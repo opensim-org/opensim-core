@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson                                               *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -29,11 +29,9 @@
 //-----------------------------------------------------------------------------
 // INCLUDES
 //-----------------------------------------------------------------------------
-#include <fstream>  // Ayman: remove .h per .NET 2003
-#include "osimCommonDLL.h"
 #include "XMLDocument.h"
-#include "Exception.h"
 #include "Object.h"
+#include <functional>
 
 
 using namespace OpenSim;
@@ -50,12 +48,24 @@ using namespace std;
 // 20303
 // 30000 for OpenSim 3.0 release
 // 30500 for OpenSim 4.0 development and Connectors
-// 30501 for Changing serialization of Marker
-// 30502 for Changing serialization of Geometry
-// 30503 for Changing serialization of Ground
-// 30505 for Changing serialization of Joint to create offset frames
+// 30501 for changing serialization of Marker
+// 30502 for changing serialization of Geometry
+// 30503 for changing serialization of Ground
+// 30505 for changing serialization of Joint to create offset frames
 // 30506 for testing 30505 conversion code
-const int XMLDocument::LatestVersion = 30506;
+// 30507 for changing serialization of Coordinates owned by Joint
+// 30508 for moving Connector's connectee_name to enclosing Component.
+// 30509 for replacing 'isDisabled' with: 'appliesForce', 'isEnforced' and
+//       'enabled', for Force, Constraint and Controller, respectively
+// 30510 for renaming Connector to Socket.
+// 30511 for replacing Probe::isDisabled with Probe::enabled.
+// 30512 for removing Model::FrameSet and moving frames to components list
+// 30513 for removing internal (silent) clamping of Muscle controls (excitations)
+// 30514 for removing "reverse" property from Joint
+// 30515 for WrapObject color, display_preference, VisibleObject -> Appearance
+// 30516 for GeometryPath default_color -> Appearance
+// 30517 for removal of _connectee_name suffix to shorten XML for socket, input
+const int XMLDocument::LatestVersion = 30517;
 //=============================================================================
 // DESTRUCTOR AND CONSTRUCTOR(S)
 //=============================================================================
@@ -429,7 +439,39 @@ void XMLDocument::addConnector(SimTK::Xml::Element& element,
     //connectors_node->writeToString(debug);
 }
 
-void XMLDocument::addPhysicalOffsetFrame(SimTK::Xml::Element& element,
+void XMLDocument::updateConnectors30508(SimTK::Xml::Element& componentElt)
+{
+    using ElementItr = SimTK::Xml::element_iterator;
+    
+    ElementItr connectors_node = componentElt.element_begin("connectors");
+    
+    // See if there's a <connectors> element.
+    if (connectors_node == componentElt.element_end()) return;
+    
+    for (ElementItr connectorElt = connectors_node->element_begin();
+            connectorElt != componentElt.element_end();
+            ++connectorElt) {
+        // Grab name of Connector.
+        const auto& connectorName =
+                connectorElt->getRequiredAttributeValue("name");
+        // Grab value of connectee_name property.
+        ElementItr connecteeNameElt =
+                connectorElt->element_begin("connectee_name");
+        SimTK::String connecteeName;
+        connecteeNameElt->getValueAs<std::string>(connecteeName);
+        
+        // Create new element for this connector's connectee name.
+        SimTK::Xml::Element newConnecteeNameElt(
+                "connector_" + connectorName + "_connectee_name");
+        newConnecteeNameElt.setValue(connecteeName);
+        componentElt.insertNodeAfter(connectors_node, newConnecteeNameElt);
+    }
+    
+    // No longer want the old syntax for connectors.
+    componentElt.eraseNode(connectors_node);
+}
+
+void XMLDocument::addPhysicalOffsetFrame30505_30517(SimTK::Xml::Element& element,
     const std::string& frameName,
     const std::string& parentFrameName, 
     const SimTK::Vec3& location, const SimTK::Vec3& orientation)
@@ -447,7 +489,17 @@ void XMLDocument::addPhysicalOffsetFrame(SimTK::Xml::Element& element,
     newFrameElement.setAttributeValue("name", frameName);
     //newFrameElement.writeToString(debug);
 
-    XMLDocument::addConnector(newFrameElement, "Connector_PhysicalFrame_", "parent", parentFrameName);
+    // This function always adds the frame as a subcomponent of a component
+    // that is a member of the forceset, making this frame three levels
+    // deep. The connectee is either ground or a member of bodyset.
+    if(parentFrameName == "ground")
+        XMLDocument::addConnector(newFrameElement,
+            "Connector_PhysicalFrame_", "parent", "../../../"
+            + parentFrameName);
+    else
+        XMLDocument::addConnector(newFrameElement,
+            "Connector_PhysicalFrame_", "parent", "../../../bodyset/"
+            + parentFrameName);
 
     std::ostringstream transValue;
     transValue << location[0] << " " << location[1] << " " << location[2];
@@ -461,4 +513,51 @@ void XMLDocument::addPhysicalOffsetFrame(SimTK::Xml::Element& element,
 
     frames_node->insertNodeAfter(frames_node->element_end(), newFrameElement);
     //frames_node->writeToString(debug);
+}
+
+string XMLDocument::updateConnecteePath30517(
+        const std::string& connecteeSetName,
+        const std::string& connecteeName) {
+    std::string connecteePath;
+    if (connecteeSetName == "bodyset" && connecteeName == "ground") {
+        connecteePath = "/" + connecteeName;
+    } else{
+        connecteePath = "/" + connecteeSetName + "/" + connecteeName;
+    }
+    return connecteePath;
+}
+
+SimTK::Xml::Element XMLDocument::findElementWithName(
+        SimTK::Xml::Element& element, const std::string& name) {
+    using namespace SimTK;
+
+    if (name.empty()) return Xml::Element();
+
+    // First, get to the root of the XML document.
+    Xml::Element current = element;
+    while (current.hasParentElement())
+        current = current.getParentElement();
+    Xml::Element root = current;
+
+    // This will be a recursive lambda function.
+    std::function<Xml::Element(Xml::Element&, const std::string&)>
+        searchForElement;
+    // For recursion, must capture the function itself.
+    // Returns an invalid Element if no element with `name` could be found.
+    searchForElement = [&searchForElement](
+            Xml::Element& elem, const std::string& name) -> Xml::Element {
+        // This is a depth-first search.
+        for (auto it = elem.element_begin(); it != elem.element_end();
+                ++it) {
+            std::string elemName = it->getOptionalAttributeValue("name");
+            if (elemName == name)
+                return elem;
+            Xml::Element foundElem = searchForElement(*it, name);
+            if (foundElem.isValid())
+                return foundElem;
+            // Keep searching other branches.
+        }
+        return Xml::Element(); // Did not find.
+    };
+    return searchForElement(root, name);
 }

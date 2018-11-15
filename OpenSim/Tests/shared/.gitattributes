@@ -1,0 +1,7 @@
+# By default, git will change the line endings of files to match the convention
+# for specific platforms (CRLF on Windows, LF on Linux, etc.).
+# But we want to test that, on UNIX, we can still read data files with CRLF
+# line endings. Therefore, we use the following to enforce that the "end of
+# line" (eol) for certain files is CRLF, even on UNIX.
+gait10dof18musc_ik_CRLF_line_ending.mot eol=crlf
+gait10dof18musc_walk_CRLF_line_ending.trc eol=crlf

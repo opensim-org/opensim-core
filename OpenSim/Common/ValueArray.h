@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2015 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Authors:                                                                   *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -24,8 +24,11 @@
 #ifndef OPENSIM_VALUE_ARRAY_H_
 #define OPENSIM_VALUE_ARRAY_H_
 
+#include <vector>
+
 // Non-standard headers.
-#include "SimTKcommon.h"
+//#include "SimTKcommon.h"
+#include "SimTKcommon/internal/Value.h"
 #include "OpenSim/Common/Exception.h"
 
 namespace OpenSim {
@@ -54,6 +57,9 @@ public:
 
     /** Access an element of the array using its index.                       */
     virtual const AbstractValue& operator[](size_t index) const = 0;
+
+    /** Get value corresponding to the given index as string.                 */
+    virtual std::string toString(const size_t index) const = 0;
 };
 
 
@@ -74,19 +80,19 @@ public:
 
     /** Access an element of the array using its index.                       
 
-    \throws std::out_of_range If index is out of range.                       */
+    \throws IndexOutOfRange If index is out of range.                         */
     Value<T>& operator[](size_t index) override {
         OPENSIM_THROW_IF(isIndexOutOfRange(index), 
-                         IndexOutOfRange, index, 0, _values.size());
+                         IndexOutOfRange, index, 0, _values.size() - 1);
         return _values.at(index);
     } 
 
     /** Access an element of the array using its index.                       
 
-    \throws std::out_of_range If index is out of range.                       */
+    \throws IndexOutOfRange If index is out of range.                         */
     const Value<T>& operator[](size_t index) const override {
         OPENSIM_THROW_IF(isIndexOutOfRange(index), 
-                         IndexOutOfRange, index, 0, _values.size());
+                         IndexOutOfRange, index, 0, _values.size() - 1);
         return _values.at(index);
     }
 
@@ -100,9 +106,32 @@ public:
         return _values;
     }
 
+    /** Get the value corresponding to the given index as string.             
+    
+    \throws IndexOutOfRange If indes is out of range.                         */
+    std::string toString(const size_t index) const override {
+        OPENSIM_THROW_IF(isIndexOutOfRange(index), 
+                         IndexOutOfRange, index, 0, _values.size() - 1);
+
+        return toString_impl(_values.at(index).get());
+    }
+
 private:
     bool isIndexOutOfRange(size_t index) const {
         return index >= _values.size();
+    }
+
+    template<typename Type,
+             typename = decltype(std::declval<std::ostream&>() <<
+                                 std::declval<Type>())>
+    std::string toString_impl(const Type& value) const {
+        std::ostringstream stream{};
+        stream << value;
+        return stream.str();
+    }
+    template<typename... Types>
+    std::string toString_impl(Types...) const {
+        return "<cannot-convert-to-string>";
     }
 
     std::vector<Value<T>> _values;

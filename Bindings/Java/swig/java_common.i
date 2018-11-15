@@ -1,5 +1,5 @@
-%module(directors="1") opensimModelCommon
-%module opensimModelCommon
+%module(directors="1") opensimCommon
+%module opensimCommon
 
 #pragma SWIG nowarn=822,451,503,516,325,401
 
@@ -10,6 +10,8 @@
 using namespace OpenSim;
 using namespace SimTK;
 %}
+
+%include "java_preliminaries.i";
 
 %include "arrays_java.i";
 
@@ -120,35 +122,6 @@ using namespace SimTK;
   }
 %}
 
-// Generic Exception handling
-%typemap(throws) SWIGTYPE, SWIGTYPE &, SWIGTYPE *, SWIGTYPE [ANY] %{
-    SWIG_JavaThrowException(jenv, SWIG_JavaIOException,
-                            "C++ $1_type exception thrown");
-    return $null;
-%}
-
-%typemap(throws, throws="java.io.IOException") OpenSim::Exception {
-    jclass excep = jenv->FindClass("java/io/IOException");
-    if (excep)
-        jenv->ThrowNew(excep, ($1).getMessage());
-    return $null;
-}
-
-%exception {
-  if (OpenSim::mapCxxExceptionsToJava){
-	  try {
-	  $action
-	  }
-	  catch(std::exception& _ex){
-              jclass excep = jenv->FindClass("java/lang/RuntimeException");
-              if (excep)
-                  jenv->ThrowNew(excep,_ex.what());
-	  }
-  }
-  else
-	$action
-}
-
 %extend OpenSim::Array<double> {
     void setValues(double dValues[], int size) {
         self->setSize(size);
@@ -202,24 +175,6 @@ using namespace SimTK;
   }
 };
 
-/* Load the required libraries when this module is loaded.                    */
-%pragma(java) jniclassclassmodifiers="public class"
-SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
-%pragma(java) jniclassimports="import javax.swing.JOptionPane;"
-%pragma(java) jniclasscode=%{
-  static {
-      try{
-          // All OpenSim classes required for GUI operation.
-          System.loadLibrary("osimJavaJNI");
-      }
-      catch(UnsatisfiedLinkError e){
-          new JOptionPane("Required library failed to load. Check that the " +
-                          "dynamic library osimJavaJNI is in your PATH\n" + e, 
-        JOptionPane.ERROR_MESSAGE).createDialog(null, "Error").setVisible(true);
-      }
-  }
-%}
-
 %extend OpenSim::Object {
 	static OpenSim::Array<std::string> getFunctionClassNames() {
 		  OpenSim::Array<std::string> availableClassNames;
@@ -242,7 +197,6 @@ SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
       private_addComponent(comp);
   }
 %}
-
 
 %import "java_simbody.i"
 

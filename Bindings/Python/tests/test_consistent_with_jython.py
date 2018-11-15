@@ -12,8 +12,11 @@ import opensim as osim
 test_dir = os.path.join(os.path.dirname(os.path.abspath(osim.__file__)),
                         'tests')
 
+# Silence warning messages if mesh (.vtp) files cannot be found.
+osim.Model.setDebugLevel(0)
+
 def assert_almost_equal(valA, valB, tol=1e-5):
-    assert abs(valA - valB) < 1e-5
+    assert abs(valA - valB) < tol
 
 class TestConsistentWithJython(unittest.TestCase):
     def test_makeUlnaHeavy(self):
@@ -39,8 +42,8 @@ class TestConsistentWithJython(unittest.TestCase):
         newMass = forearm.getMass() * massScale
         forearm.setMass(newMass)
     
-        # Get full path name of original.old model
-        fullPathName = oldModel.getInputFileName()
+        # Get absolute path name of original.old model
+        absPathName = oldModel.getInputFileName()
     
         # Change the name of the modified model
         newName = os.path.join(test_dir, 'Arm26_makeUlnaHeavy.osim')
@@ -78,8 +81,8 @@ class TestConsistentWithJython(unittest.TestCase):
             oldSL = currentMuscle.getTendonSlackLength()
             currentMuscle.setTendonSlackLength(oldSL * tendonSlackLengthScale)
     
-        #get full path name of original model
-        fullPathName = oldModel.getInputFileName()
+        #get absolute path name of original model
+        absPathName = oldModel.getInputFileName()
     
         #Change pathname to output file name
         newName = os.path.join(test_dir, 'Arm26_alterTendonSlackLength.osim')

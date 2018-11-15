@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Peter Eastman                                                   *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -24,10 +24,9 @@
  * -------------------------------------------------------------------------- */
 // INCLUDE
 #include <OpenSim/Simulation/osimSimulationDLL.h>
-#include "OpenSim/Common/Object.h"
-#include "OpenSim/Simulation/SimbodyEngine/Body.h"
 #include "OpenSim/Simulation/Model/ModelComponent.h"
-#include <SimTKsimbody.h>
+#include "OpenSim/Simulation/Model/PhysicalFrame.h"
+#include "Appearance.h"
 
 namespace OpenSim {
 
@@ -36,7 +35,9 @@ class ScaleSet;
 /** This class represents the physical shape of an object for use in contact
  * modeling.  It is an abstract class, with subclasses for particular geometric
  * representations. The geometry is attached to a PhysicalFrame, which is
- * specified using a Connector named "frame".
+ * specified using a Socket named "frame".
+ *
+ * Note that ContactGeometry is not scaled with the Model.
  *
  * @author Peter Eastman
  */
@@ -56,13 +57,11 @@ public:
         "Orientation of geometry in the PhysicalFrame "
         "(body-fixed XYZ Euler angles).");
 
-    OpenSim_DECLARE_PROPERTY(display_preference, int,
-        "0:Hide 1:Wire 3:Flat 4:Shaded");
+    // Default display properties e.g. Representation, color, texture, etc.
+    OpenSim_DECLARE_UNNAMED_PROPERTY(Appearance,
+        "Default appearance for this Geometry");
 
-    OpenSim_DECLARE_LIST_PROPERTY_SIZE(color, double, 3,
-        "Display Color to apply to the contact geometry.");
-
-    OpenSim_DECLARE_CONNECTOR(frame, PhysicalFrame,
+    OpenSim_DECLARE_SOCKET(frame, PhysicalFrame,
         "The frame to which this geometry is attached.");
 
 //=============================================================================
@@ -97,12 +96,7 @@ public:
     /** Get the PhysicalFrame this geometry is attached to. */
     const PhysicalFrame& getFrame() const;
     /** %Set the PhysicalFrame this geometry is attached to. */
-    void setFrame(const PhysicalFrame& body);
-
-    /** Get the display_preference of this geometry. */
-    const int getDisplayPreference();
-    /** %Set the display_preference of this geometry. */
-    void setDisplayPreference(const int dispPref);
+    void setFrame(const PhysicalFrame& frame);
 
     /** Create a new SimTK::ContactGeometry based on this object. */
     virtual SimTK::ContactGeometry createSimTKContactGeometry() const = 0;
@@ -111,7 +105,7 @@ public:
      * geometry relative to the PhysicalFrame `F` to which this geometry is
      * connected.
      *
-     * If you want the transform of this geometry relative to the Body (or
+     * If you want the transform of this geometry relative to the Frame (or
      * Ground) `B` in which this geometry is fixed, you can use the following
      * code:
      * @code{.cpp}
@@ -130,9 +124,6 @@ public:
     * @param aScaleSet Set of XYZ scale factors for the bodies.
     */
     virtual void scale(const ScaleSet& aScaleSet);
-
-    // Override this method if geometry changes/deforms
-    virtual void updateGeometry() {};
 
     /** @name Deprecated */
     // @{

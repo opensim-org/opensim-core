@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson                                               *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -34,17 +34,10 @@
 #include "XMLDocument.h"
 #include "Exception.h"
 #include "Property_Deprecated.h"
-#include "PropertyObj.h"
-#include "PropertyDblVec.h"
 #include "PropertyTransform.h"
 #include "IO.h"
 
-#include "Simbody.h"
-
 #include <fstream>
-#include <vector>
-#include <map>
-#include <algorithm>
 
 using namespace OpenSim;
 using namespace std;
@@ -102,16 +95,14 @@ Object::Object(const string &aFileName, bool aUpdateFromXMLNode)
     // This maybe slower than we like but definitely faster than 
     // going all the way down to the parser to throw an exception for null document!
     // -Ayman 8/06
-    if(aFileName.empty()) {
-        string msg =
-            "Object: ERR- Empty filename encountered.";
-        throw Exception(msg,__FILE__,__LINE__);
-    } else 
-        if(!ifstream(aFileName.c_str(), ios_base::in).good()) {
-        string msg =
-            "Object: ERR- Could not open file " + aFileName+ ". It may not exist or you don't have permission to read it.";
-        throw Exception(msg,__FILE__,__LINE__);
-    }   
+    OPENSIM_THROW_IF(aFileName.empty(), Exception,
+        getClassName() + 
+        ": Cannot construct from empty filename. No filename specified.");
+
+    OPENSIM_THROW_IF(!ifstream(aFileName.c_str(), ios_base::in).good(),
+        Exception,
+        getClassName() + ": Cannot open file " + aFileName +
+        ". It may not exist or you do not have permission to read it.");
 
     _document = new XMLDocument(aFileName);
 
@@ -135,7 +126,6 @@ Object::Object(const string &aFileName, bool aUpdateFromXMLNode)
         }
         IO::chDir(saveWorkingDirectory);
     }
-
 }
 //_____________________________________________________________________________
 /**
@@ -246,23 +236,55 @@ void Object::setNull()
 // operator.
 bool Object::operator==(const Object& other) const
 {
-    if (getConcreteClassName()  != other.getConcreteClassName()) return false;
-    if (getName()               != other.getName())         return false;
-    if (getDescription()        != other.getDescription())  return false;
-    if (getAuthors()            != other.getAuthors())      return false;
-    if (getReferences()         != other.getReferences())   return false;
+    auto printDiff = [](const std::string& name,
+                            const std::string& thisValue,
+                            const std::string& otherValue) {
+        if (Object::getDebugLevel() > 0) {
+            std::cout << "In Object::operator==(), differing " << name << ":\n"
+                << "left: " << thisValue
+                << "\nright: " << otherValue << std::endl;
+        }
+
+    };
+    if (getConcreteClassName()  != other.getConcreteClassName()) {
+        printDiff("ConcreteClassName", getConcreteClassName(),
+                  other.getConcreteClassName());
+        return false;
+    }
+    if (getName()               != other.getName()) {
+        printDiff("name", getName(), other.getName());
+        return false;
+    }
+    if (getDescription()        != other.getDescription()) {
+        printDiff("description", getDescription(), other.getDescription());
+        return false;
+    }
+    if (getAuthors()            != other.getAuthors()) {
+        printDiff("authors", getAuthors(), other.getAuthors());
+        return false;
+    }
+    if (getReferences()         != other.getReferences()) {
+        printDiff("references", getReferences(), other.getReferences());
+        return false;
+    }
 
     // Must have the same number of properties, in the same order.
     const int numProps = getNumProperties();
-    if (other.getNumProperties() != numProps)
+    if (other.getNumProperties() != numProps) {
+        printDiff("number of properties", std::to_string(numProps),
+                  std::to_string(other.getNumProperties()));
         return false;
+    }
 
     for (int px = 0; px < numProps; ++px) {
         const AbstractProperty& myProp    = getPropertyByIndex(px);
         const AbstractProperty& otherProp = other.getPropertyByIndex(px);
 
-        if (!myProp.equals(otherProp))
+        if (!myProp.equals(otherProp)) {
+            printDiff("property '" + myProp.getName() + "'",
+                      myProp.toString(), otherProp.toString());
             return false;
+        }
     }
 
     return true;
@@ -1027,8 +1049,8 @@ updateDefaultObjectsFromXMLNode()
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
 
-void Object::
-updateXMLNode(SimTK::Xml::Element& aParent) const
+void Object::updateXMLNode(SimTK::Xml::Element& aParent,
+                           const AbstractProperty* prop) const
 {
     // Handle non-inlined object
     if(!getInlined()) {
@@ -1036,35 +1058,43 @@ updateXMLNode(SimTK::Xml::Element& aParent) const
         // Handle not-inlined objects first.
         if (!aParent.isValid()) {
             cout<<"Root node must be inlined"<<*this<<endl;
-        } else {
-            // Can we make this more efficient than recreating the node again?
-            // We can possibly check when setInlined() is invoked if we need to do it or not
-            // Create a new document and write object to it
-            string offlineFileName = getDocumentFileName();
-            if(IO::GetPrintOfflineDocuments()) {
-                // The problem is that generateChildXMLDocument makes a root which allows print
-                // to do its job but root is duplicated. If we don't create the node then generateXMLDocument
-                // is invoked which messes up the whole _childDocument mechanism as _document is overwritten.
-                _inlined=true;
-                print(offlineFileName);
-                _inlined=false;
-                SimTK::Xml::Element myObjectElement(getConcreteClassName());
-                myObjectElement.setAttributeValue("file", offlineFileName);
-                aParent.insertNodeAfter(aParent.node_end(), myObjectElement);
-            }
-            /*
-            if (!_refNode) _refNode = XMLNode::AppendNewElementWithComment(aParent,getType(),getName());
-            XMLNode::SetAttribute(_refNode,"file",offlineFileName);
-            XMLNode::RemoveAttribute(_refNode,"name"); // Shouldn't have a name attribute in the reference document
-            XMLNode::RemoveChildren(_refNode); // Shouldn't have any children in the reference document*/
+        }
+        else {
+        // Can we make this more efficient than recreating the node again?
+        // We can possibly check when setInlined() is invoked if we need to do it or not
+        // Create a new document and write object to it
+        string offlineFileName = getDocumentFileName();
+        if(IO::GetPrintOfflineDocuments()) {
+            // The problem is that generateChildXMLDocument makes a root which allows print
+            // to do its job but root is duplicated. If we don't create the node then generateXMLDocument
+            // is invoked which messes up the whole _childDocument mechanism as _document is overwritten.
+            _inlined=true;
+            print(offlineFileName);
+            _inlined=false;
+            SimTK::Xml::Element myObjectElement(getConcreteClassName());
+            myObjectElement.setAttributeValue("file", offlineFileName);
+            aParent.insertNodeAfter(aParent.node_end(), myObjectElement);
+        }
+        /*
+        if (!_refNode) _refNode = XMLNode::AppendNewElementWithComment(aParent,getType(),getName());
+        XMLNode::SetAttribute(_refNode,"file",offlineFileName);
+        XMLNode::RemoveAttribute(_refNode,"name"); // Shouldn't have a name attribute in the reference document
+        XMLNode::RemoveChildren(_refNode); // Shouldn't have any children in the reference document*/
         }
         return;
     }
     
     // GENERATE XML NODE for object
     SimTK::Xml::Element myObjectElement(getConcreteClassName());
-    if (!getName().empty())
+    
+    // if property is provided and it is not of unnamed type, use the property name
+    if(prop && prop->isOneObjectProperty() && !prop->isUnnamedProperty()) {
+        myObjectElement.setAttributeValue("name", prop->getName());
+    } // otherwise if object has a name use it as the name value
+    else if (!getName().empty()) { 
         myObjectElement.setAttributeValue("name", getName());
+    }
+
     aParent.insertNodeAfter(aParent.node_end(), myObjectElement);
 
     // DEFAULT OBJECTS
@@ -1251,10 +1281,15 @@ updateDefaultObjectsXMLNode(SimTK::Xml::Element& aParent)
  *
  * @return Document's filename for this object.
  */
-string Object::
-getDocumentFileName() const
+string Object::getDocumentFileName() const
 {
     return _document ? _document->getFileName() : "";
+}
+
+
+int Object::getDocumentFileVersion() const
+{ 
+    return _document ? _document->getDocumentVersion() : -1;
 }
 
 
@@ -1332,6 +1367,9 @@ setAllPropertiesUseDefault(bool aUseDefault)
 bool Object::
 print(const string &aFileName) const
 {
+    try {
+        warnBeforePrint();
+    } catch (...) {}
     // Temporarily change current directory so that inlined files are written to correct relative directory
     std::string savedCwd = IO::getCwd();
     IO::chDir(IO::getParentDirectory(aFileName));
@@ -1368,9 +1406,10 @@ print(const string &aFileName) const
 
 // This signature accepts "className.propertyName", splits out the individual
 // segments and calls the other signature.
-void Object::
+bool Object::
 PrintPropertyInfo(ostream &aOStream,
-                        const string &aClassNameDotPropertyName)
+                  const string &aClassNameDotPropertyName,
+                  bool printFlagInfo)
 {
     // PARSE NAMES
     string compoundName = aClassNameDotPropertyName;
@@ -1382,13 +1421,14 @@ PrintPropertyInfo(ostream &aOStream,
         propertyName = compoundName.substr(delimPos+1);
     }
 
-    PrintPropertyInfo(aOStream,className,propertyName);
+    return PrintPropertyInfo(aOStream, className, propertyName, printFlagInfo);
 }
 
 // This is the real method.
-void Object::
+bool Object::
 PrintPropertyInfo(ostream &aOStream,
-                  const string &aClassName,const string &aPropertyName)
+                  const string &aClassName, const string &aPropertyName,
+                  bool printFlagInfo)
 {
     if(aClassName=="") {
         // NO CLASS
@@ -1400,16 +1440,20 @@ PrintPropertyInfo(ostream &aOStream,
             if(obj==NULL) continue;
             aOStream<<obj->getConcreteClassName()<<endl;
         }
-        aOStream<<"\n\nUse '-PropertyInfo ClassName' to list the properties of a particular class.\n\n";
-        return;
+        if (printFlagInfo) {
+            aOStream<<"\n\nUse '-PropertyInfo ClassName' to list the properties of a particular class.\n\n";
+        }
+        return true;
     }
 
     // FIND CLASS
     const Object* object = getDefaultInstanceOfType(aClassName);
     if(object==NULL) {
-        aOStream<<"\nA class with the name '"<<aClassName<<"' was not found.\n";
-        aOStream<<"\nUse '-PropertyInfo' without specifying a class name to print a listing of all registered classes.\n";
-        return;
+        if (printFlagInfo) {
+            aOStream<<"\nA class with the name '"<<aClassName<<"' was not found.\n";
+            aOStream<<"\nUse '-PropertyInfo' without specifying a class name to print a listing of all registered classes.\n";
+        }
+        return false;
     }
 
     PropertySet propertySet = object->getPropertySet();
@@ -1454,13 +1498,15 @@ PrintPropertyInfo(ostream &aOStream,
             }
         }
 
-        aOStream << "\n\nUse '-PropertyInfo ClassName.PropertyName' to print "
-                    "info for a particular property.\n";
-        if(aPropertyName!="*") {
-            aOStream << "Use '-PropertyInfo ClassName.*' to print info for all "
-                        "properties in a class.\n";
+        if (printFlagInfo) {
+            aOStream << "\n\nUse '-PropertyInfo ClassName.PropertyName' to print "
+                "info for a particular property.\n";
+            if(aPropertyName!="*") {
+                aOStream << "Use '-PropertyInfo ClassName.*' to print info for all "
+                    "properties in a class.\n";
+            }
         }
-        return;
+        return true;
     }
 
     // FIND PROPERTY
@@ -1470,20 +1516,28 @@ PrintPropertyInfo(ostream &aOStream,
         //aOStream<<"\nPROPERTY INFO FOR "<<aClassName<<"\n";
         aOStream << "\n" << aClassName << "." << aPropertyName << "\n"
                  << prop->getComment() << "\n";
+        return true;
     } catch(...) {
         try {
             abstractProperty = object->_propertyTable.getPropertyPtr(aPropertyName);
+            if (abstractProperty == nullptr) {
+                throw Exception("No property '" + aPropertyName +
+                        "' class '" + aClassName + "'.");
+            }
             // OUTPUT
             //aOStream<<"\nPROPERTY INFO FOR "<<aClassName<<"\n";
             aOStream << "\n" <<aClassName << "." << aPropertyName <<"\n"
                      << abstractProperty->getComment()<<"\n";
+            return true;
         } catch (...) {
-            aOStream << "\nPrintPropertyInfo: no property with the name "
-                     << aPropertyName;
-            aOStream << " was found in class " << aClassName << ".\n";
-            aOStream << "Omit the property name to get a listing of all "
-                        "properties in a class.\n";
-            return;
+            if (printFlagInfo) {
+                aOStream << "\nPrintPropertyInfo: no property with the name "
+                    << aPropertyName;
+                aOStream << " was found in class " << aClassName << ".\n";
+                aOStream << "Omit the property name to get a listing of all "
+                    "properties in a class.\n";
+            }
+            return false;
         }
     }
 }
@@ -1535,22 +1589,50 @@ makeObjectFromFile(const std::string &aFileName)
             IO::chDir(saveWorkingDirectory);
             throw; // re-issue the exception
         }
+        IO::chDir(saveWorkingDirectory);
         return (newObject);
     }
 
     catch(const std::exception& x) {
         cout << x.what() << endl;
-        return 0;
+        return nullptr;
     }
     catch(...){ // Document couldn't be opened, or something went really bad
-        return 0;
+        return nullptr;
     }
     assert(!"Shouldn't be here");
-    return 0;
+    return nullptr;
 }
 
+void Object::makeObjectNamesConsistentWithProperties()
+{
+    // Cycle through this object's Object properties and make sure those
+    // that are objects have names that are consistent with object property. 
+    for (int i = 0; i < getNumProperties(); ++i) {
+        auto& prop = updPropertyByIndex(i);
+        // check if property is of type Object
+        if (prop.isObjectProperty()) {
+            // a property is a list so cycle through its contents
+            for (int j = 0; j < prop.size(); ++j) {
+                Object& obj = prop.updValueAsObject(j);
+                // If a single object property, set the object's name to the
+                // property's name, otherwise it will be inconsistent with
+                // what is serialized (property name).
+                if (!prop.isUnnamedProperty() && prop.isOneObjectProperty()) {
+                    obj.setName(prop.getName());
+                }
+                // In any case, any objects that are properties of this object
+                // also need to be processed
+                obj.makeObjectNamesConsistentWithProperties();
+            }
+        }
+    }
+}
 
-
+void Object::setObjectIsUpToDateWithProperties()
+{
+    _objectIsUpToDate = true;
+}
 
 void Object::updateFromXMLDocument()
 {

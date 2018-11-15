@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ajay Seth                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -91,12 +91,12 @@ void PointToPointSpring::constructProperties()
 
 void PointToPointSpring::setBody1(const PhysicalFrame& body)
 {
-    updConnector<PhysicalFrame>("body1").connect(body);
+    connectSocket_body1(body);
 }
 
 void PointToPointSpring::setBody2(const PhysicalFrame& body)
 {
-    updConnector<PhysicalFrame>("body2").connect(body);
+    connectSocket_body2(body);
 }
 
 const PhysicalFrame& PointToPointSpring::getBody1() const
@@ -187,16 +187,50 @@ getRecordValues(const SimTK::State& state) const
     SimTK::Vec3 forces = bodyForces(body1.getMobilizedBodyIndex())[1];
     values.append(3, &forces[0]);
 
-    SimTK::Vec3 gpoint(0);
-    _model->getSimbodyEngine().getPosition(state, body1, getPoint1(), gpoint);
+    SimTK::Vec3 gpoint = body1.findStationLocationInGround(state, getPoint1());
     values.append(3, &gpoint[0]);
 
     forces = bodyForces(body2.getMobilizedBodyIndex())[1];
     values.append(3, &forces[0]);
 
-    _model->getSimbodyEngine().getPosition(state, body2, getPoint2(), gpoint);
+    gpoint = body2.findStationLocationInGround(state, getPoint2());
     values.append(3, &gpoint[0]);
 
     return values;
 }
 
+void PointToPointSpring::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
+{
+    int documentVersion = versionNumber;
+    if (documentVersion < XMLDocument::getLatestVersion()) {
+        if (documentVersion<30500) {
+            // replace old properties with latest use of Connectors
+            SimTK::Xml::element_iterator body1Element = aNode.element_begin("body1");
+            SimTK::Xml::element_iterator body2Element = aNode.element_begin("body2");
+            std::string body1_name(""), body2_name("");
+            // If default constructed then elements not serialized since they
+            // are default values. Check that we have associated elements, then
+            // extract their values.
+            // Forces in pre-4.0 models are necessarily 1 level deep
+            // Bodies are also necessarily 1 level deep.
+            // Here we create the correct relative path (accounting for sets
+            // being components).
+            if (body1Element != aNode.element_end()) {
+                body1Element->getValueAs<std::string>(body1_name);
+                body1_name = XMLDocument::updateConnecteePath30517("bodyset",
+                                                                   body1_name);
+            }
+            if (body2Element != aNode.element_end()) {
+                body2Element->getValueAs<std::string>(body2_name);
+                body2_name = XMLDocument::updateConnecteePath30517("bodyset",
+                                                                   body2_name);
+            }
+            XMLDocument::addConnector(aNode, "Connector_PhysicalFrame_",
+                "body1", body1_name);
+            XMLDocument::addConnector(aNode, "Connector_PhysicalFrame_",
+                "body2", body2_name);
+        }
+    }
+
+    Super::updateFromXMLNode(aNode, versionNumber);
+}

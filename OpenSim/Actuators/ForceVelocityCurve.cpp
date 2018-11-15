@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Matthew Millard                                                 *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -21,6 +21,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 #include "ForceVelocityCurve.h"
+#include <OpenSim/Common/SmoothSegmentedFunctionFactory.h>
 
 using namespace OpenSim;
 using namespace SimTK;
@@ -185,6 +186,13 @@ double ForceVelocityCurve::calcDerivative(double normFiberVelocity,
         "order must be 0, 1, or 2, but %i was entered", order);
 
     return m_curve.calcDerivative(normFiberVelocity,order);
+}
+
+double ForceVelocityCurve::
+    calcDerivative(const std::vector<int>& derivComponents,
+                   const SimTK::Vector& x) const
+{
+    return m_curve.calcDerivative(derivComponents, x);
 }
 
 SimTK::Vec2 ForceVelocityCurve::getCurveDomain() const

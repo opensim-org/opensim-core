@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Peter Loan                                                      *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -25,15 +25,14 @@
 
 // INCLUDE
 #include <OpenSim/Simulation/Model/ModelComponent.h>
-
+#include <OpenSim/Simulation/Model/Appearance.h>
 namespace OpenSim {
 
-class Body;
-class PathPoint;
 class PathWrap;
 class WrapResult;
 class Model;
 class PhysicalFrame;
+class AbstractPathPoint;
 
 //=============================================================================
 //=============================================================================
@@ -45,7 +44,7 @@ class PhysicalFrame;
  * @version 1.0
  */
 class OSIMSIMULATION_API WrapObject : public ModelComponent {
-OpenSim_DECLARE_ABSTRACT_OBJECT(WrapObject, Component);
+OpenSim_DECLARE_ABSTRACT_OBJECT(WrapObject, ModelComponent);
 public:
 //==============================================================================
 // PROPERTIES
@@ -59,11 +58,9 @@ public:
     OpenSim_DECLARE_PROPERTY(translation, SimTK::Vec3,
         "Translation of the WrapObject.");
 
-    OpenSim_DECLARE_PROPERTY(display_preference, int,
-        "Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded");
-
-    OpenSim_DECLARE_LIST_PROPERTY_SIZE(color, double, 3,
-        "Display Color as RGB with each being any value on [0, 1]");
+    // Default display properties e.g. Representation, color, texture, etc.
+    OpenSim_DECLARE_UNNAMED_PROPERTY(Appearance,
+        "Default appearance for this Geometry");
 
     OpenSim_DECLARE_PROPERTY(quadrant, std::string,
         "The name of quadrant over which the wrap object is active. "
@@ -99,7 +96,7 @@ public:
 
     // Use default copy and assignment operator
 
-    virtual void scale(const SimTK::Vec3& aScaleFactors);
+    void extendScale(const SimTK::State& s, const ScaleSet& scaleSet) override;
     virtual void connectToModelAndBody(Model& aModel, PhysicalFrame& aBody) {}
 
     const PhysicalFrame& getFrame() const;
@@ -130,22 +127,28 @@ public:
 * @return The status, as a WrapAction enum
 */
     int wrapPathSegment( const SimTK::State& state, 
-                         PathPoint& aPoint1, PathPoint& aPoint2,
+                         AbstractPathPoint& aPoint1, AbstractPathPoint& aPoint2,
                          const PathWrap& aPathWrap,
                          WrapResult& aWrapResult) const;
 
+protected:
     virtual int wrapLine(const SimTK::State& state,
                          SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
                          const PathWrap& aPathWrap,
                          WrapResult& aWrapResult, bool& aFlag) const = 0;
 
-    virtual void updateGeometry() {};
-
-protected:
+    /**
+     * Compute the transform of the wrap geomerty w.r.t. the mobilized body 
+     * it is attached to.
+     */
+    SimTK::Transform calcWrapGeometryTransformInBaseFrame() const;
    /** Determine the appropriate values of _quadrant, _wrapAxis, and _wrapSign,
      * based on the name of the quadrant. finalizeFromProperties() should be
      * called whenever the quadrant property changes. */
     void extendFinalizeFromProperties() override;
+
+    void updateFromXMLNode(SimTK::Xml::Element& node, int versionNumber)
+        override;
 
 private:
     void constructProperties();

@@ -37,8 +37,8 @@ class TestTableSourceReporter(unittest.TestCase):
         m.addComponent(t_rep)
 
         # Connect.
-        c_rep.updInput("inputs").connect(source.getOutput("column").getChannel("col1"))
-        t_rep.updInput("inputs").connect(source.getOutput("column").getChannel("col2"))
+        c_rep.addToReport(source.getOutput("column").getChannel("col1"))
+        t_rep.addToReport(source.getOutput("column").getChannel("col2"))
 
         # Realize.
         s = m.initSystem()
@@ -47,6 +47,6 @@ class TestTableSourceReporter(unittest.TestCase):
 
         # Test.
         # This value is the average of col2 (2.0 and 3.0).
-        assert t_rep.getReport().getRowAtIndex(0)[0] == 2.5
+        assert t_rep.getTable().getRowAtIndex(0)[0] == 2.5
 
 

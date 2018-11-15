@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson                                               *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -27,11 +27,8 @@
  * Author: Frank C. Anderson 
  */
 
-#include "osimCommonDLL.h"
-#include "Object.h"
 #include "StateVector.h"
 #include "Units.h"
-#include "SimTKcommon.h"
 #include "StorageInterface.h"
 #include "TimeSeriesTable.h"
 
@@ -106,7 +103,7 @@ protected:
     std::string _description;
 
     /** Storage file version as written to the file */
-    int _fileVersion;
+    int _fileVersion = -1;
     static const int LatestVersion;
 //=============================================================================
 // METHODS
@@ -115,6 +112,21 @@ public:
     // make this constructor explicit so you don't get implicit casting of int to Storage
     explicit Storage(int aCapacity=Storage_DEFAULT_CAPACITY,
         const std::string &aName="UNKNOWN");
+    /** Load a data file into a Storage. 
+    <b>Version 2 STO files</b>: This constructor can read MOT, unversioned, 
+    version 1 and 2 STO files, and any data file format supported by FileAdapter,
+    which includes C3D and TRC files. Several of these formats support tables of
+    different element types (e.g. Vec3, Quaternion, SpatialVec), in which case these
+    elements are flattened to scalar values with more columns.
+    @see DataTable_::faltten()
+    Note, this capability was introduced to support plotting OutputReporter results
+    in the GUI and is not recommended for API users. In addition to only supporting
+    scalar elements, Storage does not preserve the metadata that can be contained by
+    version 2 STO files and read in from C3D and TRC files via their respective
+    FileAdapters. In the case of data files with multiple tables (like C3D files)
+    only the first table read is converted into a Storage.
+    Please use FileAdapter (STOFileAdpater, C3DFileAdapter, ...) and TimeSeriesTable
+    instead, whenever possible. */
     Storage(const std::string &aFileName, bool readHeadersOnly=false) SWIG_DECLARE_EXCEPTION;
     Storage(const Storage &aStorage,bool aCopyData=true);
     Storage(const Storage &aStorage,int aStateIndex,int aN,
@@ -194,8 +206,9 @@ public:
     int getDataColumn(const std::string& columnName,double *&rData) const;
     void getDataColumn(const std::string& columnName, Array<double>& data, double startTime=0.0) override;
 
-    /** Get a TimeSeriesTable out of the Storage.                             */
-    TimeSeriesTable getAsTimeSeriesTable() const;
+    /** Convert to a TimeSeriesTable. This may be useful if you need to use
+    parts of the API that require a TimeSeriesTable instead of a Storage. */
+    TimeSeriesTable exportToTable() const;
 
 #ifndef SWIG
     /** A data block, like a vector for a force, point, etc... will span multiple "columns"
@@ -207,9 +220,12 @@ public:
     void getDataForIdentifier(const std::string& identifier, Array< Array<double> >& rData, double startTime=0.0) const;
 #endif
     /**
-     * Get indices of columns corresponding to identifier, empty array if identifier is not found in labels
+     * Get indices of columns whose labels begin with the specified "identifier"
+     * (prefix). Returns an empty Array if none of the column labels begin with
+     * the identifier.
      */
-    OpenSim::Array<int>  getColumnIndicesForIdentifier(const std::string& identifier) const;
+    OpenSim::Array<int>
+        getColumnIndicesForIdentifier(const std::string& identifier) const;
 
     // STEP INTERVAL
     void setStepInterval(int aStepInterval);
@@ -262,21 +278,21 @@ public:
     void shiftTime(double aValue);
     void scaleTime(double aValue);
     void add(double aValue);
-    void add(int aN,double aY[]);
+    void add(const SimTK::Vector_<double>& values);
     void add(int aN,double aValue);
     void add(StateVector *aStateVector);
     void add(Storage *aStorage);
     void subtract(double aValue);
-    void subtract(int aN,double aY[]);
+    void subtract(const SimTK::Vector_<double>& values);
     void subtract(StateVector *aStateVector);
     void subtract(Storage *aStorage);
     void multiply(double aValue);
     void multiplyColumn(int aIndex, double aValue);
-    void multiply(int aN,double aY[]);
+    void multiply(const SimTK::Vector_<double>& values);
     void multiply(StateVector *aStateVector);
     void multiply(Storage *aStorage);
     void divide(double aValue);
-    void divide(int aN,double aY[]);
+    void divide(const SimTK::Vector_<double>& values);
     void divide(StateVector *aStateVector);
     void divide(Storage *aStorage);
     Storage* integrate(int aI1=-2,int aI2=-1) const;
@@ -286,9 +302,34 @@ public:
     int computeAverage(int aN,double *aAve) const;
     int computeAverage(double aTI,double aTF,int aN,double *aAve) const;
     void pad(int aPadSize);
-    void smoothSpline(int aOrder,double aCutoffFrequency);
-    void lowpassIIR(double aCutoffFequency);
-    void lowpassFIR(int aOrder,double aCutoffFequency);
+    /**
+    * Smooth spline each of the columns in the storage.  Note that as a part
+    * of this operation, the storage is re-sampled to obtain uniform samples
+    * unless its time steps are already uniform.
+    *
+    * @param order Order of the spline.
+    * @param cutoffFrequency Cutoff frequency of the smoothing filter.
+    */
+    void smoothSpline(int order,double cutoffFrequency);
+    /**
+    * Low-pass filter each of the columns in the storage using a 3rd order
+    * lowpass IIR Butterworth digital filter. Note that as a part of this
+    * operation, the storage is re-sampled to obtain uniform samples unless
+    * its time steps are already uniform.
+    *
+    * @param cutoffFrequency Cutoff frequency of the lowpass filter.
+    */
+    void lowpassIIR(double cutoffFrequency);
+    /**
+    * Lowpass filter each of the columns in the storage using an FIR non-
+    * recursive digital filter. Note that as a part of this operation, the
+    * storage is re-sampled to obtain uniform samples unless its time steps
+    * are already uniform.
+    *
+    * @param order Order of the FIR filter.
+    * @param cutoffFrequency Cutoff frequency.
+    */
+    void lowpassFIR(int order, double cutoffFrequency);
     // Append rows of two storages at matched time
     void addToRdStorage(Storage& rStorage, double aStartTime, double aEndTime);
     //--------------------------------------------------------------------------
@@ -302,11 +343,13 @@ public:
     double compareColumn(Storage& aOtherStorage, 
                          const std::string& aColumnName,
                          double startTime, double endTime=-1.0);
-    double compareColumnRMS(Storage& aOtherStorage, 
-                         const std::string& aColumnName,
-                         double startTime=SimTK::NaN, double endTime=SimTK::NaN);
+    double compareColumnRMS(const Storage& aOtherStorage, 
+                            const std::string& aColumnName,
+                            double startTime=SimTK::NaN, double endTime=SimTK::NaN) const;
     //void checkAgainstStandard(Storage standard, Array<double> &tolerances, std::string testFile = "", int testFileLine = -1, std::string errorMessage = "Exception");
-    void compareWithStandard(Storage& standard, Array<std::string> &columnsUsed, Array<double> &comparisons);
+    void compareWithStandard(const Storage& standard, 
+                             std::vector<std::string>& columnsUsed, 
+                             std::vector<double>& comparisons) const;
     /** Force column labels for a Storage object to become unique. This is done
      * by prepending the string (n_) as needed where n=1, 2, ...
      *

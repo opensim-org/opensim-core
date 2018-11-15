@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson, Peter Loan, Ajay Seth                        *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -26,10 +26,10 @@
 //=============================================================================
 #include "CustomJoint.h"
 #include "SpatialTransform.h"
-#include <OpenSim/Simulation/SimbodyEngine/Body.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Common/Constant.h>
 #include <OpenSim/Common/LinearFunction.h>
+#include "simbody/internal/MobilizedBody_FunctionBased.h"
 
 
 //=============================================================================
@@ -53,28 +53,26 @@ CustomJoint::CustomJoint()
 /**
  * Constructor with specified SpatialTransform.
  */
-CustomJoint::CustomJoint(const std::string &name,
-                         const PhysicalFrame& parent,
-                         const PhysicalFrame& child,
-                         SpatialTransform& spatialTransform,
-                         bool reverse) :
-                         Super(name, parent, child, reverse)
+CustomJoint::CustomJoint(const std::string&    name,
+                         const PhysicalFrame&  parent,
+                         const PhysicalFrame&  child,
+                         SpatialTransform&     spatialTransform) :
+                         Super(name, parent, child)
 {
     constructProperties();
     set_SpatialTransform(spatialTransform);
 }
 
-CustomJoint::CustomJoint(const std::string& name,
-    const PhysicalFrame& parent,
-    const SimTK::Vec3& locationInParent,
-    const SimTK::Vec3& orientationInParent,
-    const PhysicalFrame& child,
-    const SimTK::Vec3& locationInChild,
-    const SimTK::Vec3& orientationInChild,
-    SpatialTransform& spatialTransform,
-    bool reverse) :
-        Super(name, parent, locationInParent, orientationInParent,
-            child, locationInChild, orientationInChild, reverse)
+CustomJoint::CustomJoint(const std::string&    name,
+                         const PhysicalFrame&  parent,
+                         const SimTK::Vec3&    locationInParent,
+                         const SimTK::Vec3&    orientationInParent,
+                         const PhysicalFrame&  child,
+                         const SimTK::Vec3&    locationInChild,
+                         const SimTK::Vec3&    orientationInChild,
+                         SpatialTransform&     spatialTransform) :
+    Super(name, parent, locationInParent, orientationInParent,
+          child, locationInChild, orientationInChild)
 {
     constructProperties();
     set_SpatialTransform(spatialTransform);
@@ -127,44 +125,21 @@ void CustomJoint::extendConnectToModel(Model& aModel)
     updSpatialTransform().connectToJoint(*this);
 }
 
-
-//=============================================================================
-// GET AND SET
-//=============================================================================
-// SCALING
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Scale a joint based on XYZ scale factors for the bodies.
- *
- * @param aScaleSet Set of XYZ scale factors for the bodies.
- * @todo Need to scale transforms appropriately, given an arbitrary axis.
- */
-void CustomJoint::scale(const ScaleSet& aScaleSet)
+void CustomJoint::extendScale(const SimTK::State& s, const ScaleSet& scaleSet)
 {
-    Vec3 scaleFactors(1.0);
+    Super::extendScale(s, scaleSet);
 
-    // Joint knows how to scale locations of the joint in parent and on the body
-    Super::scale(aScaleSet);
+    // Get scale factors (if an entry for the parent Frame's base Body exists).
+    const Vec3& scaleFactors = getScaleFactors(scaleSet, getParentFrame());
+    if (scaleFactors == ModelComponent::InvalidScaleFactors)
+        return;
 
-    // SCALING TO DO WITH THE PARENT BODY -----
-    // Joint kinematics are scaled by the scale factors for the
-    // parent body, so get those body's factors
-    const string& parentName = getParentFrame().getName();
-    for (int i=0; i<aScaleSet.getSize(); i++) {
-        Scale& scale = aScaleSet.get(i);
-        if (scale.getSegmentName()==parentName) {
-            scale.getScaleFactors(scaleFactors);
-            break;
-        }
-    }
-
+    //TODO: Need to scale transforms appropriately, given an arbitrary axis.
     updSpatialTransform().scale(scaleFactors);
 }
 
 void CustomJoint::constructCoordinates()
 {
-    CoordinateSet& coordinateSet = upd_CoordinateSet();
     const SpatialTransform& spatialTransform = getSpatialTransform();
     OpenSim::Array<std::string> coordinateNames
         = spatialTransform.getCoordinateNames();
@@ -172,37 +147,49 @@ void CustomJoint::constructCoordinates()
     // Check how many coordinates are required
     int ncoords = coordinateNames.getSize();
 
-    for (int i = 0; i < ncoords; i++){
+    for (int i = 0; i < ncoords; ++i){
         std::string coordName = spatialTransform.getCoordinateNames()[i];
         // Locate the coordinate in the set if it has already been defined (e.g. in XML) 
-        int coordIndex = coordinateSet.getIndex(coordName);
-        if (coordIndex < 0){
-            coordIndex = constructCoordinate(Coordinate::MotionType::Undefined);
+        int coordIndex = getProperty_coordinates().findIndexForName(coordName);
+        if (coordIndex < 0) {
+            coordIndex = constructCoordinate(Coordinate::MotionType::Undefined,
+                                             i);
         }
-        Coordinate& coord = coordinateSet.get(coordIndex);
+        Coordinate& coord = upd_coordinates(coordIndex);
         coord.setName(coordName);
 
-
-        // Determine if the MotionType of the Coordinate based
-        // on which TransformAxis it is relate to 0-2 are Rotational
+        // Determine the MotionType of the Coordinate based
+        // on which TransformAxis it operates upon: 0-2 are Rotational
         // and 3-5 are Translational. Coordinates appearing
         // in both categories are Coupled
-        Coordinate::MotionType mt = Coordinate::MotionType::Coupled;
-        for (int j = 0; j < 3; ++j){
-            if (spatialTransform[j]
-                    .getCoordinateNamesInArray().findIndex(coordName) >= 0) {
+        Coordinate::MotionType mt = Coordinate::MotionType::Undefined;
+        for (int j = 0; j < 6; ++j){
+            auto coordNamesForAxis = spatialTransform[j]
+                .getCoordinateNamesInArray();
+            if (coordNamesForAxis.findIndex(coordName) >= 0) {
                 const LinearFunction* lf = nullptr;
                 if (spatialTransform[j].hasFunction()) {
-                    lf = dynamic_cast<const LinearFunction*>(&spatialTransform[j].get_function());
-                    // displacement on axis is directly proportional to the coordinate value
-                    if (lf && lf->getSlope() == 1.0) {
-                        // coordinate is the axis displacement
-                        if (i < 3)
-                            // coordinate dof is about rotational axis 
+                    lf = dynamic_cast<const LinearFunction*>(
+                            &spatialTransform[j].get_function() );
+                    // if displacement on axis is linear (w/ slope of +/-1)
+                    // w.r.t. the coordinate value, we have a pure
+                    // rotation/translation
+                    if (lf && (lf->getSlope() == 1.0 || lf->getSlope() == -1.0))
+                    {
+                        // coordinate is pure axis displacement
+                        if (j < 3)
+                            // coordinate about rotational axis 
                             mt = Coordinate::MotionType::Rotational;
-                        else // along translational axis
+                        else // otherwise translational axis 
                             mt = Coordinate::MotionType::Translational;
-                        break;
+                    } else {
+                        // scaled (slope != +/-1) or nonlinear relationship
+                        // means not a pure rotational or translational for
+                        // this axis. designate as Coupled unless already
+                        // defined as pure Rotational or Translational about
+                        // another axis
+                        mt = (mt == Coordinate::MotionType::Undefined ?
+                            Coordinate::MotionType::Coupled : mt);
                     }
                 }
             }
@@ -227,7 +214,7 @@ void CustomJoint::extendAddToSystem(SimTK::MultibodySystem& system) const
     // if the joint is reversed then flip the underlying tree representation
     // of inboard and outboard bodies, although the joint direction will be 
     // preserved, the inboard must exist first.
-    if (get_reverse()){
+    if (isReversed){
         inb = getChildFrame().getMobilizedBody();
         inbX = getChildFrame().findTransformInBaseFrame();
 
@@ -241,31 +228,30 @@ void CustomJoint::extendAddToSystem(SimTK::MultibodySystem& system) const
         outb = getChildInternalRigidBody();
     }
 
-    const CoordinateSet& coords = get_CoordinateSet();
     const Array<std::string>& coordNames = getSpatialTransform().getCoordinateNames();
 
     // Some initializations
-    int numCoordinates = coords.getSize();  // Note- should check that all coordinates are used.
+    const int numCoords = numCoordinates();  // Note- should check that all coordinates are used.
     std::vector<std::vector<int> > coordinateIndices =
         getSpatialTransform().getCoordinateIndices();
     std::vector<const SimTK::Function*> functions =
         getSpatialTransform().getFunctions();
     std::vector<Vec3> axes = getSpatialTransform().getAxes();
 
-    SimTK_ASSERT1(numCoordinates == coordNames.getSize(),
+    SimTK_ASSERT1(numCoords == coordNames.getSize(),
         "%s list of coordinates does not match number of mobilities.",
         getConcreteClassName().c_str());
 
-    SimTK_ASSERT1(numCoordinates > 0,
+    SimTK_ASSERT1(numCoords > 0,
         "%s must have 1 or more mobilities (dofs).",
                   getConcreteClassName().c_str());
 
-    SimTK_ASSERT1(numCoordinates <= 6,
+    SimTK_ASSERT1(numCoords <= 6,
         "%s cannot exceed 6 mobilities (dofs).",
         getConcreteClassName().c_str());
     assert(functions.size() == 6);
 
-    SimTK_ASSERT2(numCoordinates <= 6,
+    SimTK_ASSERT2(numCoords <= 6,
         "%s::%s must specify functions for complete spatial (6 axes) motion.",
         getConcreteClassName().c_str(),
                   getSpatialTransform().getConcreteClassName().c_str());
@@ -276,15 +262,15 @@ void CustomJoint::extendAddToSystem(SimTK::MultibodySystem& system) const
         getConcreteClassName().c_str(), getSpatialTransform().getConcreteClassName().c_str());
 
     SimTK::MobilizedBody::Direction dir =
-        SimTK::MobilizedBody::Direction(get_reverse());
+        SimTK::MobilizedBody::Direction(isReversed);
 
     SimTK::MobilizedBody::FunctionBased
         simtkBody(inb, inbX, 
                   outb, outbX, 
-                    numCoordinates, functions,
+                    numCoords, functions,
                   coordinateIndices, axes, dir);
 
-    assignSystemIndicesToBodyAndCoordinates(simtkBody, mobilized, numCoordinates, 0);
+    assignSystemIndicesToBodyAndCoordinates(simtkBody, mobilized, numCoords, 0);
 }
 
 //=============================================================================

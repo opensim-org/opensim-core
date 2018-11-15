@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2013 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Thomas Uchida                                                   *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -378,8 +378,7 @@ void generateUmbergerMuscleData(const std::string& muscleName,
     // Create slider joint between ground and block.
     SliderJoint* prismatic = new SliderJoint("prismatic", ground, Vec3(0), Vec3(0),
                                                 *block, Vec3(0), Vec3(0));
-    CoordinateSet& prisCoordSet = prismatic->upd_CoordinateSet();
-    prisCoordSet[0].setName("xTranslation");
+    prismatic->updCoordinate().setName("xTranslation");
     model.addBody(block);
     model.addJoint(prismatic);
 
@@ -543,7 +542,7 @@ void compareUmbergerProbeToPublishedResults()
     double rec_normalizedForce[numPoints];
     double rec_mechanicalPower[numPoints];
     double rec_totalEnergyRate[numPoints];
-    generateUmbergerMuscleData("rectus femoris", rec_maxIsometricForce,
+    generateUmbergerMuscleData("rectus_femoris", rec_maxIsometricForce,
         rec_optimalFiberLength, 0.76, rec_Arel, rec_Brel, 1.5, 0.35,
         rec_muscleMass, &rec_normalizedForce[0], &rec_mechanicalPower[0],
         &rec_totalEnergyRate[0]);
@@ -622,33 +621,28 @@ void compareUmbergerProbeToPublishedResults()
 //   - total energy at final time equals integral of total rate
 //   - multiple muscles are correctly handled
 //   - less energy is liberated with lower activation
-Storage simulateModel(Model& model,double t0, double t1)
+Storage simulateModel(Model& model, double t0, double t1)
 {
     // Initialize model and state.
     cout << "- initializing" << endl;
     SimTK::State& state = model.initSystem();
-
-    
 
     for (int i=0; i<model.getMuscles().getSize(); ++i)
         model.getMuscles().get(i).setIgnoreActivationDynamics(state, true);
     model.getMultibodySystem().realize(state, SimTK::Stage::Dynamics);
     model.equilibrateMuscles(state);
 
-    // Prepare integrator.
+    // Prepare manager.
     const double integrationAccuracy = 1.0e-8;
-    SimTK::RungeKuttaMersonIntegrator integrator(model.getMultibodySystem());
-    integrator.setAccuracy(integrationAccuracy);
-
-    Manager manager(model,integrator);
-
-    manager.setInitialTime(t0);
-    manager.setFinalTime(t1);
+    Manager manager(model);
+    manager.setIntegratorAccuracy(integrationAccuracy);
+    state.setTime(t0);
+    manager.initialize(state);
 
     // Simulate.
     const clock_t tStart = clock();
     cout << "- integrating from " << t0 << " to " << t1 << "s" << endl;
-    manager.integrate(state, 1.0e-3);
+    manager.integrate(t1);
     cout << "- simulation complete (" << (double)(clock()-tStart)/CLOCKS_PER_SEC
          << " seconds elapsed)" << endl;
 
@@ -675,15 +669,15 @@ void testProbesUsingMillardMuscleSimulation()
     // Create slider joint between ground and block.
     SliderJoint* prismatic = new SliderJoint("prismatic", ground, Vec3(0), Vec3(0),
                                                 *block, Vec3(0), Vec3(0));
-    CoordinateSet& prisCoordSet = prismatic->upd_CoordinateSet();
-    prisCoordSet[0].setName("xTranslation");
-    prisCoordSet[0].setRangeMin(-1);
-    prisCoordSet[0].setRangeMax(1);
+    auto& prisCoord = prismatic->updCoordinate();
+    prisCoord.setName("xTranslation");
+    prisCoord.setRangeMin(-1);
+    prisCoord.setRangeMax(1);
 
     // Prescribe motion.
     Sine motion(0.1, SimTK::Pi, 0);
-    prisCoordSet[0].setPrescribedFunction(motion);
-    prisCoordSet[0].setDefaultIsPrescribed(true);
+    prisCoord.setPrescribedFunction(motion);
+    prisCoord.setDefaultIsPrescribed(true);
     model.addBody(block);
     model.addJoint(prismatic);
 
@@ -1034,7 +1028,8 @@ void testProbesUsingMillardMuscleSimulation()
     model.addAnalysis(muscleAnalysis);
 
     // Print the model.
-    printf("\n"); model.printBasicInfo(cout); printf("\n");
+    model.finalizeFromProperties();
+    printf("\n"); model.printBasicInfo(); printf("\n");
     const std::string baseFilename = "testMuscleMetabolicsProbes";
     if (OUTPUT_FILES) {
         const std::string fname = baseFilename + "Model.osim";
@@ -1047,13 +1042,11 @@ void testProbesUsingMillardMuscleSimulation()
     //--------------------------------------------------------------------------
     const double t0 = 0.0;
     const double t1 = 2.0;
-    Manager manager(model);
-    simulateModel(model, t0, t1);
+    auto stateStorage = simulateModel(model, t0, t1);
 
     // Output results files.
     if (OUTPUT_FILES) {
         std::string fname = baseFilename + "_states.sto";
-        Storage stateStorage(manager.getStateStorage());
         stateStorage.print(fname);
         cout << "+ saved state storage file: " << fname << endl;
 
@@ -1212,7 +1205,7 @@ void testProbesUsingMillardMuscleSimulation()
     //--------------------------------------------------------------------------
     // Integrate rates and check total energy liberation results at time t1.
     //--------------------------------------------------------------------------
-    Storage* probeStorageInt = probeStorage.integrate(t0, t1);
+    std::unique_ptr<Storage> probeStorageInt{probeStorage.integrate(t0, t1)};
     if (OUTPUT_FILES) {
         std::string fname = baseFilename + "_probesInteg.sto";
         probeStorageInt->print(fname);
@@ -1319,7 +1312,8 @@ void testProbesUsingMillardMuscleSimulation()
     model.addAnalysis(probeReporter2);
 
     // Print the model.
-    printf("\n"); model.printBasicInfo(cout); printf("\n");
+    model.finalizeFromProperties();
+    printf("\n"); model.printBasicInfo(); printf("\n");
     if (OUTPUT_FILES) {
         const std::string fname = baseFilename + "Model2.osim";
         model.print(fname);

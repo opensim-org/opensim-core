@@ -1,4 +1,4 @@
-%module(directors="1") simulation
+%module(package="opensim", directors="1") simulation
 #pragma SWIG nowarn=822,451,503,516,325
 // 401 is "Nothing known about base class *some-class*.
 //         Maybe you forgot to instantiate *some-template* using %template."
@@ -18,6 +18,9 @@ using namespace OpenSim;
 using namespace SimTK;
 %}
 
+// Ignore method that is not callable from Python (uses double[] arg)
+%ignore OpenSim::Coordinate::setRange;
+
 
 %include "python_preliminaries.i"
 
@@ -30,7 +33,7 @@ using namespace SimTK;
 // program to crash.
 %include "exception.i"
 // Delete any previous exception handlers.
-%exception; 
+%exception;
 %exception {
     try {
         $action
@@ -63,9 +66,9 @@ note: ## is a "glue" operator: `a ## b` --> `ab`.
 
 MODEL_ADOPT_HELPER(ModelComponent);
 MODEL_ADOPT_HELPER(Body);
+MODEL_ADOPT_HELPER(Marker)
 MODEL_ADOPT_HELPER(Probe);
 MODEL_ADOPT_HELPER(Joint);
-MODEL_ADOPT_HELPER(Frame);
 MODEL_ADOPT_HELPER(Constraint);
 MODEL_ADOPT_HELPER(ContactGeometry);
 MODEL_ADOPT_HELPER(Analysis);
@@ -77,48 +80,17 @@ MODEL_ADOPT_HELPER(Controller);
     geom._markAdopted()
 %}
 
+%pythonappend OpenSim::PhysicalFrame::addWrapObject %{
+    wrapObject._markAdopted()
+%}
 
-// Compensate for insufficient C++11 support in SWIG
-// =================================================
-/*
-Extend concrete Joints to use the inherited base constructors.
-This is only necessary because SWIG does not generate these inherited
-constructors provided by C++11's 'using' (e.g. using Joint::Joint) declaration.
-Note that CustomJoint and EllipsoidJoint do implement their own
-constructors because they have additional arguments.
-*/
-%define EXPOSE_JOINT_CONSTRUCTORS_HELPER(NAME)
-%extend OpenSim::NAME {
-    NAME() {
-        return new NAME();
-    }
-	NAME(const std::string& name,
-         const PhysicalFrame& parent,
-         const PhysicalFrame& child) {
-		return new NAME(name, parent, child, false);
-	}
-	
-	NAME(const std::string& name,
-         const PhysicalFrame& parent,
-         const SimTK::Vec3& locationInParent,
-         const SimTK::Vec3& orientationInParent,
-         const PhysicalFrame& child,
-         const SimTK::Vec3& locationInChild,
-         const SimTK::Vec3& orientationInChild) {
-		return new NAME(name, parent, locationInParent, orientationInParent,
-					child, locationInChild, orientationInChild, false);
-	}
-};
-%enddef
-
-EXPOSE_JOINT_CONSTRUCTORS_HELPER(FreeJoint);
-EXPOSE_JOINT_CONSTRUCTORS_HELPER(BallJoint);
-EXPOSE_JOINT_CONSTRUCTORS_HELPER(PinJoint);
-EXPOSE_JOINT_CONSTRUCTORS_HELPER(SliderJoint);
-EXPOSE_JOINT_CONSTRUCTORS_HELPER(WeldJoint);
-EXPOSE_JOINT_CONSTRUCTORS_HELPER(GimbalJoint);
-EXPOSE_JOINT_CONSTRUCTORS_HELPER(UniversalJoint);
-EXPOSE_JOINT_CONSTRUCTORS_HELPER(PlanarJoint);
+// PrescribedController::prescribeControlForActuator takes ownership of
+// the passed-in function.
+// There are two overloads of this function; we append to both of them.
+// args[1] is `Function* prescribedFunction`.
+%pythonappend OpenSim::PrescribedController::prescribeControlForActuator %{
+    args[1]._markAdopted()
+%}
 
 // Typemaps
 // ========
@@ -138,7 +110,7 @@ EXPOSE_JOINT_CONSTRUCTORS_HELPER(PlanarJoint);
     def __iter__(self):
         """Get an iterator for this Set, to be used as such (where `states` is
         the StatesTrajectory object)::
-           
+
             for state in states:
                 model.calcMassCenterPosition(state)
         """
@@ -172,7 +144,6 @@ SET_ADOPT_HELPER(BodyScale);
 SET_ADOPT_HELPER(PathPoint);
 SET_ADOPT_HELPER(Marker);
 SET_ADOPT_HELPER(Control);
-SET_ADOPT_HELPER(Frame);
 SET_ADOPT_HELPER(Force);
 SET_ADOPT_HELPER(Analysis);
 

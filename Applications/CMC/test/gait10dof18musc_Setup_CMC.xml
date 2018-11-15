@@ -14,7 +14,7 @@
 		<!--Initial time for the simulation.-->
 		<initial_time>0.6</initial_time>
 		<!--Final time for the simulation.-->
-		<final_time>1.1</final_time>
+		<final_time>0.9</final_time>
 		<!--Flag indicating whether or not to compute equilibrium values for states other than the coordinates or speeds.  For example, equilibrium muscle fiber lengths or muscle forces.-->
 		<solve_for_equilibrium_for_auxiliary_states>true</solve_for_equilibrium_for_auxiliary_states>
 		<!--Maximum number of integrator steps.-->

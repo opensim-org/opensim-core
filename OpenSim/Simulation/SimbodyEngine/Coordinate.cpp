@@ -26,12 +26,9 @@
 //=============================================================================
 #include "Coordinate.h"
 #include "CoordinateCouplerConstraint.h"
-#include <OpenSim/Common/IO.h>
-#include <OpenSim/Common/Function.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/SimbodyEngine/Joint.h>
-
-#include <memory>
+#include "simbody/internal/Constraint.h"
 
 //=============================================================================
 // STATICS
@@ -144,7 +141,7 @@ void Coordinate::extendFinalizeFromProperties()
 {
     Super::extendFinalizeFromProperties();
 
-    string prefix = "Coordinate("+getName()+")::extendFinalizeFromProperties: ";
+    string prefix = "Coordinate("+getName()+")::extendFinalizeFromProperties:";
 
     // Make sure the default value is within the range when clamped
     if (get_clamped()){
@@ -155,11 +152,11 @@ void Coordinate::extendFinalizeFromProperties()
         double dv = get_default_value();
         SimTK_ERRCHK2_ALWAYS(dv > (get_range(0) - SimTK::SqrtEps), prefix.c_str(),
             "Default coordinate value is less than range minimum.\n" 
-            "Default value = %d  < min = %d.", dv,  get_range(0));
+            "Default value = %g  < min = %g.", dv,  get_range(0));
 
         SimTK_ERRCHK2_ALWAYS(dv < (get_range(1) + SimTK::SqrtEps), prefix.c_str(),
             "Default coordinate value is greater than range maximum.\n"
-            "Default value = %d > max = %d.", dv, get_range(1));    
+            "Default value = %g > max = %g.", dv, get_range(1));    
     }
 
     _lockedWarningGiven=false;
@@ -208,7 +205,7 @@ void Coordinate::extendAddToSystem(SimTK::MultibodySystem& system) const
         mutableThis->upd_prescribed() = false;
     }
 
-    //TODO add clamping
+    //Now add clamping
     addModelingOption("is_clamped", 1);
 
     SimTK::SubsystemIndex sbsix =
@@ -294,7 +291,7 @@ const Joint& Coordinate::getJoint() const
 
 Coordinate::MotionType Coordinate::getMotionType() const
 {
-    int ix = getJoint().get_CoordinateSet().getIndex(this);
+    int ix = getJoint().getProperty_coordinates().findIndexForName(getName());
     return getJoint().getMotionType(Joint::CoordinateIndex(ix));
 }
 
@@ -320,8 +317,8 @@ double Coordinate::getValue(const SimTK::State& s) const
  */
 void Coordinate::setValue(SimTK::State& s, double aValue , bool enforceConstraints) const
 {
-    // If the coordinate is clamped, pull aValue into range.
-    if (getClamped(s)) {
+    // If enforceConstraints is true and coordinate is clamped, clamp aValue into range
+    if (enforceConstraints && getClamped(s)) {
         if (aValue < get_range(0))
             aValue = get_range(0);
         else if (aValue > get_range(1))
@@ -472,7 +469,7 @@ void Coordinate::setPrescribedFunction(const OpenSim::Function& function)
             dynamic_cast<CoordinateCouplerConstraint*>(&constraint);
         if(couplerp) {
             if (couplerp->getDependentCoordinateName() == getName())
-                return !couplerp->isDisabled(s);
+                return couplerp->isEnforced(s);
         }
     }
     return false;
@@ -626,7 +623,7 @@ double Coordinate::CoordinateStateVariable::
 void Coordinate::CoordinateStateVariable::
     setValue(SimTK::State& state, double value) const
 {
-    ((Coordinate *)&getOwner())->setValue(state, value);
+    ((Coordinate *)&getOwner())->setValue(state, value, false);
 }
 
 double Coordinate::CoordinateStateVariable::
@@ -679,4 +676,37 @@ void Coordinate::SpeedStateVariable::
     string msg = "SpeedStateVariable::setDerivative() - ERROR \n";
     msg +=  "Generalized speed derivative (udot) can only be set by the Multibody system.";
     throw Exception(msg);
+}
+
+//=============================================================================
+// XML Deserialization
+//=============================================================================
+void Coordinate::updateFromXMLNode(SimTK::Xml::Element& aNode,
+    int versionNumber)
+{
+    if (versionNumber < XMLDocument::getLatestVersion()) {
+        if (versionNumber < 30514) {
+            SimTK::Xml::element_iterator iter = aNode.element_begin("motion_type");
+            if (iter != aNode.element_end()) {
+                SimTK::Xml::Element motionTypeElm = 
+                    SimTK::Xml::Element::getAs(aNode.removeNode(iter));
+                std::string typeName = motionTypeElm.getValue();
+
+                if ((IO::Lowercase(typeName) == "rotational"))
+                    _userSpecifiedMotionTypePriorTo40 = Rotational;
+                else if (IO::Lowercase(typeName) == "translational")
+                    _userSpecifiedMotionTypePriorTo40 = Translational;
+                else if (IO::Lowercase(typeName) == "coupled")
+                    _userSpecifiedMotionTypePriorTo40 = Coupled;
+                else
+                    _userSpecifiedMotionTypePriorTo40 = Undefined;
+            }
+        }
+    }
+    Super::updateFromXMLNode(aNode, versionNumber);
+}
+
+const Coordinate::MotionType& Coordinate::getUserSpecifiedMotionTypePriorTo40() const
+{
+    return _userSpecifiedMotionTypePriorTo40;
 }

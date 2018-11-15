@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ajay Seth, Ayman Habib                                          *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -84,7 +84,11 @@ private:
     /* If point of applications for external forces must be re-expressed
        then build new storages to be assigned to the individual ExternalForces
        with the transformed point data. Hang-on to them so we can delete them. */
-    ArrayPtrs<Storage> _storages;
+    std::vector<std::shared_ptr<Storage>> _storages;
+
+    // TODO: Replace with a Path property type that remembers where a file
+    // was loaded from.
+    std::string _loadedFromFile;
 
 //=============================================================================
 // METHODS
@@ -94,8 +98,11 @@ private:
     //--------------------------------------------------------------------------
 public:
     ExternalLoads();
-    ExternalLoads(Model& model);
-    ExternalLoads(Model& model, const std::string &aFileName, bool aUpdateFromXMLNode = true)  SWIG_DECLARE_EXCEPTION;
+
+    /**  Construct an actuator set from file.
+    * @param fileName Name of the file. */
+    ExternalLoads(const std::string &fileName, bool aUpdateFromXMLNode);
+
     ExternalLoads(const ExternalLoads &aExternalLoads);
     virtual ~ExternalLoads();
 
@@ -106,7 +113,7 @@ public:
 
     // Connect all ExternalForces inside this ExternalLoads collection to
     // their Model. Overrides ModelComponentSet method.
-    void invokeConnectToModel(Model& aModel) override;
+    void extendConnectToModel(Model& aModel) override;
 
     const std::string& getDataFileName() const { return _dataFileName;};
     void setDataFileName(const std::string& aNewFile) { _dataFileName = aNewFile; };
@@ -118,6 +125,13 @@ public:
 
     void transformPointsExpressedInGroundToAppliedBodies(const Storage &kinematics, double startTime = -SimTK::Infinity, double endTime = SimTK::Infinity);
     ExternalForce* transformPointExpressedInGroundToAppliedBody(const ExternalForce &exForce, const Storage &kinematics, double startTime, double endTime);
+
+    /// ExternalLoads remembers the file it was loaded from, even after being
+    /// copied. This file path is used to find the datafile relative to the
+    /// location of the ExternalLoads file itself. This function can clear
+    /// the memory of the file that the original ExternalLoads came from.
+    /// In general, users should not need to use this function.
+    void clearLoadedFromFile() { _loadedFromFile = ""; }
 
 private:
     void setNull();

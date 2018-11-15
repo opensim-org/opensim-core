@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ajay Seth                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -23,7 +23,7 @@
 
 //=============================================================================
 // testAssemblySolver loads models with constraints to verify that constraints
-// are adequately satified or that an appropriate exception is thrown.
+// are adequately satisfied or that an appropriate exception is thrown.
 //
 //=============================================================================
 #include <OpenSim/Simulation/osimSimulation.h>
@@ -33,6 +33,9 @@
 using namespace OpenSim;
 using namespace std;
 
+// Measure how long it takes to perform model.setStateVariableValues() on a 
+// model with constraints to evaluate the effect of assembly in the process.
+void instrumentSetStateValues(const string& modelFile);
 void testAssembleModelWithConstraints(string modelFile);
 void testAssemblySatisfiesConstraints(string modelFile);
 double calcLigamentLengthError(const SimTK::State &s, const Model &model);
@@ -41,6 +44,11 @@ int main()
 {
     try {
         LoadOpenSimLibrary("osimActuators");
+
+        //~3.5s for CoordinateStateVariable::setValue() enforcing constraints
+        //~0.18s for CoordinateStateVariable::setValue() NOT enforcing constraints
+        //       plus explicit Model::assemble() after model.setStateVariableValues()
+        instrumentSetStateValues("PushUpToesOnGroundLessPreciseConstraints.osim");
         testAssemblySatisfiesConstraints("knee_patella_ligament.osim");
         testAssembleModelWithConstraints("PushUpToesOnGroundExactConstraints.osim");
         testAssembleModelWithConstraints("PushUpToesOnGroundLessPreciseConstraints.osim");
@@ -57,6 +65,34 @@ int main()
 //==========================================================================================================
 // Test Cases
 //==========================================================================================================
+void instrumentSetStateValues(const string& modelFile)
+{
+    // Setup OpenSim model
+    Model model(modelFile);
+    SimTK::State &s = model.initSystem();
+
+    auto names = model.getStateVariableNames();
+    SimTK::Vector stateValues = model.getStateVariableValues(s);
+
+    int numLoop = 1000;
+
+    std::clock_t testStartTime = std::clock();
+
+    for (int i = 0; i < numLoop; ++i) {
+        model.setStateVariableValues(s, stateValues);
+        // Directly setting values for coordinates does not ensure they 
+        // satisfy kinematic constraints. Explicitly enforce constraints
+        // by performing an assembly, now.
+        model.assemble(s);
+    }
+
+    std::clock_t testEndTime = std::clock();
+    double elapsed = testEndTime - testStartTime;
+    cout << "model.setStateVariableValues elapsed time = "
+        << elapsed / CLOCKS_PER_SEC << "s" << endl;
+}
+
+
 void testAssembleModelWithConstraints(string modelFile)
 {
     double accuracy = 1e-5;
@@ -184,15 +220,14 @@ void testAssembleModelWithConstraints(string modelFile)
 
     //==========================================================================================================
     // Integrate forward and init the state and update defaults to make sure
-    // assembler is not effecting anything more than the pose.
-    RungeKuttaMersonIntegrator integrator(model.getMultibodySystem());
-    integrator.setAccuracy(accuracy);
-    Manager manager(model, integrator);
-    manager.setInitialTime(0.0);
-    manager.setFinalTime(0.05);
+    // assembler is not affecting anything more than the pose.
+    Manager manager(model);
+    manager.setIntegratorAccuracy(accuracy);
+    state.setTime(0.0);
+    manager.initialize(state);
 
     // Simulate forward in time
-    manager.integrate(state);
+    state = manager.integrate(0.05);
     model.getMultibodySystem().realize(state, SimTK::Stage::Velocity);
 
     Vector positionErr = state.getQErr();

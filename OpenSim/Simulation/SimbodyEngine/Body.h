@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2015 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ajay Seth, Ayman Habib, Matt DeMers                             *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -92,8 +92,18 @@ public:
      */
     SimTK::MassProperties getMassProperties() const;
 
-    void scale(const SimTK::Vec3& aScaleFactors, bool aScaleMass = false);
-    void scaleInertialProperties(const SimTK::Vec3& aScaleFactors, bool aScaleMass = true);
+    /** Scale the Body's center of mass location and its inertial properties. */
+    void scale(const SimTK::Vec3& scaleFactors, bool scaleMass = false);
+
+    /** Scale the Body's center of mass location only. Note that
+        scaleInertialProperties() must be called after this method to update the
+        Body's mass and inertia tensor. */
+    void extendScale(const SimTK::State& s, const ScaleSet& scaleSet) override;
+
+    /** Scale the Body's mass and inertia tensor. */
+    void scaleInertialProperties(const ScaleSet& scaleSet, bool scaleMass = true);
+    void scaleInertialProperties(const SimTK::Vec3& scaleFactors, bool scaleMass = true);
+
     void scaleMass(double aScaleFactor);
  protected:
 

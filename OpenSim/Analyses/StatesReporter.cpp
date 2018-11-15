@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ayman Habib                                                     *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -25,8 +25,6 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <iostream>
-#include <string>
 #include <OpenSim/Simulation/Model/Model.h>
 #include "StatesReporter.h"
 
@@ -206,7 +204,7 @@ record(const SimTK::State& s)
     _model->getMultibodySystem().realize(s, SimTK::Stage::Velocity );
 
     SimTK::Vector stateValues = _model->getStateVariableValues(s);
-    StateVector nextRow(s.getTime(), stateValues.size(), &stateValues[0]);
+    StateVector nextRow(s.getTime(), stateValues);
     _statesStore.append(nextRow);
 
     return(0);
@@ -227,7 +225,7 @@ record(const SimTK::State& s)
  * @return -1 on error, 0 otherwise.
  */
 int StatesReporter::
-begin( SimTK::State& s)
+begin( const SimTK::State& s)
 {
     if(!proceed()) return(0);
     // LABELS
@@ -283,7 +281,7 @@ step(const SimTK::State& s, int stepNumber )
  * @return -1 on error, 0 otherwise.
  */
 int StatesReporter::
-end( SimTK::State& s )
+end( const SimTK::State& s )
 {
     if (!proceed()) return 0;
 

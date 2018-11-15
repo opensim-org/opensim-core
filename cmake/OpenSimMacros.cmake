@@ -1,10 +1,148 @@
 include(CMakeParseArguments)
 
+# Add a relative path to the run-path of a shared library. The run-path allows
+# a library to find the libraries it depends on without the need to set the
+# (DY)LD_LIBRARY_PATH environment variable. This function nnly affects UNIX
+# systems. Here are the arguments:
+#
+# TARGET: The CMake target to which the run-path should be added.
+# EXECUTABLE, LOADER: Specify one of these flags to indicate whether the
+#   run-path is relative to the executable's location or relative to the loader
+#   (the library/executable that attempts to load the dependent library). Only
+#   affects Mac.
+# FROM: The path (relative to the OpenSim installation root) of the
+#   executable/library that is loading a dependent library.
+# TO: The path (relative to the OpenSim installation root) where the dependent
+#   library is located.
+function(OpenSimAddInstallRPATH)
+    set(options EXECUTABLE LOADER)
+    set(oneValueArgs TARGET FROM TO)
+    set(multiValueArgs)
+    cmake_parse_arguments(
+        OSIMRP "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+    if(OSIMRP_EXECUTABLE EQUAL OSIMRP_LOADER) 
+        message(AUTHOR_WARNING "Cannot specify both EXECUTABLE and LOADER.")
+    endif()
+
+    if(NOT OPENSIM_USE_INSTALL_RPATH)
+        return()
+    endif()
+
+    if(APPLE)
+        if(OSIMRP_EXECUTABLE)
+            set(rpath_macro "\@executable_path")
+        elseif(OSIMRP_LOADER)
+            set(rpath_macro "\@loader_path")
+        endif()
+    elseif(UNIX)
+        set(rpath_macro "\$ORIGIN")
+    endif()
+
+    file(RELATIVE_PATH to_root "${CMAKE_INSTALL_PREFIX}/${OSIMRP_FROM}"
+        "${CMAKE_INSTALL_PREFIX}")
+    set_property(TARGET ${OSIMRP_TARGET} APPEND PROPERTY INSTALL_RPATH
+        "${rpath_macro}/${to_root}${OSIMRP_TO}")
+endfunction()
+
+# Similar to OpenSimAddInstallRPATH except the run-path is the same directory
+# loader (e.g., "@loader_path/"). Arguments:
+#
+# TARGET: The CMake target to which the run-path should be added.
+function(OpenSimAddInstallRPATHSelf)
+    set(options)
+    set(oneValueArgs TARGET)
+    set(multiValueArgs)
+    cmake_parse_arguments(
+        OSIMRP "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+
+    if(NOT OPENSIM_USE_INSTALL_RPATH)
+        return()
+    endif()
+
+    # By specifing "" and "" for FROM and TO, the resulting RPATH will simply
+    # be "${rpath_macro}/".
+    OpenSimAddInstallRPATH(TARGET ${OSIMRP_TARGET} LOADER FROM "" TO "")
+
+endfunction()
+
+# Similar to OpenSimAddInstallRPATH, but specifically for adding a run-path to
+# the Simbody libraries copied into the OpenSim installation. If Simbody is not
+# copied into the OpenSim installation (OPENSIM_COPY_DEPENDENCIES=OFF) or the
+# copied Simbody libraries are installed to the same folder as the OpenSim
+# libraries (OPENSIM_INSTALL_UNIX_FHS=ON), then this function does nothing.
+#
+# TARGET: The CMake target to which the run-path should be added.
+# ABSOLUTE: Add an absolute run-path to the Simbody libraries in the OpenSim
+#   installation. If you specify this argument, then you should not specify
+#   EXECTUABLE, LOADER, or FROM.
+# EXECUTABLE, LOADER: Specify one of these flags to indicate whether the
+#   run-path is relative to the executable's location or relative to the loader
+#   (the library/executable that attempts to load the dependent library). Only
+#   affects Mac.
+# FROM: The path (relative to the OpenSim installation root) of the
+#   executable/library that is loading a dependent Simbody library.
+function(OpenSimAddInstallRPATHSimbody)
+    set(options EXECUTABLE LOADER ABSOLUTE)
+    set(oneValueArgs TARGET FROM)
+    set(multiValueArgs)
+    cmake_parse_arguments(
+        OSIMRP "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+    if(OSIMRP_ABSOLUTE AND (OSIMRP_FROM OR OSIMRP_EXECUTABLE OR OSIMRP_LOADER))
+        message(AUTHOR_WARNING
+            "Cannot specify both ABSOLUTE and FROM, EXECUTABLE, or LOADER.")
+    endif()
+
+    if(NOT OPENSIM_USE_INSTALL_RPATH OR NOT OPENSIM_COPY_DEPENDENCIES
+            OR OPENSIM_INSTALL_UNIX_FHS)
+        return()
+    endif()
+
+    file(RELATIVE_PATH simbody_root_to_simbody_lib_dir 
+        "${Simbody_ROOT_DIR}" "${Simbody_LIB_DIR}")
+    set(root_to_simbody_lib_dir
+        "${OPENSIM_INSTALL_SIMBODYDIR}/${simbody_root_to_simbody_lib_dir}")
+
+    if(OSIMRP_ABSOLUTE)
+        set_property(TARGET ${OSIMRP_TARGET} APPEND PROPERTY INSTALL_RPATH
+            "${CMAKE_INSTALL_PREFIX}/${root_to_simbody_lib_dir}")
+    else()
+        if(OSIMRP_EXECUTABLE)
+            OpenSimAddInstallRPATH(TARGET ${OSIMRP_TARGET} EXECUTABLE
+                FROM ${OSIMRP_FROM} TO ${root_to_simbody_lib_dir})
+        elseif(OSIMRP_LOADER)
+            OpenSimAddInstallRPATH(TARGET ${OSIMRP_TARGET} LOADER
+                FROM ${OSIMRP_FROM} TO ${root_to_simbody_lib_dir})
+        endif()
+    endif()
+endfunction()
+
+# Similar to OpenSimAddInstallRPATH, but specifically for adding an absolute
+# run-path.
+#
+# TARGET: The CMake target to which the run-path should be added.
+# TO: The path (relative to the OpenSim installation root) where the dependent
+#   library is located.
+function(OpenSimAddInstallRPATHAbsolute)
+    set(options)
+    set(oneValueArgs TARGET TO)
+    set(multiValueArgs)
+    cmake_parse_arguments(
+        OSIMRP "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+
+    if(NOT OPENSIM_USE_INSTALL_RPATH)
+        return()
+    endif()
+
+    set_property(TARGET ${OSIMRP_TARGET} APPEND PROPERTY INSTALL_RPATH
+        "${CMAKE_INSTALL_PREFIX}/${OSIMRP_TO}")
+endfunction()
+
 # Create an OpenSim API library. Here are the arguments:
 # VENDORLIB: If this is a vendor library, specify "VENDORLIB" as the first
 #   argument. Otherwise, omit.
 # LOWERINCLUDEDIRNAME: When installing the headers for this library, make the
 #   name of the library all lower-case (e.g., Lepton -> lepton).
+# EXCLUDEFROMPYTHON: Do not install this library into the python package.
 # KIT: Name of the library (e.g., Common).
 # AUTHORS: A string listing authors of the library.
 # LINKLIBS: List of libraries (targets) to link against.
@@ -17,6 +155,8 @@ include(CMakeParseArguments)
 #   paths). See OpenSim/Simulation/CMakeLists.txt for an example. If omitted,
 #   all the headers specified under INCLUDES are installed into the same
 #   directory in the installation tree.
+# INCLUDEINSTALLREL (optional): If INCLUDEDIRS is specified, remove
+#   "INCLUDEINSTALLREL" from the location of the installed headers.
 #
 # Here's an example from OpenSim/Common/CMakeLists.txt:
 #
@@ -33,8 +173,8 @@ function(OpenSimAddLibrary)
     # Parse arguments.
     # ----------------
     # http://www.cmake.org/cmake/help/v2.8.9/cmake.html#module:CMakeParseArguments
-    set(options VENDORLIB LOWERINCLUDEDIRNAME)
-    set(oneValueArgs KIT AUTHORS)
+    set(options VENDORLIB LOWERINCLUDEDIRNAME EXCLUDEFROMPYTHON)
+    set(oneValueArgs KIT AUTHORS INCLUDEINSTALLREL)
     set(multiValueArgs LINKLIBS INCLUDES SOURCES TESTDIRS INCLUDEDIRS)
     cmake_parse_arguments(
         OSIMADDLIB "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
@@ -51,7 +191,7 @@ function(OpenSimAddLibrary)
         -DOPENSIM_${OSIMADDLIB_UKIT}_MAJOR_VERSION=${OPENSIM_MAJOR_VERSION}
         -DOPENSIM_${OSIMADDLIB_UKIT}_MINOR_VERSION=${OPENSIM_MINOR_VERSION}
         -DOPENSIM_${OSIMADDLIB_UKIT}_BUILD_VERSION=${OPENSIM_PATCH_VERSION}
-        -DOPENSIM_${OSIMADDLIB_UKIT}_COPYRIGHT_YEARS="2005-2014"
+        -DOPENSIM_${OSIMADDLIB_UKIT}_COPYRIGHT_YEARS="2005-2017"
         -DOPENSIM_${OSIMADDLIB_UKIT}_AUTHORS="${AUTHORS}"
         -DOPENSIM_${OSIMADDLIB_UKIT}_TYPE="Shared"
         )
@@ -60,12 +200,22 @@ function(OpenSimAddLibrary)
     # Add the library.
     # ----------------
     # These next few lines are the most important:
-    # Specify the directories in OpenSim that contain header files.
-    include_directories(${OpenSim_SOURCE_DIR})
 
     # Create the library using the provided source and include files.
     add_library(${OSIMADDLIB_LIBRARY_NAME} SHARED
         ${OSIMADDLIB_SOURCES} ${OSIMADDLIB_INCLUDES})
+
+    target_include_directories(${OSIMADDLIB_LIBRARY_NAME} 
+        # Used when building this target:
+        PRIVATE "${OpenSim_SOURCE_DIR}"
+                "${OpenSim_SOURCE_DIR}/Vendors/lepton/include"
+        # Used by other targets in this project:
+        INTERFACE $<BUILD_INTERFACE:${OpenSim_SOURCE_DIR}>
+                  $<BUILD_INTERFACE:${OpenSim_SOURCE_DIR}/Vendors/lepton/include>
+        # Used by client projects using an installed OpenSim:
+        INTERFACE $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+                  $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/OpenSim>
+        )
 
     # This target links to the libraries provided as arguments to this func.
     target_link_libraries(${OSIMADDLIB_LIBRARY_NAME} ${OSIMADDLIB_LINKLIBS})
@@ -97,15 +247,20 @@ function(OpenSimAddLibrary)
         RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
         LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
         ARCHIVE DESTINATION "${OPENSIM_INSTALL_ARCHIVEDIR}")
+    if(BUILD_PYTHON_WRAPPING AND OPENSIM_PYTHON_STANDALONE
+            AND NOT OSIMADDLIB_EXCLUDEFROMPYTHON)
+        if (WIN32)
+            install(TARGETS ${OSIMADDLIB_LIBRARY_NAME}
+                RUNTIME DESTINATION "${OPENSIM_INSTALL_PYTHONDIR}/opensim")
+        else()
+            install(TARGETS ${OSIMADDLIB_LIBRARY_NAME}
+                LIBRARY DESTINATION "${OPENSIM_INSTALL_PYTHONDIR}/opensim")
+        endif()
+    endif()
 
     # Install headers.
     # ----------------
-    set(_INCLUDE_PREFIX "${CMAKE_INSTALL_INCLUDEDIR}")
-    if(OSIMADDLIB_VENDORLIB)
-        set(_INCLUDE_PREFIX ${_INCLUDE_PREFIX}/Vendors)
-    else()
-        set(_INCLUDE_PREFIX ${_INCLUDE_PREFIX}/OpenSim)
-    endif()
+    set(_INCLUDE_PREFIX "${CMAKE_INSTALL_INCLUDEDIR}/OpenSim")
     if(OSIMADDLIB_LOWERINCLUDEDIRNAME)
         string(TOLOWER "${OSIMADDLIB_KIT}" OSIMADDLIB_LKIT)
         set(_INCLUDE_LIBNAME ${OSIMADDLIB_LKIT})
@@ -115,14 +270,27 @@ function(OpenSimAddLibrary)
     if(OSIMADDLIB_INCLUDEDIRS)
         foreach(dir ${OSIMADDLIB_INCLUDEDIRS})
             file(GLOB HEADERS ${dir}/*.h) # returns full pathnames
+            if(OSIMADDLIB_INCLUDEINSTALLREL)
+                # Remove "INCLUDEINSTALLREL" from the installed location.
+                file(RELATIVE_PATH subdir
+                    "${CMAKE_CURRENT_SOURCE_DIR}${OSIMADDLIB_INCLUDEINSTALLREL}"
+                    "${CMAKE_CURRENT_SOURCE_DIR}${dir}")
+            else()
+                set(subdir ${dir})
+            endif()
             install(FILES ${HEADERS}
-                DESTINATION ${_INCLUDE_PREFIX}/${_INCLUDE_LIBNAME}/${dir})
+                DESTINATION ${_INCLUDE_PREFIX}/${_INCLUDE_LIBNAME}/${subdir})
         endforeach(dir)
     else()
         install(FILES ${OSIMADDLIB_INCLUDES}
             DESTINATION ${_INCLUDE_PREFIX}/${_INCLUDE_LIBNAME})
     endif()
 
+    # RPATH (so that libraries find library dependencies)
+    # ---------------------------------------------------
+    OpenSimAddInstallRPATHSelf(TARGET ${OSIMADDLIB_LIBRARY_NAME} LOADER)
+    OpenSimAddInstallRPATHSimbody(TARGET ${OSIMADDLIB_LIBRARY_NAME} LOADER
+        FROM "${CMAKE_INSTALL_LIBDIR}")
 
     # Testing.
     # --------
@@ -159,7 +327,7 @@ endfunction()
 # DATAFILES: Files necessary to run the test. These will be copied into the
 #   corresponding build directory.
 # LINKLIBS: Arguments to TARGET_LINK_LIBRARIES.
-# SOURCES: Extra source files for the exectuable.
+# SOURCES: Extra source files for the executable.
 #
 # Here's an example:
 #   file(GLOB TEST_PROGRAMS "test*.cpp")
@@ -223,35 +391,71 @@ endfunction()
 
 
 # Create an application/executable. To be used in the Appliations directory.
-# APPNAME: Name of the application. Must also be the name of the source file
-# containing main().
+# NAME: Name of the application. Must also be the name of the source file
+#   containing main() (without the .cpp extension).
+# SOURCES: Additional header/source files to compile into this target. 
 #
 # Here's an example:
-#   OpenSimAddApplication(forward)
-function(OpenSimAddApplication APPNAME)
+#   OpenSimAddApplication(NAME opensim-cmd SOURCES opensim-cmd_run-tool.h)
+function(OpenSimAddApplication)
 
-    include_directories(${OpenSim_SOURCE_DIR} ${OpenSim_SOURCE_DIR}/Vendors)
-    add_executable(${APPNAME} ${APPNAME}.cpp)
-    target_link_libraries(${APPNAME} osimTools)
-    install(TARGETS ${APPNAME} DESTINATION "${CMAKE_INSTALL_BINDIR}")
-    set_target_properties(${APPNAME} PROPERTIES
+    # Parse arguments.
+    # ----------------
+    # http://www.cmake.org/cmake/help/v2.8.9/cmake.html#module:CMakeParseArguments
+    set(options)
+    set(oneValueArgs NAME)
+    set(multiValueArgs SOURCES)
+    cmake_parse_arguments(
+        OSIMADDAPP "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+    
+    # Build.
+    add_executable(${OSIMADDAPP_NAME} ${OSIMADDAPP_NAME}.cpp
+                                      ${OSIMADDAPP_SOURCES})
+    target_link_libraries(${OSIMADDAPP_NAME} osimTools)
+    set_target_properties(${OSIMADDAPP_NAME} PROPERTIES
         FOLDER "Applications")
 
-    if(${OPENSIM_USE_INSTALL_RPATH})
-        # TODO @executable_path only makes sense on OSX, so if we use RPATH on
-        # Linux we'll have to revisit.
+    # Install.
+    install(TARGETS ${OSIMADDAPP_NAME} DESTINATION ${CMAKE_INSTALL_BINDIR})
 
-        # bin_dir_to_install_dir is most likely "../"
-        file(RELATIVE_PATH bin_dir_to_install_dir
-            "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}"
-            "${CMAKE_INSTALL_PREFIX}")
-        set(bin_dir_to_lib_dir
-            "${bin_dir_to_install_dir}${CMAKE_INSTALL_LIBDIR}")
-        set_target_properties(${APPNAME} PROPERTIES
-            INSTALL_RPATH "\@executable_path/${bin_dir_to_lib_dir}"
-            )
+    # RPATH (so that the executable finds libraries without using env. vars).
+    OpenSimAddInstallRPATH(TARGET ${OSIMADDAPP_NAME} EXECUTABLE
+        FROM "${CMAKE_INSTALL_BINDIR}" TO "${CMAKE_INSTALL_LIBDIR}")
+    OpenSimAddInstallRPATHSimbody(TARGET ${OSIMADDAPP_NAME} EXECUTABLE
+        FROM "${CMAKE_INSTALL_BINDIR}")
+
+endfunction()
+
+
+# Function to install shared libraries (any platform) from a dependency install
+# directory into the OpenSim installation. One use case is to install libraries
+# into the python package.
+# PREFIX: A common part of the library file names (e.g., 'SimTK' or 'BTK').
+#         This is to avoid copying unrelated files from a folder like /usr/lib.
+# DEP_LIBS_DIR_WIN: Directory to search for the dependency's library, on
+#         Windows.
+# DEP_LIBS_DIR_UNIX: Directory to search for the dependency's library, on
+#         UNIX (APPLE and Linux). Specify only the lib directory to avoid
+#         searching all of /usr/local (if the dependency is installed to a
+#         system location like this).
+# OSIM_DESTINATION: Destination of the libraries within OpenSim's installation.
+function(OpenSimInstallDependencyLibraries PREFIX DEP_LIBS_DIR_WIN
+        DEP_LIBS_DIR_UNIX OSIM_DESTINATION)
+    if(WIN32)
+        file(GLOB_RECURSE LIBS "${DEP_LIBS_DIR_WIN}/${PREFIX}*.dll")
+    else()
+        if(APPLE)
+            set(lib_ext "dylib")
+        else()
+            set(lib_ext "so*") # Trailing * for version #s.
+        endif()
+        file(GLOB_RECURSE LIBS "${DEP_LIBS_DIR_UNIX}/lib${PREFIX}*.${lib_ext}")
     endif()
-
+    if(NOT LIBS)
+        message(FATAL_ERROR "Zero shared libraries found in directory "
+            "${DEP_INSTALL_DIR}.")
+    endif()
+    install(FILES ${LIBS} DESTINATION "${OSIM_DESTINATION}")
 endfunction()
 
 
@@ -259,7 +463,7 @@ endfunction()
 # build and install directories. This is a Windows specific function enabled 
 # only for Windows platform. Intention is to allow runtime loader to find all 
 # the required DLLs without need for editing PATH variable.
-function(CopyDependencyDLLsForWin DEP_NAME DEP_INSTALL_DIR)
+function(OpenSimCopyDependencyDLLsForWin DEP_NAME DEP_INSTALL_DIR)
     # On Windows, copy dlls into OpenSim binary directory.
     if(WIN32)
         file(GLOB_RECURSE DLLS ${DEP_INSTALL_DIR}/*.dll)
@@ -267,19 +471,24 @@ function(CopyDependencyDLLsForWin DEP_NAME DEP_INSTALL_DIR)
             message(FATAL_ERROR "Zero DLLs found in directory "
                                 "${DEP_INSTALL_DIR}.")
         endif()
+        set(DEST_DIR "${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR}")
         foreach(DLL IN LISTS DLLS)
             get_filename_component(DLL_NAME ${DLL} NAME)
-            set(DEST_DIR ${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR})
-            add_custom_command(OUTPUT ${DLL_NAME}
-                               COMMAND ${CMAKE_COMMAND} -E copy ${DLL} ${DEST_DIR}
-                               COMMENT "Copying ${DLL_NAME} to ${DEST_DIR}")
-            list(APPEND DLL_NAMES ${DLL_NAME})
+            list(APPEND DLLS_DEST "${DEST_DIR}/${DLL_NAME}")
+            add_custom_command(OUTPUT "${DEST_DIR}/${DLL_NAME}"
+                COMMAND ${CMAKE_COMMAND} -E make_directory ${DEST_DIR}
+                COMMAND ${CMAKE_COMMAND} -E copy ${DLL} ${DEST_DIR}
+                DEPENDS ${DLL}
+                COMMENT "Copying DLL from ${DEP_INSTALL_DIR}/${DLL_NAME} to ${DEST_DIR}.")
         endforeach()
-        add_custom_target("Copy_${DEP_NAME}_DLLs" ALL DEPENDS ${DLL_NAMES})
-        install(FILES ${DLLS} DESTINATION ${CMAKE_INSTALL_BINDIR})
+        add_custom_target(Copy_${DEP_NAME}_DLLs ALL DEPENDS ${DLLS_DEST})
+        set_target_properties(Copy_${DEP_NAME}_DLLs PROPERTIES
+            PROJECT_LABEL "Copy ${DEP_NAME} DLLs")
+        if(OPENSIM_COPY_DEPENDENCIES)
+            install(FILES ${DLLS} DESTINATION ${CMAKE_INSTALL_BINDIR})
+        endif()
     endif()
 endfunction()
-
 
 # Discover the file dependencies for an invocation of swig, for use with the
 # DEPENDS field of an add_custom_command().
@@ -324,7 +533,4 @@ macro(OpenSimFindSwigFileDependencies OSIMSWIGDEP_RETURNVAL
     unset(_successfully_got_dependencies)
 
 endmacro()
-
-
-
 

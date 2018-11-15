@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2015 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Authors:                                                                   *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -24,7 +24,7 @@
 #include "OpenSim/Common/Adapters.h"
 
 int main() {
-    std::string filename{"TRCFileWithNANs.trc"};
+    std::string filename{"dataWithNaNsOfDifferentCases.trc"};
 
     // There are two ways to read the file:
     // (1) Use the specific adapter to read the file. This requires you to know

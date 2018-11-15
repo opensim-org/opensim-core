@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Matthew Millard                                                 *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -23,8 +23,6 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 #include "osimCommonDLL.h"
-
-//#include "SmoothSegmentedFunctionFactory.h"
 #include "SegmentedQuinticBezierToolkit.h"
 
 namespace OpenSim { 
@@ -124,9 +122,17 @@ namespace OpenSim {
        */
        double calcDerivative(double x, int order) const;       
 
-       
+#ifndef SWIG
+       /// Allow the more general calcDerivative from the base class to be used.
+       // This helps avoid the -Woverloaded-virtual warning with Clang.
+       // We could have also put this `using` line in ActiveForceLengthCurve,
+       // etc., but that would be inconsistent with how the
+       // SmoothSegmentedFunction is used (e.g., calcValue() delegates to the
+       // internal `m_value`).
+       using Function_<double>::calcDerivative;
+#endif
 
-     
+
        /**This will return the value of the integral of this objects curve 
        evaluated at x. 
        

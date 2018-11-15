@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -24,7 +24,6 @@
 // INCLUDES
 //=============================================================================
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/BodySet.h>
 #include <OpenSim/Common/SimmSpline.h>
 #include "PrescribedForce.h"
 
@@ -52,7 +51,7 @@ PrescribedForce::PrescribedForce(const std::string& name, const PhysicalFrame& f
     PrescribedForce()
 {
     setName(name);
-    updConnector<PhysicalFrame>("frame").connect(frame);
+    connectSocket_frame(frame);
 }
 
 //_____________________________________________________________________________
@@ -76,15 +75,20 @@ PrescribedForce::PrescribedForce(SimTK::Xml::Element& aNode) :
 void PrescribedForce::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 {
     // Base class
-    // This test for veversion number needs to change when we have a new version number otherwise 
-    // subsequent versions will continue to trigger the conversion below. -Ayman 4/16
-    if (versionNumber != 30505) { 
+    if (versionNumber < 30506) {
         // Convert body property into a connector to PhysicalFrame with name "frame"
         SimTK::Xml::element_iterator bodyElement = aNode.element_begin("body");
         std::string frame_name("");
         if (bodyElement != aNode.element_end()) {
             bodyElement->getValueAs<std::string>(frame_name);
-            XMLDocument::addConnector(aNode, "Connector_PhysicalFrame_", "frame", frame_name);
+            // Forces in pre-4.0 models are necessarily 1 level deep
+            // (model, forces), and Bodies are necessarily 1 level deep.
+            // Here we create the correct relative path (accounting for sets
+            // being components).
+            frame_name = XMLDocument::updateConnecteePath30517("bodyset",
+                                                               frame_name);
+            XMLDocument::addConnector(aNode, "Connector_PhysicalFrame_",
+                    "frame", frame_name);
         }
     }
     Super::updateFromXMLNode(aNode, versionNumber);
@@ -124,10 +128,10 @@ void PrescribedForce::constructProperties()
 }
 
 void PrescribedForce::setFrameName(const std::string& frameName) {
-    updConnector<PhysicalFrame>("frame").setConnecteeName(frameName);
+    updSocket<PhysicalFrame>("frame").setConnecteePath(frameName);
 }
 const std::string& PrescribedForce::getFrameName() const {
-    return getConnector<PhysicalFrame>("frame").getConnecteeName();
+    return getSocket<PhysicalFrame>("frame").getConnecteePath();
 }
 
 void PrescribedForce::setForceFunctions(Function* forceX, Function* forceY, Function* forceZ)
@@ -254,7 +258,7 @@ void PrescribedForce::computeForce(const SimTK::State& state,
     const bool hasTorqueFunctions = torqueFunctions.getSize()==3;
 
     const PhysicalFrame& frame =
-        getConnector<PhysicalFrame>("frame").getConnectee();
+        getSocket<PhysicalFrame>("frame").getConnectee();
     const Ground& gnd = getModel().getGround();
     if (hasForceFunctions) {
         Vec3 force(forceFunctions[0].calcValue(timeAsVector), 
@@ -270,7 +274,7 @@ void PrescribedForce::computeForce(const SimTK::State& state,
                          pointFunctions[1].calcValue(timeAsVector), 
                          pointFunctions[2].calcValue(timeAsVector));
             if (pointIsGlobal)
-                point = gnd.findLocationInAnotherFrame(state, point, frame);
+                point = gnd.findStationLocationInAnotherFrame(state, point, frame);
 
         }
         applyForceToPoint(state, frame, point, force, bodyForces);
@@ -349,7 +353,7 @@ OpenSim::Array<std::string> PrescribedForce::getRecordLabels() const {
     const bool pointSpecified = pointFunctions.getSize()==3;
     const bool appliesTorque  = torqueFunctions.getSize()==3;
     const PhysicalFrame& frame =
-        getConnector<PhysicalFrame>("frame").getConnectee();
+        getSocket<PhysicalFrame>("frame").getConnectee();
     std::string BodyToReport = (forceIsGlobal?"ground": frame.getName());
     if (appliesForce) {
         labels.append(BodyToReport+"_"+getName()+"_fx");
@@ -390,7 +394,7 @@ OpenSim::Array<double> PrescribedForce::getRecordValues(const SimTK::State& stat
     const double time = state.getTime();
     const SimTK::Vector timeAsVector(1, time);
     const PhysicalFrame& frame =
-        getConnector<PhysicalFrame>("frame").getConnectee();
+        getSocket<PhysicalFrame>("frame").getConnectee();
     const Ground& gnd = getModel().getGround();
     if (appliesForce) {
         Vec3 force = getForceApplied(state);
@@ -403,7 +407,7 @@ OpenSim::Array<double> PrescribedForce::getRecordValues(const SimTK::State& stat
         } else {
             Vec3 point = getApplicationPoint(state);
             if (pointIsGlobal)
-                point = gnd.findLocationInAnotherFrame(state, point, frame);
+                point = gnd.findStationLocationInAnotherFrame(state, point, frame);
 
             //applyForceToPoint(*_body, point, force);
             for (int i=0; i<3; i++) values.append(force[i]);

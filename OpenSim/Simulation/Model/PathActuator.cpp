@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ajay Seth                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -25,8 +25,6 @@
 // INCLUDES
 //=============================================================================
 #include "PathActuator.h"
-#include "Model.h"
-#include "PointForceDirection.h"
 
 using namespace OpenSim;
 using namespace std;
@@ -44,7 +42,6 @@ PathActuator::PathActuator()
 {
     setNull();
     constructProperties();
-    finalizeFromProperties();
 }
 
 //=============================================================================
@@ -142,11 +139,10 @@ double PathActuator::getStress( const SimTK::State& s) const
  */
 void PathActuator::addNewPathPoint(
          const std::string& proposedName, 
-         PhysicalFrame& aBody, 
+         const PhysicalFrame& aBody, 
          const SimTK::Vec3& aPositionOnBody) {
     // Create new PathPoint already appended to the PathPointSet for the path
-    PathPoint* newPathPoint = updGeometryPath()
-        .appendNewPathPoint(proposedName, aBody, aPositionOnBody);
+    updGeometryPath().appendNewPathPoint(proposedName, aBody, aPositionOnBody);
 }
 
 //=============================================================================
@@ -208,25 +204,6 @@ double PathActuator::computeMomentArm(const SimTK::State& s, Coordinate& aCoord)
 }
 
 //------------------------------------------------------------------------------
-//                            CONNECT TO MODEL
-//------------------------------------------------------------------------------
-/**
- * Perform some setup functions that happen after the
- * object has been deserialized or copied.
- *
- * @param aModel OpenSim model containing this PathActuator.
- */
-void PathActuator::extendFinalizeFromProperties()
-{
-    GeometryPath &path = updGeometryPath();
-
-    // Set owner here in case errors happen later so we can put useful message about responsible party.
-    path.setOwner(this);
-
-    Super::extendFinalizeFromProperties();
-}
-
-//------------------------------------------------------------------------------
 //                            REALIZE DYNAMICS
 //------------------------------------------------------------------------------
 // See if anyone has an opinion about the path color and change it if so.
@@ -236,7 +213,7 @@ void PathActuator::extendRealizeDynamics(const SimTK::State& state) const
 
     // if this force is disabled OR it is being overridden (not computing dynamics)
     // then don't compute the color of the path.
-    if (!isDisabled(state) && !isActuationOverridden(state)){
+    if (appliesForce(state) && !isActuationOverridden(state)){
         const SimTK::Vec3 color = computePathColor(state);
         if (!color.isNaN())
             getGeometryPath().setColor(state, color);
@@ -254,47 +231,4 @@ void PathActuator::extendRealizeDynamics(const SimTK::State& state) const
 // activation level.
 SimTK::Vec3 PathActuator::computePathColor(const SimTK::State& state) const {
     return SimTK::Vec3(SimTK::NaN);
-}
-
-
-//=============================================================================
-// SCALING
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Perform computations that need to happen before the muscle is scaled.
- * For this object, that entails calculating and storing the muscle-tendon
- * length in the current body position.
- *
- * @param aScaleSet XYZ scale factors for the bodies.
- */
-void PathActuator::preScale(const SimTK::State& s, const ScaleSet& aScaleSet)
-{
-    updGeometryPath().preScale(s, aScaleSet);
-}
-
-//_____________________________________________________________________________
-/**
- * Scale the muscle based on XYZ scale factors for each body.
- *
- * @param aScaleSet XYZ scale factors for the bodies.
- * @return Whether muscle was successfully scaled or not.
- */
-void PathActuator::scale(const SimTK::State& s, const ScaleSet& aScaleSet)
-{
-    updGeometryPath().scale(s, aScaleSet);
-}
-
-//_____________________________________________________________________________
-/**
- * Perform computations that need to happen after the muscle is scaled.
- * For this object, that entails updating the muscle path. Derived classes
- * should probably also scale or update some of the force-generating
- * properties.
- *
- * @param aScaleSet XYZ scale factors for the bodies.
- */
-void PathActuator::postScale(const SimTK::State& s, const ScaleSet& aScaleSet)
-{
-    updGeometryPath().postScale(s, aScaleSet);
 }

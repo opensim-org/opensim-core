@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2013 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Peter Loan                                                      *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -27,8 +27,6 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <OpenSim/Common/ScaleSet.h>
-#include "Model.h"
 #include "Force.h"
 
 #ifdef SWIG
@@ -40,7 +38,9 @@
 
 namespace OpenSim {
 
+class Function;
 class GeometryPath;
+class ScaleSet;
 
 //=============================================================================
 //=============================================================================
@@ -106,9 +106,12 @@ public:
     //--------------------------------------------------------------------------
     // SCALE
     //--------------------------------------------------------------------------
-    virtual void preScale(const SimTK::State& s, const ScaleSet& aScaleSet);
-    virtual void scale(const SimTK::State& s, const ScaleSet& aScaleSet);
-    virtual void postScale(const SimTK::State& s, const ScaleSet& aScaleSet);
+
+    /** Adjust the resting length of the ligament after the model has been
+        scaled. The `resting_length` property is multiplied by the quotient of
+        the current path length and the path length before scaling. */
+    void extendPostScale(const SimTK::State& s,
+                         const ScaleSet& scaleSet) override;
 
 protected:
     /** Override this method if you would like to calculate a color for use

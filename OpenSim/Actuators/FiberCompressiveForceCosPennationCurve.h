@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Matthew Millard                                                 *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -25,11 +25,8 @@
 
 #include <OpenSim/Actuators/osimActuatorsDLL.h>
 
-
 // INCLUDE
-#include <simbody/internal/common.h>
 #include <OpenSim/Common/Function.h>
-#include <OpenSim/Common/SmoothSegmentedFunctionFactory.h>
 #include <OpenSim/Common/SmoothSegmentedFunction.h>
 
 #ifdef SWIG
@@ -67,7 +64,9 @@ namespace OpenSim {
 
  */
 class OSIMACTUATORS_API FiberCompressiveForceCosPennationCurve : 
-    public Function {OpenSim_DECLARE_CONCRETE_OBJECT(
+    public Function {
+    
+    OpenSim_DECLARE_CONCRETE_OBJECT(
                                 FiberCompressiveForceCosPennationCurve, 
                                 Function);
 
@@ -330,6 +329,10 @@ public:
     */
     double calcDerivative(double cosPennationAngle, int order) const;
 
+    /// If possible, use the simpler overload above.
+    double calcDerivative(const std::vector<int>& derivComponents,
+                          const SimTK::Vector& x) const override;
+
     /**     
     @param cosPennationAngle
                 The cosine of the pennation angle
@@ -443,8 +446,8 @@ private:
     double m_stiffnessAtPerpendicularInUse;
     double m_curvinessInUse;
     bool  m_isFittedCurveBeingUsed;
-    };
+};
 
-    }
+}
 
 #endif //OPENSIM_FiberCompressiveForceCosPennationCurve_h__

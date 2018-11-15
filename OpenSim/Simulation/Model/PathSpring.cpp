@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- *                           OpenSim:  PathSpring.cpp                           *
+ *                           OpenSim:  PathSpring.cpp                         *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -7,8 +7,8 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2013 Stanford University and the Authors                *
- * Author(s): Ajay Seth                                                     *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
+ * Author(s): Ajay Seth                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -35,7 +35,7 @@ using namespace std;
 using namespace OpenSim;
 using SimTK::Vec3;
 
-static const Vec3 DefaultPathSpringColor(.9,.9,.9); // mostly white 
+static const Vec3 DefaultPathSpringColor(0, 1, 0); // Green for backward compatibility
 
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
@@ -109,9 +109,18 @@ void PathSpring::extendFinalizeFromProperties()
     GeometryPath& path = upd_GeometryPath();
     path.setDefaultColor(DefaultPathSpringColor);
 
-    // Resting length must be greater than 0.0.
-    assert(get_resting_length() > 0.0);
-    path.setOwner(this);
+    OPENSIM_THROW_IF_FRMOBJ(
+        (SimTK::isNaN(get_resting_length()) || get_resting_length() < 0),
+        InvalidPropertyValue, getProperty_resting_length().getName(),
+        "Resting length cannot be less than zero");
+    OPENSIM_THROW_IF_FRMOBJ(
+        (SimTK::isNaN(get_stiffness()) || get_stiffness() < 0),
+        InvalidPropertyValue, getProperty_stiffness().getName(),
+        "Stiffness cannot be less than zero");
+    OPENSIM_THROW_IF_FRMOBJ(
+        (SimTK::isNaN(get_dissipation()) || get_dissipation() < 0),
+        InvalidPropertyValue, getProperty_dissipation().getName(),
+        "Dissipation cannot be less than zero");
 }
 
 
@@ -157,53 +166,24 @@ double PathSpring::getTension(const SimTK::State& s) const
 }
 
 
-//=============================================================================
+//==============================================================================
 // SCALING
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Perform computations that need to happen before the PathSpring is scaled.
- * For this object, that entails calculating and storing the
- * length in the current body position.
- *
- * @param aScaleSet XYZ scale factors for the bodies.
- */
-void PathSpring::preScale(const SimTK::State& s, const ScaleSet& aScaleSet)
+//==============================================================================
+void PathSpring::
+extendPostScale(const SimTK::State& s, const ScaleSet& scaleSet)
 {
-    updGeometryPath().preScale(s, aScaleSet);
-}
+    Super::extendPostScale(s, scaleSet);
 
-//_____________________________________________________________________________
-
-void PathSpring::scale(const SimTK::State& s, const ScaleSet& aScaleSet)
-{
-    updGeometryPath().scale(s, aScaleSet);
-}
-
-//_____________________________________________________________________________
-/**
- * Perform computations that need to happen after the PathSpring is scaled.
- * For this object, that entails comparing the length before and after scaling,
- * and scaling the resting length a proportional amount.
- *
- * @param aScaleSet XYZ scale factors for the bodies.
- */
-void PathSpring::postScale(const SimTK::State& s, const ScaleSet& aScaleSet)
-{
-    GeometryPath& path = updGeometryPath();
-    path.postScale(s, aScaleSet);
-
+    GeometryPath& path = upd_GeometryPath();
     if (path.getPreScaleLength(s) > 0.0)
     {
         double scaleFactor = path.getLength(s) / path.getPreScaleLength(s);
-        // Scale resting length by the same amount as the change in
-        // total PathSpring length (in the current body position).
         upd_resting_length() *= scaleFactor;
 
+        // Clear the pre-scale length that was stored in the GeometryPath.
         path.setPreScaleLength(s, 0.0);
     }
 }
-
 
 //=============================================================================
 // COMPUTATION

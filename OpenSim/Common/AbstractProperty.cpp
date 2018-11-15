@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -26,7 +26,6 @@
 #include "AbstractProperty.h"
 #include "Object.h"
 
-#include <string>
 #include <limits>
 
 using namespace OpenSim;
@@ -224,11 +223,6 @@ void AbstractProperty::writeToXMLParentElement(Xml::Element& parent) const {
 
     // If this is a named property then the lone object must have its
     // name attribute set to the property name.
-    //
-    // KLUDGE: We shouldn't const_cast here to change obj name, instead the 
-    // name of the object should be set ahead of time. Revisit when DeprecatedProperties are gone.
-    // -Ayman 09/14
-    (const_cast<Object&>(obj)).setName(isUnnamedProperty() ? "" : getName());
-    obj.updateXMLNode(parent);
+    obj.updateXMLNode(parent, this);
 }
 

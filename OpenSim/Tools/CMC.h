@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson                                               *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -32,7 +32,6 @@
 // INCLUDE
 //============================================================================
 #include "osimToolsDLL.h"
-#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Control/ControlSet.h>
 #include <OpenSim/Simulation/Control/TrackingController.h>
 
@@ -42,6 +41,7 @@ class Optimizer;
 
 namespace OpenSim {
 
+class Model;
 class OptimizationTarget;
 class VectorFunctionForActuators;
 class CMC_TaskSet;
@@ -113,11 +113,11 @@ protected:
     /** Whether or not to check the target time. */
     bool _checkTargetTime;
     /** Storage object for the position errors. */
-    Storage *_pErrStore;
+    std::shared_ptr<Storage> _pErrStore;
     /** Storage object for the velocity errors. */
-    Storage *_vErrStore;
+    std::shared_ptr<Storage> _vErrStore;
     /** Storage object for the stress term weight. */
-    Storage *_stressTermWeightStore;
+    std::shared_ptr<Storage> _stressTermWeightStore;
 
     ControlSet _controlSet;
     /** List of parameters in the control set that are serving as the

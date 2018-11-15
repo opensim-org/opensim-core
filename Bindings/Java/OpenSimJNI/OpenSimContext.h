@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Jack Middleton, Ayman Habib                                     *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -45,7 +45,7 @@ class Model;
 class MovingPathPoint;
 class Muscle;
 class GeometryPath;
-class PathPoint;
+class AbstractPathPoint;
 class PathWrap;
 class ConditionalPathPoint;
 class WrapObject;
@@ -88,8 +88,8 @@ OpenSim_DECLARE_CONCRETE_OBJECT(OpenSimContext, Object);
 public:
     OpenSimContext(SimTK::State* s, Model* model);
 
-    void setState( SimTK::State* s) { _configState = s; }
-    void setModel( Model* m) { _model = m; }
+    void setState( SimTK::State* s) { _configState.reset(s); }
+    void setModel( Model* m) { _model.reset(m); }
 
     /** Get reference to the single instance of SimTK::State maintained by the Context object **/
     const SimTK::State& getCurrentStateRef() const { return (*_configState); };
@@ -117,26 +117,26 @@ public:
     bool isPrescribed(const Coordinate& coord) const;
     bool isConstrained(const Coordinate& coord) const;
     // Constraints
-    bool isDisabled(const Constraint& constraint) const {
-        return  constraint.isDisabled(*_configState);
+    bool isEnforced(const Constraint& constraint) const {
+        return constraint.isEnforced(*_configState);
     }
-    void setDisabled(Constraint& constraint, bool disable) {
-        constraint.setDisabled(*_configState, disable);
+    void setIsEnforced(Constraint& constraint, bool isEnforced) {
+        constraint.setIsEnforced(*_configState, isEnforced);
         _model->assemble(*_configState);
     }
     // Forces
-    bool isDisabled(const Force& force) const {
-        return  force.isDisabled(*_configState);
+    bool appliesForce(const Force& force) const {
+        return  force.appliesForce(*_configState);
     }
-    void setDisabled(Force& force, bool disable) const {
-        force.setDisabled(*_configState, disable);
-        _model->getMultibodySystem().realize(*_configState, SimTK::Stage::Position);
+    void setAppliesForce(Force& force, bool applyForce) const {
+        force.setAppliesForce(*_configState, applyForce);
+        _model->getMultibodySystem().realize(*_configState,
+                                             SimTK::Stage::Position);
     }
     // Muscles
     double getActivation(Muscle& act);
     double getMuscleLength(Muscle& act);
-    const Array<PathPoint*>& getCurrentPath(Muscle& act);
-    const Array<PathPoint*>& getCurrentDisplayPath(GeometryPath& path);
+    const Array<AbstractPathPoint*>& getCurrentPath(Muscle& act);
     void copyMuscle(Muscle& from, Muscle& to);
     void replacePropertyFunction(OpenSim::Object& obj, OpenSim::Function* aOldFunction, OpenSim::Function* aNewFunction);
 
@@ -147,16 +147,18 @@ public:
     void setXCoordinate(MovingPathPoint& mmp, Coordinate& newCoord);
     void setYCoordinate(MovingPathPoint& mmp, Coordinate& newCoord);
     void setZCoordinate(MovingPathPoint& mmp, Coordinate& newCoord);
-    void setBody(PathPoint& pathPoint, PhysicalFrame& newBody);
+    void setBody(AbstractPathPoint& pathPoint, PhysicalFrame& newBody);
     void setCoordinate(ConditionalPathPoint& via, Coordinate& newCoord);
     void setRangeMin(ConditionalPathPoint& via, double d);
     void setRangeMax(ConditionalPathPoint& via, double d);
-    bool replacePathPoint(GeometryPath& p, PathPoint& mp, PathPoint& newPoint);
+    bool replacePathPoint(GeometryPath& p, AbstractPathPoint& mp, AbstractPathPoint& newPoint);
     void setLocation(PathPoint& mp, int i, double d);
+
+    void setLocation(PathPoint& mp, const SimTK::Vec3& newLocation);
     void setEndPoint(PathWrap& mw, int newEndPt);
     void addPathPoint(GeometryPath& p, int menuChoice, PhysicalFrame& body);
     bool deletePathPoint(GeometryPath& p, int menuChoice);
-    bool isActivePathPoint(PathPoint& mp) ; 
+    bool isActivePathPoint(AbstractPathPoint& mp) ; 
     // Muscle Wrapping
     void setStartPoint(PathWrap& mw, int newStartPt);
     void addPathWrap(GeometryPath& p, WrapObject& awo);
@@ -165,7 +167,7 @@ public:
     void deletePathWrap(GeometryPath& p, int num);
     // Markers
     void setBody(Marker& currentMarker, PhysicalFrame& newBody, bool  b);
-    int replaceMarkerSet(Model& model, MarkerSet& aMarkerSet);
+    void updateMarkerSet(Model& model, MarkerSet& aMarkerSet);
 
     void getCenterOfMassInGround(double com[3]) const {
         SimTK::Vec3 comV = _model->getMatterSubsystem().calcSystemMassCenterLocationInGround(*_configState);
@@ -219,17 +221,19 @@ public:
 
     void cacheModelAndState();
     void restoreStateFromCachedModel()  SWIG_DECLARE_EXCEPTION;
+    void setSocketConnecteePath(AbstractSocket& socket,
+            const std::string& newValue)   SWIG_DECLARE_EXCEPTION;
 //=============================================================================
 // DATA
 //=============================================================================
 
 private:
     // SimTK::State supporting the OpenSim::Model 
-    SimTK::State* _configState;
+    SimTK::ReferencePtr<SimTK::State> _configState;
     // The OpenSim::model 
-    Model* _model;
+    SimTK::ReferencePtr<Model> _model;
 
-    Model* clonedModel;
+    SimTK::ResetOnCopy<std::unique_ptr<Model> > clonedModel;
     SimTK::State clonedState;
 }; // class OpenSimContext
 
@@ -367,17 +371,28 @@ public:
         pd.setValue(6, array6);
     }
     //=================Vec3 Properties, treated as three Doubles ==================
-    static double getValueVec3(const AbstractProperty& p, int index) 
-    {   
+    static double getValueVec3(const AbstractProperty& p, int index)
+    {
         const Property<SimTK::Vec3>& pd = dynamic_cast<const Property<SimTK::Vec3>&>(p);
         const SimTK::Vec3& vec3 = pd.getValue();
-        return vec3[index]; 
+        return vec3[index];
     }
-    static void setValueVec3(double v, AbstractProperty& p, int index) 
-    {   
+    static void setValueVec3(double v, AbstractProperty& p, int index)
+    {
         Property<SimTK::Vec3>& pd = dynamic_cast<Property<SimTK::Vec3>&>(p);
         pd.updValue()[index] = v;
-     }
+    }
+    static double getValueVec6(const AbstractProperty& p, int index)
+    {
+        const Property<SimTK::Vec6>& pd = dynamic_cast<const Property<SimTK::Vec6>&>(p);
+        const SimTK::Vec6& vec6 = pd.getValue();
+        return vec6[index];
+    }
+    static void setValueVec6(double v, AbstractProperty& p, int index)
+    {
+        Property<SimTK::Vec6>& pd = dynamic_cast<Property<SimTK::Vec6>&>(p);
+        pd.updValue()[index] = v;
+    }
     // ================ String arrays ===================================================
     static OpenSim::Array<std::string> getValueStringArray(const AbstractProperty& p)
     {

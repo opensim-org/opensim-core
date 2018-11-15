@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<OpenSimDocument Version="30517">
+	<Model name="EF_Mesh_to_Mesh">
+		<!--The model's ground reference frame.-->
+		<Ground name="ground">
+			<!--All properties of this object have their default values.-->
+		</Ground>
+		<!--Acceleration due to gravity, expressed in ground.-->
+		<gravity>0 -9.8064999999999998 0</gravity>
+		<!--List of bodies that make up this model.-->
+		<BodySet>
+			<objects>
+				<Body name="ball">
+					<!--The mass of the body (kg)-->
+					<mass>1</mass>
+					<!--The location (Vec3) of the mass center in the body frame.-->
+					<mass_center>0 0 0</mass_center>
+					<!--The elements of the inertia tensor (Vec6) as [Ixx Iyy Izz Ixy Ixz Iyz] measured about the mass_center and not the body origin.-->
+					<inertia>1 1 1 0 0 0</inertia>
+				</Body>
+			</objects>
+			<groups />
+		</BodySet>
+		<!--List of joints that connect the bodies.-->
+		<JointSet>
+			<objects>
+				<FreeJoint name="free">
+					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The parent frame for the joint.).-->
+					<socket_parent_frame>ground_offset</socket_parent_frame>
+					<!--Path to a Component that satisfies the Socket 'child_frame' of type PhysicalFrame (description: The child frame for the joint.).-->
+					<socket_child_frame>ball_offset</socket_child_frame>
+					<!--List containing the generalized coordinates (q's) that parameterize this joint.-->
+					<coordinates>
+						<Coordinate name="free_coord_0">
+							<!--All properties of this object have their default values.-->
+						</Coordinate>
+						<Coordinate name="free_coord_1">
+							<!--All properties of this object have their default values.-->
+						</Coordinate>
+						<Coordinate name="free_coord_2">
+							<!--All properties of this object have their default values.-->
+						</Coordinate>
+						<Coordinate name="free_coord_3">
+							<!--All properties of this object have their default values.-->
+						</Coordinate>
+						<Coordinate name="free_coord_4">
+							<!--All properties of this object have their default values.-->
+						</Coordinate>
+						<Coordinate name="free_coord_5">
+							<!--All properties of this object have their default values.-->
+						</Coordinate>
+					</coordinates>
+					<!--Physical offset frames owned by the Joint that are typically used to satisfy the owning Joint's parent and child frame connections (sockets). PhysicalOffsetFrames are often used to describe the fixed transformation from a Body's origin to another location of interest on the Body (e.g., the joint center). When the joint is deleted, so are the PhysicalOffsetFrame components in this list.-->
+					<frames>
+						<PhysicalOffsetFrame name="ground_offset">
+							<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
+							<socket_parent>../../../ground</socket_parent>
+							<!--Translational offset (in meters) of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
+							<translation>0 0 0</translation>
+							<!--Orientation offset (in radians) of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
+							<orientation>0 0 0</orientation>
+						</PhysicalOffsetFrame>
+						<PhysicalOffsetFrame name="ball_offset">
+							<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
+							<socket_parent>../../../bodyset/ball</socket_parent>
+							<!--Translational offset (in meters) of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
+							<translation>0 0 0</translation>
+							<!--Orientation offset (in radians) of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
+							<orientation>0 0 0</orientation>
+						</PhysicalOffsetFrame>
+					</frames>
+				</FreeJoint>
+			</objects>
+			<groups />
+		</JointSet>
+		<!--Forces in the model (includes Actuators).-->
+		<ForceSet>
+			<objects>
+				<ElasticFoundationForce name="contact1">
+					<!--Material properties.-->
+					<ElasticFoundationForce::ContactParametersSet name="contact_parameters">
+						<objects>
+							<ElasticFoundationForce::ContactParameters>
+								<!--Names of geometry objects affected by these parameters.-->
+								<geometry>ball1 ball2</geometry>
+								<stiffness>5000000</stiffness>
+								<dissipation>0.001</dissipation>
+								<static_friction>0</static_friction>
+								<dynamic_friction>0</dynamic_friction>
+								<viscous_friction>0</viscous_friction>
+							</ElasticFoundationForce::ContactParameters>
+						</objects>
+						<groups />
+					</ElasticFoundationForce::ContactParametersSet>
+				</ElasticFoundationForce>
+			</objects>
+			<groups />
+		</ForceSet>
+		<!--Geometry to be used in contact forces.-->
+		<ContactGeometrySet>
+			<objects>
+				<ContactMesh name="ball1">
+					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
+					<socket_frame>../../ground</socket_frame>
+					<!--Location of geometry center in the PhysicalFrame.-->
+					<location>1 2 0</location>
+					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
+					<orientation>0 0 0</orientation>
+					<!--Path to mesh geometry file (supports .obj, .stl, .vtp). Mesh should be closed and water-tight.-->
+					<filename>sphere.vtp</filename>
+				</ContactMesh>
+				<ContactMesh name="ball2">
+					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
+					<socket_frame>../../bodyset/ball</socket_frame>
+					<!--Location of geometry center in the PhysicalFrame.-->
+					<location>1 1 0</location>
+					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
+					<orientation>0 0 0</orientation>
+					<!--Path to mesh geometry file (supports .obj, .stl, .vtp). Mesh should be closed and water-tight.-->
+					<filename>sphere.vtp</filename>
+				</ContactMesh>
+				<ContactSphere name="ball3">
+					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
+					<socket_frame>../../bodyset/ball</socket_frame>
+					<!--Location of geometry center in the PhysicalFrame.-->
+					<location>0 1 0</location>
+					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
+					<orientation>0 0 0</orientation>
+					<!--Radius of the sphere (default: 0).-->
+					<radius>0.25</radius>
+				</ContactSphere>
+				<ContactHalfSpace name="plane">
+					<!--List of components that this component owns and serializes.-->
+					<components />
+					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
+					<socket_frame>../../ground</socket_frame>
+					<!--Location of geometry center in the PhysicalFrame.-->
+					<location>0 0 0</location>
+					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
+					<orientation>0 0 0.5</orientation>
+					<!--Default appearance for this Geometry-->
+					<Appearance>
+						<!--Flag indicating whether the associated Geometry is visible or hidden.-->
+						<visible>true</visible>
+						<!--The opacity used to display the geometry between 0:transparent, 1:opaque.-->
+						<opacity>0.69999999999999996</opacity>
+						<!--The color, (red, green, blue), [0, 1], used to display the geometry. -->
+						<color>0 1 1</color>
+						<!--Visuals applied to surfaces associated with this Appearance.-->
+						<SurfaceProperties>
+							<!--The representation (1:Points, 2:Wire, 3:Shaded) used to display the object.-->
+							<representation>3</representation>
+						</SurfaceProperties>
+					</Appearance>
+				</ContactHalfSpace>
+			</objects>
+			<groups />
+		</ContactGeometrySet>
+	</Model>
+</OpenSimDocument>

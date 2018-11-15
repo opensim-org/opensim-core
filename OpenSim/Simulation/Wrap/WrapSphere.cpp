@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Peter Loan                                                      *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -24,16 +24,14 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include "SimTKsimbody.h"
 #include "WrapSphere.h"
-#include <OpenSim/Simulation/Model/PathPoint.h>
 #include "PathWrap.h"
 #include "WrapResult.h"
 #include "WrapMath.h"
 #include <OpenSim/Common/SimmMacros.h>
 #include <OpenSim/Common/Mtx.h>
-#include <sstream>
 #include <OpenSim/Common/ModelDisplayHints.h>
+#include <OpenSim/Common/ScaleSet.h>
 
 //=============================================================================
 // STATICS
@@ -131,18 +129,16 @@ void WrapSphere::connectToModelAndBody(Model& aModel, PhysicalFrame& aBody)
 */
 }
 
-//_____________________________________________________________________________
-/**
- * Scale the sphere by the average of the three scale factors. The base class
- * scales the origin of the sphere in the body's reference frame.
- *
- * @param aScaleFactors The XYZ scale factors.
- */
-void WrapSphere::scale(const SimTK::Vec3& aScaleFactors)
+void WrapSphere::extendScale(const SimTK::State& s, const ScaleSet& scaleSet)
 {
-   WrapObject::scale(aScaleFactors);
+    Super::extendScale(s, scaleSet);
 
-   _radius *= (aScaleFactors.sum() / 3.0);
+    // Get scale factors (if an entry for the Frame's base Body exists).
+    const Vec3& scaleFactors = getScaleFactors(scaleSet, getFrame());
+    if (scaleFactors == ModelComponent::InvalidScaleFactors)
+        return;
+
+    _radius *= (scaleFactors.sum() / 3.);
 }
 
 //_____________________________________________________________________________
@@ -599,16 +595,19 @@ void WrapSphere::generateDecorations(bool fixed, const ModelDisplayHints& hints,
 {
 
     Super::generateDecorations(fixed, hints, state, appendToThis);
-    if (fixed) return;
+    if (!fixed) return;
 
     if (hints.get_show_wrap_geometry()) {
-        const Vec3 color(SimTK::Cyan);
-        const SimTK::Transform& X_GB = getFrame().getTransformInGround(state);
-        SimTK::Transform X_GW = X_GB*getTransform();
+        const Appearance& defaultAppearance = get_Appearance();
+        if (!defaultAppearance.get_visible()) return;
+        const Vec3 color = defaultAppearance.get_color();
+        const auto X_BP = calcWrapGeometryTransformInBaseFrame();
         appendToThis.push_back(
             SimTK::DecorativeSphere(getRadius())
-            .setTransform(X_GW).setResolution(2.0)
-            .setColor(color).setOpacity(0.5));
+            .setTransform(X_BP).setResolution(2.0)
+            .setColor(color).setOpacity(defaultAppearance.get_opacity())
+            .setScale(1).setRepresentation(defaultAppearance.get_representation())
+            .setBodyId(getFrame().getMobilizedBodyIndex()));
     }
 
 

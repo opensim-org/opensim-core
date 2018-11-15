@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2013 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ajay Seth                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -49,7 +49,7 @@ public:
 // PROPERTIES
 //=============================================================================
     OpenSim_DECLARE_UNNAMED_PROPERTY(GeometryPath,
-        "The set of points defining the path of the muscle.");
+        "The set of points defining the path of the actuator.");
     OpenSim_DECLARE_PROPERTY(optimal_force, double,
         "The maximum force this actuator can produce.");
 
@@ -92,8 +92,9 @@ public:
     // Convenience method to add PathPoints
      /** Note that this function does not maintain the State and so should be used only
         before a valid State is created */
-    void addNewPathPoint(const std::string& proposedName, PhysicalFrame& aBody,
-                           const SimTK::Vec3& aPositionOnBody);
+    void addNewPathPoint(const std::string& proposedName,
+                         const PhysicalFrame& aBody,
+                         const SimTK::Vec3& aPositionOnBody);
 
     //--------------------------------------------------------------------------
     // APPLICATION
@@ -107,13 +108,6 @@ public:
     //--------------------------------------------------------------------------
     double computeActuation( const SimTK::State& s) const override;
     virtual double computeMomentArm( const SimTK::State& s, Coordinate& aCoord) const;
-
-    //--------------------------------------------------------------------------
-    // SCALING
-    //--------------------------------------------------------------------------
-    virtual void preScale(const SimTK::State& s, const ScaleSet& aScaleSet);
-    virtual void scale(const SimTK::State& s, const ScaleSet& aScaleSet);
-    virtual void postScale(const SimTK::State& s, const ScaleSet& aScaleSet);
 
 protected:
     /** Override this method if you would like to calculate a color for use when
@@ -135,8 +129,6 @@ protected:
         should not be changed. **/
     virtual SimTK::Vec3 computePathColor(const SimTK::State& state) const;
 
-    /** Extension of parent class method; derived classes may extend further. **/
-    void extendFinalizeFromProperties() override;
     /** Extension of parent class method; derived classes may extend further. **/
     void extendRealizeDynamics(const SimTK::State& state) const override;
 

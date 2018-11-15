@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ajay Seth                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -21,17 +21,19 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-//==========================================================================================================
-//  testControllers builds OpenSim models using the OpenSim API and verifies that controllers
-//  behave as described.
+//=============================================================================
+//  testControllers builds OpenSim models using the OpenSim API and verifies 
+//  that controllers behave as described.
 //
 //  Tests Include:
-//      1. Test a control set controller on a block with an ideal actuator
-//      2. Test a corrective controller on a block with an ideal actuator
-//      
+//  1. Test a ControlSetController on a block with an ideal actuator
+//  2. Test a PrescribedController on a block with an ideal actuator
+//  3. Test a CorrectionController tracking a block with an ideal actuator
+//  4. Test a PrescribedController on the arm26 model with reserves.
 //     Add tests here as new controller types are added to OpenSim
 //
-//==========================================================================================================
+//=============================================================================
+
 #include <OpenSim/OpenSim.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 
@@ -39,7 +41,7 @@ using namespace OpenSim;
 using namespace std;
 
 void testControlSetControllerOnBlock();
-void testPrescribedControllerOnBlock(bool disabled);
+void testPrescribedControllerOnBlock(bool enabled);
 void testCorrectionControllerOnBlock();
 void testPrescribedControllerFromFile(const std::string& modelFile,
                                       const std::string& actuatorsFile,
@@ -51,19 +53,20 @@ int main()
         cout << "Testing ControlSetController" << endl; 
         testControlSetControllerOnBlock();
         cout << "Testing PrescribedController" << endl; 
-        testPrescribedControllerOnBlock(false);
         testPrescribedControllerOnBlock(true);
+        testPrescribedControllerOnBlock(false);
         cout << "Testing CorrectionController" << endl; 
         testCorrectionControllerOnBlock();
         cout << "Testing PrescribedController from File" << endl;
         testPrescribedControllerFromFile("arm26.osim", "arm26_Reserve_Actuators.xml",
                                          "arm26_controls.xml");
     }   
-    catch (const Exception& e) {
-        e.print(cerr);
+    catch (const std::exception& e) {
+        cout << "TestControllers failed due to the following error(s):" << endl;
+        cout << e.what() << endl;
         return 1;
     }
-    cout << "Done" << endl;
+    cout << "TestControllers passed." << endl;
     return 0;
 }
 
@@ -86,22 +89,22 @@ void testControlSetControllerOnBlock()
 
     OpenSim::Body block("block", blockMass, blockMassCenter, blockMass*blockInertia);
 
-    //Create a free joint with 6 degrees-of-freedom
+    // Create a slider joint with 1 degree of freedom
     SimTK::Vec3 noRotation(0);
     SliderJoint blockToGround("slider",ground, blockInGround, noRotation, block, blockMassCenter, noRotation);
     
-    // Create coordinates (degrees-of-freedom) between the ground and block
-    CoordinateSet& jointCoordinateSet = blockToGround.upd_CoordinateSet();
+    // Create coordinate (degree of freedom) between the ground and block
+    auto& sliderCoord = blockToGround.updCoordinate();
     double posRange[2] = {-1, 1};
-    jointCoordinateSet[0].setName("xTranslation");
-    jointCoordinateSet[0].setRange(posRange);
+    sliderCoord.setName("xTranslation");
+    sliderCoord.setRange(posRange);
 
     // Add the block and joint to the model
     osimModel.addBody(&block);
     osimModel.addJoint(&blockToGround);
 
     // Define a single coordinate actuator.
-    CoordinateActuator actuator(jointCoordinateSet[0].getName());
+    CoordinateActuator actuator(sliderCoord.getName());
     actuator.setName("actuator");
 
     // Add the actuator to the model
@@ -140,15 +143,14 @@ void testControlSetControllerOnBlock()
 
     // Create the integrator and manager for the simulation.
     double accuracy = 1.0e-3;
-    SimTK::RungeKuttaMersonIntegrator integrator(osimModel.getMultibodySystem());
-    integrator.setAccuracy(accuracy);
-    Manager manager(osimModel, integrator);
+    Manager manager(osimModel);
+    manager.setIntegratorAccuracy(accuracy);
 
     // Integrate from initial time to final time
-    manager.setInitialTime(initialTime);
-    manager.setFinalTime(finalTime);
+    si.setTime(initialTime);
+    manager.initialize(si);
     std::cout<<"\n\nIntegrating from "<<initialTime<<" to "<<finalTime<<std::endl;
-    manager.integrate(si);
+    si = manager.integrate(finalTime);
 
     si.getQ().dump("Final position:");
     double x_err = fabs(coordinates[0].getValue(si) - 0.5*(controlForce[0]/blockMass)*finalTime*finalTime);
@@ -163,7 +165,7 @@ void testControlSetControllerOnBlock()
 
 
 //==========================================================================================================
-void testPrescribedControllerOnBlock(bool disabled)
+void testPrescribedControllerOnBlock(bool enabled)
 {
     using namespace SimTK;
 
@@ -181,20 +183,21 @@ void testPrescribedControllerOnBlock(bool disabled)
 
     OpenSim::Body block("block", blockMass, blockMassCenter, blockMass*blockInertia);
 
-    //Create a free joint with 6 degrees-of-freedom
+    // Create a slider joint with 1 degree of freedom
     SimTK::Vec3 noRotation(0);
     SliderJoint blockToGround("slider",ground, blockInGround, noRotation, block, blockMassCenter, noRotation);
-    // Create 6 coordinates (degrees-of-freedom) between the ground and block
-    CoordinateSet& jointCoordinateSet = blockToGround.upd_CoordinateSet();
+
+    // Create 1 coordinate (degree of freedom) between the ground and block
+    auto& sliderCoord = blockToGround.updCoordinate();
     double posRange[2] = {-1, 1};
-    jointCoordinateSet[0].setRange(posRange);
+    sliderCoord.setRange(posRange);
 
     // Add the block body to the model
     osimModel.addBody(&block);
     osimModel.addJoint(&blockToGround);
 
     // Define a single coordinate actuator.
-    CoordinateActuator actuator(jointCoordinateSet[0].getName());
+    CoordinateActuator actuator(sliderCoord.getName());
     actuator.setName("actuator");
 
     // Add the actuator to the model
@@ -211,16 +214,17 @@ void testPrescribedControllerOnBlock(bool disabled)
     actuatorController.setName("testPrescribedController");
     actuatorController.setActuators(osimModel.updActuators());
     actuatorController.prescribeControlForActuator(0, new Constant(controlForce));
-    actuatorController.setDisabled(disabled);
+    actuatorController.setEnabled(enabled);
 
     // add the controller to the model
     osimModel.addController(&actuatorController);
+    osimModel.disownAllComponents();
     
     osimModel.print("blockWithPrescribedController.osim");
-    Model modelfileFromFile("blockWithPrescribedController.osim");
+    Model modelFromFile("blockWithPrescribedController.osim");
 
     // Verify that serialization and then deserialization is correct
-    ASSERT(osimModel == modelfileFromFile);
+    ASSERT(osimModel == modelFromFile);
 
     // Initialize the system and get the state representing the state system
     SimTK::State& si = osimModel.initSystem();
@@ -232,26 +236,26 @@ void testPrescribedControllerOnBlock(bool disabled)
 
     // Create the integrator and manager for the simulation.
     double accuracy = 1.0e-3;
-    SimTK::RungeKuttaMersonIntegrator integrator(osimModel.getMultibodySystem());
-    integrator.setAccuracy(accuracy);
-    Manager manager(osimModel, integrator);
+    Manager manager(osimModel);
+    manager.setIntegratorAccuracy(accuracy);
 
     // Integrate from initial time to final time
-    manager.setInitialTime(initialTime);
-    manager.setFinalTime(finalTime);
+    si.setTime(initialTime);
+    manager.initialize(si);
     std::cout<<"\n\nIntegrating from "<<initialTime<<" to "<<finalTime<<std::endl;
-    manager.integrate(si);
+    si = manager.integrate(finalTime);
 
     si.getQ().dump("Final position:");
 
-    double expected = disabled ? 0 : 0.5*(controlForce/blockMass)*finalTime*finalTime;
-    ASSERT_EQUAL(expected, coordinates[0].getValue(si), accuracy, __FILE__, __LINE__, "PrescribedController failed to produce the expected motion of block.");
+    double expected = enabled ? 0.5*(controlForce/blockMass)*finalTime*finalTime : 0;
+    ASSERT_EQUAL(expected, coordinates[0].getValue(si), accuracy,
+        __FILE__, __LINE__, 
+        "PrescribedController failed to produce the expected motion of block.");
 
     // Save the simulation results
     Storage states(manager.getStateStorage());
     states.print("block_push.sto");
 
-    osimModel.disownAllComponents();
 }// end of testPrescribedControllerOnBlock()
 
 
@@ -274,14 +278,15 @@ void testCorrectionControllerOnBlock()
 
     OpenSim::Body block("block", blockMass, blockMassCenter, blockMass*blockInertia);
 
-    //Create a free joint with 6 degrees-of-freedom
+    // Create a slider joint with 1 degree of freedom
     SimTK::Vec3 noRotation(0);
     SliderJoint blockToGround("slider",ground, blockInGround, noRotation, block, blockMassCenter, noRotation);
-    // Create coordinates (degrees-of-freedom) between the ground and block
-    CoordinateSet& jointCoordinateSet = blockToGround.upd_CoordinateSet();
+
+    // Create coordinate (degree of freedom) between the ground and block
+    auto& sliderCoord = blockToGround.updCoordinate();
     double posRange[2] = {-1, 1};
-    jointCoordinateSet[0].setName("xTranslation");
-    jointCoordinateSet[0].setRange(posRange);
+    sliderCoord.setName("xTranslation");
+    sliderCoord.setRange(posRange);
 
     // Add the block body to the model
     osimModel.addBody(&block);
@@ -298,10 +303,9 @@ void testCorrectionControllerOnBlock()
     // Initialize the system and get the state representing the state system
     /*SimTK::State& si = */osimModel.initSystem();
 
-    // Create the integrator and manager for the simulation.
-    SimTK::RungeKuttaMersonIntegrator integrator(osimModel.getMultibodySystem());
-    integrator.setAccuracy(1.0e-4);
-    Manager manager(osimModel, integrator);
+    // Create the manager for the simulation.
+    Manager manager(osimModel);
+    manager.setIntegratorAccuracy(1.0e-4);
 
     osimModel.disownAllComponents();
 }// end of testCorrectionControllerOnBlock()
@@ -320,7 +324,7 @@ void testPrescribedControllerFromFile(const std::string& modelFile,
     Model osimModel(modelFile);
 
     try{
-        ForceSet *forceSet=new ForceSet(osimModel, actuatorsFile);
+        ForceSet *forceSet=new ForceSet(actuatorsFile, true);
         osimModel.updForceSet().append(*forceSet);
     }
     catch(const std::exception& e){
@@ -337,16 +341,15 @@ void testPrescribedControllerFromFile(const std::string& modelFile,
     // Initialize the system and get the state representing the state system
     SimTK::State& si = osimModel.initSystem();
 
-    // Create the integrator and manager for the simulation.
-    SimTK::RungeKuttaMersonIntegrator integrator(osimModel.getMultibodySystem());
-    integrator.setAccuracy(1.0e-5);
-    Manager manager(osimModel, integrator);
+    // Create the manager for the simulation.
+    Manager manager(osimModel);
+    manager.setIntegratorAccuracy(1.0e-5);
 
     // Integrate from initial time to final time
-    manager.setInitialTime(initialTime);
-    manager.setFinalTime(finalTime);
+    si.setTime(initialTime);
+    manager.initialize(si);
     cout<<"\n\nIntegrating from "<<initialTime<<" to "<<finalTime<<std::endl;
-    manager.integrate(si);
+    si = manager.integrate(finalTime);
 
     string modelName = osimModel.getName();
     // Save the simulation results
@@ -379,16 +382,15 @@ void testPrescribedControllerFromFile(const std::string& modelFile,
     // Initialize the system and get the state representing the state system
     SimTK::State& s2 = osimModel.initSystem();
 
-    // Create the integrator and manager for the simulation.
-    SimTK::RungeKuttaMersonIntegrator integrator2(osimModel.getMultibodySystem());
-    integrator2.setAccuracy(1.0e-5);
-    Manager manager2(osimModel, integrator2);
+    // Create the manager for the simulation.
+    Manager manager2(osimModel);
+    manager2.setIntegratorAccuracy(1.0e-5);
 
     // Integrate from initial time to final time
-    manager2.setInitialTime(initialTime);
-    manager2.setFinalTime(finalTime);
+    s2.setTime(initialTime);
+    manager2.initialize(s2);
     cout<<"\n\nIntegrating from "<<initialTime<<" to "<<finalTime<<std::endl;
-    manager2.integrate(s2);
+    s2 = manager2.integrate(finalTime);
 
     // Save the simulation results
     Storage states(manager2.getStateStorage());
@@ -403,11 +405,11 @@ void testPrescribedControllerFromFile(const std::string& modelFile,
     /*int ncontrols = */osimModel.getNumControls();
 
     CHECK_STORAGE_AGAINST_STANDARD(states, std_states, 
-        Array<double>(0.005, nstates), __FILE__, __LINE__,
+        std::vector<double>(nstates, 0.005), __FILE__, __LINE__,
         "testPrescribedControllerFromFile '"+modelName+"'states failed");
 
     CHECK_STORAGE_AGAINST_STANDARD(controls, std_controls, 
-        Array<double>(0.01, nstates), __FILE__, __LINE__,
+        std::vector<double>(nstates, 0.01), __FILE__, __LINE__,
         "testPrescribedControllerFromFile '"+modelName+"'controls failed");
      
     osimModel.disownAllComponents();

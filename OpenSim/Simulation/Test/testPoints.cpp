@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ajay Seth, James Dunne                                          *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -165,7 +165,7 @@ void testStationOnOffsetFrame()
     X_RO.updR().setRotationFromAngleAboutAxis(SimTK::Pi/3.33 , SimTK::ZAxis);
     PhysicalOffsetFrame* offsetFrame = new PhysicalOffsetFrame(*rod2, X_RO);
     offsetFrame->setName("myExtraFrame");
-    pendulum.addFrame(offsetFrame);
+    pendulum.addComponent(offsetFrame);
 
     // Create station in the extra frame
     Station* myStation = new Station();
@@ -181,10 +181,10 @@ void testStationOnOffsetFrame()
     SimTK::State state = pendulum.initSystem();
 
     // set the model coordinates and coordinate speeds
-    hip->upd_CoordinateSet()[0].setValue(state, 0.29);
-    hip->upd_CoordinateSet()[0].setSpeedValue(state, 0.1);
-    hip->upd_CoordinateSet()[1].setValue(state, -0.38);
-    hip->upd_CoordinateSet()[1].setSpeedValue(state, -0.13);
+    hip->getCoordinate(GimbalJoint::Coord::Rotation1X).setValue(state, 0.29);
+    hip->getCoordinate(GimbalJoint::Coord::Rotation1X).setSpeedValue(state, 0.1);
+    hip->getCoordinate(GimbalJoint::Coord::Rotation2Y).setValue(state, -0.38);
+    hip->getCoordinate(GimbalJoint::Coord::Rotation2Y).setSpeedValue(state, -0.13);
 
     // Get the frame's mobilized body
     const OpenSim::PhysicalFrame&  frame = myStation->getParentFrame();

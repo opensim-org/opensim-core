@@ -32,6 +32,7 @@
 #include <OpenSim/Common/MultiplierFunction.h>
 #include <OpenSim/Common/PolynomialFunction.h>
 #include <OpenSim/Common/GCVSpline.h>
+#include <OpenSim/Common/GCVSplineSet.h>
 #include <OpenSim/Common/Sine.h>
 #include <OpenSim/Common/SmoothSegmentedFunctionFactory.h>
 #include <OpenSim/Common/SmoothSegmentedFunction.h>
@@ -40,6 +41,7 @@
 
 #include <OpenSim/Common/LoadOpenSimLibrary.h>
 #include <OpenSim/Common/ModelDisplayHints.h>
+#include <OpenSim/Common/ComponentPath.h>
 #include <OpenSim/Common/Component.h>
 
 #include <OpenSim/Common/MarkerData.h>

@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2016 Stanford University and the Authors                     *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Chris Dembia                                                    *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -76,11 +76,11 @@ bool StatesTrajectory::isConsistent() const {
     // An empty or size-1 trajectory is necessarily consistent.
     if (getSize() <= 1) return true;
 
-    const auto& state0 = get(0);
+    const auto& state0 = operator[](0);
 
     for (unsigned itime = 1; itime < getSize(); ++itime) {
 
-        if (!state0.isConsistent(get(itime))) {
+        if (!state0.isConsistent(operator[](itime))) {
             return false;
         }
 
@@ -121,11 +121,6 @@ namespace {
             vec.push_back(strings[i]);
         return vec;
     }
-    template <>
-    std::vector<std::string> createVector(
-            const std::vector<std::string>& strings) {
-        return strings;
-    }
 }
 
 TimeSeriesTable StatesTrajectory::exportToTable(const Model& model,
@@ -143,16 +138,21 @@ TimeSeriesTable StatesTrajectory::exportToTable(const Model& model,
             requestedStateVars;
     table.setColumnLabels(stateVars);
     size_t numDepColumns = stateVars.size();
-
+    
     // Fill up the table with the data.
     for (size_t itime = 0; itime < getSize(); ++itime) {
         const auto& state = get(itime);
         TimeSeriesTable::RowVector row(static_cast<int>(numDepColumns));
 
         // Get each state variable's value.
-        for (unsigned icol = 0; icol < numDepColumns; ++icol) {
-            row[static_cast<int>(icol)] = 
-                model.getStateVariableValue(state, stateVars[icol]);
+        if (requestedStateVars.empty()) {
+            // This is *much* faster than getting the values one-by-one.
+            row = model.getStateVariableValues(state).transpose();
+        } else {
+            for (unsigned icol = 0; icol < numDepColumns; ++icol) {
+                row[static_cast<int>(icol)] = 
+                    model.getStateVariableValue(state, stateVars[icol]);
+            }
         }
 
         table.appendRow(state.getTime(), row);
@@ -165,7 +165,8 @@ StatesTrajectory StatesTrajectory::createFromStatesStorage(
         const Model& model,
         const Storage& sto,
         bool allowMissingColumns,
-        bool allowExtraColumns) {
+        bool allowExtraColumns,
+        bool assemble) {
 
     // Assemble the required objects.
     // ==============================
@@ -175,7 +176,7 @@ StatesTrajectory StatesTrajectory::createFromStatesStorage(
 
     // Make a copy of the model so that we can get a corresponding state.
     Model localModel(model);
-
+    
     // We'll keep editing this state as we loop through time.
     auto state = localModel.initSystem();
 
@@ -205,16 +206,16 @@ StatesTrajectory StatesTrajectory::createFromStatesStorage(
     // ---------------------------------------------
     const auto& modelStateNames = localModel.getStateVariableNames();
     std::vector<std::string> missingColumnNames;
-    // Also, assemble the names of the states that we will actually set in the
-    // trajectory, along with the corresponding state index.
-    std::map<int, std::string> statesToFillUp;
+    // Also, assemble the indices of the states that we will actually set in the
+    // trajectory.
+    std::map<int, int> statesToFillUp;
     for (int is = 0; is < modelStateNames.getSize(); ++is) {
         // getStateIndex() will check for pre-4.0 column names.
         const int stateIndex = sto.getStateIndex(modelStateNames[is]);
         if (stateIndex == -1) {
             missingColumnNames.push_back(modelStateNames[is]);
         } else {
-            statesToFillUp[stateIndex] = modelStateNames[is];
+            statesToFillUp[stateIndex] = is;
         }
     }
     OPENSIM_THROW_IF(!allowMissingColumns && !missingColumnNames.empty(),
@@ -239,16 +240,22 @@ StatesTrajectory StatesTrajectory::createFromStatesStorage(
                     extraColumnNames);
         }
     }
-
-
+    
     // Fill up trajectory.
     // ===================
 
     // Reserve the memory we'll need to fit all the states.
     states.m_states.reserve(sto.getSize());
 
-    // Working memory.
+    // Working memory for Storage.
     SimTK::Vector dependentValues(numDependentColumns);
+
+    // Working memory for state. Initialize so that missing columns end up as
+    // NaN.
+    SimTK::Vector statesValues(modelStateNames.getSize(), SimTK::NaN);
+
+    // Initialize so that missing columns end up as NaN.
+    state.updY().setToNaN();
 
     // Loop through all rows of the Storage.
     for (int itime = 0; itime < sto.getSize(); ++itime) {
@@ -259,15 +266,14 @@ StatesTrajectory StatesTrajectory::createFromStatesStorage(
         // Set the correct time in the state.
         sto.getTime(itime, state.updTime());
 
-        // Put in NaNs for state variable values not in the Storage.
-        for (const auto& stateName : missingColumnNames) {
-            localModel.setStateVariableValue(state, stateName, SimTK::NaN);
-        }
-
         // Fill up current State with the data for the current time.
         for (const auto& kv : statesToFillUp) {
-            localModel.setStateVariableValue(state,
-                    kv.second, dependentValues[kv.first]);
+            // 'first': index for Storage; 'second': index for Model.
+            statesValues[kv.second] = dependentValues[kv.first];
+        }
+        localModel.setStateVariableValues(state, statesValues);
+        if (assemble) {
+            localModel.assemble(state);
         }
 
         // Make a copy of the edited state and put it in the trajectory.

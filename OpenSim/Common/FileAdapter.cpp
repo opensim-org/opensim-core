@@ -1,22 +1,37 @@
 #include "FileAdapter.h"
+#include <OpenSim/Common/IO.h>
 
 namespace OpenSim {
+
+std::shared_ptr<DataAdapter>
+createSTOFileAdapterForReading(const std::string&);
+
+std::shared_ptr<DataAdapter>
+createSTOFileAdapterForWriting(const DataAdapter::InputTables&);
 
 FileAdapter::OutputTables
 FileAdapter::readFile(const std::string& fileName) {
     auto extension = findExtension(fileName);
-    auto data_adapter = createAdapter(extension);
-    auto& file_adapter = static_cast<FileAdapter&>(*data_adapter);
-    return file_adapter.extendRead(fileName);
+    std::shared_ptr<DataAdapter> dataAdapter{};
+    if(extension == "sto")
+        dataAdapter = createSTOFileAdapterForReading(fileName);
+    else 
+        dataAdapter = createAdapter(extension);
+    auto& fileAdapter = static_cast<FileAdapter&>(*dataAdapter);
+    return fileAdapter.extendRead(fileName);
 }
 
 void 
 FileAdapter::writeFile(const InputTables& tables, 
                        const std::string& fileName) {
     auto extension = findExtension(fileName);
-    auto data_adapter = createAdapter(extension);
-    auto& file_adapter = static_cast<FileAdapter&>(*data_adapter);
-    file_adapter.extendWrite(tables, fileName);
+    std::shared_ptr<DataAdapter> dataAdapter{};
+    if(extension == "sto")
+        dataAdapter = createSTOFileAdapterForWriting(tables);
+    else
+        dataAdapter = createAdapter(extension);
+    auto& fileAdapter = static_cast<FileAdapter&>(*dataAdapter);
+    fileAdapter.extendWrite(tables, fileName);
 }
 
 std::string 
@@ -27,45 +42,48 @@ FileAdapter::findExtension(const std::string& filename) {
                      FileExtensionNotFound,
                      filename);
 
-    return filename.substr(found + 1);
+    auto ext = filename.substr(found + 1);
+    std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
+    return ext;
 }
 
 std::vector<std::string> 
 FileAdapter::tokenize(const std::string& str, 
-                      const std::string& delims) const {
+                      const std::string& delims) {
     using size_type = std::string::size_type;
 
     std::vector<std::string> tokens{};
+    std::string token;
 
-    size_type token_start{0}, token_end{0};
-    bool is_token{false};
-    while(token_end < str.length()) {
-        if(delims.find_first_of(str[token_end]) != std::string::npos) {
-            if(is_token) {
-                tokens.push_back(str.substr(token_start, 
-                                            token_end - token_start));
-                is_token = false;
-            }
-        } else {
-            if(!is_token) {
-                token_start = token_end;
-                is_token = true;
-            }
-        }
-
-        ++token_end;
+    size_type token_start{0}, token_end{ std::string::npos };
+    while((token_end = str.find_first_of(delims, token_start)) 
+                    != std::string::npos) {
+        token = str.substr(token_start, token_end - token_start);
+        OpenSim::IO::TrimWhitespace(token);
+        tokens.push_back(token);
+        token_start = token_end;
+        ++token_start;
     }
-    if(is_token)
-        tokens.push_back(str.substr(token_start, token_end - token_start));
-
+    // reached std::string::npos, now set token_end to be the end of the string
+    token_end = str.size();
+    //capture from last delimiter to the end of string that is not empty
+    if (token_end > token_start) {
+        token = str.substr(token_start, token_end - token_start);
+        OpenSim::IO::TrimWhitespace(token);
+        tokens.push_back(token);
+    }
     return tokens;
 }
 
 std::vector<std::string>
 FileAdapter::getNextLine(std::istream& stream,
-                         const std::string& delims) const {
+                         const std::string& delims) {
     std::string line{};
-    while(std::getline(stream, line)) {
+    if(std::getline(stream, line)) {
+        // Get rid of the extra \r if parsing a file with CRLF line endings.
+        if (!line.empty() && line.back() == '\r') 
+            line.pop_back();
+
         auto tokens = tokenize(line, delims);
         if(tokens.size() > 0)
             return tokens;

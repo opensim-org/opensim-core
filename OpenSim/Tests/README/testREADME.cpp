@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Chris Dembia                                                    *
  * Contributor(s): Thomas Uchida, James Dunne                                 *
  *                                                                            *
@@ -40,13 +40,16 @@
  *    repository.
  */
 
-// #define VISUALIZE
+//#define VISUALIZE
 
+/// [README]
 #include <OpenSim/OpenSim.h>
 using namespace SimTK;
 using namespace OpenSim;
+
 int main() {
     Model model;
+    model.setName("bicep_curl");
 #ifdef VISUALIZE
     model.setUseVisualizer(true);
 #endif
@@ -87,38 +90,43 @@ int main() {
     // Add a console reporter to print the muscle fiber force and elbow angle.
     ConsoleReporter* reporter = new ConsoleReporter();
     reporter->set_report_time_interval(1.0);
-    reporter->updInput("inputs").connect(biceps->getOutput("fiber_force"));
-    reporter->updInput("inputs").connect(
-        elbow->getCoordinateSet()[0].getOutput("value"), "elbow_angle");
+    reporter->addToReport(biceps->getOutput("fiber_force"));
+    reporter->addToReport(
+        elbow->getCoordinate(PinJoint::Coord::RotationZ).getOutput("value"),
+        "elbow_angle");
     model.addComponent(reporter);
+
+    // Add display geometry.
+    Ellipsoid bodyGeometry(0.1, 0.5, 0.1);
+    bodyGeometry.setColor(Gray);
+    // Attach an ellipsoid to a frame located at the center of each body.
+    PhysicalOffsetFrame* humerusCenter = new PhysicalOffsetFrame(
+        "humerusCenter", *humerus, Transform(Vec3(0, 0.5, 0)));
+    humerus->addComponent(humerusCenter);
+    humerusCenter->attachGeometry(bodyGeometry.clone());
+    PhysicalOffsetFrame* radiusCenter = new PhysicalOffsetFrame(
+        "radiusCenter", *radius, Transform(Vec3(0, 0.5, 0)));
+    radius->addComponent(radiusCenter);
+    radiusCenter->attachGeometry(bodyGeometry.clone());
 
     // Configure the model.
     State& state = model.initSystem();
     // Fix the shoulder at its default angle and begin with the elbow flexed.
-    shoulder->upd_CoordinateSet()[0].setLocked(state, true);
-    elbow->upd_CoordinateSet()[0].setValue(state, 0.5 * Pi);
+    shoulder->getCoordinate().setLocked(state, true);
+    elbow->getCoordinate().setValue(state, 0.5 * Pi);
     model.equilibrateMuscles(state);
 
-    // Add display geometry.
+    // Configure the visualizer.
 #ifdef VISUALIZE
     model.updMatterSubsystem().setShowDefaultGeometry(true);
     Visualizer& viz = model.updVisualizer().updSimbodyVisualizer();
+    viz.setBackgroundType(viz.SolidColor);
     viz.setBackgroundColor(White);
-    // Ellipsoids: 0.5 m radius along y-axis, centered 0.5 m up along y-axis.
-    DecorativeEllipsoid geom(Vec3(0.1, 0.5, 0.1)); Vec3 center(0, 0.5, 0);
-    viz.addDecoration(humerus->getMobilizedBodyIndex(), Transform(center), geom);
-    viz.addDecoration( radius->getMobilizedBodyIndex(), Transform(center), geom);
 #endif
 
     // Simulate.
-    RungeKuttaMersonIntegrator integrator(model.getSystem());
-    Manager manager(model, integrator);
-    manager.setInitialTime(0); manager.setFinalTime(10.0);
-#ifdef VISUALIZE // To give you the chance to click View -> Save Movie.
-    std::cout << "Press enter/return to begin the simulation..." << std::endl;
-    getchar();
-#endif
-    manager.integrate(state);
+    simulate(model, state, 10.0);
 
     return 0;
 };
+/// [README]

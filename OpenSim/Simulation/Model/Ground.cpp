@@ -7,7 +7,7 @@
 * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
 * through the Warrior Web program.                                           *
 *                                                                            *
-* Copyright (c) 2005-2015 Stanford University and the Authors                *
+* Copyright (c) 2005-2017 Stanford University and the Authors                *
 * Author(s): Ajay Seth                                                       *
 *                                                                            *
 * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -32,6 +32,8 @@
 using namespace std;
 using namespace OpenSim;
 
+const char* Ground::GroundNameString{ "ground" };
+
 //=============================================================================
 // CONSTRUCTOR(S)
 //=============================================================================
@@ -41,8 +43,20 @@ using namespace OpenSim;
 */
 Ground::Ground() : PhysicalFrame()
 {
-    setName("ground");
+    setName(GroundNameString);
     setAuthors("Ajay Seth");
+}
+
+/* Ground should never change name */
+void Ground::extendFinalizeFromProperties() {
+    Super::extendFinalizeFromProperties();
+    // Ground is always named "ground"
+    if (getName() != GroundNameString) {
+        std::string msg = getConcreteClassName() + " '" + getName() + "' ";
+        setName(GroundNameString);
+        msg += "was renamed and is being reset to '" + getName() + "'.";
+        std::cout << msg << std::endl;
+    }
 }
 
 /*

@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson                                               *
  * Contributor(s): Ayman Habib, Frank C. Anderson                             *
  *                                                                            *
@@ -31,6 +31,7 @@
 
 #include "osimToolsDLL.h"
 #include <OpenSim/Simulation/Model/AbstractTool.h>
+#include <OpenSim/Simulation/Model/ForceSet.h>
 
 
 #ifdef SWIG
@@ -42,7 +43,6 @@
 
 namespace OpenSim {
 
-class ForceSet;
 class ControlSet;
 class Storage;
 //=============================================================================

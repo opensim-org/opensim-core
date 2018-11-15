@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ayman Habib                                                     *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -65,9 +65,10 @@ static void dumpObj(const Object& obj, int nSpaces) {
 
 int main()
 {
-    // Need to force Windows to load Actuators library if there are no
-    // explicit uses.
-    LoadOpenSimLibrary("osimActuators");
+    // Actuators library is not loaded automatically (unless using clang).
+    #if !defined(__clang__)
+        LoadOpenSimLibrary("osimActuators");
+    #endif
 
     try {
         Model testModel;
@@ -76,15 +77,15 @@ int main()
         //Test serialization for all ModelComponents
         ArrayPtrs<OpenSim::ModelComponent> availableComponentTypes;
         Object::getRegisteredObjectsOfGivenType<OpenSim::ModelComponent>(availableComponentTypes);
+
         for (int i=0; i< availableComponentTypes.getSize(); i++){
             Object* clone = availableComponentTypes[i]->clone();
             Object* randClone = randomize(clone);
             try {
-                testModel.addModelComponent(ModelComponent::safeDownCast(randClone));
+                ModelComponent* comp = ModelComponent::safeDownCast(randClone);
+                testModel.addModelComponent(comp);
             } //Ignore the validity of the property values
-            // TODO this should specifically handle "InvalidPropertyValue" exceptions
-            // once we have that in place.
-            catch (const std::exception&) {
+            catch (const InvalidPropertyValue&) {
                 // const string& errMsg = err.getMessage();
                 //std::cout << errMsg << std::endl;
             }
@@ -93,23 +94,12 @@ int main()
         int nc = testModel.getMiscModelComponentSet().getSize();
         cout << nc << " model components were serialized in testModel." << endl;
 
+
         //Serialize all the components
         testModel.print("allComponents.osim");
 
-        // The finalize flag is for testing purposes ONLY. This way we
-        // can ignore invalid properties and focus the test on serialization.
-        Model deserializedModel("allComponents.osim", false);
-
-        try {
-            deserializedModel.finalizeFromProperties();
-        }
-        //Ignore the validity of the property values
-        // TODO this should specifically handle "InvalidPropertyValue" exceptions
-        // once we have that in place.
-        catch (const std::exception&) {
-            // const string& errMsg = err.getMessage();
-            //std::cout << errMsg << std::endl;
-        }
+        Model deserializedModel("allComponents.osim");
+        deserializedModel.print("allComponents_reserialized.osim");
 
         nc = deserializedModel.getMiscModelComponentSet().getSize();
         cout << nc << " model components were deserialized from file." << endl;

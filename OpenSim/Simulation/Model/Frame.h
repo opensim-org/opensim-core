@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2015 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Matt DeMers, Ajay Seth, Ayman Habib                             *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -24,7 +24,6 @@
  * -------------------------------------------------------------------------- */
 
 // INCLUDE
-#include <OpenSim/Simulation/osimSimulationDLL.h>
 #include <OpenSim/Simulation/Model/ModelComponent.h>
 #include <OpenSim/Simulation/Model/Geometry.h>
 
@@ -99,7 +98,15 @@ public:
         SimTK::Stage::Position);
     OpenSim_DECLARE_OUTPUT(velocity, SimTK::SpatialVec, getVelocityInGround,
         SimTK::Stage::Velocity);
+    OpenSim_DECLARE_OUTPUT(angular_velocity, SimTK::Vec3, getAngularVelocityInGround,
+        SimTK::Stage::Velocity);
+    OpenSim_DECLARE_OUTPUT(linear_velocity, SimTK::Vec3, getLinearVelocityInGround,
+        SimTK::Stage::Velocity);
     OpenSim_DECLARE_OUTPUT(acceleration, SimTK::SpatialVec, getAccelerationInGround,
+        SimTK::Stage::Acceleration);
+    OpenSim_DECLARE_OUTPUT(angular_acceleration, SimTK::Vec3, getAngularAccelerationInGround,
+        SimTK::Stage::Acceleration);
+    OpenSim_DECLARE_OUTPUT(linear_acceleration, SimTK::Vec3, getLinearAccelerationInGround,
         SimTK::Stage::Acceleration);
 
     //--------------------------------------------------------------------------
@@ -127,28 +134,54 @@ public:
     const SimTK::Transform&
         getTransformInGround(const SimTK::State& state) const;
 
-    /** The spatial velocity V_GF {omega; v} for this Frame in ground.
-        It can be used to compute the velocity of any stationary point on F,
-        located at r_F (Vec3), in ground, G, as:
-            v_G = V_GF(0)*r_F + V_GF(1);
+    /** The spatial velocity V_GF {omega; v} of this Frame, measured with
+        respect to and expressed in the ground frame. It can be used to compute
+        the velocity of any stationary point on F, located at r_F (Vec3), in
+        ground, G, as:
+            v_G = V_GF[1] + SimTK::cross(V_GF[0], r_F);
         Is only valid at Stage::Velocity or higher. */
     const SimTK::SpatialVec&
         getVelocityInGround(const SimTK::State& state) const;
 
-    /** The spatial acceleration A_GF {alpha; a} for this Frame in ground.
-        It can also be used to compute the acceleration of any stationary point
-        on F, located at r_F (Vec3), in ground, G, as:
-            a_G = A_GF(0)*r_F + A_GF(1);
+    /** The angular velocity of this Frame, measured with respect to and
+        expressed in the ground frame (i.e., the first half of the SpatialVec
+        returned by getVelocityInGround()). */
+    const SimTK::Vec3&
+        getAngularVelocityInGround(const SimTK::State& state) const;
+
+    /** The linear velocity of this Frame, measured with respect to and
+        expressed in the ground frame (i.e., the second half of the SpatialVec
+        returned by getVelocityInGround()). */
+    const SimTK::Vec3&
+        getLinearVelocityInGround(const SimTK::State& state) const;
+
+    /** The spatial acceleration A_GF {alpha; a} of this Frame, measured with
+        respect to and expressed in the ground frame. It can also be used to
+        compute the acceleration of any stationary point on F, located at r_F
+        (Vec3), in ground, G, as:
+            a_G = A_GF[1] + SimTK::cross(A_GF[0], r_F) + 
+                  SimTK::cross(V_GF[0], SimTK::cross(V_GF[0], r_F));
         Is only valid at Stage::Acceleration or higher. */
     const SimTK::SpatialVec&
         getAccelerationInGround(const SimTK::State& state) const;
+
+    /** The angular acceleration of this Frame, measured with respect to and
+        expressed in the ground frame (i.e., the first half of the SpatialVec
+        returned by getAccelerationInGround()). */
+    const SimTK::Vec3&
+        getAngularAccelerationInGround(const SimTK::State& state) const;
+
+    /** The linear acceleration of this Frame, measured with respect to and
+        expressed in the ground frame (i.e., the second half of the SpatialVec
+        returned by getAccelerationInGround()). */
+    const SimTK::Vec3&
+        getLinearAccelerationInGround(const SimTK::State& state) const;
 
 
     /**
     Find the transform that describes this frame (F) relative to another
     frame (A). It transforms quantities expressed in F to quantities expressed
     in A. This is mathematically stated as:
-    This is mathematically stated as:
         vec_A = X_AF*vec_F ,
     where X_AF is the transform returned by this method.
 
@@ -169,31 +202,89 @@ public:
     physical vector quantities such as a frame's angular velocity or an
     applied force, from one frame to another without changing the physical
     quantity. If you have a position vector and want to change the point from
-    which the position is measured, you want findLocationInAnotherFrame().
+    which the position is measured, you want findStationLocationInAnotherFrame().
 
     @param state       The state of the model.
     @param vec_F       The vector to be re-expressed.
     @param otherFrame  The frame in which the vector will be re-expressed
-    @return vec_A; the expression of the vector in otherFrame.
+    @return vec_A      The expression of the vector in otherFrame.
     */
     SimTK::Vec3 expressVectorInAnotherFrame(const SimTK::State& state,
                         const SimTK::Vec3& vec_F,
                         const Frame& otherFrame) const;
 
     /**
-    Take a point located and expressed in this frame (F) and determine
-    its location expressed in another frame (A). The transform accounts for
-    the difference in orientation and translation between the frames.
+    Take a vector in this frame (F) and re-express the same vector
+    in Ground (G). This method is equivalent to expressVectorInAnotherFrame()
+    where the "other Frame" is always Ground.
+    @param state       The state of the model.
+    @param vec_F       The vector to be re-expressed.
+    @return vec_G      The expression of the vector in Ground.
+    */
+    SimTK::Vec3 expressVectorInGround(const SimTK::State& state,
+                        const SimTK::Vec3& vec_F) const;
+
+    /**
+    Take a station located and expressed in this frame (F) and determine
+    its location relative to and expressed in another frame (A). The transform
+    accounts for the difference in orientation and translation between the 
+    frames.
     This is mathematically stated as: 
-        point_A = X_AF*point_F
+        loc_A = X_AF*station_F
 
     @param state       The state of the model.
-    @param point_F     The point to be re-expressed.
-    @param otherFrame  The frame in which the point will be re-expressed
-    @return point_A    The re-expression of the point in another frame.
+    @param station_F   The position Vec3 from frame F's origin to the station.
+    @param otherFrame  The frame (A) in which the station's location 
+                       will be relative to and expressed.
+    @return loc_A      The location of the station in another frame (A).
     */
-    SimTK::Vec3 findLocationInAnotherFrame(const SimTK::State& state, 
-                    const SimTK::Vec3& point_F, const Frame& otherFrame) const;
+    SimTK::Vec3 findStationLocationInAnotherFrame(const SimTK::State& state, 
+                    const SimTK::Vec3& station_F, const Frame& otherFrame) const;
+
+    /**
+    Take a station located and expressed in this frame (F) and determine
+    its location relative to and expressed in Ground (G). This method is
+    equivalent to findStationLocationInAnotherFrame() where the "other Frame" is
+    always Ground.
+
+    Note that if you have added an OpenSim::Station, you should use the
+    Station's %getLocationInGround() method instead.
+
+    @param state       The state of the model.
+    @param station_F   The position Vec3 from frame F's origin to the station.
+    @return loc_G      The location of the station in Ground.
+    */
+    SimTK::Vec3 findStationLocationInGround(const SimTK::State& state,
+                    const SimTK::Vec3& station_F) const;
+
+    /**
+    Take a station located and expressed in this frame (F) and determine
+    its velocity relative to and expressed in Ground (G).
+
+    Note that if you have added an OpenSim::Station, you should use the
+    Station's %getVelocityInGround() method instead.
+
+    @param state       The state of the model.
+    @param station_F   The position Vec3 from frame F's origin to the station.
+    @return vel_G      The velocity of the station in Ground.
+    */
+    SimTK::Vec3 findStationVelocityInGround(const SimTK::State& state,
+        const SimTK::Vec3& station_F) const;
+
+    /**
+    Take a station located and expressed in this frame (F) and determine
+    its acceleration relative to and expressed in Ground (G).
+
+    Note that if you have added an OpenSim::Station, you should use the
+    Station's %getAccelerationInGround() method instead.
+
+    @param state       The state of the model.
+    @param station_F   The position Vec3 from frame F's origin to the station.
+    @return acc_G      The acceleration of the station in Ground.
+    */
+    SimTK::Vec3 findStationAccelerationInGround(const SimTK::State& state,
+        const SimTK::Vec3& station_F) const;
+
     /**@}**/
 
     /** @name Advanced: A Frame's Base Frame and Transform 
@@ -209,7 +300,7 @@ public:
     */
     ///@{
     /** 
-    Find this Frame's base Frame.
+    Find this Frame's base Frame. See the "Advanced" note, above.
 
     @return baseFrame     The Frame that is the base for this Frame.
     */
@@ -232,10 +323,22 @@ public:
     ///@}
 
     /** Attach Geometry to this Frame and have this Frame take ownership of
-        it by adding it to this Frame's <attached_geometry> property list.
+        it by adding it to this Frame's \<attached_geometry\> property list.
         The Geometry is treated as being fixed to this Frame such that the
         transform used to position the Geometry is that of this Frame. */
     void attachGeometry(OpenSim::Geometry* geom);
+
+    void scaleAttachedGeometry(const SimTK::Vec3& scaleFactors);
+
+    /** Scales Geometry components that reside in the Frame's
+        `attached_geometry` list property. Note that Geometry residing elsewhere
+        (e.g., in the `components` list property of a Frame or any other
+        Component) will not be scaled. Note also that ContactGeometry derives
+        from ModelComponent so the classes derived from ContactGeometry are
+        responsible for scaling themselves. (However, `scale()` is not currently
+        implemented on ContactGeometry or classes derived therefrom so they will
+        not scale with the Model.) */
+    void extendScale(const SimTK::State& s, const ScaleSet& scaleSet) override;
 
 protected:
     /** @name Extension of calculations of Frame kinematics.

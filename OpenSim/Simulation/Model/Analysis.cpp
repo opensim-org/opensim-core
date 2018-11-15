@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson, Ajay Seth                                    *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -30,7 +30,7 @@
 // INCLUDES
 //=============================================================================
 #include "Analysis.h"
-#include "Model.h"
+#include "OpenSim/Common/XMLDocument.h"
 
 
 
@@ -484,8 +484,7 @@ getEndTime() const
  *
  * @return -1 on error, 0 otherwise.
  */
-int Analysis::
-begin( SimTK::State& s )
+int Analysis::begin(const SimTK::State& s )
 {
     //printf("Analysis.begin: %s.\n",getName());
     return (0);
@@ -518,8 +517,7 @@ step( const SimTK::State& s, int stepNumber )
  *
  * @return -1 on error, 0 otherwise.
  */
-int Analysis::
-end( SimTK::State& s )
+int Analysis::end(const SimTK::State& s )
 {
     //printf("Analysis.end: %s.\n",getName());
     return(0);

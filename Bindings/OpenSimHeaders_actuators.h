@@ -11,10 +11,8 @@
 #include <OpenSim/Actuators/PointToPointActuator.h>
 #include <OpenSim/Actuators/ClutchedPathSpring.h>
 #include <OpenSim/Actuators/SpringGeneralizedForce.h>
-#include <OpenSim/Actuators/Thelen2003Muscle.h>
 #include <OpenSim/Actuators/RigidTendonMuscle.h>
-#include <OpenSim/Actuators/Millard2012EquilibriumMuscle.h>
 #include <OpenSim/Actuators/Millard2012AccelerationMuscle.h>
-#include <OpenSim/Actuators/ClutchedPathSpring.h>
+#include <OpenSim/Actuators/McKibbenActuator.h>
 
 #endif // OPENSIM_OPENSIM_HEADERS_ACTUATORS_H_

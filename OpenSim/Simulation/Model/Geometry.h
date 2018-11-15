@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2015 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ayman Habib                                                     *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -23,18 +23,12 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "SimTKcommon.h"
 #include <OpenSim/Common/Component.h>
-#include <OpenSim/Common/Set.h>
-#include "ModelComponent.h"
 #include "Appearance.h"
 
 namespace OpenSim { 
 
-class PhysicalFrame;
-class Model;
 class Frame;
-class ModelComponent;
 //=============================================================================
 //=============================================================================
 /**
@@ -69,9 +63,9 @@ public:
         "Default appearance attributes for this Geometry");
 
 //=============================================================================
-// CONNECTORS
+// SOCKETS
 //=============================================================================
-    OpenSim_DECLARE_CONNECTOR_FD(frame, Frame,
+    OpenSim_DECLARE_SOCKET_FD(frame, Frame,
         "The frame to which this geometry is attached. Note, being connected "
         "to a Frame means its transform is used to position this Geometry." );
 //=============================================================================
@@ -100,7 +94,7 @@ public:
     /** %Set the Frame of attachment **/
     void setFrame(const Frame& frame);
     /** Return a reference to the name of the Frame to which
-    this Geometry is attached (using a Connector). **/
+    this Geometry is attached (using a Socket). **/
 
     /** Return a reference to the actual Frame to which this Geometry
     is attached. */
@@ -150,7 +144,7 @@ public:
         (bool                                       fixed,
         const ModelDisplayHints&                    hints,
         const SimTK::State&                         state,
-        SimTK::Array_<SimTK::DecorativeGeometry>&   appendToThis) const override final;
+        SimTK::Array_<SimTK::DecorativeGeometry>&   appendToThis) const override;
 
 
 protected:
@@ -159,7 +153,7 @@ protected:
     virtual void implementCreateDecorativeGeometry(
         SimTK::Array_<SimTK::DecorativeGeometry>&) const = 0;
 
-    void extendConnect(Component& root) override;
+    void extendFinalizeConnections(Component& root) override;
 
 private:
     // Compute Transform of this geometry relative to its base frame, utilizing 
@@ -299,51 +293,19 @@ private:
 
 
 /**
- * Utility class used to abstract analytic geometry. This will need to be 
- * revisited when wrapping is re-done to handle quadrants or analytic shapes
- * that were supported in earlier releases before 4.0. 
- *
- * TODO: using start/end angle may be a better choice.
+ * Abstract class for analytical geometry (e.g. surfaces of revolution) whose
+ * rendering is optimized by the graphics library (e.g. threejs). Unlike other
+ * geometry, property edits require a recreation of the AnalyticGeometry on
+ * the renderer and not simple updates. AnalyticGeometry is the base class for
+ * Sphere, Cylinder, Cone, Ellipsoid and Torus geometry.
  */
 class OSIMSIMULATION_API AnalyticGeometry : public Geometry
 {    
     OpenSim_DECLARE_ABSTRACT_OBJECT(AnalyticGeometry, Geometry);
-    // Amended with a quadrants array to support pieces of analytic geometry (for wrapping)
-    OpenSim_DECLARE_LIST_PROPERTY(quadrants, std::string,
-        "Quadrants to use: combination of +X -X +Y -Y +Z -Z space separated."); 
-private:
-    bool                    _bounds[6];     //-X, +X, -Y, +Y, -Z, +Z
-    bool                    _piece;
+
 public:
-    AnalyticGeometry():
-        _piece(false)
-    {
-        constructProperties();
-        for(int i=0; i<6; i++) _bounds[i]=true;
-    }
+    AnalyticGeometry() {}
     virtual ~AnalyticGeometry() {}
-    void setQuadrants(const bool quadrants[6])
-    {
-        _piece=false;
-        for(int i=0; i<6; i++){
-            _bounds[i]=quadrants[i];
-            _piece = _piece || (!quadrants[i]);
-        }
-    }
-    void getQuadrants(bool quadrants[6])
-    {
-        for(int i=0; i<6; i++){
-            quadrants[i]=_bounds[i];
-        }
-    }
-    const bool isPiece() const
-    {
-        return _piece;
-    }
-private:
-    void constructProperties() {
-        constructProperty_quadrants();
-    }
 };
 /**
  * A class to represent Sphere geometry. 
@@ -649,6 +611,12 @@ public:
     }
     /// destructor
     virtual ~FrameGeometry() {};
+
+    void generateDecorations
+        (bool                                       fixed,
+            const ModelDisplayHints&                    hints,
+            const SimTK::State&                         state,
+            SimTK::Array_<SimTK::DecorativeGeometry>&   appendToThis) const override;
 protected:
     /// Method to map FrameGeometry to Array of SimTK::DecorativeGeometry.
     void implementCreateDecorativeGeometry(

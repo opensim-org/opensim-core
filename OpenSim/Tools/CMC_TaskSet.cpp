@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -28,7 +28,6 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <string>
 #include "CMC_TaskSet.h"
 #include "StateTrackingTask.h"
 
@@ -198,8 +197,7 @@ getModel() const
  * @param aFuncSet Function set.
  * @return Pointer to the previous function set.
  */
-void CMC_TaskSet::
-setFunctions(FunctionSet &aFuncSet)
+void CMC_TaskSet::setFunctions(FunctionSet &aFuncSet)
 {
     // LOOP THROUGH TRACK OBJECTS
     int i,j,iFunc=0;
@@ -237,10 +235,10 @@ setFunctions(FunctionSet &aFuncSet)
         iFunc = aFuncSet.getIndex(name,iFunc);
         if (iFunc < 0){
             const Coordinate& coord = _model->getCoordinateSet().get(name);
-            name = coord.getJoint().getName() + "/" + name + "/value";
+            name = coord.getStateVariableNames()[0];
             iFunc = aFuncSet.getIndex(name, iFunc);
             if (iFunc < 0){
-                string msg = "CMC_TaskSet::setFunctionsForVelocity: function for task '";
+                string msg = "CMC_TaskSet::setFunctions: function for task '";
                 msg += name + " not found.";
                 throw Exception(msg);
             }
@@ -314,7 +312,8 @@ setFunctionsForVelocity(FunctionSet &aFuncSet)
         iFunc = aFuncSet.getIndex(coord.getSpeedName(),iFunc);
 
         if (iFunc < 0){
-            name = coord.getJoint().getName() + "/" + coord.getSpeedName();
+            const Coordinate& coord = _model->getCoordinateSet().get(name);
+            name = coord.getStateVariableNames()[1]; // index 1 is speed
             iFunc = aFuncSet.getIndex(name, iFunc);
             if (iFunc < 0){
                 string msg = "CMC_TaskSet::setFunctionsForVelocity: function for task '";
@@ -410,7 +409,8 @@ setFunctionsForAcceleration(FunctionSet &aFuncSet)
         iFunc = aFuncSet.getIndex(coord.getSpeedName(),iFunc);
 
         if (iFunc < 0){
-            name = coord.getJoint().getName() + "/" + coord.getSpeedName();
+            const Coordinate& coord = _model->getCoordinateSet().get(name);
+            name = coord.getStateVariableNames()[1];
             iFunc = aFuncSet.getIndex(name, iFunc);
             if (iFunc < 0){
                 string msg = "CMC_TaskSet::setFunctionsForAcceleration: function for task '";

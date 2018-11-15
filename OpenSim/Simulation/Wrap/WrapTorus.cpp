@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Peter Loan                                                      *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -26,13 +26,13 @@
 //=============================================================================
 #include "WrapTorus.h"
 #include "WrapCylinder.h"
-#include <OpenSim/Simulation/Model/PathPoint.h>
-#include "PathWrap.h"
 #include "WrapResult.h"
+#include <OpenSim/Common/ModelDisplayHints.h>
 #include <OpenSim/Common/SimmMacros.h>
 #include <OpenSim/Common/Lmdif.h>
 #include <OpenSim/Common/Mtx.h>
-#include <sstream>
+#include <OpenSim/Simulation/Model/PhysicalFrame.h>
+#include <OpenSim/Common/ScaleSet.h>
 
 //=============================================================================
 // STATICS
@@ -52,13 +52,9 @@ static const char* wrapTypeName = "torus";
 /**
  * Default constructor.
  */
-WrapTorus::WrapTorus() :
-    WrapObject(),
-   _innerRadius(_innerRadiusProp.getValueDbl()),
-   _outerRadius(_outerRadiusProp.getValueDbl())
+WrapTorus::WrapTorus()
 {
-    setNull();
-    setupProperties();
+    constructProperties();
 }
 
 //_____________________________________________________________________________
@@ -69,81 +65,43 @@ WrapTorus::~WrapTorus()
 {
 }
 
-//_____________________________________________________________________________
-/**
- * Copy constructor.
- *
- * @param aWrapTorus WrapTorus to be copied.
- */
-WrapTorus::WrapTorus(const WrapTorus& aWrapTorus) :
-    WrapObject(aWrapTorus),
-   _innerRadius(_innerRadiusProp.getValueDbl()),
-   _outerRadius(_outerRadiusProp.getValueDbl())
-{
-    setNull();
-    setupProperties();
-    copyData(aWrapTorus);
-}
-
-
 //=============================================================================
 // CONSTRUCTION METHODS
 //=============================================================================
 //_____________________________________________________________________________
 /**
- * Set the data members of this WrapTorus to their null values.
- */
-void WrapTorus::setNull()
-{
-}
-
-//_____________________________________________________________________________
-/**
  * Connect properties to local pointers.
  */
-void WrapTorus::setupProperties()
+void WrapTorus::constructProperties()
 {
-    // BASE CLASS
-    //WrapObject::setupProperties();
-
-    _innerRadiusProp.setName("inner_radius");
-    _innerRadiusProp.setValue(-1.0);
-    _propertySet.append(&_innerRadiusProp);
-
-    _outerRadiusProp.setName("outer_radius");
-    _outerRadiusProp.setValue(-1.0);
-    _propertySet.append(&_outerRadiusProp);
+    constructProperty_inner_radius(0.01);
+    constructProperty_outer_radius(0.05);
 }
 
-//_____________________________________________________________________________
-/**
- * Scale the torus's dimensions. The base class scales the origin
- * of the torus in the body's reference frame.
- *
- * @param aScaleFactors The XYZ scale factors.
- */
-void WrapTorus::scale(const SimTK::Vec3& aScaleFactors)
+void WrapTorus::extendScale(const SimTK::State& s, const ScaleSet& scaleSet)
 {
-   // Base class, to scale origin in body frame
-   WrapObject::scale(aScaleFactors);
+    Super::extendScale(s, scaleSet);
 
-    SimTK::Vec3 localScaleVector[2]; // only need X and Y for torus
+    // Get scale factors (if an entry for the Frame's base Body exists).
+    const Vec3& scaleFactors = getScaleFactors(scaleSet, getFrame());
+    if (scaleFactors == ModelComponent::InvalidScaleFactors)
+        return;
 
-   // _pose.x() holds the torus's X axis expressed in the
-   // body's reference frame, and _pose.y() holds the Y.
-   // Multiplying these vectors by the scale factor vector gives
-    // localScaleVector[]. The magnitudes of the localScaleVectors
-    // gives the amount to scale the torus in the XYZ dimensions.
-    // The wrap torus is oriented along the Z axis, so the inner and
+    // _pose.x() holds the torus's X-axis expressed in the body's reference
+    // frame, and _pose.y() holds the Y-axis. Multiplying these vectors by the
+    // scale factor vector gives localScaleVector[]. The magnitudes of the
+    // localScaleVectors gives the amount to scale the torus in the X, Y, and Z
+    // dimensions. The wrap torus is oriented along the Z-axis, so the inner and
     // outer radii are scaled by the average of the X and Y scale factors.
-    for (int i=0; i<3; i++) {
-        localScaleVector[0][i] = _pose.x()[i] * aScaleFactors[i];
-        localScaleVector[1][i] = _pose.y()[i] * aScaleFactors[i];
-    }
+    Vec3 localScaleVector[2];
 
-   double averageXYScale = (localScaleVector[0].norm() + localScaleVector[1].norm()) * 0.5;
-   _innerRadius *= averageXYScale;
-   _outerRadius *= averageXYScale;
+    localScaleVector[0] = _pose.x().elementwiseMultiply(scaleFactors);
+    localScaleVector[1] = _pose.y().elementwiseMultiply(scaleFactors);
+
+    const double averageXYScale =
+        (localScaleVector[0].norm() + localScaleVector[1].norm()) * 0.5;
+   upd_inner_radius() *= averageXYScale;
+   upd_outer_radius() *= averageXYScale;
 }
 
 //_____________________________________________________________________________
@@ -151,41 +109,36 @@ void WrapTorus::scale(const SimTK::Vec3& aScaleFactors)
  * Perform some set up functions that happen after the
  * object has been deserialized or copied.
  *
- * @param aModel pointer to OpenSim Model 
+ * @param aModel pointer to OpenSim Model
  */
-void WrapTorus::connectToModelAndBody(Model& aModel, PhysicalFrame& aBody)
+void WrapTorus::extendFinalizeFromProperties()
 {
     // Base class
-    Super::connectToModelAndBody(aModel, aBody);
+    Super::extendFinalizeFromProperties();
 
-   // maybe set a parent pointer, _body = aBody;
+    // maybe set a parent pointer, _body = aBody;
+    OPENSIM_THROW_IF_FRMOBJ(
+        get_inner_radius() <= 0,
+        InvalidPropertyValue,
+        getProperty_inner_radius().getName(),
+        "Inner radius cannot be equal or less than zero");
 
-    if (_innerRadius < 0.0)
-    {
-        string errorMessage = "Error: inner_radius for WrapTorus " + getName() + " was either not specified, or is negative.";
-        throw Exception(errorMessage);
-    }
+    // maybe set a parent pointer, _body = aBody;
+    OPENSIM_THROW_IF_FRMOBJ(
+        get_outer_radius() <= 0,
+        InvalidPropertyValue,
+        getProperty_outer_radius().getName(),
+        "Outer Radius cannot be equal or less than zero");
 
-    if (_outerRadius <= _innerRadius)
-    {
-        string errorMessage = "Error: outer_radius for WrapTorus " + getName() + " is less than or equal to inner_radius.";
-        throw Exception(errorMessage);
-    }
+    OPENSIM_THROW_IF_FRMOBJ(
+        get_outer_radius() <= get_inner_radius(),
+        InvalidPropertyValue,
+        getProperty_outer_radius().getName(),
+        "Outer Radius cannot be equal or less than inner radius");
+
 /*  Torus* torus = new Torus(_innerRadius, (_outerRadius-_innerRadius));
     setGeometryQuadrants(torus);
 */
-}
-
-//_____________________________________________________________________________
-/**
- * Copy data members from one WrapTorus to another.
- *
- * @param aWrapTorus WrapTorus to be copied.
- */
-void WrapTorus::copyData(const WrapTorus& aWrapTorus)
-{
-    _innerRadius = aWrapTorus._innerRadius;
-    _outerRadius = aWrapTorus._outerRadius;
 }
 
 //_____________________________________________________________________________
@@ -210,7 +163,7 @@ const char* WrapTorus::getWrapTypeName() const
 string WrapTorus::getDimensionsString() const
 {
     stringstream dimensions;
-    dimensions << "radius " << _innerRadius << " " << _outerRadius;
+    dimensions << "radius " << get_inner_radius() << " " << get_outer_radius();
 
     return dimensions.str();
 }
@@ -222,7 +175,7 @@ string WrapTorus::getDimensionsString() const
  */
 SimTK::Real WrapTorus::getInnerRadius() const
 {
-    return SimTK::Real(_innerRadius);
+    return get_inner_radius();
 }
 //_____________________________________________________________________________
 /**
@@ -232,23 +185,7 @@ SimTK::Real WrapTorus::getInnerRadius() const
  */
 SimTK::Real WrapTorus::getOuterRadius() const
 {
-    return SimTK::Real(_outerRadius);
-}
-//=============================================================================
-// OPERATORS
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Assignment operator.
- *
- * @return Reference to this object.
- */
-WrapTorus& WrapTorus::operator=(const WrapTorus& aWrapTorus)
-{
-    // BASE CLASS
-    WrapObject::operator=(aWrapTorus);
-
-    return(*this);
+    return get_outer_radius();
 }
 
 //=============================================================================
@@ -274,14 +211,14 @@ int WrapTorus::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec3
     //bool far_side_wrap = false;
     aFlag = true;
 
-    if (findClosestPoint(_outerRadius, &aPoint1[0], &aPoint2[0], &closestPt[0], &closestPt[1], &closestPt[2], _wrapSign, _wrapAxis) == 0)
+    if (findClosestPoint(get_outer_radius(), &aPoint1[0], &aPoint2[0], &closestPt[0], &closestPt[1], &closestPt[2], _wrapSign, _wrapAxis) == 0)
         return noWrap;
 
     // Now put a cylinder at closestPt and call the cylinder wrap code.
     WrapCylinder cyl;//(rot, trans, quadrant, body, radius, length);
     SimTK::Vec3 cylXaxis, cylYaxis, cylZaxis; // cylinder axes in torus reference frame
 
-    cyl.set_radius(_innerRadius);
+    cyl.set_radius(get_inner_radius());
     cyl.set_length(CYL_LENGTH);
     cyl.set_quadrant("+x");
 
@@ -348,7 +285,7 @@ int WrapTorus::findClosestPoint(double radius, double p1[], double p2[],
    double ftol = 1e-4, xtol = 1e-4, gtol = 0.0;
    double epsfcn = 0.0, step_factor = 0.2;
    // work arrays
-   int ipvt[2];  
+   int ipvt[2];
    double diag[2], qtf[2], wa1[2], wa2[2], wa3[2], wa4[2];
    // Circle variables
    double u, mag, nx, ny, nz, x, y, z, a1[3], a2[3], distance1, distance2, betterPt = 0;
@@ -515,12 +452,27 @@ void WrapTorus::calcCircleResids(int numResid, int numQs, double q[],
 }
 
 
-// Implement generateDecorations by WrapTorus to replace the previous out of place implementation 
+// Implement generateDecorations by WrapTorus to replace the previous out of place implementation
 // in ModelVisualizer, not implemented yet in API visualizer
 void WrapTorus::generateDecorations(bool fixed, const ModelDisplayHints& hints, const SimTK::State& state,
     SimTK::Array_<SimTK::DecorativeGeometry>& appendToThis) const {
 
+
     Super::generateDecorations(fixed, hints, state, appendToThis);
-    if (fixed) return;
-    //OPENSIM_THROW(NotImplementedYet, "WrapTorus::generateDecorations not implemented yet");
+    if (!fixed) return;
+
+    if (hints.get_show_wrap_geometry()) {
+        const Appearance& defaultAppearance = get_Appearance();
+        if (!defaultAppearance.get_visible()) return;
+        const Vec3 color = defaultAppearance.get_color();
+
+        const auto X_BP = calcWrapGeometryTransformInBaseFrame();
+        appendToThis.push_back(
+            SimTK::DecorativeTorus(getOuterRadius(),
+                getInnerRadius())
+            .setTransform(X_BP).setResolution(2.0)
+            .setColor(color).setOpacity(defaultAppearance.get_opacity())
+            .setScale(1).setRepresentation(defaultAppearance.get_representation())
+            .setBodyId(getFrame().getMobilizedBodyIndex()));
+    }
 }

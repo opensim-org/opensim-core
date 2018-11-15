@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -20,6 +20,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
+#include <OpenSim/Common/FunctionAdapter.h>
 #include <OpenSim/Common/PiecewiseLinearFunction.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 
@@ -32,7 +33,8 @@ int main() {
         double y[] = {0.5, 0.7, 2.0, -1.0, 0.5, 0.1};
         PiecewiseLinearFunction f1(6, x, y);
         FunctionAdapter adapter(f1);
-        const SimTK::Function& f2 = *f1.createSimTKFunction();
+        std::unique_ptr<SimTK::Function> func_ptr{f1.createSimTKFunction()};
+        const SimTK::Function& f2 = *func_ptr;
         SimTK::Vector xvec(1);
         vector<int> deriv(1, 0);
         for (int i = 0; i < 100; ++i) {

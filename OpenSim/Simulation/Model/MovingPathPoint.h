@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Peter Loan                                                      *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -24,23 +24,13 @@
  * -------------------------------------------------------------------------- */
 
 // INCLUDE
-#include <OpenSim/Simulation/osimSimulationDLL.h>
-#include <OpenSim/Common/Function.h>
 #include <OpenSim/Simulation/Model/PathPoint.h>
-
-#ifdef SWIG
-    #ifdef OSIMSIMULATION_API
-        #undef OSIMSIMULATION_API
-        #define OSIMSIMULATION_API
-    #endif
-#endif
 
 namespace OpenSim {
 
+class Function;
 class Coordinate;
-class Model;
-class GeometryPath;
-class SimbodyEngine;
+class PhysicalFrame;
 
 //=============================================================================
 //=============================================================================
@@ -51,8 +41,8 @@ class SimbodyEngine;
  * @author Peter Loan
  * @version 1.0
  */
-class OSIMSIMULATION_API MovingPathPoint : public PathPoint {
-OpenSim_DECLARE_CONCRETE_OBJECT(MovingPathPoint, PathPoint);
+class OSIMSIMULATION_API MovingPathPoint : public AbstractPathPoint {
+OpenSim_DECLARE_CONCRETE_OBJECT(MovingPathPoint, AbstractPathPoint);
 public:
 //==============================================================================
 // PROPERTIES
@@ -70,15 +60,15 @@ public:
         "in the Frame of the Point.");
 
 //==============================================================================
-// CONNECTORS
+// SOCKETS
 //==============================================================================
-    OpenSim_DECLARE_CONNECTOR(x_coordinate, Coordinate,
+    OpenSim_DECLARE_SOCKET(x_coordinate, Coordinate,
         "The x_location function is a function of this coordinate's value.");
 
-    OpenSim_DECLARE_CONNECTOR(y_coordinate, Coordinate,
+    OpenSim_DECLARE_SOCKET(y_coordinate, Coordinate,
         "The y_location function is a function of this coordinate's value.");
 
-    OpenSim_DECLARE_CONNECTOR(z_coordinate, Coordinate,
+    OpenSim_DECLARE_SOCKET(z_coordinate, Coordinate,
         "The z_location function is a function of this coordinate's value.");
 
 //=============================================================================
@@ -109,7 +99,7 @@ public:
     bool isActive(const SimTK::State& s) const override { return true; }
 
     /** Get the local location of the MovingPathPoint in its Frame */
-    SimTK::Vec3 getLocation(const SimTK::State& s) const;
+    SimTK::Vec3 getLocation(const SimTK::State& s) const override;
     /** Get the local velocity of the MovingPathPoint w.r.t to and 
         expressed in its Frame. To get the velocity of the point w.r.t.
         and expressed in Ground, call getVelocityInGround(). */
@@ -117,7 +107,9 @@ public:
 
     SimTK::Vec3 getdPointdQ(const SimTK::State& s) const override; 
 
-   void scale(const SimTK::Vec3& aScaleFactors) override;
+    /** Scale the underlying MultiplierFunctions associated with the
+        MovingPathPoint. */
+    void extendScale(const SimTK::State& s, const ScaleSet& scaleSet) override;
 
 private:
     void constructProperties();

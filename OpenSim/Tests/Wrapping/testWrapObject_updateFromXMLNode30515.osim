@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OpenSimDocument Version="20302">
+	<Model name="testWrapObject_updateFromXMLNode30515">
+		<defaults/>
+		<credits> Parts copied from TestShoulderModel.osim</credits>
+		<publications> List of publications related to model... </publications>
+		<length_units> meters </length_units>
+		<force_units> N </force_units>
+		<!--Acceleration due to gravity.-->
+		<gravity>       0.00000000      -9.80665000       0.00000000 </gravity>
+		<!--Bodies in the model.-->
+		<BodySet name="">
+			<objects>
+				<Body name="ground">
+					<WrapObjectSet name="">
+						<objects>
+							<WrapSphere name="wrapsphere">
+								<xyz_body_rotation>       0.00000000       0.00000000       0.00000000 </xyz_body_rotation>
+								<translation>      -0.00320000       0.00490000      -0.00200000 </translation>
+								<active> true </active>
+								<quadrant> all </quadrant>
+                                <display_preference> 1 </display_preference>
+								<VisibleObject name="">
+									<!--Set of geometry files and associated attributes, allow .vtp, .stl,
+									    .obj-->
+									<GeometrySet name="">
+										<objects/>
+										<groups/>
+									</GeometrySet>
+									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+									<!--transform relative to owner specified as 3 rotations (rad) followed by
+									    3 translations rX rY rZ tx ty tz-->
+									<transform>       0.00000000       0.00000000       0.00000000      -0.00320000       0.00490000      -0.00200000 </transform>
+									<!--Whether to show a coordinate frame-->
+									<show_axes> false </show_axes>
+									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for
+									    individual geometries-->
+									<display_preference> 0 </display_preference>
+								</VisibleObject>
+								<radius>       0.02300000 </radius>
+							</WrapSphere>
+							<WrapCylinder name="wrapcylinder">
+                                <display_preference> 0 </display_preference>
+								<xyz_body_rotation>       1.63080000      -0.04120000       0.48750000 </xyz_body_rotation>
+								<translation>       0.00060000      -0.05980000      -0.00250000 </translation>
+								<active> true </active>
+								<quadrant> -y </quadrant>
+								<VisibleObject name="">
+									<!--Set of geometry files and associated attributes, allow .vtp, .stl,
+									    .obj-->
+									<GeometrySet name="">
+										<objects/>
+										<groups/>
+									</GeometrySet>
+									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+									<!--transform relative to owner specified as 3 rotations (rad) followed by
+									    3 translations rX rY rZ tx ty tz-->
+									<transform>       1.63080000      -0.04120000       0.48750000       0.00060000      -0.05980000      -0.00250000 </transform>
+									<!--Whether to show a coordinate frame-->
+									<show_axes> false </show_axes>
+									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for
+									    individual geometries-->
+									<display_preference> 4 </display_preference>
+								</VisibleObject>
+								<radius>       0.00950000 </radius>
+								<length>       0.10000000 </length>
+							</WrapCylinder>
+							<WrapEllipsoid name="wrapellipsoid">
+                                <color> 1 0.5 0 </color>
+                                <display_preference> 2 </display_preference>
+								<xyz_body_rotation>       1.66070000      -0.01880000       0.03250000 </xyz_body_rotation>
+								<translation>      -0.00080000      -0.05980000      -0.00170000 </translation>
+								<active> true </active>
+								<quadrant> -y </quadrant>
+								<VisibleObject name="">
+									<!--Set of geometry files and associated attributes, allow .vtp, .stl,
+									    .obj-->
+									<GeometrySet name="">
+										<objects/>
+										<groups/>
+									</GeometrySet>
+									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+									<!--transform relative to owner specified as 3 rotations (rad) followed by
+									    3 translations rX rY rZ tx ty tz-->
+									<transform>       1.66070000      -0.01880000       0.03250000      -0.00080000      -0.05980000      -0.00170000 </transform>
+									<!--Whether to show a coordinate frame-->
+									<show_axes> false </show_axes>
+									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for
+									    individual geometries-->
+									<display_preference> 3 </display_preference>
+								</VisibleObject>
+								<dimensions>       0.00200000       0.00700000       0.08000000 </dimensions>
+							</WrapEllipsoid>
+                        </objects>
+						<groups/>
+					</WrapObjectSet>
+				</Body>
+			</objects>
+			<groups/>
+		</BodySet>
+	</Model>
+</OpenSimDocument>
+

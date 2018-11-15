@@ -18,6 +18,7 @@ namespace SimTK {
 
 // Mat33
 %include <SWIGSimTK/Mat.h>
+%include <SimTKcommon/SmallMatrix.h> // for typedefs like Mat33.
 namespace SimTK {
 %template(Mat33) Mat<3, 3>;
 }
@@ -31,47 +32,57 @@ namespace SimTK {
 //%include <Bindings/std.i>
 %include <SWIGSimTK/BigMatrix.h>
 %template(StdVectorVec3) std::vector<SimTK::Vec3>;
+
 namespace SimTK {
 %extend RowVectorBase<double> {
-     double __getitem__(size_t i) {
+     double __getitem__(int i) {
          if(i >= $self->nelt())
-             throw SimTK::Exception::Base{"Index out of Range."};
+             throw std::out_of_range{"Index out of Range."};
 
          return $self->getElt(0, i);
      }
 
-     void __setitem__(size_t i, double value) {
+     void __setitem__(int i, double value) {
          if(i >= $self->nelt())
-             throw SimTK::Exception::Base{"Index out of Range."};
+             throw std::out_of_range{"Index out of Range."};
 
          $self->updElt(0, i) = value;
      }
  }
+
 %extend RowVector_<double> {
      RowVector_(const std::vector<double>& row) {
          return new RowVector_<double>{static_cast<int>(row.size()),
                                        row.data()};
      }
+
+     Vector_<double> transpose() {
+         return $self->operator~();
+     }
  }
 %extend VectorBase<double> {
-     double __getitem__(size_t i) {
+     double __getitem__(int i) {
          if(i >= $self->nelt())
-             throw SimTK::Exception::Base{"Index out of Range."};
+             throw std::out_of_range{"Index out of Range."};
 
          return $self->getElt(i, 0);
      }
 
-     void __setitem__(size_t i, double value) {
+     void __setitem__(int i, double value) {
          if(i >= $self->nelt())
-             throw SimTK::Exception::Base{"Index out of Range."};
+             throw std::out_of_range{"Index out of Range."};
 
          $self->updElt(i, 0) = value;
      }
- }
+}
 %extend Vector_<double> {
      Vector_(const std::vector<double>& row) {
          return new Vector_<double>{static_cast<int>(row.size()),
                                     row.data()};
+     }
+
+     RowVector_<double> transpose() {
+         return $self->operator~();
      }
  }
 %template(MatrixBaseDouble)    SimTK::MatrixBase<double>;
@@ -85,45 +96,60 @@ namespace SimTK {
 %template(RowVector)           SimTK::RowVector_<double>;
 
 %extend RowVectorBase<Vec3> {
-     Vec3 __getitem__(size_t i) {
+     Vec3 __getitem__(int i) {
          if(i >= $self->nelt())
-             throw SimTK::Exception::Base{"Index out of Range."};
+             throw std::out_of_range{"Index out of Range."};
 
          return $self->getElt(0, i);
      }
 
-     void __setitem__(size_t i, Vec3 value) {
+     void __setitem__(int i, Vec3 value) {
          if(i >= $self->nelt())
-             throw SimTK::Exception::Base{"Index out of Range."};
+             throw std::out_of_range{"Index out of Range."};
 
          $self->updElt(0, i) = value;
      }
+
  }
 %extend RowVector_<Vec3> {
      RowVector_(const std::vector<Vec3>& row) {
          return new RowVector_<Vec3>{static_cast<int>(row.size()),
                                      row.data()};
      }
+
+     Vector_<Vec3> transpose() {
+         Vector_<Vec3> colVec{static_cast<int>($self->nelt())};
+         for(int i = 0; i < colVec.nelt(); ++i)
+             colVec[i] = $self->operator[](i);
+         return colVec;
+     }
  }
 %extend VectorBase<Vec3> {
-     Vec3 __getitem__(size_t i) {
+     Vec3 __getitem__(int i) {
          if(i >= $self->nelt())
-             throw SimTK::Exception::Base{"Index out of Range."};
+             throw std::out_of_range{"Index out of Range."};
 
          return $self->getElt(i, 0);
      }
 
-     void __setitem__(size_t i, Vec3 value) {
+     void __setitem__(int i, Vec3 value) {
          if(i >= $self->nelt())
-             throw SimTK::Exception::Base{"Index out of Range."};
+             throw std::out_of_range{"Index out of Range."};
 
          $self->updElt(i, 0) = value;
      }
- }
+}
 %extend Vector_<Vec3> {
      Vector_(const std::vector<Vec3>& row) {
          return new Vector_<Vec3>{static_cast<int>(row.size()),
                                   row.data()};
+     }
+
+     RowVector_<Vec3> transpose() {
+         RowVector_<Vec3> rowVec{static_cast<int>($self->nelt())};
+         for(int i = 0; i < rowVec.nelt(); ++i)
+             rowVec[i] = $self->operator[](i);
+         return rowVec;
      }
  }
 %template(MatrixBaseVec3)    SimTK::MatrixBase<Vec3>;
@@ -146,12 +172,27 @@ namespace SimTK {
 %template(MatrixOfSpatialVec) Matrix_<SpatialVec>;
 }
 
-
 %include <SWIGSimTK/Rotation.h>
 namespace SimTK {
 %template(Rotation) SimTK::Rotation_<double>;
 %template(InverseRotation) SimTK::InverseRotation_<double>;
 }
+
+%extend SimTK::Rotation_<double> {
+    Vec3 multiply(const Vec3& v) {
+        return operator*(*$self, v);
+    }
+
+    RowVector_<Vec3> multiply(const RowVector_<Vec3>& row) {
+        return operator*(*$self, row);
+    }
+
+    RowVector_<Vec3> multiply(const RowVectorView_<Vec3>& row) {
+        return operator*(*$self, row);
+    }
+}
+
+
 // Transform
 %include <SWIGSimTK/Transform.h>
 namespace SimTK {
@@ -188,13 +229,13 @@ namespace SimTK {
 typedef int MobilizedBodyIndex;
 
 namespace SimTK {
-%template(ArrayIndexUnsigned) ArrayIndexTraits<unsigned>; 
-%template(ArrayIndexInt) ArrayIndexTraits<int>; 
+%template(ArrayIndexUnsigned) ArrayIndexTraits<unsigned>;
+%template(ArrayIndexInt) ArrayIndexTraits<int>;
 }
 
+%include <SWIGSimTK/PolygonalMesh.h>
 %include <SWIGSimTK/DecorativeGeometry.h>
 
-%include <SWIGSimTK/PolygonalMesh.h>
 
 namespace SimTK {
 %template(ArrayDecorativeGeometry) SimTK::Array_<SimTK::DecorativeGeometry>;
@@ -206,3 +247,39 @@ namespace SimTK {
 // Used for StatesTrajectory iterating.
 %template(StdVectorState) std::vector<SimTK::State>;
 %include <SWIGSimTK/SimbodyMatterSubsystem.h>
+
+%rename(SimTKVisualizer) SimTK::Visualizer;
+%include <simbody/internal/Visualizer.h>
+
+// Wrap SimTK::Visualizer and InputSilo to put geometry in Visualizer and
+// obtain keyboard input.
+// Nested classes are inaccessible from MATLAB.
+%feature("flatnested") SimTK::Visualizer::InputListener;
+%feature("flatnested") SimTK::Visualizer::InputSilo;
+%rename(SimTKVisualizerInputListener) SimTK::Visualizer::InputListener;
+%rename(SimTKVisualizerInputSilo) SimTK::Visualizer::InputSilo;
+%include <simbody/internal/Visualizer_InputListener.h>
+// The following is necessary because the BackgroundType enum cannot be used
+// from MATLAB.
+// The new version of takeKeyHit() allows returning the value rather than using
+// an output variable as an argument, which is difficult to manage with SWIG.
+// The alternative `waitForKeyHit()` is not ideal for MATLAB, as MATLAB is not
+// able to interrupt native functions, and `waitForKeyHit()` will hang if the
+// simbody-visualizer is killed.
+namespace SimTK {
+%extend Visualizer {
+    const Visualizer& setBackgroundTypeByInt(int index) {
+        if (index == 1) $self->setBackgroundType(SimTK::Visualizer::GroundAndSky);
+        else if (index == 2) $self->setBackgroundType(SimTK::Visualizer::SolidColor);
+        return *($self);
+    }
+}
+%extend Visualizer::InputSilo {
+    unsigned takeKeyHitKeyOnly() {
+        unsigned key = 0;
+        unsigned modifier = 0;
+        $self->takeKeyHit(key, modifier);
+        return key;
+    }
+}
+}

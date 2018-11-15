@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2015 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ayman Habib, Matthew Millard, Ajay Seth                         *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -42,13 +42,15 @@ void testLapackErrorDLASD4();
 
 void testModelWithPassiveForces();
 
+void testRelativePathInExternalLoads();
+
 int main()
 {
     Array<string> muscleModelNames;
     muscleModelNames.append("Thelen2003Muscle_Deprecated");
     muscleModelNames.append("Thelen2003Muscle");
     muscleModelNames.append("Millard2012EquilibriumMuscle");
-    muscleModelNames.append("Millard2012AccelerationMuscle");
+    //muscleModelNames.append("Millard2012AccelerationMuscle");
     
     // Tolerances for the differences between the current models
     // and the 'standard' solution, which was closest to using 
@@ -57,7 +59,7 @@ int main()
     double forceTols[4] = {0.5, 4, 5, 6};
     
     SimTK::Array_<std::string> failures;
-    
+
     for(int i=0; i< muscleModelNames.getSize(); ++i){
         try { // regression test for the Thelen deprecate muscle
            // otherwise verify that SO runs with the new models
@@ -68,7 +70,7 @@ int main()
             failures.push_back("testArm26_"+muscleModelNames[i]);
         }
     }
-    
+
     try {
         testModelWithPassiveForces();
     }
@@ -76,13 +78,21 @@ int main()
         cout << e.what() << endl;
         failures.push_back("testModelWithPassiveForces");
     }
-    
+
     try {
         testLapackErrorDLASD4();
     }
     catch (const std::exception& e) {
         cout << e.what() << endl;
         failures.push_back("testLapackErrorDLASD4");
+    }
+
+    try {
+        testRelativePathInExternalLoads();
+    }
+    catch (const std::exception& e) {
+        cout << e.what() << endl;
+        failures.push_back("testRelativePathInExternalLoads");
     }
 
     if (!failures.empty()) {
@@ -135,14 +145,14 @@ void testArm26(const string& muscleModelClassName, double actTol, double forceTo
     //Storage stdForces1("std_arm26_"+muscName+"_SO_force.sto");
 
     CHECK_STORAGE_AGAINST_STANDARD(activations1, stdActivations1, 
-                                    Array<double>(actTol, 6),
-                                    __FILE__, __LINE__, 
-                                    "Arm26 activations "+muscName+" failed");
+                                   std::vector<double>(6, actTol),
+                                   __FILE__, __LINE__, 
+                                   "Arm26 activations "+muscName+" failed");
 
     CHECK_STORAGE_AGAINST_STANDARD(forces1, stdForces1, 
-                                    Array<double>(forceTol, 6),
-                                    __FILE__, __LINE__, 
-                                    "Arm26 forces "+muscName+" failed.");
+                                   std::vector<double>(6, forceTol),
+                                   __FILE__, __LINE__, 
+                                   "Arm26 forces "+muscName+" failed.");
     cout << resultsDir <<": test Arm26 passed." << endl;
   
     
@@ -164,12 +174,12 @@ void testArm26(const string& muscleModelClassName, double actTol, double forceTo
     //Storage stdForces2("std_arm26_bounds_"+muscName+"_SO_force.sto");
 
     CHECK_STORAGE_AGAINST_STANDARD(activations2, stdActivations2,
-        Array<double>(actTol, 6), 
+        std::vector<double>(6, actTol),
         __FILE__, __LINE__, 
         "Arm26 activation "+muscName+" with bounds failed.");
 
     CHECK_STORAGE_AGAINST_STANDARD(forces2, stdForces2, 
-        Array<double>(forceTol, 6),
+        std::vector<double>(6, forceTol),
         __FILE__,  __LINE__, 
         "Arm26 forces "+muscName+" with bounds failed.");
  
@@ -188,12 +198,12 @@ void testModelWithPassiveForces() {
     Storage stdForces("std_walk_subject01_ankle_spring_StaticOptimization_force.sto");
 
     CHECK_STORAGE_AGAINST_STANDARD(activations, stdActivations,
-        Array<double>(0.025, 28),
+        std::vector<double>(28, 0.025),
         __FILE__, __LINE__,
         "ModelWithPassiveForces activations failed");
 
     CHECK_STORAGE_AGAINST_STANDARD(forces, stdForces,
-        Array<double>(2.5, 48),
+        std::vector<double>(48, 2.5),
         __FILE__, __LINE__,
         "ModelWithPassiveForces forces failed.");
     cout << resultsDir << ": test ModelWithPassiveForces passed." << endl;
@@ -217,5 +227,14 @@ void testLapackErrorDLASD4() {
     //     "** On entry to DLASD4 parameter number -1 had an illegal value"
     AnalyzeTool analyze("subject01_Setup_StaticOptimization.xml");
     analyze.setResultsDir("Results_subject01_StaticOptimization_LapackError");
+    analyze.run();
+}
+
+void testRelativePathInExternalLoads() {
+    // Ensure that we can handle relative paths in the ExternalLoads XML file.
+    // It's important that we do not run with the current working directory as
+    // the location of Setup_SO.xml.
+    AnalyzeTool analyze("UsingRelativePaths/Setup_SO.xml");
+    analyze.setResultsDir("Results_UsingRelativePaths");
     analyze.run();
 }

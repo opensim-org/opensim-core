@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -28,9 +28,7 @@
 #include "AbstractTool.h"
 #include <OpenSim/Common/IO.h>
 
-#include "PrescribedForce.h"
 #include "ForceSet.h"
-#include "BodySet.h"
 #include "Model.h"
 #include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
 #include <OpenSim/Simulation/Control/ControlSetController.h>
@@ -217,7 +215,7 @@ void AbstractTool::setupProperties()
     _replaceForceSetProp.setName("replace_force_set");
     _propertySet.append( &_replaceForceSetProp );
 
-    comment = "List of xml files used to construct an force set for the model.";
+    comment = "List of xml files used to construct a force set for the model.";
     _forceSetFilesProp.setComment(comment);
     _forceSetFilesProp.setValue(Array<string>(""));
     _forceSetFilesProp.setName("force_set_files");
@@ -384,27 +382,29 @@ getAnalysisSet() const
 void AbstractTool::
 loadModel(const string &aToolSetupFileName, ForceSet *rOriginalForceSet )
 {
-    if (_modelFile != "") {
-        string saveWorkingDirectory = IO::getCwd();
-        string directoryOfSetupFile = IO::getParentDirectory(aToolSetupFileName);
-        IO::chDir(directoryOfSetupFile);
+    OPENSIM_THROW_IF_FRMOBJ(_modelFile.empty(), Exception,
+            "No model file was specified (<model_file> element is empty) in "
+            "the Tool's Setup file. Consider passing `false` for the "
+            "constructor's `aLoadModel` parameter");
+    string saveWorkingDirectory = IO::getCwd();
+    string directoryOfSetupFile = IO::getParentDirectory(aToolSetupFileName);
+    IO::chDir(directoryOfSetupFile);
 
-        cout<<"AbstractTool "<<getName()<<" loading model '"<<_modelFile<<"'"<<endl;
+    cout<<"AbstractTool "<<getName()<<" loading model '"<<_modelFile<<"'"<<endl;
 
-        Model *model = 0;
+    Model *model = 0;
 
-        try {
-            model = new Model(_modelFile);
-            if (rOriginalForceSet!=NULL)
-                *rOriginalForceSet = model->getForceSet();
-        } catch(...) { // Properly restore current directory if an exception is thrown
-            IO::chDir(saveWorkingDirectory);
-            throw;
-        }
-        _model = model;
+    try {
+        model = new Model(_modelFile);
+        model->finalizeFromProperties();
+        if (rOriginalForceSet!=NULL)
+            *rOriginalForceSet = model->getForceSet();
+    } catch(...) { // Properly restore current directory if an exception is thrown
         IO::chDir(saveWorkingDirectory);
-
+        throw;
     }
+    _model = model;
+    IO::chDir(saveWorkingDirectory);
 }
 
 void AbstractTool::
@@ -429,7 +429,7 @@ updateModelForces(Model& model, const string &aToolSetupFileName, ForceSet *rOri
         // Load force set(s)
         for(int i=0;i<_forceSetFiles.getSize();i++) {
             cout<<"Adding force object set from "<<_forceSetFiles[i]<<endl;
-            ForceSet *forceSet=new ForceSet(model, _forceSetFiles[i]);
+            ForceSet *forceSet=new ForceSet(_forceSetFiles[i], true);
             model.updForceSet().append(*forceSet);
         }
 
@@ -463,7 +463,6 @@ addAnalysisSetToModel()
     int size = _analysisSet.getSize();
     _analysisCopies.setMemoryOwner(false);
     for(int i=0;i<size;i++) {
-        if(!&_analysisSet.get(i)) continue;
         Analysis *analysis = _analysisSet.get(i).clone();
         _model->addAnalysis(analysis);
         _analysisCopies.adoptAndAppend(analysis);
@@ -492,7 +491,6 @@ addControllerSetToModel()
     int size = _controllerSet.getSize();
     _controllerCopies.setMemoryOwner(false);
     for(int i=0;i<size;i++) {
-        if(!&_controllerSet.get(i)) continue;
         Controller *controller = _controllerSet.get(i).clone();
         _model->addController(controller);
         _controllerCopies.adoptAndAppend(controller);
@@ -554,95 +552,111 @@ printResults(const string &aBaseName,const string &aDir,double aDT,
     _model->updAnalysisSet().printResults(aBaseName,aDir,aDT,aExtension);
 }
 
-
-bool AbstractTool::createExternalLoads( const string& aExternalLoadsFileName, Model& aModel, const Storage *loadKinematics)
+// NOTE: The implementation here should be verbatim that of DynamicsTool::
+// createExternalLoads to ensure consistent behavior of Tools in the GUI
+// TODO: Unify the code bases.
+bool AbstractTool::createExternalLoads( const string& aExternalLoadsFileName,
+                                        Model& aModel)
 {
     if(aExternalLoadsFileName==""||aExternalLoadsFileName=="Unassigned") {
         cout<<"No external loads will be applied (external loads file not specified)."<<endl;
         return false;
     }
 
-    // This is required so that the references to other files inside ExternalLoads file are interpreted 
-    // as relative paths
-    std::string savedCwd = IO::getCwd();
-    IO::chDir(IO::getParentDirectory(aExternalLoadsFileName));
+    Model copyModel = aModel;
+    // speedup realize position calculations by removing all force elements
+    // including muscles whose path calculations are most intensive
+    copyModel.updForceSet().clearAndDestroy();
+    copyModel.updControllerSet().clearAndDestroy();
+
     // Create external forces
+    ExternalLoads* externalLoads = nullptr;
     try {
-        _externalLoads = ExternalLoads(aModel, aExternalLoadsFileName);
+        externalLoads = new ExternalLoads(aExternalLoadsFileName, true);
+        copyModel.addModelComponent(externalLoads);
     }
-     catch (const Exception &ex) {
+    catch (const Exception &ex) {
         // Important to catch exceptions here so we can restore current working directory...
         // And then we can re-throw the exception
         cout << "Error: failed to construct ExternalLoads from file " << aExternalLoadsFileName;
         cout << ". Please make sure the file exists and that it contains an ExternalLoads";
         cout << "object or create a fresh one." << endl;
-        if(getDocument()) IO::chDir(savedCwd);
         throw(ex);
     }
-    _externalLoads.setMemoryOwner(false);
-    aModel.finalizeFromProperties();
-    _externalLoads.invokeConnectToModel(aModel);
 
-    string loadKinematicsFileName = _externalLoads.getExternalLoadsModelKinematicsFileName();
+    string loadKinematicsFileName =
+        externalLoads->getExternalLoadsModelKinematicsFileName();
     
-    const Storage *loadKinematicsForPointTransformation = NULL;
-    
-    //If the Tool is already loading the storage allow it to pass it in for use rather than reloading and processing
-    if(loadKinematics && loadKinematics->getName() == loadKinematicsFileName){
-        loadKinematicsForPointTransformation = loadKinematics;
-    }
-    else{
-        IO::TrimLeadingWhitespace(loadKinematicsFileName);
-        Storage *temp = NULL;
-        // fine if there are no kinematics as long as it was not assigned
-        if(!(loadKinematicsFileName == "") && !(loadKinematicsFileName == "Unassigned")){
+    const Storage *loadKinematicsForPointTransformation = nullptr;
+
+    IO::TrimLeadingWhitespace(loadKinematicsFileName);
+    Storage *temp = NULL;
+    // fine if there are no kinematics as long as it was not assigned
+    if (!(loadKinematicsFileName == "") && !(loadKinematicsFileName == "Unassigned")) {
+        if (IO::FileExists(loadKinematicsFileName)) {
             temp = new Storage(loadKinematicsFileName);
-            if(!temp){
+        }
+        else {
+            // attempt to find the file local to the external loads XML file
+            std::string savedCwd = IO::getCwd();
+            IO::chDir(IO::getParentDirectory(aExternalLoadsFileName));
+            if (IO::FileExists(loadKinematicsFileName)) {
+                temp = new Storage(loadKinematicsFileName);
                 IO::chDir(savedCwd);
-                throw Exception("DynamicsTool: could not find external loads kinematics file '"+loadKinematicsFileName+"'."); 
+            }
+            else {
+                IO::chDir(savedCwd);
+                throw Exception("AbstractTool: could not find external loads kinematics file '"
+                    + loadKinematicsFileName + "'.");
             }
         }
         // if loading the data, do whatever filtering operations are also specified
-        if(temp && _externalLoads.getLowpassCutoffFrequencyForLoadKinematics() >= 0) {
-            cout<<"\n\nLow-pass filtering coordinates data with a cutoff frequency of "<<_externalLoads.getLowpassCutoffFrequencyForLoadKinematics()<<"."<<endl;
-            temp->pad(temp->getSize()/2);
-            temp->lowpassIIR(_externalLoads.getLowpassCutoffFrequencyForLoadKinematics());
+        if (temp && externalLoads->getLowpassCutoffFrequencyForLoadKinematics() >= 0) {
+            cout << "\n\nLow-pass filtering coordinates data with a cutoff frequency of "
+                << _externalLoads.getLowpassCutoffFrequencyForLoadKinematics() << "." << endl;
+            temp->pad(temp->getSize() / 2);
+            temp->lowpassIIR(externalLoads->getLowpassCutoffFrequencyForLoadKinematics());
         }
         loadKinematicsForPointTransformation = temp;
     }
-    
+
     // if load kinematics for performing re-expressing the point of application is provided
     // then perform the transformations
     if(loadKinematicsForPointTransformation){
-        SimTK::State& s = aModel.initSystem();
-        
+        SimTK::State& s = copyModel.initSystem();
+
         // Form complete storage so that the kinematics match the state labels/ordering
         Storage *qStore=NULL;
         Storage *uStore=NULL;
-        aModel.getSimbodyEngine().formCompleteStorages(s, *loadKinematicsForPointTransformation,qStore,uStore);
-        // qStore should be in radians
-        if (qStore->isInDegrees()){
-            aModel.getSimbodyEngine().convertDegreesToRadians(*qStore);
-        }
-        _externalLoads.transformPointsExpressedInGroundToAppliedBodies(*qStore, _ti, _tf);
+        copyModel.getSimbodyEngine().formCompleteStorages(s,
+            *loadKinematicsForPointTransformation,
+            qStore, uStore);
+
+        externalLoads->transformPointsExpressedInGroundToAppliedBodies(*qStore, _ti, _tf);
         delete qStore;
         delete uStore;
-
-        aModel.invalidateSystem();
-    }
-    
-    // Add external loads to the set of all model forces
-    for(int i=0; i<_externalLoads.getSize(); ++i){
-        aModel.addForce(&_externalLoads[i]);
     }
 
-    if(!loadKinematics)
-        delete loadKinematics;
+    //Now add the ExternalLoads (transformed or not) to the Model to be analyzed
+    ExternalLoads* exLoadsClone = externalLoads->clone();
+    aModel.addModelComponent(exLoadsClone);
 
-    IO::chDir(savedCwd);
-    return(true);
+    // copy over created external loads to the external loads owned by the tool
+    _externalLoads = *externalLoads;
+    // tool holds on to a reference of the external loads in the model so it can
+    // be removed afterwards
+    _modelExternalLoads = exLoadsClone;
+
+    return true;
 }
 
+void AbstractTool::removeExternalLoadsFromModel()
+{
+    // If ExternalLoads were added to the model by the Tool, then remove them
+    if (modelHasExternalLoads()) {
+        _model->updMiscModelComponentSet().remove(_modelExternalLoads.release());
+    }
+}
 
 //_____________________________________________________________________________
 /**

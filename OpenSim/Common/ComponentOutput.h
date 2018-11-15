@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2014 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ajay Seth                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -31,12 +31,19 @@
  */
 
 // INCLUDES
+#include "Exception.h"
+#include "Object.h"
+
 #include <functional>
 #include <map>
+
+#include <SimTKcommon/internal/Stage.h>
+#include <SimTKcommon/internal/State.h>
 
 namespace OpenSim {
 
 class Component;
+class AbstractInput;
 
 /** One of the values of an Output. */
 class AbstractChannel {
@@ -45,15 +52,17 @@ public:
     /** The name of this channel, or the name of the output that
     contains this Channel if it's in a single-value Output. */
     virtual const std::string& getChannelName() const = 0;
+    /** The name of the value type (e.g., `double`) produced by this channel. */
+    virtual std::string getTypeName() const = 0;
     /** The name of this channel appended to the name of the output that
      * contains this channel. The output name and channel name are separated by
      * a colon (e.g., "markers:medial_knee"). If the output that contains
      * this channel is a single-value Output, then this is just the Output's 
      * name. */
     virtual std::string getName() const = 0;
-    /** This returns the full path name of the component to which this channel
+    /** This returns the absolute path name of the component to which this channel
      * belongs prepended to the channel's name. For example, this 
-     * method might return something like "/model/metabolics/heat_rate:soleus_r".
+     * method might return something like "/model/metabolics|heat_rate:soleus_r".
      */
     virtual std::string getPathName() const = 0;
 };
@@ -106,6 +115,9 @@ public:
 
     /** Output's owning Component */
     const Component& getOwner() const { return _owner.getRef(); }
+    
+    /** This returns <absolute-path-to-component>|<output-name>. */
+    std::string getPathName() const;
 
     /** Output Interface */
     
@@ -116,6 +128,7 @@ public:
     virtual void addChannel(const std::string& channelName) = 0;
     virtual const AbstractChannel& getChannel(const std::string& name) const = 0;
     
+    /** The name of the value type (e.g., `double`) produced by this output. */
     virtual std::string     getTypeName() const = 0;
     virtual std::string     getValueAsString(const SimTK::State& state) const = 0;
     virtual bool        isCompatible(const AbstractOutput&) const = 0;
@@ -209,7 +222,7 @@ public:
     
     virtual ~Output() {}
     
-    // TODO someone more knowledgable could try to implement these.
+    // TODO someone more knowledgeable could try to implement these.
     Output(Output&&) = delete;
     Output& operator=(Output&&) = delete;
 
@@ -234,9 +247,12 @@ public:
             throw Exception("Channel name cannot be empty.");
         _channels[channelName] = Channel(this, channelName);
     }
-    
+
+    /** For a single-value output, name must be empty or must be the output's
+     * name. */
     const AbstractChannel& getChannel(const std::string& name) const override {
         try {
+            if (!isListOutput() && name == getName()) return _channels.at("");
             return _channels.at(name);
         } catch (const std::out_of_range&) {
             OPENSIM_THROW(Exception, "Output '" + getName() + "' does not have "
@@ -276,9 +292,9 @@ public:
         return _result;
     }
     
-    /** determine the value type for this Output*/
-    std::string getTypeName() const override 
-        { return SimTK::NiceTypeName<T>::namestr(); }
+    std::string getTypeName() const override {
+        return OpenSim::Object_GetClassName<T>::name();
+    }
 
     std::string getValueAsString(const SimTK::State& state) const override {
         if (isListOutput()) {
@@ -330,12 +346,15 @@ public:
         if (_channelName.empty()) return getOutput().getName();
         return _channelName;
     }
+    std::string getTypeName() const override {
+        return getOutput().getTypeName();
+    }
     std::string getName() const override {
         if (_channelName.empty()) return getOutput().getName();
         return getOutput().getName() + ":" + _channelName;
     }
     std::string getPathName() const override {
-        return getOutput().getOwner().getFullPathName() + "/" + getName();
+        return getOutput().getOwner().getAbsolutePathString() + "|" + getName();
     }
 private:
     mutable T _result;
@@ -396,7 +415,9 @@ private:
     OpenSim_DOXYGEN_Q_PROPERTY(T, oname)                                    \
     /** @}                                                               */ \
     /** @cond                                                            */ \
-    bool _has_output_##oname { constructOutput<T>(#oname, &Self::func, ostage) }; \
+    bool _has_output_##oname {                                              \
+        this->template constructOutput<T>(#oname, &Self::func, ostage)      \
+    };                                                                      \
     /** @endcond                                                         */
     
 /**
@@ -420,6 +441,9 @@ private:
  *     }
  * };
  * @endcode
+ * In this example, `getChannelsToAdd()` is a placeholder for whatever way
+ * you determine your class' available channels. For example, TableSource_
+ * uses the columns of its DataTable_.
  * @relates OpenSim::Output
  */
 #define OpenSim_DECLARE_LIST_OUTPUT(oname, T, func, ostage)                 \
@@ -432,7 +456,9 @@ private:
     OpenSim_DOXYGEN_Q_PROPERTY(T, oname)                                    \
     /** @}                                                               */ \
     /** @cond                                                            */ \
-    bool _has_output_##oname { constructListOutput<T>(#oname, &Self::func, ostage) }; \
+    bool _has_output_##oname {                                              \
+        this->template constructListOutput<T>(#oname, &Self::func, ostage)  \
+    };                                                                      \
     /** @endcond                                                         */
 
 // Note: we could omit the T argument from the above macro by using the

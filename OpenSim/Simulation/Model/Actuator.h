@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ajay Seth, Soha Pouya                                           *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -35,10 +35,6 @@
 #endif
 
 namespace OpenSim {
-
-class Model;
-class Controller;
-class Coordinate;
 
 //=============================================================================
 //           ACTUATOR (base class to make a vector of control values)
@@ -88,9 +84,6 @@ private:
 protected:
     // ModelComponent Interface
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
-
-    // Update the geometry attached to the actuator. Use inertial frame.
-    virtual void updateGeometry();
 
 public:
 
@@ -179,13 +172,11 @@ public:
     virtual double getStress(const SimTK::State& s) const;
     virtual double getOptimalForce() const;
 
-    // manage bounds on Control
-    void setMinControl(const double& aMinControl) 
-    {   set_min_control(aMinControl); }
-    double getMinControl() const { return get_min_control(); }
-    void setMaxControl(const double& aMaxControl) 
-    {   set_max_control(aMaxControl); }
-    double getMaxControl() const { return get_max_control(); }
+    /** Methods to manage the bounds on ScalarActuator's control */
+    void setMinControl(const double& aMinControl);
+    double getMinControl() const;
+    void setMaxControl(const double& aMaxControl);
+    double getMaxControl() const;
 
     //--------------------------------------------------------------------------
     // Overriding Actuation

@@ -1,34 +1,30 @@
-// SimbodySimmModel.cpp
-// Authors: Peter Loan
-/*
- * Copyright (c)  2008, Stanford University. All rights reserved. 
-* Use of the OpenSim software in source form is permitted provided that the following
-* conditions are met:
-*   1. The software is used only for non-commercial research and education. It may not
-*     be used in relation to any commercial activity.
-*   2. The software is not distributed or redistributed.  Software distribution is allowed 
-*     only through https://simtk.org/home/opensim.
-*   3. Use of the OpenSim software or derivatives must be acknowledged in all publications,
-*      presentations, or documents describing work in which OpenSim or derivatives are used.
-*   4. Credits to developers may not be removed from executables
-*     created from modifications of the source.
-*   5. Modifications of source code must retain the above copyright notice, this list of
-*     conditions and the following disclaimer. 
-* 
-*  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
-*  EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
-*  OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
-*  SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
-*  INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
-*  TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; 
-*  HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-*  OR BUSINESS INTERRUPTION) OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY
-*  WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+/* -------------------------------------------------------------------------- *
+ *                            SimbodySimmModel.cpp                            *
+ * -------------------------------------------------------------------------- *
+ * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
+ * See http://opensim.stanford.edu and the NOTICE file for more information.  *
+ * OpenSim is developed at Stanford University and supported by the US        *
+ * National Institutes of Health (U54 GM072970, P2C HD065690, U54 EB020405)   *
+ * and by DARPA through the Warrior Web program.                              *
+ *                                                                            *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
+ * Author(s): Peter Loan                                                      *
+ *                                                                            *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
+ * not use this file except in compliance with the License. You may obtain a  *
+ * copy of the License at http://www.apache.org/licenses/LICENSE-2.0.         *
+ *                                                                            *
+ * Unless required by applicable law or agreed to in writing, software        *
+ * distributed under the License is distributed on an "AS IS" BASIS,          *
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.   *
+ * See the License for the specific language governing permissions and        *
+ * limitations under the License.                                             *
+ * -------------------------------------------------------------------------- */
 
 //=============================================================================
 // INCLUDES
 //=============================================================================
+#include <fstream>
 #include <iostream>
 #include <string>
 #include <math.h>
@@ -477,12 +473,12 @@ void SimbodySimmModel::convertJoint(const Joint& joint)
         // Nothing to do.
     } else if (joint.getConcreteClassName()==("PinJoint")) {
         int index = 0;
-        string coordName = joint.getCoordinateSet().get(index).getName();
+        string coordName = joint.get_coordinates(index).getName();
         SimTK::Vec3 axis(0.0, 0.0, 1.0); // Pin joints always rotate about the Z axis.
         ssj->addFunctionDof(axis, coordName, 0, Coordinate::Rotational);
     } else if (joint.getConcreteClassName()==("SliderJoint")) {
         int index = 0;
-        string coordName = joint.getCoordinateSet().get(index).getName();
+        string coordName = joint.get_coordinates(index).getName();
         SimTK::Vec3 axis(1.0, 0.0, 0.0); // Slider joints always translate along the X axis.
         ssj->addFunctionDof(axis, coordName, 0, Coordinate::Translational);
     } else if (joint.getConcreteClassName()==("EllipsoidJoint")) {
@@ -492,15 +488,14 @@ void SimbodySimmModel::convertJoint(const Joint& joint)
         SimTK::Vec3 yaxis(0.0, 1.0, 0.0);
         SimTK::Vec3 zaxis(0.0, 0.0, 1.0);
         int index = 0;
-        ssj->addFunctionDof(xaxis, joint.getCoordinateSet().get(index++).getName(), 0, Coordinate::Translational);
-        ssj->addFunctionDof(yaxis, joint.getCoordinateSet().get(index++).getName(), 0, Coordinate::Translational);
-        ssj->addFunctionDof(zaxis, joint.getCoordinateSet().get(index++).getName(), 0, Coordinate::Translational);
-        ssj->addFunctionDof(xaxis, joint.getCoordinateSet().get(index++).getName(), 0, Coordinate::Rotational);
-        ssj->addFunctionDof(yaxis, joint.getCoordinateSet().get(index++).getName(), 0, Coordinate::Rotational);
-        ssj->addFunctionDof(zaxis, joint.getCoordinateSet().get(index).getName(), 0, Coordinate::Rotational);
+        ssj->addFunctionDof(xaxis, joint.get_coordinates(index++).getName(), 0, Coordinate::Translational);
+        ssj->addFunctionDof(yaxis, joint.get_coordinates(index++).getName(), 0, Coordinate::Translational);
+        ssj->addFunctionDof(zaxis, joint.get_coordinates(index++).getName(), 0, Coordinate::Translational);
+        ssj->addFunctionDof(xaxis, joint.get_coordinates(index++).getName(), 0, Coordinate::Rotational);
+        ssj->addFunctionDof(yaxis, joint.get_coordinates(index++).getName(), 0, Coordinate::Rotational);
+        ssj->addFunctionDof(zaxis, joint.get_coordinates(index).getName(), 0, Coordinate::Rotational);
     } else if (joint.getConcreteClassName()==("CustomJoint")) {
         const CustomJoint* cj = (CustomJoint*)(&joint);
-        const CoordinateSet& coordinates = cj->getCoordinateSet();
 
         // Add the joint's transform axes to the SimbodySimmJoint.
         const SpatialTransform& dofs = cj->getSpatialTransform();
@@ -513,11 +508,14 @@ void SimbodySimmModel::convertJoint(const Joint& joint)
                 const Coordinate* coord = NULL;
                 const Coordinate* independentCoord = NULL;
                 const Function* constraintFunc = NULL;
+                int ix = -1;
                 Coordinate::MotionType motionType = (order[i]<3) ? Coordinate::Rotational : Coordinate::Translational;
                 if (ta->getCoordinateNames().size() > 0)
-                    coord = &coordinates.get(ta->getCoordinateNames()[0]);
-                if (coord)
+                    ix = cj->getProperty_coordinates().findIndexForName(ta->getCoordinateNames()[0]);
+                if (ix >= 0) {
+                    coord = &cj->get_coordinates(ix);
                     constraintFunc = isDependent(coord, &independentCoord);
+                }
                 if (constraintFunc != NULL) {  // dof is constrained to a coordinate in another joint
                     ssj->addFunctionDof(ta->getAxis(), independentCoord->getName(), addJointFunction(constraintFunc, independentCoord->getMotionType(), motionType), motionType);
                 } else {
@@ -632,8 +630,7 @@ bool SimbodySimmModel::isParentJointNeeded(const OpenSim::Joint& aJoint)
         for (int i=0; i<6; i++) {
             const TransformAxis* ta = &dofs[i];
             if (i >= 3) {
-                double axis[3];
-                ta->getAxis(axis);
+                const auto& axis = ta->getAxis();
                 for (int j=0; j<3; j++) {
                     if (EQUAL_WITHIN_ERROR(axis[j], 1.0)) {
                         if (ta->getCoordinateNames().size() > 0) { // transform axis is unused if it has no coordinate names
@@ -1027,15 +1024,18 @@ bool SimbodySimmModel::writeMuscle(Muscle& aMuscle, const ForceSet& aActuatorSet
 
     const PathPointSet& pts = aMuscle.getGeometryPath().getPathPointSet();
 
+    // get a state for the purpose of probing path points
+    const SimTK::State& s = aMuscle.getSystem().getDefaultState();
+
     aStream << "beginpoints" << endl;
     for (int i = 0; i < pts.getSize(); i++)
     {
-        PathPoint& pt = pts.get(i);
+        AbstractPathPoint& pt = pts.get(i);
         if (pt.getConcreteClassName()==("ConditionalPathPoint")) {
             ConditionalPathPoint* mvp = (ConditionalPathPoint*)(&pt);
-            Vec3& attachment = mvp->getLocation();
+            Vec3 attachment = mvp->getLocation(s);
             double range[]{ mvp->get_range(0), mvp->get_range(1) };
-            aStream << attachment[0] << " " << attachment[1] << " " << attachment[2] << " segment " << mvp->getBody().getName();
+            aStream << attachment[0] << " " << attachment[1] << " " << attachment[2] << " segment " << mvp->getParentFrame().getName();
             
             if (mvp->hasCoordinate()) {
                 const Coordinate& coord = mvp->getCoordinate();
@@ -1045,12 +1045,13 @@ bool SimbodySimmModel::writeMuscle(Muscle& aMuscle, const ForceSet& aActuatorSet
                     aStream << " ranges 1 " << coord.getName() << " (" << range[0] << ", " << range[1] << ")" << endl;
             } else {
                 aStream << " ranges 1 " 
-                    << mvp->getConnector<Coordinate>("coordinate").getConnecteeName()
+                    << mvp->getSocket<Coordinate>(
+                            "coordinate").getConnecteePath()
                     << " (0.0, 1.0)" << endl;
             }
         } else if (pt.getConcreteClassName()==("MovingPathPoint")) {
             MovingPathPoint* mpp = (MovingPathPoint*)(&pt);
-            const Vec3& attachment = mpp->get_location();
+            const Vec3 attachment(0);
             if (mpp->hasXCoordinate()) {
                 aStream << "f" << addMuscleFunction(&mpp->get_x_location(), mpp->getXCoordinate().getMotionType(), Coordinate::Translational) << "(" << mpp->getXCoordinate().getName() << ") ";
             } else {
@@ -1066,10 +1067,10 @@ bool SimbodySimmModel::writeMuscle(Muscle& aMuscle, const ForceSet& aActuatorSet
             } else {
                 aStream << attachment[2];
             }
-            aStream << " segment " << mpp->getBody().getName() << endl;
+            aStream << " segment " << mpp->getParentFrame().getName() << endl;
         } else {
-            Vec3& attachment = pt.getLocation();
-            aStream << attachment[0] << " " << attachment[1] << " " << attachment[2] << " segment " << pt.getBody().getName() << endl;
+            Vec3 attachment = pt.getLocation(s);
+            aStream << attachment[0] << " " << attachment[1] << " " << attachment[2] << " segment " << pt.getParentFrame().getName() << endl;
         }
     }
     aStream << "endpoints" << endl;

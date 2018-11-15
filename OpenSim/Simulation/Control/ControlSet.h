@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson                                               *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -31,8 +31,6 @@
 // INCLUDES
 #include "Control.h"
 #include <OpenSim/Common/Set.h>
-#include <OpenSim/Common/Storage.h>
-
 
 
 //=============================================================================
@@ -40,6 +38,7 @@
 namespace OpenSim { 
 
 class ControlLinear;
+class Storage;
 
 /**
  * A class for holding and managing a set of controls for a dynamic
@@ -98,12 +97,16 @@ public:
     void getControlList(const char *aType,Array<int> &rList,
         bool aForModelControls=true) const;
     // CONTROL VALUES
+#ifndef SWIG
     void getControlValues(double aT,double rX[],
             bool aForModelControls=true) const;
+#endif
     void getControlValues(double aT,Array<double> &rX,
             bool aForModelControls=true) const;
+#ifndef SWIG
     void setControlValues(double aT,const double aX[],
             bool aForModelControls=true);
+#endif
     void setControlValues(double aT,const Array<double> &aX,
             bool aForModelControls=true);
     // PARAMETERS
@@ -118,12 +121,16 @@ public:
             const Array<int> *aList=NULL) const;
     void getParameterMaxs(Array<double> &rMaxs,
             const Array<int> *aList=NULL) const;
+#ifndef SWIG
     void getParameterValues(double rP[],
             const Array<int> *aList=NULL) const;
+#endif
     void getParameterValues(Array<double> &rP,
             const Array<int> *aList=NULL) const;
+#ifndef SWIG
     void setParameterValues(const double aP[],
             const Array<int> *aList=NULL);
+#endif
     void setParameterValues(const Array<double> &aP,
             const Array<int> *aList=NULL);
 

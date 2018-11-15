@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ajay Seth, Matthew Millard                                      *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -36,8 +36,28 @@
 
 namespace OpenSim {
 
-//=============================================================================
-//=============================================================================
+//==============================================================================
+//                              Muscle Exceptions
+//==============================================================================
+class MuscleCannotEquilibrate : public Exception {
+public:
+    MuscleCannotEquilibrate(const std::string& file,
+                            size_t line,
+                            const std::string& func,
+                            const Object& obj,
+                            const std::string& detail) :
+        Exception(file, line, func, obj, detail) {
+        std::string msg = "Unable to compute equilibrium for this muscle.\n";
+        msg += "Please verify that the initial activation is valid and that ";
+        msg += "the length of the musculotendon actuator doesn't produce a ";
+        msg += "pennation angle of 90 degrees or a negative fiber length.";
+        addMessage(msg);
+    }
+};
+
+//==============================================================================
+//                                    Muscle
+//==============================================================================
 /**
  * A base class for modeling a muscle-tendon actuator. It defines muscle parameters
  * and methods to PathActuator, but does not implement all of the necessary methods,
@@ -256,27 +276,28 @@ public:
     double getFiberForceAlongTendon(const SimTK::State& s) const;
     /** get the current active fiber force (N) due to activation*force_length*force_velocity relationships */
     double getActiveFiberForce(const SimTK::State& s) const;
-    /** get the current passive fiber force (N) passive_force_length relationship */
+    /** get the total force applied by all passive elements in the fiber (N) */
     double getPassiveFiberForce(const SimTK::State& s) const;
     /** get the current active fiber force (N) projected onto the tendon direction */
     double getActiveFiberForceAlongTendon(const SimTK::State& s) const;
-    /** get the current passive fiber force (N) projected onto the tendon direction */
+    /** get the total force applied by all passive elements in the fiber (N)
+        projected onto the tendon direction */
     double getPassiveFiberForceAlongTendon(const SimTK::State& s) const;
     /** get the current tendon force (N) applied to bones */
     double getTendonForce(const SimTK::State& s) const;
 
     /** get the current fiber stiffness (N/m) defined as the partial derivative
-        of fiber force w.r.t. fiber length */
+        of fiber force with respect to fiber length */
     double getFiberStiffness(const SimTK::State& s) const;
     /**get the stiffness of the fiber (N/m) along the direction of the tendon,
     that is the partial derivative of the fiber force along the tendon with
     respect to small changes in fiber length along the tendon*/
     double getFiberStiffnessAlongTendon(const SimTK::State& s) const;
     /** get the current tendon stiffness (N/m) defined as the partial derivative
-        of tendon force w.r.t. tendon length */
+        of tendon force with respect to tendon length */
     double getTendonStiffness(const SimTK::State& s) const;
     /** get the current muscle stiffness (N/m) defined as the partial derivative
-        of muscle force w.r.t. muscle length */
+        of muscle force with respect to muscle length */
     double getMuscleStiffness(const SimTK::State& s) const;
 
     /** get the current active fiber power (W) */
@@ -315,7 +336,9 @@ public:
      */ 
     //@{
     /** Find and set the equilibrium state of the muscle (if any) */
-    void equilibrate(SimTK::State& s) const { return computeFiberEquilibriumAtZeroVelocity(s); }
+    void computeEquilibrium(SimTK::State& s) const override final {
+        return computeInitialFiberEquilibrium(s);
+    }
     // End of Muscle's State Dependent Accessors.
     //@} 
 
@@ -384,18 +407,9 @@ protected:
     velocity into account. This routine can assume that the state contains a
     meaningful estimate of muscle activation, joint positions, and joint 
     velocities. For example, this can produce fiber lengths suited to 
-    beginning a forward dynamics simulation. If you are missing any of that 
-    information, don't call this method, use 
+    beginning a forward dynamics simulation. 
     computeFiberEquilibriumAtZeroVelocity(). */
     virtual void computeInitialFiberEquilibrium(SimTK::State& s) const = 0;
-
-    /** Provide a quick estimate of the fiber length assuming the 
-    musculotendon unit velocity is zero. The default implementation here just
-    calls computeInitialFiberEquilibrium(); you should override if you have
-    a better implementation for this case. */
-    virtual void computeFiberEquilibriumAtZeroVelocity(SimTK::State& s) const {
-        computeInitialFiberEquilibrium(s);
-    }
 
     // End of Muscle's State Related Calculations.
     //@} 
@@ -426,8 +440,7 @@ protected:
     void extendSetPropertiesFromState(const SimTK::State &s) override;
     void extendInitStateFromProperties(SimTK::State& state) const override;
     
-    // Update the geometry attached to the muscle (location of muscle points and connecting segments
-    //  all in global/inertial frame)
+    // Update the display geometry attached to the muscle
     virtual void updateGeometry(const SimTK::State& s);
     // End of Interfaces imposed by parent classes.
     //@} 

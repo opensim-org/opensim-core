@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -27,13 +27,8 @@
 #include "ForwardTool.h"
 #include <OpenSim/Common/IO.h>
 
-#include <OpenSim/Simulation/Control/Controller.h>
-#include <OpenSim/Simulation/Control/ControlSet.h>
-#include <OpenSim/Simulation/Control/ControlSetController.h>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/BodySet.h>
-#include <OpenSim/Simulation/Model/ForceSet.h>
-#include <OpenSim/Simulation/Model/PrescribedForce.h>
+#include <OpenSim/Simulation/Manager/Manager.h>
 #include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
 #include "CorrectionController.h"
 
@@ -253,7 +248,6 @@ bool ForwardTool::run()
 
     /*bool externalLoads = */createExternalLoads(_externalLoadsFileName, *_model);
 
-
     // Re create the system with forces above and Realize the topology
     SimTK::State& s = _model->initSystem();
     _model->getMultibodySystem().realize(s, Stage::Position );
@@ -268,27 +262,20 @@ bool ForwardTool::run()
 
     // SETUP SIMULATION
     // Manager (now allocated on the heap so that getManager doesn't return stale pointer on stack
-    RungeKuttaMersonIntegrator integrator(_model->getMultibodySystem());
-    Manager manager(*_model, integrator);
+    Manager manager(*_model);
     setManager( manager );
     manager.setSessionName(getName());
-    manager.setInitialTime(_ti);
-    manager.setFinalTime(_tf);
     if (!_printResultFiles){
         manager.setWriteToStorage(false);
     }
-    // Initialize integrator
-    integrator.setInternalStepLimit(_maxSteps);
-    integrator.setMaximumStepSize(_maxDT);
-    integrator.setAccuracy(_errorTolerance);
+    manager.setIntegratorInternalStepLimit(_maxSteps);
+    manager.setIntegratorMaximumStepSize(_maxDT);
+    manager.setIntegratorMinimumStepSize(_minDT);
+    manager.setIntegratorAccuracy(_errorTolerance);
 
 
     // integ->setFineTolerance(_fineTolerance); No equivalent in SimTK
     if(_useSpecifiedDt) InitializeSpecifiedTimeStepping(_yStore, manager);
-
-    // SET INITIAL AND FINAL TIME
-    manager.setInitialTime(_ti);
-    manager.setFinalTime(_tf);
 
     // get values for state variables in rawData then assign by name to model
     int numStateVariables = _model->getNumStateVariables();
@@ -316,7 +303,9 @@ bool ForwardTool::run()
         _model->printDetailedInfo(s, std::cout );
 
         cout<<"\n\nIntegrating from "<<_ti<<" to "<<_tf<<endl;
-        manager.integrate(s);
+        s.setTime(_ti);
+        manager.initialize(s);
+        manager.integrate(_tf);
     } catch(const std::exception& x) {
         cout << "ForwardTool::run() caught exception \n";
         cout << x.what() << endl;
@@ -426,7 +415,9 @@ void ForwardTool::InitializeSpecifiedTimeStepping(Storage *aYStore, Manager& aMa
         aYStore->getTimeColumn(tArray);
         for(int i=0;i<aYStore->getSize()-1;i++) dtArray[i]=tArray[i+1]-tArray[i];
         aManager.setUseSpecifiedDT(true);
-        aManager.setDTArray(aYStore->getSize()-1,&dtArray[0],tArray[0]);
+        aManager.setDTArray(SimTK::Vector_<double>(aYStore->getSize() - 1,
+                                                   &dtArray[0]),
+                            tArray[0]);
         //std::cout << "ForwardTool.InitializeSpecifiedTimeStepping: " << tArray << endl;
 
     // NO AVAILABLE STATES FILE

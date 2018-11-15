@@ -940,11 +940,6 @@
 				<Thelen2003Muscle name="TRIlong">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
 					<isDisabled>false</isDisabled>
-					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
-					<min_control>0</min_control>
-					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
-					<max_control>1</max_control>
-					<!--The set of points defining the path of the muscle.-->
 					<GeometryPath>
 						<PathPointSet>
 							<objects>
@@ -1023,10 +1018,6 @@
 				<Thelen2003Muscle name="TRIlat">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
 					<isDisabled>false</isDisabled>
-					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
-					<min_control>0</min_control>
-					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
-					<max_control>1</max_control>
 					<!--The set of points defining the path of the muscle.-->
 					<GeometryPath>
 						<PathPointSet>
@@ -1106,10 +1097,6 @@
 				<Thelen2003Muscle name="TRImed">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
 					<isDisabled>false</isDisabled>
-					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
-					<min_control>0</min_control>
-					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
-					<max_control>1</max_control>
 					<!--The set of points defining the path of the muscle.-->
 					<GeometryPath>
 						<PathPointSet>
@@ -1189,10 +1176,6 @@
 				<Thelen2003Muscle name="BIClong">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
 					<isDisabled>false</isDisabled>
-					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
-					<min_control>0</min_control>
-					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
-					<max_control>1</max_control>
 					<!--The set of points defining the path of the muscle.-->
 					<GeometryPath>
 						<PathPointSet>
@@ -1288,10 +1271,6 @@
 				<Thelen2003Muscle name="BICshort">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
 					<isDisabled>false</isDisabled>
-					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
-					<min_control>0</min_control>
-					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
-					<max_control>1</max_control>
 					<!--The set of points defining the path of the muscle.-->
 					<GeometryPath>
 						<PathPointSet>
@@ -1375,10 +1354,6 @@
 				<Thelen2003Muscle name="BRA">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
 					<isDisabled>false</isDisabled>
-					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
-					<min_control>0</min_control>
-					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
-					<max_control>1</max_control>
 					<!--The set of points defining the path of the muscle.-->
 					<GeometryPath>
 						<PathPointSet>

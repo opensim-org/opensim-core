@@ -138,5 +138,20 @@
 #include <OpenSim/Simulation/StatesTrajectory.h>
 #include <OpenSim/Simulation/StatesTrajectoryReporter.h>
 
+#include <OpenSim/Simulation/SimulationUtilities.h>
+
+#include <OpenSim/Actuators/osimActuatorsDLL.h>
+#include <OpenSim/Actuators/MuscleFixedWidthPennationModel.h>
+#include <OpenSim/Actuators/MuscleFirstOrderActivationDynamicModel.h>
+#include <OpenSim/Actuators/Thelen2003Muscle.h>
+#include <OpenSim/Actuators/Millard2012EquilibriumMuscle.h>
+#include <OpenSim/Actuators/FiberCompressiveForceCosPennationCurve.h>
+#include <OpenSim/Actuators/FiberCompressiveForceLengthCurve.h>
+#include <OpenSim/Actuators/ActiveForceLengthCurve.h>
+#include <OpenSim/Actuators/FiberForceLengthCurve.h>
+#include <OpenSim/Actuators/ForceVelocityCurve.h>
+#include <OpenSim/Actuators/ForceVelocityInverseCurve.h>
+#include <OpenSim/Actuators/TendonForceLengthCurve.h>
+
 #endif // OPENSIM_OPENSIM_HEADERS_SIMULATION_H_
 

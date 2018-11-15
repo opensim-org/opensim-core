@@ -91,6 +91,34 @@ function(AddDependency)
         endif()
         list(APPEND CMAKE_ARGS ${DEP_CMAKE_ARGS})
 
+        # Forward cmake arguments to dependencies.
+        list(APPEND CMAKE_ARGS
+             -DCMAKE_CXX_COMPILER:STRING=${CMAKE_CXX_COMPILER})
+        list(APPEND CMAKE_ARGS
+             -DCMAKE_C_COMPILER:STRING=${CMAKE_C_COMPILER})
+        list(APPEND CMAKE_ARGS
+             -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS})
+        list(APPEND CMAKE_ARGS
+             -DCMAKE_CXX_FLAGS_DEBUG:STRING=${CMAKE_CXX_FLAGS_DEBUG})
+        list(APPEND CMAKE_ARGS
+             -DCMAKE_CXX_FLAGS_MINSIZEREL:STRING=${CMAKE_CXX_FLAGS_MINSIZEREL})
+        list(APPEND CMAKE_ARGS
+             -DCMAKE_CXX_FLAGS_RELEASE:STRING=${CMAKE_CXX_FLAGS_RELEASE})
+        list(APPEND CMAKE_ARGS
+             -DCMAKE_CXX_FLAGS_RELWITHDEBINFO:STRING=${CMAKE_CXX_FLAGS_RELWITHDEBINFO})
+        list(APPEND CMAKE_ARGS
+             -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS})
+        list(APPEND CMAKE_ARGS
+             -DCMAKE_C_FLAGS_DEBUG:STRING=${CMAKE_C_FLAGS_DEBUG})
+        list(APPEND CMAKE_ARGS
+             -DCMAKE_C_FLAGS_MINSIZEREL:STRING=${CMAKE_C_FLAGS_MINSIZEREL})
+        list(APPEND CMAKE_ARGS
+             -DCMAKE_C_FLAGS_RELEASE:STRING=${CMAKE_C_FLAGS_RELEASE})
+        list(APPEND CMAKE_ARGS
+             -DCMAKE_C_FLAGS_RELWITHDEBINFO:STRING=${CMAKE_C_FLAGS_RELWITHDEBINFO})
+        list(APPEND CMAKE_ARGS
+             -DCMAKE_OSX_DEPLOYMENT_TARGET:STRING=${CMAKE_OSX_DEPLOYMENT_TARGET})
+
         ExternalProject_Add(${DEP_NAME}
             TMP_DIR          ${BINARY_DIR}/tmp
             STAMP_DIR        ${BINARY_DIR}/stamp
@@ -115,18 +143,21 @@ SetDefaultCMakeBuildType()
 
 AddDependency(NAME       BTK
               # URL        https://github.com/Biomechanical-ToolKit/BTKCore.git
-              URL        https://github.com/klshrinidhi/BTKCore.git
-              TAG        ae0d2a43de0fe6c9ef2acce34a87c944dd113829
+              URL        https://github.com/opensim-org/BTKCore.git
+              TAG        6d787d0be223851a8f454f2ee8c7d9e47b84cbbe
               CMAKE_ARGS -DBUILD_SHARED_LIBS:BOOL=ON)
-
 
 AddDependency(NAME       simbody
               URL        https://github.com/simbody/simbody.git
-              TAG        76ca55bcfc169a1ddf3b13903d3cd1aa15d6e957
+              TAG        Simbody-3.6.1
               CMAKE_ARGS -DBUILD_EXAMPLES:BOOL=OFF 
                          -DBUILD_TESTING:BOOL=OFF)
+                     
 
-
+AddDependency(NAME       docopt
+              URL        https://github.com/docopt/docopt.cpp.git
+              TAG        af03fa044ee1eff20819549b534ea86829a24a54)
+ 
 #######################
 
 RemoveDefaultInstallDirIfEmpty("${DEFAULT_CMAKE_INSTALL_PREFIX}")

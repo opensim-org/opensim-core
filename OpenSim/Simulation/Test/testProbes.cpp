@@ -7,7 +7,7 @@
 * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
 * through the Warrior Web program.                                           *
 *                                                                            *
-* Copyright (c) 2005-2012 Stanford University and the Authors                *
+* Copyright (c) 2005-2017 Stanford University and the Authors                *
 * Author(s): Ajay Seth, Matthew Millard                                      *
 *                                                                            *
 * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -32,7 +32,6 @@
 #include <OpenSim/Common/IO.h>
 #include <OpenSim/Simulation/osimSimulation.h>
 #include <OpenSim/Actuators/osimActuators.h>
-#include <OpenSim/Simulation/Model/PathActuator.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 #include <OpenSim/Analyses/MuscleAnalysis.h>
 #include <OpenSim/Analyses/ProbeReporter.h>
@@ -226,15 +225,15 @@ void simulateMuscle(
         Vec3(0),
                         Vec3(0));
 
-    CoordinateSet& jointCoordinateSet = slider->upd_CoordinateSet();
-        jointCoordinateSet[0].setName("tx");
-        jointCoordinateSet[0].setDefaultValue(1.0);
-    jointCoordinateSet[0].setRangeMin(0);
-        jointCoordinateSet[0].setRangeMax(1.0);
+    auto& sliderCoord = slider->updCoordinate();
+    sliderCoord.setName("tx");
+    sliderCoord.setDefaultValue(1.0);
+    sliderCoord.setRangeMin(0);
+    sliderCoord.setRangeMax(1.0);
 
     if (motion != NULL){
-        jointCoordinateSet[0].setPrescribedFunction(*motion);
-        jointCoordinateSet[0].setDefaultIsPrescribed(true);
+        sliderCoord.setPrescribedFunction(*motion);
+        sliderCoord.setDefaultIsPrescribed(true);
     }
     // add ball to model
     model.addBody(ball);
@@ -436,7 +435,7 @@ void simulateMuscle(
     // Add SystemEnergyProbe to measure system power (d/dt system KE+PE)
     SystemEnergyProbe* sysPowerProbe = new SystemEnergyProbe(*sysEnergyProbe);  // use copy constructor
     sysPowerProbe->setName("SystemPower");
-    sysPowerProbe->setDisabled(false);
+    sysPowerProbe->setEnabled(true);
     sysPowerProbe->setOperation("differentiate");
     model.addProbe(sysPowerProbe);
     cout << probeCounter++ << ") Added SystemEnergyProbe to measure system power (d/dt system KE+PE)" << endl;
@@ -489,7 +488,8 @@ void simulateMuscle(
     MuscleAnalysis* muscleReporter = new MuscleAnalysis(&model);
     model.addAnalysis(muscleReporter);
     model.print("testProbesModel.osim");
-    model.printBasicInfo(cout);
+    model.finalizeFromProperties();
+    model.printBasicInfo();
 
 
 
@@ -535,22 +535,19 @@ void simulateMuscle(
     // 4. SIMULATION Integration
     //==========================================================================
 
-    // Create the integrator
-    SimTK::RungeKuttaMersonIntegrator integrator(model.getMultibodySystem());
-    integrator.setAccuracy(integrationAccuracy);
-
     // Create the manager
-    Manager manager(model, integrator);
+    Manager manager(model);
+    manager.setIntegratorAccuracy(integrationAccuracy);
 
     // Integrate from initial time to final time
-    manager.setInitialTime(initialTime);
-    manager.setFinalTime(finalTime);
+    si.setTime(initialTime);
     cout << "\nIntegrating from " << initialTime << " to " << finalTime << endl;
 
     // Start timing the simulation
     const clock_t start = clock();
     // simulate
-    manager.integrate(si);
+    manager.initialize(si);
+    manager.integrate(finalTime);
 
     // how long did it take?
     double comp_time = (double)(clock() - start) / CLOCKS_PER_SEC;

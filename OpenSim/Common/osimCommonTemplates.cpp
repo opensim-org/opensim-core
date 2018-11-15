@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson                                               *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -36,7 +36,7 @@
 
 
 using namespace OpenSim;
-#ifdef WIN32
+#ifdef _WIN32
 
 //template class OSIMCOMMON_API Array<bool>;
 //template class OSIMCOMMON_API Array<int>;
@@ -45,7 +45,7 @@ using namespace OpenSim;
 
 //template class OSIMCOMMON_API Set<Material>;
 
-#endif  // WIN32
+#endif  // _WIN32
 
 
 typedef Array<bool> ArrayBool;

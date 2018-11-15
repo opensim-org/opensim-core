@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OpenSimDocument Version="20302">
+	<Model name="double_pendulum_testReverse">
+		<defaults/>
+		<credits> Ajay Seth </credits>
+		<publications> For testing change in 30514 (removing "reverse" property from Joint). PinJoint "pin2" has "reverse" set to "true". </publications>
+		<ForceSet name="">
+			<objects/>
+			<groups/>
+		</ForceSet>
+		<length_units> meters </length_units>
+		<force_units> N </force_units>
+		<!--Acceleration due to gravity.-->
+		<gravity>       0.00000000      -9.80665000       0.00000000 </gravity>
+		<!--Bodies in the model.-->
+		<BodySet name="">
+			<objects>
+				<Body name="ground">
+					<mass>       0.00000000 </mass>
+					<mass_center>       0.00000000       0.00000000       0.00000000 </mass_center>
+					<inertia_xx>       0.00000000 </inertia_xx>
+					<inertia_yy>       0.00000000 </inertia_yy>
+					<inertia_zz>       0.00000000 </inertia_zz>
+					<inertia_xy>       0.00000000 </inertia_xy>
+					<inertia_xz>       0.00000000 </inertia_xz>
+					<inertia_yz>       0.00000000 </inertia_yz>
+					<!--Joint that connects this body with the parent body.-->
+					<Joint/>
+					<VisibleObject name="">
+						<!--Set of geometry files and associated attributes, allow .vtp, .stl,
+						    .obj-->
+						<GeometrySet name="">
+							<objects/>
+							<groups/>
+						</GeometrySet>
+						<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+						<!--transform relative to owner specified as 3 rotations (rad) followed by
+						    3 translations rX rY rZ tx ty tz-->
+						<transform>       0.00000000       0.00000000       0.00000000       0.00000000       0.00000000       0.00000000 </transform>
+						<!--Whether to show a coordinate frame-->
+						<show_axes> true </show_axes>
+						<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for
+						    individual geometries-->
+						<display_preference> 4 </display_preference>
+					</VisibleObject>
+					<WrapObjectSet name="">
+						<objects/>
+						<groups/>
+					</WrapObjectSet>
+				</Body>
+				<Body name="rod1">
+					<mass>       1.00000000 </mass>
+					<mass_center>       0.00000000       0.00000000       0.00000000 </mass_center>
+					<inertia_xx>       0.00000000 </inertia_xx>
+					<inertia_yy>       0.00000000 </inertia_yy>
+					<inertia_zz>       0.00000000 </inertia_zz>
+					<inertia_xy>       0.00000000 </inertia_xy>
+					<inertia_xz>       0.00000000 </inertia_xz>
+					<inertia_yz>       0.00000000 </inertia_yz>
+					<!--Joint that connects this body with the parent body.-->
+					<Joint>
+						<PinJoint name="pin1">
+							<parent_body> ground </parent_body>
+							<location_in_parent>       0.00000000       0.00000000       0.00000000 </location_in_parent>
+							<orientation_in_parent>       0.00000000       0.00000000       0.00000000 </orientation_in_parent>
+							<location>       0.00000000       0.50000000       0.00000000 </location>
+							<orientation>       0.00000000       0.00000000       0.00000000 </orientation>
+							<!--Generalized coordinates parameterizing this joint.-->
+							<CoordinateSet name="">
+								<objects>
+									<Coordinate name="q1">
+										<!--Cooridnate can describe rotational, translational, or coupled values.
+										    Defaults to rotational.-->
+										<motion_type> rotational </motion_type>
+										<default_value>      -0.78539816 </default_value>
+										<default_speed_value>       0.00000000 </default_speed_value>
+										<range>      -1.57079633       1.57079633 </range>
+										<clamped> false </clamped>
+										<locked> false </locked>
+										<prescribed_function/>
+									</Coordinate>
+								</objects>
+								<groups/>
+							</CoordinateSet>
+							<reverse> false </reverse>
+						</PinJoint>
+					</Joint>
+					<VisibleObject name="">
+						<!--Set of geometry files and associated attributes, allow .vtp, .stl,
+						    .obj-->
+						<GeometrySet name="">
+							<objects/>
+							<groups/>
+						</GeometrySet>
+						<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+						<!--transform relative to owner specified as 3 rotations (rad) followed by
+						    3 translations rX rY rZ tx ty tz-->
+						<transform>       0.00000000       0.00000000       0.00000000       0.00000000       0.00000000       0.00000000 </transform>
+						<!--Whether to show a coordinate frame-->
+						<show_axes> true </show_axes>
+						<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for
+						    individual geometries-->
+						<display_preference> 4 </display_preference>
+					</VisibleObject>
+					<WrapObjectSet name="">
+						<objects/>
+						<groups/>
+					</WrapObjectSet>
+				</Body>
+        <Body name="rod2">
+          <mass>       1.00000000 </mass>
+          <mass_center>       0.00000000       0.00000000       0.00000000 </mass_center>
+          <inertia_xx>       0.00000000 </inertia_xx>
+          <inertia_yy>       0.00000000 </inertia_yy>
+          <inertia_zz>       0.00000000 </inertia_zz>
+          <inertia_xy>       0.00000000 </inertia_xy>
+          <inertia_xz>       0.00000000 </inertia_xz>
+          <inertia_yz>       0.00000000 </inertia_yz>
+          <!--Joint that connects this body with the parent body.-->
+          <Joint>
+            <PinJoint name="pin2">
+              <parent_body> rod1 </parent_body>
+              <location_in_parent>       0.00000000       0.00000000       0.00000000 </location_in_parent>
+              <orientation_in_parent>       0.00000000       0.00000000       0.00000000 </orientation_in_parent>
+              <location>       0.00000000       0.50000000       0.00000000 </location>
+              <orientation>       0.00000000       0.00000000       0.00000000 </orientation>
+              <!--Generalized coordinates parameterizing this joint.-->
+              <CoordinateSet name="">
+                <objects>
+                  <Coordinate name="q2">
+                    <!--Cooridnate can describe rotational, translational, or coupled values.
+										    Defaults to rotational.-->
+                    <motion_type> rotational </motion_type>
+                    <default_value>      -1.04719755 </default_value>
+                    <default_speed_value>       0.00000000 </default_speed_value>
+                    <range>      -1.57079633       1.57079633 </range>
+                    <clamped> false </clamped>
+                    <locked> false </locked>
+                    <prescribed_function/>
+                  </Coordinate>
+                </objects>
+                <groups/>
+              </CoordinateSet>
+              <reverse> true </reverse>
+            </PinJoint>
+          </Joint>
+          <VisibleObject name="">
+            <!--Set of geometry files and associated attributes, allow .vtp, .stl,
+						    .obj-->
+            <GeometrySet name="">
+              <objects/>
+              <groups/>
+            </GeometrySet>
+            <!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+            <scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+            <!--transform relative to owner specified as 3 rotations (rad) followed by
+						    3 translations rX rY rZ tx ty tz-->
+            <transform>       0.00000000       0.00000000       0.00000000       0.00000000       0.00000000       0.00000000 </transform>
+            <!--Whether to show a coordinate frame-->
+            <show_axes> true </show_axes>
+            <!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for
+						    individual geometries-->
+            <display_preference> 4 </display_preference>
+          </VisibleObject>
+          <WrapObjectSet name="">
+            <objects/>
+            <groups/>
+          </WrapObjectSet>
+        </Body>
+      </objects>
+      <groups/>
+    </BodySet>
+    <!--Constraints in the model.-->
+    <ConstraintSet name="">
+      <objects/>
+      <groups/>
+    </ConstraintSet>
+    <!--Markers in the model.-->
+    <MarkerSet name="">
+      <objects/>
+      <groups/>
+    </MarkerSet>
+    <!--ContactGeometry objects in the model.-->
+    <ContactGeometrySet name="">
+      <objects/>
+      <groups/>
+    </ContactGeometrySet>
+    <!--Controller objects in the model.-->
+    <ControllerSet name="Controllers">
+      <objects/>
+      <groups/>
+    </ControllerSet>
+  </Model>
+</OpenSimDocument>

@@ -1,4 +1,4 @@
-%module(directors="1") tools
+%module(package="opensim", directors="1") tools
 #pragma SWIG nowarn=822,451,503,516,325
 // 401 is "Nothing known about base class *some-class*.
 //         Maybe you forgot to instantiate *some-template* using %template."
@@ -49,11 +49,17 @@ using namespace SimTK;
 // None.
 
 
+%pythonappend OpenSim::ModelScaler::addScale %{
+    aScale._markAdopted()
+%}
+
+%pythonappend OpenSim::ModelScaler::addMeasurement %{
+    aMeasurement._markAdopted()
+%}
 // Include all the OpenSim code.
 // =============================
 %include <Bindings/preliminaries.i>
 %include <Bindings/tools.i>
-
 
 // Memory management
 // =================

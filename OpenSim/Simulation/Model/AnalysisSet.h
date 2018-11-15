@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson                                               *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -96,12 +96,9 @@ public:
     //--------------------------------------------------------------------------
     // CALLBACKS
     //--------------------------------------------------------------------------
-    virtual void
-        begin(SimTK::State& s );
-    virtual void
-        step(const SimTK::State& s, int stepNumber );
-    virtual void
-        end(SimTK::State& s );
+    void begin(const SimTK::State& s );
+    void step(const SimTK::State& s, int stepNumber );
+    void end(const SimTK::State& s );
 
     //--------------------------------------------------------------------------
     // RESULTS

@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Peter Eastman                                                   *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -22,8 +22,6 @@
  * -------------------------------------------------------------------------- */
 
 #include "ContactGeometry.h"
-#include "PhysicalOffsetFrame.h"
-#include <OpenSim/Common/ScaleSet.h>
 
 using namespace OpenSim;
 using SimTK::Vec3;
@@ -67,11 +65,11 @@ void ContactGeometry::constructProperties()
 {
     constructProperty_location(Vec3(0));
     constructProperty_orientation(Vec3(0));
-    constructProperty_display_preference(1);
+    Appearance defaultAppearance;
+    defaultAppearance.set_color(SimTK::Cyan);
+    defaultAppearance.set_representation(VisualRepresentation::DrawWireframe);
+    constructProperty_Appearance(defaultAppearance);
 
-    Array<double> defaultColor(1.0, 3); //color default to 0, 1, 1
-    defaultColor[0] = 0.0; 
-    constructProperty_color(defaultColor);
 }
 
 const Vec3& ContactGeometry::getLocation() const
@@ -98,19 +96,13 @@ SimTK::Transform ContactGeometry::getTransform() const
 
 const PhysicalFrame& ContactGeometry::getFrame() const
 {
-    return getConnector<PhysicalFrame>("frame").getConnectee();
+    return getSocket<PhysicalFrame>("frame").getConnectee();
 }
 
 void ContactGeometry::setFrame(const PhysicalFrame& frame)
 {
-    updConnector<PhysicalFrame>("frame").connect(frame);
+    connectSocket_frame(frame);
 }
-
-const int ContactGeometry::getDisplayPreference()
-{ return get_display_preference(); }
-
-void ContactGeometry::setDisplayPreference(const int dispPref)
-{ set_display_preference(dispPref); }
 
 const PhysicalFrame& ContactGeometry::getBody() const
 { return getFrame(); }
@@ -134,8 +126,69 @@ void ContactGeometry::updateFromXMLNode(SimTK::Xml::Element& node,
             if (bodyElement != node.element_end()) {
                 bodyElement->getValueAs<std::string>(body_name);
             }
+            // ContactGeometry in pre-4.0 models are necessarily 1 level deep
+            // (model, contact_geom), and Bodies are necessarily 1 level deep.
+            // Here we create the correct relative path (accounting for sets
+            // being components).
+            body_name = XMLDocument::updateConnecteePath30517("bodyset",
+                                                              body_name);
             XMLDocument::addConnector(node, "Connector_PhysicalFrame_",
                     "frame", body_name);
+        }
+
+        if (versionNumber < 30507) {
+            // display_preference and color were replaced with Appearance in PR
+            // #1122, at which point the latest XML version number was 30507;
+            // however, the corresponding updateFromXMLNode code below was
+            // added a while later.
+            // https://github.com/opensim-org/opensim-core/pull/1122
+            
+            SimTK::Xml::Element appearanceNode("Appearance");
+
+            // Move color inside Appearance.
+            SimTK::Xml::element_iterator colorIter =
+                        node.element_begin("color");
+            bool addAppearanceNode = false;
+            if (colorIter != node.element_end()) {
+                appearanceNode.insertNodeAfter(appearanceNode.element_end(),
+                        node.removeNode(colorIter));
+                addAppearanceNode = true;
+            } else {
+                // If the user didn't set a color but set one of the other
+                // Appearance properties, then we must set color explicitly so
+                // that the Appearance's default of white is not used.
+                SimTK::Xml::Element color("color");
+                color.setValue("0 1 1"); // SimTK::Cyan
+                appearanceNode.insertNodeAfter(appearanceNode.element_end(),
+                        color);
+            }
+
+            // Move <display_preference> to
+            // <Appearance><SurfaceProperties><representation>
+            SimTK::Xml::element_iterator reprIter =
+                    node.element_begin("display_preference");
+            if (reprIter != node.element_end()) {
+                if (reprIter->getValue() == "0") {
+                    SimTK::Xml::Element visible("visible");
+                    visible.setValue("false");
+                    appearanceNode.insertNodeAfter(appearanceNode.element_end(),
+                            visible);
+                } else {
+                    reprIter->setElementTag("representation");
+                    if (reprIter->getValue() == "4") {
+                        // Enum changed to go 0-3 instead of 0-4
+                        reprIter->setValue("3");
+                    }
+                    SimTK::Xml::Element surfProp("SurfaceProperties");
+                    surfProp.insertNodeAfter(surfProp.element_end(),
+                            node.removeNode(reprIter));
+                    appearanceNode.insertNodeAfter(appearanceNode.element_end(),
+                            surfProp);
+                }
+                addAppearanceNode = true;
+            }
+            if (addAppearanceNode) 
+                node.insertNodeAfter(node.element_end(), appearanceNode);
         }
     }
     Super::updateFromXMLNode(node, versionNumber);

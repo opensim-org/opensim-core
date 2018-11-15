@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ajay Seth                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -26,6 +26,7 @@
 //=============================================================================
 #include <OpenSim/Simulation/Model/Model.h>
 #include "Actuator.h"
+#include "OpenSim/Common/DebugUtilities.h"
 
 
 using namespace std;
@@ -75,17 +76,6 @@ void Actuator::extendAddToSystem(SimTK::MultibodySystem& system) const
     mutableThis->_controlIndex = _model->updDefaultControls().size();
     _model->updDefaultControls().resizeKeep(_controlIndex + numControls());
     _model->updDefaultControls()(_controlIndex, numControls()) = Vector(numControls(), 0.0);
-}
-
-
-//_____________________________________________________________________________
-/**
- * Update the geometric representation of the Actuator if any.
- * The resulting geometry is maintained at the VisibleObject layer
- * 
- */
-void Actuator::updateGeometry()
-{
 }
 
 // CONTROLS
@@ -157,6 +147,26 @@ void ScalarActuator::constructProperties()
     constructProperty_max_control( Infinity);
 }
 
+void ScalarActuator::setMinControl(const double& aMinControl)
+{
+    set_min_control(aMinControl);
+}
+
+double ScalarActuator::getMinControl() const
+{
+    return get_min_control();
+}
+
+void ScalarActuator::setMaxControl(const double& aMaxControl)
+{
+    set_max_control(aMaxControl);
+}
+
+double ScalarActuator::getMaxControl() const
+{
+    return get_max_control();
+}
+
 // Create the underlying computational system component(s) that support the
 // ScalarActuator model component
 void ScalarActuator::extendAddToSystem(SimTK::MultibodySystem& system) const
@@ -191,8 +201,10 @@ double ScalarActuator::getOptimalForce() const
 
 double ScalarActuator::getActuation(const State &s) const
 {
-    if (isDisabled(s)) return 0.0;
-    return getCacheVariableValue<double>(s, "actuation");
+    if (appliesForce(s))
+        return getCacheVariableValue<double>(s, "actuation");
+    else
+        return 0.0;
 }
 
 void ScalarActuator::setActuation(const State& s, double aActuation) const

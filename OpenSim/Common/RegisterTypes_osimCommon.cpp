@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson                                               *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -41,6 +41,8 @@
 #include "MultiplierFunction.h"
 #include "PolynomialFunction.h"
 
+#include "SignalGenerator.h"
+
 #include "ObjectGroup.h"
 
 #include "Reporter.h"
@@ -65,14 +67,6 @@ OSIMCOMMON_API void RegisterTypes_osimCommon()
 {
   try {
 
-    Object::registerType(Connector<Component>());
-
-    // Register commonly used Inputs for de/serialization
-    Object::registerType(Input<double>());
-    Object::registerType(Input<SimTK::Vec3>());
-    Object::registerType(Input<SimTK::Vector>());
-    Object::registerType(Input<SimTK::SpatialVec>());
-
     //SimTK::Xml::setXmlCondenseWhiteSpace(false);
     Object::registerType( FunctionSet() );
     Object::registerType( GCVSplineSet() );
@@ -89,7 +83,10 @@ OSIMCOMMON_API void RegisterTypes_osimCommon()
     Object::registerType( PiecewiseLinearFunction() );
     Object::registerType( PiecewiseConstantFunction() );
     Object::registerType( MultiplierFunction() );
-    Object::registerType(PolynomialFunction());
+    Object::registerType( PolynomialFunction() );
+
+    Object::registerType( SignalGenerator() );
+
     Object::registerType( ObjectGroup() );
     
     Object::registerType( TableSource() );

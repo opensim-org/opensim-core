@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- *                          OpenSim:  PathPoint.cpp                           *
+ *                           OpenSim:  PathPoint.cpp                          *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Peter Loan                                                      *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -25,6 +25,7 @@
 // INCLUDES
 //=============================================================================
 #include "PathPoint.h"
+#include <OpenSim/Common/ScaleSet.h>
 
 //=============================================================================
 // STATICS
@@ -34,43 +35,75 @@ using namespace OpenSim;
 using SimTK::Vec3;
 using SimTK::Transform;
 
-void PathPoint::
-changeBodyPreserveLocation(const SimTK::State& s, const PhysicalFrame& body)
+PathPoint::PathPoint() : Super() 
 {
-    if (!hasParent()) {
+    constructProperties();
+}
+
+void PathPoint::constructProperties()
+{
+    //Default location
+    SimTK::Vec3 origin(0.0, 0.0, 0.0);
+    // Location in Body 
+    constructProperty_location(origin);
+}
+
+void PathPoint::extendFinalizeFromProperties()
+{
+    Super::extendFinalizeFromProperties();
+    updStation().upd_location() = get_location();
+    updStation().updSocket("parent_frame").
+            setConnecteePath(updSocket("parent_frame").getConnecteePath());
+}
+
+void PathPoint::setLocation(const SimTK::Vec3& location) {
+    upd_location() = location;
+    updStation().upd_location() = location;
+}
+
+void PathPoint::extendConnectToModel(Model& model)
+{
+    Super::extendConnectToModel(model);
+    // connect the underlying Station to the PathPoint's parent_frame
+    updStation().setParentFrame(getParentFrame());
+}
+
+void PathPoint::
+changeBodyPreserveLocation(const SimTK::State& s, const PhysicalFrame& frame)
+{
+    if (!hasOwner()) {
         throw Exception("PathPoint::changeBodyPreserveLocation attempted to "
-            " change the body on PathPoint which was not assigned to a body.");
+            " change the frame of PathPoint which was not assigned to a frame.");
     }
     // if it is already assigned to body, do nothing
-    const PhysicalFrame& currentFrame = getParentFrame();
+    const PhysicalFrame& currentFrame = getStation().getParentFrame();
 
-    if (currentFrame == body)
+    if (currentFrame == frame)
         return;
 
     // Preserve location means to switch bodies without changing
     // the location of the point in the inertial reference frame.
-    upd_location() = currentFrame.findLocationInAnotherFrame(s, get_location(), body);
+    setLocation(
+        currentFrame.findStationLocationInAnotherFrame(s, 
+            getStation().get_location(), frame) );
 
-    // now make "body" this PathPoint's parent Frame
-    setParentFrame(body);
+    // now make frame this PathPoint's parent Frame
+    setParentFrame(frame);
 }
 
-void PathPoint::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
+void PathPoint::extendScale(const SimTK::State& s, const ScaleSet& scaleSet)
 {
-    int documentVersion = versionNumber;
-    if (documentVersion < XMLDocument::getLatestVersion()) {
-        if (documentVersion < 30505) {
-            // replace old properties with latest use of Connectors
-            SimTK::Xml::element_iterator bodyElement = aNode.element_begin("body");
-            std::string bodyName("");
-            if (bodyElement != aNode.element_end()) {
-                bodyElement->getValueAs<std::string>(bodyName);
-                XMLDocument::addConnector(aNode, "Connector_PhysicalFrame_",
-                    "parent_frame", bodyName);
-            }
-        }
-    }
+    Super::extendScale(s, scaleSet);
 
-    Super::updateFromXMLNode(aNode, versionNumber);
+    // Get scale factors (if an entry for the parent Frame's base Body exists).
+    const Vec3& scaleFactors = getScaleFactors(scaleSet, getParentFrame());
+    if (scaleFactors == ModelComponent::InvalidScaleFactors)
+        return;
+
+    // Note: Currently, PathPoint and its Station subcomponent both have a
+    //       property named "location" and the values of these properties should
+    //       always match. We scale only PathPoint's "location" property here;
+    //       the "location" property on Station will be similarly adjusted when
+    //       Station's scale() method is called.
+    upd_location() = get_location().elementwiseMultiply(scaleFactors);
 }
-

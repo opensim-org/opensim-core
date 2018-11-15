@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Peter Loan                                                      *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -25,7 +25,6 @@
 // INCLUDES
 //=============================================================================
 #include "ConditionalPathPoint.h"
-#include <OpenSim/Common/XMLDocument.h>
 #include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
 
 //=============================================================================
@@ -66,16 +65,42 @@ void ConditionalPathPoint::updateFromXMLNode(SimTK::Xml::Element& node,
         XMLDocument::renameChildNode(node, "coordinates", "coordinate");
     }
     if (versionNumber < 30505) {
-        // replace old properties with latest use of Connectors
+        // replace old properties with latest use of Sockets
         SimTK::Xml::element_iterator coord = node.element_begin("coordinate");
-        std::string coord_name("");
+        std::string coordName("");
         if (coord != node.element_end())
-            coord->getValueAs<std::string>(coord_name);
-        XMLDocument::addConnector(node, "Connector_Coordinate_", "coordinate", coord_name);
+            coord->getValueAs<std::string>(coordName);
+
+        // As a backup, we will specify just the coordinate name as the
+        // connectee name...
+        std::string connectee_name = coordName;
+
+        // ...but if possible, we try to create a relative path from this
+        // PathPoint to the coordinate.
+        SimTK::Xml::Element coordElem = 
+            XMLDocument::findElementWithName(node, coordName);
+        if (coordElem.isValid() && coordElem.hasParentElement()) {
+            // We found an Xml Element with the coordinate's name.
+            std::string jointName =
+                coordElem.getParentElement().getOptionalAttributeValue("name");
+            // PathPoints in pre-4.0 models are necessarily
+            // 3 levels deep (model, muscle, geometry path), and Coordinates 
+            // are necessarily 2 levels deep.
+            // Here we create the correct relative path (accounting for sets
+            // being components).
+            if (jointName.empty())
+                jointName = IO::Lowercase(
+                        coordElem.getParentElement().getElementTag());
+            connectee_name = XMLDocument::updateConnecteePath30517(
+                    "jointset", jointName + "/" + coordName);
+        }
+
+        XMLDocument::addConnector(node, "Connector_Coordinate_", "coordinate",
+                connectee_name);
     }
 
     // Call base class now assuming _node has been corrected for current version
-    PathPoint::updateFromXMLNode(node, versionNumber);
+    Super::updateFromXMLNode(node, versionNumber);
 }
 
 //_____________________________________________________________________________
@@ -95,12 +120,12 @@ void ConditionalPathPoint::constructProperties()
  */
 void ConditionalPathPoint::setCoordinate(const Coordinate& coordinate)
 {
-    updConnector<Coordinate>("coordinate").connect(coordinate);
+    connectSocket_coordinate(coordinate);
 }
 
 bool ConditionalPathPoint::hasCoordinate() const
 {
-    return getConnector<Coordinate>("coordinate").isConnected();
+    return getSocket<Coordinate>("coordinate").isConnected();
 }
 
 const Coordinate& ConditionalPathPoint::getCoordinate() const
@@ -134,7 +159,7 @@ void ConditionalPathPoint::setRangeMax(double maxVal)
  */
 bool ConditionalPathPoint::isActive(const SimTK::State& s) const
 {
-    if (getConnector<Coordinate>("coordinate").isConnected()) {
+    if (getSocket<Coordinate>("coordinate").isConnected()) {
         double value = getConnectee<Coordinate>("coordinate").getValue(s);
         if (value >= get_range(0) - 1e-5 &&
              value <= get_range(1) + 1e-5)

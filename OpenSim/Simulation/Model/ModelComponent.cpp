@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2013 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ajay Seth, Michael Sherman                                      *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -61,9 +61,9 @@ Model& ModelComponent::updModel()
 }
 
 
-void ModelComponent::extendConnect(Component &root)
+void ModelComponent::extendFinalizeConnections(Component& root)
 {
-    Super::extendConnect(root);
+    Super::extendFinalizeConnections(root);
     Model* model = dynamic_cast<Model*>(&root);
     // Allow (model) component to include its own subcomponents
     // before calling the base method which automatically invokes
@@ -125,6 +125,32 @@ void ModelComponent::updateFromXMLNode(SimTK::Xml::Element& aNode,
         }
     }
     Super::updateFromXMLNode(aNode, versionNumber);
+}
+
+// Base class implementations of virtual methods for scaling.
+void ModelComponent::preScale(const SimTK::State& s, const ScaleSet& scaleSet)
+{   extendPreScale(s, scaleSet); }
+
+void ModelComponent::scale(const SimTK::State& s, const ScaleSet& scaleSet)
+{   extendScale(s, scaleSet); }
+
+void ModelComponent::postScale(const SimTK::State& s, const ScaleSet& scaleSet)
+{   extendPostScale(s, scaleSet); }
+
+// (static) Returned by getScaleFactors() if scale factors not found.
+const SimTK::Vec3 ModelComponent::InvalidScaleFactors = SimTK::Vec3(0);
+
+const SimTK::Vec3& ModelComponent::
+getScaleFactors(const ScaleSet& scaleSet, const Frame& frame) const
+{
+    const std::string& baseFrameName = frame.findBaseFrame().getName();
+
+    for (int i = 0; i < scaleSet.getSize(); ++i)
+        if (scaleSet[i].getSegmentName() == baseFrameName)
+            return scaleSet[i].getScaleFactors();
+
+    // No scale factors found for the base Body.
+    return InvalidScaleFactors;
 }
 
 } // end of namespace OpenSim

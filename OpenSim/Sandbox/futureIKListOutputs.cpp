@@ -8,7 +8,7 @@ using namespace SimTK;
 // single value of type T. The key notion here is that outputs can contain
 // any number of channels.
 
-// TODO Multiplexer, channels of type T into 1 vector. with the same annotations.
+// TODO Multiplexer, channels of type T into 1 vector. with the same aliases.
 
 // TODO this could be a type of component that has a minimum required number
 // of inputs: need 3 markers to define a body.
@@ -129,7 +129,7 @@ protected:
         const auto& lowerb = std::lower_bound(times.begin(), times.end(), time);
         const auto& timeLowerb = *lowerb;
         const auto& ilowerb = lowerb - times.begin();
-        // If the the time is an exact match to an existing column.
+        // If the time is an exact match to an existing column.
         if (timeLowerb == time) {
             ibelow = ilowerb;
             iabove = -1;
@@ -173,7 +173,7 @@ public:
     OpenSim_DECLARE_LIST_OUTPUT(coords, double, getSolution,
         SimTK::Stage::Position);
     OpenSim_DECLARE_LIST_INPUT(targets, Vec3, SimTK::Stage::Position,
-        "The target (experimental) marker positions. Input annotations must "
+        "The target (experimental) marker positions. Input aliases must "
         "be the name of the model marker to pair with each target.");
     // TODO OpenSim_DECLARE_LIST_INPUT(marker_weights, double, SimTK::Stage::Position,
     // TODO     "Weights for each marker specified in targets.");
@@ -195,7 +195,7 @@ public:
         // These target markers could have come from mixed sources.
         const auto& targets = getInput<Vec3>("targets").getVector(s);
         // To pretend like we're doing something useful, we'll multiply by
-        // the station jacobian transpose.
+        // the station Jacobian transpose.
         // TODO
         const auto& smss = getModel().getMatterSubsystem();
         SimTK::Vector f;
@@ -215,7 +215,7 @@ public:
         const_cast<Self*>(this)->_stationPinB.clear();
         const auto& input = getInput<Vec3>("targets");
         for (int ichan = 0; ichan < input.getNumConnectees(); ++ichan) {
-            const auto& markerName = input.getAnnotation(ichan);
+            const auto& markerName = input.getAlias(ichan);
             const auto& marker = getModel().getMarkerSet().get(markerName);
             const auto& mbi = marker.getParentFrame().getMobilizedBodyIndex();
             const_cast<Self*>(this)->_onBodyB.push_back(mbi);
@@ -225,10 +225,10 @@ public:
 protected:
     void extendFinalizeFromProperties() override {
         // Create the output channels.
-        for (const auto& marker : getParent().getComponentList<Marker>()) {
+        for (const auto& marker : getOwner().getComponentList<Marker>()) {
             updOutput("model_marker_pos").addChannel(marker.getName());
         }
-        for (const auto& coord : getParent().getComponentList<Coordinate>()) {
+        for (const auto& coord : getOwner().getComponentList<Coordinate>()) {
             updOutput("coords").addChannel(coord.getName());
         }
     }
@@ -268,7 +268,7 @@ void createModel(Model& model) {
                              *pelvis, Vec3(0), Vec3(0),
                              *femur,  Vec3(0, 1, 0), Vec3(0));
     model.addJoint(hip);
-    hog->getCoordinateSet().get(0).setDefaultValue(0.5 * SimTK::Pi);
+    hog->updCoordinate().setDefaultValue(0.5 * SimTK::Pi);
     
     auto* asis = new OpenSim::Marker();
     asis->setName("asis"); asis->setParentFrame(*pelvis);
@@ -383,9 +383,9 @@ void testFutureIKListOutputs() {
     // Set the marker targets for IK. Connect to all channels in the "col"
     // list output.
     ik->updInput("targets").connect(exp->getOutput("col"));
-    // Must annotate this output since we need a way to figure out which marker
-    // it corresponds to. The InverseKinematics component uses annotations to
-    // pair target Vec3's with model markers.
+    // Must provide an alias for this output since we need a way to figure out
+    // which marker it corresponds to. The InverseKinematics component uses
+    // aliases to pair target Vec3's with model markers.
     ik->updInput("targets").connect(hjc->getOutput("joint_center"), "hjc");
     
     // Connect up the reporters.
@@ -398,11 +398,10 @@ void testFutureIKListOutputs() {
     modelMarkers->updInput("inputs").connect(ik->getOutput("model_marker_pos"));
     // Connect to all channels in the "coords" list output.
     solution->updInput("inputs").connect(ik->getOutput("coords"));
-    hjc->dumpConnections();
-    ik->dumpConnections();
+    hjc->printSocketInfo();
+    ik->printSocketInfo();
 
-
-    model.dumpSubcomponents();
+    model.printSubcomponentInfo();
 
     SimTK::State& s = model.initSystem();
     

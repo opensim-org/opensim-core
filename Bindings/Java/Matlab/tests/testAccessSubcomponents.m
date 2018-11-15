@@ -5,11 +5,13 @@ model = Model('arm26.osim');
 
 % Individual components
 % =====================
-muscle = model.getComponent('BICshort');
+muscle = model.getComponent('forceset/BICshort');
 assert(strcmp(muscle.getName(), 'BICshort'));
-Thelen2003Muscle.safeDownCast(muscle).get_max_isometric_force();
-muscle = model.updComponent('BICshort');
-Thelen2003Muscle.safeDownCast(muscle).set_max_isometric_force(100);
+thelenMuscle = Thelen2003Muscle.safeDownCast(muscle);
+thelenMuscle.get_max_isometric_force();
+muscle = model.updComponent('forceset/BICshort');
+updThelenMuscle = Thelen2003Muscle.safeDownCast(muscle)
+updThelenMuscle.set_max_isometric_force(100);
 
 % ComponentList
 % =============
@@ -20,7 +22,7 @@ it = comps.begin();
 countComps = 0;
 while ~it.equals(comps.end())
     it.getName(); % Object.
-    it.getNumConnectors(); % Component.
+    it.getNumSockets(); % Component.
     it.next();
     countComps = countComps + 1;
 end
@@ -53,7 +55,7 @@ assert(countMuscles > 0);
 % TODO end
 
 % Use ComponentList filter.
-muscleList.setFilter(ComponentFilterFullPathNameContainsString('BIC'));
+muscleList.setFilter(ComponentFilterAbsolutePathNameContainsString('BIC'));
 muscleIter = muscleList.begin();
 countBICMuscles = 0;
 BICnames = {'BIClong', 'BICshort'};

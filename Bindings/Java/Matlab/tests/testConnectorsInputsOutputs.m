@@ -32,29 +32,32 @@ model.addComponent(source);
 model.addComponent(rep);
 
 
-% Connectors
-% ==========
+% Sockets
+% =======
 
-% Access (and iterate through) a component's AbstractConnectors, using names.
-names = joint.getConnectorNames();
+% Access (and iterate through) a component's AbstractSockets, using names.
+names = joint.getSocketNames();
 for i = 0:(names.size() - 1)
-    typeName = joint.getConnector(names.get(i)).getConnecteeTypeName();
+    typeName = joint.getSocket(names.get(i)).getConnecteeTypeName();
     assert(strcmp(typeName, 'PhysicalFrame'));
 end
 
 % Access (and iterate through) a component's connectees as objects.
-expectedNames = {'ground', 'block'};
+expectedNames = {'block', 'ground'};
 for i = 0:(names.size() - 1)
     obj = joint.getConnectee(names.get(i)); % this is an object.
     assert(strcmp(obj.getName(), expectedNames{i+1}));
 end
 
 % Access a specific concrete connectee.
-assert(Body.safeDownCast(joint.getConnectee('child_frame')).getMass() == 2);
+body = Body.safeDownCast(joint.getConnectee('child_frame'));
+assert(body.getMass() == 2);
 
-% Connect a connector.
-offset.updConnector('parent').connect(ground);
-assert(strcmp(offset.getConnector('parent').getConnecteeName(), '../ground'));
+% Connect a socket. Try the different methods to ensure they all work.
+offset.connectSocket_parent(ground);
+offset.updSocket('parent').connect(ground);
+model.finalizeConnections()
+assert(strcmp(offset.getSocket('parent').getConnecteePath(), '/ground'));
 
 
 
@@ -64,7 +67,7 @@ state = model.initSystem();
 model.realizeAcceleration(state);
 
 % Access (and iterate through) the AbstractOutputs, using names.
-coord = joint.getCoordinateSet().get(0);
+coord = joint.get_coordinates(0);
 names = coord.getOutputNames();
 for i = 0:(names.size() - 1)
     assert(coord.getOutput(names.get(i)).isListOutput() == 0);
@@ -72,13 +75,14 @@ for i = 0:(names.size() - 1)
 end
 
 % Access the value of a concrete Output.
-OutputDouble.safeDownCast(coord.getOutput('speed')).getValue(state);
+concreteOutput = OutputDouble.safeDownCast(coord.getOutput('speed'));
+concreteOutput.getValue(state);
 
 % Channels
 % --------
 % Access AbstractChannels.
 assert(strcmp(coord.getOutput('speed').getChannel('').getPathName(), ...
-              '/leg/pin/pin_coord_0/speed'));
+              '/jointset/pin/pin_coord_0|speed'));
 
 % Access the value of a concrete Channel.
 % TODO Concrete channels are not wrapped yet.
@@ -90,34 +94,39 @@ assert(strcmp(coord.getOutput('speed').getChannel('').getPathName(), ...
 % ==========================
 % Only need the abstract types in order to connect.
 rep.updInput('inputs').connect(coord.getOutput('value'));
-% With annotation:
-rep.updInput('inputs').connect(coord.getOutput('speed'), 'target');
+% With alias:
+rep.connectInput_inputs(coord.getOutput('speed'), 'target');
 % These commands use the AbstractChannel.
-rep.updInput('inputs').connect(source.getOutput('column').getChannel('c1'));
+rep.addToReport(source.getOutput('column').getChannel('c1'));
 rep.updInput('inputs').connect(source.getOutput('column').getChannel('c2'), ...
                                'second_col');
-
+model.finalizeConnections()
 
 % Inputs
 % ======
 
 % Access (and iterate through) the AbstractInputs, using names.
 names = rep.getInputNames();
-expectedAnnos = {'value', 'target', 'c1', 'second_col'};
+expectedAliases = {'', 'target', '', 'second_col'};
+expectedLabels  = {'/jointset/pin/pin_coord_0|value', 'target', ...
+                   '/source|column:c1', 'second_col'};
 for i = 0:(names.size() - 1)
     % Actually, there is only one Input, named 'inputs'.
     % We connected it to 4 channels.
     numConnectees = rep.getInput(names.get(i)).getNumConnectees();
     assert(numConnectees == 4);
     for j = 0:(numConnectees - 1)
-        assert(strcmp(rep.getInput(names.get(i)).getAnnotation(j), ...
-                      expectedAnnos{j+1}));
+        assert(strcmp(rep.getInput(names.get(i)).getAlias(j), ...
+                      expectedAliases{j+1}));
+        assert(strcmp(rep.getInput(names.get(i)).getLabel(j), ...
+                      expectedLabels{j+1}));
     end
 end
 
 % Access the value of a concerete Input.
 % The value 1 comes from column 2 of the TableSource.
-assert(InputDouble.safeDownCast(rep.getInput('inputs')).getValue(state, 3)==1);
+concreteInput = InputDouble.safeDownCast(rep.getInput('inputs'));
+assert(concreteInput.getValue(state, 3)==1);
 % TODO Concrete channels are not wrapped yet.
 % TODO InputDouble.safeDownCast(comp.getInput(name)).getChannel(0).getValue(s);
 

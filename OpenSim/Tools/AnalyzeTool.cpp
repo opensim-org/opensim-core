@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -371,7 +371,8 @@ loadStatesFromFile(SimTK::State& s)
         cout<<"\nLoading states from file "<<_statesFileName<<"."<<endl;
         Storage temp(_statesFileName);
         _statesStore = new Storage();
-        _model->formStateStorage(temp, *_statesStore);
+        _statesStore->setName("states"); // Name appears in GUI
+        _model->formStateStorage(temp, *_statesStore, true);
     } else {
         if(!_coordinatesFileNameProp.isValidFileName()) 
             throw Exception("AnalyzeTool.initializeFromFiles: Either a states file or a coordinates file must be specified.",__FILE__,__LINE__);
@@ -390,7 +391,9 @@ loadStatesFromFile(SimTK::State& s)
 
         Storage *qStore=NULL, *uStore=NULL;
 
-        _model->getSimbodyEngine().formCompleteStorages( s, coordinatesStore,qStore,uStore);
+        // qStore and uStore returned are in radians
+        _model->getSimbodyEngine().formCompleteStorages( s, coordinatesStore,
+            qStore, uStore);
 
         if(_speedsFileName!="") {
             delete uStore;
@@ -398,10 +401,15 @@ loadStatesFromFile(SimTK::State& s)
             uStore = new Storage(_speedsFileName);
         }
 
-        _model->getSimbodyEngine().convertDegreesToRadians(*qStore);
-        _model->getSimbodyEngine().convertDegreesToRadians(*uStore);
+        // used to use createStatesStorageFromCoordinatesAndSpeeds(*_model, *qStore, *uStore);
+        double ti = qStore->getFirstTime();
+        double tf = qStore->getLastTime();
+        uStore->addToRdStorage(*qStore, ti, tf);
 
-        _statesStore = createStatesStorageFromCoordinatesAndSpeeds(*_model, *qStore, *uStore);
+        delete _statesStore;
+        _statesStore = new Storage(512, "states");
+
+        _model->formStateStorage(*qStore, *_statesStore, false);
 
         delete qStore;
         delete uStore;
@@ -429,13 +437,17 @@ setStatesFromMotion(const SimTK::State& s, const Storage &aMotion, bool aInDegre
     }
 
     Storage *qStore=NULL, *uStore=NULL;
+    // qStore and uStore returned are in radians
     _model->getSimbodyEngine().formCompleteStorages(s,motionCopy,qStore,uStore);
 
-    _model->getSimbodyEngine().convertDegreesToRadians(*qStore);
-    _model->getSimbodyEngine().convertDegreesToRadians(*uStore);
+    double ti = qStore->getFirstTime();
+    double tf = qStore->getLastTime();
+    uStore->addToRdStorage(*qStore, ti, tf);
 
-    _statesStore = createStatesStorageFromCoordinatesAndSpeeds(*_model, *qStore, *uStore);
+    delete _statesStore;
+    _statesStore = new Storage(512, "states");
 
+    _model->formStateStorage(*qStore, *_statesStore, false);
     delete qStore;
     delete uStore;
 }
@@ -513,6 +525,11 @@ bool AnalyzeTool::run(bool plotting)
         throw(Exception(msg,__FILE__,__LINE__));
     }
 
+    // Do the maneuver to change then restore working directory 
+    // so that the parsing code behaves properly if called from a different directory.
+    string saveWorkingDirectory = IO::getCwd();
+    if (getDocument())  // When the tool is created live from GUI it has no file/document association
+        IO::chDir(IO::getParentDirectory(getDocumentFileName()));
     // Use the Dynamics Tool API to handle external loads instead of outdated AbstractTool
     /*bool externalLoads = */createExternalLoads(_externalLoadsFileName, *_model);
 
@@ -527,12 +544,6 @@ bool AnalyzeTool::run(bool plotting)
         loadStatesFromFile(s);
     }
 
-
-    // Do the maneuver to change then restore working directory 
-    // so that the parsing code behaves properly if called from a different directory.
-    string saveWorkingDirectory = IO::getCwd();
-    if (getDocument())  // When the tool is created live from GUI it has no file/document association
-        IO::chDir(IO::getParentDirectory(getDocumentFileName()));
 
     bool completed = true;
 
@@ -584,6 +595,8 @@ bool AnalyzeTool::run(bool plotting)
 
     IO::chDir(saveWorkingDirectory);
 
+    removeExternalLoadsFromModel();
+
     return completed;
 }
 
@@ -598,8 +611,6 @@ void AnalyzeTool::run(SimTK::State& s, Model &aModel, int iInitial, int iFinal, 
         analysisSet.get(i).setStatesStore(aStatesStore);
     }
 
-    // TODO: some sort of filtering or something to make derivatives smoother?
-    GCVSplineSet statesSplineSet(5,&aStatesStore);
 
     // PERFORM THE ANALYSES
     double /*tPrev=0.0,*/t=0.0/*,dt=0.0*/;

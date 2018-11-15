@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ajay Seth                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -25,7 +25,6 @@
 // INCLUDES
 //==============================================================================
 #include "ActivationFiberLengthMuscle.h"
-#include "Model.h"
 
 using namespace std;
 using namespace OpenSim;
@@ -135,7 +134,7 @@ void ActivationFiberLengthMuscle::
     double adot = 0;
     double ldot = 0;
 
-    if (!isDisabled(s) && !isActuationOverridden(s)) {
+    if (appliesForce(s) && !isActuationOverridden(s)) {
         adot = getActivationRate(s);
         ldot = getFiberVelocity(s);
     }
@@ -176,30 +175,21 @@ double ActivationFiberLengthMuscle::getActivationRate(const SimTK::State& s) con
 //==============================================================================
 // SCALING
 //==============================================================================
-
-//_____________________________________________________________________________
-/**
- * Perform computations that need to happen after the muscle is scaled.
- * For this object, that entails updating the muscle path. Derived classes
- * should probably also scale or update some of the force-generating
- * properties.
- *
- * @param aScaleSet XYZ scale factors for the bodies.
- */
 void ActivationFiberLengthMuscle::
-postScale(const SimTK::State& s, const ScaleSet& aScaleSet)
+extendPostScale(const SimTK::State& s, const ScaleSet& scaleSet)
 {
+    Super::extendPostScale(s, scaleSet);
+
     GeometryPath& path = upd_GeometryPath();
-
-    path.postScale(s, aScaleSet);
-
     if (path.getPreScaleLength(s) > 0.0)
-        {
-            double scaleFactor = getLength(s) / path.getPreScaleLength(s);
-            upd_optimal_fiber_length() *= scaleFactor;
-            upd_tendon_slack_length() *= scaleFactor;
-            path.setPreScaleLength(s, 0.0) ;
-        }
+    {
+        double scaleFactor = path.getLength(s) / path.getPreScaleLength(s);
+        upd_optimal_fiber_length() *= scaleFactor;
+        upd_tendon_slack_length() *= scaleFactor;
+
+        // Clear the pre-scale length that was stored in the GeometryPath.
+        path.setPreScaleLength(s, 0.0);
+    }
 }
 
 //--------------------------------------------------------------------------
@@ -240,10 +230,7 @@ void ActivationFiberLengthMuscle::computeForce(const SimTK::State& s,
         // ask for muscle derivatives, which will be integrated
         // in the case the actuation is being overridden, the states aren't 
         // being used but a valid derivative cache entry is still required
-        int numStateVariables = getNumStateVariables();
-        Array<std::string> stateVariableNames = getStateVariableNames();
-        for (int i = 0; i < numStateVariables; ++i) {
-            setStateVariableDerivativeValue(s, stateVariableNames[i], 0.0);
-        }
+        setStateVariableDerivativeValue(s, STATE_ACTIVATION_NAME, 0.0);
+        setStateVariableDerivativeValue(s, STATE_FIBER_LENGTH_NAME, 0.0);
     } 
 }

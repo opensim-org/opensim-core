@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Chand T. John, Ajay Seth                                        *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -180,18 +180,20 @@ public:
         // If desired force is in direction of one muscle's pull
         // direction, then set that muscle's control based on desired
         // force.  Otherwise, set the muscle's control to zero.
-        double leftControl = 0.0, rightControl = 0.0;
+
+        double leftControl = leftMuscle->getMinControl(),
+            rightControl = rightMuscle->getMinControl();
         if( desFrc < 0 ) {
             leftControl = std::abs( desFrc ) / FoptL;
-            rightControl = 0.0;
         }
         else if( desFrc > 0 ) {
-            leftControl = 0.0;
             rightControl = std::abs( desFrc ) / FoptR;
         }
         // Don't allow any control value to be greater than one.
-        if( leftControl > 1.0 ) leftControl = 1.0;
-        if( rightControl > 1.0 ) rightControl = 1.0;
+        if( leftControl > leftMuscle->getMaxControl())
+            leftControl = leftMuscle->getMaxControl();
+        if( rightControl > rightMuscle->getMaxControl())
+            rightControl = rightMuscle->getMaxControl();
 
         // Thelen muscle has only one control
         Vector muscleControl(1, leftControl);
@@ -292,12 +294,9 @@ int main()
         // Compute initial conditions for muscles.
         //osimModel.computeEquilibriumForAuxiliaryStates(si);
 
-        // Create the integrator and manager for the simulation.
-        SimTK::RungeKuttaMersonIntegrator
-            integrator( osimModel.getMultibodySystem() );
-        integrator.setAccuracy( 1.0e-4 );
-
-        Manager manager( osimModel, integrator );
+        // Create the manager for the simulation.
+        Manager manager(osimModel);
+        manager.setIntegratorAccuracy(1.0e-4);
 
         // Examine the model.
         osimModel.printDetailedInfo( si, std::cout );
@@ -311,18 +310,18 @@ int main()
         }
 
         // Integrate from initial time to final time.
-        manager.setInitialTime( initialTime );
-        manager.setFinalTime( finalTime );
+        si.setTime(initialTime);
+        manager.initialize(si);
         std::cout << "\n\nIntegrating from " << initialTime
             << " to " << finalTime << std::endl;
-        manager.integrate( si );
+        manager.integrate(finalTime);
 
         // Save the simulation results.
         auto controlsTable = osimModel.getControlsTable();
-        STOFileAdapter::write(controlsTable, "tugOfWar_controls.sto");
+        STOFileAdapter_<double>::write(controlsTable, "tugOfWar_controls.sto");
 
         auto statesTable = manager.getStatesTable();
-        STOFileAdapter::write(statesTable, "tugOfWar_states.sto");
+        STOFileAdapter_<double>::write(statesTable, "tugOfWar_states.sto");
     }
     catch (const std::exception &ex) {
         

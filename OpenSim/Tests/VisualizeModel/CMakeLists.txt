@@ -3,7 +3,7 @@ set(VISUALIZE_MODEL visualizeModel)
 
 add_executable(${VISUALIZE_MODEL} VisualizeModel.cpp)
 
-target_link_libraries(${VISUALIZE_MODEL} osimTools)
+target_link_libraries(${VISUALIZE_MODEL} osimAnalyses)
 
 set_target_properties(${VISUALIZE_MODEL}        
        PROPERTIES        

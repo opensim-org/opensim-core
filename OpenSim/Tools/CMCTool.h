@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson                                               *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -29,15 +29,8 @@
 #define CMCTool_h__
 
 #include "osimToolsDLL.h"
-#include <OpenSim/Common/Object.h>
-#include <OpenSim/Common/PropertyBool.h>
-#include <OpenSim/Common/PropertyStr.h>
-#include <OpenSim/Common/PropertyInt.h>
-#include <OpenSim/Common/Storage.h>
-#include <OpenSim/Common/FunctionSet.h>
 #include <OpenSim/Simulation/Model/AbstractTool.h>
 #include <OpenSim/Simulation/Model/ForceSet.h>
-#include <OpenSim/Simulation/Control/ControlSet.h>
 
 #ifdef SWIG
     #ifdef OSIMTOOLS_API
@@ -48,6 +41,8 @@
 
 namespace OpenSim {
 
+class ControlSet;
+class Storage;
 
 //=============================================================================
 //=============================================================================

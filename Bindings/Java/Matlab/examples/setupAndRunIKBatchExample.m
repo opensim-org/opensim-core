@@ -5,7 +5,7 @@
 % and supported by the US National Institutes of Health (U54 GM072970,    %
 % R24 HD065690) and by DARPA through the Warrior Web program.             %
 %                                                                         %   
-% Copyright (c) 2005-2012 Stanford University and the Authors             %
+% Copyright (c) 2005-2017 Stanford University and the Authors             %
 % Author(s): Edith Arnold                                                 %  
 %                                                                         %   
 % Licensed under the Apache License, Version 2.0 (the "License");         %
@@ -50,7 +50,7 @@ ikTool = InverseKinematicsTool([genericSetupPath genericSetupForIK]);
     uigetfile('*.osim','Pick the the model file to be used.');
 
 % Load the model and initialize
-model = Model([modelFilePath modelFile]);
+model = Model(fullfile(modelFilePath, modelFile));
 model.initSystem();
 
 % Tell Tool to use the loaded model
@@ -61,14 +61,14 @@ trialsForIK = dir(fullfile(trc_data_folder, '*.trc'));
 nTrials = size(trialsForIK);
 
 % Loop through the trials
-for trial= 1:nTrials;
+for trial= 1:nTrials
     
     % Get the name of the file for this trial
     markerFile = trialsForIK(trial).name;
     
     % Create name of trial from .trc file name
     name = regexprep(markerFile,'.trc','');
-    fullpath = ([trc_data_folder '\' markerFile])
+    fullpath = fullfile(trc_data_folder, markerFile);
     
     % Get trc data to determine time range
     markerData = MarkerData(fullpath);
@@ -82,11 +82,11 @@ for trial= 1:nTrials;
     ikTool.setMarkerDataFileName(fullpath);
     ikTool.setStartTime(initial_time);
     ikTool.setEndTime(final_time);
-    ikTool.setOutputMotionFileName([results_folder '\' name '_ik.mot']);
+    ikTool.setOutputMotionFileName(fullfile(results_folder, [name '_ik.mot']));
     
     % Save the settings in a setup file
     outfile = ['Setup_IK_' name '.xml'];
-    ikTool.print([genericSetupPath '\' outfile]);
+    ikTool.print(fullfile(genericSetupPath, outfile));
     
     fprintf(['Performing IK on cycle # ' num2str(trial) '\n']);
     % Run IK

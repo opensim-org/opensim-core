@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Peter Eastman, Ajay Seth                                        *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -133,15 +133,15 @@ int testBouncingBall(bool useMesh, const std::string mesh_filename)
     ContactHalfSpace *floor = new ContactHalfSpace(Vec3(0),
                                                    Vec3(0, 0, -0.5*SimTK_PI),
                                                    ground,
-                                                   "ground");
+                                                   "floor");
     osimModel->addContactGeometry(floor);
     OpenSim::ContactGeometry* geometry;
     if (useMesh){
         geometry = new ContactMesh(mesh_filename, Vec3(0), Vec3(0),
-                                   ball, "ball");
+                                   ball, "sphere");
     }
     else
-        geometry = new ContactSphere(radius, Vec3(0), ball, "ball");
+        geometry = new ContactSphere(radius, Vec3(0), ball, "sphere");
     osimModel->addContactGeometry(geometry);
 
     OpenSim::Force* force;
@@ -151,8 +151,8 @@ int testBouncingBall(bool useMesh, const std::string mesh_filename)
         auto* contactParams =
             new OpenSim::ElasticFoundationForce::ContactParameters(
                     1.0e6/radius, 1e-5, 0.0, 0.0, 0.0);
-        contactParams->addGeometry("ball");
-        contactParams->addGeometry("ground");
+        contactParams->addGeometry("sphere");
+        contactParams->addGeometry("floor");
         force = new OpenSim::ElasticFoundationForce(contactParams);
         osimModel->addForce(force);
     }
@@ -162,8 +162,8 @@ int testBouncingBall(bool useMesh, const std::string mesh_filename)
         auto* contactParams =
             new OpenSim::HuntCrossleyForce::ContactParameters(
                     1.0e6, 1e-5, 0.0, 0.0, 0.0);
-        contactParams->addGeometry("ball");
-        contactParams->addGeometry("ground");
+        contactParams->addGeometry("sphere");
+        contactParams->addGeometry("floor");
         force = new OpenSim::HuntCrossleyForce(contactParams);
         osimModel->addForce(force);
     }
@@ -187,24 +187,19 @@ int testBouncingBall(bool useMesh, const std::string mesh_filename)
     // Simulate it and see if it bounces correctly.
     cout << "stateY=" << osim_state.getY() << std::endl;
 
-    RungeKuttaMersonIntegrator integrator(osimModel->getMultibodySystem() );
-    integrator.setAccuracy(integ_accuracy);
-    Manager manager(*osimModel, integrator);
+    Manager manager(*osimModel);
+    manager.setIntegratorAccuracy(integ_accuracy);
+    osim_state.setTime(0.0);
+    manager.initialize(osim_state);
 
     for (unsigned int i = 0; i < duration/interval; ++i)
     {
-        manager.setInitialTime(i*interval);
-        manager.setFinalTime((i+1)*interval);
-        manager.integrate(osim_state);
+        osim_state = manager.integrate((i + 1)*interval);
         double time = osim_state.getTime();
 
         osimModel->getMultibodySystem().realize(osim_state, Stage::Acceleration);
-        Vec3 pos, vel;
-
-        osimModel->updSimbodyEngine().getPosition(osim_state,
-                osimModel->getBodySet().get("ball"), Vec3(0), pos);
-        osimModel->updSimbodyEngine().getVelocity(osim_state,
-                osimModel->getBodySet().get("ball"), Vec3(0), vel);
+        Vec3 pos = ball.findStationLocationInGround(osim_state, Vec3(0));
+        Vec3 vel = ball.findStationVelocityInGround(osim_state, Vec3(0));
 
         double Etot = mass*((-gravity_vec[1])*pos[1] + 0.5*vel[1]*vel[1]);
 
@@ -327,13 +322,12 @@ int testBallToBallContact(bool useElasticFoundation, bool useMesh1, bool useMesh
     // Simulate it and see if it bounces correctly.
     cout << "stateY=" << osim_state.getY() << std::endl;
 
-    RungeKuttaMersonIntegrator integrator(osimModel->getMultibodySystem() );
-    integrator.setAccuracy(integ_accuracy);
-    integrator.setMaximumStepSize(100*integ_accuracy);
-    Manager manager(*osimModel, integrator);
-    manager.setInitialTime(0.0);
-    manager.setFinalTime(duration);
-    manager.integrate(osim_state);
+    Manager manager(*osimModel);
+    manager.setIntegratorAccuracy(integ_accuracy);
+    manager.setIntegratorMaximumStepSize(100*integ_accuracy);
+    osim_state.setTime(0.0);
+    manager.initialize(osim_state);
+    osim_state = manager.integrate(duration);
 
     kin->printResults(prefix);
     reporter->printResults(prefix);
@@ -356,21 +350,21 @@ void compareHertzAndMeshContactResults()
 
     // Hertz theory and ElasticFoundation will not be the same, but they should
     // yield similar results, to withing
-    Array<double> rms_tols_1(12, nforces);
+    std::vector<double> rms_tols_1(nforces, 12);
     CHECK_STORAGE_AGAINST_STANDARD(meshToMesh, hertz, rms_tols_1,
             __FILE__, __LINE__,
             "ElasticFoundation FAILED to Match Hertz Contact ");
 
     // ElasticFoundation on mesh to mesh and mesh to non-mesh should be
     // virtually identical
-    Array<double> rms_tols_2(0.5, nforces);
+    std::vector<double> rms_tols_2(nforces, 0.5);
     CHECK_STORAGE_AGAINST_STANDARD(meshToMesh, meshToNoMesh, rms_tols_2,
             __FILE__, __LINE__,
             "ElasticFoundation Mesh-Mesh FAILED to match Mesh-noMesh Case ");
 
     // ElasticFoundation on non-mesh to mesh and mesh to non-mesh should be
     // identical
-    Array<double> rms_tols_3(integ_accuracy, nforces);
+    std::vector<double> rms_tols_3(nforces, integ_accuracy);
     CHECK_STORAGE_AGAINST_STANDARD(noMeshToMesh, meshToNoMesh, rms_tols_3,
             __FILE__, __LINE__,
             "ElasticFoundation noMesh-Mesh FAILED to match Mesh-noMesh Case ");
@@ -381,7 +375,7 @@ void compareHertzAndMeshContactResults()
 // In version 4.0, we introduced intermediate PhysicalFrames to
 // ContactGeometry. The test below ensures that the intermediate frames (as
 // well as the ContactGeometry's location and orientation properties) are
-// acccounted for by comparing results for equivalent systems, some of which
+// accounted for by comparing results for equivalent systems, some of which
 // use an intermediate offset frame.
 // The system is a point mass situated 1 meter along a link that is attached to
 // ground by a hinge. The contact ball (sphere or mesh) is 1 meter up and 0.5
@@ -404,7 +398,7 @@ void compareHertzAndMeshContactResults()
 // The link starts at an incline of 27 degrees and then the link drops down and
 // hits the platform.
 // We test three equivalent systems that specify the transforms for the
-// platform and ball geomtries in different ways:
+// platform and ball geometries in different ways:
 //    1. Only using WeldJoints and massless bodies.
 //    2. Using a mix of PhysicalOffsetFrames and the geometry's location and
 //       orientation properties.
@@ -490,15 +484,15 @@ void testIntermediateFrames() {
         // Initialize and set state.
         SimTK::State& state = model.initSystem();
         const auto& hinge = model.getJointSet().get("hinge");
-        const auto& coord = hinge.get_CoordinateSet()[0];
+        const auto& coord = hinge.getCoordinate();
         coord.setValue(state, 0.15 * SimTK::Pi);
 
         // Integrate.
-        RungeKuttaMersonIntegrator integrator(model.getMultibodySystem());
-        integrator.setAccuracy(integ_accuracy);
-        Manager manager(model, integrator);
-        manager.setFinalTime(1.0);
-        manager.integrate(state);
+        Manager manager(model);
+        manager.setIntegratorAccuracy(integ_accuracy);
+        state.setTime(0.0);
+        manager.initialize(state);
+        state = manager.integrate(1.0);
 
         return state;
     };
@@ -552,13 +546,13 @@ void testIntermediateFrames() {
                 model.getBodySet().get("point"),
                 // Frame is up 1m in the y direction.
                 SimTK::Transform(Vec3(0, 1, 0)));
-        model.addFrame(linkOffset);
+        model.addComponent(linkOffset);
 
         // Scaffolding for the platform.
         auto* platformOffset = new PhysicalOffsetFrame("platform_offset",
                 model.getGround(),
                 SimTK::Transform(SimTK::Rotation(-deg45, SimTK::ZAxis)));
-        model.addFrame(platformOffset);
+        model.addComponent(platformOffset);
 
         addContactComponents<ContactType>(model,
                 *linkOffset, Vec3(0.5, 0, 0),
@@ -570,7 +564,7 @@ void testIntermediateFrames() {
         SimTK_TEST(model.calcMassCenterVelocity(stateIntermedFrameY)[1] > 0);
     }
 
-    // Achieve transforms soleley with PhysicalOffsetFrames.
+    // Achieve transforms solely with PhysicalOffsetFrames.
     SimTK::State stateIntermedFrameXY;
     {
         Model model = createBaseModel();
@@ -580,13 +574,13 @@ void testIntermediateFrames() {
                 model.getBodySet().get("point"),
                 // Frame is 0.5m to the right and 1m up.
                 SimTK::Transform(Vec3(0.5, 1, 0)));
-        model.addFrame(linkOffset);
+        model.addComponent(linkOffset);
 
         // Scaffolding for the platform.
         auto* platformOffset = new PhysicalOffsetFrame("platform_offset",
                 model.getGround(),
                 SimTK::Transform(SimTK::Rotation(-deg90, SimTK::ZAxis)));
-        model.addFrame(platformOffset);
+        model.addComponent(platformOffset);
 
         addContactComponents<ContactType>(model, *linkOffset, Vec3(0),
                                                  *platformOffset, Vec3(0));

@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2014-2014 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Authors: Ayman Habib                                                       *
  * Contributers : Chris Dembia                                                *
  *                                                                            *
@@ -26,7 +26,9 @@
 
 // INCLUDES
 #include <OpenSim/Common/osimCommonDLL.h>
-#include "Simbody.h"
+#include <string>
+#include <type_traits>
+#include "SimTKcommon/basics.h"
 
 namespace OpenSim {
 
@@ -77,16 +79,16 @@ public:
     }
 };
 
-/** A component is considered a match if its full path name contains the
+/** A component is considered a match if its absolute path name contains the
 given string. */
-class OSIMCOMMON_API ComponentFilterFullPathNameContainsString
+class OSIMCOMMON_API ComponentFilterAbsolutePathNameContainsString
         : public ComponentFilter {
 public:
-    ComponentFilterFullPathNameContainsString(const std::string& substring)
+    ComponentFilterAbsolutePathNameContainsString(const std::string& substring)
         : _substring(substring) {}
     bool isMatch(const Component& comp) const override;
-    ComponentFilterFullPathNameContainsString* clone() const override {
-        return new ComponentFilterFullPathNameContainsString(*this);
+    ComponentFilterAbsolutePathNameContainsString* clone() const override {
+        return new ComponentFilterAbsolutePathNameContainsString(*this);
     }
 private:
     std::string _substring;
@@ -112,12 +114,17 @@ public:
 
     static_assert(std::is_base_of<Component, T>::value,
         "Can only create a ComponentList of Components.");
+
+    // This typedef is used to avoid "duplicate const" errors with SWIG,
+    // caused when "T" is "const Component," leading to
+    // "const const Component."
+    typedef typename std::add_const<T>::type ConstT;
     
     /** A const forward iterator for iterating through ComponentList<T>.
     The const indicates that the iterator provides only 
     const references/pointers, and that components can't be modified 
     through this iterator. */
-    typedef ComponentListIterator<const T> const_iterator;
+    typedef ComponentListIterator<ConstT> const_iterator;
     
     /** If T is const (e.g., ComponentList<const Body>), then this is
     the same as const_iterator, and does not allow modifying the elements.
@@ -136,7 +143,7 @@ public:
     descendants). ComponentFilterMatchAll is used internally. You can
     change the filter using setFilter() method. 
     */
-    ComponentList(const Component& root) : _root(root){
+    ComponentList(const Component& root) : _root(root) {
         setDefaultFilter();
     }
     /// Destructor of ComponentList.
@@ -226,6 +233,10 @@ template <typename T>
 class ComponentListIterator :
     public std::iterator<std::forward_iterator_tag, Component>
 {
+    // This typedef is used to avoid "duplicate const" errors with SWIG,
+    // caused when "T" is "const Component," leading to
+    // "const const Component."
+    typedef typename std::add_const<T>::type ConstT;
     // The template argument T may be const or non-const; this typedef is
     // always the non-const variant of T. The typedef is useful for friend
     // declarations and casting.
@@ -273,6 +284,9 @@ public:
     // `x = new int` is not valid but `*x = 5` is.
     T& operator*() const { return *operator->(); }
 
+    // A method rather than an operator to dereference the iterator 
+    // to be used in scripting from Matlab environment
+    T& deref() const { return  *operator->(); }
     /// Another dereferencing operator that returns a pointer.
     // The const cast is required for the case when T is not const. In the
     // case where T is const, it is okay that we do the const cast,
@@ -322,7 +336,7 @@ public:
     
     /** @internal ComponentListIterator<const T> needs access to the members
     of ComponentListIterator<T> for the templated constructor above. */
-    friend class ComponentListIterator<const T>;
+    friend class ComponentListIterator<ConstT>;
     /** @internal Comparison operators for ComponentListIterator<T> need
     access to members of ComponentListIterator<const T> (e.g., when invoking
     operator==() with a ComponentListIterator<T> as the left operand and a
@@ -338,7 +352,7 @@ private:
     // just before giving the node to the user (operator*() and operator->()).
     const Component* _node;
     // Root of subtree of Components that we're iterating over.
-    const Component& _root;
+    const Component* _root = nullptr;
     /** Optional filter to further select Components under _root, defaults to
     Filter by type. */
     const ComponentFilter& _filter;
@@ -350,7 +364,7 @@ private:
     ComponentListIterator(const Component* node,
                           const ComponentFilter& filter) :
         _node(node),
-        _root(*node),
+        _root(node),
         _filter(filter) {
         advanceToNextValidComponent(); // in case node is not a match.
     }

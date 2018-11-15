@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ajay Seth                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -24,10 +24,10 @@
 //==============================================================================
 // INCLUDES
 //==============================================================================
-#include <OpenSim/Simulation/Model/Model.h>
+#include "RigidTendonMuscle.h"
 #include <OpenSim/Common/SimmSpline.h>
 
-#include "RigidTendonMuscle.h"
+
 
 //==============================================================================
 // STATICS
@@ -125,12 +125,17 @@ calcMuscleLengthInfo(const State& s, MuscleLengthInfo& mli) const
     double zeroPennateLength = getLength(s) - mli.tendonLength;
     zeroPennateLength = zeroPennateLength < 0 ? 0 : zeroPennateLength;
 
-    mli.fiberLength = sqrt(square(zeroPennateLength) + square(_muscleWidth))
-                        + Eps;
-    
+    if (_muscleWidth > SimTK::SqrtEps) {
+        mli.fiberLength = sqrt(square(zeroPennateLength) + square(_muscleWidth));
     mli.cosPennationAngle = zeroPennateLength/mli.fiberLength;
+    }
+    else { 
+        mli.fiberLength = zeroPennateLength;
+        //also avoid divide by zero if fiberLength is approaching zero
+        mli.cosPennationAngle = 1.0;
+    }
+        
     mli.pennationAngle = acos(mli.cosPennationAngle);
-    
     mli.normFiberLength = mli.fiberLength/getOptimalFiberLength();
 
     const Vector arg(1, mli.normFiberLength);

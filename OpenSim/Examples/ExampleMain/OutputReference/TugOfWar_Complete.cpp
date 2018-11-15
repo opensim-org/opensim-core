@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Jeffrey A. Reinbolt, Ayman Habib, Ajay Seth, Samuel R. Hamner   *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -77,19 +77,19 @@ int main()
         // Left brick
         OpenSim::PhysicalFrame* leftAnchorFrame = new PhysicalOffsetFrame(ground, Transform(Vec3(0, 0.05, 0.35)));
         leftAnchorFrame->setName("LeftAnchor");
-        osimModel.addFrame(leftAnchorFrame);
+        osimModel.addComponent(leftAnchorFrame);
         // Right brick
         OpenSim::PhysicalFrame* rightAnchorFrame = new PhysicalOffsetFrame(ground, Transform(Vec3(0, 0.05, -0.35)));
         rightAnchorFrame->setName("RightAnchor");
-        osimModel.addFrame(rightAnchorFrame);
+        osimModel.addComponent(rightAnchorFrame);
         // Cylinder
         OpenSim::PhysicalFrame* cylFrame = new PhysicalOffsetFrame(ground, Transform(Vec3(-.2, 0.0, 0.)));
         cylFrame->setName("CylAnchor");
-        osimModel.addFrame(cylFrame);
+        osimModel.addComponent(cylFrame);
         // Ellipsoid
         OpenSim::PhysicalFrame* ellipsoidFrame = new PhysicalOffsetFrame(ground, Transform(Vec3(-.6, 0.6, 0.)));
         ellipsoidFrame->setName("EllipsoidAnchor");
-        osimModel.addFrame(ellipsoidFrame);
+        osimModel.addComponent(ellipsoidFrame);
 
 
         // Add display geometry to the ground to visualize in the Visualizer and GUI
@@ -140,27 +140,28 @@ int main()
         Vec3 locationInParent(0, blockSideLength/2, 0), orientationInParent(0), locationInBody(0), orientationInBody(0);
         FreeJoint *blockToGround = new FreeJoint("blockToGround", ground, locationInParent, orientationInParent, *block, locationInBody, orientationInBody);
         
-        // Get a reference to the coordinate set (6 degrees-of-freedom) between the block and ground frames
-        CoordinateSet& jointCoordinateSet = blockToGround->upd_CoordinateSet();
-
-        // Set the angle and position ranges for the coordinate set
+        // Set the angle and position ranges for the free (6-degree-of-freedom)
+        // joint between the block and ground frames.
         double angleRange[2] = {-SimTK::Pi/2, SimTK::Pi/2};
         double positionRange[2] = {-1, 1};
-        jointCoordinateSet[0].setRange(angleRange);
-        jointCoordinateSet[1].setRange(angleRange);
-        jointCoordinateSet[2].setRange(angleRange);
-        jointCoordinateSet[3].setRange(positionRange);
-        jointCoordinateSet[4].setRange(positionRange);
-        jointCoordinateSet[5].setRange(positionRange);
+        blockToGround->updCoordinate(FreeJoint::Coord::Rotation1X).setRange(angleRange);
+        blockToGround->updCoordinate(FreeJoint::Coord::Rotation2Y).setRange(angleRange);
+        blockToGround->updCoordinate(FreeJoint::Coord::Rotation3Z).setRange(angleRange);
+        blockToGround->updCoordinate(FreeJoint::Coord::TranslationX).setRange(positionRange);
+        blockToGround->updCoordinate(FreeJoint::Coord::TranslationY).setRange(positionRange);
+        blockToGround->updCoordinate(FreeJoint::Coord::TranslationZ).setRange(positionRange);
 
         // GRAVITY
         // Obtain the default acceleration due to gravity
         Vec3 gravity = osimModel.getGravity();
 
         // Define non-zero default states for the free joint
-        jointCoordinateSet[3].setDefaultValue(constantDistance); // set x-translation value
-        double h_start = blockMass*gravity[1]/(stiffness*blockSideLength*blockSideLength);
-        jointCoordinateSet[4].setDefaultValue(h_start); // set y-translation which is height
+        blockToGround->updCoordinate(FreeJoint::Coord::TranslationX)
+                       .setDefaultValue(constantDistance);
+        double h_start = blockMass*gravity[1] /
+                         (stiffness*blockSideLength*blockSideLength);
+        blockToGround->updCoordinate(FreeJoint::Coord::TranslationY)
+                       .setDefaultValue(h_start); //y-translation is height
 
         // Add the block and joint to the model
         osimModel.addBody(block);
@@ -297,7 +298,7 @@ int main()
         // Initialize the system and get the default state
         SimTK::State& si = osimModel.initSystem();
         // Enable constraint consistent with current configuration of the model
-        constDist->setDisabled(si, false);
+        constDist->setIsEnforced(si, true);
 
         cout << "Start height = "<< h_start << endl;
         osimModel.getMultibodySystem().realize(si, Stage::Velocity);
@@ -313,31 +314,28 @@ int main()
         ForceReporter* reporter = new ForceReporter(&osimModel);
         osimModel.addAnalysis(reporter);
 
-        // Create the integrator for integrating system dynamics
-        SimTK::RungeKuttaMersonIntegrator integrator(osimModel.getMultibodySystem());
-        integrator.setAccuracy(1.0e-6);
-        
         // Create the manager managing the forward integration and its outputs
-        Manager manager(osimModel,  integrator);
+        Manager manager(osimModel);
+        manager.setIntegratorAccuracy(1.0e-6);
 
         // Print out details of the model
         osimModel.printDetailedInfo(si, cout);
 
         // Integrate from initial time to final time
-        manager.setInitialTime(initialTime);
-        manager.setFinalTime(finalTime);
+        si.setTime(initialTime);
+        manager.initialize(si);
         cout<<"\nIntegrating from "<<initialTime<<" to "<<finalTime<<endl;
-        manager.integrate(si);
+        manager.integrate(finalTime);
 
         //////////////////////////////
         // SAVE THE RESULTS TO FILE //
         //////////////////////////////
         // Save the model states from forward integration
         auto statesTable = manager.getStatesTable();
-        STOFileAdapter::write(statesTable, "tugOfWar_states.sto");
+        STOFileAdapter_<double>::write(statesTable, "tugOfWar_states.sto");
 
         auto forcesTable = reporter->getForcesTable();
-        STOFileAdapter::write(forcesTable, "tugOfWar_forces.sto");
+        STOFileAdapter_<double>::write(forcesTable, "tugOfWar_forces.sto");
     }
     catch (const std::exception& ex)
     {

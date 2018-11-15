@@ -5,7 +5,7 @@
 % and supported by the US National Institutes of Health (U54 GM072970,    %
 % R24 HD065690) and by DARPA through the Warrior Web program.             %
 %                                                                         %   
-% Copyright (c) 2005-2012 Stanford University and the Authors             %
+% Copyright (c) 2005-2017 Stanford University and the Authors             %
 %                                                                         %   
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -26,13 +26,13 @@ import org.opensim.modeling.*
 subjectDir = uigetdir('testData', 'Select the folder that contains the current subject data');
 
 % Go to the folder in the subject's folder where IK Results are
-ik_results_folder = [subjectDir '\IKResults\'];
+ik_results_folder = fullfile(subjectDir, 'IKResults');
 
 % specify where setup files will be printed.
-setupfiles_folder = [subjectDir '\AnalyzeSetup\'];
+setupfiles_folder = fullfile(subjectDir, 'AnalyzeSetup');
 
 % specify where results will be printed.
-results_folder = [subjectDir '\AnalyzeResults\'];
+results_folder = fullfile(subjectDir, 'AnalyzeResults');
 
 % %% To send an email at the end of this function define these variables appropriately:
 % % more details available here:
@@ -54,15 +54,15 @@ results_folder = [subjectDir '\AnalyzeResults\'];
 %% Get and operate on the files
 
 subjectNumber = 'subject01';
-genericSetupForAn = [setupfiles_folder subjectNumber '_Setup_Analyze_generic.xml'];
+genericSetupForAn = fullfile(setupfiles_folder, [subjectNumber '_Setup_Analyze_generic.xml']);
 analyzeTool = AnalyzeTool(genericSetupForAn);
 
 % get the file names that match the ik_reults convention
 % this is where consistent naming conventions pay off
-trialsForAn = dir([ik_results_folder '*_ik.mot']);
+trialsForAn = dir(fullfile(ik_results_folder, '*_ik.mot'));
 nTrials =length(trialsForAn);
 
-for trial= 1:nTrials;
+for trial= 1:nTrials
     % get the name of the file for this trial
     motIKCoordsFile = trialsForAn(trial).name;
     
@@ -70,7 +70,7 @@ for trial= 1:nTrials;
     name = regexprep(motIKCoordsFile,'_ik.mot','');
     
     % get .mot data to determine time range
-    motCoordsData = Storage([ik_results_folder motIKCoordsFile]);
+    motCoordsData = Storage(fullfile(ik_results_folder, motIKCoordsFile));
     
     % for this example, column is time
     initial_time = motCoordsData.getFirstTime();
@@ -78,18 +78,18 @@ for trial= 1:nTrials;
     
     analyzeTool.setName(name);
     analyzeTool.setResultsDir(results_folder);
-    analyzeTool.setCoordinatesFileName([ik_results_folder motIKCoordsFile]);
+    analyzeTool.setCoordinatesFileName(fullfile(ik_results_folder, motIKCoordsFile));
     analyzeTool.setInitialTime(initial_time);
     analyzeTool.setFinalTime(final_time);   
     
     outfile = ['Setup_Analyze_' name '.xml'];
-    analyzeTool.print([setupfiles_folder outfile]);
+    analyzeTool.print(fullfile(setupfiles_folder, outfile));
     
     analyzeTool.run();
     fprintf(['Performing IK on cycle # ' num2str(trial) '\n']);
     
     % rename the out.log so that it doesn't get overwritten
-    copyfile('out.log',[results_folder name '_out.log'])
+    copyfile('out.log', fullfile(results_folder, [name '_out.log']));
     
 end
 %sendmail(mail,subjectNumber, ['Hello! Analysis for ' subjectNumber '  is complete']);

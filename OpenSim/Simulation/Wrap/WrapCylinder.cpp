@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Peter Loan                                                      *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -24,16 +24,16 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include "SimTKsimbody.h"
 #include "WrapCylinder.h"
-#include <OpenSim/Simulation/Model/PathPoint.h>
 #include "PathWrap.h"
-#include "WrapResult.h"
 #include "WrapMath.h"
-#include <OpenSim/Common/SimmMacros.h>
-#include <OpenSim/Common/Mtx.h>
-#include <sstream>
+#include "WrapResult.h"
 #include <OpenSim/Common/ModelDisplayHints.h>
+#include <OpenSim/Common/Mtx.h>
+#include <OpenSim/Common/SimmMacros.h>
+#include <OpenSim/Common/ScaleSet.h>
+
+
 //=============================================================================
 // STATICS
 //=============================================================================
@@ -76,39 +76,35 @@ WrapCylinder::~WrapCylinder()
 */
 void WrapCylinder::constructProperties()
 {
-    constructProperty_radius(-1.0);
+    constructProperty_radius(1.0);
     constructProperty_length(1.0);
 }
 
-//_____________________________________________________________________________
-/**
- * Scale the cylinder's dimensions. The base class scales the origin
- * of the cylinder in the body's reference frame.
- *
- * @param aScaleFactors The XYZ scale factors.
- */
-void WrapCylinder::scale(const SimTK::Vec3& aScaleFactors)
+void WrapCylinder::extendScale(const SimTK::State& s, const ScaleSet& scaleSet)
 {
-   // Base class, to scale origin in body frame
-   WrapObject::scale(aScaleFactors);
+    Super::extendScale(s, scaleSet);
 
-    SimTK::Vec3 localScaleVector[3];
+    // Get scale factors (if an entry for the Frame's base Body exists).
+    const Vec3& scaleFactors = getScaleFactors(scaleSet, getFrame());
+    if (scaleFactors == ModelComponent::InvalidScaleFactors)
+        return;
 
-   // _pose.x() holds the ellipsoid's X axis expressed in the
-   // body's reference frame, _pose.y() holds the Y, and
-   // _pose.z() holds the Z. Multiplying these vectors by
-   // the scale factor vector gives localScaleVector[]. The magnitudes
-   // of the localScaleVectors gives the amount to scale the cylinder
-   // in the XYZ dimensions. The wrap cylinder is oriented along
-   // the Z axis, so the length is scaled by the Z scale factor,
-   // and the radius is scaled by the average of the X and Y scale factors.
-    for (int i=0; i<3; i++) {
-        localScaleVector[0][i] = _pose.x()[i] * aScaleFactors[i];
-        localScaleVector[1][i] = _pose.y()[i] * aScaleFactors[i];
-        localScaleVector[2][i] = _pose.z()[i] * aScaleFactors[i];
-    }
-   upd_radius() *= ((localScaleVector[0].norm() + localScaleVector[1].norm()) * 0.5);
-   upd_length() *= localScaleVector[2].norm();
+    // _pose.x() holds the ellipsoid's X-axis expressed in the body's reference
+    // frame, _pose.y() holds the Y-axis, and _pose.z() holds the Z-axis.
+    // Multiplying these vectors by the scale factor vector gives
+    // localScaleVector[]. The magnitudes of the localScaleVectors gives the
+    // amount to scale the cylinder in the X, Y, and Z dimensions. The wrap
+    // cylinder is oriented along the Z-axis, so the length is scaled by the Z
+    // scale factor, and the radius is scaled by the average of the X and Y
+    // scale factors.
+    Vec3 localScaleVector[3];
+
+    localScaleVector[0] = _pose.x().elementwiseMultiply(scaleFactors);
+    localScaleVector[1] = _pose.y().elementwiseMultiply(scaleFactors);
+    localScaleVector[2] = _pose.z().elementwiseMultiply(scaleFactors);
+
+    upd_radius() *= (localScaleVector[0].norm() + localScaleVector[1].norm()) * 0.5;
+    upd_length() *= localScaleVector[2].norm();
 }
 
 //_____________________________________________________________________________
@@ -122,12 +118,17 @@ void WrapCylinder::extendFinalizeFromProperties()
     Super::extendFinalizeFromProperties();
 
     // maybe set a parent pointer, _body = aBody;
-    if (get_radius() < 0.0)
-    {
-        string errorMessage = "Error: radius for WrapCylinder " + getName() +
-            " was either not specified, or is negative.";
-        throw Exception(errorMessage);
-    }
+    OPENSIM_THROW_IF_FRMOBJ(
+        get_radius() < 0,
+        InvalidPropertyValue,
+        getProperty_radius().getName(),
+        "Radius cannot be less than zero");
+
+    OPENSIM_THROW_IF_FRMOBJ(
+        get_length() < 0,
+        InvalidPropertyValue,
+        getProperty_length().getName(),
+        "Length cannot be less than zero");
 }
 
 //_____________________________________________________________________________
@@ -809,21 +810,27 @@ void WrapCylinder::generateDecorations(bool fixed, const ModelDisplayHints& hint
 {
 
     Super::generateDecorations(fixed, hints, state, appendToThis);
-    if (fixed) return;
+    if (!fixed) return;
 
     if (hints.get_show_wrap_geometry()) {
-        const Vec3 color(SimTK::Cyan);
+        const Appearance& defaultAppearance = get_Appearance();
+        if (!defaultAppearance.get_visible()) return;
+        const Vec3 color = defaultAppearance.get_color();
+
         SimTK::Transform ztoy;
         // Make transform that takes z axis to y axis due to different
         // assumptions between DecorativeCylinder aligned with y  and
         // WrapCylinder aligned with z
         ztoy.updR().setRotationFromAngleAboutX(SimTK_PI / 2);
-        const SimTK::Transform& X_GB = getFrame().getTransformInGround(state);
-        SimTK::Transform X_GW = X_GB*getTransform()*ztoy;
+
+        const auto X_BP = calcWrapGeometryTransformInBaseFrame();
+        SimTK::Transform X_BP_ztoy = X_BP*ztoy;
         appendToThis.push_back(
             SimTK::DecorativeCylinder(get_radius(),
                 get_length() / 2)
-            .setTransform(X_GW).setResolution(2.0)
-            .setColor(color).setOpacity(0.5));
+            .setTransform(X_BP_ztoy).setResolution(2.0)
+            .setColor(color).setOpacity(defaultAppearance.get_opacity())
+            .setScale(1).setRepresentation(defaultAppearance.get_representation())
+            .setBodyId(getFrame().getMobilizedBodyIndex()));
     }
 }

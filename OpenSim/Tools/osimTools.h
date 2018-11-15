@@ -1,5 +1,5 @@
-#ifndef _osimTools_h_
-#define _osimTools_h_
+#ifndef OPENSIM_OSIMTOOLS_H_
+#define OPENSIM_OSIMTOOLS_H_
 /* -------------------------------------------------------------------------- *
  *                           OpenSim:  osimTools.h                            *
  * -------------------------------------------------------------------------- *
@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ayman Habib                                                     *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -24,11 +24,13 @@
  * -------------------------------------------------------------------------- */
 
 #include "ScaleTool.h"
+#include "RRATool.h"
 #include "CMCTool.h"
 #include "ForwardTool.h"
 #include "AnalyzeTool.h"
 
 #include "InverseKinematicsTool.h"
+#include "InverseDynamicsTool.h"
 #include "GenericModelMaker.h"
 #include "TrackingTask.h"
 #include "MuscleStateTrackingTask.h"
@@ -49,4 +51,4 @@
 #include "CorrectionController.h"
 #include "RegisterTypes_osimTools.h"    // to expose RegisterTypes_osimTools
 
-#endif // _osimTools_h_
+#endif // OPENSIM_OSIMTOOLS_H_

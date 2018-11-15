@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Peter Eastman                                                   *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -23,10 +23,10 @@
 
 #include "ElasticFoundationForce.h"
 #include "ContactGeometry.h"
-#include "ContactGeometrySet.h"
 #include "ContactMesh.h"
 #include "Model.h"
-#include <OpenSim/Simulation/Model/BodySet.h>
+
+#include "simbody/internal/ElasticFoundationForce.h"
 
 namespace OpenSim {
 
@@ -63,10 +63,17 @@ void ElasticFoundationForce::extendAddToSystem(SimTK::MultibodySystem& system) c
     {
         ContactParameters& params = contactParametersSet.get(i);
         for (int j = 0; j < params.getGeometry().size(); ++j) {
-            // get the ContactGeometry from the Model
-            const ContactGeometry& geom =
-                getModel().getComponent<ContactGeometry>(params.getGeometry()[j]);
+            // TODO: Dependency of ElasticFoundationForce on ContactGeometry
+            // should be handled by Sockets.
+            const ContactGeometry* contactGeom = nullptr;
+            if (getModel().hasComponent<ContactGeometry>(params.getGeometry()[j]))
+                contactGeom = &getModel().getComponent<ContactGeometry>(
+                    params.getGeometry()[j]);
+            else
+                contactGeom = &getModel().getComponent<ContactGeometry>(
+                    "./contactgeometryset/" + params.getGeometry()[j]);
 
+            const ContactGeometry& geom = *contactGeom;
             // B: base Frame (Body or Ground)
             // F: PhysicalFrame that this ContactGeometry is connected to
             // P: the frame defined (relative to F) by the location and
@@ -309,10 +316,8 @@ ElasticFoundationForce::ContactParametersSet::ContactParametersSet()
 //=============================================================================
 // Reporting
 //=============================================================================
-/*
- * Provide names of the quantities (column labels) of the force value(s) reported
- * 
- */
+/* Provide names of the quantities (column labels) of the force value(s)
+ * to be reported. */
 OpenSim::Array<std::string> ElasticFoundationForce::getRecordLabels() const 
 {
     OpenSim::Array<std::string> labels("");
@@ -325,8 +330,17 @@ OpenSim::Array<std::string> ElasticFoundationForce::getRecordLabels() const
         ContactParameters& params = contactParametersSet.get(i);
         for (int j = 0; j < params.getGeometry().size(); ++j)
         {
-            const ContactGeometry& geom =
-                getModel().getComponent<ContactGeometry>(params.getGeometry()[j]);
+            // TODO: Dependency of ElasticFoundationForce on ContactGeometry
+            // should be handled by Sockets.
+            const ContactGeometry* contactGeom = nullptr;
+            if (getModel().hasComponent<ContactGeometry>(params.getGeometry()[j]))
+                contactGeom = &getModel().getComponent<ContactGeometry>(
+                    params.getGeometry()[j]);
+            else
+                contactGeom = &getModel().getComponent<ContactGeometry>(
+                    "./contactgeometryset/" + params.getGeometry()[j]);
+
+            const ContactGeometry& geom = *contactGeom;
             std::string frameName = geom.getFrame().getName();
             labels.append(getName()+"."+frameName+".force.X");
             labels.append(getName()+"."+frameName+".force.Y");
@@ -365,8 +379,17 @@ OpenSim::Array<double> ElasticFoundationForce::getRecordValues(const SimTK::Stat
         ContactParameters& params = contactParametersSet.get(i);
         for (int j = 0; j < params.getGeometry().size(); ++j)
         {
-            const ContactGeometry& geom =
-                getModel().getComponent<ContactGeometry>(params.getGeometry()[j]);
+            // TODO: Dependency of ElasticFoundationForce on ContactGeometry
+            // should be handled by Sockets.
+            const ContactGeometry* contactGeom = nullptr;
+            if (getModel().hasComponent<ContactGeometry>(params.getGeometry()[j]))
+                contactGeom = &getModel().getComponent<ContactGeometry>(
+                    params.getGeometry()[j]);
+            else
+                contactGeom = &getModel().getComponent<ContactGeometry>(
+                    "./contactgeometryset/" + params.getGeometry()[j]);
+
+            const ContactGeometry& geom = *contactGeom;
     
             const auto& mbi = geom.getFrame().getMobilizedBodyIndex();
             const auto& thisBodyForce = bodyForces(mbi);

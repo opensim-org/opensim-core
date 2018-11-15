@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Matt S. DeMers                                                  *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -25,7 +25,6 @@
 
 
 // INCLUDE
-#include <OpenSim/Simulation/osimSimulationDLL.h>
 #include "Force.h"
 #include <OpenSim/Simulation/Model/TwoFrameLinker.h>
 
@@ -101,11 +100,27 @@ public:
       * to be at their body origins, and sets all bushing parameters to zero. **/
     ExpressionBasedBushingForce();
 
+    /** This convenience constructor sets the bushing frames and sets all
+     * bushing functions to zero.  **/
+    ExpressionBasedBushingForce(const std::string& name,
+                                const PhysicalFrame& frame1,
+                                const PhysicalFrame& frame2);
+
     /** This convenience constructor defines and sets the bushing frames by name
-    *  and sets all bushing functions to zero.  **/
+     * and sets all bushing functions to zero.  **/
     ExpressionBasedBushingForce(const std::string& name,
                                 const std::string& frame1Name,
                                 const std::string& frame2Name);
+
+    /** This convenience constructor defines and sets the bushing frames on
+      * each body, and sets all bushing functions to zero.  **/
+    ExpressionBasedBushingForce(const std::string& name,
+                                const PhysicalFrame& frame1,
+                                const SimTK::Vec3& point1,
+                                const SimTK::Vec3& orientation1,
+                                const PhysicalFrame& frame2,
+                                const SimTK::Vec3& point2,
+                                const SimTK::Vec3& orientation2);
 
     /** This convenience constructor defines and sets the bushing frames on 
       * each body, and sets all bushing functions to zero.  **/
@@ -116,6 +131,22 @@ public:
                  const std::string& frame2Name,
                  const SimTK::Vec3& point2, 
                  const SimTK::Vec3& orientation2);
+
+    /** This convenience constructor defines a bushing that behaves like a
+      * primitive bushing.  Stiffnesses are used to define linear functions for
+      * force deflection profiles.**/
+    ExpressionBasedBushingForce(const std::string& name,
+                                const PhysicalFrame& frame1,
+                                const SimTK::Vec3& point1,
+                                const SimTK::Vec3& orientation1,
+                                const PhysicalFrame& frame2,
+                                const SimTK::Vec3& point2,
+                                const SimTK::Vec3& orientation2,
+                                const SimTK::Vec3& transStiffness,
+                                const SimTK::Vec3& rotStiffness,
+                                const SimTK::Vec3& transDamping,
+                                const SimTK::Vec3& rotDamping);
+
     /** This convenience constructor defines a bushing that behaves like a
       * primitive bushing.  Stiffnesses are used to define linear functions for
       * force deflection profiles.**/

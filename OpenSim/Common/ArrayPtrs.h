@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson                                               *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -86,6 +86,10 @@ protected:
 // CONSTRUCTION
 //=============================================================================
 public:
+
+// This typedef is used to avoid "duplicate const" errors with SWIG.
+typedef typename std::add_const<T>::type ConstT;
+
 //_____________________________________________________________________________
 /**
  * Destructor.
@@ -556,7 +560,7 @@ int size() const {return getSize();}
  * @return Index of the object with the address aObject.  If no such object
  * exists in the array, -1 is returned.
  */
-int getIndex(const T *aObject,int aStartIndex=0) const
+int getIndex(ConstT *aObject,int aStartIndex=0) const
 {
     if(aStartIndex<0) aStartIndex=0;
     if(aStartIndex>=getSize()) aStartIndex=0;
@@ -770,7 +774,7 @@ bool remove(int aIndex)
  * specified address is not found, no action is taken.
  * @return True if the removal was successful, false otherwise.
  */
-bool remove(const T* aObject)
+bool remove(ConstT* aObject)
 {
     int index = getIndex(aObject);
     return( remove(index) );
@@ -968,7 +972,7 @@ T* getLast() const
  * is empty), or the array contains no element that is less than or equal
  * to aValue, -1 is returned.
  */
-int searchBinary(const T &aObject,bool aFindFirst=false,
+int searchBinary(ConstT& aObject,bool aFindFirst=false,
                       int aLo=-1,int aHi=-1) const
 {
     if(_size<=0) return(-1);

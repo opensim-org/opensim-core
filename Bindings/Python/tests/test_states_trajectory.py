@@ -6,6 +6,9 @@ import opensim as osim
 test_dir = os.path.join(os.path.dirname(os.path.abspath(osim.__file__)),
                         'tests')
 
+# Silence warning messages if mesh (.vtp) files cannot be found.
+osim.Model.setDebugLevel(0)
+
 # TODO add more tests of the integrity checks.
 
 class TestStatesTrajectory(unittest.TestCase):
@@ -46,7 +49,6 @@ class TestStatesTrajectory(unittest.TestCase):
     def test_modify_states(self):
         model = osim.Model(os.path.join(test_dir,
             "gait10dof18musc_subject01.osim"))
-        model.initSystem()
 
         states = osim.StatesTrajectory.createFromStatesStorage(
                 model, self.states_sto_fname)
@@ -54,12 +56,13 @@ class TestStatesTrajectory(unittest.TestCase):
         states[0].setTime(4)
         assert states[0].getTime() == 4
 
+        model.initSystem()
         self.assertNotAlmostEqual(model.getStateVariableValue(states[2],
-                "ground_pelvis/pelvis_tilt/value"), 8)
+                "jointset/ground_pelvis/pelvis_tilt/value"), 8)
         model.setStateVariableValue(states[2],
-                "ground_pelvis/pelvis_tilt/value", 8)
+                "jointset/ground_pelvis/pelvis_tilt/value", 8)
         self.assertAlmostEqual(model.getStateVariableValue(states[2],
-                "ground_pelvis/pelvis_tilt/value"), 8)
+                "jointset/ground_pelvis/pelvis_tilt/value"), 8)
 
         # Assigning is not allowed, since it easily allows people to violate
         # the ordering of the trajectory.

@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ayman Habib, Ajay Seth                                          *
  * Contributor(s): Ayman Habib, Ajay Seth                                     *
  *                                                                            *
@@ -25,8 +25,6 @@
  * -------------------------------------------------------------------------- */
 
 // INCLUDES
-#include "osimToolsDLL.h"
-#include <OpenSim/Common/Object.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/Actuator.h>
 #include "TrackingTask.h"
@@ -36,7 +34,9 @@ namespace OpenSim {
 //=============================================================================
 //=============================================================================
 /**
- * A target for a tracking problem that corresponds to a state variable.
+ * A tracking task objective that corresponds to a state variable of a Force
+ * component (e.g. a Muscle state such as its activation) during a forward
+ * dynamics simulation.
  *
  * @author Ayman Habib & Ajay Seth
  * @version 1.0
@@ -85,14 +85,15 @@ public:
 #endif
     virtual double getTaskError(const SimTK::State& s) {
         double val = SimTK::NaN;
+        const auto& forceSet = _model->getForceSet();
         std::string::size_type dix = getName().find(".");
         if(dix != std::string::npos){
             std::string varName = getName();
             varName.replace(dix, 1, "/");
-            val = _model->getStateVariableValue(s, varName);
+            val = forceSet.getStateVariableValue(s, varName);
         }
         else{
-            val = _model->getStateVariableValue(s, getName());
+            val = forceSet.getStateVariableValue(s, getName());
         }
 
         return (_pTrk[0]->calcValue(SimTK::Vector(1,s.getTime()))- val);

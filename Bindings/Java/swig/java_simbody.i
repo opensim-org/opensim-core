@@ -11,6 +11,8 @@
 using namespace SimTK;
 %}
 
+%include "java_preliminaries.i";
+
 /* This file is for creation/handling of arrays */
 %include "arrays_java.i";
 
@@ -91,6 +93,71 @@ public:
      }
 }
 
+%include exception.i
+
+%extend SimTK::RowVectorBase<double> {
+     double get(int i) {
+         if(i >= $self->nelt())
+             throw std::out_of_range{"Index out of Range."};
+         
+         return $self->getElt(0, i);
+     }
+
+     void set(int i, double value) {
+         if(i >= $self->nelt())
+             throw std::out_of_range{"Index out of Range."};
+
+         $self->updElt(0, i) = value;
+     }
+}
+
+%extend SimTK::VectorBase<double> {
+     double get(int i) {
+         if(i >= $self->nelt())
+             throw std::out_of_range{"Index out of Range."};
+
+         return $self->getElt(i, 0);
+     }
+
+     void set(int i, double value) {
+         if(i >= $self->nelt())
+             throw std::out_of_range{"Index out of Range."};
+
+         $self->updElt(i, 0) = value;
+     }
+}
+
+%extend SimTK::RowVectorBase<SimTK::Vec3> {
+     Vec3 get(int i) {
+         if(i >= $self->nelt())
+             throw std::out_of_range{"Index out of Range."};
+
+         return $self->getElt(0, i);
+     }
+
+     void set(int i, Vec3 value) {
+         if(i >= $self->nelt())
+             throw std::out_of_range{"Index out of Range."};
+
+         $self->updElt(0, i) = value;
+     }
+}
+
+%extend SimTK::VectorBase<SimTK::Vec3> {
+     Vec3 get(int i) {
+         if(i >= $self->nelt())
+             throw std::out_of_range{"Index out of Range."};
+
+         return $self->getElt(i, 0);
+     }
+
+     void set(int i, Vec3 value) {
+         if(i >= $self->nelt())
+             throw std::out_of_range{"Index out of Range."};
+
+         $self->updElt(i, 0) = value;
+     }
+}
 
 %include <Bindings/preliminaries.i>
 %include <Bindings/simbody.i>

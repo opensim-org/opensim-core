@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2014 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Chris Dembia, Ajay Seth                                         *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -39,8 +39,24 @@ void testSerialization(Component* instance);
 
 void addObjectAsComponentToModel(Object* instance, Model& model);
 
+// This component, used solely for testing, is used to satisfy the Inputs of
+// the components we test.
+class OutputGenerator : public Component {
+OpenSim_DECLARE_CONCRETE_OBJECT(OutputGenerator, Component);
+public:
+    OpenSim_DECLARE_OUTPUT(outdouble, double, calcDouble, SimTK::Stage::Model);
+    OpenSim_DECLARE_OUTPUT(outvec3, SimTK::Vec3, calcVec3, SimTK::Stage::Model);
+    OpenSim_DECLARE_OUTPUT(outxform, SimTK::Transform, calcXform, SimTK::Stage::Model);
+    double calcDouble(const SimTK::State&) const {return 0.0;}
+    SimTK::Vec3 calcVec3(const SimTK::State&) const {return SimTK::Vec3(0);}
+    SimTK::Transform calcXform(const SimTK::State&) const
+    {return SimTK::Transform(SimTK::Vec3(0));}
+};
+
 int main()
 {
+    Object::registerType(OutputGenerator());
+
     SimTK::Array_<std::string> failures;
 
     // get all registered Components
@@ -98,13 +114,15 @@ int main()
     availableComponents.push_back(availablePointToPointSpring[0]);
 
     /** //Uncomment when dependencies of CoordinateCouplerConstraints are 
-    // specified as Connectors 
+    // specified as Sockets 
     ArrayPtrs<Constraint> availableConstraints;
     Object::getRegisteredObjectsOfGivenType(availableConstraints);
     for (int i = 0; i < availableConstraints.size(); ++i) {
         availableComponents.push_back(availableConstraints[i]);
     }
     */
+
+    availableComponents.push_back(new SignalGenerator());
 
     for (unsigned int i = 0; i < availableComponents.size(); i++) {
         try {
@@ -162,6 +180,9 @@ void testComponent(const Component& instanceToTest)
     // ------------------------------
     // This will find issues with de/serialization.
     cout << "Serializing and deserializing component." << endl;
+    // Give Component opportunity to validate properties that could 
+    // be junk from randomizer
+    instance->finalizeFromProperties();
     testSerialization(instance);
 
     const size_t instanceSize = getCurrentRSS();
@@ -177,17 +198,16 @@ void testComponent(const Component& instanceToTest)
 
     // 6. Connect up the aggregate; check that connections are correct.
     // ----------------------------------------------------------------
-    // First make sure Connectors are satisfied.
-    Component* sub = instance;
-    auto comps = instance->getComponentList<Component>();
-    ComponentList<Component>::const_iterator it = comps.begin();
 
-    while(sub) {
-        int nc = sub->getNumConnectors();
-        for (int i = 0; i < nc; ++i){
-            AbstractConnector& connector = sub->updConnector(i);
-            string dependencyTypeName = connector.getConnecteeTypeName();
-            cout << "Connector '" << connector.getName() <<
+    // First make sure Sockets are satisfied.
+    Component* sub = instance;
+    auto comps = instance->updComponentList<Component>();
+    ComponentList<Component>::iterator itc = comps.begin();
+    while (sub) {
+        for (const auto& socketName : sub->getSocketNames()) {
+            AbstractSocket& socket = sub->updSocket(socketName);
+            string dependencyTypeName = socket.getConnecteeTypeName();
+            cout << "Socket '" << socket.getName() <<
                 "' has dependency on: " << dependencyTypeName << endl;
 
             // Dependency on a Coordinate needs special treatment.
@@ -195,12 +215,12 @@ void testComponent(const Component& instanceToTest)
             // Here we see if there is a Coordinate already in the model, 
             // otherwise we add a Body and Joint so we can connect to its
             // Coordinate.
-            if (dynamic_cast<Connector<Coordinate> *>(&connector)) {
-                while (!connector.isConnected()) {
+            if (dynamic_cast<Socket<Coordinate> *>(&socket)) {
+                while (!socket.isConnected()) {
                     // Dependency on a coordinate, check if there is one in the model already
                     auto coordinates = model.getComponentList<Coordinate>();
                     if(coordinates.begin() != coordinates.end()) {
-                        connector.connect(*coordinates.begin());
+                        socket.connect(*coordinates.begin());
                         break;
                     }
                     // no luck finding a Coordinate already in the Model
@@ -212,33 +232,73 @@ void testComponent(const Component& instanceToTest)
                 continue;
             }
 
-            Object* dependency =
-                Object::newInstanceOfType(dependencyTypeName);
-
-            if (dependency == nullptr){
-                // Get a concrete instance of a PhysicalFrame, which is a Body
-                if (dependencyTypeName == "PhysicalFrame"){
-                    dependency = Object::newInstanceOfType("Body");
-                }
+            std::unique_ptr<Object> dependency;
+            if (dynamic_cast< Socket<Frame>*>(&socket) ||
+                dynamic_cast< Socket<PhysicalFrame>*>(&socket)) {
+                dependency.reset(Object::newInstanceOfType("Body"));
+            } else {
+                dependency.reset(Object::newInstanceOfType(dependencyTypeName));
             }
 
             if (dependency) {
                 //give it some random values including a name
-                randomize(dependency);
-                connector.setConnecteeName(dependency->getName());
+                randomize(dependency.get());
 
                 // add the dependency 
-                addObjectAsComponentToModel(dependency, model);
+                const Object* depRawPtr = dependency.get();
+                addObjectAsComponentToModel(dependency.release(), model);
+
+                // Connect the socket. This should come after adding the
+                // dependency to the model, otherwise the connectee path may
+                // be incorrect.
+                socket.connect(*depRawPtr);
             }
         }
-        const Component& next = *it;
+        
+        Component& next = *itc;
         //Now keep checking the subcomponents
-        sub = const_cast<Component *>(&next);
-        it++;
+        sub = &next;
+        itc++;
     }
-
+    
+    // Now make sure Inputs are satisfied.
+    // We'll use the custom OutputGenerator class to satisfy the inputs.
+    OutputGenerator* outputGen = new OutputGenerator();
+    outputGen->setName("output_gen");
+    model.addComponent(outputGen);
+    for (auto& sub : model.updComponentList()) {
+        for (const auto& inputName : sub.getInputNames()) {
+            AbstractInput& input = sub.updInput(inputName);
+            
+            // Special case: Geometry cannot have both its input and socket
+            // connected.
+            if (dynamic_cast<Geometry*>(&sub) && inputName == "transform") {
+                input.setConnecteePath("");
+                continue;
+            }
+            
+            string dependencyTypeName = input.getConnecteeTypeName();
+            cout << "Input '" << input.getName() << "' has dependency on: " <<
+                "Output<" << dependencyTypeName << ">" << endl;
+            
+            // Find an output of the correct type.
+            bool foundAnOutput = false;
+            for (const auto& ito : outputGen->getOutputs()) {
+                const AbstractOutput* output = ito.second.get();
+                if (dependencyTypeName == output->getTypeName()) {
+                    input.setConnecteePath(output->getChannel("").getPathName());
+                    foundAnOutput = true;
+                }
+            }
+            if (!foundAnOutput) {
+                throw Exception("OutputGenerator does not provide an output "
+                                "of type " + dependencyTypeName + ".");
+            }
+        }
+    }
+    
     // This method calls connect().
-    cout << "Call Model::setup()." << endl;
+    cout << "Calling Model::setup()." << endl;
     try{
         model.setup();
     }
@@ -246,10 +306,9 @@ void testComponent(const Component& instanceToTest)
         cout << "testComponents::" << className << " unable to connect to model:" << endl;
         cout << " '" << x.what() << "'" <<endl;
         cout << "Error is likely due to " << className;
-        cout << " having structural dependencies that are not specified as Connectors.";
+        cout << " having structural dependencies that are not specified as Sockets.";
         cout << endl;
     }
-
 
     // 7. Build the system.
     // --------------------
@@ -262,6 +321,12 @@ void testComponent(const Component& instanceToTest)
         cout << " '" << x.what() << "'" << endl;
         cout << "Skipping ... " << endl;
     }
+
+    // Verify that the Model (and its System) remains up-to-date with its
+    // properties after initSystem (or attempt). Throw if not.
+    OPENSIM_THROW_IF(!model.isObjectUpToDateWithProperties(), Exception,
+        "testComponents:: model.initSystem() caused Model to no longer be "
+        "up-to-date with its properties.");
 
     // Outputs.
     // --------
@@ -311,21 +376,22 @@ void testComponent(const Component& instanceToTest)
 
         // Catch a possible decrease in the memory footprint, which will cause
         // size_t (unsigned int) to wrap through zero.
-        const size_t increaseInMemory = getCurrentRSS() > initMemory ?
-                                        getCurrentRSS() - initMemory : 0;
+        const size_t finalMemory = getCurrentRSS();
+        const size_t increaseInMemory = finalMemory > initMemory ?
+                                        finalMemory - initMemory : 0;
         const long double leakPercent = (100.0*increaseInMemory/instanceSize)
                                         /nCopies;
 
         stringstream msg;
         msg << className << ".clone() increased memory use by "
-            << setprecision(3) << leakPercent << "%";
+            << setprecision(3) << leakPercent << "%.";
 
         ASSERT(leakPercent < acceptableMemoryLeakPercent, __FILE__, __LINE__,
-            msg.str() + "exceeds acceptable tolerance (" + 
-            to_string(acceptableMemoryLeakPercent) + ").\n Instance size: " +
+            msg.str() + "\nExceeds acceptable tolerance of " +
+            to_string(acceptableMemoryLeakPercent) + "%.\n Instance size: " +
             to_string(instanceSize / 1024) + "KB increased by " +
             to_string(increaseInMemory / 1024) + "KB over " + to_string(nCopies) +
-            " iterations = " + to_string(leakPercent) + "%.\n"); // << endl;
+            " iterations = " + to_string(leakPercent) + "%.\n");
 
         if (reportAllMemoryLeaks && increaseInMemory>0)
             cout << msg.str()  << endl;
@@ -344,8 +410,14 @@ void testComponent(const Component& instanceToTest)
         {
             finalInitState = model.initSystem();
         }
-        const size_t increaseInMemory = getCurrentRSS() - initMemory;
-        const long double leakPercent = (100.0*increaseInMemory/instanceSize)/nLoops;
+
+        // Catch a possible decrease in the memory footprint, which will cause
+        // size_t (unsigned int) to wrap through zero.
+        const size_t finalMemory = getCurrentRSS();
+        const size_t increaseInMemory = finalMemory > initMemory ?
+                                        finalMemory - initMemory : 0;
+        const long double leakPercent = (100.0*increaseInMemory/instanceSize)
+                                        /nLoops;
 
         ASSERT_EQUAL(0.0,
                 (finalInitState.getY() - initState.getY()).norm(),
@@ -362,14 +434,14 @@ void testComponent(const Component& instanceToTest)
             to_string(acceptableMemoryLeakPercent) + "%.\n Instance size: " +
             to_string(instanceSize / 1024) + "KB increased by " +
             to_string(increaseInMemory / 1024) + "KB over " + to_string(nLoops) +
-            " iterations = " + to_string(leakPercent) + "%.\n"); // << endl;
+            " iterations = " + to_string(leakPercent) + "%.\n");
 
         if (reportAllMemoryLeaks && increaseInMemory>0)
             cout << msg.str() << endl;
     }
 }
 
-void testComponentEquivalence(const Component* a, const Component* b) 
+void testComponentEquivalence(const Component* a, const Component* b, bool recurse = true)
 {
     const string& className = a->getConcreteClassName();
 
@@ -377,11 +449,11 @@ void testComponentEquivalence(const Component* a, const Component* b)
     ASSERT(same, __FILE__, __LINE__,
         className + " components are not equivalent in properties.");
 
-    int nc_a = a->getNumConnectors();
-    int nc_b = b->getNumConnectors();
-    cout << className << " getNumConnectors: " << nc_a << endl;
-    ASSERT(nc_a==nc_b, __FILE__, __LINE__, 
-        className + "components differ in number of connectors.");
+    int ns_a = a->getNumSockets();
+    int ns_b = b->getNumSockets();
+    cout << className << " getNumSockets: " << ns_a << endl;
+    ASSERT(ns_a == ns_b, __FILE__, __LINE__,
+        className + "components differ in number of sockets.");
 
     int nin_a = a->getNumInputs();
     int nin_b = b->getNumInputs();
@@ -392,21 +464,32 @@ void testComponentEquivalence(const Component* a, const Component* b)
     int nout_a = a->getNumOutputs();
     int nout_b = b->getNumOutputs();
     cout << className << " getNumOutputs: " << nout_a << endl;
-    ASSERT(nout_a == nout_b, __FILE__, __LINE__, 
+    ASSERT(nout_a == nout_b, __FILE__, __LINE__,
         className + " components differ in number of outputs.");
 
-    auto aSubsList = a->getComponentList<Component>();
-    auto bSubsList = b->getComponentList<Component>();
-    auto iter_a = aSubsList.begin();
-    auto iter_b = bSubsList.begin();
+    if (recurse) {
+        try {
+            auto aSubsList = a->getComponentList<Component>();
+            auto bSubsList = b->getComponentList<Component>();
+            auto iter_a = aSubsList.begin();
+            auto iter_b = bSubsList.begin();
 
-    //Subcomponents must be equivalent too!
-    while (iter_a != aSubsList.end() && iter_b != aSubsList.end()) {
-        const Component& asub = *iter_a;
-        const Component& bsub = *iter_b;
-        testComponentEquivalence(&asub, &bsub);
-        ++iter_a;
-        ++iter_b;
+            //Subcomponents must be equivalent too!
+            while (iter_a != aSubsList.end() && iter_b != aSubsList.end()) {
+                const Component& asub = *iter_a;
+                const Component& bsub = *iter_b;
+                testComponentEquivalence(&asub, &bsub, false);
+                ++iter_a;
+                ++iter_b;
+            }
+        }
+        // only trap the ComponentIsRootWithNoSubcomponents
+        catch (const ComponentIsRootWithNoSubcomponents& ex) {
+            // Just print the exception message but allow the test to continue.
+            // The test is blind to whether Components should have any 
+            // subcomponents as part of its generic processing.
+            cout << ex.what() << endl;
+        }
     }
 }
 
@@ -458,6 +541,9 @@ void testSerialization(Component* instance)
 
     Component* deserializedComp = dynamic_cast<Component *>(deserializedInstance);
 
+    instance->finalizeFromProperties();
+    deserializedComp->finalizeFromProperties();
+
     testComponentEquivalence(instance, deserializedComp);
     delete deserializedInstance;
 }
@@ -467,40 +553,26 @@ void addObjectAsComponentToModel(Object* instance, Model& model)
     const string& className = instance->getConcreteClassName();
     cout << "Adding " << className << " to the model." << endl;
 
-    try{
-        if (Object::isObjectTypeDerivedFrom< Analysis >(className))
-            model.addAnalysis(dynamic_cast<Analysis*>(instance));
-        else if (Object::isObjectTypeDerivedFrom< Body >(className))
-            model.addBody(dynamic_cast<Body*>(instance));
-        else if (Object::isObjectTypeDerivedFrom< Constraint >(className))
-            model.addConstraint(dynamic_cast<Constraint*>(instance));
-        else if (Object::isObjectTypeDerivedFrom< ContactGeometry >(className))
-            model.addContactGeometry(dynamic_cast<ContactGeometry*>(instance));
-        else if (Object::isObjectTypeDerivedFrom< Controller >(className))
-            model.addController(dynamic_cast<Controller*>(instance));
-        else if (Object::isObjectTypeDerivedFrom< Force >(className))
-            model.addForce(dynamic_cast<Force*>(instance));
-        else if (Object::isObjectTypeDerivedFrom< Probe >(className))
-            model.addProbe(dynamic_cast<Probe*>(instance));
-        else if (Object::isObjectTypeDerivedFrom< Joint >(className))
-            model.addJoint(dynamic_cast<Joint*>(instance));
-        else if (Object::isObjectTypeDerivedFrom< Frame >(className))
-            model.addFrame(dynamic_cast<Frame*>(instance));
-        else if (Object::isObjectTypeDerivedFrom< ModelComponent >(className))
-            model.addModelComponent(dynamic_cast<ModelComponent*>(instance));
-        else
-        {
-            throw Exception(className + " is not a ModelComponent.",
-                __FILE__, __LINE__);
-        }
-    }
-    // It is more than likely that connect() will fail, but the subcomponents tree
-    // will be traversable, so we can continue to resolve dependencies by visiting
-    // subcomponents' connectors
-    catch (const std::exception& e) {
-        cout << "testComponents: Model unable to connect after adding ";
-        cout << instance->getName() << endl;
-        cout << "ERROR: " << e.what() << "'" << endl;
-        cout << "Possible that dependency was not added yet. Continuing...." << endl;
+    if (Object::isObjectTypeDerivedFrom< Analysis >(className))
+        throw Exception("Analysis is not a Component.", __FILE__, __LINE__);
+    else if (Object::isObjectTypeDerivedFrom< Body >(className))
+        model.addBody(dynamic_cast<Body*>(instance));
+    else if (Object::isObjectTypeDerivedFrom< Constraint >(className))
+        model.addConstraint(dynamic_cast<Constraint*>(instance));
+    else if (Object::isObjectTypeDerivedFrom< ContactGeometry >(className))
+        model.addContactGeometry(dynamic_cast<ContactGeometry*>(instance));
+    else if (Object::isObjectTypeDerivedFrom< Controller >(className))
+        model.addController(dynamic_cast<Controller*>(instance));
+    else if (Object::isObjectTypeDerivedFrom< Force >(className))
+        model.addForce(dynamic_cast<Force*>(instance));
+    else if (Object::isObjectTypeDerivedFrom< Probe >(className))
+        model.addProbe(dynamic_cast<Probe*>(instance));
+    else if (Object::isObjectTypeDerivedFrom< Joint >(className))
+        model.addJoint(dynamic_cast<Joint*>(instance));
+    else if (Object::isObjectTypeDerivedFrom< Component >(className))
+        model.addComponent(dynamic_cast<Component*>(instance));
+    else {
+        throw Exception(className + " is not a Component.",
+            __FILE__, __LINE__);
     }
 }

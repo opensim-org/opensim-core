@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Peter Loan                                                      *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -24,13 +24,13 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <OpenSim/Common/XMLDocument.h>
 #include "MovingPathPoint.h"
 #include <OpenSim/Common/Function.h>
 #include <OpenSim/Common/Constant.h>
 #include <OpenSim/Common/MultiplierFunction.h>
+#include <OpenSim/Simulation/Model/PhysicalFrame.h>
 #include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
-
+#include <OpenSim/Common/ScaleSet.h>
 
 //=============================================================================
 // STATICS
@@ -46,7 +46,7 @@ using SimTK::Vec3;
 /*
  * Default constructor.
  */
-MovingPathPoint::MovingPathPoint() : PathPoint()
+MovingPathPoint::MovingPathPoint() : Super()
 {
     constructProperties();
 }
@@ -72,15 +72,15 @@ void MovingPathPoint::constructProperties()
 
 bool MovingPathPoint::hasXCoordinate() const
 {
-    return getConnector<Coordinate>("x_coordinate").isConnected();
+    return getSocket<Coordinate>("x_coordinate").isConnected();
 }
 bool MovingPathPoint::hasYCoordinate() const
 {
-    return getConnector<Coordinate>("y_coordinate").isConnected();
+    return getSocket<Coordinate>("y_coordinate").isConnected();
 }
 bool MovingPathPoint::hasZCoordinate() const
 {
-    return getConnector<Coordinate>("z_coordinate").isConnected();
+    return getSocket<Coordinate>("z_coordinate").isConnected();
 }
 
 const Coordinate& MovingPathPoint::getXCoordinate() const
@@ -100,29 +100,29 @@ const Coordinate& MovingPathPoint::getZCoordinate() const
 
 void MovingPathPoint::setXCoordinate(const Coordinate& coordinate)
 {
-    updConnector<Coordinate>("x_coordinate").connect(coordinate);
+    connectSocket_x_coordinate(coordinate);
 }
 void MovingPathPoint::setYCoordinate(const Coordinate& coordinate)
 {
-    updConnector<Coordinate>("y_coordinate").connect(coordinate);
+    connectSocket_y_coordinate(coordinate);
 }
 void MovingPathPoint::setZCoordinate(const Coordinate& coordinate)
 {
-    updConnector<Coordinate>("z_coordinate").connect(coordinate);
+    connectSocket_z_coordinate(coordinate);
 }
 
 void MovingPathPoint::extendConnectToModel(Model& model)
 {
     Super::extendConnectToModel(model);
     // Hang on to references to the Coordinates instead of
-    // finding the connector each time we need a Coordinate value
-    if (getConnector<Coordinate>("x_coordinate").isConnected()) {
+    // finding the socket each time we need a Coordinate value
+    if (getSocket<Coordinate>("x_coordinate").isConnected()) {
         _xCoordinate.reset(&getConnectee<Coordinate>("x_coordinate"));
     }
-    if (getConnector<Coordinate>("y_coordinate").isConnected()) {
+    if (getSocket<Coordinate>("y_coordinate").isConnected()) {
         _yCoordinate.reset(&getConnectee<Coordinate>("y_coordinate"));
     }
-    if (getConnector<Coordinate>("z_coordinate").isConnected()) {
+    if (getSocket<Coordinate>("z_coordinate").isConnected()) {
         _zCoordinate.reset(&getConnectee<Coordinate>("z_coordinate"));
     }
 
@@ -138,14 +138,6 @@ void MovingPathPoint::extendConnectToModel(Model& model)
         "MovingPathPoint:: Components of the path point location "
         "must depend on the same Coordinate. Condition: "
         "x_coordinate == y_coordinate == z_coordinate  FAILED.");
-
-    // Overwrite any setting of a MovingPathPoint's location property.
-    // MovingPathPoint should NOT derive from Station.
-    // TODO: We should not have Path specific Points of any kind. They should
-    // be "path" Points by virtue of being subcomponents of a GeometryPath.
-    // Set it to NaN so it blows up if we attempt to use a MovingPathPoint
-    // as a Station.
-    set_location(SimTK::Vec3(SimTK::NaN));
 }
 
 //_____________________________________________________________________________
@@ -170,20 +162,51 @@ void MovingPathPoint::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionN
         SimTK::Xml::element_iterator zCoord = aNode.element_begin("z_coordinate");
 
         std::string xCoord_name(""), yCoord_name(""), zCoord_name("");
-        // If default constructed then elements not serialized since they are default
-        // values. Check that we have associated elements, then extract their values.
+        // If default constructed then elements not serialized since they are
+        // default values. Check that we have associated elements, then extract
+        // their values.
         if (xCoord != aNode.element_end())
             xCoord->getValueAs<std::string>(xCoord_name);
         if (yCoord != aNode.element_end())
             yCoord->getValueAs<std::string>(yCoord_name);
         if (zCoord != aNode.element_end())
             zCoord->getValueAs<std::string>(zCoord_name);
+
+        // Helper function to try creating relative paths to the coordinates.
+        auto createConnecteeName = [](SimTK::Xml::Element& elem, 
+                const std::string& coordName) -> std::string {
+            if (coordName.empty()) return coordName;
+            // As a backup, we will specify just the coordinate name as the
+            // connectee name...
+            std::string connectee_name = coordName;
+            // ...but if possible, we try to create a relative path from this
+            // PathPoint to the coordinate.
+            SimTK::Xml::Element coordElem = 
+                XMLDocument::findElementWithName(elem, coordName);
+            if (coordElem.isValid() && coordElem.hasParentElement()) {
+                // We found an Xml Element with the coordinate's name.
+                const auto jointElem = coordElem.getParentElement();
+                std::string jointName =
+                    jointElem.getOptionalAttributeValue("name");
+                // PathPoints in pre-4.0 models are necessarily 3 levels deep
+                // (model, muscle, geometry path), and Coordinates were
+                // necessarily 2 level deep.
+                // Here we create the correct relative path (accounting for sets
+                // being components).
+                if (jointName.empty())
+                    jointName = IO::Lowercase(jointElem.getElementTag());
+                connectee_name = XMLDocument::updateConnecteePath30517(
+                        "jointset", jointName + "/" + coordName);
+            }
+            return connectee_name;
+        };
+        
         XMLDocument::addConnector(aNode, "Connector_Coordinate_", 
-            "x_coordinate", xCoord_name);
+            "x_coordinate", createConnecteeName(aNode, xCoord_name));
         XMLDocument::addConnector(aNode, "Connector_Coordinate_", 
-            "y_coordinate", yCoord_name);
+            "y_coordinate", createConnecteeName(aNode, yCoord_name));
         XMLDocument::addConnector(aNode, "Connector_Coordinate_", 
-            "z_coordinate", zCoord_name);
+            "z_coordinate", createConnecteeName(aNode, zCoord_name));
     }
 
     // Call base class now assuming _node has been corrected for current version
@@ -291,20 +314,27 @@ SimTK::Vec3 MovingPathPoint::getdPointdQ(const SimTK::State& s) const
     return dPdq_B;
 }
 
-
-void MovingPathPoint::scale(const SimTK::Vec3& aScaleFactors)
+void MovingPathPoint::
+extendScale(const SimTK::State& s, const ScaleSet& scaleSet)
 {
+    Super::extendScale(s, scaleSet);
+
+    // Get scale factors (if an entry for the parent Frame's base Body exists).
+    const Vec3& scaleFactors = getScaleFactors(scaleSet, getParentFrame());
+    if (scaleFactors == ModelComponent::InvalidScaleFactors)
+        return;
+
     if (!_xCoordinate.empty()) {
         // If the function is already a MultiplierFunction, just update its scale factor.
         // Otherwise, make a MultiplierFunction from it and make the muscle point use
         // the new MultiplierFunction.
         MultiplierFunction* mf = dynamic_cast<MultiplierFunction*>(&upd_x_location());
         if (mf) {
-            mf->setScale(mf->getScale() * aScaleFactors[0]);
+            mf->setScale(mf->getScale() * scaleFactors[0]);
         } else {
             // Make a copy of the original function and delete the original
             // (so its node will be removed from the XML document).
-            set_x_location(MultiplierFunction(get_x_location().clone(), aScaleFactors[0]));
+            set_x_location(MultiplierFunction(get_x_location().clone(), scaleFactors[0]));
         }
     }
 
@@ -314,11 +344,11 @@ void MovingPathPoint::scale(const SimTK::Vec3& aScaleFactors)
         // the new MultiplierFunction.
         MultiplierFunction* mf = dynamic_cast<MultiplierFunction*>(&upd_y_location());
         if (mf) {
-            mf->setScale(mf->getScale() * aScaleFactors[1]);
+            mf->setScale(mf->getScale() * scaleFactors[1]);
         } else {
             // Make a copy of the original function and delete the original
             // (so its node will be removed from the XML document).
-            set_y_location(MultiplierFunction(get_y_location().clone(), aScaleFactors[1]));
+            set_y_location(MultiplierFunction(get_y_location().clone(), scaleFactors[1]));
         }
     }
 
@@ -328,13 +358,11 @@ void MovingPathPoint::scale(const SimTK::Vec3& aScaleFactors)
         // the new MultiplierFunction.
         MultiplierFunction* mf = dynamic_cast<MultiplierFunction*>(&upd_z_location());
         if (mf) {
-            mf->setScale(mf->getScale() * aScaleFactors[2]);
+            mf->setScale(mf->getScale() * scaleFactors[2]);
         } else {
-            set_z_location(MultiplierFunction(get_z_location().clone(), aScaleFactors[2]));
+            set_z_location(MultiplierFunction(get_z_location().clone(), scaleFactors[2]));
         }
     }
-
-    updateGeometry();
 }
 
 

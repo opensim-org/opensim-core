@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2016 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ayman Habib                                                     *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -23,15 +23,11 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-
 // INCLUDE
-#include <OpenSim/Simulation/osimSimulationDLL.h>
 #include "OpenSim/Simulation/Model/Point.h"
-#include "OpenSim/Simulation/Model/PhysicalFrame.h"
+#include <OpenSim/Simulation/Model/PhysicalFrame.h>
 
 namespace OpenSim {
-
-class Body;
 
 //=============================================================================
 //=============================================================================
@@ -51,7 +47,7 @@ public:
     //==============================================================================
     OpenSim_DECLARE_PROPERTY(location, SimTK::Vec3,
         "The fixed location of the station expressed in its parent frame.");
-    OpenSim_DECLARE_CONNECTOR(parent_frame, PhysicalFrame,
+    OpenSim_DECLARE_SOCKET(parent_frame, PhysicalFrame,
         "The frame to which this station is fixed.");
 
 public:
@@ -68,14 +64,17 @@ public:
 
     virtual ~Station();
 
-    /** get the parent PhysicalFrame to which the Station is attached */
+    /** get the parent PhysicalFrame in which the Station is defined */
     const PhysicalFrame& getParentFrame() const;
-    /** setter of Reference Frame off which the Station is defined */
+    /** set the parent PhysicalFrame in which the Station is defined */
     void setParentFrame(const OpenSim::PhysicalFrame& aFrame);
 
     /** Find this Station's location in any Frame */
     SimTK::Vec3 findLocationInFrame(const SimTK::State& s,
                                     const OpenSim::Frame& frame) const;
+
+    void extendScale(const SimTK::State& s, const ScaleSet& scaleSet) override;
+
 private:
     /* Calculate the Station's location with respect to and expressed in Ground
     */

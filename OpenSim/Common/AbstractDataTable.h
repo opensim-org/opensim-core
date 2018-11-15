@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2015 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Authors:                                                                   *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -29,7 +29,6 @@ This file defines the AbstractDataTable class, which is used by OpenSim to
 provide an in-memory container for data access and manipulation.              */
 
 // Non-standard headers.
-#include "SimTKcommon.h"
 #include "OpenSim/Common/Exception.h"
 #include "OpenSim/Common/ValueArrayDictionary.h"
 
@@ -42,6 +41,17 @@ public:
     using Exception::Exception;
 };
 
+class InvalidColumn : public Exception {
+public:
+    using Exception::Exception;
+};
+
+class InvalidColumnLabel : public Exception {
+public:
+    using Exception::Exception;
+};
+
+
 class IncorrectNumColumns : public InvalidRow {
 public:
     IncorrectNumColumns(const std::string& file,
@@ -50,8 +60,25 @@ public:
                         size_t expected,
                         size_t received) :
         InvalidRow(file, line, func) {
-        std::string msg = "expected = " + std::to_string(expected);
-        msg += " received = " + std::to_string(received);
+        std::string msg = "Incorrect number of columns. ";
+        msg += "Expected = " + std::to_string(expected);
+        msg += ", Received = " + std::to_string(received);
+
+        addMessage(msg);
+    }
+};
+
+class IncorrectNumRows : public InvalidColumn {
+public:
+    IncorrectNumRows(const std::string& file,
+                     size_t line,
+                     const std::string& func,
+                     size_t expected,
+                     size_t received) :
+        InvalidColumn(file, line, func) {
+        std::string msg = "Incorrect number of rows. ";
+        msg += "Expected = " + std::to_string(expected);
+        msg += ", Received = " + std::to_string(received);
 
         addMessage(msg);
     }
@@ -80,6 +107,19 @@ public:
     }
 };
 
+class NoColumnLabels : public Exception {
+public:
+    NoColumnLabels(const std::string& file,
+                   size_t line,
+                   const std::string& func) :
+        Exception(file, line, func) {
+        std::string msg = "Table has no column labels. Use setColumnLabels() to"
+                          " add labels.";
+
+        addMessage(msg);
+    }
+};
+
 class IncorrectMetaDataLength : public Exception {
 public:
     IncorrectMetaDataLength(const std::string& file,
@@ -97,22 +137,14 @@ public:
     }
 };
 
-class MetaDataLengthZero : public Exception {
-public:
-    MetaDataLengthZero(const std::string& file,
-                       size_t line,
-                       const std::string& func,
-                       const std::string& key) :
-        Exception(file, line, func) {
-        std::string msg = "Key = " + key;
-
-        addMessage(msg);
-    }
-};
-
 class EmptyTable : public Exception {
 public:
-    using Exception::Exception;
+    EmptyTable(const std::string& file,
+               size_t line,
+               const std::string& func) :
+        Exception(file, line, func) {
+        addMessage("Table is empty.");
+    }
 };
 
 class KeyExists : public Exception {
@@ -155,6 +187,10 @@ public:
     virtual std::shared_ptr<AbstractDataTable> clone() const = 0;
     virtual ~AbstractDataTable()                             = default;
 
+    /** Get number of components per element of the DataTable. See documentation
+    for DataTable on possible return values.                                  */
+    virtual unsigned numComponentsPerElement() const = 0;
+
     /** Get number of rows.                                                   */
     size_t getNumRows() const;
 
@@ -165,6 +201,16 @@ public:
     /// @{
 
     /** Add key-value pair to the table metadata.
+
+    If using this function from Python/Java/Matlab, use:
+    ```
+    addTableMetaDataString(key, value)
+    ```
+    where both 'key' and 'value' are strings. The above call translates to C++
+    as:
+    ```
+    addTableMetaData<std::string>(key, value)
+    ```
 
     \tparam Value Type of the value. This need not be specified explicitly in
                   most cases. It will be deduced automatically.
@@ -177,7 +223,41 @@ public:
                          key);
     }
 
+    /** Whether or not table metadata for the given key exists.               */
+    bool hasTableMetaDataKey(const std::string& key) const {
+        return _tableMetaData.hasKey(key);
+    }
+
     /** Get table metadata for a given key.
+
+    If using this function from Python/Java/Matlab, use the following table:
+    <table>
+    <tr>
+      <th>C++</th>
+      <th>Python / Java / Matlab</th>
+      <th>Example</th>
+    </tr>
+    <tr>
+      <td>%getTableMetaData<std::string></td>
+      <td>getTableMetaDataString</td>
+      <td>%Marker table read from a C3D file could contain quantities 
+          <b>DataRate</b> and <b>%Units</b> that can be retrieved with this 
+          method.</td>
+    </tr>
+    <tr>
+      <td>getTableMetaData<std::vector<SimTK::Matrix_<double>>></td>
+      <td>getTableMetaDataVectorMatrix</td>
+      <td>Forces table read from a C3D file could contain quantities 
+          <b>Calibration Matrices</b>, <b>%Force Plate Corners</b> and <b>%Force
+          Plate Origins</b> that can be retrieved with this method.</td>
+    </tr>
+    <tr>
+      <td>getTableMetaData<std::vector<unsigned>></td>
+      <td>getTableMetaDataVectorUnsigned</td>
+      <td>Forces table read from a C3D file could contain quantity <b>%Force 
+          Plate Types</b> that can be retrieved with this method</td>
+    </tr>
+    </table>
 
     \tparam Value Type of the value to be retrieved. For example if the metadata
                   contains key-value pair ("sample-rate", 200), this could be
@@ -197,6 +277,13 @@ public:
                           "' is not of type that is provided as template "
                           "argument.");
         }
+    }
+
+    /** Get table metadata for a given key as a string.
+
+    \throws KeyNotFound If the key provided is not found in table metadata.   */
+    std::string getTableMetaDataAsString(const std::string& key) const {
+        return _tableMetaData.getValueAsString(key);
     }
 
     /** Remove key-value pair associated with the given key from table 
@@ -225,6 +312,10 @@ public:
     /** %Set metadata associated with the dependent columns.                  */
     void 
     setDependentsMetaData(const DependentsMetaData& dependentsMetaData);
+
+    /** Remove key-value pair associated with the given key from dependents
+    metadata.                                                                 */
+    void removeDependentsMetaDataForKey(const std::string& key);
 
     /// @} End of MetaData accessors/mutators.
 
@@ -257,16 +348,19 @@ public:
     /// \endcode
     /// @{
 
+    /** Does the table have non-zero number of column labels.                 */
+    bool hasColumnLabels() const;
+
     /** Get column labels.                                                    
 
-    \throws KeyNotFound If column labels have not be set for the table.       */
+    \throws NoColumnLabels If column labels have not be set for the table.    */
     std::vector<std::string> getColumnLabels() const;
 
     /** Get column label of a given column.                                   
 
     \throws ColumnIndexOutOfRange If columnIndex is out of range of number of
                                   columns.                                    
-    \throws KeyNotFound If column labels have not be set for the table.       */
+    \throws NoColumnLabels If column labels have not be set for the table.    */
     const std::string& getColumnLabel(const size_t columnIndex) const;
 
     /** %Set column labels using a pair of iterators.
@@ -283,23 +377,35 @@ public:
     \param last InputIterator representing the sentinel or one past the end of
                 sequence of labels.                                          
 
-    \throws MetaDataLengthZero If input sequence of labels is zero.
     \throws IncorrectMetaDataLength If length of the input sequence of labels is
                                     incorrect -- does not match the number of
                                     columns in the table.                     */
     template<typename InputIt>
     void setColumnLabels(InputIt first, InputIt last) {
-        OPENSIM_THROW_IF(first == last, 
-                         MetaDataLengthZero,
-                         "labels");
+        std::unique_ptr<AbstractValueArray> oldLabels;
+        if (_dependentsMetaData.hasKey("labels")) {
+            oldLabels.reset(
+                _dependentsMetaData.getValueArrayForKey("labels").clone());
+        }
 
         ValueArray<std::string> labels{};
         for(auto it = first; it != last; ++it)
             labels.upd().push_back(SimTK::Value<std::string>(*it));
+
         _dependentsMetaData.removeValueArrayForKey("labels");
         _dependentsMetaData.setValueArrayForKey("labels", labels);
-
-        validateDependentsMetaData();
+        try {
+            validateDependentsMetaData();
+        }
+        catch (const InvalidColumnLabel&) {
+            // undo any partial column label changes
+            // and restore to previous column labels if there were any
+            if (oldLabels) {
+                _dependentsMetaData.removeValueArrayForKey("labels");
+                _dependentsMetaData.setValueArrayForKey("labels", *oldLabels);
+            }
+            throw;
+        }
     }
 
     /** %Set column labels using a sequence container.
@@ -314,7 +420,6 @@ public:
                       own) that supports begin() and end(). Type of the values
                       produced by iterator should be std::string.
 
-    \throws MetaDataLengthZero If input sequence of labels is zero.
     \throws IncorrectMetaDataLength If length of the input sequence of labels is
                                     incorrect -- does not match the number of
                                     columns in the table.                     */
@@ -330,7 +435,6 @@ public:
     setColumnLabels({"col1", "col2", "col3"});
     \endcode                                                                  
 
-    \throws MetaDataLengthZero If input sequence of labels is zero.
     \throws IncorrectMetaDataLength If length of the input sequence of labels is
                                     incorrect -- does not match the number of
                                     columns in the table.                     */
@@ -339,6 +443,7 @@ public:
 
     /** %Set the label for a column.                                          
 
+    \throws NoColumnLabels If table has no column labels.
     \throws ColumnIndexOutOfRange If columnIndex is out of range for number of
                                   columns in the table.                       */
     void setColumnLabel(const size_t columnIndex,
@@ -346,10 +451,13 @@ public:
 
     /** Get index of a column label.                                          
 
+    \throw NoColumnLabels If table has no column labels.
     \throw KeyNotFound If columnLabel is not found to be label for any column.*/
     size_t getColumnIndex(const std::string& columnLabel) const;
 
-    /** Check if the table has a column with the given label.                 */
+    /** Check if the table has a column with the given label.
+
+    \throw NoColumnLabels If table has no column labels.                     */
     bool hasColumn(const std::string& columnLabel) const;
 
     /// @} End of Column-labels related accessors/mutators.
@@ -358,13 +466,16 @@ public:
     bool hasColumn(const size_t columnIndex) const;
 
 protected:
+    /** Append column-label.                                                  */
+    void appendColumnLabel(const std::string& columnLabel);
+    
     /** Get number of rows. Implemented by derived classes.                   */
     virtual size_t implementGetNumRows() const       = 0;
     
     /** Get number of columns. Implemented by derived classes.                */
     virtual size_t implementGetNumColumns() const    = 0;
     
-    /** Check if metadata for independent column is valid . Implemented by 
+    /** Check if metadata for independent column is valid. Implemented by 
     derived classes.                                                          */
     virtual void validateIndependentMetaData() const = 0;
 

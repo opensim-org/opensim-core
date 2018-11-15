@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson                                               *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -25,12 +25,8 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <iostream>
-#include <string>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
 #include "Kinematics.h"
-
 
 
 using namespace OpenSim;
@@ -324,10 +320,6 @@ void Kinematics::setModel(Model& aModel)
 
     // Allocate storages to contain the results of the analysis
     allocateStorage();
-
-    // UPDATE LABELS
-    updateCoordinatesToRecord();
-    constructColumnLabels();
 }
 
 //-----------------------------------------------------------------------------
@@ -347,7 +339,6 @@ setStorageCapacityIncrements(int aIncrement)
     _vStore->setCapacityIncrement(aIncrement);
     _pStore->setCapacityIncrement(aIncrement);
 }
-
 
 
 //=============================================================================
@@ -409,12 +400,16 @@ int Kinematics::record(const SimTK::State& s)
  * @return -1 on error, 0 otherwise.
  */
 int Kinematics::
-begin( SimTK::State& s )
+begin( const SimTK::State& s )
 {
     if(!proceed()) return(0);
 
     double time = s.getTime();
     
+    // UPDATE LABELS
+    updateCoordinatesToRecord();
+    constructColumnLabels();
+
     // RESET STORAGE
     _pStore->reset(time);
     _vStore->reset(time);
@@ -472,7 +467,7 @@ step(const SimTK::State& s, int stepNumber )
  * @return -1 on error, 0 otherwise.
  */
 int Kinematics::
-end( SimTK::State& s )
+end( const SimTK::State& s )
 {
     if (!proceed()) return 0;
 

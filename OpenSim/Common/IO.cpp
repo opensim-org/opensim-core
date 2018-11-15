@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson                                               *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -27,7 +27,6 @@
 
 
 // INCLUDES
-#include "osimCommonDLL.h"
 #include <time.h>
 #include <math.h>
 #include <string>
@@ -108,7 +107,7 @@ FixSlashesInFilePath(const std::string &path)
 {
     std::string fixedPath = path;
     for(unsigned int i=0;i<fixedPath.length();i++) {
-#ifdef WIN32
+#ifdef _WIN32
         if(fixedPath[i] == '/') fixedPath[i] = '\\';
 #else
         if(fixedPath[i] == '\\') fixedPath[i] = '/';
@@ -419,6 +418,10 @@ ReadCharacters(istream &aIS,int aNChar)
     return str;
 }
 
+bool IO::FileExists(const std::string& filePath) {
+    return std::ifstream(filePath).good();
+}
+
 //_____________________________________________________________________________
 /**
  * Open a file.
@@ -645,4 +648,15 @@ Uppercase(const std::string &aStr)
     std::string result = aStr;
     for(unsigned int i=0; i<aStr.size(); i++) result[i] = toupper(result[i]);
     return result;
+}
+
+void IO::eraseEmptyElements(std::vector<std::string>& list)
+{
+    std::vector<std::string>::iterator it = list.begin();
+    while (it != list.end()) {
+        if (it->empty())
+            it = list.erase(it);
+        else
+            ++it;
+    }
 }

@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2014 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ayman Habib, Peter Loan                                         *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -25,11 +25,7 @@
 
 
 // INCLUDE
-#include <iostream>
-#include <math.h>
-#include <OpenSim/Simulation/osimSimulationDLL.h>
 #include "Station.h"
-#include "SimTKcommon.h"
 
 namespace OpenSim {
 
@@ -49,33 +45,57 @@ class OSIMSIMULATION_API Marker : public Station {
     OpenSim_DECLARE_CONCRETE_OBJECT(Marker, Station);
 
 class Body;
-
+public:
+//==============================================================================
+// PROPERTIES
+//==============================================================================
+    OpenSim_DECLARE_PROPERTY(fixed, bool,
+        "Flag (true or false) specifying whether the marker is fixed in its "
+        "parent frame during the marker placement step of scaling.  If false, "
+        "the marker is free to move within its parent Frame to match its "
+        "experimental counterpart.");
 //=============================================================================
 // METHODS
 //=============================================================================
-    //--------------------------------------------------------------------------
-    // CONSTRUCTION
-    //--------------------------------------------------------------------------
 public:
+    /** Default constructor */
     Marker();
+
+    /** Convenience constructor
+    @param[in] name      Marker name string.
+    @param[in] frame     PhysicalFrame in which the Marker is located.
+    @param[in] location  Vec3 location of the station in its PhysicalFrame */
+    Marker(const std::string& name, const PhysicalFrame& frame,
+           const SimTK::Vec3& location);
+
     virtual ~Marker();
 
-    const std::string& getFrameName() const;
+    /** Convenience method to get the 'parent_frame' Socket's connectee_name */
+    const std::string& getParentFrameName() const;
 
-    void setFrameName(const std::string& aName);
-    void changeFrame(const OpenSim::PhysicalFrame& aPhysicalFrame );
-    void changeFramePreserveLocation(const SimTK::State& s, OpenSim::PhysicalFrame& aPhysicalFrame );
-    void scale(const SimTK::Vec3& aScaleFactors);
+    /** Convenience method to set the 'parent_frame' Socket's connectee_name.
+        The the named parent frame is not connected and finalizeConnections()
+        must be invoked to establish the connection. */
+    void setParentFrameName(const std::string& parentFrameName);
+    /** Change the parent PhysicalFrame that this marker is attached to. */
+    void changeFrame(const PhysicalFrame& parentFrame);
+    /**  Change the parent PhysicalFrame that this marker is attached to. In  
+         addition, preserve the marker location in the inertial (Ground) frame
+         by using the state to compute the location in the new parent frame and
+         to set its location property. */
+    void changeFramePreserveLocation(const SimTK::State& s, 
+                                     const PhysicalFrame& newParentFrame );
 
     /** Override of the default implementation to account for versioning. */
     void updateFromXMLNode(SimTK::Xml::Element& aNode,
         int versionNumber = -1) override;
-    void generateDecorations(bool fixed, const ModelDisplayHints& hints, const SimTK::State& state,
+    void generateDecorations(bool fixed, const ModelDisplayHints& hints,
+        const SimTK::State& state,
         SimTK::Array_<SimTK::DecorativeGeometry>& appendToThis) const override;
 
 private:
     void setNull();
-    void setupProperties();
+    void constructProperties();
 //=============================================================================
 };  // END of class Marker
 //=============================================================================

@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Katherine R. S. Holzbaur, Frank C. Anderson, Ajay Seth,         *
  *            Matthew Millard                                                 *
  *                                                                            *
@@ -28,11 +28,6 @@
 //=============================================================================
 #include <OpenSim/Common/IO.h>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/Muscle.h>
-#include <OpenSim/Simulation/Model/Actuator.h>
-#include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
-#include <OpenSim/Simulation/Model/CoordinateSet.h>
-#include <OpenSim/Simulation/Model/ForceSet.h>
 #include "MuscleAnalysis.h"
 
 using namespace OpenSim;
@@ -687,7 +682,7 @@ int MuscleAnalysis::record(const SimTK::State& s)
  *
  * @return -1 on error, 0 otherwise.
  */
-int MuscleAnalysis::begin(SimTK::State& s )
+int MuscleAnalysis::begin(const SimTK::State&s )
 {
     if(!proceed()) return 0;
 
@@ -758,7 +753,7 @@ int MuscleAnalysis::step(const SimTK::State& s, int stepNumber )
  *
  * @return -1 on error, 0 otherwise.
  */
-int MuscleAnalysis::end(SimTK::State& s )
+int MuscleAnalysis::end(const SimTK::State& s )
 {
     if (!proceed()) return 0;
     record(s);

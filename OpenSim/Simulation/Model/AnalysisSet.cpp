@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson                                               *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -30,7 +30,6 @@
 // INCLUDES
 //=============================================================================
 #include "AnalysisSet.h"
-#include "Model.h"
 
 
 using namespace OpenSim;
@@ -197,8 +196,7 @@ getOn() const
  *
  * @param s Current state 
  */
-void AnalysisSet::
-begin(SimTK::State& s )
+void AnalysisSet::begin(const SimTK::State& s )
 {
     int i;
     for(i=0;i<getSize();i++) {
@@ -231,8 +229,7 @@ step( const SimTK::State& s, int stepNumber )
  *
  * @param s Current state 
  */
-void AnalysisSet::
-end(SimTK::State& s)
+void AnalysisSet:: end(const SimTK::State& s)
 {
     int i;
     for(i=0;i<getSize();i++) {

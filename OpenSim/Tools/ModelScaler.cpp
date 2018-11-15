@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Peter Loan                                                      *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -24,16 +24,10 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <OpenSim/Common/ScaleSet.h>
 #include "ModelScaler.h"
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
 #include <OpenSim/Common/MarkerData.h>
 #include <OpenSim/Common/IO.h>
-#include <OpenSim/Simulation/Model/BodySet.h>
-#include <OpenSim/Simulation/Model/MarkerSet.h>
-#include <OpenSim/Simulation/Model/Marker.h>
-#include <OpenSim/Simulation/Model/ForceSet.h>
 
 //=============================================================================
 // STATICS
@@ -266,9 +260,9 @@ bool ModelScaler::processModel(Model* aModel, const string& aPathToSubject,
             {
                 /* Load the static pose marker file, and convert units.
                 */
-                MarkerData *markerData = 0;
+                std::unique_ptr<MarkerData> markerData{};
                 if(!_markerFileName.empty() && _markerFileName!=PropertyStr::getDefaultStr()) {
-                    markerData = new MarkerData(aPathToSubject + _markerFileName);
+                    markerData.reset(new MarkerData(aPathToSubject + _markerFileName));
                     markerData->convertToUnits(aModel->getLengthUnits());
                 }
 
@@ -315,29 +309,32 @@ bool ModelScaler::processModel(Model* aModel, const string& aPathToSubject,
         }
 
         /* Now scale the model. */
-        aModel->scale(s, theScaleSet, aSubjectMass, _preserveMassDist);
-
+        aModel->scale(s, theScaleSet, _preserveMassDist, aSubjectMass);
 
         if(_printResultFiles) {
             std::string savedCwd = IO::getCwd();
             IO::chDir(aPathToSubject);
+            try { // writing can throw an exception
+                if (_outputModelFileNameProp.isValidFileName()) {
+                    if (aModel->print(_outputModelFileName))
+                        cout << "Wrote model file " << _outputModelFileName <<
+                        " from model " << aModel->getName() << endl;
+                }
 
-            if (!_outputModelFileNameProp.getValueIsDefault())
-            {
-                if (aModel->print(_outputModelFileName))
-                    cout << "Wrote model file " << _outputModelFileName << " from model " << aModel->getName() << endl;
-            }
-
-            if (!_outputScaleFileNameProp.getValueIsDefault())
-            {
-                if (theScaleSet.print(_outputScaleFileName))
-                    cout << "Wrote scale file " << _outputScaleFileName << " for model " << aModel->getName() << endl;
+                if (_outputScaleFileNameProp.isValidFileName()) {
+                    if (theScaleSet.print(_outputScaleFileName))
+                        cout << "Wrote scale file " << _outputScaleFileName <<
+                        " for model " << aModel->getName() << endl;
+                }
+            } // catch the exception so we can reset the working directory
+            catch (std::exception& ex) {
+                IO::chDir(savedCwd);
+                OPENSIM_THROW_FRMOBJ(Exception, ex.what());
             }
             IO::chDir(savedCwd);
         }
     }
-    catch (const Exception& x)
-    {
+    catch (const Exception& x) {
         x.print(cout);
         return false;
     }

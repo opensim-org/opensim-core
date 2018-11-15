@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Peter Loan                                                      *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -58,17 +58,21 @@ public:
 
     const char* getWrapTypeName() const override;
     std::string getDimensionsString() const override;
-    void scale(const SimTK::Vec3& aScaleFactors) override;
 
-#ifndef SWIG
+    /** Scale the cylinder's dimensions. The base class (WrapObject) scales the
+        origin of the cylinder in the body's reference frame. */
+    void extendScale(const SimTK::State& s, const ScaleSet& scaleSet) override;
+
+protected:
     int wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
         const PathWrap& aPathWrap, WrapResult& aWrapResult, bool& aFlag) const override;
-#endif
+    // WrapTorus uses WrapCylinder::wrapLine.
+    friend class WrapTorus;
+
     /// Implement generateDecorations to draw geometry in visualizer
     void generateDecorations(bool fixed, const ModelDisplayHints& hints, const SimTK::State& state,
         SimTK::Array_<SimTK::DecorativeGeometry>& appendToThis) const override;
 
-protected:
     void extendFinalizeFromProperties() override;
 
 private:

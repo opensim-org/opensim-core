@@ -47,11 +47,11 @@ When you are ready to make a PR, please adhere to the following guidelines:
 
 2. Make sure that your request conforms to our [coding standards](#coding-standards).
 
-3. Make sure that tests pass on your local machine before making a pull request. The [README.md](https://github.com/opensim-org/opensim-core) mentions how to run the tests.
+3. Make sure that your code executes as intended and that *all* tests pass on your local machine before making a pull request. The [README.md](https://github.com/opensim-org/opensim-core) explains how to run the tests. If your changes introduce runtime options or branching in the code, please ensure that all options or branches are being tested and that exceptions are being thrown in invalid scenarios.
 
 4. Typo fixes can be merged by any member of the Development (Dev) Team.
 
-5. Updates to comments, Doxygen, compiler compatibility, or CMake files must be reviewed by at least one member of the Dev Team before being merged. The original author or the reviewer(s) may merge the pull request.
+5. Updates to comments, Doxygen, compiler compatibility, CMake files, or continuous integration files must be reviewed by at least one member of the Dev Team before being merged. The original author or the reviewer(s) may merge the pull request.
 
 6. Any other changes to the code require review by at least two members of the Dev Team. If the pull request involves adding a new class or performing a major object/algorithm refactor, one of these reviewers must be an Owner. The Owners and Dev Team are Teams within the opensim-org GitHub organization. The original author may NOT merge the pull request.
 
@@ -175,7 +175,7 @@ shows protected members, nested classes, etc. When writing doxygen comments,
 you can use `\internal` or `\if developer ... \endif`
 for documentation that is only intended for developers.
 
-Read more about doxygen on this page: Guide to Building Doxygen
+Read more about doxygen on this page: [Guide to Building Doxygen](http://simtk-confluence.stanford.edu:8080/display/OpenSim/Guide+to+Building+Doxygen)
 
 ### Each line of text should be at most 80 characters
 
@@ -226,6 +226,7 @@ We have some conventional starting verbs; you should use the same ones when they
 `adopt`   | Take over ownership (e.g., `Set::adoptAndAppend()`).
 `extend`  | A virtual method intended to extend a defining capability of a Base class; can either be pure virtual or not. The first line of the derived class implementation must be `Super::extend<DoSomething>()`. For example, a ModelComponent knows how to ``connectToModel``, but the details of how each concrete ModelComponent type does this is implemented by the derived class.
 `implement` | A virtual method intended to implement a *pure* virtual function of a Base class. The derived class's implementation does *not* call any method on `Super`.
+`express` | Express a vector in a different basis (i.e., without translation). Typically used as `Frame::expressVectorIn*()`.
 
 ### ``throw`` and ``return`` are not functions
 
@@ -237,9 +238,9 @@ Both pre-increment i and post-increment i are available. When you don’t look a
 
 
 ```cpp
-/*YES*/ for (int i; i < limit; ++i);
+/*YES*/ for (int i = 0; i < limit; ++i);
 
-/*NO*/ for (int i; i < limit; i++);
+/*NO*/ for (int i = 0; i < limit; i++);
 ```
 
 This will prevent you from using the wrong operator in the expensive cases, which are not always obvious.
@@ -315,6 +316,7 @@ Jack Middleton     |              |Initial Simbody integration
 Jeffrey Reinbolt   |              |Static Optimization; Examples; Musculoskeletal modeling
 Shrinidhi Lakshmikanth|@klshrinidhi|Data interface
 Andrew LaPre       |@ankela       |IK error output to file
+Neil Dhir		   |@wagglefoot   |Python API contributions; specifically example usages
 
 Contributor License Agreement
 -----------------------------

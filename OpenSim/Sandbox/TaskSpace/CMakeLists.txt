@@ -4,9 +4,6 @@ file(GLOB TO_COMPILE "future*.cpp")
 
 # These executables are *not* tests.
 
-include_directories(${OpenSim_SOURCE_DIR}
-                    ${OpenSim_SOURCE_DIR}/Vendors)
-
 set(SANDBOX_FILES
     "futureTaskSpace.osim"
 )

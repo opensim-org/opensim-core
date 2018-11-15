@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson                                               *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -66,11 +66,21 @@ exception()
 //#endif
 }
 
+namespace {
+/// Grab the last element of a file path.
+std::string findFileName(const std::string& filepath) {
+    // Based on a similar function from Simbody.
+    std::string::size_type pos = filepath.find_last_of("/\\");
+    if (pos + 1 >= filepath.size()) pos = 0;
+    return filepath.substr(pos + 1);
+}
+} // namespace
+
 Exception::Exception(const std::string& file,
                      size_t line,
                      const std::string& func) {
-    addMessage("\tIn file " + file + ":" + std::to_string(line) + "\n" +
-               "\tIn function '" + func + "'");
+    addMessage("\tThrown at " + findFileName(file) + ":" +
+            std::to_string(line) + " in " + func + "().");
 }
 
 Exception::Exception(const std::string& file,
@@ -89,7 +99,7 @@ Exception::Exception(const std::string& file,
     std::string className = obj.getConcreteClassName();
     std::string objName = obj.getName();
     if (objName.empty()) objName = "<no-name>";
-    addMessage("\tIn object '" + objName + "' of type " + className + ".");
+    addMessage("\tIn Object '" + objName + "' of type " + className + ".");
 }
 
 Exception::Exception(const std::string& file,

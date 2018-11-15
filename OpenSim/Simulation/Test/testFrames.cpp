@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2015 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ayman Habib, Ajay Seth                                          *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -28,6 +28,9 @@ Tests Include:
     2. PhysicalOffsetFrame on a Body computations
     3. PhysicalOffsetFrame on a Body serialization
     4. PhysicalOffsetFrame on a PhysicalOffsetFrame computations
+    5. PhysicalOffsetFrame on PhysicalOffsetFrame in non-Multibody tree order
+    6. Filtering of Frames by their type
+    7. Velocity and acceleration methods
       
      Add tests here as Frames are added to OpenSim
 
@@ -44,7 +47,9 @@ void testBody();
 void testPhysicalOffsetFrameOnBody();
 void testPhysicalOffsetFrameOnBodySerialize();
 void testPhysicalOffsetFrameOnPhysicalOffsetFrame();
+void testPhysicalOffsetFrameOnPhysicalOffsetFrameOrder();
 void testFilterByFrameType();
+void testVelocityAndAccelerationMethods();
 
 class OrdinaryOffsetFrame : public OffsetFrame < Frame > {
     OpenSim_DECLARE_CONCRETE_OBJECT(OrdinaryOffsetFrame, OffsetFrame<Frame>);
@@ -84,10 +89,22 @@ int main()
         failures.push_back("testPhysicalOffsetFrameOnPhysicalOffsetFrame");
     }
 
+    try { testPhysicalOffsetFrameOnPhysicalOffsetFrameOrder(); }
+    catch (const std::exception& e) {
+        cout << e.what() << endl;
+        failures.push_back("testPhysicalOffsetFrameOnPhysicalOffsetFrameOrder");
+    }
+
     try { testFilterByFrameType(); }
     catch (const std::exception& e){
         cout << e.what() << endl;
         failures.push_back("testFilterByFrameType");
+    }
+
+    try { testVelocityAndAccelerationMethods(); }
+    catch (const std::exception& e) {
+        cout << e.what() << endl;
+        failures.push_back("testVelocityAndAccelerationMethods");
     }
 
     if (!failures.empty()) {
@@ -155,6 +172,7 @@ void testPhysicalOffsetFrameOnBody()
 
     cout << "\nRunning testOffsetFrameOnBody" << endl;
     Model* pendulum = new Model("double_pendulum.osim");
+
     const OpenSim::Body& rod1 = pendulum->getBodySet().get("rod1");
 
     // The offset transform on the rod body
@@ -166,7 +184,7 @@ void testPhysicalOffsetFrameOnBody()
     X_RO.updR().setRotationToBodyFixedXYZ(angs_known);
 
     PhysicalOffsetFrame* offsetFrame = new PhysicalOffsetFrame(rod1, X_RO);
-    pendulum->addFrame(offsetFrame);
+    pendulum->addComponent(offsetFrame);
 
     SimTK::State& s = pendulum->initSystem();
     const SimTK::Transform& X_GR = rod1.getTransformInGround(s);
@@ -214,7 +232,7 @@ void testPhysicalOffsetFrameOnBody()
 
     SimTK::Vec3 p_R(0.333, 0.222, 0.111);
     SimTK::Vec3 p_G = 
-        rod1.findLocationInAnotherFrame(s, p_R, pendulum->getGround());
+        rod1.findStationLocationInAnotherFrame(s, p_R, pendulum->getGround());
     SimTK::Vec3 p_G_2 = 
         rod1.getMobilizedBody().findStationLocationInGround(s, p_R);
 
@@ -229,6 +247,7 @@ void testPhysicalOffsetFrameOnPhysicalOffsetFrame()
 
     cout << "\nRunning testPhysicalOffsetFrameOnPhysicalOffsetFrame" << endl;
     Model* pendulum = new Model("double_pendulum.osim");
+
     const OpenSim::Body& rod1 = pendulum->getBodySet().get("rod1");
     
     SimTK::Transform X_RO;
@@ -238,21 +257,17 @@ void testPhysicalOffsetFrameOnPhysicalOffsetFrame()
     X_RO.updR().setRotationToBodyFixedXYZ(SimTK::Vec3(0.33, 0.22, 0.11));
     PhysicalOffsetFrame* offsetFrame = new PhysicalOffsetFrame(rod1, X_RO);
     offsetFrame->setName("first");
-    pendulum->addFrame(offsetFrame);
+    pendulum->addComponent(offsetFrame);
 
     //connect a second frame to the first PhysicalOffsetFrame 
     PhysicalOffsetFrame* secondFrame = offsetFrame->clone();
-    // Hack since clone does not copy internal ownership (parent) references
-    // TODO: should be removed when Component cloning preserves ownership
-    // relationships.
-    secondFrame->finalizeFromProperties();
 
     secondFrame->setName("second");
     secondFrame->setParentFrame(*offsetFrame);
     X_RO.setP(SimTK::Vec3(3.3, 2.2, 1.1));
     X_RO.updR().setRotationToBodyFixedXYZ(SimTK::Vec3(1.5, -0.707, 0.5));
     secondFrame->setOffsetTransform(X_RO);
-    pendulum->addFrame(secondFrame);
+    pendulum->addComponent(secondFrame);
 
     SimTK::State& s = pendulum->initSystem();
 
@@ -297,6 +312,7 @@ void testPhysicalOffsetFrameOnBodySerialize()
 
     cout << "\nRunning testPhysicalOffsetFrameOnBodySerialize" << endl;
     Model* pendulum = new Model("double_pendulum.osim");
+
     const OpenSim::Body& rod1 = pendulum->getBodySet().get("rod1");
 
     SimTK::Transform X_RO;
@@ -305,7 +321,7 @@ void testPhysicalOffsetFrameOnBodySerialize()
 
     PhysicalOffsetFrame* offsetFrame = new PhysicalOffsetFrame(rod1, X_RO);
     offsetFrame->setName("myExtraFrame");
-    pendulum->addFrame(offsetFrame);
+    pendulum->addComponent(offsetFrame);
 
     SimTK::State& s1 = pendulum->initSystem();
     const SimTK::Transform& X_GO_1 = offsetFrame->getTransformInGround(s1);
@@ -332,8 +348,78 @@ void testPhysicalOffsetFrameOnBodySerialize()
         "testPhysicalOffsetFrameOnBodySerialize(): incorrect MobilizedBodyIndex");
 }
 
+void testPhysicalOffsetFrameOnPhysicalOffsetFrameOrder()
+{
+    cout << "\nRunning testPhysicalOffsetFrameOnPhysicalOffsetFrameOrder" << endl;
+    // The order of the offset frames in the Model's "components" property list
+    // is specified to be the reverse of the order of the offset frames in the
+    // Multibody tree. This test ensures that the calls to addToSystem() for 
+    // PhysicalOffsetFrames occur in the order of the Multibody tree instead of
+    // the order in Model's property list, which can be arbitrary.
+    Model pendulum("double_pendulum.osim");
+
+    SimTK::Transform X_RO;
+    X_RO.setP(SimTK::Vec3(0.1, 0.2, 0.3));
+    X_RO.updR().setRotationFromAngleAboutAxis(SimTK::Pi / 4.0, SimTK::ZAxis);
+
+    // create PhysicalOffsetFrames Distal and Proximal to identify their
+    // relative location to w.r.t a Body in the Model.
+    PhysicalOffsetFrame* offsetFrameDistal = new PhysicalOffsetFrame();
+    offsetFrameDistal->setName("offsetFrameDistal");
+    offsetFrameDistal->setOffsetTransform(X_RO);
+    // add Distal offset first so it appears before Proximal in the Model's
+    // property list.
+    pendulum.addComponent(offsetFrameDistal);
+
+    PhysicalOffsetFrame* offsetFrameProximal = new PhysicalOffsetFrame();
+    offsetFrameProximal->setName("offsetFrameProximal");
+    offsetFrameProximal->setOffsetTransform(~X_RO);
+    pendulum.addComponent(offsetFrameProximal);
+
+    // Now attach them such that offsetFrameProximal is attached to rod2 of
+    // the pendulum and offsetFrameDistal is attached to offsetFrameProximal
+    const Body& rod2 = pendulum.getComponent<Body>("./bodyset/rod2");
+    offsetFrameProximal->setParentFrame(rod2);
+    offsetFrameDistal->setParentFrame(*offsetFrameProximal);
+
+    SimTK::State& s = pendulum.initSystem();
+
+    // make sure that this offsetFrameDistal knows that it is rigidly fixed 
+    // to the same MobilizedBody as the rod2 Body
+    ASSERT(rod2.getMobilizedBodyIndex() == 
+                offsetFrameDistal->getMobilizedBodyIndex(), __FILE__, __LINE__,
+        "testPhysicalOffsetFrameOnPhysicalOffsetFrame(): "
+        "incorrect MobilizedBodyIndex");
+
+    // Verify that a direct loop throws an exception
+    // Re-wire the PhysicalOffsetFrames to form a loop
+    offsetFrameProximal->setParentFrame(*offsetFrameDistal);
+    offsetFrameDistal->setParentFrame(*offsetFrameProximal);
+
+    // Check that loop causes an exception to be thrown and that
+    // connecting does not run endlessly.
+    ASSERT_THROW(PhysicalOffsetFramesFormLoop, pendulum.initSystem());
+
+    // Now test that we do not get stuck in a loop of PhysicalOffsetFrames
+    // for more than two frames
+    PhysicalOffsetFrame* offsetFrameMiddle = new PhysicalOffsetFrame();
+    offsetFrameMiddle->setName("offsetFrameMiddle");
+    offsetFrameMiddle->setOffsetTransform(X_RO);
+    pendulum.addComponent(offsetFrameMiddle);
+
+    // Re-wire the PhysicalOffsetFrames to form a loop
+    offsetFrameProximal->setParentFrame(*offsetFrameDistal);
+    offsetFrameMiddle->setParentFrame(*offsetFrameProximal);
+    offsetFrameDistal->setParentFrame(*offsetFrameMiddle);
+
+    // Check that loop causes an exception to be thrown and that
+    // connecting does not run endlessly.
+    ASSERT_THROW(PhysicalOffsetFramesFormLoop, pendulum.initSystem());
+}
+
 void testFilterByFrameType()
 {
+    cout << "\nRunning testFilterByFrameType" << endl;
     // Previous model with a PhysicalOffsetFrame attached to rod1
     Model* pendulumWFrame = new Model("double_pendulum_extraFrame.osim");
 
@@ -346,7 +432,7 @@ void testFilterByFrameType()
         new OrdinaryOffsetFrame(rod2, X_RO_2);
 
     // add OffsetFrame to the model
-    pendulumWFrame->addFrame(anOffset);
+    pendulumWFrame->addComponent(anOffset);
 
     std::cout << "\nList all Frames in the model." << std::endl;
     int i = 0;
@@ -355,8 +441,8 @@ void testFilterByFrameType()
             << " of type " << typeid(component).name() << std::endl;
     }
 
-    ASSERT_EQUAL(9, i, 0, __FILE__, __LINE__,
-        "testFilterByFrameType failed to find the 9 Frames in the model.");
+    ASSERT_EQUAL(11, i, __FILE__, __LINE__,
+        "testFilterByFrameType failed to find the 11 Frames in the model.");
 
     i = 0;
     std::cout << "\nList all PhysicalFrames in the model." << std::endl;
@@ -364,8 +450,8 @@ void testFilterByFrameType()
         std::cout << "frame[" << ++i << "] is " << component.getName()
             << " of type " << typeid(component).name() << std::endl;
     }
-    ASSERT_EQUAL(8, i, 0, __FILE__, __LINE__,
-        "testFilterByFrameType failed to find 6 PhysicalFrames.");
+    ASSERT_EQUAL(10, i, __FILE__, __LINE__,
+        "testFilterByFrameType failed to find 10 PhysicalFrames.");
 
     i = 0;
     std::cout << "\nList all Bodies in the model." << std::endl;
@@ -374,7 +460,7 @@ void testFilterByFrameType()
             << " of type " << typeid(component).name() << std::endl;
     }
 
-    ASSERT_EQUAL(2, i, 0, __FILE__, __LINE__,
+    ASSERT_EQUAL(2, i, __FILE__, __LINE__,
         "testFilterByFrameType failed to find the 2 Bodies in the model.");
     
 
@@ -385,7 +471,70 @@ void testFilterByFrameType()
         std::cout << "frame[" << ++i << "] is " << component.getName()
             << " of type " << typeid(component).name() << std::endl;
     }
-    ASSERT_EQUAL(5, i, 0, __FILE__, __LINE__,
-        "testFilterByFrameType failed to find the 3 PhyscicalOffsetFrame in the model.");
+    ASSERT_EQUAL(7, i, __FILE__, __LINE__,
+        "testFilterByFrameType failed to find the 7 PhyscicalOffsetFrame in the model.");
 }
 
+void testVelocityAndAccelerationMethods()
+{
+    cout << "\nRunning testVelocityAndAccelerationMethods" << endl;
+
+    Model* pendulum = new Model("double_pendulum.osim");
+    const OpenSim::Body& rod2 = pendulum->getBodySet().get("rod2");
+    SimTK::Vec3 p2(-.2, .1, -.3);
+    Station* p2_station = new Station();
+    p2_station->set_location(p2);
+    p2_station->setParentFrame(rod2);
+    pendulum->addModelComponent(p2_station);
+
+    SimTK::State& s = pendulum->initSystem();
+    pendulum->getCoordinateSet().get("q1").setValue(s, 2.0);
+    pendulum->getCoordinateSet().get("q2").setValue(s, -1.0);
+    
+    SimTK::RungeKuttaMersonIntegrator integrator(pendulum->getSystem());
+    SimTK::TimeStepper ts(pendulum->getSystem(), integrator);
+    ts.initialize(s);
+
+    double finalT = 1.0;
+    double dt = 0.01;
+    int n = int(round(finalT / dt));
+
+    // Hold the computed kinematics from Station and Frame methods
+    SimTK::Vec3 lo, vo, ao, l, v, a;
+
+    for (int i = 1; i <= n; ++i) {
+        ts.stepTo(i*dt);
+        s = ts.getState();
+
+        // realize to acceleration to access acceleration stage cache
+        pendulum->realizeAcceleration(s);
+
+        // Compare to Station calculations
+        l = p2_station->getLocationInGround(s);
+        v = p2_station->getVelocityInGround(s);
+        a = p2_station->getAccelerationInGround(s);
+
+        lo = rod2.findStationLocationInGround(s, p2);
+        vo = rod2.findStationVelocityInGround(s, p2);
+        ao = rod2.findStationAccelerationInGround(s, p2);
+
+        cout << "t = " << s.getTime() << ": os_a = " << ao;
+        cout << " | sb_a = " << a << endl;
+
+        // Compare Station values to values from Frame
+        SimTK_TEST_EQ(l, lo);
+        SimTK_TEST_EQ(v, vo);
+        SimTK_TEST_EQ(a, ao);
+    }
+
+    // Test convenience methods for accessing angular and linear components of
+    // velocity and acceleration.
+    SimTK_TEST_EQ(rod2.getVelocityInGround(s)[0],
+                  rod2.getAngularVelocityInGround(s));
+    SimTK_TEST_EQ(rod2.getVelocityInGround(s)[1],
+                  rod2.getLinearVelocityInGround(s));
+    SimTK_TEST_EQ(rod2.getAccelerationInGround(s)[0],
+                  rod2.getAngularAccelerationInGround(s));
+    SimTK_TEST_EQ(rod2.getAccelerationInGround(s)[1],
+                  rod2.getLinearAccelerationInGround(s));
+}

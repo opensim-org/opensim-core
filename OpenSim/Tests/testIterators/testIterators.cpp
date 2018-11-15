@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2014-2014 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ayman Habib                                                     *
  * Contributer(s) :                                                           *
  *                                                                            *
@@ -23,6 +23,7 @@
  * -------------------------------------------------------------------------- */
 #include <iostream>
 #include <OpenSim/Simulation/Model/Model.h>
+#include "OpenSim/Simulation/SimbodyEngine/PinJoint.h"
 #include <OpenSim/Common/LoadOpenSimLibrary.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 
@@ -52,109 +53,198 @@ const std::string modelFilename = "arm26.osim";
 // to recompose existing components, this will need continual updating. For example,
 // Joint's often add PhysicalOffsetFrames to handle what used to be baked in location
 // and orientation offsets.
-const int expectedNumComponents = 134;
+// 2018-09-05 updates to accommodate ModelComponentSets: BodySet, JointSet,
+//    ConstraintSet, ForceSet, ProbeSet, WrapObjectSet, ...
+const int expectedNumComponents = 200; 
 const int expectedNumJointsWithStateVariables = 2;
-const int expectedNumModelComponentsWithStateVariables = 10;
-// Below updated from 1 to 3 to account for offset frame and its geometry added
-// to the Joint
-const int expectedNumJntComponents = 3;
+// 2018-08-22 added 2 for JointSet and ForceSet that contain Components with states
+const int expectedNumModelComponentsWithStateVariables = 12;
+// Below updated from 1 to 7 to account for offset frame and its geometry and 
+// wrapobjectset that are now part of the Joint
+const int expectedNumJntComponents = 7;
 // Test using the iterator to skip over every other Component (Frame in this case)
-// nf = 1 ground + 2 bodies + 2 joint offsets = 5, skipping - 2 = 3
-const int expectedNumCountSkipFrames = 3;
+// nf = 1 ground + 2 bodies + 4 joint offsets = 7, skipping - 3 = 4
+const int expectedNumCountSkipFrames = 4;
+
+namespace OpenSim {
+    
+class Device : public ModelComponent {
+    OpenSim_DECLARE_CONCRETE_OBJECT(Device, ModelComponent);
+}; // end of Device
+    
+} // namespace OpenSim
+
+
+void testNestedComponentListConsistency() {
+    using SimTK::Vec3;
+    using SimTK::Inertia;
+
+    Model model(modelFilename);
+
+    auto device = new OpenSim::Device();
+    device->setName("device");
+
+    auto humerus = new OpenSim::Body("device_humerus", 1, Vec3(0), Inertia(0));
+    auto radius  = new OpenSim::Body("device_radius",  1, Vec3(0), Inertia(0));
+
+    auto shoulder = new OpenSim::PinJoint("device_shoulder",
+                                          model.getGround(), Vec3(0), Vec3(0),
+                                          *humerus, Vec3(0, 1, 0), Vec3(0));
+    auto elbow = new OpenSim::PinJoint("device_elbow",
+                                       *humerus, Vec3(0), Vec3(0),
+                                       *radius, Vec3(0, 1, 0), Vec3(0));
+
+    device->addComponent(shoulder);
+    device->addComponent(elbow);
+
+    model.addModelComponent(device);
+
+    std::vector<const Joint*> joints1{}, joints2{};
+    std::set<const Coordinate*> coords{};
+
+    std::cout << "Joints in the model: " << std::endl;
+    for(const auto& joint : model.getComponentList<Joint>()) {
+        std::cout << "    " << joint.getAbsolutePathString() << std::endl;
+        joints1.push_back(&joint);
+    }
+
+    std::cout << "Joints and Coordinates: " << std::endl;
+    for(const auto& joint : model.getComponentList<Joint>()) {
+        joints2.push_back(&joint);
+        std::cout << "    Joint: " << joint.getAbsolutePathString() << std::endl;
+        for(const auto& coord : joint.getComponentList<Coordinate>()) {
+            std::cout << "        Coord: "
+                      << coord.getAbsolutePathString() << std::endl;
+            coords.insert(&coord);
+        }
+    }
+
+    // Joints list should be a unique set.
+    ASSERT(std::set<const Joint*>{joints1.begin(), joints1.end()}.size() == 4);
+    // Joints1 and Joints2 must be identical.
+    ASSERT(joints1 == joints2);
+    // Expected number of unique coordinates.
+    ASSERT(coords.size() == 4);
+}
 
 void testComponentListConst() {
 
     Model model(modelFilename);
-    model.dumpSubcomponents();
+    model.printSubcomponentInfo();
 
     ComponentList<const Component> componentsList = model.getComponentList();
-    std::cout << "list begin: " << componentsList.begin()->getName() << std::endl;
+    cout << "list begin: " << componentsList.begin()->getName() << endl;
     int numComponents = 0;
-    for (ComponentList<const Component>::const_iterator it = componentsList.begin();
-            it != componentsList.end();
-            ++it) {
-        std::cout << "Iterator is at: " << it->getFullPathName() << " <" << it->getConcreteClassName() << ">" << std::endl;
+    for (ComponentList<const Component>::const_iterator 
+            it = componentsList.begin(); it != componentsList.end();  ++it) {
+        cout << "Iterator is at: " << it->getAbsolutePathString() <<
+            " <" << it->getConcreteClassName() << ">" << endl;
         numComponents++;
         // it->setName("this line should not compile; using const_iterator.");
     }
     
-    ComponentList<const OpenSim::Body> bodiesList = model.getComponentList<OpenSim::Body>();
+    ComponentList<const OpenSim::Body> bodiesList = 
+        model.getComponentList<OpenSim::Body>();
+
     int numBodies = 0;
-    std::cout << "Bodies list begin: " << bodiesList.begin()->getName() << std::endl;
-    for (ComponentList<OpenSim::Body>::const_iterator it = bodiesList.begin();
-            it != bodiesList.end();
-            ++it) {
-        std::cout << "Iterator is at Body: " << it->getName() << std::endl;
+    cout << "Bodies list begin: " << bodiesList.begin()->getName() << endl;
+    for (ComponentList<OpenSim::Body>::const_iterator 
+            it = bodiesList.begin(); it != bodiesList.end(); ++it) {
+        cout << "Iterator is at Body: " << it->getName() << endl;
         numBodies++;
     }
     // Now we try the post increment variant of the iterator
-    std::cout << "Bodies list begin, using post increment: " << bodiesList.begin()->getName() << std::endl;
+    cout << "Bodies list begin, using post increment: " 
+        << bodiesList.begin()->getName() << endl;
     int numBodiesPost = 0;
-    for (ComponentList<OpenSim::Body>::const_iterator itPost = bodiesList.begin();
-            itPost != bodiesList.end();
-            itPost++) {
-        std::cout << "Iterator is at Body: " << itPost->getName() << std::endl;
+    for (ComponentList<OpenSim::Body>::const_iterator 
+            itPost = bodiesList.begin(); itPost != bodiesList.end(); itPost++) {
+        cout << "Iterator is at Body: " << itPost->getName() << endl;
         numBodiesPost++;
     }
 
     int numMuscles = 0;
-    std::cout << "Using range-for loop over Muscles: " << std::endl;
+    cout << "Using range-for loop over Muscles: " << endl;
     ComponentList<const Muscle> musclesList = model.getComponentList<Muscle>();
     for (const Muscle& muscle : musclesList) {
-        std::cout << "Iterator is at muscle: " << muscle.getName() << std::endl;
+        cout << "Iterator is at muscle: " << muscle.getName() << endl;
         numMuscles++;
     }
     
     int numGeomPaths = 0;
-    ComponentList<const GeometryPath> geomPathList = model.getComponentList<GeometryPath>();
+    ComponentList<const GeometryPath> geomPathList =
+        model.getComponentList<GeometryPath>();
     for (const GeometryPath& gpath : geomPathList) {
         (void)gpath; // Suppress unused variable warning.
         numGeomPaths++;
     }
     const OpenSim::Joint& shoulderJnt = model.getJointSet().get(0);
-    // cycle through components under shoulderJnt should return the Joint itself and the Coordinate
+    // cycle through components under shoulderJnt should return the Joint 
+    // and the Coordinate
     int numJntComponents = 0;
-    ComponentList<const Component> jComponentsList = shoulderJnt.getComponentList();
-    std::cout << "Components/subComponents under Shoulder Joint:" << std::endl;
-    for (ComponentList<Component>::const_iterator it = jComponentsList.begin();
-            it != jComponentsList.end();
-            ++it) {
-        std::cout << "Iterator is at: " << it->getConcreteClassName() << " " << it->getFullPathName() << std::endl;
+    ComponentList<const Component> jComponentsList = 
+        shoulderJnt.getComponentList();
+    cout << "Components/subComponents under Shoulder Joint:" << endl;
+    for (ComponentList<Component>::const_iterator
+            it = jComponentsList.begin(); it != jComponentsList.end(); ++it) {
+        cout << "Iterator is at: " << it->getConcreteClassName() << " "
+            << it->getAbsolutePathString() << endl;
         numJntComponents++;
     }
-    cout << "Num all components = " << numComponents << std::endl;
-    cout << "Num bodies = " << numBodies << std::endl;
-    cout << "Num Muscles = " << numMuscles << std::endl;
-    cout << "Num GeometryPath components = " << numGeomPaths << std::endl;
-    // Components = Model+3Body+3Marker+2(Joint+Coordinate)+6(Muscle+GeometryPath)
-    // Should test against 1+#Bodies+#Markers+#Joints+#Constraints+#Coordinates+#Forces+#ForcesWithPath+..
-    // Would that account for internal (split-bodies etc.?)
+    cout << "Num all components = " << numComponents << endl;
+    cout << "Num bodies = " << numBodies << endl;
+    cout << "Num Muscles = " << numMuscles << endl;
+    cout << "Num GeometryPath components = " << numGeomPaths << endl;
+    // Components = Model + 3Body + 3Marker + 2(Joint+Coordinate) 
+    //              + 6(Muscle+GeometryPath)
 
     // To test states we must have added the components to the system
     // which is done when the model creates and initializes the system
     SimTK::State state = model.initSystem();
 
+    unsigned numJoints{}, numCoords{};
+    for(const auto& joint : model.getComponentList<Joint>()) {
+        cout << "Joint: " << joint.getAbsolutePathString() << endl;
+        ++numJoints;
+        for(const auto& coord : joint.getComponentList<Coordinate>()) {
+            cout << "Coord: " << coord.getAbsolutePathString() << endl;
+            ++numCoords;
+        }
+    }
+    ASSERT(numJoints == 2);
+    ASSERT(numCoords == 2);
+
     int numJointsWithStateVariables = 0;
-    ComponentList<const Joint> jointsWithStates = model.getComponentList<Joint>();
+    ComponentList<const Joint> jointsWithStates = 
+        model.getComponentList<Joint>();
     ComponentWithStateVariables myFilter;
     jointsWithStates.setFilter(myFilter); 
     for (const Joint& comp : jointsWithStates) {
-        cout << comp.getConcreteClassName() << ":" << comp.getFullPathName() << endl;
+        cout << comp.getConcreteClassName() << ":" 
+            << comp.getAbsolutePathString() << endl;
         numJointsWithStateVariables++;
     }
+
     int numModelComponentsWithStateVariables = 0;
-    ComponentList<const ModelComponent> comps = model.getComponentList<ModelComponent>();
+    ComponentList<const ModelComponent> comps = 
+        model.getComponentList<ModelComponent>();
     comps.setFilter(myFilter);
     for (const ModelComponent& comp : comps) {
-        cout << comp.getConcreteClassName() << ":" << comp.getFullPathName() << endl;
+        cout << comp.getConcreteClassName() << ":" 
+            << comp.getAbsolutePathString() << endl;
         numModelComponentsWithStateVariables++;
     }
+
+    cout << "numModelComponentsWithStateVariables ="
+        << numModelComponentsWithStateVariables << endl;
+
     //Now test a std::iterator method
     ComponentList<const Frame> allFrames = model.getComponentList<Frame>();
     ComponentList<Frame>::const_iterator skipIter = allFrames.begin();
     int countSkipFrames = 0;
     while (skipIter != allFrames.end()){
-        cout << skipIter->getConcreteClassName() << ":" << skipIter->getFullPathName() << endl;
+        cout << skipIter->getConcreteClassName() << ":" 
+            << skipIter->getAbsolutePathString() << endl;
         std::advance(skipIter, 2);
         countSkipFrames++;
     }
@@ -195,7 +285,7 @@ void testComponentListNonConstWithConstIterator() {
     for (ComponentList<Component>::const_iterator it = componentsList.begin();
             it != componentsList.end();
             ++it) {
-        std::cout << "Iterator is at: " << it->getFullPathName() << " <" << it->getConcreteClassName() << ">" << std::endl;
+        std::cout << "Iterator is at: " << it->getAbsolutePathString() << " <" << it->getConcreteClassName() << ">" << std::endl;
         numComponents++;
         // it->setName("this line should not compile; using const_iterator.");
     }
@@ -250,7 +340,7 @@ void testComponentListNonConstWithConstIterator() {
     for (ComponentList<Component>::const_iterator it = jComponentsList.begin();
         it != jComponentsList.end();
         ++it) {
-        std::cout << "Iterator is at: " << it->getConcreteClassName() << " " << it->getFullPathName() << std::endl;
+        std::cout << "Iterator is at: " << it->getConcreteClassName() << " " << it->getAbsolutePathString() << std::endl;
         numJntComponents++;
     }
     cout << "Num all components = " << numComponents << std::endl;
@@ -267,14 +357,14 @@ void testComponentListNonConstWithConstIterator() {
     ComponentWithStateVariables myFilter;
     jointsWithStates.setFilter(myFilter); 
     for (const Joint& comp : jointsWithStates) {
-        cout << comp.getConcreteClassName() << ":" << comp.getFullPathName() << endl;
+        cout << comp.getConcreteClassName() << ":" << comp.getAbsolutePathString() << endl;
         numJointsWithStateVariables++;
     }
     int numModelComponentsWithStateVariables = 0;
     ComponentList<ModelComponent> comps = model.updComponentList<ModelComponent>();
     comps.setFilter(myFilter);
     for (const ModelComponent& comp : comps) {
-        cout << comp.getConcreteClassName() << ":" << comp.getFullPathName() << endl;
+        cout << comp.getConcreteClassName() << ":" << comp.getAbsolutePathString() << endl;
         numModelComponentsWithStateVariables++;
     }
     //Now test a std::iterator method
@@ -283,7 +373,7 @@ void testComponentListNonConstWithConstIterator() {
     ComponentList<Frame>::const_iterator skipIter = allFrames.begin();
     int countSkipFrames = 0;
     while (skipIter != allFrames.end()){
-        cout << skipIter->getConcreteClassName() << ":" << skipIter->getFullPathName() << endl;
+        cout << skipIter->getConcreteClassName() << ":" << skipIter->getAbsolutePathString() << endl;
         std::advance(skipIter, 2);
         countSkipFrames++;
     }
@@ -303,7 +393,7 @@ void testComponentListNonConstWithConstIterator() {
     {
         // Lines are commented out b/c they don't compile. I (Chris) uncommented
         // them during development of the non-const iterators to check that
-        // these lines do not copmile.
+        // these lines do not compile.
         ComponentList<Body> mutBodyList = model.updComponentList<Body>();
         // ComponentList<Body>::iterator itBody = mutBodyList.cbegin();
         // Also does not work with an abstract type.
@@ -408,6 +498,10 @@ void testComponentListNonConstWithNonConstIterator() {
     ASSERT(numBodiesPost == numBodies);
     ASSERT(numMuscles == model.getMuscles().getSize());
     ASSERT(numJointsWithStateVariables == expectedNumJointsWithStateVariables);
+
+    cout << "numModelComponentsWithStateVariables ="
+        << numModelComponentsWithStateVariables << endl;
+
     ASSERT(numModelComponentsWithStateVariables ==
            expectedNumModelComponentsWithStateVariables);
     ASSERT(numJntComponents == expectedNumJntComponents);
@@ -417,6 +511,7 @@ void testComponentListNonConstWithNonConstIterator() {
 // Ensure that we can compare const_iterator and (non-const) iterator.
 void testComponentListComparisonOperators() {
     Model model(modelFilename);
+
     ComponentList<Body> list = model.updComponentList<Body>();
     ComponentList<Body>::const_iterator constIt = list.cbegin();
     ComponentList<Body>::iterator mutIt = list.begin();
@@ -441,6 +536,7 @@ int main() {
         SimTK_SUBTEST(testComponentListNonConstWithConstIterator);
         SimTK_SUBTEST(testComponentListNonConstWithNonConstIterator);
         SimTK_SUBTEST(testComponentListComparisonOperators);
+        SimTK_SUBTEST(testNestedComponentListConsistency);
     SimTK_END_TEST();
 }
 
