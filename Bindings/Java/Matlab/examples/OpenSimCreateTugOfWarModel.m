@@ -61,12 +61,9 @@ blockToGround        = FreeJoint('blockToGround', ...
 % Set bounds on the 6 coordinates of the Free Joint.
 angleRange 	  = [-pi/2, pi/2];
 positionRange = [-1, 1];
-blockToGround.upd_coordinates(0).setRange(angleRange);
-blockToGround.upd_coordinates(1).setRange(angleRange);
-blockToGround.upd_coordinates(2).setRange(angleRange);
-blockToGround.upd_coordinates(3).setRange(positionRange);
-blockToGround.upd_coordinates(4).setRange(positionRange);
-blockToGround.upd_coordinates(5).setRange(positionRange);
+for i=0:2, blockToGround.upd_coordinates(i).setRange(angleRange); end
+for i=3:5, blockToGround.upd_coordinates(i).setRange(positionRange); end
+
 
 % Add the block body to the model
 model.addBody(block)
@@ -110,20 +107,19 @@ model.addForce(muscle2);
 initialTime = 0.0;
 finalTime = 3.0;
 
-% Instantiate a Prescribed Controller
 muscleController = PrescribedController();
 muscleController.setName('LinearRamp_Controller')
 muscleController.setActuators(model.updActuators())
 
-% Define linear functions for the control values
+% Define linear functions for the control values for the two muscles
 slopeAndIntercept1=ArrayDouble(0.0, 2);
 slopeAndIntercept2=ArrayDouble(0.0, 2);
 
-% Set Muscle1 to have a control slope of -1 starting 1 at t = 0
+% Set the Muscle1 control coefficients
 slopeAndIntercept1.setitem(0, -1.0/(finalTime-initialTime));
 slopeAndIntercept1.setitem(1,  1.0);
 
-% Set Muscle2 to have a control slope of 0.95 starting 0.05 at t = 0
+% Set the Muscle1 control coefficients
 slopeAndIntercept2.setitem(0, 0.95/(finalTime-initialTime));
 slopeAndIntercept2.setitem(1, 0.05);
 
