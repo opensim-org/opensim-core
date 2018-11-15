@@ -330,9 +330,8 @@ InverseMuscleSolverMotionData::createCoordPathsToActuate(const Model& model,
     std::vector<std::string> coordPathsToActuate(coordsToActuate.size());
     const auto modelPath = model.getAbsolutePath();
     for (size_t iCoord = 0; iCoord < coordsToActuate.size(); ++iCoord) {
-        auto absPath = coordsToActuate[iCoord]->getAbsolutePath();
-        coordPathsToActuate[iCoord] =
-                absPath.formRelativePath(modelPath).toString();
+        auto absPath = coordsToActuate[iCoord]->getAbsolutePath().toString();
+        coordPathsToActuate[iCoord] = absPath;
     }
     return coordPathsToActuate;
 }
@@ -378,9 +377,7 @@ void InverseMuscleSolverMotionData::computeInverseDynamics(
         // Find the index of the coordinate with path coordPathAct.
         size_t iCoordAct = 0;
         for (auto& coord : coordsInOrder) {
-            const auto thisCoordPath =
-                    coord->getAbsolutePath()
-                            .formRelativePath(modelPath).toString();
+            const auto thisCoordPath = coord->getAbsolutePathString();
             if (coordPathAct == thisCoordPath) {
                 coordActIndices.push_back(iCoordAct);
                 break;

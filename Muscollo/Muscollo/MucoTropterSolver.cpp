@@ -297,7 +297,7 @@ public:
 
         for (const auto& actu : m_model.getComponentList<Actuator>()) {
             // TODO handle a variable number of control signals.
-            const auto& actuName = actu.getName();
+            const auto& actuName = actu.getAbsolutePathString();
             const auto& info = m_phase0.getControlInfo(actuName);
             this->add_control(actuName, convert(info.getBounds()),
                     convert(info.getInitialBounds()),
@@ -333,8 +333,6 @@ public:
         // TODO do not copy? I think this will still make a copy:
         // TODO use m_state.updY() = SimTK::Vector(states.size(), states.data(), true);
         //m_state.setY(SimTK::Vector(states.size(), states.data(), true));
-
-        const auto& matter = m_model.getMatterSubsystem();
 
         // Set the controls for actuators in the OpenSim model.
         if (m_model.getNumControls()) {
@@ -414,7 +412,6 @@ public:
         const auto& states = in.states;
         const auto& controls = in.controls;
         const auto& adjuncts = in.adjuncts;
-        const auto& parameters = in.parameters;
 
         // TODO would it make sense to a vector of States, one for each mesh
         // point, so that each can preserve their cache?
@@ -448,7 +445,7 @@ public:
         
     }
     void calc_endpoint_cost(const T& final_time, const VectorX<T>& states,
-            const VectorX<T>& parameters, T& cost) const override {
+            const VectorX<T>& /*parameters*/, T& cost) const override {
         // TODO avoid all of this if there are no endpoint costs.
         m_state.setTime(final_time);
         std::copy(states.data(), states.data() + states.size(),
@@ -608,7 +605,12 @@ MucoIterate MucoTropterSolver::createGuessTimeStepping() const {
     manager.integrate(finalTime);
 
     const auto& statesTable = manager.getStatesTable();
-    const auto controlsTable = model.getControlsTable();
+    auto controlsTable = model.getControlsTable();
+
+    // Fix column labels.
+    auto labels = controlsTable.getColumnLabels();
+    for (auto& label : labels) { label = "/forceset/" + label; }
+    controlsTable.setColumnLabels(labels);
 
     // TODO handle parameters.
     return MucoIterate::createFromStatesControlsTables(
@@ -617,6 +619,8 @@ MucoIterate MucoTropterSolver::createGuessTimeStepping() const {
 
 void MucoTropterSolver::setGuess(MucoIterate guess) {
     // Ensure the guess is compatible with this solver/problem.
+    // Make sure to initialize the problem. TODO put in a better place.
+    getTropterProblem();
     guess.isCompatible(getProblem(), true);
     clearGuess();
     m_guessFromAPI = std::move(guess);

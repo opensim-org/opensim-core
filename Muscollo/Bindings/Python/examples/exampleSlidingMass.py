@@ -39,6 +39,8 @@ model.addComponent(actu)
 
 body.attachGeometry(osim.Sphere(0.05))
 
+model.finalizeConnections()
+
 # Create MucoTool.
 # ================
 muco = osim.MucoTool()
@@ -58,13 +60,13 @@ problem.setModel(model)
 problem.setTimeBounds(osim.MucoInitialBounds(0.), osim.MucoFinalBounds(0., 5.))
 
 # Initial position must be 0, final position must be 1.
-problem.setStateInfo('slider/position/value', osim.MucoBounds(-5, 5),
+problem.setStateInfo('/slider/position/value', osim.MucoBounds(-5, 5),
                      osim.MucoInitialBounds(0), osim.MucoFinalBounds(1))
 # Initial and final speed must be 0. Use compact syntax.
-problem.setStateInfo('slider/position/speed', [-50, 50], [0], [0])
+problem.setStateInfo('/slider/position/speed', [-50, 50], [0], [0])
 
 # Applied force must be between -50 and 50.
-problem.setControlInfo('actuator', osim.MucoBounds(-50, 50))
+problem.setControlInfo('/actuator', osim.MucoBounds(-50, 50))
 
 # Cost.
 # -----

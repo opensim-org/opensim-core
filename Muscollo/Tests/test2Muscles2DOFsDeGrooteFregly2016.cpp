@@ -442,6 +442,8 @@ OpenSim::Model buildModel() {
         model.addComponent(actuR);
     }
 
+    model.finalizeConnections();
+
     // For use in "filebased" tests.
     model.print("test2Muscles2DOFsDeGrooteFregly2016.osim");
     // SimTK::State s = model.initSystem();
@@ -495,7 +497,7 @@ solveForTrajectory_GSO(const Model& model) {
     TimeSeriesTable ocpSolution = CSVFileAdapter::read(trajFileWithHeader);
     TimeSeriesTable kinematics;
     kinematics.setColumnLabels(
-            {"tx/tx/value", "tx/tx/speed", "ty/ty/value", "ty/ty/speed"});
+            {"/tx/tx/value", "/tx/tx/speed", "/ty/ty/value", "/ty/ty/speed"});
     const auto& x = ocpSolution.getDependentColumn("x");
     const auto& vx = ocpSolution.getDependentColumn("vx");
     const auto& y = ocpSolution.getDependentColumn("y");
@@ -577,7 +579,7 @@ solveForTrajectory_INDYGO(const Model& model) {
     TimeSeriesTable ocpSolution = CSVFileAdapter::read(trajFileWithHeader);
     TimeSeriesTable kinematics;
     kinematics.setColumnLabels(
-            {"tx/tx/value", "tx/tx/speed", "ty/ty/value", "ty/ty/speed"});
+            {"/tx/tx/value", "/tx/tx/speed", "/ty/ty/value", "/ty/ty/speed"});
     const auto& x = ocpSolution.getDependentColumn("x");
     const auto& vx = ocpSolution.getDependentColumn("vx");
     const auto& y = ocpSolution.getDependentColumn("y");
@@ -614,10 +616,10 @@ solveForTrajectory_INDYGO(const Model& model) {
 void compareSolution_GSO(const GlobalStaticOptimization::Solution& actual,
                          const TimeSeriesTable& expected,
                          const double& reserveOptimalForce) {
-    compare(actual.activation, "/block2musc2dof/left",
+    compare(actual.activation, "/left",
             expected,          "activation_l",
             0.02);
-    compare(actual.activation, "/block2musc2dof/right",
+    compare(actual.activation, "/right",
             expected,          "activation_r",
             0.05);
     auto reserveForceXRMS = reserveOptimalForce *
@@ -690,7 +692,7 @@ void test2Muscles2DOFs_GSO_GenForces(
             (int)netGenForcesEigen.cols(), (int)netGenForcesEigen.rows(),
             netGenForcesEigen.data());
     TimeSeriesTable netGenForces;
-    netGenForces.setColumnLabels({"tx/tx", "ty/ty"});
+    netGenForces.setColumnLabels({"/tx/tx", "/ty/ty"});
     for (int iRow = 0; iRow < netGenForcesMatrix.nrow(); ++iRow) {
         netGenForces.appendRow(times[iRow], netGenForcesMatrix.row(iRow));
     }
@@ -711,34 +713,34 @@ void test2Muscles2DOFs_GSO_GenForces(
 void compareSolution_INDYGO(const INDYGO::Solution& actual,
                          const TimeSeriesTable& expected,
                          const double& reserveOptimalForce) {
-    compare(actual.activation, "/block2musc2dof/left",
+    compare(actual.activation, "/left",
             expected,          "activation_l",
             0.05);
-    compare(actual.activation, "/block2musc2dof/right",
+    compare(actual.activation, "/right",
             expected,          "activation_r",
             0.05);
 
-    compare(actual.norm_fiber_length, "/block2musc2dof/left",
+    compare(actual.norm_fiber_length, "/left",
             expected,                 "norm_fiber_length_l",
             0.01);
-    compare(actual.norm_fiber_length, "/block2musc2dof/right",
+    compare(actual.norm_fiber_length, "/right",
             expected,                 "norm_fiber_length_r",
             0.01);
 
     // We use a weaker check for the controls; they don't match as well.
     // The excitations are fairly noisy across time, and the fiber velocity
     // does not match well at the beginning of the trajectory.
-    rootMeanSquare(actual.excitation, "/block2musc2dof/left",
+    rootMeanSquare(actual.excitation, "/left",
             expected,                 "excitation_l",
             0.03);
-    rootMeanSquare(actual.excitation, "/block2musc2dof/right",
+    rootMeanSquare(actual.excitation, "/right",
             expected,                 "excitation_r",
             0.03);
 
-    rootMeanSquare(actual.norm_fiber_velocity, "/block2musc2dof/left",
+    rootMeanSquare(actual.norm_fiber_velocity, "/left",
             expected,                          "norm_fiber_velocity_l",
             0.02);
-    rootMeanSquare(actual.norm_fiber_velocity, "/block2musc2dof/right",
+    rootMeanSquare(actual.norm_fiber_velocity, "/right",
             expected,                          "norm_fiber_velocity_r",
             0.02);
 
@@ -822,7 +824,7 @@ void test2Muscles2DOFs_INDYGO_GenForces(
             (int)netGenForcesEigen.cols(), (int)netGenForcesEigen.rows(),
             netGenForcesEigen.data());
     TimeSeriesTable netGenForces;
-    netGenForces.setColumnLabels({"tx/tx", "ty/ty"});
+    netGenForces.setColumnLabels({"/tx/tx", "/ty/ty"});
     for (int iRow = 0; iRow < netGenForcesMatrix.nrow(); ++iRow) {
         netGenForces.appendRow(times[iRow], netGenForcesMatrix.row(iRow));
     }

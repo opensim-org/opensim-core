@@ -108,9 +108,7 @@ public:
             _optimalForce[i_act] = actuator.getOptimalForce();
             // Figure out which DOF each coordinate actuator is actuating.
             const auto* coord = actuator.getCoordinate();
-            const auto coordPath =
-                    coord->getAbsolutePath()
-                            .formRelativePath(modelPath).toString();
+            const auto coordPath = coord->getAbsolutePathString();
             size_t i_coord = 0;
             while (i_coord < coordPathsToActuate.size() &&
                     coordPathsToActuate[i_coord] != coordPath) {
@@ -400,8 +398,7 @@ GlobalStaticOptimization::solve() const {
         // Go through coordinates in order.
         for (auto& coord : coordsInOrder) {
             // Remove the model name from the coordinate path.
-            const auto coordPath = coord->getAbsolutePath()
-                            .formRelativePath(modelPath).toString();
+            const auto coordPath = coord->getAbsolutePathString();
             // Should this coordinate be included?
             const auto foundCoordPath = coordsToInclude.find(coordPath);
             if (foundCoordPath != coordsToInclude.end()) {
@@ -460,8 +457,7 @@ GlobalStaticOptimization::solve() const {
             auto path = coord->getAbsolutePathString();
             coordPaths.push_back(path);
             // Get rid of model name.
-            path = coord->getAbsolutePath().formRelativePath(
-                    model.getAbsolutePath()).toString();
+            path = coord->getAbsolutePathString();
             // Get rid of slashes in the path; slashes not allowed in names.
             std::replace(path.begin(), path.end(), '/', '_');
             actu->setName("reserve_" + path);

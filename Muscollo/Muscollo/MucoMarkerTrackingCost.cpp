@@ -26,7 +26,14 @@
     
     // Cache reference pointers to model markers.
     m_model_markers.clear();
+    // TODO: When should we load a markers file?
+    if (get_markers_reference().get_marker_file() != "") {
+        const_cast<MucoMarkerTrackingCost*>(this)->upd_markers_reference().
+                loadMarkersFile(get_markers_reference().get_marker_file());
+    }
     const auto& markRefNames = get_markers_reference().getNames();
+    const auto& markerSet = getModel().getMarkerSet();
+    int iset = -1;
     for (int i = 0; i < (int)markRefNames.size(); ++i) {
         if (getModel().hasComponent<Marker>(markRefNames[i])) {
             const auto& m = getModel().getComponent<Marker>(markRefNames[i]);
@@ -34,6 +41,11 @@
             m_model_markers.emplace_back(&m);
             // Store the reference index corresponding to the current model
             // marker.
+            m_refindices.push_back(i);
+        } else if ((iset = markerSet.getIndex(markRefNames[i])) != -1) {
+            // Allow the marker ref names to be names of markers in the
+            // MarkerSet.
+            m_model_markers.emplace_back(&markerSet.get(iset));
             m_refindices.push_back(i);
         } else {
             if (get_allow_unused_references()) {

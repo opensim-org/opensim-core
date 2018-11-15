@@ -47,7 +47,6 @@ void compare(const OpenSim::TimeSeriesTable& actualTable,
              const OpenSim::TimeSeriesTable& expectedTable,
              const std::string& expectedColumnLabel,
              double tol, bool verbose = false) {
-    // For this problem, there's only 1 column in this table.
     const auto& actual = actualTable.getDependentColumn(actualColumnLabel);
     SimTK::Vector expected = interp(actualTable, expectedTable,
                                     expectedColumnLabel);

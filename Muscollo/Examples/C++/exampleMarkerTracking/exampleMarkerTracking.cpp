@@ -51,10 +51,14 @@ Model createDoublePendulumModel() {
     auto* j0 = new PinJoint("j0", model.getGround(), Vec3(0), Vec3(0),
         *b0, Vec3(-1, 0, 0), Vec3(0));
     auto& q0 = j0->updCoordinate();
+    q0.setRangeMin(-10);
+    q0.setRangeMax(10);
     q0.setName("q0");
     auto* j1 = new PinJoint("j1",
         *b0, Vec3(0), Vec3(0), *b1, Vec3(-1, 0, 0), Vec3(0));
     auto& q1 = j1->updCoordinate();
+    q1.setRangeMin(-10);
+    q1.setRangeMax(10);
     q1.setName("q1");
     model.addJoint(j0);
     model.addJoint(j1);
@@ -63,23 +67,29 @@ Model createDoublePendulumModel() {
     tau0->setCoordinate(&j0->updCoordinate());
     tau0->setName("tau0");
     tau0->setOptimalForce(1);
+    tau0->setMinControl(-40);
+    tau0->setMaxControl(40);
     model.addComponent(tau0);
 
     auto* tau1 = new CoordinateActuator();
     tau1->setCoordinate(&j1->updCoordinate());
     tau1->setName("tau1");
     tau1->setOptimalForce(1);
+    tau1->setMinControl(-40);
+    tau1->setMaxControl(40);
     model.addComponent(tau1);
 
     // Add display geometry.
     Ellipsoid bodyGeometry(0.5, 0.1, 0.1);
     SimTK::Transform transform(SimTK::Vec3(-0.5, 0, 0));
-    auto* b0Center = new PhysicalOffsetFrame("b0_center", "b0", transform);
+    auto* b0Center = new PhysicalOffsetFrame("b0_center", *b0, transform);
     b0->addComponent(b0Center);
     b0Center->attachGeometry(bodyGeometry.clone());
-    auto* b1Center = new PhysicalOffsetFrame("b1_center", "b1", transform);
+    auto* b1Center = new PhysicalOffsetFrame("b1_center", *b1, transform);
     b1->addComponent(b1Center);
     b1Center->attachGeometry(bodyGeometry.clone());
+
+    model.finalizeConnections();
 
     return model;
 }
@@ -101,18 +111,12 @@ int main() {
     // -------
     double finalTime = 1.0;
     problem.setTimeBounds(0, finalTime);
-    problem.setStateInfo("j0/q0/value", { -10, 10 });
-    problem.setStateInfo("j0/q0/speed", { -50, 50 });
-    problem.setStateInfo("j1/q1/value", { -10, 10 });
-    problem.setStateInfo("j1/q1/speed", { -50, 50 });
-    problem.setControlInfo("tau0", { -40, 40 });
-    problem.setControlInfo("tau1", { -40, 40 });
 
     // Cost.
     // -----
     // Create marker trajectories based on exampleTracking.cpp joint angles.
     TimeSeriesTableVec3 markerTrajectories;
-    markerTrajectories.setColumnLabels({"m0", "m1"});
+    markerTrajectories.setColumnLabels({"/markerset/m0", "/markerset/m1"});
     for (double time = 0; time < finalTime; time += 0.01) {
 
         SimTK::Real q0 = (time / 1.0) * 0.5 * SimTK::Pi;
@@ -125,8 +129,8 @@ int main() {
 
     // Assign a weight to each marker.
     Set<MarkerWeight> markerWeights;
-    markerWeights.cloneAndAppend({"m0", 100});
-    markerWeights.cloneAndAppend({"m1", 10});
+    markerWeights.cloneAndAppend({"/markerset/m0", 100});
+    markerWeights.cloneAndAppend({"/markerset/m1", 10});
 
     // Create the MarkersReference to be passed to the cost.
     //MarkersReference ref(markerTrajectories);

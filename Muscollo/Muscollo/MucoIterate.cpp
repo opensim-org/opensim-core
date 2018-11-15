@@ -379,7 +379,9 @@ TimeSeriesTable MucoIterate::convertToTable() const {
 
     SimTK::Matrix data(numTimes, (int)labels.size());
     data.updBlock(0, 0, numTimes, numStates) = m_states;
-    data.updBlock(0, numStates, numTimes, numControls) = m_controls;
+    if (numControls) {
+        data.updBlock(0, numStates, numTimes, numControls) = m_controls;
+    }
     if (numMultipliers) {
         data.updBlock(0, numStates + numControls, numTimes, numMultipliers)
             = m_multipliers;
@@ -433,7 +435,7 @@ StatesTrajectory MucoIterate::exportToStatesTrajectory(
 }
 
 /*static*/ MucoIterate MucoIterate::createFromStatesControlsTables(
-        const MucoProblem& problem,
+        const MucoProblem& /*problem*/,
         const TimeSeriesTable& statesTrajectory,
         const TimeSeriesTable& controlsTrajectory) {
     const int statesNumRows = (int)statesTrajectory.getNumRows();

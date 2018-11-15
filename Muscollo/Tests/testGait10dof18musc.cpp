@@ -37,123 +37,123 @@ void testGait10dof18musc_GSO() {
     // Regression tests.
     TimeSeriesTable std_activation = STOFileAdapter_<double>::read
             ("std_testGait10dof18musc_GSO_solution_activation.sto");
-    compare(solution.activation, "/walk_subject01/hamstrings_r",
-            std_activation,      "/walk_subject01/hamstrings_r", 1e-3);
-    compare(solution.activation, "/walk_subject01/bifemsh_r",
-            std_activation,      "/walk_subject01/bifemsh_r", 1e-3);
-    compare(solution.activation, "/walk_subject01/glut_max_r",
-            std_activation,      "/walk_subject01/glut_max_r", 1e-3);
-    compare(solution.activation, "/walk_subject01/iliopsoas_r",
-            std_activation,      "/walk_subject01/iliopsoas_r", 1e-3);
-    compare(solution.activation, "/walk_subject01/rect_fem_r",
-            std_activation,      "/walk_subject01/rect_fem_r", 1e-3);
-    compare(solution.activation, "/walk_subject01/vasti_r",
-            std_activation,      "/walk_subject01/vasti_r", 1e-3);
-    compare(solution.activation, "/walk_subject01/gastroc_r",
-            std_activation,      "/walk_subject01/gastroc_r", 1e-3);
-    compare(solution.activation, "/walk_subject01/soleus_r",
-            std_activation,      "/walk_subject01/soleus_r", 1e-3);
-    compare(solution.activation, "/walk_subject01/tib_ant_r",
-            std_activation,      "/walk_subject01/tib_ant_r", 1e-3);
+    compare(solution.activation, "/forceset/hamstrings_r",
+            std_activation,      "/forceset/hamstrings_r", 1e-3, true);
+    compare(solution.activation, "/forceset/bifemsh_r",
+            std_activation,      "/forceset/bifemsh_r", 1e-3);
+    compare(solution.activation, "/forceset/glut_max_r",
+            std_activation,      "/forceset/glut_max_r", 1e-3);
+    compare(solution.activation, "/forceset/iliopsoas_r",
+            std_activation,      "/forceset/iliopsoas_r", 1e-3);
+    compare(solution.activation, "/forceset/rect_fem_r",
+            std_activation,      "/forceset/rect_fem_r", 1e-3);
+    compare(solution.activation, "/forceset/vasti_r",
+            std_activation,      "/forceset/vasti_r", 1e-3);
+    compare(solution.activation, "/forceset/gastroc_r",
+            std_activation,      "/forceset/gastroc_r", 1e-3);
+    compare(solution.activation, "/forceset/soleus_r",
+            std_activation,      "/forceset/soleus_r", 1e-3);
+    compare(solution.activation, "/forceset/tib_ant_r",
+            std_activation,      "/forceset/tib_ant_r", 1e-3);
 
     TimeSeriesTable std_norm_fiber_length = STOFileAdapter_<double>::read
             ("std_testGait10dof18musc_GSO_solution_norm_fiber_length.sto");
-    compare(solution.norm_fiber_length, "/walk_subject01/hamstrings_r",
-            std_norm_fiber_length,      "/walk_subject01/hamstrings_r", 1e-5);
-    compare(solution.norm_fiber_length, "/walk_subject01/bifemsh_r",
-            std_norm_fiber_length,      "/walk_subject01/bifemsh_r", 1e-5);
-    compare(solution.norm_fiber_length, "/walk_subject01/glut_max_r",
-            std_norm_fiber_length,      "/walk_subject01/glut_max_r", 1e-5);
-    compare(solution.norm_fiber_length, "/walk_subject01/iliopsoas_r",
-            std_norm_fiber_length,      "/walk_subject01/iliopsoas_r", 1e-5);
-    compare(solution.norm_fiber_length, "/walk_subject01/rect_fem_r",
-            std_norm_fiber_length,      "/walk_subject01/rect_fem_r", 1e-5);
-    compare(solution.norm_fiber_length, "/walk_subject01/vasti_r",
-            std_norm_fiber_length,      "/walk_subject01/vasti_r", 1e-5);
-    compare(solution.norm_fiber_length, "/walk_subject01/gastroc_r",
-            std_norm_fiber_length,      "/walk_subject01/gastroc_r", 1e-5);
-    compare(solution.norm_fiber_length, "/walk_subject01/soleus_r",
-            std_norm_fiber_length,      "/walk_subject01/soleus_r", 1e-5);
-    compare(solution.norm_fiber_length, "/walk_subject01/tib_ant_r",
-            std_norm_fiber_length,      "/walk_subject01/tib_ant_r", 1e-5);
+    compare(solution.norm_fiber_length, "/forceset/hamstrings_r",
+            std_norm_fiber_length,      "/forceset/hamstrings_r", 1e-5);
+    compare(solution.norm_fiber_length, "/forceset/bifemsh_r",
+            std_norm_fiber_length,      "/forceset/bifemsh_r", 1e-5);
+    compare(solution.norm_fiber_length, "/forceset/glut_max_r",
+            std_norm_fiber_length,      "/forceset/glut_max_r", 1e-5);
+    compare(solution.norm_fiber_length, "/forceset/iliopsoas_r",
+            std_norm_fiber_length,      "/forceset/iliopsoas_r", 1e-5);
+    compare(solution.norm_fiber_length, "/forceset/rect_fem_r",
+            std_norm_fiber_length,      "/forceset/rect_fem_r", 1e-5);
+    compare(solution.norm_fiber_length, "/forceset/vasti_r",
+            std_norm_fiber_length,      "/forceset/vasti_r", 1e-5);
+    compare(solution.norm_fiber_length, "/forceset/gastroc_r",
+            std_norm_fiber_length,      "/forceset/gastroc_r", 1e-5);
+    compare(solution.norm_fiber_length, "/forceset/soleus_r",
+            std_norm_fiber_length,      "/forceset/soleus_r", 1e-5);
+    compare(solution.norm_fiber_length, "/forceset/tib_ant_r",
+            std_norm_fiber_length,      "/forceset/tib_ant_r", 1e-5);
 
     TimeSeriesTable std_norm_fiber_velocity = STOFileAdapter_<double>::read
             ("std_testGait10dof18musc_GSO_solution_norm_fiber_velocity.sto");
-    compare(solution.norm_fiber_velocity, "/walk_subject01/hamstrings_r",
-            std_norm_fiber_velocity,      "/walk_subject01/hamstrings_r", 1e-5);
-    compare(solution.norm_fiber_velocity, "/walk_subject01/bifemsh_r",
-            std_norm_fiber_velocity,      "/walk_subject01/bifemsh_r", 1e-5);
-    compare(solution.norm_fiber_velocity, "/walk_subject01/glut_max_r",
-            std_norm_fiber_velocity,      "/walk_subject01/glut_max_r", 1e-5);
-    compare(solution.norm_fiber_velocity, "/walk_subject01/iliopsoas_r",
-            std_norm_fiber_velocity,      "/walk_subject01/iliopsoas_r", 1e-5);
-    compare(solution.norm_fiber_velocity, "/walk_subject01/rect_fem_r",
-            std_norm_fiber_velocity,      "/walk_subject01/rect_fem_r", 1e-5);
-    compare(solution.norm_fiber_velocity, "/walk_subject01/vasti_r",
-            std_norm_fiber_velocity,      "/walk_subject01/vasti_r", 1e-5);
-    compare(solution.norm_fiber_velocity, "/walk_subject01/gastroc_r",
-            std_norm_fiber_velocity,      "/walk_subject01/gastroc_r", 1e-5);
-    compare(solution.norm_fiber_velocity, "/walk_subject01/soleus_r",
-            std_norm_fiber_velocity,      "/walk_subject01/soleus_r", 1e-5);
-    compare(solution.norm_fiber_velocity, "/walk_subject01/tib_ant_r",
-            std_norm_fiber_velocity,      "/walk_subject01/tib_ant_r", 1e-5);
+    compare(solution.norm_fiber_velocity, "/forceset/hamstrings_r",
+            std_norm_fiber_velocity,      "/forceset/hamstrings_r", 1e-5);
+    compare(solution.norm_fiber_velocity, "/forceset/bifemsh_r",
+            std_norm_fiber_velocity,      "/forceset/bifemsh_r", 1e-5);
+    compare(solution.norm_fiber_velocity, "/forceset/glut_max_r",
+            std_norm_fiber_velocity,      "/forceset/glut_max_r", 1e-5);
+    compare(solution.norm_fiber_velocity, "/forceset/iliopsoas_r",
+            std_norm_fiber_velocity,      "/forceset/iliopsoas_r", 1e-5);
+    compare(solution.norm_fiber_velocity, "/forceset/rect_fem_r",
+            std_norm_fiber_velocity,      "/forceset/rect_fem_r", 1e-5);
+    compare(solution.norm_fiber_velocity, "/forceset/vasti_r",
+            std_norm_fiber_velocity,      "/forceset/vasti_r", 1e-5);
+    compare(solution.norm_fiber_velocity, "/forceset/gastroc_r",
+            std_norm_fiber_velocity,      "/forceset/gastroc_r", 1e-5);
+    compare(solution.norm_fiber_velocity, "/forceset/soleus_r",
+            std_norm_fiber_velocity,      "/forceset/soleus_r", 1e-5);
+    compare(solution.norm_fiber_velocity, "/forceset/tib_ant_r",
+            std_norm_fiber_velocity,      "/forceset/tib_ant_r", 1e-5);
 
     TimeSeriesTable std_other_controls = STOFileAdapter_<double>::read
             ("std_testGait10dof18musc_GSO_solution_other_controls.sto");
     compare(solution.other_controls,
-            "/walk_subject01/reserve_hip_r_hip_flexion_r",
+            "/reserve__jointset_hip_r_hip_flexion_r",
             std_other_controls,
-            "/walk_subject01/reserve_hip_r_hip_flexion_r", 1e-6);
+            "/reserve__jointset_hip_r_hip_flexion_r", 1e-6);
     compare(solution.other_controls,
-            "/walk_subject01/reserve_knee_r_knee_angle_r",
+            "/reserve__jointset_knee_r_knee_angle_r",
             std_other_controls,
-            "/walk_subject01/reserve_knee_r_knee_angle_r", 1e-6);
+            "/reserve__jointset_knee_r_knee_angle_r", 1e-6);
     compare(solution.other_controls,
-            "/walk_subject01/reserve_ankle_r_ankle_angle_r",
+            "/reserve__jointset_ankle_r_ankle_angle_r",
             std_other_controls,
-            "/walk_subject01/reserve_ankle_r_ankle_angle_r", 1e-6);
+            "/reserve__jointset_ankle_r_ankle_angle_r", 1e-6);
 
     TimeSeriesTable std_tendon_force = STOFileAdapter_<double>::read
             ("std_testGait10dof18musc_GSO_solution_tendon_force.sto");
-    compare(solution.tendon_force, "/walk_subject01/hamstrings_r",
-            std_tendon_force,      "/walk_subject01/hamstrings_r", 1e-3);
-    compare(solution.tendon_force, "/walk_subject01/bifemsh_r",
-            std_tendon_force,      "/walk_subject01/bifemsh_r", 1e-3);
-    compare(solution.tendon_force, "/walk_subject01/glut_max_r",
-            std_tendon_force,      "/walk_subject01/glut_max_r", 1e-3);
-    compare(solution.tendon_force, "/walk_subject01/iliopsoas_r",
-            std_tendon_force,      "/walk_subject01/iliopsoas_r", 1e-3);
-    compare(solution.tendon_force, "/walk_subject01/rect_fem_r",
-            std_tendon_force,      "/walk_subject01/rect_fem_r", 1e-3);
-    compare(solution.tendon_force, "/walk_subject01/vasti_r",
-            std_tendon_force,      "/walk_subject01/vasti_r", 1e-3);
-    compare(solution.tendon_force, "/walk_subject01/gastroc_r",
-            std_tendon_force,      "/walk_subject01/gastroc_r", 1e-3);
-    compare(solution.tendon_force, "/walk_subject01/soleus_r",
-            std_tendon_force,      "/walk_subject01/soleus_r", 1e-3);
-    compare(solution.tendon_force, "/walk_subject01/tib_ant_r",
-            std_tendon_force,      "/walk_subject01/tib_ant_r", 5e-3, 1);
+    compare(solution.tendon_force, "/forceset/hamstrings_r",
+            std_tendon_force,      "/forceset/hamstrings_r", 1e-3);
+    compare(solution.tendon_force, "/forceset/bifemsh_r",
+            std_tendon_force,      "/forceset/bifemsh_r", 1e-3);
+    compare(solution.tendon_force, "/forceset/glut_max_r",
+            std_tendon_force,      "/forceset/glut_max_r", 1e-3);
+    compare(solution.tendon_force, "/forceset/iliopsoas_r",
+            std_tendon_force,      "/forceset/iliopsoas_r", 1e-3);
+    compare(solution.tendon_force, "/forceset/rect_fem_r",
+            std_tendon_force,      "/forceset/rect_fem_r", 1e-3);
+    compare(solution.tendon_force, "/forceset/vasti_r",
+            std_tendon_force,      "/forceset/vasti_r", 1e-3);
+    compare(solution.tendon_force, "/forceset/gastroc_r",
+            std_tendon_force,      "/forceset/gastroc_r", 1e-3);
+    compare(solution.tendon_force, "/forceset/soleus_r",
+            std_tendon_force,      "/forceset/soleus_r", 1e-3);
+    compare(solution.tendon_force, "/forceset/tib_ant_r",
+            std_tendon_force,      "/forceset/tib_ant_r", 5e-3, 1);
 
     TimeSeriesTable std_norm_tendon_force = STOFileAdapter_<double>::read
             ("std_testGait10dof18musc_GSO_solution_norm_tendon_force.sto");
-    compare(solution.norm_tendon_force, "/walk_subject01/hamstrings_r",
-            std_norm_tendon_force,      "/walk_subject01/hamstrings_r", 1e-3);
-    compare(solution.norm_tendon_force, "/walk_subject01/bifemsh_r",
-            std_norm_tendon_force,      "/walk_subject01/bifemsh_r", 1e-3);
-    compare(solution.norm_tendon_force, "/walk_subject01/glut_max_r",
-            std_norm_tendon_force,      "/walk_subject01/glut_max_r", 1e-3);
-    compare(solution.norm_tendon_force, "/walk_subject01/iliopsoas_r",
-            std_norm_tendon_force,      "/walk_subject01/iliopsoas_r", 1e-3);
-    compare(solution.norm_tendon_force, "/walk_subject01/rect_fem_r",
-            std_norm_tendon_force,      "/walk_subject01/rect_fem_r", 1e-3);
-    compare(solution.norm_tendon_force, "/walk_subject01/vasti_r",
-            std_norm_tendon_force,      "/walk_subject01/vasti_r", 1e-3);
-    compare(solution.norm_tendon_force, "/walk_subject01/gastroc_r",
-            std_norm_tendon_force,      "/walk_subject01/gastroc_r", 1e-3);
-    compare(solution.norm_tendon_force, "/walk_subject01/soleus_r",
-            std_norm_tendon_force,      "/walk_subject01/soleus_r", 1e-3);
-    compare(solution.norm_tendon_force, "/walk_subject01/tib_ant_r",
-            std_norm_tendon_force,      "/walk_subject01/tib_ant_r", 1e-3);
+    compare(solution.norm_tendon_force, "/forceset/hamstrings_r",
+            std_norm_tendon_force,      "/forceset/hamstrings_r", 1e-3);
+    compare(solution.norm_tendon_force, "/forceset/bifemsh_r",
+            std_norm_tendon_force,      "/forceset/bifemsh_r", 1e-3);
+    compare(solution.norm_tendon_force, "/forceset/glut_max_r",
+            std_norm_tendon_force,      "/forceset/glut_max_r", 1e-3);
+    compare(solution.norm_tendon_force, "/forceset/iliopsoas_r",
+            std_norm_tendon_force,      "/forceset/iliopsoas_r", 1e-3);
+    compare(solution.norm_tendon_force, "/forceset/rect_fem_r",
+            std_norm_tendon_force,      "/forceset/rect_fem_r", 1e-3);
+    compare(solution.norm_tendon_force, "/forceset/vasti_r",
+            std_norm_tendon_force,      "/forceset/vasti_r", 1e-3);
+    compare(solution.norm_tendon_force, "/forceset/gastroc_r",
+            std_norm_tendon_force,      "/forceset/gastroc_r", 1e-3);
+    compare(solution.norm_tendon_force, "/forceset/soleus_r",
+            std_norm_tendon_force,      "/forceset/soleus_r", 1e-3);
+    compare(solution.norm_tendon_force, "/forceset/tib_ant_r",
+            std_norm_tendon_force,      "/forceset/tib_ant_r", 1e-3);
 }
 
 void testGait10dof18musc_INDYGO(const std::string& fiberDynamicsMode,
@@ -169,65 +169,65 @@ void testGait10dof18musc_INDYGO(const std::string& fiberDynamicsMode,
     // Regression tests.
     TimeSeriesTable std_activation = STOFileAdapter_<double>::read
             ("std_testGait10dof18musc_INDYGO_solution_activation.sto");
-    compare(solution.activation, "/walk_subject01/gastroc_r",
-            std_activation,      "/walk_subject01/gastroc_r", 1e-3);
-    compare(solution.activation, "/walk_subject01/soleus_r",
-            std_activation,      "/walk_subject01/soleus_r", 1e-3);
-    compare(solution.activation, "/walk_subject01/tib_ant_r",
-            std_activation,      "/walk_subject01/tib_ant_r", 1e-3);
+    compare(solution.activation, "/forceset/gastroc_r",
+            std_activation,      "/forceset/gastroc_r", 1e-3);
+    compare(solution.activation, "/forceset/soleus_r",
+            std_activation,      "/forceset/soleus_r", 1e-3);
+    compare(solution.activation, "/forceset/tib_ant_r",
+            std_activation,      "/forceset/tib_ant_r", 1e-3);
 
     TimeSeriesTable std_excitation = STOFileAdapter_<double>::read
             ("std_testGait10dof18musc_INDYGO_solution_excitation.sto");
-    compare(solution.excitation, "/walk_subject01/gastroc_r",
-            std_excitation,      "/walk_subject01/gastroc_r", 1e-3);
-    compare(solution.excitation, "/walk_subject01/soleus_r",
-            std_excitation,      "/walk_subject01/soleus_r", 1e-3);
-    compare(solution.excitation, "/walk_subject01/tib_ant_r",
-            std_excitation,      "/walk_subject01/tib_ant_r", 1e-3);
+    compare(solution.excitation, "/forceset/gastroc_r",
+            std_excitation,      "/forceset/gastroc_r", 1e-3);
+    compare(solution.excitation, "/forceset/soleus_r",
+            std_excitation,      "/forceset/soleus_r", 1e-3);
+    compare(solution.excitation, "/forceset/tib_ant_r",
+            std_excitation,      "/forceset/tib_ant_r", 1e-3);
 
     TimeSeriesTable std_norm_fiber_length = STOFileAdapter_<double>::read
             ("std_testGait10dof18musc_INDYGO_solution_norm_fiber_length.sto");
-    compare(solution.norm_fiber_length, "/walk_subject01/gastroc_r",
-            std_norm_fiber_length,      "/walk_subject01/gastroc_r", 1e-2);
-    compare(solution.norm_fiber_length, "/walk_subject01/soleus_r",
-            std_norm_fiber_length,      "/walk_subject01/soleus_r", 1e-2);
-    compare(solution.norm_fiber_length, "/walk_subject01/tib_ant_r",
-            std_norm_fiber_length,      "/walk_subject01/tib_ant_r", 1e-2);
+    compare(solution.norm_fiber_length, "/forceset/gastroc_r",
+            std_norm_fiber_length,      "/forceset/gastroc_r", 1e-2);
+    compare(solution.norm_fiber_length, "/forceset/soleus_r",
+            std_norm_fiber_length,      "/forceset/soleus_r", 1e-2);
+    compare(solution.norm_fiber_length, "/forceset/tib_ant_r",
+            std_norm_fiber_length,      "/forceset/tib_ant_r", 1e-2);
 
     TimeSeriesTable std_norm_fiber_velocity = STOFileAdapter_<double>::read
             ("std_testGait10dof18musc_INDYGO_solution_norm_fiber_velocity.sto");
-    compare(solution.norm_fiber_velocity, "/walk_subject01/gastroc_r",
-            std_norm_fiber_velocity,      "/walk_subject01/gastroc_r", 1e-1);
-    compare(solution.norm_fiber_velocity, "/walk_subject01/soleus_r",
-            std_norm_fiber_velocity,      "/walk_subject01/soleus_r", 1e-2);
-    compare(solution.norm_fiber_velocity, "/walk_subject01/tib_ant_r",
-            std_norm_fiber_velocity,      "/walk_subject01/tib_ant_r", 1e-2);
+    compare(solution.norm_fiber_velocity, "/forceset/gastroc_r",
+            std_norm_fiber_velocity,      "/forceset/gastroc_r", 1e-1);
+    compare(solution.norm_fiber_velocity, "/forceset/soleus_r",
+            std_norm_fiber_velocity,      "/forceset/soleus_r", 1e-2);
+    compare(solution.norm_fiber_velocity, "/forceset/tib_ant_r",
+            std_norm_fiber_velocity,      "/forceset/tib_ant_r", 1e-2);
 
     TimeSeriesTable std_other_controls = STOFileAdapter_<double>::read
             ("std_testGait10dof18musc_INDYGO_solution_other_controls.sto");
     compare(solution.other_controls,
-            "/walk_subject01/reserve_ankle_r_ankle_angle_r",
+            "/reserve__jointset_ankle_r_ankle_angle_r",
             std_other_controls,
-            "/walk_subject01/reserve_ankle_r_ankle_angle_r", 1e-4);
+            "/reserve__jointset_ankle_r_ankle_angle_r", 1e-4);
 
     TimeSeriesTable std_tendon_force = STOFileAdapter_<double>::read
             ("std_testGait10dof18musc_INDYGO_solution_tendon_force.sto");
-    compare(solution.tendon_force, "/walk_subject01/gastroc_r",
-            std_tendon_force,      "/walk_subject01/gastroc_r", 0.5);
+    compare(solution.tendon_force, "/forceset/gastroc_r",
+            std_tendon_force,      "/forceset/gastroc_r", 0.5);
     // Forces diverge at the very end of the motion.
-    rootMeanSquare(solution.tendon_force, "/walk_subject01/soleus_r",
-                   std_tendon_force,      "/walk_subject01/soleus_r", 0.5);
-    rootMeanSquare(solution.tendon_force, "/walk_subject01/tib_ant_r",
-                   std_tendon_force,      "/walk_subject01/tib_ant_r", 0.5);
+    rootMeanSquare(solution.tendon_force, "/forceset/soleus_r",
+                   std_tendon_force,      "/forceset/soleus_r", 0.5);
+    rootMeanSquare(solution.tendon_force, "/forceset/tib_ant_r",
+                   std_tendon_force,      "/forceset/tib_ant_r", 0.5);
 
     TimeSeriesTable std_norm_tendon_force = STOFileAdapter_<double>::read
             ("std_testGait10dof18musc_INDYGO_solution_norm_tendon_force.sto");
-    compare(solution.norm_tendon_force, "/walk_subject01/gastroc_r",
-            std_norm_tendon_force,      "/walk_subject01/gastroc_r", 1e-3);
-    compare(solution.norm_tendon_force, "/walk_subject01/soleus_r",
-            std_norm_tendon_force,      "/walk_subject01/soleus_r", 1e-3);
-    compare(solution.norm_tendon_force, "/walk_subject01/tib_ant_r",
-            std_norm_tendon_force,      "/walk_subject01/tib_ant_r", 1e-3);
+    compare(solution.norm_tendon_force, "/forceset/gastroc_r",
+            std_norm_tendon_force,      "/forceset/gastroc_r", 1e-3);
+    compare(solution.norm_tendon_force, "/forceset/soleus_r",
+            std_norm_tendon_force,      "/forceset/soleus_r", 1e-3);
+    compare(solution.norm_tendon_force, "/forceset/tib_ant_r",
+            std_norm_tendon_force,      "/forceset/tib_ant_r", 1e-3);
 }
 
 int main() {

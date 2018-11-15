@@ -61,6 +61,8 @@ Model createSlidingMassModel() {
 
     body->attachGeometry(new Sphere(0.05));
 
+    model.finalizeConnections();
+
     return model;
 }
 
@@ -83,13 +85,13 @@ int main() {
     problem.setTimeBounds(MucoInitialBounds(0), MucoFinalBounds(0, 5));
 
     // Initial position must be 0, final position must be 1.
-    problem.setStateInfo("slider/position/value", MucoBounds(-5, 5),
+    problem.setStateInfo("/slider/position/value", MucoBounds(-5, 5),
             MucoInitialBounds(0), MucoFinalBounds(1));
     // Initial and final speed must be 0. Use compact syntax.
-    problem.setStateInfo("slider/position/speed", {-50, 50}, 0, 0);
+    problem.setStateInfo("/slider/position/speed", {-50, 50}, 0, 0);
 
     // Applied force must be between -50 and 50.
-    problem.setControlInfo("actuator", MucoBounds(-50, 50));
+    problem.setControlInfo("/actuator", MucoBounds(-50, 50));
 
     // Cost.
     // -----

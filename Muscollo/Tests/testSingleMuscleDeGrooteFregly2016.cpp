@@ -142,8 +142,8 @@ solveForTrajectoryGSO() {
     // Create a table containing only the position and speed of the mass.
     TimeSeriesTable ocpSolution = CSVFileAdapter::read(trajFileWithHeader);
     TimeSeriesTable kinematics;
-    kinematics.setColumnLabels({"joint/height/value",
-                                "joint/height/speed"});
+    kinematics.setColumnLabels({"/joint/height/value",
+                                "/joint/height/speed"});
     const auto& position = ocpSolution.getDependentColumn("position");
     const auto& speed = ocpSolution.getDependentColumn("speed");
     for (int iRow = 0; iRow < (int)ocpSolution.getNumRows(); ++iRow) {
@@ -310,8 +310,8 @@ solveForTrajectoryINDYGO() {
     // Create a table containing only the position and speed of the mass.
     TimeSeriesTable ocpSolution = CSVFileAdapter::read(trajFileWithHeader);
     TimeSeriesTable kinematics;
-    kinematics.setColumnLabels({"joint/height/value",
-                                "joint/height/speed"});
+    kinematics.setColumnLabels({"/joint/height/value",
+                                "/joint/height/speed"});
     const auto& position = ocpSolution.getDependentColumn("position");
     const auto& speed = ocpSolution.getDependentColumn("speed");
     for (int iRow = 0; iRow < (int)ocpSolution.getNumRows(); ++iRow) {
@@ -375,6 +375,8 @@ OpenSim::Model buildLiftingMassModel() {
     actu->addNewPathPoint("origin", model.updGround(), SimTK::Vec3(0));
     actu->addNewPathPoint("insertion", *body, SimTK::Vec3(0));
     model.addComponent(actu);
+
+    model.finalizeConnections();
     return model;
 }
 
@@ -415,7 +417,7 @@ void testLiftingMassGSO(
 
     // The rationale for the tolerances: as tight as they could be for the
     // test to pass.
-    rootMeanSquare(solution.activation, "/hanging_muscle/actuator",
+    rootMeanSquare(solution.activation, "/actuator",
                    ocpSolution,         "activation",
                    0.06);
 }
@@ -467,18 +469,18 @@ void testLiftingMassINDYGO(
     // leads to an incorrect net joint moment at the end of the motion,
     // causing the muscle to be active when it shouldn't be. When this issue
     // is fixed, we can tighten the activation comparison.
-    rootMeanSquare(solution.activation, "/hanging_muscle/actuator",
+    rootMeanSquare(solution.activation, "/actuator",
                    ocpSolution,         "activation",
                    0.03);
-    compare(solution.norm_fiber_length, "/hanging_muscle/actuator",
+    compare(solution.norm_fiber_length, "/actuator",
             ocpSolution,                "norm_fiber_length",
             0.005);
 
     // We use a weaker check for the controls; they don't match as well.
-    rootMeanSquare(solution.excitation, "/hanging_muscle/actuator",
+    rootMeanSquare(solution.excitation, "/actuator",
                    ocpSolution,         "excitation",
                    0.20);
-    rootMeanSquare(solution.norm_fiber_velocity, "/hanging_muscle/actuator",
+    rootMeanSquare(solution.norm_fiber_velocity, "/actuator",
                    ocpSolution,                  "norm_fiber_velocity",
                    0.04);
 }
