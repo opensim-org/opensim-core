@@ -305,3 +305,4 @@ SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
 
 %include <Bindings/muscollo.i>
 
+

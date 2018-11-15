@@ -14,6 +14,18 @@ typedef SimTK::RowVector_<double> RowVector;
 %include <Muscollo/MucoJointReactionNormCost.h>
 
 %include <Muscollo/MucoBounds.h>
+%include <Muscollo/MucoVariableInfo.h>
+
+%include <Muscollo/MucoProblemRep.h>
+
+// MucoProblemRep() is not copyable, but by default, SWIG tries to make a copy
+// when wrapping createRep().
+%extend OpenSim::MucoProblem {
+    MucoProblemRep* createRep() const {
+        return self->createRepHeap();
+    }
+};
+
 %include <Muscollo/MucoProblem.h>
 %include <Muscollo/MucoParameter.h>
 

@@ -272,16 +272,19 @@ public:
     const MucoPhase& getPhase(int index = 0) const
     {   return get_phases(index); }
 
-    /// @name Interface for solvers
-    /// These functions are for use by MucoSolver%s, but can also be called
-    /// by users for debugging.
-    /// @{
-
+#ifndef SWIG // MucoProblemRep() is not copyable.
     /// TODO
-    MucoProblemRep createRep() const { return MucoProblemRep(*this); }
-    friend MucoProblemRep;
+    MucoProblemRep createRep() const
+    {   return MucoProblemRep(*this); }
+#endif
+    /// @cond
+    /// For internal use. You must manage the memory for the returned pointer.
+    /// TODO: Ideally we would use std::unique_ptr but SWIG doesn't support it.
+    MucoProblemRep* createRepHeap() const
+    {   return new MucoProblemRep(*this); }
+    /// @endcond
 
-    /// @}
+    friend MucoProblemRep;
 
     // TODO
     // TODO check that
@@ -293,6 +296,7 @@ protected: // We'd prefer private, but protected means it shows up in Doxygen.
 
 private:
     void constructProperties();
+
 };
 
 } // namespace OpenSim

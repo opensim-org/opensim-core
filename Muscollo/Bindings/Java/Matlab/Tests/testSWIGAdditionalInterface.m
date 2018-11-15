@@ -188,3 +188,6 @@ assert(st(3, 2) == 1);
 ct = it.getControlsTrajectoryMat();
 assert(ct(1, 1) == 10);
 assert(ct(3, 3) == -1);
+
+pr = mp.createRep();
+assert(pr.createStateInfoNames().size() == 2);

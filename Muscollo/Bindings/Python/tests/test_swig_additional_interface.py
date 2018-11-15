@@ -146,3 +146,7 @@ class TestSwigAddtlInterface(unittest.TestCase):
         assert(p[1] == 30)
         p0 = it.getParameter('p0')
         assert(p0 == 25)
+
+    def test_createRep(self):
+        pr = mp.createRep();
+        assert(pr.createStateInfoNames().size() == 2);

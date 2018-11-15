@@ -74,9 +74,7 @@ MucoProblemRep::MucoProblemRep(const MucoProblem& problem)
     }
 
     for (int i = 0; i < ph0.getProperty_parameters().size(); ++i) {
-        // TODO MucoParameterRep?
         m_parameters.emplace_back(ph0.get_parameters(i).clone());
-        // TODO remove initialize()
         m_parameters.back()->initialize(m_model);
     }
 

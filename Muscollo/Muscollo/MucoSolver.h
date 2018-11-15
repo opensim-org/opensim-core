@@ -112,7 +112,7 @@ private:
 
     // TODO unique_ptr, stack variable?
     SimTK::ReferencePtr<const MucoProblem> m_problem;
-    MucoProblemRep m_problemRep;
+    SimTK::ResetOnCopy<MucoProblemRep> m_problemRep;
 
 };
 

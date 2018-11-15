@@ -30,21 +30,24 @@ namespace OpenSim {
 
 class MucoProblem;
 
+/// TODO document
+/// This interface currently supports only single-phase problems.
 class OSIMMUSCOLLO_API MucoProblemRep {
 public:
     MucoProblemRep() = default;
+    MucoProblemRep(const MucoProblemRep&) = delete;
+    MucoProblemRep(MucoProblemRep&&) = default;
+    MucoProblemRep& operator=(MucoProblemRep&&) = default;
+
     const std::string& getName() const;
+
     const Model& getModel() const { return m_model; }
-    // TODO update doc
-    /// @details Note: the return value is constructed fresh on every call from
-    /// the internal property. Avoid repeated calls to this function.
-    MucoInitialBounds getTimeInitialBounds() const;
-    /// @copydoc getTimeInitialBounds()
-    MucoFinalBounds getTimeFinalBounds() const;
     /// Get the state names of all the state infos.
     std::vector<std::string> createStateInfoNames() const;
     /// Get the control names of all the control infos.
     std::vector<std::string> createControlInfoNames() const;
+    /// Get the names of all the parameters.
+    std::vector<std::string> createParameterNames() const;
     /// Get the names of all the MucoPathConstraints.
     std::vector<std::string> createPathConstraintNames() const;
     /// Get the names of all the Lagrange multiplier infos.
@@ -52,9 +55,11 @@ public:
     /// Get the constraint names of all the multibody constraints. Note: this
     /// should only be called after initialize().
     std::vector<std::string> createMultibodyConstraintNames() const;
-    /// Get the names of all the parameters.
-    // TODO reorder
-    std::vector<std::string> createParameterNames() const;
+    /// @details Note: the return value is constructed fresh on every call from
+    /// the internal property. Avoid repeated calls to this function.
+    MucoInitialBounds getTimeInitialBounds() const;
+    /// @copydoc getTimeInitialBounds()
+    MucoFinalBounds getTimeFinalBounds() const;
     /// Get information for state variables. If info was not specified for
     /// a coordinate value, the coordinate range is used for the bounds.
     /// If info was not specified for a coordinate speed, the
@@ -76,6 +81,12 @@ public:
                 "until after initialization.");
         return m_num_path_constraint_eqs;
     }
+    /// Given a multibody constraint name, get a vector of MucoVariableInfos
+    /// corresponding to the Lagrange multipliers for that multibody constraint.
+    /// Note: Since these are created directly from model constraint
+    /// information, this should only be called after initialization. TODO
+    const std::vector<MucoVariableInfo>&
+    getMultiplierInfos(const std::string& multibodyConstraintInfoName) const;
     /// Get a MucoMultibodyConstraint from this MucoPhase. Note: this does not
     /// include MucoPathConstraints, use getPathConstraint() instead. Since
     /// these are created directly from model information, this should only be
@@ -90,12 +101,6 @@ public:
                 "available until after initialization.");
         return m_num_multibody_constraint_eqs;
     }
-    /// Given a multibody constraint name, get a vector of MucoVariableInfos
-    /// corresponding to the Lagrange multipliers for that multibody constraint.
-    /// Note: Since these are created directly from model constraint
-    /// information, this should only be called after initialization. TODO
-    const std::vector<MucoVariableInfo>&
-    getMultiplierInfos(const std::string& multibodyConstraintInfoName) const;
 
     /// Print a description of this problem, including costs and variable
     /// bounds. By default, the description is printed to the console (cout),
@@ -104,8 +109,7 @@ public:
 
     /// @name Interface for solvers
     /// These functions are for use by MucoSolver%s, but can also be called
-    /// by users for debugging. Make sure to call initialize() before invoking
-    /// any other functions in this group.
+    /// by users for debugging.
     /// @{
     /// Calculate the sum of integrand over all the integral cost terms in this
     /// phase for the provided state. That is, the returned value is *not* an
@@ -172,6 +176,7 @@ public:
     /// method in order for provided parameter values to be applied to the
     /// model.
     void applyParametersToModel(const SimTK::Vector& parameterValues) const;
+    /// @}
 
 private:
     explicit MucoProblemRep(const MucoProblem& problem);
@@ -179,19 +184,19 @@ private:
 
     const MucoProblem* m_problem;
 
+    // This is invoked on move also.
     static void ModelInitSystem(Model& m) { m.initSystem(); }
     InvokeOnCopy<Model, ModelInitSystem> m_model;
 
-    // TODO reorder these.
-    std::vector<SimTK::ResetOnCopy<std::unique_ptr<MucoPathConstraint>>>
-    m_path_constraints;
-    std::vector<SimTK::ResetOnCopy<std::unique_ptr<MucoParameter>>>
-    m_parameters;
-    std::vector<SimTK::ResetOnCopy<std::unique_ptr<MucoCost>>> m_costs;
-    int m_num_path_constraint_eqs = -1;
-    int m_num_multibody_constraint_eqs = -1;
     std::unordered_map<std::string, MucoVariableInfo> m_state_infos;
     std::unordered_map<std::string, MucoVariableInfo> m_control_infos;
+    std::vector<SimTK::ResetOnCopy<std::unique_ptr<MucoParameter>>>
+            m_parameters;
+    std::vector<SimTK::ResetOnCopy<std::unique_ptr<MucoCost>>> m_costs;
+    std::vector<SimTK::ResetOnCopy<std::unique_ptr<MucoPathConstraint>>>
+            m_path_constraints;
+    int m_num_path_constraint_eqs = -1;
+    int m_num_multibody_constraint_eqs = -1;
     std::vector<MucoMultibodyConstraint> m_multibody_constraints;
     std::map<std::string, std::vector<MucoVariableInfo>> m_multiplier_infos_map;
 };
