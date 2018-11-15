@@ -26,4 +26,6 @@ OpenSimAddLibrary(
     INCLUDEDIRS ${SIMULATION_SUBDIRS}
     )
 
-set_source_files_properties(Model/ModelVisualizer.cpp PROPERTIES COMPILE_FLAGS -DOPENSIM_INSTALL_SYSCONFDIR=${CMAKE_INSTALL_SYSCONFDIR})
+set_source_files_properties(Model/ModelVisualizer.cpp
+    PROPERTIES COMPILE_FLAGS
+    -DOPENSIM_INSTALL_SYSCONFDIR=${CMAKE_INSTALL_SYSCONFDIR})
