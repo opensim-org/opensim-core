@@ -12,8 +12,14 @@ MucoProblemRep::MucoProblemRep(const MucoProblem& problem)
     initialize();
 }
 void MucoProblemRep::initialize() {
-    /// Must use the model provided in this function, *not* the one stored as
-    /// a property in this class.
+
+    m_state_infos.clear();
+    m_control_infos.clear();
+    m_parameters.clear();
+    m_costs.clear();
+    m_path_constraints.clear();
+    m_multibody_constraints.clear();
+    m_multiplier_infos_map.clear();
 
     const auto& ph0 = m_problem->getPhase(0);
     m_model = m_problem->getPhase(0).getModel();
@@ -100,8 +106,6 @@ void MucoProblemRep::initialize() {
     const auto& state = m_model.getWorkingState();
     int mp, mv, ma;
     m_num_multibody_constraint_eqs = 0;
-    m_multibody_constraints.clear();
-    m_multiplier_infos_map.clear();
     for (SimTK::ConstraintIndex cid(0); cid < NC; ++cid) {
         const SimTK::Constraint& constraint = matter.getConstraint(cid);
         if (!constraint.isDisabled(state)) {
@@ -150,7 +154,6 @@ void MucoProblemRep::initialize() {
     }
 
     m_num_path_constraint_eqs = 0;
-    m_path_constraints.clear();
     for (int i = 0; i < ph0.getProperty_path_constraints().size(); ++i) {
         m_path_constraints.emplace_back(ph0.get_path_constraints(i).clone());
         m_path_constraints.back()->
