@@ -172,10 +172,7 @@ void testMucoControlCost() {
         MucoControlCost effort;
         effort.setWeight("nonexistent", 1.5);
         mp.addCost(effort);
-        MucoTropterSolver& ms = muco.initSolver();
-        ms.set_num_mesh_points(8);
-        ms.set_optim_max_iterations(1);
-        SimTK_TEST_MUST_THROW_EXC(muco.solve(), Exception);
+        SimTK_TEST_MUST_THROW_EXC(mp.createRep(), Exception);
     }
 
     // De/serialization.

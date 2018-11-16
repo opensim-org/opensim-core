@@ -36,8 +36,15 @@ class OSIMMUSCOLLO_API MucoProblemRep {
 public:
     MucoProblemRep() = default;
     MucoProblemRep(const MucoProblemRep&) = delete;
-    MucoProblemRep(MucoProblemRep&&) = default;
-    MucoProblemRep& operator=(MucoProblemRep&&) = default;
+    MucoProblemRep(MucoProblemRep&& source)
+            : m_problem(std::move(source.m_problem)) {
+        initialize();
+    }
+    MucoProblemRep& operator=(MucoProblemRep&& source) {
+        m_problem = std::move(source.m_problem);
+        initialize();
+        return *this;
+    }
 
     const std::string& getName() const;
 
@@ -182,11 +189,11 @@ private:
     explicit MucoProblemRep(const MucoProblem& problem);
     friend MucoProblem;
 
+    void initialize();
+
     const MucoProblem* m_problem;
 
-    // This is invoked on move also.
-    static void ModelInitSystem(Model& m) { m.initSystem(); }
-    InvokeOnCopy<Model, ModelInitSystem> m_model;
+    Model m_model;
 
     std::unordered_map<std::string, MucoVariableInfo> m_state_infos;
     std::unordered_map<std::string, MucoVariableInfo> m_control_infos;

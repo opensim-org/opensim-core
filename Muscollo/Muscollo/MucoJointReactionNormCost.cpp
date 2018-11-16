@@ -43,6 +43,7 @@ void MucoJointReactionNormCost::calcIntegralCostImpl(const SimTK::State& state,
         double& integrand) const {
 
     getModel().realizeAcceleration(state);
+    // TODO: cache the joint.
     const auto& joint = getModel().getComponent<Joint>(get_joint_path());
     integrand = joint.calcReactionOnChildExpressedInGround(state).norm();
 }

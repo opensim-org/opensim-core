@@ -9,11 +9,14 @@ using namespace OpenSim;
 
 MucoProblemRep::MucoProblemRep(const MucoProblem& problem)
         : m_problem(&problem) {
+    initialize();
+}
+void MucoProblemRep::initialize() {
     /// Must use the model provided in this function, *not* the one stored as
     /// a property in this class.
 
-    const auto& ph0 = problem.getPhase(0);
-    m_model = problem.getPhase(0).getModel();
+    const auto& ph0 = m_problem->getPhase(0);
+    m_model = m_problem->getPhase(0).getModel();
     m_model.initSystem();
 
     const auto stateNames = m_model.getStateVariableNames();
@@ -75,6 +78,7 @@ MucoProblemRep::MucoProblemRep(const MucoProblem& problem)
 
     for (int i = 0; i < ph0.getProperty_parameters().size(); ++i) {
         m_parameters.emplace_back(ph0.get_parameters(i).clone());
+        // TODO rename to initializeOnModel().
         m_parameters.back()->initialize(m_model);
     }
 
@@ -146,11 +150,13 @@ MucoProblemRep::MucoProblemRep(const MucoProblem& problem)
     }
 
     m_num_path_constraint_eqs = 0;
+    m_path_constraints.clear();
     for (int i = 0; i < ph0.getProperty_path_constraints().size(); ++i) {
-        const_cast<MucoPathConstraint&>(ph0.get_path_constraints(i)).initialize(
-                m_model, m_num_path_constraint_eqs);
+        m_path_constraints.emplace_back(ph0.get_path_constraints(i).clone());
+        m_path_constraints.back()->
+                initialize(m_model, m_num_path_constraint_eqs);
         m_num_path_constraint_eqs +=
-                ph0.get_path_constraints(i).getConstraintInfo().getNumEquations();
+                m_path_constraints.back()->getConstraintInfo().getNumEquations();
     }
 }
 

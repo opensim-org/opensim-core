@@ -25,7 +25,6 @@
  void MucoMarkerTrackingCost::initializeImpl() const {
     
     // Cache reference pointers to model markers.
-    m_model_markers.clear();
     const auto& markRefNames = get_markers_reference().getNames();
     for (int i = 0; i < (int)markRefNames.size(); ++i) {
         if (getModel().hasComponent<Marker>(markRefNames[i])) {

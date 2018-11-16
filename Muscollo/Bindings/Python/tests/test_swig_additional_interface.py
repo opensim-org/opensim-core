@@ -148,5 +148,21 @@ class TestSwigAddtlInterface(unittest.TestCase):
         assert(p0 == 25)
 
     def test_createRep(self):
+        model = osim.Model()
+        model.setName('sliding_mass')
+        model.set_gravity(osim.Vec3(0, 0, 0))
+        body = osim.Body('body', 2.0, osim.Vec3(0), osim.Inertia(0))
+        model.addComponent(body)
+
+        joint = osim.SliderJoint('slider', model.getGround(), body)
+        coord = joint.updCoordinate()
+        coord.setName('position')
+        model.addComponent(joint)
+        muco = osim.MucoTool()
+        muco.setName('sliding_mass')
+
+        mp = muco.updProblem()
+        mp.setModel(model)
+
         pr = mp.createRep();
-        assert(pr.createStateInfoNames().size() == 2);
+        assert(len(pr.createStateInfoNames()) == 2);

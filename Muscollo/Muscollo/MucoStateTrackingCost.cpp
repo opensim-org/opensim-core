@@ -59,12 +59,6 @@ void MucoStateTrackingCost::initializeImpl() const {
     }
     auto allSplines = GCVSplineSet(tableToUse);
 
-    // Clear member variables so they're not used by a subsequent cost 
-    // function by accident.
-    m_refsplines.clearAndDestroy();
-    m_sysYIndices.clear();
-    m_state_weights.clear();
-
     // Throw exception if a weight is specified for a nonexistent state.
     auto allSysYIndices = createSystemYIndexMap(getModel());
     for (int i = 0; i < get_state_weights().getSize(); ++i) {
