@@ -38,11 +38,11 @@ public:
     MucoProblemRep& operator=(const MucoProblemRep&) = delete;
     MucoProblemRep(MucoProblemRep&& source)
             : m_problem(std::move(source.m_problem)) {
-        initialize();
+        if (m_problem) initialize();
     }
     MucoProblemRep& operator=(MucoProblemRep&& source) {
         m_problem = std::move(source.m_problem);
-        initialize();
+        if (m_problem) initialize();
         return *this;
     }
 

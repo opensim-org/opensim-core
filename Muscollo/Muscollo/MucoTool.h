@@ -95,8 +95,7 @@ public:
     /// will have no effect on this MucoTool.
     MucoTropterSolver& initSolver();
 
-    /// Access the solver. The solver will be initialized only if it hasn't been
-    /// initialized already.
+    /// Access the solver. Make sure to call `initSolver()` beforehand.
     /// If using this method in C++, make sure to include the "&" in the
     /// return type; otherwise, you'll make a copy of the solver, and the copy
     /// will have no effect on this MucoTool.
@@ -136,7 +135,6 @@ public:
 
     template <typename SolverType>
     SolverType& updCustomSolver() {
-        ensureInitSolver();
         return dynamic_cast<SolverType&>(upd_solver());
     }
     /// @}
@@ -153,7 +151,7 @@ private:
     MucoSolver& initSolverInternal();
     void constructProperties();
 
-    SimTK::ResetOnCopy<bool> m_solverInitialized = false;
+    // TODO SimTK::ResetOnCopy<bool> m_solverInitialized = false;
 };
 
 } // namespace OpenSim

@@ -45,20 +45,14 @@ const MucoProblem& MucoTool::getProblem() const {
 }
 
 MucoProblem& MucoTool::updProblem() {
-    m_solverInitialized = false;
-    // TODO upd_solver().clearProblem();
     return upd_problem();
-}
-
-void MucoTool::ensureInitSolver() {
-    if (!m_solverInitialized) initSolverInternal();
 }
 
 MucoSolver& MucoTool::initSolverInternal() {
     // TODO what to do if we already have a solver (from cloning?)
     // TODO how to persist Solver settings when solving multiple times.
-    upd_solver().setProblem(get_problem());
-    m_solverInitialized = true;
+    upd_solver().resetProblem(get_problem());
+    // m_solverInitialized = true;
     return upd_solver();
 }
 
@@ -77,7 +71,7 @@ void MucoTool::setCustomSolver() {
 
 MucoSolution MucoTool::solve() const {
     // TODO avoid const_cast.
-    const_cast<Self*>(this)->ensureInitSolver();
+    const_cast<Self*>(this)->initSolverInternal();
     MucoSolution solution = get_solver().solve();
     bool originallySealed = solution.isSealed();
     if (get_write_solution() != "false") {

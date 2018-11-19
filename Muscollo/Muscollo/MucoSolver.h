@@ -60,15 +60,12 @@ public:
 
     virtual ~MucoSolver() = default;
 
-    /// Clear the internally-set MucoProblem.
-    void clearProblem();
-
     /// Call this to prepare the solver for use on the provided problem.
     // TODO can only call once?
     // TODO @precondition The problem is well-posed (MucoProblem::isWellPosed
     // ()). Move isWellPosed() to Solver, since evaluating this might require
     // creating the solver.
-    void setProblem(const MucoProblem& problem);
+    void resetProblem(const MucoProblem& problem);
 
     /* TODO
     const MucoProblemProxy& getProblemProxy() const {
@@ -102,17 +99,16 @@ private:
     friend MucoTool;
 
     /// Claer any cache based on the MucoProblem.
-    virtual void clearProblemImpl() = 0;
-    /// Perform any necessary caching based on the MucoProblem.
-    /// @
-    virtual void setProblemImpl(const MucoProblemRep& proxy) = 0;
+    // TODO virtual void clearProblemImpl() const = 0;
+    /// Check that solver is capable of solving this problem.
+    virtual void resetProblemImpl(const MucoProblemRep& rep) const = 0;
 
     /// This is the meat of a solver: solve the problem and return the solution.
     virtual MucoSolution solveImpl() const = 0;
 
     // TODO unique_ptr, stack variable?
     SimTK::ReferencePtr<const MucoProblem> m_problem;
-    SimTK::ResetOnCopy<MucoProblemRep> m_problemRep;
+    mutable SimTK::ResetOnCopy<MucoProblemRep> m_problemRep;
 
 };
 

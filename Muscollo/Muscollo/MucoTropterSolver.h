@@ -157,8 +157,7 @@ protected:
     std::shared_ptr<const tropter::Problem<double>>
     getTropterProblem() const;
 
-    void clearProblemImpl() override;
-    void setProblemImpl(const MucoProblemRep&) override;
+    void resetProblemImpl(const MucoProblemRep&) const override;
     // TODO ensure that user-provided guess is within bounds.
     MucoSolution solveImpl() const override;
 

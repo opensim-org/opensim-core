@@ -525,13 +525,8 @@ MucoTropterSolver::getTropterProblem() const {
     return m_tropProblem;
 }
 
-void MucoTropterSolver::clearProblemImpl() {
-    clearGuess();
+void MucoTropterSolver::resetProblemImpl(const MucoProblemRep&) const {
     m_tropProblem.reset();
-}
-
-void MucoTropterSolver::setProblemImpl(const MucoProblemRep&) {
-    // TODO not necessary clearProblemImpl();
 }
 
 MucoIterate MucoTropterSolver::createGuess(const std::string& type) const {
