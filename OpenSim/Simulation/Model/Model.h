@@ -1025,7 +1025,14 @@ public:
     /**@{**/
 
     /** Destructor. */
-    ~Model() override = default;
+    ~Model() override {
+        // Must ensure the System is deleted after the subsystem handles,
+        // otherwise the subsystem handles are "dangling."
+        _contactSubsystem.reset();
+        _forceSubsystem.reset();
+        _gravityForce.reset();
+        _matter.reset();
+    }
 
     /** Override of the default implementation to account for versioning. */
     void updateFromXMLNode(SimTK::Xml::Element& aNode, 
@@ -1150,7 +1157,6 @@ private:
     // subsystems and force elements are owned by the MultibodySystem. However,
     // that memory management happens through Simbody's handles. It's fine for
     // us to manage the heap memory for the handles.
-    SimTK::ResetOnCopy<std::unique_ptr<SimTK::MultibodySystem>> _system;
 
     SimTK::ResetOnCopy<std::unique_ptr<SimTK::SimbodyMatterSubsystem>>
         _matter;     
@@ -1160,6 +1166,11 @@ private:
         _forceSubsystem;
     SimTK::ResetOnCopy<std::unique_ptr<SimTK::GeneralContactSubsystem>>
         _contactSubsystem;
+
+    // We place this after the subsystems so that during copy construction and
+    // copy assignment, the subsystem handles are copied first. If the system
+    // is copied first, the handles end up "dangling."
+    SimTK::ResetOnCopy<std::unique_ptr<SimTK::MultibodySystem>> _system;
 
     // System-dependent objects.
 
