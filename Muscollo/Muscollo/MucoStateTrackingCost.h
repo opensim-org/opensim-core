@@ -53,7 +53,7 @@ public:
         set_reference_file(filepath);
     }
     /// Each column label must be the path of a state variable, e.g.,
-    /// `knee/flexion/value`. Calling this function clears the `reference_file`
+    /// `/knee/flexion/value`. Calling this function clears the `reference_file`
     /// property.
     void setReference(const TimeSeriesTable& ref) {
         set_reference_file("");

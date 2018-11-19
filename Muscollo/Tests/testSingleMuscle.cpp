@@ -105,7 +105,7 @@ void testIsometricMuscleRoundtrip() {
         auto compare = [](const TimeSeriesTable& table, double expected,
                           double tol) {
             const auto& actual = table.getDependentColumn(
-                    "/isometric_muscle/actuator");
+                    "/actuator");
             SimTK::Vector expectedVector((int)table.getNumRows(), expected);
             // actual.dump("actual");
             SimTK_TEST_EQ_TOL(actual, expectedVector, tol);

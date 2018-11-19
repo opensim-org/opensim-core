@@ -297,7 +297,7 @@ public:
 
         for (const auto& actu : m_model.getComponentList<Actuator>()) {
             // TODO handle a variable number of control signals.
-            const auto& actuName = actu.getName();
+            const auto& actuName = actu.getAbsolutePathString();
             const auto& info = m_mucoProb.getControlInfo(actuName);
             this->add_control(actuName, convert(info.getBounds()),
                     convert(info.getInitialBounds()),
@@ -601,7 +601,12 @@ MucoIterate MucoTropterSolver::createGuessTimeStepping() const {
     manager.integrate(finalTime);
 
     const auto& statesTable = manager.getStatesTable();
-    const auto controlsTable = model.getControlsTable();
+    auto controlsTable = model.getControlsTable();
+
+    // Fix column labels.
+    auto labels = controlsTable.getColumnLabels();
+    for (auto& label : labels) { label = "/forceset/" + label; }
+    controlsTable.setColumnLabels(labels);
 
     // TODO handle parameters.
     return MucoIterate::createFromStatesControlsTables(

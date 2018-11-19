@@ -33,6 +33,9 @@
 #include "MucoControlCost.h"
 #include "MucoJointReactionNormCost.h"
 #include "MucoParameter.h"
+#include "ActivationCoordinateActuator.h"
+// TODO: Move to osimSimulation.
+#include <OpenSim/Simulation/MarkersReference.h>
 
 #include <exception>
 #include <iostream>
@@ -61,8 +64,15 @@ OSIMMUSCOLLO_API void RegisterTypes_osimMuscollo() {
         Object::registerType(MucoTropterSolver());
         Object::registerType(MucoParameter());
 
+        Object::registerType(ActivationCoordinateActuator());
         Object::registerType(GlobalStaticOptimization());
         Object::registerType(INDYGO());
+
+
+        // TODO: Move to osimSimulation.
+        Object::registerType(MarkersReference());
+        Object::registerType(MarkerWeight());
+        Object::registerType(Set<MarkerWeight>());
     } catch (const std::exception& e) {
         std::cerr << "ERROR during osimMuscollo Object registration:\n"
                 << e.what() << std::endl;

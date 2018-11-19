@@ -81,6 +81,8 @@ Model createModel() {
             model.addJoint(joint);
         }
     }
+
+    model.finalizeConnections();
     
     return model;
 }
@@ -171,9 +173,10 @@ void calcAccelerationsFromMultipliers(const Model& model, const State& state,
 void testWeldConstraint() {
     State state;
     Model model = createModel();
-    const std::string& firstBodyName = model.getBodySet().get(0).getName();
-    const std::string& lastBodyName = 
-        model.getBodySet().get(NUM_BODIES-1).getName();
+    const std::string& firstBodyName =
+            model.getBodySet().get(0).getAbsolutePathString();
+    const std::string& lastBodyName =
+            model.getBodySet().get(NUM_BODIES-1).getAbsolutePathString();
     WeldConstraint* constraint = new WeldConstraint("weld", firstBodyName, 
         lastBodyName);
     model.addConstraint(constraint);
@@ -381,12 +384,14 @@ Model createDoublePendulumModel() {
     // Add display geometry.
     Ellipsoid bodyGeometry(0.5, 0.1, 0.1);
     SimTK::Transform transform(SimTK::Vec3(-0.5, 0, 0));
-    auto* b0Center = new PhysicalOffsetFrame("b0_center", "b0", transform);
+    auto* b0Center = new PhysicalOffsetFrame("b0_center", *b0, transform);
     b0->addComponent(b0Center);
     b0Center->attachGeometry(bodyGeometry.clone());
-    auto* b1Center = new PhysicalOffsetFrame("b1_center", "b1", transform);
+    auto* b1Center = new PhysicalOffsetFrame("b1_center", *b1, transform);
     b1->addComponent(b1Center);
     b1Center->attachGeometry(bodyGeometry.clone());
+
+    model.finalizeConnections();
 
     return model;
 }
@@ -401,8 +406,7 @@ MucoIterate runForwardSimulation(Model model, const MucoSolution& solution,
     OpenSim::Array<std::string> actuNames;
     const auto modelPath = model.getAbsolutePath();
     for (const auto& actu : model.getComponentList<Actuator>()) {
-        actuNames.append(
-            actu.getAbsolutePath().formRelativePath(modelPath).toString());
+        actuNames.append(actu.getAbsolutePathString());
     }
 
     // Add prescribed controllers to actuators in the model, where the control
@@ -415,8 +419,10 @@ MucoIterate runForwardSimulation(Model model, const MucoSolution& solution,
         const auto control = solution.getControl(actuNames[i]);
         auto* controlFunction = new GCVSpline(5, time.nrow(), &time[0], 
             &control[0]);
-        controller->addActuator(model.getComponent<Actuator>(actuNames[i]));
-        controller->prescribeControlForActuator(actuNames[i], controlFunction);
+        const auto& actu = model.getComponent<Actuator>(actuNames[i]);
+        controller->addActuator(actu);
+        controller->prescribeControlForActuator(actu.getName(),
+                controlFunction);
     }
     model.addController(controller);
 
@@ -491,17 +497,18 @@ void testDoublePendulumPointOnLine() {
     PointOnLineConstraint* constraint = new PointOnLineConstraint(
         model.getGround(), Vec3(0, 1, 0), Vec3(0), b1, endeff.get_location());
     model.addConstraint(constraint);
+    model.finalizeConnections();
     mp.setModel(model);
 
     mp.setTimeBounds(0, 1);
     // Coordinate value state boundary conditions are consistent with the 
     // point-on-line constraint and should require the model to "unfold" itself.
-    mp.setStateInfo("j0/q0/value", {-10, 10}, 0, SimTK::Pi / 2);
-    mp.setStateInfo("j0/q0/speed", {-50, 50}, 0, 0);
-    mp.setStateInfo("j1/q1/value", {-10, 10}, SimTK::Pi, 0);
-    mp.setStateInfo("j1/q1/speed", {-50, 50}, 0, 0);
-    mp.setControlInfo("tau0", {-100, 100});
-    mp.setControlInfo("tau1", {-100, 100});
+    mp.setStateInfo("/jointset/j0/q0/value", {-10, 10}, 0, SimTK::Pi / 2);
+    mp.setStateInfo("/jointset/j0/q0/speed", {-50, 50}, 0, 0);
+    mp.setStateInfo("/jointset/j1/q1/value", {-10, 10}, SimTK::Pi, 0);
+    mp.setStateInfo("/jointset/j1/q1/speed", {-50, 50}, 0, 0);
+    mp.setControlInfo("/tau0", {-100, 100});
+    mp.setControlInfo("/tau1", {-100, 100});
 
     MucoControlCost effort;
     mp.addCost(effort);
@@ -571,12 +578,12 @@ void testDoublePendulumCoordinateCoupler(MucoSolution& solution) {
     mp.setTimeBounds(0, 1);
     // Boundary conditions are only enforced for the first coordinate, so we can
     // test that the second coordinate is properly coupled.
-    mp.setStateInfo("j0/q0/value", {-10, 10}, 0, SimTK::Pi / 2);
-    mp.setStateInfo("j0/q0/speed", {-50, 50}, 0, 0);
-    mp.setStateInfo("j1/q1/value", {-10, 10});
-    mp.setStateInfo("j1/q1/speed", {-50, 50}, 0, 0);
-    mp.setControlInfo("tau0", {-100, 100});
-    mp.setControlInfo("tau1", {-100, 100});
+    mp.setStateInfo("/jointset/j0/q0/value", {-10, 10}, 0, SimTK::Pi / 2);
+    mp.setStateInfo("/jointset/j0/q0/speed", {-50, 50}, 0, 0);
+    mp.setStateInfo("/jointset/j1/q1/value", {-10, 10});
+    mp.setStateInfo("/jointset/j1/q1/speed", {-50, 50}, 0, 0);
+    mp.setControlInfo("/tau0", {-100, 100});
+    mp.setControlInfo("/tau1", {-100, 100});
 
     MucoControlCost effort;
     mp.addCost(effort);
@@ -631,10 +638,10 @@ void testDoublePendulumPrescribedMotion(MucoSolution& couplerSolution) {
 
     // Apply the prescribed motion constraints.
     Coordinate& q0 = model.updJointSet().get("j0").updCoordinate();
-    q0.setPrescribedFunction(statesSpline.get("j0/q0/value"));
+    q0.setPrescribedFunction(statesSpline.get("/jointset/j0/q0/value"));
     q0.setDefaultIsPrescribed(true);
     Coordinate& q1 = model.updJointSet().get("j1").updCoordinate();
-    q1.setPrescribedFunction(statesSpline.get("j1/q1/value"));
+    q1.setPrescribedFunction(statesSpline.get("/jointset/j1/q1/value"));
     q1.setDefaultIsPrescribed(true);
     // Set the model again after implementing the constraints.
     mp.setModel(model);
@@ -642,12 +649,12 @@ void testDoublePendulumPrescribedMotion(MucoSolution& couplerSolution) {
     mp.setTimeBounds(0, 1);
     // No bounds here, since the problem is already highly constrained by the
     // prescribed motion constraints on the coordinates.
-    mp.setStateInfo("j0/q0/value", {-10, 10});
-    mp.setStateInfo("j0/q0/speed", {-50, 50});
-    mp.setStateInfo("j1/q1/value", {-10, 10});
-    mp.setStateInfo("j1/q1/speed", {-50, 50});
-    mp.setControlInfo("tau0", {-100, 100});
-    mp.setControlInfo("tau1", {-100, 100});
+    mp.setStateInfo("/jointset/j0/q0/value", {-10, 10});
+    mp.setStateInfo("/jointset/j0/q0/speed", {-50, 50});
+    mp.setStateInfo("/jointset/j1/q1/value", {-10, 10});
+    mp.setStateInfo("/jointset/j1/q1/speed", {-50, 50});
+    mp.setControlInfo("/tau0", {-100, 100});
+    mp.setControlInfo("/tau1", {-100, 100});
 
     MucoControlCost effort;
     mp.addCost(effort);
@@ -683,13 +690,17 @@ void testDoublePendulumPrescribedMotion(MucoSolution& couplerSolution) {
         const SimTK::Real& time = s.getTime();
         indVec[i] = time;
         timeVec.updElt(0,0) = time;
-        depData.set(i, 0, statesSpline.get("j0/q0/value").calcValue(timeVec));
-        depData.set(i, 1, statesSpline.get("j1/q1/value").calcValue(timeVec));
+        depData.set(i, 0,
+                statesSpline.get("/jointset/j0/q0/value").calcValue(timeVec));
+        depData.set(i, 1,
+                statesSpline.get("/jointset/j1/q1/value").calcValue(timeVec));
         // The values for the speed states are created from the spline 
         // derivative values.
-        depData.set(i, 2, statesSpline.get("j0/q0/value").calcDerivative({0}, 
+        depData.set(i, 2,
+                statesSpline.get("/jointset/j0/q0/value").calcDerivative({0},
             timeVec));
-        depData.set(i, 3, statesSpline.get("j1/q1/value").calcDerivative({0}, 
+        depData.set(i, 3,
+                statesSpline.get("/jointset/j1/q1/value").calcDerivative({0},
             timeVec));
     }
     TimeSeriesTable splineStateValues(indVec, depData, 
@@ -710,23 +721,27 @@ void testDoublePendulumPrescribedMotion(MucoSolution& couplerSolution) {
     // directly via a path constraint in the current problem formulation (see 
     // MucoTropterSolver for details).
     SimTK_TEST_EQ_TOL(solution.compareContinuousVariablesRMS(mucoIterSpline, 
-        {"j0/q0/value", "j1/q1/value"}, {"none"}, {"none"}), 0, 1e-12);
+        {"/jointset/j0/q0/value", "/jointset/j1/q1/value"}, {"none"}, {"none"}),
+                0, 1e-12);
     SimTK_TEST_EQ_TOL(solution.compareContinuousVariablesRMS(couplerSolution,
-        {"j0/q0/value", "j1/q1/value"}, {"none"}, {"none"}), 0, 1e-12);
+        {"/jointset/j0/q0/value", "/jointset/j1/q1/value"}, {"none"}, {"none"}),
+                0, 1e-12);
     // Only compare the velocity-level values between the current solution 
     // states and the states from the previous test (original and splined).  
     // These won't match as well as the position-level values, since velocity-
     // level errors are not enforced in the current problem formulation.
     SimTK_TEST_EQ_TOL(solution.compareContinuousVariablesRMS(mucoIterSpline,
-        {"j0/q0/speed", "j1/q1/speed"}, {"none"}, {"none"}), 0, 1e-2);
+        {"/jointset/j0/q0/speed", "/jointset/j1/q1/speed"}, {"none"}, {"none"}),
+                0, 1e-2);
     SimTK_TEST_EQ_TOL(solution.compareContinuousVariablesRMS(couplerSolution,
-        {"j0/q0/speed", "j1/q1/speed"}, {"none"}, {"none"}), 0, 1e-2);
+        {"/jointset/j0/q0/speed", "/jointset/j1/q1/speed"}, {"none"}, {"none"}),
+                0, 1e-2);
     // Compare only the actuator controls. These match worse compared to the
     // velocity-level states. It is currently unclear to what extent this is 
     // related to velocity-level states not matching well or the how the model
     // constraints are enforced in the current formulation.
     SimTK_TEST_EQ_TOL(solution.compareContinuousVariablesRMS(couplerSolution, 
-        {"none"}, {"tau0", "tau1"}, {"none"}), 0, 1);
+        {"none"}, {"/tau0", "/tau1"}, {"none"}), 0, 1);
 
     // Run a forward simulation using the solution controls in prescribed 
     // controllers for the model actuators and see if we get the correct states
@@ -778,12 +793,12 @@ void testDoublePendulumEqualControl() {
     mp.setTimeBounds(0, 1);
     // Coordinate value state boundary conditions are consistent with the 
     // point-on-line constraint and should require the model to "unfold" itself.
-    mp.setStateInfo("j0/q0/value", {-10, 10}, 0, SimTK::Pi / 2);
-    mp.setStateInfo("j0/q0/speed", {-50, 50}, 0, 0);
-    mp.setStateInfo("j1/q1/value", {-10, 10});
-    mp.setStateInfo("j1/q1/speed", {-50, 50}, 0, 0);
-    mp.setControlInfo("tau0", {-100, 100});
-    mp.setControlInfo("tau1", {-100, 100});
+    mp.setStateInfo("/jointset/j0/q0/value", {-10, 10}, 0, SimTK::Pi / 2);
+    mp.setStateInfo("/jointset/j0/q0/speed", {-50, 50}, 0, 0);
+    mp.setStateInfo("/jointset/j1/q1/value", {-10, 10});
+    mp.setStateInfo("/jointset/j1/q1/speed", {-50, 50}, 0, 0);
+    mp.setControlInfo("/tau0", {-100, 100});
+    mp.setControlInfo("/tau1", {-100, 100});
 
     MucoControlCost effort;
     mp.addCost(effort);
@@ -801,10 +816,8 @@ void testDoublePendulumEqualControl() {
     solution.write("testConstraints_testDoublePendulumEqualControl.sto");
     //muco.visualize(solution);
 
-    const auto& controlsTraj = solution.getControlsTrajectory();
-
-    const auto& control_tau0 = solution.getControl("tau0");
-    const auto& control_tau1 = solution.getControl("tau1");
+    const auto& control_tau0 = solution.getControl("/tau0");
+    const auto& control_tau1 = solution.getControl("/tau1");
     const auto& control_res = control_tau1.abs() - control_tau0.abs();
 
     SimTK_TEST_EQ_TOL(control_res.normRMS(), 0, 1e-6);

@@ -194,8 +194,7 @@ void InverseMuscleSolver::processActuatorsToInclude(Model& model) const {
         const ComponentPath modelPath = model.getAbsolutePath();
         auto actuList = model.updComponentList<Actuator>();
         for (auto& actu : actuList) {
-            const auto actuPath = actu.getAbsolutePath()
-                    .formRelativePath(modelPath).toString();
+            const auto actuPath = actu.getAbsolutePathString();
             const auto foundActuPath = actuToInclude.find(actuPath);
             if (foundActuPath == actuToInclude.end()) {
                 // Could not find in the set; do not include.

@@ -230,8 +230,8 @@ solveForTrajectoryGSO() {
     // Create a table containing only the angle and speed of the pendulum.
     TimeSeriesTable ocpSolution = CSVFileAdapter::read(trajFileWithHeader);
     TimeSeriesTable kinematics;
-    kinematics.setColumnLabels({"joint/flexion/value",
-                                "joint/flexion/speed"});
+    kinematics.setColumnLabels({"/joint/flexion/value",
+                                "/joint/flexion/speed"});
     const auto& position = ocpSolution.getDependentColumn("angle");
     const auto& speed = ocpSolution.getDependentColumn("speed");
     for (int iRow = 0; iRow < (int)ocpSolution.getNumRows(); ++iRow) {
@@ -326,8 +326,8 @@ solveForTrajectoryINDYGO() {
     // Create a table containing only the angle and speed of the pendulum.
     TimeSeriesTable ocpSolution = CSVFileAdapter::read(trajFileWithHeader);
     TimeSeriesTable kinematics;
-    kinematics.setColumnLabels({"joint/flexion/value",
-                                "joint/flexion/speed"});
+    kinematics.setColumnLabels({"/joint/flexion/value",
+                                "/joint/flexion/speed"});
     const auto& position = ocpSolution.getDependentColumn("angle");
     const auto& speed = ocpSolution.getDependentColumn("speed");
     for (int iRow = 0; iRow < (int)ocpSolution.getNumRows(); ++iRow) {
@@ -410,6 +410,8 @@ OpenSim::Model buildLiftingMassModel() {
     //std::cin.get();
     //Manager manager(model);
     //manager.integrate(s, 1.0);
+
+    model.finalizeConnections();
     return model;
 }
 
@@ -423,7 +425,6 @@ void testLiftingMassGSO(
     // Build a similar OpenSim model.
     // ------------------------------
     Model model = buildLiftingMassModel();
-    model.finalizeFromProperties();
 
     // Create the GlobalStaticOptimization.
     // ------------------------------------------
@@ -438,7 +439,7 @@ void testLiftingMassGSO(
 
     // Compare the solution to the initial trajectory optimization solution.
     // ---------------------------------------------------------------------
-    rootMeanSquare(solution.activation, "/hanging_muscle/actuator",
+    rootMeanSquare(solution.activation, "/actuator",
                    ocpSolution,         "activation",
                    0.03);
     auto reserveForceRMS = reserveOptimalForce *
@@ -456,7 +457,6 @@ void testLiftingMassINDYGO(
     // Build a similar OpenSim model.
     // ------------------------------
     Model model = buildLiftingMassModel();
-    model.finalizeFromProperties();
 
     // Create the INDYGO.
     // ----------------------------------
@@ -473,18 +473,18 @@ void testLiftingMassINDYGO(
 
     // Compare the solution to the initial trajectory optimization solution.
     // ---------------------------------------------------------------------
-    compare(solution.activation, "/hanging_muscle/actuator",
+    compare(solution.activation, "/actuator",
             ocpSolution,         "activation",
             0.06);
-    compare(solution.norm_fiber_length, "/hanging_muscle/actuator",
+    compare(solution.norm_fiber_length, "/actuator",
             ocpSolution,                "norm_fiber_length",
             0.005);
 
     // We use a weaker check for the controls; they don't match as well.
-    rootMeanSquare(solution.excitation, "/hanging_muscle/actuator",
+    rootMeanSquare(solution.excitation, "/actuator",
                    ocpSolution,         "excitation",
                    0.06);
-    rootMeanSquare(solution.norm_fiber_velocity, "/hanging_muscle/actuator",
+    rootMeanSquare(solution.norm_fiber_velocity, "/actuator",
                    ocpSolution,                  "norm_fiber_velocity",
                    0.02);
 }

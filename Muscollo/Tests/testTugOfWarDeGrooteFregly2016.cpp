@@ -379,6 +379,8 @@ OpenSim::Model buildTugOfWarModel() {
     // std::cin.get();
     // Manager manager(model);
     // manager.integrate(s, 1.0);
+
+    model.finalizeConnections();
     return model;
 }
 
@@ -424,8 +426,8 @@ solveForTrajectory_GSO(const Model& model) {
     // Create a table containing only the angle and speed of the pendulum.
     TimeSeriesTable ocpSolution = CSVFileAdapter::read(trajFileWithHeader);
     TimeSeriesTable kinematics;
-    kinematics.setColumnLabels({"joint/position/value",
-                                "joint/position/speed"});
+    kinematics.setColumnLabels({"/joint/position/value",
+                                "/joint/position/speed"});
     const auto& position = ocpSolution.getDependentColumn("position");
     const auto& speed = ocpSolution.getDependentColumn("speed");
     for (int iRow = 0; iRow < (int)ocpSolution.getNumRows(); ++iRow) {
@@ -525,8 +527,8 @@ solveForTrajectory_INDYGO(const Model& model) {
     // Create a table containing only the angle and speed of the pendulum.
     TimeSeriesTable ocpSolution = CSVFileAdapter::read(trajFileWithHeader);
     TimeSeriesTable kinematics;
-    kinematics.setColumnLabels({"joint/position/value",
-                                "joint/position/speed"});
+    kinematics.setColumnLabels({"/joint/position/value",
+                                "/joint/position/speed"});
     const auto& position = ocpSolution.getDependentColumn("position");
     const auto& speed = ocpSolution.getDependentColumn("speed");
     for (int iRow = 0; iRow < (int)ocpSolution.getNumRows(); ++iRow) {
@@ -572,10 +574,10 @@ void test2Muscles1DOFGSO(
 
     // Compare the solution to the initial trajectory optimization solution.
     // ---------------------------------------------------------------------
-    rootMeanSquare(solution.activation, "/tug_of_war/left",
+    rootMeanSquare(solution.activation, "/left",
                    ocpSolution,         "activation_l",
                    0.005);
-    rootMeanSquare(solution.activation, "/tug_of_war/right",
+    rootMeanSquare(solution.activation, "/right",
                    ocpSolution,         "activation_r",
                    0.01);
     auto reserveForceRMS = reserveOptimalForce *
@@ -618,17 +620,17 @@ void test2Muscles1DOFINDYGO(
     // Compare the solution to the initial trajectory optimization solution.
     // ---------------------------------------------------------------------
 
-    compare(solution.activation, "/tug_of_war/left",
+    compare(solution.activation, "/left",
             ocpSolution,         "activation_l",
             0.05);
-    compare(solution.activation, "/tug_of_war/right",
+    compare(solution.activation, "/right",
             ocpSolution,         "activation_r",
             0.05);
 
-    compare(solution.norm_fiber_length, "/tug_of_war/left",
+    compare(solution.norm_fiber_length, "/left",
             ocpSolution,                "norm_fiber_length_l",
             0.01);
-    compare(solution.norm_fiber_length, "/tug_of_war/right",
+    compare(solution.norm_fiber_length, "/right",
             ocpSolution,                "norm_fiber_length_r",
             0.01);
 
@@ -636,17 +638,17 @@ void test2Muscles1DOFINDYGO(
     // excitation_l does not match well at the end of the motion; should
     // go to 0 but ends at 0.15 (b/c of error in inverse dynamics generalized
     // forces introduced by filtering, etc.)
-    rootMeanSquare(solution.excitation, "/tug_of_war/left",
+    rootMeanSquare(solution.excitation, "/left",
                    ocpSolution,         "excitation_l",
                    0.02);
-    rootMeanSquare(solution.excitation, "/tug_of_war/right",
+    rootMeanSquare(solution.excitation, "/right",
                    ocpSolution,         "excitation_r",
                    0.01);
 
-    rootMeanSquare(solution.norm_fiber_velocity, "/tug_of_war/left",
+    rootMeanSquare(solution.norm_fiber_velocity, "/left",
                    ocpSolution,                  "norm_fiber_velocity_l",
                    0.005);
-    rootMeanSquare(solution.norm_fiber_velocity, "/tug_of_war/right",
+    rootMeanSquare(solution.norm_fiber_velocity, "/right",
                    ocpSolution,                  "norm_fiber_velocity_r",
                    0.03);
 

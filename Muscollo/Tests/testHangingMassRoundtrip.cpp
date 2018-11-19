@@ -86,7 +86,7 @@ void testHangingMassRoundtrip() {
         INDYGO::Solution solution = mrs.solve();
 
         const auto& actual = solution.other_controls.getDependentColumn(
-                "/hanging_mass/actuator");
+                "/actuator");
 
         const auto& timeVec = solution.other_controls.getIndependentColumn();
         SimTK::Vector expected((int)timeVec.size(), &timeVec[0]);

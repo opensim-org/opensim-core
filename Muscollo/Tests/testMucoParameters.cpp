@@ -47,6 +47,8 @@ Model createOscillatorModel() {
     spring->setViscosity(0.0);
     model.addComponent(spring);
 
+    model.finalizeConnections();
+
     return model;
 }
 
@@ -73,8 +75,8 @@ void testOscillatorMass() {
     MucoProblem& mp = muco.updProblem();
     mp.setModel(createOscillatorModel());
     mp.setTimeBounds(0, FINAL_TIME);
-    mp.setStateInfo("slider/position/value", {-5.0, 5.0}, -0.5, {0.25, 0.75});
-    mp.setStateInfo("slider/position/speed", {-20, 20}, 0, 0);
+    mp.setStateInfo("/slider/position/value", {-5.0, 5.0}, -0.5, {0.25, 0.75});
+    mp.setStateInfo("/slider/position/speed", {-20, 20}, 0, 0);
     
     MucoParameter mass("oscillator_mass", "body", "mass", MucoBounds(0, 10));
     mp.addParameter(mass);
@@ -120,6 +122,8 @@ Model createOscillatorTwoSpringsModel() {
     spring2->setViscosity(0.0);
     model.addComponent(spring2);
 
+    model.finalizeConnections();
+
     return model;
 }
 
@@ -135,8 +139,8 @@ void testOneParameterTwoSprings() {
     MucoProblem& mp = muco.updProblem();
     mp.setModel(createOscillatorTwoSpringsModel());
     mp.setTimeBounds(0, FINAL_TIME);
-    mp.setStateInfo("slider/position/value", {-5.0, 5.0}, -0.5, {0.25, 0.75});
-    mp.setStateInfo("slider/position/speed", {-20, 20}, 0, 0);
+    mp.setStateInfo("/slider/position/value", {-5.0, 5.0}, -0.5, {0.25, 0.75});
+    mp.setStateInfo("/slider/position/speed", {-20, 20}, 0, 0);
 
     // Optimize a single stiffness value and apply to both springs.
     std::vector<std::string> components = {"spring1", "spring2"};
@@ -167,7 +171,7 @@ Model createSeeSawModel() {
     model.set_gravity(SimTK::Vec3(0, -9.81, 0));
     // Set body with z-rotational inertia and COM at the geometric center.
     auto* body = new Body("body", MASS, SimTK::Vec3(0),
-        SimTK::Inertia(0, 0, 1));
+        SimTK::Inertia(1, 1, 1));
     Ellipsoid bodyGeometry(0.5*L, 0.1*L, 0.1*L); // for visualization
     body->attachGeometry(bodyGeometry.clone());
     model.addComponent(body);
@@ -178,6 +182,8 @@ Model createSeeSawModel() {
     auto& coord = joint->updCoordinate(PinJoint::Coord::RotationZ);
     coord.setName("rotation");
     model.addComponent(joint);
+
+    model.finalizeConnections();
 
     return model;
 }
@@ -208,8 +214,8 @@ void testSeeSawCOM() {
     MucoProblem& mp = muco.updProblem();
     mp.setModel(createSeeSawModel());
     mp.setTimeBounds(0, 5);
-    mp.setStateInfo("pin/rotation/value", {-10, 10}, 0, {-10, 10});
-    mp.setStateInfo("pin/rotation/speed", {-10, 10}, 0, {-10, 10});
+    mp.setStateInfo("/pin/rotation/value", {-10, 10}, 0, {-10, 10});
+    mp.setStateInfo("/pin/rotation/speed", {-10, 10}, 0, {-10, 10});
 
     // Choose x-location of COM, which is the mass_center property's first 
     // element.

@@ -41,6 +41,8 @@ Model createSlidingMassModel() {
     actu->setOptimalForce(1);
     model.addComponent(actu);
 
+    model.finalizeConnections();
+
     return model;
 }
 
@@ -54,9 +56,9 @@ void testMucoControlCost() {
         MucoProblem& mp = muco.updProblem();
         mp.setModel(createSlidingMassModel());
         mp.setTimeBounds(0, {0, 5});
-        mp.setStateInfo("slider/position/value", {0, 1}, 0, 1);
-        mp.setStateInfo("slider/position/speed", {-100, 100}, 0, 0);
-        mp.setControlInfo("actuator", MucoBounds(-10, 10));
+        mp.setStateInfo("/slider/position/value", {0, 1}, 0, 1);
+        mp.setStateInfo("/slider/position/speed", {-100, 100}, 0, 0);
+        mp.setControlInfo("/actuator", MucoBounds(-10, 10));
 
         MucoControlCost effort;
         mp.addCost(effort);
@@ -68,11 +70,11 @@ void testMucoControlCost() {
         sol1.write("testMucoCosts_testMucoControlCost_sol1.sto");
 
         // Minimum effort solution is a linear control.
-        SimTK_TEST_EQ_TOL(sol1.getControl("actuator"),
+        SimTK_TEST_EQ_TOL(sol1.getControl("/actuator"),
                 createVectorLinspace(N, 2.23, -2.23), 0.25);
         // Symmetry.
-        SimTK_TEST_EQ_TOL(sol1.getControl("actuator").getElt(0, 0),
-                -sol1.getControl("actuator").getElt(N-1, 0), 1e-5);
+        SimTK_TEST_EQ_TOL(sol1.getControl("/actuator").getElt(0, 0),
+                -sol1.getControl("/actuator").getElt(N-1, 0), 1e-5);
 
         // Minimum effort solution takes as long as possible.
         SimTK_TEST_EQ(sol1.getTime().getElt(N-1, 0), 5);
@@ -134,10 +136,10 @@ void testMucoControlCost() {
 
         mp.setModel(model);
         mp.setTimeBounds(0, 5);
-        mp.setStateInfo("slider/position/value", {0, 1}, 0, 1);
-        mp.setStateInfo("slider/position/speed", {-100, 100}, 0, 0);
-        mp.setControlInfo("actuator", MucoBounds(-10, 10));
-        mp.setControlInfo("actuator2", MucoBounds(-10, 10));
+        mp.setStateInfo("/slider/position/value", {0, 1}, 0, 1);
+        mp.setStateInfo("/slider/position/speed", {-100, 100}, 0, 0);
+        mp.setControlInfo("/actuator", MucoBounds(-10, 10));
+        mp.setControlInfo("/actuator2", MucoBounds(-10, 10));
 
         MucoControlCost effort;
         effort.setWeight("actuator2", 2.0);
@@ -151,12 +153,12 @@ void testMucoControlCost() {
         muco.print(omucoFile);
 
         // The actuator with the lower weight is more active.
-        SimTK_TEST_EQ_TOL(sol2.getControl("actuator"),
-                2 * sol2.getControl("actuator2"), 1e-5);
+        SimTK_TEST_EQ_TOL(sol2.getControl("/actuator"),
+                2 * sol2.getControl("/actuator2"), 1e-5);
         // Sum of control for these two actuators is the same as the control
         // in the single-actuator case.
         SimTK_TEST_EQ_TOL(sol2.getControlsTrajectory().rowSum(),
-            sol1.getControl("actuator"), 1e-5);
+            sol1.getControl("/actuator"), 1e-5);
     }
 
     // Cannot set a weight for a nonexistent control.
@@ -166,9 +168,9 @@ void testMucoControlCost() {
         MucoProblem& mp = muco.updProblem();
         mp.setModel(createSlidingMassModel());
         mp.setTimeBounds(0, {0, 5});
-        mp.setStateInfo("slider/position/value", {0, 1}, 0, 1);
-        mp.setStateInfo("slider/position/speed", {-100, 100}, 0, 0);
-        mp.setControlInfo("actuator", MucoBounds(-10, 10));
+        mp.setStateInfo("/slider/position/value", {0, 1}, 0, 1);
+        mp.setStateInfo("/slider/position/speed", {-100, 100}, 0, 0);
+        mp.setControlInfo("/actuator", MucoBounds(-10, 10));
         MucoControlCost effort;
         effort.setWeight("nonexistent", 1.5);
         mp.addCost(effort);

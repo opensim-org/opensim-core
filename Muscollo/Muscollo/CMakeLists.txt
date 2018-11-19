@@ -39,6 +39,7 @@ add_library(osimMuscollo SHARED
         MucoParameter.cpp
         MucoConstraint.h
         MucoConstraint.cpp
+        ActivationCoordinateActuator.h
         InverseMuscleSolver/InverseMuscleSolver.h
         InverseMuscleSolver/InverseMuscleSolver.cpp
         InverseMuscleSolver/GlobalStaticOptimization.h
