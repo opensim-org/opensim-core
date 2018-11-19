@@ -36,6 +36,7 @@ class OSIMMUSCOLLO_API MucoProblemRep {
 public:
     MucoProblemRep() = default;
     MucoProblemRep(const MucoProblemRep&) = delete;
+    MucoProblemRep& operator=(const MucoProblemRep&) = delete;
     MucoProblemRep(MucoProblemRep&& source)
             : m_problem(std::move(source.m_problem)) {
         initialize();
@@ -197,11 +198,10 @@ private:
 
     std::unordered_map<std::string, MucoVariableInfo> m_state_infos;
     std::unordered_map<std::string, MucoVariableInfo> m_control_infos;
-    std::vector<SimTK::ResetOnCopy<std::unique_ptr<MucoParameter>>>
-            m_parameters;
-    std::vector<SimTK::ResetOnCopy<std::unique_ptr<MucoCost>>> m_costs;
-    std::vector<SimTK::ResetOnCopy<std::unique_ptr<MucoPathConstraint>>>
-            m_path_constraints;
+
+    std::vector<std::unique_ptr<MucoParameter>> m_parameters;
+    std::vector<std::unique_ptr<MucoCost>> m_costs;
+    std::vector<std::unique_ptr<MucoPathConstraint>> m_path_constraints;
     int m_num_path_constraint_eqs = -1;
     int m_num_multibody_constraint_eqs = -1;
     std::vector<MucoMultibodyConstraint> m_multibody_constraints;

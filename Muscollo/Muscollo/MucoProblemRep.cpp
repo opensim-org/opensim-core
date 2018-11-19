@@ -82,15 +82,18 @@ void MucoProblemRep::initialize() {
         }
     }
 
+    m_parameters.resize(ph0.getProperty_parameters().size());
     for (int i = 0; i < ph0.getProperty_parameters().size(); ++i) {
-        m_parameters.emplace_back(ph0.get_parameters(i).clone());
+        m_parameters[i] = std::unique_ptr<MucoParameter>(
+                ph0.get_parameters(i).clone());
         // TODO rename to initializeOnModel().
-        m_parameters.back()->initialize(m_model);
+        m_parameters[i]->initialize(m_model);
     }
 
+    m_costs.resize(ph0.getProperty_costs().size());
     for (int i = 0; i < ph0.getProperty_costs().size(); ++i) {
-        m_costs.emplace_back(ph0.get_costs(i).clone());
-        m_costs.back()->initialize(m_model);
+        m_costs[i] = std::unique_ptr<MucoCost>(ph0.get_costs(i).clone());
+        m_costs[i]->initialize(m_model);
     }
 
     // Get property values for constraint and Lagrange multipliers.
@@ -125,6 +128,7 @@ void MucoProblemRep::initialize() {
                     mc.getConstraintInfo().getNumEquations();
 
             // Append this multibody constraint to the internal vector variable.
+            // TODO: Avoid copies when the vector needs to be resized.
             m_multibody_constraints.push_back(mc);
 
             // Add variable infos for all Lagrange multipliers in the problem.
@@ -154,9 +158,11 @@ void MucoProblemRep::initialize() {
     }
 
     m_num_path_constraint_eqs = 0;
+    m_path_constraints.resize(ph0.getProperty_path_constraints().size());
     for (int i = 0; i < ph0.getProperty_path_constraints().size(); ++i) {
-        m_path_constraints.emplace_back(ph0.get_path_constraints(i).clone());
-        m_path_constraints.back()->
+        m_path_constraints[i] = std::unique_ptr<MucoPathConstraint>(
+                        ph0.get_path_constraints(i).clone());
+        m_path_constraints[i]->
                 initialize(m_model, m_num_path_constraint_eqs);
         m_num_path_constraint_eqs +=
                 m_path_constraints.back()->getConstraintInfo().getNumEquations();
