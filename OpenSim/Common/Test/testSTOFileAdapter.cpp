@@ -345,7 +345,8 @@ int main() {
         std::ifstream ifs("OpenSimVersionHeader.sto");
         std::string line;
         bool pass = false;
-        const std::string versionString = "OpenSimVersion=" + GetVersion();
+        const std::string versionString =
+            "OpenSimVersion=" + OpenSim::GetVersion();
         while (std::getline(ifs, line)) {
             if (line.find(versionString) != std::string::npos) {
                 pass = true;
