@@ -251,7 +251,6 @@ void ModelVisualizer::createVisualizer() {
                         searchPath.push_back(buffer);
                     }
                 }
-                searchPath.push_back(buffer);
                 buffer.clear();
             } else
                 buffer.push_back(ch);
