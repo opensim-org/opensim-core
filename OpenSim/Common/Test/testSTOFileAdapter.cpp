@@ -243,6 +243,8 @@ int main() {
     filenames.push_back("subject01_walk1_grf.mot");
     std::string tmpfile{"testmotfileadapter.mot"};
 
+    std::remove(tmpfile.c_str());
+
     std::cout << "Testing STOFileAdapter::read() and STOFileAdapter::write()"
               << std::endl;
     for(const auto& filename : filenames) {
@@ -272,8 +274,6 @@ int main() {
         STOFileAdapter_<double>::write(table, tmpfile);
         compareFiles(filename, tmpfile);
     }
-
-    std::remove(tmpfile.c_str());
 
     // test detection of invalid column labels
     TimeSeriesTable table{};
@@ -334,6 +334,26 @@ int main() {
     auto outputTables = FileAdapter::readFile("test.sto");
     SimTK_TEST(outputTables["table"]->getNumRows() == 2);
     SimTK_TEST(outputTables["table"]->getNumColumns() == 2);
+
+
+    std::cout << "Testing for the presence of OpenSimVersion in the header."
+              << std::endl;
+    {
+        auto table = STOFileAdapter::read("test.sto");
+        std::string filename = "OpenSimVersionHeader.sto";
+        STOFileAdapter::write(table, filename);
+        std::ifstream ifs("OpenSimVersionHeader.sto");
+        std::string line;
+        bool pass = false;
+        const std::string versionString = "OpenSimVersion=" + GetVersion();
+        while (std::getline(ifs, line)) {
+            if (line.find(versionString) != std::string::npos) {
+                pass = true;
+                break;
+            }
+        }
+        SimTK_TEST(pass);
+    }
 
     std::cout << "\nAll tests passed!" << std::endl;
 
