@@ -54,8 +54,9 @@ AnalysisPlugin_Template::AnalysisPlugin_Template() : Analysis()
 void AnalysisPlugin_Template::
 setNull()
 {
-    _bodyIndices = 0;
-    _bodypos = 0;
+
+    _bodyIndices = Array<int>();
+    _bodypos = Array<double>();
 }
 
 
