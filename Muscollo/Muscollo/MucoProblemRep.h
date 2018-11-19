@@ -19,7 +19,6 @@
  * -------------------------------------------------------------------------- */
 
 #include "osimMuscolloDLL.h"
-#include "InvokeOnCopy.h"
 #include "MucoVariableInfo.h"
 #include "MucoCost.h"
 #include "MucoConstraint.h"
