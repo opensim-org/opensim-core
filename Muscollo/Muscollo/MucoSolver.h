@@ -53,7 +53,7 @@ class OSIMMUSCOLLO_API MucoSolver : public Object {
 OpenSim_DECLARE_ABSTRACT_OBJECT(MucoSolver, Object);
 public:
 
-    MucoSolver();
+    MucoSolver() = default;
 
     /// This calls resetProblem() with the provided problem.
     explicit MucoSolver(const MucoProblem& problem);
@@ -66,14 +66,6 @@ public:
     // ()). Move isWellPosed() to Solver, since evaluating this might require
     // creating the solver.
     void resetProblem(const MucoProblem& problem);
-
-    /* TODO
-    const MucoProblemProxy& getProblemProxy() const {
-        OPENSIM_THROW_IF(!m_proxy, Exception,
-                "Problem not set; call setProblem().");
-        return m_proxy.getRef();
-    }
-     */
 
 protected:
 

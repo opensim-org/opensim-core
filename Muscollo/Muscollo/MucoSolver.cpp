@@ -21,9 +21,6 @@
 
 using namespace OpenSim;
 
-MucoSolver::MucoSolver() {}
-
-
 void MucoSolver::resetProblem(const MucoProblem& problem) {
     m_problem.reset(&problem);
     m_problemRep = problem.createRep();
