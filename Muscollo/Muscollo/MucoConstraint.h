@@ -232,6 +232,12 @@ private:
 // ============================================================================
 
 /// A path constraint to be enforced in the optimal control problem.
+/// @par For developers
+/// Every time the problem is solved, a copy of this constraint is used. An individual
+/// instance of a constraint is only ever used in a single problem. Therefore, there
+/// is no need to clear cache variables that you create in initializeImpl().
+/// Also, information stored in this constraint does not persist across multiple
+/// solves.
 /// @ingroup mucoconstraint
 class OSIMMUSCOLLO_API MucoPathConstraint : public Object {
     OpenSim_DECLARE_ABSTRACT_OBJECT(MucoPathConstraint, Object);
@@ -278,8 +284,7 @@ protected:
     OpenSim_DECLARE_UNNAMED_PROPERTY(MucoConstraintInfo, "The bounds and "
         "labels for this MucoPathConstraint.");
 
-    /// Perform any caching. Make sure to first clear any caches, as this is
-    /// invoked every time the problem is solved.
+    /// Perform any caching.
     /// The number of scalar constraint equations this MucoPathConstraint 
     /// implements must be defined here (see setNumEquations() below).
     /// Upon entry, getModel() is available.

@@ -31,6 +31,12 @@ class Model;
 // TODO give option to specify gradient and hessian analytically.
 
 /// A term in the cost functional, to be minimized.
+/// @par For developers
+/// Every time the problem is solved, a copy of this cost is used. An individual
+/// instance of a cost is only ever used in a single problem. Therefore, there
+/// is no need to clear cache variables that you create in initializeImpl().
+/// Also, information stored in this cost does not persist across multiple
+/// solves.
 /// @ingroup mucocost
 class OSIMMUSCOLLO_API MucoCost : public Object {
 OpenSim_DECLARE_ABSTRACT_OBJECT(MucoCost, Object);
@@ -63,10 +69,10 @@ public:
     void printDescription(std::ostream& stream = std::cout) const;
 
 protected:
-    /// Perform any caching. Make sure to first clear any caches, as this is
-    /// invoked every time the problem is solved.
+    /// Perform any caching before the problem is solved.
     /// Upon entry, getModel() is available.
     /// Use this opportunity to check for errors in user input.
+    // TODO pass in the model.
     virtual void initializeImpl() const {}
     /// @precondition The state is realized to SimTK::Stage::Position.
     /// If you need access to the controls, you must realize to Velocity:

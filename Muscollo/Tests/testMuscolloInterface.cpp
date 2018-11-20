@@ -413,14 +413,9 @@ void testWorkflow() {
         MucoSolution solution0 = muco.solve();
 
         problem.setTimeBounds(0, {5.8, 10});
-        // Ensure that if a property in the problem is edited, then
-        // the solver's problem is cleared.
-        // TODO which solver settings should be preserved?
-        // TODO manage notifications if the problem is dirtied.
-        // TODO ideally the guess is not cleared.
+        // Editing the problem does not affect information in the Solver; the
+        // guess still exists.
         SimTK_TEST(!solver.getGuess().empty());
-        // TODO guess now violates the bounds...what happens?
-        // TODO SimTK_TEST_MUST_THROW_EXC(muco.solve(), Exception);
 
         guess.setTime(createVectorLinspace(20, 0.0, 7.0));
         MucoSolution solution = muco.solve();
@@ -444,24 +439,49 @@ void testWorkflow() {
         SimTK_TEST_MUST_THROW_EXC(
                 phase0.getStateInfo("/slider/position/value"),
                 Exception);
-        MucoProblemRep rep = problem.createRep();
         {
-            const auto& info = rep.getStateInfo("/slider/position/value");
-            SimTK_TEST_EQ(info.getBounds().getLower(), -10);
-            SimTK_TEST_EQ(info.getBounds().getUpper(),  15);
+            MucoProblemRep rep = problem.createRep();
+            {
+                const auto& info = rep.getStateInfo("/slider/position/value");
+                SimTK_TEST_EQ(info.getBounds().getLower(), -10);
+                SimTK_TEST_EQ(info.getBounds().getUpper(),  15);
+            }
+            {
+                // Default speed bounds.
+                const auto& info = rep.getStateInfo("/slider/position/speed");
+                SimTK_TEST_EQ(info.getBounds().getLower(), -50);
+                SimTK_TEST_EQ(info.getBounds().getUpper(),  50);
+            }
+            // No control info stored in the Problem.
+            SimTK_TEST_MUST_THROW_EXC(phase0.getControlInfo("/actuator"),
+                    Exception);
+            {
+                // Obtained from controls.
+                const auto& info = rep.getControlInfo("/actuator");
+                SimTK_TEST_EQ(info.getBounds().getLower(), 35);
+                SimTK_TEST_EQ(info.getBounds().getUpper(), 56);
+            }
         }
+
+        problem.setControlInfo("/actuator", {12, 15});
         {
-            const auto& info = rep.getStateInfo("/slider/position/speed");
-            SimTK_TEST_EQ(info.getBounds().getLower(), -50);
-            SimTK_TEST_EQ(info.getBounds().getUpper(),  50);
-        }
-        {
-            const auto& info = rep.getControlInfo("/actuator");
-            SimTK_TEST_EQ(info.getBounds().getLower(), 35);
-            SimTK_TEST_EQ(info.getBounds().getUpper(), 56);
+            {
+                const auto& probinfo = phase0.getControlInfo("/actuator");
+                SimTK_TEST_EQ(probinfo.getBounds().getLower(), 12);
+                SimTK_TEST_EQ(probinfo.getBounds().getUpper(), 15);
+            }
+            MucoProblemRep rep = problem.createRep();
+            {
+                const auto& info = rep.getControlInfo("/actuator");
+                SimTK_TEST_EQ(info.getBounds().getLower(), 12);
+                SimTK_TEST_EQ(info.getBounds().getUpper(), 15);
+            }
         }
     }
 
+    {
+        MucoFinalTimeCost cost;
+    }
     // TODO MucoCost and MucoParameter cache pointers into some model.
     // TODO {
     // TODO     MucoFinalTimeCost cost;
@@ -470,12 +490,6 @@ void testWorkflow() {
     // TODO     SimTK_TEST_MUST_THROW_EXC(cost.calcEndpointCost(state), Exception);
     // TODO }
 
-    {
-        // TODO disable the copy constructor for MucoProblem.
-        // MucoTool muco;
-        // SimTK_TEST_MUST_THROW_EXC(MucoProblem problem = muco.updProblem(),
-        //         Exception);
-    }
     // TODO {
     // TODO     // TODO change how costs are added to a model.
     // TODO     MucoTool muco;
@@ -496,34 +510,9 @@ void testWorkflow() {
     // TODO     }
     // TODO }
 
-    // Cache could live in:
-    //  - MucoProblem
-    //  - MucoProblemDelegate (like Decorator in tropter)
-    //  - MucoSolver (base class)
-    // Do we need a model phase?
-    // Do we want users to be able to access the automatically-set bounds?
-
     // Do *NOT* want to edit the properties by adding
     // TODO the state_infos etc. could be cached outside of the properties;
     // finalizeFromProperties().
-
-    // Find a way to automatically clear the cache stored in MucoCosts, etc.,
-    // upon solving a problem multiple times.
-
-    // Look into the logic surrounding the stored guess and how we clear it
-    // if the model is updated in any way (a new delegate is required).
-
-    // If we have a delegate; would each MucoCost have its own "cache" type?
-    // We would pass in an object that holds the cache?
-
-    // TODO maybe we make a copy of the Cost every time we solve a problem
-    // (when solve() is called); perhaps the delegate holds the copy of the
-    // cost. That way there's no risk of a stale cache in the MucoProblem.
-
-    // TODO if we leave the MucoCost caching as it is,
-    // when the problem is done being solved, we need to have a way of
-    // clearing the cache.
-
 }
 
 void testStateTracking() {

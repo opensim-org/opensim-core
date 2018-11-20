@@ -71,6 +71,12 @@ class Model;
 /// MucoParameter y_com("y_com", componentPaths, "mass_center", 
 ///         MucoBounds(-0.05, 0.05), propertyElt);
 /// @endcode
+/// @par For developers
+/// Every time the problem is solved, a copy of this parameter is used.
+/// An individual instance of a parameter is only ever used in a single problem.
+/// Therefore, there is no need to clear cache variables that you create in
+/// initializeImpl(). Also, information stored in this parameter does not
+/// persist across multiple solves.
 class OSIMMUSCOLLO_API MucoParameter : public Object {
     OpenSim_DECLARE_CONCRETE_OBJECT(MucoParameter, Object);
 public:
