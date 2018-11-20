@@ -158,6 +158,8 @@ class TestSwigAddtlInterface(unittest.TestCase):
         coord = joint.updCoordinate()
         coord.setName('position')
         model.addComponent(joint)
+        model.finalizeConnections()
+
         muco = osim.MucoTool()
         muco.setName('sliding_mass')
 

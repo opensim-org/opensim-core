@@ -34,8 +34,7 @@ void MucoProblemRep::initialize() {
     OpenSim::Array<std::string> actuNames;
     const auto modelPath = m_model.getAbsolutePath();
     for (const auto& actu : m_model.getComponentList<ScalarActuator>()) {
-        actuNames.append(
-                actu.getAbsolutePath().formRelativePath(modelPath).toString());
+        actuNames.append(actu.getAbsolutePathString());
     }
 
     // TODO can only handle ScalarActuators?
@@ -53,15 +52,14 @@ void MucoProblemRep::initialize() {
         m_state_infos[name] = ph0.get_state_infos(i);
     }
     for (const auto& coord : m_model.getComponentList<Coordinate>()) {
-        const std::string coordPath =
-                coord.getAbsolutePath().formRelativePath(modelPath).toString();
-        const std::string coordValueName = coordPath + "/value";
+        const auto stateVarNames = coord.getStateVariableNames();
+        const std::string coordValueName = stateVarNames[0];
         if (m_state_infos.count(coordValueName) == 0) {
             const auto info = MucoVariableInfo(coordValueName,
                     {coord.getRangeMin(), coord.getRangeMax()}, {}, {});
             m_state_infos[coordValueName] = info;
         }
-        const std::string coordSpeedName = coordPath + "/speed";
+        const std::string coordSpeedName = stateVarNames[1];
         if (m_state_infos.count(coordSpeedName) == 0) {
             const auto info = MucoVariableInfo(coordSpeedName,
                     ph0.get_default_speed_bounds(), {}, {});
@@ -73,8 +71,7 @@ void MucoProblemRep::initialize() {
         m_control_infos[name] = ph0.get_control_infos(i);
     }
     for (const auto& actu : m_model.getComponentList<ScalarActuator>()) {
-        const std::string actuName =
-                actu.getAbsolutePath().formRelativePath(modelPath).toString();
+        const std::string actuName = actu.getAbsolutePathString();
         if (m_control_infos.count(actuName) == 0) {
             const auto info = MucoVariableInfo(actuName,
                     {actu.getMinControl(), actu.getMaxControl()}, {}, {});

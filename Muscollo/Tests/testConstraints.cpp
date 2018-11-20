@@ -292,7 +292,8 @@ void testCoordinateCouplerConstraint() {
     CoordinateCouplerConstraint* constraint = new CoordinateCouplerConstraint();
     Array<std::string> names;
     coordSet.getNames(names);
-    constraint->setIndependentCoordinateNames(names.get(0));
+    constraint->setIndependentCoordinateNames(
+            Array<std::string>(names.get(0), 1));
     constraint->setDependentCoordinateName(names.getLast());
     LinearFunction func(1.0, 0.0);
     constraint->setFunction(func);

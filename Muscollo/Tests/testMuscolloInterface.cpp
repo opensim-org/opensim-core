@@ -400,9 +400,9 @@ void testWorkflow() {
         problem.setModel(model);
 
         problem.setTimeBounds(0, {0, 10});
-        problem.setStateInfo("slider/position/value", {0, 1}, 0, 1);
-        problem.setStateInfo("slider/position/speed", {-100, 100}, 0, 0);
-        problem.setControlInfo("actuator", {-10, 10});
+        problem.setStateInfo("/slider/position/value", {0, 1}, 0, 1);
+        problem.setStateInfo("/slider/position/speed", {-100, 100}, 0, 0);
+        problem.setControlInfo("/actuator", {-10, 10});
         problem.addCost(MucoFinalTimeCost());
 
         MucoTropterSolver& solver = muco.initSolver();
@@ -442,21 +442,21 @@ void testWorkflow() {
         const auto& phase0 = problem.getPhase(0);
         // User did not specify state info explicitly.
         SimTK_TEST_MUST_THROW_EXC(
-                phase0.getStateInfo("slider/position/value"),
+                phase0.getStateInfo("/slider/position/value"),
                 Exception);
         MucoProblemRep rep = problem.createRep();
         {
-            const auto& info = rep.getStateInfo("slider/position/value");
+            const auto& info = rep.getStateInfo("/slider/position/value");
             SimTK_TEST_EQ(info.getBounds().getLower(), -10);
             SimTK_TEST_EQ(info.getBounds().getUpper(),  15);
         }
         {
-            const auto& info = rep.getStateInfo("slider/position/speed");
+            const auto& info = rep.getStateInfo("/slider/position/speed");
             SimTK_TEST_EQ(info.getBounds().getLower(), -50);
             SimTK_TEST_EQ(info.getBounds().getUpper(),  50);
         }
         {
-            const auto& info = rep.getControlInfo("actuator");
+            const auto& info = rep.getControlInfo("/actuator");
             SimTK_TEST_EQ(info.getBounds().getLower(), 35);
             SimTK_TEST_EQ(info.getBounds().getUpper(), 56);
         }

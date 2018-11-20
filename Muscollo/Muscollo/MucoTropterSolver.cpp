@@ -368,13 +368,13 @@ public:
             matter.calcConstraintForcesFromMultipliers(m_state, -multipliers,
                 constraintBodyForces, constraintMobilityForces);
 
-            SimTK::Vector& udot = m_state.updUDot();
+            SimTK::Vector udot;
             matter.calcAccelerationIgnoringConstraints(m_state,
                 appliedMobilityForces + constraintMobilityForces,
                 appliedBodyForces + constraintBodyForces, udot, A_GB);
            
             // Constraint errors.
-            // TODO double-check that disable constraints don't show up in 
+            // TODO double-check that disabled constraints don't show up in
             // state
             std::copy(&m_state.getQErr()[0], 
                 &m_state.getQErr()[0] + m_mpSum,
@@ -388,10 +388,29 @@ public:
             //        out.path.data() + 2*m_mpSum + m_mvSum);
             //}
 
+            // Copy state derivative values to output struct. We cannot simply
+            // use getYDot() because that requires realizing to Acceleration.
+            const int nq = m_state.getQ().size();
+            const int nu = udot.size();
+            const int nz = m_state.getZ().size();
+            std::copy(&m_state.getQDot()[0], &m_state.getQDot()[0] + nq,
+                    out.dynamics.data());
+            std::copy(&udot[0], &udot[0] + udot.size(),
+                    out.dynamics.data() + nq);
+            if (nz) {
+                std::copy(&m_state.getZDot()[0], &m_state.getZDot()[0] + nz,
+                        out.dynamics.data() + nq + nu);
+            }
+
         } else {
             // TODO Antoine and Gil said realizing Dynamics is a lot costlier than
             // realizing to Velocity and computing forces manually.
             m_model.realizeAcceleration(m_state);
+
+            // Copy state derivative values to output struct.
+            std::copy(&m_state.getYDot()[0],
+                    &m_state.getYDot()[0] + states.size(),
+                    out.dynamics.data());
         }
 
         // Copy errors from generic path constraints into output struct.
@@ -399,10 +418,6 @@ public:
         std::copy(m_pathConstraintErrors.begin(),
                   m_pathConstraintErrors.end(),
                   out.path.data() + m_numMultibodyConstraintEqs);
-
-        // Copy state derivative values to output struct.
-        std::copy(&m_state.getYDot()[0], &m_state.getYDot()[0] + states.size(),
-                  out.dynamics.data());   
     }
     
     void calc_integral_cost(const tropter::Input<T>& in, 
