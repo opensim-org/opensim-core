@@ -39,7 +39,7 @@ OpenSim_DECLARE_CONCRETE_OBJECT(CoordinateSet, Set<Coordinate>);
 
 public:
     /** Use Super's constructors. @see Set */
-    using Super::Set;
+    using Super::Super;
 
     /**
      * Populate this %Set as a flat list of all Model Coordinates given 

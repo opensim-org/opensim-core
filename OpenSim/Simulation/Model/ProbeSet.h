@@ -42,7 +42,7 @@ OpenSim_DECLARE_CONCRETE_OBJECT(ProbeSet, ModelComponentSet<Probe>);
 
 public:
     /** Use Super's constructors. @see ModelComponentSet */
-    using Super::ModelComponentSet;
+    using Super::Super;
 
     // default copy, assignment operator, and destructor
 

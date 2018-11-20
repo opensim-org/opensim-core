@@ -40,7 +40,7 @@ OpenSim_DECLARE_CONCRETE_OBJECT(ConstraintSet, ModelComponentSet<Constraint>);
 
 public:
     /** Use Super's constructors. @see ModelComponentSet */
-    using Super::ModelComponentSet;
+    using Super::Super;
 
     // default copy, assignment operator, and destructor
 
