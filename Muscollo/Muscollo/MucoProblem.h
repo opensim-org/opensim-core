@@ -303,7 +303,7 @@ public:
         SimTK::Real cost = 0;
         // TODO cannot use controls.
         for (int i = 0; i < getProperty_costs().size(); ++i) {
-            cost = get_costs(i).calcEndpointCost(finalState);
+            cost += get_costs(i).calcEndpointCost(finalState);
         }
         return cost;
     }
