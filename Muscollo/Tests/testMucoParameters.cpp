@@ -26,28 +26,26 @@ using namespace OpenSim;
 const double STIFFNESS = 100.0; // N/m
 const double MASS = 5.0; // kg
 const double FINAL_TIME = SimTK::Pi * sqrt(MASS / STIFFNESS);
-Model createOscillatorModel() {
-    Model model;
-    model.setName("oscillator");
-    model.set_gravity(SimTK::Vec3(0, 0, 0));
+std::unique_ptr<Model> createOscillatorModel() {
+    auto model = make_unique<Model>();
+    model->setName("oscillator");
+    model->set_gravity(SimTK::Vec3(0, 0, 0));
     // Set model with incorrect mass value.
     auto* body = new Body("body", 0.5*MASS, SimTK::Vec3(0), SimTK::Inertia(0));
-    model.addComponent(body);
+    model->addComponent(body);
 
     // Allows translation along x.
-    auto* joint = new SliderJoint("slider", model.getGround(), *body);
+    auto* joint = new SliderJoint("slider", model->getGround(), *body);
     auto& coord = joint->updCoordinate(SliderJoint::Coord::TranslationX);
     coord.setName("position");
-    model.addComponent(joint);
+    model->addComponent(joint);
 
     auto* spring = new SpringGeneralizedForce();
     spring->set_coordinate("position");
     spring->setRestLength(0.0);
     spring->setStiffness(STIFFNESS);
     spring->setViscosity(0.0);
-    model.addComponent(spring);
-
-    model.finalizeConnections();
+    model->addComponent(spring);
 
     return model;
 }
@@ -78,11 +76,9 @@ void testOscillatorMass() {
     mp.setStateInfo("/slider/position/value", {-5.0, 5.0}, -0.5, {0.25, 0.75});
     mp.setStateInfo("/slider/position/speed", {-20, 20}, 0, 0);
     
-    MucoParameter mass("oscillator_mass", "body", "mass", MucoBounds(0, 10));
-    mp.addParameter(mass);
+    mp.addParameter("oscillator_mass", "body", "mass", MucoBounds(0, 10));
 
-    FinalPositionCost cost;
-    mp.addCost(cost);
+    mp.addCost<FinalPositionCost>();
 
     MucoTropterSolver& ms = muco.initSolver();
     ms.set_num_mesh_points(N);
@@ -93,18 +89,18 @@ void testOscillatorMass() {
     SimTK_TEST_EQ_TOL(sol.getParameter("oscillator_mass"), MASS, 0.003);
 }
 
-Model createOscillatorTwoSpringsModel() {
-    Model model;
-    model.setName("oscillator_two_springs");
-    model.set_gravity(SimTK::Vec3(0, 0, 0));
+std::unique_ptr<Model> createOscillatorTwoSpringsModel() {
+    auto model = make_unique<Model>();
+    model->setName("oscillator_two_springs");
+    model->set_gravity(SimTK::Vec3(0, 0, 0));
     auto* body = new Body("body", MASS, SimTK::Vec3(0), SimTK::Inertia(0));
-    model.addComponent(body);
+    model->addComponent(body);
 
     // Allows translation along x.
-    auto* joint = new SliderJoint("slider", model.getGround(), *body);
+    auto* joint = new SliderJoint("slider", model->getGround(), *body);
     auto& coord = joint->updCoordinate(SliderJoint::Coord::TranslationX);
     coord.setName("position");
-    model.addComponent(joint);
+    model->addComponent(joint);
 
     auto* spring1 = new SpringGeneralizedForce();
     spring1->setName("spring1");
@@ -112,7 +108,7 @@ Model createOscillatorTwoSpringsModel() {
     spring1->setRestLength(0.0);
     spring1->setStiffness(0.25*STIFFNESS);
     spring1->setViscosity(0.0);
-    model.addComponent(spring1);
+    model->addComponent(spring1);
 
     auto* spring2 = new SpringGeneralizedForce();
     spring2->setName("spring2");
@@ -120,9 +116,7 @@ Model createOscillatorTwoSpringsModel() {
     spring2->setRestLength(0.0);
     spring2->setStiffness(0.25*STIFFNESS);
     spring2->setViscosity(0.0);
-    model.addComponent(spring2);
-
-    model.finalizeConnections();
+    model->addComponent(spring2);
 
     return model;
 }
@@ -144,12 +138,10 @@ void testOneParameterTwoSprings() {
 
     // Optimize a single stiffness value and apply to both springs.
     std::vector<std::string> components = {"spring1", "spring2"};
-    MucoParameter stiffness("spring_stiffness", components, "stiffness", 
+    mp.addParameter("spring_stiffness", components, "stiffness",
         MucoBounds(0, 100));
-    mp.addParameter(stiffness);
 
-    FinalPositionCost cost;
-    mp.addCost(cost);
+    mp.addCost<FinalPositionCost>();
 
     MucoTropterSolver& ms = muco.initSolver();
     ms.set_num_mesh_points(N);
@@ -165,25 +157,23 @@ void testOneParameterTwoSprings() {
 
 const double L = 1; 
 const double xCOM = -0.25*L;
-Model createSeeSawModel() {
-    Model model;
-    model.setName("seesaw");
-    model.set_gravity(SimTK::Vec3(0, -9.81, 0));
+std::unique_ptr<Model> createSeeSawModel() {
+    auto model = make_unique<Model>();
+    model->setName("seesaw");
+    model->set_gravity(SimTK::Vec3(0, -9.81, 0));
     // Set body with z-rotational inertia and COM at the geometric center.
     auto* body = new Body("body", MASS, SimTK::Vec3(0),
         SimTK::Inertia(1, 1, 1));
     Ellipsoid bodyGeometry(0.5*L, 0.1*L, 0.1*L); // for visualization
     body->attachGeometry(bodyGeometry.clone());
-    model.addComponent(body);
+    model->addComponent(body);
 
     // Allows rotation around z. Connected offset from the midpoint of the body.
-    auto* joint = new PinJoint("pin", model.getGround(), SimTK::Vec3(0, 1, 0), 
+    auto* joint = new PinJoint("pin", model->getGround(), SimTK::Vec3(0, 1, 0),
             SimTK::Vec3(0), *body, SimTK::Vec3(xCOM, 0, 0), SimTK::Vec3(0));
     auto& coord = joint->updCoordinate(PinJoint::Coord::RotationZ);
     coord.setName("rotation");
-    model.addComponent(joint);
-
-    model.finalizeConnections();
+    model->addComponent(joint);
 
     return model;
 }
@@ -223,12 +213,10 @@ void testSeeSawCOM() {
     // body's COM isn't the solution, but close enough for the problem to
     // converge.
     int centerOfMassElt = 0; 
-    MucoParameter com("com_location", "body", "mass_center", 
+    mp.addParameter("com_location", "body", "mass_center",
             MucoBounds(-0.7*L, 0), centerOfMassElt);
-    mp.addParameter(com);
 
-    RotationalAccelerationCost cost;
-    mp.addCost(cost);
+    mp.addCost<RotationalAccelerationCost>();
 
     MucoTropterSolver& ms = muco.initSolver();
     ms.set_num_mesh_points(N);

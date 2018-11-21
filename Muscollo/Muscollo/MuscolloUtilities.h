@@ -24,9 +24,14 @@
 
 #include "osimMuscolloDLL.h"
 
-#include <set>
-
 namespace OpenSim {
+
+/// Since Muscollo does not require C++14 (which contains std::make_unique()),
+/// here is an implementation of make_unique().
+template<typename T, typename... Args>
+std::unique_ptr<T> make_unique(Args&&... args) {
+    return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
+}
 
 class StatesTrajectory;
 class Model;

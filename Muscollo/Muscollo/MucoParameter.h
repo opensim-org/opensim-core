@@ -51,7 +51,7 @@ class Model;
 /// @code
 /// MucoParameter p0;
 /// p0.setName("torso_mass");
-/// p0.setComponentPath("torso");
+/// p0.appendComponentPath("torso");
 /// p0.setParameterName("mass");
 /// MucoBounds massBounds(60, 80);
 /// p0.setBounds(massBounds);

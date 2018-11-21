@@ -1,9 +1,25 @@
-//
-// Created by Chris Dembia on 2018-11-15.
-//
+/* -------------------------------------------------------------------------- *
+ * OpenSim Muscollo: MucoProblemRep.cpp                                       *
+ * -------------------------------------------------------------------------- *
+ * Copyright (c) 2017 Stanford University and the Authors                     *
+ *                                                                            *
+ * Author(s): Christopher Dembia, Nicholas Bianco                             *
+ *                                                                            *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
+ * not use this file except in compliance with the License. You may obtain a  *
+ * copy of the License at http://www.apache.org/licenses/LICENSE-2.0          *
+ *                                                                            *
+ * Unless required by applicable law or agreed to in writing, software        *
+ * distributed under the License is distributed on an "AS IS" BASIS,          *
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.   *
+ * See the License for the specific language governing permissions and        *
+ * limitations under the License.                                             *
+ * -------------------------------------------------------------------------- */
 
 #include "MucoProblemRep.h"
 #include "MucoProblem.h"
+
+#include <unordered_set>
 
 using namespace OpenSim;
 
@@ -80,16 +96,31 @@ void MucoProblemRep::initialize() {
     }
 
     m_parameters.resize(ph0.getProperty_parameters().size());
+    std::unordered_set<std::string> paramNames;
     for (int i = 0; i < ph0.getProperty_parameters().size(); ++i) {
+        const auto& param = ph0.get_parameters(i);
+        OPENSIM_THROW_IF(param.getName().empty(), Exception,
+                "All parameters must have a name.");
+        OPENSIM_THROW_IF(paramNames.count(param.getName()), Exception,
+                "A parameter with name '" + param.getName() +
+                "' already exists.");
+        paramNames.insert(param.getName());
         m_parameters[i] = std::unique_ptr<MucoParameter>(
-                ph0.get_parameters(i).clone());
+                param.clone());
         // TODO rename to initializeOnModel().
         m_parameters[i]->initialize(m_model);
     }
 
     m_costs.resize(ph0.getProperty_costs().size());
+    std::unordered_set<std::string> costNames;
     for (int i = 0; i < ph0.getProperty_costs().size(); ++i) {
-        m_costs[i] = std::unique_ptr<MucoCost>(ph0.get_costs(i).clone());
+        const auto& cost = ph0.get_costs(i);
+        OPENSIM_THROW_IF(cost.getName().empty(), Exception,
+                "All costs must have a name.");
+        OPENSIM_THROW_IF(costNames.count(cost.getName()), Exception,
+                "A cost with name '" + cost.getName() + "' already exists.");
+        costNames.insert(cost.getName());
+        m_costs[i] = std::unique_ptr<MucoCost>(cost.clone());
         m_costs[i]->initialize(m_model);
     }
 
@@ -156,13 +187,19 @@ void MucoProblemRep::initialize() {
 
     m_num_path_constraint_eqs = 0;
     m_path_constraints.resize(ph0.getProperty_path_constraints().size());
+    std::unordered_set<std::string> pcNames;
     for (int i = 0; i < ph0.getProperty_path_constraints().size(); ++i) {
-        m_path_constraints[i] = std::unique_ptr<MucoPathConstraint>(
-                        ph0.get_path_constraints(i).clone());
+        const auto& pc = ph0.get_path_constraints(i);
+        OPENSIM_THROW_IF(pc.getName().empty(), Exception,
+                "All costs must have a name.");
+        OPENSIM_THROW_IF(pcNames.count(pc.getName()), Exception,
+                "A cost with name '" + pc.getName() + "' already exists.");
+        pcNames.insert(pc.getName());
+        m_path_constraints[i] = std::unique_ptr<MucoPathConstraint>(pc.clone());
         m_path_constraints[i]->
                 initialize(m_model, m_num_path_constraint_eqs);
         m_num_path_constraint_eqs +=
-                m_path_constraints.back()->getConstraintInfo().getNumEquations();
+                m_path_constraints[i]->getConstraintInfo().getNumEquations();
     }
 }
 

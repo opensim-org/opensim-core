@@ -70,8 +70,7 @@ problem.setControlInfo('/actuator', osim.MucoBounds(-50, 50))
 
 # Cost.
 # -----
-ftCost = osim.MucoFinalTimeCost()
-problem.addCost(ftCost)
+problem.addCost(osim.MucoFinalTimeCost())
 
 # Configure the solver.
 # =====================

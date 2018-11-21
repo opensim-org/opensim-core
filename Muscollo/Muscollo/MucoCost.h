@@ -46,6 +46,10 @@ public:
 
     MucoCost();
 
+    MucoCost(std::string name);
+
+    MucoCost(std::string name, double weight);
+
     /// This includes the weight.
     SimTK::Real calcIntegralCost(const SimTK::State& state) const {
         double integrand = 0;
@@ -107,6 +111,11 @@ inline void MucoCost::calcEndpointCostImpl(const SimTK::State&,
 /// @ingroup mucocost
 class OSIMMUSCOLLO_API MucoFinalTimeCost : public MucoCost {
 OpenSim_DECLARE_CONCRETE_OBJECT(MucoFinalTimeCost, MucoCost);
+public:
+    MucoFinalTimeCost() = default;
+    MucoFinalTimeCost(std::string name) : MucoCost(std::move(name)) {}
+    MucoFinalTimeCost(std::string name, double weight)
+            : MucoCost(std::move(name), weight) {}
 protected:
     void calcEndpointCostImpl(const SimTK::State& finalState,
             SimTK::Real& cost) const override {
