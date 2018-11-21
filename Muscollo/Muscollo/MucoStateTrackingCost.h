@@ -97,7 +97,7 @@ public:
 
 protected:
     // TODO check that the reference covers the entire possible time range.
-    void initializeImpl() const override;
+    void initializeOnModelImpl(const Model&) const override;
     void calcIntegralCostImpl(const SimTK::State& state,
             double& integrand) const override;
 private:

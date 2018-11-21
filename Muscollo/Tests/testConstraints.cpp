@@ -749,12 +749,12 @@ void testDoublePendulumPrescribedMotion(MucoSolution& couplerSolution) {
 class EqualControlConstraint : public MucoPathConstraint {
 OpenSim_DECLARE_CONCRETE_OBJECT(EqualControlConstraint, MucoPathConstraint);
 protected:
-    void initializeImpl() const override {
+    void initializeOnModelImpl(const Model& model) const override {
         // Make sure the model generates a state object with the two controls we 
         // expect, no more and no less.
-        const auto state = getModel().getWorkingState();
-        getModel().realizeVelocity(state);
-        OPENSIM_THROW_IF(getModel().getControls(state).size() != 2, Exception,
+        const auto state = model.getWorkingState();
+        model.realizeVelocity(state);
+        OPENSIM_THROW_IF(model.getControls(state).size() != 2, Exception,
             "State has incorrect number of controls (two expected).");
 
         // There is only constraint equation: match the two model controls.

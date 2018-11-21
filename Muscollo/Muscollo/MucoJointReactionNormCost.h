@@ -50,7 +50,7 @@ public:
     {   set_joint_path(path); }
 
 protected:
-    void initializeImpl() const override;
+    void initializeOnModelImpl(const Model&) const override;
     void calcIntegralCostImpl(const SimTK::State& state,
             double& integrand) const override;
 

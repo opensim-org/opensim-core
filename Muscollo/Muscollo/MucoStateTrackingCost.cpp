@@ -22,7 +22,7 @@
 
 using namespace OpenSim;
 
-void MucoStateTrackingCost::initializeImpl() const {
+void MucoStateTrackingCost::initializeOnModelImpl(const Model& model) const {
 
     TimeSeriesTable tableToUse;
     
@@ -55,12 +55,12 @@ void MucoStateTrackingCost::initializeImpl() const {
     // Convert to degrees if needed and create spline set.
     if (tableToUse.hasTableMetaDataKey("inDegrees") &&
         tableToUse.getTableMetaDataAsString("inDegrees") == "yes") {
-        getModel().getSimbodyEngine().convertDegreesToRadians(tableToUse);
+        model.getSimbodyEngine().convertDegreesToRadians(tableToUse);
     }
     auto allSplines = GCVSplineSet(tableToUse);
 
     // Throw exception if a weight is specified for a nonexistent state.
-    auto allSysYIndices = createSystemYIndexMap(getModel());
+    auto allSysYIndices = createSystemYIndexMap(model);
     for (int i = 0; i < get_state_weights().getSize(); ++i) {
         const auto& weightName = get_state_weights().get(i).getName();
         if (allSysYIndices.count(weightName) == 0) {

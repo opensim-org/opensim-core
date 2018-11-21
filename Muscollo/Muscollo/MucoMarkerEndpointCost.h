@@ -52,7 +52,7 @@ public:
     }
 
 protected:
-    void initializeImpl() const override;
+    void initializeOnModelImpl(const Model&) const override;
     void calcEndpointCostImpl(const SimTK::State& finalState,
         double& cost) const override;
 private:

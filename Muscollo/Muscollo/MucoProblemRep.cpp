@@ -107,8 +107,7 @@ void MucoProblemRep::initialize() {
         paramNames.insert(param.getName());
         m_parameters[i] = std::unique_ptr<MucoParameter>(
                 param.clone());
-        // TODO rename to initializeOnModel().
-        m_parameters[i]->initialize(m_model);
+        m_parameters[i]->initializeOnModel(m_model);
     }
 
     m_costs.resize(ph0.getProperty_costs().size());
@@ -121,7 +120,7 @@ void MucoProblemRep::initialize() {
                 "A cost with name '" + cost.getName() + "' already exists.");
         costNames.insert(cost.getName());
         m_costs[i] = std::unique_ptr<MucoCost>(cost.clone());
-        m_costs[i]->initialize(m_model);
+        m_costs[i]->initializeOnModel(m_model);
     }
 
     // Get property values for constraint and Lagrange multipliers.
@@ -197,7 +196,7 @@ void MucoProblemRep::initialize() {
         pcNames.insert(pc.getName());
         m_path_constraints[i] = std::unique_ptr<MucoPathConstraint>(pc.clone());
         m_path_constraints[i]->
-                initialize(m_model, m_num_path_constraint_eqs);
+                initializeOnModel(m_model, m_num_path_constraint_eqs);
         m_num_path_constraint_eqs +=
                 m_path_constraints[i]->getConstraintInfo().getNumEquations();
     }

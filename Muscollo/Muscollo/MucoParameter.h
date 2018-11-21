@@ -127,7 +127,7 @@ public:
     /// about the model that is useful during the optimization.
     /// This method takes a non-const reference to the model because parameters
     /// need to be able to alter the model.
-    void initialize(Model& model) const;
+    void initializeOnModel(Model& model) const;
     /// Set the value of the model property to the passed-in parameter value.
     void applyParameterToModel(const double& value) const;
 

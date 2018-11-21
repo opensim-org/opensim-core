@@ -47,7 +47,7 @@ public:
     /// weight replaces the previous weight.
     void setWeight(const std::string& controlName, const double& weight);
 protected:
-    void initializeImpl() const override;
+    void initializeOnModelImpl(const Model&) const override;
     void calcIntegralCostImpl(const SimTK::State& state,
             double& integrand) const override;
 private:

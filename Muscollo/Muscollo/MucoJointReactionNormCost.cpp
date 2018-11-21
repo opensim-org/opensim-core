@@ -29,12 +29,13 @@ void MucoJointReactionNormCost::constructProperties() {
     constructProperty_joint_path("");
 }
 
-void MucoJointReactionNormCost::initializeImpl() const {
+void MucoJointReactionNormCost::initializeOnModelImpl(
+        const Model& model) const {
 
     OPENSIM_THROW_IF_FRMOBJ(get_joint_path().empty(), Exception,
         "Empty model joint path detected. Please provide a valid joint path.");
 
-    OPENSIM_THROW_IF_FRMOBJ(!getModel().hasComponent<Joint>(get_joint_path()),
+    OPENSIM_THROW_IF_FRMOBJ(!model.hasComponent<Joint>(get_joint_path()),
         Exception, "Joint at path " + get_joint_path() + " not found in the "
         "model. Please provide a valid joint path.");
 }
@@ -43,7 +44,7 @@ void MucoJointReactionNormCost::calcIntegralCostImpl(const SimTK::State& state,
         double& integrand) const {
 
     getModel().realizeAcceleration(state);
-    // TODO: cache the joint.
+    // TODO: Cache the joint.
     const auto& joint = getModel().getComponent<Joint>(get_joint_path());
     integrand = joint.calcReactionOnChildExpressedInGround(state).norm();
 }

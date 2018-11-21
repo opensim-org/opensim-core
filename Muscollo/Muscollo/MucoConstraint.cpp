@@ -170,11 +170,11 @@ void MucoPathConstraint::constructProperties() {
     constructProperty_MucoConstraintInfo(MucoConstraintInfo());
 }
 
-void MucoPathConstraint::initialize(const Model& model, 
+void MucoPathConstraint::initializeOnModel(const Model& model,
         const int& pathConstraintIndex) const {
 
     m_model.reset(&model);
-    initializeImpl();
+    initializeOnModelImpl(model);
 
     OPENSIM_THROW_IF_FRMOBJ(get_MucoConstraintInfo().getNumEquations() <= 0,
         Exception, "Invalid number of equations. Either no equation number was "

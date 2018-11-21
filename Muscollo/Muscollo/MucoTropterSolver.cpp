@@ -191,8 +191,6 @@ public:
                     "Disable all controllers in the model.");
         }
         m_state = m_model.getWorkingState();
-        // TODO avoid multiple calls to initialize
-        // TODO m_mucoProb.initialize(m_model);
 
         this->set_time(convert(m_mucoProb.getTimeInitialBounds()),
                 convert(m_mucoProb.getTimeFinalBounds()));
@@ -309,7 +307,6 @@ public:
         }
     }
     void initialize_on_mesh(const Eigen::VectorXd&) const override {
-        // TODO m_mucoProb.initialize(m_model);
     }
     void initialize_on_iterate(const Eigen::VectorXd& parameters)
             const override {

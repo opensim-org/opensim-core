@@ -64,9 +64,9 @@ public:
         return get_weight() * cost;
     }
     /// For use by solvers. This also performs error checks on the Problem.
-    void initialize(const Model& model) const {
+    void initializeOnModel(const Model& model) const {
         m_model.reset(&model);
-        initializeImpl();
+        initializeOnModelImpl(model);
     }
 
     /// Print the name, type, and weight for this cost.
@@ -75,9 +75,10 @@ public:
 protected:
     /// Perform any caching before the problem is solved.
     /// Upon entry, getModel() is available.
+    /// The passed-in model is equivalent to getModel().
     /// Use this opportunity to check for errors in user input.
-    // TODO pass in the model.
-    virtual void initializeImpl() const {}
+    // TODO: Rename to extendInitializeOnModel().
+    virtual void initializeOnModelImpl(const Model&) const {}
     /// @precondition The state is realized to SimTK::Stage::Position.
     /// If you need access to the controls, you must realize to Velocity:
     /// @code

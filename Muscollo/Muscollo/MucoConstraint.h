@@ -278,7 +278,8 @@ public:
     }
 
     /// For use by solvers. This also performs error checks on the Problem.
-    void initialize(const Model& model, const int& pathConstraintIndex) const;
+    void initializeOnModel(const Model& model,
+            const int& pathConstraintIndex) const;
     
 protected:
     OpenSim_DECLARE_UNNAMED_PROPERTY(MucoConstraintInfo, "The bounds and "
@@ -288,13 +289,14 @@ protected:
     /// The number of scalar constraint equations this MucoPathConstraint 
     /// implements must be defined here (see setNumEquations() below).
     /// Upon entry, getModel() is available.
+    /// The passed-in model is equivalent to getModel().
     /// Use this opportunity to check for errors in user input, in addition to
     /// the checks provided in initialize().
-    virtual void initializeImpl() const = 0;
+    virtual void initializeOnModelImpl(const Model&) const = 0;
     /// Set the number of scalar equations for this MucoPathConstraint. This 
     /// must be set within initializeImpl(), otherwise an exception is thrown
     /// during initialization.
-    void setNumEquations(int numEqs) const  {
+    void setNumEquations(int numEqs) const {
         // TODO avoid const_cast
         const_cast<MucoPathConstraint*>(this)
             ->updConstraintInfo().setNumEquations(numEqs);
