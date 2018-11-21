@@ -21,8 +21,7 @@
 
 #include "MucoIterate.h"
 
-// TODO should only need the MucoProblemProxy.
-#include "MucoProblem.h"
+#include "MucoProblemRep.h"
 
 #include <OpenSim/Common/Object.h>
 
@@ -77,7 +76,6 @@ protected:
     static void setSolutionStats(MucoSolution&,
             bool success, const std::string& status, int numIterations);
 
-    // TODO must use a different rep when solving vs just when initializing.
     const MucoProblemRep& getProblemRep() const {
         return m_problemRep;
     }
@@ -90,15 +88,12 @@ private:
     MucoSolution solve() const;
     friend MucoTool;
 
-    /// Claer any cache based on the MucoProblem.
-    // TODO virtual void clearProblemImpl() const = 0;
     /// Check that solver is capable of solving this problem.
     virtual void resetProblemImpl(const MucoProblemRep& rep) const = 0;
 
     /// This is the meat of a solver: solve the problem and return the solution.
     virtual MucoSolution solveImpl() const = 0;
 
-    // TODO unique_ptr, stack variable?
     SimTK::ReferencePtr<const MucoProblem> m_problem;
     mutable SimTK::ResetOnCopy<MucoProblemRep> m_problemRep;
 

@@ -324,8 +324,7 @@ public:
         const auto& adjuncts = in.adjuncts;
 
         m_state.setTime(in.time);
-        std::copy(states.data(), states.data() + states.size(),
-                &m_state.updY()[0]);
+        std::copy_n(states.data(), states.size(), &m_state.updY()[0]);
         //
         // TODO do not copy? I think this will still make a copy:
         // TODO use m_state.updY() = SimTK::Vector(states.size(), states.data(), true);
@@ -334,8 +333,7 @@ public:
         // Set the controls for actuators in the OpenSim model.
         if (m_model.getNumControls()) {
             auto& osimControls = m_model.updControls(m_state);
-            std::copy(controls.data(), controls.data() + controls.size(),
-                &osimControls[0]);
+            std::copy_n(controls.data(), controls.size(), &osimControls[0]);
             m_model.realizeVelocity(m_state);
             m_model.setControls(m_state, osimControls);
         }
@@ -373,15 +371,12 @@ public:
             // Constraint errors.
             // TODO double-check that disabled constraints don't show up in
             // state
-            std::copy(&m_state.getQErr()[0], 
-                &m_state.getQErr()[0] + m_mpSum,
-                out.path.data());
+            std::copy_n(&m_state.getQErr()[0], m_mpSum, out.path.data());
             // TODO if (!get_enforce_holonomic_constraints_only()) {
-            //    std::copy(&m_state.getUErr()[0],
-            //        &m_state.getUErr()[0] + m_mpSum + m_mvSum,
+            //    std::copy_n(&m_state.getUErr()[0], m_mpSum + m_mvSum,
             //        out.path.data() + m_mpSum);
-            //    std::copy(&m_state.getUDotErr()[0],
-            //        &m_state.getUDotErr()[0] + m_mpSum + m_mvSum + m_maSum,
+            //    std::copy_n(&m_state.getUDotErr()[0],
+            //        m_mpSum + m_mvSum + m_maSum,
             //        out.path.data() + 2*m_mpSum + m_mvSum);
             //}
 
@@ -390,12 +385,10 @@ public:
             const int nq = m_state.getQ().size();
             const int nu = udot.size();
             const int nz = m_state.getZ().size();
-            std::copy(&m_state.getQDot()[0], &m_state.getQDot()[0] + nq,
-                    out.dynamics.data());
-            std::copy(&udot[0], &udot[0] + udot.size(),
-                    out.dynamics.data() + nq);
+            std::copy_n(&m_state.getQDot()[0], nq, out.dynamics.data());
+            std::copy_n(&udot[0], udot.size(), out.dynamics.data() + nq);
             if (nz) {
-                std::copy(&m_state.getZDot()[0], &m_state.getZDot()[0] + nz,
+                std::copy_n(&m_state.getZDot()[0], nz,
                         out.dynamics.data() + nq + nu);
             }
 
@@ -405,8 +398,7 @@ public:
             m_model.realizeAcceleration(m_state);
 
             // Copy state derivative values to output struct.
-            std::copy(&m_state.getYDot()[0],
-                    &m_state.getYDot()[0] + states.size(),
+            std::copy_n(&m_state.getYDot()[0], states.size(),
                     out.dynamics.data());
         }
 
@@ -629,7 +621,6 @@ void MucoTropterSolver::setGuess(MucoIterate guess) {
     // Ensure the guess is compatible with this solver/problem.
     // Make sure to initialize the problem. TODO put in a better place.
     getTropterProblem();
-    // TODO allow implicit conversion to MucoProblemRep?
     guess.isCompatible(getProblemRep(), true);
     clearGuess();
     m_guessFromAPI = std::move(guess);

@@ -78,11 +78,8 @@ public:
     /// Load a MucoTool setup file.
     MucoTool(const std::string& omucoFile);
 
-    // TODO
     const MucoProblem& getProblem() const;
 
-    /// Throws an exception if you try calling this after initSolver() and
-    /// before solve().
     /// If using this method in C++, make sure to include the "&" in the
     /// return type; otherwise, you'll make a copy of the problem, and the copy
     /// will have no effect on this MucoTool.
@@ -150,8 +147,6 @@ private:
     void ensureInitSolver();
     MucoSolver& initSolverInternal();
     void constructProperties();
-
-    // TODO SimTK::ResetOnCopy<bool> m_solverInitialized = false;
 };
 
 } // namespace OpenSim
