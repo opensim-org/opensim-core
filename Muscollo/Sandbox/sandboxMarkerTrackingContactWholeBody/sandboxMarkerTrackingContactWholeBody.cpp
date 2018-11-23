@@ -289,7 +289,7 @@ MucoSolution solveMarkerTrackingProblem(bool createGuess,
     // -----
     MucoMarkerTrackingCost tracking;
     tracking.setName("tracking");
-    auto ref = TRCFileAdapter::read("walk_marker_trajectories.trc");
+    auto ref = TRCFileAdapter::read("marker_trajectories.trc");
     // Convert from millimeters to meters.
     ref.updMatrix() /= 1000;
     // TODO shift x and y positions to create "overground" trial.

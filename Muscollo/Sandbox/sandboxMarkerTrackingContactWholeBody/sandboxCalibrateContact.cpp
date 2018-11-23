@@ -603,7 +603,7 @@ void calibrateContact(DataType dataType, ContactModel contactModel,
     if (dataType == DataType::Treadmill) {
         const std::string trcFile = "sandboxCalibrateContact_markers.trc";
         const std::string motFile = "sandboxCalibrateContact.mot";
-        auto ref = TRCFileAdapter::read("walk_marker_trajectories.trc");
+        auto ref = TRCFileAdapter::read("marker_trajectories.trc");
         // Convert from millimeters to meters.
         ref.updMatrix() /= 1000;
         const auto& reftime = ref.getIndependentColumn();
