@@ -1004,13 +1004,8 @@ MucoSolution MucoTropterSolver::solveImpl() const {
     MucoSolution mucoSolution = convert(tropSolution);
 
     // TODO move this to convert():
-<<<<<<< HEAD
     MucoSolver::setSolutionStats(mucoSolution, tropSolution.success,
             tropSolution.status, tropSolution.num_iterations);
-=======
-    MucoSolver::setSolutionStatusAndSuccess(mucoSolution,
-            tropSolution.success, tropSolution.status);
->>>>>>> Add Stopwatch class; report elapsed time
 
     if (get_verbosity()) {
         std::cout << std::string(79, '-') << "\n";

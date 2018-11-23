@@ -50,7 +50,7 @@ public:
 
     /// Get a vector of names of all variables in the optimization problem,
     /// in the correct order.
-   /// If unimplemented, this returns an empty vector.
+    /// If unimplemented, this returns an empty vector.
     virtual std::vector<std::string> get_variable_names() const { return {}; }
 
     /// Get a vector of names of the constraints in the optimization problem, in
