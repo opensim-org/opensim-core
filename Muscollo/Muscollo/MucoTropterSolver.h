@@ -157,6 +157,10 @@ protected:
 
     /// Internal tropter optimal control problem.
     template <typename T>
+    class OCProblem;
+
+    // TODO
+    template <typename T>
     class OptimalControlProblem;
     template <typename T>
     class OCPExplicit;
@@ -177,9 +181,8 @@ private:
 
     void constructProperties();
 
-    // TODO
-    //mutable SimTK::ResetOnCopy<std::shared_ptr<OCProblem<double>>>
-    //        m_tropProblem;
+    mutable SimTK::ResetOnCopy<std::shared_ptr<OCProblem<double>>>
+            m_tropProblem;
 
     // When a copy of the solver is made, we want to keep any guess specified
     // by the API, but want to discard anything we've cached by loading a file.

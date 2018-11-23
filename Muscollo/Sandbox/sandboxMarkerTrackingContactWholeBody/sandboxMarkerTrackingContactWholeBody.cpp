@@ -287,7 +287,7 @@ MucoSolution solveMarkerTrackingProblem(bool createGuess,
 
     // Cost.
     // -----
-    MucoMarkerTrackingCost tracking;
+    MucoMarkerTrackingCompCost tracking;
     tracking.setName("tracking");
     auto ref = TRCFileAdapter::read("marker_trajectories.trc");
     // Convert from millimeters to meters.
