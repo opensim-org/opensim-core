@@ -25,65 +25,6 @@
 
 namespace OpenSim {
 
-/// Similar to CoordinateActuator (simply produces a generalized force) but
-/// with first-order linear activation dynamics. This actuator has one state
-/// variable, `activation`, with \f$ \dot{a} = (u - a) / \tau \f$, where
-/// \f$ a \f$ is activation, \f$ u $\f is excitation, and \f$ \tau \f$ is the
-/// activation time constant (there is no separate deactivation time constant).
-/// <b>Default %Property Values</b>
-/// @verbatim
-/// activation_time_constant: 0.01
-/// default_activation: 0.5
-/// @dverbatim
-class /*OSIMMUSCOLLO_API*/
-ActivationCoordinateActuator : public CoordinateActuator {
-    OpenSim_DECLARE_CONCRETE_OBJECT(ActivationCoordinateActuator,
-            CoordinateActuator);
-public:
-    OpenSim_DECLARE_PROPERTY(activation_time_constant, double,
-    "Smaller value means activation can change more rapidly (units: seconds).");
-
-    OpenSim_DECLARE_PROPERTY(default_activation, double,
-    "Value of activation in the default state returned by initSystem().");
-
-    ActivationCoordinateActuator() {
-        constructProperties();
-    }
-
-    void extendAddToSystem(SimTK::MultibodySystem& system) const override {
-        Super::extendAddToSystem(system);
-        addStateVariable("activation", SimTK::Stage::Dynamics);
-    }
-
-    void extendInitStateFromProperties(SimTK::State& s) const override {
-        Super::extendInitStateFromProperties(s);
-        setStateVariableValue(s, "activation", get_default_activation());
-    }
-
-    void extendSetPropertiesFromState(const SimTK::State& s) override {
-        Super::extendSetPropertiesFromState(s);
-        set_default_activation(getStateVariableValue(s, "activation"));
-    }
-
-    // TODO no need to do clamping, etc; CoordinateActuator is bidirectional.
-    void computeStateVariableDerivatives(const SimTK::State& s) const override {
-        const auto& tau = get_activation_time_constant();
-        const auto& u = getControl(s);
-        const auto& a = getStateVariableValue(s, "activation");
-        const SimTK::Real adot = (u - a) / tau;
-        setStateVariableDerivativeValue(s, "activation", adot);
-    }
-
-    double computeActuation(const SimTK::State& s) const override {
-        return getStateVariableValue(s, "activation") * getOptimalForce();
-    }
-private:
-    void constructProperties() {
-        constructProperty_activation_time_constant(0.010);
-        constructProperty_default_activation(0.5);
-    }
-};
-
 class /*TODO OSIMMUSCOLLO_API*/StationPlaneContactForce : public Force {
     OpenSim_DECLARE_ABSTRACT_OBJECT(StationPlaneContactForce, Force);
 public:
@@ -438,6 +379,73 @@ private:
 public: // TODO
     mutable GCVSpline m_refspline_x;
     mutable GCVSpline m_refspline_y;
+};
+
+class MucoMarkerTrackingCompCost : public MucoMarkerTrackingCost {
+    OpenSim_DECLARE_CONCRETE_OBJECT(MucoMarkerTrackingCompCost,
+            MucoMarkerTrackingCost);
+public:
+    /// TODO: description
+    void setFreeRadius(double value) {
+        set_free_radius(value);
+    }
+
+    /// TODO: description, better name
+    void setTrackedMarkerComponents(std::string components) {
+        set_tracked_marker_components(components);
+    }
+protected:
+
+    void calcIntegralCostImpl(const SimTK::State& state,
+            double& integrand) const override {
+        const auto& time = state.getTime();
+        getModel().realizePosition(state);
+        SimTK::Vector timeVec(1, time);
+
+        for (int i = 0; i < (int)m_model_markers.size(); ++i) {
+            const auto& modelValue =
+                    m_model_markers[i]->getLocationInGround(state);
+            SimTK::Vec3 refValue;
+
+            // Get the markers reference index corresponding to the current
+            // model marker and get the reference value.
+            int refidx = m_refindices[i];
+            refValue[0] = m_refsplines[3*refidx].calcValue(timeVec);
+            refValue[1] = m_refsplines[3*refidx + 1].calcValue(timeVec);
+            refValue[2] = m_refsplines[3*refidx + 2].calcValue(timeVec);
+
+            // Calculate distance for specified marker position components.
+            double distance = 0.0;
+            if (get_tracked_marker_components().find("x") != std::string::npos) {
+                distance += pow(modelValue[0] - refValue[0], 2);
+            }
+            if (get_tracked_marker_components().find("y") != std::string::npos) {
+                distance += pow(modelValue[1] - refValue[1], 2);
+            }
+            if (get_tracked_marker_components().find("z") != std::string::npos) {
+                distance += pow(modelValue[2] - refValue[2], 2);
+            }
+
+            // Only calculate error when distance is outside of specified free
+            // radius.
+            if (distance <= get_free_radius()) {
+                integrand += 0.0;
+            } else {
+                integrand += m_marker_weights[refidx] * distance;
+            }
+        }
+private:
+    OpenSim_DECLARE_PROPERTY(free_radius, double,
+            "TODO");
+
+    OpenSim_DECLARE_PROPERTY(tracked_marker_components, std::string,
+            "TODO");
+
+    void constructProperties() {
+        constructProperty_free_radius(0.0);
+        constructProperty_tracked_marker_components("xyz");
+    };
+
 };
 
 } // namespace OpenSim
