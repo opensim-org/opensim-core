@@ -182,8 +182,33 @@ void testMucoControlCost() {
     }
 }
 
+/// Make sure that multiple costs are added together properly.
+void testMultipleCosts() {
+    MucoTool muco;
+    MucoProblem& problem = muco.updProblem();
+
+    MucoFinalTimeCost ft0;
+    ft0.set_weight(0.1);
+    problem.addCost(ft0);
+
+    MucoFinalTimeCost ft1;
+    ft1.setName("ft1");
+    ft1.set_weight(0.2);
+    problem.addCost(ft1);
+
+    Model model(problem.getPhase().getModel());
+    SimTK::State state = model.initSystem();
+    const double ft = 0.35;
+    state.setTime(ft);
+    problem.initialize(model);
+
+    const double cost = problem.getPhase().calcEndpointCost(state);
+    SimTK_TEST_EQ(cost, (ft0.get_weight() + ft1.get_weight() ) * ft);
+}
+
 int main() {
     SimTK_START_TEST("testMucoCosts");
         SimTK_SUBTEST(testMucoControlCost);
+        SimTK_SUBTEST(testMultipleCosts);
     SimTK_END_TEST();
 }
