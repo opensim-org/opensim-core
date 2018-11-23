@@ -29,8 +29,14 @@ namespace OpenSim {
 
 class MucoProblem;
 
-/// TODO document
+/// The primary intent of this class is for use by MucoSolver%s, but users
+/// can also use this class to apply parameter values to the model
+/// and evaluate cost terms.
+/// This class also checks the MucoProblem for various errors.
+/// To get an instance of this class, use MucoProblem::createRep().
 /// This interface currently supports only single-phase problems.
+/// This class stores a reference (not a copy) to the original MucoProblem
+/// from which it was created.
 class OSIMMUSCOLLO_API MucoProblemRep {
 public:
     MucoProblemRep() = default;
@@ -48,6 +54,9 @@ public:
 
     const std::string& getName() const;
 
+    /// Get a reference to the copy of the model being used by this MucoProblemRep.
+    /// This model is the same instance as that given to MucoCost,
+    /// MucoParameter, and MucoPathConstraint.
     const Model& getModel() const { return m_model; }
     /// Get the state names of all the state infos.
     std::vector<std::string> createStateInfoNames() const;

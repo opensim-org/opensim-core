@@ -110,6 +110,29 @@ SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
   }
 %}
 
+// Memory management
+// =================
+%javamethodmodifiers OpenSim::MucoPhase::setModel "private";
+%rename OpenSim::MucoPhase::setModel private_setModel;
+%javamethodmodifiers OpenSim::MucoPhase::addParameter "private";
+%rename OpenSim::MucoPhase::addParameter private_addParameter;
+%javamethodmodifiers OpenSim::MucoPhase::addCost "private";
+%rename OpenSim::MucoPhase::addCost private_addCost;
+%javamethodmodifiers OpenSim::MucoPhase::addPathConstraint "private";
+%rename OpenSim::MucoPhase::addPathConstraint private_addPathConstraint;
+
+%javamethodmodifiers OpenSim::MucoProblem::setModel "private";
+%rename OpenSim::MucoProblem::setModel private_setModel;
+%javamethodmodifiers OpenSim::MucoProblem::addParameter "private";
+%rename OpenSim::MucoProblem::addParameter private_addParameter;
+%javamethodmodifiers OpenSim::MucoProblem::addCost "private";
+%rename OpenSim::MucoProblem::addCost private_addCost;
+%javamethodmodifiers OpenSim::MucoProblem::addPathConstraint "private";
+%rename OpenSim::MucoProblem::addPathConstraint private_addPathConstraint;
+
+// Interface
+// =========
+
 %typemap(javacode) OpenSim::MucoPhase %{
     public static MucoBounds convertArrayToMB(double[] arr) throws Exception {
         MucoBounds bounds = new MucoBounds();
@@ -150,6 +173,22 @@ SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
         return bounds;
     }
 
+    public void setModel(Model model) {
+        private_setModel(model);
+        model.markAdopted();
+    }
+    public void addParameter(MucoParameter obj) {
+        private_addParameter(obj);
+        obj.markAdopted();
+    }
+    public void addCost(MucoCost obj) {
+        private_addCost(obj);
+        obj.markAdopted();
+    }
+    public void addPathConstraint(MucoPathConstraint obj) {
+        private_addPathConstraint(obj);
+        obj.markAdopted();
+    }
     public void setTimeBounds(double[] ib, double[] fb) throws Exception {
         setTimeBounds(this.convertArrayToMIB(ib), this.convertArrayToMFB(fb));
     }
@@ -183,6 +222,22 @@ SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
 %}
 
 %typemap(javacode) OpenSim::MucoProblem %{
+    public void setModel(Model model) {
+        private_setModel(model);
+        model.markAdopted();
+    }
+    public void addParameter(MucoParameter obj) {
+        private_addParameter(obj);
+        obj.markAdopted();
+    }
+    public void addCost(MucoCost obj) {
+        private_addCost(obj);
+        obj.markAdopted();
+    }
+    public void addPathConstraint(MucoPathConstraint obj) {
+        private_addPathConstraint(obj);
+        obj.markAdopted();
+    }
     public void setTimeBounds(double[] ib, double[] fb) throws Exception {
         setTimeBounds(MucoPhase.convertArrayToMIB(ib),
             MucoPhase.convertArrayToMFB(fb));

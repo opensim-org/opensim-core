@@ -60,7 +60,8 @@ target_include_directories(osimMuscollo INTERFACE
 set_target_properties(osimMuscollo PROPERTIES
         DEFINE_SYMBOL OSIMMUSCOLLO_EXPORTS
         PROJECT_LABEL "Library - osimMuscollo"
-        FOLDER "Muscollo")
+        FOLDER "Muscollo"
+        )
 
 if(MUSCOLLO_COPY_DEPENDENCIES)
     if(APPLE)

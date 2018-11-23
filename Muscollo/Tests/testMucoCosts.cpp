@@ -22,26 +22,24 @@
 
 using namespace OpenSim;
 
-Model createSlidingMassModel() {
-    Model model;
-    model.setName("sliding_mass");
-    model.set_gravity(SimTK::Vec3(0, 0, 0));
+std::unique_ptr<Model> createSlidingMassModel() {
+    auto model = make_unique<Model>();
+    model->setName("sliding_mass");
+    model->set_gravity(SimTK::Vec3(0, 0, 0));
     auto* body = new Body("body", 10.0, SimTK::Vec3(0), SimTK::Inertia(0));
-    model.addComponent(body);
+    model->addComponent(body);
 
     // Allows translation along x.
-    auto* joint = new SliderJoint("slider", model.getGround(), *body);
+    auto* joint = new SliderJoint("slider", model->getGround(), *body);
     auto& coord = joint->updCoordinate(SliderJoint::Coord::TranslationX);
     coord.setName("position");
-    model.addComponent(joint);
+    model->addComponent(joint);
 
     auto* actu = new CoordinateActuator();
     actu->setCoordinate(&coord);
     actu->setName("actuator");
     actu->setOptimalForce(1);
-    model.addComponent(actu);
-
-    model.finalizeConnections();
+    model->addComponent(actu);
 
     return model;
 }
@@ -60,8 +58,7 @@ void testMucoControlCost() {
         mp.setStateInfo("/slider/position/speed", {-100, 100}, 0, 0);
         mp.setControlInfo("/actuator", MucoBounds(-10, 10));
 
-        MucoControlCost effort;
-        mp.addCost(effort);
+        mp.addCost<MucoControlCost>();
 
         MucoTropterSolver& ms = muco.initSolver();
         ms.set_num_mesh_points(N);
@@ -129,21 +126,20 @@ void testMucoControlCost() {
         auto model = createSlidingMassModel();
 
         auto* actu = new CoordinateActuator();
-        actu->setCoordinate(&model.updCoordinateSet().get("position"));
+        actu->setCoordinate(&model->updCoordinateSet().get("position"));
         actu->setName("actuator2");
         actu->setOptimalForce(1);
-        model.addComponent(actu);
+        model->addComponent(actu);
 
-        mp.setModel(model);
+        mp.setModel(std::move(model));
         mp.setTimeBounds(0, 5);
         mp.setStateInfo("/slider/position/value", {0, 1}, 0, 1);
         mp.setStateInfo("/slider/position/speed", {-100, 100}, 0, 0);
         mp.setControlInfo("/actuator", MucoBounds(-10, 10));
         mp.setControlInfo("/actuator2", MucoBounds(-10, 10));
 
-        MucoControlCost effort;
-        effort.setWeight("actuator2", 2.0);
-        mp.addCost(effort);
+        auto effort = mp.addCost<MucoControlCost>();
+        effort->setWeight("actuator2", 2.0);
 
         MucoTropterSolver& ms = muco.initSolver();
         ms.set_num_mesh_points(N);
@@ -171,9 +167,8 @@ void testMucoControlCost() {
         mp.setStateInfo("/slider/position/value", {0, 1}, 0, 1);
         mp.setStateInfo("/slider/position/speed", {-100, 100}, 0, 0);
         mp.setControlInfo("/actuator", MucoBounds(-10, 10));
-        MucoControlCost effort;
-        effort.setWeight("nonexistent", 1.5);
-        mp.addCost(effort);
+        auto effort = mp.addCost<MucoControlCost>();
+        effort->setWeight("nonexistent", 1.5);
         SimTK_TEST_MUST_THROW_EXC(mp.createRep(), Exception);
     }
 
@@ -187,8 +182,33 @@ void testMucoControlCost() {
     }
 }
 
+/// Make sure that multiple costs are added together properly.
+void testMultipleCosts() {
+    MucoTool muco;
+    MucoProblem& problem = muco.updProblem();
+
+    MucoFinalTimeCost ft0;
+    ft0.set_weight(0.1);
+    problem.addCost(ft0);
+
+    MucoFinalTimeCost ft1;
+    ft1.setName("ft1");
+    ft1.set_weight(0.2);
+    problem.addCost(ft1);
+
+    Model model(problem.getPhase().getModel());
+    SimTK::State state = model.initSystem();
+    const double ft = 0.35;
+    state.setTime(ft);
+    problem.initialize(model);
+
+    const double cost = problem.getPhase().calcEndpointCost(state);
+    SimTK_TEST_EQ(cost, (ft0.get_weight() + ft1.get_weight() ) * ft);
+}
+
 int main() {
     SimTK_START_TEST("testMucoCosts");
         SimTK_SUBTEST(testMucoControlCost);
+        SimTK_SUBTEST(testMultipleCosts);
     SimTK_END_TEST();
 }

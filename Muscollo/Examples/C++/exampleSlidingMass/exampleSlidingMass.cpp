@@ -40,28 +40,28 @@
 
 using namespace OpenSim;
 
-Model createSlidingMassModel() {
-    Model model;
-    model.setName("sliding_mass");
-    model.set_gravity(SimTK::Vec3(0, 0, 0));
+std::unique_ptr<Model> createSlidingMassModel() {
+    auto model = make_unique<Model>();
+    model->setName("sliding_mass");
+    model->set_gravity(SimTK::Vec3(0, 0, 0));
     auto* body = new Body("body", 2.0, SimTK::Vec3(0), SimTK::Inertia(0));
-    model.addComponent(body);
+    model->addComponent(body);
 
     // Allows translation along x.
-    auto* joint = new SliderJoint("slider", model.getGround(), *body);
+    auto* joint = new SliderJoint("slider", model->getGround(), *body);
     auto& coord = joint->updCoordinate(SliderJoint::Coord::TranslationX);
     coord.setName("position");
-    model.addComponent(joint);
+    model->addComponent(joint);
 
     auto* actu = new CoordinateActuator();
     actu->setCoordinate(&coord);
     actu->setName("actuator");
     actu->setOptimalForce(1);
-    model.addComponent(actu);
+    model->addComponent(actu);
 
     body->attachGeometry(new Sphere(0.05));
 
-    model.finalizeConnections();
+    model->finalizeConnections();
 
     return model;
 }
@@ -95,8 +95,7 @@ int main() {
 
     // Cost.
     // -----
-    MucoFinalTimeCost ftCost;
-    problem.addCost(ftCost);
+    problem.addCost<MucoFinalTimeCost>();
 
     // Configure the solver.
     // =====================

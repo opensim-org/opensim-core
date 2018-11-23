@@ -50,9 +50,7 @@ MucoProblem& MucoTool::updProblem() {
 
 MucoSolver& MucoTool::initSolverInternal() {
     // TODO what to do if we already have a solver (from cloning?)
-    // TODO how to persist Solver settings when solving multiple times.
     upd_solver().resetProblem(get_problem());
-    // m_solverInitialized = true;
     return upd_solver();
 }
 

@@ -42,8 +42,16 @@ void MucoPhase::constructProperties() {
     constructProperty_multibody_constraint_bounds(MucoBounds(0));
     constructProperty_multiplier_bounds(MucoBounds(-1000.0, 1000.0));
 }
-void MucoPhase::setModel(Model model) {
+Model* MucoPhase::setModel(std::unique_ptr<Model> model) {
+    // Write the connectee paths to properties.
+    model->finalizeConnections();
+    updProperty_model().clear();
+    updProperty_model().adoptAndAppendValue(model.release());
+    return &upd_model();
+}
+Model* MucoPhase::setModelCopy(Model model) {
     set_model(std::move(model));
+    return &upd_model();
 }
 void MucoPhase::setTimeBounds(const MucoInitialBounds& initial,
         const MucoFinalBounds& final) {
@@ -66,32 +74,6 @@ void MucoPhase::setControlInfo(const std::string& name,
     MucoVariableInfo info(name, bounds, initial, final);
     if (idx == -1) append_control_infos(info);
     else           upd_control_infos(idx) = info;
-}
-void MucoPhase::addParameter(const MucoParameter& parameter) {
-    OPENSIM_THROW_IF_FRMOBJ(parameter.getName().empty(), Exception,
-        "Cannot add a parameter if it does not have a name (use setName()).");
-    int idx = getProperty_parameters().findIndexForName(parameter.getName());
-    OPENSIM_THROW_IF_FRMOBJ(idx != -1, Exception,
-        "A parameter with name '" + parameter.getName() + "' already exists.");
-    append_parameters(parameter);
-}
-void MucoPhase::addCost(const MucoCost& cost) {
-    OPENSIM_THROW_IF_FRMOBJ(cost.getName().empty(), Exception,
-        "Cannot add a cost if it does not have a name (use setName()).");
-    int idx = getProperty_costs().findIndexForName(cost.getName());
-    OPENSIM_THROW_IF_FRMOBJ(idx != -1, Exception,
-        "A cost with name '" + cost.getName() + "' already exists.");
-    append_costs(cost);
-}
-void MucoPhase::addPathConstraint(const MucoPathConstraint& constraint) {
-    OPENSIM_THROW_IF_FRMOBJ(constraint.getName().empty(), Exception,
-        "Cannot add a constraint if it does not have a name (use setName()).");
-    int idx = 
-        getProperty_path_constraints().findIndexForName(constraint.getName());
-    OPENSIM_THROW_IF_FRMOBJ(idx != -1, Exception,
-        "A constraint with name '" + constraint.getName() + "' already "
-        "exists.");
-    append_path_constraints(constraint);
 }
 MucoInitialBounds MucoPhase::getTimeInitialBounds() const {
     return get_time_initial_bounds();
@@ -131,6 +113,20 @@ MucoParameter& MucoPhase::updParameter(
         "No parameter with name '" + name + "' found.");
     return upd_parameters(idx);
 }
+const MucoCost& MucoPhase::getCost(const std::string& name) const {
+
+    int idx = getProperty_costs().findIndexForName(name);
+    OPENSIM_THROW_IF_FRMOBJ(idx == -1, Exception,
+            "No cost with name '" + name + "' found.");
+    return get_costs(idx);
+}
+MucoCost& MucoPhase::updCost(const std::string& name) {
+
+    int idx = updProperty_costs().findIndexForName(name);
+    OPENSIM_THROW_IF_FRMOBJ(idx == -1, Exception,
+            "No cost with name '" + name + "' found.");
+    return upd_costs(idx);
+}
 const MucoPathConstraint& MucoPhase::getPathConstraint(
         const std::string& name) const {
 
@@ -138,6 +134,14 @@ const MucoPathConstraint& MucoPhase::getPathConstraint(
     OPENSIM_THROW_IF_FRMOBJ(idx == -1, Exception,
             "No path constraint with name '" + name + "' found.");
     return get_path_constraints(idx);
+}
+MucoPathConstraint& MucoPhase::updPathConstraint(
+        const std::string& name) {
+
+    int idx = updProperty_path_constraints().findIndexForName(name);
+    OPENSIM_THROW_IF_FRMOBJ(idx == -1, Exception,
+            "No path constraint with name '" + name + "' found.");
+    return upd_path_constraints(idx);
 }
 
 
@@ -148,8 +152,11 @@ MucoProblem::MucoProblem() {
     constructProperties();
 }
 
-void MucoProblem::setModel(Model model) {
-    upd_phases(0).setModel(std::move(model));
+Model* MucoProblem::setModel(std::unique_ptr<Model> model) {
+    return upd_phases(0).setModel(std::move(model));
+}
+Model* MucoProblem::setModelCopy(Model model) {
+    return upd_phases(0).setModelCopy(std::move(model));
 }
 void MucoProblem::setTimeBounds(const MucoInitialBounds& initial,
         const MucoFinalBounds& final) {
@@ -170,15 +177,6 @@ void MucoProblem::setMultibodyConstraintBounds(const MucoBounds& bounds) {
 }
 void MucoProblem::setMultiplierBounds(const MucoBounds& bounds) {
     upd_phases(0).setMultiplierBounds(bounds);
-}
-void MucoProblem::addParameter(const MucoParameter& parameter) {
-    upd_phases(0).addParameter(parameter);
-}
-void MucoProblem::addCost(const MucoCost& cost) {
-    upd_phases(0).addCost(cost);
-}
-void MucoProblem::addPathConstraint(const MucoPathConstraint& cost) {
-    upd_phases(0).addPathConstraint(cost);
 }
 void MucoProblem::constructProperties() {
     constructProperty_phases(Array<MucoPhase>(MucoPhase(), 1));

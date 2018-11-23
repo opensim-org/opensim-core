@@ -38,6 +38,13 @@ class OSIMMUSCOLLO_API MucoMarkerTrackingCost : public MucoCost {
 OpenSim_DECLARE_CONCRETE_OBJECT(MucoMarkerTrackingCost, MucoCost);
 public:
     MucoMarkerTrackingCost() { constructProperties(); }
+    MucoMarkerTrackingCost(std::string name) : MucoCost(std::move(name)) {
+        constructProperties();
+    }
+    MucoMarkerTrackingCost(std::string name, double weight)
+            : MucoCost(std::move(name), weight) {
+        constructProperties();
+    }
 
     /// Provide a MarkersReference object containing the marker trajectories to 
     /// be tracked by a model. The MarkersReferences can be created from a file 
@@ -64,7 +71,7 @@ public:
     }
 
 protected:
-    void initializeImpl() const override;
+    void initializeOnModelImpl(const Model&) const override;
     void calcIntegralCostImpl(const SimTK::State& state,
         double& integrand) const override;
 private:

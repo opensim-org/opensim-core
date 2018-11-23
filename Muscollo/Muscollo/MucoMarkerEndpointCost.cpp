@@ -22,8 +22,8 @@
 
 using namespace OpenSim;
 
-void MucoMarkerEndpointCost::initializeImpl() const {
-    m_point.reset(&getModel().getComponent<Point>(get_point_name()));
+void MucoMarkerEndpointCost::initializeOnModelImpl(const Model& model) const {
+    m_point.reset(&model.getComponent<Point>(get_point_name()));
 }
 
 void MucoMarkerEndpointCost::calcEndpointCostImpl(

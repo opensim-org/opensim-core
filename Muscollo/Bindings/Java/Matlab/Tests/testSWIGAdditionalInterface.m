@@ -34,6 +34,7 @@ actu = CoordinateActuator();
 actu.setCoordinate(coord);
 actu.setName('actuator');
 model.addComponent(actu);
+model.finalizeConnections();
 
 muco = MucoTool();
 muco.setName('sliding_mass');
@@ -65,38 +66,38 @@ assert(almostEqual(ph0.getTimeFinalBounds().getLower(), 4.5));
 assert(almostEqual(ph0.getTimeFinalBounds().getUpper(), 4.5));
 
 
-mp.setStateInfo('slider/position/value', MucoBounds(-5, 5), ...
+mp.setStateInfo('/slider/position/value', MucoBounds(-5, 5), ...
     MucoInitialBounds(0));
-assert(-5 == ph0.getStateInfo('slider/position/value').getBounds().getLower());
-assert( 5 == ph0.getStateInfo('slider/position/value').getBounds().getUpper());
-assert(isnan(ph0.getStateInfo('slider/position/value').getFinalBounds().getLower()));
-assert(isnan(ph0.getStateInfo('slider/position/value').getFinalBounds().getUpper()));
-mp.setStateInfo('slider/position/speed', [-50, 50], [-3], 1.5);
-assert(-50 == ph0.getStateInfo('slider/position/speed').getBounds().getLower());
-assert( 50 == ph0.getStateInfo('slider/position/speed').getBounds().getUpper());
-assert(-3 == ph0.getStateInfo('slider/position/speed').getInitialBounds().getLower());
-assert(-3 == ph0.getStateInfo('slider/position/speed').getInitialBounds().getUpper());
+assert(-5 == ph0.getStateInfo('/slider/position/value').getBounds().getLower());
+assert( 5 == ph0.getStateInfo('/slider/position/value').getBounds().getUpper());
+assert(isnan(ph0.getStateInfo('/slider/position/value').getFinalBounds().getLower()));
+assert(isnan(ph0.getStateInfo('/slider/position/value').getFinalBounds().getUpper()));
+mp.setStateInfo('/slider/position/speed', [-50, 50], [-3], 1.5);
+assert(-50 == ph0.getStateInfo('/slider/position/speed').getBounds().getLower());
+assert( 50 == ph0.getStateInfo('/slider/position/speed').getBounds().getUpper());
+assert(-3 == ph0.getStateInfo('/slider/position/speed').getInitialBounds().getLower());
+assert(-3 == ph0.getStateInfo('/slider/position/speed').getInitialBounds().getUpper());
 assert(almostEqual(1.5, ...
-    ph0.getStateInfo('slider/position/speed').getFinalBounds().getLower()));
+    ph0.getStateInfo('/slider/position/speed').getFinalBounds().getLower()));
 assert(almostEqual(1.5, ...
-    ph0.getStateInfo('slider/position/speed').getFinalBounds().getUpper()));
+    ph0.getStateInfo('/slider/position/speed').getFinalBounds().getUpper()));
 
 % Use setter on MucoPhase.
-ph0.setStateInfo('slider/position/speed', [-6, 10], [-4, 3], [0]);
-assert(-6 == ph0.getStateInfo('slider/position/speed').getBounds().getLower());
-assert(10 == ph0.getStateInfo('slider/position/speed').getBounds().getUpper());
-assert(-4 == ph0.getStateInfo('slider/position/speed').getInitialBounds().getLower());
-assert( 3 == ph0.getStateInfo('slider/position/speed').getInitialBounds().getUpper());
-assert(0 == ph0.getStateInfo('slider/position/speed').getFinalBounds().getLower());
-assert(0 == ph0.getStateInfo('slider/position/speed').getFinalBounds().getUpper());
+ph0.setStateInfo('/slider/position/speed', [-6, 10], [-4, 3], [0]);
+assert(-6 == ph0.getStateInfo('/slider/position/speed').getBounds().getLower());
+assert(10 == ph0.getStateInfo('/slider/position/speed').getBounds().getUpper());
+assert(-4 == ph0.getStateInfo('/slider/position/speed').getInitialBounds().getLower());
+assert( 3 == ph0.getStateInfo('/slider/position/speed').getInitialBounds().getUpper());
+assert(0 == ph0.getStateInfo('/slider/position/speed').getFinalBounds().getLower());
+assert(0 == ph0.getStateInfo('/slider/position/speed').getFinalBounds().getUpper());
 
 % Controls.
-mp.setControlInfo('actuator', MucoBounds(-50, 50));
-assert(-50 == ph0.getControlInfo('actuator').getBounds().getLower());
-assert( 50 == ph0.getControlInfo('actuator').getBounds().getUpper());
-mp.setControlInfo('actuator', [18]);
-assert(18 == ph0.getControlInfo('actuator').getBounds().getLower());
-assert(18 == ph0.getControlInfo('actuator').getBounds().getUpper());
+mp.setControlInfo('/actuator', MucoBounds(-50, 50));
+assert(-50 == ph0.getControlInfo('/actuator').getBounds().getLower());
+assert( 50 == ph0.getControlInfo('/actuator').getBounds().getUpper());
+mp.setControlInfo('/actuator', [18]);
+assert(18 == ph0.getControlInfo('/actuator').getBounds().getLower());
+assert(18 == ph0.getControlInfo('/actuator').getBounds().getUpper());
 
 
 %% MucoIterate

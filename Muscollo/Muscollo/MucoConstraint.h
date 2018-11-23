@@ -232,6 +232,12 @@ private:
 // ============================================================================
 
 /// A path constraint to be enforced in the optimal control problem.
+/// @par For developers
+/// Every time the problem is solved, a copy of this constraint is used. An individual
+/// instance of a constraint is only ever used in a single problem. Therefore, there
+/// is no need to clear cache variables that you create in initializeImpl().
+/// Also, information stored in this constraint does not persist across multiple
+/// solves.
 /// @ingroup mucoconstraint
 class OSIMMUSCOLLO_API MucoPathConstraint : public Object {
     OpenSim_DECLARE_ABSTRACT_OBJECT(MucoPathConstraint, Object);
@@ -272,24 +278,25 @@ public:
     }
 
     /// For use by solvers. This also performs error checks on the Problem.
-    void initialize(const Model& model, const int& pathConstraintIndex) const;
+    void initializeOnModel(const Model& model,
+            const int& pathConstraintIndex) const;
     
 protected:
     OpenSim_DECLARE_UNNAMED_PROPERTY(MucoConstraintInfo, "The bounds and "
         "labels for this MucoPathConstraint.");
 
-    /// Perform any caching. Make sure to first clear any caches, as this is
-    /// invoked every time the problem is solved.
+    /// Perform any caching.
     /// The number of scalar constraint equations this MucoPathConstraint 
     /// implements must be defined here (see setNumEquations() below).
     /// Upon entry, getModel() is available.
+    /// The passed-in model is equivalent to getModel().
     /// Use this opportunity to check for errors in user input, in addition to
     /// the checks provided in initialize().
-    virtual void initializeImpl() const = 0;
+    virtual void initializeOnModelImpl(const Model&) const = 0;
     /// Set the number of scalar equations for this MucoPathConstraint. This 
     /// must be set within initializeImpl(), otherwise an exception is thrown
     /// during initialization.
-    void setNumEquations(int numEqs) const  {
+    void setNumEquations(int numEqs) const {
         // TODO avoid const_cast
         const_cast<MucoPathConstraint*>(this)
             ->updConstraintInfo().setNumEquations(numEqs);

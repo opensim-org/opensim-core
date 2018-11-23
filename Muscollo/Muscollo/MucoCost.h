@@ -31,6 +31,12 @@ class Model;
 // TODO give option to specify gradient and hessian analytically.
 
 /// A term in the cost functional, to be minimized.
+/// @par For developers
+/// Every time the problem is solved, a copy of this cost is used. An individual
+/// instance of a cost is only ever used in a single problem. Therefore, there
+/// is no need to clear cache variables that you create in initializeImpl().
+/// Also, information stored in this cost does not persist across multiple
+/// solves.
 /// @ingroup mucocost
 class OSIMMUSCOLLO_API MucoCost : public Object {
 OpenSim_DECLARE_ABSTRACT_OBJECT(MucoCost, Object);
@@ -39,6 +45,10 @@ public:
             "The cost value is multiplied by this weight (default: 1).");
 
     MucoCost();
+
+    MucoCost(std::string name);
+
+    MucoCost(std::string name, double weight);
 
     /// This includes the weight.
     SimTK::Real calcIntegralCost(const SimTK::State& state) const {
@@ -54,20 +64,21 @@ public:
         return get_weight() * cost;
     }
     /// For use by solvers. This also performs error checks on the Problem.
-    void initialize(const Model& model) const {
+    void initializeOnModel(const Model& model) const {
         m_model.reset(&model);
-        initializeImpl();
+        initializeOnModelImpl(model);
     }
 
     /// Print the name, type, and weight for this cost.
     void printDescription(std::ostream& stream = std::cout) const;
 
 protected:
-    /// Perform any caching. Make sure to first clear any caches, as this is
-    /// invoked every time the problem is solved.
+    /// Perform any caching before the problem is solved.
     /// Upon entry, getModel() is available.
+    /// The passed-in model is equivalent to getModel().
     /// Use this opportunity to check for errors in user input.
-    virtual void initializeImpl() const {}
+    // TODO: Rename to extendInitializeOnModel().
+    virtual void initializeOnModelImpl(const Model&) const {}
     /// @precondition The state is realized to SimTK::Stage::Position.
     /// If you need access to the controls, you must realize to Velocity:
     /// @code
@@ -101,6 +112,11 @@ inline void MucoCost::calcEndpointCostImpl(const SimTK::State&,
 /// @ingroup mucocost
 class OSIMMUSCOLLO_API MucoFinalTimeCost : public MucoCost {
 OpenSim_DECLARE_CONCRETE_OBJECT(MucoFinalTimeCost, MucoCost);
+public:
+    MucoFinalTimeCost() = default;
+    MucoFinalTimeCost(std::string name) : MucoCost(std::move(name)) {}
+    MucoFinalTimeCost(std::string name, double weight)
+            : MucoCost(std::move(name), weight) {}
 protected:
     void calcEndpointCostImpl(const SimTK::State& finalState,
             SimTK::Real& cost) const override {
