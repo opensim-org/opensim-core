@@ -99,23 +99,23 @@ Model createModel() {
     return model;
 }
 
-Model createModel2D() {
-    Model model;
-    model.setName("point_mass");
+std::unique_ptr<Model> createModel2D() {
+    auto model = make_unique<Model>();
+    model->setName("point_mass");
     auto* intermed = new Body("intermed", 0, Vec3(0), SimTK::Inertia(0));
-    model.addComponent(intermed);
+    model->addComponent(intermed);
     // TODO inertia...
     auto* body = new Body("body", 50.0, Vec3(0), SimTK::Inertia(1));
-    model.addComponent(body);
+    model->addComponent(body);
 
     // Allows translation along x.
     auto* jointX = new SliderJoint();
     jointX->setName("tx");
-    jointX->connectSocket_parent_frame(model.getGround());
+    jointX->connectSocket_parent_frame(model->getGround());
     jointX->connectSocket_child_frame(*intermed);
     auto& coordX = jointX->updCoordinate(SliderJoint::Coord::TranslationX);
     coordX.setName("tx");
-    model.addComponent(jointX);
+    model->addComponent(jointX);
 
     // The joint's x axis must point in the global "+y" direction.
     auto* jointY = new SliderJoint("ty",
@@ -123,17 +123,17 @@ Model createModel2D() {
             *body, Vec3(0), Vec3(0, 0, 0.5 * SimTK::Pi));
     auto& coordY = jointY->updCoordinate(SliderJoint::Coord::TranslationX);
     coordY.setName("ty");
-    model.addComponent(jointY);
+    model->addComponent(jointY);
 
     auto* station = new Station();
     station->setName("contact_point");
     station->connectSocket_parent_frame(*body);
-    model.addComponent(station);
+    model->addComponent(station);
 
     //auto* force = new CustomContactForce();
     auto* force = new AckermannVanDenBogert2010Force();
     force->setName("contact");
-    model.addComponent(force);
+    model->addComponent(force);
     force->connectSocket_station(*station);
 
     return model;
@@ -145,19 +145,19 @@ void ball2d() {
     const SimTK::Real vx0 = 0.7;
     const SimTK::Real finalTime = 1.0;
 
-    Model model = createModel2D();
-    auto state = model.initSystem();
-    model.setStateVariableValue(state, "ty/ty/value", y0);
-    model.setStateVariableValue(state, "tx/tx/speed", vx0);
-    SimTK::RungeKuttaMersonIntegrator integrator(model.getMultibodySystem());
+    auto model = createModel2D();
+    auto state = model->initSystem();
+    model->setStateVariableValue(state, "ty/ty/value", y0);
+    model->setStateVariableValue(state, "tx/tx/speed", vx0);
+    Manager manager(*model);
     // Without the next line: Simbody takes steps that are too large and NaNs
     // are generated.
-    integrator.setMaximumStepSize(0.05);
-    Manager manager(model, state, integrator);
+    manager.setIntegratorMaximumStepSize(0.05);
+    manager.initialize(state);
     state = manager.integrate(finalTime);
     const auto& statesTimeStepping = manager.getStateStorage();
     std::cout << "DEBUG " << statesTimeStepping.getSize() << std::endl;
-    visualize(model, statesTimeStepping);
+    visualize(*model, statesTimeStepping);
     auto statesTimeSteppingTable = statesTimeStepping.exportToTable();
     STOFileAdapter::write(statesTimeSteppingTable, "ball2d_timestepping.sto");
 
@@ -170,7 +170,7 @@ void ball2d() {
 
     // Model (dynamics).
     // -----------------
-    mp.setModel(model);
+    mp.setModel(std::move(model));
 
     // Bounds.
     // -------
@@ -210,7 +210,7 @@ void ball2d() {
 
     solution.write("ball2d_solution.sto");
 
-    std::cout << "RMS: " << solution.compareStatesControlsRMS(guess)
+    std::cout << "RMS: " << solution.compareContinuousVariablesRMS(guess)
             << std::endl;
 
     // Visualize.
@@ -218,31 +218,31 @@ void ball2d() {
     muco.visualize(solution);
 }
 
-Model createModelPendulum(double linkLength, double jointHeight,
+std::unique_ptr<Model> createModelPendulum(double linkLength, double jointHeight,
         double dissipation, double frictionCoeff) {
-    Model model;
-    model.setName("pendulum");
+    auto model = make_unique<Model>();
+    model->setName("pendulum");
     auto* body = new Body("body", 50.0, Vec3(0), SimTK::Inertia(1));
-    model.addComponent(body);
+    model->addComponent(body);
 
     // The joint's x axis must point in the global "+y" direction.
     auto* joint = new PinJoint("rz",
-            model.getGround(), Vec3(0, jointHeight, 0), Vec3(0),
+            model->getGround(), Vec3(0, jointHeight, 0), Vec3(0),
             *body, Vec3(-linkLength, 0, 0), Vec3(0));
     auto& rz = joint->updCoordinate(PinJoint::Coord::RotationZ);
     rz.setName("rz");
-    model.addComponent(joint);
+    model->addComponent(joint);
 
     auto* station = new Station();
     station->setName("contact_point");
     station->connectSocket_parent_frame(*body);
-    model.addComponent(station);
+    model->addComponent(station);
 
     auto* force = new AckermannVanDenBogert2010Force();
     force->set_dissipation(dissipation);
     force->set_friction_coefficient(frictionCoeff);
     force->setName("contact");
-    model.addComponent(force);
+    model->addComponent(force);
     force->connectSocket_station(*station);
 
     return model;
@@ -256,15 +256,15 @@ void pendulum() {
     const SimTK::Real finalTime = 1.0;
     auto model = createModelPendulum(linkLength, jointHeight, dissipation,
             frictionCoeff);
-    auto state = model.initSystem();
-    SimTK::RungeKuttaMersonIntegrator integrator(model.getMultibodySystem());
+    auto state = model->initSystem();
+    Manager manager(*model);
     // Without the next line: Simbody takes steps that are too large and NaNs
     // are generated.
-    integrator.setMaximumStepSize(0.05);
-    Manager manager(model, state, integrator);
+    manager.setIntegratorMaximumStepSize(0.05);
+    manager.initialize(state);
     state = manager.integrate(finalTime);
     const auto& statesTimeStepping = manager.getStateStorage();
-    visualize(model, statesTimeStepping);
+    visualize(*model, statesTimeStepping);
     auto statesTimeSteppingTable = statesTimeStepping.exportToTable();
     STOFileAdapter::write(statesTimeSteppingTable, "pendulum_timestepping.sto");
 
@@ -273,7 +273,7 @@ void pendulum() {
     MucoTool muco;
     muco.setName("ball2d");
     MucoProblem& mp = muco.updProblem();
-    mp.setModel(model);
+    mp.setModel(std::move(model));
     mp.setTimeBounds(0, finalTime);
 
     mp.setStateInfo("rz/rz/value", {-0.5 * SimTK::Pi, 0.5 * SimTK::Pi}, 0);
@@ -291,7 +291,7 @@ void pendulum() {
 
     solution.write("pendulum_solution.sto");
 
-    std::cout << "RMS: " << solution.compareStatesControlsRMS(guess)
+    std::cout << "RMS: " << solution.compareContinuousVariablesRMS(guess)
             << std::endl;
 
     // Visualize.
@@ -299,32 +299,32 @@ void pendulum() {
     muco.visualize(solution);
 }
 
-Model createModelPendulumActivationCoordinateActuator() {
+std::unique_ptr<Model> createModelPendulumActivationCoordinateActuator() {
     const double jointHeight = 0.6;
     const double linkLength = 1.0;
-    Model model;
-    model.setName("pendulum");
+    auto model = make_unique<Model>();
+    model->setName("pendulum");
     auto* body = new Body("body", 50.0, Vec3(0), SimTK::Inertia(1));
-    model.addComponent(body);
+    model->addComponent(body);
 
     // The joint's x axis must point in the global "+y" direction.
     auto* joint = new PinJoint("rz",
-            model.getGround(), Vec3(0, jointHeight, 0), Vec3(0),
+            model->getGround(), Vec3(0, jointHeight, 0), Vec3(0),
             *body, Vec3(-linkLength, 0, 0), Vec3(0));
     auto& rz = joint->updCoordinate(PinJoint::Coord::RotationZ);
     rz.setName("rz");
-    model.addComponent(joint);
+    model->addComponent(joint);
 
     auto* station = new Station();
     station->setName("contact_point");
     station->connectSocket_parent_frame(*body);
-    model.addComponent(station);
+    model->addComponent(station);
 
     auto* force = new AckermannVanDenBogert2010Force();
     force->set_dissipation(1.0);
     force->set_friction_coefficient(1.0);
     force->setName("contact");
-    model.addComponent(force);
+    model->addComponent(force);
     force->connectSocket_station(*station);
 
     auto* actu = new ActivationCoordinateActuator();
@@ -332,7 +332,7 @@ Model createModelPendulumActivationCoordinateActuator() {
     actu->setName("actuator");
     actu->setCoordinate(&rz);
     actu->setOptimalForce(600);
-    model.addComponent(actu);
+    model->addComponent(actu);
 
     return model;
 }
@@ -341,19 +341,19 @@ void pendulumActivationCoordinateActuator() {
     const SimTK::Real finalTime = 1.0;
     auto model = createModelPendulumActivationCoordinateActuator();
     PrescribedController* contr = new PrescribedController();
-    contr->addActuator(model.getComponent<ActivationCoordinateActuator>
+    contr->addActuator(model->getComponent<ActivationCoordinateActuator>
             ("actuator"));
     contr->prescribeControlForActuator("actuator", new Constant(1.0));
-    model.addComponent(contr);
-    auto state = model.initSystem();
-    SimTK::RungeKuttaMersonIntegrator integrator(model.getMultibodySystem());
+    model->addComponent(contr);
+    auto state = model->initSystem();
+    Manager manager(*model);
     // Without the next line: Simbody takes steps that are too large and NaNs
     // are generated.
-    integrator.setMaximumStepSize(0.05);
-    Manager manager(model, state, integrator);
+    manager.setIntegratorMaximumStepSize(0.05);
+    manager.initialize(state);
     state = manager.integrate(finalTime);
     const auto& statesTimeStepping = manager.getStateStorage();
-    visualize(model, statesTimeStepping);
+    visualize(*model, statesTimeStepping);
     auto statesTimeSteppingTable = statesTimeStepping.exportToTable();
     STOFileAdapter::write(statesTimeSteppingTable,
             "pendulumaca_timestepping.sto");
@@ -438,13 +438,13 @@ void addResidualCoordinateActuators(Model& model) {
 
 }
 
-Model createModelSLIP() {
-    Model model;
-    model.setName("SLIP");
+std::unique_ptr<Model> createModelSLIP() {
+    auto model = make_unique<Model>();
+    model->setName("SLIP");
     auto* foot = new Body("foot", 15.0, Vec3(0), SimTK::Inertia(1));
-    model.addComponent(foot);
+    model->addComponent(foot);
     auto* pelvis = new Body("pelvis", 35.0, Vec3(0), SimTK::Inertia(1));
-    model.addComponent(pelvis);
+    model->addComponent(pelvis);
 
     Sphere bodyGeom(0.05);
     bodyGeom.setColor(SimTK::Red);
@@ -452,13 +452,13 @@ Model createModelSLIP() {
     bodyGeom.setColor(SimTK::Blue);
     pelvis->attachGeometry(bodyGeom.clone());
 
-    auto* planar = new PlanarJoint("planar", model.getGround(), *foot);
+    auto* planar = new PlanarJoint("planar", model->getGround(), *foot);
     planar->updCoordinate(PlanarJoint::Coord::TranslationX).setName("tx");
     auto& ty = planar->updCoordinate(PlanarJoint::Coord::TranslationY);
     ty.setName("ty");
     ty.setDefaultValue(0.1);
     planar->updCoordinate(PlanarJoint::Coord::RotationZ).setName("rz");
-    model.addComponent(planar);
+    model->addComponent(planar);
 
     const Vec3 rz90 = SimTK::Vec3(0, 0, 0.5 * SimTK::Pi);
     auto* leg = new SliderJoint("leg", *foot, Vec3(0), rz90,
@@ -466,33 +466,33 @@ Model createModelSLIP() {
     auto& length = leg->updCoordinate(SliderJoint::Coord::TranslationX);
     length.setName("length");
     length.setDefaultValue(1.0);
-    model.addComponent(leg);
+    model->addComponent(leg);
 
     // Foot-ground contact.
     auto* station = new Station();
     station->setName("contact_point");
     station->connectSocket_parent_frame(*foot);
-    model.addComponent(station);
+    model->addComponent(station);
 
     auto* force = new AckermannVanDenBogert2010Force();
     force->set_dissipation(1.0);
     force->set_stiffness(5e5);
     force->set_friction_coefficient(1.0);
     force->setName("contact");
-    model.addComponent(force);
+    model->addComponent(force);
     force->connectSocket_station(*station);
 
     // auto* force = new MeyerFregly2016Force();
     // // force->set_dissipation(1.0);
     // // force->set_stiffness(1e4);
     // force->setName("contact");
-    // model.addComponent(force);
+    // model->addComponent(force);
     // force->connectSocket_station(*station);
 
     // auto* force = new EspositoMiller2018Force();
     // force->set_stiffness(1e5);
     // force->setName("contact");
-    // model.addComponent(force);
+    // model->addComponent(force);
     // force->connectSocket_station(*station);
 
 
@@ -500,27 +500,27 @@ Model createModelSLIP() {
     // TODO spring force should be felt all the time; similar to contact.
     // TODO disallow PathSpring?
     auto* spring = new PointToPointSpring();
-    model.addComponent(spring);
+    model->addComponent(spring);
     spring->set_stiffness(5e3);
     spring->set_rest_length(1.0);
     spring->connectSocket_body1(*foot);
     spring->connectSocket_body2(*pelvis);
 
     auto* foot_marker = new Marker("foot_COM", *foot, Vec3(0));
-    model.addComponent(foot_marker);
+    model->addComponent(foot_marker);
     auto* pelvis_marker = new Marker("pelvis_COM", *pelvis, Vec3(0));
-    model.addComponent(pelvis_marker);
+    model->addComponent(pelvis_marker);
 
     return model;
 }
 
-Model createModelSLIPActuated() {
-    Model model;
-    model.setName("SLIP");
+std::unique_ptr<Model>createModelSLIPActuated() {
+    auto model = make_unique<Model>();
+    model->setName("SLIP");
     auto* foot = new Body("foot", 15.0, Vec3(0), SimTK::Inertia(1));
-    model.addComponent(foot);
+    model->addComponent(foot);
     auto* pelvis = new Body("pelvis", 35.0, Vec3(0), SimTK::Inertia(1));
-    model.addComponent(pelvis);
+    model->addComponent(pelvis);
 
     Sphere bodyGeom(0.05);
     bodyGeom.setColor(SimTK::Red);
@@ -528,13 +528,13 @@ Model createModelSLIPActuated() {
     bodyGeom.setColor(SimTK::Blue);
     pelvis->attachGeometry(bodyGeom.clone());
 
-    auto* planar = new PlanarJoint("planar", model.getGround(), *foot);
+    auto* planar = new PlanarJoint("planar", model->getGround(), *foot);
     planar->updCoordinate(PlanarJoint::Coord::TranslationX).setName("tx");
     auto& ty = planar->updCoordinate(PlanarJoint::Coord::TranslationY);
     ty.setName("ty");
     ty.setDefaultValue(0.1);
     planar->updCoordinate(PlanarJoint::Coord::RotationZ).setName("rz");
-    model.addComponent(planar);
+    model->addComponent(planar);
 
     const Vec3 rz90 = SimTK::Vec3(0, 0, 0.5 * SimTK::Pi);
     auto* leg = new SliderJoint("leg", *foot, Vec3(0), rz90,
@@ -542,33 +542,33 @@ Model createModelSLIPActuated() {
     auto& length = leg->updCoordinate(SliderJoint::Coord::TranslationX);
     length.setName("length");
     length.setDefaultValue(1.0);
-    model.addComponent(leg);
+    model->addComponent(leg);
 
     // Foot-ground contact.
     auto* station = new Station();
     station->setName("contact_point");
     station->connectSocket_parent_frame(*foot);
-    model.addComponent(station);
+    model->addComponent(station);
 
     auto* force = new AckermannVanDenBogert2010Force();
     force->set_dissipation(1.0);
     force->set_stiffness(5e5);
     force->set_friction_coefficient(1.0);
     force->setName("contact");
-    model.addComponent(force);
+    model->addComponent(force);
     force->connectSocket_station(*station);
 
     // auto* force = new MeyerFregly2016Force();
     // force->set_dissipation(1.0);
     // force->set_stiffness(1e4);
     // force->setName("contact");
-    // model.addComponent(force);
+    // model->addComponent(force);
     // force->connectSocket_station(*station);
 
     // auto* force = new EspositoMiller2018Force();
     // force->set_stiffness(1e5);
     // force->setName("contact");
-    // model.addComponent(force);
+    // model->addComponent(force);
     // force->connectSocket_station(*station);
 
     auto* actuator = new CoordinateActuator();
@@ -576,15 +576,15 @@ Model createModelSLIPActuated() {
     actuator->setName("actuator");
     actuator->setOptimalForce(2500);
     //actuator->set_activation_time_constant(0.025);
-    model.addComponent(actuator);
+    model->addComponent(actuator);
 
-    //addResidualActivationCoordinateActuators(model);
-    addResidualCoordinateActuators(model);
+    //addResidualActivationCoordinateActuators(*model);
+    addResidualCoordinateActuators(*model);
 
     auto* foot_marker = new Marker("foot_COM", *foot, Vec3(0));
-    model.addComponent(foot_marker);
+    model->addComponent(foot_marker);
     auto* pelvis_marker = new Marker("pelvis_COM", *pelvis, Vec3(0));
-    model.addComponent(pelvis_marker);
+    model->addComponent(pelvis_marker);
 
     return model;
 }
@@ -592,16 +592,16 @@ Model createModelSLIPActuated() {
 void slip(double rzvalue0 = 0, double rzspeed0 = 0) {
     const SimTK::Real finalTime = 1.0;
     auto model = createModelSLIP();
-    auto state = model.initSystem();
-    model.setStateVariableValue(state, "planar/rz/value", rzvalue0);
-    model.setStateVariableValue(state, "planar/rz/speed", rzspeed0);
-    SimTK::RungeKuttaMersonIntegrator integrator(model.getMultibodySystem());
-    integrator.setAccuracy(1e-5);
-    integrator.setMaximumStepSize(0.05);
-    Manager manager(model, state, integrator);
+    auto state = model->initSystem();
+    model->setStateVariableValue(state, "planar/rz/value", rzvalue0);
+    model->setStateVariableValue(state, "planar/rz/speed", rzspeed0);
+    Manager manager(*model);
+    manager.setIntegratorAccuracy(1e-5);
+    manager.setIntegratorMaximumStepSize(0.05);
+    manager.initialize(state);
     state = manager.integrate(finalTime);
     const auto& statesTimeStepping = manager.getStateStorage();
-    visualize(model, statesTimeStepping);
+    visualize(*model, statesTimeStepping);
     auto statesTimeSteppingTable = statesTimeStepping.exportToTable();
     STOFileAdapter::write(statesTimeSteppingTable, "slip_timestepping.sto");
 
@@ -609,7 +609,7 @@ void slip(double rzvalue0 = 0, double rzspeed0 = 0) {
     MucoTool muco;
     muco.setName("slip");
     MucoProblem& mp = muco.updProblem();
-    mp.setModel(model);
+    mp.setModel(std::move(model));
     mp.setTimeBounds(0, finalTime);
     using SimTK::Pi;
     mp.setStateInfo("planar/tx/value", {-5, 5}, 0);
@@ -634,7 +634,7 @@ void slip(double rzvalue0 = 0, double rzspeed0 = 0) {
 
     MucoSolution solution = muco.solve().unseal();
     solution.write("slip_solution.sto");
-    std::cout << "RMS: " << solution.compareStatesControlsRMS(guess)
+    std::cout << "RMS: " << solution.compareContinuousVariablesRMS(guess)
             << std::endl;
     muco.visualize(solution);
 }
@@ -646,27 +646,27 @@ void slipSolveForForce(double rzvalue0 = 0, double rzspeed0 = 0) {
     reporter->setName("contact_rep");
     reporter->set_report_time_interval(0.01);
     reporter->addToReport(
-            modelTS.getComponent("contact").getOutput("force_on_station"));
-    modelTS.addComponent(reporter);
+            modelTS->getComponent("contact").getOutput("force_on_station"));
+    modelTS->addComponent(reporter);
     auto markersReporter = new TableReporterVec3();
     markersReporter->setName("marker_rep");
     markersReporter->set_report_time_interval(0.01);
     markersReporter->addToReport(
-            modelTS.getComponent("foot_COM").getOutput("location"), 
+            modelTS->getComponent("foot_COM").getOutput("location"),
             "foot_COM");
     markersReporter->addToReport(
-            modelTS.getComponent("pelvis_COM").getOutput("location"), 
+            modelTS->getComponent("pelvis_COM").getOutput("location"),
             "pelvis_COM");
-    modelTS.addComponent(markersReporter);
-    auto state = modelTS.initSystem();
-    modelTS.setStateVariableValue(state, "planar/rz/value", rzvalue0);
-    modelTS.setStateVariableValue(state, "planar/rz/speed", rzspeed0);
-    SimTK::RungeKuttaMersonIntegrator integrator(modelTS.getMultibodySystem());
-    integrator.setAccuracy(1e-5);
-    integrator.setMaximumStepSize(0.05);
-    auto* forceRep = new ForceReporter(&modelTS);
-    modelTS.addAnalysis(forceRep);
-    Manager manager(modelTS, state, integrator);
+    modelTS->addComponent(markersReporter);
+    auto state = modelTS->initSystem();
+    modelTS->setStateVariableValue(state, "planar/rz/value", rzvalue0);
+    modelTS->setStateVariableValue(state, "planar/rz/speed", rzspeed0);
+    auto* forceRep = new ForceReporter(modelTS.get());
+    modelTS->addAnalysis(forceRep);
+    Manager manager(*modelTS);
+    manager.setIntegratorAccuracy(1e-5);
+    manager.setIntegratorMaximumStepSize(0.05);
+    manager.initialize(state);
     state = manager.integrate(finalTime);
     const auto& statesTimeStepping = manager.getStateStorage();
 
@@ -717,7 +717,7 @@ void slipSolveForForce(double rzvalue0 = 0, double rzspeed0 = 0) {
     auto markersPacked = markersFilt.pack<double>();
     TimeSeriesTableVec3 markersToUse(markersPacked);
     markersToUse.setColumnLabels({"foot_COM", "pelvis_COM"});
-    visualize(modelTS, statesTimeStepping);
+    visualize(*modelTS, statesTimeStepping);
 
 
     MucoTool muco;
@@ -755,14 +755,10 @@ void slipSolveForForce(double rzvalue0 = 0, double rzspeed0 = 0) {
     // TODO filter statesTimeSteppingTable!
     // TODO only track coordinate values, not speeds.
 
-    MucoStateTrackingCost stateTracking;
-    stateTracking.setName("state_tracking");
-    stateTracking.setReference(statesToTrack);
-    mp.addCost(stateTracking);
+    auto* stateTracking = mp.addCost<MucoStateTrackingCost>("state_tracking");
+    stateTracking->setReference(statesToTrack);
 
-    //MucoControlCost effort;
-    //effort.setName("effort");
-    //mp.addCost(effort);
+    mp.addCost<MucoControlCost>("effort");
 
     //MucoMarkerTrackingCost markerTracking;
     //markerTracking.setName("marker_tracking");
@@ -772,18 +768,16 @@ void slipSolveForForce(double rzvalue0 = 0, double rzspeed0 = 0) {
     //markerTracking.set_weight(1);
     //mp.addCost(markerTracking);
 
-    MucoForceTrackingCost grfTracking;
-    grfTracking.setName("grf_tracking");
-    GCVSplineSet grfSplines(forcesFlattened);
-    grfTracking.m_refspline_x = *grfSplines.getGCVSpline(0);
-    grfTracking.m_refspline_y = *grfSplines.getGCVSpline(1);
-    double normGRFs = 0.001;
-    double weight = 1;
-    grfTracking.set_weight(normGRFs * weight);
-    grfTracking.append_forces("contact");
-    mp.addCost(grfTracking);
     // Solves in 3-4 minutes without contact tracking, 9 minutes with contact
     // tracking.
+    auto* grfTracking = mp.addCost<MucoForceTrackingCost>("grf_tracking");
+    GCVSplineSet grfSplines(forcesFlattened);
+    grfTracking->m_refspline_x = *grfSplines.getGCVSpline(0);
+    grfTracking->m_refspline_y = *grfSplines.getGCVSpline(1);
+    double normGRFs = 0.001;
+    double weight = 1;
+    grfTracking->set_weight(normGRFs * weight);
+    grfTracking->append_forces("contact");
 
 
     MucoTropterSolver& ms = muco.initSolver();
@@ -807,7 +801,7 @@ void slipSolveForForce(double rzvalue0 = 0, double rzspeed0 = 0) {
 
     MucoSolution solution = muco.solve().unseal();
     solution.write("slipSolveForForce_solution.sto");
-    std::cout << "RMS: " << solution.compareStatesControlsRMS(guess)
+    std::cout << "RMS: " << solution.compareContinuousVariablesRMS(guess)
             << std::endl;
 
     SimTK::Vector springForceRecovered =
@@ -870,7 +864,7 @@ int main() {
 
     if (false) {
         const SimTK::Real y0 = 0.5;
-        const SimTK::Real vx0 = 0.7;
+        // const SimTK::Real vx0 = 0.7;
         const SimTK::Real finalTime = 1.0;
         Model model = createModel();
         auto state = model.initSystem();

@@ -327,12 +327,15 @@ public:
     MucoForceTrackingCost() {
         constructProperties();
     }
+    MucoForceTrackingCost(std::string name) : MucoForceTrackingCost() {
+        setName(std::move(name));
+    }
 protected:
-    void initializeImpl() const override {
+    void initializeOnModelImpl(const Model& model) const override {
         m_forces.clear();
         for (int i = 0; i < getProperty_forces().size(); ++i) {
             m_forces.emplace_back(
-                    getModel().getComponent<StationPlaneContactForce>(
+                    model.getComponent<StationPlaneContactForce>(
                             get_forces(i)));
         }
     }
@@ -434,6 +437,7 @@ protected:
                 integrand += m_marker_weights[refidx] * distance;
             }
         }
+    }
 private:
     OpenSim_DECLARE_PROPERTY(free_radius, double,
             "TODO");
