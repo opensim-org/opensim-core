@@ -177,10 +177,10 @@ void ball2d() {
     // Initial time must be 0, final time can be within [0, 5].
     mp.setTimeBounds(0, finalTime);
 
-    mp.setStateInfo("tx/tx/value", {-5, 5}, 0);
-    mp.setStateInfo("ty/ty/value", {-0.5, 1}, y0);
-    mp.setStateInfo("tx/tx/speed", {-10, 10}, vx0);
-    mp.setStateInfo("ty/ty/speed", {-10, 10}, 0);
+    mp.setStateInfo("/tx/tx/value", {-5, 5}, 0);
+    mp.setStateInfo("/ty/ty/value", {-0.5, 1}, y0);
+    mp.setStateInfo("/tx/tx/speed", {-10, 10}, vx0);
+    mp.setStateInfo("/ty/ty/speed", {-10, 10}, 0);
 
     // Configure the solver.
 
@@ -276,8 +276,8 @@ void pendulum() {
     mp.setModel(std::move(model));
     mp.setTimeBounds(0, finalTime);
 
-    mp.setStateInfo("rz/rz/value", {-0.5 * SimTK::Pi, 0.5 * SimTK::Pi}, 0);
-    mp.setStateInfo("rz/rz/speed", {-10, 10}, 0);
+    mp.setStateInfo("/rz/rz/value", {-0.5 * SimTK::Pi, 0.5 * SimTK::Pi}, 0);
+    mp.setStateInfo("/rz/rz/speed", {-10, 10}, 0);
 
     // Configure the solver.
 
@@ -366,8 +366,8 @@ void pendulumActivationCoordinateActuator() {
     mp.setModel(model);
     mp.setTimeBounds(0, finalTime);
 
-    mp.setStateInfo("rz/rz/value", {-0.5 * SimTK::Pi, 0.5 * SimTK::Pi}, 0);
-    mp.setStateInfo("rz/rz/speed", {-10, 10}, 0);
+    mp.setStateInfo("/rz/rz/value", {-0.5 * SimTK::Pi, 0.5 * SimTK::Pi}, 0);
+    mp.setStateInfo("/rz/rz/speed", {-10, 10}, 0);
 
     // Configure the solver.
 
@@ -612,14 +612,14 @@ void slip(double rzvalue0 = 0, double rzspeed0 = 0) {
     mp.setModel(std::move(model));
     mp.setTimeBounds(0, finalTime);
     using SimTK::Pi;
-    mp.setStateInfo("planar/tx/value", {-5, 5}, 0);
-    mp.setStateInfo("planar/ty/value", {-0.5, 2}, 0.1);
-    mp.setStateInfo("planar/rz/value", {-0.5*Pi, 0.5*Pi}, rzvalue0);
-    mp.setStateInfo("leg/length/value", {0.1, 1.9}, 1.0);
-    mp.setStateInfo("planar/tx/speed", {-10, 10}, 0);
-    mp.setStateInfo("planar/ty/speed", {-10, 10}, 0);
-    mp.setStateInfo("planar/rz/speed", {-10, 10}, rzspeed0);
-    mp.setStateInfo("leg/length/speed", {-10, 10}, 0);
+    mp.setStateInfo("/planar/tx/value", {-5, 5}, 0);
+    mp.setStateInfo("/planar/ty/value", {-0.5, 2}, 0.1);
+    mp.setStateInfo("/planar/rz/value", {-0.5*Pi, 0.5*Pi}, rzvalue0);
+    mp.setStateInfo("/leg/length/value", {0.1, 1.9}, 1.0);
+    mp.setStateInfo("/planar/tx/speed", {-10, 10}, 0);
+    mp.setStateInfo("/planar/ty/speed", {-10, 10}, 0);
+    mp.setStateInfo("/planar/rz/speed", {-10, 10}, rzspeed0);
+    mp.setStateInfo("/leg/length/speed", {-10, 10}, 0);
 
     MucoTropterSolver& ms = muco.initSolver();
     ms.set_num_mesh_points(500);
@@ -727,22 +727,22 @@ void slipSolveForForce(double rzvalue0 = 0, double rzspeed0 = 0) {
     mp.setModel(createModelSLIPActuated());
     mp.setTimeBounds(0, finalTime);
     using SimTK::Pi;
-    mp.setStateInfo("planar/tx/value", {-5, 5}, 0);
-    mp.setStateInfo("planar/ty/value", {-0.5, 2}, 0.1);
-    mp.setStateInfo("planar/rz/value", {-0.5*Pi, 0.5*Pi}, rzvalue0);
-    mp.setStateInfo("leg/length/value", {0.1, 1.9}, 1.0);
-    mp.setStateInfo("planar/tx/speed", {-10, 10}, 0);
-    mp.setStateInfo("planar/ty/speed", {-10, 10}, 0);
-    mp.setStateInfo("planar/rz/speed", {-10, 10}, rzspeed0);
-    mp.setStateInfo("leg/length/speed", {-10, 10}, 0);
-    //mp.setStateInfo("actuator/activation", {-2, 2});
-    //mp.setStateInfo("res_rz/activation", { -2, 2 });
-    //mp.setStateInfo("res_tx/activation", { -2, 2 });
-    //mp.setStateInfo("res_ty/activation", { -2, 2 });
-    mp.setControlInfo("actuator", {-1, 1});
-    mp.setControlInfo("res_rz", { -1, 1 });
-    mp.setControlInfo("res_tx", { -1, 1 });
-    mp.setControlInfo("res_ty", { -1, 1 });
+    mp.setStateInfo("/planar/tx/value", {-5, 5}, 0);
+    mp.setStateInfo("/planar/ty/value", {-0.5, 2}, 0.1);
+    mp.setStateInfo("/planar/rz/value", {-0.5*Pi, 0.5*Pi}, rzvalue0);
+    mp.setStateInfo("/leg/length/value", {0.1, 1.9}, 1.0);
+    mp.setStateInfo("/planar/tx/speed", {-10, 10}, 0);
+    mp.setStateInfo("/planar/ty/speed", {-10, 10}, 0);
+    mp.setStateInfo("/planar/rz/speed", {-10, 10}, rzspeed0);
+    mp.setStateInfo("/leg/length/speed", {-10, 10}, 0);
+    //mp.setStateInfo("/actuator/activation", {-2, 2});
+    //mp.setStateInfo("/res_rz/activation", { -2, 2 });
+    //mp.setStateInfo("/res_tx/activation", { -2, 2 });
+    //mp.setStateInfo("/res_ty/activation", { -2, 2 });
+    mp.setControlInfo("/actuator", {-1, 1});
+    mp.setControlInfo("/res_rz", { -1, 1 });
+    mp.setControlInfo("/res_tx", { -1, 1 });
+    mp.setControlInfo("/res_ty", { -1, 1 });
 
     Storage statesFilt = statesTimeStepping;
     statesFilt.pad(statesFilt.getSize() / 2);

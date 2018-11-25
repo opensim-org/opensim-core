@@ -45,7 +45,7 @@ T contact_force(const TStiffness& stiffness, const T& y) {
 }
 
 template<typename T>
-class BouncingBallLinear : public tropter::OptimalControlProblem<T> {
+class BouncingBallLinear : public tropter::Problem<T> {
 public:
     static const double mass; // kg
     static const double stiffness; // N/m
@@ -56,20 +56,20 @@ public:
         this->add_state("vy", {-10, 10}, 0);
     }
     void calc_differential_algebraic_equations(
-            const tropter::DAEInput<T>& in,
-            tropter::DAEOutput<T> out) const override {
+            const tropter::Input<T>& in,
+            tropter::Output<T> out) const override {
         const T& y = in.states[0];
         const T& vy = in.states[1];
         out.dynamics[0] = vy;
         const auto contact_normal_force = contact_force(this->stiffness, y);
         out.dynamics[1] = -g + (contact_normal_force) / mass;
     }
-    static tropter::OptimalControlSolution run() {
+    static tropter::Solution run() {
         auto ocp = std::make_shared<BouncingBallLinear<T>>();
         const int N = 1000;
         tropter::DirectCollocationSolver<T> dircol(ocp, "trapezoidal", "ipopt",
                 N);
-        tropter::OptimalControlSolution solution = dircol.solve();
+        tropter::Solution solution = dircol.solve();
         //std::cout << "States: " << solution.states << std::endl;
         //solution.write("sandboxCalibrateContact_bouncing_ball_solution.csv");
         return solution;
@@ -82,10 +82,10 @@ const double BouncingBallLinear<T>::stiffness = 3180.0; // N/m
 template <typename T>
 const double BouncingBallLinear<T>::g = 9.81; // m/s^2
 
-class BallCalibration : public tropter::OptimizationProblem<double> {
+class BallCalibration : public tropter::optimization::Problem<double> {
 public:
     BallCalibration(Eigen::VectorXd yTraj, Eigen::VectorXd contactForceTraj) :
-            tropter::OptimizationProblem<double>(1, 0),
+            tropter::optimization::Problem<double>(1, 0),
             m_yTraj(yTraj), m_contactForceTraj(contactForceTraj) {
         Eigen::VectorXd lower(1); lower[0] = 0;
         Eigen::VectorXd upper(1); upper[0] = 10000;
@@ -115,7 +115,7 @@ void calibrateBall() {
                 exp.states(0, it));
     }
     BallCalibration problem(exp.states.row(0).transpose(), Fy);
-    tropter::IPOPTSolver solver(problem);
+    tropter::optimization::IPOPTSolver solver(problem);
     solver.set_verbosity(1);
     auto solution = solver.optimize();
     std::cout << solution.variables << std::endl;
@@ -128,7 +128,7 @@ enum class ContactModel {
 
 /// Optimize the stiffness of contact points to match the ground reaction
 /// force.
-class ContactCalibration : public tropter::OptimizationProblem<double> {
+class ContactCalibration : public tropter::optimization::Problem<double> {
 public:
     ContactCalibration(Model model, StatesTrajectory statesTraj,
             TimeSeriesTable grfData, std::string grfPrefix,
@@ -272,7 +272,7 @@ public:
                 forces(itime, 0) = 0;
                 forces(itime, 1) = 0;
                 for (auto& contact : contacts) {
-                    SimTK::Vec3 force = contact.calcContactForce(state);
+                    SimTK::Vec3 force = contact.calcContactForceOnStation(state);
                     forces(itime, 0) += force[0];
                     forces(itime, 1) += force[1];
                 }
@@ -491,7 +491,7 @@ void addContact(Model& model, std::string markerName, double stiffness = 5e7,
     contact->set_friction_coefficient(friction_coefficient);
     contact->set_tangent_velocity_scaling_factor(velocity_scaling);
     model.addComponent(contact);
-    contact->updSocket("station").setConnecteeName(markerName);
+    contact->updSocket("station").setConnecteePath(markerName);
 }
 
 enum class DataType {
