@@ -23,6 +23,7 @@
 extern "C" {
 
 OSIMMUSCOLLO_API void RegisterTypes_osimMuscollo();
+
 }
 
 class osimMuscolloInstantiator {

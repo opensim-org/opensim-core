@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- * OpenSim Muscollo: sandboxTestContact.cpp                                   *
+ * OpenSim Muscollo: testContact.cpp                                          *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2017 Stanford University and the Authors                     *
  *                                                                            *
@@ -16,14 +16,10 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-// This file will become testContact.
-
 // TODO add 3D tests (contact models are currently only 2D).
 
 #include <Muscollo/osimMuscollo.h>
 #include <OpenSim/Simulation/Manager/Manager.h>
-
-#include "MuscolloSandboxShared.h"
 
 const double FRICTION_COEFFICIENT = 0.7;
 
@@ -210,7 +206,6 @@ void testFrictionForce(CreateContactFunction createContact,
     // -------------------
     // This is a simulation (initial value problem), not a trajectory
     // optimization.
-    SimTK::Real finalHeightDircol;
     {
         MucoTool muco;
         MucoProblem& mp = muco.updProblem();

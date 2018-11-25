@@ -28,6 +28,8 @@ MuscolloAddTest(NAME testMucoParameters)
 
 MuscolloAddTest(NAME testConstraints)
 
+MuscolloAddTest(NAME testContact)
+
 MuscolloAddTest(NAME testHangingMassRoundtrip)
 
 MuscolloAddTest(NAME testSingleMuscle)

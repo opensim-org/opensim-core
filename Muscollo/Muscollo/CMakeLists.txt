@@ -49,6 +49,8 @@ add_library(osimMuscollo SHARED
         InverseMuscleSolver/DeGrooteFregly2016MuscleStandalone.h
         InverseMuscleSolver/InverseMuscleSolverMotionData.h
         InverseMuscleSolver/InverseMuscleSolverMotionData.cpp
+        Components/StationPlaneContactForce.h
+        Components/StationPlaneContactForce.cpp
         )
 target_link_libraries(osimMuscollo PUBLIC osimActuators
                                    PRIVATE tropter)

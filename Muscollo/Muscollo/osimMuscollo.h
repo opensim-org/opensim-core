@@ -35,6 +35,8 @@
 #include "MucoConstraint.h"
 #include "ActivationCoordinateActuator.h"
 
+#include "Components/StationPlaneContactForce.h"
+
 #include "RegisterTypes_osimMuscollo.h"
 
 #endif // MUSCOLLO_OSIMMUSCOLLO_H
