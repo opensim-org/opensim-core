@@ -168,7 +168,7 @@ protected:
     class ImplicitTropterProblem;
 
     std::shared_ptr<const tropter::Problem<double>>
-    getTropterProblem() const;
+    createTropterProblem() const;
 
     void resetProblemImpl(const MucoProblemRep&) const override;
     // TODO ensure that user-provided guess is within bounds.

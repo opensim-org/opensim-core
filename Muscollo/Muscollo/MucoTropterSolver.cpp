@@ -48,10 +48,8 @@ void MucoTropterSolver::constructProperties() {
     constructProperty_guess_file("");
 }
 
-// TODO rename to createTropterProblem().
-// TODO avoid inconsistent tropter problem for guess versus for solving.
 std::shared_ptr<const tropter::Problem<double>>
-MucoTropterSolver::getTropterProblem() const {
+MucoTropterSolver::createTropterProblem() const {
     checkPropertyInSet(*this, getProperty_dynamics_mode(), {"explicit",
                                                             "implicit"});
     if (get_dynamics_mode() == "explicit") {
@@ -75,7 +73,7 @@ MucoIterate MucoTropterSolver::createGuess(const std::string& type) const {
             "Unexpected guess type '" + type +
             "'; supported types are 'bounds', 'random', and "
             "'time-stepping'.");
-    auto ocp = getTropterProblem();
+    auto ocp = createTropterProblem();
 
     if (type == "time-stepping") {
         return createGuessTimeStepping();
@@ -153,7 +151,7 @@ MucoIterate MucoTropterSolver::createGuessTimeStepping() const {
 void MucoTropterSolver::setGuess(MucoIterate guess) {
     // Ensure the guess is compatible with this solver/problem.
     // Make sure to initialize the problem. TODO put in a better place.
-    getTropterProblem();
+    createTropterProblem();
     if (get_dynamics_mode() != "implicit") {
         // TODO check even if implicit.
         guess.isCompatible(getProblemRep(), true);
@@ -203,7 +201,7 @@ void MucoTropterSolver::printOptimizationSolverOptions(std::string solver) {
 MucoSolution MucoTropterSolver::solveImpl() const {
     const Stopwatch stopwatch;
 
-    auto ocp = getTropterProblem();
+    auto ocp = createTropterProblem();
 
     checkPropertyInSet(*this, getProperty_verbosity(), {0, 1, 2});
 

@@ -26,6 +26,7 @@ using namespace OpenSim;
 Model createDoublePendulumModel() {
     Model model;
     model.setName("double_pendulum");
+    const auto& ground = model.getGround();
 
     using SimTK::Vec3;
     using SimTK::Inertia;
@@ -38,7 +39,7 @@ Model createDoublePendulumModel() {
     model.addBody(b1);
 
     // Connect the bodies with pin joints. Assume each body is 1 m long.
-    auto* j0 = new PinJoint("j0", model.getGround(), Vec3(0), Vec3(0),
+    auto* j0 = new PinJoint("j0", ground, Vec3(0), Vec3(0),
             *b0, Vec3(-1, 0, 0), Vec3(0));
     auto& q0 = j0->updCoordinate();
     q0.setName("q0");
@@ -69,27 +70,29 @@ Model createDoublePendulumModel() {
     bodyGeometry.setColor(SimTK::Gray);
     // Attach an ellipsoid to a frame located at the center of each body.
     PhysicalOffsetFrame* b0center = new PhysicalOffsetFrame(
-        "b0center", "b0", SimTK::Transform(Vec3(-0.5, 0, 0)));
+        "b0center", *b0, SimTK::Transform(Vec3(-0.5, 0, 0)));
     b0->addComponent(b0center);
     b0center->attachGeometry(bodyGeometry.clone());
     PhysicalOffsetFrame* b1center = new PhysicalOffsetFrame(
-        "b1center", "b1", SimTK::Transform(Vec3(-0.5, 0, 0)));
+        "b1center", *b1, SimTK::Transform(Vec3(-0.5, 0, 0)));
     b1->addComponent(b1center);
     b1center->attachGeometry(bodyGeometry.clone());
 
     Sphere target(0.1);
     target.setColor(SimTK::Red);
     PhysicalOffsetFrame* targetframe = new PhysicalOffsetFrame(
-            "targetframe", "ground", SimTK::Transform(Vec3(0, 2, 0)));
+            "targetframe", ground, SimTK::Transform(Vec3(0, 2, 0)));
     model.updGround().addComponent(targetframe);
     targetframe->attachGeometry(target.clone());
 
     Sphere start(target);
     PhysicalOffsetFrame* startframe = new PhysicalOffsetFrame(
-            "startframe", "ground", SimTK::Transform(Vec3(2, 0, 0)));
+            "startframe", ground, SimTK::Transform(Vec3(2, 0, 0)));
     model.updGround().addComponent(startframe);
     start.setColor(SimTK::Green);
     startframe->attachGeometry(start.clone());
+
+    model.finalizeConnections();
 
     return model;
 }
@@ -106,31 +109,27 @@ int main() {
 
     // Model (dynamics).
     // -----------------
-    mp.setModel(createDoublePendulumModel());
+    mp.setModelCopy(createDoublePendulumModel());
 
     // Bounds.
     // -------
     mp.setTimeBounds(0, {0, 5});
-    mp.setStateInfo("j0/q0/value", {-10, 10}, 0);
-    mp.setStateInfo("j0/q0/speed", {-50, 50}, 0, 0);
-    mp.setStateInfo("j1/q1/value", {-10, 10}, 0);
-    mp.setStateInfo("j1/q1/speed", {-50, 50}, 0, 0);
-    mp.setControlInfo("tau0", {-100, 100}); // TODO tighten.
-    mp.setControlInfo("tau1", {-100, 100});
+    mp.setStateInfo("/jointset/j0/q0/value", {-10, 10}, 0);
+    mp.setStateInfo("/jointset/j0/q0/speed", {-50, 50}, 0, 0);
+    mp.setStateInfo("/jointset/j1/q1/value", {-10, 10}, 0);
+    mp.setStateInfo("/jointset/j1/q1/speed", {-50, 50}, 0, 0);
+    mp.setControlInfo("/tau0", {-100, 100}); // TODO tighten.
+    mp.setControlInfo("/tau1", {-100, 100});
 
     // Cost.
     // -----
-    MucoFinalTimeCost ftCost;
-    ftCost.set_weight(0.001);
-    mp.addCost(ftCost);
+    auto* ftCost = mp.addCost<MucoFinalTimeCost>();
+    ftCost->set_weight(0.001);
 
-    MucoMarkerEndpointCost endpointCost;
-    endpointCost.setName("endpoint");
-    endpointCost.set_weight(1000.0);
-    endpointCost.setPointName("marker");
-    endpointCost.setReferenceLocation(SimTK::Vec3(0, 2, 0));
-
-    mp.addCost(endpointCost);
+    auto* endpointCost = mp.addCost<MucoMarkerEndpointCost>("endpoint");
+    endpointCost->set_weight(1000.0);
+    endpointCost->setPointName("/markerset/marker");
+    endpointCost->setReferenceLocation(SimTK::Vec3(0, 2, 0));
 
     // Configure the solver.
     // =====================
@@ -144,12 +143,12 @@ int main() {
     MucoIterate guess = ms.createGuess();
     guess.setNumTimes(2);
     guess.setTime({0, 1});
-    guess.setState("j0/q0/value", {0, -SimTK::Pi});
-    guess.setState("j1/q1/value", {0, 2*SimTK::Pi});
-    guess.setState("j0/q0/speed", {0, 0});
-    guess.setState("j1/q1/speed", {0, 0});
-    guess.setControl("tau0", {0, 0});
-    guess.setControl("tau1", {0, 0});
+    guess.setState("/jointset/j0/q0/value", {0, -SimTK::Pi});
+    guess.setState("/jointset/j1/q1/value", {0, 2*SimTK::Pi});
+    guess.setState("/jointset/j0/q0/speed", {0, 0});
+    guess.setState("/jointset/j1/q1/speed", {0, 0});
+    guess.setControl("/tau0", {0, 0});
+    guess.setControl("/tau1", {0, 0});
     guess.resampleWithNumTimes(10);
     ms.setGuess(guess);
 
@@ -173,14 +172,12 @@ int main() {
     MucoIterate guessImp = ms.createGuess();
     guessImp.setNumTimes(2);
     guessImp.setTime({0, 1});
-    guessImp.setState("j0/q0/value", {0, -SimTK::Pi});
-    guessImp.setState("j1/q1/value", {0, 2*SimTK::Pi});
-    guessImp.setState("j0/q0/speed", {0, 0});
-    guessImp.setState("j1/q1/speed", {0, 0});
-    guessImp.setControl("j0/q0/accel", {0, 0});
-    guessImp.setControl("j1/q1/accel", {0, 0});
-    guessImp.setControl("tau0", {0, 0});
-    guessImp.setControl("tau1", {0, 0});
+    guessImp.setState("/jointset/j0/q0/value", {0, -SimTK::Pi});
+    guessImp.setState("/jointset/j1/q1/value", {0, 2*SimTK::Pi});
+    guessImp.setState("/jointset/j0/q0/speed", {0, 0});
+    guessImp.setState("/jointset/j1/q1/speed", {0, 0});
+    guessImp.setControl("/tau0", {0, 0});
+    guessImp.setControl("/tau1", {0, 0});
     guessImp.resampleWithNumTimes(10);
     ms.setGuess(guessImp);
     ms.set_optim_max_iterations(-1);
