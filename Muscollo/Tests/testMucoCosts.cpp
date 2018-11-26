@@ -187,14 +187,9 @@ void testMultipleCosts() {
     MucoTool muco;
     MucoProblem& problem = muco.updProblem();
 
-    MucoFinalTimeCost ft0;
-    ft0.set_weight(0.1);
-    problem.addCost(ft0);
+    auto* ft0 = problem.addCost<MucoFinalTimeCost>("ft0", 0.1);
 
-    MucoFinalTimeCost ft1;
-    ft1.setName("ft1");
-    ft1.set_weight(0.2);
-    problem.addCost(ft1);
+    auto* ft1 = problem.addCost<MucoFinalTimeCost>("ft1", 0.2);
 
     Model model(problem.getPhase().getModel());
     SimTK::State state = model.initSystem();
@@ -203,7 +198,7 @@ void testMultipleCosts() {
     problem.initialize(model);
 
     const double cost = problem.getPhase().calcEndpointCost(state);
-    SimTK_TEST_EQ(cost, (ft0.get_weight() + ft1.get_weight() ) * ft);
+    SimTK_TEST_EQ(cost, (ft0->get_weight() + ft1->get_weight() ) * ft);
 }
 
 int main() {
