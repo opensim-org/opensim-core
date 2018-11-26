@@ -20,8 +20,6 @@
 #include "MuscolloUtilities.h"
 
 #include <OpenSim/Simulation/Manager/Manager.h>
-#include <simbody/internal/Constraint.h>
-#include <OpenSim/Simulation/InverseDynamicsSolver.h>
 
 #include "tropter/TropterProblem.h"
 
@@ -48,7 +46,7 @@ void MucoTropterSolver::constructProperties() {
     constructProperty_guess_file("");
 }
 
-std::shared_ptr<const tropter::Problem<double>>
+std::shared_ptr<const MucoTropterSolver::TropterProblemBase<double>>
 MucoTropterSolver::createTropterProblem() const {
     checkPropertyInSet(*this, getProperty_dynamics_mode(), {"explicit",
                                                             "implicit"});
@@ -94,7 +92,7 @@ MucoIterate MucoTropterSolver::createGuess(const std::string& type) const {
     } else if (type == "random") {
         tropIter = dircol.make_random_iterate_within_bounds();
     }
-    return convert<MucoIterate, tropter::Iterate>(tropIter);
+    return ocp->convertToMucoIterate(tropIter);
 }
 
 MucoIterate MucoTropterSolver::createGuessTimeStepping() const {
@@ -152,10 +150,7 @@ void MucoTropterSolver::setGuess(MucoIterate guess) {
     // Ensure the guess is compatible with this solver/problem.
     // Make sure to initialize the problem. TODO put in a better place.
     createTropterProblem();
-    if (get_dynamics_mode() != "implicit") {
-        // TODO check even if implicit.
-        guess.isCompatible(getProblemRep(), true);
-    }
+    guess.isCompatible(getProblemRep(), true);
     clearGuess();
     m_guessFromAPI = std::move(guess);
 }
@@ -271,14 +266,14 @@ MucoSolution MucoTropterSolver::solveImpl() const {
     // TODO optsolver.set_advanced_option_string("derivative_test", "second-order");
     // TODO optsolver.set_findiff_hessian_step_size(1e-3);
 
-    tropter::Iterate tropIterate = convert(getGuess());
+    tropter::Iterate tropIterate = ocp->convertToTropterIterate(getGuess());
     tropter::Solution tropSolution = dircol.solve(tropIterate);
 
     if (get_verbosity()) {
         dircol.print_constraint_values(tropSolution);
     }
 
-    MucoSolution mucoSolution = convert(tropSolution);
+    MucoSolution mucoSolution = ocp->convertToMucoSolution(tropSolution);
 
     // TODO move this to convert():
     MucoSolver::setSolutionStats(mucoSolution, tropSolution.success,

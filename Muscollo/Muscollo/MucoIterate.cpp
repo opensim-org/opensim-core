@@ -62,6 +62,31 @@ MucoIterate::MucoIterate(const SimTK::Vector& time,
             Exception, "Inconsistent number of parameters.");
 }
 
+MucoIterate::MucoIterate(const SimTK::Vector& time,
+        std::vector<std::string> state_names,
+        std::vector<std::string> control_names,
+        std::vector<std::string> multiplier_names,
+        std::vector<std::string> derivative_names,
+        std::vector<std::string> parameter_names,
+        const SimTK::Matrix& statesTrajectory,
+        const SimTK::Matrix& controlsTrajectory,
+        const SimTK::Matrix& multipliersTrajectory,
+        const SimTK::Matrix& derivativesTrajectory,
+        const SimTK::RowVector& parameters)
+        : MucoIterate(time, state_names, control_names, multiplier_names,
+                parameter_names,
+                statesTrajectory, controlsTrajectory,
+                multipliersTrajectory, parameters) {
+    m_derivative_names = derivative_names;
+    m_derivatives = derivativesTrajectory;
+    OPENSIM_THROW_IF((int)m_derivative_names.size() != m_derivatives.ncol(),
+            Exception, "Inconsistent number of derivatives.");
+    if (m_derivatives.ncol()) {
+        OPENSIM_THROW_IF((int)time.size() != m_derivatives.nrow(), Exception,
+                "Inconsistent number of times in derivatives trajectory.");
+    }
+}
+
 void MucoIterate::setTime(const SimTK::Vector& time) {
     ensureUnsealed();
     OPENSIM_THROW_IF(time.size() != m_time.size(), Exception,
@@ -309,37 +334,52 @@ MucoIterate::MucoIterate(const std::string& filepath) {
     SimTK::convertStringTo(
             metadata.getValueForKey("num_multipliers").getValue<std::string>(),
             numMultipliers);
+    int numDerivatives;
+    SimTK::convertStringTo(
+            metadata.getValueForKey("num_derivatives").getValue<std::string>(),
+            numDerivatives);
     int numParameters;
     SimTK::convertStringTo(
             metadata.getValueForKey("num_parameters").getValue<std::string>(),
             numParameters);
     OPENSIM_THROW_IF(numStates < 0, Exception, "Invalid num_states.");
     OPENSIM_THROW_IF(numControls < 0, Exception, "Invalid num_controls.");
-    OPENSIM_THROW_IF(numMultipliers < 0, Exception, "Invalid num_multipliers");
+    OPENSIM_THROW_IF(numMultipliers < 0, Exception, "Invalid num_multipliers.");
+    OPENSIM_THROW_IF(numDerivatives < 0, Exception, "Invalid num_derivatives.");
     OPENSIM_THROW_IF(numParameters < 0, Exception, "Invalid num_parameters.");
 
     const auto& labels = table->getColumnLabels();
+    int offset = 0;
     m_state_names.insert(m_state_names.end(),
-            labels.begin(), 
-            labels.begin() + numStates);
+            labels.begin() + offset,
+            labels.begin() + offset + numStates);
+    offset += numStates;
     m_control_names.insert(m_control_names.end(),
-            labels.begin() + numStates, 
-            labels.begin() + numStates + numControls);
+            labels.begin() + offset,
+            labels.begin() + offset + numControls);
+    offset += numControls;
     m_multiplier_names.insert(m_multiplier_names.end(),
-            labels.begin() + numStates + numControls,
-            labels.begin() + numStates + numControls + numMultipliers);
+            labels.begin() + offset,
+            labels.begin() + offset + numMultipliers);
+    offset += numMultipliers;
+    m_derivative_names.insert(m_derivative_names.end(),
+            labels.begin() + offset,
+            labels.begin() + offset + numDerivatives);
+    offset += numDerivatives;
     m_parameter_names.insert(m_parameter_names.end(),
-            labels.begin() + numStates + numControls + numMultipliers, 
+            labels.begin() + offset,
             labels.end());
 
-    OPENSIM_THROW_IF(numStates + numControls + numMultipliers + numParameters 
+    OPENSIM_THROW_IF(numStates + numControls +
+            numMultipliers + numDerivatives + numParameters
                 != (int)table->getNumColumns(),
             Exception,
-            "Expected num_states + num_controls + num_multipliers " 
-            " + num_parameters = number of columns, but "
+            "Expected num_states + num_controls + num_multipliers + "
+            "num_derivatives + num_parameters = number of columns, but "
             "num_states=" + std::to_string(numStates) + ", "
             "num_controls=" + std::to_string(numControls) + ", "
             "num_multipliers=" + std::to_string(numMultipliers) + ", "
+            "num_derivatives=" + std::to_string(numDerivatives) + ", "
             "num_parameters=" + std::to_string(numParameters) + ", "
             "number of columns=" + std::to_string(table->getNumColumns()));
 
@@ -381,32 +421,41 @@ TimeSeriesTable MucoIterate::convertToTable() const {
     labels.insert(labels.end(),
             m_multiplier_names.begin(), m_multiplier_names.end());
     labels.insert(labels.end(),
+            m_derivative_names.begin(), m_derivative_names.end());
+    labels.insert(labels.end(),
             m_parameter_names.begin(), m_parameter_names.end());
     int numTimes = (int)m_time.size();
     int numStates = (int)m_state_names.size();
     int numControls = (int)m_control_names.size();
     int numMultipliers = (int)m_multiplier_names.size();
+    int numDerivatives = (int)m_derivative_names.size();
     int numParameters = (int)m_parameter_names.size();
 
     SimTK::Matrix data(numTimes, (int)labels.size());
-    data.updBlock(0, 0, numTimes, numStates) = m_states;
+    int startCol = 0;
+    data.updBlock(0, startCol, numTimes, numStates) = m_states;
+    startCol += numStates;
     if (numControls) {
-        data.updBlock(0, numStates, numTimes, numControls) = m_controls;
+        data.updBlock(0, startCol, numTimes, numControls) = m_controls;
+        startCol += numControls;
     }
     if (numMultipliers) {
-        data.updBlock(0, numStates + numControls, numTimes, numMultipliers)
-            = m_multipliers;
+        data.updBlock(0, startCol, numTimes, numMultipliers) = m_multipliers;
+        startCol += numMultipliers;
+    }
+    if (numDerivatives) {
+        data.updBlock(0, startCol, numTimes, numMultipliers) = m_derivatives;
+        startCol += numDerivatives;
     }
     if (numParameters) {
         // First row of table contains parameter values.
-        data.updBlock(0, numStates + numControls + numMultipliers, 1, 
-            numParameters) = m_parameters;
+        data.updBlock(0, startCol, 1, numParameters) = m_parameters;
         // Remaining rows of table contain NaNs in parameter columns.
         SimTK::Matrix parameter_nan_rows(numTimes - 1, 
             (int)m_parameter_names.size());
         parameter_nan_rows.setToNaN();
-        data.updBlock(1, numStates + numControls + numMultipliers, numTimes - 1, 
-            numParameters) = parameter_nan_rows;     
+        data.updBlock(1, startCol, numTimes - 1, numParameters) =
+                parameter_nan_rows;
     }
     TimeSeriesTable table(time, data, labels);
     // TODO table.updTableMetaData().setValueForKey("header", m_name);
@@ -420,6 +469,8 @@ TimeSeriesTable MucoIterate::convertToTable() const {
             std::to_string(numControls));
     table.updTableMetaData().setValueForKey("num_multipliers",
             std::to_string(numMultipliers));
+    table.updTableMetaData().setValueForKey("num_derivatives",
+            std::to_string(numDerivatives));
     table.updTableMetaData().setValueForKey("num_parameters",
             std::to_string(numParameters));
     return table;
@@ -509,10 +560,31 @@ bool MucoIterate::isCompatible(const MucoProblemRep& mp,
     auto mn(m_multiplier_names);
     std::sort(mn.begin(), mn.end());
 
-    auto pn(m_parameter_names);
-    std::sort(pn.begin(), pn.end()); 
+    auto dn(m_derivative_names);
+    std::sort(dn.begin(), dn.end());
 
-    bool compatible = mpsn == sn && mpcn == cn && mpmn == mn && mppn == pn;
+    auto pn(m_parameter_names);
+    std::sort(pn.begin(), pn.end());
+
+    // Create the expected names for the derivative variable names.
+    std::vector<std::string> mpdn;
+    for (auto name : mpsn) {
+        auto leafpos = name.find("value");
+        if (leafpos != std::string::npos) {
+            name.replace(leafpos, name.size(), "accel");
+            mpdn.push_back(name);
+        }
+    }
+    std::sort(mpdn.begin(), mpdn.end());
+
+    bool compatible =
+            mpsn == sn &&
+            mpcn == cn &&
+            mpmn == mn &&
+            // It's okay to not have any derivatives (for solving the problem
+            // with an explicit dynamics mode).
+            (dn.empty() || mpdn == dn) &&
+            mppn == pn;
 
     // TODO more detailed error message specifying exactly what's different.
     OPENSIM_THROW_IF(!compatible && throwOnError, Exception,

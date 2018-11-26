@@ -4,133 +4,32 @@
 
 // TODO create a MucoTropterSolver folder.
 
+#include "../MucoBounds.h"
+#include "../MucoTropterSolver.h"
+#include "../MuscolloUtilities.h"
+
+#include <simbody/internal/Constraint.h>
+#include <OpenSim/Simulation/InverseDynamicsSolver.h>
+
 #include <tropter/tropter.h>
 
-template <typename MucoIterateType, typename tropIterateType>
-MucoIterateType convert(const tropIterateType& tropSol) {
-    const auto& tropTime = tropSol.time;
-    SimTK::Vector time((int)tropTime.size(), tropTime.data());
-    const auto& state_names = tropSol.state_names;
-    const auto& control_names = tropSol.control_names;
-    const auto& multiplier_names = tropSol.adjunct_names;
-    const auto& parameter_names = tropSol.parameter_names;
+namespace OpenSim {
 
-    int numTimes = (int)time.size();
-    int numStates = (int)state_names.size();
-    int numControls = (int)control_names.size();
-    int numMultipliers = (int)multiplier_names.size();
-    int numParameters = (int)parameter_names.size();
-    // Create and populate states matrix.
-    SimTK::Matrix states(numTimes, numStates);
-    for (int itime = 0; itime < numTimes; ++itime) {
-        for (int istate = 0; istate < numStates; ++istate) {
-            states(itime, istate) = tropSol.states(istate, itime);
-        }
-    }
-    // Instantiating a SimTK::Matrix with a zero row or column does not create
-    // an empty matrix. For example,
-    //      SimTK::Matrix controls(5, 0);
-    // will create a matrix with five empty rows. So, for variables other than
-    // states, only allocate memory if necessary. Otherwise, return an empty
-    // matrix. This will prevent weird comparison errors between two iterates
-    // that should be equal but have slightly different "empty" values.
-    SimTK::Matrix controls;
-    if (numControls) {
-        controls.resize(numTimes, numControls);
-        for (int itime = 0; itime < numTimes; ++itime) {
-            for (int icontrol = 0; icontrol < numControls; ++icontrol) {
-                controls(itime, icontrol) = tropSol.controls(icontrol, itime);
-            }
-        }
-    }
-    SimTK::Matrix multipliers;
-    if (numMultipliers) {
-        multipliers.resize(numTimes, numMultipliers);
-        for (int itime = 0; itime < numTimes; ++itime) {
-            for (int imultiplier = 0; imultiplier < numMultipliers;
-                 ++imultiplier) {
-                multipliers(itime, imultiplier) = tropSol.adjuncts(imultiplier,
-                        itime);
-            }
-        }
-    }
-    // This produces an empty RowVector if numParameters is zero.
-    SimTK::RowVector parameters(numParameters, tropSol.parameters.data());
-    return {time, state_names, control_names, multiplier_names, parameter_names,
-            states, controls, multipliers, parameters};
-}
-
-OpenSim::MucoSolution convert(const tropter::Solution& tropSol) {
-    // TODO enhance when solution contains more info than iterate.
-    return convert<OpenSim::MucoSolution, tropter::Solution>(tropSol);
-}
-
-tropter::Iterate convert(const OpenSim::MucoIterate& mucoIter) {
-    tropter::Iterate tropIter;
-    if (mucoIter.empty()) return tropIter;
-
-    using Eigen::Map;
-    using Eigen::RowVectorXd;
-    using Eigen::MatrixXd;
-    using Eigen::VectorXd;
-
-    const auto& time = mucoIter.getTime();
-    tropIter.time = Map<const RowVectorXd>(&time[0], time.size());
-
-    tropIter.state_names = mucoIter.getStateNames();
-    tropIter.control_names = mucoIter.getControlNames();
-    tropIter.adjunct_names = mucoIter.getMultiplierNames();
-    tropIter.parameter_names = mucoIter.getParameterNames();
-
-    int numTimes = (int)time.size();
-    int numStates = (int)tropIter.state_names.size();
-    int numControls = (int)tropIter.control_names.size();
-    int numMultipliers = (int)tropIter.adjunct_names.size();
-    int numParameters = (int)tropIter.parameter_names.size();
-    const auto& states = mucoIter.getStatesTrajectory();
-    const auto& controls = mucoIter.getControlsTrajectory();
-    const auto& multipliers = mucoIter.getMultipliersTrajectory();
-    const auto& parameters = mucoIter.getParameters();
-    // Muscollo's matrix is numTimes x numStates;
-    // tropter's is numStates x numTimes.
-    tropIter.states = Map<const MatrixXd>(
-            &states(0, 0), numTimes, numStates).transpose();
-    if (numControls) {
-        tropIter.controls = Map<const MatrixXd>(
-                &controls(0, 0), numTimes, numControls).transpose();
-    } else {
-        tropIter.controls.resize(numControls, numTimes);
-    }
-    if (numMultipliers) {
-        tropIter.adjuncts = Map<const MatrixXd>(
-                &multipliers(0, 0), numTimes, numMultipliers).transpose();
-    } else {
-        tropIter.adjuncts.resize(numMultipliers, numTimes);
-    }
-    if (numParameters) {
-        tropIter.parameters = Map<const VectorXd>(
-                &parameters(0), numParameters);
-    } else {
-        tropIter.parameters.resize(numParameters);
-    }
-    return tropIter;
-}
-
-tropter::Bounds convert(const OpenSim::MucoBounds& mb) {
+inline tropter::Bounds convertBounds(const MucoBounds& mb) {
     return {mb.getLower(), mb.getUpper()};
 }
-tropter::InitialBounds convert(const OpenSim::MucoInitialBounds& mb) {
+inline tropter::InitialBounds convertBounds(const MucoInitialBounds& mb) {
     return {mb.getLower(), mb.getUpper()};
 }
-tropter::FinalBounds convert(const OpenSim::MucoFinalBounds& mb) {
+inline tropter::FinalBounds convertBounds(const MucoFinalBounds& mb) {
     return {mb.getLower(), mb.getUpper()};
 }
 
 template <typename T>
-class OpenSim::MucoTropterSolver::TropterProblemBase
+class MucoTropterSolver::TropterProblemBase
         : public tropter::Problem<T> {
 protected:
-    TropterProblemBase(const OpenSim::MucoTropterSolver& solver)
+    TropterProblemBase(const MucoTropterSolver& solver)
             : tropter::Problem<T>(solver.getProblemRep().getName()),
             m_mucoTropterSolver(solver),
             m_mucoProb(solver.getProblemRep()),
@@ -138,9 +37,9 @@ protected:
         // TODO set name properly.
         // Disable all controllers.
         // TODO temporary; don't want to actually do this.
-        auto controllers = m_model.getComponentList<OpenSim::Controller>();
+        auto controllers = m_model.getComponentList<Controller>();
         for (auto& controller : controllers) {
-            OPENSIM_THROW_IF(controller.get_enabled(), OpenSim::Exception,
+            OPENSIM_THROW_IF(controller.get_enabled(), Exception,
                     "MucoTropterSolver does not support OpenSim Controllers. "
                     "Disable all controllers in the model.");
         }
@@ -155,13 +54,13 @@ protected:
     }
 
     void addStateVariables() {
-        this->set_time(convert(m_mucoProb.getTimeInitialBounds()),
-                convert(m_mucoProb.getTimeFinalBounds()));
+        this->set_time(convertBounds(m_mucoProb.getTimeInitialBounds()),
+                convertBounds(m_mucoProb.getTimeFinalBounds()));
         for (const auto& svName : m_svNamesInSysOrder) {
             const auto& info = m_mucoProb.getStateInfo(svName);
-            this->add_state(svName, convert(info.getBounds()),
-                    convert(info.getInitialBounds()),
-                    convert(info.getFinalBounds()));
+            this->add_state(svName, convertBounds(info.getBounds()),
+                    convertBounds(info.getInitialBounds()),
+                    convertBounds(info.getFinalBounds()));
         }
     }
 
@@ -170,9 +69,9 @@ protected:
             // TODO handle a variable number of control signals.
             const auto& actuName = actu.getAbsolutePathString();
             const auto& info = m_mucoProb.getControlInfo(actuName);
-            this->add_control(actuName, convert(info.getBounds()),
-                    convert(info.getInitialBounds()),
-                    convert(info.getFinalBounds()));
+            this->add_control(actuName, convertBounds(info.getBounds()),
+                    convertBounds(info.getInitialBounds()),
+                    convertBounds(info.getFinalBounds()));
         }
     }
 
@@ -180,9 +79,9 @@ protected:
         // Add any scalar constraints associated with multibody constraints in
         // the model as path constraints in the problem.
         int cid, mp, mv, ma, numEquationsEnforced, multIndexThisConstraint;
-        std::vector<OpenSim::MucoBounds> bounds;
+        std::vector<MucoBounds> bounds;
         std::vector<std::string> labels;
-        std::vector<OpenSim::KinematicLevel> kinLevels;
+        std::vector<KinematicLevel> kinLevels;
         std::vector<std::string> mcNames =
                 m_mucoProb.createMultibodyConstraintNames();
         for (const auto& mcName : mcNames) {
@@ -199,13 +98,13 @@ protected:
             m_mpSum += mp;
             // Only considering holonomic constraints for now.
             // TODO if (get_enforce_holonomic_constraints_only()) {
-            OPENSIM_THROW_IF(mv != 0, OpenSim::Exception,
+            OPENSIM_THROW_IF(mv != 0, Exception,
                     "Only holonomic "
                     "(position-level) constraints are currently supported. "
                     "There are " + std::to_string(mv) + " velocity-level "
                     "scalar constraints associated with the model Constraint "
                     "at ConstraintIndex " + std::to_string(cid) + ".");
-            OPENSIM_THROW_IF(ma != 0, OpenSim::Exception,
+            OPENSIM_THROW_IF(ma != 0, Exception,
                     "Only holonomic "
                     "(position-level) constraints are currently supported. "
                     "There are " + std::to_string(ma) + " acceleration-level "
@@ -233,7 +132,7 @@ protected:
 
                 // TODO name constraints based on model constraint names
                 // or coordinate names if a locked or prescribed coordinate
-                this->add_path_constraint(labels[i], convert(bounds[i]));
+                this->add_path_constraint(labels[i], convertBounds(bounds[i]));
 
                 // If the index for this path constraint represents an
                 // a non-derivative scalar constraint equation, also add a
@@ -244,9 +143,9 @@ protected:
 
                     const auto& multInfo = multInfos[multIndexThisConstraint];
                     this->add_adjunct(multInfo.getName(),
-                            convert(multInfo.getBounds()),
-                            convert(multInfo.getInitialBounds()),
-                            convert(multInfo.getFinalBounds()));
+                            convertBounds(multInfo.getBounds()),
+                            convertBounds(multInfo.getInitialBounds()),
+                            convertBounds(multInfo.getFinalBounds()));
                     ++multIndexThisConstraint;
                 }
             }
@@ -265,7 +164,7 @@ protected:
             auto labels = pcInfo.getConstraintLabels();
             auto bounds = pcInfo.getBounds();
             for (int i = 0; i < pcInfo.getNumEquations(); ++i) {
-                this->add_path_constraint(labels[i], convert(bounds[i]));
+                this->add_path_constraint(labels[i], convertBounds(bounds[i]));
             }
         }
         m_numPathConstraintEqs = m_mucoProb.getNumPathConstraintEquations();
@@ -274,7 +173,7 @@ protected:
     void addParameters() {
         for (std::string name : m_mucoProb.createParameterNames()) {
             const MucoParameter& parameter = m_mucoProb.getParameter(name);
-            this->add_parameter(name, convert(parameter.getBounds()));
+            this->add_parameter(name, convertBounds(parameter.getBounds()));
         }
     }
 
@@ -398,14 +297,28 @@ protected:
                 this->m_numPathConstraintEqs, errorsBegin, true);
         m_mucoProb.calcPathConstraintErrors(state, pathConstraintErrors);
     }
+
+public:
+    template <typename MucoIterateType, typename tropIterateType>
+    MucoIterateType
+    convertIterateTropterToMuco(const tropIterateType& tropSol) const;
+
+    MucoIterate
+    convertToMucoIterate(const tropter::Iterate& tropSol) const;
+
+    MucoSolution
+    convertToMucoSolution(const tropter::Solution& tropSol) const;
+
+    tropter::Iterate
+    convertToTropterIterate(const MucoIterate& mucoIter) const;
 };
 
 
 template <typename T>
-class OpenSim::MucoTropterSolver::ExplicitTropterProblem
-        : public OpenSim::MucoTropterSolver::TropterProblemBase<T> {
+class MucoTropterSolver::ExplicitTropterProblem
+        : public MucoTropterSolver::TropterProblemBase<T> {
 public:
-    ExplicitTropterProblem(const OpenSim::MucoTropterSolver& solver)
+    ExplicitTropterProblem(const MucoTropterSolver& solver)
             : MucoTropterSolver::TropterProblemBase<T>(solver) {
     }
     void initialize_on_mesh(const Eigen::VectorXd&) const override {
@@ -418,7 +331,6 @@ public:
 
         const auto& states = in.states;
         const auto& controls = in.controls;
-        const auto& adjuncts = in.adjuncts;
 
         auto& model = this->m_model;
         auto& simTKState = this->m_state;
@@ -515,7 +427,7 @@ private:
 };
 
 template <typename T>
-class OpenSim::MucoTropterSolver::ImplicitTropterProblem :
+class MucoTropterSolver::ImplicitTropterProblem :
         public MucoTropterSolver::TropterProblemBase<T> {
 public:
     ImplicitTropterProblem(const MucoTropterSolver& solver)
@@ -565,7 +477,7 @@ public:
         // Multibody dynamics: differential equations
         // ------------------------------------------
         // udot = w
-        out.dynamics.segment(NQ, NQ) = controls.head(NQ);
+        out.dynamics.segment(NQ, NQ) = adjuncts.head(NQ);
 
 
         // Multibody dynamics: "F - ma = 0"
@@ -579,12 +491,10 @@ public:
 
         if (model.getNumControls()) {
             auto& osimControls = model.updControls(simTKState);
-            std::copy(controls.data() + NQ,
-                    controls.data() + controls.size(),
-                    &osimControls[0]);
+            std::copy_n(controls.data(), controls.size(), &osimControls[0]);
 
             model.realizeVelocity(simTKState);
-            model.setControls(this->m_state, osimControls);
+            model.setControls(simTKState, osimControls);
         }
 
         // TODO: Update to support multibody constraints, using
@@ -593,11 +503,10 @@ public:
         InverseDynamicsSolver id(model);
         const double* udotBegin =
                 adjuncts.data() + this->m_numMultibodyConstraintEqs;
-        SimTK::Vector udot(NQ, udotBegin, true);
+        SimTK::Vector udot(NQ, udotBegin); // TODO , true);
         SimTK::Vector residual = id.solve(simTKState, udot);
 
-        std::copy_n(&residual[0], residual.size(),
-                out.path.data());
+        std::copy_n(&residual[0], residual.size(), out.path.data());
 
         // TODO Antoine and Gil said realizing Dynamics is a lot costlier than
         // realizing to Velocity and computing forces manually.
@@ -605,7 +514,21 @@ public:
         this->calcPathConstraintErrors(simTKState,
                 out.path.data() +
                 residual.size() + this->m_numMultibodyConstraintEqs);
+        /* TODO
+        if (SimTK::isNaN(in.adjuncts(0))) {
+            std::cout << "DEBUG detected NaN " << std::endl;
+        }
+        std::cout << "DEBUG dynamics\n" << out.dynamics << "\npath\n" << out.path << std::endl;
+        std::cout << simTKState.getY() << std::endl;
+        std::cout << residual << std::endl;
+        std::cout << udot << std::endl;
+        std::cout << "adjuncts " << adjuncts << std::endl;
+        std::cout << "num multibody " << this->m_numMultibodyConstraintEqs;
+         */
     }
 };
+
+} // namespace OpenSim
+
 
 #endif // MUSCOLLO_TROPTERPROBLEM_H

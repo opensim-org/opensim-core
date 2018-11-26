@@ -45,24 +45,35 @@ returned by a solver.
 
 The file format for reading and writing a MucoIterate is comprised of a
 file header followed by a row of column names and the stored data. The file
-header contains the number of states, controls, and parameters (order does
-not matter). Order does matter for the column names and corresponding data
+header contains the number of states, controls, Lagrange multipliers
+(for multibody constraints), derivatives
+(non-zero if the dynamics mode is implicit),
+and parameters (order does not matter).
+Order does matter for the column names and corresponding data
 columns. The columns *must* follow this order: time, states, controls,
 parameters. For parameter columns, the value of the parameter is stored in
 the first row of the column, while the rest of the rows are filled with
 NaNs.
 @samplefile
 num_controls=<number-of-control-variables>
+num_derivatives=<number-of-derivative-variables>
+num_multipliers=<number-of-multipliers>
 num_parameters=<number-of-parameter-variables>
 num_states=<number-of-state-variables>
-time,<state-0-name>,...,<control-0-name>,...,<multiplier-0-name>,...,
-                                                         <parameter-0-name>,...
-<#>,<#>,...,<#>,...,<#>,...,<#>,...
-<#>,<#>,...,<#>,...,<#>,...,<NaN>,...
- : , : ,..., : ,..., : ,...,  :  ,...
-<#>,<#>,...,<#>,...,<#>,...,<NaN>,...
+time,<state-0-name>,...,<control-0-name>,...,<multiplier-0-name>,..., \
+        <derivative-0-name>,...,<parameter-0-name>,...
+<#>,<#>,...,<#>,...,<#>,...,<#>,...,<#>  ,...
+<#>,<#>,...,<#>,...,<#>,...,<#>,...,<NaN>,...
+ : , : ,..., : ,..., : ,..., : ,...,  :  ,...
+<#>,<#>,...,<#>,...,<#>,...,<#>,...,<NaN>,...
 @endsamplefile
-(If stored in a STO file, the delimiters are tabs, not commas.) */
+(If stored in a STO file, the delimiters are tabs, not commas.)
+
+
+@par Implicit dynamics model
+If the solver uses an implicit dynamics mode, then there are "control"
+variables ("adjunct" variables in tropter's terminology) for the generalized
+accelerations. These are stored in the iterate as derivative variables. */
 // Not using three-slash doxygen comments because that messes up verbatim.
 class OSIMMUSCOLLO_API MucoIterate {
 public:
@@ -75,6 +86,19 @@ public:
             const SimTK::Matrix& statesTrajectory,
             const SimTK::Matrix& controlsTrajectory,
             const SimTK::Matrix& multipliersTrajectory,
+            const SimTK::RowVector& parameters);
+    /// This constructor is for use with the implicit dynamics mode, and
+    /// allows specifying a derivativesTrajectory.
+    MucoIterate(const SimTK::Vector& time,
+            std::vector<std::string> state_names,
+            std::vector<std::string> control_names,
+            std::vector<std::string> multiplier_names,
+            std::vector<std::string> derivative_names,
+            std::vector<std::string> parameter_names,
+            const SimTK::Matrix& statesTrajectory,
+            const SimTK::Matrix& controlsTrajectory,
+            const SimTK::Matrix& multipliersTrajectory,
+            const SimTK::Matrix& derivativesTrajectory,
             const SimTK::RowVector& parameters);
     /// Read a MucoIterate from a data file (e.g., STO, CSV). See output of
     /// write() for the correct format.
@@ -198,7 +222,7 @@ public:
     /// vector must have length getNumTimes().
     /// This variant supports use of an initializer list:
     /// @code{.cpp}
-    /// iterate.setState("knee/flexion/value", {0, 0.5, 1.0});
+    /// iterate.setState("/jointset/knee/flexion/value", {0, 0.5, 1.0});
     /// @endcode
     void setState(const std::string& name,
             std::initializer_list<double> trajectory) {
@@ -213,7 +237,7 @@ public:
     /// vector must have length getNumTimes().
     /// This variant supports use of an initializer list:
     /// @code{.cpp}
-    /// iterate.setControl("soleus", {0, 0.5, 1.0});
+    /// iterate.setControl("/forceset/soleus", {0, 0.5, 1.0});
     /// @endcode
     void setControl(const std::string& name,
             std::initializer_list<double> trajectory) {
@@ -283,6 +307,7 @@ public:
     /// The last time in the time vector.
     /// @throws Exception If numTimes is 0.
     double getFinalTime() const;
+
     // TODO inconsistent plural "state names" vs "states trajectory"
     const std::vector<std::string>& getStateNames() const
     {   ensureUnsealed(); return m_state_names; }
@@ -290,6 +315,8 @@ public:
     {   ensureUnsealed(); return m_control_names; }
     const std::vector<std::string>& getMultiplierNames() const
     {   ensureUnsealed(); return m_multiplier_names; }
+    const std::vector<std::string>& getDerivativeNames() const
+    {   ensureUnsealed(); return m_derivative_names; }
     const std::vector<std::string>& getParameterNames() const
     {   ensureUnsealed(); return m_parameter_names; }
     SimTK::VectorView_<double> getState(const std::string& name) const;
@@ -302,6 +329,8 @@ public:
     {   ensureUnsealed(); return m_controls; }
     const SimTK::Matrix& getMultipliersTrajectory() const
     {   ensureUnsealed(); return m_multipliers; }
+    const SimTK::Matrix& getDerivativesTrajectory() const
+    {   ensureUnsealed(); return m_derivatives; }
     const SimTK::RowVector& getParameters() const
     {   ensureUnsealed(); return m_parameters; }
 
@@ -312,6 +341,8 @@ public:
 
     /// Do the state and control names in this iterate match those in the
     /// problem? This may not catch all possible incompatibilities.
+    /// The problem and this iterate can still be compatible even if the iterate
+    /// contains no derivative columns.
     bool isCompatible(const MucoProblemRep&, bool throwOnError = false) const;
     /// Check if this iterate is numerically equal to another iterate.
     /// This uses SimTK::Test::numericallyEqual() internally.
@@ -394,6 +425,7 @@ private:
     std::vector<std::string> m_state_names;
     std::vector<std::string> m_control_names;
     std::vector<std::string> m_multiplier_names;
+    std::vector<std::string> m_derivative_names;
     std::vector<std::string> m_parameter_names;
     // Dimensions: time x states
     SimTK::Matrix m_states;
@@ -401,6 +433,8 @@ private:
     SimTK::Matrix m_controls;
     // Dimensions: time x multipliers
     SimTK::Matrix m_multipliers;
+    // Dimensions: time x derivatives
+    SimTK::Matrix m_derivatives;
     // Dimensions: 1 x parameters
     SimTK::RowVector m_parameters;
 

@@ -163,8 +163,10 @@ int main() {
     //muco.visualize(solution);
 
     ms.set_optim_max_iterations(-1);
-    MucoSolution solution2 = muco.solve().unseal();
-    muco.visualize(solution2);
+    MucoSolution solution2;
+    // TODO: The implicit problem no longer solves if we uncomment these lines:
+    // TODO MucoSolution solution2 = muco.solve().unseal();
+    // TODO muco.visualize(solution2);
 
     // Use implicit differential equations.
     // ====================================
@@ -179,6 +181,7 @@ int main() {
     guessImp.setControl("/tau0", {0, 0});
     guessImp.setControl("/tau1", {0, 0});
     guessImp.resampleWithNumTimes(10);
+    guessImp.write("DEBUG_TODO_guess.sto");
     ms.setGuess(guessImp);
     ms.set_optim_max_iterations(-1);
     // ms.clearGuess();
@@ -191,6 +194,8 @@ int main() {
             << solutionImplicit.getTime()[N-1] << std::endl;
     //TODO std::cout << "Comparison with implicit: " <<
     //        solutionImplicit.compareRMS(solution2) << std::endl;
+
+    // TODO test reading/writing MucoIterate.
 
     return EXIT_SUCCESS;
 }

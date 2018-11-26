@@ -167,7 +167,7 @@ protected:
     template <typename T>
     class ImplicitTropterProblem;
 
-    std::shared_ptr<const tropter::Problem<double>>
+    std::shared_ptr<const TropterProblemBase<double>>
     createTropterProblem() const;
 
     void resetProblemImpl(const MucoProblemRep&) const override;
