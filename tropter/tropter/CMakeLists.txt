@@ -38,6 +38,9 @@ add_library(tropter SHARED
         optimalcontrol/transcription/Trapezoidal.h
         optimalcontrol/transcription/Trapezoidal.hpp
         optimalcontrol/transcription/Trapezoidal.cpp
+        optimalcontrol/transcription/HermiteSimpson.h
+        optimalcontrol/transcription/HermiteSimpson.hpp
+        optimalcontrol/transcription/HermiteSimpson.cpp
         )
 
 # TODO generate_export_header() for exporting symbols on Windows.
