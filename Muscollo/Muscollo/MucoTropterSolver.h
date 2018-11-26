@@ -161,11 +161,11 @@ protected:
 
     // TODO
     template <typename T>
-    class OptimalControlProblem;
+    class TropterProblemBase;
     template <typename T>
-    class OCPExplicit;
+    class ExplicitTropterProblem;
     template <typename T>
-    class OCPImplicit;
+    class ImplicitTropterProblem;
 
     std::shared_ptr<const tropter::Problem<double>>
     getTropterProblem() const;
@@ -181,7 +181,7 @@ private:
 
     void constructProperties();
 
-    mutable SimTK::ResetOnCopy<std::shared_ptr<OCProblem<double>>>
+    mutable SimTK::ResetOnCopy<std::shared_ptr<tropter::Problem<double>>>
             m_tropProblem;
 
     // When a copy of the solver is made, we want to keep any guess specified

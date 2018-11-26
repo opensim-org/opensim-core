@@ -82,6 +82,11 @@ OSIMMUSCOLLO_API void visualize(Model, TimeSeriesTable);
 OSIMMUSCOLLO_API void prescribeControlsToModel(const MucoIterate& iterate, 
     Model& model);
 
+/// The map provides the index of each state variable in
+/// SimTK::State::getY() from its each state variable path string.
+std::vector<std::string> createStateVariableNamesInSystemOrder(
+        const Model& model);
+
 #ifndef SWIG
 /// The map provides the index of each state variable in
 /// SimTK::State::getY() from its state variable path string.
