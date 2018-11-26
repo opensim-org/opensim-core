@@ -52,24 +52,18 @@ void MucoTropterSolver::constructProperties() {
 // TODO avoid inconsistent tropter problem for guess versus for solving.
 std::shared_ptr<const tropter::Problem<double>>
 MucoTropterSolver::getTropterProblem() const {
-    if (!m_tropProblem) { // TODO detect if dynamics_mode has changed.
-        m_tropProblem = std::make_shared<ExplicitTropterProblem<double>>(*this);
+    checkPropertyInSet(*this, getProperty_dynamics_mode(), {"explicit",
+                                                            "implicit"});
+    if (get_dynamics_mode() == "explicit") {
+        return std::make_shared<ExplicitTropterProblem<double>>(*this);
+    } else if (get_dynamics_mode() == "implicit") {
+        return std::make_shared<ImplicitTropterProblem<double>>(*this);
+    } else {
+        OPENSIM_THROW_FRMOBJ(Exception, "Internal error.");
     }
-    return m_tropProblem;
-    // TODO
-    // checkPropertyInSet(*this, getProperty_dynamics_mode(), {"explicit",
-    //                                                         "implicit"});
-    // if (get_dynamics_mode() == "explicit") {
-    //     return std::make_shared<OCPExplicit<double>>(*this);
-    // } else if (get_dynamics_mode() == "implicit") {
-    //     return std::make_shared<OCPImplicit<double>>(*this);
-    // } else {
-    //     OPENSIM_THROW_FRMOBJ(Exception, "Internal error.");
-    // }
 }
 
 void MucoTropterSolver::resetProblemImpl(const MucoProblemRep&) const {
-    m_tropProblem.reset();
 }
 
 MucoIterate MucoTropterSolver::createGuess(const std::string& type) const {
@@ -224,8 +218,6 @@ MucoSolution MucoTropterSolver::solveImpl() const {
 
     // Apply settings/options.
     // -----------------------
-    checkPropertyInSet(*this, getProperty_dynamics_mode(), {"explicit"});
-
     checkPropertyIsPositive(*this, getProperty_num_mesh_points());
     int N = get_num_mesh_points();
 

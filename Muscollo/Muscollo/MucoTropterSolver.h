@@ -181,9 +181,6 @@ private:
 
     void constructProperties();
 
-    mutable SimTK::ResetOnCopy<std::shared_ptr<tropter::Problem<double>>>
-            m_tropProblem;
-
     // When a copy of the solver is made, we want to keep any guess specified
     // by the API, but want to discard anything we've cached by loading a file.
     MucoIterate m_guessFromAPI;

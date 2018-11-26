@@ -518,7 +518,7 @@ template <typename T>
 class OpenSim::MucoTropterSolver::ImplicitTropterProblem :
         public MucoTropterSolver::TropterProblemBase<T> {
 public:
-    ImplicitTropterProblem(const MucoSolver& solver)
+    ImplicitTropterProblem(const MucoTropterSolver& solver)
             : TropterProblemBase<T>(solver) {
         OPENSIM_THROW_IF(this->m_state.getNZ(), Exception,
                 "Cannot use implicit dynamics mode if the system has auxiliary "
@@ -531,7 +531,7 @@ public:
         OPENSIM_THROW_IF(NU != this->m_state.getNQ(), Exception,
                 "Quaternions are not supported.");
         for (int iudot = 0; iudot < NU; ++iudot) {
-            const auto& name = this->m_svNamesInSysOrder[iudot];
+            auto name = this->m_svNamesInSysOrder[iudot];
             auto leafpos = name.find("value");
             OPENSIM_THROW_IF(leafpos == std::string::npos, Exception,
                     "Internal error.");
@@ -549,7 +549,7 @@ public:
         const auto& controls = in.controls;
         const auto& adjuncts = in.adjuncts;
 
-        auto& model = this->model;
+        auto& model = this->m_model;
         auto& simTKState = this->m_state;
 
         simTKState.setTime(in.time);
@@ -591,7 +591,8 @@ public:
         // this->calcMultibodyConstraintForces()
 
         InverseDynamicsSolver id(model);
-        double* udotBegin = adjuncts.data() + this->m_numMultibodyConstraintEqs;
+        const double* udotBegin =
+                adjuncts.data() + this->m_numMultibodyConstraintEqs;
         SimTK::Vector udot(NQ, udotBegin, true);
         SimTK::Vector residual = id.solve(simTKState, udot);
 
