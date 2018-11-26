@@ -191,13 +191,12 @@ void testMultipleCosts() {
 
     auto* ft1 = problem.addCost<MucoFinalTimeCost>("ft1", 0.2);
 
-    Model model(problem.getPhase().getModel());
-    SimTK::State state = model.initSystem();
+    MucoProblemRep rep = problem.createRep();
+    SimTK::State state = rep.getModel().getWorkingState();
     const double ft = 0.35;
     state.setTime(ft);
-    problem.initialize(model);
 
-    const double cost = problem.getPhase().calcEndpointCost(state);
+    const double cost = rep.calcEndpointCost(state);
     SimTK_TEST_EQ(cost, (ft0->get_weight() + ft1->get_weight() ) * ft);
 }
 
