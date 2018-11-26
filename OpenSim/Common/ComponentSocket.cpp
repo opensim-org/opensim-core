@@ -27,12 +27,62 @@
 using namespace OpenSim;
 
 const Property<std::string>&
-AbstractSocket::getConnecteeNameProp() const {
-    return _owner->getProperty<std::string>(_connecteeNameIndex);
+AbstractSocket::getConnecteePathProp() const {
+    return _owner->getProperty<std::string>(_connecteePathIndex);
 }
 
 Property<std::string>&
-AbstractSocket::updConnecteeNameProp() {
-    return const_cast<Component*>(_owner.get())->updProperty<std::string>(
-                _connecteeNameIndex);
+AbstractSocket::updConnecteePathProp() {
+    auto* owner = const_cast<Component*>(_owner.get());
+    // We do not want to flip the isObjectUpToDateWithProperties flag.
+    const auto& prop = owner->getProperty<std::string>(_connecteePathIndex);
+    return const_cast<Property<std::string>&>(prop);
+}
+
+void AbstractSocket::prependComponentPathToConnecteePath(
+        const std::string& pathToPrepend) {
+    for (unsigned iConn = 0u; iConn < getNumConnectees(); ++iConn) {
+        ComponentPath path(getConnecteePath(iConn));
+        if (path.isAbsolute()) {
+            ComponentPath newPath(pathToPrepend);
+            for (int iPath = 0; iPath < path.getNumPathLevels();
+                 ++iPath) {
+                newPath.pushBack(
+                        path.getSubcomponentNameAtLevel(iPath));
+            }
+            setConnecteePath(newPath.toString(), iConn);
+        }
+    }
+}
+
+void AbstractInput::prependComponentPathToConnecteePath(
+        const std::string& pathToPrepend) {
+    for (unsigned iConn = 0u; iConn < getNumConnectees(); ++iConn) {
+        std::string connecteePath = getConnecteePath(iConn);
+        std::string componentPath;
+        std::string outputName;
+        std::string channelName;
+        std::string alias;
+        AbstractInput::parseConnecteePath(connecteePath,
+                                          componentPath,
+                                          outputName,
+                                          channelName,
+                                          alias);
+        ComponentPath path(componentPath);
+        if (path.isAbsolute()) {
+            ComponentPath newPath(pathToPrepend);
+            for (int iPath = 0; iPath < path.getNumPathLevels();
+                 ++iPath) {
+                newPath.pushBack(
+                        path.getSubcomponentNameAtLevel(iPath));
+            }
+            std::string newConnecteePath =
+                    AbstractInput::composeConnecteePath(
+                            newPath.toString(),
+                            outputName, channelName, alias);
+
+            setConnecteePath(newConnecteePath, iConn);
+        }
+    }
+
 }

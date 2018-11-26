@@ -1,12 +1,31 @@
-function Simulate(model, state, visualize)
-% Simulate an OpenSim model from an initial state. The provided state is
-% updated to be the state at the end of the simulation.
+function osimSimulate(model, stateOrVisualize, finalTime)
+% Simulate an OpenSim model.
+%
+% The simulation can be run with or without visualization (see stateOrVisualize
+% for more information). If visualizing (with the simbody-visualizer), you will
+% be able run the simulation multiple times.
+% Otherwise, the simulation is run once without visualization.
+%
+% Use Ctrl-C in the command window to halt the simulation.
+%
 %
 % Parameters
 % ----------
 % model: The OpenSim Model to simulate.
-% state: The SimTK State to use as the initial state for the simulation.
-% visualize (bool): Use the simbody-visualizer to visualize the simulation?
+% stateOrVisualize:
+%    State mode: The second parameter is the SimTK State to use as the initial
+%        state for the simulation. In this case, you must have already called
+%        initSystem() on the model. You can indicate if the visualizer should
+%        be used via model.setUseVisualizer() (before calling initSystem()).
+%        The provided state is updated to be the state at the end of the
+%        simulation.
+%    Visualize mode: The second parameter is a boolean indicating whether or
+%        not the visualizer should be used. In this case, you need not call
+%        initSystem() yourself. This function will call initSystem()
+%        internally, and the simulation will start from the default state. In
+%        this mode, this parameter is overridden by the OPENSIM_USE_VISUALIZER
+%        environment variable, if set.
+% finalTime: The final time for the simulation.
 
 %-----------------------------------------------------------------------%
 % The OpenSim API is a toolkit for musculoskeletal modeling and         %
@@ -33,17 +52,28 @@ function Simulate(model, state, visualize)
 
 import org.opensim.modeling.*;
 
-% This env. var. is used to turn off the visualizer during automated tests.
-if getenv('OPENSIM_USE_VISUALIZER') == '1'
-    visualize = true;
-elseif getenv('OPENSIM_USE_VISUALIZER') == '0'
-    visualize = false;
+stateMode = false;
+if isa(stateOrVisualize, 'org.opensim.modeling.State')
+    stateMode = true;
 end
 
-if visualize
-    model.setUseVisualizer(true);
+if stateMode
+    visualize = model.getUseVisualizer();
+    state = stateOrVisualize;
+else
+    visualize = stateOrVisualize;
+    % This env. var. is used to turn off the visualizer during automated tests.
+    if getenv('OPENSIM_USE_VISUALIZER') == '1'
+        visualize = true;
+    elseif getenv('OPENSIM_USE_VISUALIZER') == '0'
+        visualize = false;
+    end
+    
+    if visualize
+        model.setUseVisualizer(true);
+    end
+    state = model.initSystem();
 end
-model.initSystem();
 
 % Save this so that we can restart simulation from the given state.
 % We use the copy constructor to perform a deep copy.
@@ -90,24 +120,29 @@ while true
     end
 
     % Clear the table for all TableReporters. Note: this does not handle
-    % TableReporters for Vec3s, etc.
+    % TableReporters for class Vector, etc.
     compList = model.getComponentsList();
     compIter = compList.begin();
     while ~compIter.equals(compList.end())
         if ~isempty(strfind(compIter.getConcreteClassName(), ...
-                'TableReporter__double_'))
+                    'TableReporter__double_'))
             comp = model.getComponent(compIter.getAbsolutePathString());
             reporter = TableReporter.safeDownCast(comp);
             reporter.clearTable();
+        elseif ~isempty(strfind(compIter.getConcreteClassName(), ...
+                    'TableReporter__Vec3_'))
+            comp = model.getComponent(compIter.getAbsolutePathString());
+            reporterVec3 = TableReporterVec3.safeDownCast(comp);
+            reporterVec3.clearTable();  
         end
         compIter.next();
     end
 
     % Simulate.
-    state = State(initState);
+    thisState = State(initState);
     manager = Manager(model);
-    manager.initialize(state);
-    state = manager.integrate(5.0);
+    manager.initialize(thisState);
+    state = manager.integrate(finalTime);
     simulatedAtLeastOnce = true;
 
     % If there is no visualizer, only simulate once.

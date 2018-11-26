@@ -221,7 +221,8 @@ public:
 
     void cacheModelAndState();
     void restoreStateFromCachedModel()  SWIG_DECLARE_EXCEPTION;
-    void setSocketConnecteeName(AbstractSocket& socket, const std::string& newValue )   SWIG_DECLARE_EXCEPTION;
+    void setSocketConnecteePath(AbstractSocket& socket,
+            const std::string& newValue)   SWIG_DECLARE_EXCEPTION;
 //=============================================================================
 // DATA
 //=============================================================================

@@ -909,8 +909,7 @@ bool RRATool::run()
 //=============================================================================
 // UTILITY
 //=============================================================================
-void RRATool::
-writeAdjustedModel() 
+void RRATool::writeAdjustedModel() 
 {
     if(_outputModelFile=="") {
         cerr<<"Warning: A name for the output model was not set.\n";
@@ -933,11 +932,7 @@ writeAdjustedModel()
     // NOTE: use operator= so actuator groups are properly copied over
     _model->updForceSet() = _originalForceSet;
 
-    // ExternalLoads were added as miscellaneous ModelComponents
-    cout << _model->updMiscModelComponentSet() << endl;
-    if (hasExternalLoads()) {
-        _model->updMiscModelComponentSet().remove(_externalLoads.release());
-    }
+    removeExternalLoadsFromModel();
 
     // CMC was added as a model controller, now remove before printing out
     int c = _model->updControllerSet().getIndex("CMC");

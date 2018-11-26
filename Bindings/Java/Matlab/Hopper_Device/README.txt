@@ -25,8 +25,6 @@ BuildHopper.m: Builds an OpenSim Model of a single-legged hopper, actuated
     by a single muscle.
 BuildDevice.m: Builds an OpenSim Model of an assistive device, which can be
     attached to the hopper.
-Simulate.m: Runs a forward simulation of an OpenSim model from a given State.
-    Optionally, the simulation can be visualized in the simbody-visualizer.
 EvaluateHopper.m: Computes the jump height from a provided simulation.
 
 RunHopper_answers.m: The same as RunHopper.m but with all "TODO" blocks

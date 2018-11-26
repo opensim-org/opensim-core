@@ -6,10 +6,19 @@ request related to the change, then we may provide the commit.
 
 This is not a comprehensive list of changes but rather a hand-curated collection of the more notable ones. For a comprehensive history, see the [OpenSim Core GitHub repo](https://github.com/opensim-org/opensim-core).
 
-**Note**: This document is currently under construction.
+v4.1
+====
 
-v4.0 (in development)
-=====================
+Converting from v4.0 to v4.1
+----------------------------
+- The `OpenSim::Array` constructor is now marked explicit, which prevents
+  accidental implicit conversion to `Array`. If you relied on this implicit
+  conversion, you will need to update your code to use the constructor
+  explicitly.
+
+
+v4.0
+====
 
 Converting from v3.x to v4.0
 -----------------------------
@@ -200,6 +209,7 @@ MATLAB interface
 - The configureOpenSim.m function should no longer require administrator
   privileges for most users, and gives more verbose output to assist with
   troubleshooting.
+- New MATLAB examples were added: Hopper-Device and Knee-Reflex.
 
 Python interface
 ----------------
@@ -242,17 +252,13 @@ programmatically in MATLAB or python.
 - The source code for the "From the Ground Up: Building a Passive Dynamic
   Walker Example" was added to this repository.
 - OpenSim no longer looks for the simbody-visualizer using the environment
-  variable `OPENSIM_HOME`.
+  variable `OPENSIM_HOME`. OpenSim uses `PATH` instead.
+- The Thelen2003Muscle now depend on separate components for modeling pennation,
+  and activation dynamics.
 
 Documentation
---------------
+-------------
 - Improved Doxygen layout and fixed several bugs and warnings (various)
 - All mentions of SimTK/Simbody classes in OpenSim's Doxygen now provide links directly to SimTK/Simbody's doxygen.
 - Added a detailed README.md wtith build instructions, as well as guides to contributing and developing (CONTRIBUTING.md).
 - Included GIFs in Doxygen for several commonly used Joint types
-
-STILL NEED TO ADD:
-- Additional changes to Model Component Interface, Iterator (any PRs labeled "New MCI")
-- PR #364
-- PR #370
-- PR #378

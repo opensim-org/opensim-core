@@ -60,7 +60,8 @@ ExternalLoads::ExternalLoads(const std::string &fileName, bool updateFromXMLNode
     Super(fileName, false),
     _dataFileName(_dataFileNameProp.getValueStr()),
     _externalLoadsModelKinematicsFileName(_externalLoadsModelKinematicsFileNameProp.getValueStr()),
-    _lowpassCutoffFrequencyForLoadKinematics(_lowpassCutoffFrequencyForLoadKinematicsProp.getValueDbl())
+    _lowpassCutoffFrequencyForLoadKinematics(_lowpassCutoffFrequencyForLoadKinematicsProp.getValueDbl()),
+    _loadedFromFile(fileName)
 {
     setNull();
 
@@ -117,6 +118,7 @@ void ExternalLoads::copyData(const ExternalLoads &aAbsExternalLoads)
     _externalLoadsModelKinematicsFileName = aAbsExternalLoads._externalLoadsModelKinematicsFileName;
     _lowpassCutoffFrequencyForLoadKinematics = aAbsExternalLoads._lowpassCutoffFrequencyForLoadKinematics;
     _storages = aAbsExternalLoads._storages;
+    _loadedFromFile = aAbsExternalLoads._loadedFromFile;
 }
 
 //_____________________________________________________________________________
@@ -134,7 +136,8 @@ void ExternalLoads::setupSerializedMembers()
     _propertySet.append(&_dataFileNameProp);
 
     _externalLoadsModelKinematicsFileName="";
-    comment =   "Optional motion file (.mot) or storage file (.sto) containing the model kinematics "
+    comment =   "The option is deprecated and unnecessary to apply external loads. " 
+                "A motion file (.mot) or storage file (.sto) containing the model kinematics "
                 "used to transform a point expressed in ground to the body of force application."
                 "If the point is not expressed in ground, the point is not transformed";
     _externalLoadsModelKinematicsFileNameProp.setComment(comment);
@@ -176,8 +179,41 @@ void ExternalLoads::extendConnectToModel(Model& aModel)
     // BASE CLASS
     Super::extendConnectToModel(aModel);
 
+    Storage *forceData = nullptr;
+    auto loadDataFromDirectoryAdjacentToFile =
+        [this, &forceData](const std::string& filepath) {
+            // Change working directory the ExternalLoads location
+            std::string savedCwd = IO::getCwd();
+            IO::chDir(IO::getParentDirectory(filepath));
+            try {
+                forceData = new Storage(this->_dataFileName);
+            }
+            catch (const std::exception &ex) {
+                cout << "Error: failed to read ExternalLoads data file '"
+                    << this->_dataFileName <<"'." << endl;
+                if (this->getDocument())
+                    IO::chDir(savedCwd);
+                throw(ex);
+            }
+            IO::chDir(savedCwd);
+    };
     if (_dataFileName.length() > 0) {
-        Storage *forceData = new Storage(_dataFileName);
+        if(IO::FileExists(_dataFileName))
+            forceData = new Storage(_dataFileName);
+        else if(getDocument()) { // ExternalLoads constructed from file
+            loadDataFromDirectoryAdjacentToFile(getDocumentFileName());
+        }
+        else if (!_loadedFromFile.empty()) {
+            // Might be dealing with a copy of an ExternalLoads constructed
+            // from file.
+            loadDataFromDirectoryAdjacentToFile(_loadedFromFile);
+        }
+        else {
+            // Cannot find the data file and do not have an ExternalLoads (XML)
+            // document to test if file is in its directory.
+            throw Exception("Error: unable to read ExternalLoads data file '" +
+                _dataFileName + "'.");
+        }
 
         for (int i = 0; i < getSize(); ++i)
             get(i).setDataSource(*forceData);

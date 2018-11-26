@@ -250,7 +250,9 @@ public:
     properties and corresponding properties are equal, and if the objects
     are the same concrete type and the concrete class says they are equal. 
     Concrete object classes must override this if they have any fields to
-    compare, but be sure to invoke the base class operator too. **/
+    compare, but be sure to invoke the base class operator too.
+    To print information about the exact differences,
+    set the debug level (setDebugLevel()) to a number greater than 0. **/
     virtual bool operator==(const Object &aObject) const;
     /** Provide an ordering for objects so they can be put in sorted
     containers. **/
@@ -805,6 +807,13 @@ private:
 
     void updateDefaultObjectsFromXMLNode();
     void updateDefaultObjectsXMLNode(SimTK::Xml::Element& aParent);
+
+    /** This is invoked at the start of print(). Derived classes can use this
+     * as an opportunity to issue warnings to users.
+     * Any exception thrown in this function is ignored, as exceptions would
+     * prevent the user from printing the object, which could be useful for
+     * debugging. */
+    virtual void warnBeforePrint() const {}
 
 //==============================================================================
 // DATA

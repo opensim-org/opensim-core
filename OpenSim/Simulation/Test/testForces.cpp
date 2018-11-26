@@ -76,7 +76,7 @@ int main()
     catch (const std::exception& e){
         cout << e.what() <<endl; failures.push_back("testPathSpring");
     }
-        
+
     try { testExternalForce(); }
     catch (const std::exception& e){
         cout << e.what() <<endl; failures.push_back("testExternalForce");
@@ -100,7 +100,7 @@ int main()
 
     try { testFunctionBasedBushingForce(); }
     catch (const std::exception& e){
-        cout << e.what() <<endl; 
+        cout << e.what() <<endl;
         failures.push_back("testFunctionBasedBushingForce");
     }
 
@@ -613,8 +613,11 @@ void testBushingForce()
 
     osimModel.setGravity(gravity_vec);
 
-    auto* spring = new BushingForce("bushing", "ground", "ball",
-        transStiffness, rotStiffness, transDamping, rotDamping);
+    auto* spring = new BushingForce("bushing", ground, *ball);
+    spring->set_translational_stiffness(transStiffness);
+    spring->set_rotational_stiffness(rotStiffness);
+    spring->set_translational_damping(transDamping);
+    spring->set_rotational_damping(rotDamping);
 
     osimModel.addForce(spring);
     const BushingForce& bushingForce =
@@ -622,7 +625,7 @@ void testBushingForce()
 
     // To print (serialize) the latest connections of the model, it is 
     // necessary to finalizeConnections() first.
-    osimModel.finalizeConnections(osimModel);
+    osimModel.finalizeConnections();
     osimModel.print("BushingForceModel.osim");
 
     Model previousVersionModel("BushingForceModel_30000.osim");
@@ -723,11 +726,11 @@ void testTwoFrameLinkerUpdateFromXMLNode() {
     osimModel.setGravity(gravity_vec);
 
     auto* spring = new BushingForce("bushing",
-            "ground",
+            ground,
             Transform(Rotation(BodyRotationSequence,
                     -0.5, XAxis, 0, YAxis, 0.5, ZAxis),
                 Vec3(1, 2, 3)),
-            "ball",
+            *ball,
             Transform(Rotation(BodyRotationSequence,
                     0.1, XAxis, 0.2, YAxis, 0.3, ZAxis), 
                 Vec3(4, 5, 6)),
@@ -739,14 +742,14 @@ void testTwoFrameLinkerUpdateFromXMLNode() {
     const BushingForce& bushingForce =
         osimModel.getComponent<BushingForce>("./forceset/bushing");
 
-    // It's necessary to correct the connectee names in the BushingForce, which
+    // It's necessary to correct the connectee paths in the BushingForce, which
     // we can do with finalizeConnections() (they are incorrect otherwise
     // because `spring` is initially orphaned).
-    osimModel.finalizeConnections(osimModel);
+    osimModel.finalizeConnections();
     osimModel.print("BushingForceOffsetModel.osim");
 
     Model previousVersionModel("BushingForceOffsetModel_30000.osim");
-    previousVersionModel.finalizeConnections(osimModel);
+    previousVersionModel.finalizeConnections();
     previousVersionModel.print("BushingForceOffsetModel_30000_in_Latest.osim");
 
     const BushingForce& bushingForceFromPrevious =
@@ -800,8 +803,8 @@ void testFunctionBasedBushingForce()
     osimModel.setGravity(gravity_vec);
 
     FunctionBasedBushingForce spring("linear_bushing",
-                    "ground", Vec3(0), Vec3(0), 
-                    "ball", Vec3(0), Vec3(0),
+                    ground, Vec3(0), Vec3(0),
+                    ball, Vec3(0), Vec3(0),
                     transStiffness, rotStiffness, transDamping, rotDamping);
 
     osimModel.addForce(&spring);
@@ -915,8 +918,8 @@ void testExpressionBasedBushingForceTranslational()
     Vec3 transDamping(0);
     
     ExpressionBasedBushingForce spring("linear_bushing",
-        "base_body", Vec3(0), Vec3(0), 
-        "ball", Vec3(0), Vec3(0), 
+        base, Vec3(0), Vec3(0),
+        ball, Vec3(0), Vec3(0),
         transStiffness, rotStiffness, transDamping, rotDamping);
     
     spring.setName("translational_linear_bushing");
@@ -1031,8 +1034,8 @@ void testExpressionBasedBushingForceRotational()
     Vec3 transDamping(0);
 
     ExpressionBasedBushingForce spring("rotatinal_spring", 
-        "base_body", Vec3(0), Vec3(0),
-        "ball", Vec3(0), Vec3(0),
+        base, Vec3(0), Vec3(0),
+        ball, Vec3(0), Vec3(0),
         transStiffness, rotStiffness, transDamping, rotDamping);
 
     spring.setName("rotational_linear_bushing");
@@ -1302,6 +1305,7 @@ void testCoordinateLimitForce()
     // BAD: have to set memoryOwner to false or program will crash when this test is complete.
     osimModel->disownAllComponents();
 
+    osimModel->finalizeConnections();
     osimModel->print("CoordinateLimitForceTest.osim");
 
     // Check serialization and deserialization

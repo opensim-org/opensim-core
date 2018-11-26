@@ -5,7 +5,7 @@
 % and supported by the US National Institutes of Health (U54 GM072970,
 % R24 HD065690) and by DARPA through the Warrior Web program.
 %
-% Copyright (c) 2005-2017 Stanford University and the Authors
+% Copyright (c) 2005-2019 Stanford University and the Authors
 % Author(s): Daniel A. Jacobs, Tom Uchida
 %
 % Licensed under the Apache License, Version 2.0 (the "License");
@@ -49,6 +49,9 @@ coordAct.setMaxControl(inf);                % Maximum control signal allowed
 
 % Add the force to the model.
 walkerModel.addForce(coordAct);
+
+% Finalize connections
+walkerModel.finalizeConnections();
 
 % Save the new model file.
 modelFile_new = '../Model/WalkerModelTerrain_CoordAct.osim';

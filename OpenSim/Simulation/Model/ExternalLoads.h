@@ -86,6 +86,10 @@ private:
        with the transformed point data. Hang-on to them so we can delete them. */
     std::vector<std::shared_ptr<Storage>> _storages;
 
+    // TODO: Replace with a Path property type that remembers where a file
+    // was loaded from.
+    std::string _loadedFromFile;
+
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -96,7 +100,9 @@ public:
     ExternalLoads();
 
     /**  Construct an actuator set from file.
-    * @param fileName Name of the file. */
+    * @param fileName Name of the file.
+    * @param aUpdateFromXMLNode Should the ExternalLoads be updated from the
+    * file? */
     ExternalLoads(const std::string &fileName, bool aUpdateFromXMLNode);
 
     ExternalLoads(const ExternalLoads &aExternalLoads);
@@ -121,6 +127,13 @@ public:
 
     void transformPointsExpressedInGroundToAppliedBodies(const Storage &kinematics, double startTime = -SimTK::Infinity, double endTime = SimTK::Infinity);
     ExternalForce* transformPointExpressedInGroundToAppliedBody(const ExternalForce &exForce, const Storage &kinematics, double startTime, double endTime);
+
+    /// ExternalLoads remembers the file it was loaded from, even after being
+    /// copied. This file path is used to find the datafile relative to the
+    /// location of the ExternalLoads file itself. This function can clear
+    /// the memory of the file that the original ExternalLoads came from.
+    /// In general, users should not need to use this function.
+    void clearLoadedFromFile() { _loadedFromFile = ""; }
 
 private:
     void setNull();

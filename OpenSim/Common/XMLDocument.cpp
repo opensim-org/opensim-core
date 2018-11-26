@@ -65,7 +65,8 @@ using namespace std;
 // 30515 for WrapObject color, display_preference, VisibleObject -> Appearance
 // 30516 for GeometryPath default_color -> Appearance
 // 30517 for removal of _connectee_name suffix to shorten XML for socket, input
-const int XMLDocument::LatestVersion = 30517;
+// 40000 for OpenSim 4.0 release
+const int XMLDocument::LatestVersion = 40000;
 //=============================================================================
 // DESTRUCTOR AND CONSTRUCTOR(S)
 //=============================================================================
@@ -513,6 +514,18 @@ void XMLDocument::addPhysicalOffsetFrame30505_30517(SimTK::Xml::Element& element
 
     frames_node->insertNodeAfter(frames_node->element_end(), newFrameElement);
     //frames_node->writeToString(debug);
+}
+
+string XMLDocument::updateConnecteePath30517(
+        const std::string& connecteeSetName,
+        const std::string& connecteeName) {
+    std::string connecteePath;
+    if (connecteeSetName == "bodyset" && connecteeName == "ground") {
+        connecteePath = "/" + connecteeName;
+    } else{
+        connecteePath = "/" + connecteeSetName + "/" + connecteeName;
+    }
+    return connecteePath;
 }
 
 SimTK::Xml::Element XMLDocument::findElementWithName(

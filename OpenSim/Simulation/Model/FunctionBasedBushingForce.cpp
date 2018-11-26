@@ -40,13 +40,25 @@ using namespace OpenSim;
 
 //_____________________________________________________________________________
 // Default constructor.
-FunctionBasedBushingForce::FunctionBasedBushingForce() :
-    TwoFrameLinker<Force, PhysicalFrame>()
+FunctionBasedBushingForce::FunctionBasedBushingForce()
 {
     setNull();
     constructProperties();
 }
 
+FunctionBasedBushingForce::FunctionBasedBushingForce(
+        const std::string& name,
+        const PhysicalFrame& frame1,
+        const SimTK::Vec3& point1,
+        const SimTK::Vec3& orientation1,
+        const PhysicalFrame& frame2,
+        const SimTK::Vec3& point2,
+        const SimTK::Vec3& orientation2)
+    : Super(name, frame1, point1, orientation1, frame2, point2, orientation2)
+{
+    setNull();
+    constructProperties();
+}
 
 // Convenience constructor for zero value force functions.
 FunctionBasedBushingForce::FunctionBasedBushingForce(const string&   name,
@@ -56,12 +68,39 @@ FunctionBasedBushingForce::FunctionBasedBushingForce(const string&   name,
                                     const string&   frame2Name,
                                     const Vec3&     point2,
                                     const Vec3&     orientation2)
-    : TwoFrameLinker<Force, PhysicalFrame>(name,
-                                          frame1Name, point1, orientation1,
-                                          frame2Name, point2, orientation2)
+    : Super(name,
+            frame1Name, point1, orientation1,
+            frame2Name, point2, orientation2)
 {
     setNull();
     constructProperties();
+}
+
+FunctionBasedBushingForce::FunctionBasedBushingForce(
+        const std::string& name,
+        const PhysicalFrame& frame1,
+        const SimTK::Vec3& point1,
+        const SimTK::Vec3& orientation1,
+        const PhysicalFrame& frame2,
+        const SimTK::Vec3& point2,
+        const SimTK::Vec3& orientation2,
+        const SimTK::Vec3& transStiffness,
+        const SimTK::Vec3& rotStiffness,
+        const SimTK::Vec3& transDamping,
+        const SimTK::Vec3& rotDamping)
+    : FunctionBasedBushingForce(name,
+                                frame1, point1, orientation1,
+                                frame2, point2, orientation2)
+{
+    // populate m_ii and f_ii as LinearFunction based on stiffness
+    set_m_x_theta_x_function( LinearFunction( rotStiffness[0], 0.0) );
+    set_m_y_theta_y_function( LinearFunction( rotStiffness[1], 0.0) );
+    set_m_z_theta_z_function( LinearFunction( rotStiffness[2], 0.0) );
+    set_f_x_delta_x_function( LinearFunction( transStiffness[0], 0.0) );
+    set_f_y_delta_y_function( LinearFunction( transStiffness[1], 0.0) );
+    set_f_z_delta_z_function( LinearFunction( transStiffness[2], 0.0) );
+    set_rotational_damping(rotDamping);
+    set_translational_damping(transDamping);
 }
 
 // Convenience constructor for linear functions.

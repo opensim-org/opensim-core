@@ -6,11 +6,9 @@
 %rename(OpenSimObject) OpenSim::Object;
 %rename(OpenSimException) OpenSim::Exception;
 
-/* rest of header files to be wrapped */
-%include <OpenSim/version.h>
-
 // osimCommon Library
 %include <OpenSim/Common/osimCommonDLL.h>
+%include <OpenSim/Common/About.h>
 %include <OpenSim/Common/Exception.h>
 %include <OpenSim/Common/Array.h>
 %include <OpenSim/Common/ArrayPtrs.h>
@@ -103,7 +101,11 @@ namespace OpenSim {
 // Can't wrap the return type of this function.
 %ignore OpenSim::Component::getOutputs;
 
+%include <OpenSim/Common/Path.h>
+%include <OpenSim/Common/ComponentPath.h>
+
 %include <OpenSim/Common/Component.h>
+%template(findComponent) OpenSim::Component::findComponent<OpenSim::Component>;
 
 %template(ComponentsList) OpenSim::ComponentList<const OpenSim::Component>;
 %template(ComponentIterator) OpenSim::ComponentListIterator<const OpenSim::Component>;
