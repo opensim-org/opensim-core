@@ -137,6 +137,9 @@ void HermiteSimpson<T>::set_ocproblem(
 
     m_constraint_names.clear();
     // Start at index 1 (counting mesh intervals; not mesh points).
+    // Betts eq. 4.107 on page 144 suggests that the Hermite defect constraints
+    // (eq. 4.103) for all states at a collocation point should be grouped 
+    // together, followed by all of the Simpson defect constraints (eq. 4.104).
     for (int i_mesh = 1; i_mesh < m_num_mesh_points; ++i_mesh) {
         for (const auto& state_name : state_names) {
             std::stringstream ss;
@@ -253,14 +256,24 @@ void HermiteSimpson<T>::set_ocproblem(
     VectorXd mesh = VectorXd::LinSpaced(m_num_mesh_points, 0, 1);
     VectorXd mesh_intervals = mesh.tail(num_mesh_intervals)
         - mesh.head(num_mesh_intervals);
+    // Simpson quadrature includes integrand evaluations at the midpoint.
     m_simpson_quadrature_coefficients = VectorXd::Zero(m_num_col_points);
-
-    Eigen::Vector3d fracs(1/6, 2/3, 1/6);
+    // The fractional coefficients that, when multiplied by the mesh fraction
+    // for a given mesh interval, make up the Simpson quadrature coefficients
+    // for that mesh interval.
+    Eigen::Vector3d fracs;
+    fracs << 1/6, 2/3, 1/6;
+    // Loop through each mesh interval and update the corresponding components
+    // in the total coefficients vector.
     for (int i_mesh = 0; i_mesh < num_mesh_intervals; ++i_mesh) {
-        Eigen::Map<Eigen::Vector3d> 
-            coefs_view(m_simpson_quadrature_coefficients.data() + 2*i_mesh, 3);
+        // The mesh interval coefficients overlap at the mesh grid points in the
+        // total coefficients vector, so we create a map starting at every 
+        // other index
+        Eigen::Map<Eigen::Vector3d> mesh_interval_coefs_map( 
+            m_simpson_quadrature_coefficients.data() + 2*i_mesh, 3);
 
-        coefs_view += mesh_intervals[i_mesh] * fracs;
+        // Update the total coefficients vector for this mesh interval.
+        mesh_interval_coefs_map += mesh_intervals[i_mesh] * fracs;
     }
 
     // Allocate working memory.
@@ -277,7 +290,7 @@ void HermiteSimpson<T>::calc_objective(const VectorX<T>& x, T& obj_value) const
     const T& initial_time = x[0];
     const T& final_time = x[1];
     const T duration = final_time - initial_time;
-    const T step_size = duration / (m_num_mesh_points - 1);
+    const T step_size = duration / (m_num_col_points - 1);
 
     // TODO I don't actually need to make a new view each time; just change the
     // data pointer. TODO probably don't even need to update the data pointer!
@@ -299,18 +312,17 @@ void HermiteSimpson<T>::calc_objective(const VectorX<T>& x, T& obj_value) const
     // Integral cost.
     // --------------
     m_integrand.setZero();
-    for (int i_mesh = 0; i_mesh < m_num_mesh_points; ++i_mesh) {
-        const T time = step_size * i_mesh + initial_time;
-        m_ocproblem->calc_integral_cost({i_mesh, time,
-            states.col(i_mesh), controls.col(i_mesh), adjuncts.col(i_mesh),
+    for (int i_col = 0; i_col < m_num_col_points; ++i_col) {
+        const T time = step_size * i_col + initial_time;
+        m_ocproblem->calc_integral_cost({i_col, time,
+            states.col(i_col), controls.col(i_col), adjuncts.col(i_col),
             parameters},
-            m_integrand[i_mesh]);
+            m_integrand[i_col]);
     }
-    // TODO use more intelligent quadrature? trapezoidal rule?
     T integral_cost = 0;
-    for (int i_mesh = 0; i_mesh < m_num_mesh_points; ++i_mesh) {
-        integral_cost += m_trapezoidal_quadrature_coefficients[i_mesh] *
-            m_integrand[i_mesh];
+    for (int i_col = 0; i_col < m_num_col_points; ++i_col) {
+        integral_cost += m_simpson_quadrature_coefficients[i_col] *
+            m_integrand[i_col];
     }
     // The quadrature coefficients are fractions of the duration; multiply
     // by duration to get the correct units.
@@ -326,7 +338,7 @@ void HermiteSimpson<T>::calc_constraints(const VectorX<T>& x,
     const T& initial_time = x[0];
     const T& final_time = x[1];
     const T duration = final_time - initial_time;
-    const T step_size = duration / (m_num_mesh_points - 1);
+    const T step_size = duration / (m_num_col_points - 1);
 
     auto states = make_states_trajectory_view(x);
     auto controls = make_controls_trajectory_view(x);
@@ -346,42 +358,55 @@ void HermiteSimpson<T>::calc_constraints(const VectorX<T>& x,
 
     // Obtain state derivatives at each mesh point.
     // --------------------------------------------
-    // TODO storing 1 too many derivatives trajectory; don't need the first
-    // xdot (at t0). (TODO I don't think this is true anymore).
-    // TODO tradeoff between memory and parallelism.
-    for (int i_mesh = 0; i_mesh < m_num_mesh_points; ++i_mesh) {
-        // TODO should pass the time.
-        const T time = step_size * i_mesh + initial_time;
+    // Evaluate points on the mesh.
+    int i_mesh = 0;
+    for (int i_col = 0; i_col < m_num_col_points; i_col += 2) {
+        const T time = step_size * i_col + initial_time;
         m_ocproblem->calc_differential_algebraic_equations(
-        {i_mesh, time, states.col(i_mesh), controls.col(i_mesh),
-            adjuncts.col(i_mesh), parameters},
-            {m_derivs.col(i_mesh),
-            constr_view.path_constraints.col(i_mesh)});
+        {i_mesh, time, states.col(i_col), controls.col(i_col),
+            adjuncts.col(i_col), parameters},
+            {m_derivs.col(i_col),
+            constr_view.path_constraints.col(i_col)});
+        i_mesh++;
+    }
+    // Evaluate points off the mesh.
+    for (int i_col = 1; i_col < m_num_col_points; i_col += 2) {
+        const T time = step_size * i_col + initial_time;
+        m_ocproblem->calc_differential_algebraic_equations(
+        {-1, time, states.col(i_col), controls.col(i_col),
+            adjuncts.col(i_col), parameters},
+            {m_derivs.col(i_col),
+            constr_view.path_constraints.col(i_col)});
     }
 
     // Compute constraint defects.
     // ---------------------------
-    // Backwards Euler (not used here):
-    // defect_i = x_i - (x_{i-1} + h * xdot_i)  for i = 1, ..., N.
     if (m_num_defects) {
+        // Betts eq. 4.107 on page 144 suggests that the Hermite defect 
+        // constraints (eq. 4.103) for all states at a collocation point should 
+        // be grouped together, followed by all of the Simpson defect 
+        // constraints (eq. 4.104).
         const unsigned N = m_num_mesh_points;
-        const auto& x_i = states.rightCols(N - 1);
-        const auto& x_im1 = states.leftCols(N - 1);
-        const auto& xdot_i = m_derivs.rightCols(N - 1);
         const auto& h = step_size;
-        //constr_view.defects = x_i-(x_im1+h*xdot_i);
-        // TODO Trapezoidal:
-        const auto& xdot_im1 = m_derivs.leftCols(N - 1);
-        //constr_view.defects = x_i-(x_im1+h*xdot_im1);
-        constr_view.defects = x_i - (x_im1 + 0.5 * h * (xdot_i + xdot_im1));
-        //for (int i_mesh = 0; i_mesh < N - 1; ++i_mesh) {
-        //    const auto& h = m_mesh_intervals[i_mesh];
-        //    constr_view.defects.col(i_mesh) = x_i.col(i_mesh)
-        //            - (x_im1.col(i_mesh) + 0.5 * h * duration * (xdot_i.col
-        // (i_mesh) + xdot_im1.col(i_mesh)));
-        //}
-    }
+        // States.
+        const auto& states_mesh = make_trajectory_view_mesh(states);
+        const auto& x_i = states_mesh.rightCols(N - 1);
+        const auto& x_im1 = states_mesh.leftCols(N - 1);
+        const auto& x_mid = make_trajectory_view_midpoint(states);
+        // State derivatives.
+        const auto& derivs_mesh = make_trajectory_view_mesh(m_derivs);
+        const auto& xdot_i = derivs_mesh.rightCols(N - 1);
+        const auto& xdot_im1 = derivs_mesh.leftCols(N - 1);
+        const auto& xdot_mid = make_trajectory_view_midpoint(m_derivs);
 
+        // Hermite interpolant defects
+        constr_view.defects.block(0, 0, m_num_states, m_num_defects)
+            = x_mid - 0.5 * (x_i + x_im1) - (h / 8) * (xdot_im1 - xdot_i);
+
+        // Simpson integration defects
+        constr_view.defects.block(m_num_states, 0, m_num_states, m_num_defects)
+            = x_i - x_im1 - (h / 6) * (xdot_i + 4*xdot_mid + xdot_im1);
+    }
 }
 
 template<typename T>
@@ -392,10 +417,6 @@ void HermiteSimpson<T>::calc_sparsity_hessian_lagrangian(
     const auto& num_variables = this->get_num_variables();
 
     const auto& num_con_vars = m_num_continuous_variables;
-
-    // TODO provide option for assuming dense (conservative)! To avoid trying to
-    // get an aggressive sparsity pattern; this is necessary if contact has
-    // if-statements.
 
     // Hessian of constraints.
     // -----------------------
@@ -410,58 +431,25 @@ void HermiteSimpson<T>::calc_sparsity_hessian_lagrangian(
         }
     }
 
-    // The Hessian of sum_i lambda_i * constraint_i over constraints i has a
-    // certain structure as a result of the direct collocation formulation.
-    // The diagonal contains the same repeated square block of dimensions
-    // num_continuous_variables.
-    // We estimate the sparsity of this block by combining the sparsity from
-    // constraint_i for i covering the defects at mesh point 0 and the
-    // path constraints at mesh point 0.
-    // Note that defect constraint i actually depends on mesh points i and i
-    // + 1. However, since the sparsity pattern repeats for each mesh point,
-    // we can "ignore" the dependence on mesh point i + 1.
-
-    // This function evaluates the DAE at the mesh point 0, and returns a
-    // single DAE derivative or path constraint.
-    std::function<T(const VectorX<T>&, int)> calc_dae =
-        [this, &x](const VectorX<T>& vars, int idx) {
-        T t = x[0]; // initial time.
-        VectorX<T> s = vars.head(m_num_states);
-        VectorX<T> c = vars.segment(m_num_states, m_num_controls);
-        VectorX<T> a = vars.tail(m_num_adjuncts);
-        VectorX<T> p = x.segment(m_num_time_variables,
-            m_num_parameters).template cast<T>();
-        VectorX<T> deriv(m_num_states);
-        VectorX<T> path(m_num_path_constraints);
-        m_ocproblem->calc_differential_algebraic_equations(
-        {0, t, s, c, a, p}, {deriv, path});
-        return idx < m_num_states ? deriv[idx]
-            : path[idx - m_num_states];
-    };
     SymmetricSparsityPattern dae_sparsity(m_num_continuous_variables);
-    for (int i = 0; i < (m_num_states + m_num_path_constraints); ++i) {
-        // Create a function for a specific derivative or path constraint.
-        std::function<T(const VectorX<T>&)> calc_dae_i =
-            std::bind(calc_dae, std::placeholders::_1, i);
-        // Determine the sparsity for this specific derivative/path constraint.
-        auto block_sparsity = calc_hessian_sparsity_with_perturbation(
-            x.segment(m_num_dense_variables,
-                m_num_continuous_variables),
-            calc_dae_i);
-        // Add in this sparsity to the block that we'll repeat.
-        dae_sparsity.add_in_nonzeros(block_sparsity);
+    if (get_hessian_sparsity_mode()) {
+        TROPTER_THROW("Automatic sparsity detection for hessian diagonal "
+            "blocks not implemented for Hermite-Simpson transcription.");
+    } else {
+        // Dense block sparity mode.
+        dae_sparsity.set_dense();
     }
 
     // Repeat the block down the diagonal of the Hessian of constraints.
-    for (int imesh = 0; imesh < m_num_mesh_points; ++imesh) {
-        const auto istart = m_num_dense_variables + imesh * num_con_vars;
+    // TODO may need to move this into each branch of if-statement above, 
+    // depending on how automatic sparsity detection is implemented.
+    for (int i_col = 0; i_col < m_num_col_points; ++i_col) {
+        const auto istart = m_num_dense_variables + i_col * num_con_vars;
         hescon_sparsity.set_nonzero_block(istart, istart, dae_sparsity);
     }
 
-
     // Hessian of objective.
     // ---------------------
-
     // Assume time and parameters are coupled to all other variables.
     // TODO not necessarily; detect this sparsity.
     for (int irow = 0; irow < m_num_dense_variables; ++irow) {
@@ -470,28 +458,20 @@ void HermiteSimpson<T>::calc_sparsity_hessian_lagrangian(
         }
     }
 
-    // Integral cost depends on states and controls at all times.
-    // Determine how the integrand depends on the state and control at mesh
-    // point 0, then repeat this block down the diagonal.
-    std::function<T(const VectorX<T>&)> calc_integral_cost =
-        [this, &x](const VectorX<T>& vars) {
-        T t = x[0]; // initial time.
-        VectorX<T> s = vars.head(m_num_states);
-        VectorX<T> c = vars.segment(m_num_states, m_num_controls);
-        VectorX<T> a = vars.tail(m_num_adjuncts);
-        VectorX<T> p = x.segment(m_num_time_variables,
-            m_num_parameters).template cast<T>();
-        T integrand = 0;
-        m_ocproblem->calc_integral_cost({0, t, s, c, a, p}, integrand);
-        return integrand;
-    };
-    SymmetricSparsityPattern integral_cost_sparsity =
-        calc_hessian_sparsity_with_perturbation(
-            // Grab the first state and first controls.
-            x.segment(m_num_dense_variables, num_con_vars),
-            calc_integral_cost);
-    for (int imesh = 0; imesh < m_num_mesh_points; ++imesh) {
-        const auto istart = m_num_dense_variables + imesh * num_con_vars;
+    SymmetricSparsityPattern integral_cost_sparsity(num_con_vars);
+    if (get_hessian_sparsity_mode()) {
+        TROPTER_THROW("Automatic sparsity detection for hessian diagonal "
+            "blocks not implemented for Hermite-Simpson transcription.");
+    } else {
+        // Dense block sparity mode.
+        integral_cost_sparsity.set_dense();
+    }
+    
+    // Repeat the block down the diagonal of the Hessian of the objective.
+    // TODO may need to move this into each branch of if-statement above, 
+    // depending on how automatic sparsity detection is implemented.
+    for (int i_col = 0; i_col < m_num_col_points; ++i_col) {
+        const auto istart = m_num_dense_variables + i_col * num_con_vars;
         hesobj_sparsity.set_nonzero_block(istart, istart,
             integral_cost_sparsity);
     }
@@ -509,7 +489,7 @@ void HermiteSimpson<T>::calc_sparsity_hessian_lagrangian(
         return cost;
     };
     const auto lastmeshstart = m_num_dense_variables +
-        (m_num_mesh_points - 1) * num_con_vars;
+        (m_num_col_points - 1) * num_con_vars;
     SymmetricSparsityPattern endpoint_cost_sparsity =
         calc_hessian_sparsity_with_perturbation(
             // Grab the final state.
@@ -579,28 +559,28 @@ Eigen::VectorXd HermiteSimpson<T>::
         }
     }
     else {
-        TROPTER_THROW_IF(traj.time.size() != m_num_mesh_points,
+        TROPTER_THROW_IF(traj.time.size() != m_num_col_points,
             "Expected time to have %i element(s), but it has %i.",
-            m_num_mesh_points, traj.time.size());
-        TROPTER_THROW_IF(traj.states.cols() != m_num_mesh_points,
+            m_num_col_points, traj.time.size());
+        TROPTER_THROW_IF(traj.states.cols() != m_num_col_points,
             "Expected states to have %i column(s), but it has %i.",
-            m_num_mesh_points, traj.states.cols());
-        TROPTER_THROW_IF(traj.controls.cols() != m_num_mesh_points,
+            m_num_col_points, traj.states.cols());
+        TROPTER_THROW_IF(traj.controls.cols() != m_num_col_points,
             "Expected controls to have %i column(s), but it has %i.",
-            m_num_mesh_points, traj.controls.cols());
-        TROPTER_THROW_IF(traj.adjuncts.cols() != m_num_mesh_points,
+            m_num_col_points, traj.controls.cols());
+        TROPTER_THROW_IF(traj.adjuncts.cols() != m_num_col_points,
             "Expected adjuncts to have %i column(s), but it has %i.",
-            m_num_mesh_points, traj.adjuncts.cols());
+            m_num_col_points, traj.adjuncts.cols());
     }
 
     // Interpolate the guess, as it might have a different number of mesh
-    // points than m_num_mesh_points.
+    // points than m_num_col_points.
     Iterate traj_interp;
     const Iterate* traj_to_use;
     if (interpolate) {
         // TODO will actually need to provide the mesh spacing as well, when we
         // no longer have uniform mesh spacing.
-        traj_interp = traj.interpolate(m_num_mesh_points);
+        traj_interp = traj.interpolate(m_num_col_points);
         traj_to_use = &traj_interp;
     }
     else {
@@ -633,7 +613,7 @@ Iterate HermiteSimpson<T>::
     const double& initial_time = x[0];
     const double& final_time = x[1];
     Iterate traj;
-    traj.time = Eigen::RowVectorXd::LinSpaced(m_num_mesh_points,
+    traj.time = Eigen::RowVectorXd::LinSpaced(m_num_col_points,
         initial_time, final_time);
 
     traj.states = this->make_states_trajectory_view(x);
@@ -1037,7 +1017,7 @@ HermiteSimpson<T>::make_states_trajectory_view(const VectorX<S>& x) const
             // Pointer to the start of the states.
             x.data() + m_num_dense_variables,
             m_num_states,      // Number of rows.
-            m_num_mesh_points, // Number of columns.
+            m_num_col_points,  // Number of columns.
             // Distance between the start of each column.
             Eigen::OuterStride<Eigen::Dynamic>(m_num_continuous_variables)};
 }
@@ -1051,7 +1031,7 @@ HermiteSimpson<T>::make_controls_trajectory_view(const VectorX<S>& x) const
             // Start of controls for first mesh interval.
             x.data() + m_num_dense_variables + m_num_states,
             m_num_controls,          // Number of rows.
-            m_num_mesh_points,       // Number of columns.
+            m_num_col_points,        // Number of columns.
             // Distance between the start of each column; same as above.
             Eigen::OuterStride<Eigen::Dynamic>(m_num_continuous_variables)};
 }
@@ -1062,12 +1042,36 @@ typename HermiteSimpson<T>::template TrajectoryViewConst<S>
 HermiteSimpson<T>::make_adjuncts_trajectory_view(const VectorX<S>& x) const
 {
     return{
-        // Start of adjuncts for first mesh interval.
-        x.data() + m_num_dense_variables + m_num_states + m_num_controls,
-        m_num_adjuncts,         // Number of rows.
-        m_num_mesh_points,      // Number of columns.
-        // Distance between the start of each column; same as above.
-        Eigen::OuterStride<Eigen::Dynamic>(m_num_continuous_variables)};
+            // Start of adjuncts for first mesh interval.
+            x.data() + m_num_dense_variables + m_num_states + m_num_controls,
+            m_num_adjuncts,         // Number of rows.
+            m_num_col_points,       // Number of columns.
+            // Distance between the start of each column; same as above.
+            Eigen::OuterStride<Eigen::Dynamic>(m_num_continuous_variables)};
+}
+
+template<typename T>
+template<typename S>
+typename HermiteSimpson<T>::template TrajectoryViewMeshConst<S>
+HermiteSimpson<T>::make_trajectory_view_mesh(const MatrixX<S>& traj) const
+{
+    return{ // Pointer to the first mesh point in the trajectory.
+            traj.data(),
+            traj.rows(),            // Number of rows.
+            m_num_mesh_points,      // Number of columns.
+           };
+}
+
+template<typename T>
+template<typename S>
+typename HermiteSimpson<T>::template TrajectoryViewMidpointConst<S>
+HermiteSimpson<T>::make_trajectory_view_midpoint(const MatrixX<S>& traj) const
+{
+    return{ // Pointer to the first midpoint node in the trajectory.
+            traj.data() + 1,
+            traj.rows(),              // Number of rows.
+            m_num_mesh_points - 1,    // Number of columns.
+          };
 }
 
 // TODO avoid the duplication with the above.
@@ -1092,7 +1096,7 @@ HermiteSimpson<T>::make_states_trajectory_view(VectorX<S>& x) const
             // Pointer to the start of the states.
             x.data() + m_num_dense_variables,
             m_num_states,      // Number of rows.
-            m_num_mesh_points, // Number of columns.
+            m_num_col_points,  // Number of columns.
             // Distance between the start of each column.
             Eigen::OuterStride<Eigen::Dynamic>(m_num_continuous_variables)};
 }
@@ -1106,7 +1110,7 @@ HermiteSimpson<T>::make_controls_trajectory_view(VectorX<S>& x) const
             // Start of controls for first mesh interval.
             x.data() + m_num_dense_variables + m_num_states,
             m_num_controls,          // Number of rows.
-            m_num_mesh_points,       // Number of columns.
+            m_num_col_points,        // Number of columns.
             // Distance between the start of each column; same as above.
             Eigen::OuterStride<Eigen::Dynamic>(m_num_continuous_variables)};
 }
@@ -1120,9 +1124,33 @@ HermiteSimpson<T>::make_adjuncts_trajectory_view(VectorX<S>& x) const
             // Start of adjuncts for first mesh interval.
             x.data() + m_num_dense_variables + m_num_states + m_num_controls,
             m_num_adjuncts,         // Number of rows.
-            m_num_mesh_points,      // Number of columns.
+            m_num_col_points,       // Number of columns.
             // Distance between the start of each column; same as above.
             Eigen::OuterStride<Eigen::Dynamic>(m_num_continuous_variables)};
+}
+
+template<typename T>
+template<typename S>
+typename HermiteSimpson<T>::template TrajectoryViewMesh<S>
+HermiteSimpson<T>::make_trajectory_view_mesh(MatrixX<S>& traj) const
+{
+    return{ // Pointer to the first mesh point in the trajectory.
+            traj.data(),
+            traj.rows(),            // Number of rows.
+            m_num_mesh_points,      // Number of columns.
+          };
+}
+
+template<typename T>
+template<typename S>
+typename HermiteSimpson<T>::template TrajectoryViewMidpoint<S>
+HermiteSimpson<T>::make_trajectory_view_midpoint(MatrixX<S>& traj) const
+{
+    return{ // Pointer to the first midpoint node in the trajectory.
+            traj.data() + 1,
+            traj.rows(),              // Number of rows.
+            m_num_mesh_points - 1,    // Number of columns.
+          };
 }
 
 template<typename T>

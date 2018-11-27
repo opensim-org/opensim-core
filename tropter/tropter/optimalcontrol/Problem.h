@@ -53,6 +53,9 @@ template<typename T>
 struct Input {
     /// This index may be helpful for using a cache computed in
     /// OptimalControlProblem::initialize_on_mesh().
+    /// Setting this value to -1 indicates a point not on the mesh, usually a
+    /// collocation point for transcription schemes that require extra points
+    /// within the interval to construct defect constraints.
     const int mesh_index;
     /// The current time for the provided states and controls.
     const T& time;

@@ -135,6 +135,14 @@ protected:
         Eigen::Unaligned,
         Eigen::OuterStride<Eigen::Dynamic>>;
     template<typename S>
+    using TrajectoryViewMeshConst = Eigen::Map<const MatrixX<S>,
+        Eigen::Unaligned,
+        Eigen::OuterStride<2>>;
+    template<typename S>
+    using TrajectoryViewMidpointConst = Eigen::Map<const MatrixX<S>,
+        Eigen::Unaligned,
+        Eigen::OuterStride<2>>;
+    template<typename S>
     using ParameterView = Eigen::Map<VectorX<S>,
         Eigen::Unaligned,
         Eigen::InnerStride<1>>;
@@ -142,6 +150,14 @@ protected:
     using TrajectoryView = Eigen::Map<MatrixX<S>,
         Eigen::Unaligned,
         Eigen::OuterStride<Eigen::Dynamic>>;
+    template<typename S>
+    using TrajectoryViewMesh = Eigen::Map<MatrixX<S>,
+        Eigen::Unaligned,
+        Eigen::OuterStride<2>>;
+    template<typename S>
+    using TrajectoryViewMidpoint = Eigen::Map<MatrixX<S>,
+        Eigen::Unaligned,
+        Eigen::OuterStride<2>>;
     // TODO move to a single "make_variables_view"
     template<typename S>
     ParameterViewConst<S>
@@ -155,22 +171,38 @@ protected:
     template<typename S>
     TrajectoryViewConst<S>
         make_adjuncts_trajectory_view(const VectorX<S>& variables) const;
-    // TODO find a way to avoid these duplicated functions, using SFINAE.
-    /// This provides a view to which you can write.
+    template<typename S>
+    TrajectoryViewMeshConst<S>
+        make_trajectory_view_mesh(const MatrixX<S>& trajectory) const;
+    template<typename S>
+    TrajectoryViewMidpointConst<S>
+        make_trajectory_view_midpoint(const MatrixX<S>& trajectory) const;
+
+    /// These provide a view to which you can write.
     template<typename S>
     ParameterView<S>
         make_parameters_view(VectorX<S>& variables) const;
-    /// This provides a view to which you can write.
     template<typename S>
     TrajectoryView<S>
         make_states_trajectory_view(VectorX<S>& variables) const;
-    /// This provides a view to which you can write.
+    template<typename S>
+    TrajectoryViewMidpoint<S>
+        make_states_trajectory_view_midpoint(VectorX<S>& variables) const;
+    template<typename S>
+    TrajectoryViewMesh<S>
+        make_states_trajectory_view_mesh(VectorX<S>& variables) const;
     template<typename S>
     TrajectoryView<S>
         make_controls_trajectory_view(VectorX<S>& variables) const;
     template<typename S>
     TrajectoryView<S>
         make_adjuncts_trajectory_view(VectorX<S>& variables) const;
+    template<typename S>
+    TrajectoryViewMesh<S>
+        make_trajectory_view_mesh(MatrixX<S>& trajectory) const;
+    template<typename S>
+    TrajectoryViewMidpoint<S>
+        make_trajectory_view_midpoint(MatrixX<S>& trajectory) const;
 
     // TODO templatize.
     using DefectsTrajectoryView = Eigen::Map<MatrixX<T>>;
