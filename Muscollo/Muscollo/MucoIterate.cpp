@@ -605,9 +605,11 @@ bool MucoIterate::isNumericallyEqual(const MucoIterate& other, double tol)
             SimTK::Test::numericallyEqual(m_states, other.m_states, 1, tol) &&
             SimTK::Test::numericallyEqual(m_controls, other.m_controls, 1, tol)
             && SimTK::Test::numericallyEqual(m_multipliers, other.m_multipliers,
-                1, tol)
-            && SimTK::Test::numericallyEqual(m_parameters, other.m_parameters, 
-                1, tol);
+                    1, tol)
+            && SimTK::Test::numericallyEqual(m_derivatives, other.m_derivatives,
+                    1, tol)
+            && SimTK::Test::numericallyEqual(m_parameters, other.m_parameters,
+                    1, tol);
 }
 
 using VecStr = std::vector<std::string>;
@@ -649,11 +651,12 @@ void checkContains(std::string type, VecStr a, VecStr b, VecStr c) {
 double MucoIterate::compareContinuousVariablesRMS(const MucoIterate& other,
         std::vector<std::string> stateNames,
         std::vector<std::string> controlNames,
-        std::vector<std::string> multiplierNames) const {
+        std::vector<std::string> multiplierNames,
+        std::vector<std::string> derivativeNames) const {
     ensureUnsealed();
 
-    // Process state, control, and multiplier names.
-    // ---------------------------------------------
+    // Process state, control, multiplier, and derivative names.
+    // ---------------------------------------------------------
     if (stateNames.empty()) {
         OPENSIM_THROW_IF(!sameContents(m_state_names, other.m_state_names),
                 Exception,
@@ -691,9 +694,23 @@ double MucoIterate::compareContinuousVariablesRMS(const MucoIterate& other,
         multiplierNames.clear();
     }
     else {
-        // Will hold elements of stateNames that are not in m_state_names, etc.
         checkContains("multiplier", multiplierNames, m_multiplier_names,
             other.m_multiplier_names);
+    }
+    if (derivativeNames.empty()) {
+        OPENSIM_THROW_IF(!sameContents(m_derivative_names,
+                other.m_derivative_names),
+                Exception,
+                "Expected both iterates to have the same derivative names; "
+                "consider specifying the derivatives to compare.");
+        derivativeNames = m_derivative_names;
+    }
+    else if (derivativeNames.size() == 1 && derivativeNames[0] == "none") {
+        derivativeNames.clear();
+    }
+    else {
+        checkContains("derivative", derivativeNames, m_derivative_names,
+                other.m_derivative_names);
     }
 
     std::vector<double> selfTime =
@@ -752,12 +769,15 @@ double MucoIterate::compareContinuousVariablesRMS(const MucoIterate& other,
     const auto multiplierISS = integralSumSquaredError(multiplierNames, 
         m_multipliers, m_multiplier_names, other.m_multipliers, 
         other.m_multiplier_names);
+    const auto derivativeISS = integralSumSquaredError(derivativeNames,
+            m_derivatives, m_derivative_names, other.m_derivatives,
+            other.m_derivative_names);
 
     // sqrt(1/T * integral_t (sum_is error_is^2 + sum_ic error_ic^2 
     //                                          + sum_im error_im^2)
     // `is`: index for states; `ic`: index for controls; 
     // `im`: index for multipliers.
-    return sqrt((stateISS + controlISS + multiplierISS) / 
+    return sqrt((stateISS + controlISS + multiplierISS + derivativeISS) /
                 (finalTime - initialTime));
 }
 

@@ -97,11 +97,9 @@ Model createDoublePendulumModel() {
     return model;
 }
 
-
-int main() {
-
+MucoSolution solveDoublePendulumSwingup(const std::string& dynamics_mode) {
     MucoTool muco;
-    muco.setName("double_pendulum_swingup");
+    muco.setName("double_pendulum_swingup_" + dynamics_mode);
 
     // Define the optimal control problem.
     // ===================================
@@ -133,68 +131,71 @@ int main() {
 
     // Configure the solver.
     // =====================
-    int N = 50;
-    {
-        MucoTropterSolver& solver = muco.initSolver();
-        solver.set_dynamics_mode("explicit");
-        solver.set_num_mesh_points(N);
-        //solver.set_verbosity(2);
-        //solver.set_optim_hessian_approximation("exact");
+    int N = 30;
+    MucoTropterSolver& solver = muco.initSolver();
+    solver.set_dynamics_mode(dynamics_mode);
+    solver.set_num_mesh_points(N);
+    //solver.set_verbosity(2);
+    //solver.set_optim_hessian_approximation("exact");
 
-        MucoIterate guess = solver.createGuess();
-        guess.setNumTimes(2);
-        guess.setTime({0, 1});
-        guess.setState("/jointset/j0/q0/value", {0, -SimTK::Pi});
-        guess.setState("/jointset/j1/q1/value", {0, 2*SimTK::Pi});
-        guess.setState("/jointset/j0/q0/speed", {0, 0});
-        guess.setState("/jointset/j1/q1/speed", {0, 0});
-        guess.setControl("/tau0", {0, 0});
-        guess.setControl("/tau1", {0, 0});
-        guess.resampleWithNumTimes(10);
-        solver.setGuess(guess);
+    MucoIterate guess = solver.createGuess();
+    guess.setNumTimes(2);
+    guess.setTime({0, 1});
+    guess.setState("/jointset/j0/q0/value", {0, -SimTK::Pi});
+    guess.setState("/jointset/j1/q1/value", {0, 2*SimTK::Pi});
+    guess.setState("/jointset/j0/q0/speed", {0, 0});
+    guess.setState("/jointset/j1/q1/speed", {0, 0});
+    guess.setControl("/tau0", {0, 0});
+    guess.setControl("/tau1", {0, 0});
+    guess.resampleWithNumTimes(10);
+    solver.setGuess(guess);
 
-        muco.visualize(guess);
-    }
+    // muco.visualize(guess);
 
-    muco.print("double_pendulum_swingup.omuco");
+    muco.print("double_pendulum_swingup_" + dynamics_mode + ".omuco");
 
     // Solve the problem.
     // ==================
-    // TODO: The implicit problem doesn't solve if we first solve the explicit
-    // problem.
     MucoSolution solution = muco.solve();
-    muco.visualize(solution);
-
-    // Use implicit differential equations.
-    // ====================================
-    // Making a copy doesn't actually help.
-    MucoTool muco2 = MucoTool(muco);
-    auto& solver2 = muco2.initSolver();
-    // auto& muco2 = muco;
-    muco2.setName("double_pendulum_swingup_implicit");
-    solver2.set_dynamics_mode("implicit");
-    MucoIterate guessImp = solver2.createGuess();
-    guessImp.setNumTimes(2);
-    guessImp.setTime({0, 1});
-    guessImp.setState("/jointset/j0/q0/value", {0, -SimTK::Pi});
-    guessImp.setState("/jointset/j1/q1/value", {0, 2*SimTK::Pi});
-    guessImp.setState("/jointset/j0/q0/speed", {0, 0});
-    guessImp.setState("/jointset/j1/q1/speed", {0, 0});
-    guessImp.setControl("/tau0", {0, 0});
-    guessImp.setControl("/tau1", {0, 0});
-    guessImp.resampleWithNumTimes(10);
-    solver2.setGuess(guessImp);
-
-    MucoSolution solutionImplicit = muco2.solve().unseal();
-    muco2.visualize(solutionImplicit);
-
-    std::cout << solution.getTime()[N-1] << " "
-            << solutionImplicit.getTime()[N-1] << std::endl;
-    std::cout << "Comparison with implicit: " <<
-       solutionImplicit.compareContinuousVariablesRMS(solution) << std::endl;
+    // muco.visualize(solution);
 
     // TODO compareContinuousVariables: handle derivatives.
     // TODO test reading/writing MucoIterate with derivatives.
+
+    return solution;
+
+}
+
+int main() {
+    auto solutionImplicit = solveDoublePendulumSwingup("implicit");
+    // TODO: Solving the implicit problem multiple times gives different
+    // results; https://github.com/stanfordnmbl/moco/issues/172.
+    // auto solutionImplicit2 = solveDoublePendulumSwingup("implicit");
+    // TODO: The solution to this explicit problem changes every time.
+    auto solution = solveDoublePendulumSwingup("explicit");
+    auto solution2 = solveDoublePendulumSwingup("explicit");
+    auto solution3 = solveDoublePendulumSwingup("explicit");
+    std::cout <<
+    solution2.getFinalTime() << " " << solution3.getFinalTime() << std::endl;
+
+    std::cout << "Implicit final time: " << solutionImplicit.getFinalTime()
+            << std::endl;
+    std::cout << "Explicit final time: "
+            << solution.getFinalTime() << std::endl;
+    SimTK_TEST_EQ_TOL(solution.getFinalTime(), solutionImplicit.getFinalTime(),
+            1e-3);
+    const double stateError =
+            solutionImplicit.compareContinuousVariablesRMS(solution,
+                    {}, /* controlNames: */ {"none"}, {"none"},
+                    /* derivativeNames: */ {"none"});
+    std::cout << "State error: " << stateError << std::endl;
+    SimTK_TEST(stateError < 2.0);
+    // There is more deviation in the controls.
+    const double controlError =
+            solutionImplicit.compareContinuousVariablesRMS(solution,
+                    {"none"}, /* controlNames: */ {}, {"none"}, {"none"});
+    std::cout << "Control error: " << controlError << std::endl;
+    SimTK_TEST(controlError < 30.0);
 
     return EXIT_SUCCESS;
 }

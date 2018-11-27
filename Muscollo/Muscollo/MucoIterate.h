@@ -352,22 +352,30 @@ public:
             double tol = SimTK::NTraits<SimTK::Real>::getDefaultTolerance())
             const;
     /// Compute the root-mean-square error between the continuous variables of
-    /// this iterate and another. The RMS is computed by numerically integrating 
-    /// the sum of squared error across states, controls, and Lagrange 
-    /// multipliers and dividing by the larger of the two time ranges. When one 
-    /// iterate does not cover the same time range as the other, we assume 
-    /// values of 0 for the iterate with "missing" time. Numerical integration 
-    /// is performed using the trapezoidal rule. By default, all states, 
-    /// controls, and multipliers are compared, and it is expected that both 
+    /// this iterate and another. The RMS is computed by numerically integrating
+    /// the sum of squared error across
+    /// states,
+    /// controls,
+    /// Lagrange multipliers, and
+    /// derivatives and dividing by the larger of the two time ranges. When one
+    /// iterate does not cover the same time range as the other, we assume
+    /// values of 0 for the iterate with "missing" time. Numerical integration
+    /// is performed using the trapezoidal rule. By default, all states,
+    /// controls, and multipliers are compared, and it is expected that both
     /// iterates have the same states, controls, and multipliers. Alternatively,
-    /// you can specify the specific states, controls, and multipliers to 
-    /// compare. To skip over all states, specify a single element of "none" for 
-    /// stateNames; likewise for controlNames and multiplierNames. Both iterates 
-    /// must have at least 6 time nodes.
+    /// you can specify the specific
+    /// states,
+    /// controls,
+    /// multipliers, and
+    /// derivatives to compare. To skip over all states, specify a single
+    /// element of "none" for stateNames; likewise for controlNames,
+    /// multiplierNames, and derivativeNames. Both iterates must have at least 6
+    /// time nodes.
     double compareContinuousVariablesRMS(const MucoIterate& other,
             std::vector<std::string> stateNames = {},
             std::vector<std::string> controlNames = {},
-            std::vector<std::string> multiplierNames = {}) const;
+            std::vector<std::string> multiplierNames = {},
+            std::vector<std::string> derivativeNames = {}) const;
     /// Compute the root-mean-square error between the parameters in this
     /// iterate and another. The RMS is computed by dividing the the sum of the
     /// squared errors between corresponding parameters and then dividing by the
