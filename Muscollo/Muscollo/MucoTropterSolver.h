@@ -98,8 +98,7 @@ public:
     /// - **time-stepping**: see createGuessTimeStepping().
     /// @note Calling this method does *not* set an initial guess to be used
     /// in the solver; you must call setGuess() or setGuessFile() for that.
-    /// @precondition You must have called setProblem().
-    // TODO problem must be upToDate()?
+    /// @precondition You must have called resetProblem().
     MucoIterate createGuess(const std::string& type = "bounds") const;
 
     /// (Experimental) Run a forward simulation (using the OpenSim Manager,

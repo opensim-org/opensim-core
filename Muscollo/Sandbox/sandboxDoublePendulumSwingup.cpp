@@ -133,45 +133,47 @@ int main() {
 
     // Configure the solver.
     // =====================
-    MucoTropterSolver& ms = muco.initSolver();
     int N = 50;
-    ms.set_num_mesh_points(N);
-    ms.set_optim_max_iterations(5);
-    //ms.set_verbosity(2);
-    //ms.set_optim_hessian_approximation("exact");
+    {
+        MucoTropterSolver& solver = muco.initSolver();
+        solver.set_dynamics_mode("explicit");
+        solver.set_num_mesh_points(N);
+        //solver.set_verbosity(2);
+        //solver.set_optim_hessian_approximation("exact");
 
-    MucoIterate guess = ms.createGuess();
-    guess.setNumTimes(2);
-    guess.setTime({0, 1});
-    guess.setState("/jointset/j0/q0/value", {0, -SimTK::Pi});
-    guess.setState("/jointset/j1/q1/value", {0, 2*SimTK::Pi});
-    guess.setState("/jointset/j0/q0/speed", {0, 0});
-    guess.setState("/jointset/j1/q1/speed", {0, 0});
-    guess.setControl("/tau0", {0, 0});
-    guess.setControl("/tau1", {0, 0});
-    guess.resampleWithNumTimes(10);
-    ms.setGuess(guess);
+        MucoIterate guess = solver.createGuess();
+        guess.setNumTimes(2);
+        guess.setTime({0, 1});
+        guess.setState("/jointset/j0/q0/value", {0, -SimTK::Pi});
+        guess.setState("/jointset/j1/q1/value", {0, 2*SimTK::Pi});
+        guess.setState("/jointset/j0/q0/speed", {0, 0});
+        guess.setState("/jointset/j1/q1/speed", {0, 0});
+        guess.setControl("/tau0", {0, 0});
+        guess.setControl("/tau1", {0, 0});
+        guess.resampleWithNumTimes(10);
+        solver.setGuess(guess);
 
-    //muco.visualize(guess);
+        muco.visualize(guess);
+    }
 
     muco.print("double_pendulum_swingup.omuco");
 
     // Solve the problem.
     // ==================
-    //MucoSolution solution = muco.solve().unseal();
-    //solution.write("double_pendulum_swingup_solution.sto");
-    //muco.visualize(solution);
-
-    ms.set_optim_max_iterations(-1);
-    MucoSolution solution2;
-    // TODO: The implicit problem no longer solves if we uncomment these lines:
-    // TODO MucoSolution solution2 = muco.solve().unseal();
-    // TODO muco.visualize(solution2);
+    // TODO: The implicit problem doesn't solve if we first solve the explicit
+    // problem.
+    MucoSolution solution = muco.solve();
+    muco.visualize(solution);
 
     // Use implicit differential equations.
     // ====================================
-    ms.set_dynamics_mode("implicit");
-    MucoIterate guessImp = ms.createGuess();
+    // Making a copy doesn't actually help.
+    MucoTool muco2 = MucoTool(muco);
+    auto& solver2 = muco2.initSolver();
+    // auto& muco2 = muco;
+    muco2.setName("double_pendulum_swingup_implicit");
+    solver2.set_dynamics_mode("implicit");
+    MucoIterate guessImp = solver2.createGuess();
     guessImp.setNumTimes(2);
     guessImp.setTime({0, 1});
     guessImp.setState("/jointset/j0/q0/value", {0, -SimTK::Pi});
@@ -181,21 +183,18 @@ int main() {
     guessImp.setControl("/tau0", {0, 0});
     guessImp.setControl("/tau1", {0, 0});
     guessImp.resampleWithNumTimes(10);
-    guessImp.write("DEBUG_TODO_guess.sto");
-    ms.setGuess(guessImp);
-    ms.set_optim_max_iterations(-1);
-    // ms.clearGuess();
+    solver2.setGuess(guessImp);
 
-    MucoSolution solutionImplicit = muco.solve();
-    solutionImplicit.write("double_pendulum_swingup_solution_implicit.sto");
-    muco.visualize(solutionImplicit);
+    MucoSolution solutionImplicit = muco2.solve().unseal();
+    muco2.visualize(solutionImplicit);
 
-    std::cout << solution2.getTime()[N-1] << " "
+    std::cout << solution.getTime()[N-1] << " "
             << solutionImplicit.getTime()[N-1] << std::endl;
-    //TODO std::cout << "Comparison with implicit: " <<
-    //        solutionImplicit.compareRMS(solution2) << std::endl;
+    std::cout << "Comparison with implicit: " <<
+       solutionImplicit.compareContinuousVariablesRMS(solution) << std::endl;
 
-    // TODO test reading/writing MucoIterate.
+    // TODO compareContinuousVariables: handle derivatives.
+    // TODO test reading/writing MucoIterate with derivatives.
 
     return EXIT_SUCCESS;
 }

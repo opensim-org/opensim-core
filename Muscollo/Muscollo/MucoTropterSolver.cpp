@@ -71,7 +71,6 @@ MucoIterate MucoTropterSolver::createGuess(const std::string& type) const {
             "Unexpected guess type '" + type +
             "'; supported types are 'bounds', 'random', and "
             "'time-stepping'.");
-    auto ocp = createTropterProblem();
 
     if (type == "time-stepping") {
         return createGuessTimeStepping();
@@ -83,6 +82,8 @@ MucoIterate MucoTropterSolver::createGuess(const std::string& type) const {
     int N = get_num_mesh_points();
 
     checkPropertyInSet(*this, getProperty_optim_solver(), {"ipopt", "snopt"});
+
+    auto ocp = createTropterProblem();
     tropter::DirectCollocationSolver<double> dircol(ocp, "trapezoidal",
             get_optim_solver(), N);
 
@@ -205,8 +206,6 @@ MucoSolution MucoTropterSolver::solveImpl() const {
         std::cout << "MucoTropterSolver starting.\n";
         std::cout << std::string(79, '-') << std::endl;
         getProblemRep().printDescription();
-        // We can provide more detail about our problem than tropter can.
-        // ocp->print_description();
     }
 
     // Apply settings/options.

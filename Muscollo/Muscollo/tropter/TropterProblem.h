@@ -1,8 +1,22 @@
 #ifndef MUSCOLLO_TROPTERPROBLEM_H
 #define MUSCOLLO_TROPTERPROBLEM_H
-// TODO license block
-
-// TODO create a MucoTropterSolver folder.
+/* -------------------------------------------------------------------------- *
+ * OpenSim Muscollo: TropterProblem.h                                         *
+ * -------------------------------------------------------------------------- *
+ * Copyright (c) 2018 Stanford University and the Authors                     *
+ *                                                                            *
+ * Author(s): Christopher Dembia                                              *
+ *                                                                            *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
+ * not use this file except in compliance with the License. You may obtain a  *
+ * copy of the License at http://www.apache.org/licenses/LICENSE-2.0          *
+ *                                                                            *
+ * Unless required by applicable law or agreed to in writing, software        *
+ * distributed under the License is distributed on an "AS IS" BASIS,          *
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.   *
+ * See the License for the specific language governing permissions and        *
+ * limitations under the License.                                             *
+ * -------------------------------------------------------------------------- */
 
 #include "../MucoBounds.h"
 #include "../MucoTropterSolver.h"
@@ -184,7 +198,7 @@ protected:
     }
 
     void calc_integral_cost(const tropter::Input<T>& in,
-            T& integrand) const override final {
+            T& integrand) const override {
         // Unpack variables.
         const auto& time = in.time;
         const auto& states = in.states;
@@ -465,19 +479,21 @@ public:
         auto& simTKState = this->m_state;
 
         simTKState.setTime(in.time);
+        const auto NQ = simTKState.getNQ(); // TODO we assume NQ = NU
+
+        const auto& u = states.segment(NQ, NQ);
+        const auto& w = adjuncts.segment(this->m_numMultibodyConstraintEqs, NQ);
 
         // Kinematic differential equations
         // --------------------------------
         // qdot = u
         // TODO does not work for quaternions!
-        const auto NQ = simTKState.getNQ(); // TODO we assume NQ = NU
-        const auto& u = states.segment(NQ, NQ);
         out.dynamics.head(NQ) = u;
 
         // Multibody dynamics: differential equations
         // ------------------------------------------
         // udot = w
-        out.dynamics.segment(NQ, NQ) = adjuncts.head(NQ);
+        out.dynamics.segment(NQ, NQ) = w;
 
 
         // Multibody dynamics: "F - ma = 0"
@@ -500,20 +516,21 @@ public:
         // TODO: Update to support multibody constraints, using
         // this->calcMultibodyConstraintForces()
 
+        double* pathConstraintErrorBegin =
+                out.path.data() + this->m_numMultibodyConstraintEqs;
+        this->calcPathConstraintErrors(simTKState, pathConstraintErrorBegin);
+
         InverseDynamicsSolver id(model);
-        const double* udotBegin =
-                adjuncts.data() + this->m_numMultibodyConstraintEqs;
-        SimTK::Vector udot(NQ, udotBegin); // TODO , true);
+        SimTK::Vector udot((int)w.size(), w.data(), true);
         SimTK::Vector residual = id.solve(simTKState, udot);
 
-        std::copy_n(&residual[0], residual.size(), out.path.data());
+        double* residualBegin =
+                pathConstraintErrorBegin + this->m_numPathConstraintEqs;
+        std::copy_n(&residual[0], residual.size(), residualBegin);
 
         // TODO Antoine and Gil said realizing Dynamics is a lot costlier than
         // realizing to Velocity and computing forces manually.
 
-        this->calcPathConstraintErrors(simTKState,
-                out.path.data() +
-                residual.size() + this->m_numMultibodyConstraintEqs);
         /* TODO
         if (SimTK::isNaN(in.adjuncts(0))) {
             std::cout << "DEBUG detected NaN " << std::endl;
@@ -525,6 +542,16 @@ public:
         std::cout << "adjuncts " << adjuncts << std::endl;
         std::cout << "num multibody " << this->m_numMultibodyConstraintEqs;
          */
+    }
+    void calc_integral_cost(const tropter::Input<T>& in,
+            T& integrand) const override final {
+        TropterProblemBase<T>::calc_integral_cost(in, integrand);
+        // TODO: Test that this exception does get thrown.
+        OPENSIM_THROW_IF(
+                this->m_state.getSystemStage() >= SimTK::Stage::Acceleration,
+                Exception,
+                "Cannot use acceleration-level cache in implicit dynamics "
+                "mode.");
     }
 };
 

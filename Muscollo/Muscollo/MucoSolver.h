@@ -1,6 +1,5 @@
 #ifndef MUSCOLLO_MUCOSOLVER_H
 #define MUSCOLLO_MUCOSOLVER_H
-
 /* -------------------------------------------------------------------------- *
  * OpenSim Muscollo: MucoSolver.h                                             *
  * -------------------------------------------------------------------------- *

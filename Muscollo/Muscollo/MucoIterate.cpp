@@ -444,7 +444,7 @@ TimeSeriesTable MucoIterate::convertToTable() const {
         startCol += numMultipliers;
     }
     if (numDerivatives) {
-        data.updBlock(0, startCol, numTimes, numMultipliers) = m_derivatives;
+        data.updBlock(0, startCol, numTimes, numDerivatives) = m_derivatives;
         startCol += numDerivatives;
     }
     if (numParameters) {
