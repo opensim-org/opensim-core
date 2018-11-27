@@ -370,7 +370,7 @@ void Trapezoidal<T>::calc_sparsity_hessian_lagrangian(
     }
 
     SymmetricSparsityPattern dae_sparsity(m_num_continuous_variables);
-    if (get_hessian_sparsity_mode()) {
+    if (this->get_hessian_sparsity_mode()) {
         // The Hessian of sum_i lambda_i * constraint_i over constraints i has a
         // certain structure as a result of the direct collocation formulation.
         // The diagonal contains the same repeated square block of dimensions
@@ -415,7 +415,7 @@ void Trapezoidal<T>::calc_sparsity_hessian_lagrangian(
     } else {
         // Dense block sparity mode.
         dae_sparsity.set_dense();
-    {
+    }
 
     // Repeat the block down the diagonal of the Hessian of constraints.
     for (int imesh = 0; imesh < m_num_mesh_points; ++imesh) {
@@ -434,7 +434,7 @@ void Trapezoidal<T>::calc_sparsity_hessian_lagrangian(
     }
 
     SymmetricSparsityPattern integral_cost_sparsity(num_con_vars);
-    if (get_hessian_sparsity_mode()) {
+    if (this->get_hessian_sparsity_mode()) {
         // Integral cost depends on states and controls at all times.
         // Determine how the integrand depends on the state and control at mesh
         // point 0, then repeat this block down the diagonal.

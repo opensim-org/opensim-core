@@ -225,6 +225,7 @@ private:
 
     std::shared_ptr<const OCProblem> m_ocproblem;
     int m_num_mesh_points;
+    int m_num_col_points;
     int m_num_time_variables = -1;
     int m_num_parameters = -1;
     // The sum total of time_variables and parameters. Here, "dense" means that

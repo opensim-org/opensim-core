@@ -80,7 +80,7 @@ public:
     /// transcription scheme.
     void set_hessian_sparsity_mode(int mode);
     /// @copydoc set_hessian_sparsity_mode()
-    std::string get_hessian_sparsity_mode() const 
+    int get_hessian_sparsity_mode() const 
     { return m_hessian_sparsity_mode; }
 
     /// Solve the problem using an initial guess that is based on the bounds
