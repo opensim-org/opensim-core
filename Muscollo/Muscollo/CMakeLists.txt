@@ -53,6 +53,8 @@ add_library(osimMuscollo SHARED
         InverseMuscleSolver/InverseMuscleSolverMotionData.cpp
         Components/StationPlaneContactForce.h
         Components/StationPlaneContactForce.cpp
+        Components/ModelFactory.h
+        Components/ModelFactory.cpp
         )
 target_link_libraries(osimMuscollo PUBLIC osimActuators
                                    PRIVATE tropter)

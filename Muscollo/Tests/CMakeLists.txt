@@ -12,7 +12,9 @@ function(MuscolloAddTest)
     # To organize targets in Visual Studio's Solution Explorer.
     set_target_properties(${MUCOTEST_NAME} PROPERTIES FOLDER "Muscollo/Tests")
     target_link_libraries(${MUCOTEST_NAME} osimMuscollo ${MUCOTEST_LIB_DEPENDS})
-    add_test(NAME ${MUCOTEST_NAME} COMMAND ${MUCOTEST_NAME})
+    target_include_directories(${MUCOTEST_NAME}
+            PRIVATE "${CMAKE_SOURCE_DIR}/tropter/external/catch")
+    ADD_TEST(NAME ${MUCOTEST_NAME} COMMAND ${MUCOTEST_NAME})
     #if(WIN32) # Instead, we are copying dependencies' DLLs.
     #    set_property(TEST ${MUCOTEST_NAME} APPEND PROPERTY
     #        ENVIRONMENT "PATH=${IPOPT_DIR}/bin\;${ADOLC_DIR}/bin\;${OpenSim_ROOT_DIR}/bin")
@@ -20,19 +22,21 @@ function(MuscolloAddTest)
     file(COPY ${MUCOTEST_RESOURCES} DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
 endfunction()
 
-MuscolloAddTest(NAME testMuscolloInterface)
+MUSCOLLOADDTEST(NAME testMuscolloInterface)
 
-MuscolloAddTest(NAME testMucoCosts)
+MUSCOLLOADDTEST(NAME testMucoCosts)
 
-MuscolloAddTest(NAME testMucoParameters)
+MUSCOLLOADDTEST(NAME testMucoParameters)
 
-MuscolloAddTest(NAME testConstraints)
+MUSCOLLOADDTEST(NAME testImplicit)
 
-MuscolloAddTest(NAME testContact)
+MUSCOLLOADDTEST(NAME testConstraints)
 
-MuscolloAddTest(NAME testHangingMassRoundtrip)
+MUSCOLLOADDTEST(NAME testContact)
 
-MuscolloAddTest(NAME testSingleMuscle)
+MUSCOLLOADDTEST(NAME testHangingMassRoundtrip)
+
+MUSCOLLOADDTEST(NAME testSingleMuscle)
 
 MuscolloAddTest(NAME testSingleMuscleDeGrooteFregly2016 LIB_DEPENDS tropter)
 
