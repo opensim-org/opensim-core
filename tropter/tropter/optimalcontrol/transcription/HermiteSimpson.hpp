@@ -277,7 +277,8 @@ void HermiteSimpson<T>::set_ocproblem(
 
     // Allocate working memory.
     m_integrand.resize(m_num_col_points);
-    m_derivs.resize(m_num_states, m_num_col_points);
+    m_derivs_mesh.resize(m_num_states, m_num_mesh_points);
+    m_derivs_mid.resize(m_num_states, m_num_mesh_points - 1);
 
     m_ocproblem->initialize_on_mesh(mesh);
 }
@@ -364,18 +365,21 @@ void HermiteSimpson<T>::calc_constraints(const VectorX<T>& x,
         m_ocproblem->calc_differential_algebraic_equations(
         {i_mesh, time, states.col(i_col), controls.col(i_col),
             adjuncts.col(i_col), parameters},
-            {m_derivs.col(i_col),
-            constr_view.path_constraints.col(i_col)});
+            {m_derivs_mesh.col(i_mesh),
+            constr_view.path_constraints.col(i_mesh)});
         i_mesh++;
     }
     // Evaluate points off the mesh.
+    int i_mid = 0;
     for (int i_col = 1; i_col < m_num_col_points; i_col += 2) {
         const T time = step_size * i_col + initial_time;
         m_ocproblem->calc_differential_algebraic_equations(
         {-1, time, states.col(i_col), controls.col(i_col),
             adjuncts.col(i_col), parameters},
-            {m_derivs.col(i_col),
+            {m_derivs_mid.col(i_mid),
+            // TODO pass empty variable
             constr_view.path_constraints.col(i_col)});
+        i_mid++;
     }
 
     // Compute constraint defects.
@@ -387,28 +391,17 @@ void HermiteSimpson<T>::calc_constraints(const VectorX<T>& x,
         // constraints (eq. 4.104).
         const unsigned N = m_num_mesh_points;
         const auto& h = duration / (N - 1);
-        using TrajectoryViewSkip = Eigen::Map<const MatrixX<T>, 
-            Eigen::Unaligned, 
-            Eigen::OuterStride<Eigen::Dynamic>>;
-
-        std::cout << states.rows() << std::endl;
-        std::cout << states.cols() << std::endl;
 
         // States.
-        TrajectoryViewSkip x_mesh(states.data(), states.rows(), N,
-            Eigen::OuterStride<Eigen::Dynamic>(3));
+        auto x_mesh = make_states_trajectory_view_mesh(x);
+        auto x_mid = make_states_trajectory_view_mid(x);
         const auto& x_i = x_mesh.rightCols(N - 1);
         const auto& x_im1 = x_mesh.leftCols(N - 1);
-        TrajectoryViewSkip x_mid(states.data() + 5, states.rows(), 
-            N-1, Eigen::OuterStride<Eigen::Dynamic>(3));
 
         // State derivatives.
-        TrajectoryViewSkip xdot_mesh(m_derivs.data(), m_derivs.rows(), N,
-            Eigen::OuterStride<Eigen::Dynamic>(3));
-        const auto& xdot_i = xdot_mesh.rightCols(N - 1);
-        const auto& xdot_im1 = xdot_mesh.leftCols(N - 1);
-        TrajectoryViewSkip xdot_mid(m_derivs.data() + 3, m_derivs.rows(), N-1,
-            Eigen::OuterStride<Eigen::Dynamic>(3));
+        const auto& xdot_i = m_derivs_mesh.rightCols(N - 1);
+        const auto& xdot_im1 = m_derivs_mesh.leftCols(N - 1);
+        const auto& xdot_mid = m_derivs_mid;
 
         // Hermite interpolant defects
         constr_view.defects.topRows(m_num_states) =
@@ -417,28 +410,6 @@ void HermiteSimpson<T>::calc_constraints(const VectorX<T>& x,
         // Simpson integration defects
         constr_view.defects.bottomRows(m_num_states) =
             x_i - x_im1 - (h / T(6.0)) * (xdot_i + T(4.0)*xdot_mid + xdot_im1);
-
-        std::cout << "states: " << std::endl;
-        std::cout << states << std::endl;
-
-        std::cout << "x_mesh: " << std::endl;
-        std::cout << x_mesh << std::endl;
-
-        std::cout << "x_mid: " << std::endl;
-        std::cout << x_mid << std::endl;
-        //std::cout << "0.5*(x_i + x_im1): " << std::endl;
-        //std::cout << T(0.5) * (x_i + x_im1) << std::endl;
-
-
-        std::cout << "xdot_mesh: " << std::endl;
-        std::cout << xdot_mesh << std::endl;
-
-        std::cout << "xdot_mid: " << std::endl;
-        std::cout << xdot_mid << std::endl;
-
-        std::cout << "defects: " << std::endl;
-        std::cout << constr_view.defects << std::endl;
-
     }
 }
 
@@ -1060,6 +1031,36 @@ HermiteSimpson<T>::make_states_trajectory_view(const VectorX<S>& x) const
 template<typename T>
 template<typename S>
 typename HermiteSimpson<T>::template TrajectoryViewConst<S>
+HermiteSimpson<T>::make_states_trajectory_view_mesh(const VectorX<S>& x) const
+{
+    // TODO move time variables to the end.
+    return{
+        // Pointer to the start of the states.
+        x.data() + m_num_dense_variables,
+        m_num_states,       // Number of rows.
+        m_num_mesh_points,  // Number of columns.
+        // Distance between the start of each column.
+        Eigen::OuterStride<Eigen::Dynamic>(2 * m_num_continuous_variables)};
+}
+
+template<typename T>
+template<typename S>
+typename HermiteSimpson<T>::template TrajectoryViewConst<S>
+HermiteSimpson<T>::make_states_trajectory_view_mid(const VectorX<S>& x) const
+{
+    // TODO move time variables to the end.
+    return{
+        // Pointer to the start of the states.
+        x.data() + m_num_dense_variables + m_num_continuous_variables,
+        m_num_states,           // Number of rows.
+        m_num_mesh_points - 1,  // Number of columns.
+        // Distance between the start of each column.
+        Eigen::OuterStride<Eigen::Dynamic>(2 * m_num_continuous_variables)};
+}
+
+template<typename T>
+template<typename S>
+typename HermiteSimpson<T>::template TrajectoryViewConst<S>
 HermiteSimpson<T>::make_controls_trajectory_view(const VectorX<S>& x) const
 {
     return{
@@ -1110,6 +1111,36 @@ HermiteSimpson<T>::make_states_trajectory_view(VectorX<S>& x) const
             m_num_col_points,  // Number of columns.
             // Distance between the start of each column.
             Eigen::OuterStride<Eigen::Dynamic>(m_num_continuous_variables)};
+}
+
+template<typename T>
+template<typename S>
+typename HermiteSimpson<T>::template TrajectoryView<S>
+HermiteSimpson<T>::make_states_trajectory_view_mesh(VectorX<S>& x) const
+{
+    // TODO move time variables to the end.
+    return{
+        // Pointer to the start of the states.
+        x.data() + m_num_dense_variables,
+        m_num_states,           // Number of rows.
+        m_num_mesh_points,      // Number of columns.
+        // Distance between the start of each column.
+        Eigen::OuterStride<Eigen::Dynamic>(2 * m_num_continuous_variables)};
+}
+
+template<typename T>
+template<typename S>
+typename HermiteSimpson<T>::template TrajectoryView<S>
+HermiteSimpson<T>::make_states_trajectory_view_mid(VectorX<S>& x) const
+{
+    // TODO move time variables to the end.
+    return{
+        // Pointer to the start of the states.
+        x.data() + m_num_dense_variables + m_num_continuous_variables,
+        m_num_states,           // Number of rows.
+        m_num_mesh_points - 1,  // Number of columns.
+        // Distance between the start of each column.
+        Eigen::OuterStride<Eigen::Dynamic>(2 * m_num_continuous_variables)};
 }
 
 template<typename T>

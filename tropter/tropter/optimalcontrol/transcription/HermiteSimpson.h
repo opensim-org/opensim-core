@@ -155,6 +155,24 @@ protected:
     template<typename S>
     TrajectoryViewConst<S>
         make_adjuncts_trajectory_view(const VectorX<S>& variables) const;
+    template<typename S>
+    TrajectoryViewConst<S>
+        make_states_trajectory_view_mesh(const VectorX<S>& variables) const;
+    //template<typename S>
+    //TrajectoryViewConst<S>
+    //    make_controls_trajectory_view_mesh(const VectorX<S>& variables) const;
+    //template<typename S>
+    //TrajectoryViewConst<S>
+    //    make_adjuncts_trajectory_view_mesh(const VectorX<S>& variables) const;
+    template<typename S>
+    TrajectoryViewConst<S>
+        make_states_trajectory_view_mid(const VectorX<S>& variables) const;
+    //template<typename S>
+    //TrajectoryViewConst<S>
+    //    make_controls_trajectory_view_mid(const VectorX<S>& variables) const;
+    //template<typename S>
+    //TrajectoryViewConst<S>
+    //    make_adjuncts_trajectory_view_mid(const VectorX<S>& variables) const;
 
     /// These provide a view to which you can write.
     template<typename S>
@@ -169,6 +187,24 @@ protected:
     template<typename S>
     TrajectoryView<S>
         make_adjuncts_trajectory_view(VectorX<S>& variables) const;
+    template<typename S>
+    TrajectoryView<S>
+        make_states_trajectory_view_mesh(VectorX<S>& variables) const;
+    //template<typename S>
+    //TrajectoryView<S>
+    //    make_controls_trajectory_view_mesh(VectorX<S>& variables) const;
+    //template<typename S>
+    //TrajectoryView<S>
+    //    make_adjuncts_trajectory_view_mesh(VectorX<S>& variables) const;
+    template<typename S>
+    TrajectoryView<S>
+        make_states_trajectory_view_mid(VectorX<S>& variables) const;
+    //template<typename S>
+    //TrajectoryView<S>
+    //    make_controls_trajectory_view_mid(VectorX<S>& variables) const;
+    //template<typename S>
+    //TrajectoryView<S>
+    //    make_adjuncts_trajectory_view_mid(VectorX<S>& variables) const;
 
     // TODO templatize.
     using DefectsTrajectoryView = Eigen::Map<MatrixX<T>>;
@@ -212,7 +248,8 @@ private:
 
     // Working memory.
     mutable VectorX<T> m_integrand;
-    mutable MatrixX<T> m_derivs;
+    mutable MatrixX<T> m_derivs_mesh;
+    mutable MatrixX<T> m_derivs_mid;
 };
 
 } // namespace transcription
