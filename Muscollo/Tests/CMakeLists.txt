@@ -14,7 +14,7 @@ function(MuscolloAddTest)
     target_link_libraries(${MUCOTEST_NAME} osimMuscollo ${MUCOTEST_LIB_DEPENDS})
     target_include_directories(${MUCOTEST_NAME}
             PRIVATE "${CMAKE_SOURCE_DIR}/tropter/external/catch")
-    ADD_TEST(NAME ${MUCOTEST_NAME} COMMAND ${MUCOTEST_NAME})
+    add_test(NAME ${MUCOTEST_NAME} COMMAND ${MUCOTEST_NAME})
     #if(WIN32) # Instead, we are copying dependencies' DLLs.
     #    set_property(TEST ${MUCOTEST_NAME} APPEND PROPERTY
     #        ENVIRONMENT "PATH=${IPOPT_DIR}/bin\;${ADOLC_DIR}/bin\;${OpenSim_ROOT_DIR}/bin")
@@ -22,21 +22,21 @@ function(MuscolloAddTest)
     file(COPY ${MUCOTEST_RESOURCES} DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
 endfunction()
 
-MUSCOLLOADDTEST(NAME testMuscolloInterface)
+MuscolloAddTest(NAME testMuscolloInterface)
 
-MUSCOLLOADDTEST(NAME testMucoCosts)
+MuscolloAddTest(NAME testMucoCosts)
 
-MUSCOLLOADDTEST(NAME testMucoParameters)
+MuscolloAddTest(NAME testMucoParameters)
 
-MUSCOLLOADDTEST(NAME testImplicit)
+MuscolloAddTest(NAME testImplicit)
 
-MUSCOLLOADDTEST(NAME testConstraints)
+MuscolloAddTest(NAME testConstraints)
 
-MUSCOLLOADDTEST(NAME testContact)
+MuscolloAddTest(NAME testContact)
 
-MUSCOLLOADDTEST(NAME testHangingMassRoundtrip)
+MuscolloAddTest(NAME testHangingMassRoundtrip)
 
-MUSCOLLOADDTEST(NAME testSingleMuscle)
+MuscolloAddTest(NAME testSingleMuscle)
 
 MuscolloAddTest(NAME testSingleMuscleDeGrooteFregly2016 LIB_DEPENDS tropter)
 
