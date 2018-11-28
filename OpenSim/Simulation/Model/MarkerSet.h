@@ -39,7 +39,7 @@ class OSIMSIMULATION_API MarkerSet : public ModelComponentSet<Marker> {
 
 public:
     /** Use Super's constructors. @see ModelComponentSet */
-    using Super::ModelComponentSet;
+    using Super::Super;
 
     // default copy, assignment operator, and destructor
 
