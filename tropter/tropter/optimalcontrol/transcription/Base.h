@@ -92,7 +92,7 @@ public:
         m_hessian_sparsity_mode = mode; 
     }
     /// @copydoc set_hessian_sparsity_mode()
-    int get_hessian_sparsity_mode ()
+    int get_hessian_sparsity_mode () const
     {   return m_hessian_sparsity_mode; }
 
 private:

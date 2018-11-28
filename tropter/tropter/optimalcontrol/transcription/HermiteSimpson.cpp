@@ -17,10 +17,10 @@
 #include "HermiteSimpson.hpp"
 
 namespace tropter {
-    namespace transcription {
+namespace transcription {
 
-        template class HermiteSimpson<double>;
-        template class HermiteSimpson<adouble>;
+template class HermiteSimpson<double>;
+template class HermiteSimpson<adouble>;
 
-    } // namespace transcription
+} // namespace transcription
 } // namespace tropter

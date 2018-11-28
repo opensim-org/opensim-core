@@ -388,24 +388,32 @@ void HermiteSimpson<T>::calc_constraints(const VectorX<T>& x,
         // constraints (eq. 4.104).
         const unsigned N = m_num_mesh_points;
         const auto& h = step_size;
+        using TrajectoryViewSkip = 
+            Eigen::Map<const MatrixX<T>, 0, Eigen::OuterStride<2>>;
+
         // States.
-        const auto& states_mesh = make_trajectory_view_mesh(states);
-        const auto& x_i = states_mesh.rightCols(N - 1);
-        const auto& x_im1 = states_mesh.leftCols(N - 1);
-        const auto& x_mid = make_trajectory_view_midpoint(states);
+        TrajectoryViewSkip x_mesh(states.data(), states.rows(), 
+            m_num_mesh_points);
+        const auto& x_i = x_mesh.rightCols(N - 1);
+        const auto& x_im1 = x_mesh.leftCols(N - 1);
+        TrajectoryViewSkip x_mid(states.data()+1, states.rows(), 
+            m_num_mesh_points-1);
+
         // State derivatives.
-        const auto& derivs_mesh = make_trajectory_view_mesh(m_derivs);
-        const auto& xdot_i = derivs_mesh.rightCols(N - 1);
-        const auto& xdot_im1 = derivs_mesh.leftCols(N - 1);
-        const auto& xdot_mid = make_trajectory_view_midpoint(m_derivs);
+        TrajectoryViewSkip xdot_mesh(m_derivs.data(), m_derivs.rows(), 
+            m_num_mesh_points);
+        const auto& xdot_i = xdot_mesh.rightCols(N - 1);
+        const auto& xdot_im1 = xdot_mesh.leftCols(N - 1);
+        TrajectoryViewSkip xdot_mid(m_derivs.data() + 1, m_derivs.rows(), 
+            m_num_mesh_points - 1);
 
         // Hermite interpolant defects
-        constr_view.defects.block(0, 0, m_num_states, m_num_defects)
-            = x_mid - 0.5 * (x_i + x_im1) - (h / 8) * (xdot_im1 - xdot_i);
+        constr_view.defects.topRows(m_num_states) =
+            x_mid - T(0.5) * (x_i + x_im1) - (h / T(8)) * (xdot_im1 - xdot_i);
 
         // Simpson integration defects
-        constr_view.defects.block(m_num_states, 0, m_num_states, m_num_defects)
-            = x_i - x_im1 - (h / 6) * (xdot_i + 4*xdot_mid + xdot_im1);
+        constr_view.defects.bottomRows(m_num_states) =
+            x_i - x_im1 - (h / T(6)) * (xdot_i + T(4)*xdot_mid + xdot_im1);
     }
 }
 
@@ -1050,30 +1058,6 @@ HermiteSimpson<T>::make_adjuncts_trajectory_view(const VectorX<S>& x) const
             Eigen::OuterStride<Eigen::Dynamic>(m_num_continuous_variables)};
 }
 
-template<typename T>
-template<typename S>
-typename HermiteSimpson<T>::template TrajectoryViewMeshConst<S>
-HermiteSimpson<T>::make_trajectory_view_mesh(const MatrixX<S>& traj) const
-{
-    return{ // Pointer to the first mesh point in the trajectory.
-            traj.data(),
-            traj.rows(),            // Number of rows.
-            m_num_mesh_points,      // Number of columns.
-           };
-}
-
-template<typename T>
-template<typename S>
-typename HermiteSimpson<T>::template TrajectoryViewMidpointConst<S>
-HermiteSimpson<T>::make_trajectory_view_midpoint(const MatrixX<S>& traj) const
-{
-    return{ // Pointer to the first midpoint node in the trajectory.
-            traj.data() + 1,
-            traj.rows(),              // Number of rows.
-            m_num_mesh_points - 1,    // Number of columns.
-          };
-}
-
 // TODO avoid the duplication with the above.
 template<typename T>
 template<typename S>
@@ -1127,30 +1111,6 @@ HermiteSimpson<T>::make_adjuncts_trajectory_view(VectorX<S>& x) const
             m_num_col_points,       // Number of columns.
             // Distance between the start of each column; same as above.
             Eigen::OuterStride<Eigen::Dynamic>(m_num_continuous_variables)};
-}
-
-template<typename T>
-template<typename S>
-typename HermiteSimpson<T>::template TrajectoryViewMesh<S>
-HermiteSimpson<T>::make_trajectory_view_mesh(MatrixX<S>& traj) const
-{
-    return{ // Pointer to the first mesh point in the trajectory.
-            traj.data(),
-            traj.rows(),            // Number of rows.
-            m_num_mesh_points,      // Number of columns.
-          };
-}
-
-template<typename T>
-template<typename S>
-typename HermiteSimpson<T>::template TrajectoryViewMidpoint<S>
-HermiteSimpson<T>::make_trajectory_view_midpoint(MatrixX<S>& traj) const
-{
-    return{ // Pointer to the first midpoint node in the trajectory.
-            traj.data() + 1,
-            traj.rows(),              // Number of rows.
-            m_num_mesh_points - 1,    // Number of columns.
-          };
 }
 
 template<typename T>
