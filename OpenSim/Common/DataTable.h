@@ -1574,6 +1574,11 @@ protected:
     }
     template<int M, int N>
     static constexpr
+        unsigned numComponentsPerElement_impl(SimTK::Mat<M, N>) {
+        return M * N;
+    }
+    template<int M, int N>
+    static constexpr
     unsigned numComponentsPerElement_impl(SimTK::Vec<M, SimTK::Vec<N>>) {
         return M * N;
     }
