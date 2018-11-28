@@ -27,6 +27,7 @@
 
 namespace SimTK {
 class Markers;
+class OrientationSensors;
 }
 
 namespace OpenSim {

@@ -28,6 +28,7 @@
 #include "Model/MarkerSet.h"
 
 #include "simbody/internal/AssemblyCondition_Markers.h"
+#include "simbody/internal/AssemblyCondition_OrientationSensors.h"
 
 using namespace std;
 using namespace SimTK;
