@@ -727,6 +727,9 @@ double MucoIterate::compareContinuousVariablesRMS(const MucoIterate& other,
         checkContains("derivative", derivativeNames, m_derivative_names,
                 other.m_derivative_names);
     }
+    const int numColumns = int(stateNames.size() + controlNames.size() +
+            multiplierNames.size() + derivativeNames.size());
+    if (numColumns == 0) return 0;
 
     std::vector<double> selfTime =
             std::vector<double>(&m_time[0], &m_time[0] + m_time.size());
@@ -787,15 +790,13 @@ double MucoIterate::compareContinuousVariablesRMS(const MucoIterate& other,
     const auto derivativeISS = integralSumSquaredError(derivativeNames,
             m_derivatives, m_derivative_names, other.m_derivatives,
             other.m_derivative_names);
-    const int numColumns = int(stateNames.size() + controlNames.size() +
-            multiplierNames.size() + derivativeNames.size());
 
     // sqrt(1/(T*N) * integral_t (sum_is error_is^2 + sum_ic error_ic^2
     //                                          + sum_im error_im^2)
     // `is`: index for states; `ic`: index for controls; 
     // `im`: index for multipliers.
     return sqrt((stateISS + controlISS + multiplierISS + derivativeISS) /
-                (finalTime - initialTime) / numColumns);
+                timeInterval / numColumns);
 }
 
 double MucoIterate::compareParametersRMS(const MucoIterate& other, 

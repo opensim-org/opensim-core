@@ -360,7 +360,20 @@ public:
     /// controls,
     /// Lagrange multipliers, and
     /// derivatives and dividing by the number of columns and the larger of the
-    /// two time ranges. When one iterate does not cover the same time range as
+    /// two time ranges. The calculation can be expressed as follows:
+    /// \f[
+    ///     \epsilon_{\textrm{RMS}} =
+    ///     \sqrt{\frac{1}{N(t_f - t_i)} \int_{t_i}^{t_f} \left(
+    ///         \sum_{ \textrm{i \in states} } \epsilon_i(t)^2 +
+    ///         \sum_{ \textrm{i \in controls} } \epsilon_i(t)^2 +
+    ///         \sum_{ \textrm{i \in mult} } \epsilon_i(t)^2 +
+    ///         \sum_{ \textrm{i \in deriv} } \epsilon_i(t)^2
+    ///     \right) dt  },
+    /// \f]
+    /// where \f$N\f$ is the number of columns and \f$ \epsilon \f$ indicates
+    /// an error.
+    ///
+    /// When one iterate does not cover the same time range as
     /// the other, we assume values of 0 for the iterate with "missing" time.
     /// Numerical integration is performed using the trapezoidal rule. By
     /// default, all states, controls, and multipliers are compared, and it is
@@ -373,6 +386,7 @@ public:
     /// element of "none" for stateNames; likewise for controlNames,
     /// multiplierNames, and derivativeNames. Both iterates must have at least 6
     /// time nodes.
+    /// If the number of columns to compare is 0, this returns 0.
     double compareContinuousVariablesRMS(const MucoIterate& other,
             std::vector<std::string> stateNames = {},
             std::vector<std::string> controlNames = {},

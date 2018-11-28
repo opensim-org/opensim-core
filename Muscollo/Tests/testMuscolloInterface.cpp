@@ -960,7 +960,8 @@ void testGuessTimeStepping() {
 
         Model modelCopy(muco.updProblem().getPhase().getModel());
         SimTK::State state = modelCopy.initSystem();
-        modelCopy.setStateVariableValue(state, "/jointset/j0/q0/value", initialAngle);
+        modelCopy.setStateVariableValue(
+                state, "/jointset/j0/q0/value", initialAngle);
         Manager manager(modelCopy, state);
         manager.integrate(1.0);
 
@@ -1106,7 +1107,7 @@ void testMucoIterate() {
                 multipliers.elementwiseAddScalar(error),
                 SimTK::RowVector());
         // If error is constant:
-        // sqrt(1/T * integral_t (sum_i^N (err_{i,t}^2))) = sqrt(N)*err
+        // sqrt(1/(T*N) * integral_t (sum_i^N (err_{i,t}^2))) = err
         auto rmsBA = b.compareContinuousVariablesRMS(a, statesToCompare, 
             controlsToCompare, multipliersToCompare);
         int N = 0;
@@ -1119,7 +1120,7 @@ void testMucoIterate() {
         if (multipliersToCompare.empty()) N += NM;
         else if (multipliersToCompare[0] == "none") N += 0;
         else N += (int)multipliersToCompare.size();
-        auto rmsExpected = sqrt(N) * error;
+        auto rmsExpected = N == 0 ? 0 : error;
         SimTK_TEST_EQ(rmsBA, rmsExpected);
         auto rmsAB = a.compareContinuousVariablesRMS(b, statesToCompare, 
             controlsToCompare, multipliersToCompare);
