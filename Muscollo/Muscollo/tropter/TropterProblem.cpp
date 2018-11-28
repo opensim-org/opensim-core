@@ -45,10 +45,13 @@ convertIterateTropterToMuco(const tropIterateType& tropSol) const {
     int numTimes = (int)time.size();
     int numStates = (int)state_names.size();
     // Create and populate states matrix.
-    SimTK::Matrix states(numTimes, numStates);
-    for (int itime = 0; itime < numTimes; ++itime) {
-        for (int istate = 0; istate < numStates; ++istate) {
-            states(itime, istate) = tropSol.states(istate, itime);
+    SimTK::Matrix states;
+    if (numStates) {
+        states.resize(numTimes, numStates);
+        for (int itime = 0; itime < numTimes; ++itime) {
+            for (int istate = 0; istate < numStates; ++istate) {
+                states(itime, istate) = tropSol.states(istate, itime);
+            }
         }
     }
     int numControls = (int)control_names.size();
@@ -74,8 +77,8 @@ convertIterateTropterToMuco(const tropIterateType& tropSol) const {
         for (int itime = 0; itime < numTimes; ++itime) {
             for (int imultiplier = 0; imultiplier < numMultipliers;
                     ++imultiplier) {
-                multipliers(itime, imultiplier) = tropSol.adjuncts(imultiplier,
-                        itime);
+                multipliers(itime, imultiplier) =
+                        tropSol.adjuncts(imultiplier, itime);
             }
         }
     }

@@ -273,7 +273,7 @@ public:
         // (provided by the MucoProblem) to the elements for which this 
         // MucoPathConstraint provides constraint error information.
         SimTK::Vector theseErrors(getConstraintInfo().getNumEquations(), 
-            errors.getContiguousScalarData() + getPathConstraintIndex(), true);
+            errors.updContiguousScalarData() + getPathConstraintIndex(), true);
         calcPathConstraintErrorsImpl(state, theseErrors);
     }
 
@@ -288,7 +288,8 @@ protected:
     /// Perform any caching.
     /// The number of scalar constraint equations this MucoPathConstraint 
     /// implements must be defined here (see setNumEquations() below).
-    /// Upon entry, getModel() is available.
+    /// @precondition The model is initialized (initSystem()) and getModel()
+    /// is available.
     /// The passed-in model is equivalent to getModel().
     /// Use this opportunity to check for errors in user input, in addition to
     /// the checks provided in initialize().

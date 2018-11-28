@@ -16,6 +16,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
+#define CATCH_CONFIG_MAIN
+#include "Testing.h"
 #include <Muscollo/osimMuscollo.h>
 #include <OpenSim/Common/STOFileAdapter.h>
 #include <OpenSim/Simulation/SimbodyEngine/SliderJoint.h>
@@ -194,19 +196,10 @@ void testSolverOptions() {
     }
 }
 
+void testEmpty() {
+}
 /*
 
-void testEmpty() {
-    // It's possible to solve an empty problem.
-    MucoTool muco;
-    MucoSolution solution = muco.solve();
-    // 100 is the default num_mesh_points.
-    SimTK_TEST(solution.getTime().size() == 100);
-    SimTK_TEST(solution.getStatesTrajectory().ncol() == 0);
-    SimTK_TEST(solution.getStatesTrajectory().nrow() == 0);
-    SimTK_TEST(solution.getControlsTrajectory().ncol() == 0);
-    SimTK_TEST(solution.getControlsTrajectory().nrow() == 0);
-}
 
 void testOrderingOfCalls() {
 
@@ -1197,26 +1190,43 @@ void testInterpolate() {
     SimTK_TEST(SimTK::isNaN(newY[3]));
 }
 
-int main() {
-    SimTK_START_TEST("testMuscolloInterface");
-        SimTK_SUBTEST(testSlidingMass);
-        SimTK_SUBTEST(testSolverOptions);
-        //SimTK_SUBTEST(testEmpty);
-        //SimTK_SUBTEST(testCopy);
-        //SimTK_SUBTEST(testSolveRepeatedly);
-        //SimTK_SUBTEST(testOMUCOSerialization);
-        SimTK_SUBTEST(testBounds);
-        SimTK_SUBTEST(testBuildingProblem);
-        SimTK_SUBTEST(testWorkflow);
+TEST_CASE("testMuscolloInterface") {
+    testSlidingMass();
+    testSolverOptions();
 
-        SimTK_SUBTEST(testStateTracking);
-        SimTK_SUBTEST(testGuess);
-        SimTK_SUBTEST(testGuessTimeStepping);
-        SimTK_SUBTEST(testMucoIterate);
+    // testCopy();
+    // testSolveRepeatedly();
+    // testOMUCOSerialization();
+    testBounds();
+    testBuildingProblem();
+    testWorkflow();
 
-        // TODO what happens when Ipopt does not converge.
-        // TODO specifying optimizer options.
+    testStateTracking();
+    testGuess();
+    testGuessTimeStepping();
+    testMucoIterate();
 
-        SimTK_SUBTEST(testInterpolate);
-    SimTK_END_TEST();
+    // TODO what happens when Ipopt does not converge.
+    // TODO specifying optimizer options.
+
+    testInterpolate();
+}
+
+SCENARIO("Solving an empty MucoProbem") {
+
+    MucoTool muco;
+    THEN("problem solves without error, solution trajectories are empty.") {
+        MucoSolution solution = muco.solve();
+        // 100 is the default num_mesh_points.
+        CHECK(solution.getTime().size() ==
+                muco.updSolver().get_num_mesh_points());
+        CHECK(solution.getStatesTrajectory().ncol() == 0);
+        CHECK(solution.getStatesTrajectory().nrow() == 0);
+        CHECK(solution.getControlsTrajectory().ncol() == 0);
+        CHECK(solution.getControlsTrajectory().nrow() == 0);
+        CHECK(solution.getMultipliersTrajectory().ncol() == 0);
+        CHECK(solution.getMultipliersTrajectory().nrow() == 0);
+        CHECK(solution.getDerivativesTrajectory().ncol() == 0);
+        CHECK(solution.getDerivativesTrajectory().nrow() == 0);
+    }
 }

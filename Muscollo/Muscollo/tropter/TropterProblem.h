@@ -208,14 +208,14 @@ protected:
         // TODO would it make sense to a vector of States, one for each mesh
         // point, so that each can preserve their cache?
         m_state.setTime(time);
-        std::copy(states.data(), states.data() + states.size(),
-                &m_state.updY()[0]);
+        std::copy_n(states.data(), states.size(),
+                m_state.updY().updContiguousScalarData());
 
         // Set the controls for actuators in the OpenSim model.
         if (m_model.getNumControls()) {
             auto& osimControls = m_model.updControls(m_state);
-            std::copy(controls.data(), controls.data() + controls.size(),
-                    &osimControls[0]);
+            std::copy_n(controls.data(), controls.size(),
+                    osimControls.updContiguousScalarData());
             m_model.realizePosition(m_state);
             m_model.setControls(m_state, osimControls);
         } else {
@@ -246,7 +246,7 @@ protected:
         // TODO avoid all of this if there are no endpoint costs.
         m_state.setTime(final_time);
         std::copy(states.data(), states.data() + states.size(),
-                &m_state.updY()[0]);
+                m_state.updY().updContiguousScalarData());
         // TODO cannot use control signals...
         m_model.updControls(m_state).setToNaN();
         cost = m_mucoProb.calcEndpointCost(m_state);
@@ -350,7 +350,8 @@ public:
         auto& simTKState = this->m_state;
 
         simTKState.setTime(in.time);
-        std::copy_n(states.data(), states.size(), &simTKState.updY()[0]);
+        std::copy_n(states.data(), states.size(),
+                simTKState.updY().updContiguousScalarData());
         //
         // TODO do not copy? I think this will still make a copy:
         // TODO use m_state.updY() = SimTK::Vector(states.size(), states.data(), true);
@@ -359,7 +360,8 @@ public:
         // Set the controls for actuators in the OpenSim model.
         if (model.getNumControls()) {
             auto& osimControls = model.updControls(simTKState);
-            std::copy_n(controls.data(), controls.size(), &osimControls[0]);
+            std::copy_n(controls.data(), controls.size(),
+                    osimControls.updContiguousScalarData());
             model.realizeVelocity(simTKState);
             model.setControls(simTKState, osimControls);
         }
@@ -397,12 +399,12 @@ public:
             // Constraint errors.
             // TODO double-check that disabled constraints don't show up in
             // state
-            std::copy_n(&simTKState.getQErr()[0], this->m_mpSum,
-                    out.path.data());
+            std::copy_n(simTKState.getQErr().getContiguousScalarData(),
+                    this->m_mpSum, out.path.data());
             // TODO if (!get_enforce_holonomic_constraints_only()) {
-            //    std::copy_n(&simTKState.getUErr()[0], m_mpSum + m_mvSum,
-            //        out.path.data() + m_mpSum);
-            //    std::copy_n(&simTKState.getUDotErr()[0],
+            //    std::copy_n(simTKState.getUErr().getContiguousScalarData(),
+            //          m_mpSum + m_mvSum, out.path.data() + m_mpSum);
+            //    std::copy_n(simTKState.getUDotErr().getContiguousScalarData(),
             //        m_mpSum + m_mvSum + m_maSum,
             //        out.path.data() + 2*m_mpSum + m_mvSum);
             //}
@@ -412,12 +414,12 @@ public:
             const int nq = simTKState.getQ().size();
             const int nu = udot.size();
             const int nz = simTKState.getZ().size();
-            std::copy_n(&simTKState.getQDot()[0], nq, out.dynamics.data());
-            std::copy_n(&udot[0], udot.size(), out.dynamics.data() + nq);
-            if (nz) {
-                std::copy_n(&simTKState.getZDot()[0], nz,
-                        out.dynamics.data() + nq + nu);
-            }
+            std::copy_n(simTKState.getQDot().getContiguousScalarData(),
+                    nq, out.dynamics.data());
+            std::copy_n(udot.getContiguousScalarData(),
+                    udot.size(), out.dynamics.data() + nq);
+            std::copy_n(simTKState.getZDot().getContiguousScalarData(), nz,
+                    out.dynamics.data() + nq + nu);
 
         } else {
             // TODO Antoine and Gil said realizing Dynamics is a lot costlier than
@@ -425,8 +427,8 @@ public:
             model.realizeAcceleration(simTKState);
 
             // Copy state derivative values to output struct.
-            std::copy_n(&simTKState.getYDot()[0], states.size(),
-                    out.dynamics.data());
+            std::copy_n(simTKState.getYDot().getContiguousScalarData(),
+                    states.size(), out.dynamics.data());
         }
 
         this->calcPathConstraintErrors(simTKState,
@@ -498,8 +500,8 @@ public:
 
         // Multibody dynamics: "F - ma = 0"
         // --------------------------------
-        std::copy(states.data(), states.data() + states.size(),
-                &this->m_state.updY()[0]);
+        std::copy_n(states.data(), states.size(),
+                simTKState.updY().updContiguousScalarData());
 
         // TODO do not copy? I think this will still make a copy:
         // TODO use m_state.updY() = SimTK::Vector(states.size(), states.data(), true);
@@ -507,7 +509,8 @@ public:
 
         if (model.getNumControls()) {
             auto& osimControls = model.updControls(simTKState);
-            std::copy_n(controls.data(), controls.size(), &osimControls[0]);
+            std::copy_n(controls.data(), controls.size(),
+                    osimControls.updContiguousScalarData());
 
             model.realizeVelocity(simTKState);
             model.setControls(simTKState, osimControls);
@@ -530,7 +533,8 @@ public:
 
         double* residualBegin =
                 pathConstraintErrorBegin + this->m_numPathConstraintEqs;
-        std::copy_n(&residual[0], residual.size(), residualBegin);
+        std::copy_n(residual.getContiguousScalarData(), residual.size(),
+                residualBegin);
 
         // TODO Antoine and Gil said realizing Dynamics is a lot costlier than
         // realizing to Velocity and computing forces manually.

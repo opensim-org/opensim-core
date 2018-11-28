@@ -76,8 +76,14 @@ MucoSolution MucoTool::solve() const {
         OpenSim::IO::makeDir(get_write_solution());
         std::string prefix = getName().empty() ? "MucoTool" : getName();
         solution.unseal();
-        solution.write(get_write_solution() +
-                SimTK::Pathname::getPathSeparator() + prefix + "_solution.sto");
+        const std::string filename = get_write_solution() +
+                SimTK::Pathname::getPathSeparator() + prefix + "_solution.sto";
+        try {
+            solution.write(filename);
+        } catch (const TimestampGreaterThanEqualToNext& e) {
+            std::cout << "Could not write solution to file...skipping."
+                    << std::endl;
+        }
         if (originallySealed) solution.seal();
     }
     return solution;
