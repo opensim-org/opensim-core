@@ -24,6 +24,7 @@
 #include "OrientationsReference.h"
 #include <OpenSim/Common/Units.h>
 #include <OpenSim/Common/TRCFileAdapter.h>
+#include <SimTKcommon/internal/State.h>
 
 using namespace std;
 using namespace SimTK;
