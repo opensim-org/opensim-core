@@ -519,6 +519,10 @@ public:
         double* pathConstraintErrorBegin =
                 out.path.data() + this->m_numMultibodyConstraintEqs;
         this->calcPathConstraintErrors(simTKState, pathConstraintErrorBegin);
+        OPENSIM_THROW_IF(
+                simTKState.getSystemStage() >= SimTK::Stage::Acceleration,
+                Exception,
+                "Cannot realize to Acceleration in implicit dynamics mode.");
 
         InverseDynamicsSolver id(model);
         SimTK::Vector udot((int)w.size(), w.data(), true);
@@ -533,7 +537,7 @@ public:
 
         /* TODO
         if (SimTK::isNaN(in.adjuncts(0))) {
-            std::cout << "DEBUG detected NaN " << std::endl;
+
         }
         std::cout << "DEBUG dynamics\n" << out.dynamics << "\npath\n" << out.path << std::endl;
         std::cout << simTKState.getY() << std::endl;
@@ -550,8 +554,7 @@ public:
         OPENSIM_THROW_IF(
                 this->m_state.getSystemStage() >= SimTK::Stage::Acceleration,
                 Exception,
-                "Cannot use acceleration-level cache in implicit dynamics "
-                "mode.");
+                "Cannot realize to Acceleration in implicit dynamics mode.");
     }
 };
 

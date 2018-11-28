@@ -121,7 +121,152 @@ SCENARIO("Similar solutions between implicit and explicit dynamics modes",
             REQUIRE(stateError < 2.0);
             REQUIRE(controlError < 30.0);
         }
+
+        THEN("accelerations are correct") {
+            auto table = solution.exportToStatesTable();
+            GCVSplineSet splines(table,
+                    {"/jointset/j0/q0/speed", "/jointset/j1/q1/speed"});
+            OpenSim::Array<double> explicitAccel;
+            SimTK::Matrix derivTraj(
+                    (int)table.getIndependentColumn().size(), 2);
+            int i = 0;
+            for (const auto& explicitTime : table.getIndependentColumn()) {
+                splines.evaluate(explicitAccel, 1, explicitTime);
+                derivTraj(i, 0) = explicitAccel[0];
+                derivTraj(i, 1) = explicitAccel[1];
+                ++i;
+            }
+            SimTK::Matrix empty;
+            MucoIterate explicitWithDeriv(solution.getTime(),
+                    {}, {}, {}, solutionImplicit.getDerivativeNames(), {},
+                    empty, empty, empty, derivTraj, SimTK::RowVector());
+            solutionImplicit.compareContinuousVariablesRMS(explicitWithDeriv,
+                    {"none"}, {"none"}, {"none"}, {});
+
+        }
     }
 }
-// TODO compareContinuousVariables: handle derivatives.
-// TODO test reading/writing MucoIterate with derivatives.
+
+SCENARIO("Using MucoIterate with the implicit dynamics mode", "[implicit]") {
+    GIVEN("MucoIterate with only derivatives") {
+        MucoIterate iterate;
+        const_cast<SimTK::Matrix*>(&iterate.
+                getDerivativesTrajectory())->resize(3, 2);
+        THEN("it is not empty") {
+            REQUIRE(!iterate.empty());
+        }
+    }
+    GIVEN("MucoIterate with only derivative names") {
+        MucoIterate iterate;
+        const_cast<std::vector<std::string>*>(&iterate.
+                getDerivativeNames())->resize(3);
+        THEN("it is not empty") {
+            REQUIRE(!iterate.empty());
+        }
+    }
+    GIVEN("MucoIterate with derivative data") {
+        MucoIterate iter(createVectorLinspace(6, 0, 1),
+                {}, {}, {}, {"a", "b"}, {},
+                {}, {}, {}, {6, 2, 0.5}, {});
+        WHEN("calling setNumTimes()") {
+            REQUIRE(iter.getDerivativesTrajectory().nrow() != 4);
+            iter.setNumTimes(4);
+            THEN("setNumTimes() changes number of rows of derivatives") {
+                REQUIRE(iter.getDerivativesTrajectory().nrow() == 4);
+            }
+        }
+        WHEN("deserializing") {
+            const std::string filename = "testImplicit_MucoIterate.sto";
+            iter.write(filename);
+            THEN("derivatives trajectory is preserved") {
+                MucoIterate deserialized(filename);
+                REQUIRE(iter.getDerivativesTrajectory().nrow() == 6);
+                REQUIRE(iter.isNumericallyEqual(deserialized));
+            }
+        }
+    }
+    GIVEN("two MucoIterates with different derivative data") {
+        const double valueA = 0.5;
+        const double valueB = 0.499999;
+        MucoIterate iterA(createVectorLinspace(6, 0, 1),
+                {}, {}, {}, {"a", "b"}, {},
+                {}, {}, {}, {6, 2, valueA}, {});
+        MucoIterate iterB(createVectorLinspace(6, 0, 1),
+                {}, {}, {}, {"a", "b"}, {},
+                {}, {}, {}, {6, 2, valueB}, {});
+        THEN("not numerically equal") {
+            REQUIRE(!iterA.isNumericallyEqual(iterB));
+        }
+        THEN("RMS error is computed correctly") {
+            REQUIRE(iterA.compareContinuousVariablesRMS(iterB) ==
+                    Approx(valueA - valueB));
+        }
+    }
+}
+
+SCENARIO("Solving a problem with acceleration-level quantities", "[implicit]") {
+    class AccelerationIntegralCost : public MucoCost {
+    OpenSim_DECLARE_CONCRETE_OBJECT(AccelerationIntegralCost, MucoCost);
+        void calcIntegralCostImpl(const SimTK::State& state,
+                SimTK::Real& cost) const override {
+            static_assert(std::is_class<Self>::value, "dummy");
+            getModel().realizeAcceleration(state);
+            cost = state.getYDot().norm();
+        }
+    };
+
+    GIVEN("an integral MucoCost that invokes realizeAcceleration") {
+        MucoTool muco;
+        muco.updProblem().addCost<AccelerationIntegralCost>();
+
+        THEN("problem cannot be solved") {
+            REQUIRE_THROWS_WITH(muco.solve(),
+                    "Cannot realize to Acceleration in implicit dynamics "
+                    "mode.");
+        }
+    }
+
+    class AccelerationEndpointCost : public MucoCost {
+    OpenSim_DECLARE_CONCRETE_OBJECT(AccelerationEndpointCost, MucoCost);
+        void calcEndpointCostImpl(const SimTK::State& state,
+                SimTK::Real& cost) const override {
+            getModel().realizeAcceleration(state);
+            cost = state.getYDot().norm();
+        }
+    };
+
+    GIVEN("an endpoint MucoCost that invokes realizeAcceleration") {
+        MucoTool muco;
+        muco.updProblem().addCost<AccelerationEndpointCost>();
+
+        THEN("problem cannot be solved") {
+            REQUIRE_THROWS_WITH(muco.solve(),
+                    "Cannot realize to Acceleration in implicit dynamics "
+                    "mode.");
+        }
+    }
+
+    class AccelerationConstraint : public MucoPathConstraint {
+    OpenSim_DECLARE_CONCRETE_OBJECT(AccelerationConstraint,
+            MucoPathConstraint);
+        void initializeOnModelImpl(const Model&) const override {
+            setNumEquations(1);
+        }
+        void calcPathConstraintErrorsImpl(const SimTK::State& state,
+                SimTK::Vector& errors) const override {
+            getModel().realizeAcceleration(state);
+            errors = 0;
+        }
+    };
+
+    GIVEN("a MucoPathConstraint that invokes realizeAcceleration") {
+        MucoTool muco;
+        muco.updProblem().addPathConstraint<AccelerationConstraint>();
+        THEN("problem cannot be solved") {
+            REQUIRE_THROWS_WITH(muco.solve(),
+                    "Cannot realize to Acceleration in implicit dynamics "
+                    "mode.");
+
+        }
+    }
+}

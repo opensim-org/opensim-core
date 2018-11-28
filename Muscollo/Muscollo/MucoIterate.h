@@ -114,15 +114,15 @@ public:
     bool empty() const {
         ensureUnsealed();
         return !(m_time.size() || m_states.nelt() || m_controls.nelt() ||
-                m_multipliers.nelt() || m_parameters.nelt() || 
+                m_multipliers.nelt() || m_derivatives.nelt() ||
+                m_parameters.nelt() ||
                 m_state_names.size() || m_control_names.size() || 
-                m_multiplier_names.size() || m_parameter_names.size());
+                m_multiplier_names.size() || m_derivative_names.size() ||
+                m_parameter_names.size());
     }
 
     /// @name Change the length of the trajectory
     /// @{
-
-    /// setNumTimes() -> setNumNodes().
 
     /// Resize the time vector and the time dimension of the states and controls
     /// trajectories, and set all times, states, and controls to NaN.
@@ -139,6 +139,8 @@ public:
         m_controls.setToNaN();
         m_multipliers.resize(numTimes, m_multipliers.ncol());
         m_multipliers.setToNaN();
+        m_derivatives.resize(numTimes, m_derivatives.ncol());
+        m_derivatives.setToNaN();
     }
     /// Uniformly resample (interpolate) the iterate so that it retains the
     /// same initial and final times but now has the provided number of time

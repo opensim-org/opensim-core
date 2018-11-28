@@ -48,8 +48,10 @@ MucoIterate::MucoIterate(const SimTK::Vector& time,
             Exception, "Inconsistent number of controls.");
     OPENSIM_THROW_IF((int)m_multiplier_names.size() != m_multipliers.ncol(),
             Exception, "Inconsistent number of multipliers.");
-    OPENSIM_THROW_IF(time.size() != m_states.nrow(), Exception,
-            "Inconsistent number of times in states trajectory.");
+    if (m_states.ncol()) {
+        OPENSIM_THROW_IF(time.size() != m_states.nrow(), Exception,
+                "Inconsistent number of times in states trajectory.");
+    }
     if (m_controls.ncol()) {
         OPENSIM_THROW_IF(time.size() != m_controls.nrow(), Exception,
             "Inconsistent number of times in controls trajectory.");
@@ -258,6 +260,7 @@ double MucoIterate::resampleWithNumTimes(int numTimes) {
     int numStates = (int)m_state_names.size();
     int numControls = (int)m_control_names.size();
     int numMultipliers = (int)m_multiplier_names.size();
+    int numDerivatives = (int)m_derivative_names.size();
     TimeSeriesTable table = convertToTable();
     OPENSIM_THROW_IF(m_time.size() < 2, Exception,
             "Cannot resample if number of times is 0 or 1.");
@@ -266,6 +269,7 @@ double MucoIterate::resampleWithNumTimes(int numTimes) {
     m_states.resize(numTimes, numStates);
     m_controls.resize(numTimes, numControls);
     m_multipliers.resize(numTimes, numMultipliers);
+    m_derivatives.resize(numTimes, numDerivatives);
     SimTK::Vector time(1);
     for (int itime = 0; itime < m_time.size(); ++itime) {
         time[0] = m_time[itime];
@@ -276,6 +280,8 @@ double MucoIterate::resampleWithNumTimes(int numTimes) {
             m_controls(itime, icontr) = splines[icol].calcValue(time);
         for (int imult = 0; imult < numMultipliers; ++imult, ++icol)
             m_multipliers(itime, imult) = splines[icol].calcValue(time);
+        for (int ideriv = 0; ideriv < numDerivatives; ++ideriv, ++icol)
+            m_derivatives(itime, ideriv) = splines[icol].calcValue(time);
     }
     return m_time[1] - m_time[0];
 }
@@ -386,7 +392,9 @@ MucoIterate::MucoIterate(const std::string& filepath) {
     const auto& time = table->getIndependentColumn();
     m_time = SimTK::Vector((int)time.size(), time.data());
 
-    m_states = table->getMatrixBlock(0, 0, table->getNumRows(), numStates);
+    if (numStates) {
+        m_states = table->getMatrixBlock(0, 0, table->getNumRows(), numStates);
+    }
     if (numControls) {
         m_controls = table->getMatrixBlock(0, numStates,
                 table->getNumRows(), numControls);
@@ -395,9 +403,14 @@ MucoIterate::MucoIterate(const std::string& filepath) {
         m_multipliers = table->getMatrixBlock(0, numStates + numControls,
                 table->getNumRows(), numMultipliers);
     }
+    if (numDerivatives) {
+        m_derivatives = table->getMatrixBlock(0,
+                numStates + numControls + numMultipliers,
+                table->getNumRows(), numDerivatives);
+    }
     if (numParameters) {
         m_parameters = table->getMatrixBlock(0, 
-                numStates + numControls + numMultipliers, 1,
+                numStates + numControls + numMultipliers + numDerivatives, 1,
                 numParameters).getAsRowVectorBase();
     }
 }
@@ -433,8 +446,10 @@ TimeSeriesTable MucoIterate::convertToTable() const {
 
     SimTK::Matrix data(numTimes, (int)labels.size());
     int startCol = 0;
-    data.updBlock(0, startCol, numTimes, numStates) = m_states;
-    startCol += numStates;
+    if (numStates) {
+        data.updBlock(0, startCol, numTimes, numStates) = m_states;
+        startCol += numStates;
+    }
     if (numControls) {
         data.updBlock(0, startCol, numTimes, numControls) = m_controls;
         startCol += numControls;
