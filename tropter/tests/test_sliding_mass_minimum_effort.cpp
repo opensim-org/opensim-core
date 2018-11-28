@@ -140,7 +140,12 @@ TEST_CASE("IPOPT") {
         DirectCollocationSolver<double> dircol(ocp, "hermite-simpson", "ipopt");
         dircol.get_opt_solver().set_findiff_hessian_step_size(1e-3);
         dircol.get_opt_solver().set_hessian_approximation("exact");
-        Solution solution = dircol.solve();
+        Iterate guess;
+        guess.time.setLinSpaced(20, 0, 2);
+        ocp->set_state_guess(guess, "x", RowVectorXd::LinSpaced(20, 0, 1));
+        ocp->set_state_guess(guess, "u", RowVectorXd::LinSpaced(20, 0, 0));
+        ocp->set_control_guess(guess, "F", RowVectorXd::LinSpaced(20, 0, 0));
+        Solution solution = dircol.solve(guess);
         REQUIRE(Approx(solution.states(0, 0)) == 0.0);
         REQUIRE(Approx(solution.states.rightCols<1>()[0]) == 1.0);
         // Initial and final speed.

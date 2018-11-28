@@ -261,8 +261,7 @@ void HermiteSimpson<T>::set_ocproblem(
     // The fractional coefficients that, when multiplied by the mesh fraction
     // for a given mesh interval, make up the Simpson quadrature coefficients
     // for that mesh interval.
-    Eigen::Vector3d fracs;
-    fracs << 1/6, 2/3, 1/6;
+    Eigen::Vector3d fracs(1.0/6.0, 2.0/3.0, 1.0/6.0);
     // Loop through each mesh interval and update the corresponding components
     // in the total coefficients vector.
     for (int i_mesh = 0; i_mesh < num_mesh_intervals; ++i_mesh) {
@@ -387,33 +386,59 @@ void HermiteSimpson<T>::calc_constraints(const VectorX<T>& x,
         // be grouped together, followed by all of the Simpson defect 
         // constraints (eq. 4.104).
         const unsigned N = m_num_mesh_points;
-        const auto& h = step_size;
-        using TrajectoryViewSkip = 
-            Eigen::Map<const MatrixX<T>, 0, Eigen::OuterStride<2>>;
+        const auto& h = duration / (N - 1);
+        using TrajectoryViewSkip = Eigen::Map<const MatrixX<T>, 
+            Eigen::Unaligned, 
+            Eigen::OuterStride<Eigen::Dynamic>>;
+
+        std::cout << states.rows() << std::endl;
+        std::cout << states.cols() << std::endl;
 
         // States.
-        TrajectoryViewSkip x_mesh(states.data(), states.rows(), 
-            m_num_mesh_points);
+        TrajectoryViewSkip x_mesh(states.data(), states.rows(), N,
+            Eigen::OuterStride<Eigen::Dynamic>(3));
         const auto& x_i = x_mesh.rightCols(N - 1);
         const auto& x_im1 = x_mesh.leftCols(N - 1);
-        TrajectoryViewSkip x_mid(states.data()+1, states.rows(), 
-            m_num_mesh_points-1);
+        TrajectoryViewSkip x_mid(states.data() + 5, states.rows(), 
+            N-1, Eigen::OuterStride<Eigen::Dynamic>(3));
 
         // State derivatives.
-        TrajectoryViewSkip xdot_mesh(m_derivs.data(), m_derivs.rows(), 
-            m_num_mesh_points);
+        TrajectoryViewSkip xdot_mesh(m_derivs.data(), m_derivs.rows(), N,
+            Eigen::OuterStride<Eigen::Dynamic>(3));
         const auto& xdot_i = xdot_mesh.rightCols(N - 1);
         const auto& xdot_im1 = xdot_mesh.leftCols(N - 1);
-        TrajectoryViewSkip xdot_mid(m_derivs.data() + 1, m_derivs.rows(), 
-            m_num_mesh_points - 1);
+        TrajectoryViewSkip xdot_mid(m_derivs.data() + 3, m_derivs.rows(), N-1,
+            Eigen::OuterStride<Eigen::Dynamic>(3));
 
         // Hermite interpolant defects
         constr_view.defects.topRows(m_num_states) =
-            x_mid - T(0.5) * (x_i + x_im1) - (h / T(8)) * (xdot_im1 - xdot_i);
+            x_mid - T(0.5) * (x_i + x_im1) - (h / T(8.0)) * (xdot_im1 - xdot_i);
 
         // Simpson integration defects
         constr_view.defects.bottomRows(m_num_states) =
-            x_i - x_im1 - (h / T(6)) * (xdot_i + T(4)*xdot_mid + xdot_im1);
+            x_i - x_im1 - (h / T(6.0)) * (xdot_i + T(4.0)*xdot_mid + xdot_im1);
+
+        std::cout << "states: " << std::endl;
+        std::cout << states << std::endl;
+
+        std::cout << "x_mesh: " << std::endl;
+        std::cout << x_mesh << std::endl;
+
+        std::cout << "x_mid: " << std::endl;
+        std::cout << x_mid << std::endl;
+        //std::cout << "0.5*(x_i + x_im1): " << std::endl;
+        //std::cout << T(0.5) * (x_i + x_im1) << std::endl;
+
+
+        std::cout << "xdot_mesh: " << std::endl;
+        std::cout << xdot_mesh << std::endl;
+
+        std::cout << "xdot_mid: " << std::endl;
+        std::cout << xdot_mid << std::endl;
+
+        std::cout << "defects: " << std::endl;
+        std::cout << constr_view.defects << std::endl;
+
     }
 }
 
@@ -440,6 +465,7 @@ void HermiteSimpson<T>::calc_sparsity_hessian_lagrangian(
     }
 
     SymmetricSparsityPattern dae_sparsity(m_num_continuous_variables);
+    dae_sparsity.set_dense();
     if (this->get_hessian_sparsity_mode()) {
         TROPTER_THROW("Automatic sparsity detection for hessian diagonal "
             "blocks not implemented for Hermite-Simpson transcription.");
@@ -467,6 +493,7 @@ void HermiteSimpson<T>::calc_sparsity_hessian_lagrangian(
     }
 
     SymmetricSparsityPattern integral_cost_sparsity(num_con_vars);
+    integral_cost_sparsity.set_dense();
     if (this->get_hessian_sparsity_mode()) {
         TROPTER_THROW("Automatic sparsity detection for hessian diagonal "
             "blocks not implemented for Hermite-Simpson transcription.");
@@ -1122,7 +1149,7 @@ HermiteSimpson<T>::make_constraints_view(Eigen::Ref<VectorX<T>> constr) const
                &constr[0] : nullptr;
     T* pc_ptr= m_num_path_constraints ?                  // path constraints.
                &constr[m_num_dynamics_constraints] : nullptr;
-    return{DefectsTrajectoryView(d_ptr, m_num_states, m_num_defects),
+    return{DefectsTrajectoryView(d_ptr, 2*m_num_states, m_num_mesh_points-1),
            PathConstraintsTrajectoryView(pc_ptr, m_num_path_constraints,
                    m_num_mesh_points)};
 }
