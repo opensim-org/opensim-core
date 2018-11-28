@@ -127,7 +127,7 @@ public:
     /// Resize the time vector and the time dimension of the states and controls
     /// trajectories, and set all times, states, and controls to NaN.
     /// @note Parameters are NOT set to NaN.
-    // TODO rename to setNumPoints() or setNumTimePoints().
+    // TODO rename to setNumPoints(), setNumNodes(), setNumTimePoints().
     void setNumTimes(int numTimes)
     {
         ensureUnsealed();
@@ -357,13 +357,13 @@ public:
     /// states,
     /// controls,
     /// Lagrange multipliers, and
-    /// derivatives and dividing by the larger of the two time ranges. When one
-    /// iterate does not cover the same time range as the other, we assume
-    /// values of 0 for the iterate with "missing" time. Numerical integration
-    /// is performed using the trapezoidal rule. By default, all states,
-    /// controls, and multipliers are compared, and it is expected that both
-    /// iterates have the same states, controls, and multipliers. Alternatively,
-    /// you can specify the specific
+    /// derivatives and dividing by the number of columns and the larger of the
+    /// two time ranges. When one iterate does not cover the same time range as
+    /// the other, we assume values of 0 for the iterate with "missing" time.
+    /// Numerical integration is performed using the trapezoidal rule. By
+    /// default, all states, controls, and multipliers are compared, and it is
+    /// expected that both iterates have the same states, controls, and
+    /// multipliers. Alternatively, you can specify the specific
     /// states,
     /// controls,
     /// multipliers, and
