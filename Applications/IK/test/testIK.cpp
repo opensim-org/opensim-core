@@ -377,7 +377,7 @@ void testInverseKinematicsSolverWithEulerAnglesFromFile()
         model.realizeReport(s0);
     }
 
-    auto report = ikReporter->getReport();
+    auto report = ikReporter->getTable();
     STOFileAdapter::write(report, "ik_euler_tracking_results.sto");
 
     const auto standard = STOFileAdapter::read("std_subject01_walk1_ik.mot");
