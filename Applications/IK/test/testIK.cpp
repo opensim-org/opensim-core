@@ -314,11 +314,12 @@ void testInverseKinematicsSolverWithOrientations()
     OrientationsReference oRefs(&orientationsData);
     oRefs.set_default_weight(1.0);
 
-    SimTK::Array_<CoordinateReference> coordinateReferences;
+    MarkersReference mRefs{};
+
+    SimTK::Array_<CoordinateReference> coordinateRefs;
 
     // create the solver given the input data
-    InverseKinematicsSolver ikSolver(model, nullptr, &oRefs, 
-        coordinateReferences);
+    InverseKinematicsSolver ikSolver(model, mRefs, oRefs, coordinateRefs);
     ikSolver.setAccuracy(1e-4);
 
     auto timeRange = oRefs.getValidTimeRange();
@@ -338,7 +339,7 @@ void testInverseKinematicsSolverWithEulerAnglesFromFile()
 {
     Model model("subject01_simbody.osim");
     // visualize for debugging
-    model.setUseVisualizer(true);
+    //model.setUseVisualizer(true);
 
     // Add a reporter to get IK computed coordinate values out
     TableReporter* ikReporter = new TableReporter();
@@ -353,14 +354,13 @@ void testInverseKinematicsSolverWithEulerAnglesFromFile()
 
     SimTK::State& s0 = model.initSystem();
 
+    MarkersReference mRefs{};
     OrientationsReference oRefs("subject1_walk_euler_angles.sto");
-
-    SimTK::Array_<CoordinateReference> coordinateReferences;
+    SimTK::Array_<CoordinateReference> coordRefs{};
 
     // create the solver given the input data
     const double accuracy = 1e-4;
-    InverseKinematicsSolver ikSolver(model, nullptr, &oRefs,
-        coordinateReferences);
+    InverseKinematicsSolver ikSolver(model, mRefs, oRefs, coordRefs);
     ikSolver.setAccuracy(accuracy);
 
     auto& times = oRefs.getTimes();
@@ -372,7 +372,7 @@ void testInverseKinematicsSolverWithEulerAnglesFromFile()
     for (auto time : times) {
         s0.updTime() = time;
         ikSolver.track(s0);
-        model.getVisualizer().show(s0);
+        //model.getVisualizer().show(s0);
         // realize to report to get reporter to pull values from model
         model.realizeReport(s0);
     }
