@@ -182,6 +182,9 @@ set(SUPERBUILD_adolc ON CACHE BOOL
 set(SUPERBUILD_ipopt ON CACHE BOOL 
     "Automatically download, configure, build and install ipopt")
 
+set(SUPERBUILD_casadi ON CACHE BOOL 
+    "Automatically download, configure, build and install casadi")
+
 if (WIN32)
 
     if(SUPERBUILD_adolc)
@@ -269,6 +272,18 @@ else()
             INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install)
     endif()
 
+endif()
+
+if(SUPERBUILD_casadi)
+    AddDependency(NAME casadi
+                  DEPENDS ipopt
+                  GIT_URL    https://github.com/casadi/casadi.git
+                  GIT_TAG    3.4.5
+                  CMAKE_ARGS -DWITH_IPOPT:BOOL=ON
+                             -DWITH_EXAMPLES:BOOL=OFF
+                             -DPKG_CONFIG_USE_CMAKE_PREFIX_PATH:BOOL=ON
+                             -DCMAKE_PREFIX_PATH:PATH=${CMAKE_INSTALL_PREFIX}/ipopt
+                  )
 endif()
 
 include(opensim-core.cmake)
