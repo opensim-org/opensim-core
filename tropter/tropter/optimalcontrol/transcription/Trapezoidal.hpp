@@ -208,7 +208,7 @@ void Trapezoidal<T>::set_ocproblem(
 
     // Set the mesh.
     // -------------
-    const unsigned num_mesh_intervals = m_num_mesh_points - 1;
+    int num_mesh_intervals = m_num_mesh_points - 1;
     // For integrating the integral cost.
     // The duration of each mesh interval.
     VectorXd mesh = VectorXd::LinSpaced(m_num_mesh_points, 0, 1);
