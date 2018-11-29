@@ -23,10 +23,16 @@
 
 namespace OpenSim {
 
-/// This class provides utilities for craeting OpenSim models.
-class ModelFactory {
+/// This class provides utilities for creating OpenSim models.
+class OSIMMUSCOLLO_API ModelFactory {
 public:
-    static Model createDoublePendulumModel();
+    static Model createNLinkPendulum(int numLinks);
+    static Model createPendulum() {
+        return createNLinkPendulum(1);
+    }
+    static Model createDoublePendulum() {
+        return createNLinkPendulum(2);
+    }
 };
 
 } // namespace OpenSim
