@@ -24,6 +24,8 @@
  * -------------------------------------------------------------------------- */
 
 #include "AssemblySolver.h"
+#include "MarkersReference.h"
+#include "OrientationsReference.h"
 
 namespace SimTK {
 class Markers;
@@ -31,10 +33,6 @@ class OrientationSensors;
 }
 
 namespace OpenSim {
-
-class MarkersReference;
-class OrientationsReference;
-
 //=============================================================================
 //=============================================================================
 /**
@@ -78,14 +76,14 @@ public:
     //--------------------------------------------------------------------------
     virtual ~InverseKinematicsSolver() {}
 
-    InverseKinematicsSolver(const Model &model, 
-                        const MarkersReference &markersReference,
-                        SimTK::Array_<CoordinateReference> &coordinateReferences,
+    InverseKinematicsSolver(const Model& model, 
+                        const MarkersReference& markersReference,
+                        SimTK::Array_<CoordinateReference>& coordinateReferences,
                         double constraintWeight = SimTK::Infinity);
 
-    InverseKinematicsSolver(const Model &model,
-                        const MarkersReference *markersReference,
-                        const OrientationsReference *orientationsReference,
+    InverseKinematicsSolver(const Model& model,
+                        const MarkersReference& markersReference,
+                        const OrientationsReference& orientationsReference,
                         SimTK::Array_<CoordinateReference> &coordinateReferences,
                         double constraintWeight = SimTK::Infinity);
     
@@ -178,7 +176,10 @@ private:
     void setupOrientationsGoal(SimTK::State &s);
 
     // The marker reference values and weightings
-    SimTK::ReferencePtr<const MarkersReference> _markersReference;
+    MarkersReference _markersReference;
+
+    // The orientation reference values and weightings
+    OrientationsReference _orientationsReference;
 
     // Non-accessible cache of the marker values to be matched at a given state
     SimTK::Array_<SimTK::Vec3> _markerValues;
@@ -186,9 +187,6 @@ private:
     // Markers collectively form a single assembly condition for the 
     // SimTK::Assembler and the memory is managed by the Assembler
     SimTK::ReferencePtr<SimTK::Markers> _markerAssemblyCondition;
-
-    // The orientation reference values and weightings
-    SimTK::ReferencePtr<const OrientationsReference> _orientationsReference;
 
     // Private cache of the orientation values to be matched at a given state
     SimTK::Array_<SimTK::Rotation> _orientationValues;
