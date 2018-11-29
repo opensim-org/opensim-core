@@ -103,9 +103,12 @@ public:
 
     virtual ~OrientationsReference() {}
 
-    /** load the orientation data for this OrientationsReference from orientationFile  */
-    void loadOrientationsFile(const std::string orientationFile,
-        Units modelUnits=Units(Units::Meters));
+    /** load the orientation data for this OrientationsReference from eulerAnglesXYZ */
+    void loadOrientationsFile(const std::string eulerAnglesXYZ,
+        Units modelUnits=Units(Units::Radians));
+    /** load the orientation data for this OrientationsReference from quaternions */
+    void loadOrientationsFromQuaternions(
+        const std::string quaternionsFile);
 
     //--------------------------------------------------------------------------
     // Reference Interface
@@ -142,7 +145,7 @@ public:
     /** %Set the orientation weights from a set of OrientationWeights, which is
     const and a copy of the Set is used internally. Therefore, subsequent changes
     to the Set of OrientationWeights will have no effect on the orientation weights
-    associated with this Reference. You can, however, change the weigtings on the
+    associated with this Reference. You can, however, change the weightings on the
     InverseKinematicsSolver prior to solving at any instant in time. */
     void setOrientationWeightSet(const Set<OrientationWeight>& orientationWeights);
     void setDefaultWeight(double weight) { set_default_weight(weight); }
