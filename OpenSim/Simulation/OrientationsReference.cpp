@@ -69,13 +69,13 @@ void OrientationsReference::loadOrientationsFile(const std::string orientationFi
     const auto& times = xyzEulerData.getIndependentColumn();
 
     size_t nt = xyzEulerData.getNumRows();
-    size_t nc = xyzEulerData.getNumColumns();
+    int nc = int(xyzEulerData.getNumColumns());
 
     RowVector_<Rotation> row(nc);
 
     for (size_t i = 0; i < nt; ++i) {
         const auto& xyzRow = xyzEulerData.getRowAtIndex(i);
-        for (size_t j = 0; j < nc; ++j) {
+        for (int j = 0; j < nc; ++j) {
             const Vec3& xyzO = xyzRow[j];
             row[j] = Rotation(BodyOrSpaceType::BodyRotationSequence,
                 xyzO[0], XAxis, xyzO[1], YAxis, xyzO[2], ZAxis);
@@ -92,7 +92,7 @@ void OrientationsReference::populateFromOrientationData(
     const TimeSeriesTable_<Rotation>& orientationData)
 {
     const std::vector<std::string> &tempNames = orientationData.getColumnLabels();
-    size_t no = tempNames.size();
+    unsigned int no = unsigned(tempNames.size());
 
     // empty any lingering names and weights
     _orientationNames.clear();
@@ -103,7 +103,7 @@ void OrientationsReference::populateFromOrientationData(
 
     int index = 0;
     // Build flat lists (arrays) of orientation names and weights in the same order as the orientation data
-    for(size_t i=0; i<no; ++i){
+    for(unsigned int i=0; i<no; ++i){
         const std::string &name = tempNames[i];
         _orientationNames[i] = name;
         index = get_orientation_weights().getIndex(name, index);
@@ -118,7 +118,7 @@ void OrientationsReference::populateFromOrientationData(
 
 int OrientationsReference::getNumRefs() const
 {
-    return _orientationData.getNumColumns();
+    return int(_orientationData.getNumColumns());
 }
 
 double OrientationsReference::getSamplingFrequency() const
