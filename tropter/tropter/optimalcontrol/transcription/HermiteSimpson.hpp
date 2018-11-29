@@ -87,7 +87,8 @@ void HermiteSimpson<T>::set_ocproblem(
     const auto control_names = m_ocproblem->get_control_names();
     const auto adjunct_names = m_ocproblem->get_adjunct_names();
     for (int i_mesh = 0; i_mesh < m_num_mesh_points; ++i_mesh) {
-        // If not the first mesh point, also add in midpoint variable names. 
+        // If not the first mesh point, also add in midpoint variable names
+        // before the mesh point variable names. 
         // Ordering based on Betts 4.105, pg. 144.
         if (i_mesh) {
             for (const auto& state_name : state_names) {
@@ -140,6 +141,8 @@ void HermiteSimpson<T>::set_ocproblem(
     // Betts eq. 4.107 on page 144 suggests that the Hermite defect constraints
     // (eq. 4.103) for all states at a collocation point should be grouped 
     // together, followed by all of the Simpson defect constraints (eq. 4.104).
+    // TODO I (nickbianco) don't think we currently take advantage of this 
+    // constraint ordering in the defect computations. See below.
     for (int i_mesh = 1; i_mesh < m_num_mesh_points; ++i_mesh) {
         for (const auto& state_name : state_names) {
             std::stringstream ss;
@@ -407,11 +410,17 @@ void HermiteSimpson<T>::calc_constraints(const VectorX<T>& x,
         const auto& xdot_im1 = m_derivs_mesh.leftCols(N - 1);
         const auto& xdot_mid = m_derivs_mid;
 
+        // TODO separate out nonlinear components of the constraint vector per
+        // Bett's eq. 4.107 on page 144 to fully take advantage of the separated
+        // Hermite-Simpson form.
+
         // Hermite interpolant defects
+        // ---------------------------
         constr_view.defects.topRows(m_num_states) =
             x_mid - T(0.5) * (x_i + x_im1) - (h / T(8.0)) * (xdot_im1 - xdot_i);
 
         // Simpson integration defects
+        // ---------------------------
         constr_view.defects.bottomRows(m_num_states) =
             x_i - x_im1 - (h / T(6.0)) * (xdot_i + T(4.0)*xdot_mid + xdot_im1);
     }
@@ -1184,6 +1193,9 @@ HermiteSimpson<T>::make_constraints_view(Eigen::Ref<VectorX<T>> constr) const
                &constr[0] : nullptr;
     T* pc_ptr= m_num_path_constraints ?                  // path constraints.
                &constr[m_num_dynamics_constraints] : nullptr;
+    // Each column of the defects view contains all the Hermite interpolant 
+    // defects (first m_num_states rows) followed by all the Simpson interpolant
+    // defects (bottom m_num_states rows) for each mesh interval.
     return{DefectsTrajectoryView(d_ptr, 2*m_num_states, m_num_mesh_points-1),
            PathConstraintsTrajectoryView(pc_ptr, m_num_path_constraints,
                    m_num_mesh_points)};
