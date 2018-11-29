@@ -314,9 +314,11 @@ public:
 
         // Achieve the motion.
         // ===================
-        out.path.segment(_numMuscles, _numCoordsToActuate)
-                = _desiredMoments.col(i_mesh).template cast<T>()
-                - genForce;
+        if (out.path.size() != 0) {
+            out.path.segment(_numMuscles, _numCoordsToActuate)
+                    = _desiredMoments.col(i_mesh).template cast<T>()
+                    - genForce;
+        }
     }
     void calc_integral_cost(const tropter::Input<T>& in,
             T& integrand) const override {

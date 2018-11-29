@@ -280,7 +280,10 @@ void HermiteSimpson<T>::set_ocproblem(
     m_derivs_mesh.resize(m_num_states, m_num_mesh_points);
     m_derivs_mid.resize(m_num_states, m_num_mesh_points - 1);
 
-    m_ocproblem->initialize_on_mesh(mesh);
+    // Return a mesh including the Hermite-Simpson collocation midpoints to 
+    // enable initialization of mesh-dependent integral cost quantities. 
+    VectorXd mesh_and_midpoints = VectorXd::LinSpaced(m_num_col_points, 0, 1);
+    m_ocproblem->initialize_on_mesh(mesh_and_midpoints);
 }
 
 template<typename T>
@@ -363,7 +366,7 @@ void HermiteSimpson<T>::calc_constraints(const VectorX<T>& x,
     for (int i_col = 0; i_col < m_num_col_points; i_col += 2) {
         const T time = step_size * i_col + initial_time;
         m_ocproblem->calc_differential_algebraic_equations(
-        {i_mesh, time, states.col(i_col), controls.col(i_col),
+        {i_col, time, states.col(i_col), controls.col(i_col),
             adjuncts.col(i_col), parameters},
             {m_derivs_mesh.col(i_mesh),
             constr_view.path_constraints.col(i_mesh)});
@@ -374,11 +377,12 @@ void HermiteSimpson<T>::calc_constraints(const VectorX<T>& x,
     for (int i_col = 1; i_col < m_num_col_points; i_col += 2) {
         const T time = step_size * i_col + initial_time;
         m_ocproblem->calc_differential_algebraic_equations(
-        {-1, time, states.col(i_col), controls.col(i_col),
+        {i_col, time, states.col(i_col), controls.col(i_col),
             adjuncts.col(i_col), parameters},
             {m_derivs_mid.col(i_mid),
-            // TODO pass empty variable
-            constr_view.path_constraints.col(i_col)});
+            m_empty_path_constraint_vec});
+            TROPTER_THROW_IF(m_empty_path_constraint_vec.size() != 0, 
+                "Invalid resize of empty path constraint output.");
         i_mid++;
     }
 

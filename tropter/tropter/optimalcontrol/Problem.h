@@ -53,10 +53,7 @@ template<typename T>
 struct Input {
     /// This index may be helpful for using a cache computed in
     /// OptimalControlProblem::initialize_on_mesh().
-    /// Setting this value to -1 indicates a point not on the mesh, usually a
-    /// collocation point for transcription schemes that require extra points
-    /// within the interval to construct defect constraints.
-    const int mesh_index;
+    const int time_index;
     /// The current time for the provided states and controls.
     const T& time;
     /// The vector of states at time `time`. This stores a reference to an
@@ -296,9 +293,15 @@ public:
     /// Compute the right-hand side of the differntial algebraic equations
     /// (DAE) for the system you want to optimize. This is the function that
     /// provides the dynamics and path constraints.
-    /// The initial values in `derivatives` and `constraints` are arbitrary and
-    /// cannot be assumed to be 0, etc. You must set entries to 0 explicitly if
-    /// you want that.
+    /// The initial values in `dynamics` and `path` are arbitrary and cannot be 
+    /// assumed to be 0, etc. You must set entries to 0 explicitly if you want 
+    /// that.
+    /// It is not always necessary to compute path constraint values at every 
+    /// time point. This is determined by the underlying transcription scheme,
+    /// and return values for the `path` structure are only accepted if it is of
+    /// non-zero size for a given time index. Therefore, implementations of this
+    /// function require detection of the `path` structure size if path
+    /// constraints exist in your problem.
     virtual void calc_differential_algebraic_equations(
             const Input<T>& in, Output<T> out) const;
     // TODO alternate form that takes a matrix; state at every time.
@@ -308,14 +311,16 @@ public:
     //    var.states[0];
     //    var.states_traj
     //    var.controls[0];
-    //    out.derivatives[0] =
-    //    out.constraints[0] = ...
+    //    out.dynamics[0] =
+    //    out.path[0] = ...
     //}
     // TODO endpoint or terminal cost?
     virtual void calc_endpoint_cost(const T& final_time,
             const VectorX<T>& final_states,
             const VectorX<T>& parameters,
             T& cost) const;
+    /// Compute the integrand for the total integral cost in your optimal 
+    /// control problem. 
     virtual void calc_integral_cost(const Input<T>& in, T& integrand) const;
     /// @}
 

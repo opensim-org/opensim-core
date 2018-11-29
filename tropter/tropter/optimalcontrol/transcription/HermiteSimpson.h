@@ -158,21 +158,9 @@ protected:
     template<typename S>
     TrajectoryViewConst<S>
         make_states_trajectory_view_mesh(const VectorX<S>& variables) const;
-    //template<typename S>
-    //TrajectoryViewConst<S>
-    //    make_controls_trajectory_view_mesh(const VectorX<S>& variables) const;
-    //template<typename S>
-    //TrajectoryViewConst<S>
-    //    make_adjuncts_trajectory_view_mesh(const VectorX<S>& variables) const;
     template<typename S>
     TrajectoryViewConst<S>
         make_states_trajectory_view_mid(const VectorX<S>& variables) const;
-    //template<typename S>
-    //TrajectoryViewConst<S>
-    //    make_controls_trajectory_view_mid(const VectorX<S>& variables) const;
-    //template<typename S>
-    //TrajectoryViewConst<S>
-    //    make_adjuncts_trajectory_view_mid(const VectorX<S>& variables) const;
 
     /// These provide a view to which you can write.
     template<typename S>
@@ -190,21 +178,9 @@ protected:
     template<typename S>
     TrajectoryView<S>
         make_states_trajectory_view_mesh(VectorX<S>& variables) const;
-    //template<typename S>
-    //TrajectoryView<S>
-    //    make_controls_trajectory_view_mesh(VectorX<S>& variables) const;
-    //template<typename S>
-    //TrajectoryView<S>
-    //    make_adjuncts_trajectory_view_mesh(VectorX<S>& variables) const;
     template<typename S>
     TrajectoryView<S>
         make_states_trajectory_view_mid(VectorX<S>& variables) const;
-    //template<typename S>
-    //TrajectoryView<S>
-    //    make_controls_trajectory_view_mid(VectorX<S>& variables) const;
-    //template<typename S>
-    //TrajectoryView<S>
-    //    make_adjuncts_trajectory_view_mid(VectorX<S>& variables) const;
 
     // TODO templatize.
     using DefectsTrajectoryView = Eigen::Map<MatrixX<T>>;
@@ -250,6 +226,12 @@ private:
     mutable VectorX<T> m_integrand;
     mutable MatrixX<T> m_derivs_mesh;
     mutable MatrixX<T> m_derivs_mid;
+    // This empty vector is passed to calc_differential_algebraic_equations()
+    // for collocation points not on the mesh where we do not enforce path 
+    // constraints. If the user tries to write to it, an Eigen runtime assertion 
+    // will be violated. If the user tries to resize it, tropter will throw an 
+    // exception after exiting the function call.
+    mutable VectorX<T> m_empty_path_constraint_vec;
 };
 
 } // namespace transcription

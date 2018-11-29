@@ -143,10 +143,14 @@ public:
             const T& normFibLen = in.states[3];
             const T& normFibVel = in.controls[1];
             T normTenForce;
+            T res;
             // This also provides the path constraint value.
             m_muscle.calcEquilibriumResidual(
                     activation, musTenLen, normFibLen, normFibVel,
-                    out.path[0], normTenForce);
+                    res, normTenForce);
+            if (out.path.size() != 0) {
+                out.path[0] = res;
+            }
             tendonForce = m_muscle.get_max_isometric_force() * normTenForce;
         } else {
             // Muscle-tendon velocity.

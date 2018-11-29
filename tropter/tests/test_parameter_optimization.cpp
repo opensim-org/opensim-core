@@ -190,7 +190,7 @@ TEST_CASE("OscillatorMass, IPOPT") {
     // TODO: reduce number of mesh points needed (try different collocation scheme)
     unsigned N = 350;
 
-    SECTION("Finite differences, limited memory") {
+    SECTION("Finite differences, limited memory, trapezoidal") {
         auto ocp = std::make_shared<OscillatorMass<double>>();
         DirectCollocationSolver<double> dircol(ocp, "trapezoidal", "ipopt", N);
         dircol.get_opt_solver().set_hessian_approximation("limited-memory");
@@ -200,7 +200,7 @@ TEST_CASE("OscillatorMass, IPOPT") {
         REQUIRE(Approx(solution.parameters[0]) == ocp->MASS);
         REQUIRE(Approx(solution.objective) == 0);
     }
-    SECTION("Finite differences, exact Hessian") {
+    SECTION("Finite differences, exact Hessian, trapezoidal") {
         auto ocp = std::make_shared<OscillatorMass<double>>();
         DirectCollocationSolver<double> dircol(ocp, "trapezoidal", "ipopt", N);
         dircol.get_opt_solver().set_findiff_hessian_step_size(1e-3);
@@ -211,7 +211,7 @@ TEST_CASE("OscillatorMass, IPOPT") {
         REQUIRE(Approx(solution.parameters[0]) == ocp->MASS);
         REQUIRE(Approx(solution.objective) == 0);
     }
-    SECTION("ADOL-C") {
+    SECTION("ADOL-C, trapezoidal") {
         auto ocp = std::make_shared<OscillatorMass<adouble>>();
         DirectCollocationSolver<adouble> dircol(ocp, "trapezoidal", "ipopt", N);
         Solution solution = dircol.solve();
@@ -220,4 +220,40 @@ TEST_CASE("OscillatorMass, IPOPT") {
         REQUIRE(Approx(solution.parameters[0]) == ocp->MASS);
         REQUIRE(Approx(solution.objective) == 0);
     }
+    // Hermite-Simpson allows us to *drastically* reduce the number of mesh 
+    // points!
+    SECTION("Finite differences, limited memory, hermite-simpson") {
+        auto ocp = std::make_shared<OscillatorMass<double>>();
+        DirectCollocationSolver<double> dircol(ocp, "hermite-simpson", "ipopt", 
+            N / 25);
+        dircol.get_opt_solver().set_hessian_approximation("limited-memory");
+        dircol.get_opt_solver().set_sparsity_detection("random");
+        Solution solution = dircol.solve();
+
+        REQUIRE(Approx(solution.parameters[0]) == ocp->MASS);
+        REQUIRE(Approx(solution.objective) == 0);
+    }
+    SECTION("Finite differences, exact Hessian, hermite-simpson") {
+        auto ocp = std::make_shared<OscillatorMass<double>>();
+        DirectCollocationSolver<double> dircol(ocp, "hermite-simpson", "ipopt", 
+            N / 25);
+        dircol.get_opt_solver().set_findiff_hessian_step_size(1e-3);
+        dircol.get_opt_solver().set_hessian_approximation("exact");
+        dircol.get_opt_solver().set_sparsity_detection("random");
+        Solution solution = dircol.solve();
+
+        REQUIRE(Approx(solution.parameters[0]) == ocp->MASS);
+        REQUIRE(Approx(solution.objective) == 0);
+    }
+    SECTION("ADOL-C, hermite-simpson") {
+        auto ocp = std::make_shared<OscillatorMass<adouble>>();
+        DirectCollocationSolver<adouble> dircol(ocp, "hermite-simpson", "ipopt", 
+            N / 25);
+        Solution solution = dircol.solve();
+        dircol.print_constraint_values(solution);
+
+        REQUIRE(Approx(solution.parameters[0]) == ocp->MASS);
+        REQUIRE(Approx(solution.objective) == 0);
+    }
+
 };

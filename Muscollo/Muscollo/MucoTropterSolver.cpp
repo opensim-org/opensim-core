@@ -345,7 +345,7 @@ public:
 
         // If enabled constraints exist in the model, compute accelerations
         // based on Lagrange multipliers.
-        if (m_numMultibodyConstraintEqs) {
+        if (m_numMultibodyConstraintEqs && (out.path.size() != 0)) {
             // TODO Antoine and Gil said realizing Dynamics is a lot costlier than
             // realizing to Velocity and computing forces manually.
             m_model.realizeDynamics(m_state);
@@ -394,15 +394,18 @@ public:
             m_model.realizeAcceleration(m_state);
         }
 
-        // Copy errors from generic path constraints into output struct.
-        m_phase0.calcPathConstraintErrors(m_state, m_pathConstraintErrors);
-        std::copy(m_pathConstraintErrors.begin(),
-                  m_pathConstraintErrors.end(),
-                  out.path.data() + m_numMultibodyConstraintEqs);
+        // Compute errors for generic path constraints.
+        if (out.path.size() != 0) {
+            m_phase0.calcPathConstraintErrors(m_state, m_pathConstraintErrors);
+            std::copy(m_pathConstraintErrors.begin(),
+                      m_pathConstraintErrors.end(),
+                      out.path.data() + m_numMultibodyConstraintEqs);
 
-        // Copy state derivative values to output struct.
-        std::copy(&m_state.getYDot()[0], &m_state.getYDot()[0] + states.size(),
-                  out.dynamics.data());   
+            // Copy state derivative values to output struct.
+            std::copy(&m_state.getYDot()[0], 
+                      &m_state.getYDot()[0] + states.size(),
+                      out.dynamics.data());   
+        }
     }
     
     void calc_integral_cost(const tropter::Input<T>& in, 

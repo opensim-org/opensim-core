@@ -254,8 +254,10 @@ public:
 
         // Achieve the motion.
         // ===================
-        out.path = _desiredMoments.col(i_mesh).template cast<adouble>()
-                 - genForce;
+        if (out.path.size() != 0) {
+            out.path = _desiredMoments.col(i_mesh).template cast<adouble>()
+                     - genForce;
+        }
     }
     void calc_integral_cost(const tropter::Input<T>& in,
             T& integrand) const override {

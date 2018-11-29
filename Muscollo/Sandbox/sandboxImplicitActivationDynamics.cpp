@@ -74,13 +74,16 @@ public:
         const T normTenForceRate =
                 tendon_force_dynamics_scaling_factor * tenForceControl;
         T tendonForce;
+        T res;
         // This also computes the fiber equilibrium path constraint.
         m_muscle.calcTendonForceStateEquilibriumResidual(
-                activation, position, speed, normTenForce, normTenForceRate,
-                out.path[1], tendonForce);
-        // TODO might make more sense to use fiber force; might be a more
-        // direct relationship (that, or make tendon length a variable).
-        out.path[0] = tendonForce - netGeneralizedForce;
+            activation, position, speed, normTenForce, normTenForceRate,
+            res, tendonForce);
+
+        if (out.path.size() != 0) {
+            out.path[0] = tendonForce - netGeneralizedForce;
+            out.path[1] = res;
+        }
 
         // Activation dynamics.
         m_muscle.calcActivationDynamics(excitation, activation,
@@ -142,14 +145,17 @@ public:
         //const T speed = 0.04;
         //const T netGeneralizedForce = 10 + 5 * in.time;
 
-
         T normTenForce;
+        T res;
         m_muscle.calcEquilibriumResidual(
-                activation, position, normFibLen, normFibVel, out.path[1],
-                normTenForce);
+            activation, position, normFibLen, normFibVel, res,
+            normTenForce);
         T tendonForce = m_muscle.get_max_isometric_force() * normTenForce;
-
-        out.path[0] = tendonForce - netGeneralizedForce;
+        
+        if (out.path.size() != 0) {
+            out.path[0] = tendonForce - netGeneralizedForce;
+            out.path[1]  = res;
+        }
 
         // Activation dynamics.
         m_muscle.calcActivationDynamics(excitation, activation,
@@ -222,14 +228,17 @@ public:
         const T normTenForceRate =
                 tendon_force_dynamics_scaling_factor * tenForceControl;
         T tendonForce;
+        T res;
         // This also computes the fiber equilibrium path constraint.
         m_muscle.calcTendonForceStateEquilibriumResidual(
                 activation, position, speed, normTenForce, normTenForceRate,
-                out.path[1], tendonForce);
+                res, tendonForce);
         // TODO might make more sense to use fiber force; might be a more
         // direct relationship (that, or make tendon length a variable).
-        out.path[0] = tendonForce - netGeneralizedForce;
-
+        if (out.path.size() != 0) {
+            out.path[0] = tendonForce - netGeneralizedForce;
+            out.path[1] = res;
+        }
 
         // Activation dynamics.
         const double activation_rate_min = -1.0 / deactivation_time_constant;
@@ -238,8 +247,12 @@ public:
                 + (activation_rate_max - activation_rate_min) * activationControl;
         out.dynamics[0] = activationRate;
 
-        out.path[2] = activationRate + activation / deactivation_time_constant;
-        out.path[3] = activationRate + activation / activation_time_constant;
+        if (out.path.size() != 0) {
+            out.path[2] = activationRate 
+                        + activation / deactivation_time_constant;
+            out.path[3] = activationRate 
+                        + activation / activation_time_constant;
+        }
 
         // Fiber dynamics.
         out.dynamics[1] = normTenForceRate;
@@ -302,12 +315,16 @@ public:
         const T netGeneralizedForce = 10 + 10 * in.time / duration;
 
         T normTenForce;
+        T res;
         m_muscle.calcEquilibriumResidual(
-                activation, position, normFibLen, normFibVel, out.path[1],
+                activation, position, normFibLen, normFibVel, res,
                 normTenForce);
         T tendonForce = m_muscle.get_max_isometric_force() * normTenForce;
 
-        out.path[0] = tendonForce - netGeneralizedForce;
+        if (out.path.size() != 0) {
+            out.path[0] = tendonForce - netGeneralizedForce;
+            out.path[1] = res;
+        }
 
         // Activation dynamics.
         const double activation_rate_min = -1.0 / deactivation_time_constant;
@@ -316,8 +333,12 @@ public:
                 + (activation_rate_max - activation_rate_min) * activationControl;
         out.dynamics[0] = activationRate;
 
-        out.path[2] = activationRate + activation / deactivation_time_constant;
-        out.path[3] = activationRate + activation / activation_time_constant;
+        if (out.path.size() != 0) {
+            out.path[2] = activationRate 
+                        + activation / deactivation_time_constant;
+            out.path[3] = activationRate 
+                        + activation / activation_time_constant;
+        }
 
         // Fiber dynamics.
         out.dynamics[1] = max_contraction_velocity * normFibVel;

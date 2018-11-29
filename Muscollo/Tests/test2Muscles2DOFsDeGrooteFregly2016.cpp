@@ -322,25 +322,27 @@ public:
 
         // Path constraints.
         // =================
-        const T& x = in.states[m_i_x];
-        const T& y = in.states[m_i_y];
-        {
-            const T& activationL = in.states[m_i_activation_l];
-            const T& normFibLenL = in.states[m_i_norm_fiber_length_l];
-            const T& normFibVelL = in.controls[m_i_norm_fiber_velocity_l];
-            const T musTenLenL = sqrt(pow(d + x, 2) + pow(y, 2));
-            m_muscleL.calcEquilibriumResidual(activationL, musTenLenL,
-                    normFibLenL, normFibVelL,
-                    out.path[m_i_fiber_equilibrium_l]);
-        }
-        {
-            const T& activationR = in.states[m_i_activation_r];
-            const T& normFibLenR = in.states[m_i_norm_fiber_length_r];
-            const T& normFibVelR = in.controls[m_i_norm_fiber_velocity_r];
-            const T musTenLenR = sqrt(pow(d - x, 2) + pow(y, 2));
-            m_muscleR.calcEquilibriumResidual(activationR, musTenLenR,
-                    normFibLenR, normFibVelR,
-                    out.path[m_i_fiber_equilibrium_r]);
+        if (out.path.size() != 0) {
+            const T& x = in.states[m_i_x];
+            const T& y = in.states[m_i_y];
+            {
+                const T& activationL = in.states[m_i_activation_l];
+                const T& normFibLenL = in.states[m_i_norm_fiber_length_l];
+                const T& normFibVelL = in.controls[m_i_norm_fiber_velocity_l];
+                const T musTenLenL = sqrt(pow(d + x, 2) + pow(y, 2));
+                m_muscleL.calcEquilibriumResidual(activationL, musTenLenL,
+                        normFibLenL, normFibVelL,
+                        out.path[m_i_fiber_equilibrium_l]);
+            }
+            {
+                const T& activationR = in.states[m_i_activation_r];
+                const T& normFibLenR = in.states[m_i_norm_fiber_length_r];
+                const T& normFibVelR = in.controls[m_i_norm_fiber_velocity_r];
+                const T musTenLenR = sqrt(pow(d - x, 2) + pow(y, 2));
+                m_muscleR.calcEquilibriumResidual(activationR, musTenLenR,
+                        normFibLenR, normFibVelR,
+                        out.path[m_i_fiber_equilibrium_r]);
+            }
         }
     }
     NetForce calcNetForce(const tropter::VectorX<T>& states) const {

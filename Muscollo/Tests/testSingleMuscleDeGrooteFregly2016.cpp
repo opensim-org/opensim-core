@@ -246,10 +246,14 @@ public:
 
         // Multibody dynamics.
         T normTenForce;
+        T res;
         // This also computes the fiber equilibrium path constraint.
         m_muscle.calcEquilibriumResidual(
-                activation, position, normFibLen, normFibVel, out.path[0],
+                activation, position, normFibLen, normFibVel, res,
                 normTenForce);
+        if (out.path.size() != 0) {
+            out.path[0] = res;
+        }
         T tendonForce = m_muscle.get_max_isometric_force() * normTenForce;
         // TODO might make more sense to use fiber force; might be a more
         // direct relationship (that, or make tendon length a variable).
