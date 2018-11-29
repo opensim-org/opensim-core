@@ -54,7 +54,7 @@ Model ModelFactory::createNLinkPendulum(int numLinks) {
         auto* ji = new PinJoint("j" + istr, *prevBody, Vec3(0), Vec3(0),
                 *bi, Vec3(-1, 0, 0), Vec3(0));
         auto& qi = ji->updCoordinate();
-        qi.setName("qi");
+        qi.setName("q" + istr);
         model.addJoint(ji);
 
         auto* taui = new CoordinateActuator();
