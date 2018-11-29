@@ -374,19 +374,19 @@ public:
                 appliedBodyForces + constraintBodyForces, udot, A_GB);
            
             // Constraint errors.
-            // TODO double-check that disable constraints don't show up in 
+            // TODO double-check that disabled constraints don't show up in 
             // state
             std::copy(&m_state.getQErr()[0], 
                 &m_state.getQErr()[0] + m_mpSum,
                 out.path.data());
-            // TODO if (!get_enforce_holonomic_constraints_only()) {
-            //    std::copy(&m_state.getUErr()[0],
-            //        &m_state.getUErr()[0] + m_mpSum + m_mvSum,
-            //        out.path.data() + m_mpSum);
-            //    std::copy(&m_state.getUDotErr()[0],
-            //        &m_state.getUDotErr()[0] + m_mpSum + m_mvSum + m_maSum,
-            //        out.path.data() + 2*m_mpSum + m_mvSum);
-            //}
+            if (!get_enforce_holonomic_constraints_only()) {
+                std::copy(&m_state.getUErr()[0],
+                    &m_state.getUErr()[0] + m_mpSum + m_mvSum,
+                    out.path.data() + m_mpSum);
+                std::copy(&m_state.getUDotErr()[0],
+                    &m_state.getUDotErr()[0] + m_mpSum + m_mvSum + m_maSum,
+                    out.path.data() + 2*m_mpSum + m_mvSum);
+             }
 
         } else {
             // TODO Antoine and Gil said realizing Dynamics is a lot costlier than
@@ -435,16 +435,16 @@ public:
 
         integrand = m_phase0.calcIntegralCost(m_state);
 
-        // TODO if (get_enforce_holonomic_constraints_only()) {
-        // Add squared multiplers cost to integrand. Since we currently don't
-        // include the derivatives of the holonomic contraint equations as path
-        // constraints in the OCP, this term exists in order to impose
-        // uniqueness in the Lagrange multipliers. 
-        for (int i = 0; i < m_numMultibodyConstraintEqs; ++i) {
-            integrand += m_mucoTropterSolver.get_multiplier_weight() 
-                * adjuncts[i] * adjuncts[i];
+        if (get_enforce_holonomic_constraints_only()) {
+            // Add squared multiplers cost to integrand. Since we currently 
+            // don't include the derivatives of the holonomic contraint 
+            // equations as path constraints in the OCP, this term exists in 
+            // order to impose uniqueness in the Lagrange multipliers. 
+            for (int i = 0; i < m_numMultibodyConstraintEqs; ++i) {
+                integrand += m_mucoTropterSolver.get_multiplier_weight() 
+                    * adjuncts[i] * adjuncts[i];
+            }
         }
-        // }
         
     }
     void calc_endpoint_cost(const T& final_time, const VectorX<T>& states,
@@ -516,7 +516,7 @@ void MucoTropterSolver::constructProperties() {
     constructProperty_optim_ipopt_print_level(-1);
     constructProperty_optim_transcription_scheme("trapezoidal");
     constructProperty_multiplier_weight(100.0);
-    // TODO constructProperty_enforce_holonomic_constraints_only(true);
+    constructProperty_enforce_holonomic_constraints_only(true);
 
     constructProperty_guess_file("");
 }
@@ -694,7 +694,13 @@ MucoSolution MucoTropterSolver::solveImpl() const {
 
     checkPropertyInSet(*this, getProperty_optim_solver(), {"ipopt", "snopt"});
     checkPropertyInSet(*this, getProperty_optim_transcription_scheme(),
-        {"trapezoidal", "hermite-simpson"});    
+        {"trapezoidal", "hermite-simpson"});
+    OPENSIM_THROW_IF(get_optim_transcription_scheme() != "hermite-simpson" &&
+        !get_enforce_holonomic_constraints_only(), Exception,
+        "If enforcing all levels of model kinematic constraints, then the "
+        "property 'optim_transcription_scheme' must be set to "
+        "'hermite-simpson'. Currently, it is set to '" + 
+        get_optim_transcription_scheme() + "'.");
     tropter::DirectCollocationSolver<double> dircol(ocp, 
             get_optim_transcription_scheme(),
             get_optim_solver(), N);

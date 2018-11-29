@@ -75,6 +75,10 @@ public:
     "control problem when only enforcing holonomic constraints in the model. A "
     "relatively high weight of 100 is set by default (so model actuators are  "
     "preferred).")
+    OpenSim_DECLARE_PROPERTY(enforce_holonomic_constraints_only, bool, 
+    "Option to only enforce holonomic kinematic constraints in the problem. "
+    "This option becomes a requirement when using a transcription scheme other "
+    "than Hermite-Simpson. By default, this is true.");
     // TODO OpenSim_DECLARE_LIST_PROPERTY(enforce_constraint_kinematic_levels, 
     //   std::string, "");
     // TODO must make more general for multiple phases, mesh refinement.
