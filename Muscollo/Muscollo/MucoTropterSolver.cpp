@@ -514,7 +514,7 @@ void MucoTropterSolver::constructProperties() {
     constructProperty_optim_hessian_approximation("limited-memory");
     constructProperty_optim_sparsity_detection("random");
     constructProperty_optim_ipopt_print_level(-1);
-    constructProperty_optim_transcription_scheme("trapezoidal");
+    constructProperty_transcription_scheme("trapezoidal");
     constructProperty_multiplier_weight(100.0);
     constructProperty_enforce_holonomic_constraints_only(true);
 
@@ -558,10 +558,10 @@ MucoIterate MucoTropterSolver::createGuess(const std::string& type) const {
     int N = get_num_mesh_points();
 
     checkPropertyInSet(*this, getProperty_optim_solver(), {"ipopt", "snopt"});
-    checkPropertyInSet(*this, getProperty_optim_transcription_scheme(), 
+    checkPropertyInSet(*this, getProperty_transcription_scheme(), 
         {"trapezoidal", "hermite-simpson"});
     tropter::DirectCollocationSolver<double> dircol(ocp, 
-            get_optim_transcription_scheme(),
+            get_transcription_scheme(),
             get_optim_solver(), N);
 
     tropter::Iterate tropIter;
@@ -693,16 +693,16 @@ MucoSolution MucoTropterSolver::solveImpl() const {
     int N = get_num_mesh_points();
 
     checkPropertyInSet(*this, getProperty_optim_solver(), {"ipopt", "snopt"});
-    checkPropertyInSet(*this, getProperty_optim_transcription_scheme(),
+    checkPropertyInSet(*this, getProperty_transcription_scheme(),
         {"trapezoidal", "hermite-simpson"});
-    OPENSIM_THROW_IF(get_optim_transcription_scheme() != "hermite-simpson" &&
+    OPENSIM_THROW_IF(get_transcription_scheme() != "hermite-simpson" &&
         !get_enforce_holonomic_constraints_only(), Exception,
         "If enforcing all levels of model kinematic constraints, then the "
-        "property 'optim_transcription_scheme' must be set to "
+        "property 'transcription_scheme' must be set to "
         "'hermite-simpson'. Currently, it is set to '" + 
-        get_optim_transcription_scheme() + "'.");
+        get_transcription_scheme() + "'.");    
     tropter::DirectCollocationSolver<double> dircol(ocp, 
-            get_optim_transcription_scheme(),
+            get_transcription_scheme(),
             get_optim_solver(), N);
 
     dircol.set_verbosity(get_verbosity() >= 1);
