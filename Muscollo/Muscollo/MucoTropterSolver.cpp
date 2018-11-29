@@ -514,6 +514,7 @@ void MucoTropterSolver::constructProperties() {
     constructProperty_optim_hessian_approximation("limited-memory");
     constructProperty_optim_sparsity_detection("random");
     constructProperty_optim_ipopt_print_level(-1);
+    constructProperty_optim_transcription_scheme("trapezoidal");
     constructProperty_multiplier_weight(100.0);
     // TODO constructProperty_enforce_holonomic_constraints_only(true);
 
@@ -557,7 +558,10 @@ MucoIterate MucoTropterSolver::createGuess(const std::string& type) const {
     int N = get_num_mesh_points();
 
     checkPropertyInSet(*this, getProperty_optim_solver(), {"ipopt", "snopt"});
-    tropter::DirectCollocationSolver<double> dircol(ocp, "trapezoidal",
+    checkPropertyInSet(*this, getProperty_optim_transcription_scheme(), 
+        {"trapezoidal", "hermite-simpson"});
+    tropter::DirectCollocationSolver<double> dircol(ocp, 
+            get_optim_transcription_scheme(),
             get_optim_solver(), N);
 
     tropter::Iterate tropIter;
@@ -689,8 +693,10 @@ MucoSolution MucoTropterSolver::solveImpl() const {
     int N = get_num_mesh_points();
 
     checkPropertyInSet(*this, getProperty_optim_solver(), {"ipopt", "snopt"});
-
-    tropter::DirectCollocationSolver<double> dircol(ocp, "trapezoidal",
+    checkPropertyInSet(*this, getProperty_optim_transcription_scheme(),
+        {"trapezoidal", "hermite-simpson"});    
+    tropter::DirectCollocationSolver<double> dircol(ocp, 
+            get_optim_transcription_scheme(),
             get_optim_solver(), N);
 
     dircol.set_verbosity(get_verbosity() >= 1);
