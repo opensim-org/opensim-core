@@ -308,7 +308,7 @@ void testInverseKinematicsSolverWithOrientations()
         eulerData.appendRow(times[i], rowEuler);
     }
 
-    TRCFileAdapter::write(eulerData, "subject1_walk_euler_angles.trc");
+    STOFileAdapter_<SimTK::Vec3>::write(eulerData, "subject1_walk_euler_angles.sto");
 
     //cout << orientationsData << endl;
     OrientationsReference oRefs(&orientationsData);
@@ -338,7 +338,7 @@ void testInverseKinematicsSolverWithEulerAnglesFromFile()
 {
     Model model("subject01_simbody.osim");
     // visualize for debugging
-    //model.setUseVisualizer(true);
+    model.setUseVisualizer(true);
 
     // Add a reporter to get IK computed coordinate values out
     TableReporter* ikReporter = new TableReporter();
@@ -353,7 +353,7 @@ void testInverseKinematicsSolverWithEulerAnglesFromFile()
 
     SimTK::State& s0 = model.initSystem();
 
-    OrientationsReference oRefs("subject1_walk_euler_angles.trc");
+    OrientationsReference oRefs("subject1_walk_euler_angles.sto");
 
     SimTK::Array_<CoordinateReference> coordinateReferences;
 
@@ -372,7 +372,7 @@ void testInverseKinematicsSolverWithEulerAnglesFromFile()
     for (auto time : times) {
         s0.updTime() = time;
         ikSolver.track(s0);
-        //model.getVisualizer().show(s0);
+        model.getVisualizer().show(s0);
         // realize to report to get reporter to pull values from model
         model.realizeReport(s0);
     }
