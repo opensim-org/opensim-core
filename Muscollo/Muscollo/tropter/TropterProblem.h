@@ -235,7 +235,6 @@ protected:
             integrand += m_mucoTropterSolver.get_multiplier_weight()
                     * adjuncts[i] * adjuncts[i];
         }
-        // }
 
     }
 
@@ -539,9 +538,9 @@ public:
         // TODO Antoine and Gil said realizing Dynamics is a lot costlier than
         // realizing to Velocity and computing forces manually.
 
-        /* TODO
+        /*
         if (SimTK::isNaN(in.adjuncts(0))) {
-
+            std::cout << "DEBUG " << in.adjuncts << std::endl;
         }
         std::cout << "DEBUG dynamics\n" << out.dynamics << "\npath\n" << out.path << std::endl;
         std::cout << simTKState.getY() << std::endl;
@@ -554,7 +553,17 @@ public:
     void calc_integral_cost(const tropter::Input<T>& in,
             T& integrand) const override final {
         TropterProblemBase<T>::calc_integral_cost(in, integrand);
-        // TODO: Test that this exception does get thrown.
+        OPENSIM_THROW_IF(
+                this->m_state.getSystemStage() >= SimTK::Stage::Acceleration,
+                Exception,
+                "Cannot realize to Acceleration in implicit dynamics mode.");
+    }
+    void calc_endpoint_cost(const T& final_time,
+            const tropter::VectorX<T>& states,
+            const tropter::VectorX<T>& parameters,
+            T& cost) const override final {
+        TropterProblemBase<T>::calc_endpoint_cost(final_time, states,
+                parameters, cost);
         OPENSIM_THROW_IF(
                 this->m_state.getSystemStage() >= SimTK::Stage::Acceleration,
                 Exception,

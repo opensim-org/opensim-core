@@ -795,8 +795,8 @@ double MucoIterate::compareContinuousVariablesRMS(const MucoIterate& other,
     //                                          + sum_im error_im^2)
     // `is`: index for states; `ic`: index for controls; 
     // `im`: index for multipliers.
-    return sqrt((stateISS + controlISS + multiplierISS + derivativeISS) /
-                timeInterval / numColumns);
+    const double ISS = stateISS + controlISS + multiplierISS + derivativeISS;
+    return sqrt(ISS / (finalTime - initialTime) / numColumns);
 }
 
 double MucoIterate::compareParametersRMS(const MucoIterate& other, 

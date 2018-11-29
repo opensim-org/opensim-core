@@ -124,12 +124,12 @@ public:
     /// @name Change the length of the trajectory
     /// @{
 
-    /// Resize the time vector and the time dimension of the states and controls
-    /// trajectories, and set all times, states, and controls to NaN.
+    /// Resize the time vector and the time dimension of the states, controls,
+    /// multipliers, and derivatives trajectories, and set all times, states,
+    /// controls, multipliers, and derivatives to NaN.
     /// @note Parameters are NOT set to NaN.
     // TODO rename to setNumPoints(), setNumNodes(), setNumTimePoints().
-    void setNumTimes(int numTimes)
-    {
+    void setNumTimes(int numTimes) {
         ensureUnsealed();
         m_time.resize(numTimes);
         m_time.setToNaN();

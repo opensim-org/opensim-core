@@ -16,15 +16,22 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 #define CATCH_CONFIG_MAIN
-#include <catch.hpp>
+#include "Testing.h"
 #include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
 #include <OpenSim/Actuators/CoordinateActuator.h>
 #include <Muscollo/osimMuscollo.h>
 #include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
 
+// TODO: Test with hermite-simpson.
+// TODO: Test with multibody constraints.
+
 using namespace OpenSim;
+using namespace Catch;
 
 MucoSolution solveDoublePendulumSwingup(const std::string& dynamics_mode) {
+
+    using SimTK::Vec3;
+
     MucoTool muco;
     muco.setName("double_pendulum_swingup_" + dynamics_mode);
 
@@ -34,7 +41,22 @@ MucoSolution solveDoublePendulumSwingup(const std::string& dynamics_mode) {
 
     // Model (dynamics).
     // -----------------
-    mp.setModelCopy(ModelFactory::createDoublePendulumModel());
+    auto model = ModelFactory::createDoublePendulum();
+    Sphere target(0.1);
+    target.setColor(SimTK::Red);
+    PhysicalOffsetFrame* targetframe = new PhysicalOffsetFrame(
+            "targetframe", model.getGround(), SimTK::Transform(Vec3(0, 2, 0)));
+    model.updGround().addComponent(targetframe);
+    targetframe->attachGeometry(target.clone());
+
+    Sphere start(target);
+    PhysicalOffsetFrame* startframe = new PhysicalOffsetFrame(
+            "startframe", model.getGround(), SimTK::Transform(Vec3(2, 0, 0)));
+    model.updGround().addComponent(startframe);
+    start.setColor(SimTK::Green);
+    startframe->attachGeometry(start.clone());
+    model.finalizeConnections();
+    mp.setModelCopy(model);
 
     // Bounds.
     // -------
@@ -43,7 +65,7 @@ MucoSolution solveDoublePendulumSwingup(const std::string& dynamics_mode) {
     mp.setStateInfo("/jointset/j0/q0/speed", {-50, 50}, 0, 0);
     mp.setStateInfo("/jointset/j1/q1/value", {-10, 10}, 0);
     mp.setStateInfo("/jointset/j1/q1/speed", {-50, 50}, 0, 0);
-    mp.setControlInfo("/tau0", {-100, 100}); // TODO tighten.
+    mp.setControlInfo("/tau0", {-100, 100});
     mp.setControlInfo("/tau1", {-100, 100});
 
     // Cost.
@@ -53,7 +75,7 @@ MucoSolution solveDoublePendulumSwingup(const std::string& dynamics_mode) {
 
     auto* endpointCost = mp.addCost<MucoMarkerEndpointCost>("endpoint");
     endpointCost->set_weight(1000.0);
-    endpointCost->setPointName("/markerset/marker");
+    endpointCost->setPointName("/markerset/marker1");
     endpointCost->setReferenceLocation(SimTK::Vec3(0, 2, 0));
 
     // Configure the solver.
@@ -66,7 +88,7 @@ MucoSolution solveDoublePendulumSwingup(const std::string& dynamics_mode) {
     //solver.set_optim_hessian_approximation("exact");
 
     MucoIterate guess = solver.createGuess();
-    guess.setNumTimes(2);
+    guess.resampleWithNumTimes(2);
     guess.setTime({0, 1});
     guess.setState("/jointset/j0/q0/value", {0, -SimTK::Pi});
     guess.setState("/jointset/j1/q1/value", {0, 2*SimTK::Pi});
@@ -115,39 +137,74 @@ SCENARIO("Similar solutions between implicit and explicit dynamics modes",
 
         CAPTURE(stateError, controlError);
 
-        THEN("solutions are approximately equal") {
-            REQUIRE(solutionImplicit.getFinalTime() ==
-                    Approx(solution.getFinalTime()).margin(1e-2));
-            REQUIRE(stateError < 2.0);
-            REQUIRE(controlError < 30.0);
+        // Solutions are approximately equal.
+        CHECK(solutionImplicit.getFinalTime() ==
+                Approx(solution.getFinalTime()).margin(1e-2));
+        CHECK(stateError < 2.0);
+        CHECK(controlError < 30.0);
+
+        // Accelerations are correct.
+        auto table = solution.exportToStatesTable();
+        GCVSplineSet splines(table,
+                {"/jointset/j0/q0/speed", "/jointset/j1/q1/speed"});
+        OpenSim::Array<double> explicitAccel;
+        SimTK::Matrix derivTraj(
+                (int)table.getIndependentColumn().size(), 2);
+        int i = 0;
+        for (const auto& explicitTime : table.getIndependentColumn()) {
+            splines.evaluate(explicitAccel, 1, explicitTime);
+            derivTraj(i, 0) = explicitAccel[0];
+            derivTraj(i, 1) = explicitAccel[1];
+            ++i;
         }
+        SimTK::Matrix empty;
+        MucoIterate explicitWithDeriv(solution.getTime(),
+                {}, {}, {}, solutionImplicit.getDerivativeNames(), {},
+                empty, empty, empty, derivTraj, SimTK::RowVector());
+        const double RMS = solutionImplicit.compareContinuousVariablesRMS(
+                explicitWithDeriv, {"none"}, {"none"}, {"none"}, {});
+        CAPTURE(RMS);
+        CHECK(RMS < 30.0);
+    }
+}
 
-        THEN("accelerations are correct") {
-            auto table = solution.exportToStatesTable();
-            GCVSplineSet splines(table,
-                    {"/jointset/j0/q0/speed", "/jointset/j1/q1/speed"});
-            OpenSim::Array<double> explicitAccel;
-            SimTK::Matrix derivTraj(
-                    (int)table.getIndependentColumn().size(), 2);
-            int i = 0;
-            for (const auto& explicitTime : table.getIndependentColumn()) {
-                splines.evaluate(explicitAccel, 1, explicitTime);
-                derivTraj(i, 0) = explicitAccel[0];
-                derivTraj(i, 1) = explicitAccel[1];
-                ++i;
-            }
-            SimTK::Matrix empty;
-            MucoIterate explicitWithDeriv(solution.getTime(),
-                    {}, {}, {}, solutionImplicit.getDerivativeNames(), {},
-                    empty, empty, empty, derivTraj, SimTK::RowVector());
-            solutionImplicit.compareContinuousVariablesRMS(explicitWithDeriv,
-                    {"none"}, {"none"}, {"none"}, {});
+SCENARIO("Combining implicit dynamics mode with path constraints",
+        "[implicit]") {
+    class MyPathConstraint : public MucoPathConstraint {
+        OpenSim_DECLARE_CONCRETE_OBJECT(MyPathConstraint, MucoPathConstraint);
+        void initializeOnModelImpl(const Model& model) const override {
+            setNumEquations(model.getNumControls());
+        }
+        void calcPathConstraintErrorsImpl(const SimTK::State& state,
+                SimTK::Vector& errors) const override {
+            errors = getModel().getControls(state);
+        }
+    };
+    GIVEN("MucoProblem with path constraints") {
+        MucoTool muco;
+        auto& prob = muco.updProblem();
+        auto model = ModelFactory::createPendulum();
+        prob.setTimeBounds(0, 1);
+        prob.setModelCopy(model);
+        prob.addCost<MucoControlCost>();
+        auto* pc = prob.addPathConstraint<MyPathConstraint>();
+        MucoConstraintInfo info;
+        info.setBounds(std::vector<MucoBounds>(1, {10, 10000}));
+        pc->setConstraintInfo(info);
+        auto& solver = muco.initSolver();
+        solver.set_dynamics_mode("implicit");
+        solver.set_num_mesh_points(5);
+        MucoSolution solution = muco.solve();
 
+        THEN("path constraints are still obeyed") {
+            OpenSim_REQUIRE_MATRIX_TOL(solution.getControlsTrajectory(),
+                    SimTK::Matrix(5, 1, 10.0), 1e-5);
         }
     }
 }
 
-SCENARIO("Using MucoIterate with the implicit dynamics mode", "[implicit]") {
+SCENARIO("Using MucoIterate with the implicit dynamics mode",
+        "[implicit][iterate]") {
     GIVEN("MucoIterate with only derivatives") {
         MucoIterate iterate;
         const_cast<SimTK::Matrix*>(&iterate.
@@ -205,24 +262,28 @@ SCENARIO("Using MucoIterate with the implicit dynamics mode", "[implicit]") {
 }
 
 SCENARIO("Solving a problem with acceleration-level quantities", "[implicit]") {
+    MucoTool muco;
+    muco.updProblem().setModelCopy(ModelFactory::createPendulum());
+    auto& solver = muco.initSolver();
+    solver.set_dynamics_mode("implicit");
+    solver.set_num_mesh_points(5);
+
     class AccelerationIntegralCost : public MucoCost {
     OpenSim_DECLARE_CONCRETE_OBJECT(AccelerationIntegralCost, MucoCost);
         void calcIntegralCostImpl(const SimTK::State& state,
                 SimTK::Real& cost) const override {
-            static_assert(std::is_class<Self>::value, "dummy");
             getModel().realizeAcceleration(state);
             cost = state.getYDot().norm();
         }
     };
 
     GIVEN("an integral MucoCost that invokes realizeAcceleration") {
-        MucoTool muco;
         muco.updProblem().addCost<AccelerationIntegralCost>();
 
         THEN("problem cannot be solved") {
             REQUIRE_THROWS_WITH(muco.solve(),
-                    "Cannot realize to Acceleration in implicit dynamics "
-                    "mode.");
+                    Contains("Cannot realize to Acceleration in implicit "
+                             "dynamics mode."));
         }
     }
 
@@ -236,13 +297,12 @@ SCENARIO("Solving a problem with acceleration-level quantities", "[implicit]") {
     };
 
     GIVEN("an endpoint MucoCost that invokes realizeAcceleration") {
-        MucoTool muco;
         muco.updProblem().addCost<AccelerationEndpointCost>();
 
         THEN("problem cannot be solved") {
             REQUIRE_THROWS_WITH(muco.solve(),
-                    "Cannot realize to Acceleration in implicit dynamics "
-                    "mode.");
+                    Contains("Cannot realize to Acceleration in implicit "
+                             "dynamics mode."));
         }
     }
 
@@ -260,13 +320,12 @@ SCENARIO("Solving a problem with acceleration-level quantities", "[implicit]") {
     };
 
     GIVEN("a MucoPathConstraint that invokes realizeAcceleration") {
-        MucoTool muco;
         muco.updProblem().addPathConstraint<AccelerationConstraint>();
+
         THEN("problem cannot be solved") {
             REQUIRE_THROWS_WITH(muco.solve(),
-                    "Cannot realize to Acceleration in implicit dynamics "
-                    "mode.");
-
+                    Contains("Cannot realize to Acceleration in implicit "
+                             "dynamics mode."));
         }
     }
 }

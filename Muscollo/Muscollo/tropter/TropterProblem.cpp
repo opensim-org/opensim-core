@@ -152,8 +152,12 @@ convertToTropterIterate(const OpenSim::MucoIterate& mucoIter) const {
     const auto& parameters = mucoIter.getParameters();
     // Muscollo's matrix is numTimes x numStates;
     // tropter's is numStates x numTimes.
-    tropIter.states = Map<const MatrixXd>(
-            &states(0, 0), numTimes, numStates).transpose();
+    if (numStates) {
+        tropIter.states = Map<const MatrixXd>(
+                &states(0, 0), numTimes, numStates).transpose();
+    } else {
+        tropIter.states.resize(numStates, numTimes);
+    }
     if (numControls) {
         tropIter.controls = Map<const MatrixXd>(
                 &controls(0, 0), numTimes, numControls).transpose();
