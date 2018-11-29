@@ -31,8 +31,11 @@ void HermiteSimpson<T>::set_num_mesh_points(unsigned N) {
     TROPTER_THROW_IF(N < 2, "Expected number of mesh points to be at "
         "least 2, but got %i", N);
     m_num_mesh_points = N;
-    // Collocation points include mesh interval midpoints, so add N-1 points to
-    // the number of mesh points.
+    // We define the set of collocation points to include any time point where
+    // derivatives of the state estimates are required to match the estimated 
+    // dynamics. For Hermite-Simpson collocation, collocation points include 
+    // both the mesh points and the mesh interval midpoints, so add N-1 points 
+    // to the number of mesh points to get the number of collocation points.
     m_num_col_points = 2*N - 1;
 }
 
@@ -253,7 +256,7 @@ void HermiteSimpson<T>::set_ocproblem(
 
     // Set the mesh.
     // -------------
-    int num_mesh_intervals = m_num_mesh_points - 1;
+    const int num_mesh_intervals = m_num_mesh_points - 1;
     // For integrating the integral cost.
     // The duration of each mesh interval.
     VectorXd mesh = VectorXd::LinSpaced(m_num_mesh_points, 0, 1);
@@ -449,13 +452,13 @@ void HermiteSimpson<T>::calc_sparsity_hessian_lagrangian(
     }
 
     SymmetricSparsityPattern dae_sparsity(m_num_continuous_variables);
-    dae_sparsity.set_dense();
-    if (this->get_hessian_sparsity_mode()) {
+
+
+    if (this->get_hessian_block_sparsity_mode() == "sparse") {
         TROPTER_THROW("Automatic sparsity detection for hessian diagonal "
             "blocks not implemented for Hermite-Simpson transcription.");
-    } else {
-        // Dense block sparity mode.
-        dae_sparsity.set_dense();
+    } else if (this->get_hessian_block_sparsity_mode() == "dense") {
+         dae_sparsity.set_dense();
     }
 
     // Repeat the block down the diagonal of the Hessian of constraints.
@@ -477,12 +480,10 @@ void HermiteSimpson<T>::calc_sparsity_hessian_lagrangian(
     }
 
     SymmetricSparsityPattern integral_cost_sparsity(num_con_vars);
-    integral_cost_sparsity.set_dense();
-    if (this->get_hessian_sparsity_mode()) {
+    if (this->get_hessian_block_sparsity_mode() == "sparse") {
         TROPTER_THROW("Automatic sparsity detection for hessian diagonal "
             "blocks not implemented for Hermite-Simpson transcription.");
-    } else {
-        // Dense block sparity mode.
+    } else if (this->get_hessian_block_sparsity_mode() == "dense") {
         integral_cost_sparsity.set_dense();
     }
     

@@ -71,10 +71,11 @@ void DirectCollocationSolver<T>::set_verbosity(int verbosity) {
 }
 
 template<typename T>
-void DirectCollocationSolver<T>::set_hessian_sparsity_mode(int mode) {
-    TROPTER_VALUECHECK(mode == 0 || mode == 1,
-        "hessian sparsity mode", mode, "0 or 1");
-    m_transcription->set_hessian_sparsity_mode(mode);
+void DirectCollocationSolver<T>::set_hessian_block_sparsity_mode(
+        std::string mode) {
+    TROPTER_VALUECHECK(mode == "dense" || mode == "sparse",
+        "hessian block sparsity mode", mode, "dense or sparse");
+    m_transcription->set_hessian_block_sparsity_mode(mode);
     m_hessian_sparsity_mode = mode;
 }
 
