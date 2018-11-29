@@ -351,7 +351,7 @@ void testUpdateMarkerWeights()
 
     // Reset the initial coordinate value
     coord.setValue(state, 0.0);
-    ikSolver.assemble(state);
+    ikSolver.track(state);
 
     coordValue = coord.getValue(state);
     cout << "Assembled " << coord.getName() << " value = "
@@ -377,7 +377,7 @@ void testUpdateMarkerWeights()
 
     // Reset the initial coordinate value and reassemble
     coord.setValue(state, 0.0);
-    ikSolver.assemble(state);
+    ikSolver.track(state);
 
     coordValue = coord.getValue(state);
     cout << "Assembled " << coord.getName() << " value = "
