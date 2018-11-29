@@ -250,9 +250,6 @@ void InverseKinematicsSolver::setupMarkersGoal(SimTK::State &s)
     // get markers defined by the model 
     const MarkerSet &modelMarkerSet = getModel().getMarkerSet();
 
-    // get markers with specified tasks/weights
-    const Set<MarkerWeight>& mwSet = _markersReference->getMarkerWeightSet();
-
     // now build the Goal (AsemblyCondition) for Markers
     std::unique_ptr<SimTK::Markers> condOwner(new SimTK::Markers());
     _markerAssemblyCondition.reset(condOwner.get());
