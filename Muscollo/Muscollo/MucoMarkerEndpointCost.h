@@ -31,7 +31,12 @@ class OSIMMUSCOLLO_API MucoMarkerEndpointCost : public MucoCost {
     OpenSim_DECLARE_CONCRETE_OBJECT(MucoMarkerEndpointCost, MucoCost);
 public:
 
-    MucoMarkerEndpointCost() {
+    MucoMarkerEndpointCost() { constructProperties(); }
+    MucoMarkerEndpointCost(std::string name) : MucoCost(std::move(name)) {
+        constructProperties();
+    }
+    MucoMarkerEndpointCost(std::string name, double weight)
+            : MucoCost(std::move(name), weight) {
         constructProperties();
     }
 
@@ -47,7 +52,7 @@ public:
     }
 
 protected:
-    void initializeImpl() const override;
+    void initializeOnModelImpl(const Model&) const override;
     void calcEndpointCostImpl(const SimTK::State& finalState,
         double& cost) const override;
 private:

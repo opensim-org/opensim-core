@@ -51,7 +51,7 @@ class Model;
 /// @code
 /// MucoParameter p0;
 /// p0.setName("torso_mass");
-/// p0.setComponentPath("torso");
+/// p0.appendComponentPath("torso");
 /// p0.setParameterName("mass");
 /// MucoBounds massBounds(60, 80);
 /// p0.setBounds(massBounds);
@@ -71,6 +71,12 @@ class Model;
 /// MucoParameter y_com("y_com", componentPaths, "mass_center", 
 ///         MucoBounds(-0.05, 0.05), propertyElt);
 /// @endcode
+/// @par For developers
+/// Every time the problem is solved, a copy of this parameter is used.
+/// An individual instance of a parameter is only ever used in a single problem.
+/// Therefore, there is no need to clear cache variables that you create in
+/// initializeImpl(). Also, information stored in this parameter does not
+/// persist across multiple solves.
 class OSIMMUSCOLLO_API MucoParameter : public Object {
     OpenSim_DECLARE_CONCRETE_OBJECT(MucoParameter, Object);
 public:
@@ -121,7 +127,7 @@ public:
     /// about the model that is useful during the optimization.
     /// This method takes a non-const reference to the model because parameters
     /// need to be able to alter the model.
-    void initialize(Model& model) const;
+    void initializeOnModel(Model& model) const;
     /// Set the value of the model property to the passed-in parameter value.
     void applyParameterToModel(const double& value) const;
 

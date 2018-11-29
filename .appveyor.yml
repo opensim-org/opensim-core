@@ -43,7 +43,7 @@ install:
   - cmake --version
 
   - choco install doxygen.portable
-  
+
   ## Use Chocolatey to install SWIG.
   # Only install swig if it isn't present (as a result of AppVeyor's caching).
   # SWIG 3.0.8 is the minimum required version, but it does not yet exist in

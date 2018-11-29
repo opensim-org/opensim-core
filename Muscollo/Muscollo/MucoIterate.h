@@ -26,6 +26,7 @@
 namespace OpenSim {
 
 class MucoProblem;
+class MucoProblemRep;
 
 /// This exception is thrown if you try to invoke most methods on MucoIterate
 /// while the iterate is sealed.
@@ -276,6 +277,12 @@ public:
     {   ensureUnsealed(); return m_time.size(); }
     const SimTK::Vector& getTime() const
     {   ensureUnsealed(); return m_time; }
+    /// The first time in the time vector.
+    /// @throws Exception If numTimes is 0.
+    double getInitialTime() const;
+    /// The last time in the time vector.
+    /// @throws Exception If numTimes is 0.
+    double getFinalTime() const;
     // TODO inconsistent plural "state names" vs "states trajectory"
     const std::vector<std::string>& getStateNames() const
     {   ensureUnsealed(); return m_state_names; }
@@ -305,7 +312,7 @@ public:
 
     /// Do the state and control names in this iterate match those in the
     /// problem? This may not catch all possible incompatibilities.
-    bool isCompatible(const MucoProblem&, bool throwOnError = false) const;
+    bool isCompatible(const MucoProblemRep&, bool throwOnError = false) const;
     /// Check if this iterate is numerically equal to another iterate.
     /// This uses SimTK::Test::numericallyEqual() internally.
     /// Accordingly, the tolerance is both a relative and absolute tolerance
@@ -369,7 +376,7 @@ public:
     /// match exactly. The times in the iterate will be those from the tables.
     /// This does not (yet) handle parameters.
     static MucoIterate createFromStatesControlsTables(
-            const MucoProblem&,
+            const MucoProblemRep&,
             const TimeSeriesTable& statesTrajectory,
             const TimeSeriesTable& controlsTrajectory);
     /// @}

@@ -72,7 +72,7 @@ void MucoParameter::constructProperties() {
     constructProperty_property_element();
 }
 
-void MucoParameter::initialize(Model& model) const {
+void MucoParameter::initializeOnModel(Model& model) const {
     
     OPENSIM_THROW_IF_FRMOBJ(getProperty_component_paths().empty(), Exception,
         "A model component name must be provided.");

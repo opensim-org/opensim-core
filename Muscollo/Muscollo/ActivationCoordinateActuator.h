@@ -48,6 +48,7 @@ public:
         constructProperties();
     }
 
+protected:
     void extendAddToSystem(SimTK::MultibodySystem& system) const override {
         Super::extendAddToSystem(system);
         addStateVariable("activation", SimTK::Stage::Dynamics);

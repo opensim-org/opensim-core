@@ -27,9 +27,9 @@
 using namespace OpenSim;
 
 /// This model is torque-actuated.
-Model createDoublePendulumModel() {
-    Model model;
-    model.setName("double_pendulum");
+std::unique_ptr<Model> createDoublePendulumModel() {
+    auto model = make_unique<Model>();
+    model->setName("double_pendulum");
 
     using SimTK::Vec3;
     using SimTK::Inertia;
@@ -37,18 +37,18 @@ Model createDoublePendulumModel() {
     // Create two links, each with a mass of 1 kg, center of mass at the body's
     // origin, and moments and products of inertia of zero.
     auto* b0 = new OpenSim::Body("b0", 1, Vec3(0), Inertia(1));
-    model.addBody(b0);
+    model->addBody(b0);
     auto* b1 = new OpenSim::Body("b1", 1, Vec3(0), Inertia(1));
-    model.addBody(b1);
+    model->addBody(b1);
 
     // Add markers to body origin locations
     auto* m0 = new Marker("m0", *b0, Vec3(0));
     auto* m1 = new Marker("m1", *b1, Vec3(0));
-    model.addMarker(m0);
-    model.addMarker(m1);
+    model->addMarker(m0);
+    model->addMarker(m1);
 
     // Connect the bodies with pin joints. Assume each body is 1 m long.
-    auto* j0 = new PinJoint("j0", model.getGround(), Vec3(0), Vec3(0),
+    auto* j0 = new PinJoint("j0", model->getGround(), Vec3(0), Vec3(0),
         *b0, Vec3(-1, 0, 0), Vec3(0));
     auto& q0 = j0->updCoordinate();
     q0.setRangeMin(-10);
@@ -60,8 +60,8 @@ Model createDoublePendulumModel() {
     q1.setRangeMin(-10);
     q1.setRangeMax(10);
     q1.setName("q1");
-    model.addJoint(j0);
-    model.addJoint(j1);
+    model->addJoint(j0);
+    model->addJoint(j1);
 
     auto* tau0 = new CoordinateActuator();
     tau0->setCoordinate(&j0->updCoordinate());
@@ -69,7 +69,7 @@ Model createDoublePendulumModel() {
     tau0->setOptimalForce(1);
     tau0->setMinControl(-40);
     tau0->setMaxControl(40);
-    model.addComponent(tau0);
+    model->addComponent(tau0);
 
     auto* tau1 = new CoordinateActuator();
     tau1->setCoordinate(&j1->updCoordinate());
@@ -77,7 +77,7 @@ Model createDoublePendulumModel() {
     tau1->setOptimalForce(1);
     tau1->setMinControl(-40);
     tau1->setMaxControl(40);
-    model.addComponent(tau1);
+    model->addComponent(tau1);
 
     // Add display geometry.
     Ellipsoid bodyGeometry(0.5, 0.1, 0.1);
@@ -89,7 +89,7 @@ Model createDoublePendulumModel() {
     b1->addComponent(b1Center);
     b1Center->attachGeometry(bodyGeometry.clone());
 
-    model.finalizeConnections();
+    model->finalizeConnections();
 
     return model;
 }
@@ -137,9 +137,8 @@ int main() {
     MarkersReference ref(markerTrajectories, &markerWeights);
 
     // Create cost, set reference, and attach to problem.
-    MucoMarkerTrackingCost markerTracking;
-    markerTracking.setMarkersReference(ref);
-    problem.addCost(markerTracking);
+    auto* markerTracking = problem.addCost<MucoMarkerTrackingCost>();
+    markerTracking->setMarkersReference(ref);
 
     // Configure the solver.
     // =====================

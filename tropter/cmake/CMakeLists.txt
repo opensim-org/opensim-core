@@ -19,9 +19,9 @@ if(TROPTER_COPY_DEPENDENCIES AND APPLE)
             ${IPOPT_LIBDIR}/libcoinmetis.dylib
 
             # From Homebrew:
-            /usr/local/opt/gcc/lib/gcc/7/libgfortran.4.dylib
+            /usr/local/opt/gcc/lib/gcc/8/libgfortran.5.dylib
             /usr/local/lib/gcc/7/libgcc_s.1.dylib
-            /usr/local/opt/gcc/lib/gcc/7/libquadmath.0.dylib
+            /usr/local/opt/gcc/lib/gcc/8/libquadmath.0.dylib
 
             # TODO: Parse and use
             # ${pkgcfg_lib_IPOPT_gfortran}

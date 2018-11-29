@@ -69,8 +69,7 @@ problem.setControlInfo('/actuator', MucoBounds(-50, 50));
 
 % Cost.
 % -----
-ftCost = MucoFinalTimeCost();
-problem.addCost(ftCost);
+problem.addCost(MucoFinalTimeCost());
 
 % Configure the solver.
 % =====================
