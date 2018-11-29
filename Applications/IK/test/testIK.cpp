@@ -276,9 +276,9 @@ void testInverseKinematicsSolverWithOrientations()
         .setValueForKey("Units", std::string("Radians"));
 
     // Writable row for creating table of Rotations 
-    SimTK::RowVector_<SimTK::Rotation> rowRots(bodyLabels.size());
+    SimTK::RowVector_<SimTK::Rotation> rowRots(int(bodyLabels.size()));
     // Writable row for creating table of Euler angles as Vec3 elements
-    SimTK::RowVector_<SimTK::Vec3> rowEuler(bodyLabels.size());
+    SimTK::RowVector_<SimTK::Vec3> rowEuler(int(bodyLabels.size()));
 
     // Apply the read in coordinate values to the model.
     // Then get the rotation of the Bodies in the model and 
@@ -298,7 +298,7 @@ void testInverseKinematicsSolverWithOrientations()
         model.realizePosition(s0);
         //model.getVisualizer().show(s0);
 
-        size_t nb = 0;
+        int nb = 0;
         for (auto& body : bodies) {
             const SimTK::Rotation& rot = body.getTransformInGround(s0).R();
             rowRots[nb] = rot;
