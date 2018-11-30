@@ -601,7 +601,7 @@ public:
 
     /** dump the XML representation of this %Object into an std::string and return it.
     Mainly intended for debugging and for use by the XML browser in the GUI. **/
-    std::string dump(bool dumpName=false); 
+    std::string dump(bool dumpName=false) const; 
     /**@}**/
     //--------------------------------------------------------------------------
     // ADVANCED/OBSCURE/QUESTIONABLE/BUGGY
