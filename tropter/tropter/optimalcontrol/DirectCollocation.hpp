@@ -76,7 +76,7 @@ void DirectCollocationSolver<T>::set_hessian_block_sparsity_mode(
     TROPTER_VALUECHECK(mode == "dense" || mode == "sparse",
         "hessian block sparsity mode", mode, "dense or sparse");
     m_transcription->set_hessian_block_sparsity_mode(mode);
-    m_hessian_sparsity_mode = mode;
+    m_hessian_block_sparsity_mode = mode;
 }
 
 template<typename T>
@@ -104,11 +104,13 @@ Solution DirectCollocationSolver<T>::solve(
     solution.states = traj.states;
     solution.controls = traj.controls;
     solution.adjuncts = traj.adjuncts;
+    solution.intersteps = traj.intersteps;
     solution.parameters = traj.parameters;
     solution.objective = optsol.objective;
     solution.state_names = traj.state_names;
     solution.control_names = traj.control_names;
     solution.adjunct_names = traj.adjunct_names;
+    solution.interstep_names = traj.interstep_names;
     solution.parameter_names = traj.parameter_names;
     solution.success = optsol.success;
     solution.status = optsol.status;

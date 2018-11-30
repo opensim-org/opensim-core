@@ -97,7 +97,7 @@ public:
     std::vector<std::string> get_constraint_names() const override;
 
     Iterate interpolate_iterate(const Iterate& traj, 
-        int desired_num_columns) const override;
+            int desired_num_columns) const override;
     /// This function checks the dimensions of the matrices in traj.
     Eigen::VectorXd construct_iterate(const Iterate& traj,
             bool interpolate = false) const override;

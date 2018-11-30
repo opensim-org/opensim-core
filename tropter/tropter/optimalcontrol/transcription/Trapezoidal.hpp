@@ -40,6 +40,8 @@ void Trapezoidal<T>::set_ocproblem(
     m_num_states = m_ocproblem->get_num_states();
     m_num_controls = m_ocproblem->get_num_controls();
     m_num_adjuncts = m_ocproblem->get_num_adjuncts();
+    TROPTER_THROW_IF(m_ocproblem->get_num_intersteps(),
+        "Trapezoidal collocation does not support interstep variables.");
     m_num_continuous_variables = m_num_states + m_num_controls + m_num_adjuncts;
     m_num_time_variables = 2;
     m_num_parameters = m_ocproblem->get_num_parameters();
@@ -150,6 +152,8 @@ void Trapezoidal<T>::set_ocproblem(
     VectorXd initial_adjuncts_upper(m_num_adjuncts);
     VectorXd final_adjuncts_lower(m_num_adjuncts);
     VectorXd final_adjuncts_upper(m_num_adjuncts);
+    VectorXd intersteps_lower; // empty
+    VectorXd intersteps_upper; // empty
     VectorXd parameters_upper(m_num_parameters);
     VectorXd parameters_lower(m_num_parameters);
     VectorXd path_constraints_lower(m_num_path_constraints);
@@ -165,6 +169,7 @@ void Trapezoidal<T>::set_ocproblem(
             adjuncts_lower, adjuncts_upper,
             initial_adjuncts_lower, initial_adjuncts_upper,
             final_adjuncts_lower, final_adjuncts_upper,
+            intersteps_lower, intersteps_upper,
             parameters_lower, parameters_upper,
             path_constraints_lower, path_constraints_upper);
     // TODO validate sizes.
@@ -262,7 +267,7 @@ void Trapezoidal<T>::calc_objective(const VectorX<T>& x, T& obj_value) const
         const T time = step_size * i_mesh + initial_time;
         m_ocproblem->calc_integral_cost({i_mesh, time,
                 states.col(i_mesh), controls.col(i_mesh), adjuncts.col(i_mesh),
-                parameters}, 
+                m_empty_interstep_col, parameters}, 
                 m_integrand[i_mesh]);
     }
     // TODO use more intelligent quadrature? trapezoidal rule?
@@ -313,7 +318,7 @@ void Trapezoidal<T>::calc_constraints(const VectorX<T>& x,
         const T time = step_size * i_mesh + initial_time;
         m_ocproblem->calc_differential_algebraic_equations(
                 {i_mesh, time, states.col(i_mesh), controls.col(i_mesh),
-                 adjuncts.col(i_mesh), parameters},
+                 adjuncts.col(i_mesh), m_empty_interstep_col, parameters},
                 {m_derivs.col(i_mesh),
                  constr_view.path_constraints.col(i_mesh)});
     }
@@ -390,12 +395,13 @@ void Trapezoidal<T>::calc_sparsity_hessian_lagrangian(
                     VectorX<T> s = vars.head(m_num_states);
                     VectorX<T> c = vars.segment(m_num_states, m_num_controls);
                     VectorX<T> a = vars.tail(m_num_adjuncts);
+                    VectorX<T> i; // empty
                     VectorX<T> p = x.segment(m_num_time_variables,
                         m_num_parameters).template cast<T>();
                     VectorX<T> deriv(m_num_states);
                     VectorX<T> path(m_num_path_constraints);
                     m_ocproblem->calc_differential_algebraic_equations(
-                            {0, t, s, c, a, p}, {deriv, path});
+                            {0, t, s, c, a, i, p}, {deriv, path});
                     return idx < m_num_states ? deriv[idx]
                                               : path[idx - m_num_states];
                 };
@@ -443,10 +449,11 @@ void Trapezoidal<T>::calc_sparsity_hessian_lagrangian(
             VectorX<T> s = vars.head(m_num_states);
             VectorX<T> c = vars.segment(m_num_states, m_num_controls);
             VectorX<T> a = vars.tail(m_num_adjuncts);
+            VectorX<T> i; // empty
             VectorX<T> p = x.segment(m_num_time_variables,
                 m_num_parameters).template cast<T>();
             T integrand = 0;
-            m_ocproblem->calc_integral_cost({0, t, s, c, a, p}, integrand);
+            m_ocproblem->calc_integral_cost({0, t, s, c, a, i, p}, integrand);
             return integrand;
         };
 
@@ -502,41 +509,30 @@ std::vector<std::string> Trapezoidal<T>::get_constraint_names() const {
 }
 
 template<typename T>
-Eigen::VectorXd Trapezoidal<T>::
+Iterate Trapezoidal<T>::
 interpolate_iterate(const Iterate& traj, int desired_num_columns) const {
 
-    if (time.size() == desired_num_columns) return traj;
+    if (traj.time.size() == desired_num_columns) return Iterate(traj);
 
     assert(desired_num_columns > 0);
-    TROPTER_THROW_IF(!std::is_sorted(time.data(), time.data() + time.size()),
+    TROPTER_THROW_IF(!std::is_sorted(traj.time.data(), 
+        traj.time.data() + traj.time.size()),
         "Expected time to be non-decreasing.");
-
+    TROPTER_THROW_IF(traj.intersteps.rows(),
+        "Trapezoidal collocation does not support interstep variables.");
 
     Iterate out;
-    out.state_names = state_names;
-    out.control_names = control_names;
-    out.adjunct_names = adjunct_names;
-    out.interstep_names = interstep_names;
+    out.state_names = traj.state_names;
+    out.control_names = traj.control_names;
+    out.adjunct_names = traj.adjunct_names;
     out.time = Eigen::RowVectorXd::LinSpaced(desired_num_columns,
-        time[0], time.tail<1>()[0]);
+        traj.time[0], traj.time.tail<1>()[0]);
 
-    out.states = interp1(time, states, out.time);
-    out.controls = interp1(time, controls, out.time);
-    out.adjuncts = interp1(time, adjuncts, out.time);
-
-    if (interstep_indices.size()) {
-        Eigen::RowVectorXd time_interstep;
-        for (int i = 0; i < interstep_indices.size(); ++i) {
-            const int& interstep_index = interstep_indices[i];
-            time_interstep << out.time[interstep_index];
-        }
-
-        out.intersteps = interp1(time, intersteps, time_interstep);
-    }
-
+    out.states = interp1(traj.time, traj.states, out.time);
+    out.controls = interp1(traj.time, traj.controls, out.time);
+    out.adjuncts = interp1(traj.time, traj.adjuncts, out.time);
 
     return out;
-
 }
 
 template<typename T>
@@ -559,6 +555,8 @@ construct_iterate(const Iterate& traj, bool interpolate) const
     TROPTER_THROW_IF(traj.parameters.rows() != m_num_parameters,
             "Expected parameters to have %i element(s), but it has %i.",
             m_num_parameters, traj.parameters.size());
+    TROPTER_THROW_IF(traj.intersteps.rows(),
+            "Trapezoidal collocation does not support interstep variables.");
     // Check columns.
     if (interpolate) {
         // If interpolating, only check that non-empty matrices have the same
@@ -606,7 +604,7 @@ construct_iterate(const Iterate& traj, bool interpolate) const
     if (interpolate) {
         // TODO will actually need to provide the mesh spacing as well, when we
         // no longer have uniform mesh spacing.
-        traj_interp = traj.interpolate(m_num_mesh_points);
+        traj_interp = interpolate_iterate(traj, m_num_mesh_points);
         traj_to_use = &traj_interp;
     } else {
         traj_to_use = &traj;

@@ -252,6 +252,41 @@ set_adjunct_guess(Iterate& guess,
 
 template<typename T>
 void Problem<T>::
+set_interstep_guess(Iterate& guess,
+    const std::string& name,
+    const Eigen::VectorXd& value)
+{
+    // Check for errors.
+    TROPTER_THROW_IF(guess.time.size() == 0, "guess.time is empty.");
+    TROPTER_THROW_IF(value.size() != guess.time.size(),
+        "Expected value to have %i elements, but it has %i elements.",
+        guess.time.size(), value.size());
+    if (guess.intersteps.rows() == 0) {
+        guess.intersteps.resize(m_interstep_infos.size(), guess.time.size());
+    }
+    else if (size_t(guess.intersteps.rows()) != m_interstep_infos.size() ||
+        guess.intersteps.cols() != guess.time.size()) {
+        TROPTER_THROW("Expected guess.intersteps to have dimensions %i x %i "
+            "but dimensions are %i x %i.",
+            m_interstep_infos.size(), guess.time.size(),
+            guess.intersteps.rows(), guess.intersteps.cols());
+    }
+    // Find the interstep index.
+    size_t interstep_index = 0;
+    // TODO store interstep infos in a map.
+    for (const auto& info : m_interstep_infos) {
+        if (info.name == name) break;
+        interstep_index++;
+    }
+    TROPTER_THROW_IF(interstep_index == m_interstep_infos.size(),
+        "Interstep '%s' does not exist.", name);
+
+    // Set the guess.
+    guess.intersteps.row(interstep_index) = value;
+}
+
+template<typename T>
+void Problem<T>::
 set_parameter_guess(Iterate& guess,
         const std::string& name,
         const double& value)
@@ -300,6 +335,8 @@ void Problem<T>::get_all_bounds(
         Eigen::Ref<Eigen::VectorXd> initial_adjuncts_upper,
         Eigen::Ref<Eigen::VectorXd> final_adjuncts_lower,
         Eigen::Ref<Eigen::VectorXd> final_adjuncts_upper,
+        Eigen::Ref<Eigen::VectorXd> intersteps_lower,
+        Eigen::Ref<Eigen::VectorXd> intersteps_upper,
         Eigen::Ref<Eigen::VectorXd> parameters_lower,
         Eigen::Ref<Eigen::VectorXd> parameters_upper,
         Eigen::Ref<Eigen::VectorXd> path_constraints_lower,
@@ -355,19 +392,23 @@ void Problem<T>::get_all_bounds(
         if (info.initial_bounds.is_set()) {
             initial_adjuncts_lower[ia] = info.initial_bounds.lower;
             initial_adjuncts_upper[ia] = info.initial_bounds.upper;
-        }
-        else {
+        } else {
             initial_adjuncts_lower[ia] = info.bounds.lower;
             initial_adjuncts_upper[ia] = info.bounds.upper;
         }
         if (info.final_bounds.is_set()) {
             final_adjuncts_lower[ia] = info.final_bounds.lower;
             final_adjuncts_upper[ia] = info.final_bounds.upper;
-        }
-        else {
+        } else {
             final_adjuncts_lower[ia] = info.bounds.lower;
             final_adjuncts_upper[ia] = info.bounds.upper;
         }
+    }
+    for (unsigned ii = 0; ii < m_interstep_infos.size(); ++ii) {
+        const auto& info = m_interstep_infos[ii];
+        // TODO if (!info.bounds.is_set()), give error.
+        intersteps_lower[ii] = info.bounds.lower;
+        intersteps_upper[ii] = info.bounds.upper;
     }
     for (unsigned ip = 0; ip < m_parameter_infos.size(); ++ip) {
         const auto& info = m_parameter_infos[ip];

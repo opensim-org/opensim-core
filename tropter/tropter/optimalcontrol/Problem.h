@@ -75,7 +75,11 @@ struct Input {
     /// @note If you pass this into functions that take an Eigen Vector as
     /// input, see the note above for the `states` variable.
     const Eigen::Ref<const VectorX<T>>& adjuncts;
-    /// TODO
+    /// The vector of adjuncts at time `time`.
+    /// @note If you pass this into functions that take an Eigen Vector as
+    /// input, see the note above for the `states` variable.
+    /// @note An empty reference indicates that the intersteps are not defined
+    /// for the time point associated with this struct.
     const Eigen::Ref<const VectorX<T>>& intersteps;
     /// The vector of time-invariant parameter values.
     /// @note If you pass this into functions that take an Eigen Vector as
@@ -104,6 +108,8 @@ struct Output {
     /// Store the path constraint errors in this variable. The length of this
     /// vector is num_path_constraints. See the notes above about using this
     /// reference.
+    /// @note An empty reference indicates that the path constraint is not 
+    /// defined for the time point represented by this struct.
     Eigen::Ref<VectorX<T>> path;
 };
 
@@ -116,9 +122,13 @@ struct Output {
 /// - *controls trajectory*: a trajectory through time of controls
 ///   (control vectors).
 /// - *adjunct*: a single supplemental continuous variable. 
-/// - *adjuncts*: a vector of all adjunct varialbes at a given time.
+/// - *adjuncts*: a vector of all adjunct variables at a given time.
 /// - *adjuncts trajectory*: a trajectory through time of adjuncts
 ///   (adjunct vectors).
+/// - *interstep*: a single variable only defined within a mesh interval.
+/// - *intersteps*: a vector of all intersteps at a given time.
+/// - *intersteps trajectory*: a trajectory through time of intersteps
+///   (interstep vectors).
 /// - *parameter*: a single parameter variable.
 /// - *parameters*: a vector of all parameter variables.
 /// @ingroup optimalcontrol
@@ -140,6 +150,10 @@ private:
         std::string name;
         Bounds bounds;
     };
+    struct InterstepInfo {
+        std::string name;
+        Bounds bounds;
+    };
 public:
 
     Problem() = default;
@@ -153,6 +167,8 @@ public:
     {   return (int)m_control_infos.size(); }
     int get_num_adjuncts() const
     {   return (int)m_adjunct_infos.size(); }
+    int get_num_intersteps() const
+    {   return (int)m_interstep_infos.size(); }
     int get_num_parameters() const
     {   return (int)m_parameter_infos.size(); }
     int get_num_path_constraints() const
@@ -183,6 +199,16 @@ public:
     std::vector<std::string> get_adjunct_names() const {
         std::vector<std::string> names;
         for (const auto& info : m_adjunct_infos) {
+            names.push_back(info.name);
+        }
+        return names;
+    }
+    /// Get the names of all the intersteps in the order they appear in the 
+    /// `intersteps` input to calc_differential_algebraic_equations(), etc.
+    /// Note: this function is not free to call.
+    std::vector<std::string> get_interstep_names() const {
+        std::vector<std::string> names;
+        for (const auto& info : m_interstep_infos) {
             names.push_back(info.name);
         }
         return names;
@@ -249,6 +275,14 @@ public:
 
         m_adjunct_infos.push_back({name, bounds, initial_bounds, final_bounds});
         return (int)m_adjunct_infos.size() - 1;
+    }
+    /// This returns an index that can be used to access this specific interstep
+    /// variable within `dynamics()`, `path_constraints()`, etc.
+    /// TODO check if an interstep with the provided name already exists.
+    int add_interstep(const std::string& name, const Bounds& bounds) {
+
+        m_interstep_infos.push_back({name, bounds});
+        return (int)m_interstep_infos.size() - 1;
     }
     /// This returns an index that can be used to access this specific parameter
     /// variable within `dynamics()` , `path_constraints()`, etc.
@@ -383,6 +417,29 @@ public:
     void set_adjunct_guess(Iterate& guess,
             const std::string& name,
             const Eigen::VectorXd& value);
+    /// Set a guess for the trajectory of a single interstep variable with name
+    /// `name` to `value`. This function relieves you of the need to know the
+    /// index of a interstep variable. The `guess` must already have its `time`
+    /// vector filled out. If `guess.intersteps` is empty, this function will 
+    /// set its dimensions appropriately according to the provided `guess.time`;
+    /// otherwise, `guess.intersteps` must have the correct dimensions (number 
+    /// of intersteps x mesh points).
+    /// @param[in,out] guess
+    ///     The row of the interstep matrix associated with the provided name
+    ///     is set to value.
+    /// @param[in] name
+    ///     Name of the interstep variable (provided in add_interstep()).
+    /// @param[in] value
+    ///     This must have the same number of columns as `guess.time` and
+    ///     `guess.intersteps`.
+    /// @note For convenience, this method has the same behavior as the previous
+    /// set_*_guess() methods. However, depending on the transcription scheme 
+    /// used to solve the optimal control problem, the guess provided for the 
+    /// interstep variable be valid for certain time points. The values at these 
+    /// invalid time will therefore be ignored in the transcribed NLP. 
+    void set_interstep_guess(Iterate& guess,
+            const std::string& name,
+            const Eigen::VectorXd& value);
     /// Set a guess for the value of a single parameter variable with name
     /// `name` to `value`. This function relieves you of the need to know the
     /// index of a parameter variable.
@@ -425,6 +482,8 @@ public:
             Eigen::Ref<Eigen::VectorXd> initial_adjuncts_upper,
             Eigen::Ref<Eigen::VectorXd> final_adjuncts_lower,
             Eigen::Ref<Eigen::VectorXd> final_adjuncts_upper,
+            Eigen::Ref<Eigen::VectorXd> intersteps_lower,
+            Eigen::Ref<Eigen::VectorXd> intersteps_upper,
             Eigen::Ref<Eigen::VectorXd> parameters_lower,
             Eigen::Ref<Eigen::VectorXd> parameters_upper,
             Eigen::Ref<Eigen::VectorXd> path_constraints_lower,
@@ -437,6 +496,7 @@ private:
     std::vector<ContinuousVariableInfo> m_state_infos;
     std::vector<ContinuousVariableInfo> m_control_infos;
     std::vector<ContinuousVariableInfo> m_adjunct_infos;
+    std::vector<InterstepInfo> m_interstep_infos;
     std::vector<ParameterInfo> m_parameter_infos;
     std::vector<PathConstraintInfo> m_path_constraint_infos;
 };

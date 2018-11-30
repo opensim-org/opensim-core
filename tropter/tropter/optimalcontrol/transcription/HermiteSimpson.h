@@ -34,6 +34,7 @@ namespace transcription {
 /// states_bar(t=1) 
 /// controls_bar(t=1)
 /// adjuncts_bar(t=1)
+/// intersteps_bar(t=1)
 /// states(t=1)
 /// controls(t=1)
 /// adjuncts(t=1)
@@ -41,6 +42,7 @@ namespace transcription {
 /// states_bar(t=N)
 /// controls_bar(t=N)
 /// adjuncts_bar(t=N)
+/// intersteps_bar(t=N)
 /// states(t=N)
 /// controls(t=N)
 /// adjuncts(t=N)
@@ -102,14 +104,27 @@ public:
     /// (0-based index).
     /// Note: this function is not free to call.
     std::vector<std::string> get_constraint_names() const override;
-
+    /// Interstep variables are interpolated at interval midpoint time indices
+    /// for Hermite-Simpson. Use this function to get a slice of the total time
+    /// vector containing times at the midpoints.
+    Eigen::RowVectorXd get_interstep_times(
+        const Eigen::RowVectorXd& time) const;
+    /// Interstep variables are only defined at interval midpoints. When stored
+    /// in a tropter::Iterate, we represent interstep values for time points not
+    /// at the interval midpoint with NaNs.
+    Eigen::MatrixXd get_intersteps_with_nans(
+        const Eigen::MatrixXd& intersteps_without_nans) const;
+    /// @copydoc get_intersteps_with_nans()
+    Eigen::MatrixXd get_intersteps_without_nans(
+        const Eigen::MatrixXd& intersteps_with_nans) const;
+    Iterate interpolate_iterate(const Iterate& traj,
+        int desired_num_columns) const override;
     /// This function checks the dimensions of the matrices in traj.
     Eigen::VectorXd construct_iterate(const Iterate& traj, 
         bool interpolate = false) const override;
     // TODO can this have a generic implementation in the Base class?
     Iterate deconstruct_iterate(const Eigen::VectorXd& x) const override;
-    Iterate interpolate_iterate(const Iterate& traj, 
-        int desired_num_columns) const override;
+    
     void print_constraint_values(
         const Iterate& vars,
         std::ostream& stream = std::cout) const override;
@@ -151,16 +166,19 @@ protected:
         make_states_trajectory_view(const VectorX<S>& variables) const;
     template<typename S>
     TrajectoryViewConst<S>
+        make_states_trajectory_view_mesh(const VectorX<S>& variables) const;
+    template<typename S>
+    TrajectoryViewConst<S>
+        make_states_trajectory_view_mid(const VectorX<S>& variables) const;
+    template<typename S>
+    TrajectoryViewConst<S>
         make_controls_trajectory_view(const VectorX<S>& variables) const;
     template<typename S>
     TrajectoryViewConst<S>
         make_adjuncts_trajectory_view(const VectorX<S>& variables) const;
     template<typename S>
     TrajectoryViewConst<S>
-        make_states_trajectory_view_mesh(const VectorX<S>& variables) const;
-    template<typename S>
-    TrajectoryViewConst<S>
-        make_states_trajectory_view_mid(const VectorX<S>& variables) const;
+        make_intersteps_trajectory_view(const VectorX<S>& variables) const;
 
     /// These provide a view to which you can write.
     template<typename S>
@@ -171,16 +189,19 @@ protected:
         make_states_trajectory_view(VectorX<S>& variables) const;
     template<typename S>
     TrajectoryView<S>
+        make_states_trajectory_view_mesh(VectorX<S>& variables) const;
+    template<typename S>
+    TrajectoryView<S>
+        make_states_trajectory_view_mid(VectorX<S>& variables) const;
+    template<typename S>
+    TrajectoryView<S>
         make_controls_trajectory_view(VectorX<S>& variables) const;
     template<typename S>
     TrajectoryView<S>
         make_adjuncts_trajectory_view(VectorX<S>& variables) const;
     template<typename S>
     TrajectoryView<S>
-        make_states_trajectory_view_mesh(VectorX<S>& variables) const;
-    template<typename S>
-    TrajectoryView<S>
-        make_states_trajectory_view_mid(VectorX<S>& variables) const;
+        make_intersteps_trajectory_view(VectorX<S>& variables) const;
 
     // TODO templatize.
     using DefectsTrajectoryView = Eigen::Map<MatrixX<T>>;
@@ -214,6 +235,7 @@ private:
     int m_num_states = -1;
     int m_num_controls = -1;
     int m_num_adjuncts = -1;
+    int m_num_intersteps = -1;
     int m_num_continuous_variables = -1;
     int m_num_dynamics_constraints = -1;
     int m_num_path_constraints = -1;
@@ -226,14 +248,6 @@ private:
     mutable VectorX<T> m_integrand;
     mutable MatrixX<T> m_derivs_mesh;
     mutable MatrixX<T> m_derivs_mid;
-    // This empty vector is passed to calc_differential_algebraic_equations()
-    // for collocation points not on the mesh where we do not enforce path 
-    // constraints. If the user tries to write to it, an Eigen runtime assertion 
-    // will be violated. If the user tries to resize it, tropter will throw an 
-    // exception after exiting the function call.
-    mutable VectorX<T> m_empty_path_constraint_vec;
-    // TODO
-    mutable VectorX<T> m_empty_midpoint_adjunct_vec;
 };
 
 } // namespace transcription
