@@ -140,7 +140,7 @@ public:
     // Convenience Access
     //--------------------------------------------------------------------------
     double getSamplingFrequency() const;
-    Set<OrientationWeight> &updOrientationWeightSet()
+    Set<OrientationWeight>& updOrientationWeightSet()
         { return upd_orientation_weights(); }
     /** %Set the orientation weights from a set of OrientationWeights, which is
     const and a copy of the Set is used internally. Therefore, subsequent changes

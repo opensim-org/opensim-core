@@ -119,6 +119,18 @@ public:
         solver was constructed. */
     void updateMarkerWeights(const SimTK::Array_<double> &weights);
 
+    /** Change the weighting of an orientation sensor, given it's name. Takes
+    effect when assemble() or track() is called next. */
+    void updateOrientationWeight(const std::string& orientationName, double value);
+    /** Change the weighting of an orientation sensor, given it's index. Takes
+    effect when assemble() or track() is called next. */
+    void updateOrientationWeight(int orientationIndex, double value);
+    /** Change the weighting of all orientation sensors. Takes effect when
+    assemble() or track() is called next. Orientation weights are specified
+    in the same order as they appear in the OrientationsReference that was
+    passed in when the solver was constructed. */
+    void updateOrientationWeights(const SimTK::Array_<double> &weights);
+
     /** Compute and return a marker's spatial location in the ground frame,
         given the marker's name. */
     SimTK::Vec3 computeCurrentMarkerLocation(const std::string &markerName);

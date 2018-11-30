@@ -99,7 +99,7 @@ int InverseKinematicsSolver::getNumMarkersInUse() const
 
 /* Change the weighting of a marker to take effect when assemble or track is called next. 
    Update a marker's weight by name. */
-void InverseKinematicsSolver::updateMarkerWeight(const std::string &markerName, double value)
+void InverseKinematicsSolver::updateMarkerWeight(const std::string& markerName, double value)
 {
     const Array_<std::string> &names = _markersReference.getNames();
     SimTK::Array_<const std::string>::iterator p = std::find(names.begin(), names.end(), markerName);
@@ -132,6 +132,44 @@ void InverseKinematicsSolver::updateMarkerWeights(const SimTK::Array_<double> &w
     }
     else
         throw Exception("InverseKinematicsSolver::updateMarkerWeights: invalid size of weights.");
+}
+
+/* Change the weighting of an orientation sensor to take effect when assemble or
+track is called next. Update an orientation sensor's weight by name. */
+void InverseKinematicsSolver::updateOrientationWeight(const std::string& orientationName, double value)
+{
+    const Array_<std::string> &names = _orientationsReference.getNames();
+    SimTK::Array_<const std::string>::iterator p = std::find(names.begin(), names.end(), orientationName);
+    int index = (int)std::distance(names.begin(), p);
+    updateOrientationWeight(index, value);
+}
+
+/* Update an orientation sensor's weight by its index. */
+void InverseKinematicsSolver::updateOrientationWeight(int orientationIndex, double value)
+{
+    if (orientationIndex >= 0 && orientationIndex < _orientationsReference.updOrientationWeightSet().getSize()) {
+        _orientationsReference.updOrientationWeightSet()[orientationIndex].setWeight(value);
+        _orientationAssemblyCondition->changeOSensorWeight(
+            SimTK::OrientationSensors::OSensorIx(orientationIndex), value );
+    }
+    else
+        throw Exception("InverseKinematicsSolver::updateOrientationWeight: invalid orientationIndex.");
+}
+
+/* Update all orientation sensor weights by order in the orientationsReference passed in to
+construct the solver. */
+void InverseKinematicsSolver::updateOrientationWeights(const SimTK::Array_<double> &weights)
+{
+    if (static_cast<unsigned>(_orientationsReference.updOrientationWeightSet().getSize())
+        == weights.size()) {
+        for (unsigned int i = 0; i<weights.size(); i++) {
+            _orientationsReference.updOrientationWeightSet()[i].setWeight(weights[i]);
+            _orientationAssemblyCondition->changeOSensorWeight(
+                SimTK::OrientationSensors::OSensorIx(i), weights[i] );
+        }
+    }
+    else
+        throw Exception("InverseKinematicsSolver::updateOrientationWeights: invalid size of weights.");
 }
 
 /* Compute and return the spatial location of a marker in ground. */
