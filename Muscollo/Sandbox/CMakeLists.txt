@@ -33,6 +33,8 @@ MuscolloAddSandboxExecutable(NAME sandboxMuscle
             shared/DeGrooteFregly2016Muscle.h
             shared/DeGrooteFregly2016Muscle.cpp
         LIB_DEPENDS osimMuscollo)
+MuscolloAddSandboxExecutable(NAME sandboxCasADi
+        LIB_DEPENDS osimMuscollo casadi tropter)
 
 add_subdirectory(sandboxWholeBodyTracking)
 add_subdirectory(sandboxMarkerTrackingWholeBody)

@@ -1,5 +1,12 @@
 
 set(CMAKE_CXX_STANDARD 11)
+
+find_package(casadi 3.4.5 REQUIRED)
+set_package_properties(casadi PROPERTIES
+        URL https://web.casadi.org
+        TYPE REQUIRED
+        PURPOSE "Differentiation and optimizer interface.")
+
 find_package(OpenSim 4.0 REQUIRED)
 set_package_properties(OpenSim PROPERTIES
         URL http://opensim.stanford.edu

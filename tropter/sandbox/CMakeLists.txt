@@ -11,6 +11,6 @@ set_target_properties(sandbox_contact PROPERTIES
 
 add_executable(sandbox_casadi EXCLUDE_FROM_ALL
         sandbox_casadi.cpp)
-target_link_libraries(sandbox_casadi casadi)
+target_link_libraries(sandbox_casadi tropter casadi)
 set_target_properties(sandbox_contact PROPERTIES
         FOLDER "tropter/sandbox")

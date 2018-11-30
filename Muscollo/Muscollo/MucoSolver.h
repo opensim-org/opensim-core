@@ -53,9 +53,6 @@ public:
 
     MucoSolver() = default;
 
-    /// This calls resetProblem() with the provided problem.
-    explicit MucoSolver(const MucoProblem& problem);
-
     virtual ~MucoSolver() = default;
 
     /// Call this to prepare the solver for use on the provided problem.
@@ -84,6 +81,7 @@ private:
     /// This is called by MucoTool.
     // We don't want to make this public, as users would get confused about
     // whether they should call MucoTool::solve() or MucoSolver::solve().
+public: // TODO temp
     MucoSolution solve() const;
     friend MucoTool;
 
