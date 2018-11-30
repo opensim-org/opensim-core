@@ -389,7 +389,7 @@ void testInverseKinematicsSolverWithEulerAnglesFromFile()
     auto stdLabels = standard.getColumnLabels();
 
     std::vector<int> mapStdToReport;
-    // cycle through the coodinates in the model order and store the
+    // cycle through the coordinates in the model order and store the
     // corresponding column index in the table according to column name
     for (auto& label : reportLabels) {
         int index = -1;

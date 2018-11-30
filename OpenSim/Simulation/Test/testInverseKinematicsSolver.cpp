@@ -40,7 +40,9 @@ using namespace std;
 // Verify that the marker weight are consistent with the initial Set
 // of MarkerWeights used to construct the MarkersReference
 void testMarkersReference();
-
+// Verify that the orientations sensor weights are consistent with the initial
+// Set of OrientationWeights used to construct the OrientationsReference
+void testOrientationsReference();
 
 // Utility function to build a simple pendulum with markers attached
 Model* constructPendulumWithMarkers();
@@ -55,6 +57,20 @@ generateMarkerDataFromModelAndStates(const Model& model,
                         const SimTK::RowVector_<SimTK::Vec3>& biases,
                         double noiseRadius = 0, 
                         bool constantOffset = false);
+
+// Utility function to build a simple 3dof leg model
+Model* constructLegWithOrientationFrames();
+// Using a model with orientation reference frames and a trajectory of
+// states, create synthetic orientation data. If noiseRadius is provided
+// use it to scale the noise that perturbs the orientation data. Optionally,
+// use the constantOffset parameter true to use the same noise for each time
+// frame, otherwise randomly select the noise to be added at each frame.
+TimeSeriesTable_<SimTK::Rotation>
+generateOrientationsDataFromModelAndStates(const Model& model,
+    const StatesTrajectory& states,
+    const SimTK::RowVector_<SimTK::Rotation>& biases,
+    double noiseRadius,
+    bool constantOffset = false);
 
 // Verify that accuracy improves the number of decimals points to which
 // the solver solution (coordinates) can be trusted as it is tightened.
@@ -79,6 +95,11 @@ int main()
     catch (const std::exception& e) {
         cout << e.what() << endl;
         failures.push_back("testMarkersReference");
+    }
+    try { testOrientationsReference(); }
+    catch (const std::exception& e) {
+        cout << e.what() << endl;
+        failures.push_back("testOrientationsReference");
     }
     try { testAccuracy(); }
     catch (const std::exception& e) {
@@ -164,7 +185,7 @@ void testMarkersReference()
 
     MarkersReference markersRef2(markerData, &markerWeights);
 
-    auto mWeightSet = markersRef2.get_marker_weights();
+    auto& mWeightSet = markersRef2.get_marker_weights();
 
     // verify that internal weight set was updated 
     std::cout << mWeightSet.dump() << std::endl;
@@ -179,6 +200,74 @@ void testMarkersReference()
         std::cout << names[i] << ": " << weights[i] << std::endl;
         SimTK_ASSERT_ALWAYS(weights[i] == double(i),
             "Mismatched weight to marker.");
+    }
+}
+
+void testOrientationsReference()
+{
+    // column labels for marker data
+    vector<std::string> labels{ "A", "B", "C", "D", "E", "F" };
+    // for testing construct a set of marker weights is a different order 
+    vector<int> order = { 3, 5, 1, 4, 0, 2 };
+
+    size_t nc = labels.size();
+    size_t nr = 5;
+
+    TimeSeriesTable_<SimTK::Rotation> orientationData;
+    orientationData.setColumnLabels(labels);
+    for (size_t r{ 0 }; r < nr; ++r) {
+        SimTK::RowVector_<SimTK::Rotation> row{ int(nc), SimTK::Rotation() };
+        orientationData.appendRow(0.1*r, row);
+    }
+
+    Set<OrientationWeight> orientationWeights;
+    for (size_t m{ 0 }; m < nc; ++m)
+        orientationWeights.adoptAndAppend(
+            new OrientationWeight(labels[order[m]], double(order[m])));
+
+    std::cout << orientationWeights.dump() << std::endl;
+
+    OrientationsReference orientationsRef(&orientationData, &orientationWeights);
+
+    Model model;
+    SimTK::State& s = model.initSystem();
+    s.updTime() = 0.0;
+
+    SimTK::Array_<string> names = orientationsRef.getNames();
+
+    SimTK::Array_<double> weights;
+    orientationsRef.getWeights(s, weights);
+
+    SimTK_ASSERT_ALWAYS(names.size() == weights.size(),
+        "Number of markers does not match number of weights.");
+
+    for (unsigned int i{ 0 }; i < names.size(); ++i) {
+        std::cout << names[i] << ": " << weights[i] << std::endl;
+        SimTK_ASSERT_ALWAYS(weights[i] == double(i),
+            "Mismatched weight to marker.");
+    }
+
+    // Add marker weights for markers not present in the data
+    orientationWeights.adoptAndAppend(new OrientationWeight("X", 0.1));
+    orientationWeights.insert(0, new OrientationWeight("Y", 0.01));
+
+    OrientationsReference orientationsRef2(&orientationData, &orientationWeights);
+
+    auto& oWeightSet = orientationsRef2.get_orientation_weights();
+
+    // verify that internal weight set was updated 
+    std::cout << oWeightSet.dump() << std::endl;
+
+    names = orientationsRef2.getNames();
+    orientationsRef2.getWeights(s, weights);
+
+    SimTK_ASSERT_ALWAYS(names.size() == weights.size(),
+        "Number of orientation sensors does not match number of weights.");
+
+    for (unsigned int i = 0; i < names.size(); ++i) {
+        std::cout << names[i] << ": " << weights[i] << std::endl;
+        SimTK_ASSERT_ALWAYS(weights[i] == double(i),
+            "Mismatched weight to orientation sensor.");
     }
 }
 
@@ -685,3 +774,110 @@ generateMarkerDataFromModelAndStates(const Model& model,
     return results;
 }
 
+Model* constructLegWithOrientationFrames()
+{
+    Model* leg = new Model();
+    leg->setName("leg");
+    Body* thigh =
+        new Body("thigh", 5.0, SimTK::Vec3(0),
+                 SimTK::Inertia::cylinderAlongY(0.1, 0.5) );
+    leg->addBody(thigh);
+    Body* shank =
+        new Body("shank", 2.0, SimTK::Vec3(0),
+                 SimTK::Inertia::cylinderAlongY(0.04, 0.4) );
+    leg->addBody(shank);
+    Body* foot =
+        new Body("foot", 1.0, SimTK::Vec3(0),
+            SimTK::Inertia::cylinderAlongY(0.02, 0.1));
+    leg->addBody(foot);
+
+
+    // PinJoint hip is 1m above ground origin and 1m above the ball in the ball
+    // reference frame such that the ball center is at the origin with the hinge
+    // angle is zero
+    PinJoint* hip = new PinJoint("hip", leg->getGround(),
+        SimTK::Vec3(0, 1.0, 0), SimTK::Vec3(0),
+        *thigh, SimTK::Vec3(0, 0.25, 0), SimTK::Vec3(0));
+    hip->updCoordinate().setName("flex");
+    leg->addJoint(hip);
+
+    PinJoint* knee = new PinJoint("knee", *thigh,
+        SimTK::Vec3(0, -0.25, 0), SimTK::Vec3(0),
+        *shank, SimTK::Vec3(0, 0.2, 0), SimTK::Vec3(0));
+    knee->updCoordinate().setName("flex");
+    leg->addJoint(knee);
+
+    PinJoint* ankle = new PinJoint("ankle", *shank,
+        SimTK::Vec3(0, -0.2, 0), SimTK::Vec3(0),
+        *foot, SimTK::Vec3(0, 0.1, 0), SimTK::Vec3(0));
+    ankle->updCoordinate().setName("flex");
+    leg->addJoint(ankle);
+
+    // Add Orientation Sensor Frames
+    SimTK::Transform offset(SimTK::Rotation(0.378, SimTK::YAxis) );
+    thigh->addComponent(new PhysicalOffsetFrame("thigh_imu", *thigh, offset));
+    shank->addComponent(new PhysicalOffsetFrame("shank_imu", *shank, offset));
+    foot->addComponent(new PhysicalOffsetFrame("foot_imu", *foot, offset));
+
+    return leg;
+}
+
+TimeSeriesTable_<SimTK::Rotation>
+generateOrientationsDataFromModelAndStates(const Model& model,
+    const StatesTrajectory& states,
+    const SimTK::RowVector_<SimTK::Rotation>& biases,
+    double noiseRadius,
+    bool constantOffset) {
+    // use a fixed seed so that we can reproduce and debug failures.
+    std::mt19937 gen(0);
+    std::normal_distribution<double> noise(0.0, 1);
+
+    unique_ptr<Model> m{ model.clone() };
+
+    auto* orientationsReporter = new TableReporter_<SimTK::Rotation>();
+
+    auto imus = m->updComponentList<PhysicalOffsetFrame>();
+    int cnt = 0;
+    for (auto& imu : imus) {
+        imu.setOffsetTransform(
+            SimTK::Transform(imu.getOffsetTransform().R()*biases[cnt++]) );
+        orientationsReporter->addToReport(
+            imu.getOutput("rotation"), imu.getName());
+    }
+
+    m->addComponent(orientationsReporter);
+
+    SimTK::State s = m->initSystem();
+
+    for (const auto& state : states) {
+        // collect results into reporter
+        m->realizeReport(state);
+    }
+
+    // make a copy of the reported table
+    auto results = orientationsReporter->getTable();
+
+    SimTK::Rotation offset = SimTK::Rotation(
+        SimTK::BodyRotationSequence,
+        noiseRadius*double(noise(gen)), SimTK::XAxis,
+        noiseRadius*double(noise(gen)), SimTK::YAxis,
+        noiseRadius*double(noise(gen)), SimTK::ZAxis );
+
+    if (noiseRadius >= SimTK::Eps) {
+        for (size_t i = 0; i < results.getNumRows(); ++i) {
+            auto row = results.updRowAtIndex(i);
+            for (int j = 0; j < row.size(); ++j) {
+                if (!constantOffset) {
+                    offset = SimTK::Rotation(SimTK::BodyRotationSequence,
+                        noiseRadius*double(noise(gen)), SimTK::XAxis,
+                        noiseRadius*double(noise(gen)), SimTK::YAxis,
+                        noiseRadius*double(noise(gen)), SimTK::ZAxis);
+                }
+                // add noise to each marker
+                row[j] *= offset;
+            }
+        }
+    }
+
+    return results;
+}
