@@ -515,6 +515,7 @@ void MucoTropterSolver::constructProperties() {
     constructProperty_optim_sparsity_detection("random");
     constructProperty_optim_ipopt_print_level(-1);
     constructProperty_transcription_scheme("trapezoidal");
+    constructProperty_hessian_block_sparsity_mode("dense");
     constructProperty_multiplier_weight(100.0);
     // TODO constructProperty_enforce_holonomic_constraints_only(true);
 
@@ -694,12 +695,15 @@ MucoSolution MucoTropterSolver::solveImpl() const {
 
     checkPropertyInSet(*this, getProperty_optim_solver(), {"ipopt", "snopt"});
     checkPropertyInSet(*this, getProperty_transcription_scheme(),
-        {"trapezoidal", "hermite-simpson"});    
+        {"trapezoidal", "hermite-simpson"});
+    checkPropertyInSet(*this, getProperty_hessian_block_sparsity_mode(),
+        {"dense", "sparse"});
     tropter::DirectCollocationSolver<double> dircol(ocp, 
             get_transcription_scheme(),
             get_optim_solver(), N);
 
     dircol.set_verbosity(get_verbosity() >= 1);
+    dircol.set_hessian_block_sparsity_mode(get_hessian_block_sparsity_mode());
 
     auto& optsolver = dircol.get_opt_solver();
 
