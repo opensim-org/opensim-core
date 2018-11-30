@@ -37,10 +37,18 @@ namespace OpenSim {
 /// The reference can be provided as a file name to a STO or CSV file (or
 /// other file types for which there is a FileAdapter), or programmatically
 /// as a TimeSeriesTable.
+/// @ingroup mucocost
 class OSIMMUSCOLLO_API MucoStateTrackingCost : public MucoCost {
 OpenSim_DECLARE_CONCRETE_OBJECT(MucoStateTrackingCost, MucoCost);
 public:
     MucoStateTrackingCost() { constructProperties(); }
+    MucoStateTrackingCost(std::string name) : MucoCost(std::move(name)) {
+        constructProperties();
+    }
+    MucoStateTrackingCost(std::string name, double weight)
+            : MucoCost(std::move(name), weight) {
+        constructProperties();
+    }
     /// Provide the path to a data file containing reference values for the
     /// states you want to track. Each column label must be the path of a state
     /// variable, e.g., `knee/flexion/value`. Calling this function clears the
@@ -89,7 +97,7 @@ public:
 
 protected:
     // TODO check that the reference covers the entire possible time range.
-    void initializeImpl() const override;
+    void initializeOnModelImpl(const Model&) const override;
     void calcIntegralCostImpl(const SimTK::State& state,
             double& integrand) const override;
 private:

@@ -21,13 +21,14 @@
 
 #include "MucoIterate.h"
 
+#include "MucoProblemRep.h"
+
 #include <OpenSim/Common/Object.h>
 
 #include <SimTKcommon/internal/ReferencePtr.h>
 
 namespace OpenSim {
 
-class MucoProblem;
 class MucoTool;
 
 // TODO create typed versions?
@@ -51,29 +52,19 @@ class OSIMMUSCOLLO_API MucoSolver : public Object {
 OpenSim_DECLARE_ABSTRACT_OBJECT(MucoSolver, Object);
 public:
 
-    MucoSolver();
+    MucoSolver() = default;
 
     /// This calls resetProblem() with the provided problem.
     explicit MucoSolver(const MucoProblem& problem);
 
     virtual ~MucoSolver() = default;
 
-    /// Clear the internally-set MucoProblem.
-    void clearProblem();
-
     /// Call this to prepare the solver for use on the provided problem.
     // TODO can only call once?
     // TODO @precondition The problem is well-posed (MucoProblem::isWellPosed
     // ()). Move isWellPosed() to Solver, since evaluating this might require
     // creating the solver.
-    // TODO use a wrapper class (like MODelegate).
-    void setProblem(const MucoProblem& problem);
-
-    const MucoProblem& getProblem() const {
-        OPENSIM_THROW_IF(!m_problem, Exception,
-                "Problem not set; call setProblem().");
-        return m_problem.getRef();
-    }
+    void resetProblem(const MucoProblem& problem);
 
 protected:
 
@@ -85,6 +76,10 @@ protected:
     static void setSolutionStats(MucoSolution&,
             bool success, const std::string& status, int numIterations);
 
+    const MucoProblemRep& getProblemRep() const {
+        return m_problemRep;
+    }
+
 private:
 
     /// This is called by MucoTool.
@@ -93,16 +88,14 @@ private:
     MucoSolution solve() const;
     friend MucoTool;
 
-    /// Claer any cache based on the MucoProblem.
-    virtual void clearProblemImpl() = 0;
-    /// Perform any necessary caching based on the MucoProblem.
-    /// @
-    virtual void setProblemImpl(const MucoProblem& problem) = 0;
+    /// Check that solver is capable of solving this problem.
+    virtual void resetProblemImpl(const MucoProblemRep& rep) const = 0;
 
     /// This is the meat of a solver: solve the problem and return the solution.
     virtual MucoSolution solveImpl() const = 0;
 
     SimTK::ReferencePtr<const MucoProblem> m_problem;
+    mutable SimTK::ResetOnCopy<MucoProblemRep> m_problemRep;
 
 };
 

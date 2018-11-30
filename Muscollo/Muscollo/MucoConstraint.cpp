@@ -127,7 +127,9 @@ MucoMultibodyConstraint::MucoMultibodyConstraint(SimTK::ConstraintIndex cid,
 }
 
 void MucoMultibodyConstraint::calcMultibodyConstraintErrors(
-    const Model& model, const SimTK::State& state, SimTK::Vector& errors) {
+        const Model& model,
+        const SimTK::State& state,
+        SimTK::Vector& errors) const {
 
     OPENSIM_THROW_IF(
         errors.size() != m_constraint_info.getNumEquations(), Exception,
@@ -168,11 +170,11 @@ void MucoPathConstraint::constructProperties() {
     constructProperty_MucoConstraintInfo(MucoConstraintInfo());
 }
 
-void MucoPathConstraint::initialize(const Model& model, 
+void MucoPathConstraint::initializeOnModel(const Model& model,
         const int& pathConstraintIndex) const {
 
     m_model.reset(&model);
-    initializeImpl();
+    initializeOnModelImpl(model);
 
     OPENSIM_THROW_IF_FRMOBJ(get_MucoConstraintInfo().getNumEquations() <= 0,
         Exception, "Invalid number of equations. Either no equation number was "

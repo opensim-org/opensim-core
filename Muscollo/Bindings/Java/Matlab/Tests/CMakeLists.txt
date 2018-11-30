@@ -78,6 +78,7 @@ add_dependencies(RunMuscolloMatlabTests MuscolloJavaBindings)
 # From examples.
 MuscolloAddMatlabTest(SlidingMass ../Examples/exampleSlidingMass.m)
 MuscolloAddMatlabTest(SWIGAdditionalInterface testSWIGAdditionalInterface.m)
+MuscolloAddMatlabTest(Workflow testWorkflow.m)
 
 # Copy resources.
 # file(COPY "${OPENSIM_SHARED_TEST_FILES_DIR}/arm26.osim"

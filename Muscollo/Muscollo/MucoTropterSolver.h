@@ -86,8 +86,6 @@ public:
 
     MucoTropterSolver();
 
-    explicit MucoTropterSolver(const MucoProblem& problem);
-
     /// @name Specifying an initial guess
     /// @{
 
@@ -166,8 +164,7 @@ protected:
     std::shared_ptr<const tropter::Problem<double>>
     getTropterProblem() const;
 
-    void clearProblemImpl() override;
-    void setProblemImpl(const MucoProblem& problem) override;
+    void resetProblemImpl(const MucoProblemRep&) const override;
     // TODO ensure that user-provided guess is within bounds.
     MucoSolution solveImpl() const override;
 
