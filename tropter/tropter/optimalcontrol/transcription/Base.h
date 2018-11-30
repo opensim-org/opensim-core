@@ -67,7 +67,10 @@ public:
     // TODO change interface to be a templated function so users can pass in
     // writeable blocks of a matrix.
     virtual Iterate
-    deconstruct_iterate(const Eigen::VectorXd& x) const = 0;
+    deconstruct_iterate(const Eigen::VectorXd& x) const = 0; 
+    // TODO
+    virtual Iterate
+    interpolate_iterate(const Iterate&, int desired_num_columns) const = 0;
     /// Print the value of constraint vector for the given iterate. This is
     /// helpful for troubleshooting why a problem may be infeasible.
     /// This function will try to give meaningful names to the

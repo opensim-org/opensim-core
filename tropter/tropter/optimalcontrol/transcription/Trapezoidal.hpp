@@ -503,6 +503,44 @@ std::vector<std::string> Trapezoidal<T>::get_constraint_names() const {
 
 template<typename T>
 Eigen::VectorXd Trapezoidal<T>::
+interpolate_iterate(const Iterate& traj, int desired_num_columns) const {
+
+    if (time.size() == desired_num_columns) return traj;
+
+    assert(desired_num_columns > 0);
+    TROPTER_THROW_IF(!std::is_sorted(time.data(), time.data() + time.size()),
+        "Expected time to be non-decreasing.");
+
+
+    Iterate out;
+    out.state_names = state_names;
+    out.control_names = control_names;
+    out.adjunct_names = adjunct_names;
+    out.interstep_names = interstep_names;
+    out.time = Eigen::RowVectorXd::LinSpaced(desired_num_columns,
+        time[0], time.tail<1>()[0]);
+
+    out.states = interp1(time, states, out.time);
+    out.controls = interp1(time, controls, out.time);
+    out.adjuncts = interp1(time, adjuncts, out.time);
+
+    if (interstep_indices.size()) {
+        Eigen::RowVectorXd time_interstep;
+        for (int i = 0; i < interstep_indices.size(); ++i) {
+            const int& interstep_index = interstep_indices[i];
+            time_interstep << out.time[interstep_index];
+        }
+
+        out.intersteps = interp1(time, intersteps, time_interstep);
+    }
+
+
+    return out;
+
+}
+
+template<typename T>
+Eigen::VectorXd Trapezoidal<T>::
 construct_iterate(const Iterate& traj, bool interpolate) const
 {
     // Check for errors with dimensions.

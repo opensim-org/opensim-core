@@ -188,7 +188,7 @@ Iterate::interpolate(int desired_num_columns,
             "Expected time to be non-decreasing.");
     TROPTER_THROW_IF(interstep_names.size() && !interstep_indices.size(),
         "Interstep variables are part of this iterate, you must provide their "
-        "time vector indices to interpolate.");
+        "time vector indices to interpolate.")
     TROPTER_THROW_IF(!interstep_names.size() && interstep_indices.size(),
         "Interstep time vector indices provided, but no interstep variables "
         "are present in this iterate.");

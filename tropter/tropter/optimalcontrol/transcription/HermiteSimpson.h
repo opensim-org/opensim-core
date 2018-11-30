@@ -104,12 +104,12 @@ public:
     std::vector<std::string> get_constraint_names() const override;
 
     /// This function checks the dimensions of the matrices in traj.
-    Eigen::VectorXd
-        construct_iterate(const Iterate& traj,
-            bool interpolate = false) const override;
+    Eigen::VectorXd construct_iterate(const Iterate& traj, 
+        bool interpolate = false) const override;
     // TODO can this have a generic implementation in the Base class?
-    Iterate
-        deconstruct_iterate(const Eigen::VectorXd& x) const override;
+    Iterate deconstruct_iterate(const Eigen::VectorXd& x) const override;
+    Iterate interpolate_iterate(const Iterate& traj, 
+        int desired_num_columns) const override;
     void print_constraint_values(
         const Iterate& vars,
         std::ostream& stream = std::cout) const override;
