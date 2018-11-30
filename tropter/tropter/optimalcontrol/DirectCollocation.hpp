@@ -76,7 +76,7 @@ void DirectCollocationSolver<T>::set_hessian_block_sparsity_mode(
     TROPTER_VALUECHECK(mode == "dense" || mode == "sparse",
         "hessian block sparsity mode", mode, "dense or sparse");
     m_transcription->set_hessian_block_sparsity_mode(mode);
-    m_hessian_sparsity_mode = mode;
+    m_hessian_block_sparsity_mode = mode;
 }
 
 template<typename T>
