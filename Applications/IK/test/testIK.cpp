@@ -407,7 +407,7 @@ void testInverseKinematicsSolverWithEulerAnglesFromFile()
         auto error = SimTK::Real(SimTK_RTD)*repVec - stdVec;
         cout << "Column '" << reportLabels[i] << "' has RMSE = "
             << sqrt(error.norm()/17) << "degrees" << endl;
-        SimTK_ASSERT1_ALWAYS(sqrt(error.norm()/17) < 0.1,
+        SimTK_ASSERT1_ALWAYS((sqrt(error.norm()/17) < 0.1),
             "Column '%s' FAILED to meet accuracy of 0.1 degree RMS.",
             reportLabels[i]);
     }
