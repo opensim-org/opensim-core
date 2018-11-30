@@ -179,22 +179,46 @@ namespace {
 }
 
 Iterate
-Iterate::interpolate(int desired_num_columns) const {
+Iterate::interpolate(int desired_num_columns, 
+        Eigen::VectorXi interstep_indices = {}) const {
     if (time.size() == desired_num_columns) return *this;
 
     assert(desired_num_columns > 0);
     TROPTER_THROW_IF(!std::is_sorted(time.data(), time.data() + time.size()),
             "Expected time to be non-decreasing.");
+    TROPTER_THROW_IF(interstep_names.size() && !interstep_indices.size(),
+        "Interstep variables are part of this iterate, you must provide their "
+        "time vector indices to interpolate.");
+    TROPTER_THROW_IF(!interstep_names.size() && interstep_indices.size(),
+        "Interstep time vector indices provided, but no interstep variables "
+        "are present in this iterate.");
+    if (interstep_indices.size()) {
+        assert(interstep_indices.maxCoeff() < desired_num_columns);
+        assert(interstep_indices.minCoeff() > 0);
+    }
 
     Iterate out;
     out.state_names = state_names;
     out.control_names = control_names;
     out.adjunct_names = adjunct_names;
+    out.interstep_names = interstep_names;
     out.time = Eigen::RowVectorXd::LinSpaced(desired_num_columns,
                                              time[0], time.tail<1>()[0]);
+    
     out.states = interp1(time, states, out.time);
     out.controls = interp1(time, controls, out.time);
     out.adjuncts = interp1(time, adjuncts, out.time);
+
+    if (interstep_indices.size()) {
+        Eigen::RowVectorXd time_interstep;
+        for (int i = 0; i < interstep_indices.size(); ++i) {
+            const int& interstep_index = interstep_indices[i];
+            time_interstep << out.time[interstep_index];
+        }
+
+        out.intersteps = interp1(time, intersteps, time_interstep);
+    }
+
 
     return out;
 }

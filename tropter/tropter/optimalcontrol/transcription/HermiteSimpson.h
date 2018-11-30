@@ -232,6 +232,8 @@ private:
     // will be violated. If the user tries to resize it, tropter will throw an 
     // exception after exiting the function call.
     mutable VectorX<T> m_empty_path_constraint_vec;
+    // TODO
+    mutable VectorX<T> m_empty_midpoint_adjunct_vec;
 };
 
 } // namespace transcription

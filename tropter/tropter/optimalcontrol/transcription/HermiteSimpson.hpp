@@ -46,12 +46,14 @@ void HermiteSimpson<T>::set_ocproblem(
     m_num_states = m_ocproblem->get_num_states();
     m_num_controls = m_ocproblem->get_num_controls();
     m_num_adjuncts = m_ocproblem->get_num_adjuncts();
+    m_num_intersteps = m_ocproblem->get_num_intersteps();
     m_num_continuous_variables = m_num_states + m_num_controls + m_num_adjuncts;
     m_num_time_variables = 2;
     m_num_parameters = m_ocproblem->get_num_parameters();
     m_num_dense_variables = m_num_time_variables + m_num_parameters;
     int num_variables = m_num_time_variables + m_num_parameters
-        + m_num_col_points * m_num_continuous_variables;
+        + m_num_col_points * m_num_continuous_variables
+        + (m_num_mesh_points - 1) * m_num_intersteps;
     this->set_num_variables(num_variables);
     // The separated form of Hermite-Simpson requires two constraint equations
     // to implement the defects for a single state variable, one for the 
@@ -89,6 +91,7 @@ void HermiteSimpson<T>::set_ocproblem(
     const auto state_names = m_ocproblem->get_state_names();
     const auto control_names = m_ocproblem->get_control_names();
     const auto adjunct_names = m_ocproblem->get_adjunct_names();
+    const auto interstep_names = m_ocproblem->get_interstep_names();
     for (int i_mesh = 0; i_mesh < m_num_mesh_points; ++i_mesh) {
         // If not the first mesh point, also add in midpoint variable names
         // before the mesh point variable names. 
@@ -111,6 +114,13 @@ void HermiteSimpson<T>::set_ocproblem(
             for (const auto& adjunct_name : adjunct_names) {
                 std::stringstream ss;
                 ss << adjunct_name << "_bar_"
+                    << std::setfill('0') << std::setw(num_digits_max_mesh_index)
+                    << i_mesh;
+                m_variable_names.push_back(ss.str());
+            }
+            for (const auto& interstep_name : interstep_names) {
+                std::stringstream ss;
+                ss << interstep_name << "_"
                     << std::setfill('0') << std::setw(num_digits_max_mesh_index)
                     << i_mesh;
                 m_variable_names.push_back(ss.str());
@@ -198,6 +208,8 @@ void HermiteSimpson<T>::set_ocproblem(
     VectorXd initial_adjuncts_upper(m_num_adjuncts);
     VectorXd final_adjuncts_lower(m_num_adjuncts);
     VectorXd final_adjuncts_upper(m_num_adjuncts);
+    VectorXd intersteps_lower(m_num_intersteps);
+    VectorXd intersteps_upper(m_num_intersteps);
     VectorXd parameters_upper(m_num_parameters);
     VectorXd parameters_lower(m_num_parameters);
     VectorXd path_constraints_lower(m_num_path_constraints);
@@ -213,6 +225,7 @@ void HermiteSimpson<T>::set_ocproblem(
         adjuncts_lower, adjuncts_upper,
         initial_adjuncts_lower, initial_adjuncts_upper,
         final_adjuncts_lower, final_adjuncts_upper,
+        intersteps_lower, intersteps_upper,
         parameters_lower, parameters_upper,
         path_constraints_lower, path_constraints_upper);
     // TODO validate sizes.
@@ -222,8 +235,9 @@ void HermiteSimpson<T>::set_ocproblem(
         initial_time_lower, final_time_lower, parameters_lower,
         initial_states_lower, initial_controls_lower,
         initial_adjuncts_lower,
-        (VectorXd(m_num_continuous_variables)
-            << states_lower, controls_lower, adjuncts_lower)
+        (VectorXd(m_num_continuous_variables + m_num_intersteps)
+            << states_lower, controls_lower, adjuncts_lower, 
+               intersteps_lower)
         .finished()
         .replicate(m_num_col_points - 2, 1),
         final_states_lower, final_controls_lower, final_adjuncts_lower;
@@ -232,8 +246,9 @@ void HermiteSimpson<T>::set_ocproblem(
         initial_time_upper, final_time_upper, parameters_upper,
         initial_states_upper, initial_controls_upper,
         initial_adjuncts_upper,
-        (VectorXd(m_num_continuous_variables)
-            << states_upper, controls_upper, adjuncts_upper)
+        (VectorXd(m_num_continuous_variables + m_num_intersteps)
+            << states_upper, controls_upper, adjuncts_upper,
+               intersteps_upper)
         .finished()
         .replicate(m_num_col_points - 2, 1),
         final_states_upper, final_controls_upper, final_adjuncts_upper;
@@ -352,6 +367,7 @@ void HermiteSimpson<T>::calc_constraints(const VectorX<T>& x,
     auto states = make_states_trajectory_view(x);
     auto controls = make_controls_trajectory_view(x);
     auto adjuncts = make_adjuncts_trajectory_view(x);
+    auto intersteps = make_intersteps_trajectory_view(x);
     auto parameters = make_parameters_view(x);
 
     // Initialize on iterate.
@@ -373,18 +389,18 @@ void HermiteSimpson<T>::calc_constraints(const VectorX<T>& x,
         const T time = step_size * i_col + initial_time;
         m_ocproblem->calc_differential_algebraic_equations(
         {i_col, time, states.col(i_col), controls.col(i_col),
-            adjuncts.col(i_col), parameters},
+            adjuncts.col(i_col), m_empty_intersteps_vec, parameters},
             {m_derivs_mesh.col(i_mesh),
             constr_view.path_constraints.col(i_mesh)});
         i_mesh++;
     }
-    // Evaluate points off the mesh.
+    // Evaluate points on the mesh interval interior.
     int i_mid = 0;
     for (int i_col = 1; i_col < m_num_col_points; i_col += 2) {
         const T time = step_size * i_col + initial_time;
         m_ocproblem->calc_differential_algebraic_equations(
         {i_col, time, states.col(i_col), controls.col(i_col),
-            adjuncts.col(i_col), parameters},
+            adjuncts.col(i_col), intersteps.col(i_mid), parameters},
             {m_derivs_mid.col(i_mid),
             m_empty_path_constraint_vec});
             TROPTER_THROW_IF(m_empty_path_constraint_vec.size() != 0, 
@@ -452,8 +468,6 @@ void HermiteSimpson<T>::calc_sparsity_hessian_lagrangian(
     }
 
     SymmetricSparsityPattern dae_sparsity(m_num_continuous_variables);
-
-
     if (this->get_hessian_block_sparsity_mode() == "sparse") {
         TROPTER_THROW("Automatic sparsity detection for hessian diagonal "
             "blocks not implemented for Hermite-Simpson transcription.");
@@ -549,6 +563,9 @@ Eigen::VectorXd HermiteSimpson<T>::
     TROPTER_THROW_IF(traj.adjuncts.rows() != m_num_adjuncts,
         "Expected adjuncts to have %i row(s), but it has %i.",
         m_num_adjuncts, traj.adjuncts.rows());
+    TROPTER_THROW_IF(traj.intersteps.rows() != m_num_intersteps,
+        "Expected adjuncts to have %i row(s), but it has %i.",
+        m_num_intersteps, traj.intersteps.rows());
     TROPTER_THROW_IF(traj.parameters.rows() != m_num_parameters,
         "Expected parameters to have %i element(s), but it has %i.",
         m_num_parameters, traj.parameters.size());
@@ -577,6 +594,15 @@ Eigen::VectorXd HermiteSimpson<T>::
                 "respectively.",
                 traj.time.size(), traj.adjuncts.cols());
         }
+        // Intersteps are a special case: they should only be of size N-1 if 
+        // N is the number of mesh points.
+        if (traj.intersteps.cols()) {
+            TROPTER_THROW_IF((m_num_mesh_points - 1) != traj.adjuncts.cols(),
+                "Expected intersteps to have the same number of columns as the "
+                "number of iterate mesh points minus one, but it has %i "
+                "column(s) and M=%i where M = # mesh point(s) minus one.",
+                traj.intersteps.cols(), m_num_mesh_points - 1);
+        }
     }
     else {
         TROPTER_THROW_IF(traj.time.size() != m_num_col_points,
@@ -591,9 +617,12 @@ Eigen::VectorXd HermiteSimpson<T>::
         TROPTER_THROW_IF(traj.adjuncts.cols() != m_num_col_points,
             "Expected adjuncts to have %i column(s), but it has %i.",
             m_num_col_points, traj.adjuncts.cols());
+        TROPTER_THROW_IF(traj.intersteps.cols() != m_num_mesh_points-1,
+            "Expected intersteps to have %i column(s), but it has %i.",
+            m_num_mesh_points-1, traj.intersteps.cols());
     }
 
-    // Interpolate the guess, as it might have a different number of mesh
+    // Interpolate the guess, as it might have a different number of collocation
     // points than m_num_col_points.
     Iterate traj_interp;
     const Iterate* traj_to_use;

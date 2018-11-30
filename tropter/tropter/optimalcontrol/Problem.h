@@ -75,6 +75,8 @@ struct Input {
     /// @note If you pass this into functions that take an Eigen Vector as
     /// input, see the note above for the `states` variable.
     const Eigen::Ref<const VectorX<T>>& adjuncts;
+    /// TODO
+    const Eigen::Ref<const VectorX<T>>& intersteps;
     /// The vector of time-invariant parameter values.
     /// @note If you pass this into functions that take an Eigen Vector as
     /// input, see the note above for the `states` variable.
