@@ -17,10 +17,10 @@ public:
         construct(name, opts);
     }
     ~EndpointCost() override {}
-    casadi_int get_n_in() override { return p.getNumStates() + 1; }
+    casadi_int get_n_in() override { return 1 + p.getNumStates(); }
     casadi_int get_n_out() override { return 1;}
     void init() override {
-        std::cout << "initializing object" << std::endl;
+        std::cout << "initializing object endpointCost" << std::endl;
     }
 
     // Evaluate numerically
@@ -29,10 +29,12 @@ public:
         auto state = p.getModel().getWorkingState();
         state.setTime(time);
         for (int i = 0; i < state.getNY(); ++i) {
-            state.updY()[i] = double(arg.at(i + 1));
+            state.updY()[i] = double(arg.at(1 + i));
         }
         // TODO parameters.
-        return {p.calcEndpointCost(state)};
+        DM cost = p.calcEndpointCost(state);
+        // TODO std::cout << "DEBUG endpointCost " << cost.rows() << " " << cost.columns() << std::endl;
+        return {cost};
     }
 private:
     const MucoProblemRep& p;
@@ -45,7 +47,7 @@ public:
         construct(name, opts);
     }
     ~IntegrandCost() override {}
-    casadi_int get_n_in() override { return p.getNumStates() + p.getNumControls() + 1; }
+    casadi_int get_n_in() override { return 1 + p.getNumStates() + p.getNumControls(); }
     casadi_int get_n_out() override { return 1;}
     void init() override {
         std::cout << "initializing object" << std::endl;
@@ -57,11 +59,11 @@ public:
         auto state = p.getModel().getWorkingState();
         state.setTime(time);
         for (int i = 0; i < state.getNY(); ++i) {
-            state.updY()[i] = double(arg.at(i + 1));
+            state.updY()[i] = double(arg.at(1 + i)); // (i));
         }
         auto& controls = p.getModel().updControls(state);
         for (int i = 0; i < controls.size(); ++i) {
-            controls[i] = double(arg.at(i + 1 + p.getNumStates()));
+            controls[i] = double(arg.at(1 + state.getNY() + i)); // 2)(i));
         }
         return {p.calcIntegralCost(state)};
     }
@@ -69,16 +71,15 @@ private:
     const MucoProblemRep& p;
 };
 
-/*
-class Defect : public Callback {
+class DynamicsFunc : public Callback {
 public:
-    Defect(const std::string& name, const Problem<double>& problem,
+    DynamicsFunc(const std::string& name, const MucoProblemRep& problem,
             const Dict& opts=Dict()) : p(problem) {
         construct(name, opts);
     }
-    ~Defect() override {}
-    casadi_int get_n_in() override { return p.get_num_states() + p.get_num_controls() + 1; }
-    casadi_int get_n_out() override { return 1;}
+    ~DynamicsFunc() override {}
+    casadi_int get_n_in() override { return p.getNumStates() + p.getNumControls() + 1; }
+    casadi_int get_n_out() override { return p.getNumStates();}
     void init() override {
         std::cout << "initializing object" << std::endl;
     }
@@ -86,25 +87,28 @@ public:
     // Evaluate numerically
     std::vector<DM> eval(const std::vector<DM>& arg) const override {
         double time = double(arg.at(0));
-        Eigen::VectorXd states(p.get_num_states());
-        for (int i = 0; i < states.size(); ++i) {
-            states[i] = double(arg.at(i + 1));
+        auto state = p.getModel().getWorkingState();
+        state.setTime(time);
+        for (int i = 0; i < state.getNY(); ++i) {
+            state.updY()[i] = double(arg.at(1 + i)); // (i));
         }
-        Eigen::VectorXd controls(p.get_num_controls());
-        for (int i = 0; i < states.size(); ++i) {
-            states[i] = double(arg.at(i + 1 + p.get_num_controls()));
+        auto& controls = p.getModel().updControls(state);
+        for (int i = 0; i < controls.size(); ++i) {
+            controls[i] = double(arg.at(1 + state.getNY() + i)); // 2)(i));
         }
-        double integrand;
-        tropter::Input<double> in {
-                0, time, states, controls, Eigen::VectorXd(), Eigen::VectorXd()};
-        p.calc_differential_algebraic_equations(in, integrand);
-        DM f = integrand;
-        return {f};
+        p.getModel().realizeVelocity(state);
+        p.getModel().setControls(state, controls);
+        p.getModel().realizeAcceleration(state);
+        //DM deriv(state.getNY(), 1);
+        std::vector<DM> deriv(state.getNY());
+        for (int i = 0; i < state.getNY(); ++i) {
+            deriv[i] = state.getYDot()[i];
+        }
+        return deriv;
     }
 private:
-    const Problem<double>& p;
+    const MucoProblemRep& p;
 };
-*/
 
 class MucoCasADiSolver : public MucoSolver {
     OpenSim_DECLARE_CONCRETE_OBJECT(MucoCasADiSolver, MucoSolver);
@@ -126,8 +130,16 @@ public:
         // TODO SX t0
         MX tf = opt.variable();
 
+        {
+            const auto& finalBounds = rep.getTimeFinalBounds();
+            opt.subject_to(finalBounds.getLower() <= tf <= finalBounds.getUpper());
+        }
+
         // TODO create mesh times.
         MX states = opt.variable(numStates, N);
+        std::cout << "DEBUG states names " << states.name() << std::endl;
+        std::cout << "DEBUG state name " << states(1, 0) << std::endl;
+        std::cout << "DEBUG state name " << states(1, -1) << std::endl;
 
         for (int is = 0; is < numStates; ++is) {
             const auto& info = rep.getStateInfo(svNamesInSysOrder[is]);
@@ -137,9 +149,13 @@ public:
             // All time except initial and final time??
             // opt.subject_to(bounds.getLower() <= states(is, Slice(1, -1)) <= bounds.getUpper());
             opt.subject_to(bounds.getLower() <= states(is, Slice()) <= bounds.getUpper());
-            opt.subject_to(initialBounds.getLower() <= states(is, 0) <= initialBounds.getUpper());
-            // Last state can be obtained via -1.
-            opt.subject_to(finalBounds.getLower() <= states(is, -1) <= finalBounds.getUpper());
+            if (initialBounds.isSet()) {
+                opt.subject_to(initialBounds.getLower() <= states(is, 0) <= initialBounds.getUpper());
+            }
+            if (finalBounds.isSet()) {
+                // Last state can be obtained via -1.
+                opt.subject_to(finalBounds.getLower() <= states(is, -1) <= finalBounds.getUpper());
+            }
         }
 
         const int numControls = [&]() {
@@ -162,10 +178,49 @@ public:
             const auto& initialBounds = info.getInitialBounds();
             const auto& finalBounds = info.getFinalBounds();
             opt.subject_to(bounds.getLower() <= controls(ic, Slice()) <= bounds.getUpper());
-            opt.subject_to(initialBounds.getLower() <= controls(ic, 0) <= initialBounds.getUpper());
-            // Last state can be obtained via -1.
-            opt.subject_to(finalBounds.getLower() <= controls(ic, -1) <= finalBounds.getUpper());
+            if (initialBounds.isSet()) {
+                opt.subject_to(initialBounds.getLower() <= controls(ic, 0) <= initialBounds.getUpper());
+            }
+            if (finalBounds.isSet()) {
+                // Last state can be obtained via -1.
+                opt.subject_to(finalBounds.getLower() <= controls(ic, -1) <= finalBounds.getUpper());
+            }
             ++ic;
+        }
+
+        auto h = tf / (N - 1);
+        DynamicsFunc dynamics("dynamics", rep, {{"enable_fd", true}});
+
+        // Defects.
+
+        std::vector<MX> dynArgs;
+        dynArgs.push_back(tf);
+        for (int istate = 0; istate < numStates; ++istate) {
+            dynArgs.push_back(states(istate, 0));
+        }
+        for (int icontrol = 0; icontrol < numControls; ++icontrol) {
+            dynArgs.push_back(controls(icontrol, 0));
+        }
+        auto xdot_im1 = dynamics(dynArgs);
+        for (int itime = 1; itime < N; ++itime) {
+            const auto t = itime * h;
+            auto x_i = states(Slice(), itime);
+            auto x_im1 = states(Slice(), itime - 1);
+            // dynArgs = std::vector<MX>{t, states(Slice(), itime), controls(Slice(), itime)};
+            dynArgs.clear();
+            dynArgs.push_back(tf);
+            for (int istate = 0; istate < numStates; ++istate) {
+                dynArgs.push_back(states(istate, itime));
+            }
+            for (int icontrol = 0; icontrol < numControls; ++icontrol) {
+                dynArgs.push_back(controls(icontrol, itime));
+            }
+            auto xdot_i = dynamics(dynArgs);
+            //std::cout << "DEBUG dyn " << OpenSim::format("%i %i", xdot_i.rows(), xdot_i.columns()) << std::endl;
+            for (int istate = 0; istate < numStates; ++istate) {
+                opt.subject_to(x_i(istate) == (x_im1(istate) + 0.5 * h * (xdot_i.at(istate) + xdot_im1.at(istate))));
+            }
+            xdot_im1 = xdot_i;
         }
 
         EndpointCost endpoint_cost_function("endpoint_cost", rep, {{"enable_fd", true}});
@@ -173,8 +228,10 @@ public:
         std::vector<MX> args;
         args.push_back(tf);
         for (int i = 0; i < numStates; ++i) {
-            args.push_back(states(i, N - 1));
+            args.push_back(states(i, N-1));
         }
+        // TODO args.push_back(states(Slice(), -1));
+
 
         auto endpoint_cost = endpoint_cost_function(args);
 
@@ -182,24 +239,35 @@ public:
         MX integral = opt.variable();
         integral = 0;
         for (int i = 0; i < N; ++i) {
-            std::vector<MX> iargs;
-            iargs.push_back(tf);
-            for (int is = 0; is < numStates; ++is) {
-                iargs.push_back(states(is, i));
+            std::vector<MX> args;
+            args.push_back(i * h);
+            for (int istate = 0; istate < numStates; ++istate) {
+                args.push_back(states(istate, i));
             }
-            for (int ic = 0; ic < numControls; ++ic) {
-                iargs.push_back(controls(ic, i));
+            for (int icontrol = 0; icontrol < numControls; ++icontrol) {
+                args.push_back(controls(icontrol, i));
             }
-            integral += integrand_cost(iargs).at(0);
+            //const auto out = integrand_cost({i * h, states(Slice(), i), controls(Slice(), i)});
+            const auto out = integrand_cost(args);
+            // std::cout << "DEBUG int " << out.size() << " " << out.at(0).rows() << " " << states(Slice(), i).rows() << std::endl;
+            integral += out.at(0);
         }
-        opt.solver("ipopt");
+        // std::cout << "DEBUG " << endpoint_cost.at(0) << std::endl;
         opt.minimize(endpoint_cost.at(0) + integral);
+        opt.disp(std::cout, true);
+        opt.solver("ipopt", {}, {{"hessian_approximation", "limited-memory"}});
+        try {
+            auto solution = opt.solve();
+        } catch (...) {}
+        DM statesValues = opt.debug().value(states);
+        // std::cout << "DEBUG states values " << statesValues << std::endl;
 
-        for (int itime = 0; itime < N; ++itime) {
-
-            opt.subject_to();
-        }
-        auto solution = opt.solve();
+        // opt.debug().show_infeasibilities();
+        // std::cout << "DEBUGg43 " << opt.debug().g_describe(43) << std::endl;
+        // std::cout << "DEBUGg44 " << opt.debug().g_describe(44) << std::endl;
+        // std::cout << "DEBUGg43 " << opt.g()(43) << std::endl;
+        // std::cout << "DEBUGg43 " << opt.x() << std::endl;
+        // std::cout << "DEBUGg43 " << opt.g()(44) << std::endl;
 
         return {};
     }
@@ -242,24 +310,6 @@ int main() {
     MucoCasADiSolver solver;
     solver.resetProblem(problem);
     solver.solve();
-    /*
-    casadi::Opti opti;
-    auto x = opti.variable();
-    auto y = opti.variable();
-    auto callback = MyCallback("f", 5, {{ "enable_fd", true}});
-    std::vector<MX> args;
-    args.push_back(x);
-    args.push_back(y);
-    auto f = callback(args);
-    opti.minimize( f.at(0) * f.at(0));
-    opti.subject_to( x * x + y * y == 1 );
-    opti.subject_to( x + y >= 1);
-    opti.solver("ipopt");
-    auto sol = opti.solve();
-    sol.value(x);
-    sol.value(y);
-     */
-
 
     std::cout << "DEBUG " << std::endl;
     return 0;
