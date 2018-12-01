@@ -178,27 +178,25 @@ class MucoTropterSolver::OCProblem : public tropter::Problem<T> {
 public:
     OCProblem(const MucoTropterSolver& solver)
             // TODO set name properly.
-            : tropter::Problem<T>(solver.getProblem().getName()),
+            : tropter::Problem<T>(solver.getProblemRep().getName()),
               m_mucoTropterSolver(solver),
-              m_mucoProb(solver.getProblem()),
-              m_phase0(m_mucoProb.getPhase(0)) {
-        m_model = m_phase0.getModel();
+              m_mucoProbRep(solver.getProblemRep()),
+              m_model(m_mucoProbRep.getModel()) {
         // Disable all controllers.
         // TODO temporary; don't want to actually do this.
-        m_model.finalizeFromProperties();
-        auto controllers = m_model.updComponentList<Controller>();
+        auto controllers = m_model.getComponentList<Controller>();
         for (auto& controller : controllers) {
-            controller.set_enabled(false);
+            OPENSIM_THROW_IF(controller.get_enabled(), Exception,
+                    "MucoTropterSolver does not support OpenSim Controllers. "
+                    "Disable all controllers in the model.");
         }
-        m_state = m_model.initSystem();
-        // TODO avoid multiple calls to initialize
-        m_mucoProb.initialize(m_model);
+        m_state = m_model.getWorkingState();
 
-        this->set_time(convert(m_phase0.getTimeInitialBounds()),
-                convert(m_phase0.getTimeFinalBounds()));
+        this->set_time(convert(m_mucoProbRep.getTimeInitialBounds()),
+                convert(m_mucoProbRep.getTimeFinalBounds()));
         auto svNamesInSysOrder = createStateVariableNamesInSystemOrder(m_model);
         for (const auto& svName : svNamesInSysOrder) {
-            const auto& info = m_phase0.getStateInfo(svName);
+            const auto& info = m_mucoProbRep.getStateInfo(svName);
             this->add_state(svName, convert(info.getBounds()),
                     convert(info.getInitialBounds()),
                     convert(info.getFinalBounds()));
@@ -211,10 +209,10 @@ public:
         std::vector<std::string> labels;
         std::vector<KinematicLevel> kinLevels;
         std::vector<std::string> mcNames = 
-            m_phase0.createMultibodyConstraintNames();
+            m_mucoProbRep.createMultibodyConstraintNames();
         for (const auto& mcName : mcNames) {
-            const auto& mc = m_phase0.getMultibodyConstraint(mcName);
-            const auto& multInfos = m_phase0.getMultiplierInfos(mcName);
+            const auto& mc = m_mucoProbRep.getMultibodyConstraint(mcName);
+            const auto& multInfos = m_mucoProbRep.getMultiplierInfos(mcName);
             cid = mc.getSimbodyConstraintIndex();
             mp = mc.getNumPositionEquations();
             mv = mc.getNumVelocityEquations();
@@ -280,9 +278,9 @@ public:
         }
         
         // Add any generic path constraints included in the problem. 
-        for (std::string pcName : m_phase0.createPathConstraintNames()) {
+        for (std::string pcName : m_mucoProbRep.createPathConstraintNames()) {
             const MucoPathConstraint& constraint = 
-                m_phase0.getPathConstraint(pcName);
+                m_mucoProbRep.getPathConstraint(pcName);
             auto pcInfo = constraint.getConstraintInfo();
             auto labels = pcInfo.getConstraintLabels();
             auto bounds = pcInfo.getBounds();
@@ -290,7 +288,7 @@ public:
                 this->add_path_constraint(labels[i], convert(bounds[i])); 
             }
         }
-        m_numPathConstraintEqs = m_phase0.getNumPathConstraintEquations();
+        m_numPathConstraintEqs = m_mucoProbRep.getNumPathConstraintEquations();
         // Allocate path constraint error memory.
         m_pathConstraintErrors.resize(m_numPathConstraintEqs);
         m_pathConstraintErrors.setToZero();
@@ -298,18 +296,17 @@ public:
         for (const auto& actu : m_model.getComponentList<Actuator>()) {
             // TODO handle a variable number of control signals.
             const auto& actuName = actu.getAbsolutePathString();
-            const auto& info = m_phase0.getControlInfo(actuName);
+            const auto& info = m_mucoProbRep.getControlInfo(actuName);
             this->add_control(actuName, convert(info.getBounds()),
                     convert(info.getInitialBounds()),
                     convert(info.getFinalBounds()));
         }
-        for (std::string name : m_phase0.createParameterNames()) {
-            const MucoParameter& parameter = m_phase0.getParameter(name);
+        for (std::string name : m_mucoProbRep.createParameterNames()) {
+            const MucoParameter& parameter = m_mucoProbRep.getParameter(name);
             this->add_parameter(name, convert(parameter.getBounds()));
         }
     }
     void initialize_on_mesh(const Eigen::VectorXd&) const override {
-        m_mucoProb.initialize(m_model);
     }
     void initialize_on_iterate(const Eigen::VectorXd& parameters)
             const override {
@@ -327,8 +324,7 @@ public:
         const auto& adjuncts = in.adjuncts;
 
         m_state.setTime(in.time);
-        std::copy(states.data(), states.data() + states.size(),
-                &m_state.updY()[0]);
+        std::copy_n(states.data(), states.size(), &m_state.updY()[0]);
         //
         // TODO do not copy? I think this will still make a copy:
         // TODO use m_state.updY() = SimTK::Vector(states.size(), states.data(), true);
@@ -337,8 +333,7 @@ public:
         // Set the controls for actuators in the OpenSim model.
         if (m_model.getNumControls()) {
             auto& osimControls = m_model.updControls(m_state);
-            std::copy(controls.data(), controls.data() + controls.size(),
-                &osimControls[0]);
+            std::copy_n(controls.data(), controls.size(), &osimControls[0]);
             m_model.realizeVelocity(m_state);
             m_model.setControls(m_state, osimControls);
         }
@@ -368,13 +363,13 @@ public:
             matter.calcConstraintForcesFromMultipliers(m_state, -multipliers,
                 constraintBodyForces, constraintMobilityForces);
 
-            SimTK::Vector& udot = m_state.updUDot();
+            SimTK::Vector udot;
             matter.calcAccelerationIgnoringConstraints(m_state,
                 appliedMobilityForces + constraintMobilityForces,
                 appliedBodyForces + constraintBodyForces, udot, A_GB);
            
             // Constraint errors.
-            // TODO double-check that disabled constraints don't show up in 
+            // TODO double-check that disabled constraints don't show up in
             // state
             std::copy(&m_state.getQErr()[0], 
                 &m_state.getQErr()[0] + m_mpSum,
@@ -388,24 +383,33 @@ public:
                     out.path.data() + 2*m_mpSum + m_mvSum);
              }
 
-        } else {
-            // TODO Antoine and Gil said realizing Dynamics is a lot costlier than
-            // realizing to Velocity and computing forces manually.
-            m_model.realizeAcceleration(m_state);
-        }
+            // Copy state derivative values to output struct. We cannot simply
+            // use getYDot() because that requires realizing to Acceleration.
+            const int nq = m_state.getQ().size();
+            const int nu = udot.size();
+            const int nz = m_state.getZ().size();
+            std::copy_n(&m_state.getQDot()[0], nq, out.dynamics.data());
+            std::copy_n(&udot[0], udot.size(), out.dynamics.data() + nq);
+            if (nz) {
+                std::copy_n(&m_state.getZDot()[0], nz,
+                        out.dynamics.data() + nq + nu);
+            }
 
-        // Compute errors for generic path constraints.
-        if (out.path.size() != 0) {
-            m_phase0.calcPathConstraintErrors(m_state, m_pathConstraintErrors);
-            std::copy(m_pathConstraintErrors.begin(),
-                      m_pathConstraintErrors.end(),
-                      out.path.data() + m_numMultibodyConstraintEqs);
+        } else {
+            // TODO Antoine and Gil said realizing Dynamics is a lot costlier
+            // than realizing to Velocity and computing forces manually.
+            m_model.realizeAcceleration(m_state);
 
             // Copy state derivative values to output struct.
-            std::copy(&m_state.getYDot()[0], 
-                      &m_state.getYDot()[0] + states.size(),
-                      out.dynamics.data());   
+            std::copy_n(&m_state.getYDot()[0], states.size(),
+                    out.dynamics.data());
         }
+
+        // Copy errors from generic path constraints into output struct.
+        m_mucoProbRep.calcPathConstraintErrors(m_state, m_pathConstraintErrors);
+        std::copy(m_pathConstraintErrors.begin(),
+                  m_pathConstraintErrors.end(),
+                  out.path.data() + m_numMultibodyConstraintEqs);
     }
     
     void calc_integral_cost(const tropter::Input<T>& in, 
@@ -433,7 +437,7 @@ public:
             m_model.realizePosition(m_state);
         }
 
-        integrand = m_phase0.calcIntegralCost(m_state);
+        integrand = m_mucoProbRep.calcIntegralCost(m_state);
 
         if (get_enforce_holonomic_constraints_only()) {
             // Add squared multiplers cost to integrand. Since we currently 
@@ -455,14 +459,13 @@ public:
                 &m_state.updY()[0]);
         // TODO cannot use control signals...
         m_model.updControls(m_state).setToNaN();
-        cost = m_phase0.calcEndpointCost(m_state);
+        cost = m_mucoProbRep.calcEndpointCost(m_state);
     }
 
 private:
     const MucoTropterSolver& m_mucoTropterSolver;
-    const MucoProblem& m_mucoProb;
-    const MucoPhase& m_phase0;
-    mutable Model m_model;
+    const MucoProblemRep& m_mucoProbRep;
+    const Model& m_model;
     mutable SimTK::State m_state;
     // This member variable avoids unnecessary extra allocation of memory for
     // spatial accelerations, which are incidental to the computation of
@@ -491,11 +494,12 @@ private:
             // Warning: memory borrowed, not copied (when third argument to
             // SimTK::Vector constructor is true)
             SimTK::Vector mucoParams(
-                (int)m_phase0.createParameterNames().size(),
+                (int)m_mucoProbRep.createParameterNames().size(),
                 parameters.data(), true);
 
-            m_phase0.applyParametersToModel(mucoParams);
-            m_model.initSystem();
+            m_mucoProbRep.applyParametersToModel(mucoParams);
+            // TODO: Avoid this const_cast.
+            const_cast<Model&>(m_model).initSystem();
         }
     }
 };
@@ -515,6 +519,7 @@ void MucoTropterSolver::constructProperties() {
     constructProperty_optim_sparsity_detection("random");
     constructProperty_optim_ipopt_print_level(-1);
     constructProperty_transcription_scheme("trapezoidal");
+    constructProperty_hessian_block_sparsity_mode("dense");
     constructProperty_multiplier_weight(100.0);
     constructProperty_enforce_holonomic_constraints_only(true);
 
@@ -529,12 +534,8 @@ MucoTropterSolver::getTropterProblem() const {
     return m_tropProblem;
 }
 
-void MucoTropterSolver::clearProblemImpl() {
-    clearGuess();
-}
-
-void MucoTropterSolver::setProblemImpl(const MucoProblem& /*problem*/) {
-    clearProblemImpl();
+void MucoTropterSolver::resetProblemImpl(const MucoProblemRep&) const {
+    m_tropProblem.reset();
 }
 
 MucoIterate MucoTropterSolver::createGuess(const std::string& type) const {
@@ -574,16 +575,15 @@ MucoIterate MucoTropterSolver::createGuess(const std::string& type) const {
 }
 
 MucoIterate MucoTropterSolver::createGuessTimeStepping() const {
-    const auto& problem = getProblem();
-    const auto& phase = problem.getPhase();
-    const auto& initialTime = phase.getTimeInitialBounds().getUpper();
-    const auto& finalTime = phase.getTimeFinalBounds().getLower();
+    const auto& probrep = getProblemRep();
+    const auto& initialTime = probrep.getTimeInitialBounds().getUpper();
+    const auto& finalTime = probrep.getTimeFinalBounds().getLower();
     OPENSIM_THROW_IF_FRMOBJ(finalTime <= initialTime, Exception,
         "Expected lower bound on final time to be greater than "
         "upper bound on initial time, but "
         "final_time.lower: " + std::to_string(finalTime) + "; " +
         "initial_time.upper: " + std::to_string(initialTime) + ".");
-    Model model(phase.getModel());
+    Model model(probrep.getModel());
 
     // Disable all controllers?
     SimTK::State state = model.initSystem();
@@ -592,7 +592,8 @@ MucoIterate MucoTropterSolver::createGuessTimeStepping() const {
     Array<std::string> svNames = model.getStateVariableNames();
     for (int isv = 0; isv < svNames.getSize(); ++isv) {
         const auto& svName = svNames[isv];
-        const auto& initBounds = phase.getStateInfo(svName).getInitialBounds();
+        const auto& initBounds =
+                probrep.getStateInfo(svName).getInitialBounds();
         const auto defaultValue = model.getStateVariableValue(state, svName);
         SimTK::Real valueToUse = defaultValue;
         if (initBounds.isEquality()) {
@@ -621,14 +622,14 @@ MucoIterate MucoTropterSolver::createGuessTimeStepping() const {
 
     // TODO handle parameters.
     return MucoIterate::createFromStatesControlsTables(
-            problem, statesTable, controlsTable);
+            probrep, statesTable, controlsTable);
 }
 
 void MucoTropterSolver::setGuess(MucoIterate guess) {
     // Ensure the guess is compatible with this solver/problem.
     // Make sure to initialize the problem. TODO put in a better place.
     getTropterProblem();
-    guess.isCompatible(getProblem(), true);
+    guess.isCompatible(getProblemRep(), true);
     clearGuess();
     m_guessFromAPI = std::move(guess);
 }
@@ -650,7 +651,7 @@ const MucoIterate& MucoTropterSolver::getGuess() const {
             assert(m_guessFromAPI.empty());
             // No need to load from file again if we've already loaded it.
             MucoIterate guessFromFile(get_guess_file());
-            guessFromFile.isCompatible(getProblem(), true);
+            guessFromFile.isCompatible(getProblemRep(), true);
             m_guessFromFile = guessFromFile;
             m_guessToUse.reset(&m_guessFromFile);
         } else {
@@ -682,7 +683,7 @@ MucoSolution MucoTropterSolver::solveImpl() const {
         std::cout << std::string(79, '=') << "\n";
         std::cout << "MucoTropterSolver starting.\n";
         std::cout << std::string(79, '-') << std::endl;
-        getProblem().printDescription();
+        getProblemRep().printDescription();
         // We can provide more detail about our problem than tropter can.
         // ocp->print_description();
     }
@@ -701,11 +702,14 @@ MucoSolution MucoTropterSolver::solveImpl() const {
         "property 'transcription_scheme' must be set to "
         "'hermite-simpson'. Currently, it is set to '" + 
         get_transcription_scheme() + "'.");    
+    checkPropertyInSet(*this, getProperty_hessian_block_sparsity_mode(),
+        {"dense", "sparse"});
     tropter::DirectCollocationSolver<double> dircol(ocp, 
             get_transcription_scheme(),
             get_optim_solver(), N);
 
     dircol.set_verbosity(get_verbosity() >= 1);
+    dircol.set_hessian_block_sparsity_mode(get_hessian_block_sparsity_mode());
 
     auto& optsolver = dircol.get_opt_solver();
 

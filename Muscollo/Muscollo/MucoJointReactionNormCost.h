@@ -26,6 +26,7 @@ namespace OpenSim {
 /// The norm of the reaction forces and moments integrated over the phase is 
 /// the specific quantity minimized.
 /// This cost requires realizing to the Acceleration stage.
+/// @ingroup mucocost
 // TODO allow a list property of multiple joints?
 // TODO allow specification of the components of the reaction load SpatialVec
 //      to be minimized.
@@ -35,6 +36,13 @@ class OSIMMUSCOLLO_API MucoJointReactionNormCost : public MucoCost {
 OpenSim_DECLARE_CONCRETE_OBJECT(MucoJointReactionNormCost, MucoCost);
 public: 
     MucoJointReactionNormCost();
+    MucoJointReactionNormCost(std::string name) : MucoCost(std::move(name)) {
+        constructProperties();
+    }
+    MucoJointReactionNormCost(std::string name, double weight)
+            : MucoCost(std::move(name), weight) {
+        constructProperties();
+    }
     /// Provide a valid model path for joint whose reaction loads will be
     /// minimized. 
     // TODO when using implicit dynamics, we will need to revisit this cost.
@@ -42,7 +50,7 @@ public:
     {   set_joint_path(path); }
 
 protected:
-    void initializeImpl() const override;
+    void initializeOnModelImpl(const Model&) const override;
     void calcIntegralCostImpl(const SimTK::State& state,
             double& integrand) const override;
 

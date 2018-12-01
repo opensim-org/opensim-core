@@ -22,21 +22,20 @@
 
  using namespace OpenSim;
 
- void MucoMarkerTrackingCost::initializeImpl() const {
+ void MucoMarkerTrackingCost::initializeOnModelImpl(const Model& model) const {
     
     // Cache reference pointers to model markers.
-    m_model_markers.clear();
     // TODO: When should we load a markers file?
     if (get_markers_reference().get_marker_file() != "") {
         const_cast<MucoMarkerTrackingCost*>(this)->upd_markers_reference().
                 loadMarkersFile(get_markers_reference().get_marker_file());
     }
     const auto& markRefNames = get_markers_reference().getNames();
-    const auto& markerSet = getModel().getMarkerSet();
+    const auto& markerSet = model.getMarkerSet();
     int iset = -1;
     for (int i = 0; i < (int)markRefNames.size(); ++i) {
-        if (getModel().hasComponent<Marker>(markRefNames[i])) {
-            const auto& m = getModel().getComponent<Marker>(markRefNames[i]);
+        if (model.hasComponent<Marker>(markRefNames[i])) {
+            const auto& m = model.getComponent<Marker>(markRefNames[i]);
             // Store a pointer to the current model marker.
             m_model_markers.emplace_back(&m);
             // Store the reference index corresponding to the current model
@@ -61,7 +60,7 @@
     // Get the marker weights. The MarkersReference constructor automatically
     // sets a default value of 1.0 to each marker if not provided by the user,
     // so this is generic.
-    const SimTK::State& s = getModel().getWorkingState();
+    const SimTK::State& s = model.getWorkingState();
     get_markers_reference().getWeights(s, m_marker_weights);
 
     // Get and flatten TimeSeriesTableVec3 to doubles and create a set of
@@ -93,3 +92,4 @@
             m_marker_weights[refidx] * (modelValue - refValue).normSqr();
      }
  }
+

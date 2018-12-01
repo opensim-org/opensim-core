@@ -34,13 +34,20 @@ class OSIMMUSCOLLO_API MucoControlCost : public MucoCost {
 OpenSim_DECLARE_CONCRETE_OBJECT(MucoControlCost, MucoCost);
 public:
     MucoControlCost();
+    MucoControlCost(std::string name) : MucoCost(std::move(name)) {
+        constructProperties();
+    }
+    MucoControlCost(std::string name, double weight)
+            : MucoCost(std::move(name), weight) {
+        constructProperties();
+    }
     /// Set the weight to use for the term in the cost associated with
     /// `controlName` (the name or path of the corresponding actuator). If a
     /// weight is already set for the requested state, then the provided
     /// weight replaces the previous weight.
     void setWeight(const std::string& controlName, const double& weight);
 protected:
-    void initializeImpl() const override;
+    void initializeOnModelImpl(const Model&) const override;
     void calcIntegralCostImpl(const SimTK::State& state,
             double& integrand) const override;
 private:

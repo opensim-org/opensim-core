@@ -38,11 +38,11 @@ void MucoControlCost::setWeight(
     }
 }
 
-void MucoControlCost::initializeImpl() const {
+void MucoControlCost::initializeOnModelImpl(const Model& model) const {
 
     std::vector<std::string> actuPaths;
-    const auto modelPath = getModel().getAbsolutePath();
-    for (const auto& actu : getModel().getComponentList<Actuator>()) {
+    const auto modelPath = model.getAbsolutePath();
+    for (const auto& actu : model.getComponentList<Actuator>()) {
         OPENSIM_THROW_IF_FRMOBJ(actu.numControls() != 1, Exception,
                 "Currently, only ScalarActuators are supported.");
         actuPaths.push_back(
@@ -59,10 +59,10 @@ void MucoControlCost::initializeImpl() const {
     // control is NaN.
     {
         SimTK::Vector nan(1, SimTK::NaN);
-        const SimTK::State state = getModel().getWorkingState();
+        const SimTK::State state = model.getWorkingState();
         int i = 0;
-        auto modelControls = getModel().updControls(state);
-        for (const auto& actu : getModel().getComponentList<Actuator>()) {
+        auto modelControls = model.updControls(state);
+        for (const auto& actu : model.getComponentList<Actuator>()) {
             SimTK::Vector origControls(1);
             actu.getControls(modelControls, origControls);
             actu.setControls(nan, modelControls);
@@ -84,7 +84,7 @@ void MucoControlCost::initializeImpl() const {
         }
     }
 
-    m_weights.resize(getModel().getNumControls());
+    m_weights.resize(model.getNumControls());
     int i = 0;
     for (const auto& actuPath : actuPaths) {
         double weight = 1.0;

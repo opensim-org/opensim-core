@@ -21,20 +21,10 @@
 
 using namespace OpenSim;
 
-MucoSolver::MucoSolver() {}
-
-MucoSolver::MucoSolver(const MucoProblem& problem) : MucoSolver() {
-    setProblem(problem);
-}
-
-void MucoSolver::clearProblem() {
-    m_problem.reset();
-    clearProblemImpl();
-}
-
-void MucoSolver::setProblem(const MucoProblem& problem) {
+void MucoSolver::resetProblem(const MucoProblem& problem) {
     m_problem.reset(&problem);
-    setProblemImpl(problem);
+    m_problemRep = problem.createRep();
+    resetProblemImpl(m_problemRep);
 }
 
 MucoSolution MucoSolver::solve() const {

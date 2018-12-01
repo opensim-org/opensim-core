@@ -292,7 +292,8 @@ void testCoordinateCouplerConstraint() {
     CoordinateCouplerConstraint* constraint = new CoordinateCouplerConstraint();
     Array<std::string> names;
     coordSet.getNames(names);
-    constraint->setIndependentCoordinateNames(names.get(0));
+    constraint->setIndependentCoordinateNames(
+            Array<std::string>(names.get(0), 1));
     constraint->setDependentCoordinateName(names.getLast());
     LinearFunction func(1.0, 0.0);
     constraint->setFunction(func);
@@ -336,9 +337,9 @@ void testPrescribedMotion() {
 
 /// Create a torque-actuated double pendulum model. Each subtest will add to the
 /// model the relevant constraint(s).
-Model createDoublePendulumModel() {
-    Model model;
-    model.setName("double_pendulum");
+std::unique_ptr<Model> createDoublePendulumModel() {
+    auto model = make_unique<Model>();
+    model->setName("double_pendulum");
 
     using SimTK::Vec3;
     using SimTK::Inertia;
@@ -346,17 +347,17 @@ Model createDoublePendulumModel() {
     // Create two links, each with a mass of 1 kg, center of mass at the body's
     // origin, and moments and products of inertia of zero.
     auto* b0 = new OpenSim::Body("b0", 1, Vec3(0), Inertia(1));
-    model.addBody(b0);
+    model->addBody(b0);
     auto* b1 = new OpenSim::Body("b1", 1, Vec3(0), Inertia(1));
-    model.addBody(b1);
+    model->addBody(b1);
 
     // Add station representing the model end-effector.
     auto* endeff = new Station(*b1, Vec3(0));
     endeff->setName("endeff");
-    model.addComponent(endeff);
+    model->addComponent(endeff);
 
     // Connect the bodies with pin joints. Assume each body is 1 m long.
-    auto* j0 = new PinJoint("j0", model.getGround(), Vec3(0), Vec3(0),
+    auto* j0 = new PinJoint("j0", model->getGround(), Vec3(0), Vec3(0),
         *b0, Vec3(-1, 0, 0), Vec3(0));
     auto& q0 = j0->updCoordinate();
     q0.setName("q0");
@@ -366,20 +367,20 @@ Model createDoublePendulumModel() {
     auto& q1 = j1->updCoordinate();
     q1.setName("q1");
     q1.setDefaultValue(SimTK::Pi);
-    model.addJoint(j0);
-    model.addJoint(j1);
+    model->addJoint(j0);
+    model->addJoint(j1);
 
     // Add coordinate actuators.
     auto* tau0 = new CoordinateActuator();
     tau0->setCoordinate(&j0->updCoordinate());
     tau0->setName("tau0");
     tau0->setOptimalForce(1);
-    model.addComponent(tau0);
+    model->addComponent(tau0);
     auto* tau1 = new CoordinateActuator();
     tau1->setCoordinate(&j1->updCoordinate());
     tau1->setName("tau1");
     tau1->setOptimalForce(1);
-    model.addComponent(tau1);
+    model->addComponent(tau1);
     
     // Add display geometry.
     Ellipsoid bodyGeometry(0.5, 0.1, 0.1);
@@ -390,8 +391,6 @@ Model createDoublePendulumModel() {
     auto* b1Center = new PhysicalOffsetFrame("b1_center", *b1, transform);
     b1->addComponent(b1Center);
     b1Center->attachGeometry(bodyGeometry.clone());
-
-    model.finalizeConnections();
 
     return model;
 }
@@ -491,14 +490,14 @@ void testDoublePendulumPointOnLine() {
     // Create double pendulum model and add the point-on-line constraint. The 
     // constraint consists of a vertical line in the y-direction (defined in 
     // ground) and the model end-effector point (the origin of body "b1").
-    Model model = createDoublePendulumModel();
-    const Body& b1 = model.getBodySet().get("b1");
-    const Station& endeff = model.getComponent<Station>("endeff");
+    auto model = createDoublePendulumModel();
+    const Body& b1 = model->getBodySet().get("b1");
+    const Station& endeff = model->getComponent<Station>("endeff");
     PointOnLineConstraint* constraint = new PointOnLineConstraint(
-        model.getGround(), Vec3(0, 1, 0), Vec3(0), b1, endeff.get_location());
-    model.addConstraint(constraint);
-    model.finalizeConnections();
-    mp.setModel(model);
+        model->getGround(), Vec3(0, 1, 0), Vec3(0), b1, endeff.get_location());
+    model->addConstraint(constraint);
+    model->finalizeConnections();
+    mp.setModelCopy(*model);
 
     mp.setTimeBounds(0, 1);
     // Coordinate value state boundary conditions are consistent with the 
@@ -510,8 +509,7 @@ void testDoublePendulumPointOnLine() {
     mp.setControlInfo("/tau0", {-100, 100});
     mp.setControlInfo("/tau1", {-100, 100});
 
-    MucoControlCost effort;
-    mp.addCost(effort);
+    mp.addCost<MucoControlCost>();
 
     MucoTropterSolver& ms = muco.initSolver();
     ms.set_num_mesh_points(15);
@@ -526,10 +524,10 @@ void testDoublePendulumPointOnLine() {
     solution.write("testConstraints_testDoublePendulumPointOnLine.sto");
     //muco.visualize(solution);
 
-    model.initSystem();
+    model->initSystem();
     StatesTrajectory states = solution.exportToStatesTrajectory(mp);
     for (const auto& s : states) {
-        model.realizePosition(s);
+        model->realizePosition(s);
         const SimTK::Vec3& loc = endeff.getLocationInGround(s);
 
         // The end-effector should not have moved in the x- or z-directions.
@@ -541,7 +539,7 @@ void testDoublePendulumPointOnLine() {
     // Run a forward simulation using the solution controls in prescribed 
     // controllers for the model actuators and see if we get the correct states
     // trajectory back.
-    runForwardSimulation(model, solution, 1e-1);
+    runForwardSimulation(*model, solution, 1e-1);
 }
 
 /// Solve an optimal control problem where a double pendulum must reach a 
@@ -554,9 +552,9 @@ void testDoublePendulumCoordinateCoupler(MucoSolution& solution) {
     MucoProblem& mp = muco.updProblem();
 
     // Create double pendulum model and add the coordinate coupler constraint. 
-    Model model = createDoublePendulumModel();
-    const Coordinate& q0 = model.getCoordinateSet().get("q0");
-    const Coordinate& q1 = model.getCoordinateSet().get("q1");
+    auto model = createDoublePendulumModel();
+    const Coordinate& q0 = model->getCoordinateSet().get("q0");
+    const Coordinate& q1 = model->getCoordinateSet().get("q1");
     CoordinateCouplerConstraint* constraint = new CoordinateCouplerConstraint();
     Array<std::string> indepCoordNames;
     indepCoordNames.append("q0");
@@ -572,8 +570,9 @@ void testDoublePendulumCoordinateCoupler(MucoSolution& solution) {
     const SimTK::Real b = SimTK::Pi;
     LinearFunction linFunc(m, b);
     constraint->setFunction(linFunc);
-    model.addConstraint(constraint);
-    mp.setModel(model);
+    model->addConstraint(constraint);
+    model->finalizeConnections();
+    mp.setModelCopy(*model);
 
     mp.setTimeBounds(0, 1);
     // Boundary conditions are only enforced for the first coordinate, so we can
@@ -585,8 +584,7 @@ void testDoublePendulumCoordinateCoupler(MucoSolution& solution) {
     mp.setControlInfo("/tau0", {-100, 100});
     mp.setControlInfo("/tau1", {-100, 100});
 
-    MucoControlCost effort;
-    mp.addCost(effort);
+    mp.addCost<MucoControlCost>();
 
     MucoTropterSolver& ms = muco.initSolver();
     ms.set_num_mesh_points(50);
@@ -601,10 +599,10 @@ void testDoublePendulumCoordinateCoupler(MucoSolution& solution) {
     solution.write("testConstraints_testDoublePendulumCoordinateCoupler.sto");
     //muco.visualize(solution);
 
-    model.initSystem();
+    model->initSystem();
     StatesTrajectory states = solution.exportToStatesTrajectory(mp);
     for (const auto& s : states) {
-        model.realizePosition(s);
+        model->realizePosition(s);
 
         // The coordinates should be coupled according to the linear function
         // described above.
@@ -614,7 +612,7 @@ void testDoublePendulumCoordinateCoupler(MucoSolution& solution) {
     // Run a forward simulation using the solution controls in prescribed 
     // controllers for the model actuators and see if we get the correct states
     // trajectory back.
-    runForwardSimulation(model, solution, 1e-2);
+    runForwardSimulation(*model, solution, 1e-2);
 }
 
 /// Solve an optimal control problem where a double pendulum must follow a
@@ -626,25 +624,25 @@ void testDoublePendulumPrescribedMotion(MucoSolution& couplerSolution) {
     MucoProblem& mp = muco.updProblem();
 
     // Create double pendulum model. 
-    Model model = createDoublePendulumModel();
+    auto model = createDoublePendulumModel();
     // Create a spline set for the model states from the previous solution. We 
     // need to call initSystem() and set the model here in order to convert the 
     // solution from the previous problem to a StatesTrajectory.
-    model.initSystem();
-    mp.setModel(model);
+    model->initSystem();
+    mp.setModelCopy(*model);
 
     GCVSplineSet statesSpline(
-        couplerSolution.exportToStatesTrajectory(mp).exportToTable(model));
+        couplerSolution.exportToStatesTrajectory(mp).exportToTable(*model));
 
     // Apply the prescribed motion constraints.
-    Coordinate& q0 = model.updJointSet().get("j0").updCoordinate();
+    Coordinate& q0 = model->updJointSet().get("j0").updCoordinate();
     q0.setPrescribedFunction(statesSpline.get("/jointset/j0/q0/value"));
     q0.setDefaultIsPrescribed(true);
-    Coordinate& q1 = model.updJointSet().get("j1").updCoordinate();
+    Coordinate& q1 = model->updJointSet().get("j1").updCoordinate();
     q1.setPrescribedFunction(statesSpline.get("/jointset/j1/q1/value"));
     q1.setDefaultIsPrescribed(true);
     // Set the model again after implementing the constraints.
-    mp.setModel(model);
+    mp.setModelCopy(*model);
 
     mp.setTimeBounds(0, 1);
     // No bounds here, since the problem is already highly constrained by the
@@ -656,8 +654,7 @@ void testDoublePendulumPrescribedMotion(MucoSolution& couplerSolution) {
     mp.setControlInfo("/tau0", {-100, 100});
     mp.setControlInfo("/tau1", {-100, 100});
 
-    MucoControlCost effort;
-    mp.addCost(effort);
+    mp.addCost<MucoControlCost>();
 
     MucoTropterSolver& ms = muco.initSolver();
     ms.set_num_mesh_points(50); 
@@ -746,18 +743,18 @@ void testDoublePendulumPrescribedMotion(MucoSolution& couplerSolution) {
     // Run a forward simulation using the solution controls in prescribed 
     // controllers for the model actuators and see if we get the correct states
     // trajectory back.
-    runForwardSimulation(model, solution, 1e-2);
+    runForwardSimulation(*model, solution, 1e-2);
 }
 
 class EqualControlConstraint : public MucoPathConstraint {
 OpenSim_DECLARE_CONCRETE_OBJECT(EqualControlConstraint, MucoPathConstraint);
 protected:
-    void initializeImpl() const override {
+    void initializeOnModelImpl(const Model& model) const override {
         // Make sure the model generates a state object with the two controls we 
         // expect, no more and no less.
-        const auto state = getModel().getWorkingState();
-        getModel().realizeVelocity(state);
-        OPENSIM_THROW_IF(getModel().getControls(state).size() != 2, Exception,
+        const auto state = model.getWorkingState();
+        model.realizeVelocity(state);
+        OPENSIM_THROW_IF(model.getControls(state).size() != 2, Exception,
             "State has incorrect number of controls (two expected).");
 
         // There is only constraint equation: match the two model controls.
@@ -781,14 +778,15 @@ void testDoublePendulumEqualControl() {
     MucoTool muco;
     muco.setName("double_pendulum_equal_control");
     MucoProblem& mp = muco.updProblem();
-    Model model = createDoublePendulumModel();
-    mp.setModel(model);
+    auto model = createDoublePendulumModel();
+    model->finalizeConnections();
+    mp.setModelCopy(*model);
     
+    auto* equalControlConstraint =
+            mp.addPathConstraint<EqualControlConstraint>();
     MucoConstraintInfo cInfo;
     cInfo.setBounds(std::vector<MucoBounds>(1, {0, 0}));
-    EqualControlConstraint equalControlConstraint;
-    equalControlConstraint.setConstraintInfo(cInfo);
-    mp.addPathConstraint(equalControlConstraint);
+    equalControlConstraint->setConstraintInfo(cInfo);
 
     mp.setTimeBounds(0, 1);
     // Coordinate value state boundary conditions are consistent with the 
@@ -800,8 +798,7 @@ void testDoublePendulumEqualControl() {
     mp.setControlInfo("/tau0", {-100, 100});
     mp.setControlInfo("/tau1", {-100, 100});
 
-    MucoControlCost effort;
-    mp.addCost(effort);
+    mp.addCost<MucoControlCost>();
 
     MucoTropterSolver& ms = muco.initSolver();
     ms.set_num_mesh_points(100);
@@ -826,7 +823,7 @@ void testDoublePendulumEqualControl() {
     // controllers for the model actuators and see if we get the correct states
     // trajectory back.
     // TODO why does the forward solution match so poorly here?
-    MucoIterate forwardSolution = runForwardSimulation(model, solution, 2);
+    MucoIterate forwardSolution = runForwardSimulation(*model, solution, 2);
     //muco.visualize(forwardSolution);
 
     // Test de/serialization.

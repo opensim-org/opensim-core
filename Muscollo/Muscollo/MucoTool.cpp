@@ -40,21 +40,17 @@ void MucoTool::constructProperties() {
     constructProperty_solver(MucoTropterSolver());
 }
 
-MucoProblem& MucoTool::updProblem() {
-    m_solverInitialized = false;
-    upd_solver().clearProblem();
-    return upd_problem();
+const MucoProblem& MucoTool::getProblem() const {
+    return get_problem();
 }
 
-void MucoTool::ensureInitSolver() {
-    if (!m_solverInitialized) initSolverInternal();
+MucoProblem& MucoTool::updProblem() {
+    return upd_problem();
 }
 
 MucoSolver& MucoTool::initSolverInternal() {
     // TODO what to do if we already have a solver (from cloning?)
-    // TODO how to persist Solver settings when solving multiple times.
-    upd_solver().setProblem(get_problem());
-    m_solverInitialized = true;
+    upd_solver().resetProblem(get_problem());
     return upd_solver();
 }
 
@@ -73,7 +69,7 @@ void MucoTool::setCustomSolver() {
 
 MucoSolution MucoTool::solve() const {
     // TODO avoid const_cast.
-    const_cast<Self*>(this)->ensureInitSolver();
+    const_cast<Self*>(this)->initSolverInternal();
     MucoSolution solution = get_solver().solve();
     bool originallySealed = solution.isSealed();
     if (get_write_solution() != "false") {

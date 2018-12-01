@@ -213,7 +213,7 @@ void Trapezoidal<T>::set_ocproblem(
 
     // Set the mesh.
     // -------------
-    int num_mesh_intervals = m_num_mesh_points - 1;
+    const int num_mesh_intervals = m_num_mesh_points - 1;
     // For integrating the integral cost.
     // The duration of each mesh interval.
     VectorXd mesh = VectorXd::LinSpaced(m_num_mesh_points, 0, 1);
@@ -456,7 +456,6 @@ void Trapezoidal<T>::calc_sparsity_hessian_lagrangian(
             m_ocproblem->calc_integral_cost({0, t, s, c, a, i, p}, integrand);
             return integrand;
         };
-
         integral_cost_sparsity = calc_hessian_sparsity_with_perturbation(
             // Grab the first state, first controls and first adjuncts.
             x.segment(m_num_dense_variables, num_con_vars),

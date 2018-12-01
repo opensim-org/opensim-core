@@ -70,6 +70,10 @@ public:
     OpenSim_DECLARE_PROPERTY(transcription_scheme, std::string,
     "'trapezoidal' (default) for trapezoidal collocation, or "
     "'hermite-simpson' for separated Hermite-Simpson collocation.");
+    OpenSim_DECLARE_PROPERTY(hessian_block_sparsity_mode, std::string,
+        "'dense' for dense blocks on the hessian diagonal, or "
+        "'sparse' for sparse blocks on the hessian diagonal, detected from the "
+        "optimal control problem.");
     OpenSim_DECLARE_PROPERTY(multiplier_weight, double,
     "The weight of the squared multiplier cost term included in the optimal "
     "control problem when only enforcing holonomic constraints in the model. A "
@@ -85,8 +89,6 @@ public:
     // TODO mesh_point_frequency if time is fixed.
 
     MucoTropterSolver();
-
-    explicit MucoTropterSolver(const MucoProblem& problem);
 
     /// @name Specifying an initial guess
     /// @{
@@ -166,8 +168,7 @@ protected:
     std::shared_ptr<const tropter::Problem<double>>
     getTropterProblem() const;
 
-    void clearProblemImpl() override;
-    void setProblemImpl(const MucoProblem& problem) override;
+    void resetProblemImpl(const MucoProblemRep&) const override;
     // TODO ensure that user-provided guess is within bounds.
     MucoSolution solveImpl() const override;
 
