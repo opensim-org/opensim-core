@@ -22,6 +22,12 @@ public:
     void init() override {
         std::cout << "initializing object endpointCost" << std::endl;
     }
+    Sparsity get_sparsity_in(casadi_int i) override {
+        // TODO fix when using a matrix as input for states.
+        // TODO detect this sparsity.
+        if (i == 0) return Sparsity::scalar();
+        else return Sparsity(1, 1);
+    }
 
     // Evaluate numerically
     std::vector<DM> eval(const std::vector<DM>& arg) const override {
@@ -53,6 +59,11 @@ public:
         std::cout << "initializing object" << std::endl;
     }
 
+    Sparsity get_sparsity_out(casadi_int i) override {
+        // TODO fix when we have an actual integral cost!
+        if (i == 0) return Sparsity(1, 1);
+        else return Sparsity(0, 0);
+    }
     // Evaluate numerically
     std::vector<DM> eval(const std::vector<DM>& arg) const override {
         double time = double(arg.at(0));
@@ -252,6 +263,7 @@ public:
         }
         opt.minimize(endpoint_cost.at(0) + integral);
         opt.disp(std::cout, true);
+        opt.
         opt.solver("ipopt", {}, {{"hessian_approximation", "limited-memory"}});
         try {
             auto casadiSolution = opt.solve();
