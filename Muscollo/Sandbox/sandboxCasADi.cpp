@@ -137,9 +137,6 @@ public:
 
         // TODO create mesh times.
         MX states = opt.variable(numStates, N);
-        std::cout << "DEBUG states names " << states.name() << std::endl;
-        std::cout << "DEBUG state name " << states(1, 0) << std::endl;
-        std::cout << "DEBUG state name " << states(1, -1) << std::endl;
 
         for (int is = 0; is < numStates; ++is) {
             const auto& info = rep.getStateInfo(svNamesInSysOrder[is]);
@@ -170,9 +167,11 @@ public:
 
         MX controls = opt.variable(numControls, N);
 
+        std::vector<std::string> controlNames;
         int ic = 0;
         for (const auto& actuator : model.getComponentList<Actuator>()) {
             const auto actuPath = actuator.getAbsolutePathString();
+            controlNames.push_back(actuPath);
             const auto& info = rep.getControlInfo(actuPath);
             const auto& bounds = info.getBounds();
             const auto& initialBounds = info.getInitialBounds();
@@ -249,18 +248,40 @@ public:
             }
             //const auto out = integrand_cost({i * h, states(Slice(), i), controls(Slice(), i)});
             const auto out = integrand_cost(args);
-            // std::cout << "DEBUG int " << out.size() << " " << out.at(0).rows() << " " << states(Slice(), i).rows() << std::endl;
             integral += out.at(0);
         }
-        // std::cout << "DEBUG " << endpoint_cost.at(0) << std::endl;
         opt.minimize(endpoint_cost.at(0) + integral);
         opt.disp(std::cout, true);
         opt.solver("ipopt", {}, {{"hessian_approximation", "limited-memory"}});
         try {
-            auto solution = opt.solve();
+            auto casadiSolution = opt.solve();
+            const auto statesValue = opt.value(states);
+            SimTK::Matrix simtkStates(N, numStates);
+            for (int istate = 0; istate < numStates; ++istate) {
+                for (int itime = 0; itime < N; ++itime) {
+                    simtkStates(itime, istate) = double(statesValue(istate, itime));
+                }
+            }
+            const auto controlsValue = opt.value(controls);
+            SimTK::Matrix simtkControls(N, numControls);
+            for (int icontrol = 0; icontrol < numControls; ++icontrol) {
+                for (int itime = 0; itime < N; ++itime) {
+                    simtkControls(itime, icontrol) = double(controlsValue(icontrol, itime));
+                }
+            }
+
+            MucoSolution mucoSolution(
+                    OpenSim::createVectorLinspace(N, 0, double(opt.value(tf))),
+                    svNamesInSysOrder, controlNames, {}, {},
+                    simtkStates, simtkControls, {}, {});
+            return mucoSolution;
+
+
         } catch (...) {}
         DM statesValues = opt.debug().value(states);
-        // std::cout << "DEBUG states values " << statesValues << std::endl;
+        std::cout << "DEBUG states values " << statesValues << std::endl;
+        DM controlValues = opt.debug().value(controls);
+        std::cout << "DEBUG control values " << controlValues << std::endl;
 
         // opt.debug().show_infeasibilities();
         // std::cout << "DEBUGg43 " << opt.debug().g_describe(43) << std::endl;
@@ -295,6 +316,8 @@ std::unique_ptr<Model> createSlidingMassModel() {
     actu->setMaxControl(10);
     model->addComponent(actu);
 
+    body->attachGeometry(new Sphere(0.05));
+
     return model;
 }
 
@@ -309,7 +332,9 @@ int main() {
 
     MucoCasADiSolver solver;
     solver.resetProblem(problem);
-    solver.solve();
+    MucoSolution solution = solver.solve();
+    OpenSim::visualize(problem.getPhase().getModel(),
+            solution.exportToStatesStorage());
 
     std::cout << "DEBUG " << std::endl;
     return 0;
