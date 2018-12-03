@@ -60,7 +60,6 @@ public:
         }
         // TODO parameters.
         DM cost = p.calcEndpointCost(state);
-        // TODO std::cout << "DEBUG endpointCost " << cost.rows() << " " << cost.columns() << std::endl;
         return {cost};
     }
 private:
@@ -74,7 +73,7 @@ public:
         construct(name, opts);
     }
     ~IntegrandCost() override {}
-    casadi_int get_n_in() override { return 3; /*1 + p.getNumStates() + p.getNumControls()*/; }
+    casadi_int get_n_in() override { return 3; }
     casadi_int get_n_out() override { return 1;}
     void init() override {
         std::cout << "initializing object" << std::endl;
@@ -242,28 +241,12 @@ MucoSolution MucoCasADiSolver::solveImpl() const {
     DynamicsFunc dynamics("dynamics", rep, {{"enable_fd", true}});
 
     // Defects.
-
     MX xdot_im1 = dynamics({0, states(Slice(), 0), controls(Slice(), 0)}).at(0);
     for (int itime = 1; itime < N; ++itime) {
         const auto t = itime * h;
         auto x_i = states(Slice(), itime);
         auto x_im1 = states(Slice(), itime - 1);
-        /*
-        // dynArgs = std::vector<MX>{t, states(Slice(), itime), controls(Slice(), itime)};
-        dynArgs.clear();
-        dynArgs.push_back(tf);
-        for (int istate = 0; istate < numStates; ++istate) {
-            dynArgs.push_back(states(istate, itime));
-        }
-        for (int icontrol = 0; icontrol < numControls; ++icontrol) {
-            dynArgs.push_back(controls(icontrol, itime));
-        }
-        */
         MX xdot_i = dynamics({t, states(Slice(), itime), controls(Slice(), itime)}).at(0);
-        //std::cout << "DEBUG dyn " << OpenSim::format("%i %i", xdot_i.rows(), xdot_i.columns()) << std::endl;
-        // for (int istate = 0; istate < numStates; ++istate) {
-        //     opt.subject_to(x_i(istate) == (x_im1(istate) + 0.5 * h * (xdot_i.at(istate) + xdot_im1.at(istate))));
-        // }
         opt.subject_to(x_i == (x_im1 + 0.5 * h * (xdot_i + xdot_im1)));
         xdot_im1 = xdot_i;
     }
