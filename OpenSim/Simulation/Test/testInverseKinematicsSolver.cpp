@@ -86,6 +86,7 @@ void testTrackWithUpdateMarkerWeights();
 // has more markers than the model, order is changed or marker reference
 // includes intervals with NaNs (no observation)
 void testNumberOfMarkersMismatch();
+void testNumberOfOrientationsMismatch();
 
 int main()
 {
@@ -563,7 +564,6 @@ void testTrackWithUpdateMarkerWeights()
     }
 }
 
-
 void testNumberOfMarkersMismatch()
 {
     cout << 
@@ -676,6 +676,121 @@ void testNumberOfMarkersMismatch()
     }
 }
 
+void testNumberOfOrientationsMismatch()
+{
+    cout <<
+        "\ntestInverseKinematicsSolver::testNumberOfOrientationsMismatch()"
+        << endl;
+
+    std::unique_ptr<Model> leg{ constructLegWithOrientationFrames() };
+    const Coordinate& coord = leg->getCoordinateSet()[0];
+
+    SimTK::State state = leg->initSystem();
+    StatesTrajectory states;
+
+    // sample time
+    double dt = 0.1;
+    int N = 11;
+    for (int i = 0; i < N; ++i) {
+        state.updTime() = i*dt;
+        coord.setValue(state, i*dt*SimTK::Pi / 3);
+        states.append(state);
+    }
+
+    double err = 0.05;
+    SimTK::RowVector_<SimTK::Rotation> biases(3);
+    // bias thigh_imu
+    biases[0] *= SimTK::Rotation(err, SimTK::XAxis);
+    cout << "biases: " << biases << endl;
+
+    auto orientationsTable =
+            generateOrientationsDataFromModelAndStates(*leg,
+                states,
+                biases,
+                0.0,
+                true);
+
+    SimTK::Vector_<SimTK::Rotation> unusedCol(N,
+        SimTK::Rotation(0.987654321, SimTK::ZAxis));
+
+    auto usedOrientationNames = orientationsTable.getColumnLabels();
+
+    // add an unused marker to the marker data
+    orientationsTable.appendColumn("unused", unusedCol);
+
+    cout << "Before:\n" << orientationsTable << endl;
+
+    // re-order "observed" marker data
+    SimTK::Matrix_<SimTK::Rotation> dataGutsCopy
+        = orientationsTable.getMatrix();
+    int last = dataGutsCopy.ncol() - 1;
+    // swap first and last columns 
+    orientationsTable.updMatrix()(0) = dataGutsCopy(last);
+    orientationsTable.updMatrix()(last) = dataGutsCopy(0);
+    auto columnNames = orientationsTable.getColumnLabels();
+    orientationsTable.setColumnLabel(0, columnNames[last]);
+    orientationsTable.setColumnLabel(last, columnNames[0]);
+    columnNames = orientationsTable.getColumnLabels();
+
+    // Inject NaN in "observations" of thigh_imu orientation data
+    for (int i = 4; i < 7; ++i) {
+        orientationsTable.updMatrix()(i, 1).scalarMultiply(SimTK::NaN);
+    }
+
+    cout << "After reorder and NaN injections:\n" << orientationsTable << endl;
+
+    OrientationsReference orientationsRef(&orientationsTable);
+    int nmr = orientationsRef.getNumRefs();
+    auto& osNames = orientationsRef.getNames();
+    cout << osNames << endl;
+
+    MarkersReference mRefs{};
+    SimTK::Array_<CoordinateReference> coordRefs;
+    // Reset the initial coordinate value
+    coord.setValue(state, 0.0);
+    InverseKinematicsSolver ikSolver(*leg, mRefs, orientationsRef, coordRefs);
+    double tol = 1e-4;
+    ikSolver.setAccuracy(tol);
+    ikSolver.assemble(state);
+
+    int nos = ikSolver.getNumOSenorsInUse();
+
+    SimTK::Array_<double> orientationErrors(nos);
+    for (double t : orientationsRef.getTimes()) {
+        state.updTime() = t;
+        ikSolver.track(state);
+
+        //get the marker errors
+        ikSolver.computeCurrentOSensorErrors(orientationErrors);
+
+        int nose = orientationErrors.size();
+
+        SimTK_ASSERT_ALWAYS(nose == nos,
+            "InverseKinematicsSolver failed to account "
+            "for unused orientations reference (observation).");
+
+        cout << "time: " << state.getTime() << " |";
+        auto namesIter = usedOrientationNames.begin();
+        for (int j = 0; j < nose; ++j) {
+            const auto& orientationName = ikSolver.getOSensorNameForIndex(j);
+            cout << " " << orientationName << " error = " << orientationErrors[j];
+
+            SimTK_ASSERT_ALWAYS(*namesIter++ != "unused",
+                "InverseKinematicsSolver failed to ignore "
+                "unused orientation reference (observation).");
+
+            if (orientationName == "thigh_imu") {//should see error on biased marker
+                SimTK_ASSERT_ALWAYS(abs(orientationErrors[j] - err) <= tol,
+                    "InverseKinematicsSolver mangled marker order.");
+            }
+            else { // other markers should be minimally affected
+                SimTK_ASSERT_ALWAYS(orientationErrors[j] <= tol,
+                    "InverseKinematicsSolver mangled marker order.");
+            }
+        }
+        cout << endl;
+    }
+}
 
 Model* constructPendulumWithMarkers()
 {
