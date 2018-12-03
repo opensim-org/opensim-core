@@ -59,16 +59,6 @@ namespace transcription {
 template<typename T>
 class Base : public optimization::Problem<T> {
 public:
-    /// Linearly interpolate (upsample or downsample) the continuous variables 
-    /// (i.e. states and controls) within this iterate to produce a new iterate 
-    /// with a desired number of columns with equally spaced time points. This 
-    /// is useful when forming an initial guess for an optimal control problem. 
-    /// If the size of time matches desired_num_columns, then we return a copy 
-    /// of this iterate (no interpolation).
-    /// @returns the interpolated iterate.
-    // TODO comment about transcription specific differences
-    virtual Iterate
-    interpolate_iterate(const Iterate&, int desired_num_columns) const = 0;
     /// Create a vector of optimization variables (for the generic
     /// optimization problem) from an states and controls.
     virtual Eigen::VectorXd

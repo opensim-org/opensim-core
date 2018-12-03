@@ -52,15 +52,16 @@ parameters. For parameter columns, the value of the parameter is stored in
 the first row of the column, while the rest of the rows are filled with
 NaNs.
 @samplefile
-num_controls=<number-of-control-variables>
-num_parameters=<number-of-parameter-variables>
 num_states=<number-of-state-variables>
-time,<state-0-name>,...,<control-0-name>,...,<multiplier-0-name>,...,
-                                                         <parameter-0-name>,...
-<#>,<#>,...,<#>,...,<#>,...,<#>,...
-<#>,<#>,...,<#>,...,<#>,...,<NaN>,...
- : , : ,..., : ,..., : ,...,  :  ,...
-<#>,<#>,...,<#>,...,<#>,...,<NaN>,...
+num_controls=<number-of-control-variables>
+num_multipliers=<number-of-multiplier-variables>
+num_gammas=<number-of-gamma-variables>
+num_parameters=<number-of-parameter-variables>
+time,<s0-name>,...,<c0-name>,...,<m0-name>,...,<g0-name>,...,<p0-name>,...
+<#>,<#>,...,<#>,...,<#>,...,<#-or-NaN>,...,<#>
+<#>,<#>,...,<#>,...,<#>,...,<#-or-NaN>,...,<NaN>
+ : , : ,..., : ,..., : ,...,  :  ,...,  :
+<#>,<#>,...,<#>,...,<#>,...,<#-or-NaN>,...,<NaN>
 @endsamplefile
 (If stored in a STO file, the delimiters are tabs, not commas.) */
 // Not using three-slash doxygen comments because that messes up verbatim.
@@ -71,10 +72,12 @@ public:
             std::vector<std::string> state_names,
             std::vector<std::string> control_names,
             std::vector<std::string> multiplier_names,
+            std::vector<std::string> gamma_names,
             std::vector<std::string> parameter_names,
             const SimTK::Matrix& statesTrajectory,
             const SimTK::Matrix& controlsTrajectory,
             const SimTK::Matrix& multipliersTrajectory,
+            const SimTK::Matrix& gammasTrajectory,
             const SimTK::RowVector& parameters);
     /// Read a MucoIterate from a data file (e.g., STO, CSV). See output of
     /// write() for the correct format.
@@ -90,9 +93,10 @@ public:
     bool empty() const {
         ensureUnsealed();
         return !(m_time.size() || m_states.nelt() || m_controls.nelt() ||
-                m_multipliers.nelt() || m_parameters.nelt() || 
-                m_state_names.size() || m_control_names.size() || 
-                m_multiplier_names.size() || m_parameter_names.size());
+                m_multipliers.nelt() || m_gammas.nelt() || 
+                m_parameters.nelt() || m_state_names.size() || 
+                m_control_names.size() || m_multiplier_names.size() || 
+                m_gamma_names.size() || m_parameter_names.size());
     }
 
     /// @name Change the length of the trajectory
@@ -115,6 +119,8 @@ public:
         m_controls.setToNaN();
         m_multipliers.resize(numTimes, m_multipliers.ncol());
         m_multipliers.setToNaN();
+        m_gammas.resize(numTimes, m_gammas.ncol());
+        m_gammas.setToNaN();
     }
     /// Uniformly resample (interpolate) the iterate so that it retains the
     /// same initial and final times but now has the provided number of time
@@ -175,6 +181,8 @@ public:
     /// value 10.
     void setMultiplier(const std::string& name, 
                        const SimTK::Vector& trajectory);
+    /// TODO doc
+    void setGamma(const std::string& name, const SimTK::Vector& trajectory);
     /// Set the value of a single parameter variable. This value is invariant
     /// across time.
     void setParameter(const std::string& name, const SimTK::Real& value);
@@ -239,6 +247,16 @@ public:
             v[i] = *it;
         setMultiplier(name, v);
     }
+    /// TODO doc
+    void setGamma(const std::string& name,
+        std::initializer_list<double> trajectory) {
+        ensureUnsealed();
+        SimTK::Vector v((int)trajectory.size());
+        int i = 0;
+        for (auto it = trajectory.begin(); it != trajectory.end(); ++it, ++i)
+            v[i] = *it;
+        setGamma(name, v);
+    }
 
     /// Set the states trajectory. The provided data is interpolated at the
     /// times contained within this iterate. The controls trajectory is not
@@ -290,11 +308,14 @@ public:
     {   ensureUnsealed(); return m_control_names; }
     const std::vector<std::string>& getMultiplierNames() const
     {   ensureUnsealed(); return m_multiplier_names; }
+    const std::vector<std::string>& getGammaNames() const
+    {   ensureUnsealed(); return m_gamma_names; }
     const std::vector<std::string>& getParameterNames() const
     {   ensureUnsealed(); return m_parameter_names; }
     SimTK::VectorView_<double> getState(const std::string& name) const;
     SimTK::VectorView_<double> getControl(const std::string& name) const;
     SimTK::VectorView_<double> getMultiplier(const std::string& name) const;
+    SimTK::VectorView_<double> getGamma(const std::string& name) const;
     const SimTK::Real& getParameter(const std::string& name) const;
     const SimTK::Matrix& getStatesTrajectory() const
     {   ensureUnsealed(); return m_states; }
@@ -302,6 +323,8 @@ public:
     {   ensureUnsealed(); return m_controls; }
     const SimTK::Matrix& getMultipliersTrajectory() const
     {   ensureUnsealed(); return m_multipliers; }
+    const SimTK::Matrix& getGammasTrajectory() const
+    {   ensureUnsealed(); return m_gammas; }
     const SimTK::RowVector& getParameters() const
     {   ensureUnsealed(); return m_parameters; }
 
@@ -394,6 +417,7 @@ private:
     std::vector<std::string> m_state_names;
     std::vector<std::string> m_control_names;
     std::vector<std::string> m_multiplier_names;
+    std::vector<std::string> m_gamma_names;
     std::vector<std::string> m_parameter_names;
     // Dimensions: time x states
     SimTK::Matrix m_states;
@@ -401,6 +425,8 @@ private:
     SimTK::Matrix m_controls;
     // Dimensions: time x multipliers
     SimTK::Matrix m_multipliers;
+    // Dimensions: time x gammas
+    SimTK::Matrix m_gammas;
     // Dimensions: 1 x parameters
     SimTK::RowVector m_parameters;
 

@@ -147,6 +147,87 @@ Iterate::Iterate(const std::string& filepath) {
     f.close();
 }
 
+namespace {
+
+// We can use Eigen's Spline module for linear interpolation, though it's
+// not really meant for this.
+// https://eigen.tuxfamily.org/dox/unsupported/classEigen_1_1Spline.html
+// The independent variable must be between [0, 1].
+using namespace Eigen;
+RowVectorXd normalize(RowVectorXd x) {
+    const double lower = x[0];
+    const double denom = x.tail<1>()[0] - lower;
+    for (Index i = 0; i < x.size(); ++i) {
+        // We assume that x is non-decreasing.
+        x[i] = (x[i] - lower) / denom;
+    }
+    return x;
+}
+
+MatrixXd interp1(const RowVectorXd& xin, const MatrixXd yin,
+    const RowVectorXd& xout) {
+    // Make sure we're not extrapolating.
+    assert(xout[0] >= xin[0]);
+    assert(xout.tail<1>()[0] <= xin.tail<1>()[0]);
+
+    typedef Spline<double, 1> Spline1d;
+
+    MatrixXd yout(yin.rows(), xout.size());
+    RowVectorXd xin_norm = normalize(xin);
+    RowVectorXd xout_norm = normalize(xout);
+    for (Index irow = 0; irow < yin.rows(); ++irow) {
+        const Spline1d spline = SplineFitting<Spline1d>::Interpolate(
+            yin.row(irow), // dependent variable.
+            1, // linear interp
+            xin_norm); // "knot points" (independent variable).
+        for (Index icol = 0; icol < xout.size(); ++icol) {
+            yout(irow, icol) = spline(xout_norm[icol]).value();
+        }
+    }
+    return yout;
+}
+
+}
+
+Iterate 
+Iterate::interpolate(int desired_num_columns) const {
+
+    if (time.size() == desired_num_columns) return *this;
+
+    assert(desired_num_columns > 0);
+    TROPTER_THROW_IF(!std::is_sorted(time.data(), time.data() + time.size()),
+        "Expected time to be non-decreasing.");
+
+    Iterate out;
+    out.state_names = state_names;
+    out.control_names = control_names;
+    out.adjunct_names = adjunct_names;
+    out.interstep_names = interstep_names;
+    out.time = Eigen::RowVectorXd::LinSpaced(desired_num_columns,
+        time[0], time.tail<1>()[0]);
+
+    out.states = interp1(time, states, out.time);
+    out.controls = interp1(time, controls, out.time);
+    out.adjuncts = interp1(time, adjuncts, out.time);
+    if (interstep_names.size()) {
+        // Create interpolant for non-nan columns.
+        MatrixXd intersteps_no_nans;
+        VectorXd time_no_nans;
+        int cols_no_nans = 1;
+        for (int icol = 0; icol < intersteps.cols(); ++icol) {
+            if (isnan(intersteps(0, icol))) {
+                intersteps_no_nans.conservativeResize(NoChange, cols_no_nans);
+                intersteps_no_nans.col(cols_no_nans - 1) = intersteps.col(icol);
+                time_no_nans << time[icol];
+                ++cols_no_nans;
+            }
+        }
+        out.intersteps = interp1(time_no_nans, intersteps_no_nans, out.time);
+    }
+
+    return out;
+}
+
 /// Write the states, controls, and adjuncts trajectories and the parameter
 /// values to a plain-text CSV file.
 void Iterate::write(const std::string& filepath) const {

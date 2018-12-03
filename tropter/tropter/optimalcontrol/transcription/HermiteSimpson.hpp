@@ -118,13 +118,6 @@ void HermiteSimpson<T>::set_ocproblem(
                     << i_mesh;
                 m_variable_names.push_back(ss.str());
             }
-            for (const auto& interstep_name : interstep_names) {
-                std::stringstream ss;
-                ss << interstep_name << "_bar_"
-                    << std::setfill('0') << std::setw(num_digits_max_mesh_index)
-                    << i_mesh;
-                m_variable_names.push_back(ss.str());
-            }
         }
         for (const auto& state_name : state_names) {
             std::stringstream ss;
@@ -143,6 +136,16 @@ void HermiteSimpson<T>::set_ocproblem(
         for (const auto& adjunct_name : adjunct_names) {
             std::stringstream ss;
             ss << adjunct_name << "_"
+                << std::setfill('0') << std::setw(num_digits_max_mesh_index)
+                << i_mesh;
+            m_variable_names.push_back(ss.str());
+        }
+    }
+    // Need to append intersteps to end for now to allow slicing.
+    for (int i_mesh = 1; i_mesh < m_num_mesh_points; ++i_mesh) {
+        for (const auto& interstep_name : interstep_names) {
+            std::stringstream ss;
+            ss << interstep_name << "_bar_"
                 << std::setfill('0') << std::setw(num_digits_max_mesh_index)
                 << i_mesh;
             m_variable_names.push_back(ss.str());
@@ -235,22 +238,26 @@ void HermiteSimpson<T>::set_ocproblem(
         initial_time_lower, final_time_lower, parameters_lower,
         initial_states_lower, initial_controls_lower,
         initial_adjuncts_lower,
-        (VectorXd(m_num_continuous_variables + m_num_intersteps)
-            << states_lower, controls_lower, adjuncts_lower, 
-               intersteps_lower)
-        .finished()
-        .replicate(m_num_col_points - 2, 1),
+        (VectorXd(m_num_continuous_variables)
+                << states_lower, controls_lower, adjuncts_lower)
+                .finished()
+                .replicate(m_num_col_points - 2, 1),
+        (VectorXd(m_num_intersteps) << intersteps_lower)
+                .finished()
+                .replicate(m_num_mesh_points - 1, 1),
         final_states_lower, final_controls_lower, final_adjuncts_lower;
     VectorXd variable_upper(num_variables);
     variable_upper <<
         initial_time_upper, final_time_upper, parameters_upper,
         initial_states_upper, initial_controls_upper,
         initial_adjuncts_upper,
-        (VectorXd(m_num_continuous_variables + m_num_intersteps)
-            << states_upper, controls_upper, adjuncts_upper,
-               intersteps_upper)
-        .finished()
-        .replicate(m_num_col_points - 2, 1),
+        (VectorXd(m_num_continuous_variables)
+                << states_upper, controls_upper, adjuncts_upper)
+                .finished()
+                .replicate(m_num_col_points - 2, 1),
+        (VectorXd(m_num_intersteps) << intersteps_upper)
+                .finished()
+                .replicate(m_num_mesh_points - 1, 1),
         final_states_upper, final_controls_upper, final_adjuncts_upper;
     this->set_variable_bounds(variable_lower, variable_upper);
     // Bounds for constraints.
@@ -561,9 +568,9 @@ template<typename T>
 Eigen::RowVectorXd HermiteSimpson<T>::
 get_interstep_times(const Eigen::RowVectorXd& time) const {
     
-    Eigen::RowVectorXd interstep_times;
+    Eigen::RowVectorXd interstep_times(m_num_mesh_points - 1);
     for (int i = 1; i < time.size(); i += 2) {
-        interstep_times << time[i];
+        interstep_times[i] = time[i];
     }
    return interstep_times;
 }
@@ -601,36 +608,6 @@ get_intersteps_without_nans(const Eigen::MatrixXd& intersteps_with_nans) const {
     }
 
     return intersteps_without_nans;
-}
-
-template<typename T>
-Iterate HermiteSimpson<T>::
-interpolate_iterate(const Iterate& traj, int desired_num_columns) const {
-
-    if (traj.time.size() == desired_num_columns) return Iterate(traj);
-
-    assert(desired_num_columns > 0);
-    TROPTER_THROW_IF(!std::is_sorted(traj.time.data(),
-        traj.time.data() + traj.time.size()),
-        "Expected time to be non-decreasing.");
-
-    Iterate out;
-    out.state_names = traj.state_names;
-    out.control_names = traj.control_names;
-    out.adjunct_names = traj.adjunct_names;
-    out.interstep_names = traj.interstep_names;
-    out.time = Eigen::RowVectorXd::LinSpaced(desired_num_columns,
-        traj.time[0], traj.time.tail<1>()[0]);
-
-    out.states = interp1(traj.time, traj.states, out.time);
-    out.controls = interp1(traj.time, traj.controls, out.time);
-    out.adjuncts = interp1(traj.time, traj.adjuncts, out.time);
-    out.intersteps = get_intersteps_with_nans(
-        interp1(traj.time, 
-                get_intersteps_without_nans(traj.intersteps), 
-                get_interstep_times(out.time)));
-
-    return out;
 }
 
 template<typename T>
@@ -714,7 +691,7 @@ Eigen::VectorXd HermiteSimpson<T>::
     if (interpolate) {
         // TODO will actually need to provide the mesh spacing as well, when we
         // no longer have uniform mesh spacing.
-        traj_interp = interpolate_iterate(traj, m_num_col_points);
+        traj_interp = traj.interpolate(m_num_col_points);
         traj_to_use = &traj_interp;
     }
     else {
@@ -1171,8 +1148,7 @@ HermiteSimpson<T>::make_states_trajectory_view(const VectorX<S>& x) const
             m_num_states,      // Number of rows.
             m_num_col_points,  // Number of columns.
             // Distance between the start of each column.
-            Eigen::OuterStride<Eigen::Dynamic>(
-                    m_num_continuous_variables + m_num_intersteps)};
+            Eigen::OuterStride<Eigen::Dynamic>(m_num_continuous_variables)};
 }
 
 template<typename T>
@@ -1187,8 +1163,7 @@ HermiteSimpson<T>::make_states_trajectory_view_mesh(const VectorX<S>& x) const
             m_num_states,       // Number of rows.
             m_num_mesh_points,  // Number of columns.
             // Distance between the start of each column.
-            Eigen::OuterStride<Eigen::Dynamic>(
-                    2 * m_num_continuous_variables + m_num_intersteps)};
+            Eigen::OuterStride<Eigen::Dynamic>(2*m_num_continuous_variables)};
 }
 
 template<typename T>
@@ -1203,8 +1178,7 @@ HermiteSimpson<T>::make_states_trajectory_view_mid(const VectorX<S>& x) const
             m_num_states,           // Number of rows.
             m_num_mesh_points - 1,  // Number of columns.
             // Distance between the start of each column.
-            Eigen::OuterStride<Eigen::Dynamic>(
-                    2 * m_num_continuous_variables + m_num_intersteps)};
+            Eigen::OuterStride<Eigen::Dynamic>(2*m_num_continuous_variables)};
 }
 
 template<typename T>
@@ -1218,8 +1192,7 @@ HermiteSimpson<T>::make_controls_trajectory_view(const VectorX<S>& x) const
             m_num_controls,          // Number of rows.
             m_num_col_points,        // Number of columns.
             // Distance between the start of each column.
-            Eigen::OuterStride<Eigen::Dynamic>(
-                    m_num_continuous_variables + m_num_intersteps)};
+            Eigen::OuterStride<Eigen::Dynamic>(m_num_continuous_variables)};
 }
 
 template<typename T>
@@ -1233,8 +1206,7 @@ HermiteSimpson<T>::make_adjuncts_trajectory_view(const VectorX<S>& x) const
             m_num_adjuncts,         // Number of rows.
             m_num_col_points,       // Number of columns.
             // Distance between the start of each column.
-            Eigen::OuterStride<Eigen::Dynamic>(
-                m_num_continuous_variables + m_num_intersteps)};
+            Eigen::OuterStride<Eigen::Dynamic>(m_num_continuous_variables)};
 }
 
 template<typename T>
@@ -1244,13 +1216,12 @@ HermiteSimpson<T>::make_intersteps_trajectory_view(const VectorX<S>& x) const
 {
     return{
             // Start of intersteps for first mesh interval.
-            x.data() + m_num_dense_variables + m_num_states + m_num_controls
-                     + m_num_intersteps,
+            x.data() + m_num_dense_variables 
+                     + m_num_continuous_variables * m_num_col_points,
             m_num_intersteps,         // Number of rows.
             m_num_mesh_points - 1,    // Number of columns.
             // Distance between the start of each column.
-            Eigen::OuterStride<Eigen::Dynamic>(
-                m_num_continuous_variables + m_num_intersteps)};
+            Eigen::OuterStride<Eigen::Dynamic>(m_num_intersteps)};
 }
 
 // TODO avoid the duplication with the above.
@@ -1277,8 +1248,7 @@ HermiteSimpson<T>::make_states_trajectory_view(VectorX<S>& x) const
             m_num_states,      // Number of rows.
             m_num_col_points,  // Number of columns.
             // Distance between the start of each column.
-            Eigen::OuterStride<Eigen::Dynamic>(
-                    m_num_continuous_variables + m_num_intersteps)};
+            Eigen::OuterStride<Eigen::Dynamic>(m_num_continuous_variables)};
 }
 
 template<typename T>
@@ -1293,8 +1263,7 @@ HermiteSimpson<T>::make_states_trajectory_view_mesh(VectorX<S>& x) const
             m_num_states,           // Number of rows.
             m_num_mesh_points,      // Number of columns.
             // Distance between the start of each column.
-            Eigen::OuterStride<Eigen::Dynamic>(
-                    2 * m_num_continuous_variables + m_num_intersteps)};
+            Eigen::OuterStride<Eigen::Dynamic>(2*m_num_continuous_variables)};
 }
 
 template<typename T>
@@ -1309,8 +1278,7 @@ HermiteSimpson<T>::make_states_trajectory_view_mid(VectorX<S>& x) const
             m_num_states,           // Number of rows.
             m_num_mesh_points - 1,  // Number of columns.
             // Distance between the start of each column.
-            Eigen::OuterStride<Eigen::Dynamic>(
-                    2 * m_num_continuous_variables + m_num_intersteps)};
+            Eigen::OuterStride<Eigen::Dynamic>(2*m_num_continuous_variables)};
 }
 
 template<typename T>
@@ -1324,8 +1292,7 @@ HermiteSimpson<T>::make_controls_trajectory_view(VectorX<S>& x) const
             m_num_controls,          // Number of rows.
             m_num_col_points,        // Number of columns.
             // Distance between the start of each column.
-            Eigen::OuterStride<Eigen::Dynamic>(
-                    m_num_continuous_variables + m_num_intersteps)};
+            Eigen::OuterStride<Eigen::Dynamic>(m_num_continuous_variables)};
 }
 
 template<typename T>
@@ -1339,8 +1306,7 @@ HermiteSimpson<T>::make_adjuncts_trajectory_view(VectorX<S>& x) const
             m_num_adjuncts,         // Number of rows.
             m_num_col_points,       // Number of columns.
             // Distance between the start of each column.
-            Eigen::OuterStride<Eigen::Dynamic>(
-                    m_num_continuous_variables + m_num_intersteps)};
+            Eigen::OuterStride<Eigen::Dynamic>(m_num_continuous_variables)};
 }
 
 template<typename T>
@@ -1350,14 +1316,13 @@ HermiteSimpson<T>::make_intersteps_trajectory_view(VectorX<S>& x) const
 {
     return{
             // Start of intersteps for first mesh interval.
-            x.data() + m_num_dense_variables + m_num_states + m_num_controls
-                     + m_num_intersteps,
+            x.data() + m_num_dense_variables
+                + m_num_continuous_variables * m_num_col_points,
             m_num_intersteps,         // Number of rows.
             m_num_mesh_points - 1,    // Number of columns.
             // Distance between the start of each column.
-            Eigen::OuterStride<Eigen::Dynamic>(
-                    m_num_continuous_variables + m_num_intersteps)};
-}
+            Eigen::OuterStride<Eigen::Dynamic>(m_num_intersteps)};
+    }
 
 template<typename T>
 typename HermiteSimpson<T>::ConstraintsView

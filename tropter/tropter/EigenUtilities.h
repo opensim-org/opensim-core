@@ -81,47 +81,4 @@ void write(const Eigen::VectorXd& time,
 
 } // namespace tropter
 
-namespace {
-
-// We can use Eigen's Spline module for linear interpolation, though it's
-// not really meant for this.
-// https://eigen.tuxfamily.org/dox/unsupported/classEigen_1_1Spline.html
-// The independent variable must be between [0, 1].
-using namespace Eigen;
-RowVectorXd normalize(RowVectorXd x) {
-    const double lower = x[0];
-    const double denom = x.tail<1>()[0] - lower;
-    for (Index i = 0; i < x.size(); ++i) {
-        // We assume that x is non-decreasing.
-        x[i] = (x[i] - lower) / denom;
-    }
-    return x;
-}
-
-MatrixXd interp1(const RowVectorXd& xin, const MatrixXd yin,
-    const RowVectorXd& xout) {
-    // Make sure we're not extrapolating.
-    assert(xout[0] >= xin[0]);
-    assert(xout.tail<1>()[0] <= xin.tail<1>()[0]);
-
-    typedef Spline<double, 1> Spline1d;
-
-    MatrixXd yout(yin.rows(), xout.size());
-    RowVectorXd xin_norm = normalize(xin);
-    RowVectorXd xout_norm = normalize(xout);
-    for (Index irow = 0; irow < yin.rows(); ++irow) {
-        const Spline1d spline = SplineFitting<Spline1d>::Interpolate(
-            yin.row(irow), // dependent variable.
-            1, // linear interp
-            xin_norm); // "knot points" (independent variable).
-        for (Index icol = 0; icol < xout.size(); ++icol) {
-            yout(irow, icol) = spline(xout_norm[icol]).value();
-        }
-    }
-    return yout;
-}
-
-} // namespace (anonymous)
-
-
 #endif // TROPTER_EIGENUTILITIES_H

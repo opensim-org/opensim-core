@@ -461,9 +461,9 @@ MucoIterate runForwardSimulation(Model model, const MucoSolution& solution,
     const auto& statesTimes = states.getIndependentColumn();
     SimTK::Vector timeVec((int)statesTimes.size(), statesTimes.data(), true);
     auto forwardSolution = MucoIterate(timeVec, states.getColumnLabels(),
-        controls.getColumnLabels(), states.getColumnLabels(), {}, 
+        controls.getColumnLabels(), states.getColumnLabels(), {}, {},
         states.getMatrix(), controls.getMatrix(), states.getMatrix(),
-        SimTK::RowVector(0));
+        SimTK::Matrix(), SimTK::RowVector(0));
     
     // Compare controls between foward simulation and OCP solution. These
     // should match very closely, since the foward simulation controls are 
@@ -501,28 +501,32 @@ void testDoublePendulumPointOnLine() {
 
     mp.setTimeBounds(0, 1);
     // Coordinate value state boundary conditions are consistent with the 
-    // point-on-line constraint and should require the model to "unfold" itself.
-    mp.setStateInfo("/jointset/j0/q0/value", {-10, 10}, 0, SimTK::Pi / 2);
-    mp.setStateInfo("/jointset/j0/q0/speed", {-50, 50}, 0, 0);
-    mp.setStateInfo("/jointset/j1/q1/value", {-10, 10}, SimTK::Pi, 0);
-    mp.setStateInfo("/jointset/j1/q1/speed", {-50, 50}, 0, 0);
+    // point-on-line constraint.
+    mp.setStateInfo("/jointset/j0/q0/value", {-10, 10}, SimTK::Pi / 6);
+    mp.setStateInfo("/jointset/j0/q0/speed", {-50, 50});
+    mp.setStateInfo("/jointset/j1/q1/value", {-10, 10}, 2*SimTK::Pi / 3);
+    mp.setStateInfo("/jointset/j1/q1/speed", {-50, 50});
     mp.setControlInfo("/tau0", {-100, 100});
     mp.setControlInfo("/tau1", {-100, 100});
 
-    mp.addCost<MucoControlCost>();
+    auto* markerCost = mp.addCost<MucoMarkerEndpointCost>();
+    markerCost->setName("marker_endpoint");
+    markerCost->setPointName("endeff");
+    markerCost->setReferenceLocation(Vec3(0, 1.7, 0));
 
     MucoTropterSolver& ms = muco.initSolver();
-    ms.set_num_mesh_points(15);
+    ms.set_num_mesh_points(10);
     ms.set_verbosity(2);
     ms.set_optim_solver("ipopt");
     ms.set_optim_convergence_tolerance(1e-3);
-    //ms.set_optim_ipopt_print_level(5);
     ms.set_optim_hessian_approximation("exact");
+    ms.set_transcription_scheme("hermite-simpson");
+    ms.set_enforce_holonomic_constraints_only(false);
     ms.setGuess("bounds");
 
     MucoSolution solution = muco.solve();
     solution.write("testConstraints_testDoublePendulumPointOnLine.sto");
-    //muco.visualize(solution);
+    muco.visualize(solution);
 
     model->initSystem();
     StatesTrajectory states = solution.exportToStatesTrajectory(mp);
@@ -539,7 +543,7 @@ void testDoublePendulumPointOnLine() {
     // Run a forward simulation using the solution controls in prescribed 
     // controllers for the model actuators and see if we get the correct states
     // trajectory back.
-    runForwardSimulation(*model, solution, 1e-1);
+    //runForwardSimulation(*model, solution, 1e-1);
 }
 
 /// Solve an optimal control problem where a double pendulum must reach a 
@@ -593,6 +597,8 @@ void testDoublePendulumCoordinateCoupler(MucoSolution& solution) {
     ms.set_optim_convergence_tolerance(1e-3);
     //ms.set_optim_ipopt_print_level(5);
     ms.set_optim_hessian_approximation("limited-memory");
+    ms.set_transcription_scheme("hermite-simpson");
+    ms.set_enforce_holonomic_constraints_only(false);
     ms.setGuess("bounds");
 
     solution = muco.solve();
@@ -663,6 +669,8 @@ void testDoublePendulumPrescribedMotion(MucoSolution& couplerSolution) {
     ms.set_optim_convergence_tolerance(1e-3);
     //ms.set_optim_ipopt_print_level(5);
     ms.set_optim_hessian_approximation("limited-memory");
+    ms.set_transcription_scheme("hermite-simpson");
+    ms.set_enforce_holonomic_constraints_only(false);
     ms.setGuess("bounds");
 
     MucoSolution solution = muco.solve().unseal();
@@ -709,8 +717,8 @@ void testDoublePendulumPrescribedMotion(MucoSolution& couplerSolution) {
     SimTK::Vector time((int)statesTimes.size(), statesTimes.data(), true);
     auto mucoIterSpline = MucoIterate(time, splineStateValues.getColumnLabels(),
         splineStateValues.getColumnLabels(), splineStateValues.getColumnLabels(), 
-        {}, splineStateValues.getMatrix(), splineStateValues.getMatrix(), 
-        splineStateValues.getMatrix(), SimTK::RowVector(0));
+        {}, {}, splineStateValues.getMatrix(), splineStateValues.getMatrix(), 
+        splineStateValues.getMatrix(), SimTK::Matrix(), SimTK::RowVector(0));
 
     // Only compare the position-level values between the current solution 
     // states and the states from the previous test (original and splined).  
@@ -851,9 +859,9 @@ int main() {
         SimTK_SUBTEST(testPrescribedMotion);
         // Direct collocation subtests.
         SimTK_SUBTEST(testDoublePendulumPointOnLine);
-        MucoSolution couplerSolution;
-        SimTK_SUBTEST1(testDoublePendulumCoordinateCoupler, couplerSolution);
-        SimTK_SUBTEST1(testDoublePendulumPrescribedMotion, couplerSolution);
-        SimTK_SUBTEST(testDoublePendulumEqualControl);
+        //MucoSolution couplerSolution;
+        //SimTK_SUBTEST1(testDoublePendulumCoordinateCoupler, couplerSolution);
+        //SimTK_SUBTEST1(testDoublePendulumPrescribedMotion, couplerSolution);
+        //SimTK_SUBTEST(testDoublePendulumEqualControl);
     SimTK_END_TEST();
 }

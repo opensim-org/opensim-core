@@ -117,8 +117,6 @@ public:
     /// @copydoc get_intersteps_with_nans()
     Eigen::MatrixXd get_intersteps_without_nans(
         const Eigen::MatrixXd& intersteps_with_nans) const;
-    Iterate interpolate_iterate(const Iterate& traj,
-        int desired_num_columns) const override;
     /// This function checks the dimensions of the matrices in traj.
     Eigen::VectorXd construct_iterate(const Iterate& traj, 
         bool interpolate = false) const override;

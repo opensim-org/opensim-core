@@ -60,12 +60,14 @@ MucoIterateType convert(const tropIterateType& tropSol) {
     const auto& state_names = tropSol.state_names;
     const auto& control_names = tropSol.control_names;
     const auto& multiplier_names = tropSol.adjunct_names;
+    const auto& gamma_names = tropSol.interstep_names;
     const auto& parameter_names = tropSol.parameter_names;
 
     int numTimes = (int)time.size();
     int numStates = (int)state_names.size();
     int numControls = (int)control_names.size();
     int numMultipliers = (int)multiplier_names.size();
+    int numGammas = (int)gamma_names.size();
     int numParameters = (int)parameter_names.size();
     // Create and populate states matrix.
     SimTK::Matrix states(numTimes, numStates);
@@ -101,10 +103,20 @@ MucoIterateType convert(const tropIterateType& tropSol) {
             }
         }
     }
+    SimTK::Matrix gammas;
+    if (numGammas) {
+        gammas.resize(numTimes, numGammas);
+        for (int itime = 0; itime < numTimes; ++itime) {
+            for (int igamma = 0; igamma < numGammas; ++igamma) {
+                gammas(itime, igamma) = tropSol.intersteps(igamma,
+                    itime);
+            }
+        }
+    }
     // This produces an empty RowVector if numParameters is zero.
     SimTK::RowVector parameters(numParameters, tropSol.parameters.data());
-    return {time, state_names, control_names, multiplier_names, parameter_names, 
-            states, controls, multipliers, parameters};
+    return {time, state_names, control_names, multiplier_names, gamma_names,
+            parameter_names, states, controls, multipliers, gammas, parameters};
 }
 
 MucoSolution convert(const tropter::Solution& tropSol) {
@@ -127,16 +139,19 @@ tropter::Iterate convert(const MucoIterate& mucoIter) {
     tropIter.state_names = mucoIter.getStateNames();
     tropIter.control_names = mucoIter.getControlNames();
     tropIter.adjunct_names = mucoIter.getMultiplierNames();
+    tropIter.interstep_names = mucoIter.getGammaNames();
     tropIter.parameter_names = mucoIter.getParameterNames();
 
     int numTimes = (int)time.size();
     int numStates = (int)tropIter.state_names.size();
     int numControls = (int)tropIter.control_names.size();
-    int numMultipliers = (int)tropIter.adjunct_names.size();
+    int numAdjuncts = (int)tropIter.adjunct_names.size();
+    int numIntersteps = (int)tropIter.interstep_names.size();
     int numParameters = (int)tropIter.parameter_names.size();
     const auto& states = mucoIter.getStatesTrajectory();
     const auto& controls = mucoIter.getControlsTrajectory();
     const auto& multipliers = mucoIter.getMultipliersTrajectory();
+    const auto& gammas = mucoIter.getGammasTrajectory();
     const auto& parameters = mucoIter.getParameters();
     // Muscollo's matrix is numTimes x numStates;
     // tropter's is numStates x numTimes.
@@ -148,11 +163,17 @@ tropter::Iterate convert(const MucoIterate& mucoIter) {
     } else {
         tropIter.controls.resize(numControls, numTimes);
     }
-    if (numMultipliers) {
+    if (numAdjuncts) {
         tropIter.adjuncts = Map<const MatrixXd>(
-                &multipliers(0, 0), numTimes, numMultipliers).transpose();
+                &multipliers(0, 0), numTimes, numAdjuncts).transpose();
     } else {
-        tropIter.adjuncts.resize(numMultipliers, numTimes);
+        tropIter.adjuncts.resize(numAdjuncts, numTimes);
+    }
+    if (numIntersteps) {
+        tropIter.intersteps = Map<const MatrixXd>(
+            &gammas(0, 0), numTimes, numIntersteps).transpose();
+    } else {
+        tropIter.intersteps.resize(numIntersteps, numTimes);
     }
     if (numParameters) {
         tropIter.parameters = Map<const VectorXd>(
@@ -222,27 +243,23 @@ public:
             kinLevels = mc.getKinematicLevels();
 
             m_mpSum += mp;
-            // Only considering holonomic constraints for now.
-            // TODO if (get_enforce_holonomic_constraints_only()) {
-            OPENSIM_THROW_IF(mv != 0, Exception, "Only holonomic "
-                "(position-level) constraints are currently supported. "
-                "There are " + std::to_string(mv) + " velocity-level "
-                "scalar constraints associated with the model Constraint "
-                "at ConstraintIndex " + std::to_string(cid) + ".");
-            OPENSIM_THROW_IF(ma != 0, Exception, "Only holonomic "
-                "(position-level) constraints are currently supported. "
-                "There are " + std::to_string(ma) + " acceleration-level "
-                "scalar constraints associated with the model Constraint "
-                "at ConstraintIndex " + std::to_string(cid) + ".");         
-            // } else {
-            //   m_mvSum += mv;
-            //   m_maSum += ma;
-            // }
-
-            numEquationsEnforced = mp;
-            //TODO numEquationsEnforced = 
-            //    get_enforce_holonomic_constraints_only() 
-            //        ? mp : mcInfo.getNumEquations();
+            if (m_mucoTropterSolver.get_enforce_holonomic_constraints_only()) {
+                OPENSIM_THROW_IF(mv != 0, Exception, "Only holonomic "
+                    "(position-level) constraints are currently supported. "
+                    "There are " + std::to_string(mv) + " velocity-level "
+                    "scalar constraints associated with the model Constraint "
+                    "at ConstraintIndex " + std::to_string(cid) + ".");
+                OPENSIM_THROW_IF(ma != 0, Exception, "Only holonomic "
+                    "(position-level) constraints are currently supported. "
+                    "There are " + std::to_string(ma) + " acceleration-level "
+                    "scalar constraints associated with the model Constraint "
+                    "at ConstraintIndex " + std::to_string(cid) + ".");    
+                numEquationsEnforced = mp;
+            } else {
+                m_mvSum += mv;
+                m_maSum += ma;
+                numEquationsEnforced = mc.getConstraintInfo().getNumEquations();
+            }
 
             // Loop through all scalar constraints associated with the model 
             // constraint and corresponding path constraints to the optimal
@@ -270,6 +287,14 @@ public:
                                       convert(multInfo.getBounds()), 
                                       convert(multInfo.getInitialBounds()),
                                       convert(multInfo.getFinalBounds()));
+                    // Add velocity correction variables if enforcing
+                    // constraint equation derivatives.
+                    if (!m_mucoTropterSolver
+                         .get_enforce_holonomic_constraints_only()) {
+                        this->add_interstep(std::string(
+                                multInfo.getName()).replace(0, 6, "gamma"),
+                            convert(MucoBounds(-5, 5)));
+                    }
                     ++multIndexThisConstraint;
                 }
             }
@@ -322,6 +347,7 @@ public:
         const auto& states = in.states;
         const auto& controls = in.controls;
         const auto& adjuncts = in.adjuncts;
+        const auto& intersteps = in.intersteps;
 
         m_state.setTime(in.time);
         std::copy_n(states.data(), states.size(), &m_state.updY()[0]);
@@ -340,7 +366,7 @@ public:
 
         // If enabled constraints exist in the model, compute accelerations
         // based on Lagrange multipliers.
-        if (m_numMultibodyConstraintEqs && (out.path.size() != 0)) {
+        if (m_numMultibodyConstraintEqs) {
             // TODO Antoine and Gil said realizing Dynamics is a lot costlier than
             // realizing to Velocity and computing forces manually.
             m_model.realizeDynamics(m_state);
@@ -358,8 +384,7 @@ public:
             SimTK::Vector constraintMobilityForces;
             // Multipliers are negated so constraint forces can be used like 
             // applied forces.
-            SimTK::Vector multipliers(m_numMultibodyConstraintEqs, 
-                adjuncts.data());
+            SimTK::Vector multipliers((int)adjuncts.size(), adjuncts.data());
             matter.calcConstraintForcesFromMultipliers(m_state, -multipliers,
                 constraintBodyForces, constraintMobilityForces);
 
@@ -368,20 +393,20 @@ public:
                 appliedMobilityForces + constraintMobilityForces,
                 appliedBodyForces + constraintBodyForces, udot, A_GB);
            
-            // Constraint errors.
-            // TODO double-check that disabled constraints don't show up in
-            // state
-            std::copy(&m_state.getQErr()[0], 
-                &m_state.getQErr()[0] + m_mpSum,
-                out.path.data());
-            if (!get_enforce_holonomic_constraints_only()) {
-                std::copy(&m_state.getUErr()[0],
-                    &m_state.getUErr()[0] + m_mpSum + m_mvSum,
-                    out.path.data() + m_mpSum);
-                std::copy(&m_state.getUDotErr()[0],
-                    &m_state.getUDotErr()[0] + m_mpSum + m_mvSum + m_maSum,
-                    out.path.data() + 2*m_mpSum + m_mvSum);
-             }
+            // Apply velocity correction to QDot if at a mesh interval midpoint.
+            if (intersteps.size() != 0) {
+                SimTK::Vector gamma((int)intersteps.size(), intersteps.data());
+                SimTK::Vector qdotCorr;
+                //SimTK::Matrix G;
+                //matter.calcG(m_state, G);
+                //SimTK::FactorSVD m(G);
+                //std::cout << "Jacobian rank: " << m.getRank() << std::endl;
+                //std::cout << G << std::endl;
+                matter.multiplyByGTranspose(m_state, gamma, qdotCorr);
+                //std::cout << gamma << std::endl;
+                //std::cout << qdotCorr << std::endl;
+                SimTK::Vector qdot = m_state.getQDot() + qdotCorr;
+            }
 
             // Copy state derivative values to output struct. We cannot simply
             // use getYDot() because that requires realizing to Acceleration.
@@ -405,11 +430,30 @@ public:
                     out.dynamics.data());
         }
 
+        // Constraint errors.
+        if (m_numMultibodyConstraintEqs && (out.path.size() != 0)) {
+            std::copy(&m_state.getQErr()[0],
+                &m_state.getQErr()[0] + m_mpSum,
+                out.path.data());
+            if (!m_mucoTropterSolver.get_enforce_holonomic_constraints_only()) {
+                std::copy(&m_state.getUErr()[0],
+                    &m_state.getUErr()[0] + m_mpSum + m_mvSum,
+                    out.path.data() + m_mpSum);
+                std::copy(&m_state.getUDotErr()[0],
+                    &m_state.getUDotErr()[0] + m_mpSum + m_mvSum + m_maSum,
+                    out.path.data() + 2 * m_mpSum + m_mvSum);
+            }
+        }
+
         // Copy errors from generic path constraints into output struct.
-        m_mucoProbRep.calcPathConstraintErrors(m_state, m_pathConstraintErrors);
-        std::copy(m_pathConstraintErrors.begin(),
-                  m_pathConstraintErrors.end(),
-                  out.path.data() + m_numMultibodyConstraintEqs);
+        if (out.path.size() != 0) {
+            m_mucoProbRep.calcPathConstraintErrors(m_state, 
+                m_pathConstraintErrors);
+            std::copy(m_pathConstraintErrors.begin(),
+                      m_pathConstraintErrors.end(),
+                      out.path.data() + m_numMultibodyConstraintEqs);
+        }
+        
     }
     
     void calc_integral_cost(const tropter::Input<T>& in, 
@@ -439,7 +483,7 @@ public:
 
         integrand = m_mucoProbRep.calcIntegralCost(m_state);
 
-        if (get_enforce_holonomic_constraints_only()) {
+        if (m_mucoTropterSolver.get_enforce_holonomic_constraints_only()) {
             // Add squared multiplers cost to integrand. Since we currently 
             // don't include the derivatives of the holonomic contraint 
             // equations as path constraints in the OCP, this term exists in 
@@ -476,8 +520,8 @@ private:
     // This does not count equations for derivatives of scalar holonomic 
     // constraints. 
     mutable int m_mpSum = 0;
-    // TODO mutable int m_mvSum = 0; (nonholonomic constraints)
-    // TODO mutable int m_maSum = 0; (acceleration-only constraints)
+    mutable int m_mvSum = 0; // (nonholonomic constraints)
+    mutable int m_maSum = 0; // (acceleration-only constraints)
 
     // The total number of scalar constraint equations associated with model 
     // multibody constraints that the solver is responsible for enforcing.

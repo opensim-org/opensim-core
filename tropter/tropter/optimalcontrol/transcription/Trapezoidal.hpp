@@ -508,33 +508,6 @@ std::vector<std::string> Trapezoidal<T>::get_constraint_names() const {
 }
 
 template<typename T>
-Iterate Trapezoidal<T>::
-interpolate_iterate(const Iterate& traj, int desired_num_columns) const {
-
-    if (traj.time.size() == desired_num_columns) return Iterate(traj);
-
-    assert(desired_num_columns > 0);
-    TROPTER_THROW_IF(!std::is_sorted(traj.time.data(), 
-        traj.time.data() + traj.time.size()),
-        "Expected time to be non-decreasing.");
-    TROPTER_THROW_IF(traj.intersteps.rows(),
-        "Trapezoidal collocation does not support interstep variables.");
-
-    Iterate out;
-    out.state_names = traj.state_names;
-    out.control_names = traj.control_names;
-    out.adjunct_names = traj.adjunct_names;
-    out.time = Eigen::RowVectorXd::LinSpaced(desired_num_columns,
-        traj.time[0], traj.time.tail<1>()[0]);
-
-    out.states = interp1(traj.time, traj.states, out.time);
-    out.controls = interp1(traj.time, traj.controls, out.time);
-    out.adjuncts = interp1(traj.time, traj.adjuncts, out.time);
-
-    return out;
-}
-
-template<typename T>
 Eigen::VectorXd Trapezoidal<T>::
 construct_iterate(const Iterate& traj, bool interpolate) const
 {
@@ -603,7 +576,7 @@ construct_iterate(const Iterate& traj, bool interpolate) const
     if (interpolate) {
         // TODO will actually need to provide the mesh spacing as well, when we
         // no longer have uniform mesh spacing.
-        traj_interp = interpolate_iterate(traj, m_num_mesh_points);
+        traj_interp = traj.interpolate(m_num_mesh_points);
         traj_to_use = &traj_interp;
     } else {
         traj_to_use = &traj;
