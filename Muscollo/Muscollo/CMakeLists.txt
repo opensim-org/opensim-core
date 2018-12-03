@@ -55,9 +55,11 @@ add_library(osimMuscollo SHARED
         Components/StationPlaneContactForce.cpp
         Components/ModelFactory.h
         Components/ModelFactory.cpp
+        MucoCasADiSolver/MucoCasADiSolver.h
+        MucoCasADiSolver/MucoCasADiSolver.cpp
         )
 target_link_libraries(osimMuscollo PUBLIC osimActuators
-                                   PRIVATE tropter)
+                                   PRIVATE tropter casadi)
 
 target_include_directories(osimMuscollo INTERFACE
         $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/Muscollo>

@@ -263,7 +263,6 @@ public:
         }
         opt.minimize(endpoint_cost.at(0) + integral);
         opt.disp(std::cout, true);
-        opt.
         opt.solver("ipopt", {}, {{"hessian_approximation", "limited-memory"}});
         try {
             auto casadiSolution = opt.solve();
@@ -347,7 +346,5 @@ int main() {
     MucoSolution solution = solver.solve();
     OpenSim::visualize(problem.getPhase().getModel(),
             solution.exportToStatesStorage());
-
-    std::cout << "DEBUG " << std::endl;
     return 0;
 }
