@@ -107,6 +107,13 @@ public:
         (i.e. during subsequent calls to track()).*/
     int getNumMarkersInUse() const;
 
+    /** Return the number of orientation sensors used to solve for model
+    coordinates. It is a count of the number of orientation sensors that
+    intersect the reference orientations and model reference frames with
+    the same name. This number is guaranteed not to change after assemble()
+    is called (i.e. during subsequent calls to track()).*/
+    int getNumOSenorsInUse() const;
+
     /** Change the weighting of a marker, given the marker's name. Takes effect
         when assemble() or track() is called next. */
     void updateMarkerWeight(const std::string &markerName, double value);
@@ -169,6 +176,33 @@ public:
         name for an index in the list of marker locations/errors returned by the
         solver. */
     std::string getMarkerNameForIndex(int markerIndex) const;
+
+    /** Compute and return an orientation sensor's spatial orientation in the
+    ground frame, given the o-sensor's name. */
+    SimTK::Rotation computeCurrentOSensorOrientation(const std::string& osensorName);
+    /** Compute and return an orientation sensor's spatial orientation in the
+    ground frame, given the o-sensor's index. */
+    SimTK::Rotation computeCurrentOSensorOrientation(int osensorIndex);
+    /** Compute and return the spatial orientations of all o-sensors, expressed in
+    the ground frame. */
+    void computecomputeCurrentOSensorOrientations(
+        SimTK::Array_<SimTK::Rotation>& osensorOrientations);
+
+    /** Compute and return the orientation error between the model orientation
+    sensor and its observation, given the o-sensor's name. */
+    double computeCurrentOSensorError(const std::string& osensorName);
+    /** Compute and return the orientation error between the model orientation
+    sensor and its observation, given the o-sensor's index. */
+    double computeCurrentOSensorError(int osensorIndex);
+    /** Compute all the orientation errors between the model orientation
+    sensors and their observations. */
+    void computeCurrentOSensorErrors(SimTK::Array_<double>& osensorErrors);
+
+    /** Orientation sensor locations and errors may be computed in an order that
+    may be different from tasks file or listed in the model. Return the 
+    corresponding o-sensor name for an index in the list of orientations returned
+    by the solver. */
+    std::string getOSensorNameForIndex(int osensorIndex) const;
 
 protected:
     /** Override to include point of interest matching (Marker tracking)
