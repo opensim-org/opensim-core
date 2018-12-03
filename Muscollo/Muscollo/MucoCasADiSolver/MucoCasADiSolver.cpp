@@ -32,7 +32,7 @@ public:
         construct(name, opts);
     }
     ~EndpointCost() override {}
-    casadi_int get_n_in() override { return 1 + p.getNumStates(); }
+    casadi_int get_n_in() override { return 2; }
     casadi_int get_n_out() override { return 1;}
     void init() override {
         std::cout << "initializing object endpointCost" << std::endl;
@@ -41,7 +41,13 @@ public:
         // TODO fix when using a matrix as input for states.
         // TODO detect this sparsity.
         if (i == 0) return Sparsity::scalar();
-        else return Sparsity(1, 1);
+        else if (i == 1) return Sparsity::dense(p.getNumStates(), 1);
+        else return Sparsity(0, 0);
+    }
+    Sparsity get_sparsity_out(casadi_int i) override {
+        // TODO fix when we have an actual integral cost!
+        if (i == 0) return Sparsity::scalar();
+        else return Sparsity(0, 0);
     }
 
     // Evaluate numerically
@@ -50,7 +56,7 @@ public:
         auto state = p.getModel().getWorkingState();
         state.setTime(time);
         for (int i = 0; i < state.getNY(); ++i) {
-            state.updY()[i] = double(arg.at(1 + i));
+            state.updY()[i] = double(arg.at(1)(i));
         }
         // TODO parameters.
         DM cost = p.calcEndpointCost(state);
@@ -68,12 +74,22 @@ public:
         construct(name, opts);
     }
     ~IntegrandCost() override {}
-    casadi_int get_n_in() override { return 1 + p.getNumStates() + p.getNumControls(); }
+    casadi_int get_n_in() override { return 3; /*1 + p.getNumStates() + p.getNumControls()*/; }
     casadi_int get_n_out() override { return 1;}
     void init() override {
         std::cout << "initializing object" << std::endl;
     }
-
+    Sparsity get_sparsity_in(casadi_int i) override {
+        if (i == 0) {
+            return Sparsity::dense(1, 1);
+        } else if (i == 1) {
+            return Sparsity::dense(p.getNumStates(), 1);
+        } else if (i == 2) {
+            return Sparsity::dense(p.getNumControls(), 1);
+        } else {
+            return Sparsity(0, 0);
+        }
+    }
     Sparsity get_sparsity_out(casadi_int i) override {
         // TODO fix when we have an actual integral cost!
         if (i == 0) return Sparsity(1, 1);
@@ -85,11 +101,11 @@ public:
         auto state = p.getModel().getWorkingState();
         state.setTime(time);
         for (int i = 0; i < state.getNY(); ++i) {
-            state.updY()[i] = double(arg.at(1 + i)); // (i));
+            state.updY()[i] = double(arg.at(1)(i));
         }
         auto& controls = p.getModel().updControls(state);
         for (int i = 0; i < controls.size(); ++i) {
-            controls[i] = double(arg.at(1 + state.getNY() + i)); // 2)(i));
+            controls[i] = double(arg.at(2)(i));
         }
         return {p.calcIntegralCost(state)};
     }
@@ -104,8 +120,23 @@ public:
         construct(name, opts);
     }
     ~DynamicsFunc() override {}
-    casadi_int get_n_in() override { return p.getNumStates() + p.getNumControls() + 1; }
-    casadi_int get_n_out() override { return p.getNumStates();}
+    casadi_int get_n_in() override { return 3; }
+    casadi_int get_n_out() override { return 1; }
+    Sparsity get_sparsity_in(casadi_int i) override {
+        if (i == 0) {
+            return Sparsity::dense(1, 1);
+        } else if (i == 1) {
+            return Sparsity::dense(p.getNumStates(), 1);
+        } else if (i == 2) {
+            return Sparsity::dense(p.getNumControls(), 1);
+        } else {
+            return Sparsity(0, 0);
+        }
+    }
+    Sparsity get_sparsity_out(casadi_int i) override {
+        if (i == 0) return Sparsity::dense(p.getNumStates(), 1);
+        else return Sparsity(0, 0);
+    }
     void init() override {
         std::cout << "initializing object" << std::endl;
     }
@@ -116,21 +147,20 @@ public:
         auto state = p.getModel().getWorkingState();
         state.setTime(time);
         for (int i = 0; i < state.getNY(); ++i) {
-            state.updY()[i] = double(arg.at(1 + i)); // (i));
+            state.updY()[i] = double(arg.at(1)(i));
         }
         auto& controls = p.getModel().updControls(state);
         for (int i = 0; i < controls.size(); ++i) {
-            controls[i] = double(arg.at(1 + state.getNY() + i)); // 2)(i));
+            controls[i] = double(arg.at(2)(i));
         }
         p.getModel().realizeVelocity(state);
         p.getModel().setControls(state, controls);
         p.getModel().realizeAcceleration(state);
-        //DM deriv(state.getNY(), 1);
-        std::vector<DM> deriv(state.getNY());
+        DM deriv(state.getNY(), 1);
         for (int i = 0; i < state.getNY(); ++i) {
-            deriv[i] = state.getYDot()[i];
+            deriv(i, 0) = state.getYDot()[i];
         }
-        return deriv;
+        return {deriv};
     }
 private:
     const MucoProblemRep& p;
@@ -213,19 +243,12 @@ MucoSolution MucoCasADiSolver::solveImpl() const {
 
     // Defects.
 
-    std::vector<MX> dynArgs;
-    dynArgs.push_back(tf);
-    for (int istate = 0; istate < numStates; ++istate) {
-        dynArgs.push_back(states(istate, 0));
-    }
-    for (int icontrol = 0; icontrol < numControls; ++icontrol) {
-        dynArgs.push_back(controls(icontrol, 0));
-    }
-    auto xdot_im1 = dynamics(dynArgs);
+    MX xdot_im1 = dynamics({0, states(Slice(), 0), controls(Slice(), 0)}).at(0);
     for (int itime = 1; itime < N; ++itime) {
         const auto t = itime * h;
         auto x_i = states(Slice(), itime);
         auto x_im1 = states(Slice(), itime - 1);
+        /*
         // dynArgs = std::vector<MX>{t, states(Slice(), itime), controls(Slice(), itime)};
         dynArgs.clear();
         dynArgs.push_back(tf);
@@ -235,25 +258,19 @@ MucoSolution MucoCasADiSolver::solveImpl() const {
         for (int icontrol = 0; icontrol < numControls; ++icontrol) {
             dynArgs.push_back(controls(icontrol, itime));
         }
-        auto xdot_i = dynamics(dynArgs);
+        */
+        MX xdot_i = dynamics({t, states(Slice(), itime), controls(Slice(), itime)}).at(0);
         //std::cout << "DEBUG dyn " << OpenSim::format("%i %i", xdot_i.rows(), xdot_i.columns()) << std::endl;
-        for (int istate = 0; istate < numStates; ++istate) {
-            opt.subject_to(x_i(istate) == (x_im1(istate) + 0.5 * h * (xdot_i.at(istate) + xdot_im1.at(istate))));
-        }
+        // for (int istate = 0; istate < numStates; ++istate) {
+        //     opt.subject_to(x_i(istate) == (x_im1(istate) + 0.5 * h * (xdot_i.at(istate) + xdot_im1.at(istate))));
+        // }
+        opt.subject_to(x_i == (x_im1 + 0.5 * h * (xdot_i + xdot_im1)));
         xdot_im1 = xdot_i;
     }
 
     EndpointCost endpoint_cost_function("endpoint_cost", rep, {{"enable_fd", true}});
 
-    std::vector<MX> args;
-    args.push_back(tf);
-    for (int i = 0; i < numStates; ++i) {
-        args.push_back(states(i, N-1));
-    }
-    // TODO args.push_back(states(Slice(), -1));
-
-
-    auto endpoint_cost = endpoint_cost_function(args);
+    auto endpoint_cost = endpoint_cost_function({tf, states(Slice(), -1)});
 
     MX mesh = MX::linspace(0, tf, N);
     MX meshIntervals = mesh(Slice(1)) - mesh(Slice(0, -2));
@@ -265,16 +282,7 @@ MucoSolution MucoCasADiSolver::solveImpl() const {
     MX integral = opt.variable();
     integral = 0;
     for (int i = 0; i < N; ++i) {
-        std::vector<MX> args;
-        args.push_back(i * h);
-        for (int istate = 0; istate < numStates; ++istate) {
-            args.push_back(states(istate, i));
-        }
-        for (int icontrol = 0; icontrol < numControls; ++icontrol) {
-            args.push_back(controls(icontrol, i));
-        }
-        //const auto out = integrand_cost({i * h, states(Slice(), i), controls(Slice(), i)});
-        const auto out = integrand_cost(args);
+        const auto out = integrand_cost({i * h, states(Slice(), i), controls(Slice(), i)});
         integral += trapezoidalQuadCoeffs(i) * out.at(0);
     }
     opt.minimize(endpoint_cost.at(0) + integral);
@@ -304,8 +312,9 @@ MucoSolution MucoCasADiSolver::solveImpl() const {
                 simtkStates, simtkControls, {}, {});
         return mucoSolution;
 
-
-    } catch (...) {}
+    } catch (const std::exception& e) {
+        std::cout << "Error: " << e.what() << std::endl;
+    }
     DM statesValues = opt.debug().value(states);
     std::cout << "DEBUG states values " << statesValues << std::endl;
     DM controlValues = opt.debug().value(controls);
