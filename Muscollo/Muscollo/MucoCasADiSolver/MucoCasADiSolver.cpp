@@ -198,16 +198,16 @@ struct CasADiVariables {
 class MucoCasADiSolverImpl {
 public:
     MucoSolution solve() {
-        opt.solver("ipopt", {}, {{"hessian_approximation", "limited-memory"}});
-        auto casadiSolution = opt.solve();
-        const auto statesValue = opt.value(m_vars.states);
+        m_opti.solver("ipopt", {}, {{"hessian_approximation", "limited-memory"}});
+        auto casadiSolution = m_opti.solve();
+        const auto statesValue = m_opti.value(m_vars.states);
         SimTK::Matrix simtkStates(m_numTimes, m_numStates);
         for (int istate = 0; istate < m_numStates; ++istate) {
             for (int itime = 0; itime < m_numTimes; ++itime) {
                 simtkStates(itime, istate) = double(statesValue(istate, itime));
             }
         }
-        const auto controlsValue = opt.value(m_vars.controls);
+        const auto controlsValue = m_opti.value(m_vars.controls);
         SimTK::Matrix simtkControls(m_numTimes, m_numControls);
         for (int icontrol = 0; icontrol < m_numControls; ++icontrol) {
             for (int itime = 0; itime < m_numTimes; ++itime) {
@@ -216,7 +216,7 @@ public:
             }
         }
 
-        const auto timesValue = opt.value(m_times);
+        const auto timesValue = m_opti.value(m_times);
         SimTK::Vector simtkTimes(m_numTimes);
         for (int itime = 0; itime < m_numTimes; ++itime) {
             simtkTimes[itime] = double(timesValue(itime, 0));
@@ -228,14 +228,14 @@ public:
     }
     void setVariableBounds(const MX& variable, const MucoBounds& bounds) {
         if (bounds.isSet()) {
-            opt.subject_to(bounds.getLower() <= variable <= bounds.getUpper());
+            m_opti.subject_to(bounds.getLower() <= variable <= bounds.getUpper());
         }
     }
     MucoCasADiSolverImpl(const MucoCasADiSolver& solver)
             : m_solver(solver) {
         const MucoProblemRep& rep = m_solver.getProblemRep();
 
-        opt = casadi::Opti();
+        m_opti = casadi::Opti();
 
         m_numTimes = 20;
 
@@ -254,8 +254,8 @@ public:
             return count;
         }();
 
-        m_vars.initialTime = opt.variable();
-        m_vars.finalTime = opt.variable();
+        m_vars.initialTime = m_opti.variable();
+        m_vars.finalTime = m_opti.variable();
         MX duration = m_vars.finalTime - m_vars.initialTime;
         MX mesh = MX::linspace(0, 1, m_numTimes);
         m_times = duration * MX::linspace(0, 1, m_numTimes) +
@@ -265,7 +265,7 @@ public:
         setVariableBounds(m_vars.initialTime, rep.getTimeInitialBounds());
         setVariableBounds(m_vars.finalTime, rep.getTimeFinalBounds());
 
-        m_vars.states = opt.variable(m_numStates, m_numTimes);
+        m_vars.states = m_opti.variable(m_numStates, m_numTimes);
         for (int is = 0; is < m_numStates; ++is) {
             const auto& info = rep.getStateInfo(m_stateNames[is]);
             const auto& bounds = info.getBounds();
@@ -279,7 +279,7 @@ public:
             setVariableBounds(m_vars.states(is, -1), finalBounds);
         }
 
-        m_vars.controls = opt.variable(m_numControls, m_numTimes);
+        m_vars.controls = m_opti.variable(m_numControls, m_numTimes);
         int ic = 0;
         for (const auto& actuator : model.getComponentList<Actuator>()) {
             const auto actuPath = actuator.getAbsolutePathString();
@@ -309,7 +309,7 @@ public:
                     {t,
                      m_vars.states(Slice(), itime),
                      m_vars.controls(Slice(), itime)}).at(0);
-            opt.subject_to(x_i == (x_im1 + 0.5 * h * (xdot_i + xdot_im1)));
+            m_opti.subject_to(x_i == (x_im1 + 0.5 * h * (xdot_i + xdot_im1)));
             xdot_im1 = xdot_i;
         }
 
@@ -325,7 +325,7 @@ public:
         trapezoidalQuadCoeffs(Slice(1, -1)) += 0.5 * meshIntervals;
 
         m_integrandCostFunction = make_unique<IntegrandCost>("integrand", rep);
-        MX integral_cost = opt.variable();
+        MX integral_cost = m_opti.variable();
         integral_cost = 0;
         for (int i = 0; i < m_numTimes; ++i) {
             const auto out = m_integrandCostFunction->operator()(
@@ -335,18 +335,18 @@ public:
             integral_cost += trapezoidalQuadCoeffs(i) * out.at(0);
         }
         integral_cost *= duration;
-        opt.minimize(endpoint_cost + integral_cost);
+        m_opti.minimize(endpoint_cost + integral_cost);
 
     }
 private:
     void createVariables() {
-        m_vars.initialTime = opt.variable();
-        m_vars.finalTime = opt.variable();
-        m_vars.states = opt.variable(m_numStates, m_numTimes);
-        m_vars.controls = opt.variable(m_numControls, m_numTimes);
+        m_vars.initialTime = m_opti.variable();
+        m_vars.finalTime = m_opti.variable();
+        m_vars.states = m_opti.variable(m_numStates, m_numTimes);
+        m_vars.controls = m_opti.variable(m_numControls, m_numTimes);
     }
     const MucoCasADiSolver& m_solver;
-    casadi::Opti opt; // TODO rename
+    casadi::Opti m_opti;
     CasADiVariables m_vars;
     std::vector<std::string> m_stateNames;
     std::vector<std::string> m_controlNames;
