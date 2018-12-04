@@ -30,8 +30,6 @@ class OSIMMUSCOLLO_API MucoCasADiSolver : public MucoSolver {
     OpenSim_DECLARE_CONCRETE_OBJECT(MucoCasADiSolver, MucoSolver);
 public:
     void resetProblemImpl(const MucoProblemRep&) const override {}
-    // TODO: Remove this function.
-    MucoSolution solve() const { return Super::solve(); }
     MucoSolution solveImpl() const override;
 };
 

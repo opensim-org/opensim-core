@@ -27,6 +27,7 @@ namespace OpenSim {
 
 class MucoProblem;
 class MucoTropterSolver;
+class MucoCasADiSolver;
 
 /// The top-level class for solving a custom optimal control problem.
 ///
@@ -57,8 +58,12 @@ class MucoTropterSolver;
 ///
 /// Solver
 /// ------
-/// The default and only built-in solver uses the **tropter** direct
-/// collocation library. We would like to support users plugging in their own
+/// The default solver uses the **tropter** direct
+/// collocation library. We also provide the **CasADi** solver, which
+/// depends on the **CasADi** automatic differentiation and optimization library.
+/// If you want to use CasADi programmatically, call initCasADiSolver() before
+/// solve().
+/// We would like to support users plugging in their own
 /// solvers, but there is no timeline for this. If you require additional
 /// features or enhancements to the solver, please consider contributing to
 /// **tropter**.
@@ -90,7 +95,11 @@ public:
     /// If using this method in C++, make sure to include the "&" in the
     /// return type; otherwise, you'll make a copy of the solver, and the copy
     /// will have no effect on this MucoTool.
-    MucoTropterSolver& initSolver();
+    MucoTropterSolver& initTropterSolver();
+
+    // TODO document
+    /// This returns a fresh MucoCasADiSolver and deletes the previous solver.
+    MucoCasADiSolver& initCasADiSolver();
 
     /// Access the solver. Make sure to call `initSolver()` beforehand.
     /// If using this method in C++, make sure to include the "&" in the
@@ -104,9 +113,8 @@ public:
     /// also written to disk.
     /// @precondition
     ///     You must have finished setting up both the problem and solver.
-    /// If you have not yet called initSolver(), or if you modified the problem
-    /// after calling initSolver(), then solve() will first call initSolver().
-    /// This can be called multiple times.
+    /// This reinitializes the solver so that any changes you have made will
+    /// hold.
     MucoSolution solve() const;
 
     /// Interactively visualize an iterate using the simbody-visualizer. The
@@ -123,7 +131,9 @@ public:
     /// tested yet).
     /// @{
     template <typename SolverType>
-    void setCustomSolver();
+    void setCustomSolver() {
+        set_solver(SolverType());
+    }
 
     template <typename SolverType>
     SolverType& initCustomSolver() {

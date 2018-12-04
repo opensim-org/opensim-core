@@ -18,6 +18,7 @@
 #include "MucoTool.h"
 #include "MucoProblem.h"
 #include "MucoTropterSolver.h"
+#include "MucoCasADiSolver/MucoCasADiSolver.h"
 #include "MuscolloUtilities.h"
 
 #include <OpenSim/Simulation/StatesTrajectory.h>
@@ -54,17 +55,18 @@ MucoSolver& MucoTool::initSolverInternal() {
     return upd_solver();
 }
 
-MucoTropterSolver& MucoTool::initSolver() {
+MucoTropterSolver& MucoTool::initTropterSolver() {
+    set_solver(MucoTropterSolver());
     return initCustomSolver<MucoTropterSolver>();
+}
+
+MucoCasADiSolver& MucoTool::initCasADiSolver() {
+    set_solver(MucoCasADiSolver());
+    return initCustomSolver<MucoCasADiSolver>();
 }
 
 MucoTropterSolver& MucoTool::updSolver() {
     return updCustomSolver<MucoTropterSolver>();
-}
-
-template <typename SolverType>
-void MucoTool::setCustomSolver() {
-    set_solver(SolverType());
 }
 
 MucoSolution MucoTool::solve() const {

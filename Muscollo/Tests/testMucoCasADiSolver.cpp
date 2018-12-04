@@ -33,7 +33,8 @@ std::unique_ptr<Model> createSlidingMassModel() {
 }
 
 int main() {
-    MucoProblem problem;
+    MucoTool muco;
+    auto& problem = muco.updProblem();
     problem.setModel(createSlidingMassModel());
     problem.setTimeBounds(MucoInitialBounds(0), MucoFinalBounds(0, 10));
     problem.setStateInfo("/slider/position/value", MucoBounds(0, 1),
@@ -42,10 +43,9 @@ int main() {
     problem.addCost<MucoFinalTimeCost>();
 
     // TODO: Fix the MucoTool interface for MucoCasADiSolver.
-    MucoCasADiSolver solver;
-    solver.resetProblem(problem);
-    MucoSolution solution = solver.solve();
-    OpenSim::visualize(problem.getPhase().getModel(),
-            solution.exportToStatesStorage());
+    muco.initCasADiSolver();
+    MucoSolution solution = muco.solve();
+
+    muco.visualize(solution);
     return 0;
 }
