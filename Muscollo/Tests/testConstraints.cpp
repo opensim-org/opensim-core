@@ -515,7 +515,7 @@ void testDoublePendulumPointOnLine() {
     markerCost->setReferenceLocation(Vec3(0, 1.7, 0));
 
     MucoTropterSolver& ms = muco.initSolver();
-    ms.set_num_mesh_points(10);
+    ms.set_num_mesh_points(15);
     ms.set_verbosity(2);
     ms.set_optim_solver("ipopt");
     ms.set_optim_convergence_tolerance(1e-3);

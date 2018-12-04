@@ -242,10 +242,10 @@ void HermiteSimpson<T>::set_ocproblem(
                 << states_lower, controls_lower, adjuncts_lower)
                 .finished()
                 .replicate(m_num_col_points - 2, 1),
+        final_states_lower, final_controls_lower, final_adjuncts_lower,
         (VectorXd(m_num_intersteps) << intersteps_lower)
                 .finished()
-                .replicate(m_num_mesh_points - 1, 1),
-        final_states_lower, final_controls_lower, final_adjuncts_lower;
+                .replicate(m_num_mesh_points - 1, 1);
     VectorXd variable_upper(num_variables);
     variable_upper <<
         initial_time_upper, final_time_upper, parameters_upper,
@@ -255,10 +255,10 @@ void HermiteSimpson<T>::set_ocproblem(
                 << states_upper, controls_upper, adjuncts_upper)
                 .finished()
                 .replicate(m_num_col_points - 2, 1),
+        final_states_upper, final_controls_upper, final_adjuncts_upper,
         (VectorXd(m_num_intersteps) << intersteps_upper)
                 .finished()
-                .replicate(m_num_mesh_points - 1, 1),
-        final_states_upper, final_controls_upper, final_adjuncts_upper;
+                .replicate(m_num_mesh_points - 1, 1);
     this->set_variable_bounds(variable_lower, variable_upper);
     // Bounds for constraints.
     VectorXd constraint_lower(num_constraints);
@@ -397,6 +397,9 @@ void HermiteSimpson<T>::calc_constraints(const VectorX<T>& x,
     auto controls = make_controls_trajectory_view(x);
     auto adjuncts = make_adjuncts_trajectory_view(x);
     auto intersteps = make_intersteps_trajectory_view(x);
+    //auto* last_x = x.data() + x.size();
+    //auto* last_i = intersteps.data() + intersteps.size();
+    //std::cout << (last_i == last_x) << std::endl;
     auto parameters = make_parameters_view(x);
 
     // Initialize on iterate.
@@ -580,7 +583,7 @@ Eigen::RowVectorXd HermiteSimpson<T>::
 get_interstep_times(const Eigen::RowVectorXd& time) const {
     
     Eigen::RowVectorXd interstep_times(m_num_mesh_points - 1);
-    for (int i = 1; i < time.size(); i += 2) {
+    for (int i = 1; i < time.size()-1; i += 2) {
         interstep_times[i] = time[i];
     }
    return interstep_times;
@@ -596,7 +599,7 @@ get_intersteps_with_nans(const Eigen::MatrixXd& intersteps_without_nans) const {
             std::numeric_limits<double>::quiet_NaN());
     
     int i_mid = 0;
-    for (int i_col = 1; i_col < m_num_col_points; i_col += 2) {
+    for (int i_col = 1; i_col < m_num_col_points-1; i_col += 2) {
         intersteps_with_nans.col(i_col) = intersteps_without_nans.col(i_mid);
         i_mid++;
     }
@@ -613,7 +616,7 @@ get_intersteps_without_nans(const Eigen::MatrixXd& intersteps_with_nans) const {
         m_num_mesh_points - 1);
 
     int i_mid = 0;
-    for (int i_col = 1; i_col < m_num_col_points; i_col += 2) {
+    for (int i_col = 1; i_col < m_num_col_points-1; i_col += 2) {
         intersteps_without_nans.col(i_mid) = intersteps_with_nans.col(i_col);
         i_mid++;
     }
@@ -1328,7 +1331,7 @@ HermiteSimpson<T>::make_intersteps_trajectory_view(VectorX<S>& x) const
     return{
             // Start of intersteps for first mesh interval.
             x.data() + m_num_dense_variables
-                + m_num_continuous_variables * m_num_col_points,
+                     + m_num_continuous_variables * m_num_col_points,
             m_num_intersteps,         // Number of rows.
             m_num_mesh_points - 1,    // Number of columns.
             // Distance between the start of each column.

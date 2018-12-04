@@ -18,6 +18,10 @@
 #include <tropter/Exception.hpp>
 
 #include <fstream>
+#include <iostream>
+
+// For interpolating.	
+#include <unsupported/Eigen/Splines>
 
 using namespace tropter;
 
@@ -191,7 +195,6 @@ MatrixXd interp1(const RowVectorXd& xin, const MatrixXd yin,
 
 Iterate 
 Iterate::interpolate(int desired_num_columns) const {
-
     if (time.size() == desired_num_columns) return *this;
 
     assert(desired_num_columns > 0);
@@ -204,11 +207,12 @@ Iterate::interpolate(int desired_num_columns) const {
     out.adjunct_names = adjunct_names;
     out.interstep_names = interstep_names;
     out.time = Eigen::RowVectorXd::LinSpaced(desired_num_columns,
-        time[0], time.tail<1>()[0]);
+                                             time[0], time.tail<1>()[0]);
 
     out.states = interp1(time, states, out.time);
     out.controls = interp1(time, controls, out.time);
     out.adjuncts = interp1(time, adjuncts, out.time);
+
     if (interstep_names.size()) {
         // Create interpolant for non-nan columns.
         MatrixXd intersteps_no_nans;
@@ -222,8 +226,9 @@ Iterate::interpolate(int desired_num_columns) const {
                 ++cols_no_nans;
             }
         }
-        out.intersteps = interp1(time_no_nans, intersteps_no_nans, out.time);
+
     }
+
 
     return out;
 }

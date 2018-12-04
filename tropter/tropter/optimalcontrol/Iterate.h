@@ -20,8 +20,6 @@
 
 #include <string>
 #include <vector>
-// For interpolating.
-#include <unsupported/Eigen/Splines>
 
 namespace tropter {
 

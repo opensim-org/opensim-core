@@ -246,6 +246,17 @@ private:
     mutable VectorX<T> m_integrand;
     mutable MatrixX<T> m_derivs_mesh;
     mutable MatrixX<T> m_derivs_mid;
+    // This empty vector is passed to calc_differential_algebraic_equations()
+    // for collocation points not on the mesh where we do not enforce path 
+    // constraints. If the user tries to write to it, an Eigen runtime assertion 
+    // will be violated. If the user tries to resize it, tropter will throw an 
+    // exception after exiting the function call.
+    mutable VectorX<T> m_empty_path_constraint_col;
+    // This empty vector is passed to calc_differential_algebraic_equations()
+    // for collocation points on the mesh where we do not have interstep
+    // variables. If the user tries to write to it, an Eigen runtime assertion 
+    // will be violated. 
+    mutable VectorX<T> m_empty_interstep_col;
 };
 
 } // namespace transcription
