@@ -399,8 +399,9 @@ public:
                 SimTK::Vector qdotCorr;
                 //SimTK::Matrix G;
                 //matter.calcG(m_state, G);
-                //SimTK::FactorSVD m(G);
-                //std::cout << "Jacobian rank: " << m.getRank() << std::endl;
+                //SimTK::FactorQTZ G_qtz;
+                //G_qtz.factor<SimTK::Real>(G);
+                //std::cout << "Jacobian rank: " << G_qtz.getRank() << std::endl;
                 //std::cout << G << std::endl;
                 matter.multiplyByGTranspose(m_state, gamma, qdotCorr);
                 //std::cout << gamma << std::endl;

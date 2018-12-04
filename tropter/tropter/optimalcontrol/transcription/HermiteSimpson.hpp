@@ -331,6 +331,17 @@ void HermiteSimpson<T>::calc_objective(const VectorX<T>& x, T& obj_value) const
     auto intersteps = make_intersteps_trajectory_view(x);
     auto parameters = make_parameters_view(x);
 
+    //std::cout << "states: " << std::endl;
+    //std::cout << states << std::endl;
+    //std::cout << "controls: " << std::endl;
+    //std::cout << controls << std::endl;
+    //std::cout << "adjuncts: " << std::endl;
+    //std::cout << adjuncts << std::endl;
+    //std::cout << "intersteps: " << std::endl;
+    //std::cout << intersteps << std::endl;
+    //std::cout << "parameters: " << std::endl;
+    //std::cout << parameters << std::endl;
+
     // Initialize on iterate.
     // ----------------------
     m_ocproblem->initialize_on_iterate(parameters);

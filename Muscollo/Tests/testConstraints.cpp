@@ -526,6 +526,18 @@ void testDoublePendulumPointOnLine() {
 
     MucoSolution solution = muco.solve();
     solution.write("testConstraints_testDoublePendulumPointOnLine.sto");
+
+    std::cout << "states: " << std::endl;
+    std::cout << solution.getStatesTrajectory() << std::endl;
+    std::cout << "controls: " << std::endl;
+    std::cout << solution.getControlsTrajectory() << std::endl;
+    std::cout << "adjuncts: " << std::endl;
+    std::cout << solution.getMultipliersTrajectory() << std::endl;
+    std::cout << "intersteps: " << std::endl;
+    std::cout << solution.getGammasTrajectory() << std::endl;
+    //std::cout << "parameters: " << std::endl;
+    //std::cout << parameters << std::endl;
+
     muco.visualize(solution);
 
     model->initSystem();

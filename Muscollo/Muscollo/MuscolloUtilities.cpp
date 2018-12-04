@@ -96,9 +96,12 @@ void OpenSim::visualize(Model model, Storage statesSto) {
     // A data rate of 300 Hz means we can maintain 30 fps down to
     // realTimeScale = 0.1. But if we have more than 20 seconds of data, then
     // we lower the data rate to avoid using too much memory.
+    std::cout << "duration: " << duration << std::endl;
     const double desiredNumStates = std::min(300 * duration, 300.0 * 20.0);
     const double dataRate = desiredNumStates / duration; // Hz
     const double frameRate = 30; // Hz.
+    std::cout << "desiredNumStates: " << desiredNumStates << std::endl;
+    std::cout << "dataRate: " << dataRate << std::endl;
 
     // Prepare data.
     // -------------
