@@ -24,6 +24,8 @@
 
 namespace OpenSim {
 
+class MucoCasADiSolverImpl;
+
 // TODO have a different class for each transcription scheme.
 // TODO need functions to convert between data types
 class OSIMMUSCOLLO_API MucoCasADiSolver : public MucoSolver {
@@ -31,6 +33,8 @@ class OSIMMUSCOLLO_API MucoCasADiSolver : public MucoSolver {
 public:
     void resetProblemImpl(const MucoProblemRep&) const override {}
     MucoSolution solveImpl() const override;
+
+    friend MucoCasADiSolverImpl;
 };
 
 } // namespace OpenSim
