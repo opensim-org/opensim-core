@@ -186,7 +186,7 @@ void testMucoControlCost() {
 
 int main() {
     SimTK_START_TEST("testMucoCosts");
-        // TODO SimTK_SUBTEST(testMucoControlCost<MucoTropterSolver>);
+        SimTK_SUBTEST(testMucoControlCost<MucoTropterSolver>);
         SimTK_SUBTEST(testMucoControlCost<MucoCasADiSolver>);
     SimTK_END_TEST();
 }
