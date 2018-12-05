@@ -24,17 +24,18 @@
 
 namespace OpenSim {
 
-class MucoCasADiSolverImpl;
-
 // TODO have a different class for each transcription scheme.
 // TODO need functions to convert between data types
 class OSIMMUSCOLLO_API MucoCasADiSolver : public MucoSolver {
     OpenSim_DECLARE_CONCRETE_OBJECT(MucoCasADiSolver, MucoSolver);
 public:
+    OpenSim_DECLARE_PROPERTY(num_mesh_points, int,
+    "The number of mesh points for discretizing the problem (default: 100).");
+    MucoCasADiSolver();
+private:
+    void constructProperties();
     void resetProblemImpl(const MucoProblemRep&) const override {}
     MucoSolution solveImpl() const override;
-
-    friend MucoCasADiSolverImpl;
 };
 
 } // namespace OpenSim

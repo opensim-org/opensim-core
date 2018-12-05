@@ -105,7 +105,7 @@ public:
     /// If using this method in C++, make sure to include the "&" in the
     /// return type; otherwise, you'll make a copy of the solver, and the copy
     /// will have no effect on this MucoTool.
-    MucoTropterSolver& updSolver();
+    MucoSolver& updSolver();
 
     /// Solve the provided MucoProblem using the provided MucoSolver, and
     /// obtain the solution to the problem. If the write_solution property
@@ -126,22 +126,22 @@ public:
     // know aobut MucoIterate?
     void visualize(const MucoIterate& it) const;
 
-    /// @name Using solvers other than MucoTropterSolver
-    /// In the future, we hope to support custom solvers (but it's not
-    /// tested yet).
+    /// @name Using other solvers
     /// @{
     template <typename SolverType>
     void setCustomSolver() {
         set_solver(SolverType());
     }
 
+    /// @precondition If not using MucoTropterSolver or MucoCasADiSolver, you
+    /// must invoke setCustomSolver() first.
     template <typename SolverType>
-    SolverType& initCustomSolver() {
+    SolverType& initSolver() {
         return dynamic_cast<SolverType&>(initSolverInternal());
     }
 
     template <typename SolverType>
-    SolverType& updCustomSolver() {
+    SolverType& updSolver() {
         return dynamic_cast<SolverType&>(upd_solver());
     }
     /// @}
@@ -158,6 +158,12 @@ private:
     MucoSolver& initSolverInternal();
     void constructProperties();
 };
+
+template <>
+MucoTropterSolver& MucoTool::initSolver<MucoTropterSolver>();
+
+template <>
+MucoCasADiSolver& MucoTool::initSolver<MucoCasADiSolver>();
 
 } // namespace OpenSim
 

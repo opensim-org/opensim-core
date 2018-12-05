@@ -42,8 +42,8 @@ int main() {
     problem.setStateInfo("/slider/position/speed", {-100, 100}, 0, 0);
     problem.addCost<MucoFinalTimeCost>();
 
-    // TODO: Fix the MucoTool interface for MucoCasADiSolver.
-    muco.initCasADiSolver();
+    auto& solver = muco.initCasADiSolver();
+    solver.set_num_mesh_points(20);
     MucoSolution solution = muco.solve();
 
     muco.visualize(solution);

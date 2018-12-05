@@ -35,8 +35,9 @@
 #include "MucoParameter.h"
 #include "ActivationCoordinateActuator.h"
 
-#include "Components/StationPlaneContactForce.h"
+#include "MucoCasADiSolver/MucoCasADiSolver.h"
 
+#include "Components/StationPlaneContactForce.h"
 
 // TODO: Move to osimSimulation.
 #include <OpenSim/Simulation/MarkersReference.h>
@@ -67,6 +68,8 @@ OSIMMUSCOLLO_API void RegisterTypes_osimMuscollo() {
         Object::registerType(MucoTool());
         Object::registerType(MucoTropterSolver());
         Object::registerType(MucoParameter());
+
+        Object::registerType(MucoCasADiSolver());
 
         Object::registerType(ActivationCoordinateActuator());
         Object::registerType(GlobalStaticOptimization());

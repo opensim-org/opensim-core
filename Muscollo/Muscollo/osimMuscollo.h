@@ -38,6 +38,8 @@
 #include "Components/StationPlaneContactForce.h"
 #include "Components/ModelFactory.h"
 
+#include "MucoCasADiSolver/MucoCasADiSolver.h"
+
 #include "RegisterTypes_osimMuscollo.h"
 
 #endif // MUSCOLLO_OSIMMUSCOLLO_H

@@ -45,6 +45,7 @@ std::unique_ptr<Model> createSlidingMassModel() {
 }
 
 /// Test the result of a sliding mass minimum effort problem.
+template <typename SolverType>
 void testMucoControlCost() {
     int N = 10;
     MucoSolution sol1;
@@ -60,7 +61,7 @@ void testMucoControlCost() {
 
         mp.addCost<MucoControlCost>();
 
-        MucoTropterSolver& ms = muco.initSolver();
+        auto& ms = muco.initSolver<SolverType>();
         ms.set_num_mesh_points(N);
 
         sol1 = muco.solve();
@@ -74,7 +75,8 @@ void testMucoControlCost() {
                 -sol1.getControl("/actuator").getElt(N-1, 0), 1e-5);
 
         // Minimum effort solution takes as long as possible.
-        SimTK_TEST_EQ(sol1.getTime().getElt(N-1, 0), 5);
+        SimTK_TEST_EQ_TOL(sol1.getTime().getElt(N-1, 0), 5, 1e-7);
+
     }
 
     // TODO test that we can ignore specific actuators.
@@ -141,7 +143,7 @@ void testMucoControlCost() {
         auto effort = mp.addCost<MucoControlCost>();
         effort->setWeight("actuator2", 2.0);
 
-        MucoTropterSolver& ms = muco.initSolver();
+        auto& ms = muco.initSolver<SolverType>();
         ms.set_num_mesh_points(N);
 
         sol2 = muco.solve();
@@ -184,6 +186,7 @@ void testMucoControlCost() {
 
 int main() {
     SimTK_START_TEST("testMucoCosts");
-        SimTK_SUBTEST(testMucoControlCost);
+        // TODO SimTK_SUBTEST(testMucoControlCost<MucoTropterSolver>);
+        SimTK_SUBTEST(testMucoControlCost<MucoCasADiSolver>);
     SimTK_END_TEST();
 }

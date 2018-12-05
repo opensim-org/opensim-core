@@ -24,7 +24,7 @@ endfunction()
 
 MuscolloAddTest(NAME testMuscolloInterface)
 
-MuscolloAddTest(NAME testMucoCasAdiSolver)
+MuscolloAddTest(NAME testMucoCasADiSolver)
 
 MuscolloAddTest(NAME testMucoCosts)
 

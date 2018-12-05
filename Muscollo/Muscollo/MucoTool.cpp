@@ -55,18 +55,29 @@ MucoSolver& MucoTool::initSolverInternal() {
     return upd_solver();
 }
 
+template <>
+MucoTropterSolver& MucoTool::initSolver<MucoTropterSolver>() {
+    set_solver(MucoTropterSolver());
+    return dynamic_cast<MucoTropterSolver&>(initSolverInternal());
+}
+
+template <>
+MucoCasADiSolver& MucoTool::initSolver<MucoCasADiSolver>() {
+    set_solver(MucoCasADiSolver());
+    return dynamic_cast<MucoCasADiSolver&>(initSolverInternal());
+}
+
 MucoTropterSolver& MucoTool::initTropterSolver() {
     set_solver(MucoTropterSolver());
-    return initCustomSolver<MucoTropterSolver>();
+    return initSolver<MucoTropterSolver>();
 }
 
 MucoCasADiSolver& MucoTool::initCasADiSolver() {
-    set_solver(MucoCasADiSolver());
-    return initCustomSolver<MucoCasADiSolver>();
+    return initSolver<MucoCasADiSolver>();
 }
 
-MucoTropterSolver& MucoTool::updSolver() {
-    return updCustomSolver<MucoTropterSolver>();
+MucoSolver& MucoTool::updSolver() {
+    return updSolver<MucoSolver>();
 }
 
 MucoSolution MucoTool::solve() const {

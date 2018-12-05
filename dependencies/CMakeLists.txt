@@ -231,6 +231,10 @@ if (WIN32)
     endif()
 else()
 
+    if(NOT XCODE)
+        set(BUILD_FLAGS "-j4")
+    endif()
+
     if(SUPERBUILD_adolc)
         # TODO copy source code into dependencies dir. OR make clean.
         # TODO rename to adol-c
@@ -252,7 +256,7 @@ else()
                 COMMAND <SOURCE_DIR>/configure --prefix=<INSTALL_DIR>
                                                --enable-sparse
                                                --with-colpack=${CMAKE_INSTALL_PREFIX}/colpack
-            BUILD_COMMAND ${CMAKE_MAKE_PROGRAM} -j4
+            BUILD_COMMAND ${CMAKE_MAKE_PROGRAM} ${BUILD_FLAGS}
             INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install)
     endif()
 
@@ -268,7 +272,7 @@ else()
             PATCH_COMMAND cd <SOURCE_DIR>/ThirdParty/Metis && ./get.Metis
                   COMMAND cd <SOURCE_DIR>/ThirdParty/Mumps && ./get.Mumps
             CONFIGURE_COMMAND <SOURCE_DIR>/configure --prefix=<INSTALL_DIR>
-            BUILD_COMMAND ${CMAKE_MAKE_PROGRAM} -j4
+            BUILD_COMMAND ${CMAKE_MAKE_PROGRAM} ${BUILD_FLAGS}
             INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install)
     endif()
 

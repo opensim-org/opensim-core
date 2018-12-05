@@ -1,4 +1,4 @@
-/* -------------------------------------------------------------------------- *
+#include "MucoCasADiSolver.h"/* -------------------------------------------------------------------------- *
  * OpenSim Muscollo: MucoCasADiSolver.cpp                                     *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2017 Stanford University and the Authors                     *
@@ -22,8 +22,6 @@
 #include <casadi/casadi.hpp>
 
 // TODO
-// - put all the old impl stuff into Transcription, split out the
-//   code related to trapezoidal.
 // - solve testMucoCosts using CasADi.
 // - get all tests to pass using CasADi, adding in features as necessary.
 // - create separate tests for tropter and CasADi.
@@ -42,6 +40,8 @@ using casadi::Callback;
 using casadi::Dict;
 
 using namespace OpenSim;
+
+class CasADiTranscription;
 
 class EndpointCost : public Callback {
 public:
@@ -86,15 +86,16 @@ private:
 
 class IntegrandCost : public Callback {
 public:
-    IntegrandCost(const std::string& name, const MucoProblemRep& problem,
-            Dict opts=Dict()) : p(problem) {
+    IntegrandCost(const std::string& name,
+            const CasADiTranscription& transcrip,
+            const MucoProblemRep& problem,
+            Dict opts=Dict()) : m_transcrip(transcrip), p(problem) {
         opts["enable_fd"] = true;
         construct(name, opts);
     }
     ~IntegrandCost() override {}
     casadi_int get_n_in() override { return 3; }
-    casadi_int get_n_out() override { return 1;}
-    void init() override {}
+    casadi_int get_n_out() override { return 1; }
     Sparsity get_sparsity_in(casadi_int i) override {
         if (i == 0) {
             return Sparsity::dense(1, 1);
@@ -107,31 +108,21 @@ public:
         }
     }
     Sparsity get_sparsity_out(casadi_int i) override {
-        // TODO fix when we have an actual integral cost!
-        if (i == 0) return Sparsity(1, 1);
+        if (i == 0) return Sparsity::scalar();
         else return Sparsity(0, 0);
     }
-    std::vector<DM> eval(const std::vector<DM>& arg) const override {
-        double time = double(arg.at(0));
-        auto state = p.getModel().getWorkingState();
-        state.setTime(time);
-        for (int i = 0; i < state.getNY(); ++i) {
-            state.updY()[i] = double(arg.at(1)(i));
-        }
-        auto& controls = p.getModel().updControls(state);
-        for (int i = 0; i < controls.size(); ++i) {
-            controls[i] = double(arg.at(2)(i));
-        }
-        return {p.calcIntegralCost(state)};
-    }
+    std::vector<DM> eval(const std::vector<DM>& arg) const override;
 private:
+    const CasADiTranscription& m_transcrip;
     const MucoProblemRep& p;
 };
 
 class DynamicsFunction : public Callback {
 public:
-    DynamicsFunction(const std::string& name, const MucoProblemRep& problem,
-            Dict opts=Dict()) : p(problem) {
+    DynamicsFunction(const std::string& name,
+            const CasADiTranscription& transcrip,
+            const MucoProblemRep& problem,
+            Dict opts=Dict()) : m_transcrip(transcrip), p(problem) {
         opts["enable_fd"] = true;
         construct(name, opts);
     }
@@ -155,31 +146,11 @@ public:
     }
     void init() override {}
 
-    std::vector<DM> eval(const std::vector<DM>& arg) const override {
-        double time = double(arg.at(0));
-        auto state = p.getModel().getWorkingState();
-        state.setTime(time);
-        for (int i = 0; i < state.getNY(); ++i) {
-            state.updY()[i] = double(arg.at(1)(i));
-        }
-        auto& controls = p.getModel().updControls(state);
-        for (int i = 0; i < controls.size(); ++i) {
-            controls[i] = double(arg.at(2)(i));
-        }
-        p.getModel().realizeVelocity(state);
-        p.getModel().setControls(state, controls);
-        p.getModel().realizeAcceleration(state);
-        DM deriv(state.getNY(), 1);
-        for (int i = 0; i < state.getNY(); ++i) {
-            deriv(i, 0) = state.getYDot()[i];
-        }
-        return {deriv};
-    }
+    std::vector<DM> eval(const std::vector<DM>& arg) const override;
 private:
+    const CasADiTranscription& m_transcrip;
     const MucoProblemRep& p;
 };
-
-namespace OpenSim {
 
 struct CasADiVariables {
     MX initialTime;
@@ -193,11 +164,12 @@ public:
     CasADiTranscription(const MucoCasADiSolver& solver,
             const MucoProblemRep& probRep)
             : m_solver(solver), m_probRep(probRep),
-            m_model(m_probRep.getModel()) {}
+            m_model(m_probRep.getModel()),
+            m_state(m_model.getWorkingState()) {}
     void initialize() {
         m_opti = casadi::Opti();
 
-        m_numTimes = 20;
+        m_numTimes = m_solver.get_num_mesh_points();
 
         // Add this as a method to MucoProblemRep.
         m_stateNames = createStateVariableNamesInSystemOrder(m_model);
@@ -215,6 +187,15 @@ public:
         createVariables();
 
         m_duration = m_vars.finalTime - m_vars.initialTime;
+        DM meshIntervals = m_mesh(Slice(1, m_mesh.rows())) -
+                m_mesh(Slice(0, m_mesh.rows() - 1));
+        // m_times = MX(m_numTimes, 1);
+        // m_times(0) = m_vars.initialTime;
+        // for (int itime = 1; itime < m_numTimes - 1; ++itime) {
+        //     m_times(itime) = m_times(itime - 1) +
+        //             m_duration * meshIntervals(itime - 1);
+        // }
+        // m_times(m_numTimes - 1) = m_vars.finalTime;
         m_times = m_duration * m_mesh + m_vars.initialTime;
 
         setVariableBounds(m_vars.initialTime, m_probRep.getTimeInitialBounds());
@@ -254,12 +235,10 @@ public:
         auto endpoint_cost = m_endpointCostFunction->operator()(
                 {m_vars.finalTime, m_vars.states(Slice(), -1)}).at(0);
 
-        m_times = m_duration * m_mesh + m_vars.initialTime;
-        DM meshIntervals = m_mesh(Slice(1)) - m_mesh(Slice(0, -2));
         DM quadCoeffs = createIntegralQuadratureCoefficients(meshIntervals);
 
         m_integrandCostFunction =
-                make_unique<IntegrandCost>("integrand", m_probRep);
+                make_unique<IntegrandCost>("integrand", *this, m_probRep);
         MX integral_cost = m_opti.variable();
         integral_cost = 0;
         for (int i = 0; i < m_numTimes; ++i) {
@@ -274,21 +253,28 @@ public:
     }
 
     MucoSolution solve() {
-        m_opti.solver("ipopt", {}, {{"hessian_approximation", "limited-memory"}});
+        m_opti.solver("ipopt", {},
+                {{"hessian_approximation", "limited-memory"}});
         auto casadiSolution = m_opti.solve();
-        const auto statesValue = m_opti.value(m_vars.states);
-        SimTK::Matrix simtkStates(m_numTimes, m_numStates);
-        for (int istate = 0; istate < m_numStates; ++istate) {
-            for (int itime = 0; itime < m_numTimes; ++itime) {
-                simtkStates(itime, istate) = double(statesValue(istate, itime));
+        SimTK::Matrix simtkStates;
+        if (m_numStates) {
+            const auto statesValue = m_opti.value(m_vars.states);
+            simtkStates.resize(m_numTimes, m_numStates);
+            for (int istate = 0; istate < m_numStates; ++istate) {
+                for (int itime = 0; itime < m_numTimes; ++itime) {
+                    simtkStates(itime, istate) = double(statesValue(istate, itime));
+                }
             }
         }
-        const auto controlsValue = m_opti.value(m_vars.controls);
-        SimTK::Matrix simtkControls(m_numTimes, m_numControls);
-        for (int icontrol = 0; icontrol < m_numControls; ++icontrol) {
-            for (int itime = 0; itime < m_numTimes; ++itime) {
-                simtkControls(itime, icontrol) =
-                        double(controlsValue(icontrol, itime));
+        SimTK::Matrix simtkControls;
+        if (m_numControls) {
+            const auto controlsValue = m_opti.value(m_vars.controls);
+            simtkControls.resize(m_numTimes, m_numControls);
+            for (int icontrol = 0; icontrol < m_numControls; ++icontrol) {
+                for (int itime = 0; itime < m_numTimes; ++itime) {
+                    simtkControls(itime, icontrol) =
+                            double(controlsValue(icontrol, itime));
+                }
             }
         }
 
@@ -308,9 +294,18 @@ public:
     /// @postcondition All fields in member variable m_vars are set, and
     ///     and m_mesh is set.
     virtual void createVariables() = 0;
-    virtual void addDefectConstraints() = 0;
+    void addDefectConstraints() {
+        if (m_numStates) addDefectConstraintsImpl();
+    }
+    virtual void addDefectConstraintsImpl() = 0;
     virtual DM createIntegralQuadratureCoefficients(const DM& meshIntervals)
             const = 0;
+
+    const MucoCasADiSolver& m_solver;
+    const MucoProblemRep& m_probRep;
+    const Model& m_model;
+    mutable SimTK::State m_state;
+
 protected:
     void setVariableBounds(const MX& variable, const MucoBounds& bounds) {
         if (bounds.isSet()) {
@@ -319,9 +314,6 @@ protected:
             m_opti.subject_to(lower <= variable <= upper);
         }
     }
-    const MucoCasADiSolver& m_solver;
-    const MucoProblemRep& m_probRep;
-    const Model& m_model;
     casadi::Opti m_opti;
     CasADiVariables m_vars;
     int m_numTimes = -1;
@@ -345,16 +337,16 @@ public:
     DM createIntegralQuadratureCoefficients(const DM& meshIntervals)
             const override {
         DM trapezoidalQuadCoeffs(m_numTimes, 1);
-        trapezoidalQuadCoeffs(Slice(0, -2)) = 0.5 * meshIntervals;
-        trapezoidalQuadCoeffs(Slice(1, -1)) += 0.5 * meshIntervals;
+        trapezoidalQuadCoeffs(Slice(0, m_numTimes - 1)) = 0.5 * meshIntervals;
+        trapezoidalQuadCoeffs(Slice(1, m_numTimes)) += 0.5 * meshIntervals;
         return trapezoidalQuadCoeffs;
     }
 
-    void addDefectConstraints() override {
+    void addDefectConstraintsImpl() override {
 
         auto h = m_duration / (m_numTimes - 1);
         m_dynamicsFunction =
-                make_unique<DynamicsFunction>("dynamics", m_probRep);
+                make_unique<DynamicsFunction>("dynamics", *this, m_probRep);
 
         // Defects.
         MX xdot_im1 = m_dynamicsFunction->operator()(
@@ -383,9 +375,53 @@ private:
 
 };
 
-} // namespace OpenSim
+std::vector<DM> IntegrandCost::eval(const std::vector<DM>& arg) const {
+    auto& state = m_transcrip.m_state;
+    double time = double(arg.at(0));
+    state.setTime(time);
+    for (int i = 0; i < state.getNY(); ++i) {
+        state.updY()[i] = double(arg.at(1)(i));
+    }
+    auto& controls = p.getModel().updControls(state);
+    for (int i = 0; i < controls.size(); ++i) {
+        controls[i] = double(arg.at(2)(i));
+    }
+    p.getModel().realizeVelocity(state);
+    p.getModel().setControls(state, controls);
+    return {p.calcIntegralCost(state)};
+}
+std::vector<DM> DynamicsFunction::eval(const std::vector<DM>& arg) const {
+    auto& state = m_transcrip.m_state;
+    // TODO move copying over the state to a separate function.
+    double time = double(arg.at(0));
+    state.setTime(time);
+    for (int i = 0; i < state.getNY(); ++i) {
+        state.updY()[i] = double(arg.at(1)(i));
+    }
+    auto& controls = p.getModel().updControls(state);
+    for (int i = 0; i < controls.size(); ++i) {
+        controls[i] = double(arg.at(2)(i));
+    }
+    p.getModel().realizeVelocity(state);
+    p.getModel().setControls(state, controls);
+    p.getModel().realizeAcceleration(state);
+    DM deriv(state.getNY(), 1);
+    for (int i = 0; i < state.getNY(); ++i) {
+        deriv(i, 0) = state.getYDot()[i];
+    }
+    return {deriv};
+}
+
+MucoCasADiSolver::MucoCasADiSolver() {
+    constructProperties();
+}
+
+void MucoCasADiSolver::constructProperties() {
+    constructProperty_num_mesh_points(100);
+}
 
 MucoSolution MucoCasADiSolver::solveImpl() const {
+    checkPropertyIsPositive(*this, getProperty_num_mesh_points());
     CasADiTrapezoidal transcription(*this, getProblemRep());
     transcription.initialize();
     // opt.disp(std::cout, true);

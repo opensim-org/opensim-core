@@ -97,12 +97,6 @@ else()
     tropter_copy_dlls(IPOPT "${Ipopt_ROOT_DIR}/bin")
 endif()
 
-find_package(casadi 3.4.5 REQUIRED CONFIG)
-set_package_properties(casadi PROPERTIES
-        URL https://web.casadi.org
-        TYPE REQUIRED
-        PURPOSE "Differentiation and optimizer interface.")
-
 # OpenMP allows parallelization (of evaluating dynamics and path constraints
 # across tropter points) and is usually a feature of a compiler. It's fine if
 # the compiler does not support OpenMP.
