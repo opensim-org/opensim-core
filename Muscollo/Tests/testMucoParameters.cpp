@@ -16,6 +16,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
+#define CATCH_CONFIG_MAIN
+#include "Testing.h"
 #include <Muscollo/osimMuscollo.h>
 #include <OpenSim/Simulation/SimbodyEngine/SliderJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
@@ -65,7 +67,7 @@ protected:
 /// correct trajectory specified by the state bounds and the FinalPositionCost.
 /// This tests the ability for MucoParameter to optimize a simple scalar model
 /// property value.
-void testOscillatorMass() {
+TEMPLATE_TEST_CASE("Oscillator mass", "", MucoTropterSolver, MucoCasADiSolver) {
     int N = 25;
 
     MucoTool muco;
@@ -80,7 +82,7 @@ void testOscillatorMass() {
 
     mp.addCost<FinalPositionCost>();
 
-    MucoTropterSolver& ms = muco.initSolver();
+    auto& ms = muco.initSolver<TestType>();
     ms.set_num_mesh_points(N);
 
     MucoSolution sol = muco.solve();
@@ -125,7 +127,8 @@ std::unique_ptr<Model> createOscillatorTwoSpringsModel() {
 /// equivalent stiffness of a single spring that would produce the same 
 /// oscillation trajectory. This tests the ability for MucoParameter to optimize
 /// the value of a model property for two different components.
-void testOneParameterTwoSprings() {
+TEMPLATE_TEST_CASE("One parameter two springs", "",
+        MucoTropterSolver, MucoCasADiSolver) {
     int N = 25;
 
     MucoTool muco;
@@ -143,7 +146,7 @@ void testOneParameterTwoSprings() {
 
     mp.addCost<FinalPositionCost>();
 
-    MucoTropterSolver& ms = muco.initSolver();
+    auto& ms = muco.initSolver<TestType>();
     ms.set_num_mesh_points(N);
 
     MucoSolution sol = muco.solve();
@@ -196,7 +199,8 @@ protected:
 /// that the body comes to rest, i.e. the body's center of mass becomes aligned
 /// with the pin joint rotation point. This tests the ability of MucoParameter
 /// to optimize an element of a non-scalar model property.
-void testSeeSawCOM() {
+TEMPLATE_TEST_CASE("See-saw center of mass", "",
+        MucoTropterSolver, MucoCasADiSolver) {
     int N = 25;
 
     MucoTool muco;
@@ -218,7 +222,7 @@ void testSeeSawCOM() {
 
     mp.addCost<RotationalAccelerationCost>();
 
-    MucoTropterSolver& ms = muco.initSolver();
+    auto& ms = muco.initSolver<TestType>();
     ms.set_num_mesh_points(N);
 
     MucoSolution sol = muco.solve().unseal();
@@ -234,12 +238,4 @@ void testSeeSawCOM() {
     // muco.visualize(sol);
 
     SimTK_TEST_EQ_TOL(sol_xCOM, xCOM, 0.003);
-}
-
-int main() {
-    SimTK_START_TEST("testMucoParameters");
-        SimTK_SUBTEST(testOscillatorMass);
-        SimTK_SUBTEST(testOneParameterTwoSprings);
-        SimTK_SUBTEST(testSeeSawCOM);
-    SimTK_END_TEST();
 }

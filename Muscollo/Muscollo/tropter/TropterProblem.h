@@ -278,8 +278,7 @@ protected:
             // Warning: memory borrowed, not copied (when third argument to
             // SimTK::Vector constructor is true)
             SimTK::Vector mucoParams(
-                    (int)m_mucoProb.createParameterNames().size(),
-                    parameters.data(), true);
+                    (int)parameters.size(), parameters.data(), true);
 
             m_mucoProb.applyParametersToModel(mucoParams);
             // TODO: Avoid this const_cast.

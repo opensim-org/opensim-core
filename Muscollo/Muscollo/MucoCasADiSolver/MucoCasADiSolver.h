@@ -32,10 +32,61 @@ public:
     OpenSim_DECLARE_PROPERTY(num_mesh_points, int,
     "The number of mesh points for discretizing the problem (default: 100).");
     MucoCasADiSolver();
-private:
-    void constructProperties();
+
+    /// @name Specifying an initial guess
+    /// @{
+
+    /// Create a guess that you can edit and then set using setGuess().
+    /// The types of guesses available are:
+    /// - **bounds**: variable values are the midpoint between the variables'
+    ///   bounds (the value for variables with ony one bound is the specified
+    ///   bound). This is the default type.
+    /// - **random**: values are randomly generated within the bounds.
+    /// - **time-stepping**: see MucoSolver::createGuessTimeStepping().
+    /// @note Calling this method does *not* set an initial guess to be used
+    /// in the solver; you must call setGuess() or setGuessFile() for that.
+    /// @precondition You must have called resetProblem().
+    MucoIterate createGuess(const std::string& type = "bounds") const;
+
+    /// The number of time points in the iterate does *not* need to match
+    /// `num_mesh_points`; the iterate will be interpolated to the correct size.
+    /// This clears the `guess_file`, if any.
+    void setGuess(MucoIterate guess);
+    /// Use this convenience function if you want to choose the type of guess
+    /// used, but do not want to modify it first.
+    void setGuess(const std::string& type) { setGuess(createGuess(type)); }
+    /// This clears any previously-set guess, if any. The file is not loaded
+    /// until solving or if you call getGuess().
+    /// Set to an empty string to clear the guess file.
+    void setGuessFile(const std::string& file);
+
+    /// Clear the stored guess and the `guess_file` if any.
+    void clearGuess();
+
+    /// Access the guess, loading it from the guess_file if necessary.
+    /// This throws an exception if you have not set a guess (or guess file).
+    /// If you have not set a guess (or guess file), this returns an empty
+    /// guess, and when solving, we will generate a guess using bounds.
+    const MucoIterate& getGuess() const;
+
+    /// @}
+
+protected:
     void resetProblemImpl(const MucoProblemRep&) const override {}
     MucoSolution solveImpl() const override;
+
+private:
+
+    OpenSim_DECLARE_PROPERTY(guess_file, std::string,
+            "A MucoIterate file storing an initial guess.");
+
+    void constructProperties();
+
+    // When a copy of the solver is made, we want to keep any guess specified
+    // by the API, but want to discard anything we've cached by loading a file.
+    MucoIterate m_guessFromAPI;
+    mutable SimTK::ResetOnCopy<MucoIterate> m_guessFromFile;
+    mutable SimTK::ReferencePtr<const MucoIterate> m_guessToUse;
 };
 
 } // namespace OpenSim
