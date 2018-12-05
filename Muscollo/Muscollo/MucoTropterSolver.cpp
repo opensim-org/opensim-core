@@ -223,14 +223,40 @@ public:
                     convert(info.getFinalBounds()));
         }
 
+        // Whether or not enabled kinematic constraints exist in the model, 
+        // check that optional solver properties related to constraints are
+        // set properly.
+        std::vector<std::string> mcNames =
+            m_mucoProbRep.createMultibodyConstraintNames();
+        if (mcNames.empty()) {
+            OPENSIM_THROW_IF(
+                !m_mucoTropterSolver
+                .getProperty_enforce_constraint_derivatives().empty(),
+                Exception, "Solver property 'enforce_constraint_derivatives' "
+                "was set but no enabled kinematic constraints exist in the "
+                "model.")
+            OPENSIM_THROW_IF(
+                !m_mucoTropterSolver
+                .getProperty_lagrange_multiplier_weight().empty(),
+                Exception, "Solver property 'lagrange_multiplier_weight' was "
+                "set but no enabled kinematic constraints exist in the model.")
+        } else {
+            OPENSIM_THROW_IF(
+                m_mucoTropterSolver
+                .getProperty_enforce_constraint_derivatives().empty(),
+                Exception, "Enabled kinematic constraints exist in the "
+                "provided model. Please set the solver property "
+                "'enforce_constraint_derivatives' to either 'true' or 'false'."
+                );
+        }
         // Add any scalar constraints associated with multibody constraints in 
         // the model as path constraints in the problem.
-        int cid, mp, mv, ma, numEquationsEnforced, multIndexThisConstraint;
+        int cid, mp, mv, ma;
+        int numEquationsThisConstraint; 
+        int multIndexThisConstraint;
         std::vector<MucoBounds> bounds;
         std::vector<std::string> labels;
         std::vector<KinematicLevel> kinLevels;
-        std::vector<std::string> mcNames = 
-            m_mucoProbRep.createMultibodyConstraintNames();
         for (const auto& mcName : mcNames) {
             const auto& mc = m_mucoProbRep.getMultibodyConstraint(mcName);
             const auto& multInfos = m_mucoProbRep.getMultiplierInfos(mcName);
@@ -242,23 +268,15 @@ public:
             labels = mc.getConstraintInfo().getConstraintLabels();
             kinLevels = mc.getKinematicLevels();
 
-            m_mpSum += mp;
-            if (m_mucoTropterSolver.get_enforce_holonomic_constraints_only()) {
-                OPENSIM_THROW_IF(mv != 0, Exception, "Only holonomic "
-                    "(position-level) constraints are currently supported. "
-                    "There are " + std::to_string(mv) + " velocity-level "
-                    "scalar constraints associated with the model Constraint "
-                    "at ConstraintIndex " + std::to_string(cid) + ".");
-                OPENSIM_THROW_IF(ma != 0, Exception, "Only holonomic "
-                    "(position-level) constraints are currently supported. "
-                    "There are " + std::to_string(ma) + " acceleration-level "
-                    "scalar constraints associated with the model Constraint "
-                    "at ConstraintIndex " + std::to_string(cid) + ".");    
-                numEquationsEnforced = mp;
+            m_num_mp += mp;
+            m_num_mv += mv;
+            m_num_ma += ma;
+            if (m_mucoTropterSolver.get_enforce_constraint_derivatives()) {
+                // This includes constraint derivatives: 3*mp + 2*mv + ma.
+                numEquationsThisConstraint 
+                    = mc.getConstraintInfo().getNumEquations();
             } else {
-                m_mvSum += mv;
-                m_maSum += ma;
-                numEquationsEnforced = mc.getConstraintInfo().getNumEquations();
+                numEquationsThisConstraint = mp + mv + ma;
             }
 
             // Loop through all scalar constraints associated with the model 
@@ -269,7 +287,7 @@ public:
             // they are only added if the current constraint equation is not a
             // derivative of a position- or velocity-level equation.
             multIndexThisConstraint = 0;
-            for (int i = 0; i < numEquationsEnforced; ++i) {
+            for (int i = 0; i < numEquationsThisConstraint; ++i) {
                 
                 // TODO name constraints based on model constraint names
                 // or coordinate names if a locked or prescribed coordinate
@@ -289,17 +307,18 @@ public:
                                       convert(multInfo.getFinalBounds()));
                     // Add velocity correction variables if enforcing
                     // constraint equation derivatives.
-                    if (!m_mucoTropterSolver
-                         .get_enforce_holonomic_constraints_only()) {
+                    if (m_mucoTropterSolver
+                            .get_enforce_constraint_derivatives()) {
                         this->add_interstep(std::string(
                                 multInfo.getName()).replace(0, 6, "gamma"),
-                            convert(MucoBounds(-5, 5)));
+                            convert(m_mucoTropterSolver
+                                .get_velocity_correction_bounds()));
                     }
                     ++multIndexThisConstraint;
                 }
             }
 
-            m_numMultibodyConstraintEqs += numEquationsEnforced;
+            m_numMultibodyConstraintEquations += numEquationsThisConstraint;
         }
         
         // Add any generic path constraints included in the problem. 
@@ -313,9 +332,10 @@ public:
                 this->add_path_constraint(labels[i], convert(bounds[i])); 
             }
         }
-        m_numPathConstraintEqs = m_mucoProbRep.getNumPathConstraintEquations();
+        m_numPathConstraintEquations = 
+            m_mucoProbRep.getNumPathConstraintEquations();
         // Allocate path constraint error memory.
-        m_pathConstraintErrors.resize(m_numPathConstraintEqs);
+        m_pathConstraintErrors.resize(m_numPathConstraintEquations);
         m_pathConstraintErrors.setToZero();
 
         for (const auto& actu : m_model.getComponentList<Actuator>()) {
@@ -366,7 +386,7 @@ public:
 
         // If enabled constraints exist in the model, compute accelerations
         // based on Lagrange multipliers.
-        if (m_numMultibodyConstraintEqs) {
+        if (m_numMultibodyConstraintEquations) {
             // TODO Antoine and Gil said realizing Dynamics is a lot costlier than
             // realizing to Velocity and computing forces manually.
             m_model.realizeDynamics(m_state);
@@ -380,23 +400,27 @@ public:
 
             const SimTK::SimbodyMatterSubsystem& matter = 
                 m_model.getMatterSubsystem();
-            SimTK::Vector_<SimTK::SpatialVec> constraintBodyForces;
-            SimTK::Vector constraintMobilityForces;
+            
             // Multipliers are negated so constraint forces can be used like 
             // applied forces.
             SimTK::Vector multipliers((int)adjuncts.size(), adjuncts.data());
             matter.calcConstraintForcesFromMultipliers(m_state, -multipliers,
                 constraintBodyForces, constraintMobilityForces);
 
-            SimTK::Vector udot;
             matter.calcAccelerationIgnoringConstraints(m_state,
                 appliedMobilityForces + constraintMobilityForces,
                 appliedBodyForces + constraintBodyForces, udot, A_GB);
            
-            // Apply velocity correction to QDot if at a mesh interval midpoint.
+            // Apply velocity correction to qdot if at a mesh interval midpoint.
+            // This correction modifies the dynamics to enable a projection of
+            // the model coordinates back onto the constraint manifold whenever
+            // they deviate.
+            // Posa, Kuindersma, Tedrake, 2016. "Optimization and stabilization
+            // of trajectories for constrained dynamical systems"
+            // Note: Only supported for the Hermite-Simpson transcription 
+            // scheme.
             if (intersteps.size() != 0) {
                 SimTK::Vector gamma((int)intersteps.size(), intersteps.data());
-                SimTK::Vector qdotCorr;
                 //SimTK::Matrix G;
                 //matter.calcG(m_state, G);
                 //SimTK::FactorQTZ G_qtz;
@@ -406,7 +430,9 @@ public:
                 matter.multiplyByGTranspose(m_state, gamma, qdotCorr);
                 //std::cout << gamma << std::endl;
                 //std::cout << qdotCorr << std::endl;
-                SimTK::Vector qdot = m_state.getQDot() + qdotCorr;
+                qdot = m_state.getQDot() + qdotCorr;
+            } else {
+                qdot = m_state.getQDot();
             }
 
             // Copy state derivative values to output struct. We cannot simply
@@ -414,8 +440,8 @@ public:
             const int nq = m_state.getQ().size();
             const int nu = udot.size();
             const int nz = m_state.getZ().size();
-            std::copy_n(&m_state.getQDot()[0], nq, out.dynamics.data());
-            std::copy_n(&udot[0], udot.size(), out.dynamics.data() + nq);
+            std::copy_n(&qdot[0], nq, out.dynamics.data());
+            std::copy_n(&udot[0], nu, out.dynamics.data() + nq);
             if (nz) {
                 std::copy_n(&m_state.getZDot()[0], nz,
                         out.dynamics.data() + nq + nu);
@@ -432,17 +458,17 @@ public:
         }
 
         // Constraint errors.
-        if (m_numMultibodyConstraintEqs && (out.path.size() != 0)) {
+        if (m_numMultibodyConstraintEquations && (out.path.size() != 0)) {
             std::copy(&m_state.getQErr()[0],
-                &m_state.getQErr()[0] + m_mpSum,
+                &m_state.getQErr()[0] + m_num_mp,
                 out.path.data());
-            if (!m_mucoTropterSolver.get_enforce_holonomic_constraints_only()) {
+            if (m_mucoTropterSolver.get_enforce_constraint_derivatives()) {
                 std::copy(&m_state.getUErr()[0],
-                    &m_state.getUErr()[0] + m_mpSum + m_mvSum,
-                    out.path.data() + m_mpSum);
+                    &m_state.getUErr()[0] + m_num_mp + m_num_mv,
+                    out.path.data() + m_num_mp);
                 std::copy(&m_state.getUDotErr()[0],
-                    &m_state.getUDotErr()[0] + m_mpSum + m_mvSum + m_maSum,
-                    out.path.data() + 2 * m_mpSum + m_mvSum);
+                    &m_state.getUDotErr()[0] + m_num_mp + m_num_mv + m_num_ma,
+                    out.path.data() + 2 * m_num_mp + m_num_mv);
             }
         }
 
@@ -452,7 +478,7 @@ public:
                 m_pathConstraintErrors);
             std::copy(m_pathConstraintErrors.begin(),
                       m_pathConstraintErrors.end(),
-                      out.path.data() + m_numMultibodyConstraintEqs);
+                      out.path.data() + m_numMultibodyConstraintEquations);
         }
         
     }
@@ -484,13 +510,13 @@ public:
 
         integrand = m_mucoProbRep.calcIntegralCost(m_state);
 
-        if (m_mucoTropterSolver.get_enforce_holonomic_constraints_only()) {
-            // Add squared multiplers cost to integrand. Since we currently 
-            // don't include the derivatives of the holonomic contraint 
-            // equations as path constraints in the OCP, this term exists in 
-            // order to impose uniqueness in the Lagrange multipliers. 
-            for (int i = 0; i < m_numMultibodyConstraintEqs; ++i) {
-                integrand += m_mucoTropterSolver.get_multiplier_weight() 
+        if (!m_mucoTropterSolver.getProperty_lagrange_multiplier_weight()
+              .empty()) {
+            // If the user provided a weight, add squared multiplers cost to 
+            // integrand.
+            for (int i = 0; i < (m_num_mp + m_num_mv + m_num_ma); ++i) {
+                integrand += 
+                    m_mucoTropterSolver.get_lagrange_multiplier_weight() 
                     * adjuncts[i] * adjuncts[i];
             }
         }
@@ -512,24 +538,26 @@ private:
     const MucoProblemRep& m_mucoProbRep;
     const Model& m_model;
     mutable SimTK::State m_state;
-    // This member variable avoids unnecessary extra allocation of memory for
-    // spatial accelerations, which are incidental to the computation of
-    // generalized accelerations when specifying the dynamics with model 
-    // constraints present.
+    // Working memory.
     mutable SimTK::Vector_<SimTK::SpatialVec> A_GB;
-    // The number of scalar holonomic constraint equations enabled in the model. 
-    // This does not count equations for derivatives of scalar holonomic 
-    // constraints. 
-    mutable int m_mpSum = 0;
-    mutable int m_mvSum = 0; // (nonholonomic constraints)
-    mutable int m_maSum = 0; // (acceleration-only constraints)
-
+    mutable SimTK::Vector_<SimTK::SpatialVec> constraintBodyForces;
+    mutable SimTK::Vector constraintMobilityForces;
+    mutable SimTK::Vector qdot;
+    mutable SimTK::Vector qdotCorr;
+    mutable SimTK::Vector udot;
+    // The number of scalar holonomic, non-holonomic, and acceleration 
+    // constraint equations enabled in the model. This does not count equations 
+    // for derivatives of holonomic and non-holonomic constraints. 
+    mutable int m_num_mp = 0;
+    mutable int m_num_mv = 0; 
+    mutable int m_num_ma = 0;
     // The total number of scalar constraint equations associated with model 
-    // multibody constraints that the solver is responsible for enforcing.
-    mutable int m_numMultibodyConstraintEqs = 0;
+    // multibody constraints that the solver is responsible for enforcing. This
+    // number does include equations for constraint derivatives.
+    mutable int m_numMultibodyConstraintEquations = 0;
     // The total number of scalar constraint equations associated with
     // MucoPathConstraints added to the MucoProblem.
-    mutable int m_numPathConstraintEqs = 0;
+    mutable int m_numPathConstraintEquations = 0;
     // Cached path constraint errors.
     mutable SimTK::Vector m_pathConstraintErrors;
 
@@ -564,9 +592,11 @@ void MucoTropterSolver::constructProperties() {
     constructProperty_optim_sparsity_detection("random");
     constructProperty_optim_ipopt_print_level(-1);
     constructProperty_transcription_scheme("trapezoidal");
-    constructProperty_hessian_block_sparsity_mode("dense");
-    constructProperty_multiplier_weight(100.0);
-    constructProperty_enforce_holonomic_constraints_only(true);
+    constructProperty_velocity_correction_bounds({-0.1, 0.1});
+    // These must be empty to allow user input error checking.
+    constructProperty_hessian_block_sparsity_mode();
+    constructProperty_lagrange_multiplier_weight();
+    constructProperty_enforce_constraint_derivatives();
 
     constructProperty_guess_file("");
 }
@@ -722,8 +752,11 @@ MucoSolution MucoTropterSolver::solveImpl() const {
 
     auto ocp = getTropterProblem();
 
+    // Apply settings/options.
+    // -----------------------
+    // Check that a valid verbosity level was provided.
     checkPropertyInSet(*this, getProperty_verbosity(), {0, 1, 2});
-
+    // Print problem information is verbosity is 1 or 2.
     if (get_verbosity()) {
         std::cout << std::string(79, '=') << "\n";
         std::cout << "MucoTropterSolver starting.\n";
@@ -732,42 +765,73 @@ MucoSolution MucoTropterSolver::solveImpl() const {
         // We can provide more detail about our problem than tropter can.
         // ocp->print_description();
     }
-
-    // Apply settings/options.
-    // -----------------------
+    // Check that a positive number of mesh points was provided.
     checkPropertyIsPositive(*this, getProperty_num_mesh_points());
-    int N = get_num_mesh_points();
-
+    // Check that a valid optimization solver was specified.
     checkPropertyInSet(*this, getProperty_optim_solver(), {"ipopt", "snopt"});
+    // Check that a valid transcription scheme was specified.
     checkPropertyInSet(*this, getProperty_transcription_scheme(),
         {"trapezoidal", "hermite-simpson"});
-    OPENSIM_THROW_IF(get_transcription_scheme() != "hermite-simpson" &&
-        !get_enforce_holonomic_constraints_only(), Exception,
-        "If enforcing all levels of model kinematic constraints, then the "
-        "property 'transcription_scheme' must be set to "
-        "'hermite-simpson'. Currently, it is set to '" + 
-        get_transcription_scheme() + "'.");    
-    checkPropertyInSet(*this, getProperty_hessian_block_sparsity_mode(),
-        {"dense", "sparse"});
-    tropter::DirectCollocationSolver<double> dircol(ocp, 
-            get_transcription_scheme(),
-            get_optim_solver(), N);
+    // Enforcing constraint derivatives is only supported when Hermite-Simpson
+    // is set as the transcription scheme.
+    if (!getProperty_enforce_constraint_derivatives().empty()) {
+        OPENSIM_THROW_IF(get_transcription_scheme() != "hermite-simpson" &&
+            get_enforce_constraint_derivatives(), Exception,
+            "If enforcing derivatives of model kinematic constraints, then the "
+            "property 'transcription_scheme' must be set to "
+            "'hermite-simpson'. Currently, it is set to '" + 
+            get_transcription_scheme() + "'.");    
+    }
+    // Block sparsity detected is only in effect when using an exact Hessian
+    // approximation.
+    OPENSIM_THROW_IF(get_optim_hessian_approximation() == "limited-memory" &&
+        !getProperty_hessian_block_sparsity_mode().empty(), Exception, 
+        "A value for solver property 'hessian_block_sparsity_mode' was "
+        "provided, but is unused when using a 'limited-memory' Hessian "
+        "approximation. Set solver property 'optim_hessian_approximation' to"
+        "'exact' for Hessian block sparsity to take effect.");
+    OPENSIM_THROW_IF(get_optim_hessian_approximation() == "exact" &&
+        getProperty_hessian_block_sparsity_mode().empty(), Exception,
+        "Solver property 'optim_hessian_approximation' set to 'exact'. Please "
+        "set 'hessian_block_sparsity_mode' to 'dense' or 'sparse' to specify "
+        "block sparsity detection mode.");
+    if (!getProperty_hessian_block_sparsity_mode().empty()) {
+        checkPropertyInSet(*this, getProperty_hessian_block_sparsity_mode(),
+            {"dense", "sparse"});
+    }
+    // If a Lagrange multiplier weight was provided, check that it is positive.
+    if (!getProperty_lagrange_multiplier_weight().empty()) {
+        checkPropertyIsPositive(*this, 
+            getProperty_lagrange_multiplier_weight());
+    }
 
+    // Create direct collocation solver.
+    // ---------------------------------
+    tropter::DirectCollocationSolver<double> dircol(ocp,
+        get_transcription_scheme(),
+        get_optim_solver(), 
+        get_num_mesh_points());
     dircol.set_verbosity(get_verbosity() >= 1);
-    dircol.set_hessian_block_sparsity_mode(get_hessian_block_sparsity_mode());
+    if (!getProperty_hessian_block_sparsity_mode().empty()) {
+        dircol.set_hessian_block_sparsity_mode(
+            get_hessian_block_sparsity_mode());
+    }
 
+    // Get optimization solver to check the remaining property settings.
     auto& optsolver = dircol.get_opt_solver();
 
+    // Check that number of max iterations is valid.
     checkPropertyInRangeOrSet(*this, getProperty_optim_max_iterations(),
             0, std::numeric_limits<int>::max(), {-1});
     if (get_optim_max_iterations() != -1)
         optsolver.set_max_iterations(get_optim_max_iterations());
-
+    // Check that convergence tolerance is valid.
     checkPropertyInRangeOrSet(*this,
             getProperty_optim_convergence_tolerance(),
             0.0, SimTK::NTraits<double>::getInfinity(), {-1.0});
     if (get_optim_convergence_tolerance() != -1)
         optsolver.set_convergence_tolerance(get_optim_convergence_tolerance());
+    // Check that constraint tolerance is valid.
     checkPropertyInRangeOrSet(*this,
             getProperty_optim_constraint_tolerance(),
             0.0, SimTK::NTraits<double>::getInfinity(), {-1.0});
@@ -777,6 +841,7 @@ MucoSolution MucoTropterSolver::solveImpl() const {
     optsolver.set_hessian_approximation(get_optim_hessian_approximation());
 
     if (get_optim_solver() == "ipopt") {
+        // Check that IPOPT print level is valid.
         checkPropertyInRangeOrSet(*this, getProperty_optim_ipopt_print_level(),
                 0, 12, {-1});
         if (get_verbosity() < 2) {
@@ -788,7 +853,7 @@ MucoSolution MucoTropterSolver::solveImpl() const {
             }
         }
     }
-
+    // Check that sparsity detection mode is valid.
     checkPropertyInSet(*this, getProperty_optim_sparsity_detection(),
             {"random", "initial-guess"});
     optsolver.set_sparsity_detection(get_optim_sparsity_detection());
@@ -806,6 +871,55 @@ MucoSolution MucoTropterSolver::solveImpl() const {
     }
 
     MucoSolution mucoSolution = convert(tropSolution);
+
+    // If enforcing model constraints and not minimizing Lagrange multipliers,
+    // check the rank of the constraint Jacobian and if rank-deficient, print
+    // recommendation to the user to enable Lagrange multiplier minimization.
+    if (!getProperty_enforce_constraint_derivatives().empty() && 
+             getProperty_lagrange_multiplier_weight().empty()) {
+        const auto& model = getProblemRep().getModel();
+        const auto& matter = model.getMatterSubsystem();
+        Storage storage = mucoSolution.exportToStatesStorage();
+        // TODO update when we support multiple phases.
+        auto statesTraj = StatesTrajectory::createFromStatesStorage(model, 
+            storage);
+        SimTK::Matrix G;
+        SimTK::FactorQTZ G_qtz;
+        bool isJacobianFullRank = true;
+        int rank;
+        // Jacobian rank should be time-independent, but loop through states 
+        // until rank deficiency detected, just in case.
+        for (const auto& s : statesTraj) {
+            // Jacobian is at most velocity-dependent.
+            model.realizeVelocity(s);
+            matter.calcG(s, G);
+            G_qtz.factor<double>(G);
+            if (G_qtz.getRank() < G.nrow()) {
+                isJacobianFullRank = false;
+                rank = G_qtz.getRank();
+                break;
+            }
+        }
+
+        if (!isJacobianFullRank) {
+            std::cout << "---------------------------------------------------"
+                      << "--\n";
+            std::cout << "WARNING: rank-deficient constraint Jacobian "
+                      << "detected.\n";
+            std::cout << "---------------------------------------------------"
+                        << "--\n";
+            std::cout << "The model constraint Jacobian has "
+                      << std::to_string(G.nrow()) + " row(s) but is only rank "
+                      << std::to_string(rank) + ".\nTry removing "
+                      << "redundant constraints from the model or enable \n" 
+                      << "minimization of Lagrange multipliers by specifying "
+                      << "a value \nto the solver property "
+                      << "'lagrange_multiplier_weight'.\n";
+            std::cout << "---------------------------------------------------"
+                      << "--\n\n";
+        }
+    }
+    
 
     // TODO move this to convert():
     MucoSolver::setSolutionStats(mucoSolution, tropSolution.success,

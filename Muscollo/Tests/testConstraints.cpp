@@ -493,6 +493,8 @@ void testDoublePendulumPointOnLine() {
     auto model = createDoublePendulumModel();
     const Body& b1 = model->getBodySet().get("b1");
     const Station& endeff = model->getComponent<Station>("endeff");
+ 
+      
     PointOnLineConstraint* constraint = new PointOnLineConstraint(
         model->getGround(), Vec3(0, 1, 0), Vec3(0), b1, endeff.get_location());
     model->addConstraint(constraint);
@@ -502,43 +504,33 @@ void testDoublePendulumPointOnLine() {
     mp.setTimeBounds(0, 1);
     // Coordinate value state boundary conditions are consistent with the 
     // point-on-line constraint.
-    mp.setStateInfo("/jointset/j0/q0/value", {-10, 10}, SimTK::Pi / 6);
-    mp.setStateInfo("/jointset/j0/q0/speed", {-50, 50});
-    mp.setStateInfo("/jointset/j1/q1/value", {-10, 10}, 2*SimTK::Pi / 3);
-    mp.setStateInfo("/jointset/j1/q1/speed", {-50, 50});
+    double theta_i = 0;
+    double theta_f = SimTK::Pi;
+    mp.setStateInfo("/jointset/j0/q0/value", {-10, 10}, theta_i, theta_f);
+    mp.setStateInfo("/jointset/j0/q0/speed", {-50, 50}, 0, 0);
+    mp.setStateInfo("/jointset/j1/q1/value", {-10, 10}, SimTK::Pi - 2*theta_i,
+                                                        SimTK::Pi - 2*theta_f);
+    mp.setStateInfo("/jointset/j1/q1/speed", {-50, 50}, 0, 0);
     mp.setControlInfo("/tau0", {-100, 100});
     mp.setControlInfo("/tau1", {-100, 100});
 
-    auto* markerCost = mp.addCost<MucoMarkerEndpointCost>();
-    markerCost->setName("marker_endpoint");
-    markerCost->setPointName("endeff");
-    markerCost->setReferenceLocation(Vec3(0, 1.7, 0));
+    mp.addCost<MucoControlCost>();
 
     MucoTropterSolver& ms = muco.initSolver();
-    ms.set_num_mesh_points(15);
+    ms.set_num_mesh_points(10);
     ms.set_verbosity(2);
     ms.set_optim_solver("ipopt");
     ms.set_optim_convergence_tolerance(1e-3);
     ms.set_optim_hessian_approximation("exact");
+    ms.set_hessian_block_sparsity_mode("dense");
     ms.set_transcription_scheme("hermite-simpson");
-    ms.set_enforce_holonomic_constraints_only(false);
+    ms.set_enforce_constraint_derivatives(true);
+    ms.set_lagrange_multiplier_weight(10);
     ms.setGuess("bounds");
 
     MucoSolution solution = muco.solve();
     solution.write("testConstraints_testDoublePendulumPointOnLine.sto");
-
-    std::cout << "states: " << std::endl;
-    std::cout << solution.getStatesTrajectory() << std::endl;
-    std::cout << "controls: " << std::endl;
-    std::cout << solution.getControlsTrajectory() << std::endl;
-    std::cout << "adjuncts: " << std::endl;
-    std::cout << solution.getMultipliersTrajectory() << std::endl;
-    std::cout << "intersteps: " << std::endl;
-    std::cout << solution.getGammasTrajectory() << std::endl;
-    //std::cout << "parameters: " << std::endl;
-    //std::cout << parameters << std::endl;
-
-    muco.visualize(solution);
+    //muco.visualize(solution);
 
     model->initSystem();
     StatesTrajectory states = solution.exportToStatesTrajectory(mp);
@@ -555,7 +547,7 @@ void testDoublePendulumPointOnLine() {
     // Run a forward simulation using the solution controls in prescribed 
     // controllers for the model actuators and see if we get the correct states
     // trajectory back.
-    //runForwardSimulation(*model, solution, 1e-1);
+    runForwardSimulation(*model, solution, 1e-1);
 }
 
 /// Solve an optimal control problem where a double pendulum must reach a 
@@ -603,14 +595,15 @@ void testDoublePendulumCoordinateCoupler(MucoSolution& solution) {
     mp.addCost<MucoControlCost>();
 
     MucoTropterSolver& ms = muco.initSolver();
-    ms.set_num_mesh_points(50);
+    ms.set_num_mesh_points(10);
     ms.set_verbosity(2);
     ms.set_optim_solver("ipopt");
     ms.set_optim_convergence_tolerance(1e-3);
-    //ms.set_optim_ipopt_print_level(5);
-    ms.set_optim_hessian_approximation("limited-memory");
+    ms.set_optim_hessian_approximation("exact");
+    ms.set_hessian_block_sparsity_mode("dense");
     ms.set_transcription_scheme("hermite-simpson");
-    ms.set_enforce_holonomic_constraints_only(false);
+    ms.set_enforce_constraint_derivatives(true);
+    ms.set_lagrange_multiplier_weight(10);
     ms.setGuess("bounds");
 
     solution = muco.solve();
@@ -630,7 +623,7 @@ void testDoublePendulumCoordinateCoupler(MucoSolution& solution) {
     // Run a forward simulation using the solution controls in prescribed 
     // controllers for the model actuators and see if we get the correct states
     // trajectory back.
-    runForwardSimulation(*model, solution, 1e-2);
+    runForwardSimulation(*model, solution, 1e-1);
 }
 
 /// Solve an optimal control problem where a double pendulum must follow a
@@ -675,17 +668,18 @@ void testDoublePendulumPrescribedMotion(MucoSolution& couplerSolution) {
     mp.addCost<MucoControlCost>();
 
     MucoTropterSolver& ms = muco.initSolver();
-    ms.set_num_mesh_points(50); 
+    ms.set_num_mesh_points(20); 
     ms.set_verbosity(2);
     ms.set_optim_solver("ipopt");
-    ms.set_optim_convergence_tolerance(1e-3);
-    //ms.set_optim_ipopt_print_level(5);
-    ms.set_optim_hessian_approximation("limited-memory");
+    ms.set_optim_convergence_tolerance(1e-4);
+    ms.set_optim_hessian_approximation("exact");
+    ms.set_hessian_block_sparsity_mode("dense");
     ms.set_transcription_scheme("hermite-simpson");
-    ms.set_enforce_holonomic_constraints_only(false);
+    ms.set_enforce_constraint_derivatives(true);
+    ms.set_lagrange_multiplier_weight(10);
     ms.setGuess("bounds");
 
-    MucoSolution solution = muco.solve().unseal();
+    MucoSolution solution = muco.solve();
     solution.write("testConstraints_testDoublePendulumPrescribedMotion.sto");
     //muco.visualize(solution);
 
@@ -739,10 +733,10 @@ void testDoublePendulumPrescribedMotion(MucoSolution& couplerSolution) {
     // MucoTropterSolver for details).
     SimTK_TEST_EQ_TOL(solution.compareContinuousVariablesRMS(mucoIterSpline, 
         {"/jointset/j0/q0/value", "/jointset/j1/q1/value"}, {"none"}, {"none"}),
-                0, 1e-12);
+                0, 1e-5);
     SimTK_TEST_EQ_TOL(solution.compareContinuousVariablesRMS(couplerSolution,
         {"/jointset/j0/q0/value", "/jointset/j1/q1/value"}, {"none"}, {"none"}),
-                0, 1e-12);
+                0, 1e-5);
     // Only compare the velocity-level values between the current solution 
     // states and the states from the previous test (original and splined).  
     // These won't match as well as the position-level values, since velocity-
@@ -758,7 +752,7 @@ void testDoublePendulumPrescribedMotion(MucoSolution& couplerSolution) {
     // related to velocity-level states not matching well or the how the model
     // constraints are enforced in the current formulation.
     SimTK_TEST_EQ_TOL(solution.compareContinuousVariablesRMS(couplerSolution, 
-        {"none"}, {"/tau0", "/tau1"}, {"none"}), 0, 1);
+        {"none"}, {"/tau0", "/tau1"}, {"none"}), 0, 5);
 
     // Run a forward simulation using the solution controls in prescribed 
     // controllers for the model actuators and see if we get the correct states
@@ -821,11 +815,10 @@ void testDoublePendulumEqualControl() {
     mp.addCost<MucoControlCost>();
 
     MucoTropterSolver& ms = muco.initSolver();
-    ms.set_num_mesh_points(100);
+    ms.set_num_mesh_points(10);
     ms.set_verbosity(2);
     ms.set_optim_solver("ipopt");
     ms.set_optim_convergence_tolerance(1e-3);
-    //ms.set_optim_ipopt_print_level(5);
     ms.set_optim_hessian_approximation("limited-memory");
     ms.setGuess("bounds");
 

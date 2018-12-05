@@ -583,8 +583,10 @@ Eigen::RowVectorXd HermiteSimpson<T>::
 get_interstep_times(const Eigen::RowVectorXd& time) const {
     
     Eigen::RowVectorXd interstep_times(m_num_mesh_points - 1);
+    int interstep_time_index = 0;
     for (int i = 1; i < time.size()-1; i += 2) {
-        interstep_times[i] = time[i];
+        interstep_times[interstep_time_index] = time[i];
+        ++interstep_time_index;
     }
    return interstep_times;
 }
@@ -601,7 +603,7 @@ get_intersteps_with_nans(const Eigen::MatrixXd& intersteps_without_nans) const {
     int i_mid = 0;
     for (int i_col = 1; i_col < m_num_col_points-1; i_col += 2) {
         intersteps_with_nans.col(i_col) = intersteps_without_nans.col(i_mid);
-        i_mid++;
+        ++i_mid;
     }
 
     return intersteps_with_nans;
@@ -618,7 +620,7 @@ get_intersteps_without_nans(const Eigen::MatrixXd& intersteps_with_nans) const {
     int i_mid = 0;
     for (int i_col = 1; i_col < m_num_col_points-1; i_col += 2) {
         intersteps_without_nans.col(i_mid) = intersteps_with_nans.col(i_col);
-        i_mid++;
+        ++i_mid;
     }
 
     return intersteps_without_nans;
