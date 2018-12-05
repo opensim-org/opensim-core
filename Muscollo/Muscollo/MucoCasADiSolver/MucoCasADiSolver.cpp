@@ -61,20 +61,13 @@ MucoIterate MucoCasADiSolver::createGuess(const std::string& type) const {
         return createGuessTimeStepping();
     }
 
-    // TODO avoid performing error checks multiple times; use
-    // isObjectUpToDateWithProperties();
-    checkPropertyIsPositive(*this, getProperty_num_mesh_points());
-    int N = get_num_mesh_points();
-    /* TODO
+    auto transcription = createTranscription();
 
     if (type == "bounds") {
-        tropIter = dircol.make_initial_guess_from_bounds();
-    } else if (type == "random") {
-        tropIter = dircol.make_random_iterate_within_bounds();
+        return transcription->createInitialGuessFromBounds();
+    } else {
+        return transcription->createRandomIterateWithinBounds();
     }
-    return ocp->convertToMucoIterate(tropIter);
-    */
-    return MucoIterate();
 }
 
 void MucoCasADiSolver::setGuess(MucoIterate guess) {
@@ -115,20 +108,21 @@ const MucoIterate& MucoCasADiSolver::getGuess() const {
     return m_guessToUse.getRef();
 }
 
-void MucoCasADiSolver::constructProperties() {
-    constructProperty_num_mesh_points(100);
+std::unique_ptr<CasADiTranscription>
+MucoCasADiSolver::createTranscription() const {
+    return make_unique<CasADiTrapezoidal>(*this, getProblemRep());
 }
 
 MucoSolution MucoCasADiSolver::solveImpl() const {
     checkPropertyIsPositive(*this, getProperty_num_mesh_points());
-    CasADiTrapezoidal transcription(*this, getProblemRep());
-    transcription.initialize();
+    auto transcription = createTranscription();
+    transcription->initialize();
     // opt.disp(std::cout, true);
     try {
-        return transcription.solve();
+        return transcription->solve();
     } catch (const std::exception& e) {
         std::cout << "Error: " << e.what() << std::endl;
-        // TODO: Return a solution.
+        // TODO: Return a solution (sealed).
     }
 
     // Some useful functions for debugging:
@@ -141,3 +135,7 @@ MucoSolution MucoCasADiSolver::solveImpl() const {
     return {};
 }
 
+
+void MucoCasADiSolver::constructProperties() {
+    constructProperty_num_mesh_points(100);
+}

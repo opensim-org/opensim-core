@@ -166,6 +166,8 @@ public:
               m_model(m_probRep.getModel()),
               m_state(m_model.getWorkingState()) {}
 
+    virtual ~CasADiTranscription() = default;
+
     template <typename T>
     T createTimes(const T& initialTime, const T& finalTime) const {
         return (finalTime - initialTime) * m_mesh + initialTime;
@@ -236,21 +238,52 @@ public:
             }
         };
         CasADiVariables<DM> casGuess = m_lowerBounds;
-        setToMidpoint(casGuess.initialTime, m_lowerBounds.initialTime,
-                m_upperBounds.initialTime);
-        setToMidpoint(casGuess.finalTime, m_lowerBounds.finalTime,
-                m_upperBounds.finalTime);
-        setToMidpoint(casGuess.states, m_lowerBounds.states,
-                m_upperBounds.states);
-        setToMidpoint(casGuess.controls, m_lowerBounds.controls,
-                m_upperBounds.controls);
-        setToMidpoint(casGuess.parameters, m_lowerBounds.parameters,
-                m_upperBounds.parameters);
+        setToMidpoint(casGuess.initialTime,
+                m_lowerBounds.initialTime, m_upperBounds.initialTime);
+        setToMidpoint(casGuess.finalTime,
+                m_lowerBounds.finalTime, m_upperBounds.finalTime);
+        setToMidpoint(casGuess.states,
+                m_lowerBounds.states, m_upperBounds.states);
+        setToMidpoint(casGuess.controls,
+                m_lowerBounds.controls, m_upperBounds.controls);
+        setToMidpoint(casGuess.parameters,
+                m_lowerBounds.parameters, m_upperBounds.parameters);
 
         return convertToMuco<DM>(casGuess);
     }
+    /// Create a vector with random variable values within the variable
+    /// bounds, potentially for use as an initial guess. If, for a given
+    /// variable, either bound is infinite, then the element is a random number
+    /// in [-1, 1] clamped by the bounds.
     MucoIterate createRandomIterateWithinBounds() const {
-        return MucoIterate();
+        static SimTK::Random::Uniform randGen(-1, 1);
+        auto setRandom = [](DM& output, const DM& lowerDM,
+                const DM& upperDM) {
+            for (int irow = 0; irow < output.rows(); ++irow) {
+                for (int icol = 0; icol < output.columns(); ++icol) {
+                    const auto& lower = double(lowerDM(irow, icol));
+                    const auto& upper = double(upperDM(irow, icol));
+                    const auto rand = randGen.getValue();
+                    auto value = 0.5 * (rand + 1.0) * (upper - lower) + lower;
+                    if (std::isnan(value))
+                        value = SimTK::clamp(lower, rand, upper);
+                    output(irow, icol) = value;
+                }
+            }
+        };
+        CasADiVariables<DM> casIterate = m_lowerBounds;
+        setRandom(casIterate.initialTime,
+                m_lowerBounds.initialTime, m_upperBounds.initialTime);
+        setRandom(casIterate.finalTime,
+                m_lowerBounds.finalTime, m_upperBounds.finalTime);
+        setRandom(casIterate.states,
+                m_lowerBounds.states, m_upperBounds.states);
+        setRandom(casIterate.controls,
+                m_lowerBounds.controls, m_upperBounds.controls);
+        setRandom(casIterate.parameters,
+                m_lowerBounds.parameters, m_upperBounds.parameters);
+
+        return convertToMuco<DM>(casIterate);
     }
     void initialize() {
         m_opti = casadi::Opti();

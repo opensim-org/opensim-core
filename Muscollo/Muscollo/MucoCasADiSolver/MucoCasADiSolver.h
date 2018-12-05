@@ -22,6 +22,8 @@
 
 #include "../MucoSolver.h"
 
+class CasADiTranscription;
+
 namespace OpenSim {
 
 // TODO have a different class for each transcription scheme.
@@ -74,6 +76,8 @@ public:
 protected:
     void resetProblemImpl(const MucoProblemRep&) const override {}
     MucoSolution solveImpl() const override;
+
+    std::unique_ptr<CasADiTranscription> createTranscription() const;
 
 private:
 
