@@ -21,6 +21,19 @@
 
 #include <casadi/casadi.hpp>
 
+// TODO
+// - put all the old impl stuff into Transcription, split out the
+//   code related to trapezoidal.
+// - solve testMucoCosts using CasADi.
+// - get all tests to pass using CasADi, adding in features as necessary.
+// - create separate tests for tropter and CasADi.
+// - copy TropterSolver options to CasADi (num_mesh_points).
+// - initial guess
+// - converting an iterate between muco and casadi.
+// - creating parameters.
+
+//
+
 using casadi::MX;
 using casadi::DM;
 using casadi::Sparsity;
@@ -166,27 +179,7 @@ private:
     const MucoProblemRep& p;
 };
 
-// TODO:
-// - initial guess
-// - converting an iterate between muco and casadi.
-// - creating parameters.
-
 namespace OpenSim {
-
-class Transcription {
-    virtual int getNumTimes() const = 0;
-    virtual void setDefectConstraints() const = 0;
-};
-
-class Trapezoidal : public Transcription {
-    void addDefectConstraints() {
-
-    }
-    void getIntegralQuadratureCoefficients() const {
-
-    }
-
-};
 
 struct CasADiVariables {
     MX initialTime;
@@ -195,8 +188,91 @@ struct CasADiVariables {
     MX controls;
 };
 
-class MucoCasADiSolverImpl {
+class CasADiTranscription {
 public:
+    CasADiTranscription(const MucoCasADiSolver& solver,
+            const MucoProblemRep& probRep)
+            : m_solver(solver), m_probRep(probRep),
+            m_model(m_probRep.getModel()) {}
+    void initialize() {
+        m_opti = casadi::Opti();
+
+        m_numTimes = 20;
+
+        // Add this as a method to MucoProblemRep.
+        m_stateNames = createStateVariableNamesInSystemOrder(m_model);
+        m_numStates = (int)m_stateNames.size();
+        m_numControls = [&]() {
+            int count = 0;
+            for (const auto& actuator : m_model.getComponentList<Actuator>()) {
+                // TODO check if it's enabled.
+                actuator.getName();
+                ++count;
+            }
+            return count;
+        }();
+
+        createVariables();
+
+        m_duration = m_vars.finalTime - m_vars.initialTime;
+        m_times = m_duration * m_mesh + m_vars.initialTime;
+
+        setVariableBounds(m_vars.initialTime, m_probRep.getTimeInitialBounds());
+        setVariableBounds(m_vars.finalTime, m_probRep.getTimeFinalBounds());
+
+        for (int is = 0; is < m_numStates; ++is) {
+            const auto& info = m_probRep.getStateInfo(m_stateNames[is]);
+            const auto& bounds = info.getBounds();
+            const auto& initialBounds = info.getInitialBounds();
+            const auto& finalBounds = info.getFinalBounds();
+            setVariableBounds(m_vars.states(is, Slice()), bounds);
+            setVariableBounds(m_vars.states(is, 0), initialBounds);
+            // Last state can be obtained via -1.
+            setVariableBounds(m_vars.states(is, -1), finalBounds);
+        }
+
+        int ic = 0;
+        for (const auto& actuator : m_model.getComponentList<Actuator>()) {
+            const auto actuPath = actuator.getAbsolutePathString();
+            m_controlNames.push_back(actuPath);
+            const auto& info = m_probRep.getControlInfo(actuPath);
+            const auto& bounds = info.getBounds();
+            const auto& initialBounds = info.getInitialBounds();
+            const auto& finalBounds = info.getFinalBounds();
+            setVariableBounds(m_vars.controls(ic, Slice()), bounds);
+            setVariableBounds(m_vars.controls(ic, 0), initialBounds);
+            setVariableBounds(m_vars.controls(ic, -1), finalBounds);
+            ++ic;
+        }
+
+        addDefectConstraints();
+
+        m_endpointCostFunction =
+                make_unique<EndpointCost>("endpoint_cost", m_probRep);
+
+        // TODO: Evaluate individual endpoint costs separately.
+        auto endpoint_cost = m_endpointCostFunction->operator()(
+                {m_vars.finalTime, m_vars.states(Slice(), -1)}).at(0);
+
+        m_times = m_duration * m_mesh + m_vars.initialTime;
+        DM meshIntervals = m_mesh(Slice(1)) - m_mesh(Slice(0, -2));
+        DM quadCoeffs = createIntegralQuadratureCoefficients(meshIntervals);
+
+        m_integrandCostFunction =
+                make_unique<IntegrandCost>("integrand", m_probRep);
+        MX integral_cost = m_opti.variable();
+        integral_cost = 0;
+        for (int i = 0; i < m_numTimes; ++i) {
+            const auto out = m_integrandCostFunction->operator()(
+                    {m_times(i, 0),
+                     m_vars.states(Slice(), i),
+                     m_vars.controls(Slice(), i)});
+            integral_cost += quadCoeffs(i) * out.at(0);
+        }
+        integral_cost *= m_duration;
+        m_opti.minimize(endpoint_cost + integral_cost);
+    }
+
     MucoSolution solve() {
         m_opti.solver("ipopt", {}, {{"hessian_approximation", "limited-memory"}});
         auto casadiSolution = m_opti.solve();
@@ -226,76 +302,59 @@ public:
                 simtkStates, simtkControls, {}, {});
         return mucoSolution;
     }
+
+    /// @precondition The following are set: m_numTimes, m_numStates,
+    ///     m_numControls.
+    /// @postcondition All fields in member variable m_vars are set, and
+    ///     and m_mesh is set.
+    virtual void createVariables() = 0;
+    virtual void addDefectConstraints() = 0;
+    virtual DM createIntegralQuadratureCoefficients(const DM& meshIntervals)
+            const = 0;
+protected:
     void setVariableBounds(const MX& variable, const MucoBounds& bounds) {
         if (bounds.isSet()) {
-            m_opti.subject_to(bounds.getLower() <= variable <= bounds.getUpper());
+            const auto& lower = bounds.getLower();
+            const auto& upper = bounds.getUpper();
+            m_opti.subject_to(lower <= variable <= upper);
         }
     }
-    MucoCasADiSolverImpl(const MucoCasADiSolver& solver)
-            : m_solver(solver) {
-        const MucoProblemRep& rep = m_solver.getProblemRep();
+    const MucoCasADiSolver& m_solver;
+    const MucoProblemRep& m_probRep;
+    const Model& m_model;
+    casadi::Opti m_opti;
+    CasADiVariables m_vars;
+    int m_numTimes = -1;
+    int m_numStates = -1;
+    int m_numControls = -1;
+    MX m_times;
+    MX m_duration;
+    DM m_mesh;
+    std::vector<std::string> m_stateNames;
+    std::vector<std::string> m_controlNames;
 
-        m_opti = casadi::Opti();
+    std::unique_ptr<DynamicsFunction> m_dynamicsFunction;
+    std::unique_ptr<EndpointCost> m_endpointCostFunction;
+    std::unique_ptr<IntegrandCost> m_integrandCostFunction;
+};
 
-        m_numTimes = 20;
+class CasADiTrapezoidal : public CasADiTranscription {
+public:
+    using CasADiTranscription::CasADiTranscription;
 
-        const auto& model = rep.getModel();
+    DM createIntegralQuadratureCoefficients(const DM& meshIntervals)
+            const override {
+        DM trapezoidalQuadCoeffs(m_numTimes, 1);
+        trapezoidalQuadCoeffs(Slice(0, -2)) = 0.5 * meshIntervals;
+        trapezoidalQuadCoeffs(Slice(1, -1)) += 0.5 * meshIntervals;
+        return trapezoidalQuadCoeffs;
+    }
 
-        // Add this as a method to MucoProblemRep.
-        m_stateNames = createStateVariableNamesInSystemOrder(model);
-        m_numStates = (int)m_stateNames.size();
-        m_numControls = [&]() {
-            int count = 0;
-            for (const auto& actuator : model.getComponentList<Actuator>()) {
-                // TODO check if it's enabled.
-                actuator.getName();
-                ++count;
-            }
-            return count;
-        }();
+    void addDefectConstraints() override {
 
-        m_vars.initialTime = m_opti.variable();
-        m_vars.finalTime = m_opti.variable();
-        MX duration = m_vars.finalTime - m_vars.initialTime;
-        MX mesh = MX::linspace(0, 1, m_numTimes);
-        m_times = duration * MX::linspace(0, 1, m_numTimes) +
-                m_vars.initialTime;
-        MX meshIntervals = mesh(Slice(1)) - mesh(Slice(0, -2));
-
-        setVariableBounds(m_vars.initialTime, rep.getTimeInitialBounds());
-        setVariableBounds(m_vars.finalTime, rep.getTimeFinalBounds());
-
-        m_vars.states = m_opti.variable(m_numStates, m_numTimes);
-        for (int is = 0; is < m_numStates; ++is) {
-            const auto& info = rep.getStateInfo(m_stateNames[is]);
-            const auto& bounds = info.getBounds();
-            const auto& initialBounds = info.getInitialBounds();
-            const auto& finalBounds = info.getFinalBounds();
-            // All time except initial and final time??
-            // opt.subject_to(bounds.getLower() <= states(is, Slice(1, -1)) <= bounds.getUpper());
-            setVariableBounds(m_vars.states(is, Slice()), bounds);
-            setVariableBounds(m_vars.states(is, 0), initialBounds);
-            // Last state can be obtained via -1.
-            setVariableBounds(m_vars.states(is, -1), finalBounds);
-        }
-
-        m_vars.controls = m_opti.variable(m_numControls, m_numTimes);
-        int ic = 0;
-        for (const auto& actuator : model.getComponentList<Actuator>()) {
-            const auto actuPath = actuator.getAbsolutePathString();
-            m_controlNames.push_back(actuPath);
-            const auto& info = rep.getControlInfo(actuPath);
-            const auto& bounds = info.getBounds();
-            const auto& initialBounds = info.getInitialBounds();
-            const auto& finalBounds = info.getFinalBounds();
-            setVariableBounds(m_vars.controls(ic, Slice()), bounds);
-            setVariableBounds(m_vars.controls(ic, 0), initialBounds);
-            setVariableBounds(m_vars.controls(ic, -1), finalBounds);
-            ++ic;
-        }
-
-        auto h = duration / (m_numTimes - 1);
-        m_dynamicsFunction = make_unique<DynamicsFunction>("dynamics", rep);
+        auto h = m_duration / (m_numTimes - 1);
+        m_dynamicsFunction =
+                make_unique<DynamicsFunction>("dynamics", m_probRep);
 
         // Defects.
         MX xdot_im1 = m_dynamicsFunction->operator()(
@@ -312,62 +371,26 @@ public:
             m_opti.subject_to(x_i == (x_im1 + 0.5 * h * (xdot_i + xdot_im1)));
             xdot_im1 = xdot_i;
         }
-
-        m_endpointCostFunction =
-                make_unique<EndpointCost>("endpoint_cost", rep);
-
-        // TODO: Evaluate individual endpoint costs separately.
-        auto endpoint_cost = m_endpointCostFunction->operator()(
-                {m_vars.finalTime, m_vars.states(Slice(), -1)}).at(0);
-
-        MX trapezoidalQuadCoeffs(m_numTimes, 1);
-        trapezoidalQuadCoeffs(Slice(0, -2)) = 0.5 * meshIntervals;
-        trapezoidalQuadCoeffs(Slice(1, -1)) += 0.5 * meshIntervals;
-
-        m_integrandCostFunction = make_unique<IntegrandCost>("integrand", rep);
-        MX integral_cost = m_opti.variable();
-        integral_cost = 0;
-        for (int i = 0; i < m_numTimes; ++i) {
-            const auto out = m_integrandCostFunction->operator()(
-                    {i * h,
-                     m_vars.states(Slice(), i),
-                     m_vars.controls(Slice(), i)});
-            integral_cost += trapezoidalQuadCoeffs(i) * out.at(0);
-        }
-        integral_cost *= duration;
-        m_opti.minimize(endpoint_cost + integral_cost);
-
     }
 private:
-    void createVariables() {
+    void createVariables() override {
         m_vars.initialTime = m_opti.variable();
         m_vars.finalTime = m_opti.variable();
         m_vars.states = m_opti.variable(m_numStates, m_numTimes);
         m_vars.controls = m_opti.variable(m_numControls, m_numTimes);
+        m_mesh = DM::linspace(0, 1, m_numTimes);
     }
-    const MucoCasADiSolver& m_solver;
-    casadi::Opti m_opti;
-    CasADiVariables m_vars;
-    std::vector<std::string> m_stateNames;
-    std::vector<std::string> m_controlNames;
-    int m_numTimes = -1;
-    int m_numStates = -1;
-    int m_numControls = -1;
-    MX m_times;
-
-    std::unique_ptr<DynamicsFunction> m_dynamicsFunction;
-    std::unique_ptr<EndpointCost> m_endpointCostFunction;
-    std::unique_ptr<IntegrandCost> m_integrandCostFunction;
 
 };
 
 } // namespace OpenSim
 
 MucoSolution MucoCasADiSolver::solveImpl() const {
-    MucoCasADiSolverImpl solverImpl(*this);
+    CasADiTrapezoidal transcription(*this, getProblemRep());
+    transcription.initialize();
     // opt.disp(std::cout, true);
     try {
-        return solverImpl.solve();
+        return transcription.solve();
     } catch (const std::exception& e) {
         std::cout << "Error: " << e.what() << std::endl;
         // TODO: Return a solution.
