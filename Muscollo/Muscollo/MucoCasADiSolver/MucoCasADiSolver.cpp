@@ -22,13 +22,13 @@
 #include <casadi/casadi.hpp>
 
 // TODO
-// - solve testMucoCosts using CasADi.
 // - get all tests to pass using CasADi, adding in features as necessary.
 // - create separate tests for tropter and CasADi.
 // - copy TropterSolver options to CasADi (num_mesh_points).
 // - initial guess
 // - converting an iterate between muco and casadi.
 // - creating parameters.
+// - compute kinematic diff eqs directly if possible (not finite differences).
 
 //
 
