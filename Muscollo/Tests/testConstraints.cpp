@@ -525,7 +525,7 @@ void testDoublePendulumPointOnLine() {
     ms.set_hessian_block_sparsity_mode("dense");
     ms.set_transcription_scheme("hermite-simpson");
     ms.set_enforce_constraint_derivatives(true);
-    ms.set_lagrange_multiplier_weight(10);
+    ms.set_lagrange_multiplier_weight(100);
     ms.setGuess("bounds");
 
     MucoSolution solution = muco.solve();
@@ -864,9 +864,9 @@ int main() {
         SimTK_SUBTEST(testPrescribedMotion);
         // Direct collocation subtests.
         SimTK_SUBTEST(testDoublePendulumPointOnLine);
-        //MucoSolution couplerSolution;
-        //SimTK_SUBTEST1(testDoublePendulumCoordinateCoupler, couplerSolution);
-        //SimTK_SUBTEST1(testDoublePendulumPrescribedMotion, couplerSolution);
-        //SimTK_SUBTEST(testDoublePendulumEqualControl);
+        MucoSolution couplerSolution;
+        SimTK_SUBTEST1(testDoublePendulumCoordinateCoupler, couplerSolution);
+        SimTK_SUBTEST1(testDoublePendulumPrescribedMotion, couplerSolution);
+        SimTK_SUBTEST(testDoublePendulumEqualControl);
     SimTK_END_TEST();
 }

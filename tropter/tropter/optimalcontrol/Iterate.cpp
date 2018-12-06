@@ -31,8 +31,8 @@ Iterate::Iterate(const std::string& filepath) {
     std::ifstream f(filepath);
     TROPTER_THROW_IF(!f, "Could not read '%s'.", filepath);
 
-    // Grab the number of states, controls, adjuncts, intersteps and parameters.
-    // -------------------------------------------------------------------------
+    // Grab the number of states, controls, adjuncts, diffuses and parameters.
+    // -----------------------------------------------------------------------
     std::string line;
     TROPTER_THROW_IF(!std::getline(f, line) || line.find("num_states=") != 0,
             "Could not read num_states from '%s'.", filepath);
@@ -49,10 +49,10 @@ Iterate::Iterate(const std::string& filepath) {
     std::string num_adjuncts_str = line.substr(line.find('=') + 1);
     int num_adjuncts = std::stoi(num_adjuncts_str);
 
-    TROPTER_THROW_IF(!std::getline(f, line) || line.find("num_intersteps=") != 0,
-        "Could not read num_intersteps from '%s'.", filepath);
-    std::string num_intersteps_str = line.substr(line.find('=') + 1);
-    int num_intersteps = std::stoi(num_intersteps_str);
+    TROPTER_THROW_IF(!std::getline(f, line) || line.find("num_diffuses=") != 0,
+        "Could not read num_diffuses from '%s'.", filepath);
+    std::string num_diffuses_str = line.substr(line.find('=') + 1);
+    int num_diffuses = std::stoi(num_diffuses_str);
 
     TROPTER_THROW_IF(!std::getline(f, line) || 
             line.find("num_parameters=") != 0,
@@ -81,18 +81,18 @@ Iterate::Iterate(const std::string& filepath) {
         else if (i_label < num_states + num_controls + num_adjuncts)
             adjunct_names.push_back(label);
         else if (i_label < num_states + num_controls + num_adjuncts 
-                                                     + num_intersteps)
-            interstep_names.push_back(label);
+                                                     + num_diffuses)
+            diffuse_names.push_back(label);
         else
             parameter_names.push_back(label);
         ++i_label;
     }
     TROPTER_THROW_IF(i_label != num_states + num_controls + num_adjuncts + 
-                num_intersteps + num_parameters,
+                num_diffuses + num_parameters,
             "In '%s', expected %i columns but got %i columns.",
             // Add 1 for the time column.
             filepath, 1 + num_states + num_controls + num_adjuncts + 
-                num_intersteps + num_parameters, 
+                num_diffuses + num_parameters, 
             1 + i_label);
 
     // Get number of times.
@@ -113,7 +113,7 @@ Iterate::Iterate(const std::string& filepath) {
     states.resize(num_states, num_times);
     controls.resize(num_controls, num_times);
     adjuncts.resize(num_adjuncts, num_times);
-    intersteps.resize(num_intersteps, num_times);
+    diffuses.resize(num_diffuses, num_times);
     parameters.resize(num_parameters);
     std::string element;
     // For each line of data.
@@ -136,13 +136,13 @@ Iterate::Iterate(const std::string& filepath) {
                 element_ss >> adjuncts(i_var - num_states - num_controls, 
                     i_time);
             else if (i_var < num_states + num_controls + num_adjuncts 
-                                                       + num_intersteps)
-                element_ss >> intersteps(i_var - num_states - num_controls
+                                                       + num_diffuses)
+                element_ss >> diffuses(i_var - num_states - num_controls
                     - num_adjuncts, i_time);
             else 
                 if (i_time == 0)
                     element_ss >> parameters(i_var - num_states - num_controls
-                        - num_adjuncts - num_intersteps);
+                        - num_adjuncts - num_diffuses);
             ++i_var;
         }
         ++i_time;
@@ -205,7 +205,7 @@ Iterate::interpolate(int desired_num_columns) const {
     out.state_names = state_names;
     out.control_names = control_names;
     out.adjunct_names = adjunct_names;
-    out.interstep_names = interstep_names;
+    out.diffuse_names = diffuse_names;
     out.time = Eigen::RowVectorXd::LinSpaced(desired_num_columns,
                                              time[0], time.tail<1>()[0]);
 
@@ -213,15 +213,15 @@ Iterate::interpolate(int desired_num_columns) const {
     out.controls = interp1(time, controls, out.time);
     out.adjuncts = interp1(time, adjuncts, out.time);
 
-    if (interstep_names.size()) {
+    if (diffuse_names.size()) {
         // Create interpolant for non-nan columns.
-        MatrixXd intersteps_no_nans;
+        MatrixXd diffuses_no_nans;
         VectorXd time_no_nans;
         int cols_no_nans = 1;
-        for (int icol = 0; icol < intersteps.cols(); ++icol) {
-            if (isnan(intersteps(0, icol))) {
-                intersteps_no_nans.conservativeResize(NoChange, cols_no_nans);
-                intersteps_no_nans.col(cols_no_nans - 1) = intersteps.col(icol);
+        for (int icol = 0; icol < diffuses.cols(); ++icol) {
+            if (isnan(diffuses(0, icol))) {
+                diffuses_no_nans.conservativeResize(NoChange, cols_no_nans);
+                diffuses_no_nans.col(cols_no_nans - 1) = diffuses.col(icol);
                 time_no_nans << time[icol];
                 ++cols_no_nans;
             }
@@ -242,7 +242,7 @@ void Iterate::write(const std::string& filepath) const {
     f << "num_states=" << states.rows() << std::endl;
     f << "num_controls=" << controls.rows() << std::endl;
     f << "num_adjuncts=" << adjuncts.rows() << std::endl;
-    f << "num_intersteps=" << intersteps.rows() << std::endl;
+    f << "num_diffuses=" << diffuses.rows() << std::endl;
     f << "num_parameters=" << parameters.rows() << std::endl;
 
     // Column labels.
@@ -250,7 +250,7 @@ void Iterate::write(const std::string& filepath) const {
     if (state_names.size() == (size_t)states.rows() &&
             control_names.size() == (size_t)controls.rows() &&
             adjunct_names.size() == (size_t)adjuncts.rows() &&
-            interstep_names.size() == (size_t)intersteps.rows() &&
+            diffuse_names.size() == (size_t)diffuses.rows() &&
             parameter_names.size() == (size_t)parameters.rows()) {
         for (int i_state = 0; i_state < states.rows(); ++i_state)
             f << "," << state_names[i_state];
@@ -258,12 +258,10 @@ void Iterate::write(const std::string& filepath) const {
             f << "," << control_names[i_control];
         for (int i_adjunct = 0; i_adjunct < adjuncts.rows(); ++i_adjunct)
             f << "," << adjunct_names[i_adjunct];
-        for (int i_interstep = 0; i_interstep < intersteps.rows(); 
-                ++i_interstep)
-            f << "," << interstep_names[i_interstep];
-        for (int i_parameter = 0; i_parameter < parameters.rows(); 
-                ++i_parameter)
-            f << "," << parameter_names[i_parameter];
+        for (int i_diffuse = 0; i_diffuse < diffuses.rows(); ++i_diffuse)
+            f << "," << diffuse_names[i_diffuse];
+        for (int i_param = 0; i_param < parameters.rows(); ++i_param)
+            f << "," << parameter_names[i_param];
     } else {
         for (int i_state = 0; i_state < states.rows(); ++i_state)
             f << ",state" << i_state;
@@ -271,12 +269,10 @@ void Iterate::write(const std::string& filepath) const {
             f << ",control" << i_control;
         for (int i_adjunct = 0; i_adjunct < adjuncts.rows(); ++i_adjunct)
             f << ",adjunct" << i_adjunct;
-        for (int i_interstep = 0; i_interstep < intersteps.rows(); 
-                ++i_interstep)
-            f << ",interstep" << i_interstep;
-        for (int i_parameter = 0; i_parameter < parameters.rows(); 
-                ++i_parameter)
-            f << ",parameter" << i_parameter;
+        for (int i_diffuse = 0; i_diffuse < diffuses.rows(); ++i_diffuse)
+            f << ",diffuse" << i_diffuse;
+        for (int i_param = 0; i_param < parameters.rows(); ++i_param)
+            f << ",parameter" << i_param;
     }
     f << std::endl;
 
@@ -289,13 +285,11 @@ void Iterate::write(const std::string& filepath) const {
             f << "," << controls(i_control, i_mesh);
         for (int i_adjunct = 0; i_adjunct < adjuncts.rows(); ++i_adjunct)
             f << "," << adjuncts(i_adjunct, i_mesh);
-        for (int i_interstep = 0; i_interstep < intersteps.rows(); 
-                ++i_interstep)
-            f << "," << intersteps(i_interstep, i_mesh);
-        for (int i_parameter = 0; i_parameter < parameters.rows(); 
-                ++i_parameter)
+        for (int i_diffuse = 0; i_diffuse < diffuses.rows(); ++i_diffuse)
+            f << "," << diffuses(i_diffuse, i_mesh);
+        for (int i_param = 0; i_param < parameters.rows(); ++i_param)
             if (i_mesh == 0) {
-                f << "," << parameters(i_parameter);
+                f << "," << parameters(i_param);
             } else {
                 f << "," << std::numeric_limits<double>::quiet_NaN();
             }

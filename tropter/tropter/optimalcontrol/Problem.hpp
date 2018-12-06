@@ -252,7 +252,7 @@ set_adjunct_guess(Iterate& guess,
 
 template<typename T>
 void Problem<T>::
-set_interstep_guess(Iterate& guess,
+set_diffuse_guess(Iterate& guess,
     const std::string& name,
     const Eigen::VectorXd& value)
 {
@@ -261,28 +261,28 @@ set_interstep_guess(Iterate& guess,
     TROPTER_THROW_IF(value.size() != guess.time.size(),
         "Expected value to have %i elements, but it has %i elements.",
         guess.time.size(), value.size());
-    if (guess.intersteps.rows() == 0) {
-        guess.intersteps.resize(m_interstep_infos.size(), guess.time.size());
+    if (guess.diffuses.rows() == 0) {
+        guess.diffuses.resize(m_diffuse_infos.size(), guess.time.size());
     }
-    else if (size_t(guess.intersteps.rows()) != m_interstep_infos.size() ||
-        guess.intersteps.cols() != guess.time.size()) {
-        TROPTER_THROW("Expected guess.intersteps to have dimensions %i x %i "
+    else if (size_t(guess.diffuses.rows()) != m_diffuse_infos.size() ||
+        guess.diffuses.cols() != guess.time.size()) {
+        TROPTER_THROW("Expected guess.diffuses to have dimensions %i x %i "
             "but dimensions are %i x %i.",
-            m_interstep_infos.size(), guess.time.size(),
-            guess.intersteps.rows(), guess.intersteps.cols());
+            m_diffuse_infos.size(), guess.time.size(),
+            guess.diffuses.rows(), guess.diffuses.cols());
     }
-    // Find the interstep index.
-    size_t interstep_index = 0;
-    // TODO store interstep infos in a map.
-    for (const auto& info : m_interstep_infos) {
+    // Find the diffuse index.
+    size_t diffuse_index = 0;
+    // TODO store diffuse infos in a map.
+    for (const auto& info : m_diffuse_infos) {
         if (info.name == name) break;
-        interstep_index++;
+        diffuse_index++;
     }
-    TROPTER_THROW_IF(interstep_index == m_interstep_infos.size(),
-        "Interstep '%s' does not exist.", name);
+    TROPTER_THROW_IF(diffuse_index == m_diffuse_infos.size(),
+        "diffuse '%s' does not exist.", name);
 
     // Set the guess.
-    guess.intersteps.row(interstep_index) = value;
+    guess.diffuses.row(diffuse_index) = value;
 }
 
 template<typename T>
@@ -335,8 +335,8 @@ void Problem<T>::get_all_bounds(
         Eigen::Ref<Eigen::VectorXd> initial_adjuncts_upper,
         Eigen::Ref<Eigen::VectorXd> final_adjuncts_lower,
         Eigen::Ref<Eigen::VectorXd> final_adjuncts_upper,
-        Eigen::Ref<Eigen::VectorXd> intersteps_lower,
-        Eigen::Ref<Eigen::VectorXd> intersteps_upper,
+        Eigen::Ref<Eigen::VectorXd> diffuses_lower,
+        Eigen::Ref<Eigen::VectorXd> diffuses_upper,
         Eigen::Ref<Eigen::VectorXd> parameters_lower,
         Eigen::Ref<Eigen::VectorXd> parameters_upper,
         Eigen::Ref<Eigen::VectorXd> path_constraints_lower,
@@ -404,11 +404,11 @@ void Problem<T>::get_all_bounds(
             final_adjuncts_upper[ia] = info.bounds.upper;
         }
     }
-    for (unsigned ii = 0; ii < m_interstep_infos.size(); ++ii) {
-        const auto& info = m_interstep_infos[ii];
+    for (unsigned ii = 0; ii < m_diffuse_infos.size(); ++ii) {
+        const auto& info = m_diffuse_infos[ii];
         // TODO if (!info.bounds.is_set()), give error.
-        intersteps_lower[ii] = info.bounds.lower;
-        intersteps_upper[ii] = info.bounds.upper;
+        diffuses_lower[ii] = info.bounds.lower;
+        diffuses_upper[ii] = info.bounds.upper;
     }
     for (unsigned ip = 0; ip < m_parameter_infos.size(); ++ip) {
         const auto& info = m_parameter_infos[ip];

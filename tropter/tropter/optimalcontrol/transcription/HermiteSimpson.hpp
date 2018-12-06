@@ -46,14 +46,14 @@ void HermiteSimpson<T>::set_ocproblem(
     m_num_states = m_ocproblem->get_num_states();
     m_num_controls = m_ocproblem->get_num_controls();
     m_num_adjuncts = m_ocproblem->get_num_adjuncts();
-    m_num_intersteps = m_ocproblem->get_num_intersteps();
+    m_num_diffuses = m_ocproblem->get_num_diffuses();
     m_num_continuous_variables = m_num_states + m_num_controls + m_num_adjuncts;
     m_num_time_variables = 2;
     m_num_parameters = m_ocproblem->get_num_parameters();
     m_num_dense_variables = m_num_time_variables + m_num_parameters;
     int num_variables = m_num_time_variables + m_num_parameters
         + m_num_col_points * m_num_continuous_variables
-        + (m_num_mesh_points - 1) * m_num_intersteps;
+        + (m_num_mesh_points - 1) * m_num_diffuses;
     this->set_num_variables(num_variables);
     // The separated form of Hermite-Simpson requires two constraint equations
     // to implement the defects for a single state variable, one for the 
@@ -91,7 +91,7 @@ void HermiteSimpson<T>::set_ocproblem(
     const auto state_names = m_ocproblem->get_state_names();
     const auto control_names = m_ocproblem->get_control_names();
     const auto adjunct_names = m_ocproblem->get_adjunct_names();
-    const auto interstep_names = m_ocproblem->get_interstep_names();
+    const auto diffuse_names = m_ocproblem->get_diffuse_names();
     for (int i_mesh = 0; i_mesh < m_num_mesh_points; ++i_mesh) {
         // If not the first mesh point, also add in midpoint variable names
         // before the mesh point variable names. 
@@ -141,11 +141,11 @@ void HermiteSimpson<T>::set_ocproblem(
             m_variable_names.push_back(ss.str());
         }
     }
-    // Need to append intersteps to end for now to allow slicing.
+    // Need to append diffuses to end for now to allow slicing.
     for (int i_mesh = 1; i_mesh < m_num_mesh_points; ++i_mesh) {
-        for (const auto& interstep_name : interstep_names) {
+        for (const auto& diffuse_name : diffuse_names) {
             std::stringstream ss;
-            ss << interstep_name << "_bar_"
+            ss << diffuse_name << "_bar_"
                 << std::setfill('0') << std::setw(num_digits_max_mesh_index)
                 << i_mesh;
             m_variable_names.push_back(ss.str());
@@ -211,8 +211,8 @@ void HermiteSimpson<T>::set_ocproblem(
     VectorXd initial_adjuncts_upper(m_num_adjuncts);
     VectorXd final_adjuncts_lower(m_num_adjuncts);
     VectorXd final_adjuncts_upper(m_num_adjuncts);
-    VectorXd intersteps_lower(m_num_intersteps);
-    VectorXd intersteps_upper(m_num_intersteps);
+    VectorXd diffuses_lower(m_num_diffuses);
+    VectorXd diffuses_upper(m_num_diffuses);
     VectorXd parameters_upper(m_num_parameters);
     VectorXd parameters_lower(m_num_parameters);
     VectorXd path_constraints_lower(m_num_path_constraints);
@@ -228,7 +228,7 @@ void HermiteSimpson<T>::set_ocproblem(
         adjuncts_lower, adjuncts_upper,
         initial_adjuncts_lower, initial_adjuncts_upper,
         final_adjuncts_lower, final_adjuncts_upper,
-        intersteps_lower, intersteps_upper,
+        diffuses_lower, diffuses_upper,
         parameters_lower, parameters_upper,
         path_constraints_lower, path_constraints_upper);
     // TODO validate sizes.
@@ -243,7 +243,7 @@ void HermiteSimpson<T>::set_ocproblem(
                 .finished()
                 .replicate(m_num_col_points - 2, 1),
         final_states_lower, final_controls_lower, final_adjuncts_lower,
-        (VectorXd(m_num_intersteps) << intersteps_lower)
+        (VectorXd(m_num_diffuses) << diffuses_lower)
                 .finished()
                 .replicate(m_num_mesh_points - 1, 1);
     VectorXd variable_upper(num_variables);
@@ -256,7 +256,7 @@ void HermiteSimpson<T>::set_ocproblem(
                 .finished()
                 .replicate(m_num_col_points - 2, 1),
         final_states_upper, final_controls_upper, final_adjuncts_upper,
-        (VectorXd(m_num_intersteps) << intersteps_upper)
+        (VectorXd(m_num_diffuses) << diffuses_upper)
                 .finished()
                 .replicate(m_num_mesh_points - 1, 1);
     this->set_variable_bounds(variable_lower, variable_upper);
@@ -328,19 +328,9 @@ void HermiteSimpson<T>::calc_objective(const VectorX<T>& x, T& obj_value) const
     auto states = make_states_trajectory_view(x);
     auto controls = make_controls_trajectory_view(x);
     auto adjuncts = make_adjuncts_trajectory_view(x);
-    auto intersteps = make_intersteps_trajectory_view(x);
+    auto diffuses = make_diffuses_trajectory_view(x);
     auto parameters = make_parameters_view(x);
 
-    //std::cout << "states: " << std::endl;
-    //std::cout << states << std::endl;
-    //std::cout << "controls: " << std::endl;
-    //std::cout << controls << std::endl;
-    //std::cout << "adjuncts: " << std::endl;
-    //std::cout << adjuncts << std::endl;
-    //std::cout << "intersteps: " << std::endl;
-    //std::cout << intersteps << std::endl;
-    //std::cout << "parameters: " << std::endl;
-    //std::cout << parameters << std::endl;
 
     // Initialize on iterate.
     // ----------------------
@@ -357,17 +347,17 @@ void HermiteSimpson<T>::calc_objective(const VectorX<T>& x, T& obj_value) const
     m_integrand.setZero();
     for (int i_col = 0; i_col < m_num_col_points; ++i_col) {
         const T time = step_size * i_col + initial_time;
-        // Only pass interstep variables on the midpoints where they are 
+        // Only pass diffuse variables on the midpoints where they are 
         // defined, otherwise pass an empty variable.
         if (i_col % 2) {
             m_ocproblem->calc_integral_cost({i_col, time,
                 states.col(i_col), controls.col(i_col), adjuncts.col(i_col),
-                intersteps.col(i_col), parameters},
+                diffuses.col(i_col), parameters},
                 m_integrand[i_col]);
         } else {
             m_ocproblem->calc_integral_cost({i_col, time,
                 states.col(i_col), controls.col(i_col), adjuncts.col(i_col),
-                m_empty_interstep_col, parameters},
+                m_empty_diffuse_col, parameters},
                 m_integrand[i_col]);
         }
         
@@ -396,10 +386,7 @@ void HermiteSimpson<T>::calc_constraints(const VectorX<T>& x,
     auto states = make_states_trajectory_view(x);
     auto controls = make_controls_trajectory_view(x);
     auto adjuncts = make_adjuncts_trajectory_view(x);
-    auto intersteps = make_intersteps_trajectory_view(x);
-    //auto* last_x = x.data() + x.size();
-    //auto* last_i = intersteps.data() + intersteps.size();
-    //std::cout << (last_i == last_x) << std::endl;
+    auto diffuses = make_diffuses_trajectory_view(x);
     auto parameters = make_parameters_view(x);
 
     // Initialize on iterate.
@@ -421,7 +408,7 @@ void HermiteSimpson<T>::calc_constraints(const VectorX<T>& x,
         const T time = step_size * i_col + initial_time;
         m_ocproblem->calc_differential_algebraic_equations(
         {i_col, time, states.col(i_col), controls.col(i_col),
-            adjuncts.col(i_col), m_empty_interstep_col, parameters},
+            adjuncts.col(i_col), m_empty_diffuse_col, parameters},
             {m_derivs_mesh.col(i_mesh),
             constr_view.path_constraints.col(i_mesh)});
         i_mesh++;
@@ -432,7 +419,7 @@ void HermiteSimpson<T>::calc_constraints(const VectorX<T>& x,
         const T time = step_size * i_col + initial_time;
         m_ocproblem->calc_differential_algebraic_equations(
         {i_col, time, states.col(i_col), controls.col(i_col),
-            adjuncts.col(i_col), intersteps.col(i_mid), parameters},
+            adjuncts.col(i_col), diffuses.col(i_mid), parameters},
             {m_derivs_mid.col(i_mid),
             m_empty_path_constraint_col});
             TROPTER_THROW_IF(m_empty_path_constraint_col.size() != 0, 
@@ -580,50 +567,50 @@ std::vector<std::string> HermiteSimpson<T>::get_constraint_names() const {
 
 template<typename T>
 Eigen::RowVectorXd HermiteSimpson<T>::
-get_interstep_times(const Eigen::RowVectorXd& time) const {
+get_diffuse_times(const Eigen::RowVectorXd& time) const {
     
-    Eigen::RowVectorXd interstep_times(m_num_mesh_points - 1);
-    int interstep_time_index = 0;
+    Eigen::RowVectorXd diffuse_times(m_num_mesh_points - 1);
+    int diffuse_time_index = 0;
     for (int i = 1; i < time.size()-1; i += 2) {
-        interstep_times[interstep_time_index] = time[i];
-        ++interstep_time_index;
+        diffuse_times[diffuse_time_index] = time[i];
+        ++diffuse_time_index;
     }
-   return interstep_times;
+   return diffuse_times;
 }
 
 template<typename T>
 Eigen::MatrixXd HermiteSimpson<T>::
-get_intersteps_with_nans(const Eigen::MatrixXd& intersteps_without_nans) const {
-    assert(intersteps_without_nans.rows() == m_num_intersteps);
-    assert(intersteps_without_nans.cols() == m_num_mesh_points - 1);
-    Eigen::MatrixXd intersteps_with_nans =
-        Eigen::MatrixXd::Constant(m_num_intersteps, m_num_col_points,
+get_diffuses_with_nans(const Eigen::MatrixXd& diffuses_without_nans) const {
+    assert(diffuses_without_nans.rows() == m_num_diffuses);
+    assert(diffuses_without_nans.cols() == m_num_mesh_points - 1);
+    Eigen::MatrixXd diffuses_with_nans =
+        Eigen::MatrixXd::Constant(m_num_diffuses, m_num_col_points,
             std::numeric_limits<double>::quiet_NaN());
     
     int i_mid = 0;
     for (int i_col = 1; i_col < m_num_col_points-1; i_col += 2) {
-        intersteps_with_nans.col(i_col) = intersteps_without_nans.col(i_mid);
+        diffuses_with_nans.col(i_col) = diffuses_without_nans.col(i_mid);
         ++i_mid;
     }
 
-    return intersteps_with_nans;
+    return diffuses_with_nans;
 }
 
 template<typename T>
 Eigen::MatrixXd HermiteSimpson<T>::
-get_intersteps_without_nans(const Eigen::MatrixXd& intersteps_with_nans) const {
-    assert(intersteps_with_nans.rows() == m_num_intersteps);
-    assert(intersteps_with_nans.cols() == m_num_col_points);
-    Eigen::MatrixXd intersteps_without_nans(m_num_intersteps, 
+get_diffuses_without_nans(const Eigen::MatrixXd& diffuses_with_nans) const {
+    assert(diffuses_with_nans.rows() == m_num_diffuses);
+    assert(diffuses_with_nans.cols() == m_num_col_points);
+    Eigen::MatrixXd diffuses_without_nans(m_num_diffuses, 
         m_num_mesh_points - 1);
 
     int i_mid = 0;
     for (int i_col = 1; i_col < m_num_col_points-1; i_col += 2) {
-        intersteps_without_nans.col(i_mid) = intersteps_with_nans.col(i_col);
+        diffuses_without_nans.col(i_mid) = diffuses_with_nans.col(i_col);
         ++i_mid;
     }
 
-    return intersteps_without_nans;
+    return diffuses_without_nans;
 }
 
 template<typename T>
@@ -643,9 +630,9 @@ Eigen::VectorXd HermiteSimpson<T>::
     TROPTER_THROW_IF(traj.adjuncts.rows() != m_num_adjuncts,
         "Expected adjuncts to have %i row(s), but it has %i.",
         m_num_adjuncts, traj.adjuncts.rows());
-    TROPTER_THROW_IF(traj.intersteps.rows() != m_num_intersteps,
-        "Expected intersteps to have %i row(s), but it has %i.",
-        m_num_intersteps, traj.intersteps.rows());
+    TROPTER_THROW_IF(traj.diffuses.rows() != m_num_diffuses,
+        "Expected diffuses to have %i row(s), but it has %i.",
+        m_num_diffuses, traj.diffuses.rows());
     TROPTER_THROW_IF(traj.parameters.rows() != m_num_parameters,
         "Expected parameters to have %i element(s), but it has %i.",
         m_num_parameters, traj.parameters.size());
@@ -674,12 +661,12 @@ Eigen::VectorXd HermiteSimpson<T>::
                 "respectively.",
                 traj.time.size(), traj.adjuncts.cols());
         }
-        if (traj.intersteps.cols()) {
-            TROPTER_THROW_IF(traj.time.size() != traj.intersteps.cols(),
-                "Expected time and intersteps to have the same number of "
+        if (traj.diffuses.cols()) {
+            TROPTER_THROW_IF(traj.time.size() != traj.diffuses.cols(),
+                "Expected time and diffuses to have the same number of "
                 "columns, but they have %i and %i column(s), "
                 "respectively.",
-                traj.time.size(), traj.intersteps.cols());
+                traj.time.size(), traj.diffuses.cols());
         }
     }
     else {
@@ -695,9 +682,9 @@ Eigen::VectorXd HermiteSimpson<T>::
         TROPTER_THROW_IF(traj.adjuncts.cols() != m_num_col_points,
             "Expected adjuncts to have %i column(s), but it has %i.",
             m_num_col_points, traj.adjuncts.cols());
-        TROPTER_THROW_IF(traj.intersteps.cols() != m_num_col_points,
-            "Expected intersteps to have %i column(s), but it has %i.",
-            m_num_col_points, traj.intersteps.cols());
+        TROPTER_THROW_IF(traj.diffuses.cols() != m_num_col_points,
+            "Expected diffuses to have %i column(s), but it has %i.",
+            m_num_col_points, traj.diffuses.cols());
     }
 
     // Interpolate the guess, as it might have a different number of collocation
@@ -726,9 +713,9 @@ Eigen::VectorXd HermiteSimpson<T>::
     this->make_controls_trajectory_view(iterate) = traj_to_use->controls;
     if (traj_to_use->adjuncts.cols())
         this->make_adjuncts_trajectory_view(iterate) = traj_to_use->adjuncts;
-    if (traj_to_use->intersteps.cols())
-        this->make_intersteps_trajectory_view(iterate) 
-            = get_intersteps_without_nans(traj_to_use->intersteps);
+    if (traj_to_use->diffuses.cols())
+        this->make_diffuses_trajectory_view(iterate) 
+            = get_diffuses_without_nans(traj_to_use->diffuses);
     if (traj_to_use->parameters.size())
         this->make_parameters_view(iterate) = traj_to_use->parameters;
 
@@ -749,14 +736,14 @@ Iterate HermiteSimpson<T>::
     traj.states = this->make_states_trajectory_view(x);
     traj.controls = this->make_controls_trajectory_view(x);
     traj.adjuncts = this->make_adjuncts_trajectory_view(x);
-    traj.intersteps = get_intersteps_with_nans(
-        this->make_intersteps_trajectory_view(x));
+    traj.diffuses = get_diffuses_with_nans(
+        this->make_diffuses_trajectory_view(x));
     traj.parameters = this->make_parameters_view(x);
 
     traj.state_names = m_ocproblem->get_state_names();
     traj.control_names = m_ocproblem->get_control_names();
     traj.adjunct_names = m_ocproblem->get_adjunct_names();
-    traj.interstep_names = m_ocproblem->get_interstep_names();
+    traj.diffuse_names = m_ocproblem->get_diffuse_names();
     traj.parameter_names = m_ocproblem->get_parameter_names();
 
     return traj;
@@ -793,7 +780,7 @@ void HermiteSimpson<T>::
     auto state_names = m_ocproblem->get_state_names();
     auto control_names = m_ocproblem->get_control_names();
     auto adjunct_names = m_ocproblem->get_adjunct_names();
-    auto interstep_names = m_ocproblem->get_interstep_names();
+    auto diffuse_names = m_ocproblem->get_diffuse_names();
     auto parameter_names = m_ocproblem->get_parameter_names();
     std::vector<std::string> time_names = {"initial_time", "final_time"};
 
@@ -826,10 +813,10 @@ void HermiteSimpson<T>::
                 adjunct_names.end(),
                 compare_size)->size());
     }
-    if (!interstep_names.empty()) {
+    if (!diffuse_names.empty()) {
         max_name_length = (int)std::max((size_t)max_name_length,
-            std::max_element(interstep_names.begin(),
-                interstep_names.end(),
+            std::max_element(diffuse_names.begin(),
+                diffuse_names.end(),
                 compare_size)->size());
     }
 
@@ -919,11 +906,11 @@ void HermiteSimpson<T>::
         ocp_vars.controls, ocp_vars_lower.controls, ocp_vars_upper.controls);
     print_bounds("Adjunct bounds", adjunct_names, ocp_vars.time,
         ocp_vars.adjuncts, ocp_vars_lower.adjuncts, ocp_vars_upper.adjuncts);
-    print_bounds("Interstep bounds", interstep_names,
-        get_interstep_times(ocp_vars.time), 
-        get_intersteps_without_nans(ocp_vars.intersteps), 
-        get_intersteps_without_nans(ocp_vars_lower.intersteps), 
-        get_intersteps_without_nans(ocp_vars_upper.intersteps));
+    print_bounds("Diffuse bounds", diffuse_names,
+        get_diffuse_times(ocp_vars.time), 
+        get_diffuses_without_nans(ocp_vars.diffuses), 
+        get_diffuses_without_nans(ocp_vars_lower.diffuses), 
+        get_diffuses_without_nans(ocp_vars_upper.diffuses));
 
     // Bounds on time and parameter variables.
     // ---------------------------------------
@@ -1228,16 +1215,16 @@ HermiteSimpson<T>::make_adjuncts_trajectory_view(const VectorX<S>& x) const
 template<typename T>
 template<typename S>
 typename HermiteSimpson<T>::template TrajectoryViewConst<S>
-HermiteSimpson<T>::make_intersteps_trajectory_view(const VectorX<S>& x) const
+HermiteSimpson<T>::make_diffuses_trajectory_view(const VectorX<S>& x) const
 {
     return{
-            // Start of intersteps for first mesh interval.
+            // Start of diffuses for first mesh interval.
             x.data() + m_num_dense_variables 
                      + m_num_continuous_variables * m_num_col_points,
-            m_num_intersteps,         // Number of rows.
+            m_num_diffuses,         // Number of rows.
             m_num_mesh_points - 1,    // Number of columns.
             // Distance between the start of each column.
-            Eigen::OuterStride<Eigen::Dynamic>(m_num_intersteps)};
+            Eigen::OuterStride<Eigen::Dynamic>(m_num_diffuses)};
 }
 
 // TODO avoid the duplication with the above.
@@ -1328,16 +1315,16 @@ HermiteSimpson<T>::make_adjuncts_trajectory_view(VectorX<S>& x) const
 template<typename T>
 template<typename S>
 typename HermiteSimpson<T>::template TrajectoryView<S>
-HermiteSimpson<T>::make_intersteps_trajectory_view(VectorX<S>& x) const
+HermiteSimpson<T>::make_diffuses_trajectory_view(VectorX<S>& x) const
 {
     return{
-            // Start of intersteps for first mesh interval.
+            // Start of diffuses for first mesh interval.
             x.data() + m_num_dense_variables
                      + m_num_continuous_variables * m_num_col_points,
-            m_num_intersteps,         // Number of rows.
+            m_num_diffuses,           // Number of rows.
             m_num_mesh_points - 1,    // Number of columns.
             // Distance between the start of each column.
-            Eigen::OuterStride<Eigen::Dynamic>(m_num_intersteps)};
+            Eigen::OuterStride<Eigen::Dynamic>(m_num_diffuses)};
     }
 
 template<typename T>

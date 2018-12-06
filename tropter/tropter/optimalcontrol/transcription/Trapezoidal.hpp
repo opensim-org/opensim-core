@@ -40,8 +40,8 @@ void Trapezoidal<T>::set_ocproblem(
     m_num_states = m_ocproblem->get_num_states();
     m_num_controls = m_ocproblem->get_num_controls();
     m_num_adjuncts = m_ocproblem->get_num_adjuncts();
-    TROPTER_THROW_IF(m_ocproblem->get_num_intersteps(),
-        "Trapezoidal collocation does not support interstep variables.");
+    TROPTER_THROW_IF(m_ocproblem->get_num_diffuses(),
+        "Trapezoidal collocation does not support diffuse variables.");
     m_num_continuous_variables = m_num_states + m_num_controls + m_num_adjuncts;
     m_num_time_variables = 2;
     m_num_parameters = m_ocproblem->get_num_parameters();
@@ -152,8 +152,8 @@ void Trapezoidal<T>::set_ocproblem(
     VectorXd initial_adjuncts_upper(m_num_adjuncts);
     VectorXd final_adjuncts_lower(m_num_adjuncts);
     VectorXd final_adjuncts_upper(m_num_adjuncts);
-    VectorXd intersteps_lower; // empty
-    VectorXd intersteps_upper; // empty
+    VectorXd diffuses_lower; // empty
+    VectorXd diffuses_upper; // empty
     VectorXd parameters_upper(m_num_parameters);
     VectorXd parameters_lower(m_num_parameters);
     VectorXd path_constraints_lower(m_num_path_constraints);
@@ -169,7 +169,7 @@ void Trapezoidal<T>::set_ocproblem(
             adjuncts_lower, adjuncts_upper,
             initial_adjuncts_lower, initial_adjuncts_upper,
             final_adjuncts_lower, final_adjuncts_upper,
-            intersteps_lower, intersteps_upper,
+            diffuses_lower, diffuses_upper,
             parameters_lower, parameters_upper,
             path_constraints_lower, path_constraints_upper);
     // TODO validate sizes.
@@ -267,7 +267,7 @@ void Trapezoidal<T>::calc_objective(const VectorX<T>& x, T& obj_value) const
         const T time = step_size * i_mesh + initial_time;
         m_ocproblem->calc_integral_cost({i_mesh, time,
                 states.col(i_mesh), controls.col(i_mesh), adjuncts.col(i_mesh),
-                m_empty_interstep_col, parameters}, 
+                m_empty_diffuse_col, parameters}, 
                 m_integrand[i_mesh]);
     }
     // TODO use more intelligent quadrature? trapezoidal rule?
@@ -318,7 +318,7 @@ void Trapezoidal<T>::calc_constraints(const VectorX<T>& x,
         const T time = step_size * i_mesh + initial_time;
         m_ocproblem->calc_differential_algebraic_equations(
                 {i_mesh, time, states.col(i_mesh), controls.col(i_mesh),
-                 adjuncts.col(i_mesh), m_empty_interstep_col, parameters},
+                 adjuncts.col(i_mesh), m_empty_diffuse_col, parameters},
                 {m_derivs.col(i_mesh),
                  constr_view.path_constraints.col(i_mesh)});
     }
@@ -527,8 +527,8 @@ construct_iterate(const Iterate& traj, bool interpolate) const
     TROPTER_THROW_IF(traj.parameters.rows() != m_num_parameters,
             "Expected parameters to have %i element(s), but it has %i.",
             m_num_parameters, traj.parameters.size());
-    TROPTER_THROW_IF(traj.intersteps.rows(),
-            "Trapezoidal collocation does not support interstep variables.");
+    TROPTER_THROW_IF(traj.diffuses.rows(),
+            "Trapezoidal collocation does not support diffuse variables.");
     // Check columns.
     if (interpolate) {
         // If interpolating, only check that non-empty matrices have the same

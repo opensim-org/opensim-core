@@ -222,7 +222,7 @@ TEST_CASE("(De)serialization of Iterate", "[iterate_readwrite]") {
     int num_states = 3;
     int num_controls = 2;
     int num_adjuncts = 1;
-    int num_intersteps = 1;
+    int num_diffuses = 1;
     int num_parameters = 2;
     it0.time.resize(num_times);
     it0.time.setRandom();
@@ -236,8 +236,8 @@ TEST_CASE("(De)serialization of Iterate", "[iterate_readwrite]") {
     it0.adjuncts.resize(num_adjuncts, num_times);
     it0.adjuncts.setRandom();
 
-    it0.intersteps.resize(num_intersteps, num_times);
-    it0.intersteps.setRandom();
+    it0.diffuses.resize(num_diffuses, num_times);
+    it0.diffuses.setRandom();
 
     it0.parameters.resize(num_parameters);
     it0.parameters.setRandom();
@@ -245,7 +245,7 @@ TEST_CASE("(De)serialization of Iterate", "[iterate_readwrite]") {
     it0.state_names = {"a", "b", "c"};
     it0.control_names = {"x", "y"};
     it0.adjunct_names = {"l"};
-    it0.interstep_names = {"g"};
+    it0.diffuse_names = {"g"};
     it0.parameter_names = {"p0", "p1"};
 
     // Serialize.
@@ -260,13 +260,13 @@ TEST_CASE("(De)serialization of Iterate", "[iterate_readwrite]") {
     TROPTER_REQUIRE_EIGEN(it0.states, it1.states, 1e-5);
     TROPTER_REQUIRE_EIGEN(it0.controls, it1.controls, 1e-5);
     TROPTER_REQUIRE_EIGEN(it0.adjuncts, it1.adjuncts, 1e-5);
-    TROPTER_REQUIRE_EIGEN(it0.intersteps, it1.intersteps, 1e-5);
+    TROPTER_REQUIRE_EIGEN(it0.diffuses, it1.diffuses, 1e-5);
     TROPTER_REQUIRE_EIGEN(it0.parameters, it1.parameters, 1e-5);
 
     REQUIRE(it0.state_names == it1.state_names);
     REQUIRE(it0.control_names == it1.control_names);
     REQUIRE(it0.adjunct_names == it1.adjunct_names);
-    REQUIRE(it0.interstep_names == it1.interstep_names);
+    REQUIRE(it0.diffuse_names == it1.diffuse_names);
     REQUIRE(it0.parameter_names == it1.parameter_names);
 }
 

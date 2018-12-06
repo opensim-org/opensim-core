@@ -78,9 +78,9 @@ struct Input {
     /// The vector of adjuncts at time `time`.
     /// @note If you pass this into functions that take an Eigen Vector as
     /// input, see the note above for the `states` variable.
-    /// @note An empty reference indicates that the intersteps are not defined
+    /// @note An empty reference indicates that the diffuses are not defined
     /// for the time point associated with this struct.
-    const Eigen::Ref<const VectorX<T>>& intersteps;
+    const Eigen::Ref<const VectorX<T>>& diffuses;
     /// The vector of time-invariant parameter values.
     /// @note If you pass this into functions that take an Eigen Vector as
     /// input, see the note above for the `states` variable.
@@ -125,10 +125,10 @@ struct Output {
 /// - *adjuncts*: a vector of all adjunct variables at a given time.
 /// - *adjuncts trajectory*: a trajectory through time of adjuncts
 ///   (adjunct vectors).
-/// - *interstep*: a single variable only defined within a mesh interval.
-/// - *intersteps*: a vector of all intersteps at a given time.
-/// - *intersteps trajectory*: a trajectory through time of intersteps
-///   (interstep vectors).
+/// - *diffuse*: a single variable only defined within a mesh interval.
+/// - *diffuses*: a vector of all diffuses at a given time.
+/// - *diffuses trajectory*: a trajectory through time of diffuses
+///   (diffuse vectors).
 /// - *parameter*: a single parameter variable.
 /// - *parameters*: a vector of all parameter variables.
 /// @ingroup optimalcontrol
@@ -150,7 +150,7 @@ private:
         std::string name;
         Bounds bounds;
     };
-    struct InterstepInfo {
+    struct DiffuseInfo {
         std::string name;
         Bounds bounds;
     };
@@ -167,8 +167,8 @@ public:
     {   return (int)m_control_infos.size(); }
     int get_num_adjuncts() const
     {   return (int)m_adjunct_infos.size(); }
-    int get_num_intersteps() const
-    {   return (int)m_interstep_infos.size(); }
+    int get_num_diffuses() const
+    {   return (int)m_diffuse_infos.size(); }
     int get_num_parameters() const
     {   return (int)m_parameter_infos.size(); }
     int get_num_path_constraints() const
@@ -203,12 +203,12 @@ public:
         }
         return names;
     }
-    /// Get the names of all the intersteps in the order they appear in the 
-    /// `intersteps` input to calc_differential_algebraic_equations(), etc.
+    /// Get the names of all the diffuses in the order they appear in the 
+    /// `diffuses` input to calc_differential_algebraic_equations(), etc.
     /// Note: this function is not free to call.
-    std::vector<std::string> get_interstep_names() const {
+    std::vector<std::string> get_diffuse_names() const {
         std::vector<std::string> names;
-        for (const auto& info : m_interstep_infos) {
+        for (const auto& info : m_diffuse_infos) {
             names.push_back(info.name);
         }
         return names;
@@ -276,13 +276,13 @@ public:
         m_adjunct_infos.push_back({name, bounds, initial_bounds, final_bounds});
         return (int)m_adjunct_infos.size() - 1;
     }
-    /// This returns an index that can be used to access this specific interstep
+    /// This returns an index that can be used to access this specific diffuse
     /// variable within `dynamics()`, `path_constraints()`, etc.
-    /// TODO check if an interstep with the provided name already exists.
-    int add_interstep(const std::string& name, const Bounds& bounds) {
+    /// TODO check if an diffuse with the provided name already exists.
+    int add_diffuse(const std::string& name, const Bounds& bounds) {
 
-        m_interstep_infos.push_back({name, bounds});
-        return (int)m_interstep_infos.size() - 1;
+        m_diffuse_infos.push_back({name, bounds});
+        return (int)m_diffuse_infos.size() - 1;
     }
     /// This returns an index that can be used to access this specific parameter
     /// variable within `dynamics()` , `path_constraints()`, etc.
@@ -417,27 +417,27 @@ public:
     void set_adjunct_guess(Iterate& guess,
             const std::string& name,
             const Eigen::VectorXd& value);
-    /// Set a guess for the trajectory of a single interstep variable with name
+    /// Set a guess for the trajectory of a single diffuse variable with name
     /// `name` to `value`. This function relieves you of the need to know the
-    /// index of a interstep variable. The `guess` must already have its `time`
-    /// vector filled out. If `guess.intersteps` is empty, this function will 
+    /// index of a diffuse variable. The `guess` must already have its `time`
+    /// vector filled out. If `guess.diffuses` is empty, this function will 
     /// set its dimensions appropriately according to the provided `guess.time`;
-    /// otherwise, `guess.intersteps` must have the correct dimensions (number 
-    /// of intersteps x mesh points).
+    /// otherwise, `guess.diffuses` must have the correct dimensions (number 
+    /// of diffuses x mesh points).
     /// @param[in,out] guess
-    ///     The row of the interstep matrix associated with the provided name
+    ///     The row of the diffuse matrix associated with the provided name
     ///     is set to value.
     /// @param[in] name
-    ///     Name of the interstep variable (provided in add_interstep()).
+    ///     Name of the diffuse variable (provided in add_diffuse()).
     /// @param[in] value
     ///     This must have the same number of columns as `guess.time` and
-    ///     `guess.intersteps`.
+    ///     `guess.diffuses`.
     /// @note For convenience, this method has the same behavior as the previous
     /// set_*_guess() methods. However, depending on the transcription scheme 
     /// used to solve the optimal control problem, the guess provided for the 
-    /// interstep variable be valid for certain time points. The values at these 
+    /// diffuse variable be valid for certain time points. The values at these 
     /// invalid time will therefore be ignored in the transcribed NLP. 
-    void set_interstep_guess(Iterate& guess,
+    void set_diffuse_guess(Iterate& guess,
             const std::string& name,
             const Eigen::VectorXd& value);
     /// Set a guess for the value of a single parameter variable with name
@@ -482,8 +482,8 @@ public:
             Eigen::Ref<Eigen::VectorXd> initial_adjuncts_upper,
             Eigen::Ref<Eigen::VectorXd> final_adjuncts_lower,
             Eigen::Ref<Eigen::VectorXd> final_adjuncts_upper,
-            Eigen::Ref<Eigen::VectorXd> intersteps_lower,
-            Eigen::Ref<Eigen::VectorXd> intersteps_upper,
+            Eigen::Ref<Eigen::VectorXd> diffuses_lower,
+            Eigen::Ref<Eigen::VectorXd> diffuses_upper,
             Eigen::Ref<Eigen::VectorXd> parameters_lower,
             Eigen::Ref<Eigen::VectorXd> parameters_upper,
             Eigen::Ref<Eigen::VectorXd> path_constraints_lower,
@@ -496,7 +496,7 @@ private:
     std::vector<ContinuousVariableInfo> m_state_infos;
     std::vector<ContinuousVariableInfo> m_control_infos;
     std::vector<ContinuousVariableInfo> m_adjunct_infos;
-    std::vector<InterstepInfo> m_interstep_infos;
+    std::vector<DiffuseInfo> m_diffuse_infos;
     std::vector<ParameterInfo> m_parameter_infos;
     std::vector<PathConstraintInfo> m_path_constraint_infos;
 };

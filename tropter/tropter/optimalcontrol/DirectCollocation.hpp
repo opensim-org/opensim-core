@@ -104,13 +104,13 @@ Solution DirectCollocationSolver<T>::solve(
     solution.states = traj.states;
     solution.controls = traj.controls;
     solution.adjuncts = traj.adjuncts;
-    solution.intersteps = traj.intersteps;
+    solution.diffuses = traj.diffuses;
     solution.parameters = traj.parameters;
     solution.objective = optsol.objective;
     solution.state_names = traj.state_names;
     solution.control_names = traj.control_names;
     solution.adjunct_names = traj.adjunct_names;
-    solution.interstep_names = traj.interstep_names;
+    solution.diffuse_names = traj.diffuse_names;
     solution.parameter_names = traj.parameter_names;
     solution.success = optsol.success;
     solution.status = optsol.status;

@@ -206,10 +206,10 @@ private:
     mutable VectorX<T> m_integrand;
     mutable MatrixX<T> m_derivs;
     // This empty vector is passed to calc_differential_algebraic_equations()
-    // for collocation points on the mesh where we do not have interstep
+    // for collocation points on the mesh where we do not have diffuse
     // variables. If the user tries to write to it, an Eigen runtime assertion 
     // will be violated. 
-    mutable VectorX<T> m_empty_interstep_col;
+    mutable VectorX<T> m_empty_diffuse_col;
 };
 
 } // namespace transcription

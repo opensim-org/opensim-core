@@ -60,7 +60,7 @@ MucoIterateType convert(const tropIterateType& tropSol) {
     const auto& state_names = tropSol.state_names;
     const auto& control_names = tropSol.control_names;
     const auto& multiplier_names = tropSol.adjunct_names;
-    const auto& gamma_names = tropSol.interstep_names;
+    const auto& gamma_names = tropSol.diffuse_names;
     const auto& parameter_names = tropSol.parameter_names;
 
     int numTimes = (int)time.size();
@@ -108,7 +108,7 @@ MucoIterateType convert(const tropIterateType& tropSol) {
         gammas.resize(numTimes, numGammas);
         for (int itime = 0; itime < numTimes; ++itime) {
             for (int igamma = 0; igamma < numGammas; ++igamma) {
-                gammas(itime, igamma) = tropSol.intersteps(igamma,
+                gammas(itime, igamma) = tropSol.diffuses(igamma,
                     itime);
             }
         }
@@ -139,14 +139,14 @@ tropter::Iterate convert(const MucoIterate& mucoIter) {
     tropIter.state_names = mucoIter.getStateNames();
     tropIter.control_names = mucoIter.getControlNames();
     tropIter.adjunct_names = mucoIter.getMultiplierNames();
-    tropIter.interstep_names = mucoIter.getGammaNames();
+    tropIter.diffuse_names = mucoIter.getGammaNames();
     tropIter.parameter_names = mucoIter.getParameterNames();
 
     int numTimes = (int)time.size();
     int numStates = (int)tropIter.state_names.size();
     int numControls = (int)tropIter.control_names.size();
     int numAdjuncts = (int)tropIter.adjunct_names.size();
-    int numIntersteps = (int)tropIter.interstep_names.size();
+    int numDiffuses = (int)tropIter.diffuse_names.size();
     int numParameters = (int)tropIter.parameter_names.size();
     const auto& states = mucoIter.getStatesTrajectory();
     const auto& controls = mucoIter.getControlsTrajectory();
@@ -169,11 +169,11 @@ tropter::Iterate convert(const MucoIterate& mucoIter) {
     } else {
         tropIter.adjuncts.resize(numAdjuncts, numTimes);
     }
-    if (numIntersteps) {
-        tropIter.intersteps = Map<const MatrixXd>(
-            &gammas(0, 0), numTimes, numIntersteps).transpose();
+    if (numDiffuses) {
+        tropIter.diffuses = Map<const MatrixXd>(
+            &gammas(0, 0), numTimes, numDiffuses).transpose();
     } else {
-        tropIter.intersteps.resize(numIntersteps, numTimes);
+        tropIter.diffuses.resize(numDiffuses, numTimes);
     }
     if (numParameters) {
         tropIter.parameters = Map<const VectorXd>(
@@ -309,7 +309,7 @@ public:
                     // constraint equation derivatives.
                     if (m_mucoTropterSolver
                             .get_enforce_constraint_derivatives()) {
-                        this->add_interstep(std::string(
+                        this->add_diffuse(std::string(
                                 multInfo.getName()).replace(0, 6, "gamma"),
                             convert(m_mucoTropterSolver
                                 .get_velocity_correction_bounds()));
@@ -367,7 +367,7 @@ public:
         const auto& states = in.states;
         const auto& controls = in.controls;
         const auto& adjuncts = in.adjuncts;
-        const auto& intersteps = in.intersteps;
+        const auto& diffuses = in.diffuses;
 
         m_state.setTime(in.time);
         std::copy_n(states.data(), states.size(), &m_state.updY()[0]);
@@ -419,17 +419,9 @@ public:
             // of trajectories for constrained dynamical systems"
             // Note: Only supported for the Hermite-Simpson transcription 
             // scheme.
-            if (intersteps.size() != 0) {
-                SimTK::Vector gamma((int)intersteps.size(), intersteps.data());
-                //SimTK::Matrix G;
-                //matter.calcG(m_state, G);
-                //SimTK::FactorQTZ G_qtz;
-                //G_qtz.factor<SimTK::Real>(G);
-                //std::cout << "Jacobian rank: " << G_qtz.getRank() << std::endl;
-                //std::cout << G << std::endl;
+            if (diffuses.size() != 0) {
+                SimTK::Vector gamma((int)diffuses.size(), diffuses.data());
                 matter.multiplyByGTranspose(m_state, gamma, qdotCorr);
-                //std::cout << gamma << std::endl;
-                //std::cout << qdotCorr << std::endl;
                 qdot = m_state.getQDot() + qdotCorr;
             } else {
                 qdot = m_state.getQDot();
