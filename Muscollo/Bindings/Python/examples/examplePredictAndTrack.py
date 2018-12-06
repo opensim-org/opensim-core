@@ -112,7 +112,7 @@ def solvePrediction():
     problem.setModel(createDoublePendulumModel())
 
     # Bounds.
-    problem.setTimeBounds(0, [0, 5]);
+    problem.setTimeBounds(0, [0, 5])
     # Arguments are name, [lower bound, upper bound],
     #                     initial [lower bound, upper bound],
     #                     final [lower bound, upper bound].
@@ -143,17 +143,17 @@ def solvePrediction():
     solver.set_verbosity(2)
     solver.set_optim_solver("ipopt")
 
-    guess = solver.createGuess();
-    guess.setNumTimes(2);
-    guess.setTime([0, 1]);
-    guess.setState("/jointset/j0/q0/value", [0, -math.pi]);
-    guess.setState("/jointset/j1/q1/value", [0, 2*math.pi]);
-    guess.setState("/jointset/j0/q0/speed", [0, 0]);
-    guess.setState("/jointset/j1/q1/speed", [0, 0]);
-    guess.setControl("/tau0", [0, 0]);
-    guess.setControl("/tau1", [0, 0]);
-    guess.resampleWithNumTimes(10);
-    solver.setGuess(guess);
+    guess = solver.createGuess()
+    guess.setNumTimes(2)
+    guess.setTime([0, 1])
+    guess.setState("/jointset/j0/q0/value", [0, -math.pi])
+    guess.setState("/jointset/j1/q1/value", [0, 2*math.pi])
+    guess.setState("/jointset/j0/q0/speed", [0, 0])
+    guess.setState("/jointset/j1/q1/speed", [0, 0])
+    guess.setControl("/tau0", [0, 0])
+    guess.setControl("/tau1", [0, 0])
+    guess.resampleWithNumTimes(10)
+    solver.setGuess(guess)
 
     # Save the problem to a setup file for reference.
     muco.printToXML("examplePredictAndTrack_predict.omuco")
@@ -180,7 +180,7 @@ def computeMarkersReference(predictedSolution):
     statesTraj = osim.StatesTrajectory.createFromStatesStorage(model, states)
     
     markerTrajectories = osim.TimeSeriesTableVec3()
-    markerTrajectories.setColumnLabels(["/markerset/m0", "/markerset/m1"]);
+    markerTrajectories.setColumnLabels(["/markerset/m0", "/markerset/m1"])
 
     for state in statesTraj:
         model.realizePosition(state)
@@ -215,21 +215,21 @@ def solveStateTracking(stateRef):
     finalTime = markersRef.getMarkerTable().getIndependentColumn()[-1]
     problem.setTimeBounds(0, finalTime)
     problem.setStateInfo("/jointset/j0/q0/value", [-10, 10], 0)
-    problem.setStateInfo("/jointset/j0/q0/speed", [-10, 10], 0)
+    problem.setStateInfo("/jointset/j0/q0/speed", [-50, 50], 0)
     problem.setStateInfo("/jointset/j1/q1/value", [-10, 10], 0)
-    problem.setStateInfo("/jointset/j1/q1/speed", [-10, 10], 0)
-    problem.setControlInfo("/tau0", [-40, 40])
-    problem.setControlInfo("/tau1", [-40, 40])
+    problem.setStateInfo("/jointset/j1/q1/speed", [-50, 50], 0)
+    problem.setControlInfo("/tau0", [-150, 150])
+    problem.setControlInfo("/tau1", [-150, 150])
 
     # Cost: track provided state data.
     stateTracking = osim.MucoStateTrackingCost()
     stateTracking.setReference(stateRef)
     problem.addCost(stateTracking)
-    
+
     effort = osim.MucoControlCost()
     effort.setName("effort")
     effort.set_weight(0.001)
-    problem.addCost(effort)
+    # TODO problem.addCost(effort)
 
     # Configure the solver.
     solver = muco.initSolver()
@@ -268,11 +268,11 @@ def solveMarkerTracking(markersRef, guess):
     finalTime = markersRef.getMarkerTable().getIndependentColumn()[-1]
     problem.setTimeBounds(0, finalTime)
     problem.setStateInfo("/jointset/j0/q0/value", [-10, 10], 0)
-    problem.setStateInfo("/jointset/j0/q0/speed", [-10, 10], 0)
+    problem.setStateInfo("/jointset/j0/q0/speed", [-50, 50], 0)
     problem.setStateInfo("/jointset/j1/q1/value", [-10, 10], 0)
-    problem.setStateInfo("/jointset/j1/q1/speed", [-10, 10], 0)
-    problem.setControlInfo("/tau0", [-40, 40])
-    problem.setControlInfo("/tau1", [-40, 40])
+    problem.setStateInfo("/jointset/j1/q1/speed", [-50, 50], 0)
+    problem.setControlInfo("/tau0", [-100, 100])
+    problem.setControlInfo("/tau1", [-100, 100])
 
     # Cost: track provided marker data.
     markerTracking = osim.MucoMarkerTrackingCost()
@@ -281,8 +281,8 @@ def solveMarkerTracking(markersRef, guess):
     
     effort = osim.MucoControlCost()
     effort.setName("effort")
-    effort.set_weight(0.001)
-    problem.addCost(effort)
+    effort.set_weight(0.0001)
+    # problem.addCost(effort)
 
     # Configure the solver.
     solver = muco.initSolver()
