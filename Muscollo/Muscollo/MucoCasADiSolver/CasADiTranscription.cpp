@@ -55,6 +55,13 @@ std::vector<DM> IntegrandCostFunction::eval(const std::vector<DM>& arg) const {
     return {p.calcIntegralCost(state)};
 }
 
+casadi::Sparsity DynamicsFunction::get_sparsity_out(casadi_int i) {
+    if (i == 0) {
+        int numRows = m_transcrip.m_state.getNU() + m_transcrip.m_state.getNZ();
+        return casadi::Sparsity::dense(numRows, 1);
+    }
+    else return casadi::Sparsity(0, 0);
+}
 std::vector<DM> DynamicsFunction::eval(const std::vector<DM>& arg) const {
     m_transcrip.applyParametersToModel(arg.at(3));
     auto& state = m_transcrip.m_state;
@@ -71,9 +78,10 @@ std::vector<DM> DynamicsFunction::eval(const std::vector<DM>& arg) const {
     p.getModel().realizeVelocity(state);
     p.getModel().setControls(state, controls);
     p.getModel().realizeAcceleration(state);
-    DM deriv(state.getNY(), 1);
-    for (int i = 0; i < state.getNY(); ++i) {
-        deriv(i, 0) = state.getYDot()[i];
+    DM deriv(state.getNU() + state.getNZ(), 1);
+    for (int i = 0; i < deriv.rows(); ++i) {
+        // Skip over qdot.
+        deriv(i, 0) = state.getYDot()[i + state.getNQ()];
     }
     return {deriv};
 }

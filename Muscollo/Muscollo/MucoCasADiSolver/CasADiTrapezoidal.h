@@ -38,22 +38,31 @@ public:
         m_dynamicsFunction =
                 make_unique<DynamicsFunction>("dynamics", *this, m_probRep);
 
+        // Compute qdot symbolically.
+        OPENSIM_THROW_IF(m_state.getNQ() != m_state.getNU(), Exception);
+        const int NQ = m_state.getNQ();
+
         // Defects.
-        MX xdot_im1 = m_dynamicsFunction->operator()(
+        const auto& states = m_vars[Var::states];
+        MX qdot = states(Slice(NQ, 2 * NQ), 0);
+        MX udotzdot = m_dynamicsFunction->operator()(
                 {m_vars[Var::initial_time],
-                 m_vars[Var::states](Slice(), 0),
+                 states(Slice(), 0),
                  m_vars[Var::controls](Slice(), 0),
                  m_vars[Var::parameters]
                 }).at(0);
+        MX xdot_im1 = casadi::MX::vertcat({qdot, udotzdot});
         for (int itime = 1; itime < m_numTimes; ++itime) {
             const auto t = m_times(itime);
-            auto x_i = m_vars[Var::states](Slice(), itime);
-            auto x_im1 = m_vars[Var::states](Slice(), itime - 1);
-            MX xdot_i = m_dynamicsFunction->operator()(
+            auto x_i = states(Slice(), itime);
+            auto x_im1 = states(Slice(), itime - 1);
+            qdot = states(Slice(NQ, 2 * NQ), itime);
+            udotzdot = m_dynamicsFunction->operator()(
                     {t,
                      m_vars[Var::states](Slice(), itime),
                      m_vars[Var::controls](Slice(), itime),
                      m_vars[Var::parameters]}).at(0);
+            MX xdot_i = MX::vertcat({qdot, udotzdot});
             m_opti.subject_to(x_i == (x_im1 + 0.5 * h * (xdot_i + xdot_im1)));
             xdot_im1 = xdot_i;
         }

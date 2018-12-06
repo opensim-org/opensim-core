@@ -26,13 +26,23 @@
 // - get all tests to pass using CasADi, adding in features as necessary.
 // - create separate tests for tropter and CasADi.
 // - copy TropterSolver options to CasADi (num_mesh_points).
-// - initial guess
-// - converting an iterate between muco and casadi.
-// - creating parameters.
-// - compute kinematic diff eqs directly if possible (not finite differences).
+// - initial guess (there's a bug here).
 // - parameters are very inefficient: reapplying parameters more than necessary.
 // - how to handle avoiding interpolation of splines? mesh index?
-//
+// - variable allocation order MATTERS: try allocating variables in a
+//   more efficient manner, or create views again.
+// - does CasADi rearrange to improve sparsity? does order of variables
+//   (and sparsity pattern) matter for performance? ....almost no time is spent
+//   in the solver, so this can't matter yet.
+// - Remove time as a variable to greatly reduce coupling, or just, for now,
+//   do not use time when computing cost and constraints.
+//   what is the performance benefit of removing time?
+// - improve sparsity pattern?
+// - profile marker tracking test in C++.
+// - Expected much better performance, b/c I thought we would not need to evaluate
+//   cost at time i when perturbing at time j, i \neq j..
+//   I can try to investigate this on my own.
+// - Is there a way to collect stats on how many times a function is called?
 
 using casadi::MX;
 using casadi::DM;
@@ -50,6 +60,8 @@ MucoCasADiSolver::MucoCasADiSolver() {
 void MucoCasADiSolver::constructProperties() {
     constructProperty_num_mesh_points(100);
     constructProperty_optim_max_iterations(-1);
+    constructProperty_optim_convergence_tolerance(-1);
+    constructProperty_optim_constraint_tolerance(-1);
     constructProperty_optim_hessian_approximation("limited-memory");
     constructProperty_guess_file("");
 }

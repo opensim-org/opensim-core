@@ -201,20 +201,19 @@ MucoSolution solveMarkerTrackingProblem(bool usingMuscleLikeActuators,
 
     // Define the optimal control problem.
     // ===================================
-    MucoProblem& mp = muco.updProblem();
+    MucoProblem& problem = muco.updProblem();
 
     // Model(dynamics).
     // -----------------
-    mp.setModel(setupModel(usingMuscleLikeActuators));
+    problem.setModelCopy(setupModel(usingMuscleLikeActuators));
 
     // Bounds.
     // -------
-    setBounds(mp);
+    setBounds(problem);
         
     // Cost.
     // -----
-    MucoMarkerTrackingCost tracking;
-    tracking.setName("tracking");
+    auto* tracking = problem.addCost<MucoMarkerTrackingCost>("tracking");
     auto ref = TRCFileAdapter::read("marker_trajectories.trc");
 
     // Set marker weights to match IK task weights.
@@ -229,13 +228,12 @@ MucoSolution solveMarkerTrackingProblem(bool usingMuscleLikeActuators,
     markerWeights.cloneAndAppend({ "L.Toe.Tip", 2 });
     MarkersReference markersRef(ref, &markerWeights);
     
-    tracking.setMarkersReference(markersRef);
-    tracking.setAllowUnusedReferences(true);
-    mp.addCost(tracking);
+    tracking->setMarkersReference(markersRef);
+    tracking->setAllowUnusedReferences(true);
 
     // Configure the solver.
     // =====================
-    MucoTropterSolver& ms = muco.initSolver();
+    MucoTropterSolver& ms = muco.initTropterSolver();
     ms.set_num_mesh_points(10);
     ms.set_verbosity(2);
     ms.set_optim_solver("ipopt");

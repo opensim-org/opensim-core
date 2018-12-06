@@ -26,8 +26,8 @@ class CasADiTranscription;
 
 namespace OpenSim {
 
-// TODO have a different class for each transcription scheme.
-// TODO need functions to convert between data types
+/// @note This solver currently only supports systems for which \f$ \dot{q} = u
+/// \f$ (e.g., no quaternions).
 class OSIMMUSCOLLO_API MucoCasADiSolver : public MucoSolver {
     OpenSim_DECLARE_CONCRETE_OBJECT(MucoCasADiSolver, MucoSolver);
 public:
@@ -36,6 +36,12 @@ public:
     OpenSim_DECLARE_PROPERTY(optim_max_iterations, int,
     "Maximum number of iterations in the optimization solver "
     "(-1 for solver's default).");
+    OpenSim_DECLARE_PROPERTY(optim_convergence_tolerance, double,
+    "Tolerance used to determine if the objective is minimized "
+    "(-1 for solver's default)");
+    OpenSim_DECLARE_PROPERTY(optim_constraint_tolerance, double,
+    "Tolerance used to determine if the constraints are satisfied "
+    "(-1 for solver's default)");
     OpenSim_DECLARE_PROPERTY(optim_hessian_approximation, std::string,
     "'limited-memory' (default) for quasi-Newton, or 'exact' for full Newton.");
 

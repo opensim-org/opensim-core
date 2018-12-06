@@ -118,6 +118,10 @@ private:
     const OpenSim::MucoProblemRep& p;
 };
 
+/// Currently, this class only returns the right-hand-side of the generalized
+/// accelerations differential equations. Currently, we only support
+/// models for which qdot = u. That is, the N matrix (qdot = N u) is identity.
+/// This allows us to compute qdot symbolically through CasADi.
 class DynamicsFunction : public casadi::Callback {
 public:
     DynamicsFunction(const std::string& name,
@@ -148,10 +152,7 @@ public:
             return casadi::Sparsity(0, 0);
         }
     }
-    casadi::Sparsity get_sparsity_out(casadi_int i) override {
-        if (i == 0) return casadi::Sparsity::dense(p.getNumStates(), 1);
-        else return casadi::Sparsity(0, 0);
-    }
+    casadi::Sparsity get_sparsity_out(casadi_int i) override;
     void init() override {}
 
     std::vector<casadi::DM>
@@ -451,6 +452,18 @@ public:
             m_opti.set_initial(kv.second, casGuess.at(kv.first));
         }
 
+        /*
+        m_opti.disp(std::cout, true);
+        std::cout << "DEBUG jacobian " << std::endl;
+        std::cout << jacobian(m_opti.g(), m_opti.x()) << std::endl;
+        std::cout << "DEBUG sparsity " << std::endl;
+        jacobian(m_opti.g(), m_opti.x()).sparsity().to_file("DEBUG_sparsity.mtx");
+        // TODO look at portions of the hessian (individual integrands).
+        // TODO is it really the hessian or is it the constraints that are
+        // expensive?
+        hessian(m_opti.f(), m_opti.x()).sparsity().to_file("DEBUG_sparsity.mtx");
+        */
+
         // Set solver options.
         // -------------------
         Dict solverOptions;
@@ -463,6 +476,28 @@ public:
 
         if (m_solver.get_optim_max_iterations() != -1)
             solverOptions["max_iter"] = m_solver.get_optim_max_iterations();
+
+        checkPropertyInRangeOrSet(m_solver,
+                m_solver.getProperty_optim_convergence_tolerance(),
+                0.0, SimTK::NTraits<double>::getInfinity(), {-1.0});
+        if (m_solver.get_optim_convergence_tolerance() != -1) {
+            const auto& tol = m_solver.get_optim_convergence_tolerance();
+            // This is based on what Simbody does.
+            solverOptions["tol"] = tol;
+            solverOptions["dual_inf_tol"] = tol;
+            solverOptions["compl_inf_tol"] = tol;
+            solverOptions["acceptable_tol"] = tol;
+            solverOptions["acceptable_dual_inf_tol"] = tol;
+            solverOptions["acceptable_compl_inf_tol"] = tol;
+        }
+        checkPropertyInRangeOrSet(m_solver,
+                m_solver.getProperty_optim_constraint_tolerance(),
+                0.0, SimTK::NTraits<double>::getInfinity(), {-1.0});
+        if (m_solver.get_optim_constraint_tolerance() != -1) {
+            const auto& tol = m_solver.get_optim_constraint_tolerance();
+            solverOptions["constr_viol_tol"] = tol;
+            solverOptions["acceptable_constr_viol_tol"] = tol;
+        }
 
         m_opti.solver("ipopt", {}, solverOptions);
         auto casadiSolution = m_opti.solve();
