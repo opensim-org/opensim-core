@@ -422,8 +422,7 @@ public:
 
         m_integrandCostFunction =
                 make_unique<IntegrandCostFunction>("integrand", *this, m_probRep);
-        MX integral_cost = m_opti.variable();
-        integral_cost = 0;
+        MX integral_cost = 0;
         for (int i = 0; i < m_numTimes; ++i) {
             const auto out = m_integrandCostFunction->operator()(
                     {m_times(i, 0),
@@ -438,6 +437,7 @@ public:
 
     MucoSolution solve(const MucoIterate& guess) {
         // Initial guess.
+        // --------------
         std::unique_ptr<MucoIterate> guessFromBounds;
         const MucoIterate* guessToUse = &guess;
         if (guess.empty()) {
@@ -451,8 +451,20 @@ public:
             m_opti.set_initial(kv.second, casGuess.at(kv.first));
         }
 
-        m_opti.solver("ipopt", {},
-                {{"hessian_approximation", "limited-memory"}});
+        // Set solver options.
+        // -------------------
+        Dict solverOptions;
+        solverOptions["hessian_approximation"] =
+                m_solver.get_optim_hessian_approximation();
+
+        checkPropertyInRangeOrSet(m_solver,
+                m_solver.getProperty_optim_max_iterations(),
+                0, std::numeric_limits<int>::max(), {-1});
+
+        if (m_solver.get_optim_max_iterations() != -1)
+            solverOptions["max_iter"] = m_solver.get_optim_max_iterations();
+
+        m_opti.solver("ipopt", {}, solverOptions);
         auto casadiSolution = m_opti.solve();
         return convertToMucoIterate<MX, MucoSolution>(m_vars);
     }
@@ -496,6 +508,14 @@ protected:
             m_lowerBounds[var](rowIndices, columnIndices) = lower;
             const auto& upper = bounds.getUpper();
             m_upperBounds[var](rowIndices, columnIndices) = upper;
+            /*
+            auto submatrix = m_vars[var](rowIndices, columnIndices);
+            for (int irow = 0; irow < submatrix.rows(); ++irow) {
+                for (int icol = 0; icol < submatrix.columns(); ++icol) {
+                    m_opti.subject_to(lower <= submatrix(irow, icol) <= upper);
+                }
+            }
+            */
             m_opti.subject_to(
                     lower <= m_vars[var](rowIndices, columnIndices) <= upper);
         } else {

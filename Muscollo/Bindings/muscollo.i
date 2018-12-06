@@ -158,6 +158,7 @@ namespace OpenSim {
     %ignore MucoTropterSolver::MucoTropterSolver(const MucoProblem&);
 }
 %include <Muscollo/MucoTropterSolver.h>
+%include <Muscollo/MucoCasADiSolver/MucoCasADiSolver.h>
 %include <Muscollo/MucoTool.h>
 
 %include <Muscollo/ActivationCoordinateActuator.h>

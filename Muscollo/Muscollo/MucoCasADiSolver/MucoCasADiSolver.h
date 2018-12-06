@@ -33,6 +33,13 @@ class OSIMMUSCOLLO_API MucoCasADiSolver : public MucoSolver {
 public:
     OpenSim_DECLARE_PROPERTY(num_mesh_points, int,
     "The number of mesh points for discretizing the problem (default: 100).");
+    OpenSim_DECLARE_PROPERTY(optim_max_iterations, int,
+    "Maximum number of iterations in the optimization solver "
+    "(-1 for solver's default).");
+    OpenSim_DECLARE_PROPERTY(optim_hessian_approximation, std::string,
+    "'limited-memory' (default) for quasi-Newton, or 'exact' for full Newton.");
+
+
     MucoCasADiSolver();
 
     /// @name Specifying an initial guess

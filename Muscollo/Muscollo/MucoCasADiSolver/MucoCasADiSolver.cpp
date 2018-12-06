@@ -47,6 +47,13 @@ MucoCasADiSolver::MucoCasADiSolver() {
     constructProperties();
 }
 
+void MucoCasADiSolver::constructProperties() {
+    constructProperty_num_mesh_points(100);
+    constructProperty_optim_max_iterations(-1);
+    constructProperty_optim_hessian_approximation("limited-memory");
+    constructProperty_guess_file("");
+}
+
 MucoIterate MucoCasADiSolver::createGuess(const std::string& type) const {
     OPENSIM_THROW_IF_FRMOBJ(
             type != "bounds"
@@ -65,8 +72,10 @@ MucoIterate MucoCasADiSolver::createGuess(const std::string& type) const {
 
     if (type == "bounds") {
         return transcription->createInitialGuessFromBounds();
-    } else {
+    } else if (type == "random") {
         return transcription->createRandomIterateWithinBounds();
+    } else {
+        OPENSIM_THROW(Exception, "Internal error.");
     }
 }
 
@@ -133,10 +142,4 @@ MucoSolution MucoCasADiSolver::solveImpl() const {
     // std::cout << "DEBUGg43 " << opt.x() << std::endl;
 
     return {};
-}
-
-
-void MucoCasADiSolver::constructProperties() {
-    constructProperty_num_mesh_points(100);
-    constructProperty_guess_file("");
 }
