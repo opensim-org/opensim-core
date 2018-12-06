@@ -34,16 +34,18 @@ using casadi::Dict;
 
 class CasADiTranscription;
 
-class EndpointCost : public casadi::Callback {
+// TODO: Create a base class for all of these callback functions.
+class EndpointCostFunction : public casadi::Callback {
 public:
-    EndpointCost(const std::string& name,
+    EndpointCostFunction(const std::string& name,
             const CasADiTranscription& transcrip,
             const OpenSim::MucoProblemRep& problem,
-            casadi::Dict opts=casadi::Dict()) : m_transcrip(transcrip), p(problem) {
+            casadi::Dict opts=casadi::Dict())
+            : m_transcrip(transcrip), p(problem) {
         opts["enable_fd"] = true;
         construct(name, opts);
     }
-    ~EndpointCost() override {}
+    ~EndpointCostFunction() override {}
     casadi_int get_n_in() override { return 3; }
     casadi_int get_n_out() override { return 1; }
     void init() override {}
@@ -75,16 +77,21 @@ private:
     const OpenSim::MucoProblemRep& p;
 };
 
-class IntegrandCost : public casadi::Callback {
+class IntegrandCostFunction : public casadi::Callback {
 public:
-    IntegrandCost(const std::string& name,
+    IntegrandCostFunction(const std::string& name,
             const CasADiTranscription& transcrip,
             const OpenSim::MucoProblemRep& problem,
-            casadi::Dict opts=casadi::Dict()) : m_transcrip(transcrip), p(problem) {
+            casadi::Dict opts=casadi::Dict())
+            : m_transcrip(transcrip), p(problem) {
         opts["enable_fd"] = true;
         construct(name, opts);
     }
-    ~IntegrandCost() override {}
+    ~IntegrandCostFunction() override {}
+    /// 0. time
+    /// 1. states
+    /// 2. controls
+    /// 3. parameters
     casadi_int get_n_in() override { return 4; }
     casadi_int get_n_out() override { return 1; }
     casadi::Sparsity get_sparsity_in(casadi_int i) override {
@@ -116,11 +123,16 @@ public:
     DynamicsFunction(const std::string& name,
             const CasADiTranscription& transcrip,
             const OpenSim::MucoProblemRep& problem,
-            casadi::Dict opts=casadi::Dict()) : m_transcrip(transcrip), p(problem) {
+            casadi::Dict opts=casadi::Dict())
+            : m_transcrip(transcrip), p(problem) {
         opts["enable_fd"] = true;
         construct(name, opts);
     }
     ~DynamicsFunction() override {}
+    /// 0. time
+    /// 1. states
+    /// 2. controls
+    /// 3. parameters
     casadi_int get_n_in() override { return 4; }
     casadi_int get_n_out() override { return 1; }
     casadi::Sparsity get_sparsity_in(casadi_int i) override {
@@ -149,6 +161,8 @@ private:
     const OpenSim::MucoProblemRep& p;
 };
 
+// TODO: Might simplify the code to use a map instead (so we can iterate
+// through these fields).
 template <typename T>
 struct CasADiVariables {
     T initialTime;
@@ -172,45 +186,85 @@ public:
     T createTimes(const T& initialTime, const T& finalTime) const {
         return (finalTime - initialTime) * m_mesh + initialTime;
     }
+
+    /// This converts a SimTK::Matrix to a casadi::DM matrix, transposing the
+    /// data in the process.
+    static DM convertToCasADiDM(const SimTK::Matrix& simtkMatrix) {
+        DM out(simtkMatrix.ncol(), simtkMatrix.nrow());
+        for (int irow = 0; irow < simtkMatrix.nrow(); ++irow) {
+            for (int icol = 0; icol < simtkMatrix.ncol(); ++icol) {
+                out(icol, irow) = simtkMatrix(irow, icol);
+            }
+        }
+        return out;
+    }
+    /// This converts a SimTK::RowVector to a casadi::DM column vector.
+    static DM convertToCasADiDM(const SimTK::RowVector& simtkRV) {
+        DM out(simtkRV.size(), 1);
+        for (int i = 0; i < simtkRV.size(); ++i) {
+            out(i) = simtkRV[i];
+        }
+        return out;
+    }
+    /// This resamples the iterate to obtain values that lie on the mesh.
+    CasADiVariables<DM>
+    convertToCasADiVariables(MucoIterate mucoIt) const {
+        CasADiVariables<DM> casVars;
+        casVars.initialTime = mucoIt.getInitialTime();
+        casVars.finalTime = mucoIt.getFinalTime();
+        const auto timesValue =
+                createTimes(casVars.initialTime, casVars.finalTime);
+        SimTK::Vector simtkTimes = convertToSimTKVector(timesValue);
+        mucoIt.resample(simtkTimes);
+        casVars.states = convertToCasADiDM(mucoIt.getStatesTrajectory());
+        casVars.controls = convertToCasADiDM(mucoIt.getControlsTrajectory());
+        // TODO dimensions?
+        casVars.parameters = convertToCasADiDM(mucoIt.getParameters());
+        return casVars;
+    }
+    /// This converts a casadi::DM matrix to a
+    /// SimTK::Matrix, transposing the data in the process.
+    SimTK::Matrix convertToSimTKMatrix(const DM& casMatrix) const {
+        SimTK::Matrix simtkMatrix(
+                (int)casMatrix.columns(), (int)casMatrix.rows());
+        for (int irow = 0; irow < casMatrix.rows(); ++irow) {
+            for (int icol = 0; icol < casMatrix.columns(); ++icol) {
+                simtkMatrix(icol, irow) = double(casMatrix(irow, icol));
+            }
+        }
+        return simtkMatrix;
+    }
+    template <typename VectorType = SimTK::Vector>
+    VectorType convertToSimTKVector(const DM& casVector) const {
+        assert(casVector.columns() == 1);
+        VectorType simtkVector((int)casVector.rows());
+        for (int i = 0; i < casVector.rows(); ++i) {
+            simtkVector[i] = double(casVector(i));
+        }
+        return simtkVector;
+    }
     template <typename TIn, typename TOut = MucoIterate>
-    TOut convertToMuco(const CasADiVariables<TIn>& casVars) const {
+    TOut convertToMucoIterate(const CasADiVariables<TIn>& casVars) const {
         SimTK::Matrix simtkStates;
         if (m_numStates) {
             const auto statesValue = m_opti.value(casVars.states);
-            simtkStates.resize(m_numTimes, m_numStates);
-            for (int istate = 0; istate < m_numStates; ++istate) {
-                for (int itime = 0; itime < m_numTimes; ++itime) {
-                    simtkStates(itime, istate) =
-                            double(statesValue(istate, itime));
-                }
-            }
+            simtkStates = convertToSimTKMatrix(m_opti.value(casVars.states));
         }
         SimTK::Matrix simtkControls;
         if (m_numControls) {
-            const auto controlsValue = m_opti.value(casVars.controls);
-            simtkControls.resize(m_numTimes, m_numControls);
-            for (int icontrol = 0; icontrol < m_numControls; ++icontrol) {
-                for (int itime = 0; itime < m_numTimes; ++itime) {
-                    simtkControls(itime, icontrol) =
-                            double(controlsValue(icontrol, itime));
-                }
-            }
+            simtkControls =
+                    convertToSimTKMatrix(m_opti.value(casVars.controls));
         }
         SimTK::RowVector simtkParameters;
         if (m_numParameters) {
             const auto paramsValue = m_opti.value(casVars.parameters);
-            simtkParameters.resize(m_numParameters);
-            for (int iparam = 0; iparam < m_numParameters; ++iparam) {
-                simtkParameters[iparam] = double(paramsValue(iparam));
-            }
+            simtkParameters =
+                    convertToSimTKVector<SimTK::RowVector>(paramsValue);
         }
 
         const auto timesValue = m_opti.value(
                         createTimes(casVars.initialTime, casVars.finalTime));
-        SimTK::Vector simtkTimes(m_numTimes);
-        for (int itime = 0; itime < m_numTimes; ++itime) {
-            simtkTimes[itime] = double(timesValue(itime, 0));
-        }
+        SimTK::Vector simtkTimes = convertToSimTKVector(timesValue);
         TOut mucoIterate(simtkTimes,
                 m_stateNames, m_controlNames, {}, m_parameterNames,
                 simtkStates, simtkControls, {}, simtkParameters);
@@ -249,7 +303,7 @@ public:
         setToMidpoint(casGuess.parameters,
                 m_lowerBounds.parameters, m_upperBounds.parameters);
 
-        return convertToMuco<DM>(casGuess);
+        return convertToMucoIterate<DM>(casGuess);
     }
     /// Create a vector with random variable values within the variable
     /// bounds, potentially for use as an initial guess. If, for a given
@@ -283,7 +337,7 @@ public:
         setRandom(casIterate.parameters,
                 m_lowerBounds.parameters, m_upperBounds.parameters);
 
-        return convertToMuco<DM>(casIterate);
+        return convertToMucoIterate<DM>(casIterate);
     }
     void initialize() {
         m_opti = casadi::Opti();
@@ -390,13 +444,10 @@ public:
                 m_mesh(Slice(0, m_mesh.rows() - 1));
         m_times = createTimes(m_vars.initialTime, m_vars.finalTime);
 
-        // Initial guess.
-        // TODO m_opti.set_initial(m_vars.parameters, ...);
-
         addDefectConstraints();
 
         m_endpointCostFunction =
-                make_unique<EndpointCost>("endpoint_cost", *this, m_probRep);
+                make_unique<EndpointCostFunction>("endpoint_cost", *this, m_probRep);
 
         // TODO: Evaluate individual endpoint costs separately.
         auto endpoint_cost = m_endpointCostFunction->operator()(
@@ -407,7 +458,7 @@ public:
         DM quadCoeffs = createIntegralQuadratureCoefficients(meshIntervals);
 
         m_integrandCostFunction =
-                make_unique<IntegrandCost>("integrand", *this, m_probRep);
+                make_unique<IntegrandCostFunction>("integrand", *this, m_probRep);
         MX integral_cost = m_opti.variable();
         integral_cost = 0;
         for (int i = 0; i < m_numTimes; ++i) {
@@ -422,11 +473,22 @@ public:
         m_opti.minimize(endpoint_cost + integral_cost);
     }
 
-    MucoSolution solve() {
+    MucoSolution solve(const MucoIterate& guess) {
+        // Initial guess.
+        if (!guess.empty()) {
+            const CasADiVariables<DM> casGuess =
+                    convertToCasADiVariables(guess);
+            m_opti.set_initial(m_vars.initialTime, casGuess.initialTime);
+            m_opti.set_initial(m_vars.finalTime, casGuess.finalTime);
+            m_opti.set_initial(m_vars.states, casGuess.states);
+            m_opti.set_initial(m_vars.controls, casGuess.controls);
+            m_opti.set_initial(m_vars.parameters, casGuess.parameters);
+        }
+
         m_opti.solver("ipopt", {},
                 {{"hessian_approximation", "limited-memory"}});
         auto casadiSolution = m_opti.solve();
-        return convertToMuco<MX, MucoSolution>(m_vars);
+        return convertToMucoIterate<MX, MucoSolution>(m_vars);
     }
 
     /// @precondition The following are set: m_numTimes, m_numStates,
@@ -492,8 +554,8 @@ protected:
     std::vector<std::string> m_parameterNames;
 
     std::unique_ptr<DynamicsFunction> m_dynamicsFunction;
-    std::unique_ptr<EndpointCost> m_endpointCostFunction;
-    std::unique_ptr<IntegrandCost> m_integrandCostFunction;
+    std::unique_ptr<EndpointCostFunction> m_endpointCostFunction;
+    std::unique_ptr<IntegrandCostFunction> m_integrandCostFunction;
 };
 
 #endif // MUSCOLLO_CASADITRANSCRIPTION_H

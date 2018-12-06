@@ -257,33 +257,10 @@ const SimTK::Real& MucoIterate::getParameter(const std::string& name) const {
 
 double MucoIterate::resampleWithNumTimes(int numTimes) {
     ensureUnsealed();
-    int numStates = (int)m_state_names.size();
-    int numControls = (int)m_control_names.size();
-    int numMultipliers = (int)m_multiplier_names.size();
-    int numDerivatives = (int)m_derivative_names.size();
-    TimeSeriesTable table = convertToTable();
-    OPENSIM_THROW_IF(m_time.size() < 2, Exception,
-            "Cannot resample if number of times is 0 or 1.");
-    GCVSplineSet splines(table, {}, std::min(m_time.size() - 1, 5));
-    m_time = createVectorLinspace(numTimes, m_time[0], m_time[m_time.size()-1]);
-    m_states.resize(numTimes, numStates);
-    m_controls.resize(numTimes, numControls);
-    m_multipliers.resize(numTimes, numMultipliers);
-    m_derivatives.resize(numTimes, numDerivatives);
-    SimTK::Vector time(1);
-    for (int itime = 0; itime < m_time.size(); ++itime) {
-        time[0] = m_time[itime];
-        int icol;
-        for (icol = 0; icol < numStates; ++icol)
-            m_states(itime, icol) = splines[icol].calcValue(time);
-        for (int icontr = 0; icontr < numControls; ++icontr, ++icol)
-            m_controls(itime, icontr) = splines[icol].calcValue(time);
-        for (int imult = 0; imult < numMultipliers; ++imult, ++icol)
-            m_multipliers(itime, imult) = splines[icol].calcValue(time);
-        for (int ideriv = 0; ideriv < numDerivatives; ++ideriv, ++icol)
-            m_derivatives(itime, ideriv) = splines[icol].calcValue(time);
-    }
-    return m_time[1] - m_time[0];
+    SimTK::Vector newTime =
+            createVectorLinspace(numTimes, m_time[0], m_time[m_time.size()-1]);
+    resample(newTime);
+    return newTime[1] - newTime[0];
 }
 double MucoIterate::resampleWithInterval(double desiredTimeInterval) {
     ensureUnsealed();
@@ -303,6 +280,53 @@ double MucoIterate::resampleWithFrequency(double desiredFrequency) {
     const int actualNumTimes = (int)ceil(duration * desiredFrequency);
     resampleWithNumTimes(actualNumTimes);
     return (double)actualNumTimes / duration;
+}
+void MucoIterate::resample(SimTK::Vector time) {
+    ensureUnsealed();
+    OPENSIM_THROW_IF(m_time.size() < 2, Exception,
+            "Cannot resample if number of times is 0 or 1.");
+    OPENSIM_THROW_IF(time[0] < m_time[0], Exception,
+            format("New initial time (%s) cannot be less than existing initial "
+                   "time (%s)", time[0], m_time[0]));
+    OPENSIM_THROW_IF(time[time.size() - 1] > m_time[m_time.size() - 1],
+            Exception,
+            format("New final time (%s) cannot be less than existing final "
+                   "time (%s)",
+                   time[time.size() - 1], m_time[m_time.size() - 1]));
+    for (int itime = 1; itime < time.size(); ++itime) {
+        OPENSIM_THROW_IF(time[itime] < time[itime - 1], Exception,
+                format("New times must be non-decreasing, but "
+                       "time[%i] < time[%i] (%f < %f).",
+                       itime, itime - 1, time[itime], time[itime - 1]));
+    }
+
+    int numStates = (int)m_state_names.size();
+    int numControls = (int)m_control_names.size();
+    int numMultipliers = (int)m_multiplier_names.size();
+    int numDerivatives = (int)m_derivative_names.size();
+
+    TimeSeriesTable table = convertToTable();
+    GCVSplineSet splines(table, {}, std::min(m_time.size() - 1, 5));
+
+    m_time = std::move(time);
+    const int numTimes = m_time.size();
+    m_states.resize(numTimes, numStates);
+    m_controls.resize(numTimes, numControls);
+    m_multipliers.resize(numTimes, numMultipliers);
+    m_derivatives.resize(numTimes, numDerivatives);
+    SimTK::Vector curTime(1);
+    for (int itime = 0; itime < m_time.size(); ++itime) {
+        curTime[0] = m_time[itime];
+        int icol;
+        for (icol = 0; icol < numStates; ++icol)
+            m_states(itime, icol) = splines[icol].calcValue(time);
+        for (int icontr = 0; icontr < numControls; ++icontr, ++icol)
+            m_controls(itime, icontr) = splines[icol].calcValue(time);
+        for (int imult = 0; imult < numMultipliers; ++imult, ++icol)
+            m_multipliers(itime, imult) = splines[icol].calcValue(time);
+        for (int ideriv = 0; ideriv < numDerivatives; ++ideriv, ++icol)
+            m_derivatives(itime, ideriv) = splines[icol].calcValue(time);
+    }
 }
 
 MucoIterate::MucoIterate(const std::string& filepath) {

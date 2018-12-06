@@ -60,13 +60,13 @@ public:
 };
 
 
-class EndpointCost : public Callback {
+class EndpointCostFunction : public Callback {
 public:
-    EndpointCost(const std::string& name, const Problem<double>& problem,
+    EndpointCostFunction(const std::string& name, const Problem<double>& problem,
             const Dict& opts=Dict()) : p(problem) {
         construct(name, opts);
     }
-    ~EndpointCost() override {}
+    ~EndpointCostFunction() override {}
     casadi_int get_n_in() override { return p.get_num_states() + 1; }
     casadi_int get_n_out() override { return 1;}
     void init() override {
@@ -90,13 +90,13 @@ private:
     const Problem<double>& p;
 };
 
-class IntegrandCost : public Callback {
+class IntegrandCostFunction : public Callback {
 public:
-    IntegrandCost(const std::string& name, const Problem<double>& problem,
+    IntegrandCostFunction(const std::string& name, const Problem<double>& problem,
             const Dict& opts=Dict()) : p(problem) {
         construct(name, opts);
     }
-    ~IntegrandCost() override {}
+    ~IntegrandCostFunction() override {}
     casadi_int get_n_in() override { return p.get_num_states() + p.get_num_controls() + 1; }
     casadi_int get_n_out() override { return 1;}
     void init() override {
@@ -168,7 +168,7 @@ public:
         MX tf = opt.variable();
         MX states = opt.variable(p.get_num_states(), N);
         auto controls = opt.variable(p.get_num_controls(), N);
-        EndpointCost endpoint_cost_function("endpoint_cost", p, {{"enable_fd", true}});
+        EndpointCostFunction endpoint_cost_function("endpoint_cost", p, {{"enable_fd", true}});
 
         std::vector<MX> args;
         args.push_back(tf);
@@ -178,7 +178,7 @@ public:
 
         auto endpoint_cost = endpoint_cost_function(args);
 
-        IntegrandCost integrand_cost("integrand", p, {{"enable_fd", true}});
+        IntegrandCostFunction integrand_cost("integrand", p, {{"enable_fd", true}});
         MX integral = opt.variable();
         integral = 0;
         for (int i = 0; i < N; ++i) {

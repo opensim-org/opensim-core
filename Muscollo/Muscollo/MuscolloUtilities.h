@@ -42,6 +42,10 @@ class MucoIterate;
 OSIMMUSCOLLO_API
 SimTK::Vector createVectorLinspace(int length, double start, double end);
 
+/// Create a SimTK::Vector using modern C++ syntax.
+OSIMMUSCOLLO_API
+SimTK::Vector createVector(const std::vector<SimTK::Real>& elements);
+
 /// Linearly interpolate y(x) at new values of x.
 /// The returned vector will have NaN for any values of newX outside of the
 /// range of x.

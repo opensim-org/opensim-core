@@ -848,6 +848,24 @@ void testGuess() {
                     createVectorLinspace(expectedNumTimes, 2.8, 7.3));
         }
 
+        // resample
+        {
+            MucoIterate guess = guess0;
+            SimTK_TEST_MUST_THROW_EXC(guess.resample(createVector(
+                    {guess.getInitialTime() - 1e-15, 0, 1})),
+                    Exception);
+            SimTK_TEST_MUST_THROW_EXC(guess.resample(createVector(
+                    {0.5, 0.6, guess.getFinalTime() + 1e15})), Exception);
+            SimTK_TEST_MUST_THROW_EXC(guess.resample(createVector(
+                    {0.5, 0.6, 0.59999999, 0.8})), Exception);
+
+            {
+                SimTK::Vector newTime = createVector({0.1, 0.3, 0.8});
+                MucoIterate guess2 = guess;
+                guess2.resample(newTime);
+                SimTK_TEST_EQ(newTime, guess2.getTime());
+            }
+        }
     }
 
     // Number of points required for splining.

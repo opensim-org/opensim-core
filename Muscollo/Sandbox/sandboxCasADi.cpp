@@ -10,13 +10,13 @@ using namespace casadi;
 
 using namespace OpenSim;
 
-class EndpointCost : public Callback {
+class EndpointCostFunction : public Callback {
 public:
-    EndpointCost(const std::string& name, const MucoProblemRep& problem,
+    EndpointCostFunction(const std::string& name, const MucoProblemRep& problem,
             const Dict& opts=Dict()) : p(problem) {
         construct(name, opts);
     }
-    ~EndpointCost() override {}
+    ~EndpointCostFunction() override {}
     casadi_int get_n_in() override { return 1 + p.getNumStates(); }
     casadi_int get_n_out() override { return 1;}
     void init() override {
@@ -46,13 +46,13 @@ private:
     const MucoProblemRep& p;
 };
 
-class IntegrandCost : public Callback {
+class IntegrandCostFunction : public Callback {
 public:
-    IntegrandCost(const std::string& name, const MucoProblemRep& problem,
+    IntegrandCostFunction(const std::string& name, const MucoProblemRep& problem,
             const Dict& opts=Dict()) : p(problem) {
         construct(name, opts);
     }
-    ~IntegrandCost() override {}
+    ~IntegrandCostFunction() override {}
     casadi_int get_n_in() override { return 1 + p.getNumStates() + p.getNumControls(); }
     casadi_int get_n_out() override { return 1;}
     void init() override {
@@ -233,7 +233,7 @@ public:
             xdot_im1 = xdot_i;
         }
 
-        EndpointCost endpoint_cost_function("endpoint_cost", rep, {{"enable_fd", true}});
+        EndpointCostFunction endpoint_cost_function("endpoint_cost", rep, {{"enable_fd", true}});
 
         std::vector<MX> args;
         args.push_back(tf);
@@ -245,7 +245,7 @@ public:
 
         auto endpoint_cost = endpoint_cost_function(args);
 
-        IntegrandCost integrand_cost("integrand", rep, {{"enable_fd", true}});
+        IntegrandCostFunction integrand_cost("integrand", rep, {{"enable_fd", true}});
         MX integral = opt.variable();
         integral = 0;
         for (int i = 0; i < N; ++i) {

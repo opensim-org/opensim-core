@@ -119,7 +119,7 @@ MucoSolution MucoCasADiSolver::solveImpl() const {
     transcription->initialize();
     // opt.disp(std::cout, true);
     try {
-        return transcription->solve();
+        return transcription->solve(getGuess());
     } catch (const std::exception& e) {
         std::cout << "Error: " << e.what() << std::endl;
         // TODO: Return a solution (sealed).
@@ -138,4 +138,5 @@ MucoSolution MucoCasADiSolver::solveImpl() const {
 
 void MucoCasADiSolver::constructProperties() {
     constructProperty_num_mesh_points(100);
+    constructProperty_guess_file("");
 }

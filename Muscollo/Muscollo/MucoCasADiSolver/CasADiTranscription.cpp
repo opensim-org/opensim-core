@@ -25,7 +25,7 @@ using casadi::Slice;
 using casadi::Callback;
 using casadi::Dict;
 
-std::vector<DM> EndpointCost::eval(const std::vector<DM>& arg) const {
+std::vector<DM> EndpointCostFunction::eval(const std::vector<DM>& arg) const {
     m_transcrip.applyParametersToModel(arg.at(2));
     // TODO do not make a copy!
     auto state = p.getModel().getWorkingState();
@@ -38,7 +38,7 @@ std::vector<DM> EndpointCost::eval(const std::vector<DM>& arg) const {
     return {cost};
 }
 
-std::vector<DM> IntegrandCost::eval(const std::vector<DM>& arg) const {
+std::vector<DM> IntegrandCostFunction::eval(const std::vector<DM>& arg) const {
     m_transcrip.applyParametersToModel(arg.at(3));
     auto& state = m_transcrip.m_state;
     double time = double(arg.at(0));

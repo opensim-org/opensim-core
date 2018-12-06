@@ -171,6 +171,10 @@ public:
     /// The degree is reduced as necessary if getNumTimes() < 6, and
     /// resampling is not possible if getNumTimes() < 2.
     double resampleWithFrequency(double desiredNumTimePointsPerSecond);
+    /// Resample (interpolate) the data in this iterate at the provided times.
+    /// @throws Exception if new times are not within existing initial and final
+    /// times or if the new times are decreasing, or if getNumTimes() < 2.
+    void resample(SimTK::Vector newTime);
     /// @}
 
     /// @name Set the data

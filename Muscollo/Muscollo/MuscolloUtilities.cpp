@@ -41,6 +41,11 @@ SimTK::Vector OpenSim::createVectorLinspace(
     return v;
 }
 
+SimTK::Vector OpenSim::createVector(
+        const std::vector<SimTK::Real>& elements) {
+    return SimTK::Vector((int)elements.size(), elements.data());
+}
+
 SimTK::Vector OpenSim::interpolate(const SimTK::Vector& x,
         const SimTK::Vector& y, const SimTK::Vector& newX) {
     PiecewiseLinearFunction function(x.size(), &x[0], &y[0]);
