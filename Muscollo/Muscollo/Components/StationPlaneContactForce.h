@@ -144,7 +144,7 @@ private:
 /// B. J. (2016). Muscle Synergies Facilitate Computational Prediction of
 /// Subject-Specific Walking Motions. Frontiers in Bioengineering and
 /// Biotechnology, 4, 1055–27. http://doi.org/10.3389/fbioe.2016.00077
-clas, OSIMMUSCOLLO_API MeyerFregly2016Force
+class OSIMMUSCOLLO_API MeyerFregly2016Force
         : public StationPlaneContactForce {
 OpenSim_DECLARE_CONCRETE_OBJECT(MeyerFregly2016Force,
         StationPlaneContactForce);
