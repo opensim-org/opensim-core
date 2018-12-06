@@ -56,7 +56,7 @@ public:
             return casadi::Sparsity::scalar();
         } else if (i == 1) {
             return casadi::Sparsity::dense(p.getNumStates(), 1);
-        } else if (i == 3) {
+        } else if (i == 2) {
             return casadi::Sparsity::dense(p.getNumParameters(), 1);
         } else {
             return casadi::Sparsity(0, 0);
@@ -438,12 +438,17 @@ public:
 
     MucoSolution solve(const MucoIterate& guess) {
         // Initial guess.
-        if (!guess.empty()) {
-            const CasADiVariables<DM> casGuess =
-                    convertToCasADiVariables(guess);
-            for (auto& kv : m_vars) {
-                m_opti.set_initial(kv.second, casGuess.at(kv.first));
-            }
+        std::unique_ptr<MucoIterate> guessFromBounds;
+        const MucoIterate* guessToUse = &guess;
+        if (guess.empty()) {
+            guessFromBounds.reset(createInitialGuessFromBounds().clone());
+            guessToUse = guessFromBounds.get();
+        }
+        const CasADiVariables<DM> casGuess =
+                convertToCasADiVariables(*guessToUse);
+        if (guessFromBounds) guessFromBounds.reset();
+        for (auto& kv : m_vars) {
+            m_opti.set_initial(kv.second, casGuess.at(kv.first));
         }
 
         m_opti.solver("ipopt", {},
