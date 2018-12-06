@@ -161,16 +161,15 @@ private:
     const OpenSim::MucoProblemRep& p;
 };
 
-// TODO: Might simplify the code to use a map instead (so we can iterate
-// through these fields).
-template <typename T>
-struct CasADiVariables {
-    T initialTime;
-    T finalTime;
-    T states;
-    T controls;
-    T parameters;
+enum Var {
+    initial_time,
+    final_time,
+    states,
+    controls,
+    parameters
 };
+template <typename T>
+using CasADiVariables = std::unordered_map<Var, T, std::hash<int>>;
 
 class CasADiTranscription {
 public:
@@ -210,16 +209,17 @@ public:
     CasADiVariables<DM>
     convertToCasADiVariables(MucoIterate mucoIt) const {
         CasADiVariables<DM> casVars;
-        casVars.initialTime = mucoIt.getInitialTime();
-        casVars.finalTime = mucoIt.getFinalTime();
-        const auto timesValue =
-                createTimes(casVars.initialTime, casVars.finalTime);
+        casVars[Var::initial_time] = mucoIt.getInitialTime();
+        casVars[Var::final_time] = mucoIt.getFinalTime();
+        const auto timesValue = createTimes(casVars[Var::initial_time],
+                        casVars[Var::final_time]);
         SimTK::Vector simtkTimes = convertToSimTKVector(timesValue);
         mucoIt.resample(simtkTimes);
-        casVars.states = convertToCasADiDM(mucoIt.getStatesTrajectory());
-        casVars.controls = convertToCasADiDM(mucoIt.getControlsTrajectory());
+        casVars[Var::states] = convertToCasADiDM(mucoIt.getStatesTrajectory());
+        casVars[Var::controls] =
+                convertToCasADiDM(mucoIt.getControlsTrajectory());
         // TODO dimensions?
-        casVars.parameters = convertToCasADiDM(mucoIt.getParameters());
+        casVars[Var::parameters] = convertToCasADiDM(mucoIt.getParameters());
         return casVars;
     }
     /// This converts a casadi::DM matrix to a
@@ -247,23 +247,24 @@ public:
     TOut convertToMucoIterate(const CasADiVariables<TIn>& casVars) const {
         SimTK::Matrix simtkStates;
         if (m_numStates) {
-            const auto statesValue = m_opti.value(casVars.states);
-            simtkStates = convertToSimTKMatrix(m_opti.value(casVars.states));
+            simtkStates = convertToSimTKMatrix(
+                    m_opti.value(casVars.at(Var::states)));
         }
         SimTK::Matrix simtkControls;
         if (m_numControls) {
-            simtkControls =
-                    convertToSimTKMatrix(m_opti.value(casVars.controls));
+            simtkControls = convertToSimTKMatrix(
+                    m_opti.value(casVars.at(Var::controls)));
         }
         SimTK::RowVector simtkParameters;
         if (m_numParameters) {
-            const auto paramsValue = m_opti.value(casVars.parameters);
+            const auto paramsValue = m_opti.value(casVars.at(Var::parameters));
             simtkParameters =
                     convertToSimTKVector<SimTK::RowVector>(paramsValue);
         }
 
-        const auto timesValue = m_opti.value(
-                        createTimes(casVars.initialTime, casVars.finalTime));
+        const auto timesValue = m_opti.value(createTimes(
+                        casVars.at(Var::initial_time),
+                        casVars.at(Var::final_time)));
         SimTK::Vector simtkTimes = convertToSimTKVector(timesValue);
         TOut mucoIterate(simtkTimes,
                 m_stateNames, m_controlNames, {}, m_parameterNames,
@@ -292,16 +293,10 @@ public:
             }
         };
         CasADiVariables<DM> casGuess = m_lowerBounds;
-        setToMidpoint(casGuess.initialTime,
-                m_lowerBounds.initialTime, m_upperBounds.initialTime);
-        setToMidpoint(casGuess.finalTime,
-                m_lowerBounds.finalTime, m_upperBounds.finalTime);
-        setToMidpoint(casGuess.states,
-                m_lowerBounds.states, m_upperBounds.states);
-        setToMidpoint(casGuess.controls,
-                m_lowerBounds.controls, m_upperBounds.controls);
-        setToMidpoint(casGuess.parameters,
-                m_lowerBounds.parameters, m_upperBounds.parameters);
+        for (auto& kv : casGuess) {
+            setToMidpoint(kv.second,
+                    m_lowerBounds.at(kv.first), m_upperBounds.at(kv.first));
+        }
 
         return convertToMucoIterate<DM>(casGuess);
     }
@@ -326,16 +321,10 @@ public:
             }
         };
         CasADiVariables<DM> casIterate = m_lowerBounds;
-        setRandom(casIterate.initialTime,
-                m_lowerBounds.initialTime, m_upperBounds.initialTime);
-        setRandom(casIterate.finalTime,
-                m_lowerBounds.finalTime, m_upperBounds.finalTime);
-        setRandom(casIterate.states,
-                m_lowerBounds.states, m_upperBounds.states);
-        setRandom(casIterate.controls,
-                m_lowerBounds.controls, m_upperBounds.controls);
-        setRandom(casIterate.parameters,
-                m_lowerBounds.parameters, m_upperBounds.parameters);
+        for (auto& kv : casIterate) {
+            setRandom(kv.second,
+                    m_lowerBounds.at(kv.first), m_upperBounds.at(kv.first));
+        }
 
         return convertToMucoIterate<DM>(casIterate);
     }
@@ -366,28 +355,17 @@ public:
         // Create variables and set bounds.
         // --------------------------------
         createVariables();
-        auto resizeLike = [](DM& resizeThis, MX& likeThis) {
-            resizeThis.resize(likeThis.rows(), likeThis.columns());
-        };
         auto initializeBounds = [&](CasADiVariables<DM>& bounds) {
-            resizeLike(bounds.initialTime, m_vars.initialTime);
-            resizeLike(bounds.finalTime, m_vars.finalTime);
-            resizeLike(bounds.states, m_vars.states);
-            resizeLike(bounds.controls, m_vars.controls);
-            resizeLike(bounds.parameters, m_vars.parameters);
+            for (auto& kv : m_vars) {
+                bounds[kv.first] = DM(kv.second.rows(), kv.second.columns());
+            }
         };
         initializeBounds(m_lowerBounds);
         initializeBounds(m_upperBounds);
 
-        setVariableBounds(
-                m_lowerBounds.initialTime,
-                m_vars.initialTime,
-                m_upperBounds.initialTime, 0, 0,
+        setVariableBounds(Var::initial_time, 0, 0,
                 m_probRep.getTimeInitialBounds());
-        setVariableBounds(
-                m_lowerBounds.finalTime,
-                m_vars.finalTime,
-                m_upperBounds.finalTime, 0, 0,
+        setVariableBounds(Var::final_time, 0, 0,
                 m_probRep.getTimeFinalBounds());
 
         for (int is = 0; is < m_numStates; ++is) {
@@ -395,17 +373,11 @@ public:
             const auto& bounds = info.getBounds();
             auto initialBounds = info.getInitialBounds();
             auto finalBounds = info.getFinalBounds();
-            setVariableBounds(
-                    m_lowerBounds.states, m_vars.states, m_upperBounds.states,
-                    // TODO do not specify bounds twice for endpoints.
-                    is, Slice(), bounds);
-            setVariableBounds(
-                    m_lowerBounds.states, m_vars.states, m_upperBounds.states,
-                    is, 0, initialBounds);
+            // TODO do not specify bounds twice for endpoints.
+            setVariableBounds(Var::states, is, Slice(), bounds);
+            setVariableBounds(Var::states, is, 0, initialBounds);
             // Last state can be obtained via -1.
-            setVariableBounds(
-                    m_lowerBounds.states, m_vars.states, m_upperBounds.states,
-                    is, -1, finalBounds);
+            setVariableBounds(Var::states, is, -1, finalBounds);
         }
 
         int ic = 0;
@@ -416,33 +388,24 @@ public:
             const auto& bounds = info.getBounds();
             const auto& initialBounds = info.getInitialBounds();
             const auto& finalBounds = info.getFinalBounds();
-            setVariableBounds(
-                    m_lowerBounds.controls, m_vars.controls,
-                    m_upperBounds.controls,
-                    ic, Slice(), bounds);
-            setVariableBounds(
-                    m_lowerBounds.controls, m_vars.controls,
-                    m_upperBounds.controls,
-                    ic, 0, initialBounds);
-            setVariableBounds(
-                    m_lowerBounds.controls, m_vars.controls,
-                    m_upperBounds.controls,
-                    ic, -1, finalBounds);
+            setVariableBounds(Var::controls, ic, Slice(), bounds);
+            setVariableBounds(Var::controls, ic, 0, initialBounds);
+            setVariableBounds(Var::controls, ic, -1, finalBounds);
             ++ic;
         }
 
         for (int iparam = 0; iparam < m_numParameters; ++iparam) {
             const auto& param =
                     m_probRep.getParameter(m_parameterNames[iparam]);
-            setVariableBounds(m_lowerBounds.parameters,
-                    m_vars.parameters, m_upperBounds.parameters,
+            setVariableBounds(Var::parameters,
                     iparam, 0, param.getBounds());
         }
 
-        m_duration = m_vars.finalTime - m_vars.initialTime;
+        m_duration = m_vars[Var::final_time] - m_vars[Var::initial_time];
         DM meshIntervals = m_mesh(Slice(1, m_mesh.rows())) -
                 m_mesh(Slice(0, m_mesh.rows() - 1));
-        m_times = createTimes(m_vars.initialTime, m_vars.finalTime);
+        m_times =
+                createTimes(m_vars[Var::initial_time], m_vars[Var::final_time]);
 
         addDefectConstraints();
 
@@ -451,9 +414,9 @@ public:
 
         // TODO: Evaluate individual endpoint costs separately.
         auto endpoint_cost = m_endpointCostFunction->operator()(
-                {m_vars.finalTime,
-                 m_vars.states(Slice(), -1),
-                 m_vars.parameters}).at(0);
+                {m_vars[Var::final_time],
+                 m_vars[Var::states](Slice(), -1),
+                 m_vars[Var::parameters]}).at(0);
 
         DM quadCoeffs = createIntegralQuadratureCoefficients(meshIntervals);
 
@@ -464,9 +427,9 @@ public:
         for (int i = 0; i < m_numTimes; ++i) {
             const auto out = m_integrandCostFunction->operator()(
                     {m_times(i, 0),
-                     m_vars.states(Slice(), i),
-                     m_vars.controls(Slice(), i),
-                     m_vars.parameters});
+                     m_vars[Var::states](Slice(), i),
+                     m_vars[Var::controls](Slice(), i),
+                     m_vars[Var::parameters]});
             integral_cost += quadCoeffs(i) * out.at(0);
         }
         integral_cost *= m_duration;
@@ -478,11 +441,9 @@ public:
         if (!guess.empty()) {
             const CasADiVariables<DM> casGuess =
                     convertToCasADiVariables(guess);
-            m_opti.set_initial(m_vars.initialTime, casGuess.initialTime);
-            m_opti.set_initial(m_vars.finalTime, casGuess.finalTime);
-            m_opti.set_initial(m_vars.states, casGuess.states);
-            m_opti.set_initial(m_vars.controls, casGuess.controls);
-            m_opti.set_initial(m_vars.parameters, casGuess.parameters);
+            for (auto& kv : m_vars) {
+                m_opti.set_initial(kv.second, casGuess.at(kv.first));
+            }
         }
 
         m_opti.solver("ipopt", {},
@@ -522,20 +483,19 @@ public:
 
 protected:
     template <typename TRow, typename TColumn>
-    void setVariableBounds(
-            DM& lowerBounds, const MX& variable, DM& upperBounds,
+    void setVariableBounds(Var var,
             const TRow& rowIndices, const TColumn& columnIndices,
             const MucoBounds& bounds) {
         if (bounds.isSet()) {
             const auto& lower = bounds.getLower();
-            lowerBounds(rowIndices, columnIndices) = lower;
+            m_lowerBounds[var](rowIndices, columnIndices) = lower;
             const auto& upper = bounds.getUpper();
-            upperBounds(rowIndices, columnIndices) = upper;
+            m_upperBounds[var](rowIndices, columnIndices) = upper;
             m_opti.subject_to(
-                    lower <= variable(rowIndices, columnIndices) <= upper);
+                    lower <= m_vars[var](rowIndices, columnIndices) <= upper);
         } else {
-            lowerBounds(rowIndices, columnIndices) = -SimTK::Infinity;
-            upperBounds(rowIndices, columnIndices) =  SimTK::Infinity;
+            m_lowerBounds[var](rowIndices, columnIndices) = -SimTK::Infinity;
+            m_upperBounds[var](rowIndices, columnIndices) =  SimTK::Infinity;
         }
     }
     casadi::Opti m_opti;

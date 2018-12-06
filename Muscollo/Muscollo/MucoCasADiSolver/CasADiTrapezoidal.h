@@ -40,31 +40,31 @@ public:
 
         // Defects.
         MX xdot_im1 = m_dynamicsFunction->operator()(
-                {m_vars.initialTime,
-                 m_vars.states(Slice(), 0),
-                 m_vars.controls(Slice(), 0),
-                 m_vars.parameters
+                {m_vars[Var::initial_time],
+                 m_vars[Var::states](Slice(), 0),
+                 m_vars[Var::controls](Slice(), 0),
+                 m_vars[Var::parameters]
                 }).at(0);
         for (int itime = 1; itime < m_numTimes; ++itime) {
             const auto t = m_times(itime);
-            auto x_i = m_vars.states(Slice(), itime);
-            auto x_im1 = m_vars.states(Slice(), itime - 1);
+            auto x_i = m_vars[Var::states](Slice(), itime);
+            auto x_im1 = m_vars[Var::states](Slice(), itime - 1);
             MX xdot_i = m_dynamicsFunction->operator()(
                     {t,
-                     m_vars.states(Slice(), itime),
-                     m_vars.controls(Slice(), itime),
-                     m_vars.parameters}).at(0);
+                     m_vars[Var::states](Slice(), itime),
+                     m_vars[Var::controls](Slice(), itime),
+                     m_vars[Var::parameters]}).at(0);
             m_opti.subject_to(x_i == (x_im1 + 0.5 * h * (xdot_i + xdot_im1)));
             xdot_im1 = xdot_i;
         }
     }
 private:
     void createVariables() override {
-        m_vars.initialTime = m_opti.variable();
-        m_vars.finalTime = m_opti.variable();
-        m_vars.states = m_opti.variable(m_numStates, m_numTimes);
-        m_vars.controls = m_opti.variable(m_numControls, m_numTimes);
-        m_vars.parameters = m_opti.variable(m_numParameters, 1);
+        m_vars[Var::initial_time] = m_opti.variable();
+        m_vars[Var::final_time] = m_opti.variable();
+        m_vars[Var::states] = m_opti.variable(m_numStates, m_numTimes);
+        m_vars[Var::controls] = m_opti.variable(m_numControls, m_numTimes);
+        m_vars[Var::parameters] = m_opti.variable(m_numParameters, 1);
         m_mesh = DM::linspace(0, 1, m_numTimes);
     }
 
