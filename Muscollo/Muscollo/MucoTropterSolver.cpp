@@ -181,8 +181,8 @@ public:
             // TODO set name properly.
             : tropter::Problem<T>(solver.getProblemRep().getName()),
               m_mucoTropterSolver(solver),
-              m_mucoProb(solver.getProblemRep()),
-              m_model(m_mucoProb.getModel()) {
+              m_mucoProbRep(solver.getProblemRep()),
+              m_model(m_mucoProbRep.getModel()) {
         // Disable all controllers.
         // TODO temporary; don't want to actually do this.
         auto controllers = m_model.getComponentList<Controller>();
@@ -193,11 +193,11 @@ public:
         }
         m_state = m_model.getWorkingState();
 
-        this->set_time(convert(m_mucoProb.getTimeInitialBounds()),
-                convert(m_mucoProb.getTimeFinalBounds()));
+        this->set_time(convert(m_mucoProbRep.getTimeInitialBounds()),
+                convert(m_mucoProbRep.getTimeFinalBounds()));
         auto svNamesInSysOrder = createStateVariableNamesInSystemOrder(m_model);
         for (const auto& svName : svNamesInSysOrder) {
-            const auto& info = m_mucoProb.getStateInfo(svName);
+            const auto& info = m_mucoProbRep.getStateInfo(svName);
             this->add_state(svName, convert(info.getBounds()),
                     convert(info.getInitialBounds()),
                     convert(info.getFinalBounds()));
@@ -210,10 +210,10 @@ public:
         std::vector<std::string> labels;
         std::vector<KinematicLevel> kinLevels;
         std::vector<std::string> mcNames = 
-            m_mucoProb.createMultibodyConstraintNames();
+            m_mucoProbRep.createMultibodyConstraintNames();
         for (const auto& mcName : mcNames) {
-            const auto& mc = m_mucoProb.getMultibodyConstraint(mcName);
-            const auto& multInfos = m_mucoProb.getMultiplierInfos(mcName);
+            const auto& mc = m_mucoProbRep.getMultibodyConstraint(mcName);
+            const auto& multInfos = m_mucoProbRep.getMultiplierInfos(mcName);
             cid = mc.getSimbodyConstraintIndex();
             mp = mc.getNumPositionEquations();
             mv = mc.getNumVelocityEquations();
@@ -279,9 +279,9 @@ public:
         }
         
         // Add any generic path constraints included in the problem. 
-        for (std::string pcName : m_mucoProb.createPathConstraintNames()) {
+        for (std::string pcName : m_mucoProbRep.createPathConstraintNames()) {
             const MucoPathConstraint& constraint = 
-                m_mucoProb.getPathConstraint(pcName);
+                m_mucoProbRep.getPathConstraint(pcName);
             auto pcInfo = constraint.getConstraintInfo();
             auto labels = pcInfo.getConstraintLabels();
             auto bounds = pcInfo.getBounds();
@@ -289,7 +289,7 @@ public:
                 this->add_path_constraint(labels[i], convert(bounds[i])); 
             }
         }
-        m_numPathConstraintEqs = m_mucoProb.getNumPathConstraintEquations();
+        m_numPathConstraintEqs = m_mucoProbRep.getNumPathConstraintEquations();
         // Allocate path constraint error memory.
         m_pathConstraintErrors.resize(m_numPathConstraintEqs);
         m_pathConstraintErrors.setToZero();
@@ -297,13 +297,13 @@ public:
         for (const auto& actu : m_model.getComponentList<Actuator>()) {
             // TODO handle a variable number of control signals.
             const auto& actuName = actu.getAbsolutePathString();
-            const auto& info = m_mucoProb.getControlInfo(actuName);
+            const auto& info = m_mucoProbRep.getControlInfo(actuName);
             this->add_control(actuName, convert(info.getBounds()),
                     convert(info.getInitialBounds()),
                     convert(info.getFinalBounds()));
         }
-        for (std::string name : m_mucoProb.createParameterNames()) {
-            const MucoParameter& parameter = m_mucoProb.getParameter(name);
+        for (std::string name : m_mucoProbRep.createParameterNames()) {
+            const MucoParameter& parameter = m_mucoProbRep.getParameter(name);
             this->add_parameter(name, convert(parameter.getBounds()));
         }
     }
@@ -342,8 +342,8 @@ public:
         // If enabled constraints exist in the model, compute accelerations
         // based on Lagrange multipliers.
         if (m_numMultibodyConstraintEqs) {
-            // TODO Antoine and Gil said realizing Dynamics is a lot costlier than
-            // realizing to Velocity and computing forces manually.
+            // TODO Antoine and Gil said realizing Dynamics is a lot costlier
+            // than realizing to Velocity and computing forces manually.
             m_model.realizeDynamics(m_state);
 
             const SimTK::MultibodySystem& multibody = 
@@ -394,8 +394,8 @@ public:
             }
 
         } else {
-            // TODO Antoine and Gil said realizing Dynamics is a lot costlier than
-            // realizing to Velocity and computing forces manually.
+            // TODO Antoine and Gil said realizing Dynamics is a lot costlier
+            // than realizing to Velocity and computing forces manually.
             m_model.realizeAcceleration(m_state);
 
             // Copy state derivative values to output struct.
@@ -404,7 +404,7 @@ public:
         }
 
         // Copy errors from generic path constraints into output struct.
-        m_mucoProb.calcPathConstraintErrors(m_state, m_pathConstraintErrors);
+        m_mucoProbRep.calcPathConstraintErrors(m_state, m_pathConstraintErrors);
         std::copy(m_pathConstraintErrors.begin(),
                   m_pathConstraintErrors.end(),
                   out.path.data() + m_numMultibodyConstraintEqs);
@@ -435,7 +435,7 @@ public:
             m_model.realizePosition(m_state);
         }
 
-        integrand = m_mucoProb.calcIntegralCost(m_state);
+        integrand = m_mucoProbRep.calcIntegralCost(m_state);
 
         // TODO if (get_enforce_holonomic_constraints_only()) {
         // Add squared multiplers cost to integrand. Since we currently don't
@@ -457,12 +457,12 @@ public:
                 &m_state.updY()[0]);
         // TODO cannot use control signals...
         m_model.updControls(m_state).setToNaN();
-        cost = m_mucoProb.calcEndpointCost(m_state);
+        cost = m_mucoProbRep.calcEndpointCost(m_state);
     }
 
 private:
     const MucoTropterSolver& m_mucoTropterSolver;
-    const MucoProblemRep& m_mucoProb;
+    const MucoProblemRep& m_mucoProbRep;
     const Model& m_model;
     mutable SimTK::State m_state;
     // This member variable avoids unnecessary extra allocation of memory for
@@ -492,10 +492,10 @@ private:
             // Warning: memory borrowed, not copied (when third argument to
             // SimTK::Vector constructor is true)
             SimTK::Vector mucoParams(
-                (int)m_mucoProb.createParameterNames().size(),
+                (int)m_mucoProbRep.createParameterNames().size(),
                 parameters.data(), true);
 
-            m_mucoProb.applyParametersToModel(mucoParams);
+            m_mucoProbRep.applyParametersToModel(mucoParams);
             // TODO: Avoid this const_cast.
             const_cast<Model&>(m_model).initSystem();
         }
