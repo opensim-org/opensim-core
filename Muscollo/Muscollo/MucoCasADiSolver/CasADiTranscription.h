@@ -68,6 +68,22 @@ public:
     ~EndpointCostFunction() override {}
     casadi_int get_n_in() override { return 3; }
     casadi_int get_n_out() override { return 1; }
+    std::string get_name_in(casadi_int i) override {
+        switch (i) {
+        case 0: return "time";
+        case 1: return "states";
+        case 2: return "parameters";
+        default:
+            OPENSIM_THROW(Exception, "Internal error.");
+        }
+    }
+    std::string get_name_out(casadi_int i) override {
+        switch (i) {
+        case 0: return "endpoint_cost";
+        default:
+            OPENSIM_THROW(Exception, "Internal error.");
+        }
+    }
     void init() override {}
     casadi::Sparsity get_sparsity_in(casadi_int i) override {
         // TODO fix when using a matrix as input for states.
@@ -112,6 +128,23 @@ public:
     /// 3. parameters
     casadi_int get_n_in() override { return 4; }
     casadi_int get_n_out() override { return 1; }
+    std::string get_name_in(casadi_int i) override {
+        switch (i) {
+        case 0: return "time";
+        case 1: return "states";
+        case 2: return "controls";
+        case 3: return "parameters";
+        default:
+            OPENSIM_THROW(Exception, "Internal error.");
+        }
+    }
+    std::string get_name_out(casadi_int i) override {
+        switch (i) {
+        case 0: return "integral_cost_integrand";
+        default:
+            OPENSIM_THROW(Exception, "Internal error.");
+        }
+    }
     casadi::Sparsity get_sparsity_in(casadi_int i) override {
         if (i == 0) {
             return casadi::Sparsity::dense(1, 1);
@@ -133,6 +166,58 @@ public:
     // to avoid any overhead.
     int eval(const double** arg, double** res, casadi_int*, double*, void*)
             const override;
+
+    // TODO: Should I provide a Jacobian *and* a forward?
+    /*
+    bool has_forward(casadi_int ifwd) const override {
+        return ifwd == 1;
+    }
+    Function get_forward(casadi_int ifwd, const std::string& name,
+            const std::vector<std::string>& inames,
+            const std::vector<std::string>& onames,
+            const Dict& opts) const override {
+        std::cout << "DEBUGname " << name << std::endl;
+        std::cout << "DEBUG " << inames.size() << std::endl;
+        for (const auto& name : inames) std::cout << name << std::endl;
+        std::cout << "DEBUG " << onames.size() << std::endl;
+        for (const auto& name : onames) std::cout << name << std::endl;
+
+        MX time = MX::sym(inames[0]);
+        MX states = MX::sym(inames[1], p.getNumStates(), 1);
+        MX controls = MX::sym(inames[2], p.getNumControls(), 1);
+        MX parameters = MX::sym(inames[3], p.getNumParameters(), 1);
+        MX out_integrand = MX::sym(inames[4]);
+        std::vector<MX> in =
+                {time, states, controls, parameters, out_integrand};
+        MX fwd = MX::sym(onames[0],  )
+        std::vector<MX> out =
+                {};
+        return Function(name, in, out, inames, onames, opts);
+    }
+    bool has_jacobian() const override { return true; }
+    Function get_jacobian(const std::string& name,
+            const std::vector<std::string>& inames,
+            const std::vector<std::string>& onames,
+            const Dict& opts) const override {
+
+        std::cout << "DEBUGname " << name << std::endl;
+        std::cout << "DEBUG " << inames.size() << std::endl;
+        for (const auto& name : inames) std::cout << name << std::endl;
+        std::cout << "DEBUG " << onames.size() << std::endl;
+        for (const auto& name : onames) std::cout << name << std::endl;
+
+        MX time = MX::sym(inames[0]);
+        MX states = MX::sym(inames[1], p.getNumStates(), 1);
+        MX controls = MX::sym(inames[2], p.getNumControls(), 1);
+        MX parameters = MX::sym(inames[3], p.getNumParameters(), 1);
+        MX out_integrand = MX::sym(inames[4]);
+        std::vector<MX> in =
+                {time, states, controls, parameters, out_integrand};
+        MX jac = MX::sym(onames[0], )
+        std::vector<MX> out =
+                {};
+        return Function(name, in, out, inames, onames, opts);
+    }*/
 };
 
 /// Currently, this class only returns the right-hand-side of the generalized
@@ -156,6 +241,23 @@ public:
     /// 3. parameters
     casadi_int get_n_in() override { return 4; }
     casadi_int get_n_out() override { return 1; }
+    std::string get_name_in(casadi_int i) override {
+        switch (i) {
+        case 0: return "time";
+        case 1: return "states";
+        case 2: return "controls";
+        case 3: return "parameters";
+        default:
+            OPENSIM_THROW(Exception, "Internal error.");
+        }
+    }
+    std::string get_name_out(casadi_int i) override {
+        switch (i) {
+        case 0: return "dynamics";
+        default:
+            OPENSIM_THROW(Exception, "Internal error.");
+        }
+    }
     casadi::Sparsity get_sparsity_in(casadi_int i) override {
         if (i == 0) {
             return casadi::Sparsity::dense(1, 1);
@@ -445,6 +547,12 @@ public:
                      m_vars[Var::controls](Slice(), i),
                      m_vars[Var::parameters]});
             integral_cost += quadCoeffs(i) * out.at(0);
+            // Testing the performance benefit of providing a cost with CasADi
+            // directly.
+            /*
+            const auto& controls = m_vars[Var::controls](Slice(), i);
+            integral_cost += quadCoeffs(i) * dot(controls, controls);
+             */
         }
         integral_cost *= m_duration;
         m_opti.minimize(endpoint_cost + integral_cost);
