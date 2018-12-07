@@ -90,8 +90,9 @@ public:
     /// 0. time
     /// 1. final state
     /// 2. parameters
-    std::vector<casadi::DM>
-    eval(const std::vector<casadi::DM>& arg) const override;
+    int eval(const double** arg, double** res, casadi_int*, double*, void*)
+            const override;
+
 };
 
 class IntegrandCostFunction : public CasADiFunction {
@@ -128,8 +129,10 @@ public:
         if (i == 0) return casadi::Sparsity::scalar();
         else return casadi::Sparsity(0, 0);
     }
-    std::vector<casadi::DM>
-    eval(const std::vector<casadi::DM>& arg) const override;
+    // Use the more efficient virtual function (not the eval() that uses DMs)
+    // to avoid any overhead.
+    int eval(const double** arg, double** res, casadi_int*, double*, void*)
+            const override;
 };
 
 /// Currently, this class only returns the right-hand-side of the generalized
@@ -169,8 +172,8 @@ public:
     casadi::Sparsity get_sparsity_out(casadi_int i) override;
     void init() override {}
 
-    std::vector<casadi::DM>
-    eval(const std::vector<casadi::DM>& arg) const override;
+    int eval(const double** arg, double** res, casadi_int*, double*, void*)
+            const override;
 };
 
 enum Var {
@@ -527,14 +530,10 @@ public:
     virtual DM createIntegralQuadratureCoefficients(const DM& meshIntervals)
     const = 0;
 
-    void applyParametersToModel(const DM& parameters) const
+    void applyParametersToModel(const SimTK::Vector& parameters) const
     {
         if (m_numParameters) {
-            SimTK::Vector mucoParams(m_numParameters);
-            for (int iparam = 0; iparam < m_numParameters; ++iparam) {
-                mucoParams[iparam] = double(parameters(iparam));
-            }
-            m_probRep.applyParametersToModel(mucoParams);
+            m_probRep.applyParametersToModel(parameters);
             const_cast<Model&>(m_model).initSystem();
         }
     }
