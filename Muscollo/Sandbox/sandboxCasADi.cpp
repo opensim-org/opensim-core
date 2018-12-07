@@ -348,3 +348,54 @@ int main() {
             solution.exportToStatesStorage());
     return 0;
 }
+
+/* User-defined Jacobian in Python.
+
+from casadi import *
+class MyCallback(Callback):
+    def __init__(self, name, d, opts={}):
+        Callback.__init__(self)
+        self.d = d
+        self.construct(name, opts)
+    # Number of inputs and outputs
+    def get_n_in(self): return 1
+    def get_n_out(self): return 1
+    # Initialize the object
+    def init(self):
+        print('initializing object')
+    # Evaluate numerically
+    def eval(self, arg):
+        x = arg[0]
+        f = sin(self.d*x)
+        return [f]
+    def has_jacobian(self):
+        return True
+    def get_jacobian(self, name, inames, onames, opts):
+        x = MX.sym(inames[0])
+        J = MX.sym(onames[0])
+        J = self.d * cos(self.d * x)
+
+        dummy = MX.sym(inames[1])
+
+        return Function(name, [x, dummy], [J], opts)
+
+
+fd = MyCallback('f', 0.5, {'enable_fd': True, 'fd_options': {'h_min': 1e-3}})
+f = MyCallback('f', 0.5)
+ynum = fd(2)
+print(fd(2))
+x = MX.sym('x')
+
+
+
+yd = fd(x)
+y = f(x) # sin(0.5 * x) # f(x)
+
+Jd = jacobian(yd, x)
+J = jacobian(y, x)
+
+Jdf = Function('Jdf', [x], [Jd])
+print(Jdf(2))
+Jf = Function('Jf', [x], [J])
+print(Jf(2))
+*/
