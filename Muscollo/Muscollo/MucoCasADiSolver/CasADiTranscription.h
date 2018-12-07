@@ -34,15 +34,35 @@ using casadi::Dict;
 
 class CasADiTranscription;
 
+class CasADiFunction : public casadi::Callback {
+public:
+    CasADiFunction(
+            const CasADiTranscription& transcrip,
+            const OpenSim::MucoProblemRep& problem)
+            : m_transcrip(transcrip), p(problem) {
+    }
+    // Concrete class constructors should invoke this before construct().
+    void setCommonOptions(Dict& opts) {
+        opts["enable_fd"] = true;
+        opts["fd_method"] = "central";
+        // Using "forward", iterations are 10x faster but problems don't
+        // converge.
+    }
+protected:
+    const CasADiTranscription& m_transcrip;
+    const OpenSim::MucoProblemRep& p;
+
+};
+
 // TODO: Create a base class for all of these callback functions.
-class EndpointCostFunction : public casadi::Callback {
+class EndpointCostFunction : public CasADiFunction {
 public:
     EndpointCostFunction(const std::string& name,
             const CasADiTranscription& transcrip,
             const OpenSim::MucoProblemRep& problem,
-            casadi::Dict opts=casadi::Dict())
-            : m_transcrip(transcrip), p(problem) {
-        opts["enable_fd"] = true;
+            casadi::Dict opts = casadi::Dict())
+            : CasADiFunction(transcrip, problem) {
+        setCommonOptions(opts);
         construct(name, opts);
     }
     ~EndpointCostFunction() override {}
@@ -72,19 +92,16 @@ public:
     /// 2. parameters
     std::vector<casadi::DM>
     eval(const std::vector<casadi::DM>& arg) const override;
-private:
-    const CasADiTranscription& m_transcrip;
-    const OpenSim::MucoProblemRep& p;
 };
 
-class IntegrandCostFunction : public casadi::Callback {
+class IntegrandCostFunction : public CasADiFunction {
 public:
     IntegrandCostFunction(const std::string& name,
             const CasADiTranscription& transcrip,
             const OpenSim::MucoProblemRep& problem,
-            casadi::Dict opts=casadi::Dict())
-            : m_transcrip(transcrip), p(problem) {
-        opts["enable_fd"] = true;
+            casadi::Dict opts = casadi::Dict())
+            : CasADiFunction(transcrip, problem) {
+        setCommonOptions(opts);
         construct(name, opts);
     }
     ~IntegrandCostFunction() override {}
@@ -113,23 +130,20 @@ public:
     }
     std::vector<casadi::DM>
     eval(const std::vector<casadi::DM>& arg) const override;
-private:
-    const CasADiTranscription& m_transcrip;
-    const OpenSim::MucoProblemRep& p;
 };
 
 /// Currently, this class only returns the right-hand-side of the generalized
 /// accelerations differential equations. Currently, we only support
 /// models for which qdot = u. That is, the N matrix (qdot = N u) is identity.
 /// This allows us to compute qdot symbolically through CasADi.
-class DynamicsFunction : public casadi::Callback {
+class DynamicsFunction : public CasADiFunction {
 public:
     DynamicsFunction(const std::string& name,
             const CasADiTranscription& transcrip,
             const OpenSim::MucoProblemRep& problem,
             casadi::Dict opts=casadi::Dict())
-            : m_transcrip(transcrip), p(problem) {
-        opts["enable_fd"] = true;
+            : CasADiFunction(transcrip, problem) {
+        setCommonOptions(opts);
         construct(name, opts);
     }
     ~DynamicsFunction() override {}
@@ -157,9 +171,6 @@ public:
 
     std::vector<casadi::DM>
     eval(const std::vector<casadi::DM>& arg) const override;
-private:
-    const CasADiTranscription& m_transcrip;
-    const OpenSim::MucoProblemRep& p;
 };
 
 enum Var {

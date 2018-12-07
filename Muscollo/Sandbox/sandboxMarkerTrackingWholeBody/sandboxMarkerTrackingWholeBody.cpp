@@ -235,10 +235,11 @@ MucoSolution solveMarkerTrackingProblem(bool usingMuscleLikeActuators,
     // =====================
     auto& solver = muco.initSolver<MucoCasADiSolver>();
     solver.set_num_mesh_points(10);
-    solver.set_optim_max_iterations(2);
+    // solver.set_optim_max_iterations(2);
     // solver.set_verbosity(2);
     // solver.set_optim_solver("ipopt");
     solver.set_optim_hessian_approximation("exact");
+    // solver.set_optim_constraint_tolerance(1e-3);
 
     // Create guess.
     // =============
