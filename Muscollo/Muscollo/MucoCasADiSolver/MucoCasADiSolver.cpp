@@ -43,6 +43,9 @@
 //   cost at time i when perturbing at time j, i \neq j..
 //   I can try to investigate this on my own.
 // - Is there a way to collect stats on how many times a function is called?
+// - IntegrandCost: no point in realizing to velocity if there aren't even
+//   any integral cost terms, or if integral costs depend only on controls
+//   (not any more complex calculations).
 
 using casadi::MX;
 using casadi::DM;

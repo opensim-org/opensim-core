@@ -95,8 +95,8 @@ do {                                                                         \
         for (int ic = 0; ic < a.ncol(); ++ic) {                              \
             INFO("(" << ir << "," << ic << "): " <<                          \
                     a(ir, ic) << " vs " << b(ir, ic));                       \
-            REQUIRE((Approx(a(ir, ic)).toltype(tol)                          \
-                    == b(ir, ic)));                                          \
+            REQUIRE((Approx(a.getElt(ir, ic)).toltype(tol)                   \
+                    == b.getElt(ir, ic)));                                   \
         }                                                                    \
     }                                                                        \
 } while (0)
@@ -120,5 +120,7 @@ do {                                                                         \
 do {                                                                         \
     OpenSim_REQUIRE_MATRIX_INTERNAL(actual, expected, tol, margin);          \
 } while (0)
+
+// TODO: Add "CHECK" variants.
 
 #endif // MUSCOLLO_TESTING_H

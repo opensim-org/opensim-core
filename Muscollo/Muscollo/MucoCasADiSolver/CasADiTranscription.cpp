@@ -27,8 +27,7 @@ using casadi::Dict;
 
 std::vector<DM> EndpointCostFunction::eval(const std::vector<DM>& arg) const {
     m_transcrip.applyParametersToModel(arg.at(2));
-    // TODO do not make a copy!
-    auto state = p.getModel().getWorkingState();
+    auto& state = m_transcrip.m_state;
     double time = double(arg.at(0));
     state.setTime(time);
     for (int i = 0; i < state.getNY(); ++i) {
@@ -38,20 +37,23 @@ std::vector<DM> EndpointCostFunction::eval(const std::vector<DM>& arg) const {
     return {cost};
 }
 
+// TODO: Move to a better place.
+void convertToSimTKState(const DM& time, const DM& states, const DM& controls,
+        const Model& model, SimTK::State& simtkState) {
+    simtkState.setTime(double(time));
+    simtkState.setY(SimTK::Vector(simtkState.getNY(), states.ptr(), true));
+    auto& simtkControls = model.updControls(simtkState);
+    simtkControls = SimTK::Vector(simtkControls.size(), controls.ptr(), true);
+    model.realizeVelocity(simtkState);
+    model.setControls(simtkState, simtkControls);
+}
+
 std::vector<DM> IntegrandCostFunction::eval(const std::vector<DM>& arg) const {
     m_transcrip.applyParametersToModel(arg.at(3));
     auto& state = m_transcrip.m_state;
-    double time = double(arg.at(0));
-    state.setTime(time);
-    for (int i = 0; i < state.getNY(); ++i) {
-        state.updY()[i] = double(arg.at(1)(i));
-    }
-    auto& controls = p.getModel().updControls(state);
-    for (int i = 0; i < controls.size(); ++i) {
-        controls[i] = double(arg.at(2)(i));
-    }
-    p.getModel().realizeVelocity(state);
-    p.getModel().setControls(state, controls);
+    convertToSimTKState(arg.at(0), arg.at(1), arg.at(2), p.getModel(), state);
+    // TODO don't necessarily need to realize to Velocity just to penalize
+    // controls.
     return {p.calcIntegralCost(state)};
 }
 
@@ -65,23 +67,16 @@ casadi::Sparsity DynamicsFunction::get_sparsity_out(casadi_int i) {
 std::vector<DM> DynamicsFunction::eval(const std::vector<DM>& arg) const {
     m_transcrip.applyParametersToModel(arg.at(3));
     auto& state = m_transcrip.m_state;
-    // TODO move copying over the state to a separate function.
-    double time = double(arg.at(0));
-    state.setTime(time);
-    for (int i = 0; i < state.getNY(); ++i) {
-        state.updY()[i] = double(arg.at(1)(i));
-    }
-    auto& controls = p.getModel().updControls(state);
-    for (int i = 0; i < controls.size(); ++i) {
-        controls[i] = double(arg.at(2)(i));
-    }
-    p.getModel().realizeVelocity(state);
-    p.getModel().setControls(state, controls);
+    convertToSimTKState(arg.at(0), arg.at(1), arg.at(2), p.getModel(), state);
     p.getModel().realizeAcceleration(state);
-    DM deriv(state.getNU() + state.getNZ(), 1);
+
+    int numRowsOut = state.getNU() + state.getNZ();
+    DM deriv(Sparsity::dense(numRowsOut, 1));
+    // Modify the internal vector of nonzeros because it's more efficient.
+    deriv.nonzeros().resize(numRowsOut);
     for (int i = 0; i < deriv.rows(); ++i) {
         // Skip over qdot.
-        deriv(i, 0) = state.getYDot()[i + state.getNQ()];
+        deriv.nonzeros()[i] = state.getYDot()[i + state.getNQ()];
     }
     return {deriv};
 }

@@ -110,12 +110,14 @@ problem.addCost(controlCost);
 
 % Configure the solver.
 % =====================
-solver = muco.initSolver();
+solver = muco.initCasADiSolver();
+% solver = muco.initTropterSolver();
 % 10 mesh points ~ 1 minute to solve
 % 25 mesh points ~ 5 minutes to solve
 solver.set_num_mesh_points(10);
 solver.set_optim_hessian_approximation('exact');
-solver.setGuess('bounds');
+% solver.set_optim_max_iterations(3000);
+% TODO solver.setGuess('bounds');
 
 % Now that we've finished setting up the tool, print it to a file.
 muco.print('marker_tracking_10dof.omuco');

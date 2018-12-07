@@ -72,7 +72,7 @@ void testMucoControlCost() {
                 createVectorLinspace(N, 2.23, -2.23), 0.25);
         // Symmetry.
         SimTK_TEST_EQ_TOL(sol1.getControl("/actuator").getElt(0, 0),
-                -sol1.getControl("/actuator").getElt(N-1, 0), 1e-5);
+                -sol1.getControl("/actuator").getElt(N-1, 0), 1e-3);
 
         // Minimum effort solution takes as long as possible.
         SimTK_TEST_EQ_TOL(sol1.getTime().getElt(N-1, 0), 5, 1e-7);
@@ -156,7 +156,7 @@ void testMucoControlCost() {
         // Sum of control for these two actuators is the same as the control
         // in the single-actuator case.
         SimTK_TEST_EQ_TOL(sol2.getControlsTrajectory().rowSum(),
-            sol1.getControl("/actuator"), 1e-5);
+            sol1.getControl("/actuator"), 1e-3);
     }
 
     // Cannot set a weight for a nonexistent control.

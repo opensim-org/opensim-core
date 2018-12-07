@@ -233,18 +233,19 @@ MucoSolution solveMarkerTrackingProblem(bool usingMuscleLikeActuators,
 
     // Configure the solver.
     // =====================
-    MucoTropterSolver& ms = muco.initTropterSolver();
-    ms.set_num_mesh_points(10);
-    ms.set_verbosity(2);
-    ms.set_optim_solver("ipopt");
-    ms.set_optim_hessian_approximation("exact");
+    auto& solver = muco.initSolver<MucoCasADiSolver>();
+    solver.set_num_mesh_points(10);
+    solver.set_optim_max_iterations(2);
+    // solver.set_verbosity(2);
+    // solver.set_optim_solver("ipopt");
+    solver.set_optim_hessian_approximation("exact");
 
     // Create guess.
     // =============
     if (prevSolutionInitialization) {
         MucoIterate prevSolution(
             "sandboxMarkerTrackingWholeBody_marker_solution.sto");
-        ms.setGuess(prevSolution);
+        solver.setGuess(prevSolution);
     }
 
     // Solve the problem.
