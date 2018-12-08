@@ -111,9 +111,9 @@ std::unique_ptr<Model> createPendulumModel() {
     return model;
 }
 
-void testSolverOptions() {
+TEMPLATE_TEST_CASE("Solver options", "", MucoTropterSolver, MucoCasADiSolver) {
     MucoTool muco = createSlidingMassMucoTool();
-    MucoTropterSolver& ms = muco.initTropterSolver();
+    auto& ms = muco.initSolver<TestType>();
     MucoSolution solDefault = muco.solve();
     ms.set_verbosity(3); // Invalid value.
     SimTK_TEST_MUST_THROW_EXC(muco.solve(), Exception);
@@ -154,54 +154,7 @@ void testSolverOptions() {
     }
 }
 
-void testEmpty() {
-}
 /*
-
-
-void testOrderingOfCalls() {
-
-    // Solve a problem, edit the problem, re-solve.
-    {
-        // It's fine to
-        MucoTool muco = createSlidingMassMucoTool();
-        auto& solver = muco.initTropterSolver();
-        muco.solve();
-        // This flips the "m_solverInitialized" flag:
-        muco.updProblem();
-        // This will call initSolver() internally:
-        muco.solve();
-    }
-
-    // Solve a problem, edit the problem, ask the solver to do something.
-    {
-        MucoTool muco = createSlidingMassMucoTool();
-        auto& solver = muco.initTropterSolver();
-        muco.solve();
-        // This resets the problem to null on the solver.
-        muco.updProblem();
-        // The solver can't do anything if you've edited the model.
-        SimTK_TEST_MUST_THROW_EXC(solver.getProblem(), Exception);
-        SimTK_TEST_MUST_THROW_EXC(solver.solve(), Exception);
-    }
-
-    // Solve a problem, edit the solver, re-solve.
-    {
-        MucoTool muco = createSlidingMassMucoTool();
-        auto& solver = muco.initTropterSolver();
-        const int initNumMeshPoints = solver.get_num_mesh_points();
-        MucoSolution sol0 = muco.solve();
-        solver.set_num_mesh_points(2 * initNumMeshPoints);
-        MucoSolution sol1 = muco.solve();
-        solver.set_num_mesh_points(initNumMeshPoints);
-        MucoSolution sol2 = muco.solve();
-        // Ensure that changing the mesh has an effect.
-        SimTK_TEST(!sol0.isNumericallyEqual(sol1));
-        // Ensure we get repeatable results with the initial settings.
-        SimTK_TEST(sol0.isNumericallyEqual(sol2));
-
-    }
-}
 
 /// Test that we can read in a Muscollo setup file, solve, edit the setup,
 /// re-solve.
@@ -234,7 +187,7 @@ void testCopy() {
 }
  */
 
-void testBounds() {
+TEST_CASE("Bounds", "") {
     {
         SimTK_TEST(!MucoBounds().isSet());
         SimTK_TEST(MucoBounds(5.3).isSet());
@@ -255,24 +208,9 @@ void testBounds() {
     // By default, the bounds for coordinates, if clamped, are the
     // coordinate's range.
 
-    // TODO create intermediate class, Delegate or Proxy or Decorator
-    // TODO or simply have a "finalize()" method on MucoProblem.
-    /*
-    {
-        MucoTool muco;
-        MucoProblem& mp = muco.updProblem();
-        mp.setModel(createSlidingMassModel());
-        mp.setStateInfo("slider/position/value", {}, 0, 0);
-        // TODO something...
-        SimTK_TEST(state_bounds.lower == coord.get_range(0));
-        SimTK_TEST(state_bounds.upper == coord.get_range(0));
-    }
-     */
-
     // TODO what to do if the user does not specify info for some variables?
 
     // Get error if state/control name does not exist.
-
     {
         auto model = createSlidingMassModel();
         model->initSystem();
@@ -294,7 +232,7 @@ void testBounds() {
     // TODO what if bounds are missing for some states?
 }
 
-void testBuildingProblem() {
+TEST_CASE("Building a problem", "") {
     {
         MucoTool muco;
         MucoProblem& mp = muco.updProblem();
@@ -348,7 +286,7 @@ void testBuildingProblem() {
     }
 }
 
-void testWorkflow() {
+TEMPLATE_TEST_CASE("Workflow", "", MucoTropterSolver, MucoCasADiSolver) {
 
     // Default bounds.
     {
@@ -419,7 +357,7 @@ void testWorkflow() {
         problem.setControlInfo("/actuator", {-10, 10});
         problem.addCost<MucoFinalTimeCost>();
 
-        MucoTropterSolver& solver = muco.initTropterSolver();
+        auto& solver = muco.initSolver<TestType>();
         solver.set_num_mesh_points(20);
         MucoIterate guess = solver.createGuess("random");
         guess.setTime(createVectorLinspace(20, 0.0, 3.0));
@@ -447,7 +385,7 @@ void testWorkflow() {
             problem.setStateInfo("/slider/position/value", {0, 1}, 0, 1);
             problem.setStateInfo("/slider/position/speed", {-100, 100}, 0, 0);
             problem.addCost<MucoFinalTimeCost>();
-            MucoTropterSolver& solver = muco.initTropterSolver();
+            auto& solver = muco.initSolver<TestType>();
             solver.set_num_mesh_points(20);
             finalTime0 = muco.solve().getFinalTime();
 
@@ -466,7 +404,7 @@ void testWorkflow() {
             problem.setStateInfo("/slider/position/value", {0, 1}, 0, 1);
             problem.setStateInfo("/slider/position/speed", {-100, 100}, 0, 0);
             problem.setModel(createSlidingMassModel());
-            MucoTropterSolver& solver = muco.initTropterSolver();
+            auto& solver = muco.initSolver<TestType>();
             solver.set_num_mesh_points(20);
             const double finalTime =  muco.solve().getFinalTime();
             SimTK_TEST_EQ_TOL(finalTime, finalTime0, 1e-6);
@@ -520,7 +458,7 @@ void testWorkflow() {
     // }
 }
 
-void testStateTracking() {
+TEMPLATE_TEST_CASE("State tracking", "", MucoTropterSolver, MucoCasADiSolver) {
     // TODO move to another test file?
     auto makeTool = []() {
         MucoTool muco;
@@ -555,7 +493,7 @@ void testStateTracking() {
         MucoProblem& mp = muco.updProblem();
         auto tracking = mp.addCost<MucoStateTrackingCost>();
         tracking->setReference(STOFileAdapter::read(fname));
-        MucoTropterSolver& ms = muco.initTropterSolver();
+        auto& ms = muco.template initSolver<TestType>();
         ms.set_num_mesh_points(5);
         ms.set_optim_hessian_approximation("exact");
         solDirect = muco.solve();
@@ -571,7 +509,7 @@ void testStateTracking() {
         MucoProblem& mp = muco.updProblem();
         auto tracking = mp.addCost<MucoStateTrackingCost>();
         tracking->setReferenceFile(fname);
-        MucoTropterSolver& ms = muco.initTropterSolver();
+        auto& ms = muco.template initSolver<TestType>();
         ms.set_num_mesh_points(5);
         ms.set_optim_hessian_approximation("exact");
         solFile = muco.solve();
@@ -601,9 +539,10 @@ void testStateTracking() {
 
 }
 
-void testGuess() {
+TEMPLATE_TEST_CASE("Guess", "", MucoTropterSolver, MucoCasADiSolver) {
+
     MucoTool muco = createSlidingMassMucoTool();
-    MucoTropterSolver& ms = muco.initTropterSolver();
+    auto& ms = muco.initSolver<TestType>();
     const int N = 6;
     ms.set_num_mesh_points(N);
 
@@ -888,13 +827,14 @@ void testGuess() {
     // TODO ordering of states and controls in MucoIterate should not matter!
 
     // TODO getting a guess, editing the problem, asking for another guess,
-    // requires calling initTropterSolver(). TODO can check the Problem's
+    // requires calling initSolver<>(). TODO can check the Problem's
     // isObjectUptoDateWithProperties(); simply flipping a flag with
     // updProblem() is not sufficient, b/c a user could make changes way
     // after they get the mutable reference.
 }
 
-void testGuessTimeStepping() {
+TEMPLATE_TEST_CASE("Guess time-stepping", "",
+        MucoTropterSolver, MucoCasADiSolver) {
     // This problem is just a simulation (there are no costs), and so the
     // forward simulation guess should reduce the number of iterations to
     // converge, and the guess and solution should also match our own forward
@@ -910,7 +850,7 @@ void testGuessTimeStepping() {
     problem.setStateInfo("/jointset/j0/q0/value", {-10, 10}, initialAngle);
     problem.setStateInfo("/jointset/j0/q0/speed", {-50, 50}, 0);
     problem.setControlInfo("/forceset/tau0", 0);
-    MucoTropterSolver& solver = muco.initTropterSolver();
+    auto& solver = muco.initSolver<TestType>();
     solver.set_num_mesh_points(20);
     solver.setGuess("random");
     // With MUMPS: 4 iterations.
@@ -949,14 +889,14 @@ void testGuessTimeStepping() {
     // Ensure the forward simulation guess uses the correct time bounds.
     {
         muco.updProblem().setTimeBounds({-10, -5}, {6, 15});
-        MucoTropterSolver& solver = muco.initTropterSolver();
+        auto& solver = muco.initSolver<TestType>();
         MucoIterate guess = solver.createGuess("time-stepping");
         SimTK_TEST(guess.getTime()[0] == -5);
         SimTK_TEST(guess.getTime()[guess.getNumTimes()-1] == 6);
     }
 }
 
-void testMucoIterate() {
+TEST_CASE("MucoIterate") {
     // Reading and writing.
     {
         const std::string fname = "testMuscolloInterface_testMucoIterate.sto";
@@ -1143,7 +1083,7 @@ void testMucoIterate() {
     testCompareParametersRMS(100, 0.5);
 }
 
-void testInterpolate() {
+TEST_CASE("Interpolate", "") {
     SimTK::Vector x(2);
     x[0] = 0;
     x[1] = 1;
@@ -1164,27 +1104,6 @@ void testInterpolate() {
     SimTK_TEST_EQ(newY[1], 0.75);
     SimTK_TEST_EQ(newY[2], 0.25);
     SimTK_TEST(SimTK::isNaN(newY[3]));
-}
-
-TEST_CASE("testMuscolloInterface") {
-    testSolverOptions();
-
-    // testCopy();
-    // testSolveRepeatedly();
-    // testOMUCOSerialization();
-    testBounds();
-    testBuildingProblem();
-    testWorkflow();
-
-    testStateTracking();
-    testGuess();
-    testGuessTimeStepping();
-    testMucoIterate();
-
-    // TODO what happens when Ipopt does not converge.
-    // TODO specifying optimizer options.
-
-    testInterpolate();
 }
 
 TEMPLATE_TEST_CASE("Sliding mass", "", MucoTropterSolver, MucoCasADiSolver) {
@@ -1249,3 +1168,10 @@ TEMPLATE_TEST_CASE("Solving an empty MucoProblem", "",
         CHECK(solution.getDerivativesTrajectory().nrow() == 0);
     }
 }
+
+// testCopy();
+// testSolveRepeatedly();
+// testOMUCOSerialization();
+
+// TODO what happens when Ipopt does not converge.
+// TODO specifying optimizer options.

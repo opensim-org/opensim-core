@@ -62,10 +62,13 @@ MucoCasADiSolver::MucoCasADiSolver() {
 
 void MucoCasADiSolver::constructProperties() {
     constructProperty_num_mesh_points(100);
+    constructProperty_verbosity(2);
+    constructProperty_optim_solver("ipopt");
     constructProperty_optim_max_iterations(-1);
     constructProperty_optim_convergence_tolerance(-1);
     constructProperty_optim_constraint_tolerance(-1);
     constructProperty_optim_hessian_approximation("limited-memory");
+    constructProperty_optim_ipopt_print_level(-1);
     constructProperty_guess_file("");
 }
 
@@ -134,27 +137,109 @@ const MucoIterate& MucoCasADiSolver::getGuess() const {
 
 std::unique_ptr<CasADiTranscription>
 MucoCasADiSolver::createTranscription() const {
-    return make_unique<CasADiTrapezoidal>(*this, getProblemRep());
+    auto transcrip = make_unique<CasADiTrapezoidal>(*this, getProblemRep());
+    transcrip->initialize();
+    return transcrip;
 }
 
 MucoSolution MucoCasADiSolver::solveImpl() const {
+    const Stopwatch stopwatch;
+
+    checkPropertyInSet(*this, getProperty_verbosity(), {0, 1, 2});
+
+    if (get_verbosity()) {
+        std::cout << std::string(79, '=') << "\n";
+        std::cout << "MucoCasADiSolver starting.\n";
+        std::cout << std::string(79, '-') << std::endl;
+        getProblemRep().printDescription();
+    }
     checkPropertyIsPositive(*this, getProperty_num_mesh_points());
     auto transcription = createTranscription();
-    transcription->initialize();
     // opt.disp(std::cout, true);
-    try {
-        return transcription->solve(getGuess());
-    } catch (const std::exception& e) {
-        std::cout << "Error: " << e.what() << std::endl;
-        // TODO: Return a solution (sealed).
+
+    // Initial guess.
+    // --------------
+    std::unique_ptr<MucoIterate> guessFromBounds;
+    if (m_guessToUse) {
+        transcription->setGuess(*m_guessToUse);
+    } else {
+        transcription->setGuess(transcription->createInitialGuessFromBounds());
     }
 
-    // Some useful functions for debugging:
-    // opt.debug().show_infeasibilities();
-    // DM controlValues = opt.debug().value(controls);
-    // std::cout << "DEBUGg43 " << opt.debug().g_describe(43) << std::endl;
-    // std::cout << "DEBUGg43 " << opt.g()(43) << std::endl;
-    // std::cout << "DEBUGg43 " << opt.x() << std::endl;
 
-    return {};
+    /*
+    m_opti.disp(std::cout, true);
+    std::cout << "DEBUG jacobian " << std::endl;
+    std::cout << jacobian(m_opti.g(), m_opti.x()) << std::endl;
+    std::cout << "DEBUG sparsity " << std::endl;
+    jacobian(m_opti.g(), m_opti.x()).sparsity().to_file("DEBUG_sparsity.mtx");
+    // TODO look at portions of the hessian (individual integrands).
+    // TODO is it really the hessian or is it the constraints that are
+    // expensive?
+    hessian(m_opti.f(), m_opti.x()).sparsity().to_file("DEBUG_sparsity.mtx");
+    */
+
+    // Set solver options.
+    // -------------------
+    Dict solverOptions;
+    checkPropertyInSet(*this, getProperty_optim_solver(), {"ipopt"});
+
+    checkPropertyInRangeOrSet(*this, getProperty_optim_max_iterations(),
+            0, std::numeric_limits<int>::max(), {-1});
+    checkPropertyInRangeOrSet(*this, getProperty_optim_convergence_tolerance(),
+            0.0, SimTK::NTraits<double>::getInfinity(), {-1.0});
+    checkPropertyInRangeOrSet(*this, getProperty_optim_constraint_tolerance(),
+            0.0, SimTK::NTraits<double>::getInfinity(), {-1.0});
+    if (get_optim_solver() == "ipopt") {
+        solverOptions["print_user_options"] = "yes";
+        if (get_verbosity() < 2) {
+            solverOptions["print_level"] = 0;
+        } else if (get_optim_ipopt_print_level() != -1) {
+            solverOptions["print_level"] = get_optim_ipopt_print_level();
+        }
+        solverOptions["hessian_approximation"] =
+                get_optim_hessian_approximation();
+
+        if (get_optim_max_iterations() != -1)
+            solverOptions["max_iter"] = get_optim_max_iterations();
+
+        if (get_optim_convergence_tolerance() != -1) {
+            const auto& tol = get_optim_convergence_tolerance();
+            // This is based on what Simbody does.
+            solverOptions["tol"] = tol;
+            solverOptions["dual_inf_tol"] = tol;
+            solverOptions["compl_inf_tol"] = tol;
+            solverOptions["acceptable_tol"] = tol;
+            solverOptions["acceptable_dual_inf_tol"] = tol;
+            solverOptions["acceptable_compl_inf_tol"] = tol;
+        }
+        if (get_optim_constraint_tolerance() != -1) {
+            const auto& tol = get_optim_constraint_tolerance();
+            solverOptions["constr_viol_tol"] = tol;
+            solverOptions["acceptable_constr_viol_tol"] = tol;
+        }
+    }
+    Dict pluginOptions;
+    pluginOptions["verbose_init"] = true;
+
+    MucoSolution mucoSolution = transcription->solve(get_optim_solver(),
+                pluginOptions, solverOptions);
+    const auto& casadiStats = transcription->getStats();
+    setSolutionStats(mucoSolution, casadiStats.at("success"),
+            casadiStats.at("return_status"), casadiStats.at("iter_count"));
+
+    if (get_verbosity()) {
+        std::cout << std::string(79, '-') << "\n";
+        std::cout << "Elapsed real time: "
+                << stopwatch.getElapsedTimeFormatted() << ".\n";
+        if (mucoSolution) {
+            std::cout << "MucoCasADiSolver succeeded!\n";
+        } else {
+            // TODO cout or cerr?
+            std::cout << "MucoCasADiSolver did NOT succeed:\n";
+            std::cout << "  " << mucoSolution.getStatus() << "\n";
+        }
+        std::cout << std::string(79, '=') << std::endl;
+    }
+    return mucoSolution;
 }

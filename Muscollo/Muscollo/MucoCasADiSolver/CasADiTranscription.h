@@ -360,8 +360,18 @@ public:
         }
         return simtkVector;
     }
-    template <typename TIn, typename TOut = MucoIterate>
-    TOut convertToMucoIterate(const CasADiVariables<TIn>& casVars) const {
+    template <typename InvokeOn>
+    CasADiVariables<DM>
+    convertToCasADiVariablesDM(
+            const InvokeOn& obj, const CasADiVariables<MX>& varsMX) {
+        CasADiVariables<DM> varsDM;
+        for (const auto& kv : varsMX) {
+            varsDM[kv.first] = obj.value(kv.second);
+        }
+        return varsDM;
+    }
+    template <typename TOut = MucoIterate>
+    TOut convertToMucoIterate(const CasADiVariables<DM>& casVars) const {
         SimTK::Matrix simtkStates;
         if (m_numStates) {
             simtkStates = convertToSimTKMatrix(
@@ -415,7 +425,7 @@ public:
                     m_lowerBounds.at(kv.first), m_upperBounds.at(kv.first));
         }
 
-        return convertToMucoIterate<DM>(casGuess);
+        return convertToMucoIterate(casGuess);
     }
     /// Create a vector with random variable values within the variable
     /// bounds, potentially for use as an initial guess. If, for a given
@@ -443,9 +453,11 @@ public:
                     m_lowerBounds.at(kv.first), m_upperBounds.at(kv.first));
         }
 
-        return convertToMucoIterate<DM>(casIterate);
+        return convertToMucoIterate(casIterate);
     }
     void initialize() {
+        OPENSIM_THROW_IF(m_initialized, Exception, "Can only initialize once.");
+        m_initialized = true;
         m_opti = casadi::Opti();
 
         m_numTimes = m_solver.get_num_mesh_points();
@@ -558,72 +570,34 @@ public:
         m_opti.minimize(endpoint_cost + integral_cost);
     }
 
-    MucoSolution solve(const MucoIterate& guess) {
-        // Initial guess.
-        // --------------
-        std::unique_ptr<MucoIterate> guessFromBounds;
-        const MucoIterate* guessToUse = &guess;
-        if (guess.empty()) {
-            guessFromBounds.reset(createInitialGuessFromBounds().clone());
-            guessToUse = guessFromBounds.get();
-        }
+    void setGuess(const MucoIterate& guess) {
         const CasADiVariables<DM> casGuess =
-                convertToCasADiVariables(*guessToUse);
-        if (guessFromBounds) guessFromBounds.reset();
+                convertToCasADiVariables(guess);
         for (auto& kv : m_vars) {
             m_opti.set_initial(kv.second, casGuess.at(kv.first));
         }
+    }
 
-        /*
-        m_opti.disp(std::cout, true);
-        std::cout << "DEBUG jacobian " << std::endl;
-        std::cout << jacobian(m_opti.g(), m_opti.x()) << std::endl;
-        std::cout << "DEBUG sparsity " << std::endl;
-        jacobian(m_opti.g(), m_opti.x()).sparsity().to_file("DEBUG_sparsity.mtx");
-        // TODO look at portions of the hessian (individual integrands).
-        // TODO is it really the hessian or is it the constraints that are
-        // expensive?
-        hessian(m_opti.f(), m_opti.x()).sparsity().to_file("DEBUG_sparsity.mtx");
-        */
+    Dict getStats() { return m_opti.stats(); }
 
-        // Set solver options.
-        // -------------------
-        Dict solverOptions;
-        solverOptions["hessian_approximation"] =
-                m_solver.get_optim_hessian_approximation();
-
-        checkPropertyInRangeOrSet(m_solver,
-                m_solver.getProperty_optim_max_iterations(),
-                0, std::numeric_limits<int>::max(), {-1});
-
-        if (m_solver.get_optim_max_iterations() != -1)
-            solverOptions["max_iter"] = m_solver.get_optim_max_iterations();
-
-        checkPropertyInRangeOrSet(m_solver,
-                m_solver.getProperty_optim_convergence_tolerance(),
-                0.0, SimTK::NTraits<double>::getInfinity(), {-1.0});
-        if (m_solver.get_optim_convergence_tolerance() != -1) {
-            const auto& tol = m_solver.get_optim_convergence_tolerance();
-            // This is based on what Simbody does.
-            solverOptions["tol"] = tol;
-            solverOptions["dual_inf_tol"] = tol;
-            solverOptions["compl_inf_tol"] = tol;
-            solverOptions["acceptable_tol"] = tol;
-            solverOptions["acceptable_dual_inf_tol"] = tol;
-            solverOptions["acceptable_compl_inf_tol"] = tol;
+    MucoSolution
+    solve(const std::string& solver, Dict pluginOptions, Dict solverOptions) {
+        m_opti.solver(solver, pluginOptions, solverOptions);
+        try {
+            m_opti.solve();
+            return convertToMucoIterate<MucoSolution>(
+                    convertToCasADiVariablesDM(m_opti, m_vars));
+        } catch (const std::exception& e) {
+            return convertToMucoIterate<MucoSolution>(
+                    convertToCasADiVariablesDM(m_opti.debug(), m_vars));
         }
-        checkPropertyInRangeOrSet(m_solver,
-                m_solver.getProperty_optim_constraint_tolerance(),
-                0.0, SimTK::NTraits<double>::getInfinity(), {-1.0});
-        if (m_solver.get_optim_constraint_tolerance() != -1) {
-            const auto& tol = m_solver.get_optim_constraint_tolerance();
-            solverOptions["constr_viol_tol"] = tol;
-            solverOptions["acceptable_constr_viol_tol"] = tol;
-        }
-
-        m_opti.solver("ipopt", {}, solverOptions);
-        auto casadiSolution = m_opti.solve();
-        return convertToMucoIterate<MX, MucoSolution>(m_vars);
+        // Print constraint violations from Opti.
+        // opt.debug().show_infeasibilities();
+        // DM controlValues = opt.debug().value(controls);
+        // std::cout << "DEBUGg43 " << opt.debug().g_describe(43) << std::endl;
+        // std::cout << "DEBUGg43 " << opt.g()(43) << std::endl;
+        // std::cout << "DEBUGg43 " << opt.x() << std::endl;
+        // TODO: Return a solution (sealed).
     }
 
     /// @precondition The following are set: m_numTimes, m_numStates,
@@ -676,6 +650,7 @@ protected:
             m_upperBounds[var](rowIndices, columnIndices) =  SimTK::Infinity;
         }
     }
+    bool m_initialized = false;
     casadi::Opti m_opti;
     CasADiVariables<casadi::MX> m_vars;
     CasADiVariables<casadi::DM> m_lowerBounds;

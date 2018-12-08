@@ -33,6 +33,11 @@ class OSIMMUSCOLLO_API MucoCasADiSolver : public MucoSolver {
 public:
     OpenSim_DECLARE_PROPERTY(num_mesh_points, int,
     "The number of mesh points for discretizing the problem (default: 100).");
+    OpenSim_DECLARE_PROPERTY(verbosity, int,
+    "0 for silent. 1 for only Muscollo's own output. "
+    "2 for output from CasADi and the underlying solver (default: 2).");
+    OpenSim_DECLARE_PROPERTY(optim_solver, std::string,
+    "The optimization solver for CasADi to use (default: ipopt).");
     OpenSim_DECLARE_PROPERTY(optim_max_iterations, int,
     "Maximum number of iterations in the optimization solver "
     "(-1 for solver's default).");
@@ -44,6 +49,8 @@ public:
     "(-1 for solver's default)");
     OpenSim_DECLARE_PROPERTY(optim_hessian_approximation, std::string,
     "'limited-memory' (default) for quasi-Newton, or 'exact' for full Newton.");
+    OpenSim_DECLARE_PROPERTY(optim_ipopt_print_level, int,
+    "IPOPT's verbosity (see IPOPT documentation).");
 
 
     MucoCasADiSolver();
