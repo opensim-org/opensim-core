@@ -220,64 +220,6 @@ public:
     }*/
 };
 
-/// Currently, this class only returns the right-hand-side of the generalized
-/// accelerations differential equations. Currently, we only support
-/// models for which qdot = u. That is, the N matrix (qdot = N u) is identity.
-/// This allows us to compute qdot symbolically through CasADi.
-class DynamicsFunction : public CasADiFunction {
-public:
-    DynamicsFunction(const std::string& name,
-            const CasADiTranscription& transcrip,
-            const OpenSim::MucoProblemRep& problem,
-            casadi::Dict opts=casadi::Dict())
-            : CasADiFunction(transcrip, problem) {
-        setCommonOptions(opts);
-        construct(name, opts);
-    }
-    ~DynamicsFunction() override {}
-    /// 0. time
-    /// 1. states
-    /// 2. controls
-    /// 3. parameters
-    casadi_int get_n_in() override { return 4; }
-    casadi_int get_n_out() override { return 1; }
-    std::string get_name_in(casadi_int i) override {
-        switch (i) {
-        case 0: return "time";
-        case 1: return "states";
-        case 2: return "controls";
-        case 3: return "parameters";
-        default:
-            OPENSIM_THROW(Exception, "Internal error.");
-        }
-    }
-    std::string get_name_out(casadi_int i) override {
-        switch (i) {
-        case 0: return "dynamics";
-        default:
-            OPENSIM_THROW(Exception, "Internal error.");
-        }
-    }
-    casadi::Sparsity get_sparsity_in(casadi_int i) override {
-        if (i == 0) {
-            return casadi::Sparsity::dense(1, 1);
-        } else if (i == 1) {
-            return casadi::Sparsity::dense(p.getNumStates(), 1);
-        } else if (i == 2) {
-            return casadi::Sparsity::dense(p.getNumControls(), 1);
-        } else if (i == 3) {
-            return casadi::Sparsity::dense(p.getNumParameters(), 1);
-        } else {
-            return casadi::Sparsity(0, 0);
-        }
-    }
-    casadi::Sparsity get_sparsity_out(casadi_int i) override;
-    void init() override {}
-
-    int eval(const double** arg, double** res, casadi_int*, double*, void*)
-            const override;
-};
-
 enum Var {
     initial_time,
     final_time,
@@ -667,9 +609,23 @@ protected:
     std::vector<std::string> m_controlNames;
     std::vector<std::string> m_parameterNames;
 
-    std::unique_ptr<DynamicsFunction> m_dynamicsFunction;
     std::unique_ptr<EndpointCostFunction> m_endpointCostFunction;
     std::unique_ptr<IntegrandCostFunction> m_integrandCostFunction;
 };
+
+// TODO: Move to a better place.
+inline void convertToSimTKState(
+        const double* time, const double* states, const double* controls,
+        const Model& model, SimTK::State& simtkState) {
+    simtkState.setTime(time[0]);
+    simtkState.setY(SimTK::Vector(simtkState.getNY(), states, true));
+    std::copy_n(states, simtkState.getNY(),
+            simtkState.updY().updContiguousScalarData());
+    auto& simtkControls = model.updControls(simtkState);
+    std::copy_n(controls, simtkControls.size(),
+            simtkControls.updContiguousScalarData());
+    model.realizeVelocity(simtkState);
+    model.setControls(simtkState, simtkControls);
+}
 
 #endif // MUSCOLLO_CASADITRANSCRIPTION_H

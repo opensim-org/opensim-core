@@ -38,21 +38,6 @@ int EndpointCostFunction::eval(const double** inputs, double** outputs,
     return 0;
 }
 
-// TODO: Move to a better place.
-void convertToSimTKState(
-        const double* time, const double* states, const double* controls,
-        const Model& model, SimTK::State& simtkState) {
-    simtkState.setTime(time[0]);
-    simtkState.setY(SimTK::Vector(simtkState.getNY(), states, true));
-    std::copy_n(states, simtkState.getNY(),
-            simtkState.updY().updContiguousScalarData());
-    auto& simtkControls = model.updControls(simtkState);
-    std::copy_n(controls, simtkControls.size(),
-            simtkControls.updContiguousScalarData());
-    model.realizeVelocity(simtkState);
-    model.setControls(simtkState, simtkControls);
-}
-
 int IntegrandCostFunction::eval(const double** inputs, double** outputs,
         casadi_int*, double*, void*) const {
     m_transcrip.applyParametersToModel(
@@ -62,27 +47,5 @@ int IntegrandCostFunction::eval(const double** inputs, double** outputs,
     // controls.
     convertToSimTKState(inputs[0], inputs[1], inputs[2], p.getModel(), state);
     outputs[0][0] = p.calcIntegralCost(state);
-    return 0;
-}
-
-casadi::Sparsity DynamicsFunction::get_sparsity_out(casadi_int i) {
-    if (i == 0) {
-        int numRows = m_transcrip.m_state.getNU() + m_transcrip.m_state.getNZ();
-        return casadi::Sparsity::dense(numRows, 1);
-    }
-    else return casadi::Sparsity(0, 0);
-}
-int DynamicsFunction::eval(const double** inputs, double** outputs,
-        casadi_int*, double*, void*) const {
-    m_transcrip.applyParametersToModel(
-            SimTK::Vector(p.getNumParameters(), inputs[3], true));
-    auto& state = m_transcrip.m_state;
-    convertToSimTKState(inputs[0], inputs[1], inputs[2], p.getModel(), state);
-    p.getModel().realizeAcceleration(state);
-
-    // TODO create member variable for numRowsOut.
-    int numRowsOut = state.getNU() + state.getNZ();
-    std::copy_n(state.getYDot().getContiguousScalarData() + state.getNQ(),
-            numRowsOut, outputs[0]);
     return 0;
 }
