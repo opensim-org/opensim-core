@@ -78,4 +78,42 @@ private:
 
 };
 
+class CasADiTrapezoidalImplicit : public CasADiTrapezoidal {
+private:
+    void addDefectConstraintsImpl() override {
+        const int NQ = m_state.getNQ();
+        const auto& states = m_vars[Var::states];
+        MX qdot = states(Slice(NQ, 2 * NQ), 0);
+        MX udot = states(Slice(2 * NQ, NQ), 0);
+        MX zdot = m_dynamicsFunction->operator()(
+                {m_vars[Var::initial_time],
+                 states(Slice(), 0),
+                 m_vars[Var::controls](Slice(), 0),
+                 m_vars[Var::parameters]
+                }).at(0);
+        MX xdot_im1 = casadi::MX::vertcat({qdot, udot, zdot});
+        for (int itime = 1; itime < m_numTimes; ++itime) {
+            auto h = m_times(itime) - m_times(itime - 1);
+            auto x_i = states(Slice(), itime);
+            auto x_im1 = states(Slice(), itime - 1);
+            qdot = states(Slice(NQ, 2 * NQ), itime);
+            udot = states(Slice(2 * NQ, NQ), itime);
+            zdot = m_dynamicsFunction->operator()(
+                    {m_times(itime),
+                     m_vars[Var::states](Slice(), itime),
+                     m_vars[Var::controls](Slice(), itime),
+                     m_vars[Var::parameters]}).at(0);
+            MX xdot_i = MX::vertcat({qdot, udot, zdot});
+            m_opti.subject_to(x_i == (x_im1 + 0.5 * h * (xdot_i + xdot_im1)));
+            m_opti.subject_to(residual == 0);
+            xdot_im1 = xdot_i;
+        }
+
+    }
+    void createVariables() override {
+        CasADiTranscription::createVariables();
+        m_vars[Var::derivatives] = m_opti.variable(m_genSpeeds, m_numTimes);
+    }
+};
+
 #endif // MUSCOLLO_CASADITRAPEZOIDAL_H

@@ -36,6 +36,9 @@ public:
     OpenSim_DECLARE_PROPERTY(verbosity, int,
     "0 for silent. 1 for only Muscollo's own output. "
     "2 for output from CasADi and the underlying solver (default: 2).");
+    OpenSim_DECLARE_PROPERTY(dynamics_mode, std::string,
+    "Dynamics are expressed as 'explicit' (default) or 'implicit' "
+    "differential equations.");
     OpenSim_DECLARE_PROPERTY(optim_solver, std::string,
     "The optimization solver for CasADi to use (default: ipopt).");
     OpenSim_DECLARE_PROPERTY(optim_max_iterations, int,

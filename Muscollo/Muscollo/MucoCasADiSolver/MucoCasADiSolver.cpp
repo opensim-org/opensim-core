@@ -63,6 +63,7 @@ MucoCasADiSolver::MucoCasADiSolver() {
 void MucoCasADiSolver::constructProperties() {
     constructProperty_num_mesh_points(100);
     constructProperty_verbosity(2);
+    constructProperty_dynamics_mode("explicit");
     constructProperty_optim_solver("ipopt");
     constructProperty_optim_max_iterations(-1);
     constructProperty_optim_convergence_tolerance(-1);
@@ -157,6 +158,9 @@ MucoSolution MucoCasADiSolver::solveImpl() const {
     auto transcription = createTranscription();
     // opt.disp(std::cout, true);
 
+    checkPropertyInSet(*this, getProperty_dynamics_mode(),
+            {"explicit", "implicit"});
+
     // Initial guess.
     // --------------
     MucoIterate guess = getGuess();
@@ -182,6 +186,7 @@ MucoSolution MucoCasADiSolver::solveImpl() const {
     // -------------------
     Dict solverOptions;
     checkPropertyInSet(*this, getProperty_optim_solver(), {"ipopt"});
+
 
     checkPropertyInRangeOrSet(*this, getProperty_optim_max_iterations(),
             0, std::numeric_limits<int>::max(), {-1});

@@ -283,6 +283,7 @@ enum Var {
     final_time,
     states,
     controls,
+    derivatives,
     parameters
 };
 template <typename T>
