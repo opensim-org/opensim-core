@@ -149,7 +149,8 @@ TEMPLATE_TEST_CASE("Solver options", "", MucoTropterSolver, MucoCasADiSolver) {
         // Tightening the constraint tolerance means more iterations.
         ms.set_optim_constraint_tolerance(1e-12);
         MucoSolution solution = muco.solve();
-        SimTK_TEST(solution.getNumIterations() > solDefault.getNumIterations());
+        SimTK_TEST(solution.getNumIterations() >
+                solDefault.getNumIterations());
         ms.set_optim_constraint_tolerance(-1);
     }
 }
@@ -371,7 +372,7 @@ TEMPLATE_TEST_CASE("Workflow", "", MucoTropterSolver, MucoCasADiSolver) {
 
         guess.setTime(createVectorLinspace(20, 0.0, 7.0));
         MucoSolution solution = muco.solve();
-        SimTK_TEST_EQ(solution.getFinalTime(), 5.8);
+        CHECK(solution.getFinalTime() == Approx(5.8));
     }
 
     {
@@ -845,10 +846,11 @@ TEMPLATE_TEST_CASE("Guess time-stepping", "",
     auto& problem = muco.updProblem();
     problem.setModel(createPendulumModel());
     const SimTK::Real initialAngle = 0.25 * SimTK::Pi;
+    const SimTK::Real initialSpeed = .5;
     // Make the simulation interesting.
     problem.setTimeBounds(0, 1);
     problem.setStateInfo("/jointset/j0/q0/value", {-10, 10}, initialAngle);
-    problem.setStateInfo("/jointset/j0/q0/speed", {-50, 50}, 0);
+    problem.setStateInfo("/jointset/j0/q0/speed", {-50, 50}, initialSpeed);
     problem.setControlInfo("/forceset/tau0", 0);
     auto& solver = muco.initSolver<TestType>();
     solver.set_num_mesh_points(20);
@@ -860,8 +862,7 @@ TEMPLATE_TEST_CASE("Guess time-stepping", "",
     // With MUMPS: 2 iterations.
     MucoSolution solutionSim = muco.solve();
 
-    SimTK_TEST(solutionSim.getNumIterations() <
-            solutionRandom.getNumIterations());
+    CHECK(solutionSim.getNumIterations() < solutionRandom.getNumIterations());
 
     {
         MucoIterate guess = solver.createGuess("time-stepping");
@@ -871,6 +872,8 @@ TEMPLATE_TEST_CASE("Guess time-stepping", "",
         SimTK::State state = modelCopy.initSystem();
         modelCopy.setStateVariableValue(
                 state, "/jointset/j0/q0/value", initialAngle);
+        modelCopy.setStateVariableValue(
+                state, "/jointset/j0/q0/speed", initialSpeed);
         Manager manager(modelCopy, state);
         manager.integrate(1.0);
 

@@ -42,8 +42,8 @@ SimTK::Vector OpenSim::createVectorLinspace(
 }
 
 SimTK::Vector OpenSim::createVector(
-        const std::vector<SimTK::Real>& elements) {
-    return SimTK::Vector((int)elements.size(), elements.data());
+        std::initializer_list<SimTK::Real> elements) {
+    return SimTK::Vector((int)elements.size(), elements.begin());
 }
 
 SimTK::Vector OpenSim::interpolate(const SimTK::Vector& x,

@@ -286,12 +286,12 @@ void MucoIterate::resample(SimTK::Vector time) {
     OPENSIM_THROW_IF(m_time.size() < 2, Exception,
             "Cannot resample if number of times is 0 or 1.");
     OPENSIM_THROW_IF(time[0] < m_time[0], Exception,
-            format("New initial time (%s) cannot be less than existing initial "
-                   "time (%s)", time[0], m_time[0]));
+            format("New initial time (%f) cannot be less than existing initial "
+                   "time (%f)", time[0], m_time[0]));
     OPENSIM_THROW_IF(time[time.size() - 1] > m_time[m_time.size() - 1],
             Exception,
-            format("New final time (%s) cannot be less than existing final "
-                   "time (%s)",
+            format("New final time (%f) cannot be less than existing final "
+                   "time (%f)",
                    time[time.size() - 1], m_time[m_time.size() - 1]));
     for (int itime = 1; itime < time.size(); ++itime) {
         OPENSIM_THROW_IF(time[itime] < time[itime - 1], Exception,
@@ -319,13 +319,13 @@ void MucoIterate::resample(SimTK::Vector time) {
         curTime[0] = m_time[itime];
         int icol;
         for (icol = 0; icol < numStates; ++icol)
-            m_states(itime, icol) = splines[icol].calcValue(time);
+            m_states(itime, icol) = splines[icol].calcValue(curTime);
         for (int icontr = 0; icontr < numControls; ++icontr, ++icol)
-            m_controls(itime, icontr) = splines[icol].calcValue(time);
+            m_controls(itime, icontr) = splines[icol].calcValue(curTime);
         for (int imult = 0; imult < numMultipliers; ++imult, ++icol)
-            m_multipliers(itime, imult) = splines[icol].calcValue(time);
+            m_multipliers(itime, imult) = splines[icol].calcValue(curTime);
         for (int ideriv = 0; ideriv < numDerivatives; ++ideriv, ++icol)
-            m_derivatives(itime, ideriv) = splines[icol].calcValue(time);
+            m_derivatives(itime, ideriv) = splines[icol].calcValue(curTime);
     }
 }
 
@@ -496,7 +496,19 @@ TimeSeriesTable MucoIterate::convertToTable() const {
         data.updBlock(1, startCol, numTimes - 1, numParameters) =
                 parameter_nan_rows;
     }
-    TimeSeriesTable table(time, data, labels);
+    TimeSeriesTable table;
+    try {
+        table = TimeSeriesTable(time, data, labels);
+    } catch (const TimestampGreaterThanEqualToNext&) {
+        // TimeSeriesTable requires monotonically increasing time, but
+        // this might not be true for iterates. Create the table with complying
+        // times then hack in to set times back to what the iterate contains.
+        std::vector<double> tempTime(time.size());
+        for (int i = 0; i < (int)tempTime.size(); ++i)
+            tempTime[i] = -1000.0 + i;
+        table = TimeSeriesTable(tempTime, data, labels);
+        const_cast<std::vector<double>&>(table.getIndependentColumn()) = time;
+    }
     // TODO table.updTableMetaData().setValueForKey("header", m_name);
     //table.updTableMetaData().setValueForKey("num_states", numStates);
     //table.updTableMetaData().setValueForKey("num_controls", numControls);
