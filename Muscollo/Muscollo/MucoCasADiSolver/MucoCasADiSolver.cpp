@@ -159,13 +159,12 @@ MucoSolution MucoCasADiSolver::solveImpl() const {
 
     // Initial guess.
     // --------------
-    std::unique_ptr<MucoIterate> guessFromBounds;
-    if (m_guessToUse) {
-        transcription->setGuess(*m_guessToUse);
-    } else {
+    MucoIterate guess = getGuess();
+    if (guess.empty()) {
         transcription->setGuess(transcription->createInitialGuessFromBounds());
+    } else {
+        transcription->setGuess(*m_guessToUse);
     }
-
 
     /*
     m_opti.disp(std::cout, true);

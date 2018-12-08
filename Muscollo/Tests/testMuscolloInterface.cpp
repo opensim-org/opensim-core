@@ -146,12 +146,18 @@ TEMPLATE_TEST_CASE("Solver options", "", MucoTropterSolver, MucoCasADiSolver) {
         ms.set_optim_convergence_tolerance(-1);
     }
     {
+        // Must loosen convergence tolerance for constraint tolerance to have
+        // an effect.
+        ms.set_optim_convergence_tolerance(1e-2);
         // Tightening the constraint tolerance means more iterations.
         ms.set_optim_constraint_tolerance(1e-12);
-        MucoSolution solution = muco.solve();
-        SimTK_TEST(solution.getNumIterations() >
-                solDefault.getNumIterations());
+        MucoSolution solutionTight = muco.solve();
+        ms.set_optim_constraint_tolerance(1e-2);
+        MucoSolution solutionLoose = muco.solve();
+        SimTK_TEST(solutionTight.getNumIterations() >
+                solutionLoose.getNumIterations());
         ms.set_optim_constraint_tolerance(-1);
+        ms.set_optim_convergence_tolerance(-1);
     }
 }
 
