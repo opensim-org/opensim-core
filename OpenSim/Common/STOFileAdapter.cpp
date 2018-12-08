@@ -85,92 +85,41 @@ createSTOFileAdapterForReading(const std::string& fileName) {
     return std::make_shared<STOFileAdapter_<double>>();
 }
 
+template <typename T>
+std::shared_ptr<STOFileAdapter_<T>>
+makeAdapter(const AbstractDataTable* absTable) {
+    if (auto table = dynamic_cast<const TimeSeriesTable_<T>*>(absTable)) {
+        return std::make_shared<STOFileAdapter_<T>>();
+    }
+    return {};
+}
+
 std::shared_ptr<DataAdapter>
 createSTOFileAdapterForWriting(const DataAdapter::InputTables& absTables) {
     using namespace SimTK;
 
-    auto& absTable = *absTables.at("table");
+    auto* absTable = absTables.at("table");
 
     // Try derived class before base class.
     
-    try {
-        using Table = const TimeSeriesTable_<UnitVec3>;
-        auto table = dynamic_cast<Table&>(absTable);
-        return std::make_shared<STOFileAdapter_<UnitVec3>>();
-    } catch(const std::bad_cast&) {}
-    try {
-        using Table = const TimeSeriesTable_<Quaternion>;
-        auto table = dynamic_cast<Table&>(absTable);
-        return std::make_shared<STOFileAdapter_<Quaternion>>();
-    } catch(const std::bad_cast&) {}
-    try {
-        using Table = const TimeSeriesTable_<SpatialVec>;
-        auto table = dynamic_cast<Table&>(absTable);
-        return std::make_shared<STOFileAdapter_<SpatialVec>>();
-    } catch(const std::bad_cast&) {}
-    try {
-        using Table = const TimeSeriesTable_<double>;
-        auto table = dynamic_cast<Table&>(absTable);
-        return std::make_shared<STOFileAdapter_<double>>();
-    } catch(const std::bad_cast&) {}
-    try {
-        using Table = const TimeSeriesTable_<Vec2>;
-        auto table = dynamic_cast<Table&>(absTable);
-        return std::make_shared<STOFileAdapter_<Vec2>>();
-    } catch(const std::bad_cast&) {}
-    try {
-        using Table = const TimeSeriesTable_<Vec3>;
-        auto table = dynamic_cast<Table&>(absTable);
-        return std::make_shared<STOFileAdapter_<Vec3>>();
-    } catch(const std::bad_cast&) {}
-    try {
-        using Table = const TimeSeriesTable_<Vec4>;
-        auto table = dynamic_cast<Table&>(absTable);
-        return std::make_shared<STOFileAdapter_<Vec4>>();
-    } catch(const std::bad_cast&) {}
-    try {
-        using Table = const TimeSeriesTable_<Vec5>;
-        auto table = dynamic_cast<Table&>(absTable);
-        return std::make_shared<STOFileAdapter_<Vec5>>();
-    } catch(const std::bad_cast&) {}
-    try {
-        using Table = const TimeSeriesTable_<Vec6>;
-        auto table = dynamic_cast<Table&>(absTable);
-        return std::make_shared<STOFileAdapter_<Vec6>>();
-    } catch(const std::bad_cast&) {}
-    try {
-        using Table = const TimeSeriesTable_<Vec7>;
-        auto table = dynamic_cast<Table&>(absTable);
-        return std::make_shared<STOFileAdapter_<Vec7>>();
-    } catch(const std::bad_cast&) {}
-    try {
-        using Table = const TimeSeriesTable_<Vec8>;
-        auto table = dynamic_cast<Table&>(absTable);
-        return std::make_shared<STOFileAdapter_<Vec8>>();
-    } catch(const std::bad_cast&) {}
-    try {
-        using Table = const TimeSeriesTable_<Vec9>;
-        auto table = dynamic_cast<Table&>(absTable);
-        return std::make_shared<STOFileAdapter_<Vec9>>();
-    } catch(const std::bad_cast&) {}
-    try {
-        using Table = const TimeSeriesTable_<Vec<10>>;
-        auto table = dynamic_cast<Table&>(absTable);
-        return std::make_shared<STOFileAdapter_<Vec<10>>>();
-    } catch(const std::bad_cast&) {}
-    try {
-        using Table = const TimeSeriesTable_<Vec<11>>;
-        auto table = dynamic_cast<Table&>(absTable);
-        return std::make_shared<STOFileAdapter_<Vec<11>>>();
-    } catch(const std::bad_cast&) {}
-    try {
-        using Table = const TimeSeriesTable_<Vec<12>>;
-        auto table = dynamic_cast<Table&>(absTable);
-        return std::make_shared<STOFileAdapter_<Vec<12>>>();
-    } catch(const std::bad_cast&) {}
+    if (auto adapter = makeAdapter<UnitVec3>(absTable)) return adapter;
+    if (auto adapter = makeAdapter<Quaternion>(absTable)) return adapter;
+    if (auto adapter = makeAdapter<SpatialVec>(absTable)) return adapter;
+    if (auto adapter = makeAdapter<double>(absTable)) return adapter;
+    if (auto adapter = makeAdapter<Vec2>(absTable)) return adapter;
+    if (auto adapter = makeAdapter<Vec3>(absTable)) return adapter;
+    if (auto adapter = makeAdapter<Vec4>(absTable)) return adapter;
+    if (auto adapter = makeAdapter<Vec5>(absTable)) return adapter;
+    if (auto adapter = makeAdapter<Vec6>(absTable)) return adapter;
+    if (auto adapter = makeAdapter<Vec7>(absTable)) return adapter;
+    if (auto adapter = makeAdapter<Vec8>(absTable)) return adapter;
+    if (auto adapter = makeAdapter<Vec9>(absTable)) return adapter;
+    if (auto adapter = makeAdapter<Vec<10>>(absTable)) return adapter;
+    if (auto adapter = makeAdapter<Vec<11>>(absTable)) return adapter;
+    if (auto adapter = makeAdapter<Vec<12>>(absTable)) return adapter;
 
     OPENSIM_THROW(STODataTypeNotSupported,
                   "<unknown>");
 }
 
-}
+} // namespace OpenSim
