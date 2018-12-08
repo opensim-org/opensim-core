@@ -34,7 +34,6 @@ public:
 
     void addDefectConstraintsImpl() override {
 
-        auto h = m_duration / (m_numTimes - 1);
         m_dynamicsFunction =
                 make_unique<DynamicsFunction>("dynamics", *this, m_probRep);
 
@@ -53,12 +52,12 @@ public:
                 }).at(0);
         MX xdot_im1 = casadi::MX::vertcat({qdot, udotzdot});
         for (int itime = 1; itime < m_numTimes; ++itime) {
-            const auto t = m_times(itime);
+            auto h = m_times(itime) - m_times(itime - 1);
             auto x_i = states(Slice(), itime);
             auto x_im1 = states(Slice(), itime - 1);
             qdot = states(Slice(NQ, 2 * NQ), itime);
             udotzdot = m_dynamicsFunction->operator()(
-                    {t,
+                    {m_times(itime),
                      m_vars[Var::states](Slice(), itime),
                      m_vars[Var::controls](Slice(), itime),
                      m_vars[Var::parameters]}).at(0);
