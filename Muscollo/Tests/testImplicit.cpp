@@ -28,6 +28,7 @@
 using namespace OpenSim;
 using namespace Catch;
 
+template <typename SolverType>
 MucoSolution solveDoublePendulumSwingup(const std::string& dynamics_mode) {
 
     using SimTK::Vec3;
@@ -81,7 +82,7 @@ MucoSolution solveDoublePendulumSwingup(const std::string& dynamics_mode) {
     // Configure the solver.
     // =====================
     int N = 30;
-    MucoTropterSolver& solver = muco.initSolver();
+    auto& solver = muco.initSolver<SolverType>();
     solver.set_dynamics_mode(dynamics_mode);
     solver.set_num_mesh_points(N);
     //solver.set_verbosity(2);
@@ -112,16 +113,17 @@ MucoSolution solveDoublePendulumSwingup(const std::string& dynamics_mode) {
 
 }
 
-SCENARIO("Similar solutions between implicit and explicit dynamics modes",
-        "[implicit]") {
+TEMPLATE_TEST_CASE("Similar solutions between implicit and explicit dynamics",
+        "[implicit]", MucoTropterSolver, MucoCasADiSolver) {
     GIVEN("solutions to implicit and explicit problems") {
 
-        auto solutionImplicit = solveDoublePendulumSwingup("implicit");
+        auto solutionImplicit =
+                solveDoublePendulumSwingup<TestType>("implicit");
         // TODO: Solving the implicit problem multiple times gives different
         // results; https://github.com/stanfordnmbl/moco/issues/172.
         // auto solutionImplicit2 = solveDoublePendulumSwingup("implicit");
         // TODO: The solution to this explicit problem changes every time.
-        auto solution = solveDoublePendulumSwingup("explicit");
+        auto solution = solveDoublePendulumSwingup<TestType>("explicit");
 
         CAPTURE(solutionImplicit.getFinalTime(), solution.getFinalTime());
 
@@ -168,8 +170,8 @@ SCENARIO("Similar solutions between implicit and explicit dynamics modes",
     }
 }
 
-SCENARIO("Combining implicit dynamics mode with path constraints",
-        "[implicit]") {
+TEMPLATE_TEST_CASE("Combining implicit dynamics mode with path constraints",
+        "[implicit]", MucoTropterSolver, MucoCasADiSolver) {
     class MyPathConstraint : public MucoPathConstraint {
         OpenSim_DECLARE_CONCRETE_OBJECT(MyPathConstraint, MucoPathConstraint);
         void initializeOnModelImpl(const Model& model) const override {
@@ -191,7 +193,7 @@ SCENARIO("Combining implicit dynamics mode with path constraints",
         MucoConstraintInfo info;
         info.setBounds(std::vector<MucoBounds>(1, {10, 10000}));
         pc->setConstraintInfo(info);
-        auto& solver = muco.initSolver();
+        auto& solver = muco.initSolver<TestType>();
         solver.set_dynamics_mode("implicit");
         solver.set_num_mesh_points(5);
         MucoSolution solution = muco.solve();
@@ -261,10 +263,11 @@ SCENARIO("Using MucoIterate with the implicit dynamics mode",
     }
 }
 
-SCENARIO("Solving a problem with acceleration-level quantities", "[implicit]") {
+TEMPLATE_TEST_CASE("Solving a problem with acceleration-level quantities",
+        "[implicit]", MucoTropterSolver, MucoCasADiSolver) {
     MucoTool muco;
     muco.updProblem().setModelCopy(ModelFactory::createPendulum());
-    auto& solver = muco.initSolver();
+    auto& solver = muco.initSolver<TestType>();
     solver.set_dynamics_mode("implicit");
     solver.set_num_mesh_points(5);
 

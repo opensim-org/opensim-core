@@ -278,6 +278,10 @@ public:
         casVars[Var::states] = convertToCasADiDM(mucoIt.getStatesTrajectory());
         casVars[Var::controls] =
                 convertToCasADiDM(mucoIt.getControlsTrajectory());
+        if (m_numDerivatives) {
+            casVars[Var::derivatives] =
+                    convertToCasADiDM(mucoIt.getDerivativesTrajectory());
+        }
         // TODO dimensions?
         casVars[Var::parameters] = convertToCasADiDM(mucoIt.getParameters());
         return casVars;
@@ -331,14 +335,21 @@ public:
             simtkParameters =
                     convertToSimTKVector<SimTK::RowVector>(paramsValue);
         }
+        SimTK::Matrix simtkDerivatives;
+        if (casVars.count(Var::derivatives)) {
+            const auto derivsValue = m_opti.value(casVars.at(Var::derivatives));
+            simtkDerivatives = convertToSimTKMatrix(derivsValue);
+        }
 
         const auto timesValue = m_opti.value(createTimes(
                         casVars.at(Var::initial_time),
                         casVars.at(Var::final_time)));
         SimTK::Vector simtkTimes = convertToSimTKVector(timesValue);
         TOut mucoIterate(simtkTimes,
-                m_stateNames, m_controlNames, {}, m_parameterNames,
-                simtkStates, simtkControls, {}, simtkParameters);
+                m_stateNames, m_controlNames, {}, m_derivativeNames,
+                m_parameterNames,
+                simtkStates, simtkControls, {}, simtkDerivatives,
+                simtkParameters);
         return mucoIterate;
     }
     /// Create an initial guess for this problem according to the
@@ -424,6 +435,22 @@ public:
         m_parameterNames = m_probRep.createParameterNames();
         m_numParameters = (int)m_parameterNames.size();
 
+        // derivatives.
+        if (m_solver.get_dynamics_mode() == "explicit") {
+            m_numDerivatives = 0;
+        } else if (m_solver.get_dynamics_mode() == "implicit") {
+            m_numDerivatives = m_state.getNU();
+            for (auto name : m_stateNames) {
+                const auto leafpos = name.find("value");
+                if (leafpos != std::string::npos) {
+                    name.replace(leafpos, name.size(), "accel");
+                    m_derivativeNames.push_back(name);
+                }
+            }
+            OPENSIM_THROW_IF(m_numDerivatives != (int)m_derivativeNames.size(),
+                    Exception, "Internal error in derivative names.");
+        }
+
         // Create variables and set bounds.
         // --------------------------------
         createVariables();
@@ -466,6 +493,12 @@ public:
             ++ic;
         }
 
+        if (m_numDerivatives) {
+            // TODO: Create a user option for these bounds.
+            setVariableBounds(Var::derivatives, Slice(), Slice(),
+                    MucoBounds(-1000.0, 1000.0));
+        }
+
         for (int iparam = 0; iparam < m_numParameters; ++iparam) {
             const auto& param =
                     m_probRep.getParameter(m_parameterNames[iparam]);
@@ -481,8 +514,8 @@ public:
 
         addDefectConstraints();
 
-        m_endpointCostFunction =
-                make_unique<EndpointCostFunction>("endpoint_cost", *this, m_probRep);
+        m_endpointCostFunction = make_unique<EndpointCostFunction>(
+                "endpoint_cost", *this, m_probRep);
 
         // TODO: Evaluate individual endpoint costs separately.
         auto endpoint_cost = m_endpointCostFunction->operator()(
@@ -492,8 +525,8 @@ public:
 
         DM quadCoeffs = createIntegralQuadratureCoefficients(meshIntervals);
 
-        m_integrandCostFunction =
-                make_unique<IntegrandCostFunction>("integrand", *this, m_probRep);
+        m_integrandCostFunction = make_unique<IntegrandCostFunction>(
+                "integrand", *this, m_probRep);
         MX integral_cost = 0;
         for (int i = 0; i < m_numTimes; ++i) {
             const auto out = m_integrandCostFunction->operator()(
@@ -601,6 +634,7 @@ protected:
     int m_numTimes = -1;
     int m_numStates = -1;
     int m_numControls = -1;
+    int m_numDerivatives = -1;
     int m_numParameters = -1;
     MX m_times;
     MX m_duration;
@@ -608,6 +642,7 @@ protected:
     std::vector<std::string> m_stateNames;
     std::vector<std::string> m_controlNames;
     std::vector<std::string> m_parameterNames;
+    std::vector<std::string> m_derivativeNames;
 
     std::unique_ptr<EndpointCostFunction> m_endpointCostFunction;
     std::unique_ptr<IntegrandCostFunction> m_integrandCostFunction;

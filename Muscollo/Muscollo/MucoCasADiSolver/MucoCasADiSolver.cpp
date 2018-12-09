@@ -138,7 +138,15 @@ const MucoIterate& MucoCasADiSolver::getGuess() const {
 
 std::unique_ptr<CasADiTranscription>
 MucoCasADiSolver::createTranscription() const {
-    auto transcrip = make_unique<CasADiTrapezoidal>(*this, getProblemRep());
+    checkPropertyInSet(*this, getProperty_dynamics_mode(),
+            {"explicit", "implicit"});
+    std::unique_ptr<CasADiTranscription> transcrip;
+    if (get_dynamics_mode() == "explicit") {
+        transcrip = make_unique<CasADiTrapezoidal>(*this, getProblemRep());
+    } else if (get_dynamics_mode() == "implicit") {
+        transcrip = make_unique<CasADiTrapezoidalImplicit>(
+                *this, getProblemRep());
+    }
     transcrip->initialize();
     return transcrip;
 }
@@ -157,9 +165,6 @@ MucoSolution MucoCasADiSolver::solveImpl() const {
     checkPropertyIsPositive(*this, getProperty_num_mesh_points());
     auto transcription = createTranscription();
     // opt.disp(std::cout, true);
-
-    checkPropertyInSet(*this, getProperty_dynamics_mode(),
-            {"explicit", "implicit"});
 
     // Initial guess.
     // --------------

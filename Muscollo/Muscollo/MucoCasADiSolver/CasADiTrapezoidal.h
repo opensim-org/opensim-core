@@ -36,8 +36,8 @@ public:
     }
 
     void addDefectConstraintsImpl() override;
-private:
 
+protected:
     void createVariables() override {
         m_vars[Var::initial_time] = m_opti.variable();
         m_vars[Var::final_time] = m_opti.variable();
@@ -47,14 +47,15 @@ private:
         m_mesh = DM::linspace(0, 1, m_numTimes);
     }
 
+private:
     std::unique_ptr<DynamicsFunction> m_dynamicsFunction;
 
 };
 
 /// Currently, this class only returns the right-hand-side of the generalized
-/// accelerations differential equations. Currently, we only support
-/// models for which qdot = u. That is, the N matrix (qdot = N u) is identity.
-/// This allows us to compute qdot symbolically through CasADi.
+/// accelerations and auxiliary differential equations. Currently, we only
+/// support models for which qdot = u. That is, the N matrix (qdot = N u) is
+/// identity. This allows us to compute qdot symbolically through CasADi.
 class CasADiTrapezoidal::DynamicsFunction : public CasADiFunction {
 public:
     DynamicsFunction(const std::string& name,
@@ -109,44 +110,128 @@ public:
     const override;
 };
 
-/*
+// TODO: Throw exception if costs realize to acceleration.
 class CasADiTrapezoidalImplicit : public CasADiTrapezoidal {
-private:
-    void addDefectConstraintsImpl() override {
-        const int NQ = m_state.getNQ();
-        const auto& states = m_vars[Var::states];
-        MX qdot = states(Slice(NQ, 2 * NQ), 0);
-        MX udot = states(Slice(2 * NQ, NQ), 0);
-        MX zdot = m_dynamicsFunction->operator()(
-                {m_vars[Var::initial_time],
-                 states(Slice(), 0),
-                 m_vars[Var::controls](Slice(), 0),
-                 m_vars[Var::parameters]
-                }).at(0);
-        MX xdot_im1 = casadi::MX::vertcat({qdot, udot, zdot});
-        for (int itime = 1; itime < m_numTimes; ++itime) {
-            auto h = m_times(itime) - m_times(itime - 1);
-            auto x_i = states(Slice(), itime);
-            auto x_im1 = states(Slice(), itime - 1);
-            qdot = states(Slice(NQ, 2 * NQ), itime);
-            udot = states(Slice(2 * NQ, NQ), itime);
-            zdot = m_dynamicsFunction->operator()(
-                    {m_times(itime),
-                     m_vars[Var::states](Slice(), itime),
-                     m_vars[Var::controls](Slice(), itime),
-                     m_vars[Var::parameters]}).at(0);
-            MX xdot_i = MX::vertcat({qdot, udot, zdot});
-            m_opti.subject_to(x_i == (x_im1 + 0.5 * h * (xdot_i + xdot_im1)));
-            m_opti.subject_to(residual == 0);
-            xdot_im1 = xdot_i;
-        }
-
-    }
+    using CasADiTrapezoidal::CasADiTrapezoidal;
+    // TODO: Rename to include path constraints.
+    void addDefectConstraintsImpl() override;
     void createVariables() override {
-        CasADiTranscription::createVariables();
-        m_vars[Var::derivatives] = m_opti.variable(m_genSpeeds, m_numTimes);
+        CasADiTrapezoidal::createVariables();
+        m_vars[Var::derivatives] = m_opti.variable(m_state.getNU(), m_numTimes);
+        std::cout << "DEBUG TrapImpl::createVariables()" << std::endl;
     }
+private:
+    class DynamicsFunction;
+    class ResidualFunction;
+    std::unique_ptr<DynamicsFunction> m_dynamicsFunction;
+    std::unique_ptr<ResidualFunction> m_residualFunction;
 };
-*/
+
+class CasADiTrapezoidalImplicit::DynamicsFunction : public CasADiFunction {
+public:
+    DynamicsFunction(const std::string& name,
+            const CasADiTranscription& transcrip,
+            const OpenSim::MucoProblemRep& problem,
+            casadi::Dict opts=casadi::Dict())
+            : CasADiFunction(transcrip, problem) {
+        setCommonOptions(opts);
+        construct(name, opts);
+    }
+    ~DynamicsFunction() override {}
+    /// 0. time
+    /// 1. states
+    /// 2. controls
+    /// 3. parameters
+    casadi_int get_n_in() override { return 4; }
+    casadi_int get_n_out() override { return 1; }
+    std::string get_name_in(casadi_int i) override {
+        switch (i) {
+        case 0: return "time";
+        case 1: return "states";
+        case 2: return "controls";
+        case 3: return "parameters";
+        default:
+            OPENSIM_THROW(Exception, "Internal error.");
+        }
+    }
+    std::string get_name_out(casadi_int i) override {
+        switch (i) {
+        case 0: return "auxiliary_dynamics";
+        default:
+            OPENSIM_THROW(Exception, "Internal error.");
+        }
+    }
+    casadi::Sparsity get_sparsity_in(casadi_int i) override {
+        if (i == 0) {
+            return casadi::Sparsity::dense(1, 1);
+        } else if (i == 1) {
+            return casadi::Sparsity::dense(p.getNumStates(), 1);
+        } else if (i == 2) {
+            return casadi::Sparsity::dense(p.getNumControls(), 1);
+        } else if (i == 3) {
+            return casadi::Sparsity::dense(p.getNumParameters(), 1);
+        } else {
+            return casadi::Sparsity(0, 0);
+        }
+    }
+    casadi::Sparsity get_sparsity_out(casadi_int i) override;
+    void init() override {}
+
+    int eval(const double** arg, double** res, casadi_int*, double*, void*)
+    const override;
+};
+
+class CasADiTrapezoidalImplicit::ResidualFunction : public CasADiFunction {
+public:
+    ResidualFunction(const std::string& name,
+            const CasADiTranscription& transcrip,
+            const OpenSim::MucoProblemRep& problem,
+            casadi::Dict opts=casadi::Dict())
+            : CasADiFunction(transcrip, problem) {
+        setCommonOptions(opts);
+        construct(name, opts);
+    }
+    ~ResidualFunction() override {}
+    casadi_int get_n_in() override { return 5; }
+    casadi_int get_n_out() override { return 1; }
+    std::string get_name_in(casadi_int i) override {
+        switch (i) {
+        case 0: return "time";
+        case 1: return "states";
+        case 2: return "controls";
+        case 3: return "accelerations";
+        case 4: return "parameters";
+        default:
+            OPENSIM_THROW(Exception, "Internal error.");
+        }
+    }
+    std::string get_name_out(casadi_int i) override {
+        switch (i) {
+        case 0: return "residual";
+        default:
+            OPENSIM_THROW(Exception, "Internal error.");
+        }
+    }
+    casadi::Sparsity get_sparsity_in(casadi_int i) override {
+        if (i == 0) {
+            return casadi::Sparsity::dense(1, 1);
+        } else if (i == 1) {
+            return casadi::Sparsity::dense(p.getNumStates(), 1);
+        } else if (i == 2) {
+            return casadi::Sparsity::dense(p.getNumControls(), 1);
+        } else if (i == 3) {
+            return casadi::Sparsity::dense(m_transcrip.m_state.getNU(), 1);
+        } else if (i == 4) {
+            return casadi::Sparsity::dense(p.getNumParameters(), 1);
+        } else {
+            return casadi::Sparsity(0, 0);
+        }
+    }
+    casadi::Sparsity get_sparsity_out(casadi_int i) override;
+    void init() override {}
+
+    int eval(const double** arg, double** res, casadi_int*, double*, void*)
+    const override;
+};
 
 #endif // MUSCOLLO_CASADITRAPEZOIDAL_H
