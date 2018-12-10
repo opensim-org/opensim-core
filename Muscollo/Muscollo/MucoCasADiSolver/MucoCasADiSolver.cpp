@@ -42,6 +42,8 @@
 // - IntegrandCost: no point in realizing to velocity if there aren't even
 //   any integral cost terms, or if integral costs depend only on controls
 //   (not any more complex calculations).
+// - support multibody constraints
+// - get testConstraints working with CasADi.
 
 using casadi::MX;
 using casadi::DM;

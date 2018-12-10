@@ -6,6 +6,8 @@ using namespace tropter;
 
 using namespace OpenSim;
 
+// TODO: Could remove this test, as it duplicates testMuscolloInterface.
+
 std::unique_ptr<Model> createSlidingMassModel() {
     auto model = make_unique<Model>();
     model->setName("sliding_mass");
