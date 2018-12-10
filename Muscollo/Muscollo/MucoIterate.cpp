@@ -314,18 +314,36 @@ void MucoIterate::resample(SimTK::Vector time) {
     m_controls.resize(numTimes, numControls);
     m_multipliers.resize(numTimes, numMultipliers);
     m_derivatives.resize(numTimes, numDerivatives);
-    SimTK::Vector curTime(1);
-    for (int itime = 0; itime < m_time.size(); ++itime) {
-        curTime[0] = m_time[itime];
+    if (m_time[numTimes - 1] == m_time[0]) {
+        // If, for example, all times are 0.0, then we cannot use the spline,
+        // which requires strictly increasing time.
         int icol;
         for (icol = 0; icol < numStates; ++icol)
-            m_states(itime, icol) = splines[icol].calcValue(curTime);
+            m_states.updCol(icol) = table.getDependentColumnAtIndex(icol)[0];
         for (int icontr = 0; icontr < numControls; ++icontr, ++icol)
-            m_controls(itime, icontr) = splines[icol].calcValue(curTime);
+            m_controls.updCol(icontr) =
+                    table.getDependentColumnAtIndex(icol)[0];
         for (int imult = 0; imult < numMultipliers; ++imult, ++icol)
-            m_multipliers(itime, imult) = splines[icol].calcValue(curTime);
+            m_multipliers.updCol(imult) =
+                    table.getDependentColumnAtIndex(icol)[0];
         for (int ideriv = 0; ideriv < numDerivatives; ++ideriv, ++icol)
-            m_derivatives(itime, ideriv) = splines[icol].calcValue(curTime);
+            m_derivatives.updCol(ideriv) =
+                    table.getDependentColumnAtIndex(icol)[0];
+
+    } else {
+        SimTK::Vector curTime(1);
+        for (int itime = 0; itime < m_time.size(); ++itime) {
+            curTime[0] = m_time[itime];
+            int icol;
+            for (icol = 0; icol < numStates; ++icol)
+                m_states(itime, icol) = splines[icol].calcValue(curTime);
+            for (int icontr = 0; icontr < numControls; ++icontr, ++icol)
+                m_controls(itime, icontr) = splines[icol].calcValue(curTime);
+            for (int imult = 0; imult < numMultipliers; ++imult, ++icol)
+                m_multipliers(itime, imult) = splines[icol].calcValue(curTime);
+            for (int ideriv = 0; ideriv < numDerivatives; ++ideriv, ++icol)
+                m_derivatives(itime, ideriv) = splines[icol].calcValue(curTime);
+        }
     }
 }
 

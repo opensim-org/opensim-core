@@ -35,6 +35,11 @@ int EndpointCostFunction::eval(const double** inputs, double** outputs,
             state.updY().updContiguousScalarData());
     // TODO set controls to NaN.
     outputs[0][0] = p.calcEndpointCost(state);
+    OPENSIM_THROW_IF(
+            m_transcrip.dynamicsModeIsImplicit() &&
+                    state.getSystemStage() >= SimTK::Stage::Acceleration,
+            Exception,
+            "Cannot realize to Acceleration in implicit dynamics mode.");
     return 0;
 }
 
@@ -47,5 +52,29 @@ int IntegrandCostFunction::eval(const double** inputs, double** outputs,
     // controls.
     convertToSimTKState(inputs[0], inputs[1], inputs[2], p.getModel(), state);
     outputs[0][0] = p.calcIntegralCost(state);
+    OPENSIM_THROW_IF(
+            m_transcrip.dynamicsModeIsImplicit() &&
+                    state.getSystemStage() >= SimTK::Stage::Acceleration,
+            Exception,
+            "Cannot realize to Acceleration in implicit dynamics mode.");
+    return 0;
+}
+
+int PathConstraintFunction::
+eval(const double** inputs, double** outputs, casadi_int*, double*, void*)
+        const {
+    m_transcrip.applyParametersToModel(
+            SimTK::Vector(p.getNumParameters(), inputs[3], true));
+    auto& state = m_transcrip.m_state;
+    // TODO don't necessarily need to realize to Velocity.
+    convertToSimTKState(inputs[0], inputs[1], inputs[2], p.getModel(), state);
+    SimTK::Vector errors(m_pathCon.getConstraintInfo().getNumEquations());
+    m_pathCon.calcPathConstraintErrors(state, errors);
+    OPENSIM_THROW_IF(
+            m_transcrip.dynamicsModeIsImplicit() &&
+                    state.getSystemStage() >= SimTK::Stage::Acceleration,
+            Exception,
+            "Cannot realize to Acceleration in implicit dynamics mode.");
+    std::copy_n(errors.getContiguousScalarData(), errors.size(), outputs[0]);
     return 0;
 }

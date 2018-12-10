@@ -118,7 +118,6 @@ class CasADiTrapezoidalImplicit : public CasADiTrapezoidal {
     void createVariables() override {
         CasADiTrapezoidal::createVariables();
         m_vars[Var::derivatives] = m_opti.variable(m_state.getNU(), m_numTimes);
-        std::cout << "DEBUG TrapImpl::createVariables()" << std::endl;
     }
 private:
     class DynamicsFunction;

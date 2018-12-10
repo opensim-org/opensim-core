@@ -102,13 +102,8 @@ public:
         if (i == 0) return casadi::Sparsity::scalar();
         else return casadi::Sparsity(0, 0);
     }
-    /// Arguments:
-    /// 0. time
-    /// 1. final state
-    /// 2. parameters
     int eval(const double** arg, double** res, casadi_int*, double*, void*)
             const override;
-
 };
 
 class IntegrandCostFunction : public CasADiFunction {
@@ -122,10 +117,6 @@ public:
         construct(name, opts);
     }
     ~IntegrandCostFunction() override {}
-    /// 0. time
-    /// 1. states
-    /// 2. controls
-    /// 3. parameters
     casadi_int get_n_in() override { return 4; }
     casadi_int get_n_out() override { return 1; }
     std::string get_name_in(casadi_int i) override {
@@ -220,6 +211,66 @@ public:
     }*/
 };
 
+class PathConstraintFunction : public CasADiFunction {
+public:
+    PathConstraintFunction(const std::string& name,
+            const CasADiTranscription& transcrip,
+            const OpenSim::MucoProblemRep& problem,
+            const MucoPathConstraint& pathCon,
+            casadi::Dict opts = casadi::Dict())
+            : CasADiFunction(transcrip, problem), m_pathCon(pathCon) {
+        setCommonOptions(opts);
+        construct(name, opts);
+
+    }
+    ~PathConstraintFunction() override {}
+    casadi_int get_n_in() override { return 4; }
+    casadi_int get_n_out() override { return 1; }
+    std::string get_name_in(casadi_int i) override {
+        switch (i) {
+        case 0: return "time";
+        case 1: return "states";
+        case 2: return "controls";
+        case 3: return "parameters";
+        default:
+            OPENSIM_THROW(Exception, "Internal error.");
+        }
+    }
+    std::string get_name_out(casadi_int i) override {
+        switch (i) {
+        case 0: return "path_constraint_" + m_pathCon.getName();
+        default:
+            OPENSIM_THROW(Exception, "Internal error.");
+        }
+    }
+    casadi::Sparsity get_sparsity_in(casadi_int i) override {
+        if (i == 0) {
+            return casadi::Sparsity::dense(1, 1);
+        } else if (i == 1) {
+            return casadi::Sparsity::dense(p.getNumStates(), 1);
+        } else if (i == 2) {
+            return casadi::Sparsity::dense(p.getNumControls(), 1);
+        } else if (i == 3) {
+            return casadi::Sparsity::dense(p.getNumParameters(), 1);
+        } else {
+            return casadi::Sparsity(0, 0);
+        }
+    }
+    casadi::Sparsity get_sparsity_out(casadi_int i) override {
+        if (i == 0) {
+            const int numEqs = m_pathCon.getConstraintInfo().getNumEquations();
+            return casadi::Sparsity::dense(numEqs, 1);
+        }
+        else return casadi::Sparsity(0, 0);
+    }
+    // Use the more efficient virtual function (not the eval() that uses DMs)
+    // to avoid any overhead.
+    int eval(const double** arg, double** res, casadi_int*, double*, void*)
+    const override;
+private:
+    const MucoPathConstraint& m_pathCon;
+};
+
 enum Var {
     initial_time,
     final_time,
@@ -282,7 +333,6 @@ public:
             casVars[Var::derivatives] =
                     convertToCasADiDM(mucoIt.getDerivativesTrajectory());
         }
-        // TODO dimensions?
         casVars[Var::parameters] = convertToCasADiDM(mucoIt.getParameters());
         return casVars;
     }
@@ -512,13 +562,89 @@ public:
         m_times =
                 createTimes(m_vars[Var::initial_time], m_vars[Var::final_time]);
 
+        // Defect constraints.
+        // -------------------
+        // (TODO: Right now this includes path constraints for implicit, not
+        //  just "defects").
         addDefectConstraints();
+
+        // Path constraints.
+        // -----------------
+        const auto pathConstraintNames =
+                m_probRep.createPathConstraintNames();
+        std::vector<DM> pathConLowerBounds;
+        std::vector<DM> pathConUpperBounds;
+        for (const auto& name : pathConstraintNames) {
+            const auto& pathConstraint = m_probRep.getPathConstraint(name);
+            m_pathConstraintFunctions.push_back(
+                    make_unique<PathConstraintFunction>(
+                            "path_constraint_" + name, *this, m_probRep,
+                            pathConstraint));
+            // Ensure that evaluating the path constraint does not throw
+            // any exceptions.
+            {
+                std::unique_ptr<const double*> inputArray(new const double*[4]);
+                inputArray.get()[0] = m_lowerBounds[Var::initial_time].ptr();
+                inputArray.get()[1] =
+                        m_lowerBounds[Var::states](Slice(), 0).ptr();
+                inputArray.get()[2] =
+                        m_lowerBounds[Var::controls](Slice(), 0).ptr();
+                inputArray.get()[3] = m_lowerBounds[Var::parameters].ptr();
+                std::unique_ptr<double*> outputArray(new double*[1]);
+                int numEquations =
+                        pathConstraint.getConstraintInfo().getNumEquations();
+                SimTK::Vector output(numEquations);
+                outputArray.get()[0] = output.updContiguousScalarData();
+                m_pathConstraintFunctions.back()->eval(inputArray.get(),
+                        outputArray.get(), nullptr, nullptr, nullptr);
+            }
+            const std::vector<MucoBounds>& bounds =
+                    pathConstraint.getConstraintInfo().getBounds();
+            DM lower(bounds.size(), 1);
+            DM upper(bounds.size(), 1);
+            for (int ibound = 0; ibound < (int)bounds.size(); ++ibound) {
+                lower(ibound, 0) = bounds[ibound].getLower();
+                upper(ibound, 0) = bounds[ibound].getUpper();
+            }
+            pathConLowerBounds.push_back(lower);
+            pathConUpperBounds.push_back(upper);
+        }
+        for (int ipc = 0; ipc < (int)pathConstraintNames.size(); ++ipc) {
+            for (int itime = 0; itime < m_numTimes; ++itime) {
+                auto pathConstraintErrors =
+                        m_pathConstraintFunctions.back()->operator()(
+                                {m_times(itime, 0),
+                                 m_vars[Var::states](Slice(), itime),
+                                 m_vars[Var::controls](Slice(), itime),
+                                 m_vars[Var::parameters]}).at(0);
+                m_opti.subject_to(pathConLowerBounds[ipc] <=
+                        pathConstraintErrors <=
+                        pathConUpperBounds[ipc]);
+            }
+        }
+
+        // Cost functional.
+        // ----------------
 
         m_endpointCostFunction = make_unique<EndpointCostFunction>(
                 "endpoint_cost", *this, m_probRep);
+        // Ensure that evaluating the cost functions does not throw
+        // any exceptions.
+        {
+            std::unique_ptr<const double*> inputArray(new const double*[3]);
+            inputArray.get()[0] = m_lowerBounds[Var::final_time].ptr();
+            inputArray.get()[1] =
+                    m_lowerBounds[Var::states](Slice(), 0).ptr();
+            inputArray.get()[2] = m_lowerBounds[Var::parameters].ptr();
+            std::unique_ptr<double*> outputArray(new double*[1]);
+            SimTK::Vector output(1);
+            outputArray.get()[0] = output.updContiguousScalarData();
+            m_endpointCostFunction->eval(inputArray.get(), outputArray.get(),
+                    nullptr, nullptr, nullptr);
+        }
 
         // TODO: Evaluate individual endpoint costs separately.
-        auto endpoint_cost = m_endpointCostFunction->operator()(
+        auto endpointCost = m_endpointCostFunction->operator()(
                 {m_vars[Var::final_time],
                  m_vars[Var::states](Slice(), -1),
                  m_vars[Var::parameters]}).at(0);
@@ -527,14 +653,28 @@ public:
 
         m_integrandCostFunction = make_unique<IntegrandCostFunction>(
                 "integrand", *this, m_probRep);
-        MX integral_cost = 0;
-        for (int i = 0; i < m_numTimes; ++i) {
+        {
+            std::unique_ptr<const double*> inputArray(new const double*[4]);
+            inputArray.get()[0] = m_lowerBounds[Var::initial_time].ptr();
+            inputArray.get()[1] =
+                    m_lowerBounds[Var::states](Slice(), 0).ptr();
+            inputArray.get()[2] =
+                    m_lowerBounds[Var::controls](Slice(), 0).ptr();
+            inputArray.get()[3] = m_lowerBounds[Var::parameters].ptr();
+            std::unique_ptr<double*> outputArray(new double*[1]);
+            SimTK::Vector output(1);
+            outputArray.get()[0] = output.updContiguousScalarData();
+            m_integrandCostFunction->eval(inputArray.get(), outputArray.get(),
+                    nullptr, nullptr, nullptr);
+        }
+        MX integralCost = 0;
+        for (int itime = 0; itime < m_numTimes; ++itime) {
             const auto out = m_integrandCostFunction->operator()(
-                    {m_times(i, 0),
-                     m_vars[Var::states](Slice(), i),
-                     m_vars[Var::controls](Slice(), i),
+                    {m_times(itime, 0),
+                     m_vars[Var::states](Slice(), itime),
+                     m_vars[Var::controls](Slice(), itime),
                      m_vars[Var::parameters]});
-            integral_cost += quadCoeffs(i) * out.at(0);
+            integralCost += quadCoeffs(itime) * out.at(0);
             // Testing the performance benefit of providing a cost with CasADi
             // directly.
             /*
@@ -542,8 +682,8 @@ public:
             integral_cost += quadCoeffs(i) * dot(controls, controls);
              */
         }
-        integral_cost *= m_duration;
-        m_opti.minimize(endpoint_cost + integral_cost);
+        integralCost *= m_duration;
+        m_opti.minimize(endpointCost + integralCost);
     }
 
     void setGuess(const MucoIterate& guess) {
@@ -596,6 +736,8 @@ public:
         }
     }
 
+    bool dynamicsModeIsImplicit() const { return m_numDerivatives; }
+
     const MucoCasADiSolver& m_solver;
     const MucoProblemRep& m_probRep;
     const Model& m_model;
@@ -644,6 +786,8 @@ protected:
     std::vector<std::string> m_parameterNames;
     std::vector<std::string> m_derivativeNames;
 
+    std::vector<std::unique_ptr<PathConstraintFunction>>
+            m_pathConstraintFunctions;
     std::unique_ptr<EndpointCostFunction> m_endpointCostFunction;
     std::unique_ptr<IntegrandCostFunction> m_integrandCostFunction;
 };
