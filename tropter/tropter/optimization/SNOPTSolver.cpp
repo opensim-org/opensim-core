@@ -15,6 +15,7 @@
 // ----------------------------------------------------------------------------
 #include "SNOPTSolver.h"
 #include "Problem.h"
+#include "tropter/SparsityPattern.h"
 
 using namespace tropter::optimization;
 using Eigen::VectorXd;
@@ -148,17 +149,12 @@ SNOPTSolver::optimize_impl(const VectorXd& variablesArg) const {
 
     // Sparsity pattern of the Jacobian.
     // ---------------------------------
-    // TODO perhaps these should give ints, not unsigneds; then we can reuse
-    // the memory.
-    std::vector<unsigned int> jacobian_row_indices;
-    std::vector<unsigned int> jacobian_col_indices;
-    // TODO do not need these:
-    std::vector<unsigned int> hessian_row_indices;
-    std::vector<unsigned int> hessian_col_indices;
+    SparsityCoordinates jacobian_sparsity;
     calc_sparsity(variables,
-            jacobian_row_indices, jacobian_col_indices, false,
-            hessian_row_indices,  hessian_col_indices);
-    int jacobian_num_nonzeros = (int)jacobian_row_indices.size();
+            jacobian_sparsity, false,
+            SparsityCoordinates()  /*hessian_sparsity*/);
+    int jacobian_num_nonzeros = (int)jacobian_sparsity.row.size();
+
     int length_G = num_variables + jacobian_num_nonzeros;
     int num_nonzeros_G = length_G;
     // Row indices of Jacobian G (rows correspond to "fun"ctions).
@@ -172,41 +168,41 @@ SNOPTSolver::optimize_impl(const VectorXd& variablesArg) const {
     for (int index = 0; index < jacobian_num_nonzeros; ++index) {
         // The Jacobian of the constraints is shifted down one row, since
         // the first row of G is the gradient of the objective function.
-        iGfun[num_variables + index] = jacobian_row_indices[index] + 1;
-        jGvar[num_variables + index] = jacobian_col_indices[index];
+        iGfun[num_variables + index] = jacobian_sparsity.row[index] + 1;
+        jGvar[num_variables + index] = jacobian_sparsity.col[index];
     }
 
 
     // Create the snoptProblemA.
     // -------------------------
     snoptProblemA snopt_prob;
-    snopt_prob.setProbName("SNOPTTODO");
-    snopt_prob.setPrintFile("snopt.out");
+    snopt_prob.initialize("snopt.out", 1);
 
-    snopt_prob.setProblemSize(num_variables, length_F);
+    snopt_prob.setProbName("SNOPTTODO");
+
+
 
     int    ObjRow  = 0; // The element of F that contains the objective func.
     double ObjAdd  = 0; // A constant to add to the objective for reporting.
-    snopt_prob.setObjective(ObjRow, ObjAdd);
 
     // Memory related to the variables (unknowns).
-    snopt_prob.setX(variables.data(), xlow.data(), xupp.data(),
-            xmul.data(), xstate.data());
+    //snopt_prob.setX(variables.data(), xlow.data(), xupp.data(),
+    //        xmul.data(), xstate.data());
 
     // Memory related to the objective and constraint values.
-    snopt_prob.setF(F.data(), Flow.data(), Fupp.data(),
-            Fmul.data(), Fstate.data());
+    //snopt_prob.setF(F.data(), Flow.data(), Fupp.data(),
+    //        Fmul.data(), Fstate.data());
     // TODO linear portion of F. Can we omit this?
     // TODO for our generic problems, we cannot provide this.
     int lenA = 1; int neA = 0;
     VectorXi iAfun(lenA); VectorXi jAvar(lenA); VectorXd A;
-    snopt_prob.setA(lenA, neA, iAfun.data(), jAvar.data(), A.data());
+    //snopt_prob.setA(lenA, neA, iAfun.data(), jAvar.data(), A.data());
     // For some reason, SNOPT allows the length of the iGfun and jGvar arrays
     // to be greater than the number of nonzero elements.
-    snopt_prob.setG(length_G, num_nonzeros_G, iGfun.data(), jGvar.data());
+    //snopt_prob.setG(length_G, num_nonzeros_G, iGfun.data(), jGvar.data());
 
     // This function computes the objective and constraints (defined above).
-    snopt_prob.setUserFun(snopt_userfunction);
+    //snopt_prob.setUserFun(snopt_userfunction);
 
     // TODO call snJac().
     // snopta will compute the Jacobian by finite-differences.
@@ -233,10 +229,21 @@ SNOPTSolver::optimize_impl(const VectorXd& variablesArg) const {
         }
     }
 
+    snopt_prob.setRealParameter("Major optimality tolerance", 1e-4);
+
     // Solve the problem.
     // snJac is called implicitly in this case to compute the Jacobian.
     int Cold = 0 /*, Basis = 1, Warm = 2 */;
-    int info = snopt_prob.solve(Cold);
+    int nS, nInf;
+    double sInf;
+    int info = snopt_prob.solve(Cold, length_F, num_variables, ObjAdd,
+        ObjRow, snopt_userfunction,
+        iAfun.data(), jAvar.data(), A.data(), neA,
+        iGfun.data(), jGvar.data(), num_nonzeros_G,
+        xlow.data(), xupp.data(), Flow.data(), Fupp.data(),
+        variables.data(), xstate.data(), xmul.data(),
+        F.data(), Fstate.data(), Fmul.data(),
+        nS, nInf, sInf);
 
     Solution solution;
     solution.variables = variables;

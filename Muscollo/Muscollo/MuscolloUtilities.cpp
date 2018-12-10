@@ -42,12 +42,32 @@ SimTK::Vector OpenSim::createVectorLinspace(
 }
 
 SimTK::Vector OpenSim::interpolate(const SimTK::Vector& x,
-        const SimTK::Vector& y, const SimTK::Vector& newX) {
-    PiecewiseLinearFunction function(x.size(), &x[0], &y[0]);
+        const SimTK::Vector& y, const SimTK::Vector& newX, 
+        const bool ignoreNaNs) {
+
+    // Create vectors of non-NaN values if user set 'ignoreNaNs' argument to 
+    // 'true', otherwise throw an exception. If no NaN's are present in the
+    // provided data vectors, the '*_no_nans' variables below will contain
+    // the original data vector values.
+    std::vector<double> x_no_nans;
+    std::vector<double> y_no_nans;
+    for (int i = 0; i < x.size(); ++i) {
+        if ((SimTK::isNaN(x[i]) || SimTK::isNaN(y[i])) && ignoreNaNs) {
+            x_no_nans.push_back(x[i]);
+            y_no_nans.push_back(y[i]);
+        } else {
+            OPENSIM_THROW(Exception, "NaN value detected in provided data. "
+                "Please correct data or set 'ignoreNaNs' argument to 'true' to "
+                "create interpolant from non-NaN values only.");
+        }
+    }
+
+    PiecewiseLinearFunction function((int)x_no_nans.size(), &x_no_nans[0], 
+        &y_no_nans[0]);
     SimTK::Vector newY(newX.size(), SimTK::NaN);
     for (int i = 0; i < newX.size(); ++i) {
         const auto& newXi = newX[i];
-        if (x[0] <= newXi && newXi <= x[x.size()-1])
+        if (x_no_nans[0] <= newXi && newXi <= x_no_nans[x_no_nans.size()-1])
             newY[i] = function.calcValue(SimTK::Vector(1, newXi));
     }
     return newY;

@@ -41,7 +41,7 @@ void Trapezoidal<T>::set_ocproblem(
     m_num_controls = m_ocproblem->get_num_controls();
     m_num_adjuncts = m_ocproblem->get_num_adjuncts();
     TROPTER_THROW_IF(m_ocproblem->get_num_diffuses(),
-        "Trapezoidal collocation does not support diffuse variables.");
+        "Trapezoidal transcription does not support diffuse variables.");
     m_num_continuous_variables = m_num_states + m_num_controls + m_num_adjuncts;
     m_num_time_variables = 2;
     m_num_parameters = m_ocproblem->get_num_parameters();
@@ -528,7 +528,7 @@ construct_iterate(const Iterate& traj, bool interpolate) const
             "Expected parameters to have %i element(s), but it has %i.",
             m_num_parameters, traj.parameters.size());
     TROPTER_THROW_IF(traj.diffuses.rows(),
-            "Trapezoidal collocation does not support diffuse variables.");
+            "Trapezoidal transcription does not support diffuse variables.");
     // Check columns.
     if (interpolate) {
         // If interpolating, only check that non-empty matrices have the same

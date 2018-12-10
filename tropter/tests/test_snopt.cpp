@@ -78,6 +78,9 @@ TEST_CASE("SNOPT sntoyA example problem; Jacobian not provided.")
     int ObjRow = 0;
     double ObjAdd = 0;
     int Cold = 0, Basis = 1, Warm = 2;
+    int nS;
+    int nInf;
+    double sInf;
 
 
     // Set the upper and lower bounds.
@@ -99,15 +102,16 @@ TEST_CASE("SNOPT sntoyA example problem; Jacobian not provided.")
 
 
     // Load the data for ToyProb ...
+    ToyProb.initialize("Toy0.out", 1);
     ToyProb.setProbName("Toy0");
-    ToyProb.setPrintFile("Toy0.out");
+    //ToyProb.setPrintFile("Toy0.out");
 
-    ToyProb.setProblemSize(n, neF);
-    ToyProb.setObjective(ObjRow, ObjAdd);
-    ToyProb.setX(x, xlow, xupp, xmul, xstate);
-    ToyProb.setF(F, Flow, Fupp, Fmul, Fstate);
+    //ToyProb.setProblemSize(n, neF);
+    //ToyProb.setObjective(ObjRow, ObjAdd);
+    //ToyProb.setX(x, xlow, xupp, xmul, xstate);
+    //ToyProb.setF(F, Flow, Fupp, Fmul, Fstate);
 
-    ToyProb.setUserFun(toyusrf_);
+    //ToyProb.setUserFun(toyusrf_);
 
 
     // snopta will compute the Jacobian by finite-differences.
@@ -119,7 +123,11 @@ TEST_CASE("SNOPT sntoyA example problem; Jacobian not provided.")
 
     // Solve the problem.
     // snJac is called implicitly in this case to compute the Jacobian.
-    ToyProb.solve(Cold);
+    ToyProb.solve(Cold, neF, n, ObjAdd, ObjRow, toyusrf_,
+                   xlow, xupp, Flow, Fupp, 
+                   x, xstate, xmul, 
+                   F, Fstate, Fmul,
+                   nS, nInf, sInf);
 
     for (int i = 0; i < n; i++) {
         std::cout << "x = " << x[i] << " xstate = " << xstate[i] << std::endl;

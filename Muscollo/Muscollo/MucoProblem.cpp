@@ -33,7 +33,7 @@ void MucoPhase::constructProperties() {
     constructProperty_model(Model());
     constructProperty_time_initial_bounds(MucoInitialBounds());
     constructProperty_time_final_bounds(MucoFinalBounds());
-    constructProperty_default_speed_bounds(MucoBounds(-50, 50));
+    constructProperty_default_speed_bounds(MucoBounds(-25, 25));
     constructProperty_state_infos();
     constructProperty_control_infos();
     constructProperty_parameters();

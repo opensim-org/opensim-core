@@ -90,11 +90,15 @@ endif()
 # TODO IPOPT_DEFINITIONS, IPOPT_LINK_FLAGS
 
 if(TROPTER_WITH_SNOPT)
-    target_link_libraries(tropter PUBLIC snopt7_cpp) # PRIVATE
+    target_include_directories(tropter SYSTEM PUBLIC ${SNOPT_INCLUDES})
+    target_link_libraries(tropter PUBLIC snopt7) # PRIVATE
 endif()
 
 if(WIN32)
     add_dependencies(tropter Copy_ADOLC_DLLs Copy_IPOPT_DLLs)
+    if(TROPTER_WITH_SNOPT)
+        add_dependencies(tropter Copy_SNOPT_DLLs)
+    endif()
     #add_dependencies(tropter Copy_COLPACK_DLLs Copy_ADOLC_DLLs Copy_IPOPT_DLLs)
 endif()
 
@@ -110,9 +114,9 @@ endif()
 # Only use the parts of Eigen that do not have a viral license.
 # Also, make sure client projects remain non-viral ("PUBLIC").
 target_compile_definitions(tropter PUBLIC EIGEN_MPL2_ONLY)
-if(TROPTER_WITH_SNOPT)
-    target_compile_definitions(tropter PUBLIC TROPTER_WITH_SNOPT)
-endif()
+# if(TROPTER_WITH_SNOPT)
+#     target_compile_definitions(tropter PUBLIC TROPTER_WITH_SNOPT)
+# endif()
 
 # Specify the include directories that the tropter target and client targets
 # should use.

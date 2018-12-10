@@ -29,22 +29,22 @@ MucoIterate::MucoIterate(const SimTK::Vector& time,
         std::vector<std::string> state_names,
         std::vector<std::string> control_names,
         std::vector<std::string> multiplier_names,
-        std::vector<std::string> gamma_names,
+        std::vector<std::string> slack_names,
         std::vector<std::string> parameter_names, 
         const SimTK::Matrix& statesTrajectory,
         const SimTK::Matrix& controlsTrajectory,
         const SimTK::Matrix& multipliersTrajectory,
-        const SimTK::Matrix& gammasTrajectory,
+        const SimTK::Matrix& slacksTrajectory,
         const SimTK::RowVector& parameters) :
         m_time(time), m_state_names(std::move(state_names)),
         m_control_names(std::move(control_names)),
         m_multiplier_names(std::move(multiplier_names)),
-        m_gamma_names(std::move(gamma_names)),
+        m_slack_names(std::move(slack_names)),
         m_parameter_names(std::move(parameter_names)),
         m_states(statesTrajectory),
         m_controls(controlsTrajectory),
         m_multipliers(multipliersTrajectory),
-        m_gammas(gammasTrajectory),
+        m_slacks(slacksTrajectory),
         m_parameters(parameters) {
     OPENSIM_THROW_IF((int)m_state_names.size() != m_states.ncol(),
             Exception, "Inconsistent number of states.");
@@ -52,8 +52,8 @@ MucoIterate::MucoIterate(const SimTK::Vector& time,
             Exception, "Inconsistent number of controls.");
     OPENSIM_THROW_IF((int)m_multiplier_names.size() != m_multipliers.ncol(),
             Exception, "Inconsistent number of multipliers.");
-    OPENSIM_THROW_IF((int)m_gamma_names.size() != m_gammas.ncol(),
-        Exception, "Inconsistent number of gammas.");
+    OPENSIM_THROW_IF((int)m_slack_names.size() != m_slacks.ncol(),
+        Exception, "Inconsistent number of slacks.");
     OPENSIM_THROW_IF(time.size() != m_states.nrow(), Exception,
             "Inconsistent number of times in states trajectory.");
     if (m_controls.ncol()) {
@@ -64,9 +64,9 @@ MucoIterate::MucoIterate(const SimTK::Vector& time,
         OPENSIM_THROW_IF(time.size() != m_multipliers.nrow(), Exception,
             "Inconsistent number of times in multipliers trajectory.");
     }
-    if (m_gammas.ncol()) {
-        OPENSIM_THROW_IF(time.size() != m_gammas.nrow(), Exception,
-            "Inconsistent number of times in gammas trajectory.");
+    if (m_slacks.ncol()) {
+        OPENSIM_THROW_IF(time.size() != m_slacks.nrow(), Exception,
+            "Inconsistent number of times in slacks trajectory.");
     }
     OPENSIM_THROW_IF((int)m_parameter_names.size() != m_parameters.nelt(),
             Exception, "Inconsistent number of parameters.");
@@ -127,20 +127,20 @@ void MucoIterate::setMultiplier(const std::string& name,
     m_multipliers.updCol(index) = trajectory;
 }
 
-void MucoIterate::setGamma(const std::string& name,
+void MucoIterate::setSlack(const std::string& name,
     const SimTK::Vector& trajectory) {
     ensureUnsealed();
-    OPENSIM_THROW_IF(trajectory.size() != m_gammas.nrow(), Exception,
-        "For gamma " + name + ", expected " +
-        std::to_string(m_gammas.nrow()) +
+    OPENSIM_THROW_IF(trajectory.size() != m_slacks.nrow(), Exception,
+        "For slack " + name + ", expected " +
+        std::to_string(m_slacks.nrow()) +
         " elements but got " + std::to_string(trajectory.size()) + ".");
 
-    auto it = std::find(m_gamma_names.cbegin(), m_gamma_names.cend(),
+    auto it = std::find(m_slack_names.cbegin(), m_slack_names.cend(),
         name);
-    OPENSIM_THROW_IF(it == m_gamma_names.cend(), Exception,
-        "Cannot find gamma named " + name + ".");
-    int index = (int)std::distance(m_gamma_names.cbegin(), it);
-    m_gammas.updCol(index) = trajectory;
+    OPENSIM_THROW_IF(it == m_slack_names.cend(), Exception,
+        "Cannot find slack named " + name + ".");
+    int index = (int)std::distance(m_slack_names.cbegin(), it);
+    m_slacks.updCol(index) = trajectory;
 }
 
 void MucoIterate::setParameter(const std::string& name, 
@@ -244,14 +244,14 @@ SimTK::VectorView MucoIterate::getMultiplier(const std::string& name) const {
     int index = (int)std::distance(m_multiplier_names.cbegin(), it);
     return m_multipliers.col(index);
 }
-SimTK::VectorView MucoIterate::getGamma(const std::string& name) const {
+SimTK::VectorView MucoIterate::getSlack(const std::string& name) const {
     ensureUnsealed();
-    auto it = std::find(m_gamma_names.cbegin(), m_gamma_names.cend(),
+    auto it = std::find(m_slack_names.cbegin(), m_slack_names.cend(),
         name);
-    OPENSIM_THROW_IF(it == m_gamma_names.cend(), Exception,
-        "Cannot find gamma named " + name + ".");
-    int index = (int)std::distance(m_gamma_names.cbegin(), it);
-    return m_gammas.col(index);
+    OPENSIM_THROW_IF(it == m_slack_names.cend(), Exception,
+        "Cannot find slack named " + name + ".");
+    int index = (int)std::distance(m_slack_names.cbegin(), it);
+    return m_slacks.col(index);
 }
 const SimTK::Real& MucoIterate::getParameter(const std::string& name) const {
     ensureUnsealed();
@@ -268,7 +268,7 @@ double MucoIterate::resampleWithNumTimes(int numTimes) {
     int numStates = (int)m_state_names.size();
     int numControls = (int)m_control_names.size();
     int numMultipliers = (int)m_multiplier_names.size();
-    int numGammas = (int)m_gamma_names.size();
+    int numSlacks = (int)m_slack_names.size();
     TimeSeriesTable table = convertToTable();
     OPENSIM_THROW_IF(m_time.size() < 2, Exception,
             "Cannot resample if number of times is 0 or 1.");
@@ -277,7 +277,7 @@ double MucoIterate::resampleWithNumTimes(int numTimes) {
     m_states.resize(numTimes, numStates);
     m_controls.resize(numTimes, numControls);
     m_multipliers.resize(numTimes, numMultipliers);
-    m_gammas.resize(numTimes, numGammas);
+    m_slacks.resize(numTimes, numSlacks);
     SimTK::Vector time(1);
     for (int itime = 0; itime < m_time.size(); ++itime) {
         time[0] = m_time[itime];
@@ -288,8 +288,8 @@ double MucoIterate::resampleWithNumTimes(int numTimes) {
             m_controls(itime, icontr) = splines[icol].calcValue(time);
         for (int imult = 0; imult < numMultipliers; ++imult, ++icol)
             m_multipliers(itime, imult) = splines[icol].calcValue(time);
-        for (int igamma = 0; igamma < numGammas; ++igamma, ++icol)
-            m_gammas(itime, igamma) = splines[icol].calcValue(time);
+        for (int islack = 0; islack < numSlacks; ++islack, ++icol)
+            m_slacks(itime, islack) = splines[icol].calcValue(time);
     }
     return m_time[1] - m_time[0];
 }
@@ -348,10 +348,10 @@ MucoIterate::MucoIterate(const std::string& filepath) {
     SimTK::convertStringTo(
             metadata.getValueForKey("num_multipliers").getValue<std::string>(),
             numMultipliers);
-    int numGammas;
+    int numSlacks;
     SimTK::convertStringTo(
-            metadata.getValueForKey("num_gammas").getValue<std::string>(),
-            numGammas);
+            metadata.getValueForKey("num_slacks").getValue<std::string>(),
+            numSlacks);
     int numParameters;
     SimTK::convertStringTo(
             metadata.getValueForKey("num_parameters").getValue<std::string>(),
@@ -359,7 +359,7 @@ MucoIterate::MucoIterate(const std::string& filepath) {
     OPENSIM_THROW_IF(numStates < 0, Exception, "Invalid num_states.");
     OPENSIM_THROW_IF(numControls < 0, Exception, "Invalid num_controls.");
     OPENSIM_THROW_IF(numMultipliers < 0, Exception, "Invalid num_multipliers");
-    OPENSIM_THROW_IF(numGammas < 0, Exception, "Invalid num_gammas.");
+    OPENSIM_THROW_IF(numSlacks < 0, Exception, "Invalid num_slacks.");
     OPENSIM_THROW_IF(numParameters < 0, Exception, "Invalid num_parameters.");
 
     const auto& labels = table->getColumnLabels();
@@ -372,24 +372,24 @@ MucoIterate::MucoIterate(const std::string& filepath) {
     m_multiplier_names.insert(m_multiplier_names.end(),
             labels.begin() + numStates + numControls,
             labels.begin() + numStates + numControls + numMultipliers);
-    m_gamma_names.insert(m_gamma_names.end(),
+    m_slack_names.insert(m_slack_names.end(),
             labels.begin() + numStates + numControls + numMultipliers,
             labels.begin() + numStates + numControls + numMultipliers + 
-            numGammas);
+            numSlacks);
     m_parameter_names.insert(m_parameter_names.end(),
             labels.begin() + numStates + numControls + numMultipliers +
-                numGammas, 
+                numSlacks, 
             labels.end());
 
-    OPENSIM_THROW_IF(numStates + numControls + numMultipliers + numGammas + 
+    OPENSIM_THROW_IF(numStates + numControls + numMultipliers + numSlacks + 
                 numParameters != (int)table->getNumColumns(),
             Exception,
             "Expected num_states + num_controls + num_multipliers " 
-            " + num_gammas + num_parameters = number of columns, but "
+            " + num_slacks + num_parameters = number of columns, but "
             "num_states=" + std::to_string(numStates) + ", "
             "num_controls=" + std::to_string(numControls) + ", "
             "num_multipliers=" + std::to_string(numMultipliers) + ", "
-            "num_gammas=" + std::to_string(numGammas) + ", "
+            "num_slacks=" + std::to_string(numSlacks) + ", "
             "num_parameters=" + std::to_string(numParameters) + ", "
             "number of columns=" + std::to_string(table->getNumColumns()));
 
@@ -405,14 +405,14 @@ MucoIterate::MucoIterate(const std::string& filepath) {
         m_multipliers = table->getMatrixBlock(0, numStates + numControls,
                 table->getNumRows(), numMultipliers);
     }
-    if (numGammas) {
-        m_gammas = table->getMatrixBlock(0, 
+    if (numSlacks) {
+        m_slacks = table->getMatrixBlock(0, 
             numStates + numControls + numMultipliers,
-            table->getNumRows(), numGammas);
+            table->getNumRows(), numSlacks);
     }
     if (numParameters) {
         m_parameters = table->getMatrixBlock(0, 
-                numStates + numControls + numMultipliers + numGammas, 1,
+                numStates + numControls + numMultipliers + numSlacks, 1,
                 numParameters).getAsRowVectorBase();
     }
 }
@@ -436,14 +436,14 @@ TimeSeriesTable MucoIterate::convertToTable() const {
     labels.insert(labels.end(),
             m_multiplier_names.begin(), m_multiplier_names.end());
     labels.insert(labels.end(),
-        m_gamma_names.begin(), m_gamma_names.end());
+        m_slack_names.begin(), m_slack_names.end());
     labels.insert(labels.end(),
             m_parameter_names.begin(), m_parameter_names.end());
     int numTimes = (int)m_time.size();
     int numStates = (int)m_state_names.size();
     int numControls = (int)m_control_names.size();
     int numMultipliers = (int)m_multiplier_names.size();
-    int numGammas = (int)m_gamma_names.size();
+    int numSlacks = (int)m_slack_names.size();
     int numParameters = (int)m_parameter_names.size();
 
     SimTK::Matrix data(numTimes, (int)labels.size());
@@ -455,19 +455,19 @@ TimeSeriesTable MucoIterate::convertToTable() const {
         data.updBlock(0, numStates + numControls, numTimes, numMultipliers)
             = m_multipliers;
     }
-    if (numGammas) {
+    if (numSlacks) {
         data.updBlock(0, numStates + numControls + numMultipliers, numTimes, 
-            numGammas) = m_gammas;
+            numSlacks) = m_slacks;
     }
     if (numParameters) {
         // First row of table contains parameter values.
-        data.updBlock(0, numStates + numControls + numMultipliers + numGammas, 
+        data.updBlock(0, numStates + numControls + numMultipliers + numSlacks, 
             1, numParameters) = m_parameters;
         // Remaining rows of table contain NaNs in parameter columns.
         SimTK::Matrix parameter_nan_rows(numTimes - 1, 
             (int)m_parameter_names.size());
         parameter_nan_rows.setToNaN();
-        data.updBlock(1, numStates + numControls + numMultipliers + numGammas, 
+        data.updBlock(1, numStates + numControls + numMultipliers + numSlacks, 
             numTimes - 1, numParameters) = parameter_nan_rows;     
     }
     TimeSeriesTable table(time, data, labels);
@@ -475,7 +475,7 @@ TimeSeriesTable MucoIterate::convertToTable() const {
     //table.updTableMetaData().setValueForKey("num_states", numStates);
     //table.updTableMetaData().setValueForKey("num_controls", numControls);
     //table.updTableMetaData().setValueForKey("num_multipliers", numMultipliers);
-    //table.updTableMetaData().setValueForKey("num_gammas", numGammas);
+    //table.updTableMetaData().setValueForKey("num_slacks", numSlacks);
     //table.updTableMetaData().setValueForKey("num_parameters", numParameters);
     table.updTableMetaData().setValueForKey("num_states",
             std::to_string(numStates));
@@ -483,8 +483,8 @@ TimeSeriesTable MucoIterate::convertToTable() const {
             std::to_string(numControls));
     table.updTableMetaData().setValueForKey("num_multipliers",
             std::to_string(numMultipliers));
-    table.updTableMetaData().setValueForKey("num_gammas",
-        std::to_string(numGammas));
+    table.updTableMetaData().setValueForKey("num_slacks",
+        std::to_string(numSlacks));
     table.updTableMetaData().setValueForKey("num_parameters",
             std::to_string(numParameters));
     return table;
@@ -545,19 +545,19 @@ StatesTrajectory MucoIterate::exportToStatesTrajectory(
             statesTrajectory.getColumnLabels(),
             controlsTrajectory.getColumnLabels(),
             {}, // TODO (multiplier_names)
-            {}, // TODO (gamma_names)
+            {}, // TODO (slack_names)
             {}, // TODO (parameter_names)
             statesTrajectory.getMatrix(),
             controlsTrajectory.getMatrix(),
             SimTK::Matrix(0,0), // TODO (multipliersTrajectory)
-            SimTK::Matrix(0,0), // TODO (gammasTrajectory)
+            SimTK::Matrix(0,0), // TODO (slacksTrajectory)
             SimTK::RowVector(0)); // TODO (parameters)
 }
 
 bool MucoIterate::isCompatible(const MucoProblemRep& mp,
         bool throwOnError) const {
     ensureUnsealed();
-    // Slack (gammas) variables are solver dependent, so we can't check for
+    // Slack variables might be solver dependent, so we can't check for
     // compatibility on the problem.
 
     auto mpsn = mp.createStateInfoNames();
@@ -597,14 +597,14 @@ bool MucoIterate::isNumericallyEqual(const MucoIterate& other, double tol)
     return m_state_names == other.m_state_names &&
             m_control_names == other.m_control_names &&
             m_multiplier_names == other.m_multiplier_names &&
-            m_gamma_names == other.m_gamma_names &&
+            m_slack_names == other.m_slack_names &&
             m_parameter_names == other.m_parameter_names &&
             SimTK::Test::numericallyEqual(m_time, other.m_time, 1, tol) &&
             SimTK::Test::numericallyEqual(m_states, other.m_states, 1, tol) &&
             SimTK::Test::numericallyEqual(m_controls, other.m_controls, 1, tol)
             && SimTK::Test::numericallyEqual(m_multipliers, other.m_multipliers,
                 1, tol)
-            && SimTK::Test::numericallyEqual(m_gammas, other.m_gammas, 1, tol)
+            && SimTK::Test::numericallyEqual(m_slacks, other.m_slacks, 1, tol)
             && SimTK::Test::numericallyEqual(m_parameters, other.m_parameters, 
                 1, tol);
 }

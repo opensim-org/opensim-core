@@ -47,17 +47,23 @@ The file format for reading and writing a MucoIterate is comprised of a
 file header followed by a row of column names and the stored data. The file
 header contains the number of states, controls, and parameters (order does
 not matter). Order does matter for the column names and corresponding data
-columns. The columns *must* follow this order: time, states, controls,
-parameters. For parameter columns, the value of the parameter is stored in
+columns. The columns *must* follow this order: time, states, controls, slacks,
+parameters. 
+@note Slack columns may contain real number or NaN values, depending on their
+use. For example, values for velocity correction variables used in problems
+with model kinematic constraints are defined only at the midpoint of a Hermite-
+Simpson mesh interval. The non-midpoint variables are returned as NaN in the
+slack variable data structure.
+@note For parameter columns, the value of the parameter is stored in
 the first row of the column, while the rest of the rows are filled with
 NaNs.
 @samplefile
 num_states=<number-of-state-variables>
 num_controls=<number-of-control-variables>
 num_multipliers=<number-of-multiplier-variables>
-num_gammas=<number-of-gamma-variables>
+num_slacks=<number-of-slack-variables>
 num_parameters=<number-of-parameter-variables>
-time,<s0-name>,...,<c0-name>,...,<m0-name>,...,<g0-name>,...,<p0-name>,...
+time,<st0-name>,...,<c0-name>,...,<m0-name>,...,<sl0-name>,...,<p0-name>,...
 <#>,<#>,...,<#>,...,<#>,...,<#-or-NaN>,...,<#>
 <#>,<#>,...,<#>,...,<#>,...,<#-or-NaN>,...,<NaN>
  : , : ,..., : ,..., : ,...,  :  ,...,  :
@@ -72,12 +78,12 @@ public:
             std::vector<std::string> state_names,
             std::vector<std::string> control_names,
             std::vector<std::string> multiplier_names,
-            std::vector<std::string> gamma_names,
+            std::vector<std::string> slack_names,
             std::vector<std::string> parameter_names,
             const SimTK::Matrix& statesTrajectory,
             const SimTK::Matrix& controlsTrajectory,
             const SimTK::Matrix& multipliersTrajectory,
-            const SimTK::Matrix& gammasTrajectory,
+            const SimTK::Matrix& slacksTrajectory,
             const SimTK::RowVector& parameters);
     /// Read a MucoIterate from a data file (e.g., STO, CSV). See output of
     /// write() for the correct format.
@@ -93,10 +99,10 @@ public:
     bool empty() const {
         ensureUnsealed();
         return !(m_time.size() || m_states.nelt() || m_controls.nelt() ||
-                m_multipliers.nelt() || m_gammas.nelt() || 
+                m_multipliers.nelt() || m_slacks.nelt() || 
                 m_parameters.nelt() || m_state_names.size() || 
                 m_control_names.size() || m_multiplier_names.size() || 
-                m_gamma_names.size() || m_parameter_names.size());
+                m_slack_names.size() || m_parameter_names.size());
     }
 
     /// @name Change the length of the trajectory
@@ -119,8 +125,8 @@ public:
         m_controls.setToNaN();
         m_multipliers.resize(numTimes, m_multipliers.ncol());
         m_multipliers.setToNaN();
-        m_gammas.resize(numTimes, m_gammas.ncol());
-        m_gammas.setToNaN();
+        m_slacks.resize(numTimes, m_slacks.ncol());
+        m_slacks.setToNaN();
     }
     /// Uniformly resample (interpolate) the iterate so that it retains the
     /// same initial and final times but now has the provided number of time
@@ -182,7 +188,7 @@ public:
     void setMultiplier(const std::string& name, 
                        const SimTK::Vector& trajectory);
     /// TODO doc
-    void setGamma(const std::string& name, const SimTK::Vector& trajectory);
+    void setSlack(const std::string& name, const SimTK::Vector& trajectory);
     /// Set the value of a single parameter variable. This value is invariant
     /// across time.
     void setParameter(const std::string& name, const SimTK::Real& value);
@@ -248,14 +254,14 @@ public:
         setMultiplier(name, v);
     }
     /// TODO doc
-    void setGamma(const std::string& name,
+    void setSlack(const std::string& name,
         std::initializer_list<double> trajectory) {
         ensureUnsealed();
         SimTK::Vector v((int)trajectory.size());
         int i = 0;
         for (auto it = trajectory.begin(); it != trajectory.end(); ++it, ++i)
             v[i] = *it;
-        setGamma(name, v);
+        setSlack(name, v);
     }
 
     /// Set the states trajectory. The provided data is interpolated at the
@@ -308,14 +314,14 @@ public:
     {   ensureUnsealed(); return m_control_names; }
     const std::vector<std::string>& getMultiplierNames() const
     {   ensureUnsealed(); return m_multiplier_names; }
-    const std::vector<std::string>& getGammaNames() const
-    {   ensureUnsealed(); return m_gamma_names; }
+    const std::vector<std::string>& getSlackNames() const
+    {   ensureUnsealed(); return m_slack_names; }
     const std::vector<std::string>& getParameterNames() const
     {   ensureUnsealed(); return m_parameter_names; }
     SimTK::VectorView_<double> getState(const std::string& name) const;
     SimTK::VectorView_<double> getControl(const std::string& name) const;
     SimTK::VectorView_<double> getMultiplier(const std::string& name) const;
-    SimTK::VectorView_<double> getGamma(const std::string& name) const;
+    SimTK::VectorView_<double> getSlack(const std::string& name) const;
     const SimTK::Real& getParameter(const std::string& name) const;
     const SimTK::Matrix& getStatesTrajectory() const
     {   ensureUnsealed(); return m_states; }
@@ -323,8 +329,8 @@ public:
     {   ensureUnsealed(); return m_controls; }
     const SimTK::Matrix& getMultipliersTrajectory() const
     {   ensureUnsealed(); return m_multipliers; }
-    const SimTK::Matrix& getGammasTrajectory() const
-    {   ensureUnsealed(); return m_gammas; }
+    const SimTK::Matrix& getSlacksTrajectory() const
+    {   ensureUnsealed(); return m_slacks; }
     const SimTK::RowVector& getParameters() const
     {   ensureUnsealed(); return m_parameters; }
 
@@ -417,7 +423,7 @@ private:
     std::vector<std::string> m_state_names;
     std::vector<std::string> m_control_names;
     std::vector<std::string> m_multiplier_names;
-    std::vector<std::string> m_gamma_names;
+    std::vector<std::string> m_slack_names;
     std::vector<std::string> m_parameter_names;
     // Dimensions: time x states
     SimTK::Matrix m_states;
@@ -425,8 +431,8 @@ private:
     SimTK::Matrix m_controls;
     // Dimensions: time x multipliers
     SimTK::Matrix m_multipliers;
-    // Dimensions: time x gammas
-    SimTK::Matrix m_gammas;
+    // Dimensions: time x slacks
+    SimTK::Matrix m_slacks;
     // Dimensions: 1 x parameters
     SimTK::RowVector m_parameters;
 

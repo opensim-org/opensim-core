@@ -42,12 +42,16 @@ class MucoIterate;
 OSIMMUSCOLLO_API
 SimTK::Vector createVectorLinspace(int length, double start, double end);
 
-/// Linearly interpolate y(x) at new values of x.
-/// The returned vector will have NaN for any values of newX outside of the
-/// range of x.
+/// Linearly interpolate y(x) at new values of x. The optional 'ignoreNaNs'
+/// argument will ignore any NaN values contained in the input vectors and 
+/// create the interpolant from the non-NaN values only. Otherwise, an exception
+/// is thrown. Note that this option does not necessarily prevent NaN values 
+/// from being returned in 'newX', which will have NaN for any values of newX 
+/// outside of the range of x.
 OSIMMUSCOLLO_API
 SimTK::Vector interpolate(const SimTK::Vector& x,
-        const SimTK::Vector& y, const SimTK::Vector& newX);
+        const SimTK::Vector& y, const SimTK::Vector& newX,
+        const bool ignoreNaNs = false);
 
 /// Create a Storage from a TimeSeriesTable. Metadata from the
 /// TimeSeriesTable is *not* copied to the Storage.

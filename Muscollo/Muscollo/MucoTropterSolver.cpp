@@ -60,14 +60,14 @@ MucoIterateType convert(const tropIterateType& tropSol) {
     const auto& state_names = tropSol.state_names;
     const auto& control_names = tropSol.control_names;
     const auto& multiplier_names = tropSol.adjunct_names;
-    const auto& gamma_names = tropSol.diffuse_names;
+    const auto& slack_names = tropSol.diffuse_names;
     const auto& parameter_names = tropSol.parameter_names;
 
     int numTimes = (int)time.size();
     int numStates = (int)state_names.size();
     int numControls = (int)control_names.size();
     int numMultipliers = (int)multiplier_names.size();
-    int numGammas = (int)gamma_names.size();
+    int numSlacks = (int)slack_names.size();
     int numParameters = (int)parameter_names.size();
     // Create and populate states matrix.
     SimTK::Matrix states(numTimes, numStates);
@@ -103,20 +103,20 @@ MucoIterateType convert(const tropIterateType& tropSol) {
             }
         }
     }
-    SimTK::Matrix gammas;
-    if (numGammas) {
-        gammas.resize(numTimes, numGammas);
+    SimTK::Matrix slacks;
+    if (numSlacks) {
+        slacks.resize(numTimes, numSlacks);
         for (int itime = 0; itime < numTimes; ++itime) {
-            for (int igamma = 0; igamma < numGammas; ++igamma) {
-                gammas(itime, igamma) = tropSol.diffuses(igamma,
+            for (int islack = 0; islack < numSlacks; ++islack) {
+                slacks(itime, islack) = tropSol.diffuses(islack,
                     itime);
             }
         }
     }
     // This produces an empty RowVector if numParameters is zero.
     SimTK::RowVector parameters(numParameters, tropSol.parameters.data());
-    return {time, state_names, control_names, multiplier_names, gamma_names,
-            parameter_names, states, controls, multipliers, gammas, parameters};
+    return {time, state_names, control_names, multiplier_names, slack_names,
+            parameter_names, states, controls, multipliers, slacks, parameters};
 }
 
 MucoSolution convert(const tropter::Solution& tropSol) {
@@ -139,7 +139,7 @@ tropter::Iterate convert(const MucoIterate& mucoIter) {
     tropIter.state_names = mucoIter.getStateNames();
     tropIter.control_names = mucoIter.getControlNames();
     tropIter.adjunct_names = mucoIter.getMultiplierNames();
-    tropIter.diffuse_names = mucoIter.getGammaNames();
+    tropIter.diffuse_names = mucoIter.getSlackNames();
     tropIter.parameter_names = mucoIter.getParameterNames();
 
     int numTimes = (int)time.size();
@@ -151,7 +151,7 @@ tropter::Iterate convert(const MucoIterate& mucoIter) {
     const auto& states = mucoIter.getStatesTrajectory();
     const auto& controls = mucoIter.getControlsTrajectory();
     const auto& multipliers = mucoIter.getMultipliersTrajectory();
-    const auto& gammas = mucoIter.getGammasTrajectory();
+    const auto& slacks = mucoIter.getSlacksTrajectory();
     const auto& parameters = mucoIter.getParameters();
     // Muscollo's matrix is numTimes x numStates;
     // tropter's is numStates x numTimes.
@@ -171,7 +171,7 @@ tropter::Iterate convert(const MucoIterate& mucoIter) {
     }
     if (numDiffuses) {
         tropIter.diffuses = Map<const MatrixXd>(
-            &gammas(0, 0), numTimes, numDiffuses).transpose();
+            &slacks(0, 0), numTimes, numDiffuses).transpose();
     } else {
         tropIter.diffuses.resize(numDiffuses, numTimes);
     }
@@ -309,6 +309,9 @@ public:
                     // constraint equation derivatives.
                     if (m_mucoTropterSolver
                             .get_enforce_constraint_derivatives()) {
+                        // TODO this naming convention assumes that the 
+                        // associated Lagrange multiplier name begins with
+                        // "lambda", which may change in the future.
                         this->add_diffuse(std::string(
                                 multInfo.getName()).replace(0, 6, "gamma"),
                             convert(m_mucoTropterSolver
