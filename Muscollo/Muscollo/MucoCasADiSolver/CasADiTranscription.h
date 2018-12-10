@@ -467,6 +467,15 @@ public:
         m_initialized = true;
         m_opti = casadi::Opti();
 
+        createVariableCountAndNames();
+        createVariablesAndSetBounds();
+        addConstraints();
+        // TODO: Multibody constraints.
+        addPathConstraints();
+        addCostFunctional();
+
+    }
+    void createVariableCountAndNames() {
         m_numTimes = m_solver.get_num_mesh_points();
 
         // Get number and names of variables.
@@ -503,7 +512,9 @@ public:
             OPENSIM_THROW_IF(m_numDerivatives != (int)m_derivativeNames.size(),
                     Exception, "Internal error in derivative names.");
         }
+    }
 
+    void createVariablesAndSetBounds() {
         // Create variables and set bounds.
         // --------------------------------
         createVariables();
@@ -559,16 +570,10 @@ public:
         }
 
         m_duration = m_vars[Var::final_time] - m_vars[Var::initial_time];
-        DM meshIntervals = m_mesh(Slice(1, m_mesh.rows())) -
-                m_mesh(Slice(0, m_mesh.rows() - 1));
         m_times =
                 createTimes(m_vars[Var::initial_time], m_vars[Var::final_time]);
-
-        // Defect constraints.
-        // -------------------
-        // (TODO: Right now this includes path constraints for implicit, not
-        //  just "defects").
-        addConstraints();
+    }
+    void addPathConstraints() {
 
         // Path constraints.
         // -----------------
@@ -606,9 +611,9 @@ public:
                         pathConUpperBounds[ipc]);
             }
         }
+    }
 
-        // Cost functional.
-        // ----------------
+    void addCostFunctional() {
 
         m_endpointCostFunction = make_unique<EndpointCostFunction>(
                 "endpoint_cost", *this, m_probRep);
@@ -619,6 +624,9 @@ public:
                  m_vars[Var::states](Slice(), -1),
                  m_vars[Var::parameters]}).at(0);
 
+        DM meshIntervals =
+                m_mesh(Slice(1, m_mesh.rows())) -
+                m_mesh(Slice(0, m_mesh.rows() - 1));
         DM quadCoeffs = createIntegralQuadratureCoefficients(meshIntervals);
 
         m_integrandCostFunction = make_unique<IntegrandCostFunction>(
