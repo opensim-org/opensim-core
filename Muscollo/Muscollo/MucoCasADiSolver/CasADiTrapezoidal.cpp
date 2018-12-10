@@ -19,7 +19,7 @@
 
 #include <OpenSim/Simulation/InverseDynamicsSolver.h>
 
-void CasADiTrapezoidal::addDefectConstraintsImpl() {
+void CasADiTrapezoidal::addConstraintsImpl() {
 
     m_dynamicsFunction =
             make_unique<DynamicsFunction>("dynamics", *this, m_probRep);
@@ -78,7 +78,7 @@ int CasADiTrapezoidal::DynamicsFunction::eval(
     return 0;
 }
 
-void CasADiTrapezoidalImplicit::addDefectConstraintsImpl() {
+void CasADiTrapezoidalImplicit::addConstraintsImpl() {
     m_dynamicsFunction =
             make_unique<DynamicsFunction>("dynamics", *this, m_probRep);
     m_residualFunction =

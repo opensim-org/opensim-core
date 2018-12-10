@@ -23,7 +23,7 @@
 #include "MucoCasADiSolver.h"
 #include <casadi/casadi.hpp>
 
-// TODO: temporary
+// TODO: temporary using declarations.
 using namespace OpenSim;
 using casadi::MX;
 using casadi::DM;
@@ -555,8 +555,7 @@ public:
         for (int iparam = 0; iparam < m_numParameters; ++iparam) {
             const auto& param =
                     m_probRep.getParameter(m_parameterNames[iparam]);
-            setVariableBounds(Var::parameters,
-                    iparam, 0, param.getBounds());
+            setVariableBounds(Var::parameters, iparam, 0, param.getBounds());
         }
 
         m_duration = m_vars[Var::final_time] - m_vars[Var::initial_time];
@@ -569,7 +568,7 @@ public:
         // -------------------
         // (TODO: Right now this includes path constraints for implicit, not
         //  just "defects").
-        addDefectConstraints();
+        addConstraints();
 
         // Path constraints.
         // -----------------
@@ -650,9 +649,6 @@ public:
             m_opti.set_initial(kv.second, casGuess.at(kv.first));
         }
     }
-
-    Dict getStats() { return m_opti.stats(); }
-
     MucoSolution
     solve(const std::string& solver, Dict pluginOptions, Dict solverOptions) {
         m_opti.solver(solver, pluginOptions, solverOptions);
@@ -673,15 +669,17 @@ public:
         // TODO: Return a solution (sealed).
     }
 
+    Dict getStats() { return m_opti.stats(); }
+
     /// @precondition The following are set: m_numTimes, m_numStates,
     ///     m_numControls.
     /// @postcondition All fields in member variable m_vars are set, and
     ///     and m_mesh is set.
     virtual void createVariables() = 0;
-    void addDefectConstraints() {
-        if (m_numStates) addDefectConstraintsImpl();
+    void addConstraints() {
+        if (m_numStates) addConstraintsImpl();
     }
-    virtual void addDefectConstraintsImpl() = 0;
+    virtual void addConstraintsImpl() = 0;
     virtual DM createIntegralQuadratureCoefficients(const DM& meshIntervals)
     const = 0;
 
@@ -712,14 +710,6 @@ protected:
             m_lowerBounds[var](rowIndices, columnIndices) = lower;
             const auto& upper = bounds.getUpper();
             m_upperBounds[var](rowIndices, columnIndices) = upper;
-            /*
-            auto submatrix = m_vars[var](rowIndices, columnIndices);
-            for (int irow = 0; irow < submatrix.rows(); ++irow) {
-                for (int icol = 0; icol < submatrix.columns(); ++icol) {
-                    m_opti.subject_to(lower <= submatrix(irow, icol) <= upper);
-                }
-            }
-            */
             m_opti.subject_to(
                     lower <= m_vars[var](rowIndices, columnIndices) <= upper);
         } else {

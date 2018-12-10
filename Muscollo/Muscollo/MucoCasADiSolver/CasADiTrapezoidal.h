@@ -35,7 +35,7 @@ public:
         return trapezoidalQuadCoeffs;
     }
 
-    void addDefectConstraintsImpl() override;
+    void addConstraintsImpl() override;
 
 protected:
     void createVariables() override {
@@ -110,11 +110,9 @@ public:
     const override;
 };
 
-// TODO: Throw exception if costs realize to acceleration.
 class CasADiTrapezoidalImplicit : public CasADiTrapezoidal {
     using CasADiTrapezoidal::CasADiTrapezoidal;
-    // TODO: Rename to include path constraints.
-    void addDefectConstraintsImpl() override;
+    void addConstraintsImpl() override;
     void createVariables() override {
         CasADiTrapezoidal::createVariables();
         m_vars[Var::derivatives] = m_opti.variable(m_state.getNU(), m_numTimes);
@@ -136,11 +134,6 @@ public:
         setCommonOptions(opts);
         construct(name, opts);
     }
-    ~DynamicsFunction() override {}
-    /// 0. time
-    /// 1. states
-    /// 2. controls
-    /// 3. parameters
     casadi_int get_n_in() override { return 4; }
     casadi_int get_n_out() override { return 1; }
     std::string get_name_in(casadi_int i) override {

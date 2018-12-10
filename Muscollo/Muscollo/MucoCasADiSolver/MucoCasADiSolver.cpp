@@ -23,10 +23,7 @@
 #include <casadi/casadi.hpp>
 
 // TODO
-// - get all tests to pass using CasADi, adding in features as necessary.
 // - create separate tests for tropter and CasADi.
-// - copy TropterSolver options to CasADi (num_mesh_points).
-// - initial guess (there's a bug here).
 // - parameters are very inefficient: reapplying parameters more than necessary.
 // - how to handle avoiding interpolation of splines? mesh index?
 // - variable allocation order MATTERS: try allocating variables in a
@@ -38,7 +35,6 @@
 //   do not use time when computing cost and constraints.
 //   what is the performance benefit of removing time?
 // - improve sparsity pattern?
-// - profile marker tracking test in C++.
 // - Expected much better performance, b/c I thought we would not need to evaluate
 //   cost at time i when perturbing at time j, i \neq j..
 //   I can try to investigate this on my own.
