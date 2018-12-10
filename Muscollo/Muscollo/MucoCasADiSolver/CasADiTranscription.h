@@ -34,6 +34,17 @@ using casadi::Dict;
 
 class CasADiTranscription;
 
+enum Var {
+    initial_time,
+    final_time,
+    states,
+    controls,
+    derivatives,
+    parameters
+};
+template <typename T>
+using CasADiVariables = std::unordered_map<Var, T, std::hash<int>>;
+
 class CasADiFunction : public casadi::Callback {
 public:
     CasADiFunction(
@@ -84,7 +95,6 @@ public:
             OPENSIM_THROW(Exception, "Internal error.");
         }
     }
-    void init() override {}
     casadi::Sparsity get_sparsity_in(casadi_int i) override {
         // TODO fix when using a matrix as input for states.
         // TODO detect this sparsity.
@@ -102,6 +112,7 @@ public:
         if (i == 0) return casadi::Sparsity::scalar();
         else return casadi::Sparsity(0, 0);
     }
+    void init() override;
     int eval(const double** arg, double** res, casadi_int*, double*, void*)
             const override;
 };
@@ -153,6 +164,7 @@ public:
         if (i == 0) return casadi::Sparsity::scalar();
         else return casadi::Sparsity(0, 0);
     }
+    void init() override;
     // Use the more efficient virtual function (not the eval() that uses DMs)
     // to avoid any overhead.
     int eval(const double** arg, double** res, casadi_int*, double*, void*)
@@ -236,6 +248,7 @@ public:
             OPENSIM_THROW(Exception, "Internal error.");
         }
     }
+
     std::string get_name_out(casadi_int i) override {
         switch (i) {
         case 0: return "path_constraint_" + m_pathCon.getName();
@@ -267,20 +280,10 @@ public:
     // to avoid any overhead.
     int eval(const double** arg, double** res, casadi_int*, double*, void*)
     const override;
+    void init() override;
 private:
     const MucoPathConstraint& m_pathCon;
 };
-
-enum Var {
-    initial_time,
-    final_time,
-    states,
-    controls,
-    derivatives,
-    parameters
-};
-template <typename T>
-using CasADiVariables = std::unordered_map<Var, T, std::hash<int>>;
 
 class CasADiTranscription {
 public:
@@ -580,24 +583,6 @@ public:
                     make_unique<PathConstraintFunction>(
                             "path_constraint_" + name, *this, m_probRep,
                             pathConstraint));
-            // Ensure that evaluating the path constraint does not throw
-            // any exceptions.
-            {
-                std::unique_ptr<const double*> inputArray(new const double*[4]);
-                inputArray.get()[0] = m_lowerBounds[Var::initial_time].ptr();
-                inputArray.get()[1] =
-                        m_lowerBounds[Var::states](Slice(), 0).ptr();
-                inputArray.get()[2] =
-                        m_lowerBounds[Var::controls](Slice(), 0).ptr();
-                inputArray.get()[3] = m_lowerBounds[Var::parameters].ptr();
-                std::unique_ptr<double*> outputArray(new double*[1]);
-                int numEquations =
-                        pathConstraint.getConstraintInfo().getNumEquations();
-                SimTK::Vector output(numEquations);
-                outputArray.get()[0] = output.updContiguousScalarData();
-                m_pathConstraintFunctions.back()->eval(inputArray.get(),
-                        outputArray.get(), nullptr, nullptr, nullptr);
-            }
             const std::vector<MucoBounds>& bounds =
                     pathConstraint.getConstraintInfo().getBounds();
             DM lower(bounds.size(), 1);
@@ -628,20 +613,6 @@ public:
 
         m_endpointCostFunction = make_unique<EndpointCostFunction>(
                 "endpoint_cost", *this, m_probRep);
-        // Ensure that evaluating the cost functions does not throw
-        // any exceptions.
-        {
-            std::unique_ptr<const double*> inputArray(new const double*[3]);
-            inputArray.get()[0] = m_lowerBounds[Var::final_time].ptr();
-            inputArray.get()[1] =
-                    m_lowerBounds[Var::states](Slice(), 0).ptr();
-            inputArray.get()[2] = m_lowerBounds[Var::parameters].ptr();
-            std::unique_ptr<double*> outputArray(new double*[1]);
-            SimTK::Vector output(1);
-            outputArray.get()[0] = output.updContiguousScalarData();
-            m_endpointCostFunction->eval(inputArray.get(), outputArray.get(),
-                    nullptr, nullptr, nullptr);
-        }
 
         // TODO: Evaluate individual endpoint costs separately.
         auto endpointCost = m_endpointCostFunction->operator()(
@@ -653,20 +624,6 @@ public:
 
         m_integrandCostFunction = make_unique<IntegrandCostFunction>(
                 "integrand", *this, m_probRep);
-        {
-            std::unique_ptr<const double*> inputArray(new const double*[4]);
-            inputArray.get()[0] = m_lowerBounds[Var::initial_time].ptr();
-            inputArray.get()[1] =
-                    m_lowerBounds[Var::states](Slice(), 0).ptr();
-            inputArray.get()[2] =
-                    m_lowerBounds[Var::controls](Slice(), 0).ptr();
-            inputArray.get()[3] = m_lowerBounds[Var::parameters].ptr();
-            std::unique_ptr<double*> outputArray(new double*[1]);
-            SimTK::Vector output(1);
-            outputArray.get()[0] = output.updContiguousScalarData();
-            m_integrandCostFunction->eval(inputArray.get(), outputArray.get(),
-                    nullptr, nullptr, nullptr);
-        }
         MX integralCost = 0;
         for (int itime = 0; itime < m_numTimes; ++itime) {
             const auto out = m_integrandCostFunction->operator()(
@@ -737,6 +694,8 @@ public:
     }
 
     bool dynamicsModeIsImplicit() const { return m_numDerivatives; }
+    const CasADiVariables<DM>& getVariablesLowerBounds() const
+    {   return m_lowerBounds; }
 
     const MucoCasADiSolver& m_solver;
     const MucoProblemRep& m_probRep;

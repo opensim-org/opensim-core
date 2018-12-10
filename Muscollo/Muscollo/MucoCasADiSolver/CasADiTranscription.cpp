@@ -25,6 +25,20 @@ using casadi::Slice;
 using casadi::Callback;
 using casadi::Dict;
 
+void EndpointCostFunction::init() {
+    // Ensure that evaluating the cost functions does not throw
+    // any exceptions.
+    const auto& lowerBounds = m_transcrip.getVariablesLowerBounds();
+    std::unique_ptr<const double*> inputArray(new const double*[3]);
+    inputArray.get()[0] = lowerBounds.at(Var::final_time).ptr();
+    inputArray.get()[1] = lowerBounds.at(Var::states)(Slice(), 0).ptr();
+    inputArray.get()[2] = lowerBounds.at(Var::parameters).ptr();
+    std::unique_ptr<double*> outputArray(new double*[1]);
+    SimTK::Vector output(1);
+    outputArray.get()[0] = output.updContiguousScalarData();
+    eval(inputArray.get(), outputArray.get(), nullptr, nullptr, nullptr);
+}
+
 int EndpointCostFunction::eval(const double** inputs, double** outputs,
         casadi_int*, double*, void*) const {
     m_transcrip.applyParametersToModel(
@@ -43,6 +57,21 @@ int EndpointCostFunction::eval(const double** inputs, double** outputs,
     return 0;
 }
 
+void IntegrandCostFunction::init() {
+    // Ensure that evaluating the cost functions does not throw
+    // any exceptions.
+    const auto& lowerBounds = m_transcrip.getVariablesLowerBounds();
+    std::unique_ptr<const double*> inputArray(new const double*[4]);
+    inputArray.get()[0] = lowerBounds.at(Var::initial_time).ptr();
+    inputArray.get()[1] = lowerBounds.at(Var::states)(Slice(), 0).ptr();
+    inputArray.get()[2] = lowerBounds.at(Var::controls)(Slice(), 0).ptr();
+    inputArray.get()[3] = lowerBounds.at(Var::parameters).ptr();
+    std::unique_ptr<double*> outputArray(new double*[1]);
+    SimTK::Vector output(1);
+    outputArray.get()[0] = output.updContiguousScalarData();
+    eval(inputArray.get(), outputArray.get(), nullptr, nullptr, nullptr);
+}
+
 int IntegrandCostFunction::eval(const double** inputs, double** outputs,
         casadi_int*, double*, void*) const {
     m_transcrip.applyParametersToModel(
@@ -58,6 +87,22 @@ int IntegrandCostFunction::eval(const double** inputs, double** outputs,
             Exception,
             "Cannot realize to Acceleration in implicit dynamics mode.");
     return 0;
+}
+
+void PathConstraintFunction::init() {
+    // Ensure that evaluating the path constraint does not throw
+    // any exceptions.
+    const auto& lowerBounds = m_transcrip.getVariablesLowerBounds();
+    std::unique_ptr<const double*> inputArray(new const double*[4]);
+    inputArray.get()[0] = lowerBounds.at(Var::initial_time).ptr();
+    inputArray.get()[1] = lowerBounds.at(Var::states)(Slice(), 0).ptr();
+    inputArray.get()[2] = lowerBounds.at(Var::controls)(Slice(), 0).ptr();
+    inputArray.get()[3] = lowerBounds.at(Var::parameters).ptr();
+    std::unique_ptr<double*> outputArray(new double*[1]);
+    int numEquations = m_pathCon.getConstraintInfo().getNumEquations();
+    SimTK::Vector output(numEquations);
+    outputArray.get()[0] = output.updContiguousScalarData();
+    eval(inputArray.get(), outputArray.get(), nullptr, nullptr, nullptr);
 }
 
 int PathConstraintFunction::
@@ -78,3 +123,4 @@ eval(const double** inputs, double** outputs, casadi_int*, double*, void*)
     std::copy_n(errors.getContiguousScalarData(), errors.size(), outputs[0]);
     return 0;
 }
+
