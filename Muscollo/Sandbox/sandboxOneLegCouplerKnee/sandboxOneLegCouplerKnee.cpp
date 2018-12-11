@@ -206,7 +206,7 @@ void minimizeControlEffortRightLegWeldedPelvis(const std::string& actuatorType)
     mp.setControlInfo("/forceset/bifemsh_r", {0.01, 1});
     mp.setControlInfo("/forceset/med_gas_r", {0.01, 1});
     mp.setControlInfo("/forceset/glut_max2_r", {0.01, 1});
-    mp.setControlInfo("/forceset/psoas_r", {0.01, 1});
+    mp.setControlInfo("/forceset/psoas_r", {0.01, 1.5});
     mp.setControlInfo("/forceset/rect_fem_r", {0.01, 1});
     mp.setControlInfo("/forceset/semimem_r", {0.01, 1});
     mp.setControlInfo("/forceset/soleus_r", {0.01, 1});
@@ -223,7 +223,7 @@ void minimizeControlEffortRightLegWeldedPelvis(const std::string& actuatorType)
     effort->setWeight("tau_ankle_angle_r", 1000);
 
     MucoTropterSolver& ms = muco.initSolver();
-    ms.set_num_mesh_points(15);
+    ms.set_num_mesh_points(10);
     ms.set_verbosity(2);
     ms.set_optim_solver("snopt");
     ms.set_optim_convergence_tolerance(1e-3);
@@ -232,10 +232,12 @@ void minimizeControlEffortRightLegWeldedPelvis(const std::string& actuatorType)
     ms.set_transcription_scheme("hermite-simpson");
     ms.set_enforce_constraint_derivatives(true);
     ms.set_lagrange_multiplier_weight(10);
-    ms.set_velocity_correction_bounds({-0.1, 0.1});
-    ms.setGuess("bounds");
+    ms.set_velocity_correction_bounds({-0.25, 0.25});
+    //ms.setGuess("bounds");
+    ms.setGuessFile("sandboxRightLeg_weldedPelvis_" +
+        actuatorType + "_minimize_control_effort_solution.sto");
 
-    MucoSolution solution = muco.solve();
+    MucoSolution solution = muco.solve().unseal();
     muco.visualize(solution);
 }
 
