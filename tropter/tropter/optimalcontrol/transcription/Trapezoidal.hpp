@@ -127,6 +127,15 @@ void Trapezoidal<T>::set_ocproblem(
         }
     }
 
+    std::cout << "variable names: " << std::endl;
+    for (int i = 0; i < m_variable_names.size(); ++i) {
+        std::cout << std::to_string(i + 1) << ": " << m_variable_names[i] << std::endl;
+    }
+    std::cout << "constraint names: " << std::endl;
+    for (int i = 0; i < m_constraint_names.size(); ++i) {
+        std::cout << std::to_string(i + 1) << ": " << m_constraint_names[i] << std::endl;
+    }
+
     // Bounds.
     // -------
     double initial_time_lower;

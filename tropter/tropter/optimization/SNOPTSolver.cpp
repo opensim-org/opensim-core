@@ -98,14 +98,14 @@ void snopt_userfunction(int*   /* Status */,
                 *length_F - 1, &F[1]);
 
     }
-    if (*needG > 0) {
-        if (*needF > 0) new_variables = false;
-        // The first num_variables elements of G are the gradient.
-        probproxy->calc_gradient(*num_variables, x, new_variables, &G[0]);
-        // The jacobian's nonzeros start at G[n].
-        probproxy->calc_jacobian(*num_variables, x, new_variables,
-                *neG - *num_variables, &G[*num_variables]);
-    }
+    //if (*needG > 0) {
+    //    if (*needF > 0) new_variables = false;
+    //    // The first num_variables elements of G are the gradient.
+    //    probproxy->calc_gradient(*num_variables, x, new_variables, &G[0]);
+    //    // The jacobian's nonzeros start at G[n].
+    //    probproxy->calc_jacobian(*num_variables, x, new_variables,
+    //            *neG - *num_variables, &G[*num_variables]);
+    //}
 }
 
 Solution
@@ -162,34 +162,34 @@ SNOPTSolver::optimize_impl(const VectorXd& variablesArg) const {
 
     // Sparsity pattern of the Jacobian.
     // ---------------------------------
-    SparsityCoordinates jacobian_sparsity;
-    calc_sparsity(variables,
-            jacobian_sparsity, false,
-            SparsityCoordinates()  /*hessian_sparsity*/);
-    int jacobian_num_nonzeros = (int)jacobian_sparsity.row.size();
-    std::cout << "jacobian_num_nonzeros: " << jacobian_num_nonzeros << std::endl;
+    //SparsityCoordinates jacobian_sparsity;
+    //calc_sparsity(variables,
+    //        jacobian_sparsity, false,
+    //        SparsityCoordinates()  /*hessian_sparsity*/);
+    //int jacobian_num_nonzeros = (int)jacobian_sparsity.row.size();
+    //std::cout << "jacobian_num_nonzeros: " << jacobian_num_nonzeros << std::endl;
 
-    int length_G = num_variables + jacobian_num_nonzeros;
-    std::cout << "length_G: " << length_G << std::endl;
+    //int length_G = num_variables + jacobian_num_nonzeros;
+    //std::cout << "length_G: " << length_G << std::endl;
 
-    int num_nonzeros_G = length_G;
-    std::cout << "num_nonzeros_G: " << num_nonzeros_G << std::endl;
+    //int num_nonzeros_G = length_G;
+    //std::cout << "num_nonzeros_G: " << num_nonzeros_G << std::endl;
 
-    // Row indices of Jacobian G (rows correspond to "fun"ctions).
-    VectorXi iGfun(length_G);
-    // Column indices of Jacobian G (columns correspond to "var"iables).
-    VectorXi jGvar(length_G);
-    // The first row is the gradient of the objective; we assume it is dense.
-    iGfun.head(num_variables).setZero();
-    // In MATLAB, this would be jGvar(1:num_variables) = 1:num_variables.
-    jGvar.head(num_variables).setLinSpaced(num_variables, 0, num_variables-1);
+    //// Row indices of Jacobian G (rows correspond to "fun"ctions).
+    //VectorXi iGfun(length_G);
+    //// Column indices of Jacobian G (columns correspond to "var"iables).
+    //VectorXi jGvar(length_G);
+    //// The first row is the gradient of the objective; we assume it is dense.
+    //iGfun.head(num_variables).setZero();
+    //// In MATLAB, this would be jGvar(1:num_variables) = 0:num_variables-1.
+    //jGvar.head(num_variables).setLinSpaced(num_variables, 0, num_variables-1);
 
-    for (int index = 0; index < jacobian_num_nonzeros; ++index) {
-        // The Jacobian of the constraints is shifted down one row, since
-        // the first row of G is the gradient of the objective function.
-        iGfun[num_variables + index] = jacobian_sparsity.row[index] + 1;
-        jGvar[num_variables + index] = jacobian_sparsity.col[index];
-    }
+    //for (int index = 0; index < jacobian_num_nonzeros; ++index) {
+    //    // The Jacobian of the constraints is shifted down one row, since
+    //    // the first row of G is the gradient of the objective function.
+    //    iGfun[num_variables + index] = jacobian_sparsity.row[index] + 1;
+    //    jGvar[num_variables + index] = jacobian_sparsity.col[index];
+    //}
 
     //for (int i = 0; i < num_variables; ++i) {
     //    std::cout << iGfun[i] << ", " << jGvar[i] << std::endl;
@@ -252,7 +252,9 @@ SNOPTSolver::optimize_impl(const VectorXd& variablesArg) const {
     //    }
     //}
 
+    // TODO try QPSolver Cholesky setting
     snopt_prob.setRealParameter("Major optimality tolerance", 1e-3);
+    snopt_prob.setIntParameter("Iterations", 100000);
 
     // Solve the problem.
     // snJac is called implicitly in this case to compute the Jacobian.
@@ -262,8 +264,8 @@ SNOPTSolver::optimize_impl(const VectorXd& variablesArg) const {
 
     int info = snopt_prob.solve(Cold, length_F, num_variables, ObjAdd,
         ObjRow, snopt_userfunction,
-        iAfun.data(), jAvar.data(), A.data(), neA,
-        iGfun.data(), jGvar.data(), length_G,
+        //iAfun.data(), jAvar.data(), A.data(), neA,
+        //iGfun.data(), jGvar.data(), length_G,
         xlow.data(), xupp.data(), Flow.data(), Fupp.data(),
         variables.data(), xstate.data(), xmul.data(),
         F.data(), Fstate.data(), Fmul.data(),

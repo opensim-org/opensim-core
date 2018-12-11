@@ -99,12 +99,12 @@ Model createRightLegWeldedPelvisModel(const std::string& actuatorType) {
     } else if (actuatorType == "path_actuators") {
         replaceMusclesWithPathActuators(model);
     } else if (actuatorType == "muscles") {
-        //addCoordinateActuator(model, "hip_flexion_r", 20);
-        //addCoordinateActuator(model, "hip_adduction_r", 20);
-        //addCoordinateActuator(model, "hip_rotation_r", 20);
-        //addCoordinateActuator(model, "knee_angle_r", 20);
-        //addCoordinateActuator(model, "knee_angle_r_beta", 20);
-        //addCoordinateActuator(model, "ankle_angle_r", 5);
+        addCoordinateActuator(model, "hip_flexion_r", 20);
+        addCoordinateActuator(model, "hip_adduction_r", 20);
+        addCoordinateActuator(model, "hip_rotation_r", 20);
+        addCoordinateActuator(model, "knee_angle_r", 20);
+        addCoordinateActuator(model, "knee_angle_r_beta", 20);
+        addCoordinateActuator(model, "ankle_angle_r", 5);
     } else {
         OPENSIM_THROW(Exception, "Invalid actuator type");
     }
@@ -192,36 +192,47 @@ void minimizeControlEffortRightLegWeldedPelvis(const std::string& actuatorType)
 
     // Set bounds.
     mp.setTimeBounds(0, 1);
-    mp.setStateInfo("/jointset/hip_r/hip_flexion_r/value", {-1, 1},
+    mp.setStateInfo("/jointset/hip_r/hip_flexion_r/value", {-10, 10},
         -SimTK::Pi / 4.0, SimTK::Pi / 4.0);
-    //mp.setStateInfo("/jointset/hip_r/hip_rotation_r/value", {-1, 1});
-    //mp.setStateInfo("/jointset/hip_r/hip_adduction_r/value", {-1, 1});
-    mp.setStateInfo("/jointset/walker_knee_r/knee_angle_r/value", {-1, 1}, 
+    mp.setStateInfo("/jointset/hip_r/hip_rotation_r/value", {-10, 10});
+    mp.setStateInfo("/jointset/hip_r/hip_adduction_r/value", {-10, 10});
+    mp.setStateInfo("/jointset/walker_knee_r/knee_angle_r/value", {-10, 10}, 
         -0.6, 0);
     mp.setStateInfo("/jointset/patellofemoral_r/knee_angle_r_beta/value", 
-        {-1, 1});
-    mp.setStateInfo("/jointset/ankle_r/ankle_angle_r/value", {-0.1, 0.1}, -0.1,
+        {-10, 10});
+    mp.setStateInfo("/jointset/ankle_r/ankle_angle_r/value", {-10, 10}, -0.1,
         0.1);
+
+    mp.setControlInfo("/forceset/bifemsh_r", {0.01, 1});
+    mp.setControlInfo("/forceset/med_gas_r", {0.01, 1});
+    mp.setControlInfo("/forceset/glut_max2_r", {0.01, 1});
+    mp.setControlInfo("/forceset/psoas_r", {0.01, 1});
+    mp.setControlInfo("/forceset/rect_fem_r", {0.01, 1});
+    mp.setControlInfo("/forceset/semimem_r", {0.01, 1});
+    mp.setControlInfo("/forceset/soleus_r", {0.01, 1});
+    mp.setControlInfo("/forceset/tib_ant_r", {0.01, 1});
+    mp.setControlInfo("/forceset/vas_int_r", {0.01, 1});
 
     auto* effort = mp.addCost<MucoControlCost>();
     effort->setName("control_effort");
-    //effort->setWeight("tau_hip_flexion_r", 100);
-    //effort->setWeight("tau_hip_adduction_r", 100);
-    //effort->setWeight("tau_hip_rotation_r", 100);
-    //effort->setWeight("tau_knee_angle_r", 100);
-    //effort->setWeight("tau_knee_angle_r_beta", 100);
-    //effort->setWeight("tau_ankle_angle_r", 100);
+    effort->setWeight("tau_hip_flexion_r", 1000);
+    effort->setWeight("tau_hip_adduction_r", 1000);
+    effort->setWeight("tau_hip_rotation_r", 1000);
+    effort->setWeight("tau_knee_angle_r", 1000);
+    effort->setWeight("tau_knee_angle_r_beta", 1000);
+    effort->setWeight("tau_ankle_angle_r", 1000);
 
     MucoTropterSolver& ms = muco.initSolver();
-    ms.set_num_mesh_points(10);
+    ms.set_num_mesh_points(15);
     ms.set_verbosity(2);
     ms.set_optim_solver("snopt");
     ms.set_optim_convergence_tolerance(1e-3);
     ms.set_optim_hessian_approximation("exact");
     ms.set_hessian_block_sparsity_mode("dense");
-    ms.set_transcription_scheme("trapezoidal");
-    ms.set_enforce_constraint_derivatives(false);
+    ms.set_transcription_scheme("hermite-simpson");
+    ms.set_enforce_constraint_derivatives(true);
     ms.set_lagrange_multiplier_weight(10);
+    ms.set_velocity_correction_bounds({-0.1, 0.1});
     ms.setGuess("bounds");
 
     MucoSolution solution = muco.solve();
@@ -314,6 +325,11 @@ void markerTrackingRightLeg(const std::string& actuatorType) {
 
 void main() {
 
+    // This problem solves fine in SNOPT when using coordinate actuators.
+    // However, for path actuators and muscles, SNOPT exits with error 52:
+    // "incorrect constraint derivatives". This may suggest a bug in our own
+    // Jacobian derivative calculations. But why only for path actuators and
+    // muscles?
     minimizeControlEffortRightLegWeldedPelvis("muscles");
     //stateTrackingWeldedLeg39("torques");
     //markerTrackingRightLeg("torques");
