@@ -307,6 +307,64 @@ void OpenSim::prescribeControlsToModel(const MucoIterate& iterate,
     model.addController(controller);
 }
 
+void OpenSim::replaceMusclesWithPathActuators(Model& model) {
+
+    // Create path actuators from muscle properties and add to the model. Save
+    // a list of pointers of the muscles to delete.
+    std::vector<Muscle*> musclesToDelete;
+    for (auto& musc : model.updComponentList<Muscle>()) {
+        auto* actu = new PathActuator();
+        actu->setName(musc.getName());
+        musc.setName(musc.getName() + "_delete");
+        actu->setOptimalForce(musc.getMaxIsometricForce());
+        actu->setMinControl(musc.getMinControl());
+        actu->setMaxControl(musc.getMaxControl());
+
+        const auto& pathPointSet = musc.getGeometryPath().getPathPointSet();
+        auto& geomPath = actu->updGeometryPath();
+        for (int i = 0; i < pathPointSet.getSize(); ++i) {
+            auto* pathPoint = pathPointSet.get(i).clone();
+            const auto& socketNames = pathPoint->getSocketNames();
+            for (const auto& socketName : socketNames) {
+                pathPoint->updSocket(socketName).connect(
+                    pathPointSet.get(i).getSocket(socketName).getConnecteeAsObject());
+            }
+            geomPath.updPathPointSet().adoptAndAppend(pathPoint);
+        }
+        model.addComponent(actu);
+        musclesToDelete.push_back(&musc);
+    }
+
+    // Delete the muscles.
+    for (const auto* musc : musclesToDelete) {
+        int index = model.getForceSet().getIndex(musc, 0);
+        OPENSIM_THROW_IF(index == -1, Exception, "Muscle with name " +
+            musc->getName() + " not found in ForceSet.");
+        bool success = model.updForceSet().remove(index);
+        OPENSIM_THROW_IF(!success, Exception, "Attempt to remove muscle with "
+            "name " + musc->getName() + " was unsuccessful.");
+    }
+
+}
+
+void OpenSim::removeMuscles(Model& model) {
+
+    // Create path actuators from muscle properties and add to the model. Save
+    // a list of pointers of the muscles to delete.
+    std::vector<Muscle*> musclesToDelete;
+    for (auto& musc : model.updComponentList<Muscle>()) {
+        musclesToDelete.push_back(&musc);
+    }
+
+    // Delete the muscles.
+    for (const auto* musc : musclesToDelete) {
+        int index = model.getForceSet().getIndex(musc, 0);
+        OPENSIM_THROW_IF(index == -1, Exception, "Muscle with name " +
+            musc->getName() + " not found in ForceSet.");
+        model.updForceSet().remove(index);
+    }
+}
+
 std::unordered_map<std::string, int>
 OpenSim::createSystemYIndexMap(const Model& model) {
     std::unordered_map<std::string, int> sysYIndices;

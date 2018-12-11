@@ -114,9 +114,9 @@ endif()
 # Only use the parts of Eigen that do not have a viral license.
 # Also, make sure client projects remain non-viral ("PUBLIC").
 target_compile_definitions(tropter PUBLIC EIGEN_MPL2_ONLY)
-# if(TROPTER_WITH_SNOPT)
-#     target_compile_definitions(tropter PUBLIC TROPTER_WITH_SNOPT)
-# endif()
+if(TROPTER_WITH_SNOPT)
+    target_compile_definitions(tropter PUBLIC TROPTER_WITH_SNOPT)
+endif()
 
 # Specify the include directories that the tropter target and client targets
 # should use.

@@ -41,3 +41,4 @@ MuscolloAddSandboxExecutable(NAME sandboxMuscle
 add_subdirectory(sandboxWholeBodyTracking)
 add_subdirectory(sandboxMarkerTrackingWholeBody)
 add_subdirectory(sandboxJointReaction)
+add_subdirectory(sandboxOneLegCouplerKnee)

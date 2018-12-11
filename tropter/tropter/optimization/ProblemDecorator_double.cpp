@@ -102,7 +102,7 @@ calc_sparsity(const Eigen::VectorXd& variables,
     m_jacobian_coloring->get_coordinate_format(jacobian_sparsity_coordinates);
     int num_jacobian_seeds = (int)m_jacobian_coloring->get_seed_matrix().cols();
     print("Number of seeds for Jacobian: %i", num_jacobian_seeds);
-    // jacobian_sparsity.write("DEBUG_findiff_jacobian_sparsity.csv");
+    //jacobian_sparsity.write("DEBUG_findiff_jacobian_sparsity.csv");
 
     // Allocate memory that is used in jacobian().
     m_constr_pos.resize(num_jac_rows);

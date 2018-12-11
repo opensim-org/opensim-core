@@ -1112,8 +1112,8 @@ void HermiteSimpson<T>::
     for (size_t i_mesh = 0; i_mesh < size_t(values.path_constraints.cols());
         ++i_mesh) {
 
-        stream << std::setw(4) << i_mesh << "  "
-            << ocp_vars.time[i_mesh] << "  ";
+        stream << std::setw(4) << 2*i_mesh << "  "
+            << ocp_vars.time[2*i_mesh] << "  ";
         for (size_t i_pc = 0; i_pc < pathcon_names.size(); ++i_pc) {
             auto& value = static_cast<const double&>(
                 values.path_constraints(i_pc, i_mesh));

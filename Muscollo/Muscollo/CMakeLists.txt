@@ -50,7 +50,7 @@ add_library(osimMuscollo SHARED
         InverseMuscleSolver/InverseMuscleSolverMotionData.h
         InverseMuscleSolver/InverseMuscleSolverMotionData.cpp
         )
-target_link_libraries(osimMuscollo PUBLIC osimActuators
+target_link_libraries(osimMuscollo PUBLIC osimTools
                                    PRIVATE tropter)
 
 target_include_directories(osimMuscollo INTERFACE
