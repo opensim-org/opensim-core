@@ -98,6 +98,10 @@ void snopt_userfunction(int*   /* Status */,
                 *length_F - 1, &F[1]);
 
     }
+    // TODO SNOPT's derivative checker throws an exception in certain problems 
+    // for errors in the tropter-computed Jacobian. For now, used the SNOPT-
+    // computed Jacobian until this is resolved.
+
     //if (*needG > 0) {
     //    if (*needF > 0) new_variables = false;
     //    // The first num_variables elements of G are the gradient.
@@ -112,27 +116,30 @@ Solution
 SNOPTSolver::optimize_impl(const VectorXd& variablesArg) const {
 
     VectorXd variables(variablesArg);
-
     probproxy = m_problem.get();
 
     // Allocate and initialize.
     int num_variables = m_problem->get_num_variables();
-    std::cout << "num vars from prob: " << num_variables << std::endl;
-    std::cout << "real num variables: " << variables.size() << std::endl;
-    // The F vector contains both the objective and constraints.
-    // TODO handle the case that the user does not define an objective function.
-    int length_F = 1 + m_problem->get_num_constraints();
-    std::cout << "num cons from prob: " << m_problem->get_num_constraints() << std::endl;
-    std::cout << "length_F: " << length_F << std::endl;
 
-    // TODO what does this do?
+    // Initial "states" for variables x. This lets you specify if you think the
+    // the optimal value for a variable will probably be one of it's bounds.
+    // By default, set all states to 0, which does not make this assumption, or
+    // in SNOPT's terminology, "all variables will be eligible for the initial
+    // basis."
     VectorXi xstate = VectorXi::Zero(num_variables);
     // This is an output variable; SNOPT will fill it with the multipliers.
     // TODO unless this is a warm start?
     VectorXd xmul(num_variables);
-
+    // The F vector contains both the objective and constraints.
+    // F[0] = objective, F[1:end] = constraints.
+    // TODO handle the case that the user does not define an objective function.
+    int length_F = 1 + m_problem->get_num_constraints();
     VectorXd F(length_F);
-    // TODO what does this do?
+    // Initial "states" for problem function F. This lets you specify if you
+    // think the optimal value for a row will probably be one of it's bounds.
+    // By default, set all states to 0, which does not make this assumption, or
+    // in SNOPT's terminology, "all rows of F will be eligible for the initial
+    // basis."
     VectorXi Fstate = VectorXi::Zero(length_F);
     // This is an output variable; SNOPT will fill it with the multipliers.
     // TODO unless this is a warm start?
@@ -143,25 +150,20 @@ SNOPTSolver::optimize_impl(const VectorXd& variablesArg) const {
     // We make a copy of these because setX takes double*, not const double*.
     auto xlow                    = m_problem->get_variable_lower_bounds();
     auto xupp                    = m_problem->get_variable_upper_bounds();
-    std::cout << "xlow size: " << xlow.size() << std::endl;
-    std::cout << "xupp size: " << xupp.size() << std::endl;
     const auto& constraint_lower = m_problem->get_constraint_lower_bounds();
     const auto& constraint_upper = m_problem->get_constraint_upper_bounds();
-    std::cout << "constraint_lower size: " << constraint_lower.size() << std::endl;
-    std::cout << "constraint_upper size: " << constraint_upper.size() << std::endl;
 
     // There is no bound on the objective, thus the -1e20, 1e20.
     // The `finished()` is to get rid of Eigen's "expression templates."
     VectorXd Flow = (VectorXd(length_F) << -1.1e20, constraint_lower).finished();
     VectorXd Fupp = (VectorXd(length_F) <<  1.1e20, constraint_upper).finished();
-    std::cout << "Flow size: " << Flow.size() << std::endl;
-    std::cout << "Fupp size: " << Fupp.size() << std::endl;
 
-    // TODO Fstate?
+    // Derivative information.
+    // -----------------------
+    // TODO SNOPT's derivative checker throws an exception in certain problems 
+    // for errors in the tropter-computed Jacobian. For now, used the SNOPT-
+    // computed Jacobian until this is resolved.
 
-
-    // Sparsity pattern of the Jacobian.
-    // ---------------------------------
     //SparsityCoordinates jacobian_sparsity;
     //calc_sparsity(variables,
     //        jacobian_sparsity, false,
@@ -195,89 +197,86 @@ SNOPTSolver::optimize_impl(const VectorXd& variablesArg) const {
     //    std::cout << iGfun[i] << ", " << jGvar[i] << std::endl;
     //}
 
+    // TODO linear portion of F. Can we omit this?
+    // TODO for our generic problems, we cannot provide this.
+    // int lenA = 1; int neA = 0;
+    // VectorXi iAfun(lenA); VectorXi jAvar(lenA); VectorXd A;
+    // For some reason, SNOPT allows the length of the iGfun and jGvar arrays
+    // to be greater than the number of nonzero elements.
 
     // Create the snoptProblemA.
     // -------------------------
     snoptProblemA snopt_prob;
     snopt_prob.initialize("snopt.out", 1);
+    snopt_prob.setProbName(""); // TODO create problem name
 
-    snopt_prob.setProbName("");
-
-
-
-    int    ObjRow  = 0; 
-    double ObjAdd  = 0; // A constant to add to the objective for reporting.
-
-    // Memory related to the variables (unknowns).
-    //snopt_prob.setX(variables.data(), xlow.data(), xupp.data(),
-    //        xmul.data(), xstate.data());
-
-    // Memory related to the objective and constraint values.
-    //snopt_prob.setF(F.data(), Flow.data(), Fupp.data(),
-    //        Fmul.data(), Fstate.data());
-    // TODO linear portion of F. Can we omit this?
-    // TODO for our generic problems, we cannot provide this.
-    int lenA = 1; int neA = 0;
-    VectorXi iAfun(lenA); VectorXi jAvar(lenA); VectorXd A;
-    //snopt_prob.setA(lenA, neA, iAfun.data(), jAvar.data(), A.data());
-    // For some reason, SNOPT allows the length of the iGfun and jGvar arrays
-    // to be greater than the number of nonzero elements.
-    //snopt_prob.setG(length_G, num_nonzeros_G, iGfun.data(), jGvar.data());
-
-    // This function computes the objective and constraints (defined above).
-    //snopt_prob.setUserFun(snopt_userfunction);
-
-    // TODO call snJac().
-    // snopta will compute the Jacobian by finite-differences.
-    // The user has the option of calling  snJac  to define the
-    // coordinate arrays (iAfun,jAvar,A) and (iGfun, jGvar).
+    // Main solver settings.
+    if (const auto opt = get_max_iterations()) { // TODO untested
+        snopt_prob.setIntParameter("Iterations", opt.value());
+    }
+    if (const auto opt = get_convergence_tolerance()) { // TODO untested
+        snopt_prob.setRealParameter("Major optimality tolerance", opt.value());
+    }
+    if (const auto opt = get_constraint_tolerance()) { // TODO untested
+        snopt_prob.setRealParameter("Major feasibility tolerance", opt.value());
+    }
+    
+    // Derivative settings.
     snopt_prob.setIntParameter("Derivative option", 0 /* TODO 1 */);
-    //if (const auto opt = get_max_iterations()) { // TODO untested
-    //    snopt_prob.setIntParameter("Iterations", opt.value());
-    //}
-    // TODO handle set_convergence_tolerance, set_constraint_tolerance.
     snopt_prob.setIntParameter("Verify level", 3);
 
-    // TODO string options?
-    //for (const auto& option : get_advanced_options_int()) {
-    //    if (option.second) {
-    //        snopt_prob.setIntParameter(option.first.c_str(),
-    //                option.second.value());
-    //    }
-    //}
-    //for (const auto& option : get_advanced_options_real()) {
-    //    if (option.second) {
-    //        snopt_prob.setRealParameter(option.first.c_str(),
-    //                option.second.value());
-    //    }
-    //}
-
+    // Advanced settings.
     // TODO try QPSolver Cholesky setting
-    snopt_prob.setParameter("QPSolver Cholesky"); 
-    snopt_prob.setIntParameter("Hessian updates", 5);
-    snopt_prob.setRealParameter("Major optimality tolerance", 1e-1);
-    snopt_prob.setRealParameter("Major feasibility tolerance", 1e-3);
-    snopt_prob.setIntParameter("Iterations", 100000);
-
+    for (const auto& option : get_advanced_options_string()) {
+        if (option.second) {
+            size_t optLen = strlen(option.first.c_str()) + 
+                            strlen(option.second.value().c_str()) + 1;
+            assert(optLen < 256);
+            char str[256];
+            char *space = " ";
+            snprintf(str, sizeof(str), "%s%s%s", option.first.c_str(), space,
+                option.second.value().c_str());
+            snopt_prob.setParameter(str);
+        }
+    }
+    for (const auto& option : get_advanced_options_int()) {
+        if (option.second) {
+            snopt_prob.setIntParameter(option.first.c_str(),
+                    option.second.value());
+        }
+    }
+    for (const auto& option : get_advanced_options_real()) {
+        if (option.second) {
+            snopt_prob.setRealParameter(option.first.c_str(),
+                    option.second.value());
+        }
+    }
     // Solve the problem.
-    // snJac is called implicitly in this case to compute the Jacobian.
-    int Cold = 0 /*, Basis = 1, Warm = 2 */;
-    int nS, nInf;
-    double sInf;
+    // ------------------
+    int      Cold = 0  /*, Basis = 1, Warm = 2 */;
+    int    ObjRow = 0; // The objective is the first row of F.
+    double ObjAdd = 0; // A constant to add to the objective for reporting.
+    int            nS; // Final number of superbasic variables ("free" variables)
+    int          nInf; // Final number of infeasibilities
+    double       sInf; // Final sum of infeasibilities
 
+    // snJac is called implicitly in this case to compute the Jacobian.
     int info = snopt_prob.solve(Cold, length_F, num_variables, ObjAdd,
         ObjRow, snopt_userfunction,
-        //iAfun.data(), jAvar.data(), A.data(), neA,
-        //iGfun.data(), jGvar.data(), length_G,
         xlow.data(), xupp.data(), Flow.data(), Fupp.data(),
         variables.data(), xstate.data(), xmul.data(),
         F.data(), Fstate.data(), Fmul.data(),
         nS, nInf, sInf);
     
-    std::cout << "nInf: " << nInf << std::endl;
-    std::cout << "sInf: " << sInf << std::endl;
+    // Output problem information.
+    // ---------------------------
+    std::cout << std::endl;
+    std::cout << "Final number of superbasic variables: " << nInf << std::endl;
+    std::cout << "Final number of infeasibilities: " << nInf << std::endl;
+    std::cout << "Final sum of infeasibilities: " << sInf << std::endl;
 
-
+    // Return solution.
+    // ----------------
     Solution solution;
     solution.variables = variables;
     solution.objective = F[0];

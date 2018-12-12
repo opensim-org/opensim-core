@@ -29,22 +29,18 @@ MucoIterate::MucoIterate(const SimTK::Vector& time,
         std::vector<std::string> state_names,
         std::vector<std::string> control_names,
         std::vector<std::string> multiplier_names,
-        std::vector<std::string> slack_names,
         std::vector<std::string> parameter_names, 
         const SimTK::Matrix& statesTrajectory,
         const SimTK::Matrix& controlsTrajectory,
         const SimTK::Matrix& multipliersTrajectory,
-        const SimTK::Matrix& slacksTrajectory,
         const SimTK::RowVector& parameters) :
         m_time(time), m_state_names(std::move(state_names)),
         m_control_names(std::move(control_names)),
         m_multiplier_names(std::move(multiplier_names)),
-        m_slack_names(std::move(slack_names)),
         m_parameter_names(std::move(parameter_names)),
         m_states(statesTrajectory),
         m_controls(controlsTrajectory),
         m_multipliers(multipliersTrajectory),
-        m_slacks(slacksTrajectory),
         m_parameters(parameters) {
     OPENSIM_THROW_IF((int)m_state_names.size() != m_states.ncol(),
             Exception, "Inconsistent number of states.");
@@ -52,8 +48,6 @@ MucoIterate::MucoIterate(const SimTK::Vector& time,
             Exception, "Inconsistent number of controls.");
     OPENSIM_THROW_IF((int)m_multiplier_names.size() != m_multipliers.ncol(),
             Exception, "Inconsistent number of multipliers.");
-    OPENSIM_THROW_IF((int)m_slack_names.size() != m_slacks.ncol(),
-        Exception, "Inconsistent number of slacks.");
     OPENSIM_THROW_IF(time.size() != m_states.nrow(), Exception,
             "Inconsistent number of times in states trajectory.");
     if (m_controls.ncol()) {
@@ -63,10 +57,6 @@ MucoIterate::MucoIterate(const SimTK::Vector& time,
     if (m_multipliers.ncol()) {
         OPENSIM_THROW_IF(time.size() != m_multipliers.nrow(), Exception,
             "Inconsistent number of times in multipliers trajectory.");
-    }
-    if (m_slacks.ncol()) {
-        OPENSIM_THROW_IF(time.size() != m_slacks.nrow(), Exception,
-            "Inconsistent number of times in slacks trajectory.");
     }
     OPENSIM_THROW_IF((int)m_parameter_names.size() != m_parameters.nelt(),
             Exception, "Inconsistent number of parameters.");
@@ -545,12 +535,10 @@ StatesTrajectory MucoIterate::exportToStatesTrajectory(
             statesTrajectory.getColumnLabels(),
             controlsTrajectory.getColumnLabels(),
             {}, // TODO (multiplier_names)
-            {}, // TODO (slack_names)
             {}, // TODO (parameter_names)
             statesTrajectory.getMatrix(),
             controlsTrajectory.getMatrix(),
             SimTK::Matrix(0,0), // TODO (multipliersTrajectory)
-            SimTK::Matrix(0,0), // TODO (slacksTrajectory)
             SimTK::RowVector(0)); // TODO (parameters)
 }
 
@@ -604,7 +592,8 @@ bool MucoIterate::isNumericallyEqual(const MucoIterate& other, double tol)
             SimTK::Test::numericallyEqual(m_controls, other.m_controls, 1, tol)
             && SimTK::Test::numericallyEqual(m_multipliers, other.m_multipliers,
                 1, tol)
-            && SimTK::Test::numericallyEqual(m_slacks, other.m_slacks, 1, tol)
+            // TODO include slack variables?
+            //&& SimTK::Test::numericallyEqual(m_slacks, other.m_slacks, 1, tol)
             && SimTK::Test::numericallyEqual(m_parameters, other.m_parameters, 
                 1, tol);
 }

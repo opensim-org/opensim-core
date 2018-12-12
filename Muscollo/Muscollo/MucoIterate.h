@@ -78,12 +78,10 @@ public:
             std::vector<std::string> state_names,
             std::vector<std::string> control_names,
             std::vector<std::string> multiplier_names,
-            std::vector<std::string> slack_names,
             std::vector<std::string> parameter_names,
             const SimTK::Matrix& statesTrajectory,
             const SimTK::Matrix& controlsTrajectory,
             const SimTK::Matrix& multipliersTrajectory,
-            const SimTK::Matrix& slacksTrajectory,
             const SimTK::RowVector& parameters);
     /// Read a MucoIterate from a data file (e.g., STO, CSV). See output of
     /// write() for the correct format.
@@ -187,8 +185,7 @@ public:
     /// value 10.
     void setMultiplier(const std::string& name, 
                        const SimTK::Vector& trajectory);
-    /// TODO doc
-    void setSlack(const std::string& name, const SimTK::Vector& trajectory);
+    
     /// Set the value of a single parameter variable. This value is invariant
     /// across time.
     void setParameter(const std::string& name, const SimTK::Real& value);
@@ -253,16 +250,6 @@ public:
             v[i] = *it;
         setMultiplier(name, v);
     }
-    /// TODO doc
-    void setSlack(const std::string& name,
-        std::initializer_list<double> trajectory) {
-        ensureUnsealed();
-        SimTK::Vector v((int)trajectory.size());
-        int i = 0;
-        for (auto it = trajectory.begin(); it != trajectory.end(); ++it, ++i)
-            v[i] = *it;
-        setSlack(name, v);
-    }
 
     /// Set the states trajectory. The provided data is interpolated at the
     /// times contained within this iterate. The controls trajectory is not
@@ -314,14 +301,11 @@ public:
     {   ensureUnsealed(); return m_control_names; }
     const std::vector<std::string>& getMultiplierNames() const
     {   ensureUnsealed(); return m_multiplier_names; }
-    const std::vector<std::string>& getSlackNames() const
-    {   ensureUnsealed(); return m_slack_names; }
     const std::vector<std::string>& getParameterNames() const
     {   ensureUnsealed(); return m_parameter_names; }
     SimTK::VectorView_<double> getState(const std::string& name) const;
     SimTK::VectorView_<double> getControl(const std::string& name) const;
     SimTK::VectorView_<double> getMultiplier(const std::string& name) const;
-    SimTK::VectorView_<double> getSlack(const std::string& name) const;
     const SimTK::Real& getParameter(const std::string& name) const;
     const SimTK::Matrix& getStatesTrajectory() const
     {   ensureUnsealed(); return m_states; }
@@ -329,8 +313,6 @@ public:
     {   ensureUnsealed(); return m_controls; }
     const SimTK::Matrix& getMultipliersTrajectory() const
     {   ensureUnsealed(); return m_multipliers; }
-    const SimTK::Matrix& getSlacksTrajectory() const
-    {   ensureUnsealed(); return m_slacks; }
     const SimTK::RowVector& getParameters() const
     {   ensureUnsealed(); return m_parameters; }
 
@@ -435,6 +417,27 @@ private:
     SimTK::Matrix m_slacks;
     // Dimensions: 1 x parameters
     SimTK::RowVector m_parameters;
+
+    /// User interaction with slack variables is limited to using previous
+    /// solution slack trajectories as initial guesses for subsequent problems.
+    /// Therefore, these methods are private to only allow access to friends
+    /// of MucoIterate.
+    // TODO friend class TropterProblem
+    void setSlack(const std::string& name, const SimTK::Vector& trajectory);
+    void setSlack(const std::string& name,
+        std::initializer_list<double> trajectory) {
+        ensureUnsealed();
+        SimTK::Vector v((int)trajectory.size());
+        int i = 0;
+        for (auto it = trajectory.begin(); it != trajectory.end(); ++it, ++i)
+            v[i] = *it;
+        setSlack(name, v);
+    }
+    const std::vector<std::string>& getSlackNames() const
+    {   ensureUnsealed(); return m_slack_names; }
+    const SimTK::Matrix& getSlacksTrajectory() const
+    {   ensureUnsealed(); return m_slacks; }
+    SimTK::VectorView_<double> getSlack(const std::string& name) const;
 
     // We use "seal" instead of "lock" because locks have a specific meaning
     // with threading (e.g., std::unique_lock()).

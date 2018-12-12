@@ -461,9 +461,9 @@ MucoIterate runForwardSimulation(Model model, const MucoSolution& solution,
     const auto& statesTimes = states.getIndependentColumn();
     SimTK::Vector timeVec((int)statesTimes.size(), statesTimes.data(), true);
     auto forwardSolution = MucoIterate(timeVec, states.getColumnLabels(),
-        controls.getColumnLabels(), states.getColumnLabels(), {}, {},
+        controls.getColumnLabels(), states.getColumnLabels(), {},
         states.getMatrix(), controls.getMatrix(), states.getMatrix(),
-        SimTK::Matrix(), SimTK::RowVector(0));
+        SimTK::RowVector(0));
     
     // Compare controls between foward simulation and OCP solution. These
     // should match very closely, since the foward simulation controls are 
@@ -737,8 +737,8 @@ void testDoublePendulumPrescribedMotion(MucoSolution& couplerSolution,
     SimTK::Vector time((int)statesTimes.size(), statesTimes.data(), true);
     auto mucoIterSpline = MucoIterate(time, splineStateValues.getColumnLabels(),
         splineStateValues.getColumnLabels(), splineStateValues.getColumnLabels(), 
-        {}, {}, splineStateValues.getMatrix(), splineStateValues.getMatrix(), 
-        splineStateValues.getMatrix(), SimTK::Matrix(), SimTK::RowVector(0));
+        {}, splineStateValues.getMatrix(), splineStateValues.getMatrix(), 
+        splineStateValues.getMatrix(), SimTK::RowVector(0));
 
     // Only compare the position-level values between the current solution 
     // states and the states from the previous test (original and splined).  

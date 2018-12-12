@@ -293,12 +293,12 @@ void stateTrackingRightLegWeldedPelvis(const std::string& actuatorType) {
 
     auto* effort = mp.addCost<MucoControlCost>();
     effort->setName("control_effort");
-    effort->setWeight("tau_hip_flexion_r", 1);
+    effort->setWeight("tau_hip_flexion_r", 10);
     effort->setWeight("tau_hip_adduction_r", 0);
     effort->setWeight("tau_hip_rotation_r", 0);
-    effort->setWeight("tau_knee_angle_r", 1);
+    effort->setWeight("tau_knee_angle_r", 10);
     effort->setWeight("tau_knee_angle_r_beta", 1000);
-    effort->setWeight("tau_ankle_angle_r", 1);
+    effort->setWeight("tau_ankle_angle_r", 10);
     effort->setWeight("forceset/bifemsh_r", 0);
     effort->setWeight("forceset/med_gas_r", 0);
     effort->setWeight("forceset/glut_max2_r", 0);
@@ -323,7 +323,7 @@ void stateTrackingRightLegWeldedPelvis(const std::string& actuatorType) {
 
 
     MucoTropterSolver& ms = muco.initSolver();
-    ms.set_num_mesh_points(10);
+    ms.set_num_mesh_points(20);
     ms.set_verbosity(2);
     ms.set_optim_solver("snopt");
     ms.set_optim_convergence_tolerance(1e-3);
@@ -333,14 +333,14 @@ void stateTrackingRightLegWeldedPelvis(const std::string& actuatorType) {
     ms.set_enforce_constraint_derivatives(true);
     ms.set_lagrange_multiplier_weight(1);
 
-    MucoIterate guess = ms.createGuess();
-    model.initSystem();
-    model.getSimbodyEngine().convertDegreesToRadians(statesRef);
-    STOFileAdapter::write(statesRef, "ik_results_radians.sto");
-    guess.setStatesTrajectory(statesRef, true, true);
-    ms.setGuess(guess);
-    //ms.setGuessFile("sandboxRightLeg_weldedPelvis_" + actuatorType 
-    //     + "_state_tracking_solution.sto");
+    //MucoIterate guess = ms.createGuess();
+    //model.initSystem();
+    //model.getSimbodyEngine().convertDegreesToRadians(statesRef);
+    //STOFileAdapter::write(statesRef, "ik_results_radians.sto");
+    //guess.setStatesTrajectory(statesRef, true, true);
+    //ms.setGuess(guess);
+    ms.setGuessFile("sandboxRightLeg_weldedPelvis_" + actuatorType 
+         + "_state_tracking_solution.sto");
 
     MucoSolution solution = muco.solve();
     muco.visualize(solution);

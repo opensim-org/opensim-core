@@ -47,7 +47,6 @@ void MucoControlCost::initializeOnModelImpl(const Model& model) const {
                 "Currently, only ScalarActuators are supported.");
         actuPaths.push_back(
                 actu.getAbsolutePath().formRelativePath(modelPath).toString());
-        std::cout << actu.getAbsolutePath().formRelativePath(modelPath).toString() << std::endl;
     }
 
     // TODO this assumes controls are in the same order as actuators.

@@ -991,10 +991,10 @@ void testMucoIterate() {
     {
         const std::string fname = "testMuscolloInterface_testMucoIterate.sto";
         SimTK::Vector time(3); time[0] = 0; time[1] = 0.1; time[2] = 0.25;
-        MucoIterate orig(time, {"a", "b"}, {"g", "h", "i", "j"}, {"m"}, {"n"},
+        MucoIterate orig(time, {"a", "b"}, {"g", "h", "i", "j"}, {"m"},
                 {"o", "p"}, SimTK::Test::randMatrix(3, 2), 
                 SimTK::Test::randMatrix(3, 4), SimTK::Test::randMatrix(3, 1),
-                SimTK::Matrix(3, 1), SimTK::Test::randVector(2).transpose());
+                SimTK::Test::randVector(2).transpose());
         orig.write(fname);
 
         MucoIterate deserialized(fname);
@@ -1047,8 +1047,8 @@ void testMucoIterate() {
             std::vector<std::string> cnames{"c0"};
             SimTK::Matrix states = SimTK::Test::randMatrix(5, 2);
             SimTK::Matrix controls = SimTK::Test::randMatrix(5, 1);
-            MucoIterate it(time, snames, cnames, {}, {}, {}, states, controls,
-                    SimTK::Matrix(), SimTK::Matrix(), SimTK::RowVector());
+            MucoIterate it(time, snames, cnames, {}, {}, states, controls,
+                    SimTK::Matrix(), SimTK::RowVector());
 
             SimTK_TEST_EQ(it.getInitialTime(), -3.1);
             SimTK_TEST_EQ(it.getFinalTime(), 8.9);
@@ -1060,8 +1060,8 @@ void testMucoIterate() {
             std::vector<std::string> cnames{"c0"};
             SimTK::Matrix states = SimTK::Test::randMatrix(1, 2);
             SimTK::Matrix controls = SimTK::Test::randMatrix(1, 1);
-            MucoIterate it(time, snames, cnames, {}, {}, {}, states, controls,
-                    SimTK::Matrix(), SimTK::Matrix(), SimTK::RowVector());
+            MucoIterate it(time, snames, cnames, {}, {}, states, controls,
+                    SimTK::Matrix(), SimTK::RowVector());
 
             SimTK_TEST_EQ(it.getInitialTime(), 7.2);
             SimTK_TEST_EQ(it.getFinalTime(), 7.2);
@@ -1098,13 +1098,12 @@ void testMucoIterate() {
                 SimTK::Test::randDouble(), SimTK::Test::randDouble());
         }
         SimTK::Vector time = createVectorLinspace(NT, t0, t0 + duration);
-        MucoIterate a(time, snames, cnames, mnames, {}, {}, states, controls, 
-                multipliers, SimTK::Matrix(), SimTK::RowVector());
-        MucoIterate b(time, snames, cnames, mnames, {}, {},
+        MucoIterate a(time, snames, cnames, mnames, {}, states, controls, 
+                multipliers, SimTK::RowVector());
+        MucoIterate b(time, snames, cnames, mnames, {},
                 states.elementwiseAddScalar(error),
                 controls.elementwiseAddScalar(error),
                 multipliers.elementwiseAddScalar(error),
-                SimTK::Matrix(),
                 SimTK::RowVector());
         // If error is constant:
         // sqrt(1/T * integral_t (sum_i^N (err_{i,t}^2))) = sqrt(N)*err
@@ -1151,10 +1150,10 @@ void testMucoIterate() {
         std::vector<std::string> pnames;
         for (int i = 0; i < NP; ++i) pnames.push_back("p" + std::to_string(i));
         SimTK::RowVector parameters = SimTK::Test::randVector(NP).transpose();
-        MucoIterate a(SimTK::Vector(), {}, {}, {}, {}, pnames, SimTK::Matrix(),
-            SimTK::Matrix(), SimTK::Matrix(), SimTK::Matrix(), parameters);
-        MucoIterate b(SimTK::Vector(), {}, {}, {}, {}, pnames, SimTK::Matrix(),
-            SimTK::Matrix(), SimTK::Matrix(), SimTK::Matrix(),
+        MucoIterate a(SimTK::Vector(), {}, {}, {}, pnames, SimTK::Matrix(),
+            SimTK::Matrix(), SimTK::Matrix(), parameters);
+        MucoIterate b(SimTK::Vector(), {}, {}, {}, pnames, SimTK::Matrix(),
+            SimTK::Matrix(), SimTK::Matrix(),
             parameters.elementwiseAddScalar(error).getAsRowVector());
         // If error is constant:
         // sqrt(sum_i^N (err_{i}^2) / N) = err
