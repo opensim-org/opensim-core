@@ -585,7 +585,8 @@ bool MucoIterate::isNumericallyEqual(const MucoIterate& other, double tol)
     return m_state_names == other.m_state_names &&
             m_control_names == other.m_control_names &&
             m_multiplier_names == other.m_multiplier_names &&
-            m_slack_names == other.m_slack_names &&
+            // TODO include slack variables?
+            //m_slack_names == other.m_slack_names &&
             m_parameter_names == other.m_parameter_names &&
             SimTK::Test::numericallyEqual(m_time, other.m_time, 1, tol) &&
             SimTK::Test::numericallyEqual(m_states, other.m_states, 1, tol) &&
