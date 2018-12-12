@@ -39,6 +39,7 @@ enum Var {
     final_time,
     states,
     controls,
+    multipliers,
     derivatives,
     parameters
 };
@@ -332,6 +333,8 @@ public:
         casVars[Var::states] = convertToCasADiDM(mucoIt.getStatesTrajectory());
         casVars[Var::controls] =
                 convertToCasADiDM(mucoIt.getControlsTrajectory());
+        casVars[Var::multipliers] =
+                convertToCasADiDM(mucoIt.getMultipliersTrajectory());
         if (m_numDerivatives) {
             casVars[Var::derivatives] =
                     convertToCasADiDM(mucoIt.getDerivativesTrajectory());
@@ -388,6 +391,11 @@ public:
             simtkParameters =
                     convertToSimTKVector<SimTK::RowVector>(paramsValue);
         }
+        SimTK::Matrix simtkMultipliers;
+        if (m_numMultipliers) {
+            const auto multsValue = m_opti.value(casVars.at(Var::multipliers));
+            simtkMultipliers = convertToSimTKMatrix(multsValue);
+        }
         SimTK::Matrix simtkDerivatives;
         if (casVars.count(Var::derivatives)) {
             const auto derivsValue = m_opti.value(casVars.at(Var::derivatives));
@@ -399,9 +407,11 @@ public:
                         casVars.at(Var::final_time)));
         SimTK::Vector simtkTimes = convertToSimTKVector(timesValue);
         TOut mucoIterate(simtkTimes,
-                m_stateNames, m_controlNames, {}, m_derivativeNames,
+                m_stateNames, m_controlNames, m_multiplierNames,
+                m_derivativeNames,
                 m_parameterNames,
-                simtkStates, simtkControls, {}, simtkDerivatives,
+                simtkStates, simtkControls, simtkMultipliers,
+                simtkDerivatives,
                 simtkParameters);
         return mucoIterate;
     }
@@ -427,6 +437,15 @@ public:
             }
         };
         CasADiVariables<DM> casGuess = m_lowerBounds;
+        for (auto& kv : casGuess) {
+            std::cout << "DEBUG createInitialGuess CG " << kv.first << std::endl;
+        }
+        for (auto& kv : m_lowerBounds) {
+            std::cout << "DEBUG createInitialGuess LB " << kv.first << std::endl;
+        }
+        for (auto& kv : m_upperBounds) {
+            std::cout << "DEBUG createInitialGuess UB " << kv.first << std::endl;
+        }
         for (auto& kv : casGuess) {
             setToMidpoint(kv.second,
                     m_lowerBounds.at(kv.first), m_upperBounds.at(kv.first));
@@ -573,6 +592,11 @@ public:
         m_times =
                 createTimes(m_vars[Var::initial_time], m_vars[Var::final_time]);
     }
+
+    void addConstraints() {
+        if (m_numStates) addConstraintsImpl();
+    }
+
     void addPathConstraints() {
 
         // Path constraints.
@@ -684,9 +708,6 @@ public:
     /// @postcondition All fields in member variable m_vars are set, and
     ///     and m_mesh is set.
     virtual void createVariables() = 0;
-    void addConstraints() {
-        if (m_numStates) addConstraintsImpl();
-    }
     virtual void addConstraintsImpl() = 0;
     virtual DM createIntegralQuadratureCoefficients(const DM& meshIntervals)
     const = 0;
@@ -733,6 +754,7 @@ protected:
     int m_numTimes = -1;
     int m_numStates = -1;
     int m_numControls = -1;
+    int m_numMultipliers = -1;
     int m_numDerivatives = -1;
     int m_numParameters = -1;
     MX m_times;
@@ -740,8 +762,9 @@ protected:
     DM m_mesh;
     std::vector<std::string> m_stateNames;
     std::vector<std::string> m_controlNames;
-    std::vector<std::string> m_parameterNames;
+    std::vector<std::string> m_multiplierNames;
     std::vector<std::string> m_derivativeNames;
+    std::vector<std::string> m_parameterNames;
 
     std::vector<std::unique_ptr<PathConstraintFunction>>
             m_pathConstraintFunctions;

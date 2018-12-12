@@ -44,8 +44,90 @@ protected:
         m_vars[Var::states] = m_opti.variable(m_numStates, m_numTimes);
         m_vars[Var::controls] = m_opti.variable(m_numControls, m_numTimes);
         m_vars[Var::parameters] = m_opti.variable(m_numParameters, 1);
+
         m_mesh = DM::linspace(0, 1, m_numTimes);
+
+        // Multibody constraints.
+        // ----------------------
+        std::vector<std::string> mcNames =
+                m_probRep.createMultibodyConstraintNames();
+        for (const auto& mcName : mcNames) {
+            const auto& mc = m_probRep.getMultibodyConstraint(mcName);
+            int cid = mc.getSimbodyConstraintIndex();
+            int mv = mc.getNumVelocityEquations();
+            int ma = mc.getNumAccelerationEquations();
+            // Only considering holonomic constraints for now.
+            OPENSIM_THROW_IF(mv != 0, Exception,
+                    "Only holonomic "
+                    "(position-level) constraints are currently supported. "
+                    "There are " + std::to_string(mv) + " velocity-level "
+                    "scalar constraints associated with the model Constraint "
+                    "at ConstraintIndex " + std::to_string(cid) + ".");
+            OPENSIM_THROW_IF(ma != 0, Exception,
+                    "Only holonomic "
+                    "(position-level) constraints are currently supported. "
+                    "There are " + std::to_string(ma) + " acceleration-level "
+                    "scalar constraints associated with the model Constraint "
+                    "at ConstraintIndex " + std::to_string(cid) + ".");
+        }
+        m_numMultibodyConstraintEqs =
+                m_probRep.getNumMultibodyConstraintEquations();
+        // TODO: This isn't true when we enforce the derivatives of constraints.
+        m_numMultipliers = m_probRep.getNumMultibodyConstraintEquations();
+        m_vars[Var::multipliers]
+                = m_opti.variable(m_numMultibodyConstraintEqs, m_numTimes);
+        m_lowerBounds[Var::multipliers] =
+                DM(m_numMultibodyConstraintEqs, m_numTimes);
+        m_upperBounds[Var::multipliers] =
+                DM(m_numMultibodyConstraintEqs, m_numTimes);
+
+        int multIndex = 0;
+        for (const auto& mcName : mcNames) {
+            const auto& mc = m_probRep.getMultibodyConstraint(mcName);
+            const auto& multInfos = m_probRep.getMultiplierInfos(mcName);
+            const int mp = mc.getNumPositionEquations();
+            const auto kinLevels = mc.getKinematicLevels();
+
+            int numEquationsEnforced = mp;
+            // Loop through all scalar constraints associated with the model
+            // constraint and corresponding path constraints to the optimal
+            // control problem.
+            //
+            // We need a different index for the Lagrange multipliers since
+            // they are only added if the current constraint equation is not a
+            // derivative of a position- or velocity-level equation.
+            int multIndexThisConstraint = 0;
+            for (int i = 0; i < numEquationsEnforced; ++i) {
+
+                // If the index for this path constraint represents an
+                // a non-derivative scalar constraint equation, also add a
+                // Lagrange multplier to the problem.
+                if (kinLevels[i] == KinematicLevel::Position ||
+                        kinLevels[i] == KinematicLevel::Velocity ||
+                        kinLevels[i] == KinematicLevel::Acceleration) {
+
+                    const auto& multInfo = multInfos[multIndexThisConstraint];
+                    m_multiplierNames.push_back(multInfo.getName());
+                    setVariableBounds(Var::multipliers,
+                            Slice(multIndex), Slice(), multInfo.getBounds());
+                    setVariableBounds(Var::multipliers,
+                            Slice(multIndex), 0, multInfo.getInitialBounds());
+                    setVariableBounds(Var::multipliers,
+                            Slice(multIndex), -1, multInfo.getFinalBounds());
+                    ++multIndex;
+                    ++multIndexThisConstraint;
+                }
+            }
+        }
     }
+
+    // The number of scalar holonomic constraint equations enabled in the model.
+    // This does not count equations for derivatives of scalar holonomic
+    // constraints.
+    mutable int m_mpSum = 0;
+    // The total number of scalar constraint equations associated with model
+    // multibody constraints that the solver is responsible for enforcing.
+    mutable int m_numMultibodyConstraintEqs = 0;
 
 private:
     std::unique_ptr<DynamicsFunction> m_dynamicsFunction;
@@ -56,6 +138,7 @@ private:
 /// accelerations and auxiliary differential equations. Currently, we only
 /// support models for which qdot = u. That is, the N matrix (qdot = N u) is
 /// identity. This allows us to compute qdot symbolically through CasADi.
+/// TODO: Rename to MultibodyDAEFunction
 class CasADiTrapezoidal::DynamicsFunction : public CasADiFunction {
 public:
     DynamicsFunction(const std::string& name,
@@ -67,18 +150,15 @@ public:
         construct(name, opts);
     }
     ~DynamicsFunction() override {}
-    /// 0. time
-    /// 1. states
-    /// 2. controls
-    /// 3. parameters
-    casadi_int get_n_in() override { return 4; }
-    casadi_int get_n_out() override { return 1; }
+    casadi_int get_n_in() override { return 5; }
+    casadi_int get_n_out() override { return 2; }
     std::string get_name_in(casadi_int i) override {
         switch (i) {
         case 0: return "time";
         case 1: return "states";
         case 2: return "controls";
-        case 3: return "parameters";
+        case 3: return "multipliers";
+        case 4: return "parameters";
         default:
             OPENSIM_THROW(Exception, "Internal error.");
         }
@@ -86,6 +166,7 @@ public:
     std::string get_name_out(casadi_int i) override {
         switch (i) {
         case 0: return "dynamics";
+        case 1: return "multibody_constraint_errors";
         default:
             OPENSIM_THROW(Exception, "Internal error.");
         }
@@ -98,6 +179,9 @@ public:
         } else if (i == 2) {
             return casadi::Sparsity::dense(p.getNumControls(), 1);
         } else if (i == 3) {
+            return casadi::Sparsity::dense(
+                    p.getNumMultibodyConstraintEquations(), 1);
+        } else if (i == 4) {
             return casadi::Sparsity::dense(p.getNumParameters(), 1);
         } else {
             return casadi::Sparsity(0, 0);
@@ -108,6 +192,12 @@ public:
 
     int eval(const double** arg, double** res, casadi_int*, double*, void*)
     const override;
+private:
+    // This member variable avoids unnecessary extra allocation of memory for
+    // spatial accelerations, which are incidental to the computation of
+    // generalized accelerations when specifying the dynamics with model
+    // constraints present.
+    mutable SimTK::Vector_<SimTK::SpatialVec> A_GB;
 };
 
 class CasADiTrapezoidalImplicit : public CasADiTrapezoidal {
@@ -118,6 +208,7 @@ class CasADiTrapezoidalImplicit : public CasADiTrapezoidal {
         m_vars[Var::derivatives] = m_opti.variable(m_state.getNU(), m_numTimes);
     }
 private:
+
     class DynamicsFunction;
     class ResidualFunction;
     std::unique_ptr<DynamicsFunction> m_dynamicsFunction;

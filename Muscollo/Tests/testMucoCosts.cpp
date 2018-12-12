@@ -76,7 +76,6 @@ void testMucoControlCost() {
 
         // Minimum effort solution takes as long as possible.
         SimTK_TEST_EQ_TOL(sol1.getTime().getElt(N-1, 0), 5, 1e-7);
-
     }
 
     // TODO test that we can ignore specific actuators.
