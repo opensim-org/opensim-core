@@ -51,9 +51,12 @@ protected:
         // ----------------------
         std::vector<std::string> mcNames =
                 m_probRep.createMultibodyConstraintNames();
+        m_numMultipliers = 0;
+        m_numMultibodyConstraintEqs = 0;
         for (const auto& mcName : mcNames) {
             const auto& mc = m_probRep.getMultibodyConstraint(mcName);
             int cid = mc.getSimbodyConstraintIndex();
+            int mp = mc.getNumPositionEquations();
             int mv = mc.getNumVelocityEquations();
             int ma = mc.getNumAccelerationEquations();
             // Only considering holonomic constraints for now.
@@ -69,17 +72,14 @@ protected:
                     "There are " + std::to_string(ma) + " acceleration-level "
                     "scalar constraints associated with the model Constraint "
                     "at ConstraintIndex " + std::to_string(cid) + ".");
+            m_numMultipliers += mp;
+            m_numMultibodyConstraintEqs += mp; // 3 * mp + 2 * mv + ma;
         }
-        m_numMultibodyConstraintEqs =
-                m_probRep.getNumMultibodyConstraintEquations();
         // TODO: This isn't true when we enforce the derivatives of constraints.
-        m_numMultipliers = m_probRep.getNumMultibodyConstraintEquations();
-        m_vars[Var::multipliers]
-                = m_opti.variable(m_numMultibodyConstraintEqs, m_numTimes);
-        m_lowerBounds[Var::multipliers] =
-                DM(m_numMultibodyConstraintEqs, m_numTimes);
-        m_upperBounds[Var::multipliers] =
-                DM(m_numMultibodyConstraintEqs, m_numTimes);
+        m_vars[Var::multipliers] =
+                m_opti.variable(m_numMultipliers, m_numTimes);
+        m_lowerBounds[Var::multipliers] = DM(m_numMultipliers, m_numTimes);
+        m_upperBounds[Var::multipliers] = DM(m_numMultipliers, m_numTimes);
 
         int multIndex = 0;
         for (const auto& mcName : mcNames) {
@@ -90,8 +90,7 @@ protected:
 
             int numEquationsEnforced = mp;
             // Loop through all scalar constraints associated with the model
-            // constraint and corresponding path constraints to the optimal
-            // control problem.
+            // constraint.
             //
             // We need a different index for the Lagrange multipliers since
             // they are only added if the current constraint equation is not a
@@ -109,25 +108,18 @@ protected:
                     const auto& multInfo = multInfos[multIndexThisConstraint];
                     m_multiplierNames.push_back(multInfo.getName());
                     setVariableBounds(Var::multipliers,
-                            Slice(multIndex), Slice(), multInfo.getBounds());
+                            multIndex, Slice(), multInfo.getBounds());
                     setVariableBounds(Var::multipliers,
-                            Slice(multIndex), 0, multInfo.getInitialBounds());
+                            multIndex, 0, multInfo.getInitialBounds());
                     setVariableBounds(Var::multipliers,
-                            Slice(multIndex), -1, multInfo.getFinalBounds());
+                            multIndex, -1, multInfo.getFinalBounds());
+                    std::cout << "DEBUGmb " << m_lowerBounds[Var::multipliers] << " " << m_upperBounds[Var::multipliers] << std::endl;
                     ++multIndex;
                     ++multIndexThisConstraint;
                 }
             }
         }
     }
-
-    // The number of scalar holonomic constraint equations enabled in the model.
-    // This does not count equations for derivatives of scalar holonomic
-    // constraints.
-    mutable int m_mpSum = 0;
-    // The total number of scalar constraint equations associated with model
-    // multibody constraints that the solver is responsible for enforcing.
-    mutable int m_numMultibodyConstraintEqs = 0;
 
 private:
     std::unique_ptr<DynamicsFunction> m_dynamicsFunction;
@@ -179,15 +171,24 @@ public:
         } else if (i == 2) {
             return casadi::Sparsity::dense(p.getNumControls(), 1);
         } else if (i == 3) {
-            return casadi::Sparsity::dense(
-                    p.getNumMultibodyConstraintEquations(), 1);
+            return casadi::Sparsity::dense(m_transcrip.getNumMultipliers(), 1);
         } else if (i == 4) {
             return casadi::Sparsity::dense(p.getNumParameters(), 1);
         } else {
             return casadi::Sparsity(0, 0);
         }
     }
-    casadi::Sparsity get_sparsity_out(casadi_int i) override;
+    casadi::Sparsity get_sparsity_out(casadi_int i) override {
+        if (i == 0) {
+            int numRows = m_transcrip.m_state.getNU() +
+                    m_transcrip.m_state.getNZ();
+            return casadi::Sparsity::dense(numRows, 1);
+        } else if (i == 1) {
+            int numRows = m_transcrip.getNumMultibodyConstraintEquations();
+            return casadi::Sparsity::dense(numRows, 1);
+        }
+        else return casadi::Sparsity(0, 0);
+    }
     void init() override {}
 
     int eval(const double** arg, double** res, casadi_int*, double*, void*)

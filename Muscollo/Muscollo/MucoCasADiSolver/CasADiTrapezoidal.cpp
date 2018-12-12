@@ -28,8 +28,8 @@ void CasADiTrapezoidal::addConstraintsImpl() {
     OPENSIM_THROW_IF(m_state.getNQ() != m_state.getNU(), Exception);
     const int NQ = m_state.getNQ();
 
-    // Bounds for multibody constraints.
-    // ---------------------------------
+    // Bounds for multibody constraint errors.
+    // ---------------------------------------
     // Add any scalar constraints associated with multibody constraints in
     // the model as path constraints in the problem.
     std::vector<std::string> mcNames =
@@ -41,10 +41,16 @@ void CasADiTrapezoidal::addConstraintsImpl() {
     for (const auto& mcName : mcNames) {
         const auto& mc = m_probRep.getMultibodyConstraint(mcName);
         const auto& bounds = mc.getConstraintInfo().getBounds();
+        const auto& kinLevels = mc.getKinematicLevels();
         for (int ibound = 0; ibound < (int)bounds.size(); ++ibound) {
-            mcLowerBounds(multIndex) = bounds[ibound].getLower();
-            mcUpperBounds(multIndex) = bounds[ibound].getUpper();
-            ++multIndex;
+            if (kinLevels[ibound] == KinematicLevel::Position ||
+                    kinLevels[ibound] == KinematicLevel::Velocity ||
+                    kinLevels[ibound] == KinematicLevel::Acceleration) {
+                // Only grab the constraints for the position-level constraints.
+                mcLowerBounds(multIndex) = bounds[ibound].getLower();
+                mcUpperBounds(multIndex) = bounds[ibound].getUpper();
+                ++multIndex;
+            }
         }
     }
 
@@ -84,17 +90,6 @@ void CasADiTrapezoidal::addConstraintsImpl() {
     }
 }
 
-casadi::Sparsity
-CasADiTrapezoidal::DynamicsFunction::get_sparsity_out(casadi_int i) {
-    if (i == 0) {
-        int numRows = m_transcrip.m_state.getNU() + m_transcrip.m_state.getNZ();
-        return casadi::Sparsity::dense(numRows, 1);
-    } else if (i == 1) {
-        int numRows = p.getNumMultibodyConstraintEquations();
-        return casadi::Sparsity::dense(numRows, 1);
-    }
-    else return casadi::Sparsity(0, 0);
-}
 int CasADiTrapezoidal::DynamicsFunction::eval(
         const double** inputs, double** outputs,
         casadi_int*, double*, void*) const {
@@ -112,7 +107,7 @@ int CasADiTrapezoidal::DynamicsFunction::eval(
     convertToSimTKState(time, states, controls, p.getModel(), simtkState);
     // If enabled constraints exist in the model, compute accelerations
     // based on Lagrange multipliers.
-    if (p.getNumMultibodyConstraintEquations()) {
+    if (m_transcrip.getNumMultibodyConstraintEquations()) {
         // TODO Antoine and Gil said realizing Dynamics is a lot costlier than
         // realizing to Velocity and computing forces manually.
         model.realizeDynamics(simtkState);
@@ -136,7 +131,7 @@ int CasADiTrapezoidal::DynamicsFunction::eval(
 
         // Multipliers are negated so constraint forces can be used like
         // applied forces.
-        SimTK::Vector simtkMultipliers(p.getNumMultibodyConstraintEquations(),
+        SimTK::Vector simtkMultipliers(m_transcrip.getNumMultipliers(),
                 multipliers, true);
         matter.calcConstraintForcesFromMultipliers(simtkState,
                 -simtkMultipliers,
@@ -151,12 +146,12 @@ int CasADiTrapezoidal::DynamicsFunction::eval(
         // TODO double-check that disabled constraints don't show up in
         // state
         std::copy_n(simtkState.getQErr().getContiguousScalarData(),
-                simtkState.getQErr().size(), out_multibody_constraint_errors);
+                simtkState.getNQErr(), out_multibody_constraint_errors);
 
         // Copy state derivative values to output struct. We cannot simply
         // use getYDot() because that requires realizing to Acceleration.
         const int nu = udot.size();
-        const int nz = simtkState.getZ().size();
+        const int nz = simtkState.getNZ();
         std::copy_n(udot.getContiguousScalarData(), udot.size(),
                 out_derivatives);
         // TODO: Does computing ZDot require realizing to Acceleration?

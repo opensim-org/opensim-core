@@ -406,13 +406,12 @@ public:
                         casVars.at(Var::initial_time),
                         casVars.at(Var::final_time)));
         SimTK::Vector simtkTimes = convertToSimTKVector(timesValue);
+
         TOut mucoIterate(simtkTimes,
                 m_stateNames, m_controlNames, m_multiplierNames,
-                m_derivativeNames,
-                m_parameterNames,
+                m_derivativeNames, m_parameterNames,
                 simtkStates, simtkControls, simtkMultipliers,
-                simtkDerivatives,
-                simtkParameters);
+                simtkDerivatives, simtkParameters);
         return mucoIterate;
     }
     /// Create an initial guess for this problem according to the
@@ -480,7 +479,6 @@ public:
         createVariableCountAndNames();
         createVariablesAndSetBounds();
         addConstraints();
-        // TODO: Multibody constraints.
         addPathConstraints();
         addCostFunctional();
 
@@ -654,6 +652,11 @@ public:
                      m_vars[Var::controls](Slice(), itime),
                      m_vars[Var::parameters]});
             integralCost += quadCoeffs(itime) * out.at(0);
+            if (m_numMultipliers) {
+                const auto mults = m_vars[Var::multipliers](Slice(), itime);
+                const int multiplierWeight = 100.0; // TODO move.
+                integralCost += multiplierWeight * dot(mults, mults);
+            }
             // Testing the performance benefit of providing a cost with CasADi
             // directly.
             /*
@@ -714,6 +717,9 @@ public:
     bool dynamicsModeIsImplicit() const { return m_numDerivatives; }
     const CasADiVariables<DM>& getVariablesLowerBounds() const
     {   return m_lowerBounds; }
+    int getNumMultipliers() const { return m_numMultipliers; }
+    int getNumMultibodyConstraintEquations() const
+    {   return m_numMultibodyConstraintEqs; }
 
     const MucoCasADiSolver& m_solver;
     const MucoProblemRep& m_probRep;
@@ -756,6 +762,10 @@ protected:
     std::vector<std::string> m_multiplierNames;
     std::vector<std::string> m_derivativeNames;
     std::vector<std::string> m_parameterNames;
+
+    // The total number of scalar constraint equations associated with model
+    // multibody constraints that the solver is responsible for enforcing.
+    int m_numMultibodyConstraintEqs = 0;
 
     std::vector<std::unique_ptr<PathConstraintFunction>>
             m_pathConstraintFunctions;
