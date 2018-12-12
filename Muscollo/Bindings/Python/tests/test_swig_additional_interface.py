@@ -307,7 +307,7 @@ class TestWorkflow(unittest.TestCase):
         problem.setTimeBounds(0, [0, 10])
         problem.setStateInfo("/slider/position/value", [0, 1], 0, 1)
         problem.setStateInfo("/slider/position/speed", [-100, 100], 0, 0)
-        problem.addCost(osim.MucoFinalTimeCost())
+        problem.updPhase().addCost(osim.MucoFinalTimeCost())
         effort = osim.MucoControlCost("effort")
         problem.updPhase().addCost(effort)
         finalTime0 = muco.solve().getFinalTime()
