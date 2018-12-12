@@ -94,6 +94,20 @@ private:
                            const Number* g, const Number* lambda,
                            Number obj_value, const Ipopt::IpoptData* ip_data,
                            Ipopt::IpoptCalculatedQuantities* ip_cq) override;
+    /*
+    virtual bool intermediate_callback(Ipopt::AlgorithmMode mode,
+            Index iter, Number obj_value,
+            Number inf_pr, Number inf_du,
+            Number mu, Number d_norm,
+            Number regularization_size,
+            Number alpha_du, Number alpha_pr,
+            Index ls_trials,
+            const Ipopt::IpoptData* ip_data,
+            Ipopt::IpoptCalculatedQuantities* ip_cq) override {
+        auto c = ip_cq->curr_c();
+        for (int i = 0; i < c->N)
+
+    }*/
 
     // Members.
 //    const ProblemDecorator& m_problem;
@@ -390,6 +404,10 @@ bool IPOPTSolver::TNLP::eval_g(
     assert((unsigned)num_constraints == m_num_constraints);
     //// TODO if (!num_constraints) return true;
     m_problem.calc_constraints(num_variables, x, new_x, num_constraints, g);
+    std::cout << "DEBUG eval_g " << std::endl;
+    for (int i = 0; i < num_constraints; ++i) {
+        std::cout << g[i] << std::endl;
+    }
     return true;
 }
 

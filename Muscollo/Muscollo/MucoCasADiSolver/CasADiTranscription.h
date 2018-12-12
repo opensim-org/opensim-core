@@ -669,20 +669,63 @@ public:
     }
 
     void setGuess(const MucoIterate& guess) {
+        // guess.write("DEBUG_casadi_guess.sto");
         const CasADiVariables<DM> casGuess =
                 convertToCasADiVariables(guess);
         for (auto& kv : m_vars) {
             m_opti.set_initial(kv.second, casGuess.at(kv.first));
         }
     }
+    // http://casadi.sourceforge.net/api/html/d7/df0/solvers_2callback_8py-example.html
+    /*
+    class NlpsolCallback : public Callback {
+    public:
+        NlpsolCallback(const std::string& name, Dict opts = Dict()) {
+            construct(name, opts);
+        }
+        void init() override {
+            std::cout << "DEBUGinit" << std::endl;
+        }
+        casadi_int get_n_in() override { return casadi::nlpsol_n_out(); }
+        casadi_int get_n_out() override { return 1; }
+        std::string get_name_in(casadi_int i) override {
+            return casadi::nlpsol_out(i);
+        }
+        std::string get_name_out(casadi_int) override {
+            return "ret";
+        }
+        casadi::Sparsity get_sparsity_in(casadi_int i) override {
+            auto n = casadi::nlpsol_out(i);
+            if (n == "f") {
+                return casadi::Sparsity::scalar();
+            } else if (n == "x" || n == "lam_x") {
+                return casadi::Sparsity::dense(122, 1);
+            } else if (n == "g" || n == "lam_g") {
+                return casadi::Sparsity::dense(220, 1);
+            } else {
+                return casadi::Sparsity(0, 0);
+            }
+        }
+        std::vector<DM> eval(const std::vector<DM>& args) const override {
+            std::cout << "DEBUG EVAL CALLBACK " << std::endl;
+            std::cout << args.at(2) << std::endl;
+            // std::exit(-1);
+            return {0};
+        }
+    };
+     */
     MucoSolution
     solve(const std::string& solver, Dict pluginOptions, Dict solverOptions) {
+        // NlpsolCallback callback("solver_callback");
+        // pluginOptions["iteration_callback"] = callback;
         m_opti.solver(solver, pluginOptions, solverOptions);
         try {
             m_opti.solve();
             return convertToMucoIterate<MucoSolution>(
                     convertToCasADiVariablesDM(m_opti, m_vars));
         } catch (const std::exception& e) {
+            std::cerr << "MucoCasADiSolver did not succeed: "
+                    << e.what() << std::endl;
             return convertToMucoIterate<MucoSolution>(
                     convertToCasADiVariablesDM(m_opti.debug(), m_vars));
         }

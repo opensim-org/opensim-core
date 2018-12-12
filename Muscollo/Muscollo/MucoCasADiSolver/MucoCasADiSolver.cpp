@@ -44,6 +44,9 @@
 //   (not any more complex calculations).
 // - support multibody constraints
 // - get testConstraints working with CasADi.
+// - TODO: clean up by separating problem from solver.
+//      Allow creating variables and supplying the casadi function for
+//      the DAEs, objective, etc.
 
 using casadi::MX;
 using casadi::DM;

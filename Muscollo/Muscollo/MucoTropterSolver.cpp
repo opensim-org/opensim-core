@@ -129,6 +129,7 @@ const MucoIterate& MucoTropterSolver::getGuess() const {
             m_guessToUse.reset(&m_guessFromAPI);
         }
     }
+    // if (m_guessToUse) m_guessToUse->write("DEBUG_tropter_guess.sto");
     return m_guessToUse.getRef();
 }
 

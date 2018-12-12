@@ -113,7 +113,6 @@ protected:
                             multIndex, 0, multInfo.getInitialBounds());
                     setVariableBounds(Var::multipliers,
                             multIndex, -1, multInfo.getFinalBounds());
-                    std::cout << "DEBUGmb " << m_lowerBounds[Var::multipliers] << " " << m_upperBounds[Var::multipliers] << std::endl;
                     ++multIndex;
                     ++multIndexThisConstraint;
                 }
