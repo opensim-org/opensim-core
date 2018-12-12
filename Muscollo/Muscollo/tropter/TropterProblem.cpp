@@ -28,7 +28,8 @@ convertIterateTropterToMuco(const tropIterateType& tropSol) const {
     const auto& state_names = tropSol.state_names;
     const auto& control_names = tropSol.control_names;
 
-    const int& numMultipliers = this->m_numMultibodyConstraintEqs;
+    const int& numMultipliers =
+            this->m_mpSum /* + this->m_mvSum + this->m_maSum*/;
     std::vector<std::string> multiplier_names(numMultipliers);
     std::copy_n(tropSol.adjunct_names.begin(), numMultipliers,
             multiplier_names.begin());

@@ -33,7 +33,8 @@ do {                                                                         \
         for (int ic = 0; ic < actual.cols(); ++ic) {                         \
             INFO("(" << ir << "," << ic << "): " <<                          \
                     actual(ir, ic) << " vs " << expected(ir, ic));           \
-            REQUIRE((Approx(actual(ir, ic)).epsilon(rel_error_tolerance)     \
+            REQUIRE((Approx(actual(ir, ic))                                  \
+                    .epsilon(rel_error_tolerance).scale(1.0)                 \
                     == expected(ir, ic)));                                   \
         }                                                                    \
     }                                                                        \
