@@ -16,6 +16,9 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
+#define CATCH_CONFIG_MAIN
+#include <catch.hpp>
+
 #include <Muscollo/osimMuscollo.h>
 #include <OpenSim/Common/LinearFunction.h>
 #include <simbody/internal/Constraint.h>
@@ -159,6 +162,8 @@ void calcAccelerationsFromMultipliers(const Model& model, const State& state,
         appliedBodyForces + constraintBodyForces, udot, A_GB);
 }
 
+/// DAE calculation subtests.
+/// -------------------------
 /// The following tests add a constraint to a model and check that the method
 /// calcAccelerationsFromMultipliers() is implemented correctly. Each test 
 /// follows a similar structure:
@@ -169,8 +174,7 @@ void calcAccelerationsFromMultipliers(const Model& model, const State& state,
 ///     5) Retrieve the Lagrange multiplier values for the current state
 ///     6) Compute the accelerations from calcAccelerationsFromMultipliers()
 ///     7) Ensure that the accelerations from step 4 and 6 match
-
-void testWeldConstraint() {
+TEST_CASE("WeldConstraint", "") {
     State state;
     Model model = createModel();
     const std::string& firstBodyName =
@@ -195,7 +199,7 @@ void testWeldConstraint() {
     MACHINE_TEST(udotSimbody, udotMultipliers);
 }
 
-void testPointConstraint() {
+TEST_CASE("PointConstraint", "") {
     State state;
     Model model = createModel();
     const Body& firstBody = model.getBodySet().get(0);
@@ -218,7 +222,7 @@ void testPointConstraint() {
     MACHINE_TEST(udotSimbody, udotMultipliers);
 }
 
-void testPointOnLineConstraint() {
+TEST_CASE("PointOnLineConstraint", "") {
     State state;
     Model model = createModel();
     const Body& firstBody = model.getBodySet().get(0);
@@ -241,7 +245,7 @@ void testPointOnLineConstraint() {
     MACHINE_TEST(udotSimbody, udotMultipliers);
 }
 
-void testConstantDistanceConstraint() {
+TEST_CASE("ConstantDistanceConstraint", "") {
     State state;
     Model model = createModel();
     const Body& firstBody = model.getBodySet().get(0);
@@ -265,7 +269,7 @@ void testConstantDistanceConstraint() {
     MACHINE_TEST(udotSimbody, udotMultipliers);
 }
 
-void testLockedCoordinate() {
+TEST_CASE("LockedCoordinate", "") {
     State state;
     Model model = createModel();
     CoordinateSet& coordSet = model.updCoordinateSet();
@@ -285,7 +289,7 @@ void testLockedCoordinate() {
     MACHINE_TEST(udotSimbody, udotMultipliers);
 }
 
-void testCoordinateCouplerConstraint() {
+TEST_CASE("CoordinateCouplerConstraint", "") {
     State state;
     Model model = createModel();
     CoordinateSet& coordSet = model.updCoordinateSet();
@@ -313,7 +317,7 @@ void testCoordinateCouplerConstraint() {
     MACHINE_TEST(udotSimbody, udotMultipliers);
 }
 
-void testPrescribedMotion() {
+TEST_CASE("PrescribedMotion", "") {
     State state;
     Model model = createModel();
     CoordinateSet& coordSet = model.updCoordinateSet();
@@ -479,11 +483,15 @@ MucoIterate runForwardSimulation(Model model, const MucoSolution& solution,
     return forwardSolution;
 }
 
-/// Solve an optimal control problem where a double pendulum must reach a 
+/// Direct collocation subtests.
+/// ----------------------------
+
+/// Solve an optimal control problem where a double pendulum must reach a
 /// specified final configuration while subject to a constraint that its
 /// end-effector must lie on a vertical line through the origin and minimize
 /// control effort.
-void testDoublePendulumPointOnLine() {
+TEMPLATE_TEST_CASE("DoublePendulumPointOnLine", "",
+        MucoTropterSolver, MucoCasADiSolver) {
     MucoTool muco;
     muco.setName("double_pendulum_point_on_line");
     MucoProblem& mp = muco.updProblem();
@@ -511,7 +519,7 @@ void testDoublePendulumPointOnLine() {
 
     mp.addCost<MucoControlCost>();
 
-    MucoTropterSolver& ms = muco.initSolver();
+    auto& ms = muco.initSolver<TestType>();
     ms.set_num_mesh_points(15);
     ms.set_verbosity(2);
     ms.set_optim_solver("ipopt");
@@ -546,12 +554,13 @@ void testDoublePendulumPointOnLine() {
 /// specified final configuration while subject to a constraint that couples
 /// its two coordinates together via a linear relationship and minimizing 
 /// control effort.
+template <typename SolverType>
 void testDoublePendulumCoordinateCoupler(MucoSolution& solution) {
     MucoTool muco;
     muco.setName("double_pendulum_coordinate_coupler");
     MucoProblem& mp = muco.updProblem();
 
-    // Create double pendulum model and add the coordinate coupler constraint. 
+    // Create double pendulum model and add the coordinate coupler constraint.
     auto model = createDoublePendulumModel();
     const Coordinate& q0 = model->getCoordinateSet().get("q0");
     const Coordinate& q1 = model->getCoordinateSet().get("q1");
@@ -562,9 +571,9 @@ void testDoublePendulumCoordinateCoupler(MucoSolution& solution) {
     constraint->setDependentCoordinateName("q1");
     // Represented by the following equation,
     //      q1 = m*q0 + b
-    // this linear function couples the two model coordinates such that given 
+    // this linear function couples the two model coordinates such that given
     // the boundary conditions for q0 from testDoublePendulumPointOnLine, the
-    // same boundary conditions for q1 should be achieved without imposing 
+    // same boundary conditions for q1 should be achieved without imposing
     // bounds for this coordinate.
     const SimTK::Real m = -2;
     const SimTK::Real b = SimTK::Pi;
@@ -586,7 +595,7 @@ void testDoublePendulumCoordinateCoupler(MucoSolution& solution) {
 
     mp.addCost<MucoControlCost>();
 
-    MucoTropterSolver& ms = muco.initSolver();
+    auto& ms = muco.initSolver<SolverType>();
     ms.set_num_mesh_points(50);
     ms.set_verbosity(2);
     ms.set_optim_solver("ipopt");
@@ -609,7 +618,7 @@ void testDoublePendulumCoordinateCoupler(MucoSolution& solution) {
         SimTK_TEST_EQ_TOL(q1.getValue(s), m*q0.getValue(s) + b, 1e-6);
     }
 
-    // Run a forward simulation using the solution controls in prescribed 
+    // Run a forward simulation using the solution controls in prescribed
     // controllers for the model actuators and see if we get the correct states
     // trajectory back.
     runForwardSimulation(*model, solution, 1e-2);
@@ -618,6 +627,7 @@ void testDoublePendulumCoordinateCoupler(MucoSolution& solution) {
 /// Solve an optimal control problem where a double pendulum must follow a
 /// prescribed motion based on the previous test case (see
 /// testDoublePendulumCoordinateCoupler).
+template <typename SolverType>
 void testDoublePendulumPrescribedMotion(MucoSolution& couplerSolution) {
     MucoTool muco;
     muco.setName("double_pendulum_prescribed_motion");
@@ -656,7 +666,7 @@ void testDoublePendulumPrescribedMotion(MucoSolution& couplerSolution) {
 
     mp.addCost<MucoControlCost>();
 
-    MucoTropterSolver& ms = muco.initSolver();
+    auto& ms = muco.initSolver<SolverType>();
     ms.set_num_mesh_points(50); 
     ms.set_verbosity(2);
     ms.set_optim_solver("ipopt");
@@ -746,6 +756,13 @@ void testDoublePendulumPrescribedMotion(MucoSolution& couplerSolution) {
     runForwardSimulation(*model, solution, 1e-2);
 }
 
+TEMPLATE_TEST_CASE("Double Pendulum Coordinate Coupler and Prescribed Motion",
+        "", MucoTropterSolver, MucoCasADiSolver) {
+    MucoSolution couplerSolution;
+    testDoublePendulumCoordinateCoupler<TestType>(couplerSolution);
+    testDoublePendulumPrescribedMotion<TestType>(couplerSolution);
+}
+
 class EqualControlConstraint : public MucoPathConstraint {
 OpenSim_DECLARE_CONCRETE_OBJECT(EqualControlConstraint, MucoPathConstraint);
 protected:
@@ -774,7 +791,9 @@ protected:
 /// Solve an optimal control problem where a double pendulum must reach a 
 /// specified final configuration while subject to a constraint that its
 /// actuators must produce an equal control trajectory.
-void testDoublePendulumEqualControl() {
+TEMPLATE_TEST_CASE("DoublePendulumEqualControl", "",
+        MucoTropterSolver, MucoCasADiSolver) {
+    OpenSim::Object::registerType(EqualControlConstraint());
     MucoTool muco;
     muco.setName("double_pendulum_equal_control");
     MucoProblem& mp = muco.updProblem();
@@ -800,7 +819,7 @@ void testDoublePendulumEqualControl() {
 
     mp.addCost<MucoControlCost>();
 
-    MucoTropterSolver& ms = muco.initSolver();
+    auto& ms = muco.initSolver<TestType>();
     ms.set_num_mesh_points(100);
     ms.set_verbosity(2);
     ms.set_optim_solver("ipopt");
@@ -835,25 +854,4 @@ void testDoublePendulumEqualControl() {
     MucoTool mucoDeserialize(setup_fname);
     solutionDeserialized = mucoDeserialize.solve();
     SimTK_TEST(solution.isNumericallyEqual(solutionDeserialized));
-}
-
-int main() {
-    OpenSim::Object::registerType(EqualControlConstraint());
-
-    SimTK_START_TEST("testConstraints");
-        // DAE calculation subtests.
-        SimTK_SUBTEST(testWeldConstraint);
-        SimTK_SUBTEST(testPointConstraint);
-        SimTK_SUBTEST(testPointOnLineConstraint);
-        SimTK_SUBTEST(testConstantDistanceConstraint);
-        SimTK_SUBTEST(testLockedCoordinate);
-        SimTK_SUBTEST(testCoordinateCouplerConstraint);
-        SimTK_SUBTEST(testPrescribedMotion);
-        // Direct collocation subtests.
-        SimTK_SUBTEST(testDoublePendulumPointOnLine);
-        MucoSolution couplerSolution;
-        SimTK_SUBTEST1(testDoublePendulumCoordinateCoupler, couplerSolution);
-        SimTK_SUBTEST1(testDoublePendulumPrescribedMotion, couplerSolution);
-        SimTK_SUBTEST(testDoublePendulumEqualControl);
-    SimTK_END_TEST();
 }
