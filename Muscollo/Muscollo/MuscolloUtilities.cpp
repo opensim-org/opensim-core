@@ -52,14 +52,13 @@ SimTK::Vector OpenSim::interpolate(const SimTK::Vector& x,
     std::vector<double> x_no_nans;
     std::vector<double> y_no_nans;
     for (int i = 0; i < x.size(); ++i) {
-        if ((SimTK::isNaN(x[i]) || SimTK::isNaN(y[i])) && ignoreNaNs) {
+
+        bool shouldNotPushBack = (SimTK::isNaN(x[i]) || SimTK::isNaN(y[i])) 
+                                 && ignoreNaNs;
+        if (!shouldNotPushBack) {
             x_no_nans.push_back(x[i]);
             y_no_nans.push_back(y[i]);
-        } else {
-            OPENSIM_THROW(Exception, "NaN value detected in provided data. "
-                "Please correct data or set 'ignoreNaNs' argument to 'true' to "
-                "create interpolant from non-NaN values only.");
-        }
+        } 
     }
 
     PiecewiseLinearFunction function((int)x_no_nans.size(), &x_no_nans[0], 

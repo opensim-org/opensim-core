@@ -212,7 +212,8 @@ Iterate::interpolate(int desired_num_columns) const {
     out.states = interp1(time, states, out.time);
     out.controls = interp1(time, controls, out.time);
     out.adjuncts = interp1(time, adjuncts, out.time);
-
+    // TODO this causes problems if a user creates an iterate full of NaNs and
+    // trys to interpolate: the diffuses will have nothing to interpolate over.
     if (diffuse_names.size()) {
         // Create interpolant for non-nan columns.
         int cols_no_nans = 0;
@@ -223,13 +224,11 @@ Iterate::interpolate(int desired_num_columns) const {
                 no_nan_indices.push_back(icol);
             }
         }
-
         MatrixXd diffuses_no_nans(diffuses.rows(), cols_no_nans);
         for (int icol_no_nan = 0; icol_no_nan < cols_no_nans; ++icol_no_nan) {
             diffuses_no_nans.col(icol_no_nan) 
                 = diffuses.col(no_nan_indices[icol_no_nan]);
         }
-
         // Use the whole time vector so we don't get NaNs during interpolation.
         auto time_no_nans = Eigen::RowVectorXd::LinSpaced(cols_no_nans,
             time[0], time.tail<1>()[0]);
