@@ -74,7 +74,7 @@ void MucoControlCost::initializeOnModelImpl(const Model& model) const {
             ++i;
         }
     }
-
+    
     // Make sure there are no weights for nonexistent controls.
     for (int i = 0; i < get_control_weights().getSize(); ++i) {
         const auto& thisName = get_control_weights()[i].getName();
