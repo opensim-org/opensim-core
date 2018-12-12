@@ -438,15 +438,6 @@ public:
         };
         CasADiVariables<DM> casGuess = m_lowerBounds;
         for (auto& kv : casGuess) {
-            std::cout << "DEBUG createInitialGuess CG " << kv.first << std::endl;
-        }
-        for (auto& kv : m_lowerBounds) {
-            std::cout << "DEBUG createInitialGuess LB " << kv.first << std::endl;
-        }
-        for (auto& kv : m_upperBounds) {
-            std::cout << "DEBUG createInitialGuess UB " << kv.first << std::endl;
-        }
-        for (auto& kv : casGuess) {
             setToMidpoint(kv.second,
                     m_lowerBounds.at(kv.first), m_upperBounds.at(kv.first));
         }
