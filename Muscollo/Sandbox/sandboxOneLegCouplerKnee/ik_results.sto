@@ -8,7 +8,7 @@ Units are S.I. units (second, meters, Newtons, ...)
 Angles are in degrees.
 
 endheader
-time	pelvis_tilt	pelvis_list	pelvis_rotation	pelvis_tx	pelvis_ty	pelvis_tz	hip_flexion_r	hip_adduction_r	hip_rotation_r	knee_angle_r	knee_angle_r_beta	ankle_angle_r	subtalar_angle_r	mtp_angle_r
+time	/jointset/ground_pelvis/pelvis_tilt/value	/jointset/ground_pelvis/pelvis_list/value	/jointset/ground_pelvis/pelvis_rotation/value	/jointset/ground_pelvis/pelvis_tx/value	/jointset/ground_pelvis/pelvis_ty/value	/jointset/ground_pelvis/pelvis_tz/value	/jointset/hip_r/hip_flexion_r/value	/jointset/hip_r/hip_adduction_r/value	/jointset/hip_r/hip_rotation_r/value	/jointset/walker_knee_r/knee_angle_r/value	/jointset/patellofemoral_r/knee_angle_r_beta/value	/jointset/ankle_r/ankle_angle_r/value	/jointset/subtalar_r/subtalar_angle_r/value	/jointset/mtp_r/mtp_angle_r/value
       0.00000000	     13.80244829	      2.40305418	     -0.98519835	     -0.57146936	      0.98752079	     -0.25669157	     -3.44631615	    -12.19798786	    -11.19211913	     63.79854415	      1.11349465	     -5.72586008	      0.00000000	      0.00000000
       0.01000000	     13.80391573	      2.14960976	     -0.54443615	     -0.55940549	      0.98958578	     -0.25743712	     -2.08592979	    -11.81491037	    -11.33208108	     63.15335507	      1.10223398	     -5.00199236	      0.00000000	      0.00000000
       0.02000000	     13.81724631	      1.77989730	     -0.17733904	     -0.54789038	      0.99154809	     -0.25802880	     -0.80309652	    -11.32934620	    -11.51658244	     62.12840185	      1.08434517	     -4.24934320	      0.00000000	      0.00000000
