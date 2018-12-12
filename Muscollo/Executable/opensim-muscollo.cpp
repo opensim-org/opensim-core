@@ -128,7 +128,7 @@ int main(int argc, char* argv[]) {
             std::string file(argv[2]);
             std::unique_ptr<Model> model;
             if (file.rfind(".osim") != std::string::npos) {
-                model = make_unique<Model>(file);
+                model = OpenSim::make_unique<Model>(file);
             } else {
                 MucoTool muco(file);
                 const MucoPhase& phase = muco.getProblem().getPhase(0);
