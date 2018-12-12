@@ -254,8 +254,8 @@ SNOPTSolver::optimize_impl(const VectorXd& variablesArg) const {
 
     // TODO try QPSolver Cholesky setting
     snopt_prob.setParameter("QPSolver Cholesky"); 
-    snopt_prob.setRealParameter("Major optimality tolerance", 1e-2);
-    snopt_prob.setRealParameter("Major feasibility tolerance", 1e-4);
+    snopt_prob.setRealParameter("Major optimality tolerance", 1e-1);
+    snopt_prob.setRealParameter("Major feasibility tolerance", 1e-6);
     snopt_prob.setIntParameter("Iterations", 100000);
 
     // Solve the problem.
