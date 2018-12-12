@@ -37,14 +37,16 @@ using CompressedRowSparsity = std::vector<std::vector<unsigned int>>;
 class SparsityPattern {
 public:
     SparsityPattern(int num_rows, int num_cols)
-            : m_num_rows(num_rows), m_num_cols(num_cols) {}
+        : m_num_rows(num_rows), m_num_cols(num_cols) {}
     SparsityPattern(int num_rows, int num_cols,
-            const std::vector<unsigned int>& row_indices,
-            const std::vector<unsigned int>& col_indices);
+        const std::vector<unsigned int>& row_indices,
+        const std::vector<unsigned int>& col_indices);
     /// Construct a sparsity pattern of a matrix with dimensions 1 x
     /// num_cols, whose nonzero entries are specified by nonzero_col_indices.
     SparsityPattern(int num_cols,
-            const std::vector<unsigned int>& nonzero_col_indices);
+        const std::vector<unsigned int>& nonzero_col_indices);
+    /// Set all elements to be nonzero.
+    virtual void set_dense();
     /// Set a single entry of the matrix as nonzero.
     /// This function has the same effect if called one or more times with the
     /// same arguments.
@@ -78,13 +80,15 @@ public:
     /// N is the number of rows and number of columns.
     explicit SymmetricSparsityPattern(int N) : SparsityPattern(N, N) {}
 
+    void set_dense() override;
+
     /// Only upper triangular elements can be appended.
     void set_nonzero(unsigned int row_index, unsigned int col_index) override;
     /// Add in a nonzero block, placing the block's upper left corner at
     /// (irowstart, icolstart) in this matrix.
     /// Note, no nonzeros are "removed", only added.
     void set_nonzero_block(unsigned int irowstart, unsigned int icolstart,
-            SymmetricSparsityPattern& block);
+        SymmetricSparsityPattern& block);
 
     /// Create a non-symmetric sparsity pattern of this matrix where the
     /// lower triangle is filled in by mirroring the upper triangle.
@@ -101,7 +105,7 @@ public:
     /// nonlinear programming." ACM Transactions on Mathematical Software
     /// (TOMS) 41.1 (2014): 1.
     static SymmetricSparsityPattern create_from_jacobian_sparsity(
-            const SparsityPattern& jac_sparsity);
+        const SparsityPattern& jac_sparsity);
 };
 
 
@@ -109,7 +113,7 @@ public:
 /// x to NaN and examining if the function value ends up as NaN.
 template <typename T>
 SparsityPattern
-calc_gradient_sparsity_with_nan(const Eigen::VectorXd& x0,
+    calc_gradient_sparsity_with_nan(const Eigen::VectorXd& x0,
         std::function<T(const VectorX<T>&)>& function) {
     using std::isnan;
     using tropter::isnan;
@@ -130,7 +134,7 @@ calc_gradient_sparsity_with_nan(const Eigen::VectorXd& x0,
 /// depend on that element of x).
 template <typename T>
 SparsityPattern
-calc_jacobian_sparsity_with_nan(const Eigen::VectorXd& x0,
+    calc_jacobian_sparsity_with_nan(const Eigen::VectorXd& x0,
         int num_outputs,
         std::function<void(const VectorX<T>&, VectorX<T>&)> function) {
     using std::isnan;
@@ -154,7 +158,7 @@ calc_jacobian_sparsity_with_nan(const Eigen::VectorXd& x0,
 /// examining if the function value is affected by the perturbation.
 template <typename T>
 SparsityPattern
-calc_gradient_sparsity_with_perturbation(const Eigen::VectorXd& x0,
+    calc_gradient_sparsity_with_perturbation(const Eigen::VectorXd& x0,
         std::function<T(const VectorX<T>&)>& function) {
     using std::isnan;
     using tropter::isnan;
@@ -178,7 +182,7 @@ calc_gradient_sparsity_with_perturbation(const Eigen::VectorXd& x0,
 /// col_names, if provided, are used to make the warning more informative.
 template <typename T>
 SparsityPattern
-calc_jacobian_sparsity_with_perturbation(const Eigen::VectorXd& x0,
+    calc_jacobian_sparsity_with_perturbation(const Eigen::VectorXd& x0,
         int num_outputs,
         std::function<void(const VectorX<T>&, VectorX<T>&)> function,
         const std::vector<std::string>& row_names = {},
@@ -201,12 +205,12 @@ calc_jacobian_sparsity_with_perturbation(const Eigen::VectorXd& x0,
         for (int i = 0; i < (int)num_outputs; ++i) {
             if (std::isnan(diff[i])) {
                 std::cout << "[tropter] Warning: NaN encountered when "
-                        "detecting sparsity of Jacobian; entry (";
+                    "detecting sparsity of Jacobian; entry (";
                 if (col_names.empty() || row_names.empty())
                     std::cout << i << ", " << j;
                 else
                     std::cout << row_names[i] << ", "
-                              << col_names[j];
+                    << col_names[j];
                 std::cout << ")." << std::endl;
             }
             if (diff[i] != 0) sparsity.set_nonzero(i, j);
@@ -220,7 +224,7 @@ calc_jacobian_sparsity_with_perturbation(const Eigen::VectorXd& x0,
 /// examining if the function value is affected by the perturbation.
 template <typename T>
 SymmetricSparsityPattern
-calc_hessian_sparsity_with_perturbation(
+    calc_hessian_sparsity_with_perturbation(
         const Eigen::VectorXd& x0,
         const std::function<T(const VectorX<T>&)>& function) {
     SymmetricSparsityPattern sparsity((int)x0.size());

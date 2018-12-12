@@ -72,11 +72,30 @@ public:
     "'random' (default) or 'initial-guess'");
     OpenSim_DECLARE_PROPERTY(optim_ipopt_print_level, int,
     "IPOPT's verbosity (see IPOPT documentation).");
-    OpenSim_DECLARE_PROPERTY(multiplier_weight, double,
-    "The weight of the squared multiplier cost term included in the optimal "
-    "control problem when only enforcing holonomic constraints in the model. A "
-    "relatively high weight of 100 is set by default (so model actuators are  "
-    "preferred).")
+    OpenSim_DECLARE_PROPERTY(transcription_scheme, std::string,
+    "'trapezoidal' (default) for trapezoidal transcription, or "
+    "'hermite-simpson' for separated Hermite-Simpson transcription.");
+    OpenSim_DECLARE_OPTIONAL_PROPERTY(hessian_block_sparsity_mode, std::string,
+    "'dense' for dense blocks on the hessian diagonal, or "
+    "'sparse' for sparse blocks on the hessian diagonal, detected from the "
+    "optimal control problem. If using an 'exact' Hessian approximation, this "
+    "property must be set.");
+    OpenSim_DECLARE_OPTIONAL_PROPERTY(enforce_constraint_derivatives, bool,
+    "'true' or 'false', whether or not derivatives of any kinematic "
+    "constraints present in the model are enforced as a path constraints in "
+    "the optimal control problem. This must property must be set if enabled "
+    "constraints exist in the model.");
+    OpenSim_DECLARE_OPTIONAL_PROPERTY(lagrange_multiplier_weight, double,
+    "(Optional) If provided, a term minimizing the weighted, squared sum of "
+    "any existing Lagrange multipliers is added to the optimal control "
+    "problem. This may be useful for imposing uniqueness in the Lagrange "
+    "multipliers when not enforcing model kinematic constraint derivatives or "
+    "when the constraint Jacobian is singular.")
+    OpenSim_DECLARE_PROPERTY(velocity_correction_bounds, MucoBounds,
+    "For problems where model kinematic constraint derivatives are enforced, "
+    "set the bounds on the slack variables performing the velocity correction "
+    "to project the model coordinates back onto the constraint manifold. "
+    "Default: [-0.1, 0.1]");
     // TODO OpenSim_DECLARE_LIST_PROPERTY(enforce_constraint_kinematic_levels, 
     //   std::string, "");
     // TODO must make more general for multiple phases, mesh refinement.

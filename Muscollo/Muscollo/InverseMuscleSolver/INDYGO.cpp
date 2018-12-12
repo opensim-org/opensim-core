@@ -221,7 +221,7 @@ public:
             const tropter::Input<T>& in,
             tropter::Output<T> out) const override {
 
-        const auto& i_mesh = in.mesh_index;
+        const auto& i_time = in.time_index;
         const auto& states = in.states;
         const auto& controls = in.controls;
 
@@ -276,7 +276,7 @@ public:
                 // Unpack variables.
                 const T& activation = states[2 * i_act];
                 // Get the total muscle-tendon length from the data.
-                const T& musTenLen = _muscleTendonLengths(i_act, i_mesh);
+                const T& musTenLen = _muscleTendonLengths(i_act, i_time);
 
                 if (_useFiberLengthState) {
                     const T& normFibVel = controls[_numCoordActuators+2*i_act+1];
@@ -293,7 +293,7 @@ public:
                     const T& tenForceRateControl =
                             controls[_numCoordActuators + 2 * i_act + 1];
                     const T& normTenForce = states[2 * i_act + 1];
-                    const T& musTenVel = _muscleTendonVelocities(i_act, i_mesh);
+                    const T& musTenVel = _muscleTendonVelocities(i_act, i_time);
 
                     const T normTenForceRate =
                             _tendonForceDynamicsScalingFactor
@@ -306,7 +306,7 @@ public:
             }
 
             // Compute generalized forces from muscles.
-            const auto& momArms = _momentArms[i_mesh];
+            const auto& momArms = _momentArms[i_time];
             // TODO convert to type T once instead of in every iteration.
             genForce += momArms.template cast<T>() * tendonForces;
         }
@@ -314,9 +314,11 @@ public:
 
         // Achieve the motion.
         // ===================
-        out.path.segment(_numMuscles, _numCoordsToActuate)
-                = _desiredMoments.col(i_mesh).template cast<T>()
-                - genForce;
+        if (out.path.size() != 0) {
+            out.path.segment(_numMuscles, _numCoordsToActuate)
+                    = _desiredMoments.col(i_time).template cast<T>()
+                    - genForce;
+        }
     }
     void calc_integral_cost(const tropter::Input<T>& in,
             T& integrand) const override {

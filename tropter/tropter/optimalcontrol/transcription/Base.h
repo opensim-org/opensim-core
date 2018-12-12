@@ -58,7 +58,6 @@ namespace transcription {
 template<typename T>
 class Base : public optimization::Problem<T> {
 public:
-
     /// Create a vector of optimization variables (for the generic
     /// optimization problem) from an states and controls.
     virtual Eigen::VectorXd
@@ -67,7 +66,8 @@ public:
     // TODO change interface to be a templated function so users can pass in
     // writeable blocks of a matrix.
     virtual Iterate
-    deconstruct_iterate(const Eigen::VectorXd& x) const = 0;
+    deconstruct_iterate(const Eigen::VectorXd& x) const = 0; 
+    
     /// Print the value of constraint vector for the given iterate. This is
     /// helpful for troubleshooting why a problem may be infeasible.
     /// This function will try to give meaningful names to the
@@ -79,6 +79,26 @@ public:
         stream << "The function print_constraint_values() is unimplemented for "
                 "this transcription method." << std::endl;
     }
+
+    /// When calculating total hessian sparsity and using repeated diagonal 
+    /// sparsity blocks to avoid redundant calculations for each mesh point,
+    /// how should these blocks be calculated?
+    ///  "dense": Mesh point blocks are assumed dense (conservative, default 
+    ///           mode)
+    /// "sparse": Mesh point block sparsity is detected from the optimal control
+    ///           problem initial guess. 
+    void set_hessian_block_sparsity_mode(std::string mode) {
+        TROPTER_VALUECHECK(mode == "dense" || mode == "sparse",
+            "hessian block sparsity mode", mode, "dense or sparse");
+        m_hessian_block_sparsity_mode = mode; 
+    }
+    /// @copydoc set_hessian_block_sparsity_mode()
+    std::string get_hessian_block_sparsity_mode () const
+    {   return m_hessian_block_sparsity_mode; }
+
+private:
+    std::string m_hessian_block_sparsity_mode{"dense"};
+
 };
 
 } // namespace transcription

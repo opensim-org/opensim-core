@@ -54,7 +54,8 @@ public:
 
     const std::string& getName() const;
 
-    /// Get a reference to the copy of the model being used by this MucoProblemRep.
+    /// Get a reference to the copy of the model being used by this 
+    /// MucoProblemRep.
     /// This model is the same instance as that given to MucoCost,
     /// MucoParameter, and MucoPathConstraint.
     const Model& getModel() const { return m_model; }
@@ -93,8 +94,8 @@ public:
     /// not include multibody constraints equations.
     int getNumPathConstraintEquations() const {
         OPENSIM_THROW_IF(m_num_path_constraint_eqs == -1, Exception,
-                "The number of scalar path constraint equations is not available "
-                "until after initialization.");
+                "The number of scalar path constraint equations is not "
+                "available until after initialization.");
         return m_num_path_constraint_eqs;
     }
     /// Given a multibody constraint name, get a vector of MucoVariableInfos
@@ -152,9 +153,9 @@ public:
             SimTK::Vector& errors) const {
 
         OPENSIM_THROW_IF(
-                errors.size() != getNumPathConstraintEquations(), Exception,
-                "The size of the errors vector passed is not consistent with the "
-                "number of scalar path constraint equations in this MucoProblem.");
+            errors.size() != getNumPathConstraintEquations(), Exception,
+            "The size of the errors vector passed is not consistent with the "
+            "number of scalar path constraint equations in this MucoProblem.");
 
         for (const auto& pc : m_path_constraints) {
             pc->calcPathConstraintErrors(state, errors);
@@ -171,8 +172,9 @@ public:
         int index = 0;
         int thisConstraintNumEqs;
         for (int i = 0; i < (int)m_multibody_constraints.size(); ++i) {
-            thisConstraintNumEqs =
-                    m_multibody_constraints[i].getConstraintInfo().getNumEquations();
+            thisConstraintNumEqs = 
+                m_multibody_constraints[i].getConstraintInfo()
+                                          .getNumEquations();
 
             SimTK::Vector theseErrors(thisConstraintNumEqs,
                     errors.getContiguousScalarData() + index, true);

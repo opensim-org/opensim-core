@@ -85,9 +85,9 @@ public:
         return result;
     }
     static void run_test(int N, std::string solver,
-            std::string hessian_approx) {
+            std::string hessian_approx, std::string transcription) {
         auto ocp = std::make_shared<SecondOrderLinearMinEffort<T>>();
-        DirectCollocationSolver<T> dircol(ocp, "trapezoidal", solver, N);
+        DirectCollocationSolver<T> dircol(ocp, transcription, solver, N);
         dircol.get_opt_solver().set_hessian_approximation
                 (hessian_approx);
         Solution solution = dircol.solve();
@@ -98,14 +98,25 @@ public:
     }
 };
 
-TEST_CASE("Second order linear min effort", "[adolc][trapezoidal]") {
+TEST_CASE("Second order linear min effort", 
+          "[adolc][trapezoidal][hermite-simpson]") 
+{
     SECTION("ADOL-C") {
-        SecondOrderLinearMinEffort<adouble>::run_test(1000, "ipopt", "exact");
+        SecondOrderLinearMinEffort<adouble>::run_test(1000, "ipopt", "exact",
+            "trapezoidal");
     }
     //SECTION("Finite differences") {
-    //    SecondOrderLinearMinEffort<double>::run_test(20, "ipopt", "exact");
+    //    SecondOrderLinearMinEffort<double>::run_test(20, "ipopt", "exact"
+    //        "trapezoidal");
+    //}
+    SECTION("ADOL-C") {
+        SecondOrderLinearMinEffort<adouble>::run_test(500, "ipopt", "exact",
+            "hermite-simpson");
+    }
+    //SECTION("Finite differences") {
+    //    SecondOrderLinearMinEffort<double>::run_test(10, "ipopt", "exact"
+    //        "hermite-simpson");
     //}
 }
-
 
 // TODO add linear tangent steering (Bryson 1975). Also in Betts' book.

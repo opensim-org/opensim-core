@@ -986,7 +986,7 @@ void testMucoIterate() {
         const std::string fname = "testMuscolloInterface_testMucoIterate.sto";
         SimTK::Vector time(3); time[0] = 0; time[1] = 0.1; time[2] = 0.25;
         MucoIterate orig(time, {"a", "b"}, {"g", "h", "i", "j"}, {"m"},
-                {"n", "o"}, SimTK::Test::randMatrix(3, 2), 
+                {"o", "p"}, SimTK::Test::randMatrix(3, 2), 
                 SimTK::Test::randMatrix(3, 4), SimTK::Test::randMatrix(3, 1),
                 SimTK::Test::randVector(2).transpose());
         orig.write(fname);
@@ -1019,8 +1019,8 @@ void testMucoIterate() {
         SimTK_TEST_MUST_THROW_EXC(iterate.getControlNames(),
                 MucoIterateIsSealed);
 
-        // The clone() function doesn't call ensureSealed(), but the clone should
-        // preserve the value of m_sealed.
+        // The clone() function doesn't call ensureSealed(), but the clone 
+        // should preserve the value of m_sealed.
         std::unique_ptr<MucoIterateDerived> ptr(iterate.clone());
         SimTK_TEST(ptr->isSealedD());
         SimTK_TEST_MUST_THROW_EXC(iterate.getNumTimes(), MucoIterateIsSealed);

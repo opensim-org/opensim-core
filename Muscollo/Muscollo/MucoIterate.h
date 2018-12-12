@@ -45,27 +45,34 @@ returned by a solver.
 
 The file format for reading and writing a MucoIterate is comprised of a
 file header followed by a row of column names and the stored data. The file
-header contains the number of states, controls, Lagrange multipliers
-(for multibody constraints), derivatives
-(non-zero if the dynamics mode is implicit),
-and parameters (order does not matter).
-Order does matter for the column names and corresponding data
+header contains the number of states, controls, Lagrange multipliers (for
+multibody constraints), derivatives (non-zero if the dynamics mode is implict),
+slacks (for special solver implmentations), and parameters (order does
+not matter). Order does matter for the column names and corresponding data
 columns. The columns *must* follow this order: time, states, controls,
-parameters. For parameter columns, the value of the parameter is stored in
+multipliers, derivatives, slacks, parameters. 
+@note Slack columns may contain real number or NaN values, depending on their
+use. For example, values for velocity correction variables used in problems
+with model kinematic constraints are defined only at the midpoint of a Hermite-
+Simpson mesh interval. The non-midpoint variables are returned as NaN in the
+slack variable data structure.
+@note For parameter columns, the value of the parameter is stored in
 the first row of the column, while the rest of the rows are filled with
 NaNs.
 @samplefile
 num_controls=<number-of-control-variables>
 num_derivatives=<number-of-derivative-variables>
-num_multipliers=<number-of-multipliers>
+num_multipliers=<number-of-multiplier-variables>
 num_parameters=<number-of-parameter-variables>
 num_states=<number-of-state-variables>
+num_slacks=<number-of-slack-variables>
+num_states=<number-of-state-variables>
 time,<state-0-name>,...,<control-0-name>,...,<multiplier-0-name>,..., \
-        <derivative-0-name>,...,<parameter-0-name>,...
-<#>,<#>,...,<#>,...,<#>,...,<#>,...,<#>  ,...
-<#>,<#>,...,<#>,...,<#>,...,<#>,...,<NaN>,...
- : , : ,..., : ,..., : ,..., : ,...,  :  ,...
-<#>,<#>,...,<#>,...,<#>,...,<#>,...,<NaN>,...
+        <derivative-0-name>,...,<slack-0-name>,...,<parameter-0-name>,...
+<#>,<#>,...,<#>,...,<#>,...,<#>,...,<#-or-NaN>,...,<#>  ,...
+<#>,<#>,...,<#>,...,<#>,...,<#>,...,<#-or-NaN>,...,<NaN>,...
+ : , : ,..., : ,..., : ,..., : ,...,    :     ,...,  :  ,...
+<#>,<#>,...,<#>,...,<#>,...,<#>,...,<#-or-NaN>,...,<NaN>,...
 @endsamplefile
 (If stored in a STO file, the delimiters are tabs, not commas.)
 
@@ -114,11 +121,11 @@ public:
     bool empty() const {
         ensureUnsealed();
         return !(m_time.size() || m_states.nelt() || m_controls.nelt() ||
-                m_multipliers.nelt() || m_derivatives.nelt() ||
-                m_parameters.nelt() ||
+                m_multipliers.nelt() || m_derivatives.nelt() || 
+                m_slacks.nelt() || m_parameters.nelt() || 
                 m_state_names.size() || m_control_names.size() || 
                 m_multiplier_names.size() || m_derivative_names.size() ||
-                m_parameter_names.size());
+                m_slack_names.size() || m_parameter_names.size());
     }
 
     /// @name Change the length of the trajectory
@@ -141,6 +148,8 @@ public:
         m_multipliers.setToNaN();
         m_derivatives.resize(numTimes, m_derivatives.ncol());
         m_derivatives.setToNaN();
+        m_slacks.resize(numTimes, m_slacks.ncol());
+        m_slacks.setToNaN();
     }
     /// Uniformly resample (interpolate) the iterate so that it retains the
     /// same initial and final times but now has the provided number of time
@@ -201,6 +210,7 @@ public:
     /// value 10.
     void setMultiplier(const std::string& name, 
                        const SimTK::Vector& trajectory);
+    
     /// Set the value of a single parameter variable. This value is invariant
     /// across time.
     void setParameter(const std::string& name, const SimTK::Real& value);
@@ -450,6 +460,7 @@ private:
     std::vector<std::string> m_control_names;
     std::vector<std::string> m_multiplier_names;
     std::vector<std::string> m_derivative_names;
+    std::vector<std::string> m_slack_names;
     std::vector<std::string> m_parameter_names;
     // Dimensions: time x states
     SimTK::Matrix m_states;
@@ -459,8 +470,31 @@ private:
     SimTK::Matrix m_multipliers;
     // Dimensions: time x derivatives
     SimTK::Matrix m_derivatives;
+    // Dimensions: time x slacks
+    SimTK::Matrix m_slacks;
     // Dimensions: 1 x parameters
     SimTK::RowVector m_parameters;
+
+    /// User interaction with slack variables is limited to using previous
+    /// solution slack trajectories as initial guesses for subsequent problems.
+    /// Therefore, these methods are private to only allow access to friends
+    /// of MucoIterate.
+    // TODO friend class TropterProblem
+    void setSlack(const std::string& name, const SimTK::Vector& trajectory);
+    void setSlack(const std::string& name,
+        std::initializer_list<double> trajectory) {
+        ensureUnsealed();
+        SimTK::Vector v((int)trajectory.size());
+        int i = 0;
+        for (auto it = trajectory.begin(); it != trajectory.end(); ++it, ++i)
+            v[i] = *it;
+        setSlack(name, v);
+    }
+    const std::vector<std::string>& getSlackNames() const
+    {   ensureUnsealed(); return m_slack_names; }
+    const SimTK::Matrix& getSlacksTrajectory() const
+    {   ensureUnsealed(); return m_slacks; }
+    SimTK::VectorView_<double> getSlack(const std::string& name) const;
 
     // We use "seal" instead of "lock" because locks have a specific meaning
     // with threading (e.g., std::unique_lock()).

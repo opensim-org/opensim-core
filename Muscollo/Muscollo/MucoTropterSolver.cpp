@@ -40,8 +40,12 @@ void MucoTropterSolver::constructProperties() {
     constructProperty_optim_hessian_approximation("limited-memory");
     constructProperty_optim_sparsity_detection("random");
     constructProperty_optim_ipopt_print_level(-1);
-    constructProperty_multiplier_weight(100.0);
-    // TODO constructProperty_enforce_holonomic_constraints_only(true);
+    constructProperty_transcription_scheme("trapezoidal");
+    constructProperty_velocity_correction_bounds({-0.1, 0.1});
+    // These must be empty to allow user input error checking.
+    constructProperty_hessian_block_sparsity_mode();
+    constructProperty_lagrange_multiplier_weight();
+    constructProperty_enforce_constraint_derivatives();
 
     constructProperty_guess_file("");
 }
@@ -82,9 +86,10 @@ MucoIterate MucoTropterSolver::createGuess(const std::string& type) const {
     int N = get_num_mesh_points();
 
     checkPropertyInSet(*this, getProperty_optim_solver(), {"ipopt", "snopt"});
-
-    auto ocp = createTropterProblem();
-    tropter::DirectCollocationSolver<double> dircol(ocp, "trapezoidal",
+    checkPropertyInSet(*this, getProperty_transcription_scheme(), 
+        {"trapezoidal", "hermite-simpson"});
+    tropter::DirectCollocationSolver<double> dircol(ocp, 
+            get_transcription_scheme(),
             get_optim_solver(), N);
 
     tropter::Iterate tropIter;
@@ -199,39 +204,84 @@ MucoSolution MucoTropterSolver::solveImpl() const {
 
     auto ocp = createTropterProblem();
 
+    // Apply settings/options.
+    // -----------------------
+    // Check that a valid verbosity level was provided.
     checkPropertyInSet(*this, getProperty_verbosity(), {0, 1, 2});
-
+    // Print problem information is verbosity is 1 or 2.
     if (get_verbosity()) {
         std::cout << std::string(79, '=') << "\n";
         std::cout << "MucoTropterSolver starting.\n";
         std::cout << std::string(79, '-') << std::endl;
         getProblemRep().printDescription();
     }
-
-    // Apply settings/options.
-    // -----------------------
+    // Check that a positive number of mesh points was provided.
     checkPropertyIsPositive(*this, getProperty_num_mesh_points());
-    int N = get_num_mesh_points();
-
+    // Check that a valid optimization solver was specified.
     checkPropertyInSet(*this, getProperty_optim_solver(), {"ipopt", "snopt"});
+    // Check that a valid transcription scheme was specified.
+    checkPropertyInSet(*this, getProperty_transcription_scheme(),
+        {"trapezoidal", "hermite-simpson"});
+    // Enforcing constraint derivatives is only supported when Hermite-Simpson
+    // is set as the transcription scheme.
+    if (!getProperty_enforce_constraint_derivatives().empty()) {
+        OPENSIM_THROW_IF(get_transcription_scheme() != "hermite-simpson" &&
+            get_enforce_constraint_derivatives(), Exception,
+            "If enforcing derivatives of model kinematic constraints, then the "
+            "property 'transcription_scheme' must be set to "
+            "'hermite-simpson'. Currently, it is set to '" + 
+            get_transcription_scheme() + "'.");    
+    }
+    // Block sparsity detected is only in effect when using an exact Hessian
+    // approximation.
+    OPENSIM_THROW_IF(get_optim_hessian_approximation() == "limited-memory" &&
+        !getProperty_hessian_block_sparsity_mode().empty(), Exception, 
+        "A value for solver property 'hessian_block_sparsity_mode' was "
+        "provided, but is unused when using a 'limited-memory' Hessian "
+        "approximation. Set solver property 'optim_hessian_approximation' to"
+        "'exact' for Hessian block sparsity to take effect.");
+    OPENSIM_THROW_IF(get_optim_hessian_approximation() == "exact" &&
+        getProperty_hessian_block_sparsity_mode().empty(), Exception,
+        "Solver property 'optim_hessian_approximation' set to 'exact'. Please "
+        "set 'hessian_block_sparsity_mode' to 'dense' or 'sparse' to specify "
+        "block sparsity detection mode.");
+    if (!getProperty_hessian_block_sparsity_mode().empty()) {
+        checkPropertyInSet(*this, getProperty_hessian_block_sparsity_mode(),
+            {"dense", "sparse"});
+    }
+    // If a Lagrange multiplier weight was provided, check that it is positive.
+    if (!getProperty_lagrange_multiplier_weight().empty()) {
+        checkPropertyIsPositive(*this, 
+            getProperty_lagrange_multiplier_weight());
+    }
 
-    tropter::DirectCollocationSolver<double> dircol(ocp, "trapezoidal",
-            get_optim_solver(), N);
-
+    // Create direct collocation solver.
+    // ---------------------------------
+    tropter::DirectCollocationSolver<double> dircol(ocp,
+        get_transcription_scheme(),
+        get_optim_solver(), 
+        get_num_mesh_points());
     dircol.set_verbosity(get_verbosity() >= 1);
+    if (!getProperty_hessian_block_sparsity_mode().empty()) {
+        dircol.set_hessian_block_sparsity_mode(
+            get_hessian_block_sparsity_mode());
+    }
 
+    // Get optimization solver to check the remaining property settings.
     auto& optsolver = dircol.get_opt_solver();
 
+    // Check that number of max iterations is valid.
     checkPropertyInRangeOrSet(*this, getProperty_optim_max_iterations(),
             0, std::numeric_limits<int>::max(), {-1});
     if (get_optim_max_iterations() != -1)
         optsolver.set_max_iterations(get_optim_max_iterations());
-
+    // Check that convergence tolerance is valid.
     checkPropertyInRangeOrSet(*this,
             getProperty_optim_convergence_tolerance(),
             0.0, SimTK::NTraits<double>::getInfinity(), {-1.0});
     if (get_optim_convergence_tolerance() != -1)
         optsolver.set_convergence_tolerance(get_optim_convergence_tolerance());
+    // Check that constraint tolerance is valid.
     checkPropertyInRangeOrSet(*this,
             getProperty_optim_constraint_tolerance(),
             0.0, SimTK::NTraits<double>::getInfinity(), {-1.0});
@@ -241,6 +291,7 @@ MucoSolution MucoTropterSolver::solveImpl() const {
     optsolver.set_hessian_approximation(get_optim_hessian_approximation());
 
     if (get_optim_solver() == "ipopt") {
+        // Check that IPOPT print level is valid.
         checkPropertyInRangeOrSet(*this, getProperty_optim_ipopt_print_level(),
                 0, 12, {-1});
         if (get_verbosity() < 2) {
@@ -252,7 +303,7 @@ MucoSolution MucoTropterSolver::solveImpl() const {
             }
         }
     }
-
+    // Check that sparsity detection mode is valid.
     checkPropertyInSet(*this, getProperty_optim_sparsity_detection(),
             {"random", "initial-guess"});
     optsolver.set_sparsity_detection(get_optim_sparsity_detection());
@@ -273,6 +324,55 @@ MucoSolution MucoTropterSolver::solveImpl() const {
     }
 
     MucoSolution mucoSolution = ocp->convertToMucoSolution(tropSolution);
+
+    // If enforcing model constraints and not minimizing Lagrange multipliers,
+    // check the rank of the constraint Jacobian and if rank-deficient, print
+    // recommendation to the user to enable Lagrange multiplier minimization.
+    if (!getProperty_enforce_constraint_derivatives().empty() && 
+             getProperty_lagrange_multiplier_weight().empty()) {
+        const auto& model = getProblemRep().getModel();
+        const auto& matter = model.getMatterSubsystem();
+        Storage storage = mucoSolution.exportToStatesStorage();
+        // TODO update when we support multiple phases.
+        auto statesTraj = StatesTrajectory::createFromStatesStorage(model, 
+            storage);
+        SimTK::Matrix G;
+        SimTK::FactorQTZ G_qtz;
+        bool isJacobianFullRank = true;
+        int rank;
+        // Jacobian rank should be time-independent, but loop through states 
+        // until rank deficiency detected, just in case.
+        for (const auto& s : statesTraj) {
+            // Jacobian is at most velocity-dependent.
+            model.realizeVelocity(s);
+            matter.calcG(s, G);
+            G_qtz.factor<double>(G);
+            if (G_qtz.getRank() < G.nrow()) {
+                isJacobianFullRank = false;
+                rank = G_qtz.getRank();
+                break;
+            }
+        }
+
+        if (!isJacobianFullRank) {
+            std::cout << "---------------------------------------------------"
+                      << "--\n";
+            std::cout << "WARNING: rank-deficient constraint Jacobian "
+                      << "detected.\n";
+            std::cout << "---------------------------------------------------"
+                        << "--\n";
+            std::cout << "The model constraint Jacobian has "
+                      << std::to_string(G.nrow()) + " row(s) but is only rank "
+                      << std::to_string(rank) + ".\nTry removing "
+                      << "redundant constraints from the model or enable \n" 
+                      << "minimization of Lagrange multipliers by specifying "
+                      << "a value \nto the solver property "
+                      << "'lagrange_multiplier_weight'.\n";
+            std::cout << "---------------------------------------------------"
+                      << "--\n\n";
+        }
+    }
+    
 
     // TODO move this to convert():
     MucoSolver::setSolutionStats(mucoSolution, tropSolution.success,

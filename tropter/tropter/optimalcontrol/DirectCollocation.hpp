@@ -18,6 +18,7 @@
 
 #include "DirectCollocation.h"
 #include "transcription/Trapezoidal.h"
+#include "transcription/HermiteSimpson.h"
 #include <tropter/optimization/SNOPTSolver.h>
 #include <tropter/optimization/IPOPTSolver.h>
 
@@ -38,6 +39,9 @@ DirectCollocationSolver<T>::DirectCollocationSolver(
             transcrip_lower.begin(), ::tolower);
     if (transcrip_lower == "trapezoidal") {
         m_transcription.reset(new transcription::Trapezoidal<T>(ocproblem,
+                                                             num_mesh_points));
+    } else if (transcrip_lower == "hermite-simpson") {
+        m_transcription.reset(new transcription::HermiteSimpson<T>(ocproblem,
                                                              num_mesh_points));
     } else {
         TROPTER_THROW("Unrecognized transcription method %s.", transcrip);
@@ -67,6 +71,15 @@ void DirectCollocationSolver<T>::set_verbosity(int verbosity) {
 }
 
 template<typename T>
+void DirectCollocationSolver<T>::set_hessian_block_sparsity_mode(
+        std::string mode) {
+    TROPTER_VALUECHECK(mode == "dense" || mode == "sparse",
+        "hessian block sparsity mode", mode, "dense or sparse");
+    m_transcription->set_hessian_block_sparsity_mode(mode);
+    m_hessian_block_sparsity_mode = mode;
+}
+
+template<typename T>
 Solution DirectCollocationSolver<T>::solve() const
 {
     Iterate initial_guess;
@@ -91,11 +104,13 @@ Solution DirectCollocationSolver<T>::solve(
     solution.states = traj.states;
     solution.controls = traj.controls;
     solution.adjuncts = traj.adjuncts;
+    solution.diffuses = traj.diffuses;
     solution.parameters = traj.parameters;
     solution.objective = optsol.objective;
     solution.state_names = traj.state_names;
     solution.control_names = traj.control_names;
     solution.adjunct_names = traj.adjunct_names;
+    solution.diffuse_names = traj.diffuse_names;
     solution.parameter_names = traj.parameter_names;
     solution.success = optsol.success;
     solution.status = optsol.status;

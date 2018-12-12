@@ -75,6 +75,16 @@ public:
     /// @copydoc set_verbosity()
     int get_verbosity() const { return m_verbosity; }
 
+    /// "dense" for dense diagonal blocks, "sparse" for sparse diagonal blocks 
+    /// (detected from the optimal control problem). This setting is copied into 
+    /// the underlying transcription scheme.
+    /// Note that the inherited method set_sparsity_detection() only has an 
+    /// effect if this mode is set to "sparse".
+    void set_hessian_block_sparsity_mode(std::string mode);
+    /// @copydoc set_hessian_block_sparsity_mode()
+    std::string get_hessian_block_sparsity_mode() const
+    { return m_hessian_block_sparsity_mode; }
+
     /// Solve the problem using an initial guess that is based on the bounds
     /// on the variables.
     Solution solve() const;
@@ -118,6 +128,7 @@ private:
     std::unique_ptr<optimization::Solver> m_optsolver;
 
     int m_verbosity = 1;
+    std::string m_hessian_block_sparsity_mode{"dense"};
 };
 
 } // namespace tropter

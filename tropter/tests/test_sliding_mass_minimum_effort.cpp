@@ -55,7 +55,7 @@ public:
 
 TEST_CASE("IPOPT") {
 
-    SECTION("ADOL-C") {
+    SECTION("ADOL-C, trapezoidal") {
         auto ocp = std::make_shared<SlidingMass<adouble>>();
         DirectCollocationSolver<adouble> dircol(ocp, "trapezoidal", "ipopt");
         Solution solution = dircol.solve();
@@ -80,6 +80,31 @@ TEST_CASE("IPOPT") {
         //REQUIRE(Approx(errors.norm()) == 0);
 
     }
+    SECTION("ADOL-C, hermite-simpson") {
+        auto ocp = std::make_shared<SlidingMass<adouble>>();
+        DirectCollocationSolver<adouble> dircol(ocp, "hermite-simpson", 
+            "ipopt");
+        Solution solution = dircol.solve();
+        solution.write("sliding_mass_solution.csv");
+        //Iterate initial_guess = ocp->make_guess_template();
+        //Solution solution = dircol.solve(initial_guess);
+
+        // Initial and final position.
+        REQUIRE(Approx(solution.states(0, 0)) == 0.0);
+        REQUIRE(Approx(solution.states.rightCols<1>()[0]) == 1.0);
+        // Initial and final speed.
+        REQUIRE(Approx(solution.states(1, 0)) == 0.0);
+        REQUIRE(Approx(solution.states.rightCols<1>()[1]) == 0.0);
+
+        int N = (int)solution.time.size();
+        //std::cout << "DEBUG solution.controls " << solution.controls << std::endl;
+        // TODO is this really the correct solution?
+        RowVectorXd expected = RowVectorXd::LinSpaced(N - 2, 14.6119, -14.6119);
+        TROPTER_REQUIRE_EIGEN(solution.controls.middleCols(1, N - 2), expected,
+            0.1);
+        //RowVectorXd errors = solution.controls.rightCols(N - 1) - expected;
+        //REQUIRE(Approx(errors.norm()) == 0);
+    }
     SECTION("Compare derivatives") {
         OCPDerivativesComparison<SlidingMass> comp;
         comp.findiff_hessian_step_size = 1e-3;
@@ -87,7 +112,7 @@ TEST_CASE("IPOPT") {
         comp.hessian_error_tolerance = 1e-3;
         comp.compare();
     }
-    SECTION("Finite differences, limited memory") {
+    SECTION("Finite differences, limited memory, trapezoidal") {
         auto ocp = std::make_shared<SlidingMass<double>>();
         DirectCollocationSolver<double> dircol(ocp, "trapezoidal", "ipopt");
         dircol.get_opt_solver().set_findiff_hessian_step_size(1e-3);
@@ -103,7 +128,23 @@ TEST_CASE("IPOPT") {
         TROPTER_REQUIRE_EIGEN(solution.controls.middleCols(1, N - 2), expected,
                 0.1);
     }
-    SECTION("Finite differences, exact Hessian") {
+    SECTION("Finite differences, limited memory, hermite-simpson") {
+        auto ocp = std::make_shared<SlidingMass<double>>();
+        DirectCollocationSolver<double> dircol(ocp, "hermite-simpson", "ipopt");
+        dircol.get_opt_solver().set_findiff_hessian_step_size(1e-3);
+        dircol.get_opt_solver().set_hessian_approximation("limited-memory");
+        Solution solution = dircol.solve();
+        REQUIRE(Approx(solution.states(0, 0)) == 0.0);
+        REQUIRE(Approx(solution.states.rightCols<1>()[0]) == 1.0);
+        // Initial and final speed.
+        REQUIRE(Approx(solution.states(1, 0)) == 0.0);
+        REQUIRE(Approx(solution.states.rightCols<1>()[1]) == 0.0);
+        int N = (int)solution.time.size();
+        RowVectorXd expected = RowVectorXd::LinSpaced(N - 2, 14.6119, -14.6119);
+        TROPTER_REQUIRE_EIGEN(solution.controls.middleCols(1, N - 2), expected,
+            0.1);
+    }
+    SECTION("Finite differences, exact Hessian, trapezoidal") {
         auto ocp = std::make_shared<SlidingMass<double>>();
         DirectCollocationSolver<double> dircol(ocp, "trapezoidal", "ipopt");
         dircol.get_opt_solver().set_findiff_hessian_step_size(1e-3);
@@ -119,10 +160,27 @@ TEST_CASE("IPOPT") {
         TROPTER_REQUIRE_EIGEN(solution.controls.middleCols(1, N - 2), expected,
                 0.1);
     }
+    SECTION("Finite differences, exact Hessian, hermite-simpson") {
+        auto ocp = std::make_shared<SlidingMass<double>>();
+        DirectCollocationSolver<double> dircol(ocp, "hermite-simpson", "ipopt");
+        dircol.get_opt_solver().set_findiff_hessian_step_size(1e-3);
+        dircol.get_opt_solver().set_hessian_approximation("exact");
+        Solution solution = dircol.solve();
+        REQUIRE(Approx(solution.states(0, 0)) == 0.0);
+        REQUIRE(Approx(solution.states.rightCols<1>()[0]) == 1.0);
+        // Initial and final speed.
+        REQUIRE(Approx(solution.states(1, 0)) == 0.0);
+        REQUIRE(Approx(solution.states.rightCols<1>()[1]) == 0.0);
+        int N = (int)solution.time.size();
+        solution.write("sliding_mass_solution_hermite_simpson.csv");
+        RowVectorXd expected = RowVectorXd::LinSpaced(N - 2, 14.6119, -14.6119);
+        TROPTER_REQUIRE_EIGEN(solution.controls.middleCols(1, N - 2), expected,
+            0.1);
+    }
 }
 
 #if defined(TROPTER_WITH_SNOPT)
-TEST_CASE("SNOPT") {
+TEST_CASE("SNOPT, trapezoidal") {
 
     auto ocp = std::make_shared<SlidingMass<adouble>>();
     DirectCollocationSolver<adouble> dircol(ocp, "trapezoidal", "snopt");
@@ -144,6 +202,31 @@ TEST_CASE("SNOPT") {
     RowVectorXd expected = RowVectorXd::LinSpaced(N - 2, 14.6119, -14.6119);
     TROPTER_REQUIRE_EIGEN(solution.controls.middleCols(1, N - 2), expected,
      0.1);
+    //RowVectorXd errors = solution.controls.rightCols(N - 1) - expected;
+    //REQUIRE(Approx(errors.norm()) == 0);
+}
+TEST_CASE("SNOPT, hermite-simpson") {
+
+    auto ocp = std::make_shared<SlidingMass<adouble>>();
+    DirectCollocationSolver<adouble> dircol(ocp, "hermite-simpson", "snopt");
+    Solution solution = dircol.solve();
+    solution.write("sliding_mass_solution.csv");
+    //Iterate initial_guess = ocp->make_guess_template();
+    //Solution solution = dircol.solve(initial_guess);
+
+    // Initial and final position.
+    REQUIRE(Approx(solution.states(0, 0)) == 0.0);
+    REQUIRE(Approx(solution.states.rightCols<1>()[0]) == 1.0);
+    // Initial and final speed.
+    REQUIRE(Approx(solution.states(1, 0)) == 0.0);
+    REQUIRE(Approx(solution.states.rightCols<1>()[1]) == 0.0);
+
+    int N = (int)solution.time.size();
+    //std::cout << "DEBUG solution.controls " << solution.controls << std::endl;
+    // TODO is this really the correct solution?
+    RowVectorXd expected = RowVectorXd::LinSpaced(N - 2, 14.6119, -14.6119);
+    TROPTER_REQUIRE_EIGEN(solution.controls.middleCols(1, N - 2), expected,
+        0.1);
     //RowVectorXd errors = solution.controls.rightCols(N - 1) - expected;
     //REQUIRE(Approx(errors.norm()) == 0);
 }

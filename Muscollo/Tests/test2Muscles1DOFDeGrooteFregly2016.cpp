@@ -242,12 +242,18 @@ public:
         // Multibody dynamics.
         T normTenForce_1;
         T normTenForce_2;
+        T res_1;
+        T res_2;
         m_muscle_1.calcEquilibriumResidual(
                 activation_1, position, normFibLen_1, normFibVel_1, 
-                out.path[0], normTenForce_1);
+                res_1, normTenForce_1);
         m_muscle_2.calcEquilibriumResidual(
                 activation_2, position, normFibLen_2, normFibVel_2,
-                out.path[1], normTenForce_2);
+                res_2, normTenForce_2);
+        if (out.path.size() != 0) {
+            out.path[0] = res_1;
+            out.path[1] = res_2;
+        }
         T tendonForce_1 = m_muscle_1.get_max_isometric_force()*normTenForce_1;
         T tendonForce_2 = m_muscle_2.get_max_isometric_force()*normTenForce_2;
         out.dynamics[1] = g - (tendonForce_1 + tendonForce_2) / mass;

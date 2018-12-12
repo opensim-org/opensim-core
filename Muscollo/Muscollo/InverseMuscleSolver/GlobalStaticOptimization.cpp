@@ -210,7 +210,7 @@ public:
     void calc_differential_algebraic_equations(
             const tropter::Input<T>& in,
             tropter::Output<T> out) const override {
-        const auto& i_mesh = in.mesh_index;
+        const auto& i_time = in.time_index;
 
         // Actuator equilibrium.
         // =====================
@@ -239,8 +239,8 @@ public:
 
                 // Get the total muscle-tendon length and velocity from the
                 // data.
-                const T& musTenLen = _muscleTendonLengths(i_act, i_mesh);
-                const T& musTenVel = _muscleTendonVelocities(i_act, i_mesh);
+                const T& musTenLen = _muscleTendonLengths(i_act, i_time);
+                const T& musTenVel = _muscleTendonVelocities(i_act, i_time);
 
                 muscleForces[i_act] =
                         _muscles[i_act].calcRigidTendonFiberForceAlongTendon(
@@ -248,14 +248,16 @@ public:
             }
 
             // Compute generalized forces from muscles.
-            const auto& momArms = _momentArms[i_mesh];
+            const auto& momArms = _momentArms[i_time];
             genForce += momArms.template cast<adouble>() * muscleForces;
         }
 
         // Achieve the motion.
         // ===================
-        out.path = _desiredMoments.col(i_mesh).template cast<adouble>()
-                 - genForce;
+        if (out.path.size() != 0) {
+            out.path = _desiredMoments.col(i_time).template cast<adouble>()
+                     - genForce;
+        }
     }
     void calc_integral_cost(const tropter::Input<T>& in,
             T& integrand) const override {
