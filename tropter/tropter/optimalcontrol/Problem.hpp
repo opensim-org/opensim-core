@@ -304,14 +304,30 @@ void Problem<T>::get_all_bounds(
         Eigen::Ref<Eigen::VectorXd> parameters_upper,
         Eigen::Ref<Eigen::VectorXd> path_constraints_lower,
         Eigen::Ref<Eigen::VectorXd> path_constraints_upper) const {
-    initial_time_lower = m_initial_time_bounds.lower;
-    initial_time_upper = m_initial_time_bounds.upper;
-    final_time_lower = m_final_time_bounds.lower;
-    final_time_upper = m_final_time_bounds.upper;
+    const double inf = std::numeric_limits<double>::infinity();
+    if (m_initial_time_bounds.is_set()) {
+        initial_time_lower = m_initial_time_bounds.lower;
+        initial_time_upper = m_initial_time_bounds.upper;
+    } else {
+        initial_time_lower = -inf;
+        initial_time_upper =  inf;
+    }
+    if (m_final_time_bounds.is_set()) {
+        final_time_lower = m_final_time_bounds.lower;
+        final_time_upper = m_final_time_bounds.upper;
+    } else {
+        final_time_lower = -inf;
+        final_time_upper =  inf;
+    }
     for (unsigned is = 0; is < m_state_infos.size(); ++is) {
         const auto& info = m_state_infos[is];
-        states_lower[is]         = info.bounds.lower;
-        states_upper[is]         = info.bounds.upper;
+        if (info.bounds.is_set()) {
+            states_lower[is]         = info.bounds.lower;
+            states_upper[is]         = info.bounds.upper;
+        } else {
+            states_lower[is]         = -inf;
+            states_upper[is]         =  inf;
+        }
         if (info.initial_bounds.is_set()) {
             initial_states_lower[is] = info.initial_bounds.lower;
             initial_states_upper[is] = info.initial_bounds.upper;
@@ -329,9 +345,13 @@ void Problem<T>::get_all_bounds(
     }
     for (unsigned ic = 0; ic < m_control_infos.size(); ++ic) {
         const auto& info = m_control_infos[ic];
-        // TODO if (!info.bounds.is_set()), give error.
-        controls_lower[ic]         = info.bounds.lower;
-        controls_upper[ic]         = info.bounds.upper;
+        if (info.bounds.is_set()) {
+            controls_lower[ic]         = info.bounds.lower;
+            controls_upper[ic]         = info.bounds.upper;
+        } else {
+            controls_lower[ic]         = -inf;
+            controls_upper[ic]         =  inf;
+        }
         if (info.initial_bounds.is_set()) {
             initial_controls_lower[ic] = info.initial_bounds.lower;
             initial_controls_upper[ic] = info.initial_bounds.upper;
@@ -349,9 +369,13 @@ void Problem<T>::get_all_bounds(
     }
     for (unsigned ia = 0; ia < m_adjunct_infos.size(); ++ia) {
         const auto& info = m_adjunct_infos[ia];
-        // TODO if (!info.bounds.is_set()), give error.
-        adjuncts_lower[ia] = info.bounds.lower;
-        adjuncts_upper[ia] = info.bounds.upper;
+        if (info.bounds.is_set()) {
+            adjuncts_lower[ia]         = info.bounds.lower;
+            adjuncts_upper[ia]         = info.bounds.upper;
+        } else {
+            adjuncts_lower[ia]         = -inf;
+            adjuncts_upper[ia]         =  inf;
+        }
         if (info.initial_bounds.is_set()) {
             initial_adjuncts_lower[ia] = info.initial_bounds.lower;
             initial_adjuncts_upper[ia] = info.initial_bounds.upper;
@@ -371,13 +395,23 @@ void Problem<T>::get_all_bounds(
     }
     for (unsigned ip = 0; ip < m_parameter_infos.size(); ++ip) {
         const auto& info = m_parameter_infos[ip];
-        parameters_lower[ip] = info.bounds.lower;
-        parameters_upper[ip] = info.bounds.upper;
+        if (info.bounds.is_set()) {
+            parameters_lower[ip] = info.bounds.lower;
+            parameters_upper[ip] = info.bounds.upper;
+        } else {
+            parameters_lower[ip] = -inf;
+            parameters_upper[ip] =  inf;
+        }
     }
     for (unsigned ipc = 0; ipc < m_path_constraint_infos.size(); ++ipc) {
         const auto& info = m_path_constraint_infos[ipc];
-        path_constraints_lower[ipc] = info.bounds.lower;
-        path_constraints_upper[ipc] = info.bounds.upper;
+        if (info.bounds.is_set()) {
+            path_constraints_lower[ipc] = info.bounds.lower;
+            path_constraints_upper[ipc] = info.bounds.upper;
+        } else {
+            path_constraints_lower[ipc] = -inf;
+            path_constraints_upper[ipc] =  inf;
+        }
     }
 }
 

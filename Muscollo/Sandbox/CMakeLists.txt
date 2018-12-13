@@ -28,8 +28,6 @@ MuscolloAddSandboxExecutable(NAME sandboxSlidingMass
         LIB_DEPENDS osimMuscollo tropter)
 MuscolloAddSandboxExecutable(NAME sandboxContact
         LIB_DEPENDS osimMuscollo osimAnalyses tropter)
-MuscolloAddSandboxExecutable(NAME sandboxDoublePendulumSwingup
-        LIB_DEPENDS osimMuscollo tropter)
 MuscolloAddSandboxExecutable(NAME sandboxMuscle
         SOURCE_FILES
             shared/DeGrooteFregly2016Muscle.h

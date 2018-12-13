@@ -31,9 +31,12 @@ Usage:
     Print a template XML file for the provided tool.
     <tool> can be "GlobalStaticOptimization", "INDYGO", or "MucoTool"
 
-  opensim-muscollo visualize <model-file> [<iterate-file>]
+  opensim-muscollo visualize <model-or-omuco-file> [<iterate-file>]
 
     Visualize an OpenSim model (.osim file) with a MucoIterate, if provided.
+    If an iterate is not provided, the model is visualized with its default
+    state.
+    You can provide a MucoTool setup file (.omuco) instead of a model.
 
 )";
 
@@ -122,19 +125,26 @@ int main(int argc, char* argv[]) {
             OPENSIM_THROW_IF(argc < 3 || argc > 4, Exception,
                     "Incorrect number of arguments.");
 
-            std::string modelFile(argv[2]);
+            std::string file(argv[2]);
+            std::unique_ptr<Model> model;
+            if (file.rfind(".osim") != std::string::npos) {
+                model = OpenSim::make_unique<Model>(file);
+            } else {
+                MucoTool muco(file);
+                const MucoPhase& phase = muco.getProblem().getPhase(0);
+                model.reset(phase.getModel().clone());
+            }
             if (argc == 3) {
                 // No motion provided.
-                Model model(modelFile);
-                model.setUseVisualizer(true);
-                auto state = model.initSystem();
-                model.getVisualizer().show(state);
+                model->setUseVisualizer(true);
+                auto state = model->initSystem();
+                model->getVisualizer().show(state);
                 std::cout << "Press any key to exit." << std::endl;
                 // Wait for user input.
                 std::cin.get();
             } else {
                 MucoIterate iterate(argv[3]);
-                visualize(Model(modelFile), iterate.exportToStatesStorage());
+                visualize(*model, iterate.exportToStatesStorage());
             }
         } else {
             std::cout << "Unrecognized arguments. See usage with -h or --help"

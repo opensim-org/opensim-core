@@ -35,6 +35,8 @@ add_library(osimMuscollo SHARED
         MucoIterate.cpp
         MucoTropterSolver.h
         MucoTropterSolver.cpp
+        tropter/TropterProblem.h
+        tropter/TropterProblem.cpp
         MucoParameter.h
         MucoParameter.cpp
         MucoConstraint.h
@@ -51,6 +53,8 @@ add_library(osimMuscollo SHARED
         InverseMuscleSolver/InverseMuscleSolverMotionData.cpp
         Components/StationPlaneContactForce.h
         Components/StationPlaneContactForce.cpp
+        Components/ModelFactory.h
+        Components/ModelFactory.cpp
         )
 target_link_libraries(osimMuscollo PUBLIC osimActuators
                                    PRIVATE tropter)

@@ -98,8 +98,7 @@ public:
     /// - **time-stepping**: see createGuessTimeStepping().
     /// @note Calling this method does *not* set an initial guess to be used
     /// in the solver; you must call setGuess() or setGuessFile() for that.
-    /// @precondition You must have called setProblem().
-    // TODO problem must be upToDate()?
+    /// @precondition You must have called resetProblem().
     MucoIterate createGuess(const std::string& type = "bounds") const;
 
     /// (Experimental) Run a forward simulation (using the OpenSim Manager,
@@ -161,14 +160,14 @@ protected:
 
     // TODO
     template <typename T>
-    class OptimalControlProblem;
+    class TropterProblemBase;
     template <typename T>
-    class OCPExplicit;
+    class ExplicitTropterProblem;
     template <typename T>
-    class OCPImplicit;
+    class ImplicitTropterProblem;
 
-    std::shared_ptr<const tropter::Problem<double>>
-    getTropterProblem() const;
+    std::shared_ptr<const TropterProblemBase<double>>
+    createTropterProblem() const;
 
     void resetProblemImpl(const MucoProblemRep&) const override;
     // TODO ensure that user-provided guess is within bounds.
@@ -180,9 +179,6 @@ private:
             "A MucoIterate file storing an initial guess.");
 
     void constructProperties();
-
-    mutable SimTK::ResetOnCopy<std::shared_ptr<OCProblem<double>>>
-            m_tropProblem;
 
     // When a copy of the solver is made, we want to keep any guess specified
     // by the API, but want to discard anything we've cached by loading a file.

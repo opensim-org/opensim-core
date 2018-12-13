@@ -25,13 +25,13 @@ namespace OpenSim {
 /// Similar to CoordinateActuator (simply produces a generalized force) but
 /// with first-order linear activation dynamics. This actuator has one state
 /// variable, `activation`, with \f$ \dot{a} = (u - a) / \tau \f$, where
-/// \f$ a \f$ is activation, \f$ u $\f is excitation, and \f$ \tau \f$ is the
+/// \f$ a \f$ is activation, \f$ u \f$ is excitation, and \f$ \tau \f$ is the
 /// activation time constant (there is no separate deactivation time constant).
 /// <b>Default %Property Values</b>
 /// @verbatim
 /// activation_time_constant: 0.01
 /// default_activation: 0.5
-/// @dverbatim
+/// @endverbatim
 class OSIMMUSCOLLO_API
     ActivationCoordinateActuator : public CoordinateActuator {
     OpenSim_DECLARE_CONCRETE_OBJECT(ActivationCoordinateActuator,

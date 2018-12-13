@@ -70,7 +70,9 @@ public:
     ///   - only one bound: value of the bound.
     Eigen::VectorXd make_initial_guess_from_bounds() const;
     /// Create a vector with random variable values within the variable
-    /// bounds, potentially for use as an initial guess.
+    /// bounds, potentially for use as an initial guess. If, for a given
+    /// variable, either bound is infinite, then the element is a random number
+    /// in [-1, 1] clamped by the bounds.
     // TODO rename to random_variables
     Eigen::VectorXd make_random_iterate_within_bounds() const;
     /// When using finite differences to compute derivatives, should we use
@@ -184,7 +186,12 @@ AbstractProblem::make_random_iterate_within_bounds() const {
     // random's values are within [-1, 1]
     Eigen::ArrayXd random = Eigen::ArrayXd::Random(lower.size());
     // Get values between [0, 1], then scale by width and shift by lower.
-    return 0.5 * (random + 1.0) * (upper - lower) + lower;
+    Eigen::ArrayXd scaled = 0.5 * (random + 1.0) * (upper - lower) + lower;
+    for (int i = 0; i < scaled.size(); ++i) {
+        if (std::isnan(scaled[i]))
+            scaled[i] = std::min(std::max(random[i], lower[i]), upper[i]);
+    }
+    return scaled;
 }
 
 } // namespace optimization
