@@ -29,6 +29,7 @@
 
 #include <cstdarg>
 #include <cstdio>
+#include <iomanip>
 
 using namespace OpenSim;
 
