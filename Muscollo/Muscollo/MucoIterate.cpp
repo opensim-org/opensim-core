@@ -481,7 +481,7 @@ TimeSeriesTable MucoIterate::convertToTable() const {
     labels.insert(labels.end(),
             m_derivative_names.begin(), m_derivative_names.end());
     labels.insert(labels.end(),
-        m_slack_names.begin(), m_slack_names.end());
+            m_slack_names.begin(), m_slack_names.end());
     labels.insert(labels.end(),
             m_parameter_names.begin(), m_parameter_names.end());
     int numTimes = (int)m_time.size();

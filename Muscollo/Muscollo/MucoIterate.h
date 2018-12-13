@@ -446,6 +446,30 @@ public:
             const TimeSeriesTable& controlsTrajectory);
     /// @}
 
+    /// User interaction with slack variables is limited to using previous
+    /// solution slack trajectories as initial guesses for subsequent problems.
+    /// Therefore, these methods are hidden from doxygen and the bindings to 
+    /// discourage use.
+    #ifndef SWIG
+    /// @cond
+    void setSlack(const std::string& name, const SimTK::Vector& trajectory);
+    void setSlack(const std::string& name,
+        std::initializer_list<double> trajectory) {
+        ensureUnsealed();
+        SimTK::Vector v((int)trajectory.size());
+        int i = 0;
+        for (auto it = trajectory.begin(); it != trajectory.end(); ++it, ++i)
+            v[i] = *it;
+        setSlack(name, v);
+    }
+    const std::vector<std::string>& getSlackNames() const
+    {   ensureUnsealed(); return m_slack_names; }
+    const SimTK::Matrix& getSlacksTrajectory() const
+    {   ensureUnsealed(); return m_slacks; }
+    SimTK::VectorView_<double> getSlack(const std::string& name) const;
+    /// @endcond
+    #endif
+
 protected:
     void setSealed(bool sealed) { m_sealed = sealed; }
     bool isSealed() const { return m_sealed; }
@@ -474,27 +498,6 @@ private:
     SimTK::Matrix m_slacks;
     // Dimensions: 1 x parameters
     SimTK::RowVector m_parameters;
-
-    /// User interaction with slack variables is limited to using previous
-    /// solution slack trajectories as initial guesses for subsequent problems.
-    /// Therefore, these methods are private to only allow access to friends
-    /// of MucoIterate.
-    // TODO friend class TropterProblem
-    void setSlack(const std::string& name, const SimTK::Vector& trajectory);
-    void setSlack(const std::string& name,
-        std::initializer_list<double> trajectory) {
-        ensureUnsealed();
-        SimTK::Vector v((int)trajectory.size());
-        int i = 0;
-        for (auto it = trajectory.begin(); it != trajectory.end(); ++it, ++i)
-            v[i] = *it;
-        setSlack(name, v);
-    }
-    const std::vector<std::string>& getSlackNames() const
-    {   ensureUnsealed(); return m_slack_names; }
-    const SimTK::Matrix& getSlacksTrajectory() const
-    {   ensureUnsealed(); return m_slacks; }
-    SimTK::VectorView_<double> getSlack(const std::string& name) const;
 
     // We use "seal" instead of "lock" because locks have a specific meaning
     // with threading (e.g., std::unique_lock()).

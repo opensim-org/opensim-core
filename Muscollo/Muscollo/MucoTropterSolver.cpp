@@ -88,6 +88,7 @@ MucoIterate MucoTropterSolver::createGuess(const std::string& type) const {
     checkPropertyInSet(*this, getProperty_optim_solver(), {"ipopt", "snopt"});
     checkPropertyInSet(*this, getProperty_transcription_scheme(), 
         {"trapezoidal", "hermite-simpson"});
+    auto ocp = createTropterProblem();
     tropter::DirectCollocationSolver<double> dircol(ocp, 
             get_transcription_scheme(),
             get_optim_solver(), N);

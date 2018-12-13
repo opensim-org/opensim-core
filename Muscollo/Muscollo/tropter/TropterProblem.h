@@ -182,7 +182,7 @@ protected:
                         // "lambda", which may change in the future.
                         this->add_diffuse(std::string(
                                 multInfo.getName()).replace(0, 6, "gamma"),
-                            convert(m_mucoTropterSolver
+                            convertBounds(m_mucoTropterSolver
                                 .get_velocity_correction_bounds()));
                     }
                     ++multIndexThisConstraint;
@@ -325,7 +325,7 @@ protected:
 
         // Multipliers are negated so constraint forces can be used like
         // applied forces.
-        SimTK::Vector multipliers(m_numMultibodyConstraintEqs,
+        SimTK::Vector multipliers(m_numMultibodyConstraintEquations,
                 in.adjuncts.data(), true);
         matter.calcConstraintForcesFromMultipliers(state, -multipliers,
                 constraintBodyForces, constraintMobilityForces);
@@ -335,7 +335,7 @@ protected:
             double* errorsBegin) const {
         // Copy errors from generic path constraints into output struct.
         SimTK::Vector pathConstraintErrors(
-                this->m_numPathConstraintEqs, errorsBegin, true);
+                this->m_numPathConstraintEquations, errorsBegin, true);
         m_mucoProbRep.calcPathConstraintErrors(state, pathConstraintErrors);
     }
 
@@ -497,7 +497,7 @@ public:
         OPENSIM_THROW_IF(this->m_state.getNZ(), Exception,
                 "Cannot use implicit dynamics mode if the system has auxiliary "
                 "states.");
-        OPENSIM_THROW_IF(this->m_numMultibodyConstraintEqs, Exception,
+        OPENSIM_THROW_IF(this->m_numMultibodyConstraintEquations, Exception,
                 "Cannot use implicit dynamics mode with multibody "
                 "constraints.");
         // Add adjuncts for udot, which we call "w".
@@ -530,7 +530,8 @@ public:
         const auto NQ = simTKState.getNQ(); // TODO we assume NQ = NU
 
         const auto& u = states.segment(NQ, NQ);
-        const auto& w = adjuncts.segment(this->m_numMultibodyConstraintEqs, NQ);
+        const auto& w = adjuncts.segment(
+            this->m_numMultibodyConstraintEquations, NQ);
 
         // Kinematic differential equations
         // --------------------------------
@@ -567,22 +568,23 @@ public:
 		// TODO move condition inside function
 		if (out.path.size() != 0) {
 			double* pathConstraintErrorBegin =
-					out.path.data() + this->m_numMultibodyConstraintEqs;
+					out.path.data() + this->m_numMultibodyConstraintEquations;
 			this->calcPathConstraintErrors(simTKState, pathConstraintErrorBegin);
 			OPENSIM_THROW_IF(
 					simTKState.getSystemStage() >= SimTK::Stage::Acceleration,
 					Exception,
 					"Cannot realize to Acceleration in implicit dynamics mode.");
-		}
+		
+            InverseDynamicsSolver id(model);
+            SimTK::Vector udot((int)w.size(), w.data(), true);
+            SimTK::Vector residual = id.solve(simTKState, udot);
 
-        InverseDynamicsSolver id(model);
-        SimTK::Vector udot((int)w.size(), w.data(), true);
-        SimTK::Vector residual = id.solve(simTKState, udot);
-
-        double* residualBegin =
-                pathConstraintErrorBegin + this->m_numPathConstraintEqs;
-        std::copy_n(residual.getContiguousScalarData(), residual.size(),
-                residualBegin);
+            double* residualBegin =
+                    pathConstraintErrorBegin + 
+                    this->m_numPathConstraintEquations;
+            std::copy_n(residual.getContiguousScalarData(), residual.size(),
+                    residualBegin);
+        }
 
         // TODO Antoine and Gil said realizing Dynamics is a lot costlier than
         // realizing to Velocity and computing forces manually.

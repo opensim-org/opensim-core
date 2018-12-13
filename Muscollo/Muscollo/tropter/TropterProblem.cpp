@@ -40,6 +40,8 @@ convertIterateTropterToMuco(const tropIterateType& tropSol) const {
     std::vector<std::string> derivative_names(numDerivatives);
     std::copy_n(tropSol.adjunct_names.begin() + numMultipliers, numDerivatives,
             derivative_names.begin());
+
+    const auto& slack_names = tropSol.diffuse_names;
 	const int numSlacks = (int)slack_names.size();
     const auto& parameter_names = tropSol.parameter_names;
 
