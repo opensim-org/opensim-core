@@ -74,7 +74,6 @@ protected:
     void initializeOnModelImpl(const Model&) const override;
     void calcIntegralCostImpl(const SimTK::State& state,
         double& integrand) const override;
-private:
     OpenSim_DECLARE_PROPERTY(markers_reference, MarkersReference,
             "MarkersReference object containing the marker trajectories to be "
             "tracked by a model. Marker weights can be optionally specified "
@@ -86,15 +85,17 @@ private:
             "Allow markers_reference to contain marker data for a marker "
             "not in the model (such data would be ignored). Default: false.");
 
+    mutable GCVSplineSet m_refsplines;
+    mutable std::vector<SimTK::ReferencePtr<const Marker>> m_model_markers;
+    mutable std::vector<int> m_refindices;
+    mutable SimTK::Array_<double> m_marker_weights;
+
+private:
     void constructProperties() {
         constructProperty_markers_reference(MarkersReference());
         constructProperty_allow_unused_references(false);
     };
 
-    mutable GCVSplineSet m_refsplines;
-    mutable std::vector<SimTK::ReferencePtr<const Marker>> m_model_markers;
-    mutable std::vector<int> m_refindices;
-    mutable SimTK::Array_<double> m_marker_weights;
 };
 
 } // namespace OpenSim

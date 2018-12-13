@@ -38,8 +38,9 @@ TODO
 MucoFramework
 MucoTrack
 
-Example
--------
+HELLO
+
+@section Example
 
 TODO
 
@@ -51,24 +52,22 @@ MucoProblem and a MucoSolver.
   - MucoSolver: solves the MucoProblem using direct collocation.
 
 
-Workflow
---------
+@section Workflow
+
 When building a MucoTool programmatically (e.g., in C++), the workflow is as
 follows:
 
 1. Build the MucoProblem (set the model, constraints, etc.).
 2. Call MucoTool::initSolver(), which returns a reference to the MucoSolver.
-   After this, you cannot edit the MucoProblem.
 3. Edit the settings of the MucoSolver (returned by initSolver()).
 4. Call MucoTool::solve(). This returns the MucoSolution.
 5. (Optional) Postprocess the solution, perhaps using MucoTool::visualize().
 
 After calling solve(), you can edit the MucoProblem and/or the MucoSolver.
-You can then call solve() again, if you wish.
+You can then edit the problem or solver and call solve() again, if you wish.
 
 
-%MucoProblem
-------------
+@section MucoProblem
 
 A MucoProblem contains multiple phases.
 
@@ -81,19 +80,31 @@ TODO describe bounds (set automatically based on the model).
     ///     true, then the bounds are set to the coordinate's **range** (see
     ///     Coordinate::clamped and Coordinate::range). (TODO)
 
-### Defining the cost functional
+@subsection costfunctional Defining the cost functional
 
 See @ref mucocost for more information.
 
-%MucoSolver
------------
+@section MucoSolver
 
 A MucoSolver attempts to use an optimal control method to solve the MucoProblem,
 and exposes the settings that you can use to
 
+@subsection MucoTropterSolver
 
-Tips for solving a custom problem
----------------------------------
+@par Dynamics mode: implicit
+
+When using the implicit dynamics mode, the differential equations for multibody
+dynamics are expressed as implicit differential equations. That is, they are
+in the form \f$ 0 = f(x, \dot{x}) \f$ rather than \f$ \dot{x} = f(x) \f$.
+
+The following are not currently supported with implicit dynamics:
+
+1. Auxiliary dynamics (e.g., activation and fiber dynamics).
+2. Acceleration-level quantities (e.g., MucoJointReactionNormCost).
+3. Multibody constraints.
+
+
+@section tips Tips for solving a custom problem
 
 1. Make sure every variable has bounds.
 
@@ -105,5 +116,6 @@ Tips for solving a custom problem
 These are the available cost terms you can use in your cost functional. If none
 of these satisfy your needs, you can define your own using a plugin.
 */
-}
+
+} // namespace OpenSim
 

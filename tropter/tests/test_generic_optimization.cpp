@@ -60,9 +60,9 @@ TEST_CASE("Unconstrained, IPOPTSolver", "[ipopt]") {
         solver.set_hessian_approximation("limited-memory");
         auto solution = solver.optimize(guess);
 
-        REQUIRE(Approx(solution.variables[0]) == 1.5);
-        REQUIRE(Approx(solution.variables[1]) == -2.0);
-        REQUIRE(Approx(solution.objective)   == 0);
+        REQUIRE(Approx(solution.variables[0]).margin(1e-10) == 1.5);
+        REQUIRE(Approx(solution.variables[1]).margin(1e-10) == -2.0);
+        REQUIRE(Approx(solution.objective).margin(1e-10)    == 0);
 
         // TODO throw exception if constraints() is unimplemented and
         // there are nonzero number of constraints.
@@ -74,9 +74,9 @@ TEST_CASE("Unconstrained, IPOPTSolver", "[ipopt]") {
         solver.set_hessian_approximation("exact");
         auto solution = solver.optimize(guess);
 
-        REQUIRE(Approx(solution.variables[0]) == 1.5);
-        REQUIRE(Approx(solution.variables[1]) == -2.0);
-        REQUIRE(Approx(solution.objective)   == 0);
+        REQUIRE(Approx(solution.variables[0]).margin(1e-10) == 1.5);
+        REQUIRE(Approx(solution.variables[1]).margin(1e-10) == -2.0);
+        REQUIRE(Approx(solution.objective).margin(1e-10)    == 0);
     }
     SECTION("ADOL-C") {
         // Make sure it's okay to not have constraints.
@@ -85,9 +85,9 @@ TEST_CASE("Unconstrained, IPOPTSolver", "[ipopt]") {
         VectorXd guess = Vector2d(0, 0);
         auto solution = solver.optimize(guess);
 
-        REQUIRE(Approx(solution.variables[0]) == 1.5);
-        REQUIRE(Approx(solution.variables[1]) == -2.0);
-        REQUIRE(Approx(solution.objective)   == 0);
+        REQUIRE(Approx(solution.variables[0]).margin(1e-10) == 1.5);
+        REQUIRE(Approx(solution.variables[1]).margin(1e-10) == -2.0);
+        REQUIRE(Approx(solution.objective).margin(1e-10)    == 0);
 
         // TODO throw exception if constraints() is unimplemented and
         // there are nonzero number of constraints.

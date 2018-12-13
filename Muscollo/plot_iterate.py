@@ -40,6 +40,18 @@ args = parser.parse_args()
 
 datafiles = args.file
 
+# if datafiles is None or len(datafiles) == 0:
+#     try:
+#         import tkinter as tk
+#         from tkinter import filedialog
+#         root = tk.Tk()
+#         root.withdraw()
+#         datafiles = [filedialog.askopenfilename()]
+#     except Exception as e:
+#         print("Attempted to create a file dialog but Tkinter is not "
+#                 "available.")
+#         pass
+
 include_zero = args.zero
 
 common_cols = args.common

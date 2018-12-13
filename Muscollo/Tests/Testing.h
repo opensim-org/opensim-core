@@ -20,6 +20,8 @@
 
 #include <OpenSim/Common/osimCommon.h>
 
+#include <catch.hpp>
+
 
 // Helper functions for comparing vectors.
 // ---------------------------------------
@@ -82,5 +84,41 @@ void rootMeanSquare(
     }
     SimTK_TEST(rmsError < tol);
 };
+
+#define OpenSim_REQUIRE_MATRIX_INTERNAL(actual, expected, tol, toltype)      \
+do {                                                                         \
+    const auto& a = actual;                                                  \
+    const auto& b = expected;                                                \
+    REQUIRE((a.nrow() == b.nrow()));                                         \
+    REQUIRE((a.ncol() == b.ncol()));                                         \
+    for (int ir = 0; ir < a.nrow(); ++ir) {                                  \
+        for (int ic = 0; ic < a.ncol(); ++ic) {                              \
+            INFO("(" << ir << "," << ic << "): " <<                          \
+                    a(ir, ic) << " vs " << b(ir, ic));                       \
+            REQUIRE((Approx(a(ir, ic)).toltype(tol)                          \
+                    == b(ir, ic)));                                          \
+        }                                                                    \
+    }                                                                        \
+} while (0)
+
+#define OpenSim_REQUIRE_MATRIX(actual, expected)                             \
+do {                                                                         \
+    const auto& a = actual;                                                  \
+    const auto& b = expected;                                                \
+    using TypeA = std::remove_reference<decltype(a)>::type::E;               \
+    using TypeB = std::remove_reference<decltype(b)>::type::E;               \
+    const auto tol = SimTK::Test::defTol2<TypeA, TypeB>();                   \
+    OpenSim_REQUIRE_MATRIX_INTERNAL(actual, expected, tol, epsilon);         \
+} while (0)
+
+#define OpenSim_REQUIRE_MATRIX_TOL(actual, expected, tol)                    \
+do {                                                                         \
+    OpenSim_REQUIRE_MATRIX_INTERNAL(actual, expected, tol, epsilon);         \
+} while (0)
+
+#define OpenSim_REQUIRE_MATRIX_ABSTOL(actual, expected, tol)                 \
+do {                                                                         \
+    OpenSim_REQUIRE_MATRIX_INTERNAL(actual, expected, tol, margin);          \
+} while (0)
 
 #endif // MUSCOLLO_TESTING_H

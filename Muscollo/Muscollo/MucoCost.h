@@ -74,7 +74,8 @@ public:
 
 protected:
     /// Perform any caching before the problem is solved.
-    /// Upon entry, getModel() is available.
+    /// @precondition The model is initialized (initSystem()) and getModel()
+    /// is available.
     /// The passed-in model is equivalent to getModel().
     /// Use this opportunity to check for errors in user input.
     // TODO: Rename to extendInitializeOnModel().

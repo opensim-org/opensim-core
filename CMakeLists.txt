@@ -110,7 +110,6 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Weverything")
-# TODO treat Ipopt and such as system headers to ignore their warnings.
 if(CMAKE_CXX_COMPILER_ID MATCHES Clang # includes AppleClang
         OR CMAKE_CXX_COMPILER_ID STREQUAL GNU)
     add_compile_options(-Wall -Wextra -Werror)
@@ -124,6 +123,8 @@ if(CMAKE_CXX_COMPILER_ID MATCHES Clang # includes AppleClang
     # warnings. It is sufficient to just catch such warnings in Debug.
     add_compile_options($<$<NOT:$<CONFIG:Debug>>:-Wno-unused-variable>
                         $<$<NOT:$<CONFIG:Debug>>:-Wno-unused-parameter>)
+
+    add_compile_options(-Wno-unused-local-typedef)
 endif()
 
 # TODO add /WX flag for Windows.

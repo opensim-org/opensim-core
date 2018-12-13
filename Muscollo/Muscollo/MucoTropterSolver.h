@@ -49,6 +49,11 @@ public:
     OpenSim_DECLARE_PROPERTY(verbosity, int,
     "0 for silent. 1 for only Muscollo's own output. "
     "2 for output from tropter and the underlying solver (default: 2).");
+    // TODO make a private property with a custom setter so we can detect
+    // when the user has changed this and we can invalidate relevant caches.
+    OpenSim_DECLARE_PROPERTY(dynamics_mode, std::string,
+    "Dynamics are expressed as 'explicit' (default) or 'implicit' "
+    "differential equations.");
     OpenSim_DECLARE_PROPERTY(optim_solver, std::string,
     "The optimization solver for tropter to use; ipopt (default), or snopt.");
     OpenSim_DECLARE_PROPERTY(optim_max_iterations, int,
@@ -93,8 +98,7 @@ public:
     /// - **time-stepping**: see createGuessTimeStepping().
     /// @note Calling this method does *not* set an initial guess to be used
     /// in the solver; you must call setGuess() or setGuessFile() for that.
-    /// @precondition You must have called setProblem().
-    // TODO problem must be upToDate()?
+    /// @precondition You must have called resetProblem().
     MucoIterate createGuess(const std::string& type = "bounds") const;
 
     /// (Experimental) Run a forward simulation (using the OpenSim Manager,
@@ -154,8 +158,16 @@ protected:
     template <typename T>
     class OCProblem;
 
-    std::shared_ptr<const tropter::Problem<double>>
-    getTropterProblem() const;
+    // TODO
+    template <typename T>
+    class TropterProblemBase;
+    template <typename T>
+    class ExplicitTropterProblem;
+    template <typename T>
+    class ImplicitTropterProblem;
+
+    std::shared_ptr<const TropterProblemBase<double>>
+    createTropterProblem() const;
 
     void resetProblemImpl(const MucoProblemRep&) const override;
     // TODO ensure that user-provided guess is within bounds.
@@ -167,9 +179,6 @@ private:
             "A MucoIterate file storing an initial guess.");
 
     void constructProperties();
-
-    mutable SimTK::ResetOnCopy<std::shared_ptr<OCProblem<double>>>
-            m_tropProblem;
 
     // When a copy of the solver is made, we want to keep any guess specified
     // by the API, but want to discard anything we've cached by loading a file.

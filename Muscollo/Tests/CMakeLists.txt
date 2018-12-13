@@ -12,6 +12,8 @@ function(MuscolloAddTest)
     # To organize targets in Visual Studio's Solution Explorer.
     set_target_properties(${MUCOTEST_NAME} PROPERTIES FOLDER "Muscollo/Tests")
     target_link_libraries(${MUCOTEST_NAME} osimMuscollo ${MUCOTEST_LIB_DEPENDS})
+    target_include_directories(${MUCOTEST_NAME}
+            PRIVATE "${CMAKE_SOURCE_DIR}/tropter/external/catch")
     add_test(NAME ${MUCOTEST_NAME} COMMAND ${MUCOTEST_NAME})
     #if(WIN32) # Instead, we are copying dependencies' DLLs.
     #    set_property(TEST ${MUCOTEST_NAME} APPEND PROPERTY
@@ -26,7 +28,11 @@ MuscolloAddTest(NAME testMucoCosts)
 
 MuscolloAddTest(NAME testMucoParameters)
 
+MuscolloAddTest(NAME testImplicit)
+
 MuscolloAddTest(NAME testConstraints)
+
+MuscolloAddTest(NAME testContact)
 
 MuscolloAddTest(NAME testHangingMassRoundtrip)
 

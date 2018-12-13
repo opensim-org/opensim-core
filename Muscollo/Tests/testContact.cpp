@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- * OpenSim Muscollo: sandboxTestContact.cpp                                   *
+ * OpenSim Muscollo: testContact.cpp                                          *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2017 Stanford University and the Authors                     *
  *                                                                            *
@@ -16,14 +16,10 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-// This file will become testContact.
-
 // TODO add 3D tests (contact models are currently only 2D).
 
 #include <Muscollo/osimMuscollo.h>
 #include <OpenSim/Simulation/Manager/Manager.h>
-
-#include "MuscolloSandboxShared.h"
 
 const double FRICTION_COEFFICIENT = 0.7;
 
@@ -90,9 +86,9 @@ SimTK::Real testNormalForce(CreateContactFunction createContact) {
     {
         SimTK::State state = model.initSystem();
         model.setStateVariableValue(state, "ty/ty/value", y0);
-        SimTK::RungeKuttaMersonIntegrator integ(model.getMultibodySystem());
-        integ.setAccuracy(1e-6);
-        Manager manager(model, state, integ);
+        Manager manager(model);
+        manager.setIntegratorAccuracy(1e-6);
+        manager.initialize(state);
         state = manager.integrate(finalTime);
 
         // visualize(model, manager.getStateStorage());
@@ -119,12 +115,12 @@ SimTK::Real testNormalForce(CreateContactFunction createContact) {
     {
         MucoTool muco;
         MucoProblem& mp = muco.updProblem();
-        mp.setModel(model);
+        mp.setModelCopy(model);
         mp.setTimeBounds(0, finalTime);
-        mp.setStateInfo("tx/tx/value", {-5, 5}, 0);
-        mp.setStateInfo("ty/ty/value", {-0.5, 1}, y0);
-        mp.setStateInfo("tx/tx/speed", {-10, 10}, 0);
-        mp.setStateInfo("ty/ty/speed", {-10, 10}, 0);
+        mp.setStateInfo("/tx/tx/value", {-5, 5}, 0);
+        mp.setStateInfo("/ty/ty/value", {-0.5, 1}, y0);
+        mp.setStateInfo("/tx/tx/speed", {-10, 10}, 0);
+        mp.setStateInfo("/ty/ty/speed", {-10, 10}, 0);
 
         MucoTropterSolver& ms = muco.initSolver();
         ms.set_num_mesh_points(50);
@@ -210,16 +206,15 @@ void testFrictionForce(CreateContactFunction createContact,
     // -------------------
     // This is a simulation (initial value problem), not a trajectory
     // optimization.
-    SimTK::Real finalHeightDircol;
     {
         MucoTool muco;
         MucoProblem& mp = muco.updProblem();
-        mp.setModel(model);
+        mp.setModelCopy(model);
         mp.setTimeBounds(0, finalTime);
-        mp.setStateInfo("tx/tx/value", {-5, 5}, 0);
-        mp.setStateInfo("ty/ty/value", {-0.5, 1}, y0);
-        mp.setStateInfo("tx/tx/speed", {-10, 10}, vx0);
-        mp.setStateInfo("ty/ty/speed", {-10, 10}, 0);
+        mp.setStateInfo("/tx/tx/value", {-5, 5}, 0);
+        mp.setStateInfo("/ty/ty/value", {-0.5, 1}, y0);
+        mp.setStateInfo("/tx/tx/speed", {-10, 10}, vx0);
+        mp.setStateInfo("/ty/ty/speed", {-10, 10}, 0);
 
         MucoTropterSolver& ms = muco.initSolver();
         ms.set_num_mesh_points(25);

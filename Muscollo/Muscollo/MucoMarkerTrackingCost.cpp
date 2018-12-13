@@ -88,8 +88,8 @@
          refValue[1] = m_refsplines[3*refidx + 1].calcValue(timeVec);
          refValue[2] = m_refsplines[3*refidx + 2].calcValue(timeVec);
 
-         integrand +=
-            m_marker_weights[refidx] * (modelValue - refValue).normSqr();
+         double distance = (modelValue - refValue).normSqr();
+
+         integrand += m_marker_weights[refidx] * distance;
      }
  }
-

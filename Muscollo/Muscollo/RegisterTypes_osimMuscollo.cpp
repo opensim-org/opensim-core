@@ -34,6 +34,10 @@
 #include "MucoJointReactionNormCost.h"
 #include "MucoParameter.h"
 #include "ActivationCoordinateActuator.h"
+
+#include "Components/StationPlaneContactForce.h"
+
+
 // TODO: Move to osimSimulation.
 #include <OpenSim/Simulation/MarkersReference.h>
 
@@ -68,6 +72,9 @@ OSIMMUSCOLLO_API void RegisterTypes_osimMuscollo() {
         Object::registerType(GlobalStaticOptimization());
         Object::registerType(INDYGO());
 
+        Object::registerType(AckermannVanDenBogert2010Force());
+        Object::registerType(MeyerFregly2016Force());
+        Object::registerType(EspositoMiller2018Force());
 
         // TODO: Move to osimSimulation.
         Object::registerType(MarkersReference());

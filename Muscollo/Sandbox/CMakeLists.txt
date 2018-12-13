@@ -28,10 +28,6 @@ MuscolloAddSandboxExecutable(NAME sandboxSlidingMass
         LIB_DEPENDS osimMuscollo tropter)
 MuscolloAddSandboxExecutable(NAME sandboxContact
         LIB_DEPENDS osimMuscollo osimAnalyses tropter)
-MuscolloAddSandboxExecutable(NAME sandboxTestContact
-        LIB_DEPENDS osimMuscollo osimAnalyses)
-MuscolloAddSandboxExecutable(NAME sandboxDoublePendulumSwingup
-        LIB_DEPENDS osimMuscollo tropter)
 MuscolloAddSandboxExecutable(NAME sandboxMuscle
         SOURCE_FILES
             shared/DeGrooteFregly2016Muscle.h
@@ -41,3 +37,4 @@ MuscolloAddSandboxExecutable(NAME sandboxMuscle
 add_subdirectory(sandboxWholeBodyTracking)
 add_subdirectory(sandboxMarkerTrackingWholeBody)
 add_subdirectory(sandboxJointReaction)
+add_subdirectory(sandboxMarkerTrackingContactWholeBody)
