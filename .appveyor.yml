@@ -44,7 +44,7 @@ install:
 
   # - choco install doxygen.portable
   - ps: (New-Object System.Net.WebClient).DownloadFile("https://sourceforge.net/projects/myosin/files/doxygen-1.8.14.windows.x64.bin.zip/download", "C:\doxygen.zip")
-  - 7z x C:\doxygen.zip -o C:\doxygen
+  - 7z x C:\doxygen.zip -oC:\doxygen
   - dir C:\
   - dir C:\doxygen
   - SET PATH=C:\doxygen;%PATH%
