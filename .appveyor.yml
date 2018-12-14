@@ -42,7 +42,10 @@ cache:
 install:
   - cmake --version
 
-  - choco install doxygen.portable
+  # - choco install doxygen.portable # <-- too unreliable.
+  - ps: (New-Object System.Net.WebClient).DownloadFile("https://sourceforge.net/projects/myosin/files/doxygen-1.8.14.windows.x64.bin.zip/download", "C:\doxygen.zip")
+  - 7z x C:\doxygen.zip -oC:\doxygen
+  - SET PATH=C:\doxygen;%PATH%
 
   ## Use Chocolatey to install SWIG.
   # Only install swig if it isn't present (as a result of AppVeyor's caching).
