@@ -123,7 +123,7 @@ void MucoProblemRep::initialize() {
         m_costs[i]->initializeOnModel(m_model);
     }
 
-    // Get property values for constraint and Lagrange multipliers.
+    // Get property values for constraints and Lagrange multipliers.
     const auto& mcBounds = ph0.get_multibody_constraint_bounds();
     const MucoBounds& multBounds = ph0.get_multiplier_bounds();
     MucoInitialBounds multInitBounds(multBounds.getLower(),
@@ -166,19 +166,22 @@ void MucoProblemRep::initialize() {
             // TODO how to name multiplier variables?
             std::vector<MucoVariableInfo> multInfos;
             for (int i = 0; i < mp; ++i) {
-                multInfos.push_back(MucoVariableInfo("lambda_cid" +
-                                std::to_string(cid) + "_p" + std::to_string(i), multBounds,
-                        multInitBounds, multFinalBounds));
+                MucoVariableInfo info("lambda_cid" + std::to_string(cid) +
+                                "_p" + std::to_string(i),
+                                multBounds, multInitBounds, multFinalBounds);
+                multInfos.push_back(info);
             }
             for (int i = 0; i < mv; ++i) {
-                multInfos.push_back(MucoVariableInfo("lambda_cid" +
-                                std::to_string(cid) + "_v" + std::to_string(i), multBounds,
-                        multInitBounds, multFinalBounds));
+                MucoVariableInfo info("lambda_cid" + std::to_string(cid) +
+                                "_v" + std::to_string(i),
+                                multBounds, multInitBounds, multFinalBounds);
+                multInfos.push_back(info);
             }
             for (int i = 0; i < ma; ++i) {
-                multInfos.push_back(MucoVariableInfo("lambda_cid" +
-                                std::to_string(cid) + "_a" + std::to_string(i), multBounds,
-                        multInitBounds, multFinalBounds));
+                MucoVariableInfo info("lambda_cid" + std::to_string(cid) +
+                                "_a" + std::to_string(i),
+                                multBounds, multInitBounds, multFinalBounds);
+                multInfos.push_back(info);
             }
             m_multiplier_infos_map.insert({mcInfo.getName(), multInfos});
         }
@@ -325,7 +328,8 @@ void MucoProblemRep::applyParametersToModel(
     OPENSIM_THROW_IF(parameterValues.size() != (int)m_parameters.size(),
             Exception, "There are " +
                     std::to_string(m_parameters.size()) + " parameters in "
-                                                          "this MucoProblem, but " + std::to_string(parameterValues.size()) +
+                    "this MucoProblem, but " +
+                    std::to_string(parameterValues.size()) +
                     " values were provided.");
     for (int i = 0; i < (int)m_parameters.size(); ++i) {
         m_parameters[i]->applyParameterToModel(parameterValues(i));
@@ -333,7 +337,6 @@ void MucoProblemRep::applyParametersToModel(
 }
 
 void MucoProblemRep::printDescription(std::ostream& stream) const {
-    // TODO: Make sure the problem has been initialized.
     stream << "Costs:";
     if (m_costs.empty())
         stream << " none";
