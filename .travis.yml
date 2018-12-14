@@ -150,7 +150,7 @@ before_install:
   # Need a doxygen that is more recent than that available through apt-get.
   - if [[ "$DOXY" = "on" && "$TRAVIS_OS_NAME" = "linux" ]]; then mkdir ~/doxygen && cd ~/doxygen; fi
   # http://ftp.stack.nl/pub/users/dimitri/doxygen-1.8.10.linux.bin.tar.gz; fi
-  - if [[ "$DOXY" = "on" && "$TRAVIS_OS_NAME" = "linux" ]]; then wget https://sourceforge.net/projects/doxygen/files/rel-1.8.10/doxygen-1.8.10.linux.bin.tar.gz/download doxygen-1.8.10.linux.bin.tar.gz; fi
+  - if [[ "$DOXY" = "on" && "$TRAVIS_OS_NAME" = "linux" ]]; then wget -O doxygen-1.8.10.linux.bin.tar.gz https://sourceforge.net/projects/doxygen/files/rel-1.8.10/doxygen-1.8.10.linux.bin.tar.gz/download; fi
   - if [[ "$DOXY" = "on" && "$TRAVIS_OS_NAME" = "linux" ]]; then tar xzf doxygen-1.8.10.linux.bin.tar.gz; fi
   - if [[ "$DOXY" = "on" && "$TRAVIS_OS_NAME" = "osx" ]]; then brew install doxygen; fi
 
