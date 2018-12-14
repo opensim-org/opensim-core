@@ -6,6 +6,17 @@ request related to the change, then we may provide the commit.
 
 This is not a comprehensive list of changes but rather a hand-curated collection of the more notable ones. For a comprehensive history, see the [OpenSim Core GitHub repo](https://github.com/opensim-org/opensim-core).
 
+v4.1
+====
+
+Converting from v4.0 to v4.1
+----------------------------
+- The `OpenSim::Array` constructor is now marked explicit, which prevents
+  accidental implicit conversion to `Array`. If you relied on this implicit
+  conversion, you will need to update your code to use the constructor
+  explicitly.
+
+
 v4.0
 ====
 

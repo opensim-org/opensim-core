@@ -53,7 +53,7 @@ public:
     // CONSTRUCTION
     //--------------------------------------------------------------------------
     /** Use Super's constructors. @see ModelComponentSet */
-    using Super::ModelComponentSet;
+    using Super::Super;
 
     void constructStorage();
     void storeControls( const SimTK::State& s, int step );

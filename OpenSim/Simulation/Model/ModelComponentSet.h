@@ -61,7 +61,7 @@ class ModelComponentSet : public Set<T, ModelComponent> {
 // METHODS
 //=============================================================================
 public:
-    using Set<T, ModelComponent>::Set;
+    using Super::Super;
     void extendFinalizeFromProperties() override final {
         Super::extendFinalizeFromProperties();
         // ModelComponentSets are unnamed properties of models, but as
