@@ -237,6 +237,7 @@ def solveStateTracking(stateRef):
     solver.set_verbosity(2)
     solver.set_optim_solver("ipopt")
     solver.set_optim_hessian_approximation("exact")
+    solver.set_hessian_block_sparsity_mode("dense")
 
     # Save the problem to a setup file for reference.
     muco.printToXML("examplePredictAndTrack_track_states.omuco")
@@ -290,6 +291,7 @@ def solveMarkerTracking(markersRef, guess):
     solver.set_verbosity(2)
     solver.set_optim_solver("ipopt")
     solver.set_optim_hessian_approximation("exact")
+    solver.set_hessian_block_sparsity_mode("dense")
     
     solver.setGuess(guess)
 

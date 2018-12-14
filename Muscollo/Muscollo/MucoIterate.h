@@ -467,6 +467,9 @@ public:
     const SimTK::Matrix& getSlacksTrajectory() const
     {   ensureUnsealed(); return m_slacks; }
     SimTK::VectorView_<double> getSlack(const std::string& name) const;
+    // This additional mutator is necessary since no constructor exists to 
+    // update the slack variable data member variables.
+    void appendSlack(const std::string& name, const SimTK::Vector& trajectory);
 
     /// @endcond
     #endif

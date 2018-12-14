@@ -161,6 +161,22 @@ void MucoIterate::setSlack(const std::string& name,
     m_slacks.updCol(index) = trajectory;
 }
 
+void MucoIterate::appendSlack(const std::string& name,
+    const SimTK::Vector& trajectory) {
+    ensureUnsealed();
+
+    OPENSIM_THROW_IF(m_time.nrow() == 0, Exception,
+        "The time vector must be set before adding slack variables.");
+    OPENSIM_THROW_IF(trajectory.size() != m_time.nrow(),
+        Exception, "Attempted to add slack " + name + " of length " + 
+        std::to_string(trajectory.size()) + ", but it is incompatible with the "
+        "time vector, which is length " + std::to_string(m_time.nrow()) +  ".");
+
+    m_slack_names.push_back(name);
+    m_slacks.resizeKeep(m_time.nrow(), m_slacks.ncol() + 1);
+    m_slacks.updCol(m_slacks.ncol() - 1) = trajectory;
+}
+
 void MucoIterate::setParameter(const std::string& name, 
         const SimTK::Real& value) {
     ensureUnsealed();

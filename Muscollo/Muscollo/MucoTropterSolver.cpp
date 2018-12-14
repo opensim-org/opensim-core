@@ -374,7 +374,6 @@ MucoSolution MucoTropterSolver::solveImpl() const {
                       << "--\n\n";
         }
     }
-    
 
     // TODO move this to convert():
     MucoSolver::setSolutionStats(mucoSolution, tropSolution.success,

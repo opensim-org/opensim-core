@@ -113,11 +113,11 @@ convertIterateTropterToMuco(const tropIterateType& tropSol) const {
 	// Create iterate.
     MucoIterateType mucoIter(time, state_names, control_names, multiplier_names,
                         derivative_names, parameter_names, states, controls,
-                        multipliers, derivatives, parameters)
-    mucoIter.updSlackNames() = slack_names;
-    mucoIter.updSlacksTrajector() = slacks;
-    
-
+                        multipliers, derivatives, parameters);
+    // Append slack variables.
+    for (int i = 0; i < numSlacks; ++i) {
+        mucoIter.appendSlack(slack_names[i], slacks.col(i));
+    }
     return mucoIter;
 }
 

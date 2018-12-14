@@ -155,8 +155,8 @@ SNOPTSolver::optimize_impl(const VectorXd& variablesArg) const {
 
     // There is no bound on the objective, thus the -1e20, 1e20.
     // The `finished()` is to get rid of Eigen's "expression templates."
-    VectorXd Flow = (VectorXd(length_F) << -1.1e20, constraint_lower).finished();
-    VectorXd Fupp = (VectorXd(length_F) <<  1.1e20, constraint_upper).finished();
+    VectorXd Flow = (VectorXd(length_F) << -1e20, constraint_lower).finished();
+    VectorXd Fupp = (VectorXd(length_F) <<  1e20, constraint_upper).finished();
 
     // Derivative information.
     // -----------------------
