@@ -600,6 +600,7 @@ void testStateTracking() {
         MucoTropterSolver& ms = muco.initSolver();
         ms.set_num_mesh_points(5);
         ms.set_optim_hessian_approximation("exact");
+        ms.set_hessian_block_sparsity_mode("dense");
         solDirect = muco.solve();
     }
 
@@ -616,6 +617,7 @@ void testStateTracking() {
         MucoTropterSolver& ms = muco.initSolver();
         ms.set_num_mesh_points(5);
         ms.set_optim_hessian_approximation("exact");
+        ms.set_hessian_block_sparsity_mode("dense");
         solFile = muco.solve();
         muco.print(setup_fname);
     }

@@ -111,12 +111,12 @@ convertIterateTropterToMuco(const tropIterateType& tropSol) const {
     SimTK::RowVector parameters(numParameters, tropSol.parameters.data());
 
 	// Create iterate.
-    MucoIterate mucoIter(time, state_names, control_names, multiplier_names,
+    MucoIterateType mucoIter(time, state_names, control_names, multiplier_names,
                         derivative_names, parameter_names, states, controls,
-                        multipliers, derivatives, parameters);
-    for (int i = 0; i < numSlacks; ++i) {
-        mucoIter.setSlack(slack_names[i], slacks.col(i));
-    }
+                        multipliers, derivatives, parameters)
+    mucoIter.updSlackNames() = slack_names;
+    mucoIter.updSlacksTrajector() = slacks;
+    
 
     return mucoIter;
 }

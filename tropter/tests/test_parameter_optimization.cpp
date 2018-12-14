@@ -230,8 +230,8 @@ TEST_CASE("OscillatorMass, IPOPT") {
         dircol.get_opt_solver().set_sparsity_detection("random");
         Solution solution = dircol.solve();
 
-        REQUIRE(Approx(solution.parameters[0]) == ocp->MASS);
-        REQUIRE(Approx(solution.objective) == 0);
+        REQUIRE(Approx(solution.parameters[0]).epsilon(1e-4) == ocp->MASS);
+        REQUIRE(Approx(solution.objective).margin(1e-10) == 0);
     }
     SECTION("Finite differences, exact Hessian, hermite-simpson") {
         auto ocp = std::make_shared<OscillatorMass<double>>();
@@ -242,8 +242,8 @@ TEST_CASE("OscillatorMass, IPOPT") {
         dircol.get_opt_solver().set_sparsity_detection("random");
         Solution solution = dircol.solve();
 
-        REQUIRE(Approx(solution.parameters[0]) == ocp->MASS);
-        REQUIRE(Approx(solution.objective) == 0);
+        REQUIRE(Approx(solution.parameters[0]).epsilon(1e-4) == ocp->MASS);
+        REQUIRE(Approx(solution.objective).margin(1e-10) == 0);
     }
     SECTION("ADOL-C, hermite-simpson") {
         auto ocp = std::make_shared<OscillatorMass<adouble>>();
@@ -252,8 +252,8 @@ TEST_CASE("OscillatorMass, IPOPT") {
         Solution solution = dircol.solve();
         dircol.print_constraint_values(solution);
 
-        REQUIRE(Approx(solution.parameters[0]) == ocp->MASS);
-        REQUIRE(Approx(solution.objective) == 0);
+        REQUIRE(Approx(solution.parameters[0]).epsilon(1e-4) == ocp->MASS);
+        REQUIRE(Approx(solution.objective).margin(1e-10) == 0);
     }
 
 };

@@ -186,15 +186,6 @@ void HermiteSimpson<T>::set_ocproblem(
         }
     }
 
-    //std::cout << "variable names: " << std::endl;
-    //for (int i = 0; i < m_variable_names.size(); ++i) {
-    //    std::cout << std::to_string(i + 1) << ": " << m_variable_names[i] << std::endl;
-    //}
-    //std::cout << "constraint names: " << std::endl;
-    //for (int i = 0; i < m_constraint_names.size(); ++i) {
-    //    std::cout << std::to_string(i + 1) << ": " << m_constraint_names[i] << std::endl;
-    //}
-
     // Bounds.
     // -------
     double initial_time_lower;
@@ -354,10 +345,6 @@ void HermiteSimpson<T>::calc_objective(const VectorX<T>& x, T& obj_value) const
     // Integral cost.
     // --------------
     m_integrand.setZero();
-    //std::cout << "control rows: " << controls.rows() << std::endl;
-    //std::cout << "control cols: " << controls.cols() << std::endl;
-    //std::cout << "diffuses rows: " << diffuses.rows() << std::endl;
-    //std::cout << "diffuses cols: " << diffuses.cols() << std::endl;
     int i_diff = 0;
     for (int i_col = 0; i_col < m_num_col_points; ++i_col) {
         const T time = step_size * i_col + initial_time;

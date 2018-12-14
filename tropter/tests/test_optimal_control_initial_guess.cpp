@@ -251,17 +251,9 @@ public:
         const auto& adjuncts = in.adjuncts;
         const auto& diffuses = in.diffuses;
         
-
+        integrand = 0.001 * pow(controls[0], 2) + pow(adjuncts[0], 2);
         if (diffuses.size() != 0) {
-            std::cout << "diffuse size: " << diffuses.size() << std::endl;
-            std::cout << "diffuse rows: " << diffuses.rows() << std::endl;
-            std::cout << "diffuse cols: " << diffuses.cols() << std::endl;
-            std::cout << "controls: " << controls[0] << std::endl;
-            std::cout << "adjuncts: " << adjuncts[0] << std::endl;
-            std::cout << "diffuses: " << diffuses[0] << std::endl;
-
-            integrand = 0.001 * pow(controls[0], 2) + pow(adjuncts[0], 2)
-                                                    + pow(diffuses[0], 2);
+            integrand += pow(diffuses[0], 2);
         }
     }
     /// This function has minima at `x = \pm 1/\sqrt(2)`.
@@ -349,7 +341,7 @@ TEST_CASE("Exceptions for setting optimal control guess, Hermite-Simpson rule",
     auto ocp = 
         std::make_shared<FinalPositionLocalOptimaWithDiffuses<adouble>>();
     int N = 15;
-    DirectCollocationSolver<adouble> dircol(ocp, "trapezoidal", "ipopt", N);
+    DirectCollocationSolver<adouble> dircol(ocp, "hermite-simpson", "ipopt", N);
 
     // The length of trajectories when using Hermite-Simpson is not equal
     // to the number of mesh points, but rather equal to the number of
@@ -366,7 +358,7 @@ TEST_CASE("Exceptions for setting optimal control guess, Hermite-Simpson rule",
     REQUIRE_THROWS_WITH(
         ocp->set_control_guess(guess, "F", RowVectorXd::Zero(1)),
         Contains("guess.time is empty"));
-    guess.time.setLinSpaced(N, 0, 1);
+    guess.time.setLinSpaced(Nc, 0, 1);
 
     // Wrong number of elements.
     REQUIRE_THROWS_WITH(ocp->set_state_guess(guess, "x", RowVectorXd::Zero(1)),
@@ -401,8 +393,8 @@ TEST_CASE("Exceptions for setting optimal control guess, Hermite-Simpson rule",
     guess.parameters.resize(1, 1); // correct.
     REQUIRE_THROWS_WITH(dircol.solve(guess),
         Contains("Expected time and states to have "
-            "the same number of columns, but they have 5 "
-            "and 15 column(s), respectively."));
+            "the same number of columns, but they have 19 "
+            "and 29 column(s), respectively."));
 
     guess.time.resize(Nc);        // correct.
     guess.states.resize(6, Nc);   // incorrect.

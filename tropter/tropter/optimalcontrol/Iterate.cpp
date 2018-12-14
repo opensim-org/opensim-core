@@ -212,10 +212,10 @@ Iterate::interpolate(int desired_num_columns) const {
     out.states = interp1(time, states, out.time);
     out.controls = interp1(time, controls, out.time);
     out.adjuncts = interp1(time, adjuncts, out.time);
+    // If diffuses have any NaNs, create interpolant from non-NaN columns only.
     // TODO this causes problems if a user creates an iterate full of NaNs and
     // trys to interpolate: the diffuses will have nothing to interpolate over.
-    if (diffuse_names.size()) {
-        // Create interpolant for non-nan columns.
+    if (diffuses.hasNaN()) {
         int cols_no_nans = 0;
         std::vector<int> no_nan_indices;
         for (int icol = 0; icol < diffuses.cols(); ++icol) {
@@ -229,11 +229,14 @@ Iterate::interpolate(int desired_num_columns) const {
             diffuses_no_nans.col(icol_no_nan) 
                 = diffuses.col(no_nan_indices[icol_no_nan]);
         }
-        // Use the whole time vector so we don't get NaNs during interpolation.
+        // Use the whole time range so we don't get NaNs during interpolation.
         auto time_no_nans = Eigen::RowVectorXd::LinSpaced(cols_no_nans,
             time[0], time.tail<1>()[0]);
-        out.diffuses = interp1(time_no_nans, diffuses_no_nans, 
-            out.time);
+
+        out.diffuses = interp1(time_no_nans, diffuses_no_nans, out.time);
+    } else {
+        // If no NaNs, create interpolant as normal.
+        out.diffuses = interp1(time, diffuses, out.time);
     }
 
     return out;

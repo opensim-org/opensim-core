@@ -467,6 +467,7 @@ public:
     const SimTK::Matrix& getSlacksTrajectory() const
     {   ensureUnsealed(); return m_slacks; }
     SimTK::VectorView_<double> getSlack(const std::string& name) const;
+
     /// @endcond
     #endif
 

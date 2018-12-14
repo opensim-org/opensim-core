@@ -147,6 +147,7 @@ void MucoIterate::setMultiplier(const std::string& name,
 void MucoIterate::setSlack(const std::string& name,
     const SimTK::Vector& trajectory) {
     ensureUnsealed();
+
     OPENSIM_THROW_IF(trajectory.size() != m_slacks.nrow(), Exception,
         "For slack " + name + ", expected " +
         std::to_string(m_slacks.nrow()) +

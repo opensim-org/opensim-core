@@ -132,8 +132,9 @@ solveForTrajectoryGSO() {
     trajFileWithHeader.replace(trajectoryFile.rfind(".csv"), 4,
                                "_with_header.csv");
     // Skip the "num_states=#", "num_controls=#", "num_adjuncts=#",
-    // and "num_parameters=#" lines.
+    // "num_diffuses=#", and "num_parameters=#" lines.
     std::string line;
+    std::getline(fRead, line);
     std::getline(fRead, line);
     std::getline(fRead, line);
     std::getline(fRead, line);
@@ -302,8 +303,9 @@ solveForTrajectoryINDYGO() {
     trajFileWithHeader.replace(trajectoryFile.rfind(".csv"), 4,
         "_with_header.csv");
     // Skip the "num_states=#", "num_controls=#", "num_adjuncts=#",
-    // and "num_parameters=#" lines.
+    // "num_diffus=#", and "num_parameters=#" lines.
     std::string line;
+    std::getline(fRead, line);
     std::getline(fRead, line);
     std::getline(fRead, line);
     std::getline(fRead, line);
