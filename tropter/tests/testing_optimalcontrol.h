@@ -133,7 +133,9 @@ private:
             for (int ic = 0; ic < a.cols(); ++ic) {
                 INFO("(" << ir << "," << ic << "): " <<
                         a.coeff(ir, ic) << " vs " << b.coeff(ir, ic));
-                REQUIRE((Approx(a.coeff(ir, ic)).epsilon(rel_error_tolerance)
+                REQUIRE((Approx(a.coeff(ir, ic))
+                        .epsilon(rel_error_tolerance)
+                        .scale(1.0)
                         == b.coeff(ir, ic)));
             }
         }

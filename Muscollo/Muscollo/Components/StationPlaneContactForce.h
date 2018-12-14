@@ -24,6 +24,7 @@
 
 namespace OpenSim {
 
+/// This class models compliant point contact with a ground plane y=0.
 /// This class is still under development.
 class OSIMMUSCOLLO_API StationPlaneContactForce : public Force {
 OpenSim_DECLARE_ABSTRACT_OBJECT(StationPlaneContactForce, Force);
@@ -31,7 +32,8 @@ public:
     OpenSim_DECLARE_OUTPUT(force_on_station, SimTK::Vec3,
             calcContactForceOnStation, SimTK::Stage::Velocity);
 
-    OpenSim_DECLARE_SOCKET(station, Station, "TODO");
+    OpenSim_DECLARE_SOCKET(station, Station,
+            "The body-fixed point that can contact the plane.");
 
     void computeForce(const SimTK::State& s,
             SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
@@ -77,11 +79,15 @@ class OSIMMUSCOLLO_API AckermannVanDenBogert2010Force
 OpenSim_DECLARE_CONCRETE_OBJECT(AckermannVanDenBogert2010Force,
         StationPlaneContactForce);
 public:
-    OpenSim_DECLARE_PROPERTY(stiffness, double, "TODO N/m^3");
-    OpenSim_DECLARE_PROPERTY(dissipation, double, "TODO s/m");
-    OpenSim_DECLARE_PROPERTY(friction_coefficient, double, "TODO");
+    OpenSim_DECLARE_PROPERTY(stiffness, double,
+            "Spring stiffness in N/m^3 (default: 5e7).");
+    OpenSim_DECLARE_PROPERTY(dissipation, double,
+            "Dissipation coefficient in s/m (default: 1.0).");
+    OpenSim_DECLARE_PROPERTY(friction_coefficient, double,
+            "Friction coefficient");
     // TODO rename to transition_velocity
-    OpenSim_DECLARE_PROPERTY(tangent_velocity_scaling_factor, double, "TODO");
+    OpenSim_DECLARE_PROPERTY(tangent_velocity_scaling_factor, double,
+            "Governs how rapidly friction develops (default: 0.05).");
 
     AckermannVanDenBogert2010Force() {
         constructProperties();
@@ -111,8 +117,8 @@ public:
 
         const SimTK::Real velSlidingScaling =
                 get_tangent_velocity_scaling_factor();
-        //// The paper used (1 - exp(-x)) / (1 + exp(-x)) = tanh(2x).
-        //// tanh() has a wider domain than using exp().
+        // The paper used (1 - exp(-x)) / (1 + exp(-x)) = tanh(2x).
+        // tanh() has a wider domain than using exp().
         const SimTK::Real transition = tanh(velSliding / velSlidingScaling / 2);
 
         const SimTK::Real frictionForce =
@@ -131,14 +137,24 @@ private:
     }
 };
 
+
+
+/// This contact model is from the following paper:
+/// Meyer A. J., Eskinazi, I., Jackson, J. N., Rao, A. V., Patten, C., & Fregly,
+/// B. J. (2016). Muscle Synergies Facilitate Computational Prediction of
+/// Subject-Specific Walking Motions. Frontiers in Bioengineering and
+/// Biotechnology, 4, 1055–27. http://doi.org/10.3389/fbioe.2016.00077
 class OSIMMUSCOLLO_API MeyerFregly2016Force
         : public StationPlaneContactForce {
 OpenSim_DECLARE_CONCRETE_OBJECT(MeyerFregly2016Force,
         StationPlaneContactForce);
 public:
-    OpenSim_DECLARE_PROPERTY(stiffness, double, "TODO N/m");
-    OpenSim_DECLARE_PROPERTY(dissipation, double, "TODO s/m");
-    OpenSim_DECLARE_PROPERTY(tscale, double, "TODO");
+    OpenSim_DECLARE_PROPERTY(stiffness, double,
+            "Spring stiffness in N/m (default: 1e4).");
+    OpenSim_DECLARE_PROPERTY(dissipation, double,
+            "Dissipation coefficient in s/m (default: 0.01).");
+    OpenSim_DECLARE_PROPERTY(tscale, double,
+            "TODO");
 
     MeyerFregly2016Force() {
         constructProperties();
@@ -185,7 +201,7 @@ public:
 
         /// Friction force.
         const SimTK::Real mu_d = 1;
-        const SimTK::Real latchvel = 0.05;
+        const SimTK::Real latchvel = 0.05; // m/s
 
         const SimTK::Real mu = mu_d * tanh(velSliding / latchvel / 2);
         force[0] = -force[1] * mu;
@@ -221,12 +237,17 @@ class OSIMMUSCOLLO_API EspositoMiller2018Force
 OpenSim_DECLARE_CONCRETE_OBJECT(EspositoMiller2018Force,
         StationPlaneContactForce);
 public:
-    OpenSim_DECLARE_PROPERTY(stiffness, double, "TODO N/m^2");
-    OpenSim_DECLARE_PROPERTY(dissipation, double, "TODO s/m");
-    OpenSim_DECLARE_PROPERTY(friction_coefficient, double, "TODO");
+    OpenSim_DECLARE_PROPERTY(stiffness, double,
+            "Spring stiffness in N/m^3 (default: 2e6).");
+    OpenSim_DECLARE_PROPERTY(dissipation, double,
+            "Dissipation coefficient in s/m (default: 1.0).");
+    OpenSim_DECLARE_PROPERTY(friction_coefficient, double,
+            "Friction coefficient");
     // TODO rename to transition_velocity
-    OpenSim_DECLARE_PROPERTY(tangent_velocity_scaling_factor, double, "TODO");
-    OpenSim_DECLARE_PROPERTY(depth_offset, double, "TODO y0 m");
+    OpenSim_DECLARE_PROPERTY(tangent_velocity_scaling_factor, double,
+            "Governs how rapidly friction develops (default: 0.05).");
+    OpenSim_DECLARE_PROPERTY(depth_offset, double,
+            "'Resting length' of spring in meters (default: 0.001).");
 
     EspositoMiller2018Force() {
         constructProperties();
