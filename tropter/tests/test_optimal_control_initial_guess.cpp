@@ -250,8 +250,19 @@ public:
         const auto& controls = in.controls;
         const auto& adjuncts = in.adjuncts;
         const auto& diffuses = in.diffuses;
-        integrand = 0.001 * pow(controls[0], 2) + pow(adjuncts[0], 2)
-                                                + pow(diffuses[0], 2);
+        
+
+        if (diffuses.size() != 0) {
+            std::cout << "diffuse size: " << diffuses.size() << std::endl;
+            std::cout << "diffuse rows: " << diffuses.rows() << std::endl;
+            std::cout << "diffuse cols: " << diffuses.cols() << std::endl;
+            std::cout << "controls: " << controls[0] << std::endl;
+            std::cout << "adjuncts: " << adjuncts[0] << std::endl;
+            std::cout << "diffuses: " << diffuses[0] << std::endl;
+
+            integrand = 0.001 * pow(controls[0], 2) + pow(adjuncts[0], 2)
+                                                    + pow(diffuses[0], 2);
+        }
     }
     /// This function has minima at `x = \pm 1/\sqrt(2)`.
     static T two_minima(const T& x) {
@@ -359,79 +370,81 @@ TEST_CASE("Exceptions for setting optimal control guess, Hermite-Simpson rule",
 
     // Wrong number of elements.
     REQUIRE_THROWS_WITH(ocp->set_state_guess(guess, "x", RowVectorXd::Zero(1)),
-        Contains("Expected value to have 15"));
+        Contains("Expected value to have 29"));
     REQUIRE_THROWS_WITH(
         ocp->set_control_guess(guess, "F", RowVectorXd::Zero(1)),
-        Contains("Expected value to have 15"));
+        Contains("Expected value to have 29"));
 
     // Wrong state name.
-    REQUIRE_THROWS_WITH(ocp->set_state_guess(guess, "H", RowVectorXd::Zero(N)),
+    REQUIRE_THROWS_WITH(ocp->set_state_guess(guess, "H", RowVectorXd::Zero(Nc)),
         Contains("State 'H' does not exist"));
     REQUIRE_THROWS_WITH(
-        ocp->set_control_guess(guess, "H", RowVectorXd::Zero(N)),
+        ocp->set_control_guess(guess, "H", RowVectorXd::Zero(Nc)),
         Contains("Control 'H' does not exist"));
 
-    guess.states.resize(10, N - 1);
-    guess.controls.resize(9, N - 2);
+    guess.states.resize(10, Nc - 1);
+    guess.controls.resize(9, Nc - 2);
     // guess.states has the wrong size.
-    REQUIRE_THROWS_WITH(ocp->set_state_guess(guess, "x", RowVectorXd::Zero(N)),
+    REQUIRE_THROWS_WITH(ocp->set_state_guess(guess, "x", RowVectorXd::Zero(Nc)),
         Contains("Expected guess.states to have "));
     REQUIRE_THROWS_WITH(
-        ocp->set_control_guess(guess, "F", RowVectorXd::Zero(N)),
+        ocp->set_control_guess(guess, "F", RowVectorXd::Zero(Nc)),
         Contains("Expected guess.controls to have "));
 
     // Test for more exceptions when calling solve().
     // ----------------------------------------------
-    guess.time.resize(N - 10);     // incorrect.
-    guess.states.resize(2, N);     // correct.
-    guess.controls.resize(1, N);   // correct.
-    guess.adjuncts.resize(1, N);   // correct.
+    guess.time.resize(Nc - 10);    // incorrect.
+    guess.states.resize(2, Nc);    // correct.
+    guess.controls.resize(1, Nc);  // correct.
+    guess.adjuncts.resize(1, Nc);  // correct.
+    guess.diffuses.resize(1, Nc);  // correct.
     guess.parameters.resize(1, 1); // correct.
     REQUIRE_THROWS_WITH(dircol.solve(guess),
         Contains("Expected time and states to have "
             "the same number of columns, but they have 5 "
             "and 15 column(s), respectively."));
 
-    guess.time.resize(N);        // correct.
-    guess.states.resize(6, N);   // incorrect.
+    guess.time.resize(Nc);        // correct.
+    guess.states.resize(6, Nc);   // incorrect.
     REQUIRE_THROWS_WITH(dircol.solve(guess),
         Contains("Expected states to have 2 row(s), but it has 6."));
 
-    guess.states.resize(2, N + 1); // incorrect.
+    guess.states.resize(2, Nc + 1); // incorrect.
     REQUIRE_THROWS_WITH(dircol.solve(guess),
         Contains("Expected time and states to have "
-            "the same number of columns, but they have 15 "
-            "and 16 column(s), respectively."));
+            "the same number of columns, but they have 29 "
+            "and 30 column(s), respectively."));
 
-    guess.states.resize(2, N);   // correct.
-    guess.controls.resize(4, N); // incorrect.
+    guess.states.resize(2, Nc);   // correct.
+    guess.controls.resize(4, Nc); // incorrect.
     REQUIRE_THROWS_WITH(dircol.solve(guess),
         Contains("Expected controls to have 1 row(s), but it has 4."));
 
-    guess.controls.resize(1, N - 3); // incorrect.
+    guess.controls.resize(1, Nc - 3); // incorrect.
     REQUIRE_THROWS_WITH(dircol.solve(guess),
         Contains("Expected time and controls to have "
-            "the same number of columns, but they have 15 "
-            "and 12 column(s), respectively."));
+            "the same number of columns, but they have 29 "
+            "and 26 column(s), respectively."));
 
-    guess.controls.resize(1, N); // correct.
-    guess.adjuncts.resize(1, N + 2); // incorrect.
+    guess.controls.resize(1, Nc); // correct.
+    guess.adjuncts.resize(1, Nc + 2); // incorrect.
     REQUIRE_THROWS_WITH(dircol.solve(guess),
         Contains("Expected time and adjuncts to have "
-            "the same number of columns, but they have 15 "
-            "and 17 column(s), respectively."));
+            "the same number of columns, but they have 29 "
+            "and 31 column(s), respectively."));
 
-    guess.adjuncts.resize(1, N); // correct.
+    guess.adjuncts.resize(1, Nc); // correct.
     guess.parameters.resize(2, 1); // incorrect.
     REQUIRE_THROWS_WITH(dircol.solve(guess),
         Contains("Expected parameters to have 1 element(s), "
             "but it has 2."));
 
     guess.parameters.resize(1, 1); // correct.
-    guess.diffuses.resize(1, N); // trapezoidal doesn't support diffuses
+    guess.diffuses.resize(1, Nc + 4); // incorrect.
     REQUIRE_THROWS_WITH(dircol.solve(guess),
-        Contains("Trapezoidal transcription does not support diffuse "
-            "variables."));
+        Contains("Expected time and diffuses to have "
+            "the same number of columns, but they have 29 "
+            "and 33 column(s), respectively."));
 }
 
 TEST_CASE("(De)serialization of Iterate", "[iterate_readwrite]") {

@@ -504,8 +504,8 @@ void testDoublePendulumPointOnLine(bool enforce_constraint_derivatives) {
     mp.setTimeBounds(0, 1);
     // Coordinate value state boundary conditions are consistent with the 
     // point-on-line constraint.
-    double theta_i = 0;
-    double theta_f = SimTK::Pi;
+    const double theta_i = 0;
+    const double theta_f = SimTK::Pi;
     mp.setStateInfo("/jointset/j0/q0/value", {-10, 10}, theta_i, theta_f);
     mp.setStateInfo("/jointset/j0/q0/speed", {-50, 50}, 0, 0);
     mp.setStateInfo("/jointset/j1/q1/value", {-10, 10}, SimTK::Pi - 2*theta_i,
@@ -878,7 +878,7 @@ int main() {
         SimTK_SUBTEST(testCoordinateCouplerConstraint);
         SimTK_SUBTEST(testPrescribedMotion);
         // TODO test tolerances can be improved significantly by not including
-        // Hermite-Simpson midpoint values only in comparisons.
+        // Hermite-Simpson midpoint values in comparisons.
         // Direct collocation tests, without constraint derivatives.
         SimTK_SUBTEST1(testDoublePendulumPointOnLine, false);
         MucoSolution couplerSol;

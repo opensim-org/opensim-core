@@ -136,9 +136,9 @@ protected:
             labels = mc.getConstraintInfo().getConstraintLabels();
             kinLevels = mc.getKinematicLevels();
 
-            m_num_mp += mp;
-            m_num_mv += mv;
-            m_num_ma += ma;
+            m_total_mp += mp;
+            m_total_mv += mv;
+            m_total_ma += ma;
             if (m_mucoTropterSolver.get_enforce_constraint_derivatives()) {
                 // This includes constraint derivatives: 3*mp + 2*mv + ma.
                 numEquationsThisConstraint 
@@ -253,7 +253,7 @@ protected:
               .empty()) {
             // If the user provided a weight, add squared multiplers cost to 
             // integrand.
-            for (int i = 0; i < (m_num_mp + m_num_mv + m_num_ma); ++i) {						
+            for (int i = 0; i < (m_total_mp + m_total_mv + m_total_ma); ++i) {						
                 integrand += 
                     m_mucoTropterSolver.get_lagrange_multiplier_weight() 
                     * adjuncts[i] * adjuncts[i];
@@ -285,12 +285,12 @@ protected:
     mutable SimTK::Vector qdot;
     mutable SimTK::Vector qdotCorr;
     mutable SimTK::Vector udot;
-    // The number of scalar holonomic, non-holonomic, and acceleration 
+    // The total number of scalar holonomic, non-holonomic, and acceleration 
     // constraint equations enabled in the model. This does not count equations 																	
     // for derivatives of holonomic and non-holonomic constraints. 
-    mutable int m_num_mp = 0;
-    mutable int m_num_mv = 0; 
-    mutable int m_num_ma = 0;
+    mutable int m_total_mp = 0;
+    mutable int m_total_mv = 0; 
+    mutable int m_total_ma = 0;
 
     // The total number of scalar constraint equations associated with model
     // multibody constraints that the solver is responsible for enforcing. This
@@ -441,14 +441,19 @@ public:
             // TODO double-check that disabled constraints don't show up in
             // state
 			if (out.path.size() != 0) {
+                // Position-level errors.
 				std::copy_n(simTKState.getQErr().getContiguousScalarData(),
-					m_num_mp, out.path.data());
+					m_total_mp, out.path.data());
 				if (m_mucoTropterSolver.get_enforce_constraint_derivatives()) {
-					std::copy_n(simTKState.getUErr().getContiguousScalarData(),
-						m_num_mp + m_num_mv, out.path.data() + m_num_mp);
-					std::copy_n(simTKState.getUDotErr().getContiguousScalarData(),
-						m_num_mp + m_num_mv + m_num_ma,
-						out.path.data() + 2*m_num_mp + m_num_mv);
+                    // Velocity-level errors.
+					std::copy_n(
+                        simTKState.getUErr().getContiguousScalarData(),
+						m_total_mp + m_total_mv, out.path.data() + m_total_mp);
+                    // Acceleration-level errors.
+					std::copy_n(
+                        simTKState.getUDotErr().getContiguousScalarData(),
+						m_total_mp + m_total_mv + m_total_ma,
+						out.path.data() + 2*m_total_mp + m_total_mv);
 				}
 			}
 
@@ -565,7 +570,7 @@ public:
 
         // TODO: Update to support multibody constraints, using
         // this->calcMultibodyConstraintForces()
-		// TODO move condition inside function
+		// TODO move condition inside path constraint function
 		if (out.path.size() != 0) {
 			double* pathConstraintErrorBegin =
 					out.path.data() + this->m_numMultibodyConstraintEquations;

@@ -209,7 +209,7 @@ MucoSolution MucoTropterSolver::solveImpl() const {
     // -----------------------
     // Check that a valid verbosity level was provided.
     checkPropertyInSet(*this, getProperty_verbosity(), {0, 1, 2});
-    // Print problem information is verbosity is 1 or 2.
+    // Problem print information is verbosity 1 or 2.
     if (get_verbosity()) {
         std::cout << std::string(79, '=') << "\n";
         std::cout << "MucoTropterSolver starting.\n";
@@ -243,8 +243,8 @@ MucoSolution MucoTropterSolver::solveImpl() const {
         "'exact' for Hessian block sparsity to take effect.");
     OPENSIM_THROW_IF(get_optim_hessian_approximation() == "exact" &&
         getProperty_hessian_block_sparsity_mode().empty(), Exception,
-        "Solver property 'optim_hessian_approximation' set to 'exact'. Please "
-        "set 'hessian_block_sparsity_mode' to 'dense' or 'sparse' to specify "
+        "Solver property 'optim_hessian_approximation' set to 'exact'. "
+        "Set 'hessian_block_sparsity_mode' to 'dense' or 'sparse' to specify "
         "block sparsity detection mode.");
     if (!getProperty_hessian_block_sparsity_mode().empty()) {
         checkPropertyInSet(*this, getProperty_hessian_block_sparsity_mode(),
@@ -356,6 +356,7 @@ MucoSolution MucoTropterSolver::solveImpl() const {
         }
 
         if (!isJacobianFullRank) {
+            std::cout << std::endl;
             std::cout << "---------------------------------------------------"
                       << "--\n";
             std::cout << "WARNING: rank-deficient constraint Jacobian "

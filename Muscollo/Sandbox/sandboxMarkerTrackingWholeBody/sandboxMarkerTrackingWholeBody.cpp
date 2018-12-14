@@ -30,119 +30,119 @@
 
 using namespace OpenSim;
 
-//class /*OSIMMUSCOLLO_API*/
-//    ActivationMuscleLikeCoordinateActuator : 
-//            public MuscleLikeCoordinateActuator {
-//    OpenSim_DECLARE_CONCRETE_OBJECT(ActivationMuscleLikeCoordinateActuator,
-//        MuscleLikeCoordinateActuator);
-//public:
-//    OpenSim_DECLARE_PROPERTY(activation_time_constant, double,
-//        "Larger value means activation can change more rapidly "
-//        "(units: seconds).");
-//
-//    OpenSim_DECLARE_PROPERTY(default_activation, double,
-//        "Value of activation in the default state returned by initSystem().");
-//
-//    ActivationMuscleLikeCoordinateActuator() {
-//        constructProperties();
-//    }
-//
-//    void extendAddToSystem(SimTK::MultibodySystem& system) const override {
-//        Super::extendAddToSystem(system);
-//        addStateVariable("activation", SimTK::Stage::Dynamics);
-//    }
-//
-//    void extendInitStateFromProperties(SimTK::State& s) const override {
-//        Super::extendInitStateFromProperties(s);
-//        setStateVariableValue(s, "activation", get_default_activation());
-//    }
-//
-//    void extendSetPropertiesFromState(const SimTK::State& s) override {
-//        Super::extendSetPropertiesFromState(s);
-//        set_default_activation(getStateVariableValue(s, "activation"));
-//    }
-//
-//    // TODO no need to do clamping, etc; CoordinateActuator is bidirectional.
-//    void computeStateVariableDerivatives(const SimTK::State& s) const override {
-//        const auto& tau = get_activation_time_constant();
-//        const auto& u = getControl(s);
-//        const auto& a = getStateVariableValue(s, "activation");
-//        const SimTK::Real adot = (u - a) / tau;
-//        setStateVariableDerivativeValue(s, "activation", adot);
-//    }
-//
-//    double computeActuation(const SimTK::State& s) const override {
-//        return getStateVariableValue(s, "activation") * getOptimalForce();
-//    }
-//private:
-//    void constructProperties() {
-//        constructProperty_activation_time_constant(0.010);
-//        constructProperty_default_activation(0.5);
-//    }
-//};
-//
-///// Convenience function to apply an ActivationCoordinateActuator to the model.
-//void addActivationCoordinateActuator(Model& model, std::string coordName,
-//        double optimalForce) {
-//
-//    auto& coordSet = model.updCoordinateSet();
-//
-//    auto* actu = new ActivationCoordinateActuator();
-//    actu->set_default_activation(0.1);
-//    actu->setName("tau_" + coordName);
-//    actu->setCoordinate(&coordSet.get(coordName));
-//    actu->setOptimalForce(optimalForce);
-//    actu->setMinControl(-1);
-//    actu->setMaxControl(1);
-//    model.addComponent(actu);
-//}
-//
-///// Convenience function to apply an MuscleLikeCoordinateActuator to the model.
-//void addMuscleLikeCoordinateActuator(Model& model, std::string coordName, 
-//        double optimalForce) {
-//
-//    auto& coordSet = model.updCoordinateSet();
-//
-//    auto* actu = new ActivationMuscleLikeCoordinateActuator();
-//    actu->setName("tau_" + coordName);
-//    actu->setCoordinate(&coordSet.get(coordName));
-//    actu->setOptimalForce(optimalForce);
-//    actu->setMinControl(-1);
-//    actu->setMaxControl(1);
-//
-//    auto* posFunc = new PolynomialFunction();
-//    posFunc->setName("pos_force_vs_coordinate_function");
-//    auto* negFunc = new PolynomialFunction();
-//    negFunc->setName("neg_force_vs_coordinate_function");
-//
-//    // Polynomial coefficients from Carmichael Ong's SimTK project
-//    // "Predictive Simulation of Standing Long Jumps". Borrowed from the
-//    // "AshbyModel_twoConstraints.osim" model.
-//    if (coordName.find("hip") != std::string::npos) {
-//        posFunc->setCoefficients(
-//            SimTK::Vector(SimTK::Vec4(27.175, -163.26, 146.58, 203.88)));
-//        negFunc->setCoefficients(
-//            SimTK::Vector(SimTK::Vec4(-15.492, 0.99992, 188.07, 326.63)));
-//        actu->set_qdot_max(20.0);
-//    } else if (coordName.find("knee") != std::string::npos) {
-//        posFunc->setCoefficients(
-//            SimTK::Vector(SimTK::Vec4(11.285, -135.23, 282.53, 238.77)));
-//        negFunc->setCoefficients(
-//            SimTK::Vector(SimTK::Vec4(69.248, -454.99, 712.19, 203.07)));
-//        actu->set_qdot_max(18.0);
-//    } else if (coordName.find("ankle") != std::string::npos) {
-//        posFunc->setCoefficients(
-//            SimTK::Vector(SimTK::Vec4(-80.378, -173.56, -102.12, 91.211)));
-//        negFunc->setCoefficients(
-//            SimTK::Vector(SimTK::Vec4(-748.14, -1054.1, 38.366, 407.2)));
-//        actu->set_qdot_max(16.0);
-//    }
-//    
-//    actu->setPosForceVsCoordinateFunction(posFunc);
-//    actu->setNegForceVsCoordinateFunction(negFunc);
-//    model.addComponent(actu);
-//}
-//
+class /*OSIMMUSCOLLO_API*/
+    ActivationMuscleLikeCoordinateActuator : 
+            public MuscleLikeCoordinateActuator {
+    OpenSim_DECLARE_CONCRETE_OBJECT(ActivationMuscleLikeCoordinateActuator,
+        MuscleLikeCoordinateActuator);
+public:
+    OpenSim_DECLARE_PROPERTY(activation_time_constant, double,
+        "Larger value means activation can change more rapidly "
+        "(units: seconds).");
+
+    OpenSim_DECLARE_PROPERTY(default_activation, double,
+        "Value of activation in the default state returned by initSystem().");
+
+    ActivationMuscleLikeCoordinateActuator() {
+        constructProperties();
+    }
+
+    void extendAddToSystem(SimTK::MultibodySystem& system) const override {
+        Super::extendAddToSystem(system);
+        addStateVariable("activation", SimTK::Stage::Dynamics);
+    }
+
+    void extendInitStateFromProperties(SimTK::State& s) const override {
+        Super::extendInitStateFromProperties(s);
+        setStateVariableValue(s, "activation", get_default_activation());
+    }
+
+    void extendSetPropertiesFromState(const SimTK::State& s) override {
+        Super::extendSetPropertiesFromState(s);
+        set_default_activation(getStateVariableValue(s, "activation"));
+    }
+
+    // TODO no need to do clamping, etc; CoordinateActuator is bidirectional.
+    void computeStateVariableDerivatives(const SimTK::State& s) const override {
+        const auto& tau = get_activation_time_constant();
+        const auto& u = getControl(s);
+        const auto& a = getStateVariableValue(s, "activation");
+        const SimTK::Real adot = (u - a) / tau;
+        setStateVariableDerivativeValue(s, "activation", adot);
+    }
+
+    double computeActuation(const SimTK::State& s) const override {
+        return getStateVariableValue(s, "activation") * getOptimalForce();
+    }
+private:
+    void constructProperties() {
+        constructProperty_activation_time_constant(0.010);
+        constructProperty_default_activation(0.5);
+    }
+};
+
+/// Convenience function to apply an ActivationCoordinateActuator to the model.
+void addActivationCoordinateActuator(Model& model, std::string coordName,
+        double optimalForce) {
+
+    auto& coordSet = model.updCoordinateSet();
+
+    auto* actu = new ActivationCoordinateActuator();
+    actu->set_default_activation(0.1);
+    actu->setName("tau_" + coordName);
+    actu->setCoordinate(&coordSet.get(coordName));
+    actu->setOptimalForce(optimalForce);
+    actu->setMinControl(-1);
+    actu->setMaxControl(1);
+    model.addComponent(actu);
+}
+
+/// Convenience function to apply an MuscleLikeCoordinateActuator to the model.
+void addMuscleLikeCoordinateActuator(Model& model, std::string coordName, 
+        double optimalForce) {
+
+    auto& coordSet = model.updCoordinateSet();
+
+    auto* actu = new ActivationMuscleLikeCoordinateActuator();
+    actu->setName("tau_" + coordName);
+    actu->setCoordinate(&coordSet.get(coordName));
+    actu->setOptimalForce(optimalForce);
+    actu->setMinControl(-1);
+    actu->setMaxControl(1);
+
+    auto* posFunc = new PolynomialFunction();
+    posFunc->setName("pos_force_vs_coordinate_function");
+    auto* negFunc = new PolynomialFunction();
+    negFunc->setName("neg_force_vs_coordinate_function");
+
+    // Polynomial coefficients from Carmichael Ong's SimTK project
+    // "Predictive Simulation of Standing Long Jumps". Borrowed from the
+    // "AshbyModel_twoConstraints.osim" model.
+    if (coordName.find("hip") != std::string::npos) {
+        posFunc->setCoefficients(
+            SimTK::Vector(SimTK::Vec4(27.175, -163.26, 146.58, 203.88)));
+        negFunc->setCoefficients(
+            SimTK::Vector(SimTK::Vec4(-15.492, 0.99992, 188.07, 326.63)));
+        actu->set_qdot_max(20.0);
+    } else if (coordName.find("knee") != std::string::npos) {
+        posFunc->setCoefficients(
+            SimTK::Vector(SimTK::Vec4(11.285, -135.23, 282.53, 238.77)));
+        negFunc->setCoefficients(
+            SimTK::Vector(SimTK::Vec4(69.248, -454.99, 712.19, 203.07)));
+        actu->set_qdot_max(18.0);
+    } else if (coordName.find("ankle") != std::string::npos) {
+        posFunc->setCoefficients(
+            SimTK::Vector(SimTK::Vec4(-80.378, -173.56, -102.12, 91.211)));
+        negFunc->setCoefficients(
+            SimTK::Vector(SimTK::Vec4(-748.14, -1054.1, 38.366, 407.2)));
+        actu->set_qdot_max(16.0);
+    }
+    
+    actu->setPosForceVsCoordinateFunction(posFunc);
+    actu->setNegForceVsCoordinateFunction(negFunc);
+    model.addComponent(actu);
+}
+
 ///// Load the base OpenSim model (gait10dof18musc) and apply actuators based on
 ///// specified actuator type.
 //Model setupModel(bool usingMuscleLikeActuators) {

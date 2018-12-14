@@ -354,6 +354,11 @@ void HermiteSimpson<T>::calc_objective(const VectorX<T>& x, T& obj_value) const
     // Integral cost.
     // --------------
     m_integrand.setZero();
+    //std::cout << "control rows: " << controls.rows() << std::endl;
+    //std::cout << "control cols: " << controls.cols() << std::endl;
+    //std::cout << "diffuses rows: " << diffuses.rows() << std::endl;
+    //std::cout << "diffuses cols: " << diffuses.cols() << std::endl;
+    int i_diff = 0;
     for (int i_col = 0; i_col < m_num_col_points; ++i_col) {
         const T time = step_size * i_col + initial_time;
         // Only pass diffuse variables on the midpoints where they are 
@@ -361,8 +366,9 @@ void HermiteSimpson<T>::calc_objective(const VectorX<T>& x, T& obj_value) const
         if (i_col % 2) {
             m_ocproblem->calc_integral_cost({i_col, time,
                 states.col(i_col), controls.col(i_col), adjuncts.col(i_col),
-                diffuses.col(i_col), parameters},
+                diffuses.col(i_diff), parameters},
                 m_integrand[i_col]);
+            ++i_diff;
         } else {
             m_ocproblem->calc_integral_cost({i_col, time,
                 states.col(i_col), controls.col(i_col), adjuncts.col(i_col),

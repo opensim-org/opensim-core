@@ -93,10 +93,10 @@ public:
     /// Get the number of scalar path constraints in the MucoProblem. This does
     /// not include multibody constraints equations.
     int getNumPathConstraintEquations() const {
-        OPENSIM_THROW_IF(m_num_path_constraint_eqs == -1, Exception,
+        OPENSIM_THROW_IF(m_num_path_constraint_equations == -1, Exception,
                 "The number of scalar path constraint equations is not "
                 "available until after initialization.");
-        return m_num_path_constraint_eqs;
+        return m_num_path_constraint_equations;
     }
     /// Given a multibody constraint name, get a vector of MucoVariableInfos
     /// corresponding to the Lagrange multipliers for that multibody constraint.
@@ -113,10 +113,10 @@ public:
     /// Get the number of scalar multibody constraints in the MucoProblem. This
     /// does not include path constraints equations.
     int getNumMultibodyConstraintEquations() const {
-        OPENSIM_THROW_IF(m_num_multibody_constraint_eqs == -1, Exception,
+        OPENSIM_THROW_IF(m_num_multibody_constraint_equations == -1, Exception,
                 "The number of scalar multibody constraint equations is not "
                 "available until after initialization.");
-        return m_num_multibody_constraint_eqs;
+        return m_num_multibody_constraint_equations;
     }
 
     /// Print a description of this problem, including costs and variable
@@ -170,18 +170,18 @@ public:
     {
         SimTK::Vector errors(getNumMultibodyConstraintEquations(), 0.0);
         int index = 0;
-        int thisConstraintNumEqs;
+        int thisConstraintNumEquations;
         for (int i = 0; i < (int)m_multibody_constraints.size(); ++i) {
-            thisConstraintNumEqs = 
+            thisConstraintNumEquations =
                 m_multibody_constraints[i].getConstraintInfo()
                                           .getNumEquations();
 
-            SimTK::Vector theseErrors(thisConstraintNumEqs,
+            SimTK::Vector theseErrors(thisConstraintNumEquations,
                     errors.getContiguousScalarData() + index, true);
             m_multibody_constraints[i].calcMultibodyConstraintErrors(
                     getModel(), state, theseErrors);
 
-            index += thisConstraintNumEqs;
+            index += thisConstraintNumEquations;
         }
         return errors;
     }
@@ -212,8 +212,8 @@ private:
     std::vector<std::unique_ptr<MucoParameter>> m_parameters;
     std::vector<std::unique_ptr<MucoCost>> m_costs;
     std::vector<std::unique_ptr<MucoPathConstraint>> m_path_constraints;
-    int m_num_path_constraint_eqs = -1;
-    int m_num_multibody_constraint_eqs = -1;
+    int m_num_path_constraint_equations = -1;
+    int m_num_multibody_constraint_equations = -1;
     std::vector<MucoMultibodyConstraint> m_multibody_constraints;
     std::map<std::string, std::vector<MucoVariableInfo>> m_multiplier_infos_map;
 };

@@ -29,7 +29,7 @@ convertIterateTropterToMuco(const tropIterateType& tropSol) const {
     const auto& control_names = tropSol.control_names;
 
     const int& numMultipliers =
-            this->m_num_mp + this->m_num_mv + this->m_num_ma;
+            this->m_total_mp + this->m_total_mv + this->m_total_ma;
     std::vector<std::string> multiplier_names(numMultipliers);
     std::copy_n(tropSol.adjunct_names.begin(), numMultipliers,
             multiplier_names.begin());
@@ -109,10 +109,16 @@ convertIterateTropterToMuco(const tropIterateType& tropSol) const {
     int numParameters = (int)parameter_names.size();
     // This produces an empty RowVector if numParameters is zero.
     SimTK::RowVector parameters(numParameters, tropSol.parameters.data());
-	// TODO add slack variables here
-    return {time, state_names, control_names, multiplier_names,
-            derivative_names, parameter_names,
-            states, controls, multipliers, derivatives, parameters};
+
+	// Create iterate.
+    MucoIterate mucoIter(time, state_names, control_names, multiplier_names,
+                        derivative_names, parameter_names, states, controls,
+                        multipliers, derivatives, parameters);
+    for (int i = 0; i < numSlacks; ++i) {
+        mucoIter.setSlack(slack_names[i], slacks.col(i));
+    }
+
+    return mucoIter;
 }
 
 template <typename T>

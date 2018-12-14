@@ -135,7 +135,7 @@ void MucoProblemRep::initialize() {
     const auto NC = matter.getNumConstraints();
     const auto& state = m_model.getWorkingState();
     int mp, mv, ma;
-    m_num_multibody_constraint_eqs = 0;
+    m_num_multibody_constraint_equations = 0;
     for (SimTK::ConstraintIndex cid(0); cid < NC; ++cid) {
         const SimTK::Constraint& constraint = matter.getConstraint(cid);
         if (!constraint.isDisabled(state)) {
@@ -151,7 +151,7 @@ void MucoProblemRep::initialize() {
             mc.setConstraintInfo(mcInfo);
 
             // Update number of scalar multibody constraint equations.
-            m_num_multibody_constraint_eqs +=
+            m_num_multibody_constraint_equations +=
                     mc.getConstraintInfo().getNumEquations();
 
             // Append this multibody constraint to the internal vector variable.
@@ -187,7 +187,7 @@ void MucoProblemRep::initialize() {
         }
     }
 
-    m_num_path_constraint_eqs = 0;
+    m_num_path_constraint_equations = 0;
     m_path_constraints.resize(ph0.getProperty_path_constraints().size());
     std::unordered_set<std::string> pcNames;
     for (int i = 0; i < ph0.getProperty_path_constraints().size(); ++i) {
@@ -199,8 +199,8 @@ void MucoProblemRep::initialize() {
         pcNames.insert(pc.getName());
         m_path_constraints[i] = std::unique_ptr<MucoPathConstraint>(pc.clone());
         m_path_constraints[i]->
-                initializeOnModel(m_model, m_num_path_constraint_eqs);
-        m_num_path_constraint_eqs +=
+                initializeOnModel(m_model, m_num_path_constraint_equations);
+        m_num_path_constraint_equations +=
                 m_path_constraints[i]->getConstraintInfo().getNumEquations();
     }
 }
