@@ -279,7 +279,6 @@ protected:
             // SimTK::Vector constructor is true)
             SimTK::Vector mucoParams(
                     (int)parameters.size(), parameters.data(), true);
-
             m_mucoProbRep.applyParametersToModel(mucoParams);
             // TODO: Avoid this const_cast.
             const_cast<Model&>(m_model).initSystem();
