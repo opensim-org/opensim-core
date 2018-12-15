@@ -84,7 +84,7 @@ std::string convert_info_integer_to_string(int info) {
 void snopt_userfunction(int*   /* Status */,
         int* num_variables, double x[],
         int*   needF, int* length_F  , double  F[],
-        int*   needG, int* neG, double G[],
+        int*   /*needG*/, int* /*neG*/, double /*G*/[],
         char*  /*    cu  */, int* /* lencu */,
         int   [] /* iu   */, int* /* leniu */,
         double[] /* ru   */, int* /* lenru */)
@@ -233,8 +233,8 @@ SNOPTSolver::optimize_impl(const VectorXd& variablesArg) const {
                             strlen(option.second.value().c_str()) + 1;
             assert(optLen < 256);
             char str[256];
-            char *space = " ";
-            snprintf(str, sizeof(str), "%s%s%s", option.first.c_str(), space,
+            char space = ' ';
+            snprintf(str, sizeof(str), "%s%s%s", option.first.c_str(), &space,
                 option.second.value().c_str());
             snopt_prob.setParameter(str);
         }
