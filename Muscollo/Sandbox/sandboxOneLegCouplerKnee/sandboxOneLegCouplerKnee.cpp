@@ -333,14 +333,14 @@ void stateTrackingRightLegWeldedPelvis(const std::string& actuatorType) {
     ms.set_enforce_constraint_derivatives(true);
     ms.set_lagrange_multiplier_weight(1);
 
-    //MucoIterate guess = ms.createGuess();
-    //model.initSystem();
-    //model.getSimbodyEngine().convertDegreesToRadians(statesRef);
-    //STOFileAdapter::write(statesRef, "ik_results_radians.sto");
-    //guess.setStatesTrajectory(statesRef, true, true);
-    //ms.setGuess(guess);
-    ms.setGuessFile("sandboxRightLeg_weldedPelvis_" + actuatorType 
-         + "_state_tracking_solution.sto");
+    MucoIterate guess = ms.createGuess();
+    model.initSystem();
+    model.getSimbodyEngine().convertDegreesToRadians(statesRef);
+    STOFileAdapter::write(statesRef, "ik_results_radians.sto");
+    guess.setStatesTrajectory(statesRef, true, true);
+    ms.setGuess(guess);
+    //ms.setGuessFile("sandboxRightLeg_weldedPelvis_" + actuatorType 
+    //     + "_state_tracking_solution.sto");
 
     MucoSolution solution = muco.solve();
     muco.visualize(solution);
@@ -422,14 +422,14 @@ void stateTrackingRightLeg(const std::string& actuatorType) {
     ms.set_enforce_constraint_derivatives(true);
     ms.set_lagrange_multiplier_weight(10);
 
-    //MucoIterate guess = ms.createGuess();
-    //model.initSystem();
-    //model.getSimbodyEngine().convertDegreesToRadians(statesRef);
-    //STOFileAdapter::write(statesRef, "ik_results_radians.sto");
-    //guess.setStatesTrajectory(statesRef, true, true);
-    //ms.setGuess(guess);
-    ms.setGuessFile("sandboxRightLeg_" + actuatorType 
-         + "_state_tracking_solution.sto");
+    MucoIterate guess = ms.createGuess();
+    model.initSystem();
+    model.getSimbodyEngine().convertDegreesToRadians(statesRef);
+    STOFileAdapter::write(statesRef, "ik_results_radians.sto");
+    guess.setStatesTrajectory(statesRef, true, true);
+    ms.setGuess(guess);
+    //ms.setGuessFile("sandboxRightLeg_" + actuatorType 
+    //     + "_state_tracking_solution.sto");
 
     MucoSolution solution = muco.solve();
     muco.visualize(solution);

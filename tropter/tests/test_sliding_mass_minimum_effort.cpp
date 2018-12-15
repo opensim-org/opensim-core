@@ -179,58 +179,57 @@ TEST_CASE("IPOPT") {
     }
 }
 
-// TODO: these problem are not solving
-//#if defined(TROPTER_WITH_SNOPT)
-//TEST_CASE("SNOPT, trapezoidal") {
-//
-//    auto ocp = std::make_shared<SlidingMass<double>>();
-//    DirectCollocationSolver<double> dircol(ocp, "trapezoidal", "snopt");
-//    Solution solution = dircol.solve();
-//    solution.write("sliding_mass_solution.csv");
-//    //Iterate initial_guess = ocp->make_guess_template();
-//    //Solution solution = dircol.solve(initial_guess);
-//
-//    // Initial and final position.
-//    REQUIRE(Approx(solution.states(0, 0)) == 0.0);
-//    REQUIRE(Approx(solution.states.rightCols<1>()[0]) == 1.0);
-//    // Initial and final speed.
-//    REQUIRE(Approx(solution.states(1, 0)) == 0.0);
-//    REQUIRE(Approx(solution.states.rightCols<1>()[1]) == 0.0);
-//
-//    int N = (int)solution.time.size();
-//    //std::cout << "DEBUG solution.controls " << solution.controls << std::endl;
-//    // TODO is this really the correct solution?
-//    RowVectorXd expected = RowVectorXd::LinSpaced(N - 2, 14.6119, -14.6119);
-//    TROPTER_REQUIRE_EIGEN(solution.controls.middleCols(1, N - 2), expected,
-//     0.1);
-//    //RowVectorXd errors = solution.controls.rightCols(N - 1) - expected;
-//    //REQUIRE(Approx(errors.norm()) == 0);
-//}
-//
-//TEST_CASE("SNOPT, hermite-simpson") {
-//
-//    auto ocp = std::make_shared<SlidingMass<double>>();
-//    DirectCollocationSolver<double> dircol(ocp, "hermite-simpson", "snopt");
-//    Solution solution = dircol.solve();
-//    solution.write("sliding_mass_solution.csv");
-//    //Iterate initial_guess = ocp->make_guess_template();
-//    //Solution solution = dircol.solve(initial_guess);
-//
-//    // Initial and final position.
-//    REQUIRE(Approx(solution.states(0, 0)) == 0.0);
-//    REQUIRE(Approx(solution.states.rightCols<1>()[0]) == 1.0);
-//    // Initial and final speed.
-//    REQUIRE(Approx(solution.states(1, 0)) == 0.0);
-//    REQUIRE(Approx(solution.states.rightCols<1>()[1]) == 0.0);
-//
-//    int N = (int)solution.time.size();
-//    //std::cout << "DEBUG solution.controls " << solution.controls << std::endl;
-//    // TODO is this really the correct solution?
-//    RowVectorXd expected = RowVectorXd::LinSpaced(N - 2, 14.6119, -14.6119);
-//    TROPTER_REQUIRE_EIGEN(solution.controls.middleCols(1, N - 2), expected,
-//        0.1);
-//    //RowVectorXd errors = solution.controls.rightCols(N - 1) - expected;
-//    //REQUIRE(Approx(errors.norm()) == 0);
-//}
-//#endif
+#if defined(TROPTER_WITH_SNOPT)
+TEST_CASE("SNOPT, trapezoidal") {
+
+    auto ocp = std::make_shared<SlidingMass<double>>();
+    DirectCollocationSolver<double> dircol(ocp, "trapezoidal", "snopt");
+    Solution solution = dircol.solve();
+    solution.write("sliding_mass_solution.csv");
+    //Iterate initial_guess = ocp->make_guess_template();
+    //Solution solution = dircol.solve(initial_guess);
+
+    // Initial and final position.
+    REQUIRE(Approx(solution.states(0, 0)) == 0.0);
+    REQUIRE(Approx(solution.states.rightCols<1>()[0]) == 1.0);
+    // Initial and final speed.
+    REQUIRE(Approx(solution.states(1, 0)) == 0.0);
+    REQUIRE(Approx(solution.states.rightCols<1>()[1]) == 0.0);
+
+    int N = (int)solution.time.size();
+    //std::cout << "DEBUG solution.controls " << solution.controls << std::endl;
+    // TODO is this really the correct solution?
+    RowVectorXd expected = RowVectorXd::LinSpaced(N - 2, 14.6119, -14.6119);
+    TROPTER_REQUIRE_EIGEN(solution.controls.middleCols(1, N - 2), expected,
+     0.1);
+    //RowVectorXd errors = solution.controls.rightCols(N - 1) - expected;
+    //REQUIRE(Approx(errors.norm()) == 0);
+}
+
+TEST_CASE("SNOPT, hermite-simpson") {
+
+    auto ocp = std::make_shared<SlidingMass<double>>();
+    DirectCollocationSolver<double> dircol(ocp, "hermite-simpson", "snopt");
+    Solution solution = dircol.solve();
+    solution.write("sliding_mass_solution.csv");
+    //Iterate initial_guess = ocp->make_guess_template();
+    //Solution solution = dircol.solve(initial_guess);
+
+    // Initial and final position.
+    REQUIRE(Approx(solution.states(0, 0)) == 0.0);
+    REQUIRE(Approx(solution.states.rightCols<1>()[0]) == 1.0);
+    // Initial and final speed.
+    REQUIRE(Approx(solution.states(1, 0)) == 0.0);
+    REQUIRE(Approx(solution.states.rightCols<1>()[1]) == 0.0);
+
+    int N = (int)solution.time.size();
+    //std::cout << "DEBUG solution.controls " << solution.controls << std::endl;
+    // TODO is this really the correct solution?
+    RowVectorXd expected = RowVectorXd::LinSpaced(N - 2, 14.6119, -14.6119);
+    TROPTER_REQUIRE_EIGEN(solution.controls.middleCols(1, N - 2), expected,
+        0.1);
+    //RowVectorXd errors = solution.controls.rightCols(N - 1) - expected;
+    //REQUIRE(Approx(errors.norm()) == 0);
+}
+#endif
 
