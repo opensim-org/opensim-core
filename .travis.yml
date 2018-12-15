@@ -1,0 +1,2 @@
+script:
+  - bash build_on_linux.sh
