@@ -68,6 +68,7 @@ public:
     ///   bound). This is the default type.
     /// - **random**: values are randomly generated within the bounds.
     /// - **time-stepping**: see MucoSolver::createGuessTimeStepping().
+    ///   NOTE: This option does not yet work well for this solver.
     /// @note Calling this method does *not* set an initial guess to be used
     /// in the solver; you must call setGuess() or setGuessFile() for that.
     /// @precondition You must have called resetProblem().

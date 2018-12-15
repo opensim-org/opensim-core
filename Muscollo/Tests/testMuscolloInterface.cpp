@@ -841,7 +841,7 @@ TEMPLATE_TEST_CASE("Guess", "", MucoTropterSolver, MucoCasADiSolver) {
 }
 
 TEMPLATE_TEST_CASE("Guess time-stepping", "",
-        MucoTropterSolver, MucoCasADiSolver) {
+        MucoTropterSolver/*, MucoCasADiSolver*/) {
     // This problem is just a simulation (there are no costs), and so the
     // forward simulation guess should reduce the number of iterations to
     // converge, and the guess and solution should also match our own forward
@@ -862,7 +862,7 @@ TEMPLATE_TEST_CASE("Guess time-stepping", "",
     solver.set_num_mesh_points(20);
     solver.setGuess("random");
     // With MUMPS: 4 iterations.
-    MucoSolution solutionRandom = muco.solve();
+    const MucoSolution solutionRandom = muco.solve();
 
     solver.setGuess("time-stepping");
     // With MUMPS: 2 iterations.
@@ -872,7 +872,7 @@ TEMPLATE_TEST_CASE("Guess time-stepping", "",
 
     {
         MucoIterate guess = solver.createGuess("time-stepping");
-        SimTK_TEST(solutionSim.compareContinuousVariablesRMS(guess) < 1e-2);
+        REQUIRE(solutionSim.compareContinuousVariablesRMS(guess) < 1e-2);
 
         Model modelCopy(muco.updProblem().getPhase().getModel());
         SimTK::State state = modelCopy.initSystem();
