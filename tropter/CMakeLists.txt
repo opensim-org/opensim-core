@@ -31,11 +31,13 @@ option(TROPTER_WITH_SNOPT
         "Include support for the SNOPT optimization library; \
         precompiled C++ interface libraries for SNOPT required."
         OFF)
-add_feature_info(SNOPT TROPTER_WITH_SNOPT
+add_feature_info(WITH_SNOPT TROPTER_WITH_SNOPT
     "Support the SNOPT optimization library (TROPTER_WITH_SNOPT)")
-# if(TROPTER_WITH_SNOPT)
-#     enable_language(Fortran)
-# endif()
+if(TROPTER_WITH_SNOPT AND NOT MSVC)
+    # On MSVC, we do not try to compile Fortran sources.
+    enable_language(Fortran)
+endif()
+
 
 # Organization of installation.
 # -----------------------------
@@ -80,7 +82,7 @@ set_package_properties(ADOLC PROPERTIES
         URL https://projects.coin-or.org/ADOL-C
         TYPE REQUIRED
         PURPOSE "Computing derivatives for optimization")
-tropter_copy_dlls(ADOLC "${ADOLC_DIR}/bin")
+tropter_copy_dlls(DEP_NAME ADOLC DEP_INSTALL_DIR "${ADOLC_DIR}/bin")
 
 if(UNIX)
     pkg_check_modules(IPOPT REQUIRED ipopt IMPORTED_TARGET)
@@ -94,15 +96,7 @@ else()
     # TODO move these flags to a specific target.
     # TODO set(CMAKE_SHARED_LINKER_FLAGS
     # TODO        "${CMAKE_SHARED_LINKER_FLAGS} ${IPOPT_LINK_FLAGS}")
-    tropter_copy_dlls(IPOPT "${Ipopt_ROOT_DIR}/bin")
-endif()
-
-if(TROPTER_WITH_SNOPT)
-    find_package(SNOPT REQUIRED)
-    set_package_properties(SNOPT PROPERTIES
-            TYPE REQUIRED
-            PURPOSE "Sparse nonlinear optimization")
-    tropter_copy_dlls(SNOPT "${SNOPT_DIR}/bin")
+    tropter_copy_dlls(DEP_NAME IPOPT DEP_INSTALL_DIR "${Ipopt_ROOT_DIR}/bin")
 endif()
 
 # OpenMP allows parallelization (of evaluating dynamics and path constraints
