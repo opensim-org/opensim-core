@@ -404,9 +404,6 @@ bool IPOPTSolver::TNLP::eval_g(
     assert((unsigned)num_constraints == m_num_constraints);
     //// TODO if (!num_constraints) return true;
     m_problem.calc_constraints(num_variables, x, new_x, num_constraints, g);
-    for (int i = 0; i < num_constraints; ++i) {
-        std::cout << g[i] << std::endl;
-    }
     return true;
 }
 

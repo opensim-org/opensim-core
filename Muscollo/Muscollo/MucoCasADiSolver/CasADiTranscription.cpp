@@ -25,6 +25,11 @@ using casadi::Slice;
 using casadi::Callback;
 using casadi::Dict;
 
+class AccelerationStageNotAllowed : public OpenSim::Exception {
+public:
+    using Exception::Exception;
+};
+
 void EndpointCostFunction::init() {
     // Ensure that evaluating the cost functions does not throw
     // any exceptions.
@@ -36,7 +41,11 @@ void EndpointCostFunction::init() {
     std::unique_ptr<double*> outputArray(new double*[1]);
     SimTK::Vector output(1);
     outputArray.get()[0] = output.updContiguousScalarData();
-    eval(inputArray.get(), outputArray.get(), nullptr, nullptr, nullptr);
+    try {
+        eval(inputArray.get(), outputArray.get(), nullptr, nullptr, nullptr);
+    } catch (const AccelerationStageNotAllowed&) {
+        throw;
+    } catch (...) {}
 }
 
 int EndpointCostFunction::eval(const double** inputs, double** outputs,
@@ -52,7 +61,7 @@ int EndpointCostFunction::eval(const double** inputs, double** outputs,
     OPENSIM_THROW_IF(
             m_transcrip.dynamicsModeIsImplicit() &&
                     state.getSystemStage() >= SimTK::Stage::Acceleration,
-            Exception,
+            AccelerationStageNotAllowed,
             "Cannot realize to Acceleration in implicit dynamics mode.");
     return 0;
 }
@@ -69,7 +78,11 @@ void IntegrandCostFunction::init() {
     std::unique_ptr<double*> outputArray(new double*[1]);
     SimTK::Vector output(1);
     outputArray.get()[0] = output.updContiguousScalarData();
-    eval(inputArray.get(), outputArray.get(), nullptr, nullptr, nullptr);
+    try {
+        eval(inputArray.get(), outputArray.get(), nullptr, nullptr, nullptr);
+    } catch (const AccelerationStageNotAllowed&) {
+        throw;
+    } catch (...) {}
 }
 
 int IntegrandCostFunction::eval(const double** inputs, double** outputs,
@@ -84,7 +97,7 @@ int IntegrandCostFunction::eval(const double** inputs, double** outputs,
     OPENSIM_THROW_IF(
             m_transcrip.dynamicsModeIsImplicit() &&
                     state.getSystemStage() >= SimTK::Stage::Acceleration,
-            Exception,
+            AccelerationStageNotAllowed,
             "Cannot realize to Acceleration in implicit dynamics mode.");
     return 0;
 }
@@ -102,7 +115,11 @@ void PathConstraintFunction::init() {
     int numEquations = m_pathCon.getConstraintInfo().getNumEquations();
     SimTK::Vector output(numEquations);
     outputArray.get()[0] = output.updContiguousScalarData();
-    eval(inputArray.get(), outputArray.get(), nullptr, nullptr, nullptr);
+    try {
+        eval(inputArray.get(), outputArray.get(), nullptr, nullptr, nullptr);
+    } catch (const AccelerationStageNotAllowed&) {
+        throw;
+    } catch (...) {}
 }
 
 int PathConstraintFunction::
@@ -118,7 +135,7 @@ eval(const double** inputs, double** outputs, casadi_int*, double*, void*)
     OPENSIM_THROW_IF(
             m_transcrip.dynamicsModeIsImplicit() &&
                     state.getSystemStage() >= SimTK::Stage::Acceleration,
-            Exception,
+            AccelerationStageNotAllowed,
             "Cannot realize to Acceleration in implicit dynamics mode.");
     std::copy_n(errors.getContiguousScalarData(), errors.size(), outputs[0]);
     return 0;

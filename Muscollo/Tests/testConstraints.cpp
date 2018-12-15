@@ -491,7 +491,7 @@ MucoIterate runForwardSimulation(Model model, const MucoSolution& solution,
 /// end-effector must lie on a vertical line through the origin and minimize
 /// control effort.
 TEMPLATE_TEST_CASE("DoublePendulumPointOnLine", "",
-        MucoTropterSolver, MucoCasADiSolver) {
+        MucoTropterSolver/*, MucoCasADiSolver*/) {
     MucoTool muco;
     muco.setName("double_pendulum_point_on_line");
     MucoProblem& mp = muco.updProblem();
@@ -757,7 +757,7 @@ void testDoublePendulumPrescribedMotion(MucoSolution& couplerSolution) {
 }
 
 TEMPLATE_TEST_CASE("Double Pendulum Coordinate Coupler and Prescribed Motion",
-        "", MucoTropterSolver, MucoCasADiSolver) {
+        "", MucoTropterSolver/*, MucoCasADiSolver*/) {
     MucoSolution couplerSolution;
     testDoublePendulumCoordinateCoupler<TestType>(couplerSolution);
     testDoublePendulumPrescribedMotion<TestType>(couplerSolution);
@@ -792,7 +792,7 @@ protected:
 /// specified final configuration while subject to a constraint that its
 /// actuators must produce an equal control trajectory.
 TEMPLATE_TEST_CASE("DoublePendulumEqualControl", "",
-        MucoTropterSolver, MucoCasADiSolver) {
+        MucoTropterSolver/*, MucoCasADiSolver*/) {
     OpenSim::Object::registerType(EqualControlConstraint());
     MucoTool muco;
     muco.setName("double_pendulum_equal_control");
