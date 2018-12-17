@@ -92,7 +92,7 @@ protected:
     void addKinematicConstraints() {
         // Add any scalar constraints associated with kinematic constraints in
         // the model as path constraints in the problem.
-                // Whether or not enabled kinematic constraints exist in the model, 
+        // Whether or not enabled kinematic constraints exist in the model, 
         // check that optional solver properties related to constraints are
         // set properly.
         std::vector<std::string> kcNames =
@@ -125,6 +125,8 @@ protected:
         std::vector<MucoBounds> bounds;
         std::vector<std::string> labels;
         std::vector<KinematicLevel> kinLevels;
+        bool enforceConstraintDerivs = 
+            m_mucoTropterSolver.get_enforce_constraint_derivatives();
         for (const auto& kcName : kcNames) {
             const auto& kc = m_mucoProbRep.getKinematicConstraint(kcName);
             const auto& multInfos = m_mucoProbRep.getMultiplierInfos(kcName);
@@ -135,17 +137,9 @@ protected:
             bounds = kc.getConstraintInfo().getBounds();
             labels = kc.getConstraintInfo().getConstraintLabels();
             kinLevels = kc.getKinematicLevels();
-
             m_total_mp += mp;
             m_total_mv += mv;
             m_total_ma += ma;
-            if (m_mucoTropterSolver.get_enforce_constraint_derivatives()) {
-                // This includes constraint derivatives: 3*mp + 2*mv + ma.
-                numEquationsThisConstraint 
-                    = kc.getConstraintInfo().getNumEquations();
-            } else {
-                numEquationsThisConstraint = mp + mv + ma;				   
-            }
 
             // Loop through all scalar constraints associated with the model
             // constraint and corresponding path constraints to the optimal
@@ -155,18 +149,20 @@ protected:
             // they are only added if the current constraint equation is not a
             // derivative of a position- or velocity-level equation.
             multIndexThisConstraint = 0;
-            for (int i = 0; i < numEquationsThisConstraint; ++i) {
-
-                // TODO name constraints based on model constraint names
-                // or coordinate names if a locked or prescribed coordinate
-                this->add_path_constraint(labels[i], convertBounds(bounds[i]));
-
+            numEquationsThisConstraint = 0;
+            for (int i = 0; i < kc.getConstraintInfo().getNumEquations(); ++i) {
+                
                 // If the index for this path constraint represents an
                 // a non-derivative scalar constraint equation, also add a
-                // Lagrange multplier to the problem.
+                // Lagrange multiplier to the problem.
                 if (kinLevels[i] == KinematicLevel::Position ||
                         kinLevels[i] == KinematicLevel::Velocity ||
                         kinLevels[i] == KinematicLevel::Acceleration) {
+
+                    // TODO name constraints based on model constraint names
+                    // or coordinate names if a locked or prescribed coordinate
+                    this->add_path_constraint(labels[i], 
+                                              convertBounds(bounds[i]));
 
                     const auto& multInfo = multInfos[multIndexThisConstraint];
                     this->add_adjunct(multInfo.getName(),
@@ -175,8 +171,7 @@ protected:
                             convertBounds(multInfo.getFinalBounds()));
                     // Add velocity correction variables if enforcing
                     // constraint equation derivatives.
-                    if (m_mucoTropterSolver
-                            .get_enforce_constraint_derivatives()) {
+                    if (enforceConstraintDerivs) {
                         // TODO this naming convention assumes that the 
                         // associated Lagrange multiplier name begins with
                         // "lambda", which may change in the future.
@@ -191,6 +186,14 @@ protected:
                                 .get_velocity_correction_bounds()));
                     }
                     ++multIndexThisConstraint;
+                    ++numEquationsThisConstraint;
+
+                // If enforcing constraint derivatives, also add path 
+                // constraints for kinematic constraint equation derivatives.
+                } else if (enforceConstraintDerivs) {
+                    this->add_path_constraint(labels[i], 
+                                              convertBounds(bounds[i]));
+                    ++numEquationsThisConstraint;
                 }
             }
 
@@ -211,7 +214,8 @@ protected:
                 this->add_path_constraint(labels[i], convertBounds(bounds[i]));
             }
         }
-        m_numPathConstraintEquations = m_mucoProbRep.getNumPathConstraintEquations();
+        m_numPathConstraintEquations = 
+            m_mucoProbRep.getNumPathConstraintEquations();
     }
 
     void addParameters() {
@@ -403,8 +407,8 @@ public:
         // If enabled constraints exist in the model, compute accelerations
         // based on Lagrange multipliers.
         if (this->m_numKinematicConstraintEquations) {
-            // TODO Antoine and Gil said realizing Dynamics is a lot costlier than
-            // realizing to Velocity and computing forces manually.
+            // TODO Antoine and Gil said realizing Dynamics is a lot costlier 
+            // than realizing to Velocity and computing forces manually.
             model.realizeDynamics(simTKState);
 
             const SimTK::MultibodySystem& multibody =
@@ -459,6 +463,18 @@ public:
                         simTKState.getUDotErr().getContiguousScalarData(),
                         m_total_mp + m_total_mv + m_total_ma,
                         out.path.data() + 2*m_total_mp + m_total_mv);
+                } else {
+                    // Velocity-level errors. Skip derivatives of position-level
+                    // constraint equations.
+                    std::copy_n(
+                        simTKState.getUErr().getContiguousScalarData()
+                        + m_total_mp, m_total_mv, out.path.data() + m_total_mp);
+                    // Acceleration-level errors. Skip derivatives of velocity-
+                    // and position-level constraint equations.
+                    std::copy_n(
+                        simTKState.getUDotErr().getContiguousScalarData() +
+                        m_total_mp + m_total_mv, m_total_ma,
+                        out.path.data() + m_total_mp + m_total_mv);
                 }
             }
 
@@ -475,8 +491,8 @@ public:
                     out.dynamics.data() + nq + nu);
 
         } else {
-            // TODO Antoine and Gil said realizing Dynamics is a lot costlier than
-            // realizing to Velocity and computing forces manually.
+            // TODO Antoine and Gil said realizing Dynamics is a lot costlier 
+            // than realizing to Velocity and computing forces manually.
             model.realizeAcceleration(simTKState);
 
             // Copy state derivative values to output struct.

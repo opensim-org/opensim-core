@@ -246,6 +246,13 @@ MucoSolution MucoTropterSolver::solveImpl() const {
             getProperty_exact_hessian_block_sparsity_mode(),
             {"dense", "sparse"});
     }
+    // Hessian information is not used in SNOPT.
+    OPENSIM_THROW_IF(get_optim_hessian_approximation() == "exact" &&
+        get_optim_solver() == "snopt", Exception,
+        "The property 'optim_hessian_approximation' was set to exact while "
+        "using SNOPT as the optimization solver, but SNOPT does not utilize "
+        "Hessian information.");
+
     // If a Lagrange multiplier weight was provided, check that it is positive.
     if (!getProperty_lagrange_multiplier_weight().empty()) {
         checkPropertyIsPositive(*this, 
