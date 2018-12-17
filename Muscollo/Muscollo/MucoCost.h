@@ -28,7 +28,7 @@ namespace OpenSim {
 
 class Model;
 
-// TODO give option to specify gradient and hessian analytically.
+// TODO give option to specify gradient and Hessian analytically.
 
 /// A term in the cost functional, to be minimized.
 /// @par For developers

@@ -42,7 +42,7 @@ convertIterateTropterToMuco(const tropIterateType& tropSol) const {
             derivative_names.begin());
 
     const auto& slack_names = tropSol.diffuse_names;
-	const int numSlacks = (int)slack_names.size();
+    const int numSlacks = (int)slack_names.size();
     const auto& parameter_names = tropSol.parameter_names;
 
     int numTimes = (int)time.size();
@@ -96,7 +96,7 @@ convertIterateTropterToMuco(const tropIterateType& tropSol) const {
             }
         }
     }
-	SimTK::Matrix slacks;
+    SimTK::Matrix slacks;
     if (numSlacks) {
         slacks.resize(numTimes, numSlacks);
         for (int itime = 0; itime < numTimes; ++itime) {
@@ -110,7 +110,7 @@ convertIterateTropterToMuco(const tropIterateType& tropSol) const {
     // This produces an empty RowVector if numParameters is zero.
     SimTK::RowVector parameters(numParameters, tropSol.parameters.data());
 
-	// Create iterate.
+    // Create iterate.
     MucoIterateType mucoIter(time, state_names, control_names, multiplier_names,
                         derivative_names, parameter_names, states, controls,
                         multipliers, derivatives, parameters);
@@ -157,7 +157,7 @@ convertToTropterIterate(const OpenSim::MucoIterate& mucoIter) const {
     const auto& derivativeNames = mucoIter.getDerivativeNames();
     tropIter.adjunct_names.insert(tropIter.adjunct_names.end(),
             derivativeNames.begin(), derivativeNames.end());
-	tropIter.diffuse_names = mucoIter.getSlackNames();
+    tropIter.diffuse_names = mucoIter.getSlackNames();
     tropIter.parameter_names = mucoIter.getParameterNames();
 
     int numTimes = (int)time.size();
@@ -165,13 +165,13 @@ convertToTropterIterate(const OpenSim::MucoIterate& mucoIter) const {
     int numControls = (int)tropIter.control_names.size();
     int numMultipliers = (int)mucoIter.getMultiplierNames().size();
     int numDerivatives = (int)derivativeNames.size();
-	int numDiffuses = (int)tropIter.diffuse_names.size();
+    int numDiffuses = (int)tropIter.diffuse_names.size();
     int numParameters = (int)tropIter.parameter_names.size();
     const auto& states = mucoIter.getStatesTrajectory();
     const auto& controls = mucoIter.getControlsTrajectory();
     const auto& multipliers = mucoIter.getMultipliersTrajectory();
     const auto& derivatives = mucoIter.getDerivativesTrajectory();
-	const auto& slacks = mucoIter.getSlacksTrajectory();
+    const auto& slacks = mucoIter.getSlacksTrajectory();
     const auto& parameters = mucoIter.getParameters();
     // Muscollo's matrix is numTimes x numStates;
     // tropter's is numStates x numTimes.
@@ -197,7 +197,7 @@ convertToTropterIterate(const OpenSim::MucoIterate& mucoIter) const {
         tropIter.adjuncts.bottomRows(numDerivatives) = Map<const MatrixXd>(
                 &derivatives(0, 0), numTimes, numDerivatives).transpose();
     }
-	if (numDiffuses) {
+    if (numDiffuses) {
         tropIter.diffuses = Map<const MatrixXd>(
             &slacks(0, 0), numTimes, numDiffuses).transpose();
     } else {

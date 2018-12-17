@@ -489,10 +489,10 @@ void HermiteSimpson<T>::calc_sparsity_hessian_lagrangian(
     }
 
     SymmetricSparsityPattern dae_sparsity(m_num_continuous_variables);
-    if (this->get_hessian_block_sparsity_mode() == "sparse") {
-        TROPTER_THROW("Automatic sparsity detection for hessian diagonal "
+    if (this->get_exact_hessian_block_sparsity_mode() == "sparse") {
+        TROPTER_THROW("Automatic sparsity detection for Hessian diagonal "
             "blocks not implemented for Hermite-Simpson transcription.");
-    } else if (this->get_hessian_block_sparsity_mode() == "dense") {
+    } else if (this->get_exact_hessian_block_sparsity_mode() == "dense") {
          dae_sparsity.set_dense();
     }
 
@@ -515,10 +515,10 @@ void HermiteSimpson<T>::calc_sparsity_hessian_lagrangian(
     }
 
     SymmetricSparsityPattern integral_cost_sparsity(num_con_vars);
-    if (this->get_hessian_block_sparsity_mode() == "sparse") {
-        TROPTER_THROW("Automatic sparsity detection for hessian diagonal "
+    if (this->get_exact_hessian_block_sparsity_mode() == "sparse") {
+        TROPTER_THROW("Automatic sparsity detection for Hessian diagonal "
             "blocks not implemented for Hermite-Simpson transcription.");
-    } else if (this->get_hessian_block_sparsity_mode() == "dense") {
+    } else if (this->get_exact_hessian_block_sparsity_mode() == "dense") {
         integral_cost_sparsity.set_dense();
     }
     

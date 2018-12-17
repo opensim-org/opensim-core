@@ -80,24 +80,24 @@ public:
                 "this transcription method." << std::endl;
     }
 
-    /// When calculating total hessian sparsity and using repeated diagonal 
+    /// When calculating total Hessian sparsity and using repeated diagonal 
     /// sparsity blocks to avoid redundant calculations for each mesh point,
     /// how should these blocks be calculated?
     ///  "dense": Mesh point blocks are assumed dense (conservative, default 
     ///           mode)
     /// "sparse": Mesh point block sparsity is detected from the optimal control
     ///           problem initial guess. 
-    void set_hessian_block_sparsity_mode(std::string mode) {
+    void set_exact_hessian_block_sparsity_mode(std::string mode) {
         TROPTER_VALUECHECK(mode == "dense" || mode == "sparse",
-            "hessian block sparsity mode", mode, "dense or sparse");
-        m_hessian_block_sparsity_mode = mode; 
+            "Hessian block sparsity mode", mode, "dense or sparse");
+        m_exact_hessian_block_sparsity_mode = mode; 
     }
-    /// @copydoc set_hessian_block_sparsity_mode()
-    std::string get_hessian_block_sparsity_mode () const
-    {   return m_hessian_block_sparsity_mode; }
+    /// @copydoc set_exact_hessian_block_sparsity_mode()
+    std::string get_exact_hessian_block_sparsity_mode () const
+    {   return m_exact_hessian_block_sparsity_mode; }
 
 private:
-    std::string m_hessian_block_sparsity_mode{"dense"};
+    std::string m_exact_hessian_block_sparsity_mode{"dense"};
 
 };
 

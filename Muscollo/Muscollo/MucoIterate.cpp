@@ -170,7 +170,7 @@ void MucoIterate::appendSlack(const std::string& name,
     OPENSIM_THROW_IF(trajectory.size() != m_time.nrow(),
         Exception, "Attempted to add slack " + name + " of length " + 
         std::to_string(trajectory.size()) + ", but it is incompatible with the "
-        "time vector, which is length " + std::to_string(m_time.nrow()) +  ".");
+        "time vector, which has length " + std::to_string(m_time.nrow()) +  ".");
 
     m_slack_names.push_back(name);
     m_slacks.resizeKeep(m_time.nrow(), m_slacks.ncol() + 1);

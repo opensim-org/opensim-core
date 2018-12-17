@@ -15,7 +15,7 @@
 // ----------------------------------------------------------------------------
 #include "SNOPTSolver.h"
 #include "Problem.h"
-#include "tropter/SparsityPattern.h"
+#include <tropter/SparsityPattern.h>
 
 using namespace tropter::optimization;
 using Eigen::VectorXd;

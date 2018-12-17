@@ -23,7 +23,7 @@
 #include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
 
 // TODO: Test with hermite-simpson.
-// TODO: Test with multibody constraints.
+// TODO: Test with kinematic constraints.
 
 using namespace OpenSim;
 using namespace Catch;

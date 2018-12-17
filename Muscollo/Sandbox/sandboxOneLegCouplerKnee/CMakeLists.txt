@@ -4,4 +4,4 @@ MuscolloAddSandboxExecutable(NAME sandboxOneLegCouplerKnee
 			Rajagopal2015_right_leg_9musc.osim
 			ik_results.sto
 			marker_trajectories.trc
-			ik_setup.xml)
+			ik_tasks.xml)
