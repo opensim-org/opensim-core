@@ -405,9 +405,9 @@ DelimFileAdapter<T>::extendRead(const std::string& fileName) const {
     // the data container.
     std::vector<double> timeVec;
     std::vector<SimTK::RowVector_<T>> depDataVec;
-    //int initCapacity = 10000;
-    //timeVec.reserve(initCapacity);
-    //depDataVec.reserve(initCapacity);
+    int initCapacity = 100000;
+    timeVec.reserve(initCapacity);
+    depDataVec.reserve(initCapacity);
     auto row = nextLine();
 
     while (!row.empty()) {

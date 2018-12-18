@@ -33,6 +33,7 @@
 #include "SimmMacros.h"
 #include "Storage.h"
 #include "OpenSim/Auxiliary/auxiliaryTestFunctions.h"
+#include "OpenSim/Common/STOFileAdapter.h"
 
 //=============================================================================
 // STATICS
@@ -40,6 +41,29 @@
 using namespace std;
 using namespace OpenSim;
 using SimTK::Vec3;
+
+//=============================================================================
+// HELPER FUNCTIONS
+//=============================================================================
+// Add number of rows (nRows) and number of columns (nColumns) to the header of
+// the STO file. Note that nColumns will include time, so it will be number of
+// columns in the matrix plus 1 (for time).
+inline void addNumRowsNumColumns(const std::string& filenameOld,
+    const std::string& filenameNew) {
+    auto table = OpenSim::STOFileAdapter_<double>::read(filenameOld);
+    std::regex endheader{ R"( *endheader *)" };
+    std::ifstream fileOld{ filenameOld };
+    std::ofstream fileNew{ filenameNew };
+    std::string line{};
+    while (std::getline(fileOld, line)) {
+        if (std::regex_match(line, endheader))
+            fileNew << "nRows=" << table.getNumRows() << "\n"
+            << "nColumns=" << table.getNumColumns() + 1 << "\n"
+            << "endheader\n";
+        else
+            fileNew << line << "\n";
+    }
+}
 
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR

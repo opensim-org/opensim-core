@@ -22,6 +22,7 @@
 
 #include "OpenSim/Common/C3DFileAdapter.h"
 #include "OpenSim/Common/TRCFileAdapter.h"
+#include "OpenSim/Common/STOFileAdapter.h"
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 
 #include <vector>
