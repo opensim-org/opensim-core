@@ -319,8 +319,6 @@ DelimFileAdapter<T>::extendRead(const std::string& fileName) const {
                      FileIsEmpty,
                      fileName);
 
-    //auto table = std::make_shared<TimeSeriesTable_<T>>();
-
     size_t line_num{};
     // All the lines until "endheader" is header.
     std::regex endheader{R"([ \t]*)" + _endHeaderString + R"([ \t]*)"};
@@ -374,7 +372,6 @@ DelimFileAdapter<T>::extendRead(const std::string& fileName) const {
         else
             header += "\n" + line;
     }
-    //table->updTableMetaData().setValueForKey("header", header);
     keyValuePairs.setValueForKey("header", header);
 
     // Callable to get the next line in form of vector of tokens.
@@ -408,9 +405,9 @@ DelimFileAdapter<T>::extendRead(const std::string& fileName) const {
     // the data container.
     std::vector<double> timeVec;
     std::vector<SimTK::RowVector_<T>> depDataVec;
-    int initCapacity = 2500;
-    timeVec.reserve(initCapacity);
-    depDataVec.reserve(initCapacity);
+    //int initCapacity = 10000;
+    //timeVec.reserve(initCapacity);
+    //depDataVec.reserve(initCapacity);
     auto row = nextLine();
 
     while (!row.empty()) {
@@ -429,7 +426,7 @@ DelimFileAdapter<T>::extendRead(const std::string& fileName) const {
             column_labels.size(),
             static_cast<size_t>(row_vector.size()));
         
-        depDataVec.push_back(row_vector);
+        depDataVec.push_back(std::move(row_vector));
 
         row = nextLine();
     }
