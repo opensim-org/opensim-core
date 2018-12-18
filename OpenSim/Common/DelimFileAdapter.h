@@ -440,11 +440,12 @@ DelimFileAdapter<T>::extendRead(const std::string& fileName) const {
     }
 
     // Create the table and update other metadata from above
-    auto& table = *new TimeSeriesTable_<T>(timeVec, matrix, column_labels);
-    table.updTableMetaData() = keyValuePairs;
+    auto table = 
+        std::make_shared<TimeSeriesTable_<T>>(timeVec, matrix, column_labels);
+    table->updTableMetaData() = keyValuePairs;
 
     OutputTables output_tables{};
-    output_tables.emplace(tableString(), std::shared_ptr<TimeSeriesTable_<T>>(&table));
+    output_tables.emplace(tableString(), table);
 
     return output_tables;
 }
