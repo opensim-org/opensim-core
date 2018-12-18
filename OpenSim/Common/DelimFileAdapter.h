@@ -319,7 +319,7 @@ DelimFileAdapter<T>::extendRead(const std::string& fileName) const {
                      FileIsEmpty,
                      fileName);
 
-    auto table = std::make_shared<TimeSeriesTable_<T>>();
+    //auto table = std::make_shared<TimeSeriesTable_<T>>();
 
     size_t line_num{};
     // All the lines until "endheader" is header.
@@ -327,6 +327,7 @@ DelimFileAdapter<T>::extendRead(const std::string& fileName) const {
     std::regex keyvalue{R"((.*)=(.*))"};
     std::string header{};
     std::string line{};
+    ValueArrayDictionary keyValuePairs;
     while(std::getline(in_stream, line)) {
         ++line_num;
 
@@ -361,7 +362,8 @@ DelimFileAdapter<T>::extendRead(const std::string& fileName) const {
                     // Discard OpenSim version number. Version number is added
                     // during writing.
                 } else {
-                    table->updTableMetaData().setValueForKey(key, value);
+                    //table->updTableMetaData().setValueForKey(key, value);
+                    keyValuePairs.setValueForKey(key, value);
                 }
                 continue;
             }
@@ -372,7 +374,8 @@ DelimFileAdapter<T>::extendRead(const std::string& fileName) const {
         else
             header += "\n" + line;
     }
-    table->updTableMetaData().setValueForKey("header", header);
+    //table->updTableMetaData().setValueForKey("header", header);
+    keyValuePairs.setValueForKey("header", header);
 
     // Callable to get the next line in form of vector of tokens.
     auto nextLine = [&] {
@@ -400,41 +403,51 @@ DelimFileAdapter<T>::extendRead(const std::string& fileName) const {
                      _timeColumnLabel,
                      column_labels[0]);
     column_labels.erase(column_labels.begin());
-    // Set the column labels as metadata.
-    ValueArray<std::string> value_array{};
-    for(const auto& cl : column_labels)
-        value_array.upd().push_back(SimTK::Value<std::string>{cl});
-    typename TimeSeriesTable_<T>::DependentsMetaData dep_metadata{};
-    dep_metadata.setValueArrayForKey("labels", value_array);
-    table->setDependentsMetaData(dep_metadata);
 
     // Read the rows one at a time and fill up the time column container and
     // the data container.
+    std::vector<double> timeVec;
+    std::vector<SimTK::RowVector_<T>> depDataVec;
+    int initCapacity = 2500;
+    timeVec.reserve(initCapacity);
+    depDataVec.reserve(initCapacity);
     auto row = nextLine();
-    while(!row.empty()) {
-        ++line_num;
 
+    while (!row.empty()) {
+        ++line_num;
+        
         // Time is column 0.
-        double time = std::stod(row.front());
+        timeVec.push_back(std::stod(row.front()));
         row.erase(row.begin());
 
         auto row_vector = readElems(row);
 
         OPENSIM_THROW_IF(row_vector.size() != column_labels.size(),
-                         RowLengthMismatch,
-                         fileName,
-                         line_num,
-                         column_labels.size(),
-                         static_cast<size_t>(row_vector.size()));
-
-        // Column 1 is time.
-        table->appendRow(time, std::move(row_vector));
+            RowLengthMismatch,
+            fileName,
+            line_num,
+            column_labels.size(),
+            static_cast<size_t>(row_vector.size()));
+        
+        depDataVec.push_back(row_vector);
 
         row = nextLine();
     }
 
+    // Create and fill up the matrix of data
+    int nrow = static_cast<int>(depDataVec.size());
+    int ncol = static_cast<int>(column_labels.size());
+    SimTK::Matrix_<T> matrix(nrow, ncol);
+    for (int iRow = 0; iRow < static_cast<int>(depDataVec.size()); ++iRow) {
+        matrix.updRow(iRow) = depDataVec[iRow];
+    }
+
+    // Create the table and update other metadata from above
+    auto& table = *new TimeSeriesTable_<T>(timeVec, matrix, column_labels);
+    table.updTableMetaData() = keyValuePairs;
+
     OutputTables output_tables{};
-    output_tables.emplace(tableString(), table);
+    output_tables.emplace(tableString(), std::shared_ptr<TimeSeriesTable_<T>>(&table));
 
     return output_tables;
 }
