@@ -346,24 +346,24 @@ void HermiteSimpson<T>::calc_objective(const VectorX<T>& x, T& obj_value) const
     // --------------
     m_integrand.setZero();
     int i_diff = 0;
+    VectorX<T> diffuse_to_use;
     for (int i_col = 0; i_col < m_num_col_points; ++i_col) {
         const T time = step_size * i_col + initial_time;
         // Only pass diffuse variables on the midpoints where they are 
         // defined, otherwise pass an empty variable.
         if (i_col % 2) {
-            m_ocproblem->calc_integral_cost({i_col, time,
-                states.col(i_col), controls.col(i_col), adjuncts.col(i_col),
-                diffuses.col(i_diff), parameters},
-                m_integrand[i_col]);
+            diffuse_to_use = diffuses.col(i_diff);
             ++i_diff;
         } else {
-            m_ocproblem->calc_integral_cost({i_col, time,
-                states.col(i_col), controls.col(i_col), adjuncts.col(i_col),
-                m_empty_diffuse_col, parameters},
-                m_integrand[i_col]);
+            diffuse_to_use = m_empty_diffuse_col;
         }
-        
+
+        m_ocproblem->calc_integral_cost({i_col, time,
+            states.col(i_col), controls.col(i_col), adjuncts.col(i_col),
+            diffuse_to_use, parameters},
+            m_integrand[i_col]);       
     }
+
     T integral_cost = 0;
     for (int i_col = 0; i_col < m_num_col_points; ++i_col) {
         integral_cost += m_simpson_quadrature_coefficients[i_col] *
@@ -689,8 +689,8 @@ Eigen::VectorXd HermiteSimpson<T>::
             m_num_col_points, traj.diffuses.cols());
     }
 
-    // Interpolate the guess, as it might have a different number of collocation
-    // points than m_num_col_points.
+    // Interpolate the trajectory, as it might have a different number of 
+    // collocation points than m_num_col_points.
     Iterate traj_interp;
     const Iterate* traj_to_use;
     if (interpolate) {

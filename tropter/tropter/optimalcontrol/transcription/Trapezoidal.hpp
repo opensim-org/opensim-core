@@ -569,7 +569,7 @@ construct_iterate(const Iterate& traj, bool interpolate) const
                 m_num_mesh_points, traj.adjuncts.cols());
     }
 
-    // Interpolate the guess, as it might have a different number of mesh
+    // Interpolate the trajectory, as it might have a different number of mesh
     // points than m_num_mesh_points.
     Iterate traj_interp;
     const Iterate* traj_to_use;

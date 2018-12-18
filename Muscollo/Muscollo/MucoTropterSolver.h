@@ -82,7 +82,7 @@ public:
     "property must be set.");
     OpenSim_DECLARE_OPTIONAL_PROPERTY(enforce_constraint_derivatives, bool,
     "'true' or 'false', whether or not derivatives of kinematic constraints"
-    "are enforced as a path constraints in the optimal control problem.");
+    "are enforced as path constraints in the optimal control problem.");
     OpenSim_DECLARE_OPTIONAL_PROPERTY(lagrange_multiplier_weight, double,
     "(Optional) If provided, a term minimizing the weighted, squared sum of "
     "any existing Lagrange multipliers is added to the optimal control "
