@@ -402,17 +402,32 @@ DelimFileAdapter<T>::extendRead(const std::string& fileName) const {
     column_labels.erase(column_labels.begin());
 
     // Read the rows one at a time and fill up the time column container and
-    // the data container.
+    // the data container. Start with a reasonable initial capacity for
+    // tradeoff between a small file and larger files. 100 worked well for
+    // a 50 MB file with ~80000 lines.
     std::vector<double> timeVec;
-    std::vector<SimTK::RowVector_<T>> depDataVec;
-    int initCapacity = 100000;
+    int initCapacity = 100;
+    int ncol = static_cast<int>(column_labels.size());
     timeVec.reserve(initCapacity);
-    depDataVec.reserve(initCapacity);
-    auto row = nextLine();
+    SimTK::Matrix_<T> matrix(initCapacity, ncol);
+    
+    // Initialize current row and capacity
+    int curCapacity = initCapacity;
+    int curRow = 0;
 
+    // Start looping through each line
+    auto row = nextLine();
     while (!row.empty()) {
         ++line_num;
+        ++curRow;
         
+        // Double capacity if we reach the end of the containers
+        if (curRow > curCapacity) {
+            curCapacity *= 2;
+            timeVec.reserve(curCapacity);
+            matrix.resizeKeep(curCapacity, ncol);
+        }
+
         // Time is column 0.
         timeVec.push_back(std::stod(row.front()));
         row.erase(row.begin());
@@ -426,18 +441,13 @@ DelimFileAdapter<T>::extendRead(const std::string& fileName) const {
             column_labels.size(),
             static_cast<size_t>(row_vector.size()));
         
-        depDataVec.push_back(std::move(row_vector));
+        matrix.updRow(curRow-1) = std::move(row_vector);
 
         row = nextLine();
     }
 
-    // Create and fill up the matrix of data
-    int nrow = static_cast<int>(depDataVec.size());
-    int ncol = static_cast<int>(column_labels.size());
-    SimTK::Matrix_<T> matrix(nrow, ncol);
-    for (int iRow = 0; iRow < static_cast<int>(depDataVec.size()); ++iRow) {
-        matrix.updRow(iRow) = depDataVec[iRow];
-    }
+    // Resize the matrix down to the correct number of rows
+    matrix.resizeKeep(curRow, ncol);
 
     // Create the table and update other metadata from above
     auto table = 
