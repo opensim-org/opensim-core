@@ -435,8 +435,8 @@ public:
     /// @note For convenience, this method has the same behavior as the previous
     /// set_*_guess() methods. However, depending on the transcription scheme 
     /// used to solve the optimal control problem, the guess provided for the 
-    /// diffuse variable be valid for certain time points. The values at these 
-    /// invalid time will therefore be ignored in the transcribed NLP. 
+    /// diffuse variable will be invalid for certain time points. The values at 
+    /// these time points will not be included in the transcribed NLP. 
     void set_diffuse_guess(Iterate& guess,
             const std::string& name,
             const Eigen::VectorXd& value);

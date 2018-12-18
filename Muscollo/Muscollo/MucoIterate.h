@@ -46,7 +46,7 @@ returned by a solver.
 The file format for reading and writing a MucoIterate is comprised of a
 file header followed by a row of column names and the stored data. The file
 header contains the number of states, controls, Lagrange multipliers (for
-multibody constraints), derivatives (non-zero if the dynamics mode is implict),
+kinematic constraints), derivatives (non-zero if the dynamics mode is implict),
 slacks (for special solver implmentations), and parameters (order does
 not matter). Order does matter for the column names and corresponding data
 columns. The columns *must* follow this order: time, states, controls,
@@ -446,10 +446,10 @@ public:
             const TimeSeriesTable& controlsTrajectory);
     /// @}
 
-    /// User interaction with slack variables is limited to using previous
-    /// solution slack trajectories as initial guesses for subsequent problems.
-    /// Therefore, these methods are hidden from doxygen and the bindings to 
-    /// discourage use.
+    // User interaction with slack variables is limited to using previous
+    // solution slack trajectories as initial guesses for subsequent problems.
+    // Therefore, these methods are hidden from doxygen and the bindings to 
+    // discourage use.
     #ifndef SWIG
     /// @cond
     void setSlack(const std::string& name, const SimTK::Vector& trajectory);

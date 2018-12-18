@@ -85,10 +85,13 @@ OSIMMUSCOLLO_API void visualize(Model, TimeSeriesTable);
 OSIMMUSCOLLO_API void prescribeControlsToModel(const MucoIterate& iterate, 
     Model& model);
 
-/// Replace all muscles in a model with a PathActuator of the same GeometryPath,
+/// Replace muscles in a model with a PathActuator of the same GeometryPath,
 /// optimal force, and min/max control defaults.
+/// @note This only replaces muscles within the model's ForceSet.
 OSIMMUSCOLLO_API void replaceMusclesWithPathActuators(Model& model);
 
+/// Remove muscles from the model.
+/// @note This only removes muscles within the model's ForceSet.
 OSIMMUSCOLLO_API void removeMuscles(Model& model);
 
 /// The map provides the index of each state variable in

@@ -42,8 +42,8 @@ void MucoTropterSolver::constructProperties() {
     constructProperty_optim_ipopt_print_level(-1);
     constructProperty_transcription_scheme("trapezoidal");
     constructProperty_velocity_correction_bounds({-0.1, 0.1});
+    constructProperty_exact_hessian_block_sparsity_mode("dense");
     // These must be empty to allow user input error checking.
-    constructProperty_hessian_block_sparsity_mode();
     constructProperty_lagrange_multiplier_weight();
     constructProperty_enforce_constraint_derivatives();
 
@@ -236,20 +236,23 @@ MucoSolution MucoTropterSolver::solveImpl() const {
     // Block sparsity detected is only in effect when using an exact Hessian
     // approximation.
     OPENSIM_THROW_IF(get_optim_hessian_approximation() == "limited-memory" &&
-        !getProperty_hessian_block_sparsity_mode().empty(), Exception, 
-        "A value for solver property 'hessian_block_sparsity_mode' was "
+        !getProperty_exact_hessian_block_sparsity_mode().empty(), Exception, 
+        "A value for solver property 'exact_hessian_block_sparsity_mode' was "
         "provided, but is unused when using a 'limited-memory' Hessian "
         "approximation. Set solver property 'optim_hessian_approximation' to"
         "'exact' for Hessian block sparsity to take effect.");
-    OPENSIM_THROW_IF(get_optim_hessian_approximation() == "exact" &&
-        getProperty_hessian_block_sparsity_mode().empty(), Exception,
-        "Solver property 'optim_hessian_approximation' set to 'exact'. "
-        "Set 'hessian_block_sparsity_mode' to 'dense' or 'sparse' to specify "
-        "block sparsity detection mode.");
-    if (!getProperty_hessian_block_sparsity_mode().empty()) {
-        checkPropertyInSet(*this, getProperty_hessian_block_sparsity_mode(),
+    if (!getProperty_exact_hessian_block_sparsity_mode().empty()) {
+        checkPropertyInSet(*this, 
+            getProperty_exact_hessian_block_sparsity_mode(),
             {"dense", "sparse"});
     }
+    // Hessian information is not used in SNOPT.
+    OPENSIM_THROW_IF(get_optim_hessian_approximation() == "exact" &&
+        get_optim_solver() == "snopt", Exception,
+        "The property 'optim_hessian_approximation' was set to exact while "
+        "using SNOPT as the optimization solver, but SNOPT does not utilize "
+        "Hessian information.");
+
     // If a Lagrange multiplier weight was provided, check that it is positive.
     if (!getProperty_lagrange_multiplier_weight().empty()) {
         checkPropertyIsPositive(*this, 
@@ -263,9 +266,9 @@ MucoSolution MucoTropterSolver::solveImpl() const {
         get_optim_solver(), 
         get_num_mesh_points());
     dircol.set_verbosity(get_verbosity() >= 1);
-    if (!getProperty_hessian_block_sparsity_mode().empty()) {
-        dircol.set_hessian_block_sparsity_mode(
-            get_hessian_block_sparsity_mode());
+    if (!getProperty_exact_hessian_block_sparsity_mode().empty()) {
+        dircol.set_exact_hessian_block_sparsity_mode(
+            get_exact_hessian_block_sparsity_mode());
     }
 
     // Get optimization solver to check the remaining property settings.

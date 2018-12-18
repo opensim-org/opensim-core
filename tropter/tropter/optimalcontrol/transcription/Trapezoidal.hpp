@@ -375,7 +375,7 @@ void Trapezoidal<T>::calc_sparsity_hessian_lagrangian(
     }
 
     SymmetricSparsityPattern dae_sparsity(m_num_continuous_variables);
-    if (this->get_hessian_block_sparsity_mode() == "sparse") {
+    if (this->get_exact_hessian_block_sparsity_mode() == "sparse") {
         // The Hessian of sum_i lambda_i * constraint_i over constraints i has a
         // certain structure as a result of the direct collocation formulation.
         // The diagonal contains the same repeated square block of dimensions
@@ -418,7 +418,7 @@ void Trapezoidal<T>::calc_sparsity_hessian_lagrangian(
             // Add in this sparsity to the block that we'll repeat.
             dae_sparsity.add_in_nonzeros(block_sparsity);
         }
-    } else if (this->get_hessian_block_sparsity_mode() == "dense") {
+    } else if (this->get_exact_hessian_block_sparsity_mode() == "dense") {
         dae_sparsity.set_dense();
     }
 
@@ -439,7 +439,7 @@ void Trapezoidal<T>::calc_sparsity_hessian_lagrangian(
     }
 
     SymmetricSparsityPattern integral_cost_sparsity(num_con_vars);
-    if (this->get_hessian_block_sparsity_mode() == "sparse") {
+    if (this->get_exact_hessian_block_sparsity_mode() == "sparse") {
         // Integral cost depends on states and controls at all times.
         // Determine how the integrand depends on the state and control at mesh
         // point 0, then repeat this block down the diagonal.
@@ -460,7 +460,7 @@ void Trapezoidal<T>::calc_sparsity_hessian_lagrangian(
             // Grab the first state, first controls and first adjuncts.
             x.segment(m_num_dense_variables, num_con_vars),
             calc_integral_cost);
-    } else if (this->get_hessian_block_sparsity_mode() == "dense") {
+    } else if (this->get_exact_hessian_block_sparsity_mode() == "dense") {
         integral_cost_sparsity.set_dense();
     }
 
@@ -569,7 +569,7 @@ construct_iterate(const Iterate& traj, bool interpolate) const
                 m_num_mesh_points, traj.adjuncts.cols());
     }
 
-    // Interpolate the guess, as it might have a different number of mesh
+    // Interpolate the trajectory, as it might have a different number of mesh
     // points than m_num_mesh_points.
     Iterate traj_interp;
     const Iterate* traj_to_use;

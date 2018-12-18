@@ -308,7 +308,9 @@ void OpenSim::replaceMusclesWithPathActuators(Model& model) {
     // Create path actuators from muscle properties and add to the model. Save
     // a list of pointers of the muscles to delete.
     std::vector<Muscle*> musclesToDelete;
-    for (auto& musc : model.updComponentList<Muscle>()) {
+    auto& muscleSet = model.updMuscles();
+    for (int i = 0; i < muscleSet.getSize(); ++i) {
+        auto& musc = muscleSet.get(i);
         auto* actu = new PathActuator();
         actu->setName(musc.getName());
         musc.setName(musc.getName() + "_delete");
@@ -345,11 +347,11 @@ void OpenSim::replaceMusclesWithPathActuators(Model& model) {
 
 void OpenSim::removeMuscles(Model& model) {
 
-    // Create path actuators from muscle properties and add to the model. Save
-    // a list of pointers of the muscles to delete.
+    // Save a list of pointers of the muscles to delete.
     std::vector<Muscle*> musclesToDelete;
-    for (auto& musc : model.updComponentList<Muscle>()) {
-        musclesToDelete.push_back(&musc);
+    auto& muscleSet = model.updMuscles();
+    for (int i = 0; i < muscleSet.getSize(); ++i) {
+        musclesToDelete.push_back(&muscleSet.get(i));
     }
 
     // Delete the muscles.
