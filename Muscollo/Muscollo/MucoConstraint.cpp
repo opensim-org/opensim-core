@@ -60,17 +60,17 @@ void MucoConstraintInfo::constructProperties() {
 }
 
 // ============================================================================
-// MucoMultibodyConstraint
+// MucoKinematicConstraint
 // ============================================================================
 
-MucoMultibodyConstraint::MucoMultibodyConstraint(SimTK::ConstraintIndex cid, 
+ MucoKinematicConstraint:: MucoKinematicConstraint(SimTK::ConstraintIndex cid, 
     int mp, int mv, int ma) {
 
     // Store Simbody SimTK::ConstraintIndex
     m_simbody_constraint_index = cid;
 
     // Set the default constraint info name based on the constraint index.
-    m_constraint_info.setName("multibody_constraint_cid" + std::to_string(cid));
+    m_constraint_info.setName("kinematic_constraint_cid" + std::to_string(cid));
 
     // Set the number of constraint equations for each kinematic level.
     m_num_position_eqs = mp;
@@ -126,7 +126,7 @@ MucoMultibodyConstraint::MucoMultibodyConstraint(SimTK::ConstraintIndex cid,
     m_constraint_info.setSuffixes(suffixes);
 }
 
-void MucoMultibodyConstraint::calcMultibodyConstraintErrors(
+void MucoKinematicConstraint::calcKinematicConstraintErrors(
         const Model& model,
         const SimTK::State& state,
         SimTK::Vector& errors) const {
@@ -134,7 +134,7 @@ void MucoMultibodyConstraint::calcMultibodyConstraintErrors(
     OPENSIM_THROW_IF(
         errors.size() != m_constraint_info.getNumEquations(), Exception,
         "The size of the errors vector passed is not consistent with the "
-        "number of scalar equations this MucoMultibodyConstraintInfo "
+        "number of scalar equations this MucoKinematicConstraintInfo "
         "represents.");
 
     // Get the Simbody constraint.

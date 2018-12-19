@@ -282,22 +282,24 @@ public:
 
         // Path constraints.
         // =================
-        const T& position = states[m_i_position];
-        {
-            const T& activationL = states[m_i_activation_l];
-            const T& normFibLenL = states[m_i_norm_fiber_length_l];
-            const T& normFibVelL = controls[m_i_norm_fiber_velocity_l];
-            m_muscleL.calcEquilibriumResidual(activationL, d + position,
-                    normFibLenL, normFibVelL,
-                    out.path[m_i_fiber_equilibrium_l]);
-        }
-        {
-            const T& activationR = states[m_i_activation_r];
-            const T& normFibLenR = states[m_i_norm_fiber_length_r];
-            const T& normFibVelR = controls[m_i_norm_fiber_velocity_r];
-            m_muscleR.calcEquilibriumResidual(activationR, d - position,
-                    normFibLenR, normFibVelR,
-                    out.path[m_i_fiber_equilibrium_r]);
+        if (out.path.size() != 0) {
+            const T& position = states[m_i_position];
+            {
+                const T& activationL = states[m_i_activation_l];
+                const T& normFibLenL = states[m_i_norm_fiber_length_l];
+                const T& normFibVelL = controls[m_i_norm_fiber_velocity_l];
+                m_muscleL.calcEquilibriumResidual(activationL, d + position,
+                        normFibLenL, normFibVelL,
+                        out.path[m_i_fiber_equilibrium_l]);
+            }
+            {
+                const T& activationR = states[m_i_activation_r];
+                const T& normFibLenR = states[m_i_norm_fiber_length_r];
+                const T& normFibVelR = controls[m_i_norm_fiber_velocity_r];
+                m_muscleR.calcEquilibriumResidual(activationR, d - position,
+                        normFibLenR, normFibVelR,
+                        out.path[m_i_fiber_equilibrium_r]);
+            }
         }
     }
     T calcNetForce(const Eigen::Ref<const tropter::VectorX<T>>& states) const {
@@ -411,8 +413,9 @@ solveForTrajectory_GSO(const Model& model) {
     trajFileWithHeader.replace(trajectoryFile.rfind(".csv"), 4,
                                "_with_header.csv");
     // Skip the "num_states=#", "num_controls=#", "num_adjuncts=#",
-    // and "num_parameters=#" lines.
+    // "num_diffuses=#", and "num_parameters=#" lines.
     std::string line;
+    std::getline(fRead, line);
     std::getline(fRead, line);
     std::getline(fRead, line);
     std::getline(fRead, line);
@@ -512,8 +515,9 @@ solveForTrajectory_INDYGO(const Model& model) {
     trajFileWithHeader.replace(trajectoryFile.rfind(".csv"), 4,
                                "_with_header.csv");
     // Skip the "num_states=#", "num_controls=#", "num_adjuncts=#",
-    // and "num_parameters=#" lines.
+    // "num_diffuses=#", and "num_parameters=#" lines.
     std::string line;
+    std::getline(fRead, line);
     std::getline(fRead, line);
     std::getline(fRead, line);
     std::getline(fRead, line);

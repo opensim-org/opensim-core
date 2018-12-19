@@ -178,7 +178,7 @@ protected:
     {   return m_advanced_options_real; }
 
 private:
-    int m_verbosity;
+    int m_verbosity = 1;
     Optional<int> m_max_iterations;
     Optional<double> m_convergence_tolerance;
     Optional<double> m_constraint_tolerance;

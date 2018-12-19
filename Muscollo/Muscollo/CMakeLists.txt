@@ -56,7 +56,7 @@ add_library(osimMuscollo SHARED
         Components/ModelFactory.h
         Components/ModelFactory.cpp
         )
-target_link_libraries(osimMuscollo PUBLIC osimActuators
+target_link_libraries(osimMuscollo PUBLIC osimTools
                                    PRIVATE tropter)
 
 target_include_directories(osimMuscollo INTERFACE

@@ -11,6 +11,7 @@ set(SANDBOX_MARKER_TRACKING_DIR
     "${CMAKE_BINARY_DIR}/Muscollo/Sandbox/sandboxMarkerTrackingWholeBody")
 file(COPY "Examples/exampleMarkerTracking10DOF/marker_trajectories.trc"
 		  "Examples/exampleMarkerTracking10DOF/subject01.osim"
+          "Examples/exampleMarkerTracking10DOF/state_reference.mot"
 	 DESTINATION "${SANDBOX_MARKER_TRACKING_DIR}")
 	
 # The configureMuscollo.m script contains paths into the Muscollo installation

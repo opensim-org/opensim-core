@@ -78,7 +78,8 @@ public:
     }
 };
 
-TEST_CASE("Final position and parameter cost with two local optima", "[initial_guess]") {
+TEST_CASE("Final position and parameter cost with two local optima, "
+          "trapezoidal rule", "[initial_guess][trapezoidal]") {
 
     // Guess low.
     {
@@ -126,7 +127,8 @@ TEST_CASE("Final position and parameter cost with two local optima", "[initial_g
     }
 }
 
-TEST_CASE("Exceptions for setting optimal control guess", "[initial_guess]") {
+TEST_CASE("Exceptions for setting optimal control guess, trapezoidal rule", 
+          "[initial_guess][trapezoidal]") {
     auto ocp = std::make_shared<FinalPositionLocalOptima<adouble>>();
     int N = 15;
     DirectCollocationSolver<adouble> dircol(ocp, "trapezoidal", "ipopt", N);
@@ -212,8 +214,230 @@ TEST_CASE("Exceptions for setting optimal control guess", "[initial_guess]") {
     REQUIRE_THROWS_WITH(dircol.solve(guess), 
             Contains("Expected parameters to have 1 element(s), "
                      "but it has 2."));
+
+    guess.parameters.resize(1, 1); // correct.
+    guess.diffuses.resize(1, N); // trapezoidal doesn't support diffuses
+    REQUIRE_THROWS_WITH(dircol.solve(guess),
+        Contains("Trapezoidal transcription does not support diffuse "
+                 "variables."));
 }
 
+/// This problem is identical to FinalPositionLocalOptima exception for the 
+/// inclusion of diffuse variables, which are currently only supported for 
+/// Hermite-Simpson transcription. Like the adjunct and parameter variables,
+/// the diffuse variable has no effect on the solution and is for testing
+/// purposes only.
+// TODO avoid code duplication.
+template<typename T>
+class FinalPositionLocalOptimaWithDiffuses : public tropter::Problem<T> {
+public:
+    FinalPositionLocalOptimaWithDiffuses()
+    {
+        this->set_time(0, 1);
+        this->add_state("x", {-1.5, 1.5}, {0});
+        this->add_state("v", {-10, 10}, {0}, {0});
+        this->add_control("F", {-50, 50});
+        this->add_adjunct("l", {-10, 10});
+        this->add_diffuse("g", {-10, 10});
+        this->add_parameter("p", {-1.5, 1.5});
+    }
+    void calc_differential_algebraic_equations(
+        const Input<T>& in, Output<T> out) const override {
+        out.dynamics[0] = in.states[1];
+        out.dynamics[1] = in.controls[0];
+    }
+    void calc_integral_cost(const Input<T>& in, T& integrand) const override {
+        const auto& controls = in.controls;
+        const auto& adjuncts = in.adjuncts;
+        const auto& diffuses = in.diffuses;
+        
+        integrand = 0.001 * pow(controls[0], 2) + pow(adjuncts[0], 2);
+        if (diffuses.size() != 0) {
+            integrand += pow(diffuses[0], 2);
+        }
+    }
+    /// This function has minima at `x = \pm 1/\sqrt(2)`.
+    static T two_minima(const T& x) {
+        // Root at -1, double root at 0, and root at 1.
+        // These roots cause two minima, one between -1 and 0, and another
+        // between 0 and 1.
+        return (x - 1) * (x + 1) * x*x;
+    }
+    void calc_endpoint_cost(const T& /*final_time*/,
+        const VectorX<T>& final_states,
+        const VectorX<T>& parameters,
+        T& cost) const override {
+        cost = 100.0 * (two_minima(final_states[0]) +
+            two_minima(parameters[0]));
+    }
+};
+
+TEST_CASE("Final position and parameter cost with two local optima, "
+    "Hermite-Simpson rule", "[initial_guess][hermite-simpson]") {
+    // Guess low.
+    {
+        auto ocp = 
+            std::make_shared<FinalPositionLocalOptimaWithDiffuses<adouble>>();
+        const int N = 20;
+        DirectCollocationSolver<adouble> dircol(ocp, "hermite-simpson",
+            "ipopt", N);
+
+        // The length of trajectories when using Hermite-Simpson is not equal
+        // to the number of mesh points, but rather equal to the number of
+        // collocation points, which include mesh interval midpoint variables.
+        const int Nc = 2*N - 1;
+
+        // TODO allow getting a guess template, so that we don't need to
+        // manually fill in all parts of the guess.
+        Iterate guess;
+        guess.time.setLinSpaced(Nc, 0, 1);
+        ocp->set_state_guess(guess, "x", RowVectorXd::LinSpaced(Nc, 0, -1));
+        ocp->set_state_guess(guess, "v", RowVectorXd::Zero(Nc));
+        ocp->set_control_guess(guess, "F", RowVectorXd::Zero(Nc));
+        ocp->set_adjunct_guess(guess, "l", RowVectorXd::Zero(Nc));
+        ocp->set_diffuse_guess(guess, "g", RowVectorXd::Zero(Nc));
+        ocp->set_parameter_guess(guess, "p", -1);
+        Solution solution = dircol.solve(guess);
+        solution.write("final_position_local_optima_low_solution.csv");
+        REQUIRE(Approx(solution.states.rightCols<1>()[0]).epsilon(1e-4)
+            == -1 / sqrt(2));
+        REQUIRE(Approx(solution.parameters[0]).epsilon(1e-4) == -1 / sqrt(2));
+        REQUIRE(Approx(solution.adjuncts.norm()).epsilon(1e-4) == 0);
+    }
+    // Guess high.
+    {
+        auto ocp 
+            = std::make_shared<FinalPositionLocalOptimaWithDiffuses<adouble>>();
+        const int N = 20;
+        DirectCollocationSolver<adouble> dircol(ocp, "hermite-simpson",
+            "ipopt", N);
+
+        // The length of trajectories when using Hermite-Simpson is not equal
+        // to the number of mesh points, but rather equal to the number of
+        // collocation points, which include mesh interval midpoint variables.
+        const int Nc = 2*N - 1;
+
+        // TODO allow getting a guess template, so that we don't need to
+        // manually fill in all parts of the guess.
+        Iterate guess;
+        guess.time.setLinSpaced(Nc, 0, 1);
+        ocp->set_state_guess(guess, "x", RowVectorXd::LinSpaced(Nc, 0, +1));
+        ocp->set_state_guess(guess, "v", RowVectorXd::Zero(Nc));
+        ocp->set_control_guess(guess, "F", RowVectorXd::Zero(Nc));
+        ocp->set_adjunct_guess(guess, "l", RowVectorXd::Zero(Nc));
+        ocp->set_diffuse_guess(guess, "g", RowVectorXd::Zero(Nc));
+        ocp->set_parameter_guess(guess, "p", +1);
+        Solution solution = dircol.solve(guess);
+        solution.write("final_position_local_optima_high_solution.csv");
+        REQUIRE(Approx(solution.states.rightCols<1>()[0]).epsilon(1e-4)
+            == +1 / sqrt(2));
+        REQUIRE(Approx(solution.parameters[0]).epsilon(1e-4) == +1 / sqrt(2));
+        REQUIRE(Approx(solution.adjuncts.norm()).epsilon(1e-4) == 0);
+    }
+}
+
+TEST_CASE("Exceptions for setting optimal control guess, Hermite-Simpson rule",
+    "[initial_guess][hermite-simpson]") {
+    auto ocp = 
+        std::make_shared<FinalPositionLocalOptimaWithDiffuses<adouble>>();
+    int N = 15;
+    DirectCollocationSolver<adouble> dircol(ocp, "hermite-simpson", "ipopt", N);
+
+    // The length of trajectories when using Hermite-Simpson is not equal
+    // to the number of mesh points, but rather equal to the number of
+    // collocation points, which include mesh interval midpoint variables.
+    const int Nc = 2*N - 1;
+
+    Iterate guess;
+
+    // Check for exceptions with Problem set_*_guess().
+    // --------------------------------------------------------------
+    // Must set guess.time first.
+    REQUIRE_THROWS_WITH(ocp->set_state_guess(guess, "x", RowVectorXd::Zero(1)),
+        Contains("guess.time is empty"));
+    REQUIRE_THROWS_WITH(
+        ocp->set_control_guess(guess, "F", RowVectorXd::Zero(1)),
+        Contains("guess.time is empty"));
+    guess.time.setLinSpaced(Nc, 0, 1);
+
+    // Wrong number of elements.
+    REQUIRE_THROWS_WITH(ocp->set_state_guess(guess, "x", RowVectorXd::Zero(1)),
+        Contains("Expected value to have 29"));
+    REQUIRE_THROWS_WITH(
+        ocp->set_control_guess(guess, "F", RowVectorXd::Zero(1)),
+        Contains("Expected value to have 29"));
+
+    // Wrong state name.
+    REQUIRE_THROWS_WITH(ocp->set_state_guess(guess, "H", RowVectorXd::Zero(Nc)),
+        Contains("State 'H' does not exist"));
+    REQUIRE_THROWS_WITH(
+        ocp->set_control_guess(guess, "H", RowVectorXd::Zero(Nc)),
+        Contains("Control 'H' does not exist"));
+
+    guess.states.resize(10, Nc - 1);
+    guess.controls.resize(9, Nc - 2);
+    // guess.states has the wrong size.
+    REQUIRE_THROWS_WITH(ocp->set_state_guess(guess, "x", RowVectorXd::Zero(Nc)),
+        Contains("Expected guess.states to have "));
+    REQUIRE_THROWS_WITH(
+        ocp->set_control_guess(guess, "F", RowVectorXd::Zero(Nc)),
+        Contains("Expected guess.controls to have "));
+
+    // Test for more exceptions when calling solve().
+    // ----------------------------------------------
+    guess.time.resize(Nc - 10);    // incorrect.
+    guess.states.resize(2, Nc);    // correct.
+    guess.controls.resize(1, Nc);  // correct.
+    guess.adjuncts.resize(1, Nc);  // correct.
+    guess.diffuses.resize(1, Nc);  // correct.
+    guess.parameters.resize(1, 1); // correct.
+    REQUIRE_THROWS_WITH(dircol.solve(guess),
+        Contains("Expected time and states to have "
+            "the same number of columns, but they have 19 "
+            "and 29 column(s), respectively."));
+
+    guess.time.resize(Nc);        // correct.
+    guess.states.resize(6, Nc);   // incorrect.
+    REQUIRE_THROWS_WITH(dircol.solve(guess),
+        Contains("Expected states to have 2 row(s), but it has 6."));
+
+    guess.states.resize(2, Nc + 1); // incorrect.
+    REQUIRE_THROWS_WITH(dircol.solve(guess),
+        Contains("Expected time and states to have "
+            "the same number of columns, but they have 29 "
+            "and 30 column(s), respectively."));
+
+    guess.states.resize(2, Nc);   // correct.
+    guess.controls.resize(4, Nc); // incorrect.
+    REQUIRE_THROWS_WITH(dircol.solve(guess),
+        Contains("Expected controls to have 1 row(s), but it has 4."));
+
+    guess.controls.resize(1, Nc - 3); // incorrect.
+    REQUIRE_THROWS_WITH(dircol.solve(guess),
+        Contains("Expected time and controls to have "
+            "the same number of columns, but they have 29 "
+            "and 26 column(s), respectively."));
+
+    guess.controls.resize(1, Nc); // correct.
+    guess.adjuncts.resize(1, Nc + 2); // incorrect.
+    REQUIRE_THROWS_WITH(dircol.solve(guess),
+        Contains("Expected time and adjuncts to have "
+            "the same number of columns, but they have 29 "
+            "and 31 column(s), respectively."));
+
+    guess.adjuncts.resize(1, Nc); // correct.
+    guess.parameters.resize(2, 1); // incorrect.
+    REQUIRE_THROWS_WITH(dircol.solve(guess),
+        Contains("Expected parameters to have 1 element(s), "
+            "but it has 2."));
+
+    guess.parameters.resize(1, 1); // correct.
+    guess.diffuses.resize(1, Nc + 4); // incorrect.
+    REQUIRE_THROWS_WITH(dircol.solve(guess),
+        Contains("Expected time and diffuses to have "
+            "the same number of columns, but they have 29 "
+            "and 33 column(s), respectively."));
+}
 
 TEST_CASE("(De)serialization of Iterate", "[iterate_readwrite]") {
     // Create an iterate.
@@ -222,6 +446,7 @@ TEST_CASE("(De)serialization of Iterate", "[iterate_readwrite]") {
     int num_states = 3;
     int num_controls = 2;
     int num_adjuncts = 1;
+    int num_diffuses = 1;
     int num_parameters = 2;
     it0.time.resize(num_times);
     it0.time.setRandom();
@@ -235,12 +460,16 @@ TEST_CASE("(De)serialization of Iterate", "[iterate_readwrite]") {
     it0.adjuncts.resize(num_adjuncts, num_times);
     it0.adjuncts.setRandom();
 
+    it0.diffuses.resize(num_diffuses, num_times);
+    it0.diffuses.setRandom();
+
     it0.parameters.resize(num_parameters);
     it0.parameters.setRandom();
 
     it0.state_names = {"a", "b", "c"};
     it0.control_names = {"x", "y"};
     it0.adjunct_names = {"l"};
+    it0.diffuse_names = {"g"};
     it0.parameter_names = {"p0", "p1"};
 
     // Serialize.
@@ -255,11 +484,13 @@ TEST_CASE("(De)serialization of Iterate", "[iterate_readwrite]") {
     TROPTER_REQUIRE_EIGEN(it0.states, it1.states, 1e-5);
     TROPTER_REQUIRE_EIGEN(it0.controls, it1.controls, 1e-5);
     TROPTER_REQUIRE_EIGEN(it0.adjuncts, it1.adjuncts, 1e-5);
+    TROPTER_REQUIRE_EIGEN(it0.diffuses, it1.diffuses, 1e-5);
     TROPTER_REQUIRE_EIGEN(it0.parameters, it1.parameters, 1e-5);
 
     REQUIRE(it0.state_names == it1.state_names);
     REQUIRE(it0.control_names == it1.control_names);
     REQUIRE(it0.adjunct_names == it1.adjunct_names);
+    REQUIRE(it0.diffuse_names == it1.diffuse_names);
     REQUIRE(it0.parameter_names == it1.parameter_names);
 }
 
@@ -278,6 +509,7 @@ TEST_CASE("Interpolating an initial guess") {
         int num_states = 2;
         int num_controls = 3;
         int num_adjuncts = 1;
+        int num_diffuses = 1;
         it0.time.resize(num_times);
         it0.time << 0, 1, 2, 3, 5; // non-uniform.
 
@@ -293,15 +525,20 @@ TEST_CASE("Interpolating an initial guess") {
         it0.adjuncts.resize(num_adjuncts, num_times);
         it0.adjuncts << 0, -1, 2, -3, 4; 
 
+        it0.diffuses.resize(num_diffuses, num_times);
+        it0.diffuses << 1, 0, 2, 0, 3;
+
         it0.state_names = {"alpha", "beta"};
-        it0.control_names = {"gamma", "rho", "phi"};
-        it0.adjunct_names = {"omega"};
+        it0.control_names = {"rho", "phi","omega"};
+        it0.adjunct_names = {"lambda"};
+        it0.diffuse_names = {"gamma"};
 
         // Upsampling.
         Iterate it1 = it0.interpolate(9);
         REQUIRE(it1.state_names == it0.state_names);
         REQUIRE(it1.control_names == it0.control_names);
         REQUIRE(it1.adjunct_names == it0.adjunct_names);
+        REQUIRE(it1.diffuse_names == it0.diffuse_names);
         TROPTER_REQUIRE_EIGEN(it1.time,
                 vec({0, 0.625, 1.25, 1.875, 2.5, 3.125, 3.75, 4.375, 5}),
                 1e-15);
@@ -320,8 +557,11 @@ TEST_CASE("Interpolating an initial guess") {
                 vec({5, 3.75, 3, 3, 3, 3, 3, 3, 3}), 1e-15);
 
         TROPTER_REQUIRE_EIGEN(it1.adjuncts.row(0),
-            vec({0, -0.625, -0.25, 1.625, -0.5, -2.5625, -0.375, 1.8125, 4}), 
-            1e-15);
+                vec({0, -0.625, -0.25, 1.625, -0.5, -2.5625, -0.375, 1.8125, 
+                    4}), 1e-15);
+
+        TROPTER_REQUIRE_EIGEN(it1.diffuses.row(0),
+                vec({1, 0.375, 0.5, 1.75, 1, 0.1875, 1.125, 2.0625, 3}), 1e-15);
 
         SECTION("Requesting the same number of points") {
             // We use it0 here.
@@ -329,10 +569,12 @@ TEST_CASE("Interpolating an initial guess") {
             REQUIRE(it2.state_names == it0.state_names);
             REQUIRE(it2.control_names == it0.control_names);
             REQUIRE(it2.adjunct_names == it0.adjunct_names);
+            REQUIRE(it2.diffuse_names == it0.diffuse_names);
             TROPTER_REQUIRE_EIGEN(it2.time, it0.time, 1e-15);
             TROPTER_REQUIRE_EIGEN(it2.states, it0.states, 1e-15);
             TROPTER_REQUIRE_EIGEN(it2.controls, it0.controls, 1e-15);
             TROPTER_REQUIRE_EIGEN(it2.adjuncts, it0.adjuncts, 1e-15);
+            TROPTER_REQUIRE_EIGEN(it2.diffuses, it0.diffuses, 1e-15);
         }
     }
 
@@ -343,6 +585,7 @@ TEST_CASE("Interpolating an initial guess") {
         int num_states = 2;
         int num_controls = 3;
         int num_adjuncts = 1;
+        int num_diffuses = 1;
         it0.time.resize(num_times);
         it0.time << 0, 1, 2, 3, 4;
         it0.states.resize(num_states, num_times);
@@ -354,18 +597,23 @@ TEST_CASE("Interpolating an initial guess") {
                          5,   3,  3,  3,  3;
         it0.adjuncts.resize(num_adjuncts, num_times);
         it0.adjuncts << 0, -1, 2, -3, 4;
+        it0.diffuses.resize(num_diffuses, num_times);
+        it0.diffuses << 1, 0, 2, 0, 3;
         it0.state_names = {"alpha", "beta"};
-        it0.control_names = {"gamma", "rho", "phi"};
-        it0.adjunct_names = {"omega"};
+        it0.control_names = {"rho", "phi","omega"};
+        it0.adjunct_names = {"lambda"};
+        it0.diffuse_names = {"gamma"};
         auto it1 = it0.interpolate(9);
         auto it2 = it1.interpolate(5);
         REQUIRE(it2.state_names == it0.state_names);
         REQUIRE(it2.control_names == it0.control_names);
         REQUIRE(it2.adjunct_names == it0.adjunct_names);
+        REQUIRE(it2.diffuse_names == it0.diffuse_names);
         TROPTER_REQUIRE_EIGEN(it2.time, it0.time, 1e-15);
         TROPTER_REQUIRE_EIGEN(it2.states, it0.states, 1e-15);
         TROPTER_REQUIRE_EIGEN(it2.controls, it0.controls, 1e-15);
         TROPTER_REQUIRE_EIGEN(it2.adjuncts, it0.adjuncts, 1e-15);
+        TROPTER_REQUIRE_EIGEN(it2.diffuses, it0.diffuses, 1e-15);
     }
 
     SECTION("Original times must be sorted") {

@@ -1,6 +1,7 @@
 num_states=8
 num_controls=4
 num_adjuncts=0
+num_diffuses=0
 num_parameters=0
 time,x,y,vx,vy,activation_l,activation_r,norm_fiber_length_l,norm_fiber_length_r,excitation_l,excitation_r,norm_fiber_velocity_l,norm_fiber_velocity_r
 0,-0.03,-0.2,0,0,3.81E-40,5.56E-40,0.811458,1.02124,0.0659898,0.0922052,0,0

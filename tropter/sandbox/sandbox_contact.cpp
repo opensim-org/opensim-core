@@ -340,7 +340,7 @@ int main()
     // possible?
 
     // TODO adolc issue: "process finished with exit code 11". something with
-    // hessian sparsity?
+    // Hessian sparsity?
     // Ball2DAckermann2010<adouble>::run("vx0=0.1", 5e3, {}, 1.0, "exact", 0.1);
     // This works for N = 1000, but not for N = 300, 100, 50..... WHAT!?
     // Perhaps related to use of condassign with fmax?

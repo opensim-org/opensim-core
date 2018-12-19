@@ -23,6 +23,7 @@
 #include <OpenSim/Actuators/osimActuators.h>
 #include <OpenSim/Tools/InverseKinematicsTool.h>
 #include <OpenSim/Common/TimeSeriesTable.h>
+#include <OpenSim/Common/Array.h>
 #include <Muscollo/osimMuscollo.h>
 
 #include "MuscleLikeCoordinateActuator.h"
@@ -142,58 +143,73 @@ void addMuscleLikeCoordinateActuator(Model& model, std::string coordName,
     model.addComponent(actu);
 }
 
-/// Load the base OpenSim model (gait10dof18musc) and apply actuators based on
-/// specified actuator type.
-Model setupModel(bool usingMuscleLikeActuators) {
+///// Load the base OpenSim model (gait10dof18musc) and apply actuators based on
+///// specified actuator type.
+//Model setupModel(bool usingMuscleLikeActuators) {
+//
+//    Model model("subject01.osim");  
+//
+//    addActivationCoordinateActuator(model, "lumbar_extension", 500);
+//    addActivationCoordinateActuator(model, "pelvis_tilt", 500);
+//    addActivationCoordinateActuator(model, "pelvis_tx", 1000);
+//    addActivationCoordinateActuator(model, "pelvis_ty", 2500);
+//
+//    if (usingMuscleLikeActuators) {
+//        addMuscleLikeCoordinateActuator(model, "hip_flexion_r", 100);
+//        addMuscleLikeCoordinateActuator(model, "knee_angle_r", 100);
+//        addMuscleLikeCoordinateActuator(model, "ankle_angle_r", 100);
+//        addMuscleLikeCoordinateActuator(model, "hip_flexion_l", 100);
+//        addMuscleLikeCoordinateActuator(model, "knee_angle_l", 100);
+//        addMuscleLikeCoordinateActuator(model, "ankle_angle_l", 100);
+//    } else {
+//        addActivationCoordinateActuator(model, "hip_flexion_r", 100);
+//        addActivationCoordinateActuator(model, "knee_angle_r", 100);
+//        addActivationCoordinateActuator(model, "ankle_angle_r", 100);
+//        addActivationCoordinateActuator(model, "hip_flexion_l", 100);
+//        addActivationCoordinateActuator(model, "knee_angle_l", 100);
+//        addActivationCoordinateActuator(model, "ankle_angle_l", 100);
+//    }
+//
+//    return model;
+//}
+//
+///// Set the bounds for the specified MucoProblem.
+//void setBounds(MucoProblem& mp) {
+//
+//    double finalTime = 1.25;
+//    mp.setTimeBounds(0, finalTime);
+//    mp.setStateInfo("/tau_lumbar_extension/activation", { -1, 1 });
+//    mp.setStateInfo("/tau_pelvis_tilt/activation", {-1, 1});
+//    mp.setStateInfo("/tau_pelvis_tx/activation", { -1, 1 });
+//    mp.setStateInfo("/tau_pelvis_ty/activation", { -1, 1 });
+//    mp.setStateInfo("/tau_hip_flexion_r/activation", { -1, 1 });
+//    mp.setStateInfo("/tau_knee_angle_r/activation", { -1, 1 });
+//    mp.setStateInfo("/tau_ankle_angle_r/activation", { -1, 1 });
+//    mp.setStateInfo("/tau_hip_flexion_l/activation", { -1, 1 });
+//    mp.setStateInfo("/tau_knee_angle_l/activation", { -1, 1 });
+//    mp.setStateInfo("/tau_ankle_angle_l/activation", { -1, 1 });
+//}
 
-    Model model("subject01.osim");  
+/// Convenience function to apply an CoordinateActuator to the model.
+void addCoordinateActuator(std::unique_ptr<Model>& model, std::string coordName,
+        double optimalForce) {
 
-    addActivationCoordinateActuator(model, "lumbar_extension", 500);
-    addActivationCoordinateActuator(model, "pelvis_tilt", 500);
-    addActivationCoordinateActuator(model, "pelvis_tx", 1000);
-    addActivationCoordinateActuator(model, "pelvis_ty", 2500);
+    auto& coordSet = model->updCoordinateSet();
 
-    if (usingMuscleLikeActuators) {
-        addMuscleLikeCoordinateActuator(model, "hip_flexion_r", 100);
-        addMuscleLikeCoordinateActuator(model, "knee_angle_r", 100);
-        addMuscleLikeCoordinateActuator(model, "ankle_angle_r", 100);
-        addMuscleLikeCoordinateActuator(model, "hip_flexion_l", 100);
-        addMuscleLikeCoordinateActuator(model, "knee_angle_l", 100);
-        addMuscleLikeCoordinateActuator(model, "ankle_angle_l", 100);
-    } else {
-        addActivationCoordinateActuator(model, "hip_flexion_r", 100);
-        addActivationCoordinateActuator(model, "knee_angle_r", 100);
-        addActivationCoordinateActuator(model, "ankle_angle_r", 100);
-        addActivationCoordinateActuator(model, "hip_flexion_l", 100);
-        addActivationCoordinateActuator(model, "knee_angle_l", 100);
-        addActivationCoordinateActuator(model, "ankle_angle_l", 100);
-    }
-
-    return model;
-}
-
-/// Set the bounds for the specified MucoProblem.
-void setBounds(MucoProblem& mp) {
-
-    double finalTime = 1.25;
-    mp.setTimeBounds(0, finalTime);
-    mp.setStateInfo("/tau_lumbar_extension/activation", { -1, 1 });
-    mp.setStateInfo("/tau_pelvis_tilt/activation", {-1, 1});
-    mp.setStateInfo("/tau_pelvis_tx/activation", { -1, 1 });
-    mp.setStateInfo("/tau_pelvis_ty/activation", { -1, 1 });
-    mp.setStateInfo("/tau_hip_flexion_r/activation", { -1, 1 });
-    mp.setStateInfo("/tau_knee_angle_r/activation", { -1, 1 });
-    mp.setStateInfo("/tau_ankle_angle_r/activation", { -1, 1 });
-    mp.setStateInfo("/tau_hip_flexion_l/activation", { -1, 1 });
-    mp.setStateInfo("/tau_knee_angle_l/activation", { -1, 1 });
-    mp.setStateInfo("/tau_ankle_angle_l/activation", { -1, 1 });
+    auto* actu = new CoordinateActuator();
+    actu->setName("tau_" + coordName);
+    actu->setCoordinate(&coordSet.get(coordName));
+    actu->setOptimalForce(optimalForce);
+    actu->setMinControl(-1);
+    actu->setMaxControl(1);
+    model->addComponent(actu);
 }
 
 /// Solve a full-body (10 DOF) tracking problem by having the model markers
 /// track the marker trajectories directly.
 ///
 /// Estimated time to solve: 45-95 minutes.
-MucoSolution solveMarkerTrackingProblem(bool usingMuscleLikeActuators, 
+MucoSolution solveMarkerTrackingProblem(
         bool prevSolutionInitialization) {
 
     MucoTool muco;
@@ -205,17 +221,27 @@ MucoSolution solveMarkerTrackingProblem(bool usingMuscleLikeActuators,
 
     // Model(dynamics).
     // -----------------
-    mp.setModel(setupModel(usingMuscleLikeActuators));
+    auto model = make_unique<Model>("subject01.osim");
+    addCoordinateActuator(model, "lumbar_extension", 500);
+    addCoordinateActuator(model, "pelvis_tilt", 500);
+    addCoordinateActuator(model, "pelvis_tx", 1000);
+    addCoordinateActuator(model, "pelvis_ty", 2500);
+    addCoordinateActuator(model, "hip_flexion_r", 100);
+    addCoordinateActuator(model, "knee_angle_r", 100);
+    addCoordinateActuator(model, "ankle_angle_r", 100);
+    addCoordinateActuator(model, "hip_flexion_l", 100);
+    addCoordinateActuator(model, "knee_angle_l", 100);
+    addCoordinateActuator(model, "ankle_angle_l", 100);
+    mp.setModelCopy(*model);
 
-    // Bounds.
-    // -------
-    setBounds(mp);
         
     // Cost.
     // -----
-    MucoMarkerTrackingCost tracking;
-    tracking.setName("tracking");
+    auto* tracking = mp.addCost<MucoMarkerTrackingCost>();
+    tracking->setName("tracking");
     auto ref = TRCFileAdapter::read("marker_trajectories.trc");
+    mp.setTimeBounds(ref.getIndependentColumn().at(0),
+                     ref.getIndependentColumn().at(ref.getNumRows()-1));
 
     // Set marker weights to match IK task weights.
     Set<MarkerWeight> markerWeights;
@@ -229,17 +255,21 @@ MucoSolution solveMarkerTrackingProblem(bool usingMuscleLikeActuators,
     markerWeights.cloneAndAppend({ "L.Toe.Tip", 2 });
     MarkersReference markersRef(ref, &markerWeights);
     
-    tracking.setMarkersReference(markersRef);
-    tracking.setAllowUnusedReferences(true);
-    mp.addCost(tracking);
+    tracking->setMarkersReference(markersRef);
+    tracking->setAllowUnusedReferences(true);
+
+    auto* control = mp.addCost<MucoControlCost>();
+    control->setName("control_cost");
+    control->set_weight(0.1);
 
     // Configure the solver.
     // =====================
     MucoTropterSolver& ms = muco.initSolver();
-    ms.set_num_mesh_points(10);
+    ms.set_num_mesh_points(50);
     ms.set_verbosity(2);
-    ms.set_optim_solver("ipopt");
-    ms.set_optim_hessian_approximation("exact");
+    ms.set_optim_solver("snopt");
+    ms.set_transcription_scheme("hermite-simpson");
+    //ms.set_optim_hessian_approximation("exact");
 
     // Create guess.
     // =============
@@ -247,20 +277,31 @@ MucoSolution solveMarkerTrackingProblem(bool usingMuscleLikeActuators,
         MucoIterate prevSolution(
             "sandboxMarkerTrackingWholeBody_marker_solution.sto");
         ms.setGuess(prevSolution);
+    } else {
+        ms.setGuess("bounds");
     }
 
     // Solve the problem.
     // ==================
     MucoSolution solution = muco.solve();
-    std::string output;
-    if (usingMuscleLikeActuators) {
-        output = "sandboxMarkerTrackingWholeBody_marker_solution_AMLCAs.sto";
-    } else {
-        output = "sandboxMarkerTrackingWholeBody_marker_solution_ACAs.sto";
-    }
-    solution.write(output);
-
     muco.visualize(solution);
+    solution.write("sandboxMarkerTrackingWholeBody_marker_solution.sto");
+
+    auto statesTable = solution.exportToStatesTable();
+    auto names = solution.getStateNames();
+    statesTable.setColumnLabels(names);
+    for (int i = 0; i < names.size(); ++i) {
+        if (!(names[i].find("tx") != std::string::npos) &&
+            !(names[i].find("ty") != std::string::npos)) {
+            if (names[i].find("value") != std::string::npos) {
+                statesTable.updDependentColumn(names[i]) *= (180.0 / SimTK::Pi);
+            }
+        }
+
+    }
+
+    solution.setStatesTrajectory(statesTable);
+    solution.write("sandboxMarkerTrackingWholeBody_marker_solution_degrees.sto");
 
     return solution;
 }
@@ -268,8 +309,7 @@ MucoSolution solveMarkerTrackingProblem(bool usingMuscleLikeActuators,
 int main() {
 
 
-    MucoSolution markerTrackingSolution = solveMarkerTrackingProblem(true, 
-        false);
+    MucoSolution markerTrackingSolution = solveMarkerTrackingProblem(true);
 
     return EXIT_SUCCESS;
 }

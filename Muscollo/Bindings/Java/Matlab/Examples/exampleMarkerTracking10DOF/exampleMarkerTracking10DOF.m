@@ -115,6 +115,8 @@ solver = muco.initSolver();
 % 25 mesh points ~ 5 minutes to solve
 solver.set_num_mesh_points(10);
 solver.set_optim_hessian_approximation('exact');
+solver.set_hessian_block_sparsity_mode('dense');
+
 solver.setGuess('bounds');
 
 % Now that we've finished setting up the tool, print it to a file.

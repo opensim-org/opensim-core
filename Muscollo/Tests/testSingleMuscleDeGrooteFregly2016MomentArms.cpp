@@ -143,10 +143,14 @@ public:
             const T& normFibLen = in.states[3];
             const T& normFibVel = in.controls[1];
             T normTenForce;
+            T residual;
             // This also provides the path constraint value.
             m_muscle.calcEquilibriumResidual(
                     activation, musTenLen, normFibLen, normFibVel,
-                    out.path[0], normTenForce);
+                    residual, normTenForce);
+            if (out.path.size() != 0) {
+                out.path[0] = residual;
+            }
             tendonForce = m_muscle.get_max_isometric_force() * normTenForce;
         } else {
             // Muscle-tendon velocity.
@@ -215,8 +219,9 @@ solveForTrajectoryGSO() {
     trajFileWithHeader.replace(trajectoryFile.rfind(".csv"), 4,
                                "_with_header.csv");
     // Skip the "num_states=#", "num_controls=#", "num_adjuncts=#",
-    // and "num_parameters=#" lines.
+    // "num_diffuses=#", and "num_parameters=#" lines.
     std::string line;
+    std::getline(fRead, line);
     std::getline(fRead, line);
     std::getline(fRead, line);
     std::getline(fRead, line);
@@ -311,8 +316,9 @@ solveForTrajectoryINDYGO() {
     trajFileWithHeader.replace(trajectoryFile.rfind(".csv"), 4,
                                "_with_header.csv");
     // Skip the "num_states=#", "num_controls=#", "num_adjuncts=#",
-    // and "num_parameters=#" lines.
+    // "num_diffuses=#", and "num_parameters=#" lines.
     std::string line;
+    std::getline(fRead, line);
     std::getline(fRead, line);
     std::getline(fRead, line);
     std::getline(fRead, line);

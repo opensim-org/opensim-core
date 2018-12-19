@@ -42,12 +42,31 @@ SimTK::Vector OpenSim::createVectorLinspace(
 }
 
 SimTK::Vector OpenSim::interpolate(const SimTK::Vector& x,
-        const SimTK::Vector& y, const SimTK::Vector& newX) {
-    PiecewiseLinearFunction function(x.size(), &x[0], &y[0]);
+        const SimTK::Vector& y, const SimTK::Vector& newX, 
+        const bool ignoreNaNs) {
+
+    // Create vectors of non-NaN values if user set 'ignoreNaNs' argument to 
+    // 'true', otherwise throw an exception. If no NaN's are present in the
+    // provided data vectors, the '*_no_nans' variables below will contain
+    // the original data vector values.
+    std::vector<double> x_no_nans;
+    std::vector<double> y_no_nans;
+    for (int i = 0; i < x.size(); ++i) {
+
+        bool shouldNotPushBack = (SimTK::isNaN(x[i]) || SimTK::isNaN(y[i])) 
+                                 && ignoreNaNs;
+        if (!shouldNotPushBack) {
+            x_no_nans.push_back(x[i]);
+            y_no_nans.push_back(y[i]);
+        } 
+    }
+
+    PiecewiseLinearFunction function((int)x_no_nans.size(), &x_no_nans[0], 
+        &y_no_nans[0]);
     SimTK::Vector newY(newX.size(), SimTK::NaN);
     for (int i = 0; i < newX.size(); ++i) {
         const auto& newXi = newX[i];
-        if (x[0] <= newXi && newXi <= x[x.size()-1])
+        if (x_no_nans[0] <= newXi && newXi <= x_no_nans[x_no_nans.size()-1])
             newY[i] = function.calcValue(SimTK::Vector(1, newXi));
     }
     return newY;
@@ -282,6 +301,66 @@ void OpenSim::prescribeControlsToModel(const MucoIterate& iterate,
         controller->prescribeControlForActuator(actu.getName(), function);
     }
     model.addController(controller);
+}
+
+void OpenSim::replaceMusclesWithPathActuators(Model& model) {
+
+    // Create path actuators from muscle properties and add to the model. Save
+    // a list of pointers of the muscles to delete.
+    std::vector<Muscle*> musclesToDelete;
+    auto& muscleSet = model.updMuscles();
+    for (int i = 0; i < muscleSet.getSize(); ++i) {
+        auto& musc = muscleSet.get(i);
+        auto* actu = new PathActuator();
+        actu->setName(musc.getName());
+        musc.setName(musc.getName() + "_delete");
+        actu->setOptimalForce(musc.getMaxIsometricForce());
+        actu->setMinControl(musc.getMinControl());
+        actu->setMaxControl(musc.getMaxControl());
+
+        const auto& pathPointSet = musc.getGeometryPath().getPathPointSet();
+        auto& geomPath = actu->updGeometryPath();
+        for (int i = 0; i < pathPointSet.getSize(); ++i) {
+            auto* pathPoint = pathPointSet.get(i).clone();
+            const auto& socketNames = pathPoint->getSocketNames();
+            for (const auto& socketName : socketNames) {
+                pathPoint->updSocket(socketName).connect(
+                    pathPointSet.get(i).getSocket(socketName).getConnecteeAsObject());
+            }
+            geomPath.updPathPointSet().adoptAndAppend(pathPoint);
+        }
+        model.addComponent(actu);
+        musclesToDelete.push_back(&musc);
+    }
+
+    // Delete the muscles.
+    for (const auto* musc : musclesToDelete) {
+        int index = model.getForceSet().getIndex(musc, 0);
+        OPENSIM_THROW_IF(index == -1, Exception, "Muscle with name " +
+            musc->getName() + " not found in ForceSet.");
+        bool success = model.updForceSet().remove(index);
+        OPENSIM_THROW_IF(!success, Exception, "Attempt to remove muscle with "
+            "name " + musc->getName() + " was unsuccessful.");
+    }
+
+}
+
+void OpenSim::removeMuscles(Model& model) {
+
+    // Save a list of pointers of the muscles to delete.
+    std::vector<Muscle*> musclesToDelete;
+    auto& muscleSet = model.updMuscles();
+    for (int i = 0; i < muscleSet.getSize(); ++i) {
+        musclesToDelete.push_back(&muscleSet.get(i));
+    }
+
+    // Delete the muscles.
+    for (const auto* musc : musclesToDelete) {
+        int index = model.getForceSet().getIndex(musc, 0);
+        OPENSIM_THROW_IF(index == -1, Exception, "Muscle with name " +
+            musc->getName() + " not found in ForceSet.");
+        model.updForceSet().remove(index);
+    }
 }
 
 std::vector<std::string> OpenSim::createStateVariableNamesInSystemOrder(

@@ -76,9 +76,13 @@ public:
                 tendon_force_dynamics_scaling_factor * tenForceControl;
         T tendonForce;
         // This also computes the fiber equilibrium path constraint.
+        T residual;
         m_muscle.calcTendonForceStateEquilibriumResidual(
                 activation, position, speed, normTenForce, normTenForceRate,
-                out.path[0], tendonForce);
+                residual, tendonForce);
+        if (out.path.size() != 0) {
+            out.path[0] = residual;
+        }
         // TODO might make more sense to use fiber force; might be a more
         // direct relationship (that, or make tendon length a variable).
         out.dynamics[1] = g - tendonForce / mass;
@@ -219,13 +223,17 @@ public:
         const T normTenForceRate =
                 tendon_force_dynamics_scaling_factor * tenForceControl;
         T tendonForce;
+        T residual;
         // This also computes the fiber equilibrium path constraint.
         m_muscle.calcTendonForceStateEquilibriumResidual(
                 activation, position, speed, normTenForce, normTenForceRate,
-                out.path[1], tendonForce);
+                residual, tendonForce);
         // TODO might make more sense to use fiber force; might be a more
         // direct relationship (that, or make tendon length a variable).
-        out.path[0] = tendonForce - netGeneralizedForce;
+        if (out.path.size() != 0) {
+            out.path[0] = tendonForce - netGeneralizedForce;
+            out.path[1] = residual;
+        }
 
         // Activation dynamics.
         m_muscle.calcActivationDynamics(excitation, activation,
@@ -289,12 +297,16 @@ public:
 
 
         T normTenForce;
+        T residual;
         m_muscle.calcEquilibriumResidual(
-                activation, position, normFibLen, normFibVel, out.path[1],
+                activation, position, normFibLen, normFibVel, residual,
                 normTenForce);
         T tendonForce = m_muscle.get_max_isometric_force() * normTenForce;
 
-        out.path[0] = tendonForce - netGeneralizedForce;
+        if (out.path.size() != 0) {
+            out.path[0] = tendonForce - netGeneralizedForce;
+            out.path[1] = residual;
+        }
 
         // Activation dynamics.
         m_muscle.calcActivationDynamics(excitation, activation,

@@ -46,7 +46,9 @@ public:
         // udot = a
         out.dynamics[1] = in.controls[0];
         // F = ma
-        out.path[0] = in.controls[1] - mass*in.controls[0];
+        if (out.path.size()) {
+            out.path[0] = in.controls[1] - mass*in.controls[0];
+        }
     }
     void calc_endpoint_cost(const T& final_time, const VectorX<T>&,
         const VectorX<T>&, T& cost)
@@ -83,19 +85,30 @@ public:
 
         return sol;
     }
+    static void run_test(int N, std::string solver, std::string transcription) {
+        auto ocp = std::make_shared<SlidingMassPathConstraint<T>>();
+        DirectCollocationSolver<adouble> dircol(ocp, transcription, "ipopt", N);
+        Solution solution = dircol.solve();
+        solution.write("sliding_mass_minimum_time_path_constraints_"
+            + transcription + "_solution.csv");
+
+        Solution expected = ocp->actual_solution(solution.time);
+
+        TROPTER_REQUIRE_EIGEN(solution.states, expected.states, 0.001);
+        TROPTER_REQUIRE_EIGEN(solution.controls, expected.controls, 0.001);
+    }
 };
 
 TEST_CASE("Sliding mass minimum time using path constraints", "[path]")
 {
-    auto ocp = std::make_shared<SlidingMassPathConstraint<adouble>>();
-    const int halfN = 25;
-    const int N = 2*halfN;
-    DirectCollocationSolver<adouble> dircol(ocp, "trapezoidal", "ipopt", N);
-    Solution solution = dircol.solve();
-    solution.write("sliding_mass_minimum_time_path_constraints_solution.csv");
-
-    Solution expected = ocp->actual_solution(solution.time);
-
-    TROPTER_REQUIRE_EIGEN(solution.states, expected.states, 0.001);
-    TROPTER_REQUIRE_EIGEN(solution.controls, expected.controls, 0.001);
+    SECTION("trapezoidal") {
+        SlidingMassPathConstraint<adouble>::run_test(50, "ipopt", 
+            "trapezoidal");
+    }
+    // TODO this fails since controls are zero at midpoints due to implicit
+    // dynamic formulation.
+    //SECTION("hermite-simpson") {
+    //    SlidingMassPathConstraint<adouble>::run_test(25, "ipopt",
+    //        "hermite-simpson");
+    //}
 }

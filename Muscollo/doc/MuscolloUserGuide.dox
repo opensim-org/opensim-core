@@ -104,6 +104,42 @@ The following are not currently supported with implicit dynamics:
 3. Multibody constraints.
 
 
+@subsection Kinematic constraints
+
+Muscollo supports enforcing OpenSim kinematic constraints in optimal control 
+problems. When the MucoTropterSolver is initialized, any kinematic constraints 
+enabled in the model are automatically detected, and additional information
+about each constraint is stored. This information includes the number of scalar
+path constraints (including derivatives if they exist), the scalar constraint 
+kinematic levels (i.e. holonomic, non-holonomic, or acceleration), and the 
+number of Lagrange multipliers that are added to the problem to enforce the
+constraints. 
+
+MucoTropterSolver has options if the user desires to enforce kinematic 
+constraint derivatives or minimize Lagrange multipliers in the problem.
+
+\code{.cpp}
+MucoTropterSolver& solver = muco.initSolver();
+ms.set_enforce_constraint_derivatives(true);
+ms.set_lagrange_multiplier_weight(10);
+\endcode
+
+If constraint derivatives are enforced, velocity correction variables are added
+to the problem according to the method described in Posa, Kuindersma, and
+Tedrake, 2016, "Optimization and stabilization of trajectories for constrained
+dynamical systems." It is also possible to modify the default bounds on these 
+velocity correction variables:
+
+\code{.cpp}
+// Default bounds: [-0.1, 0.1]
+ms.set_velocity_correction_bounds({-0.25, 0.25});
+\endcode
+
+If constraint derivatives are not enforced or if the multibody constraint 
+Jacobian is rank-deficient, it is recommended that the Lagrange multiplier 
+minimization term is added to the problem to provide impose uniqueness for 
+these variables.
+
 @section tips Tips for solving a custom problem
 
 1. Make sure every variable has bounds.

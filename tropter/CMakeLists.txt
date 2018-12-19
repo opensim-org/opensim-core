@@ -28,14 +28,14 @@ add_feature_info(OpenMP TROPTER_WITH_OPENMP
         "Parallelize derivative calculations (TROPTER_WITH_OPENMP)")
 
 option(TROPTER_WITH_SNOPT
-        "Compile support for the SNOPT optimization library; \
-        requires Fortran compiler"
+        "Include support for the SNOPT optimization library; \
+        precompiled C++ interface libraries for SNOPT required."
         OFF)
 add_feature_info(SNOPT TROPTER_WITH_SNOPT
     "Support the SNOPT optimization library (TROPTER_WITH_SNOPT)")
-if(TROPTER_WITH_SNOPT)
-    enable_language(Fortran)
-endif()
+# if(TROPTER_WITH_SNOPT)
+#     enable_language(Fortran)
+# endif()
 
 # Organization of installation.
 # -----------------------------
@@ -95,6 +95,14 @@ else()
     # TODO set(CMAKE_SHARED_LINKER_FLAGS
     # TODO        "${CMAKE_SHARED_LINKER_FLAGS} ${IPOPT_LINK_FLAGS}")
     tropter_copy_dlls(IPOPT "${Ipopt_ROOT_DIR}/bin")
+endif()
+
+if(TROPTER_WITH_SNOPT)
+    find_package(SNOPT REQUIRED)
+    set_package_properties(SNOPT PROPERTIES
+            TYPE REQUIRED
+            PURPOSE "Sparse nonlinear optimization")
+    tropter_copy_dlls(SNOPT "${SNOPT_DIR}/bin")
 endif()
 
 # OpenMP allows parallelization (of evaluating dynamics and path constraints

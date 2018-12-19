@@ -127,8 +127,9 @@ solveForTrajectoryGSO() {
     trajFileWithHeader.replace(trajectoryFile.rfind(".csv"), 4,
                                "_with_header.csv");
     // Skip the "num_states=#", "num_controls=#", "num_adjuncts=#",
-    // and "num_parameters=#" lines.
+    // "num_diffuses=#", and "num_parameters=#" lines.
     std::string line;
+    std::getline(fRead, line);
     std::getline(fRead, line);
     std::getline(fRead, line);
     std::getline(fRead, line);
@@ -246,10 +247,14 @@ public:
 
         // Multibody dynamics.
         T normTenForce;
+        T residual;
         // This also computes the fiber equilibrium path constraint.
         m_muscle.calcEquilibriumResidual(
-                activation, position, normFibLen, normFibVel, out.path[0],
+                activation, position, normFibLen, normFibVel, residual,
                 normTenForce);
+        if (out.path.size() != 0) {
+            out.path[0] = residual;
+        }
         T tendonForce = m_muscle.get_max_isometric_force() * normTenForce;
         // TODO might make more sense to use fiber force; might be a more
         // direct relationship (that, or make tendon length a variable).
@@ -295,8 +300,9 @@ solveForTrajectoryINDYGO() {
     trajFileWithHeader.replace(trajectoryFile.rfind(".csv"), 4,
                                "_with_header.csv");
     // Skip the "num_states=#", "num_controls=#", "num_adjuncts=#",
-    // and "num_parameters=#" lines.
+    // "num_diffuses=#", and "num_parameters=#" lines.
     std::string line;
+    std::getline(fRead, line);
     std::getline(fRead, line);
     std::getline(fRead, line);
     std::getline(fRead, line);

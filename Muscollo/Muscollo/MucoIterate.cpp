@@ -144,6 +144,39 @@ void MucoIterate::setMultiplier(const std::string& name,
     m_multipliers.updCol(index) = trajectory;
 }
 
+void MucoIterate::setSlack(const std::string& name,
+    const SimTK::Vector& trajectory) {
+    ensureUnsealed();
+
+    OPENSIM_THROW_IF(trajectory.size() != m_slacks.nrow(), Exception,
+        "For slack " + name + ", expected " +
+        std::to_string(m_slacks.nrow()) +
+        " elements but got " + std::to_string(trajectory.size()) + ".");
+
+    auto it = std::find(m_slack_names.cbegin(), m_slack_names.cend(),
+        name);
+    OPENSIM_THROW_IF(it == m_slack_names.cend(), Exception,
+        "Cannot find slack named " + name + ".");
+    int index = (int)std::distance(m_slack_names.cbegin(), it);
+    m_slacks.updCol(index) = trajectory;
+}
+
+void MucoIterate::appendSlack(const std::string& name,
+    const SimTK::Vector& trajectory) {
+    ensureUnsealed();
+
+    OPENSIM_THROW_IF(m_time.nrow() == 0, Exception,
+        "The time vector must be set before adding slack variables.");
+    OPENSIM_THROW_IF(trajectory.size() != m_time.nrow(),
+        Exception, "Attempted to add slack " + name + " of length " + 
+        std::to_string(trajectory.size()) + ", but it is incompatible with the "
+        "time vector, which has length " + std::to_string(m_time.nrow()) +  ".");
+
+    m_slack_names.push_back(name);
+    m_slacks.resizeKeep(m_time.nrow(), m_slacks.ncol() + 1);
+    m_slacks.updCol(m_slacks.ncol() - 1) = trajectory;
+}
+
 void MucoIterate::setParameter(const std::string& name, 
         const SimTK::Real& value) {
     ensureUnsealed();
@@ -245,6 +278,15 @@ SimTK::VectorView MucoIterate::getMultiplier(const std::string& name) const {
     int index = (int)std::distance(m_multiplier_names.cbegin(), it);
     return m_multipliers.col(index);
 }
+SimTK::VectorView MucoIterate::getSlack(const std::string& name) const {
+    ensureUnsealed();
+    auto it = std::find(m_slack_names.cbegin(), m_slack_names.cend(),
+        name);
+    OPENSIM_THROW_IF(it == m_slack_names.cend(), Exception,
+        "Cannot find slack named " + name + ".");
+    int index = (int)std::distance(m_slack_names.cbegin(), it);
+    return m_slacks.col(index);
+}
 const SimTK::Real& MucoIterate::getParameter(const std::string& name) const {
     ensureUnsealed();
     auto it = std::find(m_parameter_names.cbegin(), m_parameter_names.cend(),
@@ -261,6 +303,7 @@ double MucoIterate::resampleWithNumTimes(int numTimes) {
     int numControls = (int)m_control_names.size();
     int numMultipliers = (int)m_multiplier_names.size();
     int numDerivatives = (int)m_derivative_names.size();
+    int numSlacks = (int)m_slack_names.size();
     TimeSeriesTable table = convertToTable();
     OPENSIM_THROW_IF(m_time.size() < 2, Exception,
             "Cannot resample if number of times is 0 or 1.");
@@ -270,6 +313,7 @@ double MucoIterate::resampleWithNumTimes(int numTimes) {
     m_controls.resize(numTimes, numControls);
     m_multipliers.resize(numTimes, numMultipliers);
     m_derivatives.resize(numTimes, numDerivatives);
+    m_slacks.resize(numTimes, numSlacks);
     SimTK::Vector time(1);
     for (int itime = 0; itime < m_time.size(); ++itime) {
         time[0] = m_time[itime];
@@ -282,6 +326,8 @@ double MucoIterate::resampleWithNumTimes(int numTimes) {
             m_multipliers(itime, imult) = splines[icol].calcValue(time);
         for (int ideriv = 0; ideriv < numDerivatives; ++ideriv, ++icol)
             m_derivatives(itime, ideriv) = splines[icol].calcValue(time);
+        for (int islack = 0; islack < numSlacks; ++islack, ++icol)
+            m_slacks(itime, islack) = splines[icol].calcValue(time);
     }
     return m_time[1] - m_time[0];
 }
@@ -344,6 +390,10 @@ MucoIterate::MucoIterate(const std::string& filepath) {
     SimTK::convertStringTo(
             metadata.getValueForKey("num_derivatives").getValue<std::string>(),
             numDerivatives);
+    int numSlacks;
+    SimTK::convertStringTo(
+            metadata.getValueForKey("num_slacks").getValue<std::string>(),
+            numSlacks);
     int numParameters;
     SimTK::convertStringTo(
             metadata.getValueForKey("num_parameters").getValue<std::string>(),
@@ -352,6 +402,7 @@ MucoIterate::MucoIterate(const std::string& filepath) {
     OPENSIM_THROW_IF(numControls < 0, Exception, "Invalid num_controls.");
     OPENSIM_THROW_IF(numMultipliers < 0, Exception, "Invalid num_multipliers.");
     OPENSIM_THROW_IF(numDerivatives < 0, Exception, "Invalid num_derivatives.");
+    OPENSIM_THROW_IF(numSlacks < 0, Exception, "Invalid num_slacks.");
     OPENSIM_THROW_IF(numParameters < 0, Exception, "Invalid num_parameters.");
 
     const auto& labels = table->getColumnLabels();
@@ -372,20 +423,26 @@ MucoIterate::MucoIterate(const std::string& filepath) {
             labels.begin() + offset,
             labels.begin() + offset + numDerivatives);
     offset += numDerivatives;
+    m_slack_names.insert(m_slack_names.end(),
+            labels.begin() + offset,
+            labels.begin() + offset + numSlacks);
+    offset += numSlacks;
     m_parameter_names.insert(m_parameter_names.end(),
             labels.begin() + offset,
             labels.end());
 
     OPENSIM_THROW_IF(numStates + numControls +
-            numMultipliers + numDerivatives + numParameters
+            numMultipliers + numDerivatives + numSlacks + numParameters
                 != (int)table->getNumColumns(),
             Exception,
             "Expected num_states + num_controls + num_multipliers + "
-            "num_derivatives + num_parameters = number of columns, but "
+            "num_derivatives + num_slacks + num_parameters = "
+            "number of columns, but "
             "num_states=" + std::to_string(numStates) + ", "
             "num_controls=" + std::to_string(numControls) + ", "
             "num_multipliers=" + std::to_string(numMultipliers) + ", "
             "num_derivatives=" + std::to_string(numDerivatives) + ", "
+            "num_slacks=" + std::to_string(numSlacks) + ", "
             "num_parameters=" + std::to_string(numParameters) + ", "
             "number of columns=" + std::to_string(table->getNumColumns()));
 
@@ -408,10 +465,15 @@ MucoIterate::MucoIterate(const std::string& filepath) {
                 numStates + numControls + numMultipliers,
                 table->getNumRows(), numDerivatives);
     }
+    if (numSlacks) {
+        m_slacks = table->getMatrixBlock(0, 
+            numStates + numControls + numMultipliers + numDerivatives,
+            table->getNumRows(), numSlacks);
+    }
     if (numParameters) {
         m_parameters = table->getMatrixBlock(0, 
-                numStates + numControls + numMultipliers + numDerivatives, 1,
-                numParameters).getAsRowVectorBase();
+                numStates + numControls + numMultipliers + numDerivatives +
+                numSlacks, 1, numParameters).getAsRowVectorBase();
     }
 }
 
@@ -436,12 +498,15 @@ TimeSeriesTable MucoIterate::convertToTable() const {
     labels.insert(labels.end(),
             m_derivative_names.begin(), m_derivative_names.end());
     labels.insert(labels.end(),
+            m_slack_names.begin(), m_slack_names.end());
+    labels.insert(labels.end(),
             m_parameter_names.begin(), m_parameter_names.end());
     int numTimes = (int)m_time.size();
     int numStates = (int)m_state_names.size();
     int numControls = (int)m_control_names.size();
     int numMultipliers = (int)m_multiplier_names.size();
     int numDerivatives = (int)m_derivative_names.size();
+    int numSlacks = (int)m_slack_names.size();
     int numParameters = (int)m_parameter_names.size();
 
     SimTK::Matrix data(numTimes, (int)labels.size());
@@ -462,6 +527,10 @@ TimeSeriesTable MucoIterate::convertToTable() const {
         data.updBlock(0, startCol, numTimes, numDerivatives) = m_derivatives;
         startCol += numDerivatives;
     }
+    if (numSlacks) {
+        data.updBlock(0, startCol, numTimes, numSlacks) = m_slacks;
+        startCol += numSlacks;
+    }
     if (numParameters) {
         // First row of table contains parameter values.
         data.updBlock(0, startCol, 1, numParameters) = m_parameters;
@@ -477,6 +546,7 @@ TimeSeriesTable MucoIterate::convertToTable() const {
     //table.updTableMetaData().setValueForKey("num_states", numStates);
     //table.updTableMetaData().setValueForKey("num_controls", numControls);
     //table.updTableMetaData().setValueForKey("num_multipliers", numMultipliers);
+    //table.updTableMetaData().setValueForKey("num_slacks", numSlacks);
     //table.updTableMetaData().setValueForKey("num_parameters", numParameters);
     table.updTableMetaData().setValueForKey("num_states",
             std::to_string(numStates));
@@ -486,6 +556,8 @@ TimeSeriesTable MucoIterate::convertToTable() const {
             std::to_string(numMultipliers));
     table.updTableMetaData().setValueForKey("num_derivatives",
             std::to_string(numDerivatives));
+    table.updTableMetaData().setValueForKey("num_slacks",
+        std::to_string(numSlacks));
     table.updTableMetaData().setValueForKey("num_parameters",
             std::to_string(numParameters));
     return table;
@@ -556,6 +628,8 @@ StatesTrajectory MucoIterate::exportToStatesTrajectory(
 bool MucoIterate::isCompatible(const MucoProblemRep& mp,
         bool throwOnError) const {
     ensureUnsealed();
+    // Slack variables might be solver dependent, so we can't check for
+    // compatibility on the problem.
 
     auto mpsn = mp.createStateInfoNames();
     std::sort(mpsn.begin(), mpsn.end());
@@ -615,6 +689,9 @@ bool MucoIterate::isNumericallyEqual(const MucoIterate& other, double tol)
     return m_state_names == other.m_state_names &&
             m_control_names == other.m_control_names &&
             m_multiplier_names == other.m_multiplier_names &&
+            m_derivative_names == other.m_derivative_names &&
+            // TODO include slack variables?
+            //m_slack_names == other.m_slack_names &&
             m_parameter_names == other.m_parameter_names &&
             SimTK::Test::numericallyEqual(m_time, other.m_time, 1, tol) &&
             SimTK::Test::numericallyEqual(m_states, other.m_states, 1, tol) &&
@@ -623,8 +700,10 @@ bool MucoIterate::isNumericallyEqual(const MucoIterate& other, double tol)
                     1, tol)
             && SimTK::Test::numericallyEqual(m_derivatives, other.m_derivatives,
                     1, tol)
-            && SimTK::Test::numericallyEqual(m_parameters, other.m_parameters,
-                    1, tol);
+            // TODO include slack variables?
+            //&& SimTK::Test::numericallyEqual(m_slacks, other.m_slacks, 1, tol)
+            && SimTK::Test::numericallyEqual(m_parameters, other.m_parameters, 
+                1, tol);
 }
 
 using VecStr = std::vector<std::string>;
