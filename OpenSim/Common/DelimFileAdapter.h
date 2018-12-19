@@ -420,7 +420,8 @@ DelimFileAdapter<T>::extendRead(const std::string& fileName) const {
         ++line_num;
         ++curRow;
         
-        // Double capacity if we reach the end of the containers
+        // Double capacity if we reach the end of the containers.
+        // This is necessary until Simbody issue #401 is addressed.
         if (curRow > curCapacity) {
             curCapacity *= 2;
             timeVec.reserve(curCapacity);
@@ -445,7 +446,8 @@ DelimFileAdapter<T>::extendRead(const std::string& fileName) const {
         row = nextLine();
     }
 
-    // Resize the matrix down to the correct number of rows
+    // Resize the matrix down to the correct number of rows.
+    // This is necessary until Simbody issue #401 is addressed.
     matrix.resizeKeep(curRow, ncol);
 
     // Create the table and update other metadata from above
