@@ -138,6 +138,9 @@ protected:
             labels = kc.getConstraintInfo().getConstraintLabels();
             kinLevels = kc.getKinematicLevels();
 
+            // TODO only add velocity correction variables for holonomic
+            // constraint derivatives? For now, disallow enforcing derivatives
+            // if non-holonomic or acceleration constraints present.
             OPENSIM_THROW_IF(enforceConstraintDerivs && mv != 0, Exception, 
                 "Enforcing constraint derivatives is supported only for "
                 "holonomic (position-level) constraints. "
