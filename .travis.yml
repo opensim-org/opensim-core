@@ -71,7 +71,7 @@ before_install:
   # Run superbuild to download, configure, build and install dependencies.
   - mkdir ~/opensim-moco_dependencies_build
   - cd ~/opensim-moco_dependencies_build 
-  - DEP_CMAKE_ARGS=($TRAVIS_BUILD_DIR/dependencies -DCMAKE_BUILD_TYPE=$BTYPE -DOPENSIM_JAVA_WRAPPING=on -DOPENSIM_PYTHON_WRAPPING=on)
+  - DEP_CMAKE_ARGS=($TRAVIS_BUILD_DIR/dependencies -DCMAKE_BUILD_TYPE=$BTYPE -DOPENSIM_JAVA_WRAPPING=on -DOPENSIM_PYTHON_WRAPPING=on -DSWIG_EXECUTABLE=$HOME/swig/bin/swig)
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then DEP_CMAKE_ARGS+=(-DCMAKE_OSX_DEPLOYMENT_TARGET=$OSX_TARGET); fi
 
   - printf '%s\n' "${DEP_CMAKE_ARGS[@]}"

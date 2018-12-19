@@ -139,6 +139,9 @@ function(AddDependency)
             list(APPEND CMAKE_ARGS
                  -DCMAKE_OSX_DEPLOYMENT_TARGET:STRING=${CMAKE_OSX_DEPLOYMENT_TARGET})
         endif()
+        if(SWIG_EXECUTABLE)
+            list(APPEND CMAKE_ARGS -DSWIG_EXECUTABLE:FILEPATH=${SWIG_EXECUTABLE})
+        endif()
 
         if(DEP_GIT_URL)
             ExternalProject_Add(${DEP_NAME}

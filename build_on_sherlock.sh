@@ -1,7 +1,8 @@
 module load cmake
 module load llvm
 module load openblas
-export CC=clang
-export CXX=clang++
+module load gcc/8.1.0
+export CC=gcc
+export CXX=g++
 
 bash build_on_linux.sh
