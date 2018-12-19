@@ -76,10 +76,10 @@ before_install:
 
   - printf '%s\n' "${DEP_CMAKE_ARGS[@]}"
   - cmake "${DEP_CMAKE_ARGS[@]}"
+  - make -j2 opensim-core
   - make -j2 adolc
   - make -j2 ipopt
   - make -j2 casadi
-  - make -j2 opensim-core
   - make -j$NPROC
   
 
