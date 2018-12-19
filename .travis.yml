@@ -27,7 +27,7 @@ before_install:
   
   - cmake --version # To help debug any cmake-related issues.
 
-  - if [[ "$TRAVIS_OS_NAME" = "osx" ]]; then brew install pkgconfig autoconf libtool automake; fi
+  - if [[ "$TRAVIS_OS_NAME" = "osx" ]]; then brew install openblas; fi
   
   ## Ensure that there are no tabs in source code.
   # GREP returns 0 (true) if there are any matches, and
@@ -76,7 +76,7 @@ before_install:
 
   - printf '%s\n' "${DEP_CMAKE_ARGS[@]}"
   - cmake "${DEP_CMAKE_ARGS[@]}"
-  - make # TODO -j$NPROC
+  - make -j$NPROC
   
 
 install:
