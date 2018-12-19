@@ -136,7 +136,7 @@ C3DFileAdapter::extendRead(const std::string& fileName) const {
         }
 
         // Create the data
-        auto& marker_table = 
+        auto marker_table = 
             std::make_shared<TimeSeriesTableVec3>(marker_times, 
                                                   marker_matrix, 
                                                   marker_labels);
