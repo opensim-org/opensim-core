@@ -26,6 +26,8 @@ before_install:
   - if $(git log -n1 --format="%B" | grep --quiet '\[skip travis\]'); then exit; fi 
   
   - cmake --version # To help debug any cmake-related issues.
+
+  - if [[ "$TRAVIS_OS_NAME" = "osx" ]]; then brew install pkgconfig autoconf libtool automake; fi
   
   ## Ensure that there are no tabs in source code.
   # GREP returns 0 (true) if there are any matches, and
@@ -63,7 +65,6 @@ before_install:
   - export WRAP=on
   - if [[ "$WRAP" = "on" ]]; then mkdir ~/swig-source && cd ~/swig-source; fi
   - if [[ "$WRAP" = "on" ]]; then wget https://github.com/swig/swig/archive/rel-$SWIG_VER.tar.gz; fi
-  #- wget http://prdownloads.sourceforge.net/swig/$SWIG.tar.gz
   - if [[ "$WRAP" = "on" ]]; then tar xzf rel-$SWIG_VER.tar.gz && cd swig-rel-$SWIG_VER; fi
   - if [[ "$WRAP" = "on" ]]; then sh autogen.sh && ./configure --prefix=$HOME/swig --disable-ccache && make && make -j8 install; fi
   
