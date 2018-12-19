@@ -360,7 +360,6 @@ DelimFileAdapter<T>::extendRead(const std::string& fileName) const {
                     // Discard OpenSim version number. Version number is added
                     // during writing.
                 } else {
-                    //table->updTableMetaData().setValueForKey(key, value);
                     keyValuePairs.setValueForKey(key, value);
                 }
                 continue;
