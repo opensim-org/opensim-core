@@ -1,3 +1,181 @@
 language: cpp
+matrix:
+  include:
+    - os: osx
+      compiler: clang
+      env: BTYPE=Release NPROC=2 DEPLOY=yes OSX_TARGET=10.10
+
+env:
+  global:
+    - SWIG_VER=3.0.8
+
+addons:
+  # To avoid being prompted when ssh'ing into sourceforge.
+  ssh_known_hosts:
+      # For uploading doxygen.
+      - web.sourceforge.net
+      # For deleting old doxygen.
+      - shell.sourceforge.net
+      # For uploading binaries.
+      - frs.sourceforge.net
+
+before_install:
+
+  - cd $TRAVIS_BUILD_DIR
+  # Stop build if comment contains [skip travis].
+  - if $(git log -n1 --format="%B" | grep --quiet '\[skip travis\]'); then exit; fi 
+  
+  - cmake --version # To help debug any cmake-related issues.
+  
+  ## Ensure that there are no tabs in source code.
+  # GREP returns 0 (true) if there are any matches, and
+  # we don't want any matches. If there are matches,
+  # print a helpful message, and make the test fail by using "false".
+  # The GREP command here checks for any tab characters in the the files
+  # that match the specified pattern. GREP does not pick up explicit tabs
+  # (e.g., literally a \t in a source file).
+  - cd $TRAVIS_BUILD_DIR
+  # - if grep --line-num --recursive --exclude-dir="*dependencies*" --include={CMakeLists.txt,*.cpp,*.c,*.h} -P "\t" . ; then echo "Tabs found in the lines shown above. See CONTRIBUTING.md about tabs."; false; fi
+
+  ## Set up environment variables.
+  # Only if compiling with gcc, update environment variables to use the new
+  # gcc.
+  - if [ "$CXX" = "g++" ]; then export CXX="g++-4.9" CC="gcc-4.9"; fi
+  - if [[ "$TRAVIS_OS_NAME" = "linux" && "$CXX" = "clang++" ]]; then export CXX="clang++-3.5" CC="clang-3.5"; fi
+
+  ## Temporary hack to find libblas and liblapack.
+  # TODO. Currently Simbody is using Travis CI's Ubuntu 14.04 VMs, which link with 
+  # liblapack.so.3 and libblas.so.3. These files don't exist on the 12.04 machines.
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then mkdir ~/lib; fi
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then ln -s /usr/lib/liblapack.so ~/lib/liblapack.so.3; fi
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then ln -s /usr/lib/libblas.so ~/lib/libblas.so.3; fi
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:~/lib; fi
+
+  ## Doxygen.
+  # Need a doxygen that is more recent than that available through apt-get.
+  - export DOXY=on
+  - if [[ "$DOXY" = "on" && "$TRAVIS_OS_NAME" = "linux" ]]; then mkdir ~/doxygen && cd ~/doxygen; fi
+  - if [[ "$DOXY" = "on" && "$TRAVIS_OS_NAME" = "linux" ]]; then wget http://ftp.stack.nl/pub/users/dimitri/doxygen-1.8.10.linux.bin.tar.gz; fi
+  - if [[ "$DOXY" = "on" && "$TRAVIS_OS_NAME" = "linux" ]]; then tar xzf doxygen-1.8.10.linux.bin.tar.gz; fi
+  - if [[ "$DOXY" = "on" && "$TRAVIS_OS_NAME" = "osx" ]]; then brew install doxygen; fi
+
+  ## Install SWIG to build Java/python wrapping.
+  - export WRAP=on
+  - if [[ "$WRAP" = "on" ]]; then mkdir ~/swig-source && cd ~/swig-source; fi
+  - if [[ "$WRAP" = "on" ]]; then wget https://github.com/swig/swig/archive/rel-$SWIG_VER.tar.gz; fi
+  #- wget http://prdownloads.sourceforge.net/swig/$SWIG.tar.gz
+  - if [[ "$WRAP" = "on" ]]; then tar xzf rel-$SWIG_VER.tar.gz && cd swig-rel-$SWIG_VER; fi
+  - if [[ "$WRAP" = "on" ]]; then sh autogen.sh && ./configure --prefix=$HOME/swig --disable-ccache && make && make -j8 install; fi
+  
+  # Run superbuild to download, configure, build and install dependencies.
+  - mkdir ~/opensim-moco_dependencies_build
+  - cd ~/opensim-moco_dependencies_build 
+  - DEP_CMAKE_ARGS=($TRAVIS_BUILD_DIR/dependencies -DCMAKE_BUILD_TYPE=$BTYPE -DOPENSIM_JAVA_WRAPPING=on -DOPENSIM_PYTHON_WRAPPING=on)
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then DEP_CMAKE_ARGS+=(-DCMAKE_OSX_DEPLOYMENT_TARGET=$OSX_TARGET); fi
+
+  - printf '%s\n' "${DEP_CMAKE_ARGS[@]}"
+  - cmake "${DEP_CMAKE_ARGS[@]}"
+  - make -j8
+  
+
+install:
+
+  - mkdir ~/opensim-moco-build && cd ~/opensim-moco-build
+  ## Store CMake arguments in bash array.
+  # https://stackoverflow.com/questions/1951506/add-a-new-element-to-an-array-without-specifying-the-index-in-bash
+  - OSIM_CMAKE_ARGS=($TRAVIS_BUILD_DIR -DCMAKE_BUILD_TYPE=$BTYPE)
+
+  # The minimum macOS/OSX version we support.
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then OSIM_CMAKE_ARGS+=(-DCMAKE_OSX_DEPLOYMENT_TARGET=$OSX_TARGET); fi
+  
+  # Dependencies.
+  - OSIM_CMAKE_ARGS+=(-DMUSCOLLO_JAVA_BINDINGS=on -DMUSCOLLO_PYTHON_BINDINGS=on)
+  
+  # Bindings.
+  - OSIM_CMAKE_ARGS+=(-DBUILD_PYTHON_WRAPPING=$WRAP -DBUILD_JAVA_WRAPPING=$WRAP -DSWIG_EXECUTABLE=$HOME/swig/bin/swig)
+  # On Mac, use system python instead of Homebrew python.
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then OSIM_CMAKE_ARGS+=(-DPYTHON_EXECUTABLE=/usr/bin/python); fi
+  
+  # Doxygen.
+  - if [[ "$DOXY" = "on" && "$TRAVIS_OS_NAME" = "linux" ]]; then OSIM_CMAKE_ARGS+=(-DDOXYGEN_EXECUTABLE=$HOME/doxygen/doxygen-1.8.10/bin/doxygen); fi
+  
+  - printf '%s\n' "${OSIM_CMAKE_ARGS[@]}"
+  - cmake "${OSIM_CMAKE_ARGS[@]}"
+  
+  - make -j$NPROC;
+
 script:
-  - bash build_on_linux.sh
+  - ctest -j8 --output-on-failure $CTEST_FLAGS --exclude-regex $TESTS_TO_EXCLUDE
+
+  ## Build doxygen documentation.
+  - if [ "$DOXY" = "on" ]; then make doxygen; fi
+  
+  ## Install. Suppress output.
+  - make -j8 install > /dev/null
+
+# TODO   ## Set up ssh for sourceforge.
+# TODO   - if [[ "$DEPLOY" = "yes" ]]; then PREP_SOURCEFORGE_SSH=0; else PREP_SOURCEFORGE_SSH=1; fi
+# TODO   # Decrypt the private key stored in the repository to the tmp dir.
+# TODO   - if [ $PREP_SOURCEFORGE_SSH = "0" ]; then openssl aes-256-cbc -K $encrypted_b368d71b8a89_key -iv $encrypted_b368d71b8a89_iv -in $TRAVIS_BUILD_DIR/.github/.deploy_myosin_sourceforge_rsa.enc -out /tmp/deploy_myosin_sourceforge_rsa -d; fi
+# TODO   # Start the ssh agent.
+# TODO   - if [ $PREP_SOURCEFORGE_SSH = "0" ]; then eval "$(ssh-agent -s)"; fi
+# TODO   # Register this private key with this client (the travis machine).
+# TODO   - if [ $PREP_SOURCEFORGE_SSH = "0" ]; then chmod 600 /tmp/deploy_myosin_sourceforge_rsa; fi
+# TODO   - if [ $PREP_SOURCEFORGE_SSH = "0" ]; then ssh-add /tmp/deploy_myosin_sourceforge_rsa; fi
+# TODO 
+# TODO before_deploy:
+# TODO   # Zip up the installation using a file name that identifies where
+# TODO   # the binaries were built.
+# TODO   - mkdir ~/to_deploy
+# TODO   - ZIPNAME=opensim-moco-latest_${TRAVIS_OS_NAME}_${BTYPE}.zip
+# TODO   # Zip up opensim relative to where it's installed.
+# TODO   - cd $TRAVIS_BUILD_DIR/
+# TODO   # Leave symlinks intact.
+# TODO   - zip --symlinks --recurse-paths --quiet ~/to_deploy/$ZIPNAME muscollo-install
+# TODO 
+# TODO   # SSH for sourceforge is already set up, in the `script:` section.
+# TODO 
+# TODO deploy:
+# TODO   # Uploads to sourceforge.net/projects/myosin
+# TODO   # See https://docs.travis-ci.com/user/deployment/custom/
+# TODO   # '--archive' preserves symlinks.
+# TODO   provider: script
+# TODO   skip_cleanup: true
+# TODO   script: rsync --archive --compress --verbose ~/to_deploy/$ZIPNAME opensim-bot@frs.sourceforge.net:/home/frs/project/myosin/opensim-moco/
+# TODO   on:
+# TODO     branch: master
+# TODO     # Upload for both linux (once) and OSX. Might need to modify the condition
+# TODO     # if we change the build matrix.
+# TODO     condition: "$DEPLOY = yes"
+# TODO 
+# Below is a description of the process for securely uploading files to
+# Sourceforge, taken from https://oncletom.io/2016/travis-ssh-deploy/.
+#
+# The following link is a great page to learn about SSH.
+# https://www.digitalocean.com/community/tutorials/understanding-the-ssh-encryption-and-connection-process
+#
+# Contact chrisdembia if you need the login information for opensim-bot at
+# sourceforge, to manage myosin.sourceforge.net.
+#
+# You must install the travis command-line tool: `gem install travis`
+# Locally, from the root of the opensim-core repository:
+# Create a 4096-bit RSA key, providing a comment.
+# $ ssh-keygen -t rsa -b 4096 -C 'opensim-bot@sourceforge.net' -f .github/.deploy_myosin_sourceforge_rsa
+# When prompted for a passphrase, just hit enter (twice).
+# First make a backup copy of .travis.yml.
+# $ cp .travis-ci.yml travis-ci-backup.yml
+# Encrypt the private key, add decryption line to .travis.yml. 
+# $ travis encrypt-file .github/.deploy_myosin_sourceforge_rsa --add
+# Manually edit the .travis.yml file to clean up the added lines and restore
+# comments to the file; move the decryption line to the before_deploy step.
+# Remove the unencrypted private key. DO NOT commmit the unencrypted private
+# key.
+# $ rm -f .github/.deploy_myosin_sourceforge_rsa
+# Move the encrypted key to the .github folder.
+# $ mv .deploy_myosin_sourceforge_rsa.enc .github/
+# Manually, log into the sourceforge website (user opensim-bot) and add the
+# public key (contents of .github/.deploy_myosin_sourceforge_rsa.pub) in
+# Profile > SSH Settings.
+# Now you can delete the public key file from your local machine.
+# Commit the encrypted private key and the changes to .travis.yml.
+# $ git commit .travis.yml .github/.deploy_myosin_sourceforge_rsa.enc
