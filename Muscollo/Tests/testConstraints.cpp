@@ -524,6 +524,7 @@ void testDoublePendulumPointOnLine(bool enforce_constraint_derivatives) {
     ms.set_optim_hessian_approximation("exact");
     ms.set_transcription_scheme("hermite-simpson");
     ms.set_enforce_constraint_derivatives(enforce_constraint_derivatives);
+    ms.set_minimize_lagrange_multipliers(true);
     ms.set_lagrange_multiplier_weight(10);
     ms.setGuess("bounds");
 
@@ -605,6 +606,7 @@ void testDoublePendulumCoordinateCoupler(MucoSolution& solution,
     ms.set_optim_hessian_approximation("exact");
     ms.set_transcription_scheme("hermite-simpson");
     ms.set_enforce_constraint_derivatives(enforce_constraint_derivatives);
+    ms.set_minimize_lagrange_multipliers(true);
     ms.set_lagrange_multiplier_weight(10);
     ms.setGuess("bounds");
 
@@ -683,6 +685,7 @@ void testDoublePendulumPrescribedMotion(MucoSolution& couplerSolution,
     ms.set_optim_hessian_approximation("exact");
     ms.set_transcription_scheme("hermite-simpson");
     ms.set_enforce_constraint_derivatives(enforce_constraint_derivatives);
+    ms.set_minimize_lagrange_multipliers(true);
     ms.set_lagrange_multiplier_weight(10);
 
     // Set guess based on coupler solution trajectory.

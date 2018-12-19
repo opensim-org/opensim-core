@@ -43,8 +43,10 @@ void MucoTropterSolver::constructProperties() {
     constructProperty_transcription_scheme("trapezoidal");
     constructProperty_velocity_correction_bounds({-0.1, 0.1});
     constructProperty_exact_hessian_block_sparsity_mode("dense");
-    // These must be empty to allow user input error checking.
-    constructProperty_lagrange_multiplier_weight();
+    constructProperty_minimize_lagrange_multipliers(false);
+    constructProperty_lagrange_multiplier_weight(1);
+
+    // This is empty to allow user input error checking.
     constructProperty_enforce_constraint_derivatives();
 
     constructProperty_guess_file("");
@@ -253,11 +255,8 @@ MucoSolution MucoTropterSolver::solveImpl() const {
         "using SNOPT as the optimization solver, but SNOPT does not utilize "
         "Hessian information.");
 
-    // If a Lagrange multiplier weight was provided, check that it is positive.
-    if (!getProperty_lagrange_multiplier_weight().empty()) {
-        checkPropertyIsPositive(*this, 
-            getProperty_lagrange_multiplier_weight());
-    }
+    // Check that the Lagrange multiplier weight is positive
+     checkPropertyIsPositive(*this, getProperty_lagrange_multiplier_weight());
 
     // Create direct collocation solver.
     // ---------------------------------
@@ -333,7 +332,7 @@ MucoSolution MucoTropterSolver::solveImpl() const {
     // check the rank of the constraint Jacobian and if rank-deficient, print
     // recommendation to the user to enable Lagrange multiplier minimization.
     if (!getProperty_enforce_constraint_derivatives().empty() && 
-             getProperty_lagrange_multiplier_weight().empty()) {
+             !get_minimize_lagrange_multipliers()) {
         const auto& model = getProblemRep().getModel();
         const auto& matter = model.getMatterSubsystem();
         Storage storage = mucoSolution.exportToStatesStorage();
@@ -370,8 +369,9 @@ MucoSolution MucoTropterSolver::solveImpl() const {
                       << std::to_string(G.nrow()) + " row(s) but is only rank "
                       << std::to_string(rank) + ".\nTry removing "
                       << "redundant constraints from the model or enable \n" 
-                      << "minimization of Lagrange multipliers by specifying "
-                      << "a value \nto the solver property "
+                      << "minimization of Lagrange multipliers by utilizing "
+                      << "the solver \nproperties "
+                      << "'minimize_lagrange_multipliers' and \n"
                       << "'lagrange_multiplier_weight'.\n";
             std::cout << "---------------------------------------------------"
                       << "--\n\n";

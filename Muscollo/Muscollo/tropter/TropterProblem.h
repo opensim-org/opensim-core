@@ -103,12 +103,12 @@ protected:
                 .getProperty_enforce_constraint_derivatives().empty(),
                 Exception, "Solver property 'enforce_constraint_derivatives' "
                 "was set but no enabled kinematic constraints exist in the "
-                "model.")
+                "model.");
             OPENSIM_THROW_IF(
-                !m_mucoTropterSolver
-                .getProperty_lagrange_multiplier_weight().empty(),
-                Exception, "Solver property 'lagrange_multiplier_weight' was "
-                "set but no enabled kinematic constraints exist in the model.")
+                get_minimize_lagrange_multipliers,
+                Exception, "Solver property 'minimize_lagrange_multipliers' "
+                "was enabled but no enabled kinematic constraints exist in the "
+                "model.");
         } else {
             OPENSIM_THROW_IF(
                 m_mucoTropterSolver
@@ -137,6 +137,20 @@ protected:
             bounds = kc.getConstraintInfo().getBounds();
             labels = kc.getConstraintInfo().getConstraintLabels();
             kinLevels = kc.getKinematicLevels();
+
+            OPENSIM_THROW_IF(enforceConstraintDerivs && mv != 0, Exception, 
+                "Enforcing constraint derivatives is supported only for "
+                "holonomic (position-level) constraints. "
+                "There are " + std::to_string(mv) + " velocity-level "
+                "scalar constraints associated with the model Constraint "
+                "at ConstraintIndex " + std::to_string(cid) + ".");
+            OPENSIM_THROW_IF(enforceConstraintDerivs && ma != 0, Exception, 
+                "Enforcing constraint derivatives is supported only for "
+                "holonomic (position-level) constraints. "
+                "There are " + std::to_string(ma) + " acceleration-level "
+                "scalar constraints associated with the model Constraint "
+                "at ConstraintIndex " + std::to_string(cid) + ".");
+
             m_total_mp += mp;
             m_total_mv += mv;
             m_total_ma += ma;
@@ -258,10 +272,8 @@ protected:
 
         integrand = m_mucoProbRep.calcIntegralCost(m_state);
 
-        if (!m_mucoTropterSolver.getProperty_lagrange_multiplier_weight()
-              .empty()) {
-            // If the user provided a weight, add squared multiplers cost to 
-            // integrand.
+        if (m_mucoTropterSolver.get_minimize_lagrange_multipliers()) {
+            // Add squared multiplers cost to the integrand.
             for (int i = 0; i < (m_total_mp + m_total_mv + m_total_ma); ++i) {						
                 integrand += 
                     m_mucoTropterSolver.get_lagrange_multiplier_weight() 

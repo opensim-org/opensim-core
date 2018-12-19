@@ -253,6 +253,7 @@ void minimizeControlEffortRightLegWeldedPelvis(const std::string& actuatorType)
     //ms.set_optim_hessian_approximation("exact");
     ms.set_transcription_scheme("hermite-simpson");
     ms.set_enforce_constraint_derivatives(true);
+    ms.set_minimize_lagrange_multipliers(true);
     ms.set_lagrange_multiplier_weight(10);
     ms.set_velocity_correction_bounds({-0.25, 0.25});
     ms.setGuess("bounds");
@@ -331,6 +332,7 @@ void stateTrackingRightLegWeldedPelvis(const std::string& actuatorType) {
     ms.set_optim_hessian_approximation("exact");
     ms.set_transcription_scheme("hermite-simpson");
     ms.set_enforce_constraint_derivatives(true);
+    ms.set_minimize_lagrange_multipliers(true);
     ms.set_lagrange_multiplier_weight(1);
 
     MucoIterate guess = ms.createGuess();
@@ -419,6 +421,7 @@ void stateTrackingRightLeg(const std::string& actuatorType) {
     ms.set_optim_hessian_approximation("exact");
     ms.set_transcription_scheme("hermite-simpson");
     ms.set_enforce_constraint_derivatives(true);
+    ms.set_minimize_lagrange_multipliers(true);
     ms.set_lagrange_multiplier_weight(10);
 
     MucoIterate guess = ms.createGuess();
@@ -463,6 +466,7 @@ void markerTrackingRightLeg(const std::string& actuatorType) {
     ms.set_optim_hessian_approximation("exact");
     ms.set_transcription_scheme("hermite-simpson");
     ms.set_enforce_constraint_derivatives(true);
+    ms.set_minimize_lagrange_multipliers(true);
     ms.set_lagrange_multiplier_weight(10);
 
     MucoIterate guess = ms.createGuess();
