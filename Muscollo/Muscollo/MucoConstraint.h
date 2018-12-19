@@ -116,7 +116,7 @@ private:
         checkPropertySize(getProperty_suffixes());
     }
     friend class MucoPathConstraint;
-    friend class MucoMultibodyConstraint;
+    friend class MucoKinematicConstraint;
     
     void updateNumEquationsFromProperty(const AbstractProperty& prop) {
         if (!m_num_equations) {
@@ -136,12 +136,12 @@ private:
 };
 
 // ============================================================================
-// MucoMultibodyConstraint
+// MucoKinematicConstraint
 // ============================================================================
 
-/// The kinematic level for a scalar multibody constraint within a 
-/// MucoMultibodyConstraint. Each scalar constraint is automatically assigned
-/// a KinematicLevel enum value when a MucoMultibodyConstraint is 
+/// The kinematic level for a scalar kinematic constraint within a 
+/// MucoKinematicConstraint. Each scalar constraint is automatically assigned
+/// a KinematicLevel enum value when a MucoKinematicConstraint is 
 /// instantiated.
 enum class KinematicLevel {
     Position,
@@ -152,12 +152,12 @@ enum class KinematicLevel {
     Acceleration
 };
 
-/// A model multibody constraint to be enforced in the optimal control problem. 
+/// A model kinematic constraint to be enforced in the optimal control problem. 
 /// Objects of this class can only be instantiated by a MucoPhase, since 
 /// information from each constraint in the model is required to ensure that 
 /// the correct values are assigned to internal variables during construction. 
 /// @ingroup mucoconstraint
-class OSIMMUSCOLLO_API MucoMultibodyConstraint {
+class OSIMMUSCOLLO_API MucoKinematicConstraint {
 public:
     const MucoConstraintInfo& getConstraintInfo() const 
     {   return m_constraint_info; }
@@ -171,7 +171,7 @@ public:
     }
 
     /// Get the SimTK::ConstraintIndex associated with this 
-    /// MucoMultibodyConstraint. Note that a SimTK::ConstraintIndex is different 
+    /// MucoKinematicConstraint. Note that a SimTK::ConstraintIndex is different 
     /// from what is returned from MucoPathConstraint::getPathConstraintIndex(): 
     /// the former is an index to a model constraint, whereas the latter is an 
     /// index to the path constraint errors vector in a MucoProblem.
@@ -205,8 +205,8 @@ public:
     /// problem. 
     /// @precondition The errors vector passed must be consistent with the 
     /// number of scalar constraint equations associated with this 
-    /// MucoMultibodyConstraint.
-    void calcMultibodyConstraintErrors(const Model& model, 
+    /// MucoKinematicConstraint.
+    void calcKinematicConstraintErrors(const Model& model, 
         const SimTK::State& state, SimTK::Vector& errors) const;
 
 private:
@@ -223,7 +223,7 @@ private:
     /// which is a friend of this class. This implementation ensures that the
     /// correct information is passed to set the default property values, which 
     /// should be sufficient for most users. 
-    MucoMultibodyConstraint(SimTK::ConstraintIndex cid, int mp, int mv, int ma);
+    MucoKinematicConstraint(SimTK::ConstraintIndex cid, int mp, int mv, int ma);
     friend class MucoProblemRep;
 };
 

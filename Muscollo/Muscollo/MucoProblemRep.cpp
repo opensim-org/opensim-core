@@ -34,7 +34,7 @@ void MucoProblemRep::initialize() {
     m_parameters.clear();
     m_costs.clear();
     m_path_constraints.clear();
-    m_multibody_constraints.clear();
+    m_kinematic_constraints.clear();
     m_multiplier_infos_map.clear();
 
     const auto& ph0 = m_problem->getPhase(0);
@@ -124,7 +124,7 @@ void MucoProblemRep::initialize() {
     }
 
     // Get property values for constraints and Lagrange multipliers.
-    const auto& mcBounds = ph0.get_multibody_constraint_bounds();
+    const auto& kcBounds = ph0.get_kinematic_constraint_bounds();
     const MucoBounds& multBounds = ph0.get_multiplier_bounds();
     MucoInitialBounds multInitBounds(multBounds.getLower(),
             multBounds.getUpper());
@@ -135,32 +135,32 @@ void MucoProblemRep::initialize() {
     const auto NC = matter.getNumConstraints();
     const auto& state = m_model.getWorkingState();
     int mp, mv, ma;
-    m_num_multibody_constraint_equations = 0;
+    m_num_kinematic_constraint_equations = 0;
     for (SimTK::ConstraintIndex cid(0); cid < NC; ++cid) {
         const SimTK::Constraint& constraint = matter.getConstraint(cid);
         if (!constraint.isDisabled(state)) {
             constraint.getNumConstraintEquationsInUse(state, mp, mv, ma);
-            MucoMultibodyConstraint mc(cid, mp, mv, ma);
+            MucoKinematicConstraint kc(cid, mp, mv, ma);
 
-            // Set the bounds for this multibody constraint based on the
+            // Set the bounds for this kinematic constraint based on the
             // property.
-            MucoConstraintInfo mcInfo = mc.getConstraintInfo();
-            std::vector<MucoBounds> mcBoundVec(
-                    mc.getConstraintInfo().getNumEquations(), mcBounds);
-            mcInfo.setBounds(mcBoundVec);
-            mc.setConstraintInfo(mcInfo);
+            MucoConstraintInfo kcInfo = kc.getConstraintInfo();
+            std::vector<MucoBounds> kcBoundVec(
+                    kc.getConstraintInfo().getNumEquations(), kcBounds);
+            kcInfo.setBounds(kcBoundVec);
+            kc.setConstraintInfo(kcInfo);
 
-            // Update number of scalar multibody constraint equations.
-            m_num_multibody_constraint_equations +=
-                    mc.getConstraintInfo().getNumEquations();
+            // Update number of scalar kinematic constraint equations.
+            m_num_kinematic_constraint_equations +=
+                    kc.getConstraintInfo().getNumEquations();
 
-            // Append this multibody constraint to the internal vector variable.
+            // Append this kinematic constraint to the internal vector variable.
             // TODO: Avoid copies when the vector needs to be resized.
-            m_multibody_constraints.push_back(mc);
+            m_kinematic_constraints.push_back(kc);
 
             // Add variable infos for all Lagrange multipliers in the problem.
             // Multipliers are only added based on the number of holonomic,
-            // nonholonomic, or acceleration multibody constraints and are *not*
+            // nonholonomic, or acceleration kinematic constraints and are *not*
             // based on the number for derivatives of holonomic or nonholonomic
             // constraint equations.
             // TODO how to name multiplier variables?
@@ -183,7 +183,7 @@ void MucoProblemRep::initialize() {
                                 multBounds, multInitBounds, multFinalBounds);
                 multInfos.push_back(info);
             }
-            m_multiplier_infos_map.insert({mcInfo.getName(), multInfos});
+            m_multiplier_infos_map.insert({kcInfo.getName(), multInfos});
         }
     }
 
@@ -234,21 +234,21 @@ std::vector<std::string> MucoProblemRep::createControlInfoNames() const {
 }
 std::vector<std::string> MucoProblemRep::createMultiplierInfoNames() const {
     std::vector<std::string> names;
-    for (const auto& mc : m_multibody_constraints) {
+    for (const auto& kc : m_kinematic_constraints) {
         const auto& infos = m_multiplier_infos_map.at(
-                mc.getConstraintInfo().getName());
+                kc.getConstraintInfo().getName());
         for (const auto& info : infos) {
             names.push_back(info.getName());
         }
     }
     return names;
 }
-std::vector<std::string> MucoProblemRep::createMultibodyConstraintNames()
+std::vector<std::string> MucoProblemRep::createKinematicConstraintNames()
 const {
-    std::vector<std::string> names(m_multibody_constraints.size());
-    // Multibody constraint names are stored in the internal constraint info.
-    for (int i = 0; i < (int)m_multibody_constraints.size(); ++i) {
-        names[i] = m_multibody_constraints[i].getConstraintInfo().getName();
+    std::vector<std::string> names(m_kinematic_constraints.size());
+    // Kinematic constraint names are stored in the internal constraint info.
+    for (int i = 0; i < (int)m_kinematic_constraints.size(); ++i) {
+        names[i] = m_kinematic_constraints[i].getConstraintInfo().getName();
     }
     return names;
 }
@@ -300,26 +300,26 @@ const MucoPathConstraint& MucoProblemRep::getPathConstraint(
     OPENSIM_THROW(Exception,
             "No path constraint with name '" + name + "' found.");
 }
-const MucoMultibodyConstraint& MucoProblemRep::getMultibodyConstraint(
+const MucoKinematicConstraint& MucoProblemRep::getKinematicConstraint(
         const std::string& name) const {
 
-    // Multibody constraint names are stored in the internal constraint info.
-    for (const auto& mc : m_multibody_constraints) {
-        if (mc.getConstraintInfo().getName() == name) { return mc; }
+    // Kinematic constraint names are stored in the internal constraint info.
+    for (const auto& kc : m_kinematic_constraints) {
+        if (kc.getConstraintInfo().getName() == name) { return kc; }
     }
     OPENSIM_THROW(Exception,
-            "No multibody constraint with name '" + name + "' found.");
+            "No kinematic constraint with name '" + name + "' found.");
 }
 const std::vector<MucoVariableInfo>& MucoProblemRep::getMultiplierInfos(
-        const std::string& multibodyConstraintInfoName) const {
+        const std::string& kinematicConstraintInfoName) const {
 
-    auto search = m_multiplier_infos_map.find(multibodyConstraintInfoName);
+    auto search = m_multiplier_infos_map.find(kinematicConstraintInfoName);
     if (search != m_multiplier_infos_map.end()) {
-        return m_multiplier_infos_map.at(multibodyConstraintInfoName);
+        return m_multiplier_infos_map.at(kinematicConstraintInfoName);
     } else {
         OPENSIM_THROW(Exception,
-                "No variable infos for multibody constraint info with name '"
-                        + multibodyConstraintInfoName + "' found.");
+                "No variable infos for kinematic constraint info with name '"
+                        + kinematicConstraintInfoName + "' found.");
     }
 }
 
@@ -349,14 +349,14 @@ void MucoProblemRep::printDescription(std::ostream& stream) const {
     }
 
     stream << "Multibody constraints: ";
-    if (m_multibody_constraints.empty())
+    if (m_kinematic_constraints.empty())
         stream << " none";
     else
-        stream << " (total: " << m_multibody_constraints.size() << ")";
+        stream << " (total: " << m_kinematic_constraints.size() << ")";
     stream << "\n";
-    for (int i = 0; i < (int)m_multibody_constraints.size(); ++i) {
+    for (int i = 0; i < (int)m_kinematic_constraints.size(); ++i) {
         stream << "  ";
-        m_multibody_constraints[i].getConstraintInfo().printDescription(stream);
+        m_kinematic_constraints[i].getConstraintInfo().printDescription(stream);
     }
 
     stream << "Path constraints:";

@@ -99,6 +99,7 @@ Model createRightLegWeldedPelvisModel(const std::string& actuatorType) {
     } else if (actuatorType == "path_actuators") {
         replaceMusclesWithPathActuators(model);
     } else if (actuatorType == "muscles") {
+        // Reserve actuators
         addCoordinateActuator(model, "hip_flexion_r", 20);
         addCoordinateActuator(model, "hip_adduction_r", 20);
         addCoordinateActuator(model, "hip_rotation_r", 20);
@@ -170,6 +171,7 @@ Model createRightLegModel(const std::string& actuatorType) {
         addCoordinateActuator(model, "ankle_angle_r", 50);
         removeMuscles(model);
     } else if (actuatorType == "muscles") {
+        // Reserve actuators
         addCoordinateActuator(model, "pelvis_tx", 2000);
         addCoordinateActuator(model, "pelvis_ty", 2000);
         addCoordinateActuator(model, "pelvis_tz", 2000);
@@ -249,7 +251,6 @@ void minimizeControlEffortRightLegWeldedPelvis(const std::string& actuatorType)
     ms.set_optim_solver("snopt");
     //ms.set_optim_convergence_tolerance(1e-3);
     //ms.set_optim_hessian_approximation("exact");
-    //ms.set_hessian_block_sparsity_mode("dense");
     ms.set_transcription_scheme("hermite-simpson");
     ms.set_enforce_constraint_derivatives(true);
     ms.set_lagrange_multiplier_weight(10);
@@ -328,19 +329,18 @@ void stateTrackingRightLegWeldedPelvis(const std::string& actuatorType) {
     ms.set_optim_solver("snopt");
     ms.set_optim_convergence_tolerance(1e-3);
     ms.set_optim_hessian_approximation("exact");
-    ms.set_hessian_block_sparsity_mode("dense");
     ms.set_transcription_scheme("hermite-simpson");
     ms.set_enforce_constraint_derivatives(true);
     ms.set_lagrange_multiplier_weight(1);
 
-    //MucoIterate guess = ms.createGuess();
-    //model.initSystem();
-    //model.getSimbodyEngine().convertDegreesToRadians(statesRef);
-    //STOFileAdapter::write(statesRef, "ik_results_radians.sto");
-    //guess.setStatesTrajectory(statesRef, true, true);
-    //ms.setGuess(guess);
-    ms.setGuessFile("sandboxRightLeg_weldedPelvis_" + actuatorType 
-         + "_state_tracking_solution.sto");
+    MucoIterate guess = ms.createGuess();
+    model.initSystem();
+    model.getSimbodyEngine().convertDegreesToRadians(statesRef);
+    STOFileAdapter::write(statesRef, "ik_results_radians.sto");
+    guess.setStatesTrajectory(statesRef, true, true);
+    ms.setGuess(guess);
+    //ms.setGuessFile("sandboxRightLeg_weldedPelvis_" + actuatorType 
+    //     + "_state_tracking_solution.sto");
 
     MucoSolution solution = muco.solve();
     muco.visualize(solution);
@@ -417,19 +417,18 @@ void stateTrackingRightLeg(const std::string& actuatorType) {
     ms.set_optim_solver("snopt");
     ms.set_optim_convergence_tolerance(1e-3);
     ms.set_optim_hessian_approximation("exact");
-    ms.set_hessian_block_sparsity_mode("dense");
     ms.set_transcription_scheme("hermite-simpson");
     ms.set_enforce_constraint_derivatives(true);
     ms.set_lagrange_multiplier_weight(10);
 
-    //MucoIterate guess = ms.createGuess();
-    //model.initSystem();
-    //model.getSimbodyEngine().convertDegreesToRadians(statesRef);
-    //STOFileAdapter::write(statesRef, "ik_results_radians.sto");
-    //guess.setStatesTrajectory(statesRef, true, true);
-    //ms.setGuess(guess);
-    ms.setGuessFile("sandboxRightLeg_" + actuatorType 
-         + "_state_tracking_solution.sto");
+    MucoIterate guess = ms.createGuess();
+    model.initSystem();
+    model.getSimbodyEngine().convertDegreesToRadians(statesRef);
+    STOFileAdapter::write(statesRef, "ik_results_radians.sto");
+    guess.setStatesTrajectory(statesRef, true, true);
+    ms.setGuess(guess);
+    //ms.setGuessFile("sandboxRightLeg_" + actuatorType 
+    //     + "_state_tracking_solution.sto");
 
     MucoSolution solution = muco.solve();
     muco.visualize(solution);
@@ -449,10 +448,9 @@ void markerTrackingRightLeg(const std::string& actuatorType) {
 
     auto* markerTracking = mp.addCost<MucoMarkerTrackingCost>();
     markerTracking->setName("marker_tracking");
-    InverseKinematicsTool iktool("ik_setup.xml");
-    IKTaskSet& tasks = iktool.getIKTaskSet();
+    IKTaskSet iktasks("ik_tasks.xml");
     Set<MarkerWeight> markerWeights;
-    tasks.createMarkerWeightSet(markerWeights);
+    iktasks.createMarkerWeightSet(markerWeights);
     markerTracking->setMarkersReference(MarkersReference(markersRef,
         &markerWeights));
     markerTracking->setAllowUnusedReferences(true);
@@ -463,7 +461,6 @@ void markerTrackingRightLeg(const std::string& actuatorType) {
     ms.set_optim_solver("ipopt");
     ms.set_optim_convergence_tolerance(1e-3);
     ms.set_optim_hessian_approximation("exact");
-    ms.set_hessian_block_sparsity_mode("dense");
     ms.set_transcription_scheme("hermite-simpson");
     ms.set_enforce_constraint_derivatives(true);
     ms.set_lagrange_multiplier_weight(10);

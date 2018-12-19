@@ -522,7 +522,6 @@ void testDoublePendulumPointOnLine(bool enforce_constraint_derivatives) {
     ms.set_optim_solver("ipopt");
     ms.set_optim_convergence_tolerance(1e-4);
     ms.set_optim_hessian_approximation("exact");
-    ms.set_hessian_block_sparsity_mode("dense");
     ms.set_transcription_scheme("hermite-simpson");
     ms.set_enforce_constraint_derivatives(enforce_constraint_derivatives);
     ms.set_lagrange_multiplier_weight(10);
@@ -604,7 +603,6 @@ void testDoublePendulumCoordinateCoupler(MucoSolution& solution,
     ms.set_optim_solver("ipopt");
     ms.set_optim_convergence_tolerance(1e-3);
     ms.set_optim_hessian_approximation("exact");
-    ms.set_hessian_block_sparsity_mode("dense");
     ms.set_transcription_scheme("hermite-simpson");
     ms.set_enforce_constraint_derivatives(enforce_constraint_derivatives);
     ms.set_lagrange_multiplier_weight(10);
@@ -683,7 +681,6 @@ void testDoublePendulumPrescribedMotion(MucoSolution& couplerSolution,
     ms.set_optim_solver("ipopt");
     ms.set_optim_convergence_tolerance(1e-3);
     ms.set_optim_hessian_approximation("exact");
-    ms.set_hessian_block_sparsity_mode("dense");
     ms.set_transcription_scheme("hermite-simpson");
     ms.set_enforce_constraint_derivatives(enforce_constraint_derivatives);
     ms.set_lagrange_multiplier_weight(10);

@@ -214,7 +214,7 @@ Iterate::interpolate(int desired_num_columns) const {
     out.adjuncts = interp1(time, adjuncts, out.time);
     // If diffuses have any NaNs, create interpolant from non-NaN columns only.
     // TODO this causes problems if a user creates an iterate full of NaNs and
-    // trys to interpolate: the diffuses will have nothing to interpolate over.
+    // tries to interpolate: the diffuses will have nothing to interpolate over.
     if (diffuses.hasNaN()) {
         int cols_no_nans = 0;
         std::vector<int> no_nan_indices;

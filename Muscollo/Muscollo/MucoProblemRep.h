@@ -69,9 +69,9 @@ public:
     std::vector<std::string> createPathConstraintNames() const;
     /// Get the names of all the Lagrange multiplier infos.
     std::vector<std::string> createMultiplierInfoNames() const;
-    /// Get the constraint names of all the multibody constraints. Note: this
+    /// Get the constraint names of all the kinematic constraints. Note: this
     /// should only be called after initialize().
-    std::vector<std::string> createMultibodyConstraintNames() const;
+    std::vector<std::string> createKinematicConstraintNames() const;
     /// @details Note: the return value is constructed fresh on every call from
     /// the internal property. Avoid repeated calls to this function.
     MucoInitialBounds getTimeInitialBounds() const;
@@ -87,36 +87,36 @@ public:
     const MucoVariableInfo& getControlInfo(const std::string& name) const;
     const MucoParameter& getParameter(const std::string& name) const;
     /// Get a MucoPathConstraint from this MucoPhase. Note: this does not
-    /// include MucoMultibodyConstraints, use getMultibodyConstraint() instead.
+    /// include MucoKinematicConstraints, use getKinematicConstraint() instead.
     const MucoPathConstraint& getPathConstraint(const std::string& name) const;
 
     /// Get the number of scalar path constraints in the MucoProblem. This does
-    /// not include multibody constraints equations.
+    /// not include kinematic constraints equations.
     int getNumPathConstraintEquations() const {
         OPENSIM_THROW_IF(m_num_path_constraint_equations == -1, Exception,
                 "The number of scalar path constraint equations is not "
                 "available until after initialization.");
         return m_num_path_constraint_equations;
     }
-    /// Given a multibody constraint name, get a vector of MucoVariableInfos
-    /// corresponding to the Lagrange multipliers for that multibody constraint.
+    /// Given a kinematic constraint name, get a vector of MucoVariableInfos
+    /// corresponding to the Lagrange multipliers for that kinematic constraint.
     /// Note: Since these are created directly from model constraint
     /// information, this should only be called after initialization. TODO
     const std::vector<MucoVariableInfo>&
-    getMultiplierInfos(const std::string& multibodyConstraintInfoName) const;
-    /// Get a MucoMultibodyConstraint from this MucoPhase. Note: this does not
+    getMultiplierInfos(const std::string& kinematicConstraintInfoName) const;
+    /// Get a MucoKinematicConstraint from this MucoPhase. Note: this does not
     /// include MucoPathConstraints, use getPathConstraint() instead. Since
     /// these are created directly from model information, this should only be
     /// called after initialization. TODO
-    const MucoMultibodyConstraint&
-    getMultibodyConstraint(const std::string& name) const;
-    /// Get the number of scalar multibody constraints in the MucoProblem. This
+    const MucoKinematicConstraint&
+    getKinematicConstraint(const std::string& name) const;
+    /// Get the number of scalar kinematic constraints in the MucoProblem. This
     /// does not include path constraints equations.
-    int getNumMultibodyConstraintEquations() const {
-        OPENSIM_THROW_IF(m_num_multibody_constraint_equations == -1, Exception,
-                "The number of scalar multibody constraint equations is not "
+    int getNumKinematicConstraintEquations() const {
+        OPENSIM_THROW_IF(m_num_kinematic_constraint_equations == -1, Exception,
+                "The number of scalar kinematic constraint equations is not "
                 "available until after initialization.");
-        return m_num_multibody_constraint_equations;
+        return m_num_kinematic_constraint_equations;
     }
 
     /// Print a description of this problem, including costs and variable
@@ -161,24 +161,24 @@ public:
             pc->calcPathConstraintErrors(state, errors);
         }
     }
-    /// Calculate the errors in all the scalar multibody constraint equations in
+    /// Calculate the errors in all the scalar kinematic constraint equations in
     /// this phase. This may not be the most efficient solution for solvers, but
     /// is rather intended as a convenience method for a quick implementation or
     /// for debugging model constraints causing issues in an optimal control
     /// problem.
-    SimTK::Vector calcMultibodyConstraintErrors(const SimTK::State& state) const
+    SimTK::Vector calcKinematicConstraintErrors(const SimTK::State& state) const
     {
-        SimTK::Vector errors(getNumMultibodyConstraintEquations(), 0.0);
+        SimTK::Vector errors(getNumKinematicConstraintEquations(), 0.0);
         int index = 0;
         int thisConstraintNumEquations;
-        for (int i = 0; i < (int)m_multibody_constraints.size(); ++i) {
+        for (int i = 0; i < (int)m_kinematic_constraints.size(); ++i) {
             thisConstraintNumEquations =
-                m_multibody_constraints[i].getConstraintInfo()
+                m_kinematic_constraints[i].getConstraintInfo()
                                           .getNumEquations();
 
             SimTK::Vector theseErrors(thisConstraintNumEquations,
                     errors.getContiguousScalarData() + index, true);
-            m_multibody_constraints[i].calcMultibodyConstraintErrors(
+            m_kinematic_constraints[i].calcKinematicConstraintErrors(
                     getModel(), state, theseErrors);
 
             index += thisConstraintNumEquations;
@@ -213,8 +213,8 @@ private:
     std::vector<std::unique_ptr<MucoCost>> m_costs;
     std::vector<std::unique_ptr<MucoPathConstraint>> m_path_constraints;
     int m_num_path_constraint_equations = -1;
-    int m_num_multibody_constraint_equations = -1;
-    std::vector<MucoMultibodyConstraint> m_multibody_constraints;
+    int m_num_kinematic_constraint_equations = -1;
+    std::vector<MucoKinematicConstraint> m_kinematic_constraints;
     std::map<std::string, std::vector<MucoVariableInfo>> m_multiplier_infos_map;
 };
 

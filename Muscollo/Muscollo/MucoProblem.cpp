@@ -39,7 +39,7 @@ void MucoPhase::constructProperties() {
     constructProperty_parameters();
     constructProperty_costs();
     constructProperty_path_constraints();
-    constructProperty_multibody_constraint_bounds(MucoBounds(0));
+    constructProperty_kinematic_constraint_bounds(MucoBounds(0));
     constructProperty_multiplier_bounds(MucoBounds(-1000.0, 1000.0));
 }
 Model* MucoPhase::setModel(std::unique_ptr<Model> model) {
@@ -172,8 +172,8 @@ void MucoProblem::setControlInfo(const std::string& name,
         const MucoInitialBounds& initial, const MucoFinalBounds& final) {
     upd_phases(0).setControlInfo(name, bounds, initial, final);
 }
-void MucoProblem::setMultibodyConstraintBounds(const MucoBounds& bounds) {
-    upd_phases(0).setMultibodyConstraintBounds(bounds);
+void MucoProblem::setKinematicConstraintBounds(const MucoBounds& bounds) {
+    upd_phases(0).setKinematicConstraintBounds(bounds);
 }
 void MucoProblem::setMultiplierBounds(const MucoBounds& bounds) {
     upd_phases(0).setMultiplierBounds(bounds);

@@ -15,7 +15,7 @@
 // ----------------------------------------------------------------------------
 #include "SNOPTSolver.h"
 #include "Problem.h"
-#include "tropter/SparsityPattern.h"
+#include <tropter/SparsityPattern.h>
 
 using namespace tropter::optimization;
 using Eigen::VectorXd;
@@ -122,7 +122,7 @@ SNOPTSolver::optimize_impl(const VectorXd& variablesArg) const {
     int num_variables = m_problem->get_num_variables();
 
     // Initial "states" for variables x. This lets you specify if you think the
-    // the optimal value for a variable will probably be one of it's bounds.
+    // the optimal value for a variable will probably be one of its bounds.
     // By default, set all states to 0, which does not make this assumption, or
     // in SNOPT's terminology, "all variables will be eligible for the initial
     // basis."
@@ -136,7 +136,7 @@ SNOPTSolver::optimize_impl(const VectorXd& variablesArg) const {
     int length_F = 1 + m_problem->get_num_constraints();
     VectorXd F(length_F);
     // Initial "states" for problem function F. This lets you specify if you
-    // think the optimal value for a row will probably be one of it's bounds.
+    // think the optimal value for a row will probably be one of its bounds.
     // By default, set all states to 0, which does not make this assumption, or
     // in SNOPT's terminology, "all rows of F will be eligible for the initial
     // basis."
@@ -226,17 +226,14 @@ SNOPTSolver::optimize_impl(const VectorXd& variablesArg) const {
     snopt_prob.setIntParameter("Verify level", 3);
 
     // Advanced settings.
-    // TODO try QPSolver Cholesky setting
+    // TODO try QPSolver Cholesky setting, which stores the reduced Hessian
+    // a Cholesky factorization approach. Could speed things up for moderately
+    // sized problems (# variables < 1000).
     for (const auto& option : get_advanced_options_string()) {
         if (option.second) {
-            size_t optLen = strlen(option.first.c_str()) + 
-                            strlen(option.second.value().c_str()) + 1;
-            assert(optLen < 256);
-            char str[256];
-            char space = ' ';
-            snprintf(str, sizeof(str), "%s%s%s", option.first.c_str(), &space,
+            std::string param = format("%s %s", option.first.c_str(), 
                 option.second.value().c_str());
-            snopt_prob.setParameter(str);
+            snopt_prob.setParameter(param.c_str());
         }
     }
     for (const auto& option : get_advanced_options_int()) {

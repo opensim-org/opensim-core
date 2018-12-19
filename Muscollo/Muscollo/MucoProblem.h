@@ -111,12 +111,12 @@ public:
     /// associated ScalarActuator (e.g., "/forceset/soleus_r").
     void setControlInfo(const std::string& name, const MucoBounds&,
             const MucoInitialBounds& = {}, const MucoFinalBounds& = {});
-    /// Set the bounds on *all* of the multibody constraint equations in this
+    /// Set the bounds on *all* of the kinematic constraint equations in this
     /// phase. When creating a MucoProblemRep, these bounds are used to create
-    /// MucoConstraintInfo's for each multibody constraint equation in the 
+    /// MucoConstraintInfo's for each kinematic constraint equation in the 
     /// phase.
-    void setMultibodyConstraintBounds(const MucoBounds& bounds)
-    {   set_multibody_constraint_bounds(bounds); }
+    void setKinematicConstraintBounds(const MucoBounds& bounds)
+    {   set_kinematic_constraint_bounds(bounds); }
     /// Set the bounds on *all* of the Lagrange multipliers in this phase. 
     /// When creating a MucoProblemRep, these bounds are used to create
     /// MucoVariableInfo%s for each Lagrange multiplier in the phase.
@@ -252,7 +252,7 @@ public:
     MucoCost& updCost(const std::string& name);
 
     /// Get a MucoPathConstraint from this MucoPhase. Note: this does not 
-    /// include MucoMultibodyConstraints, use getMultibodyConstraint() instead.
+    /// include MucoKinematicConstraints, use getKinematicConstraint() instead.
     const MucoPathConstraint& getPathConstraint(const std::string& name) const;
     MucoPathConstraint& updPathConstraint(const std::string& name);
 
@@ -281,8 +281,8 @@ protected: // Protected so that doxygen shows the properties.
             "Path constraints to enforce in the optimal control problem.");
     // TODO make this a list property of MucoConstraintInfos when we are able to
     // map OpenSim constraint names to Simbody constraints.
-    OpenSim_DECLARE_PROPERTY(multibody_constraint_bounds, MucoBounds,
-        "The bounds on all the multibody constraints in the model to be "
+    OpenSim_DECLARE_PROPERTY(kinematic_constraint_bounds, MucoBounds,
+        "The bounds on all the kinematic constraints in the model to be "
         "enforced. By default the constraints are strictly enforced (zero "
         "bounds).");
     OpenSim_DECLARE_PROPERTY(multiplier_bounds, MucoBounds,
@@ -339,8 +339,8 @@ public:
     /// Set bounds for a control variable for phase 0.
     void setControlInfo(const std::string& name, const MucoBounds&,
             const MucoInitialBounds& = {}, const MucoFinalBounds& = {});
-    /// Set bounds for the multibody constraints in phase 0.
-    void setMultibodyConstraintBounds(const MucoBounds& bounds);
+    /// Set bounds for the kinematic constraints in phase 0.
+    void setKinematicConstraintBounds(const MucoBounds& bounds);
     /// Set bounds for the Lagrange multipliers in phase 0.
     void setMultiplierBounds(const MucoBounds& bounds);
     /// Add a parameter variable for phase 0.
