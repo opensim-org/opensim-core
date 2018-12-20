@@ -1,1 +1,0 @@
-MuscolloAddExampleCXX(NAME exampleSlidingMassAdvanced)

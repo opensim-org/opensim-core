@@ -1,10 +1,10 @@
 # This CMake file implements the super-build procedure to download, configure,
-# compile and installl dependencies for Muscollo. Using super-build is optional.
-# Muscollo does not use this file directly.
+# compile and installl dependencies for Moco. Using super-build is optional.
+# Moco does not use this file directly.
 # Copied from opensim-core/dependencies/CMakeLists.txt (originally written by
 # klshrinidhi).
 
-project(MuscolloDependencies)
+project(MocoDependencies)
 # We require a version of CMake that supports Visual Studio 2015.
 cmake_minimum_required(VERSION 3.2)
 
@@ -26,22 +26,22 @@ include(CMakeParseArguments)
 # Set the default for CMAKE_INSTALL_PREFIX.
 function(SetDefaultCMakeInstallPrefix)
     get_filename_component(BASE_DIR ${CMAKE_SOURCE_DIR} DIRECTORY)
-    # Move one directory up to (adjacent to the muscollo folder).
+    # Move one directory up to (adjacent to the moco folder).
     get_filename_component(BASE_DIR ${BASE_DIR} DIRECTORY)
-    # Default install prefix for Muscollo dependencies. If user changes
+    # Default install prefix for Moco dependencies. If user changes
     # CMAKE_INSTALL_PREFIX, this directory will be removed.
     set(DEFAULT_CMAKE_INSTALL_PREFIX 
-        ${BASE_DIR}/muscollo_dependencies_install
+        ${BASE_DIR}/moco_dependencies_install
         CACHE
         INTERNAL
-	"Default CMAKE_INSTALL_PREFIX for Muscollo dependencies.")
+	"Default CMAKE_INSTALL_PREFIX for Moco dependencies.")
 
     if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
         set(CMAKE_INSTALL_PREFIX 
             ${DEFAULT_CMAKE_INSTALL_PREFIX}
             CACHE
             PATH
-	    "Directory to install binaries of Muscollo dependencies."
+	    "Directory to install binaries of Moco dependencies."
             FORCE)
     endif()
 endfunction()

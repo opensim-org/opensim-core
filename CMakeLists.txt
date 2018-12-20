@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.2)
-project(Muscollo VERSION 0.1)
+project(Moco VERSION 0.1)
 
-# Muscollo settings.
+# Moco settings.
 # ------------------
-# Copy dependencies' libraries into Muscollo's installation?
+# Copy dependencies' libraries into Moco's installation?
 set(MUSCOLLO_COPY_DEPENDENCIES ON)
 
 option(MUSCOLLO_JAVA_BINDINGS "Build Java/MATLAB interface." OFF)
@@ -15,9 +15,9 @@ set(MUSCOLLO_PYTHON_VERSION 2 CACHE STRING
 set_property(CACHE MUSCOLLO_PYTHON_VERSION PROPERTY STRINGS "2" "3")
 
 option(MUSCOLLO_BUILD_EXECUTABLE
-    "Build the opensim-muscollo executable." ON)
+    "Build the opensim-moco executable." ON)
 option(MUSCOLLO_BUILD_EXAMPLES
-    "Build, test, and install Muscollo C++ examples." ON)
+    "Build, test, and install Moco C++ examples." ON)
 
 
 # CMake settings.
@@ -53,7 +53,7 @@ endif()
 
 # Default paths for finding dependencies.
 set(MUSCOLLO_DEPENDENCIES_DIR
-        "${CMAKE_SOURCE_DIR}/../muscollo_dependencies_install")
+        "${CMAKE_SOURCE_DIR}/../moco_dependencies_install")
 get_filename_component(MUSCOLLO_DEPENDENCIES_DIR "${MUSCOLLO_DEPENDENCIES_DIR}"
         ABSOLUTE)
 if(NOT CMAKE_PREFIX_PATH
@@ -88,7 +88,7 @@ if(WIN32)
     set(CMAKE_INSTALL_SYSCONFDIR sdk)
     set(MUSCOLLO_INSTALL_SHAREDLIBDIR "${CMAKE_INSTALL_BINDIR}")
 else()
-    set(MUSCOLLO_INSTALL_CMAKEDIR ${CMAKE_INSTALL_LIBDIR}/cmake/Muscollo)
+    set(MUSCOLLO_INSTALL_CMAKEDIR ${CMAKE_INSTALL_LIBDIR}/cmake/Moco)
     set(MUSCOLLO_INSTALL_PYTHONDIR "lib/pythonVERSION/site-packages")
     set(MUSCOLLO_INSTALL_SCRIPTSDIR "${CMAKE_INSTALL_DOCDIR}/Scripts")
     set(MUSCOLLO_INSTALL_SHAREDLIBDIR "${CMAKE_INSTALL_LIBDIR}")
@@ -101,7 +101,7 @@ set(MUSCOLLO_INSTALL_PYTHONEXDIR "${MUSCOLLO_INSTALL_SCRIPTSDIR}/Python")
 include(FeatureSummary)
 
 # Include CMake macros that we wrote to reduce duplication in this project.
-include(cmake/MuscolloMacros.cmake)
+include(cmake/MocoMacros.cmake)
 
 # Compiler flags.
 # ---------------
@@ -134,7 +134,7 @@ include(CTest)
 
 add_subdirectory(tropter)
 
-add_subdirectory(Muscollo)
+add_subdirectory(Moco)
 
 add_subdirectory(cmake)
 

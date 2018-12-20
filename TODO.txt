@@ -23,7 +23,7 @@ TBD:
 
 Use this as a model for how to handle contributions in the future.
 
-Muscollo could be an add-on, and if other pple pass some scrutiny, they can also
+Moco could be an add-on, and if other pple pass some scrutiny, they can also
 be pulled into the distribution as an add-on.
 
  opensim-core: more work int he review, but don't have to handle coordinating
