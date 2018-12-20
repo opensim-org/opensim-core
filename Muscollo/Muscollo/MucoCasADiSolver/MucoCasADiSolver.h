@@ -101,7 +101,7 @@ protected:
     void resetProblemImpl(const MucoProblemRep&) const override {}
     MucoSolution solveImpl() const override;
 
-    std::unique_ptr<CasADiTranscription> createTranscription() const;
+    std::unique_ptr<CasADiTranscription> createCasADiProblem() const;
 
 private:
 
