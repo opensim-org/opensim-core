@@ -42,7 +42,7 @@ void MocoTropterSolver::constructProperties() {
     constructProperty_optim_ipopt_print_level(-1);
     constructProperty_transcription_scheme("trapezoidal");
     constructProperty_velocity_correction_bounds({-0.1, 0.1});
-    constructProperty_exact_hessian_block_sparsity_mode("dense");
+    constructProperty_exact_hessian_block_sparsity_mode();
     constructProperty_minimize_lagrange_multipliers(false);
     constructProperty_lagrange_multiplier_weight(1);
 
@@ -265,7 +265,9 @@ MocoSolution MocoTropterSolver::solveImpl() const {
         get_optim_solver(), 
         get_num_mesh_points());
     dircol.set_verbosity(get_verbosity() >= 1);
-    if (!getProperty_exact_hessian_block_sparsity_mode().empty()) {
+    if (getProperty_exact_hessian_block_sparsity_mode().empty()) {
+        dircol.set_exact_hessian_block_sparsity_mode("dense");
+    } else {
         dircol.set_exact_hessian_block_sparsity_mode(
             get_exact_hessian_block_sparsity_mode());
     }

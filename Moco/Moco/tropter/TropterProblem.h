@@ -110,6 +110,7 @@ protected:
                 Exception, "Solver property 'minimize_lagrange_multipliers' "
                 "was enabled but no enabled kinematic constraints exist in the "
                 "model.");
+            return;
         } else {
             OPENSIM_THROW_IF(
                 m_mocoTropterSolver
