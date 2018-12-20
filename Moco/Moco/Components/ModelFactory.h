@@ -1,5 +1,5 @@
-#ifndef MUSCOLLO_MODELFACTORY_H
-#define MUSCOLLO_MODELFACTORY_H
+#ifndef MOCO_MODELFACTORY_H
+#define MOCO_MODELFACTORY_H
 /* -------------------------------------------------------------------------- *
  * OpenSim Moco: ModelFactory.h                                           *
  * -------------------------------------------------------------------------- *
@@ -24,7 +24,7 @@
 namespace OpenSim {
 
 /// This class provides utilities for creating OpenSim models.
-class OSIMMUSCOLLO_API ModelFactory {
+class OSIMMOCO_API ModelFactory {
 public:
     static Model createNLinkPendulum(int numLinks);
     static Model createPendulum() {
@@ -37,4 +37,4 @@ public:
 
 } // namespace OpenSim
 
-#endif // MUSCOLLO_MODELFACTORY_H
+#endif // MOCO_MODELFACTORY_H

@@ -1,5 +1,5 @@
-#ifndef MUSCOLLO_OSIMMUSCOLLODLL_H
-#define MUSCOLLO_OSIMMUSCOLLODLL_H
+#ifndef MOCO_OSIMMOCODLL_H
+#define MOCO_OSIMMOCODLL_H
 /* -------------------------------------------------------------------------- *
  * OpenSim Moco: osimMocoDLL.h                                        *
  * -------------------------------------------------------------------------- *
@@ -19,13 +19,13 @@
  * -------------------------------------------------------------------------- */
 
 #ifndef _WIN32
-    #define OSIMMUSCOLLO_API
+    #define OSIMMOCO_API
 #else
-    #ifdef OSIMMUSCOLLO_EXPORTS
-        #define OSIMMUSCOLLO_API __declspec(dllexport)
+    #ifdef OSIMMOCO_EXPORTS
+        #define OSIMMOCO_API __declspec(dllexport)
     #else
-        #define OSIMMUSCOLLO_API __declspec(dllimport)
+        #define OSIMMOCO_API __declspec(dllimport)
     #endif
 #endif
 
-#endif // MUSCOLLO_OSIMMUSCOLLODLL_H
+#endif // MOCO_OSIMMOCODLL_H

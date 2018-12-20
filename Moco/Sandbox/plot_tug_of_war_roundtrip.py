@@ -1,5 +1,5 @@
 # -------------------------------------------------------------------------- #
-# OpenSim Muscollo: plot_tug_of_war_roundtrip.py                             #
+# OpenSim Moco: plot_tug_of_war_roundtrip.py                             #
 # -------------------------------------------------------------------------- #
 # Copyright (c) 2017 Stanford University and the Authors                     #
 #                                                                            #

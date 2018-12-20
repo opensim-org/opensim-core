@@ -1,5 +1,5 @@
 % -------------------------------------------------------------------------- %
-% OpenSim Muscollo: exampleSlidingMass.m                                     %
+% OpenSim Moco: exampleSlidingMass.m                                     %
 % -------------------------------------------------------------------------- %
 % Copyright (c) 2017 Stanford University and the Authors                     %
 %                                                                            %
@@ -40,14 +40,14 @@ body.attachGeometry(Sphere(0.05));
 
 model.finalizeConnections();
 
-% Create MucoTool.
+% Create MocoTool.
 % ================
-muco = MucoTool();
-muco.setName('sliding_mass');
+moco = MocoTool();
+moco.setName('sliding_mass');
 
 % Define the optimal control problem.
 % ===================================
-problem = muco.updProblem();
+problem = moco.updProblem();
 
 % Model (dynamics).
 % -----------------
@@ -56,37 +56,37 @@ problem.setModel(model);
 % Bounds.
 % -------
 % Initial time must be 0, final time can be within [0, 5].
-problem.setTimeBounds(MucoInitialBounds(0.), MucoFinalBounds(0., 5.));
+problem.setTimeBounds(MocoInitialBounds(0.), MocoFinalBounds(0., 5.));
 
 % Initial position must be 0, final position must be 1.
-problem.setStateInfo('/slider/position/value', MucoBounds(-5, 5), ...
-    MucoInitialBounds(0), MucoFinalBounds(1));
+problem.setStateInfo('/slider/position/value', MocoBounds(-5, 5), ...
+    MocoInitialBounds(0), MocoFinalBounds(1));
 % Initial and final speed must be 0. Use compact syntax.
 problem.setStateInfo('/slider/position/speed', [-50, 50], [0], [0]);
 
 % Applied force must be between -50 and 50.
-problem.setControlInfo('/actuator', MucoBounds(-50, 50));
+problem.setControlInfo('/actuator', MocoBounds(-50, 50));
 
 % Cost.
 % -----
-problem.addCost(MucoFinalTimeCost());
+problem.addCost(MocoFinalTimeCost());
 
 % Configure the solver.
 % =====================
-solver = muco.initSolver();
+solver = moco.initSolver();
 solver.set_num_mesh_points(50);
 
 % Now that we've finished setting up the tool, print it to a file.
-muco.print('sliding_mass.omuco');
+moco.print('sliding_mass.omoco');
 
 % Solve the problem.
 % ==================
-solution = muco.solve();
+solution = moco.solve();
 
 solution.write('sliding_mass_solution.sto');
 
 if ~strcmp(getenv('OPENSIM_USE_VISUALIZER'), '0')
-    muco.visualize(solution);
+    moco.visualize(solution);
     plot(solution.getTimeMat(), solution.getStatesTrajectoryMat());
     xlabel('time (s)');
     ylabel('states');

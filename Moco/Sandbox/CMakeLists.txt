@@ -4,16 +4,16 @@ function(MocoAddSandboxExecutable)
     set(options)
     set(oneValueArgs NAME)
     set(multiValueArgs LIB_DEPENDS RESOURCES SOURCE_FILES)
-    cmake_parse_arguments(MUCOSAND
+    cmake_parse_arguments(MOCOSAND
             "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
-    add_executable(${MUCOSAND_NAME} EXCLUDE_FROM_ALL ${MUCOSAND_NAME}.cpp 
-            ${MUCOSAND_SOURCE_FILES})
-    set_target_properties(${MUCOSAND_NAME} PROPERTIES
+    add_executable(${MOCOSAND_NAME} EXCLUDE_FROM_ALL ${MOCOSAND_NAME}.cpp 
+            ${MOCOSAND_SOURCE_FILES})
+    set_target_properties(${MOCOSAND_NAME} PROPERTIES
             FOLDER "Moco/Sandbox")
-    target_link_libraries(${MUCOSAND_NAME} ${MUCOSAND_LIB_DEPENDS})
-    target_include_directories(${MUCOSAND_NAME} PRIVATE
+    target_link_libraries(${MOCOSAND_NAME} ${MOCOSAND_LIB_DEPENDS})
+    target_include_directories(${MOCOSAND_NAME} PRIVATE
             ${CMAKE_SOURCE_DIR}/Moco/Sandbox/shared)
-    file(COPY ${MUCOSAND_RESOURCES} DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
+    file(COPY ${MOCOSAND_RESOURCES} DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
 endfunction()
 
 

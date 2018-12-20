@@ -1,5 +1,5 @@
-#ifndef MUSCOLLO_MUCOWEIGHTSET_H
-#define MUSCOLLO_MUCOWEIGHTSET_H
+#ifndef MOCO_MOCOWEIGHTSET_H
+#define MOCO_MOCOWEIGHTSET_H
 /* -------------------------------------------------------------------------- *
  * OpenSim Moco: MocoWeightSet.h                                          *
  * -------------------------------------------------------------------------- *
@@ -28,7 +28,7 @@ namespace OpenSim {
 /// used in a MocoCost. The meaning of the name given to this object depends on
 /// where the weight is used. In a MocoStateTrackingCost, the name is the name
 /// (path) of a state variable.
-class OSIMMUSCOLLO_API MocoWeight : public Object {
+class OSIMMOCO_API MocoWeight : public Object {
 OpenSim_DECLARE_CONCRETE_OBJECT(MocoWeight, Object);
 private:
     OpenSim_DECLARE_PROPERTY(weight, double, "Weight (default: 1)");
@@ -53,7 +53,7 @@ private:
 /// A container for %Moco weights. The meaning of the weights depends upon
 /// where they are used. This container can be written to and read from an
 /// XML file.
-class OSIMMUSCOLLO_API MocoWeightSet : public Set<MocoWeight> {
+class OSIMMOCO_API MocoWeightSet : public Set<MocoWeight> {
     OpenSim_DECLARE_CONCRETE_OBJECT(MocoWeightSet, Set<MocoWeight>);
 public:
     MocoWeightSet() = default;
@@ -62,4 +62,4 @@ public:
 
 } // namespace OpenSim
 
-#endif // MUSCOLLO_MUCOWEIGHTSET_H
+#endif // MOCO_MOCOWEIGHTSET_H

@@ -1,5 +1,5 @@
-#ifndef MUSCOLLO_REGISTERTYPES_OSIMMUSCOLLO_H
-#define MUSCOLLO_REGISTERTYPES_OSIMMUSCOLLO_H
+#ifndef MOCO_REGISTERTYPES_OSIMMOCO_H
+#define MOCO_REGISTERTYPES_OSIMMOCO_H
 /* -------------------------------------------------------------------------- *
  * OpenSim Moco: RegisterTypes_osimMoco.h                                               *
  * -------------------------------------------------------------------------- *
@@ -22,7 +22,7 @@
 
 extern "C" {
 
-OSIMMUSCOLLO_API void RegisterTypes_osimMoco();
+OSIMMOCO_API void RegisterTypes_osimMoco();
 
 }
 
@@ -33,4 +33,4 @@ private:
     void registerDllClasses();
 };
 
-#endif // MUSCOLLO_REGISTERTYPES_OSIMMUSCOLLO_H
+#endif // MOCO_REGISTERTYPES_OSIMMOCO_H

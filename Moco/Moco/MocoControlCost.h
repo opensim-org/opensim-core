@@ -1,5 +1,5 @@
-#ifndef MUSCOLLO_MUCOCONTROLCOST_H
-#define MUSCOLLO_MUCOCONTROLCOST_H
+#ifndef MOCO_MOCOCONTROLCOST_H
+#define MOCO_MOCOCONTROLCOST_H
 /* -------------------------------------------------------------------------- *
  * OpenSim Moco: MocoControlCost.h                                        *
  * -------------------------------------------------------------------------- *
@@ -26,11 +26,11 @@ namespace OpenSim {
 /// Minimize the sum of squared controls, integrated over the phase.
 /// The default weight for each control is 1.0; this can be changed by
 /// calling setWeight() or editing the `control_weights` property in XML.
-/// @ingroup mucocost
+/// @ingroup mococost
 // TODO want a related cost for minimizing the value of state variables like
 // activation.
 // TODO allow leaving out some controls.
-class OSIMMUSCOLLO_API MocoControlCost : public MocoCost {
+class OSIMMOCO_API MocoControlCost : public MocoCost {
 OpenSim_DECLARE_CONCRETE_OBJECT(MocoControlCost, MocoCost);
 public:
     MocoControlCost();
@@ -60,4 +60,4 @@ private:
 
 } // namespace OpenSim
 
-#endif // MUSCOLLO_MUCOCONTROLCOST_H
+#endif // MOCO_MOCOCONTROLCOST_H

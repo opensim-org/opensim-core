@@ -4,19 +4,19 @@ project(Moco VERSION 0.1)
 # Moco settings.
 # ------------------
 # Copy dependencies' libraries into Moco's installation?
-set(MUSCOLLO_COPY_DEPENDENCIES ON)
+set(MOCO_COPY_DEPENDENCIES ON)
 
-option(MUSCOLLO_JAVA_BINDINGS "Build Java/MATLAB interface." OFF)
+option(MOCO_JAVA_BINDINGS "Build Java/MATLAB interface." OFF)
 
-option(MUSCOLLO_PYTHON_BINDINGS "Build Python interface." OFF)
-set(MUSCOLLO_PYTHON_VERSION 2 CACHE STRING
+option(MOCO_PYTHON_BINDINGS "Build Python interface." OFF)
+set(MOCO_PYTHON_VERSION 2 CACHE STRING
     "The major Python version (2 or 3) for which to build the wrapping.")
 # To create a drop-down in the CMake GUI:
-set_property(CACHE MUSCOLLO_PYTHON_VERSION PROPERTY STRINGS "2" "3")
+set_property(CACHE MOCO_PYTHON_VERSION PROPERTY STRINGS "2" "3")
 
-option(MUSCOLLO_BUILD_EXECUTABLE
+option(MOCO_BUILD_EXECUTABLE
     "Build the opensim-moco executable." ON)
-option(MUSCOLLO_BUILD_EXAMPLES
+option(MOCO_BUILD_EXAMPLES
     "Build, test, and install Moco C++ examples." ON)
 
 
@@ -31,7 +31,7 @@ set(CMAKE_DEBUG_POSTFIX "_d")
 
 # Avoid need to set DYLD_LIBRARY_PATH on macOS.
 set(CMAKE_MACOSX_RPATH ON)
-if(NOT MUSCOLLO_COPY_DEPENDENCIES)
+if(NOT MOCO_COPY_DEPENDENCIES)
     set(CMAKE_INSTALL_RPATH_USE_LINK_PATH ON)
 endif()
 
@@ -52,23 +52,23 @@ if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
 endif()
 
 # Default paths for finding dependencies.
-set(MUSCOLLO_DEPENDENCIES_DIR
+set(MOCO_DEPENDENCIES_DIR
         "${CMAKE_SOURCE_DIR}/../moco_dependencies_install")
-get_filename_component(MUSCOLLO_DEPENDENCIES_DIR "${MUSCOLLO_DEPENDENCIES_DIR}"
+get_filename_component(MOCO_DEPENDENCIES_DIR "${MOCO_DEPENDENCIES_DIR}"
         ABSOLUTE)
 if(NOT CMAKE_PREFIX_PATH
         AND NOT ADOLC_DIR AND NOT "$ENV{ADOLC_DIR}"
         AND NOT IPOPT_DIR AND NOT "$ENV{IPOPT_DIR}"
-        AND EXISTS "${MUSCOLLO_DEPENDENCIES_DIR}")
+        AND EXISTS "${MOCO_DEPENDENCIES_DIR}")
     message(STATUS
-            "Attempting to use dependencies from ${MUSCOLLO_DEPENDENCIES_DIR}")
+            "Attempting to use dependencies from ${MOCO_DEPENDENCIES_DIR}")
     set(dep_install_dirs)
     foreach(dep opensim-core colpack ipopt eigen)
-        list(APPEND dep_install_dirs "${MUSCOLLO_DEPENDENCIES_DIR}/${dep}")
+        list(APPEND dep_install_dirs "${MOCO_DEPENDENCIES_DIR}/${dep}")
     endforeach()
     set(CMAKE_PREFIX_PATH "${dep_install_dirs}" CACHE PATH
             "Directories containing dependencies.")
-    set(ADOLC_DIR "${MUSCOLLO_DEPENDENCIES_DIR}/adol-c" CACHE PATH
+    set(ADOLC_DIR "${MOCO_DEPENDENCIES_DIR}/adol-c" CACHE PATH
             "Path to ADOL-C install directory.")
 endif()
 
@@ -79,23 +79,23 @@ set(LIBRARY_OUTPUT_PATH "${CMAKE_BINARY_DIR}")
 
 # Define variables that help describe the layout of the installation.
 include(GNUInstallDirs)
-set(MUSCOLLO_INSTALL_INCLUDEDIR ${CMAKE_INSTALL_INCLUDEDIR})
-set(MUSCOLLO_INSTALL_EXAMPLEDIR ${CMAKE_INSTALL_DOCDIR}/Examples)
+set(MOCO_INSTALL_INCLUDEDIR ${CMAKE_INSTALL_INCLUDEDIR})
+set(MOCO_INSTALL_EXAMPLEDIR ${CMAKE_INSTALL_DOCDIR}/Examples)
 if(WIN32)
-    set(MUSCOLLO_INSTALL_CMAKEDIR cmake)
-    set(MUSCOLLO_INSTALL_PYTHONDIR sdk/python)
-    set(MUSCOLLO_INSTALL_SCRIPTSDIR sdk/Scripts)
+    set(MOCO_INSTALL_CMAKEDIR cmake)
+    set(MOCO_INSTALL_PYTHONDIR sdk/python)
+    set(MOCO_INSTALL_SCRIPTSDIR sdk/Scripts)
     set(CMAKE_INSTALL_SYSCONFDIR sdk)
-    set(MUSCOLLO_INSTALL_SHAREDLIBDIR "${CMAKE_INSTALL_BINDIR}")
+    set(MOCO_INSTALL_SHAREDLIBDIR "${CMAKE_INSTALL_BINDIR}")
 else()
-    set(MUSCOLLO_INSTALL_CMAKEDIR ${CMAKE_INSTALL_LIBDIR}/cmake/Moco)
-    set(MUSCOLLO_INSTALL_PYTHONDIR "lib/pythonVERSION/site-packages")
-    set(MUSCOLLO_INSTALL_SCRIPTSDIR "${CMAKE_INSTALL_DOCDIR}/Scripts")
-    set(MUSCOLLO_INSTALL_SHAREDLIBDIR "${CMAKE_INSTALL_LIBDIR}")
+    set(MOCO_INSTALL_CMAKEDIR ${CMAKE_INSTALL_LIBDIR}/cmake/Moco)
+    set(MOCO_INSTALL_PYTHONDIR "lib/pythonVERSION/site-packages")
+    set(MOCO_INSTALL_SCRIPTSDIR "${CMAKE_INSTALL_DOCDIR}/Scripts")
+    set(MOCO_INSTALL_SHAREDLIBDIR "${CMAKE_INSTALL_LIBDIR}")
 endif()
-set(MUSCOLLO_INSTALL_JAVAJARDIR "${CMAKE_INSTALL_DATAROOTDIR}/java")
-set(MUSCOLLO_INSTALL_MATLABEXDIR "${MUSCOLLO_INSTALL_SCRIPTSDIR}/Matlab")
-set(MUSCOLLO_INSTALL_PYTHONEXDIR "${MUSCOLLO_INSTALL_SCRIPTSDIR}/Python")
+set(MOCO_INSTALL_JAVAJARDIR "${CMAKE_INSTALL_DATAROOTDIR}/java")
+set(MOCO_INSTALL_MATLABEXDIR "${MOCO_INSTALL_SCRIPTSDIR}/Matlab")
+set(MOCO_INSTALL_PYTHONEXDIR "${MOCO_INSTALL_SCRIPTSDIR}/Python")
 
 # This is used to provide the user with information about config. options.
 include(FeatureSummary)

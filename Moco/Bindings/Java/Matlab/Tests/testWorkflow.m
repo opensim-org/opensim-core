@@ -1,5 +1,5 @@
 % -------------------------------------------------------------------------- %
-% OpenSim Muscollo: testWorkflow.m                                           %
+% OpenSim Moco: testWorkflow.m                                           %
 % -------------------------------------------------------------------------- %
 % Copyright (c) 2017 Stanford University and the Authors                     %
 %                                                                            %
@@ -53,8 +53,8 @@ end
 
 function testDefaultBounds(testCase)
     import org.opensim.modeling.*;
-    muco = MucoTool();
-    problem = muco.updProblem();
+    moco = MocoTool();
+    problem = moco.updProblem();
     model = createSlidingMassModel();
     model.finalizeFromProperties();
     coord = Coordinate.safeDownCast(model.updComponent('slider/position'));
@@ -94,67 +94,67 @@ end
 
 function testChangingTimeBounds(testCase)
     import org.opensim.modeling.*;
-    muco = MucoTool();
-    problem = muco.updProblem();
+    moco = MocoTool();
+    problem = moco.updProblem();
     problem.setModel(createSlidingMassModel());
     problem.setTimeBounds(0, [0, 10]);
     problem.setStateInfo('/slider/position/value', [0, 1], 0, 1);
     problem.setStateInfo('/slider/position/speed', [-100, 100], 0, 0);
     problem.setControlInfo('/actuator', [-10, 10]);
-    problem.addCost(MucoFinalTimeCost());
+    problem.addCost(MocoFinalTimeCost());
 
-    solver = muco.initSolver();
+    solver = moco.initSolver();
     solver.set_num_mesh_points(20);
     guess = solver.createGuess('random');
-    guess.setTime(opensimMuscollo.createVectorLinspace(20, 0.0, 3.0));
+    guess.setTime(opensimMoco.createVectorLinspace(20, 0.0, 3.0));
     solver.setGuess(guess);
-    solution0 = muco.solve();
+    solution0 = moco.solve();
 
     problem.setTimeBounds(0, [5.8, 10]);
     % Editing the problem does not affect information in the Solver; the
     % guess still exists.
     assert(~solver.getGuess().empty());
 
-    solution = muco.solve();
+    solution = moco.solve();
     testCase.assertEqual(solution.getFinalTime(), 5.8);
 
 end
 
 function testChangingModel(testCase)
     import org.opensim.modeling.*;
-    muco = MucoTool();
-    problem = muco.updProblem();
+    moco = MocoTool();
+    problem = moco.updProblem();
     model = createSlidingMassModel();
     problem.setModel(model);
     problem.setTimeBounds(0, [0, 10]);
     problem.setStateInfo('/slider/position/value', [0, 1], 0, 1);
     problem.setStateInfo('/slider/position/speed', [-100, 100], 0, 0);
-    problem.addCost(MucoFinalTimeCost());
-    solver = muco.initSolver();
+    problem.addCost(MocoFinalTimeCost());
+    solver = moco.initSolver();
     solver.set_num_mesh_points(20);
-    finalTime0 = muco.solve().getFinalTime();
+    finalTime0 = moco.solve().getFinalTime();
 
     testCase.assertEqual(finalTime0, 2.00, 'AbsTol', 0.01);
 
     body = Body.safeDownCast(model.updComponent('body'));
     body.setMass(2 * body.getMass());
-    finalTime1 = muco.solve().getFinalTime();
+    finalTime1 = moco.solve().getFinalTime();
     assert(finalTime1 > 1.1 * finalTime0);
 end
 
 function testOrder(testCase)
     import org.opensim.modeling.*;
     % Can set the cost and model in any order.
-    muco = MucoTool();
-    problem = muco.updProblem();
+    moco = MocoTool();
+    problem = moco.updProblem();
     problem.setTimeBounds(0, [0, 10]);
     problem.setStateInfo('/slider/position/value', [0, 1], 0, 1);
     problem.setStateInfo('/slider/position/speed', [-100, 100], 0, 0);
-    problem.addCost(MucoFinalTimeCost());
+    problem.addCost(MocoFinalTimeCost());
     problem.setModel(createSlidingMassModel());
-    solver = muco.initSolver();
+    solver = moco.initSolver();
     solver.set_num_mesh_points(20);
-    finalTime =  muco.solve().getFinalTime();
+    finalTime =  moco.solve().getFinalTime();
 
     testCase.assertEqual(finalTime, 2.0, 'AbsTol', 0.01);
 end
@@ -162,18 +162,18 @@ end
 function testChangingCosts(testCase)
     import org.opensim.modeling.*;
     % Changes to the costs are obeyed.
-    muco = MucoTool();
-    problem = muco.updProblem();
+    moco = MocoTool();
+    problem = moco.updProblem();
     problem.setModel(createSlidingMassModel());
     problem.setTimeBounds(0, [0, 10]);
     problem.setStateInfo('/slider/position/value', [0, 1], 0, 1);
     problem.setStateInfo('/slider/position/speed', [-100, 100], 0, 0);
-    problem.updPhase().addCost(MucoFinalTimeCost());
-    effort = MucoControlCost('effort');
+    problem.updPhase().addCost(MocoFinalTimeCost());
+    effort = MocoControlCost('effort');
     problem.updPhase().addCost(effort);
-    finalTime0 = muco.solve().getFinalTime();
+    finalTime0 = moco.solve().getFinalTime();
 
     % Change the weights of the costs.
     effort.set_weight(0.1);
-    assert(muco.solve().getFinalTime() < 0.8 * finalTime0);
+    assert(moco.solve().getFinalTime() < 0.8 * finalTime0);
 end

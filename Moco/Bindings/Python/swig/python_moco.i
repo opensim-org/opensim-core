@@ -1,4 +1,4 @@
-%module(package="opensim", directors="1") muscollo
+%module(package="opensim", directors="1") moco
 #pragma SWIG nowarn=822,451,503,516,325
 #pragma SWIG nowarn=401
 
@@ -9,7 +9,7 @@
 #include <Bindings/OpenSimHeaders_actuators.h>
 #include <Bindings/OpenSimHeaders_analyses.h>
 #include <Bindings/OpenSimHeaders_tools.h>
-#include <Bindings/OpenSimHeaders_muscollo.h>
+#include <Bindings/OpenSimHeaders_moco.h>
 %}
 
 %{
@@ -44,7 +44,7 @@ using namespace SimTK;
 // ========
 // None.
 
-%extend OpenSim::MucoPhase {
+%extend OpenSim::MocoPhase {
 %pythoncode %{
     def _convert(self, cls, v):
         if hasattr(v, '__len__'):
@@ -60,32 +60,32 @@ using namespace SimTK;
             return cls(v)
 %}
 }
-%pythonprepend OpenSim::MucoPhase::setTimeBounds %{
-    if not type(arg2) is MucoInitialBounds:
-        arg2 = self._convert(MucoInitialBounds, arg2)
-    if not type(arg3) is MucoFinalBounds:
-        arg3 = self._convert(MucoFinalBounds, arg3)
+%pythonprepend OpenSim::MocoPhase::setTimeBounds %{
+    if not type(arg2) is MocoInitialBounds:
+        arg2 = self._convert(MocoInitialBounds, arg2)
+    if not type(arg3) is MocoFinalBounds:
+        arg3 = self._convert(MocoFinalBounds, arg3)
 %}
-%pythonprepend OpenSim::MucoPhase::setStateInfo %{
+%pythonprepend OpenSim::MocoPhase::setStateInfo %{
     args = list(args)
-    if len(args) >= 2 and not type(args[1]) is MucoBounds:
-        args[1] = self._convert(MucoBounds, args[1])
-    if len(args) >= 3 and not type(args[2]) is MucoInitialBounds:
-        args[2] = self._convert(MucoInitialBounds, args[2])
-    if len(args) >= 4 and not type(args[3]) is MucoFinalBounds:
-        args[3] = self._convert(MucoFinalBounds, args[3])
+    if len(args) >= 2 and not type(args[1]) is MocoBounds:
+        args[1] = self._convert(MocoBounds, args[1])
+    if len(args) >= 3 and not type(args[2]) is MocoInitialBounds:
+        args[2] = self._convert(MocoInitialBounds, args[2])
+    if len(args) >= 4 and not type(args[3]) is MocoFinalBounds:
+        args[3] = self._convert(MocoFinalBounds, args[3])
 %}
-%pythonprepend OpenSim::MucoPhase::setControlInfo %{
+%pythonprepend OpenSim::MocoPhase::setControlInfo %{
     args = list(args)
-    if len(args) >= 2 and not type(args[1]) is MucoBounds:
-        args[1] = self._convert(MucoBounds, args[1])
-    if len(args) >= 3 and not type(args[2]) is MucoInitialBounds:
-        args[2] = self._convert(MucoInitialBounds, args[2])
-    if len(args) >= 4 and not type(args[3]) is MucoFinalBounds:
-        args[3] = self._convert(MucoFinalBounds, args[3])
+    if len(args) >= 2 and not type(args[1]) is MocoBounds:
+        args[1] = self._convert(MocoBounds, args[1])
+    if len(args) >= 3 and not type(args[2]) is MocoInitialBounds:
+        args[2] = self._convert(MocoInitialBounds, args[2])
+    if len(args) >= 4 and not type(args[3]) is MocoFinalBounds:
+        args[3] = self._convert(MocoFinalBounds, args[3])
 %}
 
-%extend OpenSim::MucoProblem {
+%extend OpenSim::MocoProblem {
 %pythoncode %{
     def _convert(self, cls, v):
         if hasattr(v, '__len__'):
@@ -101,33 +101,33 @@ using namespace SimTK;
             return cls(v)
 %}
 }
-%pythonprepend OpenSim::MucoProblem::setTimeBounds %{
-    if not type(arg2) is MucoInitialBounds:
-        arg2 = self._convert(MucoInitialBounds, arg2)
-    if not type(arg3) is MucoFinalBounds:
-        arg3 = self._convert(MucoFinalBounds, arg3)
+%pythonprepend OpenSim::MocoProblem::setTimeBounds %{
+    if not type(arg2) is MocoInitialBounds:
+        arg2 = self._convert(MocoInitialBounds, arg2)
+    if not type(arg3) is MocoFinalBounds:
+        arg3 = self._convert(MocoFinalBounds, arg3)
 %}
-%pythonprepend OpenSim::MucoProblem::setStateInfo %{
+%pythonprepend OpenSim::MocoProblem::setStateInfo %{
     args = list(args)
-    if len(args) >= 2 and not type(args[1]) is MucoBounds:
-        args[1] = self._convert(MucoBounds, args[1])
-    if len(args) >= 3 and not type(args[2]) is MucoInitialBounds:
-        args[2] = self._convert(MucoInitialBounds, args[2])
-    if len(args) >= 4 and not type(args[3]) is MucoFinalBounds:
-        args[3] = self._convert(MucoFinalBounds, args[3])
+    if len(args) >= 2 and not type(args[1]) is MocoBounds:
+        args[1] = self._convert(MocoBounds, args[1])
+    if len(args) >= 3 and not type(args[2]) is MocoInitialBounds:
+        args[2] = self._convert(MocoInitialBounds, args[2])
+    if len(args) >= 4 and not type(args[3]) is MocoFinalBounds:
+        args[3] = self._convert(MocoFinalBounds, args[3])
 %}
-%pythonprepend OpenSim::MucoProblem::setControlInfo %{
+%pythonprepend OpenSim::MocoProblem::setControlInfo %{
     args = list(args)
-    if len(args) >= 2 and not type(args[1]) is MucoBounds:
-        args[1] = self._convert(MucoBounds, args[1])
-    if len(args) >= 3 and not type(args[2]) is MucoInitialBounds:
-        args[2] = self._convert(MucoInitialBounds, args[2])
-    if len(args) >= 4 and not type(args[3]) is MucoFinalBounds:
-        args[3] = self._convert(MucoFinalBounds, args[3])
+    if len(args) >= 2 and not type(args[1]) is MocoBounds:
+        args[1] = self._convert(MocoBounds, args[1])
+    if len(args) >= 3 and not type(args[2]) is MocoInitialBounds:
+        args[2] = self._convert(MocoInitialBounds, args[2])
+    if len(args) >= 4 and not type(args[3]) is MocoFinalBounds:
+        args[3] = self._convert(MocoFinalBounds, args[3])
 %}
 
 
-%extend OpenSim::MucoIterate {
+%extend OpenSim::MocoIterate {
     void setTime(const std::vector<double>& time) {
         $self->setTime(SimTK::Vector((int)time.size(), time.data()));
     }
@@ -147,32 +147,32 @@ using namespace SimTK;
 // Memory management
 // =================
 
-%pythonappend OpenSim::MucoPhase::setModel %{
+%pythonappend OpenSim::MocoPhase::setModel %{
     model._markAdopted()
 %}
-%pythonappend OpenSim::MucoPhase::addParameter %{
+%pythonappend OpenSim::MocoPhase::addParameter %{
     ptr._markAdopted()
 %}
-%pythonappend OpenSim::MucoPhase::addCost %{
+%pythonappend OpenSim::MocoPhase::addCost %{
     ptr._markAdopted()
 %}
-%pythonappend OpenSim::MucoPhase::addPathConstraint %{
+%pythonappend OpenSim::MocoPhase::addPathConstraint %{
     ptr._markAdopted()
 %}
-%pythonappend OpenSim::MucoProblem::setModel %{
+%pythonappend OpenSim::MocoProblem::setModel %{
     model._markAdopted()
 %}
-%pythonappend OpenSim::MucoProblem::addParameter %{
+%pythonappend OpenSim::MocoProblem::addParameter %{
     ptr._markAdopted()
 %}
-%pythonappend OpenSim::MucoProblem::addCost %{
+%pythonappend OpenSim::MocoProblem::addCost %{
     ptr._markAdopted()
 %}
-%pythonappend OpenSim::MucoProblem::addPathConstraint %{
+%pythonappend OpenSim::MocoProblem::addPathConstraint %{
     ptr._markAdopted()
 %}
 
 // Include all the OpenSim code.
 // =============================
 %include <Bindings/preliminaries.i>
-%include <Bindings/muscollo.i>
+%include <Bindings/moco.i>

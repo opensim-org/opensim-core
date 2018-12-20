@@ -1,5 +1,5 @@
-#ifndef MUSCOLLO_INDYGO_H
-#define MUSCOLLO_INDYGO_H
+#ifndef MOCO_INDYGO_H
+#define MOCO_INDYGO_H
 /* -------------------------------------------------------------------------- *
  * OpenSim Moco: INDYGO.h                                                 *
  * -------------------------------------------------------------------------- *
@@ -128,7 +128,7 @@ biomedical engineering 12.5 (2009): 563-574.
 
 [3] Raasch, Christine C., et al. "Muscle coordination of maximum-speed
 pedaling." Journal of biomechanics 30.6 (1997): 595-602. */
-class OSIMMUSCOLLO_API INDYGO : public InverseMuscleSolver {
+class OSIMMOCO_API INDYGO : public InverseMuscleSolver {
     OpenSim_DECLARE_CONCRETE_OBJECT(INDYGO, InverseMuscleSolver);
 public:
 
@@ -167,7 +167,7 @@ public:
         "The implicit mode may be up to 2 times faster. "
         "Default: 'explicit'.");
 
-    struct OSIMMUSCOLLO_API Solution {
+    struct OSIMMOCO_API Solution {
         /// The excitation trajectories for all enabled (appliesForce) muscles.
         /// This will be empty if there are no enabled muscles.
         TimeSeriesTable excitation;
@@ -237,4 +237,4 @@ private:
 
 } // namespace OpenSim
 
-#endif // MUSCOLLO_INDYGO_H
+#endif // MOCO_INDYGO_H

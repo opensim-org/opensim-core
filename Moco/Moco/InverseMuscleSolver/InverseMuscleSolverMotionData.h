@@ -1,5 +1,5 @@
-#ifndef MUSCOLLO_INVERSEMUSCLESOLVERMOTIONDATA_H
-#define MUSCOLLO_INVERSEMUSCLESOLVERMOTIONDATA_H
+#ifndef MOCO_INVERSEMUSCLESOLVERMOTIONDATA_H
+#define MOCO_INVERSEMUSCLESOLVERMOTIONDATA_H
 /* -------------------------------------------------------------------------- *
  * OpenSim Moco: InverseMuscleSolverMotionData.h                          *
  * -------------------------------------------------------------------------- *
@@ -38,7 +38,7 @@ class Coordinate;
 ///   - muscle-tendon lengths
 ///   - moment arms
 /// This class also allows interpolating these data for use by solvers.
-class OSIMMUSCOLLO_API InverseMuscleSolverMotionData {
+class OSIMMOCO_API InverseMuscleSolverMotionData {
 public:
     InverseMuscleSolverMotionData() = default;
     /// From the given kinematics trajectory (joint angles), this constructor
@@ -137,4 +137,4 @@ private:
 
 } // namespace OpenSim
 
-#endif // MUSCOLLO_INVERSEMUSCLESOLVERMOTIONDATA_H
+#endif // MOCO_INVERSEMUSCLESOLVERMOTIONDATA_H

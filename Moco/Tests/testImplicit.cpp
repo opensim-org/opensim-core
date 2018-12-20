@@ -32,12 +32,12 @@ MocoSolution solveDoublePendulumSwingup(const std::string& dynamics_mode) {
 
     using SimTK::Vec3;
 
-    MocoTool muco;
-    muco.setName("double_pendulum_swingup_" + dynamics_mode);
+    MocoTool moco;
+    moco.setName("double_pendulum_swingup_" + dynamics_mode);
 
     // Define the optimal control problem.
     // ===================================
-    MocoProblem& mp = muco.updProblem();
+    MocoProblem& mp = moco.updProblem();
 
     // Model (dynamics).
     // -----------------
@@ -81,7 +81,7 @@ MocoSolution solveDoublePendulumSwingup(const std::string& dynamics_mode) {
     // Configure the solver.
     // =====================
     int N = 30;
-    MocoTropterSolver& solver = muco.initSolver();
+    MocoTropterSolver& solver = moco.initSolver();
     solver.set_dynamics_mode(dynamics_mode);
     solver.set_num_mesh_points(N);
     //solver.set_verbosity(2);
@@ -99,14 +99,14 @@ MocoSolution solveDoublePendulumSwingup(const std::string& dynamics_mode) {
     guess.resampleWithNumTimes(10);
     solver.setGuess(guess);
 
-    // muco.visualize(guess);
+    // moco.visualize(guess);
 
-    muco.print("double_pendulum_swingup_" + dynamics_mode + ".omuco");
+    moco.print("double_pendulum_swingup_" + dynamics_mode + ".omoco");
 
     // Solve the problem.
     // ==================
-    MocoSolution solution = muco.solve();
-    // muco.visualize(solution);
+    MocoSolution solution = moco.solve();
+    // moco.visualize(solution);
 
     return solution;
 
@@ -181,8 +181,8 @@ SCENARIO("Combining implicit dynamics mode with path constraints",
         }
     };
     GIVEN("MocoProblem with path constraints") {
-        MocoTool muco;
-        auto& prob = muco.updProblem();
+        MocoTool moco;
+        auto& prob = moco.updProblem();
         auto model = ModelFactory::createPendulum();
         prob.setTimeBounds(0, 1);
         prob.setModelCopy(model);
@@ -191,10 +191,10 @@ SCENARIO("Combining implicit dynamics mode with path constraints",
         MocoConstraintInfo info;
         info.setBounds(std::vector<MocoBounds>(1, {10, 10000}));
         pc->setConstraintInfo(info);
-        auto& solver = muco.initSolver();
+        auto& solver = moco.initSolver();
         solver.set_dynamics_mode("implicit");
         solver.set_num_mesh_points(5);
-        MocoSolution solution = muco.solve();
+        MocoSolution solution = moco.solve();
 
         THEN("path constraints are still obeyed") {
             OpenSim_REQUIRE_MATRIX_TOL(solution.getControlsTrajectory(),
@@ -262,9 +262,9 @@ SCENARIO("Using MocoIterate with the implicit dynamics mode",
 }
 
 SCENARIO("Solving a problem with acceleration-level quantities", "[implicit]") {
-    MocoTool muco;
-    muco.updProblem().setModelCopy(ModelFactory::createPendulum());
-    auto& solver = muco.initSolver();
+    MocoTool moco;
+    moco.updProblem().setModelCopy(ModelFactory::createPendulum());
+    auto& solver = moco.initSolver();
     solver.set_dynamics_mode("implicit");
     solver.set_num_mesh_points(5);
 
@@ -278,10 +278,10 @@ SCENARIO("Solving a problem with acceleration-level quantities", "[implicit]") {
     };
 
     GIVEN("an integral MocoCost that invokes realizeAcceleration") {
-        muco.updProblem().addCost<AccelerationIntegralCost>();
+        moco.updProblem().addCost<AccelerationIntegralCost>();
 
         THEN("problem cannot be solved") {
-            REQUIRE_THROWS_WITH(muco.solve(),
+            REQUIRE_THROWS_WITH(moco.solve(),
                     Contains("Cannot realize to Acceleration in implicit "
                              "dynamics mode."));
         }
@@ -297,10 +297,10 @@ SCENARIO("Solving a problem with acceleration-level quantities", "[implicit]") {
     };
 
     GIVEN("an endpoint MocoCost that invokes realizeAcceleration") {
-        muco.updProblem().addCost<AccelerationEndpointCost>();
+        moco.updProblem().addCost<AccelerationEndpointCost>();
 
         THEN("problem cannot be solved") {
-            REQUIRE_THROWS_WITH(muco.solve(),
+            REQUIRE_THROWS_WITH(moco.solve(),
                     Contains("Cannot realize to Acceleration in implicit "
                              "dynamics mode."));
         }
@@ -320,10 +320,10 @@ SCENARIO("Solving a problem with acceleration-level quantities", "[implicit]") {
     };
 
     GIVEN("a MocoPathConstraint that invokes realizeAcceleration") {
-        muco.updProblem().addPathConstraint<AccelerationConstraint>();
+        moco.updProblem().addPathConstraint<AccelerationConstraint>();
 
         THEN("problem cannot be solved") {
-            REQUIRE_THROWS_WITH(muco.solve(),
+            REQUIRE_THROWS_WITH(moco.solve(),
                     Contains("Cannot realize to Acceleration in implicit "
                              "dynamics mode."));
         }

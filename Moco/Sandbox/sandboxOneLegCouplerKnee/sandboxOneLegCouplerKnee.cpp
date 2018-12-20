@@ -198,10 +198,10 @@ Model createRightLegModel(const std::string& actuatorType) {
 
 void minimizeControlEffortRightLegWeldedPelvis(const std::string& actuatorType) 
 {
-    MocoTool muco;
-    muco.setName("sandboxRightLeg_weldedPelvis_" + actuatorType +
+    MocoTool moco;
+    moco.setName("sandboxRightLeg_weldedPelvis_" + actuatorType +
         "_minimize_control_effort");
-    MocoProblem& mp = muco.updProblem();
+    MocoProblem& mp = moco.updProblem();
     mp.setModelCopy(createRightLegWeldedPelvisModel(actuatorType));
 
     // Set bounds.
@@ -245,7 +245,7 @@ void minimizeControlEffortRightLegWeldedPelvis(const std::string& actuatorType)
     effort->setWeight("/forceset/tib_ant_r", 0);
     effort->setWeight("/forceset/vas_int_r", 0);
 
-    MocoTropterSolver& ms = muco.initSolver();
+    MocoTropterSolver& ms = moco.initSolver();
     ms.set_num_mesh_points(5);
     ms.set_verbosity(2);
     ms.set_optim_solver("snopt");
@@ -260,15 +260,15 @@ void minimizeControlEffortRightLegWeldedPelvis(const std::string& actuatorType)
     //ms.setGuessFile("sandboxRightLeg_weldedPelvis_" +
     //    actuatorType + "_minimize_control_effort_solution.sto");
 
-    MocoSolution solution = muco.solve().unseal();
-    muco.visualize(solution);
+    MocoSolution solution = moco.solve().unseal();
+    moco.visualize(solution);
 }
 
 void stateTrackingRightLegWeldedPelvis(const std::string& actuatorType) {
-    MocoTool muco;
-    muco.setName("sandboxRightLeg_weldedPelvis_" + actuatorType +
+    MocoTool moco;
+    moco.setName("sandboxRightLeg_weldedPelvis_" + actuatorType +
         "_state_tracking");
-    MocoProblem& mp = muco.updProblem();
+    MocoProblem& mp = moco.updProblem();
     Model model = createRightLegWeldedPelvisModel(actuatorType);
     mp.setModelCopy(model);
 
@@ -324,7 +324,7 @@ void stateTrackingRightLegWeldedPelvis(const std::string& actuatorType) {
     stateTracking->setAllowUnusedReferences(true);
 
 
-    MocoTropterSolver& ms = muco.initSolver();
+    MocoTropterSolver& ms = moco.initSolver();
     ms.set_num_mesh_points(20);
     ms.set_verbosity(2);
     ms.set_optim_solver("snopt");
@@ -344,15 +344,15 @@ void stateTrackingRightLegWeldedPelvis(const std::string& actuatorType) {
     //ms.setGuessFile("sandboxRightLeg_weldedPelvis_" + actuatorType 
     //     + "_state_tracking_solution.sto");
 
-    MocoSolution solution = muco.solve();
-    muco.visualize(solution);
+    MocoSolution solution = moco.solve();
+    moco.visualize(solution);
 }
 
 void stateTrackingRightLeg(const std::string& actuatorType) {
-    MocoTool muco;
-    muco.setName("sandboxRightLeg_" + actuatorType +
+    MocoTool moco;
+    moco.setName("sandboxRightLeg_" + actuatorType +
         "_state_tracking");
-    MocoProblem& mp = muco.updProblem();
+    MocoProblem& mp = moco.updProblem();
     Model model = createRightLegModel(actuatorType);
     mp.setModelCopy(model);
 
@@ -413,7 +413,7 @@ void stateTrackingRightLeg(const std::string& actuatorType) {
     stateTracking->setAllowUnusedReferences(true);
     
 
-    MocoTropterSolver& ms = muco.initSolver();
+    MocoTropterSolver& ms = moco.initSolver();
     ms.set_num_mesh_points(10);
     ms.set_verbosity(2);
     ms.set_optim_solver("snopt");
@@ -433,15 +433,15 @@ void stateTrackingRightLeg(const std::string& actuatorType) {
     //ms.setGuessFile("sandboxRightLeg_" + actuatorType 
     //     + "_state_tracking_solution.sto");
 
-    MocoSolution solution = muco.solve();
-    muco.visualize(solution);
+    MocoSolution solution = moco.solve();
+    moco.visualize(solution);
 }
 
 void markerTrackingRightLeg(const std::string& actuatorType) {
-    MocoTool muco;
-    muco.setName("sandboxRightLeg_" + actuatorType +
+    MocoTool moco;
+    moco.setName("sandboxRightLeg_" + actuatorType +
         "_marker_tracking");
-    MocoProblem& mp = muco.updProblem();
+    MocoProblem& mp = moco.updProblem();
     Model model = createRightLegModel(actuatorType);
     mp.setModelCopy(model);
 
@@ -458,7 +458,7 @@ void markerTrackingRightLeg(const std::string& actuatorType) {
         &markerWeights));
     markerTracking->setAllowUnusedReferences(true);
 
-    MocoTropterSolver& ms = muco.initSolver();
+    MocoTropterSolver& ms = moco.initSolver();
     ms.set_num_mesh_points(10);
     ms.set_verbosity(2);
     ms.set_optim_solver("ipopt");
@@ -474,8 +474,8 @@ void markerTrackingRightLeg(const std::string& actuatorType) {
         STOFileAdapter::read("ik_results_radians.sto"), true, true);
     ms.setGuess(guess);
 
-    MocoSolution solution = muco.solve();
-    muco.visualize(solution);
+    MocoSolution solution = moco.solve();
+    moco.visualize(solution);
 }
 
 void main() {

@@ -558,27 +558,27 @@ template<typename T>
 class MocoSolver::OCProblem : public tropter::Problem<T> {
 public:
     OCProblem(const MocoSolver& solver)
-            : m_mucoSolver(solver),
-              m_mucoProb(solver.getProblem()) {
-        m_model = m_mucoProb.getModel();
+            : m_mocoSolver(solver),
+              m_mocoProb(solver.getProblem()) {
+        m_model = m_mocoProb.getModel();
         m_state = m_model.initSystem();
 
-        this->set_time(m_mucoProb.getTimeInitialBounds(),
-                       m_mucoProb.getTimeFinalBounds());
+        this->set_time(m_mocoProb.getTimeInitialBounds(),
+                       m_mocoProb.getTimeFinalBounds());
         auto svNamesInSysOrder = createStateVariableNamesInSystemOrder(m_model);
         for (const auto& svName : svNamesInSysOrder) {
-            const auto& info = m_mucoProb.getStateInfo(svName);
+            const auto& info = m_mocoProb.getStateInfo(svName);
             this->add_state(svName, info.getBounds(),
                     info.getInitialBounds(), info.getFinalBounds());
         }
         for (const auto& actu : m_model.getComponentList<Actuator>()) {
             // TODO handle a variable number of control signals.
             const auto& actuName = actu.getName();
-            const auto& info = m_mucoProb.getControlInfo(actuName);
+            const auto& info = m_mocoProb.getControlInfo(actuName);
             this->add_control(actuName, info.getBounds(),
                     info.getInitialBounds(), info.getFinalBounds());
         }
-        const auto& costs = m_mucoProb.getProperty_costs();
+        const auto& costs = m_mocoProb.getProperty_costs();
         // TODO avoid this weirdness; add the costs directly to the model.
         for (int ic = 0; ic < costs.size(); ++ic) {
             costs[ic].setModel(m_model);
@@ -632,8 +632,8 @@ public:
                 &osimControls[0]);
         m_model.realizePosition(m_state);
         m_model.setControls(m_state, osimControls);
-        for (int i = 0; i < m_mucoProb.getProperty_costs().size(); ++i) {
-            integrand += m_mucoProb.get_costs(i).calcIntegralCost(m_state);
+        for (int i = 0; i < m_mocoProb.getProperty_costs().size(); ++i) {
+            integrand += m_mocoProb.get_costs(i).calcIntegralCost(m_state);
         }
     }
     void calc_endpoint_cost(const T& final_time, const VectorX<T>& states,
@@ -643,14 +643,14 @@ public:
         std::copy(states.data(), states.data() + states.size(),
                 &m_state.updY()[0]);
         // TODO cannot use control signals...
-        for (int i = 0; i < m_mucoProb.getProperty_costs().size(); ++i) {
-            cost += m_mucoProb.get_costs(i).calcEndpointCost(m_state);
+        for (int i = 0; i < m_mocoProb.getProperty_costs().size(); ++i) {
+            cost += m_mocoProb.get_costs(i).calcEndpointCost(m_state);
         }
     }
 
 private:
-    const MocoSolver& m_mucoSolver;
-    const MocoProblem& m_mucoProb;
+    const MocoSolver& m_mocoSolver;
+    const MocoProblem& m_mocoProb;
     Model m_model;
     mutable SimTK::State m_state;
 };

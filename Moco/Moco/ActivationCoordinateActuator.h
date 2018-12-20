@@ -1,5 +1,5 @@
-#ifndef MUSCOLLO_ACTIVATIONCOORDINATEACTUATOR_H
-#define MUSCOLLO_ACTIVATIONCOORDINATEACTUATOR_H
+#ifndef MOCO_ACTIVATIONCOORDINATEACTUATOR_H
+#define MOCO_ACTIVATIONCOORDINATEACTUATOR_H
 /* -------------------------------------------------------------------------- *
  * OpenSim Moco: ActivationCoordinateActuator.h                           *
  * -------------------------------------------------------------------------- *
@@ -32,7 +32,7 @@ namespace OpenSim {
 /// activation_time_constant: 0.01
 /// default_activation: 0.5
 /// @endverbatim
-class OSIMMUSCOLLO_API
+class OSIMMOCO_API
     ActivationCoordinateActuator : public CoordinateActuator {
     OpenSim_DECLARE_CONCRETE_OBJECT(ActivationCoordinateActuator,
         CoordinateActuator);
@@ -86,4 +86,4 @@ private:
 
 } // namespace OpenSim
 
-#endif // MUSCOLLO_ACTIVATIONCOORDINATEACTUATOR_H
+#endif // MOCO_ACTIVATIONCOORDINATEACTUATOR_H

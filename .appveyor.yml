@@ -149,10 +149,10 @@ after_test:
   - ps: Get-ChildItem -Path "C:\projects\deps" -Recurse -Include ** | Foreach-Object { $_.LastWriteTime = (Get-Date).AddDays(-1) }
   - 7z a C:\opensim-moco-dependencies.zip C:\projects\deps
   - appveyor PushArtifact C:\opensim-moco-dependencies.zip
-  # The published binaries can be downloaded from this link: https://ci.appveyor.com/api/projects/opensim-org/muscollo/artifacts/opensim-muscollo.zip
+  # The published binaries can be downloaded from this link: https://ci.appveyor.com/api/projects/opensim-org/opensim-moco/artifacts/opensim-moco.zip
   # Create and upload NuGet package.
-  #- IF DEFINED DISTR nuget pack .github/opensim-muscollo.nuspec -BasePath C:\muscollo
-  #- IF DEFINED DISTR appveyor PushArtifact opensim-muscollo.0.0.0.nupkg
+  #- IF DEFINED DISTR nuget pack .github/opensim-moco.nuspec -BasePath C:\moco
+  #- IF DEFINED DISTR appveyor PushArtifact opensim-moco.0.0.0.nupkg
  
  
 # The following, if uncommented, should allow you to remote-desktop into

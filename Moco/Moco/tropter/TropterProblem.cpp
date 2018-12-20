@@ -111,14 +111,14 @@ convertIterateTropterToMoco(const tropIterateType& tropSol) const {
     SimTK::RowVector parameters(numParameters, tropSol.parameters.data());
 
     // Create iterate.
-    MocoIterateType mucoIter(time, state_names, control_names, multiplier_names,
+    MocoIterateType mocoIter(time, state_names, control_names, multiplier_names,
                         derivative_names, parameter_names, states, controls,
                         multipliers, derivatives, parameters);
     // Append slack variables.
     for (int i = 0; i < numSlacks; ++i) {
-        mucoIter.appendSlack(slack_names[i], slacks.col(i));
+        mocoIter.appendSlack(slack_names[i], slacks.col(i));
     }
-    return mucoIter;
+    return mocoIter;
 }
 
 template <typename T>
@@ -139,40 +139,40 @@ convertToMocoSolution(const tropter::Solution& tropSol) const {
 
 template <typename T>
 tropter::Iterate MocoTropterSolver::TropterProblemBase<T>::
-convertToTropterIterate(const OpenSim::MocoIterate& mucoIter) const {
+convertToTropterIterate(const OpenSim::MocoIterate& mocoIter) const {
     tropter::Iterate tropIter;
-    if (mucoIter.empty()) return tropIter;
+    if (mocoIter.empty()) return tropIter;
 
     using Eigen::Map;
     using Eigen::RowVectorXd;
     using Eigen::MatrixXd;
     using Eigen::VectorXd;
 
-    const auto& time = mucoIter.getTime();
+    const auto& time = mocoIter.getTime();
     tropIter.time = Map<const RowVectorXd>(&time[0], time.size());
 
-    tropIter.state_names = mucoIter.getStateNames();
-    tropIter.control_names = mucoIter.getControlNames();
-    tropIter.adjunct_names = mucoIter.getMultiplierNames();
-    const auto& derivativeNames = mucoIter.getDerivativeNames();
+    tropIter.state_names = mocoIter.getStateNames();
+    tropIter.control_names = mocoIter.getControlNames();
+    tropIter.adjunct_names = mocoIter.getMultiplierNames();
+    const auto& derivativeNames = mocoIter.getDerivativeNames();
     tropIter.adjunct_names.insert(tropIter.adjunct_names.end(),
             derivativeNames.begin(), derivativeNames.end());
-    tropIter.diffuse_names = mucoIter.getSlackNames();
-    tropIter.parameter_names = mucoIter.getParameterNames();
+    tropIter.diffuse_names = mocoIter.getSlackNames();
+    tropIter.parameter_names = mocoIter.getParameterNames();
 
     int numTimes = (int)time.size();
     int numStates = (int)tropIter.state_names.size();
     int numControls = (int)tropIter.control_names.size();
-    int numMultipliers = (int)mucoIter.getMultiplierNames().size();
+    int numMultipliers = (int)mocoIter.getMultiplierNames().size();
     int numDerivatives = (int)derivativeNames.size();
     int numDiffuses = (int)tropIter.diffuse_names.size();
     int numParameters = (int)tropIter.parameter_names.size();
-    const auto& states = mucoIter.getStatesTrajectory();
-    const auto& controls = mucoIter.getControlsTrajectory();
-    const auto& multipliers = mucoIter.getMultipliersTrajectory();
-    const auto& derivatives = mucoIter.getDerivativesTrajectory();
-    const auto& slacks = mucoIter.getSlacksTrajectory();
-    const auto& parameters = mucoIter.getParameters();
+    const auto& states = mocoIter.getStatesTrajectory();
+    const auto& controls = mocoIter.getControlsTrajectory();
+    const auto& multipliers = mocoIter.getMultipliersTrajectory();
+    const auto& derivatives = mocoIter.getDerivativesTrajectory();
+    const auto& slacks = mocoIter.getSlacksTrajectory();
+    const auto& parameters = mocoIter.getParameters();
     // Moco's matrix is numTimes x numStates;
     // tropter's is numStates x numTimes.
     if (numStates) {

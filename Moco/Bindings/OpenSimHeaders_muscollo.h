@@ -1,5 +1,5 @@
-#ifndef MUSCOLLO_OPENSIM_HEADERS_MUSCOLLO_H_
-#define MUSCOLLO_OPENSIM_HEADERS_MUSCOLLO_H_
+#ifndef MOCO_OPENSIM_HEADERS_MOCO_H_
+#define MOCO_OPENSIM_HEADERS_MOCO_H_
 /* This header is only used with SWIG to create bindings.
 */
 
@@ -20,4 +20,4 @@
 #include <Moco/ActivationCoordinateActuator.h>
 #include <Moco/MocoUtilities.h>
 
-#endif // MUSCOLLO_OPENSIM_HEADERS_MUSCOLLO_H_
+#endif // MOCO_OPENSIM_HEADERS_MOCO_H_

@@ -48,7 +48,7 @@ using namespace OpenSim;
 
 static osimMocoInstantiator instantiator;
 
-OSIMMUSCOLLO_API void RegisterTypes_osimMoco() {
+OSIMMOCO_API void RegisterTypes_osimMoco() {
     try {
         Object::registerType(MocoFinalTimeCost());
         Object::registerType(MocoWeight());

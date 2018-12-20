@@ -64,12 +64,12 @@ target_include_directories(osimMoco INTERFACE
         $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
 
 set_target_properties(osimMoco PROPERTIES
-        DEFINE_SYMBOL OSIMMUSCOLLO_EXPORTS
+        DEFINE_SYMBOL OSIMMOCO_EXPORTS
         PROJECT_LABEL "Library - osimMoco"
         FOLDER "Moco"
         )
 
-if(MUSCOLLO_COPY_DEPENDENCIES)
+if(MOCO_COPY_DEPENDENCIES)
     if(APPLE)
         set(rpath_macro "\@loader_path")
     elseif(UNIX)
@@ -90,5 +90,5 @@ install(TARGETS osimMoco EXPORT MocoTargets
 
 # TODO do not install InverseMuscleSolverMotionData.h b/c it uses Eigen.
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
-        DESTINATION ${MUSCOLLO_INSTALL_INCLUDEDIR}/Moco
+        DESTINATION ${MOCO_INSTALL_INCLUDEDIR}/Moco
         FILES_MATCHING PATTERN "*.h*")

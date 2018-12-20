@@ -77,9 +77,9 @@ protected:
 };
 
 void minimizePendulumReactionLoads() {
-    MocoTool muco;
-    muco.setName("minimize_pendulum_reaction_loads");
-    MocoProblem& mp = muco.updProblem();
+    MocoTool moco;
+    moco.setName("minimize_pendulum_reaction_loads");
+    MocoProblem& mp = moco.updProblem();
     mp.setModel(createInvertedPendulumModel());
 
     mp.setTimeBounds(0, 1);
@@ -91,7 +91,7 @@ void minimizePendulumReactionLoads() {
     reactionNormCost.setJointPath("j0");
     mp.addCost(reactionNormCost);
 
-    MocoTropterSolver& ms = muco.initSolver();
+    MocoTropterSolver& ms = moco.initSolver();
     ms.set_num_mesh_points(50);
     ms.set_verbosity(2);
     ms.set_optim_solver("ipopt");
@@ -100,15 +100,15 @@ void minimizePendulumReactionLoads() {
     ms.set_optim_hessian_approximation("exact");
     ms.setGuess("bounds");
 
-    MocoSolution solution = muco.solve();
+    MocoSolution solution = moco.solve();
     solution.write("sandboxJointReaction_minimizePendulumReactionLoads.sto");
-    muco.visualize(solution);
+    moco.visualize(solution);
 }
 
 void minimizeControlEffort() {
-    MocoTool muco;
-    muco.setName("minimize_pendulum_reaction_loads");
-    MocoProblem& mp = muco.updProblem();
+    MocoTool moco;
+    moco.setName("minimize_pendulum_reaction_loads");
+    MocoProblem& mp = moco.updProblem();
     mp.setModel(createInvertedPendulumModel());
 
     mp.setTimeBounds(0, 1);
@@ -119,7 +119,7 @@ void minimizeControlEffort() {
     MocoControlCost effort;
     mp.addCost(effort);
 
-    MocoTropterSolver& ms = muco.initSolver();
+    MocoTropterSolver& ms = moco.initSolver();
     ms.set_num_mesh_points(50);
     ms.set_verbosity(2);
     ms.set_optim_solver("ipopt");
@@ -128,9 +128,9 @@ void minimizeControlEffort() {
     ms.set_optim_hessian_approximation("exact");
     ms.setGuess("bounds");
 
-    MocoSolution solution = muco.solve();
+    MocoSolution solution = moco.solve();
     solution.write("sandboxJointReaction_minimizeControlEffort.sto");
-    muco.visualize(solution);
+    moco.visualize(solution);
 }
 
 void main() {

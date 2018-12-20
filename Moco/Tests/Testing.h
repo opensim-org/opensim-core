@@ -1,5 +1,5 @@
-#ifndef MUSCOLLO_TESTING_H
-#define MUSCOLLO_TESTING_H
+#ifndef MOCO_TESTING_H
+#define MOCO_TESTING_H
 /* -------------------------------------------------------------------------- *
  * OpenSim Moco: testing.h                                                *
  * -------------------------------------------------------------------------- *
@@ -121,4 +121,4 @@ do {                                                                         \
     OpenSim_REQUIRE_MATRIX_INTERNAL(actual, expected, tol, margin);          \
 } while (0)
 
-#endif // MUSCOLLO_TESTING_H
+#endif // MOCO_TESTING_H

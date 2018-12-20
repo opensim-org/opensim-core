@@ -1,5 +1,5 @@
-#ifndef MUSCOLLO_DEGROOTEFREGLY2016MUSCLE_H
-#define MUSCOLLO_DEGROOTEFREGLY2016MUSCLE_H
+#ifndef MOCO_DEGROOTEFREGLY2016MUSCLE_H
+#define MOCO_DEGROOTEFREGLY2016MUSCLE_H
 /* -------------------------------------------------------------------------- *
  * OpenSim Moco: DeGrooteFregly2016Muscle.h                               *
  * -------------------------------------------------------------------------- *
@@ -62,7 +62,7 @@ namespace OpenSim {
 /// Direct Collocation Optimal Control Problem Formulations for Solving the
 /// Muscle Redundancy Problem. Annals of Biomedical Engineering, 44(10), 1–15.
 /// http://doi.org/10.1007/s10439-016-1591-9
-class /*OSIMMUSCOLLO_API*/DeGrooteFregly2016Muscle : public Muscle {
+class /*OSIMMOCO_API*/DeGrooteFregly2016Muscle : public Muscle {
     OpenSim_DECLARE_CONCRETE_OBJECT(DeGrooteFregly2016Muscle, Muscle);
 public:
 
@@ -385,4 +385,4 @@ private:
 
 } // namespace OpenSim
 
-#endif // MUSCOLLO_DEGROOTEFREGLY2016MUSCLE_H
+#endif // MOCO_DEGROOTEFREGLY2016MUSCLE_H

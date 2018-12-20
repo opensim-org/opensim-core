@@ -1,5 +1,5 @@
-#ifndef MUSCOLLO_MUSCLELIKECOORDINATEACTUATOR_H
-#define MUSCOLLO_MUSCLELIKECOORDINATEACTUATOR_H
+#ifndef MOCO_MUSCLELIKECOORDINATEACTUATOR_H
+#define MOCO_MUSCLELIKECOORDINATEACTUATOR_H
 /* -------------------------------------------------------------------------- *
  * OpenSim Moco: MuscleLikeCoordinateActuator.h                           *
  * -------------------------------------------------------------------------- *
@@ -100,6 +100,6 @@ private:
 
 } //namespace Opensim
 
-#endif // MUSCOLLO_MUSCLELIKECOORDINATEACTUATOR_H
+#endif // MOCO_MUSCLELIKECOORDINATEACTUATOR_H
 
 

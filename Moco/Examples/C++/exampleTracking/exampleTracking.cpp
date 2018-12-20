@@ -95,12 +95,12 @@ std::unique_ptr<Model> createDoublePendulumModel() {
 
 int main() {
 
-    MocoTool muco;
-    muco.setName("double_pendulum_tracking");
+    MocoTool moco;
+    moco.setName("double_pendulum_tracking");
 
     // Define the optimal control problem.
     // ===================================
-    MocoProblem& problem = muco.updProblem();
+    MocoProblem& problem = moco.updProblem();
 
     // Model (dynamics).
     // -----------------
@@ -133,20 +133,20 @@ int main() {
 
     // Configure the solver.
     // =====================
-    MocoTropterSolver& solver = muco.initSolver();
+    MocoTropterSolver& solver = moco.initSolver();
     solver.set_num_mesh_points(50);
     solver.set_verbosity(2);
     solver.set_optim_solver("ipopt");
     solver.set_optim_hessian_approximation("exact");
 
-    muco.print("double_pendulum_tracking.omuco");
+    moco.print("double_pendulum_tracking.omoco");
 
     // Solve the problem.
     // ==================
-    MocoSolution solution = muco.solve();
+    MocoSolution solution = moco.solve();
     solution.write("exampleTracking_solution.sto");
 
-    muco.visualize(solution);
+    moco.visualize(solution);
 
     return EXIT_SUCCESS;
 }

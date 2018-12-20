@@ -1,5 +1,5 @@
 % -------------------------------------------------------------------------- %
-% OpenSim Muscollo: exampleMarkerTracking10DOF.m                             %
+% OpenSim Moco: exampleMarkerTracking10DOF.m                             %
 % -------------------------------------------------------------------------- %
 % Copyright (c) 2017 Stanford University and the Authors                     %
 %                                                                            %
@@ -39,14 +39,14 @@ addCoordinateActuator(model, 'hip_flexion_l', 100);
 addCoordinateActuator(model, 'knee_angle_l', 100);
 addCoordinateActuator(model, 'ankle_angle_l', 100);
 
-% Create MucoTool.
+% Create MocoTool.
 % ================
-muco = MucoTool();
-muco.setName('marker_tracking_10dof');
+moco = MocoTool();
+moco.setName('marker_tracking_10dof');
 
 % Define the optimal control problem.
 % ===================================
-problem = muco.updProblem();
+problem = moco.updProblem();
 
 % Model (dynamics).
 % -----------------
@@ -69,7 +69,7 @@ problem.setTimeBounds(0, 1.25);
 % Create a marker tracking cost term. This term will compute the squared 
 % difference between the model markers and the experimental markers, 
 % integrated over the phase.
-markerTrackingCost = MucoMarkerTrackingCost();
+markerTrackingCost = MocoMarkerTrackingCost();
 markerTrackingCost.setName('marker_tracking');
 
 % Create a set of marker weights to define the relative importance for
@@ -104,13 +104,13 @@ problem.addCost(markerTrackingCost);
 
 % Add a low-weighted control effort cost to reduce oscillations in the 
 % actuator controls.
-controlCost = MucoControlCost();
+controlCost = MocoControlCost();
 controlCost.set_weight(0.1);
 problem.addCost(controlCost);
 
 % Configure the solver.
 % =====================
-solver = muco.initSolver();
+solver = moco.initSolver();
 % 10 mesh points ~ 1 minute to solve
 % 25 mesh points ~ 5 minutes to solve
 solver.set_num_mesh_points(10);
@@ -120,17 +120,17 @@ solver.set_hessian_block_sparsity_mode('dense');
 solver.setGuess('bounds');
 
 % Now that we've finished setting up the tool, print it to a file.
-muco.print('marker_tracking_10dof.omuco');
+moco.print('marker_tracking_10dof.omoco');
 
 % Solve the problem.
 % ==================
-solution = muco.solve();
+solution = moco.solve();
 solution.write('marker_tracking_10dof_solution.sto');
 
 % Visualize.
 % ==========
 if ~strcmp(getenv('OPENSIM_USE_VISUALIZER'), '0')
-    muco.visualize(solution);
+    moco.visualize(solution);
 end
 
 % Plot states trajectory solution.

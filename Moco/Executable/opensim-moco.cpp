@@ -14,7 +14,7 @@ static const char helpMessage[] =
 R"(OpenSim Moco. Use this command to run a setup file for the following:
   - Global Static Optimization,
   - INDYGO: Inverse, Dynamic, Global Optimization (tracking),
-  - MocoTool: flexible optimal control framework (.omuco file).
+  - MocoTool: flexible optimal control framework (.omoco file).
 
 Usage:
   opensim-moco -h | --help
@@ -31,12 +31,12 @@ Usage:
     Print a template XML file for the provided tool.
     <tool> can be "GlobalStaticOptimization", "INDYGO", or "MocoTool"
 
-  opensim-moco visualize <model-or-omuco-file> [<iterate-file>]
+  opensim-moco visualize <model-or-omoco-file> [<iterate-file>]
 
     Visualize an OpenSim model (.osim file) with a MocoIterate, if provided.
     If an iterate is not provided, the model is visualized with its default
     state.
-    You can provide a MocoTool setup file (.omuco) instead of a model.
+    You can provide a MocoTool setup file (.omoco) instead of a model.
 
 )";
 
@@ -70,7 +70,7 @@ int main(int argc, char* argv[]) {
                         ".");
             }
             std::string fileName = "default_" + className;
-            if (className == "MocoTool") fileName += ".omuco";
+            if (className == "MocoTool") fileName += ".omoco";
             else fileName += ".xml";
             std::cout << "Printing '" << fileName << "'." << std::endl;
             Object::setSerializeAllDefaults(true);
@@ -111,10 +111,10 @@ int main(int argc, char* argv[]) {
                 auto solution = mrs->solve();
                 if (visualize)
                     std::cout << "Ignoring --visualize flag." << std::endl;
-            } else if (const auto* muco
+            } else if (const auto* moco
                     = dynamic_cast<const MocoTool*>(obj.get())) {
-                auto solution = muco->solve();
-                if (visualize) muco->visualize(solution);
+                auto solution = moco->solve();
+                if (visualize) moco->visualize(solution);
             } else {
                 throw Exception("The provided file '" + setupFile +
                         "' yields a '" + obj->getConcreteClassName() +
@@ -130,8 +130,8 @@ int main(int argc, char* argv[]) {
             if (file.rfind(".osim") != std::string::npos) {
                 model = OpenSim::make_unique<Model>(file);
             } else {
-                MocoTool muco(file);
-                const MocoPhase& phase = muco.getProblem().getPhase(0);
+                MocoTool moco(file);
+                const MocoPhase& phase = moco.getProblem().getPhase(0);
                 model.reset(phase.getModel().clone());
             }
             if (argc == 3) {

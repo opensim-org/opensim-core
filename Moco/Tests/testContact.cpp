@@ -113,8 +113,8 @@ SimTK::Real testNormalForce(CreateContactFunction createContact) {
     // optimization.
     SimTK::Real finalHeightDircol;
     {
-        MocoTool muco;
-        MocoProblem& mp = muco.updProblem();
+        MocoTool moco;
+        MocoProblem& mp = moco.updProblem();
         mp.setModelCopy(model);
         mp.setTimeBounds(0, finalTime);
         mp.setStateInfo("/tx/tx/value", {-5, 5}, 0);
@@ -122,11 +122,11 @@ SimTK::Real testNormalForce(CreateContactFunction createContact) {
         mp.setStateInfo("/tx/tx/speed", {-10, 10}, 0);
         mp.setStateInfo("/ty/ty/speed", {-10, 10}, 0);
 
-        MocoTropterSolver& ms = muco.initSolver();
+        MocoTropterSolver& ms = moco.initSolver();
         ms.set_num_mesh_points(50);
 
-        MocoSolution solution = muco.solve();
-        // muco.visualize(solution);
+        MocoSolution solution = moco.solve();
+        // moco.visualize(solution);
 
         auto statesTraj = solution.exportToStatesTrajectory(mp);
         const auto& finalState = statesTraj.back();
@@ -207,8 +207,8 @@ void testFrictionForce(CreateContactFunction createContact,
     // This is a simulation (initial value problem), not a trajectory
     // optimization.
     {
-        MocoTool muco;
-        MocoProblem& mp = muco.updProblem();
+        MocoTool moco;
+        MocoProblem& mp = moco.updProblem();
         mp.setModelCopy(model);
         mp.setTimeBounds(0, finalTime);
         mp.setStateInfo("/tx/tx/value", {-5, 5}, 0);
@@ -216,11 +216,11 @@ void testFrictionForce(CreateContactFunction createContact,
         mp.setStateInfo("/tx/tx/speed", {-10, 10}, vx0);
         mp.setStateInfo("/ty/ty/speed", {-10, 10}, 0);
 
-        MocoTropterSolver& ms = muco.initSolver();
+        MocoTropterSolver& ms = moco.initSolver();
         ms.set_num_mesh_points(25);
 
-        MocoSolution solution = muco.solve();
-        // muco.visualize(solution);
+        MocoSolution solution = moco.solve();
+        // moco.visualize(solution);
 
         auto statesTraj = solution.exportToStatesTrajectory(mp);
         const auto& finalState = statesTraj.back();

@@ -1,5 +1,5 @@
-#ifndef MUSCOLLO_MUCOTOOL_H
-#define MUSCOLLO_MUCOTOOL_H
+#ifndef MOCO_MOCOTOOL_H
+#define MOCO_MOCOTOOL_H
 /* -------------------------------------------------------------------------- *
  * OpenSim Moco: MocoTool.h                                               *
  * -------------------------------------------------------------------------- *
@@ -52,8 +52,8 @@ class MocoTropterSolver;
 /// Saving the tool setup to a file
 /// -------------------------------
 /// You can save the MocoTool to a file by calling MocoTool::print(), and you
-/// can load the setup using MocoTool(const std::string& omucoFile).
-/// MocoTool setup files have a `.omuco` extension.
+/// can load the setup using MocoTool(const std::string& omocoFile).
+/// MocoTool setup files have a `.omoco` extension.
 ///
 /// Solver
 /// ------
@@ -65,7 +65,7 @@ class MocoTropterSolver;
 
 // TODO rename to MocoFramework.
 
-class OSIMMUSCOLLO_API MocoTool : public Object {
+class OSIMMOCO_API MocoTool : public Object {
     OpenSim_DECLARE_CONCRETE_OBJECT(MocoTool, Object);
 public:
     OpenSim_DECLARE_PROPERTY(write_solution, std::string,
@@ -76,7 +76,7 @@ public:
     MocoTool();
 
     /// Load a MocoTool setup file.
-    MocoTool(const std::string& omucoFile);
+    MocoTool(const std::string& omocoFile);
 
     const MocoProblem& getProblem() const;
 
@@ -151,4 +151,4 @@ private:
 
 } // namespace OpenSim
 
-#endif // MUSCOLLO_MUCOTOOL_H
+#endif // MOCO_MOCOTOOL_H

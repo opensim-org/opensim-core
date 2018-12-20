@@ -1,9 +1,9 @@
 
-set(SWIG_JAVA_MUSCOLLO_INTERFACE_FILE 
+set(SWIG_JAVA_MOCO_INTERFACE_FILE 
     "${CMAKE_CURRENT_SOURCE_DIR}/swig/java_moco.i")
-set(SWIG_JAVA_MUSCOLLO_CXX_FILE 
+set(SWIG_JAVA_MOCO_CXX_FILE 
     "${CMAKE_CURRENT_BINARY_DIR}/java_moco.cxx")
-set(SWIG_JAVA_MUSCOLLO_H_FILE   
+set(SWIG_JAVA_MOCO_H_FILE   
     "${CMAKE_CURRENT_BINARY_DIR}/java_moco.h")
 
 set(OPENSIM_JAVA_WRAPPING_PACKAGE "org.opensim.modeling")
@@ -75,17 +75,17 @@ function(MocoGenerateJavaWrapper
 endfunction() 
 
 MocoGenerateJavaWrapper(moco
-    ${SWIG_JAVA_MUSCOLLO_INTERFACE_FILE}
-    ${SWIG_JAVA_MUSCOLLO_CXX_FILE}
-    ${SWIG_JAVA_MUSCOLLO_H_FILE})
+    ${SWIG_JAVA_MOCO_INTERFACE_FILE}
+    ${SWIG_JAVA_MOCO_CXX_FILE}
+    ${SWIG_JAVA_MOCO_H_FILE})
 
 
 # Compile the C++ wrapper into a library.
 # ---------------------------------------
 add_library(osimMocoJavaJNI
     SHARED 
-    ${SWIG_JAVA_MUSCOLLO_CXX_FILE} 
-    ${SWIG_JAVA_MUSCOLLO_H_FILE}
+    ${SWIG_JAVA_MOCO_CXX_FILE} 
+    ${SWIG_JAVA_MOCO_H_FILE}
     )
 
 # SYSTEM to avoid warnings.
@@ -113,10 +113,10 @@ elseif(${CMAKE_CXX_COMPILER_ID} MATCHES "MSVC")
     set(COMPILE_FLAGS "/wd4996 /wd4114")
 endif()
 set_source_files_properties(
-        ${SWIG_JAVA_MUSCOLLO_CXX_FILE}
+        ${SWIG_JAVA_MOCO_CXX_FILE}
         PROPERTIES COMPILE_FLAGS "${COMPILE_FLAGS}")
 
-if(MUSCOLLO_COPY_DEPENDENCIES)
+if(MOCO_COPY_DEPENDENCIES)
     # The osim libraries that osimJavaJNI needs are in the same folder as
     # osimJavaJNI.
     if(APPLE)
@@ -147,7 +147,7 @@ find_package(Java 1.7 REQUIRED)
 # OpenSimJNI/CMakeLists.txt).
 add_custom_command(
     OUTPUT "${SWIG_JAVA_JAR_BUILD_OUTPUT_PATH}"
-    DEPENDS ${SWIG_JAVA_MUSCOLLO_CXX_FILE}
+    DEPENDS ${SWIG_JAVA_MOCO_CXX_FILE}
     COMMAND ${CMAKE_COMMAND} -E remove ${SWIG_JAVA_SOURCE_BUILD_OUTPUT_DIR}/*
     COMMAND ${CMAKE_COMMAND} -E copy_directory
             ${OpenSim_JAVA_FILES_DIR}/opensim/modeling
@@ -180,7 +180,7 @@ set_target_properties(MocoJavaBindings PROPERTIES
 # Install.
 # --------
 install(FILES "${SWIG_JAVA_JAR_BUILD_OUTPUT_PATH}"
-        DESTINATION ${MUSCOLLO_INSTALL_JAVAJARDIR})
+        DESTINATION ${MOCO_INSTALL_JAVAJARDIR})
 
 
 # Java tests.

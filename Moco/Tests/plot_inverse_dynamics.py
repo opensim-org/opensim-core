@@ -1,5 +1,5 @@
 # -------------------------------------------------------------------------- #
-# OpenSim Muscollo: plot_inverse_dynamics.py                                 #
+# OpenSim Moco: plot_inverse_dynamics.py                                 #
 # -------------------------------------------------------------------------- #
 # Copyright (c) 2017 Stanford University and the Authors                     #
 #                                                                            #

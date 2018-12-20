@@ -241,7 +241,7 @@ MocoSolution MocoTropterSolver::solveImpl() const {
         !getProperty_exact_hessian_block_sparsity_mode().empty(), Exception, 
         "A value for solver property 'exact_hessian_block_sparsity_mode' was "
         "provided, but is unused when using a 'limited-memory' Hessian "
-        "approximation. Set solver property 'optim_hessian_approximation' to"
+        "approximation. Set solver property 'optim_hessian_approximation' to "
         "'exact' for Hessian block sparsity to take effect.");
     if (!getProperty_exact_hessian_block_sparsity_mode().empty()) {
         checkPropertyInSet(*this, 
@@ -326,7 +326,7 @@ MocoSolution MocoTropterSolver::solveImpl() const {
         dircol.print_constraint_values(tropSolution);
     }
 
-    MocoSolution mucoSolution = ocp->convertToMocoSolution(tropSolution);
+    MocoSolution mocoSolution = ocp->convertToMocoSolution(tropSolution);
 
     // If enforcing model constraints and not minimizing Lagrange multipliers,
     // check the rank of the constraint Jacobian and if rank-deficient, print
@@ -335,7 +335,7 @@ MocoSolution MocoTropterSolver::solveImpl() const {
              !get_minimize_lagrange_multipliers()) {
         const auto& model = getProblemRep().getModel();
         const auto& matter = model.getMatterSubsystem();
-        Storage storage = mucoSolution.exportToStatesStorage();
+        Storage storage = mocoSolution.exportToStatesStorage();
         // TODO update when we support multiple phases.
         auto statesTraj = StatesTrajectory::createFromStatesStorage(model, 
             storage);
@@ -379,22 +379,22 @@ MocoSolution MocoTropterSolver::solveImpl() const {
     }
 
     // TODO move this to convert():
-    MocoSolver::setSolutionStats(mucoSolution, tropSolution.success,
+    MocoSolver::setSolutionStats(mocoSolution, tropSolution.success,
             tropSolution.status, tropSolution.num_iterations);
 
     if (get_verbosity()) {
         std::cout << std::string(79, '-') << "\n";
         std::cout << "Elapsed real time: "
                 << stopwatch.getElapsedTimeFormatted() << ".\n";
-        if (mucoSolution) {
+        if (mocoSolution) {
             std::cout << "MocoTropterSolver succeeded!\n";
         } else {
             // TODO cout or cerr?
             std::cout << "MocoTropterSolver did NOT succeed:\n";
-            std::cout << "  " << mucoSolution.getStatus() << "\n";
+            std::cout << "  " << mocoSolution.getStatus() << "\n";
         }
         std::cout << std::string(79, '=') << std::endl;
     }
 
-    return mucoSolution;
+    return mocoSolution;
 }

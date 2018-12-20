@@ -1,5 +1,5 @@
-#ifndef MUSCOLLO_MUCOBOUNDS_H
-#define MUSCOLLO_MUCOBOUNDS_H
+#ifndef MOCO_MOCOBOUNDS_H
+#define MOCO_MOCOBOUNDS_H
 /* -------------------------------------------------------------------------- *
  * OpenSim Moco: MocoBounds.h                                             *
  * -------------------------------------------------------------------------- *
@@ -31,7 +31,7 @@ class MocoVariableInfo;
 class MocoParameter;
 
 /// Small struct to handle bounds.
-class OSIMMUSCOLLO_API MocoBounds : public Object {
+class OSIMMOCO_API MocoBounds : public Object {
 OpenSim_DECLARE_CONCRETE_OBJECT(MocoBounds, Object);
 public:
     /// The bounds are NaN, which means (-inf, inf).
@@ -103,14 +103,14 @@ private:
 
 };
 /// Used for specifying the bounds on a variable at the start of a phase.
-class OSIMMUSCOLLO_API MocoInitialBounds : public MocoBounds {
+class OSIMMOCO_API MocoInitialBounds : public MocoBounds {
 OpenSim_DECLARE_CONCRETE_OBJECT(MocoInitialBounds, MocoBounds);
     using MocoBounds::MocoBounds;
     friend MocoPhase;
     friend MocoVariableInfo;
 };
 /// Used for specifying the bounds on a variable at the end of a phase.
-class OSIMMUSCOLLO_API MocoFinalBounds : public MocoBounds {
+class OSIMMOCO_API MocoFinalBounds : public MocoBounds {
 OpenSim_DECLARE_CONCRETE_OBJECT(MocoFinalBounds, MocoBounds);
     using MocoBounds::MocoBounds;
     friend MocoPhase;
@@ -119,4 +119,4 @@ OpenSim_DECLARE_CONCRETE_OBJECT(MocoFinalBounds, MocoBounds);
 
 } // namespace OpenSim
 
-#endif // MUSCOLLO_MUCOBOUNDS_H
+#endif // MOCO_MOCOBOUNDS_H

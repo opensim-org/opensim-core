@@ -4,7 +4,7 @@ if(Matlab_FOUND AND BUILD_TESTING)
     add_subdirectory(Tests)
 endif()
 
-install(DIRECTORY Examples/ DESTINATION "${MUSCOLLO_INSTALL_MATLABEXDIR}")
+install(DIRECTORY Examples/ DESTINATION "${MOCO_INSTALL_MATLABEXDIR}")
 
 # Copy example model and data file to use in Sandbox example.
 set(SANDBOX_MARKER_TRACKING_DIR 
@@ -18,9 +18,9 @@ file(COPY "Examples/exampleMarkerTracking10DOF/marker_trajectories.trc"
 # that may be different on different platforms, so we configure it with CMake
 # variables.
 file(RELATIVE_PATH matlabexdir_to_install_dir
-    "${CMAKE_INSTALL_PREFIX}/${MUSCOLLO_INSTALL_MATLABEXDIR}"
+    "${CMAKE_INSTALL_PREFIX}/${MOCO_INSTALL_MATLABEXDIR}"
     "${CMAKE_INSTALL_PREFIX}")
 configure_file(configureMoco.m.in
     "${CMAKE_CURRENT_BINARY_DIR}/configureMoco.m" @ONLY)
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/configureMoco.m"
-        DESTINATION "${MUSCOLLO_INSTALL_MATLABEXDIR}")
+        DESTINATION "${MOCO_INSTALL_MATLABEXDIR}")

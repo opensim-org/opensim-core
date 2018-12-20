@@ -1,5 +1,5 @@
-#ifndef MUSCOLLO_MUCOPROBLEM_H
-#define MUSCOLLO_MUCOPROBLEM_H
+#ifndef MOCO_MOCOPROBLEM_H
+#define MOCO_MOCOPROBLEM_H
 /* -------------------------------------------------------------------------- *
  * OpenSim Moco: MocoProblem.h                                            *
  * -------------------------------------------------------------------------- *
@@ -40,7 +40,7 @@ namespace OpenSim {
 /// Moco does not support all types of models. Specifically, the
 /// following components are not supported:
 ///   - Actuator%s with multiple controls (non-ScalarActuator%s).
-class OSIMMUSCOLLO_API MocoPhase : public Object {
+class OSIMMOCO_API MocoPhase : public Object {
 OpenSim_DECLARE_CONCRETE_OBJECT(MocoPhase, Object);
 public:
     MocoPhase();
@@ -315,7 +315,7 @@ private:
 /// anything with your problem (this class only contains user input).
 /// Use createRep() to create an instance of MocoProblemRep,
 /// which provides additional functionality.
-class OSIMMUSCOLLO_API MocoProblem : public Object {
+class OSIMMOCO_API MocoProblem : public Object {
 OpenSim_DECLARE_CONCRETE_OBJECT(MocoProblem, Object);
 public:
     MocoProblem();
@@ -419,4 +419,4 @@ private:
 
 } // namespace OpenSim
 
-#endif // MUSCOLLO_MUCOPROBLEM_H
+#endif // MOCO_MOCOPROBLEM_H

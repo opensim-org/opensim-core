@@ -296,8 +296,8 @@ void testHangingMuscleMinimumTime(bool ignoreTendonCompliance) {
     // -------------------------------------
     MocoSolution solutionTrajOpt;
     {
-        MocoTool muco;
-        MocoProblem& problem = muco.updProblem();
+        MocoTool moco;
+        MocoProblem& problem = moco.updProblem();
         problem.setModel(model);
         problem.setTimeBounds(0, {0.05, 1.0});
         // TODO this might have been the culprit when using the Millard muscle:
@@ -325,16 +325,16 @@ void testHangingMuscleMinimumTime(bool ignoreTendonCompliance) {
 
         problem.addCost(MocoFinalTimeCost());
 
-        MocoTropterSolver& solver = muco.initSolver();
+        MocoTropterSolver& solver = moco.initSolver();
         solver.set_optim_sparsity_detection("initial-guess");
         MocoIterate guessForwardSim = solver.createGuess("time-stepping");
         solver.setGuess(guessForwardSim);
         guessForwardSim.write("sandboxMuscle_guess_forward_sim.sto");
         std::cout << "Guess from forward sim: "
                 << guessForwardSim.getStatesTrajectory() << std::endl;
-        muco.visualize(guessForwardSim);
+        moco.visualize(guessForwardSim);
 
-        solutionTrajOpt = muco.solve();
+        solutionTrajOpt = moco.solve();
         std::string solutionFilename = "sandboxMuscle_solution";
         if (ignoreTendonCompliance)
             solutionFilename += "_rigidtendon";
@@ -384,8 +384,8 @@ void testHangingMuscleMinimumTime(bool ignoreTendonCompliance) {
     {
         std::cout << "Tracking the trajectory optimization coordinate solution."
                 << std::endl;
-        MocoTool muco;
-        MocoProblem& problem = muco.updProblem();
+        MocoTool moco;
+        MocoProblem& problem = moco.updProblem();
         problem.setModel(model);
         // Using an equality constraint for the time bounds was essential for
         // recovering the correct excitation.
@@ -424,14 +424,14 @@ void testHangingMuscleMinimumTime(bool ignoreTendonCompliance) {
         tracking.setAllowUnusedReferences(true);
         problem.addCost(tracking);
 
-        MocoTropterSolver& solver = muco.initSolver();
+        MocoTropterSolver& solver = moco.initSolver();
         solver.set_optim_sparsity_detection("initial-guess");
         solver.setGuess("time-stepping");
         // Don't need to use the TrajOpt solution as the initial guess; kinda
         // neat. Although, using TrajOpt for the guess improves convergence.
         // TODO solver.setGuess(solutionTrajOpt);
 
-        MocoSolution solutionTrack = muco.solve();
+        MocoSolution solutionTrack = moco.solve();
         std::string solutionFilename = "sandboxMuscle_track_solution";
         if (ignoreTendonCompliance)
             solutionFilename += "_rigidtendon";

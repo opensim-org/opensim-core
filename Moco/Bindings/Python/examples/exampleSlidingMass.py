@@ -1,5 +1,5 @@
 # -------------------------------------------------------------------------- #
-# OpenSim Muscollo: exampleSlidingMass.py                                    #
+# OpenSim Moco: exampleSlidingMass.py                                    #
 # -------------------------------------------------------------------------- #
 # Copyright (c) 2017 Stanford University and the Authors                     #
 #                                                                            #
@@ -41,14 +41,14 @@ body.attachGeometry(osim.Sphere(0.05))
 
 model.finalizeConnections()
 
-# Create MucoTool.
+# Create MocoTool.
 # ================
-muco = osim.MucoTool()
-muco.setName('sliding_mass')
+moco = osim.MocoTool()
+moco.setName('sliding_mass')
 
 # Define the optimal control problem.
 # ===================================
-problem = muco.updProblem()
+problem = moco.updProblem()
 
 # Model (dynamics).
 # -----------------
@@ -57,34 +57,34 @@ problem.setModel(model)
 # Bounds.
 # -------
 # Initial time must be 0, final time can be within [0, 5].
-problem.setTimeBounds(osim.MucoInitialBounds(0.), osim.MucoFinalBounds(0., 5.))
+problem.setTimeBounds(osim.MocoInitialBounds(0.), osim.MocoFinalBounds(0., 5.))
 
 # Initial position must be 0, final position must be 1.
-problem.setStateInfo('/slider/position/value', osim.MucoBounds(-5, 5),
-                     osim.MucoInitialBounds(0), osim.MucoFinalBounds(1))
+problem.setStateInfo('/slider/position/value', osim.MocoBounds(-5, 5),
+                     osim.MocoInitialBounds(0), osim.MocoFinalBounds(1))
 # Initial and final speed must be 0. Use compact syntax.
 problem.setStateInfo('/slider/position/speed', [-50, 50], [0], [0])
 
 # Applied force must be between -50 and 50.
-problem.setControlInfo('/actuator', osim.MucoBounds(-50, 50))
+problem.setControlInfo('/actuator', osim.MocoBounds(-50, 50))
 
 # Cost.
 # -----
-problem.addCost(osim.MucoFinalTimeCost())
+problem.addCost(osim.MocoFinalTimeCost())
 
 # Configure the solver.
 # =====================
-solver = muco.initSolver()
+solver = moco.initSolver()
 solver.set_num_mesh_points(50)
 
 # Now that we've finished setting up the tool, print it to a file.
-muco.printToXML('sliding_mass.omuco')
+moco.printToXML('sliding_mass.omoco')
 
 # Solve the problem.
 # ==================
-solution = muco.solve();
+solution = moco.solve();
 
 solution.write('sliding_mass_solution.sto')
 
 if os.getenv('OPENSIM_USE_VISUALIZER') != '0':
-    muco.visualize(solution);
+    moco.visualize(solution);

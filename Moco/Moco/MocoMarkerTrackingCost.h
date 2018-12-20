@@ -1,5 +1,5 @@
-#ifndef MUSCOLLO_MUCOMARKERTRACKINGCOST_H
-#define MUSCOLLO_MUCOMARKERTRACKINGCOST_H
+#ifndef MOCO_MOCOMARKERTRACKINGCOST_H
+#define MOCO_MOCOMARKERTRACKINGCOST_H
 /* -------------------------------------------------------------------------- *
  * OpenSim Moco: MocoMarkerTrackingCost.h                                 *
  * -------------------------------------------------------------------------- *
@@ -33,8 +33,8 @@ class Marker;
 /// experimental data location is provided, and integrated over the phase.
 /// The reference can be provided as a file name to a TRC file, or 
 /// programmatically as a TimeSeriesTable.
-/// @ingroup mucocost
-class OSIMMUSCOLLO_API MocoMarkerTrackingCost : public MocoCost {
+/// @ingroup mococost
+class OSIMMOCO_API MocoMarkerTrackingCost : public MocoCost {
 OpenSim_DECLARE_CONCRETE_OBJECT(MocoMarkerTrackingCost, MocoCost);
 public:
     MocoMarkerTrackingCost() { constructProperties(); }
@@ -100,4 +100,4 @@ private:
 
 } // namespace OpenSim
 
-#endif // MUSCOLLO_MUCOMARKERTRACKINGCOST_H
+#endif // MOCO_MOCOMARKERTRACKINGCOST_H

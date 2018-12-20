@@ -484,9 +484,9 @@ MocoIterate runForwardSimulation(Model model, const MocoSolution& solution,
 /// end-effector must lie on a vertical line through the origin and minimize
 /// control effort.
 void testDoublePendulumPointOnLine(bool enforce_constraint_derivatives) {
-    MocoTool muco;
-    muco.setName("double_pendulum_point_on_line");
-    MocoProblem& mp = muco.updProblem();
+    MocoTool moco;
+    moco.setName("double_pendulum_point_on_line");
+    MocoProblem& mp = moco.updProblem();
     // Create double pendulum model and add the point-on-line constraint. The 
     // constraint consists of a vertical line in the y-direction (defined in 
     // ground) and the model end-effector point (the origin of body "b1").
@@ -516,7 +516,7 @@ void testDoublePendulumPointOnLine(bool enforce_constraint_derivatives) {
 
     mp.addCost<MocoControlCost>();
 
-    MocoTropterSolver& ms = muco.initSolver();
+    MocoTropterSolver& ms = moco.initSolver();
     ms.set_num_mesh_points(10);
     ms.set_verbosity(2);
     ms.set_optim_solver("ipopt");
@@ -528,13 +528,13 @@ void testDoublePendulumPointOnLine(bool enforce_constraint_derivatives) {
     ms.set_lagrange_multiplier_weight(10);
     ms.setGuess("bounds");
 
-    MocoSolution solution = muco.solve();
+    MocoSolution solution = moco.solve();
     solution.write("testConstraints_testDoublePendulumPointOnLine.sto");
-    //muco.visualize(solution);
+    //moco.visualize(solution);
 
     model->initSystem();
     StatesTrajectory states = solution.exportToStatesTrajectory(mp);
-    for (int i = 0; i < states.getSize(); ++i) {
+    for (int i = 0; i < (int)states.getSize(); ++i) {
         const auto& s = states.get(i);
         model->realizePosition(s);
         const SimTK::Vec3& loc = endeff.getLocationInGround(s);
@@ -560,8 +560,8 @@ void testDoublePendulumPointOnLine(bool enforce_constraint_derivatives) {
 /// control effort.
 void testDoublePendulumCoordinateCoupler(MocoSolution& solution, 
         bool enforce_constraint_derivatives) {
-    MocoTool muco;
-    muco.setName("double_pendulum_coordinate_coupler");
+    MocoTool moco;
+    moco.setName("double_pendulum_coordinate_coupler");
 
     // Create double pendulum model and add the coordinate coupler constraint. 
     auto model = createDoublePendulumModel();
@@ -585,7 +585,7 @@ void testDoublePendulumCoordinateCoupler(MocoSolution& solution,
     model->addConstraint(constraint);
     model->finalizeConnections();
 
-    MocoProblem& mp = muco.updProblem();
+    MocoProblem& mp = moco.updProblem();
     mp.setModelCopy(*model);
     mp.setTimeBounds(0, 1);
     // Boundary conditions are only enforced for the first coordinate, so we can
@@ -598,7 +598,7 @@ void testDoublePendulumCoordinateCoupler(MocoSolution& solution,
     mp.setControlInfo("/tau1", {-100, 100});
     mp.addCost<MocoControlCost>();
 
-    MocoTropterSolver& ms = muco.initSolver();
+    MocoTropterSolver& ms = moco.initSolver();
     ms.set_num_mesh_points(10);
     ms.set_verbosity(2);
     ms.set_optim_solver("ipopt");
@@ -610,13 +610,13 @@ void testDoublePendulumCoordinateCoupler(MocoSolution& solution,
     ms.set_lagrange_multiplier_weight(10);
     ms.setGuess("bounds");
 
-    solution = muco.solve();
+    solution = moco.solve();
     solution.write("testConstraints_testDoublePendulumCoordinateCoupler.sto");
-    //muco.visualize(solution);
+    //moco.visualize(solution);
 
     model->initSystem();
     StatesTrajectory states = solution.exportToStatesTrajectory(mp);
-    for (int i =0; i < states.getSize(); ++i) {
+    for (int i = 0; i < (int)states.getSize(); ++i) {
         const auto& s = states.get(i);
         model->realizePosition(s);
 
@@ -639,9 +639,9 @@ void testDoublePendulumCoordinateCoupler(MocoSolution& solution,
 /// testDoublePendulumCoordinateCoupler).
 void testDoublePendulumPrescribedMotion(MocoSolution& couplerSolution,
         bool enforce_constraint_derivatives) {
-    MocoTool muco;
-    muco.setName("double_pendulum_prescribed_motion");
-    MocoProblem& mp = muco.updProblem();
+    MocoTool moco;
+    moco.setName("double_pendulum_prescribed_motion");
+    MocoProblem& mp = moco.updProblem();
 
     // Create double pendulum model. 
     auto model = createDoublePendulumModel();
@@ -677,7 +677,7 @@ void testDoublePendulumPrescribedMotion(MocoSolution& couplerSolution,
 
     mp.addCost<MocoControlCost>();
 
-    MocoTropterSolver& ms = muco.initSolver();
+    MocoTropterSolver& ms = moco.initSolver();
     ms.set_num_mesh_points(20); 
     ms.set_verbosity(2);
     ms.set_optim_solver("ipopt");
@@ -693,9 +693,9 @@ void testDoublePendulumPrescribedMotion(MocoSolution& couplerSolution,
     guess.setStatesTrajectory(statesTrajCoupler);
     ms.setGuess(guess);
     
-    MocoSolution solution = muco.solve();
+    MocoSolution solution = moco.solve();
     solution.write("testConstraints_testDoublePendulumPrescribedMotion.sto");
-    //muco.visualize(solution);
+    //moco.visualize(solution);
 
     // Create a TimeSeriesTable containing the splined state data from 
     // testDoublePendulumCoordinateCoupler. Since this splined data could be 
@@ -735,7 +735,7 @@ void testDoublePendulumPrescribedMotion(MocoSolution& couplerSolution,
     // state values are also set for the controls and adjuncts as dummy data.
     const auto& statesTimes = splineStateValues.getIndependentColumn();
     SimTK::Vector time((int)statesTimes.size(), statesTimes.data(), true);
-    auto mucoIterSpline = MocoIterate(time, splineStateValues.getColumnLabels(),
+    auto mocoIterSpline = MocoIterate(time, splineStateValues.getColumnLabels(),
         splineStateValues.getColumnLabels(), splineStateValues.getColumnLabels(), 
         {}, splineStateValues.getMatrix(), splineStateValues.getMatrix(), 
         splineStateValues.getMatrix(), SimTK::RowVector(0));
@@ -746,7 +746,7 @@ void testDoublePendulumPrescribedMotion(MocoSolution& couplerSolution,
     // directly via a path constraint in the current problem formulation (see 
     // MocoTropterSolver for details).
 
-    SimTK_TEST_EQ_TOL(solution.compareContinuousVariablesRMS(mucoIterSpline, 
+    SimTK_TEST_EQ_TOL(solution.compareContinuousVariablesRMS(mocoIterSpline, 
         {"/jointset/j0/q0/value", "/jointset/j1/q1/value"}, {"none"}, {"none"}),
                 0, 1e-3);
     SimTK_TEST_EQ_TOL(solution.compareContinuousVariablesRMS(couplerSolution,
@@ -756,7 +756,7 @@ void testDoublePendulumPrescribedMotion(MocoSolution& couplerSolution,
     // states and the states from the previous test (original and splined).  
     // These won't match as well as the position-level values, since velocity-
     // level errors are not enforced in the current problem formulation.
-    SimTK_TEST_EQ_TOL(solution.compareContinuousVariablesRMS(mucoIterSpline,
+    SimTK_TEST_EQ_TOL(solution.compareContinuousVariablesRMS(mocoIterSpline,
         {"/jointset/j0/q0/speed", "/jointset/j1/q1/speed"}, {"none"}, {"none"}),
                 0, 1e-1);
     SimTK_TEST_EQ_TOL(solution.compareContinuousVariablesRMS(couplerSolution,
@@ -804,9 +804,9 @@ protected:
 /// specified final configuration while subject to a constraint that its
 /// actuators must produce an equal control trajectory.
 void testDoublePendulumEqualControl() {
-    MocoTool muco;
-    muco.setName("double_pendulum_equal_control");
-    MocoProblem& mp = muco.updProblem();
+    MocoTool moco;
+    moco.setName("double_pendulum_equal_control");
+    MocoProblem& mp = moco.updProblem();
     auto model = createDoublePendulumModel();
     model->finalizeConnections();
     mp.setModelCopy(*model);
@@ -829,7 +829,7 @@ void testDoublePendulumEqualControl() {
 
     mp.addCost<MocoControlCost>();
 
-    MocoTropterSolver& ms = muco.initSolver();
+    MocoTropterSolver& ms = moco.initSolver();
     ms.set_num_mesh_points(10);
     ms.set_verbosity(2);
     ms.set_optim_solver("ipopt");
@@ -837,9 +837,9 @@ void testDoublePendulumEqualControl() {
     ms.set_optim_hessian_approximation("limited-memory");
     ms.setGuess("bounds");
 
-    MocoSolution solution = muco.solve();
+    MocoSolution solution = moco.solve();
     solution.write("testConstraints_testDoublePendulumEqualControl.sto");
-    //muco.visualize(solution);
+    //moco.visualize(solution);
 
     const auto& control_tau0 = solution.getControl("/tau0");
     const auto& control_tau1 = solution.getControl("/tau1");
@@ -852,16 +852,16 @@ void testDoublePendulumEqualControl() {
     // trajectory back.
     // TODO why does the forward solution match so poorly here?
     MocoIterate forwardSolution = runForwardSimulation(*model, solution, 2);
-    //muco.visualize(forwardSolution);
+    //moco.visualize(forwardSolution);
 
     // Test de/serialization.
     // ======================
     std::string setup_fname 
-        = "testConstraints_testDoublePendulumEqualControl.omuco";
-    muco.print(setup_fname);
+        = "testConstraints_testDoublePendulumEqualControl.omoco";
+    moco.print(setup_fname);
     MocoSolution solutionDeserialized;
-    MocoTool mucoDeserialize(setup_fname);
-    solutionDeserialized = mucoDeserialize.solve();
+    MocoTool mocoDeserialize(setup_fname);
+    solutionDeserialized = mocoDeserialize.solve();
     SimTK_TEST(solution.isNumericallyEqual(solutionDeserialized));
 }
 

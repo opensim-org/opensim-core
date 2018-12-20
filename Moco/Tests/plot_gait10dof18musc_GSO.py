@@ -1,5 +1,5 @@
 # -------------------------------------------------------------------------- #
-# OpenSim Muscollo: plot_gait10dof18musc_GSO.py                              #
+# OpenSim Moco: plot_gait10dof18musc_GSO.py                              #
 # -------------------------------------------------------------------------- #
 # Copyright (c) 2017 Stanford University and the Authors                     #
 #                                                                            #

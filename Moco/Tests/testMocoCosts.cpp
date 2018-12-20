@@ -49,9 +49,9 @@ void testMocoControlCost() {
     int N = 10;
     MocoSolution sol1;
     {
-        MocoTool muco;
-        muco.setName("sliding_mass");
-        MocoProblem& mp = muco.updProblem();
+        MocoTool moco;
+        moco.setName("sliding_mass");
+        MocoProblem& mp = moco.updProblem();
         mp.setModel(createSlidingMassModel());
         mp.setTimeBounds(0, {0, 5});
         mp.setStateInfo("/slider/position/value", {0, 1}, 0, 1);
@@ -60,10 +60,10 @@ void testMocoControlCost() {
 
         mp.addCost<MocoControlCost>();
 
-        MocoTropterSolver& ms = muco.initSolver();
+        MocoTropterSolver& ms = moco.initSolver();
         ms.set_num_mesh_points(N);
 
-        sol1 = muco.solve();
+        sol1 = moco.solve();
         sol1.write("testMocoCosts_testMocoControlCost_sol1.sto");
 
         // Minimum effort solution is a linear control.
@@ -81,10 +81,10 @@ void testMocoControlCost() {
     // TODO for now, the weight can just be set to 0 (not ideal).
     //{
 
-    //    MocoTool muco;
-    //    muco.setName("sliding_mass");
-    //    MocoProblem& mp = muco.updProblem();
-    //    MocoProblem& mp = muco.updProblem();
+    //    MocoTool moco;
+    //    moco.setName("sliding_mass");
+    //    MocoProblem& mp = moco.updProblem();
+    //    MocoProblem& mp = moco.updProblem();
     //    auto model = createSlidingMassModel();
 
     //    auto* actu = new CoordinateActuator();
@@ -105,10 +105,10 @@ void testMocoControlCost() {
     //    effort.set
     //    mp.addCost(effort);
 
-    //    MocoTropterSolver& ms = muco.initSolver();
+    //    MocoTropterSolver& ms = moco.initSolver();
     //    ms.set_num_mesh_points(N);
 
-    //    MocoSolution solution = muco.solve();
+    //    MocoSolution solution = moco.solve();
     //    SimTK_TEST_EQ(solution.getControl("actuator2"), SimTK::Vector(N, 0));
     //}
 
@@ -117,12 +117,12 @@ void testMocoControlCost() {
     // Ensure that the weights cause one actuator to be preferred over
     // another.
     MocoSolution sol2;
-    std::string omucoFile = "testMocoCosts_testMocoControlCost.omuco";
+    std::string omocoFile = "testMocoCosts_testMocoControlCost.omoco";
     {
-        MocoTool muco;
-        muco.setName("sliding_mass");
-        muco.set_write_solution("false");
-        MocoProblem& mp = muco.updProblem();
+        MocoTool moco;
+        moco.setName("sliding_mass");
+        moco.set_write_solution("false");
+        MocoProblem& mp = moco.updProblem();
         auto model = createSlidingMassModel();
 
         auto* actu = new CoordinateActuator();
@@ -141,12 +141,12 @@ void testMocoControlCost() {
         auto effort = mp.addCost<MocoControlCost>();
         effort->setWeight("actuator2", 2.0);
 
-        MocoTropterSolver& ms = muco.initSolver();
+        MocoTropterSolver& ms = moco.initSolver();
         ms.set_num_mesh_points(N);
 
-        sol2 = muco.solve();
+        sol2 = moco.solve();
 
-        muco.print(omucoFile);
+        moco.print(omocoFile);
 
         // The actuator with the lower weight is more active.
         SimTK_TEST_EQ_TOL(sol2.getControl("/actuator"),
@@ -159,9 +159,9 @@ void testMocoControlCost() {
 
     // Cannot set a weight for a nonexistent control.
     {
-        MocoTool muco;
-        muco.setName("sliding_mass");
-        MocoProblem& mp = muco.updProblem();
+        MocoTool moco;
+        moco.setName("sliding_mass");
+        MocoProblem& mp = moco.updProblem();
         mp.setModel(createSlidingMassModel());
         mp.setTimeBounds(0, {0, 5});
         mp.setStateInfo("/slider/position/value", {0, 1}, 0, 1);
@@ -174,8 +174,8 @@ void testMocoControlCost() {
 
     // De/serialization.
     {
-        MocoTool muco(omucoFile);
-        MocoSolution solDeserialized = muco.solve();
+        MocoTool moco(omocoFile);
+        MocoSolution solDeserialized = moco.solve();
         sol2.write("DEBUG_sol2.sto");
         solDeserialized.write("DEBUG_solDeserialized.sto");
         SimTK_TEST(solDeserialized.isNumericallyEqual(sol2, 1e-5));
@@ -184,8 +184,8 @@ void testMocoControlCost() {
 
 /// Make sure that multiple costs are added together properly.
 void testMultipleCosts() {
-    MocoTool muco;
-    MocoProblem& problem = muco.updProblem();
+    MocoTool moco;
+    MocoProblem& problem = moco.updProblem();
 
     auto* ft0 = problem.addCost<MocoFinalTimeCost>("ft0", 0.1);
 

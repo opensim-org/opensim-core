@@ -1,10 +1,10 @@
 # PythonInterp is supposed to come before PythonLibs.
-if(${MUSCOLLO_PYTHON_VERSION} STREQUAL "2")
+if(${MOCO_PYTHON_VERSION} STREQUAL "2")
     set(required_python_version 2.7)
-elseif(${MUSCOLLO_PYTHON_VERSION} STREQUAL "3")
+elseif(${MOCO_PYTHON_VERSION} STREQUAL "3")
     set(required_python_version 3)
 else()
-    message(FATAL_ERROR "MUSCOLLO_PYTHON_VERSION should be '2' or '3'.")
+    message(FATAL_ERROR "MOCO_PYTHON_VERSION should be '2' or '3'.")
 endif()
 find_package(PythonInterp ${required_python_version} REQUIRED)
 
@@ -16,12 +16,12 @@ set(UNIXLIBSUFFIX "so")
 # version.
 set(python_version_majmin "${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}")
 string(REPLACE "VERSION" "${python_version_majmin}"
-    MUSCOLLO_INSTALL_PYTHONDIR "${MUSCOLLO_INSTALL_PYTHONDIR}")
+    MOCO_INSTALL_PYTHONDIR "${MOCO_INSTALL_PYTHONDIR}")
 # This must be done before adding the OpenSim libraries, since
-# MUSCOLLO_INSTALL_PYTHONDIR is used in OpenSimAddLibrary (in
+# MOCO_INSTALL_PYTHONDIR is used in OpenSimAddLibrary (in
 # OpenSimMacros.cmake).
 
-if(APPLE AND ${MUSCOLLO_PYTHON_VERSION} STREQUAL "2")
+if(APPLE AND ${MOCO_PYTHON_VERSION} STREQUAL "2")
     # If you have Homebrew's Python2, then by default, PythonInterp finds
     # Apple's Python, but PythonLibs finds Homebrew's Python, causing
     # runtime crashes. This also occurs if one has Anaconda Python.
@@ -52,10 +52,10 @@ find_package(PythonLibs ${required_python_version} REQUIRED)
 if(MSVC OR XCODE)
     # Multi-configuration generators like MSVC and XCODE use one build tree for
     # all configurations.
-    set(MUSCOLLO_PYTHON_BINARY_DIR
+    set(MOCO_PYTHON_BINARY_DIR
         "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}")
 else()
-    set(MUSCOLLO_PYTHON_BINARY_DIR
+    set(MOCO_PYTHON_BINARY_DIR
         "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE}")
 endif()
 
@@ -74,7 +74,7 @@ macro(MocoPutFileInPythonPackage source_full_path relative_dest_dir)
     # ---------------------------------
     get_filename_component(file_name "${source_full_path}" NAME)
     set(binary_dest_full_path
-        "${MUSCOLLO_PYTHON_BINARY_DIR}/${relative_dest_dir}/${file_name}")
+        "${MOCO_PYTHON_BINARY_DIR}/${relative_dest_dir}/${file_name}")
     add_custom_command(
         DEPENDS "${source_full_path}"
         OUTPUT "${binary_dest_full_path}"
@@ -84,12 +84,12 @@ macro(MocoPutFileInPythonPackage source_full_path relative_dest_dir)
         VERBATIM
         )
     # This list is used to specify dependencies for the MocoPythonBindings target.
-    list(APPEND MUSCOLLO_PYTHON_PACKAGE_FILES "${binary_dest_full_path}")
+    list(APPEND MOCO_PYTHON_PACKAGE_FILES "${binary_dest_full_path}")
 
     # Python package in the installation.
     # -----------------------------------
     install(FILES "${source_full_path}"
-        DESTINATION "${MUSCOLLO_INSTALL_PYTHONDIR}/${relative_dest_dir}")
+        DESTINATION "${MOCO_INSTALL_PYTHONDIR}/${relative_dest_dir}")
 
 endmacro()
 
@@ -106,16 +106,16 @@ macro(MocoAddPythonModule)
     set(oneValueArgs MODULE)
     set(multiValueArgs DEPENDS)
     cmake_parse_arguments(
-        MUCOSWIGPY "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+        MOCOSWIGPY "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
     # Generate source code for wrapper using SWIG.
     # --------------------------------------------
     set(_output_file_prefix
-        "${CMAKE_CURRENT_BINARY_DIR}/python_${MUCOSWIGPY_MODULE}_wrap")
+        "${CMAKE_CURRENT_BINARY_DIR}/python_${MOCOSWIGPY_MODULE}_wrap")
     set(_output_cxx_file "${_output_file_prefix}.cxx")
     set(_output_header_file "${_output_file_prefix}.h")
     set(_interface_file
-        "${CMAKE_CURRENT_SOURCE_DIR}/swig/python_${MUCOSWIGPY_MODULE}.i")
+        "${CMAKE_CURRENT_SOURCE_DIR}/swig/python_${MOCOSWIGPY_MODULE}.i")
 
     # We run swig once to get dependencies and then again to actually generate
     # the wrappers. This variable holds the parts of the swig command that
@@ -133,12 +133,12 @@ macro(MocoAddPythonModule)
     # Assemble dependencies. This macro runs a command during CMake's
     # configure step and fills the first argument with a list of the
     # dependencies.
-    OpenSimFindSwigFileDependencies(_${MUCOSWIGPY_MODULE}_dependencies
-        ${MUCOSWIGPY_MODULE} "${_swig_common_args}")
+    OpenSimFindSwigFileDependencies(_${MOCOSWIGPY_MODULE}_dependencies
+        ${MOCOSWIGPY_MODULE} "${_swig_common_args}")
 
     # Run swig.
     add_custom_command(
-        OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${MUCOSWIGPY_MODULE}.py"
+        OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${MOCOSWIGPY_MODULE}.py"
             ${_output_cxx_file} ${_output_header_file}
         COMMAND ${SWIG_EXECUTABLE}
             #-debug-tmused # Which typemaps were used?
@@ -146,16 +146,16 @@ macro(MocoAddPythonModule)
             -o ${_output_cxx_file}
             -outdir "${CMAKE_CURRENT_BINARY_DIR}"
             ${_swig_common_args}
-        DEPENDS ${_${MUCOSWIGPY_MODULE}_dependencies}
-            COMMENT "Generating python bindings source code with SWIG: ${MUCOSWIGPY_MODULE} module."
+        DEPENDS ${_${MOCOSWIGPY_MODULE}_dependencies}
+            COMMENT "Generating python bindings source code with SWIG: ${MOCOSWIGPY_MODULE} module."
         )
 
     # Compile python wrapper files into a library.
     # --------------------------------------------
-    set(_libname _${MUCOSWIGPY_MODULE}) 
+    set(_libname _${MOCOSWIGPY_MODULE}) 
 
     # Used for specifying dependencies for MocoPythonBindings.
-    list(APPEND MUSCOLLO_PYTHON_PACKAGE_LIBRARY_TARGETS ${_libname})
+    list(APPEND MOCO_PYTHON_PACKAGE_LIBRARY_TARGETS ${_libname})
 
     # We purposefully wrap deprecated functions, so no need to see such
     # warnings.
@@ -201,7 +201,7 @@ macro(MocoAddPythonModule)
         set_target_properties(${_libname} PROPERTIES SUFFIX ".${UNIXLIBSUFFIX}")
     endif()
     
-    if(MUSCOLLO_COPY_DEPENDENCIES)
+    if(MOCO_COPY_DEPENDENCIES)
         # We always set a relative RPATH but only use an absolute RPATH if the
         # python package is not standalone, as the libraries are not copied
         # into the python package.
@@ -215,7 +215,7 @@ macro(MocoAddPythonModule)
 
         # Locate osim libraries, etc in the lib dir.
         file(RELATIVE_PATH py_dir_to_install_dir
-            "${CMAKE_INSTALL_PREFIX}/${MUSCOLLO_INSTALL_PYTHONDIR}/opensim"
+            "${CMAKE_INSTALL_PREFIX}/${MOCO_INSTALL_PYTHONDIR}/opensim"
             "${CMAKE_INSTALL_PREFIX}")
         set(py_dir_to_lib_dir
             "${py_dir_to_install_dir}${CMAKE_INSTALL_LIBDIR}")
@@ -236,14 +236,14 @@ macro(MocoAddPythonModule)
     # Copy the library file.
     add_custom_command(TARGET ${_libname} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy "$<TARGET_FILE:${_libname}>"
-            "${MUSCOLLO_PYTHON_BINARY_DIR}/opensim/$<TARGET_FILE_NAME:${_libname}>"
+            "${MOCO_PYTHON_BINARY_DIR}/opensim/$<TARGET_FILE_NAME:${_libname}>"
         COMMENT "Copying ${_libname} library to python package in build directory."
         VERBATIM
         )
 
     # Copy the generated .py file to the per-config python package dir.
     MocoPutFileInPythonPackage(
-        "${CMAKE_CURRENT_BINARY_DIR}/${MUCOSWIGPY_MODULE}.py" opensim)
+        "${CMAKE_CURRENT_BINARY_DIR}/${MOCOSWIGPY_MODULE}.py" opensim)
 
     # Install the library.
     # --------------------
@@ -251,7 +251,7 @@ macro(MocoAddPythonModule)
     # because this causes CMake to remove the build-tree RPATH from the library
     # (which is set temporarily for libraries in the build tree).
     install(TARGETS ${_libname} DESTINATION
-        "${MUSCOLLO_INSTALL_PYTHONDIR}/opensim")
+        "${MOCO_INSTALL_PYTHONDIR}/opensim")
 
 endmacro()
 
@@ -305,13 +305,13 @@ endforeach()
 # Umbrella target for assembling the python bindings in the build tree.
 # =====================================================================
 # This command must come *after* all calls to MocoPutFileInPythonPackage, as
-# that macro assembles the MUSCOLLO_PYTHON_PACKAGE_FILES list.
+# that macro assembles the MOCO_PYTHON_PACKAGE_FILES list.
 add_custom_target(MocoPythonBindings ALL DEPENDS
-    ${MUSCOLLO_PYTHON_PACKAGE_FILES})
+    ${MOCO_PYTHON_PACKAGE_FILES})
 
 # Require the libraries to be built.
 add_dependencies(MocoPythonBindings
-    ${MUSCOLLO_PYTHON_PACKAGE_LIBRARY_TARGETS})
+    ${MOCO_PYTHON_PACKAGE_LIBRARY_TARGETS})
 
 set_target_properties(MocoPythonBindings PROPERTIES
     PROJECT_LABEL "Python - umbrella target"
@@ -325,7 +325,7 @@ set_target_properties(MocoPythonBindings PROPERTIES
 # one can edit the tests and immediately re-run the tests without any
 # intermediate file copying.
 # It so happens that ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG> is the same as
-# ${MUSCOLLO_PYTHON_BINARY_DIR}, but the former avoids an `if(MSVC OR XCODE)`.
+# ${MOCO_PYTHON_BINARY_DIR}, but the former avoids an `if(MSVC OR XCODE)`.
 add_test(NAME python_tests
     WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>"
     COMMAND "${PYTHON_EXECUTABLE}" -m unittest discover
@@ -379,8 +379,8 @@ add_dependencies(RunMocoPythonTests MocoPythonBindings)
 # Most of the files are installed via the above macros.
 # Install the test scripts.
 install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/tests"
-        DESTINATION "${MUSCOLLO_INSTALL_PYTHONDIR}/opensim")
+        DESTINATION "${MOCO_INSTALL_PYTHONDIR}/opensim")
 
 # Install example files (not installed next to the python package).
 install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/examples/"
-        DESTINATION "${MUSCOLLO_INSTALL_PYTHONEXDIR}")
+        DESTINATION "${MOCO_INSTALL_PYTHONEXDIR}")

@@ -1,5 +1,5 @@
-#ifndef MUSCOLLO_DEGROOTEFREGLY2016MUSCLESTANDALONE_H_
-#define MUSCOLLO_DEGROOTEFREGLY2016MUSCLESTANDALONE_H_
+#ifndef MOCO_DEGROOTEFREGLY2016MUSCLESTANDALONE_H_
+#define MOCO_DEGROOTEFREGLY2016MUSCLESTANDALONE_H_
 /* -------------------------------------------------------------------------- *
  * OpenSim Moco: DeGrooteFregly2016MuscleStandalone.h                     *
  * -------------------------------------------------------------------------- *
@@ -348,4 +348,4 @@ private:
     double _fiber_width = NaN;
 };
 
-#endif // MUSCOLLO_DEGROOTEFREGLY2016MUSCLESTANDALONE_H_
+#endif // MOCO_DEGROOTEFREGLY2016MUSCLESTANDALONE_H_

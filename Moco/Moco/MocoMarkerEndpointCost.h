@@ -1,5 +1,5 @@
-#ifndef MUSCOLLO_MUCOMARKERENDPOINTCOST_H
-#define MUSCOLLO_MUCOMARKERENDPOINTCOST_H
+#ifndef MOCO_MOCOMARKERENDPOINTCOST_H
+#define MOCO_MOCOMARKERENDPOINTCOST_H
 /* -------------------------------------------------------------------------- *
  * OpenSim Moco: MocoMarkerEndpointCost.h                                 *
  * -------------------------------------------------------------------------- *
@@ -26,8 +26,8 @@ class Point;
 
 /// The squared distance between a single model point location and reference
 /// location in the final state.
-/// @ingroup mucocost
-class OSIMMUSCOLLO_API MocoMarkerEndpointCost : public MocoCost {
+/// @ingroup mococost
+class OSIMMOCO_API MocoMarkerEndpointCost : public MocoCost {
     OpenSim_DECLARE_CONCRETE_OBJECT(MocoMarkerEndpointCost, MocoCost);
 public:
 
@@ -70,4 +70,4 @@ private:
 
 } // namespace OpenSim
 
-#endif // MUSCOLLO_MUCOMARKERENDPOINTCOST_H
+#endif // MOCO_MOCOMARKERENDPOINTCOST_H

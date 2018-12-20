@@ -1,5 +1,5 @@
-#ifndef MUSCOLLO_MUSCOLLOSANDBOXSHARED_H
-#define MUSCOLLO_MUSCOLLOSANDBOXSHARED_H
+#ifndef MOCO_MOCOSANDBOXSHARED_H
+#define MOCO_MOCOSANDBOXSHARED_H
 /* -------------------------------------------------------------------------- *
  * OpenSim Moco: MocoSandboxShared.h                                  *
  * -------------------------------------------------------------------------- *
@@ -164,4 +164,4 @@ private:
 
 } // namespace OpenSim
 
-#endif // MUSCOLLO_MUSCOLLOSANDBOXSHARED_H
+#endif // MOCO_MOCOSANDBOXSHARED_H

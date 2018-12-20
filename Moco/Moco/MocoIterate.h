@@ -1,5 +1,5 @@
-#ifndef MUSCOLLO_MUCOITERATE_H
-#define MUSCOLLO_MUCOITERATE_H
+#ifndef MOCO_MOCOITERATE_H
+#define MOCO_MOCOITERATE_H
 /* -------------------------------------------------------------------------- *
  * OpenSim Moco: MocoIterate.h                                           *
  * -------------------------------------------------------------------------- *
@@ -30,7 +30,7 @@ class MocoProblemRep;
 
 /// This exception is thrown if you try to invoke most methods on MocoIterate
 /// while the iterate is sealed.
-class OSIMMUSCOLLO_API MocoIterateIsSealed : public Exception {
+class OSIMMOCO_API MocoIterateIsSealed : public Exception {
 public:
     MocoIterateIsSealed(const std::string& file, size_t line,
             const std::string& func) : Exception(file, line, func) {
@@ -82,7 +82,7 @@ If the solver uses an implicit dynamics mode, then there are "control"
 variables ("adjunct" variables in tropter's terminology) for the generalized
 accelerations. These are stored in the iterate as derivative variables. */
 // Not using three-slash doxygen comments because that messes up verbatim.
-class OSIMMUSCOLLO_API MocoIterate {
+class OSIMMOCO_API MocoIterate {
 public:
     MocoIterate() = default;
     MocoIterate(const SimTK::Vector& time,
@@ -511,7 +511,7 @@ private:
 /// Return type for MocoTool::solve(). Use success() to check if the solver
 /// succeeded. You can also use this object as a boolean in an if-statement:
 /// @code
-/// auto solution = muco.solve();
+/// auto solution = moco.solve();
 /// if (solution) {
 ///     std::cout << solution.getStatus() << std::endl;
 /// }
@@ -521,7 +521,7 @@ private:
 /// If the solver was not successful, then this object is "sealed", which
 /// means you cannot do anything with it until calling `unseal()`. This
 /// prevents you from silently proceeding with a failed solution.
-class OSIMMUSCOLLO_API MocoSolution : public MocoIterate {
+class OSIMMOCO_API MocoSolution : public MocoIterate {
 public:
     /// Returns a dynamically-allocated copy of this solution. You must manage
     /// the memory for return value.
@@ -570,4 +570,4 @@ private:
 
 } // namespace OpenSim
 
-#endif // MUSCOLLO_MUCOITERATE_H
+#endif // MOCO_MOCOITERATE_H

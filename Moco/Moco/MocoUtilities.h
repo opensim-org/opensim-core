@@ -1,5 +1,5 @@
-#ifndef MUSCOLLO_MUSCOLLOUTILITIES_H
-#define MUSCOLLO_MUSCOLLOUTILITIES_H
+#ifndef MOCO_MOCOUTILITIES_H
+#define MOCO_MOCOUTILITIES_H
 /* -------------------------------------------------------------------------- *
  * OpenSim Moco: MocoUtilities.h                                      *
  * -------------------------------------------------------------------------- *
@@ -39,7 +39,7 @@ class MocoIterate;
 
 /// Create a SimTK::Vector with the provided length whose elements are
 /// linearly spaced between start and end.
-OSIMMUSCOLLO_API
+OSIMMOCO_API
 SimTK::Vector createVectorLinspace(int length, double start, double end);
 
 /// Linearly interpolate y(x) at new values of x. The optional 'ignoreNaNs'
@@ -47,7 +47,7 @@ SimTK::Vector createVectorLinspace(int length, double start, double end);
 /// create the interpolant from the non-NaN values only. Note that this option 
 /// does not necessarily prevent NaN values from being returned in 'newX', which 
 /// will have NaN for any values of newX outside of the range of x.
-OSIMMUSCOLLO_API
+OSIMMOCO_API
 SimTK::Vector interpolate(const SimTK::Vector& x,
         const SimTK::Vector& y, const SimTK::Vector& newX,
         const bool ignoreNaNs = false);
@@ -58,12 +58,12 @@ SimTK::Vector interpolate(const SimTK::Vector& x,
 /// reduced in future versions of OpenSim. However, Storage supports some
 /// operations not supported by TimeSeriesTable (e.g., filtering, resampling).
 // TODO move to the Storage class.
-OSIMMUSCOLLO_API Storage convertTableToStorage(const TimeSeriesTable&);
+OSIMMOCO_API Storage convertTableToStorage(const TimeSeriesTable&);
 
 /// Lowpass filter the data in a TimeSeriesTable at a provided cutoff frequency.
 /// The table is converted to a Storage object to use the lowpassIIR() method
 /// to filter, and then converted back to TimeSeriesTable.
-OSIMMUSCOLLO_API TimeSeriesTable filterLowpass(const TimeSeriesTable& table, 
+OSIMMOCO_API TimeSeriesTable filterLowpass(const TimeSeriesTable& table, 
     double cutoffFreq, bool padData = false);
 
 /// Play back a motion (from the Storage) in the simbody-visuailzer. The Storage
@@ -71,32 +71,32 @@ OSIMMUSCOLLO_API TimeSeriesTable filterLowpass(const TimeSeriesTable& table,
 /// user to control playback speed.
 /// This function blocks until the user exits the simbody-visualizer window.
 // TODO handle degrees.
-OSIMMUSCOLLO_API void visualize(Model, Storage);
+OSIMMOCO_API void visualize(Model, Storage);
 
 /// This function is the same as visualize(Model, Storage), except that
 /// the states are provided in a TimeSeriesTable.
-OSIMMUSCOLLO_API void visualize(Model, TimeSeriesTable);
+OSIMMOCO_API void visualize(Model, TimeSeriesTable);
 
 /// Given a valid MocoSolution obtained from solving a MocoProblem and the 
 /// associated OpenSim model, return the model with a prescribed controller
 /// appended that will compute the control values from the MocoSolution. This 
 /// can be useful when computing state-dependent model quantities that require
 /// realization to the Dynamics stage or later.
-OSIMMUSCOLLO_API void prescribeControlsToModel(const MocoIterate& iterate, 
+OSIMMOCO_API void prescribeControlsToModel(const MocoIterate& iterate, 
     Model& model);
 
 /// Replace muscles in a model with a PathActuator of the same GeometryPath,
 /// optimal force, and min/max control defaults.
 /// @note This only replaces muscles within the model's ForceSet.
-OSIMMUSCOLLO_API void replaceMusclesWithPathActuators(Model& model);
+OSIMMOCO_API void replaceMusclesWithPathActuators(Model& model);
 
 /// Remove muscles from the model.
 /// @note This only removes muscles within the model's ForceSet.
-OSIMMUSCOLLO_API void removeMuscles(Model& model);
+OSIMMOCO_API void removeMuscles(Model& model);
 
 /// The map provides the index of each state variable in
 /// SimTK::State::getY() from its each state variable path string.
-OSIMMUSCOLLO_API
+OSIMMOCO_API
 std::vector<std::string> createStateVariableNamesInSystemOrder(
         const Model& model);
 
@@ -283,4 +283,4 @@ private:
 
 } // namespace OpenSim
 
-#endif // MUSCOLLO_MUSCOLLOUTILITIES_H
+#endif // MOCO_MOCOUTILITIES_H

@@ -30,7 +30,7 @@
 
 using namespace OpenSim;
 
-class /*OSIMMUSCOLLO_API*/
+class /*OSIMMOCO_API*/
     ActivationMuscleLikeCoordinateActuator : 
             public MuscleLikeCoordinateActuator {
     OpenSim_DECLARE_CONCRETE_OBJECT(ActivationMuscleLikeCoordinateActuator,
@@ -212,12 +212,12 @@ void addCoordinateActuator(std::unique_ptr<Model>& model, std::string coordName,
 MocoSolution solveMarkerTrackingProblem(
         bool prevSolutionInitialization) {
 
-    MocoTool muco;
-    muco.setName("whole_body_marker_tracking");
+    MocoTool moco;
+    moco.setName("whole_body_marker_tracking");
 
     // Define the optimal control problem.
     // ===================================
-    MocoProblem& mp = muco.updProblem();
+    MocoProblem& mp = moco.updProblem();
 
     // Model(dynamics).
     // -----------------
@@ -264,7 +264,7 @@ MocoSolution solveMarkerTrackingProblem(
 
     // Configure the solver.
     // =====================
-    MocoTropterSolver& ms = muco.initSolver();
+    MocoTropterSolver& ms = moco.initSolver();
     ms.set_num_mesh_points(50);
     ms.set_verbosity(2);
     ms.set_optim_solver("snopt");
@@ -283,8 +283,8 @@ MocoSolution solveMarkerTrackingProblem(
 
     // Solve the problem.
     // ==================
-    MocoSolution solution = muco.solve();
-    muco.visualize(solution);
+    MocoSolution solution = moco.solve();
+    moco.visualize(solution);
     solution.write("sandboxMarkerTrackingWholeBody_marker_solution.sto");
 
     auto statesTable = solution.exportToStatesTable();

@@ -13,7 +13,7 @@ else:
 
 setup(name='opensim',
       version=__version__,
-      description='OpenSim/Muscollo Simulation Framework',
+      description='OpenSim/Moco Simulation Framework',
       author='OpenSim Team',
       author_email='ahabib@stanford.edu',
       url='http://opensim.stanford.edu/',

@@ -54,16 +54,16 @@ class TestSwigAddtlInterface(unittest.TestCase):
         actu.setOptimalForce(1)
         model.addComponent(actu)
         
-        muco = osim.MucoTool()
-        muco.setName('sliding_mass')
+        moco = osim.MocoTool()
+        moco.setName('sliding_mass')
         
-        mp = muco.updProblem()
+        mp = moco.updProblem()
         
         mp.setModel(model)
         ph0 = mp.getPhase()
         
-        mp.setTimeBounds(osim.MucoInitialBounds(0.), 
-                osim.MucoFinalBounds(0.1, 5.))
+        mp.setTimeBounds(osim.MocoInitialBounds(0.), 
+                osim.MocoFinalBounds(0.1, 5.))
         assert ph0.getTimeInitialBounds().getLower() == 0
         assert ph0.getTimeInitialBounds().getUpper() == 0
         self.assertAlmostEqual(ph0.getTimeFinalBounds().getLower(), 0.1)
@@ -75,7 +75,7 @@ class TestSwigAddtlInterface(unittest.TestCase):
         self.assertAlmostEqual(ph0.getTimeFinalBounds().getLower(), 3.5)
         self.assertAlmostEqual(ph0.getTimeFinalBounds().getUpper(), 3.5)
         
-        # Use setter on MucoPhase.
+        # Use setter on MocoPhase.
         ph0.setTimeBounds([2.2, 2.3], [4.5])
         self.assertAlmostEqual(ph0.getTimeInitialBounds().getLower(), 2.2)
         self.assertAlmostEqual(ph0.getTimeInitialBounds().getUpper(), 2.3)
@@ -83,8 +83,8 @@ class TestSwigAddtlInterface(unittest.TestCase):
         self.assertAlmostEqual(ph0.getTimeFinalBounds().getUpper(), 4.5)
 
 
-        mp.setStateInfo('slider/position/value', osim.MucoBounds(-5, 5),
-            osim.MucoInitialBounds(0))
+        mp.setStateInfo('slider/position/value', osim.MocoBounds(-5, 5),
+            osim.MocoInitialBounds(0))
         assert -5 == ph0.getStateInfo('slider/position/value').getBounds().getLower()
         assert 5 == ph0.getStateInfo('slider/position/value').getBounds().getUpper()
         assert isnan(ph0.getStateInfo('slider/position/value').getFinalBounds().getLower())
@@ -99,7 +99,7 @@ class TestSwigAddtlInterface(unittest.TestCase):
         self.assertAlmostEqual(1.5,
             ph0.getStateInfo('slider/position/speed').getFinalBounds().getUpper())
         
-        # Use setter on MucoPhase.
+        # Use setter on MocoPhase.
         ph0.setStateInfo('slider/position/speed', [-6, 10], [-4, 3], [0])
         assert -6 == ph0.getStateInfo('slider/position/speed').getBounds().getLower()
         assert 10 == ph0.getStateInfo('slider/position/speed').getBounds().getUpper()
@@ -109,14 +109,14 @@ class TestSwigAddtlInterface(unittest.TestCase):
         assert 0 == ph0.getStateInfo('slider/position/speed').getFinalBounds().getUpper()
         
         # Controls.
-        mp.setControlInfo('actuator', osim.MucoBounds(-50, 50))
+        mp.setControlInfo('actuator', osim.MocoBounds(-50, 50))
         assert -50 == ph0.getControlInfo('actuator').getBounds().getLower()
         assert  50 == ph0.getControlInfo('actuator').getBounds().getUpper()
         mp.setControlInfo('actuator', [18])
         assert 18 == ph0.getControlInfo('actuator').getBounds().getLower()
         assert 18 == ph0.getControlInfo('actuator').getBounds().getUpper()
 
-    def test_MucoIterate(self):
+    def test_MocoIterate(self):
         time = osim.Vector(3, 0)
         time.set(0, 0)
         time.set(1, 0.1)
@@ -125,7 +125,7 @@ class TestSwigAddtlInterface(unittest.TestCase):
         ct = osim.Matrix(3, 3)
         mt = osim.Matrix(3, 1)
         p = osim.RowVector(2, 0.0)
-        it = osim.MucoIterate(time, ['s0', 's1'], ['c0', 'c1', 'c2'],
+        it = osim.MocoIterate(time, ['s0', 's1'], ['c0', 'c1', 'c2'],
                               ['m0'],
                               ['p0', 'p1'], st, ct, mt, p)
         
@@ -183,10 +183,10 @@ class TestSwigAddtlInterface(unittest.TestCase):
         model.addComponent(joint)
         model.finalizeConnections()
 
-        muco = osim.MucoTool()
-        muco.setName('sliding_mass')
+        moco = osim.MocoTool()
+        moco.setName('sliding_mass')
 
-        mp = muco.updProblem()
+        mp = moco.updProblem()
         mp.setModel(model)
 
         pr = mp.createRep();
@@ -195,8 +195,8 @@ class TestSwigAddtlInterface(unittest.TestCase):
 class TestWorkflow(unittest.TestCase):
 
     def test_default_bounds(self):
-        muco = osim.MucoTool()
-        problem = muco.updProblem()
+        moco = osim.MocoTool()
+        problem = moco.updProblem()
         model = createSlidingMassModel()
         model.finalizeFromProperties()
         coord = model.updComponent("slider/position")
@@ -241,77 +241,77 @@ class TestWorkflow(unittest.TestCase):
         self.assertEqual(info.getBounds().getUpper(), 15)
 
     def test_changing_time_bounds(self):
-        muco = osim.MucoTool()
-        problem = muco.updProblem()
+        moco = osim.MocoTool()
+        problem = moco.updProblem()
         problem.setModel(createSlidingMassModel())
         problem.setTimeBounds(0, [0, 10])
         problem.setStateInfo("/slider/position/value", [0, 1], 0, 1)
         problem.setStateInfo("/slider/position/speed", [-100, 100], 0, 0)
         problem.setControlInfo("/actuator", [-10, 10])
-        problem.addCost(osim.MucoFinalTimeCost())
+        problem.addCost(osim.MocoFinalTimeCost())
 
-        solver = muco.initSolver()
+        solver = moco.initSolver()
         solver.set_num_mesh_points(20)
         guess = solver.createGuess("random")
         guess.setTime(osim.createVectorLinspace(20, 0.0, 3.0))
         solver.setGuess(guess)
-        solution0 = muco.solve()
+        solution0 = moco.solve()
 
         problem.setTimeBounds(0, [5.8, 10])
         # Editing the problem does not affect information in the Solver; the
         # guess still exists.
         assert(not solver.getGuess().empty())
 
-        solution = muco.solve()
+        solution = moco.solve()
         self.assertAlmostEqual(solution.getFinalTime(), 5.8)
 
     def test_changing_model(self):
-        muco = osim.MucoTool()
-        problem = muco.updProblem()
+        moco = osim.MocoTool()
+        problem = moco.updProblem()
         model = createSlidingMassModel()
         problem.setModel(model)
         problem.setTimeBounds(0, [0, 10])
         problem.setStateInfo("/slider/position/value", [0, 1], 0, 1)
         problem.setStateInfo("/slider/position/speed", [-100, 100], 0, 0)
-        problem.addCost(osim.MucoFinalTimeCost())
-        solver = muco.initSolver()
+        problem.addCost(osim.MocoFinalTimeCost())
+        solver = moco.initSolver()
         solver.set_num_mesh_points(20)
-        finalTime0 = muco.solve().getFinalTime()
+        finalTime0 = moco.solve().getFinalTime()
 
         self.assertAlmostEqual(finalTime0, 2.00, places=2)
 
         body = model.updComponent("body")
         body.setMass(2 * body.getMass())
-        finalTime1 = muco.solve().getFinalTime()
+        finalTime1 = moco.solve().getFinalTime()
         assert(finalTime1 > 1.1 * finalTime0)
 
     def test_order(self):
         # Can set the cost and model in any order.
-        muco = osim.MucoTool()
-        problem = muco.updProblem()
+        moco = osim.MocoTool()
+        problem = moco.updProblem()
         problem.setTimeBounds(0, [0, 10])
         problem.setStateInfo("/slider/position/value", [0, 1], 0, 1)
         problem.setStateInfo("/slider/position/speed", [-100, 100], 0, 0)
-        problem.addCost(osim.MucoFinalTimeCost())
+        problem.addCost(osim.MocoFinalTimeCost())
         problem.setModel(createSlidingMassModel())
-        solver = muco.initSolver()
+        solver = moco.initSolver()
         solver.set_num_mesh_points(20)
-        finalTime =  muco.solve().getFinalTime()
+        finalTime =  moco.solve().getFinalTime()
         self.assertAlmostEqual(finalTime, 2.0, places=2)
 
     def test_changing_costs(self):
         # Changes to the costs are obeyed.
-        muco = osim.MucoTool()
-        problem = muco.updProblem()
+        moco = osim.MocoTool()
+        problem = moco.updProblem()
         problem.setModel(createSlidingMassModel())
         problem.setTimeBounds(0, [0, 10])
         problem.setStateInfo("/slider/position/value", [0, 1], 0, 1)
         problem.setStateInfo("/slider/position/speed", [-100, 100], 0, 0)
-        problem.updPhase().addCost(osim.MucoFinalTimeCost())
-        effort = osim.MucoControlCost("effort")
+        problem.updPhase().addCost(osim.MocoFinalTimeCost())
+        effort = osim.MocoControlCost("effort")
         problem.updPhase().addCost(effort)
-        finalTime0 = muco.solve().getFinalTime()
+        finalTime0 = moco.solve().getFinalTime()
 
         # Change the weights of the costs.
         effort.set_weight(0.1)
-        assert(muco.solve().getFinalTime() < 0.8 * finalTime0)
+        assert(moco.solve().getFinalTime() < 0.8 * finalTime0)

@@ -1,5 +1,5 @@
-#ifndef MUSCOLLO_MUCOPROBLEMREP_H
-#define MUSCOLLO_MUCOPROBLEMREP_H
+#ifndef MOCO_MOCOPROBLEMREP_H
+#define MOCO_MOCOPROBLEMREP_H
 /* -------------------------------------------------------------------------- *
  * OpenSim Moco: MocoProblemRep.h                                         *
  * -------------------------------------------------------------------------- *
@@ -37,7 +37,7 @@ class MocoProblem;
 /// This interface currently supports only single-phase problems.
 /// This class stores a reference (not a copy) to the original MocoProblem
 /// from which it was created.
-class OSIMMUSCOLLO_API MocoProblemRep {
+class OSIMMOCO_API MocoProblemRep {
 public:
     MocoProblemRep() = default;
     MocoProblemRep(const MocoProblemRep&) = delete;
@@ -221,4 +221,4 @@ private:
 } // namespace OpenSim
 
 
-#endif // MUSCOLLO_MUCOPROBLEMREP_H
+#endif // MOCO_MOCOPROBLEMREP_H

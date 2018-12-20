@@ -1,5 +1,5 @@
-#ifndef MUSCOLLO_STATIONPLANECONTACTFORCE_H
-#define MUSCOLLO_STATIONPLANECONTACTFORCE_H
+#ifndef MOCO_STATIONPLANECONTACTFORCE_H
+#define MOCO_STATIONPLANECONTACTFORCE_H
 /* -------------------------------------------------------------------------- *
  * OpenSim Moco: StationPlaneContactForce.h                               *
  * -------------------------------------------------------------------------- *
@@ -26,7 +26,7 @@ namespace OpenSim {
 
 /// This class models compliant point contact with a ground plane y=0.
 /// This class is still under development.
-class OSIMMUSCOLLO_API StationPlaneContactForce : public Force {
+class OSIMMOCO_API StationPlaneContactForce : public Force {
 OpenSim_DECLARE_ABSTRACT_OBJECT(StationPlaneContactForce, Force);
 public:
     OpenSim_DECLARE_OUTPUT(force_on_station, SimTK::Vec3,
@@ -74,7 +74,7 @@ public:
 };
 
 /// This class is still under development.
-class OSIMMUSCOLLO_API AckermannVanDenBogert2010Force
+class OSIMMOCO_API AckermannVanDenBogert2010Force
         : public StationPlaneContactForce {
 OpenSim_DECLARE_CONCRETE_OBJECT(AckermannVanDenBogert2010Force,
         StationPlaneContactForce);
@@ -144,7 +144,7 @@ private:
 /// B. J. (2016). Muscle Synergies Facilitate Computational Prediction of
 /// Subject-Specific Walking Motions. Frontiers in Bioengineering and
 /// Biotechnology, 4, 1055–27. http://doi.org/10.3389/fbioe.2016.00077
-class OSIMMUSCOLLO_API MeyerFregly2016Force
+class OSIMMOCO_API MeyerFregly2016Force
         : public StationPlaneContactForce {
 OpenSim_DECLARE_CONCRETE_OBJECT(MeyerFregly2016Force,
         StationPlaneContactForce);
@@ -232,7 +232,7 @@ private:
 /// loss. PLoS ONE, 13(1), e0191310. http://doi.org/10.1371/journal.pone.0191310
 ///
 /// This class is still under development.
-class OSIMMUSCOLLO_API EspositoMiller2018Force
+class OSIMMOCO_API EspositoMiller2018Force
         : public StationPlaneContactForce {
 OpenSim_DECLARE_CONCRETE_OBJECT(EspositoMiller2018Force,
         StationPlaneContactForce);
@@ -312,4 +312,4 @@ private:
 
 } // namespace OpenSim
 
-#endif // MUSCOLLO_STATIONPLANECONTACTFORCE_H
+#endif // MOCO_STATIONPLANECONTACTFORCE_H

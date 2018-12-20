@@ -1,5 +1,5 @@
-#ifndef MUSCOLLO_MUCOCOST_H
-#define MUSCOLLO_MUCOCOST_H
+#ifndef MOCO_MOCOCOST_H
+#define MOCO_MOCOCOST_H
 /* -------------------------------------------------------------------------- *
  * OpenSim Moco: MocoCost.h                                               *
  * -------------------------------------------------------------------------- *
@@ -37,8 +37,8 @@ class Model;
 /// is no need to clear cache variables that you create in initializeImpl().
 /// Also, information stored in this cost does not persist across multiple
 /// solves.
-/// @ingroup mucocost
-class OSIMMUSCOLLO_API MocoCost : public Object {
+/// @ingroup mococost
+class OSIMMOCO_API MocoCost : public Object {
 OpenSim_DECLARE_ABSTRACT_OBJECT(MocoCost, Object);
 public:
     OpenSim_DECLARE_PROPERTY(weight, double,
@@ -110,8 +110,8 @@ inline void MocoCost::calcEndpointCostImpl(const SimTK::State&,
         double&) const {}
 
 /// Endpoint cost for final time.
-/// @ingroup mucocost
-class OSIMMUSCOLLO_API MocoFinalTimeCost : public MocoCost {
+/// @ingroup mococost
+class OSIMMOCO_API MocoFinalTimeCost : public MocoCost {
 OpenSim_DECLARE_CONCRETE_OBJECT(MocoFinalTimeCost, MocoCost);
 public:
     MocoFinalTimeCost() = default;
@@ -128,4 +128,4 @@ protected:
 
 } // namespace OpenSim
 
-#endif // MUSCOLLO_MUCOCOST_H
+#endif // MOCO_MOCOCOST_H

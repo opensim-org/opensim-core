@@ -1,5 +1,5 @@
-#ifndef MUSCOLLO_MUCOSTATETRACKINGCOST_H
-#define MUSCOLLO_MUCOSTATETRACKINGCOST_H
+#ifndef MOCO_MOCOSTATETRACKINGCOST_H
+#define MOCO_MOCOSTATETRACKINGCOST_H
 /* -------------------------------------------------------------------------- *
  * OpenSim Moco: MocoStateTrackingCost.h                                  *
  * -------------------------------------------------------------------------- *
@@ -37,8 +37,8 @@ namespace OpenSim {
 /// The reference can be provided as a file name to a STO or CSV file (or
 /// other file types for which there is a FileAdapter), or programmatically
 /// as a TimeSeriesTable.
-/// @ingroup mucocost
-class OSIMMUSCOLLO_API MocoStateTrackingCost : public MocoCost {
+/// @ingroup mococost
+class OSIMMOCO_API MocoStateTrackingCost : public MocoCost {
 OpenSim_DECLARE_CONCRETE_OBJECT(MocoStateTrackingCost, MocoCost);
 public:
     MocoStateTrackingCost() { constructProperties(); }
@@ -130,4 +130,4 @@ private:
 
 } // namespace OpenSim
 
-#endif // MUSCOLLO_MUCOSTATETRACKINGCOST_H
+#endif // MOCO_MOCOSTATETRACKINGCOST_H

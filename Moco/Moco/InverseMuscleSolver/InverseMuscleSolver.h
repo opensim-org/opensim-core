@@ -1,5 +1,5 @@
-#ifndef MUSCOLLO_INVERSEMUSCLESOLVER_H
-#define MUSCOLLO_INVERSEMUSCLESOLVER_H
+#ifndef MOCO_INVERSEMUSCLESOLVER_H
+#define MOCO_INVERSEMUSCLESOLVER_H
 /* -------------------------------------------------------------------------- *
  * OpenSim Moco: InverseMuscleSolver.h                                    *
  * -------------------------------------------------------------------------- *
@@ -92,7 +92,7 @@ namespace OpenSim {
 /// If you need to customize the reserve actuators more than is possible via
 /// `create_reserve_actuators`, you can create your own and add them to your
 /// model.
-class OSIMMUSCOLLO_API InverseMuscleSolver : public OpenSim::Object {
+class OSIMMOCO_API InverseMuscleSolver : public OpenSim::Object {
     OpenSim_DECLARE_ABSTRACT_OBJECT(InverseMuscleSolver, Object);
 public:
 
@@ -240,4 +240,4 @@ private:
 
 } // namespace OpenSim
 
-#endif // MUSCOLLO_INVERSEMUSCLESOLVER_H
+#endif // MOCO_INVERSEMUSCLESOLVER_H

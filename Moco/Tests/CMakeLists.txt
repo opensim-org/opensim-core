@@ -6,20 +6,20 @@ function(MocoAddTest)
     set(options)
     set(oneValueArgs NAME)
     set(multiValueArgs LIB_DEPENDS RESOURCES)
-    cmake_parse_arguments(MUCOTEST
+    cmake_parse_arguments(MOCOTEST
             "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
-    add_executable(${MUCOTEST_NAME} ${MUCOTEST_NAME}.cpp Testing.h)
+    add_executable(${MOCOTEST_NAME} ${MOCOTEST_NAME}.cpp Testing.h)
     # To organize targets in Visual Studio's Solution Explorer.
-    set_target_properties(${MUCOTEST_NAME} PROPERTIES FOLDER "Moco/Tests")
-    target_link_libraries(${MUCOTEST_NAME} osimMoco ${MUCOTEST_LIB_DEPENDS})
-    target_include_directories(${MUCOTEST_NAME}
+    set_target_properties(${MOCOTEST_NAME} PROPERTIES FOLDER "Moco/Tests")
+    target_link_libraries(${MOCOTEST_NAME} osimMoco ${MOCOTEST_LIB_DEPENDS})
+    target_include_directories(${MOCOTEST_NAME}
             PRIVATE "${CMAKE_SOURCE_DIR}/tropter/external/catch")
-    add_test(NAME ${MUCOTEST_NAME} COMMAND ${MUCOTEST_NAME})
+    add_test(NAME ${MOCOTEST_NAME} COMMAND ${MOCOTEST_NAME})
     #if(WIN32) # Instead, we are copying dependencies' DLLs.
-    #    set_property(TEST ${MUCOTEST_NAME} APPEND PROPERTY
+    #    set_property(TEST ${MOCOTEST_NAME} APPEND PROPERTY
     #        ENVIRONMENT "PATH=${IPOPT_DIR}/bin\;${ADOLC_DIR}/bin\;${OpenSim_ROOT_DIR}/bin")
     #endif()
-    file(COPY ${MUCOTEST_RESOURCES} DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
+    file(COPY ${MOCOTEST_RESOURCES} DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
 endfunction()
 
 MocoAddTest(NAME testMocoInterface)

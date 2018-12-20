@@ -1,14 +1,14 @@
-function configureMuscollo()
-% configureMuscollo() adds OpenSim Muscollo library paths to MATLAB path files.
-%    Once run, you will have access to the OpenSim Muscollo API in MATLAB:
+function configureMoco()
+% configureMoco() adds OpenSim Moco library paths to MATLAB path files.
+%    Once run, you will have access to the OpenSim Moco API in MATLAB:
 %
 %        >> import org.opensim.modeling.*;
 %        >> model = Model();
 %
-%    Windows users must ensure Muscollo's bin directory is on the operating
+%    Windows users must ensure Moco's bin directory is on the operating
 %    system's PATH (search for "environment" in the Windows start menu). 
 %
-%    Linux users must ensure Muscollo's lib directory on the library path
+%    Linux users must ensure Moco's lib directory on the library path
 %    (LD_LIBRRAY_PATH), and may need to replace MATLAB's libstdc++ 
 %    (see https://github.com/opensim-org/opensim-core/issues/1397).
 %
@@ -16,7 +16,7 @@ function configureMuscollo()
 %    administrator (or sudo) privileges to succeed.
 %
 %    For this function to work, it must be located in its original place 
-%    in the Muscollo installation: @MUSCOLLO_INSTALL_MATLABEXDIR@
+%    in the Moco installation: @MOCO_INSTALL_MATLABEXDIR@
 %
 % What this function does:
 %    This function adds (a) the location of org-opensim-modeling.jar 
@@ -27,7 +27,7 @@ function configureMuscollo()
 %    OpenSim's MATLAB Utilities to the MATLAB path (e.g., addpath).
 %
 % Removing existing OpenSim paths:
-%    This function tries detect any OpenSim or Muscollo installations you may
+%    This function tries detect any OpenSim or Moco installations you may
 %    have previously configured with MATLAB, and removes them from the Java
 %    class path, Java library path, and MATLAB path (all 3 items above).
 %  
@@ -61,22 +61,22 @@ function configureMuscollo()
 % ----------------------------------------------------------------------- %
 
 try
-%% Determine the Muscollo install location.
+%% Determine the Moco install location.
     thisFolder = fileparts(mfilename('fullpath'));
-    % Number of directories between this file and the Muscollo install root.
+    % Number of directories between this file and the Moco install root.
     numDirs = length(strfind('@matlabexdir_to_install_dir@', '..'));
     % Back up numDir times from this folder.
-    muscolloRoot = thisFolder;
+    mocoRoot = thisFolder;
     for i = 1:numDirs
         % This function returns all but the leaf element of the provided path.
-        muscolloRoot = fileparts(muscolloRoot);
+        mocoRoot = fileparts(mocoRoot);
     end
-    % For this to be an Muscollo installation, there must be a buildinfo file.
-    buildInfoFile = fullfile(muscolloRoot, '@CMAKE_INSTALL_SYSCONFDIR@', ...
+    % For this to be an Moco installation, there must be a buildinfo file.
+    buildInfoFile = fullfile(mocoRoot, '@CMAKE_INSTALL_SYSCONFDIR@', ...
                 'OpenSim_buildinfo.txt');
     if ~exist(buildInfoFile)
-        showMessage(['Cannot find the Muscollo installation. Did you move ' ...
-                    'configureMuscollo.m to a different location?'], ...
+        showMessage(['Cannot find the Moco installation. Did you move ' ...
+                    'configureMoco.m to a different location?'], ...
                     'Error', true);
     end
 
@@ -87,8 +87,8 @@ try
     toolboxLocal = fullfile(matlabroot, 'toolbox', 'local');
     % Create the string names used
     % TODO GUI distribution might put this file elsewhere.
-    jarPath =  fullfile(muscolloRoot, ...
-            '@MUSCOLLO_INSTALL_JAVAJARDIR@', '@SWIG_JAVA_JAR_NAME@');
+    jarPath =  fullfile(mocoRoot, ...
+            '@MOCO_INSTALL_JAVAJARDIR@', '@SWIG_JAVA_JAR_NAME@');
     classFileTool = fullfile(toolboxLocal, 'classpath.txt');
     % Keep track of if (1) we detected existing OpenSim
     % and (2) if we had issues removing existing OpenSim entries.
@@ -113,7 +113,7 @@ try
 
 %% Edit the Java library path.
     % Create the string names used
-    libPath  = fullfile(muscolloRoot, '@MUSCOLLO_INSTALL_SHAREDLIBDIR@');
+    libPath  = fullfile(mocoRoot, '@MOCO_INSTALL_SHAREDLIBDIR@');
     libraryFileTool = fullfile(toolboxLocal, 'librarypath.txt');
     if matlabOlderThan2012b
         rmPrev = rmPrev | editPathTxtFile(libraryFileTool, libPath);
@@ -124,16 +124,16 @@ try
     end
 
 %% Display final message.
-    msg = ['Paths have been successfully updated for the copy of Muscollo '...
-            'installed at ' muscolloRoot '.'];
+    msg = ['Paths have been successfully updated for the copy of Moco '...
+            'installed at ' mocoRoot '.'];
     if rmPrev(1) && rmPrev(2) 
         % We detected previous OpenSim entries and couldn't remove them.
         msg = [msg ' However, we were unable to fully remove existing '...
-                'installations of OpenSim/Muscollo from MATLAB. '...
+                'installations of OpenSim/Moco from MATLAB. '...
                 'Either remove them manually (see Command Window for '...
                 'details), or restart ' ...
                 'MATLAB as administrator (or with sudo, on UNIX) ' ...
-                ' and re-run configureMuscollo.m.'];
+                ' and re-run configureMoco.m.'];
     end
     if ispc && rmPrev(1) 
         msg = [msg ' Make sure your Windows PATH (search for ' ...
@@ -145,7 +145,7 @@ try
     end
     msg = [msg ' To complete setup, restart MATLAB. To test your set up, ' ...
            'type: `model = org.opensim.modeling.Model();`'];
-    showMessage(msg, 'OpenSim Muscollo successfully added', false);
+    showMessage(msg, 'OpenSim Moco successfully added', false);
 catch ME
     % Introduced in version 2007b (7.4).
     throwAsCaller(ME); % Avoid a stacktrace.
@@ -158,8 +158,8 @@ function rmPrev = editPathTxtFile(txtname, spath)
     % Edits Java path .txt files. Deletes old entries and adds the new path
     % spath if spath is not empty.
     % return value:
-    % (1): have we detected existing OpenSim/Muscollo entries?
-    % (2): did we have trouble removing existing OpenSim/Muscollo entries.
+    % (1): have we detected existing OpenSim/Moco entries?
+    % (2): did we have trouble removing existing OpenSim/Moco entries.
     rmPrev = [false false];
     
     % If the file does not exist then there are no old entries to delete; if
@@ -175,19 +175,19 @@ function rmPrev = editPathTxtFile(txtname, spath)
         if fileIDread == -1
             if isempty(spath)
                 % This branch is unlikely.
-                fprintf(['-- Unable check for existing OpenSim/Muscollo ' ...
+                fprintf(['-- Unable check for existing OpenSim/Moco ' ...
                         'entries in %s. Check this file manually.\n'], txtname);
                 % If spath is not empty, then we intend to write to the file,
                 % and we will give a more useful message in the next few lines.
             end
         else
             C = textscan(fileIDread,'%s', 'delimiter','\n');
-            [entries, rmPrev(1)] = searchForOpenSimMuscollo(C, txtname);
+            [entries, rmPrev(1)] = searchForOpenSimMoco(C, txtname);
         end
         fclose(fileIDread);
     end
 
-    % If we detected previous OpenSim/Muscollo entries or if want to add an
+    % If we detected previous OpenSim/Moco entries or if want to add an
     % entry, then we need to be able to write to the file.
     if rmPrev(1) || ~isempty(spath)
         fileIDwrite = fopen(txtname, 'w');
@@ -220,7 +220,7 @@ function rmPrev = editPathTxtFile(txtname, spath)
             msg = ['-- Added ' spath ' to ' txtname];
         end
         if rmPrev(1)
-            msg = [msg ' and commented out pre-existing OpenSim/Muscollo entries'];
+            msg = [msg ' and commented out pre-existing OpenSim/Moco entries'];
         end
         msg = [msg '.\n\n'];
         fprintf(msg);
@@ -230,19 +230,19 @@ end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function [newC, foundExisting] = searchForOpenSimMuscollo(C, txtname)
+function [newC, foundExisting] = searchForOpenSimMoco(C, txtname)
     % Return a new cell array with all the same entries as C, except that
-    % entries containing opensim or muscollo are commented out.
+    % entries containing opensim or moco are commented out.
     timeStr = datestr(now, 30);
     newC = cell(0);
     foundExisting = false;
     [Cnrows, Cncols] = cellfun(@size, C, 'UniformOutput', false);
     for i = 1:Cnrows{1}
         has_opensim = ~isempty(strfind(lower(C{1}{i}), 'opensim'));
-        has_muscollo = ~isempty(strfind(lower(C{1}{i}), 'muscollo'));
+        has_moco = ~isempty(strfind(lower(C{1}{i}), 'moco'));
         commented_out = any(regexpi(C{1}{i}, '^\s*#') == 1);
-        if (has_opensim || has_muscollo) && ~commented_out
-            commentedOutLine = ['# removed by configureMuscollo.m ' ...
+        if (has_opensim || has_moco) && ~commented_out
+            commentedOutLine = ['# removed by configureMoco.m ' ...
                      timeStr ' ' C{1}{i, 1}];
             foundExisting = true;
             newC = [newC, {commentedOutLine}];
@@ -305,7 +305,7 @@ function cleanMatlabSearchPath()
         folderName = matlabPath(startString+1 : finishString-1);
         
         % Check to see if the folder string contains 'OpenSim'.
-        % No need to check for 'muscollo' because this script never adds a path
+        % No need to check for 'moco' because this script never adds a path
         % to the MATLAB PATH.
         if ~isempty(strfind(lower(folderName), 'opensim'))
             if ~attemptedBackup

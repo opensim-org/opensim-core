@@ -68,9 +68,9 @@ protected:
 void testOscillatorMass() {
     int N = 25;
 
-    MocoTool muco;
-    muco.setName("oscillator_mass");
-    MocoProblem& mp = muco.updProblem();
+    MocoTool moco;
+    moco.setName("oscillator_mass");
+    MocoProblem& mp = moco.updProblem();
     mp.setModel(createOscillatorModel());
     mp.setTimeBounds(0, FINAL_TIME);
     mp.setStateInfo("/slider/position/value", {-5.0, 5.0}, -0.5, {0.25, 0.75});
@@ -80,10 +80,10 @@ void testOscillatorMass() {
 
     mp.addCost<FinalPositionCost>();
 
-    MocoTropterSolver& ms = muco.initSolver();
+    MocoTropterSolver& ms = moco.initSolver();
     ms.set_num_mesh_points(N);
 
-    MocoSolution sol = muco.solve();
+    MocoSolution sol = moco.solve();
     sol.write("testMocoParameters_testOscillatorMass_sol.sto");
 
     SimTK_TEST_EQ_TOL(sol.getParameter("oscillator_mass"), MASS, 0.003);
@@ -128,9 +128,9 @@ std::unique_ptr<Model> createOscillatorTwoSpringsModel() {
 void testOneParameterTwoSprings() {
     int N = 25;
 
-    MocoTool muco;
-    muco.setName("oscillator_spring_stiffnesses");
-    MocoProblem& mp = muco.updProblem();
+    MocoTool moco;
+    moco.setName("oscillator_spring_stiffnesses");
+    MocoProblem& mp = moco.updProblem();
     mp.setModel(createOscillatorTwoSpringsModel());
     mp.setTimeBounds(0, FINAL_TIME);
     mp.setStateInfo("/slider/position/value", {-5.0, 5.0}, -0.5, {0.25, 0.75});
@@ -143,10 +143,10 @@ void testOneParameterTwoSprings() {
 
     mp.addCost<FinalPositionCost>();
 
-    MocoTropterSolver& ms = muco.initSolver();
+    MocoTropterSolver& ms = moco.initSolver();
     ms.set_num_mesh_points(N);
 
-    MocoSolution sol = muco.solve();
+    MocoSolution sol = moco.solve();
     sol.write("testMocoParameters_testOscillatorMassTwoSprings_sol.sto");
 
     // Since springs add in parallel, both stiffness must be the same value
@@ -199,9 +199,9 @@ protected:
 void testSeeSawCOM() {
     int N = 25;
 
-    MocoTool muco;
-    muco.setName("seesaw_com");
-    MocoProblem& mp = muco.updProblem();
+    MocoTool moco;
+    moco.setName("seesaw_com");
+    MocoProblem& mp = moco.updProblem();
     mp.setModel(createSeeSawModel());
     mp.setTimeBounds(0, 5);
     mp.setStateInfo("/pin/rotation/value", {-10, 10}, 0, {-10, 10});
@@ -218,10 +218,10 @@ void testSeeSawCOM() {
 
     mp.addCost<RotationalAccelerationCost>();
 
-    MocoTropterSolver& ms = muco.initSolver();
+    MocoTropterSolver& ms = moco.initSolver();
     ms.set_num_mesh_points(N);
 
-    MocoSolution sol = muco.solve().unseal();
+    MocoSolution sol = moco.solve().unseal();
     const auto& sol_xCOM = sol.getParameter("com_location");
     sol.write("testMocoParameters_testSeeSawCOM_sol.sto");
     
@@ -231,7 +231,7 @@ void testSeeSawCOM() {
     // mp.updPhase(0).updModel().updComponent<Body>("body").setMassCenter(sol_COM);
 
     // Body will be at rest since COM should now be aligned with the pin joint.           
-    // muco.visualize(sol);
+    // moco.visualize(sol);
 
     SimTK_TEST_EQ_TOL(sol_xCOM, xCOM, 0.003);
 }

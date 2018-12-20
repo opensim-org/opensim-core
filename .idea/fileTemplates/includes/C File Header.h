@@ -1,6 +1,6 @@
 #if ($HEADER_COMMENTS)
 /* -------------------------------------------------------------------------- *
- * OpenSim Muscollo: $FILE_NAME                                               *
+ * OpenSim Moco: $FILE_NAME                                               *
  * -------------------------------------------------------------------------- *
  * Copyright (c) $YEAR Stanford University and the Authors                     *
  *                                                                            *

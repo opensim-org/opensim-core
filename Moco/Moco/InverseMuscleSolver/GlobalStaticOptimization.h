@@ -1,5 +1,5 @@
-#ifndef MUSCOLLO_GLOBALSTATICOPTIMIZATION_H
-#define MUSCOLLO_GLOBALSTATICOPTIMIZATION_H
+#ifndef MOCO_GLOBALSTATICOPTIMIZATION_H
+#define MOCO_GLOBALSTATICOPTIMIZATION_H
 /* -------------------------------------------------------------------------- *
  * OpenSim Moco: GlobalStaticOptimization.h                               *
  * -------------------------------------------------------------------------- *
@@ -26,13 +26,13 @@ namespace OpenSim {
 
 // TODO document
 // TODO example usage.
-class OSIMMUSCOLLO_API GlobalStaticOptimization : public InverseMuscleSolver {
+class OSIMMOCO_API GlobalStaticOptimization : public InverseMuscleSolver {
     OpenSim_DECLARE_CONCRETE_OBJECT(GlobalStaticOptimization,
             InverseMuscleSolver);
 public:
 
     // TODO rename to Iterate?
-    struct OSIMMUSCOLLO_API Solution {
+    struct OSIMMOCO_API Solution {
         /// The activation trajectories for all enabled (appliesForce) muscles.
         /// This will be empty if there are no enabled muscles.
         TimeSeriesTable activation;
@@ -84,4 +84,4 @@ public:
 
 } // namespace OpenSim
 
-#endif // MUSCOLLO_GLOBALSTATICOPTIMIZATION_H
+#endif // MOCO_GLOBALSTATICOPTIMIZATION_H

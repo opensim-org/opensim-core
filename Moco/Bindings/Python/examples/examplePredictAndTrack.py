@@ -1,5 +1,5 @@
 # -------------------------------------------------------------------------- #
-# OpenSim Muscollo: examplePredictAndTrack.py                                #
+# OpenSim Moco: examplePredictAndTrack.py                                #
 # -------------------------------------------------------------------------- #
 # Copyright (c) 2018 Stanford University and the Authors                     #
 #                                                                            #
@@ -103,10 +103,10 @@ def solvePrediction():
     #
     #       iniital pose      final pose
     #
-    muco = osim.MucoTool()
-    muco.setName("double_pendulum_predict")
+    moco = osim.MocoTool()
+    moco.setName("double_pendulum_predict")
 
-    problem = muco.updProblem()
+    problem = moco.updProblem()
 
     # Model (dynamics).
     problem.setModel(createDoublePendulumModel())
@@ -125,11 +125,11 @@ def solvePrediction():
 
     # Cost: minimize final time and error from desired 
     #       end effector position.
-    ftCost = osim.MucoFinalTimeCost()
+    ftCost = osim.MocoFinalTimeCost()
     ftCost.set_weight(0.001)
     problem.addCost(ftCost)
 
-    endpointCost = osim.MucoMarkerEndpointCost()
+    endpointCost = osim.MocoMarkerEndpointCost()
     endpointCost.setName("endpoint")
     endpointCost.set_weight(1000.0)
     endpointCost.setPointName("/markerset/m1")
@@ -138,7 +138,7 @@ def solvePrediction():
 
 
     # Configure the solver.
-    solver = muco.initSolver()
+    solver = moco.initSolver()
     solver.set_num_mesh_points(50)
     solver.set_verbosity(2)
     solver.set_optim_solver("ipopt")
@@ -156,14 +156,14 @@ def solvePrediction():
     solver.setGuess(guess)
 
     # Save the problem to a setup file for reference.
-    muco.printToXML("examplePredictAndTrack_predict.omuco")
+    moco.printToXML("examplePredictAndTrack_predict.omoco")
 
     # Solve the problem.
-    solution = muco.solve();
+    solution = moco.solve();
     solution.write("examplePredictAndTrack_predict_solution.sto");
 
     if visualize:
-        muco.visualize(solution);
+        moco.visualize(solution);
     return solution
     
 
@@ -200,10 +200,10 @@ def computeMarkersReference(predictedSolution):
     
 def solveStateTracking(stateRef):
     # Predict the optimal trajectory for a minimum time swing-up.
-    muco = osim.MucoTool()
-    muco.setName("double_pendulum_track")
+    moco = osim.MocoTool()
+    moco.setName("double_pendulum_track")
 
-    problem = muco.updProblem()
+    problem = moco.updProblem()
 
     # Model (dynamics).
     problem.setModel(createDoublePendulumModel())
@@ -222,17 +222,17 @@ def solveStateTracking(stateRef):
     problem.setControlInfo("/tau1", [-150, 150])
 
     # Cost: track provided state data.
-    stateTracking = osim.MucoStateTrackingCost()
+    stateTracking = osim.MocoStateTrackingCost()
     stateTracking.setReference(stateRef)
     problem.addCost(stateTracking)
 
-    effort = osim.MucoControlCost()
+    effort = osim.MocoControlCost()
     effort.setName("effort")
     effort.set_weight(0.001)
     # TODO problem.addCost(effort)
 
     # Configure the solver.
-    solver = muco.initSolver()
+    solver = moco.initSolver()
     solver.set_num_mesh_points(50)
     solver.set_verbosity(2)
     solver.set_optim_solver("ipopt")
@@ -240,24 +240,24 @@ def solveStateTracking(stateRef):
     solver.set_hessian_block_sparsity_mode("dense")
 
     # Save the problem to a setup file for reference.
-    muco.printToXML("examplePredictAndTrack_track_states.omuco")
+    moco.printToXML("examplePredictAndTrack_track_states.omoco")
 
     # Solve the problem.
-    solution = muco.solve()
+    solution = moco.solve()
 
     solution.write("examplePredictAndTrack_track_states_solution.sto")
 
     if visualize:
-        muco.visualize(solution)
+        moco.visualize(solution)
     return solution
 
     
 def solveMarkerTracking(markersRef, guess):
     # Predict the optimal trajectory for a minimum time swing-up.
-    muco = osim.MucoTool()
-    muco.setName("double_pendulum_track")
+    moco = osim.MocoTool()
+    moco.setName("double_pendulum_track")
 
-    problem = muco.updProblem()
+    problem = moco.updProblem()
 
     # Model (dynamics).
     problem.setModel(createDoublePendulumModel())
@@ -276,17 +276,17 @@ def solveMarkerTracking(markersRef, guess):
     problem.setControlInfo("/tau1", [-100, 100])
 
     # Cost: track provided marker data.
-    markerTracking = osim.MucoMarkerTrackingCost()
+    markerTracking = osim.MocoMarkerTrackingCost()
     markerTracking.setMarkersReference(markersRef)
     problem.addCost(markerTracking)
     
-    effort = osim.MucoControlCost()
+    effort = osim.MocoControlCost()
     effort.setName("effort")
     effort.set_weight(0.0001)
     # problem.addCost(effort)
 
     # Configure the solver.
-    solver = muco.initSolver()
+    solver = moco.initSolver()
     solver.set_num_mesh_points(50)
     solver.set_verbosity(2)
     solver.set_optim_solver("ipopt")
@@ -296,15 +296,15 @@ def solveMarkerTracking(markersRef, guess):
     solver.setGuess(guess)
 
     # Save the problem to a setup file for reference.
-    muco.printToXML("examplePredictAndTrack_track_markers.omuco")
+    moco.printToXML("examplePredictAndTrack_track_markers.omoco")
 
     # Solve the problem.
-    solution = muco.solve()
+    solution = moco.solve()
 
     solution.write("examplePredictAndTrack_track_markers_solution.sto")
 
     if visualize:
-        muco.visualize(solution)
+        moco.visualize(solution)
     return solution
     
 

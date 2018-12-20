@@ -1,5 +1,5 @@
-#ifndef MUSCOLLO_OSIMMUSCOLLO_H
-#define MUSCOLLO_OSIMMUSCOLLO_H
+#ifndef MOCO_OSIMMOCO_H
+#define MOCO_OSIMMOCO_H
 /* -------------------------------------------------------------------------- *
  * OpenSim Moco: osimMoco.h                                           *
  * -------------------------------------------------------------------------- *
@@ -40,4 +40,4 @@
 
 #include "RegisterTypes_osimMoco.h"
 
-#endif // MUSCOLLO_OSIMMUSCOLLO_H
+#endif // MOCO_OSIMMOCO_H

@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- * OpenSim Muscollo: TestSlidingMass.java                                     *
+ * OpenSim Moco: TestSlidingMass.java                                     *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2017 Stanford University and the Authors                     *
  *                                                                            *
@@ -45,12 +45,12 @@ class TestSlidingMass {
 
   public static void testSlidingMass() throws Exception {
 
-    MucoTool muco = new MucoTool();
-    muco.setName("sliding_mass");
+    MocoTool moco = new MocoTool();
+    moco.setName("sliding_mass");
 
     // Define the optimal control problem.
     // ===================================
-    MucoProblem mp = muco.updProblem();
+    MocoProblem mp = moco.updProblem();
 
     // Model (dynamics).
     // -----------------
@@ -59,34 +59,34 @@ class TestSlidingMass {
     // Bounds.
     // -------
     // Initial time must be 0, final time can be within [0, 5].
-    mp.setTimeBounds(new MucoInitialBounds(0.), new MucoFinalBounds(0., 5.));
+    mp.setTimeBounds(new MocoInitialBounds(0.), new MocoFinalBounds(0., 5.));
 
     // Initial position must be 0, final position must be 1.
-    mp.setStateInfo("/slider/position/value", new MucoBounds(-5, 5),
-        new MucoInitialBounds(0), new MucoFinalBounds(1));
+    mp.setStateInfo("/slider/position/value", new MocoBounds(-5, 5),
+        new MocoInitialBounds(0), new MocoFinalBounds(1));
     // Initial and final speed must be 0. Use compact syntax.
     mp.setStateInfo("/slider/position/speed", new double[]{-50, 50},
         new double[]{0}, new double[]{0});
 
     // Applied force must be between -50 and 50.
-    mp.setControlInfo("/actuator", new MucoBounds(-50, 50));
+    mp.setControlInfo("/actuator", new MocoBounds(-50, 50));
 
     // Cost.
     // -----
-    MucoFinalTimeCost ftCost = new MucoFinalTimeCost();
+    MocoFinalTimeCost ftCost = new MocoFinalTimeCost();
     mp.addCost(ftCost);
 
     // Configure the solver.
     // =====================
-    MucoTropterSolver ms = muco.initSolver();
+    MocoTropterSolver ms = moco.initSolver();
     ms.set_num_mesh_points(50);
 
     // Now that we've finished setting up the tool, print it to a file.
-    muco.print("sliding_mass.omuco");
+    moco.print("sliding_mass.omoco");
 
     // Solve the problem.
     // ==================
-    MucoSolution solution = muco.solve();
+    MocoSolution solution = moco.solve();
 
     solution.write("sliding_mass_solution.sto");
   }

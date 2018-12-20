@@ -1,4 +1,4 @@
-%module(directors="1") opensimMuscollo
+%module(directors="1") opensimMoco
 
 %include java_preliminaries.i
 
@@ -8,7 +8,7 @@
 #include <Bindings/OpenSimHeaders_actuators.h>
 #include <Bindings/OpenSimHeaders_analyses.h>
 #include <Bindings/OpenSimHeaders_tools.h>
-#include <Bindings/OpenSimHeaders_muscollo.h>
+#include <Bindings/OpenSimHeaders_moco.h>
 using namespace OpenSim;
 using namespace SimTK;
 %}
@@ -54,13 +54,13 @@ using namespace SimTK;
 // }
 //
 // // When const SimTK::Vector& is the return type.
-// // Change the implementation of, e.g., MucoIterate.setTime() in MucoIterate.java
+// // Change the implementation of, e.g., MocoIterate.setTime() in MocoIterate.java
 // // from "return new Vector($jnicall)" to "return $jnicall" (since we no longer
 // // return a Vector).
 // %typemap(javaout) (const SimTK::Vector&) {
 //     return $jnicall;
 // }
-// // In java_muscollo.cxx, convert the SimTK::Vector to a Java double array.
+// // In java_moco.cxx, convert the SimTK::Vector to a Java double array.
 // // "&(*$1)[0] is the pointer to the start of array underlying the SimTK::Vector.
 // %typemap(out) (const SimTK::Vector&) {
 //     $result = JCALL1(NewDoubleArray, jenv, $1->size());
@@ -76,13 +76,13 @@ SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
   static {
       try{
           // All OpenSim classes required for GUI operation.
-          System.loadLibrary("osimMuscolloJavaJNI");
+          System.loadLibrary("osimMocoJavaJNI");
       }
       catch(UnsatisfiedLinkError e){
           String OS = System.getProperty("os.name").toLowerCase();
           String tip = "";
           if (OS.indexOf("win") >= 0) {
-              tip = "\nMake sure Muscollo's bin directory is on your PATH.";
+              tip = "\nMake sure Moco's bin directory is on your PATH.";
           } else if (OS.indexOf("mac") >= 0) {
               // Nothing for now; our use of RPATH means we were probably able
               // to locate the OpenSim dynamic libraries.
@@ -91,7 +91,7 @@ SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
               // to locate the OpenSim dynamic libraries.
           }
           String msg = new String(
-                  "Failed to load one or more dynamic libraries for Muscollo.\n"
+                  "Failed to load one or more dynamic libraries for Moco.\n"
                   + e + tip);
 
           String javaHome = System.getProperties().getProperty("java.home");
@@ -101,7 +101,7 @@ SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
           }
 
           System.out.println(msg);
-          String title = "Error: Failed to load OpenSim Muscollo libraries";
+          String title = "Error: Failed to load OpenSim Moco libraries";
           if (!GraphicsEnvironment.isHeadless()) {
               new JOptionPane(msg, JOptionPane.ERROR_MESSAGE)
                     .createDialog(null, title).setVisible(true);
@@ -112,63 +112,63 @@ SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
 
 // Memory management
 // =================
-%javamethodmodifiers OpenSim::MucoPhase::setModel "private";
-%rename OpenSim::MucoPhase::setModel private_setModel;
-%javamethodmodifiers OpenSim::MucoPhase::addParameter "private";
-%rename OpenSim::MucoPhase::addParameter private_addParameter;
-%javamethodmodifiers OpenSim::MucoPhase::addCost "private";
-%rename OpenSim::MucoPhase::addCost private_addCost;
-%javamethodmodifiers OpenSim::MucoPhase::addPathConstraint "private";
-%rename OpenSim::MucoPhase::addPathConstraint private_addPathConstraint;
+%javamethodmodifiers OpenSim::MocoPhase::setModel "private";
+%rename OpenSim::MocoPhase::setModel private_setModel;
+%javamethodmodifiers OpenSim::MocoPhase::addParameter "private";
+%rename OpenSim::MocoPhase::addParameter private_addParameter;
+%javamethodmodifiers OpenSim::MocoPhase::addCost "private";
+%rename OpenSim::MocoPhase::addCost private_addCost;
+%javamethodmodifiers OpenSim::MocoPhase::addPathConstraint "private";
+%rename OpenSim::MocoPhase::addPathConstraint private_addPathConstraint;
 
-%javamethodmodifiers OpenSim::MucoProblem::setModel "private";
-%rename OpenSim::MucoProblem::setModel private_setModel;
-%javamethodmodifiers OpenSim::MucoProblem::addParameter "private";
-%rename OpenSim::MucoProblem::addParameter private_addParameter;
-%javamethodmodifiers OpenSim::MucoProblem::addCost "private";
-%rename OpenSim::MucoProblem::addCost private_addCost;
-%javamethodmodifiers OpenSim::MucoProblem::addPathConstraint "private";
-%rename OpenSim::MucoProblem::addPathConstraint private_addPathConstraint;
+%javamethodmodifiers OpenSim::MocoProblem::setModel "private";
+%rename OpenSim::MocoProblem::setModel private_setModel;
+%javamethodmodifiers OpenSim::MocoProblem::addParameter "private";
+%rename OpenSim::MocoProblem::addParameter private_addParameter;
+%javamethodmodifiers OpenSim::MocoProblem::addCost "private";
+%rename OpenSim::MocoProblem::addCost private_addCost;
+%javamethodmodifiers OpenSim::MocoProblem::addPathConstraint "private";
+%rename OpenSim::MocoProblem::addPathConstraint private_addPathConstraint;
 
 // Interface
 // =========
 
-%typemap(javacode) OpenSim::MucoPhase %{
-    public static MucoBounds convertArrayToMB(double[] arr) throws Exception {
-        MucoBounds bounds = new MucoBounds();
+%typemap(javacode) OpenSim::MocoPhase %{
+    public static MocoBounds convertArrayToMB(double[] arr) throws Exception {
+        MocoBounds bounds = new MocoBounds();
         if (arr.length > 2) {
             throw new RuntimeException(
                     "Bounds cannot have more than 2 elements.");
         } else if (arr.length == 1) {
-            bounds = new MucoBounds(arr[0]);
+            bounds = new MocoBounds(arr[0]);
         } else if (arr.length == 2) {
-            bounds = new MucoBounds(arr[0], arr[1]);
+            bounds = new MocoBounds(arr[0], arr[1]);
         }
         return bounds;
     }
-    public static MucoInitialBounds convertArrayToMIB(double[] arr)
+    public static MocoInitialBounds convertArrayToMIB(double[] arr)
             throws Exception {
-        MucoInitialBounds bounds = new MucoInitialBounds();
+        MocoInitialBounds bounds = new MocoInitialBounds();
         if (arr.length > 2) {
             throw new RuntimeException(
                     "Bounds cannot have more than 2 elements.");
         } else if (arr.length == 1) {
-            bounds = new MucoInitialBounds(arr[0]);
+            bounds = new MocoInitialBounds(arr[0]);
         } else if (arr.length == 2) {
-            bounds = new MucoInitialBounds(arr[0], arr[1]);
+            bounds = new MocoInitialBounds(arr[0], arr[1]);
         }
         return bounds;
     }
-    public static MucoFinalBounds convertArrayToMFB(double[] arr)
+    public static MocoFinalBounds convertArrayToMFB(double[] arr)
             throws Exception {
-        MucoFinalBounds bounds = new MucoFinalBounds();
+        MocoFinalBounds bounds = new MocoFinalBounds();
         if (arr.length > 2) {
             throw new RuntimeException(
                     "Bounds cannot have more than 2 elements.");
         } else if (arr.length == 1) {
-            bounds = new MucoFinalBounds(arr[0]);
+            bounds = new MocoFinalBounds(arr[0]);
         } else if (arr.length == 2) {
-            bounds = new MucoFinalBounds(arr[0], arr[1]);
+            bounds = new MocoFinalBounds(arr[0], arr[1]);
         }
         return bounds;
     }
@@ -177,15 +177,15 @@ SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
         private_setModel(model);
         model.markAdopted();
     }
-    public void addParameter(MucoParameter obj) {
+    public void addParameter(MocoParameter obj) {
         private_addParameter(obj);
         obj.markAdopted();
     }
-    public void addCost(MucoCost obj) {
+    public void addCost(MocoCost obj) {
         private_addCost(obj);
         obj.markAdopted();
     }
-    public void addPathConstraint(MucoPathConstraint obj) {
+    public void addPathConstraint(MocoPathConstraint obj) {
         private_addPathConstraint(obj);
         obj.markAdopted();
     }
@@ -221,65 +221,65 @@ SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
     }
 %}
 
-%typemap(javacode) OpenSim::MucoProblem %{
+%typemap(javacode) OpenSim::MocoProblem %{
     public void setModel(Model model) {
         private_setModel(model);
         model.markAdopted();
     }
-    public void addParameter(MucoParameter obj) {
+    public void addParameter(MocoParameter obj) {
         private_addParameter(obj);
         obj.markAdopted();
     }
-    public void addCost(MucoCost obj) {
+    public void addCost(MocoCost obj) {
         private_addCost(obj);
         obj.markAdopted();
     }
-    public void addPathConstraint(MucoPathConstraint obj) {
+    public void addPathConstraint(MocoPathConstraint obj) {
         private_addPathConstraint(obj);
         obj.markAdopted();
     }
     public void setTimeBounds(double[] ib, double[] fb) throws Exception {
-        setTimeBounds(MucoPhase.convertArrayToMIB(ib),
-            MucoPhase.convertArrayToMFB(fb));
+        setTimeBounds(MocoPhase.convertArrayToMIB(ib),
+            MocoPhase.convertArrayToMFB(fb));
     }
     public void setStateInfo(String name, double[] b)
         throws Exception {
-        setStateInfo(name, MucoPhase.convertArrayToMB(b));
+        setStateInfo(name, MocoPhase.convertArrayToMB(b));
     }
     public void setStateInfo(String name, double[] b, double[] ib)
         throws Exception {
-        setStateInfo(name, MucoPhase.convertArrayToMB(b),
-                MucoPhase.convertArrayToMIB(ib));
+        setStateInfo(name, MocoPhase.convertArrayToMB(b),
+                MocoPhase.convertArrayToMIB(ib));
     }
     public void setStateInfo(String name, double[] b, double[] ib, double[] fb)
         throws Exception {
-        setStateInfo(name, MucoPhase.convertArrayToMB(b),
-                MucoPhase.convertArrayToMIB(ib), 
-                MucoPhase.convertArrayToMFB(fb));
+        setStateInfo(name, MocoPhase.convertArrayToMB(b),
+                MocoPhase.convertArrayToMIB(ib), 
+                MocoPhase.convertArrayToMFB(fb));
     }
 
     public void setControlInfo(String name, double[] b)
         throws Exception {
-        setControlInfo(name, MucoPhase.convertArrayToMB(b));
+        setControlInfo(name, MocoPhase.convertArrayToMB(b));
     }
     public void setControlInfo(String name, double[] b, double[] ib)
         throws Exception {
-        setControlInfo(name, MucoPhase.convertArrayToMB(b),
-                MucoPhase.convertArrayToMIB(ib));
+        setControlInfo(name, MocoPhase.convertArrayToMB(b),
+                MocoPhase.convertArrayToMIB(ib));
     }
     public void setControlInfo(String name, double[] b, double[] ib,
             double[] fb)
         throws Exception {
-        setControlInfo(name, MucoPhase.convertArrayToMB(b),
-                MucoPhase.convertArrayToMIB(ib), 
-                MucoPhase.convertArrayToMFB(fb));
+        setControlInfo(name, MocoPhase.convertArrayToMB(b),
+                MocoPhase.convertArrayToMIB(ib), 
+                MocoPhase.convertArrayToMFB(fb));
     }
 %}
 
 /* SWIG does not support initializer_list, but we can use Java arrays to
  * achieve similar syntax in MATLAB.
  * TODO create Vector(double[]) constructor. */
-%typemap(javacode) OpenSim::MucoIterate %{
+%typemap(javacode) OpenSim::MocoIterate %{
     public void setTime(double[] time) {
         Vector v = new Vector();
         v.resize(time.length);
@@ -358,6 +358,6 @@ SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
 
 %import "java_actuators.i"
 
-%include <Bindings/muscollo.i>
+%include <Bindings/moco.i>
 
 

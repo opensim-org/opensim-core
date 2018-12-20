@@ -1,5 +1,5 @@
-#ifndef MUSCOLLO_MUCOJOINTREACTIONNORMCOST_H
-#define MUSCOLLO_MUCOJOINTREACTIONNORMCOST_H
+#ifndef MOCO_MOCOJOINTREACTIONNORMCOST_H
+#define MOCO_MOCOJOINTREACTIONNORMCOST_H
 /* -------------------------------------------------------------------------- *
  * OpenSim Moco: MocoJointReactionNormCost.h                              *
  * -------------------------------------------------------------------------- *
@@ -26,13 +26,13 @@ namespace OpenSim {
 /// The norm of the reaction forces and moments integrated over the phase is 
 /// the specific quantity minimized.
 /// This cost requires realizing to the Acceleration stage.
-/// @ingroup mucocost
+/// @ingroup mococost
 // TODO allow a list property of multiple joints?
 // TODO allow specification of the components of the reaction load SpatialVec
 //      to be minimized.
 // TODO allow specification of either child or parent reaction loads to 
 //      to minimize.
-class OSIMMUSCOLLO_API MocoJointReactionNormCost : public MocoCost {
+class OSIMMOCO_API MocoJointReactionNormCost : public MocoCost {
 OpenSim_DECLARE_CONCRETE_OBJECT(MocoJointReactionNormCost, MocoCost);
 public: 
     MocoJointReactionNormCost();
@@ -62,4 +62,4 @@ private:
 
 } // namespace OpenSim
 
-#endif // MUSCOLLO_MUCOJOINTREACTIONNORMCOST_H
+#endif // MOCO_MOCOJOINTREACTIONNORMCOST_H

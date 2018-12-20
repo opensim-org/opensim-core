@@ -1,5 +1,5 @@
-#ifndef MUSCOLLO_MUCOVARIABLEINFO_H
-#define MUSCOLLO_MUCOVARIABLEINFO_H
+#ifndef MOCO_MOCOVARIABLEINFO_H
+#define MOCO_MOCOVARIABLEINFO_H
 /* -------------------------------------------------------------------------- *
  * OpenSim Moco: MocoProblem.h                                            *
  * -------------------------------------------------------------------------- *
@@ -24,7 +24,7 @@ namespace OpenSim {
 
 /// Bounds on continuous variables (states, controls). The name should
 /// correspond to path of a state variable or an actuator in the model.
-class OSIMMUSCOLLO_API MocoVariableInfo : public Object {
+class OSIMMOCO_API MocoVariableInfo : public Object {
 OpenSim_DECLARE_CONCRETE_OBJECT(MocoVariableInfo, Object);
 public:
     MocoVariableInfo();
@@ -67,4 +67,4 @@ private:
 
 } // namespace OpenSim
 
-#endif // MUSCOLLO_MUCOVARIABLEINFO_H
+#endif // MOCO_MOCOVARIABLEINFO_H

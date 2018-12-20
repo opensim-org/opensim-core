@@ -23,7 +23,7 @@
 
 using namespace OpenSim;
 
-class /*TODO OSIMMUSCOLLO_API*/AckermannVanDenBogert2010Force : public Force {
+class /*TODO OSIMMOCO_API*/AckermannVanDenBogert2010Force : public Force {
 OpenSim_DECLARE_CONCRETE_OBJECT(AckermannVanDenBogert2010Force, Force);
 public:
     OpenSim_DECLARE_PROPERTY(stiffness, double, "TODO N/m^3");
@@ -395,12 +395,12 @@ Model createModel(DOFs dofs) {
 
 int main() {
 
-    MocoTool muco;
-    muco.setName("whole_body_tracking");
+    MocoTool moco;
+    moco.setName("whole_body_tracking");
 
     // Define the optimal control problem.
     // ===================================
-    MocoProblem& mp = muco.updProblem();
+    MocoProblem& mp = moco.updProblem();
 
     DOFs dofs = DOFs::PTX_PTY_PRZ_HIPRZ_KNEERZ_ANKLERZ;
 
@@ -520,7 +520,7 @@ int main() {
 
     // Configure the solver.
     // =====================
-    MocoTropterSolver& ms = muco.initSolver();
+    MocoTropterSolver& ms = moco.initSolver();
     ms.set_dynamics_mode("implicit");
     ms.set_num_mesh_points(50);
     ms.set_optim_max_iterations(1000);
@@ -535,14 +535,14 @@ int main() {
     ms.setGuess(guess);
     // Using the correct initial guess reduces computational time by 4x.
 
-    muco.visualize(guess);
+    moco.visualize(guess);
 
     // Solve the problem.
     // ==================
-    MocoSolution solution = muco.solve().unseal();
+    MocoSolution solution = moco.solve().unseal();
     solution.write("sandboxWholeBodyTracking_solution.sto");
 
-    muco.visualize(solution);
+    moco.visualize(solution);
 
     // Notes:
     // All dofs and no contact takes ~70 seconds to solve.

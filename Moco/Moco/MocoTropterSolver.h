@@ -1,5 +1,5 @@
-#ifndef MUSCOLLO_MUCOTROPTERSOLVER_H
-#define MUSCOLLO_MUCOTROPTERSOLVER_H
+#ifndef MOCO_MOCOTROPTERSOLVER_H
+#define MOCO_MOCOTROPTERSOLVER_H
 /* -------------------------------------------------------------------------- *
  * OpenSim Moco: MocoTropterSolver.h                                               *
  * -------------------------------------------------------------------------- *
@@ -41,7 +41,7 @@ class MocoProblem;
 /// Using this solver in C++ requires that a tropter shared library is
 /// available, but tropter header files are not required. No tropter symbols
 /// are exposed in Moco's interface.
-class OSIMMUSCOLLO_API MocoTropterSolver : public MocoSolver {
+class OSIMMOCO_API MocoTropterSolver : public MocoSolver {
 OpenSim_DECLARE_CONCRETE_OBJECT(MocoTropterSolver, MocoSolver);
 public:
     OpenSim_DECLARE_PROPERTY(num_mesh_points, int,
@@ -211,4 +211,4 @@ private:
 
 } // namespace OpenSim
 
-#endif // MUSCOLLO_MUCOTROPTERSOLVER_H
+#endif // MOCO_MOCOTROPTERSOLVER_H

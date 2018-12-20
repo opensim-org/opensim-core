@@ -68,12 +68,12 @@ std::unique_ptr<Model> createSlidingMassModel() {
 
 int main() {
 
-    MocoTool muco;
-    muco.setName("sliding_mass");
+    MocoTool moco;
+    moco.setName("sliding_mass");
 
     // Define the optimal control problem.
     // ===================================
-    MocoProblem& problem = muco.updProblem();
+    MocoProblem& problem = moco.updProblem();
 
     // Model (dynamics).
     // -----------------
@@ -99,7 +99,7 @@ int main() {
 
     // Configure the solver.
     // =====================
-    MocoTropterSolver& solver = muco.initSolver();
+    MocoTropterSolver& solver = moco.initSolver();
     solver.set_num_mesh_points(50);
 
     // TODO interface for setting these options:
@@ -108,17 +108,17 @@ int main() {
 
 
     // Now that we've finished setting up the tool, print it to a file.
-    muco.print("sliding_mass.omuco");
+    moco.print("sliding_mass.omoco");
 
     // Solve the problem.
     // ==================
-    MocoSolution solution = muco.solve();
+    MocoSolution solution = moco.solve();
 
     //solution.write("sliding_mass_solution.sto");
 
     // Visualize.
     // ==========
-    muco.visualize(solution);
+    moco.visualize(solution);
 
     return EXIT_SUCCESS;
 }

@@ -1,5 +1,5 @@
-#ifndef MUSCOLLO_MUCOCONSTRAINT_H
-#define MUSCOLLO_MUCOCONSTRAINT_H
+#ifndef MOCO_MOCOCONSTRAINT_H
+#define MOCO_MOCOCONSTRAINT_H
 /* -------------------------------------------------------------------------- *
  * OpenSim Moco: MocoConstraint.h                                         *
  * -------------------------------------------------------------------------- *
@@ -34,8 +34,8 @@ namespace OpenSim {
 
 /// Information for a given constraint in the optimal control problem. The name
 /// should correspond to a MocoPathConstraint in the problem.
-/// @ingroup mucoconstraint
-class OSIMMUSCOLLO_API MocoConstraintInfo : public Object {
+/// @ingroup mococonstraint
+class OSIMMOCO_API MocoConstraintInfo : public Object {
     OpenSim_DECLARE_CONCRETE_OBJECT(MocoConstraintInfo, Object);
 public:
     MocoConstraintInfo();
@@ -156,8 +156,8 @@ enum class KinematicLevel {
 /// Objects of this class can only be instantiated by a MocoPhase, since 
 /// information from each constraint in the model is required to ensure that 
 /// the correct values are assigned to internal variables during construction. 
-/// @ingroup mucoconstraint
-class OSIMMUSCOLLO_API MocoKinematicConstraint {
+/// @ingroup mococonstraint
+class OSIMMOCO_API MocoKinematicConstraint {
 public:
     const MocoConstraintInfo& getConstraintInfo() const 
     {   return m_constraint_info; }
@@ -238,8 +238,8 @@ private:
 /// is no need to clear cache variables that you create in initializeImpl().
 /// Also, information stored in this constraint does not persist across multiple
 /// solves.
-/// @ingroup mucoconstraint
-class OSIMMUSCOLLO_API MocoPathConstraint : public Object {
+/// @ingroup mococonstraint
+class OSIMMOCO_API MocoPathConstraint : public Object {
     OpenSim_DECLARE_ABSTRACT_OBJECT(MocoPathConstraint, Object);
 public:
     MocoPathConstraint();
@@ -325,4 +325,4 @@ private:
 
 } // namespace OpenSim
 
-#endif // MUSCOLLO_MUCOCONSTRAINT_H
+#endif // MOCO_MOCOCONSTRAINT_H

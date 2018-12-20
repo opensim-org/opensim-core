@@ -1,5 +1,5 @@
 % -------------------------------------------------------------------------- %
-% OpenSim Muscollo: exampleMinimizeJointReaction.m                           %
+% OpenSim Moco: exampleMinimizeJointReaction.m                           %
 % -------------------------------------------------------------------------- %
 % Copyright (c) 2017 Stanford University and the Authors                     %
 %                                                                            %
@@ -23,7 +23,7 @@ import org.opensim.modeling.*;
 % Control effort minimization problem.
 % ====================================
 % This problem minimizes the squared control effort, integrated over the phase.
-effort = MucoControlCost();
+effort = MocoControlCost();
 runInvertedPendulumProblem('minimize_control_effort', effort);
 
 % Joint reaction load minimization problem.
@@ -31,7 +31,7 @@ runInvertedPendulumProblem('minimize_control_effort', effort);
 % This problem minimizes the reaction loads on the rotating body at the pin 
 % joint. Specifically, the norm of the reaction forces and moments integrated
 % over the phase is minimized.
-reaction = MucoJointReactionNormCost();
+reaction = MocoJointReactionNormCost();
 reaction.setJointPath('pin');
 runInvertedPendulumProblem('minimize_joint_reaction_loads', reaction);
 
@@ -68,14 +68,14 @@ body_center.attachGeometry(geom);
 
 model.finalizeConnections();
 
-% Create MucoTool.
+% Create MocoTool.
 % ================
-muco = MucoTool();
-muco.setName(name);
+moco = MocoTool();
+moco.setName(name);
 
 % Define the optimal control problem.
 % ===================================
-problem = muco.updProblem();
+problem = moco.updProblem();
 
 % Model (dynamics).
 % -----------------
@@ -84,16 +84,16 @@ problem.setModel(model);
 % Bounds.
 % -------
 % Initial time must be zero, final time must be 1.
-problem.setTimeBounds(MucoInitialBounds(0), MucoFinalBounds(1));
+problem.setTimeBounds(MocoInitialBounds(0), MocoFinalBounds(1));
 
 % Initial position must be 0, final position must be 180 degrees.
-problem.setStateInfo('/pin/angle/value', MucoBounds(-10, 10), ...
-    MucoInitialBounds(0), MucoFinalBounds(pi));
+problem.setStateInfo('/pin/angle/value', MocoBounds(-10, 10), ...
+    MocoInitialBounds(0), MocoFinalBounds(pi));
 % Initial and final speed must be 0. Use compact syntax.
 problem.setStateInfo('/pin/angle/speed', [-50, 50], [0], [0]);
 
 % Applied moment must be between -100 and 100 N-m.
-problem.setControlInfo('/forceset/actuator', MucoBounds(-100, 100));
+problem.setControlInfo('/forceset/actuator', MocoBounds(-100, 100));
 
 % Cost.
 % -----
@@ -101,22 +101,22 @@ problem.addCost(cost);
 
 % Configure the solver.
 % =====================
-solver = muco.initSolver();
+solver = moco.initSolver();
 solver.set_num_mesh_points(50);
 solver.set_optim_convergence_tolerance(1e-3);
 
 % Now that we've finished setting up the tool, print it to a file.
-muco.print([name '.omuco']);
+moco.print([name '.omoco']);
 
 % Solve the problem.
 % ==================
-solution = muco.solve();
+solution = moco.solve();
 solution.write([name '_solution.sto']);
 
 % Visualize.
 % ==========
 if ~strcmp(getenv('OPENSIM_USE_VISUALIZER'), '0')
-    muco.visualize(solution);
+    moco.visualize(solution);
 end
 
 % Plot results.
@@ -148,7 +148,7 @@ statesTraj = solution.exportToStatesTrajectory(problem);
 % This function adds the solution controls as prescribed controllers to the 
 % model. This ensures that the correct reaction loads are computed when 
 % realizing to acceleration.
-opensimMuscollo.prescribeControlsToModel(solution, model);
+opensimMoco.prescribeControlsToModel(solution, model);
 model.initSystem();
 
 % Compute reaction loads.

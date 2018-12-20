@@ -29,7 +29,7 @@ MocoTool::MocoTool() {
     constructProperties();
 }
 
-MocoTool::MocoTool(const std::string& omucoFile) : Object(omucoFile) {
+MocoTool::MocoTool(const std::string& omocoFile) : Object(omocoFile) {
     constructProperties();
     updateFromXMLDocument();
 }

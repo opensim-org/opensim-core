@@ -1,5 +1,5 @@
-#ifndef MUSCOLLO_MUCOPARAMETER_H
-#define MUSCOLLO_MUCOPARAMETER_H
+#ifndef MOCO_MOCOPARAMETER_H
+#define MOCO_MOCOPARAMETER_H
 /* -------------------------------------------------------------------------- *
  * OpenSim Moco: MocoParameter.h                                          *
  * -------------------------------------------------------------------------- *
@@ -77,7 +77,7 @@ class Model;
 /// Therefore, there is no need to clear cache variables that you create in
 /// initializeImpl(). Also, information stored in this parameter does not
 /// persist across multiple solves.
-class OSIMMUSCOLLO_API MocoParameter : public Object {
+class OSIMMOCO_API MocoParameter : public Object {
     OpenSim_DECLARE_CONCRETE_OBJECT(MocoParameter, Object);
 public:
     // Default constructor.
@@ -159,4 +159,4 @@ private:
 
 } // namespace OpenSim
 
-#endif // MUSCOLLO_MUCOPARAMETER_H
+#endif // MOCO_MOCOPARAMETER_H

@@ -1,5 +1,5 @@
-#ifndef MUSCOLLO_MUCOSOLVER_H
-#define MUSCOLLO_MUCOSOLVER_H
+#ifndef MOCO_MOCOSOLVER_H
+#define MOCO_MOCOSOLVER_H
 /* -------------------------------------------------------------------------- *
  * OpenSim Moco: MocoSolver.h                                             *
  * -------------------------------------------------------------------------- *
@@ -47,7 +47,7 @@ public:
 /// Once the solver is created, you should not make any edits to the
 /// MocoProblem. If you do, you must call resetProblem(const MocoProblem&
 /// problem).
-class OSIMMUSCOLLO_API MocoSolver : public Object {
+class OSIMMOCO_API MocoSolver : public Object {
 OpenSim_DECLARE_ABSTRACT_OBJECT(MocoSolver, Object);
 public:
 
@@ -100,4 +100,4 @@ private:
 
 } // namespace OpenSim
 
-#endif // MUSCOLLO_MUCOSOLVER_H
+#endif // MOCO_MOCOSOLVER_H
