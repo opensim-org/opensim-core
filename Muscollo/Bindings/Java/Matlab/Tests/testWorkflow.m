@@ -168,7 +168,7 @@ function testChangingCosts(testCase)
     problem.setTimeBounds(0, [0, 10]);
     problem.setStateInfo('/slider/position/value', [0, 1], 0, 1);
     problem.setStateInfo('/slider/position/speed', [-100, 100], 0, 0);
-    problem.addCost(MucoFinalTimeCost());
+    problem.updPhase().addCost(MucoFinalTimeCost());
     effort = MucoControlCost('effort');
     problem.updPhase().addCost(effort);
     finalTime0 = muco.solve().getFinalTime();

@@ -93,7 +93,7 @@ MucoSolution MucoTool::solve() const {
                 SimTK::Pathname::getPathSeparator() + prefix + "_solution.sto";
         try {
             solution.write(filename);
-        } catch (const TimestampGreaterThanEqualToNext& e) {
+        } catch (const TimestampGreaterThanEqualToNext&) {
             std::cout << "Could not write solution to file...skipping."
                     << std::endl;
         }

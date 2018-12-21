@@ -88,12 +88,12 @@ MucoIterate MucoCasADiSolver::createGuess(const std::string& type) const {
         return createGuessTimeStepping();
     }
 
-    auto transcription = createTranscription();
+auto casProblem = createCasADiProblem();
 
     if (type == "bounds") {
-        return transcription->createInitialGuessFromBounds();
+        return casProblem->createInitialGuessFromBounds();
     } else if (type == "random") {
-        return transcription->createRandomIterateWithinBounds();
+        return casProblem->createRandomIterateWithinBounds();
     } else {
         OPENSIM_THROW(Exception, "Internal error.");
     }
@@ -138,7 +138,7 @@ const MucoIterate& MucoCasADiSolver::getGuess() const {
 }
 
 std::unique_ptr<CasADiTranscription>
-MucoCasADiSolver::createTranscription() const {
+MucoCasADiSolver::createCasADiProblem() const {
     checkPropertyInSet(*this, getProperty_dynamics_mode(),
             {"explicit", "implicit"});
     std::unique_ptr<CasADiTranscription> transcrip;
@@ -164,16 +164,16 @@ MucoSolution MucoCasADiSolver::solveImpl() const {
         getProblemRep().printDescription();
     }
     checkPropertyIsPositive(*this, getProperty_num_mesh_points());
-    auto transcription = createTranscription();
+    auto casProblem = createCasADiProblem();
     // opt.disp(std::cout, true);
 
     // Initial guess.
     // --------------
     MucoIterate guess = getGuess();
     if (guess.empty()) {
-        transcription->setGuess(transcription->createInitialGuessFromBounds());
+        casProblem->setGuess(casProblem->createInitialGuessFromBounds());
     } else {
-        transcription->setGuess(*m_guessToUse);
+        casProblem->setGuess(*m_guessToUse);
     }
 
     /*
@@ -232,9 +232,9 @@ MucoSolution MucoCasADiSolver::solveImpl() const {
     Dict pluginOptions;
     pluginOptions["verbose_init"] = true;
 
-    MucoSolution mucoSolution = transcription->solve(get_optim_solver(),
+    MucoSolution mucoSolution = casProblem->solve(get_optim_solver(),
                 pluginOptions, solverOptions);
-    const auto& casadiStats = transcription->getStats();
+    const auto& casadiStats = casProblem->getStats();
     setSolutionStats(mucoSolution, casadiStats.at("success"),
             casadiStats.at("return_status"), casadiStats.at("iter_count"));
 

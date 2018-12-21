@@ -55,7 +55,7 @@ TEST_CASE("Unconstrained, IPOPT") {
         // Check correct optimization solution is obtained.
         REQUIRE(Approx(solution.parameters[0]) == 1.5);
         REQUIRE(Approx(solution.parameters[1]) == -2.0);
-        REQUIRE(Approx(solution.objective) == 0);
+        REQUIRE(Approx(solution.objective).margin(1e-10) == 0);
     }
     SECTION("Finite differences, exact Hessian") {
         auto ocp = std::make_shared<Unconstrained<double>>();
@@ -67,7 +67,7 @@ TEST_CASE("Unconstrained, IPOPT") {
         // Check correct optimization solution is obtained.
         REQUIRE(Approx(solution.parameters[0]) == 1.5);
         REQUIRE(Approx(solution.parameters[1]) == -2.0);
-        REQUIRE(Approx(solution.objective) == 0);
+        REQUIRE(Approx(solution.objective).margin(1e-10) == 0);
     }
     SECTION("ADOL-C") {
         // Solve the optimal control problem.
@@ -79,7 +79,7 @@ TEST_CASE("Unconstrained, IPOPT") {
         // Check correct optimization solution is obtained.
         REQUIRE(Approx(solution.parameters[0]) == 1.5);
         REQUIRE(Approx(solution.parameters[1]) == -2.0);
-        REQUIRE(Approx(solution.objective) == 0);
+        REQUIRE(Approx(solution.objective).margin(1e-10) == 0);
     }
 }
 
@@ -123,7 +123,7 @@ TEST_CASE("GravitationalAcceleration, IPOPT") {
         Solution solution = dircol.solve();
 
         REQUIRE(Approx(solution.parameters[0]) == GRAV_ACCEL);
-        REQUIRE(Approx(solution.objective) == 0);
+        REQUIRE(Approx(solution.objective).margin(1e-7) == 0);
     }
     SECTION("Finite differences, exact Hessian") {
         auto ocp = std::make_shared<GravitationalAcceleration<double>>();
@@ -133,7 +133,7 @@ TEST_CASE("GravitationalAcceleration, IPOPT") {
         Solution solution = dircol.solve();
 
         REQUIRE(Approx(solution.parameters[0]) == GRAV_ACCEL);
-        REQUIRE(Approx(solution.objective) == 0);
+        REQUIRE(Approx(solution.objective).margin(1e-7) == 0);
     }
     SECTION("ADOL-C") {
         auto ocp = std::make_shared<GravitationalAcceleration<adouble>>();
@@ -142,7 +142,7 @@ TEST_CASE("GravitationalAcceleration, IPOPT") {
         dircol.print_constraint_values(solution);
 
         REQUIRE(Approx(solution.parameters[0]) == GRAV_ACCEL);
-        REQUIRE(Approx(solution.objective) == 0);
+        REQUIRE(Approx(solution.objective).margin(1e-7) == 0);
     }
 }
 
@@ -197,8 +197,8 @@ TEST_CASE("OscillatorMass, IPOPT") {
         dircol.get_opt_solver().set_sparsity_detection("random");
         Solution solution = dircol.solve();
 
-        REQUIRE(Approx(solution.parameters[0]) == ocp->MASS);
-        REQUIRE(Approx(solution.objective) == 0);
+        REQUIRE(Approx(solution.parameters[0]).epsilon(1e-4) == ocp->MASS);
+        REQUIRE(Approx(solution.objective).margin(1e-10) == 0);
     }
     SECTION("Finite differences, exact Hessian") {
         auto ocp = std::make_shared<OscillatorMass<double>>();
@@ -208,8 +208,8 @@ TEST_CASE("OscillatorMass, IPOPT") {
         dircol.get_opt_solver().set_sparsity_detection("random");
         Solution solution = dircol.solve();
 
-        REQUIRE(Approx(solution.parameters[0]) == ocp->MASS);
-        REQUIRE(Approx(solution.objective) == 0);
+        REQUIRE(Approx(solution.parameters[0]).epsilon(1e-4) == ocp->MASS);
+        REQUIRE(Approx(solution.objective).margin(1e-10) == 0);
     }
     SECTION("ADOL-C") {
         auto ocp = std::make_shared<OscillatorMass<adouble>>();
@@ -217,7 +217,7 @@ TEST_CASE("OscillatorMass, IPOPT") {
         Solution solution = dircol.solve();
         dircol.print_constraint_values(solution);
 
-        REQUIRE(Approx(solution.parameters[0]) == ocp->MASS);
-        REQUIRE(Approx(solution.objective) == 0);
+        REQUIRE(Approx(solution.parameters[0]).epsilon(1e-4) == ocp->MASS);
+        REQUIRE(Approx(solution.objective).margin(1e-10) == 0);
     }
 };

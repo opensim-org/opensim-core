@@ -281,7 +281,7 @@ TEST_CASE("Check derivatives with analytical deriv.")
             const auto& i = jac_sparsity.row[inz];
             const auto& j = jac_sparsity.col[inz];
             REQUIRE(analytical_jacobian(i, j) ==
-                    Approx(fd_jacobian_values[inz]).epsilon(1e-8));
+                    Approx(fd_jacobian_values[inz]).margin(1e-8));
         }
     }
 
@@ -479,7 +479,7 @@ TEST_CASE("Check derivatives with analytical deriv.; sparse Jacobian.")
             const auto& i = hes_sparsity.row[inz];
             const auto& j = hes_sparsity.col[inz];
             REQUIRE(analytical_hessian(i, j) ==
-                    Approx(actual_hessian_values[inz]).epsilon(1e-7));
+                    Approx(actual_hessian_values[inz]).margin(1e-7));
         }
 
         // Jacobian.
@@ -699,7 +699,7 @@ TEST_CASE("User-supplied sparsity of Hessian of Lagrangian")
                 const auto& i = hes_sparsity.row[inz];
                 const auto& j = hes_sparsity.col[inz];
                 REQUIRE(analytical_hessian(i, j) ==
-                        Approx(actual_hessian_values[inz]).epsilon(1e-7));
+                        Approx(actual_hessian_values[inz]).margin(1e-7));
             }
         }
         {

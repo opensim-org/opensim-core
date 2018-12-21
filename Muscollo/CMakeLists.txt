@@ -6,6 +6,9 @@ set_package_properties(casadi PROPERTIES
         URL https://web.casadi.org
         TYPE REQUIRED
         PURPOSE "Differentiation and optimizer interface.")
+get_filename_component(CASADI_BIN_DIR "${casadi_DIR}/../" ABSOLUTE)
+MuscolloCopyDLLs(DEP_NAME casadi
+    DEP_BIN_DIR "${CASADI_BIN_DIR}" INSTALL_DLLS "${CMAKE_INSTALL_BINDIR}")
 
 find_package(OpenSim 4.0 REQUIRED)
 set_package_properties(OpenSim PROPERTIES

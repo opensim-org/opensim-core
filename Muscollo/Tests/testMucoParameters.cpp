@@ -22,8 +22,13 @@
 #include <OpenSim/Simulation/SimbodyEngine/SliderJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
 #include <OpenSim/Actuators/SpringGeneralizedForce.h>
-
 using namespace OpenSim;
+
+
+TEST_CASE("(Dummy test to support discovery in Resharper)")
+{
+    REQUIRE(true);
+}
 
 const double STIFFNESS = 100.0; // N/m
 const double MASS = 5.0; // kg
@@ -88,7 +93,7 @@ TEMPLATE_TEST_CASE("Oscillator mass", "", MucoTropterSolver, MucoCasADiSolver) {
     MucoSolution sol = muco.solve();
     sol.write("testMucoParameters_testOscillatorMass_sol.sto");
 
-    SimTK_TEST_EQ_TOL(sol.getParameter("oscillator_mass"), MASS, 0.003);
+    CHECK(sol.getParameter("oscillator_mass") == Approx(MASS).epsilon(0.003));
 }
 
 std::unique_ptr<Model> createOscillatorTwoSpringsModel() {
@@ -154,8 +159,8 @@ TEMPLATE_TEST_CASE("One parameter two springs", "",
 
     // Since springs add in parallel, both stiffness must be the same value
     // and equal half the original spring stiffness.
-    SimTK_TEST_EQ_TOL(sol.getParameter("spring_stiffness"), 0.5*STIFFNESS, 
-        0.003);
+    CHECK(sol.getParameter("spring_stiffness")
+        == Approx(0.5*STIFFNESS).epsilon(0.003));
 }
 
 const double L = 1; 
@@ -237,5 +242,5 @@ TEMPLATE_TEST_CASE("See-saw center of mass", "",
     // Body will be at rest since COM should now be aligned with the pin joint.           
     // muco.visualize(sol);
 
-    SimTK_TEST_EQ_TOL(sol_xCOM, xCOM, 0.003);
+    CHECK(sol_xCOM == Approx(xCOM).epsilon(0.003));
 }

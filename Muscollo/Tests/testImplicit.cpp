@@ -166,7 +166,7 @@ TEMPLATE_TEST_CASE("Similar solutions between implicit and explicit dynamics",
         const double RMS = solutionImplicit.compareContinuousVariablesRMS(
                 explicitWithDeriv, {"none"}, {"none"}, {"none"}, {});
         CAPTURE(RMS);
-        CHECK(RMS < 30.0);
+        CHECK(RMS < 35.0);
     }
 }
 

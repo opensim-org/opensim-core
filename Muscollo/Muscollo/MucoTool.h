@@ -154,15 +154,16 @@ protected:
 
 private:
 
-    void ensureInitSolver();
     MucoSolver& initSolverInternal();
     void constructProperties();
 };
 
 template <>
+OSIMMUSCOLLO_API
 MucoTropterSolver& MucoTool::initSolver<MucoTropterSolver>();
 
 template <>
+OSIMMUSCOLLO_API
 MucoCasADiSolver& MucoTool::initSolver<MucoCasADiSolver>();
 
 } // namespace OpenSim

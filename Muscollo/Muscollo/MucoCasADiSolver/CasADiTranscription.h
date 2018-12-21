@@ -597,7 +597,7 @@ public:
         for (const auto& name : pathConstraintNames) {
             const auto& pathConstraint = m_probRep.getPathConstraint(name);
             m_pathConstraintFunctions.push_back(
-                    make_unique<PathConstraintFunction>(
+                    OpenSim::make_unique<PathConstraintFunction>(
                             "path_constraint_" + name, *this, m_probRep,
                             pathConstraint));
             const std::vector<MucoBounds>& bounds =
