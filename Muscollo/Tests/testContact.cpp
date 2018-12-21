@@ -99,7 +99,7 @@ SimTK::Real testNormalForce(CreateContactFunction createContact) {
         // The horizontal force is not quite zero, maybe from a buildup of
         // numerical error (tightening the accuracy reduces this force).
         SimTK_TEST_EQ_TOL(contactForce[0], 0, 0.01);
-        SimTK_TEST_EQ_TOL(contactForce[1], weight, 0.01);
+        SimTK_TEST_EQ_TOL(contactForce[1], weight, 0.01)
         // The system is planar, so there is no force in the z direction.
         SimTK_TEST_EQ(contactForce[2], 0);
 
@@ -155,10 +155,8 @@ SimTK::Real testNormalForce(CreateContactFunction createContact) {
 void testFrictionForce(CreateContactFunction createContact,
         const SimTK::Real& equilibriumHeight) {
     Model model(create2DPointMassModel(createContact));
-    SimTK::Real weight;
     {
         SimTK::State state = model.initSystem();
-        weight = model.getTotalMass(state) * (-model.getGravity()[1]);
     }
 
     const SimTK::Real y0 = equilibriumHeight;

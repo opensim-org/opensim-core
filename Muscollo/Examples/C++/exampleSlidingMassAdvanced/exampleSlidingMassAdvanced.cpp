@@ -99,7 +99,7 @@ int main() {
 
     // Configure the solver.
     // =====================
-    MucoTropterSolver& ms = muco.initSolver();
+    MucoTropterSolver& ms = muco.initTropterSolver();
     ms.set_num_mesh_points(50);
     ms.set_verbosity(2);
     ms.set_optim_solver("ipopt");
