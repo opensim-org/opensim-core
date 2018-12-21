@@ -1,7 +1,7 @@
 #ifndef MOCO_MOCOCONSTRAINT_H
 #define MOCO_MOCOCONSTRAINT_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: MocoConstraint.h                                         *
+ * OpenSim Moco: MocoConstraint.h                                             *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2017 Stanford University and the Authors                     *
  *                                                                            *

@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: sandboxCalibrateContact.cpp                              *
+ * OpenSim Moco: sandboxCalibrateContact.cpp                                  *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2017 Stanford University and the Authors                     *
  *                                                                            *

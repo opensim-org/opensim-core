@@ -1,7 +1,7 @@
 #ifndef MOCO_MOCOMARKERENDPOINTCOST_H
 #define MOCO_MOCOMARKERENDPOINTCOST_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: MocoMarkerEndpointCost.h                                 *
+ * OpenSim Moco: MocoMarkerEndpointCost.h                                     *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2017 Stanford University and the Authors                     *
  *                                                                            *

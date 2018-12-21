@@ -1,7 +1,7 @@
 #ifndef MOCO_MOCOITERATE_H
 #define MOCO_MOCOITERATE_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: MocoIterate.h                                           *
+ * OpenSim Moco: MocoIterate.h                                               *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2017 Stanford University and the Authors                     *
  *                                                                            *

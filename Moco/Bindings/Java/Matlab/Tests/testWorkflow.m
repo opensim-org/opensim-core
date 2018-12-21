@@ -1,5 +1,5 @@
 % -------------------------------------------------------------------------- %
-% OpenSim Moco: testWorkflow.m                                           %
+% OpenSim Moco: testWorkflow.m                                               %
 % -------------------------------------------------------------------------- %
 % Copyright (c) 2017 Stanford University and the Authors                     %
 %                                                                            %

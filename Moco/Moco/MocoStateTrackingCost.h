@@ -1,7 +1,7 @@
 #ifndef MOCO_MOCOSTATETRACKINGCOST_H
 #define MOCO_MOCOSTATETRACKINGCOST_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: MocoStateTrackingCost.h                                  *
+ * OpenSim Moco: MocoStateTrackingCost.h                                      *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2017 Stanford University and the Authors                     *
  *                                                                            *

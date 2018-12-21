@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: InverseMuscleSolverMotionData.cpp                        *
+ * OpenSim Moco: InverseMuscleSolverMotionData.cpp                            *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2017 Stanford University and the Authors                     *
  *                                                                            *

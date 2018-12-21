@@ -1,7 +1,7 @@
 #ifndef MOCO_INVERSEMUSCLESOLVER_H
 #define MOCO_INVERSEMUSCLESOLVER_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: InverseMuscleSolver.h                                    *
+ * OpenSim Moco: InverseMuscleSolver.h                                        *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2017 Stanford University and the Authors                     *
  *                                                                            *

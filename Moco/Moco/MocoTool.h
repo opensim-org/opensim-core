@@ -1,7 +1,7 @@
 #ifndef MOCO_MOCOTOOL_H
 #define MOCO_MOCOTOOL_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: MocoTool.h                                               *
+ * OpenSim Moco: MocoTool.h                                                   *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2017 Stanford University and the Authors                     *
  *                                                                            *

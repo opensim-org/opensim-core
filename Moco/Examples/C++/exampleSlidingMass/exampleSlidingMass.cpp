@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: exampleSlidingMass.cpp                                   *
+ * OpenSim Moco: exampleSlidingMass.cpp                                       *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2017 Stanford University and the Authors                     *
  *                                                                            *

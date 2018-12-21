@@ -1,7 +1,7 @@
 #ifndef MOCO_DEGROOTEFREGLY2016MUSCLE_H
 #define MOCO_DEGROOTEFREGLY2016MUSCLE_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: DeGrooteFregly2016Muscle.h                               *
+ * OpenSim Moco: DeGrooteFregly2016Muscle.h                                   *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2017 Stanford University and the Authors                     *
  *                                                                            *

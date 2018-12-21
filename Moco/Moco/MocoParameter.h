@@ -1,7 +1,7 @@
 #ifndef MOCO_MOCOPARAMETER_H
 #define MOCO_MOCOPARAMETER_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: MocoParameter.h                                          *
+ * OpenSim Moco: MocoParameter.h                                              *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2017 Stanford University and the Authors                     *
  *                                                                            *

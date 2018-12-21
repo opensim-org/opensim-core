@@ -1,7 +1,7 @@
 #ifndef MOCO_MOCOCOST_H
 #define MOCO_MOCOCOST_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: MocoCost.h                                               *
+ * OpenSim Moco: MocoCost.h                                                   *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2017 Stanford University and the Authors                     *
  *                                                                            *

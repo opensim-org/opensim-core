@@ -1,7 +1,7 @@
 #ifndef MOCO_MOCOWEIGHTSET_H
 #define MOCO_MOCOWEIGHTSET_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: MocoWeightSet.h                                          *
+ * OpenSim Moco: MocoWeightSet.h                                              *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2017 Stanford University and the Authors                     *
  *                                                                            *

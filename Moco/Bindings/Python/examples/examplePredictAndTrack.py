@@ -1,5 +1,5 @@
 # -------------------------------------------------------------------------- #
-# OpenSim Moco: examplePredictAndTrack.py                                #
+# OpenSim Moco: examplePredictAndTrack.py                                    #
 # -------------------------------------------------------------------------- #
 # Copyright (c) 2018 Stanford University and the Authors                     #
 #                                                                            #

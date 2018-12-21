@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: testHangingMassRoundtrip.cpp                             *
+ * OpenSim Moco: testHangingMassRoundtrip.cpp                                 *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2017 Stanford University and the Authors                     *
  *                                                                            *

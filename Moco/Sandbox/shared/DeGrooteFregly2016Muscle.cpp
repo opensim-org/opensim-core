@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: DeGrooteFregly2016Muscle.cpp                             *
+ * OpenSim Moco: DeGrooteFregly2016Muscle.cpp                                 *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2017 Stanford University and the Authors                     *
  *                                                                            *

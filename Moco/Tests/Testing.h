@@ -1,7 +1,7 @@
 #ifndef MOCO_TESTING_H
 #define MOCO_TESTING_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: testing.h                                                *
+ * OpenSim Moco: testing.h                                                    *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2017 Stanford University and the Authors                     *
  *                                                                            *

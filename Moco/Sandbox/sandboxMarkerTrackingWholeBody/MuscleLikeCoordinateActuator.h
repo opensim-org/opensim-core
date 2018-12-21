@@ -1,7 +1,7 @@
 #ifndef MOCO_MUSCLELIKECOORDINATEACTUATOR_H
 #define MOCO_MUSCLELIKECOORDINATEACTUATOR_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: MuscleLikeCoordinateActuator.h                           *
+ * OpenSim Moco: MuscleLikeCoordinateActuator.h                               *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2017 Stanford University and the Authors                     *
  *                                                                            *

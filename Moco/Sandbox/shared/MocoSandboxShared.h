@@ -1,7 +1,7 @@
 #ifndef MOCO_MOCOSANDBOXSHARED_H
 #define MOCO_MOCOSANDBOXSHARED_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: MocoSandboxShared.h                                  *
+ * OpenSim Moco: MocoSandboxShared.h                                      *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2017 Stanford University and the Authors                     *
  *                                                                            *

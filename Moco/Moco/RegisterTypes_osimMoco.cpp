@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: RegisterTypes_osimMoco.cpp                                               *
+ * OpenSim Moco: RegisterTypes_osimMoco.cpp                                   *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2017 Stanford University and the Authors                     *
  *                                                                            *

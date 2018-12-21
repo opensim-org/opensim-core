@@ -1,5 +1,5 @@
 # -------------------------------------------------------------------------- #
-# OpenSim Moco: plot_iterate.py                                          #
+# OpenSim Moco: plot_iterate.py                                              #
 # -------------------------------------------------------------------------- #
 # Copyright (c) 2017 Stanford University and the Authors                     #
 #                                                                            #

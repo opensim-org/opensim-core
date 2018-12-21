@@ -1,7 +1,7 @@
 #ifndef MOCO_MOCOVARIABLEINFO_H
 #define MOCO_MOCOVARIABLEINFO_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: MocoProblem.h                                            *
+ * OpenSim Moco: MocoProblem.h                                                *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2017 Stanford University and the Authors                     *
  *                                                                            *

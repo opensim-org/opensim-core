@@ -1,5 +1,5 @@
 # -------------------------------------------------------------------------- #
-# OpenSim Moco: plot_gait10dof18musc_INDYGO.py                           #
+# OpenSim Moco: plot_gait10dof18musc_INDYGO.py                               #
 # -------------------------------------------------------------------------- #
 # Copyright (c) 2017 Stanford University and the Authors                     #
 #                                                                            #

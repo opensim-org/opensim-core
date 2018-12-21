@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: sandboxOneLegCouplerKnee.cpp                             *
+ * OpenSim Moco: sandboxOneLegCouplerKnee.cpp                                 *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2017 Stanford University and the Authors                     *
  *                                                                            *

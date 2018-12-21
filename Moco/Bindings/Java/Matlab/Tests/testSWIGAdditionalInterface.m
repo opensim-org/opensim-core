@@ -1,5 +1,5 @@
 % -------------------------------------------------------------------------- %
-% OpenSim Moco: testSWIGAdditionalInterface.m                            %
+% OpenSim Moco: testSWIGAdditionalInterface.m                                %
 % -------------------------------------------------------------------------- %
 % Copyright (c) 2017 Stanford University and the Authors                     %
 %                                                                            %

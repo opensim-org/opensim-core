@@ -1,7 +1,7 @@
 #ifndef MOCO_ACTIVATIONCOORDINATEACTUATOR_H
 #define MOCO_ACTIVATIONCOORDINATEACTUATOR_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: ActivationCoordinateActuator.h                           *
+ * OpenSim Moco: ActivationCoordinateActuator.h                               *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2017 Stanford University and the Authors                     *
  *                                                                            *
