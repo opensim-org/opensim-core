@@ -57,7 +57,13 @@ add_library(osimMuscollo SHARED
         Components/ModelFactory.cpp
         MucoCasADiSolver/MucoCasADiSolver.h
         MucoCasADiSolver/MucoCasADiSolver.cpp
-        MucoCasADiSolver/CasADiTranscription.cpp MucoCasADiSolver/CasADiTranscription.h MucoCasADiSolver/CasADiTrapezoidal.cpp MucoCasADiSolver/CasADiTrapezoidal.h MucoCasADiSolver/CasADiProblem.cpp MucoCasADiSolver/CasADiProblem.h)
+        MucoCasADiSolver/CasADiTranscription.cpp
+        MucoCasADiSolver/CasADiTranscription.h
+        MucoCasADiSolver/CasADiTrapezoidal.cpp
+        MucoCasADiSolver/CasADiTrapezoidal.h
+        # TODO MucoCasADiSolver/CasADiProblem.cpp
+        # TODO MucoCasADiSolver/CasADiProblem.h
+)
 target_link_libraries(osimMuscollo PUBLIC osimActuators
                                    PRIVATE tropter casadi)
 
