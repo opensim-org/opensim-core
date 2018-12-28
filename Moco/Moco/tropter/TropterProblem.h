@@ -279,7 +279,7 @@ protected:
 
         if (m_mocoTropterSolver.get_minimize_lagrange_multipliers()) {
             // Add squared multiplers cost to the integrand.
-            for (int i = 0; i < (m_total_mp + m_total_mv + m_total_ma); ++i) {						
+            for (int i = 0; i < (m_total_mp + m_total_mv + m_total_ma); ++i) {
                 integrand += 
                     m_mocoTropterSolver.get_lagrange_multiplier_weight()
                     * adjuncts[i] * adjuncts[i];
