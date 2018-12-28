@@ -110,6 +110,9 @@ protected:
                 Exception, "Solver property 'minimize_lagrange_multipliers' "
                 "was enabled but no enabled kinematic constraints exist in the "
                 "model.");
+            // Do not add kinematic constraints, so we cann return. This avoids
+            // attempting to access the `enforce_constraint_derivatives`
+            // property below, which is empty.
             return;
         } else {
             OPENSIM_THROW_IF(
@@ -312,7 +315,7 @@ protected:
     mutable SimTK::Vector qdotCorr;
     mutable SimTK::Vector udot;
     // The total number of scalar holonomic, non-holonomic, and acceleration 
-    // constraint equations enabled in the model. This does not count equations 																	
+    // constraint equations enabled in the model. This does not count equations                                                                     
     // for derivatives of holonomic and non-holonomic constraints. 
     mutable int m_total_mp = 0;
     mutable int m_total_mv = 0; 
