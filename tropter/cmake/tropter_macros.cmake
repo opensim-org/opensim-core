@@ -37,13 +37,18 @@ endfunction()
 # Copied from OpenSimMacros.cmake.
 # In the future, we could use the VS_USER_PROPS_CXX property instead
 # https://gitlab.kitware.com/cmake/cmake/commit/ef121ca0c33fb4931007c38b22c046998694b052
-function(tropter_copy_dlls DEP_NAME DEP_INSTALL_DIR)
+function(tropter_copy_dlls DEP_NAME DEP_INSTALL_DIR INSTALL_DLLS)
+    set(options DONT_INSTALL_DLLS)
+    set(oneValueArgs DEP_NAME DEP_INSTALL_DIR)
+    set(multiValueArgs)
+    cmake_parse_arguments(TROPDLL
+            "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
     # On Windows, copy dlls into the Tropter binary directory.
     if(WIN32)
-        file(GLOB_RECURSE DLLS ${DEP_INSTALL_DIR}/*.dll)
+        file(GLOB_RECURSE DLLS ${TROPDLL_DEP_INSTALL_DIR}/*.dll)
         if(NOT DLLS)
             message(FATAL_ERROR "Zero DLLs found in directory "
-                                "${DEP_INSTALL_DIR}.")
+                "${TROPDLL_DEP_INSTALL_DIR}.")
         endif()
         set(DEST_DIR "${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR}")
         foreach(DLL IN LISTS DLLS)
@@ -53,12 +58,12 @@ function(tropter_copy_dlls DEP_NAME DEP_INSTALL_DIR)
                 COMMAND ${CMAKE_COMMAND} -E make_directory ${DEST_DIR}
                 COMMAND ${CMAKE_COMMAND} -E copy ${DLL} ${DEST_DIR}
                 DEPENDS ${DLL}
-                COMMENT "Copying ${DLL_NAME} from ${DEP_INSTALL_DIR} to ${DEST_DIR}.")
+                COMMENT "Copying ${DLL_NAME} from ${TROPDLL_DEP_INSTALL_DIR} to ${DEST_DIR}.")
         endforeach()
-        add_custom_target(Copy_${DEP_NAME}_DLLs ALL DEPENDS ${DLLS_DEST})
-        set_target_properties(Copy_${DEP_NAME}_DLLs PROPERTIES
-            PROJECT_LABEL "Copy ${DEP_NAME} DLLs" FOLDER "tropter")
-        if(TROPTER_COPY_DEPENDENCIES)
+        add_custom_target(Copy_${TROPDLL_DEP_NAME}_DLLs ALL DEPENDS ${DLLS_DEST})
+        set_target_properties(Copy_${TROPDLL_DEP_NAME}_DLLs PROPERTIES
+            PROJECT_LABEL "Copy ${TROPDLL_DEP_NAME} DLLs" FOLDER "tropter")
+        if(TROPTER_COPY_DEPENDENCIES AND NOT TROPDLL_DONT_INSTALL_DLLS)
             install(FILES ${DLLS} DESTINATION ${CMAKE_INSTALL_BINDIR})
         endif()
     endif()
