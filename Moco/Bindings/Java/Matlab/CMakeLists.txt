@@ -10,10 +10,10 @@ install(DIRECTORY Examples/ DESTINATION "${MOCO_INSTALL_MATLABEXDIR}")
 set(SANDBOX_MARKER_TRACKING_DIR 
     "${CMAKE_BINARY_DIR}/Moco/Sandbox/sandboxMarkerTrackingWholeBody")
 file(COPY "Examples/exampleMarkerTracking10DOF/marker_trajectories.trc"
-		  "Examples/exampleMarkerTracking10DOF/subject01.osim"
+          "Examples/exampleMarkerTracking10DOF/subject01.osim"
           "Examples/exampleMarkerTracking10DOF/state_reference.mot"
-	 DESTINATION "${SANDBOX_MARKER_TRACKING_DIR}")
-	
+     DESTINATION "${SANDBOX_MARKER_TRACKING_DIR}")
+    
 # The configureMoco.m script contains paths into the Moco installation
 # that may be different on different platforms, so we configure it with CMake
 # variables.
