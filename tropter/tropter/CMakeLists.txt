@@ -90,8 +90,7 @@ endif()
 # TODO IPOPT_DEFINITIONS, IPOPT_LINK_FLAGS
 
 if(TROPTER_WITH_SNOPT)
-    target_include_directories(tropter SYSTEM PUBLIC ${SNOPT_INCLUDES})
-    target_link_libraries(tropter PUBLIC snopt7) # PRIVATE
+    target_link_libraries(tropter PRIVATE snopt7_cpp)
 endif()
 
 if(WIN32)

@@ -12,7 +12,7 @@ tropter_add_test(NAME test_path_constraints)
 tropter_add_test(NAME test_optimal_control_initial_guess)
 tropter_add_test(NAME test_parameter_optimization)
 if(TROPTER_WITH_SNOPT)
-    tropter_add_test(NAME test_snopt LIB_DEPENDS snopt7)
+    tropter_add_test(NAME test_snopt LIB_DEPENDS snopt7_cpp)
 endif()
 
 #if(OpenMP_FOUND)

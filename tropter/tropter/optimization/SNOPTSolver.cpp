@@ -84,7 +84,7 @@ std::string convert_info_integer_to_string(int info) {
 void snopt_userfunction(int*   /* Status */,
         int* num_variables, double x[],
         int*   needF, int* length_F  , double  F[],
-        int*   needG, int* neG, double G[],
+        int*   /*needG*/, int* /*neG*/, double /*G*/[],
         char*  /*    cu  */, int* /* lencu */,
         int   [] /* iu   */, int* /* leniu */,
         double[] /* ru   */, int* /* lenru */)

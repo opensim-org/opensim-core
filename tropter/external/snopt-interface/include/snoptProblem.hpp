@@ -4,32 +4,35 @@
 #include "snopt.h"
 
 /* File snoptProblem.hpp
- *   C++ interface for SNOPT
+ *   C++ interface for SNOPT and SQOPT
  *
- * 10 Jul 2014: First version (based on previous work by Josh Griffin).
  */
-
 /* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
 
-void summaryOff();
-void summaryOn();
-
 class snoptProblem {
-private:
-  int probID;
-  int isumm, iprint;
-  void init2zero();
-
 protected:
-  snoptProblem();
-  snoptProblem(const char*name);
-  snoptProblem(const char*name, const char *prtfile);
+  // default constructor
+  snoptProblem(const char*name, int *iw, int aleniw, double *rw, int alenrw);
+
+  // delegated constructors
+  snoptProblem() :
+    snoptProblem("        ", 0, 0, 0, 0) {};
+  snoptProblem(int aleniw, int alenrw) :
+    snoptProblem("        ", 0, aleniw, 0, alenrw) {};
+  snoptProblem(int *aiw, int aleniw, double *arw, int alenrw) :
+    snoptProblem("        ", aiw, aleniw, arw, alenrw) {} ;
+  snoptProblem(const char*name) :
+    snoptProblem(name, 0, 0, 0, 0) {};
+  snoptProblem(const char*name, int aleniw, int alenrw) :
+    snoptProblem(name, 0, aleniw, 0, alenrw) {};
+
   ~snoptProblem();
+
+  void init2zero();
 
   char    Prob[30];
 
-  int     inform;
-  int     initCalled, memCalled, allocA, allocG;
+  int     initCalled, memCalled, userWork;
 
   int     leniw, lenrw;
   double *rw;
@@ -39,151 +42,215 @@ protected:
   double *ru;
   int    *iu;
 
+  void allocI    (int leniw);
+  void allocR    (int lenrw);
+  void reallocI  (int leniw);
+  void reallocR  (int lenrw);
+
+public:
+  void setProbName    (const char *Prob);
+  void setPrintFile   (const char *prtname);
+  void setPrintFile   (const char *prtname, int iprint);
+
+  int getIntParameter (const char *stropt,   int    &opt);
+  int getRealParameter(const char *stropt,   double &opt);
+  int setParameter    (const char *stroptin);
+  int setIntParameter (const char *stropt,   int     opt);
+  int setRealParameter(const char *stropt,   double  opt);
+
+  void setUserI       (int    *iu, int leniu);
+  void setUserR       (double *ru, int lenru);
+  void setUserspace   (int    *iu, int leniu, double *ru, int lenru);
+};
+
+/* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
+
+class snoptProblemABC : public snoptProblem  {
+protected:
+  // default constructor
+  snoptProblemABC(const char*name, int *iw, int aleniw, double *rw, int alenrw);
+
+  // delegated constructors
+  snoptProblemABC() :
+    snoptProblemABC("        ", 0, 0, 0, 0) {};
+  snoptProblemABC(const char*name) :
+    snoptProblemABC(name, 0, 0, 0, 0) {};
+  snoptProblemABC(int aleniw, int alenrw) :
+    snoptProblemABC("        ", 0, aleniw, 0, alenrw) {};
+  snoptProblemABC(int *aiw, int aleniw, double *arw, int alenrw) :
+    snoptProblemABC("        ", aiw, aleniw, arw, alenrw) {};
+  snoptProblemABC(const char*name, int aleniw, int alenrw) :
+    snoptProblemABC(name, 0, aleniw, 0, alenrw) {};
+
+  ~snoptProblemABC();
+
+  void init2zero();
+
   isnLog  snLog;
   isnLog2 snLog2;
   isqLog  sqLog;
   isnSTOP snSTOP;
 
-  int  errMsgExit      ( const char *var );
-  void allocI          ( int leniw );
-  void allocR          ( int lenrw );
-  void reallocI        ( int leniw );
-  void reallocR        ( int lenrw );
-
-  virtual void setWorkspace () = 0;
-
 public:
-  virtual int solve   ( int starttype ) = 0;
+  void initialize     (const char *prtfile, int summOn);
+  void initialize     (const char *prtfile, int iprint, const char *sumfile, int isumm);
 
-  int getParameter    ( const char *stroptin, char *stroptout );
-  int getIntParameter ( const char *stropt,   int    &opt );
-  int getRealParameter( const char *stropt,   double &opt );
-  int setParameter    ( const char *stroptin );
-  int setIntParameter ( const char *stropt,   int     opt );
-  int setRealParameter( const char *stropt,   double  opt );
+  int  setSpecsFile   (const char *specname);
+  int  setSpecsFile   (const char *specname, int ispecs);
 
-  void setProbName    ( const char *Prob );
-
-  int  setSpecsFile   ( const char *specname );
-  void setPrintFile   ( const char *prtname );
-
-  void setUserI       ( int    *iu, int leniu );
-  void setUserR       ( double *ru, int lenru );
-
-  void setUserspace   ( int    *iu, int leniu,
-			double *ru, int lenru );
-
-  void setLog         ( isnLog snLog, isnLog2 snLog2, isqLog sqLog );
-  void setSTOP        ( isnSTOP snSTOP );
+  void setLog         (isnLog snLog, isnLog2 snLog2, isqLog sqLog);
+  void setSTOP        (isnSTOP snSTOP);
 };
 
 /* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
 
-class snoptProblemA : public snoptProblem {
-private:
-  void init2zero();
-
-protected:
-  int     jacComputed;
-  int     n, neF;
-  int     ObjRow;
-  double  ObjAdd;
-
-  double *x, *xlow, *xupp, *xmul;
-  double *F, *Flow, *Fupp, *Fmul;
-
-  int    *xstate, *Fstate;
-
-  int     lenA, lenG, neA, neG;
-  int    *iAfun, *jAvar, *iGfun, *jGvar;
-  double *A;
-
-  snFunA  usrfunA;
-
-  int     userDataSet();
-
+class snoptProblemA : public snoptProblemABC {
 public:
-  snoptProblemA();
-  snoptProblemA( const char *name );
-  snoptProblemA( const char *name, const char *prtfile );
+  // default constructor
+  snoptProblemA(const char*name, int *iw, int aleniw, double *rw, int alenrw);
+
+  // delegated constructors
+  snoptProblemA() :
+    snoptProblemA("        ", 0, 0, 0, 0) {};
+  snoptProblemA(const char*name) :
+    snoptProblemA(name, 0, 0, 0, 0) {};
+  snoptProblemA(int aleniw, int alenrw) :
+    snoptProblemA("        ", 0, aleniw, 0, alenrw) {};
+  snoptProblemA(int *aiw, int aleniw, double *arw, int alenrw) :
+    snoptProblemA("        ", aiw, aleniw, arw, alenrw) {};
+  snoptProblemA(const char*name, int aleniw, int alenrw) :
+    snoptProblemA(name, 0, aleniw, 0, alenrw) {};
+
   ~snoptProblemA();
 
-  int  computeJac    ( int &neA, int &neG );
-  int  solve         ( int starttype );
-  void setWorkspace  ();
+  void setWorkspace(int neF, int n, int neA, int neG);
+  int  computeJac(int neF, int n, snFunA usrfunA,
+		  double *x, double *xlow, double*xupp,
+		  int *&iAfun, int *&jAvar, double *&A, int &neA,
+		  int *&iGfun, int *&jGvar, int &neG);
 
-  void setProblemSize( int n, int neF );
-  void setObjective  ( int ObjRow, double ObjAdd );
+  int  solve(int starttype, int nF, int n, double ObjAdd,
+	     int ObjRow, snFunA usrfunA,
+	     double *xlow, double *xupp, double *Flow, double *Fupp,
+	     double *x, int *xstate, double *xmul,
+	     double *F, int *Fstate, double *Fmul,
+	     int &nS, int &nInf, double &sInf);
 
-  void setA          ( int lenA, int neA, int *iAfun, int *jAvar, double *A );
-  void setG          ( int lenG, int neG, int *iGfun, int *jGvar );
-
-  void setX          ( double *x, double *xlow, double *xupp,
-                       double *xmul, int *xstate );
-  void setF          ( double *F, double *Flow, double *Fupp,
-                       double *Fmul, int *Fstate );
-  void setUserFun    ( snFunA usrfun );
+  int  solve(int starttype, int nF, int n, double ObjAdd,
+	     int ObjRow, snFunA usrfunA,
+	     int *iAfun, int *jAvar, double *A, int neA,
+	     int *iGfun, int *jGvar, int neG,
+	     double *xlow, double *xupp, double *Flow, double *Fupp,
+	     double *x, int *xstate, double *xmul,
+	     double *F, int *Fstate, double *Fmul,
+	     int &nS, int &nInf, double &sInf);
 };
 
 /* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
 
-class snoptProblemC : public snoptProblem {
-private:
-  void init2zero();
-
-  snFunC  usrfunC;
-
-protected:
-  int     m, n, ne, nnCon, nnObj, nnJac, negCon, iObj;
-  double  ObjAdd;
-
-  int    *hs;
-  double *x, *bl, *bu, *pi, *rc;
-
-  int    *indJ, *locJ;
-  double *Jval;
-
-  int     userDataSet();
-
+class snoptProblemC : public snoptProblemABC {
 public:
-  snoptProblemC();
-  snoptProblemC( const char*name );
-  snoptProblemC( const char*name, const char *prtfile );
+  // default constructor
+  snoptProblemC(const char*name, int *iw, int aleniw, double *rw, int alenrw);
+
+  // delegated constructors
+  snoptProblemC() :
+    snoptProblemC("        ", 0, 0, 0, 0) {};
+  snoptProblemC(const char*name) :
+    snoptProblemC(name, 0, 0, 0, 0) {};
+  snoptProblemC(int aleniw, int alenrw) :
+    snoptProblemC("        ", 0, aleniw, 0, alenrw) {};
+  snoptProblemC(int *aiw, int aleniw, double *arw, int alenrw) :
+    snoptProblemC("        ", aiw, aleniw, arw, alenrw) {};
+  snoptProblemC(const char*name, int aleniw, int alenrw) :
+    snoptProblemC(name, 0, aleniw, 0, alenrw) {};
+
   ~snoptProblemC();
 
-  int  solve         ( int starttype );
-  void setWorkspace  ();
+  void setWorkspace(int m, int n, int ne, int negCon,
+		    int nnCon, int nnObj, int nnJac);
 
-  void setProblemSize( int m, int n, int nnCon, int nnJac, int nnObj );
-  void setObjective  ( int iObj, double ObjAdd );
-
-  void setJ          ( int ne, double *Jval, int *indJ, int *locJ );
-
-  void setX          ( double *bl, double *bu, double *x,
-		       double *pi, double *rc, int *hs );
-  void setUserFun    ( snFunC usrfun );
+  int solve(int starttype, int m, int n, int ne, int negCon,
+	    int nnCon, int nnObj, int nnJac,
+	    int iObj, double ObjAdd, snFunC usrfunC,
+	    double *Jval, int *indJ, int *locJ,
+	    double *bl, double *bu, int *hs,
+	    double *x, double *pi, double *rc,
+	    int &nS, int &nInf, double &sInf, double &objective);
 };
 
 /* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
 
 class snoptProblemB : public snoptProblemC {
-private:
-  void init2zero();
-  int  userDataSet();
-
-protected:
-  snObjB  funobj;
-  snConB  funcon;
-
 public:
-  snoptProblemB();
-  snoptProblemB( const char*name );
-  snoptProblemB( const char*name, const char *prtfile );
+  // default constructor
+  snoptProblemB(const char*name, int *aiw, int aleniw, double *arw, int alenrw);
+
+  // delegated constructors
+  snoptProblemB() :
+    snoptProblemB("        ", 0, 0, 0, 0) {};
+  snoptProblemB(const char*name) :
+    snoptProblemB(name, 0, 0, 0, 0) {};
+  snoptProblemB(int aleniw, int alenrw) :
+    snoptProblemB("        ", 0, aleniw, 0, alenrw) {};
+  snoptProblemB(int *aiw, int aleniw, double *arw, int alenrw) :
+    snoptProblemB("        ", aiw, aleniw, arw, alenrw) {};
+  snoptProblemB(const char*name, int aleniw, int alenrw) :
+    snoptProblemB(name, 0, aleniw, 0, alenrw) {};
+
   ~snoptProblemB();
 
-  int  solve         ( int starttype );
-  void setFuncon     ( snConB funcon );
-  void setFunobj     ( snObjB funobj );
+  int solve(int starttype, int m, int n, int ne, int negCon,
+	    int nnCon, int nnObj, int nnJac,
+	    int iObj, double ObjAdd,
+	    snConB funcon, snObjB funobj,
+	    double *Jval, int *indJ, int *locJ,
+	    double *bl, double *bu, int *hs,
+	    double *x, double *pi, double *rc,
+	    int &nS, int &nInf, double &sInf, double &objective);
+};
+
+/* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
+
+class sqoptProblem : public snoptProblem {
+private:
+  isqLog  sqLog;
+  void init2zero();
+
+public:
+  // default constructor
+  sqoptProblem(const char*name, int *iw, int aleniw, double *rw, int alenrw);
+
+  // delegated constructors
+  sqoptProblem() :
+    sqoptProblem("        ", 0, 0, 0, 0) {};
+  sqoptProblem(const char*name) :
+    sqoptProblem(name, 0, 0, 0, 0) {};
+  sqoptProblem(int aleniw, int alenrw) :
+    sqoptProblem("        ", 0, aleniw, 0, alenrw) {};
+  sqoptProblem(int *aiw, int aleniw, double *arw, int alenrw) :
+    sqoptProblem("        ", aiw, aleniw, arw, alenrw) {};
+  sqoptProblem(const char*name, int aleniw, int alenrw) :
+    sqoptProblem(name, 0, aleniw, 0, alenrw) {};
+
+  ~sqoptProblem();
+
+  void initialize  (const char *prtfile, int summOn);
+  void initialize  (const char *prtfile, int iprint, const char *sumfile, int isumm);
+
+  int  setSpecsFile(const char *specname);
+  int  setSpecsFile(const char *specname, int ispecs);
+
+  void setLog      (isqLog sqLog);
+  void setWorkspace(int m, int n, int neA, int ncObj, int nnH);
+
+  int solve(int starttype, sqFunHx qpHx,
+	    int m, int n, int neA, int ncObj, int nnH,
+	    int iObj, double ObjAdd,
+	    double *A, int *indA, int *locA,
+	    double *bl, double *bu, double *cObj,
+	    int *eType, int *hs, double *x, double *pi, double *rc,
+	    int &nS, int &nInf, double &sInf, double &objective);
 };
 
 #endif /* SNOPTPROBLEM_H */
