@@ -1,3 +1,6 @@
+# TODO The following is preferable to changing the language for the
+# overall moco project:
+# project(snopt-interface C CXX Fortran)
 
 find_package(SNOPT MODULE)
 set_package_properties(SNOPT PROPERTIES
