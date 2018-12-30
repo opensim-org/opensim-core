@@ -110,6 +110,9 @@ protected:
                 Exception, "Solver property 'minimize_lagrange_multipliers' "
                 "was enabled but no enabled kinematic constraints exist in the "
                 "model.");
+            // Do not add kinematic constraints, so we can return. This avoids
+            // attempting to access the `enforce_constraint_derivatives`
+            // property below, which is empty.
             return;
         } else {
             OPENSIM_THROW_IF(
@@ -279,7 +282,7 @@ protected:
 
         if (m_mocoTropterSolver.get_minimize_lagrange_multipliers()) {
             // Add squared multiplers cost to the integrand.
-            for (int i = 0; i < (m_total_mp + m_total_mv + m_total_ma); ++i) {						
+            for (int i = 0; i < (m_total_mp + m_total_mv + m_total_ma); ++i) {
                 integrand += 
                     m_mocoTropterSolver.get_lagrange_multiplier_weight()
                     * adjuncts[i] * adjuncts[i];
@@ -312,7 +315,7 @@ protected:
     mutable SimTK::Vector qdotCorr;
     mutable SimTK::Vector udot;
     // The total number of scalar holonomic, non-holonomic, and acceleration 
-    // constraint equations enabled in the model. This does not count equations 																	
+    // constraint equations enabled in the model. This does not count equations                                                                     
     // for derivatives of holonomic and non-holonomic constraints. 
     mutable int m_total_mp = 0;
     mutable int m_total_mv = 0; 

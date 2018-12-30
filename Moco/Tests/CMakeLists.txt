@@ -54,7 +54,7 @@ MocoAddTest(NAME test2Muscles2DOFsDeGrooteFregly2016 LIB_DEPENDS tropter
         test2Muscles2DOFsDeGrooteFregly2016_INDYGO_setup.xml)
 
 MocoAddTest(NAME test2Muscles1DOFDeGrooteFregly2016 LIB_DEPENDS tropter)
-		
+        
 MocoAddTest(NAME testGait10dof18musc RESOURCES
         testGait10dof18musc_subject01.osim
         testGait10dof18musc_kinematics.mot

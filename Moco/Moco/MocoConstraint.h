@@ -243,7 +243,7 @@ class OSIMMOCO_API MocoPathConstraint : public Object {
     OpenSim_DECLARE_ABSTRACT_OBJECT(MocoPathConstraint, Object);
 public:
     MocoPathConstraint();
-        
+
     const MocoConstraintInfo& getConstraintInfo() const 
     {   return get_MocoConstraintInfo(); }
     MocoConstraintInfo& updConstraintInfo() 

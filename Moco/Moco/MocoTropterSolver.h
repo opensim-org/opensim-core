@@ -1,7 +1,7 @@
 #ifndef MOCO_MOCOTROPTERSOLVER_H
 #define MOCO_MOCOTROPTERSOLVER_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: MocoTropterSolver.h                                                   *
+ * OpenSim Moco: MocoTropterSolver.h                                          *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2017 Stanford University and the Authors                     *
  *                                                                            *
