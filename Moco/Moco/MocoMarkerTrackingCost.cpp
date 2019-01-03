@@ -51,8 +51,8 @@
                 continue;
             } else {
                 OPENSIM_THROW_FRMOBJ(Exception,
-                    "Marker '" + markRefNames[i] + "' unrecognized by the "
-                    "specified model.");
+                        format("Marker '%s' unrecognized by the "
+                               "specified model.", markRefNames[i]));
             }
         }
     }
