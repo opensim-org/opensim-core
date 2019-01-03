@@ -83,8 +83,8 @@ int main(int argc, char* argv[]) {
 
             std::string arg2(argv[2]);
             OPENSIM_THROW_IF(argc == 4 && arg2 != "--visualize", Exception,
-                    "Unrecognized option '" + arg2 +
-                    "'; did you mean '--visualize'?");
+                    format("Unrecognized option '%s'; did you mean "
+                           "'--visualize'?", arg2));
             std::string setupFile;
             bool visualize = false;
             if (argc == 3) {
@@ -98,8 +98,8 @@ int main(int argc, char* argv[]) {
                     Object::makeObjectFromFile(setupFile));
 
             OPENSIM_THROW_IF(obj == nullptr, Exception,
-                    "A problem occurred when trying to load file '" + setupFile
-                            + "'.");
+                    format("A problem occurred when trying to load file '%s'.",
+                            setupFile));
 
             if (const auto* gso =
                     dynamic_cast<const GlobalStaticOptimization*>(obj.get())) {

@@ -18,6 +18,8 @@
 
 #include "MocoBounds.h"
 
+#include "MocoUtilities.h"
+
 using namespace OpenSim;
 
 MocoBounds::MocoBounds() {
@@ -34,8 +36,8 @@ MocoBounds::MocoBounds(double lower, double upper) : MocoBounds() {
     OPENSIM_THROW_IF(SimTK::isNaN(lower) || SimTK::isNaN(upper), Exception, 
         "NaN value detected. Please provide a non-NaN values for the bounds.");
     OPENSIM_THROW_IF(lower > upper, Exception,
-        "Expected lower <= upper, but lower=" + std::to_string(lower)
-        + " and upper=" + std::to_string(upper) + ".");
+        format("Expected lower <= upper, but lower=%g and upper=%g.",
+                lower, upper));
     append_bounds(lower);
     append_bounds(upper);
 }

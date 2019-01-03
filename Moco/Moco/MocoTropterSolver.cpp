@@ -74,9 +74,8 @@ MocoIterate MocoTropterSolver::createGuess(const std::string& type) const {
             && type != "random"
             && type != "time-stepping",
             Exception,
-            "Unexpected guess type '" + type +
-            "'; supported types are 'bounds', 'random', and "
-            "'time-stepping'.");
+            format("Unexpected guess type '%s'; supported types are 'bounds', "
+                   "'random', and 'time-stepping'.", type));
 
     if (type == "time-stepping") {
         return createGuessTimeStepping();
@@ -109,10 +108,10 @@ MocoIterate MocoTropterSolver::createGuessTimeStepping() const {
     const auto& initialTime = probrep.getTimeInitialBounds().getUpper();
     const auto& finalTime = probrep.getTimeFinalBounds().getLower();
     OPENSIM_THROW_IF_FRMOBJ(finalTime <= initialTime, Exception,
-        "Expected lower bound on final time to be greater than "
-        "upper bound on initial time, but "
-        "final_time.lower: " + std::to_string(finalTime) + "; " +
-        "initial_time.upper: " + std::to_string(initialTime) + ".");
+            format("Expected lower bound on final time to be greater than "
+                   "upper bound on initial time, but "
+                   "final_time.lower: %g; initial_time.upper: %g.",
+                    finalTime, initialTime));
     Model model(probrep.getModel());
 
     // Disable all controllers?
@@ -229,11 +228,12 @@ MocoSolution MocoTropterSolver::solveImpl() const {
     // is set as the transcription scheme.
     if (!getProperty_enforce_constraint_derivatives().empty()) {
         OPENSIM_THROW_IF(get_transcription_scheme() != "hermite-simpson" &&
-            get_enforce_constraint_derivatives(), Exception,
-            "If enforcing derivatives of model kinematic constraints, then the "
-            "property 'transcription_scheme' must be set to "
-            "'hermite-simpson'. Currently, it is set to '" + 
-            get_transcription_scheme() + "'.");    
+                get_enforce_constraint_derivatives(), Exception,
+                format("If enforcing derivatives of model kinematic "
+                       "constraints, then the property 'transcription_scheme' "
+                       "must be set to 'hermite-simpson'. "
+                       "Currently, it is set to '%s'.",
+                        get_transcription_scheme()));
     }
     // Block sparsity detected is only in effect when using an exact Hessian
     // approximation.

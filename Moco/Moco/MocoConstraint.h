@@ -19,6 +19,7 @@
  * -------------------------------------------------------------------------- */
 
 #include "MocoBounds.h"
+#include "MocoUtilities.h"
 
 #include <OpenSim/Common/Object.h>
 #include <simbody/internal/Constraint.h>
@@ -127,9 +128,9 @@ private:
     }
     void checkPropertySize(const AbstractProperty& prop) {
         if (!prop.empty()) {
-            OPENSIM_THROW_IF(m_num_equations != prop.size(), Exception, "Size "
-                "of property " + prop.getName() + " is not consistent with "
-                "current number of constraint equations.");
+            OPENSIM_THROW_IF(m_num_equations != prop.size(), Exception,
+                    format("Size of property %s is not consistent with "
+                    "current number of constraint equations.", prop.getName()));
         }
     }
     

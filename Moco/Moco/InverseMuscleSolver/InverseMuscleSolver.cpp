@@ -18,6 +18,8 @@
 
 #include "InverseMuscleSolver.h"
 
+#include "../MocoUtilities.h"
+
 #include <OpenSim/Common/TimeSeriesTable.h>
 
 using namespace OpenSim;
@@ -116,9 +118,9 @@ void InverseMuscleSolver::loadModelAndData(Model& model,
 
         // There should only be one table.
         OPENSIM_THROW_IF_FRMOBJ(tables.size() != 1, Exception,
-                "Expected kinematics file '" + get_kinematics_file() +
-                "' to contain 1 table, but it contains " +
-                std::to_string(tables.size()) + " tables.");
+                format("Expected kinematics file '%s' to contain 1 table, "
+                       "but it contains %i tables.",
+                       get_kinematics_file(), tables.size()));
 
         // Get the first table.
         auto* firstTable =
@@ -161,9 +163,9 @@ void InverseMuscleSolver::loadModelAndData(Model& model,
 
         // There should only be one table.
         OPENSIM_THROW_IF_FRMOBJ(tables.size() != 1, Exception,
-                "Expected net generalized forces file '" +
-                get_net_generalized_forces_file() + "' to contain 1 table, but "
-                "it contains " + std::to_string(tables.size()) + " tables.");
+                format("Expected net generalized forces file '%s' to "
+                       "contain 1 table, but it contains %i tables.",
+                        get_net_generalized_forces_file(), tables.size()));
 
         // Get the first table.
         auto* firstTable =

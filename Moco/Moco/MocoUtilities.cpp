@@ -336,11 +336,13 @@ void OpenSim::replaceMusclesWithPathActuators(Model& model) {
     // Delete the muscles.
     for (const auto* musc : musclesToDelete) {
         int index = model.getForceSet().getIndex(musc, 0);
-        OPENSIM_THROW_IF(index == -1, Exception, "Muscle with name " +
-            musc->getName() + " not found in ForceSet.");
+        OPENSIM_THROW_IF(index == -1, Exception,
+                format("Muscle with name %s not found in ForceSet.",
+                        musc->getName()));
         bool success = model.updForceSet().remove(index);
-        OPENSIM_THROW_IF(!success, Exception, "Attempt to remove muscle with "
-            "name " + musc->getName() + " was unsuccessful.");
+        OPENSIM_THROW_IF(!success, Exception,
+                format("Attempt to remove muscle with "
+                       "name %s was unsuccessful.", musc->getName()));
     }
 
 }
@@ -357,8 +359,9 @@ void OpenSim::removeMuscles(Model& model) {
     // Delete the muscles.
     for (const auto* musc : musclesToDelete) {
         int index = model.getForceSet().getIndex(musc, 0);
-        OPENSIM_THROW_IF(index == -1, Exception, "Muscle with name " +
-            musc->getName() + " not found in ForceSet.");
+        OPENSIM_THROW_IF(index == -1, Exception,
+                format("Muscle with name %s not found in ForceSet.",
+                        musc->getName()));
         model.updForceSet().remove(index);
     }
 }

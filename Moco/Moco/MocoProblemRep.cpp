@@ -45,7 +45,8 @@ void MocoProblemRep::initialize() {
     for (int i = 0; i < ph0.getProperty_state_infos().size(); ++i) {
         const auto& name = ph0.get_state_infos(i).getName();
         OPENSIM_THROW_IF(stateNames.findIndex(name) == -1, Exception,
-                "State info provided for nonexistent state '" + name + "'.");
+                format("State info provided for nonexistent state '%s'.",
+                        name));
     }
     OpenSim::Array<std::string> actuNames;
     const auto modelPath = m_model.getAbsolutePath();
@@ -57,8 +58,8 @@ void MocoProblemRep::initialize() {
     for (int i = 0; i < ph0.getProperty_control_infos().size(); ++i) {
         const auto& name = ph0.get_control_infos(i).getName();
         OPENSIM_THROW_IF(actuNames.findIndex(name) == -1, Exception,
-                "Control info provided for nonexistent actuator '"
-                        + name + "'.");
+                format("Control info provided for nonexistent actuator '%s'.",
+                        name));
     }
 
     // Create internal record of state and control infos, automatically
@@ -102,8 +103,8 @@ void MocoProblemRep::initialize() {
         OPENSIM_THROW_IF(param.getName().empty(), Exception,
                 "All parameters must have a name.");
         OPENSIM_THROW_IF(paramNames.count(param.getName()), Exception,
-                "A parameter with name '" + param.getName() +
-                "' already exists.");
+                format("A parameter with name '%s' already exists.",
+                        param.getName()));
         paramNames.insert(param.getName());
         m_parameters[i] = std::unique_ptr<MocoParameter>(
                 param.clone());
@@ -117,7 +118,8 @@ void MocoProblemRep::initialize() {
         OPENSIM_THROW_IF(cost.getName().empty(), Exception,
                 "All costs must have a name.");
         OPENSIM_THROW_IF(costNames.count(cost.getName()), Exception,
-                "A cost with name '" + cost.getName() + "' already exists.");
+                format("A cost with name '%s' already exists.",
+                        cost.getName()));
         costNames.insert(cost.getName());
         m_costs[i] = std::unique_ptr<MocoCost>(cost.clone());
         m_costs[i]->initializeOnModel(m_model);
@@ -195,7 +197,8 @@ void MocoProblemRep::initialize() {
         OPENSIM_THROW_IF(pc.getName().empty(), Exception,
                 "All costs must have a name.");
         OPENSIM_THROW_IF(pcNames.count(pc.getName()), Exception,
-                "A cost with name '" + pc.getName() + "' already exists.");
+                format("A constraint with name '%s' already exists.",
+                        pc.getName()));
         pcNames.insert(pc.getName());
         m_path_constraints[i] = std::unique_ptr<MocoPathConstraint>(pc.clone());
         m_path_constraints[i]->
@@ -273,13 +276,13 @@ std::vector<std::string> MocoProblemRep::createPathConstraintNames() const {
 const MocoVariableInfo& MocoProblemRep::getStateInfo(
         const std::string& name) const {
     OPENSIM_THROW_IF(m_state_infos.count(name) == 0, Exception,
-            "No info available for state '" + name + "'.");
+            format("No info available for state '%s'.", name));
     return m_state_infos.at(name);
 }
 const MocoVariableInfo& MocoProblemRep::getControlInfo(
         const std::string& name) const {
     OPENSIM_THROW_IF(m_control_infos.count(name) == 0, Exception,
-            "No info available for control '" + name + "'.");
+            format("No info available for control '%s'.", name));
     return m_control_infos.at(name);
 }
 const MocoParameter& MocoProblemRep::getParameter(
@@ -289,7 +292,7 @@ const MocoParameter& MocoProblemRep::getParameter(
         if (param->getName() == name) { return *param.get(); }
     }
     OPENSIM_THROW(Exception,
-            "No parameter with name '" + name + "' found.");
+            format("No parameter with name '%s' found.", name));
 }
 const MocoPathConstraint& MocoProblemRep::getPathConstraint(
         const std::string& name) const {
@@ -298,7 +301,7 @@ const MocoPathConstraint& MocoProblemRep::getPathConstraint(
         if (pc->getName() == name) { return *pc.get(); }
     }
     OPENSIM_THROW(Exception,
-            "No path constraint with name '" + name + "' found.");
+            format("No path constraint with name '%s' found.", name));
 }
 const MocoKinematicConstraint& MocoProblemRep::getKinematicConstraint(
         const std::string& name) const {
@@ -308,7 +311,7 @@ const MocoKinematicConstraint& MocoProblemRep::getKinematicConstraint(
         if (kc.getConstraintInfo().getName() == name) { return kc; }
     }
     OPENSIM_THROW(Exception,
-            "No kinematic constraint with name '" + name + "' found.");
+            format("No kinematic constraint with name '%s' found.", name));
 }
 const std::vector<MocoVariableInfo>& MocoProblemRep::getMultiplierInfos(
         const std::string& kinematicConstraintInfoName) const {
@@ -318,19 +321,18 @@ const std::vector<MocoVariableInfo>& MocoProblemRep::getMultiplierInfos(
         return m_multiplier_infos_map.at(kinematicConstraintInfoName);
     } else {
         OPENSIM_THROW(Exception,
-                "No variable infos for kinematic constraint info with name '"
-                        + kinematicConstraintInfoName + "' found.");
+                format("No variable infos for kinematic constraint info with "
+                       "name '%s' found.", kinematicConstraintInfoName));
     }
 }
 
 void MocoProblemRep::applyParametersToModel(
         const SimTK::Vector& parameterValues) const {
     OPENSIM_THROW_IF(parameterValues.size() != (int)m_parameters.size(),
-            Exception, "There are " +
-                    std::to_string(m_parameters.size()) + " parameters in "
-                    "this MocoProblem, but " +
-                    std::to_string(parameterValues.size()) +
-                    " values were provided.");
+            Exception,
+            format("There are %i parameters in "
+                    "this MocoProblem, but %i values were provided.",
+                    m_parameters.size(), parameterValues.size()));
     for (int i = 0; i < (int)m_parameters.size(); ++i) {
         m_parameters[i]->applyParameterToModel(parameterValues(i));
     }
