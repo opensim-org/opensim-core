@@ -18,8 +18,9 @@
 #include <tropter/Exception.hpp>
 
 #include <fstream>
+#include <iostream>
 
-// For interpolating.
+// For interpolating.	
 #include <unsupported/Eigen/Splines>
 
 using namespace tropter;
@@ -30,8 +31,8 @@ Iterate::Iterate(const std::string& filepath) {
     std::ifstream f(filepath);
     TROPTER_THROW_IF(!f, "Could not read '%s'.", filepath);
 
-    // Grab the number of state, control, adjunct, and parameter variables.
-    // --------------------------------------------------------------------
+    // Grab the number of states, controls, adjuncts, diffuses and parameters.
+    // -----------------------------------------------------------------------
     std::string line;
     TROPTER_THROW_IF(!std::getline(f, line) || line.find("num_states=") != 0,
             "Could not read num_states from '%s'.", filepath);
@@ -44,9 +45,14 @@ Iterate::Iterate(const std::string& filepath) {
     int num_controls = std::stoi(num_controls_str);
 
     TROPTER_THROW_IF(!std::getline(f, line) || line.find("num_adjuncts=") != 0,
-        "Could not read num_adjuncts from '%s'.", filepath);
+            "Could not read num_adjuncts from '%s'.", filepath);
     std::string num_adjuncts_str = line.substr(line.find('=') + 1);
     int num_adjuncts = std::stoi(num_adjuncts_str);
+
+    TROPTER_THROW_IF(!std::getline(f, line) || line.find("num_diffuses=") != 0,
+        "Could not read num_diffuses from '%s'.", filepath);
+    std::string num_diffuses_str = line.substr(line.find('=') + 1);
+    int num_diffuses = std::stoi(num_diffuses_str);
 
     TROPTER_THROW_IF(!std::getline(f, line) || 
             line.find("num_parameters=") != 0,
@@ -74,16 +80,19 @@ Iterate::Iterate(const std::string& filepath) {
             control_names.push_back(label);
         else if (i_label < num_states + num_controls + num_adjuncts)
             adjunct_names.push_back(label);
+        else if (i_label < num_states + num_controls + num_adjuncts 
+                                                     + num_diffuses)
+            diffuse_names.push_back(label);
         else
             parameter_names.push_back(label);
         ++i_label;
     }
     TROPTER_THROW_IF(i_label != num_states + num_controls + num_adjuncts + 
-                num_parameters,
+                num_diffuses + num_parameters,
             "In '%s', expected %i columns but got %i columns.",
             // Add 1 for the time column.
             filepath, 1 + num_states + num_controls + num_adjuncts + 
-                num_parameters, 
+                num_diffuses + num_parameters, 
             1 + i_label);
 
     // Get number of times.
@@ -104,6 +113,7 @@ Iterate::Iterate(const std::string& filepath) {
     states.resize(num_states, num_times);
     controls.resize(num_controls, num_times);
     adjuncts.resize(num_adjuncts, num_times);
+    diffuses.resize(num_diffuses, num_times);
     parameters.resize(num_parameters);
     std::string element;
     // For each line of data.
@@ -125,10 +135,14 @@ Iterate::Iterate(const std::string& filepath) {
             else if (i_var < num_states + num_controls + num_adjuncts)
                 element_ss >> adjuncts(i_var - num_states - num_controls, 
                     i_time);
+            else if (i_var < num_states + num_controls + num_adjuncts 
+                                                       + num_diffuses)
+                element_ss >> diffuses(i_var - num_states - num_controls
+                    - num_adjuncts, i_time);
             else 
                 if (i_time == 0)
                     element_ss >> parameters(i_var - num_states - num_controls
-                        - num_adjuncts);
+                        - num_adjuncts - num_diffuses);
             ++i_var;
         }
         ++i_time;
@@ -139,62 +153,91 @@ Iterate::Iterate(const std::string& filepath) {
 
 namespace {
 
-    // We can use Eigen's Spline module for linear interpolation, though it's
-    // not really meant for this.
-    // https://eigen.tuxfamily.org/dox/unsupported/classEigen_1_1Spline.html
-    // The independent variable must be between [0, 1].
-    using namespace Eigen;
-    RowVectorXd normalize(RowVectorXd x) {
-        const double lower = x[0];
-        const double denom = x.tail<1>()[0] - lower;
-        for (Index i = 0; i < x.size(); ++i) {
-            // We assume that x is non-decreasing.
-            x[i] = (x[i] - lower) / denom;
-        }
-        return x;
+// We can use Eigen's Spline module for linear interpolation, though it's
+// not really meant for this.
+// https://eigen.tuxfamily.org/dox/unsupported/classEigen_1_1Spline.html
+// The independent variable must be between [0, 1].
+using namespace Eigen;
+RowVectorXd normalize(RowVectorXd x) {
+    const double lower = x[0];
+    const double denom = x.tail<1>()[0] - lower;
+    for (Index i = 0; i < x.size(); ++i) {
+        // We assume that x is non-decreasing.
+        x[i] = (x[i] - lower) / denom;
     }
-
-    MatrixXd interp1(const RowVectorXd& xin, const MatrixXd yin,
-            const RowVectorXd& xout) {
-        // Make sure we're not extrapolating.
-        assert(xout[0] >= xin[0]);
-        assert(xout.tail<1>()[0] <= xin.tail<1>()[0]);
-
-        typedef Spline<double, 1> Spline1d;
-
-        MatrixXd yout(yin.rows(), xout.size());
-        RowVectorXd xin_norm = normalize(xin);
-        RowVectorXd xout_norm = normalize(xout);
-        for (Index irow = 0; irow < yin.rows(); ++irow) {
-            const Spline1d spline = SplineFitting<Spline1d>::Interpolate(
-                    yin.row(irow), // dependent variable.
-                    1, // linear interp
-                    xin_norm); // "knot points" (independent variable).
-            for (Index icol = 0; icol < xout.size(); ++icol) {
-                yout(irow, icol) = spline(xout_norm[icol]).value();
-            }
-        }
-        return yout;
-    }
+    return x;
 }
 
-Iterate
+MatrixXd interp1(const RowVectorXd& xin, const MatrixXd yin,
+    const RowVectorXd& xout) {
+    // Make sure we're not extrapolating.
+    assert(xout[0] >= xin[0]);
+    assert(xout.tail<1>()[0] <= xin.tail<1>()[0]);
+
+    typedef Spline<double, 1> Spline1d;
+
+    MatrixXd yout(yin.rows(), xout.size());
+    RowVectorXd xin_norm = normalize(xin);
+    RowVectorXd xout_norm = normalize(xout);
+    for (Index irow = 0; irow < yin.rows(); ++irow) {
+        const Spline1d spline = SplineFitting<Spline1d>::Interpolate(
+            yin.row(irow), // dependent variable.
+            1, // linear interp
+            xin_norm); // "knot points" (independent variable).
+        for (Index icol = 0; icol < xout.size(); ++icol) {
+            yout(irow, icol) = spline(xout_norm[icol]).value();
+        }
+    }
+    return yout;
+}
+
+}
+
+Iterate 
 Iterate::interpolate(int desired_num_columns) const {
     if (time.size() == desired_num_columns) return *this;
 
     assert(desired_num_columns > 0);
     TROPTER_THROW_IF(!std::is_sorted(time.data(), time.data() + time.size()),
-            "Expected time to be non-decreasing.");
+        "Expected time to be non-decreasing.");
 
     Iterate out;
     out.state_names = state_names;
     out.control_names = control_names;
     out.adjunct_names = adjunct_names;
+    out.diffuse_names = diffuse_names;
     out.time = Eigen::RowVectorXd::LinSpaced(desired_num_columns,
                                              time[0], time.tail<1>()[0]);
+
     out.states = interp1(time, states, out.time);
     out.controls = interp1(time, controls, out.time);
     out.adjuncts = interp1(time, adjuncts, out.time);
+    // If diffuses have any NaNs, create interpolant from non-NaN columns only.
+    // TODO this causes problems if a user creates an iterate full of NaNs and
+    // tries to interpolate: the diffuses will have nothing to interpolate over.
+    if (diffuses.hasNaN()) {
+        int cols_no_nans = 0;
+        std::vector<int> no_nan_indices;
+        for (int icol = 0; icol < diffuses.cols(); ++icol) {
+            if (!isnan(diffuses(0, icol))) {
+                ++cols_no_nans;
+                no_nan_indices.push_back(icol);
+            }
+        }
+        MatrixXd diffuses_no_nans(diffuses.rows(), cols_no_nans);
+        for (int icol_no_nan = 0; icol_no_nan < cols_no_nans; ++icol_no_nan) {
+            diffuses_no_nans.col(icol_no_nan) 
+                = diffuses.col(no_nan_indices[icol_no_nan]);
+        }
+        // Use the whole time range so we don't get NaNs during interpolation.
+        auto time_no_nans = Eigen::RowVectorXd::LinSpaced(cols_no_nans,
+            time[0], time.tail<1>()[0]);
+
+        out.diffuses = interp1(time_no_nans, diffuses_no_nans, out.time);
+    } else {
+        // If no NaNs, create interpolant as normal.
+        out.diffuses = interp1(time, diffuses, out.time);
+    }
 
     return out;
 }
@@ -208,6 +251,7 @@ void Iterate::write(const std::string& filepath) const {
     f << "num_states=" << states.rows() << std::endl;
     f << "num_controls=" << controls.rows() << std::endl;
     f << "num_adjuncts=" << adjuncts.rows() << std::endl;
+    f << "num_diffuses=" << diffuses.rows() << std::endl;
     f << "num_parameters=" << parameters.rows() << std::endl;
 
     // Column labels.
@@ -215,6 +259,7 @@ void Iterate::write(const std::string& filepath) const {
     if (state_names.size() == (size_t)states.rows() &&
             control_names.size() == (size_t)controls.rows() &&
             adjunct_names.size() == (size_t)adjuncts.rows() &&
+            diffuse_names.size() == (size_t)diffuses.rows() &&
             parameter_names.size() == (size_t)parameters.rows()) {
         for (int i_state = 0; i_state < states.rows(); ++i_state)
             f << "," << state_names[i_state];
@@ -222,9 +267,10 @@ void Iterate::write(const std::string& filepath) const {
             f << "," << control_names[i_control];
         for (int i_adjunct = 0; i_adjunct < adjuncts.rows(); ++i_adjunct)
             f << "," << adjunct_names[i_adjunct];
-        for (int i_parameter = 0; i_parameter < parameters.rows(); 
-                ++i_parameter)
-            f << "," << parameter_names[i_parameter];
+        for (int i_diffuse = 0; i_diffuse < diffuses.rows(); ++i_diffuse)
+            f << "," << diffuse_names[i_diffuse];
+        for (int i_param = 0; i_param < parameters.rows(); ++i_param)
+            f << "," << parameter_names[i_param];
     } else {
         for (int i_state = 0; i_state < states.rows(); ++i_state)
             f << ",state" << i_state;
@@ -232,9 +278,10 @@ void Iterate::write(const std::string& filepath) const {
             f << ",control" << i_control;
         for (int i_adjunct = 0; i_adjunct < adjuncts.rows(); ++i_adjunct)
             f << ",adjunct" << i_adjunct;
-        for (int i_parameter = 0; i_parameter < parameters.rows(); 
-                ++i_parameter)
-            f << ",parameter" << i_parameter;
+        for (int i_diffuse = 0; i_diffuse < diffuses.rows(); ++i_diffuse)
+            f << ",diffuse" << i_diffuse;
+        for (int i_param = 0; i_param < parameters.rows(); ++i_param)
+            f << ",parameter" << i_param;
     }
     f << std::endl;
 
@@ -247,10 +294,11 @@ void Iterate::write(const std::string& filepath) const {
             f << "," << controls(i_control, i_mesh);
         for (int i_adjunct = 0; i_adjunct < adjuncts.rows(); ++i_adjunct)
             f << "," << adjuncts(i_adjunct, i_mesh);
-        for (int i_parameter = 0; i_parameter < parameters.rows(); 
-                ++i_parameter)
+        for (int i_diffuse = 0; i_diffuse < diffuses.rows(); ++i_diffuse)
+            f << "," << diffuses(i_diffuse, i_mesh);
+        for (int i_param = 0; i_param < parameters.rows(); ++i_param)
             if (i_mesh == 0) {
-                f << "," << parameters(i_parameter);
+                f << "," << parameters(i_param);
             } else {
                 f << "," << std::numeric_limits<double>::quiet_NaN();
             }

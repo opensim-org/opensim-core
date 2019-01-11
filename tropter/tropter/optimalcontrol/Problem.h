@@ -53,7 +53,7 @@ template<typename T>
 struct Input {
     /// This index may be helpful for using a cache computed in
     /// OptimalControlProblem::initialize_on_mesh().
-    const int mesh_index;
+    const int time_index;
     /// The current time for the provided states and controls.
     const T& time;
     /// The vector of states at time `time`. This stores a reference to an
@@ -75,6 +75,12 @@ struct Input {
     /// @note If you pass this into functions that take an Eigen Vector as
     /// input, see the note above for the `states` variable.
     const Eigen::Ref<const VectorX<T>>& adjuncts;
+    /// The vector of adjuncts at time `time`.
+    /// @note If you pass this into functions that take an Eigen Vector as
+    /// input, see the note above for the `states` variable.
+    /// @note An empty reference indicates that the diffuses are not defined
+    /// for the time point associated with this struct.
+    const Eigen::Ref<const VectorX<T>>& diffuses;
     /// The vector of time-invariant parameter values.
     /// @note If you pass this into functions that take an Eigen Vector as
     /// input, see the note above for the `states` variable.
@@ -102,6 +108,8 @@ struct Output {
     /// Store the path constraint errors in this variable. The length of this
     /// vector is num_path_constraints. See the notes above about using this
     /// reference.
+    /// @note An empty reference indicates that the path constraint is not 
+    /// defined for the time point represented by this struct.
     Eigen::Ref<VectorX<T>> path;
 };
 
@@ -114,9 +122,13 @@ struct Output {
 /// - *controls trajectory*: a trajectory through time of controls
 ///   (control vectors).
 /// - *adjunct*: a single supplemental continuous variable. 
-/// - *adjuncts*: a vector of all adjunct varialbes at a given time.
+/// - *adjuncts*: a vector of all adjunct variables at a given time.
 /// - *adjuncts trajectory*: a trajectory through time of adjuncts
 ///   (adjunct vectors).
+/// - *diffuse*: a single variable only defined within a mesh interval.
+/// - *diffuses*: a vector of all diffuses at a given time.
+/// - *diffuses trajectory*: a trajectory through time of diffuses
+///   (diffuse vectors).
 /// - *parameter*: a single parameter variable.
 /// - *parameters*: a vector of all parameter variables.
 /// @ingroup optimalcontrol
@@ -138,6 +150,10 @@ private:
         std::string name;
         Bounds bounds;
     };
+    struct DiffuseInfo {
+        std::string name;
+        Bounds bounds;
+    };
 public:
 
     Problem() = default;
@@ -151,6 +167,8 @@ public:
     {   return (int)m_control_infos.size(); }
     int get_num_adjuncts() const
     {   return (int)m_adjunct_infos.size(); }
+    int get_num_diffuses() const
+    {   return (int)m_diffuse_infos.size(); }
     int get_num_parameters() const
     {   return (int)m_parameter_infos.size(); }
     int get_num_path_constraints() const
@@ -181,6 +199,16 @@ public:
     std::vector<std::string> get_adjunct_names() const {
         std::vector<std::string> names;
         for (const auto& info : m_adjunct_infos) {
+            names.push_back(info.name);
+        }
+        return names;
+    }
+    /// Get the names of all the diffuses in the order they appear in the 
+    /// `diffuses` input to calc_differential_algebraic_equations(), etc.
+    /// Note: this function is not free to call.
+    std::vector<std::string> get_diffuse_names() const {
+        std::vector<std::string> names;
+        for (const auto& info : m_diffuse_infos) {
             names.push_back(info.name);
         }
         return names;
@@ -248,6 +276,14 @@ public:
         m_adjunct_infos.push_back({name, bounds, initial_bounds, final_bounds});
         return (int)m_adjunct_infos.size() - 1;
     }
+    /// This returns an index that can be used to access this specific diffuse
+    /// variable within `dynamics()`, `path_constraints()`, etc.
+    /// TODO check if an diffuse with the provided name already exists.
+    int add_diffuse(const std::string& name, const Bounds& bounds) {
+
+        m_diffuse_infos.push_back({name, bounds});
+        return (int)m_diffuse_infos.size() - 1;
+    }
     /// This returns an index that can be used to access this specific parameter
     /// variable within `dynamics()` , `path_constraints()`, etc.
     /// TODO check if a parameter with the provided name already exists.
@@ -293,9 +329,15 @@ public:
     /// Compute the right-hand side of the differntial algebraic equations
     /// (DAE) for the system you want to optimize. This is the function that
     /// provides the dynamics and path constraints.
-    /// The initial values in `derivatives` and `constraints` are arbitrary and
-    /// cannot be assumed to be 0, etc. You must set entries to 0 explicitly if
-    /// you want that.
+    /// The initial values in `dynamics` and `path` are arbitrary and cannot be 
+    /// assumed to be 0, etc. You must set entries to 0 explicitly if you want 
+    /// that.
+    /// It is not always necessary to compute path constraint values at every 
+    /// time point. This is determined by the underlying transcription scheme,
+    /// and return values for the `path` structure are only accepted if it is of
+    /// non-zero size for a given time index. Therefore, implementations of this
+    /// function require detection of the `path` structure size if path
+    /// constraints exist in your problem.
     virtual void calc_differential_algebraic_equations(
             const Input<T>& in, Output<T> out) const;
     // TODO alternate form that takes a matrix; state at every time.
@@ -305,14 +347,16 @@ public:
     //    var.states[0];
     //    var.states_traj
     //    var.controls[0];
-    //    out.derivatives[0] =
-    //    out.constraints[0] = ...
+    //    out.dynamics[0] =
+    //    out.path[0] = ...
     //}
     // TODO endpoint or terminal cost?
     virtual void calc_endpoint_cost(const T& final_time,
             const VectorX<T>& final_states,
             const VectorX<T>& parameters,
             T& cost) const;
+    /// Compute the integrand for the total integral cost in your optimal 
+    /// control problem. 
     virtual void calc_integral_cost(const Input<T>& in, T& integrand) const;
     /// @}
 
@@ -373,6 +417,29 @@ public:
     void set_adjunct_guess(Iterate& guess,
             const std::string& name,
             const Eigen::VectorXd& value);
+    /// Set a guess for the trajectory of a single diffuse variable with name
+    /// `name` to `value`. This function relieves you of the need to know the
+    /// index of a diffuse variable. The `guess` must already have its `time`
+    /// vector filled out. If `guess.diffuses` is empty, this function will 
+    /// set its dimensions appropriately according to the provided `guess.time`;
+    /// otherwise, `guess.diffuses` must have the correct dimensions (number 
+    /// of diffuses x mesh points).
+    /// @param[in,out] guess
+    ///     The row of the diffuse matrix associated with the provided name
+    ///     is set to value.
+    /// @param[in] name
+    ///     Name of the diffuse variable (provided in add_diffuse()).
+    /// @param[in] value
+    ///     This must have the same number of columns as `guess.time` and
+    ///     `guess.diffuses`.
+    /// @note For convenience, this method has the same behavior as the previous
+    /// set_*_guess() methods. However, depending on the transcription scheme 
+    /// used to solve the optimal control problem, the guess provided for the 
+    /// diffuse variable will be invalid for certain time points. The values at 
+    /// these time points will not be included in the transcribed NLP. 
+    void set_diffuse_guess(Iterate& guess,
+            const std::string& name,
+            const Eigen::VectorXd& value);
     /// Set a guess for the value of a single parameter variable with name
     /// `name` to `value`. This function relieves you of the need to know the
     /// index of a parameter variable.
@@ -415,6 +482,8 @@ public:
             Eigen::Ref<Eigen::VectorXd> initial_adjuncts_upper,
             Eigen::Ref<Eigen::VectorXd> final_adjuncts_lower,
             Eigen::Ref<Eigen::VectorXd> final_adjuncts_upper,
+            Eigen::Ref<Eigen::VectorXd> diffuses_lower,
+            Eigen::Ref<Eigen::VectorXd> diffuses_upper,
             Eigen::Ref<Eigen::VectorXd> parameters_lower,
             Eigen::Ref<Eigen::VectorXd> parameters_upper,
             Eigen::Ref<Eigen::VectorXd> path_constraints_lower,
@@ -427,6 +496,7 @@ private:
     std::vector<ContinuousVariableInfo> m_state_infos;
     std::vector<ContinuousVariableInfo> m_control_infos;
     std::vector<ContinuousVariableInfo> m_adjunct_infos;
+    std::vector<DiffuseInfo> m_diffuse_infos;
     std::vector<ParameterInfo> m_parameter_infos;
     std::vector<PathConstraintInfo> m_path_constraint_infos;
 };

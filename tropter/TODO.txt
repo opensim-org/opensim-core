@@ -60,7 +60,7 @@ MuSOC:Muscolo Skeletal Optimal Control
 COLLOSIM, COLLOSIUM, COLLOSSAL ;)
 
 Muscolo
-Muscollo
+Moco
 
 NMSTO
 TONMS

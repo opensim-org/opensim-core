@@ -95,14 +95,12 @@ public:
     /// (0-based index).
     /// Note: this function is not free to call.
     std::vector<std::string> get_constraint_names() const override;
-
     /// This function checks the dimensions of the matrices in traj.
-    Eigen::VectorXd
-    construct_iterate(const Iterate& traj,
+    Eigen::VectorXd construct_iterate(const Iterate& traj,
             bool interpolate = false) const override;
     // TODO can this have a generic implementation in the Base class?
-    Iterate
-    deconstruct_iterate(const Eigen::VectorXd& x) const override;
+    Iterate deconstruct_iterate(const Eigen::VectorXd& x) const override;
+
     void print_constraint_values(
             const Iterate& vars,
             std::ostream& stream = std::cout) const override;
@@ -207,6 +205,11 @@ private:
     // Working memory.
     mutable VectorX<T> m_integrand;
     mutable MatrixX<T> m_derivs;
+    // This empty vector is passed to calc_differential_algebraic_equations()
+    // for collocation points on the mesh where we do not have diffuse
+    // variables. If the user tries to write to it, an Eigen runtime assertion 
+    // will be violated. 
+    mutable VectorX<T> m_empty_diffuse_col;
 };
 
 } // namespace transcription

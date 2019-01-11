@@ -33,6 +33,7 @@
 #include "optimalcontrol/DirectCollocation.h"
 
 #include "optimalcontrol/transcription/Trapezoidal.h"
+#include "optimalcontrol/transcription/HermiteSimpson.h"
 
 // http://www.coin-or.org/Ipopt/documentation/node23.html
 

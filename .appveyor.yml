@@ -42,7 +42,10 @@ cache:
 install:
   - cmake --version
 
-  - choco install doxygen.portable
+  # - choco install doxygen.portable # <-- too unreliable.
+  - ps: (New-Object System.Net.WebClient).DownloadFile("https://sourceforge.net/projects/myosin/files/doxygen-1.8.14.windows.x64.bin.zip/download", "C:\doxygen.zip")
+  - 7z x C:\doxygen.zip -oC:\doxygen
+  - SET PATH=C:\doxygen;%PATH%
 
   ## Use Chocolatey to install SWIG.
   # Only install swig if it isn't present (as a result of AppVeyor's caching).
@@ -146,10 +149,10 @@ after_test:
   - ps: Get-ChildItem -Path "C:\projects\deps" -Recurse -Include ** | Foreach-Object { $_.LastWriteTime = (Get-Date).AddDays(-1) }
   - 7z a C:\opensim-moco-dependencies.zip C:\projects\deps
   - appveyor PushArtifact C:\opensim-moco-dependencies.zip
-  # The published binaries can be downloaded from this link: https://ci.appveyor.com/api/projects/opensim-org/muscollo/artifacts/opensim-muscollo.zip
+  # The published binaries can be downloaded from this link: https://ci.appveyor.com/api/projects/opensim-org/opensim-moco/artifacts/opensim-moco.zip
   # Create and upload NuGet package.
-  #- IF DEFINED DISTR nuget pack .github/opensim-muscollo.nuspec -BasePath C:\muscollo
-  #- IF DEFINED DISTR appveyor PushArtifact opensim-muscollo.0.0.0.nupkg
+  #- IF DEFINED DISTR nuget pack .github/opensim-moco.nuspec -BasePath C:\moco
+  #- IF DEFINED DISTR appveyor PushArtifact opensim-moco.0.0.0.nupkg
  
  
 # The following, if uncommented, should allow you to remote-desktop into

@@ -7,61 +7,42 @@
 #include <assert.h>
 #include "snopt.h"
 
-/* File: snopt_c.h
- *   C interface for SNOPT.
- *
- * 10 Jul 2014: First version (based on cwrap).
+/* File: snopt_cwrap.h
+ *   C interface for SNOPT
  */
+
 typedef struct {
   char   *name;
 
-  int    iprint;
-  int    isumm;
-  int    memCalled;
-  int    initCalled;
-  int    sizeCalled;
-
-  int    m;
-  int    n;
-  int    ne;
-  int    negCon;
-  int    nnCon;
-  int    nnObj;
-  int    nnJac;
-  int    iObj;
-  double ObjAdd;
-
-  double *valJ;
-  int    *indJ;
-  int    *locJ;
-
-  double *bl;
-  double *bu;
-  int    *hs;
-  double  *x;
-  double *pi;
-  double *rc;
-
-  snFunC usrfun;
-  snObjB funobj;
-  snConB funcon;
+  int     memCalled;
+  int     initCalled;
+  int     userWork;
 
   isnSTOP snSTOP;
   isnLog  snLog;
   isnLog2 snLog2;
   isqLog  sqLog;
 
-  int    lenrw, leniw;
+  int     lenrw, leniw;
   int    *iw;
   double *rw;
 
-  int    lenru, leniu;
+  int     lenru, leniu;
   int    *iu;
   double *ru;
 
 } snProblem;
 
-void snInit         ( snProblem* prob, char* name, char* prtfile, int iprint, int isumm );
+void snInitX        ( snProblem* prob, char* name,
+		      char* prtfile, int iprint, char* sumfile, int isumm );
+void snInit         ( snProblem* prob, char* name, char* prtfile, int summOn );
+
+void snInitXW       ( snProblem* prob, char* name,
+		      char* prtfile, int iprint, char* sumfile, int isumm,
+		      int *iw, int leniw, double *rw, int lenrw );
+void snInitW        ( snProblem* prob, char* name, char* prtfile, int summOn,
+		      int *iw, int leniw, double *rw, int lenrw );
+
 void init2zero      ( snProblem* prob );
 
 void allocI         ( snProblem* prob, int len );
@@ -69,16 +50,17 @@ void allocR         ( snProblem* prob, int len );
 void reallocI       ( snProblem* prob, int len );
 void reallocR       ( snProblem* prob, int len );
 
-void setProbName    ( snProblem* prob, char* name );
 void setPrintfile   ( snProblem* prob, char* prtname );
 int  setSpecsfile   ( snProblem* prob, char* spcname );
 
+void setPrintfileX  ( snProblem* prob, char* prtname, int iprint );
+int  setSpecsfileX  ( snProblem* prob, char* spcname, int ispecs );
+
 int setParameter    ( snProblem* prob, char stropt[] );
-int getParameter    ( snProblem* prob, char stropt[], char strout[] );
 int setIntParameter ( snProblem* prob, char stropt[], int opt );
-int getIntParameter ( snProblem* prob, char stropt[], int opt );
+int getIntParameter ( snProblem* prob, char stropt[], int *opt );
 int setRealParameter( snProblem* prob, char stropt[], double opt );
-int getRealParameter( snProblem* prob, char stropt[], double opt );
+int getRealParameter( snProblem* prob, char stropt[], double *opt );
 
 void setUserI       ( snProblem* prob, int *iu, int leniu );
 void setUserR       ( snProblem* prob, double *ru, int lenru );
@@ -88,21 +70,67 @@ void setUserspace   ( snProblem* prob, int *iu, int leniu,
 void setLog         ( snProblem* prob, isnLog snLog, isnLog2 snLog2, isqLog sqLog );
 void setSTOP        ( snProblem* prob, isnSTOP snSTOP );
 
-void setWorkspace   ( snProblem* prob );
+void setWorkspace   ( snProblem* prob, int m, int n, int ne,
+		      int negCon, int nnCon, int nnObj, int nnJac);
+void setWorkspaceA  ( snProblem* prob, int nF, int n, int neA, int neG);
 
-void setProblemSize ( snProblem* prob, int m, int n, int ne,
-		      int nnCon, int nnJac, int nnObj );
-void setObjective   ( snProblem* prob, int iObj, double ObjAdd);
+int snJac( snProblem* prob,
+	   int nF, int n, snFunA usrfun,
+	   double *x, double *xlow, double *xupp,
+	   int *neA, int *iAfun, int *jAvar, double *A,
+	   int *neG, int *iGfun, int *jGvar );
 
-void setProblemData( snProblem *prob, double *bl, double *bu,
-		     int *hs, double *x, int *indJ, int *locJ, double *valJ );
+int solveA( snProblem* prob, int start,
+	    int nF, int n, double ObjAdd, int ObjRow,
+	    snFunA usrfun,
+	    int neA, int *iAfun, int *jAvar, double *A,
+	    int neG, int *iGfun, int *jGvar,
+	    double *xlow, double *xupp, double *Flow, double *Fupp,
+	    double *x, int *xstate, double *xmul,
+	    double *F, int *Fstate, double *Fmul,
+	    int* nS, int* nInf, double* sInf );
 
-void setUserfun     ( snProblem* prob, snFunC func );
-void setFuncon      ( snProblem* prob, snConB func );
-void setFunobj      ( snProblem* prob, snObjB func );
+int snoptA( snProblem* prob, int start,
+	    int nF, int n, double ObjAdd, int ObjRow,
+	    snFunA usrfun,
+	    int neA, int *iAfun, int *jAvar, double *A,
+	    int neG, int *iGfun, int *jGvar,
+	    double *xlow, double *xupp, double *Flow, double *Fupp,
+	    double *x, int *xstate, double *xmul,
+	    double *F, int *Fstate, double *Fmul,
+	    int* nS, int* nInf, double* sInf );
 
-int solveB          ( snProblem* prob, int start, double *objective );
-int solveC          ( snProblem* prob, int start, double *objective );
+int solveB( snProblem* prob, int start, int m, int n, int ne,
+	    int nnCon, int nnObj, int nnJac, int iObj, double ObjAdd,
+	    snConB funcon, snObjB funobj,
+	    double *valJ, int *indJ, int *locJ,
+	    double *bl, double *bu, int *hs, double *x,
+	    double *pi, double *rc, double* objective,
+	    int* nS, int* nInf, double* sInf );
+
+int snoptB( snProblem* prob, int start, int m, int n, int ne,
+	    int nnCon, int nnObj, int nnJac, int iObj, double ObjAdd,
+	    snConB funcon, snObjB funobj,
+	    double *valJ, int *indJ, int *locJ,
+	    double *bl, double *bu, int *hs, double *x,
+	    double *pi, double *rc, double* objective,
+	    int* nS, int* nInf, double* sInf );
+
+int solveC( snProblem* prob, int start, int m, int n, int ne,
+	    int nnCon, int nnObj, int nnJac, int iObj, double ObjAdd,
+	    snFunC usrfun,
+	    double *valJ, int *indJ, int *locJ,
+	    double *bl, double *bu, int *hs, double *x,
+	    double *pi, double *rc, double* objective,
+	    int* nS, int* nInf, double* sInf );
+
+int snoptC( snProblem* prob, int start, int m, int n, int ne,
+	    int nnCon, int nnObj, int nnJac, int iObj, double ObjAdd,
+	    snFunC usrfun,
+	    double *valJ, int *indJ, int *locJ,
+	    double *bl, double *bu, int *hs, double *x,
+	    double *pi, double *rc, double* objective,
+	    int* nS, int* nInf, double* sInf );
 
 void deleteSNOPT    ( snProblem* prob );
 

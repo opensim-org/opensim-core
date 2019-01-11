@@ -38,6 +38,9 @@ add_library(tropter SHARED
         optimalcontrol/transcription/Trapezoidal.h
         optimalcontrol/transcription/Trapezoidal.hpp
         optimalcontrol/transcription/Trapezoidal.cpp
+        optimalcontrol/transcription/HermiteSimpson.h
+        optimalcontrol/transcription/HermiteSimpson.hpp
+        optimalcontrol/transcription/HermiteSimpson.cpp
         )
 
 # TODO generate_export_header() for exporting symbols on Windows.
@@ -87,11 +90,14 @@ endif()
 # TODO IPOPT_DEFINITIONS, IPOPT_LINK_FLAGS
 
 if(TROPTER_WITH_SNOPT)
-    target_link_libraries(tropter PUBLIC snopt7_cpp) # PRIVATE
+    target_link_libraries(tropter PRIVATE snopt7_cpp)
 endif()
 
 if(WIN32)
     add_dependencies(tropter Copy_ADOLC_DLLs Copy_IPOPT_DLLs)
+    if(TROPTER_WITH_SNOPT)
+        add_dependencies(tropter Copy_SNOPT_DLLs)
+    endif()
     #add_dependencies(tropter Copy_COLPACK_DLLs Copy_ADOLC_DLLs Copy_IPOPT_DLLs)
 endif()
 

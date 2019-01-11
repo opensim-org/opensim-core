@@ -198,6 +198,7 @@ calc_objective(unsigned num_variables, const double* variables,
         bool /*new_x*/,
         double& obj_value) const
 {
+    obj_value = 0.0;
     // TODO avoid copy.
     const VectorXd xvec = Eigen::Map<const VectorXd>(variables, num_variables);
     m_problem.calc_objective(xvec, obj_value);

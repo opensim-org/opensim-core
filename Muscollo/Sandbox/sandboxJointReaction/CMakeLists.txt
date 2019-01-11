@@ -1,2 +1,0 @@
-MuscolloAddSandboxExecutable(NAME sandboxJointReaction
-		LIB_DEPENDS osimMuscollo tropter)

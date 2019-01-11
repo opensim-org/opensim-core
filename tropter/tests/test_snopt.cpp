@@ -78,6 +78,9 @@ TEST_CASE("SNOPT sntoyA example problem; Jacobian not provided.")
     int ObjRow = 0;
     double ObjAdd = 0;
     int Cold = 0, Basis = 1, Warm = 2;
+    int nS;
+    int nInf;
+    double sInf;
 
 
     // Set the upper and lower bounds.
@@ -97,18 +100,9 @@ TEST_CASE("SNOPT sntoyA example problem; Jacobian not provided.")
     x[0] = 1.0;
     x[1] = 1.0;
 
-
     // Load the data for ToyProb ...
+    ToyProb.initialize("Toy0.out", 1);
     ToyProb.setProbName("Toy0");
-    ToyProb.setPrintFile("Toy0.out");
-
-    ToyProb.setProblemSize(n, neF);
-    ToyProb.setObjective(ObjRow, ObjAdd);
-    ToyProb.setX(x, xlow, xupp, xmul, xstate);
-    ToyProb.setF(F, Flow, Fupp, Fmul, Fstate);
-
-    ToyProb.setUserFun(toyusrf_);
-
 
     // snopta will compute the Jacobian by finite-differences.
     // The user has the option of calling  snJac  to define the
@@ -116,10 +110,13 @@ TEST_CASE("SNOPT sntoyA example problem; Jacobian not provided.")
     ToyProb.setIntParameter("Derivative option", 0);
     ToyProb.setIntParameter("Verify level ", 3);
 
-
     // Solve the problem.
     // snJac is called implicitly in this case to compute the Jacobian.
-    ToyProb.solve(Cold);
+    ToyProb.solve(Cold, neF, n, ObjAdd, ObjRow, toyusrf_,
+                   xlow, xupp, Flow, Fupp, 
+                   x, xstate, xmul, 
+                   F, Fstate, Fmul,
+                   nS, nInf, sInf);
 
     for (int i = 0; i < n; i++) {
         std::cout << "x = " << x[i] << " xstate = " << xstate[i] << std::endl;
@@ -141,31 +138,31 @@ TEST_CASE("SNOPT sntoyA example problem; Jacobian not provided.")
 //
 //==================================================================
 
-
+//
 TEST_CASE("SNOPT and ADOL-C on SnoptA (sntoyA) example")
 {
-    class SnoptA : public OptimizationProblem<adouble> {
+    class SnoptA : public optimization::Problem<double> {
     public:
-        SnoptA() : OptimizationProblem(2, 2) {
+        SnoptA() : Problem(2, 2) {
             // TODO support an "infinity"
             set_variable_bounds(Vector2d(0, -1e20), Vector2d(1e20, 1e20));
             set_constraint_bounds(Vector2d(-1e20, -1e20), Vector2d(4, 5));
         }
-        void calc_objective(const VectorXa& x, adouble& obj_value) const
+        void calc_objective(const VectorXd& x, double& obj_value) const
                 override {
             obj_value = x[1];
         }
-        void calc_constraints(const VectorXa& x,
-                         Eigen::Ref<VectorXa> constr) const override {
+        void calc_constraints(const VectorXd& x,
+                         Eigen::Ref<VectorXd> constr) const override {
             constr[0] = x[0]*x[0] + 4*x[1]*x[1];
             constr[1] = (x[0] - 2)*(x[0] - 2) + x[1]*x[1];
         }
     };
     SnoptA problem;
-    SNOPTSolver solver(problem);
+    optimization::SNOPTSolver solver(problem);
     VectorXd variables = Vector2d(2, 2);
     auto solution = solver.optimize(variables);
-    REQUIRE(Approx(solution.variables[0]) == 0);
+    REQUIRE(Approx(solution.variables[0]).margin(1e-10) == 0);
     REQUIRE(Approx(solution.variables[1]) == -1);
     REQUIRE(Approx(solution.objective)    == -1);
 }
@@ -177,28 +174,26 @@ TEST_CASE("First order minimum effort.", "[analytic]")
     ///              x(0) = 1
     ///              x(1) = 0
     class FirstOrderMinEffort
-            : public tropter::OptimalControlProblem<adouble> {
+            : public tropter::Problem<double> {
     public:
-        using T = adouble;
+        using T = double;
         FirstOrderMinEffort() {
             set_time(0, 1);
             add_state("x", {-5, 5}, 1, 0);
             add_control("u", {-10, 10});
         }
         void calc_differential_algebraic_equations(
-                const DAEInput<T>& in, DAEOutput<T> out) const override {
+                const Input<T>& in, Output<T> out) const override {
             out.dynamics[0] = -2*in.states[0] + in.controls[0];
         }
-        void calc_integral_cost(const adouble& /*time*/,
-                           const VectorXa& /*states*/,
-                           const VectorXa& controls,
-                           adouble& integrand) const override {
-            integrand = controls[0]*controls[0];
+        void calc_integral_cost(const Input<T>& in,
+                           double& integrand) const override {
+            integrand = in.controls[0] * in.controls[0];
         }
     };
     auto ocp = std::make_shared<FirstOrderMinEffort>();
-    DirectCollocationSolver<adouble> dircol(ocp, "trapezoidal", "snopt", 400);
-    OptimalControlSolution solution = dircol.solve();
+    DirectCollocationSolver<double> dircol(ocp, "trapezoidal", "snopt", 50);
+    Solution solution = dircol.solve();
     solution.write("first_order_minimum_effort_snopt_solution.csv");
 
 
@@ -218,7 +213,7 @@ TEST_CASE("First order minimum effort.", "[analytic]")
 }
 
 template<typename T>
-class SlidingMassMinimumEffort : public tropter::OptimalControlProblem<T> {
+class SlidingMassMinimumEffort : public tropter::Problem<T> {
 public:
     SlidingMassMinimumEffort()
     {
@@ -229,24 +224,22 @@ public:
     }
     const double mass = 10.0;
     void calc_differential_algebraic_equations(
-            const DAEInput<T>& in, DAEOutput<T> out) const override {
+            const Input<T>& in, Output<T> out) const override {
         out.dynamics[0] = in.states[1];
         out.dynamics[1] = in.controls[0]/mass;
     }
-    void calc_integral_cost(const T& /*time*/,
-                       const VectorX<T>& /*states*/,
-                       const VectorX<T>& controls,
+    void calc_integral_cost(const Input<T>& in,
                        T& integrand) const override {
-        integrand = controls.squaredNorm();
+        integrand = in.controls.squaredNorm();
     }
 };
 
 TEST_CASE("Sliding mass minimum effort with SNOPT.")
 {
 
-    auto ocp = std::make_shared<SlidingMassMinimumEffort<adouble>>();
-    DirectCollocationSolver<adouble> dircol(ocp, "trapezoidal", "snopt", 30);
-    OptimalControlSolution solution = dircol.solve();
+    auto ocp = std::make_shared<SlidingMassMinimumEffort<double>>();
+    DirectCollocationSolver<double> dircol(ocp, "trapezoidal", "snopt", 30);
+    Solution solution = dircol.solve();
     solution.write("sliding_mass_minimum_effort_snopt_solution.csv");
 
     // Initial and final position.

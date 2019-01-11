@@ -23,38 +23,46 @@
 using namespace tropter;
 
 SparsityPattern::SparsityPattern(int num_rows, int num_cols,
-        const std::vector<unsigned int>& row_indices,
-        const std::vector<unsigned int>& col_indices)
-        : m_num_rows(num_rows), m_num_cols(num_cols) {
+    const std::vector<unsigned int>& row_indices,
+    const std::vector<unsigned int>& col_indices)
+    : m_num_rows(num_rows), m_num_cols(num_cols) {
     TROPTER_THROW_IF(row_indices.size() != col_indices.size(),
-            "Expected row_indices and col_indices to have the same size.");
+        "Expected row_indices and col_indices to have the same size.");
     for (int inz = 0; inz < (int)row_indices.size(); ++inz)
         set_nonzero(row_indices[inz], col_indices[inz]);
 }
 
 SparsityPattern::SparsityPattern(int num_cols,
-        const std::vector<unsigned int>& nonzero_col_indices)
-        : m_num_rows(1), m_num_cols(num_cols) {
+    const std::vector<unsigned int>& nonzero_col_indices)
+    : m_num_rows(1), m_num_cols(num_cols) {
     for (const auto& icol : nonzero_col_indices)
         set_nonzero(0, icol);
 }
 
+void SparsityPattern::set_dense() {
+    for (int irow = 0; irow < m_num_rows; ++irow) {
+        for (int icol = 0; icol < m_num_cols; ++icol) {
+            set_nonzero(irow, icol);
+        }
+    }
+}
+
 void SparsityPattern::set_nonzero(unsigned int row_index,
-        unsigned int col_index) {
+    unsigned int col_index) {
     TROPTER_THROW_IF(row_index >= (unsigned)m_num_rows,
-            "Expected row_index to be in [0, %i), but it's %i.",
-            m_num_rows, row_index);
+        "Expected row_index to be in [0, %i), but it's %i.",
+        m_num_rows, row_index);
     TROPTER_THROW_IF(col_index >= (unsigned)m_num_cols,
-            "Expected col_index to be in [0, %i), but it's %i.",
-            m_num_cols, col_index);
+        "Expected col_index to be in [0, %i), but it's %i.",
+        m_num_cols, col_index);
     m_sparsity.emplace(row_index, col_index);
 }
 
 void SparsityPattern::add_in_nonzeros(const SparsityPattern& other) {
     TROPTER_THROW_IF(get_num_rows() != other.get_num_rows(),
-            "Expected the same number of rows.");
+        "Expected the same number of rows.");
     TROPTER_THROW_IF(get_num_cols() != other.get_num_cols(),
-            "Expected the same number of columns.");
+        "Expected the same number of columns.");
     for (const auto& other_entry : other.m_sparsity)
         set_nonzero(other_entry.first, other_entry.second);
 }
@@ -96,7 +104,7 @@ SparsityPattern SymmetricSparsityPattern::convert_full() const {
 
 SymmetricSparsityPattern
 SymmetricSparsityPattern::create_from_jacobian_sparsity(
-        const SparsityPattern& jac_sparsity) {
+    const SparsityPattern& jac_sparsity) {
     Eigen::SparseMatrix<bool> S2;
     {
         // Use 'short' instead of 'bool' to avoid MSVC warning C4804.
@@ -122,24 +130,32 @@ SymmetricSparsityPattern::create_from_jacobian_sparsity(
     return output;
 }
 
+void SymmetricSparsityPattern::set_dense() {
+    for (int irow = 0; irow < m_num_rows; ++irow) {
+        for (int icol = irow; icol < m_num_cols; ++icol) {
+            set_nonzero(irow, icol);
+        }
+    }
+}
+
 void SymmetricSparsityPattern::set_nonzero(unsigned int row_index,
-        unsigned int col_index) {
+    unsigned int col_index) {
     TROPTER_THROW_IF(row_index > col_index, "Nonzeros must be in the "
-            "upper triangle, but indices (%i, %i) were provided.",
-            row_index, col_index);
+        "upper triangle, but indices (%i, %i) were provided.",
+        row_index, col_index);
     SparsityPattern::set_nonzero(row_index, col_index);
 }
 
 void SymmetricSparsityPattern::set_nonzero_block(
-        unsigned int irowstart, unsigned int icolstart,
-        SymmetricSparsityPattern& block) {
+    unsigned int irowstart, unsigned int icolstart,
+    SymmetricSparsityPattern& block) {
     TROPTER_THROW_IF((int)irowstart + block.get_num_rows() > get_num_rows(),
-            "Block does not fit within this matrix.");
+        "Block does not fit within this matrix.");
     TROPTER_THROW_IF((int)icolstart + block.get_num_cols() > get_num_cols(),
-            "Block does not fit within this matrix.");
+        "Block does not fit within this matrix.");
     for (const auto& block_entries : block.m_sparsity) {
         set_nonzero(irowstart + block_entries.first,
-                icolstart + block_entries.second);
+            icolstart + block_entries.second);
     }
 }
 
