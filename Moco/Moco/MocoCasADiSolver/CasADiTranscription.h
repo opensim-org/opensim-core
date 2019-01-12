@@ -20,7 +20,7 @@
 
 #include "../MocoUtilities.h"
 #include "../MocoProblemRep.h"
-#include "MucoCasADiSolver.h"
+#include "MocoCasADiSolver.h"
 #include <casadi/casadi.hpp>
 
 // TODO: temporary using declarations.
@@ -288,7 +288,7 @@ private:
 
 class CasADiTranscription {
 public:
-    CasADiTranscription(const MucoCasADiSolver& solver,
+    CasADiTranscription(const MocoCasADiSolver& solver,
             const MocoProblemRep& probRep)
             : m_solver(solver), m_probRep(probRep),
               m_model(m_probRep.getModel()),
@@ -724,7 +724,7 @@ public:
             return convertToMocoIterate<MocoSolution>(
                     convertToCasADiVariablesDM(m_opti, m_vars));
         } catch (const std::exception& e) {
-            std::cerr << "MucoCasADiSolver did not succeed: "
+            std::cerr << "MocoCasADiSolver did not succeed: "
                     << e.what() << std::endl;
             return convertToMocoIterate<MocoSolution>(
                     convertToCasADiVariablesDM(m_opti.debug(), m_vars));
@@ -764,7 +764,7 @@ public:
     int getNumMultibodyConstraintEquations() const
     {   return m_numMultibodyConstraintEqs; }
 
-    const MucoCasADiSolver& m_solver;
+    const MocoCasADiSolver& m_solver;
     const MocoProblemRep& m_probRep;
     const Model& m_model;
     mutable SimTK::State m_state;

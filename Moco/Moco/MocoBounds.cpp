@@ -18,7 +18,7 @@
 
 #include "MocoBounds.h"
 
-#include "MuscolloUtilities.h"
+#include "MocoUtilities.h"
 
 using namespace OpenSim;
 

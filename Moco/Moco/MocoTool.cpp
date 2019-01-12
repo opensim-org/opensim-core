@@ -18,7 +18,7 @@
 #include "MocoTool.h"
 #include "MocoProblem.h"
 #include "MocoTropterSolver.h"
-#include "MucoCasADiSolver/MucoCasADiSolver.h"
+#include "MocoCasADiSolver/MocoCasADiSolver.h"
 #include "MocoUtilities.h"
 
 #include <OpenSim/Simulation/StatesTrajectory.h>
@@ -62,9 +62,9 @@ MocoTropterSolver& MocoTool::initSolver<MocoTropterSolver>() {
 }
 
 template <>
-MucoCasADiSolver& MocoTool::initSolver<MucoCasADiSolver>() {
-    set_solver(MucoCasADiSolver());
-    return dynamic_cast<MucoCasADiSolver&>(initSolverInternal());
+MocoCasADiSolver& MocoTool::initSolver<MocoCasADiSolver>() {
+    set_solver(MocoCasADiSolver());
+    return dynamic_cast<MocoCasADiSolver&>(initSolverInternal());
 }
 
 MocoTropterSolver& MocoTool::initTropterSolver() {
@@ -72,8 +72,8 @@ MocoTropterSolver& MocoTool::initTropterSolver() {
     return initSolver<MocoTropterSolver>();
 }
 
-MucoCasADiSolver& MocoTool::initCasADiSolver() {
-    return initSolver<MucoCasADiSolver>();
+MocoCasADiSolver& MocoTool::initCasADiSolver() {
+    return initSolver<MocoCasADiSolver>();
 }
 
 MocoSolver& MocoTool::updSolver() {

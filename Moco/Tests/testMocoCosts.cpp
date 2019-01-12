@@ -204,7 +204,7 @@ void testMultipleCosts() {
 int main() {
     SimTK_START_TEST("testMocoCosts");
         SimTK_SUBTEST(testMocoControlCost<MocoTropterSolver>);
-        SimTK_SUBTEST(testMocoControlCost<MucoCasADiSolver>);
+        SimTK_SUBTEST(testMocoControlCost<MocoCasADiSolver>);
         SimTK_SUBTEST(testMultipleCosts);
     SimTK_END_TEST();
 }

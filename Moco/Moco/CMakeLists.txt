@@ -55,12 +55,16 @@ add_library(osimMoco SHARED
         Components/StationPlaneContactForce.cpp
         Components/ModelFactory.h
         Components/ModelFactory.cpp
-        MucoCasADiSolver/MucoCasADiSolver.h
-        MucoCasADiSolver/MucoCasADiSolver.cpp
-        MucoCasADiSolver/CasADiTranscription.cpp MucoCasADiSolver/CasADiTranscription.h MucoCasADiSolver/CasADiTrapezoidal.cpp MucoCasADiSolver/CasADiTrapezoidal.h MucoCasADiSolver/CasADiProblem.cpp MucoCasADiSolver/CasADiProblem.h)
-        )
+        MocoCasADiSolver/MocoCasADiSolver.h
+        MocoCasADiSolver/MocoCasADiSolver.cpp
+        MocoCasADiSolver/CasADiTranscription.cpp
+        MocoCasADiSolver/CasADiTranscription.h
+        MocoCasADiSolver/CasADiTrapezoidal.cpp
+        MocoCasADiSolver/CasADiTrapezoidal.h
+        MocoCasADiSolver/CasADiProblem.cpp
+        MocoCasADiSolver/CasADiProblem.h)
 target_link_libraries(osimMoco PUBLIC osimTools
-                                   PRIVATE tropter)
+                               PRIVATE tropter casadi)
 
 target_include_directories(osimMoco INTERFACE
         $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/Moco>

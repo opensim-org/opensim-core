@@ -16,14 +16,10 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-<<<<<<< HEAD:Muscollo/Tests/testConstraints.cpp
 #define CATCH_CONFIG_MAIN
 #include <catch.hpp>
 
-#include <Muscollo/osimMuscollo.h>
-=======
 #include <Moco/osimMoco.h>
->>>>>>> master:Moco/Tests/testConstraints.cpp
 #include <OpenSim/Common/LinearFunction.h>
 #include <simbody/internal/Constraint.h>
 #include <simbody/internal/Constraint_Ball.h>
@@ -494,19 +490,12 @@ MocoIterate runForwardSimulation(Model model, const MocoSolution& solution,
 /// specified final configuration while subject to a constraint that its
 /// end-effector must lie on a vertical line through the origin and minimize
 /// control effort.
-<<<<<<< HEAD:Muscollo/Tests/testConstraints.cpp
-TEMPLATE_TEST_CASE("DoublePendulumPointOnLine", "",
-        MucoTropterSolver/*, MucoCasADiSolver*/) {
-    MucoTool muco;
-    muco.setName("double_pendulum_point_on_line");
-    MucoProblem& mp = muco.updProblem();
-=======
+template <typename TestType>
 void testDoublePendulumPointOnLine(bool enforce_constraint_derivatives) {
     MocoTool moco;
     moco.setName("double_pendulum_point_on_line");
     MocoProblem& mp = moco.updProblem();
->>>>>>> master:Moco/Tests/testConstraints.cpp
-    // Create double pendulum model and add the point-on-line constraint. The 
+    // Create double pendulum model and add the point-on-line constraint. The
     // constraint consists of a vertical line in the y-direction (defined in 
     // ground) and the model end-effector point (the origin of body "b1").
     auto model = createDoublePendulumModel();
@@ -535,13 +524,8 @@ void testDoublePendulumPointOnLine(bool enforce_constraint_derivatives) {
 
     mp.addCost<MocoControlCost>();
 
-<<<<<<< HEAD:Muscollo/Tests/testConstraints.cpp
-    auto& ms = muco.initSolver<TestType>();
-    ms.set_num_mesh_points(15);
-=======
-    MocoTropterSolver& ms = moco.initSolver();
+    auto& ms = moco.initSolver<TestType>();
     ms.set_num_mesh_points(10);
->>>>>>> master:Moco/Tests/testConstraints.cpp
     ms.set_verbosity(2);
     ms.set_optim_solver("ipopt");
     ms.set_optim_convergence_tolerance(1e-4);
@@ -582,18 +566,11 @@ void testDoublePendulumPointOnLine(bool enforce_constraint_derivatives) {
 /// specified final configuration while subject to a constraint that couples
 /// its two coordinates together via a linear relationship and minimizing 
 /// control effort.
-<<<<<<< HEAD:Muscollo/Tests/testConstraints.cpp
 template <typename SolverType>
-void testDoublePendulumCoordinateCoupler(MucoSolution& solution) {
-    MucoTool muco;
-    muco.setName("double_pendulum_coordinate_coupler");
-    MucoProblem& mp = muco.updProblem();
-=======
-void testDoublePendulumCoordinateCoupler(MocoSolution& solution, 
+void testDoublePendulumCoordinateCoupler(MocoSolution& solution,
         bool enforce_constraint_derivatives) {
     MocoTool moco;
     moco.setName("double_pendulum_coordinate_coupler");
->>>>>>> master:Moco/Tests/testConstraints.cpp
 
     // Create double pendulum model and add the coordinate coupler constraint.
     auto model = createDoublePendulumModel();
@@ -630,15 +607,8 @@ void testDoublePendulumCoordinateCoupler(MocoSolution& solution,
     mp.setControlInfo("/tau1", {-100, 100});
     mp.addCost<MocoControlCost>();
 
-<<<<<<< HEAD:Muscollo/Tests/testConstraints.cpp
-    mp.addCost<MucoControlCost>();
-
-    auto& ms = muco.initSolver<SolverType>();
-    ms.set_num_mesh_points(50);
-=======
-    MocoTropterSolver& ms = moco.initSolver();
+    auto& ms = moco.initSolver<SolverType>();
     ms.set_num_mesh_points(10);
->>>>>>> master:Moco/Tests/testConstraints.cpp
     ms.set_verbosity(2);
     ms.set_optim_solver("ipopt");
     ms.set_optim_convergence_tolerance(1e-3);
@@ -676,19 +646,12 @@ void testDoublePendulumCoordinateCoupler(MocoSolution& solution,
 /// Solve an optimal control problem where a double pendulum must follow a
 /// prescribed motion based on the previous test case (see
 /// testDoublePendulumCoordinateCoupler).
-<<<<<<< HEAD:Muscollo/Tests/testConstraints.cpp
 template <typename SolverType>
-void testDoublePendulumPrescribedMotion(MucoSolution& couplerSolution) {
-    MucoTool muco;
-    muco.setName("double_pendulum_prescribed_motion");
-    MucoProblem& mp = muco.updProblem();
-=======
 void testDoublePendulumPrescribedMotion(MocoSolution& couplerSolution,
         bool enforce_constraint_derivatives) {
     MocoTool moco;
     moco.setName("double_pendulum_prescribed_motion");
     MocoProblem& mp = moco.updProblem();
->>>>>>> master:Moco/Tests/testConstraints.cpp
 
     // Create double pendulum model. 
     auto model = createDoublePendulumModel();
@@ -724,13 +687,8 @@ void testDoublePendulumPrescribedMotion(MocoSolution& couplerSolution,
 
     mp.addCost<MocoControlCost>();
 
-<<<<<<< HEAD:Muscollo/Tests/testConstraints.cpp
-    auto& ms = muco.initSolver<SolverType>();
-    ms.set_num_mesh_points(50); 
-=======
-    MocoTropterSolver& ms = moco.initSolver();
-    ms.set_num_mesh_points(20); 
->>>>>>> master:Moco/Tests/testConstraints.cpp
+    auto& ms = moco.initSolver<SolverType>();
+    ms.set_num_mesh_points(20);
     ms.set_verbosity(2);
     ms.set_optim_solver("ipopt");
     ms.set_optim_convergence_tolerance(1e-3);
@@ -827,20 +785,35 @@ void testDoublePendulumPrescribedMotion(MocoSolution& couplerSolution,
     runForwardSimulation(*model, solution, 1e-1);
 }
 
-<<<<<<< HEAD:Muscollo/Tests/testConstraints.cpp
-TEMPLATE_TEST_CASE("Double Pendulum Coordinate Coupler and Prescribed Motion",
-        "", MucoTropterSolver/*, MucoCasADiSolver*/) {
-    MucoSolution couplerSolution;
-    testDoublePendulumCoordinateCoupler<TestType>(couplerSolution);
-    testDoublePendulumPrescribedMotion<TestType>(couplerSolution);
+// TODO: Support MocoCasADiSolver.
+TEMPLATE_TEST_CASE("DoublePendulum with and without constraint derivatives", "",
+        MocoTropterSolver/*, MocoCasADiSolver*/) {
+    // TODO test tolerances can be improved significantly by not including
+    // Hermite-Simpson midpoint values in comparisons.
+    // Direct collocation tests, without constraint derivatives.
+    SECTION("DoublePendulumPointOnLine without constraint derivatives") {
+        testDoublePendulumPointOnLine<TestType>(false);
+    }
+    SECTION("DoublePendulum without constraint derivatives") {
+        MocoSolution couplerSol;
+        testDoublePendulumCoordinateCoupler<TestType>(couplerSol, false);
+        testDoublePendulumPrescribedMotion<TestType>(couplerSol, false);
+    }
+
+        // Direct collocation tests, with constraint derivatives.
+    SECTION("DoublePendulumPointOnLine with constraint derivatives") {
+        testDoublePendulumPointOnLine<TestType>(true);
+    }
+
+    SECTION("DoublePendulum with constraint derivatives"){
+        MocoSolution couplerSol2;
+        testDoublePendulumCoordinateCoupler<TestType>(couplerSol2, true);
+        testDoublePendulumPrescribedMotion<TestType>(couplerSol2, true);
+    }
 }
 
-class EqualControlConstraint : public MucoPathConstraint {
-OpenSim_DECLARE_CONCRETE_OBJECT(EqualControlConstraint, MucoPathConstraint);
-=======
 class EqualControlConstraint : public MocoPathConstraint {
 OpenSim_DECLARE_CONCRETE_OBJECT(EqualControlConstraint, MocoPathConstraint);
->>>>>>> master:Moco/Tests/testConstraints.cpp
 protected:
     void initializeOnModelImpl(const Model& model) const override {
         // Make sure the model generates a state object with the two controls we 
@@ -867,19 +840,12 @@ protected:
 /// Solve an optimal control problem where a double pendulum must reach a 
 /// specified final configuration while subject to a constraint that its
 /// actuators must produce an equal control trajectory.
-<<<<<<< HEAD:Muscollo/Tests/testConstraints.cpp
 TEMPLATE_TEST_CASE("DoublePendulumEqualControl", "",
-        MucoTropterSolver/*, MucoCasADiSolver*/) {
+        MocoTropterSolver/*, MocoCasADiSolver*/) {
     OpenSim::Object::registerType(EqualControlConstraint());
-    MucoTool muco;
-    muco.setName("double_pendulum_equal_control");
-    MucoProblem& mp = muco.updProblem();
-=======
-void testDoublePendulumEqualControl() {
     MocoTool moco;
     moco.setName("double_pendulum_equal_control");
     MocoProblem& mp = moco.updProblem();
->>>>>>> master:Moco/Tests/testConstraints.cpp
     auto model = createDoublePendulumModel();
     model->finalizeConnections();
     mp.setModelCopy(*model);
@@ -902,13 +868,8 @@ void testDoublePendulumEqualControl() {
 
     mp.addCost<MocoControlCost>();
 
-<<<<<<< HEAD:Muscollo/Tests/testConstraints.cpp
-    auto& ms = muco.initSolver<TestType>();
-    ms.set_num_mesh_points(100);
-=======
-    MocoTropterSolver& ms = moco.initSolver();
+    auto& ms = moco.initSolver<TestType>();
     ms.set_num_mesh_points(10);
->>>>>>> master:Moco/Tests/testConstraints.cpp
     ms.set_verbosity(2);
     ms.set_optim_solver("ipopt");
     ms.set_optim_convergence_tolerance(1e-3);
@@ -942,35 +903,3 @@ void testDoublePendulumEqualControl() {
     solutionDeserialized = mocoDeserialize.solve();
     SimTK_TEST(solution.isNumericallyEqual(solutionDeserialized));
 }
-<<<<<<< HEAD:Muscollo/Tests/testConstraints.cpp
-=======
-
-int main() {
-    OpenSim::Object::registerType(EqualControlConstraint());
-
-    SimTK_START_TEST("testConstraints");
-        // DAE calculation tests.
-        SimTK_SUBTEST(testWeldConstraint);
-        SimTK_SUBTEST(testPointConstraint);
-        SimTK_SUBTEST(testPointOnLineConstraint);
-        SimTK_SUBTEST(testConstantDistanceConstraint);
-        SimTK_SUBTEST(testLockedCoordinate);
-        SimTK_SUBTEST(testCoordinateCouplerConstraint);
-        SimTK_SUBTEST(testPrescribedMotion);
-        // TODO test tolerances can be improved significantly by not including
-        // Hermite-Simpson midpoint values in comparisons.
-        // Direct collocation tests, without constraint derivatives.
-        SimTK_SUBTEST1(testDoublePendulumPointOnLine, false);
-        MocoSolution couplerSol;
-        SimTK_SUBTEST2(testDoublePendulumCoordinateCoupler, couplerSol, false);
-        SimTK_SUBTEST2(testDoublePendulumPrescribedMotion, couplerSol, false);
-        // Direct collocation tests, with constraint derivatives.
-        SimTK_SUBTEST1(testDoublePendulumPointOnLine, true);
-        MocoSolution couplerSol2;
-        SimTK_SUBTEST2(testDoublePendulumCoordinateCoupler, couplerSol2, true);
-        SimTK_SUBTEST2(testDoublePendulumPrescribedMotion, couplerSol2, true);
-        // Custom path constraint test.
-        SimTK_SUBTEST(testDoublePendulumEqualControl);
-    SimTK_END_TEST();
-}
->>>>>>> master:Moco/Tests/testConstraints.cpp

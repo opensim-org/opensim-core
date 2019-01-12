@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- * OpenSim Muscollo: MucoCasADiSolver.cpp                                     *
+ * OpenSim Muscollo: MocoCasADiSolver.cpp                                     *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2017 Stanford University and the Authors                     *
  *                                                                            *
@@ -16,7 +16,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "MucoCasADiSolver.h"
+#include "MocoCasADiSolver.h"
 #include "../MocoUtilities.h"
 #include "CasADiTrapezoidal.h"
 
@@ -57,11 +57,11 @@ using casadi::Dict;
 
 using namespace OpenSim;
 
-MucoCasADiSolver::MucoCasADiSolver() {
+MocoCasADiSolver::MocoCasADiSolver() {
     constructProperties();
 }
 
-void MucoCasADiSolver::constructProperties() {
+void MocoCasADiSolver::constructProperties() {
     constructProperty_num_mesh_points(100);
     constructProperty_verbosity(2);
     constructProperty_dynamics_mode("explicit");
@@ -74,7 +74,7 @@ void MucoCasADiSolver::constructProperties() {
     constructProperty_guess_file("");
 }
 
-MocoIterate MucoCasADiSolver::createGuess(const std::string& type) const {
+MocoIterate MocoCasADiSolver::createGuess(const std::string& type) const {
     OPENSIM_THROW_IF_FRMOBJ(
             type != "bounds"
                     && type != "random"
@@ -99,7 +99,7 @@ auto casProblem = createCasADiProblem();
     }
 }
 
-void MucoCasADiSolver::setGuess(MocoIterate guess) {
+void MocoCasADiSolver::setGuess(MocoIterate guess) {
     // Ensure the guess is compatible with this solver/problem.
     // Make sure to initialize the problem. TODO put in a better place.
     // TODO createTropterProblem();
@@ -107,17 +107,17 @@ void MucoCasADiSolver::setGuess(MocoIterate guess) {
     clearGuess();
     m_guessFromAPI = std::move(guess);
 }
-void MucoCasADiSolver::setGuessFile(const std::string& file) {
+void MocoCasADiSolver::setGuessFile(const std::string& file) {
     clearGuess();
     set_guess_file(file);
 }
-void MucoCasADiSolver::clearGuess() {
+void MocoCasADiSolver::clearGuess() {
     m_guessFromAPI = MocoIterate();
     m_guessFromFile = MocoIterate();
     set_guess_file("");
     m_guessToUse.reset();
 }
-const MocoIterate& MucoCasADiSolver::getGuess() const {
+const MocoIterate& MocoCasADiSolver::getGuess() const {
     if (!m_guessToUse) {
         if (get_guess_file() != "" && m_guessFromFile.empty()) {
             // The API should make it impossible for both guessFromFile and
@@ -138,7 +138,7 @@ const MocoIterate& MucoCasADiSolver::getGuess() const {
 }
 
 std::unique_ptr<CasADiTranscription>
-MucoCasADiSolver::createCasADiProblem() const {
+MocoCasADiSolver::createCasADiProblem() const {
     checkPropertyInSet(*this, getProperty_dynamics_mode(),
             {"explicit", "implicit"});
     std::unique_ptr<CasADiTranscription> transcrip;
@@ -152,14 +152,14 @@ MucoCasADiSolver::createCasADiProblem() const {
     return transcrip;
 }
 
-MocoSolution MucoCasADiSolver::solveImpl() const {
+MocoSolution MocoCasADiSolver::solveImpl() const {
     const Stopwatch stopwatch;
 
     checkPropertyInSet(*this, getProperty_verbosity(), {0, 1, 2});
 
     if (get_verbosity()) {
         std::cout << std::string(79, '=') << "\n";
-        std::cout << "MucoCasADiSolver starting.\n";
+        std::cout << "MocoCasADiSolver starting.\n";
         std::cout << std::string(79, '-') << std::endl;
         getProblemRep().printDescription();
     }
@@ -243,10 +243,10 @@ MocoSolution MucoCasADiSolver::solveImpl() const {
         std::cout << "Elapsed real time: "
                 << stopwatch.getElapsedTimeFormatted() << ".\n";
         if (mucoSolution) {
-            std::cout << "MucoCasADiSolver succeeded!\n";
+            std::cout << "MocoCasADiSolver succeeded!\n";
         } else {
             // TODO cout or cerr?
-            std::cout << "MucoCasADiSolver did NOT succeed:\n";
+            std::cout << "MocoCasADiSolver did NOT succeed:\n";
             std::cout << "  " << mucoSolution.getStatus() << "\n";
         }
         std::cout << std::string(79, '=') << std::endl;

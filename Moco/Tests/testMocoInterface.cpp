@@ -111,60 +111,10 @@ std::unique_ptr<Model> createPendulumModel() {
     return model;
 }
 
-<<<<<<< HEAD:Muscollo/Tests/testMuscolloInterface.cpp
-TEMPLATE_TEST_CASE("Solver options", "", MucoTropterSolver, MucoCasADiSolver) {
-    MucoTool muco = createSlidingMassMucoTool();
-    auto& ms = muco.initSolver<TestType>();
-    MucoSolution solDefault = muco.solve();
-=======
-void testSlidingMass() {
-    MocoTool moco = createSlidingMassMocoTool();
-    MocoSolution solution = moco.solve();
-    int numTimes = 20;
-    int numStates = 2;
-    int numControls = 1;
-
-    // Check dimensions and metadata of the solution.
-    SimTK_TEST((solution.getStateNames() == std::vector<std::string>{
-            "/slider/position/value",
-            "/slider/position/speed"}));
-    SimTK_TEST((solution.getControlNames() ==
-            std::vector<std::string>{"/actuator"}));
-    SimTK_TEST(solution.getTime().size() == numTimes);
-    const auto& states = solution.getStatesTrajectory();
-    SimTK_TEST(states.nrow() == numTimes);
-    SimTK_TEST(states.ncol() == numStates);
-    const auto& controls = solution.getControlsTrajectory();
-    SimTK_TEST(controls.nrow() == numTimes);
-    SimTK_TEST(controls.ncol() == numControls);
-
-    // Check the actual solution.
-    const double expectedFinalTime = 2.0;
-    SimTK_TEST_EQ_TOL(solution.getTime().get(numTimes-1), expectedFinalTime,
-            1e-2);
-    const double half = 0.5 * expectedFinalTime;
-
-    for (int itime = 0; itime < numTimes; ++itime) {
-        const double& t = solution.getTime().get(itime);
-        // Position is a quadratic.
-        double expectedPos =
-                t < half ? 0.5 * pow(t, 2)
-                         : -0.5 * pow(t - half, 2) + 1.0 * (t - half) + 0.5;
-        SimTK_TEST_EQ_TOL(states(itime, 0), expectedPos, 1e-2);
-
-        double expectedSpeed = t < half ? t : 2.0 - t;
-        SimTK_TEST_EQ_TOL(states(itime, 1), expectedSpeed, 1e-2);
-
-        double expectedForce = t < half ? 10 : -10;
-        SimTK_TEST_EQ_TOL(controls(itime, 0), expectedForce, 1e-2);
-    }
-}
-
-void testSolverOptions() {
-    MocoTool moco = createSlidingMassMocoTool();
-    MocoTropterSolver& ms = moco.initSolver();
+TEMPLATE_TEST_CASE("Solver options", "", MocoTropterSolver, MocoCasADiSolver) {
+    MocoTool moco = createSlidingMassMocoTool<TestType>();
+    auto& ms = moco.initSolver<TestType>();
     MocoSolution solDefault = moco.solve();
->>>>>>> master:Moco/Tests/testMocoInterface.cpp
     ms.set_verbosity(3); // Invalid value.
     SimTK_TEST_MUST_THROW_EXC(moco.solve(), Exception);
     ms.set_verbosity(2);
@@ -387,7 +337,7 @@ TEST_CASE("Building a problem", "") {
     }
 }
 
-TEMPLATE_TEST_CASE("Workflow", "", MucoTropterSolver, MucoCasADiSolver) {
+TEMPLATE_TEST_CASE("Workflow", "", MocoTropterSolver, MocoCasADiSolver) {
 
     // Default bounds.
     {
@@ -559,7 +509,7 @@ TEMPLATE_TEST_CASE("Workflow", "", MucoTropterSolver, MucoCasADiSolver) {
     // }
 }
 
-TEMPLATE_TEST_CASE("State tracking", "", MucoTropterSolver, MucoCasADiSolver) {
+TEMPLATE_TEST_CASE("State tracking", "", MocoTropterSolver, MocoCasADiSolver) {
     // TODO move to another test file?
     auto makeTool = []() {
         MocoTool moco;
@@ -640,7 +590,7 @@ TEMPLATE_TEST_CASE("State tracking", "", MucoTropterSolver, MucoCasADiSolver) {
 
 }
 
-TEMPLATE_TEST_CASE("Guess", "", MocoTropterSolver, MucoCasADiSolver) {
+TEMPLATE_TEST_CASE("Guess", "", MocoTropterSolver, MocoCasADiSolver) {
     MocoTool moco = createSlidingMassMocoTool();
     auto& ms = moco.initSolver<TestType>();
     const int N = 6;
@@ -889,7 +839,7 @@ TEMPLATE_TEST_CASE("Guess", "", MocoTropterSolver, MucoCasADiSolver) {
 
         // resample
         {
-            MucoIterate guess = guess0;
+            MocoIterate guess = guess0;
             SimTK_TEST_MUST_THROW_EXC(guess.resample(createVector(
                     {guess.getInitialTime() - 1e-15, 0, 1})),
                     Exception);
@@ -900,7 +850,7 @@ TEMPLATE_TEST_CASE("Guess", "", MocoTropterSolver, MucoCasADiSolver) {
 
             {
                 SimTK::Vector newTime = createVector({0.1, 0.3, 0.8});
-                MucoIterate guess2 = guess;
+                MocoIterate guess2 = guess;
                 guess2.resample(newTime);
                 SimTK_TEST_EQ(newTime, guess2.getTime());
             }
@@ -934,7 +884,7 @@ TEMPLATE_TEST_CASE("Guess", "", MocoTropterSolver, MucoCasADiSolver) {
 }
 
 TEMPLATE_TEST_CASE("Guess time-stepping", "",
-        MucoTropterSolver/*, MucoCasADiSolver*/) {
+        MocoTropterSolver/*, MocoCasADiSolver*/) {
     // This problem is just a simulation (there are no costs), and so the
     // forward simulation guess should reduce the number of iterations to
     // converge, and the guess and solution should also match our own forward
@@ -992,7 +942,7 @@ TEMPLATE_TEST_CASE("Guess time-stepping", "",
     {
         moco.updProblem().setTimeBounds({-10, -5}, {6, 15});
         auto& solver = moco.initSolver<TestType>();
-        MucoIterate guess = solver.createGuess("time-stepping");
+        MocoIterate guess = solver.createGuess("time-stepping");
         SimTK_TEST(guess.getTime()[0] == -5);
         SimTK_TEST(guess.getTime()[guess.getNumTimes()-1] == 6);
     }
@@ -1208,11 +1158,10 @@ TEST_CASE("Interpolate", "") {
     SimTK_TEST(SimTK::isNaN(newY[3]));
 }
 
-<<<<<<< HEAD:Muscollo/Tests/testMuscolloInterface.cpp
-TEMPLATE_TEST_CASE("Sliding mass", "", MucoTropterSolver, MucoCasADiSolver) {
+TEMPLATE_TEST_CASE("Sliding mass", "", MocoTropterSolver, MocoCasADiSolver) {
 
-    MucoTool muco = createSlidingMassMucoTool<TestType>();
-    MucoSolution solution = muco.solve();
+    MocoTool moco = createSlidingMassMocoTool();
+    MocoSolution solution = moco.solve();
     int numTimes = 20;
     int numStates = 2;
     int numControls = 1;
@@ -1244,23 +1193,6 @@ TEMPLATE_TEST_CASE("Sliding mass", "", MucoTropterSolver, MucoCasADiSolver) {
                 t < half ? 0.5 * pow(t, 2)
                          : -0.5 * pow(t - half, 2) + 1.0 * (t - half) + 0.5;
         SimTK_TEST_EQ_TOL(states(itime, 0), expectedPos, 1e-2);
-=======
-TEST_CASE("testMocoInterface") {
-    testSlidingMass();
-    testSolverOptions();
-
-    // testCopy();
-    // testSolveRepeatedly();
-    // testOMOCOSerialization();
-    testBounds();
-    testBuildingProblem();
-    testWorkflow();
-
-    testStateTracking();
-    testGuess();
-    testGuessTimeStepping();
-    testMocoIterate();
->>>>>>> master:Moco/Tests/testMocoInterface.cpp
 
         double expectedSpeed = t < half ? t : 2.0 - t;
         SimTK_TEST_EQ_TOL(states(itime, 1), expectedSpeed, 1e-2);
@@ -1270,9 +1202,9 @@ TEST_CASE("testMocoInterface") {
     }
 }
 
-TEMPLATE_TEST_CASE("Solving an empty MucoProblem", "",
-        MocoTropterSolver, MucoCasADiSolver) {
-    MucoTool muco;
+TEMPLATE_TEST_CASE("Solving an empty MocoProblem", "",
+        MocoTropterSolver, MocoCasADiSolver) {
+    MocoTool moco;
     auto& solver = moco.initSolver<TestType>();
     THEN("problem solves without error, solution trajectories are empty.") {
         MocoSolution solution = moco.solve();

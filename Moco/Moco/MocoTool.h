@@ -27,7 +27,7 @@ namespace OpenSim {
 
 class MocoProblem;
 class MocoTropterSolver;
-class MucoCasADiSolver;
+class MocoCasADiSolver;
 
 /// The top-level class for solving a custom optimal control problem.
 ///
@@ -95,17 +95,17 @@ public:
     /// If using this method in C++, make sure to include the "&" in the
     /// return type; otherwise, you'll make a copy of the solver, and the copy
     /// will have no effect on this MocoTool.
-    MocoTropterSolver& initSolver();
+    MocoTropterSolver& initTropterSolver();
 
     // TODO document
     /// This returns a fresh MucoCasADiSolver and deletes the previous solver.
-    MucoCasADiSolver& initCasADiSolver();
+    MocoCasADiSolver& initCasADiSolver();
 
     /// Access the solver. Make sure to call `initSolver()` beforehand.
     /// If using this method in C++, make sure to include the "&" in the
     /// return type; otherwise, you'll make a copy of the solver, and the copy
     /// will have no effect on this MocoTool.
-    MucoSolver& updSolver();
+    MocoSolver& updSolver();
 
     /// Solve the provided MocoProblem using the provided MocoSolver, and
     /// obtain the solution to the problem. If the write_solution property
@@ -159,12 +159,12 @@ private:
 };
 
 template <>
-OSIMMUSCOLLO_API
-MucoTropterSolver& MucoTool::initSolver<MucoTropterSolver>();
+OSIMMOCO_API
+MocoTropterSolver& MocoTool::initSolver<MocoTropterSolver>();
 
 template <>
-OSIMMUSCOLLO_API
-MucoCasADiSolver& MucoTool::initSolver<MucoCasADiSolver>();
+OSIMMOCO_API
+MocoCasADiSolver& MocoTool::initSolver<MocoCasADiSolver>();
 
 } // namespace OpenSim
 

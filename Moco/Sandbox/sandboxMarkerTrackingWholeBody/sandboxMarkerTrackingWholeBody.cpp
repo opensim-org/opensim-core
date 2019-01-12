@@ -277,7 +277,7 @@ MocoSolution solveMarkerTrackingProblem(
 
     // Configure the solver.
     // =====================
-    auto& solver = muco.initSolver<MucoCasADiSolver>();
+    auto& solver = muco.initSolver<MocoCasADiSolver>();
     solver.set_num_mesh_points(10);
     // solver.set_optim_max_iterations(2);
     // solver.set_verbosity(2);

@@ -86,7 +86,7 @@ public:
     /// general; it's just that this function doesn't support it.
     ///
     /// @precondition You must have called resetProblem().
-    MucoIterate createGuessTimeStepping() const;
+    MocoIterate createGuessTimeStepping() const;
 
 protected:
 

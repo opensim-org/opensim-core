@@ -114,7 +114,7 @@ MocoSolution solveDoublePendulumSwingup(const std::string& dynamics_mode) {
 }
 
 TEMPLATE_TEST_CASE("Similar solutions between implicit and explicit dynamics",
-        "[implicit]", MucoTropterSolver, MucoCasADiSolver) {
+        "[implicit]", MocoTropterSolver, MocoCasADiSolver) {
     GIVEN("solutions to implicit and explicit problems") {
 
         auto solutionImplicit =
@@ -171,7 +171,7 @@ TEMPLATE_TEST_CASE("Similar solutions between implicit and explicit dynamics",
 }
 
 TEMPLATE_TEST_CASE("Combining implicit dynamics mode with path constraints",
-        "[implicit]", MocoTropterSolver, MucoCasADiSolver) {
+        "[implicit]", MocoTropterSolver, MocoCasADiSolver) {
     class MyPathConstraint : public MocoPathConstraint {
         OpenSim_DECLARE_CONCRETE_OBJECT(MyPathConstraint, MocoPathConstraint);
         void initializeOnModelImpl(const Model& model) const override {
@@ -264,10 +264,10 @@ SCENARIO("Using MocoIterate with the implicit dynamics mode",
 }
 
 TEMPLATE_TEST_CASE("Solving a problem with acceleration-level quantities",
-        "[implicit]", MocoTropterSolver, MucoCasADiSolver) {
+        "[implicit]", MocoTropterSolver, MocoCasADiSolver) {
     MocoTool moco;
     moco.updProblem().setModelCopy(ModelFactory::createPendulum());
-    auto& solver = muco.initSolver<TestType>();
+    auto& solver = moco.initSolver<TestType>();
     solver.set_dynamics_mode("implicit");
     solver.set_num_mesh_points(5);
 

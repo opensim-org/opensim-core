@@ -1,7 +1,7 @@
 #ifndef MUSCOLLO_MUCOCASADISOLVER_H
 #define MUSCOLLO_MUCOCASADISOLVER_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Muscollo: MucoCasADiSolver.h                                       *
+ * OpenSim Muscollo: MocoCasADiSolver.h                                       *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2017 Stanford University and the Authors                     *
  *                                                                            *
@@ -28,8 +28,8 @@ namespace OpenSim {
 
 /// @note This solver currently only supports systems for which \f$ \dot{q} = u
 /// \f$ (e.g., no quaternions).
-class OSIMMOCO_API MucoCasADiSolver : public MocoSolver {
-    OpenSim_DECLARE_CONCRETE_OBJECT(MucoCasADiSolver, MocoSolver);
+class OSIMMOCO_API MocoCasADiSolver : public MocoSolver {
+    OpenSim_DECLARE_CONCRETE_OBJECT(MocoCasADiSolver, MocoSolver);
 public:
     OpenSim_DECLARE_PROPERTY(num_mesh_points, int,
     "The number of mesh points for discretizing the problem (default: 100).");
@@ -56,7 +56,7 @@ public:
     "IPOPT's verbosity (see IPOPT documentation).");
 
 
-    MucoCasADiSolver();
+    MocoCasADiSolver();
 
     /// @name Specifying an initial guess
     /// @{

@@ -323,7 +323,7 @@ double MocoIterate::resampleWithFrequency(double desiredFrequency) {
     resampleWithNumTimes(actualNumTimes);
     return (double)actualNumTimes / duration;
 }
-void MucoIterate::resample(SimTK::Vector time) {
+void MocoIterate::resample(SimTK::Vector time) {
     ensureUnsealed();
     OPENSIM_THROW_IF(m_time.size() < 2, Exception,
             "Cannot resample if number of times is 0 or 1.");

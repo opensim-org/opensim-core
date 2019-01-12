@@ -35,7 +35,7 @@
 #include "MocoParameter.h"
 #include "ActivationCoordinateActuator.h"
 
-#include "MucoCasADiSolver/MucoCasADiSolver.h"
+#include "MocoCasADiSolver/MocoCasADiSolver.h"
 
 #include "Components/StationPlaneContactForce.h"
 
@@ -69,7 +69,7 @@ OSIMMOCO_API void RegisterTypes_osimMoco() {
         Object::registerType(MocoTropterSolver());
         Object::registerType(MocoParameter());
 
-        Object::registerType(MucoCasADiSolver());
+        Object::registerType(MocoCasADiSolver());
 
         Object::registerType(ActivationCoordinateActuator());
         Object::registerType(GlobalStaticOptimization());

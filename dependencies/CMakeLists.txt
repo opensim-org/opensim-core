@@ -282,7 +282,7 @@ if(SUPERBUILD_casadi)
     AddDependency(NAME casadi
                   DEPENDS ipopt
                   GIT_URL    https://github.com/stanfordnmbl/casadi.git
-                  GIT_TAG    af306068389bf402997cca208b8f641150bca2cc
+                  GIT_TAG    6200c02d332588d93a038f42bcd4ba26b6f64680
                   CMAKE_ARGS -DWITH_IPOPT:BOOL=ON
                              -DWITH_EXAMPLES:BOOL=OFF
                              -DPKG_CONFIG_USE_CMAKE_PREFIX_PATH:BOOL=ON
