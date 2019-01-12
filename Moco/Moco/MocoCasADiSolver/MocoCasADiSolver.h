@@ -1,5 +1,5 @@
-#ifndef MUSCOLLO_MUCOCASADISOLVER_H
-#define MUSCOLLO_MUCOCASADISOLVER_H
+#ifndef MOCO_MOCOCASADISOLVER_H
+#define MOCO_MOCOCASADISOLVER_H
 /* -------------------------------------------------------------------------- *
  * OpenSim Muscollo: MocoCasADiSolver.h                                       *
  * -------------------------------------------------------------------------- *
@@ -120,4 +120,4 @@ private:
 } // namespace OpenSim
 
 
-#endif // MUSCOLLO_MUCOCASADISOLVER_H
+#endif // MOCO_MOCOCASADISOLVER_H

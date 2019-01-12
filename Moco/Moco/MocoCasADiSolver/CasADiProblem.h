@@ -1,5 +1,5 @@
-#ifndef MUSCOLLO_CASADIPROBLEM_H
-#define MUSCOLLO_CASADIPROBLEM_H
+#ifndef MOCO_CASADIPROBLEM_H
+#define MOCO_CASADIPROBLEM_H
 
 #include <string>
 #include <unordered_map>
@@ -123,4 +123,4 @@ private:
 
 } // namespace casocp
 
-#endif // MUSCOLLO_CASADIPROBLEM_H
+#endif // MOCO_CASADIPROBLEM_H

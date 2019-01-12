@@ -1,5 +1,5 @@
-#ifndef MUSCOLLO_CASADITRANSCRIPTION_H
-#define MUSCOLLO_CASADITRANSCRIPTION_H
+#ifndef MOCO_CASADITRANSCRIPTION_H
+#define MOCO_CASADITRANSCRIPTION_H
 /* -------------------------------------------------------------------------- *
  * OpenSim Muscollo: CasADiTranscription.h                                    *
  * -------------------------------------------------------------------------- *
@@ -831,4 +831,4 @@ inline void convertToSimTKState(
     model.setControls(simtkState, simtkControls);
 }
 
-#endif // MUSCOLLO_CASADITRANSCRIPTION_H
+#endif // MOCO_CASADITRANSCRIPTION_H

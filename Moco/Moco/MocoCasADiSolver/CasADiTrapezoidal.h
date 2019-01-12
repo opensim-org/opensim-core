@@ -1,5 +1,5 @@
-#ifndef MUSCOLLO_CASADITRAPEZOIDAL_H
-#define MUSCOLLO_CASADITRAPEZOIDAL_H
+#ifndef MOCO_CASADITRAPEZOIDAL_H
+#define MOCO_CASADITRAPEZOIDAL_H
 /* -------------------------------------------------------------------------- *
  * OpenSim Muscollo: CasADiTrapezoidal.h                                      *
  * -------------------------------------------------------------------------- *
@@ -317,4 +317,4 @@ public:
     const override;
 };
 
-#endif // MUSCOLLO_CASADITRAPEZOIDAL_H
+#endif // MOCO_CASADITRAPEZOIDAL_H
