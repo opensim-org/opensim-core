@@ -10,6 +10,11 @@ get_filename_component(CASADI_BIN_DIR "${casadi_DIR}/../" ABSOLUTE)
 MocoCopyDLLs(DEP_NAME casadi
     DEP_BIN_DIR "${CASADI_BIN_DIR}" INSTALL_DLLS "${CMAKE_INSTALL_BINDIR}")
 
+# Copy CasADi into our installation.
+install(DIRECTORY "${CASADI_CMAKE_DIR}/../../../"
+        DESTINATION "${CMAKE_INSTALL_PREFIX}"
+        USE_SOURCE_PERMISSIONS)
+
 find_package(OpenSim 4.0 REQUIRED)
 set_package_properties(OpenSim PROPERTIES
         URL http://opensim.stanford.edu
