@@ -102,7 +102,7 @@ sync()
 LogManager::LogManager()
 {
     // Seems to be causing crashes in the GUI... maybe a multithreading issue.
-#if 1
+#if OPENSIM_REDIRECT_OUTPUT
     // Change the underlying streambuf for the standard cout/cerr to our custom buffers
     std::cout.rdbuf(&out);
     std::cerr.rdbuf(&err);

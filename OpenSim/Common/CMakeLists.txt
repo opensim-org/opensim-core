@@ -20,6 +20,14 @@ OpenSimAddLibrary(
     TESTDIRS "Test"
     )
 
+option(OPENSIM_REDIRECT_OUTPUT
+    "Redirect output to both the terminal and an output file."
+    ON)
+
+if(OPENSIM_REDIRECT_OUTPUT)
+    target_compile_definitions(osimCommon PRIVATE OPENSIM_REDIRECT_OUTPUT)
+endif()
+
 if(WIN32)
     # On Windows only, debug libraries cannot be mixed with release
     # libraries, and we must copy the DLLs from the dependencies
