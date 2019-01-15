@@ -192,6 +192,11 @@ namespace SimTK {
     }
 }
 
+%include <SWIGSimTK/Quaternion.h>
+namespace SimTK {
+%template(Quaternion) SimTK::Quaternion_<double>;
+}
+
 
 // Transform
 %include <SWIGSimTK/Transform.h>

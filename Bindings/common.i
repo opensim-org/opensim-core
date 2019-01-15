@@ -223,6 +223,7 @@ DATATABLE_CLONE(double, SimTK::SpatialVec)
     packUnitVec3(std::vector<std::string> suffixes) {
         return $self->pack<SimTK::UnitVec3>();
     }
+    /*
     DataTable_<double, SimTK::Quaternion>
     packQuaternion() {
         return $self->pack<SimTK::Quaternion>();
@@ -231,6 +232,7 @@ DATATABLE_CLONE(double, SimTK::SpatialVec)
     packQuaternion(std::vector<std::string> suffixes) {
         return $self->pack<SimTK::Quaternion>();
     }
+     */
     DataTable_<double, SimTK::SpatialVec>
     packSpatialVec() {
         return $self->pack<SimTK::SpatialVec>();
