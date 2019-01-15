@@ -22,7 +22,7 @@
 
 #include <SimTKcommon/internal/State.h>
 
-#include "osimMocoDLL.h"
+#include "../osimMocoDLL.h"
 
 namespace OpenSim {
 

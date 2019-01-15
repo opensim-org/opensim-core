@@ -19,11 +19,11 @@
  * -------------------------------------------------------------------------- */
 
 #include "MocoWeightSet.h"
-#include "MocoStateTrackingCost.h"
-#include "MocoMarkerTrackingCost.h"
-#include "MocoMarkerEndpointCost.h"
-#include "MocoControlCost.h"
-#include "MocoJointReactionNormCost.h"
+#include "MocoCost/MocoStateTrackingCost.h"
+#include "MocoCost/MocoMarkerTrackingCost.h"
+#include "MocoCost/MocoMarkerEndpointCost.h"
+#include "MocoCost/MocoControlCost.h"
+#include "MocoCost/MocoJointReactionNormCost.h"
 #include "MocoIterate.h"
 #include "MocoBounds.h"
 #include "MocoProblem.h"
