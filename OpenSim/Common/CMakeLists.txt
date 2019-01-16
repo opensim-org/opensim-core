@@ -20,12 +20,13 @@ OpenSimAddLibrary(
     TESTDIRS "Test"
     )
 
-option(OPENSIM_REDIRECT_OUTPUT
+option(OPENSIM_LOG_TO_FILE
     "Redirect output to both the terminal and an output file."
     ON)
 
-if(OPENSIM_REDIRECT_OUTPUT)
-    target_compile_definitions(osimCommon PRIVATE OPENSIM_REDIRECT_OUTPUT)
+# Whether cerr & cout shold be redirected to err.log and out.log respectively
+if(OPENSIM_LOG_TO_FILE)
+    target_compile_definitions(osimCommon PRIVATE OPENSIM_LOG_TO_FILE)
 endif()
 
 if(WIN32)
