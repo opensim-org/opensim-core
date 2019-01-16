@@ -252,6 +252,41 @@ set_adjunct_guess(Iterate& guess,
 
 template<typename T>
 void Problem<T>::
+set_diffuse_guess(Iterate& guess,
+    const std::string& name,
+    const Eigen::VectorXd& value)
+{
+    // Check for errors.
+    TROPTER_THROW_IF(guess.time.size() == 0, "guess.time is empty.");
+    TROPTER_THROW_IF(value.size() != guess.time.size(),
+        "Expected value to have %i elements, but it has %i elements.",
+        guess.time.size(), value.size());
+    if (guess.diffuses.rows() == 0) {
+        guess.diffuses.resize(m_diffuse_infos.size(), guess.time.size());
+    }
+    else if (size_t(guess.diffuses.rows()) != m_diffuse_infos.size() ||
+        guess.diffuses.cols() != guess.time.size()) {
+        TROPTER_THROW("Expected guess.diffuses to have dimensions %i x %i "
+            "but dimensions are %i x %i.",
+            m_diffuse_infos.size(), guess.time.size(),
+            guess.diffuses.rows(), guess.diffuses.cols());
+    }
+    // Find the diffuse index.
+    size_t diffuse_index = 0;
+    // TODO store diffuse infos in a map.
+    for (const auto& info : m_diffuse_infos) {
+        if (info.name == name) break;
+        diffuse_index++;
+    }
+    TROPTER_THROW_IF(diffuse_index == m_diffuse_infos.size(),
+        "diffuse '%s' does not exist.", name);
+
+    // Set the guess.
+    guess.diffuses.row(diffuse_index) = value;
+}
+
+template<typename T>
+void Problem<T>::
 set_parameter_guess(Iterate& guess,
         const std::string& name,
         const double& value)
@@ -300,6 +335,8 @@ void Problem<T>::get_all_bounds(
         Eigen::Ref<Eigen::VectorXd> initial_adjuncts_upper,
         Eigen::Ref<Eigen::VectorXd> final_adjuncts_lower,
         Eigen::Ref<Eigen::VectorXd> final_adjuncts_upper,
+        Eigen::Ref<Eigen::VectorXd> diffuses_lower,
+        Eigen::Ref<Eigen::VectorXd> diffuses_upper,
         Eigen::Ref<Eigen::VectorXd> parameters_lower,
         Eigen::Ref<Eigen::VectorXd> parameters_upper,
         Eigen::Ref<Eigen::VectorXd> path_constraints_lower,
@@ -379,19 +416,23 @@ void Problem<T>::get_all_bounds(
         if (info.initial_bounds.is_set()) {
             initial_adjuncts_lower[ia] = info.initial_bounds.lower;
             initial_adjuncts_upper[ia] = info.initial_bounds.upper;
-        }
-        else {
+        } else {
             initial_adjuncts_lower[ia] = info.bounds.lower;
             initial_adjuncts_upper[ia] = info.bounds.upper;
         }
         if (info.final_bounds.is_set()) {
             final_adjuncts_lower[ia] = info.final_bounds.lower;
             final_adjuncts_upper[ia] = info.final_bounds.upper;
-        }
-        else {
+        } else {
             final_adjuncts_lower[ia] = info.bounds.lower;
             final_adjuncts_upper[ia] = info.bounds.upper;
         }
+    }
+    for (unsigned ii = 0; ii < m_diffuse_infos.size(); ++ii) {
+        const auto& info = m_diffuse_infos[ii];
+        // TODO if (!info.bounds.is_set()), give error.
+        diffuses_lower[ii] = info.bounds.lower;
+        diffuses_upper[ii] = info.bounds.upper;
     }
     for (unsigned ip = 0; ip < m_parameter_infos.size(); ++ip) {
         const auto& info = m_parameter_infos[ip];

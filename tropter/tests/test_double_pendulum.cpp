@@ -109,10 +109,10 @@ public:
                 0.001 * final_time;
     }
 
-    static void run_test(std::string solver, std::string hessian_approx) {
+    static void run_test(std::string solver, std::string hessian_approx,
+            std::string transcription, int N = 100) {
         auto ocp = std::make_shared<DoublePendulumSwingUpMinTime<T>>();
-        const int N = 100;
-        DirectCollocationSolver<T> dircol(ocp, "trapezoidal", solver, N);
+        DirectCollocationSolver<T> dircol(ocp, transcription, solver, N);
         dircol.get_opt_solver().set_hessian_approximation(hessian_approx);
         dircol.get_opt_solver().set_sparsity_detection("random");
         tropter::Iterate guess;
@@ -147,29 +147,46 @@ public:
     }
 };
 
-TEST_CASE("Double pendulum swing up in minimum time.", "[trapezoidal]")
+TEST_CASE("Double pendulum swing up in minimum time.", 
+          "[trapezoidal][hermite-simpson]")
 {
     SECTION("IPOPT") {
-        SECTION("Finite differences, limited-memory Hessian") {
+        SECTION("Finite differences, limited-memory Hessian, trapezoidal") {
             DoublePendulumSwingUpMinTime<double>::run_test("ipopt",
-                    "limited-memory");
+                    "limited-memory", "trapezoidal");
         }
         // This test passes but it's just really slow:
-        //SECTION("Finite differences, exact Hessian") {
+        //SECTION("Finite differences, exact Hessian, trapezoidal") {
         //    DoublePendulumSwingUpMinTime<double>::run_test("ipopt",
-        //            "exact");
+        //            "exact", "trapezoidal");
         //}
-        SECTION("ADOL-C") {
+        SECTION("ADOL-C, trapezoidal") {
             DoublePendulumSwingUpMinTime<adouble>::run_test("ipopt",
-                    "limited-memory");
+                    "limited-memory", "trapezoidal");
+        }
+        SECTION("Finite differences, limited-memory Hessian, hermite-simpson") {
+            DoublePendulumSwingUpMinTime<double>::run_test("ipopt",
+                "limited-memory", "hermite-simpson", 50);
+        }
+        //SECTION("Finite differences, exact Hessian, hermite-simpson") {
+        //    DoublePendulumSwingUpMinTime<double>::run_test("ipopt",
+        //            "exact", "hermite-simpson");
+        //}
+        SECTION("ADOL-C, hermite-simpson") {
+            DoublePendulumSwingUpMinTime<adouble>::run_test("ipopt",
+                "limited-memory", "hermite-simpson", 50);
         }
     }
     // Does not give desired answer (not fully bang-bang controls):
     // #if defined(TROPTER_WITH_SNOPT)
     // SECTION("SNOPT") {
-    //     SECTION("ADOL-C") {
+    //     SECTION("ADOL-C, trapezoidal") {
     //         DoublePendulumSwingUpMinTime<adouble>::run_test("snopt",
-    //                 "limited-memory");
+    //                 "limited-memory", "trapezoidal");
+    //     }
+    //     SECTION("ADOL-C, hermite-simpson") {
+    //         DoublePendulumSwingUpMinTime<adouble>::run_test("snopt",
+    //                 "limited-memory", "hermite-simpson");
     //     }
     // }
     // #endif
@@ -202,9 +219,10 @@ public:
     }
 
     static Solution run_test(const std::string& solver,
-            const std::string& hessian_approx, int N = 50) {
+            const std::string& hessian_approx, 
+            const std::string& transcription, int N = 50) {
         auto ocp = std::make_shared<DoublePendulumCoordinateTracking<T>>();
-        DirectCollocationSolver<T> dircol(ocp, "trapezoidal", solver, N);
+        DirectCollocationSolver<T> dircol(ocp, transcription, solver, N);
         // Using an exact Hessian seems really important for this problem
         // (solves in only 20 iterations). Even a limited-memory problem started
         // from the solution using an exact Hessian does not converge.
@@ -216,9 +234,11 @@ public:
         solution.write("double_pendulum_coordinate_tracking.csv");
 
         TROPTER_REQUIRE_EIGEN(solution.states.row(0),
-                Eigen::RowVectorXd::LinSpaced(N, 0, 0.50 * PI), 1e-3);
+                Eigen::RowVectorXd::LinSpaced(solution.time.size(), 0, 
+                    0.50 * PI), 1e-3);
         TROPTER_REQUIRE_EIGEN(solution.states.row(1),
-                Eigen::RowVectorXd::LinSpaced(N, 0, 0.25 * PI), 1e-3);
+                Eigen::RowVectorXd::LinSpaced(solution.time.size(), 0, 
+                    0.25 * PI), 1e-3);
 
         return solution;
     }
@@ -254,18 +274,20 @@ public:
         out.dynamics[2] = udot[0];
         out.dynamics[3] = udot[1];
 
-        const T z0 = m1 * L0 * L1 * cos(q1);
-        const T M01 = m1 * L1*L1 + z0;
-        Matrix2<T> M;
-        M << m0 * L0*L0 + m1 * (L0*L0 + L1*L1) + 2*z0,    M01,
-                M01,                                         m1 * L1*L1;
-        Vector2<T> V(-u1 * (2 * u0 + u1),
-                     u0 * u0);
-        V *= m1*L0*L1*sin(q1);
-        Vector2<T> G(g * ((m0 + m1) * L0 * cos(q0) + m1 * L1 * cos(q0 + q1)),
-                     g * m1 * L1 * cos(q0 + q1));
+        if (out.path.size() != 0) {
+            const T z0 = m1 * L0 * L1 * cos(q1);
+            const T M01 = m1 * L1*L1 + z0;
+            Matrix2<T> M;
+            M << m0 * L0*L0 + m1 * (L0*L0 + L1*L1) + 2*z0,    M01,
+                    M01,                                         m1 * L1*L1;
+            Vector2<T> V(-u1 * (2 * u0 + u1),
+                         u0 * u0);
+            V *= m1*L0*L1*sin(q1);
+            Vector2<T> G(g * ((m0 + m1) * L0 * cos(q0) + m1 * L1 * cos(q0 + q1)),
+                         g * m1 * L1 * cos(q0 + q1));
 
-        out.path = M * udot + V + G - tau;
+            out.path = M * udot + V + G - tau;
+        }
     }
 };
 
@@ -298,10 +320,11 @@ public:
         integrand = (states.template head<2>() - desired).squaredNorm();
     }
     static Solution run_test(const std::string& solver,
-            const std::string& hessian_approx, int N = 50) {
+            const std::string& hessian_approx, 
+            const std::string& transcription, int N = 50) {
         auto ocp =
                 std::make_shared<ImplicitDoublePendulumCoordinateTracking<T>>();
-        DirectCollocationSolver<T> dircol(ocp, "trapezoidal", solver, N);
+        DirectCollocationSolver<T> dircol(ocp, transcription, solver, N);
         dircol.get_opt_solver().set_hessian_approximation(
                 hessian_approx);
         dircol.get_opt_solver().set_sparsity_detection("random");
@@ -312,18 +335,20 @@ public:
         solution.write("implicit_double_pendulum_coordinate_tracking.csv");
 
         TROPTER_REQUIRE_EIGEN(solution.states.row(0),
-                Eigen::RowVectorXd::LinSpaced(N, 0, 0.50 * PI), 1e-3);
+                Eigen::RowVectorXd::LinSpaced(solution.time.size(), 0, 
+                    0.50 * PI), 1e-3);
         TROPTER_REQUIRE_EIGEN(solution.states.row(1),
-                Eigen::RowVectorXd::LinSpaced(N, 0, 0.25 * PI), 1e-3);
+                Eigen::RowVectorXd::LinSpaced(solution.time.size(), 0, 
+                    0.25 * PI), 1e-3);
 
         return solution;
     }
 };
 
 TEST_CASE("Double pendulum coordinate tracking",
-        "[trapezoidal][implicitdynamics]")
+        "[trapezoidal][hermite-simpson][implicitdynamics]")
 {
-    SECTION("IPOPT") {
+    SECTION("IPOPT, trapezoidal") {
         // Make sure the solutions from the implicit and explicit
         // formulations are similar.
 
@@ -331,11 +356,11 @@ TEST_CASE("Double pendulum coordinate tracking",
         // solution takes 25 iterations.
         const auto explicit_solution =
                 DoublePendulumCoordinateTracking<adouble>::
-                run_test("ipopt", "exact");
+                run_test("ipopt", "exact", "trapezoidal");
 
         const auto implicit_solution =
                 ImplicitDoublePendulumCoordinateTracking<adouble>::
-                run_test("ipopt", "exact");
+                run_test("ipopt", "exact", "trapezoidal");
 
         TROPTER_REQUIRE_EIGEN(explicit_solution.time,
                 implicit_solution.time, 1e-10);
@@ -373,9 +398,10 @@ TEST_CASE("Double pendulum coordinate tracking",
         ci.hessian_error_tolerance = 1e-2;
         ci.compare();
 
-        DoublePendulumCoordinateTracking<double>:: run_test("ipopt", "exact");
+        DoublePendulumCoordinateTracking<double>:: run_test("ipopt", "exact",
+            "trapezoidal");
         ImplicitDoublePendulumCoordinateTracking<double>::
-        run_test("ipopt", "exact");
+        run_test("ipopt", "exact", "trapezoidal");
 
         // The following do not converge:
         // EXIT: Maximum number of iterations exceeded.
@@ -393,6 +419,41 @@ TEST_CASE("Double pendulum coordinate tracking",
         // ImplicitDoublePendulumCoordinateTracking<double>::
         // run_test("ipopt", "limited-memory");
 
+    }
+    SECTION("IPOPT, hermite-simpson") {
+        // Make sure the solutions from the implicit and explicit
+        // formulations are similar.
+
+        // The explicit solution takes 20 iterations whereas the implicit
+        // solution takes 25 iterations.
+        const auto explicit_solution =
+            DoublePendulumCoordinateTracking<adouble>::
+            run_test("ipopt", "exact", "hermite-simpson", 25);
+
+        const auto implicit_solution =
+            ImplicitDoublePendulumCoordinateTracking<adouble>::
+            run_test("ipopt", "exact", "hermite-simpson", 25);
+
+        TROPTER_REQUIRE_EIGEN(explicit_solution.time,
+            implicit_solution.time, 1e-10);
+        // q0 and q1
+        TROPTER_REQUIRE_EIGEN(explicit_solution.states.bottomRows(2),
+            implicit_solution.states.bottomRows(2), 1e-2);
+        // u0 and u1
+        TROPTER_REQUIRE_EIGEN(explicit_solution.states.bottomRows(2),
+            implicit_solution.states.bottomRows(2), 1e-2);
+        // tau0 and tau1
+        CAPTURE(explicit_solution.controls);
+        CAPTURE(implicit_solution.controls.bottomRows(2));
+        // TODO this fails since control become zero at the midpoint for 
+        // Hermite-Simpson transcription.
+        //TROPTER_REQUIRE_EIGEN_ABS(explicit_solution.controls,
+        //    implicit_solution.controls.bottomRows(2), 5.0);
+
+        DoublePendulumCoordinateTracking<double>::run_test("ipopt", "exact",
+            "hermite-simpson", 25);
+        ImplicitDoublePendulumCoordinateTracking<double>::
+            run_test("ipopt", "exact", "hermite-simpson", 25);
     }
     /*
     #if defined(TROPTER_WITH_SNOPT)
