@@ -123,13 +123,13 @@ namespace OpenSim {
 %shared_ptr(OpenSim::DataTable_<double, double>);
 %shared_ptr(OpenSim::DataTable_<double, SimTK::Vec3>);
 %shared_ptr(OpenSim::DataTable_<double, SimTK::UnitVec3>);
-%shared_ptr(OpenSim::DataTable_<double, SimTK::Quaternion>);
+%shared_ptr(OpenSim::DataTable_<double, SimTK::Vec4>);
 %shared_ptr(OpenSim::DataTable_<double, SimTK::Vec6>);
 %shared_ptr(OpenSim::DataTable_<double, SimTK::SpatialVec>);
 %shared_ptr(OpenSim::TimeSeriesTable_<double>);
 %shared_ptr(OpenSim::TimeSeriesTable_<SimTK::Vec3>);
 %shared_ptr(OpenSim::TimeSeriesTable_<SimTK::UnitVec3>);
-%shared_ptr(OpenSim::TimeSeriesTable_<SimTK::Quaternion>);
+%shared_ptr(OpenSim::TimeSeriesTable_<SimTK::Vec4>);
 %shared_ptr(OpenSim::TimeSeriesTable_<SimTK::Vec6>);
 %shared_ptr(OpenSim::TimeSeriesTable_<SimTK::SpatialVec>);
 %ignore OpenSim::AbstractDataTable::clone;
@@ -203,7 +203,7 @@ namespace OpenSim {
 DATATABLE_CLONE(double, double)
 DATATABLE_CLONE(double, SimTK::Vec3)
 DATATABLE_CLONE(double, SimTK::UnitVec3)
-DATATABLE_CLONE(double, SimTK::Quaternion)
+DATATABLE_CLONE(double, SimTK::Vec4)
 DATATABLE_CLONE(double, SimTK::Vec6)
 DATATABLE_CLONE(double, SimTK::SpatialVec)
 %extend OpenSim::DataTable_<double, double> {
@@ -223,16 +223,14 @@ DATATABLE_CLONE(double, SimTK::SpatialVec)
     packUnitVec3(std::vector<std::string> suffixes) {
         return $self->pack<SimTK::UnitVec3>();
     }
-    /*
-    DataTable_<double, SimTK::Quaternion>
-    packQuaternion() {
-        return $self->pack<SimTK::Quaternion>();
+    DataTable_<double, SimTK::Vec4>
+    packVec4() {
+        return $self->pack<SimTK::Vec4>();
     }
-    DataTable_<double, SimTK::Quaternion>
-    packQuaternion(std::vector<std::string> suffixes) {
-        return $self->pack<SimTK::Quaternion>();
+    DataTable_<double, SimTK::Vec4>
+    packVec4(std::vector<std::string> suffixes) {
+        return $self->pack<SimTK::Vec4>();
     }
-     */
     DataTable_<double, SimTK::SpatialVec>
     packSpatialVec() {
         return $self->pack<SimTK::SpatialVec>();
@@ -266,13 +264,13 @@ DATATABLE_CLONE(double, SimTK::SpatialVec)
     packUnitVec3(std::vector<std::string> suffixes) {
         return $self->pack<SimTK::UnitVec3>();
     }
-    TimeSeriesTable_<SimTK::Quaternion>
-    packQuaternion() {
-        return $self->pack<SimTK::Quaternion>();
+    TimeSeriesTable_<SimTK::Vec4>
+    packVec4() {
+        return $self->pack<SimTK::Vec4>();
     }
-    TimeSeriesTable_<SimTK::Quaternion>
-    packQuaternion(std::vector<std::string> suffixes) {
-        return $self->pack<SimTK::Quaternion>();
+    TimeSeriesTable_<SimTK::Vec4>
+    packVec4(std::vector<std::string> suffixes) {
+        return $self->pack<SimTK::Vec4>();
     }
     TimeSeriesTable_<SimTK::SpatialVec>
     packSpatialVec() {
@@ -299,14 +297,6 @@ DATATABLE_CLONE(double, SimTK::SpatialVec)
         return $self->flatten(suffixes);
     }
 }
-%extend OpenSim::TimeSeriesTable_<SimTK::Quaternion> {
-    TimeSeriesTable_<double> flatten() {
-        return $self->flatten();
-    }
-    TimeSeriesTable_<double> flatten(std::vector<std::string> suffixes) {
-        return $self->flatten(suffixes);
-    }
-}
 %extend OpenSim::TimeSeriesTable_<SimTK::Vec6> {
     TimeSeriesTable_<double> flatten() {
         return $self->flatten();
@@ -314,6 +304,14 @@ DATATABLE_CLONE(double, SimTK::SpatialVec)
     TimeSeriesTable_<double> flatten(std::vector<std::string> suffixes) {
         return $self->flatten(suffixes);
     }
+}
+%extend OpenSim::TimeSeriesTable_<SimTK::Vec4> {
+        TimeSeriesTable_<double> flatten() {
+            return $self->flatten();
+        }
+        TimeSeriesTable_<double> flatten(std::vector<std::string> suffixes) {
+            return $self->flatten(suffixes);
+        }
 }
 %extend OpenSim::TimeSeriesTable_<SimTK::SpatialVec> {
     TimeSeriesTable_<double> flatten() {
@@ -331,15 +329,14 @@ DATATABLE_CLONE(double, SimTK::SpatialVec)
 %template(DataTable)           OpenSim::DataTable_<double, double>;
 %template(DataTableVec3)       OpenSim::DataTable_<double, SimTK::Vec3>;
 %template(DataTableUnitVec3)   OpenSim::DataTable_<double, SimTK::UnitVec3>;
-%template(DataTableQuaternion) OpenSim::DataTable_<double, SimTK::Quaternion>;
+%template(DataTableVec4)       OpenSim::DataTable_<double, SimTK::Vec4>;
 %template(DataTableVec6)       OpenSim::DataTable_<double, SimTK::Vec6>;
 %template(DataTableSpatialVec) OpenSim::DataTable_<double, SimTK::SpatialVec>;
 
 %template(TimeSeriesTable)         OpenSim::TimeSeriesTable_<double>;
 %template(TimeSeriesTableVec3)     OpenSim::TimeSeriesTable_<SimTK::Vec3>;
 %template(TimeSeriesTableUnitVec3) OpenSim::TimeSeriesTable_<SimTK::UnitVec3>;
-%template(TimeSeriesTableQuaternion)
-                                   OpenSim::TimeSeriesTable_<SimTK::Quaternion>;
+%template(TimeSeriesTableVec4)     OpenSim::TimeSeriesTable_<SimTK::Vec4>;
 %template(TimeSeriesTableVec6)     OpenSim::TimeSeriesTable_<SimTK::Vec6>;
 %template(TimeSeriesTableSpatialVec)
                                    OpenSim::TimeSeriesTable_<SimTK::SpatialVec>;
@@ -355,7 +352,7 @@ DATATABLE_CLONE(double, SimTK::SpatialVec)
 %shared_ptr(OpenSim::STOFileAdapter_<double>)
 %shared_ptr(OpenSim::STOFileAdapter_<SimTK::Vec3>)
 %shared_ptr(OpenSim::STOFileAdapter_<SimTK::UnitVec3>)
-%shared_ptr(OpenSim::STOFileAdapter_<SimTK::Quaternion>)
+%shared_ptr(OpenSim::STOFileAdapter_<SimTK::Vec4>)
 %shared_ptr(OpenSim::STOFileAdapter_<SimTK::Vec6>)
 %shared_ptr(OpenSim::STOFileAdapter_<SimTK::SpatialVec>)
 %shared_ptr(OpenSim::CSVFileAdapter)
@@ -381,7 +378,7 @@ namespace OpenSim {
 %template(STOFileAdapter)           OpenSim::STOFileAdapter_<double>;
 %template(STOFileAdapterVec3)       OpenSim::STOFileAdapter_<SimTK::Vec3>;
 %template(STOFileAdapterUnitVec3)   OpenSim::STOFileAdapter_<SimTK::UnitVec3>;
-%template(STOFileAdapterQuaternion) OpenSim::STOFileAdapter_<SimTK::Quaternion>;
+%template(STOFileAdapterVec4)       OpenSim::STOFileAdapter_<SimTK::Vec4>;
 %template(STOFileAdapterVec6)       OpenSim::STOFileAdapter_<SimTK::Vec6>;
 %template(STOFileAdapterSpatialVec) OpenSim::STOFileAdapter_<SimTK::SpatialVec>;
 

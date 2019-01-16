@@ -94,74 +94,81 @@ namespace SimTK {
 %template(RowVectorBaseDouble) SimTK::RowVectorBase<double>;
 %template(RowVectorView)       SimTK::RowVectorView_<double>;
 %template(RowVector)           SimTK::RowVector_<double>;
-
-%extend RowVectorBase<Vec3> {
-     Vec3 __getitem__(int i) {
-         if(i >= $self->nelt())
-             throw std::out_of_range{"Index out of Range."};
-
-         return $self->getElt(0, i);
-     }
-
-     void __setitem__(int i, Vec3 value) {
-         if(i >= $self->nelt())
-             throw std::out_of_range{"Index out of Range."};
-
-         $self->updElt(0, i) = value;
-     }
-
- }
-%extend RowVector_<Vec3> {
-     RowVector_(const std::vector<Vec3>& row) {
-         return new RowVector_<Vec3>{static_cast<int>(row.size()),
-                                     row.data()};
-     }
-
-     Vector_<Vec3> transpose() {
-         Vector_<Vec3> colVec{static_cast<int>($self->nelt())};
-         for(int i = 0; i < colVec.nelt(); ++i)
-             colVec[i] = $self->operator[](i);
-         return colVec;
-     }
- }
-%extend VectorBase<Vec3> {
-     Vec3 __getitem__(int i) {
-         if(i >= $self->nelt())
-             throw std::out_of_range{"Index out of Range."};
-
-         return $self->getElt(i, 0);
-     }
-
-     void __setitem__(int i, Vec3 value) {
-         if(i >= $self->nelt())
-             throw std::out_of_range{"Index out of Range."};
-
-         $self->updElt(i, 0) = value;
-     }
 }
-%extend Vector_<Vec3> {
-     Vector_(const std::vector<Vec3>& row) {
-         return new Vector_<Vec3>{static_cast<int>(row.size()),
-                                  row.data()};
-     }
 
-     RowVector_<Vec3> transpose() {
-         RowVector_<Vec3> rowVec{static_cast<int>($self->nelt())};
-         for(int i = 0; i < rowVec.nelt(); ++i)
-             rowVec[i] = $self->operator[](i);
-         return rowVec;
-     }
- }
-%template(MatrixBaseVec3)    SimTK::MatrixBase<Vec3>;
-%template(MatrixViewVec3)    SimTK::MatrixView_<Vec3>;
-%template(MatrixVec3)        SimTK::Matrix_<Vec3>;
-%template(VectorBaseVec3)    SimTK::VectorBase<Vec3>;
-%template(VectorViewVec3)    SimTK::VectorView_<Vec3>;
+%define EXTEND_AND_TEMPLATE_VEC(S)
+%extend RowVectorBase<Vec ## S> {
+        Vec ## S __getitem__(int i) {
+            if(i >= $self->nelt())
+                throw std::out_of_range{"Index out of Range."};
+
+            return $self->getElt(0, i);
+        }
+
+        void __setitem__(int i, Vec ## S value) {
+            if(i >= $self->nelt())
+                throw std::out_of_range{"Index out of Range."};
+
+            $self->updElt(0, i) = value;
+        }
+
+}
+%extend RowVector_<Vec ## S> {
+        RowVector_(const std::vector<Vec ## S>& row) {
+            return new RowVector_<Vec ## S>{static_cast<int>(row.size()),
+                                        row.data()};
+        }
+
+        Vector_<Vec ## S> transpose() {
+            Vector_<Vec ## S> colVec{static_cast<int>($self->nelt())};
+            for(int i = 0; i < colVec.nelt(); ++i)
+                colVec[i] = $self->operator[](i);
+            return colVec;
+        }
+}
+%extend VectorBase<Vec ## S> {
+        Vec ## S __getitem__(int i) {
+            if(i >= $self->nelt())
+                throw std::out_of_range{"Index out of Range."};
+
+            return $self->getElt(i, 0);
+        }
+
+        void __setitem__(int i, Vec ## S value) {
+            if(i >= $self->nelt())
+                throw std::out_of_range{"Index out of Range."};
+
+            $self->updElt(i, 0) = value;
+        }
+}
+%extend Vector_<Vec ## S> {
+        Vector_(const std::vector<Vec ## S>& row) {
+            return new Vector_<Vec ## S>{static_cast<int>(row.size()),
+                                     row.data()};
+        }
+
+        RowVector_<Vec ## S> transpose() {
+            RowVector_<Vec ## S> rowVec{static_cast<int>($self->nelt())};
+            for(int i = 0; i < rowVec.nelt(); ++i)
+                rowVec[i] = $self->operator[](i);
+            return rowVec;
+        }
+}
+%template(MatrixBaseVec ## S)    SimTK::MatrixBase<Vec ## S>;
+%template(MatrixViewVec ## S)    SimTK::MatrixView_<Vec ## S>;
+%template(MatrixVec ## S)        SimTK::Matrix_<Vec ## S>;
+%template(VectorBaseVec ## S)    SimTK::VectorBase<Vec ## S>;
+%template(VectorViewVec ## S)    SimTK::VectorView_<Vec ## S>;
 // Following is wrapped few lines below.
-// %template(VectorVec3)        SimTK::Vector_<Vec3>;
-%template(RowVectorBaseVec3) SimTK::RowVectorBase<Vec3>;
-%template(RowVectorViewVec3) SimTK::RowVectorView_<Vec3>;
-%template(RowVectorOfVec3)     SimTK::RowVector_<Vec3>;
+// %template(VectorVec ## S)        SimTK::Vector_<Vec ## S>;
+%template(RowVectorBaseVec ## S) SimTK::RowVectorBase<Vec ## S>;
+%template(RowVectorViewVec ## S) SimTK::RowVectorView_<Vec ## S>;
+%template(RowVectorOfVec ## S)   SimTK::RowVector_<Vec ## S>;
+%enddef
+
+namespace SimTK {
+EXTEND_AND_TEMPLATE_VEC(3)
+EXTEND_AND_TEMPLATE_VEC(4)
 }
 
 %include <SWIGSimTK/SpatialAlgebra.h>
@@ -170,6 +177,8 @@ namespace SimTK {
 %template(VectorOfSpatialVec) Vector_<SpatialVec>;
 %template(VectorOfVec3) Vector_<Vec3>;
 %template(MatrixOfSpatialVec) Matrix_<SpatialVec>;
+
+%template(VectorOfVec4) Vector_<Vec4>;
 }
 
 %include <SWIGSimTK/Rotation.h>
@@ -192,11 +201,11 @@ namespace SimTK {
     }
 }
 
+// Quaternion
 %include <SWIGSimTK/Quaternion.h>
 namespace SimTK {
 %template(Quaternion) SimTK::Quaternion_<double>;
 }
-
 
 // Transform
 %include <SWIGSimTK/Transform.h>
