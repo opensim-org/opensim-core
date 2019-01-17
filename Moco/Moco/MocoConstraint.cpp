@@ -50,6 +50,8 @@ void MocoConstraintInfo::printDescription(std::ostream& stream) const {
     stream << ". bounds: ";
     for (int i = 0; i < (int)bounds.size(); ++i) {
         bounds[i].printDescription(stream);
+        if (i < (int)bounds.size() - 1)
+            stream << ", ";
     }
     stream << std::endl;
 }
