@@ -447,7 +447,7 @@ record(const SimTK::State& s)
             double tolConstraints = 1e-6;
             bool incompleteModel = false;
             string msgIncomplete = "The model appears unsuitable for static optimization.\nTry appending the model with additional force(s) or locking joint(s) to reduce the following acceleration constraint violation(s):\n";
-            SimTK::Vector constraints;
+            SimTK::Vector constraints(target.getNumConstraints());
             target.constraintFunc(_parameters,true,constraints);
 
             auto coordinates = _modelWorkingCopy->getCoordinatesInMultibodyTreeOrder();

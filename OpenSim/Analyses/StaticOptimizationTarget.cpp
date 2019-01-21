@@ -140,9 +140,10 @@ prepareToOptimize(SimTK::State& s, double *x)
     for(int i=0; i<fSet.getSize(); i++) {
         ScalarActuator* act = dynamic_cast<ScalarActuator*>(&fSet.get(i));
         if( act ) {
-//            act->overrideActuation(s, true);
+            act->overrideActuation(s, false);
         }
     }
+
 #endif
 
     // return false to indicate that we still need to proceed with optimization
@@ -662,7 +663,6 @@ computeAcceleration(SimTK::State& s, const SimTK::Vector &parameters,SimTK::Vect
 {
     // double time = s.getTime();
 
-
     const ForceSet& fs = _model->getForceSet();
 #ifdef USE_LINEAR_CONSTRAINT_MATRIX
     for(int i=0,j=0;i<fs.getSize();i++)  {
@@ -673,27 +673,35 @@ computeAcceleration(SimTK::State& s, const SimTK::Vector &parameters,SimTK::Vect
          }
     }
 #else
-//    for(int i=0,j=0;i<fs.getSize();i++) {
-//        Muscle *mus = dynamic_cast<Muscle*>(&fs.get(i));
-//        if (mus){
-//            mus->overrideActuation(s, true);
-//            mus->setActivation(s, parameters[j]);
-//        }
-//    }
-//    _model->equilibrateMuscles(s);
-    for(int i=0,j=0;i<fs.getSize();i++)  {
-        ScalarActuator *act = dynamic_cast<ScalarActuator*>(&fs.get(i));
-         if( act ) {
-             act->setOverrideActuation(s, parameters[j] * _optimalForce[j]);
-             j++;
-         }
+    for(int i=0,j=0;i<fs.getSize();i++) {
+        Muscle *mus = dynamic_cast<Muscle*>(&fs.get(i));
+        if (mus){
+            mus->setActivation(s, parameters[j]);
+            ++j;
+        }
+    }
+    try{
+        _model->equilibrateMuscles(s);
+    } catch (const Exception& x) {
+        // If the muscle falls into some weird numerical error, try to just slightly change the activations
+        for(int i=0,j=0;i<fs.getSize();i++) {
+            Muscle *mus = dynamic_cast<Muscle*>(&fs.get(i));
+            if (mus){
+                if (parameters[j] < 1)
+                    mus->setActivation(s, parameters[j]+.001);
+                else
+                    mus->setActivation(s, parameters[j]-.001);
+                ++j;
+            }
+        }
+        _model->equilibrateMuscles(s);
     }
 #endif
     _model->getMultibodySystem().realize(s,SimTK::Stage::Acceleration);
 
     SimTK::Vector udot = _model->getMatterSubsystem().getUDot(s);
 
-    for(int i=0; i<_accelerationIndices.getSize(); i++) 
+    for(int i=0; i<_accelerationIndices.getSize(); i++)
         rAccel[i] = udot[_accelerationIndices[i]];
 
     //QueryPerformanceCounter(&stop);
