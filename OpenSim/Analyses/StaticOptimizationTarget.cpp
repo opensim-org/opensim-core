@@ -684,6 +684,7 @@ computeAcceleration(SimTK::State& s, const SimTK::Vector &parameters,SimTK::Vect
         _model->equilibrateMuscles(s);
     } catch (const Exception& x) {
         // If the muscle falls into some weird numerical error, try to just slightly change the activations
+        // and reprocess it once, if it fails again in equilibrateMuscles, it throws the usual error
         for(int i=0,j=0;i<fs.getSize();i++) {
             Muscle *mus = dynamic_cast<Muscle*>(&fs.get(i));
             if (mus){
