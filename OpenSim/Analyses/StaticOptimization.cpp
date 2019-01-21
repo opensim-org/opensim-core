@@ -376,6 +376,8 @@ record(const SimTK::State& s)
     
     target.setParameterLimits(lowerBounds, upperBounds);
 
+    _parameters = 0.02; // Set initial guess to zeros (min activation is 0.01, and for central difference make it is not lower bound)
+
     // Static optimization
     _modelWorkingCopy->getMultibodySystem().realize(sWorkingCopy,SimTK::Stage::Velocity);
     target.prepareToOptimize(sWorkingCopy, &_parameters[0]); // Use previous solution as initial guess
@@ -587,7 +589,7 @@ int StaticOptimization::begin(const SimTK::State& s )
         _forceReporter->updForceStorage().reset();
 
         _parameters.resize(_modelWorkingCopy->getNumControls());
-        _parameters = 0;
+        _parameters = 0.02;
     }
 
     _statesSplineSet=GCVSplineSet(5,_statesStore);
