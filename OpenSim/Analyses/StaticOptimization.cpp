@@ -379,7 +379,7 @@ record(const SimTK::State& s)
 
     // Static optimization
     _modelWorkingCopy->getMultibodySystem().realize(sWorkingCopy,SimTK::Stage::Velocity);
-    target.prepareToOptimize(sWorkingCopy, &_parameters[0]);
+    target.prepareToOptimize(sWorkingCopy, &_parameters[0]); // Use previous solution as initial guess
 
     //LARGE_INTEGER start;
     //LARGE_INTEGER stop;

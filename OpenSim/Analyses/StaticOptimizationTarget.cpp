@@ -93,6 +93,7 @@ prepareToOptimize(SimTK::State& s, double *x)
 #ifdef USE_LINEAR_CONSTRAINT_MATRIX
     // COMPUTE MAX ISOMETRIC FORCE
     
+    int imus(0);
     for(int i=0, j=0;i<fSet.getSize();i++) {
         ScalarActuator* act = dynamic_cast<ScalarActuator*>(&fSet.get(i));
          if( act ) {
@@ -102,11 +103,12 @@ prepareToOptimize(SimTK::State& s, double *x)
                 //ActivationFiberLengthMuscle *aflmus = dynamic_cast<ActivationFiberLengthMuscle*>(mus);
                 if(mus && _useMusclePhysiology) {
                     _model->setAllControllersEnabled(true);
-                    fOpt = mus->calcInextensibleTendonActiveFiberForce(s, 1.0);
+                    fOpt = mus->calcInextensibleTendonActiveFiberForce(s, x[imus]) / x[imus];
                     _model->setAllControllersEnabled(false);
                 } else {
                     fOpt = mus->getMaxIsometricForce();
                 }
+                imus++;
              } else {
                   fOpt = act->getOptimalForce();
              }
@@ -130,7 +132,7 @@ prepareToOptimize(SimTK::State& s, double *x)
     for(int p=0; p<np; p++) {
         pVector[p] = 1;
         computeConstraintVector(s, pVector, cVector);
-        for(int c=0; c<nc; c++) _constraintMatrix(c,p) = (cVector[c] - _constraintVector[c]);
+        for(int c=0; c<nc; c++) _constraintMatrix(c,p) = cVector[c];
         pVector[p] = 0;
     }
 #else
