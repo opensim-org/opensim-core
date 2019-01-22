@@ -19,6 +19,7 @@
 
 #include "DeGrooteFregly2016MuscleStandalone.h"
 #include "InverseMuscleSolverMotionData.h"
+#include "../MocoUtilities.h"
 
 #include <tropter/tropter.h>
 
@@ -405,9 +406,9 @@ GlobalStaticOptimization::solve() const {
             const auto foundCoordPath = coordsToInclude.find(coordPath);
             if (foundCoordPath != coordsToInclude.end()) {
                 OPENSIM_THROW_IF_FRMOBJ(coord->isConstrained(state), Exception,
-                        "Coordinate '" + coordPath + "' is constrained and "
+                        format("Coordinate '%s' is constrained and "
                         "thus cannot be listed under "
-                        "'coordinates_to_include'.");
+                        "'coordinates_to_include'.", coordPath));
                 coordsToActuate.push_back(coord.get());
                 // No longer need to search for this coordinate.
                 coordsToInclude.erase(foundCoordPath);
@@ -445,8 +446,8 @@ GlobalStaticOptimization::solve() const {
     if (get_create_reserve_actuators() != -1) {
         const auto& optimalForce = get_create_reserve_actuators();
         OPENSIM_THROW_IF(optimalForce <= 0, Exception,
-                "Invalid value (" + std::to_string(optimalForce)
-                + ") for create_reserve_actuators; should be -1 or positive.");
+                format("Invalid value (%g) for create_reserve_actuators; "
+                       "should be -1 or positive.", optimalForce));
 
         std::cout << "Adding reserve actuators with an optimal force of "
                 << optimalForce << "..." << std::endl;
@@ -483,8 +484,8 @@ GlobalStaticOptimization::solve() const {
     double finalTime;
     int numMeshPoints;
     OPENSIM_THROW_IF(get_mesh_point_frequency() <= 0, Exception,
-            "Invalid value (" + std::to_string(get_mesh_point_frequency()) +
-            ") for mesh_point_frequency; must be positive.");
+            format("Invalid value (%g) for mesh_point_frequency; "
+                   "must be positive.", get_mesh_point_frequency()));
     determineInitialAndFinalTimes(kinematics, netGeneralizedForces,
             get_mesh_point_frequency(),
             initialTime, finalTime, numMeshPoints);

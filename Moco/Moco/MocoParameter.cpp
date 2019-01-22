@@ -17,6 +17,7 @@
  * -------------------------------------------------------------------------- */
 
 #include "MocoParameter.h"
+#include "MocoUtilities.h"
 #include <OpenSim/Simulation/Model/Model.h>
 
 using namespace OpenSim;
@@ -101,20 +102,20 @@ void MocoParameter::initializeOnModel(Model& model) const {
                 Exception, "Must specify a property element for "
                 "non-scalar propeties.");
             OPENSIM_THROW_IF_FRMOBJ(get_property_element() < 0, Exception,
-                "Expected property element to be non-negative, but "
-                + std::to_string(get_property_element()) + " was provided.");
+                format("Expected property element to be non-negative, "
+                       "but %i was provided.", get_property_element()));
             if (auto* p = dynamic_cast<Property<SimTK::Vec3>*>(ap)) {
                 OPENSIM_THROW_IF_FRMOBJ(get_property_element() > 2, Exception,
-                    "The property element for a Vec3 property must be between "
-                    "0 and 2, but the value "
-                    + std::to_string(get_property_element()) + "was provided.");
+                        format("The property element for a Vec3 property must "
+                               "be between 0 and 2, but the value %i was "
+                               "provided.", get_property_element()));
                 m_data_type = Type_Vec3;
             }
             else if (auto* p = dynamic_cast<Property<SimTK::Vec6>*>(ap)) {
                 OPENSIM_THROW_IF_FRMOBJ(get_property_element() > 5, Exception,
-                    "The property element for a Vec6 property must be between "
-                    "0 and 5, but the value "
-                    + std::to_string(get_property_element()) + "was provided.");
+                        format("The property element for a Vec6 property must "
+                               "be between 0 and 5, but the value %i was "
+                               "provided.", get_property_element()));
                 m_data_type = Type_Vec6;
             }
             else {

@@ -86,7 +86,7 @@ const MocoVariableInfo& MocoPhase::getStateInfo(
 
     int idx = getProperty_state_infos().findIndexForName(name);
     OPENSIM_THROW_IF_FRMOBJ(idx == -1, Exception,
-            "No info available for state '" + name + "'.");
+            format("No info available for state '%s'.", name));
     return get_state_infos(idx);
 }
 const MocoVariableInfo& MocoPhase::getControlInfo(
@@ -94,7 +94,7 @@ const MocoVariableInfo& MocoPhase::getControlInfo(
 
     int idx = getProperty_control_infos().findIndexForName(name);
     OPENSIM_THROW_IF_FRMOBJ(idx == -1, Exception,
-            "No info available for control '" + name + "'.");
+            format("No info available for control '%s'.", name));
     return get_control_infos(idx);
 }
 const MocoParameter& MocoPhase::getParameter(
@@ -102,7 +102,7 @@ const MocoParameter& MocoPhase::getParameter(
 
     int idx = getProperty_parameters().findIndexForName(name);
     OPENSIM_THROW_IF_FRMOBJ(idx == -1, Exception,
-            "No parameter with name '" + name + "' found.");
+            format("No parameter with name '%s' found.", name));
     return get_parameters(idx);
 }
 MocoParameter& MocoPhase::updParameter(
@@ -110,21 +110,21 @@ MocoParameter& MocoPhase::updParameter(
 
     int idx = getProperty_parameters().findIndexForName(name);
     OPENSIM_THROW_IF_FRMOBJ(idx == -1, Exception,
-        "No parameter with name '" + name + "' found.");
+            format("No parameter with name '%s' found.", name));
     return upd_parameters(idx);
 }
 const MocoCost& MocoPhase::getCost(const std::string& name) const {
 
     int idx = getProperty_costs().findIndexForName(name);
     OPENSIM_THROW_IF_FRMOBJ(idx == -1, Exception,
-            "No cost with name '" + name + "' found.");
+            format("No cost with name '%s' found.", name));
     return get_costs(idx);
 }
 MocoCost& MocoPhase::updCost(const std::string& name) {
 
     int idx = updProperty_costs().findIndexForName(name);
     OPENSIM_THROW_IF_FRMOBJ(idx == -1, Exception,
-            "No cost with name '" + name + "' found.");
+            format("No cost with name '%s' found.", name));
     return upd_costs(idx);
 }
 const MocoPathConstraint& MocoPhase::getPathConstraint(
@@ -132,7 +132,7 @@ const MocoPathConstraint& MocoPhase::getPathConstraint(
 
     int idx = getProperty_path_constraints().findIndexForName(name);
     OPENSIM_THROW_IF_FRMOBJ(idx == -1, Exception,
-            "No path constraint with name '" + name + "' found.");
+            format("No path constraint with name '%s' found.", name));
     return get_path_constraints(idx);
 }
 MocoPathConstraint& MocoPhase::updPathConstraint(
@@ -140,7 +140,7 @@ MocoPathConstraint& MocoPhase::updPathConstraint(
 
     int idx = updProperty_path_constraints().findIndexForName(name);
     OPENSIM_THROW_IF_FRMOBJ(idx == -1, Exception,
-            "No path constraint with name '" + name + "' found.");
+            format("No path constraint with name '%s' found.", name));
     return upd_path_constraints(idx);
 }
 
