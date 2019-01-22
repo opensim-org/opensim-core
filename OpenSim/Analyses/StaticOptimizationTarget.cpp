@@ -38,7 +38,7 @@ using SimTK::Vector;
 using SimTK::Matrix;
 using SimTK::Real;
 
-//#define USE_LINEAR_CONSTRAINT_MATRIX
+#define USE_LINEAR_CONSTRAINT_MATRIX
 
 const double StaticOptimizationTarget::SMALLDX = 1.0e-14;
 //const double StaticOptimizationTarget::_activationExponent = 2.0;
@@ -89,12 +89,87 @@ StaticOptimizationTarget(const SimTK::State& s, Model *aModel,int aNP,int aNC, b
 bool StaticOptimizationTarget::
 prepareToOptimize(SimTK::State& s, double *x)
 {
+    int np = getNumParameters();
+    int nc = getNumConstraints();
+
+    // Compute the target acceleration
+    _targetAcceleration.resize(nc);
+    auto coordinates = _model->getCoordinatesInMultibodyTreeOrder();
+    for(int i=0; i<getNumConstraints(); i++) {
+        const Coordinate& coord = *coordinates[static_cast<size_t>(_accelerationIndices[i])];
+        int ind = _statesStore->getStateIndex(coord.getSpeedName(), 0);
+        if (ind < 0){
+            // get the full coordinate speed state variable path name
+            string fullname = coord.getStateVariableNames()[1];
+            ind = _statesStore->getStateIndex(fullname, 0);
+            if (ind < 0){
+                string msg = "StaticOptimizationTarget::computeConstraintVector: \n";
+                msg+= "target motion for coordinate '";
+                msg += coord.getName() + "' not found.";
+                throw Exception(msg);
+            }
+        }
+        Function& targetFunc = _statesSplineSet.get(ind);
+        std::vector<int> derivComponents(1,0); //take first derivative
+        _targetAcceleration[i] = targetFunc.calcDerivative(derivComponents, SimTK::Vector(1, s.getTime()));
+    }
+
+    // Initialize the system at given activations and state
     const ForceSet& fSet = _model->getForceSet();
+    for(int i=0,j=0;i<fSet.getSize();i++) {
+        Muscle *mus = dynamic_cast<Muscle*>(&fSet.get(i));
+        if (mus){
+            mus->overrideActuation(s, false);
+            mus->setActivation(s, x[j]);
+            ++j;
+        }
+    }
+    _model->equilibrateMuscles(s); // No need to test for error, since it is the same activation as previous state
+    _model->getMultibodySystem().realize(s,SimTK::Stage::Velocity);
+
 #ifdef USE_LINEAR_CONSTRAINT_MATRIX
+    // Compute passive forces at state s
+    Vector passiveForces(np);
+    for(int i=0, j=0; i<fSet.getSize(); i++) {
+        Muscle* mus = dynamic_cast<Muscle*>(&fSet.get(i));
+        if( mus ) {
+            passiveForces[j++] = mus->getPassiveFiberForceAlongTendon(s);
+        }
+    }
+
+    // Compute linear qqdot from the passive forces
+    Vector qddotPassive(nc);
+    for(int i=0,j=0;i<fSet.getSize();i++)  {
+        Muscle* mus = dynamic_cast<Muscle*>(&fSet.get(i));
+         if( mus ) {
+             mus->overrideActuation(s, true);
+             mus->setOverrideActuation(s, passiveForces[j]);
+             ++j;
+         }
+    }
+    _model->getMultibodySystem().realize(s,SimTK::Stage::Acceleration);
+    SimTK::Vector udot = _model->getMatterSubsystem().getUDot(s);
+    for(int i=0; i<_accelerationIndices.getSize(); i++)
+        qddotPassive[i] = udot[_accelerationIndices[i]];
+
+    // Compute linear qqdot from the non linear effects
+    Vector qddotNonLinear(nc);
+    for(int i=0,j=0;i<fSet.getSize();i++)  {
+        Muscle* mus = dynamic_cast<Muscle*>(&fSet.get(i));
+         if( mus ) {
+             mus->setOverrideActuation(s, 0);
+             j++;
+         }
+    }
+    _model->getMultibodySystem().realize(s,SimTK::Stage::Acceleration);
+    udot = _model->getMatterSubsystem().getUDot(s);
+    for(int i=0; i<_accelerationIndices.getSize(); i++)
+        qddotNonLinear[i] = udot[_accelerationIndices[i]];
+
+
+
     // COMPUTE MAX ISOMETRIC FORCE
-    
-    int imus(0);
-    for(int i=0, j=0;i<fSet.getSize();i++) {
+    for(int i=0, j=0, imus=0;i<fSet.getSize();i++) {
         ScalarActuator* act = dynamic_cast<ScalarActuator*>(&fSet.get(i));
          if( act ) {
              double fOpt;
@@ -103,7 +178,7 @@ prepareToOptimize(SimTK::State& s, double *x)
                 //ActivationFiberLengthMuscle *aflmus = dynamic_cast<ActivationFiberLengthMuscle*>(mus);
                 if(mus && _useMusclePhysiology) {
                     _model->setAllControllersEnabled(true);
-                    fOpt = mus->calcInextensibleTendonActiveFiberForce(s, x[imus]) / x[imus];
+                    fOpt = mus->getActiveFiberForceAlongTendon(s) / x[imus]; // compute an approximative 100% (exactly true at x[imus])
                     _model->setAllControllersEnabled(false);
                 } else {
                     fOpt = mus->getMaxIsometricForce();
@@ -116,25 +191,18 @@ prepareToOptimize(SimTK::State& s, double *x)
          }
     }
 
-    //cout<<"Computing linear constraint matrix..."<<endl;
-    int np = getNumParameters();
-    int nc = getNumConstraints();
-
-    _constraintMatrix.resize(nc,np);
-    _constraintVector.resize(nc);
-
-    Vector pVector(np), cVector(nc);
-
     // Build linear constraint matrix and constant constraint vector
+    _constraintMatrix.resize(nc,np);
+    Vector pVector(np), cVector(nc);
     pVector = 0;
-    computeConstraintVector(s, pVector,_constraintVector);
-
     for(int p=0; p<np; p++) {
         pVector[p] = 1;
-        computeConstraintVector(s, pVector, cVector);
-        for(int c=0; c<nc; c++) _constraintMatrix(c,p) = cVector[c];
+        computeAcceleration(s, pVector, cVector);
+        for(int c=0; c<nc; c++) _constraintMatrix(c,p) = cVector[c] - qddotNonLinear[c];
         pVector[p] = 0;
     }
+    _constraintVector = _targetAcceleration - qddotPassive;
+
 #else
     // Set modeling options for Actuators to be overridden
     for(int i=0; i<fSet.getSize(); i++) {
@@ -555,7 +623,11 @@ constraintFunc(const SimTK::Vector &parameters, const bool new_parameters, SimTK
 #ifdef USE_LINEAR_CONSTRAINT_MATRIX
     // Use precomputed constraint matrix
     //cout<<"Computing constraints assuming linear dependence..."<<endl;
-    constraints = _constraintMatrix * parameters + _constraintVector;
+
+    // That is what really happening
+    // activeQddot = _constraintMatrix * parameters + qddotAtActivation0
+    // const = targetAcceleration - (activeQddot + passiveQddot() - self.NlQddot())
+    constraints = _constraintMatrix * parameters - _constraintVector;
 #else
     // Evaluate constraint function for all constraints and pick the appropriate component
     SimTK::State state(*this->getCurrentState());
@@ -592,26 +664,7 @@ computeConstraintVector(SimTK::State& s, const Vector &parameters,Vector &constr
     auto coordinates = _model->getCoordinatesInMultibodyTreeOrder();
 
     // CONSTRAINTS
-    for(int i=0; i<getNumConstraints(); i++) {
-        const Coordinate& coord = *coordinates[_accelerationIndices[i]];
-        int ind = _statesStore->getStateIndex(coord.getSpeedName(), 0);
-        if (ind < 0){
-            // get the full coordinate speed state variable path name
-            string fullname = coord.getStateVariableNames()[1];
-            ind = _statesStore->getStateIndex(fullname, 0);
-            if (ind < 0){
-                string msg = "StaticOptimizationTarget::computeConstraintVector: \n";
-                msg+= "target motion for coordinate '";
-                msg += coord.getName() + "' not found.";
-                throw Exception(msg);
-            }
-        }
-        Function& targetFunc = _statesSplineSet.get(ind);
-        std::vector<int> derivComponents(1,0); //take first derivative
-        double targetAcceleration = targetFunc.calcDerivative(derivComponents, SimTK::Vector(1, s.getTime()));
-        //std::cout << "computeConstraintVector:" << targetAcceleration << " - " <<  actualAcceleration[i] << endl;
-        constraints[i] = targetAcceleration - actualAcceleration[i];
-    }
+    constraints = _targetAcceleration - actualAcceleration;
 
     //QueryPerformanceCounter(&stop);
     //double duration = (double)(stop.QuadPart-start.QuadPart)/(double)frequency.QuadPart;
