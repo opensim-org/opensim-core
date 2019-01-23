@@ -58,7 +58,13 @@ protected:
                     "Disable all controllers in the model.");
         }
         m_state = m_model.getWorkingState();
-        m_svNamesInSysOrder = createStateVariableNamesInSystemOrder(m_model);
+
+        OPENSIM_THROW_IF(
+                !m_model.getMatterSubsystem().getUseEulerAngles(m_state),
+                Exception, "Quaternions are not supported.");
+
+        m_svNamesInSysOrder = createStateVariableNamesInSystemOrder(m_model,
+                m_yIndexMap);
 
         addStateVariables();
         addControlVariables();
@@ -75,6 +81,7 @@ protected:
             this->add_state(svName, convertBounds(info.getBounds()),
                     convertBounds(info.getInitialBounds()),
                     convertBounds(info.getFinalBounds()));
+
         }
     }
 
@@ -255,6 +262,35 @@ protected:
         this->applyParametersToModel(parameters);
     }
 
+    void setSimTKState(const T& time,
+            Eigen::Ref<const tropter::VectorX<T>> states,
+            SimTK::State& simTKState,
+            bool setControlsToNaN = false) const {
+        m_state.setTime(time);
+        // We must skip over unused slots in the SimTK::State that are
+        for (int isv = 0; isv < states.size(); ++isv) {
+            m_state.updY()[m_yIndexMap.at(isv)] = states[isv];
+        }
+
+        if (setControlsToNaN) m_model.updControls(m_state).setToNaN();
+    }
+
+    void setSimTKState(const T& time,
+            Eigen::Ref<const tropter::VectorX<T>> states,
+            Eigen::Ref<const tropter::VectorX<T>> controls,
+            SimTK::State& simTKState) const {
+        this->setSimTKState(time, states, simTKState, false);
+
+        // Set the controls for actuators in the OpenSim model.
+        if (m_model.getNumControls()) {
+            auto& osimControls = m_model.updControls(m_state);
+            std::copy_n(controls.data(), controls.size(),
+                    osimControls.updContiguousScalarData());
+            m_model.realizeVelocity(m_state);
+            m_model.setControls(m_state, osimControls);
+        }
+    }
+
     void calc_integral_cost(const tropter::Input<T>& in,
             T& integrand) const override {
         // Unpack variables.
@@ -265,21 +301,9 @@ protected:
 
         // TODO would it make sense to a vector of States, one for each mesh
         // point, so that each can preserve their cache?
-        m_state.setTime(time);
-        std::copy_n(states.data(), states.size(),
-                m_state.updY().updContiguousScalarData());
+        this->setSimTKState(time, states, controls, m_state);
 
-        // Set the controls for actuators in the OpenSim model.
-        if (m_model.getNumControls()) {
-            auto& osimControls = m_model.updControls(m_state);
-            std::copy_n(controls.data(), controls.size(),
-                    osimControls.updContiguousScalarData());
-            m_model.realizePosition(m_state);
-            m_model.setControls(m_state, osimControls);
-        } else {
-            m_model.realizePosition(m_state);
-        }
-
+        m_model.realizePosition(m_state);
         integrand = m_mocoProbRep.calcIntegralCost(m_state);
 
         if (m_mocoTropterSolver.get_minimize_lagrange_multipliers()) {
@@ -297,11 +321,7 @@ protected:
             const tropter::VectorX<T>& /*parameters*/,
             T& cost) const override {
         // TODO avoid all of this if there are no endpoint costs.
-        m_state.setTime(final_time);
-        std::copy(states.data(), states.data() + states.size(),
-                m_state.updY().updContiguousScalarData());
-        // TODO cannot use control signals...
-        m_model.updControls(m_state).setToNaN();
+        this->setSimTKState(final_time, states, m_state, true);
         cost = m_mocoProbRep.calcEndpointCost(m_state);
     }
 
@@ -311,6 +331,7 @@ protected:
     mutable SimTK::State m_state;
 
     std::vector<std::string> m_svNamesInSysOrder;
+    std::unordered_map<int, int> m_yIndexMap;
     mutable SimTK::Vector_<SimTK::SpatialVec> constraintBodyForces;
     mutable SimTK::Vector constraintMobilityForces;
     mutable SimTK::Vector qdot;
@@ -409,22 +430,7 @@ public:
         auto& model = this->m_model;
         auto& simTKState = this->m_state;
 
-        simTKState.setTime(in.time);
-        std::copy_n(states.data(), states.size(),
-                simTKState.updY().updContiguousScalarData());
-        //
-        // TODO do not copy? I think this will still make a copy:
-        // TODO use m_state.updY() = SimTK::Vector(states.size(), states.data(), true);
-        //m_state.setY(SimTK::Vector(states.size(), states.data(), true));
-
-        // Set the controls for actuators in the OpenSim model.
-        if (model.getNumControls()) {
-            auto& osimControls = model.updControls(simTKState);
-            std::copy_n(controls.data(), controls.size(),
-                    osimControls.updContiguousScalarData());
-            model.realizeVelocity(simTKState);
-            model.setControls(simTKState, osimControls);
-        }
+        this->setSimTKState(in.time, states, controls, simTKState);
 
         // If enabled constraints exist in the model, compute accelerations
         // based on Lagrange multipliers.
@@ -554,8 +560,6 @@ public:
                 "constraints.");
         // Add adjuncts for udot, which we call "w".
         int NU = this->m_state.getNU();
-        OPENSIM_THROW_IF(NU != this->m_state.getNQ(), Exception,
-                "Quaternions are not supported.");
         for (int iudot = 0; iudot < NU; ++iudot) {
             auto name = this->m_svNamesInSysOrder[iudot];
             auto leafpos = name.find("value");
@@ -599,21 +603,7 @@ public:
 
         // Multibody dynamics: "F - ma = 0"
         // --------------------------------
-        std::copy_n(states.data(), states.size(),
-                simTKState.updY().updContiguousScalarData());
-
-        // TODO do not copy? I think this will still make a copy:
-        // TODO use m_state.updY() = SimTK::Vector(states.size(), states.data(), true);
-        //m_state.setY(SimTK::Vector(states.size(), states.data(), true));
-
-        if (model.getNumControls()) {
-            auto& osimControls = model.updControls(simTKState);
-            std::copy_n(controls.data(), controls.size(),
-                    osimControls.updContiguousScalarData());
-
-            model.realizeVelocity(simTKState);
-            model.setControls(simTKState, osimControls);
-        }
+        this->setSimTKState(in.time, states, controls, simTKState);
 
         // TODO: Update to support kinematic constraints, using
         // this->calcKinematicConstraintForces()
