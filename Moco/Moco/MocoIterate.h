@@ -545,6 +545,12 @@ public:
     /// If the solver did not succeed, call this to enable read and write
     /// access to the (failed) solution. If the solver succeeded, then the
     /// solution is already unsealed.
+    /// @note In Python, you must invoke this function on a separate line:
+    /// @code
+    /// solution = moco.solve()
+    /// solution.unseal()
+    /// @endcode
+    /// Otherwise, Moco will cause a crash.
     MocoSolution& unseal() { MocoIterate::setSealed(false); return *this; }
     MocoSolution& seal() { MocoIterate::setSealed(true); return *this; }
     bool isSealed() const { return MocoIterate::isSealed(); }
