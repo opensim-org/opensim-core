@@ -96,13 +96,22 @@ OSIMMOCO_API void removeMuscles(Model& model);
 
 /// The map provides the index of each state variable in
 /// SimTK::State::getY() from its each state variable path string.
+/// Empty slots in Y (e.g., for quaternions) are ignored.
 OSIMMOCO_API
 std::vector<std::string> createStateVariableNamesInSystemOrder(
         const Model& model);
 
 #ifndef SWIG
+/// Same as above, but you can obtain a map from the returned state variable
+/// names to the index in SimTK::State::getY() that accounts for empty slots
+/// in Y.
+OSIMMOCO_API
+std::vector<std::string> createStateVariableNamesInSystemOrder(
+        const Model& model, std::unordered_map<int, int>& yIndexMap);
+
 /// The map provides the index of each state variable in
 /// SimTK::State::getY() from its state variable path string.
+OSIMMOCO_API
 std::unordered_map<std::string, int> createSystemYIndexMap(const Model& model);
 #endif
 

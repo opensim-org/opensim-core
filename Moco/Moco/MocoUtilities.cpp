@@ -365,19 +365,32 @@ void OpenSim::removeMuscles(Model& model) {
 
 std::vector<std::string> OpenSim::createStateVariableNamesInSystemOrder(
         const Model& model) {
+    std::unordered_map<int, int> yIndexMap;
+    return createStateVariableNamesInSystemOrder(model, yIndexMap);
+}
+std::vector<std::string> OpenSim::createStateVariableNamesInSystemOrder(
+        const Model& model, std::unordered_map<int, int>& yIndexMap) {
+    yIndexMap.clear();
     std::vector<std::string> svNamesInSysOrder;
     auto s = model.getWorkingState();
     const auto svNames = model.getStateVariableNames();
     s.updY() = 0;
+    int offset = 0;
     for (int iy = 0; iy < s.getNY(); ++iy) {
         s.updY()[iy] = SimTK::NaN;
         const auto svValues = model.getStateVariableValues(s);
         for (int isv = 0; isv < svNames.size(); ++isv) {
             if (SimTK::isNaN(svValues[isv])) {
                 svNamesInSysOrder.push_back(svNames[isv]);
+                yIndexMap.emplace(std::make_pair(iy, iy + offset));
                 s.updY()[iy] = 0;
                 break;
             }
+        }
+        if (SimTK::isNaN(s.updY()[iy])) {
+            // If we reach here, this is an unused slot for a quaternion.
+            ++offset;
+            s.updY()[iy] = 0;
         }
     }
     SimTK_ASSERT2_ALWAYS((size_t)svNames.size() == svNamesInSysOrder.size(),
@@ -401,6 +414,10 @@ OpenSim::createSystemYIndexMap(const Model& model) {
                 s.updY()[iy] = 0;
                 break;
             }
+        }
+        if (SimTK::isNaN(s.updY()[iy])) {
+            // If we reach here, this is an unused slot for a quaternion.
+            s.updY()[iy] = 0;
         }
     }
     SimTK_ASSERT2_ALWAYS(svNames.size() == (int)sysYIndices.size(),
