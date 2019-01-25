@@ -16,9 +16,10 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
- #include "MocoMarkerTrackingCost.h"
- #include <OpenSim/Simulation/Model/Model.h>
- #include <OpenSim/Simulation/Model/Marker.h>
+#include "MocoMarkerTrackingCost.h"
+#include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/Model/Marker.h>
+#include "MocoUtilities.h"
 
  using namespace OpenSim;
 
