@@ -203,7 +203,7 @@ typename make_printable_return<std::string>::type
 make_printable(const std::string& x) { return x.c_str(); }
 
 /// Format a char array using (C interface; mainly for internal use).
-std::string format_c(const char*, ...);
+OSIMMOCO_API std::string format_c(const char*, ...);
 
 /// Format a string in the style of sprintf. For example, the code
 /// `format("%s %d and %d yields %d", "adding", 2, 2, 4)` will produce
