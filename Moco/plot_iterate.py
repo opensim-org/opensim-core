@@ -35,9 +35,6 @@ parser.add_argument('--common', action='store_true',
                     help="Plot only common data columns across files.")
 parser.add_argument('--title', action='store',
                     help="Set the title for the plot window")
-parser.add_argument('--nan_to_zero', action='store_true',
-                    help="Set NaN values in data to zeros")
-
 args = parser.parse_args()
 
 datafiles = args.file
@@ -60,8 +57,6 @@ common_cols = args.common
 
 window_title = args.title
 
-nan_to_zero = args.nan_to_zero
-
 data = list()
 column_names = list()
 curr_column_names = list()
@@ -74,15 +69,7 @@ for ifile, filepath in enumerate(datafiles):
             else:
                 break
     this_data = np.genfromtxt(filepath, names=True, delimiter='\t',
-                              skip_header=num_header_rows)
-    if nan_to_zero:
-        rows = this_data.size
-        cols = len(this_data[0])
-        for c in range(cols):
-            for r in range(rows):
-                if np.isnan(this_data[r][c]):
-                    this_data[r][c] = 0.0
-                    
+                              skip_header=num_header_rows)           
     data.append(this_data)
 
     if common_cols:
@@ -148,11 +135,11 @@ for i in range(num_plots):
     ax.set_title(plot_names[i])
     for idat, dat in enumerate(data):
         if column_names[i] in dat.dtype.names:
-            ax.plot(dat['time'], dat[column_names[i]])
+            ax.plot(dat['time'], dat[column_names[i]], 'o-', markersize=3)
         else:
             # If not plotting only common data commons, plot something so that 
             # the datafile colors are consistent across plots, but have
-            # nothing nothing show up on the graph.
+            # nothing show up on the graph.
             if not common_cols:
                 ax.plot(np.nan, np.nan)
     if i == 0:
