@@ -35,6 +35,8 @@ parser.add_argument('--common', action='store_true',
                     help="Plot only common data columns across files.")
 parser.add_argument('--title', action='store',
                     help="Set the title for the plot window")
+parser.add_argument('--nan_to_zero', action='store_true',
+                    help="Set NaN values in data to zeros")
 
 args = parser.parse_args()
 
@@ -58,6 +60,7 @@ common_cols = args.common
 
 window_title = args.title
 
+nan_to_zero = args.nan_to_zero
 
 data = list()
 column_names = list()
@@ -72,6 +75,14 @@ for ifile, filepath in enumerate(datafiles):
                 break
     this_data = np.genfromtxt(filepath, names=True, delimiter='\t',
                               skip_header=num_header_rows)
+    if nan_to_zero:
+        rows = this_data.size
+        cols = len(this_data[0])
+        for c in range(cols):
+            for r in range(rows):
+                if np.isnan(this_data[r][c]):
+                    this_data[r][c] = 0.0
+                    
     data.append(this_data)
 
     if common_cols:
