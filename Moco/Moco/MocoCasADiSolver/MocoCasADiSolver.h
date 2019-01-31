@@ -18,11 +18,12 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
+#include "../MocoSolver.h"
 #include "../osimMocoDLL.h"
 
-#include "../MocoSolver.h"
-
-class CasADiTranscription;
+namespace CasOC {
+class Problem;
+} // namespace CasOC
 
 namespace OpenSim {
 
@@ -30,31 +31,33 @@ namespace OpenSim {
 /// \f$ (e.g., no quaternions).
 class OSIMMOCO_API MocoCasADiSolver : public MocoSolver {
     OpenSim_DECLARE_CONCRETE_OBJECT(MocoCasADiSolver, MocoSolver);
+
 public:
     OpenSim_DECLARE_PROPERTY(num_mesh_points, int,
-    "The number of mesh points for discretizing the problem (default: 100).");
+            "The number of mesh points for discretizing the problem (default: "
+            "100).");
     OpenSim_DECLARE_PROPERTY(verbosity, int,
-    "0 for silent. 1 for only Muscollo's own output. "
-    "2 for output from CasADi and the underlying solver (default: 2).");
+            "0 for silent. 1 for only Muscollo's own output. "
+            "2 for output from CasADi and the underlying solver (default: 2).");
     OpenSim_DECLARE_PROPERTY(dynamics_mode, std::string,
-    "Dynamics are expressed as 'explicit' (default) or 'implicit' "
-    "differential equations.");
+            "Dynamics are expressed as 'explicit' (default) or 'implicit' "
+            "differential equations.");
     OpenSim_DECLARE_PROPERTY(optim_solver, std::string,
-    "The optimization solver for CasADi to use (default: ipopt).");
+            "The optimization solver for CasADi to use (default: ipopt).");
     OpenSim_DECLARE_PROPERTY(optim_max_iterations, int,
-    "Maximum number of iterations in the optimization solver "
-    "(-1 for solver's default).");
+            "Maximum number of iterations in the optimization solver "
+            "(-1 for solver's default).");
     OpenSim_DECLARE_PROPERTY(optim_convergence_tolerance, double,
-    "Tolerance used to determine if the objective is minimized "
-    "(-1 for solver's default)");
+            "Tolerance used to determine if the objective is minimized "
+            "(-1 for solver's default)");
     OpenSim_DECLARE_PROPERTY(optim_constraint_tolerance, double,
-    "Tolerance used to determine if the constraints are satisfied "
-    "(-1 for solver's default)");
+            "Tolerance used to determine if the constraints are satisfied "
+            "(-1 for solver's default)");
     OpenSim_DECLARE_PROPERTY(optim_hessian_approximation, std::string,
-    "'limited-memory' (default) for quasi-Newton, or 'exact' for full Newton.");
+            "'limited-memory' (default) for quasi-Newton, or 'exact' for full "
+            "Newton.");
     OpenSim_DECLARE_PROPERTY(optim_ipopt_print_level, int,
-    "IPOPT's verbosity (see IPOPT documentation).");
-
+            "IPOPT's verbosity (see IPOPT documentation).");
 
     MocoCasADiSolver();
 
@@ -101,10 +104,9 @@ protected:
     void resetProblemImpl(const MocoProblemRep&) const override {}
     MocoSolution solveImpl() const override;
 
-    std::unique_ptr<CasADiTranscription> createCasADiProblem() const;
+    std::unique_ptr<CasOC::Problem> createCasOCProblem() const;
 
 private:
-
     OpenSim_DECLARE_PROPERTY(guess_file, std::string,
             "A MocoIterate file storing an initial guess.");
 
@@ -118,6 +120,5 @@ private:
 };
 
 } // namespace OpenSim
-
 
 #endif // MOCO_MOCOCASADISOLVER_H

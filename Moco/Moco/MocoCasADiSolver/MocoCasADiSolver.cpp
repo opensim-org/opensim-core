@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- * OpenSim Muscollo: MocoCasADiSolver.cpp                                     *
+ * OpenSim Moco: MocoCasADiSolver.cpp                                         *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2017 Stanford University and the Authors                     *
  *                                                                            *
@@ -17,9 +17,10 @@
  * -------------------------------------------------------------------------- */
 
 #include "MocoCasADiSolver.h"
-#include "../MocoUtilities.h"
-#include "CasADiTrapezoidal.h"
 
+#include "../MocoUtilities.h"
+#include "CasOCProblem.h"
+#include "MocoCasADiMisc.h"
 #include <casadi/casadi.hpp>
 
 // TODO
@@ -35,7 +36,8 @@
 //   do not use time when computing cost and constraints.
 //   what is the performance benefit of removing time?
 // - improve sparsity pattern?
-// - Expected much better performance, b/c I thought we would not need to evaluate
+// - Expected much better performance, b/c I thought we would not need to
+// evaluate
 //   cost at time i when perturbing at time j, i \neq j..
 //   I can try to investigate this on my own.
 // - Is there a way to collect stats on how many times a function is called?
@@ -47,19 +49,18 @@
 // - TODO: clean up by separating problem from solver.
 //      Allow creating variables and supplying the casadi function for
 //      the DAEs, objective, etc.
+// TODO rename MocoCasAdiMisc.h file.
 
-using casadi::MX;
-using casadi::DM;
-using casadi::Sparsity;
-using casadi::Slice;
 using casadi::Callback;
 using casadi::Dict;
+using casadi::DM;
+using casadi::MX;
+using casadi::Slice;
+using casadi::Sparsity;
 
 using namespace OpenSim;
 
-MocoCasADiSolver::MocoCasADiSolver() {
-    constructProperties();
-}
+MocoCasADiSolver::MocoCasADiSolver() { constructProperties(); }
 
 void MocoCasADiSolver::constructProperties() {
     constructProperty_num_mesh_points(100);
@@ -76,24 +77,22 @@ void MocoCasADiSolver::constructProperties() {
 
 MocoIterate MocoCasADiSolver::createGuess(const std::string& type) const {
     OPENSIM_THROW_IF_FRMOBJ(
-            type != "bounds"
-                    && type != "random"
-                    && type != "time-stepping",
+            type != "bounds" && type != "random" && type != "time-stepping",
             Exception,
             "Unexpected guess type '" + type +
                     "'; supported types are 'bounds', 'random', and "
                     "'time-stepping'.");
 
-    if (type == "time-stepping") {
-        return createGuessTimeStepping();
-    }
+    if (type == "time-stepping") { return createGuessTimeStepping(); }
 
-auto casProblem = createCasADiProblem();
+    auto casProblem = createCasOCProblem();
 
     if (type == "bounds") {
-        return casProblem->createInitialGuessFromBounds();
+        OPENSIM_THROW(OpenSim::Exception, "TODO");
+        // TODO return casProblem->createInitialGuessFromBounds();
     } else if (type == "random") {
-        return casProblem->createRandomIterateWithinBounds();
+        OPENSIM_THROW(OpenSim::Exception, "TODO");
+        // return casProblem->createRandomIterateWithinBounds();
     } else {
         OPENSIM_THROW(Exception, "Internal error.");
     }
@@ -137,19 +136,48 @@ const MocoIterate& MocoCasADiSolver::getGuess() const {
     return m_guessToUse.getRef();
 }
 
-std::unique_ptr<CasADiTranscription>
-MocoCasADiSolver::createCasADiProblem() const {
-    checkPropertyInSet(*this, getProperty_dynamics_mode(),
-            {"explicit", "implicit"});
-    std::unique_ptr<CasADiTranscription> transcrip;
-    if (get_dynamics_mode() == "explicit") {
-        transcrip = make_unique<CasADiTrapezoidal>(*this, getProblemRep());
-    } else if (get_dynamics_mode() == "implicit") {
-        transcrip = make_unique<CasADiTrapezoidalImplicit>(
-                *this, getProblemRep());
+std::unique_ptr<CasOC::Problem> MocoCasADiSolver::createCasOCProblem() const {
+    OPENSIM_THROW_IF(getProblemRep().getNumKinematicConstraintEquations(),
+            Exception,
+            "MocoCasADiSolver does not support kinematic constraints yet.");
+    auto casProblem = make_unique<CasOC::Problem>();
+    checkPropertyInSet(
+            *this, getProperty_dynamics_mode(), {"explicit", "implicit"});
+    const auto& model = getProblemRep().getModel();
+    auto stateNames = createStateVariableNamesInSystemOrder(model);
+    casProblem->setTimeBounds(
+            convertBounds(getProblemRep().getTimeInitialBounds()),
+            convertBounds(getProblemRep().getTimeFinalBounds()));
+    for (const auto& stateName : stateNames) {
+        const auto& info = getProblemRep().getStateInfo(stateName);
+        CasOC::StateType stateType;
+        if (endsWith(stateName, "/value"))
+            stateType = CasOC::StateType::Coordinate;
+        else if (endsWith(stateName, "/speed"))
+            stateType = CasOC::StateType::Speed;
+        else
+            stateType = CasOC::StateType::Auxiliary;
+        casProblem->addState(stateName, stateType,
+                convertBounds(info.getBounds()),
+                convertBounds(info.getInitialBounds()),
+                convertBounds(info.getFinalBounds()));
+        for (const auto& actu : model.getComponentList<Actuator>()) {
+            // TODO handle a variable number of control signals.
+            const auto& actuName = actu.getAbsolutePathString();
+            const auto& info = getProblemRep().getControlInfo(actuName);
+            casProblem->addControl(actuName, convertBounds(info.getBounds()),
+                    convertBounds(info.getInitialBounds()),
+                    convertBounds(info.getFinalBounds()));
+        }
     }
-    transcrip->initialize();
-    return transcrip;
+    casProblem->setIntegralCost<MocoCasADiIntegralCostIntegrand>(
+            getProblemRep());
+    casProblem->setEndpointCost<MocoCasADiEndpointCost>(getProblemRep());
+    // TODO if implicit, use different function.
+    casProblem->setMultibodySystem<MocoCasADiMultibodySystem>(getProblemRep());
+    // TODO casProblem->setPathConstraints<PathConstraints>(getProblemRep());
+    casProblem->initialize();
+    return casProblem;
 }
 
 MocoSolution MocoCasADiSolver::solveImpl() const {
@@ -164,17 +192,19 @@ MocoSolution MocoCasADiSolver::solveImpl() const {
         getProblemRep().printDescription();
     }
     checkPropertyIsPositive(*this, getProperty_num_mesh_points());
-    auto casProblem = createCasADiProblem();
+    auto casProblem = createCasOCProblem();
     // opt.disp(std::cout, true);
 
     // Initial guess.
     // --------------
     MocoIterate guess = getGuess();
+    /* TODO
     if (guess.empty()) {
         casProblem->setGuess(casProblem->createInitialGuessFromBounds());
     } else {
         casProblem->setGuess(*m_guessToUse);
     }
+     */
 
     /*
     m_opti.disp(std::cout, true);
@@ -193,9 +223,8 @@ MocoSolution MocoCasADiSolver::solveImpl() const {
     Dict solverOptions;
     checkPropertyInSet(*this, getProperty_optim_solver(), {"ipopt"});
 
-
-    checkPropertyInRangeOrSet(*this, getProperty_optim_max_iterations(),
-            0, std::numeric_limits<int>::max(), {-1});
+    checkPropertyInRangeOrSet(*this, getProperty_optim_max_iterations(), 0,
+            std::numeric_limits<int>::max(), {-1});
     checkPropertyInRangeOrSet(*this, getProperty_optim_convergence_tolerance(),
             0.0, SimTK::NTraits<double>::getInfinity(), {-1.0});
     checkPropertyInRangeOrSet(*this, getProperty_optim_constraint_tolerance(),
@@ -232,24 +261,30 @@ MocoSolution MocoCasADiSolver::solveImpl() const {
     Dict pluginOptions;
     pluginOptions["verbose_init"] = true;
 
-    MocoSolution mucoSolution = casProblem->solve(get_optim_solver(),
-                pluginOptions, solverOptions);
-    const auto& casadiStats = casProblem->getStats();
-    setSolutionStats(mucoSolution, casadiStats.at("success"),
-            casadiStats.at("return_status"), casadiStats.at("iter_count"));
+    CasOC::Solver casSolver(*casProblem);
+    casSolver.setNumMeshPoints(get_num_mesh_points());
+    casSolver.setTranscriptionScheme("trapezoidal");
+    casSolver.setOptimSolver(get_optim_solver());
+    casSolver.setPluginOptions(pluginOptions);
+    casSolver.setSolverOptions(solverOptions);
+    CasOC::Solution casSolution = casSolver.solve();
+    MocoSolution mocoSolution = convertToMocoIterate<MocoSolution>(casSolution);
+    setSolutionStats(mocoSolution, casSolution.stats.at("success"),
+            casSolution.stats.at("return_status"),
+            casSolution.stats.at("iter_count"));
 
     if (get_verbosity()) {
         std::cout << std::string(79, '-') << "\n";
         std::cout << "Elapsed real time: "
-                << stopwatch.getElapsedTimeFormatted() << ".\n";
-        if (mucoSolution) {
+                  << stopwatch.getElapsedTimeFormatted() << ".\n";
+        if (mocoSolution) {
             std::cout << "MocoCasADiSolver succeeded!\n";
         } else {
             // TODO cout or cerr?
             std::cout << "MocoCasADiSolver did NOT succeed:\n";
-            std::cout << "  " << mucoSolution.getStatus() << "\n";
+            std::cout << "  " << mocoSolution.getStatus() << "\n";
         }
         std::cout << std::string(79, '=') << std::endl;
     }
-    return mucoSolution;
+    return mocoSolution;
 }
