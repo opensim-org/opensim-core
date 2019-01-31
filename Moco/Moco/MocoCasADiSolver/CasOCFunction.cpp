@@ -37,7 +37,6 @@ casadi::Sparsity IntegralCostIntegrand::get_sparsity_in(casadi_int i) {
 }
 
 casadi::Sparsity EndpointCost::get_sparsity_in(casadi_int i) {
-    // TODO fix when using a matrix as input for states.
     // TODO detect this sparsity.
     if (i == 0) {
         return casadi::Sparsity::scalar();

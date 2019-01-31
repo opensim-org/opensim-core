@@ -100,8 +100,6 @@ MocoIterate MocoCasADiSolver::createGuess(const std::string& type) const {
 
 void MocoCasADiSolver::setGuess(MocoIterate guess) {
     // Ensure the guess is compatible with this solver/problem.
-    // Make sure to initialize the problem. TODO put in a better place.
-    // TODO createTropterProblem();
     guess.isCompatible(getProblemRep(), true);
     clearGuess();
     m_guessFromAPI = std::move(guess);
@@ -161,14 +159,14 @@ std::unique_ptr<CasOC::Problem> MocoCasADiSolver::createCasOCProblem() const {
                 convertBounds(info.getBounds()),
                 convertBounds(info.getInitialBounds()),
                 convertBounds(info.getFinalBounds()));
-        for (const auto& actu : model.getComponentList<Actuator>()) {
-            // TODO handle a variable number of control signals.
-            const auto& actuName = actu.getAbsolutePathString();
-            const auto& info = getProblemRep().getControlInfo(actuName);
-            casProblem->addControl(actuName, convertBounds(info.getBounds()),
-                    convertBounds(info.getInitialBounds()),
-                    convertBounds(info.getFinalBounds()));
-        }
+    }
+    for (const auto& actu : model.getComponentList<Actuator>()) {
+        // TODO handle a variable number of control signals.
+        const auto& actuName = actu.getAbsolutePathString();
+        const auto& info = getProblemRep().getControlInfo(actuName);
+        casProblem->addControl(actuName, convertBounds(info.getBounds()),
+                convertBounds(info.getInitialBounds()),
+                convertBounds(info.getFinalBounds()));
     }
     casProblem->setIntegralCost<MocoCasADiIntegralCostIntegrand>(
             getProblemRep());
@@ -269,8 +267,7 @@ MocoSolution MocoCasADiSolver::solveImpl() const {
         casSolution =
                 casSolver->solve(casSolver->createInitialGuessFromBounds());
     } else {
-        casSolution =
-                casSolver->solve(convertToCasOCIterate(*m_guessToUse));
+        casSolution = casSolver->solve(convertToCasOCIterate(*m_guessToUse));
     }
     MocoSolution mocoSolution = convertToMocoIterate<MocoSolution>(casSolution);
     setSolutionStats(mocoSolution, casSolution.stats.at("success"),
@@ -284,9 +281,8 @@ MocoSolution MocoCasADiSolver::solveImpl() const {
         if (mocoSolution) {
             std::cout << "MocoCasADiSolver succeeded!\n";
         } else {
-            // TODO cout or cerr?
-            std::cout << "MocoCasADiSolver did NOT succeed:\n";
-            std::cout << "  " << mocoSolution.getStatus() << "\n";
+            std::cerr << "MocoCasADiSolver did NOT succeed:\n";
+            std::cerr << "  " << mocoSolution.getStatus() << "\n";
         }
         std::cout << std::string(79, '=') << std::endl;
     }
