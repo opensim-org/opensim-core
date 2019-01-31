@@ -109,6 +109,7 @@ std::vector<std::string> createStateVariableNamesInSystemOrder(
 #ifndef SWIG
 /// The map provides the index of each state variable in
 /// SimTK::State::getY() from its state variable path string.
+OSIMMOCO_API
 std::unordered_map<std::string, int> createSystemYIndexMap(const Model& model);
 #endif
 
