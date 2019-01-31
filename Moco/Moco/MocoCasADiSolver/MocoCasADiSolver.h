@@ -23,6 +23,7 @@
 
 namespace CasOC {
 class Problem;
+class Solver;
 } // namespace CasOC
 
 namespace OpenSim {
@@ -105,6 +106,8 @@ protected:
     MocoSolution solveImpl() const override;
 
     std::unique_ptr<CasOC::Problem> createCasOCProblem() const;
+    std::unique_ptr<CasOC::Solver> createCasOCSolver(
+            const CasOC::Problem&) const;
 
 private:
     OpenSim_DECLARE_PROPERTY(guess_file, std::string,

@@ -60,6 +60,7 @@ struct Iterate {
     std::vector<std::string> multiplier_names;
     std::vector<std::string> derivative_names;
     std::vector<std::string> parameter_names;
+    Iterate resample(const casadi::DM& newTimes) const;
 };
 
 struct Solution : public Iterate {
@@ -135,7 +136,7 @@ public:
         m_pathFunc->constructFunction(this, "path_constraints");
     }
 
-    template <typename IterateType>
+    template <typename IterateType = Iterate>
     IterateType createIterate() const {
         IterateType it;
         for (const auto& info : m_stateInfos)
@@ -235,9 +236,17 @@ public:
         m_solverOptions = std::move(solverOptions);
     }
     const casadi::Dict getSolverOptions() const { return m_solverOptions; }
-    Solution solve() const;
+
+
+    Iterate createInitialGuessFromBounds() const;
+    Iterate createRandomIterateWithinBounds() const;
+
+    Solution solve(const Iterate& guess) const;
 
 private:
+
+    std::unique_ptr<Transcription> createTranscription() const;
+
     const Problem& m_problem;
     int m_numMeshPoints;
     std::string m_transcriptionScheme;

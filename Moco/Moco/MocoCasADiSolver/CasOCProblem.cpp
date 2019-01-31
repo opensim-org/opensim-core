@@ -21,12 +21,24 @@
 #include "../MocoUtilities.h"
 #include "CasOCTranscription.h"
 
+// Shhh...we shouldn't depend on these but MocoIterate has a handy resample()
+// function.
+#include "../MocoIterate.h"
+#include "MocoCasADiMisc.h"
+
 using OpenSim::Exception;
 using OpenSim::format;
 
 namespace CasOC {
 
-Solution Solver::solve() const {
+Iterate Iterate::resample(const casadi::DM& newTimes) const {
+    auto mocoIt = OpenSim::convertToMocoIterate(*this);
+    auto simtkNewTimes = OpenSim::convertToSimTKVector(newTimes);
+    mocoIt.resample(simtkNewTimes);
+    return OpenSim::convertToCasOCIterate(mocoIt);
+}
+
+std::unique_ptr<Transcription> Solver::createTranscription() const {
     std::unique_ptr<Transcription> transcription;
     if (m_transcriptionScheme == "trapezoidal") {
         transcription = OpenSim::make_unique<Trapezoidal>(*this, m_problem);
@@ -34,7 +46,22 @@ Solution Solver::solve() const {
         OPENSIM_THROW(Exception, format("Unknown transcription scheme '%s'.",
                                          m_transcriptionScheme));
     }
-    return transcription->solve();
+    return transcription;
+}
+
+Iterate Solver::createInitialGuessFromBounds() const {
+    auto transcription = createTranscription();
+    return transcription->createInitialGuessFromBounds();
+}
+
+Iterate Solver::createRandomIterateWithinBounds() const {
+    auto transcription = createTranscription();
+    return transcription->createInitialGuessFromBounds();
+}
+
+Solution Solver::solve(const Iterate& guess) const {
+    auto transcription = createTranscription();
+    return transcription->solve(guess);
 }
 
 } // namespace CasOC

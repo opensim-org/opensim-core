@@ -19,6 +19,7 @@
  * -------------------------------------------------------------------------- */
 
 #include "../MocoBounds.h"
+#include "../MocoProblemRep.h"
 #include "CasOCProblem.h"
 
 namespace OpenSim {
@@ -33,9 +34,54 @@ inline CasOC::Bounds convertBounds(const MocoFinalBounds& mb) {
     return {mb.getLower(), mb.getUpper()};
 }
 
+/// This converts a SimTK::Matrix to a casadi::DM matrix, transposing the
+/// data in the process.
+inline casadi::DM convertToCasADiDM(const SimTK::Matrix& simtkMatrix) {
+    casadi::DM out(simtkMatrix.ncol(), simtkMatrix.nrow());
+    for (int irow = 0; irow < simtkMatrix.nrow(); ++irow) {
+        for (int icol = 0; icol < simtkMatrix.ncol(); ++icol) {
+            out(icol, irow) = simtkMatrix(irow, icol);
+        }
+    }
+    return out;
+}
+/// This converts a SimTK::RowVector to a casadi::DM column vector.
+inline casadi::DM convertToCasADiDM(const SimTK::RowVector& simtkRV) {
+    casadi::DM out(simtkRV.size(), 1);
+    for (int i = 0; i < simtkRV.size(); ++i) { out(i) = simtkRV[i]; }
+    return out;
+}
+
+/// This resamples the iterate to obtain values that lie on the mesh.
+inline CasOC::Iterate convertToCasOCIterate(const MocoIterate& mocoIt) {
+    CasOC::Iterate casIt;
+    CasOC::VariablesDM& casVars = casIt.variables;
+    using CasOC::Var;
+    casVars[Var::initial_time] = mocoIt.getInitialTime();
+    casVars[Var::final_time] = mocoIt.getFinalTime();
+    casVars[Var::states] = convertToCasADiDM(mocoIt.getStatesTrajectory());
+    casVars[Var::controls] = convertToCasADiDM(mocoIt.getControlsTrajectory());
+    casVars[Var::multipliers] =
+            convertToCasADiDM(mocoIt.getMultipliersTrajectory());
+    if (!mocoIt.getDerivativeNames().empty()) {
+        casVars[Var::derivatives] =
+                convertToCasADiDM(mocoIt.getDerivativesTrajectory());
+    }
+    casVars[Var::parameters] = convertToCasADiDM(mocoIt.getParameters());
+    casIt.times = convertToCasADiDM(mocoIt.getTime());
+    casIt.state_names = mocoIt.getStateNames();
+    casIt.control_names = mocoIt.getControlNames();
+    casIt.multiplier_names = mocoIt.getMultiplierNames();
+    casIt.derivative_names = mocoIt.getDerivativeNames();
+    casIt.parameter_names = mocoIt.getParameterNames();
+    return casIt;
+}
+
 template <typename VectorType = SimTK::Vector>
 VectorType convertToSimTKVector(const casadi::DM& casVector) {
-    assert(casVector.columns() == 1);
+    OPENSIM_THROW_IF(casVector.columns() != 1, Exception,
+            format("casVector should have exactly 1 column but has %i.",
+                    casVector.columns()));
     VectorType simtkVector((int)casVector.rows());
     for (int i = 0; i < casVector.rows(); ++i) {
         simtkVector[i] = double(casVector(i));
@@ -45,7 +91,7 @@ VectorType convertToSimTKVector(const casadi::DM& casVector) {
 
 /// This converts a casadi::DM matrix to a
 /// SimTK::Matrix, transposing the data in the process.
-SimTK::Matrix convertToSimTKMatrix(const casadi::DM& casMatrix) {
+inline SimTK::Matrix convertToSimTKMatrix(const casadi::DM& casMatrix) {
     SimTK::Matrix simtkMatrix((int)casMatrix.columns(), (int)casMatrix.rows());
     for (int irow = 0; irow < casMatrix.rows(); ++irow) {
         for (int icol = 0; icol < casMatrix.columns(); ++icol) {
@@ -85,20 +131,20 @@ TOut convertToMocoIterate(const CasOC::Iterate& casIt) {
 
     SimTK::Vector simtkTimes = convertToSimTKVector(casIt.times);
 
-    TOut mucoIterate(simtkTimes, casIt.state_names, casIt.control_names,
+    TOut mocoIterate(simtkTimes, casIt.state_names, casIt.control_names,
             casIt.multiplier_names, casIt.derivative_names,
             casIt.parameter_names, simtkStates, simtkControls, simtkMultipliers,
             simtkDerivatives, simtkParameters);
-    return mucoIterate;
+    return mocoIterate;
 }
 
-void applyParametersToModel(
+inline void applyParametersToModel(
         const SimTK::Vector& parameters, const MocoProblemRep& mocoProblemRep) {
     if (parameters.size()) mocoProblemRep.applyParametersToModel(parameters);
     const_cast<Model&>(mocoProblemRep.getModel()).initSystem();
 }
 
-void convertToSimTKState(const double* time, const double* states,
+inline void convertToSimTKState(const double* time, const double* states,
         const double* controls, const Model& model, SimTK::State& simtkState) {
     OPENSIM_THROW_IF(simtkState.getNQ() != simtkState.getNU(),
             OpenSim::Exception, "NQ != NU, copying state is incorrect.");

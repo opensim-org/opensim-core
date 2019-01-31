@@ -152,7 +152,60 @@ Trapezoidal::Trapezoidal(const Solver& solver, const Problem& problem)
      */
 }
 
-Solution Trapezoidal::solveImpl() {
+Iterate Trapezoidal::createInitialGuessFromBoundsImpl() const {
+    auto setToMidpoint = [](DM& output, const DM& lowerDM, const DM& upperDM) {
+        for (int irow = 0; irow < output.rows(); ++irow) {
+            for (int icol = 0; icol < output.columns(); ++icol) {
+                const auto& lower = double(lowerDM(irow, icol));
+                const auto& upper = double(upperDM(irow, icol));
+                if (!std::isinf(lower) && !std::isinf(upper)) {
+                    output(irow, icol) = 0.5 * (upper + lower);
+                } else if (!std::isinf(lower))
+                    output(irow, icol) = lower;
+                else if (!std::isinf(upper))
+                    output(irow, icol) = upper;
+                else
+                    output(irow, icol) = 0;
+            }
+        }
+    };
+    Iterate casGuess = m_problem.createIterate();
+    casGuess.variables = m_lowerBounds;
+    for (auto& kv : casGuess.variables) {
+        setToMidpoint(kv.second, m_lowerBounds.at(kv.first),
+                m_upperBounds.at(kv.first));
+    }
+    casGuess.times = createTimes(casGuess.variables[Var::initial_time],
+            casGuess.variables[Var::final_time]);
+    return casGuess;
+}
+
+Iterate Trapezoidal::createRandomIterateWithinBoundsImpl() const {
+    static SimTK::Random::Uniform randGen(-1, 1);
+    auto setRandom = [](DM& output, const DM& lowerDM, const DM& upperDM) {
+        for (int irow = 0; irow < output.rows(); ++irow) {
+            for (int icol = 0; icol < output.columns(); ++icol) {
+                const auto& lower = double(lowerDM(irow, icol));
+                const auto& upper = double(upperDM(irow, icol));
+                const auto rand = randGen.getValue();
+                auto value = 0.5 * (rand + 1.0) * (upper - lower) + lower;
+                if (std::isnan(value)) value = SimTK::clamp(lower, rand, upper);
+                output(irow, icol) = value;
+            }
+        }
+    };
+    Iterate casIterate = m_problem.createIterate();
+    casIterate.variables = m_lowerBounds;
+    for (auto& kv : casIterate.variables) {
+        setRandom(kv.second, m_lowerBounds.at(kv.first),
+                m_upperBounds.at(kv.first));
+    }
+    casIterate.times = createTimes(casIterate.variables[Var::initial_time],
+            casIterate.variables[Var::final_time]);
+    return casIterate;
+}
+
+Solution Trapezoidal::solveImpl() const {
     m_opti.solver(m_solver.getOptimSolver(), m_solver.getPluginOptions(),
             m_solver.getSolverOptions());
     VariablesDM varsDM;

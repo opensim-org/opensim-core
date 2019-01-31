@@ -27,7 +27,22 @@ public:
     Transcription(const Solver& solver, const Problem& problem)
             : m_solver(solver), m_problem(problem) {}
     virtual ~Transcription() = default;
-    Solution solve() { return solveImpl(); }
+    Iterate createInitialGuessFromBounds() const {
+        return createInitialGuessFromBoundsImpl();
+    }
+    Iterate createRandomIterateWithinBounds() const {
+        return createRandomIterateWithinBoundsImpl();
+    }
+    Solution solve(const Iterate& guess) {
+        auto guessResampled = guess.resample(
+                createTimesImpl(guess.variables.at(Var::initial_time),
+                        guess.variables.at(Var::final_time)));
+        for (auto& kv : m_vars) {
+            m_opti.set_initial(
+                    kv.second, guessResampled.variables.at(kv.first));
+        }
+        return solveImpl();
+    }
 
 protected:
     template <typename TRow, typename TColumn>
@@ -49,7 +64,7 @@ protected:
     }
     template <typename InvokeOn>
     VariablesDM convertToVariablesDM(
-            const InvokeOn& obj, const VariablesMX& varsMX) {
+            const InvokeOn& obj, const VariablesMX& varsMX) const {
         VariablesDM varsDM;
         for (const auto& kv : varsMX) {
             varsDM[kv.first] = obj.value(kv.second);
@@ -59,13 +74,18 @@ protected:
 
     const Solver& m_solver;
     const Problem& m_problem;
-    casadi::Opti m_opti;
+    mutable casadi::Opti m_opti;
     VariablesMX m_vars;
     VariablesDM m_lowerBounds;
     VariablesDM m_upperBounds;
+    VariablesDM m_guess;
 
 private:
-    virtual Solution solveImpl() = 0;
+    virtual Iterate createInitialGuessFromBoundsImpl() const = 0;
+    virtual Iterate createRandomIterateWithinBoundsImpl() const = 0;
+    virtual casadi::DM createTimesImpl(
+            casadi::DM initialTime, casadi::DM finalTime) const = 0;
+    virtual Solution solveImpl() const = 0;
 };
 
 class Trapezoidal : public Transcription {
@@ -73,7 +93,13 @@ public:
     Trapezoidal(const Solver& solver, const Problem& problem);
 
 private:
-    Solution solveImpl() override;
+    Iterate createInitialGuessFromBoundsImpl() const override;
+    Iterate createRandomIterateWithinBoundsImpl() const override;
+    casadi::DM createTimesImpl(
+            casadi::DM initialTime, casadi::DM finalTime) const override {
+        return createTimes<casadi::DM>(initialTime, finalTime);
+    }
+    Solution solveImpl() const override;
 
     template <typename T>
     T createTimes(const T& initialTime, const T& finalTime) const {

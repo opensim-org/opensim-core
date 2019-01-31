@@ -86,13 +86,13 @@ MocoIterate MocoCasADiSolver::createGuess(const std::string& type) const {
     if (type == "time-stepping") { return createGuessTimeStepping(); }
 
     auto casProblem = createCasOCProblem();
+    auto casSolver = createCasOCSolver(*casProblem);
 
     if (type == "bounds") {
-        OPENSIM_THROW(OpenSim::Exception, "TODO");
-        // TODO return casProblem->createInitialGuessFromBounds();
+        return convertToMocoIterate(casSolver->createInitialGuessFromBounds());
     } else if (type == "random") {
-        OPENSIM_THROW(OpenSim::Exception, "TODO");
-        // return casProblem->createRandomIterateWithinBounds();
+        return convertToMocoIterate(
+                casSolver->createRandomIterateWithinBounds());
     } else {
         OPENSIM_THROW(Exception, "Internal error.");
     }
@@ -180,31 +180,9 @@ std::unique_ptr<CasOC::Problem> MocoCasADiSolver::createCasOCProblem() const {
     return casProblem;
 }
 
-MocoSolution MocoCasADiSolver::solveImpl() const {
-    const Stopwatch stopwatch;
-
-    checkPropertyInSet(*this, getProperty_verbosity(), {0, 1, 2});
-
-    if (get_verbosity()) {
-        std::cout << std::string(79, '=') << "\n";
-        std::cout << "MocoCasADiSolver starting.\n";
-        std::cout << std::string(79, '-') << std::endl;
-        getProblemRep().printDescription();
-    }
-    checkPropertyIsPositive(*this, getProperty_num_mesh_points());
-    auto casProblem = createCasOCProblem();
-    // opt.disp(std::cout, true);
-
-    // Initial guess.
-    // --------------
-    MocoIterate guess = getGuess();
-    /* TODO
-    if (guess.empty()) {
-        casProblem->setGuess(casProblem->createInitialGuessFromBounds());
-    } else {
-        casProblem->setGuess(*m_guessToUse);
-    }
-     */
+std::unique_ptr<CasOC::Solver> MocoCasADiSolver::createCasOCSolver(
+        const CasOC::Problem& casProblem) const {
+    auto casSolver = make_unique<CasOC::Solver>(casProblem);
 
     /*
     m_opti.disp(std::cout, true);
@@ -261,13 +239,39 @@ MocoSolution MocoCasADiSolver::solveImpl() const {
     Dict pluginOptions;
     pluginOptions["verbose_init"] = true;
 
-    CasOC::Solver casSolver(*casProblem);
-    casSolver.setNumMeshPoints(get_num_mesh_points());
-    casSolver.setTranscriptionScheme("trapezoidal");
-    casSolver.setOptimSolver(get_optim_solver());
-    casSolver.setPluginOptions(pluginOptions);
-    casSolver.setSolverOptions(solverOptions);
-    CasOC::Solution casSolution = casSolver.solve();
+    casSolver->setNumMeshPoints(get_num_mesh_points());
+    casSolver->setTranscriptionScheme("trapezoidal");
+    casSolver->setOptimSolver(get_optim_solver());
+    casSolver->setPluginOptions(pluginOptions);
+    casSolver->setSolverOptions(solverOptions);
+    return casSolver;
+}
+
+MocoSolution MocoCasADiSolver::solveImpl() const {
+    const Stopwatch stopwatch;
+
+    checkPropertyInSet(*this, getProperty_verbosity(), {0, 1, 2});
+
+    if (get_verbosity()) {
+        std::cout << std::string(79, '=') << "\n";
+        std::cout << "MocoCasADiSolver starting.\n";
+        std::cout << std::string(79, '-') << std::endl;
+        getProblemRep().printDescription();
+    }
+    checkPropertyIsPositive(*this, getProperty_num_mesh_points());
+    auto casProblem = createCasOCProblem();
+    auto casSolver = createCasOCSolver(*casProblem);
+    // opt.disp(std::cout, true);
+
+    CasOC::Solution casSolution;
+    MocoIterate guess = getGuess();
+    if (guess.empty()) {
+        casSolution =
+                casSolver->solve(casSolver->createInitialGuessFromBounds());
+    } else {
+        casSolution =
+                casSolver->solve(convertToCasOCIterate(*m_guessToUse));
+    }
     MocoSolution mocoSolution = convertToMocoIterate<MocoSolution>(casSolution);
     setSolutionStats(mocoSolution, casSolution.stats.at("success"),
             casSolution.stats.at("return_status"),
