@@ -32,7 +32,7 @@ if(MSVC)
     target_include_directories(snopt7_cpp
         INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/include")
 
-    target_link_libraries(snopt7_cpp ${SNOPT_LIBRARY})
+    target_link_libraries(snopt7_cpp INTERFACE ${SNOPT_LIBRARY})
 
 else()
 

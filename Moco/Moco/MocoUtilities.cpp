@@ -23,6 +23,7 @@
 #include <OpenSim/Common/PiecewiseLinearFunction.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/StatesTrajectory.h>
+#include <OpenSim/Simulation/SimbodyEngine/WeldJoint.h>
 #include <simbody/internal/Visualizer_InputListener.h>
 #include <OpenSim/Simulation/Control/PrescribedController.h>
 #include <OpenSim/Common/GCVSpline.h>
@@ -364,6 +365,47 @@ void OpenSim::removeMuscles(Model& model) {
                         musc->getName()));
         model.updForceSet().remove(index);
     }
+}
+
+void OpenSim::replaceJointWithWeldJoint(Model& model,
+    const std::string& jointName) {
+    OPENSIM_THROW_IF(!model.getJointSet().hasComponent(jointName), Exception,
+        "Joint with name '" + jointName + "' not found in the model JointSet.");
+
+    // This is needed here to access offset frames.
+    model.finalizeConnections();
+
+    // Get the current joint and save a copy of the parent and child offset
+    // frames.
+    auto& current_joint = model.updJointSet().get(jointName);
+    PhysicalOffsetFrame* parent_offset = PhysicalOffsetFrame().safeDownCast(
+        current_joint.getParentFrame().clone());
+    PhysicalOffsetFrame* child_offset = PhysicalOffsetFrame().safeDownCast(
+        current_joint.getChildFrame().clone());
+
+    // Save the original names of the body frames (not the offset frames), so we
+    // can find them when the new joint is created.
+    parent_offset->finalizeConnections(model);
+    child_offset->finalizeConnections(model);
+    std::string parent_body_path =
+        parent_offset->getParentFrame().getAbsolutePathString();
+    std::string child_body_path =
+        child_offset->getParentFrame().getAbsolutePathString();
+
+    // Remove the current Joint from the the JointSet.
+    model.updJointSet().remove(&current_joint);
+
+    // Create the new joint and add it to the model.
+    auto* new_joint = new WeldJoint(jointName,
+        model.getComponent<PhysicalFrame>(parent_body_path),
+        parent_offset->get_translation(),
+        parent_offset->get_orientation(),
+        model.getComponent<PhysicalFrame>(child_body_path),
+        child_offset->get_translation(),
+        child_offset->get_orientation());
+    model.addJoint(new_joint);
+
+    model.finalizeConnections();
 }
 
 std::vector<std::string> OpenSim::createStateVariableNamesInSystemOrder(
