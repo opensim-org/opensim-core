@@ -173,7 +173,8 @@ std::unique_ptr<CasOC::Problem> MocoCasADiSolver::createCasOCProblem() const {
     casProblem->setEndpointCost<MocoCasADiEndpointCost>(getProblemRep());
     // TODO if implicit, use different function.
     casProblem->setMultibodySystem<MocoCasADiMultibodySystem>(getProblemRep());
-    // TODO casProblem->setPathConstraints<PathConstraints>(getProblemRep());
+    // TODO casProblem->setPathConstraints<MocoCasADiPathConstraints>
+    // (getProblemRep());
     casProblem->initialize();
     return casProblem;
 }

@@ -144,20 +144,34 @@ inline void applyParametersToModel(
     const_cast<Model&>(mocoProblemRep.getModel()).initSystem();
 }
 
+inline void convertToSimTKState(const double* time,
+        const double* states, const Model& model, SimTK::State& simtkState,
+        bool setControlsToNaN = true) {
+    OPENSIM_THROW_IF(simtkState.getNQ() != simtkState.getNU(),
+            OpenSim::Exception, "NQ != NU, copying state is incorrect.");
+    simtkState.setTime(time[0]);
+    std::copy_n(states, simtkState.getNY(),
+            simtkState.updY().updContiguousScalarData());
+    if (setControlsToNaN)
+        model.updControls(simtkState).setToNaN();
+}
+
 inline void convertToSimTKState(const double* time, const double* states,
         const double* controls, const Model& model, SimTK::State& simtkState) {
     OPENSIM_THROW_IF(simtkState.getNQ() != simtkState.getNU(),
             OpenSim::Exception, "NQ != NU, copying state is incorrect.");
-    simtkState.setTime(time[0]);
-    simtkState.setY(SimTK::Vector(simtkState.getNY(), states, true));
-    std::copy_n(states, simtkState.getNY(),
-            simtkState.updY().updContiguousScalarData());
+    convertToSimTKState(time, states, model, simtkState, false);
     auto& simtkControls = model.updControls(simtkState);
     std::copy_n(controls, simtkControls.size(),
             simtkControls.updContiguousScalarData());
     model.realizeVelocity(simtkState);
     model.setControls(simtkState, simtkControls);
 }
+
+class AccelerationStageNotAllowed : public OpenSim::Exception {
+public:
+    using Exception::Exception;
+};
 
 class MocoCasADiIntegralCostIntegrand : public CasOC::IntegralCostIntegrand {
 
@@ -196,11 +210,7 @@ public:
         applyParametersToModel(SimTK::Vector(m_casProblem->getNumParameters(),
                                        inputs[3], true),
                 m_mocoProblemRep);
-        m_simtkState.setTime(inputs[0][0]);
-        // TODO: Use convertToSimTKState().
-        std::copy_n(inputs[1], m_simtkState.getNY(),
-                m_simtkState.updY().updContiguousScalarData());
-        m_mocoProblemRep.getModel().updControls(m_simtkState).setToNaN();
+        convertToSimTKState(inputs[0], inputs[1], m_model, m_simtkState, true);
         outputs[0][0] = m_mocoProblemRep.calcEndpointCost(m_simtkState);
         return 0;
     }
