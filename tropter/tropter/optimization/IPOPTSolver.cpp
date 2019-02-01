@@ -194,6 +194,15 @@ Solution IPOPTSolver::optimize_impl(const VectorXd& guess) const {
                 "either 'exact' or 'limited-memory', but '%s' was provided.",
                 value);
         ipoptions->SetStringValue("hessian_approximation", value);
+
+        TROPTER_THROW_IF(jacobian_approx == "finite-difference-values" &&
+                         value == "exact",
+            "The 'hessian_approximation' setting for Ipopt was set to 'exact' "
+            "(i.e. computed by tropter) while the 'jacobian_approximation' "
+            "setting was set to 'finite-difference-values' (i.e. computed by "
+            "Ipopt. This may lead to a mismatch in derivative information, so "
+            "please set 'jacobian_approximation' to 'exact' if using tropter-"
+            "computed Hessian information.");
     }
 
     // Set advanced options.
