@@ -200,7 +200,7 @@ Solution IPOPTSolver::optimize_impl(const VectorXd& guess) const {
             "The 'hessian_approximation' setting for Ipopt was set to 'exact' "
             "(i.e. computed by tropter) while the 'jacobian_approximation' "
             "setting was set to 'finite-difference-values' (i.e. computed by "
-            "Ipopt. This may lead to a mismatch in derivative information, so "
+            "Ipopt). This may lead to a mismatch in derivative information, so "
             "please set 'jacobian_approximation' to 'exact' if using tropter-"
             "computed Hessian information.");
     }
