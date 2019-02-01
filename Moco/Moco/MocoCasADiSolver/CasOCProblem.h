@@ -87,6 +87,10 @@ struct ControlInfo {
     Bounds initialBounds;
     Bounds finalBounds;
 };
+struct ParameterInfo {
+    std::string name;
+    Bounds bounds;
+};
 struct PathConstraintInfo {
     std::string name;
     casadi::DM lower_bounds;
@@ -126,6 +130,9 @@ public:
         clipEndpointBounds(bounds, finalBounds);
         m_controlInfos.push_back({std::move(name), std::move(bounds),
                 std::move(initialBounds), std::move(finalBounds)});
+    }
+    void addParameter(std::string name, Bounds bounds) {
+        m_paramInfos.push_back({std::move(name), std::move(bounds)});
     }
     template <typename FunctionType, typename... Args>
     void addPathConstraint(
@@ -179,7 +186,7 @@ public:
     // TODO: Skip over empty slots for quaternions.
     int getNumStates() const { return (int)m_stateInfos.size(); }
     int getNumControls() const { return (int)m_controlInfos.size(); }
-    int getNumParameters() const { return 0; /* TODO */ }
+    int getNumParameters() const { return (int)m_paramInfos.size(); }
     int getNumMultipliers() const { return 0; /* TODO */ }
     /// This is the number of generalized coordinates, which may be greater
     /// than the number of generalized speeds.
@@ -192,6 +199,9 @@ public:
     const std::vector<StateInfo>& getStateInfos() const { return m_stateInfos; }
     const std::vector<ControlInfo>& getControlInfos() const {
         return m_controlInfos;
+    }
+    const std::vector<ParameterInfo>& getParameterInfos() const {
+        return m_paramInfos;
     }
     const std::vector<PathConstraintInfo>& getPathConstraintInfos() const {
         return m_pathInfos;
@@ -223,6 +233,7 @@ private:
     int m_numAuxiliaryStates = 0;
     std::vector<ControlInfo> m_controlInfos;
     std::vector<PathConstraintInfo> m_pathInfos;
+    std::vector<ParameterInfo> m_paramInfos;
     std::unique_ptr<IntegralCostIntegrand> m_integralCostFunc;
     std::unique_ptr<EndpointCost> m_endpointCostFunc;
     std::unique_ptr<MultibodySystem> m_multibodyFunc;

@@ -57,30 +57,42 @@ Trapezoidal::Trapezoidal(const Solver& solver, const Problem& problem)
             Var::initial_time, 0, 0, m_problem.getTimeInitialBounds());
     setVariableBounds(Var::final_time, 0, 0, m_problem.getTimeFinalBounds());
 
-    const auto& stateInfos = m_problem.getStateInfos();
-    int is = 0;
-    for (const auto& info : stateInfos) {
-        setVariableBounds(
-                Var::states, is, Slice(1, numMeshPoints - 1), info.bounds);
-        setVariableBounds(Var::states, is, 0, info.initialBounds);
-        setVariableBounds(Var::states, is, -1, info.finalBounds);
-        ++is;
+    {
+        const auto& stateInfos = m_problem.getStateInfos();
+        int is = 0;
+        for (const auto& info : stateInfos) {
+            setVariableBounds(
+                    Var::states, is, Slice(1, numMeshPoints - 1), info.bounds);
+            setVariableBounds(Var::states, is, 0, info.initialBounds);
+            setVariableBounds(Var::states, is, -1, info.finalBounds);
+            ++is;
+        }
     }
 
-    const auto& controlInfos = m_problem.getControlInfos();
-    int ic = 0;
-    for (const auto& info : controlInfos) {
-        setVariableBounds(
-                Var::controls, ic, Slice(1, numMeshPoints - 1), info.bounds);
-        setVariableBounds(Var::controls, ic, 0, info.initialBounds);
-        setVariableBounds(Var::controls, ic, -1, info.finalBounds);
-        ++ic;
+    {
+        const auto& controlInfos = m_problem.getControlInfos();
+        int ic = 0;
+        for (const auto& info : controlInfos) {
+            setVariableBounds(Var::controls, ic, Slice(1, numMeshPoints - 1),
+                    info.bounds);
+            setVariableBounds(Var::controls, ic, 0, info.initialBounds);
+            setVariableBounds(Var::controls, ic, -1, info.finalBounds);
+            ++ic;
+        }
+    }
+
+    {
+        const auto& paramInfos = m_problem.getParameterInfos();
+        int ip = 0;
+        for (const auto& info : paramInfos) {
+            setVariableBounds(Var::parameters, ip, 0, info.bounds);
+        }
     }
 
     // Cost.
     // -----
     const DM meshIntervals = m_mesh(Slice(1, numMeshPoints)) -
-            m_mesh(Slice(0, numMeshPoints - 1));
+                             m_mesh(Slice(0, numMeshPoints - 1));
     DM quadCoeffs(numMeshPoints, 1);
     quadCoeffs(Slice(0, numMeshPoints - 1)) = 0.5 * meshIntervals;
     quadCoeffs(Slice(1, numMeshPoints)) += 0.5 * meshIntervals;
@@ -88,8 +100,8 @@ Trapezoidal::Trapezoidal(const Solver& solver, const Problem& problem)
     for (int itime = 0; itime < numMeshPoints; ++itime) {
         const auto out = m_problem.getIntegralCostIntegrand().operator()(
                 {m_times(itime, 0), m_vars[Var::states](Slice(), itime),
-                 m_vars[Var::controls](Slice(), itime),
-                 m_vars[Var::parameters]});
+                        m_vars[Var::controls](Slice(), itime),
+                        m_vars[Var::parameters]});
         integralCost += quadCoeffs(itime) * out.at(0);
         // TODO: Obey user option for if this penalty should exist.
         if (m_problem.getNumMultipliers()) {
@@ -102,7 +114,7 @@ Trapezoidal::Trapezoidal(const Solver& solver, const Problem& problem)
 
     const auto endpointCostOut =
             m_problem.getEndpointCost().operator()({m_vars[Var::final_time],
-                                                    m_vars[Var::states](Slice(), -1), m_vars[Var::parameters]});
+                    m_vars[Var::states](Slice(), -1), m_vars[Var::parameters]});
     const auto endpointCost = endpointCostOut.at(0);
     m_opti.minimize(integralCost + endpointCost);
 
@@ -158,13 +170,12 @@ Trapezoidal::Trapezoidal(const Solver& solver, const Problem& problem)
         // }
         for (const auto& pathInfo : m_problem.getPathConstraintInfos()) {
             const auto output = pathInfo.function->operator()(
-                    {m_times(itime),
-                     m_vars[Var::states](Slice(), itime),
-                     m_vars[Var::controls](Slice(), itime),
-                     m_vars[Var::parameters]});
+                    {m_times(itime), m_vars[Var::states](Slice(), itime),
+                            m_vars[Var::controls](Slice(), itime),
+                            m_vars[Var::parameters]});
             const auto& errors = output.at(0);
-            m_opti.subject_to(pathInfo.lower_bounds <= errors <
-                    pathInfo.upper_bounds);
+            m_opti.subject_to(
+                    pathInfo.lower_bounds <= errors < pathInfo.upper_bounds);
         }
     }
 }
@@ -233,7 +244,6 @@ Solution Trapezoidal::solveImpl() const {
         std::cerr << "MocoCasADiSolver did not succeed: " << e.what()
                   << std::endl;
         varsDM = convertToVariablesDM(m_opti.debug(), m_vars);
-
     }
     Solution solution = m_problem.createIterate<Solution>();
     solution.variables = varsDM;
