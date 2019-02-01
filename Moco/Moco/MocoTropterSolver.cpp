@@ -37,6 +37,7 @@ void MocoTropterSolver::constructProperties() {
     constructProperty_optim_max_iterations(-1);
     constructProperty_optim_convergence_tolerance(-1);
     constructProperty_optim_constraint_tolerance(-1);
+    constructProperty_optim_jacobian_approximation("finite-difference-values");
     constructProperty_optim_hessian_approximation("limited-memory");
     constructProperty_optim_sparsity_detection("random");
     constructProperty_optim_ipopt_print_level(-1);
@@ -293,6 +294,7 @@ MocoSolution MocoTropterSolver::solveImpl() const {
     if (get_optim_constraint_tolerance() != -1)
         optsolver.set_constraint_tolerance(get_optim_constraint_tolerance());
 
+    optsolver.set_jacobian_approximation(get_optim_jacobian_approximation());
     optsolver.set_hessian_approximation(get_optim_hessian_approximation());
 
     if (get_optim_solver() == "ipopt") {

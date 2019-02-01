@@ -81,6 +81,10 @@ public:
     void set_convergence_tolerance(Optional<double> value);
     /// The tolerance used to determine if the constraints are satisfied.
     void set_constraint_tolerance(Optional<double> value);
+    /// Whether the Jacobian is calculated by tropter or by IPOPT's own finite
+    /// differencing.
+    /// See https://www.coin-or.org/Bonmin/option_pages/options_list_ipopt.html
+    void set_jacobian_approximation(std::string v);
     /// Whether a full Hessian should be computed or if the Hessian
     /// should be approximated from the gradient using BFGS updates.
     /// See https://www.coin-or.org/Ipopt/documentation/node53.html#SECTION0001113010000000000000
@@ -135,6 +139,8 @@ public:
     Optional<double> get_convergence_tolerance() const;
     /// @copydoc set_constraint_tolerance()
     Optional<double> get_constraint_tolerance() const;
+    /// @copydoc set_jacobian_approximation()
+    const std::string& get_jacobian_approximation() const;
     /// @copydoc set_hessian_approximation()
     Optional<std::string> get_hessian_approximation() const;
     const std::string& get_sparsity_detection() const;
@@ -182,6 +188,7 @@ private:
     Optional<int> m_max_iterations;
     Optional<double> m_convergence_tolerance;
     Optional<double> m_constraint_tolerance;
+    std::string m_jacobian_approximation = "finite-difference-values";
     Optional<std::string> m_hessian_approximation;
     std::string m_sparsity_detection = "initial-guess";
 

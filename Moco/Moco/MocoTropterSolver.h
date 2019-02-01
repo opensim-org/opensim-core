@@ -65,6 +65,10 @@ public:
     OpenSim_DECLARE_PROPERTY(optim_constraint_tolerance, double,
     "Tolerance used to determine if the constraints are satisfied "
     "(-1 for solver's default)");
+    OpenSim_DECLARE_PROPERTY(optim_jacobian_approximation, std::string,
+    "'finite-difference-values' (default) for Jacobian calculations by the "
+    "solver (IPOPT, SNOPT, etc.), or 'exact' for Jacobian calculations by "
+    "tropter (currently not recommmended).");
     OpenSim_DECLARE_PROPERTY(optim_hessian_approximation, std::string,
     "'limited-memory' (default) for quasi-Newton, or 'exact' for full Newton.");
     OpenSim_DECLARE_PROPERTY(optim_sparsity_detection, std::string,
