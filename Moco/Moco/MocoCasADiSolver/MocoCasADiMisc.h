@@ -144,16 +144,15 @@ inline void applyParametersToModel(
     const_cast<Model&>(mocoProblemRep.getModel()).initSystem();
 }
 
-inline void convertToSimTKState(const double* time,
-        const double* states, const Model& model, SimTK::State& simtkState,
+inline void convertToSimTKState(const double* time, const double* states,
+        const Model& model, SimTK::State& simtkState,
         bool setControlsToNaN = true) {
     OPENSIM_THROW_IF(simtkState.getNQ() != simtkState.getNU(),
             OpenSim::Exception, "NQ != NU, copying state is incorrect.");
     simtkState.setTime(time[0]);
     std::copy_n(states, simtkState.getNY(),
             simtkState.updY().updContiguousScalarData());
-    if (setControlsToNaN)
-        model.updControls(simtkState).setToNaN();
+    if (setControlsToNaN) model.updControls(simtkState).setToNaN();
 }
 
 inline void convertToSimTKState(const double* time, const double* states,
@@ -173,8 +172,38 @@ public:
     using Exception::Exception;
 };
 
-class MocoCasADiIntegralCostIntegrand : public CasOC::IntegralCostIntegrand {
+class MocoCasADiPathConstraint : public CasOC::PathConstraint {
+public:
+    MocoCasADiPathConstraint(const OpenSim::MocoProblemRep& problem,
+            const OpenSim::MocoPathConstraint& mocoPathConstraint)
+            : m_mocoProblemRep(problem), m_model(problem.getModel()),
+              m_simtkState(m_model.getWorkingState()),
+              m_mocoPathCon(mocoPathConstraint) {}
 
+    int eval(const double** inputs, double** outputs, casadi_int*, double*,
+            void*) const {
+        applyParametersToModel(SimTK::Vector(m_casProblem->getNumParameters(),
+                inputs[3], true),
+                m_mocoProblemRep);
+        // TODO: Don't necessarily need to realize to Velocity.
+        convertToSimTKState(
+                inputs[0], inputs[1], inputs[2], m_model, m_simtkState);
+        errors.resize(m_numEquations);
+        m_mocoPathCon.calcPathConstraintErrors(m_simtkState, errors);
+        std::copy_n(
+                errors.getContiguousScalarData(), errors.size(), outputs[0]);
+        return 0;
+    }
+
+private:
+    const OpenSim::MocoProblemRep& m_mocoProblemRep;
+    const OpenSim::Model& m_model;
+    mutable SimTK::State m_simtkState;
+    const MocoPathConstraint& m_mocoPathCon;
+    mutable SimTK::Vector errors;
+};
+
+class MocoCasADiIntegralCostIntegrand : public CasOC::IntegralCostIntegrand {
 public:
     MocoCasADiIntegralCostIntegrand(const OpenSim::MocoProblemRep& problem)
             : m_mocoProblemRep(problem), m_model(problem.getModel()),
@@ -208,7 +237,7 @@ public:
     int eval(const double** inputs, double** outputs, casadi_int*, double*,
             void*) const override {
         applyParametersToModel(SimTK::Vector(m_casProblem->getNumParameters(),
-                                       inputs[3], true),
+                                       inputs[2], true),
                 m_mocoProblemRep);
         convertToSimTKState(inputs[0], inputs[1], m_model, m_simtkState, true);
         outputs[0][0] = m_mocoProblemRep.calcEndpointCost(m_simtkState);

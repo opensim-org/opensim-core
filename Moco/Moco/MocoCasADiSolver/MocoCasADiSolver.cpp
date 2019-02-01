@@ -135,19 +135,18 @@ const MocoIterate& MocoCasADiSolver::getGuess() const {
 }
 
 std::unique_ptr<CasOC::Problem> MocoCasADiSolver::createCasOCProblem() const {
-    OPENSIM_THROW_IF(getProblemRep().getNumKinematicConstraintEquations(),
-            Exception,
+    const auto& problemRep = getProblemRep();
+    OPENSIM_THROW_IF(problemRep.getNumKinematicConstraintEquations(), Exception,
             "MocoCasADiSolver does not support kinematic constraints yet.");
     auto casProblem = make_unique<CasOC::Problem>();
     checkPropertyInSet(
             *this, getProperty_dynamics_mode(), {"explicit", "implicit"});
-    const auto& model = getProblemRep().getModel();
+    const auto& model = problemRep.getModel();
     auto stateNames = createStateVariableNamesInSystemOrder(model);
-    casProblem->setTimeBounds(
-            convertBounds(getProblemRep().getTimeInitialBounds()),
-            convertBounds(getProblemRep().getTimeFinalBounds()));
+    casProblem->setTimeBounds(convertBounds(problemRep.getTimeInitialBounds()),
+            convertBounds(problemRep.getTimeFinalBounds()));
     for (const auto& stateName : stateNames) {
-        const auto& info = getProblemRep().getStateInfo(stateName);
+        const auto& info = problemRep.getStateInfo(stateName);
         CasOC::StateType stateType;
         if (endsWith(stateName, "/value"))
             stateType = CasOC::StateType::Coordinate;
@@ -163,19 +162,25 @@ std::unique_ptr<CasOC::Problem> MocoCasADiSolver::createCasOCProblem() const {
     for (const auto& actu : model.getComponentList<Actuator>()) {
         // TODO handle a variable number of control signals.
         const auto& actuName = actu.getAbsolutePathString();
-        const auto& info = getProblemRep().getControlInfo(actuName);
+        const auto& info = problemRep.getControlInfo(actuName);
         casProblem->addControl(actuName, convertBounds(info.getBounds()),
                 convertBounds(info.getInitialBounds()),
                 convertBounds(info.getFinalBounds()));
     }
-    casProblem->setIntegralCost<MocoCasADiIntegralCostIntegrand>(
-            getProblemRep());
-    casProblem->setEndpointCost<MocoCasADiEndpointCost>(getProblemRep());
+    const auto pathConstraintNames = problemRep.createPathConstraintNames();
+    for (const auto& name : pathConstraintNames) {
+        const auto& pathCon = problemRep.getPathConstraint(name);
+        std::vector<CasOC::Bounds> casBounds;
+        for (const auto& bounds : pathCon.getConstraintInfo().getBounds()) {
+            casBounds.push_back(convertBounds(bounds));
+        }
+        casProblem->addPathConstraint<MocoCasADiPathConstraint>(
+                name, casBounds, problemRep, pathCon);
+    }
+    casProblem->setIntegralCost<MocoCasADiIntegralCostIntegrand>(problemRep);
+    casProblem->setEndpointCost<MocoCasADiEndpointCost>(problemRep);
     // TODO if implicit, use different function.
-    casProblem->setMultibodySystem<MocoCasADiMultibodySystem>(getProblemRep());
-    // TODO casProblem->setPathConstraints<MocoCasADiPathConstraints>
-    // (getProblemRep());
-    casProblem->initialize();
+    casProblem->setMultibodySystem<MocoCasADiMultibodySystem>(problemRep);
     return casProblem;
 }
 

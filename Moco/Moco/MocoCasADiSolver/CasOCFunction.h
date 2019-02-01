@@ -50,34 +50,64 @@ protected:
     const Problem* m_casProblem;
 };
 
+class PathConstraint : public Function {
+public:
+    void constructFunction(const Problem* casProblem, const std::string& name,
+            int numEquations) {
+        Function::constructFunction(casProblem, name);
+        m_numEquations = numEquations;
+    }
+    casadi_int get_n_in() override final { return 4; }
+    casadi_int get_n_out() override final { return 1; }
+    std::string get_name_in(casadi_int i) override final {
+        switch (i) {
+        case 0: return "time";
+        case 1: return "states";
+        case 2: return "controls";
+        case 3: return "parameters";
+        default: OPENSIM_THROW(OpenSim::Exception, "Internal error.");
+        }
+    }
+    std::string get_name_out(casadi_int i) override final {
+        switch (i) {
+        case 0: return "path_constraint_" + name();
+        default: OPENSIM_THROW(OpenSim::Exception, "Internal error.");
+        }
+    }
+    casadi::Sparsity get_sparsity_in(casadi_int i) override final;
+    casadi::Sparsity get_sparsity_out(casadi_int i) override final {
+        if (i == 0) {
+            return casadi::Sparsity::dense(m_numEquations, 1);
+        } else
+            return casadi::Sparsity(0, 0);
+    }
+
+protected:
+    int m_numEquations;
+};
+
 class IntegralCostIntegrand : public Function {
+public:
     using Function::Function;
     casadi_int get_n_in() override final { return 4; }
     casadi_int get_n_out() override final { return 1; }
     std::string get_name_in(casadi_int i) override final {
         switch (i) {
-        case 0:
-            return "time";
-        case 1:
-            return "states";
-        case 2:
-            return "controls";
-        case 3:
-            return "parameters";
-        default:
-            OPENSIM_THROW(OpenSim::Exception, "Internal error.");
+        case 0: return "time";
+        case 1: return "states";
+        case 2: return "controls";
+        case 3: return "parameters";
+        default: OPENSIM_THROW(OpenSim::Exception, "Internal error.");
         }
     }
     std::string get_name_out(casadi_int i) override final {
         switch (i) {
-        case 0:
-            return "integral_cost_integrand";
-        default:
-            OPENSIM_THROW(OpenSim::Exception, "Internal error.");
+        case 0: return "integral_cost_integrand";
+        default: OPENSIM_THROW(OpenSim::Exception, "Internal error.");
         }
     }
-    casadi::Sparsity get_sparsity_in(casadi_int i) override;
-    casadi::Sparsity get_sparsity_out(casadi_int i) override {
+    casadi::Sparsity get_sparsity_in(casadi_int i) override final;
+    casadi::Sparsity get_sparsity_out(casadi_int i) override final {
         if (i == 0)
             return casadi::Sparsity::scalar();
         else
@@ -91,26 +121,20 @@ public:
     casadi_int get_n_out() override final { return 1; }
     std::string get_name_in(casadi_int i) override final {
         switch (i) {
-        case 0:
-            return "final_time";
-        case 1:
-            return "final_states";
-        case 2:
-            return "parameters";
-        default:
-            OPENSIM_THROW(OpenSim::Exception, "Internal error.");
+        case 0: return "final_time";
+        case 1: return "final_states";
+        case 2: return "parameters";
+        default: OPENSIM_THROW(OpenSim::Exception, "Internal error.");
         }
     }
     std::string get_name_out(casadi_int i) override final {
         switch (i) {
-        case 0:
-            return "endpoint_cost";
-        default:
-            OPENSIM_THROW(OpenSim::Exception, "Internal error.");
+        case 0: return "endpoint_cost";
+        default: OPENSIM_THROW(OpenSim::Exception, "Internal error.");
         }
     }
-    casadi::Sparsity get_sparsity_in(casadi_int i) override;
-    casadi::Sparsity get_sparsity_out(casadi_int i) override {
+    casadi::Sparsity get_sparsity_in(casadi_int i) override final;
+    casadi::Sparsity get_sparsity_out(casadi_int i) override final {
         if (i == 0)
             return casadi::Sparsity::scalar();
         else
@@ -124,37 +148,25 @@ public:
     casadi_int get_n_out() override final { return 3; }
     std::string get_name_in(casadi_int i) override final {
         switch (i) {
-        case 0:
-            return "time";
-        case 1:
-            return "states";
-        case 2:
-            return "controls";
-        case 3:
-            return "multipliers";
-        case 4:
-            return "parameters";
-        default:
-            OPENSIM_THROW(OpenSim::Exception, "Internal error.");
+        case 0: return "time";
+        case 1: return "states";
+        case 2: return "controls";
+        case 3: return "multipliers";
+        case 4: return "parameters";
+        default: OPENSIM_THROW(OpenSim::Exception, "Internal error.");
         }
     }
     std::string get_name_out(casadi_int i) override final {
         switch (i) {
-        case 0:
-            return "multibody_derivatives";
-        case 1:
-            return "auxiliary_derivatives";
-        case 2:
-            return "kinematic_constraint_errors";
-        default:
-            OPENSIM_THROW(OpenSim::Exception, "Internal error.");
+        case 0: return "multibody_derivatives";
+        case 1: return "auxiliary_derivatives";
+        case 2: return "kinematic_constraint_errors";
+        default: OPENSIM_THROW(OpenSim::Exception, "Internal error.");
         }
     }
     casadi::Sparsity get_sparsity_in(casadi_int i) override final;
     casadi::Sparsity get_sparsity_out(casadi_int i) override final;
 };
-
-class PathConstraints : public Function {};
 
 } // namespace CasOC
 

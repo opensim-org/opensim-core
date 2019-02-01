@@ -18,12 +18,11 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
+#include "../MocoUtilities.h"
 #include "CasOCFunction.h"
 #include <casadi/casadi.hpp>
 #include <string>
 #include <unordered_map>
-
-#include "../MocoUtilities.h"
 
 /// CasOC is a namespace containing classes for solving multibody optimal
 /// control problems with CasADi. CasOC is not designed to solve generic optimal
@@ -88,6 +87,12 @@ struct ControlInfo {
     Bounds initialBounds;
     Bounds finalBounds;
 };
+struct PathConstraintInfo {
+    std::string name;
+    casadi::DM lower_bounds;
+    casadi::DM upper_bounds;
+    std::unique_ptr<PathConstraint> function;
+};
 
 class Solver;
 class TrapezoidalSolver;
@@ -104,13 +109,39 @@ public:
     // TODO create separate addDegreeOfFreedom() and addAuxiliaryState()?
     void addState(std::string name, StateType type, Bounds bounds,
             Bounds initialBounds, Bounds finalBounds) {
+        clipEndpointBounds(bounds, initialBounds);
+        clipEndpointBounds(bounds, finalBounds);
         m_stateInfos.push_back({std::move(name), type, std::move(bounds),
                 std::move(initialBounds), std::move(finalBounds)});
+        if (type == StateType::Coordinate)
+            ++m_numCoordinates;
+        else if (type == StateType::Speed)
+            ++m_numSpeeds;
+        else if (type == StateType::Auxiliary)
+            ++m_numAuxiliaryStates;
     }
     void addControl(std::string name, Bounds bounds, Bounds initialBounds,
             Bounds finalBounds) {
+        clipEndpointBounds(bounds, initialBounds);
+        clipEndpointBounds(bounds, finalBounds);
         m_controlInfos.push_back({std::move(name), std::move(bounds),
                 std::move(initialBounds), std::move(finalBounds)});
+    }
+    template <typename FunctionType, typename... Args>
+    void addPathConstraint(
+            std::string name, std::vector<Bounds> bounds, Args&&... args) {
+        casadi::DM lower(bounds.size(), 1);
+        casadi::DM upper(bounds.size(), 1);
+        for (int ibound = 0; ibound < (int)bounds.size(); ++ibound) {
+            lower(ibound, 0) = bounds[ibound].lower;
+            upper(ibound, 0) = bounds[ibound].upper;
+        }
+        m_pathInfos.push_back(
+                {std::move(name), std::move(lower), std::move(upper),
+                        OpenSim::make_unique<FunctionType>(
+                                std::forward<Args>(args)...)});
+        m_pathInfos.back().function->constructFunction(
+                this, "path_constraint_" + name, (int)bounds.size());
     }
     template <typename FunctionType, typename... Args>
     void setIntegralCost(Args&&... args) {
@@ -130,11 +161,6 @@ public:
                 OpenSim::make_unique<FunctionType>(std::forward<Args>(args)...);
         m_multibodyFunc->constructFunction(this, "multibody_system");
     }
-    template <typename FunctionType, typename... Args>
-    void setPathConstraints(Args&&... args) {
-        m_pathFunc = std::unique_ptr<FunctionType>(std::forward<Args>(args)...);
-        m_pathFunc->constructFunction(this, "path_constraints");
-    }
 
     template <typename IterateType = Iterate>
     IterateType createIterate() const {
@@ -144,17 +170,6 @@ public:
         for (const auto& info : m_controlInfos)
             it.control_names.push_back(info.name);
         return it;
-    }
-
-    void initialize() {
-        for (const auto& info : m_stateInfos) {
-            if (info.type == StateType::Coordinate)
-                ++m_numCoordinates;
-            else if (info.type == StateType::Speed)
-                ++m_numSpeeds;
-            else if (info.type == StateType::Auxiliary)
-                ++m_numAuxiliaryStates;
-        }
     }
 
     /// @}
@@ -178,6 +193,9 @@ public:
     const std::vector<ControlInfo>& getControlInfos() const {
         return m_controlInfos;
     }
+    const std::vector<PathConstraintInfo>& getPathConstraintInfos() const {
+        return m_pathInfos;
+    }
 
     const casadi::Function& getIntegralCostIntegrand() const {
         return *m_integralCostFunc;
@@ -188,10 +206,15 @@ public:
     const casadi::Function& getMultibodySystem() const {
         return *m_multibodyFunc;
     }
-    const casadi::Function& getPathConstraints() const { return *m_pathFunc; }
     /// @}
 
 private:
+
+    void clipEndpointBounds(const Bounds& b, Bounds& endpoint) {
+        endpoint.lower = std::max(b.lower, endpoint.lower);
+        endpoint.upper = std::min(b.upper, endpoint.upper);
+    }
+
     Bounds m_timeInitialBounds;
     Bounds m_timeFinalBounds;
     std::vector<StateInfo> m_stateInfos;
@@ -199,10 +222,10 @@ private:
     int m_numSpeeds = 0;
     int m_numAuxiliaryStates = 0;
     std::vector<ControlInfo> m_controlInfos;
+    std::vector<PathConstraintInfo> m_pathInfos;
     std::unique_ptr<IntegralCostIntegrand> m_integralCostFunc;
     std::unique_ptr<EndpointCost> m_endpointCostFunc;
     std::unique_ptr<MultibodySystem> m_multibodyFunc;
-    std::unique_ptr<PathConstraints> m_pathFunc;
 };
 
 class Transcription;
@@ -237,14 +260,12 @@ public:
     }
     const casadi::Dict getSolverOptions() const { return m_solverOptions; }
 
-
     Iterate createInitialGuessFromBounds() const;
     Iterate createRandomIterateWithinBounds() const;
 
     Solution solve(const Iterate& guess) const;
 
 private:
-
     std::unique_ptr<Transcription> createTranscription() const;
 
     const Problem& m_problem;

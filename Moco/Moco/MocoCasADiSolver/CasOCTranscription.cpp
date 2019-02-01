@@ -26,8 +26,8 @@ namespace CasOC {
 Trapezoidal::Trapezoidal(const Solver& solver, const Problem& problem)
         : Transcription(solver, problem) {
 
-    // Create variables
-    // ----------------
+    // Create variables.
+    // -----------------
     // TODO: Move some of this to the Transcription base class?
     const int numMeshPoints = m_solver.getNumMeshPoints();
     m_vars[Var::initial_time] = m_opti.variable();
@@ -43,8 +43,8 @@ Trapezoidal::Trapezoidal(const Solver& solver, const Problem& problem)
     m_duration = m_vars[Var::final_time] - m_vars[Var::initial_time];
     m_times = createTimes(m_vars[Var::initial_time], m_vars[Var::final_time]);
 
-    // Set variable bounds
-    // -------------------
+    // Set variable bounds.
+    // --------------------
     auto initializeBounds = [&](VariablesDM& bounds) {
         for (auto& kv : m_vars) {
             bounds[kv.first] = DM(kv.second.rows(), kv.second.columns());
@@ -60,7 +60,8 @@ Trapezoidal::Trapezoidal(const Solver& solver, const Problem& problem)
     const auto& stateInfos = m_problem.getStateInfos();
     int is = 0;
     for (const auto& info : stateInfos) {
-        setVariableBounds(Var::states, is, Slice(1, -2), info.bounds);
+        setVariableBounds(
+                Var::states, is, Slice(1, numMeshPoints - 1), info.bounds);
         setVariableBounds(Var::states, is, 0, info.initialBounds);
         setVariableBounds(Var::states, is, -1, info.finalBounds);
         ++is;
@@ -69,7 +70,8 @@ Trapezoidal::Trapezoidal(const Solver& solver, const Problem& problem)
     const auto& controlInfos = m_problem.getControlInfos();
     int ic = 0;
     for (const auto& info : controlInfos) {
-        setVariableBounds(Var::controls, ic, Slice(1, -2), info.bounds);
+        setVariableBounds(
+                Var::controls, ic, Slice(1, numMeshPoints - 1), info.bounds);
         setVariableBounds(Var::controls, ic, 0, info.initialBounds);
         setVariableBounds(Var::controls, ic, -1, info.finalBounds);
         ++ic;
@@ -77,79 +79,94 @@ Trapezoidal::Trapezoidal(const Solver& solver, const Problem& problem)
 
     // Cost.
     // -----
-    const DM meshIntervals = m_mesh(Slice(1, -1)) - m_mesh(Slice(0, -2));
+    const DM meshIntervals = m_mesh(Slice(1, numMeshPoints)) -
+            m_mesh(Slice(0, numMeshPoints - 1));
     DM quadCoeffs(numMeshPoints, 1);
-    quadCoeffs(Slice(0, -2)) = 0.5 * meshIntervals;
-    quadCoeffs(Slice(1, -1)) += 0.5 * meshIntervals;
+    quadCoeffs(Slice(0, numMeshPoints - 1)) = 0.5 * meshIntervals;
+    quadCoeffs(Slice(1, numMeshPoints)) += 0.5 * meshIntervals;
     MX integralCost = 0;
     for (int itime = 0; itime < numMeshPoints; ++itime) {
         const auto out = m_problem.getIntegralCostIntegrand().operator()(
                 {m_times(itime, 0), m_vars[Var::states](Slice(), itime),
-                        m_vars[Var::controls](Slice(), itime),
-                        m_vars[Var::parameters]});
+                 m_vars[Var::controls](Slice(), itime),
+                 m_vars[Var::parameters]});
         integralCost += quadCoeffs(itime) * out.at(0);
-        // TODO: Penalize multipliers.
+        // TODO: Obey user option for if this penalty should exist.
+        if (m_problem.getNumMultipliers()) {
+            const auto mults = m_vars[Var::multipliers](Slice(), itime);
+            const int multiplierWeight = 100.0; // TODO move.
+            integralCost += multiplierWeight * dot(mults, mults);
+        }
     }
     integralCost *= m_duration;
 
     const auto endpointCostOut =
             m_problem.getEndpointCost().operator()({m_vars[Var::final_time],
-                    m_vars[Var::states](Slice(), -1), m_vars[Var::parameters]});
+                                                    m_vars[Var::states](Slice(), -1), m_vars[Var::parameters]});
     const auto endpointCost = endpointCostOut.at(0);
     m_opti.minimize(integralCost + endpointCost);
 
-    // Defects.
-    // --------
+    // Compute DAE at all mesh points.
+    // -------------------------------
     const auto& states = m_vars[Var::states];
     const int NQ = m_problem.getNumCoordinates();
     const int NU = m_problem.getNumSpeeds();
     OPENSIM_THROW_IF(NQ != NU, OpenSim::Exception, "NQ != NU");
     const auto calcDAE = [&](casadi_int itime, MX& xdot, MX& qerr) {
-        MX u = states(Slice(NQ, 2 * NQ), itime);
-        MX qdot = u; // TODO: This assumes the N matrix is identity.
-        auto dynamicsOutput = m_problem.getMultibodySystem().operator()(
+        const MX u = states(Slice(NQ, 2 * NQ), itime);
+        const MX qdot = u; // TODO: This assumes the N matrix is identity.
+        const auto dynamicsOutput = m_problem.getMultibodySystem().operator()(
                 {m_times(itime), m_vars[Var::states](Slice(), itime),
                         m_vars[Var::controls](Slice(), itime),
                         m_vars[Var::multipliers](Slice(), itime),
                         m_vars[Var::parameters]});
-        MX udot = dynamicsOutput.at(0);
-        MX zdot = dynamicsOutput.at(1);
+        const MX udot = dynamicsOutput.at(0);
+        const MX zdot = dynamicsOutput.at(1);
         xdot = casadi::MX::vertcat({qdot, udot, zdot});
         qerr = dynamicsOutput.at(2);
     };
+    // TODO: Does creating all this memory have efficiency implications in
+    //  CasADi?
     MX xdot(m_problem.getNumStates(), numMeshPoints);
+    MX qerr(m_problem.getNumKinematicConstraintEquations(), numMeshPoints);
     MX this_xdot;
+    MX this_qerr;
     for (int itime = 0; itime < numMeshPoints; ++itime) {
-        MX qerr;
-        calcDAE(itime, this_xdot, qerr);
+        calcDAE(itime, this_xdot, this_qerr);
         xdot(Slice(), itime) = this_xdot;
+        qerr(Slice(), itime) = this_qerr;
+    }
+
+    // Apply defect and path constraints.
+    // ----------------------------------
+    // We have arranged the code this way so that all constraints at a given
+    // mesh point are grouped together (organizing the sparsity of the Jacobian
+    // this way might have benefits for sparse linear algebra).
+    for (int itime = 0; itime < numMeshPoints; ++itime) {
+        if (itime > 0) {
+            auto h = m_times(itime) - m_times(itime - 1);
+            auto x_i = states(Slice(), itime);
+            auto x_im1 = states(Slice(), itime - 1);
+            auto xdot_i = xdot(Slice(), itime);
+            auto xdot_im1 = xdot(Slice(), itime - 1);
+            m_opti.subject_to(x_i == (x_im1 + 0.5 * h * (xdot_i + xdot_im1)));
+        }
+        // TODO
         // if (m_problem.getNumKinematicConstraintEquations()) {
-        //     m_opti.subject_to(kcLowerBounds <= qerr <= kcUpperBounds);
+        //     m_opti.subject_to(kcLowerBounds <= qerr(Slice(), itime) <=
+        //     kcUpperBounds);
         // }
+        for (const auto& pathInfo : m_problem.getPathConstraintInfos()) {
+            const auto output = pathInfo.function->operator()(
+                    {m_times(itime),
+                     m_vars[Var::states](Slice(), itime),
+                     m_vars[Var::controls](Slice(), itime),
+                     m_vars[Var::parameters]});
+            const auto& errors = output.at(0);
+            m_opti.subject_to(pathInfo.lower_bounds <= errors <
+                    pathInfo.upper_bounds);
+        }
     }
-
-    // Repeat h so that we have a (numStates x numMeshPoints) matrix to
-    // multiply, elementwise, all states in the itime interval by h(itime).
-    // repmat(v, n, m) repeats v vertically n times and horizontally m times.
-    auto h = m_times(Slice(1, -1)) - m_times(Slice(0, -2));
-    auto h_mat = repmat(h.T(), m_problem.getNumStates(), 1);
-    auto x_i = states(Slice(), Slice(1, -1));
-    auto x_im1 = states(Slice(), Slice(0, -2));
-    auto xdot_i = xdot(Slice(), Slice(1, -1));
-    auto xdot_im1 = xdot(Slice(), Slice(0, -2));
-    m_opti.subject_to(x_i == (x_im1 + 0.5 * h_mat * (xdot_i + xdot_im1)));
-
-    // Path constraints.
-    // -----------------
-    // TODO
-    /*
-    casadi::MX path_error;
-    for (int itime = 0; itime < m_numTimes; ++itime) {
-            pathError = prob.m_path_func({time, state, control})
-            m_opti.subject_to(prob.m_pathLowerBounds <
-    }
-    m_opti.subje
-     */
 }
 
 Iterate Trapezoidal::createInitialGuessFromBoundsImpl() const {
@@ -216,6 +233,7 @@ Solution Trapezoidal::solveImpl() const {
         std::cerr << "MocoCasADiSolver did not succeed: " << e.what()
                   << std::endl;
         varsDM = convertToVariablesDM(m_opti.debug(), m_vars);
+
     }
     Solution solution = m_problem.createIterate<Solution>();
     solution.variables = varsDM;

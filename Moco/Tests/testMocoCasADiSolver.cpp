@@ -47,6 +47,7 @@ int main() {
     auto& solver = moco.initCasADiSolver();
     solver.set_num_mesh_points(20);
     MocoSolution solution = moco.solve();
+    solution.unseal().write("testMocoCasADiSolver_solution.sto");
 
     // moco.visualize(solution);
     return 0;
