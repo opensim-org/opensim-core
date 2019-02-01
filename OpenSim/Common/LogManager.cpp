@@ -107,10 +107,11 @@ LogManager::LogManager()
     std::cout.rdbuf(&out);
     std::cerr.rdbuf(&err);
 
-    // Redirect output to both the terminal and an output file
+    // Redirect output to the terminal
     out.addLogCallback(new StreamLogCallback(&cout,false));
     err.addLogCallback(new StreamLogCallback(&cerr,false));
 
+    // Optional: Redirect output to file
 #if OPENSIM_LOG_TO_FILE
     out.addLogCallback(new StreamLogCallback("out.log"));
     err.addLogCallback(new StreamLogCallback("err.log"));
