@@ -167,6 +167,10 @@ std::unique_ptr<CasOC::Problem> MocoCasADiSolver::createCasOCProblem() const {
                 convertBounds(info.getInitialBounds()),
                 convertBounds(info.getFinalBounds()));
     }
+    for (const auto& paramName : problemRep.createParameterNames()) {
+        const auto& param = problemRep.getParameter(paramName);
+        casProblem->addParameter(paramName, convertBounds(param.getBounds()));
+    }
     const auto pathConstraintNames = problemRep.createPathConstraintNames();
     for (const auto& name : pathConstraintNames) {
         const auto& pathCon = problemRep.getPathConstraint(name);

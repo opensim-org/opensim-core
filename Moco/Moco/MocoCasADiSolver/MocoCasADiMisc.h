@@ -113,11 +113,6 @@ TOut convertToMocoIterate(const CasOC::Iterate& casIt) {
     if (!casIt.control_names.empty()) {
         simtkControls = convertToSimTKMatrix(casVars.at(Var::controls));
     }
-    SimTK::RowVector simtkParameters;
-    if (!casIt.parameter_names.empty()) {
-        const auto paramsValue = casVars.at(Var::parameters);
-        simtkParameters = convertToSimTKVector<SimTK::RowVector>(paramsValue);
-    }
     SimTK::Matrix simtkMultipliers;
     if (!casIt.multiplier_names.empty()) {
         const auto multsValue = casVars.at(Var::multipliers);
@@ -127,6 +122,11 @@ TOut convertToMocoIterate(const CasOC::Iterate& casIt) {
     if (casVars.count(Var::derivatives)) {
         const auto derivsValue = casVars.at(Var::derivatives);
         simtkDerivatives = convertToSimTKMatrix(derivsValue);
+    }
+    SimTK::RowVector simtkParameters;
+    if (!casIt.parameter_names.empty()) {
+        const auto paramsValue = casVars.at(Var::parameters);
+        simtkParameters = convertToSimTKVector<SimTK::RowVector>(paramsValue);
     }
 
     SimTK::Vector simtkTimes = convertToSimTKVector(casIt.times);

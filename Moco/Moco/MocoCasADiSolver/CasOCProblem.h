@@ -176,6 +176,13 @@ public:
             it.state_names.push_back(info.name);
         for (const auto& info : m_controlInfos)
             it.control_names.push_back(info.name);
+        if (getNumMultipliers()) throw std::runtime_error("Add multiplier_names");
+        //for (const auto& info : m_multiplierInfos)
+        //    it.multiplier_names.push_back(info.name);
+        //for (const auto& info : m_derivativeInfos)
+        //    it.derivative_names.push_back(info.name);
+        for (const auto& info : m_paramInfos)
+            it.parameter_names.push_back(info.name);
         return it;
     }
 
