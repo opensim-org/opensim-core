@@ -140,8 +140,10 @@ TOut convertToMocoIterate(const CasOC::Iterate& casIt) {
 
 inline void applyParametersToModel(
         const SimTK::Vector& parameters, const MocoProblemRep& mocoProblemRep) {
-    if (parameters.size()) mocoProblemRep.applyParametersToModel(parameters);
-    const_cast<Model&>(mocoProblemRep.getModel()).initSystem();
+    if (parameters.size()) {
+        mocoProblemRep.applyParametersToModel(parameters);
+        const_cast<Model&>(mocoProblemRep.getModel()).initSystem();
+    }
 }
 
 inline void convertToSimTKState(const double* time, const double* states,
