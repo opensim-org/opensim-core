@@ -57,17 +57,16 @@ add_library(osimMoco SHARED
         Components/ModelFactory.cpp
         MocoCasADiSolver/MocoCasADiSolver.h
         MocoCasADiSolver/MocoCasADiSolver.cpp
-        MocoCasADiSolver/CasADiTranscription.cpp
-        MocoCasADiSolver/CasADiTranscription.h
-        MocoCasADiSolver/CasADiTrapezoidal.cpp
-        MocoCasADiSolver/CasADiTrapezoidal.h
+        MocoCasADiSolver/MocoCasADiMisc.h
         MocoCasADiSolver/CasOCProblem.cpp
         MocoCasADiSolver/CasOCProblem.h
-        MocoCasADiSolver/MocoCasADiMisc.h
         MocoCasADiSolver/CasOCFunction.cpp
         MocoCasADiSolver/CasOCFunction.h
         MocoCasADiSolver/CasOCTranscription.cpp
-        MocoCasADiSolver/CasOCTranscription.h)
+        MocoCasADiSolver/CasOCTranscription.h
+        MocoCasADiSolver/CasOCTrapezoidal.cpp
+        MocoCasADiSolver/CasOCTrapezoidal.h
+        )
 target_link_libraries(osimMoco PUBLIC osimTools
                                PRIVATE tropter casadi)
 

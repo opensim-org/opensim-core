@@ -1,5 +1,7 @@
+#ifndef MOCO_CASOCTRAPEZOIDAL_H
+#define MOCO_CASOCTRAPEZOIDAL_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: CasOCTranscription.cpp                                       *
+ * OpenSim Moco: CasOCTrapezoidal.h                                           *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2018 Stanford University and the Authors                     *
  *                                                                            *
@@ -15,23 +17,33 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
-#include "CasOCTranscription.h"
 
-using casadi::DM;
-using casadi::MX;
-using casadi::Slice;
+#include "CasOCTranscription.h"
 
 namespace CasOC {
 
-void Transcription::addConstraints(const casadi::DM& lower,
-        const casadi::DM& upper, const casadi::MX& equations) {
-    OPENSIM_THROW_IF(
-            lower.size() != upper.size() || lower.size() != equations.size(),
-            OpenSim::Exception,
-            "Arguments must have the same size.");
-    m_constraintsLowerBounds.push_back(lower);
-    m_constraintsUpperBounds.push_back(upper);
-    m_constraints.push_back(equations);
-}
+
+class Trapezoidal : public Transcription {
+public:
+    Trapezoidal(const Solver& solver, const Problem& problem);
+
+private:
+    Iterate createInitialGuessFromBoundsImpl() const override;
+    Iterate createRandomIterateWithinBoundsImpl() const override;
+    casadi::DM createTimesImpl(
+            casadi::DM initialTime, casadi::DM finalTime) const override {
+        return createTimes<casadi::DM>(initialTime, finalTime);
+    }
+
+    template <typename T>
+    T createTimes(const T& initialTime, const T& finalTime) const {
+        return (finalTime - initialTime) * m_mesh + initialTime;
+    }
+    casadi::DM m_mesh;
+    casadi::MX m_times;
+    casadi::MX m_duration;
+};
 
 } // namespace CasOC
+
+#endif // MOCO_CASOCTRAPEZOIDAL_H

@@ -1,7 +1,7 @@
 #ifndef MOCO_CASOCTRANSCRIPTION_H
 #define MOCO_CASOCTRANSCRIPTION_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: MocoCasOCTranscription.cpp                                   *
+ * OpenSim Moco: CasOCTranscription.h                                         *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2018 Stanford University and the Authors                     *
  *                                                                            *
@@ -143,27 +143,6 @@ private:
         }
         return out;
     }
-};
-
-class Trapezoidal : public Transcription {
-public:
-    Trapezoidal(const Solver& solver, const Problem& problem);
-
-private:
-    Iterate createInitialGuessFromBoundsImpl() const override;
-    Iterate createRandomIterateWithinBoundsImpl() const override;
-    casadi::DM createTimesImpl(
-            casadi::DM initialTime, casadi::DM finalTime) const override {
-        return createTimes<casadi::DM>(initialTime, finalTime);
-    }
-
-    template <typename T>
-    T createTimes(const T& initialTime, const T& finalTime) const {
-        return (finalTime - initialTime) * m_mesh + initialTime;
-    }
-    casadi::DM m_mesh;
-    casadi::MX m_times;
-    casadi::MX m_duration;
 };
 
 } // namespace CasOC

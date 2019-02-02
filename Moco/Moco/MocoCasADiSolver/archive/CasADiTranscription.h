@@ -18,9 +18,9 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "../MocoUtilities.h"
-#include "../MocoProblemRep.h"
-#include "MocoCasADiSolver.h"
+#include "Moco/MocoUtilities.h"
+#include "Moco/MocoProblemRep.h"
+#include "Moco/MocoCasADiSolver/MocoCasADiSolver.h"
 #include <casadi/casadi.hpp>
 
 // TODO: temporary using declarations.

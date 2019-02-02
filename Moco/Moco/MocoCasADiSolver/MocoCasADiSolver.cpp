@@ -269,7 +269,6 @@ MocoSolution MocoCasADiSolver::solveImpl() const {
     checkPropertyIsPositive(*this, getProperty_num_mesh_points());
     auto casProblem = createCasOCProblem();
     auto casSolver = createCasOCSolver(*casProblem);
-    // opt.disp(std::cout, true);
 
     CasOC::Solution casSolution;
     MocoIterate guess = getGuess();
