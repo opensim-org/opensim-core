@@ -214,7 +214,7 @@ SNOPTSolver::optimize_impl(const VectorXd& variablesArg) const {
     const auto& jacobian_approx = get_jacobian_approximation();
     TROPTER_THROW_IF(jacobian_approx != "exact" &&
         jacobian_approx != "finite-difference-values",
-        "When using Ipopt, the 'jacobian_approximation' setting must be "
+        "When using SNOPT, the 'jacobian_approximation' setting must be "
         "either 'exact' or 'finite-difference-values', but '%s' was "
         "provided.", jacobian_approx);
 
