@@ -57,7 +57,7 @@ Iterate Solver::createInitialGuessFromBounds() const {
 
 Iterate Solver::createRandomIterateWithinBounds() const {
     auto transcription = createTranscription();
-    return transcription->createInitialGuessFromBounds();
+    return transcription->createRandomIterateWithinBounds();
 }
 
 Solution Solver::solve(const Iterate& guess) const {

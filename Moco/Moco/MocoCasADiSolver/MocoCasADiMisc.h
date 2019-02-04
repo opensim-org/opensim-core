@@ -79,11 +79,13 @@ inline CasOC::Iterate convertToCasOCIterate(const MocoIterate& mocoIt) {
 
 template <typename VectorType = SimTK::Vector>
 VectorType convertToSimTKVector(const casadi::DM& casVector) {
-    OPENSIM_THROW_IF(casVector.columns() != 1, Exception,
-            format("casVector should have exactly 1 column but has %i.",
-                    casVector.columns()));
-    VectorType simtkVector((int)casVector.rows());
-    for (int i = 0; i < casVector.rows(); ++i) {
+    OPENSIM_THROW_IF(casVector.columns() != 1 && casVector.rows() != 1,
+            Exception,
+            format("casVector should be 1-dimensional, but has size %i x "
+                   "%i.",
+                    casVector.rows(), casVector.columns()));
+    VectorType simtkVector((int)casVector.numel());
+    for (int i = 0; i < casVector.numel(); ++i) {
         simtkVector[i] = double(casVector(i));
     }
     return simtkVector;
@@ -185,7 +187,7 @@ public:
     int eval(const double** inputs, double** outputs, casadi_int*, double*,
             void*) const {
         applyParametersToModel(SimTK::Vector(m_casProblem->getNumParameters(),
-                inputs[3], true),
+                                       inputs[3], true),
                 m_mocoProblemRep);
         // TODO: Don't necessarily need to realize to Velocity.
         convertToSimTKState(
