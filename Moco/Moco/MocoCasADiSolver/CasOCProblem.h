@@ -250,56 +250,6 @@ private:
     std::unique_ptr<MultibodySystem> m_multibodyFunc;
 };
 
-class Transcription;
-
-class Solver {
-public:
-    Solver(const Problem& problem, const OpenSim::MocoCasADiSolver& mocoSolver)
-            : m_problem(problem), m_mocoSolver(mocoSolver) {}
-    void setNumMeshPoints(int numMeshPoints) {
-        m_numMeshPoints = numMeshPoints;
-    }
-    int getNumMeshPoints() const { return m_numMeshPoints; }
-
-    void setTranscriptionScheme(std::string scheme) {
-        m_transcriptionScheme = std::move(scheme);
-    }
-    const std::string& getTranscriptionScheme() const {
-        return m_transcriptionScheme;
-    }
-
-    void setOptimSolver(std::string optimSolver) {
-        m_optimSolver = std::move(optimSolver);
-    }
-    const std::string getOptimSolver() const { return m_optimSolver; }
-
-    void setPluginOptions(casadi::Dict opts) {
-        m_pluginOptions = std::move(opts);
-    }
-    const casadi::Dict& getPluginOptions() const { return m_pluginOptions; }
-
-    void setSolverOptions(casadi::Dict solverOptions) {
-        m_solverOptions = std::move(solverOptions);
-    }
-    const casadi::Dict getSolverOptions() const { return m_solverOptions; }
-
-    Iterate createInitialGuessFromBounds() const;
-    Iterate createRandomIterateWithinBounds() const;
-
-    Solution solve(const Iterate& guess) const;
-
-private:
-    std::unique_ptr<Transcription> createTranscription() const;
-
-    const Problem& m_problem;
-    const OpenSim::MocoCasADiSolver& m_mocoSolver;
-    int m_numMeshPoints;
-    std::string m_transcriptionScheme;
-    casadi::Dict m_pluginOptions;
-    casadi::Dict m_solverOptions;
-    std::string m_optimSolver;
-};
-
 } // namespace CasOC
 
 #endif // MOCO_CASOCPROBLEM_H

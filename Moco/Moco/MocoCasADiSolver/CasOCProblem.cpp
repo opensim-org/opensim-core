@@ -39,31 +39,4 @@ Iterate Iterate::resample(const casadi::DM& newTimes) const {
     return OpenSim::convertToCasOCIterate(mocoIt);
 }
 
-std::unique_ptr<Transcription> Solver::createTranscription() const {
-    std::unique_ptr<Transcription> transcription;
-    if (m_transcriptionScheme == "trapezoidal") {
-        transcription = OpenSim::make_unique<Trapezoidal>(
-                *this, m_problem, m_mocoSolver);
-    } else {
-        OPENSIM_THROW(Exception, format("Unknown transcription scheme '%s'.",
-                                         m_transcriptionScheme));
-    }
-    return transcription;
-}
-
-Iterate Solver::createInitialGuessFromBounds() const {
-    auto transcription = createTranscription();
-    return transcription->createInitialGuessFromBounds();
-}
-
-Iterate Solver::createRandomIterateWithinBounds() const {
-    auto transcription = createTranscription();
-    return transcription->createRandomIterateWithinBounds();
-}
-
-Solution Solver::solve(const Iterate& guess) const {
-    auto transcription = createTranscription();
-    return transcription->solve(guess);
-}
-
 } // namespace CasOC

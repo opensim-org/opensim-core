@@ -18,7 +18,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "CasOCProblem.h"
+#include "CasOCSolver.h"
 
 namespace CasOC {
 

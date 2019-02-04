@@ -1,7 +1,5 @@
-#ifndef MOCO_CASOCTRAPEZOIDAL_H
-#define MOCO_CASOCTRAPEZOIDAL_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: CasOCTrapezoidal.h                                           *
+ * OpenSim Moco: MocoCasOCSolver.cpp                                          *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2018 Stanford University and the Authors                     *
  *                                                                            *
@@ -18,33 +16,47 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
+#include "CasOCProblem.h"
+
+#include "../MocoUtilities.h"
 #include "CasOCTranscription.h"
+#include "CasOCTrapezoidal.h"
+
+// Shhh...we shouldn't depend on these but MocoIterate has a handy resample()
+// function.
+#include "../MocoIterate.h"
+#include "MocoCasADiMisc.h"
+
+using OpenSim::Exception;
+using OpenSim::format;
 
 namespace CasOC {
 
-
-class Trapezoidal : public Transcription {
-public:
-    Trapezoidal(const Solver& solver, const Problem& problem,
-            const OpenSim::MocoCasADiSolver& mocoSolver);
-
-private:
-    Iterate createInitialGuessFromBoundsImpl() const override;
-    Iterate createRandomIterateWithinBoundsImpl() const override;
-    casadi::DM createTimesImpl(
-            casadi::DM initialTime, casadi::DM finalTime) const override {
-        return createTimes<casadi::DM>(initialTime, finalTime);
+std::unique_ptr<Transcription> Solver::createTranscription() const {
+    std::unique_ptr<Transcription> transcription;
+    if (m_transcriptionScheme == "trapezoidal") {
+        transcription = OpenSim::make_unique<Trapezoidal>(
+                *this, m_problem, m_mocoSolver);
+    } else {
+        OPENSIM_THROW(Exception, format("Unknown transcription scheme '%s'.",
+                                         m_transcriptionScheme));
     }
+    return transcription;
+}
 
-    template <typename T>
-    T createTimes(const T& initialTime, const T& finalTime) const {
-        return (finalTime - initialTime) * m_mesh + initialTime;
-    }
-    casadi::DM m_mesh;
-    casadi::MX m_times;
-    casadi::MX m_duration;
-};
+Iterate Solver::createInitialGuessFromBounds() const {
+    auto transcription = createTranscription();
+    return transcription->createInitialGuessFromBounds();
+}
+
+Iterate Solver::createRandomIterateWithinBounds() const {
+    auto transcription = createTranscription();
+    return transcription->createRandomIterateWithinBounds();
+}
+
+Solution Solver::solve(const Iterate& guess) const {
+    auto transcription = createTranscription();
+    return transcription->solve(guess);
+}
 
 } // namespace CasOC
-
-#endif // MOCO_CASOCTRAPEZOIDAL_H

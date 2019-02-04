@@ -60,6 +60,8 @@ add_library(osimMoco SHARED
         MocoCasADiSolver/MocoCasADiMisc.h
         MocoCasADiSolver/CasOCProblem.cpp
         MocoCasADiSolver/CasOCProblem.h
+        MocoCasADiSolver/CasOCSolver.cpp
+        MocoCasADiSolver/CasOCSolver.h
         MocoCasADiSolver/CasOCFunction.cpp
         MocoCasADiSolver/CasOCFunction.h
         MocoCasADiSolver/CasOCTranscription.cpp

@@ -19,7 +19,7 @@
 #include "MocoCasADiSolver.h"
 
 #include "../MocoUtilities.h"
-#include "CasOCProblem.h"
+#include "CasOCSolver.h"
 #include "MocoCasADiMisc.h"
 #include <casadi/casadi.hpp>
 

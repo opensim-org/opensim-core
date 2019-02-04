@@ -24,8 +24,9 @@ using casadi::Slice;
 namespace CasOC {
 
 
-Trapezoidal::Trapezoidal(const Solver& solver, const Problem& problem)
-        : Transcription(solver, problem) {
+Trapezoidal::Trapezoidal(const Solver& solver, const Problem& problem,
+        const OpenSim::MocoCasADiSolver& mocoSolver)
+        : Transcription(solver, problem, mocoSolver) {
 
     // Create variables.
     // -----------------
