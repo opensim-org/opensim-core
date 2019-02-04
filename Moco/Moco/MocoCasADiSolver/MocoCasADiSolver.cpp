@@ -23,34 +23,6 @@
 #include "MocoCasADiMisc.h"
 #include <casadi/casadi.hpp>
 
-// TODO
-// - create separate tests for tropter and CasADi.
-// - parameters are very inefficient: reapplying parameters more than necessary.
-// - how to handle avoiding interpolation of splines? mesh index?
-// - variable allocation order MATTERS: try allocating variables in a
-//   more efficient manner, or create views again.
-// - does CasADi rearrange to improve sparsity? does order of variables
-//   (and sparsity pattern) matter for performance? ....almost no time is spent
-//   in the solver, so this can't matter yet.
-// - Remove time as a variable to greatly reduce coupling, or just, for now,
-//   do not use time when computing cost and constraints.
-//   what is the performance benefit of removing time?
-// - improve sparsity pattern?
-// - Expected much better performance, b/c I thought we would not need to
-// evaluate
-//   cost at time i when perturbing at time j, i \neq j..
-//   I can try to investigate this on my own.
-// - Is there a way to collect stats on how many times a function is called?
-// - IntegrandCost: no point in realizing to velocity if there aren't even
-//   any integral cost terms, or if integral costs depend only on controls
-//   (not any more complex calculations).
-// - support multibody constraints
-// - get testConstraints working with CasADi.
-// - TODO: clean up by separating problem from solver.
-//      Allow creating variables and supplying the casadi function for
-//      the DAEs, objective, etc.
-// TODO rename MocoCasAdiMisc.h file.
-
 using casadi::Callback;
 using casadi::Dict;
 using casadi::DM;
