@@ -136,23 +136,24 @@ C3DFileAdapter::extendRead(const std::string& fileName) const {
         }
 
         // Create the data
-        auto& marker_table = *new 
-            TimeSeriesTableVec3(marker_times, marker_matrix, marker_labels);
+        auto marker_table = 
+            std::make_shared<TimeSeriesTableVec3>(marker_times, 
+                                                  marker_matrix, 
+                                                  marker_labels);
 
-        marker_table.
+        marker_table->
             updTableMetaData().
             setValueForKey("DataRate",
                 std::to_string(acquisition->GetPointFrequency()));
 
-        marker_table.
+        marker_table->
             updTableMetaData().
             setValueForKey("Units",
                 acquisition->GetPointUnit());
 
-        marker_table.updTableMetaData().setValueForKey("events", event_table);
+        marker_table->updTableMetaData().setValueForKey("events", event_table);
 
-        tables.emplace(_markers,
-            std::shared_ptr<TimeSeriesTableVec3>(&marker_table));
+        tables.emplace(_markers, marker_table);
     }
 
     // This is probably the right way to get the raw forces data from force 

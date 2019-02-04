@@ -24,6 +24,7 @@
 #include <OpenSim/Common/Storage.h>
 #include <OpenSim/Common/MarkerData.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
+#include <OpenSim/Common/STOFileAdapter.h>
 
 #include <unordered_set>
 
