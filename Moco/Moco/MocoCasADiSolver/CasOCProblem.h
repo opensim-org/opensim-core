@@ -32,6 +32,10 @@
 /// CasOC does not conceptually depend on OpenSim or Moco, though CasOC may use
 /// OpenSim/Moco utilities (e.g., exception handling).
 
+namespace OpenSim {
+class MocoCasADiSolver;
+} // namespace OpenSim
+
 /// CasADi Optimal Control.
 namespace CasOC {
 
@@ -110,7 +114,7 @@ public:
         m_timeFinalBounds = std::move(final);
     }
     /// The state variables must be added in the order Q, U, Z.
-    // TODO create separate addDegreeOfFreedom() and addAuxiliaryState()?
+    // TODO: Create separate addDegreeOfFreedom() and addAuxiliaryState()?
     void addState(std::string name, StateType type, Bounds bounds,
             Bounds initialBounds, Bounds finalBounds) {
         clipEndpointBounds(bounds, initialBounds);
@@ -176,10 +180,11 @@ public:
             it.state_names.push_back(info.name);
         for (const auto& info : m_controlInfos)
             it.control_names.push_back(info.name);
-        if (getNumMultipliers()) throw std::runtime_error("Add multiplier_names");
-        //for (const auto& info : m_multiplierInfos)
+        if (getNumMultipliers())
+            throw std::runtime_error("Add multiplier_names");
+        // for (const auto& info : m_multiplierInfos)
         //    it.multiplier_names.push_back(info.name);
-        //for (const auto& info : m_derivativeInfos)
+        // for (const auto& info : m_derivativeInfos)
         //    it.derivative_names.push_back(info.name);
         for (const auto& info : m_paramInfos)
             it.parameter_names.push_back(info.name);
@@ -226,7 +231,6 @@ public:
     /// @}
 
 private:
-
     void clipEndpointBounds(const Bounds& b, Bounds& endpoint) {
         endpoint.lower = std::max(b.lower, endpoint.lower);
         endpoint.upper = std::min(b.upper, endpoint.upper);
@@ -250,7 +254,8 @@ class Transcription;
 
 class Solver {
 public:
-    Solver(const Problem& problem) : m_problem(problem) {}
+    Solver(const Problem& problem, const OpenSim::MocoCasADiSolver& mocoSolver)
+            : m_problem(problem), m_mocoSolver(mocoSolver) {}
     void setNumMeshPoints(int numMeshPoints) {
         m_numMeshPoints = numMeshPoints;
     }
@@ -287,6 +292,7 @@ private:
     std::unique_ptr<Transcription> createTranscription() const;
 
     const Problem& m_problem;
+    const OpenSim::MocoCasADiSolver& m_mocoSolver;
     int m_numMeshPoints;
     std::string m_transcriptionScheme;
     casadi::Dict m_pluginOptions;

@@ -51,7 +51,7 @@ casadi::Sparsity IntegralCostIntegrand::get_sparsity_in(casadi_int i) {
 }
 
 casadi::Sparsity EndpointCost::get_sparsity_in(casadi_int i) {
-    // TODO detect this sparsity.
+    // TODO: Detect this sparsity.
     if (i == 0) {
         return casadi::Sparsity::scalar();
     } else if (i == 1) {

@@ -42,7 +42,8 @@ Iterate Iterate::resample(const casadi::DM& newTimes) const {
 std::unique_ptr<Transcription> Solver::createTranscription() const {
     std::unique_ptr<Transcription> transcription;
     if (m_transcriptionScheme == "trapezoidal") {
-        transcription = OpenSim::make_unique<Trapezoidal>(*this, m_problem);
+        transcription = OpenSim::make_unique<Trapezoidal>(
+                *this, m_problem, m_mocoSolver);
     } else {
         OPENSIM_THROW(Exception, format("Unknown transcription scheme '%s'.",
                                          m_transcriptionScheme));

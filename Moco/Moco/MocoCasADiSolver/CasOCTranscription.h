@@ -24,8 +24,9 @@ namespace CasOC {
 
 class Transcription {
 public:
-    Transcription(const Solver& solver, const Problem& problem)
-            : m_solver(solver), m_problem(problem) {}
+    Transcription(const Solver& solver, const Problem& problem,
+            const OpenSim::MocoCasADiSolver& mocoSolver)
+            : m_solver(solver), m_problem(problem), m_mocoSolver(mocoSolver) {}
     virtual ~Transcription() = default;
     Iterate createInitialGuessFromBounds() const {
         return createInitialGuessFromBoundsImpl();
@@ -93,6 +94,7 @@ protected:
 
     const Solver& m_solver;
     const Problem& m_problem;
+    const OpenSim::MocoCasADiSolver& m_mocoSolver;
     VariablesMX m_vars;
     VariablesDM m_lowerBounds;
     VariablesDM m_upperBounds;

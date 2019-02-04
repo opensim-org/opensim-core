@@ -109,7 +109,7 @@ Trapezoidal::Trapezoidal(const Solver& solver, const Problem& problem)
         // TODO: Obey user option for if this penalty should exist.
         if (m_problem.getNumMultipliers()) {
             const auto mults = m_vars[Var::multipliers](Slice(), itime);
-            const int multiplierWeight = 100.0; // TODO move.
+            const int multiplierWeight = 100.0; // TODO m_mocoSolver.get_lagrange_multiplier_weight();
             integralCost += multiplierWeight * dot(mults, mults);
         }
     }
