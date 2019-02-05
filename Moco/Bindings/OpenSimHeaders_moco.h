@@ -16,7 +16,7 @@
 #include <Moco/MocoParameter.h>
 #include <Moco/MocoIterate.h>
 #include <Moco/MocoTropterSolver.h>
-#include <Moco/MucoCasADiSolver/MucoCasADiSolver.h>
+#include <Moco/MocoCasADiSolver/MocoCasADiSolver.h>
 #include <Moco/MocoTool.h>
 #include <Moco/ActivationCoordinateActuator.h>
 #include <Moco/MocoUtilities.h>

@@ -35,16 +35,6 @@ using namespace OpenSim;
 MocoCasADiSolver::MocoCasADiSolver() { constructProperties(); }
 
 void MocoCasADiSolver::constructProperties() {
-    constructProperty_num_mesh_points(100);
-    constructProperty_verbosity(2);
-    constructProperty_dynamics_mode("explicit");
-    constructProperty_optim_solver("ipopt");
-    constructProperty_optim_max_iterations(-1);
-    constructProperty_optim_convergence_tolerance(-1);
-    constructProperty_optim_constraint_tolerance(-1);
-    constructProperty_optim_hessian_approximation("limited-memory");
-    constructProperty_optim_ipopt_print_level(-1);
-    constructProperty_guess_file("");
 }
 
 MocoIterate MocoCasADiSolver::createGuess(const std::string& type) const {

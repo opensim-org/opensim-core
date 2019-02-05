@@ -68,7 +68,8 @@ add_library(osimMoco SHARED
         MocoCasADiSolver/CasOCTranscription.h
         MocoCasADiSolver/CasOCTrapezoidal.cpp
         MocoCasADiSolver/CasOCTrapezoidal.h
-        )
+        MocoDirectCollocationSolver.cpp
+        MocoDirectCollocationSolver.h)
 target_link_libraries(osimMoco PUBLIC osimTools
                                PRIVATE tropter casadi)
 

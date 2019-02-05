@@ -28,16 +28,7 @@ MocoTropterSolver::MocoTropterSolver() {
 }
 
 void MocoTropterSolver::constructProperties() {
-    constructProperty_num_mesh_points(100);
-    constructProperty_verbosity(2);
-    constructProperty_dynamics_mode("explicit");
-    constructProperty_optim_solver("ipopt");
-    constructProperty_optim_max_iterations(-1);
-    constructProperty_optim_convergence_tolerance(-1);
-    constructProperty_optim_constraint_tolerance(-1);
-    constructProperty_optim_hessian_approximation("limited-memory");
     constructProperty_optim_sparsity_detection("random");
-    constructProperty_optim_ipopt_print_level(-1);
     constructProperty_transcription_scheme("trapezoidal");
     constructProperty_velocity_correction_bounds({-0.1, 0.1});
     constructProperty_exact_hessian_block_sparsity_mode();
@@ -46,8 +37,6 @@ void MocoTropterSolver::constructProperties() {
 
     // This is empty to allow user input error checking.
     constructProperty_enforce_constraint_derivatives();
-
-    constructProperty_guess_file("");
 }
 
 std::shared_ptr<const MocoTropterSolver::TropterProblemBase<double>>
