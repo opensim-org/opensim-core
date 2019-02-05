@@ -62,6 +62,12 @@ Optional<double> Solver::get_constraint_tolerance() const {
     return m_constraint_tolerance;
 }
 
+void Solver::set_jacobian_approximation(std::string v) {
+    m_jacobian_approximation = std::move(v);
+}
+const std::string& Solver::get_jacobian_approximation() const {
+    return m_jacobian_approximation;
+}
 void Solver::set_hessian_approximation(Optional<std::string> v) {
     m_hessian_approximation = v;
 }

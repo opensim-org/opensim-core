@@ -113,6 +113,13 @@ public:
             std::string transcription, int N = 100) {
         auto ocp = std::make_shared<DoublePendulumSwingUpMinTime<T>>();
         DirectCollocationSolver<T> dircol(ocp, transcription, solver, N);
+        std::string jacobian_approx;
+        if (hessian_approx == "exact") {
+            jacobian_approx = hessian_approx;
+        } else {
+            jacobian_approx = "finite-difference-values";
+        }
+        dircol.get_opt_solver().set_jacobian_approximation(jacobian_approx);
         dircol.get_opt_solver().set_hessian_approximation(hessian_approx);
         dircol.get_opt_solver().set_sparsity_detection("random");
         tropter::Iterate guess;
@@ -226,8 +233,14 @@ public:
         // Using an exact Hessian seems really important for this problem
         // (solves in only 20 iterations). Even a limited-memory problem started
         // from the solution using an exact Hessian does not converge.
-        dircol.get_opt_solver().set_hessian_approximation(
-                hessian_approx);
+        std::string jacobian_approx;
+        if (hessian_approx == "exact") {
+            jacobian_approx = hessian_approx;
+        } else {
+            jacobian_approx = "finite-difference-values";
+        }
+        dircol.get_opt_solver().set_jacobian_approximation(jacobian_approx);
+        dircol.get_opt_solver().set_hessian_approximation(hessian_approx);
         dircol.get_opt_solver().set_sparsity_detection("random");
         Solution solution = dircol.solve();
         //dircol.print_constraint_values(solution);
@@ -325,8 +338,14 @@ public:
         auto ocp =
                 std::make_shared<ImplicitDoublePendulumCoordinateTracking<T>>();
         DirectCollocationSolver<T> dircol(ocp, transcription, solver, N);
-        dircol.get_opt_solver().set_hessian_approximation(
-                hessian_approx);
+        std::string jacobian_approx;
+        if (hessian_approx == "exact") {
+            jacobian_approx = hessian_approx;
+        } else {
+            jacobian_approx = "finite-difference-values";
+        }
+        dircol.get_opt_solver().set_jacobian_approximation(jacobian_approx);
+        dircol.get_opt_solver().set_hessian_approximation(hessian_approx);
         dircol.get_opt_solver().set_sparsity_detection("random");
         dircol.get_opt_solver().set_advanced_option_string
                 ("print_timing_statistics", "yes");

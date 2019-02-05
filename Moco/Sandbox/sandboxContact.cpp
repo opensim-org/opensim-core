@@ -785,7 +785,6 @@ void slipSolveForForce(double rzvalue0 = 0, double rzspeed0 = 0) {
     ms.set_num_mesh_points(100);
     //ms.set_num_mesh_points(50);
     //ms.set_optim_max_iterations(2);
-    ms.set_optim_hessian_approximation("exact");
     // I tried setting convergence and constraint tolerances to 1e-3, and the
     // time to solve increased from 11 to 16 minutes (using EspositoMiller2018
     // for contact). Setting the tolerance to 1e-2 decreases the solve time from

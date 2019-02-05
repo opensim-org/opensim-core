@@ -137,7 +137,6 @@ int main() {
     solver.set_num_mesh_points(50);
     solver.set_verbosity(2);
     solver.set_optim_solver("ipopt");
-    solver.set_optim_hessian_approximation("exact");
 
     moco.print("double_pendulum_tracking.omoco");
 

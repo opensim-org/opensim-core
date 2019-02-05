@@ -86,7 +86,6 @@ MocoSolution solveDoublePendulumSwingup(const std::string& dynamics_mode) {
     solver.set_dynamics_mode(dynamics_mode);
     solver.set_num_mesh_points(N);
     //solver.set_verbosity(2);
-    //solver.set_optim_hessian_approximation("exact");
 
     MocoIterate guess = solver.createGuess();
     guess.resampleWithNumTimes(2);
