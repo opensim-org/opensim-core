@@ -94,6 +94,12 @@ OSIMMOCO_API void replaceMusclesWithPathActuators(Model& model);
 /// @note This only removes muscles within the model's ForceSet.
 OSIMMOCO_API void removeMuscles(Model& model);
 
+/// Replace a joint in the model with a WeldJoint. 
+/// @note This assumes the joint is in the JointSet and that the joint's
+///       connectees are PhysicalOffsetFrames.
+OSIMMOCO_API void replaceJointWithWeldJoint(Model& model, 
+    const std::string& jointName);
+
 /// The map provides the index of each state variable in
 /// SimTK::State::getY() from its each state variable path string.
 /// Empty slots in Y (e.g., for quaternions) are ignored.
