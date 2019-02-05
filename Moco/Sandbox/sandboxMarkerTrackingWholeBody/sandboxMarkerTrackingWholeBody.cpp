@@ -217,21 +217,6 @@ MocoSolution solveMarkerTrackingProblem(
 
     // Define the optimal control problem.
     // ===================================
-<<<<<<< HEAD:Muscollo/Sandbox/sandboxMarkerTrackingWholeBody/sandboxMarkerTrackingWholeBody.cpp
-    MucoProblem& problem = muco.updProblem();
-
-    // Model(dynamics).
-    // -----------------
-    problem.setModelCopy(setupModel(usingMuscleLikeActuators));
-
-    // Bounds.
-    // -------
-    setBounds(problem);
-        
-    // Cost.
-    // -----
-    auto* tracking = problem.addCost<MucoMarkerTrackingCost>("tracking");
-=======
     MocoProblem& mp = moco.updProblem();
 
     // Model(dynamics).
@@ -249,12 +234,11 @@ MocoSolution solveMarkerTrackingProblem(
     addCoordinateActuator(model, "ankle_angle_l", 100);
     mp.setModelCopy(*model);
 
-        
+
     // Cost.
     // -----
     auto* tracking = mp.addCost<MocoMarkerTrackingCost>();
     tracking->setName("tracking");
->>>>>>> master:Moco/Sandbox/sandboxMarkerTrackingWholeBody/sandboxMarkerTrackingWholeBody.cpp
     auto ref = TRCFileAdapter::read("marker_trajectories.trc");
     mp.setTimeBounds(ref.getIndependentColumn().at(0),
                      ref.getIndependentColumn().at(ref.getNumRows()-1));
@@ -270,21 +254,9 @@ MocoSolution solveMarkerTrackingProblem(
     markerWeights.cloneAndAppend({ "L.Heel", 2 });
     markerWeights.cloneAndAppend({ "L.Toe.Tip", 2 });
     MarkersReference markersRef(ref, &markerWeights);
-    
+
     tracking->setMarkersReference(markersRef);
     tracking->setAllowUnusedReferences(true);
-<<<<<<< HEAD:Muscollo/Sandbox/sandboxMarkerTrackingWholeBody/sandboxMarkerTrackingWholeBody.cpp
-
-    // Configure the solver.
-    // =====================
-    auto& solver = muco.initSolver<MocoCasADiSolver>();
-    solver.set_num_mesh_points(10);
-    // solver.set_optim_max_iterations(2);
-    // solver.set_verbosity(2);
-    // solver.set_optim_solver("ipopt");
-    solver.set_optim_hessian_approximation("exact");
-    // solver.set_optim_constraint_tolerance(1e-3);
-=======
 
     auto* control = mp.addCost<MocoControlCost>();
     control->setName("control_cost");
@@ -292,26 +264,21 @@ MocoSolution solveMarkerTrackingProblem(
 
     // Configure the solver.
     // =====================
-    MocoTropterSolver& ms = moco.initSolver();
+    MocoTropterSolver& ms = moco.initTropterSolver();
     ms.set_num_mesh_points(50);
     ms.set_verbosity(2);
     ms.set_optim_solver("snopt");
     ms.set_transcription_scheme("hermite-simpson");
     //ms.set_optim_hessian_approximation("exact");
->>>>>>> master:Moco/Sandbox/sandboxMarkerTrackingWholeBody/sandboxMarkerTrackingWholeBody.cpp
 
     // Create guess.
     // =============
     if (prevSolutionInitialization) {
         MocoIterate prevSolution(
             "sandboxMarkerTrackingWholeBody_marker_solution.sto");
-<<<<<<< HEAD:Muscollo/Sandbox/sandboxMarkerTrackingWholeBody/sandboxMarkerTrackingWholeBody.cpp
-        solver.setGuess(prevSolution);
-=======
         ms.setGuess(prevSolution);
     } else {
         ms.setGuess("bounds");
->>>>>>> master:Moco/Sandbox/sandboxMarkerTrackingWholeBody/sandboxMarkerTrackingWholeBody.cpp
     }
 
     // Solve the problem.
