@@ -13,6 +13,7 @@
 %include <OpenSim/Common/Array.h>
 %include <OpenSim/Common/ArrayPtrs.h>
 %include <OpenSim/Common/AbstractProperty.h>
+%ignore OpenSim::Property<std::string>::appendValue(std::string const *);
 %include <OpenSim/Common/Property.h>
 %include <OpenSim/Common/PropertyGroup.h>
 %template(ArrayPtrsPropertyGroup) OpenSim::ArrayPtrs<OpenSim::PropertyGroup>;
@@ -383,6 +384,7 @@ namespace OpenSim {
 %template(STOFileAdapterSpatialVec) OpenSim::STOFileAdapter_<SimTK::SpatialVec>;
 
 %include <OpenSim/Common/CSVFileAdapter.h>
+
 %include <OpenSim/Common/C3DFileAdapter.h>
 
 %extend OpenSim::C3DFileAdapter {

@@ -23,6 +23,7 @@
 #include <fstream>
 #include <OpenSim/Common/Storage.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
+#include <OpenSim/Common/STOFileAdapter.h>
 
 using namespace OpenSim;
 using namespace std;

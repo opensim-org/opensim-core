@@ -385,12 +385,7 @@ bool MarkerPlacer::processModel(Model* aModel,
     
     _outputStorage.reset(new Storage(statesReporter.updStatesStorage()));
     _outputStorage->setName("static pose");
-    //_outputStorage->print("statesReporterOutput.sto");
-    Storage markerStorage;
-    staticPose->makeRdStorage(*_outputStorage);
     _outputStorage->getStateVector(0)->setTime(s.getTime());
-    statesReporter.updStatesStorage().addToRdStorage(*_outputStorage, s.getTime(), s.getTime());
-    //_outputStorage->print("statesReporterOutputWithMarkers.sto");
 
     if(_printResultFiles) {
         std::string savedCwd = IO::getCwd();

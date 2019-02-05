@@ -47,6 +47,10 @@ OpenSim::ModelComponentSet<OpenSim::Body>;
 %include <OpenSim/Simulation/Model/BodyScaleSet.h>
 
 %include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
+%warnfilter(509) OpenSim::TransformAxis;
+namespace OpenSim {
+%warnfilter(509) TransformAxis::setFunction;
+}
 %include <OpenSim/Simulation/SimbodyEngine/TransformAxis.h>
 %include <OpenSim/Simulation/SimbodyEngine/SpatialTransform.h>
 %include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
@@ -91,6 +95,9 @@ OpenSim::ModelComponentSet<OpenSim::Constraint>;
 %include <OpenSim/Simulation/SimbodyEngine/WeldConstraint.h>
 %include <OpenSim/Simulation/SimbodyEngine/PointConstraint.h>
 %include <OpenSim/Simulation/SimbodyEngine/ConstantDistanceConstraint.h>
+namespace OpenSim {
+%warnfilter(509) CoordinateCouplerConstraint::setFunction;
+}
 %include <OpenSim/Simulation/SimbodyEngine/CoordinateCouplerConstraint.h>
 %include <OpenSim/Simulation/SimbodyEngine/PointOnLineConstraint.h>
 
@@ -338,7 +345,7 @@ EXPOSE_SET_CONSTRUCTORS_HELPER(ModelComponentSet);
 EXPOSE_SET_CONSTRUCTORS_HELPER(BodySet);
 EXPOSE_SET_CONSTRUCTORS_HELPER(JointSet);
 EXPOSE_SET_CONSTRUCTORS_HELPER(ConstraintSet);
-EXPOSE_SET_CONSTRUCTORS_HELPER(ForcesSet);
+EXPOSE_SET_CONSTRUCTORS_HELPER(ForceSet);
 EXPOSE_SET_CONSTRUCTORS_HELPER(ControllerSet);
 EXPOSE_SET_CONSTRUCTORS_HELPER(ContactGeometrySet);
 EXPOSE_SET_CONSTRUCTORS_HELPER(PathPointSet);
