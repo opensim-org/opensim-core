@@ -24,6 +24,12 @@
 
 namespace OpenSim {
 
+/// This is a base class for solvers that use direct collocation to convert
+/// an optimal control problem into a generic nonlinear programming problem.
+/// The best resource for learning about direct collocation is the Betts
+/// textbook.
+/// Betts, John T. Practical methods for optimal control and estimation using
+/// nonlinear programming. Vol. 19. Siam, 2010.
 class MocoDirectCollocationSolver : public MocoSolver {
     OpenSim_DECLARE_ABSTRACT_OBJECT(MocoDirectCollocationSolver, MocoSolver);
 
@@ -54,9 +60,7 @@ public:
     OpenSim_DECLARE_PROPERTY(optim_ipopt_print_level, int,
             "IPOPT's verbosity (see IPOPT documentation).");
 
-    MocoDirectCollocationSolver() {
-        constructProperties();
-    }
+    MocoDirectCollocationSolver() { constructProperties(); }
 
 protected:
     OpenSim_DECLARE_PROPERTY(guess_file, std::string,

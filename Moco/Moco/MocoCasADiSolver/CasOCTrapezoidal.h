@@ -22,11 +22,12 @@
 
 namespace CasOC {
 
-
+/// Enforce the differential equations in the problem using a trapezoidal
+/// (second-order) approximation. The integral in the objective function is
+/// approximated by trapezoidal quadrature.
 class Trapezoidal : public Transcription {
 public:
-    Trapezoidal(const Solver& solver, const Problem& problem,
-            const OpenSim::MocoCasADiSolver& mocoSolver);
+    Trapezoidal(const Solver& solver, const Problem& problem);
 
 private:
     Iterate createInitialGuessFromBoundsImpl() const override;

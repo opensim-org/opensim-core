@@ -27,14 +27,24 @@ class Solver;
 
 namespace OpenSim {
 
+/// This solver uses the CasADi library (https://casadi.org) to convert the
+/// MocoProblem into a generic nonlinear programming problem. CasADi efficiently
+/// calculcates the derivatives required to solve MocoProblem%s, and may
+/// solve your MocoProblem more quickly that MocoTropterSolver. In general,
+/// we hope that the feature sets of MocoCasADiSolver and MocoTropterSolver
+/// are the same.
+/// Note, however, that parameter optimization problems are implemented much
+/// less efficiently in this solver; for parameter optimization, first try
+/// MocoTropterSolver.
+/// @note The software license of CasADi is more restrictive than that of the
+/// rest of Moco.
 /// @note This solver currently only supports systems for which \f$ \dot{q} = u
 /// \f$ (e.g., no quaternions).
 class OSIMMOCO_API MocoCasADiSolver : public MocoDirectCollocationSolver {
-    OpenSim_DECLARE_CONCRETE_OBJECT(MocoCasADiSolver,
-            MocoDirectCollocationSolver);
+    OpenSim_DECLARE_CONCRETE_OBJECT(
+            MocoCasADiSolver, MocoDirectCollocationSolver);
 
 public:
-
     MocoCasADiSolver();
 
     /// @name Specifying an initial guess
@@ -85,7 +95,6 @@ protected:
             const CasOC::Problem&) const;
 
 private:
-
     void constructProperties();
 
     // When a copy of the solver is made, we want to keep any guess specified

@@ -152,7 +152,7 @@ std::unique_ptr<CasOC::Problem> MocoCasADiSolver::createCasOCProblem() const {
 
 std::unique_ptr<CasOC::Solver> MocoCasADiSolver::createCasOCSolver(
         const CasOC::Problem& casProblem) const {
-    auto casSolver = make_unique<CasOC::Solver>(casProblem, *this);
+    auto casSolver = make_unique<CasOC::Solver>(casProblem);
 
     /*
     m_opti.disp(std::cout, true);

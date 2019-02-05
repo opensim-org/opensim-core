@@ -24,9 +24,8 @@ using casadi::Slice;
 namespace CasOC {
 
 
-Trapezoidal::Trapezoidal(const Solver& solver, const Problem& problem,
-        const OpenSim::MocoCasADiSolver& mocoSolver)
-        : Transcription(solver, problem, mocoSolver) {
+Trapezoidal::Trapezoidal(const Solver& solver, const Problem& problem)
+        : Transcription(solver, problem) {
 
     // Create variables.
     // -----------------
@@ -180,7 +179,7 @@ Trapezoidal::Trapezoidal(const Solver& solver, const Problem& problem,
                             m_vars[Var::parameters]});
             const auto& errors = output.at(0);
             addConstraints(
-                    pathInfo.lower_bounds, pathInfo.upper_bounds, errors);
+                    pathInfo.lowerBounds, pathInfo.upperBounds, errors);
         }
     }
 }

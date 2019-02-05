@@ -22,11 +22,21 @@
 
 namespace CasOC {
 
+/// This is the base class for transcription schemes that convert a
+/// CasOC::Problem into a general nonlinear programming problem. If you are
+/// creating a new derived class, make sure to override all virtual functions
+/// and obey the settings that the user specified in the CasOC::Solver. Build
+/// the CasADi problem in the constructor of your derived class by defining the
+/// following member variables in this class:
+/// - m_vars
+/// - m_lowerBounds
+/// - m_upperBounds
+/// Use setObjective() and addConstraints() to specify the functions in the
+/// optimization problem.
 class Transcription {
 public:
-    Transcription(const Solver& solver, const Problem& problem,
-            const OpenSim::MocoCasADiSolver& mocoSolver)
-            : m_solver(solver), m_problem(problem), m_mocoSolver(mocoSolver) {}
+    Transcription(const Solver& solver, const Problem& problem)
+            : m_solver(solver), m_problem(problem) {}
     virtual ~Transcription() = default;
     Iterate createInitialGuessFromBounds() const {
         return createInitialGuessFromBoundsImpl();
@@ -94,7 +104,6 @@ protected:
 
     const Solver& m_solver;
     const Problem& m_problem;
-    const OpenSim::MocoCasADiSolver& m_mocoSolver;
     VariablesMX m_vars;
     VariablesDM m_lowerBounds;
     VariablesDM m_upperBounds;

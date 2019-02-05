@@ -25,11 +25,7 @@
 namespace CasOC {
 
 class Problem;
-/// You must invoke the following in the constructor of your concrete class:
-/// @code
-/// setCommonOptions(opts);
-/// construct(name, opts);
-/// @endcode
+
 class Function : public casadi::Callback {
 public:
     virtual ~Function() = default;
@@ -40,6 +36,7 @@ public:
         this->construct(name, opts);
     }
     void setCommonOptions(casadi::Dict& opts) {
+        // Compute the derivatives of this function using finite differences.
         opts["enable_fd"] = true;
         opts["fd_method"] = "central";
         // Using "forward", iterations are 10x faster but problems don't
@@ -142,6 +139,8 @@ public:
     }
 };
 
+/// This function should compute forward dynamics (explicit multibody dynamics),
+/// auxiliary explicit dynamics, and the errors for the kinematic constraints.
 class MultibodySystem : public Function {
 public:
     casadi_int get_n_in() override final { return 5; }

@@ -24,22 +24,16 @@ namespace OpenSim {
 class MocoCasADiSolver;
 } // namespace OpenSim
 
-/// CasADi Optimal Control.
-/// CasOC is a namespace containing classes for solving multibody optimal
-/// control problems with CasADi. CasOC is not designed to solve generic optimal
-/// control problems. For example, CasOC does not require the user to provide a
-/// system of first-order differential equations.
-///
-/// CasOC does not conceptually depend on OpenSim or Moco, though CasOC may use
-/// OpenSim/Moco utilities (e.g., exception handling).
 namespace CasOC {
 
 class Transcription;
 
+/// Once you have built your CasOC::Problem, create a CasOC::Solver to configure
+/// how you want to solve the problem, then invoke solve() to solve your
+/// problem.
 class Solver {
 public:
-    Solver(const Problem& problem, const OpenSim::MocoCasADiSolver& mocoSolver)
-            : m_problem(problem), m_mocoSolver(mocoSolver) {}
+    Solver(const Problem& problem) : m_problem(problem) {}
     void setNumMeshPoints(int numMeshPoints) {
         m_numMeshPoints = numMeshPoints;
     }
@@ -67,7 +61,9 @@ public:
     }
     const casadi::Dict getSolverOptions() const { return m_solverOptions; }
 
+    /// The contents of this iterate depends on the transcription scheme.
     Iterate createInitialGuessFromBounds() const;
+    /// The contents of this iterate depends on the transcription scheme.
     Iterate createRandomIterateWithinBounds() const;
 
     Solution solve(const Iterate& guess) const;
@@ -76,7 +72,6 @@ private:
     std::unique_ptr<Transcription> createTranscription() const;
 
     const Problem& m_problem;
-    const OpenSim::MocoCasADiSolver& m_mocoSolver;
     int m_numMeshPoints;
     std::string m_transcriptionScheme;
     casadi::Dict m_pluginOptions;
