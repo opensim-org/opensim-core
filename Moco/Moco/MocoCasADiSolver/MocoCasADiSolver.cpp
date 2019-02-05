@@ -232,14 +232,14 @@ MocoSolution MocoCasADiSolver::solveImpl() const {
     auto casProblem = createCasOCProblem();
     auto casSolver = createCasOCSolver(*casProblem);
 
-    CasOC::Solution casSolution;
     MocoIterate guess = getGuess();
+    CasOC::Iterate casGuess;
     if (guess.empty()) {
-        casSolution =
-                casSolver->solve(casSolver->createInitialGuessFromBounds());
+        casGuess = casSolver->createInitialGuessFromBounds();
     } else {
-        casSolution = casSolver->solve(convertToCasOCIterate(*m_guessToUse));
+        casGuess = convertToCasOCIterate(*m_guessToUse);
     }
+    CasOC::Solution casSolution = casSolver->solve(casGuess);
     MocoSolution mocoSolution = convertToMocoIterate<MocoSolution>(casSolution);
     setSolutionStats(mocoSolution, casSolution.stats.at("success"),
             casSolution.stats.at("return_status"),

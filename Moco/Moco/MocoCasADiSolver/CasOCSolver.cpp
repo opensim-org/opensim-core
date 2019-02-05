@@ -22,11 +22,6 @@
 #include "CasOCTranscription.h"
 #include "CasOCTrapezoidal.h"
 
-// Shhh...we shouldn't depend on these but MocoIterate has a handy resample()
-// function.
-#include "../MocoIterate.h"
-#include "MocoCasADiMisc.h"
-
 using OpenSim::Exception;
 using OpenSim::format;
 

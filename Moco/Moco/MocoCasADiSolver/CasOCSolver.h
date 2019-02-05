@@ -30,7 +30,8 @@ class Transcription;
 
 /// Once you have built your CasOC::Problem, create a CasOC::Solver to configure
 /// how you want to solve the problem, then invoke solve() to solve your
-/// problem.
+/// problem. This class assumes that the problem is solved using direct
+/// collocation.
 class Solver {
 public:
     Solver(const Problem& problem) : m_problem(problem) {}

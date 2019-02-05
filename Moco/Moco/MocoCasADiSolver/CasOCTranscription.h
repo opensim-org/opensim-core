@@ -63,13 +63,13 @@ public:
 
         // Run the optimization.
         // ---------------------
-        Solution solution = m_problem.createIterate<Solution>();
         const casadi::DMDict nlpResult =
                 nlpFunc(casadi::DMDict{{"x0", flatten(guess.variables)},
                         {"lbx", flatten(m_lowerBounds)},
                         {"ubx", flatten(m_upperBounds)},
                         {"lbg", casadi::DM::veccat(m_constraintsLowerBounds)},
                         {"ubg", casadi::DM::veccat(m_constraintsUpperBounds)}});
+        Solution solution = m_problem.createIterate<Solution>();
         solution.variables = expand(nlpResult.at("x"));
 
         solution.times = createTimesImpl(solution.variables[Var::initial_time],

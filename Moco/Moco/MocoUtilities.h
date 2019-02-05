@@ -36,6 +36,7 @@ class StatesTrajectory;
 class Model;
 class MocoIterate;
 
+/// Determine if `string` ends with the substring `ending`.
 /// https://stackoverflow.com/questions/874134/find-if-string-ends-with-another-string-in-c
 inline bool endsWith(const std::string& string, const std::string& ending) {
     if (string.length() >= ending.length()) {
