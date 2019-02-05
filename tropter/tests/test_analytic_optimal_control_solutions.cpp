@@ -88,8 +88,16 @@ public:
             std::string hessian_approx, std::string transcription) {
         auto ocp = std::make_shared<SecondOrderLinearMinEffort<T>>();
         DirectCollocationSolver<T> dircol(ocp, transcription, solver, N);
+        std::string jacobian_approx;
+        if (hessian_approx == "exact") {
+            jacobian_approx = hessian_approx;
+        } else {
+            jacobian_approx = "finite-difference-values";
+        }
+        dircol.get_opt_solver().set_jacobian_approximation
+            (jacobian_approx);
         dircol.get_opt_solver().set_hessian_approximation
-                (hessian_approx);
+            (hessian_approx);
         Solution solution = dircol.solve();
         //solution.write("second_order_linear_min_effort_solution.csv");
 

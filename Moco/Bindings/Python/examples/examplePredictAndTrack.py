@@ -139,7 +139,7 @@ def solvePrediction():
 
     # Configure the solver.
     solver = moco.initSolver()
-    solver.set_num_mesh_points(50)
+    solver.set_num_mesh_points(100)
     solver.set_verbosity(2)
     solver.set_optim_solver("ipopt")
 
@@ -236,6 +236,7 @@ def solveStateTracking(stateRef):
     solver.set_num_mesh_points(50)
     solver.set_verbosity(2)
     solver.set_optim_solver("ipopt")
+    solver.set_optim_jacobian_approximation("exact")
     solver.set_optim_hessian_approximation("exact")
     solver.set_exact_hessian_block_sparsity_mode("dense")
 
@@ -290,6 +291,7 @@ def solveMarkerTracking(markersRef, guess):
     solver.set_num_mesh_points(50)
     solver.set_verbosity(2)
     solver.set_optim_solver("ipopt")
+    solver.set_optim_jacobian_approximation("exact")
     solver.set_optim_hessian_approximation("exact")
     solver.set_exact_hessian_block_sparsity_mode("dense")
     

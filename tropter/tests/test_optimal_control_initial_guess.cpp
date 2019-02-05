@@ -86,6 +86,7 @@ TEST_CASE("Final position and parameter cost with two local optima, "
         auto ocp = std::make_shared<FinalPositionLocalOptima<adouble>>();
         const int N = 20;
         DirectCollocationSolver<adouble> dircol(ocp, "trapezoidal", "ipopt", N);
+        dircol.get_opt_solver().set_jacobian_approximation("exact");
 
         // TODO allow getting a guess template, so that we don't need to
         // manually fill in all parts of the guess.
@@ -108,6 +109,7 @@ TEST_CASE("Final position and parameter cost with two local optima, "
         auto ocp = std::make_shared<FinalPositionLocalOptima<adouble>>();
         const int N = 20;
         DirectCollocationSolver<adouble> dircol(ocp, "trapezoidal", "ipopt", N);
+        dircol.get_opt_solver().set_jacobian_approximation("exact");
 
         // TODO allow getting a guess template, so that we don't need to
         // manually fill in all parts of the guess.
@@ -281,6 +283,7 @@ TEST_CASE("Final position and parameter cost with two local optima, "
         const int N = 20;
         DirectCollocationSolver<adouble> dircol(ocp, "hermite-simpson",
             "ipopt", N);
+        dircol.get_opt_solver().set_jacobian_approximation("exact");
 
         // The length of trajectories when using Hermite-Simpson is not equal
         // to the number of mesh points, but rather equal to the number of
@@ -311,6 +314,7 @@ TEST_CASE("Final position and parameter cost with two local optima, "
         const int N = 20;
         DirectCollocationSolver<adouble> dircol(ocp, "hermite-simpson",
             "ipopt", N);
+        dircol.get_opt_solver().set_jacobian_approximation("exact");
 
         // The length of trajectories when using Hermite-Simpson is not equal
         // to the number of mesh points, but rather equal to the number of
