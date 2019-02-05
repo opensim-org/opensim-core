@@ -420,8 +420,6 @@ public:
             const tropter::Input<T>& in,
             tropter::Output<T> out) const override {
 
-        // TODO convert to implicit formulation.
-
         const auto& states = in.states;
         const auto& controls = in.controls;
         // const auto& adjuncts = in.adjuncts;
@@ -583,11 +581,12 @@ public:
         auto& simTKState = this->m_state;
 
         simTKState.setTime(in.time);
-        const auto NQ = simTKState.getNQ(); // TODO we assume NQ = NU
+        const auto NQ = simTKState.getNQ();
+        const auto NU = simTKState.getNU();
 
-        const auto& u = states.segment(NQ, NQ);
+        const auto& u = states.segment(NQ, NU);
         const auto& w = adjuncts.segment(
-            this->m_numKinematicConstraintEquations, NQ);
+            this->m_numKinematicConstraintEquations, NU);
 
         // Kinematic differential equations
         // --------------------------------
@@ -598,7 +597,7 @@ public:
         // Multibody dynamics: differential equations
         // ------------------------------------------
         // udot = w
-        out.dynamics.segment(NQ, NQ) = w;
+        out.dynamics.segment(NQ, NU) = w;
 
 
         // Multibody dynamics: "F - ma = 0"
