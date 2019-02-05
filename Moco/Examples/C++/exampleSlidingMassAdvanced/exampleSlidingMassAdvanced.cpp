@@ -105,7 +105,6 @@ int main() {
     ms.set_optim_solver("ipopt");
     ms.set_optim_ipopt_print_level(4);
     ms.set_optim_max_iterations(50);
-    ms.set_optim_hessian_approximation("exact");
     // ms.set_optim_constraint_tolerance(1e-5);
     // ms.set_optim_convergence_tolerance(1e-5);
     // ms.set_optim_findiff_hessian_step_size(1e-3);

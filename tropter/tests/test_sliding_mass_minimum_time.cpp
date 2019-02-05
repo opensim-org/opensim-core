@@ -100,14 +100,14 @@ public:
 };
 
 TEST_CASE("Sliding mass minimum time.") {
-
-    OCPDerivativesComparison<SlidingMassMinimumTime> comp;
-    comp.num_mesh_points = 4;
-    comp.compare();
-
+    SECTION("derivative comparison") {
+        OCPDerivativesComparison<SlidingMassMinimumTime> comp;
+        comp.num_mesh_points = 4;
+        comp.compare();
+    }
     SECTION("trapezoidal") {
-        SlidingMassMinimumTime<adouble>::run_test(40, "trapezoidal", 0.001);
-        SlidingMassMinimumTime<double>::run_test(40, "trapezoidal", 0.001);
+        SlidingMassMinimumTime<adouble>::run_test(100, "trapezoidal", 0.001);
+        SlidingMassMinimumTime<double>::run_test(100, "trapezoidal", 0.001);
     }
     // TODO midpoint discontinuity causes the RMS error to be quite high for
     // hermite-simpson.

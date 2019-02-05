@@ -599,7 +599,6 @@ void testStateTracking() {
         tracking->setReference(STOFileAdapter::read(fname));
         MocoTropterSolver& ms = moco.initSolver();
         ms.set_num_mesh_points(5);
-        ms.set_optim_hessian_approximation("exact");
         solDirect = moco.solve();
     }
 
@@ -615,7 +614,6 @@ void testStateTracking() {
         tracking->setReferenceFile(fname);
         MocoTropterSolver& ms = moco.initSolver();
         ms.set_num_mesh_points(5);
-        ms.set_optim_hessian_approximation("exact");
         solFile = moco.solve();
         moco.print(setup_fname);
     }

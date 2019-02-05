@@ -51,12 +51,13 @@ public:
 
 TEST_CASE("Unconstrained, IPOPTSolver", "[ipopt]") {
     // Make sure it's okay to not have constraints.
-    SECTION("Finite differences, limited memory") {
+    SECTION("Finite differences, Ipopt Jacobian, limited memory Hessian") {
         Unconstrained<double> problem;
         // TODO may not want user to directly use IPOPTSolver; instead, use a
         // generic solver interface?
         IPOPTSolver solver(problem);
         VectorXd guess = Vector2d(0, 0);
+        solver.set_jacobian_approximation("finite-difference-values");
         solver.set_hessian_approximation("limited-memory");
         auto solution = solver.optimize(guess);
 
@@ -67,10 +68,28 @@ TEST_CASE("Unconstrained, IPOPTSolver", "[ipopt]") {
         // TODO throw exception if constraints() is unimplemented and
         // there are nonzero number of constraints.
     }
-    SECTION("Finite differences, exact Hessian") {
+    SECTION("Finite differences, tropter Jacobian, limited memory Hessian") {
+        Unconstrained<double> problem;
+        // TODO may not want user to directly use IPOPTSolver; instead, use a
+        // generic solver interface?
+        IPOPTSolver solver(problem);
+        VectorXd guess = Vector2d(0, 0);
+        solver.set_jacobian_approximation("exact");
+        solver.set_hessian_approximation("limited-memory");
+        auto solution = solver.optimize(guess);
+
+        REQUIRE(Approx(solution.variables[0]).margin(1e-10) == 1.5);
+        REQUIRE(Approx(solution.variables[1]).margin(1e-10) == -2.0);
+        REQUIRE(Approx(solution.objective).margin(1e-10) == 0);
+
+        // TODO throw exception if constraints() is unimplemented and
+        // there are nonzero number of constraints.
+    }
+    SECTION("Finite differences, tropter Jacobian and Hessian") {
         Unconstrained<double> problem;
         IPOPTSolver solver(problem);
         VectorXd guess = Vector2d(0, 0);
+        solver.set_jacobian_approximation("exact");
         solver.set_hessian_approximation("exact");
         auto solution = solver.optimize(guess);
 
@@ -114,9 +133,10 @@ public:
 };
 
 TEST_CASE("IPOPT C++ tutorial problem HS071; has constraints.") {
-    SECTION("Finite differences, limited memory") {
+    SECTION("Finite differences, Ipopt Jacobian, limited memory Hessian") {
         HS071<double> problem;
         IPOPTSolver solver(problem);
+        solver.set_jacobian_approximation("finite-difference-values");
         solver.set_hessian_approximation("limited-memory");
         VectorXd guess = Vector4d(1.5, 2.5, 3.5, 4.5);
         auto solution = solver.optimize(guess);
@@ -128,9 +148,25 @@ TEST_CASE("IPOPT C++ tutorial problem HS071; has constraints.") {
 
         REQUIRE(Approx(solution.objective) == 17.014);
     }
-    SECTION("Finite differences, exact Hessian") {
+    SECTION("Finite differences, tropter Jacobian, limited memory Hessian") {
         HS071<double> problem;
         IPOPTSolver solver(problem);
+        solver.set_jacobian_approximation("exact");
+        solver.set_hessian_approximation("limited-memory");
+        VectorXd guess = Vector4d(1.5, 2.5, 3.5, 4.5);
+        auto solution = solver.optimize(guess);
+
+        REQUIRE(solution.variables[0] == 1.0);
+        REQUIRE(Approx(solution.variables[1]) == 4.743);
+        REQUIRE(Approx(solution.variables[2]) == 3.82115);
+        REQUIRE(Approx(solution.variables[3]) == 1.379408);
+
+        REQUIRE(Approx(solution.objective) == 17.014);
+    }
+    SECTION("Finite differences, tropter Jacobian and Hessian") {
+        HS071<double> problem;
+        IPOPTSolver solver(problem);
+        solver.set_jacobian_approximation("exact");
         solver.set_hessian_approximation("exact");
         VectorXd guess = Vector4d(1.5, 2.5, 3.5, 4.5);
         auto solution = solver.optimize(guess);

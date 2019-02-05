@@ -65,8 +65,13 @@ public:
     OpenSim_DECLARE_PROPERTY(optim_constraint_tolerance, double,
     "Tolerance used to determine if the constraints are satisfied "
     "(-1 for solver's default)");
+    OpenSim_DECLARE_PROPERTY(optim_jacobian_approximation, std::string,
+    "When using IPOPT, 'finite-difference-values' for Jacobian calculations "
+    "by the solver, or 'exact' for Jacobian calculations by "
+    "tropter (default).");
     OpenSim_DECLARE_PROPERTY(optim_hessian_approximation, std::string,
-    "'limited-memory' (default) for quasi-Newton, or 'exact' for full Newton.");
+    "When using IPOPT, 'limited-memory' (default) for quasi-Newton, or 'exact' "
+    "for full Newton.");
     OpenSim_DECLARE_PROPERTY(optim_sparsity_detection, std::string,
     "Iterate used to detect sparsity pattern of Jacobian/Hessian; "
     "'random' (default) or 'initial-guess'");
@@ -79,7 +84,8 @@ public:
     std::string, "'dense' for dense blocks on the Hessian diagonal, or "
     "'sparse' for sparse blocks on the Hessian diagonal, detected from the "
     "optimal control problem. If using an 'exact' Hessian approximation, this "
-    "property must be set.");
+    "property must be set. Note: this option only takes effect when using "
+    "IPOPT.");
     OpenSim_DECLARE_OPTIONAL_PROPERTY(enforce_constraint_derivatives, bool,
     "'true' or 'false', whether or not derivatives of kinematic constraints"
     "are enforced as path constraints in the optimal control problem.");
