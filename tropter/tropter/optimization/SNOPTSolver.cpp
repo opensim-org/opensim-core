@@ -84,7 +84,7 @@ std::string convert_info_integer_to_string(int info) {
 void snopt_userfunction(int*   /* Status */,
         int* num_variables, double x[],
         int*   needF, int* length_F  , double  F[],
-        int*   /*needG*/, int* /*neG*/, double /*G*/[],
+        int*   /* needG  */, int* /*  neG  */, double /* G */[],
         char*  /*    cu  */, int* /* lencu */,
         int   [] /* iu   */, int* /* leniu */,
         double[] /* ru   */, int* /* lenru */)
@@ -169,18 +169,12 @@ SNOPTSolver::optimize_impl(const VectorXd& variablesArg) const {
     //        jacobian_sparsity, false,
     //        SparsityCoordinates()  /*hessian_sparsity*/);
     //int jacobian_num_nonzeros = (int)jacobian_sparsity.row.size();
-    //std::cout << "jacobian_num_nonzeros: " << jacobian_num_nonzeros << std::endl;
-
-    //int length_G = num_variables + jacobian_num_nonzeros;
-    //std::cout << "length_G: " << length_G << std::endl;
-
-    //int num_nonzeros_G = length_G;
-    //std::cout << "num_nonzeros_G: " << num_nonzeros_G << std::endl;
+    //int neG = num_variables + jacobian_num_nonzeros;
 
     //// Row indices of Jacobian G (rows correspond to "fun"ctions).
-    //VectorXi iGfun(length_G);
+    //VectorXi iGfun(neG);
     //// Column indices of Jacobian G (columns correspond to "var"iables).
-    //VectorXi jGvar(length_G);
+    //VectorXi jGvar(neG);
     //// The first row is the gradient of the objective; we assume it is dense.
     //iGfun.head(num_variables).setZero();
     //// In MATLAB, this would be jGvar(1:num_variables) = 0:num_variables-1.
@@ -264,6 +258,16 @@ SNOPTSolver::optimize_impl(const VectorXd& variablesArg) const {
         variables.data(), xstate.data(), xmul.data(),
         F.data(), Fstate.data(), Fmul.data(),
         nS, nInf, sInf);
+
+    // Use this form of solve() if providing Jacobian information.
+    //int info = snopt_prob.solve(Cold, length_F, num_variables, ObjAdd,
+    //    ObjRow, snopt_userfunction,
+    //    iAfun.data(), jAvar.data(), A.data(), neA,
+    //    iGfun.data(), jGvar.data(), neG,
+    //    xlow.data(), xupp.data(), Flow.data(), Fupp.data(),
+    //    variables.data(), xstate.data(), xmul.data(),
+    //    F.data(), Fstate.data(), Fmul.data(),
+    //    nS, nInf, sInf);
     
     // Output problem information.
     // ---------------------------

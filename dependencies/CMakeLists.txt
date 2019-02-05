@@ -195,7 +195,7 @@ if (WIN32)
             "${CMAKE_BINARY_DIR}/ADOLC-prefix/src/ADOLC"
             "${CMAKE_INSTALL_PREFIX}/adol-c")
         ExternalProject_Add(adolc
-            URL http://www2.math.uni-paderborn.de/fileadmin/Mathematik/AG-Walther/ADOL-C/adolc_sparse_x64.zip
+            URL https://sourceforge.net/projects/myosin/files/adolc/adolc_sparse_x64.zip
             CONFIGURE_COMMAND ""
             BUILD_COMMAND ""
             INSTALL_COMMAND ${ADOLC_INSTALL_CMD})

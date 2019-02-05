@@ -28,10 +28,10 @@ MocoIterate MocoSolver::createGuessTimeStepping() const {
     const auto& initialTime = probrep.getTimeInitialBounds().getUpper();
     const auto& finalTime = probrep.getTimeFinalBounds().getLower();
     OPENSIM_THROW_IF_FRMOBJ(finalTime <= initialTime, Exception,
-            "Expected lower bound on final time to be greater than "
-            "upper bound on initial time, but "
-            "final_time.lower: " + std::to_string(finalTime) + "; " +
-                    "initial_time.upper: " + std::to_string(initialTime) + ".");
+            format("Expected lower bound on final time to be greater than "
+                   "upper bound on initial time, but "
+                   "final_time.lower: %g; initial_time.upper: %g.",
+                    finalTime, initialTime));
     Model model(probrep.getModel());
 
     // Disable all controllers?
@@ -85,11 +85,9 @@ MocoSolution MocoSolver::solve() const {
     return solveImpl();
 }
 
-void MocoSolver::setSolutionStats(MocoSolution& sol,
-        bool success, const std::string& status, int numIterations) {
+void MocoSolver::setSolutionStats(MocoSolution& sol, bool success,
+        const std::string& status, int numIterations) {
     sol.setSuccess(success);
     sol.setStatus(status);
     sol.setNumIterations(numIterations);
 }
-
-

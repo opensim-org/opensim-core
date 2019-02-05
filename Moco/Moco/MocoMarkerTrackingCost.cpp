@@ -17,6 +17,7 @@
  * -------------------------------------------------------------------------- */
 
  #include "MocoMarkerTrackingCost.h"
+ #include "MocoUtilities.h"
  #include <OpenSim/Simulation/Model/Model.h>
  #include <OpenSim/Simulation/Model/Marker.h>
 
@@ -51,8 +52,8 @@
                 continue;
             } else {
                 OPENSIM_THROW_FRMOBJ(Exception,
-                    "Marker '" + markRefNames[i] + "' unrecognized by the "
-                    "specified model.");
+                        format("Marker '%s' unrecognized by the "
+                               "specified model.", markRefNames[i]));
             }
         }
     }

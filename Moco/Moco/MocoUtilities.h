@@ -106,6 +106,12 @@ OSIMMOCO_API void replaceMusclesWithPathActuators(Model& model);
 /// @note This only removes muscles within the model's ForceSet.
 OSIMMOCO_API void removeMuscles(Model& model);
 
+/// Replace a joint in the model with a WeldJoint. 
+/// @note This assumes the joint is in the JointSet and that the joint's
+///       connectees are PhysicalOffsetFrames.
+OSIMMOCO_API void replaceJointWithWeldJoint(Model& model, 
+    const std::string& jointName);
+
 /// The map provides the index of each state variable in
 /// SimTK::State::getY() from its each state variable path string.
 OSIMMOCO_API
@@ -115,6 +121,7 @@ std::vector<std::string> createStateVariableNamesInSystemOrder(
 #ifndef SWIG
 /// The map provides the index of each state variable in
 /// SimTK::State::getY() from its state variable path string.
+OSIMMOCO_API
 std::unordered_map<std::string, int> createSystemYIndexMap(const Model& model);
 #endif
 
@@ -214,7 +221,7 @@ inline typename make_printable_return<std::string>::type make_printable(
 }
 
 /// Format a char array using (C interface; mainly for internal use).
-std::string format_c(const char*, ...);
+OSIMMOCO_API std::string format_c(const char*, ...);
 
 /// Format a string in the style of sprintf. For example, the code
 /// `format("%s %d and %d yields %d", "adding", 2, 2, 4)` will produce

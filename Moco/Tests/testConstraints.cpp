@@ -473,12 +473,12 @@ MocoIterate runForwardSimulation(Model model, const MocoSolution& solution,
     // should match very closely, since the foward simulation controls are 
     // created from splines of the OCP solution controls
     SimTK_TEST_EQ_TOL(solution.compareContinuousVariablesRMS(forwardSolution,
-        {"none"}, {}, {"none"}), 0, 1e-9);
+        {"none"}, {}, {"none"}, {"none"}), 0, 1e-9);
 
     // Compare states trajectory between forward simulation and OCP solution.
     // The states trajectory may not match as well as the controls.
     SimTK_TEST_EQ_TOL(solution.compareContinuousVariablesRMS(forwardSolution,
-        {}, {"none"}, {"none"}), 0, tol);
+        {}, {"none"}, {"none"}, {"none"}), 0, tol);
 
     return forwardSolution;
 }

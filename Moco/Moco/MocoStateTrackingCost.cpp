@@ -33,9 +33,9 @@ void MocoStateTrackingCost::initializeOnModelImpl(const Model& model) const {
         auto tablesFromFile = FileAdapter::readFile(get_reference_file());
         // There should only be one table.
         OPENSIM_THROW_IF_FRMOBJ(tablesFromFile.size() != 1, Exception,
-                "Expected reference file '" + get_reference_file() +
-                "' to contain 1 table, but it contains " +
-                std::to_string(tablesFromFile.size()) + " tables.");
+                format("Expected reference file '%s' to contain 1 table, but "
+                       "it contains %i tables.",
+                       get_reference_file(), tablesFromFile.size()));
         // Get the first table.
         auto* firstTable =
                 dynamic_cast<TimeSeriesTable*>(tablesFromFile.begin()->second.get());
