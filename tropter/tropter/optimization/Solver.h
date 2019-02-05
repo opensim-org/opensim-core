@@ -84,10 +84,12 @@ public:
     /// Whether the Jacobian is calculated by tropter or by IPOPT's own finite
     /// differencing.
     /// See https://www.coin-or.org/Bonmin/option_pages/options_list_ipopt.html
+    /// @note This setting currently takes effect only when using IPOPT.
     void set_jacobian_approximation(std::string v);
     /// Whether a full Hessian should be computed or if the Hessian
     /// should be approximated from the gradient using BFGS updates.
     /// See https://www.coin-or.org/Ipopt/documentation/node53.html#SECTION0001113010000000000000
+    /// @note This setting currently takes effects only when using IPOPT.
     void set_hessian_approximation(Optional<std::string> v);
     void set_hessian_approximation(const std::string& v)
     {   set_hessian_approximation(nonstd::optional_lite::make_optional(v)); }
@@ -188,7 +190,7 @@ private:
     Optional<int> m_max_iterations;
     Optional<double> m_convergence_tolerance;
     Optional<double> m_constraint_tolerance;
-    std::string m_jacobian_approximation = "finite-difference-values";
+    std::string m_jacobian_approximation = "exact";
     Optional<std::string> m_hessian_approximation;
     std::string m_sparsity_detection = "initial-guess";
 

@@ -37,7 +37,7 @@ void MocoTropterSolver::constructProperties() {
     constructProperty_optim_max_iterations(-1);
     constructProperty_optim_convergence_tolerance(-1);
     constructProperty_optim_constraint_tolerance(-1);
-    constructProperty_optim_jacobian_approximation("finite-difference-values");
+    constructProperty_optim_jacobian_approximation("exact");
     constructProperty_optim_hessian_approximation("limited-memory");
     constructProperty_optim_sparsity_detection("random");
     constructProperty_optim_ipopt_print_level(-1);
