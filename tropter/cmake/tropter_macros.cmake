@@ -37,7 +37,7 @@ endfunction()
 # Copied from OpenSimMacros.cmake.
 # In the future, we could use the VS_USER_PROPS_CXX property instead
 # https://gitlab.kitware.com/cmake/cmake/commit/ef121ca0c33fb4931007c38b22c046998694b052
-function(tropter_copy_dlls DEP_NAME DEP_INSTALL_DIR INSTALL_DLLS)
+function(tropter_copy_dlls)
     set(options DONT_INSTALL_DLLS)
     set(oneValueArgs DEP_NAME DEP_INSTALL_DIR)
     set(multiValueArgs)

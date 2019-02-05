@@ -140,6 +140,9 @@ private:
 // MocoKinematicConstraint
 // ============================================================================
 
+#ifndef SWIG
+// TODO: Temporarily avoiding MSVC error:
+// python_moco_wrap.cxx(13610): error C3431: 'KinematicLevel': a scoped enumeration cannot be redeclared as an unscoped enumeration
 /// The kinematic level for a scalar kinematic constraint within a 
 /// MocoKinematicConstraint. Each scalar constraint is automatically assigned
 /// a KinematicLevel enum value when a MocoKinematicConstraint is 
@@ -152,6 +155,7 @@ enum class KinematicLevel {
     DtVelocity,
     Acceleration
 };
+#endif
 
 /// A model kinematic constraint to be enforced in the optimal control problem. 
 /// Objects of this class can only be instantiated by a MocoPhase, since 
