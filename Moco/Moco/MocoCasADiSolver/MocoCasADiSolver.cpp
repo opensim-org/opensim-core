@@ -97,6 +97,7 @@ const MocoIterate& MocoCasADiSolver::getGuess() const {
 }
 
 std::unique_ptr<CasOC::Problem> MocoCasADiSolver::createCasOCProblem() const {
+    // TODO: Move to MocoCasADiMisc.h
     const auto& problemRep = getProblemRep();
     OPENSIM_THROW_IF(problemRep.getNumKinematicConstraintEquations(), Exception,
             "MocoCasADiSolver does not support kinematic constraints yet.");

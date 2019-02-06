@@ -66,7 +66,9 @@ Trapezoidal::Trapezoidal(const Solver& solver, const Problem& problem)
         for (const auto& info : stateInfos) {
             setVariableBounds(
                     Var::states, is, Slice(1, numMeshPoints - 1), info.bounds);
+            // The "0" grabs the first column (first mesh point).
             setVariableBounds(Var::states, is, 0, info.initialBounds);
+            // The "-1" grabs the last column (last mesh point).
             setVariableBounds(Var::states, is, -1, info.finalBounds);
             ++is;
         }
@@ -101,6 +103,7 @@ Trapezoidal::Trapezoidal(const Solver& solver, const Problem& problem)
     quadCoeffs(Slice(1, numMeshPoints)) += 0.5 * meshIntervals;
     MX integralCost = 0;
     for (int itime = 0; itime < numMeshPoints; ++itime) {
+        // "Slice()" grabs everything in that dimension (like ":" in Matlab).
         const auto out = m_problem.getIntegralCostIntegrand().operator()(
                 {m_times(itime, 0), m_vars[Var::states](Slice(), itime),
                         m_vars[Var::controls](Slice(), itime),

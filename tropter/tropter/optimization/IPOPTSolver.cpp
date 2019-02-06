@@ -95,6 +95,8 @@ private:
                            Number obj_value, const Ipopt::IpoptData* ip_data,
                            Ipopt::IpoptCalculatedQuantities* ip_cq) override;
     /*
+    /// This allows us to inspect intermediate iterations while solving the
+    /// problem.
     virtual bool intermediate_callback(Ipopt::AlgorithmMode mode,
             Index iter, Number obj_value,
             Number inf_pr, Number inf_du,
@@ -104,9 +106,6 @@ private:
             Index ls_trials,
             const Ipopt::IpoptData* ip_data,
             Ipopt::IpoptCalculatedQuantities* ip_cq) override {
-        auto c = ip_cq->curr_c();
-        for (int i = 0; i < c->N)
-
     }*/
 
     // Members.
