@@ -546,6 +546,7 @@ TEMPLATE_TEST_CASE("State tracking", "", MocoTropterSolver, MocoCasADiSolver) {
         tracking->setReference(STOFileAdapter::read(fname));
         auto& ms = moco.template initSolver<TestType>();
         ms.set_num_mesh_points(5);
+        ms.set_optim_hessian_approximation("exact");
         solDirect = moco.solve();
     }
 
@@ -561,6 +562,7 @@ TEMPLATE_TEST_CASE("State tracking", "", MocoTropterSolver, MocoCasADiSolver) {
         tracking->setReferenceFile(fname);
         auto& ms = moco.template initSolver<TestType>();
         ms.set_num_mesh_points(5);
+        ms.set_optim_hessian_approximation("exact");
         solFile = moco.solve();
         moco.print(setup_fname);
     }
