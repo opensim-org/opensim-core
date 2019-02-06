@@ -58,6 +58,12 @@ public:
         nlp.emplace(std::make_pair("x", flatten(m_vars)));
         nlp.emplace(std::make_pair("f", m_objective));
         nlp.emplace(std::make_pair("g", casadi::MX::veccat(m_constraints)));
+        // auto hessian = casadi::MX::hessian(nlp["f"], nlp["x"]);
+        // hessian.sparsity().to_file(
+        //         "CasOCTranscription_objective_Hessian_sparsity.mtx");
+        // auto jacobian = casadi::MX::jacobian(nlp["g"], nlp["x"]);
+        // jacobian.sparsity().to_file(
+        //         "CasOCTranscription_constraint_Jacobian_sparsity.mtx");
         auto nlpFunc =
                 casadi::nlpsol("nlp", m_solver.getOptimSolver(), nlp, options);
 

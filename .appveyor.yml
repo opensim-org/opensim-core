@@ -34,6 +34,7 @@ cache:
   - C:\projects\deps\colpack -> dependencies\colpack.cmake
   - C:\projects\deps\adol-c -> dependencies\CMakeLists.txt
   - C:\projects\deps\ipopt -> dependencies\CMakeLists.txt
+  - C:\projects\deps\casadi -> dependencies\CMakeLists.txt
   - C:\projects\deps\opensim-core -> dependencies\opensim-core.cmake
   
   - C:\ProgramData\chocolatey\bin -> .appveyor.yml # swig.exe
@@ -79,16 +80,17 @@ install:
   # CMAKE_CXX_FLAGS.
   # https://msdn.microsoft.com/en-us/library/19z1t1wy.aspx
   # - set CXXFLAGS="/W0"
-  - cmake ..\opensim-moco\dependencies -G"Visual Studio 14 2015 Win64" -DCMAKE_INSTALL_PREFIX="C:\projects\opensim-moco_deps_install" -DCMAKE_CXX_FLAGS="/DWIN32 /D_WINDOWS /W0 /GR /EHsc" -DOPENSIM_JAVA_WRAPPING=ON -DOPENSIM_PYTHON_WRAPPING=ON -DSUPERBUILD_eigen=OFF -DSUPERBUILD_colpack=OFF -DSUPERBUILD_adolc=OFF -DSUPERBUILD_ipopt=OFF -DSUPERBUILD_opensim-core=OFF
+  - cmake ..\opensim-moco\dependencies -G"Visual Studio 14 2015 Win64" -DCMAKE_INSTALL_PREFIX="C:\projects\opensim-moco_deps_install" -DCMAKE_CXX_FLAGS="/DWIN32 /D_WINDOWS /W0 /GR /EHsc" -DOPENSIM_JAVA_WRAPPING=ON -DOPENSIM_PYTHON_WRAPPING=ON
 
   - IF NOT EXIST C:\projects\deps mkdir C:\projects\deps
   - dir C:\projects\
   - dir C:\projects\deps
-  - IF NOT EXIST C:\projects\deps\eigen cmake . -DSUPERBUILD_eigen=ON
-  - IF NOT EXIST C:\projects\deps\colpack cmake . -DSUPERBUILD_colpack=ON
-  - IF NOT EXIST C:\projects\deps\adol-c cmake . -DSUPERBUILD_adolc=ON
-  - IF NOT EXIST C:\projects\deps\ipopt cmake . -DSUPERBUILD_ipopt=ON
-  - IF NOT EXIST C:\projects\deps\opensim-core cmake . -DSUPERBUILD_opensim-core=ON
+  - IF EXIST C:\projects\deps\eigen cmake . -DSUPERBUILD_eigen=OFF
+  - IF EXIST C:\projects\deps\colpack cmake . -DSUPERBUILD_colpack=OFF
+  - IF EXIST C:\projects\deps\adol-c cmake . -DSUPERBUILD_adolc=OFF
+  - IF EXIST C:\projects\deps\ipopt cmake . -DSUPERBUILD_ipopt=OFF
+  - IF EXIST C:\projects\deps\casadi cmake . -DSUPERBUILD_casadi=OFF
+  - IF EXIST C:\projects\deps\opensim-core cmake . -DSUPERBUILD_opensim-core=OFF
   # List the values of the CMake variables.
   - cmake . -LAH
 
@@ -105,6 +107,7 @@ install:
   - IF NOT EXIST C:\projects\deps\colpack cmake -E copy_directory C:\projects\opensim-moco_deps_install\colpack C:\projects\deps\colpack
   - IF NOT EXIST C:\projects\deps\adol-c cmake -E copy_directory C:\projects\opensim-moco_deps_install\adol-c C:\projects\deps\adol-c
   - IF NOT EXIST C:\projects\deps\ipopt cmake -E copy_directory C:\projects\opensim-moco_deps_install\ipopt C:\projects\deps\ipopt
+  - IF NOT EXIST C:\projects\deps\casadi cmake -E copy_directory C:\projects\opensim-moco_deps_install\ipopt C:\projects\deps\casadi
   - IF NOT EXIST C:\projects\deps\opensim-core cmake -E copy_directory C:\projects\opensim-moco_deps_install\opensim-core C:\projects\deps\opensim-core
 
 build_script:
@@ -113,7 +116,7 @@ build_script:
   - mkdir ..\build
   - cd ..\build
   # Turn warnings into errors (/WX)
-  - cmake -E env CXXFLAGS="/WX" cmake ..\opensim-moco -G"Visual Studio 14 2015 Win64" -DCMAKE_INSTALL_PREFIX="C:\opensim-moco" -DADOLC_DIR="..\deps\adol-c" -DCMAKE_PREFIX_PATH="C:\projects\deps\eigen;C:\projects\deps\colpack;C:\projects\deps\opensim-core;C:\projects\deps\ipopt" -DMOCO_PYTHON_BINDINGS=ON -DMOCO_JAVA_BINDINGS=ON
+  - cmake -E env CXXFLAGS="/WX" cmake ..\opensim-moco -G"Visual Studio 14 2015 Win64" -DCMAKE_INSTALL_PREFIX="C:\opensim-moco" -DADOLC_DIR="..\deps\adol-c" -DCMAKE_PREFIX_PATH="C:\projects\deps\eigen;C:\projects\deps\colpack;C:\projects\deps\opensim-core;C:\projects\deps\ipopt;C:\projects\deps\casadi" -DMOCO_PYTHON_BINDINGS=ON -DMOCO_JAVA_BINDINGS=ON
   #-DCMAKE_TOOLCHAIN_FILE="C:\Tools\vcpkg\scripts\buildsystems\vcpkg.cmake"
   - cmake --build . --config %BTYPE% -- /maxcpucount:4 /verbosity:minimal
 
