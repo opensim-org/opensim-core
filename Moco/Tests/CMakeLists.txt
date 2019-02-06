@@ -24,8 +24,6 @@ endfunction()
 
 MocoAddTest(NAME testMocoInterface)
 
-MocoAddTest(NAME testMocoCasADiSolver)
-
 MocoAddTest(NAME testMocoCosts)
 
 MocoAddTest(NAME testMocoParameters)
