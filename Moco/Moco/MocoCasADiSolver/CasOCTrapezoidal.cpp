@@ -23,7 +23,6 @@ using casadi::Slice;
 
 namespace CasOC {
 
-
 Trapezoidal::Trapezoidal(const Solver& solver, const Problem& problem)
         : Transcription(solver, problem) {
 
@@ -104,6 +103,10 @@ Trapezoidal::Trapezoidal(const Solver& solver, const Problem& problem)
     MX integralCost = 0;
     for (int itime = 0; itime < numMeshPoints; ++itime) {
         // "Slice()" grabs everything in that dimension (like ":" in Matlab).
+        // Here, we include evaluations of the integral cost integrand
+        // into the symbolic expression graph for the integral cost. We are
+        // *not* numerically evaluating the integral cost integrand here--that
+        // occurs when the function by casadi::nlpsol() is evaluated.
         const auto out = m_problem.getIntegralCostIntegrand().operator()(
                 {m_times(itime, 0), m_vars[Var::states](Slice(), itime),
                         m_vars[Var::controls](Slice(), itime),
@@ -112,7 +115,9 @@ Trapezoidal::Trapezoidal(const Solver& solver, const Problem& problem)
         // TODO: Obey user option for if this penalty should exist.
         if (m_problem.getNumMultipliers()) {
             const auto mults = m_vars[Var::multipliers](Slice(), itime);
-            const int multiplierWeight = 100.0; // TODO m_mocoSolver.get_lagrange_multiplier_weight();
+            const int multiplierWeight =
+                    100.0; // TODO
+                           // m_mocoSolver.get_lagrange_multiplier_weight();
             integralCost += multiplierWeight * dot(mults, mults);
         }
     }
@@ -157,9 +162,10 @@ Trapezoidal::Trapezoidal(const Solver& solver, const Problem& problem)
 
     // Apply defect and path constraints.
     // ----------------------------------
-    // We have arranged the code this way so that all constraints at a given
-    // mesh point are grouped together (organizing the sparsity of the Jacobian
-    // this way might have benefits for sparse linear algebra).
+    // We have arranged the code this way so that all constraints (defects and
+    // path constraints) at a given mesh point are grouped together. Organizing
+    // the sparsity of the Jacobian this way might have benefits for sparse
+    // linear algebra.
     const DM zero(m_problem.getNumStates(), 1);
     for (int itime = 0; itime < numMeshPoints; ++itime) {
         if (itime > 0) {
@@ -168,21 +174,23 @@ Trapezoidal::Trapezoidal(const Solver& solver, const Problem& problem)
             const auto x_im1 = states(Slice(), itime - 1);
             const auto xdot_i = xdot(Slice(), itime);
             const auto xdot_im1 = xdot(Slice(), itime - 1);
-            addConstraints(zero, zero,
-                    x_i - (x_im1 + 0.5 * h * (xdot_i + xdot_im1)));
+            addConstraints(
+                    zero, zero, x_i - (x_im1 + 0.5 * h * (xdot_i + xdot_im1)));
         }
         // TODO
         // if (m_problem.getNumKinematicConstraintEquations()) {
-        //     addConstraints(kcLowerBounds, kcUpperBounds, qerr(Slice(), itime));
+        //     addConstraints(kcLowerBounds, kcUpperBounds, qerr(Slice(),
+        //     itime));
         // }
+        // The individual path constraint functions are passed to CasADi to
+        // maximize CasADi's ability to take derivatives efficiently.
         for (const auto& pathInfo : m_problem.getPathConstraintInfos()) {
             const auto output = pathInfo.function->operator()(
                     {m_times(itime), m_vars[Var::states](Slice(), itime),
                             m_vars[Var::controls](Slice(), itime),
                             m_vars[Var::parameters]});
             const auto& errors = output.at(0);
-            addConstraints(
-                    pathInfo.lowerBounds, pathInfo.upperBounds, errors);
+            addConstraints(pathInfo.lowerBounds, pathInfo.upperBounds, errors);
         }
     }
 }
