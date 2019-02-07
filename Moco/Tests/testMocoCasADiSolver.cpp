@@ -49,6 +49,6 @@ int main() {
     MocoSolution solution = moco.solve();
     solution.unseal().write("testMocoCasADiSolver_solution.sto");
 
-    // moco.visualize(solution);
+    moco.visualize(solution);
     return 0;
 }

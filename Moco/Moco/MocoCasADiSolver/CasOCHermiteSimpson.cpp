@@ -1,9 +1,9 @@
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: CasOCTrapezoidal.cpp                                         *
+ * OpenSim Moco: CasOCHermiteSimpson.cpp                                      *
  * -------------------------------------------------------------------------- *
- * Copyright (c) 2018 Stanford University and the Authors                     *
+ * Copyright (c) 2019 Stanford University and the Authors                     *
  *                                                                            *
- * Author(s): Christopher Dembia                                              *
+ * Author(s): Nicholas Bianco                                                 *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
-#include "CasOCTrapezoidal.h"
+#include "CasOCHermiteSimpson.h"
 
 using casadi::DM;
 using casadi::MX;
@@ -23,20 +23,33 @@ using casadi::Slice;
 
 namespace CasOC {
 
-DM Trapezoidal::createQuadratureCoefficientsImpl() const {
+DM HermiteSimpson::createQuadratureCoefficientsImpl() const {
 
-    // For trapezoidal rule, grid points and mesh points are synonymous.
-    const int numMeshPoints = m_numGridPoints;
-    const DM meshIntervals = m_grid(Slice(1, numMeshPoints)) -
-        m_grid(Slice(0, numMeshPoints - 1));
-    DM quadCoeffs(numMeshPoints, 1);
-    quadCoeffs(Slice(0, numMeshPoints - 1)) = 0.5 * meshIntervals;
-    quadCoeffs(Slice(1, numMeshPoints)) += 0.5 * meshIntervals;
+    // Calculate the number of mesh points based on the number of grid points.
+    const int numMeshPoints = (m_numGridPoints + 1) / 2;
+    const int numMeshIntervals = numMeshPoints - 1;
+    // The duration of each mesh interval.
+    const DM mesh = DM::linspace(0, 1, numMeshIntervals);
+    const DM meshIntervals = mesh(Slice(1, numMeshPoints)) - 
+        mesh(Slice(0, numMeshPoints - 1));
+    // Simpson quadrature includes integrand evaluations at the midpoint.
+    DM quadCoeffs(m_numGridPoints);
+
+    // Loop through each mesh interval and update the corresponding components
+    // in the total coefficients vector.
+    for (int imesh = 0; imesh < numMeshIntervals; ++imesh) {
+        // The mesh interval coefficients overlap at the mesh grid points in the
+        // total coefficients vector, so we slice at every other index to update
+        // the coefficients vector.
+        quadCoeffs(Slice(2*imesh, 1)) += meshIntervals(imesh) * (1.0/6.0);
+        quadCoeffs(Slice(2*imesh+1, 1)) += meshIntervals(imesh) * (2.0/3.0);
+        quadCoeffs(Slice(2*imesh+2, 1)) += meshIntervals(imesh) * (1.0/6.0);
+    }
 
     return quadCoeffs;
 }
 
-void Trapezoidal::applyConstraintsImpl() {
+void HermiteSimpson::applyConstraintsImpl() {
 
     // We have arranged the code this way so that all constraints at a given
     // mesh point are grouped together (organizing the sparsity of the Jacobian
@@ -68,7 +81,6 @@ void Trapezoidal::applyConstraintsImpl() {
                 pathInfo.lowerBounds, pathInfo.upperBounds, errors);
         }
     }
-
 }
 
 } // namespace CasOC

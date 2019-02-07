@@ -35,18 +35,24 @@ namespace CasOC {
 /// optimization problem.
 class Transcription {
 public:
-    Transcription(const Solver& solver, const Problem& problem)
-            : m_solver(solver), m_problem(problem) {}
+    Transcription(const Solver& solver, const Problem& problem, 
+        const int& numColPoints);
     virtual ~Transcription() = default;
-    Iterate createInitialGuessFromBounds() const {
-        return createInitialGuessFromBoundsImpl();
+    Iterate createInitialGuessFromBounds() const;
+    Iterate createRandomIterateWithinBounds() const;
+    template <typename T>
+    T createTimes(const T& initialTime, const T& finalTime) const {
+        return (finalTime - initialTime) * m_grid + initialTime;
     }
-    Iterate createRandomIterateWithinBounds() const {
-        return createRandomIterateWithinBoundsImpl();
+    casadi::DM createQuadratureCoefficients() const  {
+        return createQuadratureCoefficientsImpl();
+    }
+    void applyConstraints() {
+        applyConstraintsImpl();
     }
     Solution solve(const Iterate& guessOrig) {
         auto guess = guessOrig.resample(
-                createTimesImpl(guessOrig.variables.at(Var::initial_time),
+                createTimes(guessOrig.variables.at(Var::initial_time),
                         guessOrig.variables.at(Var::final_time)));
 
         // Option handling is copied from casadi::OptiNode::solver().
@@ -72,7 +78,7 @@ public:
         Solution solution = m_problem.createIterate<Solution>();
         solution.variables = expand(nlpResult.at("x"));
 
-        solution.times = createTimesImpl(solution.variables[Var::initial_time],
+        solution.times = createTimes(solution.variables[Var::initial_time],
                 solution.variables[Var::final_time]);
         solution.stats = nlpFunc.stats();
         return solution;
@@ -95,6 +101,9 @@ protected:
         }
     }
 
+    void calcDAE(casadi_int itime, const int& NQ, casadi::MX& xdot, 
+        casadi::MX& qerr);
+
     void setObjective(casadi::MX objective) {
         m_objective = std::move(objective);
     }
@@ -107,6 +116,17 @@ protected:
     VariablesMX m_vars;
     VariablesDM m_lowerBounds;
     VariablesDM m_upperBounds;
+    // The grid for a transcription scheme includes both mesh points (i.e. 
+    // points that lie on the endpoints of a mesh interval) and any additional
+    // collocation points that may lie on mesh interior (as in Hermite-Simpson
+    // collocation, etc.).
+    int m_numGridPoints;
+    casadi::DM m_grid;
+    casadi::MX m_times;
+    casadi::MX m_duration;
+    casadi::MX xdot;
+    casadi::MX qerr;
+    
 
 private:
     casadi::MX m_objective;
@@ -115,10 +135,8 @@ private:
     std::vector<casadi::DM> m_constraintsUpperBounds;
 
 private:
-    virtual Iterate createInitialGuessFromBoundsImpl() const = 0;
-    virtual Iterate createRandomIterateWithinBoundsImpl() const = 0;
-    virtual casadi::DM createTimesImpl(
-            casadi::DM initialTime, casadi::DM finalTime) const = 0;
+    virtual casadi::DM createQuadratureCoefficientsImpl() const = 0;
+    virtual void applyConstraintsImpl() = 0;
 
     /// Use this function to ensure you iterate through variables in the same
     /// order.

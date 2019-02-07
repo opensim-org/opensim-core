@@ -23,6 +23,189 @@ using casadi::Slice;
 
 namespace CasOC {
 
+Transcription::Transcription(const Solver& solver, const Problem& problem,
+        const int& numGridPoints) : m_solver(solver), m_problem(problem), 
+        m_numGridPoints(numGridPoints)
+{
+    // Create variables.
+    // -----------------    
+    m_vars[Var::initial_time] = MX::sym("initial_time");
+    m_vars[Var::final_time] = MX::sym("final_time");
+    m_vars[Var::states] =
+        MX::sym("states", m_problem.getNumStates(), m_numGridPoints);
+    m_vars[Var::controls] =
+        MX::sym("controls", m_problem.getNumControls(), m_numGridPoints);
+    m_vars[Var::multipliers] = MX::sym(
+        "multipliers", m_problem.getNumMultipliers(), m_numGridPoints);
+    m_vars[Var::parameters] =
+        MX::sym("parameters", m_problem.getNumParameters(), 1);
+
+    m_grid = DM::linspace(0, 1, m_numGridPoints);
+    m_duration = m_vars[Var::final_time] - m_vars[Var::initial_time];
+    m_times = createTimes(m_vars[Var::initial_time], m_vars[Var::final_time]);
+
+    // Set variable bounds.
+    // --------------------
+    auto initializeBounds = [&](VariablesDM& bounds) {
+        for (auto& kv : m_vars) {
+            bounds[kv.first] = DM(kv.second.rows(), kv.second.columns());
+        }
+    };
+    initializeBounds(m_lowerBounds);
+    initializeBounds(m_upperBounds);
+
+    setVariableBounds(
+        Var::initial_time, 0, 0, m_problem.getTimeInitialBounds());
+    setVariableBounds(Var::final_time, 0, 0, m_problem.getTimeFinalBounds());
+
+    {
+        const auto& stateInfos = m_problem.getStateInfos();
+        int is = 0;
+        for (const auto& info : stateInfos) {
+            setVariableBounds(
+                Var::states, is, Slice(1, m_numGridPoints - 1), info.bounds);
+            setVariableBounds(Var::states, is, 0, info.initialBounds);
+            setVariableBounds(Var::states, is, -1, info.finalBounds);
+            ++is;
+        }
+    }
+    {
+        const auto& controlInfos = m_problem.getControlInfos();
+        int ic = 0;
+        for (const auto& info : controlInfos) {
+            setVariableBounds(Var::controls, ic, Slice(1, m_numGridPoints - 1),
+                info.bounds);
+            setVariableBounds(Var::controls, ic, 0, info.initialBounds);
+            setVariableBounds(Var::controls, ic, -1, info.finalBounds);
+            ++ic;
+        }
+    }
+    {
+        const auto& paramInfos = m_problem.getParameterInfos();
+        int ip = 0;
+        for (const auto& info : paramInfos) {
+            setVariableBounds(Var::parameters, ip, 0, info.bounds);
+        }
+    }
+
+    // Cost.
+    // -----
+    DM quadCoeffs = createQuadratureCoefficients();
+    MX integralCost = 0;
+    for (int itime = 0; itime < m_numGridPoints; ++itime) {
+        const auto out = m_problem.getIntegralCostIntegrand().operator()(
+        {m_times(itime, 0), m_vars[Var::states](Slice(), itime),
+            m_vars[Var::controls](Slice(), itime),
+            m_vars[Var::parameters]});
+        integralCost += quadCoeffs(itime) * out.at(0);
+        // TODO: Obey user option for if this penalty should exist.
+        if (m_problem.getNumMultipliers()) {
+            const auto mults = m_vars[Var::multipliers](Slice(), itime);
+            const int multiplierWeight = 100.0; // TODO m_mocoSolver.get_lagrange_multiplier_weight();
+            integralCost += multiplierWeight * dot(mults, mults);
+        }
+    }
+    integralCost *= m_duration;
+
+    const auto endpointCostOut =
+        m_problem.getEndpointCost().operator()({m_vars[Var::final_time],
+            m_vars[Var::states](Slice(), -1), m_vars[Var::parameters]});
+    const auto endpointCost = endpointCostOut.at(0);
+    setObjective(integralCost + endpointCost);
+
+    // Compute DAE at necessary grid points.
+    // -------------------------------------
+    const int NQ = m_problem.getNumCoordinates();
+    const int NU = m_problem.getNumSpeeds();
+    OPENSIM_THROW_IF(NQ != NU, OpenSim::Exception, "NQ != NU");
+    // TODO: Does creating all this memory have efficiency implications in
+    // CasADi?
+    xdot = MX(m_problem.getNumStates(), m_numGridPoints);
+    qerr = MX(m_problem.getNumKinematicConstraintEquations(), m_numGridPoints);
+    MX this_xdot;
+    MX this_qerr;
+    for (int itime = 0; itime < m_numGridPoints; ++itime) {
+        calcDAE(itime, NQ, this_xdot, this_qerr);
+        xdot(Slice(), itime) = this_xdot;
+        qerr(Slice(), itime) = this_qerr;
+    }
+
+    // Apply constraints.
+    // ------------------
+    applyConstraints();
+
+}
+
+Iterate Transcription::createInitialGuessFromBounds() const {
+    auto setToMidpoint = [](DM& output, const DM& lowerDM, const DM& upperDM) {
+        for (int irow = 0; irow < output.rows(); ++irow) {
+            for (int icol = 0; icol < output.columns(); ++icol) {
+                const auto& lower = double(lowerDM(irow, icol));
+                const auto& upper = double(upperDM(irow, icol));
+                if (!std::isinf(lower) && !std::isinf(upper)) {
+                    output(irow, icol) = 0.5 * (upper + lower);
+                }
+                else if (!std::isinf(lower))
+                    output(irow, icol) = lower;
+                else if (!std::isinf(upper))
+                    output(irow, icol) = upper;
+                else
+                    output(irow, icol) = 0;
+            }
+        }
+    };
+    Iterate casGuess = m_problem.createIterate();
+    casGuess.variables = m_lowerBounds;
+    for (auto& kv : casGuess.variables) {
+        setToMidpoint(kv.second, m_lowerBounds.at(kv.first),
+            m_upperBounds.at(kv.first));
+    }
+    casGuess.times = createTimes(casGuess.variables[Var::initial_time],
+        casGuess.variables[Var::final_time]);
+    return casGuess;
+}
+
+Iterate Transcription::createRandomIterateWithinBounds() const {
+    static SimTK::Random::Uniform randGen(-1, 1);
+    auto setRandom = [](DM& output, const DM& lowerDM, const DM& upperDM) {
+        for (int irow = 0; irow < output.rows(); ++irow) {
+            for (int icol = 0; icol < output.columns(); ++icol) {
+                const auto& lower = double(lowerDM(irow, icol));
+                const auto& upper = double(upperDM(irow, icol));
+                const auto rand = randGen.getValue();
+                auto value = 0.5 * (rand + 1.0) * (upper - lower) + lower;
+                if (std::isnan(value)) value = SimTK::clamp(lower, rand, upper);
+                output(irow, icol) = value;
+            }
+        }
+    };
+    Iterate casIterate = m_problem.createIterate();
+    casIterate.variables = m_lowerBounds;
+    for (auto& kv : casIterate.variables) {
+        setRandom(kv.second, m_lowerBounds.at(kv.first),
+            m_upperBounds.at(kv.first));
+    }
+    casIterate.times = createTimes(casIterate.variables[Var::initial_time],
+        casIterate.variables[Var::final_time]);
+    return casIterate;
+}
+
+void Transcription::calcDAE(casadi_int itime, const int& NQ, MX& xdot, MX& qerr) 
+{
+    const auto& states = m_vars[Var::states];
+    const MX u = states(Slice(NQ, 2 * NQ), itime);
+    const MX qdot = u; // TODO: This assumes the N matrix is identity.
+    const auto dynamicsOutput = m_problem.getMultibodySystem().operator()(
+    {m_times(itime), m_vars[Var::states](Slice(), itime),
+        m_vars[Var::controls](Slice(), itime),
+        m_vars[Var::multipliers](Slice(), itime),
+        m_vars[Var::parameters]});
+    const MX udot = dynamicsOutput.at(0);
+    const MX zdot = dynamicsOutput.at(1);
+    xdot = casadi::MX::vertcat({qdot, udot, zdot});
+    qerr = dynamicsOutput.at(2);
+}
+
 void Transcription::addConstraints(const casadi::DM& lower,
         const casadi::DM& upper, const casadi::MX& equations) {
     OPENSIM_THROW_IF(
