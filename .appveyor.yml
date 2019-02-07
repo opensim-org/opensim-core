@@ -107,7 +107,7 @@ install:
   - IF NOT EXIST C:\projects\deps\colpack cmake -E copy_directory C:\projects\opensim-moco_deps_install\colpack C:\projects\deps\colpack
   - IF NOT EXIST C:\projects\deps\adol-c cmake -E copy_directory C:\projects\opensim-moco_deps_install\adol-c C:\projects\deps\adol-c
   - IF NOT EXIST C:\projects\deps\ipopt cmake -E copy_directory C:\projects\opensim-moco_deps_install\ipopt C:\projects\deps\ipopt
-  - IF NOT EXIST C:\projects\deps\casadi cmake -E copy_directory C:\projects\opensim-moco_deps_install\ipopt C:\projects\deps\casadi
+  - IF NOT EXIST C:\projects\deps\casadi cmake -E copy_directory C:\projects\opensim-moco_deps_install\casadi C:\projects\deps\casadi
   - IF NOT EXIST C:\projects\deps\opensim-core cmake -E copy_directory C:\projects\opensim-moco_deps_install\opensim-core C:\projects\deps\opensim-core
 
 build_script:
