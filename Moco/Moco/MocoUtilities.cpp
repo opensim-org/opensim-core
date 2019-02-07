@@ -27,11 +27,18 @@
 #include <simbody/internal/Visualizer_InputListener.h>
 #include <OpenSim/Simulation/Control/PrescribedController.h>
 #include <OpenSim/Common/GCVSpline.h>
+#include <OpenSim/Common/LogManager.h>
 
 #include <cstdarg>
 #include <cstdio>
 
 using namespace OpenSim;
+
+bool OpenSim::restoreStreams() {
+    std::cout.rdbuf(LogManager::cout.rdbuf());
+    std::cerr.rdbuf(LogManager::cerr.rdbuf());
+    return true;
+}
 
 SimTK::Vector OpenSim::createVectorLinspace(
         int length, double start, double end) {

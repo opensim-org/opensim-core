@@ -22,7 +22,6 @@
 #include <set>
 
 #include <OpenSim/Common/Storage.h>
-#include <OpenSim/Common/LogManager.h>
 
 namespace OpenSim {
 
@@ -40,11 +39,7 @@ std::unique_ptr<T> make_unique(Args&&... args) {
 /// By default, OpenSim redirects std::cout and std::cerr. Use this function
 /// to restore the original std::cout and std::cerr streams. This is useful
 /// when using the Catch testing framework.
-inline bool restoreStreams() {
-    std::cout.rdbuf(LogManager::cout.rdbuf());
-    std::cerr.rdbuf(LogManager::cerr.rdbuf());
-    return true;
-}
+OSIMMOCO_API bool restoreStreams();
 
 /// Determine if `string` ends with the substring `ending`.
 /// https://stackoverflow.com/questions/874134/find-if-string-ends-with-another-string-in-c
