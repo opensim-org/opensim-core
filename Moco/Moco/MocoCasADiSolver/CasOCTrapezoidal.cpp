@@ -25,13 +25,14 @@ namespace CasOC {
 
 DM Trapezoidal::createQuadratureCoefficientsImpl() const {
 
+
     // For trapezoidal rule, grid points and mesh points are synonymous.
-    const int numMeshPoints = m_numGridPoints;
-    const DM meshIntervals = m_grid(Slice(1, numMeshPoints)) -
-        m_grid(Slice(0, numMeshPoints - 1));
-    DM quadCoeffs(numMeshPoints, 1);
-    quadCoeffs(Slice(0, numMeshPoints - 1)) = 0.5 * meshIntervals;
-    quadCoeffs(Slice(1, numMeshPoints)) += 0.5 * meshIntervals;
+    //const int numMeshPoints = m_numGridPoints;
+    //const DM meshIntervals = m_grid(Slice(1, m_numGridPoints)) -
+    //    m_grid(Slice(0, m_numGridPoints - 1));
+    DM quadCoeffs(m_numGridPoints, 1);
+    //quadCoeffs(Slice(0, m_numGridPoints - 1)) = 0.5 * meshIntervals;
+   // quadCoeffs(Slice(1, m_numGridPoints)) += 0.5 * meshIntervals;
 
     return quadCoeffs;
 }

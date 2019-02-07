@@ -170,6 +170,8 @@ std::unique_ptr<CasOC::Solver> MocoCasADiSolver::createCasOCSolver(
     // -------------------
     Dict solverOptions;
     checkPropertyInSet(*this, getProperty_optim_solver(), {"ipopt"});
+    checkPropertyInSet(*this, getProperty_transcription_scheme(), 
+            {"trapezoidal", "hermite-simpson"});
 
     checkPropertyInRangeOrSet(*this, getProperty_optim_max_iterations(), 0,
             std::numeric_limits<int>::max(), {-1});
@@ -210,7 +212,7 @@ std::unique_ptr<CasOC::Solver> MocoCasADiSolver::createCasOCSolver(
     pluginOptions["verbose_init"] = true;
 
     casSolver->setNumMeshPoints(get_num_mesh_points());
-    casSolver->setTranscriptionScheme("trapezoidal");
+    casSolver->setTranscriptionScheme(get_transcription_scheme());
     casSolver->setOptimSolver(get_optim_solver());
     casSolver->setPluginOptions(pluginOptions);
     casSolver->setSolverOptions(solverOptions);

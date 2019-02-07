@@ -40,6 +40,9 @@ public:
     OpenSim_DECLARE_PROPERTY(verbosity, int,
             "0 for silent. 1 for only Moco's own output. "
             "2 for output from CasADi and the underlying solver (default: 2).");
+    OpenSim_DECLARE_PROPERTY(transcription_scheme, std::string,
+            "'trapezoidal' (default) for trapezoidal transcription, or "
+            "'hermite-simpson' for separated Hermite-Simpson transcription.");
     OpenSim_DECLARE_PROPERTY(dynamics_mode, std::string,
             "Dynamics are expressed as 'explicit' (default) or 'implicit' "
             "differential equations.");

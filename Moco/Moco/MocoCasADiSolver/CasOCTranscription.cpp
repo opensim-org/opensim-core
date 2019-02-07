@@ -90,7 +90,7 @@ Transcription::Transcription(const Solver& solver, const Problem& problem,
 
     // Cost.
     // -----
-    DM quadCoeffs = createQuadratureCoefficients();
+    DM quadCoeffs = this->createQuadratureCoefficients();
     MX integralCost = 0;
     for (int itime = 0; itime < m_numGridPoints; ++itime) {
         const auto out = m_problem.getIntegralCostIntegrand().operator()(

@@ -25,7 +25,6 @@ namespace CasOC {
 
 DM HermiteSimpson::createQuadratureCoefficientsImpl() const {
 
-    // Calculate the number of mesh points based on the number of grid points.
     const int numMeshPoints = (m_numGridPoints + 1) / 2;
     const int numMeshIntervals = numMeshPoints - 1;
     // The duration of each mesh interval.
@@ -42,8 +41,8 @@ DM HermiteSimpson::createQuadratureCoefficientsImpl() const {
         // total coefficients vector, so we slice at every other index to update
         // the coefficients vector.
         quadCoeffs(Slice(2*imesh, 1)) += meshIntervals(imesh) * (1.0/6.0);
-        quadCoeffs(Slice(2*imesh+1, 1)) += meshIntervals(imesh) * (2.0/3.0);
-        quadCoeffs(Slice(2*imesh+2, 1)) += meshIntervals(imesh) * (1.0/6.0);
+        quadCoeffs(Slice(2*imesh + 1, 1)) += meshIntervals(imesh) * (2.0/3.0);
+        quadCoeffs(Slice(2*imesh + 2, 1)) += meshIntervals(imesh) * (1.0/6.0);
     }
 
     return quadCoeffs;
@@ -56,25 +55,41 @@ void HermiteSimpson::applyConstraintsImpl() {
     // this way might have benefits for sparse linear algebra).
     const auto& states = m_vars[Var::states];
     const DM zero(m_problem.getNumStates(), 1);
-    for (int itime = 0; itime < m_numGridPoints; ++itime) {
-        if (itime > 0) {
-            const auto h = m_times(itime) - m_times(itime - 1);
-            const auto x_i = states(Slice(), itime);
-            const auto x_im1 = states(Slice(), itime - 1);
-            const auto xdot_i = xdot(Slice(), itime);
-            const auto xdot_im1 = xdot(Slice(), itime - 1);
-            addConstraints(zero, zero,
-                x_i - (x_im1 + 0.5 * h * (xdot_i + xdot_im1)));
-        }
+    const int numMeshPoints = (m_numGridPoints + 1) / 2;
+    const int numMeshIntervals = numMeshPoints - 1;
 
+    int time_i, time_mid, time_ip1;
+    for (int imesh = 0; imesh < numMeshPoints; ++imesh) {
+        time_i = 2*imesh; // Needed for defects and path constraints.
+        if (imesh < numMeshIntervals) {
+            time_mid = 2*imesh + 1;
+            time_ip1 = 2*imesh + 2;
+
+            const auto h = m_times(time_ip1) - m_times(time_i);
+            const auto x_i = states(Slice(), time_i);
+            const auto x_mid = states(Slice(), time_mid);
+            const auto x_ip1 = states(Slice(), time_ip1);
+            const auto xdot_i = xdot(Slice(), time_i);
+            const auto xdot_mid = xdot(Slice(), time_mid);
+            const auto xdot_ip1 = xdot(Slice(), time_ip1);
+
+            // Hermite interpolant defects
+            addConstraints(zero, zero,
+                x_mid - 0.5*(x_ip1 + x_i) - (h / 8.0) * (xdot_i - xdot_ip1));
+
+            // Simpson integration defects
+            addConstraints(zero, zero,
+                x_ip1 - x_i - (h / 6.0) * (xdot_ip1 + 4.0*xdot_mid + xdot_i));
+        }
+        
         // TODO
         // if (m_problem.getNumKinematicConstraintEquations()) {
         //     addConstraints(kcLowerBounds, kcUpperBounds, qerr(Slice(), itime));
         // }
         for (const auto& pathInfo : m_problem.getPathConstraintInfos()) {
             const auto output = pathInfo.function->operator()(
-            {m_times(itime), m_vars[Var::states](Slice(), itime),
-                m_vars[Var::controls](Slice(), itime),
+            {m_times(time_i), m_vars[Var::states](Slice(), time_i),
+                m_vars[Var::controls](Slice(), time_i),
                 m_vars[Var::parameters]});
             const auto& errors = output.at(0);
             addConstraints(

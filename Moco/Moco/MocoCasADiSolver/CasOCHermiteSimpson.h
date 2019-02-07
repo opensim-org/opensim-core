@@ -28,7 +28,7 @@ namespace CasOC {
 class HermiteSimpson : public Transcription {
 public:
     HermiteSimpson(const Solver& solver, const Problem& problem)
-        : Transcription(solver, problem, 2*m_solver.getNumMeshPoints() - 1) {}
+        : Transcription(solver, problem, 2*solver.getNumMeshPoints() - 1) {}
 
 private:
     casadi::DM createQuadratureCoefficientsImpl() const override;

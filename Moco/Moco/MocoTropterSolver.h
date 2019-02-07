@@ -58,9 +58,6 @@ public:
     OpenSim_DECLARE_PROPERTY(optim_sparsity_detection, std::string,
     "Iterate used to detect sparsity pattern of Jacobian/Hessian; "
     "'random' (default) or 'initial-guess'");
-    OpenSim_DECLARE_PROPERTY(transcription_scheme, std::string,
-    "'trapezoidal' (default) for trapezoidal transcription, or "
-    "'hermite-simpson' for separated Hermite-Simpson transcription.");
     OpenSim_DECLARE_OPTIONAL_PROPERTY(exact_hessian_block_sparsity_mode,
     std::string, "'dense' for dense blocks on the Hessian diagonal, or "
     "'sparse' for sparse blocks on the Hessian diagonal, detected from the "

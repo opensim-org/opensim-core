@@ -30,7 +30,6 @@ MocoTropterSolver::MocoTropterSolver() {
 void MocoTropterSolver::constructProperties() {
     constructProperty_optim_jacobian_approximation("exact");
     constructProperty_optim_sparsity_detection("random");
-    constructProperty_transcription_scheme("trapezoidal");
     constructProperty_velocity_correction_bounds({-0.1, 0.1});
     constructProperty_exact_hessian_block_sparsity_mode();
     constructProperty_minimize_lagrange_multipliers(false);
