@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: TestSlidingMass.java                                     *
+ * OpenSim Moco: TestSlidingMass.java                                         *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2017 Stanford University and the Authors                     *
  *                                                                            *
@@ -78,7 +78,7 @@ class TestSlidingMass {
 
     // Configure the solver.
     // =====================
-    MocoTropterSolver ms = moco.initSolver();
+    MocoTropterSolver ms = moco.initTropterSolver();
     ms.set_num_mesh_points(100);
 
     // Now that we've finished setting up the tool, print it to a file.
