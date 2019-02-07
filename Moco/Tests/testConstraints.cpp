@@ -528,7 +528,7 @@ void testDoublePendulumPointOnLine(bool enforce_constraint_derivatives) {
 
     MocoSolution solution = moco.solve();
     solution.write("testConstraints_testDoublePendulumPointOnLine.sto");
-    //moco.visualize(solution);
+    // moco.visualize(solution);
 
     model->initSystem();
     StatesTrajectory states = solution.exportToStatesTrajectory(mp);
@@ -579,7 +579,8 @@ void testDoublePendulumCoordinateCoupler(MocoSolution& solution,
     const SimTK::Real m = -2;
     const SimTK::Real b = SimTK::Pi;
     LinearFunction linFunc(m, b);
-    constraint->setFunction(linFunc);
+    // Avoid CoordinateCoupler::setFunction(const Function&); it has a leak.
+    constraint->setFunction(&linFunc);
     model->addConstraint(constraint);
     model->finalizeConnections();
 
@@ -880,7 +881,7 @@ int main() {
         SimTK_SUBTEST2(testDoublePendulumCoordinateCoupler, couplerSol, false);
         SimTK_SUBTEST2(testDoublePendulumPrescribedMotion, couplerSol, false);
         // Direct collocation tests, with constraint derivatives.
-        //SimTK_SUBTEST1(testDoublePendulumPointOnLine, true);
+        SimTK_SUBTEST1(testDoublePendulumPointOnLine, true);
         MocoSolution couplerSol2;
         SimTK_SUBTEST2(testDoublePendulumCoordinateCoupler, couplerSol2, true);
         SimTK_SUBTEST2(testDoublePendulumPrescribedMotion, couplerSol2, true);
