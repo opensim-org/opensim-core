@@ -19,6 +19,7 @@
  * -------------------------------------------------------------------------- */
 
 #include "MocoBounds.h"
+#include "MocoUtilities.h"
 
 #include <OpenSim/Common/Object.h>
 #include <simbody/internal/Constraint.h>
@@ -127,9 +128,9 @@ private:
     }
     void checkPropertySize(const AbstractProperty& prop) {
         if (!prop.empty()) {
-            OPENSIM_THROW_IF(m_num_equations != prop.size(), Exception, "Size "
-                "of property " + prop.getName() + " is not consistent with "
-                "current number of constraint equations.");
+            OPENSIM_THROW_IF(m_num_equations != prop.size(), Exception,
+                    format("Size of property %s is not consistent with "
+                    "current number of constraint equations.", prop.getName()));
         }
     }
     
@@ -139,6 +140,9 @@ private:
 // MocoKinematicConstraint
 // ============================================================================
 
+#ifndef SWIG
+// TODO: Temporarily avoiding MSVC error:
+// python_moco_wrap.cxx(13610): error C3431: 'KinematicLevel': a scoped enumeration cannot be redeclared as an unscoped enumeration
 /// The kinematic level for a scalar kinematic constraint within a 
 /// MocoKinematicConstraint. Each scalar constraint is automatically assigned
 /// a KinematicLevel enum value when a MocoKinematicConstraint is 
@@ -151,6 +155,7 @@ enum class KinematicLevel {
     DtVelocity,
     Acceleration
 };
+#endif
 
 /// A model kinematic constraint to be enforced in the optimal control problem. 
 /// Objects of this class can only be instantiated by a MocoPhase, since 

@@ -37,6 +37,7 @@ void MocoTropterSolver::constructProperties() {
     constructProperty_optim_max_iterations(-1);
     constructProperty_optim_convergence_tolerance(-1);
     constructProperty_optim_constraint_tolerance(-1);
+    constructProperty_optim_jacobian_approximation("exact");
     constructProperty_optim_hessian_approximation("limited-memory");
     constructProperty_optim_sparsity_detection("random");
     constructProperty_optim_ipopt_print_level(-1);
@@ -74,9 +75,8 @@ MocoIterate MocoTropterSolver::createGuess(const std::string& type) const {
             && type != "random"
             && type != "time-stepping",
             Exception,
-            "Unexpected guess type '" + type +
-            "'; supported types are 'bounds', 'random', and "
-            "'time-stepping'.");
+            format("Unexpected guess type '%s'; supported types are 'bounds', "
+                   "'random', and 'time-stepping'.", type));
 
     if (type == "time-stepping") {
         return createGuessTimeStepping();
@@ -109,10 +109,10 @@ MocoIterate MocoTropterSolver::createGuessTimeStepping() const {
     const auto& initialTime = probrep.getTimeInitialBounds().getUpper();
     const auto& finalTime = probrep.getTimeFinalBounds().getLower();
     OPENSIM_THROW_IF_FRMOBJ(finalTime <= initialTime, Exception,
-        "Expected lower bound on final time to be greater than "
-        "upper bound on initial time, but "
-        "final_time.lower: " + std::to_string(finalTime) + "; " +
-        "initial_time.upper: " + std::to_string(initialTime) + ".");
+            format("Expected lower bound on final time to be greater than "
+                   "upper bound on initial time, but "
+                   "final_time.lower: %g; initial_time.upper: %g.",
+                    finalTime, initialTime));
     Model model(probrep.getModel());
 
     // Disable all controllers?
@@ -229,11 +229,12 @@ MocoSolution MocoTropterSolver::solveImpl() const {
     // is set as the transcription scheme.
     if (!getProperty_enforce_constraint_derivatives().empty()) {
         OPENSIM_THROW_IF(get_transcription_scheme() != "hermite-simpson" &&
-            get_enforce_constraint_derivatives(), Exception,
-            "If enforcing derivatives of model kinematic constraints, then the "
-            "property 'transcription_scheme' must be set to "
-            "'hermite-simpson'. Currently, it is set to '" + 
-            get_transcription_scheme() + "'.");    
+                get_enforce_constraint_derivatives(), Exception,
+                format("If enforcing derivatives of model kinematic "
+                       "constraints, then the property 'transcription_scheme' "
+                       "must be set to 'hermite-simpson'. "
+                       "Currently, it is set to '%s'.",
+                        get_transcription_scheme()));
     }
     // Block sparsity detected is only in effect when using an exact Hessian
     // approximation.
@@ -293,6 +294,7 @@ MocoSolution MocoTropterSolver::solveImpl() const {
     if (get_optim_constraint_tolerance() != -1)
         optsolver.set_constraint_tolerance(get_optim_constraint_tolerance());
 
+    optsolver.set_jacobian_approximation(get_optim_jacobian_approximation());
     optsolver.set_hessian_approximation(get_optim_hessian_approximation());
 
     if (get_optim_solver() == "ipopt") {

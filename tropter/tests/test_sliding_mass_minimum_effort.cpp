@@ -116,6 +116,8 @@ TEST_CASE("IPOPT") {
         auto ocp = std::make_shared<SlidingMass<double>>();
         DirectCollocationSolver<double> dircol(ocp, "trapezoidal", "ipopt");
         dircol.get_opt_solver().set_findiff_hessian_step_size(1e-3);
+        dircol.get_opt_solver()
+            .set_jacobian_approximation("finite-difference-values");
         dircol.get_opt_solver().set_hessian_approximation("limited-memory");
         Solution solution = dircol.solve();
         REQUIRE(Approx(solution.states(0, 0)) == 0.0);
@@ -132,6 +134,8 @@ TEST_CASE("IPOPT") {
         auto ocp = std::make_shared<SlidingMass<double>>();
         DirectCollocationSolver<double> dircol(ocp, "hermite-simpson", "ipopt");
         dircol.get_opt_solver().set_findiff_hessian_step_size(1e-3);
+        dircol.get_opt_solver()
+            .set_jacobian_approximation("finite-difference-values");
         dircol.get_opt_solver().set_hessian_approximation("limited-memory");
         Solution solution = dircol.solve();
         REQUIRE(Approx(solution.states(0, 0)) == 0.0);
@@ -148,6 +152,7 @@ TEST_CASE("IPOPT") {
         auto ocp = std::make_shared<SlidingMass<double>>();
         DirectCollocationSolver<double> dircol(ocp, "trapezoidal", "ipopt");
         dircol.get_opt_solver().set_findiff_hessian_step_size(1e-3);
+        dircol.get_opt_solver().set_jacobian_approximation("exact");
         dircol.get_opt_solver().set_hessian_approximation("exact");
         Solution solution = dircol.solve();
         REQUIRE(Approx(solution.states(0, 0)) == 0.0);
@@ -164,6 +169,7 @@ TEST_CASE("IPOPT") {
         auto ocp = std::make_shared<SlidingMass<double>>();
         DirectCollocationSolver<double> dircol(ocp, "hermite-simpson", "ipopt");
         dircol.get_opt_solver().set_findiff_hessian_step_size(1e-3);
+        dircol.get_opt_solver().set_jacobian_approximation("exact");
         dircol.get_opt_solver().set_hessian_approximation("exact");
         Solution solution = dircol.solve();
         REQUIRE(Approx(solution.states(0, 0)) == 0.0);

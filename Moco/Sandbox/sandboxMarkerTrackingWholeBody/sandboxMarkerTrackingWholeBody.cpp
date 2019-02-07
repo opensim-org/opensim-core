@@ -269,7 +269,6 @@ MocoSolution solveMarkerTrackingProblem(
     ms.set_verbosity(2);
     ms.set_optim_solver("snopt");
     ms.set_transcription_scheme("hermite-simpson");
-    //ms.set_optim_hessian_approximation("exact");
 
     // Create guess.
     // =============

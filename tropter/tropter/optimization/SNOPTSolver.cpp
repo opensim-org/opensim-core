@@ -84,7 +84,7 @@ std::string convert_info_integer_to_string(int info) {
 void snopt_userfunction(int*   /* Status */,
         int* num_variables, double x[],
         int*   needF, int* length_F  , double  F[],
-        int*   /*needG*/, int* /*neG*/, double /*G*/[],
+        int*   /* needG */, int* /* neG */, double /* G */[],
         char*  /*    cu  */, int* /* lencu */,
         int   [] /* iu   */, int* /* leniu */,
         double[] /* ru   */, int* /* lenru */)
@@ -96,11 +96,7 @@ void snopt_userfunction(int*   /* Status */,
         probproxy->calc_objective(*num_variables, x, new_variables, F[0]);
         probproxy->calc_constraints(*num_variables, x, new_variables,
                 *length_F - 1, &F[1]);
-
     }
-    // TODO SNOPT's derivative checker throws an exception in certain problems 
-    // for errors in the tropter-computed Jacobian. For now, used the SNOPT-
-    // computed Jacobian until this is resolved.
 
     //if (*needG > 0) {
     //    if (*needF > 0) new_variables = false;
@@ -161,46 +157,36 @@ SNOPTSolver::optimize_impl(const VectorXd& variablesArg) const {
     // Derivative information.
     // -----------------------
     // TODO SNOPT's derivative checker throws an exception in certain problems 
-    // for errors in the tropter-computed Jacobian. For now, used the SNOPT-
-    // computed Jacobian until this is resolved.
+    // for errors in the tropter-computed Jacobian. For now, the SNOPT-
+    // computed Jacobian is recommended.
 
-    //SparsityCoordinates jacobian_sparsity;
-    //calc_sparsity(variables,
-    //        jacobian_sparsity, false,
-    //        SparsityCoordinates()  /*hessian_sparsity*/);
-    //int jacobian_num_nonzeros = (int)jacobian_sparsity.row.size();
-    //std::cout << "jacobian_num_nonzeros: " << jacobian_num_nonzeros << std::endl;
+    SparsityCoordinates jacobian_sparsity;
+    calc_sparsity(variables,
+            jacobian_sparsity, false,
+            SparsityCoordinates()  /*hessian_sparsity*/);
+    int jacobian_num_nonzeros = (int)jacobian_sparsity.row.size();
+    int neG = num_variables + jacobian_num_nonzeros;
 
-    //int length_G = num_variables + jacobian_num_nonzeros;
-    //std::cout << "length_G: " << length_G << std::endl;
+    // Row indices of Jacobian G (rows correspond to "fun"ctions).
+    VectorXi iGfun(neG);
+    // Column indices of Jacobian G (columns correspond to "var"iables).
+    VectorXi jGvar(neG);
+    // The first row is the gradient of the objective; we assume it is dense.
+    iGfun.head(num_variables).setZero();
+    // In MATLAB, this would be jGvar(1:num_variables) = 0:num_variables-1.
+    jGvar.head(num_variables).setLinSpaced(num_variables, 0, num_variables-1);
 
-    //int num_nonzeros_G = length_G;
-    //std::cout << "num_nonzeros_G: " << num_nonzeros_G << std::endl;
-
-    //// Row indices of Jacobian G (rows correspond to "fun"ctions).
-    //VectorXi iGfun(length_G);
-    //// Column indices of Jacobian G (columns correspond to "var"iables).
-    //VectorXi jGvar(length_G);
-    //// The first row is the gradient of the objective; we assume it is dense.
-    //iGfun.head(num_variables).setZero();
-    //// In MATLAB, this would be jGvar(1:num_variables) = 0:num_variables-1.
-    //jGvar.head(num_variables).setLinSpaced(num_variables, 0, num_variables-1);
-
-    //for (int index = 0; index < jacobian_num_nonzeros; ++index) {
-    //    // The Jacobian of the constraints is shifted down one row, since
-    //    // the first row of G is the gradient of the objective function.
-    //    iGfun[num_variables + index] = jacobian_sparsity.row[index] + 1;
-    //    jGvar[num_variables + index] = jacobian_sparsity.col[index];
-    //}
-
-    //for (int i = 0; i < num_variables; ++i) {
-    //    std::cout << iGfun[i] << ", " << jGvar[i] << std::endl;
-    //}
+    for (int index = 0; index < jacobian_num_nonzeros; ++index) {
+        // The Jacobian of the constraints is shifted down one row, since
+        // the first row of G is the gradient of the objective function.
+        iGfun[num_variables + index] = jacobian_sparsity.row[index] + 1;
+        jGvar[num_variables + index] = jacobian_sparsity.col[index];
+    }
 
     // TODO linear portion of F. Can we omit this?
     // TODO for our generic problems, we cannot provide this.
-    // int lenA = 1; int neA = 0;
-    // VectorXi iAfun(lenA); VectorXi jAvar(lenA); VectorXd A;
+    int lenA = 1; int neA = 0;
+    VectorXi iAfun(lenA); VectorXi jAvar(lenA); VectorXd A;
     // For some reason, SNOPT allows the length of the iGfun and jGvar arrays
     // to be greater than the number of nonzero elements.
 
@@ -224,6 +210,13 @@ SNOPTSolver::optimize_impl(const VectorXd& variablesArg) const {
     // Derivative settings.
     snopt_prob.setIntParameter("Derivative option", 0 /* TODO 1 */);
     snopt_prob.setIntParameter("Verify level", 3);
+
+    const auto& jacobian_approx = get_jacobian_approximation();
+    TROPTER_THROW_IF(jacobian_approx != "exact" &&
+        jacobian_approx != "finite-difference-values",
+        "When using SNOPT, the 'jacobian_approximation' setting must be "
+        "either 'exact' or 'finite-difference-values', but '%s' was "
+        "provided.", jacobian_approx);
 
     // Advanced settings.
     // TODO try QPSolver Cholesky setting, which stores the reduced Hessian
@@ -256,14 +249,34 @@ SNOPTSolver::optimize_impl(const VectorXd& variablesArg) const {
     int            nS; // Final number of superbasic variables ("free" variables)
     int          nInf; // Final number of infeasibilities
     double       sInf; // Final sum of infeasibilities
+    int          info; // Output status.
 
-    // snJac is called implicitly in this case to compute the Jacobian.
-    int info = snopt_prob.solve(Cold, length_F, num_variables, ObjAdd,
-        ObjRow, snopt_userfunction,
-        xlow.data(), xupp.data(), Flow.data(), Fupp.data(),
-        variables.data(), xstate.data(), xmul.data(),
-        F.data(), Fstate.data(), Fmul.data(),
-        nS, nInf, sInf);
+    if (jacobian_approx == "finite-difference-values") {
+        // snJac is called implicitly in this case to compute the Jacobian.
+        info = snopt_prob.solve(Cold, length_F, num_variables, ObjAdd,
+            ObjRow, snopt_userfunction,
+            xlow.data(), xupp.data(), Flow.data(), Fupp.data(),
+            variables.data(), xstate.data(), xmul.data(),
+            F.data(), Fstate.data(), Fmul.data(),
+            nS, nInf, sInf);
+
+    } else if (jacobian_approx == "exact") {
+
+        TROPTER_THROW("User-supplied derivatives currently not supported for"
+            "SNOPT");
+
+        // Use this form of solve() if providing Jacobian information.
+        //info = snopt_prob.solve(Cold, length_F, num_variables, ObjAdd,
+        //    ObjRow, snopt_userfunction,
+        //    iAfun.data(), jAvar.data(), A.data(), neA,
+        //    iGfun.data(), jGvar.data(), neG,
+        //    xlow.data(), xupp.data(), Flow.data(), Fupp.data(),
+        //    variables.data(), xstate.data(), xmul.data(),
+        //    F.data(), Fstate.data(), Fmul.data(),
+        //    nS, nInf, sInf);
+    }
+
+
     
     // Output problem information.
     // ---------------------------

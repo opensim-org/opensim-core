@@ -17,6 +17,7 @@
  * -------------------------------------------------------------------------- */
 
 #include "MocoJointReactionNormCost.h"
+#include "MocoUtilities.h"
 #include <OpenSim/Simulation/Model/Model.h>
     
 using namespace OpenSim;
@@ -36,8 +37,9 @@ void MocoJointReactionNormCost::initializeOnModelImpl(
         "Empty model joint path detected. Please provide a valid joint path.");
 
     OPENSIM_THROW_IF_FRMOBJ(!model.hasComponent<Joint>(get_joint_path()),
-        Exception, "Joint at path " + get_joint_path() + " not found in the "
-        "model. Please provide a valid joint path.");
+        Exception,
+        format("Joint at path %s not found in the model. "
+               "Please provide a valid joint path.", get_joint_path()));
 }
 
 void MocoJointReactionNormCost::calcIntegralCostImpl(const SimTK::State& state,

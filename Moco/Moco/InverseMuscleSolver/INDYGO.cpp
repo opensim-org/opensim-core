@@ -21,6 +21,8 @@
 #include "InverseMuscleSolverMotionData.h"
 #include "GlobalStaticOptimization.h"
 
+#include "../MocoUtilities.h"
+
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Actuators/CoordinateActuator.h>
 
@@ -702,9 +704,9 @@ INDYGO::Solution INDYGO::solve() const {
             const auto foundCoordPath = coordsToInclude.find(coordPath);
             if (foundCoordPath != coordsToInclude.end()) {
                 OPENSIM_THROW_IF_FRMOBJ(coord->isConstrained(state), Exception,
-                        "Coordinate '" + coordPath + "' is constrained and "
+                        format("Coordinate '%s' is constrained and "
                                 "thus cannot be listed under "
-                                "'coordinates_to_include'.");
+                                "'coordinates_to_include'.", coordPath));
                 coordsToActuate.push_back(coord.get());
                 // No longer need to search for this coordinate.
                 coordsToInclude.erase(foundCoordPath);
@@ -758,8 +760,8 @@ INDYGO::Solution INDYGO::solve() const {
     if (get_create_reserve_actuators() != -1) {
         const auto& optimalForce = get_create_reserve_actuators();
         OPENSIM_THROW_IF(optimalForce <= 0, Exception,
-            "Invalid value (" + std::to_string(optimalForce)
-            + ") for create_reserve_actuators; should be -1 or positive.");
+                format("Invalid value (%g) for create_reserve_actuators; "
+                       "should be -1 or positive.", optimalForce));
 
         std::cout << "Adding reserve actuators with an optimal force of "
                   << optimalForce << "..." << std::endl;
@@ -796,8 +798,9 @@ INDYGO::Solution INDYGO::solve() const {
     double finalTime;
     int numMeshPoints;
     OPENSIM_THROW_IF(get_mesh_point_frequency() <= 0, Exception,
-            "Invalid value (" + std::to_string(get_mesh_point_frequency()) +
-                    ") for mesh_point_frequency; must be positive.");
+            format("Invalid value (%g) for mesh_point_frequency; "
+                   "must be positive.",
+                    get_mesh_point_frequency()));
     determineInitialAndFinalTimes(kinematics, netGeneralizedForces,
             get_mesh_point_frequency(),
             initialTime, finalTime, numMeshPoints);
@@ -834,14 +837,16 @@ INDYGO::Solution INDYGO::solve() const {
     // --------------------------------------
     OPENSIM_THROW_IF(get_fiber_dynamics_mode() != "fiber_length" &&
                      get_fiber_dynamics_mode() != "tendon_force",
-            Exception, "Invalid value (" + get_fiber_dynamics_mode() + ") for"
-            "fiber_dynamics_model; should be 'fiber_length' or "
-            "'tendon_force'.");
+            Exception,
+            format("Invalid value (%s) for "
+                   "fiber_dynamics_mode; should be 'fiber_length' or "
+                   "'tendon_force'.", get_fiber_dynamics_mode()));
     OPENSIM_THROW_IF(get_activation_dynamics_mode() != "explicit" &&
                      get_activation_dynamics_mode() != "implicit",
-            Exception, "Invalid value (" + get_activation_dynamics_mode() + ") "
-            "for activation_dynamics_model; should be 'explicit' or "
-            "'implicit'.");
+            Exception,
+            format("Invalid value (%s) "
+                   "for activation_dynamics_mode; should be 'explicit' or "
+                   "'implicit'.", get_activation_dynamics_mode()));
     OPENSIM_THROW_IF(get_activation_dynamics_mode() == "implicit", Exception,
             "Implicit activation dynamics is not supported yet.");
 
@@ -854,8 +859,9 @@ INDYGO::Solution INDYGO::solve() const {
     // ----------------------------------------------------
     OPENSIM_THROW_IF(get_initial_guess() != "bounds" &&
                      get_initial_guess() != "static_optimization", Exception,
-            "Invalid value (" + get_initial_guess() + ") for "
-            "initial_guess; should be 'static_optimization' or 'bounds'.");
+            format("Invalid value (%s) for "
+                   "initial_guess; should be 'static_optimization' or 'bounds'.",
+                    get_initial_guess()));
     tropter::Iterate guess;
     if (get_initial_guess() == "static_optimization") {
         std::cout << std::string(79, '=') << std::endl;
@@ -933,9 +939,10 @@ INDYGO::Solution INDYGO::solve() const {
     } else if (get_initial_guess() == "bounds") {
         ocp_solution = dircol.solve();
     } else {
-        OPENSIM_THROW_FRMOBJ(Exception, "Expected 'initial_guess' property "
-                "to be 'static_optimization or 'bounds', but got '"
-                + get_initial_guess() + "'.");
+        OPENSIM_THROW_FRMOBJ(Exception,
+                format("Expected 'initial_guess' property "
+                       "to be 'static_optimization or 'bounds', but got '%s'.",
+                        get_initial_guess()));
     }
 
     // Return the solution.

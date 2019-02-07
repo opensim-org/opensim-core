@@ -146,18 +146,18 @@ protected:
             // TODO only add velocity correction variables for holonomic
             // constraint derivatives? For now, disallow enforcing derivatives
             // if non-holonomic or acceleration constraints present.
-            OPENSIM_THROW_IF(enforceConstraintDerivs && mv != 0, Exception, 
-                "Enforcing constraint derivatives is supported only for "
-                "holonomic (position-level) constraints. "
-                "There are " + std::to_string(mv) + " velocity-level "
-                "scalar constraints associated with the model Constraint "
-                "at ConstraintIndex " + std::to_string(cid) + ".");
-            OPENSIM_THROW_IF(enforceConstraintDerivs && ma != 0, Exception, 
-                "Enforcing constraint derivatives is supported only for "
-                "holonomic (position-level) constraints. "
-                "There are " + std::to_string(ma) + " acceleration-level "
-                "scalar constraints associated with the model Constraint "
-                "at ConstraintIndex " + std::to_string(cid) + ".");
+            OPENSIM_THROW_IF(enforceConstraintDerivs && mv != 0, Exception,
+                    format("Enforcing constraint derivatives is supported only for "
+                           "holonomic (position-level) constraints. "
+                           "There are %i velocity-level "
+                           "scalar constraints associated with the model Constraint "
+                           "at ConstraintIndex %i.", mv, cid));
+            OPENSIM_THROW_IF(enforceConstraintDerivs && ma != 0, Exception,
+                    format("Enforcing constraint derivatives is supported only for "
+                           "holonomic (position-level) constraints. "
+                           "There are %i acceleration-level "
+                           "scalar constraints associated with the model Constraint "
+                           "at ConstraintIndex %i.", ma, cid));
 
             m_total_mp += mp;
             m_total_mv += mv;
@@ -199,9 +199,11 @@ protected:
                         // "lambda", which may change in the future.
                         OPENSIM_THROW_IF(
                             multInfo.getName().substr(0, 6) != "lambda",
-                            Exception, "Expected the multiplier name for this "
-                            "constraint to begin with 'lambda' but it begins "
-                            "with '" + multInfo.getName().substr(0, 6) + "'.");
+                            Exception,
+                            format("Expected the multiplier name for this "
+                                   "constraint to begin with 'lambda' but it "
+                                   "begins with '%s'.",
+                                   multInfo.getName().substr(0, 6)));
                         this->add_diffuse(std::string(
                                 multInfo.getName()).replace(0, 6, "gamma"),
                             convertBounds(m_mocoTropterSolver

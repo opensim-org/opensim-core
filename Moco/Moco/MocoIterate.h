@@ -64,7 +64,6 @@ num_controls=<number-of-control-variables>
 num_derivatives=<number-of-derivative-variables>
 num_multipliers=<number-of-multiplier-variables>
 num_parameters=<number-of-parameter-variables>
-num_states=<number-of-state-variables>
 num_slacks=<number-of-slack-variables>
 num_states=<number-of-state-variables>
 time,<state-0-name>,...,<control-0-name>,...,<multiplier-0-name>,..., \
@@ -545,6 +544,12 @@ public:
     /// If the solver did not succeed, call this to enable read and write
     /// access to the (failed) solution. If the solver succeeded, then the
     /// solution is already unsealed.
+    /// @note In Python, you must invoke this function on a separate line:
+    /// @code
+    /// solution = moco.solve()
+    /// solution.unseal()
+    /// @endcode
+    /// Otherwise, Moco will cause a crash.
     MocoSolution& unseal() { MocoIterate::setSealed(false); return *this; }
     MocoSolution& seal() { MocoIterate::setSealed(true); return *this; }
     bool isSealed() const { return MocoIterate::isSealed(); }
