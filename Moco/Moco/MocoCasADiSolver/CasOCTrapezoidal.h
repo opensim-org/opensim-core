@@ -28,10 +28,12 @@ namespace CasOC {
 class Trapezoidal : public Transcription {
 public:
     Trapezoidal(const Solver& solver, const Problem& problem)
-        : Transcription(solver, problem, solver.getNumMeshPoints()) {}
+        : Transcription(solver, problem, solver.getNumMeshPoints())
+    { transcribe(); }
 
 private:
     casadi::DM createQuadratureCoefficientsImpl() const override;
+    casadi::DM createKinematicConstraintIndicesImpl() const override;
     void applyConstraintsImpl() override;
 
 };

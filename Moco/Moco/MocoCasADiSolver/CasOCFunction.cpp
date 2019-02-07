@@ -85,8 +85,13 @@ casadi::Sparsity MultibodySystem::get_sparsity_out(casadi_int i) {
         return casadi::Sparsity::dense(
                 m_casProblem->getNumAuxiliaryStates(), 1);
     } else if (i == 2) {
-        int numRows = m_casProblem->getNumKinematicConstraintEquations();
-        return casadi::Sparsity::dense(numRows, 1);
-    } else
+        if (m_calcKinematicConstraintsErrors) {
+            int numRows = m_casProblem->getNumKinematicConstraintEquations();
+            return casadi::Sparsity::dense(numRows, 1);
+        } else {
+            return casadi::Sparsity(0, 0);
+        }
+    } else {
         return casadi::Sparsity(0, 0);
+    }
 }

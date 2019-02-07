@@ -36,7 +36,8 @@ namespace CasOC {
 class Transcription {
 public:
     Transcription(const Solver& solver, const Problem& problem, 
-        const int& numColPoints);
+        const int& numGridPoints) : m_solver(solver), m_problem(problem),
+        m_numGridPoints(numGridPoints) {}
     virtual ~Transcription() = default;
     Iterate createInitialGuessFromBounds() const;
     Iterate createRandomIterateWithinBounds() const;
@@ -46,6 +47,9 @@ public:
     }
     casadi::DM createQuadratureCoefficients() const  {
         return createQuadratureCoefficientsImpl();
+    }
+    casadi::DM createKinematicConstraintIndices() const  {
+        return createKinematicConstraintIndicesImpl();
     }
     void applyConstraints() {
         applyConstraintsImpl();
@@ -85,6 +89,12 @@ public:
     }
 
 protected:
+    /// This must be called in the constructor for derived classes of so that 
+    /// overridden virtual methods are accessible to the base class. This
+    /// implementation allows initialization to occur during construction, 
+    /// avoiding an extra call on the instantiated object. 
+    void transcribe();
+
     template <typename TRow, typename TColumn>
     void setVariableBounds(Var var, const TRow& rowIndices,
             const TColumn& columnIndices, const Bounds& bounds) {
@@ -102,7 +112,7 @@ protected:
     }
 
     void calcDAE(casadi_int itime, const int& NQ, casadi::MX& xdot, 
-        casadi::MX& qerr);
+        bool calcQErr, casadi::MX& qerr);
 
     void setObjective(casadi::MX objective) {
         m_objective = std::move(objective);
@@ -135,7 +145,17 @@ private:
     std::vector<casadi::DM> m_constraintsUpperBounds;
 
 private:
+    /// Override this function in your derived class to compute a vector of
+    /// quadrature coeffecients (of length m_numGridPoints) required to set the
+    /// the integral cost within transcribe().
     virtual casadi::DM createQuadratureCoefficientsImpl() const = 0;
+    /// Override this function to specify the indicies in the grid where any
+    /// existing kinematic constraints are to be enforced.
+    /// @note The returned vector must be of length m_numGridPoints with nonzero
+    /// values at the indices where kinematic constraints are enforced.
+    virtual casadi::DM createKinematicConstraintIndicesImpl() const = 0;
+    /// Override this function in your derived class set the defect, kinematic,
+    /// and path constraint errors required for your transcription scheme.
     virtual void applyConstraintsImpl() = 0;
 
     /// Use this function to ensure you iterate through variables in the same

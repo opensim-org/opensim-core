@@ -129,6 +129,9 @@ std::unique_ptr<CasOC::Problem> MocoCasADiSolver::createCasOCProblem() const {
                 convertBounds(info.getInitialBounds()),
                 convertBounds(info.getFinalBounds()));
     }
+    for (const auto& multName : problemRep.createMultiplierInfoNames()) {
+
+    }
     for (const auto& paramName : problemRep.createParameterNames()) {
         const auto& param = problemRep.getParameter(paramName);
         casProblem->addParameter(paramName, convertBounds(param.getBounds()));

@@ -103,6 +103,12 @@ struct ControlInfo {
     Bounds initialBounds;
     Bounds finalBounds;
 };
+struct MultiplierInfo {
+    std::string name;
+    Bounds bounds;
+    Bounds initialBounds;
+    Bounds finalBounds;
+};
 struct ParameterInfo {
     std::string name;
     Bounds bounds;
@@ -155,6 +161,15 @@ public:
         m_controlInfos.push_back({std::move(name), std::move(bounds),
                 std::move(initialBounds), std::move(finalBounds)});
     }
+    /// Add a Lagrange multiplier variable to the problem that is associated
+    /// with a kinematic constraint in the model.
+    void addMultiplier(std::string name, Bounds bounds, Bounds initialBounds,
+            Bounds finalBounds) {
+        clipEndpointBounds(bounds, initialBounds);
+        clipEndpointBounds(bounds, finalBounds);
+        m_multiplierInfos.push_back({std::move(name), std::move(bounds),
+            std::move(initialBounds), std::move(finalBounds)});
+    }
     /// Add a constant (time-invariant) variable to the optimization problem.
     void addParameter(std::string name, Bounds bounds) {
         m_paramInfos.push_back({std::move(name), std::move(bounds)});
@@ -197,9 +212,13 @@ public:
     /// FunctionType must derive from MultibodySystem.
     template <typename FunctionType, typename... Args>
     void setMultibodySystem(Args&&... args) {
+        m_multibodyFuncUnc =
+                OpenSim::make_unique<FunctionType>(std::forward<Args>(args)...);
+        m_multibodyFuncUnc->constructFunction(this, "multibody_system_unc", 
+            false);
         m_multibodyFunc =
                 OpenSim::make_unique<FunctionType>(std::forward<Args>(args)...);
-        m_multibodyFunc->constructFunction(this, "multibody_system");
+        m_multibodyFunc->constructFunction(this, "multibody_system", true);
     }
 
     /// Create an iterate with the variable names populated according to the
@@ -211,10 +230,8 @@ public:
             it.state_names.push_back(info.name);
         for (const auto& info : m_controlInfos)
             it.control_names.push_back(info.name);
-        if (getNumMultipliers())
-            throw std::runtime_error("Add multiplier_names");
-        // for (const auto& info : m_multiplierInfos)
-        //    it.multiplier_names.push_back(info.name);
+        for (const auto& info : m_multiplierInfos)
+            it.multiplier_names.push_back(info.name);
         // for (const auto& info : m_derivativeInfos)
         //    it.derivative_names.push_back(info.name);
         for (const auto& info : m_paramInfos)
@@ -230,8 +247,7 @@ public:
     int getNumStates() const { return (int)m_stateInfos.size(); }
     int getNumControls() const { return (int)m_controlInfos.size(); }
     int getNumParameters() const { return (int)m_paramInfos.size(); }
-    /// TODO: Kinematic constraints are not supported yet. This returns 0.
-    int getNumMultipliers() const { return 0; /* TODO */ }
+    int getNumMultipliers() const { return (int)m_multiplierInfos.size(); }
     /// This is the number of generalized coordinates, which may be greater
     /// than the number of generalized speeds.
     int getNumCoordinates() const { return m_numCoordinates; }
@@ -245,22 +261,26 @@ public:
     const std::vector<ControlInfo>& getControlInfos() const {
         return m_controlInfos;
     }
+    const std::vector<MultiplierInfo>& getMultiplierInfos() const {
+        return m_multiplierInfos;
+    }
     const std::vector<ParameterInfo>& getParameterInfos() const {
         return m_paramInfos;
     }
     const std::vector<PathConstraintInfo>& getPathConstraintInfos() const {
         return m_pathInfos;
     }
-
     const casadi::Function& getIntegralCostIntegrand() const {
         return *m_integralCostFunc;
     }
     const casadi::Function& getEndpointCost() const {
         return *m_endpointCostFunc;
     }
-
     const casadi::Function& getMultibodySystem() const {
         return *m_multibodyFunc;
+    }
+    const casadi::Function& getMultibodySystemUnconstrained() const {
+        return *m_multibodyFuncUnc;
     }
     /// @}
 
@@ -277,12 +297,15 @@ private:
     int m_numCoordinates = 0;
     int m_numSpeeds = 0;
     int m_numAuxiliaryStates = 0;
+    int m_numKinematicConstraintEquations = 0;
     std::vector<ControlInfo> m_controlInfos;
+    std::vector<MultiplierInfo> m_multiplierInfos;
     std::vector<PathConstraintInfo> m_pathInfos;
     std::vector<ParameterInfo> m_paramInfos;
     std::unique_ptr<IntegralCostIntegrand> m_integralCostFunc;
     std::unique_ptr<EndpointCost> m_endpointCostFunc;
     std::unique_ptr<MultibodySystem> m_multibodyFunc;
+    std::unique_ptr<MultibodySystem> m_multibodyFuncUnc;
 };
 
 } // namespace CasOC

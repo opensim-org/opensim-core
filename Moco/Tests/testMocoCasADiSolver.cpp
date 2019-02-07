@@ -46,6 +46,7 @@ int main() {
 
     auto& solver = moco.initCasADiSolver();
     solver.set_num_mesh_points(20);
+    solver.set_transcription_scheme("hermite-simpson");
     MocoSolution solution = moco.solve();
     solution.unseal().write("testMocoCasADiSolver_solution.sto");
 

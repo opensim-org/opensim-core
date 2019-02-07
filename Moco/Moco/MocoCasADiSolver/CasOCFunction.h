@@ -143,8 +143,14 @@ public:
 /// auxiliary explicit dynamics, and the errors for the kinematic constraints.
 class MultibodySystem : public Function {
 public:
+    void constructFunction(const Problem* casProblem, const std::string& name,
+            bool calcKinematicConstraintsErrors) {
+        Function::constructFunction(casProblem, name);
+        m_calcKinematicConstraintsErrors = calcKinematicConstraintsErrors;
+    }
     casadi_int get_n_in() override final { return 5; }
-    casadi_int get_n_out() override final { return 3; }
+    casadi_int get_n_out() override final 
+    { return m_calcKinematicConstraintsErrors ? 3 : 2; }
     std::string get_name_in(casadi_int i) override final {
         switch (i) {
         case 0: return "time";
@@ -159,12 +165,19 @@ public:
         switch (i) {
         case 0: return "multibody_derivatives";
         case 1: return "auxiliary_derivatives";
-        case 2: return "kinematic_constraint_errors";
+        case 2:
+            if (m_calcKinematicConstraintsErrors) {
+                return "kinematic_constraint_errors";
+            } else {
+                OPENSIM_THROW(OpenSim::Exception, "Internal error.")
+            }
         default: OPENSIM_THROW(OpenSim::Exception, "Internal error.");
         }
     }
     casadi::Sparsity get_sparsity_in(casadi_int i) override final;
     casadi::Sparsity get_sparsity_out(casadi_int i) override final;
+protected:
+    bool m_calcKinematicConstraintsErrors;
 };
 
 } // namespace CasOC

@@ -28,24 +28,31 @@ DM HermiteSimpson::createQuadratureCoefficientsImpl() const {
     const int numMeshPoints = (m_numGridPoints + 1) / 2;
     const int numMeshIntervals = numMeshPoints - 1;
     // The duration of each mesh interval.
-    const DM mesh = DM::linspace(0, 1, numMeshIntervals);
-    const DM meshIntervals = mesh(Slice(1, numMeshPoints)) - 
+    const DM mesh = DM::linspace(0, 1, numMeshPoints);
+    const DM meshIntervals = mesh(Slice(1, numMeshPoints)) -
         mesh(Slice(0, numMeshPoints - 1));
     // Simpson quadrature includes integrand evaluations at the midpoint.
-    DM quadCoeffs(m_numGridPoints);
-
+    DM quadCoeffs(m_numGridPoints, 1);
     // Loop through each mesh interval and update the corresponding components
     // in the total coefficients vector.
-    for (int imesh = 0; imesh < numMeshIntervals; ++imesh) {
-        // The mesh interval coefficients overlap at the mesh grid points in the
-        // total coefficients vector, so we slice at every other index to update
-        // the coefficients vector.
-        quadCoeffs(Slice(2*imesh, 1)) += meshIntervals(imesh) * (1.0/6.0);
-        quadCoeffs(Slice(2*imesh + 1, 1)) += meshIntervals(imesh) * (2.0/3.0);
-        quadCoeffs(Slice(2*imesh + 2, 1)) += meshIntervals(imesh) * (1.0/6.0);
+    for (int i = 0; i < numMeshIntervals; ++i) {
+        // The mesh interval quadrature coefficients overlap at the mesh grid 
+        // points in the total coefficients vector, so we slice at every other 
+        // index to update the coefficients vector.
+        quadCoeffs(Slice(2*i)) += (1/6) * meshIntervals(i);
+        quadCoeffs(Slice(2*i + 1)) += (2/3) * meshIntervals(i);
+        quadCoeffs(Slice(2*i + 2)) += (1/6) * meshIntervals(i);
     }
 
     return quadCoeffs;
+}
+
+DM HermiteSimpson::createKinematicConstraintIndicesImpl() const {
+    DM indices(m_numGridPoints, 1);
+    for (int i = 0; i < m_numGridPoints; i += 2) {
+        indices(Slice(i)) = 1;
+    }
+    return indices;
 }
 
 void HermiteSimpson::applyConstraintsImpl() {

@@ -23,10 +23,8 @@ using casadi::Slice;
 
 namespace CasOC {
 
-Transcription::Transcription(const Solver& solver, const Problem& problem,
-        const int& numGridPoints) : m_solver(solver), m_problem(problem), 
-        m_numGridPoints(numGridPoints)
-{
+void Transcription::transcribe() {
+
     // Create variables.
     // -----------------    
     m_vars[Var::initial_time] = MX::sym("initial_time");
@@ -81,6 +79,17 @@ Transcription::Transcription(const Solver& solver, const Problem& problem,
         }
     }
     {
+        const auto& multiplierInfos = m_problem.getMultiplierInfos();
+        int im = 0;
+        for (const auto& info : multiplierInfos) {
+            setVariableBounds(Var::multipliers, 
+                im, Slice(1, m_numGridPoints - 1), info.bounds);
+            setVariableBounds(Var::multipliers, im, 0, info.initialBounds);
+            setVariableBounds(Var::multipliers, im, -1, info.finalBounds);
+            ++im;
+        }
+    }
+    {
         const auto& paramInfos = m_problem.getParameterInfos();
         int ip = 0;
         for (const auto& info : paramInfos) {
@@ -118,22 +127,40 @@ Transcription::Transcription(const Solver& solver, const Problem& problem,
     const int NQ = m_problem.getNumCoordinates();
     const int NU = m_problem.getNumSpeeds();
     OPENSIM_THROW_IF(NQ != NU, OpenSim::Exception, "NQ != NU");
+    const DM kinConIndices = createKinematicConstraintIndices();
+    const auto shape = kinConIndices.size();
+    OPENSIM_THROW_IF(shape.first != 1 && shape.second != 1, OpenSim::Exception, 
+        OpenSim::format("createKinematicConstraintIndicesImpl() must "
+            "return a vector, but a matrix with shape [%i, %i] was returned.", 
+            shape.first, shape.second));
+    OPENSIM_THROW_IF(shape.first != m_numGridPoints || 
+        shape.second != m_numGridPoints, OpenSim::Exception, OpenSim::format(
+            "createKinematicConstraintIndicesImpl() must return a "
+            "vector of length m_numGridPoints, but a vector of length %i was "
+            "returned.", shape.first == 1 ? shape.second : shape.first));
+
     // TODO: Does creating all this memory have efficiency implications in
     // CasADi?
     xdot = MX(m_problem.getNumStates(), m_numGridPoints);
-    qerr = MX(m_problem.getNumKinematicConstraintEquations(), m_numGridPoints);
+    qerr = MX(m_problem.getNumKinematicConstraintEquations(), 
+        kinConIndices.nnz());
     MX this_xdot;
     MX this_qerr;
+    int kinIdx = 0;
     for (int itime = 0; itime < m_numGridPoints; ++itime) {
-        calcDAE(itime, NQ, this_xdot, this_qerr);
+        bool calcQErr = kinConIndices(Slice(itime)).__nonzero__() ? true : 
+            false;
+        calcDAE(itime, NQ, this_xdot, calcQErr, this_qerr);
         xdot(Slice(), itime) = this_xdot;
-        qerr(Slice(), itime) = this_qerr;
+        if (calcQErr) {
+            qerr(Slice(), kinIdx) = this_qerr;
+            ++kinIdx;
+        }
     }
 
     // Apply constraints.
     // ------------------
     applyConstraints();
-
 }
 
 Iterate Transcription::createInitialGuessFromBounds() const {
@@ -190,20 +217,25 @@ Iterate Transcription::createRandomIterateWithinBounds() const {
     return casIterate;
 }
 
-void Transcription::calcDAE(casadi_int itime, const int& NQ, MX& xdot, MX& qerr) 
+void Transcription::calcDAE(casadi_int itime, const int& NQ, MX& xdot, 
+    bool calcQErr, MX& qerr)
 {
     const auto& states = m_vars[Var::states];
     const MX u = states(Slice(NQ, 2 * NQ), itime);
     const MX qdot = u; // TODO: This assumes the N matrix is identity.
-    const auto dynamicsOutput = m_problem.getMultibodySystem().operator()(
-    {m_times(itime), m_vars[Var::states](Slice(), itime),
-        m_vars[Var::controls](Slice(), itime),
-        m_vars[Var::multipliers](Slice(), itime),
-        m_vars[Var::parameters]});
+    const auto& multibodyFunc = calcQErr ? m_problem.getMultibodySystem() :
+        m_problem.getMultibodySystemUnconstrained();
+    const auto dynamicsOutput = multibodyFunc.operator()(
+        {m_times(itime), m_vars[Var::states](Slice(), itime),
+            m_vars[Var::controls](Slice(), itime),
+            m_vars[Var::multipliers](Slice(), itime),
+            m_vars[Var::parameters]});
     const MX udot = dynamicsOutput.at(0);
     const MX zdot = dynamicsOutput.at(1);
     xdot = casadi::MX::vertcat({qdot, udot, zdot});
-    qerr = dynamicsOutput.at(2);
+    if (calcQErr) {
+        qerr = dynamicsOutput.at(2);
+    }
 }
 
 void Transcription::addConstraints(const casadi::DM& lower,
