@@ -528,7 +528,7 @@ void testDoublePendulumPointOnLine(bool enforce_constraint_derivatives) {
 
     MocoSolution solution = moco.solve();
     solution.write("testConstraints_testDoublePendulumPointOnLine.sto");
-    //moco.visualize(solution);
+    // moco.visualize(solution);
 
     model->initSystem();
     StatesTrajectory states = solution.exportToStatesTrajectory(mp);
