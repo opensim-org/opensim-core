@@ -22,8 +22,13 @@
 #include <set>
 
 #include <OpenSim/Common/Storage.h>
+#include <OpenSim/Common/LogManager.h>
 
 namespace OpenSim {
+
+class StatesTrajectory;
+class Model;
+class MocoIterate;
 
 /// Since Moco does not require C++14 (which contains std::make_unique()),
 /// here is an implementation of make_unique().
@@ -32,9 +37,14 @@ std::unique_ptr<T> make_unique(Args&&... args) {
     return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
 }
 
-class StatesTrajectory;
-class Model;
-class MocoIterate;
+/// By default, OpenSim redirects std::cout and std::cerr. Use this function
+/// to restore the original std::cout and std::cerr streams. This is useful
+/// when using the Catch testing framework.
+inline bool restoreStreams() {
+    std::cout.rdbuf(LogManager::cout.rdbuf());
+    std::cerr.rdbuf(LogManager::cerr.rdbuf());
+    return true;
+}
 
 /// Determine if `string` ends with the substring `ending`.
 /// https://stackoverflow.com/questions/874134/find-if-string-ends-with-another-string-in-c
