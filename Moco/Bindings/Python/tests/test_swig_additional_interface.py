@@ -250,7 +250,7 @@ class TestWorkflow(unittest.TestCase):
         problem.setControlInfo("/actuator", [-10, 10])
         problem.addCost(osim.MocoFinalTimeCost())
 
-        solver = moco.initSolver()
+        solver = moco.initTropterSolver()
         solver.set_num_mesh_points(20)
         guess = solver.createGuess("random")
         guess.setTime(osim.createVectorLinspace(20, 0.0, 3.0))
@@ -274,7 +274,7 @@ class TestWorkflow(unittest.TestCase):
         problem.setStateInfo("/slider/position/value", [0, 1], 0, 1)
         problem.setStateInfo("/slider/position/speed", [-100, 100], 0, 0)
         problem.addCost(osim.MocoFinalTimeCost())
-        solver = moco.initSolver()
+        solver = moco.initTropterSolver()
         solver.set_num_mesh_points(20)
         finalTime0 = moco.solve().getFinalTime()
 
@@ -294,7 +294,7 @@ class TestWorkflow(unittest.TestCase):
         problem.setStateInfo("/slider/position/speed", [-100, 100], 0, 0)
         problem.addCost(osim.MocoFinalTimeCost())
         problem.setModel(createSlidingMassModel())
-        solver = moco.initSolver()
+        solver = moco.initTropterSolver()
         solver.set_num_mesh_points(20)
         finalTime =  moco.solve().getFinalTime()
         self.assertAlmostEqual(finalTime, 2.0, places=2)

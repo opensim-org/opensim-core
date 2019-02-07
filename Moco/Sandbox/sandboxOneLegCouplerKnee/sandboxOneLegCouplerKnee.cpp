@@ -175,7 +175,7 @@ MocoSolution minimizeControlEffortRightLeg(const Options& opt) {
     //reaction->set_weight(0.1);
     //reaction->setJointPath("/jointset/walker_knee_r/");
 
-    MocoTropterSolver& ms = moco.initSolver();
+    MocoTropterSolver& ms = moco.initTropterSolver();
     ms.set_num_mesh_points(opt.num_mesh_points);
     ms.set_verbosity(2);
     ms.set_dynamics_mode(opt.dynamics_mode);
@@ -315,7 +315,7 @@ MocoSolution stateTrackingRightLeg(const Options& opt) {
     effort->setName("effort");
     effort->set_weight(0.0001);
 
-    MocoTropterSolver& ms = moco.initSolver();
+    MocoTropterSolver& ms = moco.initTropterSolver();
     ms.set_num_mesh_points(opt.num_mesh_points);
     ms.set_verbosity(2);
     ms.set_dynamics_mode(opt.dynamics_mode);

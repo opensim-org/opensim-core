@@ -169,7 +169,7 @@ TEST_CASE("Ordering of calls") {
     {
         // It's fine to
         MocoTool moco = createSlidingMassMocoTool();
-        auto& solver = moco.initSolver();
+        auto& solver = moco.initTropterSolver();
         moco.solve();
         // This flips the "m_solverInitialized" flag:
         moco.updProblem();
@@ -180,7 +180,7 @@ TEST_CASE("Ordering of calls") {
     // Solve a problem, edit the problem, ask the solver to do something.
     {
         MocoTool moco = createSlidingMassMocoTool();
-        auto& solver = moco.initSolver();
+        auto& solver = moco.initTropterSolver();
         moco.solve();
         // This resets the problem to null on the solver.
         moco.updProblem();
@@ -192,7 +192,7 @@ TEST_CASE("Ordering of calls") {
     // Solve a problem, edit the solver, re-solve.
     {
         MocoTool moco = createSlidingMassMocoTool();
-        auto& solver = moco.initSolver();
+        auto& solver = moco.initTropterSolver();
         const int initNumMeshPoints = solver.get_num_mesh_points();
         MocoSolution sol0 = moco.solve();
         solver.set_num_mesh_points(2 * initNumMeshPoints);
