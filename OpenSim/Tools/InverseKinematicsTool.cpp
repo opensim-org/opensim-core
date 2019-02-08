@@ -365,10 +365,17 @@ bool InverseKinematicsTool::run()
             ikSolver.track(s);
             
             if(_reportErrors){
-                Array<double> markerErrors(0.0, 3);
+                Array_<Vec3> markerRefValues(nm);
+                Array<double> markerErrors(0.0, nm);
                 double totalSquaredMarkerError = 0.0;
                 double maxSquaredMarkerError = 0.0;
                 int worst = -1;
+                int ignore_cnt = 0;
+
+                ikSolver.getMarkerReferenceValues(markerRefValues);
+                for (const Vec3& val : markerRefValues) {
+                    if(val.isNaN()) ignore_cnt++;
+                }
 
                 ikSolver.computeCurrentSquaredMarkerErrors(squaredMarkerErrors);
                 for(int j=0; j<nm; ++j){
@@ -379,7 +386,8 @@ bool InverseKinematicsTool::run()
                     }
                 }
 
-                double rms = nm > 0 ? sqrt(totalSquaredMarkerError / nm) : 0;
+                double rms = (nm-ignore_cnt) > 0 ? 
+                    sqrt(totalSquaredMarkerError/(nm-ignore_cnt)) : NaN;
                 markerErrors.set(0, totalSquaredMarkerError); 
                 markerErrors.set(1, rms);
                 markerErrors.set(2, sqrt(maxSquaredMarkerError));

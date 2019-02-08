@@ -550,14 +550,21 @@ void testNumberOfMarkersMismatch()
 
     int nm = ikSolver.getNumMarkersInUse();
 
+    SimTK::Array_<SimTK::Vec3> markerRefs(nm);
     SimTK::Array_<double> markerErrors(nm);
+
     for (unsigned i = 0; i < markersRef.getNumFrames(); ++i) {
         state.updTime() = i*dt;
         ikSolver.track(state);
 
+        ikSolver.getMarkerReferenceValues(markerRefs);
+        int nmr = markerRefs.size();
+        SimTK_ASSERT_ALWAYS(nmr == nm,
+            "InverseKinematicsSolver number of reference values "
+            "failed to match the number of markers in use.");
+
         //get the marker errors
         ikSolver.computeCurrentMarkerErrors(markerErrors);
-
         int nme = markerErrors.size();
 
         SimTK_ASSERT_ALWAYS(nme == nm,
@@ -581,6 +588,15 @@ void testNumberOfMarkersMismatch()
             else { // other markers should be minimally affected
                 SimTK_ASSERT_ALWAYS(markerErrors[j] <= tol,
                     "InverseKinematicsSolver mangled marker order.");
+            }
+
+            if (markerRefs[j].isNaN()) {
+                SimTK_ASSERT_ALWAYS(markerName == "mR",
+                    "InverseKinematicsSolver order of marker reference "
+                    "values does not match order of markers.");
+                SimTK_ASSERT_ALWAYS(markerErrors[j] == 0,
+                    "InverseKinematicsSolver failed to assign 0 for the "
+                    "error associated with marker reference with NaN value.");
             }
         }
         cout << endl;
