@@ -36,11 +36,6 @@ std::unique_ptr<T> make_unique(Args&&... args) {
     return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
 }
 
-/// By default, OpenSim redirects std::cout and std::cerr. Use this function
-/// to restore the original std::cout and std::cerr streams. This is useful
-/// when using the Catch testing framework.
-OSIMMOCO_API bool restoreStreams();
-
 /// Determine if `string` ends with the substring `ending`.
 /// https://stackoverflow.com/questions/874134/find-if-string-ends-with-another-string-in-c
 inline bool endsWith(const std::string& string, const std::string& ending) {
