@@ -12,7 +12,7 @@
 
 #---------------------------------------------------------------------------
 # Project related configuration options
-#---------------------------------------------------------------------------
+#----------------------w-----------------------------------------------------
 
 # This tag specifies the encoding used for all characters in the config file
 # that follow. The default is UTF-8 which is also the encoding used for all
@@ -204,7 +204,7 @@ TAB_SIZE               = 4
 # will result in a user-defined paragraph with heading "Side Effects:".
 # You can put \n's in the value part of an alias to insert newlines.
 
-ALIASES = 
+ALIASES =
 
 # This tag can be used to specify a number of word-keyword mappings (TCL only).
 # A mapping has the form "name=value". For example adding
@@ -746,7 +746,6 @@ EXCLUDE_PATTERNS       = *.svn \
                          */Java/* \
                          */Matlab/* \
                          */SQP/* \
-                         */Wrap/* \
                          */Utilities/* \
                          */Models/* \
                          */Applications/* \
