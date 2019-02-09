@@ -60,8 +60,11 @@ void Trapezoidal::applyConstraintsImpl() {
 
         // TODO
         // if (m_problem.getNumKinematicConstraintEquations()) {
-        //     addConstraints(kcLowerBounds, kcUpperBounds, qerr(Slice(), itime));
+        //     addConstraints(kcLowerBounds, kcUpperBounds, qerr(Slice(),
+        //     itime));
         // }
+        // The individual path constraint functions are passed to CasADi to
+        // maximize CasADi's ability to take derivatives efficiently.
         for (const auto& pathInfo : m_problem.getPathConstraintInfos()) {
             const auto output = pathInfo.function->operator()(
             {m_times(itime), m_vars[Var::states](Slice(), itime),

@@ -1,5 +1,5 @@
 # -------------------------------------------------------------------------- #
-# OpenSim Muscollo: plot_casadi_iterate.py                                   #
+# OpenSim Muscollo: plot_casadi_sparsity.py                                  #
 # -------------------------------------------------------------------------- #
 # Copyright (c) 2018 Stanford University and the Authors                     #
 #                                                                            #
@@ -21,16 +21,17 @@ import sys
 import numpy as np
 import pylab as pl
 
-"""TODO: Does not work yet.
-"""
-
-df = pd.read_csv(sys.argv[1], skiprows=2, sep=None)
+df = pd.read_csv(sys.argv[1], skiprows=2, sep=' ',
+                 names=['row_indices', 'column_indices'])
 
 with open(sys.argv[1]) as f:
-    line0 = f.readline()
-    num_rows = int(line0.split('=')[1])
+    # The first line is a comment.
+    f.readline()
+    # The second line contains the number of row, columns, and nonzeroes.
     line1 = f.readline()
-    num_cols = int(line1.split('=')[1])
+    numbers = line1.split(' ')
+    num_rows = int(numbers[0])
+    num_cols = int(numbers[1])
 
 spmat = scipy.sparse.coo_matrix((np.ones_like(df.index),
         (df['row_indices'] - 1, df['column_indices'] - 1)),

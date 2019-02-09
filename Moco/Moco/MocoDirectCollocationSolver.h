@@ -58,8 +58,8 @@ public:
             "Tolerance used to determine if the constraints are satisfied "
             "(-1 for solver's default)");
     OpenSim_DECLARE_PROPERTY(optim_hessian_approximation, std::string,
-            "'limited-memory' (default) for quasi-Newton, or 'exact' for full "
-            "Newton.");
+            "When using IPOPT, 'limited-memory' (default) for quasi-Newton, or "
+            "'exact' for full " "Newton.");
     OpenSim_DECLARE_PROPERTY(optim_ipopt_print_level, int,
             "IPOPT's verbosity (see IPOPT documentation).");
     OpenSim_DECLARE_OPTIONAL_PROPERTY(enforce_constraint_derivatives, bool,

@@ -169,7 +169,7 @@ TEST_CASE("Ordering of calls") {
     {
         // It's fine to
         MocoTool moco = createSlidingMassMocoTool();
-        auto& solver = moco.initSolver();
+        auto& solver = moco.initTropterSolver();
         moco.solve();
         // This flips the "m_solverInitialized" flag:
         moco.updProblem();
@@ -180,7 +180,7 @@ TEST_CASE("Ordering of calls") {
     // Solve a problem, edit the problem, ask the solver to do something.
     {
         MocoTool moco = createSlidingMassMocoTool();
-        auto& solver = moco.initSolver();
+        auto& solver = moco.initTropterSolver();
         moco.solve();
         // This resets the problem to null on the solver.
         moco.updProblem();
@@ -192,7 +192,7 @@ TEST_CASE("Ordering of calls") {
     // Solve a problem, edit the solver, re-solve.
     {
         MocoTool moco = createSlidingMassMocoTool();
-        auto& solver = moco.initSolver();
+        auto& solver = moco.initTropterSolver();
         const int initNumMeshPoints = solver.get_num_mesh_points();
         MocoSolution sol0 = moco.solve();
         solver.set_num_mesh_points(2 * initNumMeshPoints);
@@ -546,6 +546,7 @@ TEMPLATE_TEST_CASE("State tracking", "", MocoTropterSolver, MocoCasADiSolver) {
         tracking->setReference(STOFileAdapter::read(fname));
         auto& ms = moco.template initSolver<TestType>();
         ms.set_num_mesh_points(5);
+        ms.set_optim_hessian_approximation("exact");
         solDirect = moco.solve();
     }
 
@@ -561,6 +562,7 @@ TEMPLATE_TEST_CASE("State tracking", "", MocoTropterSolver, MocoCasADiSolver) {
         tracking->setReferenceFile(fname);
         auto& ms = moco.template initSolver<TestType>();
         ms.set_num_mesh_points(5);
+        ms.set_optim_hessian_approximation("exact");
         solFile = moco.solve();
         moco.print(setup_fname);
     }

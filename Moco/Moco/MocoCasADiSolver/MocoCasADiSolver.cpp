@@ -97,6 +97,7 @@ const MocoIterate& MocoCasADiSolver::getGuess() const {
 }
 
 std::unique_ptr<CasOC::Problem> MocoCasADiSolver::createCasOCProblem() const {
+    // TODO: Move to MocoCasADiMisc.h
     const auto& problemRep = getProblemRep();
     OPENSIM_THROW_IF(problemRep.getNumKinematicConstraintEquations(), Exception,
             "MocoCasADiSolver does not support kinematic constraints yet.");
@@ -337,6 +338,7 @@ std::unique_ptr<CasOC::Solver> MocoCasADiSolver::createCasOCSolver(
     Dict pluginOptions;
     pluginOptions["verbose_init"] = true;
 
+    checkPropertyIsPositive(*this, getProperty_num_mesh_points());
     casSolver->setNumMeshPoints(get_num_mesh_points());
     casSolver->setTranscriptionScheme(get_transcription_scheme());
     casSolver->setOptimSolver(get_optim_solver());
@@ -356,7 +358,6 @@ MocoSolution MocoCasADiSolver::solveImpl() const {
         std::cout << std::string(79, '-') << std::endl;
         getProblemRep().printDescription();
     }
-    checkPropertyIsPositive(*this, getProperty_num_mesh_points());
     auto casProblem = createCasOCProblem();
     auto casSolver = createCasOCSolver(*casProblem);
 

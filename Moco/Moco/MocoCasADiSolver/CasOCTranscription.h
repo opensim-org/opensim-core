@@ -56,30 +56,51 @@ public:
         applyConstraintsImpl();
     }
     Solution solve(const Iterate& guessOrig) {
-        auto guess = guessOrig.resample(
-                createTimes(guessOrig.variables.at(Var::initial_time),
-                        guessOrig.variables.at(Var::final_time)));
+        // Resample the guess.
+        // -------------------
+        const auto guessTimes = createTimesImpl(
+                guessOrig.variables.at(Var::initial_time),
+                guessOrig.variables.at(Var::final_time));
+        const auto guess = guessOrig.resample(guessTimes);
 
+        // Create the CasADi NLP function.
+        // -------------------------------
         // Option handling is copied from casadi::OptiNode::solver().
         casadi::Dict options = m_solver.getPluginOptions();
         if (!options.empty()) {
             options[m_solver.getOptimSolver()] = m_solver.getSolverOptions();
         }
+        // The inputs to nlpsol() are symbolic (casadi::MX).
         casadi::MXDict nlp;
         nlp.emplace(std::make_pair("x", flatten(m_vars)));
+        // The m_objective symbolic variable holds an expression graph including all
+        // the calculations performed on the variables x.
         nlp.emplace(std::make_pair("f", m_objective));
+        // The m_constraints symbolic vector holds all of the expressions for
+        // the constraint functions.
+        // veccat() concatenates std::vectors into a single MX vector.
         nlp.emplace(std::make_pair("g", casadi::MX::veccat(m_constraints)));
-        auto nlpFunc =
+        // auto hessian = casadi::MX::hessian(nlp["f"], nlp["x"]);
+        // hessian.sparsity().to_file(
+        //         "CasOCTranscription_objective_Hessian_sparsity.mtx");
+        // auto jacobian = casadi::MX::jacobian(nlp["g"], nlp["x"]);
+        // jacobian.sparsity().to_file(
+        //         "CasOCTranscription_constraint_Jacobian_sparsity.mtx");
+        const casadi::Function nlpFunc =
                 casadi::nlpsol("nlp", m_solver.getOptimSolver(), nlp, options);
 
-        // Run the optimization.
-        // ---------------------
+        // Run the optimization (evaluate the CasADi NLP function).
+        // --------------------------------------------------------
+        // The inputs and outputs of nlpFunc are numeric (casadi::DM).
         const casadi::DMDict nlpResult =
                 nlpFunc(casadi::DMDict{{"x0", flatten(guess.variables)},
                         {"lbx", flatten(m_lowerBounds)},
                         {"ubx", flatten(m_upperBounds)},
                         {"lbg", casadi::DM::veccat(m_constraintsLowerBounds)},
                         {"ubg", casadi::DM::veccat(m_constraintsUpperBounds)}});
+
+        // Create a CasOC::Solution.
+        // -------------------------
         Solution solution = m_problem.createIterate<Solution>();
         solution.variables = expand(nlpResult.at("x"));
 
