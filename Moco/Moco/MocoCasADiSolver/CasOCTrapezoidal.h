@@ -28,8 +28,14 @@ namespace CasOC {
 class Trapezoidal : public Transcription {
 public:
     Trapezoidal(const Solver& solver, const Problem& problem)
-        : Transcription(solver, problem, solver.getNumMeshPoints())
-    { transcribe(); }
+        : Transcription(solver, problem, solver.getNumMeshPoints(), 
+            solver.getNumMeshPoints()) { 
+
+        OPENSIM_THROW_IF(problem.getNumKinematicConstraintEquations() != 0,
+            OpenSim::Exception, "Kinematic constraints not supported with "
+            "trapezoidal transcription.");
+        transcribe(); 
+    }
 
 private:
     casadi::DM createQuadratureCoefficientsImpl() const override;

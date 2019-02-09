@@ -95,7 +95,7 @@ protected:
         // Whether or not enabled kinematic constraints exist in the model, 
         // check that optional solver properties related to constraints are
         // set properly.
-        std::vector<std::string> kcNames =
+        const std::vector<std::string> kcNames =
             m_mocoProbRep.createKinematicConstraintNames();
         if (kcNames.empty()) {
             OPENSIM_THROW_IF(
@@ -130,7 +130,7 @@ protected:
         std::vector<MocoBounds> bounds;
         std::vector<std::string> labels;
         std::vector<KinematicLevel> kinLevels;
-        bool enforceConstraintDerivs = 
+        const bool enforceConstraintDerivs = 
             m_mocoTropterSolver.get_enforce_constraint_derivatives();
         for (const auto& kcName : kcNames) {
             const auto& kc = m_mocoProbRep.getKinematicConstraint(kcName);

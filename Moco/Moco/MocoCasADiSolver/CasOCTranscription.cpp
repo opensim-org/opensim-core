@@ -35,6 +35,10 @@ void Transcription::transcribe() {
         MX::sym("controls", m_problem.getNumControls(), m_numGridPoints);
     m_vars[Var::multipliers] = MX::sym(
         "multipliers", m_problem.getNumMultipliers(), m_numGridPoints);
+    // TODO: This assumes that slack variables are applied at all collocation
+    // points on the mesh interval interior.
+    m_vars[Var::slacks] = MX::sym(
+        "slacks", m_problem.getNumSlacks(), m_numGridPoints - m_numMeshPoints);
     m_vars[Var::parameters] =
         MX::sym("parameters", m_problem.getNumParameters(), 1);
 
@@ -90,6 +94,14 @@ void Transcription::transcribe() {
         }
     }
     {
+        const auto& slackInfos = m_problem.getSlackInfos();
+        int isl = 0;
+        for (const auto& info : slackInfos) {
+            setVariableBounds(Var::slacks, isl, Slice(), info.bounds);
+            ++isl;
+        }
+    }
+    {
         const auto& paramInfos = m_problem.getParameterInfos();
         int ip = 0;
         for (const auto& info : paramInfos) {
@@ -142,18 +154,18 @@ void Transcription::transcribe() {
     // TODO: Does creating all this memory have efficiency implications in
     // CasADi?
     xdot = MX(m_problem.getNumStates(), m_numGridPoints);
-    qerr = MX(m_problem.getNumKinematicConstraintEquations(), 
+    pvaerr = MX(m_problem.getNumKinematicConstraintEquations(), 
         kinConIndices.nnz());
     MX this_xdot;
-    MX this_qerr;
+    MX this_pvaerr;
     int kinIdx = 0;
     for (int itime = 0; itime < m_numGridPoints; ++itime) {
-        bool calcQErr = kinConIndices(Slice(itime)).__nonzero__() ? true : 
+        bool calcPVAErr = kinConIndices(Slice(itime)).__nonzero__() ? true : 
             false;
-        calcDAE(itime, NQ, this_xdot, calcQErr, this_qerr);
+        calcDAE(itime, NQ, this_xdot, calcPVAErr, this_pvaerr);
         xdot(Slice(), itime) = this_xdot;
-        if (calcQErr) {
-            qerr(Slice(), kinIdx) = this_qerr;
+        if (calcPVAErr) {
+            pvaerr(Slice(), kinIdx) = this_pvaerr;
             ++kinIdx;
         }
     }
@@ -218,23 +230,24 @@ Iterate Transcription::createRandomIterateWithinBounds() const {
 }
 
 void Transcription::calcDAE(casadi_int itime, const int& NQ, MX& xdot, 
-    bool calcQErr, MX& qerr)
+    bool calcPVAErr, MX& pvaerr)
 {
     const auto& states = m_vars[Var::states];
     const MX u = states(Slice(NQ, 2 * NQ), itime);
     const MX qdot = u; // TODO: This assumes the N matrix is identity.
-    const auto& multibodyFunc = calcQErr ? m_problem.getMultibodySystem() :
+    const auto& multibodyFunc = calcPVAErr ? m_problem.getMultibodySystem() :
         m_problem.getMultibodySystemUnconstrained();
     const auto dynamicsOutput = multibodyFunc.operator()(
         {m_times(itime), m_vars[Var::states](Slice(), itime),
             m_vars[Var::controls](Slice(), itime),
             m_vars[Var::multipliers](Slice(), itime),
+            m_vars[Var::slacks](Slice(), itime),
             m_vars[Var::parameters]});
     const MX udot = dynamicsOutput.at(0);
     const MX zdot = dynamicsOutput.at(1);
     xdot = casadi::MX::vertcat({qdot, udot, zdot});
-    if (calcQErr) {
-        qerr = dynamicsOutput.at(2);
+    if (calcPVAErr) {
+        pvaerr = dynamicsOutput.at(2);
     }
 }
 

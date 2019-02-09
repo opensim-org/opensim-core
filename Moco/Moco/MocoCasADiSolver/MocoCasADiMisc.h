@@ -264,11 +264,14 @@ public:
         const double* time = inputs[0];
         const double* states = inputs[1];
         const double* controls = inputs[2];
-        // TODO const double* multipliers = inputs[3];
-        const double* parameters = inputs[4];
+        const double* multipliers = inputs[3];
+        const double* slacks = inputs[4];
+        const double* parameters = inputs[5];
         double* out_multibody_derivatives = outputs[0];
         double* out_auxiliary_derivatives = outputs[1];
-        // TODO double* out_kinematic_constraint_errors = outputs[2];
+        if (m_calcKinematicConstraintsErrors) {
+            double* out_kinematic_constraint_errors = outputs[2];
+        }
         applyParametersToModel(SimTK::Vector(m_casProblem->getNumParameters(),
                                        parameters, true),
                 m_mocoProblemRep);

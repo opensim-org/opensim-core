@@ -148,7 +148,7 @@ public:
         Function::constructFunction(casProblem, name);
         m_calcKinematicConstraintsErrors = calcKinematicConstraintsErrors;
     }
-    casadi_int get_n_in() override final { return 5; }
+    casadi_int get_n_in() override final { return 6; }
     casadi_int get_n_out() override final 
     { return m_calcKinematicConstraintsErrors ? 3 : 2; }
     std::string get_name_in(casadi_int i) override final {
@@ -157,7 +157,8 @@ public:
         case 1: return "states";
         case 2: return "controls";
         case 3: return "multipliers";
-        case 4: return "parameters";
+        case 4: return "slacks";
+        case 5: return "parameters";
         default: OPENSIM_THROW(OpenSim::Exception, "Internal error.");
         }
     }

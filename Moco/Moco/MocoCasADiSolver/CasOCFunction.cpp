@@ -73,6 +73,8 @@ casadi::Sparsity MultibodySystem::get_sparsity_in(casadi_int i) {
     } else if (i == 3) {
         return casadi::Sparsity::dense(m_casProblem->getNumMultipliers(), 1);
     } else if (i == 4) {
+        return casadi::Sparsity::dense(m_casProblem->getNumSlacks(), 1);
+    } else if (i == 5) {
         return casadi::Sparsity::dense(m_casProblem->getNumParameters(), 1);
     } else {
         return casadi::Sparsity(0, 0);

@@ -36,8 +36,9 @@ namespace CasOC {
 class Transcription {
 public:
     Transcription(const Solver& solver, const Problem& problem, 
-        const int& numGridPoints) : m_solver(solver), m_problem(problem),
-        m_numGridPoints(numGridPoints) {}
+        const int& numGridPoints, const int& numMeshPoints) : m_solver(solver),
+        m_problem(problem), m_numGridPoints(numGridPoints), 
+        m_numMeshPoints(numMeshPoints) {}
     virtual ~Transcription() = default;
     Iterate createInitialGuessFromBounds() const;
     Iterate createRandomIterateWithinBounds() const;
@@ -112,7 +113,7 @@ protected:
     }
 
     void calcDAE(casadi_int itime, const int& NQ, casadi::MX& xdot, 
-        bool calcQErr, casadi::MX& qerr);
+        bool calcPVAErr, casadi::MX& pvaerr);
 
     void setObjective(casadi::MX objective) {
         m_objective = std::move(objective);
@@ -131,13 +132,13 @@ protected:
     // collocation points that may lie on mesh interior (as in Hermite-Simpson
     // collocation, etc.).
     int m_numGridPoints;
+    int m_numMeshPoints;
     casadi::DM m_grid;
     casadi::MX m_times;
     casadi::MX m_duration;
     casadi::MX xdot;
-    casadi::MX qerr;
+    casadi::MX pvaerr;
     
-
 private:
     casadi::MX m_objective;
     std::vector<casadi::MX> m_constraints;

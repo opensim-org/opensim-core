@@ -46,6 +46,7 @@ enum Var {
     states,
     controls,
     multipliers,
+    slacks,
     derivatives,
     parameters
 };
@@ -65,6 +66,7 @@ struct Iterate {
     std::vector<std::string> state_names;
     std::vector<std::string> control_names;
     std::vector<std::string> multiplier_names;
+    std::vector<std::string> slack_names;
     std::vector<std::string> derivative_names;
     std::vector<std::string> parameter_names;
     /// Return a new iterate in which the data is resampled at the times in
@@ -108,6 +110,10 @@ struct MultiplierInfo {
     Bounds bounds;
     Bounds initialBounds;
     Bounds finalBounds;
+};
+struct SlackInfo {
+    std::string name;
+    Bounds bounds;
 };
 struct ParameterInfo {
     std::string name;
@@ -161,14 +167,43 @@ public:
         m_controlInfos.push_back({std::move(name), std::move(bounds),
                 std::move(initialBounds), std::move(finalBounds)});
     }
-    /// Add a Lagrange multiplier variable to the problem that is associated
-    /// with a kinematic constraint in the model.
+    /// Add a Lagrange multiplier variable to the problem associated with a 
+    /// kinematic constraint in the model.
     void addMultiplier(std::string name, Bounds bounds, Bounds initialBounds,
             Bounds finalBounds) {
         clipEndpointBounds(bounds, initialBounds);
         clipEndpointBounds(bounds, finalBounds);
         m_multiplierInfos.push_back({std::move(name), std::move(bounds),
             std::move(initialBounds), std::move(finalBounds)});
+    }
+    /// Add a slack velocity correction variable to the problem associated with
+    /// a kinematic constraint in the model.
+    void addSlack(std::string name, Bounds bounds) {
+        m_slackInfos.push_back({std::move(name), std::move(bounds)});
+    }
+    /// Set the total number of kinematic constraint equations (including 
+    /// derivatives of holonomic and non-holonomic constraint equations) in the
+    /// multibody system.
+    void setNumKinematicConstraintEquations(int numEqs) {
+        m_numKinematicConstraintEquations = numEqs;
+    }
+    /// Set the number of holonomic constraint equations in the multibody 
+    /// system.
+    /// @note This does *not* include holonomic constraint equation derivatives.
+    void setNumHolonomicConstraintEquations(int numHolo) {
+        m_numHolonomicConstraintEquations = numHolo;
+    }
+    /// Set the number of non-holonomic constraint equations in the multibody
+    /// system.
+    /// @note This does *not* include non-holonomic constraint equation 
+    /// derivatives.
+    void setNumNonHolonomicConstraintEquations(int numNonHolo) {
+        m_numNonHolonomicConstraintEquations = numNonHolo;
+    }
+    /// Set the number of acceleration constraint equations in the multibody
+    /// system.
+    void setNumAccelerationConstraintEquations(int numAccel) {
+        m_numAccelerationConstraintEquations = numAccel;
     }
     /// Add a constant (time-invariant) variable to the optimization problem.
     void addParameter(std::string name, Bounds bounds) {
@@ -232,6 +267,8 @@ public:
             it.control_names.push_back(info.name);
         for (const auto& info : m_multiplierInfos)
             it.multiplier_names.push_back(info.name);
+        for (const auto& info : m_slackInfos)
+            it.slack_names.push_back(info.name);
         // for (const auto& info : m_derivativeInfos)
         //    it.derivative_names.push_back(info.name);
         for (const auto& info : m_paramInfos)
@@ -248,13 +285,24 @@ public:
     int getNumControls() const { return (int)m_controlInfos.size(); }
     int getNumParameters() const { return (int)m_paramInfos.size(); }
     int getNumMultipliers() const { return (int)m_multiplierInfos.size(); }
+    int getNumSlacks() const { return (int)m_slackInfos.size(); }
     /// This is the number of generalized coordinates, which may be greater
     /// than the number of generalized speeds.
     int getNumCoordinates() const { return m_numCoordinates; }
     int getNumSpeeds() const { return m_numSpeeds; }
     int getNumAuxiliaryStates() const { return m_numAuxiliaryStates; }
-    /// TODO: Kinematic constraints are not supported yet. This returns 0.
-    int getNumKinematicConstraintEquations() const { return 0; /* TODO */ }
+    int getNumKinematicConstraintEquations() const { 
+        return m_numKinematicConstraintEquations; 
+    }
+    int getNumHolonomicConstraintEquations() const {
+        return m_numHolonomicConstraintEquations; 
+    }
+    int getNumNonHolonomicConstraintEquations() const {
+        return m_numNonHolonomicConstraintEquations; 
+    }
+    int getNumAccelerationConstraintEquations() const {
+        return m_numAccelerationConstraintEquations;
+    }
     const Bounds& getTimeInitialBounds() const { return m_timeInitialBounds; }
     const Bounds& getTimeFinalBounds() const { return m_timeFinalBounds; }
     const std::vector<StateInfo>& getStateInfos() const { return m_stateInfos; }
@@ -263,6 +311,9 @@ public:
     }
     const std::vector<MultiplierInfo>& getMultiplierInfos() const {
         return m_multiplierInfos;
+    }
+    const std::vector<SlackInfo>& getSlackInfos() const {
+        return m_slackInfos;
     }
     const std::vector<ParameterInfo>& getParameterInfos() const {
         return m_paramInfos;
@@ -298,8 +349,12 @@ private:
     int m_numSpeeds = 0;
     int m_numAuxiliaryStates = 0;
     int m_numKinematicConstraintEquations = 0;
+    int m_numHolonomicConstraintEquations = 0;
+    int m_numNonHolonomicConstraintEquations = 0;
+    int m_numAccelerationConstraintEquations = 0;
     std::vector<ControlInfo> m_controlInfos;
     std::vector<MultiplierInfo> m_multiplierInfos;
+    std::vector<SlackInfo> m_slackInfos;
     std::vector<PathConstraintInfo> m_pathInfos;
     std::vector<ParameterInfo> m_paramInfos;
     std::unique_ptr<IntegralCostIntegrand> m_integralCostFunc;

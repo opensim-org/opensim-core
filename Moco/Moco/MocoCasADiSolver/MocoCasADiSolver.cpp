@@ -129,9 +129,128 @@ std::unique_ptr<CasOC::Problem> MocoCasADiSolver::createCasOCProblem() const {
                 convertBounds(info.getInitialBounds()),
                 convertBounds(info.getFinalBounds()));
     }
-    for (const auto& multName : problemRep.createMultiplierInfoNames()) {
 
+    // Add any scalar constraints associated with kinematic constraints in
+    // the model as path constraints in the problem.
+    // Whether or not enabled kinematic constraints exist in the model, 
+    // check that optional solver properties related to constraints are
+    // set properly.
+    const auto kcNames = problemRep.createKinematicConstraintNames();
+    if (kcNames.empty()) {
+        OPENSIM_THROW_IF(!getProperty_enforce_constraint_derivatives().empty(),
+            Exception, "Solver property 'enforce_constraint_derivatives' "
+            "was set but no enabled kinematic constraints exist in the "
+            "model.");
+        OPENSIM_THROW_IF(get_minimize_lagrange_multipliers(),
+            Exception, "Solver property 'minimize_lagrange_multipliers' "
+            "was enabled but no enabled kinematic constraints exist in the "
+            "model.");
+    } else {
+        OPENSIM_THROW_IF(getProperty_enforce_constraint_derivatives().empty(),
+            Exception, "Enabled kinematic constraints exist in the "
+            "provided model. Please set the solver property "
+            "'enforce_constraint_derivatives' to either 'true' or 'false'."
+        );
+    
+        int cid, mp, mv, ma;
+        int total_mp, total_mv, total_ma;
+        int numEquationsThisConstraint;
+        int multIndexThisConstraint;
+        int numKinematicConstraintEquations;
+        std::vector<MocoBounds> bounds;
+        std::vector<std::string> labels;
+        std::vector<KinematicLevel> kinLevels;
+        const bool enforceConstraintDerivs = get_enforce_constraint_derivatives();
+        for (const auto& kcName : kcNames) {
+            const auto& kc = problemRep.getKinematicConstraint(kcName);
+            const auto& multInfos = problemRep.getMultiplierInfos(kcName);
+            cid = kc.getSimbodyConstraintIndex();
+            mp = kc.getNumPositionEquations();
+            mv = kc.getNumVelocityEquations();
+            ma = kc.getNumAccelerationEquations();
+            bounds = kc.getConstraintInfo().getBounds();
+            labels = kc.getConstraintInfo().getConstraintLabels();
+            kinLevels = kc.getKinematicLevels();
+
+            // TODO only add velocity correction variables for holonomic
+            // constraint derivatives? For now, disallow enforcing derivatives
+            // if non-holonomic or acceleration constraints present.
+            OPENSIM_THROW_IF(enforceConstraintDerivs && mv != 0, Exception,
+                format("Enforcing constraint derivatives is supported only for "
+                    "holonomic (position-level) constraints. "
+                    "There are %i velocity-level "
+                    "scalar constraints associated with the model Constraint "
+                    "at ConstraintIndex %i.", mv, cid));
+            OPENSIM_THROW_IF(enforceConstraintDerivs && ma != 0, Exception,
+                format("Enforcing constraint derivatives is supported only for "
+                    "holonomic (position-level) constraints. "
+                    "There are %i acceleration-level "
+                    "scalar constraints associated with the model Constraint "
+                    "at ConstraintIndex %i.", ma, cid));
+
+            total_mp += mp;
+            total_mv += mv;
+            total_ma += ma;
+
+            // Loop through all scalar constraints associated with the model
+            // constraint and corresponding path constraints to the optimal
+            // control problem.
+            //
+            // We need a different index for the Lagrange multipliers since
+            // they are only added if the current constraint equation is not a
+            // derivative of a position- or velocity-level equation.
+            multIndexThisConstraint = 0;
+            numEquationsThisConstraint = 0;
+            for (int i = 0; i < kc.getConstraintInfo().getNumEquations(); ++i) {
+
+                // If the index for this path constraint represents an
+                // a non-derivative scalar constraint equation, add a
+                // Lagrange multiplier to the problem.
+                if (kinLevels[i] == KinematicLevel::Position ||
+                    kinLevels[i] == KinematicLevel::Velocity ||
+                    kinLevels[i] == KinematicLevel::Acceleration) {
+
+                    const auto& multInfo = multInfos[multIndexThisConstraint];
+                    casProblem->addMultiplier(multInfo.getName(),
+                            convertBounds(multInfo.getBounds()),
+                            convertBounds(multInfo.getInitialBounds()),
+                            convertBounds(multInfo.getFinalBounds()));
+
+                    // Add velocity correction variables if enforcing
+                    // constraint equation derivatives.
+                    if (enforceConstraintDerivs) {
+                        // TODO this naming convention assumes that the 
+                        // associated Lagrange multiplier name begins with
+                        // "lambda", which may change in the future.
+                        OPENSIM_THROW_IF(
+                            multInfo.getName().substr(0, 6) != "lambda",
+                            Exception,
+                            OpenSim::format("Expected the multiplier name for "
+                                "this constraint to begin with 'lambda' but it "
+                                "begins with '%s'.",
+                                multInfo.getName().substr(0, 6)));
+                        casProblem->addSlack(std::string(
+                            multInfo.getName()).replace(0, 6, "gamma"),
+                            convertBounds(get_velocity_correction_bounds()));
+                    }
+                    ++multIndexThisConstraint;
+                    ++numEquationsThisConstraint;
+
+                } else if (enforceConstraintDerivs) {
+                    // If enforcing constraint derivatives, count these 
+                    // equations in the total number of constraint equations.
+                    ++numEquationsThisConstraint;
+                }
+            }
+            numKinematicConstraintEquations += numEquationsThisConstraint;
+        }
+        casProblem->setNumKinematicConstraintEquations(
+            numKinematicConstraintEquations);
+        casProblem->setNumHolonomicConstraintEquations(total_mp);
+        casProblem->setNumNonHolonomicConstraintEquations(total_mv);
+        casProblem->setNumAccelerationConstraintEquations(total_ma);
     }
+
     for (const auto& paramName : problemRep.createParameterNames()) {
         const auto& param = problemRep.getParameter(paramName);
         casProblem->addParameter(paramName, convertBounds(param.getBounds()));
@@ -175,6 +294,10 @@ std::unique_ptr<CasOC::Solver> MocoCasADiSolver::createCasOCSolver(
     checkPropertyInSet(*this, getProperty_optim_solver(), {"ipopt"});
     checkPropertyInSet(*this, getProperty_transcription_scheme(), 
             {"trapezoidal", "hermite-simpson"});
+    OPENSIM_THROW_IF(casProblem.getNumKinematicConstraintEquations() != 0 && 
+        get_transcription_scheme() == "trapezoidal",
+        OpenSim::Exception, "Kinematic constraints not supported with "
+        "trapezoidal transcription.");
 
     checkPropertyInRangeOrSet(*this, getProperty_optim_max_iterations(), 0,
             std::numeric_limits<int>::max(), {-1});
