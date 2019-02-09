@@ -182,6 +182,9 @@ set(SUPERBUILD_adolc ON CACHE BOOL
 set(SUPERBUILD_ipopt ON CACHE BOOL 
     "Automatically download, configure, build and install ipopt")
 
+set(SUPERBUILD_casadi ON CACHE BOOL 
+    "Automatically download, configure, build and install casadi")
+
 if (WIN32)
 
     if(SUPERBUILD_adolc)
@@ -228,6 +231,10 @@ if (WIN32)
     endif()
 else()
 
+    if(NOT XCODE)
+        set(BUILD_FLAGS "-j4")
+    endif()
+
     if(SUPERBUILD_adolc)
         # TODO copy source code into dependencies dir. OR make clean.
         # TODO rename to adol-c
@@ -249,7 +256,7 @@ else()
                 COMMAND <SOURCE_DIR>/configure --prefix=<INSTALL_DIR>
                                                --enable-sparse
                                                --with-colpack=${CMAKE_INSTALL_PREFIX}/colpack
-            BUILD_COMMAND ${CMAKE_MAKE_PROGRAM} -j4
+            BUILD_COMMAND ${CMAKE_MAKE_PROGRAM} ${BUILD_FLAGS}
             INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install)
     endif()
 
@@ -265,10 +272,22 @@ else()
             PATCH_COMMAND cd <SOURCE_DIR>/ThirdParty/Metis && ./get.Metis
                   COMMAND cd <SOURCE_DIR>/ThirdParty/Mumps && ./get.Mumps
             CONFIGURE_COMMAND <SOURCE_DIR>/configure --prefix=<INSTALL_DIR>
-            BUILD_COMMAND ${CMAKE_MAKE_PROGRAM} -j4
+            BUILD_COMMAND ${CMAKE_MAKE_PROGRAM} ${BUILD_FLAGS}
             INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install)
     endif()
 
+endif()
+
+if(SUPERBUILD_casadi)
+    AddDependency(NAME casadi
+                  DEPENDS ipopt
+                  GIT_URL    https://github.com/stanfordnmbl/casadi.git
+                  GIT_TAG    6200c02d332588d93a038f42bcd4ba26b6f64680
+                  CMAKE_ARGS -DWITH_IPOPT:BOOL=ON
+                             -DWITH_EXAMPLES:BOOL=OFF
+                             -DPKG_CONFIG_USE_CMAKE_PREFIX_PATH:BOOL=ON
+                             -DCMAKE_PREFIX_PATH:PATH=${CMAKE_INSTALL_PREFIX}/ipopt
+                  )
 endif()
 
 include(opensim-core.cmake)

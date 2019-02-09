@@ -38,6 +38,8 @@
 #include "Components/StationPlaneContactForce.h"
 #include "Components/ModelFactory.h"
 
+#include "MocoCasADiSolver/MocoCasADiSolver.h"
+
 #include "RegisterTypes_osimMoco.h"
 
 #endif // MOCO_OSIMMOCO_H

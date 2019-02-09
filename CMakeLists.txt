@@ -63,7 +63,7 @@ if(NOT CMAKE_PREFIX_PATH
     message(STATUS
             "Attempting to use dependencies from ${MOCO_DEPENDENCIES_DIR}")
     set(dep_install_dirs)
-    foreach(dep opensim-core colpack ipopt eigen)
+    foreach(dep opensim-core colpack ipopt eigen casadi)
         list(APPEND dep_install_dirs "${MOCO_DEPENDENCIES_DIR}/${dep}")
     endforeach()
     set(CMAKE_PREFIX_PATH "${dep_install_dirs}" CACHE PATH

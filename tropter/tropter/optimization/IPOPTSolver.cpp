@@ -94,6 +94,19 @@ private:
                            const Number* g, const Number* lambda,
                            Number obj_value, const Ipopt::IpoptData* ip_data,
                            Ipopt::IpoptCalculatedQuantities* ip_cq) override;
+    /*
+    /// This allows us to inspect intermediate iterations while solving the
+    /// problem.
+    virtual bool intermediate_callback(Ipopt::AlgorithmMode mode,
+            Index iter, Number obj_value,
+            Number inf_pr, Number inf_du,
+            Number mu, Number d_norm,
+            Number regularization_size,
+            Number alpha_du, Number alpha_pr,
+            Index ls_trials,
+            const Ipopt::IpoptData* ip_data,
+            Ipopt::IpoptCalculatedQuantities* ip_cq) override {
+    }*/
 
     // Members.
 //    const ProblemDecorator& m_problem;

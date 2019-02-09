@@ -110,7 +110,7 @@ problem.addCost(controlCost);
 
 % Configure the solver.
 % =====================
-solver = moco.initSolver();
+solver = muco.initTropterSolver();
 % 10 mesh points ~ 1 minute to solve
 % 25 mesh points ~ 5 minutes to solve
 solver.set_num_mesh_points(10);

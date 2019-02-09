@@ -58,13 +58,14 @@ When building a MocoTool programmatically (e.g., in C++), the workflow is as
 follows:
 
 1. Build the MocoProblem (set the model, constraints, etc.).
-2. Call MocoTool::initSolver(), which returns a reference to the MocoSolver.
+2. Call MocoTool::initTropterSolver() (or MocoTool::initCasADiSolver()), which
+   returns a reference to a MocoSolver.
 3. Edit the settings of the MocoSolver (returned by initSolver()).
 4. Call MocoTool::solve(). This returns the MocoSolution.
 5. (Optional) Postprocess the solution, perhaps using MocoTool::visualize().
 
-After calling solve(), you can edit the MocoProblem and/or the MocoSolver.
-You can then edit the problem or solver and call solve() again, if you wish.
+After calling MocoTool::solve(), you can edit the MocoProblem and/or the
+MocoSolver and call MocoTool::solve() again, if you wish.
 
 
 @section MocoProblem

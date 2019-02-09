@@ -103,7 +103,7 @@ function testChangingTimeBounds(testCase)
     problem.setControlInfo('/actuator', [-10, 10]);
     problem.addCost(MocoFinalTimeCost());
 
-    solver = moco.initSolver();
+    solver = moco.initTropterSolver();
     solver.set_num_mesh_points(20);
     guess = solver.createGuess('random');
     guess.setTime(opensimMoco.createVectorLinspace(20, 0.0, 3.0));
@@ -130,7 +130,7 @@ function testChangingModel(testCase)
     problem.setStateInfo('/slider/position/value', [0, 1], 0, 1);
     problem.setStateInfo('/slider/position/speed', [-100, 100], 0, 0);
     problem.addCost(MocoFinalTimeCost());
-    solver = moco.initSolver();
+    solver = moco.initTropterSolver();
     solver.set_num_mesh_points(20);
     finalTime0 = moco.solve().getFinalTime();
 
@@ -152,7 +152,7 @@ function testOrder(testCase)
     problem.setStateInfo('/slider/position/speed', [-100, 100], 0, 0);
     problem.addCost(MocoFinalTimeCost());
     problem.setModel(createSlidingMassModel());
-    solver = moco.initSolver();
+    solver = moco.initTropterSolver();
     solver.set_num_mesh_points(20);
     finalTime =  moco.solve().getFinalTime();
 

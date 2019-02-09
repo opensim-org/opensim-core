@@ -19,7 +19,60 @@
 
 #include "MocoProblem.h"
 
+#include <OpenSim/Simulation/Manager/Manager.h>
+
 using namespace OpenSim;
+
+MocoIterate MocoSolver::createGuessTimeStepping() const {
+    const auto& probrep = getProblemRep();
+    const auto& initialTime = probrep.getTimeInitialBounds().getUpper();
+    const auto& finalTime = probrep.getTimeFinalBounds().getLower();
+    OPENSIM_THROW_IF_FRMOBJ(finalTime <= initialTime, Exception,
+            format("Expected lower bound on final time to be greater than "
+                   "upper bound on initial time, but "
+                   "final_time.lower: %g; initial_time.upper: %g.",
+                    finalTime, initialTime));
+    Model model(probrep.getModel());
+
+    // Disable all controllers?
+    SimTK::State state = model.initSystem();
+
+    // Modify initial state values as necessary.
+    Array<std::string> svNames = model.getStateVariableNames();
+    for (int isv = 0; isv < svNames.getSize(); ++isv) {
+        const auto& svName = svNames[isv];
+        const auto& initBounds =
+                probrep.getStateInfo(svName).getInitialBounds();
+        const auto defaultValue = model.getStateVariableValue(state, svName);
+        SimTK::Real valueToUse = defaultValue;
+        if (initBounds.isEquality()) {
+            valueToUse = initBounds.getLower();
+        } else if (!initBounds.isWithinBounds(defaultValue)) {
+            valueToUse = 0.5 * (initBounds.getLower() + initBounds.getUpper());
+        }
+        if (valueToUse != defaultValue) {
+            model.setStateVariableValue(state, svName, valueToUse);
+        }
+    }
+
+    // TODO Equilibrate fiber length?
+
+    state.setTime(initialTime);
+    Manager manager(model, state);
+    manager.integrate(finalTime);
+
+    const auto& statesTable = manager.getStatesTable();
+    auto controlsTable = model.getControlsTable();
+
+    // Fix column labels.
+    auto labels = controlsTable.getColumnLabels();
+    for (auto& label : labels) { label = "/forceset/" + label; }
+    controlsTable.setColumnLabels(labels);
+
+    // TODO handle parameters.
+    return MocoIterate::createFromStatesControlsTables(
+            probrep, statesTable, controlsTable);
+}
 
 void MocoSolver::resetProblem(const MocoProblem& problem) {
     m_problem.reset(&problem);
@@ -32,11 +85,9 @@ MocoSolution MocoSolver::solve() const {
     return solveImpl();
 }
 
-void MocoSolver::setSolutionStats(MocoSolution& sol,
-        bool success, const std::string& status, int numIterations) {
+void MocoSolver::setSolutionStats(MocoSolution& sol, bool success,
+        const std::string& status, int numIterations) {
     sol.setSuccess(success);
     sol.setStatus(status);
     sol.setNumIterations(numIterations);
 }
-
-

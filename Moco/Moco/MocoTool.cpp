@@ -18,6 +18,7 @@
 #include "MocoTool.h"
 #include "MocoProblem.h"
 #include "MocoTropterSolver.h"
+#include "MocoCasADiSolver/MocoCasADiSolver.h"
 #include "MocoUtilities.h"
 
 #include <OpenSim/Simulation/StatesTrajectory.h>
@@ -54,17 +55,29 @@ MocoSolver& MocoTool::initSolverInternal() {
     return upd_solver();
 }
 
-MocoTropterSolver& MocoTool::initSolver() {
-    return initCustomSolver<MocoTropterSolver>();
+template <>
+MocoTropterSolver& MocoTool::initSolver<MocoTropterSolver>() {
+    set_solver(MocoTropterSolver());
+    return dynamic_cast<MocoTropterSolver&>(initSolverInternal());
 }
 
-MocoTropterSolver& MocoTool::updSolver() {
-    return updCustomSolver<MocoTropterSolver>();
+template <>
+MocoCasADiSolver& MocoTool::initSolver<MocoCasADiSolver>() {
+    set_solver(MocoCasADiSolver());
+    return dynamic_cast<MocoCasADiSolver&>(initSolverInternal());
 }
 
-template <typename SolverType>
-void MocoTool::setCustomSolver() {
-    set_solver(SolverType());
+MocoTropterSolver& MocoTool::initTropterSolver() {
+    set_solver(MocoTropterSolver());
+    return initSolver<MocoTropterSolver>();
+}
+
+MocoCasADiSolver& MocoTool::initCasADiSolver() {
+    return initSolver<MocoCasADiSolver>();
+}
+
+MocoSolver& MocoTool::updSolver() {
+    return updSolver<MocoSolver>();
 }
 
 MocoSolution MocoTool::solve() const {

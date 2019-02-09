@@ -28,6 +28,7 @@
 using namespace OpenSim;
 using namespace Catch;
 
+template <typename SolverType>
 MocoSolution solveDoublePendulumSwingup(const std::string& dynamics_mode) {
 
     using SimTK::Vec3;
@@ -81,7 +82,7 @@ MocoSolution solveDoublePendulumSwingup(const std::string& dynamics_mode) {
     // Configure the solver.
     // =====================
     int N = 30;
-    MocoTropterSolver& solver = moco.initSolver();
+    auto& solver = moco.initSolver<SolverType>();
     solver.set_dynamics_mode(dynamics_mode);
     solver.set_num_mesh_points(N);
     //solver.set_verbosity(2);
@@ -111,16 +112,17 @@ MocoSolution solveDoublePendulumSwingup(const std::string& dynamics_mode) {
 
 }
 
-SCENARIO("Similar solutions between implicit and explicit dynamics modes",
-        "[implicit]") {
+TEMPLATE_TEST_CASE("Similar solutions between implicit and explicit dynamics",
+        "[implicit]", MocoTropterSolver /*, TODO MocoCasADiSolver*/ ) {
     GIVEN("solutions to implicit and explicit problems") {
 
-        auto solutionImplicit = solveDoublePendulumSwingup("implicit");
+        auto solutionImplicit =
+                solveDoublePendulumSwingup<TestType>("implicit");
         // TODO: Solving the implicit problem multiple times gives different
         // results; https://github.com/stanfordnmbl/moco/issues/172.
         // auto solutionImplicit2 = solveDoublePendulumSwingup("implicit");
         // TODO: The solution to this explicit problem changes every time.
-        auto solution = solveDoublePendulumSwingup("explicit");
+        auto solution = solveDoublePendulumSwingup<TestType>("explicit");
 
         CAPTURE(solutionImplicit.getFinalTime(), solution.getFinalTime());
 
@@ -163,12 +165,12 @@ SCENARIO("Similar solutions between implicit and explicit dynamics modes",
         const double RMS = solutionImplicit.compareContinuousVariablesRMS(
                 explicitWithDeriv, {"none"}, {"none"}, {"none"}, {});
         CAPTURE(RMS);
-        CHECK(RMS < 30.0);
+        CHECK(RMS < 35.0);
     }
 }
 
-SCENARIO("Combining implicit dynamics mode with path constraints",
-        "[implicit]") {
+TEMPLATE_TEST_CASE("Combining implicit dynamics mode with path constraints",
+        "[implicit]", MocoTropterSolver /* TODO , MocoCasADiSolver */ ) {
     class MyPathConstraint : public MocoPathConstraint {
         OpenSim_DECLARE_CONCRETE_OBJECT(MyPathConstraint, MocoPathConstraint);
         void initializeOnModelImpl(const Model& model) const override {
@@ -190,7 +192,7 @@ SCENARIO("Combining implicit dynamics mode with path constraints",
         MocoConstraintInfo info;
         info.setBounds(std::vector<MocoBounds>(1, {10, 10000}));
         pc->setConstraintInfo(info);
-        auto& solver = moco.initSolver();
+        auto& solver = moco.initSolver<TestType>();
         solver.set_dynamics_mode("implicit");
         solver.set_num_mesh_points(5);
         MocoSolution solution = moco.solve();
@@ -260,10 +262,11 @@ SCENARIO("Using MocoIterate with the implicit dynamics mode",
     }
 }
 
-SCENARIO("Solving a problem with acceleration-level quantities", "[implicit]") {
+TEMPLATE_TEST_CASE("Solving a problem with acceleration-level quantities",
+        "[implicit]", MocoTropterSolver /* TODO , MocoCasADiSolver */ ) {
     MocoTool moco;
     moco.updProblem().setModelCopy(ModelFactory::createPendulum());
-    auto& solver = moco.initSolver();
+    auto& solver = moco.initSolver<TestType>();
     solver.set_dynamics_mode("implicit");
     solver.set_num_mesh_points(5);
 

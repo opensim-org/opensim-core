@@ -234,7 +234,7 @@ MocoSolution solveMarkerTrackingProblem(
     addCoordinateActuator(model, "ankle_angle_l", 100);
     mp.setModelCopy(*model);
 
-        
+
     // Cost.
     // -----
     auto* tracking = mp.addCost<MocoMarkerTrackingCost>();
@@ -254,7 +254,7 @@ MocoSolution solveMarkerTrackingProblem(
     markerWeights.cloneAndAppend({ "L.Heel", 2 });
     markerWeights.cloneAndAppend({ "L.Toe.Tip", 2 });
     MarkersReference markersRef(ref, &markerWeights);
-    
+
     tracking->setMarkersReference(markersRef);
     tracking->setAllowUnusedReferences(true);
 
@@ -264,7 +264,7 @@ MocoSolution solveMarkerTrackingProblem(
 
     // Configure the solver.
     // =====================
-    MocoTropterSolver& ms = moco.initSolver();
+    MocoTropterSolver& ms = moco.initTropterSolver();
     ms.set_num_mesh_points(50);
     ms.set_verbosity(2);
     ms.set_optim_solver("snopt");

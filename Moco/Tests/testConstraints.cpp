@@ -16,6 +16,9 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
+#define CATCH_CONFIG_MAIN
+#include <catch.hpp>
+
 #include <Moco/osimMoco.h>
 #include <OpenSim/Common/LinearFunction.h>
 #include <simbody/internal/Constraint.h>
@@ -42,7 +45,12 @@ static const double ConstraintTol = 1e-10;
 /// (borrowed from Simbody's 'testConstraints.cpp').
 #define MACHINE_TEST(a,b) SimTK_TEST_EQ_SIZE(a,b, 10*state.getNU())
 
-/// Create a model consisting of a chain of bodies. This model is nearly 
+TEST_CASE("(Dummy test to support discovery in Resharper)")
+{
+    REQUIRE(true);
+}
+
+/// Create a model consisting of a chain of bodies. This model is nearly
 /// identical to the model implemented in Simbody's 'testConstraints.cpp'.
 Model createModel() {
     Model model;
@@ -67,7 +75,7 @@ Model createModel() {
         std::string jointName = "joint" + std::to_string(i+1);
         if (i == NUM_BODIES-5) {
             UniversalJoint* joint = new UniversalJoint(jointName,
-                parent, Vec3(-0.1, 0.3, 0.2), Vec3(0.3, -0.2, 0.1), 
+                parent, Vec3(-0.1, 0.3, 0.2), Vec3(0.3, -0.2, 0.1),
                 *body, Vec3(BOND_LENGTH, 0, 0), Vec3(-0.2, 0.1, -0.3));
             model.addJoint(joint);
         } else if (i == NUM_BODIES-3) {
@@ -84,7 +92,7 @@ Model createModel() {
     }
 
     model.finalizeConnections();
-    
+
     return model;
 }
 
@@ -92,7 +100,7 @@ Model createModel() {
 /// state creation in Simbody's 'testConstraints.cpp'.
 void createState(Model& model, State& state, const Vector& qOverride=Vector()) {
     state = model.initSystem();
-    SimTK::Random::Uniform random; 
+    SimTK::Random::Uniform random;
     for (int i = 0; i < state.getNY(); ++i)
         state.updY()[i] = random.getValue();
     if (qOverride.size())
@@ -105,27 +113,27 @@ void createState(Model& model, State& state, const Vector& qOverride=Vector()) {
 
 /// Get model accelerations given the constraint multipliers. This calculation
 /// is necessary for computing constraint defects associated with the system
-/// dynamics, represented by the equations 
+/// dynamics, represented by the equations
 ///
 ///     M udot + G^T lambda + f_inertial(q,u) = f_applied
 ///
 /// If using an explicit representation of the system dynamics, the derivatives
-/// of the generalized speeds for the system need to be computed in order to 
-/// construct the defects. Rearranging the equations above (and noting that 
+/// of the generalized speeds for the system need to be computed in order to
+/// construct the defects. Rearranging the equations above (and noting that
 /// Simbody does not actually invert the mass matrix, but rather uses an order-N
 /// approach), we obtain
 ///
-///     udot = M_inv (f_applied - f_inertial(q,u) - G^T lambda) 
+///     udot = M_inv (f_applied - f_inertial(q,u) - G^T lambda)
 ///          = f(q, u, lambda)
-/// 
+///
 /// where,
 ///              q | generalized coordinates
 ///              u | generalized speeds
 ///         lambda | Lagrange multipliers
 ///
-/// Since the three quantities required to compute the system accelerations 
-/// will eventually become NLP variables in a direct collocation problem, it is 
-/// not sufficient to use the internally calculated Lagrange multipliers in 
+/// Since the three quantities required to compute the system accelerations
+/// will eventually become NLP variables in a direct collocation problem, it is
+/// not sufficient to use the internally calculated Lagrange multipliers in
 /// Simbody. An intermediate calculation must be made:
 ///
 ///     f_constraint(lambda) = G^T lambda
@@ -135,13 +143,13 @@ void createState(Model& model, State& state, const Vector& qOverride=Vector()) {
 ///
 ///     udot = M_inv (f_applied - f_inertial(q,u) - f_constraint(lambda))
 ///
-/// Finally, note that in order for f_constraint to be used like an applied 
+/// Finally, note that in order for f_constraint to be used like an applied
 /// force (i.e. appear on the RHS), the multipliers are negated in the call to
 /// obtain Simbody constraint forces.
-void calcAccelerationsFromMultipliers(const Model& model, const State& state, 
+void calcAccelerationsFromMultipliers(const Model& model, const State& state,
         const Vector& multipliers, Vector& udot) {
     const SimTK::MultibodySystem& multibody = model.getMultibodySystem();
-    const SimTK::Vector_<SimTK::SpatialVec>& appliedBodyForces = 
+    const SimTK::Vector_<SimTK::SpatialVec>& appliedBodyForces =
         multibody.getRigidBodyForces(state, SimTK::Stage::Dynamics);
     const Vector& appliedMobilityForces = multibody.getMobilityForces(state,
         SimTK::Stage::Dynamics);
@@ -149,19 +157,21 @@ void calcAccelerationsFromMultipliers(const Model& model, const State& state,
     const SimTK::SimbodyMatterSubsystem& matter = model.getMatterSubsystem();
     SimTK::Vector_<SimTK::SpatialVec> constraintBodyForces;
     Vector constraintMobilityForces;
-    // Multipliers are negated so constraint forces can be used like applied 
+    // Multipliers are negated so constraint forces can be used like applied
     // forces.
-    matter.calcConstraintForcesFromMultipliers(state, -multipliers, 
+    matter.calcConstraintForcesFromMultipliers(state, -multipliers,
         constraintBodyForces, constraintMobilityForces);
 
     SimTK::Vector_<SimTK::SpatialVec> A_GB;
-    matter.calcAccelerationIgnoringConstraints(state, 
+    matter.calcAccelerationIgnoringConstraints(state,
         appliedMobilityForces + constraintMobilityForces,
         appliedBodyForces + constraintBodyForces, udot, A_GB);
 }
 
+/// DAE calculation subtests.
+/// -------------------------
 /// The following tests add a constraint to a model and check that the method
-/// calcAccelerationsFromMultipliers() is implemented correctly. Each test 
+/// calcAccelerationsFromMultipliers() is implemented correctly. Each test
 /// follows a similar structure:
 ///     1) Create a model and add a constraint between two bodies
 ///     2) Create a random state and realize the model to Stage::Acceleration
@@ -170,15 +180,14 @@ void calcAccelerationsFromMultipliers(const Model& model, const State& state,
 ///     5) Retrieve the Lagrange multiplier values for the current state
 ///     6) Compute the accelerations from calcAccelerationsFromMultipliers()
 ///     7) Ensure that the accelerations from step 4 and 6 match
-
-void testWeldConstraint() {
+TEST_CASE("WeldConstraint", "") {
     State state;
     Model model = createModel();
     const std::string& firstBodyName =
             model.getBodySet().get(0).getAbsolutePathString();
     const std::string& lastBodyName =
             model.getBodySet().get(NUM_BODIES-1).getAbsolutePathString();
-    WeldConstraint* constraint = new WeldConstraint("weld", firstBodyName, 
+    WeldConstraint* constraint = new WeldConstraint("weld", firstBodyName,
         lastBodyName);
     model.addConstraint(constraint);
     createState(model, state);
@@ -186,40 +195,40 @@ void testWeldConstraint() {
     SimTK_TEST(state.getNMultipliers() > 0);
 
     const Vector& udotSimbody = model.getMatterSubsystem().getUDot(state);
-    const Vector& multipliers = 
+    const Vector& multipliers =
         model.getMatterSubsystem().getConstraintMultipliers(state);
     Vector udotMultipliers;
-    calcAccelerationsFromMultipliers(model, state, multipliers, 
+    calcAccelerationsFromMultipliers(model, state, multipliers,
         udotMultipliers);
     // Check that accelerations calculated from Lagrange multipliers match
     // Simbody's accelerations.
     MACHINE_TEST(udotSimbody, udotMultipliers);
 }
 
-void testPointConstraint() {
+TEST_CASE("PointConstraint", "") {
     State state;
     Model model = createModel();
     const Body& firstBody = model.getBodySet().get(0);
     const Body& lastBody = model.getBodySet().get(NUM_BODIES - 1);
-    PointConstraint* constraint = new PointConstraint(firstBody, Vec3(0), 
+    PointConstraint* constraint = new PointConstraint(firstBody, Vec3(0),
         lastBody, Vec3(0));
     model.addConstraint(constraint);
     createState(model, state);
     // Check that constraint was added successfully.
     SimTK_TEST(state.getNMultipliers() > 0);
-    
+
     const Vector& udotSimbody = model.getMatterSubsystem().getUDot(state);
     const Vector& multipliers =
         model.getMatterSubsystem().getConstraintMultipliers(state);
     Vector udotMultipliers;
-    calcAccelerationsFromMultipliers(model, state, multipliers, 
+    calcAccelerationsFromMultipliers(model, state, multipliers,
         udotMultipliers);
     // Check that accelerations calculated from Lagrange multipliers match
     // Simbody's accelerations.
     MACHINE_TEST(udotSimbody, udotMultipliers);
 }
 
-void testPointOnLineConstraint() {
+TEST_CASE("PointOnLineConstraint", "") {
     State state;
     Model model = createModel();
     const Body& firstBody = model.getBodySet().get(0);
@@ -235,14 +244,14 @@ void testPointOnLineConstraint() {
     const Vector& multipliers =
         model.getMatterSubsystem().getConstraintMultipliers(state);
     Vector udotMultipliers;
-    calcAccelerationsFromMultipliers(model, state, multipliers, 
+    calcAccelerationsFromMultipliers(model, state, multipliers,
         udotMultipliers);
     // Check that accelerations calculated from Lagrange multipliers match
     // Simbody's accelerations.
     MACHINE_TEST(udotSimbody, udotMultipliers);
 }
 
-void testConstantDistanceConstraint() {
+TEST_CASE("ConstantDistanceConstraint", "") {
     State state;
     Model model = createModel();
     const Body& firstBody = model.getBodySet().get(0);
@@ -259,14 +268,14 @@ void testConstantDistanceConstraint() {
     const Vector& multipliers =
         model.getMatterSubsystem().getConstraintMultipliers(state);
     Vector udotMultipliers;
-    calcAccelerationsFromMultipliers(model, state, multipliers, 
+    calcAccelerationsFromMultipliers(model, state, multipliers,
         udotMultipliers);
     // Check that accelerations calculated from Lagrange multipliers match
     // Simbody's accelerations.
     MACHINE_TEST(udotSimbody, udotMultipliers);
 }
 
-void testLockedCoordinate() {
+TEST_CASE("LockedCoordinate", "") {
     State state;
     Model model = createModel();
     CoordinateSet& coordSet = model.updCoordinateSet();
@@ -279,14 +288,14 @@ void testLockedCoordinate() {
     const Vector& multipliers =
         model.getMatterSubsystem().getConstraintMultipliers(state);
     Vector udotMultipliers;
-    calcAccelerationsFromMultipliers(model, state, multipliers, 
+    calcAccelerationsFromMultipliers(model, state, multipliers,
         udotMultipliers);
     // Check that accelerations calculated from Lagrange multipliers match
     // Simbody's accelerations.
     MACHINE_TEST(udotSimbody, udotMultipliers);
 }
 
-void testCoordinateCouplerConstraint() {
+TEST_CASE("CoordinateCouplerConstraint", "") {
     State state;
     Model model = createModel();
     CoordinateSet& coordSet = model.updCoordinateSet();
@@ -314,7 +323,7 @@ void testCoordinateCouplerConstraint() {
     MACHINE_TEST(udotSimbody, udotMultipliers);
 }
 
-void testPrescribedMotion() {
+TEST_CASE("PrescribedMotion", "") {
     State state;
     Model model = createModel();
     CoordinateSet& coordSet = model.updCoordinateSet();
@@ -329,7 +338,7 @@ void testPrescribedMotion() {
     const Vector& multipliers =
         model.getMatterSubsystem().getConstraintMultipliers(state);
     Vector udotMultipliers;
-    calcAccelerationsFromMultipliers(model, state, multipliers, 
+    calcAccelerationsFromMultipliers(model, state, multipliers,
         udotMultipliers);
     // Check that accelerations calculated from Lagrange multipliers match
     // Simbody's accelerations.
@@ -382,7 +391,7 @@ std::unique_ptr<Model> createDoublePendulumModel() {
     tau1->setName("tau1");
     tau1->setOptimalForce(1);
     model->addComponent(tau1);
-    
+
     // Add display geometry.
     Ellipsoid bodyGeometry(0.5, 0.1, 0.1);
     SimTK::Transform transform(SimTK::Vec3(-0.5, 0, 0));
@@ -398,7 +407,7 @@ std::unique_ptr<Model> createDoublePendulumModel() {
 
 /// Run a forward simulation using controls from an OCP solution and compare the
 /// state trajectories.
-MocoIterate runForwardSimulation(Model model, const MocoSolution& solution, 
+MocoIterate runForwardSimulation(Model model, const MocoSolution& solution,
     const double& tol) {
 
     // Get actuator names.
@@ -410,14 +419,14 @@ MocoIterate runForwardSimulation(Model model, const MocoSolution& solution,
     }
 
     // Add prescribed controllers to actuators in the model, where the control
-    // functions are splined versions of the actuator controls from the OCP 
+    // functions are splined versions of the actuator controls from the OCP
     // solution.
     const SimTK::Vector& time = solution.getTime();
     auto* controller = new PrescribedController();
     controller->setName("prescribed_controller");
     for (int i = 0; i < actuNames.size(); ++i) {
         const auto control = solution.getControl(actuNames[i]);
-        auto* controlFunction = new GCVSpline(5, time.nrow(), &time[0], 
+        auto* controlFunction = new GCVSpline(5, time.nrow(), &time[0],
             &control[0]);
         const auto& actu = model.getComponent<Actuator>(actuNames[i]);
         controller->addActuator(actu);
@@ -436,11 +445,11 @@ MocoIterate runForwardSimulation(Model model, const MocoSolution& solution,
     auto* controlsRep = new TableReporter();
     for (int i = 0; i < actuNames.size(); ++i) {
         controlsRep->addToReport(
-            model.getComponent(actuNames[i]).getOutput("actuation"), 
+            model.getComponent(actuNames[i]).getOutput("actuation"),
             actuNames[i]);
     }
     model.addComponent(controlsRep);
-    
+
     // Simulate!
     SimTK::State state = model.initSystem();
     state.setTime(time[0]);
@@ -455,7 +464,7 @@ MocoIterate runForwardSimulation(Model model, const MocoSolution& solution,
 
     TimeSeriesTable controls;
     controls = controlsRep->getTable();
-    
+
     // Create a MocoIterate to facilitate states trajectory comparison (with
     // dummy data for the multipliers, which we'll ignore).
     const auto& statesTimes = states.getIndependentColumn();
@@ -464,9 +473,9 @@ MocoIterate runForwardSimulation(Model model, const MocoSolution& solution,
         controls.getColumnLabels(), states.getColumnLabels(), {},
         states.getMatrix(), controls.getMatrix(), states.getMatrix(),
         SimTK::RowVector(0));
-    
+
     // Compare controls between foward simulation and OCP solution. These
-    // should match very closely, since the foward simulation controls are 
+    // should match very closely, since the foward simulation controls are
     // created from splines of the OCP solution controls
     SimTK_TEST_EQ_TOL(solution.compareContinuousVariablesRMS(forwardSolution,
         {"none"}, {}, {"none"}, {"none"}), 0, 1e-9);
@@ -479,21 +488,25 @@ MocoIterate runForwardSimulation(Model model, const MocoSolution& solution,
     return forwardSolution;
 }
 
-/// Solve an optimal control problem where a double pendulum must reach a 
+/// Direct collocation subtests.
+/// ----------------------------
+
+/// Solve an optimal control problem where a double pendulum must reach a
 /// specified final configuration while subject to a constraint that its
 /// end-effector must lie on a vertical line through the origin and minimize
 /// control effort.
+template <typename TestType>
 void testDoublePendulumPointOnLine(bool enforce_constraint_derivatives) {
     MocoTool moco;
     moco.setName("double_pendulum_point_on_line");
     MocoProblem& mp = moco.updProblem();
-    // Create double pendulum model and add the point-on-line constraint. The 
-    // constraint consists of a vertical line in the y-direction (defined in 
+    // Create double pendulum model and add the point-on-line constraint. The
+    // constraint consists of a vertical line in the y-direction (defined in
     // ground) and the model end-effector point (the origin of body "b1").
     auto model = createDoublePendulumModel();
     const Body& b1 = model->getBodySet().get("b1");
     const Station& endeff = model->getComponent<Station>("endeff");
- 
+
     PointOnLineConstraint* constraint = new PointOnLineConstraint(
         model->getGround(), Vec3(0, 1, 0), Vec3(0), b1, endeff.get_location());
     model->addConstraint(constraint);
@@ -501,7 +514,7 @@ void testDoublePendulumPointOnLine(bool enforce_constraint_derivatives) {
     mp.setModelCopy(*model);
 
     mp.setTimeBounds(0, 1);
-    // Coordinate value state boundary conditions are consistent with the 
+    // Coordinate value state boundary conditions are consistent with the
     // point-on-line constraint.
     const double theta_i = 0.5;
     const double theta_f = SimTK::Pi/2;
@@ -515,7 +528,7 @@ void testDoublePendulumPointOnLine(bool enforce_constraint_derivatives) {
 
     mp.addCost<MocoControlCost>();
 
-    MocoTropterSolver& ms = moco.initSolver();
+    auto& ms = moco.initSolver<TestType>();
     ms.set_num_mesh_points(10);
     ms.set_verbosity(2);
     ms.set_optim_solver("ipopt");
@@ -538,7 +551,7 @@ void testDoublePendulumPointOnLine(bool enforce_constraint_derivatives) {
         const SimTK::Vec3& loc = endeff.getLocationInGround(s);
 
         // The end-effector should not have moved in the x- or z-directions.
-        // If using Hermite-Simpson, only check on the mesh interval endpoints, 
+        // If using Hermite-Simpson, only check on the mesh interval endpoints,
         // where the path constraint is enforced.
         if (ms.get_transcription_scheme() == "hermite-simpson" && !(i % 2)) {
             SimTK_TEST_EQ_TOL(loc[0], 0, 1e-6);
@@ -546,22 +559,23 @@ void testDoublePendulumPointOnLine(bool enforce_constraint_derivatives) {
         }
     }
 
-    // Run a forward simulation using the solution controls in prescribed 
+    // Run a forward simulation using the solution controls in prescribed
     // controllers for the model actuators and see if we get the correct states
     // trajectory back.
     runForwardSimulation(*model, solution, 2);
 }
 
-/// Solve an optimal control problem where a double pendulum must reach a 
+/// Solve an optimal control problem where a double pendulum must reach a
 /// specified final configuration while subject to a constraint that couples
-/// its two coordinates together via a linear relationship and minimizing 
+/// its two coordinates together via a linear relationship and minimizing
 /// control effort.
-void testDoublePendulumCoordinateCoupler(MocoSolution& solution, 
+template <typename SolverType>
+void testDoublePendulumCoordinateCoupler(MocoSolution& solution,
         bool enforce_constraint_derivatives) {
     MocoTool moco;
     moco.setName("double_pendulum_coordinate_coupler");
 
-    // Create double pendulum model and add the coordinate coupler constraint. 
+    // Create double pendulum model and add the coordinate coupler constraint.
     auto model = createDoublePendulumModel();
     const Coordinate& q0 = model->getCoordinateSet().get("q0");
     const Coordinate& q1 = model->getCoordinateSet().get("q1");
@@ -572,9 +586,9 @@ void testDoublePendulumCoordinateCoupler(MocoSolution& solution,
     constraint->setDependentCoordinateName("q1");
     // Represented by the following equation,
     //      q1 = m*q0 + b
-    // this linear function couples the two model coordinates such that given 
+    // this linear function couples the two model coordinates such that given
     // the boundary conditions for q0 from testDoublePendulumPointOnLine, the
-    // same boundary conditions for q1 should be achieved without imposing 
+    // same boundary conditions for q1 should be achieved without imposing
     // bounds for this coordinate.
     const SimTK::Real m = -2;
     const SimTK::Real b = SimTK::Pi;
@@ -597,7 +611,7 @@ void testDoublePendulumCoordinateCoupler(MocoSolution& solution,
     mp.setControlInfo("/tau1", {-100, 100});
     mp.addCost<MocoControlCost>();
 
-    MocoTropterSolver& ms = moco.initSolver();
+    auto& ms = moco.initSolver<SolverType>();
     ms.set_num_mesh_points(20);
     ms.set_verbosity(2);
     ms.set_optim_solver("ipopt");
@@ -619,14 +633,14 @@ void testDoublePendulumCoordinateCoupler(MocoSolution& solution,
         model->realizePosition(s);
 
         // The coordinates should be coupled according to the linear function
-        // described above. If using Hermite-Simpson, only check on the mesh 
+        // described above. If using Hermite-Simpson, only check on the mesh
         // interval endpoints, where the path constraint is enforced.
         if (ms.get_transcription_scheme() == "hermite-simpson" && !(i % 2)) {
             SimTK_TEST_EQ_TOL(q1.getValue(s), m*q0.getValue(s) + b, 1e-6);
         }
     }
 
-    // Run a forward simulation using the solution controls in prescribed 
+    // Run a forward simulation using the solution controls in prescribed
     // controllers for the model actuators and see if we get the correct states
     // trajectory back.
     runForwardSimulation(*model, solution, 1e-1);
@@ -635,21 +649,22 @@ void testDoublePendulumCoordinateCoupler(MocoSolution& solution,
 /// Solve an optimal control problem where a double pendulum must follow a
 /// prescribed motion based on the previous test case (see
 /// testDoublePendulumCoordinateCoupler).
+template <typename SolverType>
 void testDoublePendulumPrescribedMotion(MocoSolution& couplerSolution,
         bool enforce_constraint_derivatives) {
     MocoTool moco;
     moco.setName("double_pendulum_prescribed_motion");
     MocoProblem& mp = moco.updProblem();
 
-    // Create double pendulum model. 
+    // Create double pendulum model.
     auto model = createDoublePendulumModel();
-    // Create a spline set for the model states from the previous solution. We 
-    // need to call initSystem() and set the model here in order to convert the 
+    // Create a spline set for the model states from the previous solution. We
+    // need to call initSystem() and set the model here in order to convert the
     // solution from the previous problem to a StatesTrajectory.
     model->initSystem();
     mp.setModelCopy(*model);
 
-    TimeSeriesTable statesTrajCoupler = 
+    TimeSeriesTable statesTrajCoupler =
         couplerSolution.exportToStatesTrajectory(mp).exportToTable(*model);
     GCVSplineSet statesSpline(statesTrajCoupler);
 
@@ -675,8 +690,8 @@ void testDoublePendulumPrescribedMotion(MocoSolution& couplerSolution,
 
     mp.addCost<MocoControlCost>();
 
-    MocoTropterSolver& ms = moco.initSolver();
-    ms.set_num_mesh_points(20); 
+    auto& ms = moco.initSolver<SolverType>();
+    ms.set_num_mesh_points(20);
     ms.set_verbosity(2);
     ms.set_optim_solver("ipopt");
     ms.set_optim_convergence_tolerance(1e-3);
@@ -689,22 +704,22 @@ void testDoublePendulumPrescribedMotion(MocoSolution& couplerSolution,
     MocoIterate guess(ms.createGuess("bounds"));
     guess.setStatesTrajectory(statesTrajCoupler);
     ms.setGuess(guess);
-    
+
     MocoSolution solution = moco.solve();
     solution.write("testConstraints_testDoublePendulumPrescribedMotion.sto");
     //moco.visualize(solution);
 
-    // Create a TimeSeriesTable containing the splined state data from 
-    // testDoublePendulumCoordinateCoupler. Since this splined data could be 
-    // somewhat different from the coordinate coupler OCP solution, we use this 
-    // to create a direct comparison between the prescribed motion OCP solution 
+    // Create a TimeSeriesTable containing the splined state data from
+    // testDoublePendulumCoordinateCoupler. Since this splined data could be
+    // somewhat different from the coordinate coupler OCP solution, we use this
+    // to create a direct comparison between the prescribed motion OCP solution
     // states and exactly what the PrescribedMotion constraints should be
     // enforcing.
     auto statesTraj = solution.exportToStatesTrajectory(mp);
     // Initialize data structures to use in the TimeSeriesTable
     // convenience constructor.
     std::vector<double> indVec((int)statesTraj.getSize());
-    SimTK::Matrix depData((int)statesTraj.getSize(), 
+    SimTK::Matrix depData((int)statesTraj.getSize(),
         (int)solution.getStateNames().size());
     Vector timeVec(1);
     for (int i = 0; i < (int)statesTraj.getSize(); ++i) {
@@ -716,7 +731,7 @@ void testDoublePendulumPrescribedMotion(MocoSolution& couplerSolution,
                 statesSpline.get("/jointset/j0/q0/value").calcValue(timeVec));
         depData.set(i, 1,
                 statesSpline.get("/jointset/j1/q1/value").calcValue(timeVec));
-        // The values for the speed states are created from the spline 
+        // The values for the speed states are created from the spline
         // derivative values.
         depData.set(i, 2,
                 statesSpline.get("/jointset/j0/q0/value").calcDerivative({0},
@@ -725,7 +740,7 @@ void testDoublePendulumPrescribedMotion(MocoSolution& couplerSolution,
                 statesSpline.get("/jointset/j1/q1/value").calcDerivative({0},
             timeVec));
     }
-    TimeSeriesTable splineStateValues(indVec, depData, 
+    TimeSeriesTable splineStateValues(indVec, depData,
         solution.getStateNames());
 
     // Create a MocoIterate containing the splined state values. The splined
@@ -733,24 +748,24 @@ void testDoublePendulumPrescribedMotion(MocoSolution& couplerSolution,
     const auto& statesTimes = splineStateValues.getIndependentColumn();
     SimTK::Vector time((int)statesTimes.size(), statesTimes.data(), true);
     auto mocoIterSpline = MocoIterate(time, splineStateValues.getColumnLabels(),
-        splineStateValues.getColumnLabels(), splineStateValues.getColumnLabels(), 
-        {}, splineStateValues.getMatrix(), splineStateValues.getMatrix(), 
+        splineStateValues.getColumnLabels(), splineStateValues.getColumnLabels(),
+        {}, splineStateValues.getMatrix(), splineStateValues.getMatrix(),
         splineStateValues.getMatrix(), SimTK::RowVector(0));
 
-    // Only compare the position-level values between the current solution 
-    // states and the states from the previous test (original and splined).  
-    // These should match well, since position-level values are enforced 
-    // directly via a path constraint in the current problem formulation (see 
+    // Only compare the position-level values between the current solution
+    // states and the states from the previous test (original and splined).
+    // These should match well, since position-level values are enforced
+    // directly via a path constraint in the current problem formulation (see
     // MocoTropterSolver for details).
 
-    SimTK_TEST_EQ_TOL(solution.compareContinuousVariablesRMS(mocoIterSpline, 
+    SimTK_TEST_EQ_TOL(solution.compareContinuousVariablesRMS(mocoIterSpline,
         {"/jointset/j0/q0/value", "/jointset/j1/q1/value"}, {"none"}, {"none"}),
                 0, 1e-3);
     SimTK_TEST_EQ_TOL(solution.compareContinuousVariablesRMS(couplerSolution,
         {"/jointset/j0/q0/value", "/jointset/j1/q1/value"}, {"none"}, {"none"}),
                 0, 1e-3);
-    // Only compare the velocity-level values between the current solution 
-    // states and the states from the previous test (original and splined).  
+    // Only compare the velocity-level values between the current solution
+    // states and the states from the previous test (original and splined).
     // These won't match as well as the position-level values, since velocity-
     // level errors are not enforced in the current problem formulation.
     SimTK_TEST_EQ_TOL(solution.compareContinuousVariablesRMS(mocoIterSpline,
@@ -760,23 +775,50 @@ void testDoublePendulumPrescribedMotion(MocoSolution& couplerSolution,
         {"/jointset/j0/q0/speed", "/jointset/j1/q1/speed"}, {"none"}, {"none"}),
                 0, 1e-1);
     // Compare only the actuator controls. These match worse compared to the
-    // velocity-level states. It is currently unclear to what extent this is 
+    // velocity-level states. It is currently unclear to what extent this is
     // related to velocity-level states not matching well or the how the model
     // constraints are enforced in the current formulation.
-    SimTK_TEST_EQ_TOL(solution.compareContinuousVariablesRMS(couplerSolution, 
+    SimTK_TEST_EQ_TOL(solution.compareContinuousVariablesRMS(couplerSolution,
         {"none"}, {"/tau0", "/tau1"}, {"none"}), 0, 5);
 
-    // Run a forward simulation using the solution controls in prescribed 
+    // Run a forward simulation using the solution controls in prescribed
     // controllers for the model actuators and see if we get the correct states
     // trajectory back.
     runForwardSimulation(*model, solution, 1e-1);
+}
+
+TEMPLATE_TEST_CASE("DoublePendulum with and without constraint derivatives", "",
+        MocoTropterSolver/*, MocoCasADiSolver*/) {
+    // TODO test tolerances can be improved significantly by not including
+    // Hermite-Simpson midpoint values in comparisons.
+    SECTION("DoublePendulum without constraint derivatives") {
+        MocoSolution couplerSol;
+        testDoublePendulumCoordinateCoupler<TestType>(couplerSol, false);
+        testDoublePendulumPrescribedMotion<TestType>(couplerSol, false);
+    }
+
+    SECTION("DoublePendulum with constraint derivatives"){
+        MocoSolution couplerSol2;
+        testDoublePendulumCoordinateCoupler<TestType>(couplerSol2, true);
+        testDoublePendulumPrescribedMotion<TestType>(couplerSol2, true);
+    }
+}
+
+TEMPLATE_TEST_CASE("DoublePendulumPointOnLine without constraint derivatives",
+        "", MocoTropterSolver /*, MocoCasADiSolver*/) {
+    testDoublePendulumPointOnLine<TestType>(false);
+}
+
+TEMPLATE_TEST_CASE("DoublePendulumPointOnLine with constraint derivatives",
+        "", MocoTropterSolver /*, MocoCasADiSolver*/) {
+    testDoublePendulumPointOnLine<TestType>(true);
 }
 
 class EqualControlConstraint : public MocoPathConstraint {
 OpenSim_DECLARE_CONCRETE_OBJECT(EqualControlConstraint, MocoPathConstraint);
 protected:
     void initializeOnModelImpl(const Model& model) const override {
-        // Make sure the model generates a state object with the two controls we 
+        // Make sure the model generates a state object with the two controls we
         // expect, no more and no less.
         const auto state = model.getWorkingState();
         model.realizeVelocity(state);
@@ -791,23 +833,25 @@ protected:
         getModel().realizeVelocity(state);
 
         const auto& controls = getModel().getControls(state);
-        // In the problem below, the actuators are bilateral and act in 
+        // In the problem below, the actuators are bilateral and act in
         // opposite directions, so we use addition to create the residual here.
         errors[0] = abs(controls[1]) - abs(controls[0]);
     }
 };
 
-/// Solve an optimal control problem where a double pendulum must reach a 
+/// Solve an optimal control problem where a double pendulum must reach a
 /// specified final configuration while subject to a constraint that its
 /// actuators must produce an equal control trajectory.
-void testDoublePendulumEqualControl() {
+TEMPLATE_TEST_CASE("DoublePendulumEqualControl", "",
+        MocoTropterSolver/*, MocoCasADiSolver*/) {
+    OpenSim::Object::registerType(EqualControlConstraint());
     MocoTool moco;
     moco.setName("double_pendulum_equal_control");
     MocoProblem& mp = moco.updProblem();
     auto model = createDoublePendulumModel();
     model->finalizeConnections();
     mp.setModelCopy(*model);
-    
+
     auto* equalControlConstraint =
             mp.addPathConstraint<EqualControlConstraint>();
     MocoConstraintInfo cInfo;
@@ -815,7 +859,7 @@ void testDoublePendulumEqualControl() {
     equalControlConstraint->setConstraintInfo(cInfo);
 
     mp.setTimeBounds(0, 1);
-    // Coordinate value state boundary conditions are consistent with the 
+    // Coordinate value state boundary conditions are consistent with the
     // point-on-line constraint and should require the model to "unfold" itself.
     mp.setStateInfo("/jointset/j0/q0/value", {-10, 10}, 0, SimTK::Pi / 2);
     mp.setStateInfo("/jointset/j0/q0/speed", {-50, 50});
@@ -826,7 +870,7 @@ void testDoublePendulumEqualControl() {
 
     mp.addCost<MocoControlCost>();
 
-    MocoTropterSolver& ms = moco.initSolver();
+    auto& ms = moco.initSolver<TestType>();
     ms.set_num_mesh_points(25);
     ms.set_verbosity(2);
     ms.set_optim_solver("ipopt");
@@ -842,8 +886,8 @@ void testDoublePendulumEqualControl() {
     const auto& control_res = control_tau1.abs() - control_tau0.abs();
 
     SimTK_TEST_EQ_TOL(control_res.normRMS(), 0, 1e-6);
-    
-    // Run a forward simulation using the solution controls in prescribed 
+
+    // Run a forward simulation using the solution controls in prescribed
     // controllers for the model actuators and see if we get the correct states
     // trajectory back.
     // TODO why does the forward solution match so poorly here?
@@ -852,40 +896,11 @@ void testDoublePendulumEqualControl() {
 
     // Test de/serialization.
     // ======================
-    std::string setup_fname 
+    std::string setup_fname
         = "testConstraints_testDoublePendulumEqualControl.omoco";
     moco.print(setup_fname);
     MocoSolution solutionDeserialized;
     MocoTool mocoDeserialize(setup_fname);
     solutionDeserialized = mocoDeserialize.solve();
     SimTK_TEST(solution.isNumericallyEqual(solutionDeserialized));
-}
-
-int main() {
-    OpenSim::Object::registerType(EqualControlConstraint());
-
-    SimTK_START_TEST("testConstraints");
-        // DAE calculation tests.
-        SimTK_SUBTEST(testWeldConstraint);
-        SimTK_SUBTEST(testPointConstraint);
-        SimTK_SUBTEST(testPointOnLineConstraint);
-        SimTK_SUBTEST(testConstantDistanceConstraint);
-        SimTK_SUBTEST(testLockedCoordinate);
-        SimTK_SUBTEST(testCoordinateCouplerConstraint);
-        SimTK_SUBTEST(testPrescribedMotion);
-        // TODO test tolerances can be improved significantly by not including
-        // Hermite-Simpson midpoint values in comparisons.
-        // Direct collocation tests, without constraint derivatives.
-        SimTK_SUBTEST1(testDoublePendulumPointOnLine, false);
-        MocoSolution couplerSol;
-        SimTK_SUBTEST2(testDoublePendulumCoordinateCoupler, couplerSol, false);
-        SimTK_SUBTEST2(testDoublePendulumPrescribedMotion, couplerSol, false);
-        // Direct collocation tests, with constraint derivatives.
-        SimTK_SUBTEST1(testDoublePendulumPointOnLine, true);
-        MocoSolution couplerSol2;
-        SimTK_SUBTEST2(testDoublePendulumCoordinateCoupler, couplerSol2, true);
-        SimTK_SUBTEST2(testDoublePendulumPrescribedMotion, couplerSol2, true);
-        // Custom path constraint test.
-        SimTK_SUBTEST(testDoublePendulumEqualControl);
-    SimTK_END_TEST();
 }

@@ -133,7 +133,7 @@ int main() {
 
     // Configure the solver.
     // =====================
-    MocoTropterSolver& solver = moco.initSolver();
+    MocoTropterSolver& solver = moco.initTropterSolver();
     solver.set_num_mesh_points(50);
     solver.set_verbosity(2);
     solver.set_optim_solver("ipopt");

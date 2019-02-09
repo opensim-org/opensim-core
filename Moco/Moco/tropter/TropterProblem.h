@@ -339,8 +339,7 @@ protected:
             // Warning: memory borrowed, not copied (when third argument to
             // SimTK::Vector constructor is true)
             SimTK::Vector mocoParams(
-                    (int)m_mocoProbRep.createParameterNames().size(),
-                    parameters.data(), true);
+                    (int)parameters.size(), parameters.data(), true);
 
             m_mocoProbRep.applyParametersToModel(mocoParams);
             // TODO: Avoid this const_cast.

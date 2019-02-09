@@ -18,39 +18,51 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include <OpenSim/Common/Storage.h>
-
+#include "osimMocoDLL.h"
 #include <set>
 
-#include "osimMocoDLL.h"
+#include <OpenSim/Common/Storage.h>
 
 namespace OpenSim {
-
-/// Since Moco does not require C++14 (which contains std::make_unique()),
-/// here is an implementation of make_unique().
-template<typename T, typename... Args>
-std::unique_ptr<T> make_unique(Args&&... args) {
-    return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
-}
 
 class StatesTrajectory;
 class Model;
 class MocoIterate;
+
+/// Since Moco does not require C++14 (which contains std::make_unique()),
+/// here is an implementation of make_unique().
+template <typename T, typename... Args>
+std::unique_ptr<T> make_unique(Args&&... args) {
+    return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
+}
+
+/// Determine if `string` ends with the substring `ending`.
+/// https://stackoverflow.com/questions/874134/find-if-string-ends-with-another-string-in-c
+inline bool endsWith(const std::string& string, const std::string& ending) {
+    if (string.length() >= ending.length()) {
+        return string.compare(string.length() - ending.length(),
+                       ending.length(), ending) == 0;
+    }
+    return false;
+}
 
 /// Create a SimTK::Vector with the provided length whose elements are
 /// linearly spaced between start and end.
 OSIMMOCO_API
 SimTK::Vector createVectorLinspace(int length, double start, double end);
 
+/// Create a SimTK::Vector using modern C++ syntax.
+OSIMMOCO_API
+SimTK::Vector createVector(std::initializer_list<SimTK::Real> elements);
+
 /// Linearly interpolate y(x) at new values of x. The optional 'ignoreNaNs'
-/// argument will ignore any NaN values contained in the input vectors and 
-/// create the interpolant from the non-NaN values only. Note that this option 
-/// does not necessarily prevent NaN values from being returned in 'newX', which 
+/// argument will ignore any NaN values contained in the input vectors and
+/// create the interpolant from the non-NaN values only. Note that this option
+/// does not necessarily prevent NaN values from being returned in 'newX', which
 /// will have NaN for any values of newX outside of the range of x.
 OSIMMOCO_API
-SimTK::Vector interpolate(const SimTK::Vector& x,
-        const SimTK::Vector& y, const SimTK::Vector& newX,
-        const bool ignoreNaNs = false);
+SimTK::Vector interpolate(const SimTK::Vector& x, const SimTK::Vector& y,
+        const SimTK::Vector& newX, const bool ignoreNaNs = false);
 
 /// Create a Storage from a TimeSeriesTable. Metadata from the
 /// TimeSeriesTable is *not* copied to the Storage.
@@ -63,8 +75,8 @@ OSIMMOCO_API Storage convertTableToStorage(const TimeSeriesTable&);
 /// Lowpass filter the data in a TimeSeriesTable at a provided cutoff frequency.
 /// The table is converted to a Storage object to use the lowpassIIR() method
 /// to filter, and then converted back to TimeSeriesTable.
-OSIMMOCO_API TimeSeriesTable filterLowpass(const TimeSeriesTable& table, 
-    double cutoffFreq, bool padData = false);
+OSIMMOCO_API TimeSeriesTable filterLowpass(
+        const TimeSeriesTable& table, double cutoffFreq, bool padData = false);
 
 /// Play back a motion (from the Storage) in the simbody-visuailzer. The Storage
 /// should contain all generalized coordinates. The visualizer window allows the
@@ -77,13 +89,13 @@ OSIMMOCO_API void visualize(Model, Storage);
 /// the states are provided in a TimeSeriesTable.
 OSIMMOCO_API void visualize(Model, TimeSeriesTable);
 
-/// Given a valid MocoSolution obtained from solving a MocoProblem and the 
+/// Given a valid MocoSolution obtained from solving a MocoProblem and the
 /// associated OpenSim model, return the model with a prescribed controller
-/// appended that will compute the control values from the MocoSolution. This 
+/// appended that will compute the control values from the MocoSolution. This
 /// can be useful when computing state-dependent model quantities that require
 /// realization to the Dynamics stage or later.
-OSIMMOCO_API void prescribeControlsToModel(const MocoIterate& iterate, 
-    Model& model);
+OSIMMOCO_API void prescribeControlsToModel(
+        const MocoIterate& iterate, Model& model);
 
 /// Replace muscles in a model with a PathActuator of the same GeometryPath,
 /// optimal force, and min/max control defaults.
@@ -116,8 +128,8 @@ std::unordered_map<std::string, int> createSystemYIndexMap(const Model& model);
 /// Throw an exception if the property's value is not in the provided set.
 /// We assume that `p` is a single-value property.
 template <typename T>
-void checkPropertyInSet(const Object& obj,
-        const Property<T>& p, const std::set<T>& set) {
+void checkPropertyInSet(
+        const Object& obj, const Property<T>& p, const std::set<T>& set) {
     const auto& value = p.getValue();
     if (set.find(value) == set.end()) {
         std::stringstream msg;
@@ -125,8 +137,8 @@ void checkPropertyInSet(const Object& obj,
         if (!obj.getName().empty()) {
             msg << "object '" << obj.getName() << "' of type ";
         }
-        msg << obj.getConcreteClassName() << ") has invalid value "
-                << value << "; expected one of the following:";
+        msg << obj.getConcreteClassName() << ") has invalid value " << value
+            << "; expected one of the following:";
         std::string separator(" ");
         for (const auto& s : set) {
             msg << separator << " " << s;
@@ -149,7 +161,7 @@ void checkPropertyIsPositive(const Object& obj, const Property<T>& p) {
             msg << "object '" << obj.getName() << "' of type ";
         }
         msg << obj.getConcreteClassName() << ") must be positive, but is "
-                << value << ".";
+            << value << ".";
         OPENSIM_THROW(Exception, msg.str());
     }
 }
@@ -167,9 +179,9 @@ void checkPropertyInRangeOrSet(const Object& obj, const Property<T>& p,
         if (!obj.getName().empty()) {
             msg << "object '" << obj.getName() << "' of type ";
         }
-        msg << obj.getConcreteClassName() << ") has invalid value "
-                << value << "; expected value to be in range "
-                << lower << "," << upper << ", or one of the following:";
+        msg << obj.getConcreteClassName() << ") has invalid value " << value
+            << "; expected value to be in range " << lower << "," << upper
+            << ", or one of the following:";
         std::string separator("");
         for (const auto& s : set) {
             msg << " " << separator << s;
@@ -185,20 +197,28 @@ void checkPropertyInRangeOrSet(const Object& obj, const Property<T>& p,
 
 #ifndef SWIG
 /// Return type for make_printable()
-template<typename T> struct make_printable_return { typedef T type; };
+template <typename T>
+struct make_printable_return {
+    typedef T type;
+};
 /// Convert to types that can be printed with sprintf() (vsnprintf()).
 /// The generic template does not alter the type.
-template<typename T>
-inline typename make_printable_return<T>::type make_printable(const T& x)
-{ return x; }
+template <typename T>
+inline typename make_printable_return<T>::type make_printable(const T& x) {
+    return x;
+}
 
 /// Specialization for std::string.
-template<> struct make_printable_return<std::string>
-{ typedef const char* type; };
+template <>
+struct make_printable_return<std::string> {
+    typedef const char* type;
+};
 /// Specialization for std::string.
-template<> inline
-typename make_printable_return<std::string>::type
-make_printable(const std::string& x) { return x.c_str(); }
+template <>
+inline typename make_printable_return<std::string>::type make_printable(
+        const std::string& x) {
+    return x.c_str();
+}
 
 /// Format a char array using (C interface; mainly for internal use).
 OSIMMOCO_API std::string format_c(const char*, ...);
@@ -206,14 +226,14 @@ OSIMMOCO_API std::string format_c(const char*, ...);
 /// Format a string in the style of sprintf. For example, the code
 /// `format("%s %d and %d yields %d", "adding", 2, 2, 4)` will produce
 /// "adding 2 and 2 yields 4".
-template <typename ...Types>
+template <typename... Types>
 std::string format(const std::string& formatString, Types... args) {
     return format_c(formatString.c_str(), make_printable(args)...);
 }
 
 /// Print a formatted string to std::cout. A newline is not included, but the
 /// stream is flushed.
-template <typename ...Types>
+template <typename... Types>
 void printMessage(const std::string& formatString, Types... args) {
     std::cout << format(formatString, args...);
     std::cout.flush();
@@ -227,13 +247,9 @@ void printMessage(const std::string& formatString, Types... args) {
 class Stopwatch {
 public:
     /// This stores the start time as the current time.
-    Stopwatch() {
-        reset();
-    }
+    Stopwatch() { reset(); }
     /// Reset the start time to the current time.
-    void reset() {
-        m_startTime = SimTK::realTimeInNs();
-    }
+    void reset() { m_startTime = SimTK::realTimeInNs(); }
     /// Return the amount of time that has elapsed since this object was
     /// constructed or since reset() has been called.
     double getElapsedTime() const {
@@ -284,6 +300,7 @@ public:
         }
         return ss.str();
     }
+
 private:
     long long m_startTime;
 };

@@ -45,6 +45,7 @@ std::unique_ptr<Model> createSlidingMassModel() {
 }
 
 /// Test the result of a sliding mass minimum effort problem.
+template <typename SolverType>
 void testMocoControlCost() {
     int N = 10;
     MocoSolution sol1;
@@ -60,7 +61,7 @@ void testMocoControlCost() {
 
         mp.addCost<MocoControlCost>();
 
-        MocoTropterSolver& ms = moco.initSolver();
+        auto& ms = moco.initSolver<SolverType>();
         ms.set_num_mesh_points(N);
 
         sol1 = moco.solve();
@@ -71,10 +72,10 @@ void testMocoControlCost() {
                 createVectorLinspace(N, 2.23, -2.23), 0.25);
         // Symmetry.
         SimTK_TEST_EQ_TOL(sol1.getControl("/actuator").getElt(0, 0),
-                -sol1.getControl("/actuator").getElt(N-1, 0), 1e-5);
+                -sol1.getControl("/actuator").getElt(N-1, 0), 1e-3);
 
         // Minimum effort solution takes as long as possible.
-        SimTK_TEST_EQ(sol1.getTime().getElt(N-1, 0), 5);
+        SimTK_TEST_EQ_TOL(sol1.getTime().getElt(N-1, 0), 5, 1e-7);
     }
 
     // TODO test that we can ignore specific actuators.
@@ -141,7 +142,7 @@ void testMocoControlCost() {
         auto effort = mp.addCost<MocoControlCost>();
         effort->setWeight("actuator2", 2.0);
 
-        MocoTropterSolver& ms = moco.initSolver();
+        auto& ms = moco.initSolver<SolverType>();
         ms.set_num_mesh_points(N);
 
         sol2 = moco.solve();
@@ -154,7 +155,7 @@ void testMocoControlCost() {
         // Sum of control for these two actuators is the same as the control
         // in the single-actuator case.
         SimTK_TEST_EQ_TOL(sol2.getControlsTrajectory().rowSum(),
-            sol1.getControl("/actuator"), 1e-5);
+            sol1.getControl("/actuator"), 1e-3);
     }
 
     // Cannot set a weight for a nonexistent control.
@@ -202,7 +203,8 @@ void testMultipleCosts() {
 
 int main() {
     SimTK_START_TEST("testMocoCosts");
-        SimTK_SUBTEST(testMocoControlCost);
+        SimTK_SUBTEST(testMocoControlCost<MocoTropterSolver>);
+        SimTK_SUBTEST(testMocoControlCost<MocoCasADiSolver>);
         SimTK_SUBTEST(testMultipleCosts);
     SimTK_END_TEST();
 }

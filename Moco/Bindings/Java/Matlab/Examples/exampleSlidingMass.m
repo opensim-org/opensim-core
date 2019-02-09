@@ -73,7 +73,7 @@ problem.addCost(MocoFinalTimeCost());
 
 % Configure the solver.
 % =====================
-solver = moco.initSolver();
+solver = moco.initTropterSolver();
 solver.set_num_mesh_points(50);
 
 % Now that we've finished setting up the tool, print it to a file.
