@@ -161,9 +161,10 @@ SNOPTSolver::optimize_impl(const VectorXd& variablesArg) const {
     // computed Jacobian is recommended.
 
     SparsityCoordinates jacobian_sparsity;
+    SparsityCoordinates hessian_sparsity;
     calc_sparsity(variables,
             jacobian_sparsity, false,
-            SparsityCoordinates()  /*hessian_sparsity*/);
+            hessian_sparsity);
     int jacobian_num_nonzeros = (int)jacobian_sparsity.row.size();
     int neG = num_variables + jacobian_num_nonzeros;
 
@@ -247,9 +248,9 @@ SNOPTSolver::optimize_impl(const VectorXd& variablesArg) const {
     int    ObjRow = 0; // The objective is the first row of F.
     double ObjAdd = 0; // A constant to add to the objective for reporting.
     int            nS; // Final number of superbasic variables ("free" variables)
-    int          nInf; // Final number of infeasibilities
-    double       sInf; // Final sum of infeasibilities
-    int          info; // Output status.
+    int          nInf = -1; // Final number of infeasibilities
+    double       sInf = -1; // Final sum of infeasibilities
+    int          info = -1; // Output status.
 
     if (jacobian_approx == "finite-difference-values") {
         // snJac is called implicitly in this case to compute the Jacobian.
