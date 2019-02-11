@@ -175,7 +175,7 @@ MocoSolution minimizeControlEffortRightLeg(const Options& opt) {
     //reaction->set_weight(0.1);
     //reaction->setJointPath("/jointset/walker_knee_r/");
 
-    MocoTropterSolver& ms = moco.initTropterSolver();
+    MocoCasADiSolver& ms = moco.initCasADiSolver();
     ms.set_num_mesh_points(opt.num_mesh_points);
     ms.set_verbosity(2);
     ms.set_dynamics_mode(opt.dynamics_mode);
@@ -351,7 +351,7 @@ void main() {
     // Predictive problem.
     Options opt;
     opt.weldPelvis = true;
-    opt.num_mesh_points = 12;
+    opt.num_mesh_points = 20;
     opt.solver = "ipopt";
     opt.constraint_tol = 1e-2;
     opt.convergence_tol = 1e-2;
@@ -360,13 +360,13 @@ void main() {
     //"sandboxRightLeg_weldedPelvis_torques_minimize_control_effort_solution.sto");
 
     // TODO stiff passive muscle elements
-    TimeSeriesTable activationsMinimizeControlEffort =
-        createGuessFromGSO(torqueSolEffort, opt);
+    //TimeSeriesTable activationsMinimizeControlEffort =
+    //    createGuessFromGSO(torqueSolEffort, opt);
 
-    opt.actuatorType = "muscles";
-    opt.controlsGuess = activationsMinimizeControlEffort;
-    opt.previousSolution = torqueSolEffort;
-    MocoSolution muscleSolEffort = minimizeControlEffortRightLeg(opt);
+    //opt.actuatorType = "muscles";
+    //opt.controlsGuess = activationsMinimizeControlEffort;
+    //opt.previousSolution = torqueSolEffort;
+    //MocoSolution muscleSolEffort = minimizeControlEffortRightLeg(opt);
 
     //opt.previousSolution = torqueSolEffort;
     //MocoSolution torqueSolTracking = stateTrackingRightLeg(opt);

@@ -33,7 +33,6 @@ void MocoDirectCollocationSolver::constructProperties() {
     constructProperty_optim_ipopt_print_level(-1);
     constructProperty_guess_file("");
     constructProperty_velocity_correction_bounds({-0.1, 0.1});
-    constructProperty_exact_hessian_block_sparsity_mode();
     constructProperty_minimize_lagrange_multipliers(false);
     constructProperty_lagrange_multiplier_weight(1);
 

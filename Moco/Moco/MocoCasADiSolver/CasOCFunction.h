@@ -145,8 +145,8 @@ class MultibodySystem : public Function {
 public:
     void constructFunction(const Problem* casProblem, const std::string& name,
             bool calcKinematicConstraintsErrors) {
-        Function::constructFunction(casProblem, name);
         m_calcKinematicConstraintsErrors = calcKinematicConstraintsErrors;
+        Function::constructFunction(casProblem, name);
     }
     casadi_int get_n_in() override final { return 6; }
     casadi_int get_n_out() override final 

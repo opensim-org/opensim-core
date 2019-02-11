@@ -97,10 +97,7 @@ const MocoIterate& MocoCasADiSolver::getGuess() const {
 }
 
 std::unique_ptr<CasOC::Problem> MocoCasADiSolver::createCasOCProblem() const {
-    // TODO: Move to MocoCasADiMisc.h
     const auto& problemRep = getProblemRep();
-    OPENSIM_THROW_IF(problemRep.getNumKinematicConstraintEquations(), Exception,
-            "MocoCasADiSolver does not support kinematic constraints yet.");
     auto casProblem = make_unique<CasOC::Problem>();
     checkPropertyInSet(
             *this, getProperty_dynamics_mode(), {"explicit", "implicit"});
@@ -154,10 +151,12 @@ std::unique_ptr<CasOC::Problem> MocoCasADiSolver::createCasOCProblem() const {
         );
     
         int cid, mp, mv, ma;
-        int total_mp, total_mv, total_ma;
         int numEquationsThisConstraint;
         int multIndexThisConstraint;
-        int numKinematicConstraintEquations;
+        int total_mp = 0;
+        int total_mv = 0;
+        int total_ma = 0;
+        int numKinematicConstraintEquations = 0;
         std::vector<MocoBounds> bounds;
         std::vector<std::string> labels;
         std::vector<KinematicLevel> kinLevels;
@@ -269,7 +268,7 @@ std::unique_ptr<CasOC::Problem> MocoCasADiSolver::createCasOCProblem() const {
     casProblem->setIntegralCost<MocoCasADiIntegralCostIntegrand>(problemRep);
     casProblem->setEndpointCost<MocoCasADiEndpointCost>(problemRep);
     // TODO if implicit, use different function.
-    casProblem->setMultibodySystem<MocoCasADiMultibodySystem>(problemRep);
+    casProblem->setMultibodySystem<MocoCasADiMultibodySystem>(problemRep, *this);
     return casProblem;
 }
 
@@ -299,6 +298,17 @@ std::unique_ptr<CasOC::Solver> MocoCasADiSolver::createCasOCSolver(
         get_transcription_scheme() == "trapezoidal",
         OpenSim::Exception, "Kinematic constraints not supported with "
         "trapezoidal transcription.");
+    // Enforcing constraint derivatives is only supported when Hermite-Simpson
+    // is set as the transcription scheme.
+    if (!getProperty_enforce_constraint_derivatives().empty()) {
+        OPENSIM_THROW_IF(get_transcription_scheme() != "hermite-simpson" &&
+            get_enforce_constraint_derivatives(), Exception,
+            format("If enforcing derivatives of model kinematic "
+                "constraints, then the property 'transcription_scheme' "
+                "must be set to 'hermite-simpson'. "
+                "Currently, it is set to '%s'.",
+                get_transcription_scheme()));
+    }
 
     checkPropertyInRangeOrSet(*this, getProperty_optim_max_iterations(), 0,
             std::numeric_limits<int>::max(), {-1});
@@ -338,7 +348,6 @@ std::unique_ptr<CasOC::Solver> MocoCasADiSolver::createCasOCSolver(
     Dict pluginOptions;
     pluginOptions["verbose_init"] = true;
 
-    checkPropertyIsPositive(*this, getProperty_num_mesh_points());
     casSolver->setNumMeshPoints(get_num_mesh_points());
     casSolver->setTranscriptionScheme(get_transcription_scheme());
     casSolver->setOptimSolver(get_optim_solver());
@@ -358,10 +367,15 @@ MocoSolution MocoCasADiSolver::solveImpl() const {
         std::cout << std::string(79, '-') << std::endl;
         getProblemRep().printDescription();
     }
+    checkPropertyIsPositive(*this, getProperty_num_mesh_points());
     auto casProblem = createCasOCProblem();
     auto casSolver = createCasOCSolver(*casProblem);
 
     MocoIterate guess = getGuess();
+    //const SimTK::Matrix& slackTraj = guess.getSlacksTrajectory();
+    //std::cout << "slackTraj: " << slackTraj << std::endl;
+    std::cout << "slack names: " << guess.getSlackNames() << std::endl;
+
     CasOC::Iterate casGuess;
     if (guess.empty()) {
         casGuess = casSolver->createInitialGuessFromBounds();

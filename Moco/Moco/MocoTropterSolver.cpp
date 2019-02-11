@@ -30,6 +30,7 @@ MocoTropterSolver::MocoTropterSolver() {
 void MocoTropterSolver::constructProperties() {
     constructProperty_optim_jacobian_approximation("exact");
     constructProperty_optim_sparsity_detection("random");
+    constructProperty_exact_hessian_block_sparsity_mode();
 }
 
 std::shared_ptr<const MocoTropterSolver::TropterProblemBase<double>>

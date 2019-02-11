@@ -805,12 +805,12 @@ TEMPLATE_TEST_CASE("DoublePendulum with and without constraint derivatives", "",
 }
 
 TEMPLATE_TEST_CASE("DoublePendulumPointOnLine without constraint derivatives",
-        "", MocoTropterSolver /*, MocoCasADiSolver*/) {
+        "", MocoTropterSolver, MocoCasADiSolver) {
     testDoublePendulumPointOnLine<TestType>(false);
 }
 
 TEMPLATE_TEST_CASE("DoublePendulumPointOnLine with constraint derivatives",
-        "", MocoTropterSolver /*, MocoCasADiSolver*/) {
+        "", MocoTropterSolver, MocoCasADiSolver) {
     testDoublePendulumPointOnLine<TestType>(true);
 }
 

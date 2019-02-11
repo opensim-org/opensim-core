@@ -58,7 +58,7 @@ public:
     Solution solve(const Iterate& guessOrig) {
         // Resample the guess.
         // -------------------
-        const auto guessTimes = createTimesImpl(
+        const auto guessTimes = createTimes(
                 guessOrig.variables.at(Var::initial_time),
                 guessOrig.variables.at(Var::final_time));
         const auto guess = guessOrig.resample(guessTimes);
@@ -92,6 +92,10 @@ public:
         // Run the optimization (evaluate the CasADi NLP function).
         // --------------------------------------------------------
         // The inputs and outputs of nlpFunc are numeric (casadi::DM).
+        std::cout << "var size: " << guess.variables.size() << std::endl;
+        std::cout << "m_lowerBounds size: " << m_lowerBounds.size() << std::endl;
+        std::cout << "m_upperBounds size: " << m_upperBounds.size() << std::endl;
+
         const casadi::DMDict nlpResult =
                 nlpFunc(casadi::DMDict{{"x0", flatten(guess.variables)},
                         {"lbx", flatten(m_lowerBounds)},
@@ -134,7 +138,7 @@ protected:
     }
 
     void calcDAE(casadi_int itime, const int& NQ, casadi::MX& xdot, 
-        bool calcPVAErr, casadi::MX& pvaerr);
+        bool calcPVAErr, casadi::MX& pvaerr, casadi_int islack);
 
     void setObjective(casadi::MX objective) {
         m_objective = std::move(objective);

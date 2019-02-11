@@ -37,6 +37,7 @@ void Transcription::transcribe() {
         "multipliers", m_problem.getNumMultipliers(), m_numGridPoints);
     // TODO: This assumes that slack variables are applied at all collocation
     // points on the mesh interval interior.
+    std::cout << "num slacks: " << m_problem.getNumSlacks() << std::endl;
     m_vars[Var::slacks] = MX::sym(
         "slacks", m_problem.getNumSlacks(), m_numGridPoints - m_numMeshPoints);
     m_vars[Var::parameters] =
@@ -106,6 +107,7 @@ void Transcription::transcribe() {
         int ip = 0;
         for (const auto& info : paramInfos) {
             setVariableBounds(Var::parameters, ip, 0, info.bounds);
+            ++ip; // ?
         }
     }
 
@@ -145,28 +147,40 @@ void Transcription::transcribe() {
         OpenSim::format("createKinematicConstraintIndicesImpl() must "
             "return a vector, but a matrix with shape [%i, %i] was returned.", 
             shape.first, shape.second));
-    OPENSIM_THROW_IF(shape.first != m_numGridPoints || 
+    OPENSIM_THROW_IF(shape.first != m_numGridPoints && 
         shape.second != m_numGridPoints, OpenSim::Exception, OpenSim::format(
             "createKinematicConstraintIndicesImpl() must return a "
-            "vector of length m_numGridPoints, but a vector of length %i was "
-            "returned.", shape.first == 1 ? shape.second : shape.first));
+            "vector of length %i, but a vector of length %i was "
+            "returned.", m_numGridPoints,
+            shape.first == 1 ? shape.second : shape.first));
 
     // TODO: Does creating all this memory have efficiency implications in
     // CasADi?
     xdot = MX(m_problem.getNumStates(), m_numGridPoints);
+    std::cout << "numkincon: " << m_problem.getNumKinematicConstraintEquations() << std::endl;
+    std::cout << "nnz: " << kinConIndices.nnz() << std::endl;
     pvaerr = MX(m_problem.getNumKinematicConstraintEquations(), 
         kinConIndices.nnz());
     MX this_xdot;
     MX this_pvaerr;
     int kinIdx = 0;
+    int islack = 0;
+    //std::cout << "num_slack_pts: " << m_numGridPoints - m_numMeshPoints << std::endl;
     for (int itime = 0; itime < m_numGridPoints; ++itime) {
-        bool calcPVAErr = kinConIndices(Slice(itime)).__nonzero__() ? true : 
-            false;
-        calcDAE(itime, NQ, this_xdot, calcPVAErr, this_pvaerr);
+        bool calcPVAErr = kinConIndices(Slice(itime)).nonzeros().size() ? 
+            true : false;
+
+        //std::cout << "itime: " << itime << std::endl;
+        //std::cout << "islack: " << islack << std::endl;
+        //std::cout << "kinIdx: " << kinIdx << std::endl;
+
+        calcDAE(itime, NQ, this_xdot, calcPVAErr, this_pvaerr, islack);
         xdot(Slice(), itime) = this_xdot;
         if (calcPVAErr) {
             pvaerr(Slice(), kinIdx) = this_pvaerr;
             ++kinIdx;
+        } else {
+            if (kinIdx < (m_numGridPoints - m_numMeshPoints)) ++islack;
         }
     }
 
@@ -194,6 +208,15 @@ Iterate Transcription::createInitialGuessFromBounds() const {
         }
     };
     Iterate casGuess = m_problem.createIterate();
+    std::cout << "numGridPoints: " << m_numGridPoints << std::endl;
+    std::cout << "numMeshPoints: " << m_numMeshPoints << std::endl;
+    std::cout << "states size: " << casGuess.state_names.size() << std::endl;
+    std::cout << "controls size: " << casGuess.control_names.size() << std::endl;
+    std::cout << "multipliers size: " << casGuess.multiplier_names.size() << std::endl;
+    std::cout << "slacks size: " << casGuess.slack_names.size() << std::endl;
+
+    std::cout << "lower bounds size: " << m_lowerBounds.size() << std::endl;
+    
     casGuess.variables = m_lowerBounds;
     for (auto& kv : casGuess.variables) {
         setToMidpoint(kv.second, m_lowerBounds.at(kv.first),
@@ -230,24 +253,41 @@ Iterate Transcription::createRandomIterateWithinBounds() const {
 }
 
 void Transcription::calcDAE(casadi_int itime, const int& NQ, MX& xdot, 
-    bool calcPVAErr, MX& pvaerr)
+    bool calcPVAErr, MX& pvaerr, casadi_int islack)
 {
     const auto& states = m_vars[Var::states];
     const MX u = states(Slice(NQ, 2 * NQ), itime);
     const MX qdot = u; // TODO: This assumes the N matrix is identity.
-    const auto& multibodyFunc = calcPVAErr ? m_problem.getMultibodySystem() :
-        m_problem.getMultibodySystemUnconstrained();
-    const auto dynamicsOutput = multibodyFunc.operator()(
+
+    //std::cout << "calcPVAErr: " << calcPVAErr << std::endl;
+
+    if (calcPVAErr) {
+        const auto& multibodyFunc = m_problem.getMultibodySystem();
+        const auto dynamicsOutput = multibodyFunc.operator()(
         {m_times(itime), m_vars[Var::states](Slice(), itime),
             m_vars[Var::controls](Slice(), itime),
             m_vars[Var::multipliers](Slice(), itime),
-            m_vars[Var::slacks](Slice(), itime),
+            m_vars[Var::slacks](Slice(), islack),
             m_vars[Var::parameters]});
-    const MX udot = dynamicsOutput.at(0);
-    const MX zdot = dynamicsOutput.at(1);
-    xdot = casadi::MX::vertcat({qdot, udot, zdot});
-    if (calcPVAErr) {
+        const MX udot = dynamicsOutput.at(0);
+        const MX zdot = dynamicsOutput.at(1);
+        xdot = casadi::MX::vertcat({qdot, udot, zdot});
         pvaerr = dynamicsOutput.at(2);
+        //std::cout << "dynOutput size: " << dynamicsOutput.size() << std::endl;
+
+    } else {
+        const auto& multibodyFuncUnc = m_problem.getMultibodySystemUnconstrained();
+        const auto dynamicsOutput = multibodyFuncUnc.operator()(
+        {m_times(itime), m_vars[Var::states](Slice(), itime),
+            m_vars[Var::controls](Slice(), itime),
+            m_vars[Var::multipliers](Slice(), itime),
+            m_vars[Var::slacks](Slice(), islack),
+            m_vars[Var::parameters]});
+        const MX udot = dynamicsOutput.at(0);
+        const MX zdot = dynamicsOutput.at(1);
+        xdot = casadi::MX::vertcat({qdot, udot, zdot});
+        //std::cout << "dynOutput size: " << dynamicsOutput.size() << std::endl;
+
     }
 }
 
