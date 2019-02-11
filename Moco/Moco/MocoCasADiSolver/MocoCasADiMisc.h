@@ -185,7 +185,7 @@ public:
               m_mocoPathCon(mocoPathConstraint) {}
 
     int eval(const double** inputs, double** outputs, casadi_int*, double*,
-            void*) const {
+            void*) const override {
         applyParametersToModel(SimTK::Vector(m_casProblem->getNumParameters(),
                                        inputs[3], true),
                 m_mocoProblemRep);

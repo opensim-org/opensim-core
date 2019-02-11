@@ -22,6 +22,10 @@
 
 using namespace CasOC;
 
+// casadi::Sparsity Function::get_jacobian_sparsity() const {
+//     return Sparsity();
+// }
+
 casadi::Sparsity PathConstraint::get_sparsity_in(casadi_int i) {
     if (i == 0) {
         return casadi::Sparsity::dense(1, 1);

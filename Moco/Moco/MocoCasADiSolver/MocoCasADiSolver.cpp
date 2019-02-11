@@ -170,7 +170,7 @@ std::unique_ptr<CasOC::Solver> MocoCasADiSolver::createCasOCSolver(
     // Set solver options.
     // -------------------
     Dict solverOptions;
-    checkPropertyInSet(*this, getProperty_optim_solver(), {"ipopt"});
+    checkPropertyInSet(*this, getProperty_optim_solver(), {"ipopt", "snopt"});
 
     checkPropertyInRangeOrSet(*this, getProperty_optim_max_iterations(), 0,
             std::numeric_limits<int>::max(), {-1});
