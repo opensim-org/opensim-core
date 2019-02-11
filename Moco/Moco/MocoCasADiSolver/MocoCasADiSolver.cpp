@@ -372,8 +372,8 @@ MocoSolution MocoCasADiSolver::solveImpl() const {
     auto casSolver = createCasOCSolver(*casProblem);
 
     MocoIterate guess = getGuess();
-    //const SimTK::Matrix& slackTraj = guess.getSlacksTrajectory();
-    //std::cout << "slackTraj: " << slackTraj << std::endl;
+    const SimTK::Matrix& slackTraj = guess.getSlacksTrajectory();
+    std::cout << "slackTraj: " << slackTraj << std::endl;
     std::cout << "slack names: " << guess.getSlackNames() << std::endl;
 
     CasOC::Iterate casGuess;

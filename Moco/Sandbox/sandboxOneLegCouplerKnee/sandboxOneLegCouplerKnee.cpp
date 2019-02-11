@@ -16,6 +16,9 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
+//#define CATCH_CONFIG_MAIN
+//#include <../catch/catch.hpp>
+
 #include <Moco/osimMoco.h>
 #include <Moco/InverseMuscleSolver/GlobalStaticOptimization.h>
 #include <OpenSim/Tools/InverseKinematicsTool.h>
@@ -341,14 +344,26 @@ MocoSolution stateTrackingRightLeg(const Options& opt) {
     return solution;
 }
 
+//TEST_CASE("minimizeControlEffort", "") {
+//
+//    Options opt;
+//    opt.weldPelvis = true;
+//    opt.num_mesh_points = 20;
+//    opt.solver = "ipopt";
+//    opt.constraint_tol = 1e-2;
+//    opt.convergence_tol = 1e-2;
+//    MocoSolution torqueSolEffort = minimizeControlEffortRightLeg(opt);
+//}
+
 void main() {
 
-    // When solving problems while providing derivative infomration from 
-    // tropter, SNOPT sometime exits with error 52: "incorrect constraint 
-    // derivatives", but only for problems with muscles. This may suggest a bug 
-    // in our own Jacobian derivative calculations. Why only for muscles?
+    //When solving problems while providing derivative infomration from 
+    //tropter, SNOPT sometime exits with error 52: "incorrect constraint 
+    //derivatives", but only for problems with muscles. This may suggest a bug 
+    //in our own Jacobian derivative calculations. Why only for muscles?
 
     // Predictive problem.
+
     Options opt;
     opt.weldPelvis = true;
     opt.num_mesh_points = 20;
@@ -356,10 +371,11 @@ void main() {
     opt.constraint_tol = 1e-2;
     opt.convergence_tol = 1e-2;
     MocoSolution torqueSolEffort = minimizeControlEffortRightLeg(opt);
+    
     //MocoSolution torqueSolEffort(
     //"sandboxRightLeg_weldedPelvis_torques_minimize_control_effort_solution.sto");
 
-    // TODO stiff passive muscle elements
+    //// TODO stiff passive muscle elements
     //TimeSeriesTable activationsMinimizeControlEffort =
     //    createGuessFromGSO(torqueSolEffort, opt);
 

@@ -25,6 +25,13 @@ namespace CasOC {
 
 void Transcription::transcribe() {
 
+    std::cout << "m_problem.getNumStates(): " << m_problem.getNumStates() << std::endl;
+    std::cout << "m_problem.getNumControls(): " << m_problem.getNumControls() << std::endl;
+    std::cout << "m_problem.getNumMultipliers(): " << m_problem.getNumMultipliers() << std::endl;
+    std::cout << "m_problem.getNumSlacks(): " << m_problem.getNumSlacks() << std::endl;
+    std::cout << "m_problem.getNumParameters(): " << m_problem.getNumParameters() << std::endl;
+
+
     // Create variables.
     // -----------------    
     m_vars[Var::initial_time] = MX::sym("initial_time");
@@ -37,7 +44,6 @@ void Transcription::transcribe() {
         "multipliers", m_problem.getNumMultipliers(), m_numGridPoints);
     // TODO: This assumes that slack variables are applied at all collocation
     // points on the mesh interval interior.
-    std::cout << "num slacks: " << m_problem.getNumSlacks() << std::endl;
     m_vars[Var::slacks] = MX::sym(
         "slacks", m_problem.getNumSlacks(), m_numGridPoints - m_numMeshPoints);
     m_vars[Var::parameters] =
@@ -47,15 +53,22 @@ void Transcription::transcribe() {
     m_duration = m_vars[Var::final_time] - m_vars[Var::initial_time];
     m_times = createTimes(m_vars[Var::initial_time], m_vars[Var::final_time]);
 
+    std::cout << "m_vars.size(): " << m_vars.size() << std::endl;
+
+
     // Set variable bounds.
     // --------------------
+    std::cout << "lower bounds size 1: " << m_lowerBounds.size() << std::endl;
     auto initializeBounds = [&](VariablesDM& bounds) {
         for (auto& kv : m_vars) {
             bounds[kv.first] = DM(kv.second.rows(), kv.second.columns());
         }
     };
+    std::cout << "lower bounds size 1.5: " << m_lowerBounds.size() << std::endl;
+
     initializeBounds(m_lowerBounds);
     initializeBounds(m_upperBounds);
+    std::cout << "lower bounds size 2: " << m_lowerBounds.size() << std::endl;
 
     setVariableBounds(
         Var::initial_time, 0, 0, m_problem.getTimeInitialBounds());
@@ -72,6 +85,8 @@ void Transcription::transcribe() {
             ++is;
         }
     }
+    std::cout << "lower bounds size 3: " << m_lowerBounds.size() << std::endl;
+
     {
         const auto& controlInfos = m_problem.getControlInfos();
         int ic = 0;
@@ -83,6 +98,8 @@ void Transcription::transcribe() {
             ++ic;
         }
     }
+    std::cout << "lower bounds size 4: " << m_lowerBounds.size() << std::endl;
+
     {
         const auto& multiplierInfos = m_problem.getMultiplierInfos();
         int im = 0;
@@ -94,6 +111,8 @@ void Transcription::transcribe() {
             ++im;
         }
     }
+    std::cout << "lower bounds size 5: " << m_lowerBounds.size() << std::endl;
+
     {
         const auto& slackInfos = m_problem.getSlackInfos();
         int isl = 0;
@@ -102,6 +121,8 @@ void Transcription::transcribe() {
             ++isl;
         }
     }
+    std::cout << "lower bounds size 6: " << m_lowerBounds.size() << std::endl;
+
     {
         const auto& paramInfos = m_problem.getParameterInfos();
         int ip = 0;
@@ -110,6 +131,8 @@ void Transcription::transcribe() {
             ++ip; // ?
         }
     }
+    std::cout << "lower bounds size 7: " << m_lowerBounds.size() << std::endl;
+
 
     // Cost.
     // -----

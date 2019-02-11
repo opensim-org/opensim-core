@@ -61,7 +61,35 @@ public:
         const auto guessTimes = createTimes(
                 guessOrig.variables.at(Var::initial_time),
                 guessOrig.variables.at(Var::final_time));
-        const auto guess = guessOrig.resample(guessTimes);
+        std::cout << "guessOrig.variables.at(Var::slacks): " << guessOrig.variables.at(Var::slacks) << std::endl;
+
+        auto guess = guessOrig.resample(guessTimes);
+
+        std::cout << "guessOrig.variables.at(Var::slacks) after resample: " << guessOrig.variables.at(Var::slacks) << std::endl;
+
+
+        casadi::DM kinConIndices = createKinematicConstraintIndices();
+
+        std::vector<casadi_int> slackElementsToErase;
+        for (int itime = 0; itime < m_numGridPoints; ++itime) {
+            if (kinConIndices(casadi::Slice(itime)).nonzeros().size() > 0) {
+                std::cout << "itime: " << itime << std::endl;
+                slackElementsToErase.push_back(itime);
+            }
+        }
+        guess.variables.at(Var::slacks).erase(slackElementsToErase);
+        std::vector<double> slackNonZerosSTL = guess.variables.at(Var::slacks).nonzeros();
+        
+        casadi::DM slackNonZeros(slackNonZerosSTL);
+        guess.variables.at(Var::slacks) = slackNonZeros.T();
+
+        std::cout << "m_numGridPoints - m_numMeshPoints: " << m_numGridPoints - m_numMeshPoints << std::endl;
+
+        std::cout << "guessOrig.variables.at(Var::slacks): " << guess.variables.at(Var::slacks) << std::endl;
+        std::cout << "slack size: " << guess.variables.at(Var::slacks).size() << std::endl;
+        std::cout << "m_numGridPoints: " << m_numGridPoints << std::endl;
+
+
 
         // Create the CasADi NLP function.
         // -------------------------------

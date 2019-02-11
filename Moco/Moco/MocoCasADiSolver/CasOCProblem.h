@@ -245,15 +245,14 @@ public:
         m_endpointCostFunc->constructFunction(this, "endpoint_cost");
     }
     /// FunctionType must derive from MultibodySystem.
-    template <typename FunctionType, typename... Args>
+    template <template <bool> class FunctionType, typename... Args>
     void setMultibodySystem(Args&&... args) {
         m_multibodyFuncUnc =
-                OpenSim::make_unique<FunctionType>(std::forward<Args>(args)...);
-        m_multibodyFuncUnc->constructFunction(this, "multibody_system_unc", 
-            false);
+                OpenSim::make_unique<FunctionType<false>>(std::forward<Args>(args)...);
+        m_multibodyFuncUnc->constructFunction(this, "multibody_system_unc");
         m_multibodyFunc =
-                OpenSim::make_unique<FunctionType>(std::forward<Args>(args)...);
-        m_multibodyFunc->constructFunction(this, "multibody_system", true);
+                OpenSim::make_unique<FunctionType<true>>(std::forward<Args>(args)...);
+        m_multibodyFunc->constructFunction(this, "multibody_system");
     }
 
     /// Create an iterate with the variable names populated according to the
@@ -359,8 +358,8 @@ private:
     std::vector<ParameterInfo> m_paramInfos;
     std::unique_ptr<IntegralCostIntegrand> m_integralCostFunc;
     std::unique_ptr<EndpointCost> m_endpointCostFunc;
-    std::unique_ptr<MultibodySystem> m_multibodyFunc;
-    std::unique_ptr<MultibodySystem> m_multibodyFuncUnc;
+    std::unique_ptr<MultibodySystem<true>> m_multibodyFunc;
+    std::unique_ptr<MultibodySystem<false>> m_multibodyFuncUnc;
 };
 
 } // namespace CasOC

@@ -64,6 +64,9 @@ inline CasOC::Iterate convertToCasOCIterate(const MocoIterate& mocoIt) {
     casVars[Var::controls] = convertToCasADiDM(mocoIt.getControlsTrajectory());
     casVars[Var::multipliers] =
             convertToCasADiDM(mocoIt.getMultipliersTrajectory());
+    if (!mocoIt.getSlackNames().empty()) {
+        casVars[Var::slacks] = convertToCasADiDM(mocoIt.getSlacksTrajectory());
+    }
     if (!mocoIt.getDerivativeNames().empty()) {
         casVars[Var::derivatives] =
                 convertToCasADiDM(mocoIt.getDerivativesTrajectory());
@@ -73,6 +76,7 @@ inline CasOC::Iterate convertToCasOCIterate(const MocoIterate& mocoIt) {
     casIt.state_names = mocoIt.getStateNames();
     casIt.control_names = mocoIt.getControlNames();
     casIt.multiplier_names = mocoIt.getMultiplierNames();
+    casIt.slack_names = mocoIt.getSlackNames();
     casIt.derivative_names = mocoIt.getDerivativeNames();
     casIt.parameter_names = mocoIt.getParameterNames();
     return casIt;
@@ -121,6 +125,11 @@ TOut convertToMocoIterate(const CasOC::Iterate& casIt) {
         const auto multsValue = casVars.at(Var::multipliers);
         simtkMultipliers = convertToSimTKMatrix(multsValue);
     }
+    SimTK::Matrix simtkSlacks;
+    if (!casIt.slack_names.empty()) {
+        const auto slacksValue = casVars.at(Var::slacks);
+        simtkSlacks = convertToSimTKMatrix(slacksValue);
+    }
     SimTK::Matrix simtkDerivatives;
     if (casVars.count(Var::derivatives)) {
         const auto derivsValue = casVars.at(Var::derivatives);
@@ -138,6 +147,18 @@ TOut convertToMocoIterate(const CasOC::Iterate& casIt) {
             casIt.multiplier_names, casIt.derivative_names,
             casIt.parameter_names, simtkStates, simtkControls, simtkMultipliers,
             simtkDerivatives, simtkParameters);
+    // Append slack variables.
+    for (int i = 0; i < casIt.slack_names.size(); ++i) {
+        SimTK::Vector slackTime = createVectorLinspace(
+            simtkSlacks.col(i).size(), simtkTimes[0], 
+            simtkTimes[simtkTimes.size()-1]);
+        std::cout << "currSlack: " << simtkSlacks.col(i) << std::endl;
+
+        SimTK::Vector currSlackInterp = interpolate(slackTime, simtkSlacks.col(i), simtkTimes);
+        std::cout << "currSlackInterp: " << currSlackInterp << std::endl;
+
+        mocoIterate.appendSlack(casIt.slack_names[i], currSlackInterp);
+    }
     return mocoIterate;
 }
 
@@ -255,7 +276,8 @@ private:
     mutable SimTK::State m_simtkState;
 };
 
-class MocoCasADiMultibodySystem : public CasOC::MultibodySystem {
+template <bool CalcKinConErrors>
+class MocoCasADiMultibodySystem : public CasOC::MultibodySystem<CalcKinConErrors> {
 public:
     MocoCasADiMultibodySystem(const OpenSim::MocoProblemRep& problem,
         const OpenSim::MocoCasADiSolver& solver)
@@ -325,7 +347,7 @@ public:
             // at all collocation points on the mesh interval interior. We know
             // this because kinematic constraint errors are currently only
             // computed at mesh points.
-            if (!m_calcKinematicConstraintsErrors) {
+            if (!CalcKinConErrors) {
                 SimTK::Vector gamma(m_casProblem->getNumSlacks(), slacks);
                 matter.multiplyByGTranspose(m_simtkState, gamma, qdotCorr);
                 this->qdot = m_simtkState.getQDot() + this->qdotCorr;
@@ -337,8 +359,12 @@ public:
             // Constraint errors.
             // TODO double-check that disabled constraints don't show up in
             // state
-            if (m_calcKinematicConstraintsErrors) {
+            if (CalcKinConErrors) {
                 double* out_kinematic_constraint_errors = outputs[2];
+
+                std::cout << "qerr: " << m_simtkState.getQErr() << std::endl;
+                std::cout << "m_total_mp: " << m_total_mp << std::endl;
+
 
                 // Position-level errors.
                 std::copy_n(m_simtkState.getQErr().getContiguousScalarData(),
