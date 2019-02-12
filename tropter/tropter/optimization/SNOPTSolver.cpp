@@ -263,7 +263,7 @@ SNOPTSolver::optimize_impl(const VectorXd& variablesArg) const {
 
     } else if (jacobian_approx == "exact") {
 
-        TROPTER_THROW("User-supplied derivatives currently not supported for"
+        TROPTER_THROW("User-supplied derivatives currently not supported for "
             "SNOPT");
 
         // Use this form of solve() if providing Jacobian information.
