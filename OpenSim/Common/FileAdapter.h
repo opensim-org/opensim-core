@@ -205,8 +205,7 @@ public:
     the given delimiters.                                                     */
     static std::vector<std::string> getNextLine(std::istream& stream,
         const std::string& delims);
-
-protected:    
+   
     /** Tokenize/split a given string using the given delimiters. The delimiters
     are each required to be one character and the string is split if/when any 
     of those characters are found. For example, a delimiter string " \t" 
