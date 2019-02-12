@@ -146,6 +146,10 @@ int main() {
         std::shared_ptr<AbstractDataTable> gyroTable = tables.at(IMUHelper::_gyros);
         const TimeSeriesTableVec3& gyroTableTyped = dynamic_cast<const TimeSeriesTableVec3&>(*gyroTable);
         STOFileAdapterVec3::write(gyroTableTyped, folder + trial + "gyros.sto");
+        // Orientation
+        std::shared_ptr<AbstractDataTable> orientationTable = tables.at(IMUHelper::_orientations);
+        const TimeSeriesTableQuaternion& quatTableTyped = dynamic_cast<const TimeSeriesTableQuaternion&>(*orientationTable);
+        STOFileAdapterQuaternion::write(quatTableTyped, folder + trial + "quaternions.sto");
 
     }
     catch (const std::exception& ex) {

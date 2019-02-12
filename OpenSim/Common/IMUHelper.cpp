@@ -39,7 +39,7 @@ DataAdapter::OutputTables IMUHelper::readXsensTrial(const std::string& folderNam
         std::string line;
         for (int j = 0; j < 6; j++) {
             std::getline(*nextStream, line);
-            if (j == 1 && SimTK::isNaN(dataRate)) { // Extract Data rate
+            if (j == 1 && SimTK::isNaN(dataRate)) { // Extract Data rate from line 1
                 std::vector<std::string> tokens = FileAdapter::tokenize(line, ", ");
                 // find Update Rate: and parse into dataRate
                 if (tokens.size() < 4) continue;
@@ -47,7 +47,7 @@ DataAdapter::OutputTables IMUHelper::readXsensTrial(const std::string& folderNam
                     dataRate = std::stod(tokens[3]);
                 }
             }
-            if (j == 5) { // Find indices for PacketCounter, Acc_{X,Y,Z}, Gyr_{X,Y,Z}, Mag_{X,Y,Z}
+            if (j == 5) { // Find indices for PacketCounter, Acc_{X,Y,Z}, Gyr_{X,Y,Z}, Mag_{X,Y,Z} on line 5
                 std::vector<std::string> tokens = FileAdapter::tokenize(line, "\t");
                 if (packetCounterIndex == -1) packetCounterIndex = find_index(tokens, "PacketCounter");
                 if (accIndex == -1) accIndex = find_index(tokens, "Acc_X");
@@ -61,7 +61,7 @@ DataAdapter::OutputTables IMUHelper::readXsensTrial(const std::string& folderNam
     DataAdapter::OutputTables tables{};
     size_t n_imus = filenameToModelIMUMap.size();
 
-    auto orientationTable = std::make_shared<TimeSeriesTableVec3>();
+    auto orientationTable = std::make_shared<TimeSeriesTableQuaternion>();
     orientationTable->setColumnLabels(labels);
     orientationTable->updTableMetaData()
         .setValueForKey("DataRate", std::to_string(dataRate));
@@ -92,6 +92,8 @@ DataAdapter::OutputTables IMUHelper::readXsensTrial(const std::string& folderNam
     double timeIncrement = 1 / dataRate;
     while (!row.empty()){
         // Make vectors one per table
+        TimeSeriesTableQuaternion::RowVector
+            orientation_row_vector{ static_cast<int>(n_imus), SimTK::Quaternion() };
         TimeSeriesTableVec3::RowVector
             accel_row_vector{ static_cast<int>(n_imus), SimTK::Vec3(SimTK::NaN) };
         TimeSeriesTableVec3::RowVector
@@ -116,6 +118,18 @@ DataAdapter::OutputTables IMUHelper::readXsensTrial(const std::string& folderNam
                 std::stod(nextRow[magIndex + 1]), std::stod(nextRow[magIndex + 2]));
             gyro_row_vector[imu_index] = SimTK::Vec3(std::stod(nextRow[gyrIndex]),
                 std::stod(nextRow[gyrIndex + 1]), std::stod(nextRow[gyrIndex + 2]));
+            // Create Mat33 then convert into Quaternion
+            SimTK::Mat33 imu_matrix{ SimTK::NaN };
+            int matrix_entry_index = 0;
+            for (int mcol = 0; mcol < 3; mcol++) {
+                for (int mrow = 0; mrow < 3; mrow++) {
+                    imu_matrix[mrow][mcol] = std::stod(nextRow[rotationsIndex + matrix_entry_index]);
+                    matrix_entry_index++;
+                }
+            }
+            // Convert imu_matrix to Quaternion
+            SimTK::Rotation imu_rotation{ imu_matrix };
+            orientation_row_vector[imu_index] = imu_rotation.convertRotationToQuaternion();
         }
         if (row.empty()) 
             break;
@@ -123,6 +137,7 @@ DataAdapter::OutputTables IMUHelper::readXsensTrial(const std::string& folderNam
         accelerationTable->appendRow(time, std::move(accel_row_vector));
         magnetometerTable->appendRow(time, std::move(magneto_row_vector));
         gyrosTable->appendRow(time, std::move(gyro_row_vector));
+        orientationTable->appendRow(time, std::move(orientation_row_vector));
         time += timeIncrement;
     }
 
