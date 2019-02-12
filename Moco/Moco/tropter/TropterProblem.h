@@ -523,15 +523,14 @@ public:
 
             // Copy state derivative values to output struct. We cannot simply
             // use getYDot() because that requires realizing to Acceleration.
-            const int nq = simTKState.getQ().size();
+            const int nq = simTKState.getNQ();
             const int nu = this->udot.size();
-            const int nz = simTKState.getZ().size();
-            std::copy_n(this->qdot.getContiguousScalarData(),
-                    nq, out.dynamics.data());
-            std::copy_n(this->udot.getContiguousScalarData(),
-                    this->udot.size(), out.dynamics.data() + nq);
-            std::copy_n(simTKState.getZDot().getContiguousScalarData(), nz,
-                    out.dynamics.data() + nq + nu);
+            const int nz = simTKState.getNZ();
+            SimTK::Vector ydot(nq + nu + nz);
+            ydot(0, nq) = this->qdot;
+            ydot(nq, nu) = this->udot;
+            ydot(nq + nu, nz) = simTKState.getZDot();
+            this->setTropterDynamics(ydot, out.dynamics);
 
         } else {
             // TODO Antoine and Gil said realizing Dynamics is a lot costlier 
@@ -539,8 +538,7 @@ public:
             model.realizeAcceleration(simTKState);
 
             // Copy state derivative values to output struct.
-            std::copy_n(simTKState.getYDot().getContiguousScalarData(),
-                    states.size(), out.dynamics.data());
+            this->setTropterDynamics(simTKState.getYDot(), out.dynamics);
         }
     
         // TODO move condition inside function
@@ -550,6 +548,17 @@ public:
         }
     }
 private:
+
+    /// Set the tropter dynamics vector from the SimTK YDot, accounting for
+    /// empty slots in the SimTK YDot.
+    void setTropterDynamics(
+            const SimTK::Vector& simTKYDot,
+            Eigen::Ref<tropter::VectorX<T>> dynamics) const {
+        for (int isv = 0; isv < dynamics.size(); ++isv) {
+            dynamics[isv] = simTKYDot[this->m_yIndexMap.at(isv)];
+        }
+    }
+
     // This member variable avoids unnecessary extra allocation of memory for
     // spatial accelerations, which are incidental to the computation of
     // generalized accelerations when specifying the dynamics with model
@@ -599,7 +608,8 @@ public:
         auto& simTKState = this->m_state;
 
         simTKState.setTime(in.time);
-        const auto NQ = simTKState.getNQ();
+        const int numEmptySlots = simTKState.getNY() - (int)states.size();
+        const auto NQ = simTKState.getNQ() - numEmptySlots;
         const auto NU = simTKState.getNU();
 
         const auto& u = states.segment(NQ, NU);
