@@ -25,13 +25,6 @@ namespace CasOC {
 
 void Transcription::transcribe() {
 
-    std::cout << "m_problem.getNumStates(): " << m_problem.getNumStates() << std::endl;
-    std::cout << "m_problem.getNumControls(): " << m_problem.getNumControls() << std::endl;
-    std::cout << "m_problem.getNumMultipliers(): " << m_problem.getNumMultipliers() << std::endl;
-    std::cout << "m_problem.getNumSlacks(): " << m_problem.getNumSlacks() << std::endl;
-    std::cout << "m_problem.getNumParameters(): " << m_problem.getNumParameters() << std::endl;
-
-
     // Create variables.
     // -----------------    
     m_vars[Var::initial_time] = MX::sym("initial_time");
@@ -53,22 +46,15 @@ void Transcription::transcribe() {
     m_duration = m_vars[Var::final_time] - m_vars[Var::initial_time];
     m_times = createTimes(m_vars[Var::initial_time], m_vars[Var::final_time]);
 
-    std::cout << "m_vars.size(): " << m_vars.size() << std::endl;
-
-
     // Set variable bounds.
     // --------------------
-    std::cout << "lower bounds size 1: " << m_lowerBounds.size() << std::endl;
     auto initializeBounds = [&](VariablesDM& bounds) {
         for (auto& kv : m_vars) {
             bounds[kv.first] = DM(kv.second.rows(), kv.second.columns());
         }
     };
-    std::cout << "lower bounds size 1.5: " << m_lowerBounds.size() << std::endl;
-
     initializeBounds(m_lowerBounds);
     initializeBounds(m_upperBounds);
-    std::cout << "lower bounds size 2: " << m_lowerBounds.size() << std::endl;
 
     setVariableBounds(
         Var::initial_time, 0, 0, m_problem.getTimeInitialBounds());
@@ -85,8 +71,6 @@ void Transcription::transcribe() {
             ++is;
         }
     }
-    std::cout << "lower bounds size 3: " << m_lowerBounds.size() << std::endl;
-
     {
         const auto& controlInfos = m_problem.getControlInfos();
         int ic = 0;
@@ -98,8 +82,6 @@ void Transcription::transcribe() {
             ++ic;
         }
     }
-    std::cout << "lower bounds size 4: " << m_lowerBounds.size() << std::endl;
-
     {
         const auto& multiplierInfos = m_problem.getMultiplierInfos();
         int im = 0;
@@ -111,8 +93,6 @@ void Transcription::transcribe() {
             ++im;
         }
     }
-    std::cout << "lower bounds size 5: " << m_lowerBounds.size() << std::endl;
-
     {
         const auto& slackInfos = m_problem.getSlackInfos();
         int isl = 0;
@@ -121,8 +101,6 @@ void Transcription::transcribe() {
             ++isl;
         }
     }
-    std::cout << "lower bounds size 6: " << m_lowerBounds.size() << std::endl;
-
     {
         const auto& paramInfos = m_problem.getParameterInfos();
         int ip = 0;
@@ -131,8 +109,6 @@ void Transcription::transcribe() {
             ++ip; // ?
         }
     }
-    std::cout << "lower bounds size 7: " << m_lowerBounds.size() << std::endl;
-
 
     // Cost.
     // -----
@@ -147,7 +123,7 @@ void Transcription::transcribe() {
         // TODO: Obey user option for if this penalty should exist.
         if (m_problem.getNumMultipliers()) {
             const auto mults = m_vars[Var::multipliers](Slice(), itime);
-            const int multiplierWeight = 100.0; // TODO m_mocoSolver.get_lagrange_multiplier_weight();
+            const int multiplierWeight = 1; // TODO m_mocoSolver.get_lagrange_multiplier_weight();
             integralCost += multiplierWeight * dot(mults, mults);
         }
     }
@@ -180,22 +156,15 @@ void Transcription::transcribe() {
     // TODO: Does creating all this memory have efficiency implications in
     // CasADi?
     xdot = MX(m_problem.getNumStates(), m_numGridPoints);
-    std::cout << "numkincon: " << m_problem.getNumKinematicConstraintEquations() << std::endl;
-    std::cout << "nnz: " << kinConIndices.nnz() << std::endl;
     pvaerr = MX(m_problem.getNumKinematicConstraintEquations(), 
         kinConIndices.nnz());
     MX this_xdot;
     MX this_pvaerr;
     int kinIdx = 0;
     int islack = 0;
-    //std::cout << "num_slack_pts: " << m_numGridPoints - m_numMeshPoints << std::endl;
     for (int itime = 0; itime < m_numGridPoints; ++itime) {
         bool calcPVAErr = kinConIndices(Slice(itime)).nonzeros().size() ? 
             true : false;
-
-        //std::cout << "itime: " << itime << std::endl;
-        //std::cout << "islack: " << islack << std::endl;
-        //std::cout << "kinIdx: " << kinIdx << std::endl;
 
         calcDAE(itime, NQ, this_xdot, calcPVAErr, this_pvaerr, islack);
         xdot(Slice(), itime) = this_xdot;
@@ -231,15 +200,6 @@ Iterate Transcription::createInitialGuessFromBounds() const {
         }
     };
     Iterate casGuess = m_problem.createIterate();
-    std::cout << "numGridPoints: " << m_numGridPoints << std::endl;
-    std::cout << "numMeshPoints: " << m_numMeshPoints << std::endl;
-    std::cout << "states size: " << casGuess.state_names.size() << std::endl;
-    std::cout << "controls size: " << casGuess.control_names.size() << std::endl;
-    std::cout << "multipliers size: " << casGuess.multiplier_names.size() << std::endl;
-    std::cout << "slacks size: " << casGuess.slack_names.size() << std::endl;
-
-    std::cout << "lower bounds size: " << m_lowerBounds.size() << std::endl;
-    
     casGuess.variables = m_lowerBounds;
     for (auto& kv : casGuess.variables) {
         setToMidpoint(kv.second, m_lowerBounds.at(kv.first),
@@ -280,7 +240,6 @@ void Transcription::calcDAE(casadi_int itime, const int& NQ, MX& xdot,
 {
     const auto& states = m_vars[Var::states];
     const MX u = states(Slice(NQ, 2 * NQ), itime);
-    const MX qdot = u; // TODO: This assumes the N matrix is identity.
 
     //std::cout << "calcPVAErr: " << calcPVAErr << std::endl;
 
@@ -290,10 +249,11 @@ void Transcription::calcDAE(casadi_int itime, const int& NQ, MX& xdot,
         {m_times(itime), m_vars[Var::states](Slice(), itime),
             m_vars[Var::controls](Slice(), itime),
             m_vars[Var::multipliers](Slice(), itime),
-            m_vars[Var::slacks](Slice(), islack),
             m_vars[Var::parameters]});
+        const MX qdot = u; // TODO: This assumes the N matrix is identity.
         const MX udot = dynamicsOutput.at(0);
         const MX zdot = dynamicsOutput.at(1);
+
         xdot = casadi::MX::vertcat({qdot, udot, zdot});
         pvaerr = dynamicsOutput.at(2);
         //std::cout << "dynOutput size: " << dynamicsOutput.size() << std::endl;
@@ -304,8 +264,14 @@ void Transcription::calcDAE(casadi_int itime, const int& NQ, MX& xdot,
         {m_times(itime), m_vars[Var::states](Slice(), itime),
             m_vars[Var::controls](Slice(), itime),
             m_vars[Var::multipliers](Slice(), itime),
-            m_vars[Var::slacks](Slice(), islack),
             m_vars[Var::parameters]});
+
+        const auto& velocityCorrFunc = m_problem.getVelocityCorrection();
+        const auto velocityCorrOutput = velocityCorrFunc.operator()(
+        {m_times(itime), m_vars[Var::states](Slice(), itime),
+            m_vars[Var::slacks](Slice(), islack)});
+
+        const MX qdot = u + velocityCorrOutput.at(0); // TODO: This assumes the N matrix is identity.
         const MX udot = dynamicsOutput.at(0);
         const MX zdot = dynamicsOutput.at(1);
         xdot = casadi::MX::vertcat({qdot, udot, zdot});

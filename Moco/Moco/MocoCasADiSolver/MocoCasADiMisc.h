@@ -290,14 +290,22 @@ public:
         const double* states = inputs[1];
         const double* controls = inputs[2];
         const double* multipliers = inputs[3];
-        const double* slacks = inputs[4];
-        const double* parameters = inputs[5];
+        const double* parameters = inputs[4];
         double* out_multibody_derivatives = outputs[0];
         double* out_auxiliary_derivatives = outputs[1];
         applyParametersToModel(SimTK::Vector(m_casProblem->getNumParameters(),
                                        parameters, true),
                 m_mocoProblemRep);
-        convertToSimTKState(time, states, controls, m_model, m_simtkState);
+        //convertToSimTKState(time, states, controls, m_model, m_simtkState);
+
+        m_simtkState.setTime(time[0]);
+        std::copy_n(states, m_simtkState.getNY(),
+            m_simtkState.updY().updContiguousScalarData());
+        auto& simtkControls = m_model.updControls(m_simtkState);
+        std::copy_n(controls, simtkControls.size(),
+            simtkControls.updContiguousScalarData());
+        m_model.realizeVelocity(m_simtkState);
+        m_model.setControls(m_simtkState, simtkControls);
 
         // If enabled constraints exist in the model, compute accelerations
         // based on Lagrange multipliers.
@@ -335,47 +343,21 @@ public:
                 appliedBodyForces + constraintBodyForces,
                 udot, A_GB);
 
-            // Apply velocity correction to qdot if at a mesh interval midpoint.
-            // This correction modifies the dynamics to enable a projection of
-            // the model coordinates back onto the constraint manifold whenever
-            // they deviate.
-            // Posa, Kuindersma, Tedrake, 2016. "Optimization and stabilization
-            // of trajectories for constrained dynamical systems"
-            // Note: Only supported for the Hermite-Simpson transcription 
-            // scheme.
-            // TODO: This assumes that velocity correction variables are applied
-            // at all collocation points on the mesh interval interior. We know
-            // this because kinematic constraint errors are currently only
-            // computed at mesh points.
-            if (!CalcKinConErrors) {
-                SimTK::Vector gamma(m_casProblem->getNumSlacks(), slacks);
-                matter.multiplyByGTranspose(m_simtkState, gamma, qdotCorr);
-                this->qdot = m_simtkState.getQDot() + this->qdotCorr;
-            }
-            else {
-                this->qdot = m_simtkState.getQDot();
-            }
-
             // Constraint errors.
             // TODO double-check that disabled constraints don't show up in
             // state
             if (CalcKinConErrors) {
                 double* out_kinematic_constraint_errors = outputs[2];
-
-                std::cout << "qerr: " << m_simtkState.getQErr() << std::endl;
-                std::cout << "m_total_mp: " << m_total_mp << std::endl;
-
-
                 // Position-level errors.
                 std::copy_n(m_simtkState.getQErr().getContiguousScalarData(),
                     m_total_mp, out_kinematic_constraint_errors);
 
-                if (enforceConstraintDerivatives || this->m_total_ma) {
+                if (enforceConstraintDerivatives || m_total_ma) {
                     // Calculuate udoterr. We cannot use State::getUDotErr()
                     // because that uses Simbody's multiplilers and UDot,
                     // whereas we have our own multipliers and UDot.
                     matter.calcConstraintAccelerationErrors(m_simtkState,
-                        this->udot, m_pvaerr);
+                        udot, m_pvaerr);
                 } else {
                     m_pvaerr = SimTK::NaN;
                 }
@@ -413,12 +395,10 @@ public:
             // Copy state derivative values to output struct. We cannot simply
             // use getYDot() because that requires realizing to Acceleration.
             const int nq = m_simtkState.getQ().size();
-            const int nu = this->udot.size();
+            const int nu = udot.size();
             const int nz = m_simtkState.getZ().size();
-            std::copy_n(this->qdot.getContiguousScalarData(),
-                nq, out_multibody_derivatives);
-            std::copy_n(this->udot.getContiguousScalarData(),
-                this->udot.size(), out_multibody_derivatives + nq);
+            std::copy_n(udot.getContiguousScalarData(),
+                udot.size(), out_multibody_derivatives + nq);
             std::copy_n(m_simtkState.getZDot().getContiguousScalarData(), nz,
                 out_auxiliary_derivatives + nq + nu);
         } else {
@@ -445,8 +425,6 @@ private:
     // constraints present.
     mutable SimTK::Vector_<SimTK::SpatialVec> constraintBodyForces;
     mutable SimTK::Vector constraintMobilityForces;
-    mutable SimTK::Vector qdot;
-    mutable SimTK::Vector qdotCorr;
     mutable SimTK::Vector udot;
     // The total number of scalar holonomic, non-holonomic, and acceleration 
     // constraint equations enabled in the model. This does not count equations                                                                     
@@ -462,6 +440,56 @@ private:
     // the acceleration-level holonomic, non-holonomic constraint errors and the
     // acceleration-only constraint errors.
     mutable SimTK::Vector m_pvaerr;
+};
+
+class MocoCasADiVelocityCorrection : public CasOC::VelocityCorrection {
+public:
+    MocoCasADiVelocityCorrection(const OpenSim::MocoProblemRep& problem)
+        : m_mocoProblemRep(problem), m_model(problem.getModel()),
+        m_simtkState(m_model.getWorkingState()) {}
+    int eval(const double** inputs, double** outputs, casadi_int*, double*,
+        void*) const override {
+        
+        // TODO: would the velocity correction ever be parameter dependent?
+        const double* time = inputs[0];
+        const double* states = inputs[1];
+        const double* slacks = inputs[2];
+        double* velocity_correction = outputs[0];
+
+        m_simtkState.setTime(time[0]);
+        std::copy_n(states, m_simtkState.getNY(),
+            m_simtkState.updY().updContiguousScalarData());
+        m_model.realizeVelocity(m_simtkState);
+
+        // Apply velocity correction to qdot if at a mesh interval midpoint.
+        // This correction modifies the dynamics to enable a projection of
+        // the model coordinates back onto the constraint manifold whenever
+        // they deviate.
+        // Posa, Kuindersma, Tedrake, 2016. "Optimization and stabilization
+        // of trajectories for constrained dynamical systems"
+        // Note: Only supported for the Hermite-Simpson transcription 
+        // scheme.
+        // TODO: This assumes that velocity correction variables are applied
+        // at all collocation points on the mesh interval interior. We know
+        // this because kinematic constraint errors are currently only
+        // computed at mesh points.
+        const SimTK::SimbodyMatterSubsystem& matter =
+            m_model.getMatterSubsystem();
+
+        SimTK::Vector gamma(m_casProblem->getNumSlacks(), slacks);
+        matter.multiplyByGTranspose(m_simtkState, gamma, qdotCorr);
+
+        std::copy_n(qdotCorr.getContiguousScalarData(),
+            m_simtkState.getNQ(), velocity_correction);
+        return 0;
+    }
+
+private:
+    const OpenSim::MocoProblemRep& m_mocoProblemRep;
+    const OpenSim::Model& m_model;
+    mutable SimTK::State m_simtkState;
+    mutable SimTK::Vector qdotCorr;
+
 };
 
 } // namespace OpenSim

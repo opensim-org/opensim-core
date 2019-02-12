@@ -90,7 +90,6 @@ casadi::Sparsity MultibodySystem<CalcKinConErrors>::get_sparsity_out(casadi_int 
     } else if (i == 2) {
         if (CalcKinConErrors) {
             int numRows = m_casProblem->getNumKinematicConstraintEquations();
-            std::cout << "numRows: " << numRows << std::endl;
             return casadi::Sparsity::dense(numRows, 1);
         } else {
             return casadi::Sparsity(0, 0);
@@ -103,3 +102,22 @@ casadi::Sparsity MultibodySystem<CalcKinConErrors>::get_sparsity_out(casadi_int 
 template class CasOC::MultibodySystem<false>;
 template class CasOC::MultibodySystem<true>;
 
+casadi::Sparsity VelocityCorrection::get_sparsity_in(casadi_int i) {
+    if (i == 0) {
+        return casadi::Sparsity::dense(1, 1);
+    } else if (i == 1) {
+        return casadi::Sparsity::dense(m_casProblem->getNumStates(), 1);
+    } else if (i == 2) {
+        return casadi::Sparsity::dense(m_casProblem->getNumSlacks(), 1);
+    } else {
+        return casadi::Sparsity(0, 0);
+    }
+}
+
+casadi::Sparsity VelocityCorrection::get_sparsity_out(casadi_int i) {
+    if (i == 0) {
+        return casadi::Sparsity::dense(m_casProblem->getNumCoordinates(), 1);
+    } else {
+        return casadi::Sparsity(0, 0);
+    }
+}

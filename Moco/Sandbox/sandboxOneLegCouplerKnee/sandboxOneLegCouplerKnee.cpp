@@ -191,6 +191,7 @@ MocoSolution minimizeControlEffortRightLeg(const Options& opt) {
     ms.set_velocity_correction_bounds({-0.0001, 0.0001});
     ms.set_minimize_lagrange_multipliers(true);
     ms.set_lagrange_multiplier_weight(10);
+    //ms.set_optim_ipopt_print_level(7);
     auto guess = ms.createGuess("bounds");
     // If the controlsGuess struct field is not empty, use it to set the
     // controls in the trajectory guess.
@@ -366,7 +367,8 @@ void main() {
 
     Options opt;
     opt.weldPelvis = true;
-    opt.num_mesh_points = 20;
+    opt.max_iterations = 20;
+    opt.num_mesh_points = 50;
     opt.solver = "ipopt";
     opt.constraint_tol = 1e-2;
     opt.convergence_tol = 1e-2;

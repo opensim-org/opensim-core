@@ -89,10 +89,12 @@ void HermiteSimpson::applyConstraintsImpl() {
                 x_ip1 - x_i - (h / 6.0) * (xdot_ip1 + 4.0*xdot_mid + xdot_i));
         }
         
-        // TODO
-        // if (m_problem.getNumKinematicConstraintEquations()) {
-        //     addConstraints(kcLowerBounds, kcUpperBounds, qerr(Slice(), itime));
-        // }
+         
+        if (m_problem.getNumKinematicConstraintEquations()) {
+            DM kinConZero(m_problem.getNumKinematicConstraintEquations(), 1);
+            addConstraints(kinConZero, kinConZero, pvaerr(Slice(), imesh));
+        }
+
         for (const auto& pathInfo : m_problem.getPathConstraintInfos()) {
             const auto output = pathInfo.function->operator()(
             {m_times(time_i), m_vars[Var::states](Slice(), time_i),

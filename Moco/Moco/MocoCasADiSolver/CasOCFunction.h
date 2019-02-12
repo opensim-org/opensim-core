@@ -147,7 +147,7 @@ public:
     void constructFunction(const Problem* casProblem, const std::string& name) {
         Function::constructFunction(casProblem, name);
     }
-    casadi_int get_n_in() override final { return 6; }
+    casadi_int get_n_in() override final { return 5; }
     casadi_int get_n_out() override final 
     { return CalcKinConErrors ? 3 : 2; }
     std::string get_name_in(casadi_int i) override final {
@@ -156,8 +156,7 @@ public:
         case 1: return "states";
         case 2: return "controls";
         case 3: return "multipliers";
-        case 4: return "slacks";
-        case 5: return "parameters";
+        case 4: return "parameters";
         default: OPENSIM_THROW(OpenSim::Exception, "Internal error.");
         }
     }
@@ -171,6 +170,31 @@ public:
             } else {
                 OPENSIM_THROW(OpenSim::Exception, "Internal error.")
             }
+        default: OPENSIM_THROW(OpenSim::Exception, "Internal error.");
+        }
+    }
+    casadi::Sparsity get_sparsity_in(casadi_int i) override final;
+    casadi::Sparsity get_sparsity_out(casadi_int i) override final;
+};
+
+class VelocityCorrection : public Function {
+public: 
+    void constructFunction(const Problem* casProblem, const std::string& name) {
+        Function::constructFunction(casProblem, name);
+    }
+    casadi_int get_n_in() override final { return 3; }
+    casadi_int get_n_out() override final { return 1; }
+    std::string get_name_in(casadi_int i) override final {
+        switch (i) {
+        case 0: return "time";
+        case 1: return "states";
+        case 2: return "slacks";
+        default: OPENSIM_THROW(OpenSim::Exception, "Internal error.");
+        }
+    }
+    std::string get_name_out(casadi_int i) override final {
+        switch (i) {
+        case 0: return "velocity_correction";
         default: OPENSIM_THROW(OpenSim::Exception, "Internal error.");
         }
     }

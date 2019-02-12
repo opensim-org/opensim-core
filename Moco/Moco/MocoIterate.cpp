@@ -384,7 +384,7 @@ void MocoIterate::resample(SimTK::Vector time) {
             for (int ideriv = 0; ideriv < numDerivatives; ++ideriv, ++icol)
                 m_derivatives(itime, ideriv) = splines[icol].calcValue(curTime);
             for (int islack = 0; islack < numSlacks; ++islack, ++icol)
-                m_slacks(itime, islack) = splines[icol].calcValue(time);
+                m_slacks(itime, islack) = splines[icol].calcValue(curTime);
         }
     }
 }

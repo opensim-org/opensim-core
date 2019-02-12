@@ -254,6 +254,14 @@ public:
                 OpenSim::make_unique<FunctionType<true>>(std::forward<Args>(args)...);
         m_multibodyFunc->constructFunction(this, "multibody_system");
     }
+    /// FunctionType must derive from VelocityCorrection.
+    template <typename FunctionType, typename... Args>
+    void setVelocityCorrection(Args&&... args) {
+        m_velocityCorrectionFunc =
+            OpenSim::make_unique<FunctionType>(std::forward<Args>(args)...);
+        m_velocityCorrectionFunc->constructFunction(this, 
+            "velocity_correction");
+    }
 
     /// Create an iterate with the variable names populated according to the
     /// variables added to this problem.
@@ -332,6 +340,9 @@ public:
     const casadi::Function& getMultibodySystemUnconstrained() const {
         return *m_multibodyFuncUnc;
     }
+    const casadi::Function& getVelocityCorrection() const {
+        return *m_velocityCorrectionFunc;
+    }
     /// @}
 
 private:
@@ -360,6 +371,7 @@ private:
     std::unique_ptr<EndpointCost> m_endpointCostFunc;
     std::unique_ptr<MultibodySystem<true>> m_multibodyFunc;
     std::unique_ptr<MultibodySystem<false>> m_multibodyFuncUnc;
+    std::unique_ptr<VelocityCorrection> m_velocityCorrectionFunc;
 };
 
 } // namespace CasOC
