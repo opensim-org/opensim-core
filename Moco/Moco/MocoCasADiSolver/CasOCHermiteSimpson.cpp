@@ -48,7 +48,7 @@ DM HermiteSimpson::createQuadratureCoefficientsImpl() const {
 }
 
 DM HermiteSimpson::createKinematicConstraintIndicesImpl() const {
-    DM indices = DM::zeros(m_numGridPoints, 1);
+    DM indices = DM::zeros(1, m_numGridPoints);
     for (int i = 0; i < m_numGridPoints; i += 2) {
         indices(i) = 1;
     }
@@ -115,8 +115,8 @@ void HermiteSimpson::applyConstraintsImpl() {
                 m_problem.getNumKinematicConstraintEquations(), 1);
 
             const auto& bounds = m_problem.getKinematicConstraintBounds();
-            kinConLowerBounds = bounds.lower;
-            kinConUpperBounds = bounds.upper;
+            kinConLowerBounds(Slice()) = bounds.lower;
+            kinConUpperBounds(Slice()) = bounds.upper;
 
             addConstraints(kinConLowerBounds, kinConUpperBounds, 
                 pvaerr(Slice(), imesh));
