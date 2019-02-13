@@ -31,7 +31,7 @@ public:
         : Transcription(solver, problem, solver.getNumMeshPoints(), 
             solver.getNumMeshPoints()) { 
 
-        OPENSIM_THROW_IF(problem.getEnforceConstraintDerivatives() != 0,
+        OPENSIM_THROW_IF(problem.getEnforceConstraintDerivatives(),
             OpenSim::Exception, "Enforcing kinematic constraint derivatives "
             "not supported with trapezoidal transcription.");
         transcribe(); 

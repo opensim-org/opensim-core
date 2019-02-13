@@ -80,7 +80,7 @@ public:
             "problem. Default: 1");
     OpenSim_DECLARE_PROPERTY(velocity_correction_bounds, MocoBounds,
             "For problems where model kinematic constraint derivatives are "
-            "enforced, set the bounds on the slack varia1bles performing the "
+            "enforced, set the bounds on the slack variables performing the "
             "velocity correction to project the model coordinates back onto "
             "the constraint manifold. Default: [-0.1, 0.1]");
 

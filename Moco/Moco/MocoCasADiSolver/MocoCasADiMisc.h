@@ -110,6 +110,7 @@ inline SimTK::Matrix convertToSimTKMatrix(const casadi::DM& casMatrix) {
 
 template <typename TOut = MocoIterate>
 TOut convertToMocoIterate(const CasOC::Iterate& casIt) {
+    SimTK::Vector simtkTimes = convertToSimTKVector(casIt.times);
     SimTK::Matrix simtkStates;
     const auto& casVars = casIt.variables;
     using CasOC::Var;
@@ -130,6 +131,9 @@ TOut convertToMocoIterate(const CasOC::Iterate& casIt) {
         const auto slacksValue = casVars.at(Var::slacks);
         simtkSlacks = convertToSimTKMatrix(slacksValue);
         int simtkSlacksLength = simtkSlacks.nrow();
+        SimTK::Vector slackTime = createVectorLinspace(
+            simtkSlacksLength, simtkTimes[0],
+            simtkTimes[simtkTimes.size() - 1]);
     }
     SimTK::Matrix simtkDerivatives;
     if (casVars.count(Var::derivatives)) {
@@ -142,8 +146,6 @@ TOut convertToMocoIterate(const CasOC::Iterate& casIt) {
         simtkParameters = convertToSimTKVector<SimTK::RowVector>(paramsValue);
     }
 
-    SimTK::Vector simtkTimes = convertToSimTKVector(casIt.times);
-
     TOut mocoIterate(simtkTimes, casIt.state_names, casIt.control_names,
             casIt.multiplier_names, casIt.derivative_names,
             casIt.parameter_names, simtkStates, simtkControls, simtkMultipliers,
@@ -155,9 +157,6 @@ TOut convertToMocoIterate(const CasOC::Iterate& casIt) {
     // Therefore, slack variables are interpolated as necessary.
     for (int i = 0; i < casIt.slack_names.size(); ++i) {
         if (simtkSlacksLength != simtkTimes.size()) {
-            SimTK::Vector slackTime = createVectorLinspace(
-                simtkSlacksLength, simtkTimes[0],
-                simtkTimes[simtkTimes.size()-1]);
             mocoIterate.appendSlack(casIt.slack_names[i], 
                 interpolate(slackTime, simtkSlacks.col(i), simtkTimes));
         } else {
