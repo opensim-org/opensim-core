@@ -36,7 +36,7 @@
 namespace OpenSim {
 
 /** IMUHelper is a utility class that reads and writes files produced by IMU manufacturers
-    and produces datatables from them. This is uni-directional to help consume IMU outputs,
+    and produces datatables from them. This is intended to help consume IMU outputs,
     files but no plan to create manufacturer specific formatted files.*/
 class OSIMCOMMON_API IMUHelper {
 public:
@@ -52,13 +52,17 @@ public:
     static const std::string _magnetometers;  // name of table for magnetometer data
     static const std::string _gyros;          // name of table for gyro data
 
-    /** Read all files with the given folder name, with common prefix. a list of tables 
+    /** Read all files with the given folder name, with common prefix. Produce a list of tables 
     depending on the contents of the files read. One table for rotations, one for Gyro
-    one for Magnetometer data, one for Accelerometer data*/
+    one for Magnetometer data, one for Accelerometer data. */
     static DataAdapter::OutputTables readXsensTrial(const std::string& folderName, const std::string& prefix, 
         const std::map<std::string, std::string>& filenameToModelIMUMap);
+    
 private:
-    static int find_index(std::vector<std::string>&, const std::string&);
+    /**
+     * Find index of searchString in tokens
+     */
+    static int find_index(std::vector<std::string>& tokens, const std::string& searchString);
 };
 
 } // OpenSim namespace

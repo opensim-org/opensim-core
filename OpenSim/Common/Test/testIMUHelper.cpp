@@ -23,129 +23,52 @@
 #include "OpenSim/Common/DataAdapter.h"
 #include "OpenSim/Common/IMUHelper.h"
 #include "OpenSim/Common/STOFileAdapter.h"
+#include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 
 
 using namespace OpenSim;
-/**
-    auto& marker_table = tables.at("markers");
-    auto&  force_table = tables.at("forces");
-    downsample_table(*marker_table, 10);
-    downsample_table(*force_table, 100);
-
-    size_t ext = filename.rfind(".");
-    std::string base = filename.substr(0, ext);
-
-    const std::string marker_file = base + "_markers.trc";
-    const std::string forces_file = base + "_grfs.sto";
-
-    ASSERT(marker_table->getNumRows() > 0, __FILE__, __LINE__,
-        "Failed to read marker data from " + filename);
-
-    marker_table->updTableMetaData().setValueForKey("Units", 
-                                                    std::string{"mm"});
-    TRCFileAdapter trc_adapter{};
-    std::clock_t t0 = std::clock();
-    trc_adapter.write(*marker_table, marker_file);
-    cout << "\tWrote '" << marker_file << "' in "
-        << 1.e3*(std::clock() - t0) / CLOCKS_PER_SEC << "ms" << endl;
-
-    ASSERT(force_table->getNumRows() > 0, __FILE__, __LINE__,
-        "Failed to read forces data from " + filename);
-
-    force_table->updTableMetaData().setValueForKey("Units", 
-                                                    std::string{"mm"});
-    STOFileAdapter sto_adapter{};
-    t0 = std::clock();
-    sto_adapter.write((force_table->flatten()), forces_file);
-    cout << "\tWrote'" << forces_file << "' in "
-        << 1.e3*(std::clock() - t0) / CLOCKS_PER_SEC << "ms" << endl;
-
-    // Verify that marker data was written out and can be read in
-    t0 = std::clock();
-    auto markers = trc_adapter.read(marker_file);
-    auto std_markers = trc_adapter.read("std_" + marker_file);
-    cout << "\tRead'" << marker_file << "' and its standard in "
-        << 1.e3*(std::clock() - t0) / CLOCKS_PER_SEC << "ms" << endl;
-
-    // Compare C3DFileAdapter read-in and written marker data
-    compare_tables<SimTK::Vec3>(markers, *marker_table);
-    // Compare C3DFileAdapter written marker data to standard
-    // Note std exported from Mokka with only 5 decimal places 
-    compare_tables<SimTK::Vec3>(markers, std_markers, 1e-4);
-
-    cout << "\tMarkers " << marker_file << " equivalent to standard." << endl;
-
-    // Verify that grfs data was written out and can be read in
-    auto forces = sto_adapter.read(forces_file);
-    auto std_forces = sto_adapter.read("std_" + forces_file);
-    // Compare C3DFileAdapter read-in and written forces data
-    compare_tables<SimTK::Vec3>(forces.pack<SimTK::Vec3>(), 
-                                *force_table,
-                                SimTK::SqrtEps);
-    // Compare C3DFileAdapter written forces data to standard
-    // Note std generated using MATLAB C3D processing scripts 
-    compare_tables(forces, std_forces, SimTK::SqrtEps);
-
-    cout << "\tForces " << forces_file << " equivalent to standard." << endl;
-
-    
-    t0 = std::clock();
-    // Reread in C3D file with forces resolved to the COP 
-    auto tables2 = C3DFileAdapter::read(filename,
-        C3DFileAdapter::ForceLocation::CenterOfPressure);
-    
-    loadTime = 1.e3*(std::clock() - t0) / CLOCKS_PER_SEC;
-    cout << "\tC3DFileAdapter '" << filename << "' read with forces at COP in "
-        << loadTime << "ms" << endl;
-
-    #ifdef NDEBUG
-    ASSERT(loadTime < MaximumLoadTimeInMS, __FILE__, __LINE__,
-        "Unable to load '" + filename + "' within " +
-        to_string(MaximumLoadTimeInMS) + "ms.");
-    #endif
-
-    auto& force_table_cop = tables2.at("forces");
-    downsample_table(*force_table_cop, 100);
-
-    sto_adapter.write(force_table_cop->flatten(), "cop_"+ forces_file);
-
-    auto std_forces_cop = sto_adapter.read("std_cop_" + forces_file);
-    // Compare C3DFileAdapter written forces data to standard
-    // Note std generated using MATLAB C3D processing scripts 
-    compare_tables<SimTK::Vec3>(*force_table_cop, 
-                                std_forces_cop.pack<SimTK::Vec3>(),
-                                SimTK::SqrtEps);
-
-    cout << "\tcop_" << forces_file << " is equivalent to its standard."<< endl;
-
-    cout << "\ttestIMUHelper '" << filename << "' completed in "
-        << 1.e3*(std::clock() - startTime) / CLOCKS_PER_SEC  << "ms" << endl;
-        */
+/* Raw data from 00B421AF
+PacketCounter	SampleTimeFine	Year	Month	Day	Second	UTC_Nano	UTC_Year	UTC_Month	UTC_Day	UTC_Hour	UTC_Minute	UTC_Second	UTC_Valid	Acc_X	Acc_Y	Acc_Z	Gyr_X	Gyr_Y	Gyr_Z	Mag_X	Mag_Y	Mag_Z	Mat[1][1]	Mat[2][1]	Mat[3][1]	Mat[1][2]	Mat[2][2]	Mat[3][2]	Mat[1][3]	Mat[2][3]	Mat[3][3]
+03583														3.030769	5.254238	-7.714005	0.005991	-0.032133	0.022713	-0.045410	-0.266113	0.897217	0.609684	0.730843	0.306845	0.519480	-0.660808	0.541732	0.598686	-0.170885	-0.782543
+*/
 
 int main() {
 
     try {
         std::map<std::string, std::string> mapFileNameToIMUName;
-        mapFileNameToIMUName["00B421AF"] = "shank";
-        mapFileNameToIMUName["00B4227B"] = "thigh";
-        mapFileNameToIMUName["00B42263"] = "toe";
+        std::vector<std::string> imu_names{ "shank", "thigh", "calcn", "toe" };
+        mapFileNameToIMUName["00B421AF"] = imu_names[0];
+        mapFileNameToIMUName["00B4227B"] = imu_names[1];
+        mapFileNameToIMUName["00B42263"] = imu_names[2];
+        mapFileNameToIMUName["00B42268"] = imu_names[3];
 
-        const std::string folder = "C:/Users/Ayman-NMBL/Downloads/IMU/IMU/";
-        const std::string trial = "MT_012005D6_025-000_";
+        const std::string folder = "";
+        const std::string trial = "MT_012005D6_031-000_";
         DataAdapter::OutputTables tables = IMUHelper::readXsensTrial(folder, trial, mapFileNameToIMUName);
         // Write tables to sto files
         // Accelerations
         std::shared_ptr<AbstractDataTable> accelTable = tables.at(IMUHelper::_accelerations);
         const TimeSeriesTableVec3& accelTableTyped = dynamic_cast<const TimeSeriesTableVec3&>(*accelTable);
         STOFileAdapterVec3::write(accelTableTyped, folder + trial+ "accelerations.sto");
+        const SimTK::RowVectorView_<SimTK::Vec3>& rvv = accelTableTyped.getRowAtIndex(0);
+        SimTK::Vec3 fromTable = accelTableTyped.getRowAtIndex(0)[0];
+        SimTK::Vec3 fromFile = SimTK::Vec3{ 3.030769, 5.254238, -7.714005 };
+        double tolerance = SimTK::Eps;
+        ASSERT_EQUAL(fromTable,fromFile, tolerance);
         // Magenometer
         std::shared_ptr<AbstractDataTable> magTable = tables.at(IMUHelper::_magnetometers);
         const TimeSeriesTableVec3& magTableTyped = dynamic_cast<const TimeSeriesTableVec3&>(*magTable);
         STOFileAdapterVec3::write(magTableTyped, folder + trial + "magnetometers.sto");
+        fromTable = magTableTyped.getRowAtIndex(0)[0];
+        fromFile = SimTK::Vec3{ -0.045410, - 0.266113, 0.897217 };
+        ASSERT_EQUAL(fromTable, fromFile, tolerance);
         // Gyro
         std::shared_ptr<AbstractDataTable> gyroTable = tables.at(IMUHelper::_gyros);
         const TimeSeriesTableVec3& gyroTableTyped = dynamic_cast<const TimeSeriesTableVec3&>(*gyroTable);
         STOFileAdapterVec3::write(gyroTableTyped, folder + trial + "gyros.sto");
+        fromTable = gyroTableTyped.getRowAtIndex(0)[0];
+        fromFile = SimTK::Vec3{ 0.005991, - 0.032133, 0.022713 };
+        ASSERT_EQUAL(fromTable, fromFile, tolerance);
         // Orientation
         std::shared_ptr<AbstractDataTable> orientationTable = tables.at(IMUHelper::_orientations);
         const TimeSeriesTableQuaternion& quatTableTyped = dynamic_cast<const TimeSeriesTableQuaternion&>(*orientationTable);
@@ -157,7 +80,7 @@ int main() {
         return 1;
     }
 
-    std::cout << "\nAll testIMUHelper cases passed." << std::endl;
+    std::cout << "\n All testIMUHelper cases passed." << std::endl;
 
     return 0;
 }
