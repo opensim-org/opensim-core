@@ -129,6 +129,7 @@ TOut convertToMocoIterate(const CasOC::Iterate& casIt) {
     if (!casIt.slack_names.empty()) {
         const auto slacksValue = casVars.at(Var::slacks);
         simtkSlacks = convertToSimTKMatrix(slacksValue);
+        int simtkSlacksLength = simtkSlacks.nrow();
     }
     SimTK::Matrix simtkDerivatives;
     if (casVars.count(Var::derivatives)) {
@@ -153,9 +154,9 @@ TOut convertToMocoIterate(const CasOC::Iterate& casIt) {
     // CasOC::Iterate was generated from a CasOC::Transcription object. 
     // Therefore, slack variables are interpolated as necessary.
     for (int i = 0; i < casIt.slack_names.size(); ++i) {
-        if (simtkSlacks.col(i).size() != simtkTimes.size()) {
+        if (simtkSlacksLength != simtkTimes.size()) {
             SimTK::Vector slackTime = createVectorLinspace(
-                simtkSlacks.col(i).size(), simtkTimes[0], 
+                simtkSlacksLength, simtkTimes[0],
                 simtkTimes[simtkTimes.size()-1]);
             mocoIterate.appendSlack(casIt.slack_names[i], 
                 interpolate(slackTime, simtkSlacks.col(i), simtkTimes));
