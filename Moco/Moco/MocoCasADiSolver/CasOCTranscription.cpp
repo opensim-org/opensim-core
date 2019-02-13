@@ -74,7 +74,9 @@ void Transcription::transcribe() {
         for (const auto& info : stateInfos) {
             setVariableBounds(
                 Var::states, is, Slice(1, m_numGridPoints - 1), info.bounds);
+            // The "0" grabs the first column (first mesh point).
             setVariableBounds(Var::states, is, 0, info.initialBounds);
+            // The "-1" grabs the last column (last mesh point).
             setVariableBounds(Var::states, is, -1, info.finalBounds);
             ++is;
         }
@@ -123,6 +125,11 @@ void Transcription::transcribe() {
     DM quadCoeffs = this->createQuadratureCoefficients();
     MX integralCost = 0;
     for (int itime = 0; itime < m_numGridPoints; ++itime) {
+        // "Slice()" grabs everything in that dimension (like ":" in Matlab).
+        // Here, we include evaluations of the integral cost integrand
+        // into the symbolic expression graph for the integral cost. We are
+        // *not* numerically evaluating the integral cost integrand here--that
+        // occurs when the function by casadi::nlpsol() is evaluated.
         const auto out = m_problem.getIntegralCostIntegrand().operator()(
         {m_times(itime, 0), m_vars[Var::states](Slice(), itime),
             m_vars[Var::controls](Slice(), itime),

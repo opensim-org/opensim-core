@@ -353,9 +353,15 @@ public:
     const casadi::Function& getEndpointCost() const {
         return *m_endpointCostFunc;
     }
+    /// Get a function the full multibody system (i.e. including kinematic 
+    /// constraints errors).
     const casadi::Function& getMultibodySystem() const {
         return *m_multibodyFunc;
     }
+    /// Get a function to the multibody system that does *not* compute kinematic
+    /// constraint errors (if they exist). This may be necessary for computing
+    /// state derivatives at grid points where we do not want to enforce 
+    /// kinematic constraint errors.
     const casadi::Function& getUnconstrainedMultibodySystem() const {
         return *m_unconstrainedMultibodyFunc;
     }
