@@ -188,7 +188,7 @@ public:
         //        << static_cast<const double&>(forceVelMult + 0) << " "
         //        << static_cast<const double&>(normPassiveFibForce + 0) << " "
         //        << std::endl;
-        return activation*activeForceLenMult*forceVelMult; //+ normPassiveFibForce;
+        return activation*activeForceLenMult*forceVelMult + normPassiveFibForce;
     }
     T calcNormFiberForceAlongTendon(const T& activation,
                                     const T& normFiberLength,

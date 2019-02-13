@@ -34,7 +34,7 @@ void MocoDirectCollocationSolver::constructProperties() {
     constructProperty_guess_file("");
     constructProperty_velocity_correction_bounds({-0.1, 0.1});
     constructProperty_minimize_lagrange_multipliers(false);
-    constructProperty_lagrange_multiplier_weight(1);
+    constructProperty_lagrange_multiplier_weight(1.0);
 
     // This is empty to allow user input error checking.
     constructProperty_enforce_constraint_derivatives();

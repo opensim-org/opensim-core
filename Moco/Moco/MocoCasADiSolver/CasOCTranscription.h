@@ -50,7 +50,16 @@ public:
         return createQuadratureCoefficientsImpl();
     }
     casadi::DM createKinematicConstraintIndices() const  {
-        return createKinematicConstraintIndicesImpl();
+        casadi::DM kinConIndices = createKinematicConstraintIndicesImpl();
+        const auto shape = kinConIndices.size();
+        OPENSIM_THROW_IF(shape.first != 1 || shape.second != m_numGridPoints, 
+            OpenSim::Exception, OpenSim::format(
+                "createKinematicConstraintIndicesImpl() must return a "
+                "row vector of shape length [1, %i], but a matrix of shape "
+                "[%i, %i] was returned.", m_numGridPoints, shape.first,
+                shape.second));
+
+        return kinConIndices;
     }
     void applyConstraints() {
         applyConstraintsImpl();
@@ -141,7 +150,7 @@ public:
     }
 
 protected:
-    /// This must be called in the constructor for derived classes of so that 
+    /// This must be called in the constructor of derived classes so that 
     /// overridden virtual methods are accessible to the base class. This
     /// implementation allows initialization to occur during construction, 
     /// avoiding an extra call on the instantiated object. 
@@ -178,14 +187,11 @@ protected:
     VariablesMX m_vars;
     VariablesDM m_lowerBounds;
     VariablesDM m_upperBounds;
-    // The grid for a transcription scheme includes both mesh points (i.e. 
-    // points that lie on the endpoints of a mesh interval) and any additional
-    // collocation points that may lie on mesh interior (as in Hermite-Simpson
-    // collocation, etc.).
+    casadi::DM m_grid;
     int m_numGridPoints = 0;
     int m_numMeshPoints = 0;
+    int m_numMeshIntervals = 0;
     int m_numSlackPoints = 0;
-    casadi::DM m_grid;
     casadi::MX m_times;
     casadi::MX m_duration;
     casadi::MX xdot;
@@ -204,8 +210,9 @@ private:
     virtual casadi::DM createQuadratureCoefficientsImpl() const = 0;
     /// Override this function to specify the indicies in the grid where any
     /// existing kinematic constraints are to be enforced.
-    /// @note The returned vector must be of length m_numGridPoints with nonzero
-    /// values at the indices where kinematic constraints are enforced.
+    /// @note The returned vector must be a row vector of length m_numGridPoints 
+    /// with nonzero values at the indices where kinematic constraints are 
+    /// enforced.
     virtual casadi::DM createKinematicConstraintIndicesImpl() const = 0;
     /// Override this function in your derived class set the defect, kinematic,
     /// and path constraint errors required for your transcription scheme.

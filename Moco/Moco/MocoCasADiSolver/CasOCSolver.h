@@ -87,8 +87,8 @@ private:
     const Problem& m_problem;
     int m_numMeshPoints;
     std::string m_transcriptionScheme = "trapezoidal";
-    bool m_minimizeLagrangeMultipliers = true;
-    double m_lagrangeMultiplierWeight = 10.0;
+    bool m_minimizeLagrangeMultipliers = false;
+    double m_lagrangeMultiplierWeight = 1.0;
     casadi::Dict m_pluginOptions;
     casadi::Dict m_solverOptions;
     std::string m_optimSolver;

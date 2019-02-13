@@ -20,7 +20,7 @@
 
 #include "../MocoBounds.h"
 #include "../MocoProblemRep.h"
-#include "../MocoCasADiSolver/MocoCasADiSolver.h"
+#include "MocoCasADiSolver.h"
 #include "CasOCProblem.h"
 
 namespace OpenSim {

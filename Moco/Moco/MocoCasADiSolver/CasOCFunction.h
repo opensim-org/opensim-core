@@ -51,7 +51,6 @@ class PathConstraint : public Function {
 public:
     void constructFunction(const Problem* casProblem, const std::string& name,
             int numEquations) {
-        m_name = name;
         m_numEquations = numEquations;
         Function::constructFunction(casProblem, name);
     }
@@ -68,7 +67,7 @@ public:
     }
     std::string get_name_out(casadi_int i) override final {
         switch (i) {
-        case 0: return "path_constraint_" + m_name;
+        case 0: return "path_constraint_" + name();
         default: OPENSIM_THROW(OpenSim::Exception, "Internal error.");
         }
     }
@@ -82,7 +81,6 @@ public:
 
 protected:
     int m_numEquations;
-    std::string m_name;
 };
 
 class IntegralCostIntegrand : public Function {

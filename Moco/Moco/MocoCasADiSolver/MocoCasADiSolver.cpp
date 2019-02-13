@@ -157,8 +157,6 @@ std::unique_ptr<CasOC::Problem> MocoCasADiSolver::createCasOCProblem() const {
         int total_mv = 0;
         int total_ma = 0;
         int numKinematicConstraintEquations = 0;
-        std::vector<MocoBounds> bounds;
-        std::vector<std::string> labels;
         std::vector<KinematicLevel> kinLevels;
         const bool enforceConstraintDerivs 
             = get_enforce_constraint_derivatives();
@@ -169,8 +167,6 @@ std::unique_ptr<CasOC::Problem> MocoCasADiSolver::createCasOCProblem() const {
             mp = kc.getNumPositionEquations();
             mv = kc.getNumVelocityEquations();
             ma = kc.getNumAccelerationEquations();
-            bounds = kc.getConstraintInfo().getBounds();
-            labels = kc.getConstraintInfo().getConstraintLabels();
             kinLevels = kc.getKinematicLevels();
 
             // TODO only add velocity correction variables for holonomic
@@ -245,12 +241,20 @@ std::unique_ptr<CasOC::Problem> MocoCasADiSolver::createCasOCProblem() const {
             }
             numKinematicConstraintEquations += numEquationsThisConstraint;
         }
+
+        // Set kinematic constraint information on the CasOC::Problem.
         casProblem->setNumKinematicConstraintEquations(
             numKinematicConstraintEquations);
         casProblem->setNumHolonomicConstraintEquations(total_mp);
         casProblem->setNumNonHolonomicConstraintEquations(total_mv);
         casProblem->setNumAccelerationConstraintEquations(total_ma);
         casProblem->setEnforceConstraintDerivatives(enforceConstraintDerivs);
+        // The bounds are the same for all kinematic constraints in the 
+        // MocoProblem, so just grab the bounds from the first constraint.
+        const auto& kc = problemRep.getKinematicConstraint(kcNames.at(0));
+        std::vector<MocoBounds> bounds = kc.getConstraintInfo().getBounds();
+        casProblem->setKinematicConstraintBounds(convertBounds(bounds.at(0)));
+        // Only add the velocity correction if enforcing constraint derivatives.
         if (enforceConstraintDerivs) {
             casProblem->setVelocityCorrection<MocoCasADiVelocityCorrection>(
                 problemRep);

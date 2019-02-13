@@ -25,10 +25,22 @@ namespace CasOC {
 
 void Transcription::transcribe() {
 
+    // Set the grid.
+    // -------------
+    // The grid for a transcription scheme includes both mesh points (i.e. 
+    // points that lie on the endpoints of a mesh interval) and any additional
+    // collocation points that may lie on mesh interior (as in Hermite-Simpson
+    // collocation, etc.).
+    m_numMeshIntervals = m_numMeshPoints - 1;
+    m_numSlackPoints = m_numGridPoints - m_numMeshPoints;
+    m_grid = DM::linspace(0, 1, m_numGridPoints);
+    
     // Create variables.
     // -----------------    
     m_vars[Var::initial_time] = MX::sym("initial_time");
     m_vars[Var::final_time] = MX::sym("final_time");
+    m_duration = m_vars[Var::final_time] - m_vars[Var::initial_time];
+    m_times = createTimes(m_vars[Var::initial_time], m_vars[Var::final_time]);
     m_vars[Var::states] =
         MX::sym("states", m_problem.getNumStates(), m_numGridPoints);
     m_vars[Var::controls] =
@@ -37,15 +49,10 @@ void Transcription::transcribe() {
         "multipliers", m_problem.getNumMultipliers(), m_numGridPoints);
     // TODO: This assumes that slack variables are applied at all collocation
     // points on the mesh interval interior.
-    m_numSlackPoints = m_numGridPoints - m_numMeshPoints;
     m_vars[Var::slacks] = MX::sym(
         "slacks", m_problem.getNumSlacks(), m_numSlackPoints);
     m_vars[Var::parameters] =
         MX::sym("parameters", m_problem.getNumParameters(), 1);
-
-    m_grid = DM::linspace(0, 1, m_numGridPoints);
-    m_duration = m_vars[Var::final_time] - m_vars[Var::initial_time];
-    m_times = createTimes(m_vars[Var::initial_time], m_vars[Var::final_time]);
 
     // Set variable bounds.
     // --------------------
@@ -145,17 +152,6 @@ void Transcription::transcribe() {
     const int NU = m_problem.getNumSpeeds();
     OPENSIM_THROW_IF(NQ != NU, OpenSim::Exception, "NQ != NU");
     const DM kinConIndices = createKinematicConstraintIndices();
-    const auto shape = kinConIndices.size();
-    OPENSIM_THROW_IF(shape.first != 1 && shape.second != 1, OpenSim::Exception, 
-        OpenSim::format("createKinematicConstraintIndicesImpl() must "
-            "return a vector, but a matrix with shape [%i, %i] was returned.", 
-            shape.first, shape.second));
-    OPENSIM_THROW_IF(shape.first != m_numGridPoints && 
-        shape.second != m_numGridPoints, OpenSim::Exception, OpenSim::format(
-            "createKinematicConstraintIndicesImpl() must return a "
-            "vector of length %i, but a vector of length %i was "
-            "returned.", m_numGridPoints,
-            shape.first == 1 ? shape.second : shape.first));
 
     // TODO: Does creating all this memory have efficiency implications in
     // CasADi?

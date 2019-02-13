@@ -57,18 +57,36 @@ DM HermiteSimpson::createKinematicConstraintIndicesImpl() const {
 
 void HermiteSimpson::applyConstraintsImpl() {
 
+    // Breakdown of constraints for Hermite-Simpson collocation.
+
+    // Defect constraints.
+    // -------------------
+    // For each state variable, there is one pair of defect constraints 
+    // (Hermite interpolant defect + Simpson integration defect) per mesh
+    // interval. Each mesh interval includes two mesh points at its endpoint,
+    // and an additional collocation point at the mesh interval midpoint. All 
+    // there mesh interval points (2 mesh points + 1 collocation point) are used
+    // to construct the defects (see below).
+    
+    // Kinematic constraints + path constraints.
+    // -----------------------------------------
+    // Kinematic constraint and path constraint errors are enforced only at the 
+    // mesh points. Errors at collocation points at the mesh interval midpoint 
+    // are ignored.
+
     // We have arranged the code this way so that all constraints at a given
     // mesh point are grouped together (organizing the sparsity of the Jacobian
     // this way might have benefits for sparse linear algebra).
     const auto& states = m_vars[Var::states];
     const DM zero(m_problem.getNumStates(), 1);
-    const int numMeshPoints = (m_numGridPoints + 1) / 2;
-    const int numMeshIntervals = numMeshPoints - 1;
 
     int time_i, time_mid, time_ip1;
-    for (int imesh = 0; imesh < numMeshPoints; ++imesh) {
+    for (int imesh = 0; imesh < m_numMeshPoints; ++imesh) {
         time_i = 2*imesh; // Needed for defects and path constraints.
-        if (imesh < numMeshIntervals) {
+
+        // We enforce defect constraints on a mesh interval basis, so add
+        // constraints until the number of mesh intervals is reached.
+        if (imesh < m_numMeshIntervals) {
             time_mid = 2*imesh + 1;
             time_ip1 = 2*imesh + 2;
 
@@ -91,8 +109,17 @@ void HermiteSimpson::applyConstraintsImpl() {
         
         // Kinematic constraint errors.
         if (m_problem.getNumKinematicConstraintEquations()) {
-            DM kinConZero(m_problem.getNumKinematicConstraintEquations(), 1);
-            addConstraints(kinConZero, kinConZero, pvaerr(Slice(), imesh));
+            DM kinConLowerBounds(
+                m_problem.getNumKinematicConstraintEquations(), 1);
+            DM kinConUpperBounds(
+                m_problem.getNumKinematicConstraintEquations(), 1);
+
+            const auto& bounds = m_problem.getKinematicConstraintBounds();
+            kinConLowerBounds = bounds.lower;
+            kinConUpperBounds = bounds.upper;
+
+            addConstraints(kinConLowerBounds, kinConUpperBounds, 
+                pvaerr(Slice(), imesh));
         }
 
         // The individual path constraint functions are passed to CasADi to

@@ -209,6 +209,10 @@ public:
     void setEnforceConstraintDerivatives(bool tf) {
         m_enforceConstraintDerivatives = tf;
     }
+    /// Set the bounds for *all* kinematic constraints in the problem.
+    void setKinematicConstraintBounds(Bounds bounds) {
+        m_kinematicConstraintBounds = std::move(bounds);
+    }
     /// Add a constant (time-invariant) variable to the optimization problem.
     void addParameter(std::string name, Bounds bounds) {
         m_paramInfos.push_back({std::move(name), std::move(bounds)});
@@ -322,6 +326,9 @@ public:
     bool getEnforceConstraintDerivatives() const {
         return m_enforceConstraintDerivatives;
     }
+    const Bounds& getKinematicConstraintBounds() const { 
+        return m_kinematicConstraintBounds;
+    }
     const Bounds& getTimeInitialBounds() const { return m_timeInitialBounds; }
     const Bounds& getTimeFinalBounds() const { return m_timeFinalBounds; }
     const std::vector<StateInfo>& getStateInfos() const { return m_stateInfos; }
@@ -375,6 +382,7 @@ private:
     int m_numNonHolonomicConstraintEquations = 0;
     int m_numAccelerationConstraintEquations = 0;
     bool m_enforceConstraintDerivatives = false;
+    Bounds m_kinematicConstraintBounds;
     std::vector<ControlInfo> m_controlInfos;
     std::vector<MultiplierInfo> m_multiplierInfos;
     std::vector<SlackInfo> m_slackInfos;
