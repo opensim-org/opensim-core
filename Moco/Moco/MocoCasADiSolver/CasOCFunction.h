@@ -42,10 +42,10 @@ public:
         // Using "forward", iterations are 10x faster but problems don't
         // converge.
     }
-    // bool has_jacobian_sparsity() const override {
-    //     return true;
-    // }
-    // casadi::Sparsity get_jacobian_sparsity() const override;
+    bool has_jacobian_sparsity() const override {
+        return true;
+    }
+    casadi::Sparsity get_jacobian_sparsity() const override;
 
 protected:
     const Problem* m_casProblem;
