@@ -147,17 +147,21 @@ TOut convertToMocoIterate(const CasOC::Iterate& casIt) {
             casIt.multiplier_names, casIt.derivative_names,
             casIt.parameter_names, simtkStates, simtkControls, simtkMultipliers,
             simtkDerivatives, simtkParameters);
-    // Append slack variables.
+    
+    // Append slack variables. MocoIterate requires the slack variables to be 
+    // the same length as its time vector, but it will not be if the 
+    // CasOC::Iterate was generated from a CasOC::Transcription object. 
+    // Therefore, slack variables are interpolated as necessary.
     for (int i = 0; i < casIt.slack_names.size(); ++i) {
-        SimTK::Vector slackTime = createVectorLinspace(
-            simtkSlacks.col(i).size(), simtkTimes[0], 
-            simtkTimes[simtkTimes.size()-1]);
-        std::cout << "currSlack: " << simtkSlacks.col(i) << std::endl;
-
-        SimTK::Vector currSlackInterp = interpolate(slackTime, simtkSlacks.col(i), simtkTimes);
-        std::cout << "currSlackInterp: " << currSlackInterp << std::endl;
-
-        mocoIterate.appendSlack(casIt.slack_names[i], currSlackInterp);
+        if (simtkSlacks.col(i).size() != simtkTimes.size()) {
+            SimTK::Vector slackTime = createVectorLinspace(
+                simtkSlacks.col(i).size(), simtkTimes[0], 
+                simtkTimes[simtkTimes.size()-1]);
+            mocoIterate.appendSlack(casIt.slack_names[i], 
+                interpolate(slackTime, simtkSlacks.col(i), simtkTimes));
+        } else {
+            mocoIterate.appendSlack(casIt.slack_names[i], simtkSlacks.col(i));
+        }
     }
     return mocoIterate;
 }
@@ -296,16 +300,7 @@ public:
         applyParametersToModel(SimTK::Vector(m_casProblem->getNumParameters(),
                                        parameters, true),
                 m_mocoProblemRep);
-        //convertToSimTKState(time, states, controls, m_model, m_simtkState);
-
-        m_simtkState.setTime(time[0]);
-        std::copy_n(states, m_simtkState.getNY(),
-            m_simtkState.updY().updContiguousScalarData());
-        auto& simtkControls = m_model.updControls(m_simtkState);
-        std::copy_n(controls, simtkControls.size(),
-            simtkControls.updContiguousScalarData());
-        m_model.realizeVelocity(m_simtkState);
-        m_model.setControls(m_simtkState, simtkControls);
+        convertToSimTKState(time, states, controls, m_model, m_simtkState);
 
         // If enabled constraints exist in the model, compute accelerations
         // based on Lagrange multipliers.
@@ -347,7 +342,9 @@ public:
             // TODO double-check that disabled constraints don't show up in
             // state
             if (CalcKinConErrors) {
+                // This pointer is only available when CalcKinConErrors is true.
                 double* out_kinematic_constraint_errors = outputs[2];
+
                 // Position-level errors.
                 std::copy_n(m_simtkState.getQErr().getContiguousScalarData(),
                     m_total_mp, out_kinematic_constraint_errors);
@@ -391,16 +388,15 @@ public:
                 }
             }
             
-
             // Copy state derivative values to output struct. We cannot simply
             // use getYDot() because that requires realizing to Acceleration.
-            const int nq = m_simtkState.getQ().size();
-            const int nu = udot.size();
-            const int nz = m_simtkState.getZ().size();
-            std::copy_n(udot.getContiguousScalarData(),
-                udot.size(), out_multibody_derivatives + nq);
-            std::copy_n(m_simtkState.getZDot().getContiguousScalarData(), nz,
-                out_auxiliary_derivatives + nq + nu);
+            std::copy_n(udot.getContiguousScalarData(),udot.size(), 
+                out_multibody_derivatives);
+            std::copy_n(m_simtkState.getZDot().getContiguousScalarData(),
+                m_simtkState.getNZ(), out_auxiliary_derivatives);
+
+        // If no constraints exist in the model, simply compute accelerations
+        // directly from Simbody.
         } else {
             m_mocoProblemRep.getModel().realizeAcceleration(m_simtkState);
 
@@ -409,7 +405,6 @@ public:
             std::copy_n(m_simtkState.getZDot().getContiguousScalarData(),
                 m_simtkState.getNZ(), out_auxiliary_derivatives);
         }
-
 
         return 0;
     }
@@ -450,7 +445,7 @@ public:
     int eval(const double** inputs, double** outputs, casadi_int*, double*,
         void*) const override {
         
-        // TODO: would the velocity correction ever be parameter dependent?
+        // TODO: would the velocity correction ever be parameter-dependent?
         const double* time = inputs[0];
         const double* states = inputs[1];
         const double* slacks = inputs[2];
@@ -469,10 +464,6 @@ public:
         // of trajectories for constrained dynamical systems"
         // Note: Only supported for the Hermite-Simpson transcription 
         // scheme.
-        // TODO: This assumes that velocity correction variables are applied
-        // at all collocation points on the mesh interval interior. We know
-        // this because kinematic constraint errors are currently only
-        // computed at mesh points.
         const SimTK::SimbodyMatterSubsystem& matter =
             m_model.getMatterSubsystem();
 

@@ -54,15 +54,18 @@ void Trapezoidal::applyConstraintsImpl() {
             const auto x_im1 = states(Slice(), itime - 1);
             const auto xdot_i = xdot(Slice(), itime);
             const auto xdot_im1 = xdot(Slice(), itime - 1);
+
+            // Trapezoidal defects.
             addConstraints(zero, zero,
                 x_i - (x_im1 + 0.5 * h * (xdot_i + xdot_im1)));
         }
 
-        // TODO
-        // if (m_problem.getNumKinematicConstraintEquations()) {
-        //     addConstraints(kcLowerBounds, kcUpperBounds, qerr(Slice(),
-        //     itime));
-        // }
+        // Kinematic constraint errors.
+        if (m_problem.getNumKinematicConstraintEquations()) {
+            DM kinConZero(m_problem.getNumKinematicConstraintEquations(), 1);
+            addConstraints(kinConZero, kinConZero, pvaerr(Slice(), itime));
+        }
+
         // The individual path constraint functions are passed to CasADi to
         // maximize CasADi's ability to take derivatives efficiently.
         for (const auto& pathInfo : m_problem.getPathConstraintInfos()) {

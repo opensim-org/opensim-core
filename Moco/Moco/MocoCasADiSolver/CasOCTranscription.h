@@ -63,19 +63,36 @@ public:
                 guessOrig.variables.at(Var::final_time));
         auto guess = guessOrig.resample(guessTimes);
 
+        // Adjust guesses for the slack variables to ensure they are the correct 
+        // length (i.e. slacks.size2() == m_numSlackPoints).
+        if (guess.variables.find(Var::slacks) != guess.variables.end()) {
+            auto& slacks = guess.variables.at(Var::slacks);
 
-        
-        casadi::DM kinConIndices = createKinematicConstraintIndices();
-        std::vector<casadi_int> slackElementsToErase;
-        for (int itime = 0; itime < m_numGridPoints; ++itime) {
-            if (kinConIndices(casadi::Slice(itime)).nonzeros().size() > 0) {
-                slackElementsToErase.push_back(itime);
+            // If slack variables provided in the guess are equal to the grid 
+            // length, remove the elements on the mesh points where the slack 
+            // variables are not defined.
+            if (slacks.size2() == m_numGridPoints) {
+                casadi::DM kinConIndices = createKinematicConstraintIndices();
+                std::vector<casadi_int> slackColumnsToRemove;
+                for (int itime = 0; itime < m_numGridPoints; ++itime) {
+                    if (kinConIndices(itime).__nonzero__()) {
+                        slackColumnsToRemove.push_back(itime);
+                    }
+                }
+                // The first argument is an empty vector since we don't want to
+                // remove an entire row.
+                slacks.remove(std::vector<casadi_int>(), slackColumnsToRemove);
             }
+
+            // Check that either that the slack variables provided in the guess
+            // are the correct length, or that the correct number of columns
+            // were removed.
+            OPENSIM_THROW_IF(slacks.size2() != m_numSlackPoints, 
+                OpenSim::Exception, 
+                OpenSim::format("Expected slack variables to be length %i, "
+                    "but they are length %i.", m_numSlackPoints, 
+                    slacks.size2()));
         }
-        guess.variables.at(Var::slacks).erase(slackElementsToErase);
-        std::vector<double> slackNonZerosSTL = guess.variables.at(Var::slacks).nonzeros();
-        casadi::DM slackNonZeros(slackNonZerosSTL);
-        guess.variables.at(Var::slacks) = slackNonZeros.T();
 
         // Create the CasADi NLP function.
         // -------------------------------
@@ -117,10 +134,6 @@ public:
         // -------------------------
         Solution solution = m_problem.createIterate<Solution>();
         solution.variables = expand(nlpResult.at("x"));
-
-        //std::cout << "variables: " << nlpResult.at("x") << std::endl;
-        //std::cout << "constraints: " << nlpResult.at("g") << std::endl;
-
         solution.times = createTimes(solution.variables[Var::initial_time],
                 solution.variables[Var::final_time]);
         solution.stats = nlpFunc.stats();
@@ -169,8 +182,9 @@ protected:
     // points that lie on the endpoints of a mesh interval) and any additional
     // collocation points that may lie on mesh interior (as in Hermite-Simpson
     // collocation, etc.).
-    int m_numGridPoints;
-    int m_numMeshPoints;
+    int m_numGridPoints = 0;
+    int m_numMeshPoints = 0;
+    int m_numSlackPoints = 0;
     casadi::DM m_grid;
     casadi::MX m_times;
     casadi::MX m_duration;

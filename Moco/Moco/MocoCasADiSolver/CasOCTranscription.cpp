@@ -37,8 +37,9 @@ void Transcription::transcribe() {
         "multipliers", m_problem.getNumMultipliers(), m_numGridPoints);
     // TODO: This assumes that slack variables are applied at all collocation
     // points on the mesh interval interior.
+    m_numSlackPoints = m_numGridPoints - m_numMeshPoints;
     m_vars[Var::slacks] = MX::sym(
-        "slacks", m_problem.getNumSlacks(), m_numGridPoints - m_numMeshPoints);
+        "slacks", m_problem.getNumSlacks(), m_numSlackPoints);
     m_vars[Var::parameters] =
         MX::sym("parameters", m_problem.getNumParameters(), 1);
 
@@ -106,7 +107,7 @@ void Transcription::transcribe() {
         int ip = 0;
         for (const auto& info : paramInfos) {
             setVariableBounds(Var::parameters, ip, 0, info.bounds);
-            ++ip; // ?
+            ++ip; 
         }
     }
 
@@ -120,10 +121,13 @@ void Transcription::transcribe() {
             m_vars[Var::controls](Slice(), itime),
             m_vars[Var::parameters]});
         integralCost += quadCoeffs(itime) * out.at(0);
-        // TODO: Obey user option for if this penalty should exist.
-        if (m_problem.getNumMultipliers()) {
+
+        // Minimize Lagrange multipliers if specified by the solver.
+        if (m_solver.getMinimizeLagrangeMultipliers() && 
+                m_problem.getNumMultipliers()) {
             const auto mults = m_vars[Var::multipliers](Slice(), itime);
-            const int multiplierWeight = 1; // TODO m_mocoSolver.get_lagrange_multiplier_weight();
+            const double multiplierWeight = 
+                m_solver.getLagrangeMultiplierWeight();
             integralCost += multiplierWeight * dot(mults, mults);
         }
     }
@@ -135,8 +139,8 @@ void Transcription::transcribe() {
     const auto endpointCost = endpointCostOut.at(0);
     setObjective(integralCost + endpointCost);
 
-    // Compute DAE at necessary grid points.
-    // -------------------------------------
+    // Compute DAEs at necessary grid points.
+    // --------------------------------------
     const int NQ = m_problem.getNumCoordinates();
     const int NU = m_problem.getNumSpeeds();
     OPENSIM_THROW_IF(NQ != NU, OpenSim::Exception, "NQ != NU");
@@ -155,24 +159,44 @@ void Transcription::transcribe() {
 
     // TODO: Does creating all this memory have efficiency implications in
     // CasADi?
+    // Initialize memory for state derivatives and constraint errors.
     xdot = MX(m_problem.getNumStates(), m_numGridPoints);
     pvaerr = MX(m_problem.getNumKinematicConstraintEquations(), 
         kinConIndices.nnz());
+    // Temporary memory for state derivatives and constraint errors while 
+    // iterating through time points.
     MX this_xdot;
     MX this_pvaerr;
-    int kinIdx = 0;
-    int islack = 0;
+    // Updateable index for constraint errors vector.
+    int ikc = 0;
+    // Updateable index for slack variables. This index will always be -1 if 
+    // constraint derivatives are not being enforced (i.e. no slack variables),
+    // which tells calcDAE() not to compute the velocity correction.
+    int islack = m_problem.getEnforceConstraintDerivatives() ? 0 : -1;
+    // Iterate through the grid, computing state derivatives and constraint 
+    // errors as necessary.
     for (int itime = 0; itime < m_numGridPoints; ++itime) {
-        bool calcPVAErr = kinConIndices(Slice(itime)).nonzeros().size() ? 
+
+        // If the value of kinConIndices is non-zero at this time point, then 
+        // we need to enforce kinematic constraint derivatives.
+        bool calcPVAErr = kinConIndices(itime).__nonzero__() ? 
             true : false;
 
+        // Calculate differential-algebraic equations and update the state
+        // derivatives vector.
         calcDAE(itime, NQ, this_xdot, calcPVAErr, this_pvaerr, islack);
         xdot(Slice(), itime) = this_xdot;
+
+        // If calculating kinematic contraint errors, also update the constraint
+        // errors vector and index.
         if (calcPVAErr) {
-            pvaerr(Slice(), kinIdx) = this_pvaerr;
-            ++kinIdx;
-        } else {
-            if (kinIdx < (m_numGridPoints - m_numMeshPoints)) ++islack;
+            pvaerr(Slice(), ikc) = this_pvaerr;
+            ++ikc;
+        // If not calculating constraint errors at this time point but enforcing
+        // constraint derivatives in the problem, update the slack variable 
+        // index since we just used the current index.
+        } else if (m_problem.getEnforceConstraintDerivatives()) {
+            ++islack;
         }
     }
 
@@ -240,43 +264,40 @@ void Transcription::calcDAE(casadi_int itime, const int& NQ, MX& xdot,
 {
     const auto& states = m_vars[Var::states];
     const MX u = states(Slice(NQ, 2 * NQ), itime);
+    MX qdot = u; // TODO: This assumes the N matrix is identity.
 
-    //std::cout << "calcPVAErr: " << calcPVAErr << std::endl;
-
-    if (calcPVAErr) {
-        const auto& multibodyFunc = m_problem.getMultibodySystem();
-        const auto dynamicsOutput = multibodyFunc.operator()(
-        {m_times(itime), m_vars[Var::states](Slice(), itime),
-            m_vars[Var::controls](Slice(), itime),
-            m_vars[Var::multipliers](Slice(), itime),
-            m_vars[Var::parameters]});
-        const MX qdot = u; // TODO: This assumes the N matrix is identity.
-        const MX udot = dynamicsOutput.at(0);
-        const MX zdot = dynamicsOutput.at(1);
-
-        xdot = casadi::MX::vertcat({qdot, udot, zdot});
-        pvaerr = dynamicsOutput.at(2);
-        //std::cout << "dynOutput size: " << dynamicsOutput.size() << std::endl;
-
-    } else {
-        const auto& multibodyFuncUnc = m_problem.getMultibodySystemUnconstrained();
-        const auto dynamicsOutput = multibodyFuncUnc.operator()(
-        {m_times(itime), m_vars[Var::states](Slice(), itime),
-            m_vars[Var::controls](Slice(), itime),
-            m_vars[Var::multipliers](Slice(), itime),
-            m_vars[Var::parameters]});
-
+    // If slack variables exist and we're not computing constraint errors at 
+    // this time point, compute the velocity correction and update qdot. 
+    // See MocoCasADiVelocityCorrection for more details.
+    if (!calcPVAErr && islack != -1) {
         const auto& velocityCorrFunc = m_problem.getVelocityCorrection();
         const auto velocityCorrOutput = velocityCorrFunc.operator()(
         {m_times(itime), m_vars[Var::states](Slice(), itime),
             m_vars[Var::slacks](Slice(), islack)});
+        qdot += velocityCorrOutput.at(0);
+    }
+    
+    // Get the multibody system function.
+    const auto& multibodyFunc = calcPVAErr ? m_problem.getMultibodySystem() :
+        m_problem.getUnconstrainedMultibodySystem();
 
-        const MX qdot = u + velocityCorrOutput.at(0); // TODO: This assumes the N matrix is identity.
-        const MX udot = dynamicsOutput.at(0);
-        const MX zdot = dynamicsOutput.at(1);
-        xdot = casadi::MX::vertcat({qdot, udot, zdot});
-        //std::cout << "dynOutput size: " << dynamicsOutput.size() << std::endl;
+    // Evaluate the multibody system function and get udot (speed derivatives)
+    // and zdot (auxiliary derivatives).
+    const auto dynamicsOutput = multibodyFunc.operator()(
+    {m_times(itime), m_vars[Var::states](Slice(), itime),
+        m_vars[Var::controls](Slice(), itime),
+        m_vars[Var::multipliers](Slice(), itime),
+        m_vars[Var::parameters]});
+    const MX udot = dynamicsOutput.at(0);
+    const MX zdot = dynamicsOutput.at(1);
 
+    // Concatenate derivatives to update the state derivatives vector.
+    xdot = casadi::MX::vertcat({qdot, udot, zdot});
+
+    // If calculating constraint errors, also update the constraint errors 
+    // vector.
+    if (calcPVAErr) {
+        pvaerr = dynamicsOutput.at(2);
     }
 }
 

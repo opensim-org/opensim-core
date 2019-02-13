@@ -146,12 +146,14 @@ struct Options {
     double convergence_tol = 1e-2;
     double constraint_tol = 1e-2;
     int max_iterations = 100000;
-    std::string solver = "snopt";
+    std::string hessian_approximation = "limited-memory";
+    std::string solver = "ipopt";
     std::string dynamics_mode = "explicit";
     TimeSeriesTable controlsGuess = {};
     MocoIterate previousSolution = {};
 };
 
+template <typename SolverType>
 MocoSolution minimizeControlEffortRightLeg(const Options& opt) {
     MocoTool moco;
     std::string weldedPelvisStr = "";
@@ -178,7 +180,7 @@ MocoSolution minimizeControlEffortRightLeg(const Options& opt) {
     //reaction->set_weight(0.1);
     //reaction->setJointPath("/jointset/walker_knee_r/");
 
-    MocoCasADiSolver& ms = moco.initCasADiSolver();
+    auto& ms = moco.initSolver<SolverType>();
     ms.set_num_mesh_points(opt.num_mesh_points);
     ms.set_verbosity(2);
     ms.set_dynamics_mode(opt.dynamics_mode);
@@ -189,8 +191,9 @@ MocoSolution minimizeControlEffortRightLeg(const Options& opt) {
     ms.set_optim_max_iterations(opt.max_iterations);
     ms.set_enforce_constraint_derivatives(true);
     ms.set_velocity_correction_bounds({-0.0001, 0.0001});
-    ms.set_minimize_lagrange_multipliers(true);
+    ms.set_minimize_lagrange_multipliers(false);
     ms.set_lagrange_multiplier_weight(10);
+    ms.set_optim_hessian_approximation(opt.hessian_approximation);
     //ms.set_optim_ipopt_print_level(7);
     auto guess = ms.createGuess("bounds");
     // If the controlsGuess struct field is not empty, use it to set the
@@ -332,6 +335,7 @@ MocoSolution stateTrackingRightLeg(const Options& opt) {
     ms.set_velocity_correction_bounds({-0.0001, 0.0001});
     ms.set_minimize_lagrange_multipliers(true);
     ms.set_lagrange_multiplier_weight(10);
+    ms.set_optim_hessian_approximation(opt.hessian_approximation);
 
     // Create guess.
     // -------------
@@ -367,24 +371,29 @@ void main() {
 
     Options opt;
     opt.weldPelvis = true;
-    opt.max_iterations = 20;
     opt.num_mesh_points = 50;
     opt.solver = "ipopt";
     opt.constraint_tol = 1e-2;
     opt.convergence_tol = 1e-2;
-    MocoSolution torqueSolEffort = minimizeControlEffortRightLeg(opt);
-    
+    MocoSolution torqueSolEffortCasADi = 
+        minimizeControlEffortRightLeg<MocoCasADiSolver>(opt);
+
+    //MocoSolution torqueSolEffortTropter =
+    //    minimizeControlEffortRightLeg<MocoTropterSolver>(opt);
+
     //MocoSolution torqueSolEffort(
     //"sandboxRightLeg_weldedPelvis_torques_minimize_control_effort_solution.sto");
 
-    //// TODO stiff passive muscle elements
-    //TimeSeriesTable activationsMinimizeControlEffort =
-    //    createGuessFromGSO(torqueSolEffort, opt);
+    // TODO stiff passive muscle elements
+    TimeSeriesTable activationsMinimizeControlEffort =
+        createGuessFromGSO(torqueSolEffortCasADi, opt);
 
-    //opt.actuatorType = "muscles";
+    opt.actuatorType = "muscles";
+    //opt.hessian_approximation = "exact";
     //opt.controlsGuess = activationsMinimizeControlEffort;
-    //opt.previousSolution = torqueSolEffort;
-    //MocoSolution muscleSolEffort = minimizeControlEffortRightLeg(opt);
+    //opt.previousSolution = torqueSolEffortCasADi;
+    MocoSolution muscleSolEffort = 
+        minimizeControlEffortRightLeg<MocoCasADiSolver>(opt);
 
     //opt.previousSolution = torqueSolEffort;
     //MocoSolution torqueSolTracking = stateTrackingRightLeg(opt);

@@ -160,7 +160,8 @@ std::unique_ptr<CasOC::Problem> MocoCasADiSolver::createCasOCProblem() const {
         std::vector<MocoBounds> bounds;
         std::vector<std::string> labels;
         std::vector<KinematicLevel> kinLevels;
-        const bool enforceConstraintDerivs = get_enforce_constraint_derivatives();
+        const bool enforceConstraintDerivs 
+            = get_enforce_constraint_derivatives();
         for (const auto& kcName : kcNames) {
             const auto& kc = problemRep.getKinematicConstraint(kcName);
             const auto& multInfos = problemRep.getMultiplierInfos(kcName);
@@ -249,6 +250,11 @@ std::unique_ptr<CasOC::Problem> MocoCasADiSolver::createCasOCProblem() const {
         casProblem->setNumHolonomicConstraintEquations(total_mp);
         casProblem->setNumNonHolonomicConstraintEquations(total_mv);
         casProblem->setNumAccelerationConstraintEquations(total_ma);
+        casProblem->setEnforceConstraintDerivatives(enforceConstraintDerivs);
+        if (enforceConstraintDerivs) {
+            casProblem->setVelocityCorrection<MocoCasADiVelocityCorrection>(
+                problemRep);
+        }
     }
 
     for (const auto& paramName : problemRep.createParameterNames()) {
@@ -268,8 +274,9 @@ std::unique_ptr<CasOC::Problem> MocoCasADiSolver::createCasOCProblem() const {
     casProblem->setIntegralCost<MocoCasADiIntegralCostIntegrand>(problemRep);
     casProblem->setEndpointCost<MocoCasADiEndpointCost>(problemRep);
     // TODO if implicit, use different function.
-    casProblem->setMultibodySystem<MocoCasADiMultibodySystem>(problemRep, *this);
-    casProblem->setVelocityCorrection<MocoCasADiVelocityCorrection>(problemRep);
+    casProblem->setMultibodySystem<MocoCasADiMultibodySystem>(problemRep, 
+        *this);
+
     return casProblem;
 }
 
@@ -351,6 +358,9 @@ std::unique_ptr<CasOC::Solver> MocoCasADiSolver::createCasOCSolver(
 
     casSolver->setNumMeshPoints(get_num_mesh_points());
     casSolver->setTranscriptionScheme(get_transcription_scheme());
+    casSolver->setMinimizeLagrangeMultipliers(
+        get_minimize_lagrange_multipliers());
+    casSolver->setLagrangeMultiplierWeight(get_lagrange_multiplier_weight());
     casSolver->setOptimSolver(get_optim_solver());
     casSolver->setPluginOptions(pluginOptions);
     casSolver->setSolverOptions(solverOptions);
@@ -373,10 +383,6 @@ MocoSolution MocoCasADiSolver::solveImpl() const {
     auto casSolver = createCasOCSolver(*casProblem);
 
     MocoIterate guess = getGuess();
-    const SimTK::Matrix& slackTraj = guess.getSlacksTrajectory();
-    std::cout << "slackTraj: " << slackTraj << std::endl;
-    std::cout << "slack names: " << guess.getSlackNames() << std::endl;
-
     CasOC::Iterate casGuess;
     if (guess.empty()) {
         casGuess = casSolver->createInitialGuessFromBounds();

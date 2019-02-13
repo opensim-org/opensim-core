@@ -39,18 +39,18 @@ DM HermiteSimpson::createQuadratureCoefficientsImpl() const {
         // The mesh interval quadrature coefficients overlap at the mesh grid 
         // points in the total coefficients vector, so we slice at every other 
         // index to update the coefficients vector.
-        quadCoeffs(Slice(2*i)) += (1/6) * meshIntervals(i);
-        quadCoeffs(Slice(2*i + 1)) += (2/3) * meshIntervals(i);
-        quadCoeffs(Slice(2*i + 2)) += (1/6) * meshIntervals(i);
+        quadCoeffs(2*i) += (1.0/6.0) * meshIntervals(i);
+        quadCoeffs(2*i + 1) += (2.0/3.0) * meshIntervals(i);
+        quadCoeffs(2*i + 2) += (1.0/6.0) * meshIntervals(i);
     }
 
     return quadCoeffs;
 }
 
 DM HermiteSimpson::createKinematicConstraintIndicesImpl() const {
-    DM indices(m_numGridPoints, 1);
+    DM indices = DM::zeros(m_numGridPoints, 1);
     for (int i = 0; i < m_numGridPoints; i += 2) {
-        indices(Slice(i)) = 1;
+        indices(i) = 1;
     }
     return indices;
 }
@@ -80,21 +80,23 @@ void HermiteSimpson::applyConstraintsImpl() {
             const auto xdot_mid = xdot(Slice(), time_mid);
             const auto xdot_ip1 = xdot(Slice(), time_ip1);
 
-            // Hermite interpolant defects
+            // Hermite interpolant defects.
             addConstraints(zero, zero,
                 x_mid - 0.5*(x_ip1 + x_i) - (h / 8.0) * (xdot_i - xdot_ip1));
 
-            // Simpson integration defects
+            // Simpson integration defects.
             addConstraints(zero, zero,
                 x_ip1 - x_i - (h / 6.0) * (xdot_ip1 + 4.0*xdot_mid + xdot_i));
         }
         
-         
+        // Kinematic constraint errors.
         if (m_problem.getNumKinematicConstraintEquations()) {
             DM kinConZero(m_problem.getNumKinematicConstraintEquations(), 1);
             addConstraints(kinConZero, kinConZero, pvaerr(Slice(), imesh));
         }
 
+        // The individual path constraint functions are passed to CasADi to
+        // maximize CasADi's ability to take derivatives efficiently.
         for (const auto& pathInfo : m_problem.getPathConstraintInfos()) {
             const auto output = pathInfo.function->operator()(
             {m_times(time_i), m_vars[Var::states](Slice(), time_i),

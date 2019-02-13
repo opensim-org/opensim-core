@@ -46,6 +46,18 @@ public:
     const std::string& getTranscriptionScheme() const {
         return m_transcriptionScheme;
     }
+    void setMinimizeLagrangeMultipliers(bool tf) {
+        m_minimizeLagrangeMultipliers = tf;
+    }
+    bool getMinimizeLagrangeMultipliers() const {
+        return m_minimizeLagrangeMultipliers;
+    }
+    void setLagrangeMultiplierWeight(double weight) {
+        m_lagrangeMultiplierWeight = weight;
+    }
+    double getLagrangeMultiplierWeight() const {
+        return m_lagrangeMultiplierWeight;
+    }
 
     void setOptimSolver(std::string optimSolver) {
         m_optimSolver = std::move(optimSolver);
@@ -74,7 +86,9 @@ private:
 
     const Problem& m_problem;
     int m_numMeshPoints;
-    std::string m_transcriptionScheme;
+    std::string m_transcriptionScheme = "trapezoidal";
+    bool m_minimizeLagrangeMultipliers = true;
+    double m_lagrangeMultiplierWeight = 10.0;
     casadi::Dict m_pluginOptions;
     casadi::Dict m_solverOptions;
     std::string m_optimSolver;

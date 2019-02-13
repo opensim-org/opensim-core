@@ -205,6 +205,10 @@ public:
     void setNumAccelerationConstraintEquations(int numAccel) {
         m_numAccelerationConstraintEquations = numAccel;
     }
+    /// Set whether not constraint derivatives are to be enforced.
+    void setEnforceConstraintDerivatives(bool tf) {
+        m_enforceConstraintDerivatives = tf;
+    }
     /// Add a constant (time-invariant) variable to the optimization problem.
     void addParameter(std::string name, Bounds bounds) {
         m_paramInfos.push_back({std::move(name), std::move(bounds)});
@@ -247,20 +251,25 @@ public:
     /// FunctionType must derive from MultibodySystem.
     template <template <bool> class FunctionType, typename... Args>
     void setMultibodySystem(Args&&... args) {
-        m_multibodyFuncUnc =
-                OpenSim::make_unique<FunctionType<false>>(std::forward<Args>(args)...);
-        m_multibodyFuncUnc->constructFunction(this, "multibody_system_unc");
-        m_multibodyFunc =
-                OpenSim::make_unique<FunctionType<true>>(std::forward<Args>(args)...);
+        // Construct an unconstrained multibody system.
+        m_unconstrainedMultibodyFunc = 
+                OpenSim::make_unique<FunctionType<false>>(
+                    std::forward<Args>(args)...);
+        m_unconstrainedMultibodyFunc->constructFunction(this,
+                "unconstrainted_multibody_system");
+        // Constraint a full multibody system (i.e. including kinematic
+        // constraints).
+        m_multibodyFunc = OpenSim::make_unique<FunctionType<true>>(
+                    std::forward<Args>(args)...);
         m_multibodyFunc->constructFunction(this, "multibody_system");
     }
     /// FunctionType must derive from VelocityCorrection.
     template <typename FunctionType, typename... Args>
     void setVelocityCorrection(Args&&... args) {
         m_velocityCorrectionFunc =
-            OpenSim::make_unique<FunctionType>(std::forward<Args>(args)...);
+                OpenSim::make_unique<FunctionType>(std::forward<Args>(args)...);
         m_velocityCorrectionFunc->constructFunction(this, 
-            "velocity_correction");
+                "velocity_correction");
     }
 
     /// Create an iterate with the variable names populated according to the
@@ -310,6 +319,9 @@ public:
     int getNumAccelerationConstraintEquations() const {
         return m_numAccelerationConstraintEquations;
     }
+    bool getEnforceConstraintDerivatives() const {
+        return m_enforceConstraintDerivatives;
+    }
     const Bounds& getTimeInitialBounds() const { return m_timeInitialBounds; }
     const Bounds& getTimeFinalBounds() const { return m_timeFinalBounds; }
     const std::vector<StateInfo>& getStateInfos() const { return m_stateInfos; }
@@ -337,8 +349,8 @@ public:
     const casadi::Function& getMultibodySystem() const {
         return *m_multibodyFunc;
     }
-    const casadi::Function& getMultibodySystemUnconstrained() const {
-        return *m_multibodyFuncUnc;
+    const casadi::Function& getUnconstrainedMultibodySystem() const {
+        return *m_unconstrainedMultibodyFunc;
     }
     const casadi::Function& getVelocityCorrection() const {
         return *m_velocityCorrectionFunc;
@@ -362,6 +374,7 @@ private:
     int m_numHolonomicConstraintEquations = 0;
     int m_numNonHolonomicConstraintEquations = 0;
     int m_numAccelerationConstraintEquations = 0;
+    bool m_enforceConstraintDerivatives = false;
     std::vector<ControlInfo> m_controlInfos;
     std::vector<MultiplierInfo> m_multiplierInfos;
     std::vector<SlackInfo> m_slackInfos;
@@ -370,7 +383,7 @@ private:
     std::unique_ptr<IntegralCostIntegrand> m_integralCostFunc;
     std::unique_ptr<EndpointCost> m_endpointCostFunc;
     std::unique_ptr<MultibodySystem<true>> m_multibodyFunc;
-    std::unique_ptr<MultibodySystem<false>> m_multibodyFuncUnc;
+    std::unique_ptr<MultibodySystem<false>> m_unconstrainedMultibodyFunc;
     std::unique_ptr<VelocityCorrection> m_velocityCorrectionFunc;
 };
 
