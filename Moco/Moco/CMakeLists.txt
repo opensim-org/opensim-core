@@ -16,19 +16,19 @@ add_library(osimMoco SHARED
         MocoProblem.cpp
         MocoProblemRep.h
         MocoProblemRep.cpp
-        MocoCost.h
-        MocoCost.cpp
-        MocoMarkerEndpointCost.h
-        MocoMarkerEndpointCost.cpp
-        MocoMarkerTrackingCost.h
-        MocoMarkerTrackingCost.cpp
+        MocoCost/MocoCost.h
+        MocoCost/MocoCost.cpp
+        MocoCost/MocoMarkerEndpointCost.h
+        MocoCost/MocoMarkerEndpointCost.cpp
+        MocoCost/MocoMarkerTrackingCost.h
+        MocoCost/MocoMarkerTrackingCost.cpp
         MocoWeightSet.h
-        MocoStateTrackingCost.h
-        MocoStateTrackingCost.cpp
-        MocoControlCost.h
-        MocoControlCost.cpp
-        MocoJointReactionNormCost.h
-        MocoJointReactionNormCost.cpp
+        MocoCost/MocoStateTrackingCost.h
+        MocoCost/MocoStateTrackingCost.cpp
+        MocoCost/MocoControlCost.h
+        MocoCost/MocoControlCost.cpp
+        MocoCost/MocoJointReactionNormCost.h
+        MocoCost/MocoJointReactionNormCost.cpp
         MocoSolver.h
         MocoSolver.cpp
         MocoIterate.h

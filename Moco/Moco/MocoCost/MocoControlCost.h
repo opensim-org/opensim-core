@@ -19,7 +19,7 @@
  * -------------------------------------------------------------------------- */
 
 #include "MocoCost.h"
-#include "MocoWeightSet.h"
+#include "../MocoWeightSet.h"
 
 namespace OpenSim {
 

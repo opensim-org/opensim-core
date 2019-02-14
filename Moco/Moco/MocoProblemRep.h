@@ -20,7 +20,7 @@
 
 #include "osimMocoDLL.h"
 #include "MocoVariableInfo.h"
-#include "MocoCost.h"
+#include "MocoCost/MocoCost.h"
 #include "MocoConstraint.h"
 #include "MocoParameter.h"
 #include <OpenSim/Simulation/Model/Model.h>
