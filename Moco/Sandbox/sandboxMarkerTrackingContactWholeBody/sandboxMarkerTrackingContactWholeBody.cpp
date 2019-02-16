@@ -230,11 +230,10 @@ MocoSolution solveStateTrackingProblem() {
 
     // Configure the solver.
     // =====================
-    MocoTropterSolver& ms = moco.initSolver();
+    MocoTropterSolver& ms = moco.initTropterSolver();
     ms.set_num_mesh_points(50);
     ms.set_verbosity(2);
     ms.set_optim_solver("ipopt");
-    ms.set_optim_hessian_approximation("exact");
     ms.set_dynamics_mode("implicit");
 
     // Create guess.
@@ -366,7 +365,7 @@ MocoSolution solveMarkerTrackingProblem(bool createGuess,
 
     // Configure the solver.
     // =====================
-    MocoTropterSolver& ms = moco.initSolver();
+    MocoTropterSolver& ms = moco.initTropterSolver();
     ms.set_num_mesh_points(50);
     ms.set_verbosity(2);
     ms.set_optim_solver("ipopt");

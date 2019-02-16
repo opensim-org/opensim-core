@@ -212,6 +212,9 @@ SparsityPattern
                     std::cout << row_names[i] << ", "
                     << col_names[j];
                 std::cout << ")." << std::endl;
+                // Set non-zero here just in case this Jacobian element is
+                // important. 
+                sparsity.set_nonzero(i, j);
             }
             if (diff[i] != 0) sparsity.set_nonzero(i, j);
         }

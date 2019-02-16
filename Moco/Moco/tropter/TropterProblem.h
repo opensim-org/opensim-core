@@ -102,7 +102,7 @@ protected:
         // Whether or not enabled kinematic constraints exist in the model, 
         // check that optional solver properties related to constraints are
         // set properly.
-        std::vector<std::string> kcNames =
+        const std::vector<std::string> kcNames =
             m_mocoProbRep.createKinematicConstraintNames();
         if (kcNames.empty()) {
             OPENSIM_THROW_IF(
@@ -137,7 +137,7 @@ protected:
         std::vector<MocoBounds> bounds;
         std::vector<std::string> labels;
         std::vector<KinematicLevel> kinLevels;
-        bool enforceConstraintDerivs = 
+        const bool enforceConstraintDerivs = 
             m_mocoTropterSolver.get_enforce_constraint_derivatives();
         for (const auto& kcName : kcNames) {
             const auto& kc = m_mocoProbRep.getKinematicConstraint(kcName);
@@ -230,7 +230,7 @@ protected:
 
             m_numKinematicConstraintEquations += numEquationsThisConstraint;
         }
-
+        m_numMultipliers = m_total_mp + m_total_mv + m_total_ma;
     }
 
     /// Add any generic path constraints included in the problem.
@@ -308,7 +308,7 @@ protected:
 
         if (m_mocoTropterSolver.get_minimize_lagrange_multipliers()) {
             // Add squared multiplers cost to the integrand.
-            for (int i = 0; i < (m_total_mp + m_total_mv + m_total_ma); ++i) {
+            for (int i = 0; i < m_numMultipliers; ++i) {
                 integrand += 
                     m_mocoTropterSolver.get_lagrange_multiplier_weight()
                     * adjuncts[i] * adjuncts[i];
@@ -343,6 +343,8 @@ protected:
     mutable int m_total_mp = 0;
     mutable int m_total_mv = 0; 
     mutable int m_total_ma = 0;
+    // This is the sum of m_total_m(p|v|a).
+    mutable int m_numMultipliers = 0;
 
     // The total number of scalar constraint equations associated with model
     // kinematic constraints that the solver is responsible for enforcing. This
@@ -358,8 +360,7 @@ protected:
             // Warning: memory borrowed, not copied (when third argument to
             // SimTK::Vector constructor is true)
             SimTK::Vector mocoParams(
-                    (int)m_mocoProbRep.createParameterNames().size(),
-                    parameters.data(), true);
+                    (int)parameters.size(), parameters.data(), true);
 
             m_mocoProbRep.applyParametersToModel(mocoParams);
             // TODO: Avoid this const_cast.
@@ -377,8 +378,7 @@ protected:
 
         // Multipliers are negated so constraint forces can be used like
         // applied forces.
-        SimTK::Vector multipliers(m_numKinematicConstraintEquations,
-                in.adjuncts.data(), true);
+        SimTK::Vector multipliers(m_numMultipliers, in.adjuncts.data(), true);
         matter.calcConstraintForcesFromMultipliers(state, -multipliers,
                 constraintBodyForces, constraintMobilityForces);
     }
@@ -433,7 +433,10 @@ public:
         // If enabled constraints exist in the model, compute accelerations
         // based on Lagrange multipliers.
         if (this->m_numKinematicConstraintEquations) {
-            // TODO Antoine and Gil said realizing Dynamics is a lot costlier 
+            const auto& enforceConstraintDerivatives =
+                    this->m_mocoTropterSolver.get_enforce_constraint_derivatives();
+
+            // TODO Antoine and Gil said realizing Dynamics is a lot costlier
             // than realizing to Velocity and computing forces manually.
             model.realizeDynamics(simTKState);
 
@@ -480,8 +483,18 @@ public:
                 // Position-level errors.
                 std::copy_n(simTKState.getQErr().getContiguousScalarData(),
                     this->m_total_mp, out.path.data());
-                if (this->m_mocoTropterSolver.
-                        get_enforce_constraint_derivatives()) {
+
+                if (enforceConstraintDerivatives || this->m_total_ma) {
+                    // Calculuate udoterr. We cannot use State::getUDotErr()
+                    // because that uses Simbody's multiplilers and UDot,
+                    // whereas we have our own multipliers and UDot.
+                    matter.calcConstraintAccelerationErrors(simTKState,
+                            this->udot, m_pvaerr);
+                } else {
+                    m_pvaerr = SimTK::NaN;
+                }
+
+                if (enforceConstraintDerivatives) {
                     // Velocity-level errors.
                     std::copy_n(
                         simTKState.getUErr().getContiguousScalarData(),
@@ -489,7 +502,7 @@ public:
                         out.path.data() + this->m_total_mp);
                     // Acceleration-level errors.
                     std::copy_n(
-                        simTKState.getUDotErr().getContiguousScalarData(),
+                        m_pvaerr.getContiguousScalarData(),
                         this->m_total_mp + this->m_total_mv + this->m_total_ma,
                         out.path.data() + 2*this->m_total_mp + this->m_total_mv);
                 } else {
@@ -502,7 +515,7 @@ public:
                     // Acceleration-level errors. Skip derivatives of velocity-
                     // and position-level constraint equations.
                     std::copy_n(
-                        simTKState.getUDotErr().getContiguousScalarData() +
+                        m_pvaerr.getContiguousScalarData() +
                         this->m_total_mp + this->m_total_mv, this->m_total_ma,
                         out.path.data() + this->m_total_mp + this->m_total_mv);
                 }
@@ -542,6 +555,11 @@ private:
     // generalized accelerations when specifying the dynamics with model
     // constraints present.
     mutable SimTK::Vector_<SimTK::SpatialVec> A_GB;
+    // This is the output argument of
+    // SimbodyMatterSubsystem::calcConstraintAccelerationErrors(), and includes
+    // the acceleration-level holonomic, non-holonomic constraint errors and the
+    // acceleration-only constraint errors.
+    mutable SimTK::Vector m_pvaerr;
 };
 
 template <typename T>
@@ -554,7 +572,7 @@ public:
                 "Cannot use implicit dynamics mode if the system has auxiliary "
                 "states.");
         OPENSIM_THROW_IF(this->m_numKinematicConstraintEquations, Exception,
-                "Cannot use implicit dynamics mode with multibody "
+                "Cannot use implicit dynamics mode with kinematic "
                 "constraints.");
         // Add adjuncts for udot, which we call "w".
         int NU = this->m_state.getNU();

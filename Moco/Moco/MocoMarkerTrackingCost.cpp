@@ -25,7 +25,7 @@
  using namespace OpenSim;
 
  void MocoMarkerTrackingCost::initializeOnModelImpl(const Model& model) const {
-    
+
     // Cache reference pointers to model markers.
     // TODO: When should we load a markers file?
     if (get_markers_reference().get_marker_file() != "") {
@@ -66,13 +66,13 @@
     get_markers_reference().getWeights(s, m_marker_weights);
 
     // Get and flatten TimeSeriesTableVec3 to doubles and create a set of
-    // reference splines, one for each component of the coordinate 
+    // reference splines, one for each component of the coordinate
     // trajectories.
     m_refsplines = GCVSplineSet(
         get_markers_reference().getMarkerTable().flatten());
  }
 
- void MocoMarkerTrackingCost::calcIntegralCostImpl(const SimTK::State& state, 
+ void MocoMarkerTrackingCost::calcIntegralCostImpl(const SimTK::State& state,
         double& integrand) const {
      const auto& time = state.getTime();
      getModel().realizePosition(state);
@@ -83,7 +83,7 @@
              m_model_markers[i]->getLocationInGround(state);
          SimTK::Vec3 refValue;
 
-         // Get the markers reference index corresponding to the current 
+         // Get the markers reference index corresponding to the current
          // model marker and get the reference value.
          int refidx = m_refindices[i];
          refValue[0] = m_refsplines[3*refidx].calcValue(timeVec);

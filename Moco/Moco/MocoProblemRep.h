@@ -59,6 +59,9 @@ public:
     /// This model is the same instance as that given to MocoCost,
     /// MocoParameter, and MocoPathConstraint.
     const Model& getModel() const { return m_model; }
+    int getNumStates() const { return (int)m_state_infos.size(); }
+    int getNumControls() const { return (int)m_control_infos.size(); }
+    int getNumParameters() const { return (int)m_parameters.size(); }
     /// Get the state names of all the state infos.
     std::vector<std::string> createStateInfoNames() const;
     /// Get the control names of all the control infos.

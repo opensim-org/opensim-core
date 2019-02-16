@@ -99,7 +99,7 @@ int main() {
 
     // Configure the solver.
     // =====================
-    MocoTropterSolver& solver = moco.initSolver();
+    MocoTropterSolver& solver = moco.initTropterSolver();
     solver.set_num_mesh_points(50);
 
     // TODO interface for setting these options:

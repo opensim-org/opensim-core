@@ -35,8 +35,9 @@
 #include "MocoParameter.h"
 #include "ActivationCoordinateActuator.h"
 
-#include "Components/StationPlaneContactForce.h"
+#include "MocoCasADiSolver/MocoCasADiSolver.h"
 
+#include "Components/StationPlaneContactForce.h"
 
 // TODO: Move to osimSimulation.
 #include <OpenSim/Simulation/MarkersReference.h>
@@ -67,6 +68,8 @@ OSIMMOCO_API void RegisterTypes_osimMoco() {
         Object::registerType(MocoTool());
         Object::registerType(MocoTropterSolver());
         Object::registerType(MocoParameter());
+
+        Object::registerType(MocoCasADiSolver());
 
         Object::registerType(ActivationCoordinateActuator());
         Object::registerType(GlobalStaticOptimization());

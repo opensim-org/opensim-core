@@ -102,7 +102,7 @@ public:
 TEST_CASE("Sliding mass minimum time using path constraints", "[path]")
 {
     SECTION("trapezoidal") {
-        SlidingMassPathConstraint<adouble>::run_test(50, "ipopt", 
+        SlidingMassPathConstraint<adouble>::run_test(100, "ipopt", 
             "trapezoidal");
     }
     // TODO this fails since controls are zero at midpoints due to implicit

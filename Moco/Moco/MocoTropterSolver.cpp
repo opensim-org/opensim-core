@@ -19,8 +19,6 @@
 #include "MocoProblemRep.h"
 #include "MocoUtilities.h"
 
-#include <OpenSim/Simulation/Manager/Manager.h>
-
 #include "tropter/TropterProblem.h"
 
 using namespace OpenSim;
@@ -30,26 +28,9 @@ MocoTropterSolver::MocoTropterSolver() {
 }
 
 void MocoTropterSolver::constructProperties() {
-    constructProperty_num_mesh_points(100);
-    constructProperty_verbosity(2);
-    constructProperty_dynamics_mode("explicit");
-    constructProperty_optim_solver("ipopt");
-    constructProperty_optim_max_iterations(-1);
-    constructProperty_optim_convergence_tolerance(-1);
-    constructProperty_optim_constraint_tolerance(-1);
-    constructProperty_optim_hessian_approximation("limited-memory");
+    constructProperty_optim_jacobian_approximation("exact");
     constructProperty_optim_sparsity_detection("random");
-    constructProperty_optim_ipopt_print_level(-1);
-    constructProperty_transcription_scheme("trapezoidal");
-    constructProperty_velocity_correction_bounds({-0.1, 0.1});
     constructProperty_exact_hessian_block_sparsity_mode();
-    constructProperty_minimize_lagrange_multipliers(false);
-    constructProperty_lagrange_multiplier_weight(1);
-
-    // This is empty to allow user input error checking.
-    constructProperty_enforce_constraint_derivatives();
-
-    constructProperty_guess_file("");
 }
 
 std::shared_ptr<const MocoTropterSolver::TropterProblemBase<double>>
@@ -103,57 +84,6 @@ MocoIterate MocoTropterSolver::createGuess(const std::string& type) const {
     return ocp->convertToMocoIterate(tropIter);
 }
 
-MocoIterate MocoTropterSolver::createGuessTimeStepping() const {
-    const auto& probrep = getProblemRep();
-    const auto& initialTime = probrep.getTimeInitialBounds().getUpper();
-    const auto& finalTime = probrep.getTimeFinalBounds().getLower();
-    OPENSIM_THROW_IF_FRMOBJ(finalTime <= initialTime, Exception,
-            format("Expected lower bound on final time to be greater than "
-                   "upper bound on initial time, but "
-                   "final_time.lower: %g; initial_time.upper: %g.",
-                    finalTime, initialTime));
-    Model model(probrep.getModel());
-
-    // Disable all controllers?
-    SimTK::State state = model.initSystem();
-
-    // Modify initial state values as necessary.
-    Array<std::string> svNames = model.getStateVariableNames();
-    for (int isv = 0; isv < svNames.getSize(); ++isv) {
-        const auto& svName = svNames[isv];
-        const auto& initBounds =
-                probrep.getStateInfo(svName).getInitialBounds();
-        const auto defaultValue = model.getStateVariableValue(state, svName);
-        SimTK::Real valueToUse = defaultValue;
-        if (initBounds.isEquality()) {
-            valueToUse = initBounds.getLower();
-        } else if (!initBounds.isWithinBounds(defaultValue)) {
-            valueToUse = 0.5 * (initBounds.getLower() + initBounds.getUpper());
-        }
-        if (valueToUse != defaultValue) {
-            model.setStateVariableValue(state, svName, valueToUse);
-        }
-    }
-
-    // TODO Equilibrate fiber length?
-
-    state.setTime(initialTime);
-    Manager manager(model, state);
-    manager.integrate(finalTime);
-
-    const auto& statesTable = manager.getStatesTable();
-    auto controlsTable = model.getControlsTable();
-
-    // Fix column labels.
-    auto labels = controlsTable.getColumnLabels();
-    for (auto& label : labels) { label = "/forceset/" + label; }
-    controlsTable.setColumnLabels(labels);
-
-    // TODO handle parameters.
-    return MocoIterate::createFromStatesControlsTables(
-            probrep, statesTable, controlsTable);
-}
-
 void MocoTropterSolver::setGuess(MocoIterate guess) {
     // Ensure the guess is compatible with this solver/problem.
     // Make sure to initialize the problem. TODO put in a better place.
@@ -189,6 +119,7 @@ const MocoIterate& MocoTropterSolver::getGuess() const {
             m_guessToUse.reset(&m_guessFromAPI);
         }
     }
+    // if (m_guessToUse) m_guessToUse->write("DEBUG_tropter_guess.sto");
     return m_guessToUse.getRef();
 }
 
@@ -293,6 +224,7 @@ MocoSolution MocoTropterSolver::solveImpl() const {
     if (get_optim_constraint_tolerance() != -1)
         optsolver.set_constraint_tolerance(get_optim_constraint_tolerance());
 
+    optsolver.set_jacobian_approximation(get_optim_jacobian_approximation());
     optsolver.set_hessian_approximation(get_optim_hessian_approximation());
 
     if (get_optim_solver() == "ipopt") {

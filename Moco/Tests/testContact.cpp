@@ -122,7 +122,7 @@ SimTK::Real testNormalForce(CreateContactFunction createContact) {
         mp.setStateInfo("/tx/tx/speed", {-10, 10}, 0);
         mp.setStateInfo("/ty/ty/speed", {-10, 10}, 0);
 
-        MocoTropterSolver& ms = moco.initSolver();
+        auto& ms = moco.initTropterSolver();
         ms.set_num_mesh_points(50);
 
         MocoSolution solution = moco.solve();
@@ -216,7 +216,7 @@ void testFrictionForce(CreateContactFunction createContact,
         mp.setStateInfo("/tx/tx/speed", {-10, 10}, vx0);
         mp.setStateInfo("/ty/ty/speed", {-10, 10}, 0);
 
-        MocoTropterSolver& ms = moco.initSolver();
+        auto& ms = moco.initTropterSolver();
         ms.set_num_mesh_points(25);
 
         MocoSolution solution = moco.solve();
