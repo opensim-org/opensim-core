@@ -130,7 +130,7 @@ std::unique_ptr<CasOC::Problem> MocoCasADiSolver::createCasOCProblem() const {
 
     // Add any scalar constraints associated with kinematic constraints in
     // the model as path constraints in the problem.
-    // Whether or not enabled kinematic constraints exist in the model, 
+    // Whether or not enabled kinematic constraints exist in the model,
     // check that optional solver properties related to constraints are
     // set properly.
     const auto kcNames = problemRep.createKinematicConstraintNames();
@@ -149,7 +149,7 @@ std::unique_ptr<CasOC::Problem> MocoCasADiSolver::createCasOCProblem() const {
             "provided model. Please set the solver property "
             "'enforce_constraint_derivatives' to either 'true' or 'false'."
         );
-    
+
         int cid, mp, mv, ma;
         int numEquationsThisConstraint;
         int multIndexThisConstraint;
@@ -158,7 +158,7 @@ std::unique_ptr<CasOC::Problem> MocoCasADiSolver::createCasOCProblem() const {
         int total_ma = 0;
         int numKinematicConstraintEquations = 0;
         std::vector<KinematicLevel> kinLevels;
-        const bool enforceConstraintDerivs 
+        const bool enforceConstraintDerivs
             = get_enforce_constraint_derivatives();
         for (const auto& kcName : kcNames) {
             const auto& kc = problemRep.getKinematicConstraint(kcName);
@@ -216,7 +216,7 @@ std::unique_ptr<CasOC::Problem> MocoCasADiSolver::createCasOCProblem() const {
                     // Add velocity correction variables if enforcing
                     // constraint equation derivatives.
                     if (enforceConstraintDerivs) {
-                        // TODO this naming convention assumes that the 
+                        // TODO this naming convention assumes that the
                         // associated Lagrange multiplier name begins with
                         // "lambda", which may change in the future.
                         OPENSIM_THROW_IF(
@@ -234,7 +234,7 @@ std::unique_ptr<CasOC::Problem> MocoCasADiSolver::createCasOCProblem() const {
                     ++numEquationsThisConstraint;
 
                 } else if (enforceConstraintDerivs) {
-                    // If enforcing constraint derivatives, count these 
+                    // If enforcing constraint derivatives, count these
                     // equations in the total number of constraint equations.
                     ++numEquationsThisConstraint;
                 }
@@ -249,7 +249,7 @@ std::unique_ptr<CasOC::Problem> MocoCasADiSolver::createCasOCProblem() const {
         casProblem->setNumNonHolonomicConstraintEquations(total_mv);
         casProblem->setNumAccelerationConstraintEquations(total_ma);
         casProblem->setEnforceConstraintDerivatives(enforceConstraintDerivs);
-        // The bounds are the same for all kinematic constraints in the 
+        // The bounds are the same for all kinematic constraints in the
         // MocoProblem, so just grab the bounds from the first constraint.
         const auto& kc = problemRep.getKinematicConstraint(kcNames.at(0));
         std::vector<MocoBounds> bounds = kc.getConstraintInfo().getBounds();
@@ -278,7 +278,7 @@ std::unique_ptr<CasOC::Problem> MocoCasADiSolver::createCasOCProblem() const {
     casProblem->setIntegralCost<MocoCasADiIntegralCostIntegrand>(problemRep);
     casProblem->setEndpointCost<MocoCasADiEndpointCost>(problemRep);
     // TODO if implicit, use different function.
-    casProblem->setMultibodySystem<MocoCasADiMultibodySystem>(problemRep, 
+    casProblem->setMultibodySystem<MocoCasADiMultibodySystem>(problemRep,
         *this);
 
     return casProblem;
@@ -303,10 +303,10 @@ std::unique_ptr<CasOC::Solver> MocoCasADiSolver::createCasOCSolver(
     // Set solver options.
     // -------------------
     Dict solverOptions;
-    checkPropertyInSet(*this, getProperty_optim_solver(), {"ipopt"});
-    checkPropertyInSet(*this, getProperty_transcription_scheme(), 
+    checkPropertyInSet(*this, getProperty_optim_solver(), {"ipopt", "snopt"});
+    checkPropertyInSet(*this, getProperty_transcription_scheme(),
             {"trapezoidal", "hermite-simpson"});
-    OPENSIM_THROW_IF(casProblem.getNumKinematicConstraintEquations() != 0 && 
+    OPENSIM_THROW_IF(casProblem.getNumKinematicConstraintEquations() != 0 &&
         get_transcription_scheme() == "trapezoidal",
         OpenSim::Exception, "Kinematic constraints not supported with "
         "trapezoidal transcription.");

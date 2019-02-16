@@ -22,6 +22,81 @@
 
 using namespace CasOC;
 
+casadi::Sparsity calcJacobianSparsityWithPerturbation(const casadi::DM& x0,
+        int numOutputs,
+        std::function<void(const casadi::DM&, casadi::DM&)> function) {
+    using casadi::DM;
+    using casadi::Sparsity;
+    using std::isnan;
+    OPENSIM_THROW_IF(x0.columns() != 1, OpenSim::Exception,
+            "x0 must have exactly 1 column.");
+    Sparsity sparsity(numOutputs, x0.numel());
+    double eps = 1e-5;
+    DM x = x0;
+    DM output0(numOutputs, 1);
+    function(x, output0);
+    DM output(numOutputs, 1);
+    DM diff(numOutputs, 1);
+    for (int j = 0; j < x0.numel(); ++j) {
+        output = 0;
+        x(j) += eps;
+        function(x, output);
+        x(j) = x0(j);
+        diff = output - output0;
+        for (int i = 0; i < (int)numOutputs; ++i) {
+            if (std::isnan(diff(i).scalar())) {
+                std::cout << "[tropter] Warning: NaN encountered when "
+                             "detecting sparsity of Jacobian; entry (";
+                std::cout << i << ", " << j;
+                std::cout << ")." << std::endl;
+                // Set non-zero here just in case this Jacobian element is
+                // important.
+                sparsity.add_nz(i, j);
+            }
+            if (diff(i).scalar() != 0) sparsity.add_nz(i, j);
+        }
+        diff = 0;
+    }
+    return sparsity;
+}
+
+casadi::Sparsity Function::get_jacobian_sparsity() const {
+    using casadi::DM;
+    using casadi::Slice;
+
+    const DM x0 = getPointForSparsityDetection();
+
+    auto function = [this](const casadi::DM& x, casadi::DM& y) {
+        std::vector<casadi::DM> in(this->n_in());
+        {
+            int offset = 0;
+            for (int iin = 0; iin < this->n_in(); ++iin) {
+                OPENSIM_THROW_IF(this->size2_in(iin) != 1, OpenSim::Exception,
+                        "Internal error.");
+                const auto size = this->size1_in(iin);
+                in[iin] = x(Slice(offset, offset + size));
+                offset += size;
+            }
+        }
+
+        std::vector<casadi::DM> out = this->eval(in);
+
+        {
+            int offset = 0;
+            for (int iout = 0; iout < this->n_out(); ++iout) {
+                OPENSIM_THROW_IF(this->size2_in(iout) != 1, OpenSim::Exception,
+                        "Internal error.");
+                const auto size = this->size1_out(iout);
+                y(Slice(offset, offset + size)) = out;
+                offset += size;
+            }
+        }
+    };
+
+    return calcJacobianSparsityWithPerturbation(
+            x0, (int)this->nnz_out(), function);
+}
+
 casadi::Sparsity PathConstraint::get_sparsity_in(casadi_int i) {
     if (i == 0) {
         return casadi::Sparsity::dense(1, 1);
