@@ -269,10 +269,10 @@ protected:
         m_state.setTime(time);
         // We must skip over unused slots in the SimTK::State that are
         for (int isv = 0; isv < states.size(); ++isv) {
-            m_state.updY()[m_yIndexMap.at(isv)] = states[isv];
+            simTKState.updY()[m_yIndexMap.at(isv)] = states[isv];
         }
 
-        if (setControlsToNaN) m_model.updControls(m_state).setToNaN();
+        if (setControlsToNaN) m_model.updControls(simTKState).setToNaN();
     }
 
     void setSimTKState(const T& time,
@@ -283,11 +283,11 @@ protected:
 
         // Set the controls for actuators in the OpenSim model.
         if (m_model.getNumControls()) {
-            auto& osimControls = m_model.updControls(m_state);
+            auto& osimControls = m_model.updControls(simTKState);
             std::copy_n(controls.data(), controls.size(),
                     osimControls.updContiguousScalarData());
-            m_model.realizeVelocity(m_state);
-            m_model.setControls(m_state, osimControls);
+            m_model.realizeVelocity(simTKState);
+            m_model.setControls(simTKState, osimControls);
         }
     }
 

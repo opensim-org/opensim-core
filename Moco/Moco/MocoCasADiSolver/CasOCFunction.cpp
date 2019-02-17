@@ -60,6 +60,7 @@ casadi::Sparsity calcJacobianSparsityWithPerturbation(const casadi::DM& x0,
     return sparsity;
 }
 
+/*
 casadi::Sparsity Function::get_jacobian_sparsity() const {
     using casadi::DM;
     using casadi::Slice;
@@ -96,6 +97,7 @@ casadi::Sparsity Function::get_jacobian_sparsity() const {
     return calcJacobianSparsityWithPerturbation(
             x0, (int)this->nnz_out(), function);
 }
+*/
 
 casadi::Sparsity PathConstraint::get_sparsity_in(casadi_int i) {
     if (i == 0) {
