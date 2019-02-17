@@ -17,7 +17,7 @@
  * -------------------------------------------------------------------------- */
 
 #include "MocoStateTrackingCost.h"
-#include "MocoUtilities.h"
+#include "../MocoUtilities.h"
 #include <OpenSim/Simulation/Model/Model.h>
 
 using namespace OpenSim;

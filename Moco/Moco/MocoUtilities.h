@@ -51,9 +51,11 @@ inline bool endsWith(const std::string& string, const std::string& ending) {
 OSIMMOCO_API
 SimTK::Vector createVectorLinspace(int length, double start, double end);
 
+#ifndef SWIG
 /// Create a SimTK::Vector using modern C++ syntax.
 OSIMMOCO_API
 SimTK::Vector createVector(std::initializer_list<SimTK::Real> elements);
+#endif
 
 /// Linearly interpolate y(x) at new values of x. The optional 'ignoreNaNs'
 /// argument will ignore any NaN values contained in the input vectors and
