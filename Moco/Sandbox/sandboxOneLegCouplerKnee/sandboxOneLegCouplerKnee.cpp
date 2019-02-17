@@ -372,7 +372,7 @@ void main() {
     Options opt;
     opt.weldPelvis = true;
     opt.num_mesh_points = 50;
-    opt.solver = "ipopt";
+    opt.solver = "snopt";
     opt.constraint_tol = 1e-2;
     opt.convergence_tol = 1e-2;
     MocoSolution torqueSolEffortCasADi = 

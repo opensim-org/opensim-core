@@ -303,7 +303,7 @@ std::unique_ptr<CasOC::Solver> MocoCasADiSolver::createCasOCSolver(
     // Set solver options.
     // -------------------
     Dict solverOptions;
-    checkPropertyInSet(*this, getProperty_optim_solver(), {"ipopt"});
+    checkPropertyInSet(*this, getProperty_optim_solver(), {"ipopt", "snopt"});
     checkPropertyInSet(*this, getProperty_transcription_scheme(), 
             {"trapezoidal", "hermite-simpson"});
     OPENSIM_THROW_IF(casProblem.getNumKinematicConstraintEquations() != 0 && 
