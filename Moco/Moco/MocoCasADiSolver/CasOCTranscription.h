@@ -61,6 +61,18 @@ public:
 
         return kinConIndices;
     }
+    casadi::DM createResidualConstraintIndices() const {
+        casadi::DM resConIndices = createResidualConstraintIndicesImpl();
+        const auto shape = resConIndices.size();
+        OPENSIM_THROW_IF(shape.first != 1 || shape.second != m_numGridPoints,
+                OpenSim::Exception, OpenSim::format(
+                "createResidualConstraintIndicesImpl() must return a "
+                "row vector of shape length [1, %i], but a matrix of shape "
+                "[%i, %i] was returned.", m_numGridPoints, shape.first,
+                shape.second));
+
+        return resConIndices;
+    }
     void applyConstraints() {
         applyConstraintsImpl();
     }
@@ -177,9 +189,6 @@ protected:
         }
     }
 
-    void calcDAE(casadi_int itime, casadi::MX& xdot,
-        bool calcPVAErr, casadi::MX& pvaerr, casadi_int islack);
-
     void setObjective(casadi::MX objective) {
         m_objective = std::move(objective);
     }
@@ -199,8 +208,9 @@ protected:
     int m_numSlackPoints = 0;
     casadi::MX m_times;
     casadi::MX m_duration;
-    casadi::MX xdot;
-    casadi::MX pvaerr;
+    casadi::MX m_xdot;
+    casadi::MX m_residual;
+    casadi::MX m_pvaerr;
     
 private:
     casadi::MX m_objective;
@@ -209,6 +219,13 @@ private:
     std::vector<casadi::DM> m_constraintsUpperBounds;
 
 private:
+
+    void calcDAEExplicit(casadi_int itime, casadi::MX& xdot,
+            bool calcPVAErr, casadi::MX& pvaerr, casadi_int islack);
+    void calcDAEImplicit(casadi_int itime, casadi::MX& xdot,
+            bool calcResidual, casadi::MX& residual,
+            bool calcPVAErr, casadi::MX& pvaerr, casadi_int islack);
+
     /// Override this function in your derived class to compute a vector of
     /// quadrature coeffecients (of length m_numGridPoints) required to set the
     /// the integral cost within transcribe().
@@ -219,6 +236,10 @@ private:
     /// with nonzero values at the indices where kinematic constraints are 
     /// enforced.
     virtual casadi::DM createKinematicConstraintIndicesImpl() const = 0;
+    /// Override this function to specify the indices in the grid where, in
+    /// an implicit formulation, dynamics residual constraints should be
+    /// enforced.
+    virtual casadi::DM createResidualConstraintIndicesImpl() const = 0;
     /// Override this function in your derived class set the defect, kinematic,
     /// and path constraint errors required for your transcription scheme.
     virtual void applyConstraintsImpl() = 0;

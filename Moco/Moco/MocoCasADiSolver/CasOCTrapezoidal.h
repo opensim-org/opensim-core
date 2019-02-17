@@ -40,6 +40,7 @@ public:
 private:
     casadi::DM createQuadratureCoefficientsImpl() const override;
     casadi::DM createKinematicConstraintIndicesImpl() const override;
+    casadi::DM createResidualConstraintIndicesImpl() const override;
     void applyConstraintsImpl() override;
 
 };

@@ -16,12 +16,11 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "CasOCProblem.h"
-
 #include "../MocoUtilities.h"
+#include "CasOCHermiteSimpson.h"
+#include "CasOCProblem.h"
 #include "CasOCTranscription.h"
 #include "CasOCTrapezoidal.h"
-#include "CasOCHermiteSimpson.h"
 
 using OpenSim::Exception;
 using OpenSim::format;
@@ -52,6 +51,10 @@ Iterate Solver::createRandomIterateWithinBounds() const {
 }
 
 Solution Solver::solve(const Iterate& guess) const {
+    OPENSIM_THROW_IF(isDynamicsModeImplicit() &&
+                             m_problem.getNumKinematicConstraintEquations(),
+            OpenSim::Exception,
+            "Cannot use implicit dynamics mode with kinematic constraints.");
     auto transcription = createTranscription();
     return transcription->solve(guess);
 }

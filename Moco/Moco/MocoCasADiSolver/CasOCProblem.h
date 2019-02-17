@@ -43,11 +43,17 @@ namespace CasOC {
 enum Var {
     initial_time,
     final_time,
+    /// Differential variables.
     states,
+    /// Algebraic variables.
     controls,
+    /// Used for kinematic constraints.
     multipliers,
+    /// Used for certain methods of solving kinematic constraints.
     slacks,
-    derivatives,
+    /// Used in implicit dynamics mode.
+    derivatives, // TODO: Rename to accelerations?
+    /// Constant in time.
     parameters
 };
 
@@ -275,6 +281,13 @@ public:
         m_velocityCorrectionFunc->constructFunction(this, 
                 "velocity_correction");
     }
+    template <typename FunctionType, typename... Args>
+    void setImplicitMultibodySystem(Args&&... args) {
+        m_implicitMultibodyFunc =
+                OpenSim::make_unique<FunctionType>(std::forward<Args>(args)...);
+        m_implicitMultibodyFunc->constructFunction(this,
+                "implicit_multibody_system");
+    }
 
     /// Create an iterate with the variable names populated according to the
     /// variables added to this problem.
@@ -289,8 +302,16 @@ public:
             it.multiplier_names.push_back(info.name);
         for (const auto& info : m_slackInfos)
             it.slack_names.push_back(info.name);
-        // for (const auto& info : m_derivativeInfos)
-        //    it.derivative_names.push_back(info.name);
+        for (const auto& info : m_stateInfos) {
+            if (info.type == StateType::Speed) {
+                auto name = info.name;
+                auto leafpos = name.find("speed");
+                OPENSIM_THROW_IF(leafpos == std::string::npos,
+                        OpenSim::Exception, "Internal error.");
+                name.replace(leafpos, name.size(), "accel");
+                it.derivative_names.push_back(name);
+            }
+        }
         for (const auto& info : m_paramInfos)
             it.parameter_names.push_back(info.name);
         return it;
@@ -368,6 +389,9 @@ public:
     const casadi::Function& getVelocityCorrection() const {
         return *m_velocityCorrectionFunc;
     }
+    const casadi::Function& getImplicitMultibodySystem() const {
+        return *m_implicitMultibodyFunc;
+    }
     /// @}
 
 private:
@@ -398,6 +422,7 @@ private:
     std::unique_ptr<EndpointCost> m_endpointCostFunc;
     std::unique_ptr<MultibodySystem<true>> m_multibodyFunc;
     std::unique_ptr<MultibodySystem<false>> m_unconstrainedMultibodyFunc;
+    std::unique_ptr<MultibodySystemImplicit> m_implicitMultibodyFunc;
     std::unique_ptr<VelocityCorrection> m_velocityCorrectionFunc;
 };
 

@@ -198,3 +198,32 @@ casadi::Sparsity VelocityCorrection::get_sparsity_out(casadi_int i) {
         return casadi::Sparsity(0, 0);
     }
 }
+
+casadi::Sparsity MultibodySystemImplicit::get_sparsity_in(casadi_int i) {
+    if (i == 0) {
+        return casadi::Sparsity::dense(1, 1);
+    } else if (i == 1) {
+        return casadi::Sparsity::dense(m_casProblem->getNumStates(), 1);
+    } else if (i == 2) {
+        return casadi::Sparsity::dense(m_casProblem->getNumControls(), 1);
+    } else if (i == 3) {
+        return casadi::Sparsity::dense(m_casProblem->getNumMultipliers(), 1);
+    } else if (i == 4) {
+        return casadi::Sparsity::dense(m_casProblem->getNumSpeeds(), 1);
+    } else if (i == 5) {
+        return casadi::Sparsity::dense(m_casProblem->getNumParameters(), 1);
+    } else {
+        return casadi::Sparsity(0, 0);
+    }
+}
+
+casadi::Sparsity MultibodySystemImplicit::get_sparsity_out(casadi_int i) {
+    if (i == 0) {
+        return casadi::Sparsity::dense(m_casProblem->getNumSpeeds(), 1);
+    } else if (i == 1) {
+        return casadi::Sparsity::dense(
+                m_casProblem->getNumAuxiliaryStates(), 1);
+    } else {
+        return casadi::Sparsity(0, 0);
+    }
+}

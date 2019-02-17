@@ -18,6 +18,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
+#include <OpenSim/Simulation/InverseDynamicsSolver.h>
 #include "../MocoBounds.h"
 #include "../MocoProblemRep.h"
 #include "CasOCProblem.h"
@@ -143,9 +144,12 @@ TOut convertToMocoIterate(const CasOC::Iterate& casIt) {
         simtkSlacks = convertToSimTKMatrix(slacksValue);
     }
     SimTK::Matrix simtkDerivatives;
+    auto derivativeNames = casIt.derivative_names;
     if (casVars.count(Var::derivatives)) {
         const auto derivsValue = casVars.at(Var::derivatives);
         simtkDerivatives = convertToSimTKMatrix(derivsValue);
+    } else {
+        derivativeNames.clear();
     }
     SimTK::RowVector simtkParameters;
     if (!casIt.parameter_names.empty()) {
@@ -155,7 +159,7 @@ TOut convertToMocoIterate(const CasOC::Iterate& casIt) {
     SimTK::Vector simtkTimes = convertToSimTKVector(casIt.times);
 
     TOut mocoIterate(simtkTimes, casIt.state_names, casIt.control_names,
-            casIt.multiplier_names, casIt.derivative_names,
+            casIt.multiplier_names, derivativeNames,
             casIt.parameter_names, simtkStates, simtkControls, simtkMultipliers,
             simtkDerivatives, simtkParameters);
 
@@ -427,6 +431,7 @@ public:
 
             }
             out[0] = convertToCasADiDM(udot);
+            // TODO: zdot probably depends on realizing to Acceleration.
             out[1] = convertToCasADiDM(m_simtkState.getZDot());
 
         } else {
@@ -507,6 +512,53 @@ private:
     mutable SimTK::State m_simtkState;
     std::unordered_map<int, int> m_yIndexMap;
     mutable SimTK::Vector qdotCorr;
+};
+
+class MocoCasADiMultibodySystemImplicit
+        : public CasOC::MultibodySystemImplicit {
+public:
+    MocoCasADiMultibodySystemImplicit(const OpenSim::MocoProblemRep& problem,
+            /*const OpenSim::MocoCasADiSolver& solver,*/
+            std::unordered_map<int, int> yIndexMap)
+            : m_mocoProblemRep(problem), /*m_mocoCasADiSolver(solver),*/
+              m_model(problem.getModel()),
+              m_simtkState(m_model.getWorkingState()),
+              m_yIndexMap(std::move(yIndexMap)),
+              m_idSolver(m_model) {}
+    VectorDM eval(const VectorDM& args) const override {
+        const double& time = args.at(0).scalar();
+        const casadi::DM& states = args.at(1);
+        const casadi::DM& controls = args.at(2);
+        // const casadi::DM& multipliers = args.at(3);
+        const casadi::DM& derivatives = args.at(4);
+        const casadi::DM& parameters = args.at(5);
+        VectorDM out(2);
+        applyParametersToModel(
+                SimTK::Vector(this->m_casProblem->getNumParameters(),
+                        parameters.ptr(), true),
+                m_mocoProblemRep);
+        convertToSimTKState(
+                time, states, controls, m_model, m_yIndexMap, m_simtkState);
+
+        SimTK::Vector udot((int)derivatives.size1(), derivatives.ptr(), true);
+        SimTK::Vector residual = m_idSolver.solve(m_simtkState, udot);
+
+        // Calculate auxiliary dynamics.
+        // TODO: If auxiliary dynamics depend on udot, the wrong udot will be
+        // used.
+        m_model.realizeAcceleration(m_simtkState);
+
+        return {convertToCasADiDM(residual),
+                convertToCasADiDM(m_simtkState.getZDot())};
+    }
+
+private:
+    const OpenSim::MocoProblemRep& m_mocoProblemRep;
+    // const OpenSim::MocoCasADiSolver& m_mocoCasADiSolver;
+    const OpenSim::Model& m_model;
+    mutable SimTK::State m_simtkState;
+    std::unordered_map<int, int> m_yIndexMap;
+    mutable InverseDynamicsSolver m_idSolver;
 };
 
 } // namespace OpenSim

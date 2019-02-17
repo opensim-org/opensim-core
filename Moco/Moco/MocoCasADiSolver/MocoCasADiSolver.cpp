@@ -148,8 +148,10 @@ std::unique_ptr<CasOC::Problem> MocoCasADiSolver::createCasOCProblem() const {
         OPENSIM_THROW_IF(getProperty_enforce_constraint_derivatives().empty(),
             Exception, "Enabled kinematic constraints exist in the "
             "provided model. Please set the solver property "
-            "'enforce_constraint_derivatives' to either 'true' or 'false'."
-        );
+            "'enforce_constraint_derivatives' to either 'true' or 'false'.");
+        OPENSIM_THROW_IF(get_dynamics_mode() == "implicit", Exception,
+                "Cannot use implicit dynamics mode with kinematic constraints.");
+
 
         int cid, mp, mv, ma;
         int numEquationsThisConstraint;
@@ -278,9 +280,10 @@ std::unique_ptr<CasOC::Problem> MocoCasADiSolver::createCasOCProblem() const {
     }
     casProblem->setIntegralCost<MocoCasADiIntegralCostIntegrand>(problemRep, yIndexMap);
     casProblem->setEndpointCost<MocoCasADiEndpointCost>(problemRep, yIndexMap);
-    // TODO if implicit, use different function.
     casProblem->setMultibodySystem<MocoCasADiMultibodySystem>(problemRep,
         *this, yIndexMap);
+    casProblem->setImplicitMultibodySystem<MocoCasADiMultibodySystemImplicit>(
+            problemRep, yIndexMap);
 
     return casProblem;
 }
@@ -363,6 +366,7 @@ std::unique_ptr<CasOC::Solver> MocoCasADiSolver::createCasOCSolver(
 
     casSolver->setNumMeshPoints(get_num_mesh_points());
     casSolver->setTranscriptionScheme(get_transcription_scheme());
+    casSolver->setDynamicsMode(get_dynamics_mode());
     casSolver->setMinimizeLagrangeMultipliers(
         get_minimize_lagrange_multipliers());
     casSolver->setLagrangeMultiplierWeight(get_lagrange_multiplier_weight());

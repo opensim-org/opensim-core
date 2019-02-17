@@ -28,8 +28,16 @@ namespace OpenSim {
 /// an optimal control problem into a generic nonlinear programming problem.
 /// The best resource for learning about direct collocation is the Betts
 /// textbook.
-/// Betts, John T. Practical methods for optimal control and estimation using
-/// nonlinear programming. Vol. 19. Siam, 2010.
+///
+/// Dynamics mode
+/// -------------
+/// The `dynamics_mode` setting allows you to choose between expressing
+/// multibody dynamics as explicit differential equations (e.g., \f$ \dot{y} =
+/// f(y) \f$) or implicit differential equations (e.g., \f$ 0 = f(y, \dot{y})
+/// \f$, or inverse dynamics). Currently, auxiliary dynamics (e.g., muscle fiber
+/// and activation dynamics) are always explicit. Betts, John T. Practical
+/// methods for optimal control and estimation using nonlinear programming.
+/// Vol. 19. Siam, 2010.
 class MocoDirectCollocationSolver : public MocoSolver {
     OpenSim_DECLARE_ABSTRACT_OBJECT(MocoDirectCollocationSolver, MocoSolver);
 
@@ -59,7 +67,8 @@ public:
             "(-1 for solver's default)");
     OpenSim_DECLARE_PROPERTY(optim_hessian_approximation, std::string,
             "When using IPOPT, 'limited-memory' (default) for quasi-Newton, or "
-            "'exact' for full " "Newton.");
+            "'exact' for full "
+            "Newton.");
     OpenSim_DECLARE_PROPERTY(optim_ipopt_print_level, int,
             "IPOPT's verbosity (see IPOPT documentation).");
     OpenSim_DECLARE_OPTIONAL_PROPERTY(enforce_constraint_derivatives, bool,
@@ -69,7 +78,7 @@ public:
     OpenSim_DECLARE_PROPERTY(minimize_lagrange_multipliers, bool,
             "If enabled, a term minimizing the weighted, squared sum of "
             "any existing Lagrange multipliers is added to the optimal control "
-            "problem. This may be useful for imposing uniqueness in the " 
+            "problem. This may be useful for imposing uniqueness in the "
             "Lagrange multipliers when not enforcing model kinematic "
             "constraint derivatives or when the constraint Jacobian is "
             "singular. To set the weight for this term use the "
