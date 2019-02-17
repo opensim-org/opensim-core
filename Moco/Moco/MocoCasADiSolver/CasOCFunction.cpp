@@ -193,7 +193,7 @@ casadi::Sparsity VelocityCorrection::get_sparsity_in(casadi_int i) {
 
 casadi::Sparsity VelocityCorrection::get_sparsity_out(casadi_int i) {
     if (i == 0) {
-        return casadi::Sparsity::dense(m_casProblem->getNumCoordinates(), 1);
+        return casadi::Sparsity::dense(m_casProblem->getNumSpeeds(), 1);
     } else {
         return casadi::Sparsity(0, 0);
     }

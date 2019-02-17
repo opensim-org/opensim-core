@@ -187,7 +187,7 @@ void Transcription::transcribe() {
 
         // Calculate differential-algebraic equations and update the state
         // derivatives vector.
-        calcDAE(itime, NQ, this_xdot, calcPVAErr, this_pvaerr, islack);
+        calcDAE(itime, this_xdot, calcPVAErr, this_pvaerr, islack);
         xdot(Slice(), itime) = this_xdot;
 
         // If calculating kinematic contraint errors, also update the constraint
@@ -262,11 +262,13 @@ Iterate Transcription::createRandomIterateWithinBounds() const {
     return casIterate;
 }
 
-void Transcription::calcDAE(casadi_int itime, const int& NQ, MX& xdot, 
+void Transcription::calcDAE(casadi_int itime, MX& xdot,
     bool calcPVAErr, MX& pvaerr, casadi_int islack)
 {
     const auto& states = m_vars[Var::states];
-    const MX u = states(Slice(NQ, 2 * NQ), itime);
+    const int NQ = m_problem.getNumCoordinates();
+    const int NU = m_problem.getNumSpeeds();
+    const MX u = states(Slice(NQ, NQ + NU), itime);
     MX qdot = u; // TODO: This assumes the N matrix is identity.
 
     // If slack variables exist and we're not computing constraint errors at 

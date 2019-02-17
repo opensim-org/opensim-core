@@ -177,7 +177,7 @@ protected:
         }
     }
 
-    void calcDAE(casadi_int itime, const int& NQ, casadi::MX& xdot, 
+    void calcDAE(casadi_int itime, casadi::MX& xdot,
         bool calcPVAErr, casadi::MX& pvaerr, casadi_int islack);
 
     void setObjective(casadi::MX objective) {

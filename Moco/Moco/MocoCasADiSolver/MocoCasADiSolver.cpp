@@ -102,7 +102,8 @@ std::unique_ptr<CasOC::Problem> MocoCasADiSolver::createCasOCProblem() const {
     checkPropertyInSet(
             *this, getProperty_dynamics_mode(), {"explicit", "implicit"});
     const auto& model = problemRep.getModel();
-    auto stateNames = createStateVariableNamesInSystemOrder(model);
+    std::unordered_map<int, int> yIndexMap;
+    auto stateNames = createStateVariableNamesInSystemOrder(model, yIndexMap);
     casProblem->setTimeBounds(convertBounds(problemRep.getTimeInitialBounds()),
             convertBounds(problemRep.getTimeFinalBounds()));
     for (const auto& stateName : stateNames) {
@@ -257,7 +258,7 @@ std::unique_ptr<CasOC::Problem> MocoCasADiSolver::createCasOCProblem() const {
         // Only add the velocity correction if enforcing constraint derivatives.
         if (enforceConstraintDerivs) {
             casProblem->setVelocityCorrection<MocoCasADiVelocityCorrection>(
-                problemRep);
+                problemRep, yIndexMap);
         }
     }
 
@@ -273,13 +274,13 @@ std::unique_ptr<CasOC::Problem> MocoCasADiSolver::createCasOCProblem() const {
             casBounds.push_back(convertBounds(bounds));
         }
         casProblem->addPathConstraint<MocoCasADiPathConstraint>(
-                name, casBounds, problemRep, pathCon);
+                name, casBounds, problemRep, yIndexMap, pathCon);
     }
-    casProblem->setIntegralCost<MocoCasADiIntegralCostIntegrand>(problemRep);
-    casProblem->setEndpointCost<MocoCasADiEndpointCost>(problemRep);
+    casProblem->setIntegralCost<MocoCasADiIntegralCostIntegrand>(problemRep, yIndexMap);
+    casProblem->setEndpointCost<MocoCasADiEndpointCost>(problemRep, yIndexMap);
     // TODO if implicit, use different function.
     casProblem->setMultibodySystem<MocoCasADiMultibodySystem>(problemRep,
-        *this);
+        *this, yIndexMap);
 
     return casProblem;
 }

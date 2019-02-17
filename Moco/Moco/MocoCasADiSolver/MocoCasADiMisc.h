@@ -189,22 +189,20 @@ inline void applyParametersToModel(
 }
 
 inline void convertToSimTKState(const double& time, const casadi::DM& states,
-        const Model& model, SimTK::State& simtkState,
-        bool setControlsToNaN = true) {
-    OPENSIM_THROW_IF(simtkState.getNQ() != simtkState.getNU(),
-            OpenSim::Exception, "NQ != NU, copying state is incorrect.");
+        const Model& model, const std::unordered_map<int, int>& yIndexMap,
+        SimTK::State& simtkState, bool setControlsToNaN = true) {
     simtkState.setTime(time);
-    std::copy_n(states.ptr(), simtkState.getNY(),
-            simtkState.updY().updContiguousScalarData());
+    for (int isv = 0; isv < states.size1(); ++isv) {
+        simtkState.updY()[yIndexMap.at(isv)] = states(isv).scalar();
+    }
     if (setControlsToNaN) model.updControls(simtkState).setToNaN();
 }
 
 inline void convertToSimTKState(const double& time, const casadi::DM& states,
         const casadi::DM& controls, const Model& model,
+        const std::unordered_map<int, int>& yIndexMap,
         SimTK::State& simtkState) {
-    OPENSIM_THROW_IF(simtkState.getNQ() != simtkState.getNU(),
-            OpenSim::Exception, "NQ != NU, copying state is incorrect.");
-    convertToSimTKState(time, states, model, simtkState, false);
+    convertToSimTKState(time, states, model, yIndexMap, simtkState, false);
     auto& simtkControls = model.updControls(simtkState);
     std::copy_n(controls.ptr(), simtkControls.size(),
             simtkControls.updContiguousScalarData());
@@ -220,9 +218,11 @@ public:
 class MocoCasADiPathConstraint : public CasOC::PathConstraint {
 public:
     MocoCasADiPathConstraint(const OpenSim::MocoProblemRep& problem,
+            std::unordered_map<int, int> yIndexMap,
             const OpenSim::MocoPathConstraint& mocoPathConstraint)
             : m_mocoProblemRep(problem), m_model(problem.getModel()),
               m_simtkState(m_model.getWorkingState()),
+              m_yIndexMap(std::move(yIndexMap)),
               m_mocoPathCon(mocoPathConstraint) {}
 
     VectorDM eval(const VectorDM& args) const override {
@@ -234,7 +234,8 @@ public:
                                        parameters.ptr(), true),
                 m_mocoProblemRep);
         // TODO: Don't necessarily need to realize to Velocity.
-        convertToSimTKState(time, states, controls, m_model, m_simtkState);
+        convertToSimTKState(
+                time, states, controls, m_model, m_yIndexMap, m_simtkState);
         m_errors.resize(m_numEquations);
         m_mocoPathCon.calcPathConstraintErrors(m_simtkState, m_errors);
         return {convertToCasADiDM(m_errors)};
@@ -244,15 +245,18 @@ private:
     const OpenSim::MocoProblemRep& m_mocoProblemRep;
     const OpenSim::Model& m_model;
     mutable SimTK::State m_simtkState;
+    std::unordered_map<int, int> m_yIndexMap;
     const MocoPathConstraint& m_mocoPathCon;
     mutable SimTK::Vector m_errors;
 };
 
 class MocoCasADiIntegralCostIntegrand : public CasOC::IntegralCostIntegrand {
 public:
-    MocoCasADiIntegralCostIntegrand(const OpenSim::MocoProblemRep& problem)
+    MocoCasADiIntegralCostIntegrand(const OpenSim::MocoProblemRep& problem,
+            std::unordered_map<int, int> yIndexMap)
             : m_mocoProblemRep(problem), m_model(problem.getModel()),
-              m_simtkState(m_model.getWorkingState()) {}
+              m_simtkState(m_model.getWorkingState()),
+              m_yIndexMap(std::move(yIndexMap)) {}
     VectorDM eval(const VectorDM& args) const override {
         const double& time = args.at(0).scalar();
         const casadi::DM& states = args.at(1);
@@ -261,7 +265,8 @@ public:
         applyParametersToModel(SimTK::Vector(m_casProblem->getNumParameters(),
                                        parameters.ptr(), true),
                 m_mocoProblemRep);
-        convertToSimTKState(time, states, controls, m_model, m_simtkState);
+        convertToSimTKState(
+                time, states, controls, m_model, m_yIndexMap, m_simtkState);
         // TODO: Create separate functions for each cost term.
         casadi::DM output(1, 1);
         output(0, 0) = m_mocoProblemRep.calcIntegralCost(m_simtkState);
@@ -273,13 +278,16 @@ private:
     const OpenSim::MocoProblemRep& m_mocoProblemRep;
     const OpenSim::Model& m_model;
     mutable SimTK::State m_simtkState;
+    std::unordered_map<int, int> m_yIndexMap;
 };
 
 class MocoCasADiEndpointCost : public CasOC::EndpointCost {
 public:
-    MocoCasADiEndpointCost(const OpenSim::MocoProblemRep& problem)
+    MocoCasADiEndpointCost(const OpenSim::MocoProblemRep& problem,
+            std::unordered_map<int, int> yIndexMap)
             : m_mocoProblemRep(problem), m_model(problem.getModel()),
-              m_simtkState(m_model.getWorkingState()) {}
+              m_simtkState(m_model.getWorkingState()),
+              m_yIndexMap(std::move(yIndexMap)) {}
     VectorDM eval(const VectorDM& args) const override {
         const double& time = args.at(0).scalar();
         const casadi::DM& states = args.at(1);
@@ -287,7 +295,8 @@ public:
         applyParametersToModel(SimTK::Vector(m_casProblem->getNumParameters(),
                                        params.ptr(), true),
                 m_mocoProblemRep);
-        convertToSimTKState(time, states, m_model, m_simtkState, true);
+        convertToSimTKState(
+                time, states, m_model, m_yIndexMap, m_simtkState, true);
         casadi::DM output(1, 1);
         output(0, 0) = m_mocoProblemRep.calcEndpointCost(m_simtkState);
         return {output};
@@ -297,6 +306,7 @@ private:
     const OpenSim::MocoProblemRep& m_mocoProblemRep;
     const OpenSim::Model& m_model;
     mutable SimTK::State m_simtkState;
+    std::unordered_map<int, int> m_yIndexMap;
 };
 
 template <bool CalcKinConErrors>
@@ -304,31 +314,37 @@ class MocoCasADiMultibodySystem
         : public CasOC::MultibodySystem<CalcKinConErrors> {
 public:
     MocoCasADiMultibodySystem(const OpenSim::MocoProblemRep& problem,
-            const OpenSim::MocoCasADiSolver& solver)
+            const OpenSim::MocoCasADiSolver& solver,
+            std::unordered_map<int, int> yIndexMap)
             : m_mocoProblemRep(problem), m_mocoCasADiSolver(solver),
               m_model(problem.getModel()),
-              m_simtkState(m_model.getWorkingState())
-    {}
+              m_simtkState(m_model.getWorkingState()),
+              m_yIndexMap(std::move(yIndexMap)) {}
     VectorDM eval(const VectorDM& args) const override {
         const double& time = args.at(0).scalar();
         const casadi::DM& states = args.at(1);
         const casadi::DM& controls = args.at(2);
         const casadi::DM& multipliers = args.at(3);
         const casadi::DM& parameters = args.at(4);
-        casadi::DM out_kinematic_constraint_errors(0, 1);
-        applyParametersToModel(SimTK::Vector(this->m_casProblem->getNumParameters(),
-                                       parameters.ptr(), true),
+        VectorDM out;
+        applyParametersToModel(
+                SimTK::Vector(this->m_casProblem->getNumParameters(),
+                        parameters.ptr(), true),
                 m_mocoProblemRep);
-        convertToSimTKState(time, states, controls, m_model, m_simtkState);
+        convertToSimTKState(
+                time, states, controls, m_model, m_yIndexMap, m_simtkState);
 
         // If enabled constraints exist in the model, compute accelerations
         // based on Lagrange multipliers.
         // The total number of scalar holonomic, non-holonomic, and acceleration
-        // constraint equations enabled in the model. This does not count equations
-        // for derivatives of holonomic and non-holonomic constraints.
-        const int total_mp = this->m_casProblem->getNumHolonomicConstraintEquations();
-        const int total_mv = this->m_casProblem->getNumNonHolonomicConstraintEquations();
-        const int total_ma = this->m_casProblem->getNumAccelerationConstraintEquations();
+        // constraint equations enabled in the model. This does not count
+        // equations for derivatives of holonomic and non-holonomic constraints.
+        const int total_mp =
+                this->m_casProblem->getNumHolonomicConstraintEquations();
+        const int total_mv =
+                this->m_casProblem->getNumNonHolonomicConstraintEquations();
+        const int total_ma =
+                this->m_casProblem->getNumAccelerationConstraintEquations();
         // This is the sum of m_total_m(p|v|a).
         const int numMultipliers = this->m_casProblem->getNumMultipliers();
         if (numMultipliers) {
@@ -351,7 +367,8 @@ public:
 
             // Multipliers are negated so constraint forces can be used like
             // applied forces.
-            SimTK::Vector simtkMultipliers(numMultipliers, multipliers.ptr(), true);
+            SimTK::Vector simtkMultipliers(
+                    numMultipliers, multipliers.ptr(), true);
             matter.calcConstraintForcesFromMultipliers(m_simtkState,
                     -simtkMultipliers, constraintBodyForces,
                     constraintMobilityForces);
@@ -363,10 +380,11 @@ public:
             // Constraint errors.
             // TODO double-check that disabled constraints don't show up in
             // state
+            out.resize(2);
             if (CalcKinConErrors) {
 
                 // Position-level errors.
-                out_kinematic_constraint_errors =
+                casadi::DM out_kinematic_constraint_errors =
                         convertToCasADiDM(m_simtkState.getQErr());
 
                 if (enforceConstraintDerivatives || total_ma) {
@@ -402,24 +420,28 @@ public:
                 }
                 out_kinematic_constraint_errors = casadi::DM::vertcat(
                         {out_kinematic_constraint_errors, uerr, udoterr});
+
+                // Copy state derivative values to output. We cannot simply
+                // use getYDot() because that requires realizing to Acceleration.
+                out.push_back(out_kinematic_constraint_errors);
+
             }
-
-            // Copy state derivative values to output. We cannot simply
-            // use getYDot() because that requires realizing to Acceleration.
-
-            return {convertToCasADiDM(udot),
-                    convertToCasADiDM(m_simtkState.getZDot()),
-                    out_kinematic_constraint_errors};
+            out[0] = convertToCasADiDM(udot);
+            out[1] = convertToCasADiDM(m_simtkState.getZDot());
 
         } else {
             // If no constraints exist in the model, simply compute
             // accelerations directly from Simbody.
             m_mocoProblemRep.getModel().realizeAcceleration(m_simtkState);
 
-            return {convertToCasADiDM(m_simtkState.getUDot()),
-                    convertToCasADiDM(m_simtkState.getZDot()),
-                    out_kinematic_constraint_errors};
+            out = {convertToCasADiDM(m_simtkState.getUDot()),
+                    convertToCasADiDM(m_simtkState.getZDot())};
+            if (CalcKinConErrors) {
+                // Add an empty kinematic constraint error vector.
+                out.emplace_back(0, 1);
+            }
         }
+        return out;
     }
 
 private:
@@ -427,6 +449,7 @@ private:
     const OpenSim::MocoCasADiSolver& m_mocoCasADiSolver;
     const OpenSim::Model& m_model;
     mutable SimTK::State m_simtkState;
+    std::unordered_map<int, int> m_yIndexMap;
     // This member variable avoids unnecessary extra allocation of memory for
     // spatial accelerations, which are incidental to the computation of
     // generalized accelerations when specifying the dynamics with model
@@ -444,9 +467,11 @@ private:
 
 class MocoCasADiVelocityCorrection : public CasOC::VelocityCorrection {
 public:
-    MocoCasADiVelocityCorrection(const OpenSim::MocoProblemRep& problem)
+    MocoCasADiVelocityCorrection(const OpenSim::MocoProblemRep& problem,
+            std::unordered_map<int, int> yIndexMap)
             : /*m_mocoProblemRep(problem),*/ m_model(problem.getModel()),
-              m_simtkState(m_model.getWorkingState()) {}
+              m_simtkState(m_model.getWorkingState()),
+              m_yIndexMap(std::move(yIndexMap)) {}
     VectorDM eval(const VectorDM& args) const override {
 
         // TODO: would the velocity correction ever be parameter-dependent?
@@ -454,9 +479,8 @@ public:
         const casadi::DM& states = args.at(1);
         const casadi::DM& slacks = args.at(2);
 
-        m_simtkState.setTime(time);
-        std::copy_n(states.ptr(), m_simtkState.getNY(),
-                m_simtkState.updY().updContiguousScalarData());
+        convertToSimTKState(
+                time, states, m_model, m_yIndexMap, m_simtkState, false);
         m_model.realizeVelocity(m_simtkState);
 
         // Apply velocity correction to qdot if at a mesh interval midpoint.
@@ -470,7 +494,8 @@ public:
         const SimTK::SimbodyMatterSubsystem& matter =
                 m_model.getMatterSubsystem();
 
-        SimTK::Vector gamma(this->m_casProblem->getNumSlacks(), slacks.ptr(), true);
+        SimTK::Vector gamma(
+                this->m_casProblem->getNumSlacks(), slacks.ptr(), true);
         matter.multiplyByGTranspose(m_simtkState, gamma, qdotCorr);
 
         return {convertToCasADiDM(qdotCorr)};
@@ -480,6 +505,7 @@ private:
     // const OpenSim::MocoProblemRep& m_mocoProblemRep;
     const OpenSim::Model& m_model;
     mutable SimTK::State m_simtkState;
+    std::unordered_map<int, int> m_yIndexMap;
     mutable SimTK::Vector qdotCorr;
 };
 
