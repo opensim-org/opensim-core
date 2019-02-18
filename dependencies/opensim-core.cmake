@@ -8,12 +8,14 @@
 
 AddDependency(NAME       opensim-core
               URL        ${CMAKE_SOURCE_DIR}/../opensim-core
-              CMAKE_ARGS -DBUILD_API_EXAMPLES:BOOL=OFF
-                         -DBUILD_TESTING:BOOL=OFF
-                         -DBUILD_JAVA_WRAPPING:BOOL=${OPENSIM_JAVA_WRAPPING}
-                         -DBUILD_PYTHON_WRAPPING:BOOL=${OPENSIM_PYTHON_WRAPPING}
-                         -DSIMBODY_HOME:PATH=${CMAKE_INSTALL_PREFIX}/simbody
-                         -DCMAKE_PREFIX_PATH:PATH=${CMAKE_INSTALL_PREFIX}/docopt)
+              CMAKE_ARGS
+                    -DBUILD_API_EXAMPLES:BOOL=OFF
+                    -DBUILD_TESTING:BOOL=OFF
+                    -DBUILD_JAVA_WRAPPING:BOOL=${OPENSIM_JAVA_WRAPPING}
+                    -DBUILD_PYTHON_WRAPPING:BOOL=${OPENSIM_PYTHON_WRAPPING}
+                    -DOPENSIM_PYTHON_VERSION:STRING=${OPENSIM_PYTHON_VERSION}
+                    -DSIMBODY_HOME:PATH=${CMAKE_INSTALL_PREFIX}/simbody
+                    -DCMAKE_PREFIX_PATH:PATH=${CMAKE_INSTALL_PREFIX}/docopt)
 
 if(SUPERBUILD_opensim-core)
 

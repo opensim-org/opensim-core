@@ -197,7 +197,7 @@ inline void convertToSimTKState(const double& time, const casadi::DM& states,
         SimTK::State& simtkState, bool setControlsToNaN = true) {
     simtkState.setTime(time);
     for (int isv = 0; isv < states.size1(); ++isv) {
-        simtkState.updY()[yIndexMap.at(isv)] = states(isv).scalar();
+        simtkState.updY()[yIndexMap.at(isv)] = *(states.ptr() + isv);
     }
     if (setControlsToNaN) model.updControls(simtkState).setToNaN();
 }

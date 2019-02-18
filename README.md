@@ -1,10 +1,10 @@
-Muscollo
-========
+OpenSim Moco
+============
 
-Muscollo is a library for solving optimal control problems for 
+OpenSim Moco is a library for solving optimal control problems for 
 musculoskeletal systems. The library is written in C++ and will be part of 
 the OpenSim biomechanics simulation software package. Here are some examples of 
-problems you will be able to solve with Muscollo:
+problems you will be able to solve with OpenSim Moco:
 
 1. Solve for the muscle activity that tracks a known motion.
 2. Solve for a new motion that optimizes some objective functional.
@@ -12,10 +12,10 @@ problems you will be able to solve with Muscollo:
 
 The optimal control problems are solved using the direct collocation method.
 
-Building Muscollo
-=================
+Building Moco
+=============
 
-Muscollo depends on the following software:
+Moco depends on the following software:
 
 1. **OpenSim**: Platform for simulating musculoskeletal systems.
    1. **Simbody**: Multibody dynamics.
@@ -25,6 +25,7 @@ direct collocation. Currently, Tropter's source code is part of Muscollo.
    2. **Eigen**: C++ matrix library.
    3. **ColPack**: Used to efficiently 
    4. **ADOL-C**: Automatic differentiation.
+3. **CasADi**: Algorithmic differentiation and interface to nonlinear solvers.
 
 On **Linux** and **macOS**, you must obtain these packages on your own. Most of
 them can be found in a package manager (`apt-get` on Ubuntu, Homebrew on macOS).

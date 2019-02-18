@@ -303,7 +303,6 @@ protected:
         // point, so that each can preserve their cache?
         this->setSimTKState(time, states, controls, m_state);
 
-        m_model.realizePosition(m_state);
         integrand = m_mocoProbRep.calcIntegralCost(m_state);
 
         if (m_mocoTropterSolver.get_minimize_lagrange_multipliers()) {
@@ -332,8 +331,8 @@ protected:
 
     std::vector<std::string> m_svNamesInSysOrder;
     std::unordered_map<int, int> m_yIndexMap;
-    mutable SimTK::Vector_<SimTK::SpatialVec> constraintBodyForces;
-    mutable SimTK::Vector constraintMobilityForces;
+    mutable SimTK::Vector_<SimTK::SpatialVec> m_constraintBodyForces;
+    mutable SimTK::Vector m_constraintMobilityForces;
     mutable SimTK::Vector qdot;
     mutable SimTK::Vector qdotCorr;
     mutable SimTK::Vector udot;
@@ -453,11 +452,12 @@ public:
                     model.getMatterSubsystem();
 
             this->calcKinematicConstraintForces(in, simTKState,
-                    this->constraintBodyForces, this->constraintMobilityForces);
+                    this->m_constraintBodyForces,
+                    this->m_constraintMobilityForces);
                 
             matter.calcAccelerationIgnoringConstraints(simTKState,
-                    appliedMobilityForces + this->constraintMobilityForces,
-                    appliedBodyForces + this->constraintBodyForces,
+                    appliedMobilityForces + this->m_constraintMobilityForces,
+                    appliedBodyForces + this->m_constraintBodyForces,
                     this->udot, A_GB);
                     
             // Apply velocity correction to qdot if at a mesh interval midpoint.
