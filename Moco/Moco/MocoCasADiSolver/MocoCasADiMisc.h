@@ -546,7 +546,9 @@ public:
         // Calculate auxiliary dynamics.
         // TODO: If auxiliary dynamics depend on udot, the wrong udot will be
         // used.
-        m_model.realizeAcceleration(m_simtkState);
+        if (m_simtkState.getNZ()) {
+            m_model.realizeAcceleration(m_simtkState);
+        }
 
         return {convertToCasADiDM(residual),
                 convertToCasADiDM(m_simtkState.getZDot())};
