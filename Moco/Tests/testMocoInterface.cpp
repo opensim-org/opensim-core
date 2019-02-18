@@ -1319,7 +1319,6 @@ void testSkippingOverQuaternionSlots(bool constrained,
         CHECK(solution.getState("/jointset/j2/j2_coord_0/speed")[i] ==
                 Approx(speed));
     }
-    std::cout << solution.getStatesTrajectory() << std::endl;
 }
 
 TEST_CASE("Skip over empty quaternion slots", "") {
