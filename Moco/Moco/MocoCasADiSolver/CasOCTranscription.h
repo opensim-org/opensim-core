@@ -135,11 +135,11 @@ public:
         // auto hessian = casadi::MX::hessian(nlp["f"], nlp["x"]);
         // hessian.sparsity().to_file(
         //         "CasOCTranscription_objective_Hessian_sparsity.mtx");
-        auto lagrangian = m_objective +
-                casadi::MX::dot(casadi::MX::ones(nlp["g"].sparsity()), nlp["g"]);
-        auto hessian_lagr = casadi::MX::hessian(lagrangian, nlp["x"]);
-        hessian_lagr.sparsity().to_file(
-                         "CasOCTranscription_Lagrangian_Hessian_sparsity.mtx");
+        // auto lagrangian = m_objective +
+        //         casadi::MX::dot(casadi::MX::ones(nlp["g"].sparsity()), nlp["g"]);
+        // auto hessian_lagr = casadi::MX::hessian(lagrangian, nlp["x"]);
+        // hessian_lagr.sparsity().to_file(
+        //                  "CasOCTranscription_Lagrangian_Hessian_sparsity.mtx");
         // auto jacobian = casadi::MX::jacobian(nlp["g"], nlp["x"]);
         // jacobian.sparsity().to_file(
         //         "CasOCTranscription_constraint_Jacobian_sparsity.mtx");
