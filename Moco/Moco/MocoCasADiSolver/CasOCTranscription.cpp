@@ -166,6 +166,7 @@ void Transcription::transcribe() {
     xdot = MX(m_problem.getNumStates(), m_numGridPoints);
     pvaerr = MX(m_problem.getNumKinematicConstraintEquations(), 
         kinConIndices.nnz());
+
     // Temporary memory for state derivatives and constraint errors while 
     // iterating through time points.
     MX this_xdot;
@@ -182,8 +183,8 @@ void Transcription::transcribe() {
 
         // If the value of kinConIndices is non-zero at this time point, then 
         // we need to enforce kinematic constraint derivatives.
-        bool calcPVAErr = kinConIndices(itime).__nonzero__() ? 
-            true : false;
+        bool calcPVAErr = kinConIndices(itime).__nonzero__() && 
+            (pvaerr.size1() != 0) ? true : false;
 
         // Calculate differential-algebraic equations and update the state
         // derivatives vector.

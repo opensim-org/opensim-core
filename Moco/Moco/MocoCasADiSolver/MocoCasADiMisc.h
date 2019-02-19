@@ -437,7 +437,7 @@ public:
                     convertToCasADiDM(m_simtkState.getZDot());
 
 
-                return{out_multibody_derivatives, out_auxiliary_derivatives};
+                return {out_multibody_derivatives, out_auxiliary_derivatives};
             }
             
             // Copy state derivative values to output struct. We cannot simply
@@ -459,7 +459,7 @@ public:
             const auto out_auxiliary_derivatives =
                     convertToCasADiDM(m_simtkState.getZDot());
 
-            return{out_multibody_derivatives, out_auxiliary_derivatives};
+            return {out_multibody_derivatives, out_auxiliary_derivatives};
         }
 
         
@@ -524,8 +524,8 @@ public:
         matter.multiplyByGTranspose(m_simtkState, gamma, qdotCorr);
 
         casadi::DM velocity_correction;
-        std::copy_n(qdotCorr.getContiguousScalarData(),
-            m_simtkState.getNQ(), velocity_correction.ptr());
+        velocity_correction = convertToCasADiDM(SimTK::Vector(
+            m_simtkState.getNQ(), qdotCorr.getContiguousScalarData(), true));
 
         return {velocity_correction};
     }
