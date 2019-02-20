@@ -172,14 +172,14 @@ void Transcription::transcribe() {
             "Problems with differing numbers of coordinates and speeds are not "
             "supported (e.g., quaternions).");
     const DM kinematicConstraintIndices = createKinematicConstraintIndices();
-    const DM resConIndices = createResidualConstraintIndicesImpl();
+    const DM residualIndices = createResidualConstraintIndicesImpl();
 
     // TODO: Does creating all this memory have efficiency implications in
     // CasADi?
     // Initialize memory for state derivatives and constraint errors.
     m_xdot = MX(m_problem.getNumStates(), m_numGridPoints);
     if (m_solver.isDynamicsModeImplicit()) {
-        m_residual = MX(m_problem.getNumSpeeds(), resConIndices.nnz());
+        m_residual = MX(m_problem.getNumSpeeds(), residualIndices.nnz());
     }
     m_kcerr = MX(m_problem.getNumKinematicConstraintEquations(),
             kinematicConstraintIndices.nnz());
@@ -214,7 +214,8 @@ void Transcription::transcribe() {
         // Calculate differential-algebraic equations and update the state
         // derivatives vector.
         if (m_solver.isDynamicsModeImplicit()) {
-            const bool calcResidual = resConIndices(itime).__nonzero__();
+            const bool calcResidual =
+                    DM::is_equal(residualIndices(itime), DM::ones(1, 1));
             calcDifferentialAlgebraicEquationsImplicit(itime, islack,
                     calcResidual, calcKinematicConstraintErrors, this_xdot,
                     this_residual, this_kcerr);
