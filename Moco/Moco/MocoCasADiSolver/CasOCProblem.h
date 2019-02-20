@@ -256,11 +256,11 @@ public:
     template <template <bool> class FunctionType, typename... Args>
     void setMultibodySystem(Args&&... args) {
         // Construct an unconstrained multibody system.
-        m_unconstrainedMultibodyFunc = 
+        m_multibodyFuncIgnoringConstraints =
                 OpenSim::make_unique<FunctionType<false>>(
                     std::forward<Args>(args)...);
-        m_unconstrainedMultibodyFunc->constructFunction(this,
-                "unconstrainted_multibody_system");
+        m_multibodyFuncIgnoringConstraints->constructFunction(this,
+                "multibody_system_ignoring_constraints");
         // Constraint a full multibody system (i.e. including kinematic
         // constraints).
         m_multibodyFunc = OpenSim::make_unique<FunctionType<true>>(
@@ -353,7 +353,7 @@ public:
     const casadi::Function& getEndpointCost() const {
         return *m_endpointCostFunc;
     }
-    /// Get a function the full multibody system (i.e. including kinematic 
+    /// Get a function to the full multibody system (i.e. including kinematic 
     /// constraints errors).
     const casadi::Function& getMultibodySystem() const {
         return *m_multibodyFunc;
@@ -362,9 +362,13 @@ public:
     /// constraint errors (if they exist). This may be necessary for computing
     /// state derivatives at grid points where we do not want to enforce 
     /// kinematic constraint errors.
-    const casadi::Function& getUnconstrainedMultibodySystem() const {
-        return *m_unconstrainedMultibodyFunc;
+    const casadi::Function& getMultibodySystemIgnoringConstraints() const {
+        return *m_multibodyFuncIgnoringConstraints;
     }
+    /// Get a function to compute the velocity correction to qdot when enforcing 
+    /// kinematic constraints and their derivatives. We require a separate 
+    /// function for this since we don't actually compute qdot within the 
+    /// multibody system. 
     const casadi::Function& getVelocityCorrection() const {
         return *m_velocityCorrectionFunc;
     }
@@ -397,7 +401,7 @@ private:
     std::unique_ptr<IntegralCostIntegrand> m_integralCostFunc;
     std::unique_ptr<EndpointCost> m_endpointCostFunc;
     std::unique_ptr<MultibodySystem<true>> m_multibodyFunc;
-    std::unique_ptr<MultibodySystem<false>> m_unconstrainedMultibodyFunc;
+    std::unique_ptr<MultibodySystem<false>> m_multibodyFuncIgnoringConstraints;
     std::unique_ptr<VelocityCorrection> m_velocityCorrectionFunc;
 };
 

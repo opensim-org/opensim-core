@@ -158,43 +158,49 @@ void Transcription::transcribe() {
     const int NQ = m_problem.getNumCoordinates();
     const int NU = m_problem.getNumSpeeds();
     OPENSIM_THROW_IF(NQ != NU, OpenSim::Exception, "NQ != NU");
-    const DM kinConIndices = createKinematicConstraintIndices();
+    const DM kinematicConstraintIndices = createKinematicConstraintIndices();
 
     // TODO: Does creating all this memory have efficiency implications in
     // CasADi?
     // Initialize memory for state derivatives and constraint errors.
     xdot = MX(m_problem.getNumStates(), m_numGridPoints);
-    pvaerr = MX(m_problem.getNumKinematicConstraintEquations(), 
-        kinConIndices.nnz());
+    kcerr = MX(m_problem.getNumKinematicConstraintEquations(), 
+        kinematicConstraintIndices.nnz());
 
-    // Temporary memory for state derivatives and constraint errors while 
-    // iterating through time points.
+    // Temporary memory for state derivatives and kinematic constraint errors 
+    // while iterating through time points.
     MX this_xdot;
-    MX this_pvaerr;
+    MX this_kcerr;
     // Updateable index for constraint errors vector.
     int ikc = 0;
     // Updateable index for slack variables. This index will always be -1 if 
     // constraint derivatives are not being enforced (i.e. no slack variables),
-    // which tells calcDAE() not to compute the velocity correction.
+    // which tells calcDifferentialAlgebraicEquations() not to compute the 
+    // velocity correction.
     int islack = m_problem.getEnforceConstraintDerivatives() ? 0 : -1;
     // Iterate through the grid, computing state derivatives and constraint 
     // errors as necessary.
     for (int itime = 0; itime < m_numGridPoints; ++itime) {
 
-        // If the value of kinConIndices is non-zero at this time point, then 
+        // If kinematic constraints exists and the value of 
+        // kinematicConstraintIndices is non-zero at this time point, then 
         // we need to enforce kinematic constraint derivatives.
-        bool calcPVAErr = kinConIndices(itime).__nonzero__() && 
-            (pvaerr.size1() != 0) ? true : false;
+        bool kinematicConstraintsExist = kcerr.size1() != 0;
+        bool isKCIndex = DM::is_equal(kinematicConstraintIndices(itime), 
+            DM::ones(1,1));
+        bool calcKinematicConstraintErrors = kinematicConstraintsExist && 
+            isKCIndex ? true : false;
 
         // Calculate differential-algebraic equations and update the state
         // derivatives vector.
-        calcDAE(itime, NQ, this_xdot, calcPVAErr, this_pvaerr, islack);
+        calcDifferentialAlgebraicEquations(itime, NQ, islack,
+            calcKinematicConstraintErrors, this_xdot, this_kcerr);
         xdot(Slice(), itime) = this_xdot;
 
         // If calculating kinematic contraint errors, also update the constraint
         // errors vector and index.
-        if (calcPVAErr) {
-            pvaerr(Slice(), ikc) = this_pvaerr;
+        if (calcKinematicConstraintErrors) {
+            kcerr(Slice(), ikc) = this_kcerr;
             ++ikc;
         // If not calculating constraint errors at this time point but enforcing
         // constraint derivatives in the problem, update the slack variable 
@@ -263,9 +269,9 @@ Iterate Transcription::createRandomIterateWithinBounds() const {
     return casIterate;
 }
 
-void Transcription::calcDAE(casadi_int itime, const int& NQ, MX& xdot, 
-    bool calcPVAErr, MX& pvaerr, casadi_int islack)
-{
+void Transcription::calcDifferentialAlgebraicEquations(casadi_int itime, 
+        const int& NQ, casadi_int islack, bool calcKinematicConstraintErrors, 
+        MX& xdot, MX& kcerr) {
     const auto& states = m_vars[Var::states];
     const MX u = states(Slice(NQ, 2 * NQ), itime);
     MX qdot = u; // TODO: This assumes the N matrix is identity.
@@ -273,17 +279,21 @@ void Transcription::calcDAE(casadi_int itime, const int& NQ, MX& xdot,
     // If slack variables exist and we're not computing constraint errors at 
     // this time point, compute the velocity correction and update qdot. 
     // See MocoCasADiVelocityCorrection for more details.
-    if (!calcPVAErr && islack != -1) {
+    if (!calcKinematicConstraintErrors && islack != -1) {
         const auto& velocityCorrFunc = m_problem.getVelocityCorrection();
+        // This function only takes multibody state variables: coordinates and
+        // speeds.
+        // TODO update when NQ != NU.
         const auto velocityCorrOutput = velocityCorrFunc.operator()(
-        {m_times(itime), m_vars[Var::states](Slice(), itime),
+        {m_times(itime), m_vars[Var::states](Slice(0, 2 * NQ), itime),
             m_vars[Var::slacks](Slice(), islack)});
         qdot += velocityCorrOutput.at(0);
     }
     
     // Get the multibody system function.
-    const auto& multibodyFunc = calcPVAErr ? m_problem.getMultibodySystem() :
-        m_problem.getUnconstrainedMultibodySystem();
+    const auto& multibodyFunc = calcKinematicConstraintErrors ?
+        m_problem.getMultibodySystem() :
+        m_problem.getMultibodySystemIgnoringConstraints();
 
     // Evaluate the multibody system function and get udot (speed derivatives)
     // and zdot (auxiliary derivatives).
@@ -300,8 +310,8 @@ void Transcription::calcDAE(casadi_int itime, const int& NQ, MX& xdot,
 
     // If calculating constraint errors, also update the constraint errors 
     // vector.
-    if (calcPVAErr) {
-        pvaerr = dynamicsOutput.at(2);
+    if (calcKinematicConstraintErrors) {
+        kcerr = dynamicsOutput.at(2);
     }
 }
 

@@ -362,15 +362,9 @@ public:
             // TODO double-check that disabled constraints don't show up in
             // state
             if (CalcKinConErrors) {
-                // This pointer is only available when CalcKinConErrors is true.
+                // Position-level errors.
                 casadi::DM out_kinematic_constraint_errors = 
                     convertToCasADiDM(m_simtkState.getQErr());
-
-                
-
-                // Position-level errors.
-                //std::copy_n(m_simtkState.getQErr().getContiguousScalarData(),
-                   // m_total_mp, out_kinematic_constraint_errors.ptr());
 
                 if (enforceConstraintDerivatives || m_total_ma) {
                     // Calculuate udoterr. We cannot use State::getUDotErr()
@@ -387,38 +381,19 @@ public:
                 if (enforceConstraintDerivatives) {
                     // Velocity-level errors.
                     uerr = convertToCasADiDM(m_simtkState.getUErr());
-                    udoterr = convertToCasADiDM(m_pvaerr);
-
-                    //std::copy_n(
-                    //    m_simtkState.getUErr().getContiguousScalarData(),
-                    //    m_total_mp + m_total_mv,
-                    //    out_kinematic_constraint_errors.ptr() + m_total_mp);
                     // Acceleration-level errors.
-                    //std::copy_n(
-                    //    m_pvaerr.getContiguousScalarData(),
-                    //    m_total_mp + m_total_mv + m_total_ma,
-                    //    out_kinematic_constraint_errors.ptr() + 2*m_total_mp 
-                    //        + m_total_mv);
+                    udoterr = convertToCasADiDM(m_pvaerr);
                 } else {
                     // Velocity-level errors. Skip derivatives of position-level
                     // constraint equations.
                     uerr = convertToCasADiDM(SimTK::Vector(m_total_mv, 
                         m_simtkState.getUErr().getContiguousScalarData() 
                         + m_total_mp, true));
-                    //std::copy_n(
-                    //    m_simtkState.getUErr().getContiguousScalarData()
-                    //        + m_total_mp, m_total_mv,
-                    //        out_kinematic_constraint_errors.ptr() + m_total_mp);
                     // Acceleration-level errors. Skip derivatives of velocity-
                     // and position-level constraint equations.
                     udoterr = convertToCasADiDM(SimTK::Vector(m_total_ma,
                         m_pvaerr.getContiguousScalarData() + m_total_mp + 
                         m_total_mv, true)); 
-                    //std::copy_n(
-                    //    m_pvaerr.getContiguousScalarData() +
-                    //    m_total_mp + m_total_mv, m_total_ma,
-                    //    out_kinematic_constraint_errors.ptr() + m_total_mp + 
-                    //        m_total_mv);
                 }
                 const auto out_multibody_derivatives =
                     convertToCasADiDM(udot);
@@ -427,8 +402,8 @@ public:
                 out_kinematic_constraint_errors = casadi::DM::vertcat(
                     {out_kinematic_constraint_errors, uerr, udoterr});
 
-                return{out_multibody_derivatives, out_auxiliary_derivatives,
-                    out_kinematic_constraint_errors};
+                return {out_multibody_derivatives, out_auxiliary_derivatives,
+                        out_kinematic_constraint_errors};
 
             } else {
                 const auto out_multibody_derivatives =
@@ -440,15 +415,6 @@ public:
                 return {out_multibody_derivatives, out_auxiliary_derivatives};
             }
             
-            // Copy state derivative values to output struct. We cannot simply
-            // use getYDot() because that requires realizing to Acceleration.
-            //const auto out_multibody_derivatives =
-            //        convertToCasADiDM(udot);
-            //const auto out_auxiliary_derivatives =
-            //    convertToCasADiDM(m_simtkState.getZDot());
-
-            
-
         // If no constraints exist in the model, simply compute accelerations
         // directly from Simbody.
         } else {
@@ -478,7 +444,7 @@ private:
     mutable SimTK::Vector constraintMobilityForces;
     mutable SimTK::Vector udot;
     // The total number of scalar holonomic, non-holonomic, and acceleration 
-    // constraint equations enabled in the model. This does not count equations                                                                     
+    // constraint equations enabled in the model. This does not count equations
     // for derivatives of holonomic and non-holonomic constraints. 
     mutable int m_total_mp = 0;
     mutable int m_total_mv = 0;
@@ -500,12 +466,13 @@ public:
         m_simtkState(m_model.getWorkingState()) {}
     VectorDM eval(const VectorDM& args) const override {
         const double& time = args.at(0).scalar();
-        const casadi::DM& states = args.at(1);
+        const casadi::DM& multibody_states = args.at(1);
         const casadi::DM& slacks = args.at(2);
         // TODO: would the velocity correction ever be parameter-dependent?
 
         m_simtkState.setTime(time);
-        std::copy_n(states.ptr(), m_simtkState.getNY(),
+        std::copy_n(multibody_states.ptr(), 
+            m_simtkState.getNQ() + m_simtkState.getNU(),
             m_simtkState.updY().updContiguousScalarData());
         m_model.realizeVelocity(m_simtkState);
 

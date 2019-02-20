@@ -172,13 +172,6 @@ protected:
         }
     }
 
-    void calcDAE(casadi_int itime, const int& NQ, casadi::MX& xdot, 
-        bool calcPVAErr, casadi::MX& pvaerr, casadi_int islack);
-
-    void setObjective(casadi::MX objective) {
-        m_objective = std::move(objective);
-    }
-
     void addConstraints(const casadi::DM& lower, const casadi::DM& upper,
             const casadi::MX& equations);
 
@@ -194,8 +187,8 @@ protected:
     int m_numSlackPoints = 0;
     casadi::MX m_times;
     casadi::MX m_duration;
-    casadi::MX xdot;
-    casadi::MX pvaerr;
+    casadi::MX xdot; // State derivatives.
+    casadi::MX kcerr; // Kinematic constraint errors.
     
 private:
     casadi::MX m_objective;
@@ -217,6 +210,18 @@ private:
     /// Override this function in your derived class set the defect, kinematic,
     /// and path constraint errors required for your transcription scheme.
     virtual void applyConstraintsImpl() = 0;
+
+    /// Calculate state derivatives and kinematic constraint errors from the 
+    /// system differential-algebraic equations for the defect and path
+    /// constraints in the direct collocation problem, which are imposed in
+    /// derived classes.
+    void calcDifferentialAlgebraicEquations(casadi_int itime, const int& NQ,
+        casadi_int islack, bool calcKinematicConstraintErrors, casadi::MX& xdot,
+        casadi::MX& kcerr);
+
+    void setObjective(casadi::MX objective) {
+        m_objective = std::move(objective);
+    }
 
     /// Use this function to ensure you iterate through variables in the same
     /// order.

@@ -25,17 +25,15 @@ namespace CasOC {
 
 DM HermiteSimpson::createQuadratureCoefficientsImpl() const {
 
-    const int numMeshPoints = (m_numGridPoints + 1) / 2;
-    const int numMeshIntervals = numMeshPoints - 1;
     // The duration of each mesh interval.
-    const DM mesh = DM::linspace(0, 1, numMeshPoints);
-    const DM meshIntervals = mesh(Slice(1, numMeshPoints)) -
-        mesh(Slice(0, numMeshPoints - 1));
+    const DM mesh = DM::linspace(0, 1, m_numMeshPoints);
+    const DM meshIntervals = mesh(Slice(1, m_numMeshPoints)) -
+        mesh(Slice(0, m_numMeshPoints - 1));
     // Simpson quadrature includes integrand evaluations at the midpoint.
     DM quadCoeffs(m_numGridPoints, 1);
     // Loop through each mesh interval and update the corresponding components
     // in the total coefficients vector.
-    for (int i = 0; i < numMeshIntervals; ++i) {
+    for (int i = 0; i < m_numMeshIntervals; ++i) {
         // The mesh interval quadrature coefficients overlap at the mesh grid 
         // points in the total coefficients vector, so we slice at every other 
         // index to update the coefficients vector.
@@ -63,10 +61,10 @@ void HermiteSimpson::applyConstraintsImpl() {
     // -------------------
     // For each state variable, there is one pair of defect constraints 
     // (Hermite interpolant defect + Simpson integration defect) per mesh
-    // interval. Each mesh interval includes two mesh points at its endpoint,
-    // and an additional collocation point at the mesh interval midpoint. All 
-    // there mesh interval points (2 mesh points + 1 collocation point) are used
-    // to construct the defects (see below).
+    // interval. Each mesh interval includes two mesh points (at the interval's
+    // endpoints) and an additional collocation point at the mesh interval 
+    // midpoint. All three mesh interval points (2 mesh points + 1 collocation 
+    // point) are used to construct the defects (see below).
     
     // Kinematic constraints + path constraints.
     // -----------------------------------------
@@ -119,7 +117,7 @@ void HermiteSimpson::applyConstraintsImpl() {
             kinConUpperBounds(Slice()) = bounds.upper;
 
             addConstraints(kinConLowerBounds, kinConUpperBounds, 
-                pvaerr(Slice(), imesh));
+                kcerr(Slice(), imesh));
         }
 
         // The individual path constraint functions are passed to CasADi to
