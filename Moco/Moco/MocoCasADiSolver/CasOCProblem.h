@@ -92,6 +92,7 @@ struct Bounds {
 /// coordinate, as a generalized speed, or as an auxiliary state variable (e.g.,
 /// muscle activity).
 enum class StateType { Coordinate, Speed, Auxiliary };
+enum class KinematicLevel { Position, Velocity, Acceleration };
 struct StateInfo {
     std::string name;
     StateType type;
@@ -167,43 +168,26 @@ public:
         m_controlInfos.push_back({std::move(name), std::move(bounds),
                 std::move(initialBounds), std::move(finalBounds)});
     }
-    /// Add a Lagrange multiplier variable to the problem associated with a 
-    /// kinematic constraint in the model.
-    void addMultiplier(std::string name, Bounds bounds, Bounds initialBounds,
-            Bounds finalBounds) {
-        clipEndpointBounds(bounds, initialBounds);
-        clipEndpointBounds(bounds, finalBounds);
-        m_multiplierInfos.push_back({std::move(name), std::move(bounds),
-            std::move(initialBounds), std::move(finalBounds)});
+    /// Add a 
+    void addKinematicConstraint(std::string multName, Bounds multbounds, 
+            Bounds multInitialBounds, Bounds multFinalBounds, 
+            KinematicLevel kinLevel) {
+        clipEndpointBounds(multbounds, multInitialBounds);
+        clipEndpointBounds(multbounds, multFinalBounds);
+        m_multiplierInfos.push_back({std::move(multName), std::move(multbounds),
+            std::move(multInitialBounds), std::move(multFinalBounds)});
+
+        if (kinLevel == KinematicLevel::Position)
+            ++m_numHolonomicConstraintEquations;
+        else if (kinLevel == KinematicLevel::Velocity)
+            ++m_numNonHolonomicConstraintEquations;
+        else if (kinLevel == KinematicLevel::Acceleration)
+            ++m_numAccelerationConstraintEquations;
     }
     /// Add a slack velocity correction variable to the problem associated with
     /// a kinematic constraint in the model.
     void addSlack(std::string name, Bounds bounds) {
         m_slackInfos.push_back({std::move(name), std::move(bounds)});
-    }
-    /// Set the total number of kinematic constraint equations (including 
-    /// derivatives of holonomic and non-holonomic constraint equations) in the
-    /// multibody system.
-    void setNumKinematicConstraintEquations(int numEqs) {
-        m_numKinematicConstraintEquations = numEqs;
-    }
-    /// Set the number of holonomic constraint equations in the multibody 
-    /// system.
-    /// @note This does *not* include holonomic constraint equation derivatives.
-    void setNumHolonomicConstraintEquations(int numHolo) {
-        m_numHolonomicConstraintEquations = numHolo;
-    }
-    /// Set the number of non-holonomic constraint equations in the multibody
-    /// system.
-    /// @note This does *not* include non-holonomic constraint equation 
-    /// derivatives.
-    void setNumNonHolonomicConstraintEquations(int numNonHolo) {
-        m_numNonHolonomicConstraintEquations = numNonHolo;
-    }
-    /// Set the number of acceleration constraint equations in the multibody
-    /// system.
-    void setNumAccelerationConstraintEquations(int numAccel) {
-        m_numAccelerationConstraintEquations = numAccel;
     }
     /// Set whether not constraint derivatives are to be enforced.
     void setEnforceConstraintDerivatives(bool tf) {
@@ -312,7 +296,15 @@ public:
     int getNumSpeeds() const { return m_numSpeeds; }
     int getNumAuxiliaryStates() const { return m_numAuxiliaryStates; }
     int getNumKinematicConstraintEquations() const { 
-        return m_numKinematicConstraintEquations; 
+        if (m_enforceConstraintDerivatives) {
+            return 3*m_numHolonomicConstraintEquations +
+                   2*m_numNonHolonomicConstraintEquations +
+                     m_numAccelerationConstraintEquations;
+        } else {
+            return m_numHolonomicConstraintEquations + 
+                   m_numNonHolonomicConstraintEquations + 
+                   m_numAccelerationConstraintEquations;
+        }
     }
     int getNumHolonomicConstraintEquations() const {
         return m_numHolonomicConstraintEquations; 
