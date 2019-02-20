@@ -345,9 +345,9 @@ void Transcription::calcDifferentialAlgebraicEquationsExplicit(casadi_int itime,
 }
 
 void Transcription::calcDifferentialAlgebraicEquationsImplicit(casadi_int itime,
-        casadi_int islack, bool calcResidual,
+        casadi_int /*islack*/, bool calcResidual,
         bool calcKinematicConstraintErrors, MX& xdot, MX& residual,
-        MX& pvaerr) {
+        MX& kcerr) {
     const auto& states = m_vars[Var::states];
     const int NQ = m_problem.getNumCoordinates();
     const int NU = m_problem.getNumSpeeds();
@@ -368,13 +368,13 @@ void Transcription::calcDifferentialAlgebraicEquationsImplicit(casadi_int itime,
                     m_vars[Var::multipliers](Slice(), itime),
                     m_vars[Var::derivatives](Slice(), itime),
                     m_vars[Var::parameters]});
-    residual = dynamicsOutput.at(0);
+    if (calcResidual) residual = dynamicsOutput.at(0);
     const MX zdot = dynamicsOutput.at(1);
 
     // Concatenate derivatives to update the state derivatives vector.
     xdot = casadi::MX::vertcat({qdot, udot, zdot});
 
-    if (calcKinematicConstraintErrors) pvaerr = casadi::MX::zeros(0, 1);
+    if (calcKinematicConstraintErrors) kcerr = casadi::MX::zeros(0, 1);
 }
 
 void Transcription::addConstraints(const casadi::DM& lower,

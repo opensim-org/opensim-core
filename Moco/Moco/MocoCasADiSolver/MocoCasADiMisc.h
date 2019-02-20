@@ -509,7 +509,7 @@ public:
 
         casadi::DM velocity_correction;
         velocity_correction =
-                convertToCasADiDM(SimTK::Vector(m_simtkState.getNQ(),
+                convertToCasADiDM(SimTK::Vector(m_qdotCorr.size(),
                         m_qdotCorr.getContiguousScalarData(), true));
 
         return {velocity_correction};
