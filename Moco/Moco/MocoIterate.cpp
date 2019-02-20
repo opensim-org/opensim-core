@@ -342,8 +342,8 @@ void MocoIterate::resample(SimTK::Vector time) {
     int numDerivatives = (int)m_derivative_names.size();
     int numSlacks = (int)m_slack_names.size();
 
-    TimeSeriesTable table = convertToTable();
-    GCVSplineSet splines(table, {}, std::min(m_time.size() - 1, 5));
+    const TimeSeriesTable table = convertToTable();
+    const GCVSplineSet splines(table, {}, std::min(m_time.size() - 1, 5));
 
     m_time = std::move(time);
     const int numTimes = m_time.size();
@@ -357,18 +357,20 @@ void MocoIterate::resample(SimTK::Vector time) {
         // which requires strictly increasing time.
         int icol;
         for (icol = 0; icol < numStates; ++icol)
-            m_states.updCol(icol) = table.getDependentColumnAtIndex(icol)[0];
+            m_states.updCol(icol).setTo(
+                    table.getDependentColumnAtIndex(icol).getElt(0, 0));
         for (int icontr = 0; icontr < numControls; ++icontr, ++icol)
-            m_controls.updCol(icontr) =
-                    table.getDependentColumnAtIndex(icol)[0];
+            m_controls.updCol(icontr).setTo(
+                    table.getDependentColumnAtIndex(icol).getElt(0, 0));
         for (int imult = 0; imult < numMultipliers; ++imult, ++icol)
-            m_multipliers.updCol(imult) =
-                    table.getDependentColumnAtIndex(icol)[0];
+            m_multipliers.updCol(imult).setTo(
+                    table.getDependentColumnAtIndex(icol).getElt(0, 0));
         for (int ideriv = 0; ideriv < numDerivatives; ++ideriv, ++icol)
-            m_derivatives.updCol(ideriv) =
-                    table.getDependentColumnAtIndex(icol)[0];
+            m_derivatives.updCol(ideriv).setTo(
+                    table.getDependentColumnAtIndex(icol).getElt(0, 0));
         for (int islack = 0; islack < numDerivatives; ++islack, ++icol)
-            m_slacks.updCol(islack) = table.getDependentColumnAtIndex(icol)[0];
+            m_slacks.updCol(islack).setTo(
+                    table.getDependentColumnAtIndex(icol).getElt(0, 0));
 
     } else {
         SimTK::Vector curTime(1);

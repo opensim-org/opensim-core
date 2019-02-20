@@ -335,7 +335,7 @@ void Transcription::calcDAEExplicit(casadi_int itime, MX& xdot, bool calcPVAErr,
 
 void Transcription::calcDAEImplicit(casadi_int itime, MX& xdot,
         bool calcResidual, MX& residual, bool calcPVAErr, MX& pvaerr,
-        casadi_int islack) {
+        casadi_int /*islack*/) {
     const auto& states = m_vars[Var::states];
     const int NQ = m_problem.getNumCoordinates();
     const int NU = m_problem.getNumSpeeds();
@@ -356,7 +356,9 @@ void Transcription::calcDAEImplicit(casadi_int itime, MX& xdot,
             m_vars[Var::controls](Slice(), itime),
             m_vars[Var::multipliers](Slice(), itime),
             m_vars[Var::derivatives](Slice(), itime), m_vars[Var::parameters]});
-    residual = dynamicsOutput.at(0);
+    if (calcResidual) {
+        residual = dynamicsOutput.at(0);
+    }
     const MX zdot = dynamicsOutput.at(1);
 
     // Concatenate derivatives to update the state derivatives vector.
