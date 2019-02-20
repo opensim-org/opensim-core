@@ -34,7 +34,10 @@ MocoAddSandboxExecutable(NAME sandboxMuscle
             shared/DeGrooteFregly2016Muscle.cpp
         LIB_DEPENDS osimMoco)
 MocoAddSandboxExecutable(NAME sandboxCasADi
-        LIB_DEPENDS osimMuscollo casadi tropter)
+        LIB_DEPENDS osimMoco casadi tropter)
+
+MocoAddSandboxExecutable(NAME sandboxCasADiParallelMap
+        LIB_DEPENDS SimTKcommon casadi)
 
 add_subdirectory(sandboxWholeBodyTracking)
 add_subdirectory(sandboxMarkerTrackingWholeBody)

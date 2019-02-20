@@ -232,7 +232,9 @@ public:
             : m_mocoProblemRep(problem), m_model(problem.getModel()),
               m_simtkState(m_model.getWorkingState()),
               m_yIndexMap(std::move(yIndexMap)),
-              m_mocoPathCon(mocoPathConstraint) {}
+              m_mocoPathCon(mocoPathConstraint) {
+
+    }
 
     VectorDM eval(const VectorDM& args) const override {
         const double& time = args.at(0).scalar();
@@ -251,7 +253,7 @@ public:
     }
 
 private:
-    const OpenSim::MocoProblemRep& m_mocoProblemRep;
+    static thread_local OpenSim::MocoProblemRep m_mocoProblemRep;
     static thread_local OpenSim::Model m_model;
     static thread_local SimTK::State m_simtkState;
     std::unordered_map<int, int> m_yIndexMap;
