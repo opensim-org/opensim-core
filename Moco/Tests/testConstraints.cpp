@@ -788,7 +788,7 @@ void testDoublePendulumPrescribedMotion(MocoSolution& couplerSolution,
 }
 
 TEMPLATE_TEST_CASE("DoublePendulum with and without constraint derivatives", "",
-        MocoTropterSolver/*, MocoCasADiSolver*/) {
+        MocoTropterSolver, MocoCasADiSolver) {
     // TODO test tolerances can be improved significantly by not including
     // Hermite-Simpson midpoint values in comparisons.
     SECTION("DoublePendulum without constraint derivatives") {
@@ -798,19 +798,19 @@ TEMPLATE_TEST_CASE("DoublePendulum with and without constraint derivatives", "",
     }
 
     SECTION("DoublePendulum with constraint derivatives"){
-        MocoSolution couplerSol2;
-        testDoublePendulumCoordinateCoupler<TestType>(couplerSol2, true);
-        testDoublePendulumPrescribedMotion<TestType>(couplerSol2, true);
+        MocoSolution couplerSol;
+        testDoublePendulumCoordinateCoupler<TestType>(couplerSol, true);
+        testDoublePendulumPrescribedMotion<TestType>(couplerSol, true);
     }
 }
 
 TEMPLATE_TEST_CASE("DoublePendulumPointOnLine without constraint derivatives",
-        "", MocoTropterSolver /*, MocoCasADiSolver*/) {
+        "", MocoTropterSolver, MocoCasADiSolver) {
     testDoublePendulumPointOnLine<TestType>(false);
 }
 
 TEMPLATE_TEST_CASE("DoublePendulumPointOnLine with constraint derivatives",
-        "", MocoTropterSolver /*, MocoCasADiSolver*/) {
+        "", MocoTropterSolver, MocoCasADiSolver) {
     testDoublePendulumPointOnLine<TestType>(true);
 }
 
@@ -843,7 +843,7 @@ protected:
 /// specified final configuration while subject to a constraint that its
 /// actuators must produce an equal control trajectory.
 TEMPLATE_TEST_CASE("DoublePendulumEqualControl", "",
-        MocoTropterSolver/*, MocoCasADiSolver*/) {
+        MocoTropterSolver, MocoCasADiSolver) {
     OpenSim::Object::registerType(EqualControlConstraint());
     MocoTool moco;
     moco.setName("double_pendulum_equal_control");

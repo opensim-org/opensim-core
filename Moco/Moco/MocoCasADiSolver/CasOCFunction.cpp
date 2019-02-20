@@ -63,7 +63,8 @@ casadi::Sparsity EndpointCost::get_sparsity_in(casadi_int i) {
     }
 }
 
-casadi::Sparsity MultibodySystem::get_sparsity_in(casadi_int i) {
+template <bool CalcKinConErrors>
+casadi::Sparsity MultibodySystem<CalcKinConErrors>::get_sparsity_in(casadi_int i) {
     if (i == 0) {
         return casadi::Sparsity::dense(1, 1);
     } else if (i == 1) {
@@ -78,15 +79,46 @@ casadi::Sparsity MultibodySystem::get_sparsity_in(casadi_int i) {
         return casadi::Sparsity(0, 0);
     }
 }
-casadi::Sparsity MultibodySystem::get_sparsity_out(casadi_int i) {
+
+template <bool CalcKinConErrors>
+casadi::Sparsity MultibodySystem<CalcKinConErrors>::get_sparsity_out(casadi_int i) {
     if (i == 0) {
         return casadi::Sparsity::dense(m_casProblem->getNumSpeeds(), 1);
     } else if (i == 1) {
         return casadi::Sparsity::dense(
                 m_casProblem->getNumAuxiliaryStates(), 1);
     } else if (i == 2) {
-        int numRows = m_casProblem->getNumKinematicConstraintEquations();
-        return casadi::Sparsity::dense(numRows, 1);
-    } else
+        if (CalcKinConErrors) {
+            int numRows = m_casProblem->getNumKinematicConstraintEquations();
+            return casadi::Sparsity::dense(numRows, 1);
+        } else {
+            return casadi::Sparsity(0, 0);
+        }
+    } else {
         return casadi::Sparsity(0, 0);
+    }
+}
+
+template class CasOC::MultibodySystem<false>;
+template class CasOC::MultibodySystem<true>;
+
+casadi::Sparsity VelocityCorrection::get_sparsity_in(casadi_int i) {
+    if (i == 0) {
+        return casadi::Sparsity::dense(1, 1);
+    } else if (i == 1) {
+        return casadi::Sparsity::dense(m_casProblem->getNumStates() - 
+            m_casProblem->getNumAuxiliaryStates(), 1);
+    } else if (i == 2) {
+        return casadi::Sparsity::dense(m_casProblem->getNumSlacks(), 1);
+    } else {
+        return casadi::Sparsity(0, 0);
+    }
+}
+
+casadi::Sparsity VelocityCorrection::get_sparsity_out(casadi_int i) {
+    if (i == 0) {
+        return casadi::Sparsity::dense(m_casProblem->getNumSpeeds(), 1);
+    } else {
+        return casadi::Sparsity(0, 0);
+    }
 }

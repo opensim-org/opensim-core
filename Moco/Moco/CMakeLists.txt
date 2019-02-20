@@ -68,6 +68,8 @@ add_library(osimMoco SHARED
         MocoCasADiSolver/CasOCTranscription.h
         MocoCasADiSolver/CasOCTrapezoidal.cpp
         MocoCasADiSolver/CasOCTrapezoidal.h
+        MocoCasADiSolver/CasOCHermiteSimpson.cpp
+        MocoCasADiSolver/CasOCHermiteSimpson.h
         MocoDirectCollocationSolver.cpp
         MocoDirectCollocationSolver.h)
 target_link_libraries(osimMoco PUBLIC osimTools

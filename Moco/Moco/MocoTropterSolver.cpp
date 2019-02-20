@@ -30,14 +30,7 @@ MocoTropterSolver::MocoTropterSolver() {
 void MocoTropterSolver::constructProperties() {
     constructProperty_optim_jacobian_approximation("exact");
     constructProperty_optim_sparsity_detection("random");
-    constructProperty_transcription_scheme("trapezoidal");
-    constructProperty_velocity_correction_bounds({-0.1, 0.1});
     constructProperty_exact_hessian_block_sparsity_mode();
-    constructProperty_minimize_lagrange_multipliers(false);
-    constructProperty_lagrange_multiplier_weight(1);
-
-    // This is empty to allow user input error checking.
-    constructProperty_enforce_constraint_derivatives();
 }
 
 std::shared_ptr<const MocoTropterSolver::TropterProblemBase<double>>

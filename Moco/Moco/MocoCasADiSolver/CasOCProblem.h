@@ -46,6 +46,7 @@ enum Var {
     states,
     controls,
     multipliers,
+    slacks,
     derivatives,
     parameters
 };
@@ -65,6 +66,7 @@ struct Iterate {
     std::vector<std::string> state_names;
     std::vector<std::string> control_names;
     std::vector<std::string> multiplier_names;
+    std::vector<std::string> slack_names;
     std::vector<std::string> derivative_names;
     std::vector<std::string> parameter_names;
     /// Return a new iterate in which the data is resampled at the times in
@@ -90,6 +92,7 @@ struct Bounds {
 /// coordinate, as a generalized speed, or as an auxiliary state variable (e.g.,
 /// muscle activity).
 enum class StateType { Coordinate, Speed, Auxiliary };
+enum class KinematicLevel { Position, Velocity, Acceleration };
 struct StateInfo {
     std::string name;
     StateType type;
@@ -102,6 +105,16 @@ struct ControlInfo {
     Bounds bounds;
     Bounds initialBounds;
     Bounds finalBounds;
+};
+struct MultiplierInfo {
+    std::string name;
+    Bounds bounds;
+    Bounds initialBounds;
+    Bounds finalBounds;
+};
+struct SlackInfo {
+    std::string name;
+    Bounds bounds;
 };
 struct ParameterInfo {
     std::string name;
@@ -155,6 +168,35 @@ public:
         m_controlInfos.push_back({std::move(name), std::move(bounds),
                 std::move(initialBounds), std::move(finalBounds)});
     }
+    /// Add a 
+    void addKinematicConstraint(std::string multName, Bounds multbounds, 
+            Bounds multInitialBounds, Bounds multFinalBounds, 
+            KinematicLevel kinLevel) {
+        clipEndpointBounds(multbounds, multInitialBounds);
+        clipEndpointBounds(multbounds, multFinalBounds);
+        m_multiplierInfos.push_back({std::move(multName), std::move(multbounds),
+            std::move(multInitialBounds), std::move(multFinalBounds)});
+
+        if (kinLevel == KinematicLevel::Position)
+            ++m_numHolonomicConstraintEquations;
+        else if (kinLevel == KinematicLevel::Velocity)
+            ++m_numNonHolonomicConstraintEquations;
+        else if (kinLevel == KinematicLevel::Acceleration)
+            ++m_numAccelerationConstraintEquations;
+    }
+    /// Add a slack velocity correction variable to the problem associated with
+    /// a kinematic constraint in the model.
+    void addSlack(std::string name, Bounds bounds) {
+        m_slackInfos.push_back({std::move(name), std::move(bounds)});
+    }
+    /// Set whether not constraint derivatives are to be enforced.
+    void setEnforceConstraintDerivatives(bool tf) {
+        m_enforceConstraintDerivatives = tf;
+    }
+    /// Set the bounds for *all* kinematic constraints in the problem.
+    void setKinematicConstraintBounds(Bounds bounds) {
+        m_kinematicConstraintBounds = std::move(bounds);
+    }
     /// Add a constant (time-invariant) variable to the optimization problem.
     void addParameter(std::string name, Bounds bounds) {
         m_paramInfos.push_back({std::move(name), std::move(bounds)});
@@ -195,11 +237,27 @@ public:
         m_endpointCostFunc->constructFunction(this, "endpoint_cost");
     }
     /// FunctionType must derive from MultibodySystem.
-    template <typename FunctionType, typename... Args>
+    template <template <bool> class FunctionType, typename... Args>
     void setMultibodySystem(Args&&... args) {
-        m_multibodyFunc =
-                OpenSim::make_unique<FunctionType>(std::forward<Args>(args)...);
+        // Construct an unconstrained multibody system.
+        m_multibodyFuncIgnoringConstraints =
+                OpenSim::make_unique<FunctionType<false>>(
+                    std::forward<Args>(args)...);
+        m_multibodyFuncIgnoringConstraints->constructFunction(this,
+                "multibody_system_ignoring_constraints");
+        // Constraint a full multibody system (i.e. including kinematic
+        // constraints).
+        m_multibodyFunc = OpenSim::make_unique<FunctionType<true>>(
+                    std::forward<Args>(args)...);
         m_multibodyFunc->constructFunction(this, "multibody_system");
+    }
+    /// FunctionType must derive from VelocityCorrection.
+    template <typename FunctionType, typename... Args>
+    void setVelocityCorrection(Args&&... args) {
+        m_velocityCorrectionFunc =
+                OpenSim::make_unique<FunctionType>(std::forward<Args>(args)...);
+        m_velocityCorrectionFunc->constructFunction(this, 
+                "velocity_correction");
     }
 
     /// Create an iterate with the variable names populated according to the
@@ -211,10 +269,10 @@ public:
             it.state_names.push_back(info.name);
         for (const auto& info : m_controlInfos)
             it.control_names.push_back(info.name);
-        if (getNumMultipliers())
-            throw std::runtime_error("Add multiplier_names");
-        // for (const auto& info : m_multiplierInfos)
-        //    it.multiplier_names.push_back(info.name);
+        for (const auto& info : m_multiplierInfos)
+            it.multiplier_names.push_back(info.name);
+        for (const auto& info : m_slackInfos)
+            it.slack_names.push_back(info.name);
         // for (const auto& info : m_derivativeInfos)
         //    it.derivative_names.push_back(info.name);
         for (const auto& info : m_paramInfos)
@@ -230,20 +288,50 @@ public:
     int getNumStates() const { return (int)m_stateInfos.size(); }
     int getNumControls() const { return (int)m_controlInfos.size(); }
     int getNumParameters() const { return (int)m_paramInfos.size(); }
-    /// TODO: Kinematic constraints are not supported yet. This returns 0.
-    int getNumMultipliers() const { return 0; /* TODO */ }
+    int getNumMultipliers() const { return (int)m_multiplierInfos.size(); }
+    int getNumSlacks() const { return (int)m_slackInfos.size(); }
     /// This is the number of generalized coordinates, which may be greater
     /// than the number of generalized speeds.
     int getNumCoordinates() const { return m_numCoordinates; }
     int getNumSpeeds() const { return m_numSpeeds; }
     int getNumAuxiliaryStates() const { return m_numAuxiliaryStates; }
-    /// TODO: Kinematic constraints are not supported yet. This returns 0.
-    int getNumKinematicConstraintEquations() const { return 0; /* TODO */ }
+    int getNumKinematicConstraintEquations() const { 
+        if (m_enforceConstraintDerivatives) {
+            return 3*m_numHolonomicConstraintEquations +
+                   2*m_numNonHolonomicConstraintEquations +
+                     m_numAccelerationConstraintEquations;
+        } else {
+            return m_numHolonomicConstraintEquations + 
+                   m_numNonHolonomicConstraintEquations + 
+                   m_numAccelerationConstraintEquations;
+        }
+    }
+    int getNumHolonomicConstraintEquations() const {
+        return m_numHolonomicConstraintEquations; 
+    }
+    int getNumNonHolonomicConstraintEquations() const {
+        return m_numNonHolonomicConstraintEquations; 
+    }
+    int getNumAccelerationConstraintEquations() const {
+        return m_numAccelerationConstraintEquations;
+    }
+    bool getEnforceConstraintDerivatives() const {
+        return m_enforceConstraintDerivatives;
+    }
+    const Bounds& getKinematicConstraintBounds() const { 
+        return m_kinematicConstraintBounds;
+    }
     const Bounds& getTimeInitialBounds() const { return m_timeInitialBounds; }
     const Bounds& getTimeFinalBounds() const { return m_timeFinalBounds; }
     const std::vector<StateInfo>& getStateInfos() const { return m_stateInfos; }
     const std::vector<ControlInfo>& getControlInfos() const {
         return m_controlInfos;
+    }
+    const std::vector<MultiplierInfo>& getMultiplierInfos() const {
+        return m_multiplierInfos;
+    }
+    const std::vector<SlackInfo>& getSlackInfos() const {
+        return m_slackInfos;
     }
     const std::vector<ParameterInfo>& getParameterInfos() const {
         return m_paramInfos;
@@ -251,16 +339,30 @@ public:
     const std::vector<PathConstraintInfo>& getPathConstraintInfos() const {
         return m_pathInfos;
     }
-
     const casadi::Function& getIntegralCostIntegrand() const {
         return *m_integralCostFunc;
     }
     const casadi::Function& getEndpointCost() const {
         return *m_endpointCostFunc;
     }
-
+    /// Get a function to the full multibody system (i.e. including kinematic 
+    /// constraints errors).
     const casadi::Function& getMultibodySystem() const {
         return *m_multibodyFunc;
+    }
+    /// Get a function to the multibody system that does *not* compute kinematic
+    /// constraint errors (if they exist). This may be necessary for computing
+    /// state derivatives at grid points where we do not want to enforce 
+    /// kinematic constraint errors.
+    const casadi::Function& getMultibodySystemIgnoringConstraints() const {
+        return *m_multibodyFuncIgnoringConstraints;
+    }
+    /// Get a function to compute the velocity correction to qdot when enforcing 
+    /// kinematic constraints and their derivatives. We require a separate 
+    /// function for this since we don't actually compute qdot within the 
+    /// multibody system. 
+    const casadi::Function& getVelocityCorrection() const {
+        return *m_velocityCorrectionFunc;
     }
     /// @}
 
@@ -277,12 +379,22 @@ private:
     int m_numCoordinates = 0;
     int m_numSpeeds = 0;
     int m_numAuxiliaryStates = 0;
+    int m_numKinematicConstraintEquations = 0;
+    int m_numHolonomicConstraintEquations = 0;
+    int m_numNonHolonomicConstraintEquations = 0;
+    int m_numAccelerationConstraintEquations = 0;
+    bool m_enforceConstraintDerivatives = false;
+    Bounds m_kinematicConstraintBounds;
     std::vector<ControlInfo> m_controlInfos;
+    std::vector<MultiplierInfo> m_multiplierInfos;
+    std::vector<SlackInfo> m_slackInfos;
     std::vector<PathConstraintInfo> m_pathInfos;
     std::vector<ParameterInfo> m_paramInfos;
     std::unique_ptr<IntegralCostIntegrand> m_integralCostFunc;
     std::unique_ptr<EndpointCost> m_endpointCostFunc;
-    std::unique_ptr<MultibodySystem> m_multibodyFunc;
+    std::unique_ptr<MultibodySystem<true>> m_multibodyFunc;
+    std::unique_ptr<MultibodySystem<false>> m_multibodyFuncIgnoringConstraints;
+    std::unique_ptr<VelocityCorrection> m_velocityCorrectionFunc;
 };
 
 } // namespace CasOC

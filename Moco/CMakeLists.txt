@@ -1,7 +1,7 @@
 
 set(CMAKE_CXX_STANDARD 11)
 
-find_package(casadi 3.4.5 REQUIRED)
+find_package(casadi 3.4.4 REQUIRED)
 set_package_properties(casadi PROPERTIES
         URL https://web.casadi.org
         TYPE REQUIRED

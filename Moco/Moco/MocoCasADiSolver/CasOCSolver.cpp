@@ -21,6 +21,7 @@
 #include "../MocoUtilities.h"
 #include "CasOCTranscription.h"
 #include "CasOCTrapezoidal.h"
+#include "CasOCHermiteSimpson.h"
 
 using OpenSim::Exception;
 using OpenSim::format;
@@ -31,6 +32,8 @@ std::unique_ptr<Transcription> Solver::createTranscription() const {
     std::unique_ptr<Transcription> transcription;
     if (m_transcriptionScheme == "trapezoidal") {
         transcription = OpenSim::make_unique<Trapezoidal>(*this, m_problem);
+    } else if (m_transcriptionScheme == "hermite-simpson") {
+        transcription = OpenSim::make_unique<HermiteSimpson>(*this, m_problem);
     } else {
         OPENSIM_THROW(Exception, format("Unknown transcription scheme '%s'.",
                                          m_transcriptionScheme));

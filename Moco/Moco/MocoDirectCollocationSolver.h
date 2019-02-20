@@ -40,6 +40,9 @@ public:
     OpenSim_DECLARE_PROPERTY(verbosity, int,
             "0 for silent. 1 for only Moco's own output. "
             "2 for output from CasADi and the underlying solver (default: 2).");
+    OpenSim_DECLARE_PROPERTY(transcription_scheme, std::string,
+            "'trapezoidal' (default) for trapezoidal transcription, or "
+            "'hermite-simpson' for separated Hermite-Simpson transcription.");
     OpenSim_DECLARE_PROPERTY(dynamics_mode, std::string,
             "Dynamics are expressed as 'explicit' (default) or 'implicit' "
             "differential equations.");
@@ -59,6 +62,27 @@ public:
             "'exact' for full " "Newton.");
     OpenSim_DECLARE_PROPERTY(optim_ipopt_print_level, int,
             "IPOPT's verbosity (see IPOPT documentation).");
+    OpenSim_DECLARE_OPTIONAL_PROPERTY(enforce_constraint_derivatives, bool,
+            "'true' or 'false', whether or not derivatives of kinematic "
+            "constraints are enforced as path constraints in the optimal "
+            "control problem.");
+    OpenSim_DECLARE_PROPERTY(minimize_lagrange_multipliers, bool,
+            "If enabled, a term minimizing the weighted, squared sum of "
+            "any existing Lagrange multipliers is added to the optimal control "
+            "problem. This may be useful for imposing uniqueness in the " 
+            "Lagrange multipliers when not enforcing model kinematic "
+            "constraint derivatives or when the constraint Jacobian is "
+            "singular. To set the weight for this term use the "
+            "'lagrange_multiplier_weight' property. Default: false");
+    OpenSim_DECLARE_PROPERTY(lagrange_multiplier_weight, double,
+            "If the 'minimize_lagrange_multipliers' property is enabled, this "
+            "defines the weight for the cost term added to the optimal control "
+            "problem. Default: 1");
+    OpenSim_DECLARE_PROPERTY(velocity_correction_bounds, MocoBounds,
+            "For problems where model kinematic constraint derivatives are "
+            "enforced, set the bounds on the slack variables performing the "
+            "velocity correction to project the model coordinates back onto "
+            "the constraint manifold. Default: [-0.1, 0.1]");
 
     MocoDirectCollocationSolver() { constructProperties(); }
 
