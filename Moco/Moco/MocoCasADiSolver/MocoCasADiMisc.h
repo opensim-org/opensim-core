@@ -252,11 +252,11 @@ public:
 
 private:
     const OpenSim::MocoProblemRep& m_mocoProblemRep;
-    const OpenSim::Model& m_model;
-    mutable SimTK::State m_simtkState;
+    static thread_local OpenSim::Model m_model;
+    static thread_local SimTK::State m_simtkState;
     std::unordered_map<int, int> m_yIndexMap;
     const MocoPathConstraint& m_mocoPathCon;
-    mutable SimTK::Vector m_errors;
+    static thread_local SimTK::Vector m_errors;
 };
 
 class MocoCasADiIntegralCostIntegrand : public CasOC::IntegralCostIntegrand {
@@ -285,8 +285,8 @@ public:
 
 private:
     const OpenSim::MocoProblemRep& m_mocoProblemRep;
-    const OpenSim::Model& m_model;
-    mutable SimTK::State m_simtkState;
+    static thread_local OpenSim::Model m_model;
+    static thread_local SimTK::State m_simtkState;
     std::unordered_map<int, int> m_yIndexMap;
 };
 
@@ -313,8 +313,8 @@ public:
 
 private:
     const OpenSim::MocoProblemRep& m_mocoProblemRep;
-    const OpenSim::Model& m_model;
-    mutable SimTK::State m_simtkState;
+    static thread_local OpenSim::Model m_model;
+    static thread_local SimTK::State m_simtkState;
     std::unordered_map<int, int> m_yIndexMap;
 };
 
@@ -456,22 +456,22 @@ public:
 private:
     const OpenSim::MocoProblemRep& m_mocoProblemRep;
     const OpenSim::MocoCasADiSolver& m_mocoCasADiSolver;
-    const OpenSim::Model& m_model;
-    mutable SimTK::State m_simtkState;
+    static thread_local OpenSim::Model m_model;
+    static thread_local SimTK::State m_simtkState;
     std::unordered_map<int, int> m_yIndexMap;
     // This member variable avoids unnecessary extra allocation of memory for
     // spatial accelerations, which are incidental to the computation of
     // generalized accelerations when specifying the dynamics with model
     // constraints present.
-    mutable SimTK::Vector_<SimTK::SpatialVec> constraintBodyForces;
-    mutable SimTK::Vector constraintMobilityForces;
-    mutable SimTK::Vector udot;
-    mutable SimTK::Vector_<SimTK::SpatialVec> A_GB;
+    static thread_local SimTK::Vector_<SimTK::SpatialVec> constraintBodyForces;
+    static thread_local SimTK::Vector constraintMobilityForces;
+    static thread_local SimTK::Vector udot;
+    static thread_local SimTK::Vector_<SimTK::SpatialVec> A_GB;
     // This is the output argument of
     // SimbodyMatterSubsystem::calcConstraintAccelerationErrors(), and includes
     // the acceleration-level holonomic, non-holonomic constraint errors and the
     // acceleration-only constraint errors.
-    mutable SimTK::Vector m_pvaerr;
+    static thread_local SimTK::Vector m_pvaerr;
 };
 
 class MocoCasADiVelocityCorrection : public CasOC::VelocityCorrection {
@@ -517,10 +517,10 @@ public:
 
 private:
     // const OpenSim::MocoProblemRep& m_mocoProblemRep;
-    const OpenSim::Model& m_model;
-    mutable SimTK::State m_simtkState;
+    static thread_local OpenSim::Model m_model;
+    static thread_local SimTK::State m_simtkState;
     std::unordered_map<int, int> m_yIndexMap;
-    mutable SimTK::Vector m_qdotCorr;
+    static thread_local SimTK::Vector m_qdotCorr;
 };
 
 class MocoCasADiMultibodySystemImplicit
@@ -563,8 +563,8 @@ public:
 private:
     const OpenSim::MocoProblemRep& m_mocoProblemRep;
     // const OpenSim::MocoCasADiSolver& m_mocoCasADiSolver;
-    const OpenSim::Model& m_model;
-    mutable SimTK::State m_simtkState;
+    static thread_local OpenSim::Model m_model;
+    static thread_local SimTK::State m_simtkState;
     std::unordered_map<int, int> m_yIndexMap;
     mutable InverseDynamicsSolver m_idSolver;
 };
