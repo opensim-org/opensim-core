@@ -151,12 +151,10 @@ std::unique_ptr<CasOC::Problem> MocoCasADiSolver::createCasOCProblem() const {
         );
     
         int cid, mp, mv, ma;
-        int numEquationsThisConstraint;
         int multIndexThisConstraint;
         int total_mp = 0;
         int total_mv = 0;
         int total_ma = 0;
-        int numKinematicConstraintEquations = 0;
         std::vector<KinematicLevel> kinLevels;
         const bool enforceConstraintDerivs 
             = get_enforce_constraint_derivatives();
@@ -197,7 +195,6 @@ std::unique_ptr<CasOC::Problem> MocoCasADiSolver::createCasOCProblem() const {
             // they are only added if the current constraint equation is not a
             // derivative of a position- or velocity-level equation.
             multIndexThisConstraint = 0;
-            numEquationsThisConstraint = 0;
             for (int i = 0; i < kc.getConstraintInfo().getNumEquations(); ++i) {
 
                 // If the index for this path constraint represents an
