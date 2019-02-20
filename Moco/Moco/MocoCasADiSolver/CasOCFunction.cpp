@@ -22,6 +22,7 @@
 
 using namespace CasOC;
 
+// TODO: Not used yet.
 casadi::Sparsity calcJacobianSparsityWithPerturbation(const casadi::DM& x0,
         int numOutputs,
         std::function<void(const casadi::DM&, casadi::DM&)> function) {
@@ -45,7 +46,7 @@ casadi::Sparsity calcJacobianSparsityWithPerturbation(const casadi::DM& x0,
         diff = output - output0;
         for (int i = 0; i < (int)numOutputs; ++i) {
             if (std::isnan(diff(i).scalar())) {
-                std::cout << "[tropter] Warning: NaN encountered when "
+                std::cout << "[CasOC] Warning: NaN encountered when "
                              "detecting sparsity of Jacobian; entry (";
                 std::cout << i << ", " << j;
                 std::cout << ")." << std::endl;
