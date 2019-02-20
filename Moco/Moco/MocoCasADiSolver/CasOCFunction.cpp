@@ -22,51 +22,65 @@
 
 using namespace CasOC;
 
-casadi::Sparsity calcJacobianSparsityWithPerturbation(const casadi::DM& x0,
+casadi::Sparsity calcJacobianSparsityWithPerturbation(
+        const VectorDM& x0s,
         int numOutputs,
         std::function<void(const casadi::DM&, casadi::DM&)> function) {
+
+    OPENSIM_THROW_IF(x0s.size() < 1, OpenSim::Exception,
+            "x0s must have at least 1 element.");
     using casadi::DM;
     using casadi::Sparsity;
     using std::isnan;
-    OPENSIM_THROW_IF(x0.columns() != 1, OpenSim::Exception,
-            "x0 must have exactly 1 column.");
-    Sparsity sparsity(numOutputs, x0.numel());
-    double eps = 1e-5;
-    DM x = x0;
-    DM output0(numOutputs, 1);
-    function(x, output0);
-    DM output(numOutputs, 1);
-    DM diff(numOutputs, 1);
-    for (int j = 0; j < x0.numel(); ++j) {
-        output = 0;
-        x(j) += eps;
-        function(x, output);
-        x(j) = x0(j);
-        diff = output - output0;
-        for (int i = 0; i < (int)numOutputs; ++i) {
-            if (std::isnan(diff(i).scalar())) {
-                std::cout << "[tropter] Warning: NaN encountered when "
-                             "detecting sparsity of Jacobian; entry (";
-                std::cout << i << ", " << j;
-                std::cout << ")." << std::endl;
-                // Set non-zero here just in case this Jacobian element is
-                // important.
-                sparsity.add_nz(i, j);
+    auto sparsityForSingleX0 = [&](const casadi::DM& x0) {
+        OPENSIM_THROW_IF(x0.columns() != 1, OpenSim::Exception,
+                "x0 must have exactly 1 column.");
+        Sparsity sparsity(numOutputs, x0.numel());
+        double eps = 1e-5;
+        DM x = x0;
+        DM output0(numOutputs, 1);
+        function(x, output0);
+        DM output(numOutputs, 1);
+        DM diff(numOutputs, 1);
+        for (int j = 0; j < x0.numel(); ++j) {
+            output = 0;
+            x(j) += eps;
+            function(x, output);
+            x(j) = x0(j);
+            diff = output - output0;
+            for (int i = 0; i < (int)numOutputs; ++i) {
+                if (std::isnan(diff(i).scalar())) {
+                    std::cout << "[CasOC] Warning: NaN encountered when "
+                                 "detecting sparsity of Jacobian; entry (";
+                    std::cout << i << ", " << j;
+                    std::cout << ")." << std::endl;
+                    // Set non-zero here just in case this Jacobian element is
+                    // important.
+                    sparsity.add_nz(i, j);
+                }
+                if (diff(i).scalar() != 0) sparsity.add_nz(i, j);
             }
-            if (diff(i).scalar() != 0) sparsity.add_nz(i, j);
+            diff = 0;
         }
-        diff = 0;
+        return sparsity;
+    };
+
+    Sparsity combinedSparsity(numOutputs, x0s[0].numel());
+    for (const auto& x0 : x0s) {
+        OPENSIM_THROW_IF(x0.numel() != x0s[0].numel(), OpenSim::Exception,
+                "x0s contains vectors of different sizes.");
+        combinedSparsity = combinedSparsity + sparsityForSingleX0(x0);
     }
-    return sparsity;
+    return combinedSparsity;
 }
 
 casadi::Sparsity Function::get_jacobian_sparsity() const {
     using casadi::DM;
     using casadi::Slice;
 
-    const DM x0 = getPointForSparsityDetection();
-
     auto function = [this](const casadi::DM& x, casadi::DM& y) {
+
+        // Split input into separate DMs.
         std::vector<casadi::DM> in(this->n_in());
         {
             int offset = 0;
@@ -79,8 +93,12 @@ casadi::Sparsity Function::get_jacobian_sparsity() const {
             }
         }
 
+        // Evaluate the function.
         std::vector<casadi::DM> out = this->eval(in);
 
+        // Create output.
+        y = casadi::DM::veccat(out);
+        /* TODO
         {
             int offset = 0;
             for (int iout = 0; iout < this->n_out(); ++iout) {
@@ -91,10 +109,13 @@ casadi::Sparsity Function::get_jacobian_sparsity() const {
                 offset += size;
             }
         }
+         */
     };
 
+    const VectorDM x0s = getPointsForSparsityDetection();
+
     return calcJacobianSparsityWithPerturbation(
-            x0, (int)this->nnz_out(), function);
+            x0s, (int)this->nnz_out(), function);
 }
 
 casadi::Sparsity PathConstraint::get_sparsity_in(casadi_int i) {

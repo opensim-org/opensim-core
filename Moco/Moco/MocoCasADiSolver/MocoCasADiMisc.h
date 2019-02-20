@@ -24,8 +24,6 @@
 
 namespace OpenSim {
 
-using VectorDM = std::vector<casadi::DM>;
-
 inline CasOC::Bounds convertBounds(const MocoBounds& mb) {
     return {mb.getLower(), mb.getUpper()};
 }

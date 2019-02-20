@@ -26,6 +26,8 @@ namespace CasOC {
 
 class Problem;
 
+using VectorDM = std::vector<casadi::DM>;
+
 class Function : public casadi::Callback {
 public:
     virtual ~Function() = default;
