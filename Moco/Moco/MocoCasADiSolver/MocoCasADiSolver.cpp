@@ -154,12 +154,10 @@ std::unique_ptr<CasOC::Problem> MocoCasADiSolver::createCasOCProblem() const {
 
 
         int cid, mp, mv, ma;
-        int numEquationsThisConstraint;
         int multIndexThisConstraint;
         int total_mp = 0;
         int total_mv = 0;
         int total_ma = 0;
-        int numKinematicConstraintEquations = 0;
         std::vector<KinematicLevel> kinLevels;
         const bool enforceConstraintDerivs
             = get_enforce_constraint_derivatives();
@@ -200,7 +198,6 @@ std::unique_ptr<CasOC::Problem> MocoCasADiSolver::createCasOCProblem() const {
             // they are only added if the current constraint equation is not a
             // derivative of a position- or velocity-level equation.
             multIndexThisConstraint = 0;
-            numEquationsThisConstraint = 0;
             for (int i = 0; i < kc.getConstraintInfo().getNumEquations(); ++i) {
 
                 // If the index for this path constraint represents an
@@ -211,10 +208,24 @@ std::unique_ptr<CasOC::Problem> MocoCasADiSolver::createCasOCProblem() const {
                     kinLevels[i] == KinematicLevel::Acceleration) {
 
                     const auto& multInfo = multInfos[multIndexThisConstraint];
-                    casProblem->addMultiplier(multInfo.getName(),
+
+                    CasOC::KinematicLevel kinLevel;
+                    if (kinLevels[i] == KinematicLevel::Position)
+                        kinLevel = CasOC::KinematicLevel::Position;
+                    else if (kinLevels[i] == KinematicLevel::Velocity)
+                        kinLevel = CasOC::KinematicLevel::Velocity;
+                    else if (kinLevels[i] == KinematicLevel::Acceleration)
+                        kinLevel = CasOC::KinematicLevel::Acceleration;
+                    else {
+                        OPENSIM_THROW(OpenSim::Exception,
+                                "Unrecognized KinematicLevel");
+                    }
+
+                    casProblem->addKinematicConstraint(multInfo.getName(),
                             convertBounds(multInfo.getBounds()),
                             convertBounds(multInfo.getInitialBounds()),
-                            convertBounds(multInfo.getFinalBounds()));
+                            convertBounds(multInfo.getFinalBounds()),
+                            kinLevel);
 
                     // Add velocity correction variables if enforcing
                     // constraint equation derivatives.
@@ -234,23 +245,11 @@ std::unique_ptr<CasOC::Problem> MocoCasADiSolver::createCasOCProblem() const {
                             convertBounds(get_velocity_correction_bounds()));
                     }
                     ++multIndexThisConstraint;
-                    ++numEquationsThisConstraint;
-
-                } else if (enforceConstraintDerivs) {
-                    // If enforcing constraint derivatives, count these
-                    // equations in the total number of constraint equations.
-                    ++numEquationsThisConstraint;
                 }
             }
-            numKinematicConstraintEquations += numEquationsThisConstraint;
         }
 
         // Set kinematic constraint information on the CasOC::Problem.
-        casProblem->setNumKinematicConstraintEquations(
-            numKinematicConstraintEquations);
-        casProblem->setNumHolonomicConstraintEquations(total_mp);
-        casProblem->setNumNonHolonomicConstraintEquations(total_mv);
-        casProblem->setNumAccelerationConstraintEquations(total_ma);
         casProblem->setEnforceConstraintDerivatives(enforceConstraintDerivs);
         // The bounds are the same for all kinematic constraints in the
         // MocoProblem, so just grab the bounds from the first constraint.
@@ -326,12 +325,14 @@ std::unique_ptr<CasOC::Solver> MocoCasADiSolver::createCasOCSolver(
                 get_transcription_scheme()));
     }
 
+    checkPropertyIsPositive(*this, getProperty_num_mesh_points());
     checkPropertyInRangeOrSet(*this, getProperty_optim_max_iterations(), 0,
             std::numeric_limits<int>::max(), {-1});
     checkPropertyInRangeOrSet(*this, getProperty_optim_convergence_tolerance(),
             0.0, SimTK::NTraits<double>::getInfinity(), {-1.0});
     checkPropertyInRangeOrSet(*this, getProperty_optim_constraint_tolerance(),
             0.0, SimTK::NTraits<double>::getInfinity(), {-1.0});
+    checkPropertyInSet(*this, getProperty_verbosity(), {0, 1, 2});
     if (get_optim_solver() == "ipopt") {
         solverOptions["print_user_options"] = "yes";
         if (get_verbosity() < 2) {
@@ -379,15 +380,12 @@ std::unique_ptr<CasOC::Solver> MocoCasADiSolver::createCasOCSolver(
 MocoSolution MocoCasADiSolver::solveImpl() const {
     const Stopwatch stopwatch;
 
-    checkPropertyInSet(*this, getProperty_verbosity(), {0, 1, 2});
-
     if (get_verbosity()) {
         std::cout << std::string(79, '=') << "\n";
         std::cout << "MocoCasADiSolver starting.\n";
         std::cout << std::string(79, '-') << std::endl;
         getProblemRep().printDescription();
     }
-    checkPropertyIsPositive(*this, getProperty_num_mesh_points());
     auto casProblem = createCasOCProblem();
     auto casSolver = createCasOCSolver(*casProblem);
 

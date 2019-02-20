@@ -148,9 +148,6 @@ public:
 template <bool CalcKinConErrors>
 class MultibodySystem : public Function {
 public:
-    void constructFunction(const Problem* casProblem, const std::string& name) {
-        Function::constructFunction(casProblem, name);
-    }
     casadi_int get_n_in() override final { return 5; }
     casadi_int get_n_out() override final { return CalcKinConErrors ? 3 : 2; }
     std::string get_name_in(casadi_int i) override final {
@@ -180,17 +177,16 @@ public:
     casadi::Sparsity get_sparsity_out(casadi_int i) override final;
 };
 
+/// This function should compute a velocity correction term to make feasible
+/// problems that enforce kinematic constraints and their derivatives.
 class VelocityCorrection : public Function {
 public:
-    void constructFunction(const Problem* casProblem, const std::string& name) {
-        Function::constructFunction(casProblem, name);
-    }
     casadi_int get_n_in() override final { return 3; }
     casadi_int get_n_out() override final { return 1; }
     std::string get_name_in(casadi_int i) override final {
         switch (i) {
         case 0: return "time";
-        case 1: return "states";
+        case 1: return "multibody_states";
         case 2: return "slacks";
         default: OPENSIM_THROW(OpenSim::Exception, "Internal error.");
         }

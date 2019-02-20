@@ -74,7 +74,7 @@ Model createRightLegModel(const std::string& actuatorType,
     Model model("Rajagopal2015_right_leg_9musc.osim");
     model.finalizeConnections(); // Need this here to access offset frames.
 
-                                 // Replace ground_pelvis, subtalar_r, and mtp_r joints with weld joints.
+    // Replace ground_pelvis, subtalar_r, and mtp_r joints with weld joints.
     if (weldPelvis) {
         replaceJointWithWeldJoint(model, "ground_pelvis");
     }
@@ -371,12 +371,14 @@ void main() {
 
     Options opt;
     opt.weldPelvis = true;
-    opt.num_mesh_points = 50;
+    opt.num_mesh_points = 20;
     opt.solver = "ipopt";
-    opt.constraint_tol = 1e-2;
-    opt.convergence_tol = 1e-2;
-    MocoSolution torqueSolEffortCasADi = 
-        minimizeControlEffortRightLeg<MocoCasADiSolver>(opt);
+    opt.constraint_tol = 1e-3;
+    opt.convergence_tol = 1e-3;
+    //opt.previousSolution = MocoSolution(
+    //"sandboxRightLeg_weldedPelvis_torques_minimize_control_effort_solution.sto");
+    //MocoSolution torqueSolEffortCasADi = 
+    //    minimizeControlEffortRightLeg<MocoCasADiSolver>(opt);
 
     //MocoSolution torqueSolEffortTropter =
     //    minimizeControlEffortRightLeg<MocoTropterSolver>(opt);
@@ -385,13 +387,16 @@ void main() {
     //"sandboxRightLeg_weldedPelvis_torques_minimize_control_effort_solution.sto");
 
     // TODO stiff passive muscle elements
-    TimeSeriesTable activationsMinimizeControlEffort =
-        createGuessFromGSO(torqueSolEffortCasADi, opt);
+    //TimeSeriesTable activationsMinimizeControlEffort =
+    //    createGuessFromGSO(torqueSolEffortCasADi, opt);
+
+    //MocoSolution muscleSolEffortCasADi(
+    //"sandboxRightLeg_weldedPelvis_muscles_minimize_control_effort_solution.sto");
 
     opt.actuatorType = "muscles";
     //opt.hessian_approximation = "exact";
-    //opt.controlsGuess = activationsMinimizeControlEffort;
-    //opt.previousSolution = torqueSolEffortCasADi;
+    //opt.controlsGuess = muscleSolEffortCasADi.getControlsTrajectory();
+    //opt.previousSolution = muscleSolEffortCasADi;
     MocoSolution muscleSolEffort = 
         minimizeControlEffortRightLeg<MocoCasADiSolver>(opt);
 

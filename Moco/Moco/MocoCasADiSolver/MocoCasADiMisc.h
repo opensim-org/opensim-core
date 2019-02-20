@@ -18,11 +18,12 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include <OpenSim/Simulation/InverseDynamicsSolver.h>
 #include "../MocoBounds.h"
 #include "../MocoProblemRep.h"
 #include "CasOCProblem.h"
 #include "MocoCasADiSolver.h"
+
+#include <OpenSim/Simulation/InverseDynamicsSolver.h>
 
 namespace OpenSim {
 
@@ -159,9 +160,9 @@ TOut convertToMocoIterate(const CasOC::Iterate& casIt) {
     SimTK::Vector simtkTimes = convertToSimTKVector(casIt.times);
 
     TOut mocoIterate(simtkTimes, casIt.state_names, casIt.control_names,
-            casIt.multiplier_names, derivativeNames,
-            casIt.parameter_names, simtkStates, simtkControls, simtkMultipliers,
-            simtkDerivatives, simtkParameters);
+            casIt.multiplier_names, derivativeNames, casIt.parameter_names,
+            simtkStates, simtkControls, simtkMultipliers, simtkDerivatives,
+            simtkParameters);
 
     // Append slack variables. MocoIterate requires the slack variables to be
     // the same length as its time vector, but it will not be if the
@@ -192,6 +193,10 @@ inline void applyParametersToModel(
     }
 }
 
+/// Copy values from `states` into `simtkState.updY()`, accounting for empty
+/// slots in Simbody's Y vector.
+/// It's fine for the size of `states` to be less than the size of Y; only the
+/// first states.size1() values are copied.
 inline void convertToSimTKState(const double& time, const casadi::DM& states,
         const Model& model, const std::unordered_map<int, int>& yIndexMap,
         SimTK::State& simtkState, bool setControlsToNaN = true) {
@@ -295,9 +300,9 @@ public:
     VectorDM eval(const VectorDM& args) const override {
         const double& time = args.at(0).scalar();
         const casadi::DM& states = args.at(1);
-        const casadi::DM& params = args.at(2);
+        const casadi::DM& parameters = args.at(2);
         applyParametersToModel(SimTK::Vector(m_casProblem->getNumParameters(),
-                                       params.ptr(), true),
+                                       parameters.ptr(), true),
                 m_mocoProblemRep);
         convertToSimTKState(
                 time, states, m_model, m_yIndexMap, m_simtkState, true);
@@ -386,7 +391,6 @@ public:
             // state
             out.resize(2);
             if (CalcKinConErrors) {
-
                 // Position-level errors.
                 casadi::DM out_kinematic_constraint_errors =
                         convertToCasADiDM(m_simtkState.getQErr());
@@ -426,9 +430,9 @@ public:
                         {out_kinematic_constraint_errors, uerr, udoterr});
 
                 // Copy state derivative values to output. We cannot simply
-                // use getYDot() because that requires realizing to Acceleration.
+                // use getYDot() because that requires realizing to
+                // Acceleration.
                 out.push_back(out_kinematic_constraint_errors);
-
             }
             out[0] = convertToCasADiDM(udot);
             // TODO: zdot probably depends on realizing to Acceleration.
@@ -481,11 +485,11 @@ public:
 
         // TODO: would the velocity correction ever be parameter-dependent?
         const double& time = args.at(0).scalar();
-        const casadi::DM& states = args.at(1);
+        const casadi::DM& multibody_states = args.at(1);
         const casadi::DM& slacks = args.at(2);
 
-        convertToSimTKState(
-                time, states, m_model, m_yIndexMap, m_simtkState, false);
+        convertToSimTKState(time, multibody_states, m_model, m_yIndexMap,
+                m_simtkState, false);
         m_model.realizeVelocity(m_simtkState);
 
         // Apply velocity correction to qdot if at a mesh interval midpoint.
@@ -501,9 +505,14 @@ public:
 
         SimTK::Vector gamma(
                 this->m_casProblem->getNumSlacks(), slacks.ptr(), true);
-        matter.multiplyByGTranspose(m_simtkState, gamma, qdotCorr);
+        matter.multiplyByGTranspose(m_simtkState, gamma, m_qdotCorr);
 
-        return {convertToCasADiDM(qdotCorr)};
+        casadi::DM velocity_correction;
+        velocity_correction =
+                convertToCasADiDM(SimTK::Vector(m_simtkState.getNQ(),
+                        m_qdotCorr.getContiguousScalarData(), true));
+
+        return {velocity_correction};
     }
 
 private:
@@ -511,7 +520,7 @@ private:
     const OpenSim::Model& m_model;
     mutable SimTK::State m_simtkState;
     std::unordered_map<int, int> m_yIndexMap;
-    mutable SimTK::Vector qdotCorr;
+    mutable SimTK::Vector m_qdotCorr;
 };
 
 class MocoCasADiMultibodySystemImplicit
@@ -523,8 +532,7 @@ public:
             : m_mocoProblemRep(problem), /*m_mocoCasADiSolver(solver),*/
               m_model(problem.getModel()),
               m_simtkState(m_model.getWorkingState()),
-              m_yIndexMap(std::move(yIndexMap)),
-              m_idSolver(m_model) {}
+              m_yIndexMap(std::move(yIndexMap)), m_idSolver(m_model) {}
     VectorDM eval(const VectorDM& args) const override {
         const double& time = args.at(0).scalar();
         const casadi::DM& states = args.at(1);
@@ -546,9 +554,7 @@ public:
         // Calculate auxiliary dynamics.
         // TODO: If auxiliary dynamics depend on udot, the wrong udot will be
         // used.
-        if (m_simtkState.getNZ()) {
-            m_model.realizeAcceleration(m_simtkState);
-        }
+        if (m_simtkState.getNZ()) { m_model.realizeAcceleration(m_simtkState); }
 
         return {convertToCasADiDM(residual),
                 convertToCasADiDM(m_simtkState.getZDot())};

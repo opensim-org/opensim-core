@@ -71,8 +71,17 @@ void Trapezoidal::applyConstraintsImpl() {
 
         // Kinematic constraint errors.
         if (m_problem.getNumKinematicConstraintEquations()) {
-            DM kinConZero(m_problem.getNumKinematicConstraintEquations(), 1);
-            addConstraints(kinConZero, kinConZero, m_pvaerr(Slice(), itime));
+            DM kinConLowerBounds(
+                m_problem.getNumKinematicConstraintEquations(), 1);
+            DM kinConUpperBounds(
+                m_problem.getNumKinematicConstraintEquations(), 1);
+
+            const auto& bounds = m_problem.getKinematicConstraintBounds();
+            kinConLowerBounds(Slice()) = bounds.lower;
+            kinConUpperBounds(Slice()) = bounds.upper;
+
+            addConstraints(kinConLowerBounds, kinConUpperBounds,
+                m_kcerr(Slice(), itime));
         }
 
         // The individual path constraint functions are passed to CasADi to

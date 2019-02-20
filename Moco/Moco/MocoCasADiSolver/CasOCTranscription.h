@@ -35,10 +35,10 @@ namespace CasOC {
 /// optimization problem.
 class Transcription {
 public:
-    Transcription(const Solver& solver, const Problem& problem, 
-        const int& numGridPoints, const int& numMeshPoints) : m_solver(solver),
-        m_problem(problem), m_numGridPoints(numGridPoints), 
-        m_numMeshPoints(numMeshPoints) {}
+    Transcription(const Solver& solver, const Problem& problem,
+            const int& numGridPoints, const int& numMeshPoints)
+            : m_solver(solver), m_problem(problem),
+              m_numGridPoints(numGridPoints), m_numMeshPoints(numMeshPoints) {}
     virtual ~Transcription() = default;
     Iterate createInitialGuessFromBounds() const;
     Iterate createRandomIterateWithinBounds() const;
@@ -46,18 +46,20 @@ public:
     T createTimes(const T& initialTime, const T& finalTime) const {
         return (finalTime - initialTime) * m_grid + initialTime;
     }
-    casadi::DM createQuadratureCoefficients() const  {
+    casadi::DM createQuadratureCoefficients() const {
         return createQuadratureCoefficientsImpl();
     }
-    casadi::DM createKinematicConstraintIndices() const  {
+    casadi::DM createKinematicConstraintIndices() const {
         casadi::DM kinConIndices = createKinematicConstraintIndicesImpl();
         const auto shape = kinConIndices.size();
-        OPENSIM_THROW_IF(shape.first != 1 || shape.second != m_numGridPoints, 
-            OpenSim::Exception, OpenSim::format(
-                "createKinematicConstraintIndicesImpl() must return a "
-                "row vector of shape length [1, %i], but a matrix of shape "
-                "[%i, %i] was returned.", m_numGridPoints, shape.first,
-                shape.second));
+        OPENSIM_THROW_IF(shape.first != 1 || shape.second != m_numGridPoints,
+                OpenSim::Exception,
+                OpenSim::format(
+                        "createKinematicConstraintIndicesImpl() must return a "
+                        "row vector of shape length [1, %i], but a matrix of "
+                        "shape "
+                        "[%i, %i] was returned.",
+                        m_numGridPoints, shape.first, shape.second));
 
         return kinConIndices;
     }
@@ -65,32 +67,32 @@ public:
         casadi::DM resConIndices = createResidualConstraintIndicesImpl();
         const auto shape = resConIndices.size();
         OPENSIM_THROW_IF(shape.first != 1 || shape.second != m_numGridPoints,
-                OpenSim::Exception, OpenSim::format(
-                "createResidualConstraintIndicesImpl() must return a "
-                "row vector of shape length [1, %i], but a matrix of shape "
-                "[%i, %i] was returned.", m_numGridPoints, shape.first,
-                shape.second));
+                OpenSim::Exception,
+                OpenSim::format(
+                        "createResidualConstraintIndicesImpl() must return a "
+                        "row vector of shape length [1, %i], but a matrix of "
+                        "shape "
+                        "[%i, %i] was returned.",
+                        m_numGridPoints, shape.first, shape.second));
 
         return resConIndices;
     }
-    void applyConstraints() {
-        applyConstraintsImpl();
-    }
+    void applyConstraints() { applyConstraintsImpl(); }
     Solution solve(const Iterate& guessOrig) {
         // Resample the guess.
         // -------------------
-        const auto guessTimes = createTimes(
-                guessOrig.variables.at(Var::initial_time),
-                guessOrig.variables.at(Var::final_time));
+        const auto guessTimes =
+                createTimes(guessOrig.variables.at(Var::initial_time),
+                        guessOrig.variables.at(Var::final_time));
         auto guess = guessOrig.resample(guessTimes);
 
-        // Adjust guesses for the slack variables to ensure they are the correct 
+        // Adjust guesses for the slack variables to ensure they are the correct
         // length (i.e. slacks.size2() == m_numSlackPoints).
         if (guess.variables.find(Var::slacks) != guess.variables.end()) {
             auto& slacks = guess.variables.at(Var::slacks);
 
-            // If slack variables provided in the guess are equal to the grid 
-            // length, remove the elements on the mesh points where the slack 
+            // If slack variables provided in the guess are equal to the grid
+            // length, remove the elements on the mesh points where the slack
             // variables are not defined.
             if (slacks.size2() == m_numGridPoints) {
                 casadi::DM kinConIndices = createKinematicConstraintIndices();
@@ -108,11 +110,11 @@ public:
             // Check that either that the slack variables provided in the guess
             // are the correct length, or that the correct number of columns
             // were removed.
-            OPENSIM_THROW_IF(slacks.size2() != m_numSlackPoints, 
-                OpenSim::Exception, 
-                OpenSim::format("Expected slack variables to be length %i, "
-                    "but they are length %i.", m_numSlackPoints, 
-                    slacks.size2()));
+            OPENSIM_THROW_IF(slacks.size2() != m_numSlackPoints,
+                    OpenSim::Exception,
+                    OpenSim::format("Expected slack variables to be length %i, "
+                                    "but they are length %i.",
+                            m_numSlackPoints, slacks.size2()));
         }
 
         // Create the CasADi NLP function.
@@ -125,8 +127,8 @@ public:
         // The inputs to nlpsol() are symbolic (casadi::MX).
         casadi::MXDict nlp;
         nlp.emplace(std::make_pair("x", flatten(m_vars)));
-        // The m_objective symbolic variable holds an expression graph including all
-        // the calculations performed on the variables x.
+        // The m_objective symbolic variable holds an expression graph including
+        // all the calculations performed on the variables x.
         nlp.emplace(std::make_pair("f", m_objective));
         // The m_constraints symbolic vector holds all of the expressions for
         // the constraint functions.
@@ -136,7 +138,8 @@ public:
         // hessian.sparsity().to_file(
         //         "CasOCTranscription_objective_Hessian_sparsity.mtx");
         // auto lagrangian = m_objective +
-        //         casadi::MX::dot(casadi::MX::ones(nlp["g"].sparsity()), nlp["g"]);
+        //         casadi::MX::dot(casadi::MX::ones(nlp["g"].sparsity()),
+        //         nlp["g"]);
         // auto hessian_lagr = casadi::MX::hessian(lagrangian, nlp["x"]);
         // hessian_lagr.sparsity().to_file(
         //                  "CasOCTranscription_Lagrangian_Hessian_sparsity.mtx");
@@ -167,10 +170,10 @@ public:
     }
 
 protected:
-    /// This must be called in the constructor of derived classes so that 
+    /// This must be called in the constructor of derived classes so that
     /// overridden virtual methods are accessible to the base class. This
-    /// implementation allows initialization to occur during construction, 
-    /// avoiding an extra call on the instantiated object. 
+    /// implementation allows initialization to occur during construction,
+    /// avoiding an extra call on the instantiated object.
     void transcribe();
 
     template <typename TRow, typename TColumn>
@@ -189,10 +192,6 @@ protected:
         }
     }
 
-    void setObjective(casadi::MX objective) {
-        m_objective = std::move(objective);
-    }
-
     void addConstraints(const casadi::DM& lower, const casadi::DM& upper,
             const casadi::MX& equations);
 
@@ -208,10 +207,10 @@ protected:
     int m_numSlackPoints = 0;
     casadi::MX m_times;
     casadi::MX m_duration;
-    casadi::MX m_xdot;
+    casadi::MX m_xdot; // State derivatives.
     casadi::MX m_residual;
-    casadi::MX m_pvaerr;
-    
+    casadi::MX m_kcerr; // Kinematic constraint errors.
+
 private:
     casadi::MX m_objective;
     std::vector<casadi::MX> m_constraints;
@@ -219,21 +218,14 @@ private:
     std::vector<casadi::DM> m_constraintsUpperBounds;
 
 private:
-
-    void calcDAEExplicit(casadi_int itime, casadi::MX& xdot,
-            bool calcPVAErr, casadi::MX& pvaerr, casadi_int islack);
-    void calcDAEImplicit(casadi_int itime, casadi::MX& xdot,
-            bool calcResidual, casadi::MX& residual,
-            bool calcPVAErr, casadi::MX& pvaerr, casadi_int islack);
-
     /// Override this function in your derived class to compute a vector of
     /// quadrature coeffecients (of length m_numGridPoints) required to set the
     /// the integral cost within transcribe().
     virtual casadi::DM createQuadratureCoefficientsImpl() const = 0;
     /// Override this function to specify the indicies in the grid where any
     /// existing kinematic constraints are to be enforced.
-    /// @note The returned vector must be a row vector of length m_numGridPoints 
-    /// with nonzero values at the indices where kinematic constraints are 
+    /// @note The returned vector must be a row vector of length m_numGridPoints
+    /// with nonzero values at the indices where kinematic constraints are
     /// enforced.
     virtual casadi::DM createKinematicConstraintIndicesImpl() const = 0;
     /// Override this function to specify the indices in the grid where, in
@@ -243,6 +235,25 @@ private:
     /// Override this function in your derived class set the defect, kinematic,
     /// and path constraint errors required for your transcription scheme.
     virtual void applyConstraintsImpl() = 0;
+
+    /// Calculate state derivatives and kinematic constraint errors from the
+    /// system differential-algebraic equations for the defect and path
+    /// constraints in the direct collocation problem, which are imposed in
+    /// derived classes.
+    void calcDifferentialAlgebraicEquationsExplicit(casadi_int itime,
+            casadi_int islack, bool calcKinematicConstraintErrors,
+            casadi::MX& xdot, casadi::MX& kcerr);
+
+    /// Calculate state derivatives and kinematic constraint errors,
+    /// using implicit differential equations for multibody dynamics.
+    void calcDifferentialAlgebraicEquationsImplicit(casadi_int itime,
+            casadi_int islack, bool calcResidual,
+            bool calcKinematicConstraintErrors, casadi::MX& xdot,
+            casadi::MX& residual, casadi::MX& pvaerr);
+
+    void setObjective(casadi::MX objective) {
+        m_objective = std::move(objective);
+    }
 
     /// Use this function to ensure you iterate through variables in the same
     /// order.

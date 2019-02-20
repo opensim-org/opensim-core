@@ -171,60 +171,67 @@ void Transcription::transcribe() {
     OPENSIM_THROW_IF(NQ != NU, OpenSim::Exception,
             "Problems with differing numbers of coordinates and speeds are not "
             "supported (e.g., quaternions).");
-    const DM kinConIndices = createKinematicConstraintIndices();
+    const DM kinematicConstraintIndices = createKinematicConstraintIndices();
     const DM resConIndices = createResidualConstraintIndicesImpl();
 
     // TODO: Does creating all this memory have efficiency implications in
     // CasADi?
     // Initialize memory for state derivatives and constraint errors.
-
     m_xdot = MX(m_problem.getNumStates(), m_numGridPoints);
     if (m_solver.isDynamicsModeImplicit()) {
         m_residual = MX(m_problem.getNumSpeeds(), resConIndices.nnz());
     }
-    m_pvaerr = MX(m_problem.getNumKinematicConstraintEquations(),
-            kinConIndices.nnz());
+    m_kcerr = MX(m_problem.getNumKinematicConstraintEquations(),
+            kinematicConstraintIndices.nnz());
 
     // Temporary memory for state derivatives and constraint errors while
     // iterating through time points.
     MX this_xdot;
     MX this_residual;
-    MX this_pvaerr;
+    MX this_kcerr;
     // Updateable index for constraint errors vector.
     int ikc = 0;
     // Updateable index for residual errors vector.
     int irc = 0;
     // Updateable index for slack variables. This index will always be -1 if
     // constraint derivatives are not being enforced (i.e. no slack variables),
-    // which tells calcDAE() not to compute the velocity correction.
+    // which tells calcDifferentialAlgebraicEquations() not to compute the
+    // velocity correction.
     int islack = m_problem.getEnforceConstraintDerivatives() ? 0 : -1;
     // Iterate through the grid, computing state derivatives and constraint
     // errors as necessary.
     for (int itime = 0; itime < m_numGridPoints; ++itime) {
 
-        // If the value of kinConIndices is non-zero at this time point, then
+        // If kinematic constraints exists and the value of
+        // kinematicConstraintIndices is non-zero at this time point, then
         // we need to enforce kinematic constraint derivatives.
-        const bool calcPVAErr = kinConIndices(itime).__nonzero__();
+        bool kinematicConstraintsExist = m_kcerr.size1() != 0;
+        bool isKCIndex =
+                DM::is_equal(kinematicConstraintIndices(itime), DM::ones(1, 1));
+        bool calcKinematicConstraintErrors =
+                kinematicConstraintsExist && isKCIndex ? true : false;
 
         // Calculate differential-algebraic equations and update the state
         // derivatives vector.
         if (m_solver.isDynamicsModeImplicit()) {
             const bool calcResidual = resConIndices(itime).__nonzero__();
-            calcDAEImplicit(itime, this_xdot, calcResidual, this_residual,
-                    calcPVAErr, this_pvaerr, islack);
+            calcDifferentialAlgebraicEquationsImplicit(itime, islack,
+                    calcResidual, calcKinematicConstraintErrors, this_xdot,
+                    this_residual, this_kcerr);
             if (calcResidual) {
                 m_residual(Slice(), irc) = this_residual;
                 ++irc;
             }
         } else {
-            calcDAEExplicit(itime, this_xdot, calcPVAErr, this_pvaerr, islack);
+            calcDifferentialAlgebraicEquationsExplicit(itime, islack,
+                    calcKinematicConstraintErrors, this_xdot, this_kcerr);
         }
         m_xdot(Slice(), itime) = this_xdot;
 
         // If calculating kinematic contraint errors, also update the constraint
         // errors vector and index.
-        if (calcPVAErr) {
-            m_pvaerr(Slice(), ikc) = this_pvaerr;
+        if (calcKinematicConstraintErrors) {
+            m_kcerr(Slice(), ikc) = this_kcerr;
             ++ikc;
             // If not calculating constraint errors at this time point but
             // enforcing constraint derivatives in the problem, update the slack
@@ -292,8 +299,9 @@ Iterate Transcription::createRandomIterateWithinBounds() const {
     return casIterate;
 }
 
-void Transcription::calcDAEExplicit(casadi_int itime, MX& xdot, bool calcPVAErr,
-        MX& pvaerr, casadi_int islack) {
+void Transcription::calcDifferentialAlgebraicEquationsExplicit(casadi_int itime,
+        casadi_int islack, bool calcKinematicConstraintErrors, MX& xdot,
+        MX& kcerr) {
     const auto& states = m_vars[Var::states];
     const int NQ = m_problem.getNumCoordinates();
     const int NU = m_problem.getNumSpeeds();
@@ -303,18 +311,21 @@ void Transcription::calcDAEExplicit(casadi_int itime, MX& xdot, bool calcPVAErr,
     // If slack variables exist and we're not computing constraint errors at
     // this time point, compute the velocity correction and update qdot.
     // See MocoCasADiVelocityCorrection for more details.
-    if (!calcPVAErr && islack != -1) {
+    if (!calcKinematicConstraintErrors && islack != -1) {
         const auto& velocityCorrFunc = m_problem.getVelocityCorrection();
+        // This function only takes multibody state variables: coordinates and
+        // speeds.
         const auto velocityCorrOutput = velocityCorrFunc.operator()(
-                {m_times(itime), m_vars[Var::states](Slice(), itime),
+                {m_times(itime), m_vars[Var::states](Slice(0, NQ + NU), itime),
                         m_vars[Var::slacks](Slice(), islack)});
         qdot += velocityCorrOutput.at(0);
     }
 
     // Get the multibody system function.
     const auto& multibodyFunc =
-            calcPVAErr ? m_problem.getMultibodySystem()
-                       : m_problem.getUnconstrainedMultibodySystem();
+            calcKinematicConstraintErrors
+                    ? m_problem.getMultibodySystem()
+                    : m_problem.getMultibodySystemIgnoringConstraints();
 
     // Evaluate the multibody system function and get udot (speed derivatives)
     // and zdot (auxiliary derivatives).
@@ -330,12 +341,13 @@ void Transcription::calcDAEExplicit(casadi_int itime, MX& xdot, bool calcPVAErr,
 
     // If calculating constraint errors, also update the constraint errors
     // vector.
-    if (calcPVAErr) { pvaerr = dynamicsOutput.at(2); }
+    if (calcKinematicConstraintErrors) { kcerr = dynamicsOutput.at(2); }
 }
 
-void Transcription::calcDAEImplicit(casadi_int itime, MX& xdot,
-        bool calcResidual, MX& residual, bool calcPVAErr, MX& pvaerr,
-        casadi_int islack) {
+void Transcription::calcDifferentialAlgebraicEquationsImplicit(casadi_int itime,
+        casadi_int islack, bool calcResidual,
+        bool calcKinematicConstraintErrors, MX& xdot, MX& residual,
+        MX& pvaerr) {
     const auto& states = m_vars[Var::states];
     const int NQ = m_problem.getNumCoordinates();
     const int NU = m_problem.getNumSpeeds();
@@ -350,19 +362,19 @@ void Transcription::calcDAEImplicit(casadi_int itime, MX& xdot,
 
     // Evaluate the multibody system function and get udot (speed derivatives)
     // and zdot (auxiliary derivatives).
-    const auto dynamicsOutput = implicitMultibodyFunc.operator()({
-            m_times(itime),
-            m_vars[Var::states](Slice(), itime),
-            m_vars[Var::controls](Slice(), itime),
-            m_vars[Var::multipliers](Slice(), itime),
-            m_vars[Var::derivatives](Slice(), itime), m_vars[Var::parameters]});
+    const auto dynamicsOutput = implicitMultibodyFunc.operator()(
+            {m_times(itime), m_vars[Var::states](Slice(), itime),
+                    m_vars[Var::controls](Slice(), itime),
+                    m_vars[Var::multipliers](Slice(), itime),
+                    m_vars[Var::derivatives](Slice(), itime),
+                    m_vars[Var::parameters]});
     residual = dynamicsOutput.at(0);
     const MX zdot = dynamicsOutput.at(1);
 
     // Concatenate derivatives to update the state derivatives vector.
     xdot = casadi::MX::vertcat({qdot, udot, zdot});
 
-    if (calcPVAErr) pvaerr = casadi::MX::zeros(0, 1);
+    if (calcKinematicConstraintErrors) pvaerr = casadi::MX::zeros(0, 1);
 }
 
 void Transcription::addConstraints(const casadi::DM& lower,
