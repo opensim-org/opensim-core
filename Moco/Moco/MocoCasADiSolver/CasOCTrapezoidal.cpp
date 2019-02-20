@@ -40,24 +40,33 @@ DM Trapezoidal::createKinematicConstraintIndicesImpl() const {
     return DM::ones(1, m_numGridPoints);
 }
 
+DM Trapezoidal::createResidualConstraintIndicesImpl() const {
+    return DM::ones(1, m_numGridPoints);
+}
+
 void Trapezoidal::applyConstraintsImpl() {
 
     // We have arranged the code this way so that all constraints at a given
     // mesh point are grouped together (organizing the sparsity of the Jacobian
     // this way might have benefits for sparse linear algebra).
     const auto& states = m_vars[Var::states];
-    const DM zero(m_problem.getNumStates(), 1);
+    const DM zeroS = casadi::DM::zeros(m_problem.getNumStates(), 1);
+    const DM zeroU = casadi::DM::zeros(m_problem.getNumSpeeds(), 1);
     for (int itime = 0; itime < m_numGridPoints; ++itime) {
         if (itime > 0) {
             const auto h = m_times(itime) - m_times(itime - 1);
             const auto x_i = states(Slice(), itime);
             const auto x_im1 = states(Slice(), itime - 1);
-            const auto xdot_i = xdot(Slice(), itime);
-            const auto xdot_im1 = xdot(Slice(), itime - 1);
+            const auto xdot_i = m_xdot(Slice(), itime);
+            const auto xdot_im1 = m_xdot(Slice(), itime - 1);
 
             // Trapezoidal defects.
-            addConstraints(zero, zero,
+            addConstraints(zeroS, zeroS,
                 x_i - (x_im1 + 0.5 * h * (xdot_i + xdot_im1)));
+        }
+
+        if (m_solver.isDynamicsModeImplicit()) {
+            addConstraints(zeroU, zeroU, m_residual(Slice(), itime));
         }
 
         // Kinematic constraint errors.
@@ -72,7 +81,7 @@ void Trapezoidal::applyConstraintsImpl() {
             kinConUpperBounds(Slice()) = bounds.upper;
 
             addConstraints(kinConLowerBounds, kinConUpperBounds,
-                kcerr(Slice(), itime));
+                m_kcerr(Slice(), itime));
         }
 
         // The individual path constraint functions are passed to CasADi to

@@ -27,32 +27,36 @@ void Transcription::transcribe() {
 
     // Set the grid.
     // -------------
-    // The grid for a transcription scheme includes both mesh points (i.e. 
+    // The grid for a transcription scheme includes both mesh points (i.e.
     // points that lie on the endpoints of a mesh interval) and any additional
     // collocation points that may lie on mesh interior (as in Hermite-Simpson
     // collocation, etc.).
     m_numMeshIntervals = m_numMeshPoints - 1;
     m_numSlackPoints = m_numGridPoints - m_numMeshPoints;
     m_grid = DM::linspace(0, 1, m_numGridPoints);
-    
+
     // Create variables.
-    // -----------------    
+    // -----------------
     m_vars[Var::initial_time] = MX::sym("initial_time");
     m_vars[Var::final_time] = MX::sym("final_time");
     m_duration = m_vars[Var::final_time] - m_vars[Var::initial_time];
     m_times = createTimes(m_vars[Var::initial_time], m_vars[Var::final_time]);
     m_vars[Var::states] =
-        MX::sym("states", m_problem.getNumStates(), m_numGridPoints);
+            MX::sym("states", m_problem.getNumStates(), m_numGridPoints);
     m_vars[Var::controls] =
-        MX::sym("controls", m_problem.getNumControls(), m_numGridPoints);
+            MX::sym("controls", m_problem.getNumControls(), m_numGridPoints);
     m_vars[Var::multipliers] = MX::sym(
-        "multipliers", m_problem.getNumMultipliers(), m_numGridPoints);
+            "multipliers", m_problem.getNumMultipliers(), m_numGridPoints);
+    if (m_solver.isDynamicsModeImplicit()) {
+        m_vars[Var::derivatives] = MX::sym(
+                "derivatives", m_problem.getNumSpeeds(), m_numGridPoints);
+    }
     // TODO: This assumes that slack variables are applied at all collocation
     // points on the mesh interval interior.
-    m_vars[Var::slacks] = MX::sym(
-        "slacks", m_problem.getNumSlacks(), m_numSlackPoints);
+    m_vars[Var::slacks] =
+            MX::sym("slacks", m_problem.getNumSlacks(), m_numSlackPoints);
     m_vars[Var::parameters] =
-        MX::sym("parameters", m_problem.getNumParameters(), 1);
+            MX::sym("parameters", m_problem.getNumParameters(), 1);
 
     // Set variable bounds.
     // --------------------
@@ -65,15 +69,15 @@ void Transcription::transcribe() {
     initializeBounds(m_upperBounds);
 
     setVariableBounds(
-        Var::initial_time, 0, 0, m_problem.getTimeInitialBounds());
+            Var::initial_time, 0, 0, m_problem.getTimeInitialBounds());
     setVariableBounds(Var::final_time, 0, 0, m_problem.getTimeFinalBounds());
 
     {
         const auto& stateInfos = m_problem.getStateInfos();
         int is = 0;
         for (const auto& info : stateInfos) {
-            setVariableBounds(
-                Var::states, is, Slice(1, m_numGridPoints - 1), info.bounds);
+            setVariableBounds(Var::states, is, Slice(1, m_numGridPoints - 1),
+                    info.bounds);
             // The "0" grabs the first column (first mesh point).
             setVariableBounds(Var::states, is, 0, info.initialBounds);
             // The "-1" grabs the last column (last mesh point).
@@ -86,7 +90,7 @@ void Transcription::transcribe() {
         int ic = 0;
         for (const auto& info : controlInfos) {
             setVariableBounds(Var::controls, ic, Slice(1, m_numGridPoints - 1),
-                info.bounds);
+                    info.bounds);
             setVariableBounds(Var::controls, ic, 0, info.initialBounds);
             setVariableBounds(Var::controls, ic, -1, info.finalBounds);
             ++ic;
@@ -96,11 +100,18 @@ void Transcription::transcribe() {
         const auto& multiplierInfos = m_problem.getMultiplierInfos();
         int im = 0;
         for (const auto& info : multiplierInfos) {
-            setVariableBounds(Var::multipliers, 
-                im, Slice(1, m_numGridPoints - 1), info.bounds);
+            setVariableBounds(Var::multipliers, im,
+                    Slice(1, m_numGridPoints - 1), info.bounds);
             setVariableBounds(Var::multipliers, im, 0, info.initialBounds);
             setVariableBounds(Var::multipliers, im, -1, info.finalBounds);
             ++im;
+        }
+    }
+    {
+        if (m_solver.isDynamicsModeImplicit()) {
+            // TODO: How to choose bounds on udot?
+            setVariableBounds(
+                    Var::derivatives, Slice(), Slice(), {-1000, 1000});
         }
     }
     {
@@ -116,7 +127,7 @@ void Transcription::transcribe() {
         int ip = 0;
         for (const auto& info : paramInfos) {
             setVariableBounds(Var::parameters, ip, 0, info.bounds);
-            ++ip; 
+            ++ip;
         }
     }
 
@@ -131,25 +142,25 @@ void Transcription::transcribe() {
         // *not* numerically evaluating the integral cost integrand here--that
         // occurs when the function by casadi::nlpsol() is evaluated.
         const auto out = m_problem.getIntegralCostIntegrand().operator()(
-        {m_times(itime, 0), m_vars[Var::states](Slice(), itime),
-            m_vars[Var::controls](Slice(), itime),
-            m_vars[Var::parameters]});
+                {m_times(itime, 0), m_vars[Var::states](Slice(), itime),
+                        m_vars[Var::controls](Slice(), itime),
+                        m_vars[Var::parameters]});
         integralCost += quadCoeffs(itime) * out.at(0);
 
         // Minimize Lagrange multipliers if specified by the solver.
-        if (m_solver.getMinimizeLagrangeMultipliers() && 
+        if (m_solver.getMinimizeLagrangeMultipliers() &&
                 m_problem.getNumMultipliers()) {
             const auto mults = m_vars[Var::multipliers](Slice(), itime);
-            const double multiplierWeight = 
-                m_solver.getLagrangeMultiplierWeight();
+            const double multiplierWeight =
+                    m_solver.getLagrangeMultiplierWeight();
             integralCost += multiplierWeight * dot(mults, mults);
         }
     }
     integralCost *= m_duration;
 
     const auto endpointCostOut =
-        m_problem.getEndpointCost().operator()({m_vars[Var::final_time],
-            m_vars[Var::states](Slice(), -1), m_vars[Var::parameters]});
+            m_problem.getEndpointCost().operator()({m_vars[Var::final_time],
+                    m_vars[Var::states](Slice(), -1), m_vars[Var::parameters]});
     const auto endpointCost = endpointCostOut.at(0);
     setObjective(integralCost + endpointCost);
 
@@ -157,54 +168,75 @@ void Transcription::transcribe() {
     // --------------------------------------
     const int NQ = m_problem.getNumCoordinates();
     const int NU = m_problem.getNumSpeeds();
-    OPENSIM_THROW_IF(NQ != NU, OpenSim::Exception, "NQ != NU");
+    OPENSIM_THROW_IF(NQ != NU, OpenSim::Exception,
+            "Problems with differing numbers of coordinates and speeds are not "
+            "supported (e.g., quaternions).");
     const DM kinematicConstraintIndices = createKinematicConstraintIndices();
+    const DM residualIndices = createResidualConstraintIndicesImpl();
 
     // TODO: Does creating all this memory have efficiency implications in
     // CasADi?
     // Initialize memory for state derivatives and constraint errors.
-    xdot = MX(m_problem.getNumStates(), m_numGridPoints);
-    kcerr = MX(m_problem.getNumKinematicConstraintEquations(), 
-        kinematicConstraintIndices.nnz());
+    m_xdot = MX(m_problem.getNumStates(), m_numGridPoints);
+    if (m_solver.isDynamicsModeImplicit()) {
+        m_residual = MX(m_problem.getNumSpeeds(), residualIndices.nnz());
+    }
+    m_kcerr = MX(m_problem.getNumKinematicConstraintEquations(),
+            kinematicConstraintIndices.nnz());
 
-    // Temporary memory for state derivatives and kinematic constraint errors 
-    // while iterating through time points.
+    // Temporary memory for state derivatives and constraint errors while
+    // iterating through time points.
     MX this_xdot;
+    MX this_residual;
     MX this_kcerr;
     // Updateable index for constraint errors vector.
     int ikc = 0;
-    // Updateable index for slack variables. This index will always be -1 if 
+    // Updateable index for residual errors vector.
+    int irc = 0;
+    // Updateable index for slack variables. This index will always be -1 if
     // constraint derivatives are not being enforced (i.e. no slack variables),
-    // which tells calcDifferentialAlgebraicEquations() not to compute the 
+    // which tells calcDifferentialAlgebraicEquations() not to compute the
     // velocity correction.
     int islack = m_problem.getEnforceConstraintDerivatives() ? 0 : -1;
-    // Iterate through the grid, computing state derivatives and constraint 
+    // Iterate through the grid, computing state derivatives and constraint
     // errors as necessary.
     for (int itime = 0; itime < m_numGridPoints; ++itime) {
 
-        // If kinematic constraints exists and the value of 
-        // kinematicConstraintIndices is non-zero at this time point, then 
+        // If kinematic constraints exists and the value of
+        // kinematicConstraintIndices is non-zero at this time point, then
         // we need to enforce kinematic constraint derivatives.
-        bool kinematicConstraintsExist = kcerr.size1() != 0;
-        bool isKCIndex = DM::is_equal(kinematicConstraintIndices(itime), 
-            DM::ones(1,1));
-        bool calcKinematicConstraintErrors = kinematicConstraintsExist && 
-            isKCIndex ? true : false;
+        bool kinematicConstraintsExist = m_kcerr.size1() != 0;
+        bool isKCIndex =
+                DM::is_equal(kinematicConstraintIndices(itime), DM::ones(1, 1));
+        bool calcKinematicConstraintErrors =
+                kinematicConstraintsExist && isKCIndex ? true : false;
 
         // Calculate differential-algebraic equations and update the state
         // derivatives vector.
-        calcDifferentialAlgebraicEquations(itime, NQ, islack,
-            calcKinematicConstraintErrors, this_xdot, this_kcerr);
-        xdot(Slice(), itime) = this_xdot;
+        if (m_solver.isDynamicsModeImplicit()) {
+            const bool calcResidual =
+                    DM::is_equal(residualIndices(itime), DM::ones(1, 1));
+            calcDifferentialAlgebraicEquationsImplicit(itime, islack,
+                    calcResidual, calcKinematicConstraintErrors, this_xdot,
+                    this_residual, this_kcerr);
+            if (calcResidual) {
+                m_residual(Slice(), irc) = this_residual;
+                ++irc;
+            }
+        } else {
+            calcDifferentialAlgebraicEquationsExplicit(itime, islack,
+                    calcKinematicConstraintErrors, this_xdot, this_kcerr);
+        }
+        m_xdot(Slice(), itime) = this_xdot;
 
         // If calculating kinematic contraint errors, also update the constraint
         // errors vector and index.
         if (calcKinematicConstraintErrors) {
-            kcerr(Slice(), ikc) = this_kcerr;
+            m_kcerr(Slice(), ikc) = this_kcerr;
             ++ikc;
-        // If not calculating constraint errors at this time point but enforcing
-        // constraint derivatives in the problem, update the slack variable 
-        // index since we just used the current index.
+            // If not calculating constraint errors at this time point but
+            // enforcing constraint derivatives in the problem, update the slack
+            // variable index since we just used the current index.
         } else if (m_problem.getEnforceConstraintDerivatives()) {
             ++islack;
         }
@@ -223,8 +255,7 @@ Iterate Transcription::createInitialGuessFromBounds() const {
                 const auto& upper = double(upperDM(irow, icol));
                 if (!std::isinf(lower) && !std::isinf(upper)) {
                     output(irow, icol) = 0.5 * (upper + lower);
-                }
-                else if (!std::isinf(lower))
+                } else if (!std::isinf(lower))
                     output(irow, icol) = lower;
                 else if (!std::isinf(upper))
                     output(irow, icol) = upper;
@@ -237,10 +268,10 @@ Iterate Transcription::createInitialGuessFromBounds() const {
     casGuess.variables = m_lowerBounds;
     for (auto& kv : casGuess.variables) {
         setToMidpoint(kv.second, m_lowerBounds.at(kv.first),
-            m_upperBounds.at(kv.first));
+                m_upperBounds.at(kv.first));
     }
     casGuess.times = createTimes(casGuess.variables[Var::initial_time],
-        casGuess.variables[Var::final_time]);
+            casGuess.variables[Var::final_time]);
     return casGuess;
 }
 
@@ -262,65 +293,96 @@ Iterate Transcription::createRandomIterateWithinBounds() const {
     casIterate.variables = m_lowerBounds;
     for (auto& kv : casIterate.variables) {
         setRandom(kv.second, m_lowerBounds.at(kv.first),
-            m_upperBounds.at(kv.first));
+                m_upperBounds.at(kv.first));
     }
     casIterate.times = createTimes(casIterate.variables[Var::initial_time],
-        casIterate.variables[Var::final_time]);
+            casIterate.variables[Var::final_time]);
     return casIterate;
 }
 
-void Transcription::calcDifferentialAlgebraicEquations(casadi_int itime, 
-        const int& NQ, casadi_int islack, bool calcKinematicConstraintErrors, 
-        MX& xdot, MX& kcerr) {
+void Transcription::calcDifferentialAlgebraicEquationsExplicit(casadi_int itime,
+        casadi_int islack, bool calcKinematicConstraintErrors, MX& xdot,
+        MX& kcerr) {
     const auto& states = m_vars[Var::states];
-    const MX u = states(Slice(NQ, 2 * NQ), itime);
+    const int NQ = m_problem.getNumCoordinates();
+    const int NU = m_problem.getNumSpeeds();
+    const MX u = states(Slice(NQ, NQ + NU), itime);
     MX qdot = u; // TODO: This assumes the N matrix is identity.
 
-    // If slack variables exist and we're not computing constraint errors at 
-    // this time point, compute the velocity correction and update qdot. 
+    // If slack variables exist and we're not computing constraint errors at
+    // this time point, compute the velocity correction and update qdot.
     // See MocoCasADiVelocityCorrection for more details.
     if (!calcKinematicConstraintErrors && islack != -1) {
         const auto& velocityCorrFunc = m_problem.getVelocityCorrection();
         // This function only takes multibody state variables: coordinates and
         // speeds.
-        // TODO update when NQ != NU.
         const auto velocityCorrOutput = velocityCorrFunc.operator()(
-        {m_times(itime), m_vars[Var::states](Slice(0, 2 * NQ), itime),
-            m_vars[Var::slacks](Slice(), islack)});
+                {m_times(itime), m_vars[Var::states](Slice(0, NQ + NU), itime),
+                        m_vars[Var::slacks](Slice(), islack)});
         qdot += velocityCorrOutput.at(0);
     }
-    
+
     // Get the multibody system function.
-    const auto& multibodyFunc = calcKinematicConstraintErrors ?
-        m_problem.getMultibodySystem() :
-        m_problem.getMultibodySystemIgnoringConstraints();
+    const auto& multibodyFunc =
+            calcKinematicConstraintErrors
+                    ? m_problem.getMultibodySystem()
+                    : m_problem.getMultibodySystemIgnoringConstraints();
 
     // Evaluate the multibody system function and get udot (speed derivatives)
     // and zdot (auxiliary derivatives).
-    const auto dynamicsOutput = multibodyFunc.operator()(
-    {m_times(itime), m_vars[Var::states](Slice(), itime),
-        m_vars[Var::controls](Slice(), itime),
-        m_vars[Var::multipliers](Slice(), itime),
-        m_vars[Var::parameters]});
+    const auto dynamicsOutput = multibodyFunc.operator()({m_times(itime),
+            m_vars[Var::states](Slice(), itime),
+            m_vars[Var::controls](Slice(), itime),
+            m_vars[Var::multipliers](Slice(), itime), m_vars[Var::parameters]});
     const MX udot = dynamicsOutput.at(0);
     const MX zdot = dynamicsOutput.at(1);
 
     // Concatenate derivatives to update the state derivatives vector.
     xdot = casadi::MX::vertcat({qdot, udot, zdot});
 
-    // If calculating constraint errors, also update the constraint errors 
+    // If calculating constraint errors, also update the constraint errors
     // vector.
-    if (calcKinematicConstraintErrors) {
-        kcerr = dynamicsOutput.at(2);
-    }
+    if (calcKinematicConstraintErrors) { kcerr = dynamicsOutput.at(2); }
+}
+
+void Transcription::calcDifferentialAlgebraicEquationsImplicit(casadi_int itime,
+        casadi_int /*islack*/, bool calcResidual,
+        bool calcKinematicConstraintErrors, MX& xdot, MX& residual,
+        MX& kcerr) {
+    const auto& states = m_vars[Var::states];
+    const int NQ = m_problem.getNumCoordinates();
+    const int NU = m_problem.getNumSpeeds();
+    const MX u = states(Slice(NQ, NQ + NU), itime);
+    MX qdot = u; // TODO: This assumes the N matrix is identity.
+
+    const MX w = m_vars[Var::derivatives](Slice(), itime);
+    MX udot = w;
+
+    // Get the multibody system function.
+    const auto& implicitMultibodyFunc = m_problem.getImplicitMultibodySystem();
+
+    // Evaluate the multibody system function and get udot (speed derivatives)
+    // and zdot (auxiliary derivatives).
+    const auto dynamicsOutput = implicitMultibodyFunc.operator()(
+            {m_times(itime), m_vars[Var::states](Slice(), itime),
+                    m_vars[Var::controls](Slice(), itime),
+                    m_vars[Var::multipliers](Slice(), itime),
+                    m_vars[Var::derivatives](Slice(), itime),
+                    m_vars[Var::parameters]});
+    if (calcResidual) residual = dynamicsOutput.at(0);
+    const MX zdot = dynamicsOutput.at(1);
+
+    // Concatenate derivatives to update the state derivatives vector.
+    xdot = casadi::MX::vertcat({qdot, udot, zdot});
+
+    if (calcKinematicConstraintErrors) kcerr = casadi::MX::zeros(0, 1);
 }
 
 void Transcription::addConstraints(const casadi::DM& lower,
         const casadi::DM& upper, const casadi::MX& equations) {
     OPENSIM_THROW_IF(
             lower.size() != upper.size() || lower.size() != equations.size(),
-            OpenSim::Exception,
-            "Arguments must have the same size.");
+            OpenSim::Exception, "Arguments must have the same size.");
     m_constraintsLowerBounds.push_back(lower);
     m_constraintsUpperBounds.push_back(upper);
     m_constraints.push_back(equations);

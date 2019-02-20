@@ -53,6 +53,14 @@ DM HermiteSimpson::createKinematicConstraintIndicesImpl() const {
     return indices;
 }
 
+DM HermiteSimpson::createResidualConstraintIndicesImpl() const {
+    DM indices = DM::zeros(1, m_numGridPoints);
+    for (int i = 1; i < m_numGridPoints; i += 2) {
+        indices(i) = 1;
+    }
+    return indices;
+}
+
 void HermiteSimpson::applyConstraintsImpl() {
 
     // Breakdown of constraints for Hermite-Simpson collocation.
@@ -62,8 +70,8 @@ void HermiteSimpson::applyConstraintsImpl() {
     // For each state variable, there is one pair of defect constraints 
     // (Hermite interpolant defect + Simpson integration defect) per mesh
     // interval. Each mesh interval includes two mesh points (at the interval's
-    // endpoints) and an additional collocation point at the mesh interval 
-    // midpoint. All three mesh interval points (2 mesh points + 1 collocation 
+    // endpoints) and an additional collocation point at the mesh interval
+    // midpoint. All three mesh interval points (2 mesh points + 1 collocation
     // point) are used to construct the defects (see below).
     
     // Kinematic constraints + path constraints.
@@ -76,7 +84,8 @@ void HermiteSimpson::applyConstraintsImpl() {
     // mesh point are grouped together (organizing the sparsity of the Jacobian
     // this way might have benefits for sparse linear algebra).
     const auto& states = m_vars[Var::states];
-    const DM zero(m_problem.getNumStates(), 1);
+    const DM zeroS = casadi::DM::zeros(m_problem.getNumStates(), 1);
+    const DM zeroU = casadi::DM::zeros(m_problem.getNumSpeeds(), 1);
 
     int time_i, time_mid, time_ip1;
     for (int imesh = 0; imesh < m_numMeshPoints; ++imesh) {
@@ -92,17 +101,22 @@ void HermiteSimpson::applyConstraintsImpl() {
             const auto x_i = states(Slice(), time_i);
             const auto x_mid = states(Slice(), time_mid);
             const auto x_ip1 = states(Slice(), time_ip1);
-            const auto xdot_i = xdot(Slice(), time_i);
-            const auto xdot_mid = xdot(Slice(), time_mid);
-            const auto xdot_ip1 = xdot(Slice(), time_ip1);
+            const auto xdot_i = m_xdot(Slice(), time_i);
+            const auto xdot_mid = m_xdot(Slice(), time_mid);
+            const auto xdot_ip1 = m_xdot(Slice(), time_ip1);
 
             // Hermite interpolant defects.
-            addConstraints(zero, zero,
+            addConstraints(zeroS, zeroS,
                 x_mid - 0.5*(x_ip1 + x_i) - (h / 8.0) * (xdot_i - xdot_ip1));
 
             // Simpson integration defects.
-            addConstraints(zero, zero,
+            addConstraints(zeroS, zeroS,
                 x_ip1 - x_i - (h / 6.0) * (xdot_ip1 + 4.0*xdot_mid + xdot_i));
+
+            // The residuals are enforced at the mesh interval midpoints.
+            if (m_solver.isDynamicsModeImplicit()) {
+                addConstraints(zeroU, zeroU, m_residual(Slice(), imesh));
+            }
         }
         
         // Kinematic constraint errors.
@@ -117,7 +131,7 @@ void HermiteSimpson::applyConstraintsImpl() {
             kinConUpperBounds(Slice()) = bounds.upper;
 
             addConstraints(kinConLowerBounds, kinConUpperBounds, 
-                kcerr(Slice(), imesh));
+                m_kcerr(Slice(), imesh));
         }
 
         // The individual path constraint functions are passed to CasADi to
