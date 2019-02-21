@@ -201,7 +201,9 @@ casadi::Sparsity VelocityCorrection::get_sparsity_out(casadi_int i) {
     }
 }
 
-casadi::Sparsity MultibodySystemImplicit::get_sparsity_in(casadi_int i) {
+template <bool CalcKinConErrors>
+casadi::Sparsity 
+MultibodySystemImplicit<CalcKinConErrors>::get_sparsity_in(casadi_int i) {
     if (i == 0) {
         return casadi::Sparsity::dense(1, 1);
     } else if (i == 1) {
@@ -219,13 +221,26 @@ casadi::Sparsity MultibodySystemImplicit::get_sparsity_in(casadi_int i) {
     }
 }
 
-casadi::Sparsity MultibodySystemImplicit::get_sparsity_out(casadi_int i) {
+template <bool CalcKinConErrors>
+casadi::Sparsity 
+MultibodySystemImplicit<CalcKinConErrors>::get_sparsity_out(casadi_int i) {
     if (i == 0) {
         return casadi::Sparsity::dense(m_casProblem->getNumSpeeds(), 1);
     } else if (i == 1) {
         return casadi::Sparsity::dense(
                 m_casProblem->getNumAuxiliaryStates(), 1);
+    } else if (i == 2) {
+        if (CalcKinConErrors) {
+            int numRows = m_casProblem->getNumKinematicConstraintEquations();
+            return casadi::Sparsity::dense(numRows, 1);
+        }
+        else {
+            return casadi::Sparsity(0, 0);
+        }
     } else {
         return casadi::Sparsity(0, 0);
     }
 }
+
+template class CasOC::MultibodySystemImplicit<false>;
+template class CasOC::MultibodySystemImplicit<true>;

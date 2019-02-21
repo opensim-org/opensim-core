@@ -201,9 +201,10 @@ public:
     casadi::Sparsity get_sparsity_out(casadi_int i) override final;
 };
 
+template <bool CalcKinConErrors>
 class MultibodySystemImplicit : public Function {
     casadi_int get_n_in() override final { return 6; }
-    casadi_int get_n_out() override final { return 2; }
+    casadi_int get_n_out() override final { return CalcKinConErrors ? 3 : 2; }
     std::string get_name_in(casadi_int i) override final {
         switch (i) {
         case 0: return "time";
@@ -219,6 +220,12 @@ class MultibodySystemImplicit : public Function {
         switch (i) {
         case 0: return "multibody_residuals";
         case 1: return "auxiliary_derivatives";
+        case 2:
+            if (CalcKinConErrors) {
+                return "kinematic_constraint_errors";
+            } else {
+                OPENSIM_THROW(OpenSim::Exception, "Internal error.")
+            }
         default: OPENSIM_THROW(OpenSim::Exception, "Internal error.");
         }
     }

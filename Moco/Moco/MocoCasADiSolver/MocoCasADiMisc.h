@@ -428,12 +428,11 @@ public:
                 }
                 out_kinematic_constraint_errors = casadi::DM::vertcat(
                         {out_kinematic_constraint_errors, uerr, udoterr});
-
-                // Copy state derivative values to output. We cannot simply
-                // use getYDot() because that requires realizing to
-                // Acceleration.
                 out.push_back(out_kinematic_constraint_errors);
             }
+            // Copy state derivative values to output. We cannot simply
+            // use getYDot() because that requires realizing to
+            // Acceleration.
             out[0] = convertToCasADiDM(udot);
             // TODO: zdot probably depends on realizing to Acceleration.
             out[1] = convertToCasADiDM(m_simtkState.getZDot());
@@ -523,13 +522,14 @@ private:
     mutable SimTK::Vector m_qdotCorr;
 };
 
+template <bool CalcKinConErrors>
 class MocoCasADiMultibodySystemImplicit
-        : public CasOC::MultibodySystemImplicit {
+        : public CasOC::MultibodySystemImplicit<CalcKinConErrors> {
 public:
     MocoCasADiMultibodySystemImplicit(const OpenSim::MocoProblemRep& problem,
-            /*const OpenSim::MocoCasADiSolver& solver,*/
+            const OpenSim::MocoCasADiSolver& solver,
             std::unordered_map<int, int> yIndexMap)
-            : m_mocoProblemRep(problem), /*m_mocoCasADiSolver(solver),*/
+            : m_mocoProblemRep(problem), m_mocoCasADiSolver(solver),
               m_model(problem.getModel()),
               m_simtkState(m_model.getWorkingState()),
               m_yIndexMap(std::move(yIndexMap)), m_idSolver(m_model) {}
@@ -537,7 +537,7 @@ public:
         const double& time = args.at(0).scalar();
         const casadi::DM& states = args.at(1);
         const casadi::DM& controls = args.at(2);
-        // const casadi::DM& multipliers = args.at(3);
+        const casadi::DM& multipliers = args.at(3);
         const casadi::DM& derivatives = args.at(4);
         const casadi::DM& parameters = args.at(5);
         VectorDM out(2);
@@ -549,24 +549,131 @@ public:
                 time, states, controls, m_model, m_yIndexMap, m_simtkState);
 
         SimTK::Vector udot((int)derivatives.size1(), derivatives.ptr(), true);
-        SimTK::Vector residual = m_idSolver.solve(m_simtkState, udot);
+
+        const SimTK::SimbodyMatterSubsystem& matter =
+            m_model.getMatterSubsystem();
+
+        // If enabled constraints exist in the model, compute constraint forces
+        // based on Lagrange multipliers.
+        constraintBodyForces.setToZero();
+        constraintMobilityForces.setToZero();
+        // The total number of scalar holonomic, non-holonomic, and acceleration
+        // constraint equations enabled in the model. This does not count
+        // equations for derivatives of holonomic and non-holonomic constraints.
+        const int total_mp =
+            this->m_casProblem->getNumHolonomicConstraintEquations();
+        const int total_mv =
+            this->m_casProblem->getNumNonHolonomicConstraintEquations();
+        const int total_ma =
+            this->m_casProblem->getNumAccelerationConstraintEquations();
+        // This is the sum of m_total_m(p|v|a).
+        const int numMultipliers = this->m_casProblem->getNumMultipliers();
+        if (numMultipliers) {
+            const auto& enforceConstraintDerivatives =
+                m_mocoCasADiSolver.get_enforce_constraint_derivatives();
+
+            // Multipliers are negated so constraint forces can be used like
+            // applied forces.
+            SimTK::Vector simtkMultipliers(
+                numMultipliers, multipliers.ptr(), true);
+            matter.calcConstraintForcesFromMultipliers(m_simtkState,
+                -simtkMultipliers, constraintBodyForces,
+                constraintMobilityForces);
+
+            // Constraint errors.
+            // TODO double-check that disabled constraints don't show up in
+            // state
+            if (CalcKinConErrors) {
+                // Position-level errors.
+                casadi::DM out_kinematic_constraint_errors =
+                    convertToCasADiDM(m_simtkState.getQErr());
+
+                if (enforceConstraintDerivatives || total_ma) {
+                    // Calculuate udoterr. We cannot use State::getUDotErr()
+                    // because that uses Simbody's multiplilers and UDot,
+                    // whereas we have our own multipliers and UDot.
+                    matter.calcConstraintAccelerationErrors(
+                        m_simtkState, udot, m_pvaerr);
+                }
+                else {
+                    m_pvaerr = SimTK::NaN;
+                }
+
+                casadi::DM uerr;
+                casadi::DM udoterr;
+                if (enforceConstraintDerivatives) {
+                    // Velocity-level errors.
+                    uerr = convertToCasADiDM(m_simtkState.getUErr());
+                    // Acceleration-level errors.
+                    udoterr = convertToCasADiDM(m_pvaerr);
+                }
+                else {
+                    // Velocity-level errors. Skip derivatives of position-level
+                    // constraint equations.
+                    uerr = convertToCasADiDM(SimTK::Vector(total_mv,
+                        m_simtkState.getUErr().getContiguousScalarData() +
+                        total_mp,
+                        true));
+                    // Acceleration-level errors. Skip derivatives of velocity-
+                    // and position-level constraint equations.
+                    udoterr = convertToCasADiDM(SimTK::Vector(total_ma,
+                        m_pvaerr.getContiguousScalarData() + total_mp +
+                        total_mv,
+                        true));
+                }
+                out_kinematic_constraint_errors = casadi::DM::vertcat(
+                    {out_kinematic_constraint_errors, uerr, udoterr});
+                out.push_back(out_kinematic_constraint_errors);
+            }
+        } else {
+            if (CalcKinConErrors) {
+                // Add an empty kinematic constraint error vector.
+                out.emplace_back(0, 1);
+            }
+        }
+
+        m_mocoProblemRep.getModel().realizeDynamics(m_simtkState);
+
+        const SimTK::MultibodySystem& multibody =
+            m_model.getMultibodySystem();
+        const SimTK::Vector_<SimTK::SpatialVec>& appliedBodyForces =
+            multibody.getRigidBodyForces(
+                m_simtkState, SimTK::Stage::Dynamics);
+        const SimTK::Vector& appliedMobilityForces =
+            multibody.getMobilityForces(
+                m_simtkState, SimTK::Stage::Dynamics);
+
+        matter.calcResidualForceIgnoringConstraints(m_simtkState,
+            appliedMobilityForces + constraintMobilityForces,
+            appliedBodyForces + constraintBodyForces,
+            udot, residual);
+        out[0] = convertToCasADiDM(residual);
 
         // Calculate auxiliary dynamics.
         // TODO: If auxiliary dynamics depend on udot, the wrong udot will be
         // used.
         if (m_simtkState.getNZ()) { m_model.realizeAcceleration(m_simtkState); }
+        out[1] = convertToCasADiDM(m_simtkState.getZDot());
 
-        return {convertToCasADiDM(residual),
-                convertToCasADiDM(m_simtkState.getZDot())};
+        return out;
     }
 
 private:
     const OpenSim::MocoProblemRep& m_mocoProblemRep;
-    // const OpenSim::MocoCasADiSolver& m_mocoCasADiSolver;
+    const OpenSim::MocoCasADiSolver& m_mocoCasADiSolver;
     const OpenSim::Model& m_model;
     mutable SimTK::State m_simtkState;
     std::unordered_map<int, int> m_yIndexMap;
     mutable InverseDynamicsSolver m_idSolver;
+    mutable SimTK::Vector_<SimTK::SpatialVec> constraintBodyForces;
+    mutable SimTK::Vector constraintMobilityForces;
+    // This is the output argument of
+    // SimbodyMatterSubsystem::calcConstraintAccelerationErrors(), and includes
+    // the acceleration-level holonomic, non-holonomic constraint errors and the
+    // acceleration-only constraint errors.
+    mutable SimTK::Vector m_pvaerr;
+    mutable SimTK::Vector residual;
+
 };
 
 } // namespace OpenSim

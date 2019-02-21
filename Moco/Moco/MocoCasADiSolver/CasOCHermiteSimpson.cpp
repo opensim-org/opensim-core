@@ -55,7 +55,7 @@ DM HermiteSimpson::createKinematicConstraintIndicesImpl() const {
 
 DM HermiteSimpson::createResidualConstraintIndicesImpl() const {
     DM indices = DM::zeros(1, m_numGridPoints);
-    for (int i = 1; i < m_numGridPoints; i += 2) {
+    for (int i = 0; i < m_numGridPoints; ++i) {
         indices(i) = 1;
     }
     return indices;
@@ -115,7 +115,16 @@ void HermiteSimpson::applyConstraintsImpl() {
 
             // The residuals are enforced at the mesh interval midpoints.
             if (m_solver.isDynamicsModeImplicit()) {
-                addConstraints(zeroU, zeroU, m_residual(Slice(), imesh));
+                std::cout << "time_i: " << time_i << std::endl;
+                std::cout << "time_mid: " << time_mid << std::endl;
+
+                addConstraints(zeroU, zeroU, m_residual(Slice(), time_i));
+                addConstraints(zeroU, zeroU, m_residual(Slice(), time_mid));
+            }
+        } else {
+            if (m_solver.isDynamicsModeImplicit()) {
+                std::cout << "time_i: " << time_i << std::endl;
+                addConstraints(zeroU, zeroU, m_residual(Slice(), time_i));
             }
         }
         
