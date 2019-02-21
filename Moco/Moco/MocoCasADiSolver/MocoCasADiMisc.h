@@ -379,12 +379,12 @@ public:
             SimTK::Vector simtkMultipliers(
                     numMultipliers, multipliers.ptr(), true);
             matter.calcConstraintForcesFromMultipliers(m_simtkState,
-                    -simtkMultipliers, constraintBodyForces,
-                    constraintMobilityForces);
+                    -simtkMultipliers, m_constraintBodyForces,
+                    m_constraintMobilityForces);
 
             matter.calcAccelerationIgnoringConstraints(m_simtkState,
-                    appliedMobilityForces + constraintMobilityForces,
-                    appliedBodyForces + constraintBodyForces, udot, A_GB);
+                    appliedMobilityForces + m_constraintMobilityForces,
+                    appliedBodyForces + m_constraintBodyForces, m_udot, m_A_GB);
 
             // Constraint errors.
             // TODO double-check that disabled constraints don't show up in
@@ -400,7 +400,7 @@ public:
                     // because that uses Simbody's multiplilers and UDot,
                     // whereas we have our own multipliers and UDot.
                     matter.calcConstraintAccelerationErrors(
-                            m_simtkState, udot, m_pvaerr);
+                            m_simtkState, m_udot, m_pvaerr);
                 } else {
                     m_pvaerr = SimTK::NaN;
                 }
@@ -433,7 +433,7 @@ public:
             // Copy state derivative values to output. We cannot simply
             // use getYDot() because that requires realizing to
             // Acceleration.
-            out[0] = convertToCasADiDM(udot);
+            out[0] = convertToCasADiDM(m_udot);
             // TODO: zdot probably depends on realizing to Acceleration.
             out[1] = convertToCasADiDM(m_simtkState.getZDot());
 
@@ -462,10 +462,10 @@ private:
     // spatial accelerations, which are incidental to the computation of
     // generalized accelerations when specifying the dynamics with model
     // constraints present.
-    mutable SimTK::Vector_<SimTK::SpatialVec> constraintBodyForces;
-    mutable SimTK::Vector constraintMobilityForces;
-    mutable SimTK::Vector udot;
-    mutable SimTK::Vector_<SimTK::SpatialVec> A_GB;
+    mutable SimTK::Vector_<SimTK::SpatialVec> m_constraintBodyForces;
+    mutable SimTK::Vector m_constraintMobilityForces;
+    mutable SimTK::Vector m_udot;
+    mutable SimTK::Vector_<SimTK::SpatialVec> m_A_GB;
     // This is the output argument of
     // SimbodyMatterSubsystem::calcConstraintAccelerationErrors(), and includes
     // the acceleration-level holonomic, non-holonomic constraint errors and the
@@ -553,10 +553,19 @@ public:
         const SimTK::SimbodyMatterSubsystem& matter =
             m_model.getMatterSubsystem();
 
+        m_mocoProblemRep.getModel().realizeDynamics(m_simtkState);
+
+        const SimTK::MultibodySystem& multibody =
+            m_model.getMultibodySystem();
+        const SimTK::Vector_<SimTK::SpatialVec>& appliedBodyForces =
+            multibody.getRigidBodyForces(
+                m_simtkState, SimTK::Stage::Dynamics);
+        const SimTK::Vector& appliedMobilityForces =
+            multibody.getMobilityForces(
+                m_simtkState, SimTK::Stage::Dynamics);
+
         // If enabled constraints exist in the model, compute constraint forces
         // based on Lagrange multipliers.
-        constraintBodyForces.setToZero();
-        constraintMobilityForces.setToZero();
         // The total number of scalar holonomic, non-holonomic, and acceleration
         // constraint equations enabled in the model. This does not count
         // equations for derivatives of holonomic and non-holonomic constraints.
@@ -577,8 +586,8 @@ public:
             SimTK::Vector simtkMultipliers(
                 numMultipliers, multipliers.ptr(), true);
             matter.calcConstraintForcesFromMultipliers(m_simtkState,
-                -simtkMultipliers, constraintBodyForces,
-                constraintMobilityForces);
+                -simtkMultipliers, m_constraintBodyForces,
+                m_constraintMobilityForces);
 
             // Constraint errors.
             // TODO double-check that disabled constraints don't show up in
@@ -626,28 +635,27 @@ public:
                 out.push_back(out_kinematic_constraint_errors);
             }
         } else {
+            // This path should never be reach during an optimization, but 
+            // CasADi will throw an error (likely while constructing the 
+            // expression graph) if this path doesn't provide the correct
+            // size output.
             if (CalcKinConErrors) {
                 // Add an empty kinematic constraint error vector.
                 out.emplace_back(0, 1);
             }
+            // Set the constraint forces to zero if no constraints exist in the
+            // model.
+            m_constraintBodyForces.resize(appliedBodyForces.size());
+            m_constraintMobilityForces.resize(appliedMobilityForces.size());
+            m_constraintBodyForces.setToZero();
+            m_constraintMobilityForces.setToZero();
         }
 
-        m_mocoProblemRep.getModel().realizeDynamics(m_simtkState);
-
-        const SimTK::MultibodySystem& multibody =
-            m_model.getMultibodySystem();
-        const SimTK::Vector_<SimTK::SpatialVec>& appliedBodyForces =
-            multibody.getRigidBodyForces(
-                m_simtkState, SimTK::Stage::Dynamics);
-        const SimTK::Vector& appliedMobilityForces =
-            multibody.getMobilityForces(
-                m_simtkState, SimTK::Stage::Dynamics);
-
         matter.calcResidualForceIgnoringConstraints(m_simtkState,
-            appliedMobilityForces + constraintMobilityForces,
-            appliedBodyForces + constraintBodyForces,
-            udot, residual);
-        out[0] = convertToCasADiDM(residual);
+            appliedMobilityForces + m_constraintMobilityForces,
+            appliedBodyForces + m_constraintBodyForces,
+            udot, m_residual);
+        out[0] = convertToCasADiDM(m_residual);
 
         // Calculate auxiliary dynamics.
         // TODO: If auxiliary dynamics depend on udot, the wrong udot will be
@@ -665,14 +673,14 @@ private:
     mutable SimTK::State m_simtkState;
     std::unordered_map<int, int> m_yIndexMap;
     mutable InverseDynamicsSolver m_idSolver;
-    mutable SimTK::Vector_<SimTK::SpatialVec> constraintBodyForces;
-    mutable SimTK::Vector constraintMobilityForces;
+    mutable SimTK::Vector_<SimTK::SpatialVec> m_constraintBodyForces;
+    mutable SimTK::Vector m_constraintMobilityForces;
     // This is the output argument of
     // SimbodyMatterSubsystem::calcConstraintAccelerationErrors(), and includes
     // the acceleration-level holonomic, non-holonomic constraint errors and the
     // acceleration-only constraint errors.
     mutable SimTK::Vector m_pvaerr;
-    mutable SimTK::Vector residual;
+    mutable SimTK::Vector m_residual;
 
 };
 

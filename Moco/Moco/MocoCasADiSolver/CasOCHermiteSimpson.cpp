@@ -115,18 +115,17 @@ void HermiteSimpson::applyConstraintsImpl() {
 
             // The residuals are enforced at the mesh interval midpoints.
             if (m_solver.isDynamicsModeImplicit()) {
-                std::cout << "time_i: " << time_i << std::endl;
-                std::cout << "time_mid: " << time_mid << std::endl;
-
                 addConstraints(zeroU, zeroU, m_residual(Slice(), time_i));
                 addConstraints(zeroU, zeroU, m_residual(Slice(), time_mid));
+                // We only need to add a constraint on this time point for the 
+                // last mesh interval since, for all other mesh intervals, the
+                // time_ip1 point for a given mesh interval is covered by the 
+                // next mesh interval's time_i point.
+                if (imesh == m_numMeshIntervals - 1) {
+                    addConstraints(zeroU, zeroU, m_residual(Slice(), time_ip1));
+                }
             }
-        } else {
-            if (m_solver.isDynamicsModeImplicit()) {
-                std::cout << "time_i: " << time_i << std::endl;
-                addConstraints(zeroU, zeroU, m_residual(Slice(), time_i));
-            }
-        }
+        } 
         
         // Kinematic constraint errors.
         if (m_problem.getNumKinematicConstraintEquations()) {
