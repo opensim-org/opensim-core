@@ -20,7 +20,7 @@
 
 #include "../MocoUtilities.h"
 #include "CasOCSolver.h"
-#include "MocoCasADiMisc.h"
+#include "MocoCasADiBridge.h"
 #include <casadi/casadi.hpp>
 
 using casadi::Callback;
@@ -97,6 +97,8 @@ const MocoIterate& MocoCasADiSolver::getGuess() const {
 
 std::unique_ptr<CasOC::Problem> MocoCasADiSolver::createCasOCProblem() const {
     const auto& problemRep = getProblemRep();
+    int parallel = getMocoParallel();
+    m_jar = createProblemRepJar(parallel);
     auto casProblem = make_unique<CasOC::Problem>();
     checkPropertyInSet(
             *this, getProperty_dynamics_mode(), {"explicit", "implicit"});
@@ -274,7 +276,7 @@ std::unique_ptr<CasOC::Problem> MocoCasADiSolver::createCasOCProblem() const {
         // Only add the velocity correction if enforcing constraint derivatives.
         if (enforceConstraintDerivs) {
             casProblem->setVelocityCorrection<MocoCasADiVelocityCorrection>(
-                    problemRep, yIndexMap);
+                    *m_jar, yIndexMap);
         }
     }
 
@@ -290,15 +292,15 @@ std::unique_ptr<CasOC::Problem> MocoCasADiSolver::createCasOCProblem() const {
             casBounds.push_back(convertBounds(bounds));
         }
         casProblem->addPathConstraint<MocoCasADiPathConstraint>(
-                name, casBounds, problemRep, yIndexMap, pathCon);
+                name, casBounds, *m_jar, yIndexMap, name);
     }
     casProblem->setIntegralCost<MocoCasADiIntegralCostIntegrand>(
-            problemRep, yIndexMap);
-    casProblem->setEndpointCost<MocoCasADiEndpointCost>(problemRep, yIndexMap);
+            *m_jar, yIndexMap);
+    casProblem->setEndpointCost<MocoCasADiEndpointCost>(*m_jar, yIndexMap);
     casProblem->setMultibodySystem<MocoCasADiMultibodySystem>(
-            problemRep, *this, yIndexMap);
+            *m_jar, *this, yIndexMap);
     casProblem->setImplicitMultibodySystem<MocoCasADiMultibodySystemImplicit>(
-            problemRep, yIndexMap);
+            *m_jar, yIndexMap);
 
     return casProblem;
 }
@@ -378,6 +380,9 @@ std::unique_ptr<CasOC::Solver> MocoCasADiSolver::createCasOCSolver(
             get_minimize_lagrange_multipliers());
     casSolver->setLagrangeMultiplierWeight(get_lagrange_multiplier_weight());
     casSolver->setOptimSolver(get_optim_solver());
+    if (m_jar->size() > 1) {
+        casSolver->setParallelism("thread", m_jar->size());
+    }
     casSolver->setPluginOptions(pluginOptions);
     casSolver->setSolverOptions(solverOptions);
     return casSolver;

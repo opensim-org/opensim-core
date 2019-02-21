@@ -72,6 +72,18 @@ public:
     }
     const std::string getOptimSolver() const { return m_optimSolver; }
 
+    /// Use this to tell CasADi to evaluate the differential-algebraic equations
+    /// in parallel across grid points. "parallelism" is passed on directly to
+    /// the "parallelism" argument of casadi::MX::map(). CasADi supports
+    /// "serial", "openmp", "thread", and perhaps some other options.
+    void setParallelism(std::string parallelism, int numThreads) {
+        m_parallelism = parallelism;
+        m_numThreads = numThreads;
+    }
+    std::pair<std::string, int> getParallelism() const {
+        return std::make_pair(m_parallelism, m_numThreads);
+    }
+
     void setPluginOptions(casadi::Dict opts) {
         m_pluginOptions = std::move(opts);
     }
@@ -98,6 +110,8 @@ private:
     std::string m_dynamicsMode = "explicit";
     bool m_minimizeLagrangeMultipliers = false;
     double m_lagrangeMultiplierWeight = 1.0;
+    std::string m_parallelism;
+    int m_numThreads;
     casadi::Dict m_pluginOptions;
     casadi::Dict m_solverOptions;
     std::string m_optimSolver;

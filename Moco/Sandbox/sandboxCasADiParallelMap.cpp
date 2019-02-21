@@ -17,32 +17,76 @@
  * -------------------------------------------------------------------------- */
 
 #include <SimTKcommon.h>
-
 #include <casadi/casadi.hpp>
 
 using namespace casadi;
+
+class MyFunction : public Callback {
+public:
+    MyFunction(const std::string& name) { construct(name); }
+    ~MyFunction() {
+
+    }
+    casadi_int get_n_in() override { return 2; }
+    casadi_int get_n_out() override { return 1; }
+    Sparsity get_sparsity_in(casadi_int i) override {
+        if (i == 0)
+            return Sparsity::dense(2, 1);
+        else if (i == 1)
+            return Sparsity::dense(1, 1);
+        else
+            return Sparsity();
+    }
+    Sparsity get_sparsity_out(casadi_int) override {
+        return Sparsity::dense(2, 1);
+    }
+    std::vector<DM> eval(const std::vector<DM>& arg) const override {
+        auto x = arg.at(0);
+        auto u = arg.at(1);
+        std::this_thread::sleep_for(std::chrono::milliseconds(2));
+        std::cout << std::this_thread::get_id() << std::endl;
+        auto xdot = DM::ones(2, 1);
+        xdot(0) = x(1);
+        xdot(1) = u(0);
+        return {xdot};
+    }
+};
 
 int main() {
 
     auto x = MX::sym("x", 2, 1);
     auto u = MX::sym("u", 1, 1);
 
-    auto xdot = MX(2, 1);
-    xdot(0) = x(1);
-    xdot(1) = u(0);
+    MyFunction ode("ode");
 
-    Function ode("ode", {x, u}, {xdot});
-    auto odeTraj = ode.map(100, "openmp");
+    int N = 100;
+    auto odeTrajSerial = ode.map(N, "serial");
 
-    auto xtraj = DM::zeros(2, 100); // MX::sym("xtraj", 2, 100);
-    auto utraj = DM::zeros(1, 100); // MX::sym("utraj", 1, 100);
+    // TODO: Threading results in memory issues. Something isn't threadsafe.
+    // OpenMP isn't actually running the code in parallel.
+    auto odeTrajParallel = ode.map(N, "thread", 8);
 
-    auto start = SimTK::realTimeInNs();
-    std::vector<DM> xdottraj = odeTraj(std::vector<DM>{xtraj, utraj});
-    std::cout << SimTK::realTimeInNs() - start << std::endl;
+    auto xtraj = DM::rand(2, N); // MX::sym("xtraj", 2, 100);
+    auto utraj = DM::rand(1, N); // MX::sym("utraj", 1, 100);
 
-    std::cout << xdottraj.at(0) << std::endl;
-
+    double timeSerial;
+    {
+        auto start = SimTK::realTimeInNs();
+        std::vector<DM> xdottraj = odeTrajSerial(std::vector<DM>{xtraj, utraj});
+        timeSerial = SimTK::realTimeInNs() - start;
+        std::cout << timeSerial << std::endl;
+        std::cout << xdottraj.at(0) << std::endl;
+    }
+    double timeParallel;
+    {
+        auto start = SimTK::realTimeInNs();
+        std::vector<DM> xdottraj =
+                odeTrajParallel(std::vector<DM>{xtraj, utraj});
+        timeParallel = SimTK::realTimeInNs() - start;
+        std::cout << timeParallel << std::endl;
+        std::cout << xdottraj.at(0) << std::endl;
+    }
+    std::cout << timeSerial / timeParallel << std::endl;
 
     return 0;
 }

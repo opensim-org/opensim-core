@@ -87,7 +87,6 @@ public:
     /// @}
 
 protected:
-    void resetProblemImpl(const MocoProblemRep&) const override {}
     MocoSolution solveImpl() const override;
 
     std::unique_ptr<CasOC::Problem> createCasOCProblem() const;
@@ -102,6 +101,11 @@ private:
     MocoIterate m_guessFromAPI;
     mutable SimTK::ResetOnCopy<MocoIterate> m_guessFromFile;
     mutable SimTK::ReferencePtr<const MocoIterate> m_guessToUse;
+
+    // TODO: Move this elsewhere.
+    using MocoProblemRepJar = ThreadsafeJar<const MocoProblemRep>;
+    using ThreadsafeJarPtr = std::unique_ptr<MocoProblemRepJar>;
+    mutable SimTK::ResetOnCopy<ThreadsafeJarPtr> m_jar;
 };
 
 } // namespace OpenSim

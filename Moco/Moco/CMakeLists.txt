@@ -57,7 +57,7 @@ add_library(osimMoco SHARED
         Components/ModelFactory.cpp
         MocoCasADiSolver/MocoCasADiSolver.h
         MocoCasADiSolver/MocoCasADiSolver.cpp
-        MocoCasADiSolver/MocoCasADiMisc.h
+        MocoCasADiSolver/MocoCasADiBridge.h
         MocoCasADiSolver/CasOCProblem.cpp
         MocoCasADiSolver/CasOCProblem.h
         MocoCasADiSolver/CasOCSolver.cpp
@@ -71,7 +71,7 @@ add_library(osimMoco SHARED
         MocoCasADiSolver/CasOCHermiteSimpson.cpp
         MocoCasADiSolver/CasOCHermiteSimpson.h
         MocoDirectCollocationSolver.cpp
-        MocoDirectCollocationSolver.h)
+        MocoDirectCollocationSolver.h MocoCasADiSolver/MocoCasADiBridge.cpp)
 target_link_libraries(osimMoco PUBLIC osimTools
                                PRIVATE tropter casadi)
 

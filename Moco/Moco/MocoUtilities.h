@@ -20,6 +20,7 @@
 
 #include "osimMocoDLL.h"
 #include <set>
+#include <stack>
 
 #include <OpenSim/Common/Storage.h>
 
@@ -313,6 +314,32 @@ public:
 
 private:
     long long m_startTime;
+};
+
+OSIMMOCO_API int getMocoParallel();
+
+/// TODO Find a way to always give the same thread the same object.
+template <typename T>
+class ThreadsafeJar {
+public:
+    std::unique_ptr<T> take() {
+        std::unique_lock<std::mutex> lock(m_mutex);
+        m_inventoryMonitor.wait(lock, [this]{ return m_entries.size() > 0; });
+        std::unique_ptr<T> top = std::move(m_entries.top());
+        m_entries.pop();
+        return top;
+    }
+    void leave(std::unique_ptr<T> entry) {
+        std::unique_lock<std::mutex> lock(m_mutex);
+        m_entries.push(std::move(entry));
+        lock.unlock();
+        m_inventoryMonitor.notify_one();
+    }
+    int size() const { return (int)m_entries.size(); }
+private:
+    std::stack<std::unique_ptr<T>> m_entries;
+    std::mutex m_mutex;
+    std::condition_variable m_inventoryMonitor;
 };
 
 } // namespace OpenSim

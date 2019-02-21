@@ -46,9 +46,6 @@ MocoTropterSolver::createTropterProblem() const {
     }
 }
 
-void MocoTropterSolver::resetProblemImpl(const MocoProblemRep&) const {
-}
-
 MocoIterate MocoTropterSolver::createGuess(const std::string& type) const {
     OPENSIM_THROW_IF_FRMOBJ(
                type != "bounds"

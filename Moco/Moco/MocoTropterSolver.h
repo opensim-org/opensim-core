@@ -130,7 +130,6 @@ protected:
     std::shared_ptr<const TropterProblemBase<double>>
     createTropterProblem() const;
 
-    void resetProblemImpl(const MocoProblemRep&) const override;
     // TODO ensure that user-provided guess is within bounds.
     MocoSolution solveImpl() const override;
 
