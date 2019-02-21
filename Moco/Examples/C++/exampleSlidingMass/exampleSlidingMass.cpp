@@ -102,16 +102,13 @@ int main() {
     MocoCasADiSolver& solver = moco.initCasADiSolver();
     solver.set_num_mesh_points(50);
 
-    // TODO interface for setting these options:
-    // TODO solver.setOption("optim.hessian-approximation", "limited-memory");
-    // TODO solver.set_optimizer_algorithm("ipopt");
-
-
     // Now that we've finished setting up the tool, print it to a file.
     moco.print("sliding_mass.omoco");
 
     // Solve the problem.
     // ==================
+    char s[] = "OPENSIM_MOCO_PARALLEL=8";
+    putenv(s);
     MocoSolution solution = moco.solve();
 
     //solution.write("sliding_mass_solution.sto");

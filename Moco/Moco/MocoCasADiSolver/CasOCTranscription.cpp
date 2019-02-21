@@ -184,6 +184,40 @@ void Transcription::transcribe() {
     m_kcerr = MX(m_problem.getNumKinematicConstraintEquations(),
             kinematicConstraintIndices.nnz());
 
+    if (m_problem.getNumKinematicConstraintEquations() == 0 &&
+            !m_solver.isDynamicsModeImplicit() &&
+            m_problem.getNumParameters() == 0 &&
+            m_problem.getPathConstraintInfos().size() == 0) {
+        auto t = casadi::MX::sym("t", 1, 1);
+        auto states = casadi::MX::sym("s", m_problem.getNumStates(), 1);
+        auto controls = casadi::MX::sym("c", m_problem.getNumControls(), 1);
+        auto mult = casadi::MX::sym("m", m_problem.getNumMultipliers(), 1);
+        auto params = casadi::MX::sym("p", m_problem.getNumParameters(), 1);
+        const auto multibodyFunc = m_problem.getMultibodySystem();
+        auto dynOut =
+                multibodyFunc.operator()({t, states, controls, mult, params});
+        const int nq = m_problem.getNumCoordinates();
+        const int nu = m_problem.getNumSpeeds();
+        const MX u = states(Slice(nq, nq + nu));
+        auto qdot = u;
+        auto udot = dynOut.at(0);
+        auto zdot = dynOut.at(1);
+        auto xdot = casadi::MX::vertcat({qdot, udot, zdot});
+        auto dae = casadi::Function("dae", {t, states, controls, params}, {xdot});
+        auto parallelism = m_solver.getParallelism();
+        auto calcDAEOverTrajectory =
+                dae.map(m_numGridPoints, parallelism.first, parallelism.second);
+        m_xdot = calcDAEOverTrajectory
+                         .
+                         operator()({m_times, m_vars[Var::states],
+                                 m_vars[Var::controls],
+                                 casadi::MX::repmat(m_vars[Var::parameters], 1, m_numGridPoints)})
+                         .at(0);
+
+        applyConstraints();
+        return;
+    }
+
     // Temporary memory for state derivatives and constraint errors while
     // iterating through time points.
     MX this_xdot;
@@ -346,8 +380,7 @@ void Transcription::calcDifferentialAlgebraicEquationsExplicit(casadi_int itime,
 
 void Transcription::calcDifferentialAlgebraicEquationsImplicit(casadi_int itime,
         casadi_int /*islack*/, bool calcResidual,
-        bool calcKinematicConstraintErrors, MX& xdot, MX& residual,
-        MX& kcerr) {
+        bool calcKinematicConstraintErrors, MX& xdot, MX& residual, MX& kcerr) {
     const auto& states = m_vars[Var::states];
     const int NQ = m_problem.getNumCoordinates();
     const int NU = m_problem.getNumSpeeds();

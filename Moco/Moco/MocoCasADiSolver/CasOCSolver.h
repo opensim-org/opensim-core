@@ -76,10 +76,7 @@ public:
     /// in parallel across grid points. "parallelism" is passed on directly to
     /// the "parallelism" argument of casadi::MX::map(). CasADi supports
     /// "serial", "openmp", "thread", and perhaps some other options.
-    void setParallelism(std::string parallelism, int numThreads) {
-        m_parallelism = parallelism;
-        m_numThreads = numThreads;
-    }
+    void setParallelism(std::string parallelism, int numThreads);
     std::pair<std::string, int> getParallelism() const {
         return std::make_pair(m_parallelism, m_numThreads);
     }
@@ -110,8 +107,8 @@ private:
     std::string m_dynamicsMode = "explicit";
     bool m_minimizeLagrangeMultipliers = false;
     double m_lagrangeMultiplierWeight = 1.0;
-    std::string m_parallelism;
-    int m_numThreads;
+    std::string m_parallelism = "serial";
+    int m_numThreads = 1;
     casadi::Dict m_pluginOptions;
     casadi::Dict m_solverOptions;
     std::string m_optimSolver;
