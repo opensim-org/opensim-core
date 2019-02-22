@@ -327,7 +327,7 @@ public:
             : m_jar(jar), m_mocoCasADiSolver(solver),
               m_yIndexMap(std::move(yIndexMap)) {}
 
-    VectorDM eval(const VectorDM& args) {
+    VectorDM eval(const VectorDM& args) const override {
         const double& time = args.at(0).scalar();
         const casadi::DM& states = args.at(1);
         const casadi::DM& controls = args.at(2);
@@ -373,7 +373,7 @@ public:
         const int numMultipliers = this->m_casProblem->getNumMultipliers();
         if (numMultipliers) {
             const auto& enforceConstraintDerivatives =
-                    mocoCasADiSolver.get_enforce_constraint_derivatives();
+                    m_mocoCasADiSolver.get_enforce_constraint_derivatives();
             // Multipliers are negated so constraint forces can be used like
             // applied forces.
             SimTK::Vector simtkMultipliers(numMultipliers, multipliers.ptr(), true);
@@ -447,6 +447,9 @@ public:
                 out.emplace_back(0, 1);
             }
         }
+
+        m_jar.leave(std::move(mocoProblemRep));
+
         return out;
     }
 
@@ -656,9 +659,9 @@ public:
         // TODO: If auxiliary dynamics depend on udot, the wrong udot will be
         // used.
         if (simtkState.getNZ()) { model.realizeAcceleration(simtkState); }
+        out[1] = convertToCasADiDM(simtkState.getZDot());
 
         m_jar.leave(std::move(mocoProblemRep));
-        out[1] = convertToCasADiDM(simtkState.getZDot());
 
         return out;
     }
@@ -677,6 +680,12 @@ private:
     static thread_local SimTK::Vector m_pvaerr;
     static thread_local SimTK::Vector m_residual;
 };
+
+extern template class OpenSim::MocoCasADiMultibodySystem<false>;
+extern template class OpenSim::MocoCasADiMultibodySystem<true>;
+
+extern template class OpenSim::MocoCasADiMultibodySystemImplicit<false>;
+extern template class OpenSim::MocoCasADiMultibodySystemImplicit<true>;
 
 } // namespace OpenSim
 

@@ -361,7 +361,7 @@ public:
     }
 private:
     std::stack<std::unique_ptr<T>> m_entries;
-    std::mutex m_mutex;
+    mutable std::mutex m_mutex;
     std::condition_variable m_inventoryMonitor;
 };
 

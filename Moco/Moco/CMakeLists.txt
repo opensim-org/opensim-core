@@ -31,6 +31,8 @@ add_library(osimMoco SHARED
         MocoCost/MocoJointReactionNormCost.cpp
         MocoSolver.h
         MocoSolver.cpp
+        MocoDirectCollocationSolver.h
+        MocoDirectCollocationSolver.cpp
         MocoIterate.h
         MocoIterate.cpp
         MocoTropterSolver.h
@@ -58,20 +60,20 @@ add_library(osimMoco SHARED
         MocoCasADiSolver/MocoCasADiSolver.h
         MocoCasADiSolver/MocoCasADiSolver.cpp
         MocoCasADiSolver/MocoCasADiBridge.h
-        MocoCasADiSolver/CasOCProblem.cpp
+        MocoCasADiSolver/MocoCasADiBridge.cpp
         MocoCasADiSolver/CasOCProblem.h
-        MocoCasADiSolver/CasOCSolver.cpp
+        MocoCasADiSolver/CasOCProblem.cpp
         MocoCasADiSolver/CasOCSolver.h
-        MocoCasADiSolver/CasOCFunction.cpp
+        MocoCasADiSolver/CasOCSolver.cpp
         MocoCasADiSolver/CasOCFunction.h
-        MocoCasADiSolver/CasOCTranscription.cpp
+        MocoCasADiSolver/CasOCFunction.cpp
         MocoCasADiSolver/CasOCTranscription.h
-        MocoCasADiSolver/CasOCTrapezoidal.cpp
+        MocoCasADiSolver/CasOCTranscription.cpp
         MocoCasADiSolver/CasOCTrapezoidal.h
-        MocoCasADiSolver/CasOCHermiteSimpson.cpp
+        MocoCasADiSolver/CasOCTrapezoidal.cpp
         MocoCasADiSolver/CasOCHermiteSimpson.h
-        MocoDirectCollocationSolver.cpp
-        MocoDirectCollocationSolver.h MocoCasADiSolver/MocoCasADiBridge.cpp)
+        MocoCasADiSolver/CasOCHermiteSimpson.cpp
+        )
 target_link_libraries(osimMoco PUBLIC osimTools
                                PRIVATE tropter casadi)
 
