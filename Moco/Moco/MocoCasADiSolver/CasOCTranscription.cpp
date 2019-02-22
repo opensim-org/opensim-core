@@ -346,7 +346,7 @@ void Transcription::calcDifferentialAlgebraicEquationsExplicit(casadi_int itime,
 }
 
 void Transcription::calcDifferentialAlgebraicEquationsImplicit(casadi_int itime,
-        casadi_int /*islack*/, bool calcResidual,
+        casadi_int islack, bool calcResidual,
         bool calcKinematicConstraintErrors, MX& xdot, MX& residual,
         MX& kcerr) {
     const auto& states = m_vars[Var::states];
@@ -358,8 +358,24 @@ void Transcription::calcDifferentialAlgebraicEquationsImplicit(casadi_int itime,
     const MX w = m_vars[Var::derivatives](Slice(), itime);
     MX udot = w;
 
+    // If slack variables exist and we're not computing constraint errors at
+    // this time point, compute the velocity correction and update qdot.
+    // See MocoCasADiVelocityCorrection for more details.
+    if (!calcKinematicConstraintErrors && islack != -1) {
+        const auto& velocityCorrFunc = m_problem.getVelocityCorrection();
+        // This function only takes multibody state variables: coordinates and
+        // speeds.
+        const auto velocityCorrOutput = velocityCorrFunc.operator()(
+        {m_times(itime), m_vars[Var::states](Slice(0, NQ + NU), itime),
+            m_vars[Var::slacks](Slice(), islack)});
+        qdot += velocityCorrOutput.at(0);
+    }
+
     // Get the multibody system function.
-    const auto& implicitMultibodyFunc = m_problem.getImplicitMultibodySystem();
+    const auto& implicitMultibodyFunc =
+            calcKinematicConstraintErrors
+                ? m_problem.getImplicitMultibodySystem()
+                : m_problem.getImplicitMultibodySystemIgnoringConstraints();
 
     // Evaluate the multibody system function and get udot (speed derivatives)
     // and zdot (auxiliary derivatives).
@@ -375,7 +391,9 @@ void Transcription::calcDifferentialAlgebraicEquationsImplicit(casadi_int itime,
     // Concatenate derivatives to update the state derivatives vector.
     xdot = casadi::MX::vertcat({qdot, udot, zdot});
 
-    if (calcKinematicConstraintErrors) kcerr = casadi::MX::zeros(0, 1);
+    // If calculating constraint errors, also update the constraint errors
+    // vector.
+    if (calcKinematicConstraintErrors) { kcerr = dynamicsOutput.at(2); }
 }
 
 void Transcription::addConstraints(const casadi::DM& lower,

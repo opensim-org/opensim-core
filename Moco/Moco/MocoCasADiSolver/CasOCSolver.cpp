@@ -51,10 +51,6 @@ Iterate Solver::createRandomIterateWithinBounds() const {
 }
 
 Solution Solver::solve(const Iterate& guess) const {
-    OPENSIM_THROW_IF(isDynamicsModeImplicit() &&
-                             m_problem.getNumKinematicConstraintEquations(),
-            OpenSim::Exception,
-            "Cannot use implicit dynamics mode with kinematic constraints.");
     auto transcription = createTranscription();
     return transcription->solve(guess);
 }

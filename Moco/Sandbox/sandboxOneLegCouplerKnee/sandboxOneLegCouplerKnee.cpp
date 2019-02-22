@@ -194,7 +194,7 @@ MocoSolution minimizeControlEffortRightLeg(const Options& opt) {
     ms.set_minimize_lagrange_multipliers(false);
     ms.set_lagrange_multiplier_weight(10);
     ms.set_optim_hessian_approximation(opt.hessian_approximation);
-    //ms.set_optim_ipopt_print_level(7);
+    ms.set_dynamics_mode("implicit");
     auto guess = ms.createGuess("bounds");
     // If the controlsGuess struct field is not empty, use it to set the
     // controls in the trajectory guess.
@@ -349,17 +349,6 @@ MocoSolution stateTrackingRightLeg(const Options& opt) {
     return solution;
 }
 
-//TEST_CASE("minimizeControlEffort", "") {
-//
-//    Options opt;
-//    opt.weldPelvis = true;
-//    opt.num_mesh_points = 20;
-//    opt.solver = "ipopt";
-//    opt.constraint_tol = 1e-2;
-//    opt.convergence_tol = 1e-2;
-//    MocoSolution torqueSolEffort = minimizeControlEffortRightLeg(opt);
-//}
-
 void main() {
 
     //When solving problems while providing derivative infomration from 
@@ -373,12 +362,12 @@ void main() {
     opt.weldPelvis = true;
     opt.num_mesh_points = 20;
     opt.solver = "ipopt";
-    opt.constraint_tol = 1e-3;
-    opt.convergence_tol = 1e-3;
+    opt.constraint_tol = 1e-2;
+    opt.convergence_tol = 1e-2;
     //opt.previousSolution = MocoSolution(
     //"sandboxRightLeg_weldedPelvis_torques_minimize_control_effort_solution.sto");
-    //MocoSolution torqueSolEffortCasADi = 
-    //    minimizeControlEffortRightLeg<MocoCasADiSolver>(opt);
+    MocoSolution torqueSolEffortCasADi = 
+        minimizeControlEffortRightLeg<MocoCasADiSolver>(opt);
 
     //MocoSolution torqueSolEffortTropter =
     //    minimizeControlEffortRightLeg<MocoTropterSolver>(opt);
@@ -393,12 +382,12 @@ void main() {
     //MocoSolution muscleSolEffortCasADi(
     //"sandboxRightLeg_weldedPelvis_muscles_minimize_control_effort_solution.sto");
 
-    opt.actuatorType = "muscles";
-    //opt.hessian_approximation = "exact";
-    //opt.controlsGuess = muscleSolEffortCasADi.getControlsTrajectory();
-    //opt.previousSolution = muscleSolEffortCasADi;
-    MocoSolution muscleSolEffort = 
-        minimizeControlEffortRightLeg<MocoCasADiSolver>(opt);
+    //opt.actuatorType = "muscles";
+    ////opt.hessian_approximation = "exact";
+    ////opt.controlsGuess = muscleSolEffortCasADi.getControlsTrajectory();
+    ////opt.previousSolution = muscleSolEffortCasADi;
+    //MocoSolution muscleSolEffort = 
+    //    minimizeControlEffortRightLeg<MocoCasADiSolver>(opt);
 
     //opt.previousSolution = torqueSolEffort;
     //MocoSolution torqueSolTracking = stateTrackingRightLeg(opt);
