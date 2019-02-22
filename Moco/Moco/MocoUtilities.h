@@ -329,10 +329,15 @@ private:
 /// (e.g., from a specific MocoSolver) for more information.
 OSIMMOCO_API int getMocoParallelEnvironmentVariable();
 
-/// TODO Find a way to always give the same thread the same object.
+/// This class lets you store objects of a single type for reuse by multiple
+/// threads, ensuring threadsafe access to each of those objects.
+// TODO: Find a way to always give the same thread the same object.
 template <typename T>
 class ThreadsafeJar {
 public:
+    /// Request an object for your exclusive use on your thread. This function
+    /// halts the thread until an object is available. Make sure to return
+    /// (leave()) the object when you're done!
     std::unique_ptr<T> take() {
         std::unique_lock<std::mutex> lock(m_mutex);
         m_inventoryMonitor.wait(lock, [this]{ return m_entries.size() > 0; });
@@ -340,13 +345,20 @@ public:
         m_entries.pop();
         return top;
     }
+    /// Add or return an object so that another thread can use it. You will need
+    /// to std::move() the entry, ensuring that you will no longer have access
+    /// to the entry in your code (the pointer will now be null).
     void leave(std::unique_ptr<T> entry) {
         std::unique_lock<std::mutex> lock(m_mutex);
         m_entries.push(std::move(entry));
         lock.unlock();
         m_inventoryMonitor.notify_one();
     }
-    int size() const { return (int)m_entries.size(); }
+    /// Obtain the number of entries that can be taken.
+    int size() const {
+        std::lock_guard<std::mutex> lock(m_mutex);
+        return (int)m_entries.size();
+    }
 private:
     std::stack<std::unique_ptr<T>> m_entries;
     std::mutex m_mutex;

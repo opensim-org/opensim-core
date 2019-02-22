@@ -1333,7 +1333,9 @@ TEST_CASE("Skip over empty quaternion slots", "") {
     testSkippingOverQuaternionSlots<MocoCasADiSolver>(false, false, "explicit");
     testSkippingOverQuaternionSlots<MocoCasADiSolver>(true, false, "explicit");
     testSkippingOverQuaternionSlots<MocoCasADiSolver>(true, true, "explicit");
-    // TODO testSkippingOverQuaternionSlots<MocoCasADiSolver>(false, false, "implicit");
+    testSkippingOverQuaternionSlots<MocoCasADiSolver>(false, false, "implicit");
+    testSkippingOverQuaternionSlots<MocoCasADiSolver>(true, false, "implicit");
+    testSkippingOverQuaternionSlots<MocoCasADiSolver>(true, true, "implicit");
 }
 
 // testCopy();

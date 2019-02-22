@@ -22,6 +22,7 @@
 
 using namespace CasOC;
 
+// TODO: Not used yet.
 casadi::Sparsity calcJacobianSparsityWithPerturbation(const casadi::DM& x0,
         int numOutputs,
         std::function<void(const casadi::DM&, casadi::DM&)> function) {
@@ -45,7 +46,7 @@ casadi::Sparsity calcJacobianSparsityWithPerturbation(const casadi::DM& x0,
         diff = output - output0;
         for (int i = 0; i < (int)numOutputs; ++i) {
             if (std::isnan(diff(i).scalar())) {
-                std::cout << "[tropter] Warning: NaN encountered when "
+                std::cout << "[CasOC] Warning: NaN encountered when "
                              "detecting sparsity of Jacobian; entry (";
                 std::cout << i << ", " << j;
                 std::cout << ")." << std::endl;
@@ -200,7 +201,9 @@ casadi::Sparsity VelocityCorrection::get_sparsity_out(casadi_int i) {
     }
 }
 
-casadi::Sparsity MultibodySystemImplicit::get_sparsity_in(casadi_int i) {
+template <bool CalcKinConErrors>
+casadi::Sparsity 
+MultibodySystemImplicit<CalcKinConErrors>::get_sparsity_in(casadi_int i) {
     if (i == 0) {
         return casadi::Sparsity::dense(1, 1);
     } else if (i == 1) {
@@ -218,13 +221,26 @@ casadi::Sparsity MultibodySystemImplicit::get_sparsity_in(casadi_int i) {
     }
 }
 
-casadi::Sparsity MultibodySystemImplicit::get_sparsity_out(casadi_int i) {
+template <bool CalcKinConErrors>
+casadi::Sparsity 
+MultibodySystemImplicit<CalcKinConErrors>::get_sparsity_out(casadi_int i) {
     if (i == 0) {
         return casadi::Sparsity::dense(m_casProblem->getNumSpeeds(), 1);
     } else if (i == 1) {
         return casadi::Sparsity::dense(
                 m_casProblem->getNumAuxiliaryStates(), 1);
+    } else if (i == 2) {
+        if (CalcKinConErrors) {
+            int numRows = m_casProblem->getNumKinematicConstraintEquations();
+            return casadi::Sparsity::dense(numRows, 1);
+        }
+        else {
+            return casadi::Sparsity(0, 0);
+        }
     } else {
         return casadi::Sparsity(0, 0);
     }
 }
+
+template class CasOC::MultibodySystemImplicit<false>;
+template class CasOC::MultibodySystemImplicit<true>;

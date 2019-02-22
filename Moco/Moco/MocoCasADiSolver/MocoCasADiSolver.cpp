@@ -175,9 +175,6 @@ std::unique_ptr<CasOC::Problem> MocoCasADiSolver::createCasOCProblem() const {
                 "provided model. Please set the solver property "
                 "'enforce_constraint_derivatives' to either 'true' or "
                 "'false'.");
-        OPENSIM_THROW_IF(get_dynamics_mode() == "implicit", Exception,
-                "Cannot use implicit dynamics mode with kinematic "
-                "constraints.");
 
         int cid, mp, mv, ma;
         int multIndexThisConstraint;
@@ -317,7 +314,7 @@ std::unique_ptr<CasOC::Problem> MocoCasADiSolver::createCasOCProblem() const {
     casProblem->setMultibodySystem<MocoCasADiMultibodySystem>(
             *m_jar, *this, yIndexMap);
     casProblem->setImplicitMultibodySystem<MocoCasADiMultibodySystemImplicit>(
-            *m_jar, yIndexMap);
+            *m_jar, *this, yIndexMap);
 
     return casProblem;
 }
