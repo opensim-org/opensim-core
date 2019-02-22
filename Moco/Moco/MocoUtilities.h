@@ -316,7 +316,18 @@ private:
     long long m_startTime;
 };
 
-OSIMMOCO_API int getMocoParallel();
+/// This obtains the value of the OPENSIM_MOCO_PARALLEL environment variable.
+/// The value has the following meanings:
+/// - 0: run in series (not parallel).
+/// - 1: run in parallel using all cores.
+/// - greater than 1: run in parallel with this number of threads.
+/// If the environment variable is not set, this function returns -1.
+///
+/// This variable does not indicate which calculations are parallelized
+/// or how the parallelization is achieved. Moco may even ignore or override
+/// the setting from the environment variable. See documentation elsewhere
+/// (e.g., from a specific MocoSolver) for more information.
+OSIMMOCO_API int getMocoParallelEnvironmentVariable();
 
 /// TODO Find a way to always give the same thread the same object.
 template <typename T>

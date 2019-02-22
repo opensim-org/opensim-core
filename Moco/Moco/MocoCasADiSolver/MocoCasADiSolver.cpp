@@ -34,7 +34,9 @@ using namespace OpenSim;
 
 MocoCasADiSolver::MocoCasADiSolver() { constructProperties(); }
 
-void MocoCasADiSolver::constructProperties() {}
+void MocoCasADiSolver::constructProperties() {
+    constructProperty_parallel();
+}
 
 MocoIterate MocoCasADiSolver::createGuess(const std::string& type) const {
     OPENSIM_THROW_IF_FRMOBJ(
@@ -97,8 +99,23 @@ const MocoIterate& MocoCasADiSolver::getGuess() const {
 
 std::unique_ptr<CasOC::Problem> MocoCasADiSolver::createCasOCProblem() const {
     const auto& problemRep = getProblemRep();
-    int parallel = getMocoParallel();
-    m_jar = createProblemRepJar(parallel);
+    int parallel = 1;
+    int parallelEV = getMocoParallelEnvironmentVariable();
+    if (getProperty_parallel().size()) {
+        parallel = get_parallel();
+    } else if (parallelEV != -1) {
+        parallel = parallelEV;
+    }
+    int numThreads;
+    if (parallel == 0) {
+        numThreads = 1;
+    } else if (parallel == 1) {
+        numThreads = std::thread::hardware_concurrency();
+    } else {
+        numThreads = parallel;
+    }
+    m_jar = createProblemRepJar(numThreads);
+
     auto casProblem = make_unique<CasOC::Problem>();
     checkPropertyInSet(
             *this, getProperty_dynamics_mode(), {"explicit", "implicit"});
@@ -399,6 +416,9 @@ MocoSolution MocoCasADiSolver::solveImpl() const {
     }
     auto casProblem = createCasOCProblem();
     auto casSolver = createCasOCSolver(*casProblem);
+    if (get_verbosity()) {
+        std::cout << "Number of threads: " << m_jar->size() << std::endl;
+    }
 
     MocoIterate guess = getGuess();
     CasOC::Iterate casGuess;

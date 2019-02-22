@@ -495,18 +495,18 @@ std::string OpenSim::format_c(const char* format, ...) {
     return std::string(buf.get());
 }
 
-int OpenSim::getMocoParallel() {
+int OpenSim::getMocoParallelEnvironmentVariable() {
     const char* parallel = std::getenv("OPENSIM_MOCO_PARALLEL");
     if (parallel) {
         int num = std::atoi(parallel);
-        if (num < 1) {
+        if (num < 0) {
             std::cout << "[Moco] Warning: OPENSIM_MOCO_PARALLEL "
                          "environment variable set to incorrect value '" <<
-                         parallel << "'; must be an integer >= 1. "
-                         "Proceeding with 1." << std::endl;
+                         parallel << "'; must be an integer >= 0. "
+                         "Ignoring." << std::endl;
         } else {
             return num;
         }
     }
-    return 1;
+    return -1;
 }

@@ -107,8 +107,6 @@ int main() {
 
     // Solve the problem.
     // ==================
-    char s[] = "OPENSIM_MOCO_PARALLEL=8";
-    putenv(s);
     MocoSolution solution = moco.solve();
 
     //solution.write("sliding_mass_solution.sto");
