@@ -135,7 +135,9 @@ void Transcription::transcribe() {
     // -----
     DM quadCoeffs = this->createQuadratureCoefficients();
     MX integralCost = 0;
+    MX this_integrand;
     for (int itime = 0; itime < m_numGridPoints; ++itime) {
+        this_integrand = 0;
         // "Slice()" grabs everything in that dimension (like ":" in Matlab).
         // Here, we include evaluations of the integral cost integrand
         // into the symbolic expression graph for the integral cost. We are
@@ -145,7 +147,7 @@ void Transcription::transcribe() {
                 {m_times(itime, 0), m_vars[Var::states](Slice(), itime),
                         m_vars[Var::controls](Slice(), itime),
                         m_vars[Var::parameters]});
-        integralCost += quadCoeffs(itime) * out.at(0);
+        this_integrand += out.at(0);
 
         // Minimize Lagrange multipliers if specified by the solver.
         if (m_solver.getMinimizeLagrangeMultipliers() &&
@@ -153,8 +155,9 @@ void Transcription::transcribe() {
             const auto mults = m_vars[Var::multipliers](Slice(), itime);
             const double multiplierWeight =
                     m_solver.getLagrangeMultiplierWeight();
-            integralCost += multiplierWeight * dot(mults, mults);
+            this_integrand += multiplierWeight * dot(mults, mults);
         }
+        integralCost += quadCoeffs(itime) * this_integrand;
     }
     integralCost *= m_duration;
 
