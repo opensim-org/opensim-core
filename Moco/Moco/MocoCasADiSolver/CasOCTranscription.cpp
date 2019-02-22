@@ -217,6 +217,7 @@ void Transcription::transcribe() {
         auto parallelism = m_solver.getParallelism();
         auto calcDAEOverTrajectory =
                 dae.map(m_numGridPoints, parallelism.first, parallelism.second);
+        // TODO: Avoid the overhead of map() if not running in parallel.
         m_xdot = calcDAEOverTrajectory
                          .
                          operator()({m_times, m_vars[Var::states],
