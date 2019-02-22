@@ -134,6 +134,9 @@ public:
         // the constraint functions.
         // veccat() concatenates std::vectors into a single MX vector.
         nlp.emplace(std::make_pair("g", casadi::MX::veccat(m_constraints)));
+        // auto gradient = casadi::MX::gradient(nlp["f"], nlp["x"]);
+        // gradient.sparsity().to_file(
+        //         "CasOCTranscription_objective_gradient_sparsity.mtx");
         // auto hessian = casadi::MX::hessian(nlp["f"], nlp["x"]);
         // hessian.sparsity().to_file(
         //         "CasOCTranscription_objective_Hessian_sparsity.mtx");

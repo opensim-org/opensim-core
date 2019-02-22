@@ -134,20 +134,29 @@ void Transcription::transcribe() {
     // Cost.
     // -----
     DM quadCoeffs = this->createQuadratureCoefficients();
-    MX integralCost = 0;
-    for (int itime = 0; itime < m_numGridPoints; ++itime) {
+    MX integrandTrajectory;
+    {
+        const auto integrandFunc = m_problem.getIntegralCostIntegrand();
+        auto parallelism = m_solver.getParallelism();
+        auto calcIntegrandOverTrajectory = integrandFunc.map(
+                m_numGridPoints, parallelism.first, parallelism.second);
         // "Slice()" grabs everything in that dimension (like ":" in Matlab).
         // Here, we include evaluations of the integral cost integrand
         // into the symbolic expression graph for the integral cost. We are
         // *not* numerically evaluating the integral cost integrand here--that
         // occurs when the function by casadi::nlpsol() is evaluated.
-        const auto out = m_problem.getIntegralCostIntegrand().operator()(
-                {m_times(itime, 0), m_vars[Var::states](Slice(), itime),
-                        m_vars[Var::controls](Slice(), itime),
-                        m_vars[Var::parameters]});
-        integralCost += quadCoeffs(itime) * out.at(0);
+        integrandTrajectory = calcIntegrandOverTrajectory.operator()({
+            m_times, m_vars[Var::states],
+            m_vars[Var::controls], /* TODO m_vars[Var::multipliers],*/
+            casadi::MX::repmat(m_vars[Var::parameters], 1, m_numGridPoints)})
+                        .at(0);
+    }
+    MX integralCost = 0;
+    for (int itime = 0; itime < m_numGridPoints; ++itime) {
+        integralCost += quadCoeffs(itime) * integrandTrajectory(itime);
 
         // Minimize Lagrange multipliers if specified by the solver.
+        // TODO: This should happen within the quadrature.
         if (m_solver.getMinimizeLagrangeMultipliers() &&
                 m_problem.getNumMultipliers()) {
             const auto mults = m_vars[Var::multipliers](Slice(), itime);
@@ -203,7 +212,8 @@ void Transcription::transcribe() {
         auto udot = dynOut.at(0);
         auto zdot = dynOut.at(1);
         auto xdot = casadi::MX::vertcat({qdot, udot, zdot});
-        auto dae = casadi::Function("dae", {t, states, controls, params}, {xdot});
+        auto dae =
+                casadi::Function("dae", {t, states, controls, params}, {xdot});
         auto parallelism = m_solver.getParallelism();
         auto calcDAEOverTrajectory =
                 dae.map(m_numGridPoints, parallelism.first, parallelism.second);
@@ -211,8 +221,16 @@ void Transcription::transcribe() {
                          .
                          operator()({m_times, m_vars[Var::states],
                                  m_vars[Var::controls],
-                                 casadi::MX::repmat(m_vars[Var::parameters], 1, m_numGridPoints)})
+                                 casadi::MX::repmat(m_vars[Var::parameters], 1,
+                                         m_numGridPoints)})
                          .at(0);
+        // for (int i = 0; i < m_numGridPoints; ++i) {
+        //     m_xdot(Slice(), i) = dae.operator()({
+        //         m_times(i),
+        //         m_vars[Var::states](Slice(), i),
+        //         m_vars[Var::controls](Slice(), i),
+        //         m_vars[Var::parameters]}).at(0);
+        // }
 
         applyConstraints();
         return;

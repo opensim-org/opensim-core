@@ -92,6 +92,8 @@ public:
     using Function::Function;
     casadi_int get_n_in() override final { return 4; }
     casadi_int get_n_out() override final { return 1; }
+    // TODO: Must pass in Lagrange multipliers to properly minimize joint
+    // reactions.
     std::string get_name_in(casadi_int i) override final {
         switch (i) {
         case 0: return "time";
