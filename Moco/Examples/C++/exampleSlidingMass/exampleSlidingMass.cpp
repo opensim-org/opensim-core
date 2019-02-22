@@ -99,7 +99,8 @@ int main() {
 
     // Configure the solver.
     // =====================
-    MocoCasADiSolver& solver = moco.initCasADiSolver();
+    // MocoCasADiSolver& solver = moco.initCasADiSolver();
+    MocoTropterSolver& solver = moco.initTropterSolver();
     solver.set_num_mesh_points(50);
 
     // Now that we've finished setting up the tool, print it to a file.

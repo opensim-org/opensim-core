@@ -1,5 +1,5 @@
 
-add_library(osimMoco SHARED
+set(MOCO_SOURCES
         osimMoco.h
         osimMocoDLL.h
         RegisterTypes_osimMoco.h
@@ -37,8 +37,6 @@ add_library(osimMoco SHARED
         MocoIterate.cpp
         MocoTropterSolver.h
         MocoTropterSolver.cpp
-        tropter/TropterProblem.h
-        tropter/TropterProblem.cpp
         MocoParameter.h
         MocoParameter.cpp
         MocoConstraint.h
@@ -74,6 +72,12 @@ add_library(osimMoco SHARED
         MocoCasADiSolver/CasOCHermiteSimpson.h
         MocoCasADiSolver/CasOCHermiteSimpson.cpp
         )
+if(MOCO_WITH_TROPTER)
+    list(APPEND MOCO_SOURCES
+            tropter/TropterProblem.h
+            tropter/TropterProblem.cpp)
+endif()
+add_library(osimMoco SHARED ${MOCO_SOURCES})
 target_link_libraries(osimMoco PUBLIC osimTools
                                PRIVATE tropter casadi)
 
@@ -86,6 +90,9 @@ set_target_properties(osimMoco PROPERTIES
         PROJECT_LABEL "Library - osimMoco"
         FOLDER "Moco"
         )
+if(MOCO_WITH_TROPTER)
+    target_compile_definitions(osimMoco PUBLIC MOCO_WITH_TROPTER)
+endif()
 
 if(MOCO_COPY_DEPENDENCIES)
     if(APPLE)
