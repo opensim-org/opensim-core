@@ -635,7 +635,7 @@ public:
                 out.push_back(out_kinematic_constraint_errors);
             }
         } else {
-            // This path should never be reach during an optimization, but 
+            // This path should never be reached during an optimization, but 
             // CasADi will throw an error (likely while constructing the 
             // expression graph) if this path doesn't provide the correct
             // size output.
