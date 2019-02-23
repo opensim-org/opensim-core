@@ -36,7 +36,9 @@ private:
     casadi::DM createQuadratureCoefficientsImpl() const override;
     casadi::DM createKinematicConstraintIndicesImpl() const override;
     casadi::DM createResidualConstraintIndicesImpl() const override;
-    void applyConstraintsImpl() override;
+    void applyConstraintsImpl(const VariablesMX& vars,
+            const casadi::MX& xdot, const casadi::MX& residual,
+            const casadi::MX& kcerr) override;
 
 };
 

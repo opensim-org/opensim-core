@@ -61,7 +61,9 @@ DM HermiteSimpson::createResidualConstraintIndicesImpl() const {
     return indices;
 }
 
-void HermiteSimpson::applyConstraintsImpl() {
+void HermiteSimpson::applyConstraintsImpl(const VariablesMX& vars,
+        const casadi::MX& xdot, const casadi::MX& residual,
+        const casadi::MX& kcerr) {
 
     // Breakdown of constraints for Hermite-Simpson collocation.
 
@@ -83,7 +85,7 @@ void HermiteSimpson::applyConstraintsImpl() {
     // We have arranged the code this way so that all constraints at a given
     // mesh point are grouped together (organizing the sparsity of the Jacobian
     // this way might have benefits for sparse linear algebra).
-    const auto& states = m_vars[Var::states];
+    const auto& states = vars.at(Var::states);
     const DM zeroS = casadi::DM::zeros(m_problem.getNumStates(), 1);
     const DM zeroU = casadi::DM::zeros(m_problem.getNumSpeeds(), 1);
 
@@ -101,9 +103,9 @@ void HermiteSimpson::applyConstraintsImpl() {
             const auto x_i = states(Slice(), time_i);
             const auto x_mid = states(Slice(), time_mid);
             const auto x_ip1 = states(Slice(), time_ip1);
-            const auto xdot_i = m_xdot(Slice(), time_i);
-            const auto xdot_mid = m_xdot(Slice(), time_mid);
-            const auto xdot_ip1 = m_xdot(Slice(), time_ip1);
+            const auto xdot_i = xdot(Slice(), time_i);
+            const auto xdot_mid = xdot(Slice(), time_mid);
+            const auto xdot_ip1 = xdot(Slice(), time_ip1);
 
             // Hermite interpolant defects.
             addConstraints(zeroS, zeroS,
@@ -115,14 +117,14 @@ void HermiteSimpson::applyConstraintsImpl() {
 
             // The residuals are enforced at the mesh interval midpoints.
             if (m_solver.isDynamicsModeImplicit()) {
-                addConstraints(zeroU, zeroU, m_residual(Slice(), time_i));
-                addConstraints(zeroU, zeroU, m_residual(Slice(), time_mid));
+                addConstraints(zeroU, zeroU, residual(Slice(), time_i));
+                addConstraints(zeroU, zeroU, residual(Slice(), time_mid));
                 // We only need to add a constraint on this time point for the 
                 // last mesh interval since, for all other mesh intervals, the
                 // time_ip1 point for a given mesh interval is covered by the 
                 // next mesh interval's time_i point.
                 if (imesh == m_numMeshIntervals - 1) {
-                    addConstraints(zeroU, zeroU, m_residual(Slice(), time_ip1));
+                    addConstraints(zeroU, zeroU, residual(Slice(), time_ip1));
                 }
             }
         } 
@@ -139,16 +141,17 @@ void HermiteSimpson::applyConstraintsImpl() {
             kinConUpperBounds(Slice()) = bounds.upper;
 
             addConstraints(kinConLowerBounds, kinConUpperBounds, 
-                m_kcerr(Slice(), imesh));
+                kcerr(Slice(), imesh));
         }
 
         // The individual path constraint functions are passed to CasADi to
         // maximize CasADi's ability to take derivatives efficiently.
         for (const auto& pathInfo : m_problem.getPathConstraintInfos()) {
+            // TODO: Move these evaluations to the base class.
             const auto output = pathInfo.function->operator()(
-            {m_times(time_i), m_vars[Var::states](Slice(), time_i),
-                m_vars[Var::controls](Slice(), time_i),
-                m_vars[Var::parameters]});
+            {m_times(time_i), vars.at(Var::states)(Slice(), time_i),
+                vars.at(Var::controls)(Slice(), time_i),
+                vars.at(Var::parameters)});
             const auto& errors = output.at(0);
             addConstraints(
                 pathInfo.lowerBounds, pathInfo.upperBounds, errors);

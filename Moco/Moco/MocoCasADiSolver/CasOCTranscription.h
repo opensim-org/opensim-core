@@ -57,9 +57,15 @@ public:
                 OpenSim::format(
                         "createKinematicConstraintIndicesImpl() must return a "
                         "row vector of shape length [1, %i], but a matrix of "
-                        "shape "
-                        "[%i, %i] was returned.",
+                        "shape [%i, %i] was returned.",
                         m_numGridPoints, shape.first, shape.second));
+        std::cout << "DEBUG " << kinConIndices << " " <<
+        casadi::DM::sum2(kinConIndices).scalar() << " " <<
+        m_numMeshPoints << std::endl;
+        OPENSIM_THROW_IF(
+                !SimTK::isNumericallyEqual(
+                        casadi::DM::sum2(kinConIndices).scalar(), m_numMeshPoints),
+                OpenSim::Exception, "Internal error.");
 
         return kinConIndices;
     }
@@ -71,13 +77,11 @@ public:
                 OpenSim::format(
                         "createResidualConstraintIndicesImpl() must return a "
                         "row vector of shape length [1, %i], but a matrix of "
-                        "shape "
-                        "[%i, %i] was returned.",
+                        "shape [%i, %i] was returned.",
                         m_numGridPoints, shape.first, shape.second));
 
         return resConIndices;
     }
-    void applyConstraints() { applyConstraintsImpl(); }
     Solution solve(const Iterate& guessOrig) {
         // Resample the guess.
         // -------------------
@@ -200,9 +204,6 @@ protected:
 
     const Solver& m_solver;
     const Problem& m_problem;
-    VariablesMX m_vars;
-    VariablesDM m_lowerBounds;
-    VariablesDM m_upperBounds;
     casadi::DM m_grid;
     int m_numGridPoints = 0;
     int m_numMeshPoints = 0;
@@ -210,11 +211,16 @@ protected:
     int m_numSlackPoints = 0;
     casadi::MX m_times;
     casadi::MX m_duration;
+
+private:
+    VariablesMX m_vars;
+    VariablesDM m_lowerBounds;
+    VariablesDM m_upperBounds;
+
     casadi::MX m_xdot; // State derivatives.
     casadi::MX m_residual;
     casadi::MX m_kcerr; // Kinematic constraint errors.
 
-private:
     casadi::MX m_objective;
     std::vector<casadi::MX> m_constraints;
     std::vector<casadi::DM> m_constraintsLowerBounds;
@@ -237,7 +243,13 @@ private:
     virtual casadi::DM createResidualConstraintIndicesImpl() const = 0;
     /// Override this function in your derived class set the defect, kinematic,
     /// and path constraint errors required for your transcription scheme.
-    virtual void applyConstraintsImpl() = 0;
+    virtual void applyConstraintsImpl(const VariablesMX& vars,
+            const casadi::MX& xdot, const casadi::MX& residual,
+            const casadi::MX& kcerr) = 0;
+
+    void applyConstraints() {
+        applyConstraintsImpl(m_vars, m_xdot, m_residual, m_kcerr);
+    }
 
     /// Calculate state derivatives and kinematic constraint errors from the
     /// system differential-algebraic equations for the defect and path

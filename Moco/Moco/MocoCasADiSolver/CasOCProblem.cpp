@@ -26,6 +26,10 @@
 // function.
 #include "../MocoIterate.h"
 #include "MocoCasADiBridge.h"
+extern template class OpenSim::MocoCasADiMultibodySystem<false>;
+extern template class OpenSim::MocoCasADiMultibodySystem<true>;
+extern template class OpenSim::MocoCasADiMultibodySystemImplicit<false>;
+extern template class OpenSim::MocoCasADiMultibodySystemImplicit<true>;
 
 using OpenSim::Exception;
 using OpenSim::format;

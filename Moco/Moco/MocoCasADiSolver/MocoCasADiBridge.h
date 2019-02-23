@@ -681,12 +681,6 @@ private:
     static thread_local SimTK::Vector m_residual;
 };
 
-extern template class OpenSim::MocoCasADiMultibodySystem<false>;
-extern template class OpenSim::MocoCasADiMultibodySystem<true>;
-
-extern template class OpenSim::MocoCasADiMultibodySystemImplicit<false>;
-extern template class OpenSim::MocoCasADiMultibodySystemImplicit<true>;
-
 } // namespace OpenSim
 
 #endif // MOCO_MOCOCASADIBRIDGE_H

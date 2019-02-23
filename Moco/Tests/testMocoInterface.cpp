@@ -1316,8 +1316,8 @@ void testSkippingOverQuaternionSlots(bool constrained,
     const double lastValue = valueTraj[valueTraj.size() - 1];
     CHECK(lastValue == Approx(speed * duration));
     for (int i = 0; i < N; ++i) {
-        CHECK(solution.getState("/jointset/j2/j2_coord_0/speed")[i] ==
-                Approx(speed));
+        CHECK(solution.getState("/jointset/j2/j2_coord_0/speed").getElt(i, 0)
+                == Approx(speed));
     }
 }
 
@@ -1342,5 +1342,4 @@ TEST_CASE("Skip over empty quaternion slots", "") {
 // testSolveRepeatedly();
 // testOMUCOSerialization();
 
-// TODO what happens when Ipopt does not converge.
 // TODO specifying optimizer options.

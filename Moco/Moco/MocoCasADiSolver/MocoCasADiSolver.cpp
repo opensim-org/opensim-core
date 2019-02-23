@@ -21,6 +21,11 @@
 #include "../MocoUtilities.h"
 #include "CasOCSolver.h"
 #include "MocoCasADiBridge.h"
+extern template class OpenSim::MocoCasADiMultibodySystem<false>;
+extern template class OpenSim::MocoCasADiMultibodySystem<true>;
+extern template class OpenSim::MocoCasADiMultibodySystemImplicit<false>;
+extern template class OpenSim::MocoCasADiMultibodySystemImplicit<true>;
+
 #include <casadi/casadi.hpp>
 
 using casadi::Callback;
