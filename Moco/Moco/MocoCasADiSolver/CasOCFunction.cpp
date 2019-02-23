@@ -100,6 +100,15 @@ casadi::Sparsity Function::get_jacobian_sparsity() const {
 }
 */
 
+void Function::constructFunction(const Problem* casProblem, 
+        const std::string& name) {
+    m_casProblem = casProblem;
+    m_finite_difference_scheme = m_casProblem->getFiniteDifferenceScheme();
+    casadi::Dict opts;
+    setCommonOptions(opts);
+    this->construct(name, opts);
+}
+
 casadi::Sparsity PathConstraint::get_sparsity_in(casadi_int i) {
     if (i == 0) {
         return casadi::Sparsity::dense(1, 1);

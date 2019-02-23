@@ -59,12 +59,9 @@ public:
                         "row vector of shape length [1, %i], but a matrix of "
                         "shape [%i, %i] was returned.",
                         m_numGridPoints, shape.first, shape.second));
-        std::cout << "DEBUG " << kinConIndices << " " <<
-        casadi::DM::sum2(kinConIndices).scalar() << " " <<
-        m_numMeshPoints << std::endl;
-        OPENSIM_THROW_IF(
-                !SimTK::isNumericallyEqual(
-                        casadi::DM::sum2(kinConIndices).scalar(), m_numMeshPoints),
+        OPENSIM_THROW_IF(!SimTK::isNumericallyEqual(
+                                 casadi::DM::sum2(kinConIndices).scalar(),
+                                 m_numMeshPoints),
                 OpenSim::Exception, "Internal error.");
 
         return kinConIndices;

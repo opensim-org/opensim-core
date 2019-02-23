@@ -40,6 +40,7 @@ using namespace OpenSim;
 MocoCasADiSolver::MocoCasADiSolver() { constructProperties(); }
 
 void MocoCasADiSolver::constructProperties() {
+    constructProperty_finite_difference_scheme("central");
     constructProperty_parallel();
 }
 
@@ -129,6 +130,13 @@ std::unique_ptr<CasOC::Problem> MocoCasADiSolver::createCasOCProblem() const {
     OPENSIM_THROW_IF(!model.getMatterSubsystem().getUseEulerAngles(
                              model.getWorkingState()),
             Exception, "Quaternions are not supported.");
+
+    checkPropertyInSet(*this, getProperty_finite_difference_scheme(),
+        {"central", "forward", "backward"});
+    // TODO this must be set before call casProblem->setEndpointCost(...), etc
+    // below.
+    // TODO move this setting to the solver class.
+    casProblem->setFiniteDifferenceScheme(get_finite_difference_scheme());
 
     std::unordered_map<int, int> yIndexMap;
     auto stateNames = createStateVariableNamesInSystemOrder(model, yIndexMap);

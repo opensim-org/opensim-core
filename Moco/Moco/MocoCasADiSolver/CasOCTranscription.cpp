@@ -57,6 +57,8 @@ void Transcription::transcribe() {
             MX::sym("slacks", m_problem.getNumSlacks(), m_numSlackPoints);
     m_vars[Var::parameters] =
             MX::sym("parameters", m_problem.getNumParameters(), 1);
+    const auto paramsTraj =
+            casadi::MX::repmat(m_vars[Var::parameters], 1, m_numMeshPoints);
 
     // Set variable bounds.
     // --------------------
@@ -151,25 +153,21 @@ void Transcription::transcribe() {
                         operator()({m_times, m_vars[Var::states],
                                 m_vars[Var::controls], /* TODO
                                                           m_vars[Var::multipliers],*/
-                                casadi::MX::repmat(m_vars[Var::parameters], 1,
-                                        m_numGridPoints)})
+                                paramsTraj})
                         .at(0);
     }
-    MX integralCost = 0;
-    for (int itime = 0; itime < m_numGridPoints; ++itime) {
-        integralCost += quadCoeffs(itime) * integrandTrajectory(itime);
 
-        // Minimize Lagrange multipliers if specified by the solver.
-        // TODO: This should happen within the quadrature.
-        if (m_solver.getMinimizeLagrangeMultipliers() &&
-                m_problem.getNumMultipliers()) {
+    // Minimize Lagrange multipliers if specified by the solver.
+    if (m_solver.getMinimizeLagrangeMultipliers() &&
+            m_problem.getNumMultipliers()) {
+        for (int itime = 0; itime < m_numGridPoints; ++itime) {
             const auto mults = m_vars[Var::multipliers](Slice(), itime);
             const double multiplierWeight =
                     m_solver.getLagrangeMultiplierWeight();
-            integralCost += multiplierWeight * dot(mults, mults);
+            integrandTrajectory(itime) += multiplierWeight * dot(mults, mults);
         }
     }
-    integralCost *= m_duration;
+    MX integralCost = m_duration * dot(quadCoeffs.T(), integrandTrajectory);
 
     const auto endpointCostOut =
             m_problem.getEndpointCost().operator()({m_vars[Var::final_time],
@@ -218,8 +216,6 @@ void Transcription::transcribe() {
     const auto daeIndicesIgnoringConstraints =
             makeTimeIndices(daeIndicesIgnoringConstraintsVector);
     const int numColumnsIgnoringConstraints = m_numGridPoints - m_numMeshPoints;
-    const auto paramsTraj =
-            casadi::MX::repmat(m_vars[Var::parameters], 1, m_numMeshPoints);
     if (m_solver.isDynamicsModeImplicit()) {
         if (m_problem.getEnforceConstraintDerivatives()) {
             const MX u = m_vars[Var::states](Slice(NQ, NQ + NU), Slice());

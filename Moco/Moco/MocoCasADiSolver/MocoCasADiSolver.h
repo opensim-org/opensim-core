@@ -72,6 +72,10 @@ class OSIMMOCO_API MocoCasADiSolver : public MocoDirectCollocationSolver {
             MocoCasADiSolver, MocoDirectCollocationSolver);
 
 public:
+    OpenSim_DECLARE_PROPERTY(finite_difference_scheme, std::string,
+        "The finite difference scheme CasADi will use to calculate problem "
+        "derivatives (default: 'central').");
+
     OpenSim_DECLARE_OPTIONAL_PROPERTY(parallel, int,
             "Evaluate integral costs and the differential-algebraic "
             "equations in parallel across grid points? "
