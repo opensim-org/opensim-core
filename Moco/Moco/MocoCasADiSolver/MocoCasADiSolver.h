@@ -45,6 +45,10 @@ class OSIMMOCO_API MocoCasADiSolver : public MocoDirectCollocationSolver {
             MocoCasADiSolver, MocoDirectCollocationSolver);
 
 public:
+    OpenSim_DECLARE_PROPERTY(finite_difference_scheme, std::string,
+        "The finite difference scheme CasADi will use to calculate problem "
+        "derivatives (default: 'central').");
+
     MocoCasADiSolver();
 
     /// @name Specifying an initial guess

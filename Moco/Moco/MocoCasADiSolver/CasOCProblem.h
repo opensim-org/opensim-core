@@ -404,6 +404,19 @@ public:
     }
     /// @}
 
+    /// The finite difference scheme to be set on all CasOC::Function objects.
+    /// This must be set before calling setEndpointCost, setMultibodySystem, 
+    /// etc. for the correct difference scheme to be applied.
+    /// @note Default is 'central'.
+    // TODO move to solver class. 
+    void setFiniteDifferenceScheme(const std::string& scheme) {
+        m_finite_difference_scheme = scheme;
+    }
+    /// @copydoc setFiniteDifferenceScheme()
+    std::string getFiniteDifferenceScheme() const {
+        return m_finite_difference_scheme;
+    }
+
 private:
     /// Clip endpoint to be as strict as b.
     void clipEndpointBounds(const Bounds& b, Bounds& endpoint) {
@@ -435,6 +448,8 @@ private:
     std::unique_ptr<MultibodySystemImplicit<false>> 
     m_implicitMultibodyFuncIgnoringConstraints;
     std::unique_ptr<VelocityCorrection> m_velocityCorrectionFunc;
+    // TODO move to solver class.
+    std::string m_finite_difference_scheme = "central";
 };
 
 } // namespace CasOC

@@ -266,6 +266,12 @@ SNOPTSolver::optimize_impl(const VectorXd& variablesArg) const {
         TROPTER_THROW("User-supplied derivatives currently not supported for "
             "SNOPT");
 
+        // When solving problems while providing derivative infomration from 
+        // tropter, SNOPT sometime exits with error 52: "incorrect constraint 
+        // derivatives", but only for problems with muscles. This may suggest a 
+        // bug in our own Jacobian derivative calculations. Why only for 
+        // muscles?
+
         // Use this form of solve() if providing Jacobian information.
         //info = snopt_prob.solve(Cold, length_F, num_variables, ObjAdd,
         //    ObjRow, snopt_userfunction,
