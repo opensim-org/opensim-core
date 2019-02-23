@@ -19,7 +19,6 @@
  * -------------------------------------------------------------------------- */
 
 #include <casadi/casadi.hpp>
-
 #include <OpenSim/Common/Exception.h>
 
 namespace CasOC {
@@ -29,13 +28,7 @@ class Problem;
 class Function : public casadi::Callback {
 public:
     virtual ~Function() = default;
-    void constructFunction(const Problem* casProblem, const std::string& name) {
-        m_casProblem = casProblem;
-        m_finite_difference_scheme = m_casProblem->getFiniteDifferenceScheme();
-        casadi::Dict opts;
-        setCommonOptions(opts);
-        this->construct(name, opts);
-    }
+    void constructFunction(const Problem* casProblem, const std::string& name);
     void setCommonOptions(casadi::Dict& opts) {
         // Compute the derivatives of this function using finite differences.
         opts["enable_fd"] = true;

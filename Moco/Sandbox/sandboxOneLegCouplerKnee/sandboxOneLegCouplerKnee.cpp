@@ -27,6 +27,8 @@
 #include <OpenSim/Simulation/osimSimulation.h>
 #include <OpenSim/Actuators/osimActuators.h>
 
+#include <typeinfo>
+
 using namespace OpenSim;
 using SimTK::Vec3;
 using SimTK::Inertia;
@@ -153,7 +155,6 @@ struct Options {
     MocoIterate previousSolution = {};
 };
 
-template <typename SolverType>
 MocoSolution minimizeControlEffortRightLeg(const Options& opt) {
     MocoTool moco;
     std::string weldedPelvisStr = "";
@@ -175,12 +176,9 @@ MocoSolution minimizeControlEffortRightLeg(const Options& opt) {
     auto* effort = mp.addCost<MocoControlCost>();
     effort->setName("control_effort");
 
-    //auto* reaction = mp.addCost<MocoJointReactionNormCost>();
-    //reaction->setName("joint_reaction");
-    //reaction->set_weight(0.1);
-    //reaction->setJointPath("/jointset/walker_knee_r/");
-
-    auto& ms = moco.initSolver<SolverType>();
+    // Set solver options.
+    // -------------------
+    auto& ms = moco.initCasADiSolver();
     ms.set_num_mesh_points(opt.num_mesh_points);
     ms.set_verbosity(2);
     ms.set_dynamics_mode(opt.dynamics_mode);
@@ -194,6 +192,10 @@ MocoSolution minimizeControlEffortRightLeg(const Options& opt) {
     ms.set_minimize_lagrange_multipliers(false);
     ms.set_lagrange_multiplier_weight(10);
     ms.set_optim_hessian_approximation(opt.hessian_approximation);
+    ms.set_finite_difference_scheme("forward");
+
+    // Create guess.
+    // -------------
     auto guess = ms.createGuess("bounds");
     // If the controlsGuess struct field is not empty, use it to set the
     // controls in the trajectory guess.
@@ -282,7 +284,6 @@ TimeSeriesTable createGuessFromGSO(const MocoSolution& torqueSolution,
     return controls;
 }
 
-template <typename SolverType>
 MocoSolution stateTrackingRightLeg(const Options& opt) {
     MocoTool moco;
     std::string weldedPelvisStr = "";
@@ -322,7 +323,9 @@ MocoSolution stateTrackingRightLeg(const Options& opt) {
     effort->setName("effort");
     effort->set_weight(0.0001);
 
-    auto& ms = moco.initSolver<SolverType>();
+    // Set solver options.
+    // -------------------
+    auto& ms = moco.initCasADiSolver();
     ms.set_num_mesh_points(opt.num_mesh_points);
     ms.set_verbosity(2);
     ms.set_dynamics_mode(opt.dynamics_mode);
@@ -333,9 +336,10 @@ MocoSolution stateTrackingRightLeg(const Options& opt) {
     ms.set_optim_max_iterations(opt.max_iterations);
     ms.set_enforce_constraint_derivatives(true);
     ms.set_velocity_correction_bounds({-0.0001, 0.0001});
-    ms.set_minimize_lagrange_multipliers(true);
+    ms.set_minimize_lagrange_multipliers(false);
     ms.set_lagrange_multiplier_weight(10);
     ms.set_optim_hessian_approximation(opt.hessian_approximation);
+    ms.set_finite_difference_scheme("forward");
 
     // Create guess.
     // -------------
@@ -375,11 +379,6 @@ void compareTrackingToPrediction(const MocoSolution& predictiveSolution,
 
 void main() {
 
-    // When solving problems while providing derivative infomration from 
-    // tropter, SNOPT sometime exits with error 52: "incorrect constraint 
-    // derivatives", but only for problems with muscles. This may suggest a bug 
-    // in our own Jacobian derivative calculations. Why only for muscles?
-
     // Set options.
     Options opt;
     opt.weldPelvis = true;
@@ -390,12 +389,12 @@ void main() {
 
     // Predictive problem.
     MocoSolution torqueSolEffortCasADi = 
-        minimizeControlEffortRightLeg<MocoCasADiSolver>(opt);
+        minimizeControlEffortRightLeg(opt);
     
     // Tracking problem.
     opt.previousSolution = torqueSolEffortCasADi;
     MocoSolution torqueSolTrackingCasADi = 
-        stateTrackingRightLeg<MocoCasADiSolver>(opt);
+        stateTrackingRightLeg(opt);
 
     // Compare.
     compareTrackingToPrediction(torqueSolTrackingCasADi, torqueSolEffortCasADi);
