@@ -31,6 +31,7 @@ public:
     virtual ~Function() = default;
     void constructFunction(const Problem* casProblem, const std::string& name) {
         m_casProblem = casProblem;
+        m_finite_difference_scheme = m_casProblem->getFiniteDifferenceScheme();
         casadi::Dict opts;
         setCommonOptions(opts);
         this->construct(name, opts);
@@ -38,9 +39,12 @@ public:
     void setCommonOptions(casadi::Dict& opts) {
         // Compute the derivatives of this function using finite differences.
         opts["enable_fd"] = true;
-        opts["fd_method"] = "central";
+        opts["fd_method"] = getFiniteDifferenceScheme();
         // Using "forward", iterations are 10x faster but problems don't
         // converge.
+    }
+    std::string getFiniteDifferenceScheme() {
+        return m_finite_difference_scheme;
     }
     // bool has_jacobian_sparsity() const override {
     //     return true;
@@ -49,6 +53,7 @@ public:
 
 protected:
     const Problem* m_casProblem;
+    std::string m_finite_difference_scheme = "central";
 };
 
 class PathConstraint : public Function {
