@@ -50,17 +50,20 @@ inline casadi::DM convertToCasADiDMTranspose(const SimTK::Matrix& simtkMatrix) {
     }
     return out;
 }
-/// This converts a SimTK::RowVector to a casadi::DM column vector.
-inline casadi::DM convertToCasADiDMTranspose(const SimTK::RowVector& simtkRV) {
-    casadi::DM out(simtkRV.size(), 1);
-    for (int i = 0; i < simtkRV.size(); ++i) { out(i) = simtkRV[i]; }
+
+template <typename T>
+casadi::DM convertToCasADiDMTemplate(const T& simtk) {
+    casadi::DM out(casadi::Sparsity::dense(simtk.size(), 1));
+    std::copy_n(simtk.getContiguousScalarData(), simtk.size(), out.ptr());
     return out;
 }
+/// This converts a SimTK::RowVector to a casadi::DM column vector.
+inline casadi::DM convertToCasADiDMTranspose(const SimTK::RowVector& simtkRV) {
+    return convertToCasADiDMTemplate(simtkRV);
+}
 /// This converts a SimTK::Vector to a casadi::DM column vector.
-inline casadi::DM convertToCasADiDM(const SimTK::Vector& simtkRV) {
-    casadi::DM out(simtkRV.size(), 1);
-    for (int i = 0; i < simtkRV.size(); ++i) { out(i) = simtkRV[i]; }
-    return out;
+inline casadi::DM convertToCasADiDM(const SimTK::Vector& simtkVec) {
+    return convertToCasADiDMTemplate(simtkVec);
 }
 
 /// This resamples the iterate to obtain values that lie on the mesh.
@@ -355,8 +358,7 @@ public:
                 multibody.getRigidBodyForces(
                         simtkState, SimTK::Stage::Dynamics);
         const SimTK::Vector& appliedMobilityForces =
-                multibody.getMobilityForces(
-                        simtkState, SimTK::Stage::Dynamics);
+                multibody.getMobilityForces(simtkState, SimTK::Stage::Dynamics);
 
         // If enabled constraints exist in the model, compute constraint forces
         // based on Lagrange multipliers.
@@ -376,7 +378,8 @@ public:
                     m_mocoCasADiSolver.get_enforce_constraint_derivatives();
             // Multipliers are negated so constraint forces can be used like
             // applied forces.
-            SimTK::Vector simtkMultipliers(numMultipliers, multipliers.ptr(), true);
+            SimTK::Vector simtkMultipliers(
+                    numMultipliers, multipliers.ptr(), true);
             matter.calcConstraintForcesFromMultipliers(simtkState,
                     -simtkMultipliers, m_constraintBodyForces,
                     m_constraintMobilityForces);
@@ -389,10 +392,11 @@ public:
             // TODO double-check that disabled constraints don't show up in
             // state
             out.resize(2);
+            // TODO: This code is the same in the explicit and implicit
+            // MultibodySystem. We should consolidate.
             if (CalcKinConErrors) {
                 // Position-level errors.
-                casadi::DM out_kinematic_constraint_errors =
-                        convertToCasADiDM(simtkState.getQErr());
+                const auto& qerr = simtkState.getQErr();
 
                 if (enforceConstraintDerivatives || total_ma) {
                     // Calculuate udoterr. We cannot use State::getUDotErr()
@@ -404,29 +408,44 @@ public:
                     m_pvaerr = SimTK::NaN;
                 }
 
-                casadi::DM uerr;
-                casadi::DM udoterr;
+                const auto& uerr = simtkState.getUErr();
+                int uerrOffset;
+                int uerrSize;
+                const auto& udoterr = m_pvaerr;
+                int udoterrOffset;
+                int udoterrSize;
                 if (enforceConstraintDerivatives) {
                     // Velocity-level errors.
-                    uerr = convertToCasADiDM(simtkState.getUErr());
+                    uerrOffset = 0;
+                    uerrSize = uerr.size();
                     // Acceleration-level errors.
-                    udoterr = convertToCasADiDM(m_pvaerr);
+                    udoterrOffset = 0;
+                    udoterrSize = m_pvaerr.size();
                 } else {
                     // Velocity-level errors. Skip derivatives of position-level
                     // constraint equations.
-                    uerr = convertToCasADiDM(SimTK::Vector(total_mv,
-                            simtkState.getUErr().getContiguousScalarData() +
-                                    total_mp,
-                            true));
+                    uerrOffset = total_mp;
+                    uerrSize = total_mv;
                     // Acceleration-level errors. Skip derivatives of velocity-
                     // and position-level constraint equations.
-                    udoterr = convertToCasADiDM(SimTK::Vector(total_ma,
-                            m_pvaerr.getContiguousScalarData() + total_mp +
-                                    total_mv,
-                            true));
+                    udoterrOffset = total_mp + total_mv;
+                    udoterrSize = total_ma;
                 }
-                out_kinematic_constraint_errors = casadi::DM::vertcat(
-                        {out_kinematic_constraint_errors, uerr, udoterr});
+                // This way of copying the data avoids a threadsafety issue in
+                // CasADi related to cached Sparsity objects.
+                casadi::DM out_kinematic_constraint_errors =
+                        casadi::DM(casadi::Sparsity::dense(
+                                qerr.size() + uerrSize + udoterrSize, 1));
+                std::copy_n(qerr.getContiguousScalarData(), qerr.size(),
+                        out_kinematic_constraint_errors.ptr());
+                std::copy_n(uerr.getContiguousScalarData() + uerrOffset,
+                        uerrSize,
+                        out_kinematic_constraint_errors.ptr() + qerr.size());
+                std::copy_n(udoterr.getContiguousScalarData() + udoterrOffset,
+                        udoterrSize,
+                        out_kinematic_constraint_errors.ptr() + qerr.size() +
+                                uerrSize);
+
                 out.push_back(out_kinematic_constraint_errors);
             }
             // Copy state derivative values to output. We cannot simply
@@ -441,7 +460,7 @@ public:
             model.realizeAcceleration(simtkState);
 
             out = {convertToCasADiDM(simtkState.getUDot()),
-                   convertToCasADiDM(simtkState.getZDot())};
+                    convertToCasADiDM(simtkState.getZDot())};
             if (CalcKinConErrors) {
                 // Add an empty kinematic constraint error vector.
                 out.emplace_back(0, 1);
@@ -567,8 +586,7 @@ public:
                 multibody.getRigidBodyForces(
                         simtkState, SimTK::Stage::Dynamics);
         const SimTK::Vector& appliedMobilityForces =
-                multibody.getMobilityForces(
-                        simtkState, SimTK::Stage::Dynamics);
+                multibody.getMobilityForces(simtkState, SimTK::Stage::Dynamics);
 
         // If enabled constraints exist in the model, compute constraint forces
         // based on Lagrange multipliers.
@@ -600,8 +618,9 @@ public:
             // state
             if (CalcKinConErrors) {
                 // Position-level errors.
-                casadi::DM out_kinematic_constraint_errors =
-                        convertToCasADiDM(simtkState.getQErr());
+                // const casadi::DM qerr =
+                // convertToCasADiDM(simtkState.getQErr());
+                const auto& qerr = simtkState.getQErr();
 
                 if (enforceConstraintDerivatives || total_ma) {
                     // Calculuate udoterr. We cannot use State::getUDotErr()
@@ -613,30 +632,44 @@ public:
                     m_pvaerr = SimTK::NaN;
                 }
 
-                casadi::DM uerr;
-                casadi::DM udoterr;
+                const auto& uerr = simtkState.getUErr();
+                int uerrOffset;
+                int uerrSize;
+                const auto& udoterr = m_pvaerr;
+                int udoterrOffset;
+                int udoterrSize;
                 if (enforceConstraintDerivatives) {
                     // Velocity-level errors.
-                    uerr = convertToCasADiDM(simtkState.getUErr());
+                    uerrOffset = 0;
+                    uerrSize = uerr.size();
                     // Acceleration-level errors.
-                    udoterr = convertToCasADiDM(m_pvaerr);
+                    udoterrOffset = 0;
+                    udoterrSize = m_pvaerr.size();
                 } else {
                     // Velocity-level errors. Skip derivatives of position-level
                     // constraint equations.
-                    uerr = convertToCasADiDM(SimTK::Vector(total_mv,
-                            simtkState.getUErr().getContiguousScalarData() +
-                                    total_mp,
-                            true));
+                    uerrOffset = total_mp;
+                    uerrSize = total_mv;
                     // Acceleration-level errors. Skip derivatives of velocity-
                     // and position-level constraint equations.
-                    udoterr = convertToCasADiDM(SimTK::Vector(total_ma,
-                            m_pvaerr.getContiguousScalarData() + total_mp +
-                                    total_mv,
-                            true));
+                    udoterrOffset = total_mp + total_mv;
+                    udoterrSize = total_ma;
                 }
-                auto temp = casadi::DM::vertcat(
-                        {out_kinematic_constraint_errors, uerr, udoterr});
-                out_kinematic_constraint_errors = temp;
+                // This way of copying the data avoids a threadsafety issue in
+                // CasADi related to cached Sparsity objects.
+                casadi::DM out_kinematic_constraint_errors =
+                        casadi::DM(casadi::Sparsity::dense(
+                                qerr.size() + uerrSize + udoterrSize, 1));
+                std::copy_n(qerr.getContiguousScalarData(), qerr.size(),
+                        out_kinematic_constraint_errors.ptr());
+                std::copy_n(uerr.getContiguousScalarData() + uerrOffset,
+                        uerrSize,
+                        out_kinematic_constraint_errors.ptr() + qerr.size());
+                std::copy_n(udoterr.getContiguousScalarData() + udoterrOffset,
+                        udoterrSize,
+                        out_kinematic_constraint_errors.ptr() + qerr.size() +
+                                uerrSize);
+
                 out.push_back(out_kinematic_constraint_errors);
             }
         } else {
@@ -677,7 +710,8 @@ private:
     const OpenSim::MocoCasADiSolver& m_mocoCasADiSolver;
     std::unordered_map<int, int> m_yIndexMap;
 
-    static thread_local SimTK::Vector_<SimTK::SpatialVec> m_constraintBodyForces;
+    static thread_local SimTK::Vector_<SimTK::SpatialVec>
+            m_constraintBodyForces;
     static thread_local SimTK::Vector m_constraintMobilityForces;
     // This is the output argument of
     // SimbodyMatterSubsystem::calcConstraintAccelerationErrors(), and includes

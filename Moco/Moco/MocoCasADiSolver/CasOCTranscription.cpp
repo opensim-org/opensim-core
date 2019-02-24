@@ -257,8 +257,7 @@ void Transcription::transcribe() {
         }
 
         // Points where we ignore algebraic constraints.
-        if (m_problem.getEnforceConstraintDerivatives() &&
-                m_numPointsIgnoringConstraints) {
+        if (m_numPointsIgnoringConstraints) {
             const auto out = evalOnTrajectory(
                     m_problem.getMultibodySystemIgnoringConstraints(), inputs,
                     m_daeIndicesIgnoringConstraints);
