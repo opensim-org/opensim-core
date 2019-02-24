@@ -23,8 +23,6 @@
 #include "CasOCProblem.h"
 #include "MocoCasADiSolver.h"
 
-#include <OpenSim/Simulation/InverseDynamicsSolver.h>
-
 namespace OpenSim {
 
 using VectorDM = std::vector<casadi::DM>;
