@@ -258,6 +258,7 @@ private:
         applyConstraintsImpl(m_vars, m_xdot, m_residual, m_kcerr);
     }
 
+    /*
     /// Calculate state derivatives and kinematic constraint errors from the
     /// system differential-algebraic equations for the defect and path
     /// constraints in the direct collocation problem, which are imposed in
@@ -272,6 +273,7 @@ private:
             casadi_int islack, bool calcResidual,
             bool calcKinematicConstraintErrors, casadi::MX& xdot,
             casadi::MX& residual, casadi::MX& pvaerr);
+            */
 
     void setObjective(casadi::MX objective) {
         m_objective = std::move(objective);

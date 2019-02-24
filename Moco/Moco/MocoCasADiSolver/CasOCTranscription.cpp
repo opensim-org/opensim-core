@@ -258,7 +258,7 @@ void Transcription::transcribe() {
                 m_kcerr = trajOut.at(2);
             }
             // Points where we ignore algebraic constraints.
-            {
+            if (numColumnsIgnoringConstraints) {
                 const auto& timeSlice = daeIndicesIgnoringConstraints;
 
                 // In Hermite-Simpson, this is a midpoint, so we must compute a
@@ -315,7 +315,7 @@ void Transcription::transcribe() {
                 m_kcerr = trajOut.at(2);
             }
             // Points where we ignore algebraic constraints.
-            {
+            if (numColumnsIgnoringConstraints) {
                 const auto& timeSlice = daeIndicesIgnoringConstraints;
                 const auto& multibodyPointFunc =
                         m_problem
@@ -502,6 +502,7 @@ casadi::MXVector Transcription::evalOnTrajectory(
     }*/
 }
 
+/*
 void Transcription::calcDifferentialAlgebraicEquationsExplicit(casadi_int itime,
         casadi_int islack, bool calcKinematicConstraintErrors, MX& xdot,
         MX& kcerr) {
@@ -522,6 +523,7 @@ void Transcription::calcDifferentialAlgebraicEquationsImplicit(casadi_int itime,
     const MX u = states(Slice(NQ, NQ + NU), itime);
     MX qdot = u; // TODO: This assumes the N matrix is identity.
 }
+ */
 
 void Transcription::addConstraints(const casadi::DM& lower,
         const casadi::DM& upper, const casadi::MX& equations) {
