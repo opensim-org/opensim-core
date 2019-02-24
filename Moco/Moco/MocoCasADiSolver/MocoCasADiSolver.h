@@ -37,6 +37,12 @@ namespace OpenSim {
 /// less efficiently in this solver; for parameter optimization, first try
 /// MocoTropterSolver.
 ///
+/// Finite difference scheme
+/// ========================
+/// The "central" finite difference is more accurate but can be 2 times
+/// slower than "forward" (tested on exampleSlidingMass). Sometimes, problems
+/// may struggle to converge with "forward".
+///
 /// Parallelization
 /// ===============
 /// By default, CasADi evaluate the integral cost integrand and the
@@ -72,7 +78,7 @@ class OSIMMOCO_API MocoCasADiSolver : public MocoDirectCollocationSolver {
             MocoCasADiSolver, MocoDirectCollocationSolver);
 
 public:
-    OpenSim_DECLARE_PROPERTY(finite_difference_scheme, std::string,
+    OpenSim_DECLARE_PROPERTY(optim_finite_difference_scheme, std::string,
         "The finite difference scheme CasADi will use to calculate problem "
         "derivatives (default: 'central').");
 
