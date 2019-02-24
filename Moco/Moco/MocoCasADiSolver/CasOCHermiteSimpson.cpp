@@ -53,14 +53,6 @@ DM HermiteSimpson::createKinematicConstraintIndicesImpl() const {
     return indices;
 }
 
-DM HermiteSimpson::createResidualConstraintIndicesImpl() const {
-    DM indices = DM::zeros(1, m_numGridPoints);
-    for (int i = 0; i < m_numGridPoints; ++i) {
-        indices(i) = 1;
-    }
-    return indices;
-}
-
 void HermiteSimpson::applyConstraintsImpl(const VariablesMX& vars,
         const casadi::MX& xdot, const casadi::MX& residual,
         const casadi::MX& kcerr) {

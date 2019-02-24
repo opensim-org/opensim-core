@@ -66,19 +66,6 @@ public:
 
         return kinConIndices;
     }
-    casadi::DM createResidualConstraintIndices() const {
-        casadi::DM resConIndices = createResidualConstraintIndicesImpl();
-        const auto shape = resConIndices.size();
-        OPENSIM_THROW_IF(shape.first != 1 || shape.second != m_numGridPoints,
-                OpenSim::Exception,
-                OpenSim::format(
-                        "createResidualConstraintIndicesImpl() must return a "
-                        "row vector of shape length [1, %i], but a matrix of "
-                        "shape [%i, %i] was returned.",
-                        m_numGridPoints, shape.first, shape.second));
-
-        return resConIndices;
-    }
 
     Solution solve(const Iterate& guessOrig);
 
@@ -90,7 +77,7 @@ protected:
     void createVariablesAndSetBounds();
 
     casadi::MXVector evalOnTrajectory(const casadi::Function& pointFunction,
-            const casadi::MXVector& inputs,
+            const std::vector<Var>& inputs,
             const casadi::Matrix<casadi_int>& timeIndices) const;
 
     template <typename TRow, typename TColumn>
@@ -131,7 +118,6 @@ private:
     VariablesDM m_upperBounds;
 
     casadi::DM m_kinematicConstraintIndices;
-    casadi::DM m_residualIndices;
     casadi::Matrix<casadi_int> m_gridIndices;
     casadi::Matrix<casadi_int> m_daeIndices;
     casadi::Matrix<casadi_int> m_daeIndicesIgnoringConstraints;
@@ -157,10 +143,6 @@ private:
     /// with nonzero values at the indices where kinematic constraints are
     /// enforced.
     virtual casadi::DM createKinematicConstraintIndicesImpl() const = 0;
-    /// Override this function to specify the indices in the grid where, in
-    /// an implicit formulation, dynamics residual constraints should be
-    /// enforced.
-    virtual casadi::DM createResidualConstraintIndicesImpl() const = 0;
     /// Override this function in your derived class set the defect, kinematic,
     /// and path constraint errors required for your transcription scheme.
     virtual void applyConstraintsImpl(const VariablesMX& vars,
@@ -168,28 +150,10 @@ private:
             const casadi::MX& kcerr) = 0;
 
     void transcribe();
-
     void setObjective();
     void applyConstraints() {
         applyConstraintsImpl(m_vars, m_xdot, m_residual, m_kcerr);
     }
-
-    /*
-    /// Calculate state derivatives and kinematic constraint errors from the
-    /// system differential-algebraic equations for the defect and path
-    /// constraints in the direct collocation problem, which are imposed in
-    /// derived classes.
-    void calcDifferentialAlgebraicEquationsExplicit(casadi_int itime,
-            casadi_int islack, bool calcKinematicConstraintErrors,
-            casadi::MX& xdot, casadi::MX& kcerr);
-
-    /// Calculate state derivatives and kinematic constraint errors,
-    /// using implicit differential equations for multibody dynamics.
-    void calcDifferentialAlgebraicEquationsImplicit(casadi_int itime,
-            casadi_int islack, bool calcResidual,
-            bool calcKinematicConstraintErrors, casadi::MX& xdot,
-            casadi::MX& residual, casadi::MX& pvaerr);
-            */
 
     /// Use this function to ensure you iterate through variables in the same
     /// order.

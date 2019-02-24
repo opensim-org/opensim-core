@@ -54,7 +54,9 @@ enum Var {
     /// Used in implicit dynamics mode.
     derivatives, // TODO: Rename to accelerations?
     /// Constant in time.
-    parameters
+    parameters,
+    /// For internal use (never actually a key for Variables).
+    multibody_states = 100
 };
 
 template <typename T>

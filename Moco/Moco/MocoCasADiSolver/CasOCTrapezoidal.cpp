@@ -40,10 +40,6 @@ DM Trapezoidal::createKinematicConstraintIndicesImpl() const {
     return DM::ones(1, m_numGridPoints);
 }
 
-DM Trapezoidal::createResidualConstraintIndicesImpl() const {
-    return DM::ones(1, m_numGridPoints);
-}
-
 void Trapezoidal::applyConstraintsImpl(const VariablesMX& vars,
         const casadi::MX& xdot,
         const casadi::MX& residual, const casadi::MX& kcerr) {
