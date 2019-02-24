@@ -592,6 +592,9 @@ TEMPLATE_TEST_CASE("State tracking", "", MocoTropterSolver, MocoCasADiSolver) {
 }
 
 TEMPLATE_TEST_CASE("Guess", "", MocoTropterSolver, MocoCasADiSolver) {
+    std::cout.rdbuf(LogManager::cout.rdbuf());
+    std::cout.rdbuf(LogManager::cout.rdbuf());
+
     MocoTool moco = createSlidingMassMocoTool();
     auto& ms = moco.initSolver<TestType>();
     const int N = 6;

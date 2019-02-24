@@ -180,6 +180,10 @@ protected:
     /// avoiding an extra call on the instantiated object.
     void transcribe();
 
+    casadi::MXVector evalOnTrajectory(const casadi::Function& pointFunction,
+            const casadi::MXVector& inputs,
+            const casadi::Matrix<casadi_int>& timeIndices) const;
+
     template <typename TRow, typename TColumn>
     void setVariableBounds(Var var, const TRow& rowIndices,
             const TColumn& columnIndices, const Bounds& bounds) {

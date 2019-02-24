@@ -484,11 +484,16 @@ public:
         const double& time = args.at(0).scalar();
         const casadi::DM& multibody_states = args.at(1);
         const casadi::DM& slacks = args.at(2);
+        const casadi::DM& parameters = args.at(3);
 
         auto mocoProblemRep = m_jar.take();
         // TODO: deal with constness better.
         auto& model = const_cast<Model&>(mocoProblemRep->getModel());
         auto& simtkState = model.updWorkingState();
+        applyParametersToModel(
+                SimTK::Vector(this->m_casProblem->getNumParameters(),
+                        parameters.ptr(), true),
+                *mocoProblemRep);
         convertToSimTKState(
                 time, multibody_states, model, m_yIndexMap, simtkState, false);
         model.realizeVelocity(simtkState);

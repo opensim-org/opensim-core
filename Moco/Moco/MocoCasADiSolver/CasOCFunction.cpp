@@ -197,6 +197,8 @@ casadi::Sparsity VelocityCorrection::get_sparsity_in(casadi_int i) {
             m_casProblem->getNumAuxiliaryStates(), 1);
     } else if (i == 2) {
         return casadi::Sparsity::dense(m_casProblem->getNumSlacks(), 1);
+    } else if (i == 3) {
+        return casadi::Sparsity::dense(m_casProblem->getNumParameters(), 1);
     } else {
         return casadi::Sparsity(0, 0);
     }

@@ -19,6 +19,7 @@
 
 using casadi::DM;
 using casadi::MX;
+using casadi::MXVector;
 using casadi::Slice;
 
 namespace CasOC {
@@ -34,6 +35,27 @@ void Transcription::transcribe() {
     m_numMeshIntervals = m_numMeshPoints - 1;
     m_numSlackPoints = m_numGridPoints - m_numMeshPoints;
     m_grid = DM::linspace(0, 1, m_numGridPoints);
+
+    auto makeTimeIndices = [](const std::vector<int>& in) {
+        casadi::Matrix<casadi_int> out(1, in.size());
+        for (int i = 0; i < (int)in.size(); ++i) { out(i) = in[i]; }
+        return out;
+    };
+    const DM kinematicConstraintIndices = createKinematicConstraintIndices();
+    const DM residualIndices = createResidualConstraintIndicesImpl();
+    std::vector<int> daeIndicesVector;
+    std::vector<int> daeIndicesIgnoringConstraintsVector;
+    for (int i = 0; i < kinematicConstraintIndices.size2(); ++i) {
+        if (kinematicConstraintIndices(i).scalar() == 1) {
+            daeIndicesVector.push_back(i);
+        } else {
+            daeIndicesIgnoringConstraintsVector.push_back(i);
+        }
+    }
+    const auto daeIndices = makeTimeIndices(daeIndicesVector);
+    const auto daeIndicesIgnoringConstraints =
+            makeTimeIndices(daeIndicesIgnoringConstraintsVector);
+    const int numColumnsIgnoringConstraints = m_numGridPoints - m_numMeshPoints;
 
     // Create variables.
     // -----------------
@@ -57,8 +79,10 @@ void Transcription::transcribe() {
             MX::sym("slacks", m_problem.getNumSlacks(), m_numSlackPoints);
     m_vars[Var::parameters] =
             MX::sym("parameters", m_problem.getNumParameters(), 1);
-    const auto paramsTraj =
-            casadi::MX::repmat(m_vars[Var::parameters], 1, m_numMeshPoints);
+    const MX paramsTrajGrid = MX::repmat(m_vars[Var::parameters], 1, m_numGridPoints);
+    const MX paramsTraj = MX::repmat(m_vars[Var::parameters], 1, m_numMeshPoints);
+    const MX paramsTrajIgnoringConstraints =
+            MX::repmat(m_vars[Var::parameters], 1, numColumnsIgnoringConstraints);
 
     // Set variable bounds.
     // --------------------
@@ -136,42 +160,41 @@ void Transcription::transcribe() {
     // Cost.
     // -----
     DM quadCoeffs = this->createQuadratureCoefficients();
-    MX integrandTrajectory;
+    MX integrandTraj;
     {
         const auto integrandFunc = m_problem.getIntegralCostIntegrand();
-        auto parallelism = m_solver.getParallelism();
-        auto calcIntegrandOverTrajectory = integrandFunc.map(
-                m_numGridPoints, parallelism.first, parallelism.second);
         // "Slice()" grabs everything in that dimension (like ":" in Matlab).
         // Here, we include evaluations of the integral cost integrand
         // into the symbolic expression graph for the integral cost. We are
         // *not* numerically evaluating the integral cost integrand here--that
         // occurs when the function by casadi::nlpsol() is evaluated.
-        integrandTrajectory =
-                calcIntegrandOverTrajectory
-                        .
-                        operator()({m_times, m_vars[Var::states],
-                                m_vars[Var::controls], /* TODO
-                                                          m_vars[Var::multipliers],*/
-                                paramsTraj})
-                        .at(0);
+        std::vector<int> timeSliceVec(m_numGridPoints);
+        // This is like 0:(m_numGridPoints) in MATLAB:
+        std::iota(timeSliceVec.begin(), timeSliceVec.end(), 0);
+        const auto timeSlice = makeTimeIndices(timeSliceVec);
+        const MXVector inputs{m_times, m_vars[Var::states],
+                m_vars[Var::controls], // TODO m_vars[Var::multipliers],
+                paramsTrajGrid};
+        integrandTraj =
+                evalOnTrajectory(integrandFunc, inputs, timeSlice).at(0);
     }
 
     // Minimize Lagrange multipliers if specified by the solver.
     if (m_solver.getMinimizeLagrangeMultipliers() &&
             m_problem.getNumMultipliers()) {
-        for (int itime = 0; itime < m_numGridPoints; ++itime) {
-            const auto mults = m_vars[Var::multipliers](Slice(), itime);
-            const double multiplierWeight =
-                    m_solver.getLagrangeMultiplierWeight();
-            integrandTrajectory(itime) += multiplierWeight * dot(mults, mults);
-        }
+        const auto mults = m_vars[Var::multipliers];
+        const double multiplierWeight = m_solver.getLagrangeMultiplierWeight();
+        // Sum across constraints of each multiplier element squared.
+        using casadi::MX;
+        integrandTraj += multiplierWeight * MX::sum1(MX::sq(mults));
     }
-    MX integralCost = m_duration * dot(quadCoeffs.T(), integrandTrajectory);
+    MX integralCost = m_duration * dot(quadCoeffs.T(), integrandTraj);
 
-    const auto endpointCostOut =
-            m_problem.getEndpointCost().operator()({m_vars[Var::final_time],
-                    m_vars[Var::states](Slice(), -1), m_vars[Var::parameters]});
+    MXVector endpointCostOut;
+    m_problem.getEndpointCost().call(
+            {m_vars[Var::final_time], m_vars[Var::states](Slice(), -1),
+                    m_vars[Var::parameters]},
+            endpointCostOut);
     const auto endpointCost = endpointCostOut.at(0);
     setObjective(integralCost + endpointCost);
 
@@ -183,8 +206,6 @@ void Transcription::transcribe() {
     OPENSIM_THROW_IF(NQ != NU, OpenSim::Exception,
             "Problems with differing numbers of coordinates and speeds are not "
             "supported (e.g., quaternions).");
-    const DM kinematicConstraintIndices = createKinematicConstraintIndices();
-    const DM residualIndices = createResidualConstraintIndicesImpl();
 
     // TODO: Does creating all this memory have efficiency implications in
     // CasADi?
@@ -196,26 +217,6 @@ void Transcription::transcribe() {
     m_kcerr = MX(m_problem.getNumKinematicConstraintEquations(),
             kinematicConstraintIndices.nnz());
 
-    // TODO: Avoid the overhead of map() if not running in parallel.
-    auto parallelism = m_solver.getParallelism();
-    std::vector<int> daeIndicesVector;
-    std::vector<int> daeIndicesIgnoringConstraintsVector;
-    for (int i = 0; i < kinematicConstraintIndices.size2(); ++i) {
-        if (kinematicConstraintIndices(i).scalar() == 1) {
-            daeIndicesVector.push_back(i);
-        } else {
-            daeIndicesIgnoringConstraintsVector.push_back(i);
-        }
-    }
-    auto makeTimeIndices = [](const std::vector<int>& in) {
-        casadi::Matrix<casadi_int> out(1, in.size());
-        for (int i = 0; i < (int)in.size(); ++i) { out(i) = in[i]; }
-        return out;
-    };
-    const auto daeIndices = makeTimeIndices(daeIndicesVector);
-    const auto daeIndicesIgnoringConstraints =
-            makeTimeIndices(daeIndicesIgnoringConstraintsVector);
-    const int numColumnsIgnoringConstraints = m_numGridPoints - m_numMeshPoints;
     if (m_solver.isDynamicsModeImplicit()) {
         if (m_problem.getEnforceConstraintDerivatives()) {
             const MX u = m_vars[Var::states](Slice(NQ, NQ + NU), Slice());
@@ -227,14 +228,15 @@ void Transcription::transcribe() {
                 const auto& timeSlice = daeIndices;
                 const auto& multibodyPointFunc =
                         m_problem.getImplicitMultibodySystem();
-                auto multibodyTrajFunc = multibodyPointFunc.map(
-                        m_numMeshPoints, parallelism.first, parallelism.second);
-                auto trajOut = multibodyTrajFunc.operator()({m_times(timeSlice),
+                const MXVector inputs{m_times(timeSlice),
                         m_vars[Var::states](Slice(), timeSlice),
                         m_vars[Var::controls](Slice(), timeSlice),
                         m_vars[Var::multipliers](Slice(), timeSlice),
                         m_vars[Var::derivatives](Slice(), timeSlice),
-                        paramsTraj});
+                        paramsTraj};
+                const auto trajOut =
+                        evalOnTrajectory(multibodyPointFunc, inputs, timeSlice);
+
                 m_residual(Slice(), timeSlice) = trajOut.at(0);
                 // zdot.
                 m_xdot(Slice(NQ + NU, NS), timeSlice) = trajOut.at(1);
@@ -250,14 +252,12 @@ void Transcription::transcribe() {
                 // transcription schemes.
                 const auto& velocityCorrPointFunc =
                         m_problem.getVelocityCorrection();
-                auto velocityCorrTrajFunc =
-                        velocityCorrPointFunc.map(numColumnsIgnoringConstraints,
-                                parallelism.first, parallelism.second);
-                auto velocityCorrTrajOut =
-                        velocityCorrTrajFunc.operator()({m_times(timeSlice),
-                                m_vars[Var::states](
-                                        Slice(0, NQ + NU), timeSlice),
-                                m_vars[Var::slacks]});
+                const MXVector vcInputs{m_times(timeSlice),
+                        m_vars[Var::states](Slice(0, NQ + NU), timeSlice),
+                        m_vars[Var::slacks],
+                        paramsTrajIgnoringConstraints};
+                auto velocityCorrTrajOut = evalOnTrajectory(
+                        velocityCorrPointFunc, vcInputs, timeSlice);
                 const auto uCorr = velocityCorrTrajOut.at(0);
 
                 m_xdot(Slice(0, NQ), timeSlice) += uCorr;
@@ -265,15 +265,14 @@ void Transcription::transcribe() {
                 const auto& multibodyPointFunc =
                         m_problem
                                 .getImplicitMultibodySystemIgnoringConstraints();
-                auto multibodyTrajFunc =
-                        multibodyPointFunc.map(numColumnsIgnoringConstraints,
-                                parallelism.first, parallelism.second);
-                auto trajOut = multibodyTrajFunc.operator()({m_times(timeSlice),
+                const MXVector inputs{m_times(timeSlice),
                         m_vars[Var::states](Slice(), timeSlice),
                         m_vars[Var::controls](Slice(), timeSlice),
                         m_vars[Var::multipliers](Slice(), timeSlice),
                         m_vars[Var::derivatives](Slice(), timeSlice),
-                        paramsTraj});
+                        paramsTrajIgnoringConstraints};
+                const auto trajOut =
+                        evalOnTrajectory(multibodyPointFunc, inputs, timeSlice);
                 m_residual(Slice(), timeSlice) = trajOut.at(0);
                 // zdot.
                 m_xdot(Slice(NQ + NU, NS), timeSlice) = trajOut.at(1);
@@ -290,14 +289,14 @@ void Transcription::transcribe() {
                 const auto& timeSlice = daeIndices;
                 const auto& multibodyPointFunc =
                         m_problem.getImplicitMultibodySystem();
-                auto multibodyTrajFunc = multibodyPointFunc.map(
-                        m_numMeshPoints, parallelism.first, parallelism.second);
-                auto trajOut = multibodyTrajFunc.operator()({m_times(timeSlice),
+                const MXVector inputs{m_times(timeSlice),
                         m_vars[Var::states](Slice(), timeSlice),
                         m_vars[Var::controls](Slice(), timeSlice),
                         m_vars[Var::multipliers](Slice(), timeSlice),
                         m_vars[Var::derivatives](Slice(), timeSlice),
-                        paramsTraj});
+                        paramsTraj};
+                const auto trajOut =
+                        evalOnTrajectory(multibodyPointFunc, inputs, timeSlice);
                 m_residual(Slice(), timeSlice) = trajOut.at(0);
                 // zdot.
                 m_xdot(Slice(NQ + NU, NS), timeSlice) = trajOut.at(1);
@@ -309,15 +308,14 @@ void Transcription::transcribe() {
                 const auto& multibodyPointFunc =
                         m_problem
                                 .getImplicitMultibodySystemIgnoringConstraints();
-                auto multibodyTrajFunc =
-                        multibodyPointFunc.map(numColumnsIgnoringConstraints,
-                                parallelism.first, parallelism.second);
-                auto trajOut = multibodyTrajFunc.operator()({m_times(timeSlice),
+                const MXVector inputs{m_times(timeSlice),
                         m_vars[Var::states](Slice(), timeSlice),
                         m_vars[Var::controls](Slice(), timeSlice),
                         m_vars[Var::multipliers](Slice(), timeSlice),
                         m_vars[Var::derivatives](Slice(), timeSlice),
-                        paramsTraj});
+                        paramsTrajIgnoringConstraints};
+                const auto trajOut =
+                        evalOnTrajectory(multibodyPointFunc, inputs, timeSlice);
                 m_residual(Slice(), timeSlice) = trajOut.at(0);
                 // zdot.
                 m_xdot(Slice(NQ + NU, NS), timeSlice) = trajOut.at(1);
@@ -330,13 +328,13 @@ void Transcription::transcribe() {
                 // TODO: Nearly an exact duplicate with below.
                 const auto& timeSlice = daeIndices;
                 const auto& multibodyPointFunc = m_problem.getMultibodySystem();
-                auto multibodyTrajFunc = multibodyPointFunc.map(
-                        m_numMeshPoints, parallelism.first, parallelism.second);
-                auto trajOut = multibodyTrajFunc.operator()({m_times(timeSlice),
+                const MXVector inputs{m_times(timeSlice),
                         m_vars[Var::states](Slice(), timeSlice),
                         m_vars[Var::controls](Slice(), timeSlice),
                         m_vars[Var::multipliers](Slice(), timeSlice),
-                        paramsTraj});
+                        paramsTraj};
+                const auto trajOut =
+                        evalOnTrajectory(multibodyPointFunc, inputs, timeSlice);
                 const MX u = m_vars[Var::states](Slice(NQ, NQ + NU), timeSlice);
                 m_xdot(Slice(0, NQ), timeSlice) = u;
                 m_xdot(Slice(NQ, NQ + NU), timeSlice) = trajOut.at(0);
@@ -345,8 +343,7 @@ void Transcription::transcribe() {
             }
             // Points where we ignore algebraic constraints.
             if (numColumnsIgnoringConstraints) {
-                const Slice timeSlice =
-                        casadi::to_slice(daeIndicesIgnoringConstraints);
+                const auto& timeSlice = daeIndicesIgnoringConstraints;
 
                 // TODO: The points at which we apply the velocity correction
                 // is correct for Trapezoidal and Hermite-Simpson, but might
@@ -354,14 +351,12 @@ void Transcription::transcribe() {
                 // transcription schemes.
                 const auto& velocityCorrPointFunc =
                         m_problem.getVelocityCorrection();
-                auto velocityCorrTrajFunc =
-                        velocityCorrPointFunc.map(numColumnsIgnoringConstraints,
-                                parallelism.first, parallelism.second);
-                auto velocityCorrTrajOut =
-                        velocityCorrTrajFunc.operator()({m_times(timeSlice),
-                                m_vars[Var::states](
-                                        Slice(0, NQ + NU), timeSlice),
-                                m_vars[Var::slacks]});
+                const MXVector vcInputs{m_times(timeSlice),
+                        m_vars[Var::states](Slice(0, NQ + NU), timeSlice),
+                        m_vars[Var::slacks],
+                        paramsTrajIgnoringConstraints};
+                auto velocityCorrTrajOut = evalOnTrajectory(
+                        velocityCorrPointFunc, vcInputs, timeSlice);
                 const auto uCorr = velocityCorrTrajOut.at(0);
 
                 const MX u = m_vars[Var::states](Slice(NQ, NQ + NU), timeSlice);
@@ -369,14 +364,13 @@ void Transcription::transcribe() {
 
                 const auto& multibodyPointFunc =
                         m_problem.getMultibodySystemIgnoringConstraints();
-                auto multibodyTrajFunc =
-                        multibodyPointFunc.map(numColumnsIgnoringConstraints,
-                                parallelism.first, parallelism.second);
-                auto trajOut = multibodyTrajFunc.operator()({m_times(timeSlice),
+                const MXVector inputs{m_times(timeSlice),
                         m_vars[Var::states](Slice(), timeSlice),
                         m_vars[Var::controls](Slice(), timeSlice),
                         m_vars[Var::multipliers](Slice(), timeSlice),
-                        paramsTraj});
+                        paramsTrajIgnoringConstraints};
+                const auto trajOut =
+                        evalOnTrajectory(multibodyPointFunc, inputs, timeSlice);
                 m_xdot(Slice(NQ, NQ + NU), timeSlice) = trajOut.at(0);
                 m_xdot(Slice(NQ + NU, NS), timeSlice) = trajOut.at(1);
             }
@@ -388,13 +382,13 @@ void Transcription::transcribe() {
             {
                 const auto& timeSlice = daeIndices;
                 const auto& multibodyPointFunc = m_problem.getMultibodySystem();
-                auto multibodyTrajFunc = multibodyPointFunc.map(
-                        m_numMeshPoints, parallelism.first, parallelism.second);
-                auto trajOut = multibodyTrajFunc.operator()({m_times(timeSlice),
+                const MXVector inputs{m_times(timeSlice),
                         m_vars[Var::states](Slice(), timeSlice),
                         m_vars[Var::controls](Slice(), timeSlice),
                         m_vars[Var::multipliers](Slice(), timeSlice),
-                        paramsTraj});
+                        paramsTraj};
+                const auto trajOut =
+                        evalOnTrajectory(multibodyPointFunc, inputs, timeSlice);
                 m_xdot(Slice(NQ, NQ + NU), timeSlice) = trajOut.at(0);
                 m_xdot(Slice(NQ + NU, NS), timeSlice) = trajOut.at(1);
                 m_kcerr = trajOut.at(2);
@@ -404,14 +398,13 @@ void Transcription::transcribe() {
                 const auto& timeSlice = daeIndicesIgnoringConstraints;
                 const auto& multibodyPointFunc =
                         m_problem.getMultibodySystemIgnoringConstraints();
-                auto multibodyTrajFunc =
-                        multibodyPointFunc.map(numColumnsIgnoringConstraints,
-                                parallelism.first, parallelism.second);
-                auto trajOut = multibodyTrajFunc.operator()({m_times(timeSlice),
+                const MXVector inputs{m_times(timeSlice),
                         m_vars[Var::states](Slice(), timeSlice),
                         m_vars[Var::controls](Slice(), timeSlice),
                         m_vars[Var::multipliers](Slice(), timeSlice),
-                        paramsTraj});
+                        paramsTrajIgnoringConstraints};
+                const auto trajOut =
+                        evalOnTrajectory(multibodyPointFunc, inputs, timeSlice);
                 m_xdot(Slice(NQ, NQ + NU), timeSlice) = trajOut.at(0);
                 m_xdot(Slice(NQ + NU, NS), timeSlice) = trajOut.at(1);
             }
@@ -534,6 +527,29 @@ Iterate Transcription::createRandomIterateWithinBounds() const {
     casIterate.times = createTimes(casIterate.variables[Var::initial_time],
             casIterate.variables[Var::final_time]);
     return casIterate;
+}
+
+casadi::MXVector Transcription::evalOnTrajectory(
+        const casadi::Function& pointFunction, const casadi::MXVector& inputs,
+        const casadi::Matrix<casadi_int>& timeIndices) const {
+    auto parallelism = m_solver.getParallelism();
+    // TODO if (parallelism.second > 1) {
+    const auto trajFunc = pointFunction.map(
+            timeIndices.size2(), parallelism.first, parallelism.second);
+    casadi::MXVector out;
+    trajFunc.call(inputs, out);
+    return out;
+    // TODO: Avoid the overhead of map() if not running in parallel.
+    /* TODO } else {
+        casadi::MXVector out(pointFunction.n_out());
+        for (int iout = 0; iout < (int)out.size(); ++iout) {
+            out[iout] = casadi::MX(pointFunction.sparsity_out(iout).rows(),
+                    timeIndices.size2());
+        }
+        for (int itime = 0; itime < timeIndices.size2(); ++itime) {
+
+        }
+    }*/
 }
 
 void Transcription::calcDifferentialAlgebraicEquationsExplicit(casadi_int itime,

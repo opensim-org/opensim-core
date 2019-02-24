@@ -181,13 +181,14 @@ public:
 /// problems that enforce kinematic constraints and their derivatives.
 class VelocityCorrection : public Function {
 public:
-    casadi_int get_n_in() override final { return 3; }
+    casadi_int get_n_in() override final { return 4; }
     casadi_int get_n_out() override final { return 1; }
     std::string get_name_in(casadi_int i) override final {
         switch (i) {
         case 0: return "time";
         case 1: return "multibody_states";
         case 2: return "slacks";
+        case 3: return "parameters";
         default: OPENSIM_THROW(OpenSim::Exception, "Internal error.");
         }
     }
