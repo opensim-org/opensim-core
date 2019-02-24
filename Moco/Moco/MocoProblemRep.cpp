@@ -354,7 +354,7 @@ void MocoProblemRep::printDescription(std::ostream& stream) const {
         cost->printDescription(stream);
     }
 
-    stream << "Multibody constraints: ";
+    stream << "Kinematic constraints: ";
     if (m_kinematic_constraints.empty())
         stream << " none";
     else

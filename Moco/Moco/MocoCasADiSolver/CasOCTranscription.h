@@ -25,14 +25,7 @@ namespace CasOC {
 /// This is the base class for transcription schemes that convert a
 /// CasOC::Problem into a general nonlinear programming problem. If you are
 /// creating a new derived class, make sure to override all virtual functions
-/// and obey the settings that the user specified in the CasOC::Solver. Build
-/// the CasADi problem in the constructor of your derived class by defining the
-/// following member variables in this class:
-/// - m_vars
-/// - m_lowerBounds
-/// - m_upperBounds
-/// Use setObjective() and addConstraints() to specify the functions in the
-/// optimization problem.
+/// and obey the settings that the user specified in the CasOC::Solver.
 class Transcription {
 public:
     Transcription(const Solver& solver, const Problem& problem,
@@ -122,10 +115,10 @@ private:
     casadi::Matrix<casadi_int> m_daeIndices;
     casadi::Matrix<casadi_int> m_daeIndicesIgnoringConstraints;
 
-
     casadi::MX m_xdot; // State derivatives.
     casadi::MX m_residual;
-    casadi::MX m_kcerr; // Kinematic constraint errors.
+    casadi::MX m_kcerr;      // Kinematic constraint errors.
+    casadi::MXVector m_path; // Auxiliary path constraint errors.
 
     casadi::MX m_objective;
     std::vector<casadi::MX> m_constraints;
@@ -147,12 +140,12 @@ private:
     /// and path constraint errors required for your transcription scheme.
     virtual void applyConstraintsImpl(const VariablesMX& vars,
             const casadi::MX& xdot, const casadi::MX& residual,
-            const casadi::MX& kcerr) = 0;
+            const casadi::MX& kcerr, const casadi::MXVector& path) = 0;
 
     void transcribe();
     void setObjective();
     void applyConstraints() {
-        applyConstraintsImpl(m_vars, m_xdot, m_residual, m_kcerr);
+        applyConstraintsImpl(m_vars, m_xdot, m_residual, m_kcerr, m_path);
     }
 
     /// Use this function to ensure you iterate through variables in the same

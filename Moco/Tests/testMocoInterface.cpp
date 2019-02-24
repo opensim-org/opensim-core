@@ -595,7 +595,7 @@ TEMPLATE_TEST_CASE("Guess", "", MocoTropterSolver, MocoCasADiSolver) {
     std::cout.rdbuf(LogManager::cout.rdbuf());
     std::cout.rdbuf(LogManager::cout.rdbuf());
 
-    MocoTool moco = createSlidingMassMocoTool();
+    MocoTool moco = createSlidingMassMocoTool<TestType>();
     auto& ms = moco.initSolver<TestType>();
     const int N = 6;
     ms.set_num_mesh_points(N);
@@ -1183,7 +1183,7 @@ TEST_CASE("Interpolate", "") {
 
 TEMPLATE_TEST_CASE("Sliding mass", "", MocoTropterSolver, MocoCasADiSolver) {
 
-    MocoTool moco = createSlidingMassMocoTool();
+    MocoTool moco = createSlidingMassMocoTool<TestType>();
     MocoSolution solution = moco.solve();
     int numTimes = 20;
     int numStates = 2;

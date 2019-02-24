@@ -178,9 +178,9 @@ void Transcription::transcribe() {
     // CasADi?
     // Initialize memory for state derivatives, implicit residuals, and
     // constraint errors.
-    m_xdot = MX(m_problem.getNumStates(), m_numGridPoints);
+    m_xdot = MX(NS, m_numGridPoints);
     if (m_solver.isDynamicsModeImplicit()) {
-        m_residual = MX(m_problem.getNumSpeeds(), m_numGridPoints);
+        m_residual = MX(NU, m_numGridPoints);
     }
     m_kcerr = MX(m_problem.getNumKinematicConstraintEquations(),
             m_kinematicConstraintIndices.nnz());
@@ -200,10 +200,9 @@ void Transcription::transcribe() {
         // are correct for Trapezoidal and Hermite-Simpson, but might
         // not be correct in general. Revisit this if we add other
         // transcription schemes.
-        const auto velocityCorrOut =
-                evalOnTrajectory(m_problem.getVelocityCorrection(),
-                        {multibody_states, slacks},
-                        m_daeIndicesIgnoringConstraints);
+        const auto velocityCorrOut = evalOnTrajectory(
+                m_problem.getVelocityCorrection(), {multibody_states, slacks},
+                m_daeIndicesIgnoringConstraints);
         const auto uCorr = velocityCorrOut.at(0);
 
         m_xdot(Slice(0, NQ), m_daeIndicesIgnoringConstraints) += uCorr;
@@ -222,9 +221,9 @@ void Transcription::transcribe() {
         // residual, zdot, kcerr
         // Points where we compute algebraic constraints.
         {
-            const auto out = evalOnTrajectory(
-                    m_problem.getImplicitMultibodySystem(), inputs,
-                    m_daeIndices);
+            const auto out =
+                    evalOnTrajectory(m_problem.getImplicitMultibodySystem(),
+                            inputs, m_daeIndices);
             m_residual(Slice(), m_daeIndices) = out.at(0);
             // zdot.
             m_xdot(Slice(NQ + NU, NS), m_daeIndices) = out.at(1);
@@ -235,8 +234,7 @@ void Transcription::transcribe() {
         if (m_numPointsIgnoringConstraints) {
             const auto out = evalOnTrajectory(
                     m_problem.getImplicitMultibodySystemIgnoringConstraints(),
-                    inputs,
-                    m_daeIndicesIgnoringConstraints);
+                    inputs, m_daeIndicesIgnoringConstraints);
             m_residual(Slice(), m_daeIndicesIgnoringConstraints) = out.at(0);
             // zdot.
             m_xdot(Slice(NQ + NU, NS), m_daeIndicesIgnoringConstraints) =
@@ -251,8 +249,8 @@ void Transcription::transcribe() {
         {
             // Evaluate the multibody system function and get udot
             // (speed derivatives) and zdot (auxiliary derivatives).
-            const auto out = evalOnTrajectory(m_problem.getMultibodySystem(),
-                    inputs, m_daeIndices);
+            const auto out = evalOnTrajectory(
+                    m_problem.getMultibodySystem(), inputs, m_daeIndices);
             m_xdot(Slice(NQ, NQ + NU), m_daeIndices) = out.at(0);
             m_xdot(Slice(NQ + NU, NS), m_daeIndices) = out.at(1);
             m_kcerr = out.at(2);
@@ -262,14 +260,26 @@ void Transcription::transcribe() {
         if (m_problem.getEnforceConstraintDerivatives() &&
                 m_numPointsIgnoringConstraints) {
             const auto out = evalOnTrajectory(
-                    m_problem.getMultibodySystemIgnoringConstraints(),
-                    inputs,
+                    m_problem.getMultibodySystemIgnoringConstraints(), inputs,
                     m_daeIndicesIgnoringConstraints);
             m_xdot(Slice(NQ, NQ + NU), m_daeIndicesIgnoringConstraints) =
                     out.at(0);
             m_xdot(Slice(NQ + NU, NS), m_daeIndicesIgnoringConstraints) =
                     out.at(1);
         }
+    }
+
+    // Path constraints
+    // ----------------
+    // The individual path constraint functions are passed to CasADi to
+    // maximize CasADi's ability to take derivatives efficiently.
+    m_path.resize(m_problem.getPathConstraintInfos().size());
+    for (int ipc = 0; ipc < (int)m_path.size(); ++ipc) {
+        const auto& info = m_problem.getPathConstraintInfos()[ipc];
+        // TODO: Is it sufficiently general to apply these to mesh points?
+        const auto out = evalOnTrajectory(
+                *info.function, {states, controls}, m_daeIndices);
+        m_path[ipc] = out.at(0);
     }
 
     // Apply constraints.
@@ -286,8 +296,7 @@ void Transcription::setObjective() {
         // cost. We are *not* numerically evaluating the integral cost
         // integrand here--that occurs when the function by casadi::nlpsol()
         // is evaluated.
-        integrandTraj = evalOnTrajectory(
-                m_problem.getIntegralCostIntegrand(),
+        integrandTraj = evalOnTrajectory(m_problem.getIntegralCostIntegrand(),
                 {states, controls, /* TODO: multipliers */}, m_gridIndices)
                                 .at(0);
     }
@@ -321,9 +330,8 @@ Solution Transcription::solve(const Iterate& guessOrig) {
 
     // Resample the guess.
     // -------------------
-    const auto guessTimes =
-            createTimes(guessOrig.variables.at(Var::initial_time),
-                    guessOrig.variables.at(Var::final_time));
+    const auto guessTimes = createTimes(guessOrig.variables.at(initial_time),
+            guessOrig.variables.at(final_time));
     auto guess = guessOrig.resample(guessTimes);
 
     // Adjust guesses for the slack variables to ensure they are the correct
@@ -405,8 +413,8 @@ Solution Transcription::solve(const Iterate& guessOrig) {
     // -------------------------
     Solution solution = m_problem.createIterate<Solution>();
     solution.variables = expand(nlpResult.at("x"));
-    solution.times = createTimes(solution.variables[Var::initial_time],
-            solution.variables[Var::final_time]);
+    solution.times = createTimes(
+            solution.variables[initial_time], solution.variables[final_time]);
     solution.stats = nlpFunc.stats();
     return solution;
 }
@@ -434,8 +442,8 @@ Iterate Transcription::createInitialGuessFromBounds() const {
         setToMidpoint(kv.second, m_lowerBounds.at(kv.first),
                 m_upperBounds.at(kv.first));
     }
-    casGuess.times = createTimes(casGuess.variables[Var::initial_time],
-            casGuess.variables[Var::final_time]);
+    casGuess.times = createTimes(
+            casGuess.variables[initial_time], casGuess.variables[final_time]);
     return casGuess;
 }
 
@@ -459,8 +467,8 @@ Iterate Transcription::createRandomIterateWithinBounds() const {
         setRandom(kv.second, m_lowerBounds.at(kv.first),
                 m_upperBounds.at(kv.first));
     }
-    casIterate.times = createTimes(casIterate.variables[Var::initial_time],
-            casIterate.variables[Var::final_time]);
+    casIterate.times = createTimes(casIterate.variables[initial_time],
+            casIterate.variables[final_time]);
     return casIterate;
 }
 
