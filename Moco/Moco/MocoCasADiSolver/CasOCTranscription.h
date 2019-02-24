@@ -80,6 +80,11 @@ public:
         return resConIndices;
     }
     Solution solve(const Iterate& guessOrig) {
+
+        // Define the NLP.
+        // ---------------
+        transcribe();
+
         // Resample the guess.
         // -------------------
         const auto guessTimes =
@@ -178,7 +183,7 @@ protected:
     /// overridden virtual methods are accessible to the base class. This
     /// implementation allows initialization to occur during construction,
     /// avoiding an extra call on the instantiated object.
-    void transcribe();
+    void createVariablesAndSetBounds();
 
     casadi::MXVector evalOnTrajectory(const casadi::Function& pointFunction,
             const casadi::MXVector& inputs,
@@ -248,6 +253,7 @@ private:
             const casadi::MX& xdot, const casadi::MX& residual,
             const casadi::MX& kcerr) = 0;
 
+    void transcribe();
     void applyConstraints() {
         applyConstraintsImpl(m_vars, m_xdot, m_residual, m_kcerr);
     }

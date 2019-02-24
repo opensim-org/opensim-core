@@ -24,38 +24,16 @@ using casadi::Slice;
 
 namespace CasOC {
 
-void Transcription::transcribe() {
-
+void Transcription::createVariablesAndSetBounds() {
     // Set the grid.
     // -------------
     // The grid for a transcription scheme includes both mesh points (i.e.
-    // points that lie on the endpoints of a mesh interval) and any additional
-    // collocation points that may lie on mesh interior (as in Hermite-Simpson
-    // collocation, etc.).
+    // points that lie on the endpoints of a mesh interval) and any
+    // additional collocation points that may lie on mesh interior (as in
+    // Hermite-Simpson collocation, etc.).
     m_numMeshIntervals = m_numMeshPoints - 1;
     m_numSlackPoints = m_numGridPoints - m_numMeshPoints;
     m_grid = DM::linspace(0, 1, m_numGridPoints);
-
-    auto makeTimeIndices = [](const std::vector<int>& in) {
-        casadi::Matrix<casadi_int> out(1, in.size());
-        for (int i = 0; i < (int)in.size(); ++i) { out(i) = in[i]; }
-        return out;
-    };
-    const DM kinematicConstraintIndices = createKinematicConstraintIndices();
-    const DM residualIndices = createResidualConstraintIndicesImpl();
-    std::vector<int> daeIndicesVector;
-    std::vector<int> daeIndicesIgnoringConstraintsVector;
-    for (int i = 0; i < kinematicConstraintIndices.size2(); ++i) {
-        if (kinematicConstraintIndices(i).scalar() == 1) {
-            daeIndicesVector.push_back(i);
-        } else {
-            daeIndicesIgnoringConstraintsVector.push_back(i);
-        }
-    }
-    const auto daeIndices = makeTimeIndices(daeIndicesVector);
-    const auto daeIndicesIgnoringConstraints =
-            makeTimeIndices(daeIndicesIgnoringConstraintsVector);
-    const int numColumnsIgnoringConstraints = m_numGridPoints - m_numMeshPoints;
 
     // Create variables.
     // -----------------
@@ -73,16 +51,12 @@ void Transcription::transcribe() {
         m_vars[Var::derivatives] = MX::sym(
                 "derivatives", m_problem.getNumSpeeds(), m_numGridPoints);
     }
-    // TODO: This assumes that slack variables are applied at all collocation
-    // points on the mesh interval interior.
+    // TODO: This assumes that slack variables are applied at all
+    // collocation points on the mesh interval interior.
     m_vars[Var::slacks] =
             MX::sym("slacks", m_problem.getNumSlacks(), m_numSlackPoints);
     m_vars[Var::parameters] =
             MX::sym("parameters", m_problem.getNumParameters(), 1);
-    const MX paramsTrajGrid = MX::repmat(m_vars[Var::parameters], 1, m_numGridPoints);
-    const MX paramsTraj = MX::repmat(m_vars[Var::parameters], 1, m_numMeshPoints);
-    const MX paramsTrajIgnoringConstraints =
-            MX::repmat(m_vars[Var::parameters], 1, numColumnsIgnoringConstraints);
 
     // Set variable bounds.
     // --------------------
@@ -156,6 +130,37 @@ void Transcription::transcribe() {
             ++ip;
         }
     }
+}
+
+void Transcription::transcribe() {
+
+    auto makeTimeIndices = [](const std::vector<int>& in) {
+        casadi::Matrix<casadi_int> out(1, in.size());
+        for (int i = 0; i < (int)in.size(); ++i) { out(i) = in[i]; }
+        return out;
+    };
+    const DM kinematicConstraintIndices = createKinematicConstraintIndices();
+    const DM residualIndices = createResidualConstraintIndicesImpl();
+    std::vector<int> daeIndicesVector;
+    std::vector<int> daeIndicesIgnoringConstraintsVector;
+    for (int i = 0; i < kinematicConstraintIndices.size2(); ++i) {
+        if (kinematicConstraintIndices(i).scalar() == 1) {
+            daeIndicesVector.push_back(i);
+        } else {
+            daeIndicesIgnoringConstraintsVector.push_back(i);
+        }
+    }
+    const auto daeIndices = makeTimeIndices(daeIndicesVector);
+    const auto daeIndicesIgnoringConstraints =
+            makeTimeIndices(daeIndicesIgnoringConstraintsVector);
+    const int numColumnsIgnoringConstraints = m_numGridPoints - m_numMeshPoints;
+
+    const MX paramsTrajGrid =
+            MX::repmat(m_vars[Var::parameters], 1, m_numGridPoints);
+    const MX paramsTraj =
+            MX::repmat(m_vars[Var::parameters], 1, m_numMeshPoints);
+    const MX paramsTrajIgnoringConstraints = MX::repmat(
+            m_vars[Var::parameters], 1, numColumnsIgnoringConstraints);
 
     // Cost.
     // -----
@@ -163,11 +168,12 @@ void Transcription::transcribe() {
     MX integrandTraj;
     {
         const auto integrandFunc = m_problem.getIntegralCostIntegrand();
-        // "Slice()" grabs everything in that dimension (like ":" in Matlab).
-        // Here, we include evaluations of the integral cost integrand
-        // into the symbolic expression graph for the integral cost. We are
-        // *not* numerically evaluating the integral cost integrand here--that
-        // occurs when the function by casadi::nlpsol() is evaluated.
+        // "Slice()" grabs everything in that dimension (like ":" in
+        // Matlab). Here, we include evaluations of the integral cost
+        // integrand into the symbolic expression graph for the integral
+        // cost. We are *not* numerically evaluating the integral cost
+        // integrand here--that occurs when the function by casadi::nlpsol()
+        // is evaluated.
         std::vector<int> timeSliceVec(m_numGridPoints);
         // This is like 0:(m_numGridPoints) in MATLAB:
         std::iota(timeSliceVec.begin(), timeSliceVec.end(), 0);
@@ -204,12 +210,13 @@ void Transcription::transcribe() {
     const int NU = m_problem.getNumSpeeds();
     const int NS = m_problem.getNumStates();
     OPENSIM_THROW_IF(NQ != NU, OpenSim::Exception,
-            "Problems with differing numbers of coordinates and speeds are not "
-            "supported (e.g., quaternions).");
+            "Problems with differing numbers of coordinates and speeds are "
+            "not supported (e.g., quaternions).");
 
     // TODO: Does creating all this memory have efficiency implications in
     // CasADi?
-    // Initialize memory for state derivatives and constraint errors.
+    // Initialize memory for state derivatives, implicit residuals, and
+    // constraint errors.
     m_xdot = MX(m_problem.getNumStates(), m_numGridPoints);
     if (m_solver.isDynamicsModeImplicit()) {
         m_residual = MX(m_problem.getNumSpeeds(), residualIndices.nnz());
@@ -217,14 +224,22 @@ void Transcription::transcribe() {
     m_kcerr = MX(m_problem.getNumKinematicConstraintEquations(),
             kinematicConstraintIndices.nnz());
 
+    // Iterate through the grid, computing state derivatives and constraint
+    // errors as necessary.
     if (m_solver.isDynamicsModeImplicit()) {
+        const MX u = m_vars[Var::states](Slice(NQ, NQ + NU), Slice());
+        // qdot.
+        m_xdot(Slice(0, NQ), Slice()) = u;
+        const MX w = m_vars[Var::derivatives];
+        // udot.
+        m_xdot(Slice(NQ, NQ + NU), Slice()) = w;
         if (m_problem.getEnforceConstraintDerivatives()) {
-            const MX u = m_vars[Var::states](Slice(NQ, NQ + NU), Slice());
-            // qdot.
-            m_xdot(Slice(0, NQ), Slice()) = u;
             // Points where we compute algebraic constraints.
             {
                 // TODO: Nearly an exact duplicate with below.
+                // Evaluate the multibody system function and get multibody
+                // implicit differential equation residuals and zdot
+                // (auxiliary derivatives).
                 const auto& timeSlice = daeIndices;
                 const auto& multibodyPointFunc =
                         m_problem.getImplicitMultibodySystem();
@@ -246,16 +261,19 @@ void Transcription::transcribe() {
             {
                 const auto& timeSlice = daeIndicesIgnoringConstraints;
 
+                // In Hermite-Simpson, this is a midpoint, so we must compute a
+                // velocity correction and update qdot. See
+                // MocoCasADiVelocityCorrection for more details. This function
+                // only takes multibody state variables: coordinates and speeds.
                 // TODO: The points at which we apply the velocity correction
-                // is correct for Trapezoidal and Hermite-Simpson, but might
+                // are correct for Trapezoidal and Hermite-Simpson, but might
                 // not be correct in general. Revisit this if we add other
                 // transcription schemes.
                 const auto& velocityCorrPointFunc =
                         m_problem.getVelocityCorrection();
                 const MXVector vcInputs{m_times(timeSlice),
                         m_vars[Var::states](Slice(0, NQ + NU), timeSlice),
-                        m_vars[Var::slacks],
-                        paramsTrajIgnoringConstraints};
+                        m_vars[Var::slacks], paramsTrajIgnoringConstraints};
                 auto velocityCorrTrajOut = evalOnTrajectory(
                         velocityCorrPointFunc, vcInputs, timeSlice);
                 const auto uCorr = velocityCorrTrajOut.at(0);
@@ -278,12 +296,6 @@ void Transcription::transcribe() {
                 m_xdot(Slice(NQ + NU, NS), timeSlice) = trajOut.at(1);
             }
         } else {
-            const MX u = m_vars[Var::states](Slice(NQ, NQ + NU), Slice());
-            // qdot.
-            m_xdot(Slice(0, NQ), Slice()) = u;
-            const MX w = m_vars[Var::derivatives];
-            // udot.
-            m_xdot(Slice(NQ, NQ + NU), Slice()) = w;
             // Points where we compute algebraic constraints.
             {
                 const auto& timeSlice = daeIndices;
@@ -322,6 +334,8 @@ void Transcription::transcribe() {
             }
         }
     } else {
+        const MX u = m_vars[Var::states](Slice(NQ, NQ + NU), Slice());
+        m_xdot(Slice(0, NQ), Slice()) = u;
         if (m_problem.getEnforceConstraintDerivatives()) {
             // Points where we compute algebraic constraints.
             {
@@ -333,10 +347,10 @@ void Transcription::transcribe() {
                         m_vars[Var::controls](Slice(), timeSlice),
                         m_vars[Var::multipliers](Slice(), timeSlice),
                         paramsTraj};
+                // Evaluate the multibody system function and get udot
+                // (speed derivatives) and zdot (auxiliary derivatives).
                 const auto trajOut =
                         evalOnTrajectory(multibodyPointFunc, inputs, timeSlice);
-                const MX u = m_vars[Var::states](Slice(NQ, NQ + NU), timeSlice);
-                m_xdot(Slice(0, NQ), timeSlice) = u;
                 m_xdot(Slice(NQ, NQ + NU), timeSlice) = trajOut.at(0);
                 m_xdot(Slice(NQ + NU, NS), timeSlice) = trajOut.at(1);
                 m_kcerr = trajOut.at(2);
@@ -345,22 +359,20 @@ void Transcription::transcribe() {
             if (numColumnsIgnoringConstraints) {
                 const auto& timeSlice = daeIndicesIgnoringConstraints;
 
-                // TODO: The points at which we apply the velocity correction
-                // is correct for Trapezoidal and Hermite-Simpson, but might
-                // not be correct in general. Revisit this if we add other
+                // TODO: The points at which we apply the velocity correction is
+                // correct for Trapezoidal and Hermite-Simpson, but might not be
+                // correct in general. Revisit this if we add other
                 // transcription schemes.
                 const auto& velocityCorrPointFunc =
                         m_problem.getVelocityCorrection();
                 const MXVector vcInputs{m_times(timeSlice),
                         m_vars[Var::states](Slice(0, NQ + NU), timeSlice),
-                        m_vars[Var::slacks],
-                        paramsTrajIgnoringConstraints};
+                        m_vars[Var::slacks], paramsTrajIgnoringConstraints};
                 auto velocityCorrTrajOut = evalOnTrajectory(
                         velocityCorrPointFunc, vcInputs, timeSlice);
                 const auto uCorr = velocityCorrTrajOut.at(0);
 
-                const MX u = m_vars[Var::states](Slice(NQ, NQ + NU), timeSlice);
-                m_xdot(Slice(0, NQ), timeSlice) = u + uCorr;
+                m_xdot(Slice(0, NQ), timeSlice) += uCorr;
 
                 const auto& multibodyPointFunc =
                         m_problem.getMultibodySystemIgnoringConstraints();
@@ -376,8 +388,6 @@ void Transcription::transcribe() {
             }
 
         } else {
-            const MX u = m_vars[Var::states](Slice(NQ, NQ + NU), Slice());
-            m_xdot(Slice(0, NQ), Slice()) = u;
             // Points where we compute algebraic constraints.
             {
                 const auto& timeSlice = daeIndices;
@@ -410,66 +420,6 @@ void Transcription::transcribe() {
             }
         }
     }
-
-    /*
-    // Temporary memory for state derivatives and constraint errors while
-    // iterating through time points.
-    MX this_xdot;
-    MX this_residual;
-    MX this_kcerr;
-    // Updateable index for constraint errors vector.
-    int ikc = 0;
-    // Updateable index for residual errors vector.
-    int irc = 0;
-    // Updateable index for slack variables. This index will always be -1 if
-    // constraint derivatives are not being enforced (i.e. no slack variables),
-    // which tells calcDifferentialAlgebraicEquations() not to compute the
-    // velocity correction.
-    int islack = m_problem.getEnforceConstraintDerivatives() ? 0 : -1;
-    // Iterate through the grid, computing state derivatives and constraint
-    // errors as necessary.
-    for (int itime = 0; itime < m_numGridPoints; ++itime) {
-
-        // If kinematic constraints exists and the value of
-        // kinematicConstraintIndices is non-zero at this time point, then
-        // we need to enforce kinematic constraint derivatives.
-        bool kinematicConstraintsExist = m_kcerr.size1() != 0;
-        bool isKCIndex =
-                DM::is_equal(kinematicConstraintIndices(itime), DM::ones(1, 1));
-        bool calcKinematicConstraintErrors =
-                kinematicConstraintsExist && isKCIndex ? true : false;
-
-        // Calculate differential-algebraic equations and update the state
-        // derivatives vector.
-        if (m_solver.isDynamicsModeImplicit()) {
-            const bool calcResidual =
-                    DM::is_equal(residualIndices(itime), DM::ones(1, 1));
-            calcDifferentialAlgebraicEquationsImplicit(itime, islack,
-                    calcResidual, calcKinematicConstraintErrors, this_xdot,
-                    this_residual, this_kcerr);
-            if (calcResidual) {
-                m_residual(Slice(), irc) = this_residual;
-                ++irc;
-            }
-        } else {
-            calcDifferentialAlgebraicEquationsExplicit(itime, islack,
-                    calcKinematicConstraintErrors, this_xdot, this_kcerr);
-        }
-        m_xdot(Slice(), itime) = this_xdot;
-
-        // If calculating kinematic contraint errors, also update the constraint
-        // errors vector and index.
-        if (calcKinematicConstraintErrors) {
-            m_kcerr(Slice(), ikc) = this_kcerr;
-            ++ikc;
-            // If not calculating constraint errors at this time point but
-            // enforcing constraint derivatives in the problem, update the slack
-            // variable index since we just used the current index.
-        } else if (m_problem.getEnforceConstraintDerivatives()) {
-            ++islack;
-        }
-    }
-     */
 
     // Apply constraints.
     // ------------------
@@ -541,14 +491,14 @@ casadi::MXVector Transcription::evalOnTrajectory(
     return out;
     // TODO: Avoid the overhead of map() if not running in parallel.
     /* TODO } else {
-        casadi::MXVector out(pointFunction.n_out());
-        for (int iout = 0; iout < (int)out.size(); ++iout) {
-            out[iout] = casadi::MX(pointFunction.sparsity_out(iout).rows(),
-                    timeIndices.size2());
-        }
-        for (int itime = 0; itime < timeIndices.size2(); ++itime) {
+    casadi::MXVector out(pointFunction.n_out());
+    for (int iout = 0; iout < (int)out.size(); ++iout) {
+    out[iout] = casadi::MX(pointFunction.sparsity_out(iout).rows(),
+    timeIndices.size2());
+    }
+    for (int itime = 0; itime < timeIndices.size2(); ++itime) {
 
-        }
+    }
     }*/
 }
 
@@ -560,41 +510,7 @@ void Transcription::calcDifferentialAlgebraicEquationsExplicit(casadi_int itime,
     const int NU = m_problem.getNumSpeeds();
     const MX u = states(Slice(NQ, NQ + NU), itime);
     MX qdot = u; // TODO: This assumes the N matrix is identity.
-
-    // If slack variables exist and we're not computing constraint errors at
-    // this time point, compute the velocity correction and update qdot.
-    // See MocoCasADiVelocityCorrection for more details.
-    if (!calcKinematicConstraintErrors && islack != -1) {
-        const auto& velocityCorrFunc = m_problem.getVelocityCorrection();
-        // This function only takes multibody state variables: coordinates and
-        // speeds.
-        const auto velocityCorrOutput = velocityCorrFunc.operator()(
-                {m_times(itime), m_vars[Var::states](Slice(0, NQ + NU), itime),
-                        m_vars[Var::slacks](Slice(), islack)});
-        qdot += velocityCorrOutput.at(0);
-    }
-
-    // Get the multibody system function.
-    const auto& multibodyFunc =
-            calcKinematicConstraintErrors
-                    ? m_problem.getMultibodySystem()
-                    : m_problem.getMultibodySystemIgnoringConstraints();
-
-    // Evaluate the multibody system function and get udot (speed derivatives)
-    // and zdot (auxiliary derivatives).
-    const auto dynamicsOutput = multibodyFunc.operator()({m_times(itime),
-            m_vars[Var::states](Slice(), itime),
-            m_vars[Var::controls](Slice(), itime),
-            m_vars[Var::multipliers](Slice(), itime), m_vars[Var::parameters]});
-    const MX udot = dynamicsOutput.at(0);
-    const MX zdot = dynamicsOutput.at(1);
-
-    // Concatenate derivatives to update the state derivatives vector.
-    xdot = casadi::MX::vertcat({qdot, udot, zdot});
-
-    // If calculating constraint errors, also update the constraint errors
-    // vector.
-    if (calcKinematicConstraintErrors) { kcerr = dynamicsOutput.at(2); }
+    // TODO: What to do with this function?
 }
 
 void Transcription::calcDifferentialAlgebraicEquationsImplicit(casadi_int itime,
@@ -605,46 +521,6 @@ void Transcription::calcDifferentialAlgebraicEquationsImplicit(casadi_int itime,
     const int NU = m_problem.getNumSpeeds();
     const MX u = states(Slice(NQ, NQ + NU), itime);
     MX qdot = u; // TODO: This assumes the N matrix is identity.
-
-    const MX w = m_vars[Var::derivatives](Slice(), itime);
-    MX udot = w;
-
-    // If slack variables exist and we're not computing constraint errors at
-    // this time point, compute the velocity correction and update qdot.
-    // See MocoCasADiVelocityCorrection for more details.
-    if (!calcKinematicConstraintErrors && islack != -1) {
-        const auto& velocityCorrFunc = m_problem.getVelocityCorrection();
-        // This function only takes multibody state variables: coordinates and
-        // speeds.
-        const auto velocityCorrOutput = velocityCorrFunc.operator()(
-                {m_times(itime), m_vars[Var::states](Slice(0, NQ + NU), itime),
-                        m_vars[Var::slacks](Slice(), islack)});
-        qdot += velocityCorrOutput.at(0);
-    }
-
-    // Get the multibody system function.
-    const auto& implicitMultibodyFunc =
-            calcKinematicConstraintErrors
-                    ? m_problem.getImplicitMultibodySystem()
-                    : m_problem.getImplicitMultibodySystemIgnoringConstraints();
-
-    // Evaluate the multibody system function and get udot (speed derivatives)
-    // and zdot (auxiliary derivatives).
-    const auto dynamicsOutput = implicitMultibodyFunc.operator()(
-            {m_times(itime), m_vars[Var::states](Slice(), itime),
-                    m_vars[Var::controls](Slice(), itime),
-                    m_vars[Var::multipliers](Slice(), itime),
-                    m_vars[Var::derivatives](Slice(), itime),
-                    m_vars[Var::parameters]});
-    if (calcResidual) residual = dynamicsOutput.at(0);
-    const MX zdot = dynamicsOutput.at(1);
-
-    // Concatenate derivatives to update the state derivatives vector.
-    xdot = casadi::MX::vertcat({qdot, udot, zdot});
-
-    // If calculating constraint errors, also update the constraint errors
-    // vector.
-    if (calcKinematicConstraintErrors) { kcerr = dynamicsOutput.at(2); }
 }
 
 void Transcription::addConstraints(const casadi::DM& lower,
