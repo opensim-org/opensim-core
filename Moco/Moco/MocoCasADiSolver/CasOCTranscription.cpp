@@ -32,7 +32,7 @@ void Transcription::createVariablesAndSetBounds() {
     // additional collocation points that may lie on mesh interior (as in
     // Hermite-Simpson collocation, etc.).
     m_numMeshIntervals = m_numMeshPoints - 1;
-    m_numSlackPoints = m_numGridPoints - m_numMeshPoints;
+    m_numPointsIgnoringConstraints = m_numGridPoints - m_numMeshPoints;
     m_grid = DM::linspace(0, 1, m_numGridPoints);
 
     // Create variables.
@@ -53,10 +53,41 @@ void Transcription::createVariablesAndSetBounds() {
     }
     // TODO: This assumes that slack variables are applied at all
     // collocation points on the mesh interval interior.
-    m_vars[Var::slacks] =
-            MX::sym("slacks", m_problem.getNumSlacks(), m_numSlackPoints);
+    m_vars[Var::slacks] = MX::sym(
+            "slacks", m_problem.getNumSlacks(), m_numPointsIgnoringConstraints);
     m_vars[Var::parameters] =
             MX::sym("parameters", m_problem.getNumParameters(), 1);
+
+    m_paramsTrajGrid = MX::repmat(m_vars[Var::parameters], 1, m_numGridPoints);
+    m_paramsTraj = MX::repmat(m_vars[Var::parameters], 1, m_numMeshPoints);
+    m_paramsTrajIgnoringConstraints = MX::repmat(
+            m_vars[Var::parameters], 1, m_numPointsIgnoringConstraints);
+
+    m_kinematicConstraintIndices = createKinematicConstraintIndices();
+    m_residualIndices = createResidualConstraintIndicesImpl();
+    std::vector<int> daeIndicesVector;
+    std::vector<int> daeIndicesIgnoringConstraintsVector;
+    for (int i = 0; i < m_kinematicConstraintIndices.size2(); ++i) {
+        if (m_kinematicConstraintIndices(i).scalar() == 1) {
+            daeIndicesVector.push_back(i);
+        } else {
+            daeIndicesIgnoringConstraintsVector.push_back(i);
+        }
+    }
+
+    auto makeTimeIndices = [](const std::vector<int>& in) {
+        casadi::Matrix<casadi_int> out(1, in.size());
+        for (int i = 0; i < (int)in.size(); ++i) { out(i) = in[i]; }
+        return out;
+    };
+    {
+        std::vector<int> gridIndicesVector(m_numGridPoints);
+        std::iota(gridIndicesVector.begin(), gridIndicesVector.end(), 0);
+        m_gridIndices = makeTimeIndices(gridIndicesVector);
+    }
+    m_daeIndices = makeTimeIndices(daeIndicesVector);
+    m_daeIndicesIgnoringConstraints =
+            makeTimeIndices(daeIndicesIgnoringConstraintsVector);
 
     // Set variable bounds.
     // --------------------
@@ -134,75 +165,9 @@ void Transcription::createVariablesAndSetBounds() {
 
 void Transcription::transcribe() {
 
-    auto makeTimeIndices = [](const std::vector<int>& in) {
-        casadi::Matrix<casadi_int> out(1, in.size());
-        for (int i = 0; i < (int)in.size(); ++i) { out(i) = in[i]; }
-        return out;
-    };
-    const DM kinematicConstraintIndices = createKinematicConstraintIndices();
-    const DM residualIndices = createResidualConstraintIndicesImpl();
-    std::vector<int> daeIndicesVector;
-    std::vector<int> daeIndicesIgnoringConstraintsVector;
-    for (int i = 0; i < kinematicConstraintIndices.size2(); ++i) {
-        if (kinematicConstraintIndices(i).scalar() == 1) {
-            daeIndicesVector.push_back(i);
-        } else {
-            daeIndicesIgnoringConstraintsVector.push_back(i);
-        }
-    }
-    const auto daeIndices = makeTimeIndices(daeIndicesVector);
-    const auto daeIndicesIgnoringConstraints =
-            makeTimeIndices(daeIndicesIgnoringConstraintsVector);
-    const int numColumnsIgnoringConstraints = m_numGridPoints - m_numMeshPoints;
-
-    const MX paramsTrajGrid =
-            MX::repmat(m_vars[Var::parameters], 1, m_numGridPoints);
-    const MX paramsTraj =
-            MX::repmat(m_vars[Var::parameters], 1, m_numMeshPoints);
-    const MX paramsTrajIgnoringConstraints = MX::repmat(
-            m_vars[Var::parameters], 1, numColumnsIgnoringConstraints);
-
     // Cost.
     // -----
-    DM quadCoeffs = this->createQuadratureCoefficients();
-    MX integrandTraj;
-    {
-        const auto integrandFunc = m_problem.getIntegralCostIntegrand();
-        // "Slice()" grabs everything in that dimension (like ":" in
-        // Matlab). Here, we include evaluations of the integral cost
-        // integrand into the symbolic expression graph for the integral
-        // cost. We are *not* numerically evaluating the integral cost
-        // integrand here--that occurs when the function by casadi::nlpsol()
-        // is evaluated.
-        std::vector<int> timeSliceVec(m_numGridPoints);
-        // This is like 0:(m_numGridPoints) in MATLAB:
-        std::iota(timeSliceVec.begin(), timeSliceVec.end(), 0);
-        const auto timeSlice = makeTimeIndices(timeSliceVec);
-        const MXVector inputs{m_times, m_vars[Var::states],
-                m_vars[Var::controls], // TODO m_vars[Var::multipliers],
-                paramsTrajGrid};
-        integrandTraj =
-                evalOnTrajectory(integrandFunc, inputs, timeSlice).at(0);
-    }
-
-    // Minimize Lagrange multipliers if specified by the solver.
-    if (m_solver.getMinimizeLagrangeMultipliers() &&
-            m_problem.getNumMultipliers()) {
-        const auto mults = m_vars[Var::multipliers];
-        const double multiplierWeight = m_solver.getLagrangeMultiplierWeight();
-        // Sum across constraints of each multiplier element squared.
-        using casadi::MX;
-        integrandTraj += multiplierWeight * MX::sum1(MX::sq(mults));
-    }
-    MX integralCost = m_duration * dot(quadCoeffs.T(), integrandTraj);
-
-    MXVector endpointCostOut;
-    m_problem.getEndpointCost().call(
-            {m_vars[Var::final_time], m_vars[Var::states](Slice(), -1),
-                    m_vars[Var::parameters]},
-            endpointCostOut);
-    const auto endpointCost = endpointCostOut.at(0);
-    setObjective(integralCost + endpointCost);
+    setObjective();
 
     // Compute DAEs at necessary grid points.
     // --------------------------------------
@@ -219,10 +184,10 @@ void Transcription::transcribe() {
     // constraint errors.
     m_xdot = MX(m_problem.getNumStates(), m_numGridPoints);
     if (m_solver.isDynamicsModeImplicit()) {
-        m_residual = MX(m_problem.getNumSpeeds(), residualIndices.nnz());
+        m_residual = MX(m_problem.getNumSpeeds(), m_residualIndices.nnz());
     }
     m_kcerr = MX(m_problem.getNumKinematicConstraintEquations(),
-            kinematicConstraintIndices.nnz());
+            m_kinematicConstraintIndices.nnz());
 
     // Iterate through the grid, computing state derivatives and constraint
     // errors as necessary.
@@ -240,7 +205,7 @@ void Transcription::transcribe() {
                 // Evaluate the multibody system function and get multibody
                 // implicit differential equation residuals and zdot
                 // (auxiliary derivatives).
-                const auto& timeSlice = daeIndices;
+                const auto& timeSlice = m_daeIndices;
                 const auto& multibodyPointFunc =
                         m_problem.getImplicitMultibodySystem();
                 const MXVector inputs{m_times(timeSlice),
@@ -248,7 +213,7 @@ void Transcription::transcribe() {
                         m_vars[Var::controls](Slice(), timeSlice),
                         m_vars[Var::multipliers](Slice(), timeSlice),
                         m_vars[Var::derivatives](Slice(), timeSlice),
-                        paramsTraj};
+                        m_paramsTraj};
                 const auto trajOut =
                         evalOnTrajectory(multibodyPointFunc, inputs, timeSlice);
 
@@ -258,8 +223,8 @@ void Transcription::transcribe() {
                 m_kcerr = trajOut.at(2);
             }
             // Points where we ignore algebraic constraints.
-            if (numColumnsIgnoringConstraints) {
-                const auto& timeSlice = daeIndicesIgnoringConstraints;
+            if (m_numPointsIgnoringConstraints) {
+                const auto& timeSlice = m_daeIndicesIgnoringConstraints;
 
                 // In Hermite-Simpson, this is a midpoint, so we must compute a
                 // velocity correction and update qdot. See
@@ -273,7 +238,7 @@ void Transcription::transcribe() {
                         m_problem.getVelocityCorrection();
                 const MXVector vcInputs{m_times(timeSlice),
                         m_vars[Var::states](Slice(0, NQ + NU), timeSlice),
-                        m_vars[Var::slacks], paramsTrajIgnoringConstraints};
+                        m_vars[Var::slacks], m_paramsTrajIgnoringConstraints};
                 auto velocityCorrTrajOut = evalOnTrajectory(
                         velocityCorrPointFunc, vcInputs, timeSlice);
                 const auto uCorr = velocityCorrTrajOut.at(0);
@@ -288,7 +253,7 @@ void Transcription::transcribe() {
                         m_vars[Var::controls](Slice(), timeSlice),
                         m_vars[Var::multipliers](Slice(), timeSlice),
                         m_vars[Var::derivatives](Slice(), timeSlice),
-                        paramsTrajIgnoringConstraints};
+                        m_paramsTrajIgnoringConstraints};
                 const auto trajOut =
                         evalOnTrajectory(multibodyPointFunc, inputs, timeSlice);
                 m_residual(Slice(), timeSlice) = trajOut.at(0);
@@ -298,7 +263,7 @@ void Transcription::transcribe() {
         } else {
             // Points where we compute algebraic constraints.
             {
-                const auto& timeSlice = daeIndices;
+                const auto& timeSlice = m_daeIndices;
                 const auto& multibodyPointFunc =
                         m_problem.getImplicitMultibodySystem();
                 const MXVector inputs{m_times(timeSlice),
@@ -306,7 +271,7 @@ void Transcription::transcribe() {
                         m_vars[Var::controls](Slice(), timeSlice),
                         m_vars[Var::multipliers](Slice(), timeSlice),
                         m_vars[Var::derivatives](Slice(), timeSlice),
-                        paramsTraj};
+                        m_paramsTraj};
                 const auto trajOut =
                         evalOnTrajectory(multibodyPointFunc, inputs, timeSlice);
                 m_residual(Slice(), timeSlice) = trajOut.at(0);
@@ -315,8 +280,8 @@ void Transcription::transcribe() {
                 m_kcerr = trajOut.at(2);
             }
             // Points where we ignore algebraic constraints.
-            if (numColumnsIgnoringConstraints) {
-                const auto& timeSlice = daeIndicesIgnoringConstraints;
+            if (m_numPointsIgnoringConstraints) {
+                const auto& timeSlice = m_daeIndicesIgnoringConstraints;
                 const auto& multibodyPointFunc =
                         m_problem
                                 .getImplicitMultibodySystemIgnoringConstraints();
@@ -325,7 +290,7 @@ void Transcription::transcribe() {
                         m_vars[Var::controls](Slice(), timeSlice),
                         m_vars[Var::multipliers](Slice(), timeSlice),
                         m_vars[Var::derivatives](Slice(), timeSlice),
-                        paramsTrajIgnoringConstraints};
+                        m_paramsTrajIgnoringConstraints};
                 const auto trajOut =
                         evalOnTrajectory(multibodyPointFunc, inputs, timeSlice);
                 m_residual(Slice(), timeSlice) = trajOut.at(0);
@@ -340,13 +305,13 @@ void Transcription::transcribe() {
             // Points where we compute algebraic constraints.
             {
                 // TODO: Nearly an exact duplicate with below.
-                const auto& timeSlice = daeIndices;
+                const auto& timeSlice = m_daeIndices;
                 const auto& multibodyPointFunc = m_problem.getMultibodySystem();
                 const MXVector inputs{m_times(timeSlice),
                         m_vars[Var::states](Slice(), timeSlice),
                         m_vars[Var::controls](Slice(), timeSlice),
                         m_vars[Var::multipliers](Slice(), timeSlice),
-                        paramsTraj};
+                        m_paramsTraj};
                 // Evaluate the multibody system function and get udot
                 // (speed derivatives) and zdot (auxiliary derivatives).
                 const auto trajOut =
@@ -356,8 +321,8 @@ void Transcription::transcribe() {
                 m_kcerr = trajOut.at(2);
             }
             // Points where we ignore algebraic constraints.
-            if (numColumnsIgnoringConstraints) {
-                const auto& timeSlice = daeIndicesIgnoringConstraints;
+            if (m_numPointsIgnoringConstraints) {
+                const auto& timeSlice = m_daeIndicesIgnoringConstraints;
 
                 // TODO: The points at which we apply the velocity correction is
                 // correct for Trapezoidal and Hermite-Simpson, but might not be
@@ -367,7 +332,7 @@ void Transcription::transcribe() {
                         m_problem.getVelocityCorrection();
                 const MXVector vcInputs{m_times(timeSlice),
                         m_vars[Var::states](Slice(0, NQ + NU), timeSlice),
-                        m_vars[Var::slacks], paramsTrajIgnoringConstraints};
+                        m_vars[Var::slacks], m_paramsTrajIgnoringConstraints};
                 auto velocityCorrTrajOut = evalOnTrajectory(
                         velocityCorrPointFunc, vcInputs, timeSlice);
                 const auto uCorr = velocityCorrTrajOut.at(0);
@@ -380,7 +345,7 @@ void Transcription::transcribe() {
                         m_vars[Var::states](Slice(), timeSlice),
                         m_vars[Var::controls](Slice(), timeSlice),
                         m_vars[Var::multipliers](Slice(), timeSlice),
-                        paramsTrajIgnoringConstraints};
+                        m_paramsTrajIgnoringConstraints};
                 const auto trajOut =
                         evalOnTrajectory(multibodyPointFunc, inputs, timeSlice);
                 m_xdot(Slice(NQ, NQ + NU), timeSlice) = trajOut.at(0);
@@ -390,13 +355,13 @@ void Transcription::transcribe() {
         } else {
             // Points where we compute algebraic constraints.
             {
-                const auto& timeSlice = daeIndices;
+                const auto& timeSlice = m_daeIndices;
                 const auto& multibodyPointFunc = m_problem.getMultibodySystem();
                 const MXVector inputs{m_times(timeSlice),
                         m_vars[Var::states](Slice(), timeSlice),
                         m_vars[Var::controls](Slice(), timeSlice),
                         m_vars[Var::multipliers](Slice(), timeSlice),
-                        paramsTraj};
+                        m_paramsTraj};
                 const auto trajOut =
                         evalOnTrajectory(multibodyPointFunc, inputs, timeSlice);
                 m_xdot(Slice(NQ, NQ + NU), timeSlice) = trajOut.at(0);
@@ -404,15 +369,15 @@ void Transcription::transcribe() {
                 m_kcerr = trajOut.at(2);
             }
             // Points where we ignore algebraic constraints.
-            if (numColumnsIgnoringConstraints) {
-                const auto& timeSlice = daeIndicesIgnoringConstraints;
+            if (m_numPointsIgnoringConstraints) {
+                const auto& timeSlice = m_daeIndicesIgnoringConstraints;
                 const auto& multibodyPointFunc =
                         m_problem.getMultibodySystemIgnoringConstraints();
                 const MXVector inputs{m_times(timeSlice),
                         m_vars[Var::states](Slice(), timeSlice),
                         m_vars[Var::controls](Slice(), timeSlice),
                         m_vars[Var::multipliers](Slice(), timeSlice),
-                        paramsTrajIgnoringConstraints};
+                        m_paramsTrajIgnoringConstraints};
                 const auto trajOut =
                         evalOnTrajectory(multibodyPointFunc, inputs, timeSlice);
                 m_xdot(Slice(NQ, NQ + NU), timeSlice) = trajOut.at(0);
@@ -424,6 +389,144 @@ void Transcription::transcribe() {
     // Apply constraints.
     // ------------------
     applyConstraints();
+}
+
+void Transcription::setObjective() {
+    DM quadCoeffs = this->createQuadratureCoefficients();
+    MX integrandTraj;
+    {
+        // Here, we include evaluations of the integral cost
+        // integrand into the symbolic expression graph for the integral
+        // cost. We are *not* numerically evaluating the integral cost
+        // integrand here--that occurs when the function by casadi::nlpsol()
+        // is evaluated.
+        const auto integrandFunc = m_problem.getIntegralCostIntegrand();
+        const MXVector inputs{m_times, m_vars[Var::states],
+                m_vars[Var::controls],
+                // TODO m_vars[Var::multipliers],
+                m_paramsTrajGrid};
+        integrandTraj =
+                evalOnTrajectory(integrandFunc, inputs, m_gridIndices).at(0);
+    }
+
+    // Minimize Lagrange multipliers if specified by the solver.
+    if (m_solver.getMinimizeLagrangeMultipliers() &&
+            m_problem.getNumMultipliers()) {
+        const auto mults = m_vars[Var::multipliers];
+        const double multiplierWeight = m_solver.getLagrangeMultiplierWeight();
+        // Sum across constraints of each multiplier element squared.
+        using casadi::MX;
+        integrandTraj += multiplierWeight * MX::sum1(MX::sq(mults));
+    }
+    MX integralCost = m_duration * dot(quadCoeffs.T(), integrandTraj);
+
+    // "Slice()" grabs everything in that dimension (like ":" in Matlab).
+    MXVector endpointCostOut;
+    m_problem.getEndpointCost().call(
+            {m_vars[Var::final_time], m_vars[Var::states](Slice(), -1),
+                    m_vars[Var::parameters]},
+            endpointCostOut);
+    const auto endpointCost = endpointCostOut.at(0);
+
+    m_objective = integralCost + endpointCost;
+}
+
+Solution Transcription::solve(const Iterate& guessOrig) {
+
+    // Define the NLP.
+    // ---------------
+    transcribe();
+
+    // Resample the guess.
+    // -------------------
+    const auto guessTimes =
+            createTimes(guessOrig.variables.at(Var::initial_time),
+                    guessOrig.variables.at(Var::final_time));
+    auto guess = guessOrig.resample(guessTimes);
+
+    // Adjust guesses for the slack variables to ensure they are the correct
+    // length (i.e. slacks.size2() == m_numPointsIgnoringConstraints).
+    if (guess.variables.find(Var::slacks) != guess.variables.end()) {
+        auto& slacks = guess.variables.at(Var::slacks);
+
+        // If slack variables provided in the guess are equal to the grid
+        // length, remove the elements on the mesh points where the slack
+        // variables are not defined.
+        if (slacks.size2() == m_numGridPoints) {
+            casadi::DM kinConIndices = createKinematicConstraintIndices();
+            std::vector<casadi_int> slackColumnsToRemove;
+            for (int itime = 0; itime < m_numGridPoints; ++itime) {
+                if (kinConIndices(itime).__nonzero__()) {
+                    slackColumnsToRemove.push_back(itime);
+                }
+            }
+            // The first argument is an empty vector since we don't want to
+            // remove an entire row.
+            slacks.remove(std::vector<casadi_int>(), slackColumnsToRemove);
+        }
+
+        // Check that either that the slack variables provided in the guess
+        // are the correct length, or that the correct number of columns
+        // were removed.
+        OPENSIM_THROW_IF(slacks.size2() != m_numPointsIgnoringConstraints,
+                OpenSim::Exception,
+                OpenSim::format("Expected slack variables to be length %i, "
+                                "but they are length %i.",
+                        m_numPointsIgnoringConstraints, slacks.size2()));
+    }
+
+    // Create the CasADi NLP function.
+    // -------------------------------
+    // Option handling is copied from casadi::OptiNode::solver().
+    casadi::Dict options = m_solver.getPluginOptions();
+    if (!options.empty()) {
+        options[m_solver.getOptimSolver()] = m_solver.getSolverOptions();
+    }
+    // The inputs to nlpsol() are symbolic (casadi::MX).
+    casadi::MXDict nlp;
+    nlp.emplace(std::make_pair("x", flatten(m_vars)));
+    // The m_objective symbolic variable holds an expression graph including
+    // all the calculations performed on the variables x.
+    nlp.emplace(std::make_pair("f", m_objective));
+    // The m_constraints symbolic vector holds all of the expressions for
+    // the constraint functions.
+    // veccat() concatenates std::vectors into a single MX vector.
+    nlp.emplace(std::make_pair("g", casadi::MX::veccat(m_constraints)));
+    // auto gradient = casadi::MX::gradient(nlp["f"], nlp["x"]);
+    // gradient.sparsity().to_file(
+    //         "CasOCTranscription_objective_gradient_sparsity.mtx");
+    // auto hessian = casadi::MX::hessian(nlp["f"], nlp["x"]);
+    // hessian.sparsity().to_file(
+    //         "CasOCTranscription_objective_Hessian_sparsity.mtx");
+    // auto lagrangian = m_objective +
+    //         casadi::MX::dot(casadi::MX::ones(nlp["g"].sparsity()),
+    //         nlp["g"]);
+    // auto hessian_lagr = casadi::MX::hessian(lagrangian, nlp["x"]);
+    // hessian_lagr.sparsity().to_file(
+    //                  "CasOCTranscription_Lagrangian_Hessian_sparsity.mtx");
+    // auto jacobian = casadi::MX::jacobian(nlp["g"], nlp["x"]);
+    // jacobian.sparsity().to_file(
+    //         "CasOCTranscription_constraint_Jacobian_sparsity.mtx");
+    const casadi::Function nlpFunc =
+            casadi::nlpsol("nlp", m_solver.getOptimSolver(), nlp, options);
+
+    // Run the optimization (evaluate the CasADi NLP function).
+    // --------------------------------------------------------
+    // The inputs and outputs of nlpFunc are numeric (casadi::DM).
+    const casadi::DMDict nlpResult = nlpFunc(casadi::DMDict{
+            {"x0", flatten(guess.variables)}, {"lbx", flatten(m_lowerBounds)},
+            {"ubx", flatten(m_upperBounds)},
+            {"lbg", casadi::DM::veccat(m_constraintsLowerBounds)},
+            {"ubg", casadi::DM::veccat(m_constraintsUpperBounds)}});
+
+    // Create a CasOC::Solution.
+    // -------------------------
+    Solution solution = m_problem.createIterate<Solution>();
+    solution.variables = expand(nlpResult.at("x"));
+    solution.times = createTimes(solution.variables[Var::initial_time],
+            solution.variables[Var::final_time]);
+    solution.stats = nlpFunc.stats();
+    return solution;
 }
 
 Iterate Transcription::createInitialGuessFromBounds() const {

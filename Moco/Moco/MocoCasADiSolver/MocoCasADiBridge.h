@@ -634,8 +634,9 @@ public:
                                     total_mv,
                             true));
                 }
-                out_kinematic_constraint_errors = casadi::DM::vertcat(
+                auto temp = casadi::DM::vertcat(
                         {out_kinematic_constraint_errors, uerr, udoterr});
+                out_kinematic_constraint_errors = temp;
                 out.push_back(out_kinematic_constraint_errors);
             }
         } else {
