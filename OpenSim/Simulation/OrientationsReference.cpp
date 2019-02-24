@@ -45,14 +45,14 @@ OrientationsReference::OrientationsReference(const std::string& orientationFile,
 
 
 OrientationsReference::OrientationsReference(
-    const TimeSeriesTable_<Rotation>* orientationData,
+    const TimeSeriesTable_<Rotation>& orientationData,
     const Set<OrientationWeight>* orientationWeightSet) 
         : OrientationsReference()
 {
-    _orientationData = *orientationData;
+    _orientationData = orientationData;
     if (orientationWeightSet!=nullptr)
         upd_orientation_weights()= *orientationWeightSet;
-    populateFromOrientationData(*orientationData);
+    populateFromOrientationData(orientationData);
 }
 
 /** load the orientation data for this OrientationsReference from quaternionsFile  */

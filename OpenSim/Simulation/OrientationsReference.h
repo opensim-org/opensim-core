@@ -98,7 +98,7 @@ public:
     ship of the pointer to the orientationData. The orientation weights are used
     to initialize the weightings of the Orientations provided by the Reference.
     Orientation weights are associated to Orientations by name.*/
-    OrientationsReference(const TimeSeriesTable_<SimTK::Rotation>* orientationData,
+    OrientationsReference(const TimeSeriesTable_<SimTK::Rotation>& orientationData,
         const Set<OrientationWeight>* orientationWeightSet=nullptr);
 
     virtual ~OrientationsReference() {}
