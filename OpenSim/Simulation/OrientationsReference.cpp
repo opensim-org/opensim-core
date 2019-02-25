@@ -52,7 +52,7 @@ OrientationsReference::OrientationsReference(
     _orientationData = orientationData;
     if (orientationWeightSet!=nullptr)
         upd_orientation_weights()= *orientationWeightSet;
-    populateFromOrientationData(orientationData);
+    populateFromOrientationData();
 }
 
 void OrientationsReference::loadOrientationsFromQuaternionsFile(
@@ -81,7 +81,7 @@ void OrientationsReference::loadOrientationsFromQuaternionsFile(
         _orientationData.appendRow(times[i], row);
     }
 
-    populateFromOrientationData(_orientationData);
+    populateFromOrientationData();
 }
 
 void OrientationsReference::loadOrientationsEulerAnglesFile(
@@ -112,13 +112,13 @@ void OrientationsReference::loadOrientationsEulerAnglesFile(
         _orientationData.appendRow(times[i], row);
     }
 
-    populateFromOrientationData(_orientationData);
+    populateFromOrientationData();
 }
 
-void OrientationsReference::populateFromOrientationData(
-    const TimeSeriesTable_<Rotation>& orientationData)
+void OrientationsReference::populateFromOrientationData()
 {
-    const std::vector<std::string> &tempNames = orientationData.getColumnLabels();
+    const std::vector<std::string>& tempNames = 
+        _orientationData.getColumnLabels();
     unsigned int no = unsigned(tempNames.size());
 
     // empty any lingering names and weights

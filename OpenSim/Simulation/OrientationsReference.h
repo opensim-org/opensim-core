@@ -152,8 +152,7 @@ public:
 
 private:
     void constructProperties();
-    void populateFromOrientationData(
-        const TimeSeriesTable_<SimTK::Rotation>& orientationData);
+    void populateFromOrientationData();
 
 private:
     // Use a specialized data structure for holding the orientation data
