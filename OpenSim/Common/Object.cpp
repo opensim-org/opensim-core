@@ -1647,19 +1647,17 @@ void Object::updateFromXMLDocument()
     IO::chDir(saveWorkingDirectory);
 }
 
-std::string Object::dump(bool dumpName) const {
+std::string Object::dump() const {
     SimTK::String outString;
     XMLDocument doc;
-    //std::string saveName = getName();
-    //if (!dumpName) setName("");
     Object::setSerializeAllDefaults(true);
     SimTK::Xml::Element elem = doc.getRootElement();
     updateXMLNode(elem);
     Object::setSerializeAllDefaults(false);
-    //setName(saveName);
     doc.getRootElement().node_begin()->writeToString(outString);
     return outString;
-    }
+}
+
 /** 
     * The following code accounts for an object made up to call 
     * RegisterTypes_osimCommon function on entry to the DLL in a cross platform manner 
