@@ -134,7 +134,7 @@ void InverseKinematicsSolver::updateMarkerWeights(const SimTK::Array_<double> &w
         throw Exception("InverseKinematicsSolver::updateMarkerWeights: invalid size of weights.");
 }
 
-int InverseKinematicsSolver::getNumOSenorsInUse() const
+int InverseKinematicsSolver::getNumOrientationSensorsInUse() const
 {
     return _orientationAssemblyCondition->getNumOSensors();
 }

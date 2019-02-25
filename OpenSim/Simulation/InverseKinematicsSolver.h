@@ -112,7 +112,7 @@ public:
     intersect the reference orientations and model reference frames with
     the same name. This number is guaranteed not to change after assemble()
     is called (i.e. during subsequent calls to track()).*/
-    int getNumOSenorsInUse() const;
+    int getNumOrientationSensorsInUse() const;
 
     /** Change the weighting of a marker, given the marker's name. Takes effect
         when assemble() or track() is called next. */
