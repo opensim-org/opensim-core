@@ -228,7 +228,7 @@ void testOrientationsReference()
 
     std::cout << orientationWeights.dump() << std::endl;
 
-    OrientationsReference orientationsRef(&orientationData, &orientationWeights);
+    OrientationsReference orientationsRef(orientationData, &orientationWeights);
 
     Model model;
     SimTK::State& s = model.initSystem();
@@ -252,7 +252,7 @@ void testOrientationsReference()
     orientationWeights.adoptAndAppend(new OrientationWeight("X", 0.1));
     orientationWeights.insert(0, new OrientationWeight("Y", 0.01));
 
-    OrientationsReference orientationsRef2(&orientationData, &orientationWeights);
+    OrientationsReference orientationsRef2(orientationData, &orientationWeights);
 
     auto& oWeightSet = orientationsRef2.get_orientation_weights();
 
@@ -739,7 +739,7 @@ void testNumberOfOrientationsMismatch()
 
     cout << "After reorder and NaN injections:\n" << orientationsTable << endl;
 
-    OrientationsReference orientationsRef(&orientationsTable);
+    OrientationsReference orientationsRef(orientationsTable);
     int nmr = orientationsRef.getNumRefs();
     auto& osNames = orientationsRef.getNames();
     cout << osNames << endl;
