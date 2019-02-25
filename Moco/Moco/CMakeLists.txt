@@ -77,7 +77,7 @@ if(MOCO_WITH_TROPTER)
             tropter/TropterProblem.h
             tropter/TropterProblem.cpp)
 endif()
-add_library(osimMoco SHARED ${MOCO_SOURCES} MocoCasADiSolver/CasOCIterate.h)
+add_library(osimMoco SHARED ${MOCO_SOURCES})
 target_link_libraries(osimMoco PUBLIC osimTools
                                PRIVATE tropter casadi)
 

@@ -96,18 +96,6 @@ casadi::Sparsity Function::get_jacobian_sparsity() const {
 
         // Create output.
         y = casadi::DM::veccat(out);
-        /* TODO
-        {
-            int offset = 0;
-            for (int iout = 0; iout < this->n_out(); ++iout) {
-                OPENSIM_THROW_IF(this->size2_in(iout) != 1, OpenSim::Exception,
-                        "Internal error.");
-                const auto size = this->size1_out(iout);
-                y(Slice(offset, offset + size)) = out;
-                offset += size;
-            }
-        }
-         */
     };
 
     const VectorDM x0s = getSubsetPointsForSparsityDetection();
