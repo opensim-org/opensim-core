@@ -102,11 +102,12 @@ public:
 
     virtual ~OrientationsReference() {}
 
-    /** load the orientation data for this OrientationsReference from eulerAnglesXYZ */
-    void loadOrientationsFile(const std::string eulerAnglesXYZ,
+    /** load the orientation data for this OrientationsReference from a file
+    containing Euler-angles in body-fixed XYZ order.*/
+    void loadOrientationsEulerAnglesFile(const std::string eulerAnglesXYZ,
         Units modelUnits=Units(Units::Radians));
     /** load the orientation data for this OrientationsReference from quaternions */
-    void loadOrientationsFromQuaternions(
+    void loadOrientationsFromQuaternionsFile(
         const std::string quaternionsFile);
 
     //--------------------------------------------------------------------------

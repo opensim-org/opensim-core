@@ -40,7 +40,7 @@ OrientationsReference::OrientationsReference() : Reference_<SimTK::Rotation>()
 OrientationsReference::OrientationsReference(const std::string& orientationFile,
     Units modelUnits) : OrientationsReference()
 {
-    loadOrientationsFile(orientationFile, modelUnits);
+    loadOrientationsEulerAnglesFile(orientationFile, modelUnits);
 }
 
 
@@ -55,8 +55,7 @@ OrientationsReference::OrientationsReference(
     populateFromOrientationData(orientationData);
 }
 
-/** load the orientation data for this OrientationsReference from quaternionsFile  */
-void OrientationsReference::loadOrientationsFromQuaternions(
+void OrientationsReference::loadOrientationsFromQuaternionsFile(
                                     const std::string quaternionsFile)
 {
     upd_orientation_file() = quaternionsFile;
@@ -85,9 +84,9 @@ void OrientationsReference::loadOrientationsFromQuaternions(
     populateFromOrientationData(_orientationData);
 }
 
-/** load the orientation data for this OrientationsReference from orientationFile  */
-void OrientationsReference::loadOrientationsFile(const std::string orientationFile, 
-                                                 Units modelUnits)
+void OrientationsReference::loadOrientationsEulerAnglesFile(
+                                    const std::string orientationFile,
+                                    Units modelUnits)
 {
     upd_orientation_file() = orientationFile;
 
@@ -116,8 +115,6 @@ void OrientationsReference::loadOrientationsFile(const std::string orientationFi
     populateFromOrientationData(_orientationData);
 }
 
-
-/** A convenience method yo populate OrientationsReference from OrientationData **/
 void OrientationsReference::populateFromOrientationData(
     const TimeSeriesTable_<Rotation>& orientationData)
 {
