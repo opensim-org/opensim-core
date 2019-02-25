@@ -20,6 +20,7 @@
 
 #include "osimMocoDLL.h"
 #include <set>
+#include <stack>
 
 #include <OpenSim/Common/Storage.h>
 
@@ -51,9 +52,11 @@ inline bool endsWith(const std::string& string, const std::string& ending) {
 OSIMMOCO_API
 SimTK::Vector createVectorLinspace(int length, double start, double end);
 
+#ifndef SWIG
 /// Create a SimTK::Vector using modern C++ syntax.
 OSIMMOCO_API
 SimTK::Vector createVector(std::initializer_list<SimTK::Real> elements);
+#endif
 
 /// Linearly interpolate y(x) at new values of x. The optional 'ignoreNaNs'
 /// argument will ignore any NaN values contained in the input vectors and
@@ -114,11 +117,19 @@ OSIMMOCO_API void replaceJointWithWeldJoint(Model& model,
 
 /// The map provides the index of each state variable in
 /// SimTK::State::getY() from its each state variable path string.
+/// Empty slots in Y (e.g., for quaternions) are ignored.
 OSIMMOCO_API
 std::vector<std::string> createStateVariableNamesInSystemOrder(
         const Model& model);
 
 #ifndef SWIG
+/// Same as above, but you can obtain a map from the returned state variable
+/// names to the index in SimTK::State::getY() that accounts for empty slots
+/// in Y.
+OSIMMOCO_API
+std::vector<std::string> createStateVariableNamesInSystemOrder(
+        const Model& model, std::unordered_map<int, int>& yIndexMap);
+
 /// The map provides the index of each state variable in
 /// SimTK::State::getY() from its state variable path string.
 OSIMMOCO_API
@@ -303,6 +314,55 @@ public:
 
 private:
     long long m_startTime;
+};
+
+/// This obtains the value of the OPENSIM_MOCO_PARALLEL environment variable.
+/// The value has the following meanings:
+/// - 0: run in series (not parallel).
+/// - 1: run in parallel using all cores.
+/// - greater than 1: run in parallel with this number of threads.
+/// If the environment variable is not set, this function returns -1.
+///
+/// This variable does not indicate which calculations are parallelized
+/// or how the parallelization is achieved. Moco may even ignore or override
+/// the setting from the environment variable. See documentation elsewhere
+/// (e.g., from a specific MocoSolver) for more information.
+OSIMMOCO_API int getMocoParallelEnvironmentVariable();
+
+/// This class lets you store objects of a single type for reuse by multiple
+/// threads, ensuring threadsafe access to each of those objects.
+// TODO: Find a way to always give the same thread the same object.
+template <typename T>
+class ThreadsafeJar {
+public:
+    /// Request an object for your exclusive use on your thread. This function
+    /// halts the thread until an object is available. Make sure to return
+    /// (leave()) the object when you're done!
+    std::unique_ptr<T> take() {
+        std::unique_lock<std::mutex> lock(m_mutex);
+        m_inventoryMonitor.wait(lock, [this]{ return m_entries.size() > 0; });
+        std::unique_ptr<T> top = std::move(m_entries.top());
+        m_entries.pop();
+        return top;
+    }
+    /// Add or return an object so that another thread can use it. You will need
+    /// to std::move() the entry, ensuring that you will no longer have access
+    /// to the entry in your code (the pointer will now be null).
+    void leave(std::unique_ptr<T> entry) {
+        std::unique_lock<std::mutex> lock(m_mutex);
+        m_entries.push(std::move(entry));
+        lock.unlock();
+        m_inventoryMonitor.notify_one();
+    }
+    /// Obtain the number of entries that can be taken.
+    int size() const {
+        std::lock_guard<std::mutex> lock(m_mutex);
+        return (int)m_entries.size();
+    }
+private:
+    std::stack<std::unique_ptr<T>> m_entries;
+    mutable std::mutex m_mutex;
+    std::condition_variable m_inventoryMonitor;
 };
 
 } // namespace OpenSim

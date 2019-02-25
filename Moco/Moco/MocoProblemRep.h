@@ -20,7 +20,7 @@
 
 #include "osimMocoDLL.h"
 #include "MocoVariableInfo.h"
-#include "MocoCost.h"
+#include "MocoCost/MocoCost.h"
 #include "MocoConstraint.h"
 #include "MocoParameter.h"
 #include <OpenSim/Simulation/Model/Model.h>
@@ -195,8 +195,9 @@ public:
     ///
     /// Note: initSystem() must be called on the model after calls to this
     /// method in order for provided parameter values to be applied to the
-    /// model.
-    void applyParametersToModel(const SimTK::Vector& parameterValues) const;
+    /// model. You can pass `true` to have initSystem() called for you.
+    void applyParametersToModel(const SimTK::Vector& parameterValues,
+            bool initSystem = false) const;
     /// @}
 
 private:

@@ -18,6 +18,10 @@ endif()
 
 option(OPENSIM_JAVA_WRAPPING "Build opensim-core Java/MATLAB interface." OFF)
 option(OPENSIM_PYTHON_WRAPPING "Build opensim-core Python interface." OFF)
+set(OPENSIM_PYTHON_VERSION 2 CACHE STRING
+    "The major Python version (2 or 3) for opensim-core.")
+# To create a drop-down in the CMake GUI:
+set_property(CACHE OPENSIM_PYTHON_VERSION PROPERTY STRINGS "2" "3")
 
 
 include(ExternalProject)
@@ -138,6 +142,9 @@ function(AddDependency)
         if(APPLE)
             list(APPEND CMAKE_ARGS
                  -DCMAKE_OSX_DEPLOYMENT_TARGET:STRING=${CMAKE_OSX_DEPLOYMENT_TARGET})
+        endif()
+        if(SWIG_EXECUTABLE)
+            list(APPEND CMAKE_ARGS -DSWIG_EXECUTABLE:FILEPATH=${SWIG_EXECUTABLE})
         endif()
 
         if(DEP_GIT_URL)
@@ -282,8 +289,10 @@ if(SUPERBUILD_casadi)
     AddDependency(NAME casadi
                   DEPENDS ipopt
                   GIT_URL    https://github.com/stanfordnmbl/casadi.git
-                  GIT_TAG    21d24a305edc07bedf1fcbb314309fb075d77f25
+                  # Include threadsafe SharedObject.
+                  GIT_TAG    8aec426a98dbac1c0e2e9d0e616f5b45545fa9f8
                   CMAKE_ARGS -DWITH_IPOPT:BOOL=ON
+                             -DWITH_THREAD=ON
                              -DWITH_EXAMPLES:BOOL=OFF
                              -DPKG_CONFIG_USE_CMAKE_PREFIX_PATH:BOOL=ON
                              -DCMAKE_PREFIX_PATH:PATH=${CMAKE_INSTALL_PREFIX}/ipopt

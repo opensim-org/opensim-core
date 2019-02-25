@@ -1,11 +1,11 @@
-#ifndef MOCO_CASOCTRAPEZOIDAL_H
-#define MOCO_CASOCTRAPEZOIDAL_H
+#ifndef MOCO_CASOCHERMITESIMPSON_H
+#define MOCO_CASOCHERMITESIMPSON_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: CasOCTrapezoidal.h                                           *
+ * OpenSim Moco: CasOCHermiteSimpson.h                                        *
  * -------------------------------------------------------------------------- *
- * Copyright (c) 2018 Stanford University and the Authors                     *
+ * Copyright (c) 2019 Stanford University and the Authors                     *
  *                                                                            *
- * Author(s): Christopher Dembia                                              *
+ * Author(s): Nicholas Bianco                                                 *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -22,18 +22,14 @@
 
 namespace CasOC {
 
-/// Enforce the differential equations in the problem using a trapezoidal
-/// (second-order) approximation. The integral in the objective function is
-/// approximated by trapezoidal quadrature.
-class Trapezoidal : public Transcription {
+/// Enforce the differential equations in the problem using a Hermite-
+/// Simpson (third-order) approximation. The integral in the objective
+/// function is approximated by Simpson quadrature.
+class HermiteSimpson : public Transcription {
 public:
-    Trapezoidal(const Solver& solver, const Problem& problem)
-        : Transcription(solver, problem, solver.getNumMeshPoints(), 
-            solver.getNumMeshPoints()) { 
-
-        OPENSIM_THROW_IF(problem.getEnforceConstraintDerivatives(),
-            OpenSim::Exception, "Enforcing kinematic constraint derivatives "
-            "not supported with trapezoidal transcription.");
+    HermiteSimpson(const Solver& solver, const Problem& problem)
+            : Transcription(solver, problem, 2 * solver.getNumMeshPoints() - 1,
+                      solver.getNumMeshPoints()) {
         createVariablesAndSetBounds();
     }
 
@@ -43,9 +39,8 @@ private:
     void applyConstraintsImpl(const VariablesMX& vars, const casadi::MX& xdot,
             const casadi::MX& residual, const casadi::MX& kcerr,
             const casadi::MXVector& path) override;
-
 };
 
 } // namespace CasOC
 
-#endif // MOCO_CASOCTRAPEZOIDAL_H
+#endif // MOCO_CASOCHERMITESIMPSON_H

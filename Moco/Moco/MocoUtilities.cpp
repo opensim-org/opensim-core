@@ -415,20 +415,37 @@ void OpenSim::replaceJointWithWeldJoint(Model& model,
 
 std::vector<std::string> OpenSim::createStateVariableNamesInSystemOrder(
         const Model& model) {
+    std::unordered_map<int, int> yIndexMap;
+    return createStateVariableNamesInSystemOrder(model, yIndexMap);
+}
+std::vector<std::string> OpenSim::createStateVariableNamesInSystemOrder(
+        const Model& model, std::unordered_map<int, int>& yIndexMap) {
+    yIndexMap.clear();
     std::vector<std::string> svNamesInSysOrder;
     auto s = model.getWorkingState();
     const auto svNames = model.getStateVariableNames();
     s.updY() = 0;
+    std::vector<int> yIndices;
     for (int iy = 0; iy < s.getNY(); ++iy) {
         s.updY()[iy] = SimTK::NaN;
         const auto svValues = model.getStateVariableValues(s);
         for (int isv = 0; isv < svNames.size(); ++isv) {
             if (SimTK::isNaN(svValues[isv])) {
                 svNamesInSysOrder.push_back(svNames[isv]);
+                yIndices.emplace_back(iy);
                 s.updY()[iy] = 0;
                 break;
             }
         }
+        if (SimTK::isNaN(s.updY()[iy])) {
+            // If we reach here, this is an unused slot for a quaternion.
+            s.updY()[iy] = 0;
+        }
+    }
+    int count = 0;
+    for (const auto& iy : yIndices) {
+        yIndexMap.emplace(std::make_pair(count, iy));
+        ++count;
     }
     SimTK_ASSERT2_ALWAYS((size_t)svNames.size() == svNamesInSysOrder.size(),
             "Expected to get %i state names but found %i.", svNames.size(),
@@ -452,6 +469,10 @@ OpenSim::createSystemYIndexMap(const Model& model) {
                 break;
             }
         }
+        if (SimTK::isNaN(s.updY()[iy])) {
+            // If we reach here, this is an unused slot for a quaternion.
+            s.updY()[iy] = 0;
+        }
     }
     SimTK_ASSERT2_ALWAYS(svNames.size() == (int)sysYIndices.size(),
             "Expected to find %i state indices but found %i.", svNames.size(),
@@ -472,4 +493,20 @@ std::string OpenSim::format_c(const char* format, ...) {
     vsnprintf(buf.get(), bufsize, format, args);
     va_end(args);
     return std::string(buf.get());
+}
+
+int OpenSim::getMocoParallelEnvironmentVariable() {
+    const char* parallel = std::getenv("OPENSIM_MOCO_PARALLEL");
+    if (parallel) {
+        int num = std::atoi(parallel);
+        if (num < 0) {
+            std::cout << "[Moco] Warning: OPENSIM_MOCO_PARALLEL "
+                         "environment variable set to incorrect value '" <<
+                         parallel << "'; must be an integer >= 0. "
+                         "Ignoring." << std::endl;
+        } else {
+            return num;
+        }
+    }
+    return -1;
 }

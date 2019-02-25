@@ -22,8 +22,7 @@
 
 using namespace CasOC;
 
-casadi::Sparsity calcJacobianSparsityWithPerturbation(
-        const VectorDM& x0s,
+casadi::Sparsity calcJacobianSparsityWithPerturbation(const VectorDM& x0s,
         int numOutputs,
         std::function<void(const casadi::DM&, casadi::DM&)> function) {
 
@@ -79,7 +78,6 @@ casadi::Sparsity Function::get_jacobian_sparsity() const {
     using casadi::Slice;
 
     auto function = [this](const casadi::DM& x, casadi::DM& y) {
-
         // Split input into separate DMs.
         std::vector<casadi::DM> in(this->n_in());
         {
@@ -112,10 +110,22 @@ casadi::Sparsity Function::get_jacobian_sparsity() const {
          */
     };
 
-    const VectorDM x0s = getPointsForSparsityDetection();
+    const VectorDM x0s = getSubsetPointsForSparsityDetection();
 
     return calcJacobianSparsityWithPerturbation(
             x0s, (int)this->nnz_out(), function);
+}
+
+void Function::constructFunction(const Problem* casProblem,
+        const std::string& name, const std::string& finiteDiffScheme,
+        std::shared_ptr<std::vector<const VariablesDM>>
+                pointsForSparsityDetection) {
+    m_casProblem = casProblem;
+    m_finite_difference_scheme = finiteDiffScheme;
+    m_fullPointsForSparsityDetection = pointsForSparsityDetection;
+    casadi::Dict opts;
+    setCommonOptions(opts);
+    this->construct(name, opts);
 }
 
 casadi::Sparsity PathConstraint::get_sparsity_in(casadi_int i) {
@@ -159,7 +169,9 @@ casadi::Sparsity EndpointCost::get_sparsity_in(casadi_int i) {
     }
 }
 
-casadi::Sparsity MultibodySystem::get_sparsity_in(casadi_int i) {
+template <bool CalcKinConErrors>
+casadi::Sparsity MultibodySystem<CalcKinConErrors>::get_sparsity_in(
+        casadi_int i) {
     if (i == 0) {
         return casadi::Sparsity::dense(1, 1);
     } else if (i == 1) {
@@ -174,15 +186,105 @@ casadi::Sparsity MultibodySystem::get_sparsity_in(casadi_int i) {
         return casadi::Sparsity(0, 0);
     }
 }
-casadi::Sparsity MultibodySystem::get_sparsity_out(casadi_int i) {
+
+template <bool CalcKinConErrors>
+casadi::Sparsity MultibodySystem<CalcKinConErrors>::get_sparsity_out(
+        casadi_int i) {
     if (i == 0) {
         return casadi::Sparsity::dense(m_casProblem->getNumSpeeds(), 1);
     } else if (i == 1) {
         return casadi::Sparsity::dense(
                 m_casProblem->getNumAuxiliaryStates(), 1);
     } else if (i == 2) {
-        int numRows = m_casProblem->getNumKinematicConstraintEquations();
-        return casadi::Sparsity::dense(numRows, 1);
-    } else
+        if (CalcKinConErrors) {
+            int numRows = m_casProblem->getNumKinematicConstraintEquations();
+            return casadi::Sparsity::dense(numRows, 1);
+        } else {
+            return casadi::Sparsity(0, 0);
+        }
+    } else {
         return casadi::Sparsity(0, 0);
+    }
 }
+
+template class CasOC::MultibodySystem<false>;
+template class CasOC::MultibodySystem<true>;
+
+casadi::Sparsity VelocityCorrection::get_sparsity_in(casadi_int i) {
+    if (i == 0) {
+        return casadi::Sparsity::dense(1, 1);
+    } else if (i == 1) {
+        return casadi::Sparsity::dense(
+                m_casProblem->getNumStates() -
+                        m_casProblem->getNumAuxiliaryStates(),
+                1);
+    } else if (i == 2) {
+        return casadi::Sparsity::dense(m_casProblem->getNumSlacks(), 1);
+    } else if (i == 3) {
+        return casadi::Sparsity::dense(m_casProblem->getNumParameters(), 1);
+    } else {
+        return casadi::Sparsity(0, 0);
+    }
+}
+
+casadi::Sparsity VelocityCorrection::get_sparsity_out(casadi_int i) {
+    if (i == 0) {
+        return casadi::Sparsity::dense(m_casProblem->getNumSpeeds(), 1);
+    } else {
+        return casadi::Sparsity(0, 0);
+    }
+}
+
+casadi::DM VelocityCorrection::getSubsetPoint(
+        const VariablesDM& fullPoint) const {
+    int itime = 0;
+    using casadi::Slice;
+    const int NMBS = m_casProblem->getNumStates() -
+                     m_casProblem->getNumAuxiliaryStates();
+    return casadi::DM::vertcat({fullPoint.at(initial_time),
+            fullPoint.at(states)(Slice(0, NMBS), itime),
+            fullPoint.at(slacks)(Slice(), itime), fullPoint.at(parameters)});
+}
+
+template <bool CalcKinConErrors>
+casadi::Sparsity MultibodySystemImplicit<CalcKinConErrors>::get_sparsity_in(
+        casadi_int i) {
+    if (i == 0) {
+        return casadi::Sparsity::dense(1, 1);
+    } else if (i == 1) {
+        return casadi::Sparsity::dense(m_casProblem->getNumStates(), 1);
+    } else if (i == 2) {
+        return casadi::Sparsity::dense(m_casProblem->getNumControls(), 1);
+    } else if (i == 3) {
+        return casadi::Sparsity::dense(m_casProblem->getNumMultipliers(), 1);
+    } else if (i == 4) {
+        return casadi::Sparsity::dense(m_casProblem->getNumSpeeds(), 1);
+    } else if (i == 5) {
+        return casadi::Sparsity::dense(m_casProblem->getNumParameters(), 1);
+    } else {
+        return casadi::Sparsity(0, 0);
+    }
+}
+
+template <bool CalcKinConErrors>
+casadi::Sparsity MultibodySystemImplicit<CalcKinConErrors>::get_sparsity_out(
+        casadi_int i) {
+    if (i == 0) {
+        return casadi::Sparsity::dense(m_casProblem->getNumSpeeds(), 1);
+    } else if (i == 1) {
+        return casadi::Sparsity::dense(
+                m_casProblem->getNumAuxiliaryStates(), 1);
+    } else if (i == 2) {
+        if (CalcKinConErrors) {
+            int numRows = m_casProblem->getNumKinematicConstraintEquations();
+            return casadi::Sparsity::dense(numRows, 1);
+        } else {
+            return casadi::Sparsity(0, 0);
+        }
+    } else {
+        return casadi::Sparsity(0, 0);
+    }
+}
+
+template class CasOC::MultibodySystemImplicit<false>;
+template class CasOC::MultibodySystemImplicit<true>;

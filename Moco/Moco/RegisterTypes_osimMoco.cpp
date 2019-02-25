@@ -18,7 +18,7 @@
 #include "RegisterTypes_osimMoco.h"
 #include <OpenSim/Common/Object.h>
 
-#include "MocoCost.h"
+#include "MocoCost/MocoCost.h"
 #include "MocoBounds.h"
 #include "MocoProblem.h"
 #include "MocoSolver.h"
@@ -27,11 +27,11 @@
 #include "InverseMuscleSolver/GlobalStaticOptimization.h"
 #include "InverseMuscleSolver/INDYGO.h"
 #include "MocoWeightSet.h"
-#include "MocoStateTrackingCost.h"
-#include "MocoMarkerTrackingCost.h"
-#include "MocoMarkerEndpointCost.h"
-#include "MocoControlCost.h"
-#include "MocoJointReactionNormCost.h"
+#include "MocoCost/MocoStateTrackingCost.h"
+#include "MocoCost/MocoMarkerTrackingCost.h"
+#include "MocoCost/MocoMarkerEndpointCost.h"
+#include "MocoCost/MocoControlCost.h"
+#include "MocoCost/MocoJointReactionNormCost.h"
 #include "MocoParameter.h"
 #include "ActivationCoordinateActuator.h"
 

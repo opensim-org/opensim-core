@@ -384,3 +384,8 @@ install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/tests"
 # Install example files (not installed next to the python package).
 install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/examples/"
         DESTINATION "${MOCO_INSTALL_PYTHONEXDIR}")
+
+install(DIRECTORY "${CMAKE_SOURCE_DIR}/Moco/"
+        DESTINATION "${MOCO_INSTALL_PYTHONEXDIR}"
+        PATTERN "*.py"
+        )

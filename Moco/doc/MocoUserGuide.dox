@@ -102,7 +102,7 @@ The following are not currently supported with implicit dynamics:
 
 1. Auxiliary dynamics (e.g., activation and fiber dynamics).
 2. Acceleration-level quantities (e.g., MocoJointReactionNormCost).
-3. Multibody constraints.
+3. Kinematic constraints.
 
 
 @subsection Kinematic constraints
@@ -120,7 +120,7 @@ MocoTropterSolver has options if the user desires to enforce kinematic
 constraint derivatives or minimize Lagrange multipliers in the problem.
 
 \code{.cpp}
-MocoTropterSolver& solver = moco.initSolver();
+MocoTropterSolver& solver = moco.initTropterSolver();
 ms.set_enforce_constraint_derivatives(true);
 ms.set_lagrange_multiplier_weight(10);
 \endcode

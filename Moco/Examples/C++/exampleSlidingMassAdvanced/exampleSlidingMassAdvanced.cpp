@@ -73,49 +73,52 @@ int main() {
 
     // Define the optimal control problem.
     // ===================================
-    MocoProblem& mp = moco.updProblem();
+    MocoProblem& problem = moco.updProblem();
 
     // Model (dynamics).
     // -----------------
-    mp.setModel(createSlidingMassModel());
+    problem.setModel(createSlidingMassModel());
 
     // Bounds.
     // -------
     // Initial time must be 0, final time can be within [0, 5].
-    mp.setTimeBounds(MocoInitialBounds(0), MocoFinalBounds(0, 5));
+    problem.setTimeBounds(MocoInitialBounds(0), MocoFinalBounds(0, 5));
 
     // Initial position must be 0, final position must be 1.
-    mp.setStateInfo("/slider/position/value", MocoBounds(-5, 5),
+    problem.setStateInfo("/slider/position/value", MocoBounds(-5, 5),
             MocoInitialBounds(0), MocoFinalBounds(1));
     // Initial and final speed must be 0. Use compact syntax.
-    mp.setStateInfo("/slider/position/speed", {-50, 50}, 0, 0);
+    problem.setStateInfo("/slider/position/speed", {-50, 50}, 0, 0);
 
     // Applied force must be between -50 and 50.
-    mp.setControlInfo("/actuator", MocoBounds(-50, 50));
+    problem.setControlInfo("/actuator", MocoBounds(-50, 50));
 
     // Cost.
     // -----
-    mp.addCost<MocoFinalTimeCost>();
+    problem.addCost<MocoFinalTimeCost>();
 
     // Configure the solver.
     // =====================
-    MocoTropterSolver& ms = moco.initTropterSolver();
-    ms.set_num_mesh_points(50);
-    ms.set_verbosity(2);
-    ms.set_optim_solver("ipopt");
-    ms.set_optim_ipopt_print_level(4);
-    ms.set_optim_max_iterations(50);
-    // ms.set_optim_constraint_tolerance(1e-5);
-    // ms.set_optim_convergence_tolerance(1e-5);
-    // ms.set_optim_findiff_hessian_step_size(1e-3);
+    MocoCasADiSolver& solver = moco.initCasADiSolver();
+    solver.set_num_mesh_points(50);
+    solver.set_verbosity(2);
+    solver.set_optim_solver("ipopt");
+    solver.set_optim_ipopt_print_level(4);
+    solver.set_optim_max_iterations(50);
+    solver.set_optim_finite_difference_scheme("forward");
+    solver.set_optim_sparsity_detection("random");
+    solver.set_optim_write_sparsity("sliding_mass");
+    // solver.set_optim_constraint_tolerance(1e-5);
+    // solver.set_optim_convergence_tolerance(1e-5);
+    // solver.set_optim_findiff_hessian_step_size(1e-3);
 
     // Specify an initial guess.
     // -------------------------
-    MocoIterate guess = ms.createGuess("bounds");
+    MocoIterate guess = solver.createGuess("bounds");
     guess.resampleWithNumTimes(2);
     guess.setTime({0, 0.5});
     guess.setState("/slider/position/value", {0.0, 1.0});
-    ms.setGuess(guess);
+    solver.setGuess(guess);
 
     // Solve the problem.
     // ==================
