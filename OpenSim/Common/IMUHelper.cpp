@@ -5,7 +5,7 @@
 namespace OpenSim {
 
 const std::string IMUHelper::_orientations{ "orientations" };
-const std::string IMUHelper::_accelerations{ "accelerations" };
+const std::string IMUHelper::_linearAccelerations{ "linear_accelerations" };
 const std::string IMUHelper::_magnetometers{ "magnetometers" };
 const std::string IMUHelper::_gyros{ "gyros" };
 
@@ -76,7 +76,7 @@ DataAdapter::OutputTables IMUHelper::readXsensTrial(const std::string& folderNam
     accelerationTable->updTableMetaData()
         .setValueForKey("DataRate", std::to_string(dataRate));
     if (accIndex != -1) 
-        tables.emplace(_accelerations, accelerationTable);
+        tables.emplace(_linearAccelerations, accelerationTable);
 
     auto magnetometerTable = std::make_shared<TimeSeriesTableVec3>();
     magnetometerTable->setColumnLabels(labels);

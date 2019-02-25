@@ -48,7 +48,7 @@ public:
     virtual ~IMUHelper()                     = default;
 
     static const std::string _orientations;   // name of table for orientation data
-    static const std::string _accelerations;  // name of table for acceleration data
+    static const std::string _linearAccelerations;  // name of table for acceleration data
     static const std::string _magnetometers;  // name of table for magnetometer data
     static const std::string _gyros;          // name of table for gyro data
 
