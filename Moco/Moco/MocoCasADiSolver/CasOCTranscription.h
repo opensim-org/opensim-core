@@ -69,6 +69,8 @@ protected:
     /// avoiding an extra call on the instantiated object.
     void createVariablesAndSetBounds();
 
+    /// We assume all functions depend on time and parameters.
+    /// "inputs" is prepended by time and postpended (?) by parameters.
     casadi::MXVector evalOnTrajectory(const casadi::Function& pointFunction,
             const std::vector<Var>& inputs,
             const casadi::Matrix<casadi_int>& timeIndices) const;
