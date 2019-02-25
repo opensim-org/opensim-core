@@ -267,15 +267,15 @@ std::string InverseKinematicsSolver::getMarkerNameForIndex(int markerIndex) cons
 
 /* Compute and return the spatial orientation of an o-sensor in ground. */
 SimTK::Rotation InverseKinematicsSolver::
-    computeCurrentOSensorOrientation(const std::string& osensorName)
+    computeCurrentSensorOrientation(const std::string& osensorName)
 {
     const Array_<std::string>& names = _orientationsReference.getNames();
     SimTK::Array_<const std::string>::iterator p = std::find(names.begin(), names.end(), osensorName);
     int index = (int)std::distance(names.begin(), p);
-    return computeCurrentOSensorOrientation(index);
+    return computeCurrentSensorOrientation(index);
 }
 
-SimTK::Rotation InverseKinematicsSolver::computeCurrentOSensorOrientation(int osensorIndex)
+SimTK::Rotation InverseKinematicsSolver::computeCurrentSensorOrientation(int osensorIndex)
 {
     if (osensorIndex >= 0 && osensorIndex < _orientationAssemblyCondition->getNumOSensors()) {
         return _orientationAssemblyCondition->findCurrentOSensorOrientation(SimTK::OrientationSensors::OSensorIx(osensorIndex));
@@ -285,7 +285,7 @@ SimTK::Rotation InverseKinematicsSolver::computeCurrentOSensorOrientation(int os
 }
 
 /* Compute and return the spatial locations of all markers in ground. */
-void InverseKinematicsSolver::computecomputeCurrentOSensorOrientations(
+void InverseKinematicsSolver::computeCurrentSensorOrientations(
         SimTK::Array_<SimTK::Rotation>& osensorOrientations)
 {
     osensorOrientations.resize(_orientationAssemblyCondition->getNumOSensors());
@@ -296,26 +296,32 @@ void InverseKinematicsSolver::computecomputeCurrentOSensorOrientations(
 
 
 /* Compute and return the orientation error between model o-sensor and observation. */
-double InverseKinematicsSolver::computeCurrentOSensorError(const std::string& osensorName)
+double InverseKinematicsSolver::
+    computeCurrentOrientationError(const std::string& osensorName)
 {
     const Array_<std::string>& names = _orientationsReference.getNames();
     SimTK::Array_<const std::string>::iterator p = std::find(names.begin(), names.end(), osensorName);
     int index = (int)std::distance(names.begin(), p);
-    return computeCurrentOSensorError(index);
+    return computeCurrentOrientationError(index);
 }
 
-double InverseKinematicsSolver::computeCurrentOSensorError(int osensorIndex)
+double InverseKinematicsSolver::computeCurrentOrientationError(int osensorIndex)
 {
-    if (osensorIndex >= 0 && osensorIndex < _markerAssemblyCondition->getNumMarkers()) {
+    if (osensorIndex >= 0 && 
+        osensorIndex < _markerAssemblyCondition->getNumMarkers()) {
         return _orientationAssemblyCondition->
-            findCurrentOSensorError(SimTK::OrientationSensors::OSensorIx(osensorIndex));
+            findCurrentOSensorError(
+                SimTK::OrientationSensors::OSensorIx(osensorIndex));
     }
     else
-        throw Exception("InverseKinematicsSolver::computeCurrentOSensorError: invalid markerIndex.");
+        throw Exception(
+            "InverseKinematicsSolver::computeCurrentOrientationError: "
+            "invalid markerIndex." );
 }
 
 /* Compute and return the distance between all model o-sensors and their observations. */
-void InverseKinematicsSolver::computeCurrentOSensorErrors(SimTK::Array_<double>& osensorErrors)
+void InverseKinematicsSolver::computeCurrentOrientationErrors(
+                                          SimTK::Array_<double>& osensorErrors)
 {
     osensorErrors.resize(_orientationAssemblyCondition->getNumOSensors());
     for (unsigned int i = 0; i<osensorErrors.size(); i++)
@@ -325,7 +331,8 @@ void InverseKinematicsSolver::computeCurrentOSensorErrors(SimTK::Array_<double>&
 
 /* Orientation errors are reported in order that may be different from tasks file
    or model, find name corresponding to passed in index  */
-std::string InverseKinematicsSolver::getOSensorNameForIndex(int osensorIndex) const
+std::string InverseKinematicsSolver::
+    getOrientationSensorNameForIndex(int osensorIndex) const
 {
     return _orientationAssemblyCondition->getOSensorName(SimTK::OrientationSensors::OSensorIx(osensorIndex));
 }

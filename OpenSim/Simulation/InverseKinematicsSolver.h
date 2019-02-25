@@ -179,30 +179,30 @@ public:
 
     /** Compute and return an orientation sensor's spatial orientation in the
     ground frame, given the o-sensor's name. */
-    SimTK::Rotation computeCurrentOSensorOrientation(const std::string& osensorName);
+    SimTK::Rotation computeCurrentSensorOrientation(const std::string& osensorName);
     /** Compute and return an orientation sensor's spatial orientation in the
     ground frame, given the o-sensor's index. */
-    SimTK::Rotation computeCurrentOSensorOrientation(int osensorIndex);
+    SimTK::Rotation computeCurrentSensorOrientation(int osensorIndex);
     /** Compute and return the spatial orientations of all o-sensors, expressed in
     the ground frame. */
-    void computecomputeCurrentOSensorOrientations(
+    void computeCurrentSensorOrientations(
         SimTK::Array_<SimTK::Rotation>& osensorOrientations);
 
     /** Compute and return the orientation error between the model orientation
     sensor and its observation, given the o-sensor's name. */
-    double computeCurrentOSensorError(const std::string& osensorName);
+    double computeCurrentOrientationError(const std::string& osensorName);
     /** Compute and return the orientation error between the model orientation
     sensor and its observation, given the o-sensor's index. */
-    double computeCurrentOSensorError(int osensorIndex);
+    double computeCurrentOrientationError(int osensorIndex);
     /** Compute all the orientation errors between the model orientation
     sensors and their observations. */
-    void computeCurrentOSensorErrors(SimTK::Array_<double>& osensorErrors);
+    void computeCurrentOrientationErrors(SimTK::Array_<double>& osensorErrors);
 
     /** Orientation sensor locations and errors may be computed in an order that
     may be different from tasks file or listed in the model. Return the 
     corresponding o-sensor name for an index in the list of orientations returned
     by the solver. */
-    std::string getOSensorNameForIndex(int osensorIndex) const;
+    std::string getOrientationSensorNameForIndex(int osensorIndex) const;
 
 protected:
     /** Override to include point of interest matching (Marker tracking)
