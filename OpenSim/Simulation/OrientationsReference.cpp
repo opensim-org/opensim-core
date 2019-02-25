@@ -140,7 +140,9 @@ void OrientationsReference::populateFromOrientationData()
     }
 
     if(_orientationNames.size() != _weights.size())
-        throw Exception("OrientationsReference: Mismatch between the number of orientation names and weights. Verify that orientation names are unique.");
+        throw Exception("OrientationsReference: Mismatch between the number "
+            "of orientation names and weights. Verify that orientation names "
+            "are unique.");
 }
 
 int OrientationsReference::getNumRefs() const
