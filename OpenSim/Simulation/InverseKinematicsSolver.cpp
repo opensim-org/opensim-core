@@ -329,8 +329,8 @@ void InverseKinematicsSolver::computeCurrentOrientationErrors(
         findCurrentOSensorError(OrientationSensors::OSensorIx(i));
 }
 
-/* Orientation errors are reported in order that may be different from tasks file
-   or model, find name corresponding to passed in index  */
+/* Orientation errors may be reported in an order that may be different from
+   tasks file or model, find name corresponding to passed in index  */
 std::string InverseKinematicsSolver::
     getOrientationSensorNameForIndex(int osensorIndex) const
 {
@@ -409,12 +409,6 @@ void InverseKinematicsSolver::setupOrientationsGoal(SimTK::State &s)
     // Get list of orientations by name  
     const SimTK::Array_<SimTK::String> &osensorNames =
         _orientationsReference.getNames();
-
-    // If no orientations in the reference to be tracked, then no goal
-    // to add and we can stop.
-    if (osensorNames.size() < 1) {
-        return;
-    }
 
     std::unique_ptr<SimTK::OrientationSensors> 
         condOwner(new SimTK::OrientationSensors());

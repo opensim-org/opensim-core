@@ -126,10 +126,10 @@ public:
         solver was constructed. */
     void updateMarkerWeights(const SimTK::Array_<double> &weights);
 
-    /** Change the weighting of an orientation sensor, given it's name. Takes
+    /** Change the weighting of an orientation sensor, given its name. Takes
     effect when assemble() or track() is called next. */
     void updateOrientationWeight(const std::string& orientationName, double value);
-    /** Change the weighting of an orientation sensor, given it's index. Takes
+    /** Change the weighting of an orientation sensor, given its index. Takes
     effect when assemble() or track() is called next. */
     void updateOrientationWeight(int orientationIndex, double value);
     /** Change the weighting of all orientation sensors. Takes effect when
@@ -200,8 +200,8 @@ public:
 
     /** Orientation sensor locations and errors may be computed in an order that
     may be different from tasks file or listed in the model. Return the 
-    corresponding o-sensor name for an index in the list of orientations returned
-    by the solver. */
+    corresponding orientation sensor name for an index in the list of
+    orientations returned by the solver. */
     std::string getOrientationSensorNameForIndex(int osensorIndex) const;
 
 protected:
