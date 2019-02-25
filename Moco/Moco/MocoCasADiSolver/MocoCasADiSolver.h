@@ -129,6 +129,13 @@ public:
 
     /// @}
 
+    /// @cond
+    /// This is used to generate a warning.
+    void setRunningInPython(bool value) const {
+        m_runningInPython = value;
+    }
+    /// @endcond
+
 protected:
     MocoSolution solveImpl() const override;
 
@@ -149,6 +156,8 @@ private:
     using MocoProblemRepJar = ThreadsafeJar<const MocoProblemRep>;
     using ThreadsafeJarPtr = std::unique_ptr<MocoProblemRepJar>;
     mutable SimTK::ResetOnCopy<ThreadsafeJarPtr> m_jar;
+
+    mutable bool m_runningInPython = false;
 };
 
 } // namespace OpenSim

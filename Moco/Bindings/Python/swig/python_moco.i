@@ -1,4 +1,5 @@
 %module(package="opensim", directors="1") moco
+// %module(package="opensim", directors="1", threads="1") moco
 #pragma SWIG nowarn=822,451,503,516,325
 #pragma SWIG nowarn=401
 
@@ -172,7 +173,16 @@ using namespace SimTK;
     ptr._markAdopted()
 %}
 
+%pythonprepend OpenSim::MocoTool::solve %{
+    if MocoCasADiSolver.safeDownCast(self.updSolver()):
+        solver = MocoCasADiSolver.safeDownCast(self.updSolver())
+        solver.setRunningInPython(True)
+%}
+
+
 // Include all the OpenSim code.
 // =============================
 %include <Bindings/preliminaries.i>
 %include <Bindings/moco.i>
+
+// %thread OpenSim::MocoTool::solve;
