@@ -74,7 +74,6 @@ public:
 
     /// The finite difference scheme to be set on all CasOC::Function objects.
     /// @note Default is 'central'.
-    // TODO move to solver class.
     void setFiniteDifferenceScheme(const std::string& scheme) {
         m_finite_difference_scheme = scheme;
     }
@@ -90,6 +89,9 @@ public:
     /// to determine sparsity.
     void setSparsityDetectionRandomCount(int count);
 
+    /// If this is set to a non-empty string, the sparsity patterns of the
+    /// optimization problem derivatives are written to files whose names use
+    /// `setting` as a prefix.
     void setWriteSparsity(const std::string& setting) {
         m_write_sparsity = setting;
     }
