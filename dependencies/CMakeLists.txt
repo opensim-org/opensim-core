@@ -290,7 +290,7 @@ if(SUPERBUILD_casadi)
                   DEPENDS ipopt
                   GIT_URL    https://github.com/stanfordnmbl/casadi.git
                   # Include threadsafe SharedObject.
-                  GIT_TAG    8aec426a98dbac1c0e2e9d0e616f5b45545fa9f8
+                  GIT_TAG    1555e79ea59cbd25d05894f2e9b351d92bacf348
                   CMAKE_ARGS -DWITH_IPOPT:BOOL=ON
                              -DWITH_THREAD=ON
                              -DWITH_EXAMPLES:BOOL=OFF
