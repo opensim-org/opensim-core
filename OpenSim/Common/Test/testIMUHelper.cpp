@@ -28,8 +28,8 @@
 
 using namespace OpenSim;
 /* Raw data from 00B421AF
-PacketCounter	SampleTimeFine	Year	Month	Day	Second	UTC_Nano	UTC_Year	UTC_Month	UTC_Day	UTC_Hour	UTC_Minute	UTC_Second	UTC_Valid	Acc_X	Acc_Y	Acc_Z	Gyr_X	Gyr_Y	Gyr_Z	Mag_X	Mag_Y	Mag_Z	Mat[1][1]	Mat[2][1]	Mat[3][1]	Mat[1][2]	Mat[2][2]	Mat[3][2]	Mat[1][3]	Mat[2][3]	Mat[3][3]
-03583														3.030769	5.254238	-7.714005	0.005991	-0.032133	0.022713	-0.045410	-0.266113	0.897217	0.609684	0.730843	0.306845	0.519480	-0.660808	0.541732	0.598686	-0.170885	-0.782543
+PacketCounter<tab>SampleTimeFine<tab>Year<tab>Month<tab>Day<tab>Second<tab>UTC_Nano<tab>UTC_Year<tab>UTC_Month<tab>UTC_Day<tab>UTC_Hour<tab>UTC_Minute<tab>UTC_Second<tab>UTC_Valid<tab>Acc_X<tab>Acc_Y<tab>Acc_Z<tab>Gyr_X<tab>Gyr_Y<tab>Gyr_Z<tab>Mag_X<tab>Mag_Y<tab>Mag_Z<tab>Mat[1][1]<tab>Mat[2][1]<tab>Mat[3][1]<tab>Mat[1][2]<tab>Mat[2][2]<tab>Mat[3][2]<tab>Mat[1][3]<tab>Mat[2][3]<tab>Mat[3][3]
+03583<tab><tab><tab><tab><tab><tab><tab><tab><tab><tab><tab><tab><tab><tab>3.030769<tab>5.254238<tab>-7.714005<tab>0.005991<tab>-0.032133<tab>0.022713<tab>-0.045410<tab>-0.266113<tab>0.897217<tab>0.609684<tab>0.730843<tab>0.306845<tab>0.519480<tab>-0.660808<tab>0.541732<tab>0.598686<tab>-0.170885<tab>-0.782543
 */
 
 int main() {
