@@ -448,14 +448,17 @@ Iterate Transcription::createInitialGuessFromBounds() const {
     return casGuess;
 }
 
-Iterate Transcription::createRandomIterateWithinBounds() const {
-    static SimTK::Random::Uniform randGen(-1, 1);
-    auto setRandom = [](DM& output, const DM& lowerDM, const DM& upperDM) {
+Iterate Transcription::createRandomIterateWithinBounds(
+        const SimTK::Random* randGen) const {
+    static const SimTK::Random::Uniform randGenDefault(-1, 1);
+    const SimTK::Random* randGenToUse = &randGenDefault;
+    if (randGen) randGenToUse = randGen;
+    auto setRandom = [&](DM& output, const DM& lowerDM, const DM& upperDM) {
         for (int irow = 0; irow < output.rows(); ++irow) {
             for (int icol = 0; icol < output.columns(); ++icol) {
                 const auto& lower = double(lowerDM(irow, icol));
                 const auto& upper = double(upperDM(irow, icol));
-                const auto rand = randGen.getValue();
+                const auto rand = randGenToUse->getValue();
                 auto value = 0.5 * (rand + 1.0) * (upper - lower) + lower;
                 if (std::isnan(value)) value = SimTK::clamp(lower, rand, upper);
                 output(irow, icol) = value;

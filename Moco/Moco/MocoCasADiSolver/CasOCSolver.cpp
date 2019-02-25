@@ -51,7 +51,8 @@ Iterate Solver::createRandomIterateWithinBounds() const {
 
 void Solver::setSparsityDetection(const std::string& setting) {
     OPENSIM_THROW_IF(setting != "none" && setting != "random" &&
-            setting != "initial-guess", Exception);
+                             setting != "initial-guess",
+            Exception);
     m_sparsity_detection = setting;
 }
 
@@ -75,9 +76,14 @@ Solution Solver::solve(const Iterate& guess) const {
         // TODO: This guess has not been interpolated.
         pointsForSparsityDetection->push_back(guess.variables);
     } else if (m_sparsity_detection == "random") {
+        // Make sure the exact same sparsity pattern is used every time.
+        auto randGen = OpenSim::make_unique<SimTK::Random::Uniform>(-1, 1);
+        randGen->setSeed(0);
         for (int i = 0; i < m_sparsity_detection_random_count; ++i) {
             pointsForSparsityDetection->push_back(
-                    transcription->createRandomIterateWithinBounds().variables);
+                    transcription->createRandomIterateWithinBounds(
+                                         randGen.get())
+                            .variables);
         }
     }
     m_problem.constructFunctions(isDynamicsModeImplicit(),

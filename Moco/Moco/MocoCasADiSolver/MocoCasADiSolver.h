@@ -49,7 +49,8 @@ namespace OpenSim {
 ///
 /// See the optim_sparsity_detection setting for more information. In the case
 /// of "random", we use 3 random iterates and combine the resulting sparsity
-/// patterns.
+/// patterns. The seed used for these 3 random iterates is always exactly the
+/// same, ensuring that the sparsity pattern is deterministic.
 ///
 /// To explore the sparsity pattern for your problem, set optim_write_sparsity
 /// and run the resulting files with the plot_casadi_sparsity.py Python script.
