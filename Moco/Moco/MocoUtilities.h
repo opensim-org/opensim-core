@@ -336,10 +336,14 @@ template <typename T>
 class ThreadsafeJar {
 public:
     /// Request an object for your exclusive use on your thread. This function
-    /// halts the thread until an object is available. Make sure to return
+    /// blocks the thread until an object is available. Make sure to return
     /// (leave()) the object when you're done!
     std::unique_ptr<T> take() {
+        // Only one thread can lock the mutex at a time, so only one thread
+        // at a time can be in any of the functions of this class.
         std::unique_lock<std::mutex> lock(m_mutex);
+        // Block this thread until the condition variable is woken up
+        // (by a notify_...()) and the lambda function returns true.
         m_inventoryMonitor.wait(lock, [this]{ return m_entries.size() > 0; });
         std::unique_ptr<T> top = std::move(m_entries.top());
         m_entries.pop();

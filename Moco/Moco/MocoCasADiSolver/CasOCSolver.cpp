@@ -64,7 +64,8 @@ void Solver::setSparsityDetectionRandomCount(int count) {
 void Solver::setParallelism(std::string parallelism, int numThreads) {
     m_parallelism = parallelism;
     OPENSIM_THROW_IF(numThreads < 1, OpenSim::Exception,
-            OpenSim::format("Expected numThreads < 1 but got %i.", numThreads));
+            OpenSim::format(
+                    "Expected numThreads >= 1 but got %i.", numThreads));
     m_numThreads = numThreads;
 }
 

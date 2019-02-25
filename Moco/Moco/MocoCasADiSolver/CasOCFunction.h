@@ -187,11 +187,11 @@ public:
 
 /// This function should compute forward dynamics (explicit multibody dynamics),
 /// auxiliary explicit dynamics, and the errors for the kinematic constraints.
-template <bool CalcKinConErrors>
+template <bool CalcKCErrors>
 class MultibodySystem : public Function {
 public:
     casadi_int get_n_in() override final { return 5; }
-    casadi_int get_n_out() override final { return CalcKinConErrors ? 3 : 2; }
+    casadi_int get_n_out() override final { return CalcKCErrors ? 3 : 2; }
     std::string get_name_in(casadi_int i) override final {
         switch (i) {
         case 0: return "time";
@@ -207,7 +207,7 @@ public:
         case 0: return "multibody_derivatives";
         case 1: return "auxiliary_derivatives";
         case 2:
-            if (CalcKinConErrors) {
+            if (CalcKCErrors) {
                 return "kinematic_constraint_errors";
             } else {
                 OPENSIM_THROW(OpenSim::Exception, "Internal error.")
@@ -254,10 +254,10 @@ public:
     casadi::DM getSubsetPoint(const VariablesDM& fullPoint) const override;
 };
 
-template <bool CalcKinConErrors>
+template <bool CalcKCErrors>
 class MultibodySystemImplicit : public Function {
     casadi_int get_n_in() override final { return 6; }
-    casadi_int get_n_out() override final { return CalcKinConErrors ? 3 : 2; }
+    casadi_int get_n_out() override final { return CalcKCErrors ? 3 : 2; }
     std::string get_name_in(casadi_int i) override final {
         switch (i) {
         case 0: return "time";
@@ -274,7 +274,7 @@ class MultibodySystemImplicit : public Function {
         case 0: return "multibody_residuals";
         case 1: return "auxiliary_derivatives";
         case 2:
-            if (CalcKinConErrors) {
+            if (CalcKCErrors) {
                 return "kinematic_constraint_errors";
             } else {
                 OPENSIM_THROW(OpenSim::Exception, "Internal error.")

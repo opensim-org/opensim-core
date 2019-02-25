@@ -318,9 +318,9 @@ private:
     std::unordered_map<int, int> m_yIndexMap;
 };
 
-template <bool CalcKinConErrors>
+template <bool CalcKCErrors>
 class MocoCasADiMultibodySystem
-        : public CasOC::MultibodySystem<CalcKinConErrors> {
+        : public CasOC::MultibodySystem<CalcKCErrors> {
 public:
     MocoCasADiMultibodySystem(ThreadsafeJar<const MocoProblemRep>& jar,
             const OpenSim::MocoCasADiSolver& solver,
@@ -392,7 +392,7 @@ public:
             out.resize(2);
             // TODO: This code is the same in the explicit and implicit
             // MultibodySystem. We should consolidate.
-            if (CalcKinConErrors) {
+            if (CalcKCErrors) {
                 // Position-level errors.
                 const auto& qerr = simtkState.getQErr();
 
@@ -459,7 +459,7 @@ public:
 
             out = {convertToCasADiDM(simtkState.getUDot()),
                     convertToCasADiDM(simtkState.getZDot())};
-            if (CalcKinConErrors) {
+            if (CalcKCErrors) {
                 // Add an empty kinematic constraint error vector.
                 out.emplace_back(0, 1);
             }
@@ -544,9 +544,9 @@ private:
     static thread_local SimTK::Vector m_qdotCorr;
 };
 
-template <bool CalcKinConErrors>
+template <bool CalcKCErrors>
 class MocoCasADiMultibodySystemImplicit
-        : public CasOC::MultibodySystemImplicit<CalcKinConErrors> {
+        : public CasOC::MultibodySystemImplicit<CalcKCErrors> {
 public:
     MocoCasADiMultibodySystemImplicit(ThreadsafeJar<const MocoProblemRep>& jar,
             const OpenSim::MocoCasADiSolver& solver,
@@ -614,10 +614,8 @@ public:
             // Constraint errors.
             // TODO double-check that disabled constraints don't show up in
             // state
-            if (CalcKinConErrors) {
+            if (CalcKCErrors) {
                 // Position-level errors.
-                // const casadi::DM qerr =
-                // convertToCasADiDM(simtkState.getQErr());
                 const auto& qerr = simtkState.getQErr();
 
                 if (enforceConstraintDerivatives || total_ma) {
@@ -675,7 +673,7 @@ public:
             // CasADi will throw an error (likely while constructing the
             // expression graph) if this path doesn't provide the correct
             // size output.
-            if (CalcKinConErrors) {
+            if (CalcKCErrors) {
                 // Add an empty kinematic constraint error vector.
                 out.emplace_back(0, 1);
             }

@@ -137,6 +137,7 @@ void Transcription::createVariablesAndSetBounds() {
     }
     {
         if (m_solver.isDynamicsModeImplicit()) {
+            // "Slice()" grabs everything in that dimension (like ":" in Matlab).
             // TODO: How to choose bounds on udot?
             setVariableBounds(derivatives, Slice(), Slice(), {-1000, 1000});
         }
@@ -192,14 +193,14 @@ void Transcription::transcribe() {
 
     if (m_problem.getEnforceConstraintDerivatives() &&
             m_numPointsIgnoringConstraints) {
-        // In Hermite-Simpson, this is a midpoint, so we must compute a
-        // velocity correction and update qdot. See
-        // MocoCasADiVelocityCorrection for more details. This function
-        // only takes multibody state variables: coordinates and speeds.
+        // In Hermite-Simpson, we must compute a velocity correction at all mesh
+        // interval midpoints and update qdot. See MocoCasADiVelocityCorrection
+        // for more details. This function only takes multibody state variables:
+        // coordinates and speeds.
         // TODO: The points at which we apply the velocity correction
-        // are correct for Trapezoidal and Hermite-Simpson, but might
-        // not be correct in general. Revisit this if we add other
-        // transcription schemes.
+        // are correct for Trapezoidal (no points) and Hermite-Simpson (mesh
+        // interval midpoints), but might not be correct in general. Revisit
+        // this if we add other transcription schemes.
         const auto velocityCorrOut = evalOnTrajectory(
                 m_problem.getVelocityCorrection(), {multibody_states, slacks},
                 m_daeIndicesIgnoringConstraints);
@@ -217,6 +218,12 @@ void Transcription::transcribe() {
         m_xdot(Slice(NQ, NQ + NU), Slice()) = w;
 
         std::vector<Var> inputs{states, controls, multipliers, derivatives};
+
+        // When the model has kinematic constraints, we must treat grid points
+        // differently, as kinematic constraints are computed for only some
+        // grid points. When the model does *not* have kinematic constraints,
+        // the DAE is the same for all grid points, but the evaluation is still
+        // done separately to keep implementation general.
 
         // residual, zdot, kcerr
         // Points where we compute algebraic constraints.
@@ -310,7 +317,6 @@ void Transcription::setObjective() {
     }
     MX integralCost = m_duration * dot(quadCoeffs.T(), integrandTraj);
 
-    // "Slice()" grabs everything in that dimension (like ":" in Matlab).
     MXVector endpointCostOut;
     m_problem.getEndpointCost().call(
             {m_vars[final_time], m_vars[states](Slice(), -1),
