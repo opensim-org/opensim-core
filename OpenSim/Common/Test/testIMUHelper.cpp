@@ -47,7 +47,7 @@ int main() {
         DataAdapter::OutputTables tables = IMUHelper::readXsensTrial(folder, trial, mapFileNameToIMUName);
         // Write tables to sto files
         // Accelerations
-        std::shared_ptr<AbstractDataTable> accelTable = tables.at(IMUHelper::_accelerations);
+        std::shared_ptr<AbstractDataTable> accelTable = tables.at(IMUHelper::_linearAccelerations);
         const TimeSeriesTableVec3& accelTableTyped = dynamic_cast<const TimeSeriesTableVec3&>(*accelTable);
         STOFileAdapterVec3::write(accelTableTyped, folder + trial+ "accelerations.sto");
         const SimTK::RowVectorView_<SimTK::Vec3>& rvv = accelTableTyped.getRowAtIndex(0);
