@@ -33,7 +33,7 @@ public:
     virtual ~Function() = default;
     void constructFunction(const Problem* casProblem, const std::string& name,
             const std::string& finiteDiffScheme,
-            std::shared_ptr<std::vector<const VariablesDM>> pointsForSparsityDetection);
+            std::shared_ptr<const std::vector<VariablesDM>> pointsForSparsityDetection);
     void setCommonOptions(casadi::Dict& opts) {
         // Compute the derivatives of this function using finite differences.
         opts["enable_fd"] = true;
@@ -64,7 +64,7 @@ private:
 
     std::string m_finite_difference_scheme = "central";
 
-    std::shared_ptr<std::vector<const VariablesDM>>
+    std::shared_ptr<const std::vector<VariablesDM>>
             m_fullPointsForSparsityDetection;
 };
 
@@ -72,7 +72,7 @@ class PathConstraint : public Function {
 public:
     void constructFunction(const Problem* casProblem, const std::string& name,
             int numEquations, const std::string& finiteDiffScheme,
-            std::shared_ptr<std::vector<const VariablesDM>>
+            std::shared_ptr<const std::vector<VariablesDM>>
                     pointsForSparsityDetection) {
         m_numEquations = numEquations;
         Function::constructFunction(

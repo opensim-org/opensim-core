@@ -106,7 +106,7 @@ casadi::Sparsity Function::get_jacobian_sparsity() const {
 
 void Function::constructFunction(const Problem* casProblem,
         const std::string& name, const std::string& finiteDiffScheme,
-        std::shared_ptr<std::vector<const VariablesDM>>
+        std::shared_ptr<const std::vector<VariablesDM>>
                 pointsForSparsityDetection) {
     m_casProblem = casProblem;
     m_finite_difference_scheme = finiteDiffScheme;

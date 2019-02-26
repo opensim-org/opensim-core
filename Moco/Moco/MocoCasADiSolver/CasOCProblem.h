@@ -254,7 +254,7 @@ public:
 
     void constructFunctions(bool constructImplicit,
             const std::string& finiteDiffScheme,
-            std::shared_ptr<std::vector<const VariablesDM>>
+            std::shared_ptr<const std::vector<VariablesDM>>
                     pointsForSparsityDetection) const {
         auto* mutThis = const_cast<Problem*>(this);
         for (const auto& pathInfo : mutThis->m_pathInfos) {

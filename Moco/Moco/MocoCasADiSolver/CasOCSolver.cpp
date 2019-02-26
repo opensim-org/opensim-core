@@ -72,7 +72,7 @@ void Solver::setParallelism(std::string parallelism, int numThreads) {
 Solution Solver::solve(const Iterate& guess) const {
     auto transcription = createTranscription();
     auto pointsForSparsityDetection =
-            std::make_shared<std::vector<const VariablesDM>>();
+            std::make_shared<std::vector<VariablesDM>>();
     if (m_sparsity_detection == "initial-guess") {
         // TODO: This guess has not been interpolated.
         pointsForSparsityDetection->push_back(guess.variables);
@@ -88,7 +88,9 @@ Solution Solver::solve(const Iterate& guess) const {
         }
     }
     m_problem.constructFunctions(isDynamicsModeImplicit(),
-            m_finite_difference_scheme, pointsForSparsityDetection);
+            m_finite_difference_scheme,
+            std::const_pointer_cast<const std::vector<VariablesDM>>(
+                    pointsForSparsityDetection));
     return transcription->solve(guess);
 }
 
