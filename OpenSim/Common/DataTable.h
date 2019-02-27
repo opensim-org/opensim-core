@@ -1395,6 +1395,7 @@ protected:
     // Split element into constituent components and assign the components 
     // according to the iterator argument. This function will write MxN matrix
     // elements starting from *begin* but not necessarily up to *end*. 
+    // Elements are written out row-wise.
     // An exception is thrown if *end* is reached before assigning all components.
     // Example: Mat<3, 3> has 9 components.
     template<int M, int N, typename Iter>
