@@ -60,7 +60,10 @@ public:
     /// MocoProblemRep.
     /// This model is the same instance as that given to MocoCost,
     /// MocoParameter, and MocoPathConstraint.
+    /// TODO
     const Model& getModel() const { return m_model; }
+    const Model& getModelIgnoringConstraints() const 
+    {   return m_model_ignoring_constraints; }
     int getNumStates() const { return (int)m_state_infos.size(); }
     int getNumControls() const { return (int)m_control_infos.size(); }
     int getNumParameters() const { return (int)m_parameters.size(); }
@@ -124,8 +127,8 @@ public:
         return m_num_kinematic_constraint_equations;
     }
     /// TODO
-    //SimTK::Force::DiscreteForces getConstraintForcesHandle() const 
-    //{   return m_constraintForcesHandle; }
+    const std::string& getConstraintForcesPath() const 
+    {   return m_constraint_forces_path; }
 
     /// Print a description of this problem, including costs and variable
     /// bounds. By default, the description is printed to the console (cout),
@@ -213,8 +216,8 @@ private:
     const MocoProblem* m_problem;
 
     Model m_model;
-    //Model m_modelConForces;
-    //SimTK::Force::DiscreteForces m_constraintForcesHandle;
+    Model m_model_ignoring_constraints;
+    std::string m_constraint_forces_path = "constraint_forces";
 
     std::unordered_map<std::string, MocoVariableInfo> m_state_infos;
     std::unordered_map<std::string, MocoVariableInfo> m_control_infos;
