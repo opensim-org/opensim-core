@@ -101,7 +101,6 @@ int main() {
     // =====================
     MocoCasADiSolver& solver = moco.initCasADiSolver();
     solver.set_num_mesh_points(50);
-    solver.set_parallel(0);
 
     // Now that we've finished setting up the tool, print it to a file.
     moco.print("sliding_mass.omoco");
