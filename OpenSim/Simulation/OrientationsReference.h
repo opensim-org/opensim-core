@@ -57,10 +57,11 @@ private:
 //=============================================================================
 //=============================================================================
 /**
- * Reference values to be achieved for specified Orientations that will be used
- * via optimization and/or tracking. Also contains a weighting that identifies
- * the relative importance of achieving one orientation's reference relative to
- * another.
+ * Reference values for the Orientations of model frames that will be used to
+ * to compute tracking errors. An Orientation is specified by a Rotation
+ * matrix describing the frame orientation with respect to Ground. The 
+ * reference also contains weightings that identifies the relative importance
+ * of achieving one orientation's reference value over another.
  *
  * @author Ajay Seth
  */
@@ -93,10 +94,10 @@ public:
         body-fixed Euler angles. Units default to Radians.*/
     OrientationsReference(const std::string& orientationFileName,
                      Units modelUnits=Units(Units::Radians));
-    /** Form a Reference from TimeSeriesData of Euler angles (Vec3) and corres-
-    ponding orientation weights. The orientation weights are used
-    to initialize the weightings of the Orientations provided by the Reference.
-    Orientation weights are associated to Orientations by name.*/
+    /** Form a Reference from TimeSeriesTable of Rotations and corresponding
+    orientation weights. The input orientatonWeightSet is used to initialize
+    Reference weightings for individual Orientations. Weights are associated
+    to Orientations by name.*/
     OrientationsReference(const TimeSeriesTable_<SimTK::Rotation>& orientationData,
         const Set<OrientationWeight>* orientationWeightSet=nullptr);
 
@@ -123,18 +124,12 @@ public:
     /** get the names of the Orientations serving as references */
     const SimTK::Array_<std::string>& getNames() const override;
     /** get the value of the OrientationsReference */
-    void getValues(const SimTK::State &s,
-        SimTK::Array_<SimTK::Rotation> &values) const override;
-    /** get the speed value of the OrientationsReference */
-    virtual void getSpeedValues(const SimTK::State &s,
-        SimTK::Array_<SimTK::Vec3> &speedValues) const;
-    /** get the acceleration value of the OrientationsReference */
-    virtual void getAccelerationValues(const SimTK::State &s,
-        SimTK::Array_<SimTK::Vec3> &accValues) const;
+    void getValues(const SimTK::State& s,
+        SimTK::Array_<SimTK::Rotation>& values) const override;
     /** get the weighting (importance) of meeting this OrientationsReference in the
         same order as names*/
-    void getWeights(const SimTK::State &s,
-                    SimTK::Array_<double> &weights) const override;
+    void getWeights(const SimTK::State& s,
+                    SimTK::Array_<double>& weights) const override;
 
     //--------------------------------------------------------------------------
     // Convenience Access

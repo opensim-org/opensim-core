@@ -200,18 +200,6 @@ void  OrientationsReference::getValues(const SimTK::State &s,
     }
 }
 
-/** get the speed value of the OrientationsReference */
-void OrientationsReference::getSpeedValues(const SimTK::State &s, SimTK::Array_<Vec3> &speedValues) const
-{
-    throw Exception("OrientationsReference: getSpeedValues not implemented.");
-}
-
-/** get the acceleration value of the OrientationsReference */
-void OrientationsReference::getAccelerationValues(const SimTK::State &s, SimTK::Array_<Vec3> &accValues) const
-{
-    throw Exception("OrientationsReference: getAccelerationValues not implemented.");
-}
-
 /** get the weights of the Orientations */
 void  OrientationsReference::getWeights(const SimTK::State &s, SimTK::Array_<double> &weights) const
 {
