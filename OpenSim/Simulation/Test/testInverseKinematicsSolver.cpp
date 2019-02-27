@@ -721,12 +721,12 @@ void testNumberOfOrientationsMismatch()
 
     auto usedOrientationNames = orientationsTable.getColumnLabels();
 
-    // add an unused marker to the marker data
+    // add an unused orientation sensor to the given orientation data
     orientationsTable.appendColumn("unused", unusedCol);
 
     cout << "Before:\n" << orientationsTable << endl;
 
-    // re-order "observed" orientations data
+    // re-order "observed" orientation data
     SimTK::Matrix_<SimTK::Rotation> dataGutsCopy
         = orientationsTable.getMatrix();
     int last = dataGutsCopy.ncol() - 1;
@@ -766,9 +766,8 @@ void testNumberOfOrientationsMismatch()
         state.updTime() = t;
         ikSolver.track(state);
 
-        //get the marker errors
+        //get the  orientation errors
         ikSolver.computeCurrentOrientationErrors(orientationErrors);
-
         int nose = orientationErrors.size();
 
         SimTK_ASSERT_ALWAYS(nose == nos,
@@ -846,7 +845,7 @@ generateMarkerDataFromModelAndStates(const Model& model,
                                      const StatesTrajectory& states,
                                      const SimTK::RowVector_<SimTK::Vec3>& biases,
                                      double noiseRadius,
-                                     bool constantOffset) {
+                                     bool isConstantOffset) {
     // use a fixed seed so that we can reproduce and debug failures.
     std::mt19937 gen(0);
     std::normal_distribution<double> noise(0.0, 1);
@@ -883,7 +882,7 @@ generateMarkerDataFromModelAndStates(const Model& model,
         for (size_t i = 0; i < results.getNumRows(); ++i) {
             auto row = results.updRowAtIndex(i);
             for (int j = 0; j < row.size(); ++j) {
-                if (!constantOffset) {
+                if (!isConstantOffset) {
                     offset = noiseRadius*SimTK::Vec3(double(noise(gen)),
                                                      double(noise(gen)),
                                                      double(noise(gen)));
