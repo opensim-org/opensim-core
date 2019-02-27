@@ -565,6 +565,10 @@ public:
         // TODO: deal with constness better.
         auto& model = const_cast<Model&>(mocoProblemRep->getModel());
         auto& simtkState = model.updWorkingState();
+        auto& accel = static_cast<const PrescribedAcceleration&>(
+                model.getMiscModelComponentSet().get("motion"));
+        accel.setEnabled(simtkState, true);
+
         applyParametersToModel(
                 SimTK::Vector(this->m_casProblem->getNumParameters(),
                         parameters.ptr(), true),
@@ -574,8 +578,6 @@ public:
 
         SimTK::Vector udot((int)derivatives.size1(), derivatives.ptr(), true);
 
-        auto& accel = static_cast<const PrescribedAcceleration&>(
-                model.getComponent("motion"));
         accel.setUDot(simtkState, udot);
 
         const SimTK::SimbodyMatterSubsystem& matter =
@@ -672,6 +674,13 @@ public:
 
                 out.push_back(out_kinematic_constraint_errors);
             }
+
+            matter.calcResidualForceIgnoringConstraints(simtkState,
+                    appliedMobilityForces + m_constraintMobilityForces,
+                    appliedBodyForces + m_constraintBodyForces, udot,
+                    m_residual);
+            out[0] = convertToCasADiDM(m_residual);
+
         } else {
             // This path should never be reached during an optimization, but
             // CasADi will throw an error (likely while constructing the
@@ -687,12 +696,12 @@ public:
             m_constraintMobilityForces.resize(appliedMobilityForces.size());
             m_constraintBodyForces.setToZero();
             m_constraintMobilityForces.setToZero();
-        }
 
-        matter.calcResidualForceIgnoringConstraints(simtkState,
-                appliedMobilityForces + m_constraintMobilityForces,
-                appliedBodyForces + m_constraintBodyForces, udot, m_residual);
-        out[0] = convertToCasADiDM(m_residual);
+            model.realizeAcceleration(simtkState);
+            out[0] = casadi::DM(casadi::Sparsity::dense(udot.size(), 1));
+            SimTK::Vector simtkResidual(udot.size(), out[0].ptr(), true);
+            matter.findMotionForces(simtkState, simtkResidual);
+        }
 
         // Calculate auxiliary dynamics.
         // TODO: If auxiliary dynamics depend on udot, the wrong udot will be

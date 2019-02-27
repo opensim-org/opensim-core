@@ -169,6 +169,8 @@ TEMPLATE_TEST_CASE("Similar solutions between implicit and explicit dynamics",
 
 TEMPLATE_TEST_CASE("Combining implicit dynamics mode with path constraints",
         "[implicit]", MocoTropterSolver, MocoCasADiSolver) {
+    std::cout.rdbuf(LogManager::cout.rdbuf());
+    std::cerr.rdbuf(LogManager::cerr.rdbuf());
     class MyPathConstraint : public MocoPathConstraint {
         OpenSim_DECLARE_CONCRETE_OBJECT(MyPathConstraint, MocoPathConstraint);
         void initializeOnModelImpl(const Model& model) const override {
