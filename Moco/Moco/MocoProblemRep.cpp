@@ -19,6 +19,8 @@
 #include "MocoProblemRep.h"
 #include "MocoProblem.h"
 
+#include "Components/PrescribedAcceleration.h"
+
 #include <unordered_set>
 
 using namespace OpenSim;
@@ -39,6 +41,11 @@ void MocoProblemRep::initialize() {
 
     const auto& ph0 = m_problem->getPhase(0);
     m_model = m_problem->getPhase(0).getModel();
+
+
+    // TODO: only enable if necessary?
+    m_model.addModelComponent(new PrescribedAcceleration("motion"));
+
     m_model.initSystem();
 
     const auto stateNames = m_model.getStateVariableNames();
