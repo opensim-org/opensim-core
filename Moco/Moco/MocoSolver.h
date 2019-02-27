@@ -102,6 +102,11 @@ protected:
         return m_problemRep;
     }
 
+    /// Create a library of MocoProblemRep%s for use in parallelized code.
+    // TODO SWIG ignore.
+    std::unique_ptr<ThreadsafeJar<const MocoProblemRep>>
+    createProblemRepJar(int size) const;
+
 private:
 
     /// This is called by MocoTool.
@@ -109,9 +114,6 @@ private:
     // whether they should call MocoTool::solve() or MocoSolver::solve().
     MocoSolution solve() const;
     friend MocoTool;
-
-    /// Check that solver is capable of solving this problem.
-    virtual void resetProblemImpl(const MocoProblemRep& rep) const = 0;
 
     /// This is the meat of a solver: solve the problem and return the solution.
     virtual MocoSolution solveImpl() const = 0;

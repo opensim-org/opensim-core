@@ -1,7 +1,7 @@
 #ifndef MOCO_CASOCPROBLEM_H
 #define MOCO_CASOCPROBLEM_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: MocoCasOCProblem.h                                           *
+ * OpenSim Moco: CasOCProblem.h                                               *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2018 Stanford University and the Authors                     *
  *                                                                            *
@@ -37,54 +37,6 @@ class MocoCasADiSolver;
 /// OpenSim/Moco utilities (e.g., exception handling).
 /// CasADi Optimal Control.
 namespace CasOC {
-
-/// This enum describes the different types of optimization variables, and
-/// are the keys for the Variables map.
-enum Var {
-    initial_time,
-    final_time,
-    /// Differential variables.
-    states,
-    /// Algebraic variables.
-    controls,
-    /// Used for kinematic constraints.
-    multipliers,
-    /// Used for certain methods of solving kinematic constraints.
-    slacks,
-    /// Used in implicit dynamics mode.
-    derivatives, // TODO: Rename to accelerations?
-    /// Constant in time.
-    parameters
-};
-
-template <typename T>
-using Variables = std::unordered_map<Var, T, std::hash<int>>;
-
-/// Numeric variables for initial guesses and solutions.
-using VariablesDM = Variables<casadi::DM>;
-/// Symbolic variables, used to define the problem.
-using VariablesMX = Variables<casadi::MX>;
-
-/// This struct is used to obtain initial guesses.
-struct Iterate {
-    VariablesDM variables;
-    casadi::DM times;
-    std::vector<std::string> state_names;
-    std::vector<std::string> control_names;
-    std::vector<std::string> multiplier_names;
-    std::vector<std::string> slack_names;
-    std::vector<std::string> derivative_names;
-    std::vector<std::string> parameter_names;
-    /// Return a new iterate in which the data is resampled at the times in
-    /// newTimes.
-    Iterate resample(const casadi::DM& newTimes) const;
-};
-
-/// This struct is used to return a solution to a problem. Use `stats`
-/// to check if the problem converged.
-struct Solution : public Iterate {
-    casadi::Dict stats;
-};
 
 struct Bounds {
     Bounds() = default;
@@ -224,8 +176,6 @@ public:
                 {std::move(name), std::move(lower), std::move(upper),
                         OpenSim::make_unique<FunctionType>(
                                 std::forward<Args>(args)...)});
-        m_pathInfos.back().function->constructFunction(
-                this, "path_constraint_" + name, (int)bounds.size());
     }
     /// FunctionType must derive from IntegralCostIntegrand.
     /// Set a functon that computes the integrand of the integral cost.
@@ -233,14 +183,12 @@ public:
     void setIntegralCost(Args&&... args) {
         m_integralCostFunc =
                 OpenSim::make_unique<FunctionType>(std::forward<Args>(args)...);
-        m_integralCostFunc->constructFunction(this, "integral_cost_integrand");
     }
     /// FunctionType must derive from EndpointCost.
     template <typename FunctionType, typename... Args>
     void setEndpointCost(Args&&... args) {
         m_endpointCostFunc =
                 OpenSim::make_unique<FunctionType>(std::forward<Args>(args)...);
-        m_endpointCostFunc->constructFunction(this, "endpoint_cost");
     }
     /// FunctionType must derive from MultibodySystem.
     template <template <bool> class FunctionType, typename... Args>
@@ -248,38 +196,29 @@ public:
         // Constraint a full multibody system (i.e. including kinematic
         // constraints).
         m_multibodyFunc = OpenSim::make_unique<FunctionType<true>>(
-            std::forward<Args>(args)...);
-        m_multibodyFunc->constructFunction(this, "multibody_system");
+                std::forward<Args>(args)...);
         // Construct a multibody system ignoring kinematic constraints.
         m_multibodyFuncIgnoringConstraints =
                 OpenSim::make_unique<FunctionType<false>>(
                         std::forward<Args>(args)...);
-        m_multibodyFuncIgnoringConstraints->constructFunction(
-                this, "multibody_system_ignoring_constraints");
     }
     /// FunctionType must derive from VelocityCorrection.
     template <typename FunctionType, typename... Args>
     void setVelocityCorrection(Args&&... args) {
         m_velocityCorrectionFunc =
                 OpenSim::make_unique<FunctionType>(std::forward<Args>(args)...);
-        m_velocityCorrectionFunc->constructFunction(
-                this, "velocity_correction");
     }
     template <template <bool> class FunctionType, typename... Args>
     void setImplicitMultibodySystem(Args&&... args) {
         // Constraint a full implicit multibody system (i.e. including kinematic
         // constraints).
         m_implicitMultibodyFunc = OpenSim::make_unique<FunctionType<true>>(
-                    std::forward<Args>(args)...);
-        m_implicitMultibodyFunc->constructFunction(this, 
-            "implicit_multibody_system");
-        // Construct an implicit multibody system ignoring kinematic 
+                std::forward<Args>(args)...);
+        // Construct an implicit multibody system ignoring kinematic
         // constraints.
         m_implicitMultibodyFuncIgnoringConstraints =
                 OpenSim::make_unique<FunctionType<false>>(
                         std::forward<Args>(args)...);
-        m_implicitMultibodyFuncIgnoringConstraints->constructFunction(
-            this, "implicit_multibody_system_ignoring_constraints");
     }
 
     /// Create an iterate with the variable names populated according to the
@@ -311,6 +250,56 @@ public:
         for (const auto& info : m_paramInfos)
             it.parameter_names.push_back(info.name);
         return it;
+    }
+
+    void constructFunctions(bool constructImplicit,
+            const std::string& finiteDiffScheme,
+            std::shared_ptr<const std::vector<VariablesDM>>
+                    pointsForSparsityDetection) const {
+        auto* mutThis = const_cast<Problem*>(this);
+        for (const auto& pathInfo : mutThis->m_pathInfos) {
+            pathInfo.function->constructFunction(this,
+                    "path_constraint_" + pathInfo.name,
+                    (int)pathInfo.lowerBounds.size1(), finiteDiffScheme,
+                    pointsForSparsityDetection);
+        }
+        if (mutThis->m_integralCostFunc) {
+            mutThis->m_integralCostFunc->constructFunction(this,
+                    "integral_cost_integrand", finiteDiffScheme,
+                    pointsForSparsityDetection);
+        }
+        if (mutThis->m_endpointCostFunc) {
+            mutThis->m_endpointCostFunc->constructFunction(this,
+                    "endpoint_cost", finiteDiffScheme,
+                    pointsForSparsityDetection);
+        }
+        if (mutThis->m_multibodyFunc) {
+            mutThis->m_multibodyFunc->constructFunction(this,
+                    "multibody_system", finiteDiffScheme,
+                    pointsForSparsityDetection);
+        }
+        if (mutThis->m_multibodyFuncIgnoringConstraints) {
+            mutThis->m_multibodyFuncIgnoringConstraints->constructFunction(this,
+                    "multibody_system_ignoring_constraints", finiteDiffScheme,
+                    pointsForSparsityDetection);
+        }
+        if (mutThis->m_velocityCorrectionFunc) {
+            mutThis->m_velocityCorrectionFunc->constructFunction(this,
+                    "velocity_correction", finiteDiffScheme,
+                    pointsForSparsityDetection);
+        }
+        if (constructImplicit && mutThis->m_implicitMultibodyFunc) {
+            mutThis->m_implicitMultibodyFunc->constructFunction(this,
+                    "implicit_multibody_system", finiteDiffScheme,
+                    pointsForSparsityDetection);
+        }
+        if (constructImplicit &&
+                mutThis->m_implicitMultibodyFuncIgnoringConstraints) {
+            mutThis->m_implicitMultibodyFuncIgnoringConstraints
+                    ->constructFunction(this,
+                            "implicit_multibody_system_ignoring_constraints",
+                            finiteDiffScheme, pointsForSparsityDetection);
+        }
     }
 
     /// @}
@@ -398,24 +387,11 @@ public:
     const casadi::Function& getImplicitMultibodySystem() const {
         return *m_implicitMultibodyFunc;
     }
-    const casadi::Function& 
+    const casadi::Function&
     getImplicitMultibodySystemIgnoringConstraints() const {
         return *m_implicitMultibodyFuncIgnoringConstraints;
     }
     /// @}
-
-    /// The finite difference scheme to be set on all CasOC::Function objects.
-    /// This must be set before calling setEndpointCost, setMultibodySystem, 
-    /// etc. for the correct difference scheme to be applied.
-    /// @note Default is 'central'.
-    // TODO move to solver class. 
-    void setFiniteDifferenceScheme(const std::string& scheme) {
-        m_finite_difference_scheme = scheme;
-    }
-    /// @copydoc setFiniteDifferenceScheme()
-    std::string getFiniteDifferenceScheme() const {
-        return m_finite_difference_scheme;
-    }
 
 private:
     /// Clip endpoint to be as strict as b.
@@ -445,11 +421,9 @@ private:
     std::unique_ptr<MultibodySystem<true>> m_multibodyFunc;
     std::unique_ptr<MultibodySystem<false>> m_multibodyFuncIgnoringConstraints;
     std::unique_ptr<MultibodySystemImplicit<true>> m_implicitMultibodyFunc;
-    std::unique_ptr<MultibodySystemImplicit<false>> 
-    m_implicitMultibodyFuncIgnoringConstraints;
+    std::unique_ptr<MultibodySystemImplicit<false>>
+            m_implicitMultibodyFuncIgnoringConstraints;
     std::unique_ptr<VelocityCorrection> m_velocityCorrectionFunc;
-    // TODO move to solver class.
-    std::string m_finite_difference_scheme = "central";
 };
 
 } // namespace CasOC

@@ -31,6 +31,15 @@ namespace OpenSim {
 
 class MocoProblem;
 
+class MocoTropterSolverNotAvailable : public Exception {
+public:
+    MocoTropterSolverNotAvailable(const std::string& file, int line,
+            const std::string& func)
+            : Exception(file, line, func) {
+        addMessage("MocoTropterSolver is not available.");
+    }
+};
+
 /// Solve the MocoProblem using the **tropter** direct collocation library.
 /// **tropter** is a free and open-source C++ library that supports computing
 /// the Jacobian and Hessian via either automatic differentiation or finite
@@ -49,21 +58,28 @@ class MocoProblem;
 /// available, but tropter header files are not required. No tropter symbols
 /// are exposed in Moco's interface.
 class OSIMMOCO_API MocoTropterSolver : public MocoDirectCollocationSolver {
-OpenSim_DECLARE_CONCRETE_OBJECT(MocoTropterSolver, MocoDirectCollocationSolver);
+    OpenSim_DECLARE_CONCRETE_OBJECT(
+            MocoTropterSolver, MocoDirectCollocationSolver);
+
 public:
     OpenSim_DECLARE_PROPERTY(optim_jacobian_approximation, std::string,
-    "When using IPOPT, 'finite-difference-values' for Jacobian calculations "
-    "by the solver, or 'exact' for Jacobian calculations by "
-    "tropter (default).");
+            "When using IPOPT, 'finite-difference-values' for Jacobian "
+            "calculations "
+            "by the solver, or 'exact' for Jacobian calculations by "
+            "tropter (default).");
     OpenSim_DECLARE_PROPERTY(optim_sparsity_detection, std::string,
-    "Iterate used to detect sparsity pattern of Jacobian/Hessian; "
-    "'random' (default) or 'initial-guess'");
+            "Iterate used to detect sparsity pattern of Jacobian/Hessian; "
+            "'random' (default) or 'initial-guess'");
     OpenSim_DECLARE_OPTIONAL_PROPERTY(exact_hessian_block_sparsity_mode,
-    std::string, "'dense' for dense blocks on the Hessian diagonal, or "
-    "'sparse' for sparse blocks on the Hessian diagonal, detected from the "
-    "optimal control problem. If using an 'exact' Hessian approximation, this "
-    "property must be set. Note: this option only takes effect when using "
-    "IPOPT.");
+            std::string,
+            "'dense' for dense blocks on the Hessian diagonal, or "
+            "'sparse' for sparse blocks on the Hessian diagonal, detected from "
+            "the "
+            "optimal control problem. If using an 'exact' Hessian "
+            "approximation, this "
+            "property must be set. Note: this option only takes effect when "
+            "using "
+            "IPOPT.");
     // TODO OpenSim_DECLARE_LIST_PROPERTY(enforce_constraint_kinematic_levels,
     //   std::string, "");
     // TODO must make more general for multiple phases, mesh refinement.
@@ -114,7 +130,6 @@ public:
     static void printOptimizationSolverOptions(std::string solver = "ipopt");
 
 protected:
-
     /// Internal tropter optimal control problem.
     template <typename T>
     class OCProblem;
@@ -130,12 +145,10 @@ protected:
     std::shared_ptr<const TropterProblemBase<double>>
     createTropterProblem() const;
 
-    void resetProblemImpl(const MocoProblemRep&) const override;
     // TODO ensure that user-provided guess is within bounds.
     MocoSolution solveImpl() const override;
 
 private:
-
     void constructProperties();
 
     // When a copy of the solver is made, we want to keep any guess specified

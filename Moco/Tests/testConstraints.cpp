@@ -27,6 +27,7 @@
 #include <OpenSim/Simulation/osimSimulation.h>
 #include <OpenSim/Common/GCVSpline.h>
 #include <OpenSim/Common/TimeSeriesTable.h>
+#include <OpenSim/Common/LogManager.h>
 
 using namespace OpenSim;
 using SimTK::Vec3;
@@ -605,6 +606,8 @@ void testDoublePendulumPointOnLine(bool enforce_constraint_derivatives,
 template <typename SolverType>
 void testDoublePendulumCoordinateCoupler(MocoSolution& solution,
         bool enforce_constraint_derivatives, std::string dynamics_mode) {
+    std::cout.rdbuf(LogManager::cout.rdbuf());
+    std::cerr.rdbuf(LogManager::cerr.rdbuf());
     MocoTool moco;
     moco.setName("double_pendulum_coordinate_coupler");
 

@@ -19,9 +19,12 @@
 #include "MocoProblemRep.h"
 #include "MocoUtilities.h"
 
-#include "tropter/TropterProblem.h"
+#ifdef MOCO_WITH_TROPTER
+    #include "tropter/TropterProblem.h"
+#endif
 
 using namespace OpenSim;
+
 
 MocoTropterSolver::MocoTropterSolver() {
     constructProperties();
@@ -35,6 +38,7 @@ void MocoTropterSolver::constructProperties() {
 
 std::shared_ptr<const MocoTropterSolver::TropterProblemBase<double>>
 MocoTropterSolver::createTropterProblem() const {
+#ifdef MOCO_WITH_TROPTER
     checkPropertyInSet(*this, getProperty_dynamics_mode(), {"explicit",
                                                             "implicit"});
     if (get_dynamics_mode() == "explicit") {
@@ -44,12 +48,13 @@ MocoTropterSolver::createTropterProblem() const {
     } else {
         OPENSIM_THROW_FRMOBJ(Exception, "Internal error.");
     }
-}
-
-void MocoTropterSolver::resetProblemImpl(const MocoProblemRep&) const {
+#else
+    OPENSIM_THROW(MocoTropterSolverNotAvailable);
+#endif
 }
 
 MocoIterate MocoTropterSolver::createGuess(const std::string& type) const {
+#ifdef MOCO_WITH_TROPTER
     OPENSIM_THROW_IF_FRMOBJ(
                type != "bounds"
             && type != "random"
@@ -82,6 +87,9 @@ MocoIterate MocoTropterSolver::createGuess(const std::string& type) const {
         tropIter = dircol.make_random_iterate_within_bounds();
     }
     return ocp->convertToMocoIterate(tropIter);
+#else
+    OPENSIM_THROW(MocoTropterSolverNotAvailable);
+#endif
 }
 
 void MocoTropterSolver::setGuess(MocoIterate guess) {
@@ -124,15 +132,20 @@ const MocoIterate& MocoTropterSolver::getGuess() const {
 }
 
 void MocoTropterSolver::printOptimizationSolverOptions(std::string solver) {
+#ifdef MOCO_WITH_TROPTER
     if (solver == "ipopt") {
         tropter::optimization::IPOPTSolver::print_available_options();
     } else {
         std::cout << "No info available for " << solver << " options." <<
                 std::endl;
     }
+#else
+    OPENSIM_THROW(MocoTropterSolverNotAvailable);
+#endif
 }
 
 MocoSolution MocoTropterSolver::solveImpl() const {
+#ifdef MOCO_WITH_TROPTER
     const Stopwatch stopwatch;
 
     auto ocp = createTropterProblem();
@@ -331,4 +344,7 @@ MocoSolution MocoTropterSolver::solveImpl() const {
     }
 
     return mocoSolution;
+#else
+    OPENSIM_THROW(MocoTropterSolverNotAvailable);
+#endif
 }
