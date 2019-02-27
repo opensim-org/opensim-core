@@ -41,7 +41,6 @@ add_library(osimMoco SHARED
         MocoParameter.cpp
         MocoConstraint.h
         MocoConstraint.cpp
-        ActivationCoordinateActuator.h
         InverseMuscleSolver/InverseMuscleSolver.h
         InverseMuscleSolver/InverseMuscleSolver.cpp
         InverseMuscleSolver/GlobalStaticOptimization.h
@@ -51,10 +50,13 @@ add_library(osimMoco SHARED
         InverseMuscleSolver/DeGrooteFregly2016MuscleStandalone.h
         InverseMuscleSolver/InverseMuscleSolverMotionData.h
         InverseMuscleSolver/InverseMuscleSolverMotionData.cpp
+        Components/ActivationCoordinateActuator.h
         Components/StationPlaneContactForce.h
         Components/StationPlaneContactForce.cpp
         Components/ModelFactory.h
         Components/ModelFactory.cpp
+        Components/DiscreteForces.h
+        Components/DiscreteForces.cpp
         MocoCasADiSolver/MocoCasADiSolver.h
         MocoCasADiSolver/MocoCasADiSolver.cpp
         MocoCasADiSolver/MocoCasADiMisc.h

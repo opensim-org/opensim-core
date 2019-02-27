@@ -18,6 +18,7 @@
 
 #include "MocoProblemRep.h"
 #include "MocoProblem.h"
+#include <simbody/internal/Force_DiscreteForces.h>
 
 #include <unordered_set>
 
@@ -40,6 +41,11 @@ void MocoProblemRep::initialize() {
     const auto& ph0 = m_problem->getPhase(0);
     m_model = m_problem->getPhase(0).getModel();
     m_model.initSystem();
+
+    //// Create copy of model that we'll replace the Simbody constraint with
+    //// discrete forces.
+    //m_modelConForces = Model(m_model);
+    //SimTK::State& stateConForces = m_modelConForces.initSystem();
 
     const auto stateNames = m_model.getStateVariableNames();
     for (int i = 0; i < ph0.getProperty_state_infos().size(); ++i) {
@@ -94,35 +100,6 @@ void MocoProblemRep::initialize() {
                     {actu.getMinControl(), actu.getMaxControl()}, {}, {});
             m_control_infos[actuName] = info;
         }
-    }
-
-    m_parameters.resize(ph0.getProperty_parameters().size());
-    std::unordered_set<std::string> paramNames;
-    for (int i = 0; i < ph0.getProperty_parameters().size(); ++i) {
-        const auto& param = ph0.get_parameters(i);
-        OPENSIM_THROW_IF(param.getName().empty(), Exception,
-                "All parameters must have a name.");
-        OPENSIM_THROW_IF(paramNames.count(param.getName()), Exception,
-                format("A parameter with name '%s' already exists.",
-                        param.getName()));
-        paramNames.insert(param.getName());
-        m_parameters[i] = std::unique_ptr<MocoParameter>(
-                param.clone());
-        m_parameters[i]->initializeOnModel(m_model);
-    }
-
-    m_costs.resize(ph0.getProperty_costs().size());
-    std::unordered_set<std::string> costNames;
-    for (int i = 0; i < ph0.getProperty_costs().size(); ++i) {
-        const auto& cost = ph0.get_costs(i);
-        OPENSIM_THROW_IF(cost.getName().empty(), Exception,
-                "All costs must have a name.");
-        OPENSIM_THROW_IF(costNames.count(cost.getName()), Exception,
-                format("A cost with name '%s' already exists.",
-                        cost.getName()));
-        costNames.insert(cost.getName());
-        m_costs[i] = std::unique_ptr<MocoCost>(cost.clone());
-        m_costs[i]->initializeOnModel(m_model);
     }
 
     // Get property values for constraints and Lagrange multipliers.
@@ -187,6 +164,43 @@ void MocoProblemRep::initialize() {
             }
             m_multiplier_infos_map.insert({kcInfo.getName(), multInfos});
         }
+    }
+
+    // Add discrete force to force subsystem for constraints.
+    if (m_kinematic_constraints.size() > 0) {
+        DiscreteForces* constraintForces = new DiscreteForces();
+        constraintForces->setName("constraint_forces");
+        m_model.addComponent(constraintForces);
+        m_model.initSystem();
+    }
+    
+    m_parameters.resize(ph0.getProperty_parameters().size());
+    std::unordered_set<std::string> paramNames;
+    for (int i = 0; i < ph0.getProperty_parameters().size(); ++i) {
+        const auto& param = ph0.get_parameters(i);
+        OPENSIM_THROW_IF(param.getName().empty(), Exception,
+            "All parameters must have a name.");
+        OPENSIM_THROW_IF(paramNames.count(param.getName()), Exception,
+            format("A parameter with name '%s' already exists.",
+                param.getName()));
+        paramNames.insert(param.getName());
+        m_parameters[i] = std::unique_ptr<MocoParameter>(
+            param.clone());
+        m_parameters[i]->initializeOnModel(m_model);
+    }
+
+    m_costs.resize(ph0.getProperty_costs().size());
+    std::unordered_set<std::string> costNames;
+    for (int i = 0; i < ph0.getProperty_costs().size(); ++i) {
+        const auto& cost = ph0.get_costs(i);
+        OPENSIM_THROW_IF(cost.getName().empty(), Exception,
+            "All costs must have a name.");
+        OPENSIM_THROW_IF(costNames.count(cost.getName()), Exception,
+            format("A cost with name '%s' already exists.",
+                cost.getName()));
+        costNames.insert(cost.getName());
+        m_costs[i] = std::unique_ptr<MocoCost>(cost.clone());
+        m_costs[i]->initializeOnModel(m_model);
     }
 
     m_num_path_constraint_equations = 0;

@@ -33,10 +33,11 @@
 #include "MocoUtilities.h"
 #include "MocoParameter.h"
 #include "MocoConstraint.h"
-#include "ActivationCoordinateActuator.h"
 
+#include "Components/ActivationCoordinateActuator.h"
 #include "Components/StationPlaneContactForce.h"
 #include "Components/ModelFactory.h"
+#include "Components/DiscreteForces.h"
 
 #include "MocoCasADiSolver/MocoCasADiSolver.h"
 

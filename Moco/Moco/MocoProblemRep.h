@@ -23,7 +23,9 @@
 #include "MocoCost/MocoCost.h"
 #include "MocoConstraint.h"
 #include "MocoParameter.h"
+#include "Components/DiscreteForces.h"
 #include <OpenSim/Simulation/Model/Model.h>
+#include <simbody/internal/Force_DiscreteForces.h>
 
 namespace OpenSim {
 
@@ -121,6 +123,9 @@ public:
                 "available until after initialization.");
         return m_num_kinematic_constraint_equations;
     }
+    /// TODO
+    //SimTK::Force::DiscreteForces getConstraintForcesHandle() const 
+    //{   return m_constraintForcesHandle; }
 
     /// Print a description of this problem, including costs and variable
     /// bounds. By default, the description is printed to the console (cout),
@@ -208,6 +213,8 @@ private:
     const MocoProblem* m_problem;
 
     Model m_model;
+    //Model m_modelConForces;
+    //SimTK::Force::DiscreteForces m_constraintForcesHandle;
 
     std::unordered_map<std::string, MocoVariableInfo> m_state_infos;
     std::unordered_map<std::string, MocoVariableInfo> m_control_infos;

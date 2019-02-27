@@ -57,6 +57,7 @@ protected:
                     "MocoTropterSolver does not support OpenSim Controllers. "
                     "Disable all controllers in the model.");
         }
+
         m_state = m_model.getWorkingState();
 
         OPENSIM_THROW_IF(
@@ -373,6 +374,7 @@ protected:
             SimTK::Vector& constraintMobilityForces) const {
         // If enabled constraints exist in the model, compute accelerations
         // based on Lagrange multipliers.
+        m_model.realizeVelocity(state);
         const auto& matter = m_model.getMatterSubsystem();
 
         // Multipliers are negated so constraint forces can be used like
@@ -435,6 +437,18 @@ public:
             const auto& enforceConstraintDerivatives =
                     this->m_mocoTropterSolver.get_enforce_constraint_derivatives();
 
+            this->calcKinematicConstraintForces(in, simTKState,
+                this->m_constraintBodyForces,
+                this->m_constraintMobilityForces);
+
+            const auto& constraintForces = 
+                m_model.getComponent<DiscreteForces>("constraint_forces");
+
+            constraintForces.setAllGeneralizedForces(simTKState,
+                    this->m_constraintMobilityForces);
+            constraintForces.setAllBodyForces(simTKState,
+                    this->m_constraintBodyForces);
+
             // TODO Antoine and Gil said realizing Dynamics is a lot costlier
             // than realizing to Velocity and computing forces manually.
             model.realizeDynamics(simTKState);
@@ -450,14 +464,9 @@ public:
 
             const SimTK::SimbodyMatterSubsystem& matter =
                     model.getMatterSubsystem();
-
-            this->calcKinematicConstraintForces(in, simTKState,
-                    this->m_constraintBodyForces,
-                    this->m_constraintMobilityForces);
-                
             matter.calcAccelerationIgnoringConstraints(simTKState,
-                    appliedMobilityForces + this->m_constraintMobilityForces,
-                    appliedBodyForces + this->m_constraintBodyForces,
+                    appliedMobilityForces,
+                    appliedBodyForces,
                     this->udot, A_GB);
                     
             // Apply velocity correction to qdot if at a mesh interval midpoint.
