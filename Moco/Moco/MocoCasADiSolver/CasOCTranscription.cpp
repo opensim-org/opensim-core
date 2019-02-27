@@ -387,21 +387,23 @@ Solution Transcription::solve(const Iterate& guessOrig) {
     // the constraint functions.
     // veccat() concatenates std::vectors into a single MX vector.
     nlp.emplace(std::make_pair("g", casadi::MX::veccat(m_constraints)));
-    // auto gradient = casadi::MX::gradient(nlp["f"], nlp["x"]);
-    // gradient.sparsity().to_file(
-    //         "CasOCTranscription_objective_gradient_sparsity.mtx");
-    // auto hessian = casadi::MX::hessian(nlp["f"], nlp["x"]);
-    // hessian.sparsity().to_file(
-    //         "CasOCTranscription_objective_Hessian_sparsity.mtx");
-    // auto lagrangian = m_objective +
-    //         casadi::MX::dot(casadi::MX::ones(nlp["g"].sparsity()),
-    //         nlp["g"]);
-    // auto hessian_lagr = casadi::MX::hessian(lagrangian, nlp["x"]);
-    // hessian_lagr.sparsity().to_file(
-    //                  "CasOCTranscription_Lagrangian_Hessian_sparsity.mtx");
-    // auto jacobian = casadi::MX::jacobian(nlp["g"], nlp["x"]);
-    // jacobian.sparsity().to_file(
-    //         "CasOCTranscription_constraint_Jacobian_sparsity.mtx");
+    if (!m_solver.getWriteSparsity().empty()) {
+        const auto prefix = m_solver.getWriteSparsity();
+        auto gradient = casadi::MX::gradient(nlp["f"], nlp["x"]);
+        gradient.sparsity().to_file(
+                prefix + "_objective_gradient_sparsity.mtx");
+        auto hessian = casadi::MX::hessian(nlp["f"], nlp["x"]);
+        hessian.sparsity().to_file(prefix + "_objective_Hessian_sparsity.mtx");
+        auto lagrangian = m_objective +
+                          casadi::MX::dot(casadi::MX::ones(nlp["g"].sparsity()),
+                                  nlp["g"]);
+        auto hessian_lagr = casadi::MX::hessian(lagrangian, nlp["x"]);
+        hessian_lagr.sparsity().to_file(
+                prefix + "_Lagrangian_Hessian_sparsity.mtx");
+        auto jacobian = casadi::MX::jacobian(nlp["g"], nlp["x"]);
+        jacobian.sparsity().to_file(
+                prefix + "constraint_Jacobian_sparsity.mtx");
+    }
     const casadi::Function nlpFunc =
             casadi::nlpsol("nlp", m_solver.getOptimSolver(), nlp, options);
 
@@ -452,14 +454,17 @@ Iterate Transcription::createInitialGuessFromBounds() const {
     return casGuess;
 }
 
-Iterate Transcription::createRandomIterateWithinBounds() const {
-    static SimTK::Random::Uniform randGen(-1, 1);
-    auto setRandom = [](DM& output, const DM& lowerDM, const DM& upperDM) {
+Iterate Transcription::createRandomIterateWithinBounds(
+        const SimTK::Random* randGen) const {
+    static const SimTK::Random::Uniform randGenDefault(-1, 1);
+    const SimTK::Random* randGenToUse = &randGenDefault;
+    if (randGen) randGenToUse = randGen;
+    auto setRandom = [&](DM& output, const DM& lowerDM, const DM& upperDM) {
         for (int irow = 0; irow < output.rows(); ++irow) {
             for (int icol = 0; icol < output.columns(); ++icol) {
                 const auto& lower = double(lowerDM(irow, icol));
                 const auto& upper = double(upperDM(irow, icol));
-                const auto rand = randGen.getValue();
+                const auto rand = randGenToUse->getValue();
                 auto value = 0.5 * (rand + 1.0) * (upper - lower) + lower;
                 if (std::isnan(value)) value = SimTK::clamp(lower, rand, upper);
                 output(irow, icol) = value;

@@ -37,6 +37,24 @@ namespace OpenSim {
 /// less efficiently in this solver; for parameter optimization, first try
 /// MocoTropterSolver.
 ///
+/// Sparsity
+/// ========
+/// Direct collocation is fast because the derivative matrices (Jacobian and
+/// Hessian) in the optimization problem are extremely sparse. By default,
+/// CasADi determines the sparsity pattern of these matrices to be block
+/// patterns: the individual functions that invoke OpenSim are treated as dense,
+/// but this dense pattern is repeated in a sparse way. This is conservative
+/// because we ensure that no "nonzeros" are accidentally treated as "zeros."
+/// However, the problem may solve faster if we discover more "zeros."
+///
+/// See the optim_sparsity_detection setting for more information. In the case
+/// of "random", we use 3 random iterates and combine the resulting sparsity
+/// patterns. The seed used for these 3 random iterates is always exactly the
+/// same, ensuring that the sparsity pattern is deterministic.
+///
+/// To explore the sparsity pattern for your problem, set optim_write_sparsity
+/// and run the resulting files with the plot_casadi_sparsity.py Python script.
+///
 /// Finite difference scheme
 /// ========================
 /// The "central" finite difference is more accurate but can be 2 times
@@ -59,15 +77,16 @@ namespace OpenSim {
 /// all 4 cores.
 ///
 /// Note that there is overhead in the parallelization; if you plan to solve
-/// many problems, it is better to turn off parallelization here and parallelize the
-/// solving of your multiple problems using your system (e.g., invoke the opensim-moco
-/// command-line tool in multiple Terminals or Command Prompts).
+/// many problems, it is better to turn off parallelization here and parallelize
+/// the solving of your multiple problems using your system (e.g., invoke the
+/// opensim-moco command-line tool in multiple Terminals or Command Prompts).
 ///
-/// Note that the `parallel` property overrides the environment variable, allowing
-/// more granular control over parallelization. However, the parallelization setting
-/// does not logically belong as a property, as it does not affect the solution.
-/// We encourage you to use the environment variable instead, as this allows
-/// different users to solve the same problem in their preferred way.
+/// Note that the `parallel` property overrides the environment variable,
+/// allowing more granular control over parallelization. However, the
+/// parallelization setting does not logically belong as a property, as it does
+/// not affect the solution. We encourage you to use the environment variable
+/// instead, as this allows different users to solve the same problem in their
+/// preferred way.
 ///
 /// @note The software license of CasADi (LGPL) is more restrictive than that of
 /// the rest of Moco (Apache 2.0).
@@ -78,9 +97,17 @@ class OSIMMOCO_API MocoCasADiSolver : public MocoDirectCollocationSolver {
             MocoCasADiSolver, MocoDirectCollocationSolver);
 
 public:
+    OpenSim_DECLARE_PROPERTY(optim_sparsity_detection, std::string,
+            "Detect the sparsity pattern of derivatives; 'none' "
+            "(for safe block sparsity; default), 'random', or "
+            "'initial-guess'.");
+    OpenSim_DECLARE_PROPERTY(optim_write_sparsity, std::string,
+            "Write files for the sparsity pattern of the gradient, Jacobian, "
+            "and Hessian to the working directory using this as a prefix; "
+            "empty (default) to not write such files.");
     OpenSim_DECLARE_PROPERTY(optim_finite_difference_scheme, std::string,
-        "The finite difference scheme CasADi will use to calculate problem "
-        "derivatives (default: 'central').");
+            "The finite difference scheme CasADi will use to calculate problem "
+            "derivatives (default: 'central').");
 
     OpenSim_DECLARE_OPTIONAL_PROPERTY(parallel, int,
             "Evaluate integral costs and the differential-algebraic "

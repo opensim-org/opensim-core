@@ -40,6 +40,8 @@ using namespace OpenSim;
 MocoCasADiSolver::MocoCasADiSolver() { constructProperties(); }
 
 void MocoCasADiSolver::constructProperties() {
+    constructProperty_optim_sparsity_detection("none");
+    constructProperty_optim_write_sparsity("");
     constructProperty_optim_finite_difference_scheme("central");
     constructProperty_parallel();
 }
@@ -140,13 +142,6 @@ std::unique_ptr<CasOC::Problem> MocoCasADiSolver::createCasOCProblem() const {
     OPENSIM_THROW_IF(!model.getMatterSubsystem().getUseEulerAngles(
                              model.getWorkingState()),
             Exception, "Quaternions are not supported.");
-
-    checkPropertyInSet(*this, getProperty_optim_finite_difference_scheme(),
-        {"central", "forward", "backward"});
-    // TODO this must be set before call casProblem->setEndpointCost(...), etc
-    // below.
-    // TODO move this setting to the solver class.
-    casProblem->setFiniteDifferenceScheme(get_optim_finite_difference_scheme());
 
     std::unordered_map<int, int> yIndexMap;
     auto stateNames = createStateVariableNamesInSystemOrder(model, yIndexMap);
@@ -407,6 +402,18 @@ std::unique_ptr<CasOC::Solver> MocoCasADiSolver::createCasOCSolver(
             solverOptions["acceptable_constr_viol_tol"] = tol;
         }
     }
+
+    checkPropertyInSet(*this, getProperty_optim_sparsity_detection(),
+            {"none", "random", "initial-guess"});
+    casSolver->setSparsityDetection(get_optim_sparsity_detection());
+    casSolver->setSparsityDetectionRandomCount(3);
+
+    casSolver->setWriteSparsity(get_optim_write_sparsity());
+
+    checkPropertyInSet(*this, getProperty_optim_finite_difference_scheme(),
+            {"central", "forward", "backward"});
+    casSolver->setFiniteDifferenceScheme(get_optim_finite_difference_scheme());
+
     Dict pluginOptions;
     pluginOptions["verbose_init"] = true;
 

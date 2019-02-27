@@ -106,6 +106,8 @@ int main() {
     solver.set_optim_ipopt_print_level(4);
     solver.set_optim_max_iterations(50);
     solver.set_optim_finite_difference_scheme("forward");
+    solver.set_optim_sparsity_detection("random");
+    solver.set_optim_write_sparsity("sliding_mass");
     // solver.set_optim_constraint_tolerance(1e-5);
     // solver.set_optim_convergence_tolerance(1e-5);
     // solver.set_optim_findiff_hessian_step_size(1e-3);

@@ -34,7 +34,11 @@ public:
               m_numGridPoints(numGridPoints), m_numMeshPoints(numMeshPoints) {}
     virtual ~Transcription() = default;
     Iterate createInitialGuessFromBounds() const;
-    Iterate createRandomIterateWithinBounds() const;
+    /// Use the provided random number generator to generate an iterate.
+    /// Random::Uniform is used if a generator is not provided. The generator
+    /// should produce numbers with [-1, 1].
+    Iterate createRandomIterateWithinBounds(
+            const SimTK::Random* = nullptr) const;
     template <typename T>
     T createTimes(const T& initialTime, const T& finalTime) const {
         return (finalTime - initialTime) * m_grid + initialTime;
