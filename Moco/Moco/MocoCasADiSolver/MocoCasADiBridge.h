@@ -18,6 +18,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
+#include "../Components/PrescribedAcceleration.h"
 #include "../MocoBounds.h"
 #include "../MocoProblemRep.h"
 #include "CasOCProblem.h"
@@ -319,8 +320,7 @@ private:
 };
 
 template <bool CalcKCErrors>
-class MocoCasADiMultibodySystem
-        : public CasOC::MultibodySystem<CalcKCErrors> {
+class MocoCasADiMultibodySystem : public CasOC::MultibodySystem<CalcKCErrors> {
 public:
     MocoCasADiMultibodySystem(ThreadsafeJar<const MocoProblemRep>& jar,
             const OpenSim::MocoCasADiSolver& solver,
@@ -573,6 +573,10 @@ public:
                 time, states, controls, model, m_yIndexMap, simtkState);
 
         SimTK::Vector udot((int)derivatives.size1(), derivatives.ptr(), true);
+
+        auto& accel = static_cast<const PrescribedAcceleration&>(
+                model.getComponent("motion"));
+        accel.setUDot(simtkState, udot);
 
         const SimTK::SimbodyMatterSubsystem& matter =
                 model.getMatterSubsystem();
