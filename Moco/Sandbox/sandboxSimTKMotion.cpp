@@ -24,8 +24,7 @@ using std::endl;
 
 class MyReporter : public PeriodicEventReporter {
 public:
-    MyReporter(const MultibodySystem& system,
-            Real interval)
+    MyReporter(const MultibodySystem& system, Real interval)
             : PeriodicEventReporter(interval), system(system) {}
 
     // Show x-y position of the pendulum weight as a function of time.
@@ -35,12 +34,79 @@ public:
         Vector mf;
         mm = system.getMatterSubsystem().getMotionMultipliers(state);
         system.getMatterSubsystem().findMotionForces(state, mf);
-        std::cout << state.getTime() << "\t" << mm << "\t" << mf
-                  << std::endl;
+        std::cout << state.getTime() << "\t" << mm << "\t" << mf << std::endl;
     }
 
 private:
     const MultibodySystem& system;
+};
+
+class MyMotionImplementation : public Motion::Custom::Implementation {
+    Motion::Level getLevel(const State&) const override {
+        return Motion::Level::Position;
+    }
+
+public:
+    void calcPrescribedPosition(
+            const State& s, int nq, Real* q) const override {
+        const auto& t = s.getTime();
+        for (int i = 0; i < nq; ++i) {
+            q[i] = t * t;
+        }
+    }
+    void calcPrescribedPositionDot(
+            const State& s, int nq, Real* qdot) const override {
+        const auto& t = s.getTime();
+        for (int i = 0; i < nq; ++i) {
+            qdot[i] = 2 * t;
+        }
+    }
+    void calcPrescribedPositionDotDot(
+            const State& s, int nq, Real* qdotdot) const override {
+        for (int i = 0; i < nq; ++i) {
+            qdotdot[i] = 2;
+        }
+    }
+};
+
+class MyMotion : public Motion::Custom {
+public:
+    MyMotion(MobilizedBody& mobod)
+            : Motion::Custom(mobod, new MyMotionImplementation()) {}
+};
+
+class PrescribedAccelerationMotionImplementation :
+        public Motion::Custom::Implementation {
+    Motion::Level getLevel(const State&) const override {
+        return Motion::Level::Acceleration;
+    }
+public:
+    void calcPrescribedPosition(
+            const State& s, int nq, Real* q) const override {
+        const auto& t = s.getTime();
+        for (int i = 0; i < nq; ++i) {
+            q[i] = t * t;
+        }
+    }
+    void calcPrescribedPositionDot(
+            const State& s, int nq, Real* qdot) const override {
+        const auto& t = s.getTime();
+        for (int i = 0; i < nq; ++i) {
+            qdot[i] = 2 * t;
+        }
+    }
+    void calcPrescribedPositionDotDot(
+            const State& s, int nq, Real* qdotdot) const override {
+        for (int i = 0; i < nq; ++i) {
+            qdotdot[i] = 2;
+        }
+    }
+};
+
+class PrescribedAccelerationMotion : public Motion::Custom {
+    PrescribedAccelerationMotion(MobilizedBody& mobod)
+    : Motion::Custom(mobod, new PrescribedAccelerationMotionImplementation()) {}
+
 };
 
 int main() {
@@ -64,7 +130,8 @@ int main() {
     MobilizedBody::Pin pendulum1b(pendulum1, Transform(Vec3(0, -1, 0)),
             pendulumBody, Transform(Vec3(0, 1, 0)));
 
-    Motion::Sinusoid motion(pendulum1, Motion::Level::Position, 1.0, 2.0, 0);
+    // Motion::Sinusoid motion(pendulum1, Motion::Level::Position, 1.0, 2.0, 0);
+    MyMotion myMotion(pendulum1b);
 
     // Visualize with default options; ask for a report every 1/30 of a second
     // to match the Visualizer's default 30 frames per second rate.
