@@ -21,9 +21,7 @@
 #include <OpenSim/Actuators/CoordinateActuator.h>
 #include <Moco/osimMoco.h>
 #include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
-
-// TODO: Test with hermite-simpson.
-// TODO: Test with kinematic constraints.
+#include <OpenSim/Common/LogManager.h>
 
 using namespace OpenSim;
 using namespace Catch;
@@ -206,6 +204,8 @@ TEMPLATE_TEST_CASE("Combining implicit dynamics mode with path constraints",
 
 TEMPLATE_TEST_CASE("Combining implicit dynamics with kinematic constraints",
         "[implicit]", /*MocoTropterSolver,*/ MocoCasADiSolver) {
+    std::cout.rdbuf(LogManager::cout.rdbuf());
+    std::cerr.rdbuf(LogManager::cerr.rdbuf());
     GIVEN("MocoProblem with a kinematic constraint") {
         MocoTool moco;
         auto& prob = moco.updProblem();

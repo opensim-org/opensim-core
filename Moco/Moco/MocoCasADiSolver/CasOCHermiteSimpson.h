@@ -23,21 +23,22 @@
 namespace CasOC {
 
 /// Enforce the differential equations in the problem using a Hermite-
-/// Simpson (third-order) approximation. The integral in the objective 
+/// Simpson (third-order) approximation. The integral in the objective
 /// function is approximated by Simpson quadrature.
 class HermiteSimpson : public Transcription {
 public:
     HermiteSimpson(const Solver& solver, const Problem& problem)
-        : Transcription(solver, problem, 2*solver.getNumMeshPoints() - 1, 
-            solver.getNumMeshPoints()) 
-    { transcribe(); }
+            : Transcription(solver, problem, 2 * solver.getNumMeshPoints() - 1,
+                      solver.getNumMeshPoints()) {
+        createVariablesAndSetBounds();
+    }
 
 private:
     casadi::DM createQuadratureCoefficientsImpl() const override;
     casadi::DM createKinematicConstraintIndicesImpl() const override;
-    casadi::DM createResidualConstraintIndicesImpl() const override;
-    void applyConstraintsImpl() override;
-
+    void applyConstraintsImpl(const VariablesMX& vars, const casadi::MX& xdot,
+            const casadi::MX& residual, const casadi::MX& kcerr,
+            const casadi::MXVector& path) override;
 };
 
 } // namespace CasOC

@@ -19,6 +19,13 @@ option(MOCO_BUILD_EXECUTABLE
 option(MOCO_BUILD_EXAMPLES
     "Build, test, and install Moco C++ examples." ON)
 
+option(MOCO_WITH_TROPTER
+    "Build the tropter optimal control library." ON)
+if(NOT MOCO_WITH_TROPTER)
+    # TODO
+    message(WARNING "MOCO_WITH_TROPTER=OFF is not supported yet.")
+endif()
+
 
 # CMake settings.
 # ---------------
@@ -132,7 +139,9 @@ endif()
 enable_testing()
 include(CTest)
 
-add_subdirectory(tropter)
+if(MOCO_WITH_TROPTER)
+    add_subdirectory(tropter)
+endif()
 
 add_subdirectory(Moco)
 

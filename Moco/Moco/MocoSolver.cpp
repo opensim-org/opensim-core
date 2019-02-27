@@ -77,7 +77,6 @@ MocoIterate MocoSolver::createGuessTimeStepping() const {
 void MocoSolver::resetProblem(const MocoProblem& problem) {
     m_problem.reset(&problem);
     m_problemRep = problem.createRep();
-    resetProblemImpl(m_problemRep);
 }
 
 MocoSolution MocoSolver::solve() const {
@@ -90,4 +89,13 @@ void MocoSolver::setSolutionStats(MocoSolution& sol, bool success,
     sol.setSuccess(success);
     sol.setStatus(status);
     sol.setNumIterations(numIterations);
+}
+
+std::unique_ptr<ThreadsafeJar<const MocoProblemRep>>
+        MocoSolver::createProblemRepJar(int size) const {
+    auto jar = make_unique<ThreadsafeJar<const MocoProblemRep>>();
+    for (int i = 0; i < size; ++i) {
+        jar->leave(std::unique_ptr<MocoProblemRep>(m_problem->createRepHeap()));
+    }
+    return jar;
 }

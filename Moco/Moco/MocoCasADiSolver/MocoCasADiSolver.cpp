@@ -20,7 +20,12 @@
 
 #include "../MocoUtilities.h"
 #include "CasOCSolver.h"
-#include "MocoCasADiMisc.h"
+#include "MocoCasADiBridge.h"
+extern template class OpenSim::MocoCasADiMultibodySystem<false>;
+extern template class OpenSim::MocoCasADiMultibodySystem<true>;
+extern template class OpenSim::MocoCasADiMultibodySystemImplicit<false>;
+extern template class OpenSim::MocoCasADiMultibodySystemImplicit<true>;
+
 #include <casadi/casadi.hpp>
 
 using casadi::Callback;
@@ -35,7 +40,10 @@ using namespace OpenSim;
 MocoCasADiSolver::MocoCasADiSolver() { constructProperties(); }
 
 void MocoCasADiSolver::constructProperties() {
-    constructProperty_finite_difference_scheme("central");
+    constructProperty_optim_sparsity_detection("none");
+    constructProperty_optim_write_sparsity("");
+    constructProperty_optim_finite_difference_scheme("central");
+    constructProperty_parallel();
 }
 
 MocoIterate MocoCasADiSolver::createGuess(const std::string& type) const {
@@ -99,6 +107,33 @@ const MocoIterate& MocoCasADiSolver::getGuess() const {
 
 std::unique_ptr<CasOC::Problem> MocoCasADiSolver::createCasOCProblem() const {
     const auto& problemRep = getProblemRep();
+    int parallel = 1;
+    int parallelEV = getMocoParallelEnvironmentVariable();
+    if (getProperty_parallel().size()) {
+        parallel = get_parallel();
+    } else if (parallelEV != -1) {
+        parallel = parallelEV;
+    }
+    if (m_runningInPython && parallel) {
+        std::cout << "Warning: "
+                     "Cannot use parallelism in Python due to its "
+                     "Global Interpreter Lock. "
+                     "Set the environment variable OPENSIM_MOCO_PARALLEL or "
+                     "MocoCasADiSolver's 'parallel' property to 0, "
+                     "or use the command-line or Matlab interfaces."
+                << std::endl;
+    }
+    int numThreads;
+    if (parallel == 0) {
+        numThreads = 1;
+    } else if (parallel == 1) {
+        numThreads = std::thread::hardware_concurrency();
+    } else {
+        numThreads = parallel;
+    }
+
+    m_jar = createProblemRepJar(numThreads);
+
     auto casProblem = make_unique<CasOC::Problem>();
     checkPropertyInSet(
             *this, getProperty_dynamics_mode(), {"explicit", "implicit"});
@@ -107,13 +142,6 @@ std::unique_ptr<CasOC::Problem> MocoCasADiSolver::createCasOCProblem() const {
     OPENSIM_THROW_IF(!model.getMatterSubsystem().getUseEulerAngles(
                              model.getWorkingState()),
             Exception, "Quaternions are not supported.");
-
-    checkPropertyInSet(*this, getProperty_finite_difference_scheme(),
-        {"central", "forward", "backward"});
-    // TODO this must be set before call casProblem->setEndpointCost(...), etc
-    // below.
-    // TODO move this setting to the solver class.
-    casProblem->setFiniteDifferenceScheme(get_finite_difference_scheme());
 
     std::unordered_map<int, int> yIndexMap;
     auto stateNames = createStateVariableNamesInSystemOrder(model, yIndexMap);
@@ -280,7 +308,7 @@ std::unique_ptr<CasOC::Problem> MocoCasADiSolver::createCasOCProblem() const {
         // Only add the velocity correction if enforcing constraint derivatives.
         if (enforceConstraintDerivs) {
             casProblem->setVelocityCorrection<MocoCasADiVelocityCorrection>(
-                    problemRep, yIndexMap);
+                    *m_jar, yIndexMap);
         }
     }
 
@@ -296,15 +324,15 @@ std::unique_ptr<CasOC::Problem> MocoCasADiSolver::createCasOCProblem() const {
             casBounds.push_back(convertBounds(bounds));
         }
         casProblem->addPathConstraint<MocoCasADiPathConstraint>(
-                name, casBounds, problemRep, yIndexMap, pathCon);
+                name, casBounds, *m_jar, yIndexMap, name);
     }
     casProblem->setIntegralCost<MocoCasADiIntegralCostIntegrand>(
-            problemRep, yIndexMap);
-    casProblem->setEndpointCost<MocoCasADiEndpointCost>(problemRep, yIndexMap);
+            *m_jar, yIndexMap);
+    casProblem->setEndpointCost<MocoCasADiEndpointCost>(*m_jar, yIndexMap);
     casProblem->setMultibodySystem<MocoCasADiMultibodySystem>(
-            problemRep, *this, yIndexMap);
+            *m_jar, *this, yIndexMap);
     casProblem->setImplicitMultibodySystem<MocoCasADiMultibodySystemImplicit>(
-            problemRep, *this, yIndexMap);
+            *m_jar, *this, yIndexMap);
 
     return casProblem;
 }
@@ -374,6 +402,18 @@ std::unique_ptr<CasOC::Solver> MocoCasADiSolver::createCasOCSolver(
             solverOptions["acceptable_constr_viol_tol"] = tol;
         }
     }
+
+    checkPropertyInSet(*this, getProperty_optim_sparsity_detection(),
+            {"none", "random", "initial-guess"});
+    casSolver->setSparsityDetection(get_optim_sparsity_detection());
+    casSolver->setSparsityDetectionRandomCount(3);
+
+    casSolver->setWriteSparsity(get_optim_write_sparsity());
+
+    checkPropertyInSet(*this, getProperty_optim_finite_difference_scheme(),
+            {"central", "forward", "backward"});
+    casSolver->setFiniteDifferenceScheme(get_optim_finite_difference_scheme());
+
     Dict pluginOptions;
     pluginOptions["verbose_init"] = true;
 
@@ -384,6 +424,9 @@ std::unique_ptr<CasOC::Solver> MocoCasADiSolver::createCasOCSolver(
             get_minimize_lagrange_multipliers());
     casSolver->setLagrangeMultiplierWeight(get_lagrange_multiplier_weight());
     casSolver->setOptimSolver(get_optim_solver());
+    if (m_jar->size() > 1) {
+        casSolver->setParallelism("thread", m_jar->size());
+    }
     casSolver->setPluginOptions(pluginOptions);
     casSolver->setSolverOptions(solverOptions);
     return casSolver;
@@ -400,6 +443,9 @@ MocoSolution MocoCasADiSolver::solveImpl() const {
     }
     auto casProblem = createCasOCProblem();
     auto casSolver = createCasOCSolver(*casProblem);
+    if (get_verbosity()) {
+        std::cout << "Number of threads: " << m_jar->size() << std::endl;
+    }
 
     MocoIterate guess = getGuess();
     CasOC::Iterate casGuess;
