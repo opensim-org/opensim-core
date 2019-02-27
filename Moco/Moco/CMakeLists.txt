@@ -1,5 +1,5 @@
 
-add_library(osimMoco SHARED
+set(MOCO_SOURCES
         osimMoco.h
         osimMocoDLL.h
         RegisterTypes_osimMoco.h
@@ -31,12 +31,12 @@ add_library(osimMoco SHARED
         MocoCost/MocoJointReactionNormCost.cpp
         MocoSolver.h
         MocoSolver.cpp
+        MocoDirectCollocationSolver.h
+        MocoDirectCollocationSolver.cpp
         MocoIterate.h
         MocoIterate.cpp
         MocoTropterSolver.h
         MocoTropterSolver.cpp
-        tropter/TropterProblem.h
-        tropter/TropterProblem.cpp
         MocoParameter.h
         MocoParameter.cpp
         MocoConstraint.h
@@ -57,21 +57,27 @@ add_library(osimMoco SHARED
         Components/ModelFactory.cpp
         MocoCasADiSolver/MocoCasADiSolver.h
         MocoCasADiSolver/MocoCasADiSolver.cpp
-        MocoCasADiSolver/MocoCasADiMisc.h
-        MocoCasADiSolver/CasOCProblem.cpp
+        MocoCasADiSolver/MocoCasADiBridge.h
+        MocoCasADiSolver/MocoCasADiBridge.cpp
         MocoCasADiSolver/CasOCProblem.h
-        MocoCasADiSolver/CasOCSolver.cpp
+        MocoCasADiSolver/CasOCProblem.cpp
         MocoCasADiSolver/CasOCSolver.h
-        MocoCasADiSolver/CasOCFunction.cpp
+        MocoCasADiSolver/CasOCSolver.cpp
         MocoCasADiSolver/CasOCFunction.h
-        MocoCasADiSolver/CasOCTranscription.cpp
+        MocoCasADiSolver/CasOCFunction.cpp
         MocoCasADiSolver/CasOCTranscription.h
-        MocoCasADiSolver/CasOCTrapezoidal.cpp
+        MocoCasADiSolver/CasOCTranscription.cpp
         MocoCasADiSolver/CasOCTrapezoidal.h
-        MocoCasADiSolver/CasOCHermiteSimpson.cpp
+        MocoCasADiSolver/CasOCTrapezoidal.cpp
         MocoCasADiSolver/CasOCHermiteSimpson.h
-        MocoDirectCollocationSolver.cpp
-        MocoDirectCollocationSolver.h)
+        MocoCasADiSolver/CasOCHermiteSimpson.cpp
+        MocoCasADiSolver/CasOCIterate.h)
+if(MOCO_WITH_TROPTER)
+    list(APPEND MOCO_SOURCES
+            tropter/TropterProblem.h
+            tropter/TropterProblem.cpp)
+endif()
+add_library(osimMoco SHARED ${MOCO_SOURCES})
 target_link_libraries(osimMoco PUBLIC osimTools
                                PRIVATE tropter casadi)
 
@@ -84,6 +90,9 @@ set_target_properties(osimMoco PROPERTIES
         PROJECT_LABEL "Library - osimMoco"
         FOLDER "Moco"
         )
+if(MOCO_WITH_TROPTER)
+    target_compile_definitions(osimMoco PUBLIC MOCO_WITH_TROPTER)
+endif()
 
 if(MOCO_COPY_DEPENDENCIES)
     if(APPLE)

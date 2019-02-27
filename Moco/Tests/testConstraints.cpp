@@ -27,6 +27,7 @@
 #include <OpenSim/Simulation/osimSimulation.h>
 #include <OpenSim/Common/GCVSpline.h>
 #include <OpenSim/Common/TimeSeriesTable.h>
+#include <OpenSim/Common/LogManager.h>
 
 using namespace OpenSim;
 using SimTK::Vec3;
@@ -496,7 +497,8 @@ MocoIterate runForwardSimulation(Model model, const MocoSolution& solution,
 /// end-effector must lie on a vertical line through the origin and minimize
 /// control effort.
 template <typename TestType>
-void testDoublePendulumPointOnLine(bool enforce_constraint_derivatives) {
+void testDoublePendulumPointOnLine(bool enforce_constraint_derivatives,
+        std::string dynamics_mode) {
     MocoTool moco;
     moco.setName("double_pendulum_point_on_line");
     MocoProblem& mp = moco.updProblem();
@@ -537,6 +539,7 @@ void testDoublePendulumPointOnLine(bool enforce_constraint_derivatives) {
     ms.set_enforce_constraint_derivatives(enforce_constraint_derivatives);
     ms.set_minimize_lagrange_multipliers(true);
     ms.set_lagrange_multiplier_weight(10);
+    ms.set_dynamics_mode(dynamics_mode);
     ms.setGuess("bounds");
 
     MocoSolution solution = moco.solve();
@@ -571,7 +574,9 @@ void testDoublePendulumPointOnLine(bool enforce_constraint_derivatives) {
 /// control effort.
 template <typename SolverType>
 void testDoublePendulumCoordinateCoupler(MocoSolution& solution,
-        bool enforce_constraint_derivatives) {
+        bool enforce_constraint_derivatives, std::string dynamics_mode) {
+    std::cout.rdbuf(LogManager::cout.rdbuf());
+    std::cerr.rdbuf(LogManager::cerr.rdbuf());
     MocoTool moco;
     moco.setName("double_pendulum_coordinate_coupler");
 
@@ -620,6 +625,7 @@ void testDoublePendulumCoordinateCoupler(MocoSolution& solution,
     ms.set_enforce_constraint_derivatives(enforce_constraint_derivatives);
     ms.set_minimize_lagrange_multipliers(true);
     ms.set_lagrange_multiplier_weight(10);
+    ms.set_dynamics_mode(dynamics_mode);
     ms.setGuess("bounds");
 
     solution = moco.solve();
@@ -651,7 +657,7 @@ void testDoublePendulumCoordinateCoupler(MocoSolution& solution,
 /// testDoublePendulumCoordinateCoupler).
 template <typename SolverType>
 void testDoublePendulumPrescribedMotion(MocoSolution& couplerSolution,
-        bool enforce_constraint_derivatives) {
+        bool enforce_constraint_derivatives, std::string dynamics_mode) {
     MocoTool moco;
     moco.setName("double_pendulum_prescribed_motion");
     MocoProblem& mp = moco.updProblem();
@@ -699,6 +705,7 @@ void testDoublePendulumPrescribedMotion(MocoSolution& couplerSolution,
     ms.set_enforce_constraint_derivatives(enforce_constraint_derivatives);
     ms.set_minimize_lagrange_multipliers(true);
     ms.set_lagrange_multiplier_weight(10);
+    ms.set_dynamics_mode(dynamics_mode);
 
     // Set guess based on coupler solution trajectory.
     MocoIterate guess(ms.createGuess("bounds"));
@@ -759,27 +766,27 @@ void testDoublePendulumPrescribedMotion(MocoSolution& couplerSolution,
     // MocoTropterSolver for details).
 
     SimTK_TEST_EQ_TOL(solution.compareContinuousVariablesRMS(mocoIterSpline,
-        {"/jointset/j0/q0/value", "/jointset/j1/q1/value"}, {"none"}, {"none"}),
-                0, 1e-3);
+        {"/jointset/j0/q0/value", "/jointset/j1/q1/value"}, {"none"}, {"none"},
+            {"none"}), 0, 1e-3);
     SimTK_TEST_EQ_TOL(solution.compareContinuousVariablesRMS(couplerSolution,
-        {"/jointset/j0/q0/value", "/jointset/j1/q1/value"}, {"none"}, {"none"}),
-                0, 1e-3);
+        {"/jointset/j0/q0/value", "/jointset/j1/q1/value"}, {"none"}, {"none"},
+            {"none"}), 0, 1e-3);
     // Only compare the velocity-level values between the current solution
     // states and the states from the previous test (original and splined).
     // These won't match as well as the position-level values, since velocity-
     // level errors are not enforced in the current problem formulation.
     SimTK_TEST_EQ_TOL(solution.compareContinuousVariablesRMS(mocoIterSpline,
-        {"/jointset/j0/q0/speed", "/jointset/j1/q1/speed"}, {"none"}, {"none"}),
-                0, 1e-1);
+        {"/jointset/j0/q0/speed", "/jointset/j1/q1/speed"}, {"none"}, {"none"},
+            {"none"}), 0, 1e-1);
     SimTK_TEST_EQ_TOL(solution.compareContinuousVariablesRMS(couplerSolution,
-        {"/jointset/j0/q0/speed", "/jointset/j1/q1/speed"}, {"none"}, {"none"}),
-                0, 1e-1);
+        {"/jointset/j0/q0/speed", "/jointset/j1/q1/speed"}, {"none"}, {"none"},
+            {"none"}), 0, 1e-1);
     // Compare only the actuator controls. These match worse compared to the
     // velocity-level states. It is currently unclear to what extent this is
     // related to velocity-level states not matching well or the how the model
     // constraints are enforced in the current formulation.
     SimTK_TEST_EQ_TOL(solution.compareContinuousVariablesRMS(couplerSolution,
-        {"none"}, {"/tau0", "/tau1"}, {"none"}), 0, 5);
+        {"none"}, {"/tau0", "/tau1"}, {"none"}, {"none"}), 0, 5);
 
     // Run a forward simulation using the solution controls in prescribed
     // controllers for the model actuators and see if we get the correct states
@@ -787,31 +794,67 @@ void testDoublePendulumPrescribedMotion(MocoSolution& couplerSolution,
     runForwardSimulation(*model, solution, 1e-1);
 }
 
-TEMPLATE_TEST_CASE("DoublePendulum with and without constraint derivatives", "",
-        MocoTropterSolver, MocoCasADiSolver) {
+TEMPLATE_TEST_CASE("DoublePendulum with and without constraint derivatives", 
+        "[explicit]", MocoTropterSolver, MocoCasADiSolver) {
     // TODO test tolerances can be improved significantly by not including
     // Hermite-Simpson midpoint values in comparisons.
     SECTION("DoublePendulum without constraint derivatives") {
         MocoSolution couplerSol;
-        testDoublePendulumCoordinateCoupler<TestType>(couplerSol, false);
-        testDoublePendulumPrescribedMotion<TestType>(couplerSol, false);
+        testDoublePendulumCoordinateCoupler<TestType>(couplerSol, false, 
+            "explicit");
+        testDoublePendulumPrescribedMotion<TestType>(couplerSol, false,
+            "explicit");
     }
 
     SECTION("DoublePendulum with constraint derivatives"){
         MocoSolution couplerSol;
-        testDoublePendulumCoordinateCoupler<TestType>(couplerSol, true);
-        testDoublePendulumPrescribedMotion<TestType>(couplerSol, true);
+        testDoublePendulumCoordinateCoupler<TestType>(couplerSol, true,
+            "explicit");
+        testDoublePendulumPrescribedMotion<TestType>(couplerSol, true,
+            "explicit");
     }
 }
 
+TEST_CASE("DoublePendulum with and without constraint derivatives", 
+        "[implicit]") {
+    // TODO test tolerances can be improved significantly by not including
+    // Hermite-Simpson midpoint values in comparisons.
+    SECTION("DoublePendulum without constraint derivatives") {
+        MocoSolution couplerSol;
+        testDoublePendulumCoordinateCoupler<MocoCasADiSolver>(couplerSol, false,
+            "implicit");
+        testDoublePendulumPrescribedMotion<MocoCasADiSolver>(couplerSol, false,
+            "implicit");
+    }
+
+    SECTION("DoublePendulum with constraint derivatives"){
+        MocoSolution couplerSol;
+        testDoublePendulumCoordinateCoupler<MocoCasADiSolver>(couplerSol, true,
+            "implicit");
+        testDoublePendulumPrescribedMotion<MocoCasADiSolver>(couplerSol, true,
+            "implicit");
+    }
+}
+
+
 TEMPLATE_TEST_CASE("DoublePendulumPointOnLine without constraint derivatives",
-        "", MocoTropterSolver, MocoCasADiSolver) {
-    testDoublePendulumPointOnLine<TestType>(false);
+        "[explicit]", MocoTropterSolver, MocoCasADiSolver) {
+    testDoublePendulumPointOnLine<TestType>(false, "explicit");
 }
 
 TEMPLATE_TEST_CASE("DoublePendulumPointOnLine with constraint derivatives",
-        "", MocoTropterSolver, MocoCasADiSolver) {
-    testDoublePendulumPointOnLine<TestType>(true);
+        "[explicit]", MocoTropterSolver, MocoCasADiSolver) {
+    testDoublePendulumPointOnLine<TestType>(true, "explicit");
+}
+
+TEST_CASE("DoublePendulumPointOnLine without constraint derivatives", 
+        "[implicit]") {
+    testDoublePendulumPointOnLine<MocoCasADiSolver>(false, "implicit");
+}
+
+TEST_CASE("DoublePendulumPointOnLine with constraint derivatives", 
+        "[implicit]") {
+    testDoublePendulumPointOnLine<MocoCasADiSolver>(true, "implicit");
 }
 
 class EqualControlConstraint : public MocoPathConstraint {

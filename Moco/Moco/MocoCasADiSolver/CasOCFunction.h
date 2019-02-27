@@ -18,7 +18,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include <casadi/casadi.hpp>
+#include "CasOCIterate.h"
 
 #include <OpenSim/Common/Exception.h>
 
@@ -26,37 +26,57 @@ namespace CasOC {
 
 class Problem;
 
+using VectorDM = std::vector<casadi::DM>;
+
 class Function : public casadi::Callback {
 public:
     virtual ~Function() = default;
-    void constructFunction(const Problem* casProblem, const std::string& name) {
-        m_casProblem = casProblem;
-        casadi::Dict opts;
-        setCommonOptions(opts);
-        this->construct(name, opts);
-    }
+    void constructFunction(const Problem* casProblem, const std::string& name,
+            const std::string& finiteDiffScheme,
+            std::shared_ptr<const std::vector<VariablesDM>> pointsForSparsityDetection);
     void setCommonOptions(casadi::Dict& opts) {
         // Compute the derivatives of this function using finite differences.
         opts["enable_fd"] = true;
-        opts["fd_method"] = "central";
+        opts["fd_method"] = getFiniteDifferenceScheme();
         // Using "forward", iterations are 10x faster but problems don't
         // converge.
     }
-    // bool has_jacobian_sparsity() const override {
-    //     return true;
-    // }
-    // casadi::Sparsity get_jacobian_sparsity() const override;
+    std::string getFiniteDifferenceScheme() {
+        return m_finite_difference_scheme;
+    }
+    bool has_jacobian_sparsity() const override {
+        return !m_fullPointsForSparsityDetection->empty();
+    }
+    casadi::Sparsity get_jacobian_sparsity() const override;
 
 protected:
     const Problem* m_casProblem;
+
+private:
+    VectorDM getSubsetPointsForSparsityDetection() const {
+        VectorDM out(m_fullPointsForSparsityDetection->size());
+        for (int i = 0; i < (int)out.size(); ++i) {
+            out[i] = getSubsetPoint(m_fullPointsForSparsityDetection->at(i));
+        }
+        return out;
+    }
+    virtual casadi::DM getSubsetPoint(const VariablesDM& fullPoint) const = 0;
+
+    std::string m_finite_difference_scheme = "central";
+
+    std::shared_ptr<const std::vector<VariablesDM>>
+            m_fullPointsForSparsityDetection;
 };
 
 class PathConstraint : public Function {
 public:
     void constructFunction(const Problem* casProblem, const std::string& name,
-            int numEquations) {
+            int numEquations, const std::string& finiteDiffScheme,
+            std::shared_ptr<const std::vector<VariablesDM>>
+                    pointsForSparsityDetection) {
         m_numEquations = numEquations;
-        Function::constructFunction(casProblem, name);
+        Function::constructFunction(
+                casProblem, name, finiteDiffScheme, pointsForSparsityDetection);
     }
     casadi_int get_n_in() override final { return 4; }
     casadi_int get_n_out() override final { return 1; }
@@ -82,6 +102,14 @@ public:
         } else
             return casadi::Sparsity(0, 0);
     }
+    casadi::DM getSubsetPoint(const VariablesDM& fullPoint) const override {
+        int itime = 0;
+        using casadi::Slice;
+        return casadi::DM::vertcat({fullPoint.at(initial_time),
+                fullPoint.at(states)(Slice(), itime),
+                fullPoint.at(controls)(Slice(), itime),
+                fullPoint.at(parameters)});
+    }
 
 protected:
     int m_numEquations;
@@ -89,9 +117,10 @@ protected:
 
 class IntegralCostIntegrand : public Function {
 public:
-    using Function::Function;
     casadi_int get_n_in() override final { return 4; }
     casadi_int get_n_out() override final { return 1; }
+    // TODO: Must pass in Lagrange multipliers to properly minimize joint
+    // reactions.
     std::string get_name_in(casadi_int i) override final {
         switch (i) {
         case 0: return "time";
@@ -113,6 +142,14 @@ public:
             return casadi::Sparsity::scalar();
         else
             return casadi::Sparsity(0, 0);
+    }
+    casadi::DM getSubsetPoint(const VariablesDM& fullPoint) const override {
+        int itime = 0;
+        using casadi::Slice;
+        return casadi::DM::vertcat({fullPoint.at(initial_time),
+                fullPoint.at(states)(Slice(), itime),
+                fullPoint.at(controls)(Slice(), itime),
+                fullPoint.at(parameters)});
     }
 };
 
@@ -141,18 +178,20 @@ public:
         else
             return casadi::Sparsity(0, 0);
     }
+    casadi::DM getSubsetPoint(const VariablesDM& fullPoint) const override {
+        using casadi::Slice;
+        return casadi::DM::vertcat({fullPoint.at(final_time),
+                fullPoint.at(states)(Slice(), -1), fullPoint.at(parameters)});
+    }
 };
 
 /// This function should compute forward dynamics (explicit multibody dynamics),
 /// auxiliary explicit dynamics, and the errors for the kinematic constraints.
-template <bool CalcKinConErrors>
+template <bool CalcKCErrors>
 class MultibodySystem : public Function {
 public:
-    void constructFunction(const Problem* casProblem, const std::string& name) {
-        Function::constructFunction(casProblem, name);
-    }
     casadi_int get_n_in() override final { return 5; }
-    casadi_int get_n_out() override final { return CalcKinConErrors ? 3 : 2; }
+    casadi_int get_n_out() override final { return CalcKCErrors ? 3 : 2; }
     std::string get_name_in(casadi_int i) override final {
         switch (i) {
         case 0: return "time";
@@ -168,7 +207,7 @@ public:
         case 0: return "multibody_derivatives";
         case 1: return "auxiliary_derivatives";
         case 2:
-            if (CalcKinConErrors) {
+            if (CalcKCErrors) {
                 return "kinematic_constraint_errors";
             } else {
                 OPENSIM_THROW(OpenSim::Exception, "Internal error.")
@@ -178,20 +217,29 @@ public:
     }
     casadi::Sparsity get_sparsity_in(casadi_int i) override final;
     casadi::Sparsity get_sparsity_out(casadi_int i) override final;
+    casadi::DM getSubsetPoint(const VariablesDM& fullPoint) const override {
+        int itime = 0;
+        using casadi::Slice;
+        return casadi::DM::vertcat({fullPoint.at(initial_time),
+                fullPoint.at(states)(Slice(), itime),
+                fullPoint.at(controls)(Slice(), itime),
+                fullPoint.at(multipliers)(Slice(), itime),
+                fullPoint.at(parameters)});
+    }
 };
 
+/// This function should compute a velocity correction term to make feasible
+/// problems that enforce kinematic constraints and their derivatives.
 class VelocityCorrection : public Function {
 public:
-    void constructFunction(const Problem* casProblem, const std::string& name) {
-        Function::constructFunction(casProblem, name);
-    }
-    casadi_int get_n_in() override final { return 3; }
+    casadi_int get_n_in() override final { return 4; }
     casadi_int get_n_out() override final { return 1; }
     std::string get_name_in(casadi_int i) override final {
         switch (i) {
         case 0: return "time";
-        case 1: return "states";
+        case 1: return "multibody_states";
         case 2: return "slacks";
+        case 3: return "parameters";
         default: OPENSIM_THROW(OpenSim::Exception, "Internal error.");
         }
     }
@@ -203,11 +251,13 @@ public:
     }
     casadi::Sparsity get_sparsity_in(casadi_int i) override final;
     casadi::Sparsity get_sparsity_out(casadi_int i) override final;
+    casadi::DM getSubsetPoint(const VariablesDM& fullPoint) const override;
 };
 
+template <bool CalcKCErrors>
 class MultibodySystemImplicit : public Function {
     casadi_int get_n_in() override final { return 6; }
-    casadi_int get_n_out() override final { return 2; }
+    casadi_int get_n_out() override final { return CalcKCErrors ? 3 : 2; }
     std::string get_name_in(casadi_int i) override final {
         switch (i) {
         case 0: return "time";
@@ -223,11 +273,27 @@ class MultibodySystemImplicit : public Function {
         switch (i) {
         case 0: return "multibody_residuals";
         case 1: return "auxiliary_derivatives";
+        case 2:
+            if (CalcKCErrors) {
+                return "kinematic_constraint_errors";
+            } else {
+                OPENSIM_THROW(OpenSim::Exception, "Internal error.")
+            }
         default: OPENSIM_THROW(OpenSim::Exception, "Internal error.");
         }
     }
     casadi::Sparsity get_sparsity_in(casadi_int i) override final;
     casadi::Sparsity get_sparsity_out(casadi_int i) override final;
+    casadi::DM getSubsetPoint(const VariablesDM& fullPoint) const override {
+        int itime = 0;
+        using casadi::Slice;
+        return casadi::DM::vertcat({fullPoint.at(initial_time),
+                fullPoint.at(states)(Slice(), itime),
+                fullPoint.at(controls)(Slice(), itime),
+                fullPoint.at(multipliers)(Slice(), itime),
+                fullPoint.at(derivatives)(Slice(), itime),
+                fullPoint.at(parameters)});
+    }
 };
 
 } // namespace CasOC

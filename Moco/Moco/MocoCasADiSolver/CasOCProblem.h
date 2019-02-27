@@ -1,7 +1,7 @@
 #ifndef MOCO_CASOCPROBLEM_H
 #define MOCO_CASOCPROBLEM_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: MocoCasOCProblem.h                                           *
+ * OpenSim Moco: CasOCProblem.h                                               *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2018 Stanford University and the Authors                     *
  *                                                                            *
@@ -38,54 +38,6 @@ class MocoCasADiSolver;
 /// CasADi Optimal Control.
 namespace CasOC {
 
-/// This enum describes the different types of optimization variables, and
-/// are the keys for the Variables map.
-enum Var {
-    initial_time,
-    final_time,
-    /// Differential variables.
-    states,
-    /// Algebraic variables.
-    controls,
-    /// Used for kinematic constraints.
-    multipliers,
-    /// Used for certain methods of solving kinematic constraints.
-    slacks,
-    /// Used in implicit dynamics mode.
-    derivatives, // TODO: Rename to accelerations?
-    /// Constant in time.
-    parameters
-};
-
-template <typename T>
-using Variables = std::unordered_map<Var, T, std::hash<int>>;
-
-/// Numeric variables for initial guesses and solutions.
-using VariablesDM = Variables<casadi::DM>;
-/// Symbolic variables, used to define the problem.
-using VariablesMX = Variables<casadi::MX>;
-
-/// This struct is used to obtain initial guesses.
-struct Iterate {
-    VariablesDM variables;
-    casadi::DM times;
-    std::vector<std::string> state_names;
-    std::vector<std::string> control_names;
-    std::vector<std::string> multiplier_names;
-    std::vector<std::string> slack_names;
-    std::vector<std::string> derivative_names;
-    std::vector<std::string> parameter_names;
-    /// Return a new iterate in which the data is resampled at the times in
-    /// newTimes.
-    Iterate resample(const casadi::DM& newTimes) const;
-};
-
-/// This struct is used to return a solution to a problem. Use `stats`
-/// to check if the problem converged.
-struct Solution : public Iterate {
-    casadi::Dict stats;
-};
-
 struct Bounds {
     Bounds() = default;
     Bounds(double lower, double upper) : lower(lower), upper(upper) {}
@@ -98,6 +50,7 @@ struct Bounds {
 /// coordinate, as a generalized speed, or as an auxiliary state variable (e.g.,
 /// muscle activity).
 enum class StateType { Coordinate, Speed, Auxiliary };
+enum class KinematicLevel { Position, Velocity, Acceleration };
 struct StateInfo {
     std::string name;
     StateType type;
@@ -173,43 +126,26 @@ public:
         m_controlInfos.push_back({std::move(name), std::move(bounds),
                 std::move(initialBounds), std::move(finalBounds)});
     }
-    /// Add a Lagrange multiplier variable to the problem associated with a 
-    /// kinematic constraint in the model.
-    void addMultiplier(std::string name, Bounds bounds, Bounds initialBounds,
-            Bounds finalBounds) {
-        clipEndpointBounds(bounds, initialBounds);
-        clipEndpointBounds(bounds, finalBounds);
-        m_multiplierInfos.push_back({std::move(name), std::move(bounds),
-            std::move(initialBounds), std::move(finalBounds)});
+    /// Add a
+    void addKinematicConstraint(std::string multName, Bounds multbounds,
+            Bounds multInitialBounds, Bounds multFinalBounds,
+            KinematicLevel kinLevel) {
+        clipEndpointBounds(multbounds, multInitialBounds);
+        clipEndpointBounds(multbounds, multFinalBounds);
+        m_multiplierInfos.push_back({std::move(multName), std::move(multbounds),
+                std::move(multInitialBounds), std::move(multFinalBounds)});
+
+        if (kinLevel == KinematicLevel::Position)
+            ++m_numHolonomicConstraintEquations;
+        else if (kinLevel == KinematicLevel::Velocity)
+            ++m_numNonHolonomicConstraintEquations;
+        else if (kinLevel == KinematicLevel::Acceleration)
+            ++m_numAccelerationConstraintEquations;
     }
     /// Add a slack velocity correction variable to the problem associated with
     /// a kinematic constraint in the model.
     void addSlack(std::string name, Bounds bounds) {
         m_slackInfos.push_back({std::move(name), std::move(bounds)});
-    }
-    /// Set the total number of kinematic constraint equations (including 
-    /// derivatives of holonomic and non-holonomic constraint equations) in the
-    /// multibody system.
-    void setNumKinematicConstraintEquations(int numEqs) {
-        m_numKinematicConstraintEquations = numEqs;
-    }
-    /// Set the number of holonomic constraint equations in the multibody 
-    /// system.
-    /// @note This does *not* include holonomic constraint equation derivatives.
-    void setNumHolonomicConstraintEquations(int numHolo) {
-        m_numHolonomicConstraintEquations = numHolo;
-    }
-    /// Set the number of non-holonomic constraint equations in the multibody
-    /// system.
-    /// @note This does *not* include non-holonomic constraint equation 
-    /// derivatives.
-    void setNumNonHolonomicConstraintEquations(int numNonHolo) {
-        m_numNonHolonomicConstraintEquations = numNonHolo;
-    }
-    /// Set the number of acceleration constraint equations in the multibody
-    /// system.
-    void setNumAccelerationConstraintEquations(int numAccel) {
-        m_numAccelerationConstraintEquations = numAccel;
     }
     /// Set whether not constraint derivatives are to be enforced.
     void setEnforceConstraintDerivatives(bool tf) {
@@ -240,8 +176,6 @@ public:
                 {std::move(name), std::move(lower), std::move(upper),
                         OpenSim::make_unique<FunctionType>(
                                 std::forward<Args>(args)...)});
-        m_pathInfos.back().function->constructFunction(
-                this, "path_constraint_" + name, (int)bounds.size());
     }
     /// FunctionType must derive from IntegralCostIntegrand.
     /// Set a functon that computes the integrand of the integral cost.
@@ -249,44 +183,42 @@ public:
     void setIntegralCost(Args&&... args) {
         m_integralCostFunc =
                 OpenSim::make_unique<FunctionType>(std::forward<Args>(args)...);
-        m_integralCostFunc->constructFunction(this, "integral_cost_integrand");
     }
     /// FunctionType must derive from EndpointCost.
     template <typename FunctionType, typename... Args>
     void setEndpointCost(Args&&... args) {
         m_endpointCostFunc =
                 OpenSim::make_unique<FunctionType>(std::forward<Args>(args)...);
-        m_endpointCostFunc->constructFunction(this, "endpoint_cost");
     }
     /// FunctionType must derive from MultibodySystem.
     template <template <bool> class FunctionType, typename... Args>
     void setMultibodySystem(Args&&... args) {
-        // Construct an unconstrained multibody system.
-        m_unconstrainedMultibodyFunc = 
-                OpenSim::make_unique<FunctionType<false>>(
-                    std::forward<Args>(args)...);
-        m_unconstrainedMultibodyFunc->constructFunction(this,
-                "unconstrainted_multibody_system");
         // Constraint a full multibody system (i.e. including kinematic
         // constraints).
         m_multibodyFunc = OpenSim::make_unique<FunctionType<true>>(
-                    std::forward<Args>(args)...);
-        m_multibodyFunc->constructFunction(this, "multibody_system");
+                std::forward<Args>(args)...);
+        // Construct a multibody system ignoring kinematic constraints.
+        m_multibodyFuncIgnoringConstraints =
+                OpenSim::make_unique<FunctionType<false>>(
+                        std::forward<Args>(args)...);
     }
     /// FunctionType must derive from VelocityCorrection.
     template <typename FunctionType, typename... Args>
     void setVelocityCorrection(Args&&... args) {
         m_velocityCorrectionFunc =
                 OpenSim::make_unique<FunctionType>(std::forward<Args>(args)...);
-        m_velocityCorrectionFunc->constructFunction(this, 
-                "velocity_correction");
     }
-    template <typename FunctionType, typename... Args>
+    template <template <bool> class FunctionType, typename... Args>
     void setImplicitMultibodySystem(Args&&... args) {
-        m_implicitMultibodyFunc =
-                OpenSim::make_unique<FunctionType>(std::forward<Args>(args)...);
-        m_implicitMultibodyFunc->constructFunction(this,
-                "implicit_multibody_system");
+        // Constraint a full implicit multibody system (i.e. including kinematic
+        // constraints).
+        m_implicitMultibodyFunc = OpenSim::make_unique<FunctionType<true>>(
+                std::forward<Args>(args)...);
+        // Construct an implicit multibody system ignoring kinematic
+        // constraints.
+        m_implicitMultibodyFuncIgnoringConstraints =
+                OpenSim::make_unique<FunctionType<false>>(
+                        std::forward<Args>(args)...);
     }
 
     /// Create an iterate with the variable names populated according to the
@@ -302,6 +234,9 @@ public:
             it.multiplier_names.push_back(info.name);
         for (const auto& info : m_slackInfos)
             it.slack_names.push_back(info.name);
+        // We do not know whether this problem will be solved using implicit
+        // or explicit dynamics mode, so we populate the derivative_names
+        // always.
         for (const auto& info : m_stateInfos) {
             if (info.type == StateType::Speed) {
                 auto name = info.name;
@@ -315,6 +250,56 @@ public:
         for (const auto& info : m_paramInfos)
             it.parameter_names.push_back(info.name);
         return it;
+    }
+
+    void constructFunctions(bool constructImplicit,
+            const std::string& finiteDiffScheme,
+            std::shared_ptr<const std::vector<VariablesDM>>
+                    pointsForSparsityDetection) const {
+        auto* mutThis = const_cast<Problem*>(this);
+        for (const auto& pathInfo : mutThis->m_pathInfos) {
+            pathInfo.function->constructFunction(this,
+                    "path_constraint_" + pathInfo.name,
+                    (int)pathInfo.lowerBounds.size1(), finiteDiffScheme,
+                    pointsForSparsityDetection);
+        }
+        if (mutThis->m_integralCostFunc) {
+            mutThis->m_integralCostFunc->constructFunction(this,
+                    "integral_cost_integrand", finiteDiffScheme,
+                    pointsForSparsityDetection);
+        }
+        if (mutThis->m_endpointCostFunc) {
+            mutThis->m_endpointCostFunc->constructFunction(this,
+                    "endpoint_cost", finiteDiffScheme,
+                    pointsForSparsityDetection);
+        }
+        if (mutThis->m_multibodyFunc) {
+            mutThis->m_multibodyFunc->constructFunction(this,
+                    "multibody_system", finiteDiffScheme,
+                    pointsForSparsityDetection);
+        }
+        if (mutThis->m_multibodyFuncIgnoringConstraints) {
+            mutThis->m_multibodyFuncIgnoringConstraints->constructFunction(this,
+                    "multibody_system_ignoring_constraints", finiteDiffScheme,
+                    pointsForSparsityDetection);
+        }
+        if (mutThis->m_velocityCorrectionFunc) {
+            mutThis->m_velocityCorrectionFunc->constructFunction(this,
+                    "velocity_correction", finiteDiffScheme,
+                    pointsForSparsityDetection);
+        }
+        if (constructImplicit && mutThis->m_implicitMultibodyFunc) {
+            mutThis->m_implicitMultibodyFunc->constructFunction(this,
+                    "implicit_multibody_system", finiteDiffScheme,
+                    pointsForSparsityDetection);
+        }
+        if (constructImplicit &&
+                mutThis->m_implicitMultibodyFuncIgnoringConstraints) {
+            mutThis->m_implicitMultibodyFuncIgnoringConstraints
+                    ->constructFunction(this,
+                            "implicit_multibody_system_ignoring_constraints",
+                            finiteDiffScheme, pointsForSparsityDetection);
+        }
     }
 
     /// @}
@@ -332,14 +317,22 @@ public:
     int getNumCoordinates() const { return m_numCoordinates; }
     int getNumSpeeds() const { return m_numSpeeds; }
     int getNumAuxiliaryStates() const { return m_numAuxiliaryStates; }
-    int getNumKinematicConstraintEquations() const { 
-        return m_numKinematicConstraintEquations; 
+    int getNumKinematicConstraintEquations() const {
+        if (m_enforceConstraintDerivatives) {
+            return 3 * m_numHolonomicConstraintEquations +
+                   2 * m_numNonHolonomicConstraintEquations +
+                   m_numAccelerationConstraintEquations;
+        } else {
+            return m_numHolonomicConstraintEquations +
+                   m_numNonHolonomicConstraintEquations +
+                   m_numAccelerationConstraintEquations;
+        }
     }
     int getNumHolonomicConstraintEquations() const {
-        return m_numHolonomicConstraintEquations; 
+        return m_numHolonomicConstraintEquations;
     }
     int getNumNonHolonomicConstraintEquations() const {
-        return m_numNonHolonomicConstraintEquations; 
+        return m_numNonHolonomicConstraintEquations;
     }
     int getNumAccelerationConstraintEquations() const {
         return m_numAccelerationConstraintEquations;
@@ -347,7 +340,7 @@ public:
     bool getEnforceConstraintDerivatives() const {
         return m_enforceConstraintDerivatives;
     }
-    const Bounds& getKinematicConstraintBounds() const { 
+    const Bounds& getKinematicConstraintBounds() const {
         return m_kinematicConstraintBounds;
     }
     const Bounds& getTimeInitialBounds() const { return m_timeInitialBounds; }
@@ -359,9 +352,7 @@ public:
     const std::vector<MultiplierInfo>& getMultiplierInfos() const {
         return m_multiplierInfos;
     }
-    const std::vector<SlackInfo>& getSlackInfos() const {
-        return m_slackInfos;
-    }
+    const std::vector<SlackInfo>& getSlackInfos() const { return m_slackInfos; }
     const std::vector<ParameterInfo>& getParameterInfos() const {
         return m_paramInfos;
     }
@@ -374,23 +365,31 @@ public:
     const casadi::Function& getEndpointCost() const {
         return *m_endpointCostFunc;
     }
-    /// Get a function the full multibody system (i.e. including kinematic 
+    /// Get a function to the full multibody system (i.e. including kinematic
     /// constraints errors).
     const casadi::Function& getMultibodySystem() const {
         return *m_multibodyFunc;
     }
     /// Get a function to the multibody system that does *not* compute kinematic
     /// constraint errors (if they exist). This may be necessary for computing
-    /// state derivatives at grid points where we do not want to enforce 
+    /// state derivatives at grid points where we do not want to enforce
     /// kinematic constraint errors.
-    const casadi::Function& getUnconstrainedMultibodySystem() const {
-        return *m_unconstrainedMultibodyFunc;
+    const casadi::Function& getMultibodySystemIgnoringConstraints() const {
+        return *m_multibodyFuncIgnoringConstraints;
     }
+    /// Get a function to compute the velocity correction to qdot when enforcing
+    /// kinematic constraints and their derivatives. We require a separate
+    /// function for this since we don't actually compute qdot within the
+    /// multibody system.
     const casadi::Function& getVelocityCorrection() const {
         return *m_velocityCorrectionFunc;
     }
     const casadi::Function& getImplicitMultibodySystem() const {
         return *m_implicitMultibodyFunc;
+    }
+    const casadi::Function&
+    getImplicitMultibodySystemIgnoringConstraints() const {
+        return *m_implicitMultibodyFuncIgnoringConstraints;
     }
     /// @}
 
@@ -407,7 +406,6 @@ private:
     int m_numCoordinates = 0;
     int m_numSpeeds = 0;
     int m_numAuxiliaryStates = 0;
-    int m_numKinematicConstraintEquations = 0;
     int m_numHolonomicConstraintEquations = 0;
     int m_numNonHolonomicConstraintEquations = 0;
     int m_numAccelerationConstraintEquations = 0;
@@ -421,8 +419,10 @@ private:
     std::unique_ptr<IntegralCostIntegrand> m_integralCostFunc;
     std::unique_ptr<EndpointCost> m_endpointCostFunc;
     std::unique_ptr<MultibodySystem<true>> m_multibodyFunc;
-    std::unique_ptr<MultibodySystem<false>> m_unconstrainedMultibodyFunc;
-    std::unique_ptr<MultibodySystemImplicit> m_implicitMultibodyFunc;
+    std::unique_ptr<MultibodySystem<false>> m_multibodyFuncIgnoringConstraints;
+    std::unique_ptr<MultibodySystemImplicit<true>> m_implicitMultibodyFunc;
+    std::unique_ptr<MultibodySystemImplicit<false>>
+            m_implicitMultibodyFuncIgnoringConstraints;
     std::unique_ptr<VelocityCorrection> m_velocityCorrectionFunc;
 };
 

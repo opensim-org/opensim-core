@@ -63,11 +63,12 @@ public:
 
         problem.setModelCopy(model);
 
-        auto kinematics = STOFileAdapter::read(m_kinematicsFileName);
+        auto kinematicsRaw = STOFileAdapter::read(m_kinematicsFileName);
+        auto kinematics = filterLowpass(kinematicsRaw, 6, true);
         const double spaceForFiniteDiff = 1e-5;
         problem.setTimeBounds(
-                kinematics.getIndependentColumn().front() + spaceForFiniteDiff,
-                kinematics.getIndependentColumn().back() - spaceForFiniteDiff);
+                kinematicsRaw.getIndependentColumn().front() + spaceForFiniteDiff,
+                kinematicsRaw.getIndependentColumn().back() - spaceForFiniteDiff);
 
         problem.addCost<MocoControlCost>("effort");
         auto* stateTracking =
@@ -75,11 +76,13 @@ public:
         stateTracking->setReferenceFile(m_kinematicsFileName);
 
         auto& solver = moco.initCasADiSolver();
-        solver.set_num_mesh_points(10);
+        solver.set_num_mesh_points(5);
         solver.set_dynamics_mode("implicit");
         solver.set_optim_convergence_tolerance(1e-3);
         solver.set_optim_constraint_tolerance(1e-3);
-        // solver.set_optim_hessian_approximation("exact");
+        solver.set_optim_hessian_approximation("exact");
+        // solver.set_optim_sparsity_detection("random");
+        // solver.set_optim_finite_difference_scheme("forward");
 
         Storage kinSto(m_kinematicsFileName);
         if (kinSto.isInDegrees()) {

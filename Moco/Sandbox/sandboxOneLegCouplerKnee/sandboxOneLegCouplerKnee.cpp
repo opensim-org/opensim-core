@@ -27,6 +27,8 @@
 #include <OpenSim/Simulation/osimSimulation.h>
 #include <OpenSim/Actuators/osimActuators.h>
 
+#include <typeinfo>
+
 using namespace OpenSim;
 using SimTK::Vec3;
 using SimTK::Inertia;
@@ -74,7 +76,7 @@ Model createRightLegModel(const std::string& actuatorType,
     Model model("Rajagopal2015_right_leg_9musc.osim");
     model.finalizeConnections(); // Need this here to access offset frames.
 
-                                 // Replace ground_pelvis, subtalar_r, and mtp_r joints with weld joints.
+    // Replace ground_pelvis, subtalar_r, and mtp_r joints with weld joints.
     if (weldPelvis) {
         replaceJointWithWeldJoint(model, "ground_pelvis");
     }
@@ -153,7 +155,6 @@ struct Options {
     MocoIterate previousSolution = {};
 };
 
-template <typename SolverType>
 MocoSolution minimizeControlEffortRightLeg(const Options& opt) {
     MocoTool moco;
     std::string weldedPelvisStr = "";
@@ -175,12 +176,9 @@ MocoSolution minimizeControlEffortRightLeg(const Options& opt) {
     auto* effort = mp.addCost<MocoControlCost>();
     effort->setName("control_effort");
 
-    //auto* reaction = mp.addCost<MocoJointReactionNormCost>();
-    //reaction->setName("joint_reaction");
-    //reaction->set_weight(0.1);
-    //reaction->setJointPath("/jointset/walker_knee_r/");
-
-    auto& ms = moco.initSolver<SolverType>();
+    // Set solver options.
+    // -------------------
+    auto& ms = moco.initCasADiSolver();
     ms.set_num_mesh_points(opt.num_mesh_points);
     ms.set_verbosity(2);
     ms.set_dynamics_mode(opt.dynamics_mode);
@@ -194,7 +192,10 @@ MocoSolution minimizeControlEffortRightLeg(const Options& opt) {
     ms.set_minimize_lagrange_multipliers(false);
     ms.set_lagrange_multiplier_weight(10);
     ms.set_optim_hessian_approximation(opt.hessian_approximation);
-    //ms.set_optim_ipopt_print_level(7);
+    ms.set_finite_difference_scheme("forward");
+
+    // Create guess.
+    // -------------
     auto guess = ms.createGuess("bounds");
     // If the controlsGuess struct field is not empty, use it to set the
     // controls in the trajectory guess.
@@ -322,7 +323,9 @@ MocoSolution stateTrackingRightLeg(const Options& opt) {
     effort->setName("effort");
     effort->set_weight(0.0001);
 
-    MocoTropterSolver& ms = moco.initTropterSolver();
+    // Set solver options.
+    // -------------------
+    auto& ms = moco.initCasADiSolver();
     ms.set_num_mesh_points(opt.num_mesh_points);
     ms.set_verbosity(2);
     ms.set_dynamics_mode(opt.dynamics_mode);
@@ -333,9 +336,10 @@ MocoSolution stateTrackingRightLeg(const Options& opt) {
     ms.set_optim_max_iterations(opt.max_iterations);
     ms.set_enforce_constraint_derivatives(true);
     ms.set_velocity_correction_bounds({-0.0001, 0.0001});
-    ms.set_minimize_lagrange_multipliers(true);
+    ms.set_minimize_lagrange_multipliers(false);
     ms.set_lagrange_multiplier_weight(10);
     ms.set_optim_hessian_approximation(opt.hessian_approximation);
+    ms.set_optim_finite_difference_scheme("forward");
 
     // Create guess.
     // -------------
@@ -349,34 +353,53 @@ MocoSolution stateTrackingRightLeg(const Options& opt) {
     return solution;
 }
 
-//TEST_CASE("minimizeControlEffort", "") {
-//
-//    Options opt;
-//    opt.weldPelvis = true;
-//    opt.num_mesh_points = 20;
-//    opt.solver = "ipopt";
-//    opt.constraint_tol = 1e-2;
-//    opt.convergence_tol = 1e-2;
-//    MocoSolution torqueSolEffort = minimizeControlEffortRightLeg(opt);
-//}
+void compareTrackingToPrediction(const MocoSolution& predictiveSolution,
+    const MocoSolution& trackingSolution) {
 
-void main() {
+    std::cout << "Predictive versus tracking comparison" << std::endl;
+    std::cout << "-------------------------------------" << std::endl;
+    std::cout << "States RMS error: ";
+    std::cout <<
+        trackingSolution.compareContinuousVariablesRMS(
+            predictiveSolution, {}, {"none"}, {"none"}, {"none"});
+    std::cout << std::endl;
+    std::cout << "Controls RMS error: ";
+    std::cout <<
+        trackingSolution.compareContinuousVariablesRMS(
+            predictiveSolution, {"none"}, {}, {"none"}, {"none"});
+    std::cout << std::endl;
+    if (trackingSolution.getMultiplierNames().size() != 0) {
+        std::cout << "Multipliers RMS error: ";
+        std::cout <<
+            trackingSolution.compareContinuousVariablesRMS(
+                predictiveSolution, {"none"}, {"none"}, {}, {"none"});
+        std::cout << std::endl;
+    }
+}
 
-    //When solving problems while providing derivative infomration from 
-    //tropter, SNOPT sometime exits with error 52: "incorrect constraint 
-    //derivatives", but only for problems with muscles. This may suggest a bug 
-    //in our own Jacobian derivative calculations. Why only for muscles?
+int main() {
 
-    // Predictive problem.
-
+    // Set options.
     Options opt;
     opt.weldPelvis = true;
-    opt.num_mesh_points = 50;
+    opt.num_mesh_points = 25;
     opt.solver = "ipopt";
-    opt.constraint_tol = 1e-2;
-    opt.convergence_tol = 1e-2;
+    opt.constraint_tol = 1e-4;
+    opt.convergence_tol = 1e-4;
+
+    // Predictive problem.
     MocoSolution torqueSolEffortCasADi = 
-        minimizeControlEffortRightLeg<MocoCasADiSolver>(opt);
+        minimizeControlEffortRightLeg(opt);
+    
+    // Tracking problem.
+    opt.previousSolution = torqueSolEffortCasADi;
+    MocoSolution torqueSolTrackingCasADi = 
+        stateTrackingRightLeg(opt);
+
+    // Compare.
+    compareTrackingToPrediction(torqueSolTrackingCasADi, torqueSolEffortCasADi);
+
+    // Other problems.
 
     //MocoSolution torqueSolEffortTropter =
     //    minimizeControlEffortRightLeg<MocoTropterSolver>(opt);
@@ -385,32 +408,17 @@ void main() {
     //"sandboxRightLeg_weldedPelvis_torques_minimize_control_effort_solution.sto");
 
     // TODO stiff passive muscle elements
-    TimeSeriesTable activationsMinimizeControlEffort =
-        createGuessFromGSO(torqueSolEffortCasADi, opt);
+    //TimeSeriesTable activationsMinimizeControlEffort =
+    //    createGuessFromGSO(torqueSolEffortCasADi, opt);
 
-    opt.actuatorType = "muscles";
-    //opt.hessian_approximation = "exact";
-    //opt.controlsGuess = activationsMinimizeControlEffort;
-    //opt.previousSolution = torqueSolEffortCasADi;
-    MocoSolution muscleSolEffort = 
-        minimizeControlEffortRightLeg<MocoCasADiSolver>(opt);
+    //MocoSolution muscleSolEffortCasADi(
+    //"sandboxRightLeg_weldedPelvis_muscles_minimize_control_effort_solution.sto");
 
-    //opt.previousSolution = torqueSolEffort;
-    //MocoSolution torqueSolTracking = stateTrackingRightLeg(opt);
-
-    //std::cout << "Predictive versus tracking comparison" << std::endl;
-    //std::cout << "-------------------------------------" << std::endl;
-    //std::cout << "States RMS error: ";
-    //std::cout <<
-    //    torqueSolTracking.compareContinuousVariablesRMS(torqueSolEffort,
-    //    {}, {"none"}, {"none"}, {"none"});
-    //std::cout << std::endl;
-    //std::cout << "Controls RMS error: ";
-    //std::cout <<
-    //    torqueSolTracking.compareContinuousVariablesRMS(torqueSolEffort,
-    //    {"none"}, {}, {"none"}, {"none"});
-    //std::cout << std::endl;
-
-    
-
+    //opt.actuatorType = "muscles";
+    ////opt.hessian_approximation = "exact";
+    ////opt.controlsGuess = muscleSolEffortCasADi.getControlsTrajectory();
+    ////opt.previousSolution = muscleSolEffortCasADi;
+    //MocoSolution muscleSolEffort = 
+    //    minimizeControlEffortRightLeg<MocoCasADiSolver>(opt);
+    return EXIT_SUCCESS;
 }

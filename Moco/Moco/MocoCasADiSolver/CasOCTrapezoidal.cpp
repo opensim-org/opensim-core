@@ -28,7 +28,7 @@ DM Trapezoidal::createQuadratureCoefficientsImpl() const {
     // For trapezoidal rule, grid points and mesh points are synonymous.
     const int numMeshPoints = m_numGridPoints;
     const DM meshIntervals = m_grid(Slice(1, numMeshPoints)) -
-        m_grid(Slice(0, numMeshPoints - 1));
+                             m_grid(Slice(0, numMeshPoints - 1));
     DM quadCoeffs(numMeshPoints, 1);
     quadCoeffs(Slice(0, numMeshPoints - 1)) = 0.5 * meshIntervals;
     quadCoeffs(Slice(1, numMeshPoints)) += 0.5 * meshIntervals;
@@ -40,16 +40,14 @@ DM Trapezoidal::createKinematicConstraintIndicesImpl() const {
     return DM::ones(1, m_numGridPoints);
 }
 
-DM Trapezoidal::createResidualConstraintIndicesImpl() const {
-    return DM::ones(1, m_numGridPoints);
-}
-
-void Trapezoidal::applyConstraintsImpl() {
+void Trapezoidal::applyConstraintsImpl(const VariablesMX& vars,
+        const casadi::MX& xdot, const casadi::MX& residual,
+        const casadi::MX& kcerr, const casadi::MXVector& path) {
 
     // We have arranged the code this way so that all constraints at a given
     // mesh point are grouped together (organizing the sparsity of the Jacobian
     // this way might have benefits for sparse linear algebra).
-    const auto& states = m_vars[Var::states];
+    const auto& states = vars.at(Var::states);
     const DM zeroS = casadi::DM::zeros(m_problem.getNumStates(), 1);
     const DM zeroU = casadi::DM::zeros(m_problem.getNumSpeeds(), 1);
     for (int itime = 0; itime < m_numGridPoints; ++itime) {
@@ -57,37 +55,39 @@ void Trapezoidal::applyConstraintsImpl() {
             const auto h = m_times(itime) - m_times(itime - 1);
             const auto x_i = states(Slice(), itime);
             const auto x_im1 = states(Slice(), itime - 1);
-            const auto xdot_i = m_xdot(Slice(), itime);
-            const auto xdot_im1 = m_xdot(Slice(), itime - 1);
+            const auto xdot_i = xdot(Slice(), itime);
+            const auto xdot_im1 = xdot(Slice(), itime - 1);
 
             // Trapezoidal defects.
             addConstraints(zeroS, zeroS,
-                x_i - (x_im1 + 0.5 * h * (xdot_i + xdot_im1)));
+                    x_i - (x_im1 + 0.5 * h * (xdot_i + xdot_im1)));
         }
 
         if (m_solver.isDynamicsModeImplicit()) {
-            addConstraints(zeroU, zeroU, m_residual(Slice(), itime));
+            addConstraints(zeroU, zeroU, residual(Slice(), itime));
         }
 
         // Kinematic constraint errors.
         if (m_problem.getNumKinematicConstraintEquations()) {
-            DM kinConZero(m_problem.getNumKinematicConstraintEquations(), 1);
-            addConstraints(kinConZero, kinConZero, m_pvaerr(Slice(), itime));
+            DM kinConLowerBounds(
+                    m_problem.getNumKinematicConstraintEquations(), 1);
+            DM kinConUpperBounds(
+                    m_problem.getNumKinematicConstraintEquations(), 1);
+
+            const auto& bounds = m_problem.getKinematicConstraintBounds();
+            kinConLowerBounds(Slice()) = bounds.lower;
+            kinConUpperBounds(Slice()) = bounds.upper;
+
+            addConstraints(kinConLowerBounds, kinConUpperBounds,
+                    kcerr(Slice(), itime));
         }
 
-        // The individual path constraint functions are passed to CasADi to
-        // maximize CasADi's ability to take derivatives efficiently.
-        for (const auto& pathInfo : m_problem.getPathConstraintInfos()) {
-            const auto output = pathInfo.function->operator()(
-            {m_times(itime), m_vars[Var::states](Slice(), itime),
-                m_vars[Var::controls](Slice(), itime),
-                m_vars[Var::parameters]});
-            const auto& errors = output.at(0);
-            addConstraints(
-                pathInfo.lowerBounds, pathInfo.upperBounds, errors);
+        for (int ipc = 0; ipc < (int)path.size(); ++ipc) {
+            const auto& pathInfo = m_problem.getPathConstraintInfos()[ipc];
+            addConstraints(pathInfo.lowerBounds, pathInfo.upperBounds,
+                    path[ipc](Slice(), itime));
         }
     }
-
 }
 
 } // namespace CasOC

@@ -592,7 +592,10 @@ TEMPLATE_TEST_CASE("State tracking", "", MocoTropterSolver, MocoCasADiSolver) {
 }
 
 TEMPLATE_TEST_CASE("Guess", "", MocoTropterSolver, MocoCasADiSolver) {
-    MocoTool moco = createSlidingMassMocoTool();
+    std::cout.rdbuf(LogManager::cout.rdbuf());
+    std::cout.rdbuf(LogManager::cout.rdbuf());
+
+    MocoTool moco = createSlidingMassMocoTool<TestType>();
     auto& ms = moco.initSolver<TestType>();
     const int N = 6;
     ms.set_num_mesh_points(N);
@@ -1180,7 +1183,7 @@ TEST_CASE("Interpolate", "") {
 
 TEMPLATE_TEST_CASE("Sliding mass", "", MocoTropterSolver, MocoCasADiSolver) {
 
-    MocoTool moco = createSlidingMassMocoTool();
+    MocoTool moco = createSlidingMassMocoTool<TestType>();
     MocoSolution solution = moco.solve();
     int numTimes = 20;
     int numStates = 2;
@@ -1316,8 +1319,8 @@ void testSkippingOverQuaternionSlots(bool constrained,
     const double lastValue = valueTraj[valueTraj.size() - 1];
     CHECK(lastValue == Approx(speed * duration));
     for (int i = 0; i < N; ++i) {
-        CHECK(solution.getState("/jointset/j2/j2_coord_0/speed")[i] ==
-                Approx(speed));
+        CHECK(solution.getState("/jointset/j2/j2_coord_0/speed").getElt(i, 0)
+                == Approx(speed));
     }
 }
 
@@ -1333,12 +1336,13 @@ TEST_CASE("Skip over empty quaternion slots", "") {
     testSkippingOverQuaternionSlots<MocoCasADiSolver>(false, false, "explicit");
     testSkippingOverQuaternionSlots<MocoCasADiSolver>(true, false, "explicit");
     testSkippingOverQuaternionSlots<MocoCasADiSolver>(true, true, "explicit");
-    // TODO testSkippingOverQuaternionSlots<MocoCasADiSolver>(false, false, "implicit");
+    testSkippingOverQuaternionSlots<MocoCasADiSolver>(false, false, "implicit");
+    testSkippingOverQuaternionSlots<MocoCasADiSolver>(true, false, "implicit");
+    testSkippingOverQuaternionSlots<MocoCasADiSolver>(true, true, "implicit");
 }
 
 // testCopy();
 // testSolveRepeatedly();
 // testOMUCOSerialization();
 
-// TODO what happens when Ipopt does not converge.
 // TODO specifying optimizer options.

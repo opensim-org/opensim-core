@@ -20,7 +20,12 @@
 
 #include "../MocoUtilities.h"
 #include "CasOCSolver.h"
-#include "MocoCasADiMisc.h"
+#include "MocoCasADiBridge.h"
+extern template class OpenSim::MocoCasADiMultibodySystem<false>;
+extern template class OpenSim::MocoCasADiMultibodySystem<true>;
+extern template class OpenSim::MocoCasADiMultibodySystemImplicit<false>;
+extern template class OpenSim::MocoCasADiMultibodySystemImplicit<true>;
+
 #include <casadi/casadi.hpp>
 
 using casadi::Callback;
@@ -35,6 +40,10 @@ using namespace OpenSim;
 MocoCasADiSolver::MocoCasADiSolver() { constructProperties(); }
 
 void MocoCasADiSolver::constructProperties() {
+    constructProperty_optim_sparsity_detection("none");
+    constructProperty_optim_write_sparsity("");
+    constructProperty_optim_finite_difference_scheme("central");
+    constructProperty_parallel();
 }
 
 MocoIterate MocoCasADiSolver::createGuess(const std::string& type) const {
@@ -98,10 +107,42 @@ const MocoIterate& MocoCasADiSolver::getGuess() const {
 
 std::unique_ptr<CasOC::Problem> MocoCasADiSolver::createCasOCProblem() const {
     const auto& problemRep = getProblemRep();
+    int parallel = 1;
+    int parallelEV = getMocoParallelEnvironmentVariable();
+    if (getProperty_parallel().size()) {
+        parallel = get_parallel();
+    } else if (parallelEV != -1) {
+        parallel = parallelEV;
+    }
+    if (m_runningInPython && parallel) {
+        std::cout << "Warning: "
+                     "Cannot use parallelism in Python due to its "
+                     "Global Interpreter Lock. "
+                     "Set the environment variable OPENSIM_MOCO_PARALLEL or "
+                     "MocoCasADiSolver's 'parallel' property to 0, "
+                     "or use the command-line or Matlab interfaces."
+                << std::endl;
+    }
+    int numThreads;
+    if (parallel == 0) {
+        numThreads = 1;
+    } else if (parallel == 1) {
+        numThreads = std::thread::hardware_concurrency();
+    } else {
+        numThreads = parallel;
+    }
+
+    m_jar = createProblemRepJar(numThreads);
+
     auto casProblem = make_unique<CasOC::Problem>();
     checkPropertyInSet(
             *this, getProperty_dynamics_mode(), {"explicit", "implicit"});
     const auto& model = problemRep.getModel();
+
+    OPENSIM_THROW_IF(!model.getMatterSubsystem().getUseEulerAngles(
+                             model.getWorkingState()),
+            Exception, "Quaternions are not supported.");
+
     std::unordered_map<int, int> yIndexMap;
     auto stateNames = createStateVariableNamesInSystemOrder(model, yIndexMap);
     casProblem->setTimeBounds(convertBounds(problemRep.getTimeInitialBounds()),
@@ -137,32 +178,30 @@ std::unique_ptr<CasOC::Problem> MocoCasADiSolver::createCasOCProblem() const {
     const auto kcNames = problemRep.createKinematicConstraintNames();
     if (kcNames.empty()) {
         OPENSIM_THROW_IF(!getProperty_enforce_constraint_derivatives().empty(),
-            Exception, "Solver property 'enforce_constraint_derivatives' "
-            "was set but no enabled kinematic constraints exist in the "
-            "model.");
-        OPENSIM_THROW_IF(get_minimize_lagrange_multipliers(),
-            Exception, "Solver property 'minimize_lagrange_multipliers' "
-            "was enabled but no enabled kinematic constraints exist in the "
-            "model.");
+                Exception,
+                "Solver property 'enforce_constraint_derivatives' "
+                "was set but no enabled kinematic constraints exist in the "
+                "model.");
+        OPENSIM_THROW_IF(get_minimize_lagrange_multipliers(), Exception,
+                "Solver property 'minimize_lagrange_multipliers' "
+                "was enabled but no enabled kinematic constraints exist in the "
+                "model.");
     } else {
         OPENSIM_THROW_IF(getProperty_enforce_constraint_derivatives().empty(),
-            Exception, "Enabled kinematic constraints exist in the "
-            "provided model. Please set the solver property "
-            "'enforce_constraint_derivatives' to either 'true' or 'false'.");
-        OPENSIM_THROW_IF(get_dynamics_mode() == "implicit", Exception,
-                "Cannot use implicit dynamics mode with kinematic constraints.");
-
+                Exception,
+                "Enabled kinematic constraints exist in the "
+                "provided model. Please set the solver property "
+                "'enforce_constraint_derivatives' to either 'true' or "
+                "'false'.");
 
         int cid, mp, mv, ma;
-        int numEquationsThisConstraint;
         int multIndexThisConstraint;
         int total_mp = 0;
         int total_mv = 0;
         int total_ma = 0;
-        int numKinematicConstraintEquations = 0;
         std::vector<KinematicLevel> kinLevels;
-        const bool enforceConstraintDerivs
-            = get_enforce_constraint_derivatives();
+        const bool enforceConstraintDerivs =
+                get_enforce_constraint_derivatives();
         for (const auto& kcName : kcNames) {
             const auto& kc = problemRep.getKinematicConstraint(kcName);
             const auto& multInfos = problemRep.getMultiplierInfos(kcName);
@@ -176,17 +215,23 @@ std::unique_ptr<CasOC::Problem> MocoCasADiSolver::createCasOCProblem() const {
             // constraint derivatives? For now, disallow enforcing derivatives
             // if non-holonomic or acceleration constraints present.
             OPENSIM_THROW_IF(enforceConstraintDerivs && mv != 0, Exception,
-                format("Enforcing constraint derivatives is supported only for "
-                    "holonomic (position-level) constraints. "
-                    "There are %i velocity-level "
-                    "scalar constraints associated with the model Constraint "
-                    "at ConstraintIndex %i.", mv, cid));
+                    format("Enforcing constraint derivatives is supported only "
+                           "for "
+                           "holonomic (position-level) constraints. "
+                           "There are %i velocity-level "
+                           "scalar constraints associated with the model "
+                           "Constraint "
+                           "at ConstraintIndex %i.",
+                            mv, cid));
             OPENSIM_THROW_IF(enforceConstraintDerivs && ma != 0, Exception,
-                format("Enforcing constraint derivatives is supported only for "
-                    "holonomic (position-level) constraints. "
-                    "There are %i acceleration-level "
-                    "scalar constraints associated with the model Constraint "
-                    "at ConstraintIndex %i.", ma, cid));
+                    format("Enforcing constraint derivatives is supported only "
+                           "for "
+                           "holonomic (position-level) constraints. "
+                           "There are %i acceleration-level "
+                           "scalar constraints associated with the model "
+                           "Constraint "
+                           "at ConstraintIndex %i.",
+                            ma, cid));
 
             total_mp += mp;
             total_mv += mv;
@@ -200,21 +245,33 @@ std::unique_ptr<CasOC::Problem> MocoCasADiSolver::createCasOCProblem() const {
             // they are only added if the current constraint equation is not a
             // derivative of a position- or velocity-level equation.
             multIndexThisConstraint = 0;
-            numEquationsThisConstraint = 0;
             for (int i = 0; i < kc.getConstraintInfo().getNumEquations(); ++i) {
 
                 // If the index for this path constraint represents an
                 // a non-derivative scalar constraint equation, add a
                 // Lagrange multiplier to the problem.
                 if (kinLevels[i] == KinematicLevel::Position ||
-                    kinLevels[i] == KinematicLevel::Velocity ||
-                    kinLevels[i] == KinematicLevel::Acceleration) {
+                        kinLevels[i] == KinematicLevel::Velocity ||
+                        kinLevels[i] == KinematicLevel::Acceleration) {
 
                     const auto& multInfo = multInfos[multIndexThisConstraint];
-                    casProblem->addMultiplier(multInfo.getName(),
+
+                    CasOC::KinematicLevel kinLevel;
+                    if (kinLevels[i] == KinematicLevel::Position)
+                        kinLevel = CasOC::KinematicLevel::Position;
+                    else if (kinLevels[i] == KinematicLevel::Velocity)
+                        kinLevel = CasOC::KinematicLevel::Velocity;
+                    else if (kinLevels[i] == KinematicLevel::Acceleration)
+                        kinLevel = CasOC::KinematicLevel::Acceleration;
+                    else {
+                        OPENSIM_THROW(OpenSim::Exception,
+                                "Unrecognized KinematicLevel");
+                    }
+
+                    casProblem->addKinematicConstraint(multInfo.getName(),
                             convertBounds(multInfo.getBounds()),
                             convertBounds(multInfo.getInitialBounds()),
-                            convertBounds(multInfo.getFinalBounds()));
+                            convertBounds(multInfo.getFinalBounds()), kinLevel);
 
                     // Add velocity correction variables if enforcing
                     // constraint equation derivatives.
@@ -223,34 +280,25 @@ std::unique_ptr<CasOC::Problem> MocoCasADiSolver::createCasOCProblem() const {
                         // associated Lagrange multiplier name begins with
                         // "lambda", which may change in the future.
                         OPENSIM_THROW_IF(
-                            multInfo.getName().substr(0, 6) != "lambda",
-                            Exception,
-                            OpenSim::format("Expected the multiplier name for "
-                                "this constraint to begin with 'lambda' but it "
-                                "begins with '%s'.",
-                                multInfo.getName().substr(0, 6)));
-                        casProblem->addSlack(std::string(
-                            multInfo.getName()).replace(0, 6, "gamma"),
-                            convertBounds(get_velocity_correction_bounds()));
+                                multInfo.getName().substr(0, 6) != "lambda",
+                                Exception,
+                                OpenSim::format(
+                                        "Expected the multiplier name for "
+                                        "this constraint to begin with "
+                                        "'lambda' but it "
+                                        "begins with '%s'.",
+                                        multInfo.getName().substr(0, 6)));
+                        casProblem->addSlack(std::string(multInfo.getName())
+                                                     .replace(0, 6, "gamma"),
+                                convertBounds(
+                                        get_velocity_correction_bounds()));
                     }
                     ++multIndexThisConstraint;
-                    ++numEquationsThisConstraint;
-
-                } else if (enforceConstraintDerivs) {
-                    // If enforcing constraint derivatives, count these
-                    // equations in the total number of constraint equations.
-                    ++numEquationsThisConstraint;
                 }
             }
-            numKinematicConstraintEquations += numEquationsThisConstraint;
         }
 
         // Set kinematic constraint information on the CasOC::Problem.
-        casProblem->setNumKinematicConstraintEquations(
-            numKinematicConstraintEquations);
-        casProblem->setNumHolonomicConstraintEquations(total_mp);
-        casProblem->setNumNonHolonomicConstraintEquations(total_mv);
-        casProblem->setNumAccelerationConstraintEquations(total_ma);
         casProblem->setEnforceConstraintDerivatives(enforceConstraintDerivs);
         // The bounds are the same for all kinematic constraints in the
         // MocoProblem, so just grab the bounds from the first constraint.
@@ -260,7 +308,7 @@ std::unique_ptr<CasOC::Problem> MocoCasADiSolver::createCasOCProblem() const {
         // Only add the velocity correction if enforcing constraint derivatives.
         if (enforceConstraintDerivs) {
             casProblem->setVelocityCorrection<MocoCasADiVelocityCorrection>(
-                problemRep, yIndexMap);
+                    *m_jar, yIndexMap);
         }
     }
 
@@ -276,14 +324,15 @@ std::unique_ptr<CasOC::Problem> MocoCasADiSolver::createCasOCProblem() const {
             casBounds.push_back(convertBounds(bounds));
         }
         casProblem->addPathConstraint<MocoCasADiPathConstraint>(
-                name, casBounds, problemRep, yIndexMap, pathCon);
+                name, casBounds, *m_jar, yIndexMap, name);
     }
-    casProblem->setIntegralCost<MocoCasADiIntegralCostIntegrand>(problemRep, yIndexMap);
-    casProblem->setEndpointCost<MocoCasADiEndpointCost>(problemRep, yIndexMap);
-    casProblem->setMultibodySystem<MocoCasADiMultibodySystem>(problemRep,
-        *this, yIndexMap);
+    casProblem->setIntegralCost<MocoCasADiIntegralCostIntegrand>(
+            *m_jar, yIndexMap);
+    casProblem->setEndpointCost<MocoCasADiEndpointCost>(*m_jar, yIndexMap);
+    casProblem->setMultibodySystem<MocoCasADiMultibodySystem>(
+            *m_jar, *this, yIndexMap);
     casProblem->setImplicitMultibodySystem<MocoCasADiMultibodySystemImplicit>(
-            problemRep, yIndexMap);
+            *m_jar, *this, yIndexMap);
 
     return casProblem;
 }
@@ -292,18 +341,6 @@ std::unique_ptr<CasOC::Solver> MocoCasADiSolver::createCasOCSolver(
         const CasOC::Problem& casProblem) const {
     auto casSolver = make_unique<CasOC::Solver>(casProblem);
 
-    /*
-    m_opti.disp(std::cout, true);
-    std::cout << "DEBUG jacobian " << std::endl;
-    std::cout << jacobian(m_opti.g(), m_opti.x()) << std::endl;
-    std::cout << "DEBUG sparsity " << std::endl;
-    jacobian(m_opti.g(), m_opti.x()).sparsity().to_file("DEBUG_sparsity.mtx");
-    // TODO look at portions of the hessian (individual integrands).
-    // TODO is it really the hessian or is it the constraints that are
-    // expensive?
-    hessian(m_opti.f(), m_opti.x()).sparsity().to_file("DEBUG_sparsity.mtx");
-    */
-
     // Set solver options.
     // -------------------
     Dict solverOptions;
@@ -311,27 +348,31 @@ std::unique_ptr<CasOC::Solver> MocoCasADiSolver::createCasOCSolver(
     checkPropertyInSet(*this, getProperty_transcription_scheme(),
             {"trapezoidal", "hermite-simpson"});
     OPENSIM_THROW_IF(casProblem.getNumKinematicConstraintEquations() != 0 &&
-        get_transcription_scheme() == "trapezoidal",
-        OpenSim::Exception, "Kinematic constraints not supported with "
-        "trapezoidal transcription.");
+                             get_transcription_scheme() == "trapezoidal",
+            OpenSim::Exception,
+            "Kinematic constraints not supported with "
+            "trapezoidal transcription.");
     // Enforcing constraint derivatives is only supported when Hermite-Simpson
     // is set as the transcription scheme.
     if (!getProperty_enforce_constraint_derivatives().empty()) {
         OPENSIM_THROW_IF(get_transcription_scheme() != "hermite-simpson" &&
-            get_enforce_constraint_derivatives(), Exception,
-            format("If enforcing derivatives of model kinematic "
-                "constraints, then the property 'transcription_scheme' "
-                "must be set to 'hermite-simpson'. "
-                "Currently, it is set to '%s'.",
-                get_transcription_scheme()));
+                                 get_enforce_constraint_derivatives(),
+                Exception,
+                format("If enforcing derivatives of model kinematic "
+                       "constraints, then the property 'transcription_scheme' "
+                       "must be set to 'hermite-simpson'. "
+                       "Currently, it is set to '%s'.",
+                        get_transcription_scheme()));
     }
 
+    checkPropertyIsPositive(*this, getProperty_num_mesh_points());
     checkPropertyInRangeOrSet(*this, getProperty_optim_max_iterations(), 0,
             std::numeric_limits<int>::max(), {-1});
     checkPropertyInRangeOrSet(*this, getProperty_optim_convergence_tolerance(),
             0.0, SimTK::NTraits<double>::getInfinity(), {-1.0});
     checkPropertyInRangeOrSet(*this, getProperty_optim_constraint_tolerance(),
             0.0, SimTK::NTraits<double>::getInfinity(), {-1.0});
+    checkPropertyInSet(*this, getProperty_verbosity(), {0, 1, 2});
     if (get_optim_solver() == "ipopt") {
         solverOptions["print_user_options"] = "yes";
         if (get_verbosity() < 2) {
@@ -361,6 +402,18 @@ std::unique_ptr<CasOC::Solver> MocoCasADiSolver::createCasOCSolver(
             solverOptions["acceptable_constr_viol_tol"] = tol;
         }
     }
+
+    checkPropertyInSet(*this, getProperty_optim_sparsity_detection(),
+            {"none", "random", "initial-guess"});
+    casSolver->setSparsityDetection(get_optim_sparsity_detection());
+    casSolver->setSparsityDetectionRandomCount(3);
+
+    casSolver->setWriteSparsity(get_optim_write_sparsity());
+
+    checkPropertyInSet(*this, getProperty_optim_finite_difference_scheme(),
+            {"central", "forward", "backward"});
+    casSolver->setFiniteDifferenceScheme(get_optim_finite_difference_scheme());
+
     Dict pluginOptions;
     pluginOptions["verbose_init"] = true;
 
@@ -368,9 +421,12 @@ std::unique_ptr<CasOC::Solver> MocoCasADiSolver::createCasOCSolver(
     casSolver->setTranscriptionScheme(get_transcription_scheme());
     casSolver->setDynamicsMode(get_dynamics_mode());
     casSolver->setMinimizeLagrangeMultipliers(
-        get_minimize_lagrange_multipliers());
+            get_minimize_lagrange_multipliers());
     casSolver->setLagrangeMultiplierWeight(get_lagrange_multiplier_weight());
     casSolver->setOptimSolver(get_optim_solver());
+    if (m_jar->size() > 1) {
+        casSolver->setParallelism("thread", m_jar->size());
+    }
     casSolver->setPluginOptions(pluginOptions);
     casSolver->setSolverOptions(solverOptions);
     return casSolver;
@@ -379,17 +435,17 @@ std::unique_ptr<CasOC::Solver> MocoCasADiSolver::createCasOCSolver(
 MocoSolution MocoCasADiSolver::solveImpl() const {
     const Stopwatch stopwatch;
 
-    checkPropertyInSet(*this, getProperty_verbosity(), {0, 1, 2});
-
     if (get_verbosity()) {
         std::cout << std::string(79, '=') << "\n";
         std::cout << "MocoCasADiSolver starting.\n";
         std::cout << std::string(79, '-') << std::endl;
         getProblemRep().printDescription();
     }
-    checkPropertyIsPositive(*this, getProperty_num_mesh_points());
     auto casProblem = createCasOCProblem();
     auto casSolver = createCasOCSolver(*casProblem);
+    if (get_verbosity()) {
+        std::cout << "Number of threads: " << m_jar->size() << std::endl;
+    }
 
     MocoIterate guess = getGuess();
     CasOC::Iterate casGuess;

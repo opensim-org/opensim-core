@@ -471,9 +471,9 @@ public:
             if (diffuses.size() != 0) {
                 SimTK::Vector gamma((int)diffuses.size(), diffuses.data());
                 matter.multiplyByGTranspose(simTKState, gamma, this->qdotCorr);
-                this->qdot = simTKState.getQDot() + this->qdotCorr;
+                this->qdot = simTKState.getU() + this->qdotCorr;
             } else {
-                this->qdot = simTKState.getQDot();
+                this->qdot = simTKState.getU();
             }
 
             // Constraint errors.
@@ -523,14 +523,15 @@ public:
 
             // Copy state derivative values to output struct. We cannot simply
             // use getYDot() because that requires realizing to Acceleration.
-            const int nq = simTKState.getNQ();
+            const int nq = this->qdot.size();
             const int nu = this->udot.size();
             const int nz = simTKState.getNZ();
-            SimTK::Vector ydot(nq + nu + nz);
-            ydot(0, nq) = this->qdot;
-            ydot(nq, nu) = this->udot;
-            ydot(nq + nu, nz) = simTKState.getZDot();
-            this->setTropterDynamics(ydot, out.dynamics);
+            std::copy_n(this->qdot.getContiguousScalarData(), nq,
+                    out.dynamics.data());
+            std::copy_n(this->udot.getContiguousScalarData(), nu,
+                    out.dynamics.data() + nq);
+            std::copy_n(simTKState.getZDot().getContiguousScalarData(), nz,
+                    out.dynamics.data() + nq + nu);
 
         } else {
             // TODO Antoine and Gil said realizing Dynamics is a lot costlier 

@@ -21,9 +21,7 @@
 #include <OpenSim/Actuators/CoordinateActuator.h>
 #include <Moco/osimMoco.h>
 #include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
-
-// TODO: Test with hermite-simpson.
-// TODO: Test with kinematic constraints.
+#include <OpenSim/Common/LogManager.h>
 
 using namespace OpenSim;
 using namespace Catch;
@@ -200,6 +198,43 @@ TEMPLATE_TEST_CASE("Combining implicit dynamics mode with path constraints",
         THEN("path constraints are still obeyed") {
             OpenSim_REQUIRE_MATRIX_TOL(solution.getControlsTrajectory(),
                     SimTK::Matrix(5, 1, 10.0), 1e-5);
+        }
+    }
+}
+
+TEMPLATE_TEST_CASE("Combining implicit dynamics with kinematic constraints",
+        "[implicit]", /*MocoTropterSolver,*/ MocoCasADiSolver) {
+    std::cout.rdbuf(LogManager::cout.rdbuf());
+    std::cerr.rdbuf(LogManager::cerr.rdbuf());
+    GIVEN("MocoProblem with a kinematic constraint") {
+        MocoTool moco;
+        auto& prob = moco.updProblem();
+        auto model = ModelFactory::createDoublePendulum();
+        prob.setTimeBounds(0, 1);
+        auto* constraint = new CoordinateCouplerConstraint();
+        Array<std::string> names;
+        names.append("q0");
+        constraint->setIndependentCoordinateNames(names);
+        constraint->setDependentCoordinateName("q1");
+        LinearFunction func(1.0, 0.0);
+        constraint->setFunction(func);
+        model.addConstraint(constraint);
+        prob.setModelCopy(model);
+        auto& solver = moco.initSolver<TestType>();
+        solver.set_dynamics_mode("implicit");
+        solver.set_num_mesh_points(5);
+        solver.set_transcription_scheme("hermite-simpson");
+        solver.set_enforce_constraint_derivatives(true);
+        MocoSolution solution = moco.solve();
+
+        THEN("kinematic constraint is still obeyed") {
+            const auto q0value = solution.getStatesTrajectory().col(0);
+            const auto q1value = solution.getStatesTrajectory().col(1);
+            // Only check at the mesh points.
+            for (int i = 0; i < q0value.size(); i += 2) {
+                SimTK_TEST_EQ_TOL(q0value[i], q1value[i], 1e-6);
+
+            }
         }
     }
 }
