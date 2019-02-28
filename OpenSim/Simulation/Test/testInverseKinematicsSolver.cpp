@@ -991,7 +991,7 @@ generateOrientationsDataFromModelAndStates(const Model& model,
 
     if (noiseLevel >= SimTK::Eps) {
         for (size_t i = 0; i < results.getNumRows(); ++i) {
-            auto& row = results.updRowAtIndex(i);
+            auto row = results.updRowAtIndex(i);
             for (int j = 0; j < row.size(); ++j) {
                 if (!constantOffset) {
                     offset = SimTK::Rotation(SimTK::BodyRotationSequence,
