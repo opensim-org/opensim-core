@@ -10,7 +10,7 @@ const std::string IMUHelper::MagneticHeading{ "magnetometers" };
 const std::string IMUHelper::AngularVelocity{ "gyros" };
 
 DataAdapter::OutputTables IMUHelper::readXsensTrial(const std::string& folderName, const std::string& prefix,
-        const MapObject& filenameToModelIMUMap) {
+        const MapObject& modelIMUToFilenameMap) {
 
     std::vector<std::ifstream*> imuStreams;
     std::vector<std::string> labels;
@@ -22,9 +22,9 @@ DataAdapter::OutputTables IMUHelper::readXsensTrial(const std::string& folderNam
     int magIndex = -1;
     int rotationsIndex = -1;
 
-    int n_imus = filenameToModelIMUMap.getNumItems();
+    int n_imus = modelIMUToFilenameMap.getNumItems();
     for (int index = 0; index < n_imus; ++index) {
-        const MapItem& nextItem = filenameToModelIMUMap.get_list_MapItems(index);
+        const MapItem& nextItem = modelIMUToFilenameMap.get_list_MapItems(index);
         auto fileName = folderName + prefix + nextItem.get_value() +".txt";
         auto* nextStream = new std::ifstream{ fileName };
         OPENSIM_THROW_IF(!nextStream->good(),

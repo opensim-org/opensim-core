@@ -40,23 +40,31 @@ namespace OpenSim {
     files but no plan to create manufacturer specific formatted files.*/
 class OSIMCOMMON_API IMUHelper {
 public:
-    IMUHelper()                              = default;
+    IMUHelper()                            = default;
     IMUHelper(const IMUHelper&)            = default;
     IMUHelper(IMUHelper&&)                 = default;
     IMUHelper& operator=(const IMUHelper&) = default;
     IMUHelper& operator=(IMUHelper&&)      = default;
-    virtual ~IMUHelper()                     = default;
+    virtual ~IMUHelper()                   = default;
 
     static const std::string Orientations;   // name of table for orientation data
     static const std::string LinearAccelerations;  // name of table for acceleration data
-    static const std::string MagneticHeading;  // name of table for data from Magnetometer (Magnetic North Heading)
+    static const std::string MagneticHeading;  // name of table for data from Magnetometer (Magnetic Heading)
     static const std::string AngularVelocity;  // name of table for gyro data (AngularVelocity)
 
-    /** Read all files with the given folder name, with common prefix. Produce a list of tables 
-    depending on the contents of the files read. One table for rotations, one for Gyro
-    one for Magnetometer data, one for Accelerometer data. */
+    /** Typically, Xsens can export a trial as one .mtb file (binary that we can't parse) or as collection of
+    collection of ASCII text files that are tab delimited, one per sensor. All of these files have 
+    a common prefix that indicates the trial, and a suffix that indicates the sensor (fixed across trials).
+    Example: MT_012005D6_031-000_00B421AF.txt, MT_012005D6_031-000_00B4227B.txt for trial MT_012005D6_031-000_
+    and sensors 00B421AF, 00B4227B respectively.
+    The function below read all files with the given folder name, with common prefix (same trial). It roduces a 
+    list of tables depending on the contents of the files read. 
+    - One table for rotations, 
+    - one for LinearAccelerations
+    - one for MagneticHeading data, 
+    - one for AngularVelocity data. */
     static DataAdapter::OutputTables readXsensTrial(const std::string& folderName, const std::string& prefix, 
-        const MapObject& filenameToModelIMUMap);
+        const MapObject& modelIMUToFilenameMap);
     
 private:
     /**
