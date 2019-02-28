@@ -314,7 +314,7 @@ protected:
             simTKStateIgnoringConstraints);
 
         if (this->m_numKinematicConstraintEquations) {
-            this->calcKinematicConstraintForces(in, simTKState,
+            this->calcKinematicConstraintForces(adjuncts, simTKState,
                 simTKStateIgnoringConstraints);
         }
 
@@ -333,6 +333,7 @@ protected:
 
     void calc_endpoint_cost(const T& final_time,
             const tropter::VectorX<T>& states,
+            const tropter::VectorX<T>& adjuncts,
             const tropter::VectorX<T>& /*parameters*/,
             T& cost) const override {
         // TODO avoid all of this if there are no endpoint costs.
@@ -344,11 +345,11 @@ protected:
             simTKStateIgnoringConstraints, true);
 
         if (this->m_numKinematicConstraintEquations) {
-            this->calcKinematicConstraintForces(in, simTKState,
+            this->calcKinematicConstraintForces(adjuncts, simTKState,
                 simTKStateIgnoringConstraints);
         }
 
-        cost = m_mocoProbRep.calcEndpointCost(m_state);
+        cost = m_mocoProbRep.calcEndpointCost(simTKStateIgnoringConstraints);
     }
 
     const MocoTropterSolver& m_mocoTropterSolver;
@@ -399,7 +400,7 @@ protected:
         }
     }
 
-    void calcKinematicConstraintForces(const tropter::Input<T>& in,
+    void calcKinematicConstraintForces(const tropter::VectorX<T>& adjuncts,
             const SimTK::State& state, 
             SimTK::State& stateDisabledConstraints) const {
 
@@ -410,7 +411,7 @@ protected:
 
             // Multipliers are negated so constraint forces can be used like
             // applied forces.
-            SimTK::Vector multipliers(m_numMultipliers, in.adjuncts.data(), 
+            SimTK::Vector multipliers(m_numMultipliers, adjuncts.data(), 
                 true);
             matter.calcConstraintForcesFromMultipliers(state, -multipliers,
                 m_constraintBodyForces, m_constraintMobilityForces);
@@ -525,7 +526,7 @@ public:
 
         const auto& states = in.states;
         const auto& controls = in.controls;
-        // const auto& adjuncts = in.adjuncts;
+        const auto& adjuncts = in.adjuncts;
         const auto& diffuses = in.diffuses;
 
         const auto& model = this->m_model;
@@ -540,7 +541,7 @@ public:
         this->setSimTKState(modelDisabledConstraints, in.time, states, controls,
                 simTKStateIgnoringConstraints);
         if (this->m_numKinematicConstraintEquations) {
-            this->calcKinematicConstraintForces(in, simTKState,
+            this->calcKinematicConstraintForces(adjuncts, simTKState,
                     simTKStateIgnoringConstraints);
         }
 
@@ -696,10 +697,11 @@ public:
     }
     void calc_endpoint_cost(const T& final_time,
             const tropter::VectorX<T>& states,
+            const tropter::VectorX<T>& adjuncts,
             const tropter::VectorX<T>& parameters,
             T& cost) const override final {
         TropterProblemBase<T>::calc_endpoint_cost(final_time, states,
-                parameters, cost);
+                adjuncts, parameters, cost);
         OPENSIM_THROW_IF(
                 this->m_state.getSystemStage() >= SimTK::Stage::Acceleration,
                 Exception,

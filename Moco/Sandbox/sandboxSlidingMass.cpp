@@ -637,6 +637,7 @@ public:
         }
     }
     void calc_endpoint_cost(const T& final_time, const VectorX<T>& states,
+            const tropter::VectorX<T>& /*adjuncts*/,
             const VectorX<T>& /*parameters*/, T& cost) const override {
         cost = 0;
         m_state.setTime(final_time);
