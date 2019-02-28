@@ -17,10 +17,10 @@
  * -------------------------------------------------------------------------- */
 
 #include "MocoProblemRep.h"
-#include "MocoProblem.h"
 
+#include "Components/PositionMotion.h"
 #include "Components/PrescribedAcceleration.h"
-
+#include "MocoProblem.h"
 #include <unordered_set>
 
 using namespace OpenSim;
@@ -41,10 +41,20 @@ void MocoProblemRep::initialize() {
 
     const auto& ph0 = m_problem->getPhase(0);
     m_model = m_problem->getPhase(0).getModel();
-
+    m_model.finalizeFromProperties();
 
     // TODO: only enable if necessary?
-    m_model.addModelComponent(new PrescribedAcceleration("motion"));
+    // TODO cannot prescribe both accel and position.
+    int countMotion = 0;
+    for (const auto& comp : m_model.getComponentList<PositionMotion>()) {
+        comp.getName(); // Avoid "unused variable".
+        ++countMotion;
+    }
+    if (countMotion) {
+        m_prescribedKinematics = true;
+    } else {
+        m_model.addModelComponent(new PrescribedAcceleration("motion"));
+    }
 
     m_model.initSystem();
 
@@ -75,19 +85,21 @@ void MocoProblemRep::initialize() {
         const auto& name = ph0.get_state_infos(i).getName();
         m_state_infos[name] = ph0.get_state_infos(i);
     }
-    for (const auto& coord : m_model.getComponentList<Coordinate>()) {
-        const auto stateVarNames = coord.getStateVariableNames();
-        const std::string coordValueName = stateVarNames[0];
-        if (m_state_infos.count(coordValueName) == 0) {
-            const auto info = MocoVariableInfo(coordValueName,
-                    {coord.getRangeMin(), coord.getRangeMax()}, {}, {});
-            m_state_infos[coordValueName] = info;
-        }
-        const std::string coordSpeedName = stateVarNames[1];
-        if (m_state_infos.count(coordSpeedName) == 0) {
-            const auto info = MocoVariableInfo(coordSpeedName,
-                    ph0.get_default_speed_bounds(), {}, {});
-            m_state_infos[coordSpeedName] = info;
+    if (!m_prescribedKinematics) {
+        for (const auto& coord : m_model.getComponentList<Coordinate>()) {
+            const auto stateVarNames = coord.getStateVariableNames();
+            const std::string coordValueName = stateVarNames[0];
+            if (m_state_infos.count(coordValueName) == 0) {
+                const auto info = MocoVariableInfo(coordValueName,
+                        {coord.getRangeMin(), coord.getRangeMax()}, {}, {});
+                m_state_infos[coordValueName] = info;
+            }
+            const std::string coordSpeedName = stateVarNames[1];
+            if (m_state_infos.count(coordSpeedName) == 0) {
+                const auto info = MocoVariableInfo(
+                        coordSpeedName, ph0.get_default_speed_bounds(), {}, {});
+                m_state_infos[coordSpeedName] = info;
+            }
         }
     }
     for (int i = 0; i < ph0.getProperty_control_infos().size(); ++i) {
@@ -113,8 +125,7 @@ void MocoProblemRep::initialize() {
                 format("A parameter with name '%s' already exists.",
                         param.getName()));
         paramNames.insert(param.getName());
-        m_parameters[i] = std::unique_ptr<MocoParameter>(
-                param.clone());
+        m_parameters[i] = std::unique_ptr<MocoParameter>(param.clone());
         m_parameters[i]->initializeOnModel(m_model);
     }
 
@@ -135,10 +146,10 @@ void MocoProblemRep::initialize() {
     // Get property values for constraints and Lagrange multipliers.
     const auto& kcBounds = ph0.get_kinematic_constraint_bounds();
     const MocoBounds& multBounds = ph0.get_multiplier_bounds();
-    MocoInitialBounds multInitBounds(multBounds.getLower(),
-            multBounds.getUpper());
-    MocoFinalBounds multFinalBounds(multBounds.getLower(),
-            multBounds.getUpper());
+    MocoInitialBounds multInitBounds(
+            multBounds.getLower(), multBounds.getUpper());
+    MocoFinalBounds multFinalBounds(
+            multBounds.getLower(), multBounds.getUpper());
     // Get model information to loop through constraints.
     const auto& matter = m_model.getMatterSubsystem();
     const auto NC = matter.getNumConstraints();
@@ -176,20 +187,20 @@ void MocoProblemRep::initialize() {
             std::vector<MocoVariableInfo> multInfos;
             for (int i = 0; i < mp; ++i) {
                 MocoVariableInfo info("lambda_cid" + std::to_string(cid) +
-                                "_p" + std::to_string(i),
-                                multBounds, multInitBounds, multFinalBounds);
+                                              "_p" + std::to_string(i),
+                        multBounds, multInitBounds, multFinalBounds);
                 multInfos.push_back(info);
             }
             for (int i = 0; i < mv; ++i) {
                 MocoVariableInfo info("lambda_cid" + std::to_string(cid) +
-                                "_v" + std::to_string(i),
-                                multBounds, multInitBounds, multFinalBounds);
+                                              "_v" + std::to_string(i),
+                        multBounds, multInitBounds, multFinalBounds);
                 multInfos.push_back(info);
             }
             for (int i = 0; i < ma; ++i) {
                 MocoVariableInfo info("lambda_cid" + std::to_string(cid) +
-                                "_a" + std::to_string(i),
-                                multBounds, multInitBounds, multFinalBounds);
+                                              "_a" + std::to_string(i),
+                        multBounds, multInitBounds, multFinalBounds);
                 multInfos.push_back(info);
             }
             m_multiplier_infos_map.insert({kcInfo.getName(), multInfos});
@@ -201,15 +212,15 @@ void MocoProblemRep::initialize() {
     std::unordered_set<std::string> pcNames;
     for (int i = 0; i < ph0.getProperty_path_constraints().size(); ++i) {
         const auto& pc = ph0.get_path_constraints(i);
-        OPENSIM_THROW_IF(pc.getName().empty(), Exception,
-                "All costs must have a name.");
+        OPENSIM_THROW_IF(
+                pc.getName().empty(), Exception, "All costs must have a name.");
         OPENSIM_THROW_IF(pcNames.count(pc.getName()), Exception,
                 format("A constraint with name '%s' already exists.",
                         pc.getName()));
         pcNames.insert(pc.getName());
         m_path_constraints[i] = std::unique_ptr<MocoPathConstraint>(pc.clone());
-        m_path_constraints[i]->
-                initializeOnModel(m_model, m_num_path_constraint_equations);
+        m_path_constraints[i]->initializeOnModel(
+                m_model, m_num_path_constraint_equations);
         m_num_path_constraint_equations +=
                 m_path_constraints[i]->getConstraintInfo().getNumEquations();
     }
@@ -223,6 +234,21 @@ MocoInitialBounds MocoProblemRep::getTimeInitialBounds() const {
 }
 MocoFinalBounds MocoProblemRep::getTimeFinalBounds() const {
     return m_problem->getPhase(0).get_time_final_bounds();
+}
+std::vector<std::string> MocoProblemRep::createStateVariableNamesInSystemOrder(
+        std::unordered_map<int, int>& yIndexMap) const {
+    auto stateNames =
+            OpenSim::createStateVariableNamesInSystemOrder(m_model, yIndexMap);
+    auto out = stateNames;
+    if (m_prescribedKinematics) {
+        for (int i = 0; i < (int)stateNames.size(); ++i) {
+            if (endsWith(stateNames[i], "/value") ||
+                    endsWith(stateNames[i], "/speed")) {
+                out.erase(std::find(out.begin(), out.end(), stateNames[i]));
+            }
+        }
+    }
+    return out;
 }
 std::vector<std::string> MocoProblemRep::createStateInfoNames() const {
     std::vector<std::string> names(m_state_infos.size());
@@ -245,16 +271,14 @@ std::vector<std::string> MocoProblemRep::createControlInfoNames() const {
 std::vector<std::string> MocoProblemRep::createMultiplierInfoNames() const {
     std::vector<std::string> names;
     for (const auto& kc : m_kinematic_constraints) {
-        const auto& infos = m_multiplier_infos_map.at(
-                kc.getConstraintInfo().getName());
-        for (const auto& info : infos) {
-            names.push_back(info.getName());
-        }
+        const auto& infos =
+                m_multiplier_infos_map.at(kc.getConstraintInfo().getName());
+        for (const auto& info : infos) { names.push_back(info.getName()); }
     }
     return names;
 }
-std::vector<std::string> MocoProblemRep::createKinematicConstraintNames()
-const {
+std::vector<std::string>
+MocoProblemRep::createKinematicConstraintNames() const {
     std::vector<std::string> names(m_kinematic_constraints.size());
     // Kinematic constraint names are stored in the internal constraint info.
     for (int i = 0; i < (int)m_kinematic_constraints.size(); ++i) {
@@ -298,8 +322,8 @@ const MocoParameter& MocoProblemRep::getParameter(
     for (const auto& param : m_parameters) {
         if (param->getName() == name) { return *param.get(); }
     }
-    OPENSIM_THROW(Exception,
-            format("No parameter with name '%s' found.", name));
+    OPENSIM_THROW(
+            Exception, format("No parameter with name '%s' found.", name));
 }
 const MocoPathConstraint& MocoProblemRep::getPathConstraint(
         const std::string& name) const {
@@ -329,24 +353,22 @@ const std::vector<MocoVariableInfo>& MocoProblemRep::getMultiplierInfos(
     } else {
         OPENSIM_THROW(Exception,
                 format("No variable infos for kinematic constraint info with "
-                       "name '%s' found.", kinematicConstraintInfoName));
+                       "name '%s' found.",
+                        kinematicConstraintInfoName));
     }
 }
 
 void MocoProblemRep::applyParametersToModel(
-        const SimTK::Vector& parameterValues,
-        bool initSystem) const {
+        const SimTK::Vector& parameterValues, bool initSystem) const {
     OPENSIM_THROW_IF(parameterValues.size() != (int)m_parameters.size(),
             Exception,
             format("There are %i parameters in "
-                    "this MocoProblem, but %i values were provided.",
+                   "this MocoProblem, but %i values were provided.",
                     m_parameters.size(), parameterValues.size()));
     for (int i = 0; i < (int)m_parameters.size(); ++i) {
         m_parameters[i]->applyParameterToModel(parameterValues(i));
     }
-    if (initSystem) {
-        const_cast<Model&>(m_model).initSystem();
-    }
+    if (initSystem) { const_cast<Model&>(m_model).initSystem(); }
 }
 
 void MocoProblemRep::printDescription(std::ostream& stream) const {
@@ -420,5 +442,3 @@ void MocoProblemRep::printDescription(std::ostream& stream) const {
 
     stream.flush();
 }
-
-

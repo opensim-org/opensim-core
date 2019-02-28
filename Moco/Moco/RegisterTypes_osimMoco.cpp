@@ -38,6 +38,7 @@
 #include "MocoCasADiSolver/MocoCasADiSolver.h"
 
 #include "Components/StationPlaneContactForce.h"
+#include "Components/PositionMotion.h"
 
 // TODO: Move to osimSimulation.
 #include <OpenSim/Simulation/MarkersReference.h>
@@ -78,6 +79,7 @@ OSIMMOCO_API void RegisterTypes_osimMoco() {
         Object::registerType(AckermannVanDenBogert2010Force());
         Object::registerType(MeyerFregly2016Force());
         Object::registerType(EspositoMiller2018Force());
+        Object::registerType(PositionMotion());
 
         // TODO: Move to osimSimulation.
         Object::registerType(MarkersReference());

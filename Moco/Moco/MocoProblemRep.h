@@ -62,6 +62,9 @@ public:
     int getNumStates() const { return (int)m_state_infos.size(); }
     int getNumControls() const { return (int)m_control_infos.size(); }
     int getNumParameters() const { return (int)m_parameters.size(); }
+    bool isPrescribedKinematics() const { return m_prescribedKinematics; }
+    std::vector<std::string> createStateVariableNamesInSystemOrder(
+            std::unordered_map<int, int>& yIndexMap) const;
     /// Get the state names of all the state infos.
     std::vector<std::string> createStateInfoNames() const;
     /// Get the control names of all the control infos.
@@ -209,6 +212,8 @@ private:
     const MocoProblem* m_problem;
 
     Model m_model;
+
+    bool m_prescribedKinematics = false;
 
     std::unordered_map<std::string, MocoVariableInfo> m_state_infos;
     std::unordered_map<std::string, MocoVariableInfo> m_control_infos;

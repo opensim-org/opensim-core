@@ -137,7 +137,8 @@ void Transcription::createVariablesAndSetBounds() {
     }
     {
         if (m_solver.isDynamicsModeImplicit()) {
-            // "Slice()" grabs everything in that dimension (like ":" in Matlab).
+            // "Slice()" grabs everything in that dimension (like ":" in
+            // Matlab).
             // TODO: How to choose bounds on udot?
             setVariableBounds(derivatives, Slice(), Slice(), {-1000, 1000});
         }
@@ -181,7 +182,8 @@ void Transcription::transcribe() {
     // constraint errors.
     m_xdot = MX(NS, m_numGridPoints);
     if (m_solver.isDynamicsModeImplicit()) {
-        m_residual = MX(NU, m_numGridPoints);
+        m_residual = MX(
+                m_problem.getNumMultibodyDynamicsEquations(), m_numGridPoints);
     }
     m_kcerr = MX(m_problem.getNumKinematicConstraintEquations(),
             m_kinematicConstraintIndices.nnz());

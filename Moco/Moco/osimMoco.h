@@ -35,6 +35,7 @@
 #include "MocoConstraint.h"
 #include "ActivationCoordinateActuator.h"
 
+#include "Components/PositionMotion.h"
 #include "Components/StationPlaneContactForce.h"
 #include "Components/ModelFactory.h"
 

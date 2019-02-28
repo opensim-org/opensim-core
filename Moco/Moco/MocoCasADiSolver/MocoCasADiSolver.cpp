@@ -121,7 +121,7 @@ std::unique_ptr<CasOC::Problem> MocoCasADiSolver::createCasOCProblem() const {
                      "Set the environment variable OPENSIM_MOCO_PARALLEL or "
                      "MocoCasADiSolver's 'parallel' property to 0, "
                      "or use the command-line or Matlab interfaces."
-                << std::endl;
+                  << std::endl;
     }
     int numThreads;
     if (parallel == 0) {
@@ -142,7 +142,8 @@ std::unique_ptr<CasOC::Problem> MocoCasADiSolver::createCasOCProblem() const {
         m_jar.visit([](MocoProblemRep& rep) {
             auto& model = rep.getModel();
             auto& s = model.updWorkingState();
-            model.getComponent<PrescribedAcceleration>("motion").setEnabled(state, true);
+            model.getComponent<PrescribedAcceleration>("motion").setEnabled(state,
+    true);
         });
     } */
     const auto& model = problemRep.getModel();
@@ -151,8 +152,17 @@ std::unique_ptr<CasOC::Problem> MocoCasADiSolver::createCasOCProblem() const {
                              model.getWorkingState()),
             Exception, "Quaternions are not supported.");
 
+    if (problemRep.isPrescribedKinematics()) {
+        OPENSIM_THROW_IF(get_dynamics_mode() != "implicit", Exception,
+                "Prescribed kinematics (PositionMotion) requires implicit "
+                "dynamics mode.");
+        casProblem->setPrescribedKinematics(
+                true, model.getWorkingState().getNU());
+    }
+
     std::unordered_map<int, int> yIndexMap;
-    auto stateNames = createStateVariableNamesInSystemOrder(model, yIndexMap);
+    auto stateNames =
+            problemRep.createStateVariableNamesInSystemOrder(yIndexMap);
     casProblem->setTimeBounds(convertBounds(problemRep.getTimeInitialBounds()),
             convertBounds(problemRep.getTimeFinalBounds()));
     for (const auto& stateName : stateNames) {

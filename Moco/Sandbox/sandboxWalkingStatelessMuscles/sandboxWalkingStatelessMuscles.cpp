@@ -51,10 +51,17 @@ public:
         // TODO: Create an initial guess using GSO.
 
         Model model(m_model);
+        model.initSystem();
 
         MocoTool moco;
 
         auto& problem = moco.updProblem();
+        auto kinematicsRaw = STOFileAdapter::read(m_kinematicsFileName);
+        auto kinematics = filterLowpass(kinematicsRaw, 6, true);
+
+        auto posmot = PositionMotion::createFromTable(model, kinematics, true);
+        posmot->setName("position_motion");
+        model.addComponent(posmot.release());
 
         model.initSystem();
         if (get_create_reserve_actuators() != -1) {
@@ -63,24 +70,23 @@ public:
 
         problem.setModelCopy(model);
 
-        auto kinematicsRaw = STOFileAdapter::read(m_kinematicsFileName);
-        auto kinematics = filterLowpass(kinematicsRaw, 6, true);
-        const double spaceForFiniteDiff = 1e-5;
-        problem.setTimeBounds(
-                kinematicsRaw.getIndependentColumn().front() + spaceForFiniteDiff,
-                kinematicsRaw.getIndependentColumn().back() - spaceForFiniteDiff);
+        const double spaceForFiniteDiff = 1e-3;
+        problem.setTimeBounds(kinematicsRaw.getIndependentColumn().front() +
+                                      spaceForFiniteDiff,
+                kinematicsRaw.getIndependentColumn().back() -
+                        spaceForFiniteDiff);
 
         problem.addCost<MocoControlCost>("effort");
-        auto* stateTracking =
-                problem.addCost<MocoStateTrackingCost>("tracking");
-        stateTracking->setReferenceFile(m_kinematicsFileName);
+        // auto* stateTracking =
+        //         problem.addCost<MocoStateTrackingCost>("tracking");
+        // stateTracking->setReferenceFile(m_kinematicsFileName);
 
         auto& solver = moco.initCasADiSolver();
         solver.set_num_mesh_points(5);
         solver.set_dynamics_mode("implicit");
-        solver.set_optim_convergence_tolerance(1e-3);
-        solver.set_optim_constraint_tolerance(1e-3);
-        solver.set_optim_hessian_approximation("exact");
+        solver.set_optim_convergence_tolerance(1e-2);
+        solver.set_optim_constraint_tolerance(1e-2);
+        // solver.set_optim_hessian_approximation("exact");
         // solver.set_optim_sparsity_detection("random");
         // solver.set_optim_finite_difference_scheme("forward");
 
@@ -89,12 +95,14 @@ public:
             model.getSimbodyEngine().convertDegreesToRadians(kinSto);
         }
 
-        auto guess = solver.createGuess();
-        guess.setStatesTrajectory(
-                StatesTrajectory::createFromStatesStorage(model, kinSto, true)
-                .exportToTable(model));
+        // auto guess = solver.createGuess();
+        // guess.setStatesTrajectory(
+        //         StatesTrajectory::createFromStatesStorage(model, kinSto, true)
+        //                 .exportToTable(model));
 
         MocoSolution solution = moco.solve();
+        solution.write("sandboxWalkingStatelessMuscles_solution.sto");
+        // moco.visualize(solution);
     }
 
 private:
@@ -142,22 +150,24 @@ private:
 using namespace OpenSim;
 
 int main() {
-    Model model("testGait10dof18musc_subject01.osim");
-    for (int im = 0; im < model.getMuscles().getSize(); ++im) {
-        auto& muscle = model.getMuscles().get(im);
-        muscle.set_ignore_activation_dynamics(true);
-        muscle.set_ignore_tendon_compliance(true);
-    }
+    try {
+        Model model("testGait10dof18musc_subject01.osim");
+        for (int im = 0; im < model.getMuscles().getSize(); ++im) {
+            auto& muscle = model.getMuscles().get(im);
+            muscle.set_ignore_activation_dynamics(true);
+            muscle.set_ignore_tendon_compliance(true);
+        }
 
-    MocoINDYGO indygo;
-    indygo.setModel(model);
-    indygo.setKinematicsFile("walk_gait1018_state_reference.mot");
-    indygo.set_create_reserve_actuators(2.0);
+        MocoINDYGO indygo;
+        indygo.setModel(model);
+        indygo.setKinematicsFile("walk_gait1018_state_reference.mot");
+        indygo.set_create_reserve_actuators(2.0);
 
-    // See DynamicsTool::createExternalLoads().
-    // TODO problem.setExternalLoadsFile("walk_gait1018_subject01_grf.xml");
+        // See DynamicsTool::createExternalLoads().
+        // TODO problem.setExternalLoadsFile("walk_gait1018_subject01_grf.xml");
 
-    indygo.solve();
+        indygo.solve();
+    } catch (const std::exception& e) { std::cerr << e.what() << std::endl; }
 
     return EXIT_SUCCESS;
 }

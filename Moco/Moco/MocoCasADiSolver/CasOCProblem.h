@@ -147,6 +147,11 @@ public:
     void addSlack(std::string name, Bounds bounds) {
         m_slackInfos.push_back({std::move(name), std::move(bounds)});
     }
+    void setPrescribedKinematics(bool tf, int numMultibodyDynamicsEquations) {
+        m_prescribedKinematics = tf;
+        m_numMultibodyDynamicsEquationsIfPrescribedKinematics =
+                numMultibodyDynamicsEquations;
+    }
     /// Set whether not constraint derivatives are to be enforced.
     void setEnforceConstraintDerivatives(bool tf) {
         m_enforceConstraintDerivatives = tf;
@@ -317,6 +322,14 @@ public:
     int getNumCoordinates() const { return m_numCoordinates; }
     int getNumSpeeds() const { return m_numSpeeds; }
     int getNumAuxiliaryStates() const { return m_numAuxiliaryStates; }
+    /// If the coordinates are prescribed, then the number of multibody dynamics
+    /// equations is not the same as the number of speeds.
+    int getNumMultibodyDynamicsEquations() const {
+        if (m_prescribedKinematics) {
+            return m_numMultibodyDynamicsEquationsIfPrescribedKinematics;
+        }
+        return getNumSpeeds();
+    }
     int getNumKinematicConstraintEquations() const {
         if (m_enforceConstraintDerivatives) {
             return 3 * m_numHolonomicConstraintEquations +
@@ -410,6 +423,8 @@ private:
     int m_numNonHolonomicConstraintEquations = 0;
     int m_numAccelerationConstraintEquations = 0;
     bool m_enforceConstraintDerivatives = false;
+    bool m_prescribedKinematics = false;
+    int m_numMultibodyDynamicsEquationsIfPrescribedKinematics = 0;
     Bounds m_kinematicConstraintBounds;
     std::vector<ControlInfo> m_controlInfos;
     std::vector<MultiplierInfo> m_multiplierInfos;
