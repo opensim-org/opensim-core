@@ -76,7 +76,7 @@ public:
                 kinematicsRaw.getIndependentColumn().back() -
                         spaceForFiniteDiff);
 
-        problem.addCost<MocoControlCost>("effort");
+        // problem.addCost<MocoControlCost>("effort");
         // auto* stateTracking =
         //         problem.addCost<MocoStateTrackingCost>("tracking");
         // stateTracking->setReferenceFile(m_kinematicsFileName);
@@ -90,16 +90,17 @@ public:
         // solver.set_optim_sparsity_detection("random");
         // solver.set_optim_finite_difference_scheme("forward");
 
-        Storage kinSto(m_kinematicsFileName);
-        if (kinSto.isInDegrees()) {
-            model.getSimbodyEngine().convertDegreesToRadians(kinSto);
-        }
-
+        // Storage kinSto(m_kinematicsFileName);
+        // if (kinSto.isInDegrees()) {
+        //     model.getSimbodyEngine().convertDegreesToRadians(kinSto);
+        // }
         // auto guess = solver.createGuess();
         // guess.setStatesTrajectory(
         //         StatesTrajectory::createFromStatesStorage(model, kinSto, true)
         //                 .exportToTable(model));
 
+        solver.setGuess(moco.solve());
+        solver.set_num_mesh_points(50);
         MocoSolution solution = moco.solve();
         solution.write("sandboxWalkingStatelessMuscles_solution.sto");
         // moco.visualize(solution);
