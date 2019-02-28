@@ -21,6 +21,7 @@
  * -------------------------------------------------------------------------- */
 
 #include "OpenSim/Common/DataAdapter.h"
+#include "OpenSim/Common/MapObject.h"
 #include "OpenSim/Common/IMUHelper.h"
 #include "OpenSim/Common/STOFileAdapter.h"
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
@@ -35,16 +36,22 @@ PacketCounter<tab>SampleTimeFine<tab>Year<tab>Month<tab>Day<tab>Second<tab>UTC_N
 int main() {
 
     try {
-        std::map<std::string, std::string> mapFileNameToIMUName;
+        MapObject mapFileNameToIMUName;
         std::vector<std::string> imu_names{ "shank", "thigh", "calcn", "toe" };
-        mapFileNameToIMUName["00B421AF"] = imu_names[0];
-        mapFileNameToIMUName["00B4227B"] = imu_names[1];
-        mapFileNameToIMUName["00B42263"] = imu_names[2];
-        mapFileNameToIMUName["00B42268"] = imu_names[3];
-
+        std::vector<std::string> file_names{ "00B421AF", "00B4227B", "00B42263", "00B42268" };
+        // Programmatically add items to Map, write to xml
+        int index = 0;
+        for (auto name : imu_names) {
+            MapItem newItem(name, file_names[index]);
+            mapFileNameToIMUName.addItem(newItem);
+            index++;
+        }
+        mapFileNameToIMUName.print("map2xml.xml");
+        // read xml we wrote into a new MapObject and pass to readXsensTrial
+        MapObject readMapFileNameToIMUName("map2xml.xml");
         const std::string folder = "";
         const std::string trial = "MT_012005D6_031-000_";
-        DataAdapter::OutputTables tables = IMUHelper::readXsensTrial(folder, trial, mapFileNameToIMUName);
+        DataAdapter::OutputTables tables = IMUHelper::readXsensTrial(folder, trial, readMapFileNameToIMUName);
         // Write tables to sto files
         // Accelerations
         std::shared_ptr<AbstractDataTable> accelTable = tables.at(IMUHelper::_linearAccelerations);

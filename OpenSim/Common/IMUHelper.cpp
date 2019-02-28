@@ -10,7 +10,7 @@ const std::string IMUHelper::_magnetometers{ "magnetometers" };
 const std::string IMUHelper::_gyros{ "gyros" };
 
 DataAdapter::OutputTables IMUHelper::readXsensTrial(const std::string& folderName, const std::string& prefix,
-        const std::map<std::string, std::string>& filenameToModelIMUMap) {
+        const MapObject& filenameToModelIMUMap) {
 
     std::vector<std::ifstream*> imuStreams;
     std::vector<std::string> labels;
@@ -22,16 +22,16 @@ DataAdapter::OutputTables IMUHelper::readXsensTrial(const std::string& folderNam
     int magIndex = -1;
     int rotationsIndex = -1;
 
-    for (std::map<std::string, std::string>::const_iterator it = filenameToModelIMUMap.cbegin(); 
-            it != filenameToModelIMUMap.cend();
-            ++it) {
-        auto fileName = folderName + prefix + it->first+".txt";
+    int n_imus = filenameToModelIMUMap.getNumItems();
+    for (int index = 0; index < n_imus; ++index) {
+        const MapItem& nextItem = filenameToModelIMUMap.get_list_MapItems(index);
+        auto fileName = folderName + prefix + nextItem.get_value() +".txt";
         auto* nextStream = new std::ifstream{ fileName };
         OPENSIM_THROW_IF(!nextStream->good(),
             FileDoesNotExist,
             fileName);
         // Add imu name to labels
-        labels.push_back(it->second);
+        labels.push_back(nextItem.get_key());
         // Add corresponding stream to imuStreams
         imuStreams.push_back(nextStream);
 
@@ -63,8 +63,6 @@ DataAdapter::OutputTables IMUHelper::readXsensTrial(const std::string& folderNam
 
     // Create 4 tables for Rotations, Acc[elerations], Gyr[o], Mag[netometer] data
     DataAdapter::OutputTables tables{};
-    size_t n_imus = filenameToModelIMUMap.size();
-
     auto orientationTable = std::make_shared<TimeSeriesTableQuaternion>();
     orientationTable->setColumnLabels(labels);
     orientationTable->updTableMetaData()
@@ -100,13 +98,13 @@ DataAdapter::OutputTables IMUHelper::readXsensTrial(const std::string& folderNam
     while (!done){
         // Make vectors one per table
         TimeSeriesTableQuaternion::RowVector
-            orientation_row_vector{ static_cast<int>(n_imus), SimTK::Quaternion() };
+            orientation_row_vector{ n_imus, SimTK::Quaternion() };
         TimeSeriesTableVec3::RowVector
-            accel_row_vector{ static_cast<int>(n_imus), SimTK::Vec3(SimTK::NaN) };
+            accel_row_vector{ n_imus, SimTK::Vec3(SimTK::NaN) };
         TimeSeriesTableVec3::RowVector
-            magneto_row_vector{ static_cast<int>(n_imus), SimTK::Vec3(SimTK::NaN) };
+            magneto_row_vector{ n_imus, SimTK::Vec3(SimTK::NaN) };
         TimeSeriesTableVec3::RowVector
-            gyro_row_vector{ static_cast<int>(n_imus), SimTK::Vec3(SimTK::NaN) };
+            gyro_row_vector{ n_imus, SimTK::Vec3(SimTK::NaN) };
         // Cycle through the filles collating values
         int imu_index = 0;
         for (std::vector<std::ifstream*>::iterator it = imuStreams.begin();

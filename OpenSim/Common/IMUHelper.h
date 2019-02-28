@@ -27,7 +27,7 @@
 #include "FileAdapter.h"
 #include "TimeSeriesTable.h"
 #include "Event.h"
-
+#include "MapObject.h"
 /** @file
 * This file defines Helper class for reading or writing data files from IMU Makers.
 */
@@ -56,7 +56,7 @@ public:
     depending on the contents of the files read. One table for rotations, one for Gyro
     one for Magnetometer data, one for Accelerometer data. */
     static DataAdapter::OutputTables readXsensTrial(const std::string& folderName, const std::string& prefix, 
-        const std::map<std::string, std::string>& filenameToModelIMUMap);
+        const MapObject& filenameToModelIMUMap);
     
 private:
     /**

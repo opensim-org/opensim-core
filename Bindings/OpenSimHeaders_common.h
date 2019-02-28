@@ -14,6 +14,7 @@
 #include <OpenSim/Common/PropertyGroup.h>
 #include <OpenSim/Common/Object.h>
 #include <OpenSim/Common/ObjectGroup.h>
+#include <OpenSim/Common/MapObject.h>
 #include <OpenSim/Common/Set.h>
 #include <OpenSim/Common/StateVector.h>
 #include <OpenSim/Common/StorageInterface.h>
