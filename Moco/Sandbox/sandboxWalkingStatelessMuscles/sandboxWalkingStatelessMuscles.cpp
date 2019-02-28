@@ -70,7 +70,7 @@ public:
 
         problem.setModelCopy(model);
 
-        const double spaceForFiniteDiff = 1e-3;
+        // const double spaceForFiniteDiff = 1e-3;
         // problem.setTimeBounds(kinematicsRaw.getIndependentColumn().front() +
         //                               spaceForFiniteDiff,
         //         kinematicsRaw.getIndependentColumn().back() -
@@ -89,11 +89,13 @@ public:
         auto& solver = moco.initCasADiSolver();
         solver.set_num_mesh_points(5);
         solver.set_dynamics_mode("implicit");
-        solver.set_optim_convergence_tolerance(1e-2);
+        solver.set_optim_convergence_tolerance(1e-3);
         solver.set_optim_constraint_tolerance(1e-2);
+        // TODO parallelization is changing the number of iterations for a
+        // solution.
         // solver.set_optim_hessian_approximation("exact");
         // solver.set_optim_sparsity_detection("random");
-        // solver.set_optim_finite_difference_scheme("forward");
+        solver.set_optim_finite_difference_scheme("forward");
 
         // Storage kinSto(m_kinematicsFileName);
         // if (kinSto.isInDegrees()) {
@@ -176,6 +178,8 @@ int main() {
     } catch (const std::exception& e) { std::cerr << e.what() << std::endl; }
 
     // TODO: Implement cost minimization directly in CasADi.
+    // TODO: External loads.
+    // TODO: Activation dynamics.
 
     return EXIT_SUCCESS;
 }
