@@ -29,23 +29,15 @@ class OSIMMOCO_API DiscreteForces : public ModelComponent {
     OpenSim_DECLARE_CONCRETE_OBJECT(DiscreteForces, ModelComponent);
 
 public:
-    DiscreteForces();
+    DiscreteForces() : ModelComponent() {}
 
     void setAllGeneralizedForces(SimTK::State& s, 
             const SimTK::Vector& generalizedForces) const;
     void setAllBodyForces(SimTK::State& s, 
             const SimTK::Vector_<SimTK::SpatialVec>& bodyForcesInG) const;
 
-    //const SimTK::Vector& getAllGeneralizedForces(const SimTK::State& s) const;
-    //const SimTK::Vector_<SimTK::SpatialVec>& 
-    //getAllBodyForces(const SimTK::State& s) const;
-
 protected:
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
-    //void extendInitStateFromProperties(SimTK::State& state) const override;
-    //void extendSetPropertiesFromState(const SimTK::State& state) override;
-
-
 
 private:
     mutable SimTK::Force::DiscreteForces m_discrete_forces;

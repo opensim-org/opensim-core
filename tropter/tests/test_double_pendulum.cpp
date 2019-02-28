@@ -94,19 +94,18 @@ public:
         this->add_control("tau0", {-50, 50});
         this->add_control("tau1", {-50, 50});
     }
-    void calc_endpoint_cost(const T& final_time, const VectorX<T>& final_states,
-            const VectorX<T>& /*parameters*/, T& cost) const override
+    void calc_endpoint_cost(const tropter::Input<T>& in, T& cost) const override
     {
         // TODO a final state constraint probably makes more sense.
-        const auto& q0 = final_states[0];
-        const auto& q1 = final_states[1];
+        const auto& q0 = in.states[0];
+        const auto& q1 = in.states[1];
         const auto& L0 = this->L0;
         const auto& L1 = this->L1;
         Vector2<T> actual_location(L0 * cos(q0) + L1 * cos(q0 + q1),
                                    L0 * sin(q0) + L1 * sin(q0 + q1));
         const Vector2<T> desired_location(0, 2);
         cost = 1000.0 * (actual_location - desired_location).squaredNorm() +
-                0.001 * final_time;
+                0.001 * in.time;
     }
 
     static void run_test(std::string solver, std::string hessian_approx,

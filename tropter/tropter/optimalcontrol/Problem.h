@@ -351,10 +351,7 @@ public:
     //    out.path[0] = ...
     //}
     // TODO endpoint or terminal cost?
-    virtual void calc_endpoint_cost(const T& final_time,
-            const VectorX<T>& final_states,
-            const VectorX<T>& parameters,
-            T& cost) const;
+    virtual void calc_endpoint_cost(const Input<T>& in, T& cost) const;
     /// Compute the integrand for the total integral cost in your optimal 
     /// control problem. 
     virtual void calc_integral_cost(const Input<T>& in, T& integrand) const;

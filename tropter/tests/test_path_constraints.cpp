@@ -50,10 +50,9 @@ public:
             out.path[0] = in.controls[1] - mass*in.controls[0];
         }
     }
-    void calc_endpoint_cost(const T& final_time, const VectorX<T>&,
-        const VectorX<T>&, T& cost)
+    void calc_endpoint_cost(const Input<T>& in, T& cost)
             const override {
-        cost = final_time;
+        cost = in.time;
     }
     Solution actual_solution(const VectorXd& time) const
     {

@@ -33,18 +33,6 @@ void DiscreteForces::extendAddToSystem(SimTK::MultibodySystem& system) const {
         system.getMatterSubsystem());
 }
 
-//void DiscreteForces::extendInitStateFromProperties(SimTK::State& s) const {
-//    Super::extendInitStateFromProperties(s);
-//
-//
-//}
-//
-//void DiscreteForces::extendSetPropertiesFromState(const SimTK::State& s) {
-//    Super::extendSetPropertiesFromState(s);
-//
-//
-//}
-
 void DiscreteForces::setAllGeneralizedForces(SimTK::State& s, 
         const SimTK::Vector& generalizedForces) const {
 

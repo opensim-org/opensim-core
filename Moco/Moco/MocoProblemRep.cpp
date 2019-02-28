@@ -41,12 +41,23 @@ void MocoProblemRep::initialize() {
     m_model = m_problem->getPhase(0).getModel();
     m_model.initSystem();
 
-    // Create copy of model that we'll replace the Simbody constraint with
-    // discrete forces.
+    // We would like to eventually compute the model accelerations through 
+    // realizing to Stage::Acceleration. However, if the model has constraints,
+    // realizing to Stage::Acceleration will cause Simbody to compute it's own
+    // Lagrange multipliers which will not necessarily be consistent with the
+    // multipliers provided by a solver. Therefore, we'll create a copy of the 
+    // original model, disable the its constraints, and apply the constraint 
+    // forces equivalent to the solver's Lagrange multipliers before computing 
+    // the accelerations.
     m_model_disabled_constraints = Model(m_model);
+    // The constraint forces will be applied to the copied model via an 
+    // OpenSim::DiscreteForces component, a thin wrapper to Simbody's
+    // DiscreteForces class, which adds discrete variables to the state.
     DiscreteForces* constraintForces = new DiscreteForces();
     constraintForces->setName(m_constraint_forces_path);
     m_model_disabled_constraints.addComponent(constraintForces);
+    // Grab a writable state from the copied model -- we'll use this to disable
+    // its constraints below.
     SimTK::State& stateDisabledConstraints = 
         m_model_disabled_constraints.initSystem();
 
@@ -171,13 +182,13 @@ void MocoProblemRep::initialize() {
             }
             m_multiplier_infos_map.insert({kcInfo.getName(), multInfos});
 
-            // Disable constraint in "disabled constraints" model.
+            // Disable this constraint in the copied model. 
             constraintToDisable.disable(stateDisabledConstraints);
         }
     }
 
-    // Verify that constraint error vectors in state associated with "disabled
-    // constraints" model are empty.
+    // Verify that the constraint error vectors in the state associated with the
+    // copied model are empty.
     OPENSIM_THROW_IF(stateDisabledConstraints.getQErr().size() != 0 ||
                      stateDisabledConstraints.getUErr().size() != 0 ||
                      stateDisabledConstraints.getUDotErr().size() != 0,
@@ -195,6 +206,13 @@ void MocoProblemRep::initialize() {
         paramNames.insert(param.getName());
         m_parameters[i] = std::unique_ptr<MocoParameter>(
             param.clone());
+        // We must initialize on both models so that they are consistent when
+        // parameters are updated when applyParameterToModel() is called. 
+        // Calling initalizeOnModel() twice here should be fine since the models
+        // are identical aside from disable Simbody constraints. The property
+        // references to the parameters in both models are added to the 
+        // MocoParameter's internal vector of property references.
+        m_parameters[i]->initializeOnModel(m_model);
         m_parameters[i]->initializeOnModel(m_model_disabled_constraints);
     }
 
@@ -352,7 +370,7 @@ const std::vector<MocoVariableInfo>& MocoProblemRep::getMultiplierInfos(
 
 void MocoProblemRep::applyParametersToModel(
         const SimTK::Vector& parameterValues,
-        bool initSystem) const {
+        bool initSystemAndDisableConstraints) const {
     OPENSIM_THROW_IF(parameterValues.size() != (int)m_parameters.size(),
             Exception,
             format("There are %i parameters in "
@@ -361,8 +379,26 @@ void MocoProblemRep::applyParametersToModel(
     for (int i = 0; i < (int)m_parameters.size(); ++i) {
         m_parameters[i]->applyParameterToModel(parameterValues(i));
     }
-    if (initSystem) {
+    if (initSystemAndDisableConstraints) {
+        // TODO: Avoid these const_casts.
         const_cast<Model&>(m_model).initSystem();
+        Model& m_model_disabled_constraints_const_cast =
+            const_cast<Model&>(m_model_disabled_constraints);
+        SimTK::State& stateDisabledConstraints = 
+            m_model_disabled_constraints_const_cast.initSystem();
+
+        // Re-disable constraints if they were enabled by the previous 
+        // initSystem() call.
+        auto& matterDisabledConstraints =
+            m_model_disabled_constraints_const_cast.updMatterSubsystem();
+        const auto NC = matterDisabledConstraints.getNumConstraints();
+        for (SimTK::ConstraintIndex cid(0); cid < NC; ++cid) {
+            SimTK::Constraint& constraintToDisable =
+                matterDisabledConstraints.updConstraint(cid);
+            if (!constraintToDisable.isDisabled(stateDisabledConstraints)) {
+                constraintToDisable.disable(stateDisabledConstraints);
+            }
+        }
     }
 }
 
