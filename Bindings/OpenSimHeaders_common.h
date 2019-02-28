@@ -56,6 +56,7 @@
 #include <OpenSim/Common/STOFileAdapter.h>
 #include <OpenSim/Common/CSVFileAdapter.h>
 #include <OpenSim/Common/C3DFileAdapter.h>
+#include <OpenSim/Common/IMUHelper.h>
 
 #include <OpenSim/Common/TableSource.h>
 
