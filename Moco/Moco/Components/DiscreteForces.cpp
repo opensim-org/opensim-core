@@ -21,8 +21,6 @@
 
 using namespace OpenSim;
 
-DiscreteForces::DiscreteForces() : ModelComponent() {}
-
 void DiscreteForces::extendAddToSystem(SimTK::MultibodySystem& system) const {
     Super::extendAddToSystem(system);
 

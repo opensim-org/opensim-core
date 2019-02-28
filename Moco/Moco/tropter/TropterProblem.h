@@ -48,7 +48,7 @@ protected:
             m_mocoTropterSolver(solver),
             m_mocoProbRep(solver.getProblemRep()),
             m_model(m_mocoProbRep.getModel()),
-            m_modelIgnoringConstraints(
+            m_modelDisabledConstraints(
                 m_mocoProbRep.getModelIgnoringConstraints()) {
         // TODO set name properly.
         // Disable all controllers.
@@ -61,8 +61,8 @@ protected:
         }
 
         m_state = m_model.getWorkingState();
-        m_stateIgnoringConstraints =
-            m_modelIgnoringConstraints.getWorkingState();
+        m_stateDisabledConstraints =
+            m_modelDisabledConstraints.getWorkingState();
 
         OPENSIM_THROW_IF(
                 !m_model.getMatterSubsystem().getUseEulerAngles(m_state),
@@ -305,12 +305,12 @@ protected:
         const auto& adjuncts = in.adjuncts;
 
         auto& simTKState = this->m_state;
-        const auto& modelIgnoringConstraints = this->m_modelIgnoringConstraints;
-        auto& simTKStateIgnoringConstraints = this->m_stateIgnoringConstraints;
+        const auto& modelDisabledConstraints = this->m_modelDisabledConstraints;
+        auto& simTKStateIgnoringConstraints = this->m_stateDisabledConstraints;
 
         // TODO would it make sense to a vector of States, one for each mesh
         // point, so that each can preserve their cache?
-        this->setSimTKState(modelIgnoringConstraints, time, states, controls, 
+        this->setSimTKState(modelDisabledConstraints, time, states, controls, 
             simTKStateIgnoringConstraints);
 
         if (this->m_numKinematicConstraintEquations) {
@@ -337,10 +337,10 @@ protected:
             T& cost) const override {
         // TODO avoid all of this if there are no endpoint costs.
         auto& simTKState = this->m_state;
-        const auto& modelIgnoringConstraints = this->m_modelIgnoringConstraints;
-        auto& simTKStateIgnoringConstraints = this->m_stateIgnoringConstraints;
+        const auto& modelDisabledConstraints = this->m_modelDisabledConstraints;
+        auto& simTKStateIgnoringConstraints = this->m_stateDisabledConstraints;
 
-        this->setSimTKState(modelIgnoringConstraints, final_time, states, 
+        this->setSimTKState(modelDisabledConstraints, final_time, states, 
             simTKStateIgnoringConstraints, true);
 
         if (this->m_numKinematicConstraintEquations) {
@@ -354,9 +354,9 @@ protected:
     const MocoTropterSolver& m_mocoTropterSolver;
     const MocoProblemRep& m_mocoProbRep;
     const Model& m_model;
-    const Model& m_modelIgnoringConstraints;
+    const Model& m_modelDisabledConstraints;
     mutable SimTK::State m_state;
-    mutable SimTK::State m_stateIgnoringConstraints;
+    mutable SimTK::State m_stateDisabledConstraints;
 
     std::vector<std::string> m_svNamesInSysOrder;
     std::unordered_map<int, int> m_yIndexMap;
@@ -377,7 +377,6 @@ protected:
     // the acceleration-level holonomic, non-holonomic constraint errors and the
     // acceleration-only constraint errors.
     mutable SimTK::Vector m_pvaerr;
-
     // The total number of scalar constraint equations associated with model
     // kinematic constraints that the solver is responsible for enforcing. This
     // number does include equations for constraint derivatives.
@@ -402,34 +401,41 @@ protected:
 
     void calcKinematicConstraintForces(const tropter::Input<T>& in,
             const SimTK::State& state, 
-            SimTK::State& stateIgnoringConstraints) const {
-        // If enabled constraints exist in the model, compute accelerations
-        // based on Lagrange multipliers.
-        m_model.realizeVelocity(state);
-        const auto& matter = m_model.getMatterSubsystem();
+            SimTK::State& stateDisabledConstraints) const {
 
-        // Multipliers are negated so constraint forces can be used like
-        // applied forces.
-        SimTK::Vector multipliers(m_numMultipliers, in.adjuncts.data(), true);
-        matter.calcConstraintForcesFromMultipliers(state, -multipliers,
-            m_constraintBodyForces, m_constraintMobilityForces);
+        // OG model
+        {
+            m_model.realizeVelocity(state);
+            const auto& matter = m_model.getMatterSubsystem();
 
-        const auto& constraintForces =
-            m_modelIgnoringConstraints.getComponent<DiscreteForces>(
-                m_mocoProbRep.getConstraintForcesPath());
+            // Multipliers are negated so constraint forces can be used like
+            // applied forces.
+            SimTK::Vector multipliers(m_numMultipliers, in.adjuncts.data(), 
+                true);
+            matter.calcConstraintForcesFromMultipliers(state, -multipliers,
+                m_constraintBodyForces, m_constraintMobilityForces);
+        }
 
-        constraintForces.setAllGeneralizedForces(m_stateIgnoringConstraints, 
-            m_constraintMobilityForces);
-        constraintForces.setAllBodyForces(m_stateIgnoringConstraints,
-            m_constraintBodyForces);
+        // disabled constraint model
+        {
+            const auto& constraintForces =
+                m_modelDisabledConstraints.getComponent<DiscreteForces>(
+                    m_mocoProbRep.getConstraintForcesPath());
+
+            constraintForces.setAllGeneralizedForces(stateDisabledConstraints,
+                m_constraintMobilityForces);
+            constraintForces.setAllBodyForces(stateDisabledConstraints,
+                m_constraintBodyForces);
+        }
+        
     }
 
     void calcKinematicConstraintErrors(tropter::Output<T>& out, 
             const SimTK::State& state, 
-            const SimTK::State& stateIgnoringConstraints) const {
+            const SimTK::State& stateDisabledConstraints) const {
         const auto& enforceConstraintDerivatives =
             m_mocoTropterSolver.get_enforce_constraint_derivatives();
-        const auto& udot = stateIgnoringConstraints.getUDot();
+        const auto& udot = stateDisabledConstraints.getUDot();
         const auto& matter = m_model.getMatterSubsystem();
 
         // Constraint errors.
@@ -523,15 +529,15 @@ public:
         const auto& diffuses = in.diffuses;
 
         const auto& model = this->m_model;
-        const auto& modelIgnoringConstraints = this->m_modelIgnoringConstraints;
+        const auto& modelDisabledConstraints = this->m_modelDisabledConstraints;
         auto& simTKState = this->m_state;
-        auto& simTKStateIgnoringConstraints = this->m_stateIgnoringConstraints;
+        auto& simTKStateIgnoringConstraints = this->m_stateDisabledConstraints;
         const auto& matter = model.getMatterSubsystem();
         const auto& matterIgnoringConstraints = 
-            modelIgnoringConstraints.getMatterSubsystem();
+            modelDisabledConstraints.getMatterSubsystem();
 
         this->setSimTKState(model, in.time, states, controls, simTKState);
-        this->setSimTKState(modelIgnoringConstraints, in.time, states, controls,
+        this->setSimTKState(modelDisabledConstraints, in.time, states, controls,
                 simTKStateIgnoringConstraints);
         if (this->m_numKinematicConstraintEquations) {
             this->calcKinematicConstraintForces(in, simTKState,
@@ -540,7 +546,7 @@ public:
 
         // TODO Antoine and Gil said realizing Dynamics is a lot costlier
         // than realizing to Velocity and computing forces manually.
-        modelIgnoringConstraints.realizeAcceleration(
+        modelDisabledConstraints.realizeAcceleration(
                 simTKStateIgnoringConstraints);
 
         if (this->m_numKinematicConstraintEquations) {
@@ -579,31 +585,9 @@ public:
         std::copy_n(zdot.getContiguousScalarData(), nz,
                 out.dynamics.data() + nq + nu);
 
-        //} else {
-        //    // TODO Antoine and Gil said realizing Dynamics is a lot costlier 
-        //    // than realizing to Velocity and computing forces manually.
-        //    modelIgnoringConstraints.realizeAcceleration(
-        //        simTKStateIngoringConstraints);
-
-        //    // Copy state derivative values to output struct.
-        //    this->setTropterDynamics(simTKStateIngoringConstraints.getYDot(), 
-        //            out.dynamics);
-        //}
-    
+        // Path constraint errors.
         this->calcPathConstraintErrors(simTKStateIgnoringConstraints, out);
-    }
-private:
-
-    /// Set the tropter dynamics vector from the SimTK YDot, accounting for
-    /// empty slots in the SimTK YDot.
-    //void setTropterDynamics(
-    //        const SimTK::Vector& simTKYDot,
-    //        Eigen::Ref<tropter::VectorX<T>> dynamics) const {
-    //    for (int isv = 0; isv < dynamics.size(); ++isv) {
-    //        dynamics[isv] = simTKYDot[this->m_yIndexMap.at(isv)];
-    //    }
-    //}
-    
+    }  
 };
 
 template <typename T>

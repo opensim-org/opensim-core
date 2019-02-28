@@ -25,7 +25,6 @@
 #include "MocoParameter.h"
 #include "Components/DiscreteForces.h"
 #include <OpenSim/Simulation/Model/Model.h>
-#include <simbody/internal/Force_DiscreteForces.h>
 
 namespace OpenSim {
 
@@ -62,8 +61,8 @@ public:
     /// MocoParameter, and MocoPathConstraint.
     /// TODO
     const Model& getModel() const { return m_model; }
-    const Model& getModelIgnoringConstraints() const 
-    {   return m_model_ignoring_constraints; }
+    const Model& getModelDisabledConstraints() const 
+    {   return m_model_disabled_constraints; }
     int getNumStates() const { return (int)m_state_infos.size(); }
     int getNumControls() const { return (int)m_control_infos.size(); }
     int getNumParameters() const { return (int)m_parameters.size(); }
@@ -216,7 +215,7 @@ private:
     const MocoProblem* m_problem;
 
     Model m_model;
-    Model m_model_ignoring_constraints;
+    Model m_model_disabled_constraints;
     std::string m_constraint_forces_path = "constraint_forces";
 
     std::unordered_map<std::string, MocoVariableInfo> m_state_infos;

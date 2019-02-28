@@ -18,7 +18,6 @@
 
 #include "MocoProblemRep.h"
 #include "MocoProblem.h"
-#include <simbody/internal/Force_DiscreteForces.h>
 
 #include <unordered_set>
 
@@ -44,12 +43,12 @@ void MocoProblemRep::initialize() {
 
     // Create copy of model that we'll replace the Simbody constraint with
     // discrete forces.
-    m_model_ignoring_constraints = Model(m_model);
+    m_model_disabled_constraints = Model(m_model);
     DiscreteForces* constraintForces = new DiscreteForces();
     constraintForces->setName(m_constraint_forces_path);
-    m_model_ignoring_constraints.addComponent(constraintForces);
-    SimTK::State& stateIgnoringConstraints = 
-        m_model_ignoring_constraints.initSystem();
+    m_model_disabled_constraints.addComponent(constraintForces);
+    SimTK::State& stateDisabledConstraints = 
+        m_model_disabled_constraints.initSystem();
 
     const auto stateNames = m_model.getStateVariableNames();
     for (int i = 0; i < ph0.getProperty_state_infos().size(); ++i) {
@@ -115,8 +114,8 @@ void MocoProblemRep::initialize() {
             multBounds.getUpper());
     // Get model information to loop through constraints.
     const auto& matter = m_model.getMatterSubsystem();
-    auto& matterIgnoringConstraints = 
-        m_model_ignoring_constraints.updMatterSubsystem();
+    auto& matterDisabledConstraints = 
+        m_model_disabled_constraints.updMatterSubsystem();
     const auto NC = matter.getNumConstraints();
     const auto& state = m_model.getWorkingState();
     int mp, mv, ma;
@@ -124,7 +123,7 @@ void MocoProblemRep::initialize() {
     for (SimTK::ConstraintIndex cid(0); cid < NC; ++cid) {
         const SimTK::Constraint& constraint = matter.getConstraint(cid);
         SimTK::Constraint& constraintToDisable = 
-            matterIgnoringConstraints.updConstraint(cid);
+            matterDisabledConstraints.updConstraint(cid);
         if (!constraint.isDisabled(state)) {
             constraint.getNumConstraintEquationsInUse(state, mp, mv, ma);
             MocoKinematicConstraint kc(cid, mp, mv, ma);
@@ -172,16 +171,16 @@ void MocoProblemRep::initialize() {
             }
             m_multiplier_infos_map.insert({kcInfo.getName(), multInfos});
 
-            // Disable constraint in "ignoring constraints" model.
-            constraintToDisable.disable(stateIgnoringConstraints);
+            // Disable constraint in "disabled constraints" model.
+            constraintToDisable.disable(stateDisabledConstraints);
         }
     }
 
-    // Verify that constraint error vectors in state associated with "ignoring
+    // Verify that constraint error vectors in state associated with "disabled
     // constraints" model are empty.
-    OPENSIM_THROW_IF(stateIgnoringConstraints.getQErr().size() != 0 ||
-                     stateIgnoringConstraints.getUErr().size() != 0 ||
-                     stateIgnoringConstraints.getUDotErr().size() != 0,
+    OPENSIM_THROW_IF(stateDisabledConstraints.getQErr().size() != 0 ||
+                     stateDisabledConstraints.getUErr().size() != 0 ||
+                     stateDisabledConstraints.getUDotErr().size() != 0,
         Exception, "Internal error.");
 
     m_parameters.resize(ph0.getProperty_parameters().size());
@@ -196,7 +195,7 @@ void MocoProblemRep::initialize() {
         paramNames.insert(param.getName());
         m_parameters[i] = std::unique_ptr<MocoParameter>(
             param.clone());
-        m_parameters[i]->initializeOnModel(m_model_ignoring_constraints);
+        m_parameters[i]->initializeOnModel(m_model_disabled_constraints);
     }
 
     m_costs.resize(ph0.getProperty_costs().size());
@@ -210,7 +209,7 @@ void MocoProblemRep::initialize() {
                 cost.getName()));
         costNames.insert(cost.getName());
         m_costs[i] = std::unique_ptr<MocoCost>(cost.clone());
-        m_costs[i]->initializeOnModel(m_model_ignoring_constraints);
+        m_costs[i]->initializeOnModel(m_model_disabled_constraints);
     }
 
     m_num_path_constraint_equations = 0;
@@ -226,7 +225,7 @@ void MocoProblemRep::initialize() {
         pcNames.insert(pc.getName());
         m_path_constraints[i] = std::unique_ptr<MocoPathConstraint>(pc.clone());
         m_path_constraints[i]->
-                initializeOnModel(m_model_ignoring_constraints, 
+                initializeOnModel(m_model_disabled_constraints, 
                     m_num_path_constraint_equations);
         m_num_path_constraint_equations +=
                 m_path_constraints[i]->getConstraintInfo().getNumEquations();

@@ -149,54 +149,66 @@ void createState(Model& model, State& state, const Vector& qOverride=Vector()) {
 void calcAccelerationsFromMultipliers(const Model& model, const State& state,
         const Vector& multipliers, Vector& udot) {
 
-    // Make copy of model, whose constraints we'll disable.
-    Model modelIgnoringConstraints = Model(model);
-    DiscreteForces* constraintForces = new DiscreteForces();
-    modelIgnoringConstraints.addComponent(constraintForces);
-
-    // Create initialize the new model's underlying and get its non-const state,
-    // which contains the original model's continuous variables as well as 
-    // discrete variables for the constraint forces. 
-    SimTK::State& stateIgnoringConstraints =
-        modelIgnoringConstraints.initSystem();
-    // Update the new model's continuous variables from the passed in state.
-    stateIgnoringConstraints.updY() = state.getY();
-
-    // Disable the constraints in the new model.
-    auto& matterIgnoringConstraints = 
-        modelIgnoringConstraints.updMatterSubsystem();
-    const auto NC = matterIgnoringConstraints.getNumConstraints();
-    for (SimTK::ConstraintIndex cid(0); cid < NC; ++cid) {
-        SimTK::Constraint& constraint = 
-            matterIgnoringConstraints.updConstraint(cid);
-        if (!constraint.isDisabled(stateIgnoringConstraints)) {
-            constraint.disable(stateIgnoringConstraints); 
-        }
-    }
-
-    // TODO verify that constraint error vectors in state are empty.
-    
-    // Calculate the equivalent set of body and mobility constraint forces using
-    // the original model given the passed-in Lagrange multipliers. 
-    const SimTK::SimbodyMatterSubsystem& matter = model.getMatterSubsystem();
     SimTK::Vector_<SimTK::SpatialVec> constraintBodyForces;
     Vector constraintMobilityForces;
-    // Multipliers are negated so constraint forces can be used like applied
-    // forces.
-    matter.calcConstraintForcesFromMultipliers(state, -multipliers,
-        constraintBodyForces, constraintMobilityForces);
-    
-    // Update the discrete forces in the new state with the constraint forces
-    // we just calculated.
-    constraintForces->setAllGeneralizedForces(stateIgnoringConstraints,
-        constraintMobilityForces);
-    constraintForces->setAllBodyForces(stateIgnoringConstraints,
-        constraintBodyForces);
+    // We first need to compute the body and mobility forces associated with the
+    // Lagrange multipliers provided by a solver.
+    {
+        const auto& matter = model.getMatterSubsystem();
+        // Multipliers are negated so the constraint forces can be used like 
+        // applied forces.
+        matter.calcConstraintForcesFromMultipliers(state, -multipliers,
+            constraintBodyForces, constraintMobilityForces);
+    }
 
-    // Now we can simply realize to Stage::Acceleration on the new model to get
-    // correct accelerations.
-    modelIgnoringConstraints.realizeAcceleration(stateIgnoringConstraints);
-    udot = stateIgnoringConstraints.getUDot();
+    // We would like to eventually compute the model accelerations through 
+    // realizing to Stage::Acceleration. However, if the model has constraints,
+    // realizing to Stage::Acceleration will cause Simbody to compute it's own
+    // Lagrange multipliers which will not necessarily be consistent with the
+    // multipliers provided by a solver. Therefore, we'll first create a copy
+    // of the original model, disable the its constraints, and apply the 
+    // constraint forces we just calculated before computing the accelerations.
+    {
+        // Create a copy of the original model, whose constraints we'll disable.
+        Model modelDisabledConstraints = Model(model);
+
+        // Add an OpenSim::DiscreteForces component to the new model, which 
+        // we'll use to the apply the constraint forces.
+        DiscreteForces* constraintForces = new DiscreteForces();
+        modelDisabledConstraints.addComponent(constraintForces);
+
+        // Initialize the new model's underlying system and get a non-const 
+        // state, which contains slots for the original model's continuous 
+        // variables and new slots for the discrete variables representing the 
+        // constraint forces. 
+        SimTK::State& stateDisabledConstraints =
+                modelDisabledConstraints.initSystem();
+        // Update the new model's continuous variables from the passed in state.
+        stateDisabledConstraints.updY() = state.getY();
+        // Update the discrete forces in the new state with the constraint 
+        // forces we just calculated.
+        constraintForces->setAllGeneralizedForces(stateDisabledConstraints,
+            constraintMobilityForces);
+        constraintForces->setAllBodyForces(stateDisabledConstraints,
+            constraintBodyForces);
+
+        // Disable the constraints in the new model.
+        auto& matterIgnoringConstraints = 
+                modelDisabledConstraints.updMatterSubsystem();
+        const auto NC = matterIgnoringConstraints.getNumConstraints();
+        for (SimTK::ConstraintIndex cid(0); cid < NC; ++cid) {
+            SimTK::Constraint& constraint = 
+                matterIgnoringConstraints.updConstraint(cid);
+            if (!constraint.isDisabled(stateDisabledConstraints)) {
+                constraint.disable(stateDisabledConstraints); 
+            }
+        }
+
+        // Now we can simply realize to Stage::Acceleration on the new model to 
+        // get correct accelerations.
+        modelDisabledConstraints.realizeAcceleration(stateDisabledConstraints);
+        udot = stateDisabledConstraints.getUDot();
+    }
 }
 
 /// DAE calculation subtests.
