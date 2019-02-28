@@ -71,12 +71,17 @@ public:
         problem.setModelCopy(model);
 
         const double spaceForFiniteDiff = 1e-3;
-        problem.setTimeBounds(kinematicsRaw.getIndependentColumn().front() +
-                                      spaceForFiniteDiff,
-                kinematicsRaw.getIndependentColumn().back() -
-                        spaceForFiniteDiff);
+        // problem.setTimeBounds(kinematicsRaw.getIndependentColumn().front() +
+        //                               spaceForFiniteDiff,
+        //         kinematicsRaw.getIndependentColumn().back() -
+        //                 spaceForFiniteDiff);
+        problem.setTimeBounds(0.01, 1.4);
 
-        // problem.addCost<MocoControlCost>("effort");
+        auto* effort = problem.addCost<MocoControlCost>("effort");
+        effort->setWeight("reserve__jointset_ground_pelvis_pelvis_tilt", 0);
+        effort->setWeight("reserve__jointset_ground_pelvis_pelvis_tx", 0);
+        effort->setWeight("reserve__jointset_ground_pelvis_pelvis_ty", 0);
+
         // auto* stateTracking =
         //         problem.addCost<MocoStateTrackingCost>("tracking");
         // stateTracking->setReferenceFile(m_kinematicsFileName);
@@ -100,7 +105,7 @@ public:
         //                 .exportToTable(model));
 
         solver.setGuess(moco.solve());
-        solver.set_num_mesh_points(50);
+        solver.set_num_mesh_points(100);
         MocoSolution solution = moco.solve();
         solution.write("sandboxWalkingStatelessMuscles_solution.sto");
         // moco.visualize(solution);
@@ -169,6 +174,8 @@ int main() {
 
         indygo.solve();
     } catch (const std::exception& e) { std::cerr << e.what() << std::endl; }
+
+    // TODO: Implement cost minimization directly in CasADi.
 
     return EXIT_SUCCESS;
 }
