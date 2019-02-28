@@ -305,7 +305,7 @@ TimeSeriesTable_<SimTK::Rotation> convertMotionFileToRotations(
 TimeSeriesTableVec3 convertRotationsToEulerAngles(
     const TimeSeriesTable_<SimTK::Rotation>& rotTable)
 {
-    auto& labels = rotTable.getColumnLabels();
+    auto labels = rotTable.getColumnLabels();
     auto& times = rotTable.getIndependentColumn();
     const auto& rotations = rotTable.getMatrix();
 
