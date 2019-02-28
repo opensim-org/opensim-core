@@ -47,10 +47,10 @@ public:
     IMUHelper& operator=(IMUHelper&&)      = default;
     virtual ~IMUHelper()                     = default;
 
-    static const std::string _orientations;   // name of table for orientation data
-    static const std::string _linearAccelerations;  // name of table for acceleration data
-    static const std::string _magnetometers;  // name of table for magnetometer data
-    static const std::string _gyros;          // name of table for gyro data
+    static const std::string Orientations;   // name of table for orientation data
+    static const std::string LinearAccelerations;  // name of table for acceleration data
+    static const std::string MagneticHeading;  // name of table for data from Magnetometer (Magnetic North Heading)
+    static const std::string AngularVelocity;  // name of table for gyro data (AngularVelocity)
 
     /** Read all files with the given folder name, with common prefix. Produce a list of tables 
     depending on the contents of the files read. One table for rotations, one for Gyro

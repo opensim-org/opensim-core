@@ -54,7 +54,7 @@ int main() {
         DataAdapter::OutputTables tables = IMUHelper::readXsensTrial(folder, trial, readMapFileNameToIMUName);
         // Write tables to sto files
         // Accelerations
-        std::shared_ptr<AbstractDataTable> accelTable = tables.at(IMUHelper::_linearAccelerations);
+        std::shared_ptr<AbstractDataTable> accelTable = tables.at(IMUHelper::LinearAccelerations);
         const TimeSeriesTableVec3& accelTableTyped = dynamic_cast<const TimeSeriesTableVec3&>(*accelTable);
         STOFileAdapterVec3::write(accelTableTyped, folder + trial+ "accelerations.sto");
         const SimTK::RowVectorView_<SimTK::Vec3>& rvv = accelTableTyped.getRowAtIndex(0);
@@ -63,21 +63,21 @@ int main() {
         double tolerance = SimTK::Eps;
         ASSERT_EQUAL(fromTable,fromFile, tolerance);
         // Magenometer
-        std::shared_ptr<AbstractDataTable> magTable = tables.at(IMUHelper::_magnetometers);
+        std::shared_ptr<AbstractDataTable> magTable = tables.at(IMUHelper::MagneticHeading);
         const TimeSeriesTableVec3& magTableTyped = dynamic_cast<const TimeSeriesTableVec3&>(*magTable);
         STOFileAdapterVec3::write(magTableTyped, folder + trial + "magnetometers.sto");
         fromTable = magTableTyped.getRowAtIndex(0)[0];
         fromFile = SimTK::Vec3{ -0.045410, - 0.266113, 0.897217 };
         ASSERT_EQUAL(fromTable, fromFile, tolerance);
         // Gyro
-        std::shared_ptr<AbstractDataTable> gyroTable = tables.at(IMUHelper::_gyros);
+        std::shared_ptr<AbstractDataTable> gyroTable = tables.at(IMUHelper::AngularVelocity);
         const TimeSeriesTableVec3& gyroTableTyped = dynamic_cast<const TimeSeriesTableVec3&>(*gyroTable);
         STOFileAdapterVec3::write(gyroTableTyped, folder + trial + "gyros.sto");
         fromTable = gyroTableTyped.getRowAtIndex(0)[0];
         fromFile = SimTK::Vec3{ 0.005991, - 0.032133, 0.022713 };
         ASSERT_EQUAL(fromTable, fromFile, tolerance);
         // Orientation
-        std::shared_ptr<AbstractDataTable> orientationTable = tables.at(IMUHelper::_orientations);
+        std::shared_ptr<AbstractDataTable> orientationTable = tables.at(IMUHelper::Orientations);
         const TimeSeriesTableQuaternion& quatTableTyped = dynamic_cast<const TimeSeriesTableQuaternion&>(*orientationTable);
         STOFileAdapterQuaternion::write(quatTableTyped, folder + trial + "quaternions.sto");
 

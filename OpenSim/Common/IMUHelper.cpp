@@ -4,10 +4,10 @@
 
 namespace OpenSim {
 
-const std::string IMUHelper::_orientations{ "orientations" };
-const std::string IMUHelper::_linearAccelerations{ "linear_accelerations" };
-const std::string IMUHelper::_magnetometers{ "magnetometers" };
-const std::string IMUHelper::_gyros{ "gyros" };
+const std::string IMUHelper::Orientations{ "orientations" };
+const std::string IMUHelper::LinearAccelerations{ "linear_accelerations" };
+const std::string IMUHelper::MagneticHeading{ "magnetometers" };
+const std::string IMUHelper::AngularVelocity{ "gyros" };
 
 DataAdapter::OutputTables IMUHelper::readXsensTrial(const std::string& folderName, const std::string& prefix,
         const MapObject& filenameToModelIMUMap) {
@@ -67,28 +67,28 @@ DataAdapter::OutputTables IMUHelper::readXsensTrial(const std::string& folderNam
     orientationTable->setColumnLabels(labels);
     orientationTable->updTableMetaData()
         .setValueForKey("DataRate", std::to_string(dataRate));
-    tables.emplace(_orientations, orientationTable);
+    tables.emplace(Orientations, orientationTable);
 
     auto accelerationTable = std::make_shared<TimeSeriesTableVec3>();
     accelerationTable->setColumnLabels(labels);
     accelerationTable->updTableMetaData()
         .setValueForKey("DataRate", std::to_string(dataRate));
     if (accIndex != -1) 
-        tables.emplace(_linearAccelerations, accelerationTable);
+        tables.emplace(LinearAccelerations, accelerationTable);
 
     auto magnetometerTable = std::make_shared<TimeSeriesTableVec3>();
     magnetometerTable->setColumnLabels(labels);
     magnetometerTable->updTableMetaData()
         .setValueForKey("DataRate", std::to_string(dataRate));
     if (magIndex != -1) 
-        tables.emplace(_magnetometers, magnetometerTable);
+        tables.emplace(MagneticHeading, magnetometerTable);
 
     auto gyrosTable = std::make_shared<TimeSeriesTableVec3>();
     gyrosTable->setColumnLabels(labels);
     gyrosTable->updTableMetaData()
         .setValueForKey("DataRate", std::to_string(dataRate));
     if (gyroIndex != -1)
-        tables.emplace(_gyros, gyrosTable);
+        tables.emplace(AngularVelocity, gyrosTable);
     
     // For all tables, will create row, stitch values from different files then append,time and timestep
     // are based on the first file
