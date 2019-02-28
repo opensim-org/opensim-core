@@ -351,7 +351,8 @@ const std::vector<MocoVariableInfo>& MocoProblemRep::getMultiplierInfos(
 }
 
 void MocoProblemRep::applyParametersToModel(
-        const SimTK::Vector& parameterValues) const {
+        const SimTK::Vector& parameterValues,
+        bool initSystem) const {
     OPENSIM_THROW_IF(parameterValues.size() != (int)m_parameters.size(),
             Exception,
             format("There are %i parameters in "
@@ -359,6 +360,9 @@ void MocoProblemRep::applyParametersToModel(
                     m_parameters.size(), parameterValues.size()));
     for (int i = 0; i < (int)m_parameters.size(); ++i) {
         m_parameters[i]->applyParameterToModel(parameterValues(i));
+    }
+    if (initSystem) {
+        const_cast<Model&>(m_model).initSystem();
     }
 }
 
@@ -374,7 +378,7 @@ void MocoProblemRep::printDescription(std::ostream& stream) const {
         cost->printDescription(stream);
     }
 
-    stream << "Multibody constraints: ";
+    stream << "Kinematic constraints: ";
     if (m_kinematic_constraints.empty())
         stream << " none";
     else

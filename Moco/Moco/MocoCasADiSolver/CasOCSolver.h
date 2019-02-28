@@ -72,6 +72,43 @@ public:
     }
     const std::string getOptimSolver() const { return m_optimSolver; }
 
+    /// The finite difference scheme to be set on all CasOC::Function objects.
+    /// @note Default is 'central'.
+    void setFiniteDifferenceScheme(const std::string& scheme) {
+        m_finite_difference_scheme = scheme;
+    }
+    /// @copydoc setFiniteDifferenceScheme()
+    std::string getFiniteDifferenceScheme() const {
+        return m_finite_difference_scheme;
+    }
+
+    /// "none" to use block sparsity (treat all CasOC::Function%s as dense;
+    /// default), "initial-guess", or "random".
+    void setSparsityDetection(const std::string& setting);
+    /// If sparsity detection is "random", use this number of random iterates
+    /// to determine sparsity.
+    void setSparsityDetectionRandomCount(int count);
+
+    /// If this is set to a non-empty string, the sparsity patterns of the
+    /// optimization problem derivatives are written to files whose names use
+    /// `setting` as a prefix.
+    void setWriteSparsity(const std::string& setting) {
+        m_write_sparsity = setting;
+    }
+    std::string getWriteSparsity() const {
+        return m_write_sparsity;
+    }
+
+
+    /// Use this to tell CasADi to evaluate the differential-algebraic equations
+    /// in parallel across grid points. "parallelism" is passed on directly to
+    /// the "parallelism" argument of casadi::MX::map(). CasADi supports
+    /// "serial", "openmp", "thread", and perhaps some other options.
+    void setParallelism(std::string parallelism, int numThreads);
+    std::pair<std::string, int> getParallelism() const {
+        return std::make_pair(m_parallelism, m_numThreads);
+    }
+
     void setPluginOptions(casadi::Dict opts) {
         m_pluginOptions = std::move(opts);
     }
@@ -98,6 +135,12 @@ private:
     std::string m_dynamicsMode = "explicit";
     bool m_minimizeLagrangeMultipliers = false;
     double m_lagrangeMultiplierWeight = 1.0;
+    std::string m_finite_difference_scheme = "central";
+    std::string m_sparsity_detection = "none";
+    std::string m_write_sparsity;
+    int m_sparsity_detection_random_count = 3;
+    std::string m_parallelism = "serial";
+    int m_numThreads = 1;
     casadi::Dict m_pluginOptions;
     casadi::Dict m_solverOptions;
     std::string m_optimSolver;
