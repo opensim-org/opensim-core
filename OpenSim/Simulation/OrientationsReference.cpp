@@ -55,35 +55,6 @@ OrientationsReference::OrientationsReference(
     populateFromOrientationData();
 }
 
-void OrientationsReference::loadOrientationsFromQuaternionsFile(
-                                    const std::string quaternionsFile)
-{
-    upd_orientation_file() = quaternionsFile;
-
-    auto quaternionsData = TimeSeriesTable_<Quaternion>(quaternionsFile);
-
-    _orientationData.updTableMetaData() = quaternionsData.getTableMetaData();
-    _orientationData.setDependentsMetaData(quaternionsData.getDependentsMetaData());
-
-    const auto& times = quaternionsData.getIndependentColumn();
-
-    size_t nt = quaternionsData.getNumRows();
-    int nc = int(quaternionsData.getNumColumns());
-
-    RowVector_<Rotation> row(nc);
-
-    for (size_t i = 0; i < nt; ++i) {
-        const auto& quatsRow = quaternionsData.getRowAtIndex(i);
-        for (int j = 0; j < nc; ++j) {
-            const Quaternion& quat = quatsRow[j];
-            row[j] = Rotation(quat);
-        }
-        _orientationData.appendRow(times[i], row);
-    }
-
-    populateFromOrientationData();
-}
-
 void OrientationsReference::loadOrientationsEulerAnglesFile(
                                     const std::string orientationFile,
                                     Units modelUnits)

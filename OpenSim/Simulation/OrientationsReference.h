@@ -107,9 +107,6 @@ public:
     containing Euler-angles in body-fixed XYZ order.*/
     void loadOrientationsEulerAnglesFile(const std::string eulerAnglesXYZ,
         Units modelUnits=Units(Units::Radians));
-    /** load the orientation data for this OrientationsReference from quaternions */
-    void loadOrientationsFromQuaternionsFile(
-        const std::string quaternionsFile);
 
     //--------------------------------------------------------------------------
     // Reference Interface
