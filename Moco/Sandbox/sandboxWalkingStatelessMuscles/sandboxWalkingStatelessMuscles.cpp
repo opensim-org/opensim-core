@@ -101,9 +101,11 @@ public:
         solver.set_dynamics_mode("implicit");
         solver.set_optim_convergence_tolerance(1e-3);
         solver.set_optim_constraint_tolerance(1e-2);
+        // solver.set_optim_ipopt_print_level(0);
         // TODO parallelization is changing the number of iterations for a
         // solution.
         // solver.set_optim_hessian_approximation("exact");
+        // TODO: Doesn't work yet.
         // solver.set_optim_sparsity_detection("random");
         solver.set_optim_finite_difference_scheme("forward");
 
@@ -117,7 +119,7 @@ public:
         //                 .exportToTable(model));
 
         solver.setGuess(moco.solve());
-        solver.set_num_mesh_points(100);
+        solver.set_num_mesh_points(50);
         MocoSolution solution = moco.solve();
         solution.write("sandboxWalkingStatelessMuscles_solution.sto");
         // moco.visualize(solution);
@@ -190,6 +192,7 @@ int main() {
     // TODO: Implement cost minimization directly in CasADi.
     // TODO: External loads.
     // TODO: Activation dynamics.: can solve but takes way longer.
+    //      Without, solves in 4 seconds.
 
     return EXIT_SUCCESS;
 }
