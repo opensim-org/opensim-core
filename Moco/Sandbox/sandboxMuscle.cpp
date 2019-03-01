@@ -20,13 +20,12 @@
 // testSingleMuscleDeGrooteFregly2016.
 
 #include <Moco/Components/DeGrooteFregly2016Muscle.h>
+#include <Moco/osimMoco.h>
 
 #include <OpenSim/Actuators/Millard2012EquilibriumMuscle.h>
-#include <OpenSim/Simulation/SimbodyEngine/SliderJoint.h>
-#include <OpenSim/Simulation/Model/Model.h>
-
 #include <OpenSim/Common/GCVSpline.h>
-#include <Moco/osimMoco.h>
+#include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/SimbodyEngine/SliderJoint.h>
 
 using namespace OpenSim;
 
@@ -328,6 +327,7 @@ void testHangingMuscleMinimumTime(bool ignoreTendonCompliance) {
         problem.addCost<MocoFinalTimeCost>();
 
         MocoTropterSolver& solver = moco.initTropterSolver();
+        solver.set_num_mesh_points(20);
         solver.set_optim_sparsity_detection("initial-guess");
         MocoIterate guessForwardSim = solver.createGuess("time-stepping");
         solver.setGuess(guessForwardSim);
@@ -353,37 +353,12 @@ void testHangingMuscleMinimumTime(bool ignoreTendonCompliance) {
     // ------------------------------------------------------------------
     // See if we end up at the correct final state.
     {
-        // Add a controller to the model.
-        Model modelSim(model);
-        modelSim.finalizeFromProperties();
-        const SimTK::Vector& time = solutionTrajOpt.getTime();
-        const auto control = solutionTrajOpt.getControl("/forceset/actuator");
-        auto* controlFunction =
-                new GCVSpline(5, time.nrow(), &time[0], &control[0]);
-        auto* controller = new PrescribedController();
-        controller->addActuator(
-                modelSim.getComponent<Actuator>("/forceset/actuator"));
-        controller->prescribeControlForActuator("actuator", controlFunction);
-        modelSim.addController(controller);
-
-        // Set the initial state.
-        SimTK::State stateSim = modelSim.initSystem();
-        modelSim.setStateVariableValue(stateSim, "joint/height/value", initHeight);
-        modelSim.setStateVariableValue(
-                stateSim, "forceset/actuator/activation", initActivation);
-
-        // Integrate.
-        Manager manager(modelSim, stateSim);
-        SimTK::State finalState = manager.integrate(time[time.nrow() - 1]);
-        std::cout << "Time stepping forward sim joint/height/value "
-                     "history "
-                  << modelSim.getStateVariableValue(
-                             finalState, "joint/height/value")
+        const auto iterateSim =
+                simulateIterateWithTimeStepping(solutionTrajOpt, model);
+        std::cout << "DEBUG "
+                  << iterateSim.compareContinuousVariablesRMS(solutionTrajOpt)
                   << std::endl;
-        SimTK_TEST_EQ_TOL(
-                modelSim.getStateVariableValue(finalState, "joint/height/value"),
-                finalHeight, 1e-4);
-        manager.getStateStorage().print("sandboxMuscle_timestepping.sto");
+        SimTK_TEST(iterateSim.compareContinuousVariablesRMS(solutionTrajOpt) < 0.05);
     }
 
     // Track the kinematics from the trajectory optimization.
