@@ -25,33 +25,69 @@
 #include "OpenSim/Common/IMUHelper.h"
 #include "OpenSim/Common/STOFileAdapter.h"
 
+using namespace std;
 
-int main() {
+static void PrintUsage(const char *aProgName, ostream &aOStream);
+
+int main(int argc, char* argv[]) {
     using namespace OpenSim;
+    if (argc < 4) {
+        PrintUsage(argv[0], cout);
+        return(-1);
+    }
+    std::string folder = "";
+    std::string trial = "MT_012005D6_025-000_"; //e.g. MT_012005D6_025-000_
+    std::string mappingFile = "mapIMUNamesToFilenames.xml";
+    for (int i = 1; i < argc; i++) {
+        string option = argv[i];
+        if (option == "-F")
+            folder = argv[i + 1];
+        else if (option == "-T")
+            trial = argv[i + 1];
+        else if (option == "-M")
+            mappingFile = argv[i + 1];
+    }
+    try {
+        MapObject mapXsensName2ModelName(mappingFile);
+        DataAdapter::OutputTables tables = IMUHelper::readXsensTrial(folder, trial, mapXsensName2ModelName);
+        // Write tables to sto files
+        // Accelerations
+        std::shared_ptr<AbstractDataTable> accelTable = tables.at(IMUHelper::LinearAccelerations);
+        const TimeSeriesTableVec3& accelTableTyped = dynamic_cast<const TimeSeriesTableVec3&>(*accelTable);
+        STOFileAdapterVec3::write(accelTableTyped, folder + trial + "accelerations.sto");
 
-    MapObject mapXsensName2ModelName("mapXsensNameToOpenSimIMU.xml");
-    const std::string folder = "";
-    const std::string trial = "MT_012005D6_031-000_";
-    DataAdapter::OutputTables tables = IMUHelper::readXsensTrial(folder, trial, mapXsensName2ModelName);
-    // Write tables to sto files
-    // Accelerations
-    std::shared_ptr<AbstractDataTable> accelTable = tables.at(IMUHelper::LinearAccelerations);
-    const TimeSeriesTableVec3& accelTableTyped = dynamic_cast<const TimeSeriesTableVec3&>(*accelTable);
-    STOFileAdapterVec3::write(accelTableTyped, folder + trial + "accelerations.sto");
-
-    // Magenometer
-    std::shared_ptr<AbstractDataTable> magTable = tables.at(IMUHelper::MagneticHeading);
-    const TimeSeriesTableVec3& magTableTyped = dynamic_cast<const TimeSeriesTableVec3&>(*magTable);
-    STOFileAdapterVec3::write(magTableTyped, folder + trial + "magnetometers.sto");
+        // Magenometer
+        std::shared_ptr<AbstractDataTable> magTable = tables.at(IMUHelper::MagneticHeading);
+        const TimeSeriesTableVec3& magTableTyped = dynamic_cast<const TimeSeriesTableVec3&>(*magTable);
+        STOFileAdapterVec3::write(magTableTyped, folder + trial + "magnetometers.sto");
  
-    // Gyro
-    std::shared_ptr<AbstractDataTable> gyroTable = tables.at(IMUHelper::AngularVelocity);
-    const TimeSeriesTableVec3& gyroTableTyped = dynamic_cast<const TimeSeriesTableVec3&>(*gyroTable);
-    STOFileAdapterVec3::write(gyroTableTyped, folder + trial + "gyros.sto");
+        // Gyro
+        std::shared_ptr<AbstractDataTable> gyroTable = tables.at(IMUHelper::AngularVelocity);
+        const TimeSeriesTableVec3& gyroTableTyped = dynamic_cast<const TimeSeriesTableVec3&>(*gyroTable);
+        STOFileAdapterVec3::write(gyroTableTyped, folder + trial + "gyros.sto");
 
-    // Orientation
-    std::shared_ptr<AbstractDataTable> orientationTable = tables.at(IMUHelper::Orientations);
-    const TimeSeriesTableQuaternion& quatTableTyped = dynamic_cast<const TimeSeriesTableQuaternion&>(*orientationTable);
-    STOFileAdapterQuaternion::write(quatTableTyped, folder + trial + "quaternions.sto");
+        // Orientation
+        std::shared_ptr<AbstractDataTable> orientationTable = tables.at(IMUHelper::Orientations);
+        const TimeSeriesTableQuaternion& quatTableTyped = dynamic_cast<const TimeSeriesTableQuaternion&>(*orientationTable);
+        STOFileAdapterQuaternion::write(quatTableTyped, folder + trial + "quaternions.sto");
+    }
+    catch (const std::exception& ex) {
+        std::cout << "Xsens Data Reading Failed to run due to the following Exception: "
+            << ex.what() << std::endl;
+        return 1;
+    }
     return 0;
+}
+//_____________________________________________________________________________
+/**
+* Print the usage for this application
+*/
+void PrintUsage(const char *aProgName, std::ostream &aOStream)
+{
+    aOStream << "\n\n" << aProgName << "\n\n";
+    aOStream << "Option              Argument         Action / Notes\n";
+    aOStream << "------              --------         --------------\n";
+    aOStream << "-F folderName       Folder containing trial data. \n";
+    aOStream << "-T trialName        Common prefix to data file names e.g.MT_012005D6_026-000 will be used to prefix output files. \n";
+    aOStream << "-M mappingFileName  Name of XML file used to map filenames to names in output files. \n";
 }
