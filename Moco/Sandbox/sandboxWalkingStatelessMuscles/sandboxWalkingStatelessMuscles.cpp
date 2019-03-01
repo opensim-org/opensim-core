@@ -38,12 +38,21 @@ public:
             "discourage the use of the reserve actuators. (default is -1, "
             "which "
             "means no reserves are created)");
-    MocoINDYGO() { constructProperty_create_reserve_actuators(-1); }
+    OpenSim_DECLARE_PROPERTY(external_loads_file, std::string,
+            "TODO");
+    MocoINDYGO() {
+        constructProperty_create_reserve_actuators(-1);
+        constructProperty_external_loads_file("");
+    }
 
     void setModel(Model model) { m_model = std::move(model); }
 
     void setKinematicsFile(std::string fileName) {
         m_kinematicsFileName = std::move(fileName);
+    }
+
+    void setExternalLoadsFile(std::string fileName) {
+        set_external_loads_file(std::move(fileName));
     }
 
     void solve() const {
@@ -64,6 +73,12 @@ public:
                         {0.01, 1});
             }
         }
+
+        InverseDynamicsTool idTool;
+        if (!get_external_loads_file().empty()) {
+            idTool.createExternalLoads(get_external_loads_file(), model);
+        }
+
         model.initSystem();
 
         auto kinematicsRaw = STOFileAdapter::read(m_kinematicsFileName);
@@ -101,13 +116,12 @@ public:
         solver.set_dynamics_mode("implicit");
         solver.set_optim_convergence_tolerance(1e-3);
         solver.set_optim_constraint_tolerance(1e-2);
+        // solver.set_parallel(0);
         // solver.set_optim_ipopt_print_level(0);
-        // TODO parallelization is changing the number of iterations for a
-        // solution.
-        // solver.set_optim_hessian_approximation("exact");
+        solver.set_optim_hessian_approximation("exact");
         // TODO: Doesn't work yet.
         // solver.set_optim_sparsity_detection("random");
-        solver.set_optim_finite_difference_scheme("forward");
+        // solver.set_optim_finite_difference_scheme("forward");
 
         // Storage kinSto(m_kinematicsFileName);
         // if (kinSto.isInDegrees()) {
@@ -120,7 +134,7 @@ public:
 
         solver.setGuess(moco.solve());
         solver.set_num_mesh_points(50);
-        MocoSolution solution = moco.solve();
+        MocoSolution solution = moco.solve().unseal();
         solution.write("sandboxWalkingStatelessMuscles_solution.sto");
         // moco.visualize(solution);
     }
@@ -183,16 +197,23 @@ int main() {
         indygo.setKinematicsFile("walk_gait1018_state_reference.mot");
         indygo.set_create_reserve_actuators(2.0);
 
-        // See DynamicsTool::createExternalLoads().
-        // TODO problem.setExternalLoadsFile("walk_gait1018_subject01_grf.xml");
+        indygo.setExternalLoadsFile("walk_gait1018_subject01_grf.xml");
 
         indygo.solve();
     } catch (const std::exception& e) { std::cerr << e.what() << std::endl; }
 
     // TODO: Implement cost minimization directly in CasADi.
+    //      -> evaluating the integral cost only takes up like 5% of the
+    //         computational time; the only benefit would be accurate
+    //         derivatives.
     // TODO: External loads.
     // TODO: Activation dynamics.: can solve but takes way longer.
     //      Without, solves in 4 seconds.
+    // TODO parallelization is changing the number of iterations for a
+    // solution.
+    // TODO: are results reproducible?? stochasticity in Millard model?
+    // TODO: problem scaling.
+    // TODO: solve with toy problem (single muscle).
 
     return EXIT_SUCCESS;
 }
