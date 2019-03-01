@@ -306,7 +306,7 @@ protected:
         // discrete variables in the state.
         if (this->m_numKinematicConstraintEquations) {
             this->setSimTKTimeAndStates(time, states, simTKStateBase);
-            this->calcKinematicAndApplyConstraintForces(adjuncts, 
+            this->calcAndApplyKinematicConstraintForces(adjuncts,
                     simTKStateBase, simTKStateDisabledConstraints);
         }
     }
@@ -317,16 +317,16 @@ protected:
         // Set the controls for actuators in the OpenSim model with disabled
         // constraints. The base model never gets realized past Stage::Velocity,
         // so we don't ever need to set its controls.
-        auto& modelStateDisabledConstraints = this->m_modelDisabledConstraints;
+        auto& modelDisabledConstraints = this->m_modelDisabledConstraints;
         auto& simTKStateDisabledConstraints = this->m_stateDisabledConstraints;
-        if (modelStateDisabledConstraints.getNumControls()) {
-            auto& osimControls = modelStateDisabledConstraints.updControls(
+        if (modelDisabledConstraints.getNumControls()) {
+            auto& osimControls = modelDisabledConstraints.updControls(
                     simTKStateDisabledConstraints);
             std::copy_n(controls.data(), controls.size(),
                 osimControls.updContiguousScalarData());
-            modelStateDisabledConstraints.realizeVelocity(
+            modelDisabledConstraints.realizeVelocity(
                     simTKStateDisabledConstraints);
-            modelStateDisabledConstraints.setControls(
+            modelDisabledConstraints.setControls(
                     simTKStateDisabledConstraints, osimControls);
         }
     }
@@ -417,7 +417,7 @@ protected:
         }
     }
 
-    void calcKinematicAndApplyConstraintForces(
+    void calcAndApplyKinematicConstraintForces(
             const tropter::VectorX<T>& adjuncts,
             const SimTK::State& stateBase,
             SimTK::State& stateDisabledConstraints) const {
@@ -432,7 +432,6 @@ protected:
         matter.calcConstraintForcesFromMultipliers(stateBase, -multipliers,
             m_constraintBodyForces, m_constraintMobilityForces);
         
-
         // Apply the constraint forces on the model with disabled constraints.
         const auto& constraintForces =
             m_modelDisabledConstraints.getComponent<DiscreteForces>(
@@ -632,10 +631,7 @@ public:
 
         const auto& modelDisabledConstraints = this->m_modelDisabledConstraints;
         auto& simTKStateDisabledConstraints = this->m_stateDisabledConstraints;
-        const auto& matterIgnoringConstraints =
-            modelDisabledConstraints.getMatterSubsystem();
 
-        simTKStateDisabledConstraints.setTime(in.time);
         const int numEmptySlots = simTKStateDisabledConstraints.getNY() -
             (int)states.size();
         const auto NQ = simTKStateDisabledConstraints.getNQ() - numEmptySlots;
