@@ -314,7 +314,7 @@ protected:
             controls, this->m_stateDisabledConstraints);
         if (this->m_numKinematicConstraintEquations) {
             this->calcKinematicConstraintForces(adjuncts, this->m_state,
-                this->m_stateDisabledConstraints.getUDot());
+                this->m_stateDisabledConstraints);
         }
 
         // Compute the integrand for all MocoCosts.
@@ -340,7 +340,7 @@ protected:
             in.states, this->m_stateDisabledConstraints, true);
         if (this->m_numKinematicConstraintEquations) {
             this->calcKinematicConstraintForces(in.adjuncts, this->m_state,
-                this->m_stateDisabledConstraints.getUDot());
+                this->m_stateDisabledConstraints);
         }
 
         // Compute the endpoint cost for all MocoCosts.
@@ -547,8 +547,8 @@ public:
 
         // Compute kinematic constraint errors if they exist.
         if (this->m_numKinematicConstraintEquations) {
-            this->calcKinematicConstraintErrors(out, simTKState,
-                simTKStateDisabledConstraints.getUDot());
+            this->calcKinematicConstraintErrors(simTKState,
+                simTKStateDisabledConstraints.getUDot(), out);
         }
                     
         // Apply velocity correction to qdot if at a mesh interval midpoint.
@@ -661,7 +661,7 @@ public:
             "Cannot realize to Acceleration in implicit dynamics mode.");
 
         if (out.path.size() != 0) {
-            InverseDynamicsSolver id(model);
+            InverseDynamicsSolver id(modelDisabledConstraints);
             SimTK::Vector udot((int)w.size(), w.data(), true);
             SimTK::Vector residual = id.solve(simTKStateDisabledConstraints,
                 udot);
