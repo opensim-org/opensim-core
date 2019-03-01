@@ -230,6 +230,7 @@ inline void calcKinematicConstraintForces(const casadi::DM& multipliers,
     const auto& matter = model.getMatterSubsystem();
     SimTK::Vector simtkMultipliers((int)multipliers.size1(), multipliers.ptr(), 
         true);
+    // TODO: handle this memory allocation better.
     SimTK::Vector_<SimTK::SpatialVec> constraintBodyForces;
     SimTK::Vector constraintMobilityForces;
     // Multipliers are negated so constraint forces can be used like
@@ -261,7 +262,7 @@ inline void calcKinematicConstraintErrors(const Model& model,
     // Position-level errors.
     const auto& qerr = state.getQErr();
 
-    SimTK::Vector pvaerr;
+    SimTK::Vector pvaerr; // TODO: handle this memory allocation better.
     if (enforceConstraintDerivatives || total_ma) {
         // Calculuate udoterr. We cannot use State::getUDotErr()
         // because that uses Simbody's multiplilers and UDot,
