@@ -347,7 +347,7 @@ public:
         // Update the model and state.
         // TODO: This applies parameters to both models, rename for clarity.
         applyParametersToModelProperties(
-                SimTK::Vector(parameters.size1(), parameters.ptr(), true),
+                SimTK::Vector((int)parameters.size1(), parameters.ptr(), true),
                 *mocoProblemRep);
         // TODO: Don't necessarily need to realize to Velocity.
         convertToSimTKState(time, states, controls, modelDisabledConstraints, 
@@ -395,7 +395,7 @@ public:
         // Update the model and state.
         // TODO: This applies parameters to both models, rename for clarity.
         applyParametersToModelProperties(
-                SimTK::Vector(parameters.size1(), parameters.ptr(), true),
+                SimTK::Vector((int)parameters.size1(), parameters.ptr(), true),
                 *mocoProblemRep);
         convertToSimTKState(time, states, controls, modelDisabledConstraints, 
                 m_yIndexMap, simTKStateDisabledConstraints);
@@ -438,7 +438,7 @@ public:
         // Update the model and state.
         // TODO: This applies parameters to both models, rename for clarity.
         applyParametersToModelProperties(
-                SimTK::Vector(parameters.size1(), parameters.ptr(), true),
+                SimTK::Vector((int)parameters.size1(), parameters.ptr(), true),
                 *mocoProblemRep);
         convertToSimTKState(time, states, modelDisabledConstraints, m_yIndexMap, 
                 simTKStateDisabledConstraints, true);
@@ -482,7 +482,7 @@ public:
         auto& modelBase = const_cast<Model&>(mocoProblemRep->getModelBase());
         auto& simtkStateBase = modelBase.updWorkingState();
 
-        // Model with disabled constriants and its associated state. These are
+        // Model with disabled constraints and its associated state. These are
         // used to compute the accelerations.
         auto& modelDisabledConstraints = const_cast<Model&>(
             mocoProblemRep->getModelDisabledConstraints());
@@ -491,7 +491,7 @@ public:
 
         // Update the model and state.
         applyParametersToModelProperties(
-                SimTK::Vector(parameters.size1(), parameters.ptr(), true),
+                SimTK::Vector((int)parameters.size1(), parameters.ptr(), true),
                 *mocoProblemRep);
         convertToSimTKState(time, states, controls, modelBase, m_yIndexMap,
                 simtkStateBase);
@@ -515,7 +515,7 @@ public:
         // Compute kinematic constraint errors if they exist.
         if (numMultipliers && CalcKCErrors) {
             calcKinematicConstraintErrors(modelBase, simtkStateBase,
-                    simtkStateDisabledConstraints.getUDot(), m_casProblem,
+                    simtkStateDisabledConstraints.getUDot(), this->m_casProblem,
                     m_mocoCasADiSolver.get_enforce_constraint_derivatives(), 
                     out);
         }
@@ -556,15 +556,13 @@ public:
         const casadi::DM& parameters = args.at(3);
         auto mocoProblemRep = m_jar.take();
 
-        // It doesn't matter what model/state we use here since we're only 
-        // realizing to Stage::Velocity.
         // TODO: deal with constness better.
         auto& modelBase = const_cast<Model&>(mocoProblemRep->getModelBase());
         auto& simtkStateBase = modelBase.updWorkingState();
 
         // Update the model and state.
         applyParametersToModelProperties(
-                SimTK::Vector(parameters.size1(), parameters.ptr(), true),
+                SimTK::Vector((int)parameters.size1(), parameters.ptr(), true),
                 *mocoProblemRep);
         convertToSimTKState(time, multibody_states, modelBase, m_yIndexMap, 
                 simtkStateBase, false);
@@ -633,7 +631,7 @@ public:
 
         // Update the model and state.
         applyParametersToModelProperties(
-                SimTK::Vector(parameters.size1(), parameters.ptr(), true),
+                SimTK::Vector((int)parameters.size1(), parameters.ptr(), true),
                 *mocoProblemRep);
         convertToSimTKState(time, states, controls, modelBase, m_yIndexMap,
                 simtkStateBase);
@@ -673,7 +671,7 @@ public:
         // Compute kinematic constraint errors if they exist.
         if (numMultipliers && CalcKCErrors) {
             calcKinematicConstraintErrors(modelBase, simtkStateBase, udot, 
-                    m_casProblem, 
+                    this->m_casProblem,
                     m_mocoCasADiSolver.get_enforce_constraint_derivatives(), 
                     out);
         }

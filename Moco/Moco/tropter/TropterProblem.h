@@ -23,6 +23,7 @@
 #include "../MocoUtilities.h"
 
 #include <simbody/internal/Constraint.h>
+
 #include <OpenSim/Simulation/InverseDynamicsSolver.h>
 
 #include <tropter/tropter.h>
@@ -40,16 +41,15 @@ inline tropter::FinalBounds convertBounds(const MocoFinalBounds& mb) {
 }
 
 template <typename T>
-class MocoTropterSolver::TropterProblemBase
-        : public tropter::Problem<T> {
+class MocoTropterSolver::TropterProblemBase : public tropter::Problem<T> {
 protected:
     TropterProblemBase(const MocoTropterSolver& solver)
             : tropter::Problem<T>(solver.getProblemRep().getName()),
-            m_mocoTropterSolver(solver),
-            m_mocoProbRep(solver.getProblemRep()),
-            m_modelBase(m_mocoProbRep.getModelBase()),
-            m_modelDisabledConstraints(
-                m_mocoProbRep.getModelDisabledConstraints()) {
+              m_mocoTropterSolver(solver),
+              m_mocoProbRep(solver.getProblemRep()),
+              m_modelBase(m_mocoProbRep.getModelBase()),
+              m_modelDisabledConstraints(
+                      m_mocoProbRep.getModelDisabledConstraints()) {
         // TODO set name properly.
         // Disable all controllers.
         // TODO temporary; don't want to actually do this.
@@ -62,18 +62,17 @@ protected:
 
         m_stateBase = m_modelBase.getWorkingState();
         m_stateDisabledConstraints =
-            m_modelDisabledConstraints.getWorkingState();
+                m_modelDisabledConstraints.getWorkingState();
 
         // It is sufficient to perform this check only on the original model.
-        OPENSIM_THROW_IF(
-                !m_modelBase.getMatterSubsystem().getUseEulerAngles(
-                        m_stateBase),
+        OPENSIM_THROW_IF(!m_modelBase.getMatterSubsystem().getUseEulerAngles(
+                                 m_stateBase),
                 Exception, "Quaternions are not supported.");
         // It is sufficient to create these containers from the original model
-        // since the discrete variables added to the model with disabled 
+        // since the discrete variables added to the model with disabled
         // constraints wouldn't show up anyway.
-        m_svNamesInSysOrder = createStateVariableNamesInSystemOrder(m_modelBase,
-                m_yIndexMap);
+        m_svNamesInSysOrder =
+                createStateVariableNamesInSystemOrder(m_modelBase, m_yIndexMap);
 
         addStateVariables();
         addControlVariables();
@@ -90,7 +89,6 @@ protected:
             this->add_state(svName, convertBounds(info.getBounds()),
                     convertBounds(info.getInitialBounds()),
                     convertBounds(info.getFinalBounds()));
-
         }
     }
 
@@ -108,46 +106,51 @@ protected:
     void addKinematicConstraints() {
         // Add any scalar constraints associated with kinematic constraints in
         // the model as path constraints in the problem.
-        // Whether or not enabled kinematic constraints exist in the model, 
+        // Whether or not enabled kinematic constraints exist in the model,
         // check that optional solver properties related to constraints are
         // set properly.
         const std::vector<std::string> kcNames =
-            m_mocoProbRep.createKinematicConstraintNames();
+                m_mocoProbRep.createKinematicConstraintNames();
         if (kcNames.empty()) {
             OPENSIM_THROW_IF(
-                !m_mocoTropterSolver
-                .getProperty_enforce_constraint_derivatives().empty(),
-                Exception, "Solver property 'enforce_constraint_derivatives' "
-                "was set but no enabled kinematic constraints exist in the "
-                "model.");
+                    !m_mocoTropterSolver
+                             .getProperty_enforce_constraint_derivatives()
+                             .empty(),
+                    Exception,
+                    "Solver property 'enforce_constraint_derivatives' "
+                    "was set but no enabled kinematic constraints exist in the "
+                    "model.");
             OPENSIM_THROW_IF(
-                m_mocoTropterSolver
-                .get_minimize_lagrange_multipliers(),
-                Exception, "Solver property 'minimize_lagrange_multipliers' "
-                "was enabled but no enabled kinematic constraints exist in the "
-                "model.");
+                    m_mocoTropterSolver.get_minimize_lagrange_multipliers(),
+                    Exception,
+                    "Solver property 'minimize_lagrange_multipliers' "
+                    "was enabled but no enabled kinematic constraints exist in "
+                    "the "
+                    "model.");
             // Do not add kinematic constraints, so we can return. This avoids
             // attempting to access the `enforce_constraint_derivatives`
             // property below, which is empty.
             return;
         } else {
             OPENSIM_THROW_IF(
-                m_mocoTropterSolver
-                .getProperty_enforce_constraint_derivatives().empty(),
-                Exception, "Enabled kinematic constraints exist in the "
-                "provided model. Please set the solver property "
-                "'enforce_constraint_derivatives' to either 'true' or 'false'."
-                );
+                    m_mocoTropterSolver
+                            .getProperty_enforce_constraint_derivatives()
+                            .empty(),
+                    Exception,
+                    "Enabled kinematic constraints exist in the "
+                    "provided model. Please set the solver property "
+                    "'enforce_constraint_derivatives' to either 'true' or "
+                    "'false'.");
         }
-        
+
         int cid, mp, mv, ma;
-        int numEquationsThisConstraint; 
+        int numEquationsThisConstraint;
         int multIndexThisConstraint;
         std::vector<MocoBounds> bounds;
         std::vector<std::string> labels;
         std::vector<KinematicLevel> kinLevels;
-        const bool enforceConstraintDerivs = 
-            m_mocoTropterSolver.get_enforce_constraint_derivatives();
+        const bool enforceConstraintDerivs =
+                m_mocoTropterSolver.get_enforce_constraint_derivatives();
         for (const auto& kcName : kcNames) {
             const auto& kc = m_mocoProbRep.getKinematicConstraint(kcName);
             const auto& multInfos = m_mocoProbRep.getMultiplierInfos(kcName);
@@ -163,17 +166,23 @@ protected:
             // constraint derivatives? For now, disallow enforcing derivatives
             // if non-holonomic or acceleration constraints present.
             OPENSIM_THROW_IF(enforceConstraintDerivs && mv != 0, Exception,
-                    format("Enforcing constraint derivatives is supported only for "
+                    format("Enforcing constraint derivatives is supported only "
+                           "for "
                            "holonomic (position-level) constraints. "
                            "There are %i velocity-level "
-                           "scalar constraints associated with the model Constraint "
-                           "at ConstraintIndex %i.", mv, cid));
+                           "scalar constraints associated with the model "
+                           "Constraint "
+                           "at ConstraintIndex %i.",
+                            mv, cid));
             OPENSIM_THROW_IF(enforceConstraintDerivs && ma != 0, Exception,
-                    format("Enforcing constraint derivatives is supported only for "
+                    format("Enforcing constraint derivatives is supported only "
+                           "for "
                            "holonomic (position-level) constraints. "
                            "There are %i acceleration-level "
-                           "scalar constraints associated with the model Constraint "
-                           "at ConstraintIndex %i.", ma, cid));
+                           "scalar constraints associated with the model "
+                           "Constraint "
+                           "at ConstraintIndex %i.",
+                            ma, cid));
 
             m_total_mp += mp;
             m_total_mv += mv;
@@ -189,7 +198,7 @@ protected:
             multIndexThisConstraint = 0;
             numEquationsThisConstraint = 0;
             for (int i = 0; i < kc.getConstraintInfo().getNumEquations(); ++i) {
-                
+
                 // If the index for this path constraint represents an
                 // a non-derivative scalar constraint equation, also add a
                 // Lagrange multiplier to the problem.
@@ -199,8 +208,8 @@ protected:
 
                     // TODO name constraints based on model constraint names
                     // or coordinate names if a locked or prescribed coordinate
-                    this->add_path_constraint(labels[i], 
-                                              convertBounds(bounds[i]));
+                    this->add_path_constraint(
+                            labels[i], convertBounds(bounds[i]));
 
                     const auto& multInfo = multInfos[multIndexThisConstraint];
                     this->add_adjunct(multInfo.getName(),
@@ -210,29 +219,32 @@ protected:
                     // Add velocity correction variables if enforcing
                     // constraint equation derivatives.
                     if (enforceConstraintDerivs) {
-                        // TODO this naming convention assumes that the 
+                        // TODO this naming convention assumes that the
                         // associated Lagrange multiplier name begins with
                         // "lambda", which may change in the future.
                         OPENSIM_THROW_IF(
-                            multInfo.getName().substr(0, 6) != "lambda",
-                            Exception,
-                            format("Expected the multiplier name for this "
-                                   "constraint to begin with 'lambda' but it "
-                                   "begins with '%s'.",
-                                   multInfo.getName().substr(0, 6)));
-                        this->add_diffuse(std::string(
-                                multInfo.getName()).replace(0, 6, "gamma"),
-                            convertBounds(m_mocoTropterSolver
-                                .get_velocity_correction_bounds()));
+                                multInfo.getName().substr(0, 6) != "lambda",
+                                Exception,
+                                format("Expected the multiplier name for this "
+                                       "constraint to begin with 'lambda' but "
+                                       "it "
+                                       "begins with '%s'.",
+                                        multInfo.getName().substr(0, 6)));
+                        this->add_diffuse(std::string(multInfo.getName())
+                                                  .replace(0, 6, "gamma"),
+                                convertBounds(
+                                        m_mocoTropterSolver
+                                                .get_velocity_correction_bounds()));
                     }
                     ++multIndexThisConstraint;
                     ++numEquationsThisConstraint;
 
-                // If enforcing constraint derivatives, also add path 
-                // constraints for kinematic constraint equation derivatives.
+                    // If enforcing constraint derivatives, also add path
+                    // constraints for kinematic constraint equation
+                    // derivatives.
                 } else if (enforceConstraintDerivs) {
-                    this->add_path_constraint(labels[i], 
-                                              convertBounds(bounds[i]));
+                    this->add_path_constraint(
+                            labels[i], convertBounds(bounds[i]));
                     ++numEquationsThisConstraint;
                 }
             }
@@ -254,8 +266,8 @@ protected:
                 this->add_path_constraint(labels[i], convertBounds(bounds[i]));
             }
         }
-        m_numPathConstraintEquations = 
-            m_mocoProbRep.getNumPathConstraintEquations();
+        m_numPathConstraintEquations =
+                m_mocoProbRep.getNumPathConstraintEquations();
     }
 
     void addParameters() {
@@ -265,15 +277,15 @@ protected:
         }
     }
 
-    void initialize_on_iterate(const Eigen::VectorXd& parameters)
-            const override final {
+    void initialize_on_iterate(
+            const Eigen::VectorXd& parameters) const override final {
         // If they exist, apply parameter values to the model.
         this->applyParametersToModelProperties(parameters);
     }
 
-    void setSimTKTimeAndStates(const T& time, 
+    void setSimTKTimeAndStates(const T& time,
             Eigen::Ref<const tropter::VectorX<T>> states,
-            SimTK::Stage& simTKState) {
+            SimTK::State& simTKState) const {
         simTKState.setTime(time);
         // We must skip over unused slots in the SimTK::State that are reserved
         // for quaternions.
@@ -282,8 +294,8 @@ protected:
         }
     }
 
-    void setSimTKState(const tropter::Input<T>& in, 
-            bool setControlsToNaN = false) const {
+    void setSimTKState(
+            const tropter::Input<T>& in, bool setControlsToNaN = false) const {
         const auto& time = in.time;
         const auto& states = in.states;
         const auto& controls = in.controls;
@@ -291,48 +303,40 @@ protected:
 
         auto& simTKStateBase = this->m_stateBase;
         auto& simTKStateDisabledConstraints = this->m_stateDisabledConstraints;
-        auto& modelStateDisabledConstraints = this->m_modelDisabledConstraints;
+        auto& modelDisabledConstraints = this->m_modelDisabledConstraints;
 
-        this->setSimTKTimeAndStates(time, states, 
-                simTKStateDisabledConstraints);
+        this->setSimTKTimeAndStates(
+                time, states, simTKStateDisabledConstraints);
 
-        if (setControlsToNaN) { 
-            modelStateDisabledConstraints.updControls(
-                    simTKStateDisabledConstraints).setToNaN();
+        if (setControlsToNaN) {
+            modelDisabledConstraints.updControls(simTKStateDisabledConstraints)
+                    .setToNaN();
+        } else if (modelDisabledConstraints.getNumControls()) {
+            // Set the controls for actuators in the OpenSim model with disabled
+            // constraints. The base model never gets realized past
+            // Stage::Velocity, so we don't ever need to set its controls.
+            auto& osimControls = modelDisabledConstraints.updControls(
+                    simTKStateDisabledConstraints);
+            std::copy_n(in.controls.data(), in.controls.size(),
+                    osimControls.updContiguousScalarData());
+            modelDisabledConstraints.realizeVelocity(
+                    simTKStateDisabledConstraints);
+            modelDisabledConstraints.setControls(
+                    simTKStateDisabledConstraints, osimControls);
         }
 
         // If enabled constraints exist in the model, compute constraint forces
-        // based on Lagrange multipliers, update the associated 
+        // based on Lagrange multipliers, update the associated
         // discrete variables in the state.
         if (this->m_numKinematicConstraintEquations) {
             this->setSimTKTimeAndStates(time, states, simTKStateBase);
-            this->calcKinematicAndApplyConstraintForces(adjuncts, 
-                    simTKStateBase, simTKStateDisabledConstraints);
+            this->calcKinematicAndApplyConstraintForces(
+                    adjuncts, simTKStateBase, simTKStateDisabledConstraints);
         }
     }
 
-    void setSimTKState(const tropter::Input<T>& in) const {
-        this->setSimTKState(in, false);
-
-        // Set the controls for actuators in the OpenSim model with disabled
-        // constraints. The base model never gets realized past Stage::Velocity,
-        // so we don't ever need to set its controls.
-        auto& modelStateDisabledConstraints = this->m_modelDisabledConstraints;
-        auto& simTKStateDisabledConstraints = this->m_stateDisabledConstraints;
-        if (modelStateDisabledConstraints.getNumControls()) {
-            auto& osimControls = modelStateDisabledConstraints.updControls(
-                    simTKStateDisabledConstraints);
-            std::copy_n(controls.data(), controls.size(),
-                osimControls.updContiguousScalarData());
-            modelStateDisabledConstraints.realizeVelocity(
-                    simTKStateDisabledConstraints);
-            modelStateDisabledConstraints.setControls(
-                    simTKStateDisabledConstraints, osimControls);
-        }
-    }
-
-    void calc_integral_cost(const tropter::Input<T>& in,
-            T& integrand) const override {
+    void calc_integral_cost(
+            const tropter::Input<T>& in, T& integrand) const override {
         // Unpack variables.
         const auto& time = in.time;
         const auto& states = in.states;
@@ -351,15 +355,15 @@ protected:
         // If specified, add squared multiplers cost to the integrand.
         if (m_mocoTropterSolver.get_minimize_lagrange_multipliers()) {
             for (int i = 0; i < m_numMultipliers; ++i) {
-                integrand += 
-                    m_mocoTropterSolver.get_lagrange_multiplier_weight()
-                    * adjuncts[i] * adjuncts[i];
+                integrand +=
+                        m_mocoTropterSolver.get_lagrange_multiplier_weight() *
+                        adjuncts[i] * adjuncts[i];
             }
         }
     }
 
-    void calc_endpoint_cost(const tropter::Input<T>& in,
-            T& cost) const override {
+    void calc_endpoint_cost(
+            const tropter::Input<T>& in, T& cost) const override {
         // TODO avoid all of this if there are no endpoint costs.
 
         // Update the state.
@@ -382,11 +386,11 @@ protected:
     mutable SimTK::Vector m_constraintMobilityForces;
     mutable SimTK::Vector qdot;
     mutable SimTK::Vector qdotCorr;
-    // The total number of scalar holonomic, non-holonomic, and acceleration 
-    // constraint equations enabled in the model. This does not count equations                                                                     
-    // for derivatives of holonomic and non-holonomic constraints. 
+    // The total number of scalar holonomic, non-holonomic, and acceleration
+    // constraint equations enabled in the model. This does not count equations
+    // for derivatives of holonomic and non-holonomic constraints.
     mutable int m_total_mp = 0;
-    mutable int m_total_mv = 0; 
+    mutable int m_total_mv = 0;
     mutable int m_total_ma = 0;
     // This is the sum of m_total_m(p|v|a).
     mutable int m_numMultipliers = 0;
@@ -403,7 +407,7 @@ protected:
     // MocoPathConstraints added to the MocoProblem.
     mutable int m_numPathConstraintEquations = 0;
 
-    /// Apply parameters to properties in `m_modelBase` and 
+    /// Apply parameters to properties in `m_modelBase` and
     /// `m_modelDisabledConstraints`.
     void applyParametersToModelProperties(
             const tropter::VectorX<T>& parameters) const {
@@ -418,31 +422,28 @@ protected:
     }
 
     void calcKinematicAndApplyConstraintForces(
-            const tropter::VectorX<T>& adjuncts,
-            const SimTK::State& stateBase,
+            const tropter::VectorX<T>& adjuncts, const SimTK::State& stateBase,
             SimTK::State& stateDisabledConstraints) const {
-        // Calculate the constraint forces using the original model and the 
+        // Calculate the constraint forces using the original model and the
         // solver-provided Lagrange multipliers.
         m_modelBase.realizeVelocity(stateBase);
         const auto& matter = m_modelBase.getMatterSubsystem();
         // Multipliers are negated so constraint forces can be used like
         // applied forces.
-        SimTK::Vector multipliers(m_numMultipliers, adjuncts.data(), 
-            true);
+        SimTK::Vector multipliers(m_numMultipliers, adjuncts.data(), true);
         matter.calcConstraintForcesFromMultipliers(stateBase, -multipliers,
-            m_constraintBodyForces, m_constraintMobilityForces);
-        
+                m_constraintBodyForces, m_constraintMobilityForces);
 
         // Apply the constraint forces on the model with disabled constraints.
         const auto& constraintForces =
-            m_modelDisabledConstraints.getComponent<DiscreteForces>(
-                m_mocoProbRep.getConstraintForcesPath());
+                m_modelDisabledConstraints.getComponent<DiscreteForces>(
+                        m_mocoProbRep.getConstraintForcesPath());
         constraintForces.setAllForces(stateDisabledConstraints,
-            m_constraintMobilityForces, m_constraintBodyForces);
+                m_constraintMobilityForces, m_constraintBodyForces);
     }
 
-    void calcKinematicConstraintErrors(const SimTK::Vector& udot, 
-            tropter::Output<T>& out) const {
+    void calcKinematicConstraintErrors(
+            const SimTK::Vector& udot, tropter::Output<T>& out) const {
         // Only compute constraint errors if we're at a time point where path
         // constraints in the optimal control problem are enforced.
         if (out.path.size() != 0 && this->m_numKinematicConstraintEquations) {
@@ -450,91 +451,78 @@ protected:
 
             // Position-level errors.
             std::copy_n(stateBase.getQErr().getContiguousScalarData(),
-                m_total_mp, out.path.data());
+                    m_total_mp, out.path.data());
 
             const auto& enforceConstraintDerivatives =
-                m_mocoTropterSolver.get_enforce_constraint_derivatives();
+                    m_mocoTropterSolver.get_enforce_constraint_derivatives();
             if (enforceConstraintDerivatives || m_total_ma) {
                 // Calculuate udoterr. We cannot use State::getUDotErr()
                 // because that uses Simbody's multiplilers and UDot,
                 // whereas we have our own multipliers and UDot. Here, we use
                 // the udot computed from the model with disabled constraints
                 // since we cannot use (nor do we have availabe) udot computed
-                // from the original model. 
+                // from the original model.
                 const auto& matterBase = m_modelBase.getMatterSubsystem();
-                matterBase.calcConstraintAccelerationErrors(stateBase, udot,
-                        m_pvaerr);
+                matterBase.calcConstraintAccelerationErrors(
+                        stateBase, udot, m_pvaerr);
             } else {
                 m_pvaerr = SimTK::NaN;
             }
 
             if (enforceConstraintDerivatives) {
                 // Velocity-level errors.
-                std::copy_n(
-                    stateBase.getUErr().getContiguousScalarData(),
-                    m_total_mp + m_total_mv,
-                    out.path.data() + m_total_mp);
+                std::copy_n(stateBase.getUErr().getContiguousScalarData(),
+                        m_total_mp + m_total_mv, out.path.data() + m_total_mp);
                 // Acceleration-level errors.
-                std::copy_n(
-                    m_pvaerr.getContiguousScalarData(),
-                    m_total_mp + m_total_mv + m_total_ma,
-                    out.path.data() + 2*m_total_mp + m_total_mv);
+                std::copy_n(m_pvaerr.getContiguousScalarData(),
+                        m_total_mp + m_total_mv + m_total_ma,
+                        out.path.data() + 2 * m_total_mp + m_total_mv);
             } else {
                 // Velocity-level errors. Skip derivatives of position-level
                 // constraint equations.
-                std::copy_n(
-                    stateBase.getUErr().getContiguousScalarData()
-                    + m_total_mp, m_total_mv,
-                    out.path.data() + m_total_mp);
+                std::copy_n(stateBase.getUErr().getContiguousScalarData() +
+                                    m_total_mp,
+                        m_total_mv, out.path.data() + m_total_mp);
                 // Acceleration-level errors. Skip derivatives of velocity-
                 // and position-level constraint equations.
-                std::copy_n(
-                    m_pvaerr.getContiguousScalarData() +
-                    m_total_mp + m_total_mv, m_total_ma,
-                    out.path.data() + m_total_mp + m_total_mv);
+                std::copy_n(m_pvaerr.getContiguousScalarData() + m_total_mp +
+                                    m_total_mv,
+                        m_total_ma, out.path.data() + m_total_mp + m_total_mv);
             }
         }
     }
 
-    void calcPathConstraintErrors(const SimTK::State& state,
-            tropter::Output<T>& out) const {
+    void calcPathConstraintErrors(
+            const SimTK::State& state, tropter::Output<T>& out) const {
         if (out.path.size() != 0) {
             // Copy errors from generic path constraints into output struct.
             SimTK::Vector pathConstraintErrors(
-                    this->m_numPathConstraintEquations, 
+                    this->m_numPathConstraintEquations,
                     out.path.data() + m_numKinematicConstraintEquations, true);
-            m_mocoProbRep.calcPathConstraintErrors(state, 
-                pathConstraintErrors);
+            m_mocoProbRep.calcPathConstraintErrors(state, pathConstraintErrors);
         }
     }
 
 public:
     template <typename MocoIterateType, typename tropIterateType>
-    MocoIterateType
-    convertIterateTropterToMoco(const tropIterateType& tropSol) const;
+    MocoIterateType convertIterateTropterToMoco(
+            const tropIterateType& tropSol) const;
 
-    MocoIterate
-    convertToMocoIterate(const tropter::Iterate& tropSol) const;
+    MocoIterate convertToMocoIterate(const tropter::Iterate& tropSol) const;
 
-    MocoSolution
-    convertToMocoSolution(const tropter::Solution& tropSol) const;
+    MocoSolution convertToMocoSolution(const tropter::Solution& tropSol) const;
 
-    tropter::Iterate
-    convertToTropterIterate(const MocoIterate& mocoIter) const;
+    tropter::Iterate convertToTropterIterate(const MocoIterate& mocoIter) const;
 };
-
 
 template <typename T>
 class MocoTropterSolver::ExplicitTropterProblem
         : public MocoTropterSolver::TropterProblemBase<T> {
 public:
     ExplicitTropterProblem(const MocoTropterSolver& solver)
-            : MocoTropterSolver::TropterProblemBase<T>(solver) {
-    }
-    void initialize_on_mesh(const Eigen::VectorXd&) const override {
-    }
-    void calc_differential_algebraic_equations(
-            const tropter::Input<T>& in,
+            : MocoTropterSolver::TropterProblemBase<T>(solver) {}
+    void initialize_on_mesh(const Eigen::VectorXd&) const override {}
+    void calc_differential_algebraic_equations(const tropter::Input<T>& in,
             tropter::Output<T> out) const override {
         // Unpack variables.
         const auto& states = in.states;
@@ -542,7 +530,12 @@ public:
         const auto& adjuncts = in.adjuncts;
         const auto& diffuses = in.diffuses;
 
-        // Model with disabled constriants and its associated state. These are
+        // Original model and its associated state. These are used to calculate
+        // kinematic constraint forces and errors.
+        const auto& modelBase = this->m_modelBase;
+        auto& simTKStateBase = this->m_stateDisabledConstraints;
+
+        // Model with disabled constraints and its associated state. These are
         // used to compute the accelerations.
         const auto& modelDisabledConstraints = this->m_modelDisabledConstraints;
         auto& simTKStateDisabledConstraints = this->m_stateDisabledConstraints;
@@ -559,7 +552,7 @@ public:
         // Compute kinematic constraint errors if they exist.
         this->calcKinematicConstraintErrors(
                 simTKStateDisabledConstraints.getUDot(), out);
-        
+
         // Apply velocity correction to qdot if at a mesh interval midpoint.
         // This correction modifies the dynamics to enable a projection of
         // the model coordinates back onto the constraint manifold whenever
@@ -569,9 +562,11 @@ public:
         // Note: Only supported for the Hermite-Simpson transcription scheme.
         if (diffuses.size() != 0) {
             SimTK::Vector gamma((int)diffuses.size(), diffuses.data());
-            const auto& matter = modelDisabledConstraints.getMatterSubsystem();
-            matter.multiplyByGTranspose(simTKStateDisabledConstraints, gamma,
-                this->qdotCorr);
+            const auto& matter = modelBase.getMatterSubsystem();
+            matter.multiplyByGTranspose(
+                    simTKStateBase, gamma, this->qdotCorr);
+            // It doesn't matter what state we use for U since it's U is the
+            // same in both states.
             this->qdot = simTKStateDisabledConstraints.getU() + this->qdotCorr;
         } else {
             this->qdot = simTKStateDisabledConstraints.getU();
@@ -579,27 +574,27 @@ public:
 
         // Copy state derivative values to output struct. We cannot simply
         // use getYDot() because we may have applied a velocity correction to
-        // qdot. 
+        // qdot.
         const int nq = this->qdot.size();
         const auto& udot = simTKStateDisabledConstraints.getUDot();
         const auto& zdot = simTKStateDisabledConstraints.getZDot();
         const int nu = udot.size();
         const int nz = zdot.size();
-        std::copy_n(this->qdot.getContiguousScalarData(), nq,
-                out.dynamics.data());
-        std::copy_n(udot.getContiguousScalarData(), nu,
-                out.dynamics.data() + nq);
+        std::copy_n(
+                this->qdot.getContiguousScalarData(), nq, out.dynamics.data());
+        std::copy_n(
+                udot.getContiguousScalarData(), nu, out.dynamics.data() + nq);
         std::copy_n(zdot.getContiguousScalarData(), nz,
                 out.dynamics.data() + nq + nu);
 
         // Path constraint errors.
         this->calcPathConstraintErrors(simTKStateDisabledConstraints, out);
-    }  
+    }
 };
 
 template <typename T>
-class MocoTropterSolver::ImplicitTropterProblem :
-        public MocoTropterSolver::TropterProblemBase<T> {
+class MocoTropterSolver::ImplicitTropterProblem
+        : public MocoTropterSolver::TropterProblemBase<T> {
 public:
     ImplicitTropterProblem(const MocoTropterSolver& solver)
             : TropterProblemBase<T>(solver) {
@@ -614,16 +609,15 @@ public:
         for (int iudot = 0; iudot < NU; ++iudot) {
             auto name = this->m_svNamesInSysOrder[iudot];
             auto leafpos = name.find("value");
-            OPENSIM_THROW_IF(leafpos == std::string::npos, Exception,
-                    "Internal error.");
+            OPENSIM_THROW_IF(
+                    leafpos == std::string::npos, Exception, "Internal error.");
             name.replace(leafpos, name.size(), "accel");
             // TODO: How to choose bounds on udot?
             this->add_adjunct(name, {-1000, 1000});
             this->add_path_constraint(name.substr(0, leafpos) + "residual", 0);
         }
     }
-    void calc_differential_algebraic_equations(
-            const tropter::Input<T>& in,
+    void calc_differential_algebraic_equations(const tropter::Input<T>& in,
             tropter::Output<T> out) const override {
 
         const auto& states = in.states;
@@ -633,17 +627,17 @@ public:
         const auto& modelDisabledConstraints = this->m_modelDisabledConstraints;
         auto& simTKStateDisabledConstraints = this->m_stateDisabledConstraints;
         const auto& matterIgnoringConstraints =
-            modelDisabledConstraints.getMatterSubsystem();
+                modelDisabledConstraints.getMatterSubsystem();
 
         simTKStateDisabledConstraints.setTime(in.time);
-        const int numEmptySlots = simTKStateDisabledConstraints.getNY() -
-            (int)states.size();
+        const int numEmptySlots =
+                simTKStateDisabledConstraints.getNY() - (int)states.size();
         const auto NQ = simTKStateDisabledConstraints.getNQ() - numEmptySlots;
         const auto NU = simTKStateDisabledConstraints.getNU();
 
         const auto& u = states.segment(NQ, NU);
-        const auto& w = adjuncts.segment(
-            this->m_numKinematicConstraintEquations, NU);
+        const auto& w =
+                adjuncts.segment(this->m_numKinematicConstraintEquations, NU);
 
         // Kinematic differential equations
         // --------------------------------
@@ -663,21 +657,20 @@ public:
         // TODO: Update to support kinematic constraints, using
         // this->calcKinematicConstraintForces()
         this->calcPathConstraintErrors(simTKStateDisabledConstraints, out);
-        OPENSIM_THROW_IF(
-            simTKStateDisabledConstraints.getSystemStage() >=
-                SimTK::Stage::Acceleration,
-            Exception,
-            "Cannot realize to Acceleration in implicit dynamics mode.");
+        OPENSIM_THROW_IF(simTKStateDisabledConstraints.getSystemStage() >=
+                                 SimTK::Stage::Acceleration,
+                Exception,
+                "Cannot realize to Acceleration in implicit dynamics mode.");
 
         if (out.path.size() != 0) {
             InverseDynamicsSolver id(modelDisabledConstraints);
             SimTK::Vector udot((int)w.size(), w.data(), true);
-            SimTK::Vector residual = id.solve(simTKStateDisabledConstraints,
-                udot);
+            SimTK::Vector residual =
+                    id.solve(simTKStateDisabledConstraints, udot);
 
             double* residualBegin = out.path.data() +
-                    this->m_numKinematicConstraintEquations +
-                    this->m_numPathConstraintEquations;
+                                    this->m_numKinematicConstraintEquations +
+                                    this->m_numPathConstraintEquations;
             std::copy_n(residual.getContiguousScalarData(), residual.size(),
                     residualBegin);
         }
@@ -689,35 +682,32 @@ public:
         if (SimTK::isNaN(in.adjuncts(0))) {
             std::cout << "DEBUG " << in.adjuncts << std::endl;
         }
-        std::cout << "DEBUG dynamics\n" << out.dynamics << "\npath\n" << out.path << std::endl;
-        std::cout << simTKState.getY() << std::endl;
+        std::cout << "DEBUG dynamics\n" << out.dynamics << "\npath\n" <<
+        out.path << std::endl; std::cout << simTKState.getY() << std::endl;
         std::cout << residual << std::endl;
         std::cout << udot << std::endl;
         std::cout << "adjuncts " << adjuncts << std::endl;
         std::cout << "num multibody " << this->m_numKinematicConstraintEqs;
          */
     }
-    void calc_integral_cost(const tropter::Input<T>& in,
-            T& integrand) const override final {
+    void calc_integral_cost(
+            const tropter::Input<T>& in, T& integrand) const override final {
         TropterProblemBase<T>::calc_integral_cost(in, integrand);
-        OPENSIM_THROW_IF(
-                this->m_stateDisabledConstraints.getSystemStage() >= 
-                    SimTK::Stage::Acceleration,
+        OPENSIM_THROW_IF(this->m_stateDisabledConstraints.getSystemStage() >=
+                                 SimTK::Stage::Acceleration,
                 Exception,
                 "Cannot realize to Acceleration in implicit dynamics mode.");
     }
-    void calc_endpoint_cost(const tropter::Input<T>& in,
-            T& cost) const override final {
+    void calc_endpoint_cost(
+            const tropter::Input<T>& in, T& cost) const override final {
         TropterProblemBase<T>::calc_endpoint_cost(in, cost);
-        OPENSIM_THROW_IF(
-                this->m_stateDisabledConstraints.getSystemStage() >= 
-                    SimTK::Stage::Acceleration,
+        OPENSIM_THROW_IF(this->m_stateDisabledConstraints.getSystemStage() >=
+                                 SimTK::Stage::Acceleration,
                 Exception,
                 "Cannot realize to Acceleration in implicit dynamics mode.");
     }
 };
 
 } // namespace OpenSim
-
 
 #endif // MOCO_TROPTERPROBLEM_H
