@@ -19,12 +19,14 @@
 // Some of this code is based on testSingleMuscle,
 // testSingleMuscleDeGrooteFregly2016.
 
-#include <DeGrooteFregly2016Muscle.h>
-#include <Moco/osimMoco.h>
-#include <MocoSandboxShared.h>
+#include <Moco/Components/DeGrooteFregly2016Muscle.h>
 
 #include <OpenSim/Actuators/Millard2012EquilibriumMuscle.h>
 #include <OpenSim/Simulation/SimbodyEngine/SliderJoint.h>
+#include <OpenSim/Simulation/Model/Model.h>
+
+#include <OpenSim/Common/GCVSpline.h>
+#include <Moco/osimMoco.h>
 
 using namespace OpenSim;
 
@@ -463,7 +465,7 @@ int main() {
     testDeGrooteFregly2016Muscle();
 
     testHangingMuscleMinimumTime(true);
-    testHangingMuscleMinimumTime(false);
+    // testHangingMuscleMinimumTime(false);
 
     return EXIT_SUCCESS;
 }

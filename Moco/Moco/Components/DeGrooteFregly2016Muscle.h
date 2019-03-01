@@ -18,7 +18,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include <Moco/MocoUtilities.h>
+#include "../MocoUtilities.h"
+#include "../osimMocoDLL.h"
 
 #include <OpenSim/Common/DataTable.h>
 #include <OpenSim/Simulation/Model/Muscle.h>
@@ -62,7 +63,7 @@ namespace OpenSim {
 /// Direct Collocation Optimal Control Problem Formulations for Solving the
 /// Muscle Redundancy Problem. Annals of Biomedical Engineering, 44(10), 1–15.
 /// http://doi.org/10.1007/s10439-016-1591-9
-class /*OSIMMOCO_API*/DeGrooteFregly2016Muscle : public Muscle {
+class OSIMMOCO_API DeGrooteFregly2016Muscle : public Muscle {
     OpenSim_DECLARE_CONCRETE_OBJECT(DeGrooteFregly2016Muscle, Muscle);
 public:
 

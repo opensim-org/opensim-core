@@ -39,6 +39,7 @@
 
 #include "Components/StationPlaneContactForce.h"
 #include "Components/PositionMotion.h"
+#include "Components/DeGrooteFregly2016Muscle.h"
 
 // TODO: Move to osimSimulation.
 #include <OpenSim/Simulation/MarkersReference.h>
@@ -80,6 +81,7 @@ OSIMMOCO_API void RegisterTypes_osimMoco() {
         Object::registerType(MeyerFregly2016Force());
         Object::registerType(EspositoMiller2018Force());
         Object::registerType(PositionMotion());
+        Object::registerType(DeGrooteFregly2016Muscle());
 
         // TODO: Move to osimSimulation.
         Object::registerType(MarkersReference());
