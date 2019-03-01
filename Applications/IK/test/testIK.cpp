@@ -342,21 +342,29 @@ void compareMotionTables(const TimeSeriesTable& report,
     for (auto& label : reportLabels) {
         int index = -1;
         auto found = std::find(stdLabels.begin(), stdLabels.end(), label);
-        if (found != stdLabels.end())
-            index = (int)std::distance(stdLabels.begin(), found);
+        if (found != stdLabels.end()) {
+            // skip any pelvis translations
+            if (found->find("pelvis_t") == std::string::npos) {
+                index = (int)std::distance(stdLabels.begin(), found);
+            }
+        }
         mapStdToReport.push_back(index);
     }
 
+    size_t nt = report.getNumRows();
+
     //For simplicity, we ignore pelvis coordinates 0-5
-    for (int i = 6; i < 23; ++i) {
-        auto repVec = report.getDependentColumnAtIndex(i);
-        auto stdVec = standard.getDependentColumnAtIndex(mapStdToReport[i]);
-        auto error = SimTK::Real(SimTK_RTD)*repVec - stdVec;
-        cout << "Column '" << reportLabels[i] << "' has RMSE = "
-            << sqrt(error.norm() / 17) << "degrees" << endl;
-        SimTK_ASSERT1_ALWAYS((sqrt(error.norm() / 17) < 0.1),
-            "Column '%s' FAILED to meet accuracy of 0.1 degree RMS.",
-            reportLabels[i].c_str());
+    for (size_t i = 0; i < mapStdToReport.size(); ++i) {
+        if (mapStdToReport[i] >= 0) {
+            auto repVec = report.getDependentColumnAtIndex(i);
+            auto stdVec = standard.getDependentColumnAtIndex(mapStdToReport[i]);
+            auto error = SimTK::Real(SimTK_RTD)*repVec - stdVec;
+            cout << "Column '" << reportLabels[i] << "' has RMSE = "
+                << sqrt(error.normSqr() / nt) << "degrees" << endl;
+            SimTK_ASSERT1_ALWAYS((sqrt(error.normSqr() / nt) < 0.1),
+                "Column '%s' FAILED to meet accuracy of 0.1 degree RMS.",
+                reportLabels[i].c_str());
+        }
     }
 }
 
