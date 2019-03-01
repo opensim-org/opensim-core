@@ -330,7 +330,7 @@ protected:
         // discrete variables in the state.
         if (this->m_numKinematicConstraintEquations) {
             this->setSimTKTimeAndStates(time, states, simTKStateBase);
-            this->calcKinematicAndApplyConstraintForces(
+            this->calcAndApplyKinematicConstraintForces(
                     adjuncts, simTKStateBase, simTKStateDisabledConstraints);
         }
     }
@@ -421,7 +421,7 @@ protected:
         }
     }
 
-    void calcKinematicAndApplyConstraintForces(
+    void calcAndApplyKinematicConstraintForces(
             const tropter::VectorX<T>& adjuncts, const SimTK::State& stateBase,
             SimTK::State& stateDisabledConstraints) const {
         // Calculate the constraint forces using the original model and the
@@ -433,7 +433,6 @@ protected:
         SimTK::Vector multipliers(m_numMultipliers, adjuncts.data(), true);
         matter.calcConstraintForcesFromMultipliers(stateBase, -multipliers,
                 m_constraintBodyForces, m_constraintMobilityForces);
-
         // Apply the constraint forces on the model with disabled constraints.
         const auto& constraintForces =
                 m_modelDisabledConstraints.getComponent<DiscreteForces>(
@@ -626,10 +625,7 @@ public:
 
         const auto& modelDisabledConstraints = this->m_modelDisabledConstraints;
         auto& simTKStateDisabledConstraints = this->m_stateDisabledConstraints;
-        const auto& matterIgnoringConstraints =
-                modelDisabledConstraints.getMatterSubsystem();
 
-        simTKStateDisabledConstraints.setTime(in.time);
         const int numEmptySlots =
                 simTKStateDisabledConstraints.getNY() - (int)states.size();
         const auto NQ = simTKStateDisabledConstraints.getNQ() - numEmptySlots;
