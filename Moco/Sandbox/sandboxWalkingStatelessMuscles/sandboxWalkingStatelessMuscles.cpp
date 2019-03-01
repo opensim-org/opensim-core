@@ -51,11 +51,21 @@ public:
         // TODO: Create an initial guess using GSO.
 
         Model model(m_model);
-        model.initSystem();
 
         MocoTool moco;
-
         auto& problem = moco.updProblem();
+
+        model.finalizeFromProperties();
+        for (const auto& muscle : model.getComponentList<Muscle>()) {
+            if (!muscle.get_ignore_activation_dynamics()) {
+                problem.setStateInfo(
+                        muscle.getAbsolutePathString() + "/activation",
+                        // TODO: Use the muscle's minimum_activation.
+                        {0.01, 1});
+            }
+        }
+        model.initSystem();
+
         auto kinematicsRaw = STOFileAdapter::read(m_kinematicsFileName);
         auto kinematics = filterLowpass(kinematicsRaw, 6, true);
 
@@ -179,7 +189,7 @@ int main() {
 
     // TODO: Implement cost minimization directly in CasADi.
     // TODO: External loads.
-    // TODO: Activation dynamics.
+    // TODO: Activation dynamics.: can solve but takes way longer.
 
     return EXIT_SUCCESS;
 }
