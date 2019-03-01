@@ -32,7 +32,7 @@ MocoIterate MocoSolver::createGuessTimeStepping() const {
                    "upper bound on initial time, but "
                    "final_time.lower: %g; initial_time.upper: %g.",
                     finalTime, initialTime));
-    Model model(probrep.getModel());
+    Model model(probrep.getModelBase());
 
     // Disable all controllers?
     SimTK::State state = model.initSystem();

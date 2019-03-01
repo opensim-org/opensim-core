@@ -38,8 +38,8 @@ void MocoProblemRep::initialize() {
     m_multiplier_infos_map.clear();
 
     const auto& ph0 = m_problem->getPhase(0);
-    m_model = m_problem->getPhase(0).getModel();
-    m_model.initSystem();
+    m_model_base = m_problem->getPhase(0).getModel();
+    m_model_base.initSystem();
 
     // We would like to eventually compute the model accelerations through 
     // realizing to Stage::Acceleration. However, if the model has constraints,
@@ -49,7 +49,7 @@ void MocoProblemRep::initialize() {
     // original model, disable the its constraints, and apply the constraint 
     // forces equivalent to the solver's Lagrange multipliers before computing 
     // the accelerations.
-    m_model_disabled_constraints = Model(m_model);
+    m_model_disabled_constraints = Model(m_model_base);
     // The constraint forces will be applied to the copied model via an 
     // OpenSim::DiscreteForces component, a thin wrapper to Simbody's
     // DiscreteForces class, which adds discrete variables to the state.
@@ -61,7 +61,7 @@ void MocoProblemRep::initialize() {
     SimTK::State& stateDisabledConstraints = 
         m_model_disabled_constraints.initSystem();
 
-    const auto stateNames = m_model.getStateVariableNames();
+    const auto stateNames = m_model_base.getStateVariableNames();
     for (int i = 0; i < ph0.getProperty_state_infos().size(); ++i) {
         const auto& name = ph0.get_state_infos(i).getName();
         OPENSIM_THROW_IF(stateNames.findIndex(name) == -1, Exception,
@@ -69,8 +69,8 @@ void MocoProblemRep::initialize() {
                         name));
     }
     OpenSim::Array<std::string> actuNames;
-    const auto modelPath = m_model.getAbsolutePath();
-    for (const auto& actu : m_model.getComponentList<ScalarActuator>()) {
+    const auto modelPath = m_model_base.getAbsolutePath();
+    for (const auto& actu : m_model_base.getComponentList<ScalarActuator>()) {
         actuNames.append(actu.getAbsolutePathString());
     }
 
@@ -88,7 +88,7 @@ void MocoProblemRep::initialize() {
         const auto& name = ph0.get_state_infos(i).getName();
         m_state_infos[name] = ph0.get_state_infos(i);
     }
-    for (const auto& coord : m_model.getComponentList<Coordinate>()) {
+    for (const auto& coord : m_model_base.getComponentList<Coordinate>()) {
         const auto stateVarNames = coord.getStateVariableNames();
         const std::string coordValueName = stateVarNames[0];
         if (m_state_infos.count(coordValueName) == 0) {
@@ -107,7 +107,7 @@ void MocoProblemRep::initialize() {
         const auto& name = ph0.get_control_infos(i).getName();
         m_control_infos[name] = ph0.get_control_infos(i);
     }
-    for (const auto& actu : m_model.getComponentList<ScalarActuator>()) {
+    for (const auto& actu : m_model_base.getComponentList<ScalarActuator>()) {
         const std::string actuName = actu.getAbsolutePathString();
         if (m_control_infos.count(actuName) == 0) {
             const auto info = MocoVariableInfo(actuName,
@@ -124,11 +124,11 @@ void MocoProblemRep::initialize() {
     MocoFinalBounds multFinalBounds(multBounds.getLower(),
             multBounds.getUpper());
     // Get model information to loop through constraints.
-    const auto& matter = m_model.getMatterSubsystem();
+    const auto& matter = m_model_base.getMatterSubsystem();
     auto& matterDisabledConstraints = 
         m_model_disabled_constraints.updMatterSubsystem();
     const auto NC = matter.getNumConstraints();
-    const auto& state = m_model.getWorkingState();
+    const auto& state = m_model_base.getWorkingState();
     int mp, mv, ma;
     m_num_kinematic_constraint_equations = 0;
     for (SimTK::ConstraintIndex cid(0); cid < NC; ++cid) {
@@ -212,7 +212,7 @@ void MocoProblemRep::initialize() {
         // are identical aside from disable Simbody constraints. The property
         // references to the parameters in both models are added to the 
         // MocoParameter's internal vector of property references.
-        m_parameters[i]->initializeOnModel(m_model);
+        m_parameters[i]->initializeOnModel(m_model_base);
         m_parameters[i]->initializeOnModel(m_model_disabled_constraints);
     }
 
@@ -368,7 +368,7 @@ const std::vector<MocoVariableInfo>& MocoProblemRep::getMultiplierInfos(
     }
 }
 
-void MocoProblemRep::applyParametersToModel(
+void MocoProblemRep::applyParametersToModelProperties(
         const SimTK::Vector& parameterValues,
         bool initSystemAndDisableConstraints) const {
     OPENSIM_THROW_IF(parameterValues.size() != (int)m_parameters.size(),
@@ -377,11 +377,11 @@ void MocoProblemRep::applyParametersToModel(
                     "this MocoProblem, but %i values were provided.",
                     m_parameters.size(), parameterValues.size()));
     for (int i = 0; i < (int)m_parameters.size(); ++i) {
-        m_parameters[i]->applyParameterToModel(parameterValues(i));
+        m_parameters[i]->applyParameterToModelProperties(parameterValues(i));
     }
     if (initSystemAndDisableConstraints) {
         // TODO: Avoid these const_casts.
-        const_cast<Model&>(m_model).initSystem();
+        const_cast<Model&>(m_model_base).initSystem();
         Model& m_model_disabled_constraints_const_cast =
             const_cast<Model&>(m_model_disabled_constraints);
         SimTK::State& stateDisabledConstraints = 

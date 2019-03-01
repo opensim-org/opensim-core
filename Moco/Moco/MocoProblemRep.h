@@ -56,11 +56,25 @@ public:
     const std::string& getName() const;
 
     /// Get a reference to the copy of the model being used by this 
-    /// MocoProblemRep.
-    /// This model is the same instance as that given to MocoCost,
-    /// MocoParameter, and MocoPathConstraint.
-    /// TODO
-    const Model& getModel() const { return m_model; }
+    /// MocoProblemRep. This model is *not* the model given to MocoCost or
+    /// MocoPathConstraint, but can be used within solvers to compute constraint 
+    /// forces and constraint errors (see getModelDisabledConstraints() for more 
+    /// details). Any parameter updates via a MocoParameter added to the problem
+    /// will be applied to this model.
+    const Model& getModelBase() const { return m_model_base; }
+    /// Get a reference to a copy of the model being used by this 
+    /// MocoProblemRep, but with disabled constraints and an additional
+    /// DiscreteForces component. This new component can be used to apply 
+    /// constraint forces computed from the base model to the new model, which 
+    /// updates the discrete variables in the state associated with these
+    /// forces. You should use this model to compute accelerations via 
+    /// getModelDisabledConstraints().realizeAccleration(state), making sure to 
+    /// add any constraint forces to the model preceeding the realization. This 
+    /// model is the same instance as that given to MocoCost and 
+    /// MocoPathConstraint, ensuring that realizing to Stage::Acceleration
+    /// in these classes produces the same accelerations computed by the solver.
+    /// Any parameter updates via a MocoParameter added to the problem
+    /// will be applied to this model.
     const Model& getModelDisabledConstraints() const 
     {   return m_model_disabled_constraints; }
     int getNumStates() const { return (int)m_state_infos.size(); }
@@ -189,22 +203,24 @@ public:
             SimTK::Vector theseErrors(thisConstraintNumEquations,
                     errors.getContiguousScalarData() + index, true);
             m_kinematic_constraints[i].calcKinematicConstraintErrors(
-                    getModel(), state, theseErrors);
+                    getModelBase(), state, theseErrors);
 
             index += thisConstraintNumEquations;
         }
         return errors;
     }
 
-    /// Apply paramater values to the model passed to initialize() within the
-    /// current MocoProblem. Values must be consistent with the order of
-    /// parameters returned from createParameterNames().
+    /// Apply paramater values to the models created from the model passed to 
+    /// initialize() within the current MocoProblem. Values must be consistent 
+    /// with the order of parameters returned from createParameterNames().
     ///
-    /// Note: initSystem() must be called on the model after calls to this
+    /// Note: initSystem() must be called on each model after calls to this
     /// method in order for provided parameter values to be applied to the
-    /// model. You can pass `true` to have initSystem() called for you.
-    void applyParametersToModel(const SimTK::Vector& parameterValues,
-            bool initSystem = false) const;
+    /// model. You can pass `true` to have initSystem() called for you, and to
+    /// also re-disable any constraints re-enabled by the initSystem() call 
+    /// (see getModelDisabledConstraints()).
+    void applyParametersToModelProperties(const SimTK::Vector& parameterValues,
+            bool initSystemAndDisableConstraints = false) const;
     /// @}
 
 private:
@@ -215,7 +231,7 @@ private:
 
     const MocoProblem* m_problem;
 
-    Model m_model;
+    Model m_model_base;
     Model m_model_disabled_constraints;
     std::string m_constraint_forces_path = "constraint_forces";
 

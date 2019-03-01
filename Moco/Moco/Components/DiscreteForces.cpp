@@ -33,14 +33,10 @@ void DiscreteForces::extendAddToSystem(SimTK::MultibodySystem& system) const {
         system.getMatterSubsystem());
 }
 
-void DiscreteForces::setAllGeneralizedForces(SimTK::State& s, 
-        const SimTK::Vector& generalizedForces) const {
-
-    m_discrete_forces.setAllMobilityForces(s, generalizedForces);
-}
-
-void DiscreteForces::setAllBodyForces(SimTK::State& s, 
+void DiscreteForces::setAllForces(SimTK::State& s, 
+        const SimTK::Vector& generalizedForces,
         const SimTK::Vector_<SimTK::SpatialVec>& bodyForcesInG) const {
 
+    m_discrete_forces.setAllMobilityForces(s, generalizedForces);
     m_discrete_forces.setAllBodyForces(s, bodyForcesInG);
 }

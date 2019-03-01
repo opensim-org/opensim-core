@@ -186,10 +186,13 @@ TOut convertToMocoIterate(const CasOC::Iterate& casIt) {
     return mocoIterate;
 }
 
-inline void applyParametersToModel(
+/// Apply parameters to properties in the models returned by 
+/// `mocoProblemRep.getModelBase()` and 
+/// `mocoProblemRep.getModelDisabledConstraints()`.
+inline void applyParametersToModelProperties(
         const SimTK::Vector& parameters, const MocoProblemRep& mocoProblemRep) {
     if (parameters.size()) {
-        mocoProblemRep.applyParametersToModel(parameters, true);
+        mocoProblemRep.applyParametersToModelProperties(parameters, true);
     }
 }
 
@@ -220,14 +223,14 @@ inline void convertToSimTKState(const double& time, const casadi::DM& states,
 }
 
 inline void calcKinematicConstraintForces(const casadi::DM& multipliers,
-        const SimTK::State& state, const Model& model, 
+        const SimTK::State& stateBase, const Model& modelBase, 
         const Model& modelDisabledConstraints, 
         const std::string& constraintForcesPath, 
         SimTK::State& stateDisabledConstraints) {
     // Calculate the constraint forces using the original model and the 
     // solver-provided Lagrange multipliers.
-    model.realizeVelocity(state);
-    const auto& matter = model.getMatterSubsystem();
+    modelBase.realizeVelocity(stateBase);
+    const auto& matterBase = modelBase.getMatterSubsystem();
     SimTK::Vector simtkMultipliers((int)multipliers.size1(), multipliers.ptr(), 
         true);
     // TODO: handle this memory allocation better.
@@ -235,21 +238,19 @@ inline void calcKinematicConstraintForces(const casadi::DM& multipliers,
     SimTK::Vector constraintMobilityForces;
     // Multipliers are negated so constraint forces can be used like
     // applied forces.
-    matter.calcConstraintForcesFromMultipliers(state, -simtkMultipliers,
-        constraintBodyForces, constraintMobilityForces);
+    matterBase.calcConstraintForcesFromMultipliers(stateBase, 
+        -simtkMultipliers, constraintBodyForces, constraintMobilityForces);
 
     // Apply the constraint forces on the model with disabled constraints.
     const auto& constraintForces = 
         modelDisabledConstraints.getComponent<DiscreteForces>(
             constraintForcesPath);
-    constraintForces.setAllGeneralizedForces(stateDisabledConstraints,
-        constraintMobilityForces);
-    constraintForces.setAllBodyForces(stateDisabledConstraints,
-        constraintBodyForces);
+    constraintForces.setAllForces(stateDisabledConstraints,
+        constraintMobilityForces, constraintBodyForces);
 }
 
-inline void calcKinematicConstraintErrors(const Model& model,
-        const SimTK::State& state, const SimTK::Vector& udot, 
+inline void calcKinematicConstraintErrors(const Model& modelBase,
+        const SimTK::State& stateBase, const SimTK::Vector& udot,
         const CasOC::Problem* casProblem, 
         const bool& enforceConstraintDerivatives, VectorDM& out) {
     // The total number of scalar holonomic, non-holonomic, and acceleration
@@ -260,7 +261,7 @@ inline void calcKinematicConstraintErrors(const Model& model,
     const int total_ma = casProblem->getNumAccelerationConstraintEquations();
 
     // Position-level errors.
-    const auto& qerr = state.getQErr();
+    const auto& qerr = stateBase.getQErr();
 
     SimTK::Vector pvaerr; // TODO: handle this memory allocation better.
     if (enforceConstraintDerivatives || total_ma) {
@@ -270,15 +271,15 @@ inline void calcKinematicConstraintErrors(const Model& model,
         // the udot computed from the model with disabled constraints
         // since we cannot use (nor do we have availabe) udot computed
         // from the original model. 
-        const auto& matter = model.getMatterSubsystem();
+        const auto& matter = modelBase.getMatterSubsystem();
         matter.calcConstraintAccelerationErrors(
-            state, udot, pvaerr);
+            stateBase, udot, pvaerr);
     }
     else {
         pvaerr = SimTK::NaN;
     }
 
-    const auto& uerr = state.getUErr();
+    const auto& uerr = stateBase.getUErr();
     int uerrOffset;
     int uerrSize;
     const auto& udoterr = pvaerr;
@@ -345,8 +346,8 @@ public:
 
         // Update the model and state.
         // TODO: This applies parameters to both models, rename for clarity.
-        applyParametersToModel(SimTK::Vector(m_casProblem->getNumParameters(),
-                                       parameters.ptr(), true),
+        applyParametersToModelProperties(
+                SimTK::Vector(parameters.size1(), parameters.ptr(), true),
                 *mocoProblemRep);
         // TODO: Don't necessarily need to realize to Velocity.
         convertToSimTKState(time, states, controls, modelDisabledConstraints, 
@@ -393,8 +394,8 @@ public:
 
         // Update the model and state.
         // TODO: This applies parameters to both models, rename for clarity.
-        applyParametersToModel(SimTK::Vector(m_casProblem->getNumParameters(),
-                                       parameters.ptr(), true),
+        applyParametersToModelProperties(
+                SimTK::Vector(parameters.size1(), parameters.ptr(), true),
                 *mocoProblemRep);
         convertToSimTKState(time, states, controls, modelDisabledConstraints, 
                 m_yIndexMap, simTKStateDisabledConstraints);
@@ -436,8 +437,8 @@ public:
 
         // Update the model and state.
         // TODO: This applies parameters to both models, rename for clarity.
-        applyParametersToModel(SimTK::Vector(m_casProblem->getNumParameters(),
-                                       parameters.ptr(), true),
+        applyParametersToModelProperties(
+                SimTK::Vector(parameters.size1(), parameters.ptr(), true),
                 *mocoProblemRep);
         convertToSimTKState(time, states, modelDisabledConstraints, m_yIndexMap, 
                 simTKStateDisabledConstraints, true);
@@ -478,8 +479,8 @@ public:
         // Original model and its associated state. These are used to calculate
         // kinematic constraint forces and errors.
         // TODO: deal with constness better.
-        auto& model = const_cast<Model&>(mocoProblemRep->getModel());
-        auto& simtkState = model.updWorkingState();
+        auto& modelBase = const_cast<Model&>(mocoProblemRep->getModelBase());
+        auto& simtkStateBase = modelBase.updWorkingState();
 
         // Model with disabled constriants and its associated state. These are
         // used to compute the accelerations.
@@ -489,13 +490,11 @@ public:
             modelDisabledConstraints.updWorkingState();
 
         // Update the model and state.
-        // TODO: This applies parameters to both models, rename for clarity.
-        applyParametersToModel(
-                SimTK::Vector(this->m_casProblem->getNumParameters(),
-                        parameters.ptr(), true),
+        applyParametersToModelProperties(
+                SimTK::Vector(parameters.size1(), parameters.ptr(), true),
                 *mocoProblemRep);
-        convertToSimTKState(time, states, controls, model, m_yIndexMap, 
-                simtkState);
+        convertToSimTKState(time, states, controls, modelBase, m_yIndexMap,
+                simtkStateBase);
         convertToSimTKState(time, states, controls, modelDisabledConstraints, 
                 m_yIndexMap, simtkStateDisabledConstraints);
         // If enabled constraints exist in the model, compute constraint forces
@@ -503,8 +502,8 @@ public:
         // discrete variables in the state.
         const int numMultipliers = this->m_casProblem->getNumMultipliers();
         if (numMultipliers && CalcKCErrors) {
-            calcKinematicConstraintForces(multipliers, simtkState, model,
-                modelDisabledConstraints, 
+            calcKinematicConstraintForces(multipliers, simtkStateBase, 
+                modelBase, modelDisabledConstraints, 
                 mocoProblemRep->getConstraintForcesPath(),
                 simtkStateDisabledConstraints);
         }
@@ -515,7 +514,7 @@ public:
 
         // Compute kinematic constraint errors if they exist.
         if (numMultipliers && CalcKCErrors) {
-            calcKinematicConstraintErrors(model, simtkState, 
+            calcKinematicConstraintErrors(modelBase, simtkStateBase,
                     simtkStateDisabledConstraints.getUDot(), m_casProblem,
                     m_mocoCasADiSolver.get_enforce_constraint_derivatives(), 
                     out);
@@ -560,18 +559,16 @@ public:
         // It doesn't matter what model/state we use here since we're only 
         // realizing to Stage::Velocity.
         // TODO: deal with constness better.
-        auto& model = const_cast<Model&>(mocoProblemRep->getModel());
-        auto& simtkState = model.updWorkingState();
+        auto& modelBase = const_cast<Model&>(mocoProblemRep->getModelBase());
+        auto& simtkStateBase = modelBase.updWorkingState();
 
         // Update the model and state.
-        // TODO: This applies parameters to both models, rename for clarity.
-        applyParametersToModel(
-                SimTK::Vector(this->m_casProblem->getNumParameters(),
-                        parameters.ptr(), true),
+        applyParametersToModelProperties(
+                SimTK::Vector(parameters.size1(), parameters.ptr(), true),
                 *mocoProblemRep);
-        convertToSimTKState(
-                time, multibody_states, model, m_yIndexMap, simtkState, false);
-        model.realizeVelocity(simtkState);
+        convertToSimTKState(time, multibody_states, modelBase, m_yIndexMap, 
+                simtkStateBase, false);
+        modelBase.realizeVelocity(simtkStateBase);
 
         // Apply velocity correction to qdot if at a mesh interval midpoint.
         // This correction modifies the dynamics to enable a projection of
@@ -581,12 +578,12 @@ public:
         // of trajectories for constrained dynamical systems"
         // Note: Only supported for the Hermite-Simpson transcription
         // scheme.
-        const SimTK::SimbodyMatterSubsystem& matter =
-                model.getMatterSubsystem();
+        const SimTK::SimbodyMatterSubsystem& matterBase =
+                modelBase.getMatterSubsystem();
 
         SimTK::Vector gamma(
                 this->m_casProblem->getNumSlacks(), slacks.ptr(), true);
-        matter.multiplyByGTranspose(simtkState, gamma, m_qdotCorr);
+        matterBase.multiplyByGTranspose(simtkStateBase, gamma, m_qdotCorr);
         m_jar.leave(std::move(mocoProblemRep));
 
         casadi::DM velocity_correction;
@@ -624,59 +621,61 @@ public:
         // Original model and its associated state. These are used to calculate
         // kinematic constraint forces and errors.
         // TODO: deal with constness better.
-        auto& model = const_cast<Model&>(mocoProblemRep->getModel());
-        auto& simtkState = model.updWorkingState();
+        auto& modelBase = const_cast<Model&>(mocoProblemRep->getModelBase());
+        auto& simtkStateBase = modelBase.updWorkingState();
 
         // Model with disabled constriants and its associated state. These are
         // used to compute the accelerations.
         auto& modelDisabledConstraints = const_cast<Model&>(
-            mocoProblemRep->getModelDisabledConstraints());
+                mocoProblemRep->getModelDisabledConstraints());
         auto& simtkStateDisabledConstraints =
-            modelDisabledConstraints.updWorkingState();
+                modelDisabledConstraints.updWorkingState();
 
         // Update the model and state.
-        // TODO: This applies parameters to both models, rename for clarity.
-        applyParametersToModel(
-            SimTK::Vector(this->m_casProblem->getNumParameters(),
-                parameters.ptr(), true),
-            *mocoProblemRep);
-        convertToSimTKState(time, states, controls, model, m_yIndexMap,
-            simtkState);
+        applyParametersToModelProperties(
+                SimTK::Vector(parameters.size1(), parameters.ptr(), true),
+                *mocoProblemRep);
+        convertToSimTKState(time, states, controls, modelBase, m_yIndexMap,
+                simtkStateBase);
         convertToSimTKState(time, states, controls, modelDisabledConstraints,
-            m_yIndexMap, simtkStateDisabledConstraints);
+                m_yIndexMap, simtkStateDisabledConstraints);
         // If enabled constraints exist in the model, compute constraint forces
         // based on Lagrange multipliers. This also updates the associated 
         // discrete variables in the state.
         const int numMultipliers = this->m_casProblem->getNumMultipliers();
         //if (numMultipliers && CalcKCErrors) {
-        //    calcKinematicConstraintForces(multipliers, simtkState, model,
+        //    calcKinematicConstraintForces(multipliers, simtkState, modelBase,
         //        modelDisabledConstraints,
         //        mocoProblemRep->getConstraintForcesPath(),
         //        simtkStateDisabledConstraints)
         //}
         
-        const SimTK::SimbodyMatterSubsystem& matter =
-            model.getMatterSubsystem();
+        const SimTK::SimbodyMatterSubsystem& matterBase =
+            modelBase.getMatterSubsystem();
 
-        model.realizeDynamics(simtkState);
+        modelBase.realizeDynamics(simtkStateBase);
 
-        const SimTK::MultibodySystem& multibody = model.getMultibodySystem();
+        const SimTK::MultibodySystem& multibodyBase = 
+                modelBase.getMultibodySystem();
         const SimTK::Vector_<SimTK::SpatialVec>& appliedBodyForces =
-            multibody.getRigidBodyForces(
-                simtkState, SimTK::Stage::Dynamics);
+                multibodyBase.getRigidBodyForces(
+                    simtkStateBase, SimTK::Stage::Dynamics);
         const SimTK::Vector& appliedMobilityForces =
-            multibody.getMobilityForces(simtkState, SimTK::Stage::Dynamics);
+                multibodyBase.getMobilityForces(simtkStateBase, 
+                    SimTK::Stage::Dynamics);
 
         SimTK::Vector udot((int)derivatives.size1(), derivatives.ptr(), true);
         SimTK::Vector simtkMultipliers(numMultipliers, multipliers.ptr(), true);
 
-        matter.calcResidualForce(simtkState, appliedMobilityForces,
+        matterBase.calcResidualForce(simtkStateBase, appliedMobilityForces,
                 appliedBodyForces, udot, simtkMultipliers, m_residual);
 
         // Compute kinematic constraint errors if they exist.
         if (numMultipliers && CalcKCErrors) {
-            calcKinematicConstraintErrors(model, simtkState, udot, m_casProblem,
-                m_mocoCasADiSolver.get_enforce_constraint_derivatives(), out);
+            calcKinematicConstraintErrors(modelBase, simtkStateBase, udot, 
+                    m_casProblem, 
+                    m_mocoCasADiSolver.get_enforce_constraint_derivatives(), 
+                    out);
         }
 
         // Copy residuals to output.
@@ -684,11 +683,11 @@ public:
         // Copy auxiliary dynamics to output.
         // TODO: If auxiliary dynamics depend on udot, the wrong udot will be
         // used.
-        if (simtkState.getNZ()) { 
+        if (simtkStateDisabledConstraints.getNZ()) {
             modelDisabledConstraints.realizeAcceleration(
                     simtkStateDisabledConstraints);
         }
-        out[1] = convertToCasADiDM(simtkState.getZDot());
+        out[1] = convertToCasADiDM(simtkStateDisabledConstraints.getZDot());
 
         // This path should never be reached during an optimization, but
         // CasADi will throw an error (likely while constructing the

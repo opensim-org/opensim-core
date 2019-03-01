@@ -164,7 +164,7 @@ void calcAccelerationsFromMultipliers(const Model& model, const State& state,
 
     // We would like to eventually compute the model accelerations through 
     // realizing to Stage::Acceleration. However, if the model has constraints,
-    // realizing to Stage::Acceleration will cause Simbody to compute it's own
+    // realizing to Stage::Acceleration will cause Simbody to compute its own
     // Lagrange multipliers which will not necessarily be consistent with the
     // multipliers provided by a solver. Therefore, we'll first create a copy
     // of the original model, disable the its constraints, and apply the 
@@ -188,10 +188,8 @@ void calcAccelerationsFromMultipliers(const Model& model, const State& state,
         stateDisabledConstraints.updY() = state.getY();
         // Update the discrete forces in the new state with the constraint 
         // forces we just calculated.
-        constraintForces->setAllGeneralizedForces(stateDisabledConstraints,
-            constraintMobilityForces);
-        constraintForces->setAllBodyForces(stateDisabledConstraints,
-            constraintBodyForces);
+        constraintForces->setAllForces(stateDisabledConstraints,
+            constraintMobilityForces, constraintBodyForces);
 
         // Disable the constraints in the new model.
         auto& matterIgnoringConstraints = 
