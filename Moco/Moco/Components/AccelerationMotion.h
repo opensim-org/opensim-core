@@ -1,7 +1,7 @@
-#ifndef MOCO_PRESCRIBEDACCELERATION_H
-#define MOCO_PRESCRIBEDACCELERATION_H
+#ifndef MOCO_ACCELERATIONMOTION_H
+#define MOCO_ACCELERATIONMOTION_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: PrescribedAcceleration.h                                     *
+ * OpenSim Moco: AccelerationMotion.h                                         *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2019 Stanford University and the Authors                     *
  *                                                                            *
@@ -24,10 +24,10 @@
 
 namespace OpenSim {
 
-class PrescribedAcceleration : public ModelComponent {
-    OpenSim_DECLARE_CONCRETE_OBJECT(PrescribedAcceleration, ModelComponent);
+class AccelerationMotion : public ModelComponent {
+    OpenSim_DECLARE_CONCRETE_OBJECT(AccelerationMotion, ModelComponent);
 public:
-    PrescribedAcceleration(std::string name) { setName(std::move(name)); }
+    AccelerationMotion(std::string name) { setName(std::move(name)); }
     void setUDot(SimTK::State& state, const SimTK::Vector& fullUDot) const;
     const SimTK::Vector& getUDot(const SimTK::State& state,
             SimTK::MobilizedBodyIndex mobodIdx) const;
@@ -43,4 +43,4 @@ private:
 
 } // namespace OpenSim
 
-#endif // MOCO_PRESCRIBEDACCELERATION_H
+#endif // MOCO_ACCELERATIONMOTION_H

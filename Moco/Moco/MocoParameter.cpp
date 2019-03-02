@@ -152,7 +152,7 @@ void MocoParameter::printDescription(std::ostream& stream) const {
     stream << std::endl;
 }
 
-void MocoParameter::applyParameterToModel(const double& value) const {
+void MocoParameter::applyParameterToModelProperties(const double& value) const {
     for (auto& propRef : m_property_refs) {
 
         if (m_data_type == Type_double) {

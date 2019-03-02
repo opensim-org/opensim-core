@@ -33,11 +33,12 @@
 #include "MocoCost/MocoControlCost.h"
 #include "MocoCost/MocoJointReactionNormCost.h"
 #include "MocoParameter.h"
-#include "ActivationCoordinateActuator.h"
 
 #include "MocoCasADiSolver/MocoCasADiSolver.h"
 
+#include "Components/ActivationCoordinateActuator.h"
 #include "Components/StationPlaneContactForce.h"
+#include "Components/DiscreteForces.h"
 
 // TODO: Move to osimSimulation.
 #include <OpenSim/Simulation/MarkersReference.h>
@@ -78,6 +79,8 @@ OSIMMOCO_API void RegisterTypes_osimMoco() {
         Object::registerType(AckermannVanDenBogert2010Force());
         Object::registerType(MeyerFregly2016Force());
         Object::registerType(EspositoMiller2018Force());
+
+        Object::registerType(DiscreteForces());
 
         // TODO: Move to osimSimulation.
         Object::registerType(MarkersReference());

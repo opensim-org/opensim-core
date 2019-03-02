@@ -142,10 +142,10 @@ std::unique_ptr<CasOC::Problem> MocoCasADiSolver::createCasOCProblem() const {
         m_jar.visit([](MocoProblemRep& rep) {
             auto& model = rep.getModel();
             auto& s = model.updWorkingState();
-            model.getComponent<PrescribedAcceleration>("motion").setEnabled(state, true);
+            model.getComponent<AccelerationMotion>("motion").setEnabled(state, true);
         });
     } */
-    const auto& model = problemRep.getModel();
+    const auto& model = problemRep.getModelBase();
 
     OPENSIM_THROW_IF(!model.getMatterSubsystem().getUseEulerAngles(
                              model.getWorkingState()),
@@ -465,6 +465,7 @@ MocoSolution MocoCasADiSolver::solveImpl() const {
     CasOC::Solution casSolution = casSolver->solve(casGuess);
     MocoSolution mocoSolution = convertToMocoIterate<MocoSolution>(casSolution);
     setSolutionStats(mocoSolution, casSolution.stats.at("success"),
+            casSolution.objective,
             casSolution.stats.at("return_status"),
             casSolution.stats.at("iter_count"));
 

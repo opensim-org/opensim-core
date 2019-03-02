@@ -420,6 +420,7 @@ Solution Transcription::solve(const Iterate& guessOrig) {
     // -------------------------
     Solution solution = m_problem.createIterate<Solution>();
     solution.variables = expand(nlpResult.at("x"));
+    solution.objective = nlpResult.at("f").scalar();
     solution.times = createTimes(
             solution.variables[initial_time], solution.variables[final_time]);
     solution.stats = nlpFunc.stats();

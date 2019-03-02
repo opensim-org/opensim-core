@@ -1,11 +1,9 @@
-#ifndef MOCO_OSIMMOCO_H
-#define MOCO_OSIMMOCO_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: osimMoco.h                                                   *
+ * OpenSim Moco: DiscreteForces.cpp                                           *
  * -------------------------------------------------------------------------- *
- * Copyright (c) 2017 Stanford University and the Authors                     *
+ * Copyright (c) 2019 Stanford University and the Authors                     *
  *                                                                            *
- * Author(s): Christopher Dembia                                              *
+ * Author(s): Nicholas Bianco                                                 *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -18,29 +16,27 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "MocoWeightSet.h"
-#include "MocoCost/MocoStateTrackingCost.h"
-#include "MocoCost/MocoMarkerTrackingCost.h"
-#include "MocoCost/MocoMarkerEndpointCost.h"
-#include "MocoCost/MocoControlCost.h"
-#include "MocoCost/MocoJointReactionNormCost.h"
-#include "MocoIterate.h"
-#include "MocoBounds.h"
-#include "MocoProblem.h"
-#include "MocoSolver.h"
-#include "MocoTool.h"
-#include "MocoTropterSolver.h"
-#include "MocoUtilities.h"
-#include "MocoParameter.h"
-#include "MocoConstraint.h"
+#include "DiscreteForces.h"
+#include <OpenSim/Simulation/Model/Model.h>
 
-#include "Components/ActivationCoordinateActuator.h"
-#include "Components/StationPlaneContactForce.h"
-#include "Components/ModelFactory.h"
-#include "Components/DiscreteForces.h"
+using namespace OpenSim;
 
-#include "MocoCasADiSolver/MocoCasADiSolver.h"
+void DiscreteForces::extendAddToSystem(SimTK::MultibodySystem& system) const {
+    Super::extendAddToSystem(system);
 
-#include "RegisterTypes_osimMoco.h"
+    SimTK::SubsystemIndex forcesIdx = 
+        getModel().getForceSubsystem().getMySubsystemIndex();
+    SimTK::ForceSubsystem& forces = 
+        SimTK::ForceSubsystem::updDowncast(system.updSubsystem(forcesIdx));
+    m_discrete_forces = SimTK::Force::DiscreteForces(
+        SimTK::GeneralForceSubsystem::updDowncast(forces),
+        system.getMatterSubsystem());
+}
 
-#endif // MOCO_OSIMMOCO_H
+void DiscreteForces::setAllForces(SimTK::State& s, 
+        const SimTK::Vector& generalizedForces,
+        const SimTK::Vector_<SimTK::SpatialVec>& bodyForcesInG) const {
+
+    m_discrete_forces.setAllMobilityForces(s, generalizedForces);
+    m_discrete_forces.setAllBodyForces(s, bodyForcesInG);
+}

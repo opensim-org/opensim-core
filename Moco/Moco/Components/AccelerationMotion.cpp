@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: PrescribedAcceleration.cpp                                   *
+ * OpenSim Moco: AccelerationMotion.cpp                                   *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2019 Stanford University and the Authors                     *
  *                                                                            *
@@ -16,7 +16,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "PrescribedAcceleration.h"
+#include "AccelerationMotion.h"
 
 #include <SimTKsimbody.h>
 
@@ -27,7 +27,7 @@ class PrescribedAccelerationMotionImplementation
 public:
     PrescribedAccelerationMotionImplementation(
             const SimTK::MobilizedBodyIndex& mobodIdx,
-            const PrescribedAcceleration& accel)
+            const AccelerationMotion& accel)
             : m_mobodIdx(mobodIdx), m_accel(accel) {}
     SimTK::Motion::Level getLevel(const SimTK::State&) const override {
         return SimTK::Motion::Level::Acceleration;
@@ -41,19 +41,19 @@ public:
 
 private:
     SimTK::MobilizedBodyIndex m_mobodIdx;
-    const PrescribedAcceleration& m_accel;
+    const AccelerationMotion& m_accel;
 };
 
 class PrescribedAccelerationMotion : public SimTK::Motion::Custom {
 public:
     PrescribedAccelerationMotion(
-            const PrescribedAcceleration& accel, SimTK::MobilizedBody& mobod)
+            const AccelerationMotion& accel, SimTK::MobilizedBody& mobod)
             : Motion::Custom(
                       mobod, new PrescribedAccelerationMotionImplementation(
                                      mobod, accel)) {}
 };
 
-void PrescribedAcceleration::setUDot(
+void AccelerationMotion::setUDot(
         SimTK::State& state, const SimTK::Vector& fullUDot) const {
 
     OPENSIM_THROW_IF(fullUDot.size() != state.getNU(), Exception,
@@ -71,7 +71,7 @@ void PrescribedAcceleration::setUDot(
     }
 }
 
-const SimTK::Vector& PrescribedAcceleration::getUDot(
+const SimTK::Vector& AccelerationMotion::getUDot(
         const SimTK::State& state, SimTK::MobilizedBodyIndex mobodIdx) const {
     return getSystem()
             .getDefaultSubsystem()
@@ -79,7 +79,7 @@ const SimTK::Vector& PrescribedAcceleration::getUDot(
             .getValue<SimTK::Vector>();
 }
 
-void PrescribedAcceleration::setEnabled(
+void AccelerationMotion::setEnabled(
         SimTK::State& state, bool enabled) const {
     for (auto& motion : m_motions) {
         if (enabled) {
@@ -90,7 +90,7 @@ void PrescribedAcceleration::setEnabled(
     }
 }
 
-void PrescribedAcceleration::extendAddToSystem(
+void AccelerationMotion::extendAddToSystem(
         SimTK::MultibodySystem& system) const {
     Super::extendAddToSystem(system);
     auto& matter = system.updMatterSubsystem();
@@ -101,7 +101,7 @@ void PrescribedAcceleration::extendAddToSystem(
     }
 }
 
-void PrescribedAcceleration::extendRealizeTopology(SimTK::State& state) const {
+void AccelerationMotion::extendRealizeTopology(SimTK::State& state) const {
     Super::extendRealizeTopology(state);
     const auto& matter = getSystem().getMatterSubsystem();
     const auto& defaultSub = getSystem().getDefaultSubsystem();
