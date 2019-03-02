@@ -532,7 +532,7 @@ public:
         // Original model and its associated state. These are used to calculate
         // kinematic constraint forces and errors.
         const auto& modelBase = this->m_modelBase;
-        auto& simTKStateBase = this->m_stateDisabledConstraints;
+        auto& simTKStateBase = this->m_stateBase;
 
         // Model with disabled constraints and its associated state. These are
         // used to compute the accelerations.

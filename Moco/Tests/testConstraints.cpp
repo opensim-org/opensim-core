@@ -1004,14 +1004,16 @@ TEMPLATE_TEST_CASE(
     std::cerr.rdbuf(LogManager::cerr.rdbuf());
     auto createModel = [](bool actuator) {
         Model model;
+        model.setGravity(SimTK::Vec3(9.8, 0, 0));
         auto* body = new Body("b", 1, SimTK::Vec3(0), SimTK::Inertia(1));
         model.addBody(body);
 
-        auto* joint = new SliderJoint("j", model.getGround(), *body);
+        auto* joint = new FreeJoint("j", model.getGround(), *body);
         model.addJoint(joint);
 
-        auto* constraint = new PointConstraint(
-                model.getGround(), SimTK::Vec3(0), *body, SimTK::Vec3(0));
+        auto* constraint = new WeldConstraint("weld",
+                model.getGround(), SimTK::Transform(),
+                *body, SimTK::Transform());
         model.addConstraint(constraint);
 
         if (actuator) {
@@ -1038,6 +1040,6 @@ TEMPLATE_TEST_CASE(
         solver.set_enforce_constraint_derivatives(true);
         solver.set_transcription_scheme("hermite-simpson");
         MocoSolution solution = moco.solve();
-        CHECK(solution.getParameter("mass") == Approx(1.0));
+        CHECK(solution.getParameter("mass") == Approx(1.0).epsilon(1e-4));
     }
 }
