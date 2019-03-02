@@ -327,6 +327,7 @@ MocoSolution MocoTropterSolver::solveImpl() const {
 
     // TODO move this to convert():
     MocoSolver::setSolutionStats(mocoSolution, tropSolution.success,
+            tropSolution.objective,
             tropSolution.status, tropSolution.num_iterations);
 
     if (get_verbosity()) {

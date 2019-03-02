@@ -96,7 +96,8 @@ protected:
     /// MocoSolution::setStatus(), MocoSolution::setSuccess(), etc. are private
     /// but this class is a friend of MocoSolution.
     static void setSolutionStats(MocoSolution&,
-            bool success, const std::string& status, int numIterations);
+            bool success, double objective,
+            const std::string& status, int numIterations);
 
     const MocoProblemRep& getProblemRep() const {
         return m_problemRep;

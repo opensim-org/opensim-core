@@ -85,8 +85,10 @@ MocoSolution MocoSolver::solve() const {
 }
 
 void MocoSolver::setSolutionStats(MocoSolution& sol, bool success,
+        double objective,
         const std::string& status, int numIterations) {
     sol.setSuccess(success);
+    sol.setObjective(objective);
     sol.setStatus(status);
     sol.setNumIterations(numIterations);
 }

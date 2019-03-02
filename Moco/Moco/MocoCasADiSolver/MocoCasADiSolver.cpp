@@ -457,6 +457,7 @@ MocoSolution MocoCasADiSolver::solveImpl() const {
     CasOC::Solution casSolution = casSolver->solve(casGuess);
     MocoSolution mocoSolution = convertToMocoIterate<MocoSolution>(casSolution);
     setSolutionStats(mocoSolution, casSolution.stats.at("success"),
+            casSolution.objective,
             casSolution.stats.at("return_status"),
             casSolution.stats.at("iter_count"));
 
