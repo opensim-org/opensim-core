@@ -998,48 +998,135 @@ TEMPLATE_TEST_CASE(
     SimTK_TEST(solution.isNumericallyEqual(solutionDeserialized));
 }
 
+// This problem is a point mass welded to ground, with gravity. We are
+// solving for the mass that allows the point mass to obey the constraint
+// of staying in place. This checks that the parameters are applied to both
+// ModelBase and ModelDisabledConstraints.
 TEMPLATE_TEST_CASE(
-        "Joint reactions in costs", "", MocoTropterSolver, MocoCasADiSolver) {
+        "Parameters are set properly for Base and DisabledConstraints", "",
+        MocoTropterSolver, MocoCasADiSolver) {
     std::cout.rdbuf(LogManager::cout.rdbuf());
     std::cerr.rdbuf(LogManager::cerr.rdbuf());
-    auto createModel = [](bool actuator) {
-        Model model;
-        model.setGravity(SimTK::Vec3(9.8, 0, 0));
-        auto* body = new Body("b", 1, SimTK::Vec3(0), SimTK::Inertia(1));
-        model.addBody(body);
+    Model model;
+    auto* body = new Body("b", 0.7, SimTK::Vec3(0), SimTK::Inertia(1));
+    model.addBody(body);
 
-        auto* joint = new FreeJoint("j", model.getGround(), *body);
-        model.addJoint(joint);
+    auto* joint = new FreeJoint("j", model.getGround(), *body);
+    model.addJoint(joint);
 
-        auto* constraint = new WeldConstraint("weld",
-                model.getGround(), SimTK::Transform(),
-                *body, SimTK::Transform());
-        model.addConstraint(constraint);
+    auto* constraint = new WeldConstraint("weld", model.getGround(),
+            SimTK::Transform(), *body, SimTK::Transform());
+    model.addConstraint(constraint);
+    model.finalizeConnections();
 
-        if (actuator) {
-            auto* actuator = new CoordinateActuator("j_coord_0");
-            model.addForce(actuator);
-        }
-        model.finalizeConnections();
-        return model;
-    };
-
-    // This problem is a point mass welded to ground, with gravity. We are
-    // solving for the mass that allows the point mass to obey the constraint
-    // of staying in place. This checks that the parameters are applied to both
-    // ModelBase and ModelDisabledConstraints.
-    SECTION("Parameters are set properly for Base and DisabledConstraints") {
-        MocoTool moco;
-        auto& problem = moco.updProblem();
-        problem.setTimeBounds(0, 1);
-        problem.setModelCopy(createModel(false));
-        problem.addParameter(
-                "mass", "/bodyset/b", "mass", MocoBounds(0.5, 1.5));
-        auto& solver = moco.initSolver<TestType>();
-        solver.set_num_mesh_points(10);
-        solver.set_enforce_constraint_derivatives(true);
-        solver.set_transcription_scheme("hermite-simpson");
-        MocoSolution solution = moco.solve();
-        CHECK(solution.getParameter("mass") == Approx(1.0).epsilon(1e-4));
-    }
+    MocoTool moco;
+    auto& problem = moco.updProblem();
+    problem.setModelCopy(model);
+    problem.setTimeBounds(0, 1);
+    problem.addParameter("mass", "/bodyset/b", "mass", MocoBounds(0.5, 1.5));
+    auto& solver = moco.initSolver<TestType>();
+    solver.set_num_mesh_points(10);
+    solver.set_enforce_constraint_derivatives(true);
+    solver.set_transcription_scheme("hermite-simpson");
+    MocoSolution solution = moco.solve();
+    CHECK(solution.getParameter("mass") == Approx(1.0).epsilon(1e-4));
 }
+
+class MocoJointReactionComponentCost : public MocoCost {
+    OpenSim_DECLARE_CONCRETE_OBJECT(MocoJointReactionComponentCost, MocoCost);
+public:
+    void calcIntegralCostImpl(
+            const SimTK::State& state, double& integrand) const override {
+        getModel().realizeAcceleration(state);
+        // TODO: Cache the joint.
+        const auto& joint = getModel().getComponent<Joint>("jointset/j1");
+        integrand = pow(joint.calcReactionOnChildExpressedInGround(state)[1][1], 2);
+    }
+};
+
+///
+template <typename TestType>
+void testDoublePendulumPointOnLineJointReaction(
+        bool enforce_constraint_derivatives, std::string dynamics_mode) {
+    MocoTool moco;
+    moco.setName("double_pendulum_point_on_line");
+    MocoProblem& mp = moco.updProblem();
+    // Create double pendulum model and add the point-on-line constraint. The
+    // constraint consists of a vertical line in the y-direction (defined in
+    // ground) and the model end-effector point (the origin of body "b1").
+    auto model = createDoublePendulumModel();
+    const Body& b1 = model->getBodySet().get("b1");
+    const Station& endeff = model->getComponent<Station>("endeff");
+
+    PointOnLineConstraint* constraint =
+            new PointOnLineConstraint(model->getGround(), Vec3(0, 1, 0),
+                    Vec3(0), b1, endeff.get_location());
+    model->addConstraint(constraint);
+    model->finalizeConnections();
+    mp.setModelCopy(*model);
+
+    mp.setTimeBounds(0, 1);
+    // Coordinate value state boundary conditions are consistent with the
+    // point-on-line constraint.
+    const double theta_i = 0.5;
+    const double pi = SimTK::Pi;
+    const double theta_f = pi / 2;
+    mp.setStateInfo("/jointset/j0/q0/value", {-0.6*pi, 0.6*pi}); // , theta_i);
+    mp.setStateInfo("/jointset/j0/q0/speed", {-10, 10});
+    mp.setStateInfo(
+            "/jointset/j1/q1/value", {-0.6*pi, 0.6*pi}); // , SimTK::Pi - 2 * theta_i);
+    mp.setStateInfo("/jointset/j1/q1/speed", {-10, 10});
+    mp.setControlInfo("/tau0", {-100, 100});
+    mp.setControlInfo("/tau1", {-100, 100});
+
+    // mp.addCost<MocoControlCost>("effort", 0.1);
+    mp.addCost<MocoJointReactionComponentCost>();
+
+    auto& ms = moco.initSolver<TestType>();
+    int N = 30;
+    ms.set_num_mesh_points(N);
+    ms.set_verbosity(2);
+    ms.set_optim_solver("ipopt");
+    ms.set_optim_convergence_tolerance(1e-3);
+    ms.set_transcription_scheme("hermite-simpson");
+    ms.set_enforce_constraint_derivatives(enforce_constraint_derivatives);
+    ms.set_minimize_lagrange_multipliers(true);
+    ms.set_lagrange_multiplier_weight(0.1);
+    ms.set_dynamics_mode(dynamics_mode);
+    ms.setGuess("bounds");
+
+    MocoSolution solution = moco.solve().unseal();
+    moco.visualize(solution);
+    solution.write(
+            "testConstraints_testDoublePendulumPointOnLineJointReaction.sto");
+
+    CHECK(solution.getState("/jointset/j0/q0/value")[2 * N - 2] ==
+            Approx(0.5 * SimTK::Pi).epsilon(1e-3));
+    CHECK(solution.getState("/jointset/j1/q1/value")[2 * N - 2] ==
+            Approx(0).epsilon(1e-3));
+}
+
+TEMPLATE_TEST_CASE(
+        "DoublePendulumPointOnLineJointReaction without constraint derivatives",
+        "[explicit]", MocoTropterSolver, MocoCasADiSolver) {
+    testDoublePendulumPointOnLineJointReaction<TestType>(false, "explicit");
+}
+
+// TEMPLATE_TEST_CASE(
+//         "DoublePendulumPointOnLineJointReaction with constraint derivatives",
+//         "[explicit]", MocoTropterSolver, MocoCasADiSolver) {
+//     testDoublePendulumPointOnLineJointReaction<TestType>(true, "explicit");
+// }
+//
+// TEST_CASE(
+//         "DoublePendulumPointOnLineJointReaction without constraint derivatives",
+//         "[implicit]") {
+//     testDoublePendulumPointOnLineJointReaction<MocoCasADiSolver>(
+//             false, "implicit");
+// }
+//
+// TEST_CASE("DoublePendulumPointOnLineJointReaction with constraint derivatives",
+//         "[implicit]") {
+//     testDoublePendulumPointOnLineJointReaction<MocoCasADiSolver>(
+//             true, "implicit");
+// }
