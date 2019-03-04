@@ -6,8 +6,8 @@ namespace OpenSim {
 
 const std::string IMUHelper::Orientations{ "orientations" };
 const std::string IMUHelper::LinearAccelerations{ "linear_accelerations" };
-const std::string IMUHelper::MagneticHeading{ "magnetometers" };
-const std::string IMUHelper::AngularVelocity{ "gyros" };
+const std::string IMUHelper::MagneticHeading{ "magnetic_heading" };
+const std::string IMUHelper::AngularVelocity{ "angular_velocity" };
 
 DataAdapter::OutputTables IMUHelper::readXsensTrial(const std::string& folderName, const std::string& prefix,
         const MapObject& modelIMUToFilenameMap) {
@@ -25,13 +25,13 @@ DataAdapter::OutputTables IMUHelper::readXsensTrial(const std::string& folderNam
     int n_imus = modelIMUToFilenameMap.getNumItems();
     for (int index = 0; index < n_imus; ++index) {
         const MapItem& nextItem = modelIMUToFilenameMap.get_list_MapItems(index);
-        auto fileName = folderName + prefix + nextItem.get_value() +".txt";
+        auto fileName = folderName + prefix + nextItem.get_to_value() +".txt";
         auto* nextStream = new std::ifstream{ fileName };
         OPENSIM_THROW_IF(!nextStream->good(),
             FileDoesNotExist,
             fileName);
         // Add imu name to labels
-        labels.push_back(nextItem.get_key());
+        labels.push_back(nextItem.get_from_name());
         // Add corresponding stream to imuStreams
         imuStreams.push_back(nextStream);
 
@@ -123,8 +123,9 @@ DataAdapter::OutputTables IMUHelper::readXsensTrial(const std::string& folderNam
             if (magIndex != -1)
                 magneto_row_vector[imu_index] = SimTK::Vec3(std::stod(nextRow[magIndex]),
                     std::stod(nextRow[magIndex + 1]), std::stod(nextRow[magIndex + 2]));
-            gyro_row_vector[imu_index] = SimTK::Vec3(std::stod(nextRow[gyroIndex]),
-                std::stod(nextRow[gyroIndex + 1]), std::stod(nextRow[gyroIndex + 2]));
+            if (gyroIndex != -1)
+                gyro_row_vector[imu_index] = SimTK::Vec3(std::stod(nextRow[gyroIndex]),
+                    std::stod(nextRow[gyroIndex + 1]), std::stod(nextRow[gyroIndex + 2]));
             // Create Mat33 then convert into Quaternion
             SimTK::Mat33 imu_matrix{ SimTK::NaN };
             int matrix_entry_index = 0;
@@ -141,9 +142,9 @@ DataAdapter::OutputTables IMUHelper::readXsensTrial(const std::string& folderNam
         if (done) 
             break;
         // append to the tables
-        accelerationTable->appendRow(time, std::move(accel_row_vector));
-        magnetometerTable->appendRow(time, std::move(magneto_row_vector));
-        gyrosTable->appendRow(time, std::move(gyro_row_vector));
+        if (accIndex != -1) accelerationTable->appendRow(time, std::move(accel_row_vector));
+        if (magIndex != -1) magnetometerTable->appendRow(time, std::move(magneto_row_vector));
+        if (gyroIndex != -1) gyrosTable->appendRow(time, std::move(gyro_row_vector));
         orientationTable->appendRow(time, std::move(orientation_row_vector));
         time += timeIncrement;
     }

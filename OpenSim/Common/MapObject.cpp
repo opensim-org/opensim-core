@@ -49,8 +49,8 @@ MapItem::
 MapItem(const string &key,const string &val)
 {
     constructProperties();
-    upd_key() = key;
-    upd_value() = val;
+    upd_from_name() = key;
+    upd_to_value() = val;
 }
 
 MapItem::MapItem()
@@ -60,8 +60,8 @@ MapItem::MapItem()
 
 void MapItem::constructProperties()
 {
-    constructProperty_key("key_not_set");
-    constructProperty_value("value_not_set");
+    constructProperty_from_name("key_not_set");
+    constructProperty_to_value("value_not_set");
 }
 
 MapObject::MapObject() {

@@ -38,9 +38,9 @@ namespace OpenSim {
 class OSIMCOMMON_API MapItem : public Object {
 OpenSim_DECLARE_CONCRETE_OBJECT(MapItem, Object);
 public:
-    OpenSim_DECLARE_PROPERTY(key, std::string,
+    OpenSim_DECLARE_PROPERTY(from_name, std::string,
         "Key used to lookup item in the map.");
-    OpenSim_DECLARE_PROPERTY(value, std::string,
+    OpenSim_DECLARE_PROPERTY(to_value, std::string,
         "Value for corresponding key in the map.");
 public:
     MapItem(const std::string& key, const std::string& val);
@@ -79,7 +79,7 @@ public:
         is thrown and the passed in MapItem is not added. */
     void addItem(const MapItem& newItem) {
         if (containsItem(newItem))
-            throw OpenSim::Exception("Attempting to add MapItem with existing key:" + newItem.get_key());
+            throw OpenSim::Exception("Attempting to add MapItem with existing key:" + newItem.get_from_name());
         updProperty_list_MapItems().appendValue(newItem);
     };
 
