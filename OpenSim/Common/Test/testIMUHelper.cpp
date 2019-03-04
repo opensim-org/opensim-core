@@ -36,22 +36,22 @@ PacketCounter<tab>SampleTimeFine<tab>Year<tab>Month<tab>Day<tab>Second<tab>UTC_N
 int main() {
 
     try {
-        MapObject mapFileNameToIMUName;
+        MapObject mapOpenSimIMUToFileName;
         std::vector<std::string> imu_names{ "shank", "thigh", "calcn", "toe" };
         std::vector<std::string> file_names{ "00B421AF", "00B4227B", "00B42263", "00B42268" };
         // Programmatically add items to Map, write to xml
         int index = 0;
         for (auto name : imu_names) {
             MapItem newItem(name, file_names[index]);
-            mapFileNameToIMUName.addItem(newItem);
+            mapOpenSimIMUToFileName.addItem(newItem);
             index++;
         }
-        mapFileNameToIMUName.print("map2xml.xml");
+        mapOpenSimIMUToFileName.print("map2xml.xml");
         // read xml we wrote into a new MapObject and pass to readXsensTrial
-        MapObject readMapFileNameToIMUName("map2xml.xml");
+        MapObject readMapIMUName2FileName("map2xml.xml");
         const std::string folder = "";
-        const std::string trial = "MT_012005D6_031-000_";
-        DataAdapter::OutputTables tables = IMUHelper::readXsensTrial(folder, trial, readMapFileNameToIMUName);
+        const std::string trial = "MT-000_";
+        DataAdapter::OutputTables tables = IMUHelper::readXsensTrial(folder, trial, readMapIMUName2FileName);
         // Write tables to sto files
         // Accelerations
         std::shared_ptr<AbstractDataTable> accelTable = tables.at(IMUHelper::LinearAccelerations);
