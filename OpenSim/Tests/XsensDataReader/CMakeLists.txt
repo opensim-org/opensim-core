@@ -1,10 +1,6 @@
-set(XSENS_READER XsensDataReader)    
+set(TEST_XSENS_READER testXsensDataReader)    
 
-add_executable(${XSENS_READER} XsensDataReader.cpp)
+add_executable(${TEST_XSENS_READER} testXsensDataReader.cpp)
 
-target_link_libraries(${XSENS_READER} osimCommon)
+target_link_libraries(${TEST_XSENS_READER} osimCommon)
 
-set_target_properties(${XSENS_READER}        
-       PROPERTIES        
-       PROJECT_LABEL "Utilities - ${XSENS_READER}"       
-)
