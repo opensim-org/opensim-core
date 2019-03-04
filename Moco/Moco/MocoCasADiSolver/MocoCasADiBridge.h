@@ -503,7 +503,7 @@ public:
         // based on Lagrange multipliers. This also updates the associated 
         // discrete variables in the state.
         const int numMultipliers = this->m_casProblem->getNumMultipliers();
-        if (numMultipliers && CalcKCErrors) {
+        if (numMultipliers) {
             calcKinematicConstraintForces(multipliers, simtkStateBase, 
                 modelBase, modelDisabledConstraints, 
                 mocoProblemRep->getConstraintForcesPath(),
@@ -655,7 +655,7 @@ public:
         const int numMultipliers = this->m_casProblem->getNumMultipliers();
         // TODO: not currently used, but will be needed when we handle 
         // implicit mode accelerations as Simbody Motions.
-        //if (numMultipliers && CalcKCErrors) {
+        //if (numMultipliers) {
         //    calcKinematicConstraintForces(multipliers, simtkState, modelBase,
         //        modelDisabledConstraints,
         //        mocoProblemRep->getConstraintForcesPath(),
