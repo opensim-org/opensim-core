@@ -23,10 +23,13 @@
 
 
 // INCLUDES
-#include <string>
 #include <OpenSim/Common/Storage.h>
-#include <OpenSim/Common/ScaleSet.h>
+#include "OpenSim/Common/STOFileAdapter.h"
+#include "OpenSim/Common/TRCFileAdapter.h"
+#include <OpenSim/Common/Reporter.h>
 #include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/OrientationsReference.h>
+#include <OpenSim/Simulation/InverseKinematicsSolver.h>
 #include <OpenSim/Tools/InverseKinematicsTool.h>
 #include <OpenSim/Tools/IKTaskSet.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
@@ -37,20 +40,56 @@ using namespace std;
 void testMarkerWeightAssignments(const std::string& ikSetupFile);
 void checkMarkersReferenceConsistencyFromTool(InverseKinematicsTool& ik);
 
+void testInverseKinematicsSolverWithOrientations();
+void testInverseKinematicsSolverWithEulerAnglesFromFile();
+
 int main()
 {
+    int itc = 0;
+    SimTK::Array_<std::string> failures;
+
+    try { ++itc;
+        testInverseKinematicsSolverWithOrientations(); 
+    }
+    catch (const std::exception& e) {
+        cout << e.what() << endl;
+        failures.push_back("testInverseKinematicsSolverWithOrientations");
+    }
+
     try {
+        ++itc;
+        testInverseKinematicsSolverWithEulerAnglesFromFile();
+    }
+    catch (const std::exception& e) {
+        cout << e.what() << endl;
+        failures.push_back("testInverseKinematicsSolverWithEulerAnglesFromFile");
+    }
 
+    try {
+        ++itc;
         testMarkerWeightAssignments("subject01_Setup_InverseKinematics.xml");
+    }
+    catch (const std::exception& e) {
+        cout << e.what() << endl;
+        failures.push_back("testMarkerWeightAssignments");
+    }
 
+    Storage  standard("std_subject01_walk1_ik.mot");
+    try {
         InverseKinematicsTool ik1("subject01_Setup_InverseKinematics.xml");
         ik1.run();
-        Storage result1(ik1.getOutputMotionFileName()), standard("std_subject01_walk1_ik.mot");
+        Storage result1(ik1.getOutputMotionFileName());
         CHECK_STORAGE_AGAINST_STANDARD(result1, standard, 
             std::vector<double>(24, 0.2), __FILE__, __LINE__, 
             "testInverseKinematicsGait2354 failed");
         cout << "testInverseKinematicsGait2354 passed" << endl;
+    }
+    catch (const std::exception& e) {
+        cout << e.what() << endl;
+        failures.push_back("testInverseKinematicsGait2354");
+    }
 
+    try {
         InverseKinematicsTool ik2("subject01_Setup_InverseKinematics_NoModel.xml");
         Model mdl("subject01_simbody.osim");
         mdl.initSystem();
@@ -61,16 +100,30 @@ int main()
             std::vector<double>(24, 0.2), __FILE__, __LINE__, 
             "testInverseKinematicsGait2354 GUI workflow failed");
         cout << "testInverseKinematicsGait2354 GUI workflow passed" << endl;
+    }
+    catch (const std::exception& e) {
+        cout << e.what() << endl;
+        failures.push_back("testInverseKinematicsGait2354_GUI_workflow");
+    }
 
+    try {
         InverseKinematicsTool ik3("constraintTest_setup_ik.xml");
         ik3.run();
-        cout << "testInverseKinematicsCosntraintTest passed" << endl;
+        cout << "testInverseKinematicsConstraintTest passed" << endl;
     }
-    catch (const Exception& e) {
-        e.print(cerr);
+    catch (const std::exception& e) {
+        cout << e.what() << endl;
+        failures.push_back("testInverseKinematicsConstraintTest");
+    }
+
+    if (!failures.empty()) {
+        cout << "Done, with " << failures.size() << " failure(s) out of ";
+        cout << itc << " test cases." << endl;
+        cout << "Failure(s): " << failures << endl;
         return 1;
     }
-    cout << "Done" << endl;
+
+    cout << "Done. All cases passed." << endl;
     return 0;
 }
 
@@ -88,7 +141,7 @@ void testMarkerWeightAssignments(const std::string& ikSetupFile)
         tasks[i].setWeight(double(i));
     }
 
-    cout << tasks.dump(true) << endl;
+    cout << tasks.dump() << endl;
     // update tasks used by the IK tool
     ik.getIKTaskSet() = tasks;
 
@@ -104,7 +157,7 @@ void testMarkerWeightAssignments(const std::string& ikSetupFile)
         tasks2.adoptAndAppend(tasks[i].clone());
     }
 
-    cout << tasks2.dump(true) << endl;
+    cout << tasks2.dump() << endl;
     ik.getIKTaskSet() = tasks2;
 
     // perform the check
@@ -128,7 +181,7 @@ void testMarkerWeightAssignments(const std::string& ikSetupFile)
     tasks.adoptAndAppend(newMarker);
     tasks.setName("Added superfluous tasks");
 
-    cout << tasks.dump(true) << endl;
+    cout << tasks.dump() << endl;
     // update the tasks of the IK Tool
     ik.getIKTaskSet() = tasks;
 
@@ -167,4 +220,257 @@ void checkMarkersReferenceConsistencyFromTool(InverseKinematicsTool& ik)
                 "Mismatched weight to default weight");
         }
     }
+}
+
+TimeSeriesTable_<SimTK::Rotation> convertMotionFileToRotations(
+    Model& model,
+    const std::string& motionFile)
+{
+    SimTK::State& s0 = model.initSystem();
+    auto anglesTable = STOFileAdapter::read(motionFile);
+
+    int nt = int(anglesTable.getNumRows());
+    const auto& coordNames = anglesTable.getColumnLabels();
+    // Vector of times is just the independent column of a TimeSeriesTable
+    auto times = anglesTable.getIndependentColumn();
+
+    int dataRate = int(round(double(nt - 1) / (times[nt - 1] - times[0])));
+    // get the coordinates of the model
+    const auto& coordinates = model.getComponentList<Coordinate>();
+
+    // get bodies as frames that we want to "sense" rotations
+    const auto& bodies = model.getComponentList<Body>();
+
+    // Coordinate values in the data file may not correspond to the order
+    // of coordinates in the Model. Therefore it is necessary to build a
+    // mapping between the data and the model order
+    std::vector<int> mapDataToModel;
+    // cycle through the coordinates in the model order and store the
+    // corresponding column index in the table according to column name
+    for (auto& coord : coordinates) {
+        int index = -1;
+        auto found = std::find(coordNames.begin(), coordNames.end(), coord.getName());
+        if (found != coordNames.end())
+            index = (int)std::distance(coordNames.begin(), found);
+        mapDataToModel.push_back(index);
+    }
+
+    cout << "Read in '" << motionFile << "' with " << nt << " rows." << endl;
+    cout << "Num coordinates in file: " << coordNames.size() << endl;
+    cout << "Num of matched coordinates in model: " << mapDataToModel.size() << endl;
+
+    std::vector<std::string> bodyLabels;
+    for (auto& body : bodies) {
+        bodyLabels.push_back(body.getName());
+    }
+
+    int nc = int(bodyLabels.size());
+
+    // Store orientations as Rotation matrices
+    SimTK::Matrix_<SimTK::Rotation> rotations{ int(nt), nc };
+
+    // Apply the read in coordinate values to the model.
+    // Then get the rotation of the Bodies in the model and 
+    // store them as Rotations and Euler angles in separate tables.
+    for (int i = 0; i < nt; ++i) {
+        const auto& values = anglesTable.getRowAtIndex(i);
+        int cnt = 0;
+        for (auto& coord : coordinates) {
+            if (mapDataToModel[cnt] >= 0) {
+                if (coord.getMotionType() == Coordinate::MotionType::Rotational)
+                    coord.setValue(s0,
+                        SimTK::convertDegreesToRadians(values(mapDataToModel[cnt++])));
+                else
+                    coord.setValue(s0, values(mapDataToModel[cnt++]));
+            }
+        }
+        // pose model according to coordinate values and position constraints
+        model.realizePosition(s0);
+
+        int j = 0;
+        for (auto& body : bodies) {
+            // extract the rotation of model bodies w.r.t. ground frame
+            const SimTK::Rotation& rot = body.getTransformInGround(s0).R();
+            rotations.updElt(i,j++) = rot;
+        }
+    }
+
+    TimeSeriesTable_<SimTK::Rotation> rotTable{ times, rotations, bodyLabels };
+    rotTable.updTableMetaData()
+        .setValueForKey("DataRate", std::to_string(dataRate));
+
+    return rotTable;
+}
+
+TimeSeriesTableVec3 convertRotationsToEulerAngles(
+    const TimeSeriesTable_<SimTK::Rotation>& rotTable)
+{
+    auto labels = rotTable.getColumnLabels();
+    auto& times = rotTable.getIndependentColumn();
+    const auto& rotations = rotTable.getMatrix();
+
+    int nc = int(labels.size());
+    int nt = int(times.size());
+
+    SimTK::Matrix_<SimTK::Vec3> eulerMatrix(nt, nc, SimTK::Vec3(SimTK::NaN));
+
+    for (int i = 0; i < nt; ++i) {
+        for (int j = 0; j < nc; ++j) {
+            eulerMatrix.updElt(i, j) = 
+                rotations(i, j).convertRotationToBodyFixedXYZ();
+        }
+    }
+    TimeSeriesTableVec3 eulerData{ times, eulerMatrix, labels };
+    eulerData.updTableMetaData()
+        .setValueForKey("Units", std::string("Radians"));
+
+    return eulerData;
+}
+
+void compareMotionTables(const TimeSeriesTable& report,
+                         const TimeSeriesTable& standard)
+{
+    ASSERT(report.getNumRows() == standard.getNumRows());
+    ASSERT(report.getNumColumns() == standard.getNumColumns());
+
+    auto reportLabels = report.getColumnLabels();
+    auto stdLabels = standard.getColumnLabels();
+
+    std::vector<int> mapStdToReport;
+    // cycle through the coordinates in the model order and store the
+    // corresponding column index in the table according to column name
+    for (auto& label : reportLabels) {
+        int index = -1;
+        auto found = std::find(stdLabels.begin(), stdLabels.end(), label);
+        if (found != stdLabels.end()) {
+            // skip any pelvis translations
+            if (found->find("pelvis_t") == std::string::npos) {
+                index = (int)std::distance(stdLabels.begin(), found);
+            }
+        }
+        mapStdToReport.push_back(index);
+    }
+
+    size_t nt = report.getNumRows();
+
+    //For simplicity, we ignore pelvis coordinates 0-5
+    for (size_t i = 0; i < mapStdToReport.size(); ++i) {
+        if (mapStdToReport[i] >= 0) {
+            auto repVec = report.getDependentColumnAtIndex(i);
+            auto stdVec = standard.getDependentColumnAtIndex(mapStdToReport[i]);
+            auto error = SimTK::Real(SimTK_RTD)*repVec - stdVec;
+            cout << "Column '" << reportLabels[i] << "' has RMSE = "
+                << sqrt(error.normSqr() / nt) << "degrees" << endl;
+            SimTK_ASSERT1_ALWAYS((sqrt(error.normSqr() / nt) < 0.1),
+                "Column '%s' FAILED to meet accuracy of 0.1 degree RMS.",
+                reportLabels[i].c_str());
+        }
+    }
+}
+
+void testInverseKinematicsSolverWithOrientations()
+{
+    Model model("subject01_simbody.osim");
+
+    auto orientationsData = convertMotionFileToRotations(
+         model, "std_subject01_walk1_ik.mot");
+
+    OrientationsReference oRefs(orientationsData);
+    oRefs.set_default_weight(1.0);
+
+    const std::vector<double>& times = oRefs.getTimes();
+
+    MarkersReference mRefs{};
+
+    SimTK::Array_<CoordinateReference> coordinateRefs;
+
+    // Add a reporter to get IK computed coordinate values out
+    TableReporter* ikReporter = new TableReporter();
+    ikReporter->setName("ik_reporter");
+    auto coordinates = model.getComponentList<Coordinate>();
+    // Hookup reporter inputs to the individual coordinate outputs
+    for (auto& coord : coordinates) {
+        ikReporter->updInput("inputs").connect(
+            coord.getOutput("value"), coord.getName());
+    }
+    model.addComponent(ikReporter);
+
+
+    SimTK::State& s0 = model.initSystem();
+
+    // create the solver given the input data
+    InverseKinematicsSolver ikSolver(model, mRefs, oRefs, coordinateRefs);
+    ikSolver.setAccuracy(1e-4);
+
+    auto timeRange = oRefs.getValidTimeRange();
+    cout << "Time range from: " << timeRange[0] << " to " << timeRange[1]
+        << "s."<< endl;
+    
+    s0.updTime() = timeRange[0];
+    ikSolver.assemble(s0);
+
+    for (double time : times) {
+        s0.updTime() = time;
+        cout << "time = " << time << endl;
+        ikSolver.track(s0);
+        // realize to report to get reporter to pull values from model
+        model.realizeReport(s0);
+    }
+
+    auto report = ikReporter->getTable();
+    const auto standard = STOFileAdapter::read("std_subject01_walk1_ik.mot");
+
+    compareMotionTables(report, standard);
+}
+
+void testInverseKinematicsSolverWithEulerAnglesFromFile()
+{
+    Model model("subject01_simbody.osim");
+    auto orientationsData = convertMotionFileToRotations(
+        model, "std_subject01_walk1_ik.mot");
+
+    auto eulerData = convertRotationsToEulerAngles(orientationsData);
+    STOFileAdapter_<SimTK::Vec3>::write(eulerData, "subject1_walk_euler_angles.sto");
+
+    // Add a reporter to get IK computed coordinate values out
+    TableReporter* ikReporter = new TableReporter();
+    ikReporter->setName("ik_reporter");
+    auto coordinates = model.getComponentList<Coordinate>();
+    // Hookup reporter inputs to the individual coordinate outputs
+    for (auto& coord : coordinates) {
+        ikReporter->updInput("inputs").connect(
+            coord.getOutput("value"), coord.getName());
+    }
+    model.addComponent(ikReporter);
+
+    SimTK::State& s0 = model.initSystem();
+
+    MarkersReference mRefs{};
+    OrientationsReference oRefs("subject1_walk_euler_angles.sto");
+    SimTK::Array_<CoordinateReference> coordRefs{};
+
+    // create the solver given the input data
+    const double accuracy = 1e-4;
+    InverseKinematicsSolver ikSolver(model, mRefs, oRefs, coordRefs);
+    ikSolver.setAccuracy(accuracy);
+
+    auto& times = oRefs.getTimes();
+
+    s0.updTime() = times[0];
+    ikSolver.assemble(s0);
+    //model.getVisualizer().show(s0);
+
+    for (auto time : times) {
+        s0.updTime() = time;
+        cout << "time = " << time << endl;
+        ikSolver.track(s0);
+        // realize to report to get reporter to pull values from model
+        model.realizeReport(s0);
+    }
+
+    auto report = ikReporter->getTable();
+    STOFileAdapter::write(report, "ik_euler_tracking_results.sto");
+
+    const auto standard = STOFileAdapter::read("std_subject01_walk1_ik.mot");
+    compareMotionTables(report, standard);
 }

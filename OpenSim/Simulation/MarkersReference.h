@@ -156,7 +156,9 @@ public:
     // Convenience Access
     //--------------------------------------------------------------------------
     double getSamplingFrequency() const;
-    Set<MarkerWeight> &updMarkerWeightSet() {return upd_marker_weights(); }
+    const Set<MarkerWeight>& getMarkerWeightSet() const
+        {   return get_marker_weights(); }
+    Set<MarkerWeight>& updMarkerWeightSet() {return upd_marker_weights(); }
     /** %Set the marker weights from a set of MarkerWeights. As of OpenSim 4.0
         the input set is const and a copy of the Set is used internally. 
         Therefore, subsequent changes to the Set of MarkerWeights will have
