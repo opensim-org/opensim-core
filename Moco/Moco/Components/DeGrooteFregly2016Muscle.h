@@ -181,13 +181,21 @@ public:
 
         const SimTK::Real normActiveForce =
                 activation * activeForceLengthMult * forceVelocityMult;
-        // std::cout << "DEBUG " << s.getTime() << " "
+        auto normFiberForce = normActiveForce + passiveForceMult +
+                              get_fiber_damping() * normFiberVelocity;
+        // if (true /*normFiberForce < 0*/) {
+        // std::cout << "DEBUG " << getName() << " "
+        //         << activation << " "
         //         << normFiberLength << " "
         //         << normActiveForce << " "
-        //         << passiveForceMult
+        //         << passiveForceMult << " "
+        //         << get_fiber_damping() * normFiberVelocity << " "
+        //         << normFiberForce
         //         << std::endl;
-        return normActiveForce + passiveForceMult +
-               +get_fiber_damping() * normFiberVelocity;
+        // // }
+        std::cout << "DEBUG " << getName() << " " << activation << " "
+                  << normFiberForce << std::endl;
+        return normFiberForce;
     }
 
     // TODO replace with getNormalizedFiberLength from Muscle.

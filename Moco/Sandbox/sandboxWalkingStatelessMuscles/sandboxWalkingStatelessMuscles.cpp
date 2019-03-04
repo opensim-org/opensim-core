@@ -23,6 +23,8 @@
 
 #include <OpenSim/OpenSim.h>
 
+#include <OpenSim/Common/LogManager.h>
+
 namespace OpenSim {
 
 class MocoINDYGO : Object {
@@ -71,6 +73,10 @@ public:
                         muscle.getAbsolutePathString() + "/activation",
                         // TODO: Use the muscle's minimum_activation.
                         {0.01, 1});
+                // TODO shouldn't be necessary.
+                // problem.setStateInfo(
+                //         muscle.getAbsolutePathString() + "/norm_fiber_length",
+                //         {0.2, 1.8});
             }
         }
 
@@ -116,9 +122,9 @@ public:
         solver.set_dynamics_mode("implicit");
         solver.set_optim_convergence_tolerance(1e-3);
         solver.set_optim_constraint_tolerance(1e-2);
-        // solver.set_parallel(0);
+        solver.set_parallel(0);
         // solver.set_optim_ipopt_print_level(0);
-        solver.set_optim_hessian_approximation("exact");
+        // solver.set_optim_hessian_approximation("exact");
         // TODO: Doesn't work yet.
         // solver.set_optim_sparsity_detection("random");
         // solver.set_optim_finite_difference_scheme("forward");
@@ -185,19 +191,23 @@ using namespace OpenSim;
 
 int main() {
     try {
+        std::cout.rdbuf(LogManager::cout.rdbuf());
+        std::cerr.rdbuf(LogManager::cerr.rdbuf());
         Model model("testGait10dof18musc_subject01.osim");
+        model.finalizeConnections();
         for (int im = 0; im < model.getMuscles().getSize(); ++im) {
             auto& muscle = model.getMuscles().get(im);
-            muscle.set_ignore_activation_dynamics(true);
+            // muscle.set_ignore_activation_dynamics(true);
             muscle.set_ignore_tendon_compliance(true);
         }
+        DeGrooteFregly2016Muscle::replaceMuscles(model);
 
         MocoINDYGO indygo;
         indygo.setModel(model);
         indygo.setKinematicsFile("walk_gait1018_state_reference.mot");
         indygo.set_create_reserve_actuators(2.0);
 
-        indygo.setExternalLoadsFile("walk_gait1018_subject01_grf.xml");
+        // indygo.setExternalLoadsFile("walk_gait1018_subject01_grf.xml");
 
         indygo.solve();
     } catch (const std::exception& e) { std::cerr << e.what() << std::endl; }

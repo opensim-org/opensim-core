@@ -557,8 +557,8 @@ public:
         const double& time = args.at(0).scalar();
         const casadi::DM& states = args.at(1);
         const casadi::DM& controls = args.at(2);
-        const casadi::DM& multipliers = args.at(3);
-        const casadi::DM& derivatives = args.at(4);
+        // const casadi::DM& multipliers = args.at(3);
+        // const casadi::DM& derivatives = args.at(4);
         const casadi::DM& parameters = args.at(5);
         VectorDM out(2);
         auto mocoProblemRep = m_jar.take();
@@ -596,12 +596,12 @@ public:
         // The total number of scalar holonomic, non-holonomic, and acceleration
         // constraint equations enabled in the model. This does not count
         // equations for derivatives of holonomic and non-holonomic constraints.
-        const int total_mp =
-                this->m_casProblem->getNumHolonomicConstraintEquations();
-        const int total_mv =
-                this->m_casProblem->getNumNonHolonomicConstraintEquations();
-        const int total_ma =
-                this->m_casProblem->getNumAccelerationConstraintEquations();
+        // const int total_mp =
+        //         this->m_casProblem->getNumHolonomicConstraintEquations();
+        // const int total_mv =
+        //         this->m_casProblem->getNumNonHolonomicConstraintEquations();
+        // const int total_ma =
+        //         this->m_casProblem->getNumAccelerationConstraintEquations();
         // This is the sum of m_total_m(p|v|a).
         const int numMultipliers = this->m_casProblem->getNumMultipliers();
         if (numMultipliers) {
@@ -707,6 +707,7 @@ public:
         // TODO: If auxiliary dynamics depend on udot, the wrong udot will be
         // used.
         if (simtkState.getNZ()) { model.realizeAcceleration(simtkState); }
+        // std::cout << "DEBUG mbsi " << simtkState.getZDot() << std::endl;
         out[1] = convertToCasADiDM(simtkState.getZDot());
 
         m_jar.leave(std::move(mocoProblemRep));

@@ -24,6 +24,7 @@
 
 #include <OpenSim/Actuators/Millard2012EquilibriumMuscle.h>
 #include <OpenSim/Common/GCVSpline.h>
+#include <OpenSim/Common/LogManager.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/SimbodyEngine/SliderJoint.h>
 
@@ -288,7 +289,6 @@ void testHangingMuscleMinimumTime(bool ignoreTendonCompliance) {
     // Minimum time trajectory optimization.
     // -------------------------------------
     const auto svn = model.getStateVariableNames();
-    std::cout << "DEBUG " << svn.size() << std::endl;
     for (int i = 0; i < svn.size(); ++i) { std::cout << svn[i] << std::endl; }
     MocoSolution solutionTrajOpt;
     {
@@ -326,9 +326,10 @@ void testHangingMuscleMinimumTime(bool ignoreTendonCompliance) {
 
         problem.addCost<MocoFinalTimeCost>();
 
-        MocoTropterSolver& solver = moco.initTropterSolver();
+        auto& solver = moco.initCasADiSolver();
         solver.set_num_mesh_points(20);
-        solver.set_optim_sparsity_detection("initial-guess");
+        solver.set_dynamics_mode("implicit");
+        // solver.set_optim_sparsity_detection("initial-guess");
         MocoIterate guessForwardSim = solver.createGuess("time-stepping");
         solver.setGuess(guessForwardSim);
         guessForwardSim.write("sandboxMuscle_guess_forward_sim.sto");
@@ -374,7 +375,8 @@ void testHangingMuscleMinimumTime(bool ignoreTendonCompliance) {
         // recovering the correct excitation.
         const double finalTime =
                 solutionTrajOpt.getTime()[solutionTrajOpt.getNumTimes() - 1];
-        problem.setTimeBounds(0, finalTime);
+        const double slop = 1e-4;
+        problem.setTimeBounds(0 + slop, finalTime - slop);
         problem.setStateInfo(
                 "/joint/height/value", {0.10, 0.20}, initHeight, finalHeight);
         problem.setStateInfo("/joint/height/speed", {-10, 10}, 0, 0);
@@ -412,9 +414,10 @@ void testHangingMuscleMinimumTime(bool ignoreTendonCompliance) {
         tracking->setReference(ref);
         tracking->setAllowUnusedReferences(true);
 
-        MocoTropterSolver& solver = moco.initTropterSolver();
-        solver.set_optim_sparsity_detection("initial-guess");
-        solver.setGuess("time-stepping");
+        auto& solver = moco.initCasADiSolver();
+        solver.set_dynamics_mode("implicit");
+        // solver.set_optim_sparsity_detection("initial-guess");
+        // solver.setGuess("time-stepping");
         // Don't need to use the TrajOpt solution as the initial guess; kinda
         // neat. Although, using TrajOpt for the guess improves convergence.
         // TODO solver.setGuess(solutionTrajOpt);
@@ -437,6 +440,9 @@ void testHangingMuscleMinimumTime(bool ignoreTendonCompliance) {
 }
 
 int main() {
+
+    std::cout.rdbuf(LogManager::cout.rdbuf());
+    std::cerr.rdbuf(LogManager::cerr.rdbuf());
     testDeGrooteFregly2016Muscle();
 
     testHangingMuscleMinimumTime(true);

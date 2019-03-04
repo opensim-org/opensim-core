@@ -18,6 +18,9 @@
 
 #include "DeGrooteFregly2016Muscle.h"
 
+#include <OpenSim/Actuators/Millard2012EquilibriumMuscle.h>
+#include <OpenSim/Simulation/Model/Model.h>
+
 using namespace OpenSim;
 
 const std::string DeGrooteFregly2016Muscle::ACTIVATION("activation");
@@ -42,41 +45,41 @@ void DeGrooteFregly2016Muscle::extendFinalizeFromProperties() {
             "use max_isometric_force instead.");
 
     SimTK_ERRCHK2_ALWAYS(get_default_norm_fiber_length() >= 0.2,
-            "Thelen2003Muscle::extendFinalizeFromProperties",
+            "DeGrooteFregly2016Muscle::extendFinalizeFromProperties",
             "%s: default_norm_fiber_length must be >= 0.2, but it is %g.",
             getName().c_str(), get_default_norm_fiber_length());
 
     SimTK_ERRCHK2_ALWAYS(get_default_norm_fiber_length() <= 1.8,
-            "Thelen2003Muscle::extendFinalizeFromProperties",
+            "DeGrooteFregly2016Muscle::extendFinalizeFromProperties",
             "%s: default_norm_fiber_length must be <= 1.8, but it is %g.",
             getName().c_str(), get_default_norm_fiber_length());
 
     SimTK_ERRCHK2_ALWAYS(get_activation_time_constant() > 0,
-            "Thelen2003Muscle::extendFinalizeFromProperties",
+            "DeGrooteFregly2016Muscle::extendFinalizeFromProperties",
             "%s: activation_time_constant must be greater than zero, "
             "but it is %g.",
             getName().c_str(), get_activation_time_constant());
 
     SimTK_ERRCHK2_ALWAYS(get_deactivation_time_constant() > 0,
-            "Thelen2003Muscle::extendFinalizeFromProperties",
+            "DeGrooteFregly2016Muscle::extendFinalizeFromProperties",
             "%s: deactivation_time_constant must be greater than zero, "
             "but it is %g.",
             getName().c_str(), get_deactivation_time_constant());
 
     SimTK_ERRCHK2_ALWAYS(get_default_activation() > 0,
-            "Thelen2003Muscle::extendFinalizeFromProperties",
+            "DeGrooteFregly2016Muscle::extendFinalizeFromProperties",
             "%s: default_activation must be greater than zero, "
             "but it is %g.",
             getName().c_str(), get_default_activation());
 
-    SimTK_ERRCHK2_ALWAYS(get_fiber_damping() > 0,
-            "Thelen2003Muscle::extendFinalizeFromProperties",
+    SimTK_ERRCHK2_ALWAYS(get_fiber_damping() >= 0,
+            "DeGrooteFregly2016Muscle::extendFinalizeFromProperties",
             "%s: fiber_damping must be greater than or equal to zero, "
             "but it is %g.",
             getName().c_str(), get_fiber_damping());
 
     SimTK_ERRCHK2_ALWAYS(get_tendon_strain_at_one_norm_force() > 0,
-            "Thelen2003Muscle::extendFinalizeFromProperties",
+            "DeGrooteFregly2016Muscle::extendFinalizeFromProperties",
             "%s: tendon_strain_at_one_norm_force must be greater than zero, "
             "but it is %g.",
             getName().c_str(), get_tendon_strain_at_one_norm_force());
@@ -85,7 +88,7 @@ void DeGrooteFregly2016Muscle::extendFinalizeFromProperties() {
             get_ignore_activation_dynamics(), Exception, "Not supported yet.");
 
     OPENSIM_THROW_IF_FRMOBJ(get_pennation_angle_at_optimal() != 0, Exception,
-            "Not supported yet.");
+            "Non-zero 'pennation angle at optimal' not supported yet.");
 
     m_maxContractionVelocityInMeters =
             get_max_contraction_velocity() * get_optimal_fiber_length();
@@ -147,8 +150,11 @@ void DeGrooteFregly2016Muscle::computeStateVariableDerivatives(
                 0.5 * tanh(tanhSteepness * (excitation - activation));
         const SimTK::Real timeConst =
                 tempAct * (f + 0.5) + tempDeact * (-f + 0.5);
-        setStateVariableDerivativeValue(
-                s, ACTIVATION, timeConst * (excitation - activation));
+        const SimTK::Real derivative = timeConst * (excitation - activation);
+        // std::cout << "DEBUG cSVD " << getName() << " " << excitation << " "
+        // << activation << " "
+        //           << derivative << std::endl;
+        setStateVariableDerivativeValue(s, ACTIVATION, derivative);
     }
 
     if (!get_ignore_tendon_compliance()) {
@@ -426,4 +432,108 @@ void DeGrooteFregly2016Muscle::printCurvesToSTOFiles(
 }
 
 void DeGrooteFregly2016Muscle::replaceMuscles(
-        Model& model, bool allowUnsupportedMuscles) {}
+        Model& model, bool allowUnsupportedMuscles) {
+    // TODO: just must finalizeConnections().
+
+    // Create path actuators from muscle properties and add to the model. Save
+    // a list of pointers of the muscles to delete.
+    std::vector<Muscle*> musclesToDelete;
+    auto& muscleSet = model.updMuscles();
+    for (int im = 0; im < muscleSet.getSize(); ++im) {
+        auto& muscBase = muscleSet.get(im);
+        if (auto musc = dynamic_cast<Millard2012EquilibriumMuscle*>(
+                    &muscBase)) {
+            auto* actu = new DeGrooteFregly2016Muscle();
+            actu->setName(musc->getName());
+            musc->setName(musc->getName() + "_delete");
+            actu->setMinControl(musc->getMinControl());
+            actu->setMaxControl(musc->getMaxControl());
+
+            actu->setMaxIsometricForce(musc->getMaxIsometricForce());
+            actu->setOptimalFiberLength(musc->getOptimalFiberLength());
+            actu->setTendonSlackLength(musc->getTendonSlackLength());
+            // TODO
+            // actu->setPennationAngleAtOptimalFiberLength(
+            //         musc->getPennationAngleAtOptimalFiberLength());
+            actu->setMaxContractionVelocity(musc->getMaxContractionVelocity());
+            actu->set_ignore_tendon_compliance(
+                    musc->get_ignore_tendon_compliance());
+            actu->set_ignore_activation_dynamics(
+                    musc->get_ignore_activation_dynamics());
+
+            // TODO: There is a bug in Millard2012EquilibriumMuscle where
+            // the default fiber length is 0.1 by default instead of
+            // optimal fiber length.
+            if (!SimTK::isNumericallyEqual(
+                        musc->get_default_fiber_length(), 0.1)) {
+                actu->set_default_norm_fiber_length(
+                        musc->get_default_fiber_length() /
+                        musc->get_optimal_fiber_length());
+            }
+            actu->set_default_activation(musc->get_default_activation());
+            actu->set_activation_time_constant(
+                    musc->get_activation_time_constant());
+            actu->set_deactivation_time_constant(
+                    musc->get_deactivation_time_constant());
+            // TODO
+            actu->set_fiber_damping(0);
+            // actu->set_fiber_damping(musc->get_fiber_damping());
+            actu->set_tendon_strain_at_one_norm_force(
+                    musc->get_TendonForceLengthCurve()
+                            .get_strain_at_one_norm_force());
+
+            const auto& pathPointSet =
+                    musc->getGeometryPath().getPathPointSet();
+            auto& geomPath = actu->updGeometryPath();
+            for (int ipp = 0; ipp < pathPointSet.getSize(); ++ipp) {
+                auto* pathPoint = pathPointSet.get(ipp).clone();
+                const auto& socketNames = pathPoint->getSocketNames();
+                for (const auto& socketName : socketNames) {
+                    pathPoint->updSocket(socketName)
+                            .connect(pathPointSet.get(ipp)
+                                             .getSocket(socketName)
+                                             .getConnecteeAsObject());
+                }
+                geomPath.updPathPointSet().adoptAndAppend(pathPoint);
+            }
+            model.addComponent(actu);
+
+            // Workaround for a bug in prependComponentPathToConnecteePath().
+            for (auto& comp : model.updComponentList()) {
+                const auto& socketNames = comp.getSocketNames();
+                for (const auto& socketName : socketNames) {
+                    auto& socket = comp.updSocket(socketName);
+                    auto connecteePath = socket.getConnecteePath();
+                    if (startsWith(connecteePath, "/" + actu->getName())) {
+                        connecteePath = connecteePath.substr(
+                                actu->getName().length() + 1);
+                        socket.setConnecteePath(connecteePath);
+                    }
+                }
+            }
+            musclesToDelete.push_back(musc);
+
+        } else {
+            OPENSIM_THROW_IF(!allowUnsupportedMuscles, Exception,
+                    format("Muscle '%s' of type %s is unsupported and "
+                           "allowUnsupportedMuscles=false.",
+                            muscBase.getName(),
+                            muscBase.getConcreteClassName()));
+        }
+    }
+
+    // Delete the muscles.
+    for (const auto* musc : musclesToDelete) {
+        int index = model.getForceSet().getIndex(musc, 0);
+        OPENSIM_THROW_IF(index == -1, Exception,
+                format("Muscle with name %s not found in ForceSet.",
+                        musc->getName()));
+        bool success = model.updForceSet().remove(index);
+        OPENSIM_THROW_IF(!success, Exception,
+                format("Attempt to remove muscle with "
+                       "name %s was unsuccessful.",
+                        musc->getName()));
+    }
+
+    model.finalizeFromProperties();
+}

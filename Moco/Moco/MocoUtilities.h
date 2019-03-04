@@ -48,6 +48,15 @@ inline bool endsWith(const std::string& string, const std::string& ending) {
     return false;
 }
 
+/// Determine if `string` starts with the substring `start`.
+/// https://stackoverflow.com/questions/874134/find-if-string-ends-with-another-string-in-c
+inline bool startsWith(const std::string& string, const std::string& start) {
+    if (string.length() >= start.length()) {
+        return string.compare(0, start.length(), start) == 0;
+    }
+    return false;
+}
+
 /// @name Filling in a string with variables.
 /// @{
 
