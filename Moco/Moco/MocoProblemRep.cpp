@@ -208,8 +208,8 @@ void MocoProblemRep::initialize() {
             param.clone());
         // We must initialize on both models so that they are consistent when
         // parameters are updated when applyParameterToModel() is called. 
-        // Calling initalizeOnModel() twice here should be fine since the models
-        // are identical aside from disable Simbody constraints. The property
+        // Calling initalizeOnModel() twice here is fine since the models are 
+        // identical aside from disabled Simbody constraints. The property
         // references to the parameters in both models are added to the 
         // MocoParameter's internal vector of property references.
         m_parameters[i]->initializeOnModel(m_model_base);

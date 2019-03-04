@@ -139,7 +139,8 @@ public:
                 "available until after initialization.");
         return m_num_kinematic_constraint_equations;
     }
-    /// TODO
+    /// The path to the DiscreteForces component representing the constraint
+    /// forces in the model. 
     const std::string& getConstraintForcesPath() const 
     {   return m_constraint_forces_path; }
 

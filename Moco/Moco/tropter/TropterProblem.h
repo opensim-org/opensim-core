@@ -504,8 +504,8 @@ protected:
 
 public:
     template <typename MocoIterateType, typename tropIterateType>
-    MocoIterateType convertIterateTropterToMoco(
-            const tropIterateType& tropSol) const;
+    MocoIterateType 
+    convertIterateTropterToMoco(const tropIterateType& tropSol) const;
 
     MocoIterate convertToMocoIterate(const tropter::Iterate& tropSol) const;
 
