@@ -63,9 +63,9 @@ public:
     /// will be applied to this model.
     const Model& getModelBase() const { return m_model_base; }
     /// Get a reference to a copy of the model being used by this 
-    /// MocoProblemRep, but with disabled constraints and an additional
+    /// MocoProblemRep, but with all constraints disabled and an additional
     /// DiscreteForces component. This new component can be used to apply 
-    /// constraint forces computed from the base model to the new model, which 
+    /// constraint forces computed from the base model to this model, which 
     /// updates the discrete variables in the state associated with these
     /// forces. You should use this model to compute accelerations via 
     /// getModelDisabledConstraints().realizeAccleration(state), making sure to 
