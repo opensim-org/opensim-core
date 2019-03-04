@@ -72,8 +72,8 @@ class OSIMSIMULATION_API OrientationsReference : public Reference_<SimTK::Rotati
 //=============================================================================
 public:
     OpenSim_DECLARE_PROPERTY(orientation_file, std::string, 
-        "Orientation file (.sto, .csv) containing the time history of observations "
-        "of segment (sensor) orientations.");
+        "Orientation file (.sto) containing the time history of observations "
+        "of frame (sensor) orientations.");
 
     OpenSim_DECLARE_PROPERTY(orientation_weights, Set<OrientationWeight>,
         "Set of orientation weights identified by orientation name with weight "
