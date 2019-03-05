@@ -326,9 +326,9 @@ void testHangingMuscleMinimumTime(bool ignoreTendonCompliance) {
 
         problem.addCost<MocoFinalTimeCost>();
 
-        auto& solver = moco.initCasADiSolver();
+        auto& solver = moco.initTropterSolver();
         solver.set_num_mesh_points(20);
-        solver.set_dynamics_mode("implicit");
+        // solver.set_dynamics_mode("implicit");
         // solver.set_optim_sparsity_detection("initial-guess");
         MocoIterate guessForwardSim = solver.createGuess("time-stepping");
         // solver.setGuess(guessForwardSim);
@@ -356,11 +356,9 @@ void testHangingMuscleMinimumTime(bool ignoreTendonCompliance) {
     {
         const auto iterateSim =
                 simulateIterateWithTimeStepping(solutionTrajOpt, model);
-        std::cout << "DEBUG "
-                  << iterateSim.compareContinuousVariablesRMS(solutionTrajOpt,
-                          {{"states", {}}, {"controls", {}}})
-                  << std::endl;
-        SimTK_TEST(iterateSim.compareContinuousVariablesRMS(solutionTrajOpt) < 0.05);
+        const double error = iterateSim.compareContinuousVariablesRMS(solutionTrajOpt,
+                {{"states", {}}, {"controls", {}}});
+        SimTK_TEST(error < 0.05);
     }
 
     // Track the kinematics from the trajectory optimization.
