@@ -610,8 +610,8 @@ public:
         const double& time = args.at(0).scalar();
         const casadi::DM& states = args.at(1);
         const casadi::DM& controls = args.at(2);
-        // const casadi::DM& multipliers = args.at(3);
-        // const casadi::DM& derivatives = args.at(4);
+        const casadi::DM& multipliers = args.at(3);
+        const casadi::DM& derivatives = args.at(4);
         const casadi::DM& parameters = args.at(5);
         VectorDM out(2);
         auto mocoProblemRep = m_jar.take();

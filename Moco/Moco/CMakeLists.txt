@@ -56,8 +56,6 @@ set(MOCO_SOURCES
         Components/ActivationCoordinateActuator.h
         Components/StationPlaneContactForce.h
         Components/StationPlaneContactForce.cpp
-        Components/PrescribedAcceleration.h
-        Components/PrescribedAcceleration.cpp
         Components/PositionMotion.h
         Components/PositionMotion.cpp
         Components/ModelFactory.h
