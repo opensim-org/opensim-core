@@ -23,6 +23,16 @@ DataAdapter::OutputTables IMUHelper::readXsensTrial(const std::string& folderNam
     int rotationsIndex = -1;
 
     int n_imus = modelIMUToFilenameMap.getNumItems();
+    int last_size = 1024;
+    // Will read data into pre-allocated Matrices in-memory rather than appendRow
+    // on the fly to avoid the overhead of 
+    SimTK::Matrix_<SimTK::Quaternion> rotationsData{ last_size, n_imus };
+    SimTK::Matrix_<SimTK::Vec3> linearAccelerationData{ last_size, n_imus };
+    SimTK::Matrix_<SimTK::Vec3> magneticHeadingData{ last_size, n_imus };
+    SimTK::Matrix_<SimTK::Vec3> angularVelocityData{ last_size, n_imus };
+    std::vector<double> times;
+    times.resize(last_size);
+    
     for (int index = 0; index < n_imus; ++index) {
         const MapItem& nextItem = modelIMUToFilenameMap.get_list_MapItems(index);
         auto fileName = folderName + prefix + nextItem.get_to_value() +".txt";
@@ -60,41 +70,13 @@ DataAdapter::OutputTables IMUHelper::readXsensTrial(const std::string& folderNam
     // If no Orientation data is available or dataRate can't be deduced we'll abort completely
     OPENSIM_THROW_IF((rotationsIndex == -1 || SimTK::isNaN(dataRate)),
         TableMissingHeader);
-
-    // Create 4 tables for Rotations, Acc[elerations], Gyr[o], Mag[netometer] data
-    DataAdapter::OutputTables tables{};
-    auto orientationTable = std::make_shared<TimeSeriesTableQuaternion>();
-    orientationTable->setColumnLabels(labels);
-    orientationTable->updTableMetaData()
-        .setValueForKey("DataRate", std::to_string(dataRate));
-    tables.emplace(Orientations, orientationTable);
-
-    auto accelerationTable = std::make_shared<TimeSeriesTableVec3>();
-    accelerationTable->setColumnLabels(labels);
-    accelerationTable->updTableMetaData()
-        .setValueForKey("DataRate", std::to_string(dataRate));
-    if (accIndex != -1) 
-        tables.emplace(LinearAccelerations, accelerationTable);
-
-    auto magnetometerTable = std::make_shared<TimeSeriesTableVec3>();
-    magnetometerTable->setColumnLabels(labels);
-    magnetometerTable->updTableMetaData()
-        .setValueForKey("DataRate", std::to_string(dataRate));
-    if (magIndex != -1) 
-        tables.emplace(MagneticHeading, magnetometerTable);
-
-    auto gyrosTable = std::make_shared<TimeSeriesTableVec3>();
-    gyrosTable->setColumnLabels(labels);
-    gyrosTable->updTableMetaData()
-        .setValueForKey("DataRate", std::to_string(dataRate));
-    if (gyroIndex != -1)
-        tables.emplace(AngularVelocity, gyrosTable);
     
     // For all tables, will create row, stitch values from different files then append,time and timestep
     // are based on the first file
     bool done = false;
     double time = 0.0;
     double timeIncrement = 1 / dataRate;
+    int rowNumber = 0;
     while (!done){
         // Make vectors one per table
         TimeSeriesTableQuaternion::RowVector
@@ -142,12 +124,58 @@ DataAdapter::OutputTables IMUHelper::readXsensTrial(const std::string& folderNam
         if (done) 
             break;
         // append to the tables
-        if (accIndex != -1) accelerationTable->appendRow(time, std::move(accel_row_vector));
-        if (magIndex != -1) magnetometerTable->appendRow(time, std::move(magneto_row_vector));
-        if (gyroIndex != -1) gyrosTable->appendRow(time, std::move(gyro_row_vector));
-        orientationTable->appendRow(time, std::move(orientation_row_vector));
+        times[rowNumber] = time;
+        if (accIndex != -1) linearAccelerationData[rowNumber] =  accel_row_vector;
+        if (magIndex != -1) magneticHeadingData[rowNumber] = magneto_row_vector;
+        if (gyroIndex != -1) angularVelocityData[rowNumber] = gyro_row_vector;
+        rotationsData[rowNumber] = orientation_row_vector;
         time += timeIncrement;
+        rowNumber++;
+        if (std::remainder(rowNumber, last_size) == 0) {
+            // resize all Data/Matrices, double the size  while keeping data
+            int newSize = last_size*2;
+            times.resize(newSize);
+            // Repeat for Data matrices in use
+            if (accIndex != -1) linearAccelerationData.resizeKeep(newSize, n_imus);
+            if (magIndex != -1) magneticHeadingData.resizeKeep(newSize, n_imus);
+            if (gyroIndex != -1) angularVelocityData.resizeKeep(newSize, n_imus);
+            rotationsData.resizeKeep(newSize, n_imus);
+            last_size = newSize;
+        }
     }
+    // Trim Matrices in use to actual data and move into tables
+    int actualSize = rowNumber;
+    times.resize(actualSize);
+    // Repeat for Data matrices in use and create Tables from them
+    if (accIndex != -1) linearAccelerationData.resizeKeep(actualSize, n_imus);
+    if (magIndex != -1) magneticHeadingData.resizeKeep(actualSize, n_imus);
+    if (gyroIndex != -1) angularVelocityData.resizeKeep(actualSize, n_imus);
+    rotationsData.resizeKeep(actualSize, n_imus);
+    // Now create the tables from matrices
+    // Create 4 tables for Rotations, LinearAccelerations, AngularVelocity, MagneticHeading
+    DataAdapter::OutputTables tables{};
+    auto orientationTable = std::make_shared<TimeSeriesTableQuaternion>(times, rotationsData, labels);
+    orientationTable->updTableMetaData()
+        .setValueForKey("DataRate", std::to_string(dataRate));
+    tables.emplace(Orientations, orientationTable);
+
+    auto accelerationTable = std::make_shared<TimeSeriesTableVec3>(times, linearAccelerationData, labels);
+    accelerationTable->updTableMetaData()
+        .setValueForKey("DataRate", std::to_string(dataRate));
+    if (accIndex != -1)
+        tables.emplace(LinearAccelerations, accelerationTable);
+
+    auto magnetometerTable = std::make_shared<TimeSeriesTableVec3>(times, magneticHeadingData, labels);
+    magnetometerTable->updTableMetaData()
+        .setValueForKey("DataRate", std::to_string(dataRate));
+    if (magIndex != -1)
+        tables.emplace(MagneticHeading, magnetometerTable);
+
+    auto gyrosTable = std::make_shared<TimeSeriesTableVec3>(times, angularVelocityData, labels);
+    gyrosTable->updTableMetaData()
+        .setValueForKey("DataRate", std::to_string(dataRate));
+    if (gyroIndex != -1)
+        tables.emplace(AngularVelocity, gyrosTable);
 
     return tables;
 }
