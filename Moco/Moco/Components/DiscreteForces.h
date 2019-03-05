@@ -25,7 +25,7 @@
 
 namespace OpenSim {
 
-/// This class is a thin wrapper to Simbody's SimTK::Forces::DiscreteForces 
+/// This class is a thin wrapper to Simbody's SimTK::Force::DiscreteForces 
 /// class. Adding this component to a Model will add corresponding slots in the
 /// State for discrete variables holding the most recent value of the forces set
 /// through the component. Discrete variables are *not* updated through the same

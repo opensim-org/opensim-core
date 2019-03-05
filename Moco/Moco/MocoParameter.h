@@ -129,7 +129,7 @@ public:
     /// about the model that is useful during the optimization.
     /// This method takes a non-const reference to the model because parameters
     /// need to be able to alter the model.
-    /// If it is desired to apply this MocoParameter to multiple model, this 
+    /// If it is desired to apply this MocoParameter to multiple models, this 
     /// should be called on all models of interest. The property references from
     /// each model will be append to this MocoParameter's internal property
     /// reference list.

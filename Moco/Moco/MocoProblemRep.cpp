@@ -18,8 +18,8 @@
 
 #include "MocoProblemRep.h"
 
-#include "Components/DiscreteForces.h"
 #include "Components/AccelerationMotion.h"
+#include "Components/DiscreteForces.h"
 #include "MocoProblem.h"
 #include <unordered_set>
 
@@ -64,8 +64,7 @@ void MocoProblemRep::initialize() {
     m_model_disabled_constraints.addModelComponent(accelMotionUPtr.release());
     // Grab a writable state from the copied model -- we'll use this to disable
     // its constraints below.
-    m_state_disabled_constraints =
-            m_model_disabled_constraints.initSystem();
+    m_state_disabled_constraints = m_model_disabled_constraints.initSystem();
 
     const auto stateNames = m_model_base.getStateVariableNames();
     for (int i = 0; i < ph0.getProperty_state_infos().size(); ++i) {
@@ -195,9 +194,11 @@ void MocoProblemRep::initialize() {
 
     // Verify that the constraint error vectors in the state associated with the
     // copied model are empty.
-    OPENSIM_THROW_IF(m_state_disabled_constraints.getQErr().size() != 0 ||
-                             m_state_disabled_constraints.getUErr().size() != 0 ||
-                             m_state_disabled_constraints.getUDotErr().size() != 0,
+    m_model_disabled_constraints.getSystem().realize(
+            m_state_disabled_constraints, SimTK::Stage::Instance);
+    OPENSIM_THROW_IF(m_state_disabled_constraints.getNQErr() != 0 ||
+                             m_state_disabled_constraints.getNUErr() != 0 ||
+                             m_state_disabled_constraints.getNUDotErr() != 0,
             Exception, "Internal error.");
 
     m_parameters.resize(ph0.getProperty_parameters().size());
@@ -213,8 +214,8 @@ void MocoProblemRep::initialize() {
         m_parameters[i] = std::unique_ptr<MocoParameter>(param.clone());
         // We must initialize on both models so that they are consistent when
         // parameters are updated when applyParameterToModel() is called.
-        // Calling initalizeOnModel() twice here should be fine since the models
-        // are identical aside from disable Simbody constraints. The property
+        // Calling initalizeOnModel() twice here is fine since the models are
+        // identical aside from disabled Simbody constraints. The property
         // references to the parameters in both models are added to the
         // MocoParameter's internal vector of property references.
         m_parameters[i]->initializeOnModel(m_model_base);

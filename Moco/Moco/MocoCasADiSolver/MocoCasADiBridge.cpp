@@ -25,7 +25,24 @@ thread_local SimTK::Vector MocoCasADiPathConstraint::m_errors;
 thread_local SimTK::Vector MocoCasADiVelocityCorrection::m_qdotCorr;
 
 template <bool T>
+thread_local SimTK::Vector_<SimTK::SpatialVec>
+MocoCasADiMultibodySystem<T>::m_constraintBodyForces;
+template <bool T>
+thread_local SimTK::Vector
+MocoCasADiMultibodySystem<T>::m_constraintMobilityForces;
+template <bool T>
+thread_local SimTK::Vector MocoCasADiMultibodySystem<T>::m_pvaerr;
+
+template <bool T>
 thread_local SimTK::Vector MocoCasADiMultibodySystemImplicit<T>::m_residual;
+template <bool T>
+thread_local SimTK::Vector MocoCasADiMultibodySystemImplicit<T>::m_pvaerr;
+template <bool T>
+thread_local SimTK::Vector_<SimTK::SpatialVec>
+MocoCasADiMultibodySystemImplicit<T>::m_constraintBodyForces;
+template <bool T>
+thread_local SimTK::Vector
+MocoCasADiMultibodySystemImplicit<T>::m_constraintMobilityForces;
 
 template class OpenSim::MocoCasADiMultibodySystem<false>;
 template class OpenSim::MocoCasADiMultibodySystem<true>;

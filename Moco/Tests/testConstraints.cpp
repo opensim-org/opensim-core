@@ -1042,6 +1042,7 @@ public:
             const SimTK::State& state, double& integrand) const override {
         getModel().realizeAcceleration(state);
         const auto& joint = getModel().getComponent<Joint>("jointset/j1");
+        // Minus sign since we are maximizng.
         integrand = -joint.calcReactionOnChildExpressedInGround(state)[0][0];
     }
 };
@@ -1087,6 +1088,9 @@ void testDoublePendulumPointOnLineJointReaction(
     mp.setControlInfo("/tau1", {-20, 20});
     mp.setControlInfo("/push", {-20, 20});
 
+    // This cost tries to *maximize* joint j1's reaction torque in the
+    // x-direction, which should cause the actuator "push" to hit its upper
+    // bound.
     mp.addCost<MocoJointReactionComponentCost>();
 
     auto& ms = moco.initSolver<TestType>();
@@ -1106,7 +1110,10 @@ void testDoublePendulumPointOnLineJointReaction(
     solution.write(
             "testConstraints_testDoublePendulumPointOnLineJointReaction.sto");
 
+    // Check that the actuator "push" is hitting its upper bound.
     CHECK(solution.getControl("/push")[0] == Approx(20).epsilon(1e-4));
+    // Check that j1's x-direction reaction torque (the only objective term)
+    // is the proper value. 
     CHECK(solution.getObjective() == Approx(-1. / sqrt(2) * 20).epsilon(1e-2));
 }
 

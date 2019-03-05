@@ -299,7 +299,6 @@ protected:
             const tropter::Input<T>& in, bool setControlsToNaN = false) const {
         const auto& time = in.time;
         const auto& states = in.states;
-        const auto& controls = in.controls;
         const auto& adjuncts = in.adjuncts;
 
         auto& simTKStateBase = this->m_stateBase;
@@ -339,9 +338,6 @@ protected:
     void calc_integral_cost(
             const tropter::Input<T>& in, T& integrand) const override {
         // Unpack variables.
-        const auto& time = in.time;
-        const auto& states = in.states;
-        const auto& controls = in.controls;
         const auto& adjuncts = in.adjuncts;
 
         // Update the state.
@@ -503,8 +499,8 @@ protected:
 
 public:
     template <typename MocoIterateType, typename tropIterateType>
-    MocoIterateType convertIterateTropterToMoco(
-            const tropIterateType& tropSol) const;
+    MocoIterateType 
+    convertIterateTropterToMoco(const tropIterateType& tropSol) const;
 
     MocoIterate convertToMocoIterate(const tropter::Iterate& tropSol) const;
 
@@ -523,9 +519,6 @@ public:
     void calc_differential_algebraic_equations(const tropter::Input<T>& in,
             tropter::Output<T> out) const override {
         // Unpack variables.
-        const auto& states = in.states;
-        const auto& controls = in.controls;
-        const auto& adjuncts = in.adjuncts;
         const auto& diffuses = in.diffuses;
 
         // Original model and its associated state. These are used to calculate
@@ -601,8 +594,12 @@ public:
         OPENSIM_THROW_IF(this->m_numKinematicConstraintEquations, Exception,
                 "Cannot use implicit dynamics mode with kinematic "
                 "constraints.");
+        const auto& accel = this->m_mocoProbRep.getAccelerationMotion();
+        auto& simTKStateDisabledConstraints = this->m_stateDisabledConstraints;
+        accel.setEnabled(simTKStateDisabledConstraints, true);
+
         // Add adjuncts for udot, which we call "w".
-        int NU = this->m_stateDisabledConstraints.getNU();
+        int NU = simTKStateDisabledConstraints.getNU();
         for (int iudot = 0; iudot < NU; ++iudot) {
             auto name = this->m_svNamesInSysOrder[iudot];
             auto leafpos = name.find("value");
@@ -618,7 +615,6 @@ public:
             tropter::Output<T> out) const override {
 
         const auto& states = in.states;
-        const auto& controls = in.controls;
         const auto& adjuncts = in.adjuncts;
 
         const auto& modelDisabledConstraints = this->m_modelDisabledConstraints;

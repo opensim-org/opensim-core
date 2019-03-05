@@ -18,7 +18,7 @@
 #include <Moco/MocoTropterSolver.h>
 #include <Moco/MocoCasADiSolver/MocoCasADiSolver.h>
 #include <Moco/MocoTool.h>
-#include <Moco/ActivationCoordinateActuator.h>
+#include <Moco/Components/ActivationCoordinateActuator.h>
 #include <Moco/MocoUtilities.h>
 
 #endif // MOCO_OPENSIM_HEADERS_MOCO_H_
