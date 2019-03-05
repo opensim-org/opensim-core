@@ -59,6 +59,12 @@ void MocoProblemRep::initialize() {
     constraintForcesUPtr->setName("constraint_forces");
     m_constraint_forces.reset(constraintForcesUPtr.get());
     m_model_disabled_constraints.addComponent(constraintForcesUPtr.release());
+
+    // The Acceleration motion is always added, but is only enabled by solvers
+    // if using an implicit dynamics mode. We use this motion to ensure that
+    // joint reaction forces can be computed correctly from the solver-supplied
+    // UDot (otherwise, Simbody will compute its own "incorrect" UDot using
+    // forward dynamics).
     auto accelMotionUPtr = make_unique<AccelerationMotion>("motion");
     m_acceleration_motion.reset(accelMotionUPtr.get());
     m_model_disabled_constraints.addModelComponent(accelMotionUPtr.release());

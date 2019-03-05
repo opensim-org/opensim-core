@@ -95,7 +95,7 @@ public:
     }
     /// This is a component inside ModelDisabledConstraints that you can use
     /// to set the value of generalized accelerations UDot, for use in
-    /// implicit dynamics formulations.
+    /// implicit dynamics formulations. The motion is not necessarily enabled.
     const AccelerationMotion& getAccelerationMotion() const {
         return m_acceleration_motion.getRef();
     }
