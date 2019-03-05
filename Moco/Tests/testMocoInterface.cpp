@@ -1082,8 +1082,10 @@ TEST_CASE("MocoIterate") {
                         SimTK::RowVector());
                 // If error is constant:
                 // sqrt(1/(T*N) * integral_t (sum_i^N (err_{i,t}^2))) = err
-                auto rmsBA = b.compareContinuousVariablesRMS(a, statesToCompare,
-                        controlsToCompare, multipliersToCompare);
+                auto rmsBA = b.compareContinuousVariablesRMS(a,
+                        {{"states", statesToCompare},
+                         {"controls", controlsToCompare},
+                         {"multipliers", multipliersToCompare}});
                 int N = 0;
                 if (statesToCompare.empty())
                     N += NS;
@@ -1105,8 +1107,10 @@ TEST_CASE("MocoIterate") {
                     N += (int)multipliersToCompare.size();
                 auto rmsExpected = N == 0 ? 0 : error;
                 SimTK_TEST_EQ(rmsBA, rmsExpected);
-                auto rmsAB = a.compareContinuousVariablesRMS(b, statesToCompare,
-                        controlsToCompare, multipliersToCompare);
+                auto rmsAB = a.compareContinuousVariablesRMS(b,
+                        {{"states", statesToCompare},
+                         {"controls", controlsToCompare},
+                         {"multipliers", multipliersToCompare}});
                 SimTK_TEST_EQ(rmsAB, rmsExpected);
             };
 

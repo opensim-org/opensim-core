@@ -331,11 +331,11 @@ void testHangingMuscleMinimumTime(bool ignoreTendonCompliance) {
         solver.set_dynamics_mode("implicit");
         // solver.set_optim_sparsity_detection("initial-guess");
         MocoIterate guessForwardSim = solver.createGuess("time-stepping");
-        solver.setGuess(guessForwardSim);
+        // solver.setGuess(guessForwardSim);
         guessForwardSim.write("sandboxMuscle_guess_forward_sim.sto");
         std::cout << "Guess from forward sim: "
                   << guessForwardSim.getStatesTrajectory() << std::endl;
-        moco.visualize(guessForwardSim);
+        // moco.visualize(guessForwardSim);
 
         solutionTrajOpt = moco.solve();
         std::string solutionFilename = "sandboxMuscle_solution";
@@ -357,7 +357,8 @@ void testHangingMuscleMinimumTime(bool ignoreTendonCompliance) {
         const auto iterateSim =
                 simulateIterateWithTimeStepping(solutionTrajOpt, model);
         std::cout << "DEBUG "
-                  << iterateSim.compareContinuousVariablesRMS(solutionTrajOpt)
+                  << iterateSim.compareContinuousVariablesRMS(solutionTrajOpt,
+                          {{"states", {}}, {"controls", {}}})
                   << std::endl;
         SimTK_TEST(iterateSim.compareContinuousVariablesRMS(solutionTrajOpt) < 0.05);
     }
@@ -414,10 +415,15 @@ void testHangingMuscleMinimumTime(bool ignoreTendonCompliance) {
         tracking->setReference(ref);
         tracking->setAllowUnusedReferences(true);
 
-        auto& solver = moco.initCasADiSolver();
-        solver.set_dynamics_mode("implicit");
+        auto& solver = moco.initTropterSolver();
+        // solver.set_dynamics_mode("implicit");
+        // solver.set_parallel(0);
+        solver.set_optim_convergence_tolerance(1e-3);
+        solver.set_optim_constraint_tolerance(1e-3);
         // solver.set_optim_sparsity_detection("initial-guess");
-        // solver.setGuess("time-stepping");
+        // solver.set_optim_hessian_approximation("exact");
+        // solver.set_optim_finite_difference_scheme("forward");
+        solver.setGuess("time-stepping");
         // Don't need to use the TrajOpt solution as the initial guess; kinda
         // neat. Although, using TrajOpt for the guess improves convergence.
         // TODO solver.setGuess(solutionTrajOpt);

@@ -193,8 +193,8 @@ public:
         //         << normFiberForce
         //         << std::endl;
         // // }
-        std::cout << "DEBUG " << getName() << " " << activation << " "
-                  << normFiberForce << std::endl;
+        // std::cout << "DEBUG " << getName() << " " << activation << " "
+        //           << normFiberForce << std::endl;
         return normFiberForce;
     }
 
