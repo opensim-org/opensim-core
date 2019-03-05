@@ -162,5 +162,5 @@ namespace OpenSim {
 %include <Moco/MocoCasADiSolver/MocoCasADiSolver.h>
 %include <Moco/MocoTool.h>
 
-%include <Moco/ActivationCoordinateActuator.h>
+%include <Moco/Components/ActivationCoordinateActuator.h>
 %include <Moco/MocoUtilities.h>

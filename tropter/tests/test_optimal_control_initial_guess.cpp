@@ -69,12 +69,9 @@ public:
         // between 0 and 1.
         return (x - 1) * (x + 1) * x*x;
     }
-    void calc_endpoint_cost(const T& /*final_time*/,
-                       const VectorX<T>& final_states,
-                       const VectorX<T>& parameters,
-                       T& cost) const override {
-        cost = 100.0 * (two_minima(final_states[0]) + 
-                        two_minima(parameters[0]));
+    void calc_endpoint_cost(const Input<T>& in, T& cost) const override {
+        cost = 100.0 * (two_minima(in.states[0]) + 
+                        two_minima(in.parameters[0]));
     }
 };
 
@@ -265,12 +262,10 @@ public:
         // between 0 and 1.
         return (x - 1) * (x + 1) * x*x;
     }
-    void calc_endpoint_cost(const T& /*final_time*/,
-        const VectorX<T>& final_states,
-        const VectorX<T>& parameters,
-        T& cost) const override {
-        cost = 100.0 * (two_minima(final_states[0]) +
-            two_minima(parameters[0]));
+    void calc_endpoint_cost(const Input<T>& in,
+            T& cost) const override {
+        cost = 100.0 * (two_minima(in.states[0]) +
+            two_minima(in.parameters[0]));
     }
 };
 

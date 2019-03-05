@@ -230,7 +230,7 @@ TEMPLATE_TEST_CASE("See-saw center of mass", "",
     auto& ms = moco.initSolver<TestType>();
     ms.set_num_mesh_points(N);
 
-    MocoSolution sol = moco.solve().unseal();
+    MocoSolution sol = moco.solve();
     const auto& sol_xCOM = sol.getParameter("com_location");
     sol.write("testMocoParameters_testSeeSawCOM_sol.sto");
     

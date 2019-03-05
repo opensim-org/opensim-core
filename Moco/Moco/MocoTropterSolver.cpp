@@ -280,7 +280,7 @@ MocoSolution MocoTropterSolver::solveImpl() const {
     // recommendation to the user to enable Lagrange multiplier minimization.
     if (!getProperty_enforce_constraint_derivatives().empty() && 
              !get_minimize_lagrange_multipliers()) {
-        const auto& model = getProblemRep().getModel();
+        const auto& model = getProblemRep().getModelBase();
         const auto& matter = model.getMatterSubsystem();
         Storage storage = mocoSolution.exportToStatesStorage();
         // TODO update when we support multiple phases.
@@ -327,6 +327,7 @@ MocoSolution MocoTropterSolver::solveImpl() const {
 
     // TODO move this to convert():
     MocoSolver::setSolutionStats(mocoSolution, tropSolution.success,
+            tropSolution.objective,
             tropSolution.status, tropSolution.num_iterations);
 
     if (get_verbosity()) {

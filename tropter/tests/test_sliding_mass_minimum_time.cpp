@@ -46,10 +46,9 @@ public:
     }
     // TODO alternate form that takes a matrix; state at every time.
     //virtual void continuous(const MatrixXd& x, MatrixXd& xdot) const = 0;
-    void calc_endpoint_cost(const T& final_time, const VectorX<T>&, 
-            const VectorX<T>&, T& cost)
+    void calc_endpoint_cost(const Input<T>& in, T& cost)
             const override {
-        cost = final_time;
+        cost = in.time;
     }
     Solution actual_solution(const VectorXd& time) const {
         Solution sol;

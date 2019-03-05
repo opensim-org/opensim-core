@@ -1,7 +1,7 @@
-#ifndef MOCO_PRESCRIBEDACCELERATION_H
-#define MOCO_PRESCRIBEDACCELERATION_H
+#ifndef MOCO_ACCELERATIONMOTION_H
+#define MOCO_ACCELERATIONMOTION_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: PrescribedAcceleration.h                                     *
+ * OpenSim Moco: AccelerationMotion.h                                         *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2019 Stanford University and the Authors                     *
  *                                                                            *
@@ -24,13 +24,33 @@
 
 namespace OpenSim {
 
-class PrescribedAcceleration : public ModelComponent {
-    OpenSim_DECLARE_CONCRETE_OBJECT(PrescribedAcceleration, ModelComponent);
+/// This class is a thin wrapper to Simbody's SimTK::Motion for prescribing
+/// the acceleration of all degrees of freedom (UDot), and is used when
+/// enforcing dynamics using implicit differential equations (UDot is supplied
+/// by the solver, not by Simbody). This component adds discrete variables
+/// for holding onto the user-supplied UDot and passing it onto the
+/// SimTK::Motion. Then, SimbodyMatterSubsystem::findMotionForces() provides the
+/// "implicit" differential equation residual (akin to
+/// SimbodyMatterSubsystem::calcResidualForce()).
+/// By default, the prescribed motions are disabled; see
+/// setEnabled().
+/// This prescribed motion does *not* add constraints to the system; rather,
+/// this class removes degrees of freedom.
+/// This class is not intended for use outside of Moco.
+/// The wrapper to OpenSim is necessary so that the discrete variables appear in
+/// the State whenever initSystem() is called on a model.
+class AccelerationMotion : public ModelComponent {
+    OpenSim_DECLARE_CONCRETE_OBJECT(AccelerationMotion, ModelComponent);
 public:
-    PrescribedAcceleration(std::string name) { setName(std::move(name)); }
+    AccelerationMotion() = default;
+    AccelerationMotion(std::string name) { setName(std::move(name)); }
+    /// Set the UDot vector. The vector must have size SimTK::State::getNU().
     void setUDot(SimTK::State& state, const SimTK::Vector& fullUDot) const;
+    /// Get the subset of UDots for the requested MobilizedBody.
     const SimTK::Vector& getUDot(const SimTK::State& state,
             SimTK::MobilizedBodyIndex mobodIdx) const;
+    /// Use this to set whether the prescribed acceleration motion is used or
+    /// not.
     void setEnabled(SimTK::State& state, bool enabled) const;
 protected:
 private:
@@ -43,4 +63,4 @@ private:
 
 } // namespace OpenSim
 
-#endif // MOCO_PRESCRIBEDACCELERATION_H
+#endif // MOCO_ACCELERATIONMOTION_H

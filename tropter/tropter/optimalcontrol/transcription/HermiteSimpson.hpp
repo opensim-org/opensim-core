@@ -36,6 +36,7 @@ void HermiteSimpson<T>::set_num_mesh_points(unsigned N) {
     // dynamics. For Hermite-Simpson collocation, collocation points include 
     // both the mesh points and the mesh interval midpoints, so add N-1 points 
     // to the number of mesh points to get the number of collocation points.
+    // TODO rename to m_num_grid_points?
     m_num_col_points = 2*N - 1;
 }
 
@@ -331,16 +332,16 @@ void HermiteSimpson<T>::calc_objective(const VectorX<T>& x, T& obj_value) const
     auto diffuses = make_diffuses_trajectory_view(x);
     auto parameters = make_parameters_view(x);
 
-
     // Initialize on iterate.
     // ----------------------
     m_ocproblem->initialize_on_iterate(parameters);
 
     // Endpoint cost.
     // --------------
-    // TODO does this cause the final_states to get copied?
-    m_ocproblem->calc_endpoint_cost(final_time, states.rightCols(1), parameters,
-        obj_value);
+    // TODO does this cause variables to get copied?
+    m_ocproblem->calc_endpoint_cost({m_num_col_points - 1, final_time,
+            states.rightCols(1), controls.rightCols(1), adjuncts.rightCols(1), 
+            m_empty_diffuse_col, parameters}, obj_value);
 
     // Integral cost.
     // --------------
@@ -533,22 +534,26 @@ void HermiteSimpson<T>::calc_sparsity_hessian_lagrangian(
 
     // Endpoint cost depends on final time and final state only.
     std::function<T(const VectorX<T>&)> calc_endpoint_cost =
-        [this, &x](const VectorX<T>& vars) {
+            [this, &x](const VectorX<T>& vars) {
         T t = x[1]; // final time. TODO see if endpoint cost actually
                     // depends on final time; put it in vars.
-        VectorX<T> s = vars;
+        VectorX<T> s = vars.head(m_num_states);
+        VectorX<T> c = vars.segment(m_num_states, m_num_controls);
+        VectorX<T> a = vars.tail(m_num_adjuncts);
+        VectorX<T> d; // empty, endpoint is a meshpoint 
         VectorX<T> p = x.segment(m_num_time_variables,
             m_num_parameters).template cast<T>();
         T cost = 0;
-        m_ocproblem->calc_endpoint_cost(t, s, p, cost);
+        m_ocproblem->calc_endpoint_cost({m_num_col_points-1, t, s, c, a, d, p}, 
+            cost);
         return cost;
     };
     const auto lastmeshstart = m_num_dense_variables +
         (m_num_col_points - 1) * num_con_vars;
     SymmetricSparsityPattern endpoint_cost_sparsity =
         calc_hessian_sparsity_with_perturbation(
-            // Grab the final state.
-            x.segment(lastmeshstart, m_num_states),
+            // Grab the final mesh point continuous variables.
+            x.segment(lastmeshstart, m_num_continuous_variables),
             calc_endpoint_cost);
     hesobj_sparsity.set_nonzero_block(lastmeshstart, lastmeshstart,
         endpoint_cost_sparsity);

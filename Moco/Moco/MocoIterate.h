@@ -570,6 +570,7 @@ public:
     /// Was the problem solved successfully? If not, then you cannot access
     /// the solution until you call unlock().
     bool success() const { return m_success; }
+    double getObjective() const { return m_objective; }
     /// Same as success().
     explicit operator bool() const { return success(); }
     /// Obtain a solver-dependent string describing the return status of the
@@ -610,11 +611,15 @@ private:
         if (!success) setSealed(true);
         m_success = success;
     }
+    void setObjective(double objective) {
+        m_objective = objective;
+    }
     void setStatus(std::string status) { m_status = std::move(status); }
     void setNumIterations(int numIterations) {
         m_numIterations = numIterations;
     };
     bool m_success = true;
+    double m_objective = -1;
     std::string m_status;
     int m_numIterations = -1;
     // Allow solvers to set success, status, and construct a solution.
