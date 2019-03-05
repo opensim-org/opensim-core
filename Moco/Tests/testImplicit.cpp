@@ -22,6 +22,7 @@
 #include <Moco/osimMoco.h>
 #include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
 #include <OpenSim/Common/LogManager.h>
+#include <Moco/Components/AccelerationMotion.h>
 
 using namespace OpenSim;
 using namespace Catch;
@@ -297,5 +298,29 @@ SCENARIO("Using MocoIterate with the implicit dynamics mode",
                     Approx(valueA - valueB));
         }
     }
+}
+
+TEST_CASE("AccelerationMotion") {
+    Model model = OpenSim::ModelFactory::createNLinkPendulum(1);
+    AccelerationMotion* accel = new AccelerationMotion("motion");
+    model.addModelComponent(accel);
+    auto state = model.initSystem();
+    state.updQ()[0] = -SimTK::Pi / 2;
+    model.realizeAcceleration(state);
+    // Default.
+    CHECK(state.getUDot()[0] == Approx(0).margin(1e-10));
+
+    // Enable.
+    accel->setEnabled(state, true);
+    SimTK::Vector udot(1);
+    udot[0] = SimTK::Random::Uniform(-1, 1).getValue();
+    accel->setUDot(state, udot);
+    model.realizeAcceleration(state);
+    CHECK(state.getUDot()[0] == Approx(udot[0]).margin(1e-10));
+
+    // Disable.
+    accel->setEnabled(state, false);
+    model.realizeAcceleration(state);
+    CHECK(state.getUDot()[0] == Approx(0).margin(1e-10));
 }
 

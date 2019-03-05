@@ -1113,7 +1113,7 @@ void testDoublePendulumPointOnLineJointReaction(
     // Check that the actuator "push" is hitting its upper bound.
     CHECK(solution.getControl("/push")[0] == Approx(20).epsilon(1e-4));
     // Check that j1's x-direction reaction torque (the only objective term)
-    // is the proper value. 
+    // is the proper value.
     CHECK(solution.getObjective() == Approx(-1. / sqrt(2) * 20).epsilon(1e-2));
 }
 

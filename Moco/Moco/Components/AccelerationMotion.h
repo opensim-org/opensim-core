@@ -29,14 +29,20 @@ namespace OpenSim {
 /// enforcing dynamics using implicit differential equations (UDot is supplied
 /// by the solver, not by Simbody). This component adds discrete variables
 /// for holding onto the user-supplied UDot and passing it onto the
-/// SimTK::Motion. By default, the prescribed motions are disabled; see
+/// SimTK::Motion. Then, SimbodyMatterSubsystem::findMotionForces() provides the
+/// "implicit" differential equation residual (akin to
+/// SimbodyMatterSubsystem::calcResidualForce()).
+/// By default, the prescribed motions are disabled; see
 /// setEnabled().
+/// This prescribed motion does *not* add constraints to the system; rather,
+/// this class removes degrees of freedom.
 /// This class is not intended for use outside of Moco.
 /// The wrapper to OpenSim is necessary so that the discrete variables appear in
 /// the State whenever initSystem() is called on a model.
 class AccelerationMotion : public ModelComponent {
     OpenSim_DECLARE_CONCRETE_OBJECT(AccelerationMotion, ModelComponent);
 public:
+    AccelerationMotion() = default;
     AccelerationMotion(std::string name) { setName(std::move(name)); }
     /// Set the UDot vector. The vector must have size SimTK::State::getNU().
     void setUDot(SimTK::State& state, const SimTK::Vector& fullUDot) const;
