@@ -30,7 +30,7 @@ class Model;
 
 /// A MocoParameter allows you to optimize property values in an OpenSim Model.
 /// To describe this parameter, you must provide the name of the property you
-/// want to optimize, and the path to the component in the model where the
+/// want to optimize and the path to the component in the model where the
 /// property exists. If the property is not a scalar, then you must also provide
 /// the element index of the property you want to optimize. To optimize multiple
 /// elements of a non-scalar property, use multiple MocoParameters.
@@ -76,7 +76,9 @@ class Model;
 /// An individual instance of a parameter is only ever used in a single problem.
 /// Therefore, there is no need to clear cache variables that you create in
 /// initializeImpl(). Also, information stored in this parameter does not
-/// persist across multiple solves.
+/// persist across multiple solves. Lastly, a MocoParameter may be applied to 
+/// multiple models at once, as long as the value described in the MocoParameter
+/// exists and initializeOnModel() is called on all models of interest. 
 class OSIMMOCO_API MocoParameter : public Object {
     OpenSim_DECLARE_CONCRETE_OBJECT(MocoParameter, Object);
 public:
@@ -127,9 +129,14 @@ public:
     /// about the model that is useful during the optimization.
     /// This method takes a non-const reference to the model because parameters
     /// need to be able to alter the model.
+    /// If it is desired to apply this MocoParameter to multiple models, this 
+    /// should be called on all models of interest. The property references from
+    /// each model will be append to this MocoParameter's internal property
+    /// reference list.
     void initializeOnModel(Model& model) const;
-    /// Set the value of the model property to the passed-in parameter value.
-    void applyParameterToModel(const double& value) const;
+    /// Set the value of the stored model properties, which may include
+    /// properties from multiple models.
+    void applyParameterToModelProperties(const double& value) const;
 
     /// Print the name, property name, component paths, property element (if it
     /// exists), and bounds for this parameter.

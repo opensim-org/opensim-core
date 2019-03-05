@@ -70,6 +70,7 @@ struct Iterate {
 /// to check if the problem converged.
 struct Solution : public Iterate {
     casadi::Dict stats;
+    double objective;
 };
 
 } // namespace CasOC

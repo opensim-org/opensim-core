@@ -193,7 +193,7 @@ void testMultipleCosts() {
     auto* ft1 = problem.addCost<MocoFinalTimeCost>("ft1", 0.2);
 
     MocoProblemRep rep = problem.createRep();
-    SimTK::State state = rep.getModel().getWorkingState();
+    SimTK::State state = rep.getModelBase().getWorkingState();
     const double ft = 0.35;
     state.setTime(ft);
 
