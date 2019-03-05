@@ -57,6 +57,8 @@ set(MOCO_SOURCES
         Components/ModelFactory.cpp
         Components/DiscreteForces.h
         Components/DiscreteForces.cpp
+        Components/AccelerationMotion.h
+        Components/AccelerationMotion.cpp
         MocoCasADiSolver/MocoCasADiSolver.h
         MocoCasADiSolver/MocoCasADiSolver.cpp
         MocoCasADiSolver/MocoCasADiBridge.h
@@ -73,7 +75,8 @@ set(MOCO_SOURCES
         MocoCasADiSolver/CasOCTrapezoidal.cpp
         MocoCasADiSolver/CasOCHermiteSimpson.h
         MocoCasADiSolver/CasOCHermiteSimpson.cpp
-        MocoCasADiSolver/CasOCIterate.h Components/AccelerationMotion.cpp Components/AccelerationMotion.h)
+        MocoCasADiSolver/CasOCIterate.h
+        )
 if(MOCO_WITH_TROPTER)
     list(APPEND MOCO_SOURCES
             tropter/TropterProblem.h

@@ -137,14 +137,6 @@ std::unique_ptr<CasOC::Problem> MocoCasADiSolver::createCasOCProblem() const {
     auto casProblem = make_unique<CasOC::Problem>();
     checkPropertyInSet(
             *this, getProperty_dynamics_mode(), {"explicit", "implicit"});
-    /* TODO
-    if (get_dynamics_mode() == "implicit") {
-        m_jar.visit([](MocoProblemRep& rep) {
-            auto& model = rep.getModel();
-            auto& s = model.updWorkingState();
-            model.getComponent<AccelerationMotion>("motion").setEnabled(state, true);
-        });
-    } */
     const auto& model = problemRep.getModelBase();
 
     OPENSIM_THROW_IF(!model.getMatterSubsystem().getUseEulerAngles(
