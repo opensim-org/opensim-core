@@ -466,9 +466,9 @@ int main() {
     testDeGrooteFregly2016Muscle();
 
     testHangingMuscleMinimumTime<MocoCasADiSolver>(true, true);
-    // testHangingMuscleMinimumTime(true, false);
+    // testHangingMuscleMinimumTime<MocoCasADiSolver>(true, false);
     testHangingMuscleMinimumTime<MocoCasADiSolver>(false, true);
-    // testHangingMuscleMinimumTime(false, false);
+    // testHangingMuscleMinimumTime<MocoCasADiSolver>(false, false);
 
     return EXIT_SUCCESS;
 }
