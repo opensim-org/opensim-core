@@ -19,6 +19,7 @@
  * -------------------------------------------------------------------------- */
 
 #include <OpenSim/Simulation/Model/ModelComponent.h>
+#include "../osimMocoDLL.h"
 
 #include <simbody/internal/Motion.h>
 
@@ -39,7 +40,7 @@ namespace OpenSim {
 /// This class is not intended for use outside of Moco.
 /// The wrapper to OpenSim is necessary so that the discrete variables appear in
 /// the State whenever initSystem() is called on a model.
-class AccelerationMotion : public ModelComponent {
+class OSIMMOCO_API AccelerationMotion : public ModelComponent {
     OpenSim_DECLARE_CONCRETE_OBJECT(AccelerationMotion, ModelComponent);
 public:
     AccelerationMotion() = default;
