@@ -226,6 +226,7 @@ Model createHangingMuscleModel(bool ignoreActivationDynamics,
     return model;
 }
 
+template <typename SolverType>
 void testHangingMuscleMinimumTime(bool ignoreActivationDynamics,
         bool ignoreTendonCompliance) {
 
@@ -334,9 +335,9 @@ void testHangingMuscleMinimumTime(bool ignoreActivationDynamics,
 
         problem.addCost<MocoFinalTimeCost>();
 
-        auto& solver = moco.initCasADiSolver();
+        auto& solver = moco.initSolver<SolverType>();
         solver.set_num_mesh_points(20);
-        // solver.set_dynamics_mode("implicit");
+        solver.set_dynamics_mode("implicit");
         // solver.set_optim_sparsity_detection("initial-guess");
         MocoIterate guessForwardSim = solver.createGuess("time-stepping");
         // solver.setGuess(guessForwardSim);
@@ -427,9 +428,9 @@ void testHangingMuscleMinimumTime(bool ignoreActivationDynamics,
         tracking->setReference(ref);
         tracking->setAllowUnusedReferences(true);
 
-        auto& solver = moco.initCasADiSolver();
-        // solver.set_dynamics_mode("implicit");
-        // solver.set_parallel(0);
+        auto& solver = moco.initSolver<SolverType>();
+        solver.set_num_mesh_points(20);
+        solver.set_dynamics_mode("implicit");
         // solver.set_optim_convergence_tolerance(1e-3);
         // solver.set_optim_constraint_tolerance(1e-3);
         // solver.set_optim_sparsity_detection("initial-guess");
@@ -464,9 +465,9 @@ int main() {
     std::cerr.rdbuf(LogManager::cerr.rdbuf());
     testDeGrooteFregly2016Muscle();
 
-    testHangingMuscleMinimumTime(true, true);
+    testHangingMuscleMinimumTime<MocoCasADiSolver>(true, true);
     // testHangingMuscleMinimumTime(true, false);
-    testHangingMuscleMinimumTime(false, true);
+    testHangingMuscleMinimumTime<MocoCasADiSolver>(false, true);
     // testHangingMuscleMinimumTime(false, false);
 
     return EXIT_SUCCESS;
