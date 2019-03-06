@@ -164,7 +164,8 @@ void testDeGrooteFregly2016Muscle() {
     SimTK_TEST_EQ(state.getY()[0], 0.451);
 }
 
-Model createHangingMuscleModel(bool ignoreTendonCompliance) {
+Model createHangingMuscleModel(bool ignoreActivationDynamics,
+        bool ignoreTendonCompliance) {
     Model model;
     model.setName("isometric_muscle");
     model.set_gravity(SimTK::Vec3(9.81, 0, 0));
@@ -183,6 +184,7 @@ Model createHangingMuscleModel(bool ignoreTendonCompliance) {
     actu->set_optimal_fiber_length(0.10);
     actu->set_tendon_slack_length(0.05);
     actu->set_tendon_strain_at_one_norm_force(0.10);
+    actu->set_ignore_activation_dynamics(ignoreActivationDynamics);
     actu->set_ignore_tendon_compliance(ignoreTendonCompliance);
     actu->set_max_contraction_velocity(10);
     actu->addNewPathPoint("origin", model.updGround(), SimTK::Vec3(0));
@@ -224,7 +226,8 @@ Model createHangingMuscleModel(bool ignoreTendonCompliance) {
     return model;
 }
 
-void testHangingMuscleMinimumTime(bool ignoreTendonCompliance) {
+void testHangingMuscleMinimumTime(bool ignoreActivationDynamics,
+        bool ignoreTendonCompliance) {
 
     std::cout << "testHangingMuscleMinimumTime. "
               << "ignoreTendonCompliance: " << ignoreTendonCompliance << "."
@@ -234,7 +237,8 @@ void testHangingMuscleMinimumTime(bool ignoreTendonCompliance) {
     SimTK::Real initHeight = 0.15;
     SimTK::Real finalHeight = 0.14;
 
-    Model model = createHangingMuscleModel(ignoreTendonCompliance);
+    Model model = createHangingMuscleModel(ignoreActivationDynamics,
+            ignoreTendonCompliance);
 
     // Passive forward simulation.
     // ---------------------------
@@ -320,8 +324,10 @@ void testHangingMuscleMinimumTime(bool ignoreTendonCompliance) {
             }
         }
         // OpenSim might not allow activations of 0.
-        problem.setStateInfo(
-                "/forceset/actuator/activation", {0.01, 1}, initActivation);
+        if (!ignoreActivationDynamics) {
+            problem.setStateInfo(
+                    "/forceset/actuator/activation", {0.01, 1}, initActivation);
+        }
         problem.setControlInfo("/forceset/actuator", {0.01, 1});
 
         problem.addCost<MocoFinalTimeCost>();
@@ -374,11 +380,11 @@ void testHangingMuscleMinimumTime(bool ignoreTendonCompliance) {
         // recovering the correct excitation.
         const double finalTime =
                 solutionTrajOpt.getTime()[solutionTrajOpt.getNumTimes() - 1];
-        const double slop = 1e-4;
+        const double slop = 0; // TODO 1e-4;
         problem.setTimeBounds(0 + slop, finalTime - slop);
         problem.setStateInfo(
-                "/joint/height/value", {0.10, 0.20}, initHeight, finalHeight);
-        problem.setStateInfo("/joint/height/speed", {-10, 10}, 0, 0);
+                "/joint/height/value", {0.10, 0.20}); // , initHeight, finalHeight);
+        problem.setStateInfo("/joint/height/speed", {-10, 10}); // , 0, 0);
         if (!ignoreTendonCompliance) {
             if (usingDGF) {
                 // We would prefer to use a range of [0.2, 1.8] but then IPOPT
@@ -396,8 +402,10 @@ void testHangingMuscleMinimumTime(bool ignoreTendonCompliance) {
             }
         }
         // OpenSim might not allow activations of 0.
-        problem.setStateInfo(
-                "/forceset/actuator/activation", {0.01, 1}, initActivation);
+        if (!ignoreActivationDynamics) {
+            problem.setStateInfo(
+                    "/forceset/actuator/activation", {0.01, 1}, initActivation);
+        }
         problem.setControlInfo("/forceset/actuator", {0.01, 1});
 
         auto* tracking = problem.addCost<MocoStateTrackingCost>();
@@ -406,6 +414,8 @@ void testHangingMuscleMinimumTime(bool ignoreTendonCompliance) {
         TimeSeriesTable ref(states.getIndependentColumn());
         ref.appendColumn("/joint/height/value",
                 states.getDependentColumn("/joint/height/value"));
+        ref.appendColumn("/joint/height/speed",
+                states.getDependentColumn("/joint/height/speed"));
         // Tracking joint/height/speed slightly increases the
         // iterations to converge, and tracking activation cuts the iterations
         // in half.
@@ -413,18 +423,19 @@ void testHangingMuscleMinimumTime(bool ignoreTendonCompliance) {
         tracking->setReference(ref);
         tracking->setAllowUnusedReferences(true);
 
-        auto& solver = moco.initTropterSolver();
+        auto& solver = moco.initCasADiSolver();
         // solver.set_dynamics_mode("implicit");
         // solver.set_parallel(0);
-        solver.set_optim_convergence_tolerance(1e-3);
-        solver.set_optim_constraint_tolerance(1e-3);
+        // solver.set_optim_convergence_tolerance(1e-3);
+        // solver.set_optim_constraint_tolerance(1e-3);
         // solver.set_optim_sparsity_detection("initial-guess");
         // solver.set_optim_hessian_approximation("exact");
         // solver.set_optim_finite_difference_scheme("forward");
-        solver.setGuess("time-stepping");
+        // solver.setGuess("time-stepping");
         // Don't need to use the TrajOpt solution as the initial guess; kinda
         // neat. Although, using TrajOpt for the guess improves convergence.
         // TODO solver.setGuess(solutionTrajOpt);
+
 
         MocoSolution solutionTrack = moco.solve();
         std::string solutionFilename = "sandboxMuscle_track_solution";
@@ -449,8 +460,10 @@ int main() {
     std::cerr.rdbuf(LogManager::cerr.rdbuf());
     testDeGrooteFregly2016Muscle();
 
-    testHangingMuscleMinimumTime(true);
-    // testHangingMuscleMinimumTime(false);
+    testHangingMuscleMinimumTime(true, true);
+    // testHangingMuscleMinimumTime(true, false);
+    // testHangingMuscleMinimumTime(false, true);
+    // testHangingMuscleMinimumTime(false, false);
 
     return EXIT_SUCCESS;
 }

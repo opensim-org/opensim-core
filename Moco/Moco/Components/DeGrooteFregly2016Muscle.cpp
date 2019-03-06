@@ -23,8 +23,8 @@
 
 using namespace OpenSim;
 
-const std::string DeGrooteFregly2016Muscle::ACTIVATION("activation");
-const std::string DeGrooteFregly2016Muscle::NORM_FIBER_LENGTH(
+const std::string DeGrooteFregly2016Muscle::STATE_ACTIVATION_NAME("activation");
+const std::string DeGrooteFregly2016Muscle::STATE_NORM_FIBER_LENGTH_NAME(
         "norm_fiber_length");
 
 void DeGrooteFregly2016Muscle::constructProperties() {
@@ -84,9 +84,6 @@ void DeGrooteFregly2016Muscle::extendFinalizeFromProperties() {
             "but it is %g.",
             getName().c_str(), get_tendon_strain_at_one_norm_force());
 
-    OPENSIM_THROW_IF_FRMOBJ(
-            get_ignore_activation_dynamics(), Exception, "Not supported yet.");
-
     OPENSIM_THROW_IF_FRMOBJ(get_pennation_angle_at_optimal() != 0, Exception,
             "Non-zero 'pennation angle at optimal' not supported yet.");
 
@@ -99,43 +96,49 @@ void DeGrooteFregly2016Muscle::extendFinalizeFromProperties() {
 void DeGrooteFregly2016Muscle::extendAddToSystem(
         SimTK::MultibodySystem& system) const {
     Super::extendAddToSystem(system);
-    addStateVariable(ACTIVATION, SimTK::Stage::Dynamics);
+    if (!get_ignore_activation_dynamics()) {
+        addStateVariable(STATE_ACTIVATION_NAME, SimTK::Stage::Dynamics);
+    }
     if (!get_ignore_tendon_compliance()) {
-        addStateVariable(NORM_FIBER_LENGTH, SimTK::Stage::Position);
+        addStateVariable(STATE_NORM_FIBER_LENGTH_NAME, SimTK::Stage::Position);
     }
 }
 
 void DeGrooteFregly2016Muscle::extendInitStateFromProperties(
         SimTK::State& s) const {
     Super::extendInitStateFromProperties(s);
-    setStateVariableValue(s, ACTIVATION, get_default_activation());
-    if (!get_ignore_tendon_compliance()) {
+    if (!get_ignore_activation_dynamics()) {
         setStateVariableValue(
-                s, NORM_FIBER_LENGTH, get_default_norm_fiber_length());
+                s, STATE_ACTIVATION_NAME, get_default_activation());
+    }
+    if (!get_ignore_tendon_compliance()) {
+        setStateVariableValue(s, STATE_NORM_FIBER_LENGTH_NAME,
+                get_default_norm_fiber_length());
     }
 }
 
 void DeGrooteFregly2016Muscle::extendSetPropertiesFromState(
         const SimTK::State& s) {
     Super::extendSetPropertiesFromState(s);
-    // TODO getActivation(s)?
-    set_default_activation(getStateVariableValue(s, ACTIVATION));
+    if (!get_ignore_activation_dynamics()) {
+        set_default_activation(getStateVariableValue(s, STATE_ACTIVATION_NAME));
+    }
     if (!get_ignore_tendon_compliance()) {
         set_default_norm_fiber_length(
-                getStateVariableValue(s, NORM_FIBER_LENGTH));
+                getStateVariableValue(s, STATE_NORM_FIBER_LENGTH_NAME));
     }
 }
 
 void DeGrooteFregly2016Muscle::computeStateVariableDerivatives(
         const SimTK::State& s) const {
-    const auto& activation = getActivation(s);
 
     // On a simple hanging muscle minimum time problem, I got quicker
     // convergence using the nonlinear activation dynamics from the paper, so
     // I'm using that (below) instead of these linear dynamics.
     // const auto& tau = get_activation_time_constant();
     // const SimTK::Real activationDot = (excitation - activation) / tau;
-    {
+    if (!get_ignore_activation_dynamics()) {
+        const auto& activation = getActivation(s);
         const auto& excitation = getControl(s);
         static const double actTimeConst = get_activation_time_constant();
         static const double deactTimeConst = get_deactivation_time_constant();
@@ -154,10 +157,11 @@ void DeGrooteFregly2016Muscle::computeStateVariableDerivatives(
         // std::cout << "DEBUG cSVD " << getName() << " " << excitation << " "
         // << activation << " "
         //           << derivative << std::endl;
-        setStateVariableDerivativeValue(s, ACTIVATION, derivative);
+        setStateVariableDerivativeValue(s, STATE_ACTIVATION_NAME, derivative);
     }
 
     if (!get_ignore_tendon_compliance()) {
+        const auto& activation = getActivation(s);
 
         // Root-solve the following for v:
         // a f_L f_V(v) + beta * v + f_P = f_T
@@ -227,7 +231,7 @@ void DeGrooteFregly2016Muscle::computeStateVariableDerivatives(
         const SimTK::Real normFiberLengthDot =
                 get_max_contraction_velocity() * equilNormFiberVelocity;
         setStateVariableDerivativeValue(
-                s, NORM_FIBER_LENGTH, normFiberLengthDot);
+                s, STATE_NORM_FIBER_LENGTH_NAME, normFiberLengthDot);
     }
 }
 
@@ -433,7 +437,6 @@ void DeGrooteFregly2016Muscle::printCurvesToSTOFiles(
 
 void DeGrooteFregly2016Muscle::replaceMuscles(
         Model& model, bool allowUnsupportedMuscles) {
-    // TODO: just must finalizeConnections().
 
     // Create path actuators from muscle properties and add to the model. Save
     // a list of pointers of the muscles to delete.

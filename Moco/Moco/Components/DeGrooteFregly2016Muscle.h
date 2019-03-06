@@ -24,6 +24,7 @@
 #include <OpenSim/Common/DataTable.h>
 #include <OpenSim/Common/STOFileAdapter.h>
 #include <OpenSim/Simulation/Model/Muscle.h>
+#include <OpenSim/Simulation/Model/Model.h>
 
 namespace OpenSim {
 
@@ -113,19 +114,32 @@ public:
     //--------------------------------------------------------------------------
     /// @name Muscle interface
     /// @{
+    /// If ignore_activation_dynamics, this gets excitation instead.
     double getActivation(const SimTK::State& s) const override {
         // We override the Muscle's implementation because Muscle requires
         // realizing to Dynamics to access activation from MuscleDynamicsInfo,
         // which is unnecessary if the activation is a state.
         // TODO handle ignore_activation_dynamics
-        return getStateVariableValue(s, ACTIVATION);
+        if (get_ignore_activation_dynamics()) {
+            return getControl(s);
+        } else {
+            return getStateVariableValue(s, STATE_ACTIVATION_NAME);
+        }
     }
 
+    /// If ignore_activation_dynamics, this sets excitation instead.
     void setActivation(SimTK::State& s, double activation) const override {
-        setStateVariableValue(s, ACTIVATION, activation);
+        if (get_ignore_activation_dynamics()) {
+            SimTK::Vector& controls(getModel().updControls(s));
+            setControls(SimTK::Vector(1, activation), controls);
+            getModel().setControls(s, controls);
+        } else {
+            setStateVariableValue(s, STATE_ACTIVATION_NAME, activation);
+        }
     }
 
 protected:
+    // TODO:
     // virtual double calcInextensibleTendonActiveFiberForce(SimTK::State& s,
     //         double aActivation) const;
     // virtual void calcMuscleLengthInfo(const SimTK::State& s,
@@ -206,7 +220,7 @@ public:
         if (get_ignore_tendon_compliance()) {
             return calcFiberLength(s) / get_optimal_fiber_length();
         } else {
-            return getStateVariableValue(s, NORM_FIBER_LENGTH);
+            return getStateVariableValue(s, STATE_NORM_FIBER_LENGTH_NAME);
         }
     }
 
@@ -389,8 +403,8 @@ private:
     constexpr static double m_minNormFiberLength = 0.2;
     constexpr static double m_maxNormFiberLength = 1.8;
 
-    static const std::string ACTIVATION;
-    static const std::string NORM_FIBER_LENGTH;
+    static const std::string STATE_ACTIVATION_NAME;
+    static const std::string STATE_NORM_FIBER_LENGTH_NAME;
 
     SimTK::Real m_maxContractionVelocityInMeters = SimTK::NaN;
     // Tendon stiffness parameter from De Groote et al., 2016.
