@@ -164,8 +164,8 @@ void testDeGrooteFregly2016Muscle() {
     SimTK_TEST_EQ(state.getY()[0], 0.451);
 }
 
-Model createHangingMuscleModel(bool ignoreActivationDynamics,
-        bool ignoreTendonCompliance) {
+Model createHangingMuscleModel(
+        bool ignoreActivationDynamics, bool ignoreTendonCompliance) {
     Model model;
     model.setName("isometric_muscle");
     model.set_gravity(SimTK::Vec3(9.81, 0, 0));
@@ -227,8 +227,8 @@ Model createHangingMuscleModel(bool ignoreActivationDynamics,
 }
 
 template <typename SolverType>
-void testHangingMuscleMinimumTime(bool ignoreActivationDynamics,
-        bool ignoreTendonCompliance) {
+void testHangingMuscleMinimumTime(
+        bool ignoreActivationDynamics, bool ignoreTendonCompliance) {
 
     std::cout << "testHangingMuscleMinimumTime. "
               << "ignoreTendonCompliance: " << ignoreTendonCompliance << "."
@@ -238,8 +238,8 @@ void testHangingMuscleMinimumTime(bool ignoreActivationDynamics,
     SimTK::Real initHeight = 0.15;
     SimTK::Real finalHeight = 0.14;
 
-    Model model = createHangingMuscleModel(ignoreActivationDynamics,
-            ignoreTendonCompliance);
+    Model model = createHangingMuscleModel(
+            ignoreActivationDynamics, ignoreTendonCompliance);
 
     // Passive forward simulation.
     // ---------------------------
@@ -368,8 +368,8 @@ void testHangingMuscleMinimumTime(bool ignoreActivationDynamics,
     {
         const auto iterateSim =
                 simulateIterateWithTimeStepping(solutionTrajOpt, model);
-        const double error = iterateSim.compareContinuousVariablesRMS(solutionTrajOpt,
-                {{"states", {}}, {"controls", {}}});
+        const double error = iterateSim.compareContinuousVariablesRMS(
+                solutionTrajOpt, {{"states", {}}, {"controls", {}}});
         SimTK_TEST(error < 0.05);
     }
 
@@ -388,8 +388,8 @@ void testHangingMuscleMinimumTime(bool ignoreActivationDynamics,
                 solutionTrajOpt.getTime()[solutionTrajOpt.getNumTimes() - 1];
         const double slop = 0; // TODO 1e-4;
         problem.setTimeBounds(0 + slop, finalTime - slop);
-        problem.setStateInfo(
-                "/joint/height/value", {0.10, 0.16}); // , initHeight, finalHeight);
+        problem.setStateInfo("/joint/height/value",
+                {0.10, 0.16}); // , initHeight, finalHeight);
         problem.setStateInfo("/joint/height/speed", {-10, 10}); // , 0, 0);
         if (!ignoreTendonCompliance) {
             if (usingDGF) {
@@ -443,7 +443,6 @@ void testHangingMuscleMinimumTime(bool ignoreActivationDynamics,
         // Don't need to use the TrajOpt solution as the initial guess; kinda
         // neat. Although, using TrajOpt for the guess improves convergence.
         // TODO solver.setGuess(solutionTrajOpt);
-
 
         MocoSolution solutionTrack = moco.solve();
         std::string solutionFilename = "sandboxMuscle_track_solution";
