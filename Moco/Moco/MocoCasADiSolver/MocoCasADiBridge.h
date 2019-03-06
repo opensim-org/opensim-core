@@ -616,6 +616,9 @@ public:
         VectorDM out(2);
         auto mocoProblemRep = m_jar.take();
 
+        // TODO: as a first pass, do not allow prescribed kinematics for models
+        // with kinematic constraints.
+
         // Original model and its associated state. These are used to calculate
         // kinematic constraint forces and errors.
         // TODO: deal with constness better.
@@ -628,8 +631,7 @@ public:
                 mocoProblemRep->getModelDisabledConstraints();
         auto& simtkStateDisabledConstraints =
                 mocoProblemRep->updStateDisabledConstraints();
-        auto& accel = mocoProblemRep->getAccelerationMotion();
-        accel.setEnabled(simtkStateDisabledConstraints, true);
+
 
         // Update the model and state.
         applyParametersToModelProperties(
@@ -643,24 +645,28 @@ public:
         // based on Lagrange multipliers. This also updates the associated
         // discrete variables in the state.
         const int numMultipliers = this->m_casProblem->getNumMultipliers();
-        if (numMultipliers) {
-            calcKinematicConstraintForces(multipliers, simtkStateBase,
-                    modelBase,
-                    mocoProblemRep->getConstraintForces(),
-                    m_constraintBodyForces, m_constraintMobilityForces,
-                    simtkStateDisabledConstraints);
+        // if (numMultipliers) {
+        //     calcKinematicConstraintForces(multipliers, simtkStateBase,
+        //             modelBase,
+        //             mocoProblemRep->getConstraintForces(),
+        //             m_constraintBodyForces, m_constraintMobilityForces,
+        //             simtkStateDisabledConstraints);
+        // }
+
+        if (!mocoProblemRep->isPrescribedKinematics()) {
+            auto& accel = mocoProblemRep->getAccelerationMotion();
+            accel.setEnabled(simtkStateDisabledConstraints, true);
+            SimTK::Vector udot((int)derivatives.size1(), derivatives.ptr(), true);
+            accel.setUDot(simtkStateDisabledConstraints, udot);
         }
 
-        SimTK::Vector udot((int)derivatives.size1(), derivatives.ptr(), true);
-        accel.setUDot(simtkStateDisabledConstraints, udot);
-
-        // Compute kinematic constraint errors if they exist.
-        if (numMultipliers && CalcKCErrors) {
-            calcKinematicConstraintErrors(modelBase, simtkStateBase, udot,
-                    this->m_casProblem,
-                    m_mocoCasADiSolver.get_enforce_constraint_derivatives(),
-                    m_pvaerr, out);
-        }
+        // // Compute kinematic constraint errors if they exist.
+        // if (numMultipliers && CalcKCErrors) {
+        //     calcKinematicConstraintErrors(modelBase, simtkStateBase, udot,
+        //             this->m_casProblem,
+        //             m_mocoCasADiSolver.get_enforce_constraint_derivatives(),
+        //             m_pvaerr, out);
+        // }
 
         const SimTK::SimbodyMatterSubsystem& matterDisabledConstraints =
                 modelDisabledConstraints.getMatterSubsystem();
