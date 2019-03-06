@@ -261,13 +261,15 @@ void testHangingMuscleMinimumTime(bool ignoreActivationDynamics,
     SimTK::State state = model.initSystem();
     const auto& actuator = model.getComponent("forceset/actuator");
 
+    const auto* muscle = dynamic_cast<const Muscle*>(&actuator);
     const auto* dgf = dynamic_cast<const DeGrooteFregly2016Muscle*>(&actuator);
     const bool usingDGF = dgf != nullptr;
 
     if (!ignoreTendonCompliance) {
-        model.setStateVariableValue(
-                state, "/forceset/actuator/activation", initActivation);
+
         model.setStateVariableValue(state, "joint/height/value", initHeight);
+        model.realizeVelocity(state);
+        muscle->setActivation(state, initActivation);
         model.equilibrateMuscles(state);
         if (usingDGF) {
             std::cout << "Equilibrium norm fiber length: "
@@ -332,7 +334,7 @@ void testHangingMuscleMinimumTime(bool ignoreActivationDynamics,
 
         problem.addCost<MocoFinalTimeCost>();
 
-        auto& solver = moco.initTropterSolver();
+        auto& solver = moco.initCasADiSolver();
         solver.set_num_mesh_points(20);
         // solver.set_dynamics_mode("implicit");
         // solver.set_optim_sparsity_detection("initial-guess");
@@ -414,6 +416,8 @@ void testHangingMuscleMinimumTime(bool ignoreActivationDynamics,
         TimeSeriesTable ref(states.getIndependentColumn());
         ref.appendColumn("/joint/height/value",
                 states.getDependentColumn("/joint/height/value"));
+        // Tracking speed has a huge effect on getting a good solution for the
+        // control signal.
         ref.appendColumn("/joint/height/speed",
                 states.getDependentColumn("/joint/height/speed"));
         // Tracking joint/height/speed slightly increases the
@@ -462,7 +466,7 @@ int main() {
 
     testHangingMuscleMinimumTime(true, true);
     // testHangingMuscleMinimumTime(true, false);
-    // testHangingMuscleMinimumTime(false, true);
+    testHangingMuscleMinimumTime(false, true);
     // testHangingMuscleMinimumTime(false, false);
 
     return EXIT_SUCCESS;
