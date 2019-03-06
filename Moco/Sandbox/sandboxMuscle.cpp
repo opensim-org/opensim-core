@@ -306,7 +306,7 @@ void testHangingMuscleMinimumTime(bool ignoreActivationDynamics,
         // TODO this might have been the culprit when using the Millard muscle:
         // TODO TODO TODO
         problem.setStateInfo(
-                "/joint/height/value", {0.10, 0.20}, initHeight, finalHeight);
+                "/joint/height/value", {0.10, 0.16}, initHeight, finalHeight);
         problem.setStateInfo("/joint/height/speed", {-10, 10}, 0, 0);
         // TODO initial fiber length?
         // TODO how to enforce initial equilibrium with explicit dynamics?
@@ -338,6 +338,9 @@ void testHangingMuscleMinimumTime(bool ignoreActivationDynamics,
         auto& solver = moco.initSolver<SolverType>();
         solver.set_num_mesh_points(20);
         solver.set_dynamics_mode("implicit");
+        solver.set_optim_convergence_tolerance(1e-4);
+        solver.set_optim_constraint_tolerance(1e-3);
+        // TODO if compliant tendon, use rigid tendon as initial guess.
         // solver.set_optim_sparsity_detection("initial-guess");
         MocoIterate guessForwardSim = solver.createGuess("time-stepping");
         // solver.setGuess(guessForwardSim);
@@ -386,7 +389,7 @@ void testHangingMuscleMinimumTime(bool ignoreActivationDynamics,
         const double slop = 0; // TODO 1e-4;
         problem.setTimeBounds(0 + slop, finalTime - slop);
         problem.setStateInfo(
-                "/joint/height/value", {0.10, 0.20}); // , initHeight, finalHeight);
+                "/joint/height/value", {0.10, 0.16}); // , initHeight, finalHeight);
         problem.setStateInfo("/joint/height/speed", {-10, 10}); // , 0, 0);
         if (!ignoreTendonCompliance) {
             if (usingDGF) {

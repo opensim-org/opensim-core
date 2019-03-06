@@ -199,7 +199,7 @@ void DeGrooteFregly2016Muscle::computeStateVariableDerivatives(
         // In explicit dynamics mode and during trial integration steps,
         // the equilibrium solution for normFiberVelocity is not within
         // [-1, 1].
-        const double velocityBound = 200000;
+        const double velocityBound = 500000;
 
         SimTK::Real equilNormFiberVelocity;
         try {
@@ -280,18 +280,18 @@ SimTK::Real DeGrooteFregly2016Muscle::solveBisection(
             format("Expected maxIterations to be positive, but got %i.",
                     maxIterations));
     const bool sameSign = calcResidual(left) * calcResidual(right) >= 0;
-    // if (sameSign) {
-    //     std::cout << " solveBisection() SAME SIGN" << std::endl;
-    //     const auto x = createVectorLinspace(1000, left, right);
-    //     TimeSeriesTable table;
-    //     table.setColumnLabels({"residual"});
-    //     SimTK::RowVector row(1);
-    //     for (int i = 0; i < x.nrow(); ++i) {
-    //         row[0] = calcResidual(x[i]);
-    //         table.appendRow(x[i], row);
-    //     }
-    //     STOFileAdapter::write(table, "DEBUG_solveBisection_residual.sto");
-    // }
+    if (sameSign) {
+        std::cout << " solveBisection() SAME SIGN" << std::endl;
+        const auto x = createVectorLinspace(1000, left, right);
+        TimeSeriesTable table;
+        table.setColumnLabels({"residual"});
+        SimTK::RowVector row(1);
+        for (int i = 0; i < x.nrow(); ++i) {
+            row[0] = calcResidual(x[i]);
+            table.appendRow(x[i], row);
+        }
+        STOFileAdapter::write(table, "DEBUG_solveBisection_residual.sto");
+    }
     OPENSIM_THROW_IF_FRMOBJ(sameSign, Exception,
             format("Function has same sign at bounds of %f and %f.", left,
                     right));
