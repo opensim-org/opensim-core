@@ -39,6 +39,9 @@ MocoAddSandboxExecutable(NAME sandboxCasADi
 MocoAddSandboxExecutable(NAME sandboxCasADiParallelMap
         LIB_DEPENDS SimTKcommon casadi)
 
+MocoAddSandboxExecutable(NAME sandboxSimTKMotion
+        LIB_DEPENDS SimTKsimbody)
+
 add_subdirectory(sandboxWholeBodyTracking)
 add_subdirectory(sandboxMarkerTrackingWholeBody)
 add_subdirectory(sandboxJointReaction)

@@ -39,6 +39,7 @@
 #include "Components/ActivationCoordinateActuator.h"
 #include "Components/StationPlaneContactForce.h"
 #include "Components/DiscreteForces.h"
+#include "Components/AccelerationMotion.h"
 
 // TODO: Move to osimSimulation.
 #include <OpenSim/Simulation/MarkersReference.h>
@@ -81,6 +82,7 @@ OSIMMOCO_API void RegisterTypes_osimMoco() {
         Object::registerType(EspositoMiller2018Force());
 
         Object::registerType(DiscreteForces());
+        Object::registerType(AccelerationMotion());
 
         // TODO: Move to osimSimulation.
         Object::registerType(MarkersReference());

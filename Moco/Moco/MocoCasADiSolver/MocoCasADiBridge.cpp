@@ -37,12 +37,12 @@ template <bool T>
 thread_local SimTK::Vector MocoCasADiMultibodySystemImplicit<T>::m_residual;
 template <bool T>
 thread_local SimTK::Vector MocoCasADiMultibodySystemImplicit<T>::m_pvaerr;
-//template <bool T>
-//thread_local SimTK::Vector_<SimTK::SpatialVec>
-//MocoCasADiMultibodySystemImplicit<T>::m_constraintBodyForces;
-//template <bool T>
-//thread_local SimTK::Vector
-//MocoCasADiMultibodySystemImplicit<T>::m_constraintMobilityForces;
+template <bool T>
+thread_local SimTK::Vector_<SimTK::SpatialVec>
+MocoCasADiMultibodySystemImplicit<T>::m_constraintBodyForces;
+template <bool T>
+thread_local SimTK::Vector
+MocoCasADiMultibodySystemImplicit<T>::m_constraintMobilityForces;
 
 template class OpenSim::MocoCasADiMultibodySystem<false>;
 template class OpenSim::MocoCasADiMultibodySystem<true>;

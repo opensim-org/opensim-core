@@ -22,6 +22,7 @@
 #include <Moco/osimMoco.h>
 #include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
 #include <OpenSim/Common/LogManager.h>
+#include <Moco/Components/AccelerationMotion.h>
 
 using namespace OpenSim;
 using namespace Catch;
@@ -169,6 +170,8 @@ TEMPLATE_TEST_CASE("Similar solutions between implicit and explicit dynamics",
 
 TEMPLATE_TEST_CASE("Combining implicit dynamics mode with path constraints",
         "[implicit]", MocoTropterSolver, MocoCasADiSolver) {
+    std::cout.rdbuf(LogManager::cout.rdbuf());
+    std::cerr.rdbuf(LogManager::cerr.rdbuf());
     class MyPathConstraint : public MocoPathConstraint {
         OpenSim_DECLARE_CONCRETE_OBJECT(MyPathConstraint, MocoPathConstraint);
         void initializeOnModelImpl(const Model& model) const override {
@@ -297,72 +300,27 @@ SCENARIO("Using MocoIterate with the implicit dynamics mode",
     }
 }
 
-TEMPLATE_TEST_CASE("Solving a problem with acceleration-level quantities",
-        "[implicit]", MocoTropterSolver /* TODO , MocoCasADiSolver */ ) {
-    MocoTool moco;
-    moco.updProblem().setModelCopy(ModelFactory::createPendulum());
-    auto& solver = moco.initSolver<TestType>();
-    solver.set_dynamics_mode("implicit");
-    solver.set_num_mesh_points(5);
+TEST_CASE("AccelerationMotion") {
+    Model model = OpenSim::ModelFactory::createNLinkPendulum(1);
+    AccelerationMotion* accel = new AccelerationMotion("motion");
+    model.addModelComponent(accel);
+    auto state = model.initSystem();
+    state.updQ()[0] = -SimTK::Pi / 2;
+    model.realizeAcceleration(state);
+    // Default.
+    CHECK(state.getUDot()[0] == Approx(0).margin(1e-10));
 
-    class AccelerationIntegralCost : public MocoCost {
-    OpenSim_DECLARE_CONCRETE_OBJECT(AccelerationIntegralCost, MocoCost);
-        void calcIntegralCostImpl(const SimTK::State& state,
-                SimTK::Real& cost) const override {
-            getModel().realizeAcceleration(state);
-            cost = state.getYDot().norm();
-        }
-    };
+    // Enable.
+    accel->setEnabled(state, true);
+    SimTK::Vector udot(1);
+    udot[0] = SimTK::Random::Uniform(-1, 1).getValue();
+    accel->setUDot(state, udot);
+    model.realizeAcceleration(state);
+    CHECK(state.getUDot()[0] == Approx(udot[0]).margin(1e-10));
 
-    GIVEN("an integral MocoCost that invokes realizeAcceleration") {
-        moco.updProblem().addCost<AccelerationIntegralCost>();
-
-        THEN("problem cannot be solved") {
-            REQUIRE_THROWS_WITH(moco.solve(),
-                    Contains("Cannot realize to Acceleration in implicit "
-                             "dynamics mode."));
-        }
-    }
-
-    class AccelerationEndpointCost : public MocoCost {
-    OpenSim_DECLARE_CONCRETE_OBJECT(AccelerationEndpointCost, MocoCost);
-        void calcEndpointCostImpl(const SimTK::State& state,
-                SimTK::Real& cost) const override {
-            getModel().realizeAcceleration(state);
-            cost = state.getYDot().norm();
-        }
-    };
-
-    GIVEN("an endpoint MocoCost that invokes realizeAcceleration") {
-        moco.updProblem().addCost<AccelerationEndpointCost>();
-
-        THEN("problem cannot be solved") {
-            REQUIRE_THROWS_WITH(moco.solve(),
-                    Contains("Cannot realize to Acceleration in implicit "
-                             "dynamics mode."));
-        }
-    }
-
-    class AccelerationConstraint : public MocoPathConstraint {
-    OpenSim_DECLARE_CONCRETE_OBJECT(AccelerationConstraint,
-            MocoPathConstraint);
-        void initializeOnModelImpl(const Model&) const override {
-            setNumEquations(1);
-        }
-        void calcPathConstraintErrorsImpl(const SimTK::State& state,
-                SimTK::Vector& errors) const override {
-            getModel().realizeAcceleration(state);
-            errors = 0;
-        }
-    };
-
-    GIVEN("a MocoPathConstraint that invokes realizeAcceleration") {
-        moco.updProblem().addPathConstraint<AccelerationConstraint>();
-
-        THEN("problem cannot be solved") {
-            REQUIRE_THROWS_WITH(moco.solve(),
-                    Contains("Cannot realize to Acceleration in implicit "
-                             "dynamics mode."));
-        }
-    }
+    // Disable.
+    accel->setEnabled(state, false);
+    model.realizeAcceleration(state);
+    CHECK(state.getUDot()[0] == Approx(0).margin(1e-10));
 }
+
