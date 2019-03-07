@@ -205,20 +205,18 @@ inline void applyParametersToModelProperties(
 /// first states.size1() values are copied.
 inline void convertToSimTKState(const double& time, const casadi::DM& states,
         const Model& model, const std::unordered_map<int, int>& yIndexMap,
-        SimTK::State& simtkState, bool setControlsToNaN = true) {
+        SimTK::State& simtkState) {
     simtkState.setTime(time);
     for (int isv = 0; isv < states.size1(); ++isv) {
         simtkState.updY()[yIndexMap.at(isv)] = *(states.ptr() + isv);
     }
-    // TODO: Remove this: endpoint cost can depend on NaNs.
-    if (setControlsToNaN) model.updControls(simtkState).setToNaN();
 }
 
 inline void convertToSimTKState(const double& time, const casadi::DM& states,
         const casadi::DM& controls, const Model& model,
         const std::unordered_map<int, int>& yIndexMap,
         SimTK::State& simtkState) {
-    convertToSimTKState(time, states, model, yIndexMap, simtkState, false);
+    convertToSimTKState(time, states, model, yIndexMap, simtkState);
     auto& simtkControls = model.updControls(simtkState);
     std::copy_n(controls.ptr(), simtkControls.size(),
             simtkControls.updContiguousScalarData());
@@ -275,25 +273,25 @@ private:
             MultibodySystemExplicitOutput& output) const override {
         auto mocoProblemRep = m_jar->take();
 
-        applyInput(input.time, input.states, input.controls, input.multipliers,
-                input.derivatives, input.parameters, mocoProblemRep);
+        const auto& modelBase = mocoProblemRep->getModelBase();
+        auto& simtkStateBase = mocoProblemRep->updStateBase();
 
         const auto& modelDisabledConstraints =
                 mocoProblemRep->getModelDisabledConstraints();
         auto& simtkStateDisabledConstraints =
                 mocoProblemRep->updStateDisabledConstraints();
 
+        applyInput(input.time, input.states, input.controls, input.multipliers,
+                input.derivatives, input.parameters, mocoProblemRep);
+
         // Compute the accelerations.
         modelDisabledConstraints.realizeAcceleration(
                 simtkStateDisabledConstraints);
 
-        const auto& modelBase = mocoProblemRep->getModelBase();
-        auto& simtkStateBase = mocoProblemRep->updStateBase();
-
         // Compute kinematic constraint errors if they exist.
         if (getNumMultipliers() && calcKCErrors) {
             calcKinematicConstraintErrors(modelBase, simtkStateBase,
-                    simtkStateDisabledConstraints.getUDot(),
+                    simtkStateDisabledConstraints,
                     output.kinematic_constraint_errors);
         }
 
@@ -324,25 +322,21 @@ private:
         auto& simtkStateDisabledConstraints =
                 mocoProblemRep->updStateDisabledConstraints();
 
-        auto& accel = mocoProblemRep->getAccelerationMotion();
-        accel.setEnabled(simtkStateDisabledConstraints, true);
-        SimTK::Vector udot(
-                (int)input.derivatives.rows(), input.derivatives.ptr(), true);
-        accel.setUDot(simtkStateDisabledConstraints, udot);
-
         applyInput(input.time, input.states, input.controls, input.multipliers,
                 input.derivatives, input.parameters, mocoProblemRep);
 
+        modelDisabledConstraints.realizeAcceleration(
+                simtkStateDisabledConstraints);
+
         // Compute kinematic constraint errors if they exist.
         if (getNumMultipliers() && calcKCErrors) {
-            calcKinematicConstraintErrors(modelBase, simtkStateBase, udot,
+            calcKinematicConstraintErrors(modelBase, simtkStateBase,
+                    simtkStateDisabledConstraints,
                     output.kinematic_constraint_errors);
         }
 
         const SimTK::SimbodyMatterSubsystem& matterDisabledConstraints =
                 modelDisabledConstraints.getMatterSubsystem();
-        modelDisabledConstraints.realizeAcceleration(
-                simtkStateDisabledConstraints);
         SimTK::Vector simtkResidual((int)output.multibody_residuals.rows(),
                 output.multibody_residuals.ptr(), true);
         matterDisabledConstraints.findMotionForces(
@@ -369,7 +363,7 @@ private:
                 SimTK::Vector((int)parameters.size1(), parameters.ptr(), true),
                 *mocoProblemRep);
         convertToSimTKState(time, multibody_states, modelBase, m_yIndexMap,
-                simtkStateBase, false);
+                simtkStateBase);
         modelBase.realizeVelocity(simtkStateBase);
 
         // Apply velocity correction to qdot if at a mesh interval midpoint.
@@ -430,6 +424,15 @@ private:
         applyParametersToModelProperties(
                 SimTK::Vector((int)parameters.size1(), parameters.ptr(), true),
                 *mocoProblemRep);
+
+        if (getNumDerivatives()) {
+            auto& accel = mocoProblemRep->getAccelerationMotion();
+            accel.setEnabled(simtkStateDisabledConstraints, true);
+            SimTK::Vector udot(
+                    (int)derivatives.rows(), derivatives.ptr(), true);
+            accel.setUDot(simtkStateDisabledConstraints, udot);
+        }
+
         convertToSimTKState(
                 time, states, controls, modelBase, m_yIndexMap, simtkStateBase);
         convertToSimTKState(time, states, controls, modelDisabledConstraints,
@@ -466,7 +469,8 @@ private:
     }
 
     void calcKinematicConstraintErrors(const Model& modelBase,
-            const SimTK::State& stateBase, const SimTK::Vector& udot,
+            const SimTK::State& stateBase,
+            const SimTK::State& simtkStateDisabledConstraints,
             casadi::DM& kinematic_constraint_errors) const {
         // The total number of scalar holonomic, non-holonomic, and acceleration
         // constraint equations enabled in the model. This does not count
@@ -485,8 +489,10 @@ private:
             // the udot computed from the base model (with enabled constraints)
             // since we cannot use (nor do we have availabe) udot computed
             // from the original model.
+            // TODO: realize the base model to Acceleration and use UDotErr?
             const auto& matter = modelBase.getMatterSubsystem();
-            matter.calcConstraintAccelerationErrors(stateBase, udot, m_pvaerr);
+            matter.calcConstraintAccelerationErrors(stateBase,
+                    simtkStateDisabledConstraints.getUDot(), m_pvaerr);
         } else {
             m_pvaerr = SimTK::NaN;
         }
