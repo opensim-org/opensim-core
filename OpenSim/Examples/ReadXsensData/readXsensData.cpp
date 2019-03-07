@@ -48,7 +48,7 @@ int main(int argc, char* argv[]) {
             mappingFile = argv[i + 1];
     }
     try {
-        MapObject mapXsensName2ModelName(mappingFile);
+        ExperimentalSensors mapXsensName2ModelName(mappingFile);
         DataAdapter::OutputTables tables = XsensDataReader::readTrial(folder, trial, mapXsensName2ModelName);
         // Write tables to sto files
         // Accelerations

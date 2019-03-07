@@ -1,14 +1,12 @@
 /* -------------------------------------------------------------------------- *
- *                          OpenSim:  MapObject.cpp                           *
+ *                          OpenSim: ExperimentalSensor.h                     *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
- * See http://opensim.stanford.edu and the NOTICE file for more information.  *
  * OpenSim is developed at Stanford University and supported by the US        *
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2017 Stanford University and the Authors                *
- * Author(s): Frank C. Anderson                                               *
+ * Copyright (c) 2005-2019 Stanford University and the Authors                *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -21,55 +19,39 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/* Note: This code was originally developed by Realistic Dynamics Inc. 
- * Author: Frank C. Anderson 
- */
+#ifndef OPENSIM_EXPERIMENTAL_SENSOR_H_
+#define OPENSIM_EXPERIMENTAL_SENSOR_H_
+ // INCLUDES
+#include "Object.h"
 
-
-// INCLUDES
-#include <iostream>
-#include <string>
-#include <cassert>
-#include "osimCommonDLL.h"
-#include "MapObject.h"
-
-
-using namespace OpenSim;
-using namespace std;
-
-
-//=============================================================================
-// CONSTRUCTOR(S) AND DESTRUCTOR
-//=============================================================================
-//_____________________________________________________________________________
+namespace OpenSim {
 /**
- * Default constructor.
- */
-MapItem::
-MapItem(const string &key,const string &val)
-{
-    constructProperties();
-    upd_from_name() = key;
-    upd_to_value() = val;
-}
+* A class encapsulating the data about ExperimentalSensor (IMU)
+*
+*
+* @author Ayman Habib
+*/
 
-MapItem::MapItem()
-{
-    constructProperties();
-}
-
-void MapItem::constructProperties()
-{
-    constructProperty_from_name("key_not_set");
-    constructProperty_to_value("value_not_set");
-}
-
-MapObject::MapObject() {
-    constructProperty_list_MapItems();
+class OSIMCOMMON_API ExperimentalSensor : public Object {
+OpenSim_DECLARE_CONCRETE_OBJECT(ExperimentalSensor, Object);
+public:
+    OpenSim_DECLARE_PROPERTY(name_in_model, std::string,
+        "Name of imu object in Model corresponding to this Sensor, will be used in table headers.");
+public:
+    ExperimentalSensor(const std::string&  sensorName, const std::string& nameInModel) {
+        constructProperties();
+        upd_name_in_model() = nameInModel;
+        setName(sensorName);
+    };
+    ExperimentalSensor() {
+        constructProperties();
+    };
+    virtual ~ExperimentalSensor() = default;
+private:
+    void constructProperties() {
+        constructProperty_name_in_model("name_not_set");
+    };
 };
 
-MapObject::MapObject(const std::string &aFileName) : Object(aFileName, false) {
-    constructProperty_list_MapItems();
-    updateFromXMLDocument();
-
 }
+#endif

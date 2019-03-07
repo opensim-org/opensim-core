@@ -9,12 +9,27 @@ const std::string XsensDataReader::LinearAccelerations{ "linear_accelerations" }
 const std::string XsensDataReader::MagneticHeading{ "magnetic_heading" };
 const std::string XsensDataReader::AngularVelocity{ "angular_velocity" };
 
-DataAdapter::OutputTables XsensDataReader::readTrial(const std::string& folderName, const std::string& prefix,
-        const MapObject& modelIMUToFilenameMap) {
+XsensDataReader::XsensDataReader() {
+    constructProperties();
+}
+
+XsensDataReader::XsensDataReader(const std::string& aXmlFile) : Object (aXmlFile) {
+    constructProperties();
+    updateFromXMLDocument();
+}
+
+void
+XsensDataReader::constructProperties() {
+    constructProperty_data_folder("");
+    constructProperty_trial_prefix("");
+    constructProperty_ExperimentalSensors();
+}
+
+DataAdapter::OutputTables XsensDataReader::readTrial() {
 
     std::vector<std::ifstream*> imuStreams;
     std::vector<std::string> labels;
-    // files specified by prefix + filenameToModelIMUMap.values exist
+    // files specified by prefix + file name exist
     double dataRate = SimTK::NaN;
     int packetCounterIndex = -1;
     int accIndex = -1;
@@ -22,7 +37,7 @@ DataAdapter::OutputTables XsensDataReader::readTrial(const std::string& folderNa
     int magIndex = -1;
     int rotationsIndex = -1;
 
-    int n_imus = modelIMUToFilenameMap.getNumItems();
+    int n_imus = getProperty_ExperimentalSensors().size();
     int last_size = 1024;
     // Will read data into pre-allocated Matrices in-memory rather than appendRow
     // on the fly to avoid the overhead of 
@@ -33,15 +48,17 @@ DataAdapter::OutputTables XsensDataReader::readTrial(const std::string& folderNa
     std::vector<double> times;
     times.resize(last_size);
     
+    std::string folderName = get_data_folder();
+    std::string prefix = get_trial_prefix();
     for (int index = 0; index < n_imus; ++index) {
-        const MapItem& nextItem = modelIMUToFilenameMap.get_list_MapItems(index);
-        auto fileName = folderName + prefix + nextItem.get_to_value() +".txt";
+        const ExperimentalSensor& nextItem = get_ExperimentalSensors(index);
+        auto fileName = folderName + prefix + nextItem.getName() +".txt";
         auto* nextStream = new std::ifstream{ fileName };
         OPENSIM_THROW_IF(!nextStream->good(),
             FileDoesNotExist,
             fileName);
         // Add imu name to labels
-        labels.push_back(nextItem.get_from_name());
+        labels.push_back(nextItem.get_name_in_model());
         // Add corresponding stream to imuStreams
         imuStreams.push_back(nextStream);
 

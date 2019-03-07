@@ -21,7 +21,6 @@
  * -------------------------------------------------------------------------- */
 
 #include "OpenSim/Common/DataAdapter.h"
-#include "OpenSim/Common/MapObject.h"
 #include "OpenSim/Common/XsensDataReader.h"
 #include "OpenSim/Common/STOFileAdapter.h"
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
@@ -38,22 +37,21 @@ PacketCounter<tab>SampleTimeFine<tab>Year<tab>Month<tab>Day<tab>Second<tab>UTC_N
 int main() {
 
     try {
-        MapObject mapOpenSimIMUToFileName;
-        std::vector<std::string> imu_names{ "shank"};
-        std::vector<std::string> file_names{ "000_00B421AF"};
+        XsensDataReader reader;
+        std::vector<std::string> imu_names{ "shank", "thigh", "calcn", "toe" };
+        std::vector<std::string> file_names{ "000_00B421AF", "000_00B4227B", "000_00B42263", "000_00B42268" };
         // Programmatically add items to Map, write to xml
-        int index = 0;
-        for (auto name : imu_names) {
-            MapItem newItem(name, file_names[index]);
-            mapOpenSimIMUToFileName.addItem(newItem);
-            index++;
+        for (int index = 0; index < imu_names.size(); ++index) {
+            ExperimentalSensor  nextSensor(file_names[index], imu_names[index]);
+            reader.append_ExperimentalSensors(nextSensor);
         }
-        mapOpenSimIMUToFileName.print("map2xml.xml");
+        reader.updProperty_trial_prefix() = "MT_012005D6_031-";
+        reader.print("reader2xml.xml");
         // read xml we wrote into a new MapObject and pass to readXsensTrial
-        MapObject readMapIMUName2FileName("map2xml.xml");
-        const std::string folder = "";
-        const std::string trial = "MT_012005D6_031-";
-        DataAdapter::OutputTables tables = XsensDataReader::readTrial(folder, trial, readMapIMUName2FileName);
+        XsensDataReader reconstructFromXML("reader2xml.xml");
+        DataAdapter::OutputTables tables = reconstructFromXML.readTrial();
+        std::string folder = reader.get_data_folder();
+        std::string trial = reader.get_trial_prefix();
         // Write tables to sto files
         // Accelerations
         std::shared_ptr<AbstractDataTable> accelTable = tables.at(XsensDataReader::LinearAccelerations);
@@ -65,7 +63,7 @@ int main() {
         double tolerance = SimTK::Eps;
         ASSERT_EQUAL(fromTable,fromFile, tolerance);
         // test last row as well to make sure all data is read correctly, size is as expected
-        int numRows = accelTableTyped.getIndependentColumn().size();
+        size_t numRows = accelTableTyped.getIndependentColumn().size();
         fromTable = accelTableTyped.getRowAtIndex(numRows-1)[0];
         fromFile = SimTK::Vec3{ 2.657654, 5.012634, -7.581414 };
         ASSERT_EQUAL(fromTable, fromFile, tolerance);
@@ -87,15 +85,16 @@ int main() {
         std::shared_ptr<AbstractDataTable> orientationTable = tables.at(XsensDataReader::Orientations);
         const TimeSeriesTableQuaternion& quatTableTyped = dynamic_cast<const TimeSeriesTableQuaternion&>(*orientationTable);
         STOFileAdapterQuaternion::write(quatTableTyped, folder + trial + "quaternions.sto");
-
+        /**
         // Now test the case where only orintation data is available, rest is missing
-        MapObject mapOpenSimIMUToFileNameOrientationOnly;
-        MapItem newItem("test", "000_00B421ED");
+        ExperimentalSensors mapOpenSimIMUToFileNameOrientationOnly;
+        ExperimentalSensor newItem("test", "000_00B421ED");
         mapOpenSimIMUToFileNameOrientationOnly.addItem(newItem);
         DataAdapter::OutputTables tables2 = XsensDataReader::readTrial("", "MT_012005D6-000_sit_to_stand-", mapOpenSimIMUToFileNameOrientationOnly);
         std::shared_ptr<AbstractDataTable> accelTable2 = tables2.at(XsensDataReader::LinearAccelerations);
         int tableSize = accelTable2->getNumRows();
         ASSERT(tableSize ==0);
+        **/
     }
     catch (const std::exception& ex) {
         std::cout << "testXsensDataReader FAILED: " << ex.what() << std::endl;

@@ -1,5 +1,8 @@
+#ifndef OPENSIM_XSENS_DATA_READER_H_
+#define OPENSIM_XSENS_DATA_READER_H_
+
 /* -------------------------------------------------------------------------- *
- *                          OpenSim:  IMUHelper.h                           *
+ *                          OpenSim:  XsensDataReader.h                       *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * OpenSim is developed at Stanford University and supported by the US        *
@@ -19,17 +22,12 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#ifndef OPENSIM_IMU_HELPER_H_
-#define OPENSIM_IMU_HELPER_H_
-
 // For definition of Exceptions to be used
-#include "DataAdapter.h"
-#include "FileAdapter.h"
+#include "Object.h"
 #include "TimeSeriesTable.h"
-#include "Event.h"
-#include "MapObject.h"
+#include "ExperimentalSensor.h"
 /** @file
-* This file defines Helper class for reading or writing data files from IMU Makers.
+* This file defines Helper class for reading data files from IMU maker Xsens.
 */
 #include <map>
 
@@ -37,9 +35,22 @@ namespace OpenSim {
 
 /** XsensDataReader is a class that reads files produced by IMU manufacturer Xsens
     and produces datatables from them. This is intended to help consume IMU outputs.*/
-class OSIMCOMMON_API XsensDataReader {
+class OSIMCOMMON_API XsensDataReader : public Object {
+OpenSim_DECLARE_CONCRETE_OBJECT(XsensDataReader, Object);
 public:
-    XsensDataReader() = default;
+    OpenSim_DECLARE_PROPERTY(data_folder, std::string,
+        "Name of folder containing data files.");
+    OpenSim_DECLARE_PROPERTY(trial_prefix, std::string,
+        "Name of trial (Common prefix of txt files representing trial).");
+    OpenSim_DECLARE_LIST_PROPERTY(ExperimentalSensors, ExperimentalSensor,
+        "List of Experimental sensors and desired associated names in resulting tables");
+
+public:
+    // Default Constructor
+    XsensDataReader();
+    // Constructor from XML file
+    XsensDataReader(const std::string& xmlFile);
+
     XsensDataReader(const XsensDataReader&)            = default;
     XsensDataReader(XsensDataReader&&)                 = default;
     XsensDataReader& operator=(const XsensDataReader&) = default;
@@ -61,11 +72,12 @@ public:
     - One table for rotations, 
     - one for LinearAccelerations
     - one for MagneticHeading data, 
-    - one for AngularVelocity data. */
-    static DataAdapter::OutputTables readTrial(const std::string& folderName, const std::string& prefix, 
-        const MapObject& modelIMUToFilenameMap);
+    - one for AngularVelocity data. 
+    */
+    DataAdapter::OutputTables readTrial();
     
 private:
+    void constructProperties();
     /**
      * Find index of searchString in tokens
      */
@@ -74,4 +86,4 @@ private:
 
 } // OpenSim namespace
 
-#endif // OPENSIM_IMU_HELPER_H_
+#endif // OPENSIM_XSENS_DATA_READER_H_
