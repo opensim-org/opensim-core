@@ -204,7 +204,7 @@ inline void applyParametersToModelProperties(
 /// It's fine for the size of `states` to be less than the size of Y; only the
 /// first states.size1() values are copied.
 inline void convertToSimTKState(const double& time, const casadi::DM& states,
-        const Model& model, const std::unordered_map<int, int>& yIndexMap,
+        const std::unordered_map<int, int>& yIndexMap,
         SimTK::State& simtkState) {
     simtkState.setTime(time);
     for (int isv = 0; isv < states.size1(); ++isv) {
@@ -216,7 +216,7 @@ inline void convertToSimTKState(const double& time, const casadi::DM& states,
         const casadi::DM& controls, const Model& model,
         const std::unordered_map<int, int>& yIndexMap,
         SimTK::State& simtkState) {
-    convertToSimTKState(time, states, model, yIndexMap, simtkState);
+    convertToSimTKState(time, states, yIndexMap, simtkState);
     auto& simtkControls = model.updControls(simtkState);
     std::copy_n(controls.ptr(), simtkControls.size(),
             simtkControls.updContiguousScalarData());
@@ -362,7 +362,7 @@ private:
         applyParametersToModelProperties(
                 SimTK::Vector((int)parameters.size1(), parameters.ptr(), true),
                 *mocoProblemRep);
-        convertToSimTKState(time, multibody_states, modelBase, m_yIndexMap,
+        convertToSimTKState(time, multibody_states, m_yIndexMap,
                 simtkStateBase);
         modelBase.realizeVelocity(simtkStateBase);
 

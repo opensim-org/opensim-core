@@ -216,11 +216,11 @@ protected:
 
 public:
     virtual void calcIntegralCostIntegrand(
-            const ContinuousInput& input, double& integrand) const {
+            const ContinuousInput&, double& integrand) const {
         integrand = 0;
     }
     virtual void calcEndpointCost(
-            const EndpointInput& final, double& cost) const {
+            const EndpointInput&, double& cost) const {
         cost = 0;
     }
     virtual void calcMultibodySystemExplicit(const ContinuousInput& input,
@@ -232,8 +232,8 @@ public:
             const casadi::DM& parameters,
             casadi::DM& velocity_correction) const = 0;
 
-    virtual void calcPathConstraint(int constraintIndex,
-            const ContinuousInput& input, casadi::DM& path_constraint) const {}
+    virtual void calcPathConstraint(int,
+            const ContinuousInput&, casadi::DM&) const {}
 
     /// @}
 
