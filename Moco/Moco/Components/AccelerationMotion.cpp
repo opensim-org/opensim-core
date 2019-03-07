@@ -34,7 +34,6 @@ public:
     }
     void calcPrescribedAcceleration(
             const SimTK::State& s, int nu, SimTK::Real* udot) const override {
-        SimTK::Vector out(nu, udot, true);
         std::copy_n(m_accel.getUDot(s, m_mobodIdx).getContiguousScalarData(),
                 nu, udot);
     }

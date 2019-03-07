@@ -385,6 +385,10 @@ const MocoPathConstraint& MocoProblemRep::getPathConstraint(
     OPENSIM_THROW(Exception,
             format("No path constraint with name '%s' found.", name));
 }
+const MocoPathConstraint& MocoProblemRep::getPathConstraintByIndex(
+        int index) const {
+    return *m_path_constraints[index];
+}
 const MocoKinematicConstraint& MocoProblemRep::getKinematicConstraint(
         const std::string& name) const {
 

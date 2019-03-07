@@ -66,8 +66,8 @@ set(MOCO_SOURCES
         Components/AccelerationMotion.cpp
         MocoCasADiSolver/MocoCasADiSolver.h
         MocoCasADiSolver/MocoCasADiSolver.cpp
-        MocoCasADiSolver/MocoCasADiBridge.h
-        MocoCasADiSolver/MocoCasADiBridge.cpp
+        MocoCasADiSolver/MocoCasOCProblem.h
+        MocoCasADiSolver/MocoCasOCProblem.cpp
         MocoCasADiSolver/CasOCProblem.h
         MocoCasADiSolver/CasOCProblem.cpp
         MocoCasADiSolver/CasOCSolver.h

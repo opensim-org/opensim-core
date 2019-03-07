@@ -1119,8 +1119,8 @@ TEMPLATE_TEST_CASE(
     testDoublePendulumPointOnLineJointReaction<TestType>(true, "explicit");
 }
 
-TEST_CASE("DoublePendulumPointOnLineJointReaction with constraint derivatives",
-        "[implicit]") {
-    testDoublePendulumPointOnLineJointReaction<MocoCasADiSolver>(
-            true, "implicit");
+TEMPLATE_TEST_CASE(
+        "DoublePendulumPointOnLineJointReaction implicit with constraint derivatives",
+        "[implicit]", MocoCasADiSolver) {
+    testDoublePendulumPointOnLineJointReaction<TestType>(true, "implicit");
 }
