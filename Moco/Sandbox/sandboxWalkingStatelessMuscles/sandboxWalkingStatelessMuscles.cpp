@@ -26,8 +26,8 @@
 
 namespace OpenSim {
 
-class MocoINDYGO : Object {
-    OpenSim_DECLARE_CONCRETE_OBJECT(MocoINDYGO, Object);
+class MocoInverse : Object {
+    OpenSim_DECLARE_CONCRETE_OBJECT(MocoInverse, Object);
 
 public:
     OpenSim_DECLARE_PROPERTY(create_reserve_actuators, double,
@@ -40,7 +40,7 @@ public:
             "which "
             "means no reserves are created)");
     OpenSim_DECLARE_PROPERTY(external_loads_file, std::string, "TODO");
-    MocoINDYGO() {
+    MocoInverse() {
         constructProperty_create_reserve_actuators(-1);
         constructProperty_external_loads_file("");
     }
@@ -108,20 +108,16 @@ public:
         //                 spaceForFiniteDiff);
         problem.setTimeBounds(0.01, 1.4);
 
-        auto* effort = problem.addCost<MocoControlCost>("effort");
-        effort->setWeight("reserve__jointset_ground_pelvis_pelvis_tilt", 0);
-        effort->setWeight("reserve__jointset_ground_pelvis_pelvis_tx", 0);
-        effort->setWeight("reserve__jointset_ground_pelvis_pelvis_ty", 0);
-
-        // auto* stateTracking =
-        //         problem.addCost<MocoStateTrackingCost>("tracking");
-        // stateTracking->setReferenceFile(m_kinematicsFileName);
+        problem.addCost<MocoControlCost>("effort");
+        // effort->setWeight("reserve__jointset_ground_pelvis_pelvis_tilt", 0);
+        // effort->setWeight("reserve__jointset_ground_pelvis_pelvis_tx", 0);
+        // effort->setWeight("reserve__jointset_ground_pelvis_pelvis_ty", 0);
 
         auto& solver = moco.initCasADiSolver();
         solver.set_num_mesh_points(5);
         solver.set_dynamics_mode("implicit");
         solver.set_optim_convergence_tolerance(1e-3);
-        solver.set_optim_constraint_tolerance(1e-2);
+        solver.set_optim_constraint_tolerance(1e-3);
         // solver.set_parallel(0);
         // solver.set_optim_ipopt_print_level(0);
         // solver.set_optim_hessian_approximation("exact");
@@ -250,19 +246,19 @@ int main() {
         model.finalizeConnections();
         for (int im = 0; im < model.getMuscles().getSize(); ++im) {
             auto& muscle = model.getMuscles().get(im);
-            // muscle.set_ignore_activation_dynamics(true);
+            muscle.set_ignore_activation_dynamics(true);
             muscle.set_ignore_tendon_compliance(true);
         }
         DeGrooteFregly2016Muscle::replaceMuscles(model);
 
-        MocoINDYGO indygo;
-        indygo.setModel(model);
-        indygo.setKinematicsFile("walk_gait1018_state_reference.mot");
-        indygo.set_create_reserve_actuators(2.0);
+        MocoInverse inverse;
+        inverse.setModel(model);
+        inverse.setKinematicsFile("walk_gait1018_state_reference.mot");
+        inverse.set_create_reserve_actuators(2.0);
 
-        indygo.setExternalLoadsFile("walk_gait1018_subject01_grf.xml");
+        inverse.setExternalLoadsFile("walk_gait1018_subject01_grf.xml");
 
-        indygo.solve();
+        inverse.solve();
     } catch (const std::exception& e) { std::cerr << e.what() << std::endl; }
 
     // TODO: Implement cost minimization directly in CasADi.

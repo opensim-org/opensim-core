@@ -244,6 +244,7 @@ double DeGrooteFregly2016Muscle::computeActuation(const SimTK::State& s) const {
     const SimTK::Real normFiberForce = calcNormFiberForceAlongTendon(
             activation, normFiberLength, normFiberVelocity);
 
+    // std::cout << "DEBUG " << get_max_isometric_force() << " " << normFiberForce << std::endl;
     return get_max_isometric_force() * normFiberForce;
 }
 
@@ -452,7 +453,7 @@ void DeGrooteFregly2016Muscle::replaceMuscles(
             actu->setMinControl(musc->getMinControl());
             actu->setMaxControl(musc->getMaxControl());
 
-            actu->setMaxIsometricForce(musc->getMaxIsometricForce());
+            actu->setMaxIsometricForce(10 * musc->getMaxIsometricForce());
             actu->setOptimalFiberLength(musc->getOptimalFiberLength());
             actu->setTendonSlackLength(musc->getTendonSlackLength());
             // TODO
