@@ -385,7 +385,7 @@ namespace OpenSim {
 %template(STOFileAdapterSpatialVec) OpenSim::STOFileAdapter_<SimTK::SpatialVec>;
 
 %include <OpenSim/Common/CSVFileAdapter.h>
-%include <OpenSim/Common/IMUHelper.h>
+%include <OpenSim/Common/XsensDataReader.h>
 %include <OpenSim/Common/C3DFileAdapter.h>
 
 %extend OpenSim::C3DFileAdapter {

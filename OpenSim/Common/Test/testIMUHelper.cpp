@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- *                       OpenSim:  testIMUHelper.cpp                          *
+ *                       OpenSim:  testXsensDataReader.cpp                    *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -22,7 +22,7 @@
 
 #include "OpenSim/Common/DataAdapter.h"
 #include "OpenSim/Common/MapObject.h"
-#include "OpenSim/Common/IMUHelper.h"
+#include "OpenSim/Common/XsensDataReader.h"
 #include "OpenSim/Common/STOFileAdapter.h"
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 
@@ -53,10 +53,10 @@ int main() {
         MapObject readMapIMUName2FileName("map2xml.xml");
         const std::string folder = "";
         const std::string trial = "MT_012005D6_031-000_";
-        DataAdapter::OutputTables tables = IMUHelper::readXsensTrial(folder, trial, readMapIMUName2FileName);
+        DataAdapter::OutputTables tables = XsensDataReader::readTrial(folder, trial, readMapIMUName2FileName);
         // Write tables to sto files
         // Accelerations
-        std::shared_ptr<AbstractDataTable> accelTable = tables.at(IMUHelper::LinearAccelerations);
+        std::shared_ptr<AbstractDataTable> accelTable = tables.at(XsensDataReader::LinearAccelerations);
         const TimeSeriesTableVec3& accelTableTyped = dynamic_cast<const TimeSeriesTableVec3&>(*accelTable);
         STOFileAdapterVec3::write(accelTableTyped, folder + trial+ "accelerations.sto");
         const SimTK::RowVectorView_<SimTK::Vec3>& rvv = accelTableTyped.getRowAtIndex(0);
@@ -70,31 +70,31 @@ int main() {
         fromFile = SimTK::Vec3{ 2.657654, 5.012634, -7.581414 };
         ASSERT_EQUAL(fromTable, fromFile, tolerance);
         // Magenometer
-        std::shared_ptr<AbstractDataTable> magTable = tables.at(IMUHelper::MagneticHeading);
+        std::shared_ptr<AbstractDataTable> magTable = tables.at(XsensDataReader::MagneticHeading);
         const TimeSeriesTableVec3& magTableTyped = dynamic_cast<const TimeSeriesTableVec3&>(*magTable);
         STOFileAdapterVec3::write(magTableTyped, folder + trial + "magnetometers.sto");
         fromTable = magTableTyped.getRowAtIndex(0)[0];
         fromFile = SimTK::Vec3{ -0.045410, - 0.266113, 0.897217 };
         ASSERT_EQUAL(fromTable, fromFile, tolerance);
         // Gyro
-        std::shared_ptr<AbstractDataTable> gyroTable = tables.at(IMUHelper::AngularVelocity);
+        std::shared_ptr<AbstractDataTable> gyroTable = tables.at(XsensDataReader::AngularVelocity);
         const TimeSeriesTableVec3& gyroTableTyped = dynamic_cast<const TimeSeriesTableVec3&>(*gyroTable);
         STOFileAdapterVec3::write(gyroTableTyped, folder + trial + "gyros.sto");
         fromTable = gyroTableTyped.getRowAtIndex(0)[0];
         fromFile = SimTK::Vec3{ 0.005991, - 0.032133, 0.022713 };
         ASSERT_EQUAL(fromTable, fromFile, tolerance);
         // Orientation
-        std::shared_ptr<AbstractDataTable> orientationTable = tables.at(IMUHelper::Orientations);
+        std::shared_ptr<AbstractDataTable> orientationTable = tables.at(XsensDataReader::Orientations);
         const TimeSeriesTableQuaternion& quatTableTyped = dynamic_cast<const TimeSeriesTableQuaternion&>(*orientationTable);
         STOFileAdapterQuaternion::write(quatTableTyped, folder + trial + "quaternions.sto");
 
     }
     catch (const std::exception& ex) {
-        std::cout << "testIMUHelper FAILED: " << ex.what() << std::endl;
+        std::cout << "testXsensDataReader FAILED: " << ex.what() << std::endl;
         return 1;
     }
 
-    std::cout << "\n All testIMUHelper cases passed." << std::endl;
+    std::cout << "\n All testXsensDataReader cases passed." << std::endl;
 
     return 0;
 }

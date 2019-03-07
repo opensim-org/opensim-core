@@ -35,17 +35,16 @@
 
 namespace OpenSim {
 
-/** IMUHelper is a utility class that reads and writes files produced by IMU manufacturers
-    and produces datatables from them. This is intended to help consume IMU outputs,
-    files but no plan to create manufacturer specific formatted files.*/
-class OSIMCOMMON_API IMUHelper {
+/** XsensDataReader is a class that reads files produced by IMU manufacturer Xsens
+    and produces datatables from them. This is intended to help consume IMU outputs.*/
+class OSIMCOMMON_API XsensDataReader {
 public:
-    IMUHelper()                            = default;
-    IMUHelper(const IMUHelper&)            = default;
-    IMUHelper(IMUHelper&&)                 = default;
-    IMUHelper& operator=(const IMUHelper&) = default;
-    IMUHelper& operator=(IMUHelper&&)      = default;
-    virtual ~IMUHelper()                   = default;
+    XsensDataReader() = default;
+    XsensDataReader(const XsensDataReader&)            = default;
+    XsensDataReader(XsensDataReader&&)                 = default;
+    XsensDataReader& operator=(const XsensDataReader&) = default;
+    XsensDataReader& operator=(XsensDataReader&&)      = default;
+    virtual ~XsensDataReader()                   = default;
 
     static const std::string Orientations;   // name of table for orientation data
     static const std::string LinearAccelerations;  // name of table for acceleration data
@@ -63,7 +62,7 @@ public:
     - one for LinearAccelerations
     - one for MagneticHeading data, 
     - one for AngularVelocity data. */
-    static DataAdapter::OutputTables readXsensTrial(const std::string& folderName, const std::string& prefix, 
+    static DataAdapter::OutputTables readTrial(const std::string& folderName, const std::string& prefix, 
         const MapObject& modelIMUToFilenameMap);
     
 private:

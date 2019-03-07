@@ -1,15 +1,15 @@
 #include "Simbody.h"
 #include "Exception.h"
-#include "IMUHelper.h"
+#include "XsensDataReader.h"
 
 namespace OpenSim {
 
-const std::string IMUHelper::Orientations{ "orientations" };
-const std::string IMUHelper::LinearAccelerations{ "linear_accelerations" };
-const std::string IMUHelper::MagneticHeading{ "magnetic_heading" };
-const std::string IMUHelper::AngularVelocity{ "angular_velocity" };
+const std::string XsensDataReader::Orientations{ "orientations" };
+const std::string XsensDataReader::LinearAccelerations{ "linear_accelerations" };
+const std::string XsensDataReader::MagneticHeading{ "magnetic_heading" };
+const std::string XsensDataReader::AngularVelocity{ "angular_velocity" };
 
-DataAdapter::OutputTables IMUHelper::readXsensTrial(const std::string& folderName, const std::string& prefix,
+DataAdapter::OutputTables XsensDataReader::readTrial(const std::string& folderName, const std::string& prefix,
         const MapObject& modelIMUToFilenameMap) {
 
     std::vector<std::ifstream*> imuStreams;
@@ -67,6 +67,11 @@ DataAdapter::OutputTables IMUHelper::readXsensTrial(const std::string& folderNam
             }
         }
     }
+    // internally keep track of what data was found in input files
+    bool foundLinearAccelerationData = (accIndex != -1);
+    bool foundMagneticHeadingData = (magIndex != -1);
+    bool foundAngularVelocityData = (gyroIndex != -1);
+
     // If no Orientation data is available or dataRate can't be deduced we'll abort completely
     OPENSIM_THROW_IF((rotationsIndex == -1 || SimTK::isNaN(dataRate)),
         TableMissingHeader);
@@ -99,13 +104,13 @@ DataAdapter::OutputTables IMUHelper::readXsensTrial(const std::string& folderNam
                 done = true;
                 break;
             }
-            if (accIndex != -1)
+            if (foundLinearAccelerationData)
                 accel_row_vector[imu_index] = SimTK::Vec3(std::stod(nextRow[accIndex]),
                     std::stod(nextRow[accIndex + 1]), std::stod(nextRow[accIndex + 2]));
-            if (magIndex != -1)
+            if (foundMagneticHeadingData)
                 magneto_row_vector[imu_index] = SimTK::Vec3(std::stod(nextRow[magIndex]),
                     std::stod(nextRow[magIndex + 1]), std::stod(nextRow[magIndex + 2]));
-            if (gyroIndex != -1)
+            if (foundAngularVelocityData)
                 gyro_row_vector[imu_index] = SimTK::Vec3(std::stod(nextRow[gyroIndex]),
                     std::stod(nextRow[gyroIndex + 1]), std::stod(nextRow[gyroIndex + 2]));
             // Create Mat33 then convert into Quaternion
@@ -125,9 +130,12 @@ DataAdapter::OutputTables IMUHelper::readXsensTrial(const std::string& folderNam
             break;
         // append to the tables
         times[rowNumber] = time;
-        if (accIndex != -1) linearAccelerationData[rowNumber] =  accel_row_vector;
-        if (magIndex != -1) magneticHeadingData[rowNumber] = magneto_row_vector;
-        if (gyroIndex != -1) angularVelocityData[rowNumber] = gyro_row_vector;
+        if (foundLinearAccelerationData) 
+            linearAccelerationData[rowNumber] =  accel_row_vector;
+        if (foundMagneticHeadingData) 
+            magneticHeadingData[rowNumber] = magneto_row_vector;
+        if (foundAngularVelocityData) 
+            angularVelocityData[rowNumber] = gyro_row_vector;
         rotationsData[rowNumber] = orientation_row_vector;
         time += timeIncrement;
         rowNumber++;
@@ -136,9 +144,9 @@ DataAdapter::OutputTables IMUHelper::readXsensTrial(const std::string& folderNam
             int newSize = last_size*2;
             times.resize(newSize);
             // Repeat for Data matrices in use
-            if (accIndex != -1) linearAccelerationData.resizeKeep(newSize, n_imus);
-            if (magIndex != -1) magneticHeadingData.resizeKeep(newSize, n_imus);
-            if (gyroIndex != -1) angularVelocityData.resizeKeep(newSize, n_imus);
+            if (foundLinearAccelerationData) linearAccelerationData.resizeKeep(newSize, n_imus);
+            if (foundMagneticHeadingData) magneticHeadingData.resizeKeep(newSize, n_imus);
+            if (foundAngularVelocityData) angularVelocityData.resizeKeep(newSize, n_imus);
             rotationsData.resizeKeep(newSize, n_imus);
             last_size = newSize;
         }
@@ -147,12 +155,13 @@ DataAdapter::OutputTables IMUHelper::readXsensTrial(const std::string& folderNam
     int actualSize = rowNumber;
     times.resize(actualSize);
     // Repeat for Data matrices in use and create Tables from them
-    if (accIndex != -1) linearAccelerationData.resizeKeep(actualSize, n_imus);
-    if (magIndex != -1) magneticHeadingData.resizeKeep(actualSize, n_imus);
-    if (gyroIndex != -1) angularVelocityData.resizeKeep(actualSize, n_imus);
+    if (foundLinearAccelerationData) linearAccelerationData.resizeKeep(actualSize, n_imus);
+    if (foundMagneticHeadingData) magneticHeadingData.resizeKeep(actualSize, n_imus);
+    if (foundAngularVelocityData) angularVelocityData.resizeKeep(actualSize, n_imus);
     rotationsData.resizeKeep(actualSize, n_imus);
     // Now create the tables from matrices
     // Create 4 tables for Rotations, LinearAccelerations, AngularVelocity, MagneticHeading
+    // Tables could be empty if data is not present in file(s)
     DataAdapter::OutputTables tables{};
     auto orientationTable = std::make_shared<TimeSeriesTableQuaternion>(times, rotationsData, labels);
     orientationTable->updTableMetaData()
@@ -162,25 +171,22 @@ DataAdapter::OutputTables IMUHelper::readXsensTrial(const std::string& folderNam
     auto accelerationTable = std::make_shared<TimeSeriesTableVec3>(times, linearAccelerationData, labels);
     accelerationTable->updTableMetaData()
         .setValueForKey("DataRate", std::to_string(dataRate));
-    if (accIndex != -1)
-        tables.emplace(LinearAccelerations, accelerationTable);
+    tables.emplace(LinearAccelerations, accelerationTable);
 
     auto magnetometerTable = std::make_shared<TimeSeriesTableVec3>(times, magneticHeadingData, labels);
     magnetometerTable->updTableMetaData()
         .setValueForKey("DataRate", std::to_string(dataRate));
-    if (magIndex != -1)
-        tables.emplace(MagneticHeading, magnetometerTable);
+    tables.emplace(MagneticHeading, magnetometerTable);
 
     auto gyrosTable = std::make_shared<TimeSeriesTableVec3>(times, angularVelocityData, labels);
     gyrosTable->updTableMetaData()
         .setValueForKey("DataRate", std::to_string(dataRate));
-    if (gyroIndex != -1)
-        tables.emplace(AngularVelocity, gyrosTable);
+    tables.emplace(AngularVelocity, gyrosTable);
 
     return tables;
 }
 
-int IMUHelper::find_index(std::vector<std::string>& tokens, const std::string& keyToMatch) {
+int XsensDataReader::find_index(std::vector<std::string>& tokens, const std::string& keyToMatch) {
     int returnIndex = -1;
     std::vector<std::string>::iterator it = std::find(tokens.begin(), tokens.end(), keyToMatch);
     if (it != tokens.end())

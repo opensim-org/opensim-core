@@ -22,7 +22,7 @@
 
 #include "OpenSim/Common/DataAdapter.h"
 #include "OpenSim/Common/MapObject.h"
-#include "OpenSim/Common/IMUHelper.h"
+#include "OpenSim/Common/XsensDataReader.h"
 #include "OpenSim/Common/STOFileAdapter.h"
 
 using namespace std;
@@ -49,25 +49,25 @@ int main(int argc, char* argv[]) {
     }
     try {
         MapObject mapXsensName2ModelName(mappingFile);
-        DataAdapter::OutputTables tables = IMUHelper::readXsensTrial(folder, trial, mapXsensName2ModelName);
+        DataAdapter::OutputTables tables = XsensDataReader::readTrial(folder, trial, mapXsensName2ModelName);
         // Write tables to sto files
         // Accelerations
-        std::shared_ptr<AbstractDataTable> accelTable = tables.at(IMUHelper::LinearAccelerations);
+        std::shared_ptr<AbstractDataTable> accelTable = tables.at(XsensDataReader::LinearAccelerations);
         const TimeSeriesTableVec3& accelTableTyped = dynamic_cast<const TimeSeriesTableVec3&>(*accelTable);
         STOFileAdapterVec3::write(accelTableTyped, folder + trial + "accelerations.sto");
 
         // Magenometer
-        std::shared_ptr<AbstractDataTable> magTable = tables.at(IMUHelper::MagneticHeading);
+        std::shared_ptr<AbstractDataTable> magTable = tables.at(XsensDataReader::MagneticHeading);
         const TimeSeriesTableVec3& magTableTyped = dynamic_cast<const TimeSeriesTableVec3&>(*magTable);
         STOFileAdapterVec3::write(magTableTyped, folder + trial + "magnetometers.sto");
  
         // Gyro
-        std::shared_ptr<AbstractDataTable> gyroTable = tables.at(IMUHelper::AngularVelocity);
+        std::shared_ptr<AbstractDataTable> gyroTable = tables.at(XsensDataReader::AngularVelocity);
         const TimeSeriesTableVec3& gyroTableTyped = dynamic_cast<const TimeSeriesTableVec3&>(*gyroTable);
         STOFileAdapterVec3::write(gyroTableTyped, folder + trial + "gyros.sto");
 
         // Orientation
-        std::shared_ptr<AbstractDataTable> orientationTable = tables.at(IMUHelper::Orientations);
+        std::shared_ptr<AbstractDataTable> orientationTable = tables.at(XsensDataReader::Orientations);
         const TimeSeriesTableQuaternion& quatTableTyped = dynamic_cast<const TimeSeriesTableQuaternion&>(*orientationTable);
         STOFileAdapterQuaternion::write(quatTableTyped, folder + trial + "quaternions.sto");
     }
