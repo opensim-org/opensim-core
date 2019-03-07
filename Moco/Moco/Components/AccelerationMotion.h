@@ -19,6 +19,7 @@
  * -------------------------------------------------------------------------- */
 
 #include <OpenSim/Simulation/Model/ModelComponent.h>
+#include "../osimMocoDLL.h"
 
 #include <simbody/internal/Motion.h>
 
