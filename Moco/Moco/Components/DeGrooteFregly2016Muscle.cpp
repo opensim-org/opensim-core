@@ -244,7 +244,6 @@ double DeGrooteFregly2016Muscle::computeActuation(const SimTK::State& s) const {
     const SimTK::Real normFiberForce = calcNormFiberForceAlongTendon(
             activation, normFiberLength, normFiberVelocity);
 
-    // std::cout << "DEBUG " << get_max_isometric_force() << " " << normFiberForce << std::endl;
     return get_max_isometric_force() * normFiberForce;
 }
 
@@ -500,7 +499,7 @@ void DeGrooteFregly2016Muscle::replaceMuscles(
                 }
                 geomPath.updPathPointSet().adoptAndAppend(pathPoint);
             }
-            model.addComponent(actu);
+            model.addForce(actu);
 
             // Workaround for a bug in prependComponentPathToConnecteePath().
             for (auto& comp : model.updComponentList()) {
@@ -508,9 +507,10 @@ void DeGrooteFregly2016Muscle::replaceMuscles(
                 for (const auto& socketName : socketNames) {
                     auto& socket = comp.updSocket(socketName);
                     auto connecteePath = socket.getConnecteePath();
-                    if (startsWith(connecteePath, "/" + actu->getName())) {
+                    std::string prefix = "/forceset/" + actu->getName();
+                    if (startsWith(connecteePath, prefix)) {
                         connecteePath = connecteePath.substr(
-                                actu->getName().length() + 1);
+                                prefix.length());
                         socket.setConnecteePath(connecteePath);
                     }
                 }

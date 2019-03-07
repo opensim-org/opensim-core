@@ -97,8 +97,12 @@ Storage OpenSim::convertTableToStorage(const TimeSeriesTable& table) {
     sto.setColumnLabels(labels);
     const auto& times = table.getIndependentColumn();
     for (unsigned i_time = 0; i_time < table.getNumRows(); ++i_time) {
-        auto rowView = table.getRowAtIndex(i_time);
-        sto.append(times[i_time], SimTK::Vector(rowView.transpose()));
+        SimTK::Vector row(table.getRowAtIndex(i_time).transpose());
+        // This is a hack to allow creating a Storage with 0 columns.
+        double unused;
+        sto.append(times[i_time],
+                row.size(), row.size() ? row.getContiguousScalarData() :
+                &unused);
     }
     return sto;
 }

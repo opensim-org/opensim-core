@@ -51,16 +51,22 @@ MocoIterate::MocoIterate(const SimTK::Vector& time,
         OPENSIM_THROW_IF(time.size() != m_states.nrow(), Exception,
                 format("Expected states to have %i rows but it has %i.",
                         time.size(), m_states.nrow()));
+    } else {
+        m_states.resize(m_time.size(), 0);
     }
     if (m_controls.ncol()) {
         OPENSIM_THROW_IF(time.size() != m_controls.nrow(), Exception,
                 format("Expected controls to have %i rows but it has %i.",
                         time.size(), m_controls.nrow()));
+    } else {
+        m_controls.resize(m_time.size(), 0);
     }
     if (m_multipliers.ncol()) {
         OPENSIM_THROW_IF(time.size() != m_multipliers.nrow(), Exception,
                 format("Expected multipliers to have %i rows but it has %i.",
                         time.size(), m_multipliers.nrow()));
+    } else {
+        m_multipliers.resize(m_time.size(), 0);
     }
     OPENSIM_THROW_IF((int)m_parameter_names.size() != m_parameters.nelt(),
             Exception, "Inconsistent number of parameters.");
@@ -87,6 +93,8 @@ MocoIterate::MocoIterate(const SimTK::Vector& time,
     if (m_derivatives.ncol()) {
         OPENSIM_THROW_IF((int)time.size() != m_derivatives.nrow(), Exception,
                 "Inconsistent number of times in derivatives trajectory.");
+    } else {
+        m_derivatives.resize(m_time.size(), 0);
     }
 }
 
@@ -653,7 +661,7 @@ StatesTrajectory MocoIterate::exportToStatesTrajectory(
     Storage storage = exportToStatesStorage();
     // TODO update when we support multiple phases.
     const auto& model = problem.getPhase(0).getModel();
-    return StatesTrajectory::createFromStatesStorage(model, storage);
+    return StatesTrajectory::createFromStatesStorage(model, storage, true);
 }
 
 /*static*/ MocoIterate MocoIterate::createFromStatesControlsTables(

@@ -140,6 +140,11 @@ public:
         MocoSolution solution = moco.solve().unseal();
         solution.write("sandboxWalkingStatelessMuscles_solution.sto");
         // moco.visualize(solution);
+
+        TimeSeriesTable normFiberLengths =
+                moco.analyze(solution, {".*normalized_fiber_length"});
+        STOFileAdapter::write(normFiberLengths,
+                "sandboxWalkingStatelessMuscles_norm_fiber_length.sto");
     }
 
 private:
@@ -229,11 +234,9 @@ void testPrescribedKinematics() {
     auto& solver = moco.initCasADiSolver();
     solver.set_dynamics_mode("implicit");
 
-
     MocoSolution solution = moco.solve();
     SimTK_TEST_EQ_TOL(solution.getState("/customdynamics/s"),
-            0.2 * SimTK::exp(solution.getTime()),
-            1e-4);
+            0.2 * SimTK::exp(solution.getTime()), 1e-4);
 }
 
 int main() {
