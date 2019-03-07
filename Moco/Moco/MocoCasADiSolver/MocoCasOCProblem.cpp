@@ -39,7 +39,8 @@ MocoCasOCProblem::MocoCasOCProblem(const MocoCasADiSolver& mocoCasADiSolver,
         setPrescribedKinematics(true, model.getWorkingState().getNU());
     }
 
-    auto stateNames = createStateVariableNamesInSystemOrder(model, m_yIndexMap);
+    auto stateNames = problemRep.createStateVariableNamesInSystemOrder(
+            m_yIndexMap);
     setTimeBounds(convertBounds(problemRep.getTimeInitialBounds()),
             convertBounds(problemRep.getTimeFinalBounds()));
     for (const auto& stateName : stateNames) {

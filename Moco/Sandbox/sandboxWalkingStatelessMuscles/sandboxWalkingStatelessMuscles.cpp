@@ -21,9 +21,8 @@
 /// It serves as a goal.
 #include <Moco/osimMoco.h>
 
-#include <OpenSim/OpenSim.h>
-
 #include <OpenSim/Common/LogManager.h>
+#include <OpenSim/OpenSim.h>
 
 namespace OpenSim {
 
@@ -40,8 +39,7 @@ public:
             "discourage the use of the reserve actuators. (default is -1, "
             "which "
             "means no reserves are created)");
-    OpenSim_DECLARE_PROPERTY(external_loads_file, std::string,
-            "TODO");
+    OpenSim_DECLARE_PROPERTY(external_loads_file, std::string, "TODO");
     MocoINDYGO() {
         constructProperty_create_reserve_actuators(-1);
         constructProperty_external_loads_file("");
@@ -73,10 +71,12 @@ public:
                         muscle.getAbsolutePathString() + "/activation",
                         // TODO: Use the muscle's minimum_activation.
                         {0.01, 1});
+            }
+            if (!muscle.get_ignore_tendon_compliance()) {
                 // TODO shouldn't be necessary.
-                // problem.setStateInfo(
-                //         muscle.getAbsolutePathString() + "/norm_fiber_length",
-                //         {0.2, 1.8});
+                problem.setStateInfo(
+                        muscle.getAbsolutePathString() + "/norm_fiber_length",
+                        {0.2, 1.8});
             }
         }
 
@@ -122,7 +122,7 @@ public:
         solver.set_dynamics_mode("implicit");
         solver.set_optim_convergence_tolerance(1e-3);
         solver.set_optim_constraint_tolerance(1e-2);
-        solver.set_parallel(0);
+        // solver.set_parallel(0);
         // solver.set_optim_ipopt_print_level(0);
         // solver.set_optim_hessian_approximation("exact");
         // TODO: Doesn't work yet.
@@ -135,7 +135,8 @@ public:
         // }
         // auto guess = solver.createGuess();
         // guess.setStatesTrajectory(
-        //         StatesTrajectory::createFromStatesStorage(model, kinSto, true)
+        //         StatesTrajectory::createFromStatesStorage(model, kinSto,
+        //         true)
         //                 .exportToTable(model));
 
         solver.setGuess(moco.solve());
@@ -197,7 +198,7 @@ int main() {
         model.finalizeConnections();
         for (int im = 0; im < model.getMuscles().getSize(); ++im) {
             auto& muscle = model.getMuscles().get(im);
-            // muscle.set_ignore_activation_dynamics(true);
+            muscle.set_ignore_activation_dynamics(true);
             muscle.set_ignore_tendon_compliance(true);
         }
         DeGrooteFregly2016Muscle::replaceMuscles(model);
@@ -207,7 +208,7 @@ int main() {
         indygo.setKinematicsFile("walk_gait1018_state_reference.mot");
         indygo.set_create_reserve_actuators(2.0);
 
-        // indygo.setExternalLoadsFile("walk_gait1018_subject01_grf.xml");
+        indygo.setExternalLoadsFile("walk_gait1018_subject01_grf.xml");
 
         indygo.solve();
     } catch (const std::exception& e) { std::cerr << e.what() << std::endl; }
