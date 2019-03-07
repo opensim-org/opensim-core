@@ -190,15 +190,67 @@ private:
 
 using namespace OpenSim;
 
+void testPrescribedKinematics() {
+    class CustomDynamics : public Component {
+        OpenSim_DECLARE_CONCRETE_OBJECT(CustomDynamics, Component);
+
+    public:
+        OpenSim_DECLARE_PROPERTY(
+                default_s, double, "Default state variable value.");
+        CustomDynamics() { constructProperty_default_s(0.4361); }
+        void extendAddToSystem(SimTK::MultibodySystem& system) const override {
+            Super::extendAddToSystem(system);
+            addStateVariable("s");
+        }
+        void extendInitStateFromProperties(SimTK::State& s) const override {
+            Super::extendInitStateFromProperties(s);
+            setStateVariableValue(s, "s", get_default_s());
+        }
+        void extendSetPropertiesFromState(const SimTK::State& s) override {
+            Super::extendSetPropertiesFromState(s);
+            set_default_s(getStateVariableValue(s, "s"));
+        }
+        void computeStateVariableDerivatives(
+                const SimTK::State& s) const override {
+            setStateVariableDerivativeValue(
+                    s, "s", getStateVariableValue(s, "s"));
+        }
+    };
+    Model model = ModelFactory::createPendulum();
+    model.initSystem();
+    auto* motion = new PositionMotion();
+    motion->setPositionForCoordinate(
+            model.getCoordinateSet().get(0), Constant(0.236));
+    model.addModelComponent(motion);
+    model.addComponent(new CustomDynamics());
+
+    MocoTool moco;
+    auto& problem = moco.updProblem();
+    problem.setModelCopy(model);
+    problem.setTimeBounds(0, 1);
+    const double init_s = 0.2;
+    problem.setStateInfo("/customdynamics/s", {0, 100}, init_s);
+    auto& solver = moco.initCasADiSolver();
+    solver.set_dynamics_mode("implicit");
+
+
+    MocoSolution solution = moco.solve();
+    SimTK_TEST_EQ_TOL(solution.getState("/customdynamics/s"),
+            0.2 * SimTK::exp(solution.getTime()),
+            1e-4);
+}
+
 int main() {
     try {
         std::cout.rdbuf(LogManager::cout.rdbuf());
         std::cerr.rdbuf(LogManager::cerr.rdbuf());
+        testPrescribedKinematics();
+
         Model model("testGait10dof18musc_subject01.osim");
         model.finalizeConnections();
         for (int im = 0; im < model.getMuscles().getSize(); ++im) {
             auto& muscle = model.getMuscles().get(im);
-            muscle.set_ignore_activation_dynamics(true);
+            // muscle.set_ignore_activation_dynamics(true);
             muscle.set_ignore_tendon_compliance(true);
         }
         DeGrooteFregly2016Muscle::replaceMuscles(model);

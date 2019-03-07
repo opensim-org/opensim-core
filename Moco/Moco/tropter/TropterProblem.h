@@ -74,7 +74,8 @@ protected:
         // since the discrete variables added to the model with disabled
         // constraints wouldn't show up anyway.
         m_svNamesInSysOrder =
-                createStateVariableNamesInSystemOrder(m_modelBase, m_yIndexMap);
+                m_mocoProbRep.createStateVariableNamesInSystemOrder(
+                        m_yIndexMap);
 
         addStateVariables();
         addControlVariables();
@@ -305,7 +306,7 @@ protected:
         auto& simTKStateDisabledConstraints = this->m_stateDisabledConstraints;
         auto& modelDisabledConstraints = this->m_modelDisabledConstraints;
 
-        if (m_implicit) {
+        if (m_implicit && !m_mocoProbRep.isPrescribedKinematics()) {
             const auto& accel = this->m_mocoProbRep.getAccelerationMotion();
             const int NU = simTKStateDisabledConstraints.getNU();
             const auto& w = adjuncts.segment(
@@ -599,9 +600,12 @@ public:
                 "Cannot use implicit dynamics mode with kinematic "
                 "constraints.");
 
-        const auto& accel = this->m_mocoProbRep.getAccelerationMotion();
-        auto& simTKStateDisabledConstraints = this->m_stateDisabledConstraints;
-        accel.setEnabled(simTKStateDisabledConstraints, true);
+        auto& simTKStateDisabledConstraints =
+                this->m_stateDisabledConstraints;
+        if (!this->m_mocoProbRep.isPrescribedKinematics()) {
+            const auto& accel = this->m_mocoProbRep.getAccelerationMotion();
+            accel.setEnabled(simTKStateDisabledConstraints, true);
+        }
 
         // Add adjuncts for udot, which we call "w".
         int NU = simTKStateDisabledConstraints.getNU();
