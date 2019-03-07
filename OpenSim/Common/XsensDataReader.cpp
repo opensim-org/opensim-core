@@ -154,10 +154,13 @@ DataAdapter::OutputTables XsensDataReader::readTrial(const std::string& folderNa
     // Trim Matrices in use to actual data and move into tables
     int actualSize = rowNumber;
     times.resize(actualSize);
-    // Repeat for Data matrices in use and create Tables from them
-    if (foundLinearAccelerationData) linearAccelerationData.resizeKeep(actualSize, n_imus);
-    if (foundMagneticHeadingData) magneticHeadingData.resizeKeep(actualSize, n_imus);
-    if (foundAngularVelocityData) angularVelocityData.resizeKeep(actualSize, n_imus);
+    // Repeat for Data matrices in use and create Tables from them or size 0 for empty
+    linearAccelerationData.resizeKeep(foundLinearAccelerationData? actualSize: 0, 
+        n_imus);
+    magneticHeadingData.resizeKeep(foundMagneticHeadingData?actualSize: 0, 
+            n_imus);
+    angularVelocityData.resizeKeep(foundAngularVelocityData?actualSize:0, 
+        n_imus);
     rotationsData.resizeKeep(actualSize, n_imus);
     // Now create the tables from matrices
     // Create 4 tables for Rotations, LinearAccelerations, AngularVelocity, MagneticHeading
@@ -168,20 +171,27 @@ DataAdapter::OutputTables XsensDataReader::readTrial(const std::string& folderNa
         .setValueForKey("DataRate", std::to_string(dataRate));
     tables.emplace(Orientations, orientationTable);
 
-    auto accelerationTable = std::make_shared<TimeSeriesTableVec3>(times, linearAccelerationData, labels);
+    std::vector<double> emptyTimes;
+    auto accelerationTable = (foundLinearAccelerationData ?
+        std::make_shared<TimeSeriesTableVec3>(times, linearAccelerationData, labels) :
+        std::make_shared<TimeSeriesTableVec3>(emptyTimes, linearAccelerationData, labels));
     accelerationTable->updTableMetaData()
         .setValueForKey("DataRate", std::to_string(dataRate));
     tables.emplace(LinearAccelerations, accelerationTable);
 
-    auto magnetometerTable = std::make_shared<TimeSeriesTableVec3>(times, magneticHeadingData, labels);
-    magnetometerTable->updTableMetaData()
+    auto magneticHeadingTable = (foundMagneticHeadingData ?
+        std::make_shared<TimeSeriesTableVec3>(times, magneticHeadingData, labels) :
+        std::make_shared<TimeSeriesTableVec3>(emptyTimes, magneticHeadingData, labels));
+    magneticHeadingTable->updTableMetaData()
         .setValueForKey("DataRate", std::to_string(dataRate));
-    tables.emplace(MagneticHeading, magnetometerTable);
+    tables.emplace(MagneticHeading, magneticHeadingTable);
 
-    auto gyrosTable = std::make_shared<TimeSeriesTableVec3>(times, angularVelocityData, labels);
-    gyrosTable->updTableMetaData()
+    auto angularVelocityTable = (foundAngularVelocityData ?
+        std::make_shared<TimeSeriesTableVec3>(times, angularVelocityData, labels) :
+        std::make_shared<TimeSeriesTableVec3>(emptyTimes, angularVelocityData, labels));
+    angularVelocityTable->updTableMetaData()
         .setValueForKey("DataRate", std::to_string(dataRate));
-    tables.emplace(AngularVelocity, gyrosTable);
+    tables.emplace(AngularVelocity, angularVelocityTable);
 
     return tables;
 }

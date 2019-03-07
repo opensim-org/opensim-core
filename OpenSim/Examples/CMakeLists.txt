@@ -16,12 +16,13 @@ if(BUILD_API_EXAMPLES)
         SymbolicExpressionReporter
         DataTable
         DataAdapter
+        ReadXsensData
         DESTINATION "${OPENSIM_INSTALL_CPPEXDIR}")
 
     add_subdirectory(ExampleHopperDevice)
     add_subdirectory(SymbolicExpressionReporter)
     add_subdirectory(DataTable)
-
+	add_subdirectory(ReadXsensData)
 elseif()
 
     add_subdirectory(ControllerExample)
@@ -31,6 +32,7 @@ elseif()
     add_subdirectory(CustomActuatorExample)
     add_subdirectory(MuscleExample)
     add_subdirectory(checkEnvironment)
+    add_subdirectory(ReadXsensData)
 
 endif()
 

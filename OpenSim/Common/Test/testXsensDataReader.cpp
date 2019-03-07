@@ -39,8 +39,8 @@ int main() {
 
     try {
         MapObject mapOpenSimIMUToFileName;
-        std::vector<std::string> imu_names{ "shank", "thigh", "calcn", "toe" };
-        std::vector<std::string> file_names{ "00B421AF", "00B4227B", "00B42263", "00B42268" };
+        std::vector<std::string> imu_names{ "shank"};
+        std::vector<std::string> file_names{ "000_00B421AF"};
         // Programmatically add items to Map, write to xml
         int index = 0;
         for (auto name : imu_names) {
@@ -52,7 +52,7 @@ int main() {
         // read xml we wrote into a new MapObject and pass to readXsensTrial
         MapObject readMapIMUName2FileName("map2xml.xml");
         const std::string folder = "";
-        const std::string trial = "MT_012005D6_031-000_";
+        const std::string trial = "MT_012005D6_031-";
         DataAdapter::OutputTables tables = XsensDataReader::readTrial(folder, trial, readMapIMUName2FileName);
         // Write tables to sto files
         // Accelerations
@@ -88,6 +88,14 @@ int main() {
         const TimeSeriesTableQuaternion& quatTableTyped = dynamic_cast<const TimeSeriesTableQuaternion&>(*orientationTable);
         STOFileAdapterQuaternion::write(quatTableTyped, folder + trial + "quaternions.sto");
 
+        // Now test the case where only orintation data is available, rest is missing
+        MapObject mapOpenSimIMUToFileNameOrientationOnly;
+        MapItem newItem("test", "000_00B421ED");
+        mapOpenSimIMUToFileNameOrientationOnly.addItem(newItem);
+        DataAdapter::OutputTables tables2 = XsensDataReader::readTrial("", "MT_012005D6-000_sit_to_stand-", mapOpenSimIMUToFileNameOrientationOnly);
+        std::shared_ptr<AbstractDataTable> accelTable2 = tables2.at(XsensDataReader::LinearAccelerations);
+        int tableSize = accelTable2->getNumRows();
+        ASSERT(tableSize ==0);
     }
     catch (const std::exception& ex) {
         std::cout << "testXsensDataReader FAILED: " << ex.what() << std::endl;
