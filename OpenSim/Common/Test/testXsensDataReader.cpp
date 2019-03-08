@@ -38,8 +38,8 @@ int main() {
 
     try {
         XsensDataReader reader;
-        std::vector<std::string> imu_names{ "shank"}; //, "thigh", "calcn", "toe" 
-        std::vector<std::string> file_names{ "000_00B421AF"}; //, "000_00B4227B", "000_00B42263", "000_00B42268" 
+        std::vector<std::string> imu_names{ "shank", "thigh" }; //, "calcn", "toe" 
+        std::vector<std::string> file_names{ "000_00B421AF", "000_00B4227B" }; //, "000_00B42263", "000_00B42268" 
         // Programmatically add items to Map, write to xml
         for (int index = 0; index < imu_names.size(); ++index) {
             ExperimentalSensor  nextSensor(file_names[index], imu_names[index]);
@@ -90,7 +90,7 @@ int main() {
         XsensDataReader readOrientationsOnly;
         ExperimentalSensor nextSensor("000_00B421ED", "test");
         readOrientationsOnly.append_ExperimentalSensors(nextSensor);
-        reader.updProperty_trial_prefix() = "MT_012005D6-000_sit_to_stand-";
+        readOrientationsOnly.updProperty_trial_prefix() = "MT_012005D6-000_sit_to_stand-";
         DataAdapter::OutputTables tables2 = readOrientationsOnly.readTrial();
         std::shared_ptr<AbstractDataTable> accelTable2 = tables2.at(XsensDataReader::LinearAccelerations);
         ASSERT(accelTable2->getNumRows() ==0);
