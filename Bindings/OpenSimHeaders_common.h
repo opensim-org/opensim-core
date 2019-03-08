@@ -14,7 +14,6 @@
 #include <OpenSim/Common/PropertyGroup.h>
 #include <OpenSim/Common/Object.h>
 #include <OpenSim/Common/ObjectGroup.h>
-#include <OpenSim/Common/MapObject.h>
 #include <OpenSim/Common/Set.h>
 #include <OpenSim/Common/StateVector.h>
 #include <OpenSim/Common/StorageInterface.h>
@@ -57,6 +56,7 @@
 #include <OpenSim/Common/CSVFileAdapter.h>
 #include <OpenSim/Common/C3DFileAdapter.h>
 #include <OpenSim/Common/XsensDataReader.h>
+#include <OpenSim/Common/ExperimentalSensor.h>
 
 #include <OpenSim/Common/TableSource.h>
 

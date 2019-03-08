@@ -20,7 +20,8 @@
 %template (PropertyString) OpenSim::Property<std::string>;
 %include <OpenSim/Common/Object.h>
 %include <OpenSim/Common/ObjectGroup.h>
-%include <OpenSim/Common/MapObject.h>
+%include <OpenSim/Common/XsensDataReader.h>
+%include <OpenSim/Common/ExperimentalSensor.h>
 
 %include <OpenSim/Common/Set.h>
 %template(OpenSimObjectSet) OpenSim::Set<OpenSim::Object, OpenSim::Object>;
