@@ -247,6 +247,26 @@ double DeGrooteFregly2016Muscle::computeActuation(const SimTK::State& s) const {
     return get_max_isometric_force() * normFiberForce;
 }
 
+void DeGrooteFregly2016Muscle::calcMuscleLengthInfo(
+        const SimTK::State& s, MuscleLengthInfo& mli) const {
+    mli.fiberLength = calcFiberLength(s);
+    mli.fiberLengthAlongTendon = mli.fiberLength; // TODO: pennation
+    mli.normFiberLength = calcNormalizedFiberLength(s);
+
+    mli.normTendonLength = calcNormalizedTendonLength(s);
+    mli.tendonLength = calcTendonLength(s);
+    mli.tendonStrain = mli.normTendonLength - 1.0;
+
+    mli.pennationAngle = 0;    // TODO: pennation
+    mli.cosPennationAngle = 1; // TODO: pennation
+    mli.sinPennationAngle = 0; // TODO: pennation
+
+    mli.fiberPassiveForceLengthMultiplier =
+            calcPassiveForceMultiplier(mli.normFiberLength);
+    mli.fiberActiveForceLengthMultiplier =
+            calcActiveForceLengthMultiplier(mli.normFiberLength);
+}
+
 void DeGrooteFregly2016Muscle::computeInitialFiberEquilibrium(
         SimTK::State& s) const {
 
@@ -452,7 +472,7 @@ void DeGrooteFregly2016Muscle::replaceMuscles(
             actu->setMinControl(musc->getMinControl());
             actu->setMaxControl(musc->getMaxControl());
 
-            actu->setMaxIsometricForce(10 * musc->getMaxIsometricForce());
+            actu->setMaxIsometricForce(musc->getMaxIsometricForce());
             actu->setOptimalFiberLength(musc->getOptimalFiberLength());
             actu->setTendonSlackLength(musc->getTendonSlackLength());
             // TODO
@@ -509,8 +529,7 @@ void DeGrooteFregly2016Muscle::replaceMuscles(
                     auto connecteePath = socket.getConnecteePath();
                     std::string prefix = "/forceset/" + actu->getName();
                     if (startsWith(connecteePath, prefix)) {
-                        connecteePath = connecteePath.substr(
-                                prefix.length());
+                        connecteePath = connecteePath.substr(prefix.length());
                         socket.setConnecteePath(connecteePath);
                     }
                 }

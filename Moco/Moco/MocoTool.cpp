@@ -17,6 +17,7 @@
  * -------------------------------------------------------------------------- */
 #include "MocoTool.h"
 
+#include "Components/PositionMotion.h"
 #include "MocoCasADiSolver/MocoCasADiSolver.h"
 #include "MocoProblem.h"
 #include "MocoTropterSolver.h"
@@ -107,7 +108,7 @@ void MocoTool::visualize(const MocoIterate& it) const {
 
 TimeSeriesTable MocoTool::analyze(const MocoIterate& iterate,
         std::vector<std::string> outputPaths) const {
-    auto model = get_problem().getPhase(0).getModel();
+    auto model = get_problem().createRep().getModelBase();
 
     prescribeControlsToModel(iterate, model);
 
@@ -117,7 +118,6 @@ TimeSeriesTable MocoTool::analyze(const MocoIterate& iterate,
             const auto& output = comp.getOutput(outputName);
             if (output.getTypeName() == "double") {
                 const auto& thisOutputPath = output.getPathName();
-                std::cout << "DEBUG " << thisOutputPath << std::endl;
                 for (const auto& outputPathArg : outputPaths) {
                     if (std::regex_match(
                                 thisOutputPath, std::regex(outputPathArg))) {
@@ -133,7 +133,8 @@ TimeSeriesTable MocoTool::analyze(const MocoIterate& iterate,
 
     auto statesTraj = iterate.exportToStatesTrajectory(get_problem());
 
-    for (const auto& state : statesTraj) {
+    for (auto state : statesTraj) {
+        model.getSystem().prescribe(state);
         model.realizeReport(state);
     }
 

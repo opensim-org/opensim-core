@@ -39,12 +39,15 @@ public:
     }
     void calcPrescribedPosition(
             const SimTK::State& s, int nq, SimTK::Real* q) const override {
+        // std::cout << "DEBUG prescribedMotion " << nq << " " << m_functions.size() << std::endl;
         if (m_functions.size()) {
             for (int i = 0; i < nq; ++i) {
                 m_funcArgs[0] = s.getTime();
                 q[i] = m_functions[i]->calcValue(m_funcArgs);
+                // std::cout << q[i] << " ";
             }
         }
+        // std::cout << std::endl;
     }
     void calcPrescribedPositionDot(
             const SimTK::State& s, int nq, SimTK::Real* qdot) const override {
@@ -62,7 +65,7 @@ public:
             for (int i = 0; i < nq; ++i) {
                 m_funcArgs[0] = s.getTime();
                 qdotdot[i] = m_functions[i]->calcDerivative(
-                        m_qdotDerivComponents, m_funcArgs);
+                        m_qdotdotDerivComponents, m_funcArgs);
             }
         }
     }
@@ -92,7 +95,13 @@ public:
 void PositionMotion::setPositionForCoordinate(
         const Coordinate& coord, const Function& position) {
     const auto path = coord.getAbsolutePathString();
-    m_functions[path] = SimTK::ClonePtr<Function>(position.clone());
+    auto pos = std::unique_ptr<Function>(position.clone());
+    pos->setName(path);
+    if (get_functions().contains(path)) {
+        upd_functions().set(get_functions().getIndex(path), *pos);
+    } else {
+        upd_functions().adoptAndAppend(pos.release());
+    }
 }
 
 std::unique_ptr<PositionMotion> PositionMotion::createFromTable(
@@ -121,6 +130,8 @@ std::unique_ptr<PositionMotion> PositionMotion::createFromTable(
 void PositionMotion::extendAddToSystem(SimTK::MultibodySystem& system) const {
     Super::extendAddToSystem(system);
     auto& matter = system.updMatterSubsystem();
+    // std::cout << "DEBUG numBodies " << matter.getNumBodies() << std::endl;
+    m_motions.clear();
     for (int imb = 0; imb < matter.getNumBodies(); ++imb) {
         auto& mobod = matter.updMobilizedBody(SimTK::MobilizedBodyIndex(imb));
         m_motions.push_back(SimTKPositionMotion(mobod));
@@ -132,14 +143,14 @@ void PositionMotion::extendRealizeTopology(SimTK::State& state) const {
     const auto coords = getModel().getComponentList<Coordinate>();
     for (const auto& coord : coords) {
         const auto& path = coord.getAbsolutePathString();
-        OPENSIM_THROW_IF(m_functions.count(path) == 0, Exception,
+        OPENSIM_THROW_IF(!get_functions().contains(path), Exception,
                 format("No function provided for coordinate '%s'.", path));
     }
 
     std::map<std::pair<SimTK::MobilizedBodyIndex, int>, std::string>
             indicesToCoordName;
-    for (const auto& kv : m_functions) {
-        const auto& path = kv.first;
+    for (int i = 0; i < get_functions().getSize(); ++i) {
+        const auto& path = get_functions().get(i).getName();
         const auto& coord = getModel().getComponent<Coordinate>(path);
         const auto mbi = coord.getBodyIndex();
         const auto qIndex = coord.getMobilizerQIndex();
@@ -147,13 +158,14 @@ void PositionMotion::extendRealizeTopology(SimTK::State& state) const {
     }
 
     auto& matter = getSystem().getMatterSubsystem();
+    // std::cout << "DEBUG Topology " << matter.getNumBodies() << std::endl;
     for (SimTK::MobilizedBodyIndex mbi(0); mbi < matter.getNumBodies(); ++mbi) {
         auto& mobod = matter.getMobilizedBody(SimTK::MobilizedBodyIndex(mbi));
         std::vector<Function*> mobodFunctions;
         for (int iq = 0; iq < mobod.getNumQ(state); ++iq) {
             const auto& coordName = indicesToCoordName[std::make_pair(mbi, iq)];
             mobodFunctions.push_back(
-                    const_cast<Function*>(m_functions.at(coordName).get()));
+                    const_cast<Function*>(&get_functions().get(coordName)));
         }
         auto& motion = const_cast<SimTK::Motion&>(m_motions[mbi]);
         auto& customMotion = static_cast<SimTKPositionMotion&>(motion);

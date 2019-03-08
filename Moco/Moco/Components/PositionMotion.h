@@ -23,7 +23,7 @@
 #include <simbody/internal/Motion.h>
 
 #include <OpenSim/Common/TimeSeriesTable.h>
-
+#include <OpenSim/Common/FunctionSet.h>
 #include <OpenSim/Simulation/Model/ModelComponent.h>
 
 
@@ -34,10 +34,14 @@ class Coordinate;
 
 class OSIMMOCO_API PositionMotion : public ModelComponent {
     OpenSim_DECLARE_CONCRETE_OBJECT(PositionMotion, ModelComponent);
-
 public:
-    PositionMotion() = default;
-    PositionMotion(std::string name) { setName(std::move(name)); }
+    OpenSim_DECLARE_PROPERTY(functions, FunctionSet,
+            "Functions specifying the values of each coordinate.");
+
+    PositionMotion() { constructProperty_functions(FunctionSet()); }
+    PositionMotion(std::string name) : PositionMotion() {
+        setName(std::move(name));
+    }
     ~PositionMotion() = default;
     void setPositionForCoordinate(
             const Coordinate& coord, const Function& position);
@@ -47,7 +51,6 @@ public:
 private:
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
     void extendRealizeTopology(SimTK::State& state) const override;
-    std::map<std::string, SimTK::ClonePtr<Function>> m_functions;
     mutable SimTK::ResetOnCopy<std::vector<SimTK::Motion>> m_motions;
 };
 

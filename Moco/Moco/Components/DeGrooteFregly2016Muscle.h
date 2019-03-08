@@ -68,6 +68,7 @@ class OSIMMOCO_API DeGrooteFregly2016Muscle : public Muscle {
     OpenSim_DECLARE_CONCRETE_OBJECT(DeGrooteFregly2016Muscle, Muscle);
 
 public:
+    // TODO: Rename to "normalized_fiber_length"
     OpenSim_DECLARE_PROPERTY(default_norm_fiber_length, double,
             "Assumed initial normalized fiber length if none is assigned.");
     OpenSim_DECLARE_PROPERTY(activation_time_constant, double,
@@ -139,17 +140,18 @@ public:
     }
 
 protected:
-    // TODO:
-    // virtual double calcInextensibleTendonActiveFiberForce(SimTK::State& s,
-    //         double aActivation) const;
-    // virtual void calcMuscleLengthInfo(const SimTK::State& s,
-    //         MuscleLengthInfo& mli) const;
-    // virtual void calcFiberVelocityInfo(const SimTK::State& s,
-    //         FiberVelocityInfo& fvi) const;
-    // virtual void  calcMuscleDynamicsInfo(const SimTK::State& s,
-    //         MuscleDynamicsInfo& mdi) const;
-    // virtual void calcMusclePotentialEnergyInfo(const SimTK::State& s,
-    //         MusclePotentialEnergyInfo& mpei) const;
+    double calcInextensibleTendonActiveFiberForce(SimTK::State& s,
+            double activation) const override {
+        OPENSIM_THROW_FRMOBJ(Exception, "Not implemented.");
+    }
+    void calcMuscleLengthInfo(const SimTK::State& s,
+            MuscleLengthInfo& mli) const override;
+    // void calcFiberVelocityInfo(const SimTK::State& s,
+    //         FiberVelocityInfo& fvi) const override;
+    // void calcMuscleDynamicsInfo(const SimTK::State& s,
+    //         MuscleDynamicsInfo& mdi) const override;
+    // void calcMusclePotentialEnergyInfo(const SimTK::State& s,
+    //         MusclePotentialEnergyInfo& mpei) const override;
 
 public:
     /// Fiber velocity is assumed to be 0.
@@ -216,7 +218,6 @@ public:
     // TODO these next few methods are convoluted; using MuscleLengthInfo will
     // be better!
     SimTK::Real calcNormalizedFiberLength(const SimTK::State& s) const {
-        // TODO get from state variable.
         if (get_ignore_tendon_compliance()) {
             return calcFiberLength(s) / get_optimal_fiber_length();
         } else {
@@ -246,8 +247,20 @@ public:
             // (buckling).
             return 1.0;
         } else {
+            // TODO: Pennation.
             return (muscleTendonLength - fiberLength) /
                    get_tendon_slack_length();
+        }
+    }
+
+    SimTK::Real calcTendonLength(const SimTK::State& s) const {
+        if (get_ignore_tendon_compliance()) {
+            // TODO handle muscle-tendon length is less than tendon slack length
+            // (buckling).
+            return get_tendon_slack_length();
+        } else {
+            // TODO: Pennation.
+            return getLength(s) - calcFiberLength(s);
         }
     }
 

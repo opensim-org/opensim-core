@@ -88,6 +88,10 @@ public:
         model.initSystem();
 
         auto kinematicsRaw = STOFileAdapter::read(m_kinematicsFileName);
+        if (kinematicsRaw.hasTableMetaDataKey("inDegrees") &&
+                kinematicsRaw.getTableMetaDataAsString("inDegrees") == "yes") {
+            model.getSimbodyEngine().convertDegreesToRadians(kinematicsRaw);
+        }
         auto kinematics = filterLowpass(kinematicsRaw, 6, true);
 
         auto posmot = PositionMotion::createFromTable(model, kinematics, true);
@@ -191,7 +195,27 @@ private:
 
 using namespace OpenSim;
 
-void testPrescribedKinematics() {
+void testPrescribedKinematicsTimeStepping() {
+    Model model = ModelFactory::createPendulum();
+    auto* motion = new PositionMotion();
+    motion->setPositionForCoordinate(model.getCoordinateSet().get(0),
+            PolynomialFunction(createVector({1.3, 0.17, 0.81})));
+    model.addModelComponent(motion);
+    auto state = model.initSystem();
+
+    const auto& system = model.getSystem();
+    const auto& y = state.getY();
+    const auto& ydot = state.getYDot();
+    system.prescribe(state);
+    model.realizeAcceleration(state);
+    state.setTime(0.3);
+    system.prescribe(state);
+    model.realizeAcceleration(state);
+    std::cout << "DEBUG " << state.getY() << " " << state.getYDot()
+              << std::endl;
+}
+
+void testPrescribedKinematicsDirectCollocation() {
     class CustomDynamics : public Component {
         OpenSim_DECLARE_CONCRETE_OBJECT(CustomDynamics, Component);
 
@@ -221,7 +245,7 @@ void testPrescribedKinematics() {
     model.initSystem();
     auto* motion = new PositionMotion();
     motion->setPositionForCoordinate(
-            model.getCoordinateSet().get(0), Constant(0.236));
+            model.getCoordinateSet().get(0), LinearFunction(1.3, 0.17));
     model.addModelComponent(motion);
     model.addComponent(new CustomDynamics());
 
@@ -243,7 +267,8 @@ int main() {
     try {
         std::cout.rdbuf(LogManager::cout.rdbuf());
         std::cerr.rdbuf(LogManager::cerr.rdbuf());
-        testPrescribedKinematics();
+        testPrescribedKinematicsTimeStepping();
+        testPrescribedKinematicsDirectCollocation();
 
         Model model("testGait10dof18musc_subject01.osim");
         model.finalizeConnections();

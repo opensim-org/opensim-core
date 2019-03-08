@@ -324,9 +324,8 @@ private:
         auto& simtkStateBase = mocoProblemRep->updStateBase();
 
         // Update the model and state.
-        applyParametersToModelProperties(parameters,
-                *mocoProblemRep);
-        convertToSimTKState(time, multibody_states, simtkStateBase);
+        applyParametersToModelProperties(parameters, *mocoProblemRep);
+        convertToSimTKState(time, multibody_states, modelBase, simtkStateBase);
         modelBase.realizeVelocity(simtkStateBase);
 
         // Apply velocity correction to qdot if at a mesh interval midpoint.
@@ -383,6 +382,7 @@ private:
     /// It's fine for the size of `states` to be less than the size of Y; only
     /// the first states.size1() values are copied.
     void convertToSimTKState(const double& time, const casadi::DM& states,
+            const Model& model,
             SimTK::State& simtkState) const {
         simtkState.setTime(time);
         // Assign the generalized coordinates. We know we have NU generalized
@@ -390,20 +390,20 @@ private:
         for (int isv = 0; isv < getNumCoordinates(); ++isv) {
             simtkState.updQ()[m_yIndexMap.at(isv)] = *(states.ptr() + isv);
         }
-        std::copy_n(states.ptr() + getNumCoordinates(),
-                getNumSpeeds(),
+        std::copy_n(states.ptr() + getNumCoordinates(), getNumSpeeds(),
                 simtkState.updY().updContiguousScalarData() +
                         simtkState.getNQ());
         std::copy_n(states.ptr() + getNumCoordinates() + getNumSpeeds(),
                 getNumAuxiliaryStates(),
                 simtkState.updY().updContiguousScalarData() +
                         simtkState.getNQ() + simtkState.getNU());
+        model.getSystem().prescribe(simtkState);
     }
 
     void convertToSimTKState(const double& time, const casadi::DM& states,
             const casadi::DM& controls, const Model& model,
             SimTK::State& simtkState) const {
-        convertToSimTKState(time, states, simtkState);
+        convertToSimTKState(time, states, model, simtkState);
         auto& simtkControls = model.updControls(simtkState);
         std::copy_n(controls.ptr(), simtkControls.size(),
                 simtkControls.updContiguousScalarData());
@@ -428,6 +428,10 @@ private:
 
         // Update the model and state.
         applyParametersToModelProperties(parameters, *mocoProblemRep);
+
+        modelBase.getSystem().prescribe(simtkStateBase);
+        modelDisabledConstraints.getSystem().prescribe(
+                simtkStateDisabledConstraints);
 
         if (getNumDerivatives()) {
             auto& accel = mocoProblemRep->getAccelerationMotion();
