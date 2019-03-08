@@ -47,7 +47,7 @@ int main() {
         }
         reader.updProperty_trial_prefix() = "MT_012005D6_031-";
         reader.print("reader2xml.xml");
-        // read xml we wrote into a new MapObject and pass to readXsensTrial
+        // read xml we wrote into a new XsensDataReader to readTrial
         XsensDataReader reconstructFromXML("reader2xml.xml");
         DataAdapter::OutputTables tables = reconstructFromXML.readTrial();
         std::string folder = reader.get_data_folder();
