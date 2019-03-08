@@ -21,7 +21,6 @@
  * -------------------------------------------------------------------------- */
 
 #include "OpenSim/Common/DataAdapter.h"
-#include "OpenSim/Common/MapObject.h"
 #include "OpenSim/Common/XsensDataReader.h"
 #include "OpenSim/Common/STOFileAdapter.h"
 
