@@ -47,3 +47,5 @@ add_subdirectory(sandboxMarkerTrackingWholeBody)
 add_subdirectory(sandboxJointReaction)
 add_subdirectory(sandboxOneLegCouplerKnee)
 add_subdirectory(sandboxMarkerTrackingContactWholeBody)
+add_subdirectory(sandboxSitToStand)
+
