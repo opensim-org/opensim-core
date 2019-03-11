@@ -37,18 +37,25 @@ void MocoInverse::constructProperties() {
     constructProperty_mesh_point_frequency(50);
     constructProperty_create_reserve_actuators(-1);
     constructProperty_external_loads_file("");
+    constructProperty_ignore_activation_dynamics(false);
+    constructProperty_ignore_tendon_compliance(false);
 }
 
 MocoInverseSolution MocoInverse::solve() const {
 
-    // TODO: Create an initial guess using GSO (no dynamics).
-
     Model model(m_model);
+    model.finalizeFromProperties();
+    for (auto& muscle : model.updComponentList<Muscle>()) {
+        if (get_ignore_activation_dynamics()) {
+            muscle.set_ignore_activation_dynamics(true);
+        }
+        if (get_ignore_tendon_compliance()) {
+            muscle.set_ignore_tendon_compliance(true);
+        }
+    }
 
     MocoTool moco;
     auto& problem = moco.updProblem();
-
-    model.finalizeFromProperties();
 
     // TODO: Move this elsewhere!
     for (const auto& muscle : model.getComponentList<Muscle>()) {
@@ -90,14 +97,10 @@ MocoInverseSolution MocoInverse::solve() const {
 
     problem.setModelCopy(model);
 
-    // const double spaceForFiniteDiff = 1e-3;
-    // problem.setTimeBounds(kinematicsRaw.getIndependentColumn().front() +
-    //                               spaceForFiniteDiff,
-    //         kinematicsRaw.getIndependentColumn().back() -
-    //                 spaceForFiniteDiff);
     const auto timeInfo =
             calcInitialAndFinalTimes(kinematicsRaw.getIndependentColumn(), {},
                     get_mesh_point_frequency());
+    // const double spaceForFiniteDiff = 1e-3;
     problem.setTimeBounds(timeInfo.initialTime, timeInfo.finalTime);
 
     // TODO: Allow users to specify costs flexibly.

@@ -41,7 +41,6 @@ TEST_CASE("PrescribedKinematics prescribe() and realize()") {
     model.addModelComponent(motion);
     auto state = model.initSystem();
 
-
     const auto& system = model.getSystem();
     const auto& y = state.getY();
     const auto& ydot = state.getYDot();
@@ -126,15 +125,12 @@ TEST_CASE("MocoInverse gait10dof18musc") {
 
     Model model("testGait10dof18musc_subject01.osim");
     model.finalizeConnections();
-    for (int im = 0; im < model.getMuscles().getSize(); ++im) {
-        auto& muscle = model.getMuscles().get(im);
-        muscle.set_ignore_activation_dynamics(true);
-        muscle.set_ignore_tendon_compliance(true);
-    }
     DeGrooteFregly2016Muscle::replaceMuscles(model);
 
     MocoInverse inverse;
     inverse.setModel(model);
+    inverse.set_ignore_activation_dynamics(true);
+    inverse.set_ignore_tendon_compliance(true);
     inverse.setKinematicsFile("walk_gait1018_state_reference.mot");
     inverse.set_create_reserve_actuators(2.0);
 

@@ -62,6 +62,16 @@ public:
 
     OpenSim_DECLARE_PROPERTY(external_loads_file, std::string, "TODO");
 
+    OpenSim_DECLARE_PROPERTY(ignore_activation_dynamics, bool,
+            "Ignore activation dynamics for all muscles in the model. "
+            "If false, the muscle's setting is not modified."
+            "(default: false).");
+
+    OpenSim_DECLARE_PROPERTY(ignore_tendon_compliance, bool,
+            "Ignore tendon_compliance for all muscles in the model. "
+            "If false, the muscle's setting is not modified."
+            "(default: false).");
+
     OpenSim_DECLARE_PROPERTY(create_reserve_actuators, double,
             "Create a reserve actuator (CoordinateActuator) for each "
             "unconstrained coordinate in the model, and add each to the model. "
