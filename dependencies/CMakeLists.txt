@@ -307,3 +307,4 @@ include(opensim-core.cmake)
 RemoveDefaultInstallDirIfEmpty("${DEFAULT_CMAKE_INSTALL_PREFIX}")
 
 
+
