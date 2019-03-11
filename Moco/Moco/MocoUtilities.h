@@ -22,6 +22,7 @@
 #include <set>
 #include <stack>
 
+#include <OpenSim/Common/GCVSplineSet.h>
 #include <OpenSim/Common/Storage.h>
 
 namespace OpenSim {
@@ -47,6 +48,66 @@ inline bool endsWith(const std::string& string, const std::string& ending) {
     return false;
 }
 
+/// Determine if `string` starts with the substring `start`.
+/// https://stackoverflow.com/questions/874134/find-if-string-ends-with-another-string-in-c
+inline bool startsWith(const std::string& string, const std::string& start) {
+    if (string.length() >= start.length()) {
+        return string.compare(0, start.length(), start) == 0;
+    }
+    return false;
+}
+
+/// @name Filling in a string with variables.
+/// @{
+
+#ifndef SWIG
+/// Return type for make_printable()
+template <typename T>
+struct make_printable_return {
+    typedef T type;
+};
+/// Convert to types that can be printed with sprintf() (vsnprintf()).
+/// The generic template does not alter the type.
+template <typename T>
+inline typename make_printable_return<T>::type make_printable(const T& x) {
+    return x;
+}
+
+/// Specialization for std::string.
+template <>
+struct make_printable_return<std::string> {
+    typedef const char* type;
+};
+/// Specialization for std::string.
+template <>
+inline typename make_printable_return<std::string>::type make_printable(
+        const std::string& x) {
+    return x.c_str();
+}
+
+/// Format a char array using (C interface; mainly for internal use).
+OSIMMOCO_API std::string format_c(const char*, ...);
+
+/// Format a string in the style of sprintf. For example, the code
+/// `format("%s %d and %d yields %d", "adding", 2, 2, 4)` will produce
+/// "adding 2 and 2 yields 4".
+template <typename... Types>
+std::string format(const std::string& formatString, Types... args) {
+    return format_c(formatString.c_str(), make_printable(args)...);
+}
+
+/// Print a formatted string to std::cout. A newline is not included, but the
+/// stream is flushed.
+template <typename... Types>
+void printMessage(const std::string& formatString, Types... args) {
+    std::cout << format(formatString, args...);
+    std::cout.flush();
+}
+
+#endif // SWIG
+
+/// @}
+
 /// Create a SimTK::Vector with the provided length whose elements are
 /// linearly spaced between start and end.
 OSIMMOCO_API
@@ -66,6 +127,54 @@ SimTK::Vector createVector(std::initializer_list<SimTK::Real> elements);
 OSIMMOCO_API
 SimTK::Vector interpolate(const SimTK::Vector& x, const SimTK::Vector& y,
         const SimTK::Vector& newX, const bool ignoreNaNs = false);
+
+/// Resample (interpolate) the table at the provided times. In general, a
+/// 5th-order GCVSpline is used as the interpolant; a lower order used as
+/// necessary if the table has too few points for a 5th-order spline.
+/// @throws Exception if new times are not within existing initial and final
+/// times, if the new times are decreasing, or if getNumTimes() < 2.
+template <typename TimeVector>
+TimeSeriesTable resample(const TimeSeriesTable& in, const TimeVector& newTime) {
+
+    const auto& time = in.getIndependentColumn();
+
+    OPENSIM_THROW_IF(newTime.size() < 2, Exception,
+            "Cannot resample if number of times is 0 or 1.");
+    OPENSIM_THROW_IF(newTime[0] < time[0], Exception,
+            format("New initial time (%f) cannot be less than existing initial "
+                   "time (%f)",
+                    newTime[0], time[0]));
+    OPENSIM_THROW_IF(newTime[newTime.size() - 1] > time[time.size() - 1],
+            Exception,
+            format("New final time (%f) cannot be less than existing final "
+                   "time (%f)",
+                    newTime[newTime.size() - 1], time[time.size() - 1]));
+    for (int itime = 1; itime < (int)newTime.size(); ++itime) {
+        OPENSIM_THROW_IF(newTime[itime] < newTime[itime - 1], Exception,
+                format("New times must be non-decreasing, but "
+                       "time[%i] < time[%i] (%f < %f).",
+                        itime, itime - 1, newTime[itime], newTime[itime - 1]));
+    }
+
+    // Copy over metadata.
+    TimeSeriesTable out = in;
+    for (int irow = (int)out.getNumRows() - 1; irow >= 0; --irow) {
+        out.removeRowAtIndex(irow);
+    }
+
+    const GCVSplineSet splines(in, {}, std::min((int)time.size() - 1, 5));
+    SimTK::Vector curTime(1);
+    SimTK::RowVector row(splines.getSize());
+    for (int itime = 0; itime < (int)newTime.size(); ++itime) {
+        curTime[0] = newTime[itime];
+        for (int icol = 0; icol < splines.getSize(); ++icol) {
+            row(icol) = splines[icol].calcValue(curTime);
+        }
+        // Not efficient!
+        out.appendRow(curTime[0], row);
+    }
+    return out;
+}
 
 /// Create a Storage from a TimeSeriesTable. Metadata from the
 /// TimeSeriesTable is *not* copied to the Storage.
@@ -92,13 +201,21 @@ OSIMMOCO_API void visualize(Model, Storage);
 /// the states are provided in a TimeSeriesTable.
 OSIMMOCO_API void visualize(Model, TimeSeriesTable);
 
-/// Given a valid MocoSolution obtained from solving a MocoProblem and the
-/// associated OpenSim model, return the model with a prescribed controller
-/// appended that will compute the control values from the MocoSolution. This
-/// can be useful when computing state-dependent model quantities that require
-/// realization to the Dynamics stage or later.
+/// Given a MocoIterate and the associated OpenSim model, return the model with
+/// a prescribed controller appended that will compute the control values from
+/// the MocoSolution. This can be useful when computing state-dependent model
+/// quantities that require realization to the Dynamics stage or later.
 OSIMMOCO_API void prescribeControlsToModel(
         const MocoIterate& iterate, Model& model);
+
+/// Use the controls and initial state in the provided iterate to simulate the
+/// model using an ODE time stepping integrator (OpenSim::Manager), and return
+/// the resulting states and controls. We return a MocoIterate (rather than a
+/// StatesTrajectory) to facilitate comparing optimal control solutions with
+/// time stepping. Use integratorAccuracy to override the default setting.
+OSIMMOCO_API MocoIterate simulateIterateWithTimeStepping(
+        const MocoIterate& iterate, Model model,
+        double integratorAccuracy = -1);
 
 /// Replace muscles in a model with a PathActuator of the same GeometryPath,
 /// optimal force, and min/max control defaults.
@@ -109,11 +226,18 @@ OSIMMOCO_API void replaceMusclesWithPathActuators(Model& model);
 /// @note This only removes muscles within the model's ForceSet.
 OSIMMOCO_API void removeMuscles(Model& model);
 
-/// Replace a joint in the model with a WeldJoint. 
+/// Add CoordinateActuator%s for ech coordinate in the model, using the
+/// provided optimal force. Increasing the optimal force decreases the required
+/// control signal to generate a given actuation level. The actuators are added
+/// to the model's ForceSet and are named "reserve_<coordinate-path>" (with
+/// forward slashes converted to underscores).
+OSIMMOCO_API void createReserveActuators(Model& model, double optimalForce);
+
+/// Replace a joint in the model with a WeldJoint.
 /// @note This assumes the joint is in the JointSet and that the joint's
 ///       connectees are PhysicalOffsetFrames.
-OSIMMOCO_API void replaceJointWithWeldJoint(Model& model, 
-    const std::string& jointName);
+OSIMMOCO_API void replaceJointWithWeldJoint(
+        Model& model, const std::string& jointName);
 
 /// The map provides the index of each state variable in
 /// SimTK::State::getY() from its each state variable path string.
@@ -202,57 +326,6 @@ void checkPropertyInRangeOrSet(const Object& obj, const Property<T>& p,
         OPENSIM_THROW(Exception, msg.str());
     }
 }
-
-/// @name Filling in a string with variables.
-/// @{
-
-#ifndef SWIG
-/// Return type for make_printable()
-template <typename T>
-struct make_printable_return {
-    typedef T type;
-};
-/// Convert to types that can be printed with sprintf() (vsnprintf()).
-/// The generic template does not alter the type.
-template <typename T>
-inline typename make_printable_return<T>::type make_printable(const T& x) {
-    return x;
-}
-
-/// Specialization for std::string.
-template <>
-struct make_printable_return<std::string> {
-    typedef const char* type;
-};
-/// Specialization for std::string.
-template <>
-inline typename make_printable_return<std::string>::type make_printable(
-        const std::string& x) {
-    return x.c_str();
-}
-
-/// Format a char array using (C interface; mainly for internal use).
-OSIMMOCO_API std::string format_c(const char*, ...);
-
-/// Format a string in the style of sprintf. For example, the code
-/// `format("%s %d and %d yields %d", "adding", 2, 2, 4)` will produce
-/// "adding 2 and 2 yields 4".
-template <typename... Types>
-std::string format(const std::string& formatString, Types... args) {
-    return format_c(formatString.c_str(), make_printable(args)...);
-}
-
-/// Print a formatted string to std::cout. A newline is not included, but the
-/// stream is flushed.
-template <typename... Types>
-void printMessage(const std::string& formatString, Types... args) {
-    std::cout << format(formatString, args...);
-    std::cout.flush();
-}
-
-#endif // SWIG
-
-/// @}
 
 /// Record and report elapsed real time ("clock" or "wall" time) in seconds.
 class Stopwatch {
@@ -344,7 +417,7 @@ public:
         std::unique_lock<std::mutex> lock(m_mutex);
         // Block this thread until the condition variable is woken up
         // (by a notify_...()) and the lambda function returns true.
-        m_inventoryMonitor.wait(lock, [this]{ return m_entries.size() > 0; });
+        m_inventoryMonitor.wait(lock, [this] { return m_entries.size() > 0; });
         std::unique_ptr<T> top = std::move(m_entries.top());
         m_entries.pop();
         return top;
@@ -363,6 +436,7 @@ public:
         std::lock_guard<std::mutex> lock(m_mutex);
         return (int)m_entries.size();
     }
+
 private:
     std::stack<std::unique_ptr<T>> m_entries;
     mutable std::mutex m_mutex;

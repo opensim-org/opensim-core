@@ -28,9 +28,12 @@
 #include <OpenSim/Common/PiecewiseLinearFunction.h>
 #include <OpenSim/Common/TimeSeriesTable.h>
 #include <OpenSim/Simulation/Control/PrescribedController.h>
+#include <OpenSim/Simulation/Manager/Manager.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/SimbodyEngine/WeldJoint.h>
 #include <OpenSim/Simulation/StatesTrajectory.h>
+#include <OpenSim/Simulation/StatesTrajectoryReporter.h>
+#include <OpenSim/Actuators/CoordinateActuator.h>
 
 using namespace OpenSim;
 
@@ -95,8 +98,12 @@ Storage OpenSim::convertTableToStorage(const TimeSeriesTable& table) {
     sto.setColumnLabels(labels);
     const auto& times = table.getIndependentColumn();
     for (unsigned i_time = 0; i_time < table.getNumRows(); ++i_time) {
-        auto rowView = table.getRowAtIndex(i_time);
-        sto.append(times[i_time], SimTK::Vector(rowView.transpose()));
+        SimTK::Vector row(table.getRowAtIndex(i_time).transpose());
+        // This is a hack to allow creating a Storage with 0 columns.
+        double unused;
+        sto.append(times[i_time],
+                row.size(), row.size() ? row.getContiguousScalarData() :
+                &unused);
     }
     return sto;
 }
@@ -308,6 +315,62 @@ void OpenSim::prescribeControlsToModel(
     model.addController(controller);
 }
 
+MocoIterate OpenSim::simulateIterateWithTimeStepping(
+        const MocoIterate& iterate, Model model, double integratorAccuracy) {
+
+    prescribeControlsToModel(iterate, model);
+
+    // Add states reporter to the model.
+    auto* statesRep = new StatesTrajectoryReporter();
+    statesRep->setName("states_reporter");
+    statesRep->set_report_time_interval(0.001);
+    model.addComponent(statesRep);
+
+    // Simulate!
+    const SimTK::Vector& time = iterate.getTime();
+    SimTK::State state = model.initSystem();
+    state.setTime(time[0]);
+    Manager manager(model);
+
+    // Set the initial state.
+    {
+        const auto& matrix = iterate.getStatesTrajectory();
+        TimeSeriesTable initialStateTable(
+                std::vector<double>{iterate.getInitialTime()},
+                SimTK::Matrix(matrix.block(0, 0, 1, matrix.ncol())),
+                iterate.getStateNames());
+        auto statesTraj = StatesTrajectory::createFromStatesStorage(
+                model, convertTableToStorage(initialStateTable));
+        state.setY(statesTraj.front().getY());
+    }
+
+    if (integratorAccuracy != -1) {
+        manager.getIntegrator().setAccuracy(integratorAccuracy);
+    }
+    manager.initialize(state);
+    state = manager.integrate(time[time.size() - 1]);
+
+    // Export results from states reporter to a TimeSeries Table
+    TimeSeriesTable states = statesRep->getStates().exportToTable(model);
+
+    const auto& statesTimes = states.getIndependentColumn();
+    SimTK::Vector timeVec((int)statesTimes.size(), statesTimes.data(), true);
+    TimeSeriesTable controls = resample(model.getControlsTable(), timeVec);
+    // Fix column labels. (TODO: Not general.)
+    auto labels = controls.getColumnLabels();
+    for (auto& label : labels) { label = "/forceset/" + label; }
+    controls.setColumnLabels(labels);
+
+    // Create a MocoIterate to facilitate states trajectory comparison (with
+    // dummy data for the multipliers, which we'll ignore).
+
+    auto forwardSolution = MocoIterate(timeVec,
+            {{"states", {states.getColumnLabels(), states.getMatrix()}},
+             {"controls", {controls.getColumnLabels(), controls.getMatrix()}}});
+
+    return forwardSolution;
+}
+
 void OpenSim::replaceMusclesWithPathActuators(Model& model) {
 
     // Create path actuators from muscle properties and add to the model. Save
@@ -370,6 +433,41 @@ void OpenSim::removeMuscles(Model& model) {
                 format("Muscle with name %s not found in ForceSet.",
                         musc->getName()));
         model.updForceSet().remove(index);
+    }
+}
+
+void OpenSim::createReserveActuators(Model& model, double optimalForce) {
+    OPENSIM_THROW_IF(optimalForce <= 0, Exception,
+            format("Invalid value (%g) for create_reserve_actuators; "
+                   "should be -1 or positive.",
+                    optimalForce));
+
+    std::cout << "Adding reserve actuators with an optimal force of "
+            << optimalForce << "..." << std::endl;
+
+    std::vector<std::string> coordPaths;
+    // Borrowed from
+    // CoordinateActuator::CreateForceSetOfCoordinateAct...
+    for (const auto& coord : model.getComponentList<Coordinate>()) {
+        auto* actu = new CoordinateActuator();
+        actu->setCoordinate(&const_cast<Coordinate&>(coord));
+        auto path = coord.getAbsolutePathString();
+        coordPaths.push_back(path);
+        // Get rid of model name.
+        // Get rid of slashes in the path; slashes not allowed in names.
+        std::replace(path.begin(), path.end(), '/', '_');
+        actu->setName("reserve_" + path);
+        actu->setOptimalForce(optimalForce);
+        model.addComponent(actu);
+    }
+    // Re-make the system, since there are new actuators.
+    model.initSystem();
+    std::cout << "Added " << coordPaths.size()
+            << " reserve actuator(s), "
+               "for each of the following coordinates:"
+            << std::endl;
+    for (const auto& name : coordPaths) {
+        std::cout << "  " << name << std::endl;
     }
 }
 

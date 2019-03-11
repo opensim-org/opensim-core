@@ -51,16 +51,22 @@ MocoIterate::MocoIterate(const SimTK::Vector& time,
         OPENSIM_THROW_IF(time.size() != m_states.nrow(), Exception,
                 format("Expected states to have %i rows but it has %i.",
                         time.size(), m_states.nrow()));
+    } else {
+        m_states.resize(m_time.size(), 0);
     }
     if (m_controls.ncol()) {
         OPENSIM_THROW_IF(time.size() != m_controls.nrow(), Exception,
                 format("Expected controls to have %i rows but it has %i.",
                         time.size(), m_controls.nrow()));
+    } else {
+        m_controls.resize(m_time.size(), 0);
     }
     if (m_multipliers.ncol()) {
         OPENSIM_THROW_IF(time.size() != m_multipliers.nrow(), Exception,
                 format("Expected multipliers to have %i rows but it has %i.",
                         time.size(), m_multipliers.nrow()));
+    } else {
+        m_multipliers.resize(m_time.size(), 0);
     }
     OPENSIM_THROW_IF((int)m_parameter_names.size() != m_parameters.nelt(),
             Exception, "Inconsistent number of parameters.");
@@ -87,22 +93,50 @@ MocoIterate::MocoIterate(const SimTK::Vector& time,
     if (m_derivatives.ncol()) {
         OPENSIM_THROW_IF((int)time.size() != m_derivatives.nrow(), Exception,
                 "Inconsistent number of times in derivatives trajectory.");
+    } else {
+        m_derivatives.resize(m_time.size(), 0);
     }
 }
 
+MocoIterate::MocoIterate(const SimTK::Vector& time,
+        const std::map<std::string, NamesAndData<SimTK::Matrix>>& conVars,
+        const NamesAndData<SimTK::RowVector>& parameters)
+        : MocoIterate(time,
+                  conVars.count("states") ? conVars.at("states").first
+                                          : std::vector<std::string>(),
+                  conVars.count("controls") ? conVars.at("controls").first
+                                            : std::vector<std::string>(),
+                  conVars.count("multipliers") ? conVars.at("multipliers").first
+                                               : std::vector<std::string>(),
+                  conVars.count("derivatives") ? conVars.at("derivatives").first
+                                               : std::vector<std::string>(),
+                  parameters.first,
+                  conVars.count("states") ? conVars.at("states").second
+                                          : SimTK::Matrix(),
+                  conVars.count("controls") ? conVars.at("controls").second
+                                            : SimTK::Matrix(),
+                  conVars.count("multipliers")
+                          ? conVars.at("multipliers").second
+                          : SimTK::Matrix(),
+                  conVars.count("derivatives")
+                          ? conVars.at("derivatives").second
+                          : SimTK::Matrix(),
+                  parameters.second) {}
+
 void MocoIterate::setTime(const SimTK::Vector& time) {
     ensureUnsealed();
-    OPENSIM_THROW_IF(time.size() != m_time.size(), Exception, format(
-            "Expected %i times but got %i.", m_time.size(), time.size()));
+    OPENSIM_THROW_IF(time.size() != m_time.size(), Exception,
+            format("Expected %i times but got %i.", m_time.size(),
+                    time.size()));
     m_time = time;
 }
 
 void MocoIterate::setState(
         const std::string& name, const SimTK::Vector& trajectory) {
     ensureUnsealed();
-    OPENSIM_THROW_IF(trajectory.size() != m_states.nrow(), Exception, format(
-            "For state %s, expected %i elements but got %i.", name,
-            m_states.nrow(), trajectory.size()));
+    OPENSIM_THROW_IF(trajectory.size() != m_states.nrow(), Exception,
+            format("For state %s, expected %i elements but got %i.", name,
+                    m_states.nrow(), trajectory.size()));
 
     auto it = std::find(m_state_names.cbegin(), m_state_names.cend(), name);
     OPENSIM_THROW_IF(it == m_state_names.cend(), Exception,
@@ -115,8 +149,8 @@ void MocoIterate::setControl(
         const std::string& name, const SimTK::Vector& trajectory) {
     ensureUnsealed();
     OPENSIM_THROW_IF(trajectory.size() != m_controls.nrow(), Exception,
-            format("For control %s, expected %i elements but got %i.",
-                    name, m_controls.nrow(), trajectory.size()));
+            format("For control %s, expected %i elements but got %i.", name,
+                    m_controls.nrow(), trajectory.size()));
 
     auto it = std::find(m_control_names.cbegin(), m_control_names.cend(), name);
     OPENSIM_THROW_IF(it == m_control_names.cend(), Exception,
@@ -129,8 +163,8 @@ void MocoIterate::setMultiplier(
         const std::string& name, const SimTK::Vector& trajectory) {
     ensureUnsealed();
     OPENSIM_THROW_IF(trajectory.size() != m_multipliers.nrow(), Exception,
-            format("For multiplier %s, expected %i elements but got %i.",
-            name, m_multipliers.nrow(), trajectory.size()));
+            format("For multiplier %s, expected %i elements but got %i.", name,
+                    m_multipliers.nrow(), trajectory.size()));
 
     auto it = std::find(
             m_multiplier_names.cbegin(), m_multiplier_names.cend(), name);
@@ -145,12 +179,12 @@ void MocoIterate::setSlack(
     ensureUnsealed();
 
     OPENSIM_THROW_IF(trajectory.size() != m_slacks.nrow(), Exception,
-        format("For slack %s, expected %i elements but got %i.",
-                name, m_slacks.nrow(), trajectory.size()));
+            format("For slack %s, expected %i elements but got %i.", name,
+                    m_slacks.nrow(), trajectory.size()));
 
     auto it = std::find(m_slack_names.cbegin(), m_slack_names.cend(), name);
     OPENSIM_THROW_IF(it == m_slack_names.cend(), Exception,
-        format("Cannot find slack named %s.", name));
+            format("Cannot find slack named %s.", name));
     int index = (int)std::distance(m_slack_names.cbegin(), it);
     m_slacks.updCol(index) = trajectory;
 }
@@ -160,7 +194,7 @@ void MocoIterate::appendSlack(
     ensureUnsealed();
 
     OPENSIM_THROW_IF(m_time.nrow() == 0, Exception,
-        "The time vector must be set before adding slack variables.");
+            "The time vector must be set before adding slack variables.");
     OPENSIM_THROW_IF(trajectory.size() != m_time.nrow(), Exception,
             format("Attempted to add slack %s of length %i, but it is "
                    "incompatible with the time vector, which has length %i.",
@@ -198,13 +232,13 @@ void MocoIterate::setStatesTrajectory(const TimeSeriesTable& states,
     };
 
     if (!allowMissingColumns) {
-       for (const auto& iterate_state : m_state_names) {
-           OPENSIM_THROW_IF(find(labels, iterate_state) == labels.end(),
-                   Exception,
-                   format("Expected table to contain column '%s'; consider "
-                          "setting allowMissingColumns to true.",
-                          iterate_state));
-       }
+        for (const auto& iterate_state : m_state_names) {
+            OPENSIM_THROW_IF(find(labels, iterate_state) == labels.end(),
+                    Exception,
+                    format("Expected table to contain column '%s'; consider "
+                           "setting allowMissingColumns to true.",
+                            iterate_state));
+        }
     }
 
     std::vector<std::string> labelsToUse;
@@ -216,8 +250,9 @@ void MocoIterate::setStatesTrajectory(const TimeSeriesTable& states,
             if (!allowExtraColumns) {
                 OPENSIM_THROW(Exception,
                         format("Column '%s' is not a state in the "
-                        "iterate; consider setting allowExtraColumns to "
-                        "true.", label));
+                               "iterate; consider setting allowExtraColumns to "
+                               "true.",
+                                label));
             }
         }
     }
@@ -265,9 +300,9 @@ SimTK::VectorView MocoIterate::getControl(const std::string& name) const {
 }
 SimTK::VectorView MocoIterate::getMultiplier(const std::string& name) const {
     ensureUnsealed();
-    auto it = std::find(m_multiplier_names.cbegin(), m_multiplier_names.cend(),
-            name);
-    OPENSIM_THROW_IF(it == m_multiplier_names.cend(), Exception, 
+    auto it = std::find(
+            m_multiplier_names.cbegin(), m_multiplier_names.cend(), name);
+    OPENSIM_THROW_IF(it == m_multiplier_names.cend(), Exception,
             format("Cannot find multiplier named %s.", name));
     int index = (int)std::distance(m_multiplier_names.cbegin(), it);
     return m_multipliers.col(index);
@@ -276,7 +311,7 @@ SimTK::VectorView MocoIterate::getSlack(const std::string& name) const {
     ensureUnsealed();
     auto it = std::find(m_slack_names.cbegin(), m_slack_names.cend(), name);
     OPENSIM_THROW_IF(it == m_slack_names.cend(), Exception,
-        format("Cannot find slack named %s.", name));
+            format("Cannot find slack named %s.", name));
     int index = (int)std::distance(m_slack_names.cbegin(), it);
     return m_slacks.col(index);
 }
@@ -342,8 +377,8 @@ void MocoIterate::resample(SimTK::Vector time) {
     int numDerivatives = (int)m_derivative_names.size();
     int numSlacks = (int)m_slack_names.size();
 
-    TimeSeriesTable table = convertToTable();
-    GCVSplineSet splines(table, {}, std::min(m_time.size() - 1, 5));
+    const TimeSeriesTable table = convertToTable();
+    const GCVSplineSet splines(table, {}, std::min(m_time.size() - 1, 5));
 
     m_time = std::move(time);
     const int numTimes = m_time.size();
@@ -357,18 +392,20 @@ void MocoIterate::resample(SimTK::Vector time) {
         // which requires strictly increasing time.
         int icol;
         for (icol = 0; icol < numStates; ++icol)
-            m_states.updCol(icol) = table.getDependentColumnAtIndex(icol)[0];
+            m_states.updCol(icol).setTo(
+                    table.getDependentColumnAtIndex(icol).getElt(0, 0));
         for (int icontr = 0; icontr < numControls; ++icontr, ++icol)
-            m_controls.updCol(icontr) =
-                    table.getDependentColumnAtIndex(icol)[0];
+            m_controls.updCol(icontr).setTo(
+                    table.getDependentColumnAtIndex(icol).getElt(0, 0));
         for (int imult = 0; imult < numMultipliers; ++imult, ++icol)
-            m_multipliers.updCol(imult) =
-                    table.getDependentColumnAtIndex(icol)[0];
+            m_multipliers.updCol(imult).setTo(
+                    table.getDependentColumnAtIndex(icol).getElt(0, 0));
         for (int ideriv = 0; ideriv < numDerivatives; ++ideriv, ++icol)
-            m_derivatives.updCol(ideriv) =
-                    table.getDependentColumnAtIndex(icol)[0];
+            m_derivatives.updCol(ideriv).setTo(
+                    table.getDependentColumnAtIndex(icol).getElt(0, 0));
         for (int islack = 0; islack < numDerivatives; ++islack, ++icol)
-            m_slacks.updCol(islack) = table.getDependentColumnAtIndex(icol)[0];
+            m_slacks.updCol(islack).setTo(
+                    table.getDependentColumnAtIndex(icol).getElt(0, 0));
 
     } else {
         SimTK::Vector curTime(1);
@@ -395,7 +432,8 @@ MocoIterate::MocoIterate(const std::string& filepath) {
     // There should only be one table.
     OPENSIM_THROW_IF(tables.size() != 1, Exception,
             format("Expected MocoIterate file '%s' to contain 1 table, but it "
-                   "contains %i tables.", filepath, tables.size()));
+                   "contains %i tables.",
+                    filepath, tables.size()));
 
     // Get the first table.
     auto* table = dynamic_cast<TimeSeriesTable*>(tables.begin()->second.get());
@@ -473,9 +511,8 @@ MocoIterate::MocoIterate(const std::string& filepath) {
                    "num_states=%i, num_controls=%i, "
                    "num_multipliers=%i, num_derivatives=%i, num_slacks=%i, "
                    "num_parameters=%i, number of columns=%i.",
-                    numStates, numControls,
-                    numMultipliers, numDerivatives, numSlacks,
-                    numParameters, table->getNumColumns()));
+                    numStates, numControls, numMultipliers, numDerivatives,
+                    numSlacks, numParameters, table->getNumColumns()));
 
     const auto& time = table->getIndependentColumn();
     m_time = SimTK::Vector((int)time.size(), time.data());
@@ -624,7 +661,7 @@ StatesTrajectory MocoIterate::exportToStatesTrajectory(
     Storage storage = exportToStatesStorage();
     // TODO update when we support multiple phases.
     const auto& model = problem.getPhase(0).getModel();
-    return StatesTrajectory::createFromStatesStorage(model, storage);
+    return StatesTrajectory::createFromStatesStorage(model, storage, true);
 }
 
 /*static*/ MocoIterate MocoIterate::createFromStatesControlsTables(
@@ -636,7 +673,7 @@ StatesTrajectory MocoIterate::exportToStatesTrajectory(
     OPENSIM_THROW_IF(statesNumRows != controlsNumRows, Exception,
             format("Expected statesTrajectory (%i rows) and controlsTrajectory "
                    "(%i rows) to have the same number of rows.",
-                   statesNumRows, controlsNumRows));
+                    statesNumRows, controlsNumRows));
     // TODO interpolate instead of creating this error.
     for (int i = 0; i < statesNumRows; ++i) {
         const auto& statesTime = statesTrajectory.getIndependentColumn()[i];
@@ -645,7 +682,7 @@ StatesTrajectory MocoIterate::exportToStatesTrajectory(
                 format("Expected time columns of statesTrajectory and "
                        "controlsTrajectory to match, but they differ at i = %i "
                        "(states time: %g; controls time: %g).",
-                       i, statesTime, controlsTime));
+                        i, statesTime, controlsTime));
     }
 
     // TODO Support controlsTrajectory being empty.
@@ -779,7 +816,8 @@ void checkContains(std::string type, VecStr a, VecStr b, VecStr c) {
     }
 }
 
-double MocoIterate::compareContinuousVariablesRMS(const MocoIterate& other,
+double MocoIterate::compareContinuousVariablesRMSInternal(
+        const MocoIterate& other,
         std::vector<std::string> stateNames,
         std::vector<std::string> controlNames,
         std::vector<std::string> multiplierNames,
@@ -909,6 +947,34 @@ double MocoIterate::compareContinuousVariablesRMS(const MocoIterate& other,
     // `im`: index for multipliers.
     const double ISS = stateISS + controlISS + multiplierISS + derivativeISS;
     return sqrt(ISS / (finalTime - initialTime) / numColumns);
+}
+
+double MocoIterate::compareContinuousVariablesRMS(const MocoIterate& other,
+        std::map<std::string, std::vector<std::string>> cols) const {
+    ensureUnsealed();
+    std::vector<std::string> allowedKeys {
+        "states", "controls", "multipliers", "derivatives"
+    };
+    for (auto kv : cols) {
+        bool keyIsAllowed = false;
+        for (auto allowedKey : allowedKeys) {
+            if (kv.first == allowedKey) {
+                keyIsAllowed = true;
+                break;
+            }
+        }
+        OPENSIM_THROW_IF(!keyIsAllowed, Exception,
+                format("Key '%s' is not allowed.", kv.first));
+    }
+    if (cols.size() == 0) {
+        return compareContinuousVariablesRMSInternal(other);
+    }
+    static const std::vector<std::string> none {"none"};
+    return compareContinuousVariablesRMSInternal(other,
+            cols.count("states") ? cols.at("states") : none,
+            cols.count("controls") ? cols.at("controls") : none,
+            cols.count("multipliers") ? cols.at("multipliers") : none,
+            cols.count("derivatives") ? cols.at("derivatives") : none);
 }
 
 double MocoIterate::compareParametersRMS(const MocoIterate& other,

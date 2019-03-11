@@ -36,7 +36,8 @@ namespace OpenSim {
 /// track joint angles, activations, etc.
 /// The reference can be provided as a file name to a STO or CSV file (or
 /// other file types for which there is a FileAdapter), or programmatically
-/// as a TimeSeriesTable.
+/// as a TimeSeriesTable. If columns for rotational coordinates are in degrees,
+/// those columns will be converted to radians.
 /// @ingroup mococost
 class OSIMMOCO_API MocoStateTrackingCost : public MocoCost {
 OpenSim_DECLARE_CONCRETE_OBJECT(MocoStateTrackingCost, MocoCost);

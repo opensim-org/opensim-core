@@ -18,11 +18,11 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
+#include "../Components/AccelerationMotion.h"
+#include "../Components/DiscreteForces.h"
 #include "../MocoBounds.h"
 #include "../MocoTropterSolver.h"
 #include "../MocoUtilities.h"
-#include "../Components/DiscreteForces.h"
-#include "../Components/AccelerationMotion.h"
 
 #include <simbody/internal/Constraint.h>
 
@@ -45,7 +45,7 @@ inline tropter::FinalBounds convertBounds(const MocoFinalBounds& mb) {
 template <typename T>
 class MocoTropterSolver::TropterProblemBase : public tropter::Problem<T> {
 protected:
-    TropterProblemBase(const MocoTropterSolver& solver)
+    TropterProblemBase(const MocoTropterSolver& solver, bool implicit = false)
             : tropter::Problem<T>(solver.getProblemRep().getName()),
               m_mocoTropterSolver(solver),
               m_mocoProbRep(solver.getProblemRep()),
@@ -54,7 +54,8 @@ protected:
               m_modelDisabledConstraints(
                       m_mocoProbRep.getModelDisabledConstraints()),
               m_stateDisabledConstraints(
-                      m_mocoProbRep.updStateDisabledConstraints()) {
+                      m_mocoProbRep.updStateDisabledConstraints()),
+              m_implicit(implicit) {
         // TODO set name properly.
         // Disable all controllers.
         // TODO temporary; don't want to actually do this.
@@ -73,7 +74,8 @@ protected:
         // since the discrete variables added to the model with disabled
         // constraints wouldn't show up anyway.
         m_svNamesInSysOrder =
-                createStateVariableNamesInSystemOrder(m_modelBase, m_yIndexMap);
+                m_mocoProbRep.createStateVariableNamesInSystemOrder(
+                        m_yIndexMap);
 
         addStateVariables();
         addControlVariables();
@@ -295,8 +297,7 @@ protected:
         }
     }
 
-    void setSimTKState(
-            const tropter::Input<T>& in, bool setControlsToNaN = false) const {
+    void setSimTKState(const tropter::Input<T>& in) const {
         const auto& time = in.time;
         const auto& states = in.states;
         const auto& adjuncts = in.adjuncts;
@@ -305,13 +306,19 @@ protected:
         auto& simTKStateDisabledConstraints = this->m_stateDisabledConstraints;
         auto& modelDisabledConstraints = this->m_modelDisabledConstraints;
 
+        if (m_implicit && !m_mocoProbRep.isPrescribedKinematics()) {
+            const auto& accel = this->m_mocoProbRep.getAccelerationMotion();
+            const int NU = simTKStateDisabledConstraints.getNU();
+            const auto& w = adjuncts.segment(
+                    this->m_numKinematicConstraintEquations, NU);
+            SimTK::Vector udot((int)w.size(), w.data(), true);
+            accel.setUDot(simTKStateDisabledConstraints, udot);
+        }
+
         this->setSimTKTimeAndStates(
                 time, states, simTKStateDisabledConstraints);
 
-        if (setControlsToNaN) {
-            modelDisabledConstraints.updControls(simTKStateDisabledConstraints)
-                    .setToNaN();
-        } else if (modelDisabledConstraints.getNumControls()) {
+        if (modelDisabledConstraints.getNumControls()) {
             // Set the controls for actuators in the OpenSim model with disabled
             // constraints. The base model never gets realized past
             // Stage::Velocity, so we don't ever need to set its controls.
@@ -376,6 +383,7 @@ protected:
     SimTK::State& m_stateBase;
     const Model& m_modelDisabledConstraints;
     SimTK::State& m_stateDisabledConstraints;
+    const bool m_implicit;
 
     std::vector<std::string> m_svNamesInSysOrder;
     std::unordered_map<int, int> m_yIndexMap;
@@ -499,8 +507,8 @@ protected:
 
 public:
     template <typename MocoIterateType, typename tropIterateType>
-    MocoIterateType 
-    convertIterateTropterToMoco(const tropIterateType& tropSol) const;
+    MocoIterateType convertIterateTropterToMoco(
+            const tropIterateType& tropSol) const;
 
     MocoIterate convertToMocoIterate(const tropter::Iterate& tropSol) const;
 
@@ -587,16 +595,17 @@ class MocoTropterSolver::ImplicitTropterProblem
         : public MocoTropterSolver::TropterProblemBase<T> {
 public:
     ImplicitTropterProblem(const MocoTropterSolver& solver)
-            : TropterProblemBase<T>(solver) {
-        OPENSIM_THROW_IF(this->m_stateDisabledConstraints.getNZ(), Exception,
-                "Cannot use implicit dynamics mode if the system has auxiliary "
-                "states.");
+            : TropterProblemBase<T>(solver, true) {
         OPENSIM_THROW_IF(this->m_numKinematicConstraintEquations, Exception,
                 "Cannot use implicit dynamics mode with kinematic "
                 "constraints.");
-        const auto& accel = this->m_mocoProbRep.getAccelerationMotion();
-        auto& simTKStateDisabledConstraints = this->m_stateDisabledConstraints;
-        accel.setEnabled(simTKStateDisabledConstraints, true);
+
+        auto& simTKStateDisabledConstraints =
+                this->m_stateDisabledConstraints;
+        if (!this->m_mocoProbRep.isPrescribedKinematics()) {
+            const auto& accel = this->m_mocoProbRep.getAccelerationMotion();
+            accel.setEnabled(simTKStateDisabledConstraints, true);
+        }
 
         // Add adjuncts for udot, which we call "w".
         int NU = simTKStateDisabledConstraints.getNU();
@@ -624,6 +633,7 @@ public:
                 simTKStateDisabledConstraints.getNY() - (int)states.size();
         const auto NQ = simTKStateDisabledConstraints.getNQ() - numEmptySlots;
         const auto NU = simTKStateDisabledConstraints.getNU();
+        const auto NZ = simTKStateDisabledConstraints.getNZ();
 
         const auto& u = states.segment(NQ, NU);
         const auto& w =
@@ -648,12 +658,16 @@ public:
         // this->calcKinematicConstraintForces()
         this->calcPathConstraintErrors(simTKStateDisabledConstraints, out);
 
-        if (out.path.size() != 0) {
-            SimTK::Vector udot((int)w.size(), w.data(), true);
-            const auto& accel = this->m_mocoProbRep.getAccelerationMotion();
-            accel.setUDot(simTKStateDisabledConstraints, udot);
+        if (NZ || out.path.size()) {
             modelDisabledConstraints.realizeAcceleration(
                     simTKStateDisabledConstraints);
+        }
+
+        const auto& zdot = simTKStateDisabledConstraints.getZDot();
+        std::copy_n(zdot.getContiguousScalarData(), zdot.size(),
+                out.dynamics.data() + NQ + NU);
+
+        if (out.path.size() != 0) {
             const auto& matter =
                     this->m_modelDisabledConstraints.getMatterSubsystem();
             matter.findMotionForces(simTKStateDisabledConstraints, m_residual);

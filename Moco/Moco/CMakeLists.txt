@@ -47,12 +47,17 @@ set(MOCO_SOURCES
         InverseMuscleSolver/GlobalStaticOptimization.cpp
         InverseMuscleSolver/INDYGO.h
         InverseMuscleSolver/INDYGO.cpp
+        InverseMuscleSolver/INDYGOProblemInternal.h
         InverseMuscleSolver/DeGrooteFregly2016MuscleStandalone.h
         InverseMuscleSolver/InverseMuscleSolverMotionData.h
         InverseMuscleSolver/InverseMuscleSolverMotionData.cpp
+        Components/DeGrooteFregly2016Muscle.h
+        Components/DeGrooteFregly2016Muscle.cpp
         Components/ActivationCoordinateActuator.h
         Components/StationPlaneContactForce.h
         Components/StationPlaneContactForce.cpp
+        Components/PositionMotion.h
+        Components/PositionMotion.cpp
         Components/ModelFactory.h
         Components/ModelFactory.cpp
         Components/DiscreteForces.h
@@ -61,8 +66,8 @@ set(MOCO_SOURCES
         Components/AccelerationMotion.cpp
         MocoCasADiSolver/MocoCasADiSolver.h
         MocoCasADiSolver/MocoCasADiSolver.cpp
-        MocoCasADiSolver/MocoCasADiBridge.h
-        MocoCasADiSolver/MocoCasADiBridge.cpp
+        MocoCasADiSolver/MocoCasOCProblem.h
+        MocoCasADiSolver/MocoCasOCProblem.cpp
         MocoCasADiSolver/CasOCProblem.h
         MocoCasADiSolver/CasOCProblem.cpp
         MocoCasADiSolver/CasOCSolver.h
@@ -75,8 +80,7 @@ set(MOCO_SOURCES
         MocoCasADiSolver/CasOCTrapezoidal.cpp
         MocoCasADiSolver/CasOCHermiteSimpson.h
         MocoCasADiSolver/CasOCHermiteSimpson.cpp
-        MocoCasADiSolver/CasOCIterate.h
-        )
+        MocoCasADiSolver/CasOCIterate.h MocoInverse.cpp MocoInverse.h)
 if(MOCO_WITH_TROPTER)
     list(APPEND MOCO_SOURCES
             tropter/TropterProblem.h

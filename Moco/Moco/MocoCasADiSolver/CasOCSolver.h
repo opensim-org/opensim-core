@@ -46,14 +46,12 @@ public:
     const std::string& getTranscriptionScheme() const {
         return m_transcriptionScheme;
     }
-    void setDynamicsMode(std::string dynamicsMode) {
-        OPENSIM_THROW_IF(
-                dynamicsMode != "explicit" && dynamicsMode != "implicit",
-                OpenSim::Exception, "Invalid dynamics mode.");
-        m_dynamicsMode = std::move(dynamicsMode);
+    std::string getDynamicsMode() const {
+        return m_problem.getDynamicsMode();
     }
-    const std::string& getDynamicsMode() const { return m_dynamicsMode; }
-    bool isDynamicsModeImplicit() const { return m_dynamicsMode == "implicit"; }
+    bool isDynamicsModeImplicit() const {
+        return m_problem.getDynamicsMode() == "implicit";
+    }
     void setMinimizeLagrangeMultipliers(bool tf) {
         m_minimizeLagrangeMultipliers = tf;
     }
@@ -95,10 +93,7 @@ public:
     void setWriteSparsity(const std::string& setting) {
         m_write_sparsity = setting;
     }
-    std::string getWriteSparsity() const {
-        return m_write_sparsity;
-    }
-
+    std::string getWriteSparsity() const { return m_write_sparsity; }
 
     /// Use this to tell CasADi to evaluate the differential-algebraic equations
     /// in parallel across grid points. "parallelism" is passed on directly to
@@ -132,7 +127,6 @@ private:
     const Problem& m_problem;
     int m_numMeshPoints;
     std::string m_transcriptionScheme = "trapezoidal";
-    std::string m_dynamicsMode = "explicit";
     bool m_minimizeLagrangeMultipliers = false;
     double m_lagrangeMultiplierWeight = 1.0;
     std::string m_finite_difference_scheme = "central";

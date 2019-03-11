@@ -21,6 +21,8 @@
 #include "Components/AccelerationMotion.h"
 #include "Components/DiscreteForces.h"
 #include "MocoProblem.h"
+
+#include "Components/PositionMotion.h"
 #include <unordered_set>
 
 using namespace OpenSim;
@@ -60,14 +62,26 @@ void MocoProblemRep::initialize() {
     m_constraint_forces.reset(constraintForcesUPtr.get());
     m_model_disabled_constraints.addComponent(constraintForcesUPtr.release());
 
-    // The Acceleration motion is always added, but is only enabled by solvers
-    // if using an implicit dynamics mode. We use this motion to ensure that
-    // joint reaction forces can be computed correctly from the solver-supplied
-    // UDot (otherwise, Simbody will compute its own "incorrect" UDot using
-    // forward dynamics).
-    auto accelMotionUPtr = make_unique<AccelerationMotion>("motion");
-    m_acceleration_motion.reset(accelMotionUPtr.get());
-    m_model_disabled_constraints.addModelComponent(accelMotionUPtr.release());
+
+    // TODO: only enable if necessary?
+    // TODO cannot prescribe both accel and position.
+    int countMotion = 0;
+    for (const auto& comp : m_model_base.getComponentList<PositionMotion>()) {
+        comp.getName(); // Avoid "unused variable".
+        ++countMotion;
+    }
+    if (countMotion) {
+        m_prescribedKinematics = true;
+    } else {
+        // The Acceleration motion is always added if there is no PositionMotion, but is only enabled by solvers
+        // if using an implicit dynamics mode. We use this motion to ensure that
+        // joint reaction forces can be computed correctly from the solver-supplied
+        // UDot (otherwise, Simbody will compute its own "incorrect" UDot using
+        // forward dynamics).
+        auto accelMotionUPtr = make_unique<AccelerationMotion>("motion");
+        m_acceleration_motion.reset(accelMotionUPtr.get());
+        m_model_disabled_constraints.addModelComponent(accelMotionUPtr.release());
+    }
     // Grab a writable state from the copied model -- we'll use this to disable
     // its constraints below.
     m_state_disabled_constraints = m_model_disabled_constraints.initSystem();
@@ -99,19 +113,21 @@ void MocoProblemRep::initialize() {
         const auto& name = ph0.get_state_infos(i).getName();
         m_state_infos[name] = ph0.get_state_infos(i);
     }
-    for (const auto& coord : m_model_base.getComponentList<Coordinate>()) {
-        const auto stateVarNames = coord.getStateVariableNames();
-        const std::string coordValueName = stateVarNames[0];
-        if (m_state_infos.count(coordValueName) == 0) {
-            const auto info = MocoVariableInfo(coordValueName,
-                    {coord.getRangeMin(), coord.getRangeMax()}, {}, {});
-            m_state_infos[coordValueName] = info;
-        }
-        const std::string coordSpeedName = stateVarNames[1];
-        if (m_state_infos.count(coordSpeedName) == 0) {
-            const auto info = MocoVariableInfo(
-                    coordSpeedName, ph0.get_default_speed_bounds(), {}, {});
-            m_state_infos[coordSpeedName] = info;
+    if (!m_prescribedKinematics) {
+        for (const auto& coord : m_model_base.getComponentList<Coordinate>()) {
+            const auto stateVarNames = coord.getStateVariableNames();
+            const std::string coordValueName = stateVarNames[0];
+            if (m_state_infos.count(coordValueName) == 0) {
+                const auto info = MocoVariableInfo(coordValueName,
+                        {coord.getRangeMin(), coord.getRangeMax()}, {}, {});
+                m_state_infos[coordValueName] = info;
+            }
+            const std::string coordSpeedName = stateVarNames[1];
+            if (m_state_infos.count(coordSpeedName) == 0) {
+                const auto info = MocoVariableInfo(
+                        coordSpeedName, ph0.get_default_speed_bounds(), {}, {});
+                m_state_infos[coordSpeedName] = info;
+            }
         }
     }
     for (int i = 0; i < ph0.getProperty_control_infos().size(); ++i) {
@@ -270,6 +286,21 @@ MocoInitialBounds MocoProblemRep::getTimeInitialBounds() const {
 MocoFinalBounds MocoProblemRep::getTimeFinalBounds() const {
     return m_problem->getPhase(0).get_time_final_bounds();
 }
+std::vector<std::string> MocoProblemRep::createStateVariableNamesInSystemOrder(
+        std::unordered_map<int, int>& yIndexMap) const {
+    auto stateNames =
+            OpenSim::createStateVariableNamesInSystemOrder(m_model_base, yIndexMap);
+    auto out = stateNames;
+    if (m_prescribedKinematics) {
+        for (int i = 0; i < (int)stateNames.size(); ++i) {
+            if (endsWith(stateNames[i], "/value") ||
+                    endsWith(stateNames[i], "/speed")) {
+                out.erase(std::find(out.begin(), out.end(), stateNames[i]));
+            }
+        }
+    }
+    return out;
+}
 std::vector<std::string> MocoProblemRep::createStateInfoNames() const {
     std::vector<std::string> names(m_state_infos.size());
     int i = 0;
@@ -353,6 +384,10 @@ const MocoPathConstraint& MocoProblemRep::getPathConstraint(
     }
     OPENSIM_THROW(Exception,
             format("No path constraint with name '%s' found.", name));
+}
+const MocoPathConstraint& MocoProblemRep::getPathConstraintByIndex(
+        int index) const {
+    return *m_path_constraints[index];
 }
 const MocoKinematicConstraint& MocoProblemRep::getKinematicConstraint(
         const std::string& name) const {

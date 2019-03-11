@@ -92,6 +92,7 @@ void AccelerationMotion::setEnabled(
 void AccelerationMotion::extendAddToSystem(
         SimTK::MultibodySystem& system) const {
     Super::extendAddToSystem(system);
+    m_motions.clear();
     auto& matter = system.updMatterSubsystem();
     for (int i = 0; i < matter.getNumBodies(); ++i) {
         auto& mobod = matter.updMobilizedBody(SimTK::MobilizedBodyIndex(i));

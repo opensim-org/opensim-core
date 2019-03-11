@@ -102,13 +102,16 @@ public:
     int getNumStates() const { return (int)m_state_infos.size(); }
     int getNumControls() const { return (int)m_control_infos.size(); }
     int getNumParameters() const { return (int)m_parameters.size(); }
+    bool isPrescribedKinematics() const { return m_prescribedKinematics; }
+    std::vector<std::string> createStateVariableNamesInSystemOrder(
+            std::unordered_map<int, int>& yIndexMap) const;
     /// Get the state names of all the state infos.
     std::vector<std::string> createStateInfoNames() const;
     /// Get the control names of all the control infos.
     std::vector<std::string> createControlInfoNames() const;
     /// Get the names of all the parameters.
     std::vector<std::string> createParameterNames() const;
-    /// Get the names of all the MocoPathConstraints.
+    /// Get the names of all the MocoPathConstraint%s.
     std::vector<std::string> createPathConstraintNames() const;
     /// Get the names of all the Lagrange multiplier infos.
     std::vector<std::string> createMultiplierInfoNames() const;
@@ -132,6 +135,9 @@ public:
     /// Get a MocoPathConstraint from this MocoPhase. Note: this does not
     /// include MocoKinematicConstraints, use getKinematicConstraint() instead.
     const MocoPathConstraint& getPathConstraint(const std::string& name) const;
+    /// Get a path constraint by index. The order is the same as
+    /// in getPathConstraintNames(). Note: this does not perform a bounds check.
+    const MocoPathConstraint& getPathConstraintByIndex(int index) const;
 
     /// Get the number of scalar path constraints in the MocoProblem. This does
     /// not include kinematic constraints equations.
@@ -258,6 +264,8 @@ private:
     mutable SimTK::State m_state_disabled_constraints;
     SimTK::ReferencePtr<DiscreteForces> m_constraint_forces;
     SimTK::ReferencePtr<AccelerationMotion> m_acceleration_motion;
+
+    bool m_prescribedKinematics = false;
 
     std::unordered_map<std::string, MocoVariableInfo> m_state_infos;
     std::unordered_map<std::string, MocoVariableInfo> m_control_infos;

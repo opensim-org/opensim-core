@@ -361,18 +361,18 @@ void compareTrackingToPrediction(const MocoSolution& predictiveSolution,
     std::cout << "States RMS error: ";
     std::cout <<
         trackingSolution.compareContinuousVariablesRMS(
-            predictiveSolution, {}, {"none"}, {"none"}, {"none"});
+            predictiveSolution, {{"states", {}}});
     std::cout << std::endl;
     std::cout << "Controls RMS error: ";
     std::cout <<
         trackingSolution.compareContinuousVariablesRMS(
-            predictiveSolution, {"none"}, {}, {"none"}, {"none"});
+            predictiveSolution, {{"controls", {}}});
     std::cout << std::endl;
     if (trackingSolution.getMultiplierNames().size() != 0) {
         std::cout << "Multipliers RMS error: ";
         std::cout <<
             trackingSolution.compareContinuousVariablesRMS(
-                predictiveSolution, {"none"}, {"none"}, {}, {"none"});
+                    predictiveSolution, {{"multipliers", {}}});
         std::cout << std::endl;
     }
 }

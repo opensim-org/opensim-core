@@ -21,7 +21,7 @@
 #include <OpenSim/Common/osimCommon.h>
 #include <OpenSim/Simulation/osimSimulation.h>
 #include <OpenSim/Actuators/osimActuators.h>
-#include <Moco/MocoCost.h>
+#include <Moco/MocoCost/MocoCost.h>
 
 namespace OpenSim {
 
