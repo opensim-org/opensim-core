@@ -17,16 +17,17 @@
  * -------------------------------------------------------------------------- */
 
 #include <Moco/osimMoco.h>
+
+#include <OpenSim/Actuators/osimActuators.h>
 #include <OpenSim/Common/osimCommon.h>
 #include <OpenSim/Simulation/osimSimulation.h>
-#include <OpenSim/Actuators/osimActuators.h>
 
 using namespace OpenSim;
-using SimTK::Vec3;
 using SimTK::Inertia;
 using SimTK::Transform;
+using SimTK::Vec3;
 
-/// This essentially removes the effect of passive muscle fiber forces from the 
+/// This essentially removes the effect of passive muscle fiber forces from the
 /// model.
 void minimizePassiveFiberForces(Model& model) {
     const auto& muscleSet = model.getMuscles();
@@ -35,33 +36,45 @@ void minimizePassiveFiberForces(Model& model) {
     for (int i = 0; i < muscNames.size(); ++i) {
         const auto& name = muscNames.get(i);
         FiberForceLengthCurve fflc(
-            model.getComponent<Millard2012EquilibriumMuscle>(
-                "/forceset/" + name).getFiberForceLengthCurve());
+                model.getComponent<Millard2012EquilibriumMuscle>(
+                             "/forceset/" + name)
+                        .getFiberForceLengthCurve());
         fflc.set_strain_at_one_norm_force(100000);
         fflc.set_stiffness_at_low_force(0.00000001);
         fflc.set_stiffness_at_one_norm_force(0.0001);
         fflc.set_curviness(0);
-        model.updComponent<Millard2012EquilibriumMuscle>(
-            "/forceset/" + name).setFiberForceLengthCurve(fflc);
+        model.updComponent<Millard2012EquilibriumMuscle>("/forceset/" + name)
+                .setFiberForceLengthCurve(fflc);
     }
 }
 
 Model createModel(const std::string& actuatorType) {
 
     Model model("Rajagopal2015_bottom_up_one_leg.osim");
-    //for (int m = 0; m < model.getMuscles().getSize(); ++m) {
-    //    auto& musc = model.updMuscles().get(m);
-    //    musc.set_ignore_activation_dynamics(true);
-    //    musc.set_ignore_tendon_compliance(true);
-    //    //musc.setOptimalForce(10*musc.getOptimalForce());
-    //}
-    ////minimizePassiveFiberForces(model);
-    ////model.finalizeConnections();
-    ////model.finalizeFromProperties();
 
-    // TODO problems with muscles are quite slow, not sure if a modeling issue
-    // or something else
-    removeMuscles(model);
+    if (actuatorType == "torques") {
+        removeMuscles(model);
+    } else if (actuatorType == "Millard2012EquilibriumMuscle") {
+        for (int m = 0; m < model.getMuscles().getSize(); ++m) {
+            auto& musc = model.updMuscles().get(m);
+            musc.set_ignore_activation_dynamics(true);
+            musc.set_ignore_tendon_compliance(true);
+            // musc.setOptimalForce(10*musc.getOptimalForce());
+        }
+        ////minimizePassiveFiberForces(model);
+        ////model.finalizeConnections();
+        ////model.finalizeFromProperties();
+    } else if (actuatorType == "DeGrooteFregly2016Muscle") {
+        model.finalizeConnections();
+        DeGrooteFregly2016Muscle::replaceMuscles(model);
+        for (int m = 0; m < model.getMuscles().getSize(); ++m) {
+            auto& musc = model.updMuscles().get(m);
+            musc.set_ignore_activation_dynamics(true);
+            musc.set_ignore_tendon_compliance(true);
+        }
+    } else {
+        throw std::runtime_error("Unrecognized actuatorType.");
+    }
 
     return model;
 }
@@ -72,8 +85,8 @@ void setBounds(MocoProblem& mp) {
     mp.setStateInfo("/jointset/hip_r/hip_flexion_r/value", {-3, 0.5}, -2.25, 0);
     mp.setStateInfo("/jointset/hip_r/hip_adduction_r/value", {-1, 1}, -0.5, 0);
     mp.setStateInfo("/jointset/hip_r/hip_rotation_r/value", {-1, 1}, -0.5, 0);
-    mp.setStateInfo("/jointset/walker_knee_r/knee_angle_r/value", {-3, 0}, 
-            -2.25, 0);
+    mp.setStateInfo(
+            "/jointset/walker_knee_r/knee_angle_r/value", {-3, 0}, -2.25, 0);
     mp.setStateInfo("/jointset/ankle_r/ankle_angle_r/value", {-2, 2}, -0.5, 0);
 }
 
@@ -145,7 +158,7 @@ MocoSolution stateTracking(const Options& opt) {
     model.initSystem();
     mp.setModelCopy(model);
     TimeSeriesTable prevStateTraj =
-        prevSol.exportToStatesTrajectory(mp).exportToTable(model);
+            prevSol.exportToStatesTrajectory(mp).exportToTable(model);
     GCVSplineSet prevStateSpline(prevStateTraj, prevSol.getStateNames());
 
     setBounds(mp);
@@ -154,8 +167,10 @@ MocoSolution stateTracking(const Options& opt) {
     tracking->setName("tracking");
     tracking->setReference(prevStateTraj);
     // Don't track coordinates enforced by constraints.
-    tracking->setWeight("/jointset/patellofemoral_r/knee_angle_r_beta/value", 0);
-    tracking->setWeight("/jointset/patellofemoral_r/knee_angle_r_beta/speed", 0);
+    tracking->setWeight(
+            "/jointset/patellofemoral_r/knee_angle_r_beta/value", 0);
+    tracking->setWeight(
+            "/jointset/patellofemoral_r/knee_angle_r_beta/speed", 0);
 
     // Need this to recover the correct controls
     auto* effort = mp.addCost<MocoControlCost>();
@@ -189,25 +204,22 @@ MocoSolution stateTracking(const Options& opt) {
 }
 
 void compareTrackingToPrediction(const MocoSolution& predictiveSolution,
-    const MocoSolution& trackingSolution) {
+        const MocoSolution& trackingSolution) {
 
     std::cout << "Predictive versus tracking comparison" << std::endl;
     std::cout << "-------------------------------------" << std::endl;
     std::cout << "States RMS error: ";
-    std::cout <<
-        trackingSolution.compareContinuousVariablesRMS(
-            predictiveSolution, {}, {"none"}, {"none"}, {"none"});
+    std::cout << trackingSolution.compareContinuousVariablesRMS(
+            predictiveSolution, {{"states", {}}});
     std::cout << std::endl;
     std::cout << "Controls RMS error: ";
-    std::cout <<
-        trackingSolution.compareContinuousVariablesRMS(
-            predictiveSolution, {"none"}, {}, {"none"}, {"none"});
+    std::cout << trackingSolution.compareContinuousVariablesRMS(
+            predictiveSolution, {{"controls", {}}});
     std::cout << std::endl;
     if (trackingSolution.getMultiplierNames().size() != 0) {
         std::cout << "Multipliers RMS error: ";
-        std::cout <<
-            trackingSolution.compareContinuousVariablesRMS(
-                predictiveSolution, {"none"}, {"none"}, {}, {"none"});
+        std::cout << trackingSolution.compareContinuousVariablesRMS(
+                predictiveSolution, {{"multipliers", {}}});
         std::cout << std::endl;
     }
 }
@@ -216,12 +228,15 @@ int main() {
 
     // Set options.
     Options opt;
+    // TODO problems with muscles are quite slow, not sure if a modeling issue
+    // or something else
+    opt.actuatorType = "DeGrooteFregly2016Muscle";
     opt.num_mesh_points = 25;
     opt.solver = "ipopt";
     opt.constraint_tol = 1e-2;
     opt.convergence_tol = 1e-2;
-    //opt.max_iterations = 10;
-    opt.dynamics_mode = "explicit";
+    // opt.max_iterations = 10;
+    opt.dynamics_mode = "implicit";
 
     // Predictive problem.
     MocoSolution torqueSolEffort = minimizeControlEffort(opt);
