@@ -57,9 +57,9 @@ public:
             "All data must end at or after this time. "
             "(default: latest time available in all provided data)");
 
-    OpenSim_DECLARE_PROPERTY(mesh_point_frequency, int,
-            "The number of mesh points per second of motion "
-            "(default: 50 mesh points / second).");
+    OpenSim_DECLARE_PROPERTY(mesh_interval, double,
+            "The time duration of each mesh interval "
+            "(default: 0.020 seconds).");
 
     OpenSim_DECLARE_PROPERTY(external_loads_file, std::string, "TODO");
 

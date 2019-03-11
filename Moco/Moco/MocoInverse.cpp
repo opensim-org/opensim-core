@@ -34,7 +34,7 @@ void MocoInverse::constructProperties() {
 
     constructProperty_initial_time();
     constructProperty_final_time();
-    constructProperty_mesh_point_frequency(50);
+    constructProperty_mesh_interval(0.02);
     constructProperty_create_reserve_actuators(-1);
     constructProperty_external_loads_file("");
     constructProperty_ignore_activation_dynamics(false);
@@ -99,7 +99,7 @@ MocoInverseSolution MocoInverse::solve() const {
 
     const auto timeInfo =
             calcInitialAndFinalTimes(kinematicsRaw.getIndependentColumn(), {},
-                    get_mesh_point_frequency());
+                    get_mesh_interval());
     // const double spaceForFiniteDiff = 1e-3;
     problem.setTimeBounds(timeInfo.initialTime, timeInfo.finalTime);
 
@@ -128,7 +128,7 @@ MocoInverseSolution MocoInverse::solve() const {
 
 MocoInverse::TimeInfo MocoInverse::calcInitialAndFinalTimes(
         const std::vector<double>& time0, const std::vector<double>& time1,
-        const int& meshPointFrequency) const {
+        const int& meshInterval) const {
 
     TimeInfo out;
     double initialTimeFromData = time0.front();
@@ -162,6 +162,6 @@ MocoInverse::TimeInfo MocoInverse::calcInitialAndFinalTimes(
 
     // We do not want to end up with a lower mesh frequency than requested.
     out.numMeshPoints = (int)std::ceil(
-            (out.finalTime - out.initialTime) * meshPointFrequency);
+            (out.finalTime - out.initialTime) / (meshInterval)) + 1;
     return out;
 }

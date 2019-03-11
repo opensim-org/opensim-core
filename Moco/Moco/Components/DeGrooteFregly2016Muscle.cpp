@@ -458,6 +458,8 @@ void DeGrooteFregly2016Muscle::printCurvesToSTOFiles(
 void DeGrooteFregly2016Muscle::replaceMuscles(
         Model& model, bool allowUnsupportedMuscles) {
 
+    model.finalizeConnections();
+
     // Create path actuators from muscle properties and add to the model. Save
     // a list of pointers of the muscles to delete.
     std::vector<Muscle*> musclesToDelete;
