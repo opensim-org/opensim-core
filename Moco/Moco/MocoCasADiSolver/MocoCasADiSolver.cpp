@@ -135,7 +135,7 @@ std::unique_ptr<MocoCasOCProblem> MocoCasADiSolver::createCasOCProblem() const {
     OPENSIM_THROW_IF(!model.getMatterSubsystem().getUseEulerAngles(
             model.getWorkingState()),
             Exception, "Quaternions are not supported.");
-    return make_unique<MocoCasOCProblem>(*this, problemRep,
+    return OpenSim::make_unique<MocoCasOCProblem>(*this, problemRep,
             createProblemRepJar(numThreads),
             get_dynamics_mode());
 }
