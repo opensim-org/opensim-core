@@ -26,21 +26,6 @@ using SimTK::Vec3;
 using SimTK::Inertia;
 using SimTK::Transform;
 
- /// Convenience function to apply an CoordinateActuator to the model.
-void addCoordinateActuator(Model& model, std::string coordName,
-    double optimalForce) {
-
-    auto& coordSet = model.updCoordinateSet();
-
-    auto* actu = new CoordinateActuator();
-    actu->setName("tau_" + coordName);
-    actu->setCoordinate(&coordSet.get(coordName));
-    actu->setOptimalForce(1);
-    actu->setMinControl(-optimalForce);
-    actu->setMaxControl(optimalForce);
-    model.addComponent(actu);
-}
-
 /// This essentially removes the effect of passive muscle fiber forces from the 
 /// model.
 void minimizePassiveFiberForces(Model& model) {
@@ -61,48 +46,35 @@ void minimizePassiveFiberForces(Model& model) {
     }
 }
 
-class UprightCost : public MocoCost {
-OpenSim_DECLARE_CONCRETE_OBJECT(UprightCost, MocoCost);
-public: 
-    UprightCost() {}
-protected:
-    void calcIntegralCostImpl(const SimTK::State& state,
-            SimTK::Real& cost) const override {
-        const auto& pelvis = getModel().getBodySet().get("pelvis");
-        const auto& R = pelvis.getTransformInGround(state).R();
-
-        const auto& x_dir =
-            R.getAxisUnitVec(SimTK::CoordinateAxis::getCoordinateAxis(0));
-        const auto& y_dir = 
-            R.getAxisUnitVec(SimTK::CoordinateAxis::getCoordinateAxis(1));
-        const auto& z_dir =
-            R.getAxisUnitVec(SimTK::CoordinateAxis::getCoordinateAxis(2));
-
-        SimTK::UnitVec3 xhat_dir(1, 0, 0);
-        SimTK::UnitVec3 yhat_dir(0, 1, 0);
-        SimTK::UnitVec3 zhat_dir(0, 0, 1);
-
-        cost = pow(SimTK::dot(x_dir, xhat_dir) - 1, 2) +
-               pow(SimTK::dot(y_dir, yhat_dir) - 1, 2) +
-               pow(SimTK::dot(z_dir, zhat_dir) - 1, 2);
-    }
-};
-
 Model createModel(const std::string& actuatorType) {
 
     Model model("Rajagopal2015_bottom_up_one_leg.osim");
-    for (int m = 0; m < model.getMuscles().getSize(); ++m) {
-        auto& musc = model.updMuscles().get(m);
-        musc.set_ignore_activation_dynamics(true);
-        musc.set_ignore_tendon_compliance(true);
-        musc.setOptimalForce(10*musc.getOptimalForce());
-    }
-    minimizePassiveFiberForces(model);
-    model.finalizeConnections();
-    model.finalizeFromProperties();
-    //removeMuscles(model);
+    //for (int m = 0; m < model.getMuscles().getSize(); ++m) {
+    //    auto& musc = model.updMuscles().get(m);
+    //    musc.set_ignore_activation_dynamics(true);
+    //    musc.set_ignore_tendon_compliance(true);
+    //    //musc.setOptimalForce(10*musc.getOptimalForce());
+    //}
+    ////minimizePassiveFiberForces(model);
+    ////model.finalizeConnections();
+    ////model.finalizeFromProperties();
+
+    // TODO problems with muscles are quite slow, not sure if a modeling issue
+    // or something else
+    removeMuscles(model);
 
     return model;
+}
+
+void setBounds(MocoProblem& mp) {
+    mp.setTimeBounds(0, 1);
+
+    mp.setStateInfo("/jointset/hip_r/hip_flexion_r/value", {-3, 0.5}, -2.25, 0);
+    mp.setStateInfo("/jointset/hip_r/hip_adduction_r/value", {-1, 1}, -0.5, 0);
+    mp.setStateInfo("/jointset/hip_r/hip_rotation_r/value", {-1, 1}, -0.5, 0);
+    mp.setStateInfo("/jointset/walker_knee_r/knee_angle_r/value", {-3, 0}, 
+            -2.25, 0);
+    mp.setStateInfo("/jointset/ankle_r/ankle_angle_r/value", {-2, 2}, -0.5, 0);
 }
 
 struct Options {
@@ -120,22 +92,17 @@ struct Options {
 
 MocoSolution minimizeControlEffort(const Options& opt) {
     MocoTool moco;
+    moco.setName("sandboxSitToStand_minimizeControlEffort");
+
     MocoProblem& mp = moco.updProblem();
     Model model = createModel(opt.actuatorType);
     mp.setModelCopy(model);
 
     // Set bounds.
-    mp.setTimeBounds(0, 1);
-    mp.setStateInfo("/jointset/hip_r/hip_flexion_r/value", {-3, 3}, -1, 0);
-    mp.setStateInfo("/jointset/hip_r/hip_adduction_r/value", {-1, 1}, -0.5, 0);
-    mp.setStateInfo("/jointset/hip_r/hip_rotation_r/value", {-1, 1}, -0.5, 0);
-    mp.setStateInfo("/jointset/walker_knee_r/knee_angle_r/value", {-3, 0}, -1, 0);
-    mp.setStateInfo("/jointset/ankle_r/ankle_angle_r/value", {-2, 2}, -0.5, 0);
+    setBounds(mp);
 
     auto* effort = mp.addCost<MocoControlCost>();
     effort->setName("control_effort");
-
-    mp.addCost<UprightCost>();
 
     // Set solver options.
     // -------------------
@@ -163,20 +130,106 @@ MocoSolution minimizeControlEffort(const Options& opt) {
     return solution;
 }
 
+MocoSolution stateTracking(const Options& opt) {
+    MocoTool moco;
+    moco.setName("sandboxSitToStand_stateTracking");
+
+    MocoProblem& mp = moco.updProblem();
+    Model model = createModel(opt.actuatorType);
+
+    // Get previous solution.
+    MocoIterate prevSol = opt.previousSolution;
+
+    // Get states trajectory from previous solution. Need to set the problem
+    // model and call initSystem() to create the table internally.
+    model.initSystem();
+    mp.setModelCopy(model);
+    TimeSeriesTable prevStateTraj =
+        prevSol.exportToStatesTrajectory(mp).exportToTable(model);
+    GCVSplineSet prevStateSpline(prevStateTraj, prevSol.getStateNames());
+
+    setBounds(mp);
+
+    auto* tracking = mp.addCost<MocoStateTrackingCost>();
+    tracking->setName("tracking");
+    tracking->setReference(prevStateTraj);
+    // Don't track coordinates enforced by constraints.
+    tracking->setWeight("/jointset/patellofemoral_r/knee_angle_r_beta/value", 0);
+    tracking->setWeight("/jointset/patellofemoral_r/knee_angle_r_beta/speed", 0);
+
+    // Need this to recover the correct controls
+    auto* effort = mp.addCost<MocoControlCost>();
+    effort->setName("effort");
+
+    // Set solver options.
+    // -------------------
+    auto& ms = moco.initCasADiSolver();
+    ms.set_num_mesh_points(opt.num_mesh_points);
+    ms.set_verbosity(2);
+    ms.set_dynamics_mode(opt.dynamics_mode);
+    ms.set_optim_convergence_tolerance(opt.convergence_tol);
+    ms.set_optim_constraint_tolerance(opt.constraint_tol);
+    ms.set_optim_solver(opt.solver);
+    ms.set_transcription_scheme("hermite-simpson");
+    ms.set_optim_max_iterations(opt.max_iterations);
+    ms.set_enforce_constraint_derivatives(true);
+    ms.set_optim_hessian_approximation(opt.hessian_approximation);
+    ms.set_optim_finite_difference_scheme("forward");
+
+    // Create guess.
+    // -------------
+    ms.setGuess(opt.previousSolution);
+
+    // Solve.
+    // ------
+    MocoSolution solution = moco.solve().unseal();
+    moco.visualize(solution);
+
+    return solution;
+}
+
+void compareTrackingToPrediction(const MocoSolution& predictiveSolution,
+    const MocoSolution& trackingSolution) {
+
+    std::cout << "Predictive versus tracking comparison" << std::endl;
+    std::cout << "-------------------------------------" << std::endl;
+    std::cout << "States RMS error: ";
+    std::cout <<
+        trackingSolution.compareContinuousVariablesRMS(
+            predictiveSolution, {}, {"none"}, {"none"}, {"none"});
+    std::cout << std::endl;
+    std::cout << "Controls RMS error: ";
+    std::cout <<
+        trackingSolution.compareContinuousVariablesRMS(
+            predictiveSolution, {"none"}, {}, {"none"}, {"none"});
+    std::cout << std::endl;
+    if (trackingSolution.getMultiplierNames().size() != 0) {
+        std::cout << "Multipliers RMS error: ";
+        std::cout <<
+            trackingSolution.compareContinuousVariablesRMS(
+                predictiveSolution, {"none"}, {"none"}, {}, {"none"});
+        std::cout << std::endl;
+    }
+}
+
 int main() {
 
     // Set options.
     Options opt;
-    opt.num_mesh_points = 10;
+    opt.num_mesh_points = 25;
     opt.solver = "ipopt";
-    opt.constraint_tol = 1e-4;
-    opt.convergence_tol = 1e-4;
-    opt.dynamics_mode = "implicit";
-    opt.max_iterations = 10;
+    opt.constraint_tol = 1e-2;
+    opt.convergence_tol = 1e-2;
+    //opt.max_iterations = 10;
+    opt.dynamics_mode = "explicit";
 
     // Predictive problem.
-    MocoSolution torqueSolEffortCasADi = minimizeControlEffort(opt);
+    MocoSolution torqueSolEffort = minimizeControlEffort(opt);
 
+    opt.previousSolution = torqueSolEffort;
+    MocoSolution torqueSolTrack = stateTracking(opt);
+
+    compareTrackingToPrediction(torqueSolEffort, torqueSolTrack);
 
     return EXIT_SUCCESS;
 }
