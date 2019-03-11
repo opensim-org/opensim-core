@@ -47,6 +47,9 @@ namespace OpenSim {
 /// activations or with low force-length multipliers, and is likely to be more
 /// useful with explicit fiber dynamics than implicit fiber dynamics.
 ///
+/// @note This class is still under active development and should be used with
+/// caution.
+///
 /// @subsection Departures from the Muscle base class
 ///
 /// The documentation for Muscle::MuscleLengthInfo states that the
