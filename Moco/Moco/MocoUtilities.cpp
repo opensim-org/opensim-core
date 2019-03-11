@@ -28,9 +28,11 @@
 #include <OpenSim/Common/PiecewiseLinearFunction.h>
 #include <OpenSim/Common/TimeSeriesTable.h>
 #include <OpenSim/Simulation/Control/PrescribedController.h>
+#include <OpenSim/Simulation/Manager/Manager.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/SimbodyEngine/WeldJoint.h>
 #include <OpenSim/Simulation/StatesTrajectory.h>
+#include <OpenSim/Simulation/StatesTrajectoryReporter.h>
 
 using namespace OpenSim;
 
@@ -306,6 +308,62 @@ void OpenSim::prescribeControlsToModel(
         controller->prescribeControlForActuator(actu.getName(), function);
     }
     model.addController(controller);
+}
+
+MocoIterate OpenSim::simulateIterateWithTimeStepping(
+        const MocoIterate& iterate, Model model, double integratorAccuracy) {
+
+    prescribeControlsToModel(iterate, model);
+
+    // Add states reporter to the model.
+    auto* statesRep = new StatesTrajectoryReporter();
+    statesRep->setName("states_reporter");
+    statesRep->set_report_time_interval(0.001);
+    model.addComponent(statesRep);
+
+    // Simulate!
+    const SimTK::Vector& time = iterate.getTime();
+    SimTK::State state = model.initSystem();
+    state.setTime(time[0]);
+    Manager manager(model);
+
+    // Set the initial state.
+    {
+        const auto& matrix = iterate.getStatesTrajectory();
+        TimeSeriesTable initialStateTable(
+                std::vector<double>{iterate.getInitialTime()},
+                SimTK::Matrix(matrix.block(0, 0, 1, matrix.ncol())),
+                iterate.getStateNames());
+        auto statesTraj = StatesTrajectory::createFromStatesStorage(
+                model, convertTableToStorage(initialStateTable));
+        state.setY(statesTraj.front().getY());
+    }
+
+    if (integratorAccuracy != -1) {
+        manager.getIntegrator().setAccuracy(integratorAccuracy);
+    }
+    manager.initialize(state);
+    state = manager.integrate(time[time.size() - 1]);
+
+    // Export results from states reporter to a TimeSeries Table
+    TimeSeriesTable states = statesRep->getStates().exportToTable(model);
+
+    const auto& statesTimes = states.getIndependentColumn();
+    SimTK::Vector timeVec((int)statesTimes.size(), statesTimes.data(), true);
+    TimeSeriesTable controls = resample(model.getControlsTable(), timeVec);
+    // Fix column labels. (TODO: Not general.)
+    auto labels = controls.getColumnLabels();
+    for (auto& label : labels) { label = "/forceset/" + label; }
+    controls.setColumnLabels(labels);
+
+    // Create a MocoIterate to facilitate states trajectory comparison (with
+    // dummy data for the multipliers, which we'll ignore).
+
+    auto forwardSolution = MocoIterate(timeVec,
+            {{"states", {states.getColumnLabels(), states.getMatrix()}},
+             {"controls", {controls.getColumnLabels(), controls.getMatrix()}}});
+
+    return forwardSolution;
 }
 
 void OpenSim::replaceMusclesWithPathActuators(Model& model) {

@@ -90,6 +90,21 @@ MocoIterate::MocoIterate(const SimTK::Vector& time,
     }
 }
 
+MocoIterate::MocoIterate(const SimTK::Vector& time,
+        const std::map<std::string, NamesAndData<SimTK::Matrix>>& conVars,
+        const NamesAndData<SimTK::RowVector>& parameters) :
+        MocoIterate(time,
+        conVars.count("states") ? conVars.at("states").first : std::vector<std::string>(),
+        conVars.count("controls") ? conVars.at("controls").first : std::vector<std::string>(),
+        conVars.count("multipliers") ? conVars.at("multipliers").first : std::vector<std::string>(),
+        conVars.count("derivatives") ? conVars.at("derivatives").first : std::vector<std::string>(),
+        parameters.first,
+        conVars.count("states") ? conVars.at("states").second : SimTK::Matrix(),
+        conVars.count("controls") ? conVars.at("controls").second : SimTK::Matrix(),
+        conVars.count("multipliers") ? conVars.at("multipliers").second : SimTK::Matrix(),
+        conVars.count("derivatives") ? conVars.at("derivatives").second : SimTK::Matrix(),
+        parameters.second) {}
+
 void MocoIterate::setTime(const SimTK::Vector& time) {
     ensureUnsealed();
     OPENSIM_THROW_IF(time.size() != m_time.size(), Exception, format(
