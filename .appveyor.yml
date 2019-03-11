@@ -34,7 +34,7 @@ cache:
   - C:\projects\deps\colpack -> dependencies\colpack.cmake
   - C:\projects\deps\adol-c -> dependencies\CMakeLists.txt
   - C:\projects\deps\ipopt -> dependencies\CMakeLists.txt
-  - C:\projects\deps\casadi -> dependencies\CMakeLists.txt
+  # - C:\projects\deps\casadi -> dependencies\CMakeLists.txt
   - C:\projects\deps\opensim-core -> dependencies\opensim-core.cmake
   
   - C:\ProgramData\chocolatey\bin -> .appveyor.yml # swig.exe
@@ -89,7 +89,7 @@ install:
   - IF EXIST C:\projects\deps\colpack cmake . -DSUPERBUILD_colpack=OFF
   - IF EXIST C:\projects\deps\adol-c cmake . -DSUPERBUILD_adolc=OFF
   - IF EXIST C:\projects\deps\ipopt cmake . -DSUPERBUILD_ipopt=OFF
-  - IF EXIST C:\projects\deps\casadi cmake . -DSUPERBUILD_casadi=OFF
+  # - IF EXIST C:\projects\deps\casadi cmake . -DSUPERBUILD_casadi=OFF
   - IF EXIST C:\projects\deps\opensim-core cmake . -DSUPERBUILD_opensim-core=OFF
   # List the values of the CMake variables.
   - cmake . -LAH
