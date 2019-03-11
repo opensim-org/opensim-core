@@ -30,8 +30,9 @@ class MocoInverse;
 
 class MocoInverseSolution {
 public:
-    const MocoSolution& getMocoSolution() const;
-
+    const MocoSolution& getMocoSolution() const {
+        return m_mocoSolution;
+    }
 private:
     void setMocoSolution(MocoSolution mocoSolution) {
         m_mocoSolution = std::move(mocoSolution);
