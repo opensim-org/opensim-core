@@ -226,6 +226,13 @@ OSIMMOCO_API void replaceMusclesWithPathActuators(Model& model);
 /// @note This only removes muscles within the model's ForceSet.
 OSIMMOCO_API void removeMuscles(Model& model);
 
+/// Add CoordinateActuator%s for ech coordinate in the model, using the
+/// provided optimal force. Increasing the optimal force decreases the required
+/// control signal to generate a given actuation level. The actuators are added
+/// to the model's ForceSet and are named "reserve_<coordinate-path>" (with
+/// forward slashes converted to underscores).
+OSIMMOCO_API void createReserveActuators(Model& model, double optimalForce);
+
 /// Replace a joint in the model with a WeldJoint.
 /// @note This assumes the joint is in the JointSet and that the joint's
 ///       connectees are PhysicalOffsetFrames.

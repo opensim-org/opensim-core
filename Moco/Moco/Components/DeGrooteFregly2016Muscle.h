@@ -140,8 +140,8 @@ public:
     }
 
 protected:
-    double calcInextensibleTendonActiveFiberForce(SimTK::State& s,
-            double activation) const override {
+    double calcInextensibleTendonActiveFiberForce(SimTK::State&,
+            double) const override {
         OPENSIM_THROW_FRMOBJ(Exception, "Not implemented.");
     }
     void calcMuscleLengthInfo(const SimTK::State& s,
