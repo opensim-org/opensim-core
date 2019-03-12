@@ -36,7 +36,7 @@ class OSIMCOMMON_API ExperimentalSensor : public Object {
 OpenSim_DECLARE_CONCRETE_OBJECT(ExperimentalSensor, Object);
 public:
     OpenSim_DECLARE_PROPERTY(name_in_model, std::string,
-        "Name of imu object in Model corresponding to this Sensor, will be used in table headers.");
+        "Name of PhysicalFrame representing the imu sensor in Model, will be used as data table column label.");
 public:
     ExperimentalSensor(const std::string&  sensorName, const std::string& nameInModel) {
         constructProperties();
@@ -49,7 +49,7 @@ public:
     virtual ~ExperimentalSensor() = default;
 private:
     void constructProperties() {
-        constructProperty_name_in_model("name_not_set");
+        constructProperty_name_in_model("");
     };
 };
 
