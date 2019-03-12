@@ -47,10 +47,8 @@ void Transcription::createVariablesAndSetBounds() {
             MX::sym("controls", m_problem.getNumControls(), m_numGridPoints);
     m_vars[multipliers] = MX::sym(
             "multipliers", m_problem.getNumMultipliers(), m_numGridPoints);
-    if (m_solver.isDynamicsModeImplicit()) {
-        m_vars[derivatives] = MX::sym(
-                "derivatives", m_problem.getNumSpeeds(), m_numGridPoints);
-    }
+    m_vars[derivatives] = MX::sym(
+            "derivatives", m_problem.getNumDerivatives(), m_numGridPoints);
     // TODO: This assumes that slack variables are applied at all
     // collocation points on the mesh interval interior.
     m_vars[slacks] = MX::sym(
@@ -137,7 +135,8 @@ void Transcription::createVariablesAndSetBounds() {
     }
     {
         if (m_solver.isDynamicsModeImplicit()) {
-            // "Slice()" grabs everything in that dimension (like ":" in Matlab).
+            // "Slice()" grabs everything in that dimension (like ":" in
+            // Matlab).
             // TODO: How to choose bounds on udot?
             setVariableBounds(derivatives, Slice(), Slice(), {-1000, 1000});
         }
@@ -249,7 +248,7 @@ void Transcription::transcribe() {
         }
 
     } else { // Explicit dynamics mode.
-        std::vector<Var> inputs{states, controls, multipliers};
+        std::vector<Var> inputs{states, controls, multipliers, derivatives};
 
         // udot, zdot, kcerr.
         // Points where we compute algebraic constraints.
@@ -283,8 +282,8 @@ void Transcription::transcribe() {
     for (int ipc = 0; ipc < (int)m_path.size(); ++ipc) {
         const auto& info = m_problem.getPathConstraintInfos()[ipc];
         // TODO: Is it sufficiently general to apply these to mesh points?
-        const auto out = evalOnTrajectory(
-                *info.function, {states, controls}, m_daeIndices);
+        const auto out = evalOnTrajectory(*info.function,
+                {states, controls, multipliers, derivatives}, m_daeIndices);
         m_path[ipc] = out.at(0);
     }
 
@@ -303,7 +302,7 @@ void Transcription::setObjective() {
         // integrand here--that occurs when the function by casadi::nlpsol()
         // is evaluated.
         integrandTraj = evalOnTrajectory(m_problem.getIntegralCostIntegrand(),
-                {states, controls, /* TODO: multipliers */}, m_gridIndices)
+                {states, controls, multipliers, derivatives}, m_gridIndices)
                                 .at(0);
     }
 
@@ -320,7 +319,9 @@ void Transcription::setObjective() {
     MXVector endpointCostOut;
     m_problem.getEndpointCost().call(
             {m_vars[final_time], m_vars[states](Slice(), -1),
-                    m_vars[parameters]},
+                    m_vars[controls](Slice(), -1),
+                    m_vars[multipliers](Slice(), -1),
+                    m_vars[derivatives](Slice(), -1), m_vars[parameters]},
             endpointCostOut);
     const auto endpointCost = endpointCostOut.at(0);
 

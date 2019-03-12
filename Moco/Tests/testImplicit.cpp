@@ -113,6 +113,8 @@ MocoSolution solveDoublePendulumSwingup(const std::string& dynamics_mode) {
 
 TEMPLATE_TEST_CASE("Similar solutions between implicit and explicit dynamics",
         "[implicit]", MocoTropterSolver, MocoCasADiSolver) {
+    std::cout.rdbuf(LogManager::cout.rdbuf());
+    std::cerr.rdbuf(LogManager::cerr.rdbuf());
     GIVEN("solutions to implicit and explicit problems") {
 
         auto solutionImplicit =

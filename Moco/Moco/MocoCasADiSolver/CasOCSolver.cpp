@@ -87,7 +87,7 @@ Solution Solver::solve(const Iterate& guess) const {
                             .variables);
         }
     }
-    m_problem.constructFunctions(isDynamicsModeImplicit(),
+    m_problem.constructFunctions(
             m_finite_difference_scheme,
             std::const_pointer_cast<const std::vector<VariablesDM>>(
                     pointsForSparsityDetection));
