@@ -68,9 +68,9 @@ public:
     - one for MagneticHeading data, 
     - one for AngularVelocity data. 
     */
-    OutputTables extendRead(const std::string& folderName) const override;
+    DataAdapter::OutputTables extendRead(const std::string& folderName) const override;
     /** Implements writing functionality.                                     */
-    virtual void extendWrite(const InputTables& tables,
+    virtual void extendWrite(const DataAdapter::InputTables& tables,
         const std::string& sinkName) const {};
     /**
      * Method to get const reference to the internal XsensDataReaderSettings object
