@@ -71,7 +71,7 @@ public:
     DataAdapter::OutputTables extendRead(const std::string& folderName) const override;
     /** Implements writing functionality.                                     */
     virtual void extendWrite(const DataAdapter::InputTables& tables,
-        const std::string& sinkName) const {};
+        const std::string& sinkName) const override {};
     /**
      * Method to get const reference to the internal XsensDataReaderSettings object
      * maintained by this reader.
