@@ -31,7 +31,6 @@
 
 using namespace OpenSim;
 
-// TODO move into the actual test case.
 TEST_CASE("DeGrooteFregly2016Muscle basics") {
 
     Model model;
