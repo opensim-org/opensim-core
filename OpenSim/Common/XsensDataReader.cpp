@@ -1,5 +1,8 @@
+#include <fstream>
 #include "Simbody.h"
 #include "Exception.h"
+#include "FileAdapter.h"
+#include "TimeSeriesTable.h"
 #include "XsensDataReader.h"
 
 namespace OpenSim {
@@ -9,23 +12,12 @@ const std::string XsensDataReader::LinearAccelerations{ "linear_accelerations" }
 const std::string XsensDataReader::MagneticHeading{ "magnetic_heading" };
 const std::string XsensDataReader::AngularVelocity{ "angular_velocity" };
 
-XsensDataReader::XsensDataReader() {
-    constructProperties();
+XsensDataReader* XsensDataReader::clone() const {
+    return new XsensDataReader{*this};
 }
 
-XsensDataReader::XsensDataReader(const std::string& aXmlFile) : Object (aXmlFile) {
-    constructProperties();
-    updateFromXMLDocument();
-}
-
-void
-XsensDataReader::constructProperties() {
-    constructProperty_data_folder("");
-    constructProperty_trial_prefix("");
-    constructProperty_ExperimentalSensors();
-}
-
-DataAdapter::OutputTables XsensDataReader::readTrial() {
+DataAdapter::OutputTables 
+XsensDataReader::extendRead(const std::string& folderName) const {
 
     std::vector<std::ifstream*> imuStreams;
     std::vector<std::string> labels;
@@ -37,7 +29,7 @@ DataAdapter::OutputTables XsensDataReader::readTrial() {
     int magIndex = -1;
     int rotationsIndex = -1;
 
-    int n_imus = getProperty_ExperimentalSensors().size();
+    int n_imus = _settings.getProperty_ExperimentalSensors().size();
     int last_size = 1024;
     // Will read data into pre-allocated Matrices in-memory rather than appendRow
     // on the fly to avoid the overhead of 
@@ -48,10 +40,10 @@ DataAdapter::OutputTables XsensDataReader::readTrial() {
     std::vector<double> times;
     times.resize(last_size);
     
-    std::string folderName = get_data_folder();
-    std::string prefix = get_trial_prefix();
+    std::string prefix = _settings.get_trial_prefix();
     for (int index = 0; index < n_imus; ++index) {
-        const ExperimentalSensor& nextItem = get_ExperimentalSensors(index);
+        std::string prefix = _settings.get_trial_prefix();
+        const ExperimentalSensor& nextItem = _settings.get_ExperimentalSensors(index);
         auto fileName = folderName + prefix + nextItem.getName() +".txt";
         auto* nextStream = new std::ifstream{ fileName };
         OPENSIM_THROW_IF(!nextStream->good(),

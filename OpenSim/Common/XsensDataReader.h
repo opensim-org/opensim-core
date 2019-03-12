@@ -24,39 +24,33 @@
 
 // For definition of Exceptions to be used
 #include "Object.h"
-#include "TimeSeriesTable.h"
 #include "ExperimentalSensor.h"
+#include "DataAdapter.h"
+#include "XsensDataReaderSettings.h"
 /** @file
-* This file defines Helper class for reading data files from IMU maker Xsens.
+* This file defines class for reading data files from IMU maker Xsens and 
+* producing in memory tables to be consumed by the OpenSim tools/pipelines
 */
-#include <map>
 
 namespace OpenSim {
 
 /** XsensDataReader is a class that reads files produced by IMU manufacturer Xsens
     and produces datatables from them. This is intended to help consume IMU outputs.*/
-class OSIMCOMMON_API XsensDataReader : public Object {
-OpenSim_DECLARE_CONCRETE_OBJECT(XsensDataReader, Object);
-public:
-    OpenSim_DECLARE_PROPERTY(data_folder, std::string,
-        "Name of folder containing data files.");
-    OpenSim_DECLARE_PROPERTY(trial_prefix, std::string,
-        "Name of trial (Common prefix of txt files representing trial).");
-    OpenSim_DECLARE_LIST_PROPERTY(ExperimentalSensors, ExperimentalSensor,
-        "List of Experimental sensors and desired associated names in resulting tables");
-
+class OSIMCOMMON_API XsensDataReader : public DataAdapter {
 public:
     // Default Constructor
-    XsensDataReader();
-    // Constructor from XML file
-    XsensDataReader(const std::string& xmlFile);
-
+    XsensDataReader() = default;
+    // Constructor that takes a XsensDataReaderSettings object
+    XsensDataReader(const XsensDataReaderSettings& settings) {
+        _settings = settings;
+    }
     XsensDataReader(const XsensDataReader&)            = default;
     XsensDataReader(XsensDataReader&&)                 = default;
     XsensDataReader& operator=(const XsensDataReader&) = default;
     XsensDataReader& operator=(XsensDataReader&&)      = default;
     virtual ~XsensDataReader()                   = default;
 
+    XsensDataReader* clone() const override;
     static const std::string Orientations;   // name of table for orientation data
     static const std::string LinearAccelerations;  // name of table for acceleration data
     static const std::string MagneticHeading;  // name of table for data from Magnetometer (Magnetic Heading)
@@ -74,14 +68,34 @@ public:
     - one for MagneticHeading data, 
     - one for AngularVelocity data. 
     */
-    DataAdapter::OutputTables readTrial();
-    
+    OutputTables extendRead(const std::string& folderName) const override;
+    /** Implements writing functionality.                                     */
+    virtual void extendWrite(const InputTables& tables,
+        const std::string& sinkName) const {};
+    /**
+     * Method to get const reference to the internal XsensDataReaderSettings object
+     * maintained by this reader.
+     */
+    const XsensDataReaderSettings& getSettings() const {
+        return _settings; 
+    }
+   /**
+    * Method to get writable reference to the internal XsensDataReaderSettings object
+    * maintained by this reader, to allow modification after construction.
+    */
+    XsensDataReaderSettings& updSettings() {
+        return _settings;
+    }
 private:
-    void constructProperties();
     /**
      * Find index of searchString in tokens
      */
     static int find_index(std::vector<std::string>& tokens, const std::string& searchString);
+    /**
+     * This data member encapsulates all the serializable settings for the Reader;
+     */
+    XsensDataReaderSettings _settings;
+
 };
 
 } // OpenSim namespace

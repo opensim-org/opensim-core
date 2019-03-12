@@ -37,21 +37,21 @@ PacketCounter<tab>SampleTimeFine<tab>Year<tab>Month<tab>Day<tab>Second<tab>UTC_N
 int main() {
 
     try {
-        XsensDataReader reader;
-        std::vector<std::string> imu_names{ "shank", "thigh" }; //, "calcn", "toe" 
-        std::vector<std::string> file_names{ "000_00B421AF", "000_00B4227B" }; //, "000_00B42263", "000_00B42268" 
+        XsensDataReaderSettings readerSettings;
+        std::vector<std::string> imu_names{ "shank", "thigh" };
+        std::vector<std::string> file_names{ "000_00B421AF", "000_00B4227B" };
         // Programmatically add items to Map, write to xml
         for (int index = 0; index < imu_names.size(); ++index) {
             ExperimentalSensor  nextSensor(file_names[index], imu_names[index]);
-            reader.append_ExperimentalSensors(nextSensor);
+            readerSettings.append_ExperimentalSensors(nextSensor);
         }
-        reader.updProperty_trial_prefix() = "MT_012005D6_031-";
-        reader.print("reader2xml.xml");
+        readerSettings.updProperty_trial_prefix() = "MT_012005D6_031-";
+        readerSettings.print("reader2xml.xml");
         // read xml we wrote into a new XsensDataReader to readTrial
-        XsensDataReader reconstructFromXML("reader2xml.xml");
-        DataAdapter::OutputTables tables = reconstructFromXML.readTrial();
-        std::string folder = reader.get_data_folder();
-        std::string trial = reader.get_trial_prefix();
+        XsensDataReader reconstructFromXML(XsensDataReaderSettings("reader2xml.xml"));
+        DataAdapter::OutputTables tables = reconstructFromXML.extendRead("");
+        std::string folder = readerSettings.get_data_folder();
+        std::string trial = readerSettings.get_trial_prefix();
         // Write tables to sto files
         // Accelerations
         std::shared_ptr<AbstractDataTable> accelTable = tables.at(XsensDataReader::LinearAccelerations);
@@ -87,11 +87,11 @@ int main() {
         STOFileAdapterQuaternion::write(quatTableTyped, folder + trial + "quaternions.sto");
         
         // Now test the case where only orintation data is available, rest is missing
-        XsensDataReader readOrientationsOnly;
+        XsensDataReaderSettings readOrientationsOnly;
         ExperimentalSensor nextSensor("000_00B421ED", "test");
         readOrientationsOnly.append_ExperimentalSensors(nextSensor);
         readOrientationsOnly.updProperty_trial_prefix() = "MT_012005D6-000_sit_to_stand-";
-        DataAdapter::OutputTables tables2 = readOrientationsOnly.readTrial();
+        DataAdapter::OutputTables tables2 = XsensDataReader(readOrientationsOnly).extendRead("");
         std::shared_ptr<AbstractDataTable> accelTable2 = tables2.at(XsensDataReader::LinearAccelerations);
         ASSERT(accelTable2->getNumRows() ==0);
         ASSERT(tables2.at(XsensDataReader::MagneticHeading)->getNumRows() == 0);
