@@ -143,6 +143,8 @@ these variables.
 
 @section tips Tips for solving a custom problem
 
+- Add reserve actuators!
+
 1. Make sure every variable has bounds.
 
 */
