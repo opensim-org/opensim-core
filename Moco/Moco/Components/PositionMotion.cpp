@@ -39,7 +39,8 @@ public:
     }
     void calcPrescribedPosition(
             const SimTK::State& s, int nq, SimTK::Real* q) const override {
-        // std::cout << "DEBUG prescribedMotion " << nq << " " << m_functions.size() << std::endl;
+        // std::cout << "DEBUG prescribedMotion " << nq << " " <<
+        // m_functions.size() << std::endl;
         if (m_functions.size()) {
             for (int i = 0; i < nq; ++i) {
                 m_funcArgs[0] = s.getTime();
@@ -116,13 +117,15 @@ std::unique_ptr<PositionMotion> PositionMotion::createFromTable(
         if (endsWith(label, "/value")) {
             // This assumes that the coordinate is not named "value".
             coordPath = label.substr(0, label.find("/value"));
+            const auto& coord = model.getComponent<Coordinate>(coordPath);
+            const auto path = coord.getAbsolutePathString();
+            posmot->setPositionForCoordinate(coord, splines.get(label));
+        } else {
+            OPENSIM_THROW_IF(!model.findComponent<Component>(coordPath) &&
+                                     !allowExtraColumns,
+                    Exception,
+                    format("Column '%s' is not a coordinate.", label));
         }
-        OPENSIM_THROW_IF(!model.findComponent<Component>(coordPath) &&
-                                 !allowExtraColumns,
-                Exception, format("Column '%s' is not a coordinate.", label));
-        const auto& coord = model.getComponent<Coordinate>(coordPath);
-        const auto path = coord.getAbsolutePathString();
-        posmot->setPositionForCoordinate(coord, splines.get(label));
     }
     return posmot;
 }
@@ -130,7 +133,6 @@ std::unique_ptr<PositionMotion> PositionMotion::createFromTable(
 void PositionMotion::extendAddToSystem(SimTK::MultibodySystem& system) const {
     Super::extendAddToSystem(system);
     auto& matter = system.updMatterSubsystem();
-    // std::cout << "DEBUG numBodies " << matter.getNumBodies() << std::endl;
     m_motions.clear();
     for (int imb = 0; imb < matter.getNumBodies(); ++imb) {
         auto& mobod = matter.updMobilizedBody(SimTK::MobilizedBodyIndex(imb));
@@ -158,14 +160,21 @@ void PositionMotion::extendRealizeTopology(SimTK::State& state) const {
     }
 
     auto& matter = getSystem().getMatterSubsystem();
-    // std::cout << "DEBUG Topology " << matter.getNumBodies() << std::endl;
     for (SimTK::MobilizedBodyIndex mbi(0); mbi < matter.getNumBodies(); ++mbi) {
-        auto& mobod = matter.getMobilizedBody(SimTK::MobilizedBodyIndex(mbi));
+        auto& mobod = matter.getMobilizedBody(mbi);
         std::vector<Function*> mobodFunctions;
         for (int iq = 0; iq < mobod.getNumQ(state); ++iq) {
-            const auto& coordName = indicesToCoordName[std::make_pair(mbi, iq)];
-            mobodFunctions.push_back(
-                    const_cast<Function*>(&get_functions().get(coordName)));
+            const auto key = std::make_pair(mbi, iq);
+            // This skips over unused quaternion slots.
+            if (indicesToCoordName.count(key)) {
+                const auto& coordName = indicesToCoordName.at(key);
+                OPENSIM_THROW_IF_FRMOBJ(!get_functions().contains(coordName),
+                        Exception,
+                        format("No function provided for coordinate '%s'.",
+                                coordName));
+                mobodFunctions.push_back(
+                        const_cast<Function*>(&get_functions().get(coordName)));
+            }
         }
         auto& motion = const_cast<SimTK::Motion&>(m_motions[mbi]);
         auto& customMotion = static_cast<SimTKPositionMotion&>(motion);
