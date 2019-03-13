@@ -136,7 +136,7 @@ TEST_CASE("MocoInverse gait10dof18musc") {
 
     inverse.setExternalLoadsFile("walk_gait1018_subject01_grf.xml");
 
-    inverse.solve();
+    MocoInverseSolution solution = inverse.solve();
 
     // TODO: Implement cost minimization directly in CasADi.
     //      -> evaluating the integral cost only takes up like 5% of the

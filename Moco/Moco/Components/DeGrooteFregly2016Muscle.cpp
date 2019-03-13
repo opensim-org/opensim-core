@@ -154,9 +154,6 @@ void DeGrooteFregly2016Muscle::computeStateVariableDerivatives(
         const SimTK::Real timeConst =
                 tempAct * (f + 0.5) + tempDeact * (-f + 0.5);
         const SimTK::Real derivative = timeConst * (excitation - activation);
-        // std::cout << "DEBUG cSVD " << getName() << " " << excitation << " "
-        // << activation << " "
-        //           << derivative << std::endl;
         setStateVariableDerivativeValue(s, STATE_ACTIVATION_NAME, derivative);
     }
 
@@ -169,9 +166,6 @@ void DeGrooteFregly2016Muscle::computeStateVariableDerivatives(
         const SimTK::Real muscleTendonLength = getLength(s);
         const SimTK::Real normFiberLength = calcNormalizedFiberLength(s);
 
-        // TODO: this is inefficient because it's recalculating a lot of
-        // terms that don't actually vary with normFiberVelocity (actually,
-        // only one term depends on fiber velocity).
         const SimTK::Real activeForceLengthMult =
                 calcActiveForceLengthMultiplier(normFiberLength);
         const SimTK::Real cosPenn = 1.0; // TODO
