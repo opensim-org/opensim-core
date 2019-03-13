@@ -89,6 +89,8 @@ public:
 private:
 
     void constructProperties();
+    void writeTableToFile(const TimeSeriesTable&, const std::string&) const;
+
     struct TimeInfo {
         double initialTime;
         double finalTime;

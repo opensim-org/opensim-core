@@ -50,7 +50,7 @@ void minimizePassiveFiberForces(Model& model) {
 
 Model createModel(const std::string& actuatorType) {
 
-    Model model("Rajagopal2015_bottom_up_one_leg.osim");
+    Model model("Rajagopal2015_bottom_up_one_leg_sagittal.osim");
 
     if (actuatorType == "torques") {
         removeMuscles(model);
@@ -82,12 +82,16 @@ Model createModel(const std::string& actuatorType) {
 void setBounds(MocoProblem& mp) {
     mp.setTimeBounds(0, 1);
 
-    mp.setStateInfo("/jointset/hip_r/hip_flexion_r/value", {-3, 0.5}, -2.25, 0);
-    mp.setStateInfo("/jointset/hip_r/hip_adduction_r/value", {-1, 1}, -0.5, 0);
-    mp.setStateInfo("/jointset/hip_r/hip_rotation_r/value", {-1, 1}, -0.5, 0);
-    mp.setStateInfo(
-            "/jointset/walker_knee_r/knee_angle_r/value", {-3, 0}, -2.25, 0);
-    mp.setStateInfo("/jointset/ankle_r/ankle_angle_r/value", {-2, 2}, -0.5, 0);
+    mp.setStateInfo("/jointset/hip_r/hip_flexion_r/value", {-2.094, 0.524}, 
+        -2, 0);
+    mp.setStateInfo("/jointset/walker_knee_r/knee_angle_r/value", {-2.094, 0},
+        -2, 0);
+    mp.setStateInfo("/jointset/ankle_r/ankle_angle_r/value", {-0.524, 0.698}, 
+        -0.5, 0);
+    mp.setStateInfo("/jointset/hip_r/hip_flexion_r/speed", {-50, 50}, 0, 0);
+    mp.setStateInfo("/jointset/walker_knee_r/knee_angle_r/speed", {-50, 50}, 0, 
+        0);
+    mp.setStateInfo("/jointset/ankle_r/ankle_angle_r/speed", {-50, 50}, 0, 0);
 }
 
 struct Options {
@@ -130,7 +134,7 @@ MocoSolution minimizeControlEffort(const Options& opt) {
     ms.set_optim_max_iterations(opt.max_iterations);
     ms.set_enforce_constraint_derivatives(true);
     ms.set_optim_hessian_approximation(opt.hessian_approximation);
-    ms.set_optim_finite_difference_scheme("forward");
+    ms.set_optim_finite_difference_scheme("central");
 
     // Create guess.
     // -------------
@@ -173,8 +177,9 @@ MocoSolution stateTracking(const Options& opt) {
             "/jointset/patellofemoral_r/knee_angle_r_beta/speed", 0);
 
     // Need this to recover the correct controls
-    auto* effort = mp.addCost<MocoControlCost>();
-    effort->setName("effort");
+    //auto* effort = mp.addCost<MocoControlCost>();
+    //effort->setName("effort");
+    //effort->set_weight(0.01);
 
     // Set solver options.
     // -------------------
@@ -189,7 +194,7 @@ MocoSolution stateTracking(const Options& opt) {
     ms.set_optim_max_iterations(opt.max_iterations);
     ms.set_enforce_constraint_derivatives(true);
     ms.set_optim_hessian_approximation(opt.hessian_approximation);
-    ms.set_optim_finite_difference_scheme("forward");
+    ms.set_optim_finite_difference_scheme("central");
 
     // Create guess.
     // -------------
@@ -222,20 +227,25 @@ void compareTrackingToPrediction(const MocoSolution& predictiveSolution,
                 predictiveSolution, {{"multipliers", {}}});
         std::cout << std::endl;
     }
+    if (trackingSolution.getDerivativeNames().size() != 0) {
+        std::cout << "Derivatives RMS error: ";
+        std::cout << trackingSolution.compareContinuousVariablesRMS(
+            predictiveSolution, {{"derivatives",{}}});
+        std::cout << std::endl;
+    }
 }
 
 int main() {
 
     // Set options.
     Options opt;
-    // TODO problems with muscles are quite slow, not sure if a modeling issue
-    // or something else
+    // TODO problems with Millard muscles are quite slow
     opt.actuatorType = "DeGrooteFregly2016Muscle";
     opt.num_mesh_points = 25;
+    opt.constraint_tol = 1e-4;
+    opt.convergence_tol = 1e-4;
     opt.solver = "ipopt";
-    opt.constraint_tol = 1e-2;
-    opt.convergence_tol = 1e-2;
-    // opt.max_iterations = 10;
+    //opt.max_iterations = 100;
     opt.dynamics_mode = "implicit";
 
     // Predictive problem.

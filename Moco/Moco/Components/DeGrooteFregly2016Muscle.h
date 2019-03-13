@@ -22,7 +22,6 @@
 #include "../osimMocoDLL.h"
 
 #include <OpenSim/Common/DataTable.h>
-#include <OpenSim/Common/STOFileAdapter.h>
 #include <OpenSim/Simulation/Model/Muscle.h>
 #include <OpenSim/Simulation/Model/Model.h>
 
@@ -379,6 +378,7 @@ public:
 
 private:
     void constructProperties();
+    void writeTableToFile(const TimeSeriesTable&, const std::string&) const;
 
     /// This is a Gaussian-like function used in the active force-length curve.
     /// A proper Gaussian function does not have the variable in the denominator

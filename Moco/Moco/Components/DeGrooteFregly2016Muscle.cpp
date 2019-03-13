@@ -21,6 +21,8 @@
 #include <OpenSim/Actuators/Millard2012EquilibriumMuscle.h>
 #include <OpenSim/Simulation/Model/Model.h>
 
+#include <OpenSim/Common/FileAdapter.h>
+
 using namespace OpenSim;
 
 const std::string DeGrooteFregly2016Muscle::STATE_ACTIVATION_NAME("activation");
@@ -127,6 +129,12 @@ void DeGrooteFregly2016Muscle::extendSetPropertiesFromState(
         set_default_norm_fiber_length(
                 getStateVariableValue(s, STATE_NORM_FIBER_LENGTH_NAME));
     }
+}
+
+void DeGrooteFregly2016Muscle::writeTableToFile(const TimeSeriesTable& table,
+        const std::string& filepath) const {
+    DataAdapter::InputTables tables = {{"table", &table}};
+    FileAdapter::writeFile(tables, filepath);
 }
 
 void DeGrooteFregly2016Muscle::computeStateVariableDerivatives(
@@ -310,7 +318,7 @@ SimTK::Real DeGrooteFregly2016Muscle::solveBisection(
             row[0] = calcResidual(x[i]);
             table.appendRow(x[i], row);
         }
-        STOFileAdapter::write(table, "DEBUG_solveBisection_residual.sto");
+        writeTableToFile(table, "DEBUG_solveBisection_residual.sto");
     }
     OPENSIM_THROW_IF_FRMOBJ(sameSign, Exception,
             format("Function has same sign at bounds of %f and %f.", left,
@@ -447,11 +455,11 @@ void DeGrooteFregly2016Muscle::printCurvesToSTOFiles(
         const std::string& directory) const {
     std::string prefix =
             directory + SimTK::Pathname::getPathSeparator() + getName();
-    STOFileAdapter::write(exportFiberLengthCurvesToTable(),
+    writeTableToFile(exportFiberLengthCurvesToTable(),
             prefix + "_fiber_length_curves.sto");
-    STOFileAdapter::write(exportFiberVelocityMultiplierToTable(),
+    writeTableToFile(exportFiberVelocityMultiplierToTable(),
             prefix + "_fiber_velocity_multiplier.sto");
-    STOFileAdapter::write(exportTendonForceMultiplierToTable(),
+    writeTableToFile(exportTendonForceMultiplierToTable(),
             prefix + "_tendon_force_multiplier.sto");
 }
 

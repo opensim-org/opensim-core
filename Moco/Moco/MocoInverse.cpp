@@ -25,7 +25,7 @@
 #include "MocoTool.h"
 #include "MocoUtilities.h"
 
-#include <OpenSim/Common/STOFileAdapter.h>
+#include <OpenSim/Common/FileAdapter.h>
 #include <OpenSim/Tools/InverseDynamicsTool.h>
 
 using namespace OpenSim;
@@ -37,6 +37,12 @@ void MocoInverse::constructProperties() {
     constructProperty_mesh_point_frequency(50);
     constructProperty_create_reserve_actuators(-1);
     constructProperty_external_loads_file("");
+}
+
+void MocoInverse::writeTableToFile(const TimeSeriesTable& table,
+    const std::string& filepath) const {
+    DataAdapter::InputTables tables = {{"table", &table}};
+    FileAdapter::writeFile(tables, filepath);
 }
 
 MocoInverseSolution MocoInverse::solve() const {
@@ -72,12 +78,27 @@ MocoInverseSolution MocoInverse::solve() const {
 
     model.initSystem();
 
-    auto kinematicsRaw = STOFileAdapter::read(m_kinematicsFileName);
-    if (kinematicsRaw.hasTableMetaDataKey("inDegrees") &&
-            kinematicsRaw.getTableMetaDataAsString("inDegrees") == "yes") {
-        model.getSimbodyEngine().convertDegreesToRadians(kinematicsRaw);
+    FileAdapter::OutputTables tables = 
+            FileAdapter::readFile(m_kinematicsFileName);
+
+    // There should only be one table.
+    OPENSIM_THROW_IF(tables.size() != 1, Exception,
+        format("Expected the kinematics file '%s' to contain 1 table, but it "
+            "contains %i tables.",
+            m_kinematicsFileName, tables.size()));
+
+    // Get the first table.
+    auto* kinematicsRaw = 
+        dynamic_cast<TimeSeriesTable*>(tables.begin()->second.get());
+    OPENSIM_THROW_IF(!kinematicsRaw, Exception,
+        "Expected the provided kinematics file to contain a (scalar) "
+        "TimeSeriesTable, but it contains a different type of table.");
+
+    if (kinematicsRaw->hasTableMetaDataKey("inDegrees") &&
+            kinematicsRaw->getTableMetaDataAsString("inDegrees") == "yes") {
+        model.getSimbodyEngine().convertDegreesToRadians(*kinematicsRaw);
     }
-    auto kinematics = filterLowpass(kinematicsRaw, 6, true);
+    auto kinematics = filterLowpass(*kinematicsRaw, 6, true);
 
     auto posmot = PositionMotion::createFromTable(model, kinematics, true);
     posmot->setName("position_motion");
@@ -96,7 +117,7 @@ MocoInverseSolution MocoInverse::solve() const {
     //         kinematicsRaw.getIndependentColumn().back() -
     //                 spaceForFiniteDiff);
     const auto timeInfo =
-            calcInitialAndFinalTimes(kinematicsRaw.getIndependentColumn(), {},
+            calcInitialAndFinalTimes(kinematicsRaw->getIndependentColumn(), {},
                     get_mesh_point_frequency());
     problem.setTimeBounds(timeInfo.initialTime, timeInfo.finalTime);
 
@@ -118,7 +139,7 @@ MocoInverseSolution MocoInverse::solve() const {
     solution.setMocoSolution(moco.solve().unseal());
     // TimeSeriesTable normFiberLengths =
     //         moco.analyze(solution, {".*normalized_fiber_length"});
-    // STOFileAdapter::write(normFiberLengths,
+    // writeTableToFile(normFiberLengths,
     //         "sandboxWalkingStatelessMuscles_norm_fiber_length.sto");
     return solution;
 }

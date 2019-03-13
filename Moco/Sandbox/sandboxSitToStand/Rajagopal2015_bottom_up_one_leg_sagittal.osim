@@ -114,26 +114,6 @@
 				<!--The maximum generalized force produced by this actuator.-->
 				<optimal_force>1</optimal_force>
 			</CoordinateActuator>
-            <CoordinateActuator name="tau_hip_adduction_r">
-				<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
-				<min_control>-50</min_control>
-				<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
-				<max_control>50</max_control>
-				<!--Name of the generalized coordinate to which the actuator applies.-->
-				<coordinate>hip_adduction_r</coordinate>
-				<!--The maximum generalized force produced by this actuator.-->
-				<optimal_force>1</optimal_force>
-			</CoordinateActuator>
-            <CoordinateActuator name="tau_hip_rotation_r">
-				<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
-				<min_control>-50</min_control>
-				<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
-				<max_control>50</max_control>
-				<!--Name of the generalized coordinate to which the actuator applies.-->
-				<coordinate>hip_rotation_r</coordinate>
-				<!--The maximum generalized force produced by this actuator.-->
-				<optimal_force>1</optimal_force>
-			</CoordinateActuator>
 			<CoordinateActuator name="tau_knee_angle_r">
 				<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 				<min_control>-50</min_control>
@@ -1366,7 +1346,7 @@
 							<!--Translational offset (in meters) of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
 							<translation>-0.00809 -0.40795999999999999 -0.0027499999999999998</translation>
 							<!--Orientation offset (in radians) of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
-							<orientation>-1.64157 1.44618 1.5708</orientation>
+							<orientation>-1.5708 1.5708 1.5708</orientation>
 						</PhysicalOffsetFrame>
 						<PhysicalOffsetFrame name="tibia_r_offset">
 							<!--The geometry used to display the axes of this Frame.-->
@@ -1381,7 +1361,7 @@
 							<!--Translational offset (in meters) of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
 							<translation>-0.0080895399999999992 -0.0035347999999999998 -0.00148474</translation>
 							<!--Orientation offset (in radians) of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
-							<orientation>-1.64157 1.44618 1.5708</orientation>
+							<orientation>-1.5708 1.5708 1.5708</orientation>
 						</PhysicalOffsetFrame>
 					</frames>
 					<!--Defines how the child body moves with respect to the parent as a function of the generalized coordinates.-->
@@ -1399,25 +1379,23 @@
 						</TransformAxis>
 						<TransformAxis name="rotation2">
 							<!--Names of the coordinates that serve as the independent variables         of the transform function.-->
-							<coordinates>knee_angle_r</coordinates>
+							<coordinates></coordinates>
 							<!--Rotation or translation axis for the transform.-->
 							<axis>0 0 1</axis>
 							<!--Transform function of the generalized coordinates used to        represent the amount of displacement along a specified axis.-->
-                            <SimmSpline name="function">
-                                <x> 0 0.174533 0.349066 0.523599 0.698132 0.872665 1.0472 1.22173 1.39626 1.5708 1.74533 1.91986 2.0944</x>
-                                <y> 0 0.0126809 0.0226969 0.0296054 0.0332049 0.0335354 0.0308779 0.0257548 0.0189295 0.011407 0.00443314 -0.00050475 -0.0016782</y>
-                            </SimmSpline>
+                            <Constant>
+                                <value>0</value>
+                            </Constant>
 						</TransformAxis>
 						<TransformAxis name="rotation3">
 							<!--Names of the coordinates that serve as the independent variables         of the transform function.-->
-							<coordinates>knee_angle_r</coordinates>
+							<coordinates></coordinates>
 							<!--Rotation or translation axis for the transform.-->
 							<axis>0 1 0</axis>
 							<!--Transform function of the generalized coordinates used to        represent the amount of displacement along a specified axis.-->
-							<SimmSpline name="function">
-								<x> 0 0.174533 0.349066 0.523599 0.698132 0.872665 1.0472 1.22173 1.39626 1.5708 1.74533 1.91986 2.0944</x>
-								<y> 0 0.059461 0.109399 0.150618 0.18392 0.210107 0.229983 0.24435 0.254012 0.25977 0.262428 0.262788 0.261654</y>
-							</SimmSpline>
+                            <Constant>
+                                <value>0</value>
+                            </Constant>
 						</TransformAxis>
 						<!--3 Axes for translations are listed next.-->
 						<TransformAxis name="translation1">
@@ -1619,7 +1597,7 @@
 							<!--Translational offset (in meters) of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
 							<translation>-0.01 -0.40000000000000002 0</translation>
 							<!--Orientation offset (in radians) of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
-							<orientation>0.175895 -0.105208 0.0186622</orientation>
+							<orientation>0 -0.105208 0.0186622</orientation>
 						</PhysicalOffsetFrame>
 						<PhysicalOffsetFrame name="talus_r_offset">
 							<!--The geometry used to display the axes of this Frame.-->
@@ -1634,7 +1612,7 @@
 							<!--Translational offset (in meters) of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
 							<translation>0 0 0</translation>
 							<!--Orientation offset (in radians) of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
-							<orientation>0.175895 -0.105208 0.0186622</orientation>
+							<orientation>0 -0.105208 0.0186622</orientation>
 						</PhysicalOffsetFrame>
 					</frames>
 				</PinJoint>
@@ -1757,7 +1735,7 @@
 						</PhysicalOffsetFrame>
 					</frames>
 				</WeldJoint>
-				<CustomJoint name="hip_r">
+				<PinJoint name="hip_r">
 					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The parent frame for the joint.).-->
 					<socket_parent_frame>femur_r_offset</socket_parent_frame>
 					<!--Path to a Component that satisfies the Socket 'child_frame' of type PhysicalFrame (description: The child frame for the joint.).-->
@@ -1770,39 +1748,7 @@
 							<!--The speed value of this coordinate before any value has been set. Rotational coordinate value is in rad/s and Translational in m/s.-->
 							<default_speed_value>0</default_speed_value>
 							<!--The minimum and maximum values that the coordinate can range between. Rotational coordinate range in radians and Translational in meters.-->
-							<range>-3 3</range>
-							<!--Flag indicating whether or not the values of the coordinates should be limited to the range, above.-->
-							<clamped>true</clamped>
-							<!--Flag indicating whether or not the values of the coordinates should be constrained to the current (e.g. default) value, above.-->
-							<locked>false</locked>
-							<!--If specified, the coordinate can be prescribed by a function of time. It can be any OpenSim Function with valid second order derivatives.-->
-							<prescribed_function />
-							<!--Flag indicating whether or not the values of the coordinates should be prescribed according to the function above. It is ignored if the no prescribed function is specified.-->
-							<prescribed>false</prescribed>
-						</Coordinate>
-						<Coordinate name="hip_adduction_r">
-							<!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
-							<default_value>0</default_value>
-							<!--The speed value of this coordinate before any value has been set. Rotational coordinate value is in rad/s and Translational in m/s.-->
-							<default_speed_value>0</default_speed_value>
-							<!--The minimum and maximum values that the coordinate can range between. Rotational coordinate range in radians and Translational in meters.-->
-							<range>-3 3</range>
-							<!--Flag indicating whether or not the values of the coordinates should be limited to the range, above.-->
-							<clamped>true</clamped>
-							<!--Flag indicating whether or not the values of the coordinates should be constrained to the current (e.g. default) value, above.-->
-							<locked>false</locked>
-							<!--If specified, the coordinate can be prescribed by a function of time. It can be any OpenSim Function with valid second order derivatives.-->
-							<prescribed_function />
-							<!--Flag indicating whether or not the values of the coordinates should be prescribed according to the function above. It is ignored if the no prescribed function is specified.-->
-							<prescribed>false</prescribed>
-						</Coordinate>
-						<Coordinate name="hip_rotation_r">
-							<!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
-							<default_value>0</default_value>
-							<!--The speed value of this coordinate before any value has been set. Rotational coordinate value is in rad/s and Translational in m/s.-->
-							<default_speed_value>0</default_speed_value>
-							<!--The minimum and maximum values that the coordinate can range between. Rotational coordinate range in radians and Translational in meters.-->
-							<range>-3 3</range>
+							<range>-2.0943951 0.52359878</range>
 							<!--Flag indicating whether or not the values of the coordinates should be limited to the range, above.-->
 							<clamped>true</clamped>
 							<!--Flag indicating whether or not the values of the coordinates should be constrained to the current (e.g. default) value, above.-->
@@ -1833,71 +1779,7 @@
 						</PhysicalOffsetFrame>
 					</frames>
 					<!--Defines how the child body moves with respect to the parent as a function of the generalized coordinates.-->
-					<SpatialTransform>
-						<!--3 Axes for rotations are listed first.-->
-						<TransformAxis name="rotation1">
-							<!--Names of the coordinates that serve as the independent variables         of the transform function.-->
-							<coordinates>hip_flexion_r</coordinates>
-							<!--Rotation or translation axis for the transform.-->
-							<axis>0 0 1</axis>
-							<!--Transform function of the generalized coordinates used to        represent the amount of displacement along a specified axis.-->
-							<LinearFunction name="function">
-								<coefficients> 1 0</coefficients>
-							</LinearFunction>
-						</TransformAxis>
-						<TransformAxis name="rotation2">
-							<!--Names of the coordinates that serve as the independent variables         of the transform function.-->
-							<coordinates>hip_adduction_r</coordinates>
-							<!--Rotation or translation axis for the transform.-->
-							<axis>1 0 0</axis>
-							<!--Transform function of the generalized coordinates used to        represent the amount of displacement along a specified axis.-->
-							<LinearFunction name="function">
-								<coefficients> 1 0</coefficients>
-							</LinearFunction>
-						</TransformAxis>
-						<TransformAxis name="rotation3">
-							<!--Names of the coordinates that serve as the independent variables         of the transform function.-->
-							<coordinates>hip_rotation_r</coordinates>
-							<!--Rotation or translation axis for the transform.-->
-							<axis>0 1 0</axis>
-							<!--Transform function of the generalized coordinates used to        represent the amount of displacement along a specified axis.-->
-							<LinearFunction name="function">
-								<coefficients> 1 0</coefficients>
-							</LinearFunction>
-						</TransformAxis>
-						<!--3 Axes for translations are listed next.-->
-						<TransformAxis name="translation1">
-							<!--Names of the coordinates that serve as the independent variables         of the transform function.-->
-							<coordinates></coordinates>
-							<!--Rotation or translation axis for the transform.-->
-							<axis>1 0 0</axis>
-							<!--Transform function of the generalized coordinates used to        represent the amount of displacement along a specified axis.-->
-							<Constant name="function">
-								<value>0</value>
-							</Constant>
-						</TransformAxis>
-						<TransformAxis name="translation2">
-							<!--Names of the coordinates that serve as the independent variables         of the transform function.-->
-							<coordinates></coordinates>
-							<!--Rotation or translation axis for the transform.-->
-							<axis>0 1 0</axis>
-							<!--Transform function of the generalized coordinates used to        represent the amount of displacement along a specified axis.-->
-							<Constant name="function">
-								<value>0</value>
-							</Constant>
-						</TransformAxis>
-						<TransformAxis name="translation3">
-							<!--Names of the coordinates that serve as the independent variables         of the transform function.-->
-							<coordinates></coordinates>
-							<!--Rotation or translation axis for the transform.-->
-							<axis>0 0 1</axis>
-							<!--Transform function of the generalized coordinates used to        represent the amount of displacement along a specified axis.-->
-							<Constant name="function">
-								<value>0</value>
-							</Constant>
-						</TransformAxis>
-					</SpatialTransform>
-				</CustomJoint>
+				</PinJoint>
 			</objects>
 		</JointSet>
 		<!--Controllers that provide the control inputs for Actuators.-->
