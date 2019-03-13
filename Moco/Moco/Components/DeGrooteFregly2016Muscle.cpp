@@ -24,11 +24,11 @@
 using namespace OpenSim;
 
 const std::string DeGrooteFregly2016Muscle::STATE_ACTIVATION_NAME("activation");
-const std::string DeGrooteFregly2016Muscle::STATE_NORM_FIBER_LENGTH_NAME(
-        "norm_fiber_length");
+const std::string DeGrooteFregly2016Muscle::STATE_NORMALIZED_FIBER_LENGTH_NAME(
+        "normalized_fiber_length");
 
 void DeGrooteFregly2016Muscle::constructProperties() {
-    constructProperty_default_norm_fiber_length(1.0);
+    constructProperty_default_normalized_fiber_length(1.0);
     constructProperty_activation_time_constant(0.015);
     constructProperty_deactivation_time_constant(0.060);
     constructProperty_default_activation(0.5);
@@ -44,15 +44,15 @@ void DeGrooteFregly2016Muscle::extendFinalizeFromProperties() {
             "The optimal_force property is ignored for this Force; "
             "use max_isometric_force instead.");
 
-    SimTK_ERRCHK2_ALWAYS(get_default_norm_fiber_length() >= 0.2,
+    SimTK_ERRCHK2_ALWAYS(get_default_normalized_fiber_length() >= 0.2,
             "DeGrooteFregly2016Muscle::extendFinalizeFromProperties",
-            "%s: default_norm_fiber_length must be >= 0.2, but it is %g.",
-            getName().c_str(), get_default_norm_fiber_length());
+            "%s: default_normalized_fiber_length must be >= 0.2, but it is %g.",
+            getName().c_str(), get_default_normalized_fiber_length());
 
-    SimTK_ERRCHK2_ALWAYS(get_default_norm_fiber_length() <= 1.8,
+    SimTK_ERRCHK2_ALWAYS(get_default_normalized_fiber_length() <= 1.8,
             "DeGrooteFregly2016Muscle::extendFinalizeFromProperties",
-            "%s: default_norm_fiber_length must be <= 1.8, but it is %g.",
-            getName().c_str(), get_default_norm_fiber_length());
+            "%s: default_normalized_fiber_length must be <= 1.8, but it is %g.",
+            getName().c_str(), get_default_normalized_fiber_length());
 
     SimTK_ERRCHK2_ALWAYS(get_activation_time_constant() > 0,
             "DeGrooteFregly2016Muscle::extendFinalizeFromProperties",
@@ -100,7 +100,7 @@ void DeGrooteFregly2016Muscle::extendAddToSystem(
         addStateVariable(STATE_ACTIVATION_NAME, SimTK::Stage::Dynamics);
     }
     if (!get_ignore_tendon_compliance()) {
-        addStateVariable(STATE_NORM_FIBER_LENGTH_NAME, SimTK::Stage::Position);
+        addStateVariable(STATE_NORMALIZED_FIBER_LENGTH_NAME, SimTK::Stage::Position);
     }
 }
 
@@ -112,8 +112,8 @@ void DeGrooteFregly2016Muscle::extendInitStateFromProperties(
                 s, STATE_ACTIVATION_NAME, get_default_activation());
     }
     if (!get_ignore_tendon_compliance()) {
-        setStateVariableValue(s, STATE_NORM_FIBER_LENGTH_NAME,
-                get_default_norm_fiber_length());
+        setStateVariableValue(s, STATE_NORMALIZED_FIBER_LENGTH_NAME,
+                get_default_normalized_fiber_length());
     }
 }
 
@@ -124,8 +124,8 @@ void DeGrooteFregly2016Muscle::extendSetPropertiesFromState(
         set_default_activation(getStateVariableValue(s, STATE_ACTIVATION_NAME));
     }
     if (!get_ignore_tendon_compliance()) {
-        set_default_norm_fiber_length(
-                getStateVariableValue(s, STATE_NORM_FIBER_LENGTH_NAME));
+        set_default_normalized_fiber_length(
+                getStateVariableValue(s, STATE_NORMALIZED_FIBER_LENGTH_NAME));
     }
 }
 
@@ -225,7 +225,7 @@ void DeGrooteFregly2016Muscle::computeStateVariableDerivatives(
         const SimTK::Real normFiberLengthDot =
                 get_max_contraction_velocity() * equilNormFiberVelocity;
         setStateVariableDerivativeValue(
-                s, STATE_NORM_FIBER_LENGTH_NAME, normFiberLengthDot);
+                s, STATE_NORMALIZED_FIBER_LENGTH_NAME, normFiberLengthDot);
     }
 }
 
@@ -281,7 +281,7 @@ void DeGrooteFregly2016Muscle::computeInitialFiberEquilibrium(
             calcResidual, m_minNormFiberLength, m_maxNormFiberLength);
 
     // TODO create setNormFiberLength().
-    setStateVariableValue(s, "norm_fiber_length", equilNormFiberLength);
+    setStateVariableValue(s, "normalized_fiber_length", equilNormFiberLength);
 }
 
 SimTK::Real DeGrooteFregly2016Muscle::solveBisection(
@@ -485,7 +485,7 @@ void DeGrooteFregly2016Muscle::replaceMuscles(
             // optimal fiber length.
             if (!SimTK::isNumericallyEqual(
                         musc->get_default_fiber_length(), 0.1)) {
-                actu->set_default_norm_fiber_length(
+                actu->set_default_normalized_fiber_length(
                         musc->get_default_fiber_length() /
                         musc->get_optimal_fiber_length());
             }

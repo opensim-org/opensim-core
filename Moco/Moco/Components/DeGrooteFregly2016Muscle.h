@@ -71,8 +71,7 @@ class OSIMMOCO_API DeGrooteFregly2016Muscle : public Muscle {
     OpenSim_DECLARE_CONCRETE_OBJECT(DeGrooteFregly2016Muscle, Muscle);
 
 public:
-    // TODO: Rename to "normalized_fiber_length"
-    OpenSim_DECLARE_PROPERTY(default_norm_fiber_length, double,
+    OpenSim_DECLARE_PROPERTY(default_normalized_fiber_length, double,
             "Assumed initial normalized fiber length if none is assigned.");
     OpenSim_DECLARE_PROPERTY(activation_time_constant, double,
             "Smaller value means activation can change more rapidly (units: "
@@ -224,7 +223,7 @@ public:
         if (get_ignore_tendon_compliance()) {
             return calcFiberLength(s) / get_optimal_fiber_length();
         } else {
-            return getStateVariableValue(s, STATE_NORM_FIBER_LENGTH_NAME);
+            return getStateVariableValue(s, STATE_NORMALIZED_FIBER_LENGTH_NAME);
         }
     }
 
@@ -420,7 +419,7 @@ private:
     constexpr static double m_maxNormFiberLength = 1.8;
 
     static const std::string STATE_ACTIVATION_NAME;
-    static const std::string STATE_NORM_FIBER_LENGTH_NAME;
+    static const std::string STATE_NORMALIZED_FIBER_LENGTH_NAME;
 
     SimTK::Real m_maxContractionVelocityInMeters = SimTK::NaN;
     // Tendon stiffness parameter from De Groote et al., 2016.
