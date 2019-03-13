@@ -28,6 +28,7 @@ namespace OpenSim {
 
 class MocoInverse;
 
+/// This class holds the solution from MocoInverseTool.
 class MocoInverseSolution {
 public:
     const MocoSolution& getMocoSolution() const {
@@ -41,6 +42,15 @@ private:
     friend class MocoInverse;
 };
 
+/// This tool solves problems in which the kinematics are prescribed and you
+/// seek the actuator (e.g., muscle) behavior that may have given rise to the
+/// provided kinematics. The term "inverse" describes methods that estimate
+/// quantities from an observation; on the other hand, "forward" methods attempt
+/// to predict (unobserved) behavior. In this case, "inverse" refers to the
+/// multibody systems. This class can still be used to simulate muscles in a
+/// "forward" or predictive sense.
+///
+/// @underdevelopment
 class OSIMMOCO_API MocoInverse : public Object {
     OpenSim_DECLARE_CONCRETE_OBJECT(MocoInverse, Object);
 
