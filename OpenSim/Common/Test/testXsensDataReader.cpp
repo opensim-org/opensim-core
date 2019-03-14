@@ -54,8 +54,7 @@ int main() {
         std::string trial = readerSettings.get_trial_prefix();
         // Write tables to sto files
         // Accelerations
-        std::shared_ptr<AbstractDataTable> accelTable = tables.at(XsensDataReader::LinearAccelerations);
-        const TimeSeriesTableVec3& accelTableTyped = dynamic_cast<const TimeSeriesTableVec3&>(*accelTable);
+        const TimeSeriesTableVec3& accelTableTyped = XsensDataReader::getLinearAccelerationsTable(tables);
         STOFileAdapterVec3::write(accelTableTyped, folder + trial+ "accelerations.sto");
         const SimTK::RowVectorView_<SimTK::Vec3>& rvv = accelTableTyped.getRowAtIndex(0);
         SimTK::Vec3 fromTable = accelTableTyped.getRowAtIndex(0)[0];
@@ -68,22 +67,19 @@ int main() {
         fromFile = SimTK::Vec3{ 2.657654, 5.012634, -7.581414 };
         ASSERT_EQUAL(fromTable, fromFile, tolerance);
         // Magenometer
-        std::shared_ptr<AbstractDataTable> magTable = tables.at(XsensDataReader::MagneticHeading);
-        const TimeSeriesTableVec3& magTableTyped = dynamic_cast<const TimeSeriesTableVec3&>(*magTable);
+         const TimeSeriesTableVec3& magTableTyped = XsensDataReader::getMagneticHeadingTable(tables);
         STOFileAdapterVec3::write(magTableTyped, folder + trial + "magnetometers.sto");
         fromTable = magTableTyped.getRowAtIndex(0)[0];
         fromFile = SimTK::Vec3{ -0.045410, - 0.266113, 0.897217 };
         ASSERT_EQUAL(fromTable, fromFile, tolerance);
         // Gyro
-        std::shared_ptr<AbstractDataTable> gyroTable = tables.at(XsensDataReader::AngularVelocity);
-        const TimeSeriesTableVec3& gyroTableTyped = dynamic_cast<const TimeSeriesTableVec3&>(*gyroTable);
+        const TimeSeriesTableVec3& gyroTableTyped = XsensDataReader::getAngularVelocityTable(tables);
         STOFileAdapterVec3::write(gyroTableTyped, folder + trial + "gyros.sto");
         fromTable = gyroTableTyped.getRowAtIndex(0)[0];
         fromFile = SimTK::Vec3{ 0.005991, - 0.032133, 0.022713 };
         ASSERT_EQUAL(fromTable, fromFile, tolerance);
         // Orientation
-        std::shared_ptr<AbstractDataTable> orientationTable = tables.at(XsensDataReader::Orientations);
-        const TimeSeriesTableQuaternion& quatTableTyped = dynamic_cast<const TimeSeriesTableQuaternion&>(*orientationTable);
+         const TimeSeriesTableQuaternion& quatTableTyped = XsensDataReader::getOrientationsTable(tables);
         STOFileAdapterQuaternion::write(quatTableTyped, folder + trial + "quaternions.sto");
         
         // Now test the case where only orintation data is available, rest is missing
@@ -92,8 +88,8 @@ int main() {
         readOrientationsOnly.append_ExperimentalSensors(nextSensor);
         readOrientationsOnly.updProperty_trial_prefix() = "MT_012005D6-000_sit_to_stand-";
         DataAdapter::OutputTables tables2 = XsensDataReader(readOrientationsOnly).extendRead("");
-        std::shared_ptr<AbstractDataTable> accelTable2 = tables2.at(XsensDataReader::LinearAccelerations);
-        ASSERT(accelTable2->getNumRows() ==0);
+        const TimeSeriesTableVec3& accelTable2 = XsensDataReader::getLinearAccelerationsTable(tables2);
+        ASSERT(accelTable2.getNumRows() ==0);
         ASSERT(tables2.at(XsensDataReader::MagneticHeading)->getNumRows() == 0);
         ASSERT(tables2.at(XsensDataReader::AngularVelocity)->getNumRows() == 0);
     }
