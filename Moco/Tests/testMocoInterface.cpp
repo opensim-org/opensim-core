@@ -1236,15 +1236,16 @@ TEMPLATE_TEST_CASE("Solving an empty MocoProblem", "", MocoTropterSolver,
     THEN("problem solves without error, solution trajectories are empty.") {
         MocoSolution solution = moco.solve();
         // 100 is the default num_mesh_points.
-        CHECK(solution.getTime().size() == solver.get_num_mesh_points());
+        const int N = solver.get_num_mesh_points();
+        CHECK(solution.getTime().size() == N);
         CHECK(solution.getStatesTrajectory().ncol() == 0);
-        CHECK(solution.getStatesTrajectory().nrow() == 0);
+        CHECK(solution.getStatesTrajectory().nrow() == N);
         CHECK(solution.getControlsTrajectory().ncol() == 0);
-        CHECK(solution.getControlsTrajectory().nrow() == 0);
+        CHECK(solution.getControlsTrajectory().nrow() == N);
         CHECK(solution.getMultipliersTrajectory().ncol() == 0);
-        CHECK(solution.getMultipliersTrajectory().nrow() == 0);
+        CHECK(solution.getMultipliersTrajectory().nrow() == N);
         CHECK(solution.getDerivativesTrajectory().ncol() == 0);
-        CHECK(solution.getDerivativesTrajectory().nrow() == 0);
+        CHECK(solution.getDerivativesTrajectory().nrow() == N);
     }
 }
 
