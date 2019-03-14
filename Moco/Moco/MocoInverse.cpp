@@ -119,7 +119,7 @@ MocoInverseSolution MocoInverse::solve() const {
     problem.setModelCopy(model);
 
     const auto timeInfo =
-            calcInitialAndFinalTimes(kinematicsRaw.getIndependentColumn(), {},
+            calcInitialAndFinalTimes(kinematicsRaw->getIndependentColumn(), {},
                     get_mesh_interval());
     // const double spaceForFiniteDiff = 1e-3;
     problem.setTimeBounds(timeInfo.initialTime, timeInfo.finalTime);
