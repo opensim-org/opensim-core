@@ -34,9 +34,11 @@ void MocoInverse::constructProperties() {
 
     constructProperty_initial_time();
     constructProperty_final_time();
-    constructProperty_mesh_point_frequency(50);
+    constructProperty_mesh_interval(0.02);
     constructProperty_create_reserve_actuators(-1);
     constructProperty_external_loads_file("");
+    constructProperty_ignore_activation_dynamics(false);
+    constructProperty_ignore_tendon_compliance(false);
 }
 
 void MocoInverse::writeTableToFile(const TimeSeriesTable& table,
@@ -47,14 +49,19 @@ void MocoInverse::writeTableToFile(const TimeSeriesTable& table,
 
 MocoInverseSolution MocoInverse::solve() const {
 
-    // TODO: Create an initial guess using GSO (no dynamics).
-
     Model model(m_model);
+    model.finalizeFromProperties();
+    for (auto& muscle : model.updComponentList<Muscle>()) {
+        if (get_ignore_activation_dynamics()) {
+            muscle.set_ignore_activation_dynamics(true);
+        }
+        if (get_ignore_tendon_compliance()) {
+            muscle.set_ignore_tendon_compliance(true);
+        }
+    }
 
     MocoTool moco;
     auto& problem = moco.updProblem();
-
-    model.finalizeFromProperties();
 
     // TODO: Move this elsewhere!
     for (const auto& muscle : model.getComponentList<Muscle>()) {
@@ -111,14 +118,10 @@ MocoInverseSolution MocoInverse::solve() const {
 
     problem.setModelCopy(model);
 
-    // const double spaceForFiniteDiff = 1e-3;
-    // problem.setTimeBounds(kinematicsRaw.getIndependentColumn().front() +
-    //                               spaceForFiniteDiff,
-    //         kinematicsRaw.getIndependentColumn().back() -
-    //                 spaceForFiniteDiff);
     const auto timeInfo =
-            calcInitialAndFinalTimes(kinematicsRaw->getIndependentColumn(), {},
-                    get_mesh_point_frequency());
+            calcInitialAndFinalTimes(kinematicsRaw.getIndependentColumn(), {},
+                    get_mesh_interval());
+    // const double spaceForFiniteDiff = 1e-3;
     problem.setTimeBounds(timeInfo.initialTime, timeInfo.finalTime);
 
     // TODO: Allow users to specify costs flexibly.
@@ -146,7 +149,7 @@ MocoInverseSolution MocoInverse::solve() const {
 
 MocoInverse::TimeInfo MocoInverse::calcInitialAndFinalTimes(
         const std::vector<double>& time0, const std::vector<double>& time1,
-        const int& meshPointFrequency) const {
+        const int& meshInterval) const {
 
     TimeInfo out;
     double initialTimeFromData = time0.front();
@@ -180,6 +183,6 @@ MocoInverse::TimeInfo MocoInverse::calcInitialAndFinalTimes(
 
     // We do not want to end up with a lower mesh frequency than requested.
     out.numMeshPoints = (int)std::ceil(
-            (out.finalTime - out.initialTime) * meshPointFrequency);
+            (out.finalTime - out.initialTime) / (meshInterval)) + 1;
     return out;
 }

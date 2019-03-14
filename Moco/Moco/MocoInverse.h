@@ -28,10 +28,12 @@ namespace OpenSim {
 
 class MocoInverse;
 
+/// This class holds the solution from MocoInverseTool.
 class MocoInverseSolution {
 public:
-    const MocoSolution& getMocoSolution() const;
-
+    const MocoSolution& getMocoSolution() const {
+        return m_mocoSolution;
+    }
 private:
     void setMocoSolution(MocoSolution mocoSolution) {
         m_mocoSolution = std::move(mocoSolution);
@@ -40,6 +42,15 @@ private:
     friend class MocoInverse;
 };
 
+/// This tool solves problems in which the kinematics are prescribed and you
+/// seek the actuator (e.g., muscle) behavior that may have given rise to the
+/// provided kinematics. The term "inverse" describes methods that estimate
+/// quantities from an observation; on the other hand, "forward" methods attempt
+/// to predict (unobserved) behavior. In this case, "inverse" refers to the
+/// multibody systems. This class can still be used to simulate muscles in a
+/// "forward" or predictive sense.
+///
+/// @underdevelopment
 class OSIMMOCO_API MocoInverse : public Object {
     OpenSim_DECLARE_CONCRETE_OBJECT(MocoInverse, Object);
 
@@ -56,11 +67,21 @@ public:
             "All data must end at or after this time. "
             "(default: latest time available in all provided data)");
 
-    OpenSim_DECLARE_PROPERTY(mesh_point_frequency, int,
-            "The number of mesh points per second of motion "
-            "(default: 50 mesh points / second).");
+    OpenSim_DECLARE_PROPERTY(mesh_interval, double,
+            "The time duration of each mesh interval "
+            "(default: 0.020 seconds).");
 
     OpenSim_DECLARE_PROPERTY(external_loads_file, std::string, "TODO");
+
+    OpenSim_DECLARE_PROPERTY(ignore_activation_dynamics, bool,
+            "Ignore activation dynamics for all muscles in the model. "
+            "If false, the muscle's setting is not modified."
+            "(default: false).");
+
+    OpenSim_DECLARE_PROPERTY(ignore_tendon_compliance, bool,
+            "Ignore tendon_compliance for all muscles in the model. "
+            "If false, the muscle's setting is not modified."
+            "(default: false).");
 
     OpenSim_DECLARE_PROPERTY(create_reserve_actuators, double,
             "Create a reserve actuator (CoordinateActuator) for each "

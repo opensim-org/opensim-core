@@ -77,6 +77,8 @@ MocoAddTest(NAME testGait10dof18musc RESOURCES
         std_testGait10dof18musc_GSO_solution_norm_tendon_force.sto
         )
 
+MocoAddTest(NAME testDeGrooteFregly2016Muscle)
+
 MocoAddTest(NAME testMocoInverse RESOURCES
         testGait10dof18musc_subject01.osim
         walk_gait1018_state_reference.mot
