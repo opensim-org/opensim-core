@@ -20,8 +20,6 @@
 %template (PropertyString) OpenSim::Property<std::string>;
 %include <OpenSim/Common/Object.h>
 %include <OpenSim/Common/ObjectGroup.h>
-%include <OpenSim/Common/XsensDataReader.h>
-%include <OpenSim/Common/ExperimentalSensor.h>
 
 %include <OpenSim/Common/Set.h>
 %template(OpenSimObjectSet) OpenSim::Set<OpenSim::Object, OpenSim::Object>;
@@ -366,6 +364,11 @@ DATATABLE_CLONE(double, SimTK::SpatialVec)
 %template(StdMapStringAbstractDataTable)
         std::map<std::string, std::shared_ptr<OpenSim::AbstractDataTable>>;
 %include <OpenSim/Common/DataAdapter.h>
+%include <OpenSim/Common/ExperimentalSensor.h>
+%include <OpenSim/Common/XsensDataReaderSettings.h>
+%include <OpenSim/Common/XsensDataReader.h>
+
+
 %include <OpenSim/Common/FileAdapter.h>
 namespace OpenSim {
     %ignore TRCFileAdapter::TRCFileAdapter(TRCFileAdapter &&);
