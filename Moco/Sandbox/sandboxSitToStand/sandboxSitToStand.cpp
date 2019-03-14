@@ -71,6 +71,7 @@ Model createModel(const std::string& actuatorType) {
             auto& musc = model.updMuscles().get(m);
             musc.set_ignore_activation_dynamics(true);
             musc.set_ignore_tendon_compliance(true);
+            //musc.set_max_isometric_force(10*musc.get_max_isometric_force());
         }
     } else {
         throw std::runtime_error("Unrecognized actuatorType.");
@@ -88,10 +89,11 @@ void setBounds(MocoProblem& mp) {
         -2, 0);
     mp.setStateInfo("/jointset/ankle_r/ankle_angle_r/value", {-0.524, 0.698}, 
         -0.5, 0);
-    mp.setStateInfo("/jointset/hip_r/hip_flexion_r/speed", {-50, 50}, 0, 0);
-    mp.setStateInfo("/jointset/walker_knee_r/knee_angle_r/speed", {-50, 50}, 0, 
-        0);
-    mp.setStateInfo("/jointset/ankle_r/ankle_angle_r/speed", {-50, 50}, 0, 0);
+    //mp.setStateInfo("/jointset/hip_r/hip_flexion_r/speed", {-50, 50}, {-50, 50}, 0);
+    //mp.setStateInfo("/jointset/walker_knee_r/knee_angle_r/speed", {-50, 50}, 
+    //    {-50, 50}, 0);
+    //mp.setStateInfo("/jointset/ankle_r/ankle_angle_r/speed", {-50, 50}, 
+    //    {-50, 50}, 0);
 }
 
 struct Options {
@@ -120,6 +122,9 @@ MocoSolution minimizeControlEffort(const Options& opt) {
 
     auto* effort = mp.addCost<MocoControlCost>();
     effort->setName("control_effort");
+    //effort->setWeight("tau_hip_flexion_r", 100);
+    //effort->setWeight("tau_knee_angle_r", 100);
+    //effort->setWeight("tau_ankle_angle_r", 100);
 
     // Set solver options.
     // -------------------
@@ -241,9 +246,9 @@ int main() {
     Options opt;
     // TODO problems with Millard muscles are quite slow
     opt.actuatorType = "DeGrooteFregly2016Muscle";
-    opt.num_mesh_points = 25;
-    opt.constraint_tol = 1e-4;
-    opt.convergence_tol = 1e-4;
+    opt.num_mesh_points = 10;
+    opt.constraint_tol = 1e-2;
+    opt.convergence_tol = 1e-3;
     opt.solver = "ipopt";
     //opt.max_iterations = 100;
     opt.dynamics_mode = "implicit";
@@ -252,9 +257,9 @@ int main() {
     MocoSolution torqueSolEffort = minimizeControlEffort(opt);
 
     opt.previousSolution = torqueSolEffort;
-    MocoSolution torqueSolTrack = stateTracking(opt);
+    //MocoSolution torqueSolTrack = stateTracking(opt);
 
-    compareTrackingToPrediction(torqueSolEffort, torqueSolTrack);
+    //compareTrackingToPrediction(torqueSolEffort, torqueSolTrack);
 
     return EXIT_SUCCESS;
 }
