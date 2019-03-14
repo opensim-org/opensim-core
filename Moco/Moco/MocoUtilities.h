@@ -38,21 +38,21 @@ std::unique_ptr<T> make_unique(Args&&... args) {
     return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
 }
 
+/// Determine if `string` starts with the substring `start`.
+/// https://stackoverflow.com/questions/874134/find-if-string-ends-with-another-string-in-c
+inline bool startsWith(const std::string& string, const std::string& start) {
+    if (string.length() >= start.length()) {
+        return string.compare(0, start.length(), start) == 0;
+    }
+    return false;
+}
+
 /// Determine if `string` ends with the substring `ending`.
 /// https://stackoverflow.com/questions/874134/find-if-string-ends-with-another-string-in-c
 inline bool endsWith(const std::string& string, const std::string& ending) {
     if (string.length() >= ending.length()) {
         return string.compare(string.length() - ending.length(),
                        ending.length(), ending) == 0;
-    }
-    return false;
-}
-
-/// Determine if `string` starts with the substring `start`.
-/// https://stackoverflow.com/questions/874134/find-if-string-ends-with-another-string-in-c
-inline bool startsWith(const std::string& string, const std::string& start) {
-    if (string.length() >= start.length()) {
-        return string.compare(0, start.length(), start) == 0;
     }
     return false;
 }
@@ -146,7 +146,7 @@ TimeSeriesTable resample(const TimeSeriesTable& in, const TimeVector& newTime) {
                     newTime[0], time[0]));
     OPENSIM_THROW_IF(newTime[newTime.size() - 1] > time[time.size() - 1],
             Exception,
-            format("New final time (%f) cannot be less than existing final "
+            format("New final time (%f) cannot be greater than existing final "
                    "time (%f)",
                     newTime[newTime.size() - 1], time[time.size() - 1]));
     for (int itime = 1; itime < (int)newTime.size(); ++itime) {

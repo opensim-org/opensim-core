@@ -122,7 +122,7 @@ private:
             const std::vector<double>& time0,
             // Time vector from a secondary data source.
             const std::vector<double>& time1,
-            const int& meshPointFrequency) const;
+            const double& meshInterval) const;
 
     Model m_model;
     std::string m_kinematicsFileName;

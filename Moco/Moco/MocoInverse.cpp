@@ -149,7 +149,7 @@ MocoInverseSolution MocoInverse::solve() const {
 
 MocoInverse::TimeInfo MocoInverse::calcInitialAndFinalTimes(
         const std::vector<double>& time0, const std::vector<double>& time1,
-        const int& meshInterval) const {
+        const double& meshInterval) const {
 
     TimeInfo out;
     double initialTimeFromData = time0.front();

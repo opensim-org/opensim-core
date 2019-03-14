@@ -68,6 +68,7 @@ MocoIterate::MocoIterate(const SimTK::Vector& time,
     } else {
         m_multipliers.resize(m_time.size(), 0);
     }
+    m_derivatives.resize(m_time.size(), 0);
     OPENSIM_THROW_IF((int)m_parameter_names.size() != m_parameters.nelt(),
             Exception, "Inconsistent number of parameters.");
 }
@@ -519,24 +520,34 @@ MocoIterate::MocoIterate(const std::string& filepath) {
 
     if (numStates) {
         m_states = table->getMatrixBlock(0, 0, table->getNumRows(), numStates);
+    } else {
+        m_states.resize((int)table->getNumRows(), 0);
     }
     if (numControls) {
         m_controls = table->getMatrixBlock(
                 0, numStates, table->getNumRows(), numControls);
+    } else {
+        m_controls.resize((int)table->getNumRows(), 0);
     }
     if (numMultipliers) {
         m_multipliers = table->getMatrixBlock(0, numStates + numControls,
                 table->getNumRows(), numMultipliers);
+    } else {
+        m_multipliers.resize((int)table->getNumRows(), 0);
     }
     if (numDerivatives) {
         m_derivatives = table->getMatrixBlock(0,
                 numStates + numControls + numMultipliers, table->getNumRows(),
                 numDerivatives);
+    } else {
+        m_derivatives.resize((int)table->getNumRows(), 0);
     }
     if (numSlacks) {
         m_slacks = table->getMatrixBlock(0,
                 numStates + numControls + numMultipliers + numDerivatives,
                 table->getNumRows(), numSlacks);
+    } else {
+        m_slacks.resize((int)table->getNumRows(), 0);
     }
     if (numParameters) {
         m_parameters = table->getMatrixBlock(0,

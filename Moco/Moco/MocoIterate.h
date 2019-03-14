@@ -105,6 +105,7 @@ public:
             const SimTK::Matrix& multipliersTrajectory,
             const SimTK::Matrix& derivativesTrajectory,
             const SimTK::RowVector& parameters);
+#ifndef SWIG
     /// This constructor allows you to control which
     /// data you provide for the iterate. The possible keys for continuousVars
     /// are "states", "controls", "multipliers", and "derivatives". The names
@@ -115,6 +116,7 @@ public:
             const std::map<std::string, NamesAndData<SimTK::Matrix>>&
                     continuousVars,
             const NamesAndData<SimTK::RowVector>& parameters = {});
+#endif
     /// Read a MocoIterate from a data file (e.g., STO, CSV). See output of
     /// write() for the correct format.
     explicit MocoIterate(const std::string& filepath);
