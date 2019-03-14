@@ -207,7 +207,7 @@ void DeGrooteFregly2016Muscle::computeStateVariableDerivatives(
         try {
             equilNormFiberVelocity =
                     solveBisection(calcResidual, -velocityBound, velocityBound);
-        } catch (const Exception& e) {
+        } catch (const Exception& /*e*/) {
             std::cout << format("DEBUG computeStateVariableDerivatives"
                                 "\n\ttime: %g"
                                 "\n\tactivation: %g"
