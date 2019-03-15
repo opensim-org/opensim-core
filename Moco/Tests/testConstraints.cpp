@@ -1124,3 +1124,9 @@ TEMPLATE_TEST_CASE(
         "[implicit]", MocoCasADiSolver) {
     testDoublePendulumPointOnLineJointReaction<TestType>(true, "implicit");
 }
+
+// TEST_CASE("Prescribed kinematics with kinematic constraints", "") {
+//     Model
+//
+// }
+

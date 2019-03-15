@@ -33,6 +33,11 @@ public:
     static Model createDoublePendulum() {
         return createNLinkPendulum(2);
     }
+    /// This model contains:
+    /// - 2 bodies: a massless body "intermed", and "body" with mass 1.
+    /// - 2 slider joints: "tx" and "ty" (coordinates "tx" and "ty").
+    /// - 2 coordinate actuators: "force_x" and "force_y".
+    static Model createPlanarPointMass();
 };
 
 } // namespace OpenSim

@@ -294,6 +294,10 @@ private:
                 simtkStateDisabledConstraints);
 
         // Compute kinematic constraint errors if they exist.
+        // TODO: Do not enforce kinematic constraints if prescribedKinematics,
+        // but must make sure the prescribedKinematics already obey the
+        // constraints. This is simple at the q and u level (using assemble()),
+        // but what do we do for the acceleration level?
         if (getNumMultipliers() && calcKCErrors) {
             calcKinematicConstraintErrors(modelBase, simtkStateBase,
                     simtkStateDisabledConstraints,
