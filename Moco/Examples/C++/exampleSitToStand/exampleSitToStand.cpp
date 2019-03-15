@@ -41,12 +41,12 @@ void addCoordinateActuator(Model& model, std::string coordName,
 
 Model createTorqueDrivenModel() {
 
-     Model model("sitToStand_3dof9musc.osim");
+    Model model("sitToStand_3dof9musc.osim");
 
     removeMuscles(model);
-    addCoordinateActuator(model, "hip_flexion_r", 25);
-    addCoordinateActuator(model, "knee_angle_r", 25);
-    addCoordinateActuator(model, "ankle_angle_r", 25);
+    //addCoordinateActuator(model, "hip_flexion_r", 500);
+    //addCoordinateActuator(model, "knee_angle_r", 500);
+    //addCoordinateActuator(model, "ankle_angle_r", 500);
 
     return model;
 }
@@ -76,6 +76,13 @@ MocoTool configureMocoTool() {
         {-2, 0}, -2, 0);
     problem.setStateInfo("/jointset/ankle_r/ankle_angle_r/value", 
         {-0.5, 0.7}, -0.5, 0);
+
+    problem.setStateInfo("/jointset/hip_r/hip_flexion_r/speed",
+        {-50, 50}, 0, 0);
+    problem.setStateInfo("/jointset/knee_r/knee_angle_r/speed",
+        {-50, 50}, 0, 0);   
+    problem.setStateInfo("/jointset/ankle_r/ankle_angle_r/speed",
+        {-50, 50}, 0, 0);
 
     return moco;
 }
