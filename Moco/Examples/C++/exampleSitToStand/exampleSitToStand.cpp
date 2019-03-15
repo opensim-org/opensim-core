@@ -80,7 +80,7 @@ MocoTool configureMocoTool() {
     return moco;
 }
 
-void main() {
+int main() {
 
     MocoTool moco = configureMocoTool();
 
@@ -95,4 +95,5 @@ void main() {
     MocoSolution solution = moco.solve();
     moco.visualize(solution);
 
+    return EXIT_SUCCESS;
 }

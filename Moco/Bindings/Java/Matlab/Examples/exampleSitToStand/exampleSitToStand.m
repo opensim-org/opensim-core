@@ -2,8 +2,6 @@ function exampleSitToStand
 
 import org.opensim.modeling.*;
 
-keyboard
-
 %% Predictive problem
 moco = configureMocoTool();
 problem = moco.updProblem();
@@ -151,19 +149,18 @@ model.addComponent(actu);
 
 end
 
-% function [model] = getMuscleDrivenModel()
-% 
-% import org.opensim.modeling.*;
-% 
-% % Load the base model.
-% model = Model('sitToStand_3dof9musc.osim');
-% 
-% model.finalizeConnections();
-% DeGrooteFregly2016Muscle().replaceMuscles(model);
-% for m = 0:model.getMuscles()-1
-%     musc = model.updMuscles().get(m);
-%     musc.set_ignore_activation_dynamics(true);
-%     musc.set_ignore_tendon_compliance(true);
-% end
-% 
-% end
+function [model] = getMuscleDrivenModel()
+
+import org.opensim.modeling.*;
+
+% Load the base model.
+model = Model('sitToStand_3dof9musc.osim');
+
+DeGrooteFregly2016Muscle().replaceMuscles(model);
+for m = 0:model.getMuscles()-1
+    musc = model.updMuscles().get(m);
+    musc.set_ignore_activation_dynamics(true);
+    musc.set_ignore_tendon_compliance(true);
+end
+
+end
