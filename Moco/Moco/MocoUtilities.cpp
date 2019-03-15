@@ -434,6 +434,9 @@ void OpenSim::removeMuscles(Model& model) {
                         musc->getName()));
         model.updForceSet().remove(index);
     }
+
+    model.finalizeConnections();
+    model.initSystem();
 }
 
 void OpenSim::createReserveActuators(Model& model, double optimalForce) {

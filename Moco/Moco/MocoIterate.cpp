@@ -404,7 +404,7 @@ void MocoIterate::resample(SimTK::Vector time) {
         for (int ideriv = 0; ideriv < numDerivatives; ++ideriv, ++icol)
             m_derivatives.updCol(ideriv).setTo(
                     table.getDependentColumnAtIndex(icol).getElt(0, 0));
-        for (int islack = 0; islack < numDerivatives; ++islack, ++icol)
+        for (int islack = 0; islack < numSlacks; ++islack, ++icol)
             m_slacks.updCol(islack).setTo(
                     table.getDependentColumnAtIndex(icol).getElt(0, 0));
 

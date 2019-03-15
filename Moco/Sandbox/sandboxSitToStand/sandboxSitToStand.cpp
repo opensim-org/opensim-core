@@ -27,6 +27,21 @@ using SimTK::Inertia;
 using SimTK::Transform;
 using SimTK::Vec3;
 
+/// Convenience function to apply an CoordinateActuator to the model.
+void addCoordinateActuator(Model& model, std::string coordName,
+    double optimalForce) {
+
+    auto& coordSet = model.updCoordinateSet();
+
+    auto* actu = new CoordinateActuator();
+    actu->setName("tau_" + coordName);
+    actu->setCoordinate(&coordSet.get(coordName));
+    actu->setOptimalForce(optimalForce);
+    actu->setMinControl(-1);
+    actu->setMaxControl(1);
+    model.addComponent(actu);
+}
+
 /// This essentially removes the effect of passive muscle fiber forces from the
 /// model.
 void minimizePassiveFiberForces(Model& model) {
@@ -50,10 +65,13 @@ void minimizePassiveFiberForces(Model& model) {
 
 Model createModel(const std::string& actuatorType) {
 
-    Model model("Rajagopal2015_bottom_up_one_leg_sagittal.osim");
+    Model model("sitToStand_3dof9musc.osim");
 
     if (actuatorType == "torques") {
         removeMuscles(model);
+        addCoordinateActuator(model, "hip_flexion_r", 250);
+        addCoordinateActuator(model, "knee_angle_r", 500);
+        addCoordinateActuator(model, "ankle_angle_r", 250);
     } else if (actuatorType == "Millard2012EquilibriumMuscle") {
         for (int m = 0; m < model.getMuscles().getSize(); ++m) {
             auto& musc = model.updMuscles().get(m);
@@ -85,7 +103,7 @@ void setBounds(MocoProblem& mp) {
 
     mp.setStateInfo("/jointset/hip_r/hip_flexion_r/value", {-2.094, 0.524}, 
         -2, 0);
-    mp.setStateInfo("/jointset/walker_knee_r/knee_angle_r/value", {-2.094, 0},
+    mp.setStateInfo("/jointset/knee_r/knee_angle_r/value", {-2.094, 0},
         -2, 0);
     mp.setStateInfo("/jointset/ankle_r/ankle_angle_r/value", {-0.524, 0.698}, 
         -0.5, 0);
@@ -245,7 +263,7 @@ int main() {
     // Set options.
     Options opt;
     // TODO problems with Millard muscles are quite slow
-    opt.actuatorType = "DeGrooteFregly2016Muscle";
+    opt.actuatorType = "torques";
     opt.num_mesh_points = 10;
     opt.constraint_tol = 1e-2;
     opt.convergence_tol = 1e-3;

@@ -1,0 +1,2 @@
+MocoAddExampleCXX(NAME exampleSitToStand)
+
