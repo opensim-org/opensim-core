@@ -79,7 +79,10 @@ end
 
 
 %% Muscle-driven inverse problem
-
+% inverse = MocoInverse();
+% inverse.setModel(getMuscleDrivenModel());
+% inverse.setKinematicsFile('trackingSolution.sto');
+% inverseSolution = inverse.solve();
 
 %% Muscle-driven predictive problem
 
@@ -132,9 +135,9 @@ model.updForceSet().clearAndDestroy();
 model.initSystem();
 
 % Add CoordinateActuators to the model degrees-of-freedom.
-addCoordinateActuator(model, 'hip_flexion_r', 25);
-addCoordinateActuator(model, 'knee_angle_r', 25);
-addCoordinateActuator(model, 'ankle_angle_r', 25);
+addCoordinateActuator(model, 'hip_flexion_r', 250);
+addCoordinateActuator(model, 'knee_angle_r', 250);
+addCoordinateActuator(model, 'ankle_angle_r', 250);
 
 end
 
@@ -163,7 +166,7 @@ import org.opensim.modeling.*;
 model = Model('sitToStand_3dof9musc.osim');
 
 DeGrooteFregly2016Muscle().replaceMuscles(model);
-for m = 0:model.getMuscles()-1
+for m = 0:model.getMuscles().getSize()-1
     musc = model.updMuscles().get(m);
     musc.set_ignore_activation_dynamics(true);
     musc.set_ignore_tendon_compliance(true);
