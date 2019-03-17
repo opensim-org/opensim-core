@@ -14,13 +14,14 @@ problem.setModelCopy(getTorqueDrivenModel());
 problem.addCost(MocoControlCost('effort'));
 
 % Part 1c: Update the underlying MocoCasADiSolver with the new problem.
-solver = MocoCasADiSolver().safeDownCast(moco.updSolver());
+solver = MocoCasADiSolver.safeDownCast(moco.updSolver());
 solver.resetProblem(problem);
 solver.createGuess('bounds'); % This is also the default setting.
 
 % Part 1d: Solve, write the solution to file, and visualize.
 predictSolution = moco.solve();
 predictSolution.write('predictSolution.sto');
+% TODO: Is visualize() commented out only to ease development for now?
 % moco.visualize(predictSolution);
 
 %% Part 2: Torque-driven Tracking Problem
@@ -38,6 +39,7 @@ tracking = MocoStateTrackingCost();
 tracking.setName('tracking');
 tracking.setReferenceFile('predictSolution.sto');
 tracking.setAllowUnusedReferences(true);
+% TODO: Can we avoid these two lines?
 tracking.setWeight('/jointset/patellofemoral_r/knee_angle_r_beta/value', 0);
 tracking.setWeight('/jointset/patellofemoral_r/knee_angle_r_beta/speed', 0);
 problem.addCost(tracking);
@@ -48,7 +50,7 @@ problem.addCost(tracking);
 % problem.addCost(MocoControlCost('effort', 0.01));
 
 % Part 2c: Update the underlying MocoCasADiSolver with the new problem.
-solver = MocoCasADiSolver().safeDownCast(moco.updSolver());
+solver = MocoCasADiSolver.safeDownCast(moco.updSolver());
 solver.resetProblem(problem);
 
 % Part 2d: Set the initial guess using the predictive problem solution.
@@ -60,8 +62,7 @@ trackingSolution.write('trackingSolution.sto');
 % moco.visualize(trackingSolution);
 
 %% Part 3: Compare Predictive Solution to Tracking Solution
-% This is a convenience function provide for you. See below for 
-% implementation.
+% This is a convenience function. See below for its implementation.
 compareSolutions(predictSolution, trackingSolution) 
 
 %% Part 4: Muscle-driven Inverse Problem
@@ -70,6 +71,7 @@ compareSolutions(predictSolution, trackingSolution)
 % inverse.setModel(getMuscleDrivenModel());
 % inverse.setKinematicsFile('trackingSolution.sto');
 % inverseSolution = inverse.solve();
+% TODO: Add an analyze().
 
 %% Part 5: Muscle-driven Predictive Problem (tentative)
 % moco = configureMocoTool();
@@ -196,6 +198,7 @@ end
 
 function compareSolutions(predictSolution, trackingSolution) 
 
+%% States.
 figure(1);
 stateNames = predictSolution.getStateNames();
 numStates = stateNames.size();
@@ -210,6 +213,7 @@ for i = 0:numStates-1
          trackingSolution.getStateMat(stateNames.get(i)), '--b', ...
          'linewidth', 2.5);
     hold off
+    % TODO: These labels are too long. Remove "/jointset/".
     title(stateNames.get(i).toCharArray', 'Interpreter', 'none')
     xlabel('time (s)')
     if contains(stateNames.get(i).toCharArray', 'value')
@@ -222,6 +226,7 @@ for i = 0:numStates-1
     end
 end
 
+%% Controls.
 figure(2);
 controlNames = predictSolution.getControlNames();
 numControls = controlNames.size();
