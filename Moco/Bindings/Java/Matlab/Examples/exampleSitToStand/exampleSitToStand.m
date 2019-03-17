@@ -66,6 +66,10 @@ compareSolutions(predictSolution, trackingSolution)
 
 %% Part 4: Muscle-driven Inverse Problem
 % TODO
+% inverse = MocoInverse();
+% inverse.setModel(getMuscleDrivenModel());
+% inverse.setKinematicsFile('trackingSolution.sto');
+% inverseSolution = inverse.solve();
 
 %% Part 5: Muscle-driven Predictive Problem (tentative)
 % moco = configureMocoTool();

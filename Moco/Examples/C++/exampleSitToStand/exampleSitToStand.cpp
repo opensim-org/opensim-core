@@ -106,7 +106,7 @@ MocoTool configureMocoTool() {
     return moco;
 }
 
-void main() {
+int main() {
 
     //MocoTool moco = configureMocoTool();
     //auto& problem = moco.updProblem();
@@ -161,4 +161,6 @@ void main() {
     MocoSolution musclePredictSolution = mocoMusclePredict.solve();
     musclePredictSolution.write("musclePredictSolution.sto");
     mocoMusclePredict.visualize(musclePredictSolution);
+
+    return EXIT_SUCCESS;
 }
