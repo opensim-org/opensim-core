@@ -101,6 +101,20 @@ void PositionMotion::setPositionForCoordinate(
     }
 }
 
+void PositionMotion::setEnabled(SimTK::State& state, bool enabled) const {
+    for (auto& motion : m_motions) {
+        if (enabled) {
+            motion.enable(state);
+        } else {
+            motion.disable(state);
+        }
+    }
+}
+bool PositionMotion::getEnabled(const SimTK::State& state) const {
+    if (m_motions.size() && !m_motions[0].isDisabled(state)) return true;
+    return false;
+}
+
 std::unique_ptr<PositionMotion> PositionMotion::createFromTable(
         const Model& model, const TimeSeriesTable& table,
         bool allowExtraColumns) {

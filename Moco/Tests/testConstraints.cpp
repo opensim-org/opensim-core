@@ -26,6 +26,7 @@
 #include <OpenSim/Actuators/CoordinateActuator.h>
 #include <OpenSim/Actuators/PointActuator.h>
 #include <OpenSim/Common/Constant.h>
+#include <OpenSim/Common/Sine.h>
 #include <OpenSim/Common/GCVSpline.h>
 #include <OpenSim/Common/LinearFunction.h>
 #include <OpenSim/Common/LogManager.h>
@@ -820,20 +821,20 @@ void testDoublePendulumPrescribedMotion(MocoSolution& couplerSolution,
     // states and the states from the previous test (original and splined).
     // These won't match as well as the position-level values, since velocity-
     // level errors are not enforced in the current problem formulation.
-    SimTK_TEST_EQ_TOL(
-            solution.compareContinuousVariablesRMS(mocoIterSpline,
-                    {{"states", {"/jointset/j0/q0/speed", "/jointset/j1/q1/speed"}}}),
+    SimTK_TEST_EQ_TOL(solution.compareContinuousVariablesRMS(mocoIterSpline,
+                              {{"states", {"/jointset/j0/q0/speed",
+                                                  "/jointset/j1/q1/speed"}}}),
             0, 1e-1);
-    SimTK_TEST_EQ_TOL(
-            solution.compareContinuousVariablesRMS(couplerSolution,
-                    {{"states", {"/jointset/j0/q0/speed", "/jointset/j1/q1/speed"}}}),
+    SimTK_TEST_EQ_TOL(solution.compareContinuousVariablesRMS(couplerSolution,
+                              {{"states", {"/jointset/j0/q0/speed",
+                                                  "/jointset/j1/q1/speed"}}}),
             0, 1e-1);
     // Compare only the actuator controls. These match worse compared to the
     // velocity-level states. It is currently unclear to what extent this is
     // related to velocity-level states not matching well or the how the model
     // constraints are enforced in the current formulation.
     SimTK_TEST_EQ_TOL(solution.compareContinuousVariablesRMS(couplerSolution,
-            {{"controls", {"/tau0", "/tau1"}}}),
+                              {{"controls", {"/tau0", "/tau1"}}}),
             0, 5);
 
     // Run a forward simulation using the solution controls in prescribed
@@ -1119,14 +1120,43 @@ TEMPLATE_TEST_CASE(
     testDoublePendulumPointOnLineJointReaction<TestType>(true, "explicit");
 }
 
-TEMPLATE_TEST_CASE(
-        "DoublePendulumPointOnLineJointReaction implicit with constraint derivatives",
+TEMPLATE_TEST_CASE("DoublePendulumPointOnLineJointReaction implicit with "
+                   "constraint derivatives",
         "[implicit]", MocoCasADiSolver) {
     testDoublePendulumPointOnLineJointReaction<TestType>(true, "implicit");
 }
 
-// TEST_CASE("Prescribed kinematics with kinematic constraints", "") {
-//     Model
-//
-// }
+TEST_CASE("Prescribed kinematics with kinematic constraints", "") {
+std::cout.rdbuf(LogManager::cout.rdbuf());
+std::cerr.rdbuf(LogManager::cerr.rdbuf());
+    Model model = ModelFactory::createPlanarPointMass();
+    CoordinateCouplerConstraint* constraint = new CoordinateCouplerConstraint();
+    Array<std::string> names;
+    names.append("tx");
+    constraint->setIndependentCoordinateNames(names);
+    constraint->setDependentCoordinateName("ty");
+    LinearFunction func(1.0, 0.0);
+    constraint->setFunction(func);
+    model.addConstraint(constraint);
 
+    auto* posmot = new PositionMotion();
+    Sine function = Sine(1.0, 1.0, 0, 1.0);
+    posmot->setPositionForCoordinate(model.getCoordinateSet().get(0), function);
+    posmot->setPositionForCoordinate(model.getCoordinateSet().get(1), function);
+    model.addComponent(posmot);
+
+    model.initSystem();
+
+    MocoTool moco;
+    auto& problem = moco.updProblem();
+    problem.setModelCopy(model);
+
+    // TODO apply prescribed forces.
+    problem.setTimeBounds(0, 3);
+
+    problem.addCost<MocoControlCost>();
+
+    auto& solver = moco.initCasADiSolver();
+    solver.set_dynamics_mode("implicit");
+    moco.solve();
+}

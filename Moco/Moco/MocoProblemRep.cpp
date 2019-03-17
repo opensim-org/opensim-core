@@ -68,15 +68,22 @@ void MocoProblemRep::initialize() {
     int countMotion = 0;
     for (const auto& comp : m_model_base.getComponentList<PositionMotion>()) {
         comp.getName(); // Avoid "unused variable".
-        ++countMotion;
+        if (comp.getEnabled(m_state_base)) {
+            ++countMotion;
+            OPENSIM_THROW_IF(countMotion > 1, Exception,
+                    "The model cannot contain more than 1 PositionMotion.");
+        }
     }
     if (countMotion) {
         m_prescribedKinematics = true;
+        auto& posmotDisabledConstraints = *m_model_disabled_constraints.getComponentList<PositionMotion>().begin();
+        posmotDisabledConstraints.setEnabled(
     } else {
-        // The Acceleration motion is always added if there is no PositionMotion, but is only enabled by solvers
-        // if using an implicit dynamics mode. We use this motion to ensure that
-        // joint reaction forces can be computed correctly from the solver-supplied
-        // UDot (otherwise, Simbody will compute its own "incorrect" UDot using
+        // The Acceleration motion is always added if there is no
+        // PositionMotion, but is only enabled by solvers if using an implicit
+        // dynamics mode. We use this motion to ensure that joint reaction
+        // forces can be computed correctly from the solver-supplied UDot
+        // (otherwise, Simbody will compute its own "incorrect" UDot using
         // forward dynamics).
         auto accelMotionUPtr = make_unique<AccelerationMotion>("motion");
         m_acceleration_motion.reset(accelMotionUPtr.get());

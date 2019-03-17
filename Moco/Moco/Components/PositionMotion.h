@@ -45,6 +45,9 @@ public:
     ~PositionMotion() = default;
     void setPositionForCoordinate(
             const Coordinate& coord, const Function& position);
+    /// Use this to set whether this prescribed motion is used or not.
+    void setEnabled(SimTK::State& state, bool enabled) const;
+    bool getEnabled(const SimTK::State& state) const;
     static std::unique_ptr<PositionMotion> createFromTable(const Model& model,
             const TimeSeriesTable& coords, bool allowExtraColumns = false);
 
