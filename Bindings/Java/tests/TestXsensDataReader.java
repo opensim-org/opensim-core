@@ -10,9 +10,6 @@ class TestXsensDataReader {
         XsensDataReader xsensDataReader = new XsensDataReader(settings);
         StdMapStringAbstractDataTable tables = xsensDataReader.extendRead("");
         TimeSeriesTableVec3 accelTableTyped = XsensDataReader.getLinearAccelerationsTable(tables);
-        System.out.println("Number of Rows, columns, rate:", 
-               accelTableTyped.getNumRows(), accelTableTyped.getNumColumns(), 
-               accelTableTyped.getTableMetaDataString("DataRate"));
         assert accelTableTyped.getNumRows()    == 3369;
         assert accelTableTyped.getNumColumns() == 1;
         assert accelTableTyped.
