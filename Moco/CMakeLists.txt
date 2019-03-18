@@ -1,15 +1,6 @@
 
 set(CMAKE_CXX_STANDARD 11)
 
-find_package(casadi 3.4.4 REQUIRED)
-set_package_properties(casadi PROPERTIES
-        URL https://web.casadi.org
-        TYPE REQUIRED
-        PURPOSE "Differentiation and optimizer interface.")
-get_filename_component(CASADI_BIN_DIR "${casadi_DIR}/../" ABSOLUTE)
-MocoCopyDLLs(DEP_NAME casadi
-    DEP_BIN_DIR "${CASADI_BIN_DIR}" INSTALL_DLLS "${CMAKE_INSTALL_BINDIR}")
-
 # Copy CasADi into our installation.
 install(DIRECTORY "${CASADI_CMAKE_DIR}/../../../"
         DESTINATION "${CMAKE_INSTALL_PREFIX}"

@@ -33,7 +33,7 @@ install_name_tool_change(tropter adolc.2 "@ADOLC_DIR@/lib64")
 install_name_tool_change(tropter ipopt.1 "@IPOPT_LIBDIR@")
 install_name_tool_change(tropter coinmumps.1 "@IPOPT_LIBDIR@")
 install_name_tool_change(tropter coinmetis.1 "@IPOPT_LIBDIR@")
-install_name_tool_change(tropter gfortran.4 /usr/local/opt/gcc/lib/gcc/8)
+install_name_tool_change(tropter gfortran.5 /usr/local/opt/gcc/lib/gcc/8)
 install_name_tool_change(tropter quadmath.0 /usr/local/opt/gcc/lib/gcc/8)
 install_name_tool_add_rpath(tropter)
 
@@ -48,13 +48,13 @@ install_name_tool_delete_rpath(adolc.2 "@ColPack_ROOT_DIR@/lib")
 install_name_tool_id(ipopt.1)
 install_name_tool_change(ipopt.1 coinmumps.1 "@IPOPT_LIBDIR@")
 install_name_tool_change(ipopt.1 coinmetis.1 "@IPOPT_LIBDIR@")
-install_name_tool_change(ipopt.1 gfortran.4 /usr/local/opt/gcc/lib/gcc/8)
+install_name_tool_change(ipopt.1 gfortran.5 /usr/local/opt/gcc/lib/gcc/8)
 install_name_tool_change(ipopt.1 quadmath.0 /usr/local/opt/gcc/lib/gcc/8)
 
 # coinmumps
 install_name_tool_id(coinmumps.1)
 install_name_tool_change(coinmumps.1 coinmetis.1 "@IPOPT_LIBDIR@")
-install_name_tool_change(coinmumps.1 gfortran.4 /usr/local/opt/gcc/lib/gcc/8)
+install_name_tool_change(coinmumps.1 gfortran.5 /usr/local/opt/gcc/lib/gcc/8)
 install_name_tool_change(coinmumps.1 gcc_s.1 /usr/local/lib/gcc/8)
 install_name_tool_change(coinmumps.1 quadmath.0 /usr/local/opt/gcc/lib/gcc/8)
 install_name_tool_add_rpath(coinmumps.1)
@@ -70,11 +70,11 @@ install_name_tool_add_rpath(coinmetis.1)
 # install_name_tool_id(ColPack.0)
 
 # gfortran
-install_name_tool_id(gfortran.4)
-install_name_tool_change(gfortran.4 gcc_s.1 /usr/local/lib/gcc/8)
-install_name_tool_change(gfortran.4 quadmath.0
+install_name_tool_id(gfortran.5)
+install_name_tool_change(gfortran.5 gcc_s.1 /usr/local/lib/gcc/8)
+install_name_tool_change(gfortran.5 quadmath.0
         /usr/local/Cellar/gcc/8.2.0/lib/gcc/8)
-install_name_tool_add_rpath(gfortran.4)
+install_name_tool_add_rpath(gfortran.5)
 
 # gcc_s
 install_name_tool_id(gcc_s.1)

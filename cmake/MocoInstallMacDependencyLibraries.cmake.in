@@ -33,6 +33,15 @@ endmacro()
 
 
 install_name_tool_change(osimMoco adolc.2 "@ADOLC_DIR@/lib64")
+install_name_tool_change(casadi_nlpsol_ipopt.3.5 ipopt.1 "@IPOPT_LIBDIR@")
+install_name_tool_change(casadi_nlpsol_ipopt.3.5 coinmumps.1 "@IPOPT_LIBDIR@")
+install_name_tool_change(casadi_nlpsol_ipopt.3.5 coinmetis.1 "@IPOPT_LIBDIR@")
+install_name_tool_change(casadi_nlpsol_ipopt.3.5 gfortran.5 /usr/local/opt/gcc/lib/gcc/8)
+install_name_tool_change(casadi_nlpsol_ipopt.3.5 quadmath.0 /usr/local/opt/gcc/lib/gcc/8)
+install_name_tool_add_rpath(casadi.3.5)
+get_filename_component(CASADI_LIBDIR "@CASADI_LIBRARY_DIRS@" ABSOLUTE)
+install_name_tool_delete_rpath(casadi.3.5 "${CASADI_LIBDIR}")
+
 
 
 

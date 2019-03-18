@@ -143,6 +143,15 @@ if(MOCO_WITH_TROPTER)
     add_subdirectory(tropter)
 endif()
 
+find_package(casadi 3.4.4 REQUIRED)
+set_package_properties(casadi PROPERTIES
+        URL https://web.casadi.org
+        TYPE REQUIRED
+        PURPOSE "Differentiation and optimizer interface.")
+get_filename_component(CASADI_BIN_DIR "${casadi_DIR}/../" ABSOLUTE)
+MocoCopyDLLs(DEP_NAME casadi
+        DEP_BIN_DIR "${CAADI_BIN_DIR}" INSTALL_DLLS "${CMAKE_INSTALL_BINDIR}")
+
 add_subdirectory(Moco)
 
 add_subdirectory(cmake)
