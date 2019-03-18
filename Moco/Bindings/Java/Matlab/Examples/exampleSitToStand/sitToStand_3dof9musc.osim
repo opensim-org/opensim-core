@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <OpenSimDocument Version="40000">
-	<Model name="FullBodyModel_MuscleActuatedLowerLimb_TorqueActuatedUpperBody">
+	<Model name="sitToStand">
 		<defaults>
 			<ControlLinear name="default">
 				<is_model_control>true</is_model_control>
@@ -122,7 +122,7 @@
 		<!--Acceleration due to gravity, expressed in ground.-->
 		<gravity>0 -9.8066499999999994 0</gravity>
 		<!--Credits (e.g., model author names) associated with the model.-->
-		<credits>Rajagopal 2016 model reduced to 18 muscles, using max isometric forces from Carmichael Ong's "gait8dof18musc."</credits>
+		<credits>Rajagopal 2016 model reduced to 3 DOFS and 9 muscles, using max isometric forces from Carmichael Ong's "gait8dof18musc."</credits>
 		<!--Publications and references associated with the model.-->
 		<publications></publications>
 		<!--Units for all lengths.-->

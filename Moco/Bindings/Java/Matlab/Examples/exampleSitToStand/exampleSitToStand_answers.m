@@ -1,4 +1,4 @@
-function exampleSitToStand
+function exampleSitToStand_answers
 
 %% Part 0: Load the OpenSim and Moco libraries.
 import org.opensim.modeling.*;
@@ -6,41 +6,66 @@ import org.opensim.modeling.*;
 %% Part 1: Torque-driven Predictive Problem
 % Part 1a: Get a pre-configured MocoTool and set a torque-driven model on
 % the underlying MocoProblem.
-
+moco = configureMocoTool();
+problem = moco.updProblem();
+problem.setModelCopy(getTorqueDrivenModel());
 
 % Part 1b: Add a MocoControlCost to the problem.
-
+problem.addCost(MocoControlCost('effort'));
 
 % Part 1c: Update the underlying MocoCasADiSolver with the new problem.
-
+solver = MocoCasADiSolver.safeDownCast(moco.updSolver());
+solver.resetProblem(problem);
+solver.createGuess('bounds'); % This is also the default setting.
 
 % Part 1d: Solve, write the solution to file, and visualize.
-
+predictSolution = moco.solve();
+predictSolution.write('predictSolution.sto');
+moco.visualize(predictSolution);
 
 %% Part 2: Torque-driven Tracking Problem
 % Part 2a: Get a fresh MocoTool and set the torque-driven model on the
 % problem.
-
+moco = configureMocoTool();
+problem = moco.updProblem();
+problem.setModelCopy(getTorqueDrivenModel());
 
 % Part 2b: Add a MocoStateTrackingCost() to the problem using the states
 % from the predictive problem, and set weights to zero for states associated 
 % with the dependent coordinate in the model's knee CoordinateCoupler
 % constraint.
-
+tracking = MocoStateTrackingCost();
+tracking.setName('tracking');
+tracking.setReferenceFile('predictSolution.sto');
+tracking.setAllowUnusedReferences(true);
+tracking.setWeight('/jointset/patellofemoral_r/knee_angle_r_beta/value', 0);
+tracking.setWeight('/jointset/patellofemoral_r/knee_angle_r_beta/speed', 0);
+problem.addCost(tracking);
 
 % Part 2c: Update the underlying MocoCasADiSolver with the new problem.
-
+solver = MocoCasADiSolver.safeDownCast(moco.updSolver());
+solver.resetProblem(problem);
 
 % Part 2d: Set the initial guess using the predictive problem solution.
-
+solver.setGuess(predictSolution);
 
 % Part 2e: Solve, write the solution to file, and visualize.
-
+trackingSolution = moco.solve();
+trackingSolution.write('trackingSolution.sto');
+moco.visualize(trackingSolution);
 
 %% Part 3: Compare Predictive and Tracking Solutions
 % This is a convenience function provided for you. See below for the 
 % implementation details.
 compareSolutions(predictSolution, trackingSolution) 
+
+%% Part 4: Muscle-driven Inverse Problem
+% TODO
+% inverse = MocoInverse();
+% inverse.setModel(getMuscleDrivenModel());
+% inverse.setKinematicsFile('trackingSolution.sto');
+% inverseSolution = inverse.solve();
+% TODO: Add an analyze().
 
 end
 
@@ -163,8 +188,8 @@ for i = 0:numStates-1
          trackingSolution.getStateMat(stateNames.get(i)), '--b', ...
          'linewidth', 2.5);
     hold off
-    stateName = string(stateNames.get(i).toCharArray');
-    title(stateName(10:end), 'Interpreter', 'none')
+    stateName = stateNames.get(i).toCharArray';
+    title(stateName(11:end), 'Interpreter', 'none')
     xlabel('time (s)')
     if contains(stateName, 'value')
         ylabel('position (rad)')

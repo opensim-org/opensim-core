@@ -78,8 +78,8 @@ MocoTool configureMocoTool() {
     auto& solver = moco.initCasADiSolver();
     solver.set_num_mesh_points(25);
     solver.set_dynamics_mode("implicit"); // default: "explicit"
-    solver.set_optim_convergence_tolerance(1e-4);
-    solver.set_optim_constraint_tolerance(1e-4);
+    solver.set_optim_convergence_tolerance(1e-6);
+    solver.set_optim_constraint_tolerance(1e-6);
     solver.set_transcription_scheme("hermite-simpson");
     solver.set_enforce_constraint_derivatives(true);
     solver.set_optim_hessian_approximation("limited-memory");
@@ -97,11 +97,11 @@ MocoTool configureMocoTool() {
         {-0.5, 0.7}, -0.5, 0);
 
     problem.setStateInfo("/jointset/hip_r/hip_flexion_r/speed",
-        {-50, 50}, 0, 0);
+        {-50, 50}, 0, {-50, 50});
     problem.setStateInfo("/jointset/knee_r/knee_angle_r/speed",
-        {-50, 50}, 0, 0);
+        {-50, 50}, 0, {-50, 50});
     problem.setStateInfo("/jointset/ankle_r/ankle_angle_r/speed",
-        {-50, 50}, 0, 0);
+        {-50, 50}, 0, {-50, 50});
 
     return moco;
 }
