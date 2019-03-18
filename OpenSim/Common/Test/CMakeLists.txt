@@ -5,6 +5,7 @@ file(GLOB TRC_TEST_FILES "${CMAKE_SOURCE_DIR}/Applications/*/test/*.trc")
 file(GLOB MOT_TEST_FILES "${CMAKE_SOURCE_DIR}/Applications/*/test/*.mot")
 file(GLOB C3D_TEST_FILES "${CMAKE_SOURCE_DIR}/OpenSim/Tests/shared/*.c3d")
 file(GLOB XSENS_TEST_FILES "${CMAKE_SOURCE_DIR}/OpenSim/Tests/shared/IMUData/Xsens/*.txt")
+file(GLOB APDM_TEST_FILES "${CMAKE_SOURCE_DIR}/OpenSim/Tests/shared/IMUData/APDM/*.csv")
 
 list(APPEND TRC_TEST_FILES
     "${OPENSIM_SHARED_TEST_FILES_DIR}/gait10dof18musc_walk_CRLF_line_ending.trc")
