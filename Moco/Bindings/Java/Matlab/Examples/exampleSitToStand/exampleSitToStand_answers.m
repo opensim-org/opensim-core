@@ -188,8 +188,8 @@ for i = 0:numStates-1
          trackingSolution.getStateMat(stateNames.get(i)), '--b', ...
          'linewidth', 2.5);
     hold off
-    stateName = string(stateNames.get(i).toCharArray');
-    title(stateName(10:end), 'Interpreter', 'none')
+    stateName = stateNames.get(i).toCharArray';
+    title(stateName(11:end), 'Interpreter', 'none')
     xlabel('time (s)')
     if contains(stateName, 'value')
         ylabel('position (rad)')

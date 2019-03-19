@@ -42,14 +42,6 @@ import org.opensim.modeling.*;
 % implementation details.
 compareSolutions(predictSolution, trackingSolution) 
 
-%% Part 4: Muscle-driven Inverse Problem
-% TODO
-% inverse = MocoInverse();
-% inverse.setModel(getMuscleDrivenModel());
-% inverse.setKinematicsFile('trackingSolution.sto');
-% inverseSolution = inverse.solve();
-% TODO: Add an analyze().
-
 end
 
 function [moco] = configureMocoTool()
