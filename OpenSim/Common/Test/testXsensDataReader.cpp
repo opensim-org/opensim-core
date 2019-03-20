@@ -49,7 +49,7 @@ int main() {
         readerSettings.print("reader2xml.xml");
         // read xml we wrote into a new XsensDataReader to readTrial
         XsensDataReader reconstructFromXML(XsensDataReaderSettings("reader2xml.xml"));
-        DataAdapter::OutputTables tables = reconstructFromXML.extendRead("");
+        DataAdapter::OutputTables tables = reconstructFromXML.extendRead("./");
         std::string folder = readerSettings.get_data_folder();
         std::string trial = readerSettings.get_trial_prefix();
         // Write tables to sto files
@@ -109,7 +109,7 @@ int main() {
         readOrientationsOnly.append_ExperimentalSensors(nextSensor);
         readOrientationsOnly.updProperty_trial_prefix() = "MT_012005D6-000_sit_to_stand-";
         DataAdapter::OutputTables tables2 = 
-            XsensDataReader(readOrientationsOnly).extendRead("");
+            XsensDataReader(readOrientationsOnly).extendRead("./");
         const TimeSeriesTableVec3& accelTable2 = 
             XsensDataReader::getLinearAccelerationsTable(tables2);
         ASSERT(accelTable2.getNumRows() ==0);
