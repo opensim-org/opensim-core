@@ -16,7 +16,7 @@ problem.addCost(MocoControlCost('effort'));
 % Part 1c: Update the underlying MocoCasADiSolver with the new problem.
 solver = MocoCasADiSolver.safeDownCast(moco.updSolver());
 solver.resetProblem(problem);
-solver.createGuess('bounds'); % This is also the default setting.
+solver.setGuess('bounds'); % This is also the default setting.
 
 % Part 1d: Solve, write the solution to file, and visualize.
 predictSolution = moco.solve();
