@@ -26,8 +26,8 @@
 
 namespace OpenSim {
 /**
-* A class encapsulating the data about ExperimentalSensor (IMU)
-*
+* A class representing the experimental sensor, such as IMU, and its association
+* to a model (component) in OpenSim.
 *
 * @author Ayman Habib
 */
@@ -36,7 +36,8 @@ class OSIMCOMMON_API ExperimentalSensor : public Object {
 OpenSim_DECLARE_CONCRETE_OBJECT(ExperimentalSensor, Object);
 public:
     OpenSim_DECLARE_PROPERTY(name_in_model, std::string,
-        "Name of PhysicalFrame representing the imu sensor in Model, will be used as data table column label.");
+        "The name of the PhysicalFrame representing a sensor (IMU) in Model." 
+        "When loading sensor data, it will be used as a table column label.");
 public:
     ExperimentalSensor(const std::string&  sensorName, const std::string& nameInModel) {
         constructProperties();

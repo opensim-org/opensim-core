@@ -162,16 +162,15 @@ XsensDataReader::extendRead(const std::string& folderName) const {
         }
     }
     // Trim Matrices in use to actual data and move into tables
-    int actualSize = rowNumber;
-    times.resize(actualSize);
+    times.resize(rowNumber);
     // Repeat for Data matrices in use and create Tables from them or size 0 for empty
-    linearAccelerationData.resizeKeep(foundLinearAccelerationData? actualSize: 0, 
+    linearAccelerationData.resizeKeep(foundLinearAccelerationData? rowNumber : 0,
         n_imus);
-    magneticHeadingData.resizeKeep(foundMagneticHeadingData?actualSize: 0, 
+    magneticHeadingData.resizeKeep(foundMagneticHeadingData? rowNumber : 0,
             n_imus);
-    angularVelocityData.resizeKeep(foundAngularVelocityData?actualSize:0, 
+    angularVelocityData.resizeKeep(foundAngularVelocityData? rowNumber :0,
         n_imus);
-    rotationsData.resizeKeep(actualSize, n_imus);
+    rotationsData.resizeKeep(rowNumber, n_imus);
     // Now create the tables from matrices
     // Create 4 tables for Rotations, LinearAccelerations, AngularVelocity, MagneticHeading
     // Tables could be empty if data is not present in file(s)

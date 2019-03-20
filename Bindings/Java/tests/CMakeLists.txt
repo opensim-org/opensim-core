@@ -63,6 +63,10 @@ macro(OpenSimAddJavaTest TESTNAME)
     file(COPY ${FILETOCOPY}
          DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/TestC3DFileAdapter")
     string(CONCAT FILETOCOPY
+          "${CMAKE_SOURCE_DIR}/OpenSim/Tests/shared/IMUData/Xsens/MT_012005D6_031-000_00B421AF.txt")
+    file(COPY ${FILETOCOPY}
+         DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/TestXsensDataReader")
+    string(CONCAT FILETOCOPY
            "${CMAKE_SOURCE_DIR}/Bindings/Java/Matlab/examples/testData/"
            "Subject01/IKSetup/subject01_Setup_IK_generic.xml")
     file(COPY ${FILETOCOPY}
@@ -139,7 +143,7 @@ if(WITH_BTK)
     OpenSimAddJavaTest(TestC3DFileAdapter)
 endif()
 OpenSimAddJavaTest(TestReporter)
-
+OpenSimAddJavaTest(TestXsensDataReader)
 
 
 # This line must appear after all tests are added.
