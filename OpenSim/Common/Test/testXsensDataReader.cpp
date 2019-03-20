@@ -96,11 +96,11 @@ int main() {
             0.830996,0.416311,-0.368959 };
         SimTK::Rotation rot;
         rot.setRotationFromQuaternion(quat);
-        SimTK::Mat33 mat33 = rot.asMat33();
-        tolerance = 1e-7;
+        tolerance = 1e-6; // empirically determined due to conversion back and forth
         for (int i = 0; i < 3; ++i){
             for (int j = 0; j < 3; ++j) {
-                ASSERT_EQUAL(rotationVectorInFile[i * 3 + j], mat33[i][j], tolerance);
+                // Matrix is stored column major
+                ASSERT_EQUAL(rotationVectorInFile[i * 3 + j], rot[j][i], tolerance);
             }
         }
         // Now test the case where only orientation data is available, rest is missing
