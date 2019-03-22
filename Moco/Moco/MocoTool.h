@@ -124,10 +124,15 @@ public:
     ///     the provided iterate.
     void visualize(const MocoIterate& it) const;
 
-    // TODO
+    /// Calculate the requested outputs using the model in the problem and the
+    /// states and controls in the MocoIterate.
+    /// The output paths can be regular expressions. For example,
+    /// ".*activation" gives the activation of all muscles.
+    /// Constraints are not enforced but prescribed motion (e.g.,
+    /// PositionMotion) is.
+    /// @note Parameters in the MocoIterate are **not** applied to the model.
     TimeSeriesTable analyze(const MocoIterate& it,
             std::vector<std::string> outputPaths) const;
-
 
     /// @name Using other solvers
     /// @{
