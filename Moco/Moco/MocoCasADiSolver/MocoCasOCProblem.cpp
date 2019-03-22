@@ -175,7 +175,8 @@ MocoCasOCProblem::MocoCasOCProblem(const MocoCasADiSolver& mocoCasADiSolver,
 
                     // Add velocity correction variables if enforcing
                     // constraint equation derivatives.
-                    if (enforceConstraintDerivs) {
+                    if (enforceConstraintDerivs &&
+                            !isPrescribedKinematics()) {
                         // TODO this naming convention assumes that the
                         // associated Lagrange multiplier name begins with
                         // "lambda", which may change in the future.

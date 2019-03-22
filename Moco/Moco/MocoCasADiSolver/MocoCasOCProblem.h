@@ -322,6 +322,7 @@ private:
             const casadi::DM& multibody_states, const casadi::DM& slacks,
             const casadi::DM& parameters,
             casadi::DM& velocity_correction) const override {
+        if (isPrescribedKinematics()) return;
         auto mocoProblemRep = m_jar->take();
 
         const auto& modelBase = mocoProblemRep->getModelBase();

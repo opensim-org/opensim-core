@@ -192,7 +192,8 @@ void Transcription::transcribe() {
     m_xdot(Slice(0, NQ), Slice()) = u;
 
     if (m_problem.getEnforceConstraintDerivatives() &&
-            m_numPointsIgnoringConstraints) {
+            m_numPointsIgnoringConstraints &&
+            !m_problem.isPrescribedKinematics()) {
         // In Hermite-Simpson, we must compute a velocity correction at all mesh
         // interval midpoints and update qdot. See MocoCasADiVelocityCorrection
         // for more details. This function only takes multibody state variables:
