@@ -12,6 +12,19 @@ const std::string APDMDataReader::LinearAccelerations{ "linear_accelerations" };
 const std::string APDMDataReader::MagneticHeading{ "magnetic_heading" };
 const std::string APDMDataReader::AngularVelocity{ "angular_velocity" };
 
+const std::vector<std::string> APDMDataReader::acceleration_labels{
+        "/Acceleration/X", "/Acceleration/Y", "/Acceleration/Z"
+}; 
+const std::vector<std::string> APDMDataReader::angular_velocity_labels{
+    "/Angular Velocity/X", "/Angular Velocity/Y","/Angular Velocity/Z"
+};
+const std::vector<std::string> APDMDataReader::magnetic_heading_labels{
+    "/Magnetic Field/X", "/Magnetic Field/Y","/Magnetic Field/Z"
+};
+const std::vector<std::string> APDMDataReader::orientation_labels{
+    "/Orientation/Scalar", "/Orientation/X", "/Orientation/Y","/Orientation/Z"
+};
+
 APDMDataReader* APDMDataReader::clone() const {
     return new APDMDataReader{*this};
 }
@@ -35,10 +48,10 @@ APDMDataReader::extendRead(const std::string& fileName) const {
     // files specified by prefix + file name exist
     double dataRate = SimTK::NaN;
     int packetCounterIndex = -1;
-    int accIndex = -1;
-    int gyroIndex = -1;
-    int magIndex = -1;
-    int rotationsIndex = -1;
+    std::vector<int> accIndex;
+    std::vector<int>  gyroIndex;
+    std::vector<int>  magIndex;
+    std::vector<int>  orientationsIndex;
 
     int n_imus = _settings.getProperty_ExperimentalSensors().size();
     int last_size = 1024;
@@ -68,17 +81,27 @@ APDMDataReader::extendRead(const std::string& fileName) const {
     // Line 3, find columns for IMUs
     std::getline(in_stream, line);
     tokens = FileAdapter::tokenize(line, ",");
-    //OPENSIM_THROW_IF((tokens[0] != "Time"), UnexpectedColumnLabel);
+
+    for (int imu_index = 0; imu_index < n_imus; ++imu_index) {
+        std::string sensorName = _settings.get_ExperimentalSensors(imu_index).getName();
+        labels.push_back(_settings.get_ExperimentalSensors(imu_index).get_name_in_model());
+        find_start_column(tokens, APDMDataReader::acceleration_labels, sensorName, accIndex);
+        find_start_column(tokens, APDMDataReader::angular_velocity_labels, sensorName, gyroIndex);
+        find_start_column(tokens, APDMDataReader::magnetic_heading_labels, sensorName, magIndex);
+        find_start_column(tokens, APDMDataReader::orientation_labels, sensorName, orientationsIndex);
+    }
     // Will create a table to map 
     // internally keep track of what data was found in input files
-    bool foundLinearAccelerationData = (accIndex != -1);
-    bool foundMagneticHeadingData = (magIndex != -1);
-    bool foundAngularVelocityData = (gyroIndex != -1);
+    bool foundLinearAccelerationData = accIndex.size()>0;
+    bool foundMagneticHeadingData = magIndex.size()>0;
+    bool foundAngularVelocityData = gyroIndex.size()>0;
 
     // If no Orientation data is available or dataRate can't be deduced we'll abort completely
-    OPENSIM_THROW_IF((rotationsIndex == -1 || SimTK::isNaN(dataRate)),
+    OPENSIM_THROW_IF((orientationsIndex.size() == 0 || SimTK::isNaN(dataRate)),
         TableMissingHeader);
-    
+    // Line 4, Units unused
+    std::getline(in_stream, line);
+
     // For all tables, will create row, stitch values from different sensors then append
     bool done = false;
     double time = 0.0;
@@ -94,36 +117,30 @@ APDMDataReader::extendRead(const std::string& fileName) const {
             magneto_row_vector{ n_imus, SimTK::Vec3(SimTK::NaN) };
         TimeSeriesTableVec3::RowVector
             gyro_row_vector{ n_imus, SimTK::Vec3(SimTK::NaN) };
-        // Cycle through the filles collating values
-        int imu_index = 0;
-        // parse gyro info from imuStream
-        std::vector<std::string> nextRow = FileAdapter::getNextLine(in_stream, "\t\r");
+        std::vector<std::string> nextRow = FileAdapter::getNextLine(in_stream, ",");
         if (nextRow.empty()) {
             done = true;
             break;
         }
-        if (foundLinearAccelerationData)
-            accel_row_vector[imu_index] = SimTK::Vec3(std::stod(nextRow[accIndex]),
-                std::stod(nextRow[accIndex + 1]), std::stod(nextRow[accIndex + 2]));
-        if (foundMagneticHeadingData)
-            magneto_row_vector[imu_index] = SimTK::Vec3(std::stod(nextRow[magIndex]),
-                std::stod(nextRow[magIndex + 1]), std::stod(nextRow[magIndex + 2]));
-        if (foundAngularVelocityData)
-            gyro_row_vector[imu_index] = SimTK::Vec3(std::stod(nextRow[gyroIndex]),
-                std::stod(nextRow[gyroIndex + 1]), std::stod(nextRow[gyroIndex + 2]));
-        // Create Mat33 then convert into Quaternion
-        SimTK::Mat33 imu_matrix{ SimTK::NaN };
-        int matrix_entry_index = 0;
-        for (int mcol = 0; mcol < 3; mcol++) {
-            for (int mrow = 0; mrow < 3; mrow++) {
-                imu_matrix[mrow][mcol] = std::stod(nextRow[rotationsIndex + matrix_entry_index]);
-                matrix_entry_index++;
-            }
+        // Cycle through the filles collating values
+        for (int imu_index = 0; imu_index < n_imus; ++imu_index) {
+            // parse gyro info from imuStream
+           if (foundLinearAccelerationData)
+                accel_row_vector[imu_index] = SimTK::Vec3(std::stod(nextRow[accIndex[imu_index]]),
+                    std::stod(nextRow[accIndex[imu_index] + 1]), std::stod(nextRow[accIndex[imu_index] + 2]));
+            if (foundMagneticHeadingData)
+                magneto_row_vector[imu_index] = SimTK::Vec3(std::stod(nextRow[magIndex[imu_index]]),
+                    std::stod(nextRow[magIndex[imu_index] + 1]), std::stod(nextRow[magIndex[imu_index] + 2]));
+            if (foundAngularVelocityData)
+                gyro_row_vector[imu_index] = SimTK::Vec3(std::stod(nextRow[gyroIndex[imu_index]]),
+                    std::stod(nextRow[gyroIndex[imu_index] + 1]), std::stod(nextRow[gyroIndex[imu_index] + 2]));
+            // Create Quaternion from values in file, check assumptions
+            orientation_row_vector[imu_index] = 
+                SimTK::Quaternion(std::stod(nextRow[orientationsIndex[imu_index]]),
+                    std::stod(nextRow[orientationsIndex[imu_index] + 1]),
+                    std::stod(nextRow[orientationsIndex[imu_index] + 2]),
+                    std::stod(nextRow[orientationsIndex[imu_index] + 3]));
         }
-        // Convert imu_matrix to Quaternion
-        SimTK::Rotation imu_rotation{ imu_matrix };
-        orientation_row_vector[imu_index] = imu_rotation.convertRotationToQuaternion();
-
         if (done) 
             break;
         // append to the tables
@@ -194,4 +211,32 @@ APDMDataReader::extendRead(const std::string& fileName) const {
     return tables;
 }
 
+void APDMDataReader::find_start_column(std::vector<std::string> tokens, 
+    std::vector<std::string> search_labels,
+    const std::string& sensorName,
+    std::vector<int>& indices) const {
+    // Search for "sensorName/{search_labels} in tokens, append result to indices if found"
+    std::string firstLabel = sensorName + search_labels[0];
+    // look for first label, when found check/confirm the rest. Out of order is not supported
+    int found_index = -1;
+    std::vector<std::string>::iterator it = std::find(tokens.begin(), tokens.end(), firstLabel);
+    if (it != tokens.end()) {
+        found_index = static_cast<int>(std::distance(tokens.begin(), it));
+        // now check the following indices for match with remaining search_labels 
+        bool match = true;
+        for (int remaining = 1; remaining < search_labels.size() && match; remaining++) {
+            match = tokens[found_index + remaining].
+                compare(sensorName + search_labels[remaining]) == 0;
+        }
+        if (match) {
+            indices.push_back(found_index);
+                return;
+            }
+            else { // first label found but the remaining didn't. Warn
+                return;
+            }
+        }
+    return; // not found
+    }
 }
+

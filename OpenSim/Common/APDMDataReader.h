@@ -57,6 +57,12 @@ public:
     static const std::string MagneticHeading;  // name of table for data from Magnetometer (Magnetic Heading)
     static const std::string AngularVelocity;  // name of table for gyro data (AngularVelocity)
 
+    // Ordered labels provided by APDM
+    static const std::vector<std::string> acceleration_labels;
+    static const std::vector<std::string> angular_velocity_labels;
+    static const std::vector<std::string> magnetic_heading_labels;
+    static const std::vector<std::string> orientation_labels;
+
     /** Typically, APDM can export a trial as one .h5 file (binary that we can't parse as of now) or as .csv
     ASCII text files that are comma delimited, one per sensor.
     The function below read the csv file . It produces a 
@@ -109,7 +115,11 @@ private:
      * This data member encapsulates all the serializable settings for the Reader;
      */
     APDMDataReaderSettings _settings;
-
+    // Utility function to locate data based on labels
+    void find_start_column(std::vector<std::string> tokens, 
+        std::vector<std::string> search_labels,
+        const std::string& sensorName,
+        std::vector<int>& indices) const;
 };
 
 } // OpenSim namespace
