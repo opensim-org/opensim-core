@@ -1,9 +1,7 @@
-#ifndef MOCO_OSIMMOCO_H
-#define MOCO_OSIMMOCO_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: osimMoco.h                                                   *
+ * OpenSim Moco: MocoSumSquaredStateCost.cpp                                  *
  * -------------------------------------------------------------------------- *
- * Copyright (c) 2017 Stanford University and the Authors                     *
+ * Copyright (c) 2019 Stanford University and the Authors                     *
  *                                                                            *
  * Author(s): Christopher Dembia                                              *
  *                                                                            *
@@ -17,35 +15,22 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
+#include "MocoSumSquaredStateCost.h"
+#include <OpenSim/Simulation/Model/Model.h>
 
-#include "MocoWeightSet.h"
-#include "MocoCost/MocoStateTrackingCost.h"
-#include "MocoCost/MocoMarkerTrackingCost.h"
-#include "MocoCost/MocoMarkerEndpointCost.h"
-#include "MocoCost/MocoControlCost.h"
-#include "MocoCost/MocoSumSquaredStateCost.h"
-#include "MocoCost/MocoJointReactionNormCost.h"
-#include "MocoIterate.h"
-#include "MocoBounds.h"
-#include "MocoProblem.h"
-#include "MocoSolver.h"
-#include "MocoTool.h"
-#include "MocoTropterSolver.h"
-#include "MocoUtilities.h"
-#include "MocoParameter.h"
-#include "MocoConstraint.h"
+using namespace OpenSim;
 
-#include "MocoInverse.h"
+MocoSumSquaredStateCost::MocoSumSquaredStateCost() {
+    constructProperties();
+}
 
-#include "Components/PositionMotion.h"
-#include "Components/ActivationCoordinateActuator.h"
-#include "Components/StationPlaneContactForce.h"
-#include "Components/ModelFactory.h"
-#include "Components/DeGrooteFregly2016Muscle.h"
-#include "Components/DiscreteForces.h"
+void MocoSumSquaredStateCost::constructProperties() {
+}
 
-#include "MocoCasADiSolver/MocoCasADiSolver.h"
+void MocoSumSquaredStateCost::initializeOnModelImpl(const Model& model) const {
+}
 
-#include "RegisterTypes_osimMoco.h"
-
-#endif // MOCO_OSIMMOCO_H
+void MocoSumSquaredStateCost::calcIntegralCostImpl(const SimTK::State& state,
+        double& integrand) const {
+    integrand = state.getY().normSqr();
+}

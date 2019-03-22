@@ -10,6 +10,7 @@
 #include <Moco/MocoCost/MocoMarkerTrackingCost.h>
 #include <Moco/MocoCost/MocoMarkerEndpointCost.h>
 #include <Moco/MocoCost/MocoControlCost.h>
+#include <Moco/MocoCost/MocoSumSquaredStateCost.h>
 #include <Moco/MocoCost/MocoJointReactionNormCost.h>
 #include <Moco/MocoBounds.h>
 #include <Moco/MocoProblem.h>

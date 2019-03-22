@@ -10,6 +10,7 @@ typedef SimTK::RowVector_<double> RowVector;
 %include <Moco/MocoCost/MocoMarkerTrackingCost.h>
 %include <Moco/MocoCost/MocoMarkerEndpointCost.h>
 %include <Moco/MocoCost/MocoControlCost.h>
+%include <Moco/MocoCost/MocoSumSquaredStateCost.h>
 %include <Moco/MocoCost/MocoJointReactionNormCost.h>
 
 

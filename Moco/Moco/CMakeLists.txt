@@ -25,6 +25,8 @@ set(MOCO_SOURCES
         MocoWeightSet.h
         MocoCost/MocoStateTrackingCost.h
         MocoCost/MocoStateTrackingCost.cpp
+        MocoCost/MocoSumSquaredStateCost.h
+        MocoCost/MocoSumSquaredStateCost.cpp
         MocoCost/MocoControlCost.h
         MocoCost/MocoControlCost.cpp
         MocoCost/MocoJointReactionNormCost.h
@@ -80,7 +82,10 @@ set(MOCO_SOURCES
         MocoCasADiSolver/CasOCTrapezoidal.cpp
         MocoCasADiSolver/CasOCHermiteSimpson.h
         MocoCasADiSolver/CasOCHermiteSimpson.cpp
-        MocoCasADiSolver/CasOCIterate.h MocoInverse.cpp MocoInverse.h)
+        MocoCasADiSolver/CasOCIterate.h
+        MocoInverse.h
+        MocoInverse.cpp
+        )
 if(MOCO_WITH_TROPTER)
     list(APPEND MOCO_SOURCES
             tropter/TropterProblem.h
