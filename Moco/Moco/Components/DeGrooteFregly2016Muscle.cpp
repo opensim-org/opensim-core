@@ -35,8 +35,11 @@ void DeGrooteFregly2016Muscle::constructProperties() {
     constructProperty_deactivation_time_constant(0.060);
     constructProperty_default_activation(0.5);
 
-    constructProperty_tendon_strain_at_one_norm_force(0.049);
+    constructProperty_active_force_width_scale(1.0);
     constructProperty_fiber_damping(0.01);
+    constructProperty_tendon_strain_at_one_norm_force(0.049);
+    
+    constructProperty_ignore_passive_fiber_force(false);
 }
 
 void DeGrooteFregly2016Muscle::extendFinalizeFromProperties() {
@@ -73,6 +76,12 @@ void DeGrooteFregly2016Muscle::extendFinalizeFromProperties() {
             "%s: default_activation must be greater than zero, "
             "but it is %g.",
             getName().c_str(), get_default_activation());
+
+    SimTK_ERRCHK2_ALWAYS(get_active_force_width_scale() >= 1,
+            "DeGrooteFregly2016Muscle::extendFinalizeFromProperties",
+            "%s: active_force_width_scale must be greater than or equal to 1.0, "
+            "but it is %g.",
+            getName().c_str(), get_active_force_width_scale());
 
     SimTK_ERRCHK2_ALWAYS(get_fiber_damping() >= 0,
             "DeGrooteFregly2016Muscle::extendFinalizeFromProperties",
@@ -563,4 +572,5 @@ void DeGrooteFregly2016Muscle::replaceMuscles(
     }
 
     model.finalizeFromProperties();
+    model.finalizeConnections();
 }

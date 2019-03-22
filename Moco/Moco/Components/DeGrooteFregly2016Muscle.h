@@ -81,10 +81,17 @@ public:
             "Value of activation in the default state returned by "
             "initSystem().");
 
+    OpenSim_DECLARE_PROPERTY(active_force_width_scale, double,
+            "Scale factor for the width of the active force-length curve. "
+            "Larger values make the curve wider. "
+            "(default: 1.0).")
     OpenSim_DECLARE_PROPERTY(fiber_damping, double,
             "The linear damping of the fiber (default: 0.01).");
     OpenSim_DECLARE_PROPERTY(tendon_strain_at_one_norm_force, double,
             "Tendon strain at a tension of 1 normalized force.");
+
+    OpenSim_DECLARE_PROPERTY(ignore_passive_fiber_force, bool,
+            "Make the passive fiber force 0 (default: false).");
 
     DeGrooteFregly2016Muscle() { constructProperties(); }
 
@@ -275,8 +282,8 @@ public:
 
     /// @name Calculate multipliers.
     /// @{
-    static SimTK::Real calcActiveForceLengthMultiplier(
-            const SimTK::Real& normFiberLength) {
+    SimTK::Real calcActiveForceLengthMultiplier(
+            const SimTK::Real& normFiberLength) const {
         // Values are taken from https://simtk.org/projects/optcntrlmuscle
         // rather than the paper supplement. b11 was modified to ensure that
         // f(1) = 1.
@@ -292,9 +299,13 @@ public:
         static const double b23 = 1.0;
         static const double b33 = 0.5 * sqrt(0.5);
         static const double b43 = 0.0;
-        return calcGaussian(normFiberLength, b11, b21, b31, b41) +
-               calcGaussian(normFiberLength, b12, b22, b32, b42) +
-               calcGaussian(normFiberLength, b13, b23, b33, b43);
+        const double& scale = get_active_force_width_scale();
+        // Shift the curve so its peak is at the origin, scale it
+        // horizontally, then shift it back so its peak is still at x = 1.0.
+        const double x = (normFiberLength - 1.0) / scale + 1.0;
+        return calcGaussian(x, b11, b21, b31, b41) +
+               calcGaussian(x, b12, b22, b32, b42) +
+               calcGaussian(x, b13, b23, b33, b43);
     }
     /// Domain: [-1, 1]
     /// Range: [0, 1.789]
@@ -331,8 +342,10 @@ public:
         // The version of this equation in the supplementary materials of De
         // Groote et al., 2016 has an error. The correct equation passes
         // through y = 0 at x = 0.2, and therefore is never negative within
-        // the allowed range of the optimal fiber length. The version in the
+        // the allowed range of the fiber length. The version in the
         // supplementary materials allows for negative forces.
+
+        if (get_ignore_passive_fiber_force()) return 0;
         return (exp(kPE * (normFiberLength - 1.0) / e0) - numer_offset) / denom;
     }
 
