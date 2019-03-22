@@ -174,8 +174,8 @@ MocoInverseSolution MocoInverse::solve() const {
     // solver.set_optim_hessian_approximation("exact");
     // Forward is 3x faster than central.
     solver.set_optim_finite_difference_scheme("forward");
-    solver.set_transcription_scheme("hermite-simpson");
     if (model.getWorkingState().getNMultipliers()) {
+        solver.set_transcription_scheme("hermite-simpson");
         solver.set_enforce_constraint_derivatives(true);
     }
 
