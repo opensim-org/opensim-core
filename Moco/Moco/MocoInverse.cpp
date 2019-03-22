@@ -21,6 +21,7 @@
 #include "Components/PositionMotion.h"
 #include "MocoCasADiSolver/MocoCasADiSolver.h"
 #include "MocoCost/MocoControlCost.h"
+#include "MocoCost/MocoSumSquaredStateCost.h"
 #include "MocoProblem.h"
 #include "MocoTool.h"
 #include "MocoUtilities.h"
@@ -36,15 +37,18 @@ void MocoInverse::constructProperties() {
     constructProperty_final_time();
     constructProperty_mesh_interval(0.02);
     constructProperty_kinematics_file("");
+    constructProperty_kinematics_allow_extra_columns(false);
     constructProperty_lowpass_cutoff_frequency_for_kinematics(-1);
     constructProperty_external_loads_file("");
     constructProperty_ignore_activation_dynamics(false);
     constructProperty_ignore_tendon_compliance(false);
     constructProperty_create_reserve_actuators(-1);
+    constructProperty_minimize_sum_squared_states(false);
+    constructProperty_output_paths();
 }
 
-void MocoInverse::writeTableToFile(const TimeSeriesTable& table,
-    const std::string& filepath) const {
+void MocoInverse::writeTableToFile(
+        const TimeSeriesTable& table, const std::string& filepath) const {
     DataAdapter::InputTables tables = {{"table", &table}};
     FileAdapter::writeFile(tables, filepath);
 }
@@ -104,15 +108,16 @@ MocoInverseSolution MocoInverse::solve() const {
             FileAdapter::readFile(kinematicsFilePath);
     // There should only be one table.
     OPENSIM_THROW_IF(tables.size() != 1, Exception,
-        format("Expected the kinematics file '%s' to contain 1 table, but it "
-            "contains %i tables.",
-            kinematicsFilePath, tables.size()));
+            format("Expected the kinematics file '%s' to contain 1 table, but "
+                   "it "
+                   "contains %i tables.",
+                    kinematicsFilePath, tables.size()));
     // Get the first table.
     auto* kinematicsRaw =
-        dynamic_cast<TimeSeriesTable*>(tables.begin()->second.get());
+            dynamic_cast<TimeSeriesTable*>(tables.begin()->second.get());
     OPENSIM_THROW_IF(!kinematicsRaw, Exception,
-        "Expected the provided kinematics file to contain a (scalar) "
-        "TimeSeriesTable, but it contains a different type of table.");
+            "Expected the provided kinematics file to contain a (scalar) "
+            "TimeSeriesTable, but it contains a different type of table.");
     if (kinematicsRaw->hasTableMetaDataKey("inDegrees") &&
             kinematicsRaw->getTableMetaDataAsString("inDegrees") == "yes") {
         model.getSimbodyEngine().convertDegreesToRadians(*kinematicsRaw);
@@ -126,18 +131,19 @@ MocoInverseSolution MocoInverse::solve() const {
     }
 
     // allowMissingColumns = true: we only need kinematics.
-    // allowExtraColumns = false: user might have made an error.
+    // allowExtraColumns = user-specified.
     // assemble = true: we must obey the kinematic constraints.
-    auto statesTraj = StatesTrajectory::createFromStatesStorage(
-            model, convertTableToStorage(kinematics), true, false, true);
+    auto statesTraj = StatesTrajectory::createFromStatesStorage(model,
+            convertTableToStorage(kinematics), true,
+            get_kinematics_allow_extra_columns(), true);
 
     const auto coords = model.getCoordinatesInMultibodyTreeOrder();
     std::vector<std::string> coordSVNames;
     for (const auto& coord : coords) {
         coordSVNames.push_back(coord->getStateVariableNames()[0]);
     }
-    auto posmot = PositionMotion::createFromTable(model,
-            statesTraj.exportToTable(model, coordSVNames));
+    auto posmot = PositionMotion::createFromTable(
+            model, statesTraj.exportToTable(model, coordSVNames));
     posmot->setName("position_motion");
     model.addComponent(posmot.release());
 
@@ -154,7 +160,10 @@ MocoInverseSolution MocoInverse::solve() const {
     problem.setTimeBounds(timeInfo.initialTime, timeInfo.finalTime);
 
     // TODO: Allow users to specify costs flexibly.
-    problem.addCost<MocoControlCost>("effort");
+    problem.addCost<MocoControlCost>("excitation_effort");
+    if (get_minimize_sum_squared_states()) {
+        problem.addCost<MocoSumSquaredStateCost>("activation_effort");
+    }
 
     auto& solver = moco.initCasADiSolver();
     solver.set_dynamics_mode("implicit");
@@ -165,14 +174,23 @@ MocoInverseSolution MocoInverse::solve() const {
     // solver.set_optim_hessian_approximation("exact");
     // Forward is 3x faster than central.
     solver.set_optim_finite_difference_scheme("forward");
+    solver.set_transcription_scheme("hermite-simpson");
+    if (model.getWorkingState().getNMultipliers()) {
+        solver.set_enforce_constraint_derivatives(true);
+    }
 
     solver.set_num_mesh_points(timeInfo.numMeshPoints);
     MocoInverseSolution solution;
     solution.setMocoSolution(moco.solve().unseal());
-    // TimeSeriesTable normFiberLengths =
-    //         moco.analyze(solution, {".*normalized_fiber_length"});
-    // writeTableToFile(normFiberLengths,
-    //         "sandboxWalkingStatelessMuscles_norm_fiber_length.sto");
+
+    if (getProperty_output_paths().size()) {
+        std::vector<std::string> outputPaths;
+        for (int io = 0; io < getProperty_output_paths().size(); ++io) {
+            outputPaths.push_back(get_output_paths(io));
+        }
+        solution.setOutputs(
+                moco.analyze(solution.getMocoSolution(), outputPaths));
+    }
     return solution;
 }
 

@@ -32,12 +32,16 @@ class MocoInverse;
 class MocoInverseSolution {
 public:
     const MocoSolution& getMocoSolution() const { return m_mocoSolution; }
-
+    const TimeSeriesTable& getOutputs() const { return m_outputs; }
 private:
     void setMocoSolution(MocoSolution mocoSolution) {
         m_mocoSolution = std::move(mocoSolution);
     }
+    void setOutputs(TimeSeriesTable outputs) {
+        m_outputs = std::move(outputs);
+    }
     MocoSolution m_mocoSolution;
+    TimeSeriesTable m_outputs;
     friend class MocoInverse;
 };
 
@@ -56,6 +60,46 @@ private:
 /// The provided trajectory is altered to satisfy any enabled kinematic
 /// constraints in the model. Filtering is performed before satisfying the
 /// constraints.
+///
+/// ### Cost
+///
+/// MocoInverse minimizes the sum of squared controls and, optionally, the sum
+/// of squared states. MocoInverse assumes that the only states in the system
+/// are muscle activations, but this is not checked or enforced.
+/// Currently, the costs used by MocoInverse cannot be customized.
+/// As MocoInverse becomes more mature and general, the costs will become more
+/// flexible.
+///
+/// ### Mesh interval
+///
+/// A smaller mesh interval increases the convergence time, but is necessary
+/// for fast motions or problems with stiff differential equations (e.g.,
+/// stiff tendons).
+/// For gait, consider using a mesh interval between 0.01 and 0.05 seconds.
+/// Try solving your problem with decreasing mesh intervals and choose a mesh
+/// interval at which the solution stops changing noticeably.
+///
+/// ### Reserve actuators
+///
+/// Sometimes it is not possible to achieve the desired motion using
+/// muscles alone. There are multiple possible causes for this:
+///   - the muscles are not strong enough to achieve the required
+///     net joint moments,
+///   - the net joint moments change more rapidly than activation and
+///     deactivation time constants allow,
+///   - the filtering of the data causes unrealistic desired net joint moments.
+/// You may want to add "reserve" actuators to your model.
+/// This can be done automatically for you if you set the property
+/// `create_reserve_actuators` appropriately. This option will cause a
+/// CoordinateActuator to be added to the model for each unconstrained
+/// coordinate. The main knob on these actuators is their `optimal_force`. If
+/// the optimal force is $F$ and the actuator's control signal is $e$, then the
+/// cost of using the actuator is $e*e$, but the generalized force it applies is
+/// $F*e$. A smaller optimal force means a greater control value is required to
+/// generate a given force.
+/// The reserve actuators *can* generate (generalized) forces larger than their
+/// optimal force. The optimal force for reserve actuators should be set very
+/// low (e.g., 1.0) to discourage their use.
 ///
 /// @underdevelopment
 class OSIMMOCO_API MocoInverse : public Object {
@@ -83,6 +127,11 @@ public:
             "to prescribe. The path can be absolute or relative to the setup "
             "file.");
 
+    OpenSim_DECLARE_PROPERTY(kinematics_allow_extra_columns, bool,
+            "Allow the kinematics file to contain columns that do not name "
+            "states in the model. "
+            "This is false by default to help you avoid accidents.");
+
     OpenSim_DECLARE_PROPERTY(lowpass_cutoff_frequency_for_kinematics, double,
             "The frequency (Hz) at which to filter the kinematics. "
             "(default is -1, which means no filtering; for walking, "
@@ -109,6 +158,14 @@ public:
             "should be set low to "
             "discourage the use of the reserve actuators. (default is -1, "
             "which means no reserves are created)");
+
+    OpenSim_DECLARE_PROPERTY(minimize_sum_squared_states, bool,
+            "Minimize the sum of squared states (e.g., activations). "
+            "Do not use this if tendon compliance is enabled. Default: false.");
+
+    OpenSim_DECLARE_LIST_PROPERTY(output_paths, std::string,
+            "Outputs to compute after solving the problem."
+            " Entries can be regular expressions (e.g., '.*activation').");
 
     MocoInverse() { constructProperties(); }
 
