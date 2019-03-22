@@ -35,10 +35,12 @@ void MocoInverse::constructProperties() {
     constructProperty_initial_time();
     constructProperty_final_time();
     constructProperty_mesh_interval(0.02);
-    constructProperty_create_reserve_actuators(-1);
+    constructProperty_kinematics_file("");
+    constructProperty_lowpass_cutoff_frequency_for_kinematics(-1);
     constructProperty_external_loads_file("");
     constructProperty_ignore_activation_dynamics(false);
     constructProperty_ignore_tendon_compliance(false);
+    constructProperty_create_reserve_actuators(-1);
 }
 
 void MocoInverse::writeTableToFile(const TimeSeriesTable& table,
@@ -48,6 +50,15 @@ void MocoInverse::writeTableToFile(const TimeSeriesTable& table,
 }
 
 MocoInverseSolution MocoInverse::solve() const {
+    using SimTK::Pathname;
+    // Get the directory containing the setup file.
+    std::string setupDir;
+    {
+        bool dontApplySearchPath;
+        std::string fileName, extension;
+        Pathname::deconstructPathname(getDocumentFileName(),
+                dontApplySearchPath, setupDir, fileName, extension);
+    }
 
     Model model(m_model);
     model.finalizeFromProperties();
@@ -85,29 +96,48 @@ MocoInverseSolution MocoInverse::solve() const {
 
     model.initSystem();
 
-    FileAdapter::OutputTables tables = 
-            FileAdapter::readFile(m_kinematicsFileName);
+    std::string kinematicsFilePath =
+            Pathname::getAbsolutePathnameUsingSpecifiedWorkingDirectory(
+                    setupDir, get_kinematics_file());
 
+    FileAdapter::OutputTables tables =
+            FileAdapter::readFile(kinematicsFilePath);
     // There should only be one table.
     OPENSIM_THROW_IF(tables.size() != 1, Exception,
         format("Expected the kinematics file '%s' to contain 1 table, but it "
             "contains %i tables.",
-            m_kinematicsFileName, tables.size()));
-
+            kinematicsFilePath, tables.size()));
     // Get the first table.
-    auto* kinematicsRaw = 
+    auto* kinematicsRaw =
         dynamic_cast<TimeSeriesTable*>(tables.begin()->second.get());
     OPENSIM_THROW_IF(!kinematicsRaw, Exception,
         "Expected the provided kinematics file to contain a (scalar) "
         "TimeSeriesTable, but it contains a different type of table.");
-
     if (kinematicsRaw->hasTableMetaDataKey("inDegrees") &&
             kinematicsRaw->getTableMetaDataAsString("inDegrees") == "yes") {
         model.getSimbodyEngine().convertDegreesToRadians(*kinematicsRaw);
     }
-    auto kinematics = filterLowpass(*kinematicsRaw, 6, true);
+    TimeSeriesTable kinematics;
+    if (get_lowpass_cutoff_frequency_for_kinematics() != -1) {
+        kinematics = filterLowpass(*kinematicsRaw,
+                get_lowpass_cutoff_frequency_for_kinematics(), true);
+    } else {
+        kinematics = *kinematicsRaw;
+    }
 
-    auto posmot = PositionMotion::createFromTable(model, kinematics, true);
+    // allowMissingColumns = true: we only need kinematics.
+    // allowExtraColumns = false: user might have made an error.
+    // assemble = true: we must obey the kinematic constraints.
+    auto statesTraj = StatesTrajectory::createFromStatesStorage(
+            model, convertTableToStorage(kinematics), true, false, true);
+
+    const auto coords = model.getCoordinatesInMultibodyTreeOrder();
+    std::vector<std::string> coordSVNames;
+    for (const auto& coord : coords) {
+        coordSVNames.push_back(coord->getStateVariableNames()[0]);
+    }
+    auto posmot = PositionMotion::createFromTable(model,
+            statesTraj.exportToTable(model, coordSVNames));
     posmot->setName("position_motion");
     model.addComponent(posmot.release());
 
@@ -118,9 +148,8 @@ MocoInverseSolution MocoInverse::solve() const {
 
     problem.setModelCopy(model);
 
-    const auto timeInfo =
-            calcInitialAndFinalTimes(kinematicsRaw->getIndependentColumn(), {},
-                    get_mesh_interval());
+    const auto timeInfo = calcInitialAndFinalTimes(
+            kinematicsRaw->getIndependentColumn(), {}, get_mesh_interval());
     // const double spaceForFiniteDiff = 1e-3;
     problem.setTimeBounds(timeInfo.initialTime, timeInfo.finalTime);
 
@@ -182,7 +211,8 @@ MocoInverse::TimeInfo MocoInverse::calcInitialAndFinalTimes(
                     out.initialTime, out.finalTime));
 
     // We do not want to end up with a lower mesh frequency than requested.
-    out.numMeshPoints = (int)std::ceil(
-            (out.finalTime - out.initialTime) / (meshInterval)) + 1;
+    out.numMeshPoints =
+            (int)std::ceil((out.finalTime - out.initialTime) / (meshInterval)) +
+            1;
     return out;
 }

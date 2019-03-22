@@ -84,4 +84,5 @@ MocoAddTest(NAME testMocoInverse RESOURCES
         walk_gait1018_state_reference.mot
         walk_gait1018_subject01_grf.xml
         walk_gait1018_subject01_grf.mot
+        std_testMocoInverseGait10dof18musc_solution.sto
         )

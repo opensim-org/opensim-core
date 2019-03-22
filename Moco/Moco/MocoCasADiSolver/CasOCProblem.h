@@ -219,8 +219,7 @@ public:
             const ContinuousInput&, double& integrand) const {
         integrand = 0;
     }
-    virtual void calcEndpointCost(
-            const EndpointInput&, double& cost) const {
+    virtual void calcEndpointCost(const EndpointInput&, double& cost) const {
         cost = 0;
     }
     virtual void calcMultibodySystemExplicit(const ContinuousInput& input,
@@ -232,8 +231,8 @@ public:
             const casadi::DM& parameters,
             casadi::DM& velocity_correction) const = 0;
 
-    virtual void calcPathConstraint(int,
-            const ContinuousInput&, casadi::DM&) const {}
+    virtual void calcPathConstraint(
+            int, const ContinuousInput&, casadi::DM&) const {}
 
     /// @}
 
@@ -355,6 +354,7 @@ public:
     int getNumCoordinates() const { return m_numCoordinates; }
     int getNumSpeeds() const { return m_numSpeeds; }
     int getNumAuxiliaryStates() const { return m_numAuxiliaryStates; }
+    bool isPrescribedKinematics() const { return m_prescribedKinematics; }
     /// If the coordinates are prescribed, then the number of multibody dynamics
     /// equations is not the same as the number of speeds.
     int getNumMultibodyDynamicsEquations() const {
@@ -364,15 +364,18 @@ public:
         return getNumSpeeds();
     }
     int getNumKinematicConstraintEquations() const {
+        // If all kinematics are prescribed, we assume that the prescribed
+        // kinematics obey any kinematic constraints. Therefore, the kinematic
+        // constraints would be redundant, and we need not enforce them.
+        if (m_prescribedKinematics) return 0;
         if (m_enforceConstraintDerivatives) {
             return 3 * m_numHolonomicConstraintEquations +
                    2 * m_numNonHolonomicConstraintEquations +
                    m_numAccelerationConstraintEquations;
-        } else {
-            return m_numHolonomicConstraintEquations +
-                   m_numNonHolonomicConstraintEquations +
-                   m_numAccelerationConstraintEquations;
         }
+        return m_numHolonomicConstraintEquations +
+               m_numNonHolonomicConstraintEquations +
+               m_numAccelerationConstraintEquations;
     }
     int getNumHolonomicConstraintEquations() const {
         return m_numHolonomicConstraintEquations;

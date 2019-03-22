@@ -18,9 +18,13 @@
 
 #include "ModelFactory.h"
 #include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
+#include <OpenSim/Simulation/SimbodyEngine/SliderJoint.h>
 #include <OpenSim/Actuators/CoordinateActuator.h>
 
 using namespace OpenSim;
+
+using SimTK::Vec3;
+using SimTK::Inertia;
 
 Model ModelFactory::createNLinkPendulum(int numLinks) {
     Model model;
@@ -79,3 +83,50 @@ Model ModelFactory::createNLinkPendulum(int numLinks) {
 
     return model;
 }
+
+Model ModelFactory::createPlanarPointMass() {
+    Model model;
+    model.setName("planar_point_mass");
+
+    auto* intermed = new Body("intermed", 0, Vec3(0), Inertia(0));
+    model.addBody(intermed);
+    auto* body = new Body("body", 1, Vec3(0), Inertia(0));
+    model.addBody(body);
+
+    auto* jointX = new SliderJoint();
+    jointX->setName("tx");
+    jointX->connectSocket_parent_frame(model.getGround());
+    jointX->connectSocket_child_frame(*intermed);
+    auto& coordX = jointX->updCoordinate(SliderJoint::Coord::TranslationX);
+    coordX.setName("tx");
+    model.addJoint(jointX);
+
+    // The joint's x axis must point in the global "+y" direction.
+    auto* jointY = new SliderJoint("ty",
+            *intermed, Vec3(0), Vec3(0, 0, 0.5 * SimTK::Pi),
+            *body, Vec3(0), Vec3(0, 0, .5 * SimTK::Pi));
+    auto& coordY = jointY->updCoordinate(SliderJoint::Coord::TranslationX);
+    coordY.setName("ty");
+    model.addJoint(jointY);
+
+    {
+        auto* forceX = new CoordinateActuator();
+        forceX->setCoordinate(&coordX);
+        forceX->setName("force_x");
+        model.addForce(forceX);
+    }
+
+    {
+        auto* forceY = new CoordinateActuator();
+        forceY->setCoordinate(&coordY);
+        forceY->setName("force_y");
+        model.addForce(forceY);
+    }
+
+    return model;
+}
+
+
+
+
+

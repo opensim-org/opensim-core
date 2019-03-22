@@ -30,6 +30,7 @@ namespace OpenSim {
 
 class MocoProblem;
 class DiscreteForces;
+class PositionMotion;
 class AccelerationMotion;
 
 /// The primary intent of this class is for use by MocoSolver%s, but users
@@ -260,8 +261,11 @@ private:
 
     Model m_model_base;
     mutable SimTK::State m_state_base;
+    SimTK::ReferencePtr<const PositionMotion> m_position_motion_base;
     Model m_model_disabled_constraints;
     mutable SimTK::State m_state_disabled_constraints;
+    SimTK::ReferencePtr<const PositionMotion>
+            m_position_motion_disabled_constraints;
     SimTK::ReferencePtr<DiscreteForces> m_constraint_forces;
     SimTK::ReferencePtr<AccelerationMotion> m_acceleration_motion;
 

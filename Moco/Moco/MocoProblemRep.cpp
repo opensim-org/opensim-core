@@ -20,9 +20,8 @@
 
 #include "Components/AccelerationMotion.h"
 #include "Components/DiscreteForces.h"
-#include "MocoProblem.h"
-
 #include "Components/PositionMotion.h"
+#include "MocoProblem.h"
 #include <unordered_set>
 
 using namespace OpenSim;
@@ -43,7 +42,36 @@ void MocoProblemRep::initialize() {
 
     const auto& ph0 = m_problem->getPhase(0);
     m_model_base = ph0.getModel();
+    m_model_base.finalizeFromProperties();
+    int countMotion = 0;
+    for (const auto& comp : m_model_base.getComponentList<PositionMotion>()) {
+        comp.getName(); // Avoid "unused variable".
+        if (comp.getDefaultEnabled()) {
+            ++countMotion;
+            OPENSIM_THROW_IF(countMotion > 1, Exception,
+                    "The model cannot contain more than 1 PositionMotion.");
+            m_prescribedKinematics = true;
+        }
+    }
+
+    // We disable the PrescribedMotion by default so that,
+    // if there are constraints, the AssemblySolver does not complain about
+    // having 0 parameters with which to satisfy the constraints. After
+    // we're done with the assembly in initSystem(), we can re-enable the
+    // prescribed motion.
+    if (m_prescribedKinematics) {
+        auto& posmotBase =
+                *m_model_base.updComponentList<PositionMotion>().begin();
+        posmotBase.setDefaultEnabled(false);
+    }
+
     m_state_base = m_model_base.initSystem();
+
+    if (m_prescribedKinematics) {
+        m_position_motion_base.reset(
+                &*m_model_base.getComponentList<PositionMotion>().begin());
+        m_position_motion_base->setEnabled(m_state_base, true);
+    }
 
     // We would like to eventually compute the model accelerations through
     // realizing to Stage::Acceleration. However, if the model has constraints,
@@ -53,7 +81,10 @@ void MocoProblemRep::initialize() {
     // original model, disable the its constraints, and apply the constraint
     // forces equivalent to the solver's Lagrange multipliers before computing
     // the accelerations.
+    // If there's a PrescribedMotion in the model, it's disabled by default
+    // in this copied model.
     m_model_disabled_constraints = Model(m_model_base);
+
     // The constraint forces will be applied to the copied model via an
     // OpenSim::DiscreteForces component, a thin wrapper to Simbody's
     // DiscreteForces class, which adds discrete variables to the state.
@@ -62,85 +93,31 @@ void MocoProblemRep::initialize() {
     m_constraint_forces.reset(constraintForcesUPtr.get());
     m_model_disabled_constraints.addComponent(constraintForcesUPtr.release());
 
-
-    // TODO: only enable if necessary?
-    // TODO cannot prescribe both accel and position.
-    int countMotion = 0;
-    for (const auto& comp : m_model_base.getComponentList<PositionMotion>()) {
-        comp.getName(); // Avoid "unused variable".
-        ++countMotion;
-    }
-    if (countMotion) {
-        m_prescribedKinematics = true;
-    } else {
-        // The Acceleration motion is always added if there is no PositionMotion, but is only enabled by solvers
-        // if using an implicit dynamics mode. We use this motion to ensure that
-        // joint reaction forces can be computed correctly from the solver-supplied
-        // UDot (otherwise, Simbody will compute its own "incorrect" UDot using
+    if (!m_prescribedKinematics) {
+        // The Acceleration motion is always added if there is no
+        // PositionMotion, but is only enabled by solvers if using an implicit
+        // dynamics mode. We use this motion to ensure that joint reaction
+        // forces can be computed correctly from the solver-supplied UDot
+        // (otherwise, Simbody will compute its own "incorrect" UDot using
         // forward dynamics).
         auto accelMotionUPtr = make_unique<AccelerationMotion>("motion");
         m_acceleration_motion.reset(accelMotionUPtr.get());
-        m_model_disabled_constraints.addModelComponent(accelMotionUPtr.release());
+        m_model_disabled_constraints.addModelComponent(
+                accelMotionUPtr.release());
     }
+
     // Grab a writable state from the copied model -- we'll use this to disable
     // its constraints below.
     m_state_disabled_constraints = m_model_disabled_constraints.initSystem();
 
-    const auto stateNames = m_model_base.getStateVariableNames();
-    for (int i = 0; i < ph0.getProperty_state_infos().size(); ++i) {
-        const auto& name = ph0.get_state_infos(i).getName();
-        OPENSIM_THROW_IF(stateNames.findIndex(name) == -1, Exception,
-                format("State info provided for nonexistent state '%s'.",
-                        name));
-    }
-    OpenSim::Array<std::string> actuNames;
-    const auto modelPath = m_model_base.getAbsolutePath();
-    for (const auto& actu : m_model_base.getComponentList<ScalarActuator>()) {
-        actuNames.append(actu.getAbsolutePathString());
-    }
-
-    // TODO can only handle ScalarActuators?
-    for (int i = 0; i < ph0.getProperty_control_infos().size(); ++i) {
-        const auto& name = ph0.get_control_infos(i).getName();
-        OPENSIM_THROW_IF(actuNames.findIndex(name) == -1, Exception,
-                format("Control info provided for nonexistent actuator '%s'.",
-                        name));
-    }
-
-    // Create internal record of state and control infos, automatically
-    // populated from coordinates and actuators.
-    for (int i = 0; i < ph0.getProperty_state_infos().size(); ++i) {
-        const auto& name = ph0.get_state_infos(i).getName();
-        m_state_infos[name] = ph0.get_state_infos(i);
-    }
-    if (!m_prescribedKinematics) {
-        for (const auto& coord : m_model_base.getComponentList<Coordinate>()) {
-            const auto stateVarNames = coord.getStateVariableNames();
-            const std::string coordValueName = stateVarNames[0];
-            if (m_state_infos.count(coordValueName) == 0) {
-                const auto info = MocoVariableInfo(coordValueName,
-                        {coord.getRangeMin(), coord.getRangeMax()}, {}, {});
-                m_state_infos[coordValueName] = info;
-            }
-            const std::string coordSpeedName = stateVarNames[1];
-            if (m_state_infos.count(coordSpeedName) == 0) {
-                const auto info = MocoVariableInfo(
-                        coordSpeedName, ph0.get_default_speed_bounds(), {}, {});
-                m_state_infos[coordSpeedName] = info;
-            }
-        }
-    }
-    for (int i = 0; i < ph0.getProperty_control_infos().size(); ++i) {
-        const auto& name = ph0.get_control_infos(i).getName();
-        m_control_infos[name] = ph0.get_control_infos(i);
-    }
-    for (const auto& actu : m_model_base.getComponentList<ScalarActuator>()) {
-        const std::string actuName = actu.getAbsolutePathString();
-        if (m_control_infos.count(actuName) == 0) {
-            const auto info = MocoVariableInfo(actuName,
-                    {actu.getMinControl(), actu.getMaxControl()}, {}, {});
-            m_control_infos[actuName] = info;
-        }
+    // See comment above for m_position_motion_base.
+    if (m_prescribedKinematics) {
+        m_position_motion_disabled_constraints.reset(
+                &*m_model_disabled_constraints
+                          .getComponentList<PositionMotion>()
+                          .begin());
+        m_position_motion_disabled_constraints->setEnabled(
+                m_state_disabled_constraints, true);
     }
 
     // Get property values for constraints and Lagrange multipliers.
@@ -223,6 +200,67 @@ void MocoProblemRep::initialize() {
                              m_state_disabled_constraints.getNUDotErr() != 0,
             Exception, "Internal error.");
 
+    // State and control infos.
+    // ------------------------
+    const auto stateNames = m_model_base.getStateVariableNames();
+    for (int i = 0; i < ph0.getProperty_state_infos().size(); ++i) {
+        const auto& name = ph0.get_state_infos(i).getName();
+        OPENSIM_THROW_IF(stateNames.findIndex(name) == -1, Exception,
+                format("State info provided for nonexistent state '%s'.",
+                        name));
+    }
+    OpenSim::Array<std::string> actuNames;
+    const auto modelPath = m_model_base.getAbsolutePath();
+    for (const auto& actu : m_model_base.getComponentList<ScalarActuator>()) {
+        actuNames.append(actu.getAbsolutePathString());
+    }
+
+    // TODO can only handle ScalarActuators?
+    for (int i = 0; i < ph0.getProperty_control_infos().size(); ++i) {
+        const auto& name = ph0.get_control_infos(i).getName();
+        OPENSIM_THROW_IF(actuNames.findIndex(name) == -1, Exception,
+                format("Control info provided for nonexistent actuator '%s'.",
+                        name));
+    }
+
+    // Create internal record of state and control infos, automatically
+    // populated from coordinates and actuators.
+    for (int i = 0; i < ph0.getProperty_state_infos().size(); ++i) {
+        const auto& name = ph0.get_state_infos(i).getName();
+        m_state_infos[name] = ph0.get_state_infos(i);
+    }
+    if (!m_prescribedKinematics) {
+        for (const auto& coord : m_model_base.getComponentList<Coordinate>()) {
+            const auto stateVarNames = coord.getStateVariableNames();
+            const std::string coordValueName = stateVarNames[0];
+            if (m_state_infos.count(coordValueName) == 0) {
+                const auto info = MocoVariableInfo(coordValueName,
+                        {coord.getRangeMin(), coord.getRangeMax()}, {}, {});
+                m_state_infos[coordValueName] = info;
+            }
+            const std::string coordSpeedName = stateVarNames[1];
+            if (m_state_infos.count(coordSpeedName) == 0) {
+                const auto info = MocoVariableInfo(
+                        coordSpeedName, ph0.get_default_speed_bounds(), {}, {});
+                m_state_infos[coordSpeedName] = info;
+            }
+        }
+    }
+    for (int i = 0; i < ph0.getProperty_control_infos().size(); ++i) {
+        const auto& name = ph0.get_control_infos(i).getName();
+        m_control_infos[name] = ph0.get_control_infos(i);
+    }
+    for (const auto& actu : m_model_base.getComponentList<ScalarActuator>()) {
+        const std::string actuName = actu.getAbsolutePathString();
+        if (m_control_infos.count(actuName) == 0) {
+            const auto info = MocoVariableInfo(actuName,
+                    {actu.getMinControl(), actu.getMaxControl()}, {}, {});
+            m_control_infos[actuName] = info;
+        }
+    }
+
+    // Parameters.
+    // -----------
     m_parameters.resize(ph0.getProperty_parameters().size());
     std::unordered_set<std::string> paramNames;
     for (int i = 0; i < ph0.getProperty_parameters().size(); ++i) {
@@ -244,6 +282,8 @@ void MocoProblemRep::initialize() {
         m_parameters[i]->initializeOnModel(m_model_disabled_constraints);
     }
 
+    // Costs.
+    // ------
     m_costs.resize(ph0.getProperty_costs().size());
     std::unordered_set<std::string> costNames;
     for (int i = 0; i < ph0.getProperty_costs().size(); ++i) {
@@ -258,6 +298,8 @@ void MocoProblemRep::initialize() {
         m_costs[i]->initializeOnModel(m_model_disabled_constraints);
     }
 
+    // Auxiliary path constraints.
+    // ---------------------------
     m_num_path_constraint_equations = 0;
     m_path_constraints.resize(ph0.getProperty_path_constraints().size());
     std::unordered_set<std::string> pcNames;
@@ -288,8 +330,8 @@ MocoFinalBounds MocoProblemRep::getTimeFinalBounds() const {
 }
 std::vector<std::string> MocoProblemRep::createStateVariableNamesInSystemOrder(
         std::unordered_map<int, int>& yIndexMap) const {
-    auto stateNames =
-            OpenSim::createStateVariableNamesInSystemOrder(m_model_base, yIndexMap);
+    auto stateNames = OpenSim::createStateVariableNamesInSystemOrder(
+            m_model_base, yIndexMap);
     auto out = stateNames;
     if (m_prescribedKinematics) {
         for (int i = 0; i < (int)stateNames.size(); ++i) {
@@ -426,12 +468,32 @@ void MocoProblemRep::applyParametersToModelProperties(
     }
     if (initSystemAndDisableConstraints) {
         // TODO: Avoid these const_casts.
-        const_cast<Model&>(m_model_base).initSystem();
 
+        // Model base.
+        // -----------
+        const_cast<Model&>(m_model_base).initSystem();
+        // The PrescribedMotion is disabled by default in the model so that,
+        // if there are constraints, the AssemblySolver does not complain about
+        // having 0 parameters with which to satisfy the constraints. After
+        // we're done with the assembly in initSystem(), we can re-enable the
+        // prescribed motion.
+        if (m_position_motion_base) {
+            m_position_motion_base->setEnabled(m_state_base, true);
+        }
+
+
+        // Model disable constraints.
+        // --------------------------
         Model& m_model_disabled_constraints_const_cast =
                 const_cast<Model&>(m_model_disabled_constraints);
+
         m_state_disabled_constraints =
                 m_model_disabled_constraints_const_cast.initSystem();
+        // See comment above for m_position_motion_base.
+        if (m_position_motion_disabled_constraints) {
+            m_position_motion_disabled_constraints->setEnabled(
+                    m_state_disabled_constraints, true);
+        }
 
         // Re-disable constraints if they were enabled by the previous
         // initSystem() call.

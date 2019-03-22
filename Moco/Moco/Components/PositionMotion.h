@@ -22,10 +22,9 @@
 
 #include <simbody/internal/Motion.h>
 
-#include <OpenSim/Common/TimeSeriesTable.h>
 #include <OpenSim/Common/FunctionSet.h>
+#include <OpenSim/Common/TimeSeriesTable.h>
 #include <OpenSim/Simulation/Model/ModelComponent.h>
-
 
 namespace OpenSim {
 
@@ -34,17 +33,42 @@ class Coordinate;
 
 class OSIMMOCO_API PositionMotion : public ModelComponent {
     OpenSim_DECLARE_CONCRETE_OBJECT(PositionMotion, ModelComponent);
+
 public:
+    OpenSim_DECLARE_PROPERTY(default_enabled, bool,
+            "Is this motion enabled by default? (default value: true)");
     OpenSim_DECLARE_PROPERTY(functions, FunctionSet,
             "Functions specifying the values of each coordinate.");
 
-    PositionMotion() { constructProperty_functions(FunctionSet()); }
+    PositionMotion() {
+        constructProperty_default_enabled(true);
+        constructProperty_functions(FunctionSet());
+    }
     PositionMotion(std::string name) : PositionMotion() {
         setName(std::move(name));
     }
     ~PositionMotion() = default;
     void setPositionForCoordinate(
             const Coordinate& coord, const Function& position);
+    /// This determines if, after Model::initSystem(), these prescribed
+    /// motions are enabled or disabled.
+    void setDefaultEnabled(bool enabled) { set_default_enabled(enabled); }
+    bool getDefaultEnabled() const { return get_default_enabled(); }
+    /// Use this after Model::initSystem() to set if the prescribed motions
+    /// are enforced.
+    void setEnabled(SimTK::State& state, bool enabled) const;
+    bool getEnabled(const SimTK::State& state) const;
+    /// Create a PositionMotion that prescribes kinematics for all coordinates
+    /// in a model, given a data table containing coordinate values for all
+    /// coordinates. If the table contains any columns that are not the names
+    /// of coordinate value state variables, an exception is thrown (unless
+    /// allowExtraColumns is true).
+    ///
+    /// @note If the data in the table violates kinematic constraints in the
+    /// model, the resulting PositionMotion will also violate the kinematic
+    /// constraints.
+    ///
+    /// @note This fuction ignores the inDegrees header metadata.
     static std::unique_ptr<PositionMotion> createFromTable(const Model& model,
             const TimeSeriesTable& coords, bool allowExtraColumns = false);
 

@@ -17,8 +17,8 @@
  * -------------------------------------------------------------------------- */
 
 #define CATCH_CONFIG_MAIN
+#include "Testing.h"
 #include <Moco/osimMoco.h>
-#include <catch.hpp>
 
 #include <simbody/internal/Constraint.h>
 #include <simbody/internal/Constraint_Ball.h>
@@ -29,6 +29,7 @@
 #include <OpenSim/Common/GCVSpline.h>
 #include <OpenSim/Common/LinearFunction.h>
 #include <OpenSim/Common/LogManager.h>
+#include <OpenSim/Common/Sine.h>
 #include <OpenSim/Common/TimeSeriesTable.h>
 #include <OpenSim/Simulation/osimSimulation.h>
 
@@ -820,20 +821,20 @@ void testDoublePendulumPrescribedMotion(MocoSolution& couplerSolution,
     // states and the states from the previous test (original and splined).
     // These won't match as well as the position-level values, since velocity-
     // level errors are not enforced in the current problem formulation.
-    SimTK_TEST_EQ_TOL(
-            solution.compareContinuousVariablesRMS(mocoIterSpline,
-                    {{"states", {"/jointset/j0/q0/speed", "/jointset/j1/q1/speed"}}}),
+    SimTK_TEST_EQ_TOL(solution.compareContinuousVariablesRMS(mocoIterSpline,
+                              {{"states", {"/jointset/j0/q0/speed",
+                                                  "/jointset/j1/q1/speed"}}}),
             0, 1e-1);
-    SimTK_TEST_EQ_TOL(
-            solution.compareContinuousVariablesRMS(couplerSolution,
-                    {{"states", {"/jointset/j0/q0/speed", "/jointset/j1/q1/speed"}}}),
+    SimTK_TEST_EQ_TOL(solution.compareContinuousVariablesRMS(couplerSolution,
+                              {{"states", {"/jointset/j0/q0/speed",
+                                                  "/jointset/j1/q1/speed"}}}),
             0, 1e-1);
     // Compare only the actuator controls. These match worse compared to the
     // velocity-level states. It is currently unclear to what extent this is
     // related to velocity-level states not matching well or the how the model
     // constraints are enforced in the current formulation.
     SimTK_TEST_EQ_TOL(solution.compareContinuousVariablesRMS(couplerSolution,
-            {{"controls", {"/tau0", "/tau1"}}}),
+                              {{"controls", {"/tau0", "/tau1"}}}),
             0, 5);
 
     // Run a forward simulation using the solution controls in prescribed
@@ -1119,8 +1120,157 @@ TEMPLATE_TEST_CASE(
     testDoublePendulumPointOnLineJointReaction<TestType>(true, "explicit");
 }
 
-TEMPLATE_TEST_CASE(
-        "DoublePendulumPointOnLineJointReaction implicit with constraint derivatives",
+TEMPLATE_TEST_CASE("DoublePendulumPointOnLineJointReaction implicit with "
+                   "constraint derivatives",
         "[implicit]", MocoCasADiSolver) {
     testDoublePendulumPointOnLineJointReaction<TestType>(true, "implicit");
+}
+
+TEST_CASE("Multipliers are correct", "") {
+    std::cout.rdbuf(LogManager::cout.rdbuf());
+    std::cerr.rdbuf(LogManager::cerr.rdbuf());
+    SECTION("Body welded to ground") {
+        auto dynamics_mode = GENERATE(as<std::string>{}, "implicit", "explicit");
+
+        Model model;
+        const double mass = 1.3169;
+        auto* body = new Body("body", mass, SimTK::Vec3(0), SimTK::Inertia(1));
+        model.addBody(body);
+
+        auto* joint = new FreeJoint("joint", model.getGround(), *body);
+        model.addJoint(joint);
+
+        auto* constr = new WeldConstraint("constraint", model.getGround(),
+                SimTK::Transform(), *body, SimTK::Transform());
+        model.addConstraint(constr);
+        model.finalizeConnections();
+
+
+        MocoTool moco;
+        auto& problem = moco.updProblem();
+        problem.setModelCopy(model);
+
+        problem.setTimeBounds(0, 0.5);
+
+        auto& solver = moco.initCasADiSolver();
+        solver.set_num_mesh_points(5);
+        solver.set_dynamics_mode(dynamics_mode);
+        solver.set_transcription_scheme("hermite-simpson");
+        solver.set_enforce_constraint_derivatives(true);
+
+        MocoSolution solution = moco.solve();
+
+        // Constraints 0 through 5 are the locks for the 6 DOFs.
+        const auto MX = solution.getMultiplier("lambda_cid6_p0");
+        SimTK::Vector zero(MX);
+        zero.setToZero();
+        OpenSim_CHECK_MATRIX_TOL(MX, zero, 1e-5);
+        const auto MY = solution.getMultiplier("lambda_cid6_p1");
+        OpenSim_CHECK_MATRIX_TOL(MY, zero, 1e-5);
+        const auto MZ = solution.getMultiplier("lambda_cid6_p2");
+        OpenSim_CHECK_MATRIX_TOL(MZ, zero, 1e-5);
+        const auto FX = solution.getMultiplier("lambda_cid6_p3");
+        OpenSim_CHECK_MATRIX_TOL(FX, zero, 1e-5);
+        const auto FY = solution.getMultiplier("lambda_cid6_p4");
+        SimTK::Vector g(zero.size(), model.get_gravity()[1]);
+        OpenSim_CHECK_MATRIX_TOL(FY, mass * g, 1e-5);
+        const auto FZ = solution.getMultiplier("lambda_cid6_p5");
+        OpenSim_CHECK_MATRIX_TOL(FZ, zero, 1e-5);
+    }
+
+    // This problem is a point mass constrained to the line 0 = x - y.
+    // constraint Jacobian G is [1, -1].
+    //      m xdd + G(0) * lambda = Fx  -> m xdd + lambda = Fx
+    //      m ydd + G(1) * lambda = Fy  -> m ydd - lambda = Fy
+    // Since xdd = ydd, we have:
+    //      lambda = 0.5 * (Fx - Fy).
+    // This test ensures that the multiplier has the correct value.
+    SECTION("Planar point mass with CoordinateCouplerConstraint") {
+
+        auto dynamics_mode = GENERATE(as<std::string>{}, "implicit", "explicit");
+
+        Model model = ModelFactory::createPlanarPointMass();
+        model.set_gravity(Vec3(0));
+        CoordinateCouplerConstraint* constraint =
+                new CoordinateCouplerConstraint();
+        Array<std::string> names;
+        names.append("tx");
+        constraint->setIndependentCoordinateNames(names);
+        constraint->setDependentCoordinateName("ty");
+        LinearFunction func(1.0, 0.0);
+        constraint->setFunction(func);
+        model.addConstraint(constraint);
+
+        model.finalizeConnections();
+
+        MocoTool moco;
+        auto& problem = moco.updProblem();
+        problem.setModelCopy(model);
+
+        problem.setTimeBounds(0, 1);
+        problem.setStateInfo("/jointset/tx/tx/value", {-5, 5}, 0, 3);
+        problem.setStateInfo("/jointset/tx/tx/speed", {-5, 5}, 0, 0);
+        problem.setControlInfo("/forceset/force_x", 0.5);
+
+        problem.addCost<MocoControlCost>();
+
+        auto& solver = moco.initCasADiSolver();
+        solver.set_num_mesh_points(10);
+        solver.set_dynamics_mode(dynamics_mode);
+        solver.set_transcription_scheme("hermite-simpson");
+        solver.set_enforce_constraint_derivatives(true);
+        MocoSolution solution = moco.solve();
+        const auto Fx = solution.getControl("/forceset/force_x");
+        const auto Fy = solution.getControl("/forceset/force_y");
+        const auto lambda = solution.getMultiplier("lambda_cid2_p0");
+
+        OpenSim_CHECK_MATRIX_TOL(lambda, 0.5 * (Fx - Fy), 1e-5);
+    }
+}
+
+// Ensure that we correctly handle the combination of prescribed kinematics
+// (PositionMotion) and kinematic constraints. This test is similar to the one
+// above except that we prescribe motions for tx and ty.
+TEST_CASE("Prescribed kinematics with kinematic constraints", "") {
+    std::cout.rdbuf(LogManager::cout.rdbuf());
+    std::cerr.rdbuf(LogManager::cerr.rdbuf());
+    Model model = ModelFactory::createPlanarPointMass();
+    model.set_gravity(Vec3(0));
+    CoordinateCouplerConstraint* constraint = new CoordinateCouplerConstraint();
+    Array<std::string> names;
+    names.append("tx");
+    constraint->setIndependentCoordinateNames(names);
+    constraint->setDependentCoordinateName("ty");
+    LinearFunction func(1.0, 0.0);
+    constraint->setFunction(func);
+    model.addConstraint(constraint);
+
+    auto* posmot = new PositionMotion();
+    Sine function = Sine(1.0, 1.0, 0, 1.0);
+    posmot->setPositionForCoordinate(model.getCoordinateSet().get(0), function);
+    posmot->setPositionForCoordinate(model.getCoordinateSet().get(1), function);
+    model.addComponent(posmot);
+
+    model.finalizeConnections();
+
+    MocoTool moco;
+    auto& problem = moco.updProblem();
+    problem.setModelCopy(model);
+
+    problem.setTimeBounds(0, 3);
+    problem.setControlInfo("/forceset/force_x", 0.5);
+
+    problem.addCost<MocoControlCost>();
+
+    auto& solver = moco.initCasADiSolver();
+    solver.set_num_mesh_points(10);
+    solver.set_dynamics_mode("implicit");
+    solver.set_transcription_scheme("hermite-simpson");
+    solver.set_enforce_constraint_derivatives(true);
+    MocoSolution solution = moco.solve();
+    const auto Fx = solution.getControl("/forceset/force_x");
+    const auto Fy = solution.getControl("/forceset/force_y");
+    const auto lambda = solution.getMultiplier("lambda_cid2_p0");
+
+    OpenSim_CHECK_MATRIX_TOL(lambda, 0.5 * (Fx - Fy), 1e-5);
 }

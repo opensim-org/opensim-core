@@ -94,7 +94,7 @@ do {                                                                         \
     for (int ir = 0; ir < a.nrow(); ++ir) {                                  \
         for (int ic = 0; ic < a.ncol(); ++ic) {                              \
             INFO("(" << ir << "," << ic << "): " <<                          \
-                    a(ir, ic) << " vs " << b(ir, ic));                       \
+                    a.getElt(ir, ic) << " vs " << b.getElt(ir, ic));         \
             testtype((Approx(a.getElt(ir, ic)).toltype(tol)                  \
                     == b.getElt(ir, ic)));                                   \
         }                                                                    \
@@ -121,7 +121,7 @@ do {                                                                         \
     OpenSim_CATCH_MATRIX_INTERNAL(REQUIRE, actual, expected, tol, margin);   \
 } while (0)
 
-#define OpenSim_CHECK_MATRIX(actual, expected)                             \
+#define OpenSim_CHECK_MATRIX(actual, expected)                               \
 do {                                                                         \
     const auto& a = actual;                                                  \
     const auto& b = expected;                                                \
