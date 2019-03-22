@@ -386,8 +386,7 @@ private:
     /// It's fine for the size of `states` to be less than the size of Y; only
     /// the first states.size1() values are copied.
     void convertToSimTKState(const double& time, const casadi::DM& states,
-            const Model& model,
-            SimTK::State& simtkState) const {
+            const Model& model, SimTK::State& simtkState) const {
         simtkState.setTime(time);
         // Assign the generalized coordinates. We know we have NU generalized
         // speeds because we do not yet support quaternions.
@@ -483,6 +482,12 @@ private:
             const SimTK::State& stateBase,
             const SimTK::State& simtkStateDisabledConstraints,
             casadi::DM& kinematic_constraint_errors) const {
+
+        // If all kinematics are prescribed, we assume that the prescribed
+        // kinematics obey any kinematic constraints. Therefore, the kinematic
+        // constraints would be redundant, and we need not enforce them.
+        if (isPrescribedKinematics()) return;
+
         // The total number of scalar holonomic, non-holonomic, and acceleration
         // constraint equations enabled in the model. This does not count
         // equations for derivatives of holonomic and non-holonomic constraints.
@@ -497,10 +502,9 @@ private:
             // Calculuate udoterr. We cannot use State::getUDotErr()
             // because that uses Simbody's multiplilers and UDot,
             // whereas we have our own multipliers and UDot. Here, we use
-            // the udot computed from the base model (with enabled constraints)
-            // since we cannot use (nor do we have availabe) udot computed
+            // the udot computed from the model with disabled constraints
+            // since we cannot use (nor do we have available) udot computed
             // from the original model.
-            // TODO: realize the base model to Acceleration and use UDotErr?
             const auto& matter = modelBase.getMatterSubsystem();
             matter.calcConstraintAccelerationErrors(stateBase,
                     simtkStateDisabledConstraints.getUDot(), m_pvaerr);

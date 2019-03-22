@@ -121,7 +121,7 @@ do {                                                                         \
     OpenSim_CATCH_MATRIX_INTERNAL(REQUIRE, actual, expected, tol, margin);   \
 } while (0)
 
-#define OpenSim_CHECK_MATRIX(actual, expected)                             \
+#define OpenSim_CHECK_MATRIX(actual, expected)                               \
 do {                                                                         \
     const auto& a = actual;                                                  \
     const auto& b = expected;                                                \

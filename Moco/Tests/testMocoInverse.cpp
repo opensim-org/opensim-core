@@ -67,7 +67,7 @@ TEST_CASE("PrescribedKinematics prescribe() and realize()") {
     CHECK(ydot[1] == Approx(2 * c2));
 }
 
-TEST_CASE("PrescribedKinematics direct collocation") {
+TEST_CASE("PrescribedKinematics direct collocation auxiliary dynamics") {
 
     // Make sure that custom dynamics are still handled properly even when
     // we are skipping over the kinematic/multibody states. That is, this test
@@ -133,10 +133,18 @@ TEST_CASE("MocoInverse gait10dof18musc") {
     inverse.set_ignore_tendon_compliance(true);
     inverse.setKinematicsFile("walk_gait1018_state_reference.mot");
     inverse.set_create_reserve_actuators(2.0);
+    inverse.set_lowpass_cutoff_frequency_for_kinematics(6);
+    inverse.set_initial_time(0.01);
+    inverse.set_final_time(1.3);
 
     inverse.setExternalLoadsFile("walk_gait1018_subject01_grf.xml");
 
     MocoInverseSolution solution = inverse.solve();
+
+    const auto actual = solution.getMocoSolution().getControlsTrajectory();
+    MocoIterate std("std_testMocoInverseGait10dof18musc_solution.sto");
+    const auto expected = std.getControlsTrajectory();
+    OpenSim_CHECK_MATRIX_TOL(actual, expected, 1e-3);
 
     // TODO: Implement cost minimization directly in CasADi.
     //      -> evaluating the integral cost only takes up like 5% of the

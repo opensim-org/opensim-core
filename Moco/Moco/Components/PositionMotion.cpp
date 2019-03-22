@@ -147,6 +147,7 @@ void PositionMotion::extendAddToSystem(SimTK::MultibodySystem& system) const {
     for (int imb = 0; imb < matter.getNumBodies(); ++imb) {
         auto& mobod = matter.updMobilizedBody(SimTK::MobilizedBodyIndex(imb));
         m_motions.push_back(SimTKPositionMotion(mobod));
+        m_motions.back().setDisabledByDefault(!get_default_enabled());
     }
 }
 

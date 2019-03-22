@@ -31,9 +31,8 @@ class MocoInverse;
 /// This class holds the solution from MocoInverseTool.
 class MocoInverseSolution {
 public:
-    const MocoSolution& getMocoSolution() const {
-        return m_mocoSolution;
-    }
+    const MocoSolution& getMocoSolution() const { return m_mocoSolution; }
+
 private:
     void setMocoSolution(MocoSolution mocoSolution) {
         m_mocoSolution = std::move(mocoSolution);
@@ -49,6 +48,14 @@ private:
 /// to predict (unobserved) behavior. In this case, "inverse" refers to the
 /// multibody systems. This class can still be used to simulate muscles in a
 /// "forward" or predictive sense.
+///
+/// The kinematics file must provide values for all coordinates (even those
+/// labeled as dependent in a CoordinateCouplerConstraint); missing coordinates
+/// are set to NaN.
+///
+/// The provided trajectory is altered to satisfy any enabled kinematic
+/// constraints in the model. Filtering is performed before satisfying the
+/// constraints.
 ///
 /// @underdevelopment
 class OSIMMOCO_API MocoInverse : public Object {
@@ -71,7 +78,19 @@ public:
             "The time duration of each mesh interval "
             "(default: 0.020 seconds).");
 
-    OpenSim_DECLARE_PROPERTY(external_loads_file, std::string, "TODO");
+    OpenSim_DECLARE_PROPERTY(kinematics_file, std::string,
+            "Path to a STO file containing generalized coordinates "
+            "to prescribe. The path can be absolute or relative to the setup "
+            "file.");
+
+    OpenSim_DECLARE_PROPERTY(lowpass_cutoff_frequency_for_kinematics, double,
+            "The frequency (Hz) at which to filter the kinematics. "
+            "(default is -1, which means no filtering; for walking, "
+            "consider 6 Hz).");
+
+    OpenSim_DECLARE_PROPERTY(external_loads_file, std::string,
+            "XML file (.xml) containing the forces applied to the model as "
+            "ExternalLoads.");
 
     OpenSim_DECLARE_PROPERTY(ignore_activation_dynamics, bool,
             "Ignore activation dynamics for all muscles in the model. "
@@ -91,14 +110,12 @@ public:
             "discourage the use of the reserve actuators. (default is -1, "
             "which means no reserves are created)");
 
-    MocoInverse() {
-        constructProperties();
-    }
+    MocoInverse() { constructProperties(); }
 
     void setModel(Model model) { m_model = std::move(model); }
 
     void setKinematicsFile(std::string fileName) {
-        m_kinematicsFileName = std::move(fileName);
+        set_kinematics_file(fileName);
     }
 
     void setExternalLoadsFile(std::string fileName) {
@@ -108,7 +125,6 @@ public:
     MocoInverseSolution solve() const;
 
 private:
-
     void constructProperties();
     struct TimeInfo {
         double initialTime;
@@ -119,11 +135,10 @@ private:
             // Time vector from a primary data source.
             const std::vector<double>& time0,
             // Time vector from a secondary data source.
-            const std::vector<double>& time1,
-            const double& meshInterval) const;
+            const std::vector<double>& time1, const double& meshInterval) const;
 
+    // TODO: Move to property.
     Model m_model;
-    std::string m_kinematicsFileName;
 };
 
 } // namespace OpenSim
