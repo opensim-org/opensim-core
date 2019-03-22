@@ -83,6 +83,12 @@ TEST_CASE("DeGrooteFregly2016Muscle basics") {
         }
         {
             DeGrooteFregly2016Muscle musc = muscle;
+            musc.set_active_force_width_scale(0.99999999);
+            SimTK_TEST_MUST_THROW_EXC(musc.finalizeFromProperties(),
+                    SimTK::Exception::ErrorCheck);
+        }
+        {
+            DeGrooteFregly2016Muscle musc = muscle;
             musc.set_fiber_damping(-0.0001);
             SimTK_TEST_MUST_THROW_EXC(musc.finalizeFromProperties(),
                     SimTK::Exception::ErrorCheck);
@@ -234,9 +240,9 @@ void testHangingMuscleMinimumTime(
         muscle->setActivation(state, initActivation);
         model.equilibrateMuscles(state);
         std::cout << "Equilibrium norm fiber length: "
-                << model.getStateVariableValue(
-                        state, "forceset/actuator/norm_fiber_length")
-                << std::endl;
+                  << model.getStateVariableValue(
+                             state, "forceset/actuator/norm_fiber_length")
+                  << std::endl;
     }
 
     // Minimum time trajectory optimization.
