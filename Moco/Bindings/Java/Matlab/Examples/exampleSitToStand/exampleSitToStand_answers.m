@@ -31,7 +31,7 @@ problem = moco.updProblem();
 problem.setModelCopy(getTorqueDrivenModel());
 
 % Part 2b: Add a MocoStateTrackingCost() to the problem using the states
-% from the predictive problem, and set weights to zero for states associated 
+% from the predictive problem, and set weights to zero for states associated
 % with the dependent coordinate in the model's knee CoordinateCoupler
 % constraint.
 tracking = MocoStateTrackingCost();
@@ -55,17 +55,24 @@ trackingSolution.write('trackingSolution.sto');
 moco.visualize(trackingSolution);
 
 %% Part 3: Compare Predictive and Tracking Solutions
-% This is a convenience function provided for you. See below for the 
+% This is a convenience function provided for you. See below for the
 % implementation details.
-compareSolutions(predictSolution, trackingSolution) 
+compareSolutions(predictSolution, trackingSolution)
 
 %% Part 4: Muscle-driven Inverse Problem
-% TODO
-% inverse = MocoInverse();
-% inverse.setModel(getMuscleDrivenModel());
-% inverse.setKinematicsFile('trackingSolution.sto');
-% inverseSolution = inverse.solve();
-% TODO: Add an analyze().
+inverse = MocoInverse();
+inverse.setModel(getMuscleDrivenModel());
+inverse.setKinematicsFile('predictSolution.sto');
+inverse.set_kinematics_allow_extra_columns(true);
+inverse.set_lowpass_cutoff_frequency_for_kinematics(6);
+inverse.set_mesh_interval(0.05);
+inverse.set_create_reserve_actuators(2);
+inverse.set_minimize_sum_squared_states(true);
+inverse.append_output_paths('.*normalized_fiber_length');
+inverse.append_output_paths('.*passive_force_multiplier');
+inverseSolution = inverse.solve();
+inverseOutputs = inverseSolution.getOutputs();
+STOFileAdapter.write(inverseOutputs, 'muscle_outputs.sto');
 
 end
 
@@ -165,8 +172,17 @@ DeGrooteFregly2016Muscle().replaceMuscles(model);
 % problem simple.
 for m = 0:model.getMuscles().getSize()-1
     musc = model.updMuscles().get(m);
-    musc.set_ignore_activation_dynamics(true);
     musc.set_ignore_tendon_compliance(true);
+    musc.set_max_isometric_force(2 * musc.get_max_isometric_force());
+    dgf = DeGrooteFregly2016Muscle.safeDownCast(musc);
+    dgf.set_active_force_width_scale(1.5);
+    if strcmp(char(musc.getName()), 'soleus_r')
+        % Soleus has a very long tendon, so modeling its tendon as rigid
+        % causes the fiber to be unrealistically long and generate
+        % excessive passive fiber force.
+        dgf.set_ignore_passive_fiber_force(true);
+    end
+    dgf.printCurvesToSTOFiles();
 end
 
 end
