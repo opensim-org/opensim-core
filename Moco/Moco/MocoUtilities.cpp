@@ -451,20 +451,26 @@ void OpenSim::createReserveActuators(Model& model, double optimalForce) {
     std::cout << "Adding reserve actuators with an optimal force of "
               << optimalForce << "..." << std::endl;
 
+    Model modelCopy(model);
+    auto state = modelCopy.initSystem();
     std::vector<std::string> coordPaths;
     // Borrowed from
     // CoordinateActuator::CreateForceSetOfCoordinateAct...
-    for (const auto& coord : model.getComponentList<Coordinate>()) {
-        auto* actu = new CoordinateActuator();
-        actu->setCoordinate(&const_cast<Coordinate&>(coord));
-        auto path = coord.getAbsolutePathString();
-        coordPaths.push_back(path);
-        // Get rid of model name.
-        // Get rid of slashes in the path; slashes not allowed in names.
-        std::replace(path.begin(), path.end(), '/', '_');
-        actu->setName("reserve_" + path);
-        actu->setOptimalForce(optimalForce);
-        model.addComponent(actu);
+    for (const auto& coord : modelCopy.getComponentList<Coordinate>()) {
+        if (!coord.isConstrained(state)) {
+            auto* actu = new CoordinateActuator();
+            actu->setCoordinate(
+                    &model.updComponent<Coordinate>(
+                            coord.getAbsolutePathString()));
+            auto path = coord.getAbsolutePathString();
+            coordPaths.push_back(path);
+            // Get rid of model name.
+            // Get rid of slashes in the path; slashes not allowed in names.
+            std::replace(path.begin(), path.end(), '/', '_');
+            actu->setName("reserve_" + path);
+            actu->setOptimalForce(optimalForce);
+            model.addForce(actu);
+        }
     }
     // Re-make the system, since there are new actuators.
     model.initSystem();
