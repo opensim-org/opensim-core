@@ -71,8 +71,23 @@ inverse.set_minimize_sum_squared_states(true);
 inverse.append_output_paths('.*normalized_fiber_length');
 inverse.append_output_paths('.*passive_force_multiplier');
 inverseSolution = inverse.solve();
+inverseSolution.getMocoSolution().write('inverseSolution.sto');
 inverseOutputs = inverseSolution.getOutputs();
 STOFileAdapter.write(inverseOutputs, 'muscle_outputs.sto');
+fprintf('Cost without device: %f\n', ...
+        inverseSolution.getMocoSolution().getObjective());
+
+model = getMuscleDrivenModel();
+device = SpringGeneralizedForce('knee_angle_r');
+device.setStiffness(50);
+device.setRestLength(0);
+device.setViscosity(0);
+model.addForce(device);
+inverse.setModel(model);
+inverseDeviceSolution = inverse.solve();
+inverseDeviceSolution.getMocoSolution().write('inverseDeviceSolution.sto');
+fprintf('Cost with device: %f\n', ...
+        inverseDeviceSolution.getMocoSolution().getObjective());
 
 end
 
