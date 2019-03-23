@@ -45,8 +45,16 @@ int main() {
         APDMDataReaderSettings reconstructFromXML(APDMDataReaderSettings("reader2xml.xml"));
         APDMDataReader reader;
         reader.updSettings() = reconstructFromXML;
-        reader.extendRead("imuData01csv.csv");
-     }
+        DataAdapter::OutputTables tables = reader.extendRead("imuData01csv.csv");
+        const TimeSeriesTableVec3& accelTableTyped =
+            APDMDataReader::getLinearAccelerationsTable(tables);
+        STOFileAdapterVec3::write(accelTableTyped, "accelerations.sto");
+        const SimTK::RowVectorView_<SimTK::Vec3>& rvv = accelTableTyped.getRowAtIndex(0);
+        SimTK::Vec3 fromTable = accelTableTyped.getRowAtIndex(0)[0];
+        SimTK::Vec3 fromFile = SimTK::Vec3{ 0.102542184,0.048829611,9.804986382 };
+        double tolerance = SimTK::Eps;
+        ASSERT_EQUAL(fromTable, fromFile, tolerance);
+    }
     catch (const std::exception& ex) {
         std::cout << "testAPDMDataReader FAILED: " << ex.what() << std::endl;
         return 1;
