@@ -150,7 +150,7 @@ set_package_properties(casadi PROPERTIES
         PURPOSE "Differentiation and optimizer interface.")
 get_filename_component(CASADI_BIN_DIR "${casadi_DIR}/../" ABSOLUTE)
 MocoCopyDLLs(DEP_NAME casadi
-        DEP_BIN_DIR "${CAADI_BIN_DIR}" INSTALL_DLLS "${CMAKE_INSTALL_BINDIR}")
+        DEP_BIN_DIR "${CASADI_BIN_DIR}" INSTALL_DLLS "${CMAKE_INSTALL_BINDIR}")
 
 add_subdirectory(Moco)
 
