@@ -144,7 +144,7 @@ TEST_CASE("MocoInverse gait10dof18musc") {
     const auto actual = solution.getMocoSolution().getControlsTrajectory();
     MocoIterate std("std_testMocoInverseGait10dof18musc_solution.sto");
     const auto expected = std.getControlsTrajectory();
-    OpenSim_CHECK_MATRIX_TOL(actual, expected, 1e-3);
+    OpenSim_CHECK_MATRIX_ABSTOL(actual, expected, 1e-2);
 
     // TODO: Implement cost minimization directly in CasADi.
     //      -> evaluating the integral cost only takes up like 5% of the
