@@ -7,40 +7,41 @@ import org.opensim.modeling.*;
 % Part 1a: Get a pre-configured MocoTool and set a torque-driven model on
 % the underlying MocoProblem.
 
-
 % Part 1b: Add a MocoControlCost to the problem.
-
 
 % Part 1c: Update the underlying MocoCasADiSolver with the new problem.
 
-
 % Part 1d: Solve, write the solution to file, and visualize.
-
 
 %% Part 2: Torque-driven Tracking Problem
 % Part 2a: Get a fresh MocoTool and set the torque-driven model on the
 % problem.
 
-
 % Part 2b: Add a MocoStateTrackingCost() to the problem using the states
-% from the predictive problem, and set weights to zero for states associated 
+% from the predictive problem, and set weights to zero for states associated
 % with the dependent coordinate in the model's knee CoordinateCoupler
 % constraint.
 
+% Part 2c: Add a MocoControlCost() with a low weight to avoid oscillations
+% in the solution.
 
-% Part 2c: Update the underlying MocoCasADiSolver with the new problem.
+% Part 2d: Update the underlying MocoCasADiSolver with the new problem.
 
+% Part 2e: Set the initial guess using the predictive problem solution.
 
-% Part 2d: Set the initial guess using the predictive problem solution.
-
-
-% Part 2e: Solve, write the solution to file, and visualize.
-
+% Part 2f: Solve, write the solution to file, and visualize.
 
 %% Part 3: Compare Predictive and Tracking Solutions
-% This is a convenience function provided for you. See below for the 
+% This is a convenience function provided for you. See below for the
 % implementation details.
-compareSolutions(predictSolution, trackingSolution) 
+compareSolutions(predictSolution, trackingSolution)
+
+%% Part 4: Muscle-driven Inverse Problem
+
+%% Part 5: Add an assistive device to the knee.
+
+%% Part 6: Compare unassisted and assisted Inverse Problems.
+compareInverseSolutions(inverseSolution, inverseDeviceSolution);
 
 end
 
@@ -114,9 +115,9 @@ model.updForceSet().clearAndDestroy();
 model.initSystem();
 
 % Add CoordinateActuators to the model degrees-of-freedom.
-addCoordinateActuator(model, 'hip_flexion_r', 100);
-addCoordinateActuator(model, 'knee_angle_r', 300);
-addCoordinateActuator(model, 'ankle_angle_r', 100);
+addCoordinateActuator(model, 'hip_flexion_r', 150);
+addCoordinateActuator(model, 'knee_angle_r', 150);
+addCoordinateActuator(model, 'ankle_angle_r', 150);
 
 end
 
@@ -128,11 +129,11 @@ import org.opensim.modeling.*;
 model = Model('sitToStand_3dof9musc.osim');
 model.finalizeConnections();
 
-% Replace the muscles in the model with muscles from DeGroote, Fregly, 
-% et al. 2016, "Evaluation of Direct Collocation Optimal Control Problem 
+% Replace the muscles in the model with muscles from DeGroote, Fregly,
+% et al. 2016, "Evaluation of Direct Collocation Optimal Control Problem
 % Formulations for Solving the Muscle Redundancy Problem". These muscles
 % have the same properties as the original muscles but their characteristic
-% curves are optimized for direct collocation (i.e. no discontinuities, 
+% curves are optimized for direct collocation (i.e. no discontinuities,
 % twice differentiable, etc).
 DeGrooteFregly2016Muscle().replaceMuscles(model);
 
@@ -140,13 +141,21 @@ DeGrooteFregly2016Muscle().replaceMuscles(model);
 % problem simple.
 for m = 0:model.getMuscles().getSize()-1
     musc = model.updMuscles().get(m);
-    musc.set_ignore_activation_dynamics(true);
     musc.set_ignore_tendon_compliance(true);
+    musc.set_max_isometric_force(2 * musc.get_max_isometric_force());
+    dgf = DeGrooteFregly2016Muscle.safeDownCast(musc);
+    dgf.set_active_force_width_scale(1.5);
+    if strcmp(char(musc.getName()), 'soleus_r')
+        % Soleus has a very long tendon, so modeling its tendon as rigid
+        % causes the fiber to be unrealistically long and generate
+        % excessive passive fiber force.
+        dgf.set_ignore_passive_fiber_force(true);
+    end
 end
 
 end
 
-function compareSolutions(predictSolution, trackingSolution) 
+function compareSolutions(predictSolution, trackingSolution)
 
 %% States.
 figure(1);
@@ -163,8 +172,8 @@ for i = 0:numStates-1
          trackingSolution.getStateMat(stateNames.get(i)), '--b', ...
          'linewidth', 2.5);
     hold off
-    stateName = string(stateNames.get(i).toCharArray');
-    title(stateName(10:end), 'Interpreter', 'none')
+    stateName = stateNames.get(i).toCharArray';
+    title(stateName(11:end), 'Interpreter', 'none')
     xlabel('time (s)')
     if contains(stateName, 'value')
         ylabel('position (rad)')
@@ -191,11 +200,44 @@ for i = 0:numControls-1
          trackingSolution.getControlMat(controlNames.get(i)), '--b', ...
          'linewidth', 2.5);
     hold off
-    title(controlNames.get(i).toCharArray', 'Interpreter', 'none')        
+    title(controlNames.get(i).toCharArray', 'Interpreter', 'none')
     xlabel('time (s)')
     ylabel('value')
     if i == 0
        legend('predict', 'track')
+    end
+end
+
+end
+
+function compareInverseSolutions(unassistedSolution, assistedSolution)
+
+unassistedSolution = unassistedSolution.getMocoSolution();
+assistedSolution = assistedSolution.getMocoSolution();
+figure(3);
+stateNames = unassistedSolution.getStateNames();
+numStates = stateNames.size();
+dim = ceil(sqrt(numStates));
+for i = 0:numStates-1
+    subplot(dim, dim, i+1);
+    plot(unassistedSolution.getTimeMat(), ...
+         unassistedSolution.getStateMat(stateNames.get(i)), '-r', ...
+         'linewidth', 3);
+    hold on
+    plot(assistedSolution.getTimeMat(), ...
+         assistedSolution.getStateMat(stateNames.get(i)), '--b', ...
+         'linewidth', 2.5);
+    hold off
+    stateName = stateNames.get(i).toCharArray';
+    plotTitle = stateName;
+    plotTitle = strrep(plotTitle, '/forceset/', '');
+    plotTitle = strrep(plotTitle, '/activation', '');
+    title(plotTitle, 'Interpreter', 'none');
+    xlabel('time (s)');
+    ylabel('activation (-)');
+    ylim([0, 1]);
+    if i == 0
+       legend('unassisted', 'assisted');
     end
 end
 
