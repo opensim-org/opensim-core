@@ -210,8 +210,9 @@ violate the constraints.
 @section tips Tips for solving a custom problem
 
 - Add reserve actuators!
-
-1. Make sure every variable has bounds.
+- Make sure every variable has bounds.
+- If controls display high frequency oscillations, try tightening the solver's
+  convergence and constraint tolerances.
 
 */
 
