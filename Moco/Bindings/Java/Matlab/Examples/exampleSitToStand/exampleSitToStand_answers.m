@@ -42,14 +42,18 @@ tracking.setWeight('/jointset/patellofemoral_r/knee_angle_r_beta/value', 0);
 tracking.setWeight('/jointset/patellofemoral_r/knee_angle_r_beta/speed', 0);
 problem.addCost(tracking);
 
-% Part 2c: Update the underlying MocoCasADiSolver with the new problem.
+% Part 2c: Add a MocoControlCost() with a low weight to avoid oscillations
+% in the solution.
+problem.addCost(MocoControlCost('effort', 0.01));
+
+% Part 2d: Update the underlying MocoCasADiSolver with the new problem.
 solver = MocoCasADiSolver.safeDownCast(moco.updSolver());
 solver.resetProblem(problem);
 
-% Part 2d: Set the initial guess using the predictive problem solution.
+% Part 2e: Set the initial guess using the predictive problem solution.
 solver.setGuess(predictSolution);
 
-% Part 2e: Solve, write the solution to file, and visualize.
+% Part 2f: Solve, write the solution to file, and visualize.
 trackingSolution = moco.solve();
 trackingSolution.write('trackingSolution.sto');
 moco.visualize(trackingSolution);
@@ -78,6 +82,7 @@ STOFileAdapter.write(inverseOutputs, 'muscle_outputs.sto');
 fprintf('Cost without device: %f\n', ...
         inverseSolution.getMocoSolution().getObjective());
 
+%% Part 5: Add an assistive device to the knee.
 model = getMuscleDrivenModel();
 device = SpringGeneralizedForce('knee_angle_r');
 device.setStiffness(50);
@@ -89,6 +94,9 @@ inverseDeviceSolution = inverse.solve();
 inverseDeviceSolution.getMocoSolution().write('inverseDeviceSolution.sto');
 fprintf('Cost with device: %f\n', ...
         inverseDeviceSolution.getMocoSolution().getObjective());
+
+%% Part 6: Compare unassisted and assisted Inverse Problems.
+compareInverseSolutions(inverseSolution, inverseDeviceSolution);
 
 end
 
@@ -162,9 +170,9 @@ model.updForceSet().clearAndDestroy();
 model.initSystem();
 
 % Add CoordinateActuators to the model degrees-of-freedom.
-addCoordinateActuator(model, 'hip_flexion_r', 100);
-addCoordinateActuator(model, 'knee_angle_r', 300);
-addCoordinateActuator(model, 'ankle_angle_r', 100);
+addCoordinateActuator(model, 'hip_flexion_r', 150);
+addCoordinateActuator(model, 'knee_angle_r', 150);
+addCoordinateActuator(model, 'ankle_angle_r', 150);
 
 end
 
@@ -252,6 +260,39 @@ for i = 0:numControls-1
     ylabel('value')
     if i == 0
        legend('predict', 'track')
+    end
+end
+
+end
+
+function compareInverseSolutions(unassistedSolution, assistedSolution)
+
+unassistedSolution = unassistedSolution.getMocoSolution();
+assistedSolution = assistedSolution.getMocoSolution();
+figure(3);
+stateNames = unassistedSolution.getStateNames();
+numStates = stateNames.size();
+dim = ceil(sqrt(numStates));
+for i = 0:numStates-1
+    subplot(dim, dim, i+1);
+    plot(unassistedSolution.getTimeMat(), ...
+         unassistedSolution.getStateMat(stateNames.get(i)), '-r', ...
+         'linewidth', 3);
+    hold on
+    plot(assistedSolution.getTimeMat(), ...
+         assistedSolution.getStateMat(stateNames.get(i)), '--b', ...
+         'linewidth', 2.5);
+    hold off
+    stateName = stateNames.get(i).toCharArray';
+    plotTitle = stateName;
+    plotTitle = strrep(plotTitle, '/forceset/', '');
+    plotTitle = strrep(plotTitle, '/activation', '');
+    title(plotTitle, 'Interpreter', 'none');
+    xlabel('time (s)');
+    ylabel('activation (-)');
+    ylim([0, 1]);
+    if i == 0
+       legend('unassisted', 'assisted');
     end
 end
 
