@@ -35,17 +35,52 @@ int main() {
         APDMDataReaderSettings readerSettings;
         std::vector<std::string> imu_names{ "shank", "thigh" };
         std::vector<std::string> names_in_experiment{ "Static", "Middle" };
-        // Programmatically add items to Map, write to xml
+        // Programmatically add items to name mapping, write to xml
         for (int index = 0; index < imu_names.size(); ++index) {
             ExperimentalSensor  nextSensor(names_in_experiment[index], imu_names[index]);
             readerSettings.append_ExperimentalSensors(nextSensor);
         }
         readerSettings.print("reader2xml.xml");
         // read xml we wrote into a new XsensDataReader to readTrial
-        APDMDataReaderSettings reconstructFromXML(APDMDataReaderSettings("reader2xml.xml"));
-        APDMDataReader reader;
-        reader.updSettings() = reconstructFromXML;
-        reader.extendRead("imuData01csv.csv");
+        APDMDataReaderSettings reconstructFromXML("reader2xml.xml");
+        APDMDataReader reader(reconstructFromXML);
+        DataAdapter::OutputTables tables = reader.extendRead("imuData01csv.csv");
+        // Write tables to sto files
+        // Accelerations
+        const TimeSeriesTableVec3& accelTableTyped =
+            APDMDataReader::getLinearAccelerationsTable(tables);
+        STOFileAdapterVec3::write(accelTableTyped, "accelerations.sto");
+        const SimTK::RowVectorView_<SimTK::Vec3>& rvv = accelTableTyped.getRowAtIndex(0);
+        SimTK::Vec3 fromTable = accelTableTyped.getRowAtIndex(0)[0];
+        SimTK::Vec3 fromFile = SimTK::Vec3{ 0.102542184,0.048829611,9.804986382 };
+        double tolerance = SimTK::Eps;
+        ASSERT_EQUAL(fromTable, fromFile, tolerance);
+        // test last row as well to make sure all data is read correctly, 
+        // size is as expected
+        size_t numRows = accelTableTyped.getIndependentColumn().size();
+        fromTable = accelTableTyped.getRowAtIndex(numRows - 1)[0];
+        fromFile = SimTK::Vec3{ 2.657654, 5.012634, -7.581414 };
+        ASSERT_EQUAL(fromTable, fromFile, tolerance);
+        // Magenometer
+        const TimeSeriesTableVec3& magTableTyped =
+            APDMDataReader::getMagneticHeadingTable(tables);
+        STOFileAdapterVec3::write(magTableTyped, "magnetometers.sto");
+        fromTable = magTableTyped.getRowAtIndex(0)[0];
+        fromFile = SimTK::Vec3{ -0.045410, -0.266113, 0.897217 };
+        ASSERT_EQUAL(fromTable, fromFile, tolerance);
+        // Gyro
+        const TimeSeriesTableVec3& gyroTableTyped =
+            APDMDataReader::getAngularVelocityTable(tables);
+        STOFileAdapterVec3::write(gyroTableTyped, "gyros.sto");
+        fromTable = gyroTableTyped.getRowAtIndex(0)[0];
+        fromFile = SimTK::Vec3{ 0.005991, -0.032133, 0.022713 };
+        ASSERT_EQUAL(fromTable, fromFile, tolerance);
+        // Orientation
+        const TimeSeriesTableQuaternion& quatTableTyped =
+            APDMDataReader::getOrientationsTable(tables);
+        STOFileAdapterQuaternion::write(quatTableTyped, "quaternions.sto");
+        SimTK::Quaternion quat = quatTableTyped.getRowAtIndex(0)[1];
+
      }
     catch (const std::exception& ex) {
         std::cout << "testAPDMDataReader FAILED: " << ex.what() << std::endl;
