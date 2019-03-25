@@ -163,6 +163,9 @@ public:
             "Minimize the sum of squared states (e.g., activations). "
             "Do not use this if tendon compliance is enabled. Default: false.");
 
+    OpenSim_DECLARE_OPTIONAL_PROPERTY(tolerance, double,
+            "The convergence and constraint tolerances (default: 1e-3).");
+
     OpenSim_DECLARE_LIST_PROPERTY(output_paths, std::string,
             "Outputs to compute after solving the problem."
             " Entries can be regular expressions (e.g., '.*activation').");

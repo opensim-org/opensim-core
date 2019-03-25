@@ -68,6 +68,7 @@ inverse.set_lowpass_cutoff_frequency_for_kinematics(6);
 inverse.set_mesh_interval(0.05);
 inverse.set_create_reserve_actuators(2);
 inverse.set_minimize_sum_squared_states(true);
+inverse.set_tolerance(1e-4);
 inverse.append_output_paths('.*normalized_fiber_length');
 inverse.append_output_paths('.*passive_force_multiplier');
 inverseSolution = inverse.solve();
@@ -197,7 +198,6 @@ for m = 0:model.getMuscles().getSize()-1
         % excessive passive fiber force.
         dgf.set_ignore_passive_fiber_force(true);
     end
-    dgf.printCurvesToSTOFiles();
 end
 
 end

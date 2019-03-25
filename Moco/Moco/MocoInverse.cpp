@@ -44,6 +44,7 @@ void MocoInverse::constructProperties() {
     constructProperty_ignore_tendon_compliance(false);
     constructProperty_create_reserve_actuators(-1);
     constructProperty_minimize_sum_squared_states(false);
+    constructProperty_tolerance(1e-3);
     constructProperty_output_paths();
 }
 
@@ -167,8 +168,13 @@ MocoInverseSolution MocoInverse::solve() const {
 
     auto& solver = moco.initCasADiSolver();
     solver.set_dynamics_mode("implicit");
-    solver.set_optim_convergence_tolerance(1e-3);
-    solver.set_optim_constraint_tolerance(1e-3);
+    if (getProperty_tolerance().size()) {
+        OPENSIM_THROW_IF_FRMOBJ(get_tolerance() <= 0, Exception,
+                format("Tolerance must be positive, but got %g.",
+                        get_tolerance()));
+        solver.set_optim_convergence_tolerance(get_tolerance());
+        solver.set_optim_constraint_tolerance(get_tolerance());
+    }
     // The sparsity detection works fine with DeGrooteFregly2016Muscle.
     solver.set_optim_sparsity_detection("random");
     // solver.set_optim_hessian_approximation("exact");
