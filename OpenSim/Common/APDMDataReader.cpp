@@ -12,6 +12,8 @@ const std::string APDMDataReader::LinearAccelerations{ "linear_accelerations" };
 const std::string APDMDataReader::MagneticHeading{ "magnetic_heading" };
 const std::string APDMDataReader::AngularVelocity{ "angular_velocity" };
 
+const std::string APDMDataReader::TimeLabel{ "Time" };
+
 APDMDataReader* APDMDataReader::clone() const {
     return new APDMDataReader{*this};
 }
@@ -34,7 +36,6 @@ APDMDataReader::extendRead(const std::string& fileName) const {
     std::vector<std::string> labels;
     // files specified by prefix + file name exist
     double dataRate = SimTK::NaN;
-    int packetCounterIndex = -1;
     int accIndex = -1;
     int gyroIndex = -1;
     int magIndex = -1;
@@ -68,7 +69,10 @@ APDMDataReader::extendRead(const std::string& fileName) const {
     // Line 3, find columns for IMUs
     std::getline(in_stream, line);
     tokens = FileAdapter::tokenize(line, ",");
-    //OPENSIM_THROW_IF((tokens[0] != "Time"), UnexpectedColumnLabel);
+    OPENSIM_THROW_IF((tokens[0] != TimeLabel), UnexpectedColumnLabel,
+        fileName,
+        TimeLabel,
+        tokens[0]);
     // Will create a table to map 
     // internally keep track of what data was found in input files
     bool foundLinearAccelerationData = (accIndex != -1);
@@ -150,16 +154,15 @@ APDMDataReader::extendRead(const std::string& fileName) const {
         }
     }
     // Trim Matrices in use to actual data and move into tables
-    int actualSize = rowNumber;
-    times.resize(actualSize);
+    times.resize(rowNumber);
     // Repeat for Data matrices in use and create Tables from them or size 0 for empty
-    linearAccelerationData.resizeKeep(foundLinearAccelerationData? actualSize: 0, 
+    linearAccelerationData.resizeKeep(foundLinearAccelerationData? rowNumber : 0,
         n_imus);
-    magneticHeadingData.resizeKeep(foundMagneticHeadingData?actualSize: 0, 
+    magneticHeadingData.resizeKeep(foundMagneticHeadingData? rowNumber : 0,
             n_imus);
-    angularVelocityData.resizeKeep(foundAngularVelocityData?actualSize:0, 
+    angularVelocityData.resizeKeep(foundAngularVelocityData? rowNumber :0,
         n_imus);
-    rotationsData.resizeKeep(actualSize, n_imus);
+    rotationsData.resizeKeep(rowNumber, n_imus);
     // Now create the tables from matrices
     // Create 4 tables for Rotations, LinearAccelerations, AngularVelocity, MagneticHeading
     // Tables could be empty if data is not present in file(s)

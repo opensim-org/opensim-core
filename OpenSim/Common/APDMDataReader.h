@@ -57,15 +57,16 @@ public:
     static const std::string MagneticHeading;  // name of table for data from Magnetometer (Magnetic Heading)
     static const std::string AngularVelocity;  // name of table for gyro data (AngularVelocity)
 
-    /** Typically, APDM can export a trial as one .h5 file (binary that we can't parse as of now) or as .csv
-    ASCII text files that are comma delimited, one per sensor.
+    static const std::string TimeLabel;
+    /** Typically, APDM can export a trial as one .h5 file (binary that we don't parse as of now) or as .csv
+    ASCII text file that is comma delimited, grouped in order by sensor.
     The function below read the csv file . It produces a 
-    list of tables depending on the contents of the files read. 
+    list of tables depending on the contents of the file read. 
     - One table for rotations, 
     - one for LinearAccelerations
     - one for MagneticHeading data, 
     - one for AngularVelocity data. 
-    - one for Barometer data
+    - Barometer and Temperature data is ignored for now
     */
     DataAdapter::OutputTables extendRead(const std::string& fileName) const override;
     /** Implements writing functionality, not implemented.                         */
