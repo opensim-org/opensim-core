@@ -601,7 +601,7 @@ public:
 
     /** dump the XML representation of this %Object into an std::string and return it.
     Mainly intended for debugging and for use by the XML browser in the GUI. **/
-    std::string dump(bool dumpName=false); 
+    std::string dump() const; 
     /**@}**/
     //--------------------------------------------------------------------------
     // ADVANCED/OBSCURE/QUESTIONABLE/BUGGY
@@ -1156,6 +1156,8 @@ template <> struct Object_GetClassName<SimTK::SpatialVec>
 {   static const std::string name() {return "SpatialVec";} };
 template <> struct Object_GetClassName<SimTK::Transform>
 {   static const std::string name() {return "Transform";} };
+template <> struct Object_GetClassName<SimTK::Rotation_<SimTK::Real>>
+{   static const std::string name() { return "Rotation"; } };
 
 #define OpenSim_OBJECT_ANY_DEFS(ConcreteClass, SuperClass)                     \
 public:                                                                        \

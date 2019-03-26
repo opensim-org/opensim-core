@@ -1392,6 +1392,28 @@ protected:
             }
         }
     }
+    // Split element into constituent components and assign the components 
+    // according to the iterator argument. This function will write MxN matrix
+    // elements starting from *begin* but not necessarily up to *end*. 
+    // Elements are written out row-wise.
+    // An exception is thrown if *end* is reached before assigning all components.
+    // Example: Mat<3, 3> has 9 components.
+    template<int M, int N, typename Iter>
+    static
+        void splitAndAssignElement(Iter begin, Iter end,
+            const SimTK::Mat<M, N>& elem) {
+        for (unsigned i = 0; i < M; ++i) {
+            for (unsigned j = 0; j < N; ++j) {
+                OPENSIM_THROW_IF(begin == end,
+                    Exception,
+                    "Iterators do not produce enough elements. "
+                    "Expected: " + std::to_string(M * N) +
+                    " Received: " + std::to_string((i + 1) * j));
+
+                *begin++ = elem[i][j];
+            }
+        }
+    }
     // Unsupported type.
     template<typename Iter>
     static
@@ -1571,6 +1593,11 @@ protected:
     static constexpr
     unsigned numComponentsPerElement_impl(SimTK::Vec<M>) {
         return M;
+    }
+    template<int M, int N>
+    static constexpr
+        unsigned numComponentsPerElement_impl(SimTK::Mat<M, N>) {
+        return M * N;
     }
     template<int M, int N>
     static constexpr
