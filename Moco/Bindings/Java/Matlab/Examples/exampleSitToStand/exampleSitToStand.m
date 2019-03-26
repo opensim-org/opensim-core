@@ -116,7 +116,7 @@ model.initSystem();
 
 % Add CoordinateActuators to the model degrees-of-freedom.
 addCoordinateActuator(model, 'hip_flexion_r', 150);
-addCoordinateActuator(model, 'knee_angle_r', 150);
+addCoordinateActuator(model, 'knee_angle_r', 300);
 addCoordinateActuator(model, 'ankle_angle_r', 150);
 
 end
