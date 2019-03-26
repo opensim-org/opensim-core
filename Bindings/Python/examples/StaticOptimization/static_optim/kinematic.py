@@ -67,11 +67,11 @@ class KinematicModel:
             self.all_qdot.append(qdot)
             self.all_qddot.append(qddot)
 
+            self.model.initStateWithoutRecreatingSystem(self.state)
             self.upd_model_kinematics(frame=0)
 
     def upd_model_kinematics(self, frame):
         # get a fresh state
-        self.model.initStateWithoutRecreatingSystem(self.state)
         self.state.setTime(self.get_time(frame))
 
         # update kinematic states
