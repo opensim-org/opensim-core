@@ -33,6 +33,7 @@
 //      7. ExternalForce
 //      8. PathSpring
 //      9. ExpressionBasedPointToPointForce
+//	   10. Smith2016Ligament
 //      
 //     Add tests here as Forces are added to OpenSim
 //
@@ -67,6 +68,7 @@ void testCoordinateLimitForceRotational();
 void testExpressionBasedPointToPointForce();
 void testExpressionBasedCoordinateForce();
 void testSerializeDeserialize();
+void testSmith2016Ligament();
 
 int main()
 {
@@ -149,6 +151,12 @@ int main()
         failures.push_back("testExpressionBasedCoordinateForce");
     }
 
+	try { testSmith2015Ligament(); }
+    catch (const std::exception& e){
+        cout << e.what() <<endl; 
+        failures.push_back("testSmith2015Ligament");
+    }
+
     try { testSerializeDeserialize(); }
     catch (const std::exception& e){
         cout << e.what() <<endl; 
@@ -168,6 +176,115 @@ int main()
 //==============================================================================
 // Test Cases
 //==============================================================================
+void testSmith2016Ligament()
+{
+    using namespace SimTK;
+
+    double mass = 1;
+    double stiffness = 10;
+    double restlength = 0.5;
+    double dissipation = 0.1;
+    double start_h = 0.5;
+
+    // Setup OpenSim model
+    Model osimModel{};
+    osimModel.setName("Smith2016Ligament");
+    //OpenSim bodies
+    const Ground& ground = osimModel.getGround();;
+    OpenSim::Body pulleyBody("PulleyBody", mass ,Vec3(0), 
+                             mass*SimTK::Inertia::brick(0.1, 0.1, 0.1));
+    OpenSim::Body block("block", mass ,Vec3(0), 
+                        mass*SimTK::Inertia::brick(0.2, 0.1, 0.1));
+    block.attachGeometry(new Brick(Vec3(0.2, 0.1, 0.1)));
+    block.scale(Vec3(0.2, 0.1, 0.1), false);
+    
+    WrapCylinder* pulley = new WrapCylinder();
+    pulley->set_radius(0.1);
+    pulley->set_length(0.05);
+
+    // Add the wrap object to the body, which takes ownership of it
+    pulleyBody.addWrapObject(pulley);
+
+    // Add joints
+    WeldJoint weld("pulley", ground, Vec3(0, 1.0, 0), Vec3(0), pulleyBody, Vec3(0), Vec3(0));
+    SliderJoint slider("slider", ground, Vec3(0), Vec3(0,0,Pi/2), block, Vec3(0), Vec3(0,0,Pi/2));
+
+    double positionRange[2] = {-10, 10};
+    // Rename coordinate for the slider joint
+    auto& sliderCoord = slider.updCoordinate();
+    sliderCoord.setName("block_h");
+    sliderCoord.setRange(positionRange);
+
+    osimModel.addBody(&block);
+    osimModel.addJoint(&weld);
+
+    osimModel.addBody(&pulleyBody);
+    osimModel.addJoint(&slider);
+
+    osimModel.setGravity(gravity_vec);
+
+    Smith2016Ligament spring("spring", restlength, stiffness, dissipation);
+    spring.updGeometryPath().appendNewPathPoint("origin", block, Vec3(-0.1, 0.0 ,0.0));
+    
+    int N = 10;
+    for(int i=1; i<N; ++i){
+        double angle = i*Pi/N;
+        double x = 0.1*cos(angle);
+        double y = 0.1*sin(angle);
+        spring.updGeometryPath().appendNewPathPoint("", pulleyBody, Vec3(-x, y ,0.0));
+    }
+
+    spring.updGeometryPath().appendNewPathPoint("insertion", block, Vec3(0.1, 0.0 ,0.0));
+
+    // BUG in defining wrapping API requires that the Force containing the GeometryPath be
+    // connected to the model before the wrap can be added
+    osimModel.addForce(&spring);
+
+    // Create the force reporter
+    ForceReporter* reporter = new ForceReporter(&osimModel);
+    osimModel.addAnalysis(reporter);
+
+    //osimModel.setUseVisualizer(true);
+    SimTK::State& osim_state = osimModel.initSystem();
+
+    sliderCoord.setValue(osim_state, start_h);
+    osimModel.getMultibodySystem().realize(osim_state, Stage::Position );
+
+    //==========================================================================
+    // Compute the force and torque at the specified times.
+    Manager manager(osimModel);
+    manager.setIntegratorAccuracy(1e-6);
+    osim_state.setTime(0.0);
+    manager.initialize(osim_state);
+
+    double final_t = 10.0;
+    osim_state = manager.integrate(final_t);
+
+    // tension should only be velocity dependent
+    osimModel.getMultibodySystem().realize(osim_state, Stage::Velocity);
+
+    // Now check that the force reported by spring
+    double model_force = spring.getTension(osim_state);
+
+    // get acceleration of the block
+    osimModel.getMultibodySystem().realize(osim_state, Stage::Acceleration);
+    double hddot = osimModel.getCoordinateSet().get("block_h").getAccelerationValue(osim_state);
+
+    // the tension should be half the weight of the block
+    double analytical_force = -0.5*(gravity_vec(1)-hddot)*mass;
+
+    // Save the forces
+    reporter->getForceStorage().print("path_spring_forces.mot");  
+    
+    // something is wrong if the block does not reach equilibrium
+    ASSERT_EQUAL(analytical_force, model_force, 1e-3);
+
+    // Before exiting lets see if copying the spring works
+    PathSpring *copyOfSpring = spring.clone();
+    ASSERT(*copyOfSpring == spring);
+    
+    osimModel.disownAllComponents();
+}
 
 void testExpressionBasedCoordinateForce()
 {

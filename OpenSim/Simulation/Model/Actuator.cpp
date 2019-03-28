@@ -181,7 +181,7 @@ void ScalarActuator::extendAddToSystem(SimTK::MultibodySystem& system) const
     addCacheVariable<double>("speed", 0.0, Stage::Velocity);
 
     // Discrete state variable is the override actuation value if in override mode
-    addDiscreteVariable("override_actuation", Stage::Time);
+    addDiscreteVariable("override_actuation", Stage::Dynamics);
 }
 
 double ScalarActuator::getControl(const SimTK::State& s) const

@@ -49,6 +49,7 @@
 #include "Model/ElasticFoundationForce.h"
 #include "Model/HuntCrossleyForce.h"
 #include "Model/Ligament.h"
+#include "Model/Smith2016Ligament.h"
 #include "Model/JointSet.h"
 #include "Model/Marker.h"
 #include "Model/Station.h"
@@ -233,6 +234,7 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
     Object::registerType( ElasticFoundationForce::ContactParametersSet() );
 
     Object::registerType( Ligament() );
+	Object::registerType( Smith2016Ligament() );
     Object::registerType( PrescribedForce() );
     Object::registerType( ExternalForce() );
     Object::registerType( PointToPointSpring() );
