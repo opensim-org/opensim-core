@@ -559,14 +559,16 @@ public:
     /// Default constructor
     Mesh() :
         Geometry(),
-        cachedMesh(nullptr)
+        cachedMesh(nullptr),
+        warningGiven(false)
     {
         constructProperty_mesh_file("");
     }
     /// Constructor that takes a mesh file name
     Mesh(const std::string& geomFile) :
         Geometry(),
-        cachedMesh(nullptr)
+        cachedMesh(nullptr),
+        warningGiven(false)
     {
         constructProperty_mesh_file("");
         upd_mesh_file() = geomFile;
@@ -591,6 +593,7 @@ private:
     // load the mesh from file so we don't try loading from disk every frame.
     // This is mutable since it is not part of the public interface.
     mutable SimTK::ResetOnCopy<std::unique_ptr<SimTK::DecorativeMeshFile>> cachedMesh;
+    mutable bool warningGiven;
 };
 
 /**
