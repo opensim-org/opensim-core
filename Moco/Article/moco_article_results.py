@@ -1,7 +1,9 @@
 import opensim as osim
 import numpy as np
 import pylab as pl
+
 pl.ion()
+
 
 def Kirk():
     model = osim.Model()
@@ -49,6 +51,7 @@ def Kirk():
         def y0(t):
             return (c2 * (-t - 0.5 * np.exp(-t) + 0.5 * np.exp(t)) +
                     c3 * (1.0 - 0.5 * np.exp(-t) - 0.5 * np.exp(t)))
+
         def y1(t):
             return (c2 * (-1.0 + 0.5 * np.exp(-t) + 0.5 * np.exp(t)) +
                     c3 * (0.5 * np.exp(-t) - 0.5 * np.exp(t)))
@@ -79,12 +82,12 @@ def Kirk():
         solver_duration += [solution.getSolverDuration()]
         N *= 2
 
-
     pl.figure()
     pl.plot(N_list, np.log10(np.array(error_list)))
     pl.figure()
     pl.plot(N_list, solver_duration)
     pl.show()
+
 
 def brachistochrone():
     model = osim.ModelFactory.createBrachistochrone()
@@ -97,15 +100,24 @@ def brachistochrone():
     problem.setStateInfo("/brachistochrone/x", [-10, 10], 0, 1)
     problem.setStateInfo("/brachistochrone/y", [-10, 10], 0)
     problem.setStateInfo("/brachistochrone/v", [-10, 10], 0)
+    problem.setControlInfo("/brachistochrone", [-100, 100])
 
     problem.addCost(osim.MocoFinalTimeCost())
 
+    # problem.addCost(osim.MocoControlCost('effort', 0.01))
+
     solver = moco.initCasADiSolver();
     solver.set_optim_hessian_approximation("limited-memory");
-    # solver.set_verbosity(0)
+    solver.set_verbosity(0)
     solver.set_parallel(0)
 
-    moco.solve()
+    # solution = moco.solve()
+    # print(solution.getControlsTrajectoryMat())
+    # pl.plot(solution.getStateMat('/brachistochrone/x'),
+    #         solution.getStateMat('/brachistochrone/y'))
+    # pl.figure();
+    # pl.plot(solution.getTimeMat(), solution.getControlsTrajectoryMat())
+    # pl.show()
 
     def expectedSolution(time):
         return np.nan
@@ -114,28 +126,31 @@ def brachistochrone():
     N_list = []
     error_list = []
     solver_duration = []
-    # while N < 10000:
-    #     solver.set_num_mesh_points(N)
-    #     solution = moco.solve()
-    #     actual_y0 = solution.getStateMat('/jointset/j/coord/value')
-    #     actual_y1 = solution.getStateMat('/jointset/j/coord/speed')
-    #     actual = np.empty((N, 2))
-    #     actual[:, 0] = np.array(actual_y0)
-    #     actual[:, 1] = np.array(actual_y1)
-    #     diff = actual - expectedSolution(solution.getTimeMat())
-    #     error = np.sqrt(np.mean(np.square(diff.flatten())))
-    #     print("N: {}. Error: {}".format(N, error))
-    #     N_list += [N]
-    #     error_list += [error]
-    #     solver_duration += [solution.getSolverDuration()]
-    #     N *= 2
-    #
-    #
-    # pl.figure()
-    # pl.plot(N_list, np.log10(np.array(error_list)))
-    # pl.figure()
-    # pl.plot(N_list, solver_duration)
-    # pl.show()
+    while N < 1000:
+        solver.set_num_mesh_points(N)
+        solution = moco.solve()
+        # actual_y0 = solution.getStateMat('/jointset/j/coord/value')
+        # actual_y1 = solution.getStateMat('/jointset/j/coord/speed')
+        # actual = np.empty((N, 2))
+        # actual[:, 0] = np.array(actual_y0)
+        # actual[:, 1] = np.array(actual_y1)
+        # diff = actual - expectedSolution(solution.getTimeMat())
+        # error = np.sqrt(np.mean(np.square(diff.flatten())))
+        error = 1000.0
+        duration = solution.getSolverDuration()
+        print("N: {}. Error: {}. Duration: {}".format(N, error, duration))
+        N_list += [N]
+        error_list += [error]
+        solver_duration += [duration]
+        N *= 2
+
+
+    pl.figure()
+    pl.plot(N_list, np.log10(np.array(error_list)))
+    pl.figure()
+    pl.plot(N_list, solver_duration)
+    pl.show()
+
 
 if __name__ == "__main__":
     brachistochrone()
