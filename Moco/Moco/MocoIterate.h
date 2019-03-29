@@ -77,6 +77,18 @@ time,<state-0-name>,...,<control-0-name>,...,<multiplier-0-name>,..., \
 (If stored in a STO file, the delimiters are tabs, not commas.)
 
 
+@par Matlab and Python
+Many of the functions in this class have variants ending with "Mat" that
+provide convenient access to the data directly in Matlab or Python (NumPy).
+In Python, the constructors can also accept NumPy matrices in addition to
+arguments of type SimTK::Matrix.
+@code
+iterate.getStateMat("<state-name>")
+iterate.getStatesTrajectoryMat()
+@endcode
+
+
+
 @par Implicit dynamics model
 If the solver uses an implicit dynamics mode, then there are "control"
 variables ("adjunct" variables in tropter's terminology) for the generalized
@@ -363,6 +375,7 @@ public:
     SimTK::VectorView_<double> getState(const std::string& name) const;
     SimTK::VectorView_<double> getControl(const std::string& name) const;
     SimTK::VectorView_<double> getMultiplier(const std::string& name) const;
+    SimTK::VectorView_<double> getDerivative(const std::string& name) const;
     const SimTK::Real& getParameter(const std::string& name) const;
     const SimTK::Matrix& getStatesTrajectory() const {
         ensureUnsealed();
