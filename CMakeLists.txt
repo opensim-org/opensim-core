@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.2)
 project(Moco VERSION 0.1)
 
 # Moco settings.
-# ------------------
+# --------------
 # Copy dependencies' libraries into Moco's installation?
 set(MOCO_COPY_DEPENDENCIES ON)
 
@@ -31,6 +31,8 @@ endif()
 # ---------------
 # To allow a folder hierarchy within Visual Studio's Solution Explorer.
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+
+set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 
 # Add "_d" to the end of debug libraries, so both debug and non-debug libraries
 # can be installed.

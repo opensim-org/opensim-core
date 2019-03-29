@@ -18,6 +18,12 @@ using namespace OpenSim;
 using namespace SimTK;
 %}
 
+// Add support for converting between NumPy and C arrays (for MocoIterate).
+%include "numpy.i"
+%init %{
+    import_array();
+%}
+
 %include "python_preliminaries.i"
 
 // Tell SWIG about the modules we depend on.
@@ -30,7 +36,7 @@ using namespace SimTK;
 // program to crash.
 %include "exception.i"
 // Delete any previous exception handlers.
-%exception; 
+%exception;
 %exception {
     try {
         $action
@@ -127,8 +133,83 @@ using namespace SimTK;
         args[3] = self._convert(MocoFinalBounds, args[3])
 %}
 
-
+// https://docs.scipy.org/doc/numpy/reference/swig.interface-file.html
+// https://scipy-cookbook.readthedocs.io/items/SWIG_NumPy_examples.html
+// For constructor.
+%apply (int DIM1, double* IN_ARRAY1) {
+    (int ntime, double* time),
+    (int nparams, double* params)
+};
+// For constructor.
+%apply (int DIM1, int DIM2, double* IN_ARRAY2) {
+    (int nrowstates, int ncolstates, double* states),
+    (int nrowcontrols, int ncolcontrols, double* controls),
+    (int nrowmults, int ncolmults, double* mults),
+    (int nrowderivs, int ncolderivs, double* derivs)
+};
+// For getState(), etc.
+%apply (int DIM1, double* ARGOUT_ARRAY1) {
+    (int n, double* timeOut),
+    (int n, double* stateOut),
+    (int n, double* controlOut),
+    (int n, double* multOut),
+    (int n, double* derivOut),
+    (int n, double* paramsOut)
+};
+// For getStatesTrajectory(), etc.
+%apply (int DIM1, int DIM2, double* INPLACE_FARRAY2) {
+    (int nrow, int ncol, double* statesOut),
+    (int nrow, int ncol, double* controlsOut),
+    (int nrow, int ncol, double* multsOut),
+    (int nrow, int ncol, double* derivsOut)
+};
 %extend OpenSim::MocoIterate {
+    MocoIterate(
+            int ntime,
+            double* time,
+            std::vector<std::string> state_names,
+            std::vector<std::string> control_names,
+            std::vector<std::string> multiplier_names,
+            std::vector<std::string> parameter_names,
+            int nrowstates, int ncolstates, double* states,
+            int nrowcontrols, int ncolcontrols, double* controls,
+            int nrowmults, int ncolmults, double* mults,
+            int nparams, double* params) {
+        return new MocoIterate(SimTK::Vector(ntime, time, true),
+                        std::move(state_names),
+                        std::move(control_names),
+                        std::move(multiplier_names),
+                        std::move(parameter_names),
+                        SimTK::Matrix(nrowstates, ncolstates, states),
+                        SimTK::Matrix(nrowcontrols, ncolcontrols, controls),
+                        SimTK::Matrix(nrowmults, ncolmults, mults),
+                        SimTK::RowVector(nparams, params, true));
+    }
+    MocoIterate(
+            int ntime,
+            double* time,
+            std::vector<std::string> state_names,
+            std::vector<std::string> control_names,
+            std::vector<std::string> multiplier_names,
+            std::vector<std::string> derivative_names,
+            std::vector<std::string> parameter_names,
+            int nrowstates, int ncolstates, double* states,
+            int nrowcontrols, int ncolcontrols, double* controls,
+            int nrowmults, int ncolmults, double* mults,
+            int nrowderivs, int ncolderivs, double* derivs,
+            int nparams, double* params) {
+        return new MocoIterate(SimTK::Vector(ntime, time, true),
+                std::move(state_names),
+                std::move(control_names),
+                std::move(multiplier_names),
+                std::move(derivative_names),
+                std::move(parameter_names),
+                SimTK::Matrix(nrowstates, ncolstates, states),
+                SimTK::Matrix(nrowcontrols, ncolcontrols, controls),
+                SimTK::Matrix(nrowmults, ncolmults, mults),
+                SimTK::Matrix(nrowderivs, ncolderivs, derivs),
+                SimTK::RowVector(nparams, params, true));
+    }
     void setTime(const std::vector<double>& time) {
         $self->setTime(SimTK::Vector((int)time.size(), time.data()));
     }
@@ -143,6 +224,110 @@ using namespace SimTK;
         $self->setMultiplier(name,
                 SimTK::Vector((int)traj.size(), traj.data()));
     }
+    void _getTimeMat(int n, double* timeOut) const {
+        OPENSIM_THROW_IF(n != $self->getNumTimes(), OpenSim::Exception,
+                "n != getNumTimes()");
+        const auto& time = $self->getTime();
+        std::copy_n(time.getContiguousScalarData(), n, timeOut);
+    }
+    void _getStateMat(std::string name, int n, double* stateOut) const {
+        OPENSIM_THROW_IF(n != $self->getNumTimes(), OpenSim::Exception,
+                "n != getNumTimes()");
+        Vector state = $self->getState(name);
+        std::copy_n(state.getContiguousScalarData(), n, stateOut);
+    }
+    void _getControlMat(std::string name, int n, double* controlOut) const {
+        OPENSIM_THROW_IF(n != $self->getNumTimes(), OpenSim::Exception,
+                "n != getNumTimes()");
+        Vector control = $self->getControl(name);
+        std::copy_n(control.getContiguousScalarData(), n, controlOut);
+    }
+    void _getMultiplierMat(std::string name, int n, double* multOut) const {
+        OPENSIM_THROW_IF(n != $self->getNumTimes(), OpenSim::Exception,
+                "n != getNumTimes()");
+        Vector mult = $self->getMultiplier(name);
+        std::copy_n(mult.getContiguousScalarData(), n, multOut);
+    }
+    void _getDerivativeMat(std::string name, int n, double* derivOut) const {
+        OPENSIM_THROW_IF(n != $self->getNumTimes(), OpenSim::Exception,
+                "n != getNumTimes()");
+        Vector deriv = $self->getDerivative(name);
+        std::copy_n(deriv.getContiguousScalarData(), n, derivOut);
+    }
+    void _getParametersMat(int n, double* paramsOut) const {
+        const RowVector& params = $self->getParameters();
+        OPENSIM_THROW_IF(n != params.size(), OpenSim::Exception,
+                "n != number of parameters");
+        std::copy_n(params.getContiguousScalarData(), n, paramsOut);
+    }
+    void _getStatesTrajectoryMat(int nrow, int ncol, double* statesOut) const {
+        OPENSIM_THROW_IF(nrow != $self->getNumTimes(), OpenSim::Exception,
+                "nrow != getNumTimes()");
+        const auto& states = $self->getStatesTrajectory();
+        OPENSIM_THROW_IF(ncol != states.ncol(), OpenSim::Exception,
+                "ncol != number of states");
+        std::copy_n(states.getContiguousScalarData(), nrow * ncol, statesOut);
+    }
+    void _getControlsTrajectoryMat(int nrow, int ncol, double* controlsOut) const {
+        OPENSIM_THROW_IF(nrow != $self->getNumTimes(), OpenSim::Exception,
+                "nrow != getNumTimes()");
+        const auto& controls = $self->getControlsTrajectory();
+        OPENSIM_THROW_IF(ncol != controls.ncol(), OpenSim::Exception,
+                "ncol != number of controls");
+        std::copy_n(controls.getContiguousScalarData(), nrow * ncol, controlsOut);
+    }
+    void _getMultipliersTrajectoryMat(int nrow, int ncol, double* multsOut) const {
+        OPENSIM_THROW_IF(nrow != $self->getNumTimes(), OpenSim::Exception,
+                "nrow != getNumTimes()");
+        const auto& mults = $self->getMultipliersTrajectory();
+        OPENSIM_THROW_IF(ncol != mults.ncol(), OpenSim::Exception,
+                "ncol != number of mults");
+        std::copy_n(mults.getContiguousScalarData(), nrow * ncol, multsOut);
+    }
+    void _getDerivativesTrajectoryMat(int nrow, int ncol, double* derivsOut) const {
+        OPENSIM_THROW_IF(nrow != $self->getNumTimes(), OpenSim::Exception,
+                "nrow != getNumTimes()");
+        const auto& derivs = $self->getDerivativesTrajectory();
+        OPENSIM_THROW_IF(ncol != derivs.ncol(), OpenSim::Exception,
+                "ncol != number of derivs");
+        std::copy_n(derivs.getContiguousScalarData(), nrow * ncol, derivsOut);
+    }
+%pythoncode %{
+    def getTimeMat(self):
+        return self._getTimeMat(self.getNumTimes())
+    def getStateMat(self, name):
+        return self._getStateMat(name, self.getNumTimes())
+    def getControlMat(self, name):
+        return self._getControlMat(name, self.getNumTimes())
+    def getMultiplierMat(self, name):
+        return self._getMultiplierMat(name, self.getNumTimes())
+    def getDerivativeMat(self, name):
+        return self._getDerivativeMat(name, self.getNumTimes())
+    def getParametersMat(self):
+        return self._getParametersMat(len(self.getParameterNames()))
+
+    def getStatesTrajectoryMat(self):
+        import numpy as np
+        mat = np.empty([self.getNumTimes(), len(self.getStateNames())])
+        self._getStatesTrajectoryMat(mat)
+        return mat
+    def getControlsTrajectoryMat(self):
+        import numpy as np
+        mat = np.empty([self.getNumTimes(), len(self.getControlNames())])
+        self._getControlsTrajectoryMat(mat)
+        return mat
+    def getMultipliersTrajectoryMat(self):
+        import numpy as np
+        mat = np.empty([self.getNumTimes(), len(self.getMultiplierNames())])
+        self._getMultipliersTrajectoryMat(mat)
+        return mat
+    def getDerivativesTrajectoryMat(self):
+        import numpy as np
+        mat = np.empty([self.getNumTimes(), len(self.getDerivativeNames())])
+        self._getDerivativesTrajectoryMat(mat)
+        return mat
+
+%};
 }
 
 // Memory management
