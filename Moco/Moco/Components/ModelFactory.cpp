@@ -17,14 +17,15 @@
  * -------------------------------------------------------------------------- */
 
 #include "ModelFactory.h"
+
+#include <OpenSim/Actuators/CoordinateActuator.h>
 #include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/SliderJoint.h>
-#include <OpenSim/Actuators/CoordinateActuator.h>
 
 using namespace OpenSim;
 
-using SimTK::Vec3;
 using SimTK::Inertia;
+using SimTK::Vec3;
 
 Model ModelFactory::createNLinkPendulum(int numLinks) {
     Model model;
@@ -42,8 +43,8 @@ Model ModelFactory::createNLinkPendulum(int numLinks) {
     model.setName(name);
     const auto& ground = model.getGround();
 
-    using SimTK::Vec3;
     using SimTK::Inertia;
+    using SimTK::Vec3;
 
     Ellipsoid bodyGeometry(0.5, 0.1, 0.1);
     bodyGeometry.setColor(SimTK::Gray);
@@ -55,8 +56,8 @@ Model ModelFactory::createNLinkPendulum(int numLinks) {
         model.addBody(bi);
 
         // Assume each body is 1 m long.
-        auto* ji = new PinJoint("j" + istr, *prevBody, Vec3(0), Vec3(0),
-                *bi, Vec3(-1, 0, 0), Vec3(0));
+        auto* ji = new PinJoint("j" + istr, *prevBody, Vec3(0), Vec3(0), *bi,
+                Vec3(-1, 0, 0), Vec3(0));
         auto& qi = ji->updCoordinate();
         qi.setName("q" + istr);
         model.addJoint(ji);
@@ -102,9 +103,9 @@ Model ModelFactory::createPlanarPointMass() {
     model.addJoint(jointX);
 
     // The joint's x axis must point in the global "+y" direction.
-    auto* jointY = new SliderJoint("ty",
-            *intermed, Vec3(0), Vec3(0, 0, 0.5 * SimTK::Pi),
-            *body, Vec3(0), Vec3(0, 0, .5 * SimTK::Pi));
+    auto* jointY = new SliderJoint("ty", *intermed, Vec3(0),
+            Vec3(0, 0, 0.5 * SimTK::Pi), *body, Vec3(0),
+            Vec3(0, 0, .5 * SimTK::Pi));
     auto& coordY = jointY->updCoordinate(SliderJoint::Coord::TranslationX);
     coordY.setName("ty");
     model.addJoint(jointY);
@@ -123,10 +124,49 @@ Model ModelFactory::createPlanarPointMass() {
         model.addForce(forceY);
     }
 
+    model.finalizeConnections();
+
     return model;
 }
 
+Model ModelFactory::createBrachistochrone() {
+    Model model;
+    class Brachistochrone : public ScalarActuator {
+        OpenSim_DECLARE_CONCRETE_OBJECT(Brachistochrone, ScalarActuator);
 
-
-
-
+    public:
+        Brachistochrone() {
+            g = std::abs(Model().get_gravity()[1]);
+        }
+        void extendAddToSystem(SimTK::MultibodySystem& system) const override {
+            Super::extendAddToSystem(system);
+            addStateVariable("x");
+            addStateVariable("y");
+            addStateVariable("v");
+        }
+        void extendInitStateFromProperties(SimTK::State& s) const override {
+            Super::extendInitStateFromProperties(s);
+            setStateVariableValue(s, "x", 0);
+            setStateVariableValue(s, "y", 0);
+            setStateVariableValue(s, "v", 0);
+        }
+        void computeStateVariableDerivatives(
+                const SimTK::State& s) const override {
+            const auto v = getStateVariableValue(s, "v");
+            const auto u = getControl(s);
+            setStateVariableDerivativeValue(s, "x", v * std::cos(u));
+            setStateVariableDerivativeValue(s, "y", v * std::sin(u));
+            setStateVariableDerivativeValue(s, "v", g * std::sin(u));
+        }
+        double computeActuation(const SimTK::State&) const override {
+            return 0;
+        }
+    private:
+        double g;
+    };
+    auto* b = new Brachistochrone();
+    b->setName("brachistochrone");
+    model.addComponent(b);
+    model.finalizeConnections();
+    return model;
+}
