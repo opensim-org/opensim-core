@@ -177,7 +177,7 @@ std::unique_ptr<CasOC::Solver> MocoCasADiSolver::createCasOCSolver(
     checkPropertyIsPositive(*this, getProperty_num_mesh_points());
 
     if (getProperty_mesh().size() > 0) {
- 
+
         OPENSIM_THROW_IF_FRMOBJ((get_mesh(0) != 0), Exception,
                 "Invalid custom mesh; first mesh "
                 "point must be zero.");
@@ -350,14 +350,16 @@ MocoSolution MocoCasADiSolver::solveImpl() const {
         }
     }
 
+    const long long elapsed = stopwatch.getElapsedTimeInNs();
     setSolutionStats(mocoSolution, casSolution.stats.at("success"),
             casSolution.objective, casSolution.stats.at("return_status"),
-            casSolution.stats.at("iter_count"));
+            casSolution.stats.at("iter_count"),
+            SimTK::nsToSec(elapsed));
 
     if (get_verbosity()) {
         std::cout << std::string(79, '-') << "\n";
         std::cout << "Elapsed real time: "
-                  << stopwatch.getElapsedTimeFormatted() << ".\n";
+                << stopwatch.formatNs(elapsed) << ".\n";
         if (mocoSolution) {
             std::cout << "MocoCasADiSolver succeeded!\n";
         } else {

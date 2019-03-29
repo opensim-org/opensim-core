@@ -632,6 +632,9 @@ public:
     /// Number of solver iterations at which this solution was obtained
     /// (-1 if not set).
     int getNumIterations() const { return m_numIterations; }
+    /// Get the amount of time (clock time, not CPU time) spent within solve().
+    /// Units: seconds.
+    double getSolverDuration() const { return m_solverDuration; }
 
     /// @name Access control
     /// @{
@@ -669,11 +672,13 @@ private:
     void setNumIterations(int numIterations) {
         m_numIterations = numIterations;
     };
+    void setSolverDuration(double duration) { m_solverDuration = duration; }
     void convertToTableImpl(TimeSeriesTable&) const override;
     bool m_success = true;
     double m_objective = -1;
     std::string m_status;
     int m_numIterations = -1;
+    double m_solverDuration = -1;
     // Allow solvers to set success, status, and construct a solution.
     friend class MocoSolver;
 };
