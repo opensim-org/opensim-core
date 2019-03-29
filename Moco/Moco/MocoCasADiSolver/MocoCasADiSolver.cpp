@@ -264,15 +264,17 @@ MocoSolution MocoCasADiSolver::solveImpl() const {
     }
     CasOC::Solution casSolution = casSolver->solve(casGuess);
     MocoSolution mocoSolution = convertToMocoIterate<MocoSolution>(casSolution);
+    const long long elapsed = stopwatch.getElapsedTimeInNs();
     setSolutionStats(mocoSolution, casSolution.stats.at("success"),
             casSolution.objective,
             casSolution.stats.at("return_status"),
-            casSolution.stats.at("iter_count"));
+            casSolution.stats.at("iter_count"),
+            SimTK::nsToSec(elapsed));
 
     if (get_verbosity()) {
         std::cout << std::string(79, '-') << "\n";
         std::cout << "Elapsed real time: "
-                  << stopwatch.getElapsedTimeFormatted() << ".\n";
+                << stopwatch.formatNs(elapsed) << ".\n";
         if (mocoSolution) {
             std::cout << "MocoCasADiSolver succeeded!\n";
         } else {

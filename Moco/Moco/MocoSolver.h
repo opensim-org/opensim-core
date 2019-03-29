@@ -97,7 +97,8 @@ protected:
     /// but this class is a friend of MocoSolution.
     static void setSolutionStats(MocoSolution&,
             bool success, double objective,
-            const std::string& status, int numIterations);
+            const std::string& status, int numIterations,
+            double duration);
 
     const MocoProblemRep& getProblemRep() const {
         return m_problemRep;
