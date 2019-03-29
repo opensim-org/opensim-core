@@ -23,5 +23,6 @@
 #include <Moco/Components/ActivationCoordinateActuator.h>
 #include <Moco/Components/DeGrooteFregly2016Muscle.h>
 #include <Moco/MocoUtilities.h>
+#include <Moco/Components/ModelFactory.h>
 
 #endif // MOCO_OPENSIM_HEADERS_MOCO_H_
