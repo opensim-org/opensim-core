@@ -123,6 +123,12 @@ int main()
         failures.push_back("testNumberOfMarkersMismatch");
     }
 
+    try { testNumberOfOrientationsMismatch(); }
+    catch (const std::exception& e) {
+        cout << e.what() << endl;
+        failures.push_back("testNumberOfOrientationsMismatch");
+    }
+
     if (!failures.empty()) {
         cout << "Done, with failure(s): " << failures << endl;
         return 1;
@@ -206,13 +212,13 @@ void testMarkersReference()
 
 void testOrientationsReference()
 {
-    // column labels for marker data
+    // column labels for orientation sensor data
     vector<std::string> labels{ "A", "B", "C", "D", "E", "F" };
-    // for testing construct a set of marker weights is a different order 
+    // for testing construct a set of marker weights in a different order 
     vector<int> order = { 3, 5, 1, 4, 0, 2 };
 
-    size_t nc = labels.size();
-    size_t nr = 5;
+    size_t nc = labels.size(); // number of columns of orientation data
+    size_t nr = 5;             // number of rows of orientation data
 
     TimeSeriesTable_<SimTK::Rotation> orientationData;
     orientationData.setColumnLabels(labels);
@@ -228,7 +234,7 @@ void testOrientationsReference()
 
     std::cout << orientationWeights.dump() << std::endl;
 
-    OrientationsReference orientationsRef(&orientationData, &orientationWeights);
+    OrientationsReference orientationsRef(orientationData, &orientationWeights);
 
     Model model;
     SimTK::State& s = model.initSystem();
@@ -252,7 +258,7 @@ void testOrientationsReference()
     orientationWeights.adoptAndAppend(new OrientationWeight("X", 0.1));
     orientationWeights.insert(0, new OrientationWeight("Y", 0.01));
 
-    OrientationsReference orientationsRef2(&orientationData, &orientationWeights);
+    OrientationsReference orientationsRef2(orientationData, &orientationWeights);
 
     auto& oWeightSet = orientationsRef2.get_orientation_weights();
 
@@ -697,8 +703,8 @@ void testNumberOfOrientationsMismatch()
         states.append(state);
     }
 
-    double err = 0.05;
-    SimTK::RowVector_<SimTK::Rotation> biases(3);
+    double err = 0.1;
+    SimTK::RowVector_<SimTK::Rotation> biases(3, SimTK::Rotation());
     // bias thigh_imu
     biases[0] *= SimTK::Rotation(err, SimTK::XAxis);
     cout << "biases: " << biases << endl;
@@ -715,12 +721,12 @@ void testNumberOfOrientationsMismatch()
 
     auto usedOrientationNames = orientationsTable.getColumnLabels();
 
-    // add an unused marker to the marker data
+    // add an unused orientation sensor to the given orientation data
     orientationsTable.appendColumn("unused", unusedCol);
 
     cout << "Before:\n" << orientationsTable << endl;
 
-    // re-order "observed" marker data
+    // re-order "observed" orientation data
     SimTK::Matrix_<SimTK::Rotation> dataGutsCopy
         = orientationsTable.getMatrix();
     int last = dataGutsCopy.ncol() - 1;
@@ -739,7 +745,7 @@ void testNumberOfOrientationsMismatch()
 
     cout << "After reorder and NaN injections:\n" << orientationsTable << endl;
 
-    OrientationsReference orientationsRef(&orientationsTable);
+    OrientationsReference orientationsRef(orientationsTable);
     int nmr = orientationsRef.getNumRefs();
     auto& osNames = orientationsRef.getNames();
     cout << osNames << endl;
@@ -753,16 +759,15 @@ void testNumberOfOrientationsMismatch()
     ikSolver.setAccuracy(tol);
     ikSolver.assemble(state);
 
-    int nos = ikSolver.getNumOSenorsInUse();
+    int nos = ikSolver.getNumOrientationSensorsInUse();
 
     SimTK::Array_<double> orientationErrors(nos);
     for (double t : orientationsRef.getTimes()) {
         state.updTime() = t;
         ikSolver.track(state);
 
-        //get the marker errors
-        ikSolver.computeCurrentOSensorErrors(orientationErrors);
-
+        //get the  orientation errors
+        ikSolver.computeCurrentOrientationErrors(orientationErrors);
         int nose = orientationErrors.size();
 
         SimTK_ASSERT_ALWAYS(nose == nos,
@@ -772,7 +777,9 @@ void testNumberOfOrientationsMismatch()
         cout << "time: " << state.getTime() << " |";
         auto namesIter = usedOrientationNames.begin();
         for (int j = 0; j < nose; ++j) {
-            const auto& orientationName = ikSolver.getOSensorNameForIndex(j);
+            const auto& orientationName = 
+                ikSolver.getOrientationSensorNameForIndex(j);
+
             cout << " " << orientationName << " error = " << orientationErrors[j];
 
             SimTK_ASSERT_ALWAYS(*namesIter++ != "unused",
@@ -780,7 +787,7 @@ void testNumberOfOrientationsMismatch()
                 "unused orientation reference (observation).");
 
             if (orientationName == "thigh_imu") {//should see error on biased marker
-                SimTK_ASSERT_ALWAYS(abs(orientationErrors[j] - err) <= tol,
+                SimTK_ASSERT_ALWAYS(abs(orientationErrors[j]) <= err,
                     "InverseKinematicsSolver mangled marker order.");
             }
             else { // other markers should be minimally affected
@@ -838,7 +845,7 @@ generateMarkerDataFromModelAndStates(const Model& model,
                                      const StatesTrajectory& states,
                                      const SimTK::RowVector_<SimTK::Vec3>& biases,
                                      double noiseRadius,
-                                     bool constantOffset) {
+                                     bool isConstantOffset) {
     // use a fixed seed so that we can reproduce and debug failures.
     std::mt19937 gen(0);
     std::normal_distribution<double> noise(0.0, 1);
@@ -875,7 +882,7 @@ generateMarkerDataFromModelAndStates(const Model& model,
         for (size_t i = 0; i < results.getNumRows(); ++i) {
             auto row = results.updRowAtIndex(i);
             for (int j = 0; j < row.size(); ++j) {
-                if (!constantOffset) {
+                if (!isConstantOffset) {
                     offset = noiseRadius*SimTK::Vec3(double(noise(gen)),
                                                      double(noise(gen)),
                                                      double(noise(gen)));
@@ -891,7 +898,7 @@ generateMarkerDataFromModelAndStates(const Model& model,
 
 Model* constructLegWithOrientationFrames()
 {
-    Model* leg = new Model();
+    std::unique_ptr<Model> leg{ new Model() };
     leg->setName("leg");
     Body* thigh =
         new Body("thigh", 5.0, SimTK::Vec3(0),
@@ -934,14 +941,14 @@ Model* constructLegWithOrientationFrames()
     shank->addComponent(new PhysicalOffsetFrame("shank_imu", *shank, offset));
     foot->addComponent(new PhysicalOffsetFrame("foot_imu", *foot, offset));
 
-    return leg;
+    return leg.release();
 }
 
 TimeSeriesTable_<SimTK::Rotation>
 generateOrientationsDataFromModelAndStates(const Model& model,
     const StatesTrajectory& states,
     const SimTK::RowVector_<SimTK::Rotation>& biases,
-    double noiseRadius,
+    double noiseLevel, // noise standard deviation in radians
     bool constantOffset) {
     // use a fixed seed so that we can reproduce and debug failures.
     std::mt19937 gen(0);
@@ -954,10 +961,12 @@ generateOrientationsDataFromModelAndStates(const Model& model,
     auto imus = m->updComponentList<PhysicalOffsetFrame>();
     int cnt = 0;
     for (auto& imu : imus) {
-        imu.setOffsetTransform(
-            SimTK::Transform(imu.getOffsetTransform().R()*biases[cnt++]) );
-        orientationsReporter->addToReport(
-            imu.getOutput("rotation"), imu.getName());
+        if (imu.getName().find("_imu") != std::string::npos) {
+            imu.setOffsetTransform(
+                SimTK::Transform(imu.getOffsetTransform().R()*biases[cnt++]));
+            orientationsReporter->addToReport(
+                imu.getOutput("rotation"), imu.getName());
+        }
     }
 
     m->addComponent(orientationsReporter);
@@ -974,21 +983,23 @@ generateOrientationsDataFromModelAndStates(const Model& model,
 
     SimTK::Rotation offset = SimTK::Rotation(
         SimTK::BodyRotationSequence,
-        noiseRadius*double(noise(gen)), SimTK::XAxis,
-        noiseRadius*double(noise(gen)), SimTK::YAxis,
-        noiseRadius*double(noise(gen)), SimTK::ZAxis );
+        noiseLevel*double(noise(gen)), SimTK::XAxis,
+        noiseLevel*double(noise(gen)), SimTK::YAxis,
+        noiseLevel*double(noise(gen)), SimTK::ZAxis );
 
-    if (noiseRadius >= SimTK::Eps) {
+    cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << endl;
+
+    if (noiseLevel >= SimTK::Eps) {
         for (size_t i = 0; i < results.getNumRows(); ++i) {
             auto row = results.updRowAtIndex(i);
             for (int j = 0; j < row.size(); ++j) {
                 if (!constantOffset) {
                     offset = SimTK::Rotation(SimTK::BodyRotationSequence,
-                        noiseRadius*double(noise(gen)), SimTK::XAxis,
-                        noiseRadius*double(noise(gen)), SimTK::YAxis,
-                        noiseRadius*double(noise(gen)), SimTK::ZAxis);
+                        noiseLevel*double(noise(gen)), SimTK::XAxis,
+                        noiseLevel*double(noise(gen)), SimTK::YAxis,
+                        noiseLevel*double(noise(gen)), SimTK::ZAxis);
                 }
-                // add noise to each marker
+                // add noise to each orientation sensor
                 row[j] *= offset;
             }
         }

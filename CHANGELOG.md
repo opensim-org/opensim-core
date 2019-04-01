@@ -8,6 +8,8 @@ This is not a comprehensive list of changes but rather a hand-curated collection
 
 v4.1
 ====
+- Added `OrientationsReference` as the frame orientation analog to the location of experimental markers. Enables experimentally measured orientations from wearable sensors (e.g. from IMUs) to be tracked by reference frames in the model. A correspondence between the experimental (IMU frame) orientation column label and that of the virtual frame on the `Model` is expected. The `InverseKinematicsSolver` was extended to simultaneously track the `OrientationsReference` if provided. (PR #2412)
+- Removed the undocumented `bool dumpName` argument from `Object::dump()` and made the method `const` so it can be safely called on `const` objects. (PR #2412)
 
 Converting from v4.0 to v4.1
 ----------------------------
@@ -105,7 +107,7 @@ Converting from v3.x to v4.0
 - `Manager::setIntegrator(SimTK::Integrator)` has been removed and replaced by
   `Manager::setIntegratorMethod(IntegratorMethod)` which uses an enum and can
   be used by the MATLAB/Python interface. See the method's documentation for
-  examples. Integrator settings are now handled by the Manager through the 
+  examples. Integrator settings are now handled by the Manager through the
   following new functions:
   - setIntegratorAccuracy(double)
   - setIntegratorMinimumStepSize(double)
@@ -191,7 +193,7 @@ New Classes
 - Added Point as a new base class for all points, which include: Station, Marker, and PathPoints
 
 - Added OutputReporter as an Analysis so that users can use the existing AnalyzeTool and ForwardTool to extract Output values of interest, without modifications to the GUI. (PR #1991)
-- Added OrientationsReference as the orientation analog to the location of experimental markers. Enables experiementally measured orientations from wearable sensors (e.g. from IMUs) to be tracked by reference frames in the model. A correspondence between the experimental (IMU frame) orientation column label and that of the virtual frame on the Model is expected. The InverseKinematicsSolver was extended to simultaneously track OrientationsReference if provided. (PR #2412)
+
 
 Removed Classes
 ---------------

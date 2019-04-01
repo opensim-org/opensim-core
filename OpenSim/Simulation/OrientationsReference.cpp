@@ -40,54 +40,24 @@ OrientationsReference::OrientationsReference() : Reference_<SimTK::Rotation>()
 OrientationsReference::OrientationsReference(const std::string& orientationFile,
     Units modelUnits) : OrientationsReference()
 {
-    loadOrientationsFile(orientationFile, modelUnits);
+    loadOrientationsEulerAnglesFile(orientationFile, modelUnits);
 }
 
 
 OrientationsReference::OrientationsReference(
-    const TimeSeriesTable_<Rotation>* orientationData,
+    const TimeSeriesTable_<Rotation>& orientationData,
     const Set<OrientationWeight>* orientationWeightSet) 
         : OrientationsReference()
 {
-    _orientationData = *orientationData;
+    _orientationData = orientationData;
     if (orientationWeightSet!=nullptr)
         upd_orientation_weights()= *orientationWeightSet;
-    populateFromOrientationData(*orientationData);
+    populateFromOrientationData();
 }
 
-/** load the orientation data for this OrientationsReference from quaternionsFile  */
-void OrientationsReference::loadOrientationsFromQuaternions(
-                                    const std::string quaternionsFile)
-{
-    upd_orientation_file() = quaternionsFile;
-
-    auto quaternionsData = TimeSeriesTable_<Quaternion>(quaternionsFile);
-
-    _orientationData.updTableMetaData() = quaternionsData.getTableMetaData();
-    _orientationData.setDependentsMetaData(quaternionsData.getDependentsMetaData());
-
-    const auto& times = quaternionsData.getIndependentColumn();
-
-    size_t nt = quaternionsData.getNumRows();
-    int nc = int(quaternionsData.getNumColumns());
-
-    RowVector_<Rotation> row(nc);
-
-    for (size_t i = 0; i < nt; ++i) {
-        const auto& quatsRow = quaternionsData.getRowAtIndex(i);
-        for (int j = 0; j < nc; ++j) {
-            const Quaternion& quat = quatsRow[j];
-            row[j] = Rotation(quat);
-        }
-        _orientationData.appendRow(times[i], row);
-    }
-
-    populateFromOrientationData(_orientationData);
-}
-
-/** load the orientation data for this OrientationsReference from orientationFile  */
-void OrientationsReference::loadOrientationsFile(const std::string orientationFile, 
-                                                 Units modelUnits)
+void OrientationsReference::loadOrientationsEulerAnglesFile(
+                                    const std::string orientationFile,
+                                    Units modelUnits)
 {
     upd_orientation_file() = orientationFile;
 
@@ -113,15 +83,13 @@ void OrientationsReference::loadOrientationsFile(const std::string orientationFi
         _orientationData.appendRow(times[i], row);
     }
 
-    populateFromOrientationData(_orientationData);
+    populateFromOrientationData();
 }
 
-
-/** A convenience method yo populate OrientationsReference from OrientationData **/
-void OrientationsReference::populateFromOrientationData(
-    const TimeSeriesTable_<Rotation>& orientationData)
+void OrientationsReference::populateFromOrientationData()
 {
-    const std::vector<std::string> &tempNames = orientationData.getColumnLabels();
+    const std::vector<std::string>& tempNames = 
+        _orientationData.getColumnLabels();
     unsigned int no = unsigned(tempNames.size());
 
     // empty any lingering names and weights
@@ -143,7 +111,9 @@ void OrientationsReference::populateFromOrientationData(
     }
 
     if(_orientationNames.size() != _weights.size())
-        throw Exception("OrientationsReference: Mismatch between the number of orientation names and weights. Verify that orientation names are unique.");
+        throw Exception("OrientationsReference: Mismatch between the number "
+            "of orientation names and weights. Verify that orientation names "
+            "are unique.");
 }
 
 int OrientationsReference::getNumRefs() const
@@ -199,18 +169,6 @@ void  OrientationsReference::getValues(const SimTK::State &s,
     for (int i = 0; i < n; ++i) {
         values[i] = row[i];
     }
-}
-
-/** get the speed value of the OrientationsReference */
-void OrientationsReference::getSpeedValues(const SimTK::State &s, SimTK::Array_<Vec3> &speedValues) const
-{
-    throw Exception("OrientationsReference: getSpeedValues not implemented.");
-}
-
-/** get the acceleration value of the OrientationsReference */
-void OrientationsReference::getAccelerationValues(const SimTK::State &s, SimTK::Array_<Vec3> &accValues) const
-{
-    throw Exception("OrientationsReference: getAccelerationValues not implemented.");
 }
 
 /** get the weights of the Orientations */

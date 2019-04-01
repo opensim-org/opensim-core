@@ -57,10 +57,11 @@ private:
 //=============================================================================
 //=============================================================================
 /**
- * Reference values to be achieved for specified Orientations that will be used
- * via optimization and/or tracking. Also contains a weighting that identifies
- * the relative importance of achieving one orientation's reference relative to
- * another.
+ * Reference values for the Orientations of model frames that will be used to
+ * to compute tracking errors. An Orientation is specified by a Rotation
+ * matrix describing the frame orientation with respect to Ground. The 
+ * reference also contains weightings that identifies the relative importance
+ * of achieving one orientation's reference value over another.
  *
  * @author Ajay Seth
  */
@@ -71,8 +72,8 @@ class OSIMSIMULATION_API OrientationsReference : public Reference_<SimTK::Rotati
 //=============================================================================
 public:
     OpenSim_DECLARE_PROPERTY(orientation_file, std::string, 
-        "Orientation file (.sto, .csv) containing the time history of observations "
-        "of segment (sensor) orientations.");
+        "Orientation file (.sto) containing the time history of observations "
+        "of frame (sensor) orientations.");
 
     OpenSim_DECLARE_PROPERTY(orientation_weights, Set<OrientationWeight>,
         "Set of orientation weights identified by orientation name with weight "
@@ -93,22 +94,19 @@ public:
         body-fixed Euler angles. Units default to Radians.*/
     OrientationsReference(const std::string& orientationFileName,
                      Units modelUnits=Units(Units::Radians));
-    /** Form a Reference from TimeSeriesData of Euler angles (Vec3) and corres-
-    ponding orientation weights. Note, the OrientationsReference takes owner-
-    ship of the pointer to the orientationData. The orientation weights are used
-    to initialize the weightings of the Orientations provided by the Reference.
-    Orientation weights are associated to Orientations by name.*/
-    OrientationsReference(const TimeSeriesTable_<SimTK::Rotation>* orientationData,
+    /** Form a Reference from TimeSeriesTable of Rotations and corresponding
+    orientation weights. The input orientatonWeightSet is used to initialize
+    Reference weightings for individual Orientations. Weights are associated
+    to Orientations by name.*/
+    OrientationsReference(const TimeSeriesTable_<SimTK::Rotation>& orientationData,
         const Set<OrientationWeight>* orientationWeightSet=nullptr);
 
     virtual ~OrientationsReference() {}
 
-    /** load the orientation data for this OrientationsReference from eulerAnglesXYZ */
-    void loadOrientationsFile(const std::string eulerAnglesXYZ,
+    /** load the orientation data for this OrientationsReference from a file
+    containing Euler-angles in body-fixed XYZ order.*/
+    void loadOrientationsEulerAnglesFile(const std::string eulerAnglesXYZ,
         Units modelUnits=Units(Units::Radians));
-    /** load the orientation data for this OrientationsReference from quaternions */
-    void loadOrientationsFromQuaternions(
-        const std::string quaternionsFile);
 
     //--------------------------------------------------------------------------
     // Reference Interface
@@ -123,18 +121,12 @@ public:
     /** get the names of the Orientations serving as references */
     const SimTK::Array_<std::string>& getNames() const override;
     /** get the value of the OrientationsReference */
-    void getValues(const SimTK::State &s,
-        SimTK::Array_<SimTK::Rotation> &values) const override;
-    /** get the speed value of the OrientationsReference */
-    virtual void getSpeedValues(const SimTK::State &s,
-        SimTK::Array_<SimTK::Vec3> &speedValues) const;
-    /** get the acceleration value of the OrientationsReference */
-    virtual void getAccelerationValues(const SimTK::State &s,
-        SimTK::Array_<SimTK::Vec3> &accValues) const;
+    void getValues(const SimTK::State& s,
+        SimTK::Array_<SimTK::Rotation>& values) const override;
     /** get the weighting (importance) of meeting this OrientationsReference in the
         same order as names*/
-    void getWeights(const SimTK::State &s,
-                    SimTK::Array_<double> &weights) const override;
+    void getWeights(const SimTK::State& s,
+                    SimTK::Array_<double>& weights) const override;
 
     //--------------------------------------------------------------------------
     // Convenience Access
@@ -152,8 +144,7 @@ public:
 
 private:
     void constructProperties();
-    void populateFromOrientationData(
-        const TimeSeriesTable_<SimTK::Rotation>& orientationData);
+    void populateFromOrientationData();
 
 private:
     // Use a specialized data structure for holding the orientation data
