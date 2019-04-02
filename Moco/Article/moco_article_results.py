@@ -98,7 +98,7 @@ def brachistochrone():
     problem.setModel(model)
     problem.setTimeBounds(0, [0, 10])
     problem.setStateInfo("/brachistochrone/x", [-10, 10], 0, 1)
-    problem.setStateInfo("/brachistochrone/y", [-10, 10], 0)
+    problem.setStateInfo("/brachistochrone/y", [-10, 10], 0, 1)
     problem.setStateInfo("/brachistochrone/v", [-10, 10], 0)
     problem.setControlInfo("/brachistochrone", [-100, 100])
 
@@ -152,8 +152,178 @@ def brachistochrone():
     pl.show()
 
 
+def suspended_mass():
+
+    width = 0.2
+    def buildModel():
+        model = osim.ModelFactory.createPlanarPointMass()
+        body = model.getBodySet().get("body")
+        model.updForceSet().clearAndDestroy()
+        model.finalizeFromProperties()
+
+        actuL = osim.DeGrooteFregly2016Muscle()
+        actuL.setName("left")
+        actuL.set_max_isometric_force(20)
+        actuL.set_optimal_fiber_length(.20)
+        actuL.set_tendon_slack_length(0.10)
+        actuL.set_pennation_angle_at_optimal(0.0)
+        actuL.set_ignore_tendon_compliance(True)
+        actuL.addNewPathPoint("origin", model.updGround(),
+                               osim.Vec3(-width, 0, 0))
+        actuL.addNewPathPoint("insertion", body, osim.Vec3(0))
+        model.addForce(actuL)
+
+        actuM = osim.DeGrooteFregly2016Muscle()
+        actuM.setName("middle")
+        actuM.set_max_isometric_force(20)
+        actuM.set_optimal_fiber_length(0.09)
+        actuM.set_tendon_slack_length(0.1)
+        actuM.set_pennation_angle_at_optimal(0.0)
+        actuM.set_ignore_tendon_compliance(True)
+        actuM.addNewPathPoint("origin", model.updGround(),
+                              osim.Vec3(0, 0, 0))
+        actuM.addNewPathPoint("insertion", body, osim.Vec3(0))
+        model.addForce(actuM)
+
+        actuR = osim.DeGrooteFregly2016Muscle()
+        actuR.setName("right");
+        actuR.set_max_isometric_force(40)
+        actuR.set_optimal_fiber_length(.21)
+        actuR.set_tendon_slack_length(0.09)
+        actuR.set_pennation_angle_at_optimal(0.0)
+        actuR.set_ignore_tendon_compliance(True)
+        actuR.addNewPathPoint("origin", model.updGround(),
+                               osim.Vec3(+width, 0, 0))
+        actuR.addNewPathPoint("insertion", body, osim.Vec3(0))
+        model.addForce(actuR)
+
+        model.finalizeConnections();
+        return model
+
+    def predict():
+        moco = osim.MocoTool()
+        problem = moco.updProblem()
+        problem.setModel(buildModel())
+        problem.setTimeBounds(0, 0.5)
+        problem.setStateInfo("/jointset/tx/tx/value", [-0.03, 0.03], -0.03, 0.03)
+        problem.setStateInfo("/jointset/ty/ty/value", [-2 * width, 0], -width, -width + 0.05)
+        problem.setStateInfo("/jointset/tx/tx/speed", [-15, 15], 0, 0)
+        problem.setStateInfo("/jointset/ty/ty/speed", [-15, 15], 0, 0)
+        problem.setStateInfo("/forceset/left/activation", [0, 1], 0)
+        problem.setStateInfo("/forceset/middle/activation", [0, 1], 0)
+        problem.setStateInfo("/forceset/right/activation", [0, 1], 0)
+        problem.setControlInfo("/forceset/left", [0, 1])
+        problem.setControlInfo("/forceset/middle", [0, 1])
+        problem.setControlInfo("/forceset/right", [0, 1])
+
+        problem.addCost(osim.MocoControlCost())
+
+        solver = moco.initCasADiSolver()
+        solver.set_num_mesh_points(25)
+        # solver.set_transcription_scheme("hermite-simpson")
+        solution = moco.solve()
+
+        # moco.visualize(solution)
+
+        # pl.figure()
+        # pl.plot(solution.getTimeMat(), solution.getStatesTrajectoryMat())
+        # pl.legend(solution.getStateNames())
+        # pl.figure()
+        # pl.plot(solution.getTimeMat(), solution.getControlsTrajectoryMat())
+        # pl.legend(solution.getControlNames())
+        # pl.show()
+        return solution
+
+    def track(prediction):
+        moco = osim.MocoTool()
+        problem = moco.updProblem()
+        problem.setModel(buildModel())
+        problem.setTimeBounds(0, 0.5)
+        problem.setStateInfo("/jointset/tx/tx/value", [-0.03, 0.03], -0.03, 0.03)
+        problem.setStateInfo("/jointset/ty/ty/value", [-2 * width, 0], -width, -width + 0.05)
+        problem.setStateInfo("/jointset/tx/tx/speed", [-15, 15], 0, 0)
+        problem.setStateInfo("/jointset/ty/ty/speed", [-15, 15], 0, 0)
+        problem.setStateInfo("/forceset/left/activation", [0, 1], 0)
+        problem.setStateInfo("/forceset/middle/activation", [0, 1], 0)
+        problem.setStateInfo("/forceset/right/activation", [0, 1], 0)
+        problem.setControlInfo("/forceset/left", [0, 1])
+        problem.setControlInfo("/forceset/middle", [0, 1])
+        problem.setControlInfo("/forceset/right", [0, 1])
+
+        tracking = osim.MocoStateTrackingCost("tracking")
+        tracking.setReference(prediction.exportToStatesTable())
+        problem.addCost(tracking)
+        effort = osim.MocoControlCost("effort")
+        effort.setExponent(4)
+        problem.addCost(effort)
+
+        solver = moco.initCasADiSolver()
+        solver.set_num_mesh_points(25)
+        # solver.set_transcription_scheme("hermite-simpson")
+        solution = moco.solve()
+
+        # moco.visualize(solution)
+        #
+        # pl.figure()
+        # pl.plot(solution.getTimeMat(), solution.getStatesTrajectoryMat())
+        # pl.legend(solution.getStateNames())
+        # pl.figure()
+        # pl.plot(solution.getTimeMat(), solution.getControlsTrajectoryMat())
+        # pl.legend(solution.getControlNames())
+        # pl.show()
+        return solution
+
+    predictSolution = predict()
+    trackSolution = track(predictSolution)
+
+    pl.figure()
+    pl.plot(predictSolution.getTimeMat(), predictSolution.getControlsTrajectoryMat())
+    pl.plot(trackSolution.getTimeMat(), trackSolution.getControlsTrajectoryMat())
+    pl.legend(predictSolution.getControlNames())
+    pl.show()
+
+    # TODO surround the point with muscles and maximize distance traveled.
+
+def sit_to_stand():
+
+    def create_tool(model):
+        moco = osim.MocoTool()
+        moco.initCasADiSolver()
+        solver.set_num_mesh_points(50)
+        solver.set_dynamics_mode('implicit')
+        solver.set_optim_convergence_tolerance(1e-4)
+        solver.set_optim_constraint_tolerance(1e-4)
+        solver.set_optim_solver('ipopt')
+        solver.set_transcription_scheme('hermite-simpson')
+        solver.set_enforce_constraint_derivatives(true)
+        solver.set_optim_hessian_approximation('limited-memory')
+        solver.set_optim_finite_difference_scheme('forward')
+
+        problem = moco.updProblem()
+        problem.setModel(model)
+        problem.setTimeBounds(0, 1)
+        # TODO remove these for tracking:
+        # The position bounds specify that the model should start in a crouch and
+        # finish standing up.
+        problem.setStateInfo('/jointset/hip_r/hip_flexion_r/value',
+            MocoBounds(-2, 0.5), MocoInitialBounds(-2), MocoFinalBounds(0))
+        problem.setStateInfo('/jointset/knee_r/knee_angle_r/value',
+            [-2, 0], -2, 0)
+        problem.setStateInfo('/jointset/ankle_r/ankle_angle_r/value',
+            [-0.5, 0.7], -0.5, 0)
+        # The velocity bounds specify that the model coordinates should start and
+        # end at zero.
+        problem.setStateInfo('/jointset/hip_r/hip_flexion_r/speed',
+            MocoBounds(-50, 50), MocoInitialBounds(0), MocoFinalBounds(0))
+        problem.setStateInfo('/jointset/knee_r/knee_angle_r/speed',
+            [-50, 50], 0, 0)
+        problem.setStateInfo('/jointset/ankle_r/ankle_angle_r/speed',
+            [-50, 50], 0, 0)
+
 if __name__ == "__main__":
-    brachistochrone()
+    # brachistochrone()
+    # suspended_mass()
+    sit_to_stand()
 # TODO linear tangent steering has analytical solution Example 4.1 Betts, and Example 4.5
 
 # 2 dof 3 muscles, predict, time-stepping, and track. add noise!!!
