@@ -288,14 +288,14 @@ def sit_to_stand():
 
     def create_tool(model):
         moco = osim.MocoTool()
-        moco.initCasADiSolver()
+        solver = moco.initCasADiSolver()
         solver.set_num_mesh_points(50)
         solver.set_dynamics_mode('implicit')
         solver.set_optim_convergence_tolerance(1e-4)
         solver.set_optim_constraint_tolerance(1e-4)
         solver.set_optim_solver('ipopt')
         solver.set_transcription_scheme('hermite-simpson')
-        solver.set_enforce_constraint_derivatives(true)
+        solver.set_enforce_constraint_derivatives(True)
         solver.set_optim_hessian_approximation('limited-memory')
         solver.set_optim_finite_difference_scheme('forward')
 
@@ -306,7 +306,7 @@ def sit_to_stand():
         # The position bounds specify that the model should start in a crouch and
         # finish standing up.
         problem.setStateInfo('/jointset/hip_r/hip_flexion_r/value',
-            MocoBounds(-2, 0.5), MocoInitialBounds(-2), MocoFinalBounds(0))
+            [-2, 0.5], -2, 0)
         problem.setStateInfo('/jointset/knee_r/knee_angle_r/value',
             [-2, 0], -2, 0)
         problem.setStateInfo('/jointset/ankle_r/ankle_angle_r/value',
@@ -314,11 +314,43 @@ def sit_to_stand():
         # The velocity bounds specify that the model coordinates should start and
         # end at zero.
         problem.setStateInfo('/jointset/hip_r/hip_flexion_r/speed',
-            MocoBounds(-50, 50), MocoInitialBounds(0), MocoFinalBounds(0))
+            [-50, 50], 0, 0)
         problem.setStateInfo('/jointset/knee_r/knee_angle_r/speed',
             [-50, 50], 0, 0)
         problem.setStateInfo('/jointset/ankle_r/ankle_angle_r/speed',
             [-50, 50], 0, 0)
+
+        return moco
+
+    def add_CoordinateActuator(model, coord_name, optimal_force):
+        coord_set = model.updCoordinateSet()
+        actu = osim.CoordinateActuator()
+        actu.setName('tau_' + coord_name)
+        actu.setCoordinate(coord_set.get(coord_name))
+        actu.setOptimalForce(optimal_force)
+        actu.setMinControl(-1)
+        actu.setMaxControl(1)
+        model.addComponent(actu)
+
+    def torque_driven_model():
+        model = osim.Model('sitToStand_3dof9musc.osim')
+        model.updForceSet().clearAndDestroy()
+        model.initSystem()
+        add_CoordinateActuator(model, 'hip_flexion_r', 150)
+        add_CoordinateActuator(model, 'knee_angle_r', 300)
+        add_CoordinateActuator(model, 'ankle_angle_r', 150)
+        return model
+
+    moco = create_tool(torque_driven_model())
+    problem = moco.updProblem()
+    problem.addCost(osim.MocoControlCost('effort'))
+    solver = moco.updSolver()
+    solver.resetProblem(problem)
+
+    predictSolution = moco.solve()
+    predictSolution.write('predictSolution.sto')
+    moco.visualize(predictSolution)
+
 
 if __name__ == "__main__":
     # brachistochrone()
