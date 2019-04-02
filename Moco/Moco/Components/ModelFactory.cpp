@@ -94,6 +94,8 @@ Model ModelFactory::createPlanarPointMass() {
     auto* body = new Body("body", 1, Vec3(0), Inertia(0));
     model.addBody(body);
 
+    body->attachGeometry(new Sphere(0.05));
+
     auto* jointX = new SliderJoint();
     jointX->setName("tx");
     jointX->connectSocket_parent_frame(model.getGround());
