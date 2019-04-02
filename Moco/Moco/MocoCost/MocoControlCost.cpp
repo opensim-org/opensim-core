@@ -18,6 +18,7 @@
 
 #include "MocoControlCost.h"
 #include <OpenSim/Simulation/Model/Model.h>
+#include "../MocoUtilities.h"
 
 using namespace OpenSim;
 
@@ -27,6 +28,7 @@ MocoControlCost::MocoControlCost() {
 
 void MocoControlCost::constructProperties() {
     constructProperty_control_weights(MocoWeightSet());
+    constructProperty_exponent(2);
 }
 
 void MocoControlCost::setWeight(
@@ -94,6 +96,10 @@ void MocoControlCost::initializeOnModelImpl(const Model& model) const {
         m_weights[i] = weight;
         ++i;
     }
+
+    OPENSIM_THROW_IF_FRMOBJ(get_exponent() < 1, Exception,
+            format("Exponent must be >= 1, but got %i.", get_exponent()));
+    m_exponent = get_exponent();
 }
 
 void MocoControlCost::calcIntegralCostImpl(const SimTK::State& state,
@@ -103,6 +109,6 @@ void MocoControlCost::calcIntegralCostImpl(const SimTK::State& state,
     integrand = 0;
     assert((int)m_weights.size() == controls.size());
     for (int i = 0; i < controls.size(); ++i) {
-        integrand += m_weights[i] * controls[i] * controls[i];
+        integrand += m_weights[i] * pow(controls[i], m_exponent);
     }
 }

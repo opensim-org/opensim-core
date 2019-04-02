@@ -46,6 +46,8 @@ public:
     /// weight is already set for the requested state, then the provided
     /// weight replaces the previous weight.
     void setWeight(const std::string& controlName, const double& weight);
+    void setExponent(int exponent) { set_exponent(exponent); }
+    int getExponent() const { return get_exponent(); }
 protected:
     void initializeOnModelImpl(const Model&) const override;
     void calcIntegralCostImpl(const SimTK::State& state,
@@ -55,7 +57,10 @@ private:
     OpenSim_DECLARE_PROPERTY(control_weights, MocoWeightSet,
             "The weights for each control; "
             "the weight for unspecified controls is 1.");
+    OpenSim_DECLARE_PROPERTY(exponent, int,
+            "The exponent to which each control is raised (default: 2).");
     mutable std::vector<double> m_weights;
+    mutable int m_exponent;
 };
 
 } // namespace OpenSim
