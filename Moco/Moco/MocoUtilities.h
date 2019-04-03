@@ -138,22 +138,29 @@ TimeSeriesTable resample(const TimeSeriesTable& in, const TimeVector& newTime) {
 
     const auto& time = in.getIndependentColumn();
 
-    OPENSIM_THROW_IF(newTime.size() < 2, Exception,
+    OPENSIM_THROW_IF(time.size() < 2, Exception,
             "Cannot resample if number of times is 0 or 1.");
-    OPENSIM_THROW_IF(newTime[0] < time[0], Exception,
-            format("New initial time (%f) cannot be less than existing initial "
-                   "time (%f)",
-                    newTime[0], time[0]));
-    OPENSIM_THROW_IF(newTime[newTime.size() - 1] > time[time.size() - 1],
-            Exception,
-            format("New final time (%f) cannot be greater than existing final "
-                   "time (%f)",
-                    newTime[newTime.size() - 1], time[time.size() - 1]));
-    for (int itime = 1; itime < (int)newTime.size(); ++itime) {
-        OPENSIM_THROW_IF(newTime[itime] < newTime[itime - 1], Exception,
-                format("New times must be non-decreasing, but "
-                       "time[%i] < time[%i] (%f < %f).",
-                        itime, itime - 1, newTime[itime], newTime[itime - 1]));
+    if (newTime.size() > 0) {
+        OPENSIM_THROW_IF(time.size() < 2, Exception,
+                "Cannot resample if number of times is 0 or 1.");
+        OPENSIM_THROW_IF(newTime[0] < time[0], Exception,
+                format("New initial time (%f) cannot be less than existing "
+                       "initial "
+                       "time (%f)",
+                        newTime[0], time[0]));
+        OPENSIM_THROW_IF(newTime[newTime.size() - 1] > time[time.size() - 1],
+                Exception,
+                format("New final time (%f) cannot be greater than existing "
+                       "final "
+                       "time (%f)",
+                        newTime[newTime.size() - 1], time[time.size() - 1]));
+        for (int itime = 1; itime < (int)newTime.size(); ++itime) {
+            OPENSIM_THROW_IF(newTime[itime] < newTime[itime - 1], Exception,
+                    format("New times must be non-decreasing, but "
+                           "time[%i] < time[%i] (%f < %f).",
+                            itime, itime - 1, newTime[itime],
+                            newTime[itime - 1]));
+        }
     }
 
     // Copy over metadata.
@@ -161,6 +168,8 @@ TimeSeriesTable resample(const TimeSeriesTable& in, const TimeVector& newTime) {
     for (int irow = (int)out.getNumRows() - 1; irow >= 0; --irow) {
         out.removeRowAtIndex(irow);
     }
+
+    if (newTime.size() == 0) return out;
 
     const GCVSplineSet splines(in, {}, std::min((int)time.size() - 1, 5));
     SimTK::Vector curTime(1);
