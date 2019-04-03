@@ -27,7 +27,7 @@ MocoSumSquaredStateCost::MocoSumSquaredStateCost() {
 void MocoSumSquaredStateCost::constructProperties() {
 }
 
-void MocoSumSquaredStateCost::initializeOnModelImpl(const Model& model) const {
+void MocoSumSquaredStateCost::initializeOnModelImpl(const Model&) const {
 }
 
 void MocoSumSquaredStateCost::calcIntegralCostImpl(const SimTK::State& state,
