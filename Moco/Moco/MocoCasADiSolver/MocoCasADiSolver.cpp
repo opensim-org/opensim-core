@@ -110,15 +110,16 @@ std::unique_ptr<MocoCasOCProblem> MocoCasADiSolver::createCasOCProblem() const {
     } else if (parallelEV != -1) {
         parallel = parallelEV;
     }
-    if (m_runningInPython && parallel) {
-        std::cout << "Warning: "
-                     "Cannot use parallelism in Python due to its "
-                     "Global Interpreter Lock. "
-                     "Set the environment variable OPENSIM_MOCO_PARALLEL or "
-                     "MocoCasADiSolver's 'parallel' property to 0, "
-                     "or use the command-line or Matlab interfaces."
-                  << std::endl;
-    }
+    // Not an issue with Python 3?
+    // if (m_runningInPython && parallel) {
+    //     std::cout << "Warning: "
+    //                  "Cannot use parallelism in Python due to its "
+    //                  "Global Interpreter Lock. "
+    //                  "Set the environment variable OPENSIM_MOCO_PARALLEL or "
+    //                  "MocoCasADiSolver's 'parallel' property to 0, "
+    //                  "or use the command-line or Matlab interfaces."
+    //               << std::endl;
+    // }
     int numThreads;
     if (parallel == 0) {
         numThreads = 1;
