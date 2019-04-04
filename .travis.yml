@@ -32,7 +32,7 @@ matrix:
     - if: type != cron
       os: osx
       compiler: clang
-      env: BTYPE=Release WRAP=on  DOXY=on  NPROC=2 DEPLOY=yes OSX_TARGET=10.10
+      env: BTYPE=Release WRAP=on  DOXY=off  NPROC=2 DEPLOY=yes OSX_TARGET=10.10
       
 branches:
   except:
