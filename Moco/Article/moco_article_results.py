@@ -144,7 +144,6 @@ def brachistochrone():
         solver_duration += [duration]
         N *= 2
 
-
     pl.figure()
     pl.plot(N_list, np.log10(np.array(error_list)))
     pl.figure()
@@ -153,8 +152,8 @@ def brachistochrone():
 
 
 def suspended_mass():
-
     width = 0.2
+
     def buildModel():
         model = osim.ModelFactory.createPlanarPointMass()
         body = model.getBodySet().get("body")
@@ -169,7 +168,7 @@ def suspended_mass():
         actuL.set_pennation_angle_at_optimal(0.0)
         actuL.set_ignore_tendon_compliance(True)
         actuL.addNewPathPoint("origin", model.updGround(),
-                               osim.Vec3(-width, 0, 0))
+                              osim.Vec3(-width, 0, 0))
         actuL.addNewPathPoint("insertion", body, osim.Vec3(0))
         model.addForce(actuL)
 
@@ -193,7 +192,7 @@ def suspended_mass():
         actuR.set_pennation_angle_at_optimal(0.0)
         actuR.set_ignore_tendon_compliance(True)
         actuR.addNewPathPoint("origin", model.updGround(),
-                               osim.Vec3(+width, 0, 0))
+                              osim.Vec3(+width, 0, 0))
         actuR.addNewPathPoint("insertion", body, osim.Vec3(0))
         model.addForce(actuR)
 
@@ -205,8 +204,10 @@ def suspended_mass():
         problem = moco.updProblem()
         problem.setModel(buildModel())
         problem.setTimeBounds(0, 0.5)
-        problem.setStateInfo("/jointset/tx/tx/value", [-0.03, 0.03], -0.03, 0.03)
-        problem.setStateInfo("/jointset/ty/ty/value", [-2 * width, 0], -width, -width + 0.05)
+        problem.setStateInfo("/jointset/tx/tx/value", [-0.03, 0.03], -0.03,
+                             0.03)
+        problem.setStateInfo("/jointset/ty/ty/value", [-2 * width, 0], -width,
+                             -width + 0.05)
         problem.setStateInfo("/jointset/tx/tx/speed", [-15, 15], 0, 0)
         problem.setStateInfo("/jointset/ty/ty/speed", [-15, 15], 0, 0)
         problem.setStateInfo("/forceset/left/activation", [0, 1], 0)
@@ -239,8 +240,10 @@ def suspended_mass():
         problem = moco.updProblem()
         problem.setModel(buildModel())
         problem.setTimeBounds(0, 0.5)
-        problem.setStateInfo("/jointset/tx/tx/value", [-0.03, 0.03], -0.03, 0.03)
-        problem.setStateInfo("/jointset/ty/ty/value", [-2 * width, 0], -width, -width + 0.05)
+        problem.setStateInfo("/jointset/tx/tx/value", [-0.03, 0.03], -0.03,
+                             0.03)
+        problem.setStateInfo("/jointset/ty/ty/value", [-2 * width, 0], -width,
+                             -width + 0.05)
         problem.setStateInfo("/jointset/tx/tx/speed", [-15, 15], 0, 0)
         problem.setStateInfo("/jointset/ty/ty/speed", [-15, 15], 0, 0)
         problem.setStateInfo("/forceset/left/activation", [0, 1], 0)
@@ -277,19 +280,21 @@ def suspended_mass():
     trackSolution = track(predictSolution)
 
     pl.figure()
-    pl.plot(predictSolution.getTimeMat(), predictSolution.getControlsTrajectoryMat())
-    pl.plot(trackSolution.getTimeMat(), trackSolution.getControlsTrajectoryMat())
+    pl.plot(predictSolution.getTimeMat(),
+            predictSolution.getControlsTrajectoryMat())
+    pl.plot(trackSolution.getTimeMat(),
+            trackSolution.getControlsTrajectoryMat())
     pl.legend(predictSolution.getControlNames())
     pl.show()
 
     # TODO surround the point with muscles and maximize distance traveled.
 
-def sit_to_stand():
 
+def sit_to_stand():
     def create_tool(model):
         moco = osim.MocoTool()
         solver = moco.initCasADiSolver()
-        solver.set_num_mesh_points(50)
+        solver.set_num_mesh_points(25)
         solver.set_dynamics_mode('implicit')
         solver.set_optim_convergence_tolerance(1e-4)
         solver.set_optim_constraint_tolerance(1e-4)
@@ -300,25 +305,25 @@ def sit_to_stand():
         solver.set_optim_finite_difference_scheme('forward')
 
         problem = moco.updProblem()
-        problem.setModel(model)
+        problem.setModelCopy(model)
         problem.setTimeBounds(0, 1)
         # TODO remove these for tracking:
         # The position bounds specify that the model should start in a crouch and
         # finish standing up.
         problem.setStateInfo('/jointset/hip_r/hip_flexion_r/value',
-            [-2, 0.5], -2, 0)
+                             [-2, 0.5], -2, 0)
         problem.setStateInfo('/jointset/knee_r/knee_angle_r/value',
-            [-2, 0], -2, 0)
+                             [-2, 0], -2, 0)
         problem.setStateInfo('/jointset/ankle_r/ankle_angle_r/value',
-            [-0.5, 0.7], -0.5, 0)
+                             [-0.5, 0.7], -0.5, 0)
         # The velocity bounds specify that the model coordinates should start and
         # end at zero.
         problem.setStateInfo('/jointset/hip_r/hip_flexion_r/speed',
-            [-50, 50], 0, 0)
+                             [-50, 50], 0, 0)
         problem.setStateInfo('/jointset/knee_r/knee_angle_r/speed',
-            [-50, 50], 0, 0)
+                             [-50, 50], 0, 0)
         problem.setStateInfo('/jointset/ankle_r/ankle_angle_r/speed',
-            [-50, 50], 0, 0)
+                             [-50, 50], 0, 0)
 
         return moco
 
@@ -330,7 +335,7 @@ def sit_to_stand():
         actu.setOptimalForce(optimal_force)
         actu.setMinControl(-1)
         actu.setMaxControl(1)
-        model.addComponent(actu)
+        model.addForce(actu)
 
     def torque_driven_model():
         model = osim.Model('sitToStand_3dof9musc.osim')
@@ -341,15 +346,44 @@ def sit_to_stand():
         add_CoordinateActuator(model, 'ankle_angle_r', 150)
         return model
 
-    moco = create_tool(torque_driven_model())
-    problem = moco.updProblem()
-    problem.addCost(osim.MocoControlCost('effort'))
-    solver = moco.updSolver()
-    solver.resetProblem(problem)
+    def predict():
+        moco = create_tool(torque_driven_model())
+        problem = moco.updProblem()
+        problem.addCost(osim.MocoControlCost('effort'))
+        solver = moco.updSolver()
+        solver.resetProblem(problem)
 
-    predictSolution = moco.solve()
-    predictSolution.write('predictSolution.sto')
-    moco.visualize(predictSolution)
+        predictSolution = moco.solve()
+        predictSolution.write('predictSolution.sto')
+        # moco.visualize(predictSolution)
+
+        timeStepSolution = osim.simulateIterateWithTimeStepping(
+            predictSolution, problem.getPhase(0).getModel(),
+            1e-8)
+        timeStepSolution.write('timeStepSolution.sto')
+        # moco.visualize(timeStepSolution)
+
+    def track():
+        moco = create_tool(torque_driven_model())
+        problem = moco.updProblem()
+        tracking = osim.MocoStateTrackingCost()
+        tracking.setName('tracking')
+        tracking.setReferenceFile('predictSolution.sto')
+        tracking.setAllowUnusedReferences(True)
+        problem.addCost(tracking)
+
+        problem.addCost(osim.MocoControlCost('effort', 0.01))
+
+        solver = moco.updSolver()
+        solver.resetProblem(problem)
+
+        # solver.setGuess(predictSolution)
+        trackingSolution = moco.solve()
+        trackingSolution.write('trackingSolution.sto')
+        # moco.visualize(trackingSolution)
+
+    predict()
+    track()
 
 
 if __name__ == "__main__":
