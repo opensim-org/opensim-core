@@ -30,6 +30,7 @@
 #include "OpenSim/Common/Array.h"
 #include <OpenSim/Common/GCVSplineSet.h>
 #include <simmath/Optimizer.h>
+#include "OpenSim/Actuators/CoordinateActuator.h"
 
 //=============================================================================
 //=============================================================================

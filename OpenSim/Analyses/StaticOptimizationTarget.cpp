@@ -115,19 +115,47 @@ prepareToOptimize(SimTK::State& s, double *x)
     }
 
     // Initialize the system at given activations and state
+    double modifier(0.);
+    int iter(0);
     const ForceSet& fSet = _model->getForceSet();
-    for(int i=0,j=0;i<fSet.getSize();i++) {
-        Muscle *mus = dynamic_cast<Muscle*>(&fSet.get(i));
-        if (mus){
-            mus->overrideActuation(s, false);
-            mus->setActivation(s, x[j]);
-            ++j;
+    while(true){
+        for(int i=0,j=0;i<fSet.getSize();i++) {
+            Muscle *mus = dynamic_cast<Muscle*>(&fSet.get(i));
+            if (mus){
+                mus->overrideActuation(s, false);
+                if (x[i] + modifier <= 1)
+                    mus->setActivation(s, x[j] + modifier);
+                else
+                    mus->setActivation(s, x[j] - modifier);
+                ++j;
+            }
+            CoordinateActuator* coord = dynamic_cast<CoordinateActuator*>(&fSet.get(i));
+            if (coord)
+                coord->setOverrideActuation(s, x[i] * coord->getOptimalForce());
         }
+        try {
+            _model->equilibrateMuscles(s);
+        } catch(const Exception& e) {
+            // If the muscle falls into some weird numerical error, try to just slightly change the activations
+            // and reprocess it until it works (maximum of 10 times)
+            modifier += 0.001;
+            ++iter;
+            if (iter >= 10)
+                throw e;
+            continue;
+        }
+        break;
     }
-    _model->equilibrateMuscles(s); // No need to test for error, since it is the same activation as previous state
-    _model->getMultibodySystem().realize(s,SimTK::Stage::Velocity);
 
 #ifdef USE_LINEAR_CONSTRAINT_MATRIX
+    // Remove residual actuator to compute sole effects of passive and active forces
+    for(int i=0, j=0; i<fSet.getSize(); i++) {
+        CoordinateActuator* coord = dynamic_cast<CoordinateActuator*>(&fSet.get(i));
+        if (coord)
+            coord->setOverrideActuation(s, 0);
+    }
+    _model->getMultibodySystem().realize(s,SimTK::Stage::Velocity);
+
     // Compute passive forces at state s
     Vector passiveForces(np);
     for(int i=0, j=0; i<fSet.getSize(); i++) {
@@ -141,23 +169,24 @@ prepareToOptimize(SimTK::State& s, double *x)
     Vector qddotPassive(nc);
     for(int i=0,j=0;i<fSet.getSize();i++)  {
         Muscle* mus = dynamic_cast<Muscle*>(&fSet.get(i));
-         if( mus ) {
-             mus->overrideActuation(s, true);
-             mus->setOverrideActuation(s, passiveForces[j]);
-             ++j;
-         }
+        if( mus ) {
+            mus->overrideActuation(s, true);
+            mus->setOverrideActuation(s, passiveForces[j]);
+            ++j;
+        }
     }
+    // Don't reequilibrate muscle since it has the right length!
     _model->getMultibodySystem().realize(s,SimTK::Stage::Acceleration);
     SimTK::Vector udot = _model->getMatterSubsystem().getUDot(s);
     for(int i=0; i<_accelerationIndices.getSize(); i++)
         qddotPassive[i] = udot[_accelerationIndices[i]];
 
-    // Compute linear qqdot from the non linear effects
+    // Compute linear qqdot from the non linear effects (coriolis and gravity)
     Vector qddotNonLinear(nc);
     for(int i=0,j=0;i<fSet.getSize();i++)  {
-        Muscle* mus = dynamic_cast<Muscle*>(&fSet.get(i));
-         if( mus ) {
-             mus->setOverrideActuation(s, 0);
+        ScalarActuator* act = dynamic_cast<ScalarActuator*>(&fSet.get(i));
+         if( act ) {
+             act->setOverrideActuation(s, 0);
              j++;
          }
     }
@@ -204,6 +233,7 @@ prepareToOptimize(SimTK::State& s, double *x)
     _constraintVector = _targetAcceleration - qddotPassive;
 
 #else
+    _model->getMultibodySystem().realize(s,SimTK::Stage::Velocity);
     // Set modeling options for Actuators to be overridden
     for(int i=0; i<fSet.getSize(); i++) {
         ScalarActuator* act = dynamic_cast<ScalarActuator*>(&fSet.get(i));
@@ -733,22 +763,36 @@ computeAcceleration(SimTK::State& s, const SimTK::Vector &parameters,SimTK::Vect
             ++j;
         }
     }
-    try{
-        _model->equilibrateMuscles(s);
-    } catch (const Exception& x) {
-        // If the muscle falls into some weird numerical error, try to just slightly change the activations
-        // and reprocess it once, if it fails again in equilibrateMuscles, it throws the usual error
+
+    // If the muscle falls into some weird numerical error, try to just slightly change the activations
+    // and reprocess it until it works (maximum of 10 times)
+    double modifier(0.);
+    int iter(0);
+    while(true){
         for(int i=0,j=0;i<fs.getSize();i++) {
-            Muscle *mus = dynamic_cast<Muscle*>(&fs.get(i));
-            if (mus){
-                if (parameters[j] < 1)
-                    mus->setActivation(s, parameters[j]+.001);
-                else
-                    mus->setActivation(s, parameters[j]-.001);
-                ++j;
+            // If the muscle falls into some weird numerical error, try to just slightly change the activations
+            // and reprocess it once, if it fails again in equilibrateMuscles, it throws the usual error
+            for(int i=0,j=0;i<fs.getSize();i++) {
+                Muscle *mus = dynamic_cast<Muscle*>(&fs.get(i));
+                if (mus){
+                    if (parameters[j]+modifier < 1)
+                        mus->setActivation(s, parameters[j]+modifier);
+                    else
+                        mus->setActivation(s, parameters[j]-modifier);
+                    ++j;
+                }
             }
         }
-        _model->equilibrateMuscles(s);
+        try {
+            _model->equilibrateMuscles(s);
+        } catch(const Exception& e) {
+            modifier += 0.001;
+            ++iter;
+            if (iter >= 10)
+                throw e;
+            continue;
+        }
+        break;
     }
 #endif
     _model->getMultibodySystem().realize(s,SimTK::Stage::Acceleration);
@@ -764,3 +808,4 @@ computeAcceleration(SimTK::State& s, const SimTK::Vector &parameters,SimTK::Vect
 
     // 1.45 ms
 }
+
