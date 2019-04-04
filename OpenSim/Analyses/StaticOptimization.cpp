@@ -592,7 +592,10 @@ int StaticOptimization::begin(const SimTK::State& s )
         for(int i=0,j=0;i<fs.getSize();i++) {
             ScalarActuator* act = dynamic_cast<ScalarActuator*>(&fs.get(i));
             if (act) {
-                _parameters[j++] = act->getMinControl();
+                if (act->getMinControl() != -INFINITY)
+                    _parameters[j++] = act->getMinControl();
+                else
+                    _parameters[j++] = 0.;
             }
         }
     }
