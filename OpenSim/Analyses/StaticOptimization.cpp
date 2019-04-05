@@ -593,9 +593,9 @@ int StaticOptimization::begin(const SimTK::State& s )
             ScalarActuator* act = dynamic_cast<ScalarActuator*>(&fs.get(i));
             if (act) {
                 if (act->getMinControl() != -INFINITY)
-                    _parameters[j++] = act->getMinControl();
+                    _parameters[j++] = act->getMaxControl();
                 else
-                    _parameters[j++] = 0.;
+                    _parameters[j++] = 1.;
             }
         }
     }
