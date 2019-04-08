@@ -1,9 +1,9 @@
 % -------------------------------------------------------------------------- %
 % OpenSim Moco: exampleParameter.m                                           %
 % -------------------------------------------------------------------------- %
-% Copyright (c) 2017 Stanford University and the Authors                     %
+% Copyright (c) 2019 Stanford University and the Authors                     %
 %                                                                            %
-% Author(s): Christopher Dembia                                              %
+% Author(s): Noah Gordon                                                     %
 %                                                                            %
 % Licensed under the Apache License, Version 2.0 (the "License"); you may    %
 % not use this file except in compliance with the License. You may obtain a  %
@@ -15,6 +15,10 @@
 % See the License for the specific language governing permissions and        %
 % limitations under the License.                                             %
 % -------------------------------------------------------------------------- %
+
+% Optimize the mass of a simple harmonic oscillator such that it follows the
+% correct trajectory specified by the state bounds 
+% and the MocoMarkerEndpointCost.
 
 stiffness = 100.0;
 mass = 5.0;
@@ -45,8 +49,6 @@ spring.setStiffness(stiffness);
 spring.setViscosity(0.0);
 model.addComponent(spring);
 
-N = 25;
-
 % Create MocoTool.
 % ================
 moco = MocoTool();
@@ -65,14 +67,15 @@ problem.setModel(model);
 % Initial time must be 0, final time is FINAL_TIME.
 problem.setTimeBounds(0, final_time);
 
-% Initial position must be -0.5, final position must be in [0.25, 0.75]
+% Initial position must be -0.5, final position must be in [0.25, 0.75].
 problem.setStateInfo('/slider/position/value', [-5.0, 5.0], -0.5, [0.25, 0.75]);
 
 % Initial and final speed must be 0. Use compact syntax.
 problem.setStateInfo('/slider/position/speed', [-20, 20], [0], [0]);
 
-%Add Parameter
-problem.addParameter(MocoParameter('oscillator_mass', 'body', 'mass', MocoBounds(0, 10)));
+% Add Parameter.
+problem.addParameter(MocoParameter('oscillator_mass', 'body', 'mass',... 
+    MocoBounds(0, 10)));
 
 endpointCost = MocoMarkerEndpointCost();
 endpointCost.setPointName('/markerset/marker');
@@ -80,9 +83,9 @@ endpointCost.setReferenceLocation(Vec3(0.5, 0, 0));
 
 problem.addCost(endpointCost);
 
+solver = moco.initTropterSolver();
 
-solver = moco.initCasADiSolver();
-solver.set_num_mesh_points(N);
+moco.print('parameter.omoco');
 
 sol = moco.solve();
 sol.write('parameter_solution.sto');
