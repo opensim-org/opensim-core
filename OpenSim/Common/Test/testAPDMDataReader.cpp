@@ -81,7 +81,7 @@ int main() {
             APDMDataReader::getOrientationsTable(tables);
         STOFileAdapterQuaternion::write(quatTableTyped, "quaternions.sto");
         SimTK::Quaternion quatFromTable = quatTableTyped.getRowAtIndex(0)[0];
-        SimTK::Quaternion quatFromFile = SimTK::Quaternion(0.000865605, -0.005158994, -0.202412525, 0.979286375);
+        SimTK::Quaternion quatFromFile = SimTK::Quaternion(0.979286375, 0.000865605, -0.005158994, -0.202412525);
         ASSERT_EQUAL(quatFromTable, quatFromFile, 1e-6);
      }
     catch (const std::exception& ex) {
