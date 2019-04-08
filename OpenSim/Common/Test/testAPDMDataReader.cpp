@@ -33,16 +33,16 @@ int main() {
 
     try {
         APDMDataReaderSettings readerSettings;
-        std::vector<std::string> imu_names{ "shank", "thigh" };
+        std::vector<std::string> imu_names{ "torso", "pelvis" };
         std::vector<std::string> names_in_experiment{ "Static", "Middle" };
         // Programmatically add items to name mapping, write to xml
         for (int index = 0; index < imu_names.size(); ++index) {
             ExperimentalSensor  nextSensor(names_in_experiment[index], imu_names[index]);
             readerSettings.append_ExperimentalSensors(nextSensor);
         }
-        readerSettings.print("reader2xml.xml");
-        // read xml we wrote into a new XsensDataReader to readTrial
-        APDMDataReaderSettings reconstructFromXML("reader2xml.xml");
+        readerSettings.print("apdm_reader.xml");
+        // read xml we wrote into a new APDMDataReader to readTrial
+        APDMDataReaderSettings reconstructFromXML("apdm_reader.xml");
         APDMDataReader reader(reconstructFromXML);
         DataAdapter::OutputTables tables = reader.extendRead("imuData01csv.csv");
         // Write tables to sto files
@@ -58,6 +58,7 @@ int main() {
         // test last row as well to make sure all data is read correctly, 
         // size is as expected
         size_t numRows = accelTableTyped.getIndependentColumn().size();
+        ASSERT(numRows==1024);
         fromTable = accelTableTyped.getRowAtIndex(numRows - 1)[0];
         fromFile = SimTK::Vec3{ 0.158696249,0.298471016,9.723807335 };
         ASSERT_EQUAL(fromTable, fromFile, tolerance);

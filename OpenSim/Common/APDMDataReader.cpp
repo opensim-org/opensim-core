@@ -127,9 +127,9 @@ APDMDataReader::extendRead(const std::string& fileName) const {
             done = true;
             break;
         }
-        // Cycle through the filles collating values
+        // Cycle through the imus collating values
         for (int imu_index = 0; imu_index < n_imus; ++imu_index) {
-            // parse gyro info from imuStream
+            // parse gyro info from in_stream
            if (foundLinearAccelerationData)
                 accel_row_vector[imu_index] = SimTK::Vec3(std::stod(nextRow[accIndex[imu_index]]),
                     std::stod(nextRow[accIndex[imu_index] + 1]), std::stod(nextRow[accIndex[imu_index] + 2]));
@@ -139,7 +139,7 @@ APDMDataReader::extendRead(const std::string& fileName) const {
             if (foundAngularVelocityData)
                 gyro_row_vector[imu_index] = SimTK::Vec3(std::stod(nextRow[gyroIndex[imu_index]]),
                     std::stod(nextRow[gyroIndex[imu_index] + 1]), std::stod(nextRow[gyroIndex[imu_index] + 2]));
-            // Create Quaternion from values in file, check assumptions
+            // Create Quaternion from values in file, assume order in file W, X, Y, Z
             orientation_row_vector[imu_index] = 
                 SimTK::Quaternion(std::stod(nextRow[orientationsIndex[imu_index]]),
                     std::stod(nextRow[orientationsIndex[imu_index] + 1]),
@@ -157,6 +157,8 @@ APDMDataReader::extendRead(const std::string& fileName) const {
         if (foundAngularVelocityData) 
             angularVelocityData[rowNumber] = gyro_row_vector;
         rotationsData[rowNumber] = orientation_row_vector;
+        // We could get some indication of time from file or generate time based on rate
+        // Here we use the latter mechanism.
         time += timeIncrement;
         rowNumber++;
         if (std::remainder(rowNumber, last_size) == 0) {
