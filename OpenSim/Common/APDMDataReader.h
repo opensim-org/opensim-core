@@ -37,7 +37,7 @@ namespace OpenSim {
 
 /** APDMDataReader is a class that reads files produced by IMU manufacturer APDM
     and produces datatables from them. This is intended to help consume IMU outputs.*/
-class OSIMCOMMON_API APDMDataReader : public DataAdapter {
+class OSIMCOMMON_API APDMDataReader : public FileAdapter {
 public:
     // Default Constructor
     APDMDataReader() = default;
@@ -65,9 +65,6 @@ public:
     // Header associated with Time
     static const std::string TimeLabel;
 
-    /** Typically, APDM can export a trial as one .h5 file (binary that we can't parse as of now) or as .csv
-    ASCII text files that are comma delimited, one per sensor.
-    static const std::string TimeLabel;
     /** Typically, APDM can export a trial as one .h5 file (binary that we don't parse as of now) or as .csv
     ASCII text file that is comma delimited, grouped in order by sensor.
     The function below read the csv file . It produces a 
@@ -78,7 +75,11 @@ public:
     - one for AngularVelocity data. 
     - Barometer and Temperature data is ignored for now
     */
-    DataAdapter::OutputTables extendRead(const std::string& fileName) const override;
+    OutputTables readFile(const std::string& fileName) const;
+    /** Since not using iplementation of extendRead from base class, overriding here */
+    DataAdapter::OutputTables extendRead(const std::string& fileName) const override {
+        return readFile(fileName);
+    }
     /** Implements writing functionality, not implemented.                         */
     virtual void extendWrite(const DataAdapter::InputTables& tables,
         const std::string& sinkName) const override {};
