@@ -141,10 +141,10 @@ APDMDataReader::extendRead(const std::string& fileName) const {
                     std::stod(nextRow[gyroIndex[imu_index] + 1]), std::stod(nextRow[gyroIndex[imu_index] + 2]));
             // Create Quaternion from values in file, check assumptions
             orientation_row_vector[imu_index] = 
-                SimTK::Quaternion(std::stod(nextRow[orientationsIndex[imu_index]+1]),
+                SimTK::Quaternion(std::stod(nextRow[orientationsIndex[imu_index]]),
+                    std::stod(nextRow[orientationsIndex[imu_index] + 1]),
                     std::stod(nextRow[orientationsIndex[imu_index] + 2]),
-                    std::stod(nextRow[orientationsIndex[imu_index] + 3]),
-                    std::stod(nextRow[orientationsIndex[imu_index]]));
+                    std::stod(nextRow[orientationsIndex[imu_index] + 3]));
         }
         if (done) 
             break;
