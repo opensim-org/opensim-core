@@ -50,7 +50,7 @@ int main(int argc, char* argv[]) {
         XsensDataReaderSettings readerSettings(xsensReaderConfigFile);
         if (!trial.empty()) readerSettings.upd_trial_prefix() = trial;
         if (!folder.empty()) readerSettings.upd_data_folder() = folder;
-        DataAdapter::OutputTables tables = XsensDataReader(reader).extendRead("");
+        DataAdapter::OutputTables tables = XsensDataReader(readerSettings).extendRead("");
         // Write tables to sto files
         // Accelerations
         std::shared_ptr<AbstractDataTable> accelTable = tables.at(XsensDataReader::LinearAccelerations);
