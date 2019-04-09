@@ -33,8 +33,8 @@ int main() {
 
     try {
         APDMDataReaderSettings readerSettings;
-        std::vector<std::string> imu_names{ "torso", "pelvis" };
-        std::vector<std::string> names_in_experiment{ "Static", "Middle" };
+        std::vector<std::string> imu_names{ "torso", "pelvis", "shank" };
+        std::vector<std::string> names_in_experiment{ "Static", "Upper", "Middle" };
         // Programmatically add items to name mapping, write to xml
         for (int index = 0; index < imu_names.size(); ++index) {
             ExperimentalSensor  nextSensor(names_in_experiment[index], imu_names[index]);
