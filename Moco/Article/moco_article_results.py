@@ -66,7 +66,7 @@ def Kirk():
     N_list = []
     error_list = []
     solver_duration = []
-    while N < 10000:
+    while N < 2000: # 10000:
         solver.set_num_mesh_points(N)
         solution = moco.solve()
         actual_y0 = solution.getStateMat('/jointset/j/coord/value')
@@ -82,11 +82,20 @@ def Kirk():
         solver_duration += [solution.getSolverDuration()]
         N *= 2
 
-    pl.figure()
-    pl.plot(N_list, np.log10(np.array(error_list)))
-    pl.figure()
+    fig = pl.figure()
+    ax = fig.add_subplot(2, 1, 1)
+    ax.plot(N_list, np.array(error_list)) # np.log10(np.array(error_list)))
+    ax.set_yscale('log')
+
+    pl.ylabel('root-mean-square error (TODO)')
+    fig.add_subplot(2, 1, 2)
     pl.plot(N_list, solver_duration)
+    pl.xlabel('number of mesh points')
+    pl.ylabel('solver duration (s)')
     pl.show()
+    fig.savefig('Kirk.png')
+
+    # TODO add Hermite-Simpson
 
 
 def brachistochrone():
@@ -145,8 +154,11 @@ def brachistochrone():
         N *= 2
 
     pl.figure()
-    pl.plot(N_list, np.log10(np.array(error_list)))
-    pl.figure()
+    pl.subplot(2, 1, 1)
+    pl.plot(N_list, np.array(error_list)) # np.log10(np.array(error_list)))
+    pl.xlabel('number of mesh points')
+    pl.ylabel('err')
+    pl.subplot(2, 1, 2)
     pl.plot(N_list, solver_duration)
     pl.show()
 
@@ -387,9 +399,10 @@ def sit_to_stand():
 
 
 if __name__ == "__main__":
+    Kirk()
     # brachistochrone()
     # suspended_mass()
-    sit_to_stand()
+    # sit_to_stand()
 # TODO linear tangent steering has analytical solution Example 4.1 Betts, and Example 4.5
 
 # 2 dof 3 muscles, predict, time-stepping, and track. add noise!!!
