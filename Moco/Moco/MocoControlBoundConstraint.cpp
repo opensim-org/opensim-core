@@ -18,9 +18,15 @@
 
 #include "MocoControlBoundConstraint.h"
 
+#include "MocoProblemInfo.h"
+
+#include <OpenSim/Common/GCVSpline.h>
+
 using namespace OpenSim;
 
-MocoControlBoundConstraint::MocoControlBoundConstraint() { constructProperties(); }
+MocoControlBoundConstraint::MocoControlBoundConstraint() {
+    constructProperties();
+}
 
 void MocoControlBoundConstraint::constructProperties() {
     constructProperty_control_paths();
@@ -29,15 +35,14 @@ void MocoControlBoundConstraint::constructProperties() {
     constructProperty_equality_with_lower(false);
 }
 
-void MocoControlBoundConstraint::initializeOnModelImpl(const Model& model) const {
+void MocoControlBoundConstraint::initializeOnModelImpl(
+        const Model& model, const MocoProblemInfo& problemInfo) const {
 
     std::vector<std::string> actuPaths;
-    const auto modelPath = model.getAbsolutePath();
     for (const auto& actu : model.getComponentList<Actuator>()) {
         OPENSIM_THROW_IF_FRMOBJ(actu.numControls() != 1, Exception,
                 "Currently, only ScalarActuators are supported.");
-        actuPaths.push_back(
-                actu.getAbsolutePath().formRelativePath(modelPath).toString());
+        actuPaths.push_back(actu.getAbsolutePathString());
     }
 
     // TODO this assumes controls are in the same order as actuators.
@@ -92,6 +97,25 @@ void MocoControlBoundConstraint::initializeOnModelImpl(const Model& model) const
             "set.");
     OPENSIM_THROW_IF_FRMOBJ(get_equality_with_lower() && !m_hasLower, Exception,
             "If equality_with_lower==true, lower bound function must be set.");
+
+    auto checkTimeRange = [&](const Function& f) {
+        if (auto* spline = dynamic_cast<const GCVSpline*>(&f)) {
+            OPENSIM_THROW_IF_FRMOBJ(
+                    spline->getMinX() > problemInfo.minInitialTime, Exception,
+                    format("The function's minimum X (%f) must "
+                           "be less than or equal to the minimum possible "
+                           "initial time (%f).",
+                            spline->getMinX(), problemInfo.minInitialTime));
+            OPENSIM_THROW_IF_FRMOBJ(
+                    spline->getMaxX() < problemInfo.maxFinalTime, Exception,
+                    format("The function's maximum X (%f) must "
+                           "be greater than or equal to the maximum possible "
+                           "final time (%f).",
+                            spline->getMaxX(), problemInfo.maxFinalTime));
+        }
+    };
+    if (m_hasLower) checkTimeRange(get_lower_bound());
+    if (m_hasUpper) checkTimeRange(get_upper_bound());
 
     int numEqsPerControl;
     if (get_equality_with_lower()) {
