@@ -52,7 +52,7 @@ APDMDataReader::extendRead(const std::string& fileName) const {
     int n_imus = _settings.getProperty_ExperimentalSensors().size();
     int last_size = 1024;
     // Will read data into pre-allocated Matrices in-memory rather than appendRow
-    // on the fly to avoid the overhead of 
+    // on the fly which copies the whole table on every call.
     SimTK::Matrix_<SimTK::Quaternion> rotationsData{ last_size, n_imus };
     SimTK::Matrix_<SimTK::Vec3> linearAccelerationData{ last_size, n_imus };
     SimTK::Matrix_<SimTK::Vec3> magneticHeadingData{ last_size, n_imus };
