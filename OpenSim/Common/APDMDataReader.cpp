@@ -32,7 +32,7 @@ APDMDataReader* APDMDataReader::clone() const {
 }
 
 DataAdapter::OutputTables 
-APDMDataReader::readFile(const std::string& fileName) const {
+APDMDataReader::extendRead(const std::string& fileName) const {
 
     OPENSIM_THROW_IF(fileName.empty(),
         EmptyFileName);

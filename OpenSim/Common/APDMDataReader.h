@@ -75,11 +75,8 @@ public:
     - one for AngularVelocity data. 
     - Barometer and Temperature data is ignored for now
     */
-    OutputTables readFile(const std::string& fileName) const;
-    /** Since not using iplementation of extendRead from base class, overriding here */
-    DataAdapter::OutputTables extendRead(const std::string& fileName) const override {
-        return readFile(fileName);
-    }
+    DataAdapter::OutputTables extendRead(const std::string& fileName) const override;
+
     /** Implements writing functionality, not implemented.                         */
     virtual void extendWrite(const DataAdapter::InputTables& tables,
         const std::string& sinkName) const override {};
