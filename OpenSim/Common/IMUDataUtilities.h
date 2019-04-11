@@ -48,7 +48,7 @@ public:
     static const std::string MagneticHeading;      // name of table for data from Magnetometer (Magnetic Heading)
     static const std::string AngularVelocity;      // name of table for gyro data (AngularVelocity)
    /**
-     * Custom accessors to retrieve tables of proper types without need to casting by clients.
+     * Custom accessors to retrieve tables of proper types without requiring users/scripters to cast.
      * Scripting friendly */
      /** get table of Orientations as TimeSeriesTableQuaternion */
     static const TimeSeriesTableQuaternion& getOrientationsTable(const DataAdapter::OutputTables& tables) {
