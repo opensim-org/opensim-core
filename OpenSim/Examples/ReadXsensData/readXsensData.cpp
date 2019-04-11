@@ -53,22 +53,22 @@ int main(int argc, char* argv[]) {
         DataAdapter::OutputTables tables = XsensDataReader(readerSettings).extendRead(folder);
         // Write tables to sto files
         // Accelerations
-        std::shared_ptr<AbstractDataTable> accelTable = tables.at(XsensDataReader::LinearAccelerations);
+        std::shared_ptr<AbstractDataTable> accelTable = tables.at(IMUDataUtilities::LinearAccelerations);
         const TimeSeriesTableVec3& accelTableTyped = dynamic_cast<const TimeSeriesTableVec3&>(*accelTable);
         STOFileAdapterVec3::write(accelTableTyped, folder + trial + "accelerations.sto");
 
         // MagneticHeading
-        std::shared_ptr<AbstractDataTable> magneticHeadingTable = tables.at(XsensDataReader::MagneticHeading);
+        std::shared_ptr<AbstractDataTable> magneticHeadingTable = tables.at(IMUDataUtilities::MagneticHeading);
         const TimeSeriesTableVec3& magTableTyped = dynamic_cast<const TimeSeriesTableVec3&>(*magneticHeadingTable);
         STOFileAdapterVec3::write(magTableTyped, folder + trial + "magnetometers.sto");
  
         // AngularVelocity
-        std::shared_ptr<AbstractDataTable> angularVelocityTable = tables.at(XsensDataReader::AngularVelocity);
+        std::shared_ptr<AbstractDataTable> angularVelocityTable = tables.at(IMUDataUtilities::AngularVelocity);
         const TimeSeriesTableVec3& gyroTableTyped = dynamic_cast<const TimeSeriesTableVec3&>(*angularVelocityTable);
         STOFileAdapterVec3::write(gyroTableTyped, folder + trial + "gyros.sto");
 
         // Orientation
-        std::shared_ptr<AbstractDataTable> orientationTable = tables.at(XsensDataReader::Orientations);
+        std::shared_ptr<AbstractDataTable> orientationTable = tables.at(IMUDataUtilities::Orientations);
         const TimeSeriesTableQuaternion& quatTableTyped = dynamic_cast<const TimeSeriesTableQuaternion&>(*orientationTable);
         STOFileAdapterQuaternion::write(quatTableTyped, folder + trial + "quaternions.sto");
     }
