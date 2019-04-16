@@ -114,7 +114,10 @@ test_script:
 
   ## Build doxygen (now that tests pass).
   # http://help.appveyor.com/discussions/problems/863-doxygen-installed-via-chocolatey-not-found
-  - IF DEFINED DISTR choco install doxygen.portable --yes
+  #- IF DEFINED DISTR choco install doxygen.portable --yes
+  - IF DEFINED DISTR ps: (New-Object System.Net.WebClient).DownloadFile("https://sourceforge.net/projects/myosin/files/doxygen-1.8.14.windows.x64.bin.zip/download", "C:\doxygen.zip")
+  - IF DEFINED DISTR 7z x C:\doxygen.zip -oC:\doxygen
+  - IF DEFINED DISTR SET PATH=C:\doxygen;%PATH%
   - IF DEFINED DISTR cmake .
   - IF DEFINED DISTR cmake --build . --target doxygen --config Release
   
