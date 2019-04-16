@@ -42,7 +42,7 @@ APDMDataReader::extendRead(const std::string& fileName) const {
         fileName);
 
     std::vector<std::string> labels;
-    // files specified by prefix + file name exist
+    
     double dataRate = SimTK::NaN;
     std::vector<int> accIndex;
     std::vector<int>  gyroIndex;
@@ -141,8 +141,6 @@ APDMDataReader::extendRead(const std::string& fileName) const {
                     std::stod(nextRow[orientationsIndex[imu_index] + 2]),
                     std::stod(nextRow[orientationsIndex[imu_index] + 3]));
         }
-        if (done) 
-            break;
         // append to the tables
         times[rowNumber] = time;
         if (foundLinearAccelerationData) 

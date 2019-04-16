@@ -65,13 +65,15 @@ public:
 
     /** Typically, APDM can export a trial as one .h5 file (binary that we don't parse as of now) or as .csv
     ASCII text file that is comma delimited, grouped in order by sensor.
-    The function below read the csv file . It produces a 
+    The function below reads the csv file . It produces a 
     list of tables depending on the contents of the file read. 
     - One table for rotations, 
     - one for LinearAccelerations
     - one for MagneticHeading data, 
     - one for AngularVelocity data. 
     - Barometer and Temperature data is ignored for now
+     
+     @see IMUDataUtilities class for utilities to extract/access specific table(s)
     */
     DataAdapter::OutputTables extendRead(const std::string& fileName) const override;
 
