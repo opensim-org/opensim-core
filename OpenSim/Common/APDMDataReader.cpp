@@ -7,11 +7,6 @@
 
 namespace OpenSim {
 
-const std::string APDMDataReader::Orientations{ "orientations" };
-const std::string APDMDataReader::LinearAccelerations{ "linear_accelerations" };
-const std::string APDMDataReader::MagneticHeading{ "magnetic_heading" };
-const std::string APDMDataReader::AngularVelocity{ "angular_velocity" };
-
 const std::vector<std::string> APDMDataReader::acceleration_labels{
         "/Acceleration/X", "/Acceleration/Y", "/Acceleration/Z"
 }; 
@@ -32,7 +27,7 @@ APDMDataReader* APDMDataReader::clone() const {
 }
 
 DataAdapter::OutputTables 
-APDMDataReader::readFile(const std::string& fileName) const {
+APDMDataReader::extendRead(const std::string& fileName) const {
 
     OPENSIM_THROW_IF(fileName.empty(),
         EmptyFileName);
@@ -47,7 +42,7 @@ APDMDataReader::readFile(const std::string& fileName) const {
         fileName);
 
     std::vector<std::string> labels;
-    // files specified by prefix + file name exist
+    
     double dataRate = SimTK::NaN;
     std::vector<int> accIndex;
     std::vector<int>  gyroIndex;
@@ -57,7 +52,7 @@ APDMDataReader::readFile(const std::string& fileName) const {
     int n_imus = _settings.getProperty_ExperimentalSensors().size();
     int last_size = 1024;
     // Will read data into pre-allocated Matrices in-memory rather than appendRow
-    // on the fly to avoid the overhead of 
+    // on the fly which copies the whole table on every call.
     SimTK::Matrix_<SimTK::Quaternion> rotationsData{ last_size, n_imus };
     SimTK::Matrix_<SimTK::Vec3> linearAccelerationData{ last_size, n_imus };
     SimTK::Matrix_<SimTK::Vec3> magneticHeadingData{ last_size, n_imus };
@@ -146,8 +141,6 @@ APDMDataReader::readFile(const std::string& fileName) const {
                     std::stod(nextRow[orientationsIndex[imu_index] + 2]),
                     std::stod(nextRow[orientationsIndex[imu_index] + 3]));
         }
-        if (done) 
-            break;
         // append to the tables
         times[rowNumber] = time;
         if (foundLinearAccelerationData) 
@@ -190,7 +183,7 @@ APDMDataReader::readFile(const std::string& fileName) const {
     auto orientationTable = std::make_shared<TimeSeriesTableQuaternion>(times, rotationsData, labels);
     orientationTable->updTableMetaData()
         .setValueForKey("DataRate", std::to_string(dataRate));
-    tables.emplace(Orientations, orientationTable);
+    tables.emplace(IMUDataUtilities::Orientations, orientationTable);
 
     std::vector<double> emptyTimes;
     auto accelerationTable = (foundLinearAccelerationData ?
@@ -198,21 +191,21 @@ APDMDataReader::readFile(const std::string& fileName) const {
         std::make_shared<TimeSeriesTableVec3>(emptyTimes, linearAccelerationData, labels));
     accelerationTable->updTableMetaData()
         .setValueForKey("DataRate", std::to_string(dataRate));
-    tables.emplace(LinearAccelerations, accelerationTable);
+    tables.emplace(IMUDataUtilities::LinearAccelerations, accelerationTable);
 
     auto magneticHeadingTable = (foundMagneticHeadingData ?
         std::make_shared<TimeSeriesTableVec3>(times, magneticHeadingData, labels) :
         std::make_shared<TimeSeriesTableVec3>(emptyTimes, magneticHeadingData, labels));
     magneticHeadingTable->updTableMetaData()
         .setValueForKey("DataRate", std::to_string(dataRate));
-    tables.emplace(MagneticHeading, magneticHeadingTable);
+    tables.emplace(IMUDataUtilities::MagneticHeading, magneticHeadingTable);
 
     auto angularVelocityTable = (foundAngularVelocityData ?
         std::make_shared<TimeSeriesTableVec3>(times, angularVelocityData, labels) :
         std::make_shared<TimeSeriesTableVec3>(emptyTimes, angularVelocityData, labels));
     angularVelocityTable->updTableMetaData()
         .setValueForKey("DataRate", std::to_string(dataRate));
-    tables.emplace(AngularVelocity, angularVelocityTable);
+    tables.emplace(IMUDataUtilities::AngularVelocity, angularVelocityTable);
 
     return tables;
 }

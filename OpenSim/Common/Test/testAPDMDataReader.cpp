@@ -48,7 +48,7 @@ int main() {
         // Write tables to sto files
         // Accelerations
         const TimeSeriesTableVec3& accelTableTyped =
-            APDMDataReader::getLinearAccelerationsTable(tables);
+            IMUDataUtilities::getLinearAccelerationsTable(tables);
         STOFileAdapterVec3::write(accelTableTyped, "accelerations.sto");
         const SimTK::RowVectorView_<SimTK::Vec3>& rvv = accelTableTyped.getRowAtIndex(0);
         SimTK::Vec3 fromTable = accelTableTyped.getRowAtIndex(0)[0];
@@ -62,27 +62,38 @@ int main() {
         fromTable = accelTableTyped.getRowAtIndex(numRows - 1)[0];
         fromFile = SimTK::Vec3{ 0.158696249,0.298471016,9.723807335 };
         ASSERT_EQUAL(fromTable, fromFile, tolerance);
-        // Magenometer
+        // Magnetometer
         const TimeSeriesTableVec3& magTableTyped =
-            APDMDataReader::getMagneticHeadingTable(tables);
+            IMUDataUtilities::getMagneticHeadingTable(tables);
         STOFileAdapterVec3::write(magTableTyped, "magnetometers.sto");
         fromTable = magTableTyped.getRowAtIndex(0)[0];
         fromFile = SimTK::Vec3{ 31.27780876,13.46964874,-62.79244003 };
         ASSERT_EQUAL(fromTable, fromFile, tolerance);
+        // test last row as well
+        fromTable = magTableTyped.getRowAtIndex(numRows - 1)[0];
+        fromFile = SimTK::Vec3{ 31.1386445,13.62834516,-62.70943031 };
+        ASSERT_EQUAL(fromTable, fromFile, tolerance);
         // Gyro
         const TimeSeriesTableVec3& gyroTableTyped =
-            APDMDataReader::getAngularVelocityTable(tables);
+            IMUDataUtilities::getAngularVelocityTable(tables);
         STOFileAdapterVec3::write(gyroTableTyped, "gyros.sto");
         fromTable = gyroTableTyped.getRowAtIndex(0)[0];
         fromFile = SimTK::Vec3{ 0.002136296, 0.008331553,-0.008972442 };
         ASSERT_EQUAL(fromTable, fromFile, tolerance);
+        fromTable = gyroTableTyped.getRowAtIndex(numRows - 1)[0];
+        fromFile = SimTK::Vec3{ 0.008545183,0.007797479,-0.012817774 };
+        ASSERT_EQUAL(fromTable, fromFile, tolerance);
         // Orientation
         const TimeSeriesTableQuaternion& quatTableTyped =
-            APDMDataReader::getOrientationsTable(tables);
+            IMUDataUtilities::getOrientationsTable(tables);
         STOFileAdapterQuaternion::write(quatTableTyped, "quaternions.sto");
         SimTK::Quaternion quatFromTable = quatTableTyped.getRowAtIndex(0)[0];
         SimTK::Quaternion quatFromFile = SimTK::Quaternion(0.979286375, 0.000865605, -0.005158994, -0.202412525);
-        ASSERT_EQUAL(quatFromTable, quatFromFile, 1e-6);
+        ASSERT_EQUAL(quatFromTable, quatFromFile, tolerance);
+        // last row
+        quatFromTable = quatTableTyped.getRowAtIndex(numRows - 1)[0];
+        quatFromFile = SimTK::Quaternion(0.979175344,0.00110321,-0.005109196,-0.202949069);
+        ASSERT_EQUAL(quatFromTable, quatFromFile, tolerance);
      }
     catch (const std::exception& ex) {
         std::cout << "testAPDMDataReader FAILED: " << ex.what() << std::endl;

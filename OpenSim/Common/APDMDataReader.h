@@ -28,6 +28,8 @@
 #include "DataAdapter.h"
 #include "APDMDataReaderSettings.h"
 #include "TimeSeriesTable.h"
+#include "IMUDataUtilities.h"
+
 /** @file
 * This file defines class for reading data files from IMU maker APDM and 
 * producing in memory tables to be consumed by the OpenSim tools/pipelines
@@ -37,7 +39,7 @@ namespace OpenSim {
 
 /** APDMDataReader is a class that reads files produced by IMU manufacturer APDM
     and produces datatables from them. This is intended to help consume IMU outputs.*/
-class OSIMCOMMON_API APDMDataReader : public FileAdapter {
+class OSIMCOMMON_API APDMDataReader : public DataAdapter {
 public:
     // Default Constructor
     APDMDataReader() = default;
@@ -52,10 +54,6 @@ public:
     virtual ~APDMDataReader()                   = default;
 
     APDMDataReader* clone() const override;
-    static const std::string Orientations;   // name of table for orientation data
-    static const std::string LinearAccelerations;  // name of table for acceleration data
-    static const std::string MagneticHeading;  // name of table for data from Magnetometer (Magnetic Heading)
-    static const std::string AngularVelocity;  // name of table for gyro data (AngularVelocity)
 
     // Ordered labels provided by APDM
     static const std::vector<std::string> acceleration_labels;
@@ -67,19 +65,18 @@ public:
 
     /** Typically, APDM can export a trial as one .h5 file (binary that we don't parse as of now) or as .csv
     ASCII text file that is comma delimited, grouped in order by sensor.
-    The function below read the csv file . It produces a 
+    The function below reads the csv file . It produces a 
     list of tables depending on the contents of the file read. 
     - One table for rotations, 
     - one for LinearAccelerations
     - one for MagneticHeading data, 
     - one for AngularVelocity data. 
     - Barometer and Temperature data is ignored for now
+     
+     @see IMUDataUtilities class for utilities to extract/access specific table(s)
     */
-    OutputTables readFile(const std::string& fileName) const;
-    /** Since not using iplementation of extendRead from base class, overriding here */
-    DataAdapter::OutputTables extendRead(const std::string& fileName) const override {
-        return readFile(fileName);
-    }
+    DataAdapter::OutputTables extendRead(const std::string& fileName) const override;
+
     /** Implements writing functionality, not implemented.                         */
     virtual void extendWrite(const DataAdapter::InputTables& tables,
         const std::string& sinkName) const override {};
@@ -97,26 +94,7 @@ public:
     APDMDataReaderSettings& updSettings() {
         return _settings;
     }
-    /**
-     * Custom accessors to retrieve tables of proper types without need to casting by clients.
-     * Scripting friendly */
-    /** get table of Orientations as TimeSeriesTableQuaternion */
-    static const TimeSeriesTableQuaternion& getOrientationsTable(const DataAdapter::OutputTables& tables) {
-        return dynamic_cast<const TimeSeriesTableQuaternion&>(*tables.at(APDMDataReader::Orientations));
-    }
-    /** get table of LinearAccelerations as TimeSeriesTableVec3 */
-    static const TimeSeriesTableVec3& getLinearAccelerationsTable(const DataAdapter::OutputTables& tables) {
-        return dynamic_cast<const TimeSeriesTableVec3&>(*tables.at(APDMDataReader::LinearAccelerations));
-    }
-    /** get table of MagneticHeading as TimeSeriesTableVec3 */
-    static const TimeSeriesTableVec3& getMagneticHeadingTable(const DataAdapter::OutputTables& tables) {
-        return dynamic_cast<const TimeSeriesTableVec3&>(*tables.at(APDMDataReader::MagneticHeading));
-    }
-    /** get table of AngularVelocity as TimeSeriesTableVec3 */
-    static const TimeSeriesTableVec3& getAngularVelocityTable(const DataAdapter::OutputTables& tables) {
-        return dynamic_cast<const TimeSeriesTableVec3&>(*tables.at(APDMDataReader::AngularVelocity));
-    }
-private:
+ private:
     /**
      * This data member encapsulates all the serializable settings for the Reader;
      */
