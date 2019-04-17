@@ -238,8 +238,9 @@ void APDMDataReader::find_start_column(std::vector<std::string> tokens,
             indices.push_back(found_index);
                 return;
             }
-            else { // first label found but the remaining didn't. Warn
-                return;
+            else { // first label found but the remaining didn't. Throw
+                throw Exception{ "Expected labels for sensor " + sensorName + 
+                    " were not found. Aboring" };
             }
         }
     return; // not found
