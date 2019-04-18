@@ -30,7 +30,7 @@ using namespace OpenSim;
 using namespace SimTK;
 using namespace std;
 
-TimeSeriesTable_<SimTK::Rotation> OpenSense::
+TimeSeriesTable_<SimTK::Rotation> OpenSenseUtilities::
     convertQuaternionsToRotations(
         const TimeSeriesTableQuaternion& qauternionsTable,
         std::tuple<size_t, size_t> startEnd)

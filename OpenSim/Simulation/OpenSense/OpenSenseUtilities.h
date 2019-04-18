@@ -27,22 +27,23 @@
 #include <OpenSim/Common/TimeSeriestable.h>
 #include <SimTKCommon/internal/Rotation.h>
 
-namespace OpenSense {
+namespace OpenSim {
 
-    typedef OpenSim::TimeSeriesTable_<SimTK::Quaternion> TimeSeriesTableQuaternion;
-    typedef OpenSim::TimeSeriesTable_<SimTK::Rotation> TimeSeriesTableRotation;
+    class OSIMSIMULATION_API OpenSenseUtilities {
+        typedef OpenSim::TimeSeriesTable_<SimTK::Quaternion> TimeSeriesTableQuaternion;
+        typedef OpenSim::TimeSeriesTable_<SimTK::Rotation> TimeSeriesTableRotation;
+    public:
+        /// @name Convert Table of Quaternions into a Table for Rotations
+        /// @{
+        /** Load a TimeSeriesTable of Rotation matrices from a Storage file containing
+            quaternions as data elements. Optionally provide a range of times for data
+            to be averaged. By default just uses the first time frame.*/
+        static TimeSeriesTableRotation  convertQuaternionsToRotations(
+            const TimeSeriesTableQuaternion& qauternionsTable,
+            std::tuple<size_t, size_t> startEnd = std::tuple<size_t, size_t>{ 0, 1 }
+        );
+        /// @}
 
-/// @name Convert Table of Quaternions into a Table for Rotations
-/// @{
-/** Load a TimeSeriesTable of Rotation matrices from a Storage file containing
-    quaternions as data elements. Optionally provide a range of times for data
-    to be averaged. By default just uses the first time frame.*/
-    TimeSeriesTableRotation  __declspec(dllexport) convertQuaternionsToRotations(
-        const TimeSeriesTableQuaternion& qauternionsTable, 
-        std::tuple<size_t, size_t> startEnd = std::tuple<size_t, size_t>{ 0, 1 }
-    );
-/// @}
-
-} // end of namespace OpenSense
-
+    }; // end of class OpenSenseUtilities
+}
 #endif // OPENSENSE_UTILITIES_H_

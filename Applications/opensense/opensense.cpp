@@ -38,7 +38,6 @@
 
 using namespace std;
 using namespace OpenSim;
-using namespace OpenSense;
 using namespace SimTK;
 
 void addImuFramesFromMarkers(const string& modelFile, const string& markerFile);
@@ -634,7 +633,7 @@ void calibrateModelFromOrientaions(const string& modelCalibrationPoseFile,
         STOFileAdapter_<SimTK::Quaternion>::read(calibrationOrientationsFile);
 
     TimeSeriesTable_<SimTK::Rotation> orientationsData =
-        OpenSense::convertQuaternionsToRotations(quatTable);
+        OpenSenseUtilities::convertQuaternionsToRotations(quatTable);
 
     std::cout << "Loaded orientations as quaternions from "
         << calibrationOrientationsFile << std::endl;

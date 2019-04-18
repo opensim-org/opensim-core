@@ -15,7 +15,6 @@
 #include "ExperimentalFrame.h"
 
 
-using namespace OpenSense;
 using namespace OpenSim;
 using namespace SimTK;
 using namespace std;
@@ -132,7 +131,7 @@ void InverseKinematicsStudy::
     auto startEnd = getTimeRangeInUse(quatTable.getIndependentColumn());
 
     TimeSeriesTable_<SimTK::Rotation> orientationsData =
-        OpenSense::convertQuaternionsToRotations(quatTable, startEnd);
+        OpenSenseUtilities::convertQuaternionsToRotations(quatTable, startEnd);
 
     OrientationsReference oRefs(orientationsData);
     MarkersReference mRefs{};
