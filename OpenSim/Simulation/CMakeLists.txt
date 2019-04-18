@@ -6,7 +6,7 @@ set(SIMULATION_SUBDIRS
         Model
         Wrap
         SimbodyEngine
-	OpenSense)
+        OpenSense)
 
 set(SOURCES)
 set(INCLUDES)
