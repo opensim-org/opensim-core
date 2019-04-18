@@ -120,6 +120,7 @@
 #include "SimbodyEngine/TransformAxis.h"
 #include "SimbodyEngine/Coordinate.h"
 #include "SimbodyEngine/SpatialTransform.h"
+#include "OpenSense/InverseKinematicsStudy.h"
 
 #include "StatesTrajectoryReporter.h"
 
@@ -257,7 +258,8 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
     Object::registerType( Bhargava2004MuscleMetabolicsProbe() );
     Object::registerType( Bhargava2004MuscleMetabolicsProbe_MetabolicMuscleParameterSet() );
     Object::registerType( Bhargava2004MuscleMetabolicsProbe_MetabolicMuscleParameter() );
-
+    Object::registerType( InverseKinematicsStudy() );
+    
     Object::registerType( StatesTrajectoryReporter() );
 
     // OLD Versions

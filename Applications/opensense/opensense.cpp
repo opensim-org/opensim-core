@@ -72,10 +72,6 @@ int main(int argc, char **argv)
     //----------------------
     try {
         //----------------------
-
-        // REGISTER TYPES
-        InverseKinematicsStudy::registerTypes();
-
         // PARSE COMMAND LINE
         string option = "";
         string setupFileName;

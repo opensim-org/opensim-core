@@ -120,6 +120,7 @@
 #include "Solver.h"
 #include "StatesTrajectory.h"
 #include "StatesTrajectoryReporter.h"
+#include "OpenSense/InverseKinematicsStudy.h"
 
 #include "SimulationUtilities.h"
 

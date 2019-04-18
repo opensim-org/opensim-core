@@ -235,12 +235,6 @@ bool InverseKinematicsStudy::run()
     return true;
 }
 
-void InverseKinematicsStudy::registerTypes()
-{
-    Object::registerType(InverseKinematicsStudy());
-}
-
-
 std::tuple<size_t, size_t > InverseKinematicsStudy::getTimeRangeInUse(
                                 const std::vector<double>& times ) const
 {
