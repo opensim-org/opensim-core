@@ -55,6 +55,8 @@
 #include <OpenSim/Common/STOFileAdapter.h>
 #include <OpenSim/Common/CSVFileAdapter.h>
 #include <OpenSim/Common/C3DFileAdapter.h>
+#include <OpenSim/Common/XsensDataReader.h>
+#include <OpenSim/Common/ExperimentalSensor.h>
 
 #include <OpenSim/Common/TableSource.h>
 

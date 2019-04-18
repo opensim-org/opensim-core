@@ -164,7 +164,7 @@ createSTOFileAdapterForWriting(const AbstractDataTable& table);
 
 typedef STOFileAdapter_<double> STOFileAdapter;
 typedef STOFileAdapter_<SimTK::Vec3> STOFileAdapterVec3;
-
+typedef STOFileAdapter_<SimTK::Quaternion> STOFileAdapterQuaternion;
 }
 
 #endif // OPENSIM_STO_FILE_ADAPTER_H_
