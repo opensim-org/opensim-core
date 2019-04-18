@@ -28,8 +28,8 @@
 
 #include <OpenSim/Common/Object.h>
 #include <OpenSim/Common/ModelDisplayHints.h>
+#include <OpenSim/Common/TimeSeriesTable.h>
 #include <OpenSim/Simulation/Model/Point.h>
-#include <OpenSim/Common/TimeSeriestable.h>
 
 namespace OpenSim {
 
