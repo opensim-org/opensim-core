@@ -28,6 +28,7 @@
 #include "DataAdapter.h"
 #include "XsensDataReaderSettings.h"
 #include "TimeSeriesTable.h"
+#include "IMUDataUtilities.h"
 /** @file
 * This file defines class for reading data files from IMU maker Xsens and 
 * producing in memory tables to be consumed by the OpenSim tools/pipelines
@@ -52,10 +53,6 @@ public:
     virtual ~XsensDataReader()                   = default;
 
     XsensDataReader* clone() const override;
-    static const std::string Orientations;   // name of table for orientation data
-    static const std::string LinearAccelerations;  // name of table for acceleration data
-    static const std::string MagneticHeading;  // name of table for data from Magnetometer (Magnetic Heading)
-    static const std::string AngularVelocity;  // name of table for gyro data (AngularVelocity)
 
     /** Typically, Xsens can export a trial as one .mtb file (binary that we 
     can't parse) or as collection of ASCII text files that are tab delimited, 
@@ -90,26 +87,7 @@ public:
     XsensDataReaderSettings& updSettings() {
         return _settings;
     }
-    /**
-     * Custom accessors to retrieve tables of proper types without need to casting by clients.
-     * Scripting friendly */
-    /** get table of Orientations as TimeSeriesTableQuaternion */
-    static const TimeSeriesTableQuaternion& getOrientationsTable(const DataAdapter::OutputTables& tables) {
-        return dynamic_cast<const TimeSeriesTableQuaternion&>(*tables.at(XsensDataReader::Orientations));
-    }
-    /** get table of LinearAccelerations as TimeSeriesTableVec3 */
-    static const TimeSeriesTableVec3& getLinearAccelerationsTable(const DataAdapter::OutputTables& tables) {
-        return dynamic_cast<const TimeSeriesTableVec3&>(*tables.at(XsensDataReader::LinearAccelerations));
-    }
-    /** get table of MagneticHeading as TimeSeriesTableVec3 */
-    static const TimeSeriesTableVec3& getMagneticHeadingTable(const DataAdapter::OutputTables& tables) {
-        return dynamic_cast<const TimeSeriesTableVec3&>(*tables.at(XsensDataReader::MagneticHeading));
-    }
-    /** get table of AngularVelocity as TimeSeriesTableVec3 */
-    static const TimeSeriesTableVec3& getAngularVelocityTable(const DataAdapter::OutputTables& tables) {
-        return dynamic_cast<const TimeSeriesTableVec3&>(*tables.at(XsensDataReader::AngularVelocity));
-    }
-private:
+ private:
     /**
      * Find index of searchString in tokens
      */

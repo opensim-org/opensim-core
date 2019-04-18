@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- *                            OpenSim:  readXsensData.cpp                     *
+ *                            OpenSim:  readAPDMDatar.cpp                     *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -21,7 +21,7 @@
  * -------------------------------------------------------------------------- */
 
 #include "OpenSim/Common/DataAdapter.h"
-#include "OpenSim/Common/XsensDataReader.h"
+#include "OpenSim/Common/APDMDataReader.h"
 #include "OpenSim/Common/STOFileAdapter.h"
 
 using namespace std;
@@ -34,46 +34,42 @@ int main(int argc, char* argv[]) {
         PrintUsage(argv[0], cout);
         return(-1);
     }
-    std::string folder = "";
-    std::string trial = ""; 
-    std::string xsensReaderConfigFile = "";
+    std::string filename = "";
+    std::string apdmReaderConfigFile = "";
     for (int i = 1; i < argc; i++) {
         string option = argv[i];
-        if (option == "-F")
-            folder = argv[i + 1];
-        else if (option == "-T")
-            trial = argv[i + 1];
-        else if (option == "-S")
-            xsensReaderConfigFile = argv[i + 1];
+        if (option == "-S")
+            apdmReaderConfigFile = argv[i + 1];
+        else if (option == "-F")
+            filename = argv[i + 1];
     }
     try {
-        XsensDataReaderSettings readerSettings(xsensReaderConfigFile);
-        if (!trial.empty()) readerSettings.upd_trial_prefix() = trial;
-        if (!folder.empty()) readerSettings.upd_data_folder() = folder;
-        DataAdapter::OutputTables tables = XsensDataReader(readerSettings).extendRead(folder);
+        std::cout << "Config file " << apdmReaderConfigFile << "Data file " << filename << std::endl;
+        APDMDataReaderSettings readerSettings(apdmReaderConfigFile);
+        DataAdapter::OutputTables tables = APDMDataReader(readerSettings).extendRead(filename);
         // Write tables to sto files
         // Accelerations
         std::shared_ptr<AbstractDataTable> accelTable = tables.at(IMUDataUtilities::LinearAccelerations);
         const TimeSeriesTableVec3& accelTableTyped = dynamic_cast<const TimeSeriesTableVec3&>(*accelTable);
-        STOFileAdapterVec3::write(accelTableTyped, folder + trial + "accelerations.sto");
+        STOFileAdapterVec3::write(accelTableTyped, "accelerations.sto");
 
         // MagneticHeading
         std::shared_ptr<AbstractDataTable> magneticHeadingTable = tables.at(IMUDataUtilities::MagneticHeading);
         const TimeSeriesTableVec3& magTableTyped = dynamic_cast<const TimeSeriesTableVec3&>(*magneticHeadingTable);
-        STOFileAdapterVec3::write(magTableTyped, folder + trial + "magnetometers.sto");
+        STOFileAdapterVec3::write(magTableTyped, "magnetometers.sto");
  
         // AngularVelocity
         std::shared_ptr<AbstractDataTable> angularVelocityTable = tables.at(IMUDataUtilities::AngularVelocity);
         const TimeSeriesTableVec3& gyroTableTyped = dynamic_cast<const TimeSeriesTableVec3&>(*angularVelocityTable);
-        STOFileAdapterVec3::write(gyroTableTyped, folder + trial + "gyros.sto");
+        STOFileAdapterVec3::write(gyroTableTyped, "gyros.sto");
 
         // Orientation
         std::shared_ptr<AbstractDataTable> orientationTable = tables.at(IMUDataUtilities::Orientations);
         const TimeSeriesTableQuaternion& quatTableTyped = dynamic_cast<const TimeSeriesTableQuaternion&>(*orientationTable);
-        STOFileAdapterQuaternion::write(quatTableTyped, folder + trial + "quaternions.sto");
+        STOFileAdapterQuaternion::write(quatTableTyped, "quaternions.sto");
     }
     catch (const std::exception& ex) {
-        std::cout << "Xsens Data Reading Failed to run due to the following Exception: "
+        std::cout << "APDM Data Reading Failed to run due to the following Exception: "
             << ex.what() << std::endl;
         return 1;
     }
@@ -89,6 +85,5 @@ void PrintUsage(const char *aProgName, std::ostream &aOStream)
     aOStream << "Option              Argument         Action / Notes\n";
     aOStream << "------              --------         --------------\n";
     aOStream << "-S readerSpec.xml  Name of XML file used to configure the reader. \n";
-    aOStream << "-F folderName       Folder containing trial data, to override value in readerSpec.xml. \n";
-    aOStream << "-T trialName        Common prefix to data file names to override value in readerSpec.xml.\n";
+    aOStream << "-F fileName         CSV file containing trial data, to override value in readerSpec.xml. \n";
 }

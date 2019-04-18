@@ -7,11 +7,6 @@
 
 namespace OpenSim {
 
-const std::string XsensDataReader::Orientations{ "orientations" };
-const std::string XsensDataReader::LinearAccelerations{ "linear_accelerations" };
-const std::string XsensDataReader::MagneticHeading{ "magnetic_heading" };
-const std::string XsensDataReader::AngularVelocity{ "angular_velocity" };
-
 XsensDataReader* XsensDataReader::clone() const {
     return new XsensDataReader{*this};
 }
@@ -178,7 +173,7 @@ XsensDataReader::extendRead(const std::string& folderName) const {
     auto orientationTable = std::make_shared<TimeSeriesTableQuaternion>(times, rotationsData, labels);
     orientationTable->updTableMetaData()
         .setValueForKey("DataRate", std::to_string(dataRate));
-    tables.emplace(Orientations, orientationTable);
+    tables.emplace(IMUDataUtilities::Orientations, orientationTable);
 
     std::vector<double> emptyTimes;
     auto accelerationTable = (foundLinearAccelerationData ?
@@ -186,21 +181,21 @@ XsensDataReader::extendRead(const std::string& folderName) const {
         std::make_shared<TimeSeriesTableVec3>(emptyTimes, linearAccelerationData, labels));
     accelerationTable->updTableMetaData()
         .setValueForKey("DataRate", std::to_string(dataRate));
-    tables.emplace(LinearAccelerations, accelerationTable);
+    tables.emplace(IMUDataUtilities::LinearAccelerations, accelerationTable);
 
     auto magneticHeadingTable = (foundMagneticHeadingData ?
         std::make_shared<TimeSeriesTableVec3>(times, magneticHeadingData, labels) :
         std::make_shared<TimeSeriesTableVec3>(emptyTimes, magneticHeadingData, labels));
     magneticHeadingTable->updTableMetaData()
         .setValueForKey("DataRate", std::to_string(dataRate));
-    tables.emplace(MagneticHeading, magneticHeadingTable);
+    tables.emplace(IMUDataUtilities::MagneticHeading, magneticHeadingTable);
 
     auto angularVelocityTable = (foundAngularVelocityData ?
         std::make_shared<TimeSeriesTableVec3>(times, angularVelocityData, labels) :
         std::make_shared<TimeSeriesTableVec3>(emptyTimes, angularVelocityData, labels));
     angularVelocityTable->updTableMetaData()
         .setValueForKey("DataRate", std::to_string(dataRate));
-    tables.emplace(AngularVelocity, angularVelocityTable);
+    tables.emplace(IMUDataUtilities::AngularVelocity, angularVelocityTable);
 
     return tables;
 }
