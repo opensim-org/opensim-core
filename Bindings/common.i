@@ -351,6 +351,7 @@ DATATABLE_CLONE(double, SimTK::SpatialVec)
 %shared_ptr(OpenSim::FileAdapter)
 %shared_ptr(OpenSim::DelimFileAdapter)
 %shared_ptr(OpenSim::XsensDataReader)
+%shared_ptr(OpenSim::APDMDataReader)
 %shared_ptr(OpenSim::STOFileAdapter_<duoble>)
 %shared_ptr(OpenSim::STOFileAdapter_<SimTK::Vec3>)
 %shared_ptr(OpenSim::STOFileAdapter_<SimTK::UnitVec3>)
@@ -366,6 +367,7 @@ DATATABLE_CLONE(double, SimTK::SpatialVec)
         std::map<std::string, std::shared_ptr<OpenSim::AbstractDataTable>>;
 %include <OpenSim/Common/DataAdapter.h>
 %include <OpenSim/Common/ExperimentalSensor.h>
+%include <OpenSim/Common/IMUDataUtilities.h>
 %include <OpenSim/Common/XsensDataReaderSettings.h>
 %include <OpenSim/Common/XsensDataReader.h>
 
@@ -378,6 +380,8 @@ namespace OpenSim {
 }
 %include <OpenSim/Common/TRCFileAdapter.h>
 %include <OpenSim/Common/DelimFileAdapter.h>
+%include <OpenSim/Common/APDMDataReaderSettings.h>
+%include <OpenSim/Common/APDMDataReader.h>
 %ignore OpenSim::createSTOFileAdapterForReading;
 %ignore OpenSim::createSTOFileAdapterForWriting;
 %ignore OpenSim::STOFileAdapter_::STOFileAdapter_(STOFileAdapter_&&);
