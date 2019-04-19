@@ -95,11 +95,10 @@ protected:
     }
 
     void addControlVariables() {
-        for (const auto& actu : m_modelBase.getComponentList<Actuator>()) {
-            // TODO handle a variable number of control signals.
-            const auto& actuName = actu.getAbsolutePathString();
-            const auto& info = m_mocoProbRep.getControlInfo(actuName);
-            this->add_control(actuName, convertBounds(info.getBounds()),
+        auto controlNames = createControlNamesFromModel(m_modelBase);
+        for (const auto& controlName : controlNames) {
+            const auto& info = m_mocoProbRep.getControlInfo(controlName);
+            this->add_control(controlName, convertBounds(info.getBounds()),
                     convertBounds(info.getInitialBounds()),
                     convertBounds(info.getFinalBounds()));
         }
@@ -133,17 +132,15 @@ protected:
             // attempting to access the `enforce_constraint_derivatives`
             // property below, which is empty.
             return;
-        } else {
-            OPENSIM_THROW_IF(
-                    m_mocoTropterSolver
-                            .getProperty_enforce_constraint_derivatives()
-                            .empty(),
-                    Exception,
-                    "Enabled kinematic constraints exist in the "
-                    "provided model. Please set the solver property "
-                    "'enforce_constraint_derivatives' to either 'true' or "
-                    "'false'.");
         }
+        OPENSIM_THROW_IF(
+                m_mocoTropterSolver.getProperty_enforce_constraint_derivatives()
+                                   .empty(),
+                Exception,
+                "Enabled kinematic constraints exist in the "
+                "provided model. Please set the solver property "
+                "'enforce_constraint_derivatives' to either 'true' or "
+                "'false'.");
 
         int cid, mp, mv, ma;
         int numEquationsThisConstraint;

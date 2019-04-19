@@ -263,7 +263,7 @@ private:
     SimTK::ReferencePtr<AccelerationMotion> m_acceleration_motion;
 
     std::unordered_map<std::string, MocoVariableInfo> m_state_infos;
-    std::unordered_map<std::string, MocoVariableInfo> m_control_infos;
+    std::unordered_map<std::string, MocoControlInfo> m_control_infos;
 
     std::vector<std::unique_ptr<MocoParameter>> m_parameters;
     std::vector<std::unique_ptr<MocoCost>> m_costs;

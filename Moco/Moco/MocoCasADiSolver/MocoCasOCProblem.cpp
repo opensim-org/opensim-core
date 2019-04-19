@@ -51,11 +51,11 @@ MocoCasOCProblem::MocoCasOCProblem(const MocoCasADiSolver& mocoCasADiSolver,
                 convertBounds(info.getInitialBounds()),
                 convertBounds(info.getFinalBounds()));
     }
-    for (const auto& actu : model.getComponentList<Actuator>()) {
-        // TODO handle a variable number of control signals.
-        const auto& actuName = actu.getAbsolutePathString();
-        const auto& info = problemRep.getControlInfo(actuName);
-        addControl(actuName, convertBounds(info.getBounds()),
+
+    auto controlNames = createControlNamesFromModel(model);
+    for (const auto& controlName : controlNames) {
+        const auto& info = problemRep.getControlInfo(controlName);
+        addControl(controlName, convertBounds(info.getBounds()),
                 convertBounds(info.getInitialBounds()),
                 convertBounds(info.getFinalBounds()));
     }

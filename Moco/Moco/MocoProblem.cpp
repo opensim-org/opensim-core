@@ -71,7 +71,16 @@ void MocoPhase::setControlInfo(const std::string& name,
         const MocoInitialBounds& initial, const MocoFinalBounds& final) {
     int idx = getProperty_control_infos().findIndexForName(name);
 
-    MocoVariableInfo info(name, bounds, initial, final);
+    MocoControlInfo info(name, bounds, initial, final);
+    if (idx == -1) append_control_infos(info);
+    else           upd_control_infos(idx) = info;
+}
+void MocoPhase::setControlInfo(const std::string& name,
+    int controlIndex, const MocoBounds& bounds,
+    const MocoInitialBounds& initial, const MocoFinalBounds& final) {
+    int idx = getProperty_control_infos().findIndexForName(name);
+
+    MocoControlInfo info(name, controlIndex, bounds, initial, final);
     if (idx == -1) append_control_infos(info);
     else           upd_control_infos(idx) = info;
 }
@@ -89,7 +98,7 @@ const MocoVariableInfo& MocoPhase::getStateInfo(
             format("No info available for state '%s'.", name));
     return get_state_infos(idx);
 }
-const MocoVariableInfo& MocoPhase::getControlInfo(
+const MocoControlInfo& MocoPhase::getControlInfo(
         const std::string& name) const {
 
     int idx = getProperty_control_infos().findIndexForName(name);
