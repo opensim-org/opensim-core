@@ -181,6 +181,12 @@ void MocoProblem::setControlInfo(const std::string& name,
         const MocoInitialBounds& initial, const MocoFinalBounds& final) {
     upd_phases(0).setControlInfo(name, bounds, initial, final);
 }
+void MocoProblem::setControlInfo(const std::string& actuatorName,
+        int controlIndex, const MocoBounds& bounds,
+        const MocoInitialBounds& initial, const MocoFinalBounds& final) {
+    upd_phases(0).setControlInfo(actuatorName, controlIndex, bounds, initial,
+        final);
+}
 void MocoProblem::setKinematicConstraintBounds(const MocoBounds& bounds) {
     upd_phases(0).setKinematicConstraintBounds(bounds);
 }

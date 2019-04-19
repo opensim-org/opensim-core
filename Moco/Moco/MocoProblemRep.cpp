@@ -181,21 +181,21 @@ void MocoProblemRep::initialize() {
     // I've left it here in case there's confusion of it's placement. Uncomment 
     // when the prescribed kinematics updates catch up.
     //if (!m_prescribedKinematics) {
-    //    for (const auto& coord : m_model_base.getComponentList<Coordinate>()) {
-    //        const auto stateVarNames = coord.getStateVariableNames();
-    //        const std::string coordValueName = stateVarNames[0];
-    //        if (m_state_infos.count(coordValueName) == 0) {
-    //            const auto info = MocoVariableInfo(coordValueName,
-    //            {coord.getRangeMin(), coord.getRangeMax()}, {}, {});
-    //            m_state_infos[coordValueName] = info;
-    //        }
-    //        const std::string coordSpeedName = stateVarNames[1];
-    //        if (m_state_infos.count(coordSpeedName) == 0) {
-    //            const auto info = MocoVariableInfo(
-    //                coordSpeedName, ph0.get_default_speed_bounds(), {}, {});
-    //            m_state_infos[coordSpeedName] = info;
-    //        }
-    //    }
+    for (const auto& coord : m_model_base.getComponentList<Coordinate>()) {
+        const auto stateVarNames = coord.getStateVariableNames();
+        const std::string coordValueName = stateVarNames[0];
+        if (m_state_infos.count(coordValueName) == 0) {
+            const auto info = MocoVariableInfo(coordValueName,
+            {coord.getRangeMin(), coord.getRangeMax()}, {}, {});
+            m_state_infos[coordValueName] = info;
+        }
+        const std::string coordSpeedName = stateVarNames[1];
+        if (m_state_infos.count(coordSpeedName) == 0) {
+            const auto info = MocoVariableInfo(
+                coordSpeedName, ph0.get_default_speed_bounds(), {}, {});
+            m_state_infos[coordSpeedName] = info;
+        }
+    }
     //}
 
     for (int i = 0; i < ph0.getProperty_control_infos().size(); ++i) {

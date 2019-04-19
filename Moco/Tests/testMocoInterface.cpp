@@ -346,9 +346,10 @@ TEMPLATE_TEST_CASE("Workflow", "", MocoTropterSolver, MocoCasADiSolver) {
         MocoTool moco;
         MocoProblem& problem = moco.updProblem();
         auto model = createSlidingMassModel();
+        model->finalizeFromProperties();
         auto* bodyAct = new BodyActuator();
         bodyAct->setName("residuals");
-        bodyAct->setBodyName("body");
+        bodyAct->setBody(model->getComponent<Body>("body"));
         model->addComponent(bodyAct);
         model->finalizeFromProperties();
         auto& coord = model->updComponent<Coordinate>("slider/position");
