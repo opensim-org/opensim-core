@@ -24,7 +24,7 @@
  * -------------------------------------------------------------------------- */
 
 #include <OpenSim/Simulation/osimSimulationDLL.h>
-#include <OpenSim/Common/TimeSeriestable.h>
+#include <OpenSim/Common/TimeSeriesTable.h>
 #include <SimTKCommon/internal/Rotation.h>
 
 namespace OpenSim {
