@@ -2,7 +2,7 @@
 #include "InverseKinematicsStudy.h"
 #include "OpenSenseUtilities.h"
 #include <OpenSim/Common/IO.h>
-#include <OpenSim/Common/TimeSeriestable.h>
+#include <OpenSim/Common/TimeSeriesTable.h>
 #include <OpenSim/Common/TableSource.h>
 #include <OpenSim/Common/STOFileAdapter.h>
 #include <OpenSim/Common/TRCFileAdapter.h>
