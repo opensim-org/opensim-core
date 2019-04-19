@@ -21,6 +21,7 @@
 #include <Moco/osimMoco.h>
 
 #include <OpenSim/Actuators/CoordinateActuator.h>
+#include <OpenSim/Actuators/BodyActuator.h>
 #include <OpenSim/Common/LogManager.h>
 #include <OpenSim/Common/STOFileAdapter.h>
 #include <OpenSim/Simulation/Manager/Manager.h>
@@ -345,6 +346,10 @@ TEMPLATE_TEST_CASE("Workflow", "", MocoTropterSolver, MocoCasADiSolver) {
         MocoTool moco;
         MocoProblem& problem = moco.updProblem();
         auto model = createSlidingMassModel();
+        auto* bodyAct = new BodyActuator();
+        bodyAct->setName("residuals");
+        bodyAct->setBodyName("body");
+        model->addComponent(bodyAct);
         model->finalizeFromProperties();
         auto& coord = model->updComponent<Coordinate>("slider/position");
         coord.setRangeMin(-10);
@@ -393,6 +398,28 @@ TEMPLATE_TEST_CASE("Workflow", "", MocoTropterSolver, MocoCasADiSolver) {
                 const auto& info = rep.getControlInfo("/actuator");
                 SimTK_TEST_EQ(info.getBounds().getLower(), 12);
                 SimTK_TEST_EQ(info.getBounds().getUpper(), 15);
+            }
+        }
+
+        problem.setControlInfo("/residuals", 0, {-5, 5});
+        problem.setControlInfo("/residuals", 3, {-7.5, 10});
+        {
+            {
+                const auto& probinfo0 = phase0.getControlInfo("/residuals_0");
+                SimTK_TEST_EQ(probinfo0.getBounds().getLower(), -5);
+                SimTK_TEST_EQ(probinfo0.getBounds().getUpper(), 5);
+                const auto& probinfo3 = phase0.getControlInfo("/residuals_3");
+                SimTK_TEST_EQ(probinfo3.getBounds().getLower(), -7.5);
+                SimTK_TEST_EQ(probinfo3.getBounds().getUpper(), 10);
+            }
+            MocoProblemRep rep = problem.createRep();
+            {
+                const auto& info0 = rep.getControlInfo("/residuals_0");
+                SimTK_TEST_EQ(info0.getBounds().getLower(), -5);
+                SimTK_TEST_EQ(info0.getBounds().getUpper(), 5);
+                const auto& info3 = rep.getControlInfo("/residuals_3");
+                SimTK_TEST_EQ(info3.getBounds().getLower(), -7.5);
+                SimTK_TEST_EQ(info3.getBounds().getUpper(), 10);
             }
         }
     }
