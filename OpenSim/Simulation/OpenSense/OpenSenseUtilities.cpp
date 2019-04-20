@@ -120,7 +120,7 @@ TimeSeriesTable_<SimTK::Rotation> OpenSenseUtilities::
     );
 
     for (size_t i = 0; i < orientationTable.getNumRows(); ++i) {
-        auto& rotationsRow = orientationTable.updRowAtIndex(i);
+        RowVectorView_<SimTK::Rotation>& rotationsRow = orientationTable.updRowAtIndex(i);
         for (int j = 0; j < nc; ++j) {
             rotationsRow[j] = R_HG*rotationsRow[j];
         }
