@@ -19,6 +19,7 @@
 #include "MocoInverse.h"
 
 #include "Components/PositionMotion.h"
+#include "Components/ModelFactory.h"
 #include "MocoCasADiSolver/MocoCasADiSolver.h"
 #include "MocoCost/MocoControlCost.h"
 #include "MocoCost/MocoSumSquaredStateCost.h"
@@ -150,7 +151,8 @@ MocoInverseSolution MocoInverse::solve() const {
 
     model.initSystem();
     if (get_create_reserve_actuators() != -1) {
-        createReserveActuators(model, get_create_reserve_actuators());
+        ModelFactory::createReserveActuators(model,
+                get_create_reserve_actuators());
     }
 
     problem.setModelCopy(model);
