@@ -9,7 +9,7 @@
 * The Johns Hopkins University Applied Physics Laboratory (APL)              *
 *                                                                            *
 * Copyright (c) 2017-2019 AMJR Consulting and the Authors                    *
-* Author(s): Ajay Seth                                                       *
+* Author(s): Ajay Seth & Ayman Habib                                         *
 *                                                                            *
 * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
 * not use this file except in compliance with the License. You may obtain a  *
@@ -28,6 +28,8 @@
 #include <OpenSim/Common/IO.h>
 #include <OpenSim/Common/LoadOpenSimLibrary.h>
 #include <OpenSim/Common/STOFileAdapter.h>
+#include <OpenSim/Common/APDMDataReader.h>
+#include <OpenSim/Common/XsensDataReader.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/MarkersReference.h>
 #include <OpenSim/Simulation/InverseKinematicsSolver.h>
@@ -42,13 +44,12 @@ using namespace SimTK;
 
 void addImuFramesFromMarkers(const string& modelFile, const string& markerFile);
 
-TimeSeriesTable_<SimTK::Quaternion>
-readRotationsFromXSensFiles(const string& directory);
-
 SimTK::Transform formTransformFromPoints(const SimTK::Vec3& op,
     const SimTK::Vec3& xp,
     const SimTK::Vec3& yp);
 
+TimeSeriesTable_<SimTK::Quaternion> readRotationsFromXSensFiles(const std::string& directory,
+    const std::string& readerSetupFile);
 
 TimeSeriesTable_<SimTK::Quaternion>
     createOrientationsFileFromMarkers(const std::string& markerFile);
@@ -96,8 +97,9 @@ int main(int argc, char **argv)
                 }
                 else if ((option == "-Read") || (option == "-R")) {
                     std::string directory{ argv[i + 1] };
+                    std::string settingsFile{ argv[i + 2] };
                     TimeSeriesTable_<SimTK::Quaternion> rotationsTable =
-                                                        readRotationsFromXSensFiles(directory);
+                                                        readRotationsFromXSensFiles(directory, settingsFile);
                     cout << "Done." << endl;
                     return 0;
                 }
@@ -215,163 +217,17 @@ void PrintUsage(const char *aProgName, ostream &aOStream)
     aOStream << "-PropertyInfo, -PI                  Print help information for properties in setup files.\n";
 }
 
-TimeSeriesTable_<SimTK::Quaternion> readRotationsFromXSensFiles(const std::string& directory)
+TimeSeriesTable_<SimTK::Quaternion> readRotationsFromXSensFiles(const std::string& directory,
+                                                    const std::string& readerSetupFile)
 {
-    auto currentDir = IO::getCwd();
-    IO::chDir(directory);
+    XsensDataReaderSettings readerSettings(readerSetupFile);
+    XsensDataReader reader(readerSettings);
+    DataAdapter::OutputTables tables = reader.extendRead(directory);
+    const TimeSeriesTableQuaternion& quatTableTyped =  IMUDataUtilities::getOrientationsTable(tables);
 
-    // Subject 3-5
-    //std::vector<std::string> imuFiles = {
-    //    "MT_012005D6_009-000_00B42268.txt",
-    //    "MT_012005D6_009-000_00B42279.txt",
-    //    "MT_012005D6_009-000_00B4227D.txt",
-    //    "MT_012005D6_009-000_00B4227C.txt",
-    //    "MT_012005D6_009-000_00B421ED.txt",
-    //    "MT_012005D6_009-000_00B421EE.txt",
-    //    "MT_012005D6_009-000_00B421EF.txt",
-    //    "MT_012005D6_009-000_00B421E6.txt"
-    //};
-
-    //std::vector<std::string> imu_names = {
-    //    "back",
-    //    "pelvis",
-    //    "r.tibia",
-    //    "r.femur",
-    //    "l.tibia",
-    //    "l.femur",
-    //    "r.foot",
-    //    "l.foot"
-    //};
-
-    // Subject 07
-    std::vector<std::string> imuFiles = {
-        "MT_012005D6_002-000_00B42268.txt",  //head IMU in place of stern
-        "MT_012005D6_002-000_00B4226B.txt",
-        "MT_012005D6_002-000_00B4227D.txt",
-        "MT_012005D6_002-000_00B4227C.txt",
-        "MT_012005D6_002-000_00B421ED.txt",
-        "MT_012005D6_002-000_00B421EE.txt",
-        "MT_012005D6_002-000_00B421E6.txt",  //left and right foot reversed
-        "MT_012005D6_002-000_00B421EF.txt",
-    };
-
-    std::vector<std::string> imu_names = {
-        "torso",
-        "pelvis",
-        "tibia_r",
-        "femur_r",
-        "tibia_l",
-        "femur_l",
-        "calcn_r",
-        "calcn_l",
-    };
-
-
-    size_t n_imus = imuFiles.size();
-    assert(n_imus == imu_names.size());
-
-    std::vector<std::ifstream*> imuStreams;
-    std::string line;
-
-    std::vector<std::string> labels{ n_imus };
-
-    for (size_t i = 0; i < n_imus; i++) {
-        auto* imuStream = new std::ifstream(imuFiles[i]);
-        
-        // skip the first six lines which are the data header
-        for (int j = 0; j < 6; j++) {
-            getline(*imuStream, line);
-        }
-
-        imuStreams.push_back(imuStream);
-        labels[i] = imu_names[i] + "_imu";
-    }
-
-    size_t chunk = 2000;
-
-    SimTK::Matrix_<SimTK::Quaternion> rotationsData{ int(chunk), int(n_imus) };
-    SimTK::Matrix_<SimTK::Vec3> accelerationData{ int(chunk), int(n_imus) };
-    SimTK::Matrix_<SimTK::Vec3> angvelData{ int(chunk), int(n_imus) };
-    SimTK::Matrix_<SimTK::Vec3> headingData{ int(chunk), int(n_imus) };
-    std::vector<double> times;
-    times.resize(chunk);
-
-    // Read imu data line by line
-    size_t nl{ 0 };
-
-    SimTK::Vec3 imu_acceleration{ SimTK::NaN };
-    SimTK::Vec3 imu_angvel{ SimTK::NaN };
-    SimTK::Vec3 imu_heading{ SimTK::NaN };
-    SimTK::Mat33 imu_matrix{ SimTK::NaN };
-    long int val;
-
-    while (!(*imuStreams[0]).eof()) {
-        for (int i = 0; i < n_imus; ++i) {
-            // current imu's data stream
-            auto* imu_data = imuStreams[i];
-            // extract the first value, which is packet number
-            *imu_data >> val;
-
-            // extract the acceleration columns
-            *imu_data >> imu_acceleration;
-            accelerationData[int(nl)][i] = imu_acceleration;
-
-            // extract the angular velocity columns
-            *imu_data >> imu_angvel;
-            angvelData[int(nl)][i] = imu_angvel;
-
-            // extract the heading columns
-            *imu_data >> imu_heading;
-            headingData[int(nl)][i] = imu_heading;
-
-            // extract the rotation matrix as column vectors
-            for (int col = 0; col < 3; ++col) {
-                for (int row = 0; row < 3; ++row) {
-                    *imu_data >> imu_matrix[row][col];
-                }
-            }
-
-            if (imu_matrix.isNaN()) {
-                cout << "Found NaN data at line " << nl << ", skipping to next line." << endl;
-                break;
-            }
-
-            SimTK::Rotation imu_rotation{ imu_matrix };
-            rotationsData[int(nl)][i] = imu_rotation.convertRotationToQuaternion();
-        }
-        times[nl] = 0.01*nl;
-        ++nl;
-
-        if (std::remainder(nl, chunk) == 0) {
-            rotationsData.resizeKeep(int(nl + chunk), int(n_imus));
-            accelerationData.resizeKeep(int(nl + chunk), int(n_imus));
-            angvelData.resizeKeep(int(nl + chunk), int(n_imus));
-            headingData.resizeKeep(int(nl + chunk), int(n_imus));
-            times.resize(nl + chunk);
-        }
-    }
-
-    // Trim data back to the actual data
-    rotationsData.resizeKeep(int(nl), int(n_imus));
-    accelerationData.resizeKeep(int(nl), int(n_imus));
-    angvelData.resizeKeep(int(nl), int(n_imus));
-    headingData.resizeKeep(int(nl), int(n_imus));
-    times.resize(nl);
-
-
-    TimeSeriesTable_<SimTK::Quaternion> rotationsTable(times, rotationsData, labels);
-    TimeSeriesTable_<SimTK::Vec3> accelerationsTable(times, accelerationData, labels);
-    TimeSeriesTable_<SimTK::Vec3> angVelTable(times, angvelData, labels);
-    TimeSeriesTable_<SimTK::Vec3> headingTable(times, headingData, labels);
-
-    STOFileAdapter_<SimTK::Quaternion>::write(rotationsTable, "imuOrientations.sto");
-    STOFileAdapter_<SimTK::Vec3>::write(accelerationsTable, "imuAccelerations.sto");
-    STOFileAdapter_<SimTK::Vec3>::write(angVelTable, "imuAngularVelocities.sto");
-    STOFileAdapter_<SimTK::Vec3>::write(headingTable, "imuHeadings.sto");
-
-    IO::chDir(currentDir);
-
-    return rotationsTable;
+    STOFileAdapter_<SimTK::Quaternion>::write(quatTableTyped, "imuOrientations.sto");
+ 
+    return quatTableTyped;
 }
 
 SimTK::Transform formTransformFromPoints(const Vec3& op,
