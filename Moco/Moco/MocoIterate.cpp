@@ -530,6 +530,18 @@ void MocoIterate::write(const std::string& filepath) const {
     TimeSeriesTable table0 = convertToTable();
     DataAdapter::InputTables tables = {{"table", &table0}};
     FileAdapter::writeFile(tables, filepath);
+    std::ofstream out_stream;
+    out_stream.open(filepath, std::ios::app);
+    if(this->isSealed())
+    {
+        out_stream << "Unsuccessful solve.";
+    }
+    else
+    {
+        out_stream << "Successful solve.";
+    }
+    out_stream.close();
+
 }
 
 TimeSeriesTable MocoIterate::convertToTable() const {
