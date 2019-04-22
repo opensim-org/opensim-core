@@ -530,18 +530,6 @@ void MocoIterate::write(const std::string& filepath) const {
     TimeSeriesTable table0 = convertToTable();
     DataAdapter::InputTables tables = {{"table", &table0}};
     FileAdapter::writeFile(tables, filepath);
-    std::ofstream out_stream;
-    out_stream.open(filepath, std::ios::app);
-    if(this->isSealed())
-    {
-        out_stream << "Unsuccessful solve.";
-    }
-    else
-    {
-        out_stream << "Successful solve.";
-    }
-    out_stream.close();
-
 }
 
 TimeSeriesTable MocoIterate::convertToTable() const {
@@ -631,6 +619,7 @@ TimeSeriesTable MocoIterate::convertToTable() const {
             "num_slacks", std::to_string(numSlacks));
     table.updTableMetaData().setValueForKey(
             "num_parameters", std::to_string(numParameters));
+    convertToTableImpl(table);
     return table;
 }
 
@@ -971,4 +960,16 @@ double MocoIterate::compareParametersRMS(const MocoIterate& other,
 
 void MocoIterate::ensureUnsealed() const {
     OPENSIM_THROW_IF(m_sealed, MocoIterateIsSealed);
+}
+
+void MocoSolution::convertToTableImpl(TimeSeriesTable& table) const {
+    if(m_success)
+    {
+        table.updTableMetaData().setValueForKey(
+                "success", std::string("true"));
+    } else
+    {
+        table.updTableMetaData().setValueForKey(
+                "success", std::string("false"));
+    }
 }

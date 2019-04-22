@@ -458,6 +458,7 @@ public:
     /// Save the iterate to file(s). Use a ".sto" file extension.
     void write(const std::string& filepath) const;
 
+
     /// The Storage can be used in the OpenSim GUI to visualize a motion, or
     /// as input to OpenSim's conventional tools (e.g., AnalyzeTool).
     ///
@@ -524,6 +525,7 @@ protected:
 
 private:
     TimeSeriesTable convertToTable() const;
+    virtual void convertToTableImpl(TimeSeriesTable&) const {}
     // TODO std::string m_name;
     SimTK::Vector m_time;
     std::vector<std::string> m_state_names;
@@ -568,7 +570,7 @@ public:
     /// Returns a dynamically-allocated copy of this solution. You must manage
     /// the memory for return value.
     /// @note This works even if the iterate is sealed.
-    virtual MocoSolution* clone() const { return new MocoSolution(*this); }
+    virtual MocoSolution* clone() const override { return new MocoSolution(*this); }
     /// Was the problem solved successfully? If not, then you cannot access
     /// the solution until you call unlock().
     bool success() const { return m_success; }
@@ -620,6 +622,7 @@ private:
     void setNumIterations(int numIterations) {
         m_numIterations = numIterations;
     };
+    void convertToTableImpl(TimeSeriesTable&) const override;
     bool m_success = true;
     double m_objective = -1;
     std::string m_status;
