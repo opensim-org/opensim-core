@@ -19,8 +19,117 @@
 #include "ModelFactory.h"
 #include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
 #include <OpenSim/Actuators/CoordinateActuator.h>
+#include "../MocoUtilities.h"
+#include <OpenSim/Simulation/SimbodyEngine/WeldJoint.h>
+
 
 using namespace OpenSim;
+
+void ModelFactory::replaceMusclesWithPathActuators(OpenSim::Model &model) {
+
+    // Create path actuators from muscle properties and add to the model. Save
+    // a list of pointers of the muscles to delete.
+    std::vector<Muscle*> musclesToDelete;
+    auto& muscleSet = model.updMuscles();
+    for (int i = 0; i < muscleSet.getSize(); ++i) {
+        auto& musc = muscleSet.get(i);
+        auto* actu = new PathActuator();
+        actu->setName(musc.getName());
+        musc.setName(musc.getName() + "_delete");
+        actu->setOptimalForce(musc.getMaxIsometricForce());
+        actu->setMinControl(musc.getMinControl());
+        actu->setMaxControl(musc.getMaxControl());
+
+        const auto& pathPointSet = musc.getGeometryPath().getPathPointSet();
+        auto& geomPath = actu->updGeometryPath();
+        for (int i = 0; i < pathPointSet.getSize(); ++i) {
+            auto* pathPoint = pathPointSet.get(i).clone();
+            const auto& socketNames = pathPoint->getSocketNames();
+            for (const auto& socketName : socketNames) {
+                pathPoint->updSocket(socketName)
+                        .connect(pathPointSet.get(i)
+                                         .getSocket(socketName)
+                                         .getConnecteeAsObject());
+            }
+            geomPath.updPathPointSet().adoptAndAppend(pathPoint);
+        }
+        model.addComponent(actu);
+        musclesToDelete.push_back(&musc);
+    }
+
+    // Delete the muscles.
+    for (const auto* musc : musclesToDelete) {
+        int index = model.getForceSet().getIndex(musc, 0);
+        OPENSIM_THROW_IF(index == -1, Exception,
+                         format("Muscle with name %s not found in ForceSet.",
+                                musc->getName()));
+        bool success = model.updForceSet().remove(index);
+        OPENSIM_THROW_IF(!success, Exception,
+                         format("Attempt to remove muscle with "
+                                "name %s was unsuccessful.",
+                                musc->getName()));
+    }
+}
+
+
+void ModelFactory::replaceJointWithWeldJoint(
+        Model& model, const std::string& jointName) {
+    OPENSIM_THROW_IF(!model.getJointSet().hasComponent(jointName), Exception,
+                     "Joint with name '" + jointName +
+                     "' not found in the model JointSet.");
+
+    // This is needed here to access offset frames.
+    model.finalizeConnections();
+
+    // Get the current joint and save a copy of the parent and child offset
+    // frames.
+    auto& current_joint = model.updJointSet().get(jointName);
+    PhysicalOffsetFrame* parent_offset = PhysicalOffsetFrame().safeDownCast(
+            current_joint.getParentFrame().clone());
+    PhysicalOffsetFrame* child_offset = PhysicalOffsetFrame().safeDownCast(
+            current_joint.getChildFrame().clone());
+
+    // Save the original names of the body frames (not the offset frames), so we
+    // can find them when the new joint is created.
+    parent_offset->finalizeConnections(model);
+    child_offset->finalizeConnections(model);
+    std::string parent_body_path =
+            parent_offset->getParentFrame().getAbsolutePathString();
+    std::string child_body_path =
+            child_offset->getParentFrame().getAbsolutePathString();
+
+    // Remove the current Joint from the the JointSet.
+    model.updJointSet().remove(&current_joint);
+
+    // Create the new joint and add it to the model.
+    auto* new_joint = new WeldJoint(jointName,
+                                    model.getComponent<PhysicalFrame>(parent_body_path),
+                                    parent_offset->get_translation(), parent_offset->get_orientation(),
+                                    model.getComponent<PhysicalFrame>(child_body_path),
+                                    child_offset->get_translation(), child_offset->get_orientation());
+    model.addJoint(new_joint);
+
+    model.finalizeConnections();
+}
+
+void ModelFactory::removeMuscles(Model& model) {
+
+    // Save a list of pointers of the muscles to delete.
+    std::vector<Muscle*> musclesToDelete;
+    auto& muscleSet = model.updMuscles();
+    for (int i = 0; i < muscleSet.getSize(); ++i) {
+        musclesToDelete.push_back(&muscleSet.get(i));
+    }
+
+    // Delete the muscles.
+    for (const auto* musc : musclesToDelete) {
+        int index = model.getForceSet().getIndex(musc, 0);
+        OPENSIM_THROW_IF(index == -1, Exception,
+                         format("Muscle with name %s not found in ForceSet.",
+                                musc->getName()));
+        model.updForceSet().remove(index);
+    }
+}
 
 Model ModelFactory::createNLinkPendulum(int numLinks) {
     Model model;
