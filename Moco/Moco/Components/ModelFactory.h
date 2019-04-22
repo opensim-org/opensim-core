@@ -26,6 +26,10 @@ namespace OpenSim {
 /// This class provides utilities for creating OpenSim models.
 class OSIMMOCO_API ModelFactory {
 public:
+
+    /// @name Create a model
+    /// @{
+
     static Model createNLinkPendulum(int numLinks);
     static Model createPendulum() {
         return createNLinkPendulum(1);
@@ -33,6 +37,23 @@ public:
     static Model createDoublePendulum() {
         return createNLinkPendulum(2);
     }
+
+
+
+    /// @}
+
+    /// @name Modify a Model
+    /// @{
+
+    /// Add CoordinateActuator%s for each unconstrained coordinate (e.g.,
+    /// !Coordinate::isConstrained()) in the model, using the provided optimal
+    /// force. Increasing the optimal force decreases the required control
+    /// signal to generate a given actuation level. The actuators are added to
+    /// the model's ForceSet and are named "reserve_<coordinate-path>" with
+    /// forward slashes converted to underscores.
+    static void createReserveActuators(Model& model, double optimalForce);
+
+    /// @}
 };
 
 } // namespace OpenSim

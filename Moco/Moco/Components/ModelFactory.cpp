@@ -20,6 +20,9 @@
 #include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
 #include <OpenSim/Actuators/CoordinateActuator.h>
 
+
+#include "../MocoUtilities.h"
+
 using namespace OpenSim;
 
 Model ModelFactory::createNLinkPendulum(int numLinks) {
@@ -78,4 +81,46 @@ Model ModelFactory::createNLinkPendulum(int numLinks) {
     model.finalizeConnections();
 
     return model;
+}
+
+
+void ModelFactory::createReserveActuators(Model& model, double optimalForce) {
+    OPENSIM_THROW_IF(optimalForce <= 0, Exception,
+            format("Invalid value (%g) for create_reserve_actuators; "
+                   "should be -1 or positive.",
+                    optimalForce));
+
+    std::cout << "Adding reserve actuators with an optimal force of "
+            << optimalForce << "..." << std::endl;
+
+    Model modelCopy(model);
+    auto state = modelCopy.initSystem();
+    std::vector<std::string> coordPaths;
+    // Borrowed from
+    // CoordinateActuator::CreateForceSetOfCoordinateAct...
+    for (const auto& coord : modelCopy.getComponentList<Coordinate>()) {
+        if (!coord.isConstrained(state)) {
+            auto* actu = new CoordinateActuator();
+            actu->setCoordinate(
+                    &model.updComponent<Coordinate>(
+                            coord.getAbsolutePathString()));
+            auto path = coord.getAbsolutePathString();
+            coordPaths.push_back(path);
+            // Get rid of model name.
+            // Get rid of slashes in the path; slashes not allowed in names.
+            std::replace(path.begin(), path.end(), '/', '_');
+            actu->setName("reserve_" + path);
+            actu->setOptimalForce(optimalForce);
+            model.addForce(actu);
+        }
+    }
+    // Re-make the system, since there are new actuators.
+    model.initSystem();
+    std::cout << "Added " << coordPaths.size()
+            << " reserve actuator(s), "
+               "for each of the following coordinates:"
+            << std::endl;
+    for (const auto& name : coordPaths) {
+        std::cout << "  " << name << std::endl;
+    }
 }
