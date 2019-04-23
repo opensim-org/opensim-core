@@ -97,7 +97,6 @@ public:
     virtual ~InverseKinematicsStudy();
     InverseKinematicsStudy();
     InverseKinematicsStudy(const std::string &setupFile);
-    static void registerTypes();
     //--------------------------------------------------------------------------
     // INTERFACE
     //--------------------------------------------------------------------------

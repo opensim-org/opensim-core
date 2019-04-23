@@ -30,9 +30,10 @@
 namespace OpenSim {
 
     class OSIMSIMULATION_API OpenSenseUtilities {
+    public:
         typedef OpenSim::TimeSeriesTable_<SimTK::Quaternion> TimeSeriesTableQuaternion;
         typedef OpenSim::TimeSeriesTable_<SimTK::Rotation> TimeSeriesTableRotation;
-    public:
+
         /// @name Convert Table of Quaternions into a Table for Rotations
         /// @{
         /** Load a TimeSeriesTable of Rotation matrices from a Storage file containing
