@@ -17,9 +17,12 @@
  * -------------------------------------------------------------------------- */
 
 #include "ModelFactory.h"
+
+#include "../MocoUtilities.h"
+
+#include <OpenSim/Actuators/CoordinateActuator.h>
 #include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/SliderJoint.h>
-#include <OpenSim/Actuators/CoordinateActuator.h>
 
 using namespace OpenSim;
 
@@ -42,8 +45,8 @@ Model ModelFactory::createNLinkPendulum(int numLinks) {
     model.setName(name);
     const auto& ground = model.getGround();
 
-    using SimTK::Vec3;
     using SimTK::Inertia;
+    using SimTK::Vec3;
 
     Ellipsoid bodyGeometry(0.5, 0.1, 0.1);
     bodyGeometry.setColor(SimTK::Gray);
@@ -55,8 +58,8 @@ Model ModelFactory::createNLinkPendulum(int numLinks) {
         model.addBody(bi);
 
         // Assume each body is 1 m long.
-        auto* ji = new PinJoint("j" + istr, *prevBody, Vec3(0), Vec3(0),
-                *bi, Vec3(-1, 0, 0), Vec3(0));
+        auto* ji = new PinJoint("j" + istr, *prevBody, Vec3(0), Vec3(0), *bi,
+                Vec3(-1, 0, 0), Vec3(0));
         auto& qi = ji->updCoordinate();
         qi.setName("q" + istr);
         model.addJoint(ji);
@@ -123,7 +126,42 @@ Model ModelFactory::createPlanarPointMass() {
     return model;
 }
 
+void ModelFactory::createReserveActuators(Model& model, double optimalForce) {
+    OPENSIM_THROW_IF(optimalForce <= 0, Exception,
+            format("Invalid value (%g) for create_reserve_actuators; "
+                   "should be -1 or positive.",
+                    optimalForce));
 
+    std::cout << "Adding reserve actuators with an optimal force of "
+              << optimalForce << "..." << std::endl;
 
-
+    Model modelCopy(model);
+    auto state = modelCopy.initSystem();
+    std::vector<std::string> coordPaths;
+    // Borrowed from
+    // CoordinateActuator::CreateForceSetOfCoordinateAct...
+    for (const auto& coord : modelCopy.getComponentList<Coordinate>()) {
+        if (!coord.isConstrained(state)) {
+            auto* actu = new CoordinateActuator();
+            actu->setCoordinate(&model.updComponent<Coordinate>(
+                    coord.getAbsolutePathString()));
+            auto path = coord.getAbsolutePathString();
+            coordPaths.push_back(path);
+            // Get rid of slashes in the path; slashes not allowed in names.
+            std::replace(path.begin(), path.end(), '/', '_');
+            actu->setName("reserve" + path);
+            actu->setOptimalForce(optimalForce);
+            model.addForce(actu);
+        }
+    }
+    // Re-make the system, since there are new actuators.
+    model.initSystem();
+    std::cout << "Added " << coordPaths.size()
+              << " reserve actuator(s), "
+                 "for each of the following coordinates:"
+              << std::endl;
+    for (const auto& name : coordPaths) {
+        std::cout << "  " << name << std::endl;
+    }
+}
 
