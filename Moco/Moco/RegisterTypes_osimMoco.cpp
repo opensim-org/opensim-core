@@ -68,7 +68,6 @@ OSIMMOCO_API void RegisterTypes_osimMoco() {
         Object::registerType(MocoFinalBounds());
         Object::registerType(MocoPhase());
         Object::registerType(MocoVariableInfo());
-        Object::registerType(MocoControlInfo());
         Object::registerType(MocoProblem());
         Object::registerType(MocoTool());
         Object::registerType(MocoTropterSolver());

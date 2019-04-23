@@ -402,8 +402,8 @@ TEMPLATE_TEST_CASE("Workflow", "", MocoTropterSolver, MocoCasADiSolver) {
             }
         }
 
-        problem.setControlInfo("/residuals", 0, {-5, 5});
-        problem.setControlInfo("/residuals", 3, {-7.5, 10});
+        problem.setControlInfo("/residuals_0", {-5, 5});
+        problem.setControlInfo("/residuals_3", {-7.5, 10});
         {
             {
                 const auto& probinfo0 = phase0.getControlInfo("/residuals_0");

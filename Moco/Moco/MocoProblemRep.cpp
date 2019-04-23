@@ -178,7 +178,7 @@ void MocoProblemRep::initialize() {
     }
 
     // TODO this code is from an upcoming commit that hasn't been merged yet.
-    // I've left it here in case there's confusion of it's placement. Uncomment 
+    // I've left it here in case there's confusion of its placement. Uncomment 
     // when the prescribed kinematics updates catch up.
     //if (!m_prescribedKinematics) {
     for (const auto& coord : m_model_base.getComponentList<Coordinate>()) {
@@ -202,10 +202,14 @@ void MocoProblemRep::initialize() {
         const auto& name = ph0.get_control_infos(i).getName();
         m_control_infos[name] = ph0.get_control_infos(i);
     }
+
+    // Loop through the model's ScalarActuators and set control infos 
+    // using the actuator's getMinControl() and getMaxControl() methods to get
+    // bounding values. 
     for (const auto& actu : m_model_base.getComponentList<ScalarActuator>()) {
         const std::string actuName = actu.getAbsolutePathString();
         if (m_control_infos.count(actuName) == 0) {
-            const auto info = MocoControlInfo(actuName,
+            const auto info = MocoVariableInfo(actuName,
             {actu.getMinControl(), actu.getMaxControl()}, {}, {});
             m_control_infos[actuName] = info;
         }
@@ -219,19 +223,26 @@ void MocoProblemRep::initialize() {
             m_state_infos[activName] = info;
         }
     }
+
+    // Loop through all the actuators in the model, skipping the 
+    // ScalarActuators we've already set infos for, and create control infos
+    // for the remaining actuators using (-inf, inf) as bounds.
     for (const auto& actu : m_model_base.getComponentList<Actuator>()) {
         const std::string actuName = actu.getAbsolutePathString();
-        // Skip the ScalarActuators we've already set.
+        // We need to skip this actuator here because the if-statement in the
+        // loop below checks for a control name created by appending the 
+        // control index to the actuator name (e.g., "actuator_0").
+        // ScalarActuators simply use the actuator name, so the if-statement
+        // below will think this actuator's info hasn't been set.
         if (m_control_infos.count(actuName)) continue;
-        // This has to be a non-scalar actuator, so we need to add multiple
-        // control infos.
+        // This is a non-scalar actuator, so we need to add multiple control 
+        // infos.
         for (int idx = 0; idx < actu.numControls(); ++idx) {
             std::string controlName = actuName + "_" + std::to_string(idx);
-            if (m_control_infos.count(controlName) == 0) {
-                // TODO: how to automatically set bounds for non-scalar 
-                // actuators?
-                const auto info = MocoControlInfo(actuName, idx,
-                    MocoBounds(), {}, {});
+            if (m_control_infos.count(controlName) == 0) {   
+                const auto info = MocoVariableInfo(controlName,
+                    MocoBounds(-SimTK::NTraits<double>::getInfinity(), 
+                                SimTK::NTraits<double>::getInfinity()), {}, {});
                 m_control_infos[controlName] = info;
             }
         }

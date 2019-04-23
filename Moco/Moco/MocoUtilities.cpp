@@ -549,8 +549,7 @@ std::vector<std::string> OpenSim::createControlNamesFromModel(
         std::string actuPath = actu.getAbsolutePathString();
         if (actu.numControls() == 1) {
             controlNames.push_back(actuPath);
-        }
-        else {
+        } else {
             for (int i = 0; i < actu.numControls(); ++i) {
                 controlNames.push_back(actuPath + "_" + std::to_string(i));
             }
@@ -587,8 +586,7 @@ std::unordered_map<std::string, int> OpenSim::createSystemControlIndexMap(
                 "expected order. Submit a bug report.");
             if (nc == 1) {
                 controlIndices[actuPath] = i;
-            }
-            else {
+            } else {
                 controlIndices[format("%s_%i", actuPath, j)] = i;
             }
             ++i;
@@ -599,7 +597,7 @@ std::unordered_map<std::string, int> OpenSim::createSystemControlIndexMap(
 }
 
 void OpenSim::checkOrderSystemControls(const Model& model) {
-    auto controlIndices = createSystemControlIndexMap(model);
+    createSystemControlIndexMap(model);
 }
 
 std::string OpenSim::format_c(const char* format, ...) {

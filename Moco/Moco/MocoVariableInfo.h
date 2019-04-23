@@ -22,8 +22,12 @@
 
 namespace OpenSim {
 
-/// Bounds on continuous variables (states, multipliers, etc). For states, the 
-/// name should correspond to path of a state variable in the model.
+/// Bounds on continuous variables (states, controls, multipliers, etc). For 
+/// states, the name should correspond to a path of a state variable in the 
+/// model. For controls, the name should correspond to a path of an actuator
+/// in the model, or, for controls associated with a non-scalar actuator, the
+/// path of an actuator in the model appended by the control index (e.g. 
+/// "/actuator_0").
 class OSIMMOCO_API MocoVariableInfo : public Object {
 OpenSim_DECLARE_CONCRETE_OBJECT(MocoVariableInfo, Object);
 public:
@@ -59,34 +63,6 @@ protected:
     OpenSim_DECLARE_LIST_PROPERTY_ATMOST(final_bounds, double, 2,
             "1 value: required final value. "
             "2 values: lower, upper bounds on final value.");
-
-private:
-    void constructProperties();
-
-};
-
-/// Bounds and actuator information for continuous control variables. 
-// TODO remove this class when we support named controls in OpenSim
-class OSIMMOCO_API MocoControlInfo : public MocoVariableInfo {
-OpenSim_DECLARE_CONCRETE_OBJECT(MocoControlInfo, MocoVariableInfo);
-public:
-    MocoControlInfo() { constructProperties(); }
-    MocoControlInfo(const std::string& actuatorName, const MocoBounds&,
-        const MocoInitialBounds&, const MocoFinalBounds&);
-    MocoControlInfo(const std::string& actuatorName, int index,
-        const MocoBounds&, const MocoInitialBounds&, const MocoFinalBounds&);
-
-    const std::string& getActuatorName() const 
-    {   return get_actuator_name(); }
-    int getControlIndex() const 
-    {   return get_control_index(); }
-
-protected:
-    OpenSim_DECLARE_PROPERTY(actuator_name, std::string,
-        "The name of the actuator associated with this control variable.");
-    OpenSim_DECLARE_PROPERTY(control_index, int,
-        "The index to this control variable in the associated actuator's "
-        "control vector.");
 
 private:
     void constructProperties();

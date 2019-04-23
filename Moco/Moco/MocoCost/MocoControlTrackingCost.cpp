@@ -72,7 +72,7 @@ void MocoControlTrackingCost::initializeOnModelImpl(const Model& model) const {
         }
     }
 
-    // Populate member variables need to compute cost. Unless the property
+    // Populate member variables needed to compute the cost. Unless the property
     // allow_unused_references is set to true, an exception is thrown for
     // names in the references that don't correspond to a control variable.
     for (int iref = 0; iref < allSplines.getSize(); ++iref) {

@@ -244,7 +244,10 @@ OSIMMOCO_API
 std::unordered_map<std::string, int> createSystemYIndexMap(const Model& model);
 #endif
 
-/// Create a vector of control names based on the actuators in the model.
+/// Create a vector of control names based on the actuators in the model. For 
+/// actuators with one control (e.g. ScalarActuator) the control name is simply
+/// the actuator name. For controls with multiple controls, each control name
+/// is the actuator name appended by the control index (e.g. "/actuator_0");
 OSIMMOCO_API
 std::vector<std::string> createControlNamesFromModel(const Model& model);
 
@@ -254,8 +257,8 @@ OSIMMOCO_API
 std::unordered_map<std::string, int> createSystemControlIndexMap(
     const Model& model);
 
-/// Check that the order of the controls in the model is the same as the
-/// order of the actuators in the model. 
+/// Throws an exception if the order of the controls in the model is not the 
+/// same as the order of the actuators in the model. 
 OSIMMOCO_API void checkOrderSystemControls(const Model& model);
 
 /// Throw an exception if the property's value is not in the provided set.

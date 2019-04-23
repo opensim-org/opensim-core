@@ -85,10 +85,7 @@ public:
     /// Provide a MocoWeightSet to weight the control variables in the cost.
     /// Replaces the weight set if it already exists.
     void setWeightSet(const MocoWeightSet& weightSet) {
-        for (int w = 0; w < weightSet.getSize(); ++w) {
-            const auto& weight = weightSet[w];
-            setWeight(weight.getName(), weight.getWeight());
-        }
+        upd_control_weights() = weightSet;
     }
 
     /// If no reference file has been provided, this returns an empty string.
@@ -96,7 +93,7 @@ public:
 
     /// Specify whether or not extra columns in the reference are allowed.
     /// If set true, the extra references will be ignored by the cost.
-    /// If false, extra reference will cause an Exception to be raised.
+    /// If false, extra references will cause an Exception to be raised.
     void setAllowUnusedReferences(bool tf) {
         set_allow_unused_references(tf);
     }
@@ -109,9 +106,9 @@ protected:
 
 private:
     OpenSim_DECLARE_PROPERTY(reference_file, std::string,
-        "Path to file (.sto, .csv, ...) containing values of states "
-        "(coordinates, speeds, activation, etc.) to track. Column labels "
-        "should be state variable paths, e.g., 'knee/flexion/value'");
+        "Path to file (.sto, .csv, ...) containing values of controls "
+        "(joint moments, excitations, etc.) to track. Column labels "
+        "should be control variable paths, e.g., '/forceset/soleus_r'");
 
     OpenSim_DECLARE_PROPERTY(allow_unused_references, bool,
         "Flag to determine whether or not references contained in the "

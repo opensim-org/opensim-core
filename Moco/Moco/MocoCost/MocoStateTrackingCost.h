@@ -86,10 +86,7 @@ public:
     /// Provide a MocoWeightSet to weight the state variables in the cost.
     /// Replaces the weight set if it already exists.
     void setWeightSet(const MocoWeightSet& weightSet) {
-        for (int w = 0; w < weightSet.getSize(); ++w) {
-            const auto& weight = weightSet[w];
-            setWeight(weight.getName(), weight.getWeight());
-        }
+        upd_state_weights() = weightSet;
     }
 
     /// If no reference file has been provided, this returns an empty string.

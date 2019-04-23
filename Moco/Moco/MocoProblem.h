@@ -108,20 +108,11 @@ public:
             const MocoFinalBounds& final = {});
     /// Set information about a single control variable in this phase.
     /// Similar to setStateInfo(). The name for a control is the path to the
-    /// associated ScalarActuator (e.g., "/forceset/soleus_r").
+    /// associated actuator (e.g., "/forceset/soleus_r"). If setting a control
+    /// info for an actuator with multiple controls, the name should be the 
+    /// actuator path appended by the control index (e.g. "/actuator_0");
     void setControlInfo(const std::string& name, const MocoBounds&,
             const MocoInitialBounds& = {}, const MocoFinalBounds& = {});
-    /// Set information about a single control variable associated with a 
-    /// non-scalar actuator in this phase. This differs from setControlInfo()
-    /// for ScalarActuators in that you provide the actuator name and the
-    /// index to the actuator's control vector for this variable. The control
-    /// name becomes the actuator name appended with the index, e.g.
-    /// "pelvis_residuals_2", where "pelvis_residuals" is the actuator name and
-    /// "_2" specifies the control index.
-    // TODO remove when we support named controls in OpenSim
-    void setControlInfo(const std::string& actuName, int controlIndex,
-        const MocoBounds&, const MocoInitialBounds& = {},
-        const MocoFinalBounds& = {});
     /// Set the bounds on *all* of the kinematic constraint equations in this
     /// phase. When creating a MocoProblemRep, these bounds are used to create
     /// MocoConstraintInfo's for each kinematic constraint equation in the 
@@ -254,7 +245,7 @@ public:
     /// Default bounds are obtained from the model.
     /// This function does *not* provide such automatically-populated bounds
     /// from the model. For that, use see MocoProblemRep::getControlInfo().
-    const MocoControlInfo& getControlInfo(const std::string& name) const;
+    const MocoVariableInfo& getControlInfo(const std::string& name) const;
 
     const MocoParameter& getParameter(const std::string& name) const;
     MocoParameter& updParameter(const std::string& name);
@@ -282,7 +273,7 @@ protected: // Protected so that doxygen shows the properties.
             "state_infos (default: [-50, 50]).");
     OpenSim_DECLARE_LIST_PROPERTY(state_infos, MocoVariableInfo,
             "The state variables' bounds.");
-    OpenSim_DECLARE_LIST_PROPERTY(control_infos, MocoControlInfo,
+    OpenSim_DECLARE_LIST_PROPERTY(control_infos, MocoVariableInfo,
             "The control variables' bounds.");
     OpenSim_DECLARE_LIST_PROPERTY(parameters, MocoParameter,
             "Parameter variables (model properties) to optimize.");
@@ -350,10 +341,6 @@ public:
     /// Set bounds for a control variable for phase 0.
     void setControlInfo(const std::string& name, const MocoBounds&,
             const MocoInitialBounds& = {}, const MocoFinalBounds& = {});
-    /// Set bounds for a non-scalar control variable for phase 0.
-    void setControlInfo(const std::string& actuatorName, int controlIndex,
-        const MocoBounds&, const MocoInitialBounds& = {},
-        const MocoFinalBounds& = {});
     /// Set bounds for the kinematic constraints in phase 0.
     void setKinematicConstraintBounds(const MocoBounds& bounds);
     /// Set bounds for the Lagrange multipliers in phase 0.
