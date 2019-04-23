@@ -238,11 +238,11 @@ bool InverseKinematicsStudy::run()
 OpenSim::Array<int> InverseKinematicsStudy::getTimeRangeInUse(
                                 const std::vector<double>& times ) const
 {
-    size_t nt = times.size();
-    size_t startIx = 0;
-    size_t endIx = nt-1;
+    int nt = static_cast<int>(times.size());
+    int startIx = 0;
+    int endIx = nt-1;
 
-    for (size_t i = 0; i < nt; ++i) {
+    for (int i = 0; i < nt; ++i) {
         if (times[i] <= get_time_range(0)) {
             startIx = i;
         }
@@ -251,7 +251,7 @@ OpenSim::Array<int> InverseKinematicsStudy::getTimeRangeInUse(
         }
     }
 
-    for (size_t i = nt - 1; i > 0; --i) {
+    for (int i = nt - 1; i > 0; --i) {
         if (times[i] >= get_time_range(1)) {
             endIx= i;
         }
