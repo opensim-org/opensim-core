@@ -57,7 +57,7 @@ TimeSeriesTable_<SimTK::Quaternion> readRotationsFromAPDMFile(const std::string&
 TimeSeriesTable_<SimTK::Quaternion>
     createOrientationsFileFromMarkers(const std::string& markerFile);
 
-void calibrateModelFromOrientaions(
+void calibrateModelFromOrientations(
     const std::string& modelCalibrationPoseFile,
     const std::string& calibrationOrientationsFile);
 
@@ -132,7 +132,7 @@ int main(int argc, char **argv)
                 else if ((option == "-Calibrate") || (option == "-C")) {
                     std::string modelCalibrationPoseFile{ argv[i + 1] };
                     std::string calibrationOrientationsFile{ argv[i + 2] };
-                    calibrateModelFromOrientaions( modelCalibrationPoseFile,
+                    calibrateModelFromOrientations( modelCalibrationPoseFile,
                                                    calibrationOrientationsFile);
 
                     cout << "Done." << endl;
@@ -502,7 +502,7 @@ void addImuFramesFromMarkers(const string& modelFile, const string& markersFile)
     std::cout << std::endl;
 }
 
-void calibrateModelFromOrientaions(const string& modelCalibrationPoseFile,
+void calibrateModelFromOrientations(const string& modelCalibrationPoseFile,
     const string& calibrationOrientationsFile)
 {
     Model model(modelCalibrationPoseFile);
