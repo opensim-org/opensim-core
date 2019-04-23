@@ -110,9 +110,6 @@ public:
     void setEndTime(double d) { upd_time_range(1) = d; };
     double getEndTime() const {return  get_time_range(1); };
 
-    void previewExperimentalData(const TimeSeriesTableVec3& markers,
-        const TimeSeriesTable_<SimTK::Rotation>& orientations) const;
-
     static TimeSeriesTable_<SimTK::Vec3>
         loadMarkersFile(const std::string& markerFile);
 
@@ -123,7 +120,9 @@ public:
 
 private:
     void constructProperties();
-
+    // Made private to be used as debugging tool until we have a final place for it.
+    void previewExperimentalData(const TimeSeriesTableVec3& markers,
+        const TimeSeriesTable_<SimTK::Rotation>& orientations) const;
 
 //=============================================================================
 };  // END of class InverseKinematicsStudy
