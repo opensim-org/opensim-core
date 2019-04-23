@@ -91,6 +91,12 @@ install:
   - IF EXIST C:\projects\deps\ipopt cmake . -DSUPERBUILD_ipopt=OFF
   # - IF EXIST C:\projects\deps\casadi cmake . -DSUPERBUILD_casadi=OFF
   - IF EXIST C:\projects\deps\opensim-core cmake . -DSUPERBUILD_opensim-core=OFF
+  - dir C:\projects\deps\eigen
+  - dir C:\projects\deps\colpack
+  - dir C:\projects\deps\adol-c
+  - dir C:\projects\deps\ipopt
+  - dir C:\projects\deps\casadi
+  - dir C:\projects\deps\opensim-core
   # List the values of the CMake variables.
   - cmake . -LAH
 
