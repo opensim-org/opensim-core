@@ -90,13 +90,10 @@ Model ModelFactory::createPlanarPointMass() {
 
     auto* intermed = new Body("intermed", 0, Vec3(0), Inertia(0));
     model.addBody(intermed);
-    auto* body = new Body("body", 0, Vec3(0), Inertia(0));
+    auto* body = new Body("body", 1, Vec3(0), Inertia(0));
     model.addBody(body);
 
-    auto* jointX = new SliderJoint();
-    jointX->setName("tx");
-    jointX->connectSocket_parent_frame(model.getGround());
-    jointX->connectSocket_child_frame(*intermed);
+    auto* jointX = new SliderJoint("tx", model.getGround(), *intermed);
     auto& coordX = jointX->updCoordinate(SliderJoint::Coord::TranslationX);
     coordX.setName("tx");
     model.addJoint(jointX);
