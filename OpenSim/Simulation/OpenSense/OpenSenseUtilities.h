@@ -40,7 +40,7 @@ namespace OpenSim {
             to be averaged. By default just uses the first time frame.*/
         static TimeSeriesTableRotation  convertQuaternionsToRotations(
             const TimeSeriesTableQuaternion& qauternionsTable,
-            std::tuple<size_t, size_t> startEnd = std::tuple<size_t, size_t>{ 0, 1 }
+            const OpenSim::Array<int>& startEnd= OpenSim::Array<int>(0)
         );
         /// @}
 

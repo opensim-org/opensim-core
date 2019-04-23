@@ -33,7 +33,7 @@ using namespace std;
 TimeSeriesTable_<SimTK::Rotation> OpenSenseUtilities::
     convertQuaternionsToRotations(
         const TimeSeriesTableQuaternion& qauternionsTable,
-        std::tuple<size_t, size_t> startEnd)
+       const OpenSim::Array<int>& startEnd)
 {
     // Fixed transform to rotate sensor orientations in world with Z up into the 
     // OpenSim ground reference frame with Y up and X forward.
@@ -61,13 +61,13 @@ TimeSeriesTable_<SimTK::Rotation> OpenSenseUtilities::
 
     const auto& times = qauternionsTable.getIndependentColumn();
 
-    size_t nt = std::get<1>(startEnd) - std::get<0>(startEnd) + 1;
+    size_t nt = startEnd[1] - startEnd[0] + 1;
 
     std::vector<double> newTimes(nt, SimTK::NaN);
     SimTK::Matrix_<SimTK::Rotation> matrix(int(nt), nc, Rotation());
 
     int cnt = 0;
-    for (size_t i = std::get<0>(startEnd); i <= std::get<1>(startEnd); ++i) {
+    for (size_t i = startEnd[0]; i <= startEnd[1]; ++i) {
         newTimes[cnt] = times[i];
         const auto& quatRow = qauternionsTable.getRowAtIndex(i);
         for (int j = 0; j < nc; ++j) {

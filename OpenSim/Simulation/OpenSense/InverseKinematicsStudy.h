@@ -117,7 +117,7 @@ public:
     static TimeSeriesTable_<SimTK::Vec3>
         loadMarkersFile(const std::string& markerFile);
 
-    std::tuple<size_t, size_t> getTimeRangeInUse(const std::vector<double>& times) const;
+    Array<int> getTimeRangeInUse(const std::vector<double>& times) const;
 
     void runInverseKinematicsWithOrientationsFromFile(Model& model,
                             const std::string& quaternionStoFileName);

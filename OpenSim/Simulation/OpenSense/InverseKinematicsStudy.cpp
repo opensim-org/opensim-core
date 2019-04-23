@@ -93,7 +93,7 @@ void InverseKinematicsStudy::
     std::cout << "press any key to visualize experimental marker data ..." << std::endl;
     std::cin >> c;
 
-    for (size_t j = std::get<0>(startEnd); j <= std::get<1>(startEnd); j=j+10) {
+    for (size_t j =startEnd.get(0); j <= startEnd.get(1); j=j+10) {
         std::cout << "time: " << times[j] << "s" << std::endl;
         state.setTime(times[j]);
         previewWorld.realizePosition(state);
@@ -235,7 +235,7 @@ bool InverseKinematicsStudy::run()
     return true;
 }
 
-std::tuple<size_t, size_t > InverseKinematicsStudy::getTimeRangeInUse(
+OpenSim::Array<int> InverseKinematicsStudy::getTimeRangeInUse(
                                 const std::vector<double>& times ) const
 {
     size_t nt = times.size();
@@ -259,7 +259,10 @@ std::tuple<size_t, size_t > InverseKinematicsStudy::getTimeRangeInUse(
             break;
         }
     }
-    return std::make_tuple(startIx, endIx);
+    OpenSim::Array<int> retArray;
+    retArray.append(startIx);
+    retArray.append(endIx);
+    return retArray;
 }
 
 TimeSeriesTable_<SimTK::Vec3> 
