@@ -51,6 +51,9 @@ SimTK::Transform formTransformFromPoints(const SimTK::Vec3& op,
 TimeSeriesTable_<SimTK::Quaternion> readRotationsFromXSensFiles(const std::string& directory,
     const std::string& readerSetupFile);
 
+TimeSeriesTable_<SimTK::Quaternion> readRotationsFromAPDMFile(const std::string& file,
+    const std::string& readerSetupFile);
+
 TimeSeriesTable_<SimTK::Quaternion>
     createOrientationsFileFromMarkers(const std::string& markerFile);
 
@@ -95,11 +98,19 @@ int main(int argc, char **argv)
                     PrintUsage(argv[0], cout);
                     return 0;
                 }
-                else if ((option == "-Read") || (option == "-R")) {
+                else if ((option == "-ReadX") || (option == "-RX")) {
                     std::string directory{ argv[i + 1] };
                     std::string settingsFile{ argv[i + 2] };
                     TimeSeriesTable_<SimTK::Quaternion> rotationsTable =
                                                         readRotationsFromXSensFiles(directory, settingsFile);
+                    cout << "Done." << endl;
+                    return 0;
+                }
+                else if ((option == "-ReadA") || (option == "-RA")) {
+                    std::string dataFile{ argv[i + 1] };
+                    std::string settingsFile{ argv[i + 2] };
+                    TimeSeriesTable_<SimTK::Quaternion> rotationsTable =
+                        readRotationsFromAPDMFile(dataFile, settingsFile);
                     cout << "Done." << endl;
                     return 0;
                 }
@@ -215,6 +226,8 @@ void PrintUsage(const char *aProgName, ostream &aOStream)
     aOStream << "-PrintSetup, -PS                    Generates a template Setup file to customize the scaling\n";
     aOStream << "-Setup, -S         SetupFileName    Specify an xml setup file for solving an inverse kinematics problem.\n";
     aOStream << "-PropertyInfo, -PI                  Print help information for properties in setup files.\n";
+    aOStream << "-ReadX, -RX  directory settingsFile.xml   Parse Xsens exported files from directory using settingsFile.xml.\n";
+    aOStream << "-ReadA, -RA  datafile.csv settingsFile.xml   Parse APDM exported files from directory using settingsFile.xml.\n";
 }
 
 TimeSeriesTable_<SimTK::Quaternion> readRotationsFromXSensFiles(const std::string& directory,
@@ -230,6 +243,19 @@ TimeSeriesTable_<SimTK::Quaternion> readRotationsFromXSensFiles(const std::strin
     return quatTableTyped;
 }
 
+
+TimeSeriesTable_<SimTK::Quaternion> readRotationsFromAPDMFile(const std::string& apdmCsvFile,
+    const std::string& readerSetupFile)
+{
+    APDMDataReaderSettings readerSettings(readerSetupFile);
+    APDMDataReader reader(readerSettings);
+    DataAdapter::OutputTables tables = reader.extendRead(apdmCsvFile);
+    const TimeSeriesTableQuaternion& quatTableTyped = IMUDataUtilities::getOrientationsTable(tables);
+
+    STOFileAdapter_<SimTK::Quaternion>::write(quatTableTyped, "imuOrientations.sto");
+
+    return quatTableTyped;
+}
 SimTK::Transform formTransformFromPoints(const Vec3& op,
                                         const Vec3& xp,
                                         const Vec3& yp)
