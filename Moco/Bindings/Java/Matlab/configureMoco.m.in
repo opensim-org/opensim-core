@@ -27,7 +27,7 @@ function configureMoco()
 %    OpenSim's MATLAB Utilities to the MATLAB path (e.g., addpath).
 %
 % Removing existing OpenSim paths:
-%    This function tries detect any OpenSim or Moco installations you may
+%    This function tries to detect any OpenSim or Moco installations you may
 %    have previously configured with MATLAB, and removes them from the Java
 %    class path, Java library path, and MATLAB path (all 3 items above).
 %  

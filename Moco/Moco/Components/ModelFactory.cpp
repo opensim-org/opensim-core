@@ -22,8 +22,12 @@
 
 #include <OpenSim/Actuators/CoordinateActuator.h>
 #include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
+#include <OpenSim/Simulation/SimbodyEngine/SliderJoint.h>
 
 using namespace OpenSim;
+
+using SimTK::Vec3;
+using SimTK::Inertia;
 
 Model ModelFactory::createNLinkPendulum(int numLinks) {
     Model model;
@@ -83,6 +87,45 @@ Model ModelFactory::createNLinkPendulum(int numLinks) {
     return model;
 }
 
+Model ModelFactory::createPlanarPointMass() {
+    Model model;
+    model.setName("planar_point_mass");
+
+    auto* intermed = new Body("intermed", 0, Vec3(0), Inertia(0));
+    model.addBody(intermed);
+    auto* body = new Body("body", 1, Vec3(0), Inertia(0));
+    model.addBody(body);
+
+    auto* jointX = new SliderJoint("tx", model.getGround(), *intermed);
+    auto& coordX = jointX->updCoordinate(SliderJoint::Coord::TranslationX);
+    coordX.setName("tx");
+    model.addJoint(jointX);
+
+    // The joint's x axis must point in the global "+y" direction.
+    auto* jointY = new SliderJoint("ty",
+            *intermed, Vec3(0), Vec3(0, 0, 0.5 * SimTK::Pi),
+            *body, Vec3(0), Vec3(0, 0, .5 * SimTK::Pi));
+    auto& coordY = jointY->updCoordinate(SliderJoint::Coord::TranslationX);
+    coordY.setName("ty");
+    model.addJoint(jointY);
+
+    {
+        auto* forceX = new CoordinateActuator();
+        forceX->setCoordinate(&coordX);
+        forceX->setName("force_x");
+        model.addForce(forceX);
+    }
+
+    {
+        auto* forceY = new CoordinateActuator();
+        forceY->setCoordinate(&coordY);
+        forceY->setName("force_y");
+        model.addForce(forceY);
+    }
+
+    return model;
+}
+
 void ModelFactory::createReserveActuators(Model& model, double optimalForce) {
     OPENSIM_THROW_IF(optimalForce <= 0, Exception,
             format("Invalid value (%g) for create_reserve_actuators; "
@@ -121,3 +164,4 @@ void ModelFactory::createReserveActuators(Model& model, double optimalForce) {
         std::cout << "  " << name << std::endl;
     }
 }
+
