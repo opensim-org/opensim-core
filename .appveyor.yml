@@ -92,7 +92,6 @@ install:
   # CMAKE_CXX_FLAGS.
   # https://msdn.microsoft.com/en-us/library/19z1t1wy.aspx
   # - set CXXFLAGS="/W0"
-  - ps: Add-Content -Path .\CMakeCacheInit.cmake -Value 'set(SUPERBUILD_eigen
   - cmake ..\opensim-moco\dependencies -G"Visual Studio 14 2015 Win64" -DCMAKE_CXX_FLAGS="/DWIN32 /D_WINDOWS /W0 /GR /EHsc" -C CMakeCacheInit.cmake
   # List the values of the CMake variables.
   - cmake . -LAH
