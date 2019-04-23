@@ -19,6 +19,7 @@
  * -------------------------------------------------------------------------- */
 
 #include "../osimMocoDLL.h"
+
 #include <OpenSim/Simulation/Model/Model.h>
 
 namespace OpenSim {
@@ -26,19 +27,20 @@ namespace OpenSim {
 /// This class provides utilities for creating OpenSim models.
 class OSIMMOCO_API ModelFactory {
 public:
-
     /// @name Create a model
     /// @{
 
+    /// Create a pendulum with the provided number of links.
+    /// For each link, there is a body `/bodyset/b#` (where `#` is the link
+    /// index starting at 0), a PinJoint `/jointset/j#` with coordinate
+    /// `/jointset/j#/q#`, a CoordinateActuator `/tau#`, a Marker
+    /// `/markerset/marker#` at the origin of the link's body, and a
+    /// PhysicalOffsetFrame `/b#center` at the center of the link.
     static Model createNLinkPendulum(int numLinks);
-    static Model createPendulum() {
-        return createNLinkPendulum(1);
-    }
-    static Model createDoublePendulum() {
-        return createNLinkPendulum(2);
-    }
-
-
+    /// This is a convenience for `createNLinkPendulum(1)`.
+    static Model createPendulum() { return createNLinkPendulum(1); }
+    /// This is a convenience for `createNLinkPendulum(2)`.
+    static Model createDoublePendulum() { return createNLinkPendulum(2); }
 
     /// @}
 
