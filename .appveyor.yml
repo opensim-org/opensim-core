@@ -79,12 +79,12 @@ install:
   - IF NOT EXIST C:\projects\deps mkdir C:\projects\deps
   - dir C:\projects\
   - dir C:\projects\deps
-  - ps: if (Test-Path C:\projects\deps\eigen) { Add-Content .\ CMakeCacheInit.cmake -Value 'set(SUPERBUILD_eigen OFF CACHE BOOL "")' }
-  - ps: if (Test-Path C:\projects\deps\colpack) { Add-Content .\ CMakeCacheInit.cmake -Value 'set(SUPERBUILD_colpack OFF CACHE BOOL "")' }
-  - ps: if (Test-Path C:\projects\deps\adol-c) { Add-Content .\ CMakeCacheInit.cmake -Value 'set(SUPERBUILD_adol-c OFF CACHE BOOL "")' }
-  - ps: if (Test-Path C:\projects\deps\ipopt) { Add-Content .\ CMakeCacheInit.cmake -Value 'set(SUPERBUILD_ipopt OFF CACHE BOOL "")' }
-  - ps: if (Test-Path C:\projects\deps\casadi) { Add-Content .\ CMakeCacheInit.cmake -Value 'set(SUPERBUILD_casadi OFF CACHE BOOL "")' }
-  - ps: if (Test-Path C:\projects\deps\opensim-core) { Add-Content .\ CMakeCacheInit.cmake -Value 'set(SUPERBUILD_opensim-core OFF CACHE BOOL "")' }
+  - ps: if (Test-Path C:\projects\deps\eigen) { Add-Content .\CMakeCacheInit.cmake -Value 'set(SUPERBUILD_eigen OFF CACHE BOOL "")' }
+  - ps: if (Test-Path C:\projects\deps\colpack) { Add-Content .\CMakeCacheInit.cmake -Value 'set(SUPERBUILD_colpack OFF CACHE BOOL "")' }
+  - ps: if (Test-Path C:\projects\deps\adol-c) { Add-Content .\CMakeCacheInit.cmake -Value 'set(SUPERBUILD_adol-c OFF CACHE BOOL "")' }
+  - ps: if (Test-Path C:\projects\deps\ipopt) { Add-Content .\CMakeCacheInit.cmake -Value 'set(SUPERBUILD_ipopt OFF CACHE BOOL "")' }
+  - ps: if (Test-Path C:\projects\deps\casadi) { Add-Content .\CMakeCacheInit.cmake -Value 'set(SUPERBUILD_casadi OFF CACHE BOOL "")' }
+  - ps: if (Test-Path C:\projects\deps\opensim-core) { Add-Content .\CMakeCacheInit.cmake -Value 'set(SUPERBUILD_opensim-core OFF CACHE BOOL "")' }
   - ps: Add-Content .\CMakeCacheInit.cmake -Value 'set(CMAKE_INSTALL_PREFIX "C:\projects\opensim-moco_deps_install" CACHE PATH "")' }
   - ps: Add-Content .\CMakeCacheInit.cmake -Value 'set(OPENSIM_JAVA_WRAPPING ON CACHE BOOL "")' }
   - ps: Add-Content .\CMakeCacheInit.cmake -Value 'set(OPENSIM_PYTHON_WRAPPING ON CACHE BOOL "")' }
