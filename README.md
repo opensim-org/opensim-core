@@ -48,29 +48,31 @@ with Muscollo/tropter.
 
 Mac
 ---
-You must first install the following:
- - `gfortran`
- - `pkgconfig`
- - `autoreconf`
- - `aclocal`
- - `glibtoolize`
- - `wget`
- - `doxygen` (optional)
+
+Install the following:
+- `gfortran`
+- `pkgconfig`
+- `autoreconf`
+- `aclocal`
+- `glibtoolize`
+- `wget`
+- `cmake`
+- `doxygen` (optional)
 
 You can install these with Homebrew:
 
 ```bash
-brew install pkgconfig gcc autoconf libtool automake wget doxygen
+brew install cmake pkgconfig gcc autoconf libtool automake wget doxygen
 ```
 
-If you use Homebrew to obtain ColPack and ADOL-C, make 
-sure they are compiled with the same compiler you will use for Muscollo and 
-tropter (by default, Homebrew compiles these with GCC):
+Navigate to the directory where Moco is installed.
 
-```bash
-brew install --cc=clang colpack
-brew install --cc=clang adol-c
-```
+
+ex: `cd /Users/xxxx/Documents/github/opensim-moco`
+
+Run build_on_mac from the terminal.
+
+ex `./build_on_mac`
 
 
 Windows
