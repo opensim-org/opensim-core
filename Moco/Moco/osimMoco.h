@@ -23,6 +23,7 @@
 #include "MocoCost/MocoMarkerTrackingCost.h"
 #include "MocoCost/MocoMarkerEndpointCost.h"
 #include "MocoCost/MocoControlCost.h"
+#include "MocoCost/MocoControlTrackingCost.h"
 #include "MocoCost/MocoJointReactionNormCost.h"
 #include "MocoIterate.h"
 #include "MocoBounds.h"
