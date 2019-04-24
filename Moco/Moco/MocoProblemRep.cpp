@@ -203,49 +203,41 @@ void MocoProblemRep::initialize() {
         m_control_infos[name] = ph0.get_control_infos(i);
     }
 
-    // Loop through the model's ScalarActuators and set control infos 
-    // using the actuator's getMinControl() and getMaxControl() methods to get
-    // bounding values. 
-    for (const auto& actu : m_model_base.getComponentList<ScalarActuator>()) {
-        const std::string actuName = actu.getAbsolutePathString();
-        if (m_control_infos.count(actuName) == 0) {
-            const auto info = MocoVariableInfo(actuName,
-            {actu.getMinControl(), actu.getMaxControl()}, {}, {});
-            m_control_infos[actuName] = info;
-        }
-        // Set bounds on activations corresponding to control variables if they
-        // exist and the user hasn't already provided bounds for them.
-        std::string activName = actuName + "/activation";
-        if (stateNames.findIndex(activName) != -1 &&
-            m_state_infos.count(activName) == 0) {
-            const auto info = MocoVariableInfo(activName,
-            {actu.getMinControl(), actu.getMaxControl()}, {}, {});
-            m_state_infos[activName] = info;
-        }
-    }
-
-    // Loop through all the actuators in the model, skipping the 
-    // ScalarActuators we've already set infos for, and create control infos
-    // for the remaining actuators using (-inf, inf) as bounds.
+    // Loop through all the actuators in the model and create control infos
+    // for the associated actuator control variables.
     for (const auto& actu : m_model_base.getComponentList<Actuator>()) {
         const std::string actuName = actu.getAbsolutePathString();
-        // We need to skip this actuator here because the if-statement in the
-        // loop below checks for a control name created by appending the 
-        // control index to the actuator name (e.g., "actuator_0").
-        // ScalarActuators simply use the actuator name, so the if-statement
-        // below will think this actuator's info hasn't been set.
-        if (m_control_infos.count(actuName)) continue;
-        // This is a non-scalar actuator, so we need to add multiple control 
-        // infos.
-        for (int idx = 0; idx < actu.numControls(); ++idx) {
-            std::string controlName = actuName + "_" + std::to_string(idx);
-            if (m_control_infos.count(controlName) == 0) {   
-                const auto info = MocoVariableInfo(controlName,
-                    MocoBounds(-SimTK::NTraits<double>::getInfinity(), 
-                                SimTK::NTraits<double>::getInfinity()), {}, {});
-                m_control_infos[controlName] = info;
+        if (actu.numControls() == 1) {
+            // A control info for this scalar actuator exists, so skip it.
+            if (m_control_infos.count(actuName)) continue;
+            // If this scalar actuator derives from OpenSim::ScalarActuator,
+            // use the getMinControl() and getMaxControl() methods to set the
+            // bounds. Otherwise, set the bounds to (-inf, inf).
+            if (m_model_base.hasComponent<ScalarActuator>(actuName)) {
+                const auto& scalarActu = 
+                    m_model_base.getComponent<ScalarActuator>(actuName);
+                const auto info = MocoVariableInfo(actuName,
+                    {scalarActu.getMinControl(), 
+                     scalarActu.getMaxControl()}, 
+                     {}, {});
+                m_control_infos[actuName] = info;
+            } else {
+                const auto info = MocoVariableInfo(actuName,
+                    MocoBounds(-SimTK::Infinity, SimTK::Infinity), {}, {});
+                m_control_infos[actuName] = info;
+            }    
+        } else {
+            // This is a non-scalar actuator, so we need to add multiple control 
+            // infos.
+            for (int idx = 0; idx < actu.numControls(); ++idx) {
+                std::string controlName = actuName + "_" + std::to_string(idx);
+                if (m_control_infos.count(controlName) == 0) {
+                    const auto info = MocoVariableInfo(controlName,
+                        MocoBounds(-SimTK::Infinity, SimTK::Infinity), {}, {});
+                    m_control_infos[controlName] = info;
+                }
             }
-        }
+        }    
     }
 
     // Parameters.

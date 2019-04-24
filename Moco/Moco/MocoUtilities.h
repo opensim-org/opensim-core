@@ -246,7 +246,7 @@ std::unordered_map<std::string, int> createSystemYIndexMap(const Model& model);
 
 /// Create a vector of control names based on the actuators in the model. For 
 /// actuators with one control (e.g. ScalarActuator) the control name is simply
-/// the actuator name. For controls with multiple controls, each control name
+/// the actuator name. For actuators with multiple controls, each control name
 /// is the actuator name appended by the control index (e.g. "/actuator_0");
 OSIMMOCO_API
 std::vector<std::string> createControlNamesFromModel(const Model& model);
