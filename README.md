@@ -65,8 +65,7 @@ You can install these with Homebrew:
 brew install cmake pkgconfig gcc autoconf libtool automake wget doxygen
 ```
 
-Navigate to the directory where Moco is installed.
-
+Nagivate to the directory where you placed the opensim-moco source code.
 
 ex: `cd /Users/xxxx/Documents/github/opensim-moco`
 
