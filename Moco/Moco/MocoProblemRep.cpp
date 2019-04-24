@@ -213,12 +213,11 @@ void MocoProblemRep::initialize() {
             // If this scalar actuator derives from OpenSim::ScalarActuator,
             // use the getMinControl() and getMaxControl() methods to set the
             // bounds. Otherwise, set the bounds to (-inf, inf).
-            if (m_model_base.hasComponent<ScalarActuator>(actuName)) {
-                const auto& scalarActu = 
-                    m_model_base.getComponent<ScalarActuator>(actuName);
+            if (const auto* scalarActu = 
+                    dynamic_cast<const ScalarActuator*>(&actu)) {
                 const auto info = MocoVariableInfo(actuName,
-                    {scalarActu.getMinControl(), 
-                     scalarActu.getMaxControl()}, 
+                    {scalarActu->getMinControl(), 
+                     scalarActu->getMaxControl()}, 
                      {}, {});
                 m_control_infos[actuName] = info;
             } else {
