@@ -358,6 +358,19 @@ def sit_to_stand():
         add_CoordinateActuator(model, 'ankle_angle_r', 150)
         return model
 
+    def muscle_driven_model():
+        model = osim.Model('sitToStand_3dof9musc.osim')
+        model.finalizeConnections()
+        osim.DeGrooteFregly2016Muscle.replaceMuscles(model)
+        for muscle in model.getMuscles():
+            muscle.set_ignore_tendon_compliance(True)
+            muscle.set_max_isometric_force(2 * muscle.get_max_isometric_force())
+            dgf = osim.DeGrooteFregly2016Muscle.safeDownCast(muscle)
+            dgf.set_active_force_width_scale(1.5)
+            if muscle.getName() == 'soleus_r':
+                dgf.set_ignore_passive_fiber_force(True)
+        return model
+
     def predict():
         moco = create_tool(torque_driven_model())
         problem = moco.updProblem()
@@ -394,15 +407,48 @@ def sit_to_stand():
         trackingSolution.write('trackingSolution.sto')
         # moco.visualize(trackingSolution)
 
+    def inverse():
+        inverse = osim.MocoInverse()
+        inverse.setModel(muscle_driven_model())
+        inverse.setKinematicsFile('predictSolution.sto')
+        inverse.set_kinematics_allow_extra_columns(True)
+        inverse.set_lowpass_cutoff_frequency_for_kinematics(6)
+        inverse.set_mesh_interval(0.05)
+        inverse.set_create_reserve_actuators(2)
+        inverse.set_minimize_sum_squared_states(True)
+        inverse.set_tolerance(1e-4)
+        inverse.append_output_paths('.*normalized_fiber_length')
+        inverse.append_output_paths('.*passive_force_multiplier')
+        inverseSolution = inverse.solve()
+        inverseSolution.getMocoSolution().write('inverseSolution.sto')
+        inverseOutputs = inverseSolution.getOutputs()
+        osim.STOFileAdapter.write(inverseOutputs, 'muscle_outputs.sto')
+        print('Cost without device: %f' %
+                inverseSolution.getMocoSolution().getObjective())
+
+        model = muscle_driven_model()
+        device = osim.SpringGeneralizedForce('knee_angle_r')
+        device.setStiffness(50)
+        device.setRestLength(0)
+        device.setViscosity(0)
+        model.addForce(device)
+        inverse.setModel(model)
+        inverseDeviceSolution = inverse.solve()
+        inverseDeviceSolution.getMocoSolution().write(
+            'inverseDeviceSolution.sto')
+        print('Cost with device: %f' %
+              inverseDeviceSolution.getMocoSolution().getObjective())
+
     predict()
     track()
+    inverse()
 
 
 if __name__ == "__main__":
-    Kirk()
+    # Kirk()
     # brachistochrone()
     # suspended_mass()
-    # sit_to_stand()
+    sit_to_stand()
 # TODO linear tangent steering has analytical solution Example 4.1 Betts, and Example 4.5
 
 # 2 dof 3 muscles, predict, time-stepping, and track. add noise!!!
