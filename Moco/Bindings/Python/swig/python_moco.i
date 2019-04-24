@@ -133,14 +133,24 @@ using namespace SimTK;
         args[3] = self._convert(MocoFinalBounds, args[3])
 %}
 
+// MocoIterate's functions contain lots of matrices, and Python users
+// feel more comfortable providing/getting these matrices as NumPy types rather
+// than as SimTK numeric types. We can use SWIG NumPy typemaps to accomplish
+// this.
 // https://docs.scipy.org/doc/numpy/reference/swig.interface-file.html
 // https://scipy-cookbook.readthedocs.io/items/SWIG_NumPy_examples.html
 // For constructor.
+// The Python version of any Moco function taking the pair of arguments
+// (int ntime, double* time) or (int nparams, double* params) will instead
+// take a single NumPy array.
 %apply (int DIM1, double* IN_ARRAY1) {
     (int ntime, double* time),
     (int nparams, double* params)
 };
 // For constructor.
+// The Python version of any Moco function taking sets of arguments
+// (int nrowstates, int ncolstates, double* states) will instead take a single
+// NumPy 2D array.
 %apply (int DIM1, int DIM2, double* IN_ARRAY2) {
     (int nrowstates, int ncolstates, double* states),
     (int nrowcontrols, int ncolcontrols, double* controls),
@@ -148,6 +158,12 @@ using namespace SimTK;
     (int nrowderivs, int ncolderivs, double* derivs)
 };
 // For getState(), etc.
+// The typemaps for functions that return matrices is more complicated: we must
+// pass in a NumPy array that already has the correct size. We create a (hidden)
+// C++ function that takes, for example, (int n, double* timeOut)
+// (e.g., _getTimeMat()).
+// Then we create a Python function that invokes the hidden C++ function with
+// a correctly-sized NumPy array (e.g., getTimeMat()).
 %apply (int DIM1, double* ARGOUT_ARRAY1) {
     (int n, double* timeOut),
     (int n, double* stateOut),
@@ -157,6 +173,7 @@ using namespace SimTK;
     (int n, double* paramsOut)
 };
 // For getStatesTrajectory(), etc.
+// Similar to above but for 2D arrays.
 %apply (int DIM1, int DIM2, double* INPLACE_FARRAY2) {
     (int nrow, int ncol, double* statesOut),
     (int nrow, int ncol, double* controlsOut),
