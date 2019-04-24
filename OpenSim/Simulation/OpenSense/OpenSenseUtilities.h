@@ -43,6 +43,10 @@ namespace OpenSim {
             const TimeSeriesTableQuaternion& qauternionsTable,
             const OpenSim::Array<int>& startEnd= OpenSim::Array<int>(0)
         );
+
+        static void calibrateModelFromOrientations(
+            const std::string& modelCalibrationPoseFile,
+            const std::string& calibrationOrientationsFile);
         /// @}
 
     }; // end of class OpenSenseUtilities

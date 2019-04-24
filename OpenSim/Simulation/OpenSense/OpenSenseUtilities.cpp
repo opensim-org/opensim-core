@@ -128,3 +128,119 @@ TimeSeriesTable_<SimTK::Rotation> OpenSenseUtilities::
 
     return orientationTable;
 }
+
+
+void OpenSenseUtilities::calibrateModelFromOrientations(const string& modelCalibrationPoseFile,
+    const string& calibrationOrientationsFile)
+{
+    Model model(modelCalibrationPoseFile);
+
+    TimeSeriesTable_<SimTK::Quaternion> quatTable =
+        STOFileAdapter_<SimTK::Quaternion>::read(calibrationOrientationsFile);
+
+    TimeSeriesTable_<SimTK::Rotation> orientationsData =
+        OpenSenseUtilities::convertQuaternionsToRotations(quatTable);
+
+    std::cout << "Loaded orientations as quaternions from "
+        << calibrationOrientationsFile << std::endl;
+
+    auto imuLabels = orientationsData.getColumnLabels();
+    auto& times = orientationsData.getIndependentColumn();
+
+    // The rotations of the IMUs at the start time in order
+    // the labels in the TimerSeriesTable of orientations
+    auto rotations = orientationsData.getRowAtIndex(0);
+
+    SimTK::State& s0 = model.initSystem();
+    s0.updTime() = times[0];
+
+    // default pose of the model defined by marker-based IK 
+    model.realizePosition(s0);
+
+    size_t imuix = 0;
+    std::vector<PhysicalFrame*> bodies{ imuLabels.size(), nullptr };
+    std::map<std::string, SimTK::Rotation> imuBodiesInGround;
+
+    // First compute the transform of each of the imu bodies in ground
+    for (auto& imuName : imuLabels) {
+        auto ix = imuName.rfind("_imu");
+        if (ix != std::string::npos) {
+            auto bodyName = imuName.substr(0, ix);
+            auto body = model.findComponent<PhysicalFrame>(bodyName);
+            if (body) {
+                bodies[imuix] = const_cast<PhysicalFrame*>(body);
+                imuBodiesInGround[imuName] =
+                    body->getTransformInGround(s0).R();
+            }
+        }
+        ++imuix;
+    }
+
+    // Now cycle through each imu with a body and compute the relative
+    // offset of the IMU measurement relative to the body and
+    // update the modelOffset OR add an offset if none exists
+    imuix = 0;
+    for (auto& imuName : imuLabels) {
+        cout << "Processing " << imuName << endl;
+        if (imuBodiesInGround.find(imuName) != imuBodiesInGround.end()) {
+            cout << "Computed offset for " << imuName << endl;
+            auto R_FB = ~imuBodiesInGround[imuName] * rotations[int(imuix)];
+            cout << "Offset is " << R_FB << endl;
+            PhysicalOffsetFrame* imuOffset = nullptr;
+            const PhysicalOffsetFrame* mo = nullptr;
+            if (mo = model.findComponent<PhysicalOffsetFrame>(imuName)) {
+                imuOffset = const_cast<PhysicalOffsetFrame*>(mo);
+                auto X = imuOffset->getOffsetTransform();
+                X.updR() = R_FB;
+                imuOffset->setOffsetTransform(X);
+            }
+            else {
+                cout << "Creating offset frame for " << imuName << endl;
+                OpenSim::Body* body = dynamic_cast<OpenSim::Body*>(bodies[imuix]);
+                SimTK::Vec3 p_FB(0);
+                if (body) {
+                    p_FB = body->getMassCenter();
+                }
+
+                imuOffset = new PhysicalOffsetFrame(imuName,
+                    *bodies[imuix], SimTK::Transform(R_FB, p_FB));
+                auto* brick = new Brick(Vec3(0.02, 0.01, 0.005));
+                brick->setColor(SimTK::Orange);
+                imuOffset->attachGeometry(brick);
+                bodies[imuix]->addComponent(imuOffset);
+                cout << "Added offset frame for " << imuName << endl;
+            }
+            cout << imuOffset->getName() << " offset computed from " <<
+                imuName << " data from file." << endl;
+        }
+        imuix++;
+    }
+
+    model.finalizeConnections();
+
+    auto filename = "calibrated_" + model.getName() + ".osim";
+    cout << "Wrote calibrated model to file: '" << filename << "'." << endl;
+    model.print(filename);
+
+    model.setUseVisualizer(true);
+    SimTK::State& s = model.initSystem();
+
+    s.updTime() = times[0];
+
+    // create the solver given the input data
+    MarkersReference mRefs{};
+    OrientationsReference oRefs(orientationsData);
+    SimTK::Array_<CoordinateReference> coordRefs{};
+
+    const double accuracy = 1e-4;
+    InverseKinematicsSolver ikSolver(model, mRefs, oRefs, coordRefs);
+    ikSolver.setAccuracy(accuracy);
+
+    model.getVisualizer().getSimbodyVisualizer().setShowSimTime(true);
+    ikSolver.assemble(s);
+    model.getVisualizer().show(s);
+
+    char c;
+    std::cout << "Press any key and return to close visualizer." << std::endl;
+    std::cin >> c;
+}
