@@ -51,7 +51,7 @@ void MocoControlCost::initializeOnModelImpl(const Model& model) const {
     for (int i = 0; i < get_control_weights().getSize(); ++i) {
         const auto& thisName = get_control_weights()[i].getName();
         if (std::find(controlNames.begin(), controlNames.end(), thisName) ==
-            controlNames.end()) {
+                controlNames.end()) {
             OPENSIM_THROW_FRMOBJ(Exception,
                     "Unrecognized control '" + thisName + "'.");
         }
