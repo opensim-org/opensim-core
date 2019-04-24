@@ -565,6 +565,8 @@ private:
 /// If the solver was not successful, then this object is "sealed", which
 /// means you cannot do anything with it until calling `unseal()`. This
 /// prevents you from silently proceeding with a failed solution.
+/// Solver success can also be found in the header of a solution (.sto) file
+/// written out by write.
 class OSIMMOCO_API MocoSolution : public MocoIterate {
 public:
     /// Returns a dynamically-allocated copy of this solution. You must manage

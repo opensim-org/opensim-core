@@ -971,29 +971,26 @@ TEST_CASE("MocoIterate") {
     }
 
     {
-    const std::string fname = "testMocoInterface_testMocoSolutionSuccess.sto";
-    MocoTool moco = createSlidingMassMocoTool();
-    auto& solver = dynamic_cast<MocoDirectCollocationSolver&>(moco.updSolver());
+        const std::string fname = "testMocoInterface_testMocoSolutionSuccess.sto";
+        MocoTool moco = createSlidingMassMocoTool();
+        auto& solver = dynamic_cast<MocoDirectCollocationSolver&>(moco.updSolver());
 
-    solver.set_optim_max_iterations(1);
-    MocoSolution failedSolution  = moco.solve();
-    failedSolution.unseal();
-    failedSolution.write(fname);
-    MocoIterate deserialized(fname);
+        solver.set_optim_max_iterations(1);
+        MocoSolution failedSolution  = moco.solve();
+        failedSolution.unseal();
+        failedSolution.write(fname);
+        MocoIterate deserialized(fname);
 
-    std::ifstream mocoSolutionFile(fname);
-    for(std::string line; getline(mocoSolutionFile, line);)
-    {
-        if (line.compare("success=false"))
-        {
-            break;
+        std::ifstream mocoSolutionFile(fname);
+        for(std::string line; getline(mocoSolutionFile, line);) {
+            if (line.compare("success=false")) {
+                break;
+            }
+            else if (line.compare("success=true")) {
+                SimTK_TEST(false);
+            }
+
         }
-        else if (line.compare("success=true"))
-        {
-            SimTK_TEST(false);
-        }
-
-    }
 
     }
 
