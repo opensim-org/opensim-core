@@ -21,7 +21,7 @@ environment:
 
 init:
   - SET BTYPE=Release
-  - SET PATH=%PYTHON_DIR%;%PATH%
+  - "SET PATH=%PYTHON_DIR%;%PYTHON_DIR%\\Scripts;%PATH%"
   - SET JAVA_HOME=%JAVA_DIR%
   - SET PATH=%JAVA_HOME%\bin;%PATH%
 
@@ -42,6 +42,9 @@ cache:
 
 install:
   - cmake --version
+
+  # Moco's python bindings require numpy.
+  - python -m pip install numpy
 
   # - choco install doxygen.portable # <-- too unreliable.
   - ps: (New-Object System.Net.WebClient).DownloadFile("https://sourceforge.net/projects/myosin/files/doxygen-1.8.14.windows.x64.bin.zip/download", "C:\doxygen.zip")
