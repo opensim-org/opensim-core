@@ -1,6 +1,6 @@
 
 file(GLOB TEST_PROGS "test*.cpp")
-file(GLOB TEST_FILES *.osim *.xml *.sto *.mot *.trc)
+file(GLOB TEST_FILES *.osim *.xml *.sto)
 
 OpenSimAddTests(
     TESTPROGRAMS ${TEST_PROGS}

@@ -12,7 +12,7 @@
 		<!--Name/path to a .trc or .sto file of type Vec3 of marker data.-->
 		<marker_file_name> </marker_file_name>
 		<!--Name/path to a .sto file of sensor frame orientations as quaternions.-->
-		<orientations_file_name>S07_IMU/imu_walking_25s.sto</orientations_file_name>
+		<orientations_file_name>imu_walking_25s.sto</orientations_file_name>
 		<results_directory>.</results_directory>
 	</InverseKinematicsStudy>
 </OpenSimDocument>
