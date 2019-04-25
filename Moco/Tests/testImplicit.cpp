@@ -17,12 +17,13 @@
  * -------------------------------------------------------------------------- */
 #define CATCH_CONFIG_MAIN
 #include "Testing.h"
-#include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
-#include <OpenSim/Actuators/CoordinateActuator.h>
-#include <Moco/osimMoco.h>
-#include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
-#include <OpenSim/Common/LogManager.h>
 #include <Moco/Components/AccelerationMotion.h>
+#include <Moco/osimMoco.h>
+
+#include <OpenSim/Actuators/CoordinateActuator.h>
+#include <OpenSim/Common/LogManager.h>
+#include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
+#include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
 
 using namespace OpenSim;
 using namespace Catch;
@@ -84,13 +85,13 @@ MocoSolution solveDoublePendulumSwingup(const std::string& dynamics_mode) {
     auto& solver = moco.initSolver<SolverType>();
     solver.set_dynamics_mode(dynamics_mode);
     solver.set_num_mesh_points(N);
-    //solver.set_verbosity(2);
+    // solver.set_verbosity(2);
 
     MocoIterate guess = solver.createGuess();
     guess.resampleWithNumTimes(2);
     guess.setTime({0, 1});
     guess.setState("/jointset/j0/q0/value", {0, -SimTK::Pi});
-    guess.setState("/jointset/j1/q1/value", {0, 2*SimTK::Pi});
+    guess.setState("/jointset/j1/q1/value", {0, 2 * SimTK::Pi});
     guess.setState("/jointset/j0/q0/speed", {0, 0});
     guess.setState("/jointset/j1/q1/speed", {0, 0});
     guess.setControl("/tau0", {0, 0});
@@ -108,7 +109,6 @@ MocoSolution solveDoublePendulumSwingup(const std::string& dynamics_mode) {
     // moco.visualize(solution);
 
     return solution;
-
 }
 
 TEMPLATE_TEST_CASE("Similar solutions between implicit and explicit dynamics",
@@ -128,14 +128,13 @@ TEMPLATE_TEST_CASE("Similar solutions between implicit and explicit dynamics",
         CAPTURE(solutionImplicit.getFinalTime(), solution.getFinalTime());
 
         const double stateError =
-                solutionImplicit.compareContinuousVariablesRMS(solution,
-                        {}, /* controlNames: */ {"none"}, {"none"},
-                        /* derivativeNames: */ {"none"});
+                solutionImplicit.compareContinuousVariablesRMS(
+                        solution, {{"states", {}}});
 
         // There is more deviation in the controls.
         const double controlError =
-                solutionImplicit.compareContinuousVariablesRMS(solution,
-                        {"none"}, /* controlNames: */ {}, {"none"}, {"none"});
+                solutionImplicit.compareContinuousVariablesRMS(
+                        solution, {{"controls", {}}});
 
         CAPTURE(stateError, controlError);
 
@@ -147,11 +146,10 @@ TEMPLATE_TEST_CASE("Similar solutions between implicit and explicit dynamics",
 
         // Accelerations are correct.
         auto table = solution.exportToStatesTable();
-        GCVSplineSet splines(table,
-                {"/jointset/j0/q0/speed", "/jointset/j1/q1/speed"});
+        GCVSplineSet splines(
+                table, {"/jointset/j0/q0/speed", "/jointset/j1/q1/speed"});
         OpenSim::Array<double> explicitAccel;
-        SimTK::Matrix derivTraj(
-                (int)table.getIndependentColumn().size(), 2);
+        SimTK::Matrix derivTraj((int)table.getIndependentColumn().size(), 2);
         int i = 0;
         for (const auto& explicitTime : table.getIndependentColumn()) {
             splines.evaluate(explicitAccel, 1, explicitTime);
@@ -159,12 +157,11 @@ TEMPLATE_TEST_CASE("Similar solutions between implicit and explicit dynamics",
             derivTraj(i, 1) = explicitAccel[1];
             ++i;
         }
-        SimTK::Matrix empty;
         MocoIterate explicitWithDeriv(solution.getTime(),
-                {}, {}, {}, solutionImplicit.getDerivativeNames(), {},
-                empty, empty, empty, derivTraj, SimTK::RowVector());
+                {{"derivatives",
+                        {solutionImplicit.getDerivativeNames(), derivTraj}}});
         const double RMS = solutionImplicit.compareContinuousVariablesRMS(
-                explicitWithDeriv, {"none"}, {"none"}, {"none"}, {});
+                explicitWithDeriv, {{"derivatives", {}}});
         CAPTURE(RMS);
         CHECK(RMS < 35.0);
     }
@@ -238,7 +235,6 @@ TEMPLATE_TEST_CASE("Combining implicit dynamics with kinematic constraints",
             // Only check at the mesh points.
             for (int i = 0; i < q0value.size(); i += 2) {
                 SimTK_TEST_EQ_TOL(q0value[i], q1value[i], 1e-6);
-
             }
         }
     }
@@ -248,24 +244,19 @@ SCENARIO("Using MocoIterate with the implicit dynamics mode",
         "[implicit][iterate]") {
     GIVEN("MocoIterate with only derivatives") {
         MocoIterate iterate;
-        const_cast<SimTK::Matrix*>(&iterate.
-                getDerivativesTrajectory())->resize(3, 2);
-        THEN("it is not empty") {
-            REQUIRE(!iterate.empty());
-        }
+        const_cast<SimTK::Matrix*>(&iterate.getDerivativesTrajectory())
+                ->resize(3, 2);
+        THEN("it is not empty") { REQUIRE(!iterate.empty()); }
     }
     GIVEN("MocoIterate with only derivative names") {
         MocoIterate iterate;
-        const_cast<std::vector<std::string>*>(&iterate.
-                getDerivativeNames())->resize(3);
-        THEN("it is not empty") {
-            REQUIRE(!iterate.empty());
-        }
+        const_cast<std::vector<std::string>*>(&iterate.getDerivativeNames())
+                ->resize(3);
+        THEN("it is not empty") { REQUIRE(!iterate.empty()); }
     }
     GIVEN("MocoIterate with derivative data") {
-        MocoIterate iter(createVectorLinspace(6, 0, 1),
-                {}, {}, {}, {"a", "b"}, {},
-                {}, {}, {}, {6, 2, 0.5}, {});
+        MocoIterate iter(createVectorLinspace(6, 0, 1), {}, {}, {}, {"a", "b"},
+                {}, {}, {}, {}, {6, 2, 0.5}, {});
         WHEN("calling setNumTimes()") {
             REQUIRE(iter.getDerivativesTrajectory().nrow() != 4);
             iter.setNumTimes(4);
@@ -286,12 +277,10 @@ SCENARIO("Using MocoIterate with the implicit dynamics mode",
     GIVEN("two MocoIterates with different derivative data") {
         const double valueA = 0.5;
         const double valueB = 0.499999;
-        MocoIterate iterA(createVectorLinspace(6, 0, 1),
-                {}, {}, {}, {"a", "b"}, {},
-                {}, {}, {}, {6, 2, valueA}, {});
-        MocoIterate iterB(createVectorLinspace(6, 0, 1),
-                {}, {}, {}, {"a", "b"}, {},
-                {}, {}, {}, {6, 2, valueB}, {});
+        MocoIterate iterA(createVectorLinspace(6, 0, 1), {}, {}, {}, {"a", "b"},
+                {}, {}, {}, {}, {6, 2, valueA}, {});
+        MocoIterate iterB(createVectorLinspace(6, 0, 1), {}, {}, {}, {"a", "b"},
+                {}, {}, {}, {}, {6, 2, valueB}, {});
         THEN("not numerically equal") {
             REQUIRE(!iterA.isNumericallyEqual(iterB));
         }
@@ -325,4 +314,3 @@ TEST_CASE("AccelerationMotion") {
     model.realizeAcceleration(state);
     CHECK(state.getUDot()[0] == Approx(0).margin(1e-10));
 }
-

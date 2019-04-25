@@ -433,6 +433,68 @@ std::unordered_map<std::string, int> OpenSim::createSystemYIndexMap(
     return sysYIndices;
 }
 
+std::vector<std::string> OpenSim::createControlNamesFromModel(
+    const Model& model) {
+    std::vector<std::string> controlNames;
+    // Loop through all actuators and create control names. For scalar actuators,
+    // use the actuator name for the control name. For non-scalar actuators,
+    // use the actuator name with a control index appended for the control name.
+    // TODO update when OpenSim supports named controls.
+    for (const auto& actu : model.getComponentList<Actuator>()) {
+        std::string actuPath = actu.getAbsolutePathString();
+        if (actu.numControls() == 1) {
+            controlNames.push_back(actuPath);
+        } else {
+            for (int i = 0; i < actu.numControls(); ++i) {
+                controlNames.push_back(actuPath + "_" + std::to_string(i));
+            }
+        }
+    }
+
+    return controlNames;
+}
+
+std::unordered_map<std::string, int> OpenSim::createSystemControlIndexMap(
+    const Model& model) {
+    // We often assume that control indices in the state are in the same order
+    // as the actuators in the model. However, the control indices are 
+    // allocated in the order in which addToSystem() is invoked (not 
+    // necessarily the order used by getComponentList()). So until we can be 
+    // absolutely sure that the controls are in the same order as actuators, 
+    // we can run the following check: in order, set an actuator's control 
+    // signal(s) to NaN and ensure the i-th control is NaN.
+    // TODO update when OpenSim supports named controls.
+    std::unordered_map<std::string, int> controlIndices;
+    const SimTK::State state = model.getWorkingState();
+    auto modelControls = model.updControls(state);
+    int i = 0;
+    for (const auto& actu : model.getComponentList<Actuator>()) {
+        int nc = actu.numControls();
+        SimTK::Vector origControls(nc);
+        SimTK::Vector nan(nc, SimTK::NaN);
+        actu.getControls(modelControls, origControls);
+        actu.setControls(nan, modelControls);
+        std::string actuPath = actu.getAbsolutePathString();
+        for (int j = 0; j < nc; ++j) {
+            OPENSIM_THROW_IF(!SimTK::isNaN(modelControls[i]),
+                Exception, "Internal error: actuators are not in the "
+                "expected order. Submit a bug report.");
+            if (nc == 1) {
+                controlIndices[actuPath] = i;
+            } else {
+                controlIndices[format("%s_%i", actuPath, j)] = i;
+            }
+            ++i;
+        }
+        actu.setControls(origControls, modelControls);
+    }
+    return controlIndices;
+}
+
+void OpenSim::checkOrderSystemControls(const Model& model) {
+    createSystemControlIndexMap(model);
+}
+
 std::string OpenSim::format_c(const char* format, ...) {
     // Get buffer size.
     va_list args;
