@@ -35,7 +35,7 @@ public:
     /// index starting at 0), a PinJoint `/jointset/j#` with coordinate
     /// `/jointset/j#/q#`, a CoordinateActuator `/tau#`, a Marker
     /// `/markerset/marker#` at the origin of the link's body, and a
-    /// PhysicalOffsetFrame `/b#center` at the center of the link.
+    /// PhysicalOffsetFrame \c /b\#center at the center of the link.
     static Model createNLinkPendulum(int numLinks);
     /// This is a convenience for `createNLinkPendulum(1)`.
     static Model createPendulum() { return createNLinkPendulum(1); }
@@ -53,7 +53,7 @@ public:
     /// @{
 
     /// Add CoordinateActuator%s for each unconstrained coordinate (e.g.,
-    /// !Coordinate::isConstrained()) in the model, using the provided optimal
+    /// `! Coordinate::isConstrained()`) in the model, using the provided optimal
     /// force. Increasing the optimal force decreases the required control
     /// signal to generate a given actuation level. The actuators are added to
     /// the model's ForceSet and are named "reserve_<coordinate-path>" with

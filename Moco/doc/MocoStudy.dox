@@ -1,0 +1,167 @@
+namespace OpenSim {
+
+/**
+@page mocostudy MocoStudy: generic problems
+
+MocoStudy allows one to solve a generic optimal control problem, where the
+costs, constraints, and solver settings are fully defined by the user. That is,
+we solve the following problem:
+
+\f[
+    \begin{alignat*}{2}
+		\mbox{minimize} \quad & J_E(t_0, t_f, y_0, y_f, x_0, x_f, \lambda_0, \lambda_f, p)
+		 + \int_{t_0}^{t_f} J_I(t, y, x, \lambda, p)~dt &&  \\
+		\mbox{subject to} \quad & \dot{q} = u \\
+		 & M(q, p)\dot{u} + f_{\textrm{bias}}(q, u, p) + G(q, p)^T \lambda = f_{\textrm{app}}(t, y, x, p) \\
+		 & \dot{z}(t) = f_{\textrm{aux}}(t, y, x, p) \\
+		 & 0 = \phi(q, p) \\
+		 & 0 = \psi(q, u, p) \\
+		 & 0 = \eta(q, u, \dot{u}, p) \\
+		 & g_{\textrm{min}} \leq g(t, y, x, p) \leq g_{\textrm{max}} \\
+		 & y_{\textrm{min}} \leq y \leq y_{\textrm{max}} \\
+		 & x_{\textrm{min}} \leq x \leq x_{\textrm{max}} \\
+		 & p_{\textrm{min}} \leq p \leq p_{\textrm{max}} \\
+		 & t_{0,\textrm{min}} \leq t_0 \leq t_{0,\textrm{max}} \\
+		 & t_{f,\textrm{min}} \leq t_f \leq t_{f,\textrm{max}}
+	\end{alignat*}
+\f]
+
+We use the following notation:
+
+- \f$ t \f$: time
+- \f$ q(t) \f$: generalized coordinates
+- \f$ u(t) \f$: generalized speeds
+- \f$ z(t) \f$: auxiliary states (muscle fiber length and activation)
+- \f$ y(t) = (q(t), u(t), z(t))\f$
+- \f$ x(t) \f$: controls (including muscle activation)
+- \f$ p \f$: constant parameters
+- \f$ \lambda \f$: kinematic constraint multipliers
+- \f$ J_E \f$: endpoint cost
+- \f$ J_I \f$: integrand of the integral cost
+- \f$ M \f$: mass matrix
+- \f$ f_{\textrm{bias}} \f$: centripetal and coriolis forces
+- \f$ G \f$: kinematic constraint Jacobian
+- \f$ f_{\textrm{app}} \f$: applied forces (gravity, muscles, etc.)
+- \f$ f_{\textrm{aux}} \f$: auxiliary dynamics (muscle activation dynamics, etc.)
+- \f$ \phi \f$: position-level (holonomic) kinematic constraints
+- \f$ \psi \f$: velocity-level (non-holonomic) kinematic constraints and first time derivative of position-level constraints
+- \f$ \psi \f$: acceleration-level constraints, first derivative of velocity-level and second derivative of position-level constraints
+- \f$ g \f$: path constraints
+
+We start with a MATLAB code example.
+
+@section Example
+
+TODO
+
+To solve a custom The interface to Moco starts with the MocoStudy. The MocoStudy contains a
+MocoProblem and a MocoSolver.
+
+  - MocoProblem: describes the variables, dynamics, constraints, and cost
+      functional of the optimal control problem, using an OpenSim model.
+  - MocoSolver: solves the MocoProblem using direct collocation.
+
+
+@section Workflow
+
+When building a MocoStudy programmatically (e.g., in C++), the workflow is as
+follows:
+
+1. Build the MocoProblem (set the model, constraints, etc.).
+2. Call MocoStudy::initTropterSolver() (or MocoStudy::initCasADiSolver()), which
+   returns a reference to a MocoSolver.
+3. Edit the settings of the MocoSolver (returned by initSolver()).
+4. Call MocoStudy::solve(). This returns the MocoSolution.
+5. (Optional) Postprocess the solution, perhaps using MocoStudy::visualize().
+
+After calling MocoStudy::solve(), you can edit the MocoProblem and/or the
+MocoSolver and call MocoStudy::solve() again, if you wish.
+
+
+@section MocoProblem
+
+A MocoProblem contains multiple phases.
+
+TODO describe bounds (set automatically based on the model).
+
+    ///     The bounds on this state variable over the entire phase. If
+    ///     default-constructed (`{}`), and the state is *not* a coordinate
+    ///     value, then no bounds are applied. If default-constructed, the state
+    ///     *is* a coordinate value and the coordinate's **clamped** property is
+    ///     true, then the bounds are set to the coordinate's **range** (see
+    ///     Coordinate::clamped and Coordinate::range). (TODO)
+
+@subsection costfunctional Defining the cost functional
+
+See @ref mococost for more information.
+
+@section MocoSolver
+
+A MocoSolver attempts to use an optimal control method to solve the MocoProblem,
+and exposes the settings that you can use to
+
+@subsection MocoTropterSolver
+
+@par Dynamics mode: implicit
+
+When using the implicit dynamics mode, the differential equations for multibody
+dynamics are expressed as implicit differential equations. That is, they are
+in the form \f$ 0 = f(x, \dot{x}) \f$ rather than \f$ \dot{x} = f(x) \f$.
+
+The following are not currently supported with implicit dynamics:
+
+1. Auxiliary dynamics (e.g., activation and fiber dynamics).
+2. Acceleration-level quantities (e.g., MocoJointReactionNormCost).
+3. Kinematic constraints.
+
+
+@subsection Kinematic constraints
+
+Moco supports enforcing OpenSim kinematic constraints in optimal control
+problems. When the MocoTropterSolver is initialized, any kinematic constraints
+enabled in the model are automatically detected, and additional information
+about each constraint is stored. This information includes the number of scalar
+path constraints (including derivatives if they exist), the scalar constraint
+kinematic levels (i.e. holonomic, non-holonomic, or acceleration), and the
+number of Lagrange multipliers that are added to the problem to enforce the
+constraints.
+
+MocoTropterSolver has options if the user desires to enforce kinematic
+constraint derivatives or minimize Lagrange multipliers in the problem.
+
+\code{.cpp}
+MocoTropterSolver& solver = moco.initTropterSolver();
+ms.set_enforce_constraint_derivatives(true);
+ms.set_lagrange_multiplier_weight(10);
+\endcode
+
+If constraint derivatives are enforced, velocity correction variables are added
+to the problem according to the method described in Posa, Kuindersma, and
+Tedrake, 2016, "Optimization and stabilization of trajectories for constrained
+dynamical systems." It is also possible to modify the default bounds on these
+velocity correction variables:
+
+\code{.cpp}
+// Default bounds: [-0.1, 0.1]
+ms.set_velocity_correction_bounds({-0.25, 0.25});
+\endcode
+
+If constraint derivatives are not enforced or if the multibody constraint
+Jacobian is rank-deficient, it is recommended that the Lagrange multiplier
+minimization term is added to the problem to provide impose uniqueness for
+these variables.
+
+@section tips Tips for solving a custom problem
+
+1. Make sure every variable has bounds.
+
+*/
+
+/**
+@defgroup mococost Available cost terms
+
+These are the available cost terms you can use in your cost functional. If none
+of these satisfy your needs, you can define your own using a plugin.
+*/
+
+} // namespace OpenSim
