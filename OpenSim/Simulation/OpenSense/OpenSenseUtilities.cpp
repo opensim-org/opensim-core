@@ -188,7 +188,7 @@ void OpenSenseUtilities::calibrateModelFromOrientations(const string& modelCalib
             cout << "Offset is " << R_FB << endl;
             PhysicalOffsetFrame* imuOffset = nullptr;
             const PhysicalOffsetFrame* mo = nullptr;
-            if (mo = model.findComponent<PhysicalOffsetFrame>(imuName)) {
+            if ((mo = model.findComponent<PhysicalOffsetFrame>(imuName))) {
                 imuOffset = const_cast<PhysicalOffsetFrame*>(mo);
                 auto X = imuOffset->getOffsetTransform();
                 X.updR() = R_FB;
