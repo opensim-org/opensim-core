@@ -22,8 +22,12 @@
 
 namespace OpenSim {
 
-/// Bounds on continuous variables (states, controls). The name should
-/// correspond to path of a state variable or an actuator in the model.
+/// Bounds on continuous variables (states, controls, multipliers, etc). For 
+/// states, the name should correspond to a path of a state variable in the 
+/// model. For controls, the name should correspond to a path of an actuator
+/// in the model, or, for controls associated with actuators that have more than 
+/// one control, the path of an actuator in the model appended by the control 
+/// index (e.g. "/actuator_0").
 class OSIMMOCO_API MocoVariableInfo : public Object {
 OpenSim_DECLARE_CONCRETE_OBJECT(MocoVariableInfo, Object);
 public:

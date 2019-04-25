@@ -31,6 +31,7 @@
 #include "MocoCost/MocoMarkerTrackingCost.h"
 #include "MocoCost/MocoMarkerEndpointCost.h"
 #include "MocoCost/MocoControlCost.h"
+#include "MocoCost/MocoControlTrackingCost.h"
 #include "MocoCost/MocoJointReactionNormCost.h"
 #include "MocoParameter.h"
 
@@ -60,6 +61,7 @@ OSIMMOCO_API void RegisterTypes_osimMoco() {
         Object::registerType(MocoMarkerTrackingCost());
         Object::registerType(MocoMarkerEndpointCost());
         Object::registerType(MocoControlCost());
+        Object::registerType(MocoControlTrackingCost());
         Object::registerType(MocoJointReactionNormCost());
         Object::registerType(MocoBounds());
         Object::registerType(MocoInitialBounds());
