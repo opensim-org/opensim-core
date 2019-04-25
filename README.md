@@ -71,7 +71,7 @@ ex: `cd /Users/xxxx/Documents/github/opensim-moco`
 
 Run build_on_mac from the terminal.
 
-ex `./build_on_mac`
+ex `./build_on_mac.sh`
 
 
 Windows
