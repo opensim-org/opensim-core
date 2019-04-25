@@ -18,6 +18,7 @@
 
 #include "MocoControlCost.h"
 #include <OpenSim/Simulation/Model/Model.h>
+#include "../MocoUtilities.h"
 
 using namespace OpenSim;
 
@@ -40,45 +41,17 @@ void MocoControlCost::setWeight(
 
 void MocoControlCost::initializeOnModelImpl(const Model& model) const {
 
-    std::vector<std::string> actuPaths;
-    const auto modelPath = model.getAbsolutePath();
-    for (const auto& actu : model.getComponentList<Actuator>()) {
-        OPENSIM_THROW_IF_FRMOBJ(actu.numControls() != 1, Exception,
-                "Currently, only ScalarActuators are supported.");
-        actuPaths.push_back(
-                actu.getAbsolutePath().formRelativePath(modelPath).toString());
-    }
+    // Get all expected control names.
+    auto controlNames = createControlNamesFromModel(model);
 
-    // TODO this assumes controls are in the same order as actuators.
-    // The loop that processes weights (two down) assumes that controls are in
-    // the same order as actuators. However, the control indices are allocated
-    // in the order in which addToSystem() is invoked (not necessarily the order
-    // used by getComponentList()). So until we can be absolutely sure that the
-    // controls are in the asme order as actuators, we run the following check:
-    // in order, set an actuator's control signal to NaN and ensure the i-th
-    // control is NaN.
-    {
-        SimTK::Vector nan(1, SimTK::NaN);
-        const SimTK::State state = model.getWorkingState();
-        int i = 0;
-        auto modelControls = model.updControls(state);
-        for (const auto& actu : model.getComponentList<Actuator>()) {
-            SimTK::Vector origControls(1);
-            actu.getControls(modelControls, origControls);
-            actu.setControls(nan, modelControls);
-            OPENSIM_THROW_IF_FRMOBJ(!SimTK::isNaN(modelControls[i]), Exception,
-                    "Internal error: actuators are not in the expected order. "
-                    "Submit a bug report.");
-            actu.setControls(origControls, modelControls);
-            ++i;
-        }
-    }
+    // Check that the model controls are in the correct order.
+    checkOrderSystemControls(model);
     
     // Make sure there are no weights for nonexistent controls.
     for (int i = 0; i < get_control_weights().getSize(); ++i) {
         const auto& thisName = get_control_weights()[i].getName();
-        if (std::find(actuPaths.begin(), actuPaths.end(), thisName) ==
-                actuPaths.end()) {
+        if (std::find(controlNames.begin(), controlNames.end(), thisName) ==
+                controlNames.end()) {
             OPENSIM_THROW_FRMOBJ(Exception,
                     "Unrecognized control '" + thisName + "'.");
         }
@@ -86,10 +59,10 @@ void MocoControlCost::initializeOnModelImpl(const Model& model) const {
 
     m_weights.resize(model.getNumControls());
     int i = 0;
-    for (const auto& actuPath : actuPaths) {
+    for (const auto& controlName : controlNames) {
         double weight = 1.0;
-        if (get_control_weights().contains(actuPath)) {
-            weight = get_control_weights().get(actuPath).getWeight();
+        if (get_control_weights().contains(controlName)) {
+            weight = get_control_weights().get(controlName).getWeight();
         }
         m_weights[i] = weight;
         ++i;

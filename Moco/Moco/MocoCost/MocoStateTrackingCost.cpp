@@ -75,13 +75,9 @@ void MocoStateTrackingCost::initializeOnModelImpl(const Model& model) const {
     // names in the references that don't correspond to a state variable. 
     for (int iref = 0; iref < allSplines.getSize(); ++iref) {
         const auto& refName = allSplines[iref].getName();
-        if (allSysYIndices.count(refName) == 0) {
-            if (get_allow_unused_references()) {
-                continue;
-            } else {
-                OPENSIM_THROW_FRMOBJ(Exception,
-                    "State '" + refName + "' unrecognized.");
-            }
+        if (!get_allow_unused_references()) {
+            OPENSIM_THROW_IF_FRMOBJ(allSysYIndices.count(refName) == 0,
+                Exception, "State reference '" + refName + "' unrecognized.");
         }
 
         m_sysYIndices.push_back(allSysYIndices[refName]);
@@ -102,6 +98,7 @@ void MocoStateTrackingCost::calcIntegralCostImpl(/*int meshIndex,*/
 
     // TODO cache the reference coordinate values at the mesh points, rather
     // than evaluating the spline.
+    integrand = 0;
     for (int iref = 0; iref < m_refsplines.getSize(); ++iref) {
         const auto& modelValue = state.getY()[m_sysYIndices[iref]];
         const auto& refValue = m_refsplines[iref].calcValue(timeVec);

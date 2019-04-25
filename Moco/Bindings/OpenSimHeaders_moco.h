@@ -20,5 +20,6 @@
 #include <Moco/MocoTool.h>
 #include <Moco/Components/ActivationCoordinateActuator.h>
 #include <Moco/MocoUtilities.h>
+#include <Moco/Components/ModelFactory.h>
 
 #endif // MOCO_OPENSIM_HEADERS_MOCO_H_

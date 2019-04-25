@@ -126,7 +126,12 @@ public:
     /// default_speed_bounds property is used.
     const MocoVariableInfo& getStateInfo(const std::string& name) const;
     /// Get information for actuator controls. If info was not specified for
-    /// an actuator, the actuator's min and max control are used for the bounds.
+    /// an actuator derived from OpenSim::ScalarActuator, the actuator's min 
+    /// and max control are used for the bounds; otherwise, the bounds are 
+    /// (-inf, inf).
+    /// If the control is associated with a non-scalar actuator (i.e. uses 
+    /// multiple control variables), then the control name will be the actuator 
+    /// path appended by the control index (e.g. "/actuator_0");
     const MocoVariableInfo& getControlInfo(const std::string& name) const;
     const MocoParameter& getParameter(const std::string& name) const;
     /// Get a MocoPathConstraint from this MocoPhase. Note: this does not

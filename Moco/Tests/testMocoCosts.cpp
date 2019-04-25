@@ -1,9 +1,9 @@
 /* -------------------------------------------------------------------------- *
  * OpenSim Moco: testMocoCosts.cpp                                            *
  * -------------------------------------------------------------------------- *
- * Copyright (c) 2017 Stanford University and the Authors                     *
+ * Copyright (c) 2019 Stanford University and the Authors                     *
  *                                                                            *
- * Author(s): Christopher Dembia                                              *
+ * Author(s): Christopher Dembia, Nicholas Bianco                             *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -16,6 +16,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
+#define CATCH_CONFIG_MAIN
+#include "Testing.h"
 #include <Moco/osimMoco.h>
 #include <OpenSim/Simulation/SimbodyEngine/SliderJoint.h>
 #include <OpenSim/Actuators/CoordinateActuator.h>
@@ -45,8 +47,8 @@ std::unique_ptr<Model> createSlidingMassModel() {
 }
 
 /// Test the result of a sliding mass minimum effort problem.
-template <typename SolverType>
-void testMocoControlCost() {
+TEMPLATE_TEST_CASE("Test MocoControlCost", "", MocoTropterSolver,
+        MocoCasADiSolver) {
     int N = 10;
     MocoSolution sol1;
     {
@@ -61,7 +63,7 @@ void testMocoControlCost() {
 
         mp.addCost<MocoControlCost>();
 
-        auto& ms = moco.initSolver<SolverType>();
+        auto& ms = moco.initSolver<TestType>();
         ms.set_num_mesh_points(N);
 
         sol1 = moco.solve();
@@ -140,9 +142,9 @@ void testMocoControlCost() {
         mp.setControlInfo("/actuator2", MocoBounds(-10, 10));
 
         auto effort = mp.addCost<MocoControlCost>();
-        effort->setWeight("actuator2", 2.0);
+        effort->setWeight("/actuator2", 2.0);
 
-        auto& ms = moco.initSolver<SolverType>();
+        auto& ms = moco.initSolver<TestType>();
         ms.set_num_mesh_points(N);
 
         sol2 = moco.solve();
@@ -184,7 +186,7 @@ void testMocoControlCost() {
 }
 
 /// Make sure that multiple costs are added together properly.
-void testMultipleCosts() {
+TEST_CASE("Test multiple costs.") {
     MocoTool moco;
     MocoProblem& problem = moco.updProblem();
 
@@ -201,10 +203,50 @@ void testMultipleCosts() {
     SimTK_TEST_EQ(cost, (ft0->get_weight() + ft1->get_weight() ) * ft);
 }
 
-int main() {
-    SimTK_START_TEST("testMocoCosts");
-        SimTK_SUBTEST(testMocoControlCost<MocoTropterSolver>);
-        SimTK_SUBTEST(testMocoControlCost<MocoCasADiSolver>);
-        SimTK_SUBTEST(testMultipleCosts);
-    SimTK_END_TEST();
+TEMPLATE_TEST_CASE("Test MocoControlTrackingCost", "", MocoTropterSolver,
+        MocoCasADiSolver) {
+
+    using SimTK::Pi;
+    int N = 20;
+    const Model doublePendulum = ModelFactory::createNLinkPendulum(2);
+
+    // Start with double pendulum problem to minimize control effort to create
+    // a controls trajectory to track.
+    MocoTool moco;
+    auto& problem = moco.updProblem();
+    problem.setModelCopy(doublePendulum);
+    problem.addCost<MocoControlCost>("effort");
+    problem.setTimeBounds(0, 2);
+    problem.setControlInfo("/tau0", {-100, 100});
+    problem.setControlInfo("/tau1", {-100, 100});
+    problem.setStateInfo("/jointset/j0/q0/value", {-10, 10}, 0, Pi / 2);
+    problem.setStateInfo("/jointset/j0/q0/speed", {-50, 50}, 0, 0);
+    problem.setStateInfo("/jointset/j1/q1/value", {-10, 10}, Pi, 0);
+    problem.setStateInfo("/jointset/j0/q0/speed", {-50, 50}, 0, 0);
+
+    auto& solver = moco.initSolver<TestType>();
+    solver.set_num_mesh_points(20);
+    solver.set_optim_convergence_tolerance(1e-6);
+
+    auto solutionEffort = moco.solve();
+
+    // Re-run problem, now setting effort cost function to zero and adding 
+    // control tracking cost.
+    problem.updPhase(0).updCost("effort").set_weight(0);
+    auto* tracking =
+        problem.addCost<MocoControlTrackingCost>("control_tracking");
+    std::vector<double> time;
+    for (int i = 0; i < solutionEffort.getNumTimes(); ++i) {
+        time.push_back(solutionEffort.getTime()[i]);
+    }
+    TimeSeriesTable controlsRef(time, solutionEffort.getControlsTrajectory(),
+        solutionEffort.getControlNames());
+    tracking->setReference(controlsRef);
+    auto solutionTracking = moco.solve();
+
+    // Make sure control tracking problem matches control effort problem.
+    SimTK_TEST_EQ_TOL(solutionEffort.getControlsTrajectory(),
+        solutionTracking.getControlsTrajectory(), 1e-4);
+    SimTK_TEST_EQ_TOL(solutionEffort.getStatesTrajectory(),
+        solutionTracking.getStatesTrajectory(), 1e-4);
 }

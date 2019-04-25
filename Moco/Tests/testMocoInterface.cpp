@@ -21,6 +21,7 @@
 #include <Moco/osimMoco.h>
 
 #include <OpenSim/Actuators/CoordinateActuator.h>
+#include <OpenSim/Actuators/BodyActuator.h>
 #include <OpenSim/Common/LogManager.h>
 #include <OpenSim/Common/STOFileAdapter.h>
 #include <OpenSim/Simulation/Manager/Manager.h>
@@ -347,6 +348,11 @@ TEMPLATE_TEST_CASE("Workflow", "", MocoTropterSolver, MocoCasADiSolver) {
         MocoProblem& problem = moco.updProblem();
         auto model = createSlidingMassModel();
         model->finalizeFromProperties();
+        auto* bodyAct = new BodyActuator();
+        bodyAct->setName("residuals");
+        bodyAct->setBody(model->getComponent<Body>("body"));
+        model->addComponent(bodyAct);
+        model->finalizeFromProperties();
         auto& coord = model->updComponent<Coordinate>("slider/position");
         coord.setRangeMin(-10);
         coord.setRangeMax(15);
@@ -394,6 +400,28 @@ TEMPLATE_TEST_CASE("Workflow", "", MocoTropterSolver, MocoCasADiSolver) {
                 const auto& info = rep.getControlInfo("/actuator");
                 SimTK_TEST_EQ(info.getBounds().getLower(), 12);
                 SimTK_TEST_EQ(info.getBounds().getUpper(), 15);
+            }
+        }
+
+        problem.setControlInfo("/residuals_0", {-5, 5});
+        problem.setControlInfo("/residuals_3", {-7.5, 10});
+        {
+            {
+                const auto& probinfo0 = phase0.getControlInfo("/residuals_0");
+                SimTK_TEST_EQ(probinfo0.getBounds().getLower(), -5);
+                SimTK_TEST_EQ(probinfo0.getBounds().getUpper(), 5);
+                const auto& probinfo3 = phase0.getControlInfo("/residuals_3");
+                SimTK_TEST_EQ(probinfo3.getBounds().getLower(), -7.5);
+                SimTK_TEST_EQ(probinfo3.getBounds().getUpper(), 10);
+            }
+            MocoProblemRep rep = problem.createRep();
+            {
+                const auto& info0 = rep.getControlInfo("/residuals_0");
+                SimTK_TEST_EQ(info0.getBounds().getLower(), -5);
+                SimTK_TEST_EQ(info0.getBounds().getUpper(), 5);
+                const auto& info3 = rep.getControlInfo("/residuals_3");
+                SimTK_TEST_EQ(info3.getBounds().getLower(), -7.5);
+                SimTK_TEST_EQ(info3.getBounds().getUpper(), 10);
             }
         }
     }
@@ -1107,8 +1135,10 @@ TEST_CASE("MocoIterate") {
                         SimTK::RowVector());
                 // If error is constant:
                 // sqrt(1/(T*N) * integral_t (sum_i^N (err_{i,t}^2))) = err
-                auto rmsBA = b.compareContinuousVariablesRMS(a, statesToCompare,
-                        controlsToCompare, multipliersToCompare);
+                auto rmsBA = b.compareContinuousVariablesRMS(a,
+                        {{"states", statesToCompare},
+                         {"controls", controlsToCompare},
+                         {"multipliers", multipliersToCompare}});
                 int N = 0;
                 if (statesToCompare.empty())
                     N += NS;
@@ -1130,8 +1160,10 @@ TEST_CASE("MocoIterate") {
                     N += (int)multipliersToCompare.size();
                 auto rmsExpected = N == 0 ? 0 : error;
                 SimTK_TEST_EQ(rmsBA, rmsExpected);
-                auto rmsAB = a.compareContinuousVariablesRMS(b, statesToCompare,
-                        controlsToCompare, multipliersToCompare);
+                auto rmsAB = a.compareContinuousVariablesRMS(b,
+                        {{"states", statesToCompare},
+                         {"controls", controlsToCompare},
+                         {"multipliers", multipliersToCompare}});
                 SimTK_TEST_EQ(rmsAB, rmsExpected);
             };
 
