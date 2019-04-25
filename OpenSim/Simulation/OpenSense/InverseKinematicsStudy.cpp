@@ -233,7 +233,7 @@ bool InverseKinematicsStudy::run()
     }
 
     runInverseKinematicsWithOrientationsFromFile(modelWithIMUs,
-                                                 get_orientations_file_name(), true);
+                                                 get_orientations_file_name(), false);
 
     return true;
 }
