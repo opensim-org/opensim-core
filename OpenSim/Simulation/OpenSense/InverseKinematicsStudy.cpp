@@ -93,7 +93,7 @@ void InverseKinematicsStudy::
     std::cout << "press any key to visualize experimental marker data ..." << std::endl;
     std::cin >> c;
 
-    for (size_t j =startEnd.get(0); j <= startEnd.get(1); j=j+10) {
+    for (size_t j =startEnd[0]; j <= startEnd[1]; j=j+10) {
         std::cout << "time: " << times[j] << "s" << std::endl;
         state.setTime(times[j]);
         previewWorld.realizePosition(state);
@@ -235,7 +235,7 @@ bool InverseKinematicsStudy::run()
     return true;
 }
 
-OpenSim::Array<int> InverseKinematicsStudy::getTimeRangeInUse(
+SimTK::Array_<int> InverseKinematicsStudy::getTimeRangeInUse(
                                 const std::vector<double>& times ) const
 {
     int nt = static_cast<int>(times.size());
@@ -259,9 +259,9 @@ OpenSim::Array<int> InverseKinematicsStudy::getTimeRangeInUse(
             break;
         }
     }
-    OpenSim::Array<int> retArray;
-    retArray.append(startIx);
-    retArray.append(endIx);
+    SimTK::Array_<int> retArray;
+    retArray.push_back(startIx);
+    retArray.push_back(endIx);
     return retArray;
 }
 

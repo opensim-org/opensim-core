@@ -33,7 +33,7 @@ using namespace std;
 TimeSeriesTable_<SimTK::Rotation> OpenSenseUtilities::
     convertQuaternionsToRotations(
         const TimeSeriesTableQuaternion& qauternionsTable,
-       const OpenSim::Array<int>& startEnd)
+       const SimTK::Array_<int>& startEnd)
 {
     // Fixed transform to rotate sensor orientations in world with Z up into the 
     // OpenSim ground reference frame with Y up and X forward.
@@ -149,7 +149,7 @@ void OpenSenseUtilities::calibrateModelFromOrientations(const string& modelCalib
 
     // The rotations of the IMUs at the start time in order
     // the labels in the TimerSeriesTable of orientations
-    auto rotations = orientationsData.getRowAtIndex(0);
+    auto rotations = orientationsData.updRowAtIndex(0);
 
     SimTK::State& s0 = model.initSystem();
     s0.updTime() = times[0];

@@ -41,7 +41,7 @@ namespace OpenSim {
             to be averaged. By default just uses the first time frame.*/
         static TimeSeriesTableRotation  convertQuaternionsToRotations(
             const TimeSeriesTableQuaternion& qauternionsTable,
-            const OpenSim::Array<int>& startEnd= OpenSim::Array<int>(0)
+            const SimTK::Array_<int>& startEnd = { 0, 1 }
         );
         /// @}
         /** create a calibrated model from a raw model (unscaled)
