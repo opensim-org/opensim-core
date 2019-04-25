@@ -343,6 +343,8 @@ public:
     void setKinematicConstraintBounds(const MocoBounds& bounds);
     /// Set bounds for the Lagrange multipliers in phase 0.
     void setMultiplierBounds(const MocoBounds& bounds);
+    /// Returns a reference to the cost with name "name".
+    MocoCost& updCost(const std::string& name);
     /// Add a parameter variable for phase 0.
     /// @see MocoPhase::addParameter()
     template <typename MocoParamType = MocoParameter, typename... Args>

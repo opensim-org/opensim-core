@@ -181,3 +181,6 @@ void MocoProblem::setMultiplierBounds(const MocoBounds& bounds) {
 void MocoProblem::constructProperties() {
     constructProperty_phases(Array<MocoPhase>(MocoPhase(), 1));
 }
+MocoCost& MocoProblem::updCost(const std::string& name) {
+    return upd_phases(0).updCost(name);
+}

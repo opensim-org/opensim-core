@@ -201,10 +201,23 @@ void testMultipleCosts() {
     SimTK_TEST_EQ(cost, (ft0->get_weight() + ft1->get_weight() ) * ft);
 }
 
+void testEnabledCosts() {
+    double x = 23920;
+    MocoFinalTimeCost cost;
+    Model model;
+    auto state = model.initSystem();
+    state.setTime(x);
+    SimTK_TEST_EQ(cost.calcEndpointCost(state), x);
+    cost.set_enabled(false);
+    SimTK_TEST_EQ(cost.calcEndpointCost(state), 0);
+
+}
+
 int main() {
     SimTK_START_TEST("testMocoCosts");
         SimTK_SUBTEST(testMocoControlCost<MocoTropterSolver>);
         SimTK_SUBTEST(testMocoControlCost<MocoCasADiSolver>);
         SimTK_SUBTEST(testMultipleCosts);
+        SimTK_SUBTEST(testEnabledCosts);
     SimTK_END_TEST();
 }
