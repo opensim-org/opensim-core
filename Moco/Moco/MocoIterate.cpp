@@ -282,7 +282,7 @@ SimTK::VectorView MocoIterate::getMultiplier(const std::string& name) const {
     ensureUnsealed();
     auto it = std::find(m_multiplier_names.cbegin(), m_multiplier_names.cend(),
             name);
-    OPENSIM_THROW_IF(it == m_multiplier_names.cend(), Exception, 
+    OPENSIM_THROW_IF(it == m_multiplier_names.cend(), Exception,
             format("Cannot find multiplier named %s.", name));
     int index = (int)std::distance(m_multiplier_names.cbegin(), it);
     return m_multipliers.col(index);
@@ -963,12 +963,10 @@ void MocoIterate::ensureUnsealed() const {
 }
 
 void MocoSolution::convertToTableImpl(TimeSeriesTable& table) const {
-    if(m_success)
-    {
+    if(m_success) {
         table.updTableMetaData().setValueForKey(
                 "success", std::string("true"));
-    } else
-    {
+    } else {
         table.updTableMetaData().setValueForKey(
                 "success", std::string("false"));
     }
