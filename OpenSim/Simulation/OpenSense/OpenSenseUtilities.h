@@ -53,7 +53,8 @@ namespace OpenSim {
          */
         static void calibrateModelFromOrientations(
             const std::string& modelCalibrationPoseFile,
-            const std::string& calibrationOrientationsFile);
+            const std::string& calibrationOrientationsFile,
+            bool visualizeResult=true);
   
     }; // end of class OpenSenseUtilities
 }

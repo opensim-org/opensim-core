@@ -131,7 +131,7 @@ TimeSeriesTable_<SimTK::Rotation> OpenSenseUtilities::
 
 
 void OpenSenseUtilities::calibrateModelFromOrientations(const string& modelCalibrationPoseFile,
-    const string& calibrationOrientationsFile)
+    const string& calibrationOrientationsFile, bool visualizeResult)
 {
     Model model(modelCalibrationPoseFile);
 
@@ -221,26 +221,27 @@ void OpenSenseUtilities::calibrateModelFromOrientations(const string& modelCalib
     auto filename = "calibrated_" + model.getName() + ".osim";
     cout << "Wrote calibrated model to file: '" << filename << "'." << endl;
     model.print(filename);
+    if (visualizeResult) {
+        model.setUseVisualizer(true);
+        SimTK::State& s = model.initSystem();
 
-    model.setUseVisualizer(true);
-    SimTK::State& s = model.initSystem();
+        s.updTime() = times[0];
 
-    s.updTime() = times[0];
+        // create the solver given the input data
+        MarkersReference mRefs{};
+        OrientationsReference oRefs(orientationsData);
+        SimTK::Array_<CoordinateReference> coordRefs{};
 
-    // create the solver given the input data
-    MarkersReference mRefs{};
-    OrientationsReference oRefs(orientationsData);
-    SimTK::Array_<CoordinateReference> coordRefs{};
+        const double accuracy = 1e-4;
+        InverseKinematicsSolver ikSolver(model, mRefs, oRefs, coordRefs);
+        ikSolver.setAccuracy(accuracy);
 
-    const double accuracy = 1e-4;
-    InverseKinematicsSolver ikSolver(model, mRefs, oRefs, coordRefs);
-    ikSolver.setAccuracy(accuracy);
+        model.getVisualizer().getSimbodyVisualizer().setShowSimTime(true);
+        ikSolver.assemble(s);
+        model.getVisualizer().show(s);
 
-    model.getVisualizer().getSimbodyVisualizer().setShowSimTime(true);
-    ikSolver.assemble(s);
-    model.getVisualizer().show(s);
-
-    char c;
-    std::cout << "Press any key and return to close visualizer." << std::endl;
-    std::cin >> c;
+        char c;
+        std::cout << "Press any key and return to close visualizer." << std::endl;
+        std::cin >> c;
+    }
 }
