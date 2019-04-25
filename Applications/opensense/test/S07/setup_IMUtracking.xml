@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<OpenSimDocument Version="30511">
+	<InverseKinematicsStudy name="IMUtracking">
+		<!--The accuracy of the solution in absolute terms, i.e. the number of significant digits to which the solution can be trusted.-->
+		<accuracy>1.0000000000000001e-09</accuracy>
+		<!--The relative weighting of kinematic constraint errors. By default this is Infinity, which means constraints are strictly enforced as part of the optimization and are not appended to the objective (cost) function. Any other non-zero positive scalar is the penalty factor for constraint violations.-->
+		<constraint_weight>Inf</constraint_weight>
+		<!--The time range for the study.-->
+		<time_range>0 25.0</time_range>
+		<!--Name/path to the xml .osim file used to load a model to be analyzed.-->
+		<model_file_name>calibrated_Subject07.osim</model_file_name>
+		<!--Name/path to a .trc or .sto file of type Vec3 of marker data.-->
+		<marker_file_name> </marker_file_name>
+		<!--Name/path to a .sto file of sensor frame orientations as quaternions.-->
+		<orientations_file_name>S07_IMU/imu_walking_25s.sto</orientations_file_name>
+		<results_directory>.</results_directory>
+	</InverseKinematicsStudy>
+</OpenSimDocument>

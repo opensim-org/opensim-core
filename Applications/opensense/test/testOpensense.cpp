@@ -23,12 +23,8 @@
 
 
 // INCLUDES
-#include <OpenSim/Common/Storage.h>
-#include "OpenSim/Common/STOFileAdapter.h"
-#include "OpenSim/Common/TRCFileAdapter.h"
-#include <OpenSim/Common/Reporter.h>
-#include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
+#include <OpenSim/Simulation/OpenSense/OpenSenseUtilities.h>
+#include <OpenSim/Simulation/OpenSense/InverseKinematicsStudy.h>
 
 using namespace OpenSim;
 using namespace std;
@@ -38,7 +34,12 @@ int main()
 {
     int itc = 0;
 
-
+    // Calibrate model and comapre result to standard
+    OpenSenseUtilities::calibrateModelFromOrientations("S07/subject07.osim", "S07/S07_IMU/imuOrientations.sto");
+    // Previous line produces a model with same name but "calibrated_" prefix.
+    InverseKinematicsStudy ik("setup_IMUtracking.xml");
+    // RUN
+    ik.run();
     std::cout << "Done. All testOpensense cases passed." << endl;
     return 0;
 }

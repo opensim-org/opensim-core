@@ -43,12 +43,18 @@ namespace OpenSim {
             const TimeSeriesTableQuaternion& qauternionsTable,
             const OpenSim::Array<int>& startEnd= OpenSim::Array<int>(0)
         );
-
+        /// @}
+        /** create a calibrated model from a raw model (unscaled)
+            Assumptions about the model: ???
+            modelCalibrationPoseFile is model file where default pose matches that used to collect 
+                calibrationOrientationsFile.
+            calibrationOrientationsFile is a storage file with IMU orientations expressed
+                as Quaternions.
+         */
         static void calibrateModelFromOrientations(
             const std::string& modelCalibrationPoseFile,
             const std::string& calibrationOrientationsFile);
-        /// @}
-
+  
     }; // end of class OpenSenseUtilities
 }
 #endif // OPENSENSE_UTILITIES_H_
