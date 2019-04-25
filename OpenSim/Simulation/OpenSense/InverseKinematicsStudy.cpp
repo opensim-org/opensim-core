@@ -102,8 +102,9 @@ void InverseKinematicsStudy::
 }
 
 void InverseKinematicsStudy::
-    runInverseKinematicsWithOrientationsFromFile(Model& model,
-                                        const std::string& orientationsFileName)
+runInverseKinematicsWithOrientationsFromFile(Model& model,
+    const std::string& orientationsFileName,
+    bool visualizeResults)
 {
     // Add a reporter to get IK computed coordinate values out
     TableReporter* ikReporter = new TableReporter();
@@ -125,7 +126,7 @@ void InverseKinematicsStudy::
 
     TimeSeriesTable_<SimTK::Quaternion> quatTable =
         STOFileAdapter_<SimTK::Quaternion>::read(orientationsFileName);
-    std::cout << "Loading orientations as quaternions from " 
+    std::cout << "Loading orientations as quaternions from "
         << orientationsFileName << std::endl;
 
     auto startEnd = getTimeRangeInUse(quatTable.getIndependentColumn());
@@ -139,7 +140,8 @@ void InverseKinematicsStudy::
     SimTK::Array_<CoordinateReference> coordinateReferences;
 
     // visualize for debugging
-    model.setUseVisualizer(true);
+    if (visualizeResults)
+        model.setUseVisualizer(true);
     SimTK::State& s0 = model.initSystem();
 
     double t0 = s0.getTime();
@@ -154,13 +156,14 @@ void InverseKinematicsStudy::
 
     s0.updTime() = times[0];
     ikSolver.assemble(s0);
-    model.getVisualizer().show(s0);
-    model.getVisualizer().getSimbodyVisualizer().setShowSimTime(true);
-
+    if (visualizeResults) {
+        model.getVisualizer().show(s0);
+        model.getVisualizer().getSimbodyVisualizer().setShowSimTime(true);
+    }
     for (auto time : times) {
         s0.updTime() = time;
         ikSolver.track(s0);
-        model.getVisualizer().show(s0);
+        if (visualizeResults)  model.getVisualizer().show(s0);
         // realize to report to get reporter to pull values from model
         model.realizeReport(s0);
     }
@@ -230,7 +233,7 @@ bool InverseKinematicsStudy::run()
     }
 
     runInverseKinematicsWithOrientationsFromFile(modelWithIMUs,
-                                                 get_orientations_file_name());
+                                                 get_orientations_file_name(), true);
 
     return true;
 }

@@ -116,7 +116,7 @@ public:
     SimTK::Array_<int> getTimeRangeInUse(const std::vector<double>& times) const;
 
     void runInverseKinematicsWithOrientationsFromFile(Model& model,
-                            const std::string& quaternionStoFileName);
+                            const std::string& quaternionStoFileName, bool visualizeResults=false);
 
 private:
     void constructProperties();
