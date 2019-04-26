@@ -28,7 +28,7 @@
 
 namespace OpenSim {
 
-class MocoTool;
+class MocoStudy;
 
 // TODO create typed versions?
 /*
@@ -114,7 +114,7 @@ private:
     // We don't want to make this public, as users would get confused about
     // whether they should call MocoTool::solve() or MocoSolver::solve().
     MocoSolution solve() const;
-    friend MocoTool;
+    friend MocoStudy;
 
     /// This is the meat of a solver: solve the problem and return the solution.
     virtual MocoSolution solveImpl() const = 0;

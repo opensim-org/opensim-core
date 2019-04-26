@@ -22,7 +22,7 @@
 #include "MocoBounds.h"
 #include "MocoProblem.h"
 #include "MocoSolver.h"
-#include "MocoTool.h"
+#include "MocoStudy.h"
 #include "MocoTropterSolver.h"
 #include "InverseMuscleSolver/GlobalStaticOptimization.h"
 #include "InverseMuscleSolver/INDYGO.h"
@@ -69,7 +69,7 @@ OSIMMOCO_API void RegisterTypes_osimMoco() {
         Object::registerType(MocoPhase());
         Object::registerType(MocoVariableInfo());
         Object::registerType(MocoProblem());
-        Object::registerType(MocoTool());
+        Object::registerType(MocoStudy());
         Object::registerType(MocoTropterSolver());
         Object::registerType(MocoParameter());
 
