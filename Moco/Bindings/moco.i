@@ -163,6 +163,7 @@ namespace OpenSim {
 %include <Moco/MocoTool.h>
 
 %include <Moco/Components/ActivationCoordinateActuator.h>
+%include <Moco/Components/DeGrooteFregly2016Muscle.h>
 %include <Moco/MocoUtilities.h>
 
 %include <Moco/Components/ModelFactory.h>
