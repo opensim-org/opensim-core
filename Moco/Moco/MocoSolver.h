@@ -110,9 +110,9 @@ protected:
 
 private:
 
-    /// This is called by MocoTool.
+    /// This is called by MocoStudy.
     // We don't want to make this public, as users would get confused about
-    // whether they should call MocoTool::solve() or MocoSolver::solve().
+    // whether they should call MocoStudy::solve() or MocoSolver::solve().
     MocoSolution solve() const;
     friend MocoStudy;
 

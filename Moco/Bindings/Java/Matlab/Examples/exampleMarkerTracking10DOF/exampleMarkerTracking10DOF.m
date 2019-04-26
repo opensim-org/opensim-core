@@ -39,9 +39,9 @@ addCoordinateActuator(model, 'hip_flexion_l', 100);
 addCoordinateActuator(model, 'knee_angle_l', 100);
 addCoordinateActuator(model, 'ankle_angle_l', 100);
 
-% Create MocoTool.
+% Create MocoStudy.
 % ================
-moco = MocoTool();
+moco = MocoStudy();
 moco.setName('marker_tracking_10dof');
 
 % Define the optimal control problem.
