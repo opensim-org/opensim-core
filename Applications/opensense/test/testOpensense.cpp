@@ -25,6 +25,8 @@
 // INCLUDES
 #include <OpenSim/Simulation/OpenSense/OpenSenseUtilities.h>
 #include <OpenSim/Simulation/OpenSense/InverseKinematicsStudy.h>
+#include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 
 using namespace OpenSim;
 using namespace std;
@@ -37,6 +39,9 @@ int main()
     // Calibrate model and comapre result to standard
     OpenSenseUtilities::calibrateModelFromOrientations("subject07.osim", "imuOrientations.sto", false);
     // Previous line produces a model with same name but "calibrated_" prefix.
+    Model stdModel{ "std_calibrated_subject07.osim" };
+    Model actualModel{ "calibrated_subject07.osim" };
+    ASSERT(stdModel == actualModel);
     InverseKinematicsStudy ik("setup_IMUtracking.xml");
     // RUN
     ik.run(); 

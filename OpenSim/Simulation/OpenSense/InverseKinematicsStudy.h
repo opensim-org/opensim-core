@@ -100,7 +100,7 @@ public:
     //--------------------------------------------------------------------------
     // INTERFACE
     //--------------------------------------------------------------------------
-    bool run();
+    bool run(bool visualizeResults=false);
 
     //---- Setters and getters for various attributes
     void setModel(Model& aModel) { _model = &aModel; };

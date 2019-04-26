@@ -163,7 +163,10 @@ runInverseKinematicsWithOrientationsFromFile(Model& model,
     for (auto time : times) {
         s0.updTime() = time;
         ikSolver.track(s0);
-        if (visualizeResults)  model.getVisualizer().show(s0);
+        if (visualizeResults)  
+            model.getVisualizer().show(s0);
+        else
+            cout << "Solved frame at time: " << time << endl;
         // realize to report to get reporter to pull values from model
         model.realizeReport(s0);
     }
@@ -205,7 +208,7 @@ runInverseKinematicsWithOrientationsFromFile(Model& model,
 
 
 // main driver
-bool InverseKinematicsStudy::run()
+bool InverseKinematicsStudy::run(bool visualizeResults)
 {
     bool correct_offsets = false;
     // Supply offset corrections due to incorrect placement, etc... as X, Y, Z body fixed rotation
@@ -233,7 +236,7 @@ bool InverseKinematicsStudy::run()
     }
 
     runInverseKinematicsWithOrientationsFromFile(modelWithIMUs,
-                                                 get_orientations_file_name(), false);
+                                                 get_orientations_file_name(), visualizeResults);
 
     return true;
 }
