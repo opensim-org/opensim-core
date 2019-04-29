@@ -31,8 +31,7 @@ namespace OpenSim {
 //=============================================================================
 /**
 ExperimentalFrame is a concrete Frame that represents the experimental value
-of a Frame and can be used to display that the Frame transform in the OpenSim
-Visualizer.
+of a Frame and can be used to display its frame in the OpenSim Visualizer.
 
 Unlike its PhysicalFrame counterpart, an ExperimentalFrame is a measured value
 and not physically attached to the musculoskeletal model. It is assumed that

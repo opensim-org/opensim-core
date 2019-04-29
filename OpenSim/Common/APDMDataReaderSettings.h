@@ -37,7 +37,7 @@ class OSIMCOMMON_API APDMDataReaderSettings : public Object {
 OpenSim_DECLARE_CONCRETE_OBJECT(APDMDataReaderSettings, Object);
 public:
     OpenSim_DECLARE_LIST_PROPERTY(ExperimentalSensors, ExperimentalSensor,
-        "List of Experimental sensors and desired associated names in resulting tables");
+        "List of Experimental sensors and desired associated column labels in resulting tables");
 
 public:
     // Default Constructor
