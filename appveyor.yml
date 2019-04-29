@@ -56,7 +56,7 @@ init:
   - SET JAVA_HOME=%JAVA_DIR%
   - SET PATH=%JAVA_HOME%\bin;%PATH%
   # Detect if we are on the master branch; if so, we will deploy binaries.
-  - IF %APPVEYOR_REPO_BRANCH% EQU master IF NOT DEFINED APPVEYOR_PULL_REQUEST_NUMBER SET DISTR=TRUE
+  - IF %APPVEYOR_REPO_BRANCH% EQU master SET DISTR=TRUE
 
 cache:
   ## Cache swig, which we install via AppVeyor.
