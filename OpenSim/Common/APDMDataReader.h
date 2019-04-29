@@ -25,10 +25,9 @@
 // For definition of Exceptions to be used
 #include "Object.h"
 #include "ExperimentalSensor.h"
-#include "DataAdapter.h"
 #include "APDMDataReaderSettings.h"
 #include "TimeSeriesTable.h"
-#include "IMUDataUtilities.h"
+#include "IMUDataReader.h"
 
 /** @file
 * This file defines class for reading data files from IMU maker APDM and 
@@ -39,7 +38,7 @@ namespace OpenSim {
 
 /** APDMDataReader is a class that reads files produced by IMU manufacturer APDM
     and produces datatables from them. This is intended to help consume IMU outputs.*/
-class OSIMCOMMON_API APDMDataReader : public DataAdapter {
+class OSIMCOMMON_API APDMDataReader : public IMUDataReader {
 public:
     // Default Constructor
     APDMDataReader() = default;
@@ -73,7 +72,7 @@ public:
     - one for AngularVelocity data. 
     - Barometer and Temperature data is ignored for now
      
-     @see IMUDataUtilities class for utilities to extract/access specific table(s)
+     @see IMUDataReader class for utilities to extract/access specific table(s)
     */
     DataAdapter::OutputTables extendRead(const std::string& fileName) const override;
 

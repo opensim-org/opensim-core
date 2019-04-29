@@ -28,7 +28,7 @@
 #include "DataAdapter.h"
 #include "XsensDataReaderSettings.h"
 #include "TimeSeriesTable.h"
-#include "IMUDataUtilities.h"
+#include "IMUDataReader.h"
 /** @file
 * This file defines class for reading data files from IMU maker Xsens and 
 * producing in memory tables to be consumed by the OpenSim tools/pipelines

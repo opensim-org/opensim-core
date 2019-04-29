@@ -183,7 +183,7 @@ APDMDataReader::extendRead(const std::string& fileName) const {
     auto orientationTable = std::make_shared<TimeSeriesTableQuaternion>(times, rotationsData, labels);
     orientationTable->updTableMetaData()
         .setValueForKey("DataRate", std::to_string(dataRate));
-    tables.emplace(IMUDataUtilities::Orientations, orientationTable);
+    tables.emplace(IMUDataReader::Orientations, orientationTable);
 
     std::vector<double> emptyTimes;
     auto accelerationTable = (foundLinearAccelerationData ?
@@ -191,21 +191,21 @@ APDMDataReader::extendRead(const std::string& fileName) const {
         std::make_shared<TimeSeriesTableVec3>(emptyTimes, linearAccelerationData, labels));
     accelerationTable->updTableMetaData()
         .setValueForKey("DataRate", std::to_string(dataRate));
-    tables.emplace(IMUDataUtilities::LinearAccelerations, accelerationTable);
+    tables.emplace(IMUDataReader::LinearAccelerations, accelerationTable);
 
     auto magneticHeadingTable = (foundMagneticHeadingData ?
         std::make_shared<TimeSeriesTableVec3>(times, magneticHeadingData, labels) :
         std::make_shared<TimeSeriesTableVec3>(emptyTimes, magneticHeadingData, labels));
     magneticHeadingTable->updTableMetaData()
         .setValueForKey("DataRate", std::to_string(dataRate));
-    tables.emplace(IMUDataUtilities::MagneticHeading, magneticHeadingTable);
+    tables.emplace(IMUDataReader::MagneticHeading, magneticHeadingTable);
 
     auto angularVelocityTable = (foundAngularVelocityData ?
         std::make_shared<TimeSeriesTableVec3>(times, angularVelocityData, labels) :
         std::make_shared<TimeSeriesTableVec3>(emptyTimes, angularVelocityData, labels));
     angularVelocityTable->updTableMetaData()
         .setValueForKey("DataRate", std::to_string(dataRate));
-    tables.emplace(IMUDataUtilities::AngularVelocity, angularVelocityTable);
+    tables.emplace(IMUDataReader::AngularVelocity, angularVelocityTable);
 
     return tables;
 }

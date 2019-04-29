@@ -19,7 +19,7 @@ class TestXsensDataReader {
         // Check that custom accessors are available and return usable types
         // Only spot check of the table is done as actual testing of contents 
         // lives in the C++ tests
-        TimeSeriesTableVec3 accelTableTyped = IMUDataUtilities.getLinearAccelerationsTable(tables);
+        TimeSeriesTableVec3 accelTableTyped = IMUDataReader.getLinearAccelerationsTable(tables);
         assert accelTableTyped.getNumRows()    == 3369;
         assert accelTableTyped.getNumColumns() == 1;
         assert accelTableTyped.

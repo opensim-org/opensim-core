@@ -2,7 +2,7 @@
 #define OPENSIM_IMU_DATA_UTILITIES_H_
 
 /* -------------------------------------------------------------------------- *
- *                          OpenSim:  IMUDataUtilities.h                      *
+ *                          OpenSim:  IMUDataReader.h                      *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * OpenSim is developed at Stanford University and supported by the US        *
@@ -23,26 +23,27 @@
  * -------------------------------------------------------------------------- */
 #include "osimCommonDLL.h"
 #include "TimeSeriesTable.h"
+#include "DataAdapter.h"
 
 /** @file
-* This file defines class for common methods and utilities to be used by various DataReader
-* classes that support IMU providers
+* This file defines common base class for various IMU DataReader
+* classes that support different IMU providers
 */
 
 namespace OpenSim {
 
 
-class OSIMCOMMON_API IMUDataUtilities {
+class OSIMCOMMON_API IMUDataReader : public DataAdapter {
 
 public:
-    // No need to construct or copy this class. All methods and static
-    IMUDataUtilities() = delete;
-    IMUDataUtilities(const IMUDataUtilities&)            = delete;
-    IMUDataUtilities(IMUDataUtilities&&)                 = delete;
-    IMUDataUtilities& operator=(const IMUDataUtilities&) = delete;
-    IMUDataUtilities& operator=(IMUDataUtilities&&)      = delete;
-    ~IMUDataUtilities()                   = delete;
     
+    IMUDataReader() = default;
+    IMUDataReader(const IMUDataReader&)            = default;
+    IMUDataReader(IMUDataReader&&)                 = default;
+    IMUDataReader& operator=(const IMUDataReader&) = default;
+    IMUDataReader& operator=(IMUDataReader&&)      = default;
+    virtual ~IMUDataReader()                   = default;
+
     static const std::string Orientations;         // name of table for orientation data
     static const  std::string LinearAccelerations;  // name of table for acceleration data
     static const std::string MagneticHeading;      // name of table for data from Magnetometer (Magnetic Heading)
@@ -52,19 +53,19 @@ public:
      * Scripting friendly */
      /** get table of Orientations as TimeSeriesTableQuaternion */
     static const TimeSeriesTableQuaternion& getOrientationsTable(const DataAdapter::OutputTables& tables) {
-        return dynamic_cast<const TimeSeriesTableQuaternion&>(*tables.at(IMUDataUtilities::Orientations));
+        return dynamic_cast<const TimeSeriesTableQuaternion&>(*tables.at(IMUDataReader::Orientations));
     }
     /** get table of LinearAccelerations as TimeSeriesTableVec3 */
     static const TimeSeriesTableVec3& getLinearAccelerationsTable(const DataAdapter::OutputTables& tables) {
-        return dynamic_cast<const TimeSeriesTableVec3&>(*tables.at(IMUDataUtilities::LinearAccelerations));
+        return dynamic_cast<const TimeSeriesTableVec3&>(*tables.at(IMUDataReader::LinearAccelerations));
     }
     /** get table of MagneticHeading as TimeSeriesTableVec3 */
     static const TimeSeriesTableVec3& getMagneticHeadingTable(const DataAdapter::OutputTables& tables) {
-        return dynamic_cast<const TimeSeriesTableVec3&>(*tables.at(IMUDataUtilities::MagneticHeading));
+        return dynamic_cast<const TimeSeriesTableVec3&>(*tables.at(IMUDataReader::MagneticHeading));
     }
     /** get table of AngularVelocity as TimeSeriesTableVec3 */
     static const TimeSeriesTableVec3& getAngularVelocityTable(const DataAdapter::OutputTables& tables) {
-        return dynamic_cast<const TimeSeriesTableVec3&>(*tables.at(IMUDataUtilities::AngularVelocity));
+        return dynamic_cast<const TimeSeriesTableVec3&>(*tables.at(IMUDataReader::AngularVelocity));
     }
 
 };
