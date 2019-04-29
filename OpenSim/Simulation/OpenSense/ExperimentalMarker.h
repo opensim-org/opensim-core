@@ -31,7 +31,7 @@ namespace OpenSim {
 //=============================================================================
 /**
 ExperimentalMarker is a concrete Point that represents the experimental value
-of a Marker and can be used to display that the marker location in the OpenSim
+of a Marker and can be used to display its location in the OpenSim
 Visualizer.
 
 Unlike its model Marker counterpart, an ExperimentalMarker is a measured value

@@ -210,30 +210,8 @@ runInverseKinematicsWithOrientationsFromFile(Model& model,
 // main driver
 bool InverseKinematicsStudy::run(bool visualizeResults)
 {
-    bool correct_offsets = false;
-    // Supply offset corrections due to incorrect placement, etc... as X, Y, Z body fixed rotation
-    // Corrections are premultiplied. [C]*[R]
-    std::map<std::string, SimTK::Vec3> imu_corections{
-        {"back_imu", {0, 0, 90}},
-        {"pelvis_imu", {0, 0, 90}} };
 
     Model modelWithIMUs(get_model_file_name());
-
-    if (correct_offsets) {
-        for (auto it : imu_corections) {
-            auto* offset = modelWithIMUs.findComponent<PhysicalOffsetFrame>(it.first);
-            SimTK::Transform transform = offset->getOffsetTransform();
-            Vec3 seq = it.second;
-            Rotation correction{
-                SimTK::BodyOrSpaceType::BodyRotationSequence,
-                double(SimTK_DEGREE_TO_RADIAN*seq[0]), SimTK::XAxis,
-                double(SimTK_DEGREE_TO_RADIAN*seq[1]), SimTK::YAxis,
-                double(SimTK_DEGREE_TO_RADIAN*seq[2]), SimTK::ZAxis };
-            transform.updR() = correction*transform.R();
-            modelWithIMUs.updComponent<PhysicalOffsetFrame>(offset->getAbsolutePath())
-                .setOffsetTransform(transform);
-        }
-    }
 
     runInverseKinematicsWithOrientationsFromFile(modelWithIMUs,
                                                  get_orientations_file_name(), visualizeResults);
