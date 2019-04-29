@@ -223,7 +223,7 @@ void PrintUsage(const char *aProgName, ostream &aOStream)
     aOStream << "-Setup, -S         SetupFileName    Specify an xml setup file for solving an inverse kinematics problem.\n";
     aOStream << "-PropertyInfo, -PI                  Print help information for properties in setup files.\n";
     aOStream << "-ReadX, -RX  directory settingsFile.xml   Parse Xsens exported files from directory using settingsFile.xml.\n";
-    aOStream << "-ReadA, -RA  datafile.csv settingsFile.xml   Parse APDM exported files from directory using settingsFile.xml.\n";
+    aOStream << "-ReadA, -RA  datafile.csv settingsFile.xml   Parse APDM exported files from single csv file using settingsFile.xml.\n";
 }
 
 TimeSeriesTable_<SimTK::Quaternion> readRotationsFromXSensFiles(const std::string& directory,
