@@ -217,7 +217,9 @@ install:
   
   # Dependencies.
   - OSIM_CMAKE_ARGS+=(-DSIMBODY_HOME=~/simbody -DOPENSIM_DEPENDENCIES_DIR=$OPENSIM_DEPENDENCIES_INSTALL_DIR -DWITH_BTK:BOOL=ON)
-  
+  # Build applications
+  - OSIM_CMAKE_ARGS+=(-DOPENSIM_BUILD_INDIVIDUAL_APPS=ON)
+
   # Bindings.
   - OSIM_CMAKE_ARGS+=(-DBUILD_PYTHON_WRAPPING=$WRAP -DBUILD_JAVA_WRAPPING=$WRAP -DSWIG_EXECUTABLE=$HOME/swig/bin/swig)
   # On Mac, use system python instead of Homebrew python.
