@@ -16,21 +16,21 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "MocoJointReactionNormCost.h"
+#include "MocoJointReactionCost.h"
 #include "../MocoUtilities.h"
 #include <OpenSim/Simulation/Model/Model.h>
     
 using namespace OpenSim;
 
-MocoJointReactionNormCost::MocoJointReactionNormCost() {
+MocoJointReactionCost::MocoJointReactionCost() {
     constructProperties();
 }
 
-void MocoJointReactionNormCost::constructProperties() {
+void MocoJointReactionCost::constructProperties() {
     constructProperty_joint_path("");
 }
 
-void MocoJointReactionNormCost::initializeOnModelImpl(
+void MocoJointReactionCost::initializeOnModelImpl(
         const Model& model) const {
 
     OPENSIM_THROW_IF_FRMOBJ(get_joint_path().empty(), Exception,
@@ -42,7 +42,7 @@ void MocoJointReactionNormCost::initializeOnModelImpl(
                "Please provide a valid joint path.", get_joint_path()));
 }
 
-void MocoJointReactionNormCost::calcIntegralCostImpl(const SimTK::State& state,
+void MocoJointReactionCost::calcIntegralCostImpl(const SimTK::State& state,
         double& integrand) const {
 
     getModel().realizeAcceleration(state);

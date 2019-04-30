@@ -29,8 +29,8 @@ set(MOCO_SOURCES
         MocoCost/MocoControlCost.cpp
         MocoCost/MocoControlTrackingCost.h
         MocoCost/MocoControlTrackingCost.cpp
-        MocoCost/MocoJointReactionNormCost.h
-        MocoCost/MocoJointReactionNormCost.cpp
+        MocoCost/MocoJointReactionCost.h
+        MocoCost/MocoJointReactionCost.cpp
         MocoSolver.h
         MocoSolver.cpp
         MocoDirectCollocationSolver.h
