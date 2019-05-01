@@ -69,7 +69,9 @@ public:
     - one table for AngularVelocity data. 
     If data is missing, an empty table is returned. 
     */
-    DataAdapter::OutputTables extendRead(const std::string& folderName) const override;
+    DataAdapter::OutputTables readData(const std::string& folderName) const override {
+        return extendRead(folderName);
+    }
     /** Implements writing functionality, not implemented. */
     virtual void extendWrite(const DataAdapter::InputTables& tables,
         const std::string& sinkName) const override {};
@@ -96,7 +98,10 @@ public:
      * This data member encapsulates all the serializable settings for the Reader;
      */
     XsensDataReaderSettings _settings;
-
+    /**
+     * Implement interface required by DataAdapter class
+     */
+    DataAdapter::OutputTables extendRead(const std::string& folderName) const override;
 };
 
 } // OpenSim namespace

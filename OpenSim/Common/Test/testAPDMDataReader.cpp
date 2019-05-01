@@ -44,7 +44,7 @@ int main() {
         // read xml we wrote into a new APDMDataReader to readTrial
         APDMDataReaderSettings reconstructFromXML("apdm_reader.xml");
         APDMDataReader reader(reconstructFromXML);
-        DataAdapter::OutputTables tables = reader.extendRead("imuData01csv.csv");
+        DataAdapter::OutputTables tables = reader.readData("imuData01csv.csv");
         // Write tables to sto files
         // Accelerations
         const TimeSeriesTableVec3& accelTableTyped =

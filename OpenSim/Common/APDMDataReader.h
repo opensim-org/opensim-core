@@ -74,7 +74,9 @@ public:
      
      @see IMUDataReader class for utilities to extract/access specific table(s)
     */
-    DataAdapter::OutputTables extendRead(const std::string& fileName) const override;
+    DataAdapter::OutputTables readData(const std::string& fileName) const override {
+        return extendRead(fileName);
+    };
 
     /** Implements writing functionality, not implemented.                         */
     virtual void extendWrite(const DataAdapter::InputTables& tables,
@@ -103,6 +105,10 @@ public:
         std::vector<std::string> search_labels,
         const std::string& sensorName,
         std::vector<int>& indices) const;
+    /**
+    * Implement interface required by DataAdapter class
+    */
+    DataAdapter::OutputTables extendRead(const std::string& fileName) const override;
 };
 
 } // OpenSim namespace
