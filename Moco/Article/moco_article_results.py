@@ -448,7 +448,8 @@ if __name__ == "__main__":
     # Kirk()
     # brachistochrone()
     # suspended_mass()
-    sit_to_stand()
+    # sit_to_stand()
+    muscle_sit_to_stand()
 # TODO linear tangent steering has analytical solution Example 4.1 Betts, and Example 4.5
 
 # 2 dof 3 muscles, predict, time-stepping, and track. add noise!!!
