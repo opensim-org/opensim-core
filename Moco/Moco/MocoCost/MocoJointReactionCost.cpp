@@ -30,7 +30,7 @@ void MocoJointReactionCost::constructProperties() {
     constructProperty_joint_path("");
     constructProperty_loads_frame("parent");
     constructProperty_expressed_in_frame_path("");
-    constructProperty_reaction_components();
+    constructProperty_reaction_measures();
     constructProperty_reaction_weights(MocoWeightSet());
 }
 
@@ -61,48 +61,48 @@ void MocoJointReactionCost::initializeOnModelImpl(const Model& model) const {
             &getModel().getComponent<Frame>(get_expressed_in_frame_path());
     }
 
-    // If user provided no reaction component names, then set all components to
-    // to be minimized. Otherwise, loop through user-provided component names
-    // and check that they are all accepted components.
-    std::vector<std::string> reactionComponents;
-    std::vector<std::string> allowedComponents = {"moment-x", "moment-y",
+    // If user provided no reaction measure names, then set all measures to
+    // to be minimized. Otherwise, loop through user-provided measure names
+    // and check that they are all accepted measures.
+    std::vector<std::string> reactionMeasures;
+    std::vector<std::string> allowedMeasures = {"moment-x", "moment-y",
         "moment-z", "force-x", "force-y", "force-z"};
-    if (getProperty_reaction_components().empty()) {
-        reactionComponents = allowedComponents;    
+    if (getProperty_reaction_measures().empty()) {
+        reactionMeasures = allowedMeasures;    
     } else {
-        for (int i = 0; i < getProperty_reaction_components().size(); ++i) {
-            if (std::find(allowedComponents.begin(), allowedComponents.end(),
-                get_reaction_components(i)) == allowedComponents.end()) {
+        for (int i = 0; i < getProperty_reaction_measures().size(); ++i) {
+            if (std::find(allowedMeasures.begin(), allowedMeasures.end(),
+                get_reaction_measures(i)) == allowedMeasures.end()) {
                 OPENSIM_THROW_FRMOBJ(Exception,
-                    format("Reaction component '%s' not recognized.",
-                            get_reaction_components(i)));
+                    format("Reaction measure '%s' not recognized.",
+                            get_reaction_measures(i)));
             }
-            reactionComponents.push_back(get_reaction_components(i));
+            reactionMeasures.push_back(get_reaction_measures(i));
         }
     }
 
-    // Loop through all reaction components to minimize and get the
+    // Loop through all reaction measures to minimize and get the
     // corresponding SpatialVec indices and weights.
-    for (const auto& component :  reactionComponents) {
-        if (component == "moment-x") {
-            m_componentIndices.push_back({0, 0});
-        } else if (component == "moment-y") {
-            m_componentIndices.push_back({0, 1});
-        } else if (component == "moment-z") {
-            m_componentIndices.push_back({0, 2});
-        } else if (component == "force-x") {
-            m_componentIndices.push_back({1, 0});
-        } else if (component == "force-y") {
-            m_componentIndices.push_back({1, 1});
-        } else if (component == "force-z") {
-            m_componentIndices.push_back({1, 2});
+    for (const auto& measure :  reactionMeasures) {
+        if (measure == "moment-x") {
+            m_measureIndices.push_back({0, 0});
+        } else if (measure == "moment-y") {
+            m_measureIndices.push_back({0, 1});
+        } else if (measure == "moment-z") {
+            m_measureIndices.push_back({0, 2});
+        } else if (measure == "force-x") {
+            m_measureIndices.push_back({1, 0});
+        } else if (measure == "force-y") {
+            m_measureIndices.push_back({1, 1});
+        } else if (measure == "force-z") {
+            m_measureIndices.push_back({1, 2});
         }
 
         double compWeight = 1.0;
-        if (get_reaction_weights().contains(component)) {
-            compWeight = get_reaction_weights().get(component).getWeight();
+        if (get_reaction_weights().contains(measure)) {
+            compWeight = get_reaction_weights().get(measure).getWeight();
         }
-        m_componentWeights.push_back(compWeight);
+        m_measureWeights.push_back(compWeight);
     }
 }
 
@@ -139,9 +139,9 @@ void MocoJointReactionCost::calcIntegralCostImpl(const SimTK::State& state,
 
     // Compute cost.
     integrand = 0;
-    for (int i = 0; i < m_componentIndices.size(); ++i) {
-        const auto index = m_componentIndices[i];
-        const double weight = m_componentWeights[i];
+    for (int i = 0; i < m_measureIndices.size(); ++i) {
+        const auto index = m_measureIndices[i];
+        const double weight = m_measureWeights[i];
         integrand += weight * pow(reaction[index.first][index.second], 2);
     }
 }

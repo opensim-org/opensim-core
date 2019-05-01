@@ -284,7 +284,7 @@ TEMPLATE_TEST_CASE("Test MocoJointReactionCost", "", MocoTropterSolver,
 
     auto* reaction = mp.addCost<MocoJointReactionCost>();
     reaction->setJointPath("/jointset/weld");
-    reaction->setReactionComponents({"force-x"});
+    reaction->setReactionMeasures({"force-x"});
 
     auto& ms = moco.initSolver<TestType>();
     int N = 5;
