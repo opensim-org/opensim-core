@@ -68,9 +68,10 @@ public:
     /// Set the frame in which the minimized reaction load is expressed.
     void setExpressedInFramePath(const std::string& framePath) 
     {   set_expressed_in_frame_path(framePath); }
-    /// Set a specific set of reaction components to be minimized. If not set,
-    /// all reaction components are minimized by default. Replaces the reaction 
-    /// component set if it already exists.
+    /// Set a specific set of reaction components to be minimized. Options:
+    /// "moment-x", "moment-y", "moment-z", "force-x", "force-y", and "force-z". 
+    /// If not set, all reaction components are minimized by default. 
+    /// Replaces the reaction component set if it already exists.
     void setReactionComponents(const std::vector<std::string>& components){
         updProperty_reaction_components().clear();
         for (const auto& component : components) {
@@ -109,8 +110,10 @@ private:
     OpenSim_DECLARE_PROPERTY(expressed_in_frame_path, std::string, 
             "The frame in which the minimized reaction load is expressed.");
     OpenSim_DECLARE_LIST_PROPERTY(reaction_components, std::string,
-            "A specific set of reaction components to be minimized. If not "
-            "set, all reaction components are minimized by default.");
+            "A specific set of reaction components to be minimized. Options:
+            "'moment-x', 'moment-y', 'moment-z', 'force-x', 'force-y', and "
+            "'force-z'. If not set, all reaction components are minimized by "
+            "default.");
     OpenSim_DECLARE_PROPERTY(reaction_weights, MocoWeightSet,
             "Set of weight objects to weight individual reaction components in "
             "the cost.");
