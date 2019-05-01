@@ -232,7 +232,7 @@ TimeSeriesTable_<SimTK::Quaternion> readRotationsFromXSensFiles(const std::strin
     XsensDataReaderSettings readerSettings(readerSetupFile);
     XsensDataReader reader(readerSettings);
     DataAdapter::OutputTables tables = reader.readData(directory);
-    const TimeSeriesTableQuaternion& quatTableTyped =  IMUDataReader::getOrientationsTable(tables);
+    const TimeSeriesTableQuaternion& quatTableTyped =  reader.getOrientationsTable(tables);
 
     STOFileAdapter_<SimTK::Quaternion>::write(quatTableTyped, "imuOrientations.sto");
  
@@ -246,7 +246,7 @@ TimeSeriesTable_<SimTK::Quaternion> readRotationsFromAPDMFile(const std::string&
     APDMDataReaderSettings readerSettings(readerSetupFile);
     APDMDataReader reader(readerSettings);
     DataAdapter::OutputTables tables = reader.readData(apdmCsvFile);
-    const TimeSeriesTableQuaternion& quatTableTyped = IMUDataReader::getOrientationsTable(tables);
+    const TimeSeriesTableQuaternion& quatTableTyped = reader.getOrientationsTable(tables);
 
     STOFileAdapter_<SimTK::Quaternion>::write(quatTableTyped, "imuOrientations.sto");
 
