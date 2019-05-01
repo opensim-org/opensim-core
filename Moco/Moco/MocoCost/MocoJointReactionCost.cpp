@@ -126,7 +126,7 @@ void MocoJointReactionCost::calcIntegralCostImpl(const SimTK::State& state,
     // SpatialVec.
     SimTK::Vec3 moment;
     SimTK::Vec3 force;
-    if (m_frame == &getModel().getGround()) {
+    if (m_frame.get() == &getModel().getGround()) {
         moment = ground.expressVectorInAnotherFrame(state, reactionInGround[0], 
             *m_frame);
         force = ground.expressVectorInAnotherFrame(state, reactionInGround[1], 
