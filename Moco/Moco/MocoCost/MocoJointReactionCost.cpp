@@ -28,7 +28,7 @@ MocoJointReactionCost::MocoJointReactionCost() {
 
 void MocoJointReactionCost::constructProperties() {
     constructProperty_joint_path("");
-    constructProperty_loads_frame("child");
+    constructProperty_loads_frame("parent");
     constructProperty_expressed_in_frame_path("");
     constructProperty_reaction_components();
     constructProperty_reaction_weights(MocoWeightSet());
@@ -38,33 +38,28 @@ void MocoJointReactionCost::initializeOnModelImpl(const Model& model) const {
 
     // Cache the joint.
     OPENSIM_THROW_IF_FRMOBJ(get_joint_path().empty(), Exception,
-        "Empty model joint path detected. Please provide a valid joint path.");
-    OPENSIM_THROW_IF_FRMOBJ(!model.hasComponent<Joint>(get_joint_path()),
-        Exception,
-        format("Joint at path %s not found in the model. "
-               "Please provide a valid joint path.", get_joint_path()));
+        "Expected a joint path, but property joint_path is empty.");
     m_joint = &getModel().getComponent<Joint>(get_joint_path());
-  
+
+    // Get the frame from which the loads are computed.
     checkPropertyInSet(*this, getProperty_loads_frame(), {"parent", "child"});
-    std::string expressedInFrame;
-    if (get_expressed_in_frame_path().empty()) {
-        if (get_loads_frame() == "child") {
-            expressedInFrame = m_joint->getChildFrame().getAbsolutePathString();
-        } else if(get_loads_frame() == "parent") {
-            expressedInFrame = 
-                m_joint->getParentFrame().getAbsolutePathString();
-        }
-    } else {
-        expressedInFrame = get_expressed_in_frame_path();
+    if (get_loads_frame() == "parent") {
+        m_isParentFrame = true;
+    } else if (get_loads_frame() == "child") {
+        m_isParentFrame = false;
     }
 
-    // Cache the expressed-in frame.
-    OPENSIM_THROW_IF_FRMOBJ(!model.hasComponent<Frame>(expressedInFrame),
-        Exception,
-        format("Frame at path %s not found in the model. "
-               "Please provide a valid frame path.",
-                expressedInFrame));
-    m_frame = &getModel().getComponent<Frame>(expressedInFrame);
+    // Get the expressed-in frame.
+    if (get_expressed_in_frame_path().empty()) {
+        if (m_isParentFrame) {
+            m_frame = &m_joint->getParentFrame();
+        } else {
+            m_frame = &m_joint->getChildFrame();
+        }
+    } else {
+        m_frame = 
+            &getModel().getComponent<Frame>(get_expressed_in_frame_path());
+    }
 
     // If user provided no reaction component names, then set all components to
     // to be minimized. Otherwise, loop through user-provided component names
@@ -79,7 +74,7 @@ void MocoJointReactionCost::initializeOnModelImpl(const Model& model) const {
             if (std::find(allowedComponents.begin(), allowedComponents.end(),
                 get_reaction_components(i)) == allowedComponents.end()) {
                 OPENSIM_THROW_FRMOBJ(Exception,
-                    format("Reaction component '%s' specified not recognized.",
+                    format("Reaction component '%s' not recognized.",
                             get_reaction_components(i)));
             }
             reactionComponents.push_back(get_reaction_components(i));
@@ -119,20 +114,27 @@ void MocoJointReactionCost::calcIntegralCostImpl(const SimTK::State& state,
 
     // Compute the reaction loads on the parent or child frame.
     SimTK::SpatialVec reactionInGround;
-    if (get_loads_frame() == "child") {
-        reactionInGround =
-            m_joint->calcReactionOnChildExpressedInGround(state);
-    } else if (get_loads_frame() == "parent") {
+    if (m_isParentFrame) {
         reactionInGround =
             m_joint->calcReactionOnParentExpressedInGround(state);
+    } else {
+        reactionInGround =
+            m_joint->calcReactionOnChildExpressedInGround(state);
     }
         
     // Re-express the reactions into the proper frame and repackage into a new
     // SpatialVec.
-    const SimTK::Vec3 moment = ground.expressVectorInAnotherFrame(state,
-        reactionInGround[0], *m_frame);
-    const SimTK::Vec3 force = ground.expressVectorInAnotherFrame(state,
-        reactionInGround[1], *m_frame);
+    SimTK::Vec3 moment;
+    SimTK::Vec3 force;
+    if (*m_frame == getModel().getGround()) {
+        moment = ground.expressVectorInAnotherFrame(state, reactionInGround[0], 
+            *m_frame);
+        force = ground.expressVectorInAnotherFrame(state, reactionInGround[1], 
+            *m_frame);
+    } else {
+        moment = reactionInGround[0];
+        force = reactionInGround[1];
+    }
     SimTK::SpatialVec reaction(moment, force);
 
     // Compute cost.

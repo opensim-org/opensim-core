@@ -25,20 +25,20 @@
 
 namespace OpenSim {
 
-/// Minimize the the sum of squares of specified reaction moment and force 
+/// Minimize the sum of squares of specified reaction moment and force 
 /// components for a given joint, integrated over the phase.
 ///
 /// In addition to specifying the joint and reaction components, the user may
 /// also specify the frame the loads are computed from ("parent" or "child"),
 /// and the frame the loads are expressed in (any valid frame in the model).
 ///
-/// Minimizing the y-direction reaction force on the parent frame of the right
+/// Minimizing the y-direction reaction force on the child frame of the right
 /// knee joint expressed in the right tibia frame:
 /// @code 
 /// auto* cost = problem.addCost<MocoJointReactionCost>();
 /// cost->setName("tibiofemoral_compressive_force");
 /// cost->setJointPath("/jointset/knee_r");
-/// cost->setLoadsFrame("parent");
+/// cost->setLoadsFrame("child");
 /// cost->setExpressedInFramePath("/bodyset/tibia_r");
 /// cost->setReactionComponents({"force-y"});
 /// @endcode
@@ -62,15 +62,17 @@ public:
     void setJointPath(const std::string& jointPath)
     {   set_joint_path(jointPath); }
     /// Set the frame from which the reaction loads are computed. Options:
-    /// "parent" or "child" (default: "child").
+    /// "parent" or "child" (default: "parent").
     void setLoadsFrame(const std::string& frame)
     {   set_loads_frame(frame); }
-    /// Set the frame in which the minimized reaction load is expressed.
+    /// Set the frame in which the minimized reaction load is expressed. By 
+    /// default, it is set to the parent or child frame depending on the 
+    /// 'loads_frame' property value.
     void setExpressedInFramePath(const std::string& framePath) 
     {   set_expressed_in_frame_path(framePath); }
     /// Set a specific set of reaction components to be minimized. Options:
     /// "moment-x", "moment-y", "moment-z", "force-x", "force-y", and "force-z". 
-    /// If not set, all reaction components are minimized by default. 
+    /// All reaction components are minimized by default. 
     /// Replaces the reaction component set if it already exists.
     void setReactionComponents(const std::vector<std::string>& components){
         updProperty_reaction_components().clear();
@@ -80,8 +82,8 @@ public:
     }
     /// Set the weight for an individual reaction component. If a weight is
     /// already set for the requested component, then the provided weight
-    /// replaces the previous weight. An exception is thrown if a weight
-    /// for an unknown component is provided.
+    /// replaces the previous weight. An exception is thrown during
+    /// initialization if a weight for an unknown component is provided.
     void setWeight(const std::string& stateName, const double& weight) {
         if (get_reaction_weights().contains(stateName)) {
             upd_reaction_weights().get(stateName).setWeight(weight);
@@ -106,14 +108,13 @@ private:
             "minimized.");
     OpenSim_DECLARE_PROPERTY(loads_frame, std::string, 
             "The frame from which the reaction loads are computed. Options: "
-            "'child' or 'parent' (default: 'child').");
+            "'child' or 'parent' (default: 'parent').");
     OpenSim_DECLARE_PROPERTY(expressed_in_frame_path, std::string, 
             "The frame in which the minimized reaction load is expressed.");
     OpenSim_DECLARE_LIST_PROPERTY(reaction_components, std::string,
-            "A specific set of reaction components to be minimized. Options:
+            "A specific set of reaction components to be minimized. Options: "
             "'moment-x', 'moment-y', 'moment-z', 'force-x', 'force-y', and "
-            "'force-z'. If not set, all reaction components are minimized by "
-            "default.");
+            "'force-z'. All reaction components are minimized by default.");
     OpenSim_DECLARE_PROPERTY(reaction_weights, MocoWeightSet,
             "Set of weight objects to weight individual reaction components in "
             "the cost.");
@@ -124,6 +125,7 @@ private:
     mutable SimTK::ReferencePtr<const Frame> m_frame;
     mutable std::vector<std::pair<int, int>> m_componentIndices;
     mutable std::vector<double> m_componentWeights;
+    mutable bool m_isParentFrame;
 };
 
 } // namespace OpenSim

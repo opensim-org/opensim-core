@@ -296,9 +296,7 @@ TEMPLATE_TEST_CASE("Test MocoJointReactionCost", "", MocoTropterSolver,
 
     // Check that the actuator "actu" is equal to gravity (i.e. supporting all
     // of the weight).
-    CHECK(solution.getControl("/actu")[0] == Approx(-10).epsilon(1e-4));
+    CHECK(solution.getControl("/actu")[0] == Approx(-10).epsilon(1e-6));
     // Check that the reaction force is zero. 
-    // TODO why doesn't this work?? The objective value is practically zero,
-    // but no epsilon value gets this to pass.
-    //CHECK(solution.getObjective() == Approx(0.0).epsilon(1e-6));
+    CHECK(solution.getObjective() == Approx(0.0).margin(1e-6));
 }
