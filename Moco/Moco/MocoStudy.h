@@ -1,7 +1,7 @@
-#ifndef MOCO_MOCOTOOL_H
-#define MOCO_MOCOTOOL_H
+#ifndef MOCO_MOCOSTUDY_H
+#define MOCO_MOCOSTUDY_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: MocoTool.h                                                   *
+ * OpenSim Moco: MocoStudy.h                                                   *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2017 Stanford University and the Authors                     *
  *                                                                            *
@@ -23,6 +23,8 @@
 
 #include "MocoSolver.h"
 
+
+
 namespace OpenSim {
 
 class MocoProblem;
@@ -37,24 +39,24 @@ class MocoCasADiSolver;
 ///
 /// Workflow
 /// --------
-/// When building a MocoTool programmatically (e.g., in C++), the workflow is as
+/// When building a MocoStudy programmatically (e.g., in C++), the workflow is as
 /// follows:
 ///
 /// 1. Build the MocoProblem (set the model, constraints, etc.).
-/// 2. Call MocoTool::initSolver(), which returns a reference to the MocoSolver.
+/// 2. Call MocoStudy::initSolver(), which returns a reference to the MocoSolver.
 ///    After this, you cannot edit the MocoProblem.
 /// 3. Edit the settings of the MocoSolver (returned by initSolver()).
-/// 4. Call MocoTool::solve(). This returns the MocoSolution.
-/// 5. (Optional) Postprocess the solution, perhaps using MocoTool::visualize().
+/// 4. Call MocoStudy::solve(). This returns the MocoSolution.
+/// 5. (Optional) Postprocess the solution, perhaps using MocoStudy::visualize().
 ///
 /// After calling solve(), you can edit the MocoProblem and/or the MocoSolver.
 /// You can then call solve() again, if you wish.
 ///
-/// Saving the tool setup to a file
+/// Saving the study setup to a file
 /// -------------------------------
-/// You can save the MocoTool to a file by calling MocoTool::print(), and you
-/// can load the setup using MocoTool(const std::string& omocoFile).
-/// MocoTool setup files have a `.omoco` extension.
+/// You can save the MocoStudy to a file by calling MocoStudy::print(), and you
+/// can load the setup using MocoStudy(const std::string& omocoFile).
+/// MocoStudy setup files have a `.omoco` extension.
 ///
 /// Solver
 /// ------
@@ -70,31 +72,31 @@ class MocoCasADiSolver;
 
 // TODO rename to MocoFramework.
 
-class OSIMMOCO_API MocoTool : public Object {
-    OpenSim_DECLARE_CONCRETE_OBJECT(MocoTool, Object);
+class OSIMMOCO_API MocoStudy:public Object {
+    OpenSim_DECLARE_CONCRETE_OBJECT(MocoStudy, Object);
 public:
     OpenSim_DECLARE_PROPERTY(write_solution, std::string,
     "Provide the folder path (relative to working directory) to which the "
     "solution files should be written. Set to 'false' to not write the "
     "solution to disk.");
 
-    MocoTool();
+    MocoStudy();
 
-    /// Load a MocoTool setup file.
-    MocoTool(const std::string& omocoFile);
+    /// Load a MocoStudy setup file.
+    MocoStudy(const std::string& omocoFile);
 
     const MocoProblem& getProblem() const;
 
     /// If using this method in C++, make sure to include the "&" in the
     /// return type; otherwise, you'll make a copy of the problem, and the copy
-    /// will have no effect on this MocoTool.
+    /// will have no effect on this MocoStudy.
     MocoProblem& updProblem();
 
     /// Call this method once you have finished setting up your MocoProblem.
     /// This returns a reference to the MocoSolver, which you can then edit.
     /// If using this method in C++, make sure to include the "&" in the
     /// return type; otherwise, you'll make a copy of the solver, and the copy
-    /// will have no effect on this MocoTool.
+    /// will have no effect on this MocoStudy.
     MocoTropterSolver& initTropterSolver();
 
     // TODO document
@@ -104,7 +106,7 @@ public:
     /// Access the solver. Make sure to call `initSolver()` beforehand.
     /// If using this method in C++, make sure to include the "&" in the
     /// return type; otherwise, you'll make a copy of the solver, and the copy
-    /// will have no effect on this MocoTool.
+    /// will have no effect on this MocoStudy.
     MocoSolver& updSolver();
 
     /// Solve the provided MocoProblem using the provided MocoSolver, and
@@ -160,12 +162,14 @@ private:
 
 template <>
 OSIMMOCO_API
-MocoTropterSolver& MocoTool::initSolver<MocoTropterSolver>();
+MocoTropterSolver& MocoStudy::initSolver<MocoTropterSolver>();
 
 template <>
 OSIMMOCO_API
-MocoCasADiSolver& MocoTool::initSolver<MocoCasADiSolver>();
+MocoCasADiSolver& MocoStudy::initSolver<MocoCasADiSolver>();
+
+typedef MocoStudy MocoTool;
 
 } // namespace OpenSim
 
-#endif // MOCO_MOCOTOOL_H
+#endif // MOCO_MOCOSTUDY_H

@@ -29,7 +29,7 @@
 #include "MocoBounds.h"
 #include "MocoProblem.h"
 #include "MocoSolver.h"
-#include "MocoTool.h"
+#include "MocoStudy.h"
 #include "MocoTropterSolver.h"
 #include "MocoUtilities.h"
 #include "MocoParameter.h"

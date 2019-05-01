@@ -160,7 +160,7 @@ namespace OpenSim {
 }
 %include <Moco/MocoTropterSolver.h>
 %include <Moco/MocoCasADiSolver/MocoCasADiSolver.h>
-%include <Moco/MocoTool.h>
+%include <Moco/MocoStudy.h>
 
 %include <Moco/Components/ActivationCoordinateActuator.h>
 %include <Moco/MocoUtilities.h>
