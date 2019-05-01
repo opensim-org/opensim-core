@@ -16,6 +16,8 @@ def professional_spines(axes):
 
 
 def muscle_sit_to_stand(run, plot):
+    predict_solution_file = 'predict_solution.sto'
+    track_solution_file = 'track_solution.sto'
     def create_tool(model):
         moco = osim.MocoTool()
         solver = moco.initCasADiSolver()
@@ -92,7 +94,7 @@ def muscle_sit_to_stand(run, plot):
 
         solver.set_num_mesh_points(10)
         solution = moco.solve()
-        solution.write('predictSolution0.sto')
+        solution.write(predict_solution_file)
         # solver.setGuess(predictSolution0)
         # solver.set_num_mesh_points(20)
         # # solver.set_parallel(0)
@@ -109,11 +111,30 @@ def muscle_sit_to_stand(run, plot):
 
         return solution
 
+    def track():
+        moco = create_tool(muscle_driven_model())
+        problem = moco.updProblem()
+        tracking = osim.MocoStateTrackingCost()
+        tracking.setName('tracking')
+        tracking.setReferenceFile(predict_solution_file)
+        tracking.setAllowUnusedReferences(True)
+        problem.addCost(tracking)
+
+        problem.addCost(osim.MocoControlCost('effort', 0.001))
+
+        solver = osim.MocoCasADiSolver.safeDownCast(moco.updSolver())
+        solver.resetProblem(problem)
+
+        solver.set_num_mesh_points(10)
+        solution = moco.solve()
+        solution.write(track_solution_file)
+
     if run:
         predict_solution = predict()
+        track_solution = track()
 
     if plot:
-        predict_solution = osim.MocoIterate('predictSolution0.sto')
+        predict_solution = osim.MocoIterate(predict_solution_file)
         fig = plt.figure(figsize=(6, 7))
         values = [
             '/jointset/hip_r/hip_flexion_r/value',
