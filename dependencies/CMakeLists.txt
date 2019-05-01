@@ -16,7 +16,6 @@ if(MSVC AND NOT ${CMAKE_GENERATOR} MATCHES "Win64")
     message(FATAL_ERROR ${MSG})
 endif()
 
-
 option(OPENSIM_JAVA_WRAPPING "Build opensim-core Java/MATLAB interface." OFF)
 option(OPENSIM_PYTHON_WRAPPING "Build opensim-core Python interface." OFF)
 set(OPENSIM_PYTHON_VERSION 2 CACHE STRING
