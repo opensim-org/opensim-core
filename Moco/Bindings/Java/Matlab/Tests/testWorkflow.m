@@ -53,7 +53,7 @@ end
 
 function testDefaultBounds(testCase)
     import org.opensim.modeling.*;
-    moco = MocoTool();
+    moco = MocoStudy();
     problem = moco.updProblem();
     model = createSlidingMassModel();
     model.finalizeFromProperties();
@@ -94,7 +94,7 @@ end
 
 function testChangingTimeBounds(testCase)
     import org.opensim.modeling.*;
-    moco = MocoTool();
+    moco = MocoStudy();
     problem = moco.updProblem();
     problem.setModel(createSlidingMassModel());
     problem.setTimeBounds(0, [0, 10]);
@@ -122,7 +122,7 @@ end
 
 function testChangingModel(testCase)
     import org.opensim.modeling.*;
-    moco = MocoTool();
+    moco = MocoStudy();
     problem = moco.updProblem();
     model = createSlidingMassModel();
     problem.setModel(model);
@@ -145,7 +145,7 @@ end
 function testOrder(testCase)
     import org.opensim.modeling.*;
     % Can set the cost and model in any order.
-    moco = MocoTool();
+    moco = MocoStudy();
     problem = moco.updProblem();
     problem.setTimeBounds(0, [0, 10]);
     problem.setStateInfo('/slider/position/value', [0, 1], 0, 1);
@@ -162,7 +162,7 @@ end
 function testChangingCosts(testCase)
     import org.opensim.modeling.*;
     % Changes to the costs are obeyed.
-    moco = MocoTool();
+    moco = MocoStudy();
     problem = moco.updProblem();
     problem.setModel(createSlidingMassModel());
     problem.setTimeBounds(0, [0, 10]);
