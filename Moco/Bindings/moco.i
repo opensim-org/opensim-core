@@ -164,3 +164,5 @@ namespace OpenSim {
 
 %include <Moco/Components/ActivationCoordinateActuator.h>
 %include <Moco/MocoUtilities.h>
+
+%include <Moco/Components/ModelFactory.h>
