@@ -55,21 +55,25 @@ public:
      * Scripting friendly */
      /** get table of Orientations as TimeSeriesTableQuaternion */
     static const TimeSeriesTableQuaternion& getOrientationsTable(const DataAdapter::OutputTables& tables) {
-        return dynamic_cast<const TimeSeriesTableQuaternion&>(*tables.at(IMUDataReader::Orientations));
+        return dynamic_cast<const TimeSeriesTableQuaternion&>(*tables.at(Orientations));
     }
     /** get table of LinearAccelerations as TimeSeriesTableVec3 */
     static const TimeSeriesTableVec3& getLinearAccelerationsTable(const DataAdapter::OutputTables& tables) {
-        return dynamic_cast<const TimeSeriesTableVec3&>(*tables.at(IMUDataReader::LinearAccelerations));
+        return dynamic_cast<const TimeSeriesTableVec3&>(*tables.at(LinearAccelerations));
     }
     /** get table of MagneticHeading as TimeSeriesTableVec3 */
     static const TimeSeriesTableVec3& getMagneticHeadingTable(const DataAdapter::OutputTables& tables) {
-        return dynamic_cast<const TimeSeriesTableVec3&>(*tables.at(IMUDataReader::MagneticHeading));
+        return dynamic_cast<const TimeSeriesTableVec3&>(*tables.at(MagneticHeading));
     }
     /** get table of AngularVelocity as TimeSeriesTableVec3 */
     static const TimeSeriesTableVec3& getAngularVelocityTable(const DataAdapter::OutputTables& tables) {
-        return dynamic_cast<const TimeSeriesTableVec3&>(*tables.at(IMUDataReader::AngularVelocity));
+        return dynamic_cast<const TimeSeriesTableVec3&>(*tables.at(AngularVelocity));
     }
 protected:
+    /** create a map of names to TimeSeriesTables. MetaData contains dataRate.
+     * The result can be passed to accessors above to get individual TimeSeriesTable(s)
+     * If a matrix has nrows = 0 then an empty table is created.
+     */
     DataAdapter::OutputTables createTablesFromMatrices(double dataRate, 
         const std::vector<std::string>& labels, const std::vector<double>& times,
         const SimTK::Matrix_<SimTK::Quaternion>& rotationsData, 
