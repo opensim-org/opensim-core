@@ -56,7 +56,7 @@ int main() {
         // Write tables to sto files
         // Accelerations
         const TimeSeriesTableVec3& accelTableTyped =
-            IMUDataReader::getLinearAccelerationsTable(tables);
+            reconstructFromXML.getLinearAccelerationsTable(tables);
         STOFileAdapterVec3::write(accelTableTyped, folder + trial + "accelerations.sto");
         const SimTK::RowVectorView_<SimTK::Vec3>& rvv = accelTableTyped.getRowAtIndex(0);
         SimTK::Vec3 fromTable = accelTableTyped.getRowAtIndex(0)[0];
@@ -71,21 +71,21 @@ int main() {
         ASSERT_EQUAL(fromTable, fromFile, tolerance);
         // Magenometer
         const TimeSeriesTableVec3& magTableTyped =
-            IMUDataReader::getMagneticHeadingTable(tables);
+            reconstructFromXML.getMagneticHeadingTable(tables);
         STOFileAdapterVec3::write(magTableTyped, folder + trial + "magnetometers.sto");
         fromTable = magTableTyped.getRowAtIndex(0)[0];
         fromFile = SimTK::Vec3{ -0.045410, -0.266113, 0.897217 };
         ASSERT_EQUAL(fromTable, fromFile, tolerance);
         // Gyro
         const TimeSeriesTableVec3& gyroTableTyped =
-            IMUDataReader::getAngularVelocityTable(tables);
+            reconstructFromXML.getAngularVelocityTable(tables);
         STOFileAdapterVec3::write(gyroTableTyped, folder + trial + "gyros.sto");
         fromTable = gyroTableTyped.getRowAtIndex(0)[0];
         fromFile = SimTK::Vec3{ 0.005991, -0.032133, 0.022713 };
         ASSERT_EQUAL(fromTable, fromFile, tolerance);
         // Orientation
         const TimeSeriesTableQuaternion& quatTableTyped =
-            IMUDataReader::getOrientationsTable(tables);
+            reconstructFromXML.getOrientationsTable(tables);
         STOFileAdapterQuaternion::write(quatTableTyped, folder + trial + "quaternions.sto");
         SimTK::Quaternion quat = quatTableTyped.getRowAtIndex(0)[1];
         // Convert back to orientation matrix and compare with gold standard data in file
@@ -112,7 +112,7 @@ int main() {
         DataAdapter::OutputTables tables2 = 
             XsensDataReader(readOrientationsOnly).readData("./");
         const TimeSeriesTableVec3& accelTable2 = 
-            IMUDataReader::getLinearAccelerationsTable(tables2);
+            reconstructFromXML.getLinearAccelerationsTable(tables2);
         ASSERT(accelTable2.getNumRows() ==0);
         ASSERT(tables2.at(IMUDataReader::MagneticHeading)->getNumRows() == 0);
         ASSERT(tables2.at(IMUDataReader::AngularVelocity)->getNumRows() == 0);

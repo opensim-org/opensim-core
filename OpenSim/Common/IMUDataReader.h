@@ -1,5 +1,5 @@
-#ifndef OPENSIM_IMU_DATA_UTILITIES_H_
-#define OPENSIM_IMU_DATA_UTILITIES_H_
+#ifndef OPENSIM_IMU_DATA_READER_H_
+#define OPENSIM_IMU_DATA_READER_H_
 
 /* -------------------------------------------------------------------------- *
  *                          OpenSim:  IMUDataReader.h                      *
@@ -69,9 +69,15 @@ public:
     static const TimeSeriesTableVec3& getAngularVelocityTable(const DataAdapter::OutputTables& tables) {
         return dynamic_cast<const TimeSeriesTableVec3&>(*tables.at(IMUDataReader::AngularVelocity));
     }
-
+protected:
+    DataAdapter::OutputTables createTablesFromMatrices(double dataRate, 
+        const std::vector<std::string>& labels, const std::vector<double>& times,
+        const SimTK::Matrix_<SimTK::Quaternion>& rotationsData, 
+        const SimTK::Matrix_<SimTK::Vec3>& linearAccelerationData, 
+        const SimTK::Matrix_<SimTK::Vec3>& magneticHeadingData, 
+        const SimTK::Matrix_<SimTK::Vec3>& angularVelocityData) const;
 };
 
 } // OpenSim namespace
 
-#endif // OPENSIM_IMU_DATA_UTILITIES_H_
+#endif // OPENSIM_IMU_DATA_READER_H_

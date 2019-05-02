@@ -48,7 +48,7 @@ int main() {
         // Write tables to sto files
         // Accelerations
         const TimeSeriesTableVec3& accelTableTyped =
-            IMUDataReader::getLinearAccelerationsTable(tables);
+            reader.getLinearAccelerationsTable(tables);
         STOFileAdapterVec3::write(accelTableTyped, "accelerations.sto");
         const SimTK::RowVectorView_<SimTK::Vec3>& rvv = accelTableTyped.getRowAtIndex(0);
         SimTK::Vec3 fromTable = accelTableTyped.getRowAtIndex(0)[0];
@@ -64,7 +64,7 @@ int main() {
         ASSERT_EQUAL(fromTable, fromFile, tolerance);
         // Magnetometer
         const TimeSeriesTableVec3& magTableTyped =
-            IMUDataReader::getMagneticHeadingTable(tables);
+            reader.getMagneticHeadingTable(tables);
         STOFileAdapterVec3::write(magTableTyped, "magnetometers.sto");
         fromTable = magTableTyped.getRowAtIndex(0)[0];
         fromFile = SimTK::Vec3{ 31.27780876,13.46964874,-62.79244003 };
@@ -75,7 +75,7 @@ int main() {
         ASSERT_EQUAL(fromTable, fromFile, tolerance);
         // Gyro
         const TimeSeriesTableVec3& gyroTableTyped =
-            IMUDataReader::getAngularVelocityTable(tables);
+            reader.getAngularVelocityTable(tables);
         STOFileAdapterVec3::write(gyroTableTyped, "gyros.sto");
         fromTable = gyroTableTyped.getRowAtIndex(0)[0];
         fromFile = SimTK::Vec3{ 0.002136296, 0.008331553,-0.008972442 };
@@ -85,7 +85,7 @@ int main() {
         ASSERT_EQUAL(fromTable, fromFile, tolerance);
         // Orientation
         const TimeSeriesTableQuaternion& quatTableTyped =
-            IMUDataReader::getOrientationsTable(tables);
+            reader.getOrientationsTable(tables);
         STOFileAdapterQuaternion::write(quatTableTyped, "quaternions.sto");
         SimTK::Quaternion quatFromTable = quatTableTyped.getRowAtIndex(0)[0];
         SimTK::Quaternion quatFromFile = SimTK::Quaternion(0.979286375, 0.000865605, -0.005158994, -0.202412525);

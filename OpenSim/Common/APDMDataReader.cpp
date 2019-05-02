@@ -179,34 +179,8 @@ APDMDataReader::extendRead(const std::string& fileName) const {
     // Now create the tables from matrices
     // Create 4 tables for Rotations, LinearAccelerations, AngularVelocity, MagneticHeading
     // Tables could be empty if data is not present in file(s)
-    DataAdapter::OutputTables tables{};
-    auto orientationTable = std::make_shared<TimeSeriesTableQuaternion>(times, rotationsData, labels);
-    orientationTable->updTableMetaData()
-        .setValueForKey("DataRate", std::to_string(dataRate));
-    tables.emplace(Orientations, orientationTable);
-
-    std::vector<double> emptyTimes;
-    auto accelerationTable = (foundLinearAccelerationData ?
-        std::make_shared<TimeSeriesTableVec3>(times, linearAccelerationData, labels) :
-        std::make_shared<TimeSeriesTableVec3>(emptyTimes, linearAccelerationData, labels));
-    accelerationTable->updTableMetaData()
-        .setValueForKey("DataRate", std::to_string(dataRate));
-    tables.emplace(LinearAccelerations, accelerationTable);
-
-    auto magneticHeadingTable = (foundMagneticHeadingData ?
-        std::make_shared<TimeSeriesTableVec3>(times, magneticHeadingData, labels) :
-        std::make_shared<TimeSeriesTableVec3>(emptyTimes, magneticHeadingData, labels));
-    magneticHeadingTable->updTableMetaData()
-        .setValueForKey("DataRate", std::to_string(dataRate));
-    tables.emplace(MagneticHeading, magneticHeadingTable);
-
-    auto angularVelocityTable = (foundAngularVelocityData ?
-        std::make_shared<TimeSeriesTableVec3>(times, angularVelocityData, labels) :
-        std::make_shared<TimeSeriesTableVec3>(emptyTimes, angularVelocityData, labels));
-    angularVelocityTable->updTableMetaData()
-        .setValueForKey("DataRate", std::to_string(dataRate));
-    tables.emplace(AngularVelocity, angularVelocityTable);
-
+    DataAdapter::OutputTables tables = createTablesFromMatrices(dataRate, labels, times,
+        rotationsData, linearAccelerationData, magneticHeadingData, angularVelocityData);
     return tables;
 }
 
