@@ -41,7 +41,9 @@ class OSIMMOCO_API MocoControlTrackingCost : public MocoCost {
     OpenSim_DECLARE_CONCRETE_OBJECT(MocoControlTrackingCost, MocoCost);
 
 public:
-    MocoControlTrackingCost() { constructProperties(); };
+    MocoControlTrackingCost() {
+        constructProperties();
+    };
     MocoControlTrackingCost(std::string name) : MocoCost(std::move(name)) {
         constructProperties();
     }

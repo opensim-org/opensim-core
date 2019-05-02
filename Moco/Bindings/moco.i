@@ -11,6 +11,7 @@ typedef SimTK::RowVector_<double> RowVector;
 %include <Moco/MocoCost/MocoMarkerEndpointCost.h>
 %include <Moco/MocoCost/MocoControlCost.h>
 %include <Moco/MocoCost/MocoJointReactionCost.h>
+%include <Moco/MocoCost/MocoTransformTrackingCost.h>
 
 
 // %template(MocoBoundsVector) std::vector<OpenSim::MocoBounds>;

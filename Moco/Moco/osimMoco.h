@@ -25,6 +25,7 @@
 #include "MocoCost/MocoControlCost.h"
 #include "MocoCost/MocoControlTrackingCost.h"
 #include "MocoCost/MocoJointReactionCost.h"
+#include "MocoCost/MocoTransformTrackingCost.h"
 #include "MocoIterate.h"
 #include "MocoBounds.h"
 #include "MocoProblem.h"
