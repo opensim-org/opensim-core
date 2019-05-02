@@ -45,6 +45,8 @@ public:
     OpenSim_DECLARE_PROPERTY(num_mesh_points, int,
             "The number of mesh points for discretizing the problem (default: "
             "100).");
+    OpenSim_DECLARE_LIST_PROPERTY(mesh, double,
+                             "Usually non-uniform, custom, user-defined list of times to sample.");
     OpenSim_DECLARE_PROPERTY(verbosity, int,
             "0 for silent. 1 for only Moco's own output. "
             "2 for output from CasADi and the underlying solver (default: 2).");

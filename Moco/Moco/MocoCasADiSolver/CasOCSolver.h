@@ -38,6 +38,9 @@ public:
     void setNumMeshPoints(int numMeshPoints) {
         m_numMeshPoints = numMeshPoints;
     }
+    void setMesh(std::vector<double> mesh) {
+        m_mesh = mesh;
+    }
     int getNumMeshPoints() const { return m_numMeshPoints; }
 
     void setTranscriptionScheme(std::string scheme) {
@@ -126,6 +129,7 @@ private:
 
     const Problem& m_problem;
     int m_numMeshPoints;
+    std::vector<double> m_mesh;
     std::string m_transcriptionScheme = "trapezoidal";
     bool m_minimizeLagrangeMultipliers = false;
     double m_lagrangeMultiplierWeight = 1.0;

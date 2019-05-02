@@ -220,7 +220,16 @@ std::unique_ptr<CasOC::Solver> MocoCasADiSolver::createCasOCSolver(
     Dict pluginOptions;
     pluginOptions["verbose_init"] = true;
 
-    casSolver->setNumMeshPoints(get_num_mesh_points());
+    if(getProperty_mesh().empty()) {
+        casSolver->setNumMeshPoints(get_num_mesh_points());
+    } else {
+        casSolver->setNumMeshPoints((int) getProperty_mesh().size());
+        std::vector<double> mesh;
+        for(int i = 0; i < getProperty_mesh().size(); ++i) {
+            mesh.push_back(get_mesh(i));
+        }
+        casSolver->setMesh(mesh);
+    }
     casSolver->setTranscriptionScheme(get_transcription_scheme());
     casSolver->setMinimizeLagrangeMultipliers(
             get_minimize_lagrange_multipliers());

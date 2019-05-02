@@ -33,9 +33,15 @@ void Transcription::createVariablesAndSetBounds() {
     // Hermite-Simpson collocation, etc.).
     m_numMeshIntervals = m_numMeshPoints - 1;
     m_numPointsIgnoringConstraints = m_numGridPoints - m_numMeshPoints;
-    m_grid = DM::linspace(0, 1, m_numGridPoints);
 
-    // Create variables.
+    if (m_mesh.empty()) {
+        m_grid = DM::linspace(0, 1, m_numGridPoints);
+    } else {
+        casadi::Matrix<double> mesh (m_mesh);
+        m_grid = mesh;
+    }
+// Create variables.
+
     // -----------------
     m_vars[initial_time] = MX::sym("initial_time");
     m_vars[final_time] = MX::sym("final_time");
