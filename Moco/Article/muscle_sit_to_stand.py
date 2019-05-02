@@ -19,6 +19,7 @@ def muscle_sit_to_stand(run, plot):
     predict_solution_file = 'predict_solution.sto'
     track_solution_file = 'track_solution.sto'
     inverse_solution_file = 'inverse_solution.sto'
+    inverse_assisted_solution_file = 'inverse_assisted_solution.sto'
     def create_tool(model):
         moco = osim.MocoTool()
         solver = moco.initCasADiSolver()
@@ -149,10 +150,32 @@ def muscle_sit_to_stand(run, plot):
         # print('Cost without device: %f' %
         #       inverseSolution.getMocoSolution().getObjective())
 
+    def inverse_assisted():
+        model = muscle_driven_model()
+        device = osim.SpringGeneralizedForce('knee_angle_r')
+        device.setStiffness(50)
+        device.setRestLength(0)
+        device.setViscosity(0)
+        model.addForce(device)
+
+        inverse = osim.MocoInverse()
+        inverse.setModel(model)
+        inverse.setKinematicsFile(predict_solution_file)
+        inverse.set_kinematics_allow_extra_columns(True)
+        inverse.set_lowpass_cutoff_frequency_for_kinematics(6)
+        inverse.set_mesh_interval(0.05)
+        inverse.set_create_reserve_actuators(2)
+        inverse.set_minimize_sum_squared_states(True)
+        inverse.set_tolerance(1e-4)
+        inverseAssistedSolution = inverse.solve()
+        inverseAssistedSolution.getMocoSolution().write(
+            inverse_assisted_solution_file)
+
     if run:
         predict_solution = predict()
         track_solution = track()
-        inverse_solution = inverse()
+        inverse()
+        inverse_assisted()
 
     if plot:
         fig = plt.figure(figsize=(6, 7))
@@ -237,9 +260,11 @@ def muscle_sit_to_stand(run, plot):
         predict_solution = osim.MocoIterate(predict_solution_file)
         track_solution = osim.MocoIterate(track_solution_file)
         inverse_solution = osim.MocoIterate(inverse_solution_file)
+        inverse_assisted_solution = osim.MocoIterate(inverse_assisted_solution_file)
         plot_solution(predict_solution, 'predict')
         plot_solution(track_solution, 'track', linestyle='--')
         plot_solution(inverse_solution, 'inverse', linestyle='--')
+        plot_solution(inverse_assisted_solution, 'inverse assisted', linestyle='--')
         coord_axes[0].legend(frameon=False)
         fig.savefig('muscle_sit_to_stand.png', dpi=600)
 
