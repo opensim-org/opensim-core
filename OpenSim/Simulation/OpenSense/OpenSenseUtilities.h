@@ -55,6 +55,15 @@ namespace OpenSim {
             const std::string& modelCalibrationPoseFile,
             const std::string& calibrationOrientationsFile,
             bool visualizeResult=true);
+        /**
+         * Create Orientations as a TimeSeriesTable based on passed in markerFile
+         */
+        static TimeSeriesTable_<SimTK::Quaternion>
+            createOrientationsFileFromMarkers(const std::string& markersFile);
+
+        /// form a Transform from 3 points origin (op), along x (xp - op), along y(yp - op)
+        static SimTK::Transform formTransformFromPoints(const SimTK::Vec3& op, 
+            const SimTK::Vec3& xp,  const SimTK::Vec3& yp);
   
     }; // end of class OpenSenseUtilities
 }

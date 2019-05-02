@@ -245,3 +245,116 @@ void OpenSenseUtilities::calibrateModelFromOrientations(const string& modelCalib
         std::cin >> c;
     }
 }
+
+SimTK::Transform OpenSenseUtilities::formTransformFromPoints(const Vec3& op,
+    const Vec3& xp,
+    const Vec3& yp)
+{
+    OPENSIM_THROW_IF(op.isNaN() || xp.isNaN() || yp.isNaN(),
+        OpenSim::Exception,
+        "formTransformFromPoints: An input point is NaN.");
+
+    UnitVec3 ux{ xp - op };
+    UnitVec3 uy{ yp - op };
+    UnitVec3 uz{ ux % uy };
+
+    Mat33 nearRot{ ux, uy, uz };
+    Rotation R{ nearRot };
+
+    SimTK::Transform X{ R, op };
+
+    return X;
+}
+
+TimeSeriesTable_<SimTK::Quaternion>
+OpenSenseUtilities::createOrientationsFileFromMarkers(const std::string& markersFile)
+{
+    TimeSeriesTableVec3 table{ markersFile };
+
+    // labels of markers including those <bodyName>O,X,Y that identify the 
+    // IMU sensor placement/alignment on the body expressed in Ground
+    auto labels = table.getColumnLabels();
+
+    std::string suffix{ "_IMU" };
+
+    std::vector<std::string> imuLabels;
+    std::vector<std::vector<int>> imuIndices;
+
+    auto it = labels.begin();
+
+    size_t nImu = 0;
+    size_t index;
+    while (it != labels.end()) {
+        std::vector<int> indices;
+        auto ix = it->find(suffix);
+        if (ix > it->size()) {
+            it++;
+            continue;
+        }
+        string base = it->substr(0, ix);
+
+        imuLabels.push_back(IO::Lowercase(base + suffix));
+
+        index = table.getColumnIndex(base + suffix + "_O");
+        indices.push_back(int(index));
+        it++;
+
+        index = table.getColumnIndex(base + suffix + "_X");
+        indices.push_back(int(index));
+        it++;
+
+        index = table.getColumnIndex(base + suffix + "_Y");
+        indices.push_back(int(index));
+        it++;
+
+        index = table.getColumnIndex(base + suffix + "_D");
+        indices.push_back(int(index));
+        it++;
+
+        // Left leg plates have additional marker to differentiate from right side.
+        if (table.hasColumn(base + suffix + "_5")) it++;
+
+        imuIndices.push_back(indices);
+    }
+
+    const auto& markerData = table.getMatrix();
+    SimTK::Matrix_<SimTK::Quaternion> quatData{ markerData.nrow(), int(imuLabels.size()) };
+
+    Vec3 op, xp, yp, dp;
+    SimTK::Quaternion quat{ SimTK::NaN, SimTK::NaN, SimTK::NaN, SimTK::NaN };
+
+    for (int row = 0; row < markerData.nrow(); ++row) {
+        // reset marker and quaternion to NaN
+        op = xp = yp = dp = Vec3{ SimTK::NaN };
+        quat *= SimTK::NaN;
+
+        for (size_t i = 0; i < imuLabels.size(); ++i) {
+            op = markerData.getElt(row, imuIndices[i][0]);
+            xp = markerData.getElt(row, imuIndices[i][1]);
+            yp = markerData.getElt(row, imuIndices[i][2]);
+            dp = markerData.getElt(row, imuIndices[i][3]);
+
+            if (op.isNaN() || xp.isNaN() || yp.isNaN()) {
+                cout << "marker(s) for IMU '" << imuLabels[i] <<
+                    "' is NaN and orientation will also be NaN." << endl;
+            }
+            else {
+                // Transform of the IMU formed from markers expressed in Ground
+                auto X_FG = formTransformFromPoints(op, xp, yp);
+                quat = X_FG.R().convertRotationToQuaternion();
+            }
+            quatData(row, int(i)) = quat;
+        }
+
+    }
+
+    TimeSeriesTable_<SimTK::Quaternion> quaternions{
+        table.getIndependentColumn(), quatData, imuLabels };
+
+    auto ix = markersFile.find(".");
+    string fileName = markersFile.substr(0, ix) + "_quaternions.sto";
+
+    STOFileAdapter_<SimTK::Quaternion>::write(quaternions, fileName);
+
+    return quaternions;
+}
