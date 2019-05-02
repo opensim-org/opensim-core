@@ -11,20 +11,21 @@ we solve the following problem:
 
 \f[
     \begin{alignat*}{2}
-		\mbox{minimize} \quad & \sum_j w_{E,j} \left(J_{E,j}(t_0, t_f, y_0, y_f, u_{c,0}, u_{c,f}, \lambda_0, \lambda_f, p)
-		 + \int_{t_0}^{t_f} J_{I,j}(t, y, u_c, \lambda, p)~dt\right) &&  \\
-		\mbox{subject to} \quad & \dot{q} = u_s \\
-		 & M(q, p)\dot{u}_s + G(q, p)^T \lambda = f_{\textrm{app}}(t, y, u_c, p) - f_{\textrm{bias}}(q, u_s, p) \\
-		 & \dot{z}(t) = f_{\textrm{aux}}(t, y, u_c, \lambda, p) \\
+		\mbox{minimize} \quad & \sum_j w_{E,j} \left(J_{E,j}(t_0, t_f, y_0, y_f, x_{0}, x_{f}, \lambda_0, \lambda_f, p)
+		 + \int_{t_0}^{t_f} J_{I,j}(t, y, x, \lambda, p)~dt\right) &&  \\
+		\mbox{subject to} \quad & \dot{q} = u \\
+		 & M(q, p)\dot{u} + G(q, p)^T \lambda = f_{\textrm{app}}(t, y, x, p) - f_{\textrm{bias}}(q, u, p) \\
+		 & \dot{z}(t) = f_{\textrm{aux}}(t, y, x, \lambda, p) \\
 		 & 0 = \phi(q, p) \\
-		 & 0 = \dot{\phi}(q, p) = G(q, p) u_s\\
-		 & 0 = \ddot{\phi}(q, p) = G(q, p) \dot{u}_s + \dot{G}(q, p) u_s \\
-		 & 0 = \nu(q, u_s, p) \\
-		 & 0 = \dot{\nu}(q, u_s, p) \\
-		 & 0 = \alpha(q, u_s, \dot{u}_s, p) \\
-		 & g_{L} \leq g(t, y, u_c, \lambda, p) \leq g_{U} \\
+		 & 0 = \nu(q, u, p) \\
+		 & 0 = \alpha(q, u, \dot{u}, p) \\
+		 & g_{L} \leq g(t, y, x, \lambda, p) \leq g_{U} \\
+		 & y_{0,L} \leq y_0 \leq y_{0,U} \\
+		 & x_{0,L} \leq x_{0} \leq x_{0,U} \\
 		 & y_{L} \leq y \leq y_{U} \\
-		 & u_{c,L} \leq u_c \leq u_{c,U} \\
+		 & x_{L} \leq x \leq x_{U} \\
+		 & y_{f,L} \leq y_f \leq y_{f,U} \\
+		 & x_{f,L} \leq x_{f} \leq x_{f,U} \\
 		 & p_{L} \leq p \leq p_{U} \\
 		 & t_{0,L} \leq t_0 \leq t_{0,U} \\
 		 & t_{f,L} \leq t_f \leq t_{f,U}
@@ -35,10 +36,10 @@ We use the following notation:
 
 - \f$ t \f$: time
 - \f$ q(t) \f$: generalized coordinates
-- \f$ u_s(t) \f$: generalized speeds
+- \f$ u(t) \f$: generalized speeds
 - \f$ z(t) \f$: auxiliary states (muscle fiber length and activation)
-- \f$ y(t) = (q(t), u_s(t), z(t))\f$
-- \f$ u_c(t) \f$: controls (including muscle activation)
+- \f$ y(t) = (q(t), u(t), z(t))\f$
+- \f$ x(t) \f$: controls (including muscle activation)
 - \f$ p \f$: constant parameters
 - \f$ \lambda \f$: kinematic constraint multipliers
 - \f$ w_j \f$: weight for \f$ j \f$-th cost
@@ -135,7 +136,68 @@ See @ref mococost for more information.
 @section MocoSolver
 
 A MocoSolver attempts to use an optimal control method to solve the MocoProblem,
-and exposes the settings that you can use to
+and exposes the settings that you can use to TODO.
+
+@subsection trapezoidal Trapezoidal transcription
+
+\f[
+    \begin{alignat*}{2}
+		\mbox{minimize} \quad & \sum_j \left(J_{E,j}(t_0, t_f, y_0, y_n, x_{0}, x_{n}, \lambda_0, \lambda_n, p) +
+		 \sum_{i=1}^{n} \textrm{trap}_i(J_{I,j}(t, y, x, \lambda, p)) \right) \\
+		 & \quad + w_{\lambda} \sum_{i=1}^{n} \textrm{trap}_i(\|\lambda_i\|_2^2) &&  \\
+		\mbox{subject to} \quad & q_i = q_{i-1} + \textrm{trap}_i(x) & i \in 1, \ldots, n\\
+		 & u_i = u_{i-1} + \textrm{trap}_i(f_{\textrm{mb}}(t, y, x, \lambda, p))  & i \in 1, \ldots, n \\
+		 & z_i = z_{i-1} + \textrm{trap}_i(f_{\textrm{aux}}(t, y, x, \lambda, p)) & i \in 1, \ldots, n \\
+		 & 0 = \phi(q_i)  & i \in 0, \ldots, n\\
+		 & g_{L} \leq g(t_i, y_i, x_{i}, p) \leq g_{U}  & i \in 0, \ldots, n\\
+		 & y_{0,L} \leq y_0 \leq y_{0,U} \\
+		 & x_{0,L} \leq x_{0} \leq x_{0,U} \\
+		 & y_{L} \leq y_i \leq y_{U} & i \in 1, \ldots, n - 1\\
+		 & x_{L} \leq x_{i} \leq x_{U}  & i \in 1, \ldots, n - 1\\
+		 & y_{f,L} \leq y_n \leq y_{f,U} \\
+		 & x_{f,L} \leq x_{n} \leq x_{f,U} \\
+		 & p_{L} \leq p \leq p_{U} \\
+		 & t_{0,L} \leq t_0 \leq t_{0,U} \\
+		 & t_{f,L} \leq t_n \leq t_{f,U} \\
+		 \mbox{definitions} \quad & f_{\textrm{mb}}(t, y, x, \lambda, p) =
+		  M(q, p)^{-1}\big[(f_{\textrm{app}}(t, y, x, p) - f_{\textrm{bias}}(q, u, p) - G(q, p)^T \lambda\big] & \\
+	      & \textrm{trap}_i(F(\eta, p)) = 0.5 h_i (F(\eta_{i-1}, p) + F(\eta_i, p))
+	\end{alignat*}
+\f]
+
+\f[
+    \begin{alignat*}{1}
+	 	0 & = \tau_0 < \tau_1 < \tau_2 < \ldots < \tau_i < \ldots < \tau_{n - 1} < \tau_n = 1 \\
+		 t_i & = (t_f - t_0) \tau_i + t_0 \\
+		 h_i & = (t_f - t_0)(\tau_i - \tau_{i-1})
+	\end{alignat*}
+\f]
+
+If the multibody dynamics are enforced as implicit differential equations, then
+the constraint involving \f$ f_\textrm{mb} \f$ is replaced with the following
+constraints:
+
+\f[
+    \begin{alignat*}{2}
+		 & u_i = u_{i-1} + \textrm{trap}_i(w)  & i \in 1, \ldots, n \\
+		 & M(q_i, p)w_i + G(q_i, p)^T \lambda_i =
+		  f_{\textrm{app}}(t, y_i, x_{i}, p) -
+		    f_{\textrm{bias}}(q_i, u_{i}, p) & i \in 0, \ldots, n \\
+		 & -w_{B} \leq w_i \leq w_{B} & i \in 0, \ldots, n\\
+	\end{alignat*}
+\f]
+
+where \f$ w \f$ is generalized acceleration and \f$ w_B \f$ is a large number.
+
+@subsection hermitesimpson Hermite–Simpson transcription
+
+\f[
+    \begin{alignat*}{2}
+		 & 0 = \dot{\phi}(q, p) = G(q, p) u\\
+		 & 0 = \ddot{\phi}(q, p) = G(q, p) \dot{u} + \dot{G}(q, p) u \\
+		 & 0 = \dot{\nu}(q, u, p)
+	\end{alignat*}
+\f]
 
 @subsection MocoTropterSolver
 
@@ -187,6 +249,67 @@ If constraint derivatives are not enforced or if the multibody constraint
 Jacobian is rank-deficient, it is recommended that the Lagrange multiplier
 minimization term is added to the problem to provide impose uniqueness for
 these variables.
+
+@section prescribedmotion Prescribed motion
+
+A common goal in musculoskeletal biomechanics is to estimate for muscle and
+actuator behavior that drove an observed motion. We can solve this
+problem by tracking the observed motion, as with Computed Muscle Control (using
+the "slow target") or MocoTrack. Alternatively, we can prescribe the motion
+exactly, as with Static Optimization, EMG-driven simulation [TODO cite
+Arnold2013, Jackson2016, etc.], and the Muscle Redundancy Solver
+[DeGroote2016]. The advantage of prescribing the motion is the problem is more
+robust and solves faster, as the nonlinear multibody dynamics are no longer
+part of the optimization problem. The disadvantage is that we cannot predict
+deviations from the observed motion.
+
+OpenSim supports prescribed motion in two ways. The first is by adding a
+position-level constraint to the system, as is done by Coordinate's `prescribed`
+and `prescribed_function` properties. A more efficient way is to remove degrees
+of freedom from the system (using SimTK::Motion). Moco supports this
+"reduce-DOF" formulation, which results in the following optimal control problem.
+
+\f[
+    \begin{alignat*}{2}
+		\mbox{minimize} \quad & \sum_j w_{E,j} \left(J_{E,j}(t_0, t_f, \hat{q}_0, \hat{q}_f, \hat{u}_0, \hat{u}_f, z_0, z_f, x_{0}, x_{f}, \lambda_0, \lambda_f, p)
+		 + \int_{t_0}^{t_f} J_{I,j}(t, \hat{q}, \hat{u}, z, x, \lambda, p)~dt\right) &&  \\
+		\mbox{subject to} \quad &
+		 M(\hat{q}, p)\dot{\hat{u}} + G(\hat{q}, p)^T \lambda = f_{\textrm{app}}(t, \hat{q}, \hat{u}, z, x, p) - f_{\textrm{bias}}(\hat{q}, \hat{u}, p) \\
+		 & \dot{z}(t) = f_{\textrm{aux}}(t, \hat{q}, \hat{u}, x, \lambda, p) \\
+		 & g_{L} \leq g(t, \hat{q}, \hat{u}, z, x, \lambda, p) \leq g_{U} \\
+		 & z_{0,L} \leq z_0 \leq z_{0,U} \\
+		 & x_{0,L} \leq x_{0} \leq x_{0,U} \\
+		 & z_{L} \leq z \leq z_{U} \\
+		 & x_{L} \leq x \leq x_{U} \\
+		 & z_{f,L} \leq z_f \leq z_{f,U} \\
+		 & x_{f,L} \leq x_{f} \leq x_{f,U} \\
+		 & p_{L} \leq p \leq p_{U} \\
+		 & t_{0,L} \leq t_0 \leq t_{0,U} \\
+		 & t_{f,L} \leq t_f \leq t_{f,U}
+	\end{alignat*}
+\f]
+
+In this formulation, the kinematic variables \f$ q \f$ and \f$ u \f$ are
+replaced with known quantities \f$ \hat{q} \f$ and \f$ \hat{u} \f$. The system
+still contains auxiliary state variables \f$ z \f$, and control variables \f$ x
+\f$, and auxiliary dynamics. If none of the parameter variables affect the
+multibody system, then the multibody dynamics is reduced to a force balance:
+applied forces must match the net generalized forces determined by the
+kinematics (that is, inverse dynamics).
+
+To prescribe motion in the "reduce-DOF" way, add a PositionMotion component
+to your model. PositionMotion requires that all DOFs are prescribed; we do not
+support prescribing a subset of the degrees of freedom.
+
+If a model contains kinematic constraints, you must ensure that the
+prescribed motion obeys the kinematic constraints. PositionMotion does not
+ensure this for you. Otherwise, your answers will be nonphysical. TODO
+MocoInverse assembles. Even though the kinematic constraint equations no longer
+appear, we must still include constraint forces \f$ G^T \lambda \f$, as the
+applied forces affect what the constraint forces must be. Consider a point mass
+welded in place: the constraint forces must counter any applied forces to
+maintain the weld constraint.
+
 
 @section tips Tips for solving a custom problem
 

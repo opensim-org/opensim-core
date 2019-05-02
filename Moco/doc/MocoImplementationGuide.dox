@@ -2,4 +2,13 @@
 
 @page mocoimplguide Moco Implementation Guide
 
+TODO API design: why we have MocoProblemRep
+TODO PositionMotion
+TODO AccelerationMotion
+TODO DiscreteForces
+
+Why we need two OpenSim Models.
+
 */
+
+
