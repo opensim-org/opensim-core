@@ -56,7 +56,7 @@ public:
     /// This includes the weight.
     SimTK::Real calcIntegralCost(const SimTK::State& state) const {
         double integrand = 0;
-        if(!get_enabled()) {
+        if (!get_enabled()) {
             return integrand;
         }
         calcIntegralCostImpl(state, integrand);

@@ -37,7 +37,7 @@ MocoCost::MocoCost(std::string name, double weight)
 
 void MocoCost::printDescription(std::ostream& stream) const {
     stream << getName() << ". " << getConcreteClassName() <<
-            " weight: " << get_weight() << " enabled: " << get_enabled() << std::endl;
+            " enabled: " << get_enabled() << " weight: " << get_weight() << std::endl;
 }
 
 void MocoCost::constructProperties() {

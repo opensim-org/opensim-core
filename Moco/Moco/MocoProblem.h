@@ -343,8 +343,6 @@ public:
     void setKinematicConstraintBounds(const MocoBounds& bounds);
     /// Set bounds for the Lagrange multipliers in phase 0.
     void setMultiplierBounds(const MocoBounds& bounds);
-    /// Returns a reference to the cost with name "name".
-    MocoCost& updCost(const std::string& name);
     /// Add a parameter variable for phase 0.
     /// @see MocoPhase::addParameter()
     template <typename MocoParamType = MocoParameter, typename... Args>
@@ -391,6 +389,8 @@ public:
     /// This accesses the internal phases property.
     const MocoPhase& getPhase(int index = 0) const
     {   return get_phases(index); }
+    /// Returns a reference to the cost with name "name".
+    MocoCost& updCost(const std::string& name);
 
 #ifndef SWIG // MocoProblemRep() is not copyable.
     /// Create an instance of MocoProblemRep, which fills in additional
