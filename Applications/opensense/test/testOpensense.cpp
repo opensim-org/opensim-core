@@ -40,7 +40,7 @@ int main()
     OpenSenseUtilities::calibrateModelFromOrientations("subject07.osim", "imuOrientations.sto", false);
     // Previous line produces a model with same name but "calibrated_" prefix.
     Model stdModel{ "std_calibrated_subject07.osim" };
-    Model actualModel{ "calibrated_subject07.osim" };
+    Model actualModel{ "calibrated_Subject07.osim" };
     ASSERT(stdModel == actualModel);
     InverseKinematicsStudy ik("setup_IMUtracking.xml");
     // RUN
