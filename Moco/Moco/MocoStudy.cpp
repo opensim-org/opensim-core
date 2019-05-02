@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: MocoTool.cpp                                                 *
+ * OpenSim Moco: MocoStudy.cpp                                                 *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2017 Stanford University and the Authors                     *
  *                                                                            *
@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
-#include "MocoTool.h"
+#include "MocoStudy.h"
 #include "MocoProblem.h"
 #include "MocoTropterSolver.h"
 #include "MocoCasADiSolver/MocoCasADiSolver.h"
@@ -26,68 +26,68 @@
 
 using namespace OpenSim;
 
-MocoTool::MocoTool() {
+MocoStudy::MocoStudy() {
     constructProperties();
 }
 
-MocoTool::MocoTool(const std::string& omocoFile) : Object(omocoFile) {
+MocoStudy::MocoStudy(const std::string& omocoFile) : Object(omocoFile) {
     constructProperties();
     updateFromXMLDocument();
 }
 
-void MocoTool::constructProperties() {
+void MocoStudy::constructProperties() {
     constructProperty_write_solution("./");
     constructProperty_problem(MocoProblem());
     constructProperty_solver(MocoTropterSolver());
 }
 
-const MocoProblem& MocoTool::getProblem() const {
+const MocoProblem& MocoStudy::getProblem() const {
     return get_problem();
 }
 
-MocoProblem& MocoTool::updProblem() {
+MocoProblem& MocoStudy::updProblem() {
     return upd_problem();
 }
 
-MocoSolver& MocoTool::initSolverInternal() {
+MocoSolver& MocoStudy::initSolverInternal() {
     // TODO what to do if we already have a solver (from cloning?)
     upd_solver().resetProblem(get_problem());
     return upd_solver();
 }
 
 template <>
-MocoTropterSolver& MocoTool::initSolver<MocoTropterSolver>() {
+MocoTropterSolver& MocoStudy::initSolver<MocoTropterSolver>() {
     set_solver(MocoTropterSolver());
     return dynamic_cast<MocoTropterSolver&>(initSolverInternal());
 }
 
 template <>
-MocoCasADiSolver& MocoTool::initSolver<MocoCasADiSolver>() {
+MocoCasADiSolver& MocoStudy::initSolver<MocoCasADiSolver>() {
     set_solver(MocoCasADiSolver());
     return dynamic_cast<MocoCasADiSolver&>(initSolverInternal());
 }
 
-MocoTropterSolver& MocoTool::initTropterSolver() {
+MocoTropterSolver& MocoStudy::initTropterSolver() {
     set_solver(MocoTropterSolver());
     return initSolver<MocoTropterSolver>();
 }
 
-MocoCasADiSolver& MocoTool::initCasADiSolver() {
+MocoCasADiSolver& MocoStudy::initCasADiSolver() {
     return initSolver<MocoCasADiSolver>();
 }
 
-MocoSolver& MocoTool::updSolver() {
+MocoSolver& MocoStudy::updSolver() {
     return updSolver<MocoSolver>();
 }
 
-MocoSolution MocoTool::solve() const {
+MocoSolution MocoStudy::solve() const {
     // TODO avoid const_cast.
     const_cast<Self*>(this)->initSolverInternal();
     MocoSolution solution = get_solver().solve();
     bool originallySealed = solution.isSealed();
     if (get_write_solution() != "false") {
         OpenSim::IO::makeDir(get_write_solution());
-        std::string prefix = getName().empty() ? "MocoTool" : getName();
+        std::string prefix = getName().empty() ? "MocoStudy" : getName();
         solution.unseal();
         const std::string filename = get_write_solution() +
                 SimTK::Pathname::getPathSeparator() + prefix + "_solution.sto";
@@ -102,7 +102,7 @@ MocoSolution MocoTool::solve() const {
     return solution;
 }
 
-void MocoTool::visualize(const MocoIterate& it) const {
+void MocoStudy::visualize(const MocoIterate& it) const {
     // TODO this does not need the Solver at all, so this could be moved to
     // MocoProblem.
     const auto& model = get_problem().getPhase(0).getModel();

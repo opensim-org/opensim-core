@@ -54,7 +54,7 @@ class TestSwigAddtlInterface(unittest.TestCase):
         actu.setOptimalForce(1)
         model.addComponent(actu)
         
-        moco = osim.MocoTool()
+        moco = osim.MocoStudy()
         moco.setName('sliding_mass')
         
         mp = moco.updProblem()
@@ -222,7 +222,7 @@ class TestSwigAddtlInterface(unittest.TestCase):
         model.addComponent(joint)
         model.finalizeConnections()
 
-        moco = osim.MocoTool()
+        moco = osim.MocoStudy()
         moco.setName('sliding_mass')
 
         mp = moco.updProblem()
@@ -234,7 +234,7 @@ class TestSwigAddtlInterface(unittest.TestCase):
 class TestWorkflow(unittest.TestCase):
 
     def test_default_bounds(self):
-        moco = osim.MocoTool()
+        moco = osim.MocoStudy()
         problem = moco.updProblem()
         model = createSlidingMassModel()
         model.finalizeFromProperties()
@@ -280,7 +280,7 @@ class TestWorkflow(unittest.TestCase):
         self.assertEqual(info.getBounds().getUpper(), 15)
 
     def test_changing_time_bounds(self):
-        moco = osim.MocoTool()
+        moco = osim.MocoStudy()
         problem = moco.updProblem()
         problem.setModel(createSlidingMassModel())
         problem.setTimeBounds(0, [0, 10])
@@ -305,7 +305,7 @@ class TestWorkflow(unittest.TestCase):
         self.assertAlmostEqual(solution.getFinalTime(), 5.8)
 
     def test_changing_model(self):
-        moco = osim.MocoTool()
+        moco = osim.MocoStudy()
         problem = moco.updProblem()
         model = createSlidingMassModel()
         problem.setModel(model)
@@ -326,7 +326,7 @@ class TestWorkflow(unittest.TestCase):
 
     def test_order(self):
         # Can set the cost and model in any order.
-        moco = osim.MocoTool()
+        moco = osim.MocoStudy()
         problem = moco.updProblem()
         problem.setTimeBounds(0, [0, 10])
         problem.setStateInfo("/slider/position/value", [0, 1], 0, 1)
@@ -340,7 +340,7 @@ class TestWorkflow(unittest.TestCase):
 
     def test_changing_costs(self):
         # Changes to the costs are obeyed.
-        moco = osim.MocoTool()
+        moco = osim.MocoStudy()
         problem = moco.updProblem()
         problem.setModel(createSlidingMassModel())
         problem.setTimeBounds(0, [0, 10])

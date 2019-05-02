@@ -1,7 +1,7 @@
 #include <iostream>
 #include <Moco/InverseMuscleSolver/GlobalStaticOptimization.h>
 #include <Moco/InverseMuscleSolver/INDYGO.h>
-#include <Moco/MocoTool.h>
+#include <Moco/MocoStudy.h>
 #include <Moco/MocoProblem.h>
 #include <Moco/MocoUtilities.h>
 
