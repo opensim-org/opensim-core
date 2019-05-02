@@ -9,8 +9,14 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * InverseKinematicsStudy by AMJR Consulting for NSRDEC under subcontract No. *
- * XXXXXXXXX, The Johns Hopkins University Applied Physics Laboratory (APL)   *
+ * InverseKinematicsStudy by AMJR consulting under a contract and in a        *
+ * collaborative effort with The Johns Hopkins University Applied Physics     *
+ * Laboratory for a project sponsored by the United States Army Natick Soldier*
+ * Research Development and Engineering Center and supported by a the NAVAL   *
+ * SEA SYSTEMS COMMAND (NAVSEA) under Contract No. N00024-13-D-6400,          *
+ * Task Order #VKW02. Any opinions, findings, conclusions or recommendations  *
+ * expressed in this material are those of the author(s) and do not           *
+ * necessarily reflect the views of NAVSEA.                                   *
  *                                                                            *
  * Copyright (c) 2017-2019 AMJR Consulting and the Authors                    *
  * Author(s): Ajay Seth                                                       *

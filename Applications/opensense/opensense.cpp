@@ -5,8 +5,14 @@
 * supplied as quaternions and registered onto a subject via labeled markers  *
 * OR, by registering IMU rotations on to a model in the calibration pose.    *
 *                                                                            *
-* Developed by AMJR Consulting for NSRDEC under subcontract No. XXXXXXXXX,   *
-* The Johns Hopkins University Applied Physics Laboratory (APL)              *
+* Developed by AMJR Consulting under a contract and in a                     *
+* collaborative effort with The Johns Hopkins University Applied Physics     *
+* Laboratory for a project sponsored by the United States Army Natick Soldier*
+* Research Development and Engineering Center and supported by a the NAVAL   *
+* SEA SYSTEMS COMMAND (NAVSEA) under Contract No. N00024-13-D-6400,          *
+* Task Order #VKW02. Any opinions, findings, conclusions or recommendations  *
+* expressed in this material are those of the author(s) and do not           *
+* necessarily reflect the views of NAVSEA.                                   *
 *                                                                            *
 * Copyright (c) 2017-2019 AMJR Consulting and the Authors                    *
 * Author(s): Ajay Seth & Ayman Habib                                         *
