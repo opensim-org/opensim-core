@@ -131,7 +131,7 @@ int main(int argc, char **argv)
                     std::string baseImuName{ "" };
                     SimTK::CoordinateAxis imuHeading{ SimTK::ZAxis };
                     if (argc > 2)
-                        baseImuName = { argv[i + 3] };
+                        baseImuName = std::string{ argv[i + 3] };
 
                     if (argc > 3) {
                         char axc{ argv[i + 4][0] };
