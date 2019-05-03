@@ -82,13 +82,13 @@ void MocoControlTrackingCost::initializeOnModelImpl(const Model& model) const {
                 Exception, "Control reference '" + refName + "' unrecognized.");
         }
 
-        m_controlIndices.push_back(allControlIndices[refName]);
+        m_control_indices.push_back(allControlIndices[refName]);
         double refWeight = 1.0;
         if (get_control_weights().contains(refName)) {
             refWeight = get_control_weights().get(refName).getWeight();
         }
         m_control_weights.push_back(refWeight);
-        m_refsplines.cloneAndAppend(allSplines[iref]);
+        m_ref_splines.cloneAndAppend(allSplines[iref]);
     }
 }
 
@@ -102,9 +102,9 @@ void MocoControlTrackingCost::calcIntegralCostImpl(const SimTK::State& state,
     // TODO cache the reference coordinate values at the mesh points, 
     // rather than evaluating the spline.
     integrand = 0;
-    for (int iref = 0; iref < m_refsplines.getSize(); ++iref) {
-        const auto& modelValue = controls[m_controlIndices[iref]];
-        const auto& refValue = m_refsplines[iref].calcValue(timeVec);
+    for (int iref = 0; iref < m_ref_splines.getSize(); ++iref) {
+        const auto& modelValue = controls[m_control_indices[iref]];
+        const auto& refValue = m_ref_splines[iref].calcValue(timeVec);
         integrand += m_control_weights[iref] * pow(modelValue - refValue, 2);
     }
 }
