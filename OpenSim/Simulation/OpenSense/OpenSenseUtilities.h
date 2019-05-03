@@ -38,7 +38,12 @@ namespace OpenSim {
         /// @{
         /** Load a TimeSeriesTable of Rotation matrices from a Storage file containing
             quaternions as data elements. Optionally provide a range of times for data
-            to be averaged. By default just uses the first time frame.*/
+            to be averaged. By default just uses the first time frame.
+            Additional options include the name of the base IMU and its axis that
+            represents the heading (forward) direction. These are used to perform
+            a heading correction on all the experimental (quaternion) data so that
+            when tracking rotation data, the initial pose of the model is facing
+            forward. */
         static TimeSeriesTableRotation  convertQuaternionsToRotations(
             const TimeSeriesTableQuaternion& qauternionsTable,
             const SimTK::Array_<int>& startEnd = { 0, 1 },
