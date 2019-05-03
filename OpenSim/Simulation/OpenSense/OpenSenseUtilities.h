@@ -43,11 +43,12 @@ namespace OpenSim {
             represents the heading (forward) direction. These are used to perform
             a heading correction on all the experimental (quaternion) data so that
             when tracking rotation data, the initial pose of the model is facing
-            forward. */
+            forward. If the baseImuName is empty, no correction is made. If no
+            axis is specified, the default is the Z axis.*/
         static TimeSeriesTableRotation  convertQuaternionsToRotations(
             const TimeSeriesTableQuaternion& qauternionsTable,
             const SimTK::Array_<int>& startEnd = { 0, 1 },
-            const std::string& baseImuName = "pelvis_imu",
+            const std::string& baseImuName = "",
             const SimTK::CoordinateAxis& baseHeadingAxis = SimTK::ZAxis
         );
         /// @}
