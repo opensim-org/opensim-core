@@ -41,7 +41,9 @@ namespace OpenSim {
             to be averaged. By default just uses the first time frame.*/
         static TimeSeriesTableRotation  convertQuaternionsToRotations(
             const TimeSeriesTableQuaternion& qauternionsTable,
-            const SimTK::Array_<int>& startEnd = { 0, 1 }
+            const SimTK::Array_<int>& startEnd = { 0, 1 },
+            const std::string& baseImuName = "pelvis_imu",
+            const SimTK::CoordinateAxis& baseHeadingAxis = SimTK::ZAxis
         );
         /// @}
         /** create a calibrated model from a raw model (unscaled)
