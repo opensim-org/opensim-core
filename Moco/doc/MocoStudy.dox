@@ -109,21 +109,8 @@ warning if you do not set bounds for initial or final time.
 @subsubsection Defaults
 
 Setting bounds for state and control variables is an important but often arduous
-process. To help, Moco sets some variable bounds automatically.
-
-1. Coordinate value states: Uses the coordinate's range if the coordinate is
-   clamped by default.
-2. Coordinate speed states: Uses MocoPhase::getDefaultSpeedBounds().
-3. ScalarActuator%s: uses the actuator's min and max control.
-4. All other actuators: unconstrained.
-
-
-    ///     The bounds on this state variable over the entire phase. If
-    ///     default-constructed (`{}`), and the state is *not* a coordinate
-    ///     value, then no bounds are applied. If default-constructed, the state
-    ///     *is* a coordinate value and the coordinate's **clamped** property is
-    ///     true, then the bounds are set to the coordinate's **range** (see
-    ///     Coordinate::clamped and Coordinate::range). (TODO)
+process. To help, Moco sets some variable bounds automatically. See
+MocoPhase::setStateInfo() and MocoPhase::setControlInfo() for details.
 
 Although we support setting initial and final bounds for controls, such
 functionality is not too useful: the initial and final values of a control have
@@ -159,6 +146,7 @@ and exposes the settings that you can use to TODO.
 		 & p_{L} \leq p \leq p_{U} \\
 		 & t_{0,L} \leq t_0 \leq t_{0,U} \\
 		 & t_{f,L} \leq t_n \leq t_{f,U} \\
+		 & \lambda_L \leq \lambda_i \leq \lambda_U & i \in 0, \ldots, n \\
 		 \mbox{definitions} \quad & f_{\textrm{mb}}(t, y, x, \lambda, p) =
 		  M(q, p)^{-1}\big[(f_{\textrm{app}}(t, y, x, p) - f_{\textrm{bias}}(q, u, p) - G(q, p)^T \lambda\big] & \\
 	      & \textrm{trap}_i(F(\eta, p)) = 0.5 h_i (F(\eta_{i-1}, p) + F(\eta_i, p))
