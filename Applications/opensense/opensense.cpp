@@ -29,6 +29,7 @@
 * -------------------------------------------------------------------------- */
 
 // INCLUDES
+#include <cctype>
 #include <string>
 #include <OpenSim/version.h>
 #include <OpenSim/Common/IO.h>
@@ -127,8 +128,27 @@ int main(int argc, char **argv)
                 else if ((option == "-Calibrate") || (option == "-C")) {
                     std::string modelCalibrationPoseFile{ argv[i + 1] };
                     std::string calibrationOrientationsFile{ argv[i + 2] };
-                    OpenSenseUtilities::calibrateModelFromOrientations( modelCalibrationPoseFile,
-                                                   calibrationOrientationsFile);
+                    std::string baseImuName{ "" };
+                    SimTK::CoordinateAxis imuHeading{ SimTK::ZAxis };
+                    if (argc > 2)
+                        baseImuName = { argv[i + 3] };
+
+                    if (argc > 3) {
+                        char axc{ argv[i + 4][0] };
+                        axc = std::tolower(axc);
+                        int axis = (axc == 'x' ? 0 :
+                            ((axc == 'y') ? 1 : 2));
+                        imuHeading = SimTK::CoordinateAxis{ axis };
+                    }
+                  
+                    if (!baseImuName.empty()) {
+                        cout << "Calibration will perform heading correction using '"
+                            << baseImuName << "'along its '" << imuHeading << "'axis." << endl;
+                    }
+                    OpenSenseUtilities::calibrateModelFromOrientations(
+                        modelCalibrationPoseFile,
+                        calibrationOrientationsFile,
+                        baseImuName, imuHeading);
 
                     cout << "Done." << endl;
                     return 0;
