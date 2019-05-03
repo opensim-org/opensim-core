@@ -73,6 +73,14 @@ public:
     OpenSim_DECLARE_LIST_PROPERTY_SIZE(time_range, double, 2,
         "The time range for the study.");
 
+    OpenSim_DECLARE_PROPERTY(base_imu_label, std::string,
+        "The column label of the base IMU used to perform heading correction."
+        "Leave blank if no correction is to be applied");
+
+    OpenSim_DECLARE_PROPERTY(base_heading_axis, std::string,
+        "The axis of the base IMU that corresponds to its heading direction."
+        "Options are 'x', 'y' or 'z'.");
+
     OpenSim_DECLARE_PROPERTY(constraint_weight, double,
         "The relative weighting of kinematic constraint errors. By default this "
         "is Infinity, which means constraints are strictly enforced as part of "

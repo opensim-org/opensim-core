@@ -43,6 +43,9 @@ void InverseKinematicsStudy::constructProperties()
     Array<double> range{ Infinity, 2};
     constructProperty_time_range(range);
 
+    constructProperty_base_imu_label("");
+    constructProperty_base_heading_axis("z");
+
     constructProperty_model_file_name("");
     constructProperty_marker_file_name("");
     constructProperty_orientations_file_name("");
@@ -131,8 +134,19 @@ runInverseKinematicsWithOrientationsFromFile(Model& model,
 
     auto startEnd = getTimeRangeInUse(quatTable.getIndependentColumn());
 
+    const auto axis_string = IO::Lowercase(get_base_heading_axis());
+
+    int axis = (axis_string == "x" ? 0 : 
+                                    ((axis_string == "y") ? 1 : 2) );
+    SimTK::CoordinateAxis heading{ axis };
+
+
+    cout << "Heading correction for base '" << get_base_imu_label()
+        << "' along its '" << axis_string << "' axis." << endl;
+
     TimeSeriesTable_<SimTK::Rotation> orientationsData =
-        OpenSenseUtilities::convertQuaternionsToRotations(quatTable, startEnd);
+        OpenSenseUtilities::convertQuaternionsToRotations(quatTable,
+             startEnd, get_base_imu_label(), heading);
 
     OrientationsReference oRefs(orientationsData);
     MarkersReference mRefs{};
@@ -214,7 +228,8 @@ bool InverseKinematicsStudy::run(bool visualizeResults)
     Model modelWithIMUs(get_model_file_name());
 
     runInverseKinematicsWithOrientationsFromFile(modelWithIMUs,
-                                                 get_orientations_file_name(), visualizeResults);
+                                                 get_orientations_file_name(),
+                                                 visualizeResults);
 
     return true;
 }
