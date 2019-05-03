@@ -39,6 +39,10 @@ void MocoProblemRep::initialize() {
     m_kinematic_constraints.clear();
     m_multiplier_infos_map.clear();
 
+    if (!getTimeInitialBounds().isSet() && !getTimeFinalBounds().isSet()) {
+        std::cout << "Warning: no time bounds set." << std::endl;
+    }
+
     const auto& ph0 = m_problem->getPhase(0);
     m_model_base = ph0.getModel();
     m_state_base = m_model_base.initSystem();
@@ -101,17 +105,28 @@ void MocoProblemRep::initialize() {
     }
     for (const auto& coord : m_model_base.getComponentList<Coordinate>()) {
         const auto stateVarNames = coord.getStateVariableNames();
-        const std::string coordValueName = stateVarNames[0];
-        if (m_state_infos.count(coordValueName) == 0) {
-            const auto info = MocoVariableInfo(coordValueName,
-                    {coord.getRangeMin(), coord.getRangeMax()}, {}, {});
-            m_state_infos[coordValueName] = info;
+        {
+            const std::string coordValueName = stateVarNames[0];
+            // TODO document: Range used even if not clamped.
+            if (m_state_infos.count(coordValueName) == 0) {
+                const auto info = MocoVariableInfo(coordValueName, {}, {}, {});
+                m_state_infos[coordValueName] = info;
+            }
+            if (!m_state_infos[coordValueName].getBounds().isSet()) {
+                m_state_infos[coordValueName].setBounds(
+                        {coord.getRangeMin(), coord.getRangeMax()});
+            }
         }
-        const std::string coordSpeedName = stateVarNames[1];
-        if (m_state_infos.count(coordSpeedName) == 0) {
-            const auto info = MocoVariableInfo(
-                    coordSpeedName, ph0.get_default_speed_bounds(), {}, {});
-            m_state_infos[coordSpeedName] = info;
+        {
+            const std::string coordSpeedName = stateVarNames[1];
+            if (m_state_infos.count(coordSpeedName) == 0) {
+                const auto info = MocoVariableInfo(coordSpeedName, {}, {}, {});
+                m_state_infos[coordSpeedName] = info;
+            }
+            if (!m_state_infos[coordSpeedName].getBounds().isSet()) {
+                m_state_infos[coordSpeedName].setBounds(
+                        ph0.get_default_speed_bounds());
+            }
         }
     }
     for (int i = 0; i < ph0.getProperty_control_infos().size(); ++i) {
@@ -121,9 +136,12 @@ void MocoProblemRep::initialize() {
     for (const auto& actu : m_model_base.getComponentList<ScalarActuator>()) {
         const std::string actuName = actu.getAbsolutePathString();
         if (m_control_infos.count(actuName) == 0) {
-            const auto info = MocoVariableInfo(actuName,
-                    {actu.getMinControl(), actu.getMaxControl()}, {}, {});
+            const auto info = MocoVariableInfo(actuName, {}, {}, {});
             m_control_infos[actuName] = info;
+        }
+        if (!m_control_infos[actuName].getBounds().isSet()) {
+            m_control_infos[actuName].setBounds(
+                    {actu.getMinControl(), actu.getMaxControl()});
         }
     }
 

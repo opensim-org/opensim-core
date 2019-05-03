@@ -25,7 +25,8 @@ namespace OpenSim {
 /// Bounds on continuous variables (states, controls). The name should
 /// correspond to path of a state variable or an actuator in the model.
 class OSIMMOCO_API MocoVariableInfo : public Object {
-OpenSim_DECLARE_CONCRETE_OBJECT(MocoVariableInfo, Object);
+    OpenSim_DECLARE_CONCRETE_OBJECT(MocoVariableInfo, Object);
+
 public:
     MocoVariableInfo();
     MocoVariableInfo(const std::string& name, const MocoBounds&,
@@ -33,14 +34,25 @@ public:
 
     /// @details Note: the return value is constructed fresh on every call from
     /// the internal property. Avoid repeated calls to this function.
-    MocoBounds getBounds() const
-    {   return MocoBounds(getProperty_bounds()); }
+    MocoBounds getBounds() const { return MocoBounds(getProperty_bounds()); }
     /// @copydoc getBounds()
-    MocoInitialBounds getInitialBounds() const
-    {   return MocoInitialBounds(getProperty_initial_bounds()); }
+    MocoInitialBounds getInitialBounds() const {
+        return MocoInitialBounds(getProperty_initial_bounds());
+    }
     /// @copydoc getBounds()
-    MocoFinalBounds getFinalBounds() const
-    {   return MocoFinalBounds(getProperty_final_bounds()); }
+    MocoFinalBounds getFinalBounds() const {
+        return MocoFinalBounds(getProperty_final_bounds());
+    }
+
+    void setBounds(const MocoBounds& bounds) {
+        set_bounds(bounds.getAsArray());
+    }
+    void setInitialBounds(const MocoInitialBounds& bounds) {
+        set_initial_bounds(bounds.getAsArray());
+    }
+    void setFinalBounds(const MocoFinalBounds& bounds) {
+        set_final_bounds(bounds.getAsArray());
+    }
 
     /// Throws an exception if initial and final bounds are not within bounds.
     // TODO Move to finalizeFromProperties() and cache MocoBounds.
@@ -62,7 +74,6 @@ protected:
 
 private:
     void constructProperties();
-
 };
 
 } // namespace OpenSim
