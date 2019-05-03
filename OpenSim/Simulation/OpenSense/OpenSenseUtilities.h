@@ -62,7 +62,9 @@ namespace OpenSim {
         static void calibrateModelFromOrientations(
             const std::string& modelCalibrationPoseFile,
             const std::string& calibrationOrientationsFile,
-            bool visualizeResult=true);
+            const std::string& baseImuName = "",
+            const SimTK::CoordinateAxis& baseHeadingAxis = SimTK::ZAxis,
+            bool visualizeCalibratedModel =true);
         /**
          * Create Orientations as a TimeSeriesTable based on passed in markerFile
          */

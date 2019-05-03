@@ -139,16 +139,24 @@ TimeSeriesTable_<SimTK::Rotation> OpenSenseUtilities::
 }
 
 
-void OpenSenseUtilities::calibrateModelFromOrientations(const string& modelCalibrationPoseFile,
-    const string& calibrationOrientationsFile, bool visualizeResult)
+void OpenSenseUtilities::calibrateModelFromOrientations(
+    const string& modelCalibrationPoseFile,
+    const string& calibrationOrientationsFile,
+    const std::string& baseImuName,
+    const SimTK::CoordinateAxis& baseHeadingAxis,
+    bool visualizeCalibratedModel)
 {
     Model model(modelCalibrationPoseFile);
+
+    const SimTK::Array_<int>& startEnd = { 0, 1 };
 
     TimeSeriesTable_<SimTK::Quaternion> quatTable =
         STOFileAdapter_<SimTK::Quaternion>::read(calibrationOrientationsFile);
 
+
     TimeSeriesTable_<SimTK::Rotation> orientationsData =
-        OpenSenseUtilities::convertQuaternionsToRotations(quatTable);
+        OpenSenseUtilities::convertQuaternionsToRotations(quatTable,
+            startEnd, baseImuName, baseHeadingAxis);
 
     std::cout << "Loaded orientations as quaternions from "
         << calibrationOrientationsFile << std::endl;
@@ -230,7 +238,7 @@ void OpenSenseUtilities::calibrateModelFromOrientations(const string& modelCalib
     auto filename = "calibrated_" + model.getName() + ".osim";
     cout << "Wrote calibrated model to file: '" << filename << "'." << endl;
     model.print(filename);
-    if (visualizeResult) {
+    if (visualizeCalibratedModel) {
         model.setUseVisualizer(true);
         SimTK::State& s = model.initSystem();
 
