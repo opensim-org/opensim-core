@@ -109,6 +109,9 @@ public:
     bool registerDataAdapter(const std::string& identifier,
                              const DataAdapter& adapter);
 
+    /** Public interface to read data from a dataSourceSpecification, typically a file or folder */
+    virtual DataAdapter::OutputTables read(const std::string& dataSourceSpecification) const = 0;
+
 protected:
     /** Creator of concrete DataAdapter(s) for the specified source type by its
     unique identifier (string). For example, for file based sources, a 

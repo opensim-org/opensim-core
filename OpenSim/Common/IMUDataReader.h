@@ -43,8 +43,6 @@ public:
     IMUDataReader& operator=(const IMUDataReader&) = default;
     IMUDataReader& operator=(IMUDataReader&&)      = default;
     virtual ~IMUDataReader()                   = default;
-    /** Method required to be implemented by all subclasses that read IMU data */
-    virtual DataAdapter::OutputTables read(const std::string& dataSourceSpecification) const = 0;
 
     static const std::string Orientations;         // name of table for orientation data
     static const  std::string LinearAccelerations;  // name of table for acceleration data
