@@ -139,7 +139,7 @@ void MocoJointReactionCost::calcIntegralCostImpl(const SimTK::State& state,
 
     // Compute cost.
     integrand = 0;
-    for (int i = 0; i < m_measureIndices.size(); ++i) {
+    for (int i = 0; i < (int)m_measureIndices.size(); ++i) {
         const auto index = m_measureIndices[i];
         const double weight = m_measureWeights[i];
         integrand += weight * pow(reaction[index.first][index.second], 2);

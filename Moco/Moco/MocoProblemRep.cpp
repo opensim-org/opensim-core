@@ -235,8 +235,8 @@ void MocoProblemRep::initialize() {
                 if (const auto* scalarActu =
                                 dynamic_cast<const ScalarActuator*>(&actu)) {
                     m_control_infos[actuName].setBounds(
-                            {scalarActu.getMinControl(),
-                                    scalarActu.getMaxControl()});
+                            {scalarActu->getMinControl(),
+                                    scalarActu->getMaxControl()});
                 } else {
                     m_control_infos[actuName].setBounds(
                             {-SimTK::Infinity, SimTK::Infinity});
