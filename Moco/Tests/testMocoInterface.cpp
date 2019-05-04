@@ -255,12 +255,6 @@ TEST_CASE("Bounds", "") {
                 !MocoBounds(5.3).isWithinBounds(5.3 + SimTK::SignificantReal));
         SimTK_TEST(MocoBounds(5.2, 5.4).isWithinBounds(5.3));
     }
-    // TODO what to do about clamped coordinates? Use the range in the
-    // coordinate, or ignore that? I think that if the coordinate is clamped,
-    // then
-
-    // By default, the bounds for coordinates, if clamped, are the
-    // coordinate's range.
 
     // TODO what to do if the user does not specify info for some variables?
 
@@ -342,7 +336,7 @@ TEST_CASE("Building a problem", "") {
 TEMPLATE_TEST_CASE("Workflow", "", MocoTropterSolver, MocoCasADiSolver) {
 
     // Default bounds.
-    {
+    SECTION("Default bounds") {
         MocoTool moco;
         MocoProblem& problem = moco.updProblem();
         auto model = createSlidingMassModel();
@@ -363,7 +357,7 @@ TEMPLATE_TEST_CASE("Workflow", "", MocoTropterSolver, MocoCasADiSolver) {
         // User did not specify state info explicitly.
         SimTK_TEST_MUST_THROW_EXC(
                 phase0.getStateInfo("/slider/position/value"), Exception);
-        {
+        SECTION("User did not specify state info explicitly.") {
             MocoProblemRep rep = problem.createRep();
             {
                 const auto& info = rep.getStateInfo("/slider/position/value");
@@ -388,14 +382,14 @@ TEMPLATE_TEST_CASE("Workflow", "", MocoTropterSolver, MocoCasADiSolver) {
         }
 
         problem.setControlInfo("/actuator", {12, 15});
-        {
+        SECTION("Setting control info explicitly") {
             {
                 const auto& probinfo = phase0.getControlInfo("/actuator");
                 SimTK_TEST_EQ(probinfo.getBounds().getLower(), 12);
                 SimTK_TEST_EQ(probinfo.getBounds().getUpper(), 15);
             }
-            MocoProblemRep rep = problem.createRep();
             {
+                MocoProblemRep rep = problem.createRep();
                 const auto& info = rep.getControlInfo("/actuator");
                 SimTK_TEST_EQ(info.getBounds().getLower(), 12);
                 SimTK_TEST_EQ(info.getBounds().getUpper(), 15);
@@ -421,6 +415,117 @@ TEMPLATE_TEST_CASE("Workflow", "", MocoTropterSolver, MocoCasADiSolver) {
                 const auto& info3 = rep.getControlInfo("/residuals_3");
                 SimTK_TEST_EQ(info3.getBounds().getLower(), -7.5);
                 SimTK_TEST_EQ(info3.getBounds().getUpper(), 10);
+        }
+        SECTION("Setting only initial/final bounds explicitly.")
+        {
+            SECTION("Initial coordinate value") {
+                problem.setStateInfo("/slider/position/value", {}, {-5.0, 3.6});
+                {
+                    const auto& info =
+                            phase0.getStateInfo("/slider/position/value");
+                    SimTK_TEST(!info.getBounds().isSet());
+                    SimTK_TEST_EQ(info.getInitialBounds().getLower(), -5.0);
+                    SimTK_TEST_EQ(info.getInitialBounds().getUpper(), 3.6);
+                    SimTK_TEST(!info.getFinalBounds().isSet());
+                }
+                MocoProblemRep rep = problem.createRep();
+                const auto& info = rep.getStateInfo("/slider/position/value");
+                SimTK_TEST_EQ(info.getBounds().getLower(), -10);
+                SimTK_TEST_EQ(info.getBounds().getUpper(), 15);
+                SimTK_TEST_EQ(info.getInitialBounds().getLower(), -5.0);
+                SimTK_TEST_EQ(info.getInitialBounds().getUpper(), 3.6);
+                SimTK_TEST(!info.getFinalBounds().isSet());
+            }
+            SECTION("Final coordinate value") {
+                problem.setStateInfo(
+                        "/slider/position/value", {}, {}, {1.3, 2.5});
+                {
+                    const auto& info =
+                            phase0.getStateInfo("/slider/position/value");
+                    SimTK_TEST(!info.getBounds().isSet());
+                    SimTK_TEST(!info.getInitialBounds().isSet());
+                    SimTK_TEST_EQ(info.getFinalBounds().getLower(), 1.3);
+                    SimTK_TEST_EQ(info.getFinalBounds().getUpper(), 2.5);
+                }
+                MocoProblemRep rep = problem.createRep();
+                const auto& info = rep.getStateInfo("/slider/position/value");
+                SimTK_TEST_EQ(info.getBounds().getLower(), -10);
+                SimTK_TEST_EQ(info.getBounds().getUpper(), 15);
+                SimTK_TEST(!info.getInitialBounds().isSet());
+                SimTK_TEST_EQ(info.getFinalBounds().getLower(), 1.3);
+                SimTK_TEST_EQ(info.getFinalBounds().getUpper(), 2.5);
+            }
+            SECTION("Initial coordinate speed") {
+                problem.setStateInfo(
+                        "/slider/position/speed", {}, {-4.1, 3.9});
+                {
+                    const auto& info =
+                            phase0.getStateInfo("/slider/position/speed");
+                    SimTK_TEST(!info.getBounds().isSet());
+                    SimTK_TEST_EQ(info.getInitialBounds().getLower(), -4.1);
+                    SimTK_TEST_EQ(info.getInitialBounds().getUpper(), 3.9);
+                    SimTK_TEST(!info.getFinalBounds().isSet());
+                }
+                MocoProblemRep rep = problem.createRep();
+                const auto& info = rep.getStateInfo("/slider/position/speed");
+                SimTK_TEST_EQ(info.getBounds().getLower(), -50);
+                SimTK_TEST_EQ(info.getBounds().getUpper(), 50);
+                SimTK_TEST_EQ(info.getInitialBounds().getLower(), -4.1);
+                SimTK_TEST_EQ(info.getInitialBounds().getUpper(), 3.9);
+                SimTK_TEST(!info.getFinalBounds().isSet());
+            }
+            SECTION("Final coordinate speed") {
+                problem.setStateInfo(
+                        "/slider/position/speed", {}, {}, {0.1, 0.8});
+                {
+                    const auto& info =
+                            phase0.getStateInfo("/slider/position/speed");
+                    SimTK_TEST(!info.getBounds().isSet());
+                    SimTK_TEST(!info.getInitialBounds().isSet());
+                    SimTK_TEST_EQ(info.getFinalBounds().getLower(), 0.1);
+                    SimTK_TEST_EQ(info.getFinalBounds().getUpper(), 0.8);
+                }
+                MocoProblemRep rep = problem.createRep();
+                const auto& info = rep.getStateInfo("/slider/position/speed");
+                SimTK_TEST_EQ(info.getBounds().getLower(), -50);
+                SimTK_TEST_EQ(info.getBounds().getUpper(), 50);
+                SimTK_TEST(!info.getInitialBounds().isSet());
+                SimTK_TEST_EQ(info.getFinalBounds().getLower(), 0.1);
+                SimTK_TEST_EQ(info.getFinalBounds().getUpper(), 0.8);
+            }
+            SECTION("Initial control") {
+                problem.setControlInfo("/actuator", {}, {-4.1, 3.9});
+                {
+                    const auto& info = phase0.getControlInfo("/actuator");
+                    SimTK_TEST(!info.getBounds().isSet());
+                    SimTK_TEST_EQ(info.getInitialBounds().getLower(), -4.1);
+                    SimTK_TEST_EQ(info.getInitialBounds().getUpper(), 3.9);
+                    SimTK_TEST(!info.getFinalBounds().isSet());
+                }
+                MocoProblemRep rep = problem.createRep();
+                const auto& info = rep.getControlInfo("/actuator");
+                SimTK_TEST_EQ(info.getBounds().getLower(), 35);
+                SimTK_TEST_EQ(info.getBounds().getUpper(), 56);
+                SimTK_TEST_EQ(info.getInitialBounds().getLower(), -4.1);
+                SimTK_TEST_EQ(info.getInitialBounds().getUpper(), 3.9);
+                SimTK_TEST(!info.getFinalBounds().isSet());
+            }
+            SECTION("Final control") {
+                problem.setControlInfo("/actuator", {}, {}, {0.1, 0.8});
+                {
+                    const auto& info = phase0.getControlInfo("/actuator");
+                    SimTK_TEST(!info.getBounds().isSet());
+                    SimTK_TEST(!info.getInitialBounds().isSet());
+                    SimTK_TEST_EQ(info.getFinalBounds().getLower(), 0.1);
+                    SimTK_TEST_EQ(info.getFinalBounds().getUpper(), 0.8);
+                }
+                MocoProblemRep rep = problem.createRep();
+                const auto& info = rep.getControlInfo("/actuator");
+                SimTK_TEST_EQ(info.getBounds().getLower(), 35);
+                SimTK_TEST_EQ(info.getBounds().getUpper(), 56);
+                SimTK_TEST(!info.getInitialBounds().isSet());
+                SimTK_TEST_EQ(info.getFinalBounds().getLower(), 0.1);
+                SimTK_TEST_EQ(info.getFinalBounds().getUpper(), 0.8);
             }
         }
     }
@@ -1281,15 +1386,14 @@ TEMPLATE_TEST_CASE("Solving an empty MocoProblem", "", MocoTropterSolver,
 /// Even when not using quaternions, Simbody has a slot in the state vector
 /// for the 4th quaternion coordinate.
 template <typename SolverType>
-void testSkippingOverQuaternionSlots(bool constrained,
-        bool constraintDerivs,
-        std::string dynamicsMode) {
+void testSkippingOverQuaternionSlots(
+        bool constrained, bool constraintDerivs, std::string dynamicsMode) {
     Model model;
     using SimTK::Vec3;
     auto* b1 = new Body("b1", 1, Vec3(0), SimTK::Inertia(1));
     model.addBody(b1);
-    auto* j1 = new BallJoint("j1", model.getGround(), Vec3(0, -1, 0),
-            Vec3(0), *b1, Vec3(0), Vec3(0));
+    auto* j1 = new BallJoint("j1", model.getGround(), Vec3(0, -1, 0), Vec3(0),
+            *b1, Vec3(0), Vec3(0));
     j1->updCoordinate(BallJoint::Coord::Rotation1X).setRangeMin(-0.2);
     j1->updCoordinate(BallJoint::Coord::Rotation1X).setRangeMin(+0.2);
     j1->updCoordinate(BallJoint::Coord::Rotation2Y).setRangeMin(-0.2);
@@ -1351,8 +1455,8 @@ void testSkippingOverQuaternionSlots(bool constrained,
     const double lastValue = valueTraj[valueTraj.size() - 1];
     CHECK(lastValue == Approx(speed * duration));
     for (int i = 0; i < N; ++i) {
-        CHECK(solution.getState("/jointset/j2/j2_coord_0/speed").getElt(i, 0)
-                == Approx(speed));
+        CHECK(solution.getState("/jointset/j2/j2_coord_0/speed").getElt(i, 0) ==
+                Approx(speed));
     }
 }
 
@@ -1360,10 +1464,12 @@ TEST_CASE("Skip over empty quaternion slots", "") {
     std::cout.rdbuf(LogManager::cout.rdbuf());
     std::cout.rdbuf(LogManager::cout.rdbuf());
 
-    testSkippingOverQuaternionSlots<MocoTropterSolver>(false, false, "explicit");
+    testSkippingOverQuaternionSlots<MocoTropterSolver>(
+            false, false, "explicit");
     testSkippingOverQuaternionSlots<MocoTropterSolver>(true, false, "explicit");
     testSkippingOverQuaternionSlots<MocoTropterSolver>(true, true, "explicit");
-    testSkippingOverQuaternionSlots<MocoTropterSolver>(false, false, "implicit");
+    testSkippingOverQuaternionSlots<MocoTropterSolver>(
+            false, false, "implicit");
 
     testSkippingOverQuaternionSlots<MocoCasADiSolver>(false, false, "explicit");
     testSkippingOverQuaternionSlots<MocoCasADiSolver>(true, false, "explicit");
