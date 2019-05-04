@@ -22,8 +22,8 @@
 #include "../osimMocoDLL.h"
 
 #include <OpenSim/Common/DataTable.h>
-#include <OpenSim/Simulation/Model/Muscle.h>
 #include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/Model/Muscle.h>
 
 namespace OpenSim {
 
@@ -86,7 +86,7 @@ public:
     OpenSim_DECLARE_PROPERTY(active_force_width_scale, double,
             "Scale factor for the width of the active force-length curve. "
             "Larger values make the curve wider. "
-            "(default: 1.0).")
+            "(default: 1.0).");
     OpenSim_DECLARE_PROPERTY(fiber_damping, double,
             "The linear damping of the fiber (default: 0.01).");
     OpenSim_DECLARE_PROPERTY(tendon_strain_at_one_norm_force, double,
@@ -149,12 +149,12 @@ public:
     }
 
 protected:
-    double calcInextensibleTendonActiveFiberForce(SimTK::State&,
-            double) const override {
+    double calcInextensibleTendonActiveFiberForce(
+            SimTK::State&, double) const override {
         OPENSIM_THROW_FRMOBJ(Exception, "Not implemented.");
     }
-    void calcMuscleLengthInfo(const SimTK::State& s,
-            MuscleLengthInfo& mli) const override;
+    void calcMuscleLengthInfo(
+            const SimTK::State& s, MuscleLengthInfo& mli) const override;
     // void calcFiberVelocityInfo(const SimTK::State& s,
     //         FiberVelocityInfo& fvi) const override;
     // void calcMuscleDynamicsInfo(const SimTK::State& s,
@@ -227,50 +227,28 @@ public:
     // TODO these next few methods are convoluted; using MuscleLengthInfo will
     // be better!
     SimTK::Real calcNormalizedFiberLength(const SimTK::State& s) const {
-        if (get_ignore_tendon_compliance()) {
-            return calcFiberLength(s) / get_optimal_fiber_length();
-        } else {
-            return getStateVariableValue(s, STATE_NORMALIZED_FIBER_LENGTH_NAME);
-        }
+        return calcFiberLength(s) / get_optimal_fiber_length();
     }
 
     SimTK::Real calcFiberLength(const SimTK::State& s) const {
-        if (get_ignore_tendon_compliance()) {
-            return getLength(s) - get_tendon_slack_length();
-        } else {
-            return get_optimal_fiber_length() * calcNormalizedFiberLength(s);
-        }
+        return getLength(s) - get_tendon_slack_length();
     }
 
     SimTK::Real calcNormalizedTendonLength(const SimTK::State& s) const {
-        if (get_ignore_tendon_compliance())
-            return 1.0;
-        else
-            return calcNormalizedTendonLength(getLength(s), calcFiberLength(s));
+        return 1.0;
     }
     SimTK::Real calcNormalizedTendonLength(
             const SimTK::Real& muscleTendonLength,
             const SimTK::Real& fiberLength) const {
-        if (get_ignore_tendon_compliance()) {
-            // TODO handle muscle-tendon length is less than tendon slack length
-            // (buckling).
-            return 1.0;
-        } else {
-            // TODO: Pennation.
-            return (muscleTendonLength - fiberLength) /
-                   get_tendon_slack_length();
-        }
+        // TODO handle muscle-tendon length is less than tendon slack length
+        // (buckling).
+        return 1.0;
     }
 
     SimTK::Real calcTendonLength(const SimTK::State& s) const {
-        if (get_ignore_tendon_compliance()) {
-            // TODO handle muscle-tendon length is less than tendon slack length
-            // (buckling).
-            return get_tendon_slack_length();
-        } else {
-            // TODO: Pennation.
-            return getLength(s) - calcFiberLength(s);
-        }
+        // TODO handle muscle-tendon length is less than tendon slack length
+        // (buckling).
+        return get_tendon_slack_length();
     }
 
     /// This returns the fiber velocity normalized by the max contraction
@@ -434,12 +412,11 @@ private:
     constexpr static double m_maxNormFiberLength = 1.8;
 
     static const std::string STATE_ACTIVATION_NAME;
-    static const std::string STATE_NORMALIZED_FIBER_LENGTH_NAME;
 
     SimTK::Real m_maxContractionVelocityInMeters = SimTK::NaN;
     // Tendon stiffness parameter from De Groote et al., 2016.
     SimTK::Real m_kT = SimTK::NaN;
-};
+}; // namespace OpenSim
 
 } // namespace OpenSim
 

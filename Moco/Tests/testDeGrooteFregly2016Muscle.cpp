@@ -35,6 +35,7 @@ TEST_CASE("DeGrooteFregly2016Muscle basics") {
 
     Model model;
     auto* musclePtr = new DeGrooteFregly2016Muscle();
+    musclePtr->set_ignore_tendon_compliance(true);
     musclePtr->setName("muscle");
     musclePtr->addNewPathPoint("origin", model.updGround(), SimTK::Vec3(0));
     musclePtr->addNewPathPoint(
@@ -122,6 +123,7 @@ TEST_CASE("DeGrooteFregly2016Muscle basics") {
         }
     }
 
+    /* TODO solveBisection() is temporarily removed.
     SECTION("solveBisection()") {
 
         // solveBisection().
@@ -164,10 +166,13 @@ TEST_CASE("DeGrooteFregly2016Muscle basics") {
                     muscle.solveBisection(parabola, -5, 5), Exception);
         }
 
-        SimTK::State state = model.initSystem();
+    }
+     */
 
-        // getActivation(), setActivation()
-        // --------------------------------
+    // getActivation(), setActivation()
+    // --------------------------------
+    SECTION("getActivation(), setActivation()") {
+        SimTK::State state = model.initSystem();
         SimTK_TEST_EQ(
                 muscle.getActivation(state), muscle.get_default_activation());
         muscle.setActivation(state, 0.451);
@@ -234,9 +239,9 @@ void testHangingMuscleMinimumTime(
         muscle->setActivation(state, initActivation);
         model.equilibrateMuscles(state);
         std::cout << "Equilibrium norm fiber length: "
-                << model.getStateVariableValue(
-                        state, "forceset/actuator/norm_fiber_length")
-                << std::endl;
+                  << model.getStateVariableValue(
+                             state, "forceset/actuator/norm_fiber_length")
+                  << std::endl;
     }
 
     // Minimum time trajectory optimization.

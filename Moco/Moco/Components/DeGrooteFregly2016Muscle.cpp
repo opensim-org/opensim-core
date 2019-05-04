@@ -26,8 +26,6 @@
 using namespace OpenSim;
 
 const std::string DeGrooteFregly2016Muscle::STATE_ACTIVATION_NAME("activation");
-const std::string DeGrooteFregly2016Muscle::STATE_NORMALIZED_FIBER_LENGTH_NAME(
-        "normalized_fiber_length");
 
 void DeGrooteFregly2016Muscle::constructProperties() {
     constructProperty_default_normalized_fiber_length(1.0);
@@ -98,6 +96,9 @@ void DeGrooteFregly2016Muscle::extendFinalizeFromProperties() {
     OPENSIM_THROW_IF_FRMOBJ(get_pennation_angle_at_optimal() != 0, Exception,
             "Non-zero 'pennation angle at optimal' not supported yet.");
 
+    OPENSIM_THROW_IF_FRMOBJ(!get_ignore_tendon_compliance(), Exception,
+            "Tendon compliance not yet supported.");
+
     m_maxContractionVelocityInMeters =
             get_max_contraction_velocity() * get_optimal_fiber_length();
     m_kT = log((1.0 + c3) / c1) /
@@ -110,9 +111,6 @@ void DeGrooteFregly2016Muscle::extendAddToSystem(
     if (!get_ignore_activation_dynamics()) {
         addStateVariable(STATE_ACTIVATION_NAME, SimTK::Stage::Dynamics);
     }
-    if (!get_ignore_tendon_compliance()) {
-        addStateVariable(STATE_NORMALIZED_FIBER_LENGTH_NAME, SimTK::Stage::Position);
-    }
 }
 
 void DeGrooteFregly2016Muscle::extendInitStateFromProperties(
@@ -122,10 +120,6 @@ void DeGrooteFregly2016Muscle::extendInitStateFromProperties(
         setStateVariableValue(
                 s, STATE_ACTIVATION_NAME, get_default_activation());
     }
-    if (!get_ignore_tendon_compliance()) {
-        setStateVariableValue(s, STATE_NORMALIZED_FIBER_LENGTH_NAME,
-                get_default_normalized_fiber_length());
-    }
 }
 
 void DeGrooteFregly2016Muscle::extendSetPropertiesFromState(
@@ -133,10 +127,6 @@ void DeGrooteFregly2016Muscle::extendSetPropertiesFromState(
     Super::extendSetPropertiesFromState(s);
     if (!get_ignore_activation_dynamics()) {
         set_default_activation(getStateVariableValue(s, STATE_ACTIVATION_NAME));
-    }
-    if (!get_ignore_tendon_compliance()) {
-        set_default_normalized_fiber_length(
-                getStateVariableValue(s, STATE_NORMALIZED_FIBER_LENGTH_NAME));
     }
 }
 
@@ -172,77 +162,6 @@ void DeGrooteFregly2016Muscle::computeStateVariableDerivatives(
                 tempAct * (f + 0.5) + tempDeact * (-f + 0.5);
         const SimTK::Real derivative = timeConst * (excitation - activation);
         setStateVariableDerivativeValue(s, STATE_ACTIVATION_NAME, derivative);
-    }
-
-    if (!get_ignore_tendon_compliance()) {
-        const auto& activation = getActivation(s);
-
-        // Root-solve the following for v:
-        // a f_L f_V(v) + beta * v + f_P = f_T
-
-        const SimTK::Real muscleTendonLength = getLength(s);
-        const SimTK::Real normFiberLength = calcNormalizedFiberLength(s);
-
-        const SimTK::Real activeForceLengthMult =
-                calcActiveForceLengthMultiplier(normFiberLength);
-        const SimTK::Real cosPenn = 1.0; // TODO
-        const SimTK::Real activationActiveForceLengthMultiplierCosPenn =
-                activation * activeForceLengthMult * cosPenn;
-        const SimTK::Real passiveForceMult =
-                calcPassiveForceMultiplier(normFiberLength);
-        const SimTK::Real fiberLength =
-                get_optimal_fiber_length() * normFiberLength;
-        const SimTK::Real normTendonLength =
-                calcNormalizedTendonLength(muscleTendonLength, fiberLength);
-        const SimTK::Real normTendonForce =
-                calcTendonForceMultiplier(normTendonLength);
-        const SimTK::Real constant =
-                passiveForceMult * cosPenn - normTendonForce;
-
-        auto calcResidual =
-                [this, &activationActiveForceLengthMultiplierCosPenn,
-                        &constant](const SimTK::Real& normFiberVelocity) {
-                    return activationActiveForceLengthMultiplierCosPenn *
-                                   calcForceVelocityMultiplier(
-                                           normFiberVelocity) +
-                           get_fiber_damping() * normFiberVelocity + constant;
-                };
-        // In explicit dynamics mode and during trial integration steps,
-        // the equilibrium solution for normFiberVelocity is not within
-        // [-1, 1].
-        const double velocityBound = 500000;
-
-        SimTK::Real equilNormFiberVelocity;
-        try {
-            equilNormFiberVelocity =
-                    solveBisection(calcResidual, -velocityBound, velocityBound);
-        } catch (const Exception& /*e*/) {
-            std::cout << format("DEBUG computeStateVariableDerivatives"
-                                "\n\ttime: %g"
-                                "\n\tactivation: %g"
-                                "\n\tmuscleTendonLength: %g"
-                                "\n\tnormFiberLength: %g"
-                                "\n\tactiveForceLengthMult: %g"
-                                "\n\tpassiveForceMult: %g"
-                                "\n\tnormTendonLength: %g"
-                                "\n\tnormTendonForce: %g"
-                                "\n\tscale: %g"
-                                "\n\toffset: %g",
-                                 s.getTime(), activation, muscleTendonLength,
-                                 normFiberLength, activeForceLengthMult,
-                                 passiveForceMult, normTendonLength,
-                                 normTendonForce,
-                                 activationActiveForceLengthMultiplierCosPenn,
-                                 constant)
-                      << std::endl;
-            throw;
-        }
-
-        // norm_fiber_length/second = norm_fiber_length/second * unitless
-        const SimTK::Real normFiberLengthDot =
-                get_max_contraction_velocity() * equilNormFiberVelocity;
-        setStateVariableDerivativeValue(
-                s, STATE_NORMALIZED_FIBER_LENGTH_NAME, normFiberLengthDot);
     }
 }
 
@@ -280,107 +199,7 @@ void DeGrooteFregly2016Muscle::calcMuscleLengthInfo(
 
 void DeGrooteFregly2016Muscle::computeInitialFiberEquilibrium(
         SimTK::State& s) const {
-
     if (get_ignore_tendon_compliance()) return;
-
-    const SimTK::Real activation = getActivation(s);
-    const SimTK::Real muscleTendonLength = getLength(s);
-    const SimTK::Real normFiberVelocity = 0.0;
-
-    auto calcResidual = [this, &activation, &muscleTendonLength,
-                                &normFiberVelocity](
-                                const SimTK::Real& normFiberLength) {
-        return calcFiberEquilibriumResidual(activation, muscleTendonLength,
-                normFiberLength, normFiberVelocity);
-    };
-
-    const SimTK::Real equilNormFiberLength = solveBisection(
-            calcResidual, m_minNormFiberLength, m_maxNormFiberLength);
-
-    // TODO create setNormFiberLength().
-    setStateVariableValue(s, "normalized_fiber_length", equilNormFiberLength);
-}
-
-SimTK::Real DeGrooteFregly2016Muscle::solveBisection(
-        std::function<SimTK::Real(const SimTK::Real&)> calcResidual,
-        SimTK::Real left, SimTK::Real right, const SimTK::Real& xTolerance,
-        const SimTK::Real& yTolerance, int maxIterations) const {
-    SimTK::Real midpoint = left;
-
-    OPENSIM_THROW_IF_FRMOBJ(maxIterations < 0, Exception,
-            format("Expected maxIterations to be positive, but got %i.",
-                    maxIterations));
-    const bool sameSign = calcResidual(left) * calcResidual(right) >= 0;
-    if (sameSign) {
-        std::cout << " solveBisection() SAME SIGN" << std::endl;
-        const auto x = createVectorLinspace(1000, left, right);
-        TimeSeriesTable table;
-        table.setColumnLabels({"residual"});
-        SimTK::RowVector row(1);
-        for (int i = 0; i < x.nrow(); ++i) {
-            row[0] = calcResidual(x[i]);
-            table.appendRow(x[i], row);
-        }
-        writeTableToFile(table, "DEBUG_solveBisection_residual.sto");
-    }
-    OPENSIM_THROW_IF_FRMOBJ(sameSign, Exception,
-            format("Function has same sign at bounds of %f and %f.", left,
-                    right));
-
-    SimTK::Real residualMidpoint;
-    SimTK::Real residualLeft = calcResidual(left);
-    int iterCount = 0;
-    while (iterCount < maxIterations && (right - left) >= xTolerance) {
-        midpoint = 0.5 * (left + right);
-        residualMidpoint = calcResidual(midpoint);
-        if (std::abs(residualMidpoint) < yTolerance) {
-            break;
-        } else if (residualMidpoint * residualLeft < 0) {
-            // The solution is to the left of the current midpoint.
-            right = midpoint;
-        } else {
-            left = midpoint;
-            residualLeft = calcResidual(left);
-        }
-        ++iterCount;
-    }
-    if (iterCount == maxIterations)
-        printMessage("Warning: bisection reached max iterations "
-                     "at x = %g (%s %s).\n",
-                midpoint, getConcreteClassName(), getName());
-    return midpoint;
-}
-
-SimTK::Real DeGrooteFregly2016Muscle::calcFiberEquilibriumResidual(
-        const SimTK::Real& activation, const SimTK::Real& muscleTendonLength,
-        const SimTK::Real& normFiberLength,
-        const SimTK::Real& normFiberVelocity) const {
-
-    const SimTK::Real normFiberForce = calcNormFiberForceAlongTendon(
-            activation, normFiberLength, normFiberVelocity);
-
-    const SimTK::Real fiberLength =
-            get_optimal_fiber_length() * normFiberLength;
-    const SimTK::Real normTendonLength =
-            calcNormalizedTendonLength(muscleTendonLength, fiberLength);
-    const SimTK::Real normTendonForce =
-            calcTendonForceMultiplier(normTendonLength);
-
-    /*
-    std::cout << format("DEBUG equil"
-                    "\n\tactivation: %f"
-                    "\n\tmuscleTendonLength: %f"
-                    "\n\tnormFiberLength: %f"
-                    "\n\tnormFiberVelocity: %f"
-                    "\n\tnormFiberForce: %f"
-                    "\n\tnormTendonLength: %f"
-                    "\n\tnormTendonForce: %f",
-            activation, muscleTendonLength, normFiberLength,
-            normFiberVelocity, normFiberForce, normTendonLength,
-            normTendonForce)
-            << std::endl;
-            */
-    return normFiberForce - normTendonForce;
 }
 
 DataTable DeGrooteFregly2016Muscle::exportFiberLengthCurvesToTable(
