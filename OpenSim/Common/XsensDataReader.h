@@ -69,7 +69,7 @@ public:
     - one table for AngularVelocity data. 
     If data is missing, an empty table is returned. 
     */
-    DataAdapter::OutputTables read(const std::string& folderName) const override {
+    DataAdapter::OutputTables readSource(const std::string& folderName) const override {
         return extendRead(folderName);
     }
     /** Implements writing functionality, not implemented. */

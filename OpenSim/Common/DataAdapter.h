@@ -110,7 +110,7 @@ public:
                              const DataAdapter& adapter);
 
     /** Public interface to read data from a dataSourceSpecification, typically a file or folder */
-    virtual DataAdapter::OutputTables read(const std::string& dataSourceSpecification) const = 0;
+    virtual DataAdapter::OutputTables readSource(const std::string& dataSourceSpecification) const = 0;
 
 protected:
     /** Creator of concrete DataAdapter(s) for the specified source type by its

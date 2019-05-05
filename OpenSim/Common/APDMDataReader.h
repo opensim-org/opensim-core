@@ -74,7 +74,7 @@ public:
      
      @see IMUDataReader class for utilities to extract/access specific table(s)
     */
-    DataAdapter::OutputTables read(const std::string& fileName) const override {
+    DataAdapter::OutputTables readSource(const std::string& fileName) const override {
         return extendRead(fileName);
     };
 

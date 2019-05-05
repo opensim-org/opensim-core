@@ -14,7 +14,7 @@ class TestXsensDataReader {
         // Test costruct XsensDataReader from a XsensDataReaderSettings object 
         XsensDataReader xsensDataReader = new XsensDataReader(settings);
         // Make sure types returned by the xsensDataReader are usable in Java
-        StdMapStringAbstractDataTable tables = xsensDataReader.read("");
+        StdMapStringAbstractDataTable tables = xsensDataReader.readData("");
 
         // Check that custom accessors are available and return usable types
         // Only spot check of the table is done as actual testing of contents 
