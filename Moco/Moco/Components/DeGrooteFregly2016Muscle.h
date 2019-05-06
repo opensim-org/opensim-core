@@ -366,16 +366,23 @@ private:
     }
 
     // Curve parameters.
-    // Notation comes from De Groote et al, 2016 (supplement).
+    // Notation comes from De Groote et al., 2016 (supplement).
 
     // Parameters for the tendon force curve.
-    // TODO allow users to set kT; it has a huge effect on the runtime of
-    // INDYGO.
+    // --------------------------------------
     constexpr static double c1 = 0.200;
-    constexpr static double c2 = 0.995; // TODO 1.0?
-    constexpr static double c3 = 0.250; // TODO 0.2 (c3)?
+    // Horizontal asymptote as x -> -inf is -c3.
+    // Normalized force at 0 strain is c1 * exp(-c2) - c3.
+    // This parameter is 0.995 in De Groote et al., which causes the y-value at
+    // 0 strain to be negative. We use 1.0 so that the y-value at 0 strain is 0
+    // (since c2 == c3).
+    constexpr static double c2 = 1.0;
+    // This parameter is 0.250 in De Groote et al., which causes
+    // lim(x->-inf) = -0.25 instead of -0.20.
+    constexpr static double c3 = 0.200;
 
     // Parameters for the force-velocity curve.
+    // ----------------------------------------
     // The parameters from the paper supplement are rounded/truncated and cause
     // the curve to not go through the points (-1, 0) and (0, 1). We solved for
     // different values of d1 and d4 so that the curve goes through (-1, 0) and
@@ -393,7 +400,9 @@ private:
     static const std::string STATE_ACTIVATION_NAME;
 
     SimTK::Real m_maxContractionVelocityInMeters = SimTK::NaN;
-    // Tendon stiffness parameter from De Groote et al., 2016.
+    // Tendon stiffness parameter from De Groote et al., 2016. Instead of
+    // kT, users specify tendon strain at 1 norm force, which is more intuitive.
+
     SimTK::Real m_kT = SimTK::NaN;
 };
 
