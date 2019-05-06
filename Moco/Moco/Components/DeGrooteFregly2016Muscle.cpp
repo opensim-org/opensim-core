@@ -34,7 +34,7 @@ void DeGrooteFregly2016Muscle::constructProperties() {
     constructProperty_active_force_width_scale(1.0);
     constructProperty_fiber_damping(0.01);
     constructProperty_tendon_strain_at_one_norm_force(0.049);
-    
+
     constructProperty_ignore_passive_fiber_force(false);
 }
 
@@ -75,7 +75,8 @@ void DeGrooteFregly2016Muscle::extendFinalizeFromProperties() {
 
     SimTK_ERRCHK2_ALWAYS(get_active_force_width_scale() >= 1,
             "DeGrooteFregly2016Muscle::extendFinalizeFromProperties",
-            "%s: active_force_width_scale must be greater than or equal to 1.0, "
+            "%s: active_force_width_scale must be greater than or equal to "
+            "1.0, "
             "but it is %g.",
             getName().c_str(), get_active_force_width_scale());
 
@@ -159,34 +160,98 @@ void DeGrooteFregly2016Muscle::computeStateVariableDerivatives(
 
 double DeGrooteFregly2016Muscle::computeActuation(const SimTK::State& s) const {
     // TODO use fiber or tendon force?
-    const SimTK::Real& activation = getActivation(s);
-    const SimTK::Real normFiberLength = calcNormalizedFiberLength(s);
-    const SimTK::Real normFiberVelocity = calcNormalizedFiberVelocity(s);
-
-    const SimTK::Real normFiberForce = calcNormFiberForceAlongTendon(
-            activation, normFiberLength, normFiberVelocity);
-
-    return get_max_isometric_force() * normFiberForce;
+    const auto& mdi = getMuscleDynamicsInfo(s);
+    return mdi.tendonForce;
 }
 
 void DeGrooteFregly2016Muscle::calcMuscleLengthInfo(
         const SimTK::State& s, MuscleLengthInfo& mli) const {
-    mli.fiberLength = calcFiberLength(s);
-    mli.fiberLengthAlongTendon = mli.fiberLength; // TODO: pennation
-    mli.normFiberLength = calcNormalizedFiberLength(s);
 
-    mli.normTendonLength = calcNormalizedTendonLength(s);
-    mli.tendonLength = calcTendonLength(s);
+    // Tendon.
+    // -------
+    mli.normTendonLength = 1.0;
+    // TODO handle muscle-tendon length is less than tendon slack length
+    // (buckling).
+    mli.tendonLength = get_tendon_slack_length();
     mli.tendonStrain = mli.normTendonLength - 1.0;
 
+    // Fiber.
+    // ------
+    mli.fiberLength = getLength(s) - mli.tendonLength;
+    mli.fiberLengthAlongTendon = mli.fiberLength; // TODO: pennation
+    mli.normFiberLength = mli.fiberLength / get_optimal_fiber_length();
+
+    // Pennation.
+    // ----------
     mli.pennationAngle = 0;    // TODO: pennation
     mli.cosPennationAngle = 1; // TODO: pennation
     mli.sinPennationAngle = 0; // TODO: pennation
 
+    // Multipliers.
+    // ------------
     mli.fiberPassiveForceLengthMultiplier =
             calcPassiveForceMultiplier(mli.normFiberLength);
     mli.fiberActiveForceLengthMultiplier =
             calcActiveForceLengthMultiplier(mli.normFiberLength);
+}
+
+void DeGrooteFregly2016Muscle::calcFiberVelocityInfo(
+        const SimTK::State& s, FiberVelocityInfo& fvi) const {
+    fvi.fiberVelocity = getLengtheningSpeed(s);
+    fvi.fiberVelocityAlongTendon = fvi.fiberVelocity; // TODO: pennation
+    fvi.normFiberVelocity =
+            fvi.fiberVelocity / m_maxContractionVelocityInMeters;
+    fvi.pennationAngularVelocity = 0; // TODO: pennation
+    fvi.tendonVelocity = 0;
+    fvi.normTendonVelocity = 0;
+    fvi.fiberForceVelocityMultiplier =
+            calcForceVelocityMultiplier(fvi.normFiberVelocity);
+}
+
+void DeGrooteFregly2016Muscle::calcMuscleDynamicsInfo(const SimTK::State& s,
+        MuscleDynamicsInfo& mdi) const {
+
+    mdi.activation = getActivation(s);
+
+    const auto& mli = getMuscleLengthInfo(s);
+    const auto& fvi = getFiberVelocityInfo(s);
+
+    const SimTK::Real activeForceLengthMult =
+            calcActiveForceLengthMultiplier(mli.normFiberLength);
+    const SimTK::Real forceVelocityMult =
+            calcForceVelocityMultiplier(fvi.normFiberVelocity);
+
+    const SimTK::Real passiveForceMult =
+            calcPassiveForceMultiplier(mli.normFiberLength);
+
+    const SimTK::Real normActiveForce =
+            mdi.activation * activeForceLengthMult * forceVelocityMult;
+
+    const auto Fmax = get_max_isometric_force();
+    mdi.activeFiberForce = Fmax * normActiveForce;
+    mdi.passiveFiberForce = Fmax * passiveForceMult;
+    mdi.normFiberForce = normActiveForce + passiveForceMult +
+            get_fiber_damping() * fvi.normFiberVelocity;
+
+    mdi.fiberForce = Fmax * mdi.normFiberForce;
+    mdi.fiberForceAlongTendon = mdi.fiberForce; // TODO: pennation
+
+    // TODO: tendon compliance
+    const SimTK::Real normFiberForceAlongTendon =
+            mdi.normFiberForce;
+
+    mdi.normTendonForce = normFiberForceAlongTendon;
+    mdi.tendonForce = mdi.fiberForceAlongTendon;
+
+    mdi.fiberStiffness = SimTK::NaN;
+    mdi.fiberStiffnessAlongTendon = SimTK::NaN;
+    mdi.tendonStiffness = SimTK::NaN;
+    mdi.muscleStiffness = SimTK::NaN;
+
+    mdi.fiberActivePower = SimTK::NaN;
+    mdi.fiberPassivePower = SimTK::NaN;
+    mdi.tendonPower = SimTK::NaN;
+    mdi.musclePower = SimTK::NaN;
 }
 
 void DeGrooteFregly2016Muscle::computeInitialFiberEquilibrium(

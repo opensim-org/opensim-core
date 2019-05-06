@@ -158,10 +158,10 @@ protected:
     }
     void calcMuscleLengthInfo(
             const SimTK::State& s, MuscleLengthInfo& mli) const override;
-    // void calcFiberVelocityInfo(const SimTK::State& s,
-    //         FiberVelocityInfo& fvi) const override;
-    // void calcMuscleDynamicsInfo(const SimTK::State& s,
-    //         MuscleDynamicsInfo& mdi) const override;
+    void calcFiberVelocityInfo(const SimTK::State& s,
+            FiberVelocityInfo& fvi) const override;
+    void calcMuscleDynamicsInfo(const SimTK::State& s,
+            MuscleDynamicsInfo& mdi) const override;
     // void calcMusclePotentialEnergyInfo(const SimTK::State& s,
     //         MusclePotentialEnergyInfo& mpei) const override;
 
@@ -170,73 +170,14 @@ public:
     void computeInitialFiberEquilibrium(SimTK::State& s) const override;
     /// @}
 
-    SimTK::Real calcNormFiberForceAlongTendon(const SimTK::Real& activation,
-            const SimTK::Real& normFiberLength,
-            const SimTK::Real& normFiberVelocity) const {
-        // TODO consider pennation.
-        return calcNormFiberForce(
-                activation, normFiberLength, normFiberVelocity);
-    }
-
-    SimTK::Real calcNormFiberForce(const SimTK::Real& activation,
-            const SimTK::Real& normFiberLength,
-            const SimTK::Real& normFiberVelocity) const {
-
-        const SimTK::Real activeForceLengthMult =
-                calcActiveForceLengthMultiplier(normFiberLength);
-        const SimTK::Real forceVelocityMult =
-                calcForceVelocityMultiplier(normFiberVelocity);
-
-        const SimTK::Real passiveForceMult =
-                calcPassiveForceMultiplier(normFiberLength);
-
-        const SimTK::Real normActiveForce =
-                activation * activeForceLengthMult * forceVelocityMult;
-        auto normFiberForce = normActiveForce + passiveForceMult +
-                              get_fiber_damping() * normFiberVelocity;
-
-        return normFiberForce;
-    }
-
-    // TODO replace with getNormalizedFiberLength from Muscle.
-    // TODO these next few methods are convoluted; using MuscleLengthInfo will
-    // be better!
-    SimTK::Real calcNormalizedFiberLength(const SimTK::State& s) const {
-        return calcFiberLength(s) / get_optimal_fiber_length();
-    }
-
-    SimTK::Real calcFiberLength(const SimTK::State& s) const {
-        return getLength(s) - get_tendon_slack_length();
-    }
-
-    SimTK::Real calcNormalizedTendonLength(const SimTK::State& s) const {
-        return 1.0;
-    }
-    SimTK::Real calcNormalizedTendonLength(
-            const SimTK::Real& muscleTendonLength,
-            const SimTK::Real& fiberLength) const {
-        // TODO handle muscle-tendon length is less than tendon slack length
-        // (buckling).
-        return 1.0;
-    }
-
-    SimTK::Real calcTendonLength(const SimTK::State& s) const {
-        // TODO handle muscle-tendon length is less than tendon slack length
-        // (buckling).
-        return get_tendon_slack_length();
-    }
-
-    /// This returns the fiber velocity normalized by the max contraction
-    /// velocity. The normalized fiber velocity is unitless and should be in
-    /// [-1, 1].
-    // TODO replace with getNormalizedFiberVelocity from Muscle.
-    SimTK::Real calcNormalizedFiberVelocity(const SimTK::State& s) const {
-        const SimTK::Real& fiberVelocity = getLengtheningSpeed(s);
-        return fiberVelocity / m_maxContractionVelocityInMeters;
-    }
-
     /// @name Calculate multipliers.
+    /// These functions compute the values of normalized/dimensionless curves,
+    /// and do not depend on a SimTK::State.
     /// @{
+
+    /// The active force-length curve is the sum of 4 Gaussian-like curves. The
+    /// width of the curve can be adjusted via the active_force_width_scale
+    /// property.
     SimTK::Real calcActiveForceLengthMultiplier(
             const SimTK::Real& normFiberLength) const {
         // Values are taken from https://simtk.org/projects/optcntrlmuscle
@@ -262,6 +203,9 @@ public:
                calcGaussian(x, b12, b22, b32, b42) +
                calcGaussian(x, b13, b23, b33, b43);
     }
+
+    /// The parameters of this curve are not modifiable, so this function is
+    /// static.
     /// Domain: [-1, 1]
     /// Range: [0, 1.794]
     static SimTK::Real calcForceVelocityMultiplier(
