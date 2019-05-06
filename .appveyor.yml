@@ -17,7 +17,7 @@ skip_branch_with_pr: true
 
 environment:
   JAVA_DIR: "C:\\Program Files\\Java\\jdk1.8.0"
-  PYTHON_DIR: "C:\\Python27-x64"
+  PYTHON_DIR: "C:\\Python37-x64"
 
 init:
   - SET BTYPE=Release
