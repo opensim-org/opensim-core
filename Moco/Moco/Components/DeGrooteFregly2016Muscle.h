@@ -263,7 +263,7 @@ public:
                calcGaussian(x, b13, b23, b33, b43);
     }
     /// Domain: [-1, 1]
-    /// Range: [0, 1.789]
+    /// Range: [0, 1.794]
     static SimTK::Real calcForceVelocityMultiplier(
             const SimTK::Real& normFiberVelocity) {
         using SimTK::square;

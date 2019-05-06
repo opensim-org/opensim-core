@@ -97,17 +97,18 @@ TEST_CASE("DeGrooteFregly2016Muscle basics") {
     }
 
     SECTION("printCurvesToSTOFiles") {
-
-        // printCurvesToSTOFiles()
-        // -----------------------
         muscle.printCurvesToSTOFiles();
+    }
 
-        printMessage("%f %f %f %f %f %f\n", muscle.calcTendonForceMultiplier(1),
-                muscle.calcPassiveForceMultiplier(1),
-                muscle.calcActiveForceLengthMultiplier(1),
-                muscle.calcForceVelocityMultiplier(-1),
-                muscle.calcForceVelocityMultiplier(0),
-                muscle.calcForceVelocityMultiplier(1));
+    SECTION("Curve values") {
+        CHECK(muscle.calcTendonForceMultiplier(1) == 0);
+        CHECK(muscle.calcPassiveForceMultiplier(1) ==
+                Approx(0.018567).epsilon(1e-4));
+        CHECK(muscle.calcActiveForceLengthMultiplier(1) == Approx(1));
+        CHECK(muscle.calcForceVelocityMultiplier(-1) == 0);
+        CHECK(muscle.calcForceVelocityMultiplier(0) == Approx(1));
+        CHECK(muscle.calcForceVelocityMultiplier(1) ==
+                Approx(1.794).epsilon(1e-3));
     }
 
     SECTION("Force-velocity curve inverse") {
