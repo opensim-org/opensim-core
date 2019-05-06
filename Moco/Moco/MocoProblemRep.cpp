@@ -223,7 +223,7 @@ void MocoProblemRep::initialize() {
     for (const auto& actu : m_model_base.getComponentList<Actuator>()) {
         const std::string actuName = actu.getAbsolutePathString();
         if (actu.numControls() == 1) {
-            // A control info for this scalar actuator exists, so skip it.
+            // No control info exists; add one.
             if (m_control_infos.count(actuName) == 0) {
                 const auto info = MocoVariableInfo(actuName, {}, {}, {});
                 m_control_infos[actuName] = info;
@@ -239,7 +239,7 @@ void MocoProblemRep::initialize() {
                                     scalarActu->getMaxControl()});
                 } else {
                     m_control_infos[actuName].setBounds(
-                            {-SimTK::Infinity, SimTK::Infinity});
+                            MocoBounds::unconstrained());
                 }
             }
         } else {
@@ -253,7 +253,7 @@ void MocoProblemRep::initialize() {
                 }
                 if (!m_control_infos[controlName].getBounds().isSet()) {
                     m_control_infos[controlName].setBounds(
-                            {-SimTK::Infinity, SimTK::Infinity});
+                            MocoBounds::unconstrained());
                 }
             }
         }
