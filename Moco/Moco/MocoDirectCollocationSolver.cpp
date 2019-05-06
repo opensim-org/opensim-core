@@ -40,3 +40,10 @@ void MocoDirectCollocationSolver::constructProperties() {
     // This is empty to allow user input error checking.
     constructProperty_enforce_constraint_derivatives();
 }
+
+void MocoDirectCollocationSolver::setMesh(std::vector<double> customMesh) {
+    for(int i = 0; i < (int) customMesh.size(); ++i) {
+        this->set_mesh(i, customMesh[i]);
+    }
+
+}

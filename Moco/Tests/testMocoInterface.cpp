@@ -20,8 +20,8 @@
 #include "Testing.h"
 #include <Moco/osimMoco.h>
 
-#include <OpenSim/Actuators/CoordinateActuator.h>
 #include <OpenSim/Actuators/BodyActuator.h>
+#include <OpenSim/Actuators/CoordinateActuator.h>
 #include <OpenSim/Common/LogManager.h>
 #include <OpenSim/Common/STOFileAdapter.h>
 #include <OpenSim/Simulation/Manager/Manager.h>
@@ -78,6 +78,67 @@ MocoTool createSlidingMassMocoTool() {
     auto& ms = moco.initSolver<SolverType>();
     ms.set_num_mesh_points(20);
     return moco;
+}
+
+TEMPLATE_TEST_CASE(
+        "Non-uniform mesh", "", /*MocoTropterSolver,*/ MocoCasADiSolver) {
+    std::cout.rdbuf(LogManager::cout.rdbuf());
+    std::cout.rdbuf(LogManager::cout.rdbuf());
+    MocoTool moco;
+    double finalTime = 5.0;
+    moco.setName("sliding_mass");
+    moco.set_write_solution("false");
+    MocoProblem& mp = moco.updProblem();
+    mp.setModel(createSlidingMassModel());
+    mp.setTimeBounds(MocoInitialBounds(0), finalTime);
+    mp.setStateInfo("/slider/position/value", MocoBounds(0, 1),
+            MocoInitialBounds(0), MocoFinalBounds(1));
+    mp.setStateInfo("/slider/position/speed", {-100, 100}, 0, 0);
+    mp.addCost<MocoControlCost>();
+    SECTION("Ensure integral handles non-uniform mesh") {
+        auto& ms = moco.initSolver<TestType>();
+        ms.set_optim_max_iterations(1);
+        std::vector<double> mesh = {0, .05, .075, .1, .4, .41, .42, .58, .8, 1};
+        ms.setMesh(mesh);
+        auto solution = moco.solve().unseal();
+        auto u = solution.getControl("/actuator");
+
+        double manualIntegral = 0;
+        for (int i = 0; i < (int)(mesh.size() - 1); ++i) {
+            manualIntegral += (.5) * (finalTime * (mesh[i + 1] - mesh[i])) *
+                              ((SimTK::square(u[i])) + SimTK::square(u[i + 1]));
+        }
+
+        for (int i = 0; i < (int)mesh.size(); ++i) {
+            SimTK_TEST_EQ(solution.getTime()[i], mesh[i] * 5);
+        }
+        SimTK_TEST_EQ(manualIntegral, solution.getObjective());
+    }
+
+    SECTION("First mesh point must be zero.") {
+        auto& ms = moco.initSolver<TestType>();
+        std::vector<double> mesh = {.5, 1};
+        ms.setMesh(mesh);
+        REQUIRE_THROWS_WITH(
+                moco.solve(), Catch::Contains("Invalid custom mesh; first mesh "
+                                              "point must be zero."));
+    }
+    SECTION("Mesh points must be strictly increasing") {
+        auto& ms = moco.initSolver<TestType>();
+        std::vector<double> mesh = {0, .5, .5, 1};
+        ms.setMesh(mesh);
+        REQUIRE_THROWS_WITH(
+                moco.solve(), Catch::Contains("Invalid custom mesh; mesh "
+                                       "points must be strictly increasing."));
+    }
+    SECTION("Last mesh piont must be 1.") {
+        auto& ms = moco.initSolver<TestType>();
+        std::vector<double> mesh = {0, .4, .8};
+        ms.setMesh(mesh);
+        REQUIRE_THROWS_WITH(
+                moco.solve(), Catch::Contains("Invalid custom mesh; last mesh "
+                                       "point must be one."));
+    }
 }
 
 /// This model is torque-actuated.
@@ -1110,10 +1171,10 @@ TEST_CASE("MocoIterate") {
                         SimTK::RowVector());
                 // If error is constant:
                 // sqrt(1/(T*N) * integral_t (sum_i^N (err_{i,t}^2))) = err
-                auto rmsBA = b.compareContinuousVariablesRMS(a,
-                        {{"states", statesToCompare},
-                         {"controls", controlsToCompare},
-                         {"multipliers", multipliersToCompare}});
+                auto rmsBA = b.compareContinuousVariablesRMS(
+                        a, {{"states", statesToCompare},
+                                   {"controls", controlsToCompare},
+                                   {"multipliers", multipliersToCompare}});
                 int N = 0;
                 if (statesToCompare.empty())
                     N += NS;
@@ -1135,10 +1196,10 @@ TEST_CASE("MocoIterate") {
                     N += (int)multipliersToCompare.size();
                 auto rmsExpected = N == 0 ? 0 : error;
                 SimTK_TEST_EQ(rmsBA, rmsExpected);
-                auto rmsAB = a.compareContinuousVariablesRMS(b,
-                        {{"states", statesToCompare},
-                         {"controls", controlsToCompare},
-                         {"multipliers", multipliersToCompare}});
+                auto rmsAB = a.compareContinuousVariablesRMS(
+                        b, {{"states", statesToCompare},
+                                   {"controls", controlsToCompare},
+                                   {"multipliers", multipliersToCompare}});
                 SimTK_TEST_EQ(rmsAB, rmsExpected);
             };
 
@@ -1214,7 +1275,8 @@ TEST_CASE("Interpolate", "") {
 }
 
 TEMPLATE_TEST_CASE("Sliding mass", "", MocoTropterSolver, MocoCasADiSolver) {
-
+    std::cout.rdbuf(LogManager::cout.rdbuf());
+    std::cout.rdbuf(LogManager::cout.rdbuf());
     MocoTool moco = createSlidingMassMocoTool<TestType>();
     MocoSolution solution = moco.solve();
     int numTimes = 20;
@@ -1281,15 +1343,14 @@ TEMPLATE_TEST_CASE("Solving an empty MocoProblem", "", MocoTropterSolver,
 /// Even when not using quaternions, Simbody has a slot in the state vector
 /// for the 4th quaternion coordinate.
 template <typename SolverType>
-void testSkippingOverQuaternionSlots(bool constrained,
-        bool constraintDerivs,
-        std::string dynamicsMode) {
+void testSkippingOverQuaternionSlots(
+        bool constrained, bool constraintDerivs, std::string dynamicsMode) {
     Model model;
     using SimTK::Vec3;
     auto* b1 = new Body("b1", 1, Vec3(0), SimTK::Inertia(1));
     model.addBody(b1);
-    auto* j1 = new BallJoint("j1", model.getGround(), Vec3(0, -1, 0),
-            Vec3(0), *b1, Vec3(0), Vec3(0));
+    auto* j1 = new BallJoint("j1", model.getGround(), Vec3(0, -1, 0), Vec3(0),
+            *b1, Vec3(0), Vec3(0));
     j1->updCoordinate(BallJoint::Coord::Rotation1X).setRangeMin(-0.2);
     j1->updCoordinate(BallJoint::Coord::Rotation1X).setRangeMin(+0.2);
     j1->updCoordinate(BallJoint::Coord::Rotation2Y).setRangeMin(-0.2);
@@ -1351,8 +1412,8 @@ void testSkippingOverQuaternionSlots(bool constrained,
     const double lastValue = valueTraj[valueTraj.size() - 1];
     CHECK(lastValue == Approx(speed * duration));
     for (int i = 0; i < N; ++i) {
-        CHECK(solution.getState("/jointset/j2/j2_coord_0/speed").getElt(i, 0)
-                == Approx(speed));
+        CHECK(solution.getState("/jointset/j2/j2_coord_0/speed").getElt(i, 0) ==
+                Approx(speed));
     }
 }
 
@@ -1360,10 +1421,12 @@ TEST_CASE("Skip over empty quaternion slots", "") {
     std::cout.rdbuf(LogManager::cout.rdbuf());
     std::cout.rdbuf(LogManager::cout.rdbuf());
 
-    testSkippingOverQuaternionSlots<MocoTropterSolver>(false, false, "explicit");
+    testSkippingOverQuaternionSlots<MocoTropterSolver>(
+            false, false, "explicit");
     testSkippingOverQuaternionSlots<MocoTropterSolver>(true, false, "explicit");
     testSkippingOverQuaternionSlots<MocoTropterSolver>(true, true, "explicit");
-    testSkippingOverQuaternionSlots<MocoTropterSolver>(false, false, "implicit");
+    testSkippingOverQuaternionSlots<MocoTropterSolver>(
+            false, false, "implicit");
 
     testSkippingOverQuaternionSlots<MocoCasADiSolver>(false, false, "explicit");
     testSkippingOverQuaternionSlots<MocoCasADiSolver>(true, false, "explicit");

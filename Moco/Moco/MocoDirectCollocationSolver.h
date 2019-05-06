@@ -43,10 +43,9 @@ class MocoDirectCollocationSolver : public MocoSolver {
 
 public:
     OpenSim_DECLARE_PROPERTY(num_mesh_points, int,
-            "The number of mesh points for discretizing the problem (default: "
-            "100).");
-    OpenSim_DECLARE_LIST_PROPERTY(mesh, double,
-                             "Usually non-uniform, custom, user-defined list of times to sample.");
+            "The number of uniformly-spaced mesh points for the problem (default: "
+            "100). If a custom mesh exists, the custom mesh is used instead.");
+
     OpenSim_DECLARE_PROPERTY(verbosity, int,
             "0 for silent. 1 for only Moco's own output. "
             "2 for output from CasADi and the underlying solver (default: 2).");
@@ -97,10 +96,14 @@ public:
 
     MocoDirectCollocationSolver() { constructProperties(); }
 
+    void setMesh(std::vector<double> vector);
+
 protected:
     OpenSim_DECLARE_PROPERTY(guess_file, std::string,
             "A MocoIterate file storing an initial guess.");
-
+    OpenSim_DECLARE_LIST_PROPERTY(mesh, double,
+                                  "Usually non-uniform, custom, user-defined list of times to sample. Takes "
+                                  "precedence over default, uniform mesh with num_mesh_points.");
     void constructProperties();
 };
 

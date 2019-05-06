@@ -73,9 +73,11 @@ problem.addCost(MocoFinalTimeCost());
 
 % Configure the solver.
 % =====================
-solver = moco.initTropterSolver();
-solver.set_num_mesh_points(50);
-
+solver = moco.initCasADiSolver();
+%solver.set_num_mesh_points(6);
+customMesh = [0 .2 .4 .6 .8 1.0];
+disp(class(customMesh));
+solver.setMesh(customMesh);
 % Now that we've finished setting up the tool, print it to a file.
 moco.print('sliding_mass.omoco');
 

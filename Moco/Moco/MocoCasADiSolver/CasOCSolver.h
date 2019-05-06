@@ -36,13 +36,17 @@ class Solver {
 public:
     Solver(const Problem& problem) : m_problem(problem) {}
     void setNumMeshPoints(int numMeshPoints) {
-        m_numMeshPoints = numMeshPoints;
+        for(int i = 0; i < numMeshPoints; ++i) {
+            m_mesh.push_back(i/((double)(numMeshPoints-1)));
+        }
     }
     void setMesh(std::vector<double> mesh) {
         m_mesh = mesh;
     }
-    int getNumMeshPoints() const { return m_numMeshPoints; }
 
+    const std::vector<double>& getMesh() const {
+        return m_mesh;
+    }
     void setTranscriptionScheme(std::string scheme) {
         m_transcriptionScheme = std::move(scheme);
     }
@@ -128,7 +132,6 @@ private:
     std::unique_ptr<Transcription> createTranscription() const;
 
     const Problem& m_problem;
-    int m_numMeshPoints;
     std::vector<double> m_mesh;
     std::string m_transcriptionScheme = "trapezoidal";
     bool m_minimizeLagrangeMultipliers = false;

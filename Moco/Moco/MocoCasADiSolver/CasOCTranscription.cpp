@@ -24,22 +24,18 @@ using casadi::Slice;
 
 namespace CasOC {
 
-void Transcription::createVariablesAndSetBounds() {
+void Transcription::createVariablesAndSetBounds(const casadi::DM& grid) {
     // Set the grid.
     // -------------
     // The grid for a transcription scheme includes both mesh points (i.e.
     // points that lie on the endpoints of a mesh interval) and any
     // additional collocation points that may lie on mesh interior (as in
     // Hermite-Simpson collocation, etc.).
+    m_numMeshPoints = (int) m_solver.getMesh().size();
+    m_numGridPoints = (int) grid.numel();
     m_numMeshIntervals = m_numMeshPoints - 1;
     m_numPointsIgnoringConstraints = m_numGridPoints - m_numMeshPoints;
-
-    if (m_mesh.empty()) {
-        m_grid = DM::linspace(0, 1, m_numGridPoints);
-    } else {
-        casadi::Matrix<double> mesh (m_mesh);
-        m_grid = mesh;
-    }
+    m_grid = grid;
 // Create variables.
 
     // -----------------

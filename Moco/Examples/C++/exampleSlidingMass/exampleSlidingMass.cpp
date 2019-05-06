@@ -96,11 +96,16 @@ int main() {
     // Cost.
     // -----
     problem.addCost<MocoFinalTimeCost>();
+    //MocoCost& finalTimeCost = problem.updCost("final_time_cost");
+    //finalTimeCost.set_enabled(false);
 
     // Configure the solver.
     // =====================
     MocoCasADiSolver& solver = moco.initCasADiSolver();
-    solver.set_num_mesh_points(50);
+    solver.set_num_mesh_points(51);
+    //solver.set_mesh({0, .02, .04, .06, .08, .10, .12, .14, .16, .18, .2, .22, .24, .26, .28, .30, .32, .34, .36, .38, .40, .42, .44, .46, .48, .50, .52, .54, .56, .58, .60, .62, .64, .66, .68, .70, .72, .74, .76, .78, .80, .82, .84, .86, .88, .90, .92, .94, .96, .98, 1});
+    const std::vector<double> customMesh = {0, .02, .04, .06, .08, .10, .12, .14, .16, .18, .2, .22, .24, .26, .28, .30, .32, .34, .36, .38, .40, .42, .44, .46, .48, .50, .52, .54, .56, .58, .60, .62, .64, .66, .68, .70, .72, .74, .76, .78, .80, .82, .84, .86, .88, .90, .92, .94, .96, .98, 1};
+    solver.setMesh(customMesh);
 
     // Now that we've finished setting up the tool, print it to a file.
     moco.print("sliding_mass.omoco");

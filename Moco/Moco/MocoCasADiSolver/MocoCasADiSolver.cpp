@@ -21,7 +21,6 @@
 #include "../MocoUtilities.h"
 #include "CasOCSolver.h"
 #include "MocoCasOCProblem.h"
-
 #include <casadi/casadi.hpp>
 
 using casadi::Callback;
@@ -117,7 +116,7 @@ std::unique_ptr<MocoCasOCProblem> MocoCasADiSolver::createCasOCProblem() const {
                      "Set the environment variable OPENSIM_MOCO_PARALLEL or "
                      "MocoCasADiSolver's 'parallel' property to 0, "
                      "or use the command-line or Matlab interfaces."
-                << std::endl;
+                  << std::endl;
     }
     int numThreads;
     if (parallel == 0) {
@@ -133,11 +132,10 @@ std::unique_ptr<MocoCasOCProblem> MocoCasADiSolver::createCasOCProblem() const {
 
     const auto& model = problemRep.getModelBase();
     OPENSIM_THROW_IF(!model.getMatterSubsystem().getUseEulerAngles(
-            model.getWorkingState()),
+                             model.getWorkingState()),
             Exception, "Quaternions are not supported.");
     return OpenSim::make_unique<MocoCasOCProblem>(*this, problemRep,
-            createProblemRepJar(numThreads),
-            get_dynamics_mode());
+            createProblemRepJar(numThreads), get_dynamics_mode());
 }
 
 std::unique_ptr<CasOC::Solver> MocoCasADiSolver::createCasOCSolver(
@@ -169,6 +167,26 @@ std::unique_ptr<CasOC::Solver> MocoCasADiSolver::createCasOCSolver(
     }
 
     checkPropertyIsPositive(*this, getProperty_num_mesh_points());
+
+    if (getProperty_mesh().size() > 0) {
+
+        OPENSIM_THROW_IF_FRMOBJ((get_mesh(0) != 0), Exception,
+                "Invalid custom mesh; first mesh "
+                "point must be zero.");
+
+        for (int i = 1; i < (int)this->getProperty_mesh().size(); ++i) {
+
+            OPENSIM_THROW_IF_FRMOBJ((get_mesh(i) <= get_mesh(i - 1)), Exception,
+                    "Invalid custom mesh; mesh "
+                    "points must be strictly increasing.");
+        }
+
+        OPENSIM_THROW_IF_FRMOBJ((get_mesh(getProperty_mesh().size() - 1) != 1),
+                Exception,
+                "Invalid custom mesh; last mesh "
+                "point must be one.");
+    }
+
     checkPropertyInRangeOrSet(*this, getProperty_optim_max_iterations(), 0,
             std::numeric_limits<int>::max(), {-1});
     checkPropertyInRangeOrSet(*this, getProperty_optim_convergence_tolerance(),
@@ -220,12 +238,12 @@ std::unique_ptr<CasOC::Solver> MocoCasADiSolver::createCasOCSolver(
     Dict pluginOptions;
     pluginOptions["verbose_init"] = true;
 
-    if(getProperty_mesh().empty()) {
+    if (getProperty_mesh().empty()) {
         casSolver->setNumMeshPoints(get_num_mesh_points());
     } else {
-        casSolver->setNumMeshPoints((int) getProperty_mesh().size());
+        casSolver->setNumMeshPoints((int)getProperty_mesh().size());
         std::vector<double> mesh;
-        for(int i = 0; i < getProperty_mesh().size(); ++i) {
+        for (int i = 0; i < getProperty_mesh().size(); ++i) {
             mesh.push_back(get_mesh(i));
         }
         casSolver->setMesh(mesh);
@@ -269,8 +287,7 @@ MocoSolution MocoCasADiSolver::solveImpl() const {
     CasOC::Solution casSolution = casSolver->solve(casGuess);
     MocoSolution mocoSolution = convertToMocoIterate<MocoSolution>(casSolution);
     setSolutionStats(mocoSolution, casSolution.stats.at("success"),
-            casSolution.objective,
-            casSolution.stats.at("return_status"),
+            casSolution.objective, casSolution.stats.at("return_status"),
             casSolution.stats.at("iter_count"));
 
     if (get_verbosity()) {

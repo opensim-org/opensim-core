@@ -27,34 +27,34 @@ namespace tropter {
 namespace transcription {
 
 template<typename T>
-void HermiteSimpson<T>::set_num_mesh_points(unsigned N) {
-    TROPTER_THROW_IF(N < 2, "Expected number of mesh points to be at "
-        "least 2, but got %i", N);
-    m_num_mesh_points = N;
-    // We define the set of collocation points to include any time point where
-    // derivatives of the state estimates are required to match the estimated 
-    // dynamics. For Hermite-Simpson collocation, collocation points include 
-    // both the mesh points and the mesh interval midpoints, so add N-1 points 
-    // to the number of mesh points to get the number of collocation points.
-    // TODO rename to m_num_grid_points?
-    m_num_col_points = 2*N - 1;
-}
+        void HermiteSimpson<T>::set_num_mesh_points(unsigned N) {
+            TROPTER_THROW_IF(N < 2, "Expected number of mesh points to be at "
+                                    "least 2, but got %i", N);
+            m_num_mesh_points = N;
+            // We define the set of collocation points to include any time point where
+            // derivatives of the state estimates are required to match the estimated
+            // dynamics. For Hermite-Simpson collocation, collocation points include
+            // both the mesh points and the mesh interval midpoints, so add N-1 points
+            // to the number of mesh points to get the number of collocation points.
+            // TODO rename to m_num_grid_points?
+            m_num_col_points = 2*N - 1;
+        }
 
-template<typename T>
-void HermiteSimpson<T>::set_ocproblem(
-    std::shared_ptr<const OCProblem> ocproblem) {
-    m_ocproblem = ocproblem;
-    m_num_states = m_ocproblem->get_num_states();
-    m_num_controls = m_ocproblem->get_num_controls();
-    m_num_adjuncts = m_ocproblem->get_num_adjuncts();
-    m_num_diffuses = m_ocproblem->get_num_diffuses();
-    m_num_continuous_variables = m_num_states + m_num_controls + m_num_adjuncts;
-    m_num_time_variables = 2;
-    m_num_parameters = m_ocproblem->get_num_parameters();
-    m_num_dense_variables = m_num_time_variables + m_num_parameters;
-    int num_variables = m_num_time_variables + m_num_parameters
-        + m_num_col_points * m_num_continuous_variables
-        + (m_num_mesh_points - 1) * m_num_diffuses;
+        template<typename T>
+        void HermiteSimpson<T>::set_ocproblem(
+                std::shared_ptr<const OCProblem> ocproblem) {
+            m_ocproblem = ocproblem;
+            m_num_states = m_ocproblem->get_num_states();
+            m_num_controls = m_ocproblem->get_num_controls();
+            m_num_adjuncts = m_ocproblem->get_num_adjuncts();
+            m_num_diffuses = m_ocproblem->get_num_diffuses();
+            m_num_continuous_variables = m_num_states + m_num_controls + m_num_adjuncts;
+            m_num_time_variables = 2;
+            m_num_parameters = m_ocproblem->get_num_parameters();
+            m_num_dense_variables = m_num_time_variables + m_num_parameters;
+            int num_variables = m_num_time_variables + m_num_parameters
+                                + m_num_col_points * m_num_continuous_variables
+                                + (m_num_mesh_points - 1) * m_num_diffuses;
     this->set_num_variables(num_variables);
     // The separated form of Hermite-Simpson requires two constraint equations
     // to implement the defects for a single state variable, one for the 
