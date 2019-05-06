@@ -62,6 +62,15 @@ public:
     }
 }; 
 
+class TableNotFoundException : public Exception {
+public:
+    TableNotFoundException(const std::string& name) :
+        Exception() {
+        std::string msg = "No table with the name '" + name + "' was found. Check for spelling errors.";
+
+        addMessage(msg);
+    }
+};
 /** DataAdapter is an abstract class defining an interface for reading/writing
 in/out the contents of a DataTable. It enables access to/from various data
 sources/sinks such as: streams, files, databases and devices. The DataTable
@@ -112,6 +121,14 @@ public:
     /** Public interface to read data from a dataSourceSpecification, typically a file or folder */
     virtual DataAdapter::OutputTables readSource(const std::string& dataSourceSpecification) const = 0;
 
+    /** Generic interface to retrieve a specific table by name from readSource result */
+    const std::shared_ptr<AbstractDataTable> getDataTable(const OutputTables& tables, const std::string tableName) {
+        if (tables.find(tableName) == tables.end()) {
+            // Throw exception table not found, likely typo in tableName
+            throw TableNotFoundException(tableName);
+        }
+        return tables.at(tableName);
+    }
 protected:
     /** Creator of concrete DataAdapter(s) for the specified source type by its
     unique identifier (string). For example, for file based sources, a 
