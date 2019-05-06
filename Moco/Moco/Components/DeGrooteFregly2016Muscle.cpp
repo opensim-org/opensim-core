@@ -21,8 +21,6 @@
 #include <OpenSim/Actuators/Millard2012EquilibriumMuscle.h>
 #include <OpenSim/Simulation/Model/Model.h>
 
-#include <OpenSim/Common/FileAdapter.h>
-
 using namespace OpenSim;
 
 const std::string DeGrooteFregly2016Muscle::STATE_ACTIVATION_NAME("activation");
@@ -128,12 +126,6 @@ void DeGrooteFregly2016Muscle::extendSetPropertiesFromState(
     if (!get_ignore_activation_dynamics()) {
         set_default_activation(getStateVariableValue(s, STATE_ACTIVATION_NAME));
     }
-}
-
-void DeGrooteFregly2016Muscle::writeTableToFile(const TimeSeriesTable& table,
-        const std::string& filepath) const {
-    DataAdapter::InputTables tables = {{"table", &table}};
-    FileAdapter::writeFile(tables, filepath);
 }
 
 void DeGrooteFregly2016Muscle::computeStateVariableDerivatives(

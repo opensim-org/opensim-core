@@ -44,7 +44,10 @@ namespace OpenSim {
 ///
 /// The fiber damping helps with numerically solving for fiber velocity at low
 /// activations or with low force-length multipliers, and is likely to be more
-/// useful with explicit fiber dynamics than implicit fiber dynamics.
+/// useful with explicit fiber dynamics than implicit fiber dynamics (when
+/// support for fiber dynamics is added).
+///
+/// @note This class does not yet support tendon compliance (fiber dynamics).
 ///
 /// @note This class currently assumes a penantion angle of 0.
 ///
@@ -124,12 +127,12 @@ public:
     //--------------------------------------------------------------------------
     /// @name Muscle interface
     /// @{
-    /// If ignore_activation_dynamics, this gets excitation instead.
+
+    /// If ignore_activation_dynamics is true, this gets excitation instead.
     double getActivation(const SimTK::State& s) const override {
         // We override the Muscle's implementation because Muscle requires
         // realizing to Dynamics to access activation from MuscleDynamicsInfo,
         // which is unnecessary if the activation is a state.
-        // TODO handle ignore_activation_dynamics
         if (get_ignore_activation_dynamics()) {
             return getControl(s);
         } else {
@@ -137,7 +140,7 @@ public:
         }
     }
 
-    /// If ignore_activation_dynamics, this sets excitation instead.
+    /// If ignore_activation_dynamics is true, this sets excitation instead.
     void setActivation(SimTK::State& s, double activation) const override {
         if (get_ignore_activation_dynamics()) {
             SimTK::Vector& controls(getModel().updControls(s));
@@ -167,23 +170,6 @@ public:
     void computeInitialFiberEquilibrium(SimTK::State& s) const override;
     /// @}
 
-    /// Solve for the root of the provided function calcResidual using
-    /// bisection, starting with bounds left and right. Iteration stops when
-    /// maxIterations is reached, the width of the search interal is less than
-    /// the xTolerance, or the value of the function is less than the
-    /// yTolerance.
-    SimTK::Real solveBisection(
-            std::function<SimTK::Real(const SimTK::Real&)> calcResidual,
-            SimTK::Real left, SimTK::Real right,
-            const SimTK::Real& xTolerance = 1e-7,
-            const SimTK::Real& yTolerance = 1e-7,
-            int maxIterations = 100) const;
-
-    SimTK::Real calcFiberEquilibriumResidual(const SimTK::Real& activation,
-            const SimTK::Real& muscleTendonLength,
-            const SimTK::Real& normFiberLength,
-            const SimTK::Real& normFiberVelocity) const;
-
     SimTK::Real calcNormFiberForceAlongTendon(const SimTK::Real& activation,
             const SimTK::Real& normFiberLength,
             const SimTK::Real& normFiberVelocity) const {
@@ -208,18 +194,7 @@ public:
                 activation * activeForceLengthMult * forceVelocityMult;
         auto normFiberForce = normActiveForce + passiveForceMult +
                               get_fiber_damping() * normFiberVelocity;
-        // if (true /*normFiberForce < 0*/) {
-        // std::cout << "DEBUG " << getName() << " "
-        //         << activation << " "
-        //         << normFiberLength << " "
-        //         << normActiveForce << " "
-        //         << passiveForceMult << " "
-        //         << get_fiber_damping() * normFiberVelocity << " "
-        //         << normFiberForce
-        //         << std::endl;
-        // // }
-        // std::cout << "DEBUG " << getName() << " " << activation << " "
-        //           << normFiberForce << std::endl;
+
         return normFiberForce;
     }
 
@@ -338,6 +313,10 @@ public:
         return c1 * exp(m_kT * (normTendonLength - c2)) - c3;
     }
 
+
+    /// @name Utilities
+    /// @{
+
     /// Export the active force-length multiplier and passive force multiplier
     /// curves to a DataTable. If the normFiberLengths argument is omitted, we
     /// use createVectorLinspace(200, minNormFiberLength, maxNormFiberLength).
@@ -361,7 +340,6 @@ public:
     ///     include the filename. By default, the files are printed to the
     ///     current working directory.
     void printCurvesToSTOFiles(const std::string& directory = ".") const;
-    /// @}
 
     /// Replace muscles of other types in the model with muscles of this type.
     /// Currently, only Millard2012EquilibriumMuscles are replaced.
@@ -371,9 +349,10 @@ public:
     static void replaceMuscles(
             Model& model, bool allowUnsupportedMuscles = false);
 
+    /// @}
+
 private:
     void constructProperties();
-    void writeTableToFile(const TimeSeriesTable&, const std::string&) const;
 
     /// This is a Gaussian-like function used in the active force-length curve.
     /// A proper Gaussian function does not have the variable in the denominator
@@ -416,7 +395,7 @@ private:
     SimTK::Real m_maxContractionVelocityInMeters = SimTK::NaN;
     // Tendon stiffness parameter from De Groote et al., 2016.
     SimTK::Real m_kT = SimTK::NaN;
-}; // namespace OpenSim
+};
 
 } // namespace OpenSim
 

@@ -190,6 +190,10 @@ OSIMMOCO_API Storage convertTableToStorage(const TimeSeriesTable&);
 OSIMMOCO_API TimeSeriesTable filterLowpass(
         const TimeSeriesTable& table, double cutoffFreq, bool padData = false);
 
+/// Write a single TimeSeriesTable to a file, using the FileAdapter associated
+/// with the provided file extension.
+OSIMMOCO_API void writeTableToFile(const TimeSeriesTable&, const std::string&);
+
 /// Play back a motion (from the Storage) in the simbody-visuailzer. The Storage
 /// should contain all generalized coordinates. The visualizer window allows the
 /// user to control playback speed.

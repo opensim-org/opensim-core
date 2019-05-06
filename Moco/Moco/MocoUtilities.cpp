@@ -112,6 +112,12 @@ TimeSeriesTable OpenSim::filterLowpass(
     return storage.exportToTable();
 }
 
+void OpenSim::writeTableToFile(const TimeSeriesTable& table,
+        const std::string& filepath) {
+    DataAdapter::InputTables tables = {{"table", &table}};
+    FileAdapter::writeFile(tables, filepath);
+}
+
 // Based on code from simtk.org/projects/predictivesim SimbiconExample/main.cpp.
 void OpenSim::visualize(Model model, Storage statesSto) {
 
