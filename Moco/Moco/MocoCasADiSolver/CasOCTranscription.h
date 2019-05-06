@@ -88,10 +88,9 @@ protected:
             const auto& upper = bounds.upper;
             m_upperBounds[var](rowIndices, columnIndices) = upper;
         } else {
-            m_lowerBounds[var](rowIndices, columnIndices) =
-                    -std::numeric_limits<double>::infinity();
-            m_upperBounds[var](rowIndices, columnIndices) =
-                    std::numeric_limits<double>::infinity();
+            const auto inf = std::numeric_limits<double>::infinity();
+            m_lowerBounds[var](rowIndices, columnIndices) = -inf;
+            m_upperBounds[var](rowIndices, columnIndices) =  inf;
         }
     }
 
