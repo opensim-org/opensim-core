@@ -54,7 +54,7 @@ class TestSwigAddtlInterface(unittest.TestCase):
         actu.setOptimalForce(1)
         model.addComponent(actu)
         
-        moco = osim.MocoTool()
+        moco = osim.MocoStudy()
         moco.setName('sliding_mass')
         
         mp = moco.updProblem()
@@ -170,6 +170,45 @@ class TestSwigAddtlInterface(unittest.TestCase):
         p0 = it.getParameter('p0')
         assert(p0 == 25)
 
+    def test_MocoIterate_numpy(self):
+        try:
+            import numpy as np
+        except ImportError as e:
+            print("Could not import numpy; skipping test.")
+            return
+
+        time = np.linspace(0, 0.2, 3)
+        st = np.random.rand(3, 2)
+        ct = np.random.rand(3, 3)
+        mt = np.random.rand(3, 1)
+        p = np.random.rand(2)
+        it = osim.MocoIterate(time, ['s0', 's1'], ['c0', 'c1', 'c2'],
+                              ['m0'],
+                              ['p0', 'p1'], st, ct, mt, p)
+        assert (it.getTimeMat() == time).all()
+        assert (it.getStatesTrajectoryMat() == st).all()
+        assert (it.getControlsTrajectoryMat() == ct).all()
+        assert (it.getMultipliersTrajectoryMat() == mt).all()
+        assert (it.getParametersMat() == p).all()
+
+        # With derivatives.
+        time = np.linspace(0, 0.2, 3)
+        st = np.random.rand(3, 2)
+        ct = np.random.rand(3, 3)
+        mt = np.random.rand(3, 1)
+        dt = np.random.rand(3, 4)
+        p = np.random.rand(2)
+        it = osim.MocoIterate(time, ['s0', 's1'], ['c0', 'c1', 'c2'],
+                              ['m0'], ['d0', 'd1', 'd2', 'd3'],
+                              ['p0', 'p1'], st, ct, mt, dt, p)
+        np.allclose(it.getTimeMat(), time)
+        assert (it.getTimeMat() == time).all()
+        assert (it.getStatesTrajectoryMat() == st).all()
+        assert (it.getControlsTrajectoryMat() == ct).all()
+        assert (it.getMultipliersTrajectoryMat() == mt).all()
+        assert (it.getDerivativesTrajectoryMat() == dt).all()
+        assert (it.getParametersMat() == p).all()
+
     def test_createRep(self):
         model = osim.Model()
         model.setName('sliding_mass')
@@ -183,7 +222,7 @@ class TestSwigAddtlInterface(unittest.TestCase):
         model.addComponent(joint)
         model.finalizeConnections()
 
-        moco = osim.MocoTool()
+        moco = osim.MocoStudy()
         moco.setName('sliding_mass')
 
         mp = moco.updProblem()
@@ -195,7 +234,7 @@ class TestSwigAddtlInterface(unittest.TestCase):
 class TestWorkflow(unittest.TestCase):
 
     def test_default_bounds(self):
-        moco = osim.MocoTool()
+        moco = osim.MocoStudy()
         problem = moco.updProblem()
         model = createSlidingMassModel()
         model.finalizeFromProperties()
@@ -241,7 +280,7 @@ class TestWorkflow(unittest.TestCase):
         self.assertEqual(info.getBounds().getUpper(), 15)
 
     def test_changing_time_bounds(self):
-        moco = osim.MocoTool()
+        moco = osim.MocoStudy()
         problem = moco.updProblem()
         problem.setModel(createSlidingMassModel())
         problem.setTimeBounds(0, [0, 10])
@@ -266,7 +305,7 @@ class TestWorkflow(unittest.TestCase):
         self.assertAlmostEqual(solution.getFinalTime(), 5.8)
 
     def test_changing_model(self):
-        moco = osim.MocoTool()
+        moco = osim.MocoStudy()
         problem = moco.updProblem()
         model = createSlidingMassModel()
         problem.setModel(model)
@@ -287,7 +326,7 @@ class TestWorkflow(unittest.TestCase):
 
     def test_order(self):
         # Can set the cost and model in any order.
-        moco = osim.MocoTool()
+        moco = osim.MocoStudy()
         problem = moco.updProblem()
         problem.setTimeBounds(0, [0, 10])
         problem.setStateInfo("/slider/position/value", [0, 1], 0, 1)
@@ -301,7 +340,7 @@ class TestWorkflow(unittest.TestCase):
 
     def test_changing_costs(self):
         # Changes to the costs are obeyed.
-        moco = osim.MocoTool()
+        moco = osim.MocoStudy()
         problem = moco.updProblem()
         problem.setModel(createSlidingMassModel())
         problem.setTimeBounds(0, [0, 10])

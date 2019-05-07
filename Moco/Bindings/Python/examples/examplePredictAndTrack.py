@@ -103,7 +103,7 @@ def solvePrediction():
     #
     #       iniital pose      final pose
     #
-    moco = osim.MocoTool()
+    moco = osim.MocoStudy()
     moco.setName("double_pendulum_predict")
 
     problem = moco.updProblem()
@@ -200,7 +200,7 @@ def computeMarkersReference(predictedSolution):
     
 def solveStateTracking(stateRef):
     # Predict the optimal trajectory for a minimum time swing-up.
-    moco = osim.MocoTool()
+    moco = osim.MocoStudy()
     moco.setName("double_pendulum_track")
 
     problem = moco.updProblem()
@@ -255,7 +255,7 @@ def solveStateTracking(stateRef):
     
 def solveMarkerTracking(markersRef, guess):
     # Predict the optimal trajectory for a minimum time swing-up.
-    moco = osim.MocoTool()
+    moco = osim.MocoStudy()
     moco.setName("double_pendulum_track")
 
     problem = moco.updProblem()

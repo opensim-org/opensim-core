@@ -125,7 +125,9 @@ public:
             const MocoFinalBounds& final = {});
     /// Set information about a single control variable in this phase.
     /// Similar to setStateInfo(). The name for a control is the path to the
-    /// associated Actuator (e.g., "/forceset/soleus_r").
+    /// associated actuator (e.g., "/forceset/soleus_r"). If setting a control
+    /// info for an actuator with multiple controls, the name should be the
+    /// actuator path appended by the control index (e.g. "/actuator_0");
     /// If info is not specified for a ScalarActuator (or if only the initial
     /// and/or final bounds are provided), the actuator's min and max control
     /// are used for the bounds over the phase. By default, non-ScalarActuators
@@ -265,7 +267,7 @@ public:
     /// This function does *not* provide such automatically-populated bounds
     /// from the model. For that, use see MocoProblemRep::getStateInfo().
     const MocoVariableInfo& getStateInfo(const std::string& name) const;
-    /// Access explicit controlinfos provided to this phase.
+    /// Access explicit control infos provided to this phase.
     /// Default bounds are obtained from the model.
     /// This function does *not* provide such automatically-populated bounds
     /// from the model. For that, use see MocoProblemRep::getControlInfo().

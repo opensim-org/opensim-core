@@ -68,9 +68,9 @@ body_center.attachGeometry(geom);
 
 model.finalizeConnections();
 
-% Create MocoTool.
+% Create MocoStudy.
 % ================
-moco = MocoTool();
+moco = MocoStudy();
 moco.setName(name);
 
 % Define the optimal control problem.
