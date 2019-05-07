@@ -31,7 +31,9 @@ MocoCasOCProblem::MocoCasOCProblem(const MocoCasADiSolver& mocoCasADiSolver,
         const MocoProblemRep& problemRep,
         std::unique_ptr<ThreadsafeJar<const MocoProblemRep>> jar,
         std::string dynamicsMode)
-        : m_jar(std::move(jar)) {
+        : m_jar(std::move(jar)),
+          m_paramsRequireInitSystem(
+                  mocoCasADiSolver.get_parameters_require_initsystem()) {
 
     setDynamicsMode(dynamicsMode);
     const auto& model = problemRep.getModelBase();
@@ -39,8 +41,8 @@ MocoCasOCProblem::MocoCasOCProblem(const MocoCasADiSolver& mocoCasADiSolver,
         setPrescribedKinematics(true, model.getWorkingState().getNU());
     }
 
-    auto stateNames = problemRep.createStateVariableNamesInSystemOrder(
-            m_yIndexMap);
+    auto stateNames =
+            problemRep.createStateVariableNamesInSystemOrder(m_yIndexMap);
     setTimeBounds(convertBounds(problemRep.getTimeInitialBounds()),
             convertBounds(problemRep.getTimeFinalBounds()));
     for (const auto& stateName : stateNames) {
@@ -175,8 +177,7 @@ MocoCasOCProblem::MocoCasOCProblem(const MocoCasADiSolver& mocoCasADiSolver,
 
                     // Add velocity correction variables if enforcing
                     // constraint equation derivatives.
-                    if (enforceConstraintDerivs &&
-                            !isPrescribedKinematics()) {
+                    if (enforceConstraintDerivs && !isPrescribedKinematics()) {
                         // TODO this naming convention assumes that the
                         // associated Lagrange multiplier name begins with
                         // "lambda", which may change in the future.
