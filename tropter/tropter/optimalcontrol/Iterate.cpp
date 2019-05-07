@@ -222,13 +222,14 @@ Iterate::interpolate(Eigen::VectorXd newTime) const {
             }
         }
         MatrixXd diffuses_no_nans(diffuses.rows(), cols_no_nans);
+        Eigen::RowVectorXd time_no_nans(cols_no_nans);
         for (int icol_no_nan = 0; icol_no_nan < cols_no_nans; ++icol_no_nan) {
-            diffuses_no_nans.col(icol_no_nan) 
+            diffuses_no_nans.col(icol_no_nan)
                 = diffuses.col(no_nan_indices[icol_no_nan]);
+            time_no_nans[icol_no_nan] = time[no_nan_indices[icol_no_nan]];
         }
         // Use the whole time range so we don't get NaNs during interpolation.
-        auto time_no_nans = Eigen::RowVectorXd::LinSpaced(cols_no_nans,
-            time[0], time.tail<1>()[0]);
+
 
         out.diffuses = interp1(time_no_nans, diffuses_no_nans, out.time);
     } else {
