@@ -208,7 +208,6 @@ if (WIN32)
             INSTALL_COMMAND ${ADOLC_INSTALL_CMD})
     endif()
 
-
     if(SUPERBUILD_ipopt)
     
         # Ipopt: Download pre-built binaries built by chrisdembia.
@@ -305,6 +304,8 @@ include(opensim-core.cmake)
 #######################
 
 RemoveDefaultInstallDirIfEmpty("${DEFAULT_CMAKE_INSTALL_PREFIX}")
+
+
 
 
 

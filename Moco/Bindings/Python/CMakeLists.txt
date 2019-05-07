@@ -46,7 +46,7 @@ if(APPLE AND ${MOCO_PYTHON_VERSION} STREQUAL "2")
         CACHE FILEPATH "${pylib_desc}")
 endif()
 find_package(PythonLibs ${required_python_version} REQUIRED)
-
+find_package(NumPy)
 
 # Location of the opensim python package in the build directory, for testing.
 if(MSVC OR XCODE)
@@ -182,7 +182,8 @@ macro(MocoAddPythonModule)
     target_include_directories(${_libname} SYSTEM PRIVATE
         # For Bindings/OpenSimHeaders_common.h, etc.:
         "${CMAKE_SOURCE_DIR}/opensim-core"
-        "${PYTHON_INCLUDE_PATH}")
+        "${PYTHON_INCLUDE_PATH}"
+        "${PYTHON_NUMPY_INCLUDE_DIR}")
     
     target_link_libraries(${_libname} osimMoco ${PYTHON_LIBRARIES})
     

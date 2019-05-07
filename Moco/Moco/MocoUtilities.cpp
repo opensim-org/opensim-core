@@ -366,111 +366,6 @@ MocoIterate OpenSim::simulateIterateWithTimeStepping(
     return forwardSolution;
 }
 
-void OpenSim::replaceMusclesWithPathActuators(Model& model) {
-
-    // Create path actuators from muscle properties and add to the model. Save
-    // a list of pointers of the muscles to delete.
-    std::vector<Muscle*> musclesToDelete;
-    auto& muscleSet = model.updMuscles();
-    for (int i = 0; i < muscleSet.getSize(); ++i) {
-        auto& musc = muscleSet.get(i);
-        auto* actu = new PathActuator();
-        actu->setName(musc.getName());
-        musc.setName(musc.getName() + "_delete");
-        actu->setOptimalForce(musc.getMaxIsometricForce());
-        actu->setMinControl(musc.getMinControl());
-        actu->setMaxControl(musc.getMaxControl());
-
-        const auto& pathPointSet = musc.getGeometryPath().getPathPointSet();
-        auto& geomPath = actu->updGeometryPath();
-        for (int i = 0; i < pathPointSet.getSize(); ++i) {
-            auto* pathPoint = pathPointSet.get(i).clone();
-            const auto& socketNames = pathPoint->getSocketNames();
-            for (const auto& socketName : socketNames) {
-                pathPoint->updSocket(socketName)
-                        .connect(pathPointSet.get(i)
-                                         .getSocket(socketName)
-                                         .getConnecteeAsObject());
-            }
-            geomPath.updPathPointSet().adoptAndAppend(pathPoint);
-        }
-        model.addComponent(actu);
-        musclesToDelete.push_back(&musc);
-    }
-
-    // Delete the muscles.
-    for (const auto* musc : musclesToDelete) {
-        int index = model.getForceSet().getIndex(musc, 0);
-        OPENSIM_THROW_IF(index == -1, Exception,
-                format("Muscle with name %s not found in ForceSet.",
-                        musc->getName()));
-        bool success = model.updForceSet().remove(index);
-        OPENSIM_THROW_IF(!success, Exception,
-                format("Attempt to remove muscle with "
-                       "name %s was unsuccessful.",
-                        musc->getName()));
-    }
-}
-
-void OpenSim::removeMuscles(Model& model) {
-
-    // Save a list of pointers of the muscles to delete.
-    std::vector<Muscle*> musclesToDelete;
-    auto& muscleSet = model.updMuscles();
-    for (int i = 0; i < muscleSet.getSize(); ++i) {
-        musclesToDelete.push_back(&muscleSet.get(i));
-    }
-
-    // Delete the muscles.
-    for (const auto* musc : musclesToDelete) {
-        int index = model.getForceSet().getIndex(musc, 0);
-        OPENSIM_THROW_IF(index == -1, Exception,
-                format("Muscle with name %s not found in ForceSet.",
-                        musc->getName()));
-        model.updForceSet().remove(index);
-    }
-}
-
-void OpenSim::replaceJointWithWeldJoint(
-        Model& model, const std::string& jointName) {
-    OPENSIM_THROW_IF(!model.getJointSet().hasComponent(jointName), Exception,
-            "Joint with name '" + jointName +
-                    "' not found in the model JointSet.");
-
-    // This is needed here to access offset frames.
-    model.finalizeConnections();
-
-    // Get the current joint and save a copy of the parent and child offset
-    // frames.
-    auto& current_joint = model.updJointSet().get(jointName);
-    PhysicalOffsetFrame* parent_offset = PhysicalOffsetFrame().safeDownCast(
-            current_joint.getParentFrame().clone());
-    PhysicalOffsetFrame* child_offset = PhysicalOffsetFrame().safeDownCast(
-            current_joint.getChildFrame().clone());
-
-    // Save the original names of the body frames (not the offset frames), so we
-    // can find them when the new joint is created.
-    parent_offset->finalizeConnections(model);
-    child_offset->finalizeConnections(model);
-    std::string parent_body_path =
-            parent_offset->getParentFrame().getAbsolutePathString();
-    std::string child_body_path =
-            child_offset->getParentFrame().getAbsolutePathString();
-
-    // Remove the current Joint from the the JointSet.
-    model.updJointSet().remove(&current_joint);
-
-    // Create the new joint and add it to the model.
-    auto* new_joint = new WeldJoint(jointName,
-            model.getComponent<PhysicalFrame>(parent_body_path),
-            parent_offset->get_translation(), parent_offset->get_orientation(),
-            model.getComponent<PhysicalFrame>(child_body_path),
-            child_offset->get_translation(), child_offset->get_orientation());
-    model.addJoint(new_joint);
-
-    model.finalizeConnections();
-}
-
 std::vector<std::string> OpenSim::createStateVariableNamesInSystemOrder(
         const Model& model) {
     std::unordered_map<int, int> yIndexMap;
@@ -536,6 +431,68 @@ std::unordered_map<std::string, int> OpenSim::createSystemYIndexMap(
             "Expected to find %i state indices but found %i.", svNames.size(),
             sysYIndices.size());
     return sysYIndices;
+}
+
+std::vector<std::string> OpenSim::createControlNamesFromModel(
+    const Model& model) {
+    std::vector<std::string> controlNames;
+    // Loop through all actuators and create control names. For scalar actuators,
+    // use the actuator name for the control name. For non-scalar actuators,
+    // use the actuator name with a control index appended for the control name.
+    // TODO update when OpenSim supports named controls.
+    for (const auto& actu : model.getComponentList<Actuator>()) {
+        std::string actuPath = actu.getAbsolutePathString();
+        if (actu.numControls() == 1) {
+            controlNames.push_back(actuPath);
+        } else {
+            for (int i = 0; i < actu.numControls(); ++i) {
+                controlNames.push_back(actuPath + "_" + std::to_string(i));
+            }
+        }
+    }
+
+    return controlNames;
+}
+
+std::unordered_map<std::string, int> OpenSim::createSystemControlIndexMap(
+    const Model& model) {
+    // We often assume that control indices in the state are in the same order
+    // as the actuators in the model. However, the control indices are 
+    // allocated in the order in which addToSystem() is invoked (not 
+    // necessarily the order used by getComponentList()). So until we can be 
+    // absolutely sure that the controls are in the same order as actuators, 
+    // we can run the following check: in order, set an actuator's control 
+    // signal(s) to NaN and ensure the i-th control is NaN.
+    // TODO update when OpenSim supports named controls.
+    std::unordered_map<std::string, int> controlIndices;
+    const SimTK::State state = model.getWorkingState();
+    auto modelControls = model.updControls(state);
+    int i = 0;
+    for (const auto& actu : model.getComponentList<Actuator>()) {
+        int nc = actu.numControls();
+        SimTK::Vector origControls(nc);
+        SimTK::Vector nan(nc, SimTK::NaN);
+        actu.getControls(modelControls, origControls);
+        actu.setControls(nan, modelControls);
+        std::string actuPath = actu.getAbsolutePathString();
+        for (int j = 0; j < nc; ++j) {
+            OPENSIM_THROW_IF(!SimTK::isNaN(modelControls[i]),
+                Exception, "Internal error: actuators are not in the "
+                "expected order. Submit a bug report.");
+            if (nc == 1) {
+                controlIndices[actuPath] = i;
+            } else {
+                controlIndices[format("%s_%i", actuPath, j)] = i;
+            }
+            ++i;
+        }
+        actu.setControls(origControls, modelControls);
+    }
+    return controlIndices;
+}
+
+void OpenSim::checkOrderSystemControls(const Model& model) {
+    createSystemControlIndexMap(model);
 }
 
 std::string OpenSim::format_c(const char* format, ...) {

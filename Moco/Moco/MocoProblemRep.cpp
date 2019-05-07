@@ -39,6 +39,10 @@ void MocoProblemRep::initialize() {
     m_kinematic_constraints.clear();
     m_multiplier_infos_map.clear();
 
+    if (!getTimeInitialBounds().isSet() && !getTimeFinalBounds().isSet()) {
+        std::cout << "Warning: no time bounds set." << std::endl;
+    }
+
     const auto& ph0 = m_problem->getPhase(0);
     m_model_base = ph0.getModel();
     m_state_base = m_model_base.initSystem();
@@ -71,61 +75,6 @@ void MocoProblemRep::initialize() {
     // Grab a writable state from the copied model -- we'll use this to disable
     // its constraints below.
     m_state_disabled_constraints = m_model_disabled_constraints.initSystem();
-
-    const auto stateNames = m_model_base.getStateVariableNames();
-    for (int i = 0; i < ph0.getProperty_state_infos().size(); ++i) {
-        const auto& name = ph0.get_state_infos(i).getName();
-        OPENSIM_THROW_IF(stateNames.findIndex(name) == -1, Exception,
-                format("State info provided for nonexistent state '%s'.",
-                        name));
-    }
-    OpenSim::Array<std::string> actuNames;
-    const auto modelPath = m_model_base.getAbsolutePath();
-    for (const auto& actu : m_model_base.getComponentList<ScalarActuator>()) {
-        actuNames.append(actu.getAbsolutePathString());
-    }
-
-    // TODO can only handle ScalarActuators?
-    for (int i = 0; i < ph0.getProperty_control_infos().size(); ++i) {
-        const auto& name = ph0.get_control_infos(i).getName();
-        OPENSIM_THROW_IF(actuNames.findIndex(name) == -1, Exception,
-                format("Control info provided for nonexistent actuator '%s'.",
-                        name));
-    }
-
-    // Create internal record of state and control infos, automatically
-    // populated from coordinates and actuators.
-    for (int i = 0; i < ph0.getProperty_state_infos().size(); ++i) {
-        const auto& name = ph0.get_state_infos(i).getName();
-        m_state_infos[name] = ph0.get_state_infos(i);
-    }
-    for (const auto& coord : m_model_base.getComponentList<Coordinate>()) {
-        const auto stateVarNames = coord.getStateVariableNames();
-        const std::string coordValueName = stateVarNames[0];
-        if (m_state_infos.count(coordValueName) == 0) {
-            const auto info = MocoVariableInfo(coordValueName,
-                    {coord.getRangeMin(), coord.getRangeMax()}, {}, {});
-            m_state_infos[coordValueName] = info;
-        }
-        const std::string coordSpeedName = stateVarNames[1];
-        if (m_state_infos.count(coordSpeedName) == 0) {
-            const auto info = MocoVariableInfo(
-                    coordSpeedName, ph0.get_default_speed_bounds(), {}, {});
-            m_state_infos[coordSpeedName] = info;
-        }
-    }
-    for (int i = 0; i < ph0.getProperty_control_infos().size(); ++i) {
-        const auto& name = ph0.get_control_infos(i).getName();
-        m_control_infos[name] = ph0.get_control_infos(i);
-    }
-    for (const auto& actu : m_model_base.getComponentList<ScalarActuator>()) {
-        const std::string actuName = actu.getAbsolutePathString();
-        if (m_control_infos.count(actuName) == 0) {
-            const auto info = MocoVariableInfo(actuName,
-                    {actu.getMinControl(), actu.getMaxControl()}, {}, {});
-            m_control_infos[actuName] = info;
-        }
-    }
 
     // Get property values for constraints and Lagrange multipliers.
     const auto& kcBounds = ph0.get_kinematic_constraint_bounds();
@@ -207,6 +156,111 @@ void MocoProblemRep::initialize() {
                              m_state_disabled_constraints.getNUDotErr() != 0,
             Exception, "Internal error.");
 
+    // State and control infos.
+    // ------------------------
+    const auto stateNames = m_model_base.getStateVariableNames();
+    for (int i = 0; i < ph0.getProperty_state_infos().size(); ++i) {
+        const auto& name = ph0.get_state_infos(i).getName();
+        OPENSIM_THROW_IF(stateNames.findIndex(name) == -1, Exception,
+                format("State info provided for nonexistent state '%s'.",
+                        name));
+    }
+    auto controlNames = createControlNamesFromModel(m_model_base);
+    for (int i = 0; i < ph0.getProperty_control_infos().size(); ++i) {
+        const auto& name = ph0.get_control_infos(i).getName();
+        auto it = std::find(controlNames.begin(), controlNames.end(), name);
+        OPENSIM_THROW_IF(it == controlNames.end(), Exception,
+                format("Control info provided for nonexistent actuator '%s'.",
+                        name));
+    }
+
+    // Create internal record of state and control infos, automatically
+    // populated from coordinates and actuators.
+    for (int i = 0; i < ph0.getProperty_state_infos().size(); ++i) {
+        const auto& name = ph0.get_state_infos(i).getName();
+        m_state_infos[name] = ph0.get_state_infos(i);
+    }
+
+    // TODO this code is from an upcoming commit that hasn't been merged yet.
+    // I've left it here in case there's confusion of its placement. Uncomment
+    // when the prescribed kinematics updates catch up.
+    // if (!m_prescribedKinematics) {
+    for (const auto& coord : m_model_base.getComponentList<Coordinate>()) {
+        const auto stateVarNames = coord.getStateVariableNames();
+        {
+            const std::string coordValueName = stateVarNames[0];
+            // TODO document: Range used even if not clamped.
+            if (m_state_infos.count(coordValueName) == 0) {
+                const auto info = MocoVariableInfo(coordValueName, {}, {}, {});
+                m_state_infos[coordValueName] = info;
+            }
+            if (!m_state_infos[coordValueName].getBounds().isSet()) {
+                m_state_infos[coordValueName].setBounds(
+                        {coord.getRangeMin(), coord.getRangeMax()});
+            }
+        }
+        {
+            const std::string coordSpeedName = stateVarNames[1];
+            if (m_state_infos.count(coordSpeedName) == 0) {
+                const auto info = MocoVariableInfo(coordSpeedName, {}, {}, {});
+                m_state_infos[coordSpeedName] = info;
+            }
+            if (!m_state_infos[coordSpeedName].getBounds().isSet()) {
+                m_state_infos[coordSpeedName].setBounds(
+                        ph0.get_default_speed_bounds());
+            }
+        }
+    }
+    //}
+
+    for (int i = 0; i < ph0.getProperty_control_infos().size(); ++i) {
+        const auto& name = ph0.get_control_infos(i).getName();
+        m_control_infos[name] = ph0.get_control_infos(i);
+    }
+
+    // Loop through all the actuators in the model and create control infos
+    // for the associated actuator control variables.
+    for (const auto& actu : m_model_base.getComponentList<Actuator>()) {
+        const std::string actuName = actu.getAbsolutePathString();
+        if (actu.numControls() == 1) {
+            // No control info exists; add one.
+            if (m_control_infos.count(actuName) == 0) {
+                const auto info = MocoVariableInfo(actuName, {}, {}, {});
+                m_control_infos[actuName] = info;
+            }
+            if (!m_control_infos[actuName].getBounds().isSet()) {
+                // If this scalar actuator derives from OpenSim::ScalarActuator,
+                // use the getMinControl() and getMaxControl() methods to set
+                // the bounds. Otherwise, set the bounds to (-inf, inf).
+                if (const auto* scalarActu =
+                                dynamic_cast<const ScalarActuator*>(&actu)) {
+                    m_control_infos[actuName].setBounds(
+                            {scalarActu->getMinControl(),
+                                    scalarActu->getMaxControl()});
+                } else {
+                    m_control_infos[actuName].setBounds(
+                            MocoBounds::unconstrained());
+                }
+            }
+        } else {
+            // This is a non-scalar actuator, so we need to add multiple
+            // control infos.
+            for (int idx = 0; idx < actu.numControls(); ++idx) {
+                std::string controlName = actuName + "_" + std::to_string(idx);
+                if (m_control_infos.count(controlName) == 0) {
+                    const auto info = MocoVariableInfo(controlName, {}, {}, {});
+                    m_control_infos[controlName] = info;
+                }
+                if (!m_control_infos[controlName].getBounds().isSet()) {
+                    m_control_infos[controlName].setBounds(
+                            MocoBounds::unconstrained());
+                }
+            }
+        }
+    }
+
+    // Parameters.
+    // -----------
     m_parameters.resize(ph0.getProperty_parameters().size());
     std::unordered_set<std::string> paramNames;
     for (int i = 0; i < ph0.getProperty_parameters().size(); ++i) {
@@ -218,16 +272,18 @@ void MocoProblemRep::initialize() {
                         param.getName()));
         paramNames.insert(param.getName());
         m_parameters[i] = std::unique_ptr<MocoParameter>(param.clone());
-        // We must initialize on both models so that they are consistent when
-        // parameters are updated when applyParameterToModel() is called.
-        // Calling initalizeOnModel() twice here is fine since the models are
-        // identical aside from disabled Simbody constraints. The property
-        // references to the parameters in both models are added to the
-        // MocoParameter's internal vector of property references.
+        // We must initialize on both models so that they are consistent
+        // when parameters are updated when applyParameterToModel() is
+        // called. Calling initalizeOnModel() twice here is fine since the
+        // models are identical aside from disabled Simbody constraints. The
+        // property references to the parameters in both models are added to
+        // the MocoParameter's internal vector of property references.
         m_parameters[i]->initializeOnModel(m_model_base);
         m_parameters[i]->initializeOnModel(m_model_disabled_constraints);
     }
 
+    // Costs.
+    // ------
     m_costs.resize(ph0.getProperty_costs().size());
     std::unordered_set<std::string> costNames;
     for (int i = 0; i < ph0.getProperty_costs().size(); ++i) {
@@ -242,6 +298,8 @@ void MocoProblemRep::initialize() {
         m_costs[i]->initializeOnModel(m_model_disabled_constraints);
     }
 
+    // Auxiliary path constraints.
+    // ---------------------------
     m_num_path_constraint_equations = 0;
     m_path_constraints.resize(ph0.getProperty_path_constraints().size());
     std::unordered_set<std::string> pcNames;
@@ -300,7 +358,8 @@ std::vector<std::string> MocoProblemRep::createMultiplierInfoNames() const {
 std::vector<std::string>
 MocoProblemRep::createKinematicConstraintNames() const {
     std::vector<std::string> names(m_kinematic_constraints.size());
-    // Kinematic constraint names are stored in the internal constraint info.
+    // Kinematic constraint names are stored in the internal constraint
+    // info.
     for (int i = 0; i < (int)m_kinematic_constraints.size(); ++i) {
         names[i] = m_kinematic_constraints[i].getConstraintInfo().getName();
     }
@@ -361,7 +420,8 @@ const MocoPathConstraint& MocoProblemRep::getPathConstraintByIndex(
 const MocoKinematicConstraint& MocoProblemRep::getKinematicConstraint(
         const std::string& name) const {
 
-    // Kinematic constraint names are stored in the internal constraint info.
+    // Kinematic constraint names are stored in the internal constraint
+    // info.
     for (const auto& kc : m_kinematic_constraints) {
         if (kc.getConstraintInfo().getName() == name) { return kc; }
     }
@@ -375,10 +435,10 @@ const std::vector<MocoVariableInfo>& MocoProblemRep::getMultiplierInfos(
     if (search != m_multiplier_infos_map.end()) {
         return m_multiplier_infos_map.at(kinematicConstraintInfoName);
     } else {
-        OPENSIM_THROW(Exception,
-                format("No variable infos for kinematic constraint info with "
-                       "name '%s' found.",
-                        kinematicConstraintInfoName));
+        OPENSIM_THROW(Exception, format("No variable infos for kinematic "
+                                        "constraint info with "
+                                        "name '%s' found.",
+                                         kinematicConstraintInfoName));
     }
 }
 
@@ -457,8 +517,8 @@ void MocoProblemRep::printDescription(std::ostream& stream) const {
     else
         stream << " (total: " << m_state_infos.size() << ")";
     stream << "\n";
-    // TODO want to loop through the model's state variables and controls, not
-    // just the infos.
+    // TODO want to loop through the model's state variables and controls,
+    // not just the infos.
     for (const auto& info : m_state_infos) {
         stream << "  ";
         info.second.printDescription(stream);
