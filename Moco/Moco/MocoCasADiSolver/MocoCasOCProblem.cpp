@@ -31,7 +31,9 @@ MocoCasOCProblem::MocoCasOCProblem(const MocoCasADiSolver& mocoCasADiSolver,
         const MocoProblemRep& problemRep,
         std::unique_ptr<ThreadsafeJar<const MocoProblemRep>> jar,
         std::string dynamicsMode)
-        : m_jar(std::move(jar)) {
+        : m_jar(std::move(jar)),
+          m_paramsRequireInitSystem(
+                  mocoCasADiSolver.get_parameters_require_initsystem()) {
 
     setDynamicsMode(dynamicsMode);
     const auto& model = problemRep.getModelBase();

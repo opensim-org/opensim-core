@@ -375,7 +375,8 @@ private:
         if (parameters.numel()) {
             SimTK::Vector simtkParams(
                     (int)parameters.size1(), parameters.ptr(), true);
-            mocoProblemRep.applyParametersToModelProperties(simtkParams, true);
+            mocoProblemRep.applyParametersToModelProperties(simtkParams,
+                    m_paramsRequireInitSystem);
         }
     }
 
@@ -540,6 +541,7 @@ private:
     }
 
     std::unique_ptr<ThreadsafeJar<const MocoProblemRep>> m_jar;
+    bool m_paramsRequireInitSystem = true;
     std::unordered_map<int, int> m_yIndexMap;
     // Local memory to hold constraint forces.
     static thread_local SimTK::Vector_<SimTK::SpatialVec>
