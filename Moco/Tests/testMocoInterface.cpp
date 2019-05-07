@@ -395,6 +395,29 @@ TEMPLATE_TEST_CASE("Workflow", "", MocoTropterSolver, MocoCasADiSolver) {
                 SimTK_TEST_EQ(info.getBounds().getUpper(), 15);
             }
         }
+
+        problem.setControlInfo("/residuals_0", {-5, 5});
+        problem.setControlInfo("/residuals_3", {-7.5, 10});
+        {
+            {
+                const auto& probinfo0 = phase0.getControlInfo("/residuals_0");
+                SimTK_TEST_EQ(probinfo0.getBounds().getLower(), -5);
+                SimTK_TEST_EQ(probinfo0.getBounds().getUpper(), 5);
+                const auto& probinfo3 = phase0.getControlInfo("/residuals_3");
+                SimTK_TEST_EQ(probinfo3.getBounds().getLower(), -7.5);
+                SimTK_TEST_EQ(probinfo3.getBounds().getUpper(), 10);
+            }
+            MocoProblemRep rep = problem.createRep();
+            {
+                const auto& info0 = rep.getControlInfo("/residuals_0");
+                SimTK_TEST_EQ(info0.getBounds().getLower(), -5);
+                SimTK_TEST_EQ(info0.getBounds().getUpper(), 5);
+                const auto& info3 = rep.getControlInfo("/residuals_3");
+                SimTK_TEST_EQ(info3.getBounds().getLower(), -7.5);
+                SimTK_TEST_EQ(info3.getBounds().getUpper(), 10);
+            }
+        }
+
         SECTION("Setting only initial/final bounds explicitly.") {
             SECTION("Initial coordinate value") {
                 problem.setStateInfo("/slider/position/value", {}, {-5.0, 3.6});
@@ -434,8 +457,7 @@ TEMPLATE_TEST_CASE("Workflow", "", MocoTropterSolver, MocoCasADiSolver) {
                 SimTK_TEST_EQ(info.getFinalBounds().getUpper(), 2.5);
             }
             SECTION("Initial coordinate speed") {
-                problem.setStateInfo(
-                        "/slider/position/speed", {}, {-4.1, 3.9});
+                problem.setStateInfo("/slider/position/speed", {}, {-4.1, 3.9});
                 {
                     const auto& info =
                             phase0.getStateInfo("/slider/position/speed");
@@ -504,28 +526,6 @@ TEMPLATE_TEST_CASE("Workflow", "", MocoTropterSolver, MocoCasADiSolver) {
                 SimTK_TEST(!info.getInitialBounds().isSet());
                 SimTK_TEST_EQ(info.getFinalBounds().getLower(), 0.1);
                 SimTK_TEST_EQ(info.getFinalBounds().getUpper(), 0.8);
-            }
-        }
-
-        problem.setControlInfo("/residuals_0", {-5, 5});
-        problem.setControlInfo("/residuals_3", {-7.5, 10});
-        {
-            {
-                const auto& probinfo0 = phase0.getControlInfo("/residuals_0");
-                SimTK_TEST_EQ(probinfo0.getBounds().getLower(), -5);
-                SimTK_TEST_EQ(probinfo0.getBounds().getUpper(), 5);
-                const auto& probinfo3 = phase0.getControlInfo("/residuals_3");
-                SimTK_TEST_EQ(probinfo3.getBounds().getLower(), -7.5);
-                SimTK_TEST_EQ(probinfo3.getBounds().getUpper(), 10);
-            }
-            MocoProblemRep rep = problem.createRep();
-            {
-                const auto& info0 = rep.getControlInfo("/residuals_0");
-                SimTK_TEST_EQ(info0.getBounds().getLower(), -5);
-                SimTK_TEST_EQ(info0.getBounds().getUpper(), 5);
-                const auto& info3 = rep.getControlInfo("/residuals_3");
-                SimTK_TEST_EQ(info3.getBounds().getLower(), -7.5);
-                SimTK_TEST_EQ(info3.getBounds().getUpper(), 10);
             }
         }
     }
