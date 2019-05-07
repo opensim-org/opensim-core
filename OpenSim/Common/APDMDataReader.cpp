@@ -59,36 +59,59 @@ APDMDataReader::extendRead(const std::string& fileName) const {
     SimTK::Matrix_<SimTK::Vec3> angularVelocityData{ last_size, n_imus };
     std::vector<double> times;
     times.resize(last_size);
-    // Format looks like this:
-    // Header Line 1: Test Name:, $String,,,,,..
-    // Header Line 2: Sample Rate:, $Value, Hz,,,,,
-    // Labels Line 3: Time {SensorName/Acceleration/X,SensorName/Acceleration/Y,SensorName/Acceleration/Z,....} repeated per sensor
-    // Units Line 4: s,{m/s^2,m/s^2,m/s^2....} repeated 
-    int header_lines = 4;
+    // We support two formats, they contain similar data but headers are different
     std::string line;
     // Line 1
     std::getline(in_stream, line);
     std::vector<std::string> tokens = FileAdapter::tokenize(line, ",");
-    std::string trialName = tokens[1]; // May contain spaces
-    // Line 2
-    std::getline(in_stream, line);
-    tokens = FileAdapter::tokenize(line, ",");
-    dataRate = std::stod(tokens[1]);
-    // Line 3, find columns for IMUs
-    std::getline(in_stream, line);
-    tokens = FileAdapter::tokenize(line, ",");
-    OPENSIM_THROW_IF((tokens[0] != TimeLabel), UnexpectedColumnLabel,
-        fileName,
-        TimeLabel,
-        tokens[0]);
+    bool newFormat = false;
+    if (tokens[0] == "Format=7") {
+        newFormat = true;
+        std::vector<std::string> labels;
+        // Header Line 1:Format=7, [I1,,,$IMU1,,,,,,,,,,,]*
+        // Header Line 2: Time,[Accelerometer,,,Gyroscope,,,Magnetometer,,,Barometer,Orientation,,,]*
+        // Header Line 3: ,[X,Y,Z,X,Y,Z,X,Y,Z,,S,X,Y,Z]*
+        // In this format there's no dataRate, either assumed or computed from Time column
+        for (int imu_index = 0; imu_index < n_imus; ++imu_index) {
+            std::string sensorName = _settings.get_ExperimentalSensors(imu_index).getName();
+            labels.push_back(_settings.get_ExperimentalSensors(imu_index).get_name_in_model());
+            find_start_column(tokens, labels, sensorName, accIndex, newFormat);
+            if (accIndex[imu_index] != -1) {
+                gyroIndex.push_back(accIndex[imu_index] + 3);
+                magIndex.push_back(accIndex[imu_index] + 6);
+                orientationsIndex.push_back(accIndex[imu_index] + 10);
+            }
+        }
+    }
+    else {
+        // Older Format looks like this:
+        // Header Line 1: Test Name:, $String,,,,,..
+        // Header Line 2: Sample Rate:, $Value, Hz,,,,,
+        // Labels Line 3: Time {SensorName/Acceleration/X,SensorName/Acceleration/Y,SensorName/Acceleration/Z,....} repeated per sensor
+        // Units Line 4: s,{m/s^2,m/s^2,m/s^2....} repeated 
+        int header_lines = 4;
 
-    for (int imu_index = 0; imu_index < n_imus; ++imu_index) {
-        std::string sensorName = _settings.get_ExperimentalSensors(imu_index).getName();
-        labels.push_back(_settings.get_ExperimentalSensors(imu_index).get_name_in_model());
-        find_start_column(tokens, APDMDataReader::acceleration_labels, sensorName, accIndex);
-        find_start_column(tokens, APDMDataReader::angular_velocity_labels, sensorName, gyroIndex);
-        find_start_column(tokens, APDMDataReader::magnetic_heading_labels, sensorName, magIndex);
-        find_start_column(tokens, APDMDataReader::orientation_labels, sensorName, orientationsIndex);
+        std::string trialName = tokens[1]; // May contain spaces
+        // Line 2
+        std::getline(in_stream, line);
+        tokens = FileAdapter::tokenize(line, ",");
+        dataRate = std::stod(tokens[1]);
+        // Line 3, find columns for IMUs
+        std::getline(in_stream, line);
+        tokens = FileAdapter::tokenize(line, ",");
+        OPENSIM_THROW_IF((tokens[0] != TimeLabel), UnexpectedColumnLabel,
+            fileName,
+            TimeLabel,
+            tokens[0]);
+
+        for (int imu_index = 0; imu_index < n_imus; ++imu_index) {
+            std::string sensorName = _settings.get_ExperimentalSensors(imu_index).getName();
+            labels.push_back(_settings.get_ExperimentalSensors(imu_index).get_name_in_model());
+            find_start_column(tokens, APDMDataReader::acceleration_labels, sensorName, accIndex);
+            find_start_column(tokens, APDMDataReader::angular_velocity_labels, sensorName, gyroIndex);
+            find_start_column(tokens, APDMDataReader::magnetic_heading_labels, sensorName, magIndex);
+            find_start_column(tokens, APDMDataReader::orientation_labels, sensorName, orientationsIndex);
+        }
     }
     // Will create a table to map 
     // internally keep track of what data was found in input files
@@ -187,9 +210,9 @@ APDMDataReader::extendRead(const std::string& fileName) const {
 void APDMDataReader::find_start_column(std::vector<std::string> tokens, 
     std::vector<std::string> search_labels,
     const std::string& sensorName,
-    std::vector<int>& indices) const {
+    std::vector<int>& indices, bool newFromat) const {
     // Search for "sensorName/{search_labels} in tokens, append result to indices if found"
-    std::string firstLabel = sensorName + search_labels[0];
+    std::string firstLabel = sensorName + (newFromat?"":search_labels[0]);
     // look for first label, when found check/confirm the rest. Out of order is not supported
     int found_index = -1;
     std::vector<std::string>::iterator it = std::find(tokens.begin(), tokens.end(), firstLabel);
@@ -202,7 +225,10 @@ void APDMDataReader::find_start_column(std::vector<std::string> tokens,
                 compare(sensorName + search_labels[remaining]) == 0;
         }
         if (match) {
-            indices.push_back(found_index);
+            if (newFromat)
+                indices.push_back(found_index - 3); // Three extra  comma separated fields in header before imu name
+            else
+                indices.push_back(found_index);
                 return;
             }
             else { // first label found but the remaining didn't. Throw

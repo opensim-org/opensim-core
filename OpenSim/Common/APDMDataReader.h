@@ -104,7 +104,7 @@ public:
     void find_start_column(std::vector<std::string> tokens, 
         std::vector<std::string> search_labels,
         const std::string& sensorName,
-        std::vector<int>& indices) const;
+        std::vector<int>& indices, bool newFormat=false) const;
     /**
     * Implement interface required by DataAdapter class
     */
