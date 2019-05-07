@@ -52,6 +52,21 @@ public:
     /// @name Modify a Model
     /// @{
 
+    /// Replace muscles in a model with a PathActuator of the same GeometryPath,
+    /// optimal force, and min/max control defaults.
+    /// @note This only replaces muscles within the model's ForceSet.
+    static void replaceMusclesWithPathActuators(Model& model);
+
+    /// Remove muscles from the model.
+    /// @note This only removes muscles within the model's ForceSet.
+    static void removeMuscles(Model& model);
+
+    /// Replace a joint in the model with a WeldJoint.
+    /// @note This assumes the joint is in the JointSet and that the joint's
+    ///       connectees are PhysicalOffsetFrames.
+    static void replaceJointWithWeldJoint(
+            Model& model, const std::string& jointName);
+  
     /// Add CoordinateActuator%s for each unconstrained coordinate (e.g.,
     /// !Coordinate::isConstrained()) in the model, using the provided optimal
     /// force. Increasing the optimal force decreases the required control

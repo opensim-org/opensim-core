@@ -49,9 +49,9 @@ spring.setStiffness(stiffness);
 spring.setViscosity(0.0);
 model.addComponent(spring);
 
-% Create MocoTool.
+% Create MocoStudy.
 % ================
-moco = MocoTool();
+moco = MocoStudy();
 moco.setName('oscillator_spring_stiffness');
 
 % Define the optimal control problem.

@@ -21,6 +21,7 @@
 #include <Moco/osimMoco.h>
 #include <OpenSim/Simulation/SimbodyEngine/SliderJoint.h>
 #include <OpenSim/Actuators/CoordinateActuator.h>
+#include <OpenSim/Actuators/PointActuator.h>
 
 using namespace OpenSim;
 
@@ -249,4 +250,53 @@ TEMPLATE_TEST_CASE("Test MocoControlTrackingCost", "", MocoTropterSolver,
         solutionTracking.getControlsTrajectory(), 1e-4);
     SimTK_TEST_EQ_TOL(solutionEffort.getStatesTrajectory(),
         solutionTracking.getStatesTrajectory(), 1e-4);
+}
+
+TEMPLATE_TEST_CASE("Test MocoJointReactionCost", "", MocoTropterSolver, 
+        MocoCasADiSolver) {
+
+    using SimTK::Vec3;
+    using SimTK::Inertia;
+
+    // Create a model of a point mass welded to the ground.
+    Model model;
+    model.setName("welded_point_mass");
+    model.setGravity(Vec3(10, 0, 0));
+
+    auto* body = new Body("body", 1, Vec3(0), Inertia(0));
+    model.addBody(body);
+    auto* weldJoint = new WeldJoint("weld", model.getGround(), *body);
+    model.addJoint(weldJoint);
+    auto* actuator = new PointActuator("body");
+    actuator->setName("actu");
+    actuator->set_point(Vec3(0));
+    actuator->set_direction(Vec3(1, 0, 0));
+    model.addComponent(actuator);
+    model.finalizeConnections();
+
+    MocoTool moco;
+    moco.setName("counteract_gravity");
+    MocoProblem& mp = moco.updProblem();
+    mp.setModelCopy(model);
+
+    mp.setTimeBounds(0, 1);
+    mp.setControlInfo("/actu", {-20, 20});
+
+    auto* reaction = mp.addCost<MocoJointReactionCost>();
+    reaction->setJointPath("/jointset/weld");
+    reaction->setReactionMeasures({"force-x"});
+
+    auto& ms = moco.initSolver<TestType>();
+    int N = 5;
+    ms.set_num_mesh_points(N);
+    ms.set_optim_convergence_tolerance(1e-6);
+
+    MocoSolution solution = moco.solve().unseal();
+    solution.write("testMocoCosts_testMocoJointReactionCost.sto");
+
+    // Check that the actuator "actu" is equal to gravity (i.e. supporting all
+    // of the weight).
+    CHECK(solution.getControl("/actu")[0] == Approx(-10).epsilon(1e-6));
+    // Check that the reaction force is zero. 
+    CHECK(solution.getObjective() == Approx(0.0).margin(1e-6));
 }

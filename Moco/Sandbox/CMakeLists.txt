@@ -23,7 +23,7 @@ MocoAddSandboxExecutable(NAME sandboxImplicitActivationDynamics
         LIB_DEPENDS osimMoco tropter)
 
 
-# MocoTool-related.
+# MocoStudy-related.
 MocoAddSandboxExecutable(NAME sandboxSlidingMass
         LIB_DEPENDS osimMoco tropter)
 MocoAddSandboxExecutable(NAME sandboxContact
