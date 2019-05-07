@@ -26,12 +26,27 @@
 
 namespace tropter {
 
+std::vector<double> linspace(double start, double end, int length) {
+    double delta = (end - start) / (double)length;
+    std::vector<double> ret;
+    for (int i = 0; i < length; ++i) { ret.push_back(start + (i * delta)); }
+
+    return ret;
+}
+template <typename T>
+DirectCollocationSolver<T>::DirectCollocationSolver(
+        std::shared_ptr<const OCProblem> ocproblem,
+        const std::string& transcrip, const std::string& optsolver,
+        const unsigned& num_mesh_points)
+        : DirectCollocationSolver(ocproblem, transcrip, optsolver,
+                  linspace(0, 1, num_mesh_points)){}
+
 template<typename T>
 DirectCollocationSolver<T>::DirectCollocationSolver(
         std::shared_ptr<const OCProblem> ocproblem,
         const std::string& transcrip,
         const std::string& optsolver,
-        const unsigned& num_mesh_points)
+        const std::vector<double>& mesh)
         : m_ocproblem(ocproblem)
 {
     std::string transcrip_lower = transcrip;
@@ -39,10 +54,10 @@ DirectCollocationSolver<T>::DirectCollocationSolver(
             transcrip_lower.begin(), ::tolower);
     if (transcrip_lower == "trapezoidal") {
         m_transcription.reset(new transcription::Trapezoidal<T>(ocproblem,
-                                                             num_mesh_points));
+                                                             mesh));
     } else if (transcrip_lower == "hermite-simpson") {
         m_transcription.reset(new transcription::HermiteSimpson<T>(ocproblem,
-                                                             num_mesh_points));
+                                                             mesh));
     } else {
         TROPTER_THROW("Unrecognized transcription method %s.", transcrip);
     }

@@ -80,8 +80,7 @@ MocoTool createSlidingMassMocoTool() {
     return moco;
 }
 
-TEMPLATE_TEST_CASE(
-        "Non-uniform mesh", "", /*MocoTropterSolver,*/ MocoCasADiSolver) {
+TEMPLATE_TEST_CASE("Custom mesh", "", MocoTropterSolver, MocoCasADiSolver) {
     std::cout.rdbuf(LogManager::cout.rdbuf());
     std::cout.rdbuf(LogManager::cout.rdbuf());
     MocoTool moco;
@@ -98,19 +97,20 @@ TEMPLATE_TEST_CASE(
     SECTION("Ensure integral handles non-uniform mesh") {
         auto& ms = moco.initSolver<TestType>();
         ms.set_optim_max_iterations(1);
-        std::vector<double> mesh = {0, .05, .075, .1, .4, .41, .42, .58, .8, 1};
+        std::vector<double> mesh = {
+                0.0, .05, .075, .1, .4, .41, .42, .58, .8, 1};
         ms.setMesh(mesh);
         auto solution = moco.solve().unseal();
         auto u = solution.getControl("/actuator");
-
         double manualIntegral = 0;
+
         for (int i = 0; i < (int)(mesh.size() - 1); ++i) {
             manualIntegral += (.5) * (finalTime * (mesh[i + 1] - mesh[i])) *
                               ((SimTK::square(u[i])) + SimTK::square(u[i + 1]));
         }
 
         for (int i = 0; i < (int)mesh.size(); ++i) {
-            SimTK_TEST_EQ(solution.getTime()[i], mesh[i] * 5);
+            SimTK_TEST_EQ(solution.getTime()[i], mesh[i] * finalTime);
         }
         SimTK_TEST_EQ(manualIntegral, solution.getObjective());
     }
@@ -127,9 +127,9 @@ TEMPLATE_TEST_CASE(
         auto& ms = moco.initSolver<TestType>();
         std::vector<double> mesh = {0, .5, .5, 1};
         ms.setMesh(mesh);
-        REQUIRE_THROWS_WITH(
-                moco.solve(), Catch::Contains("Invalid custom mesh; mesh "
-                                       "points must be strictly increasing."));
+        REQUIRE_THROWS_WITH(moco.solve(),
+                Catch::Contains("Invalid custom mesh; mesh "
+                                "points must be strictly increasing."));
     }
     SECTION("Last mesh piont must be 1.") {
         auto& ms = moco.initSolver<TestType>();
@@ -137,7 +137,7 @@ TEMPLATE_TEST_CASE(
         ms.setMesh(mesh);
         REQUIRE_THROWS_WITH(
                 moco.solve(), Catch::Contains("Invalid custom mesh; last mesh "
-                                       "point must be one."));
+                                              "point must be one."));
     }
 }
 

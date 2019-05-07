@@ -169,7 +169,7 @@ std::unique_ptr<CasOC::Solver> MocoCasADiSolver::createCasOCSolver(
     checkPropertyIsPositive(*this, getProperty_num_mesh_points());
 
     if (getProperty_mesh().size() > 0) {
-
+ 
         OPENSIM_THROW_IF_FRMOBJ((get_mesh(0) != 0), Exception,
                 "Invalid custom mesh; first mesh "
                 "point must be zero.");

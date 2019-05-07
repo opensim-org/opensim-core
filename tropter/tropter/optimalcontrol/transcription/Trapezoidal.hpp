@@ -27,13 +27,6 @@ namespace tropter {
 namespace transcription {
 
 template<typename T>
-void Trapezoidal<T>::set_num_mesh_points(unsigned N) {
-    TROPTER_THROW_IF(N < 2, "Expected number of mesh points to be at "
-            "least 2, but got %i", N);
-    m_num_mesh_points = N;
-}
-
-template<typename T>
 void Trapezoidal<T>::set_ocproblem(
         std::shared_ptr<const OCProblem> ocproblem) {
     m_ocproblem = ocproblem;
@@ -46,6 +39,7 @@ void Trapezoidal<T>::set_ocproblem(
     m_num_time_variables = 2;
     m_num_parameters = m_ocproblem->get_num_parameters();
     m_num_dense_variables = m_num_time_variables + m_num_parameters;
+    m_num_mesh_points = (int) m_mesh.size();
     int num_variables = m_num_time_variables + m_num_parameters
             + m_num_mesh_points * m_num_continuous_variables;
     this->set_num_variables(num_variables);
@@ -216,22 +210,22 @@ void Trapezoidal<T>::set_ocproblem(
     const int num_mesh_intervals = m_num_mesh_points - 1;
     // For integrating the integral cost.
     // The duration of each mesh interval.
-    VectorXd mesh = VectorXd::LinSpaced(m_num_mesh_points, 0, 1);
-    VectorXd mesh_intervals = mesh.tail(num_mesh_intervals)
-            - mesh.head(num_mesh_intervals);
+    m_mesh_eigen = Eigen::Map<VectorXd>(m_mesh.data(), m_mesh.size());
+    m_mesh_intervals = m_mesh_eigen.tail(num_mesh_intervals)
+            - m_mesh_eigen.head(num_mesh_intervals);
     m_trapezoidal_quadrature_coefficients = VectorXd::Zero(m_num_mesh_points);
     // Betts 2010 equation 4.195, page 169.
     // b = 0.5 * [tau0, tau0 + tau1, tau1 + tau2, ..., tauM-2 + tauM-1, tauM-1]
     m_trapezoidal_quadrature_coefficients.head(num_mesh_intervals) =
-            0.5 * mesh_intervals;
+            0.5 * m_mesh_intervals;
     m_trapezoidal_quadrature_coefficients.tail(num_mesh_intervals) +=
-            0.5 * mesh_intervals;
+            0.5 * m_mesh_intervals;
 
     // Allocate working memory.
     m_integrand.resize(m_num_mesh_points);
     m_derivs.resize(m_num_states, m_num_mesh_points);
 
-    m_ocproblem->initialize_on_mesh(mesh);
+    m_ocproblem->initialize_on_mesh(m_mesh_eigen);
 }
 
 template<typename T>
@@ -241,7 +235,6 @@ void Trapezoidal<T>::calc_objective(const VectorX<T>& x, T& obj_value) const
     const T& initial_time = x[0];
     const T& final_time = x[1];
     const T duration = final_time - initial_time;
-    const T step_size = duration / (m_num_mesh_points - 1);
 
     // TODO I don't actually need to make a new view each time; just change the
     // data pointer. TODO probably don't even need to update the data pointer!
@@ -265,7 +258,7 @@ void Trapezoidal<T>::calc_objective(const VectorX<T>& x, T& obj_value) const
     // --------------
     m_integrand.setZero();
     for (int i_mesh = 0; i_mesh < m_num_mesh_points; ++i_mesh) {
-        const T time = step_size * i_mesh + initial_time;
+        const T time = (final_time - initial_time) * m_mesh[i_mesh] + initial_time;
         m_ocproblem->calc_integral_cost({i_mesh, time,
                 states.col(i_mesh), controls.col(i_mesh), adjuncts.col(i_mesh),
                 m_empty_diffuse_col, parameters}, 
@@ -291,8 +284,6 @@ void Trapezoidal<T>::calc_constraints(const VectorX<T>& x,
     const T& initial_time = x[0];
     const T& final_time = x[1];
     const T duration = final_time - initial_time;
-    const T step_size = duration / (m_num_mesh_points - 1);
-
     auto states = make_states_trajectory_view(x);
     auto controls = make_controls_trajectory_view(x);
     auto adjuncts = make_adjuncts_trajectory_view(x);
@@ -316,7 +307,7 @@ void Trapezoidal<T>::calc_constraints(const VectorX<T>& x,
     // TODO tradeoff between memory and parallelism.
     for (int i_mesh = 0; i_mesh < m_num_mesh_points; ++i_mesh) {
         // TODO should pass the time.
-        const T time = step_size * i_mesh + initial_time;
+        const T time = (final_time - initial_time) * m_mesh[i_mesh] + initial_time;
         m_ocproblem->calc_differential_algebraic_equations(
                 {i_mesh, time, states.col(i_mesh), controls.col(i_mesh),
                  adjuncts.col(i_mesh), m_empty_diffuse_col, parameters},
@@ -333,18 +324,16 @@ void Trapezoidal<T>::calc_constraints(const VectorX<T>& x,
         const auto& x_i = states.rightCols(N - 1);
         const auto& x_im1 = states.leftCols(N - 1);
         const auto& xdot_i = m_derivs.rightCols(N - 1);
-        const auto& h = step_size;
         //constr_view.defects = x_i-(x_im1+h*xdot_i);
         // TODO Trapezoidal:
         const auto& xdot_im1 = m_derivs.leftCols(N-1);
         //constr_view.defects = x_i-(x_im1+h*xdot_im1);
-        constr_view.defects = x_i - (x_im1 + 0.5 * h * (xdot_i + xdot_im1));
-        //for (int i_mesh = 0; i_mesh < N - 1; ++i_mesh) {
-        //    const auto& h = m_mesh_intervals[i_mesh];
-        //    constr_view.defects.col(i_mesh) = x_i.col(i_mesh)
-        //            - (x_im1.col(i_mesh) + 0.5 * h * duration * (xdot_i.col
-        // (i_mesh) + xdot_im1.col(i_mesh)));
-        //}
+        for (int i_mesh = 0; i_mesh < (int) N - 1; ++i_mesh) {
+            const auto& h = m_mesh_intervals[i_mesh];
+            constr_view.defects.col(i_mesh) = x_i.col(i_mesh)
+                    - (x_im1.col(i_mesh) + 0.5 * h * duration * (xdot_i.col
+         (i_mesh) + xdot_im1.col(i_mesh)));
+        }
     }
 
 }
@@ -613,8 +602,7 @@ deconstruct_iterate(const Eigen::VectorXd& x) const
     const double& initial_time = x[0];
     const double& final_time = x[1];
     Iterate traj;
-    traj.time = Eigen::RowVectorXd::LinSpaced(m_num_mesh_points,
-            initial_time, final_time);
+    traj.time = (final_time - initial_time) * m_mesh_eigen.array() + initial_time;
 
     traj.states = this->make_states_trajectory_view(x);
     traj.controls = this->make_controls_trajectory_view(x);
