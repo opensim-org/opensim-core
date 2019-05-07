@@ -23,6 +23,7 @@
 #include <stack>
 
 #include <OpenSim/Common/GCVSplineSet.h>
+#include <OpenSim/Common/PiecewiseLinearFunction.h>
 #include <OpenSim/Common/Storage.h>
 
 namespace OpenSim {
@@ -128,12 +129,38 @@ OSIMMOCO_API
 SimTK::Vector interpolate(const SimTK::Vector& x, const SimTK::Vector& y,
         const SimTK::Vector& newX, const bool ignoreNaNs = false);
 
+#ifndef SWIG
+template <typename FunctionType>
+std::unique_ptr<FunctionSet> createFunctionSet(const TimeSeriesTable& table) {
+    auto set = make_unique<FunctionSet>();
+    const auto& time = table.getIndependentColumn();
+    const auto numRows = (int)table.getNumRows();
+    for (int icol = 0; icol < (int)table.getNumColumns(); ++icol) {
+        const double* y =
+                table.getDependentColumnAtIndex(icol).getContiguousScalarData();
+        set->adoptAndAppend(new FunctionType(numRows, time.data(), y));
+    }
+    return set;
+}
+
+template <>
+inline std::unique_ptr<FunctionSet> createFunctionSet<GCVSpline>(
+        const TimeSeriesTable& table) {
+    const auto& time = table.getIndependentColumn();
+    return make_unique<GCVSplineSet>(table, std::vector<std::string>{},
+            std::min((int)time.size() - 1, 5));
+}
+#endif // SWIG
+
 /// Resample (interpolate) the table at the provided times. In general, a
 /// 5th-order GCVSpline is used as the interpolant; a lower order used as
 /// necessary if the table has too few points for a 5th-order spline.
-/// @throws Exception if new times are not within existing initial and final
-/// times, if the new times are decreasing, or if getNumTimes() < 2.
-template <typename TimeVector>
+/// Alternatively, you can provide a different function type as a template
+/// argument (e.g., PiecewiseLinearFunction).
+/// @throws Exception if new times are
+/// not within existing initial and final times, if the new times are
+/// decreasing, or if getNumTimes() < 2.
+template <typename TimeVector, typename FunctionType = GCVSpline>
 TimeSeriesTable resample(const TimeSeriesTable& in, const TimeVector& newTime) {
 
     const auto& time = in.getIndependentColumn();
@@ -141,7 +168,8 @@ TimeSeriesTable resample(const TimeSeriesTable& in, const TimeVector& newTime) {
     OPENSIM_THROW_IF(newTime.size() < 2, Exception,
             "Cannot resample if number of times is 0 or 1.");
     OPENSIM_THROW_IF(newTime[0] < time[0], Exception,
-            format("New initial time (%f) cannot be greater than existing initial "
+            format("New initial time (%f) cannot be greater than existing "
+                   "initial "
                    "time (%f)",
                     newTime[0], time[0]));
     OPENSIM_THROW_IF(newTime[newTime.size() - 1] > time[time.size() - 1],
@@ -162,13 +190,14 @@ TimeSeriesTable resample(const TimeSeriesTable& in, const TimeVector& newTime) {
         out.removeRowAtIndex(irow);
     }
 
-    const GCVSplineSet splines(in, {}, std::min((int)time.size() - 1, 5));
+    std::unique_ptr<FunctionSet> functions =
+            createFunctionSet<FunctionType>(in);
     SimTK::Vector curTime(1);
-    SimTK::RowVector row(splines.getSize());
+    SimTK::RowVector row(functions->getSize());
     for (int itime = 0; itime < (int)newTime.size(); ++itime) {
         curTime[0] = newTime[itime];
-        for (int icol = 0; icol < splines.getSize(); ++icol) {
-            row(icol) = splines[icol].calcValue(curTime);
+        for (int icol = 0; icol < functions->getSize(); ++icol) {
+            row(icol) = functions->get(icol).calcValue(curTime);
         }
         // Not efficient!
         out.appendRow(curTime[0], row);
@@ -209,8 +238,11 @@ OSIMMOCO_API void visualize(Model, TimeSeriesTable);
 /// a prescribed controller appended that will compute the control values from
 /// the MocoSolution. This can be useful when computing state-dependent model
 /// quantities that require realization to the Dynamics stage or later.
+/// The function used to fit the controls can either be GCVSpline or
+/// PiecewiseLinearFunction.
 OSIMMOCO_API void prescribeControlsToModel(
-        const MocoIterate& iterate, Model& model);
+        const MocoIterate& iterate, Model& model,
+        std::string functionType = "GCVSpline");
 
 /// Use the controls and initial state in the provided iterate to simulate the
 /// model using an ODE time stepping integrator (OpenSim::Manager), and return
@@ -257,7 +289,7 @@ OSIMMOCO_API
 std::unordered_map<std::string, int> createSystemYIndexMap(const Model& model);
 #endif
 
-/// Create a vector of control names based on the actuators in the model. For 
+/// Create a vector of control names based on the actuators in the model. For
 /// actuators with one control (e.g. ScalarActuator) the control name is simply
 /// the actuator name. For actuators with multiple controls, each control name
 /// is the actuator name appended by the control index (e.g. "/actuator_0");
@@ -268,10 +300,10 @@ std::vector<std::string> createControlNamesFromModel(const Model& model);
 /// return by OpenSim::Model::getControls() from its control name.
 OSIMMOCO_API
 std::unordered_map<std::string, int> createSystemControlIndexMap(
-    const Model& model);
+        const Model& model);
 
-/// Throws an exception if the order of the controls in the model is not the 
-/// same as the order of the actuators in the model. 
+/// Throws an exception if the order of the controls in the model is not the
+/// same as the order of the actuators in the model.
 OSIMMOCO_API void checkOrderSystemControls(const Model& model);
 
 /// Throw an exception if the property's value is not in the provided set.
