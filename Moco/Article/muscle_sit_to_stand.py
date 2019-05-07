@@ -117,6 +117,7 @@ def muscle_sit_to_stand(run, plot):
     def predict_assisted():
         model = muscle_driven_model()
         device = osim.SpringGeneralizedForce('knee_angle_r')
+        device.setName('spring')
         device.setStiffness(50)
         device.setRestLength(0)
         device.setViscosity(0)
@@ -126,10 +127,15 @@ def muscle_sit_to_stand(run, plot):
         problem = moco.updProblem()
         problem.addCost(osim.MocoControlCost('effort'))
 
+        problem.addParameter(
+            osim.MocoParameter('stiffness', '/forceset/spring',
+                               'stiffness', osim.MocoBounds(10, 80)))
+
         solver = osim.MocoCasADiSolver.safeDownCast(moco.updSolver())
         solver.resetProblem(problem)
 
         solver.set_num_mesh_points(10)
+        solver.set_parameters_require_initsystem(False)
         solution = moco.solve()
         solution.write(predict_assisted_solution_file)
 
