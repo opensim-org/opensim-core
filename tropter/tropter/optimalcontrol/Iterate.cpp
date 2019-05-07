@@ -194,9 +194,7 @@ MatrixXd interp1(const RowVectorXd& xin, const MatrixXd yin,
 }
 
 Iterate 
-Iterate::interpolate(int desired_num_columns) const {
-    if (time.size() == desired_num_columns) return *this;
-
+Iterate::interpolate(Eigen::VectorXd newTime) const {
     assert(desired_num_columns > 0);
     TROPTER_THROW_IF(!std::is_sorted(time.data(), time.data() + time.size()),
         "Expected time to be non-decreasing.");
@@ -206,8 +204,7 @@ Iterate::interpolate(int desired_num_columns) const {
     out.control_names = control_names;
     out.adjunct_names = adjunct_names;
     out.diffuse_names = diffuse_names;
-    out.time = Eigen::RowVectorXd::LinSpaced(desired_num_columns,
-                                             time[0], time.tail<1>()[0]);
+    out.time = newTime;
 
     out.states = interp1(time, states, out.time);
     out.controls = interp1(time, controls, out.time);

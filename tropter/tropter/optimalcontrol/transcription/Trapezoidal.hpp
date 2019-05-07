@@ -568,9 +568,8 @@ construct_iterate(const Iterate& traj, bool interpolate) const
     Iterate traj_interp;
     const Iterate* traj_to_use;
     if (interpolate) {
-        // TODO will actually need to provide the mesh spacing as well, when we
-        // no longer have uniform mesh spacing.
-        traj_interp = traj.interpolate(m_num_mesh_points);
+
+        traj_interp = traj.interpolate(m_mesh_eigen);
         traj_to_use = &traj_interp;
     } else {
         traj_to_use = &traj;

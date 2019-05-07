@@ -682,7 +682,7 @@ Eigen::VectorXd HermiteSimpson<T>::construct_iterate(
     if (interpolate) {
         // TODO will actually need to provide the mesh spacing as well, when we
         // no longer have uniform mesh spacing.
-        traj_interp = traj.interpolate(m_num_col_points);
+        traj_interp = traj.interpolate(m_mesh_and_midpoints);
         traj_to_use = &traj_interp;
     } else {
         traj_to_use = &traj;
