@@ -142,11 +142,6 @@ void DeGrooteFregly2016Muscle::extendSetPropertiesFromState(
 void DeGrooteFregly2016Muscle::computeStateVariableDerivatives(
         const SimTK::State& s) const {
 
-    // On a simple hanging muscle minimum time problem, I got quicker
-    // convergence using the nonlinear activation dynamics from the paper, so
-    // I'm using that (below) instead of these linear dynamics.
-    // const auto& tau = get_activation_time_constant();
-    // const SimTK::Real activationDot = (excitation - activation) / tau;
     if (!get_ignore_activation_dynamics()) {
         const auto& activation = getActivation(s);
         const auto& excitation = getControl(s);
