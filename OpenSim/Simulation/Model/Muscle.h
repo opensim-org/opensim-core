@@ -259,7 +259,9 @@ public:
 
     /** get current fiber velocity (m/s) positive is lengthening */
     double getFiberVelocity(const SimTK::State& s) const;
-    /** get normalize fiber velocity (fiber_lengths/s / max_contraction_velocity) */
+    /** get normalized fiber velocity. This is the fiber velocity in m/s divided by
+    the maximum contraction velocity expressed in m/s; therefore, this quantity is
+    dimensionless and should lie in [-1, 1]. */
     double getNormalizedFiberVelocity(const SimTK::State& s) const;
     /** get the current fiber velocity (m/s) projected onto the tendon direction */
     double getFiberVelocityAlongTendon(const SimTK::State& s) const;
@@ -623,9 +625,9 @@ protected:
         [1] fiberVelocityAlongTendon is the first derivative of the symbolic
             equation that defines the fiberLengthAlongTendon.
 
-        [2] normFiberVelocity is the fiberVelocity normalized with respect to 
-            the optimal fiber length of the fiber and the maximum fiber velocity
-            defined in fiber-lengths/s.
+        [2] normFiberVelocity is the fiberVelocity divided by  
+            the optimal fiber length of the fiber and by the maximum fiber velocity
+            expressed in optimal-fiber-lengths/s.
 
         [3] The sign of the angular velocity is defined using the right 
             hand rule.
@@ -653,7 +655,7 @@ protected:
     struct FiberVelocityInfo {              //DIMENSION             UNITS
         double fiberVelocity;               //length/time           m/s
         double fiberVelocityAlongTendon;    //length/time           m/s
-        double normFiberVelocity;           //(length/time)/length  (m/s)/m
+        double normFiberVelocity;           //(length/time)/Vmax    NA
                                             //
         double pennationAngularVelocity;    //angle/time            rad/s
                                             //
