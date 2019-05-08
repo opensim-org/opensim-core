@@ -375,7 +375,7 @@ using namespace SimTK;
     ptr._markAdopted()
 %}
 
-%pythonprepend OpenSim::MocoTool::solve %{
+%pythonprepend OpenSim::MocoStudy::solve %{
     if MocoCasADiSolver.safeDownCast(self.updSolver()):
         solver = MocoCasADiSolver.safeDownCast(self.updSolver())
         solver.setRunningInPython(True)
@@ -387,4 +387,4 @@ using namespace SimTK;
 %include <Bindings/preliminaries.i>
 %include <Bindings/moco.i>
 
-// %thread OpenSim::MocoTool::solve;
+// %thread OpenSim::MocoStudy::solve;
