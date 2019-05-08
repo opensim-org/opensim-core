@@ -171,7 +171,7 @@ void Trapezoidal<T>::set_ocproblem(
     VectorXd variable_lower(num_variables);
     variable_lower <<
             initial_time_lower, final_time_lower, parameters_lower,
-            initial_states_lower, initial_controls_lower, 
+            initial_states_lower, initial_controls_lower,
             initial_adjuncts_lower,
             (VectorXd(m_num_continuous_variables)
                     << states_lower, controls_lower, adjuncts_lower)
@@ -181,7 +181,7 @@ void Trapezoidal<T>::set_ocproblem(
     VectorXd variable_upper(num_variables);
     variable_upper <<
             initial_time_upper, final_time_upper, parameters_upper,
-            initial_states_upper, initial_controls_upper, 
+            initial_states_upper, initial_controls_upper,
             initial_adjuncts_upper,
             (VectorXd(m_num_continuous_variables)
                     << states_upper, controls_upper, adjuncts_upper)
@@ -261,7 +261,7 @@ void Trapezoidal<T>::calc_objective(const VectorX<T>& x, T& obj_value) const
         const T time = (final_time - initial_time) * m_mesh[i_mesh] + initial_time;
         m_ocproblem->calc_integral_cost({i_mesh, time,
                 states.col(i_mesh), controls.col(i_mesh), adjuncts.col(i_mesh),
-                m_empty_diffuse_col, parameters}, 
+                m_empty_diffuse_col, parameters},
                 m_integrand[i_mesh]);
     }
     // TODO use more intelligent quadrature? trapezoidal rule?
@@ -385,7 +385,7 @@ void Trapezoidal<T>::calc_sparsity_hessian_lagrangian(
                     VectorX<T> s = vars.head(m_num_states);
                     VectorX<T> c = vars.segment(m_num_states, m_num_controls);
                     VectorX<T> a = vars.tail(m_num_adjuncts);
-                    VectorX<T> d; // empty 
+                    VectorX<T> d; // empty
                     VectorX<T> p = x.segment(m_num_time_variables,
                         m_num_parameters).template cast<T>();
                     VectorX<T> deriv(m_num_states);
@@ -399,7 +399,7 @@ void Trapezoidal<T>::calc_sparsity_hessian_lagrangian(
             // Create a function for a specific derivative or path constraint.
             std::function<T(const VectorX<T>&)> calc_dae_i =
                     std::bind(calc_dae, std::placeholders::_1, i);
-            // Determine the sparsity for this specific derivative/path 
+            // Determine the sparsity for this specific derivative/path
             // constraint.
             auto block_sparsity = calc_hessian_sparsity_with_perturbation(
                     x.segment(m_num_dense_variables,
@@ -529,9 +529,9 @@ construct_iterate(const Iterate& traj, bool interpolate) const
         // number of columns as elements in time vector.
         if (traj.states.cols()) {
             TROPTER_THROW_IF(traj.time.size() != traj.states.cols(),
-                    "Expected time and states to have the same number of "  
-                            "columns, but they have %i and %i column(s), " 
-                            "respectively.", 
+                    "Expected time and states to have the same number of "
+                            "columns, but they have %i and %i column(s), "
+                            "respectively.",
                     traj.time.size(), traj.states.cols());
         }
         if (traj.controls.cols()) {
@@ -568,8 +568,9 @@ construct_iterate(const Iterate& traj, bool interpolate) const
     Iterate traj_interp;
     const Iterate* traj_to_use;
     if (interpolate) {
-
-        traj_interp = traj.interpolate(m_mesh_eigen);
+        const auto duration = traj.time.tail<1>()[0] - traj.time[0];
+        traj_interp = traj.interpolate(
+                duration * m_mesh_eigen.array() + traj.time[0]);
         traj_to_use = &traj_interp;
     } else {
         traj_to_use = &traj;
@@ -859,8 +860,8 @@ print_constraint_values(const Iterate& ocp_vars,
     time_upper  << ocp_vars_upper.time[0], ocp_vars_upper.time.tail<1>()[0];
     print_parameter_bounds("Time bounds", time_names, time_values, time_lower,
         time_upper);
-    print_parameter_bounds("Parameter bounds", parameter_names, 
-        ocp_vars.parameters, ocp_vars_lower.parameters, 
+    print_parameter_bounds("Parameter bounds", parameter_names,
+        ocp_vars.parameters, ocp_vars_lower.parameters,
         ocp_vars_upper.parameters);
 
     // Constraints.

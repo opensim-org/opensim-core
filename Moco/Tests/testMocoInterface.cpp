@@ -512,6 +512,7 @@ TEMPLATE_TEST_CASE("Workflow", "", MocoTropterSolver, MocoCasADiSolver) {
 
         guess.setTime(createVectorLinspace(20, 0.0, 7.0));
         MocoSolution solution = moco.solve();
+        CAPTURE(solution.getObjective());
         CHECK(solution.getFinalTime() == Approx(5.8));
     }
 
