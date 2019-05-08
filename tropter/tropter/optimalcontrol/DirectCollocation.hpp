@@ -27,7 +27,7 @@
 namespace tropter {
 
 std::vector<double> linspace(double start, double end, int length) {
-    double delta = (end - start) / (double)length;
+    double delta = (end - start) / (double) (length-1);
     std::vector<double> ret;
     for (int i = 0; i < length; ++i) { ret.push_back(start + (i * delta)); }
 
