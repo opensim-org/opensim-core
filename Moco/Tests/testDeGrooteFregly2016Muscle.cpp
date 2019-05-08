@@ -96,9 +96,7 @@ TEST_CASE("DeGrooteFregly2016Muscle basics") {
         }
     }
 
-    SECTION("printCurvesToSTOFiles") {
-        muscle.printCurvesToSTOFiles();
-    }
+    SECTION("printCurvesToSTOFiles") { muscle.printCurvesToSTOFiles(); }
 
     SECTION("Curve values") {
         CHECK(muscle.calcTendonForceMultiplier(1) == 0);
@@ -206,6 +204,7 @@ Model createHangingMuscleModel(
     actu->set_ignore_activation_dynamics(ignoreActivationDynamics);
     actu->set_ignore_tendon_compliance(ignoreTendonCompliance);
     actu->set_max_contraction_velocity(10);
+    actu->set_pennation_angle_at_optimal(0.10);
     actu->addNewPathPoint("origin", model.updGround(), SimTK::Vec3(0));
     actu->addNewPathPoint("insertion", *body, SimTK::Vec3(0));
     model.addForce(actu);
@@ -278,13 +277,14 @@ void testHangingMuscleMinimumTime(
         problem.addCost<MocoFinalTimeCost>();
 
         auto& solver = moco.initSolver<SolverType>();
-        solver.set_num_mesh_points(20);
+        solver.set_num_mesh_points(40);
         solver.set_dynamics_mode("implicit");
         solver.set_optim_convergence_tolerance(1e-4);
         solver.set_optim_constraint_tolerance(1e-3);
 
         solutionTrajOpt = moco.solve();
-        std::string solutionFilename = "sandboxMuscle_solution";
+        std::string solutionFilename = "testDeGrooteFregly2016Muscle_solution";
+        if (!ignoreActivationDynamics) solutionFilename += "_actdyn";
         if (ignoreTendonCompliance) solutionFilename += "_rigidtendon";
         solutionFilename += ".sto";
         solutionTrajOpt.write(solutionFilename);
@@ -302,9 +302,16 @@ void testHangingMuscleMinimumTime(
     {
         const auto iterateSim =
                 simulateIterateWithTimeStepping(solutionTrajOpt, model);
+        std::string iterateFilename =
+                "testDeGrooteFregly2016Muscle_timestepping";
+        if (!ignoreActivationDynamics) iterateFilename += "_actdyn";
+        if (ignoreTendonCompliance) iterateFilename += "_rigidtendon";
+        iterateFilename += ".sto";
+        iterateSim.write(iterateFilename);
+
         const double error = iterateSim.compareContinuousVariablesRMS(
                 solutionTrajOpt, {{"states", {}}, {"controls", {}}});
-        SimTK_TEST(error < 0.05);
+        CHECK(error < 0.05);
     }
 
     // Track the kinematics from the trajectory optimization.
@@ -358,11 +365,13 @@ void testHangingMuscleMinimumTime(
         tracking->setAllowUnusedReferences(true);
 
         auto& solver = moco.initSolver<SolverType>();
-        solver.set_num_mesh_points(20);
+        solver.set_num_mesh_points(40);
         solver.set_dynamics_mode("implicit");
 
         MocoSolution solutionTrack = moco.solve();
-        std::string solutionFilename = "sandboxMuscle_track_solution";
+        std::string solutionFilename =
+                "testDeGrooteFregly2016Muscle_track_solution";
+        if (!ignoreActivationDynamics) solutionFilename += "_actdyn";
         if (ignoreTendonCompliance) solutionFilename += "_rigidtendon";
         solutionFilename += ".sto";
         solutionTrack.write(solutionFilename);

@@ -49,8 +49,6 @@ namespace OpenSim {
 ///
 /// @note This class does not yet support tendon compliance (fiber dynamics).
 ///
-/// @note This class currently assumes a penantion angle of 0.
-///
 /// @underdevelopment
 ///
 /// @subsection Departures from the Muscle base class
@@ -343,10 +341,15 @@ private:
 
     static const std::string STATE_ACTIVATION_NAME;
 
+    // Computed from properties.
+    // -------------------------
+
+    // The square of (fiber_width / optimal_fiber_length).
+    SimTK::Real m_fiberWidth = SimTK::NaN;
+    SimTK::Real m_squareFiberWidth = SimTK::NaN;
     SimTK::Real m_maxContractionVelocityInMeters = SimTK::NaN;
     // Tendon stiffness parameter from De Groote et al., 2016. Instead of
     // kT, users specify tendon strain at 1 norm force, which is more intuitive.
-
     SimTK::Real m_kT = SimTK::NaN;
 };
 
