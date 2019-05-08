@@ -44,54 +44,45 @@ TEST_CASE("DeGrooteFregly2016Muscle basics") {
     auto& muscle = model.getComponent<DeGrooteFregly2016Muscle>("muscle");
 
     SECTION("Property value bounds") {
+        DeGrooteFregly2016Muscle musc = muscle;
 
-        // Property value bounds
-        // ---------------------
-        {
-            DeGrooteFregly2016Muscle musc = muscle;
+        SECTION("optimal_force") {
             musc.set_optimal_force(1.5);
-            SimTK_TEST_MUST_THROW_EXC(musc.finalizeFromProperties(), Exception);
+            REQUIRE_THROWS_AS(musc.finalizeFromProperties(), Exception);
         }
-        {
-            DeGrooteFregly2016Muscle musc = muscle;
+        SECTION("default_normalized_fiber_length min") {
             musc.set_default_normalized_fiber_length(0.1999);
-            SimTK_TEST_MUST_THROW_EXC(musc.finalizeFromProperties(),
+            REQUIRE_THROWS_AS(musc.finalizeFromProperties(),
                     SimTK::Exception::ErrorCheck);
         }
-        {
-            DeGrooteFregly2016Muscle musc = muscle;
+        SECTION("default_normalized_fiber_length max") {
             musc.set_default_normalized_fiber_length(1.800001);
-            SimTK_TEST_MUST_THROW_EXC(musc.finalizeFromProperties(),
+            REQUIRE_THROWS_AS(musc.finalizeFromProperties(),
                     SimTK::Exception::ErrorCheck);
         }
-        {
-            DeGrooteFregly2016Muscle musc = muscle;
+        SECTION("activation_time_constant") {
             musc.set_activation_time_constant(0);
-            SimTK_TEST_MUST_THROW_EXC(musc.finalizeFromProperties(),
+            REQUIRE_THROWS_AS(musc.finalizeFromProperties(),
                     SimTK::Exception::ErrorCheck);
         }
-        {
-            DeGrooteFregly2016Muscle musc = muscle;
+        SECTION("deactivation_time_constant") {
             musc.set_deactivation_time_constant(0);
-            SimTK_TEST_MUST_THROW_EXC(musc.finalizeFromProperties(),
+            REQUIRE_THROWS_AS(musc.finalizeFromProperties(),
                     SimTK::Exception::ErrorCheck);
         }
-        {
-            DeGrooteFregly2016Muscle musc = muscle;
+        SECTION("default_activation") {
             musc.set_default_activation(-0.0001);
-            SimTK_TEST_MUST_THROW_EXC(musc.finalizeFromProperties(),
+            REQUIRE_THROWS_AS(musc.finalizeFromProperties(),
                     SimTK::Exception::ErrorCheck);
         }
-        {
-            DeGrooteFregly2016Muscle musc = muscle;
+        SECTION("fiber_damping") {
             musc.set_fiber_damping(-0.0001);
-            SimTK_TEST_MUST_THROW_EXC(musc.finalizeFromProperties(),
+            REQUIRE_THROWS_AS(musc.finalizeFromProperties(),
                     SimTK::Exception::ErrorCheck);
         }
-        {
-            DeGrooteFregly2016Muscle musc = muscle;
+        SECTION("tendon_strain_at_one_norm_force") {
             musc.set_tendon_strain_at_one_norm_force(0);
-            SimTK_TEST_MUST_THROW_EXC(musc.finalizeFromProperties(),
+            REQUIRE_THROWS_AS(musc.finalizeFromProperties(),
                     SimTK::Exception::ErrorCheck);
         }
     }
@@ -161,7 +152,7 @@ TEST_CASE("DeGrooteFregly2016Muscle basics") {
             auto parabola = [](const SimTK::Real& x) {
                 return SimTK::square(x - 2.5);
             };
-            SimTK_TEST_MUST_THROW_EXC(
+            REQUIRE_THROWS_AS(
                     muscle.solveBisection(parabola, -5, 5), Exception);
         }
 
@@ -214,9 +205,9 @@ Model createHangingMuscleModel(
     return model;
 }
 
-template <typename SolverType>
-void testHangingMuscleMinimumTime(
-        bool ignoreActivationDynamics, bool ignoreTendonCompliance) {
+TEMPLATE_TEST_CASE("Hanging muscle minimum time", "", MocoCasADiSolver) {
+    auto ignoreActivationDynamics = GENERATE(true, false);
+    auto ignoreTendonCompliance = GENERATE(true);
 
     CAPTURE(ignoreActivationDynamics);
     CAPTURE(ignoreTendonCompliance);
@@ -276,7 +267,7 @@ void testHangingMuscleMinimumTime(
 
         problem.addCost<MocoFinalTimeCost>();
 
-        auto& solver = moco.initSolver<SolverType>();
+        auto& solver = moco.initSolver<TestType>();
         solver.set_num_mesh_points(40);
         solver.set_dynamics_mode("implicit");
         solver.set_optim_convergence_tolerance(1e-4);
@@ -364,7 +355,7 @@ void testHangingMuscleMinimumTime(
         tracking->setReference(ref);
         tracking->setAllowUnusedReferences(true);
 
-        auto& solver = moco.initSolver<SolverType>();
+        auto& solver = moco.initSolver<TestType>();
         solver.set_num_mesh_points(40);
         solver.set_dynamics_mode("implicit");
 
@@ -381,12 +372,4 @@ void testHangingMuscleMinimumTime(
     }
     // TODO: Support constraining initial fiber lengths to their equilibrium
     // lengths (in explicit mode).
-}
-
-TEST_CASE("Hanging muscle minimum time") {
-    testHangingMuscleMinimumTime<MocoCasADiSolver>(true, true);
-    testHangingMuscleMinimumTime<MocoCasADiSolver>(false, true);
-    // TODO: Handle tendon compliance.
-    // testHangingMuscleMinimumTime<MocoCasADiSolver>(true, false);
-    // testHangingMuscleMinimumTime<MocoCasADiSolver>(false, false);
 }
