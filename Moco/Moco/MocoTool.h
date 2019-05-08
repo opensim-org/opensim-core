@@ -29,6 +29,7 @@ class MocoProblem;
 class MocoTropterSolver;
 class MocoCasADiSolver;
 
+
 /// The top-level class for solving a custom optimal control problem.
 ///
 /// This class consists of a MocoProblem, which describes the optimal control
