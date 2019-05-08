@@ -108,7 +108,7 @@ void DeGrooteFregly2016Muscle::extendFinalizeFromProperties() {
     const auto normFiberWidth = sin(get_pennation_angle_at_optimal());
     m_fiberWidth = get_optimal_fiber_length() * normFiberWidth;
     m_squareFiberWidth = square(m_fiberWidth);
-    m_maxContractionVelocityInMeters =
+    m_maxContractionVelocityInMetersPerSecond =
             get_max_contraction_velocity() * get_optimal_fiber_length();
     m_kT = log((1.0 + c3) / c1) /
            (1.0 + get_tendon_strain_at_one_norm_force() - c2);
@@ -172,17 +172,22 @@ double DeGrooteFregly2016Muscle::computeActuation(const SimTK::State& s) const {
 void DeGrooteFregly2016Muscle::calcMuscleLengthInfo(
         const SimTK::State& s, MuscleLengthInfo& mli) const {
 
+    const auto& MTULength = getLength(s);
+    if (MTULength < get_tendon_slack_length()) {
+        // TODO: Refer to what Millard muscle does when buckling.
+        std::cout << "Warning: DeGrooteFregly2016Muscle '" << getName()
+                  << "' is buckling (length < tendon_slack_length) at time "
+                  << s.getTime() << " s." << std::endl;
+    }
+
     // Tendon.
     // -------
     mli.normTendonLength = 1.0;
-    // TODO handle muscle-tendon length is less than tendon slack length
-    // (buckling).
     mli.tendonLength = get_tendon_slack_length();
     mli.tendonStrain = mli.normTendonLength - 1.0;
 
     // Fiber.
     // ------
-    const auto& MTULength = getLength(s);
     mli.fiberLengthAlongTendon = MTULength - mli.tendonLength;
     mli.fiberLength = sqrt(
             SimTK::square(mli.fiberLengthAlongTendon) + m_squareFiberWidth);
@@ -218,7 +223,7 @@ void DeGrooteFregly2016Muscle::calcFiberVelocityInfo(
     fvi.fiberVelocity = MTUVel * mli.cosPennationAngle;
     fvi.fiberVelocityAlongTendon = MTUVel;
     fvi.normFiberVelocity =
-            fvi.fiberVelocity / m_maxContractionVelocityInMeters;
+            fvi.fiberVelocity / m_maxContractionVelocityInMetersPerSecond;
     const SimTK::Real tanPennationAngle =
             m_fiberWidth / mli.fiberLengthAlongTendon;
     fvi.pennationAngularVelocity =
@@ -267,6 +272,11 @@ void DeGrooteFregly2016Muscle::calcMuscleDynamicsInfo(
     mdi.fiberPassivePower = SimTK::NaN;
     mdi.tendonPower = SimTK::NaN;
     mdi.musclePower = SimTK::NaN;
+}
+
+void DeGrooteFregly2016Muscle::calcMusclePotentialEnergyInfo(
+        const SimTK::State& s, MusclePotentialEnergyInfo& mpei) const {
+    // TODO.
 }
 
 void DeGrooteFregly2016Muscle::computeInitialFiberEquilibrium(

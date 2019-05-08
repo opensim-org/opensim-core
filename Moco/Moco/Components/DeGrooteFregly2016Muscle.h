@@ -160,8 +160,8 @@ protected:
             FiberVelocityInfo& fvi) const override;
     void calcMuscleDynamicsInfo(const SimTK::State& s,
             MuscleDynamicsInfo& mdi) const override;
-    // void calcMusclePotentialEnergyInfo(const SimTK::State& s,
-    //         MusclePotentialEnergyInfo& mpei) const override;
+    void calcMusclePotentialEnergyInfo(const SimTK::State& s,
+            MusclePotentialEnergyInfo& mpei) const override;
 
 public:
     /// Fiber velocity is assumed to be 0.
@@ -347,7 +347,7 @@ private:
     // The square of (fiber_width / optimal_fiber_length).
     SimTK::Real m_fiberWidth = SimTK::NaN;
     SimTK::Real m_squareFiberWidth = SimTK::NaN;
-    SimTK::Real m_maxContractionVelocityInMeters = SimTK::NaN;
+    SimTK::Real m_maxContractionVelocityInMetersPerSecond = SimTK::NaN;
     // Tendon stiffness parameter from De Groote et al., 2016. Instead of
     // kT, users specify tendon strain at 1 norm force, which is more intuitive.
     SimTK::Real m_kT = SimTK::NaN;
