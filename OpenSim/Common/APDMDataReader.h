@@ -62,6 +62,7 @@ public:
     // Header associated with Time
     static const std::string TimeLabel;
 
+protected:
     /** Typically, APDM can export a trial as one .h5 file (binary that we don't parse as of now) or as .csv
     ASCII text file that is comma delimited, grouped in order by sensor.
     The function below reads the csv file . It produces a 
@@ -74,9 +75,7 @@ public:
      
      @see IMUDataReader class for utilities to extract/access specific table(s)
     */
-    DataAdapter::OutputTables readSource(const std::string& fileName) const override {
-        return extendRead(fileName);
-    };
+    DataAdapter::OutputTables extendRead(const std::string& fileName) const override;
 
     /** Implements writing functionality, not implemented.                         */
     virtual void extendWrite(const DataAdapter::InputTables& tables,
@@ -105,10 +104,6 @@ public:
         std::vector<std::string> search_labels,
         const std::string& sensorName,
         std::vector<int>& indices, bool newFormat=false) const;
-    /**
-    * Implement interface required by DataAdapter class
-    */
-    DataAdapter::OutputTables extendRead(const std::string& fileName) const override;
 };
 
 } // OpenSim namespace

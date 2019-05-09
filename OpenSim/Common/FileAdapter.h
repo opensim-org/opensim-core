@@ -191,10 +191,6 @@ public:
     the specific adapter's documentation to see what was returned.            */
     static OutputTables readFile(const std::string& fileName);
 
-    virtual DataAdapter::OutputTables readSource(const std::string& dataSourceSpecification) const {
-        return FileAdapter::readFile(dataSourceSpecification);
-    }
-
     /** Write a collection of tables to the given file. Different file formats
     require different number/type of tables. See specific adapter's 
     documentation to see what is required.                                    */

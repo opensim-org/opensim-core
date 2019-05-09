@@ -119,9 +119,11 @@ public:
                              const DataAdapter& adapter);
 
     /** Public interface to read data from a dataSourceSpecification, typically a file or folder */
-    virtual DataAdapter::OutputTables readSource(const std::string& dataSourceSpecification) const = 0;
+    DataAdapter::OutputTables read(const std::string& dataSourceSpecification) const {
+        return extendRead(dataSourceSpecification);
+    }
 
-    /** Generic interface to retrieve a specific table by name from readSource result */
+    /** Generic interface to retrieve a specific table by name from read result */
     const std::shared_ptr<AbstractDataTable> getDataTable(const OutputTables& tables, const std::string tableName) {
         if (tables.find(tableName) == tables.end()) {
             // Throw exception table not found, likely typo in tableName
