@@ -88,7 +88,7 @@ install:
   - ps: if (Test-Path C:\projects\deps\ipopt) { Add-Content .\CMakeCacheInit.cmake -Value 'set(SUPERBUILD_ipopt OFF CACHE BOOL "")' }
   - ps: if (Test-Path C:\projects\deps\casadi) { Add-Content .\CMakeCacheInit.cmake -Value 'set(SUPERBUILD_casadi OFF CACHE BOOL "")' }
   - ps: if (Test-Path C:\projects\deps\opensim-core) { Add-Content .\CMakeCacheInit.cmake -Value 'set(SUPERBUILD_opensim-core OFF CACHE BOOL "")' }
-  - ps: Add-Content .\CMakeCacheInit.cmake -Value 'set(CMAKE_INSTALL_PREFIX "C:\projects\opensim-moco_deps_install" CACHE PATH "")'
+  - ps: Add-Content .\CMakeCacheInit.cmake -Value 'set(CMAKE_INSTALL_PREFIX "C:/projects/opensim-moco_deps_install" CACHE PATH "")'
   - ps: Add-Content .\CMakeCacheInit.cmake -Value 'set(OPENSIM_JAVA_WRAPPING ON CACHE BOOL "")'
   - ps: Add-Content .\CMakeCacheInit.cmake -Value 'set(OPENSIM_PYTHON_WRAPPING ON CACHE BOOL "")'
   # /W0 disables warnings. The other CXX flags are copied from CMake's default
