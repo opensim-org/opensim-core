@@ -425,6 +425,8 @@ public:
     /// Get a modifiable phase of the problem by index (starting index of 0).
     /// This accesses the internal phases property.
     const MocoPhase& getPhase(int index = 0) const { return get_phases(index); }
+    /// Returns a reference to the cost with name "name".
+    MocoCost& updCost(const std::string& name);
 
 #ifndef SWIG // MocoProblemRep() is not copyable.
     /// Create an instance of MocoProblemRep, which fills in additional

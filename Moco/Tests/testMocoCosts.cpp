@@ -204,6 +204,17 @@ TEST_CASE("Test multiple costs.") {
     SimTK_TEST_EQ(cost, (ft0->get_weight() + ft1->get_weight() ) * ft);
 }
 
+TEST_CASE("Enabled Costs", "") {
+    double x = 23920;
+    MocoFinalTimeCost cost;
+    Model model;
+    auto state = model.initSystem();
+    state.setTime(x);
+    SimTK_TEST_EQ(cost.calcEndpointCost(state), x);
+    cost.set_enabled(false);
+    SimTK_TEST_EQ(cost.calcEndpointCost(state), 0);
+}
+
 TEMPLATE_TEST_CASE("Test MocoControlTrackingCost", "", MocoTropterSolver,
         MocoCasADiSolver) {
 
