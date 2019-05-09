@@ -488,6 +488,7 @@ TEST_CASE("DeGrooteFregly2016Muscle basics") {
                 SimTK_TEST_EQ_TOL(residual, 0, 1e-10);
             }
         }
+        // Multiple roots.
         {
             auto parabola = [](const SimTK::Real& x) {
                 return SimTK::square(x - 2.5);
@@ -591,6 +592,8 @@ TEMPLATE_TEST_CASE("Hanging muscle minimum time", "", MocoCasADiSolver) {
             // We would prefer to use a range of [0.2, 1.8] but then IPOPT
             // tries very small fiber lengths that cause tendon stretch to
             // be HUGE, causing insanely high tendon forces.
+            // TODO Try minimizing fiber velocity in the objective.
+            // Set the initial value to be the equilibrium value.
             problem.setStateInfo("/forceset/actuator/norm_fiber_length",
                     {0.8, 1.8},
                     model.getStateVariableValue(

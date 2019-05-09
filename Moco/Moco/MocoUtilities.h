@@ -147,8 +147,8 @@ template <>
 inline std::unique_ptr<FunctionSet> createFunctionSet<GCVSpline>(
         const TimeSeriesTable& table) {
     const auto& time = table.getIndependentColumn();
-    return make_unique<GCVSplineSet>(table, std::vector<std::string>{},
-            std::min((int)time.size() - 1, 5));
+    return std::unique_ptr<GCVSplineSet>(new GCVSplineSet(table,
+            std::vector<std::string>{}, std::min((int)time.size() - 1, 5)));
 }
 #endif // SWIG
 
@@ -240,9 +240,8 @@ OSIMMOCO_API void visualize(Model, TimeSeriesTable);
 /// quantities that require realization to the Dynamics stage or later.
 /// The function used to fit the controls can either be GCVSpline or
 /// PiecewiseLinearFunction.
-OSIMMOCO_API void prescribeControlsToModel(
-        const MocoIterate& iterate, Model& model,
-        std::string functionType = "GCVSpline");
+OSIMMOCO_API void prescribeControlsToModel(const MocoIterate& iterate,
+        Model& model, std::string functionType = "GCVSpline");
 
 /// Use the controls and initial state in the provided iterate to simulate the
 /// model using an ODE time stepping integrator (OpenSim::Manager), and return
