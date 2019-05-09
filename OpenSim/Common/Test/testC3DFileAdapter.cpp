@@ -148,8 +148,8 @@ void test(const std::string filename) {
     cout << "\tMarkers " << marker_file << " equivalent to standard." << endl;
 
     // Verify that grfs data was written out and can be read in
-    auto forces = sto_adapter.read(forces_file);
-    auto std_forces = sto_adapter.read("std_" + forces_file);
+    auto forces = sto_adapter.readFile(forces_file);
+    auto std_forces = sto_adapter.readFile("std_" + forces_file);
     // Compare C3DFileAdapter read-in and written forces data
     compare_tables<SimTK::Vec3>(forces.pack<SimTK::Vec3>(), 
                                 *force_table,
@@ -181,7 +181,7 @@ void test(const std::string filename) {
 
     sto_adapter.write(force_table_cop->flatten(), "cop_"+ forces_file);
 
-    auto std_forces_cop = sto_adapter.read("std_cop_" + forces_file);
+    auto std_forces_cop = sto_adapter.readFile("std_cop_" + forces_file);
     // Compare C3DFileAdapter written forces data to standard
     // Note std generated using MATLAB C3D processing scripts 
     compare_tables<SimTK::Vec3>(*force_table_cop, 

@@ -125,7 +125,7 @@ runInverseKinematicsWithOrientationsFromFile(Model& model,
     model.addComponent(ikReporter);
 
     TimeSeriesTable_<SimTK::Quaternion> quatTable =
-        STOFileAdapter_<SimTK::Quaternion>::read(orientationsFileName);
+        STOFileAdapter_<SimTK::Quaternion>::readFile(orientationsFileName);
     std::cout << "Loading orientations as quaternions from "
         << orientationsFileName << std::endl;
 

@@ -117,7 +117,7 @@ public:
 
     /** Read a STO file.                                                      */
     static
-    TimeSeriesTable_<T> read(const std::string& fileName);
+    TimeSeriesTable_<T> readFile(const std::string& fileName);
 
     /** Write a STO file.                                                     */
     static
@@ -140,7 +140,7 @@ STOFileAdapter_<T>::clone() const {
 
 template<typename T>
 TimeSeriesTable_<T>
-STOFileAdapter_<T>::read(const std::string& fileName) {
+STOFileAdapter_<T>::readFile(const std::string& fileName) {
     auto abs_table = STOFileAdapter_{}.
                      extendRead(fileName).
                      at(DelimFileAdapter<T>::tableString());

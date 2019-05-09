@@ -135,13 +135,13 @@ void testTugOfWar(const string& dataFileName, const double& defaultAct) {
     // Load the AnalyzTool results for the muscle's force through time
     TimeSeriesTable_<double> results =
         STOFileAdapter_<double>::
-        read("Analyze_Tug_of_War/Tug_of_War_Millard_Iso_ForceReporter_forces.sto");
+        readFile("Analyze_Tug_of_War/Tug_of_War_Millard_Iso_ForceReporter_forces.sto");
     assert(results.getNumColumns() == 1);
     SimTK::Vector forces = results.getDependentColumnAtIndex(0);
 
     TimeSeriesTable_<double> outputs_table =
         STOFileAdapter_<double>::
-        read("Analyze_Tug_of_War/Tug_of_War_Millard_Iso_Outputs.sto");
+        readFile("Analyze_Tug_of_War/Tug_of_War_Millard_Iso_Outputs.sto");
     SimTK::Vector tf_output = outputs_table.getDependentColumnAtIndex(1);
 
     // Load input data as StatesTrajectory used to perform the Analysis
