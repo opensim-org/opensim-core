@@ -110,7 +110,7 @@ public:
         CentereOfPressure, or the PointOfWrenchApplication (see above).
         */
     static
-    Tables read(const std::string& fileName, 
+    Tables readFile(const std::string& fileName, 
                 ForceLocation wrt = ForceLocation::OriginOfForcePlate);
 
     static

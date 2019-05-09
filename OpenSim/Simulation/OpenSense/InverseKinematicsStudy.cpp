@@ -252,7 +252,7 @@ SimTK::Array_<int> InverseKinematicsStudy::getTimeRangeInUse(
 TimeSeriesTable_<SimTK::Vec3> 
     InverseKinematicsStudy::loadMarkersFile(const std::string& markerFile)
 {
-    auto markers = TRCFileAdapter::read(markerFile);
+    auto markers = TRCFileAdapter::readFile(markerFile);
     std::cout << markerFile << " loaded " << markers.getNumColumns() << " markers "
         << " and " << markers.getNumRows() << " rows of data." << std::endl;
 
