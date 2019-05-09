@@ -53,7 +53,7 @@ public:
     virtual ~XsensDataReader()                   = default;
 
     XsensDataReader* clone() const override;
-
+protected:
     /** Typically, Xsens can export a trial as one .mtb file (binary that we 
     can't parse) or as collection of ASCII text files that are tab delimited, 
     one per sensor. All of these files have a common prefix that indicates the 
@@ -74,6 +74,7 @@ public:
     /** Implements writing functionality, not implemented. */
     virtual void extendWrite(const DataAdapter::InputTables& tables,
         const std::string& sinkName) const override {};
+public:
     /**
      * Method to get const reference to the internal XsensDataReaderSettings object
      * maintained by this reader.
