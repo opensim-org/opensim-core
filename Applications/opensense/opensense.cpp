@@ -222,7 +222,7 @@ void PrintUsage(const char *aProgName, ostream &aOStream)
     aOStream << "-Setup, -S         SetupFileName        Specify an xml setup file for solving an inverse kinematics problem.\n";
     aOStream << "-PropertyInfo, -PI                      Print help information for properties in setup files.\n";
     aOStream << "-ReadX, -RX  directory settingsFile.xml   Parse Xsens exported files from directory using settingsFile.xml.\n";
-    aOStream << "-ReadA, -RA  datafile.csv settingsFile.xml   Parse APDM exported files from single csv file using settingsFile.xml.\n";
+    aOStream << "-ReadA, -RA  datafile.csv settingsFile.xml   Parse single csv file provided by APDM using specified settingsFile.xml.\n";
     aOStream << "-Transform, -T markerFileWithIMUframes.trc  Transform experimental marker locations that define axes of IMUs, or the plates\n";
     aOStream << "                                        upon which they are rigidly affixed, into the orientations of the IMUs expressed \n";
     aOStream << "                                        in the motion capture(markers) lab frame.The orientations over the trial are \n";

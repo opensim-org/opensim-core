@@ -41,7 +41,7 @@ APDMDataReader::extendRead(const std::string& fileName) const {
         FileIsEmpty,
         fileName);
 
-    std::vector<std::string> labels;
+    std::vector<std::string> labels; // will be written to output tables
     
     double dataRate = SimTK::NaN;
     std::vector<int> accIndex;
@@ -67,21 +67,25 @@ APDMDataReader::extendRead(const std::string& fileName) const {
     bool newFormat = false;
     if (tokens[0] == "Format=7") {
         newFormat = true;
-        std::vector<std::string> labels;
+        dataRate = 128; // Will fix on reading first 2 rows
         // Header Line 1:Format=7, [I1,,,$IMU1,,,,,,,,,,,]*
         // Header Line 2: Time,[Accelerometer,,,Gyroscope,,,Magnetometer,,,Barometer,Orientation,,,]*
         // Header Line 3: ,[X,Y,Z,X,Y,Z,X,Y,Z,,S,X,Y,Z]*
+        std::vector<std::string> mtLabels;
+        mtLabels.push_back("");
         // In this format there's no dataRate, either assumed or computed from Time column
         for (int imu_index = 0; imu_index < n_imus; ++imu_index) {
             std::string sensorName = _settings.get_ExperimentalSensors(imu_index).getName();
             labels.push_back(_settings.get_ExperimentalSensors(imu_index).get_name_in_model());
-            find_start_column(tokens, labels, sensorName, accIndex, newFormat);
+            find_start_column(tokens, mtLabels, sensorName, accIndex, newFormat);
             if (accIndex[imu_index] != -1) {
                 gyroIndex.push_back(accIndex[imu_index] + 3);
                 magIndex.push_back(accIndex[imu_index] + 6);
                 orientationsIndex.push_back(accIndex[imu_index] + 10);
             }
         }
+        // Line 2 unused
+        std::getline(in_stream, line);
     }
     else {
         // Older Format looks like this:
@@ -119,8 +123,8 @@ APDMDataReader::extendRead(const std::string& fileName) const {
     bool foundMagneticHeadingData = magIndex.size()>0;
     bool foundAngularVelocityData = gyroIndex.size()>0;
 
-    // If no Orientation data is available or dataRate can't be deduced we'll abort completely
-    OPENSIM_THROW_IF((orientationsIndex.size() == 0 || SimTK::isNaN(dataRate)),
+    // If no Orientation data is available we'll abort
+    OPENSIM_THROW_IF((orientationsIndex.size() == 0),
         TableMissingHeader);
     // Line 4, Units unused
     std::getline(in_stream, line);
@@ -212,7 +216,7 @@ void APDMDataReader::find_start_column(std::vector<std::string> tokens,
     const std::string& sensorName,
     std::vector<int>& indices, bool newFromat) const {
     // Search for "sensorName/{search_labels} in tokens, append result to indices if found"
-    std::string firstLabel = sensorName + (newFromat?"":search_labels[0]);
+    std::string firstLabel = sensorName + search_labels[0];
     // look for first label, when found check/confirm the rest. Out of order is not supported
     int found_index = -1;
     std::vector<std::string>::iterator it = std::find(tokens.begin(), tokens.end(), firstLabel);
