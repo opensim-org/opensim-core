@@ -139,7 +139,6 @@ MocoTropterSolver::createTropterSolver(
                 ocp, get_transcription_scheme(), get_optim_solver(), mesh);
     }
 
-    // TODO Take as an argument either num mesh points or the mesh
     dircol->set_verbosity(get_verbosity() >= 1);
     if (getProperty_exact_hessian_block_sparsity_mode().empty()) {
         dircol->set_exact_hessian_block_sparsity_mode("dense");

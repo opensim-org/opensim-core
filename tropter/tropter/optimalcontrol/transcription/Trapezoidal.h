@@ -66,9 +66,6 @@ public:
         }
         set_ocproblem(ocproblem);
     }
-    /// The number of mesh points must be at least 2.
-    // TODO order of calls?
-    // TODO right now, must call this BEFORE set_problem.
 
     void set_ocproblem(std::shared_ptr<const OCProblem> ocproblem);
 
@@ -183,8 +180,8 @@ private:
 
     std::shared_ptr<const OCProblem> m_ocproblem;
 
-    std::vector<double> m_mesh = {};
-    Eigen::VectorXd m_mesh_intervals = {};
+    std::vector<double> m_mesh;
+    Eigen::VectorXd m_mesh_intervals;
     Eigen::VectorXd m_mesh_eigen;
     int m_num_mesh_points = 0;
     int m_num_time_variables = -1;

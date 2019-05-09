@@ -80,7 +80,8 @@ MocoTool createSlidingMassMocoTool() {
     return moco;
 }
 
-TEMPLATE_TEST_CASE("Custom mesh", "", MocoTropterSolver, MocoCasADiSolver) {
+//TODO test Hermite-Simpson
+TEMPLATE_TEST_CASE("Non-uniform mesh", "", MocoTropterSolver, MocoCasADiSolver) {
     std::cout.rdbuf(LogManager::cout.rdbuf());
     std::cout.rdbuf(LogManager::cout.rdbuf());
     MocoTool moco;
@@ -105,8 +106,8 @@ TEMPLATE_TEST_CASE("Custom mesh", "", MocoTropterSolver, MocoCasADiSolver) {
         double manualIntegral = 0;
 
         for (int i = 0; i < (int)(mesh.size() - 1); ++i) {
-            manualIntegral += (.5) * (finalTime * (mesh[i + 1] - mesh[i])) *
-                              ((SimTK::square(u[i])) + SimTK::square(u[i + 1]));
+            manualIntegral += 0.5 * finalTime * (mesh[i + 1] - mesh[i]) *
+                              (SimTK::square(u[i]) + SimTK::square(u[i + 1]));
         }
 
         for (int i = 0; i < (int)mesh.size(); ++i) {
@@ -696,7 +697,7 @@ TEMPLATE_TEST_CASE("Guess", "", MocoTropterSolver, MocoCasADiSolver) {
 
     SimTK::Matrix expectedStatesTraj(N, 2);
     expectedStatesTraj.col(0) = 0.5;  // bounds are [0, 1].
-    expectedStatesTraj(0, 0) = 0;     // initial value fixed to 0.
+    expectedStatesTraj(0, 0) = 0;     // initial value fixed to 0.f
     expectedStatesTraj(N - 1, 0) = 1; // final value fixed to 1.
     expectedStatesTraj.col(1) = 0.0;  // bounds are [-100, 100]
     expectedStatesTraj(0, 1) = 0;     // initial speed fixed to 0.

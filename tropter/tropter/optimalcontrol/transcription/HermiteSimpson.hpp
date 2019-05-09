@@ -29,7 +29,7 @@ template <typename T>
 void HermiteSimpson<T>::set_ocproblem(
         std::shared_ptr<const OCProblem> ocproblem) {
     m_ocproblem = ocproblem;
-    m_num_mesh_points = (int) m_mesh.size();
+    m_num_mesh_points = (int)m_mesh.size();
     m_num_col_points = 2 * m_num_mesh_points - 1;
     m_num_states = m_ocproblem->get_num_states();
     m_num_controls = m_ocproblem->get_num_controls();
@@ -39,7 +39,6 @@ void HermiteSimpson<T>::set_ocproblem(
     m_num_time_variables = 2;
     m_num_parameters = m_ocproblem->get_num_parameters();
     m_num_dense_variables = m_num_time_variables + m_num_parameters;
-    m_num_mesh_points = (int) m_mesh.size();
     int num_variables = m_num_time_variables + m_num_parameters +
                         m_num_col_points * m_num_continuous_variables +
                         (m_num_mesh_points - 1) * m_num_diffuses;
@@ -255,8 +254,8 @@ void HermiteSimpson<T>::set_ocproblem(
     // For integrating the integral cost.
     // The duration of each mesh interval.
     m_mesh_eigen = Eigen::Map<VectorXd>(m_mesh.data(), m_mesh.size());
-    VectorXd mesh_intervals =
-            m_mesh_eigen.tail(num_mesh_intervals) - m_mesh_eigen.head(num_mesh_intervals);
+    VectorXd mesh_intervals = m_mesh_eigen.tail(num_mesh_intervals) -
+                              m_mesh_eigen.head(num_mesh_intervals);
     // Simpson quadrature includes integrand evaluations at the midpoint.
     m_simpson_quadrature_coefficients = VectorXd::Zero(m_num_col_points);
     // The fractional coefficients that, when multiplied by the mesh fraction
@@ -284,12 +283,11 @@ void HermiteSimpson<T>::set_ocproblem(
     // Return a mesh including the Hermite-Simpson collocation midpoints to
     // enable initialization of mesh-dependent integral cost quantities.
 
-    for(int i = 0; i < (int) (m_num_col_points); ++i) {
-        if(i%2==0) {
-            m_mesh_and_midpoints[i] = (m_mesh[i/2]);
-        }
-        else {
-            m_mesh_and_midpoints[i] = (.5 * (m_mesh[(i/2)] + m_mesh[i/2 +1]));
+    for (int i = 0; i < (int)m_num_col_points; ++i) {
+        if (i % 2 == 0) {
+            m_mesh_and_midpoints[i] = (m_mesh[i / 2]);
+        } else {
+            m_mesh_and_midpoints[i] = 0.5 * (m_mesh[i / 2] + m_mesh[i / 2 + 1]);
         }
     }
     m_ocproblem->initialize_on_mesh(m_mesh_and_midpoints);
@@ -715,7 +713,8 @@ Iterate HermiteSimpson<T>::deconstruct_iterate(const Eigen::VectorXd& x) const {
     const double& initial_time = x[0];
     const double& final_time = x[1];
     Iterate traj;
-    traj.time = (final_time - initial_time) * m_mesh_and_midpoints.array() + initial_time;
+    traj.time = (final_time - initial_time) * m_mesh_and_midpoints.array() +
+                initial_time;
 
     traj.states = this->make_states_trajectory_view(x);
     traj.controls = this->make_controls_trajectory_view(x);

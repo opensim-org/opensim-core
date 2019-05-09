@@ -36,7 +36,7 @@ public:
                 grid(i) = mesh[i/2];
             }
             else {
-                grid(i) = .5 * (mesh[(i/2)] + mesh[i/2 +1]);
+                grid(i) = .5 * (mesh[i/2] + mesh[i/2 +1]);
             }
         }
         createVariablesAndSetBounds(grid);

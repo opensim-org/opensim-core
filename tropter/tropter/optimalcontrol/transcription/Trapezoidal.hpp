@@ -258,7 +258,7 @@ void Trapezoidal<T>::calc_objective(const VectorX<T>& x, T& obj_value) const
     // --------------
     m_integrand.setZero();
     for (int i_mesh = 0; i_mesh < m_num_mesh_points; ++i_mesh) {
-        const T time = (final_time - initial_time) * m_mesh[i_mesh] + initial_time;
+        const T time = duration * m_mesh[i_mesh] + initial_time;
         m_ocproblem->calc_integral_cost({i_mesh, time,
                 states.col(i_mesh), controls.col(i_mesh), adjuncts.col(i_mesh),
                 m_empty_diffuse_col, parameters},
@@ -307,7 +307,7 @@ void Trapezoidal<T>::calc_constraints(const VectorX<T>& x,
     // TODO tradeoff between memory and parallelism.
     for (int i_mesh = 0; i_mesh < m_num_mesh_points; ++i_mesh) {
         // TODO should pass the time.
-        const T time = (final_time - initial_time) * m_mesh[i_mesh] + initial_time;
+        const T time = duration * m_mesh[i_mesh] + initial_time;
         m_ocproblem->calc_differential_algebraic_equations(
                 {i_mesh, time, states.col(i_mesh), controls.col(i_mesh),
                  adjuncts.col(i_mesh), m_empty_diffuse_col, parameters},
