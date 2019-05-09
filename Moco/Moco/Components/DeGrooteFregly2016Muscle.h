@@ -158,8 +158,10 @@ protected:
             const SimTK::State& s, MuscleLengthInfo& mli) const override;
     void calcFiberVelocityInfo(const SimTK::State& s,
             FiberVelocityInfo& fvi) const override;
+    /// This function does not yet compute stiffness or power.
     void calcMuscleDynamicsInfo(const SimTK::State& s,
             MuscleDynamicsInfo& mdi) const override;
+    /// This function does not yet compute potential energy.
     void calcMusclePotentialEnergyInfo(const SimTK::State& s,
             MusclePotentialEnergyInfo& mpei) const override;
 
