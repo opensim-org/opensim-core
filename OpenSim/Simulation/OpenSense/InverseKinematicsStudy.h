@@ -74,8 +74,10 @@ public:
         "The time range for the study.");
 
     OpenSim_DECLARE_PROPERTY(base_imu_label, std::string,
-        "The column label of the base IMU used to perform heading correction."
-        "Leave blank if no correction is to be applied");
+        "The label of the base IMU in the orientations_file used to account "
+        "for the heading difference between the sensor data and the forward "
+        "direction of model. Leave blank if no heading correction is to be "
+        "applied.");
 
     OpenSim_DECLARE_PROPERTY(base_heading_axis, std::string,
         "The axis of the base IMU that corresponds to its heading direction."
