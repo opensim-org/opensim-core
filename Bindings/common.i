@@ -399,7 +399,7 @@ namespace OpenSim {
 %include <OpenSim/Common/C3DFileAdapter.h>
 
 %extend OpenSim::C3DFileAdapter {
-    Tables read(const std::string& fileName, unsigned int wrt) {
+    Tables readFile(const std::string& fileName, unsigned int wrt) {
         C3DFileAdapter::ForceLocation location;
         switch(wrt) {
             case 0:
@@ -415,7 +415,7 @@ namespace OpenSim {
                 throw OpenSim::Exception{
                     "An invalid C3DFileAdapter::ForceLocation was provided."};
         }
-        return C3DFileAdapter::read(fileName, location);
+        return C3DFileAdapter::readFile(fileName, location);
     };
 };
 
