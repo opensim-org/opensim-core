@@ -41,7 +41,7 @@ public:
         Measurement from force plates can be expressed by the C3DFileAdapter
         either at the OriginOfForcePlate (the default), CenterOfPressure, or
         the PointOfWrenchApplication. It is an optional argument to 
-        C3DFileAdapter::read().
+        C3DFileAdapter::readFile().
 
         In the case of the CenterOfPressure (COP), the underlying assumptions
         are that the ground plane (in which COP is defined) passes through the
@@ -55,26 +55,26 @@ public:
 
         <b>C++ example</b>
         \code{.cpp}
-        auto tables  =  C3DFileAdapter::read("myData.c3d", 
+        auto tables  =  C3DFileAdapter::readFile("myData.c3d", 
                             C3DFileAdapter::ForceLocation::CenterOfPressure);
         \endcode
 
         <b>Python example</b>
         \code{.py}
         import opensim
-        tables = C3DFileAdapter.read("myData.c3d",
+        tables = C3DFileAdapter.readFile("myData.c3d",
                     opensim.C3DFileAdapter.ForceLocation_CenterOfPressure)
         \endcode
 
         <b>Java example</b>
         \code{.java}
-        tables = C3DFileAdapter.read("myData.c3d",
+        tables = C3DFileAdapter.readFile("myData.c3d",
                     C3DFileAdapter.ForceLocation.CenterOfPressure);
         \endcode
 
         <b>MATLAB example</b>
         \code{.m}
-        tables = C3DFileAdapter.read("myData.c3d", 1);
+        tables = C3DFileAdapter.readFile("myData.c3d", 1);
         \endcode
     */
     enum class ForceLocation {
