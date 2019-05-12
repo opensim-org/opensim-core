@@ -708,7 +708,7 @@ class TestTables {
         String modelFileName = new String("subject01_gait2392_scaled.osim");
 
         TRCFileAdapter trcAdapter = new TRCFileAdapter();
-        TimeSeriesTableVec3 markerTable = trcAdapter.read(markerFileName);
+        TimeSeriesTableVec3 markerTable = trcAdapter.readFile(markerFileName);
         System.out.println(markerTable);
         StdVectorString suffixes = new StdVectorString();
         suffixes.add(".x"); suffixes.add(".y"); suffixes.add(".z");
