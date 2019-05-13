@@ -38,10 +38,18 @@ namespace OpenSim {
         /// @{
         /** Load a TimeSeriesTable of Rotation matrices from a Storage file containing
             quaternions as data elements. Optionally provide a range of times for data
-            to be averaged. By default just uses the first time frame.*/
+            to be averaged. By default just uses the first time frame.
+            Additional options include the name of the base IMU and its axis that
+            represents the heading (forward) direction. These are used to perform
+            a heading correction on all the experimental (quaternion) data so that
+            when tracking rotation data, the initial pose of the model is facing
+            forward. If the baseImuName is empty, no correction is made. If no
+            axis is specified, the default is the Z axis.*/
         static TimeSeriesTableRotation  convertQuaternionsToRotations(
             const TimeSeriesTableQuaternion& qauternionsTable,
-            const SimTK::Array_<int>& startEnd = { 0, 1 }
+            const SimTK::Array_<int>& startEnd = { 0, 1 },
+            const std::string& baseImuName = "",
+            const SimTK::CoordinateAxis& baseHeadingAxis = SimTK::ZAxis
         );
         /// @}
         /** create a calibrated model from a raw model (unscaled)
@@ -54,7 +62,9 @@ namespace OpenSim {
         static void calibrateModelFromOrientations(
             const std::string& modelCalibrationPoseFile,
             const std::string& calibrationOrientationsFile,
-            bool visualizeResult=true);
+            const std::string& baseImuName = "",
+            const SimTK::CoordinateAxis& baseHeadingAxis = SimTK::ZAxis,
+            bool visualizeCalibratedModel =true);
         /**
          * Create Orientations as a TimeSeriesTable based on passed in markerFile
          */
