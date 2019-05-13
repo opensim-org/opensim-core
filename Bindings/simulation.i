@@ -213,6 +213,9 @@ OpenSim::ModelComponentSet<OpenSim::Controller>;
 %include <OpenSim/Simulation/MarkersReference.h>
 %template(SetMarkerWeights) OpenSim::Set<MarkerWeight, OpenSim::Object>;
 %include <OpenSim/Simulation/CoordinateReference.h>
+%template (SetOientationWeights) OpenSim::Set<OrientationWeight, OpenSim::Object>;
+%include <OpenSim/Simulation/OrientationsReference.h>
+
 %include <OpenSim/Simulation/AssemblySolver.h>
 %include <OpenSim/Simulation/InverseKinematicsSolver.h>
 %include <OpenSim/Simulation/OpenSense/OpenSenseUtilities.h>
