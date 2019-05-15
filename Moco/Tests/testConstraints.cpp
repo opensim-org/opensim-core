@@ -1068,7 +1068,7 @@ void testDoublePendulumPointOnLineJointReaction(
     actuator->setName("push");
     actuator->set_point(endeff.get_location());
     actuator->set_point_is_global(false);
-    actuator->set_direction(SimTK::Vec3(0, 0, -1));
+    actuator->set_direction(Vec3(0, 0, -1));
     actuator->set_force_is_global(true);
     model->addComponent(actuator);
 

@@ -570,7 +570,7 @@ private:
     bool m_sealed = false;
 };
 
-/// Return type for MocoTool::solve(). Use success() to check if the solver
+/// Return type for MocoStudy::solve(). Use success() to check if the solver
 /// succeeded. You can also use this object as a boolean in an if-statement:
 /// @code
 /// auto solution = moco.solve();
