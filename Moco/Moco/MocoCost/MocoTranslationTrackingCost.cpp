@@ -96,6 +96,19 @@ void MocoTranslationTrackingCost::initializeOnModelImpl(const Model& model)
                 "the user supplied neither.");
         }
 
+        // Check that the reference state names match the model state names.
+        auto modelStateNames = model.getStateVariableNames();
+        auto tableStateNames = tableToUse.getColumnLabels();
+        for (int i = 0; i < modelStateNames.getSize(); ++i) {
+            const auto& name = modelStateNames[i];
+            std::cout << "state name: " << name << std::endl;
+            OPENSIM_THROW_IF_FRMOBJ(std::count(tableStateNames.begin(),
+                    tableStateNames.end(), name) == 0,
+                Exception, format("Expected the reference state names to match "
+                    "the model state names, but reference state %s not found "
+                    "in the model.", name));
+        }
+
         // Create the StatesTrajectory.
         Storage sto = convertTableToStorage(tableToUse);
         auto statesTraj = StatesTrajectory::createFromStatesStorage(model, sto);

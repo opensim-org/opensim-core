@@ -368,4 +368,4 @@ TEMPLATE_TEST_CASE("Test MocoJointReactionCost", "", MocoTropterSolver,
     CHECK(solution.getControl("/actu")[0] == Approx(-10).epsilon(1e-6));
     // Check that the reaction force is zero. 
     CHECK(solution.getObjective() == Approx(0.0).margin(1e-6));
-
+}
