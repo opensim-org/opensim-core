@@ -25,7 +25,25 @@
 #include <OpenSim/Common/GCVSplineSet.h>
 #include <OpenSim/Simulation/Model/Frame.h>
 
-// TODO this cost requires realizing to position
+/// The squared difference between model frame's orientation and a reference
+/// orientation value, summed over the frames for which a reference is provided,
+/// and integrated over the phase. This can be used to track orientation 
+/// quantities in the model that don't correspond to model degrees-of-freedom.
+/// The reference can be provided as a file name to a STO or CSV file (or other
+/// file types for which there is a FileAdapter). It can also be provided 
+/// programmatically as either a TimeSeriesTable of state variable values, from
+/// which specified frame orientation data will be computed, or as a 
+/// TimeSeriesTableVec3 containing the orientation data directly.
+/// 
+/// This cost requires realization to SimTK::Stage::Position. The cost is
+/// computed by creating a SimTK::Rotation between the model frame and the 
+/// reference data, and then converting it to an angle-axis representation and 
+/// minimizing the angle value.
+///
+/// Tracking problems in direct collocation perform best when tracking smooth
+/// data, so it is recommended to filter the data in the reference you provide
+/// to the cost.
+/// @ingroup mococost
 namespace OpenSim {
 
 using SimTK::Rotation;
