@@ -152,6 +152,9 @@ MocoProblem::MocoProblem() {
     constructProperties();
 }
 
+MocoCost& MocoProblem::updCost(const std::string& name) {
+    return upd_phases(0).updCost(name);
+}
 Model* MocoProblem::setModel(std::unique_ptr<Model> model) {
     return upd_phases(0).setModel(std::move(model));
 }
