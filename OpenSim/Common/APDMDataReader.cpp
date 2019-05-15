@@ -67,17 +67,17 @@ APDMDataReader::extendRead(const std::string& fileName) const {
     bool newFormat = false;
     if (tokens[0] == "Format=7") {
         newFormat = true;
-        dataRate = 128; // Will fix on reading first 2 rows
+        dataRate = 128; // Will fix after reading computing it from time column
         // Header Line 1:Format=7, [I1,,,$IMU1,,,,,,,,,,,]*
         // Header Line 2: Time,[Accelerometer,,,Gyroscope,,,Magnetometer,,,Barometer,Orientation,,,]*
         // Header Line 3: ,[X,Y,Z,X,Y,Z,X,Y,Z,,S,X,Y,Z]*
-        std::vector<std::string> mtLabels;
-        mtLabels.push_back("");
+        std::vector<std::string> emptyLabels;
+        emptyLabels.push_back("");
         // In this format there's no dataRate, either assumed or computed from Time column
         for (int imu_index = 0; imu_index < n_imus; ++imu_index) {
             std::string sensorName = _settings.get_ExperimentalSensors(imu_index).getName();
             labels.push_back(_settings.get_ExperimentalSensors(imu_index).get_name_in_model());
-            find_start_column(tokens, mtLabels, sensorName, accIndex, newFormat);
+            find_start_column(tokens, emptyLabels, sensorName, accIndex, newFormat);
             if (accIndex[imu_index] != -1) {
                 gyroIndex.push_back(accIndex[imu_index] + 3);
                 magIndex.push_back(accIndex[imu_index] + 6);

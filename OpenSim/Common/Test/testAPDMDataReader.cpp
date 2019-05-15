@@ -42,9 +42,9 @@ int main() {
         }
         readerSettings.print("apdm_reader.xml");
         // read xml we wrote into a new APDMDataReader to readTrial
-        APDMDataReaderSettings reconstructFromXML("apdm_reader.xml");
-        APDMDataReader reader(reconstructFromXML);
-        DataAdapter::OutputTables tables = reader.read("imuData01csv.csv");
+        APDMDataReaderSettings roundTripReaderSettings("apdm_reader.xml");
+        APDMDataReader reader(roundTripReaderSettings);
+        DataAdapter::OutputTables tables = reader.read("imuData01.csv");
         // Write tables to sto files
         // Accelerations
         const TimeSeriesTableVec3& accelTableTyped =
