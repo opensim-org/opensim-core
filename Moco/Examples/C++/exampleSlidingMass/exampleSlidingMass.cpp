@@ -59,6 +59,12 @@ std::unique_ptr<Model> createSlidingMassModel() {
     actu->setOptimalForce(1);
     model->addComponent(actu);
 
+    auto* actu2 = new CoordinateActuator();
+    actu2->setCoordinate(&coord);
+    actu2->setName("actuator2");
+    actu2->setOptimalForce(1);
+    model->addComponent(actu2);
+
     body->attachGeometry(new Sphere(0.05));
 
     model->finalizeConnections();
@@ -92,15 +98,17 @@ int main() {
 
     // Applied force must be between -50 and 50.
     problem.setControlInfo("/actuator", MocoBounds(-50, 50));
+    problem.setControlInfo("/actuator2", MocoBounds(-50, 50));
 
     // Cost.
     // -----
-    problem.addCost<MocoFinalTimeCost>();
-
+    problem.addCost<MocoFinalTimeCost>("Final Time Cost");
     // Configure the solver.
+
+
     // =====================
     MocoCasADiSolver& solver = moco.initCasADiSolver();
-    solver.set_num_mesh_points(50);
+    solver.set_num_mesh_points(20);
 
     // Now that we've finished setting up the tool, print it to a file.
     moco.print("sliding_mass.omoco");
@@ -113,7 +121,6 @@ int main() {
 
     // Visualize.
     // ==========
-    moco.visualize(solution);
 
     return EXIT_SUCCESS;
 }

@@ -41,7 +41,7 @@ void MocoDirectCollocationSolver::constructProperties() {
     constructProperty_enforce_constraint_derivatives();
 }
 
-void MocoDirectCollocationSolver::setMesh(std::vector<double> mesh) {
+void MocoDirectCollocationSolver::setMesh(std::vector<double> const mesh) {
     for(int i = 0; i < (int) mesh.size(); ++i) {
         this->set_mesh(i, mesh[i]);
     }

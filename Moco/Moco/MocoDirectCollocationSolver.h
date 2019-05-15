@@ -108,7 +108,7 @@ protected:
     OpenSim_DECLARE_PROPERTY(guess_file, std::string,
             "A MocoIterate file storing an initial guess.");
     OpenSim_DECLARE_LIST_PROPERTY(mesh, double,
-            "Usually non-uniform, user-defined list of times to sample. Takes "
+            "Usually non-uniform, user-defined list of mesh points to sample. Takes "
             "precedence over uniform mesh with num_mesh_points.");
     void constructProperties();
 };
