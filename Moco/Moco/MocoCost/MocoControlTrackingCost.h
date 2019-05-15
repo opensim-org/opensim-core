@@ -76,7 +76,7 @@ public:
     /// Set the weight for an individual control variable. If a weight is
     /// already set for the requested control, then the provided weight
     /// replaces the previous weight. An exception is thrown if a weight
-    /// for an unknown state is provided.
+    /// for an unknown control is provided.
     void setWeight(const std::string& controlName, const double& weight) {
         if (get_control_weights().contains(controlName)) {
             upd_control_weights().get(controlName).setWeight(weight);

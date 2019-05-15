@@ -44,11 +44,9 @@ void MocoControlTrackingCost::initializeOnModelImpl(const Model& model) const {
             "Expected reference file to contain a (scalar) "
             "TimeSeriesTable, but it contains a different type of table.");
         tableToUse = *firstTable;
-    }
-    else if (m_table.getNumColumns() != 0) {
+    } else if (m_table.getNumColumns() != 0) {
         tableToUse = m_table;
-    }
-    else {
+    } else {
         OPENSIM_THROW_FRMOBJ(Exception,
             "Expected user to either provide a reference"
             " file or to programmatically provide a reference table, but "
