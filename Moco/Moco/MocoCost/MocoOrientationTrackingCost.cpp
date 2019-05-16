@@ -122,7 +122,6 @@ void MocoOrientationTrackingCost::initializeOnModelImpl(const Model& model)
         // Use the StatesTrajectory to create the table of rotation data to
         // be used in the cost.
         for (auto state : statesTraj) {
-            model.getSystem().prescribe(state);
             model.realizePosition(state);
             std::vector<Rotation> rotations;
             for (const auto& path : pathsToUse) {
@@ -202,14 +201,20 @@ void MocoOrientationTrackingCost::calcIntegralCostImpl(const SimTK::State& state
         const auto& R_GM =
             m_model_frames[iframe]->getRotationInGround(state);
 
-        // Use quaternion data at this time point to construct a Rotation object
-        // from which we'll calcuation an angle-axis representation of the 
-        // current orientation error.
+        // Construct a new quaternion object from the splined quaternion data.
+        // This constructor normalizes the provided values to ensure that a 
+        // valid unit quaternion is created. Other approaches, such as the 
+        // Slerp algorithm (https://en.wikipedia.org/wiki/Slerp) may also be
+        // valid. However, ensuring that the normalization step is included
+        // seems to be sufficient for the purposes of this cost. 
+        // https://keithmaggio.wordpress.com/2011/02/15/math-magician-lerp-slerp-and-nlerp/
         const SimTK::Quaternion e(
             m_ref_splines[4*iframe].calcValue(timeVec),
             m_ref_splines[4*iframe + 1].calcValue(timeVec),
             m_ref_splines[4*iframe + 2].calcValue(timeVec),
             m_ref_splines[4*iframe + 3].calcValue(timeVec));
+        // Construct a Rotation object from which we'll calcuation an angle-axis 
+        // representation of the current orientation error.
         const Rotation R_GD(e);
         const Rotation R_MD = ~R_GM*R_GD;
         const SimTK::Vec4 aa_MD = R_MD.convertRotationToAngleAxis();

@@ -122,7 +122,6 @@ void MocoTranslationTrackingCost::initializeOnModelImpl(const Model& model)
         // Use the StatesTrajectory to create the table of translation data to
         // be used in the cost.
         for (auto state : statesTraj) {
-            model.getSystem().prescribe(state);
             model.realizePosition(state);
             std::vector<Vec3> translations;
             for (const auto& path : pathsToUse) {
