@@ -42,6 +42,9 @@ int main()
         "imuOrientations.sto",
         "pelvis_imu", SimTK::ZAxis,
         false);
+
+    model.print("calibrated_" + model.getName() + ".osim");
+
     // Previous line produces a model with same name but "calibrated_" prefix.
     Model stdModel{ "std_calibrated_subject07.osim" };
 
