@@ -53,7 +53,11 @@ namespace OpenSim {
         );
         /// @}
         /** create a calibrated model from a raw model (unscaled)
-            Assumptions about the model: ???
+            Assumptions about the model: 
+            1) the model default pose is the same as the pose used to collect calibration data
+            2) that IMUs are labeled <body(or physical frame)_in_model>_imu so the underlying 
+            PhysicalFrame in the model can be identified and a corresponding Offset frame attached.
+            
             modelCalibrationPoseFile is model file where default pose matches that used to collect 
                 calibrationOrientationsFile.
             calibrationOrientationsFile is a storage file with IMU orientations expressed
