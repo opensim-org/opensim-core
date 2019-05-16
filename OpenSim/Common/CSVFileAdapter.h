@@ -42,7 +42,7 @@ public:
 
     /** Read a CSV file.                                                      */
     static
-    TimeSeriesTable read(const std::string& fileName);
+    TimeSeriesTable readFile(const std::string& fileName);
 
     /** Write a CSV file.                                                     */
     static

@@ -32,7 +32,7 @@ matrix:
     - if: type != cron
       os: osx
       compiler: clang
-      env: BTYPE=Release WRAP=on  DOXY=on  NPROC=2 DEPLOY=yes OSX_TARGET=10.10
+      env: BTYPE=Release WRAP=on  DOXY=off  NPROC=2 DEPLOY=yes OSX_TARGET=10.10
       
 branches:
   except:
@@ -217,7 +217,9 @@ install:
   
   # Dependencies.
   - OSIM_CMAKE_ARGS+=(-DSIMBODY_HOME=~/simbody -DOPENSIM_DEPENDENCIES_DIR=$OPENSIM_DEPENDENCIES_INSTALL_DIR -DWITH_BTK:BOOL=ON)
-  
+  # Build applications
+  - OSIM_CMAKE_ARGS+=(-DOPENSIM_BUILD_INDIVIDUAL_APPS=ON)
+
   # Bindings.
   - OSIM_CMAKE_ARGS+=(-DBUILD_PYTHON_WRAPPING=$WRAP -DBUILD_JAVA_WRAPPING=$WRAP -DSWIG_EXECUTABLE=$HOME/swig/bin/swig)
   # On Mac, use system python instead of Homebrew python.
@@ -324,7 +326,7 @@ deploy:
   skip_cleanup: true
   script: rsync --archive --compress --verbose ~/to_deploy/$ZIPNAME opensim-bot@frs.sourceforge.net:/home/frs/project/myosin/opensim-core/
   on:
-    branch: master
+    branch: opensense_01
     # Upload for both linux (once) and OSX. Might need to modify the condition
     # if we change the build matrix.
     condition: "$DEPLOY = yes"

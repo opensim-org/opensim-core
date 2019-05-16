@@ -350,6 +350,9 @@ DATATABLE_CLONE(double, SimTK::SpatialVec)
 %shared_ptr(OpenSim::DataAdapter)
 %shared_ptr(OpenSim::FileAdapter)
 %shared_ptr(OpenSim::DelimFileAdapter)
+%shared_ptr(OpenSim::IMUDataReader)
+%shared_ptr(OpenSim::XsensDataReader)
+%shared_ptr(OpenSim::APDMDataReader)
 %shared_ptr(OpenSim::STOFileAdapter_<duoble>)
 %shared_ptr(OpenSim::STOFileAdapter_<SimTK::Vec3>)
 %shared_ptr(OpenSim::STOFileAdapter_<SimTK::UnitVec3>)
@@ -364,6 +367,12 @@ DATATABLE_CLONE(double, SimTK::SpatialVec)
 %template(StdMapStringAbstractDataTable)
         std::map<std::string, std::shared_ptr<OpenSim::AbstractDataTable>>;
 %include <OpenSim/Common/DataAdapter.h>
+%include <OpenSim/Common/ExperimentalSensor.h>
+%include <OpenSim/Common/IMUDataReader.h>
+%include <OpenSim/Common/XsensDataReaderSettings.h>
+%include <OpenSim/Common/XsensDataReader.h>
+
+
 %include <OpenSim/Common/FileAdapter.h>
 namespace OpenSim {
     %ignore TRCFileAdapter::TRCFileAdapter(TRCFileAdapter &&);
@@ -372,6 +381,8 @@ namespace OpenSim {
 }
 %include <OpenSim/Common/TRCFileAdapter.h>
 %include <OpenSim/Common/DelimFileAdapter.h>
+%include <OpenSim/Common/APDMDataReaderSettings.h>
+%include <OpenSim/Common/APDMDataReader.h>
 %ignore OpenSim::createSTOFileAdapterForReading;
 %ignore OpenSim::createSTOFileAdapterForWriting;
 %ignore OpenSim::STOFileAdapter_::STOFileAdapter_(STOFileAdapter_&&);
@@ -384,11 +395,11 @@ namespace OpenSim {
 %template(STOFileAdapterSpatialVec) OpenSim::STOFileAdapter_<SimTK::SpatialVec>;
 
 %include <OpenSim/Common/CSVFileAdapter.h>
-
+%include <OpenSim/Common/XsensDataReader.h>
 %include <OpenSim/Common/C3DFileAdapter.h>
 
 %extend OpenSim::C3DFileAdapter {
-    Tables read(const std::string& fileName, unsigned int wrt) {
+    Tables readFile(const std::string& fileName, unsigned int wrt) {
         C3DFileAdapter::ForceLocation location;
         switch(wrt) {
             case 0:
@@ -404,7 +415,7 @@ namespace OpenSim {
                 throw OpenSim::Exception{
                     "An invalid C3DFileAdapter::ForceLocation was provided."};
         }
-        return C3DFileAdapter::read(fileName, location);
+        return C3DFileAdapter::readFile(fileName, location);
     };
 };
 

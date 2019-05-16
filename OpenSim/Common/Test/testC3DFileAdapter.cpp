@@ -82,7 +82,7 @@ void test(const std::string filename) {
     const double MaximumLoadTimeInMS = 100;
     
     std::clock_t startTime = std::clock();
-    auto tables = C3DFileAdapter::read(filename,
+    auto tables = C3DFileAdapter::readFile(filename,
         C3DFileAdapter::ForceLocation::OriginOfForcePlate);
 
     double loadTime = 1.e3*(std::clock() - startTime) / CLOCKS_PER_SEC;
@@ -134,8 +134,8 @@ void test(const std::string filename) {
 
     // Verify that marker data was written out and can be read in
     t0 = std::clock();
-    auto markers = trc_adapter.read(marker_file);
-    auto std_markers = trc_adapter.read("std_" + marker_file);
+    auto markers = trc_adapter.readFile(marker_file);
+    auto std_markers = trc_adapter.readFile("std_" + marker_file);
     cout << "\tRead'" << marker_file << "' and its standard in "
         << 1.e3*(std::clock() - t0) / CLOCKS_PER_SEC << "ms" << endl;
 
@@ -148,8 +148,8 @@ void test(const std::string filename) {
     cout << "\tMarkers " << marker_file << " equivalent to standard." << endl;
 
     // Verify that grfs data was written out and can be read in
-    auto forces = sto_adapter.read(forces_file);
-    auto std_forces = sto_adapter.read("std_" + forces_file);
+    auto forces = sto_adapter.readFile(forces_file);
+    auto std_forces = sto_adapter.readFile("std_" + forces_file);
     // Compare C3DFileAdapter read-in and written forces data
     compare_tables<SimTK::Vec3>(forces.pack<SimTK::Vec3>(), 
                                 *force_table,
@@ -163,7 +163,7 @@ void test(const std::string filename) {
     
     t0 = std::clock();
     // Reread in C3D file with forces resolved to the COP 
-    auto tables2 = C3DFileAdapter::read(filename,
+    auto tables2 = C3DFileAdapter::readFile(filename,
         C3DFileAdapter::ForceLocation::CenterOfPressure);
     
     loadTime = 1.e3*(std::clock() - t0) / CLOCKS_PER_SEC;
@@ -181,7 +181,7 @@ void test(const std::string filename) {
 
     sto_adapter.write(force_table_cop->flatten(), "cop_"+ forces_file);
 
-    auto std_forces_cop = sto_adapter.read("std_cop_" + forces_file);
+    auto std_forces_cop = sto_adapter.readFile("std_cop_" + forces_file);
     // Compare C3DFileAdapter written forces data to standard
     // Note std generated using MATLAB C3D processing scripts 
     compare_tables<SimTK::Vec3>(*force_table_cop, 
