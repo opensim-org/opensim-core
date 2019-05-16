@@ -145,10 +145,14 @@ int main(int argc, char **argv)
                         cout << "Calibration will perform heading correction using '"
                             << baseImuName << "'along its '" << imuHeading << "'axis." << endl;
                     }
-                    OpenSenseUtilities::calibrateModelFromOrientations(
+                    Model model = OpenSenseUtilities::calibrateModelFromOrientations(
                         modelCalibrationPoseFile,
                         calibrationOrientationsFile,
                         baseImuName, imuHeading);
+
+                    auto filename = "calibrated_" + model.getName() + ".osim";
+                    cout << "Wrote calibrated model to file: '" << filename << "'." << endl;
+                    model.print(filename);
 
                     cout << "Done." << endl;
                     return 0;
