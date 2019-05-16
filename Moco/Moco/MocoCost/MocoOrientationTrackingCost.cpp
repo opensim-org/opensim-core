@@ -32,21 +32,49 @@ void MocoOrientationTrackingCost::initializeOnModelImpl(const Model& model)
     // Get the reference data.
     TimeSeriesTable_<Rotation> rotationTable;
     std::vector<std::string> pathsToUse;
-    if (m_rotation_table.getNumColumns() != 0) { // rotation table provided
-        // Should not be able to supply any two simultaneously.
-        assert(get_reference_file() == "");
-        assert(m_states_table.getNumColumns() == 0);
+    if (m_rotation_table.getNumColumns() != 0 ||   // rotation table or rotation
+            get_rotation_reference_file() != "") { // reference file provided
+        TimeSeriesTable_<Rotation> rotationTableToUse;
+        if (get_rotation_reference_file() != "") { // rotation reference file
+            // Should not be able to supply any two simultaneously.
+            assert(get_states_reference_file() == "");
+            assert(m_states_table.getNumColumns() == 0);
+            assert(m_rotation_table.getNumColumns() == 0);
+
+            auto tablesFromFile = FileAdapter::readFile(
+                get_rotation_reference_file());
+            // There should only be one table.
+            OPENSIM_THROW_IF_FRMOBJ(tablesFromFile.size() != 1, Exception,
+                format("Expected reference file '%s' to contain 1 table, but "
+                    "it contains %i tables.", get_rotation_reference_file(),
+                    tablesFromFile.size()));
+            // Get the first table.
+            auto* firstTable =
+                dynamic_cast<TimeSeriesTable_<Rotation>*>(
+                    tablesFromFile.begin()->second.get());
+            OPENSIM_THROW_IF_FRMOBJ(!firstTable, Exception,
+                "Expected reference file to contain a (Rotation) "
+                "TimeSeriesTable, but it contains a different type of table.");
+            rotationTableToUse = *firstTable;
+
+        } else { // rotation table
+            // Should not be able to supply any two simultaneously.
+            assert(get_states_reference_file() == "");
+            assert(m_states_table.getNumColumns() == 0);
+            assert(get_rotation_reference_file() == "");
+            rotationTableToUse = m_rotation_table;
+        }
 
         // If the frame_paths property is empty, use all frame paths specified
         // in the table's column labels. Otherwise, select only the columns 
         // from the tabel that correspond with paths in frame_paths.
         if (!getProperty_frame_paths().empty()) {
-            pathsToUse = m_rotation_table.getColumnLabels();
-            rotationTable = m_rotation_table;
+            pathsToUse = rotationTableToUse.getColumnLabels();
+            rotationTable = rotationTableToUse;
         } else {
             rotationTable = TimeSeriesTable_<Rotation>(
-                m_rotation_table.getIndependentColumn());
-            const auto& labels = m_rotation_table.getColumnLabels();
+                rotationTableToUse.getIndependentColumn());
+            const auto& labels = rotationTableToUse.getColumnLabels();
             for (int i = 0; i < getProperty_frame_paths().size(); ++i) {
                 const auto& path = get_frame_paths(i);
                 OPENSIM_THROW_IF_FRMOBJ(
@@ -58,21 +86,24 @@ void MocoOrientationTrackingCost::initializeOnModelImpl(const Model& model)
                         "path '%s' not found in the reference labels.", path));
                 pathsToUse.push_back(path);
                 rotationTable.appendColumn(path,
-                    m_rotation_table.getDependentColumn(path));
+                    rotationTableToUse.getDependentColumn(path));
             }
         }
+        
     } else { // states reference file or states reference provided
-        TimeSeriesTable tableToUse;
-        if (get_reference_file() != "") { // states reference file
+        TimeSeriesTable statesTableToUse;
+        if (get_states_reference_file() != "") { // states reference file
             // Should not be able to supply any two simultaneously.
             assert(m_states_table.getNumColumns() == 0);
+            assert(get_rotation_reference_file() == "");
             assert(m_rotation_table.getNumColumns() == 0);
 
-            auto tablesFromFile = FileAdapter::readFile(get_reference_file());
+            auto tablesFromFile = FileAdapter::readFile(
+                    get_states_reference_file());
             // There should only be one table.
             OPENSIM_THROW_IF_FRMOBJ(tablesFromFile.size() != 1, Exception,
                 format("Expected reference file '%s' to contain 1 table, but "
-                    "it contains %i tables.", get_reference_file(), 
+                    "it contains %i tables.", get_states_reference_file(),
                     tablesFromFile.size()));
             // Get the first table.
             auto* firstTable =
@@ -81,13 +112,14 @@ void MocoOrientationTrackingCost::initializeOnModelImpl(const Model& model)
             OPENSIM_THROW_IF_FRMOBJ(!firstTable, Exception,
                 "Expected reference file to contain a (scalar) "
                 "TimeSeriesTable, but it contains a different type of table.");
-            tableToUse = *firstTable;
+            statesTableToUse = *firstTable;
 
-        } else if (m_states_table.getNumColumns() != 0) { // states reference
+        } else if (m_states_table.getNumColumns() != 0) { // states table
             // Should not be able to supply any two simultaneously.
-            assert(get_reference_file() == "");
+            assert(get_states_reference_file() == "");
+            assert(get_rotation_reference_file() == "");
             assert(m_rotation_table.getNumColumns() == 0);
-            tableToUse = m_states_table;
+            statesTableToUse = m_states_table;
 
         } else {
             OPENSIM_THROW_FRMOBJ(Exception,
@@ -98,7 +130,7 @@ void MocoOrientationTrackingCost::initializeOnModelImpl(const Model& model)
 
         // Check that the reference state names match the model state names.
         auto modelStateNames = model.getStateVariableNames();
-        auto tableStateNames = tableToUse.getColumnLabels();
+        auto tableStateNames = statesTableToUse.getColumnLabels();
         for (int i = 0; i < modelStateNames.getSize(); ++i) {
             const auto& name = modelStateNames[i];
             OPENSIM_THROW_IF_FRMOBJ(std::count(tableStateNames.begin(), 
@@ -109,7 +141,7 @@ void MocoOrientationTrackingCost::initializeOnModelImpl(const Model& model)
         }
 
         // Create the StatesTrajectory.
-        Storage sto = convertTableToStorage(tableToUse);
+        Storage sto = convertTableToStorage(statesTableToUse);
         auto statesTraj = StatesTrajectory::createFromStatesStorage(model, sto);
 
         // Use all paths provided in frame_paths.
@@ -122,6 +154,8 @@ void MocoOrientationTrackingCost::initializeOnModelImpl(const Model& model)
         // Use the StatesTrajectory to create the table of rotation data to
         // be used in the cost.
         for (auto state : statesTraj) {
+            // This realization ignores any SimTK::Motions prescribed in the
+            // model.
             model.realizePosition(state);
             std::vector<Rotation> rotations;
             for (const auto& path : pathsToUse) {

@@ -31,48 +31,78 @@ void MocoTranslationTrackingCost::initializeOnModelImpl(const Model& model)
     // Get the reference data.
     TimeSeriesTableVec3 translationTable;
     std::vector<std::string> pathsToUse;
-    if (m_translation_table.getNumColumns() != 0) { // translation table provided
-        // Should not be able to supply any two simultaneously.
-        assert(get_reference_file() == "");
-        assert(m_states_table.getNumColumns() == 0);
+    if (m_translation_table.getNumColumns() != 0 ||   // translation table or 
+            get_translation_reference_file() != "") { // reference file provided
+        TimeSeriesTableVec3 translationTableToUse;
+        if (get_translation_reference_file() != "") { // translation ref file
+            // Should not be able to supply any two simultaneously.
+            assert(get_states_reference_file() == "");
+            assert(m_states_table.getNumColumns() == 0);
+            assert(m_translation_table.getNumColumns() == 0);
+
+            auto tablesFromFile = FileAdapter::readFile(
+                get_translation_reference_file());
+            // There should only be one table.
+            OPENSIM_THROW_IF_FRMOBJ(tablesFromFile.size() != 1, Exception,
+                format("Expected reference file '%s' to contain 1 table, but "
+                    "it contains %i tables.", get_translation_reference_file(),
+                    tablesFromFile.size()));
+            // Get the first table.
+            auto* firstTable =
+                dynamic_cast<TimeSeriesTableVec3*>(
+                    tablesFromFile.begin()->second.get());
+            OPENSIM_THROW_IF_FRMOBJ(!firstTable, Exception,
+                "Expected reference file to contain a TimeSeriesTableVec3, "
+                "but it contains a different type of table.");
+            translationTableToUse = *firstTable;
+
+        } else { // translation table
+            // Should not be able to supply any two simultaneously.
+            assert(get_states_reference_file() == "");
+            assert(m_states_table.getNumColumns() == 0);
+            assert(get_translation_reference_file() == "");
+            translationTableToUse = m_translation_table;
+        }
 
         // If the frame_paths property is empty, use all frame paths specified
         // in the table's column labels. Otherwise, select only the columns 
         // from the tabel that correspond with paths in frame_paths.
         if (!getProperty_frame_paths().empty()) {
-            pathsToUse = m_translation_table.getColumnLabels();
-            translationTable = m_translation_table;
+            pathsToUse = translationTableToUse.getColumnLabels();
+            translationTable = translationTableToUse;
         } else {
             translationTable = TimeSeriesTableVec3(
-                m_translation_table.getIndependentColumn());
-            const auto& labels = m_translation_table.getColumnLabels();
+                translationTableToUse.getIndependentColumn());
+            const auto& labels = translationTableToUse.getColumnLabels();
             for (int i = 0; i < getProperty_frame_paths().size(); ++i) {
                 const auto& path = get_frame_paths(i);
                 OPENSIM_THROW_IF_FRMOBJ(
                     std::find(labels.begin(), labels.end(), path) ==
-                    labels.end(),
+                        labels.end(),
                     Exception,
                     format("Expected frame_paths to match at least one of the "
                         "column labels in the translation reference, but frame "
                         "path '%s' not found in the reference labels.", path));
                 pathsToUse.push_back(path);
                 translationTable.appendColumn(path,
-                    m_translation_table.getDependentColumn(path));
+                    translationTableToUse.getDependentColumn(path));
             }
         }
 
     } else { // states reference file or states reference provided
-        TimeSeriesTable tableToUse;
-        if (get_reference_file() != "") { // states reference file
+        TimeSeriesTable statesTableToUse;
+        if (get_states_reference_file() != "") { // states reference file
             // Should not be able to supply any two simultaneously.
             assert(m_states_table.getNumColumns() == 0);
+            assert(get_translation_reference_file() != "");
             assert(m_translation_table.getNumColumns() == 0);
 
-            auto tablesFromFile = FileAdapter::readFile(get_reference_file());
+            auto tablesFromFile = FileAdapter::readFile(
+                    get_states_reference_file());
             // There should only be one table.
             OPENSIM_THROW_IF_FRMOBJ(tablesFromFile.size() != 1, Exception,
                 format("Expected reference file '%s' to contain 1 table, but "
-                    "it contains %i tables.", get_reference_file(), 
+                    "it contains %i tables.", get_states_reference_file(), 
                     tablesFromFile.size()));
             // Get the first table.
             auto* firstTable =
@@ -81,13 +111,14 @@ void MocoTranslationTrackingCost::initializeOnModelImpl(const Model& model)
             OPENSIM_THROW_IF_FRMOBJ(!firstTable, Exception,
                 "Expected reference file to contain a (scalar) "
                 "TimeSeriesTable, but it contains a different type of table.");
-            tableToUse = *firstTable;
+            statesTableToUse = *firstTable;
 
         } else if (m_states_table.getNumColumns() != 0) { // states reference
             // Should not be able to supply any two simultaneously.
-            assert(get_reference_file() == "");
+            assert(get_states_reference_file() == "");
+            assert(get_translation_reference_file() != "");
             assert(m_translation_table.getNumColumns() == 0);
-            tableToUse = m_states_table;
+            statesTableToUse = m_states_table;
 
         } else {
             OPENSIM_THROW_FRMOBJ(Exception,
@@ -98,7 +129,7 @@ void MocoTranslationTrackingCost::initializeOnModelImpl(const Model& model)
 
         // Check that the reference state names match the model state names.
         auto modelStateNames = model.getStateVariableNames();
-        auto tableStateNames = tableToUse.getColumnLabels();
+        auto tableStateNames = statesTableToUse.getColumnLabels();
         for (int i = 0; i < modelStateNames.getSize(); ++i) {
             const auto& name = modelStateNames[i];
             OPENSIM_THROW_IF_FRMOBJ(std::count(tableStateNames.begin(),
@@ -109,7 +140,7 @@ void MocoTranslationTrackingCost::initializeOnModelImpl(const Model& model)
         }
 
         // Create the StatesTrajectory.
-        Storage sto = convertTableToStorage(tableToUse);
+        Storage sto = convertTableToStorage(statesTableToUse);
         auto statesTraj = StatesTrajectory::createFromStatesStorage(model, sto);
 
         // Use all paths provided in frame_paths.
@@ -122,6 +153,8 @@ void MocoTranslationTrackingCost::initializeOnModelImpl(const Model& model)
         // Use the StatesTrajectory to create the table of translation data to
         // be used in the cost.
         for (auto state : statesTraj) {
+            // This realization ignores any SimTK::Motions prescribed in the
+            // model.
             model.realizePosition(state);
             std::vector<Vec3> translations;
             for (const auto& path : pathsToUse) {

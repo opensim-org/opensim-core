@@ -29,11 +29,13 @@
 /// orientation value, summed over the frames for which a reference is provided,
 /// and integrated over the phase. This can be used to track orientation 
 /// quantities in the model that don't correspond to model degrees of freedom.
-/// The reference can be provided as a file name to a STO or CSV file (or other
-/// file types for which there is a FileAdapter). It can also be provided 
-/// programmatically as either a TimeSeriesTable of state variable values, from
-/// which specified frame orientation data will be computed, or as a 
-/// TimeSeriesTableVec3 containing the orientation data directly.
+/// The reference can be provided as a trajectory of SimTK::Rotation%s 
+/// representing the orientation reference data, or as a model-compatible states 
+/// trajectory from which the tracked rotation reference is computed. Both 
+/// rotation and states references can be provided as a file name to a STO or 
+/// CSV file (or other file types for which there is a FileAdapter), or 
+/// programmatically as a TimeSeriesTable_<SimTK::Rotation> (for the rotation 
+/// reference) or as a scalar TimeSeriesTable (for the states reference).
 /// 
 /// This cost requires realization to SimTK::Stage::Position. The cost is
 /// computed by creating a SimTK::Rotation between the model frame and the 
@@ -66,38 +68,53 @@ public:
         constructProperties();
     }
 
-    /// Set the path to the reference file containing values of model state
-    /// variables. These data are used to create a StatesTrajectory internally,
-    /// from which the rotation data for the frame specified in setFramePaths() 
-    /// is computed. Each column label in the reference must be the path of a 
-    /// state variable, e.g., `/jointset/ankle_angle_r/value`. Calling this 
-    /// function clears the table provided via setStatesReference() or 
-    /// setRotationReference(), if any. The file is not loaded until the 
-    /// MocoProblem is initialized.
-    void setStatesReferenceFile(const std::string& filepath) {
-        m_states_table = TimeSeriesTable();
-        m_rotation_table = TimeSeriesTable_<Rotation>();
-        set_reference_file(filepath);
-    }
-    /// Each column label must be the path of a valid state variable (see
-    /// setReferenceFile). Calling this function clears the `reference_file`
-    /// property or the table provided via setRotationReference(), if any.
-    void setStatesReference(const TimeSeriesTable& ref) {
-        set_reference_file("");
-        m_rotation_table = TimeSeriesTable_<Rotation>();
-        m_states_table = ref;
-    }
     /// Set directly the rotations of individual frames in ground to be tracked
-    /// in the cost. The column labels of the provided reference table must 
+    /// in the cost. The column labels of the provided reference must 
     /// be paths to frames in the model, e.g. `/bodyset/torso`. If the 
     /// frame_paths property is empty, all frames with data in this reference 
     /// will be tracked. Otherwise, only the frames specified via
     /// setFramePaths() will be tracked. Calling this function clears the values 
-    /// provided via setStatesReferenceFile() or setStatesReference(). 
-    void setRotationReference(const TimeSeriesTable_<Rotation>& ref) {
+    /// provided via setStatesReference(), setRotationReference(), or the 
+    /// `states_reference_file` property, if any.
+    void setRotationReferenceFile(const std::string& filepath) {
+        set_states_reference_file("");
         m_states_table = TimeSeriesTable();
-        set_reference_file("");
+        m_rotation_table = TimeSeriesTable_<Rotation>();
+        set_rotation_reference_file(filepath);
+    }
+    /// Each column label must be the path of a valid frame path (see
+    /// seeRotationReferenceFile()). Calling this function clears the 
+    /// `states_reference_file` and `rotation_reference_file` properties or the 
+    /// table provided via setStatesReference(), if any. 
+    void setRotationReference(const TimeSeriesTable_<Rotation>& ref) {
+        set_states_reference_file("");
+        m_states_table = TimeSeriesTable();
+        set_rotation_reference_file("");
         m_rotation_table = ref;
+    }
+    /// Set the path to the reference file containing values of model state
+    /// variables. These data are used to create a StatesTrajectory internally,
+    /// from which the rotation data for the frames specified in setFramePaths() 
+    /// are computed. Each column label in the reference must be the path of a 
+    /// state variable, e.g., `/jointset/ankle_angle_r/value`. Calling this 
+    /// function clears the table provided via setStatesReference(), 
+    /// setRotationReference(), or the `rotation_reference_file` property, if 
+    /// any. The file is not loaded until the MocoProblem is initialized.
+    void setStatesReferenceFile(const std::string& filepath) {
+        m_states_table = TimeSeriesTable();
+        set_rotation_reference_file("");
+        m_rotation_table = TimeSeriesTable_<Rotation>();
+        set_states_reference_file(filepath);
+    }
+    /// Each column label must be the path of a valid state variable (see
+    /// setStatesReferenceFile()). Calling this function clears the 
+    /// `states_reference_file` and `rotation_reference_file` properties or the 
+    /// table provided via setRotationReference(), if any.
+    void setStatesReference(const TimeSeriesTable& ref) {
+        set_states_reference_file("");
+        set_rotation_reference_file("");
+        m_rotation_table = TimeSeriesTable_<Rotation>();
+        m_states_table = ref;
     }
     /// Set the paths to frames in the model that this cost term will track. The 
     /// names set here must correspond to OpenSim::Component%s that derive from 
@@ -125,8 +142,14 @@ public:
     void setWeightSet(const MocoWeightSet& weightSet) {
         upd_rotation_weights() = weightSet;
     }
-    /// If no reference file has been provided, this returns an empty string.
-    std::string getReferenceFile() const { return get_reference_file(); }
+    /// If no states reference file has been provided, this returns an empty 
+    /// string.
+    std::string getStatesReferenceFile() const 
+    { return get_states_reference_file(); }
+    /// If no rotation reference file has been provided, this returns an empty
+    /// string.
+    std::string getRotationReferenceFile() const
+    { return get_rotation_reference_file(); }
 
 protected:
     void initializeOnModelImpl(const Model& model) const override;
@@ -134,11 +157,15 @@ protected:
         double& integrand) const override;
 
 private:
-    OpenSim_DECLARE_PROPERTY(reference_file, std::string,
+    OpenSim_DECLARE_PROPERTY(states_reference_file, std::string,
             "Path to file (.sto, .csv, ...) containing values of model state "
             "variables from which tracked rotation data is computed. Column "
             "labels should be model state paths, "
             "e.g., '/jointset/ankle_angle_r/value'");
+    OpenSim_DECLARE_PROPERTY(rotation_reference_file, std::string,
+            "Path to file (.sto, .csv, ...) containing orientation reference "
+            "data to track. Column labels should be paths to frames in the "
+            "model, e.g. `/bodyset/torso`.")
     OpenSim_DECLARE_LIST_PROPERTY(frame_paths, std::string,
             "The frames in the model that this cost term will track. "
             "The names set here must correspond to Components that "
@@ -149,7 +176,8 @@ private:
             "frames' rotations in the cost.");
 
     void constructProperties() {
-        constructProperty_reference_file("");
+        constructProperty_states_reference_file("");
+        constructProperty_rotation_reference_file("");
         constructProperty_frame_paths();
         constructProperty_rotation_weights(MocoWeightSet());
     }
