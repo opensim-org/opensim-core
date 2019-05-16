@@ -37,15 +37,15 @@ int main()
     int itc = 0;
   
     // Calibrate model and compare result to standard
-    OpenSenseUtilities::calibrateModelFromOrientations(
+    Model model = OpenSenseUtilities::calibrateModelFromOrientations(
         "subject07.osim", 
         "imuOrientations.sto",
         "pelvis_imu", SimTK::ZAxis,
         false);
     // Previous line produces a model with same name but "calibrated_" prefix.
     Model stdModel{ "std_calibrated_subject07.osim" };
-    Model actualModel{ "calibrated_Subject07.osim" };
-    ASSERT(stdModel == actualModel);
+
+    ASSERT(model == stdModel);
     InverseKinematicsStudy ik("setup_OpenSense.xml");
     // RUN
     ik.run(); 
