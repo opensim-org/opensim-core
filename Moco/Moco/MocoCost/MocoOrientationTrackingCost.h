@@ -103,7 +103,6 @@ public:
     /// names set here must correspond to OpenSim::Component%s that derive from 
     /// OpenSim::Frame, which includes SimTK::Rotation as an output.
     /// Replaces the frame path set if it already exists.
-    // TODO if set, frame paths must match column labels 
     void setFramePaths(const std::vector<std::string>& paths) {
         updProperty_frame_paths().clear();
         for (const auto& path : paths) {

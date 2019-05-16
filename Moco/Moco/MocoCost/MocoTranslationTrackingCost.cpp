@@ -101,7 +101,6 @@ void MocoTranslationTrackingCost::initializeOnModelImpl(const Model& model)
         auto tableStateNames = tableToUse.getColumnLabels();
         for (int i = 0; i < modelStateNames.getSize(); ++i) {
             const auto& name = modelStateNames[i];
-            std::cout << "state name: " << name << std::endl;
             OPENSIM_THROW_IF_FRMOBJ(std::count(tableStateNames.begin(),
                     tableStateNames.end(), name) == 0,
                 Exception, format("Expected the reference state names to match "
