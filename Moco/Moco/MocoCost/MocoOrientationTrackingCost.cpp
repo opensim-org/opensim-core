@@ -128,8 +128,7 @@ void MocoOrientationTrackingCost::initializeOnModelImpl(const Model& model)
             std::vector<Rotation> rotations;
             for (const auto& path : pathsToUse) {
                 Rotation rotation =
-                    model.getComponent<Frame>(path).getOutputValue<Rotation>(
-                        state, "rotation");
+                    model.getComponent<Frame>(path).getRotationInGround(state);
                 rotations.push_back(rotation);
             }
             rotationTable.appendRow(state.getTime(), rotations);
@@ -195,9 +194,13 @@ void MocoOrientationTrackingCost::calcIntegralCostImpl(const SimTK::State& state
     getModel().realizePosition(state);
     SimTK::Vector timeVec(1, time);
 
+    // Rotation frame symbols: 
+    //  G - ground
+    //  D - data (reference)
+    //  M - model
     integrand = 0;
     for (int iframe = 0; iframe < (int)m_model_frames.size(); ++iframe) {
-        const auto& R_GD =
+        const auto& R_GM =
             m_model_frames[iframe]->getRotationInGround(state);
 
         // Use quaternion data at this time point to construct a Rotation object
@@ -208,13 +211,13 @@ void MocoOrientationTrackingCost::calcIntegralCostImpl(const SimTK::State& state
             m_ref_splines[4*iframe + 1].calcValue(timeVec),
             m_ref_splines[4*iframe + 2].calcValue(timeVec),
             m_ref_splines[4*iframe + 3].calcValue(timeVec));
-        const Rotation R_GM(e);
-        const Rotation R_DM = ~R_GD*R_GM;
-        const SimTK::Vec4 aa_DM = R_DM.convertRotationToAngleAxis();
+        const Rotation R_GD(e);
+        const Rotation R_MD = ~R_GM*R_GD;
+        const SimTK::Vec4 aa_MD = R_MD.convertRotationToAngleAxis();
         
         // Add this frame's rotation error to the integrand.
         const double& weight = m_rotation_weights[iframe];
-        integrand += weight * SimTK::square(aa_DM[0]);
+        integrand += weight * SimTK::square(aa_MD[0]);
     }
 }
 

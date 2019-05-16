@@ -25,15 +25,21 @@
 #include <OpenSim/Common/GCVSplineSet.h>
 #include <OpenSim/Simulation/Model/Frame.h>
 
-/// The squared difference between model frame's position and a reference
-/// position value, summed over the frames for which a reference is provided,
-/// and integrated over the phase. This can be used to track position quantities
-/// in the model that don't correspond to model degrees-of-freedom.
+/// The squared difference between a model frame's origin position and a 
+/// reference position value, summed over the frames for which a reference is 
+/// provided, and integrated over the phase. This can be used to track position 
+/// quantities in the model that don't correspond to model degrees of freedom.
 /// The reference can be provided as a file name to a STO or CSV file (or other
 /// file types for which there is a FileAdapter). It can also be provided 
 /// programmatically as either a TimeSeriesTable of state variable values, from
 /// which specified frame translation data will be computed, or as a 
 /// TimeSeriesTableVec3 containing the translation data directly.
+/// 
+/// Technically, a cost function with the same effect could be achieved with
+/// MocoMarkerTrackingCost. However, this class avoids the need for adding
+/// markers to the frame origins and provides the convenient
+/// setStatesReference() and setStatesReferenceFile() methods which let the user
+/// set up a tracking cost given only a states trajectory.
 /// 
 /// This cost requires realization to SimTK::Stage::Position.
 ///
@@ -60,7 +66,7 @@ public:
     /// Set the path to the reference file containing values of model state
     /// variables. This data is used to create a StatesTrajectory internally,
     /// from which the translation data for the frame specified in 
-    /// setFramePath() is computed. Each column label in the reference must be 
+    /// setFramePaths() is computed. Each column label in the reference must be 
     /// the path of a state variable, e.g., `/jointset/ankle_angle_r/value`. 
     /// Calling this function clears the table provided via setStatesReference() 
     /// or setRotationReference(), if any. The file is not loaded until the 
@@ -82,7 +88,7 @@ public:
     /// tracked in the cost. The column labels of the provided reference table 
     /// must be paths to frames in the model, e.g. `/bodyset/torso`. If the 
     /// frame_paths property is empty, all frames with data in this reference 
-    /// will be tracked. Otherwise, only the frames specified in provided via
+    /// will be tracked. Otherwise, only the frames specified via
     /// setFramePaths() will be tracked. Calling this function clears the values 
     /// provided via setStatesReferenceFile() or setStatesReference(). 
     void setTranslationReference(const TimeSeriesTableVec3& ref) {
@@ -134,9 +140,9 @@ private:
             "e.g., '/jointset/ankle_angle_r/value'");
     OpenSim_DECLARE_LIST_PROPERTY(frame_paths, std::string,
             "The frames in the model that this cost term will track. "
-            "The names set here must correspond to OpenSim::Components that "
+            "The names set here must correspond to Components that "
             "derive from class OpenSim::Frame, which includes 'position' "
-            "(SimTK::Vec3) as an output.")
+            "(Vec3) as an output.")
     OpenSim_DECLARE_PROPERTY(translation_weights, MocoWeightSet,
             "Set of weight objects to weight the tracking of individual "
             "frames' translations in the cost.");

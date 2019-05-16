@@ -128,8 +128,7 @@ void MocoTranslationTrackingCost::initializeOnModelImpl(const Model& model)
             std::vector<Vec3> translations;
             for (const auto& path : pathsToUse) {
                 Vec3 translation =
-                    model.getComponent<Frame>(path).getOutputValue<Vec3>(
-                        state, "position");
+                    model.getComponent<Frame>(path).getPositionInGround(state);
                 translations.push_back(translation);
             }
             translationTable.appendRow(state.getTime(), translations);

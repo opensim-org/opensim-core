@@ -25,10 +25,10 @@
 #include <OpenSim/Common/GCVSplineSet.h>
 #include <OpenSim/Simulation/Model/Frame.h>
 
-/// The squared difference between model frame's orientation and a reference
+/// The squared difference between a model frame's orientation and a reference
 /// orientation value, summed over the frames for which a reference is provided,
 /// and integrated over the phase. This can be used to track orientation 
-/// quantities in the model that don't correspond to model degrees-of-freedom.
+/// quantities in the model that don't correspond to model degrees of freedom.
 /// The reference can be provided as a file name to a STO or CSV file (or other
 /// file types for which there is a FileAdapter). It can also be provided 
 /// programmatically as either a TimeSeriesTable of state variable values, from
@@ -37,8 +37,12 @@
 /// 
 /// This cost requires realization to SimTK::Stage::Position. The cost is
 /// computed by creating a SimTK::Rotation between the model frame and the 
-/// reference data, and then converting it to an angle-axis representation and 
-/// minimizing the angle value.
+/// reference data, and then converting the rotation to an angle-axis 
+/// representation and minimizing the angle value. The angle value is
+/// equivalent to the orientation error between the model frame and the 
+/// reference data, so we only need to minimize this single scalar value per 
+/// tracked frame, compared to other more complicated approaches which could 
+/// require multiple minimized error values (e.g. Euler angle errors, etc).
 ///
 /// Tracking problems in direct collocation perform best when tracking smooth
 /// data, so it is recommended to filter the data in the reference you provide
@@ -63,8 +67,8 @@ public:
     }
 
     /// Set the path to the reference file containing values of model state
-    /// variables. This data is used to create a StatesTrajectory internally,
-    /// from which the rotation data for the frame specified in setFramePath() 
+    /// variables. These data are used to create a StatesTrajectory internally,
+    /// from which the rotation data for the frame specified in setFramePaths() 
     /// is computed. Each column label in the reference must be the path of a 
     /// state variable, e.g., `/jointset/ankle_angle_r/value`. Calling this 
     /// function clears the table provided via setStatesReference() or 
@@ -87,7 +91,7 @@ public:
     /// in the cost. The column labels of the provided reference table must 
     /// be paths to frames in the model, e.g. `/bodyset/torso`. If the 
     /// frame_paths property is empty, all frames with data in this reference 
-    /// will be tracked. Otherwise, only the frames specified in provided via
+    /// will be tracked. Otherwise, only the frames specified via
     /// setFramePaths() will be tracked. Calling this function clears the values 
     /// provided via setStatesReferenceFile() or setStatesReference(). 
     void setRotationReference(const TimeSeriesTable_<Rotation>& ref) {
@@ -138,9 +142,9 @@ private:
             "e.g., '/jointset/ankle_angle_r/value'");
     OpenSim_DECLARE_LIST_PROPERTY(frame_paths, std::string,
             "The frames in the model that this cost term will track. "
-            "The names set here must correspond to OpenSim::Components that "
-            "derive from class OpenSim::Frame, which includes "
-            "SimTK::Rotation as an output.")
+            "The names set here must correspond to Components that "
+            "derive from class Frame, which includes "
+            "Rotation as an output.")
     OpenSim_DECLARE_PROPERTY(rotation_weights, MocoWeightSet,
             "Set of weight objects to weight the tracking of individual "
             "frames' rotations in the cost.");
