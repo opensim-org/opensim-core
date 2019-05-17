@@ -224,10 +224,11 @@ runInverseKinematicsWithOrientationsFromFile(Model& model,
 // main driver
 bool InverseKinematicsStudy::run(bool visualizeResults)
 {
+    if (_model.empty()) {
+        _model.reset(new Model(get_model_file_name()));
+    }
 
-    Model modelWithIMUs(get_model_file_name());
-
-    runInverseKinematicsWithOrientationsFromFile(modelWithIMUs,
+    runInverseKinematicsWithOrientationsFromFile(*_model,
                                                  get_orientations_file_name(),
                                                  visualizeResults);
 
