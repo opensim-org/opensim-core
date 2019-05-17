@@ -139,7 +139,7 @@ TimeSeriesTable_<SimTK::Rotation> OpenSenseUtilities::
 }
 
 
-void OpenSenseUtilities::calibrateModelFromOrientations(
+Model OpenSenseUtilities::calibrateModelFromOrientations(
     const string& modelCalibrationPoseFile,
     const string& calibrationOrientationsFile,
     const std::string& baseImuName,
@@ -235,9 +235,6 @@ void OpenSenseUtilities::calibrateModelFromOrientations(
 
     model.finalizeConnections();
 
-    auto filename = "calibrated_" + model.getName() + ".osim";
-    cout << "Wrote calibrated model to file: '" << filename << "'." << endl;
-    model.print(filename);
     if (visualizeCalibratedModel) {
         model.setUseVisualizer(true);
         SimTK::State& s = model.initSystem();
@@ -261,6 +258,8 @@ void OpenSenseUtilities::calibrateModelFromOrientations(
         std::cout << "Press any key and return to close visualizer." << std::endl;
         std::cin >> c;
     }
+
+    return model;
 }
 
 SimTK::Transform OpenSenseUtilities::formTransformFromPoints(const Vec3& op,
