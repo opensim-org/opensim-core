@@ -187,10 +187,7 @@ runInverseKinematicsWithOrientationsFromFile(Model& model,
 
     auto report = ikReporter->getTable();
 
-    auto eix = orientationsFileName.rfind("_");
-    if (eix == std::string::npos) {
-        eix = orientationsFileName.rfind(".");
-    }
+    auto eix = orientationsFileName.rfind(".");
     auto stix = orientationsFileName.rfind("/") + 1;
 
     IO::makeDir(get_results_directory());
