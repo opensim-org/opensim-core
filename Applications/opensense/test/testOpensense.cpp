@@ -47,7 +47,7 @@ int main()
     // Calibrate model from two different standing trials facing
     // opposite directions to verify that heading correction is working
     Model facingX = OpenSenseUtilities::calibrateModelFromOrientations(
-        "GenericModel.osim",
+        "subject07.osim",
         "MT_012005D6_009-quaternions_calibration_trial_Facing_X.sto",
         "pelvis_imu", SimTK::ZAxis,
         false);
@@ -57,11 +57,11 @@ int main()
     InverseKinematicsStudy ik_hjc("setup_track_HJC_trial.xml");
     ik_hjc.setModel(facingX);
     ik_hjc.set_results_directory("ik_hjc_" + facingX.getName());
-    //ik_hjc.run(false);
+    ik_hjc.run(false);
 
     // Now facing the opposite direction (negative X)
     Model facingNegX = OpenSenseUtilities::calibrateModelFromOrientations(
-        "GenericModel.osim",
+        "subject07.osim",
         "MT_012005D6_009-quaternions_calibration_trial_Facing_negX.sto",
         "pelvis_imu", SimTK::ZAxis,
         false);
@@ -70,7 +70,7 @@ int main()
 
     ik_hjc.setModel(facingNegX);
     ik_hjc.set_results_directory("ik_hjc_" + facingNegX.getName());
-    //ik_hjc.run(false);
+    ik_hjc.run(false);
 
     Storage ik_X("ik_hjc_" + facingX.getName() + 
         "/ik_MT_012005D6_009-quaternions_RHJCSwinger.mot");
