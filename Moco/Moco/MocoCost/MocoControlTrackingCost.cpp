@@ -29,21 +29,7 @@ void MocoControlTrackingCost::initializeOnModelImpl(const Model& model) const {
     if (get_reference_file() != "") {
         // Should not be able to supply both.
         assert(m_table.getNumColumns() == 0);
-
-        auto tablesFromFile = FileAdapter::readFile(get_reference_file());
-        // There should only be one table.
-        OPENSIM_THROW_IF_FRMOBJ(tablesFromFile.size() != 1, Exception,
-            format("Expected reference file '%s' to contain 1 table, but "
-                "it contains %i tables.",
-                get_reference_file(), tablesFromFile.size()));
-        // Get the first table.
-        auto* firstTable =
-            dynamic_cast<TimeSeriesTable*>(
-                tablesFromFile.begin()->second.get());
-        OPENSIM_THROW_IF_FRMOBJ(!firstTable, Exception,
-            "Expected reference file to contain a (scalar) "
-            "TimeSeriesTable, but it contains a different type of table.");
-        tableToUse = *firstTable;
+        tableToUse = readTableFromFile<double>(get_reference_file());
     } else if (m_table.getNumColumns() != 0) {
         tableToUse = m_table;
     } else {

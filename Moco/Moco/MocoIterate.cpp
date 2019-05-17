@@ -428,19 +428,10 @@ void MocoIterate::resample(SimTK::Vector time) {
 MocoIterate::MocoIterate(const std::string& filepath) {
     FileAdapter::OutputTables tables = FileAdapter::readFile(filepath);
 
-    // There should only be one table.
-    OPENSIM_THROW_IF(tables.size() != 1, Exception,
-            format("Expected MocoIterate file '%s' to contain 1 table, but it "
-                   "contains %i tables.",
-                    filepath, tables.size()));
+    TimeSeriesTable table = readTableFromFile<double>(filepath);
 
-    // Get the first table.
-    auto* table = dynamic_cast<TimeSeriesTable*>(tables.begin()->second.get());
-    OPENSIM_THROW_IF(!table, Exception,
-            "Expected MocoIterate file to contain a (scalar) "
-            "TimeSeriesTable, but it contains a different type of table.");
 
-    const auto& metadata = table->getTableMetaData();
+    const auto& metadata = table.getTableMetaData();
     // TODO: bug with file adapters.
     // auto numStates = metadata.getValueForKey("num_states").getValue<int>();
     // auto numControls =
@@ -480,7 +471,7 @@ MocoIterate::MocoIterate(const std::string& filepath) {
     OPENSIM_THROW_IF(numSlacks < 0, Exception, "Invalid num_slacks.");
     OPENSIM_THROW_IF(numParameters < 0, Exception, "Invalid num_parameters.");
 
-    const auto& labels = table->getColumnLabels();
+    const auto& labels = table.getColumnLabels();
     int offset = 0;
     m_state_names.insert(m_state_names.end(), labels.begin() + offset,
             labels.begin() + offset + numStates);
@@ -502,7 +493,7 @@ MocoIterate::MocoIterate(const std::string& filepath) {
 
     OPENSIM_THROW_IF(numStates + numControls + numMultipliers + numDerivatives +
                                      numSlacks + numParameters !=
-                             (int)table->getNumColumns(),
+                             (int)table.getNumColumns(),
             Exception,
             format("Expected num_states + num_controls + num_multipliers + "
                    "num_derivatives + num_slacks + num_parameters = "
@@ -511,34 +502,34 @@ MocoIterate::MocoIterate(const std::string& filepath) {
                    "num_multipliers=%i, num_derivatives=%i, num_slacks=%i, "
                    "num_parameters=%i, number of columns=%i.",
                     numStates, numControls, numMultipliers, numDerivatives,
-                    numSlacks, numParameters, table->getNumColumns()));
-
-    const auto& time = table->getIndependentColumn();
+                    numSlacks, numParameters, table.getNumColumns()));
+    
+    const auto& time = table.getIndependentColumn();
     m_time = SimTK::Vector((int)time.size(), time.data());
 
     if (numStates) {
-        m_states = table->getMatrixBlock(0, 0, table->getNumRows(), numStates);
+        m_states = table.getMatrixBlock(0, 0, table.getNumRows(), numStates);
     }
     if (numControls) {
-        m_controls = table->getMatrixBlock(
-                0, numStates, table->getNumRows(), numControls);
+        m_controls = table.getMatrixBlock(
+                0, numStates, table.getNumRows(), numControls);
     }
     if (numMultipliers) {
-        m_multipliers = table->getMatrixBlock(0, numStates + numControls,
-                table->getNumRows(), numMultipliers);
+        m_multipliers = table.getMatrixBlock(0, numStates + numControls,
+                table.getNumRows(), numMultipliers);
     }
     if (numDerivatives) {
-        m_derivatives = table->getMatrixBlock(0,
-                numStates + numControls + numMultipliers, table->getNumRows(),
+        m_derivatives = table.getMatrixBlock(0,
+                numStates + numControls + numMultipliers, table.getNumRows(),
                 numDerivatives);
     }
     if (numSlacks) {
-        m_slacks = table->getMatrixBlock(0,
+        m_slacks = table.getMatrixBlock(0,
                 numStates + numControls + numMultipliers + numDerivatives,
-                table->getNumRows(), numSlacks);
+                table.getNumRows(), numSlacks);
     }
     if (numParameters) {
-        m_parameters = table->getMatrixBlock(0,
+        m_parameters = table.getMatrixBlock(0,
                                     numStates + numControls + numMultipliers +
                                             numDerivatives + numSlacks,
                                     1, numParameters)
