@@ -62,7 +62,8 @@ namespace OpenSim {
 /// setIngoreActivationDynamics() control modeling options, meaning these
 /// settings could theoretically be changed. However, for this class, the
 /// modeling option is ignored and the values of the ignore_tendon_compliance
-/// and ignore_activation_dynamics properties are used directly.
+/// and ignore_activation_dynamics properties are used directly (though, as
+/// mentioned earlier, tendon compliance is not yet supported).
 ///
 /// Groote, F., Kinney, A. L., Rao, A. V., & Fregly, B. J. (2016). Evaluation of
 /// Direct Collocation Optimal Control Problem Formulations for Solving the
@@ -156,11 +157,11 @@ protected:
     }
     void calcMuscleLengthInfo(
             const SimTK::State& s, MuscleLengthInfo& mli) const override;
-    void calcFiberVelocityInfo(const SimTK::State& s,
-            FiberVelocityInfo& fvi) const override;
+    void calcFiberVelocityInfo(
+            const SimTK::State& s, FiberVelocityInfo& fvi) const override;
     /// This function does not yet compute stiffness or power.
-    void calcMuscleDynamicsInfo(const SimTK::State& s,
-            MuscleDynamicsInfo& mdi) const override;
+    void calcMuscleDynamicsInfo(
+            const SimTK::State& s, MuscleDynamicsInfo& mdi) const override;
     /// This function does not yet compute potential energy.
     void calcMusclePotentialEnergyInfo(const SimTK::State& s,
             MusclePotentialEnergyInfo& mpei) const override;
@@ -175,7 +176,7 @@ public:
     /// and do not depend on a SimTK::State.
     /// @{
 
-    /// The active force-length curve is the sum of 4 Gaussian-like curves. The
+    /// The active force-length curve is the sum of 3 Gaussian-like curves. The
     /// width of the curve can be adjusted via the active_force_width_scale
     /// property.
     SimTK::Real calcActiveForceLengthMultiplier(
@@ -199,9 +200,9 @@ public:
         // Shift the curve so its peak is at the origin, scale it
         // horizontally, then shift it back so its peak is still at x = 1.0.
         const double x = (normFiberLength - 1.0) / scale + 1.0;
-        return calcGaussian(x, b11, b21, b31, b41) +
-               calcGaussian(x, b12, b22, b32, b42) +
-               calcGaussian(x, b13, b23, b33, b43);
+        return calcGaussianLikeCurve(x, b11, b21, b31, b41) +
+               calcGaussianLikeCurve(x, b12, b22, b32, b42) +
+               calcGaussianLikeCurve(x, b13, b23, b33, b43);
     }
 
     /// The parameters of this curve are not modifiable, so this function is
@@ -257,7 +258,6 @@ public:
         return c1 * exp(m_kT * (normTendonLength - c2)) - c3;
     }
 
-
     /// @name Utilities
     /// @{
 
@@ -303,8 +303,9 @@ private:
     /// of the exponent.
     /// The supplement for De Groote et al., 2016 has a typo:
     /// the denominator should be squared.
-    static SimTK::Real calcGaussian(const SimTK::Real& x, const double& b1,
-            const double& b2, const double& b3, const double& b4) {
+    static SimTK::Real calcGaussianLikeCurve(const SimTK::Real& x,
+            const double& b1, const double& b2, const double& b3,
+            const double& b4) {
         using SimTK::square;
         return b1 * exp(-0.5 * square(x - b2) / square(b3 + b4 * x));
     }

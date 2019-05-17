@@ -153,10 +153,10 @@ inline std::unique_ptr<FunctionSet> createFunctionSet<GCVSpline>(
 #endif // SWIG
 
 /// Resample (interpolate) the table at the provided times. In general, a
-/// 5th-order GCVSpline is used as the interpolant; a lower order used as
-/// necessary if the table has too few points for a 5th-order spline.
-/// Alternatively, you can provide a different function type as a template
-/// argument (e.g., PiecewiseLinearFunction).
+/// 5th-order GCVSpline is used as the interpolant; a lower order is used if the
+/// table has too few points for a 5th-order spline. Alternatively, you can
+/// provide a different function type as a template argument (e.g.,
+/// PiecewiseLinearFunction).
 /// @throws Exception if new times are
 /// not within existing initial and final times, if the new times are
 /// decreasing, or if getNumTimes() < 2.

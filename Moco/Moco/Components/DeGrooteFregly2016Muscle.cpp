@@ -286,12 +286,11 @@ void DeGrooteFregly2016Muscle::computeInitialFiberEquilibrium(
 
 DataTable DeGrooteFregly2016Muscle::exportFiberLengthCurvesToTable(
         const SimTK::Vector& normFiberLengths) const {
-    SimTK::Vector def;
     const SimTK::Vector* x = nullptr;
     if (normFiberLengths.nrow()) {
         x = &normFiberLengths;
     } else {
-        def = createVectorLinspace(
+        const auto def = createVectorLinspace(
                 200, m_minNormFiberLength, m_maxNormFiberLength);
         x = &def;
     }
@@ -311,13 +310,12 @@ DataTable DeGrooteFregly2016Muscle::exportFiberLengthCurvesToTable(
 
 DataTable DeGrooteFregly2016Muscle::exportTendonForceMultiplierToTable(
         const SimTK::Vector& normTendonLengths) const {
-    SimTK::Vector def;
     const SimTK::Vector* x = nullptr;
     if (normTendonLengths.nrow()) {
         x = &normTendonLengths;
     } else {
         // Evaluate the inverse of the tendon curve at y = 1.
-        def = createVectorLinspace(
+        const auto def = createVectorLinspace(
                 200, 0.95, 1.0 + get_tendon_strain_at_one_norm_force());
         x = &def;
     }
@@ -335,12 +333,11 @@ DataTable DeGrooteFregly2016Muscle::exportTendonForceMultiplierToTable(
 
 DataTable DeGrooteFregly2016Muscle::exportFiberVelocityMultiplierToTable(
         const SimTK::Vector& normFiberVelocities) const {
-    SimTK::Vector def;
     const SimTK::Vector* x = nullptr;
     if (normFiberVelocities.nrow()) {
         x = &normFiberVelocities;
     } else {
-        def = createVectorLinspace(200, -1.1, 1.1);
+        const auto def = createVectorLinspace(200, -1.1, 1.1);
         x = &def;
     }
 
