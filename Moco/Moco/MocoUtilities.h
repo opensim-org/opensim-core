@@ -182,9 +182,10 @@ OSIMMOCO_API TimeSeriesTable filterLowpass(
         const TimeSeriesTable& table, double cutoffFreq, bool padData = false);
 
 /// Read in a table of type TimeSeriesTable_<T> from file, where T is the type
-/// of the elements contained in the table's columns. This function assumes that
-/// only one table is contained in the file at the specified file path, and will
-/// throw an exception if otherwise.
+/// of the elements contained in the table's columns. The `filepath` argument
+/// should refer to a STO or CSV file (or other file types for which there is a 
+/// FileAdapter). This function assumes that only one table is contained in the 
+/// file, and will throw an exception otherwise.
 template <typename T>
 TimeSeriesTable_<T> readTableFromFile(const std::string& filepath) 
 {
@@ -198,7 +199,7 @@ TimeSeriesTable_<T> readTableFromFile(const std::string& filepath)
         dynamic_cast<TimeSeriesTable_<T>*>(
             tablesFromFile.begin()->second.get());
     OPENSIM_THROW_IF(!firstTable, Exception,
-        "Expected reference file to contain a TimeSeriesTable_<T> where T is "
+        "Expected file to contain a TimeSeriesTable_<T> where T is "
         "the type specified in the template argument, but it contains a "
         "different type of table.");
 

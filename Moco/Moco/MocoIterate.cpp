@@ -426,11 +426,7 @@ void MocoIterate::resample(SimTK::Vector time) {
 }
 
 MocoIterate::MocoIterate(const std::string& filepath) {
-    FileAdapter::OutputTables tables = FileAdapter::readFile(filepath);
-
     TimeSeriesTable table = readTableFromFile<double>(filepath);
-
-
     const auto& metadata = table.getTableMetaData();
     // TODO: bug with file adapters.
     // auto numStates = metadata.getValueForKey("num_states").getValue<int>();
