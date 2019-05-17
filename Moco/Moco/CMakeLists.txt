@@ -47,6 +47,8 @@ set(MOCO_SOURCES
         MocoParameter.cpp
         MocoConstraint.h
         MocoConstraint.cpp
+        MocoTrack.h
+        MocoTrack.cpp
         InverseMuscleSolver/InverseMuscleSolver.h
         InverseMuscleSolver/InverseMuscleSolver.cpp
         InverseMuscleSolver/GlobalStaticOptimization.h
