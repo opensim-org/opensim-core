@@ -215,15 +215,12 @@ TEST_CASE("Enabled Costs", "") {
     SimTK_TEST_EQ(cost.calcEndpointCost(state), 0);
 }
 
-TEMPLATE_TEST_CASE("Test MocoControlTrackingCost", "", MocoTropterSolver,
-        MocoCasADiSolver) {
-
+template <class SolverType>
+MocoTool setupMocoToolDoublePendulumMinimizeEffort() {
     using SimTK::Pi;
     int N = 20;
     const Model doublePendulum = ModelFactory::createNLinkPendulum(2);
 
-    // Start with double pendulum problem to minimize control effort to create
-    // a controls trajectory to track.
     MocoTool moco;
     auto& problem = moco.updProblem();
     problem.setModelCopy(doublePendulum);
@@ -236,14 +233,24 @@ TEMPLATE_TEST_CASE("Test MocoControlTrackingCost", "", MocoTropterSolver,
     problem.setStateInfo("/jointset/j1/q1/value", {-10, 10}, Pi, 0);
     problem.setStateInfo("/jointset/j0/q0/speed", {-50, 50}, 0, 0);
 
-    auto& solver = moco.initSolver<TestType>();
+    auto& solver = moco.initSolver<SolverType>();
     solver.set_num_mesh_points(20);
     solver.set_optim_convergence_tolerance(1e-6);
 
+    return moco;
+}
+
+TEMPLATE_TEST_CASE("Test MocoControlTrackingCost", "", MocoTropterSolver,
+        MocoCasADiSolver) {
+
+    // Start with double pendulum problem to minimize control effort to create
+    // a controls trajectory to track.
+    MocoTool moco = setupMocoToolDoublePendulumMinimizeEffort<TestType>();
     auto solutionEffort = moco.solve();
 
-    // Re-run problem, now setting effort cost function to zero and adding 
+    // Re-run problem, now setting effort cost function to zero and adding a
     // control tracking cost.
+    auto& problem = moco.updProblem();
     problem.updPhase(0).updCost("effort").set_weight(0);
     auto* tracking =
         problem.addCost<MocoControlTrackingCost>("control_tracking");
@@ -254,6 +261,8 @@ TEMPLATE_TEST_CASE("Test MocoControlTrackingCost", "", MocoTropterSolver,
     TimeSeriesTable controlsRef(time, solutionEffort.getControlsTrajectory(),
         solutionEffort.getControlNames());
     tracking->setReference(controlsRef);
+
+    moco.updSolver<TestType>().resetProblem(problem);
     auto solutionTracking = moco.solve();
 
     // Make sure control tracking problem matches control effort problem.
@@ -261,6 +270,55 @@ TEMPLATE_TEST_CASE("Test MocoControlTrackingCost", "", MocoTropterSolver,
         solutionTracking.getControlsTrajectory(), 1e-4);
     SimTK_TEST_EQ_TOL(solutionEffort.getStatesTrajectory(),
         solutionTracking.getStatesTrajectory(), 1e-4);
+}
+
+template <typename SolverType, typename TrackingType>
+void testDoublePendulumTracking() {
+    // Start with double pendulum problem to minimize control effort to create
+    // a controls trajectory to track.
+    MocoTool moco = setupMocoToolDoublePendulumMinimizeEffort<SolverType>();
+    auto solutionEffort = moco.solve();
+
+    // Re-run problem, now setting effort cost function to zero and adding a
+    // tracking cost.
+    auto& problem = moco.updProblem();
+    problem.updPhase(0).updCost("effort").set_weight(0);
+    auto* tracking = problem.addCost<TrackingType>("tracking");
+    tracking->setStatesReference(solutionEffort.exportToStatesTable());
+    tracking->setFramePaths({"/bodyset/b0", "/bodyset/b1"});
+
+    moco.updSolver<SolverType>().resetProblem(problem);
+    auto solutionTracking = moco.solve();
+
+    // Check that position-level states match the effort minimization solution.
+    SimTK_TEST_EQ_TOL(solutionTracking.compareContinuousVariablesRMS(
+        solutionEffort, {{"states",
+        {"/jointset/j0/q0/value", "/jointset/j1/q1/value"}}}),
+        0, 1e-2);
+
+    // Re-run problem again, now setting effort cost function weight to a low
+    // non-zero value as a regularization to smooth controls and velocity 
+    // states.
+    problem.updPhase(0).updCost("effort").set_weight(0.0001);
+    moco.updSolver<SolverType>().resetProblem(problem);
+    auto solutionTrackingWithRegularization = moco.solve();
+
+    // Now the full states and controls trajectories should match the effort
+    // minimization solution better.
+    SimTK_TEST_EQ_TOL(solutionEffort.getControlsTrajectory(),
+        solutionTrackingWithRegularization.getControlsTrajectory(), 1e-2);
+    SimTK_TEST_EQ_TOL(solutionEffort.getStatesTrajectory(),
+        solutionTrackingWithRegularization.getStatesTrajectory(), 1e-2);
+}
+
+TEMPLATE_TEST_CASE("Test MocoOrientationTrackingCost", "", MocoTropterSolver,
+        MocoCasADiSolver) {
+    testDoublePendulumTracking<TestType, MocoOrientationTrackingCost>();
+}
+
+TEMPLATE_TEST_CASE("Test MocoTranslationTrackingCost", "", MocoTropterSolver,
+        MocoCasADiSolver) {
+    testDoublePendulumTracking<TestType, MocoTranslationTrackingCost>();
 }
 
 TEMPLATE_TEST_CASE("Test MocoJointReactionCost", "", MocoTropterSolver, 
