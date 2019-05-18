@@ -44,6 +44,9 @@ public:
     OpenSim_DECLARE_PROPERTY(weight, double,
             "The cost value is multiplied by this weight (default: 1).");
 
+    OpenSim_DECLARE_PROPERTY(enabled, bool,
+                             "This bool indicates whether this cost is enabled.");
+
     MocoCost();
 
     MocoCost(std::string name);
@@ -53,6 +56,9 @@ public:
     /// This includes the weight.
     SimTK::Real calcIntegralCost(const SimTK::State& state) const {
         double integrand = 0;
+        if (!get_enabled()) {
+            return integrand;
+        }
         calcIntegralCostImpl(state, integrand);
         return get_weight() * integrand;
     }
@@ -60,12 +66,18 @@ public:
     // We use SimTK::Real instead of double for when we support adoubles.
     SimTK::Real calcEndpointCost(const SimTK::State& finalState) const {
         double cost = 0;
+        if(!get_enabled()) {
+            return cost;
+        }
         calcEndpointCostImpl(finalState, cost);
         return get_weight() * cost;
     }
     /// For use by solvers. This also performs error checks on the Problem.
     void initializeOnModel(const Model& model) const {
         m_model.reset(&model);
+        if(!get_enabled()) {
+            return;
+        }
         initializeOnModelImpl(model);
     }
 
