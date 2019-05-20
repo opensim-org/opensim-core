@@ -40,6 +40,7 @@
 #include "Components/ActivationCoordinateActuator.h"
 #include "Components/StationPlaneContactForce.h"
 #include "Components/ModelFactory.h"
+#include "Components/DeGrooteFregly2016Muscle.h"
 #include "Components/DiscreteForces.h"
 
 #include "MocoCasADiSolver/MocoCasADiSolver.h"

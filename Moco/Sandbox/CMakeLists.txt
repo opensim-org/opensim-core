@@ -29,9 +29,6 @@ MocoAddSandboxExecutable(NAME sandboxSlidingMass
 MocoAddSandboxExecutable(NAME sandboxContact
         LIB_DEPENDS osimMoco osimAnalyses tropter)
 MocoAddSandboxExecutable(NAME sandboxMuscle
-        SOURCE_FILES
-            shared/DeGrooteFregly2016Muscle.h
-            shared/DeGrooteFregly2016Muscle.cpp
         LIB_DEPENDS osimMoco)
 MocoAddSandboxExecutable(NAME sandboxCasADi
         LIB_DEPENDS osimMoco casadi tropter)
