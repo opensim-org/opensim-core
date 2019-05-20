@@ -96,7 +96,7 @@ int main(int argc, char **argv)
                 }
                 else if ((option == "-ReadX") || (option == "-RX")) {
                     if (argc < 4) {
-                        cout << "Both directory of data files and setup file are needed to read Xsens data. Please fix and retry." << endl;
+                        cout << "Both the directory containing Xsens data files and the reader settings file are necessary to read Xsens data. Please retry with these inputs." << endl;
                         PrintUsage(argv[0], cout);
                         exit(-1);
                     }
@@ -109,7 +109,7 @@ int main(int argc, char **argv)
                 }
                 else if ((option == "-ReadA") || (option == "-RA")) {
                     if (argc < 4) {
-                        cout << "Both data file (.csv) and setup file needed to read APDM data. Please fix and retry." << endl;
+                        cout << "Both the data file (.csv) with APDM formatted data and the reader settings file are necessary to read APDM data. Please retry with these inputs." << endl;
                         PrintUsage(argv[0], cout);
                         exit(-1);
                     }
@@ -134,7 +134,7 @@ int main(int argc, char **argv)
                 }
                 else if ((option == "-AddIMUs") || (option == "-A")) {
                     if (argc < 4) {
-                        cout << "Both model file (.osim) and markers file are needed for this option. Please fix and retry." << endl;
+                        cout << "Both a model (.osim) file and marker data (e.g. .trc) file are necessary to add IMU frames to the model based-on marker data." << endl;
                         PrintUsage(argv[0], cout);
                         exit(-1);
                     }
@@ -184,7 +184,7 @@ int main(int argc, char **argv)
                 }
                 else if ((option == "-Setup") || (option == "-S")) {
                     if (argc < 3) {
-                        cout << "Setup file .xml is expected after -S option. Please fix and retry." << endl;
+                        cout << "A setup(.xml) file was expected but no file was provided. If no setup file exists, use the - PS option to print a default setup file that can be edited." << endl;
                         PrintUsage(argv[0], cout);
                         exit(-1);
                     }
