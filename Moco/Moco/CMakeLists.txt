@@ -58,6 +58,8 @@ set(MOCO_SOURCES
         InverseMuscleSolver/DeGrooteFregly2016MuscleStandalone.h
         InverseMuscleSolver/InverseMuscleSolverMotionData.h
         InverseMuscleSolver/InverseMuscleSolverMotionData.cpp
+        Components/DeGrooteFregly2016Muscle.h
+        Components/DeGrooteFregly2016Muscle.cpp
         Components/ActivationCoordinateActuator.h
         Components/StationPlaneContactForce.h
         Components/StationPlaneContactForce.cpp
