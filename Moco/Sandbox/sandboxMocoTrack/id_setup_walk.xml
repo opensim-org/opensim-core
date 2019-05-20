@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<OpenSimDocument Version="30000">
+	<InverseDynamicsTool name="id_walk">
+		<!--Directory used for writing results.-->
+		<results_directory>./results_walk</results_directory>
+		<!--Directory for input files-->
+		<input_directory />
+		<!--Name of the .osim file used to construct a model.-->
+		<model_file>../CMC/walk/subject_walk_adjusted.osim</model_file>
+		<!--Time range over which the inverse dynamics problem is solved.-->
+		<time_range> 0.45 1.8</time_range>
+		<!--List of forces by individual or grouping name (e.g. All, actuators, muscles, ...) to be excluded when computing model dynamics.-->
+		<forces_to_exclude> muscles actuators</forces_to_exclude>
+		<!--XML file (.xml) containing the external loads applied to the model as a set of ExternalForce(s).-->
+		<external_loads_file>grf_walk.xml</external_loads_file>
+		<!--The name of the file containing coordinate data. Can be a motion (.mot) or a states (.sto) file.-->
+		<coordinates_file>../RRA/walk/results_rra_2/rra_walk_2_Kinematics_q.sto</coordinates_file>
+		<!--Low-pass cut-off frequency for filtering the coordinates_file data (currently does not apply to states_file or speeds_file). A negative value results in no filtering. The default value is -1.0, so no filtering.-->
+		<lowpass_cutoff_frequency_for_coordinates>-1</lowpass_cutoff_frequency_for_coordinates>
+		<!--Name of the storage file (.sto) to which the generalized forces are written.-->
+		<output_gen_force_file>inverse_dynamics.sto</output_gen_force_file>
+		<!--List of joints (keyword All, for all joints) to report body forces acting at the joint frame expressed in ground.-->
+		<joints_to_report_body_forces />
+		<!--Name of the storage file (.sto) to which the body forces at specified joints are written.-->
+		<output_body_forces_file></output_body_forces_file>
+	</InverseDynamicsTool>
+</OpenSimDocument>

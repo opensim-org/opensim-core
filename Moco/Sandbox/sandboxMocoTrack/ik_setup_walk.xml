@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<OpenSimDocument Version="30000">
+	<InverseKinematicsTool name="walk">
+		<!--Directory used for writing results.-->
+		<results_directory>./results_walk</results_directory>
+		<!--Directory for input files-->
+		<input_directory />
+		<!--Name of the .osim file used to construct a model.-->
+		<model_file>subject_scaled_walk.osim</model_file>
+		<!--A positive scalar that is used to weight the importance of satisfying constraints.A weighting of 'Infinity' or if it is unassigned results in the constraints being strictly enforced.-->
+		<constraint_weight>Inf</constraint_weight>
+		<!--The accuracy of the solution in absolute terms. I.e. the number of significantdigits to which the solution can be trusted.-->
+		<accuracy>1e-05</accuracy>
+		<!--Markers and coordinates to be considered (tasks) and their weightings.-->
+		<IKTaskSet>
+			<objects>
+				<!-- Upper-body markers (anatomical and tracking). -->
+				<IKMarkerTask name="R.Shoulder">
+					<!--Whether or not this task will be used during inverse kinematics solve.-->
+					<apply>true</apply>
+					<!--Weight given to a marker or coordinate for solving inverse kinematics problems.-->
+					<weight>5</weight>
+				</IKMarkerTask>
+				<IKMarkerTask name="L.Shoulder">
+					<apply>true</apply> <weight>5</weight> </IKMarkerTask>
+				<IKMarkerTask name="R.Clavicle">
+					<apply>true</apply> <weight>5</weight> </IKMarkerTask>
+				<IKMarkerTask name="L.Clavicle">
+					<apply>true</apply> <weight>5</weight> </IKMarkerTask>
+				<IKMarkerTask name="R.Biceps">
+					<apply>false</apply> <weight>1</weight> </IKMarkerTask>
+				<IKMarkerTask name="L.Biceps">
+					<apply>false</apply> <weight>1</weight> </IKMarkerTask>
+				<IKMarkerTask name="R.Elbow">
+					<apply>true</apply> <weight>2</weight> </IKMarkerTask>
+				<IKMarkerTask name="L.Elbow">
+					<apply>true</apply> <weight>2</weight> </IKMarkerTask>
+				<IKMarkerTask name="R.MElbow">
+					<apply>false</apply> <weight>0</weight> </IKMarkerTask>
+				<IKMarkerTask name="L.MElbow">
+					<apply>false</apply> <weight>0</weight> </IKMarkerTask>
+				<IKMarkerTask name="R.Forearm">
+					<apply>true</apply> <weight>1</weight> </IKMarkerTask>
+				<IKMarkerTask name="L.Forearm">
+					<apply>true</apply> <weight>1</weight> </IKMarkerTask>
+				<IKMarkerTask name="R.Wrist">
+					<apply>true</apply> <weight>1</weight> </IKMarkerTask>
+				<IKMarkerTask name="L.Wrist">
+					<apply>true</apply> <weight>1</weight> </IKMarkerTask>
+
+				<!-- Lower-body anatomical markers -->
+				<IKMarkerTask name="R.ASIS">
+					<apply>true</apply> <weight>50</weight> </IKMarkerTask>
+				<IKMarkerTask name="L.ASIS">
+					<apply>true</apply> <weight>50</weight> </IKMarkerTask>
+				<IKMarkerTask name="S2">
+					<apply>true</apply> <weight>5</weight> </IKMarkerTask>
+				<IKMarkerTask name="R.PSIS">
+					<apply>true</apply> <weight>40</weight> </IKMarkerTask>
+				<IKMarkerTask name="L.PSIS">
+					<apply>true</apply> <weight>40</weight> </IKMarkerTask>
+				<IKMarkerTask name="R_HJC">
+					<apply>false</apply> <weight>1</weight> </IKMarkerTask>
+				<IKMarkerTask name="L_HJC">
+					<apply>false</apply> <weight>1</weight> </IKMarkerTask>
+				<IKMarkerTask name="R.Knee">
+					<apply>true</apply> <weight>35</weight> </IKMarkerTask>
+				<IKMarkerTask name="L.Knee">
+					<apply>true</apply> <weight>35</weight> </IKMarkerTask>
+				<IKMarkerTask name="R.MKnee">
+					<apply>false</apply> <weight>0</weight> </IKMarkerTask>
+				<IKMarkerTask name="L.MKnee">
+					<apply>false</apply> <weight>0</weight> </IKMarkerTask>
+				<IKMarkerTask name="R.Ankle">
+					<apply>true</apply> <weight>25</weight> </IKMarkerTask>
+				<IKMarkerTask name="L.Ankle">
+					<apply>true</apply> <weight>25</weight> </IKMarkerTask>
+				<IKMarkerTask name="R.MAnkle">
+					<apply>false</apply> <weight>0</weight> </IKMarkerTask>
+				<IKMarkerTask name="L.MAnkle">
+					<apply>false</apply> <weight>0</weight> </IKMarkerTask>
+				<IKMarkerTask name="R.Toe">
+					<apply>true</apply> <weight>1</weight> </IKMarkerTask>
+				<IKMarkerTask name="L.Toe">
+					<apply>true</apply> <weight>1</weight> </IKMarkerTask>
+				<IKMarkerTask name="R.MT5">
+					<apply>true</apply> <weight>10</weight> </IKMarkerTask>
+				<IKMarkerTask name="L.MT5">
+					<apply>true</apply> <weight>10</weight> </IKMarkerTask>
+				<IKMarkerTask name="R.Heel">
+					<apply>true</apply> <weight>15</weight> </IKMarkerTask>
+				<IKMarkerTask name="L.Heel">
+					<apply>true</apply> <weight>15</weight> </IKMarkerTask>
+
+				<!-- Lower-body tracking markers. -->
+				<IKMarkerTask name="R.TH1">
+					<apply>true</apply> <weight>5</weight> </IKMarkerTask>
+				<IKMarkerTask name="R.TH2">
+					<apply>true</apply> <weight>5</weight> </IKMarkerTask>
+				<IKMarkerTask name="R.TH3">
+					<apply>true</apply> <weight>5</weight> </IKMarkerTask>
+				<IKMarkerTask name="R.SH1">
+					<apply>true</apply> <weight>1</weight> </IKMarkerTask>
+				<IKMarkerTask name="R.SH2">
+					<apply>true</apply> <weight>1</weight> </IKMarkerTask>
+				<IKMarkerTask name="R.SH3">
+					<apply>true</apply> <weight>1</weight> </IKMarkerTask>
+				<IKMarkerTask name="R.SH4">
+					<apply>true</apply> <weight>1</weight> </IKMarkerTask>
+				<IKMarkerTask name="L.TH1">
+					<apply>true</apply> <weight>15</weight> </IKMarkerTask>
+				<IKMarkerTask name="L.TH2">
+					<apply>true</apply> <weight>15</weight> </IKMarkerTask>
+				<IKMarkerTask name="L.TH3">
+					<apply>true</apply> <weight>15</weight> </IKMarkerTask>
+				<IKMarkerTask name="L.TH4">
+					<apply>true</apply> <weight>15</weight> </IKMarkerTask>
+				<IKMarkerTask name="L.SH1">
+					<apply>true</apply> <weight>1</weight> </IKMarkerTask>
+				<IKMarkerTask name="L.SH2">
+					<apply>true</apply> <weight>1</weight> </IKMarkerTask>
+				<IKMarkerTask name="L.SH3">
+					<apply>true</apply> <weight>1</weight> </IKMarkerTask>
+			</objects>
+			<groups />
+		</IKTaskSet>
+		<!--TRC file (.trc) containing the time history of observations of marker positions.-->
+		<marker_file>motion_capture_walk.trc</marker_file>
+		<!--The name of the storage (.sto or .mot) file containing coordinate observations.Coordinate values from this file are included if there is a corresponding coordinate task. -->
+		<coordinate_file>Unassigned</coordinate_file>
+		<!--Time range over which the inverse kinematics problem is solved.-->
+		<time_range> 0 2.3700</time_range>
+		<!--Flag (true or false) indicating whether or not to report marker errors from the inverse kinematics solution.-->
+		<report_errors>true</report_errors>
+		<!--Name of the motion file (.mot) to which the results should be written.-->
+		<output_motion_file>ik_output_walk.mot</output_motion_file>
+		<!--Flag indicating whether or not to report model marker locations in ground.-->
+		<report_marker_locations>false</report_marker_locations>
+	</InverseKinematicsTool>
+</OpenSimDocument>
