@@ -51,9 +51,8 @@ XsensDataReader::extendRead(const std::string& folderName) const {
 
         // Skip lines to get to data
         std::string line;
-        bool labelsFound = false;
         packetCounterIndex = -1; // Force moving file pointer to beginning of data for each stream
-        for (int j = 0; !labelsFound; j++) {
+        for (int j = 0; packetCounterIndex == -1; j++) {
             std::getline(*nextStream, line);
             if (j == 1 && SimTK::isNaN(dataRate)) { // Extract Data rate from line 1
                 std::vector<std::string> tokens = FileAdapter::tokenize(line, ", ");
@@ -63,15 +62,14 @@ XsensDataReader::extendRead(const std::string& folderName) const {
                     dataRate = std::stod(tokens[3]);
                 }
             }
-            if (!labelsFound) { // Find indices for PacketCounter, Acc_{X,Y,Z}, Gyr_{X,Y,Z}, Mag_{X,Y,Z} on line 5
+            if (packetCounterIndex == -1) { // Find indices for PacketCounter, Acc_{X,Y,Z}, Gyr_{X,Y,Z}, Mag_{X,Y,Z} on line 5
                 std::vector<std::string> tokens = FileAdapter::tokenize(line, "\t");
-                if (packetCounterIndex == -1) packetCounterIndex = find_index(tokens, "PacketCounter");
+                packetCounterIndex = find_index(tokens, "PacketCounter");
                 if (packetCounterIndex == -1) {
                     // Could be comment, skip over
                     continue;
                 }
                 else {
-                    labelsFound = true;
                     if (accIndex == -1) accIndex = find_index(tokens, "Acc_X");
                     if (gyroIndex == -1) gyroIndex = find_index(tokens, "Gyr_X");
                     if (magIndex == -1) magIndex = find_index(tokens, "Mag_X");
