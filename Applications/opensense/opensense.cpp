@@ -95,6 +95,11 @@ int main(int argc, char **argv)
                     return 0;
                 }
                 else if ((option == "-ReadX") || (option == "-RX")) {
+                    if (argc < 4) {
+                        cout << "Both directory of data files and setup file are needed to read Xsens data. Please fix and retry." << endl;
+                        PrintUsage(argv[0], cout);
+                        exit(-1);
+                    }
                     std::string directory{ argv[i + 1] };
                     std::string settingsFile{ argv[i + 2] };
                     TimeSeriesTable_<SimTK::Quaternion> rotationsTable =
@@ -103,6 +108,11 @@ int main(int argc, char **argv)
                     return 0;
                 }
                 else if ((option == "-ReadA") || (option == "-RA")) {
+                    if (argc < 4) {
+                        cout << "Both data file (.csv) and setup file needed to read APDM data. Please fix and retry." << endl;
+                        PrintUsage(argv[0], cout);
+                        exit(-1);
+                    }
                     std::string dataFile{ argv[i + 1] };
                     std::string settingsFile{ argv[i + 2] };
                     TimeSeriesTable_<SimTK::Quaternion> rotationsTable =
@@ -111,6 +121,11 @@ int main(int argc, char **argv)
                     return 0;
                 }
                 else if ((option == "-Transform") || (option == "-T")) {
+                    if (argc < 3) {
+                        cout << "Marker file is needed for this option. Please fix and retry." << endl;
+                        PrintUsage(argv[0], cout);
+                        exit(-1);
+                    }                   
                     std::string markerFile{ argv[i + 1] };
                     TimeSeriesTable_<SimTK::Quaternion> quaternions =
                         OpenSenseUtilities::createOrientationsFileFromMarkers(markerFile);
@@ -118,6 +133,11 @@ int main(int argc, char **argv)
                     return 0;
                 }
                 else if ((option == "-AddIMUs") || (option == "-A")) {
+                    if (argc < 4) {
+                        cout << "Both model file (.osim) and markers file are needed for this option. Please fix and retry." << endl;
+                        PrintUsage(argv[0], cout);
+                        exit(-1);
+                    }
                     std::string modelFile{ argv[i + 1] };
                     std::string markersFile{ argv[i + 2] };
                     addImuFramesFromMarkers(modelFile, markersFile);
@@ -126,14 +146,19 @@ int main(int argc, char **argv)
                     return 0;
                 }
                 else if ((option == "-Calibrate") || (option == "-C")) {
+                    if (argc < 4) {
+                        cout << "Model calibration .osim file,  orientation data .sto file  are needed with an optional heading Axis specification. Please fix and retry." << endl;
+                        PrintUsage(argv[0], cout);
+                        exit(-1);
+                    }
                     std::string modelCalibrationPoseFile{ argv[i + 1] };
                     std::string calibrationOrientationsFile{ argv[i + 2] };
                     std::string baseImuName{ "" };
                     SimTK::CoordinateAxis imuHeading{ SimTK::ZAxis };
-                    if (argc > 2)
+                    if (argc > 4)
                         baseImuName = std::string{ argv[i + 3] };
-
-                    if (argc > 3) {
+                    
+                    if (argc > 5) {
                         char axc{ argv[i + 4][0] };
                         axc = std::tolower(axc);
                         int axis = (axc == 'x' ? 0 :
@@ -158,6 +183,11 @@ int main(int argc, char **argv)
                     return 0;
                 }
                 else if ((option == "-Setup") || (option == "-S")) {
+                    if (argc < 3) {
+                        cout << "Setup file .xml is expected after -S option. Please fix and retry." << endl;
+                        PrintUsage(argv[0], cout);
+                        exit(-1);
+                    }
                     setupFileName = argv[i + 1];
                     break;
                 }
@@ -268,6 +298,7 @@ void PrintUsage(const char *aProgName, ostream &aOStream)
     aOStream << "                                        the model's default pose is the calibration pose. The resultant\n";
     aOStream << "                                        model with IMU frames registered is written to file as\n";
     aOStream << "                                        calibrated_modelPoseFile.osim\n";
+    aOStream << endl;
 }
 
 TimeSeriesTable_<SimTK::Quaternion> readRotationsFromXSensFiles(const std::string& directory,
