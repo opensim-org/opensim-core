@@ -129,6 +129,59 @@ public:
     // know aobut MocoIterate?
     void visualize(const MocoIterate& it) const;
 
+    /// Calculate the requested outputs using the model in the problem and the
+    /// states and controls in the MocoIterate.
+    /// The output paths can be regular expressions. For example,
+    /// ".*activation" gives the activation of all muscles.
+    /// Constraints are not enforced but prescribed motion (e.g.,
+    /// PositionMotion) is.
+    /// @note Parameters in the MocoIterate are **not** applied to the model.
+    template <typename T>
+    TimeSeriesTable_<T> analyze(const MocoIterate& iterate,
+        std::vector<std::string> outputPaths) {
+        auto model = get_problem().createRep().getModelBase();
+        model.initSystem();
+        //prescribeControlsToModel(iterate, model);
+
+        auto* reporter = new TableReporter_<T>();
+        for (const auto& comp : model.getComponentList()) {
+            for (const auto& outputName : comp.getOutputNames()) {
+                const auto& output = comp.getOutput(outputName);
+                if (output.getTypeName() ==
+                    OpenSim::Object_GetClassName<T>::name()) {
+                    auto thisOutputPath = output.getPathName();
+                    std::replace(thisOutputPath.begin(), thisOutputPath.end(),
+                        '|', '/');
+                    for (const auto& outputPathArg : outputPaths) {
+                        if (std::regex_match(
+                            thisOutputPath, std::regex(outputPathArg))) {
+                            reporter->addToReport(output);
+                        }
+                    }
+                }
+            }
+        }
+        model.addComponent(reporter);
+        model.initSystem();
+
+        auto statesTraj = iterate.exportToStatesTrajectory(get_problem());
+
+        for (int i = 0; i < statesTraj.getSize(); ++i) {
+            auto state = statesTraj[i];
+            model.getSystem().prescribe(state);
+            SimTK::RowVector controlsRow =
+                iterate.getControlsTrajectory().row(i);
+            SimTK::Vector controls(controlsRow.size(),
+                controlsRow.getContiguousScalarData(), true);
+            model.realizeVelocity(state);
+            model.setControls(state, controls);
+
+            model.realizeReport(state);
+        }
+
+        return reporter->getTable();
+    }
+
     /// @name Using other solvers
     /// @{
     template <typename SolverType>
@@ -136,7 +189,7 @@ public:
         set_solver(SolverType());
     }
 
-    /// @precondition If not using MucoTropterSolver or MucoCasADiSolver, you
+    /// @precondition If not using MocoTropterSolver or MocoCasADiSolver, you
     /// must invoke setCustomSolver() first.
     template <typename SolverType>
     SolverType& initSolver() {
