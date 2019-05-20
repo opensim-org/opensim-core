@@ -709,7 +709,7 @@ TEMPLATE_TEST_CASE("Hanging muscle minimum time", "", MocoCasADiSolver) {
         solutionTrack.write(solutionFilename);
         double error =
                 solutionTrack.compareContinuousVariablesRMS(solutionTrajOpt);
-        CHECK(error < 0.01);
+        CHECK(error < 0.015);
     }
     // TODO: Support constraining initial fiber lengths to their equilibrium
     // lengths (in explicit mode).
