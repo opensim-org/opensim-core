@@ -98,12 +98,9 @@ bool StatesTrajectory::isCompatibleWith(const Model& model) const {
     // need to check if the first one is compatible with the model.
     const auto& state0 = get(0);
 
-    if (model.getNumStateVariables() != state0.getNY()) {
-        return false;
-    }
-    if (model.getNumCoordinates() != state0.getNQ()) {
-        return false;
-    }
+    // We only check the number of speeds because OpenSim does not count
+    // quaternion slots, while the SimTK State contains quaternion slots even if
+    // quaternions are not used.
     if (model.getNumSpeeds() != state0.getNU()) {
         return false;
     }
