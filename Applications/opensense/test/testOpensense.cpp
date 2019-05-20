@@ -78,11 +78,13 @@ int main()
     Storage ik_negX("ik_hjc_" + facingNegX.getName() +
         "/ik_MT_012005D6_009-quaternions_RHJCSwinger.mot");
 
+    int nc = ik_X.getColumnLabels().size();
+
     // calibration should only result in errors due to smallish (<10degs) 
     // differences in static pose an should be unaffected by the large
     // (90+ degs) change in heading
     CHECK_STORAGE_AGAINST_STANDARD(ik_X, ik_negX,
-        std::vector<double>(23, 10.0), __FILE__, __LINE__,
+        std::vector<double>(nc, 10.0), __FILE__, __LINE__,
         "testOpenSense::IK solutions differed due to heading.");
 
     std::cout << "Done. All testOpensense cases passed." << endl;
