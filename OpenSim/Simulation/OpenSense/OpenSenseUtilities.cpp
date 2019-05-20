@@ -105,16 +105,6 @@ TimeSeriesTable_<SimTK::Rotation> OpenSenseUtilities::
         UnitVec3 groundX = UnitVec3(1, 0, 0);
         SimTK::Real angularDifference = acos(~pelvisHeading*groundX);
 
-        // If the forward axis actually is the backward axis, change direction by 180 degrees
-        if (angularDifference >= SimTK_PI / 2) {
-            if (angularDifference >= 0) {
-                angularDifference -= SimTK_PI;
-            }
-            else if (angularDifference <= -SimTK_PI / 2) {
-                angularDifference += SimTK_PI;
-            }
-        }
-
         std::cout << "Heading correction computed to be "
             << angularDifference * SimTK_RADIAN_TO_DEGREE
             << "degs about ground Y" << std::endl;

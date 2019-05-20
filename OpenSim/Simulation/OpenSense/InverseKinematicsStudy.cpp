@@ -187,10 +187,7 @@ runInverseKinematicsWithOrientationsFromFile(Model& model,
 
     auto report = ikReporter->getTable();
 
-    auto eix = orientationsFileName.rfind("_");
-    if (eix == std::string::npos) {
-        eix = orientationsFileName.rfind(".");
-    }
+    auto eix = orientationsFileName.rfind(".");
     auto stix = orientationsFileName.rfind("/") + 1;
 
     IO::makeDir(get_results_directory());
@@ -224,10 +221,11 @@ runInverseKinematicsWithOrientationsFromFile(Model& model,
 // main driver
 bool InverseKinematicsStudy::run(bool visualizeResults)
 {
+    if (_model.empty()) {
+        _model.reset(new Model(get_model_file_name()));
+    }
 
-    Model modelWithIMUs(get_model_file_name());
-
-    runInverseKinematicsWithOrientationsFromFile(modelWithIMUs,
+    runInverseKinematicsWithOrientationsFromFile(*_model,
                                                  get_orientations_file_name(),
                                                  visualizeResults);
 

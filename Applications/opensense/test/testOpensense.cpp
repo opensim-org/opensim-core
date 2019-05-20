@@ -34,25 +34,59 @@ using namespace std;
 
 int main()
 {
-    int itc = 0;
-  
     // Calibrate model and compare result to standard
     Model model = OpenSenseUtilities::calibrateModelFromOrientations(
-        "subject07.osim", 
+        "subject07.osim",
         "imuOrientations.sto",
         "pelvis_imu", SimTK::ZAxis,
         false);
-
-    model.print("calibrated_" + model.getName() + ".osim");
-
     // Previous line produces a model with same name but "calibrated_" prefix.
     Model stdModel{ "std_calibrated_subject07.osim" };
-
     ASSERT(model == stdModel);
-    InverseKinematicsStudy ik("setup_OpenSense.xml");
-    // RUN
-    ik.run(); 
-    
+
+    // Calibrate model from two different standing trials facing
+    // opposite directions to verify that heading correction is working
+    Model facingX = OpenSenseUtilities::calibrateModelFromOrientations(
+        "subject07.osim",
+        "MT_012005D6_009-quaternions_calibration_trial_Facing_X.sto",
+        "pelvis_imu", SimTK::ZAxis,
+        false);
+    facingX.setName("calibrated_FacingX");
+    facingX.finalizeFromProperties();
+
+    InverseKinematicsStudy ik_hjc("setup_track_HJC_trial.xml");
+    ik_hjc.setModel(facingX);
+    ik_hjc.set_results_directory("ik_hjc_" + facingX.getName());
+    ik_hjc.run(false);
+
+    // Now facing the opposite direction (negative X)
+    Model facingNegX = OpenSenseUtilities::calibrateModelFromOrientations(
+        "subject07.osim",
+        "MT_012005D6_009-quaternions_calibration_trial_Facing_negX.sto",
+        "pelvis_imu", SimTK::ZAxis,
+        false);
+    facingNegX.setName("calibrated_FacingNegX");
+    facingNegX.finalizeFromProperties();
+
+    ik_hjc.setModel(facingNegX);
+    ik_hjc.set_results_directory("ik_hjc_" + facingNegX.getName());
+    ik_hjc.run(false);
+
+    Storage ik_X("ik_hjc_" + facingX.getName() + 
+        "/ik_MT_012005D6_009-quaternions_RHJCSwinger.mot");
+
+    Storage ik_negX("ik_hjc_" + facingNegX.getName() +
+        "/ik_MT_012005D6_009-quaternions_RHJCSwinger.mot");
+
+    int nc = ik_X.getColumnLabels().size();
+
+    // calibration should only result in errors due to smallish (<10degs) 
+    // differences in static pose an should be unaffected by the large
+    // (90+ degs) change in heading
+    CHECK_STORAGE_AGAINST_STANDARD(ik_X, ik_negX,
+        std::vector<double>(nc, 10.0), __FILE__, __LINE__,
+        "testOpenSense::IK solutions differed due to heading.");
+
     std::cout << "Done. All testOpensense cases passed." << endl;
     return 0;
 }
