@@ -38,7 +38,7 @@ public:
     typedef std::map<std::string, std::shared_ptr<TimeSeriesTableVec3>> Tables;
 
     /** Enumerated list of locations in which read in forces are expressed.
-        Measurement from force plates can be expressed by the C3DFileAdapter
+        %Measurement from force plates can be expressed by the C3DFileAdapter
         either at the OriginOfForcePlate (the default), CenterOfPressure, or
         the PointOfWrenchApplication. It is an optional argument to 
         C3DFileAdapter::readFile().
