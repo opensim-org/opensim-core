@@ -6,8 +6,8 @@ set(MOCO_SOURCES
         RegisterTypes_osimMoco.cpp
         MocoUtilities.h
         MocoUtilities.cpp
-        MocoTool.h
-        MocoTool.cpp
+        MocoStudy.h
+        MocoStudy.cpp
         MocoBounds.h
         MocoBounds.cpp
         MocoVariableInfo.h
@@ -27,8 +27,14 @@ set(MOCO_SOURCES
         MocoCost/MocoStateTrackingCost.cpp
         MocoCost/MocoControlCost.h
         MocoCost/MocoControlCost.cpp
-        MocoCost/MocoJointReactionNormCost.h
-        MocoCost/MocoJointReactionNormCost.cpp
+        MocoCost/MocoControlTrackingCost.h
+        MocoCost/MocoControlTrackingCost.cpp
+        MocoCost/MocoJointReactionCost.h
+        MocoCost/MocoJointReactionCost.cpp
+        MocoCost/MocoOrientationTrackingCost.h
+        MocoCost/MocoOrientationTrackingCost.cpp
+        MocoCost/MocoTranslationTrackingCost.h
+        MocoCost/MocoTranslationTrackingCost.cpp
         MocoSolver.h
         MocoSolver.cpp
         MocoDirectCollocationSolver.h

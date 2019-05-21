@@ -44,7 +44,7 @@ HELLO
 
 TODO
 
-The interface to Moco starts with the MocoTool. The MocoTool contains a
+The interface to Moco starts with the MocoStudy. The MocoStudy contains a
 MocoProblem and a MocoSolver.
 
   - MocoProblem: describes the variables, dynamics, constraints, and cost
@@ -54,18 +54,18 @@ MocoProblem and a MocoSolver.
 
 @section Workflow
 
-When building a MocoTool programmatically (e.g., in C++), the workflow is as
+When building a MocoStudy programmatically (e.g., in C++), the workflow is as
 follows:
 
 1. Build the MocoProblem (set the model, constraints, etc.).
-2. Call MocoTool::initTropterSolver() (or MocoTool::initCasADiSolver()), which
+2. Call MocoStudy::initTropterSolver() (or MocoStudy::initCasADiSolver()), which
    returns a reference to a MocoSolver.
 3. Edit the settings of the MocoSolver (returned by initSolver()).
-4. Call MocoTool::solve(). This returns the MocoSolution.
-5. (Optional) Postprocess the solution, perhaps using MocoTool::visualize().
+4. Call MocoStudy::solve(). This returns the MocoSolution.
+5. (Optional) Postprocess the solution, perhaps using MocoStudy::visualize().
 
-After calling MocoTool::solve(), you can edit the MocoProblem and/or the
-MocoSolver and call MocoTool::solve() again, if you wish.
+After calling MocoStudy::solve(), you can edit the MocoProblem and/or the
+MocoSolver and call MocoStudy::solve() again, if you wish.
 
 
 @section problem MocoProblem

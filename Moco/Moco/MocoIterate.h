@@ -80,6 +80,18 @@ Column labels starting with "lambda" are Lagrange multiplier, and columns
 starting with "gamma" are slack variables (probably velocity corrections at
 certain collocation points).
 
+@par Matlab and Python
+Many of the functions in this class have variants ending with "Mat" that
+provide convenient access to the data directly in Matlab or Python (NumPy).
+In Python, the constructors can also accept NumPy matrices in addition to
+arguments of type SimTK::Matrix.
+@code
+iterate.getStateMat("<state-name>")
+iterate.getStatesTrajectoryMat()
+@endcode
+
+
+
 @par Implicit dynamics model
 If the solver uses an implicit dynamics mode, then there are "control"
 variables ("adjunct" variables in tropter's terminology) for the generalized
@@ -366,6 +378,7 @@ public:
     SimTK::VectorView_<double> getState(const std::string& name) const;
     SimTK::VectorView_<double> getControl(const std::string& name) const;
     SimTK::VectorView_<double> getMultiplier(const std::string& name) const;
+    SimTK::VectorView_<double> getDerivative(const std::string& name) const;
     const SimTK::Real& getParameter(const std::string& name) const;
     const SimTK::Matrix& getStatesTrajectory() const {
         ensureUnsealed();
@@ -437,8 +450,8 @@ public:
     /// derivatives to compare as keys for `columnsToUse`.
     /// Values are an empty vector to compare all columns for that key,
     /// `{"none"}` (single-entry vector with value "none") to compare none of
-    /// the columns for that key, or a vector of column labels to compare all
-    /// all columns for that key. Leaving out a key means no columns for that
+    /// the columns for that key, or a vector of column labels to compare
+    /// for that key. Leaving out a key means no columns for that
     /// key are compared.
     /// Both iterates must have at least 6 time nodes.
     /// If the number of columns to compare is 0, this returns 0.
@@ -558,7 +571,7 @@ private:
     bool m_sealed = false;
 };
 
-/// Return type for MocoTool::solve(). Use success() to check if the solver
+/// Return type for MocoStudy::solve(). Use success() to check if the solver
 /// succeeded. You can also use this object as a boolean in an if-statement:
 /// @code
 /// auto solution = moco.solve();

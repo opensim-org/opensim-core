@@ -41,7 +41,8 @@ namespace OpenSim {
 /// following components are not supported:
 ///   - Actuator%s with multiple controls (non-ScalarActuator%s).
 class OSIMMOCO_API MocoPhase : public Object {
-OpenSim_DECLARE_CONCRETE_OBJECT(MocoPhase, Object);
+    OpenSim_DECLARE_CONCRETE_OBJECT(MocoPhase, Object);
+
 public:
     MocoPhase();
 
@@ -65,12 +66,11 @@ public:
     /// Set information about a single state variable in this phase.
     /// @param name
     ///     The name must match the path of a state variable in the
-    ///     model (e.g., `hip/flexion/value` or `hip/flexion/speed`).
+    ///     model (e.g., `/hip/flexion/value` or `/hip/flexion/speed`).
     /// @param bounds
     ///     The bounds on this state variable over the entire phase. If
-    ///     default-constructed (`{}`), then either no bounds are applied or
-    ///     bounds are taken from the model (depending on the type of state
-    ///     variable).
+    ///     default-constructed (`{}`), then either the variable is
+    ///     unconstrained or default bounds are used (see below).
     /// @param init
     ///     The bounds on this state variable at the start of the phase.
     ///     By default, there are no additional bounds on the initial value
@@ -83,6 +83,17 @@ public:
     /// pass that single value. If you want to constrain to a range, pass
     /// the lower and upper bounds to the constructor as two arguments.
     ///
+    /// ### Default bounds
+    /// 1. Coordinate values: the Coordinate's range is used (regardless of
+    ///     whether the coordinate is clamped).
+    /// 2. Coordinate speeds: this class's default_speed_bounds property.
+    ///
+    /// These defaults are also used if you completely omit state info for a
+    /// state variable.
+    ///
+    /// For states with default bounds, if you actually want a variable to
+    /// be unconstrained, pass in MocoBounds::unconstrained().
+    ///
     /// ### Examples
     /// Set bounds over the entire phase, but do not specify additional
     /// bounds on the value at the start and end of the phase.
@@ -90,15 +101,21 @@ public:
     /// phase.setStateInfo("/knee/flexion/value", {-1.5*SimTK::Pi, 0});
     /// @endcode
     ///
-    /// Allow any value throughout the phase (within the coordinate's range,
-    /// if clamped), but the initial value is 5.
+    /// Allow any value throughout the phase (within the coordinate's range),
+    /// but the initial value is 5.
     /// @code{.cpp}
     /// phase.setStateInfo("/ankle/flexion/value", {}, 5);
     /// @endcode
     ///
-    /// Constrain the initial and final state to a single value of 0.
+    /// Constrain the initial and final state to a single value of 0, but
+    /// use default speed bounds elsewhere.
     /// @code{.cpp}
     /// phase.setStateInfo("/ankle/flexion/speed", {}, 0, 0);
+    /// @endcode
+    ///
+    /// Make a coordinate value unconstrained.
+    /// @code{.cpp}
+    /// phase.setStateInfo("/ankle/flexion/value", MocoBounds::unconstrained());
     /// @endcode
     ///
     /// This function will overwrite any info that has previously been set for
@@ -108,20 +125,31 @@ public:
             const MocoFinalBounds& final = {});
     /// Set information about a single control variable in this phase.
     /// Similar to setStateInfo(). The name for a control is the path to the
-    /// associated ScalarActuator (e.g., "/forceset/soleus_r").
+    /// associated actuator (e.g., "/forceset/soleus_r"). If setting a control
+    /// info for an actuator with multiple controls, the name should be the 
+    /// actuator path appended by the control index (e.g. "/actuator_0");
+    /// If info is not specified for a ScalarActuator (or if only the initial
+    /// and/or final bounds are provided), the actuator's min and max control
+    /// are used for the bounds over the phase. By default, non-ScalarActuators
+    /// are unconstrained.
     void setControlInfo(const std::string& name, const MocoBounds&,
             const MocoInitialBounds& = {}, const MocoFinalBounds& = {});
+    void setDefaultSpeedBounds(const MocoBounds& bounds) {
+        set_default_speed_bounds(bounds);
+    }
     /// Set the bounds on *all* of the kinematic constraint equations in this
     /// phase. When creating a MocoProblemRep, these bounds are used to create
-    /// MocoConstraintInfo's for each kinematic constraint equation in the 
+    /// MocoConstraintInfo's for each kinematic constraint equation in the
     /// phase.
-    void setKinematicConstraintBounds(const MocoBounds& bounds)
-    {   set_kinematic_constraint_bounds(bounds); }
-    /// Set the bounds on *all* of the Lagrange multipliers in this phase. 
+    void setKinematicConstraintBounds(const MocoBounds& bounds) {
+        set_kinematic_constraint_bounds(bounds);
+    }
+    /// Set the bounds on *all* of the Lagrange multipliers in this phase.
     /// When creating a MocoProblemRep, these bounds are used to create
     /// MocoVariableInfo%s for each Lagrange multiplier in the phase.
-    void setMultiplierBounds(const MocoBounds& bounds)
-    {   set_multiplier_bounds(bounds); }
+    void setMultiplierBounds(const MocoBounds& bounds) {
+        set_multiplier_bounds(bounds);
+    }
     /// Add a parameter to this phase.
     /// Parameter variables must have a name (MocoParameter::setName()), and the
     /// name must be unique. Note that parameters have the name "parameter" by
@@ -192,9 +220,9 @@ public:
     }
 
     /// Add a path constraint to this phase.
-    /// Path constraints must have a name (MocoPathConstraint::setName()), and 
+    /// Path constraints must have a name (MocoPathConstraint::setName()), and
     /// the name must be unique. Note that path constraints have the name
-    /// "path_constraint" by default, so if you only have one path constraint, 
+    /// "path_constraint" by default, so if you only have one path constraint,
     /// you don't need to set its name manually.
     /// C++ example:
     /// @code{.cpp}
@@ -239,11 +267,21 @@ public:
     /// This function does *not* provide such automatically-populated bounds
     /// from the model. For that, use see MocoProblemRep::getStateInfo().
     const MocoVariableInfo& getStateInfo(const std::string& name) const;
-    /// Access explicit controlinfos provided to this phase.
+    /// Access explicit control infos provided to this phase.
     /// Default bounds are obtained from the model.
     /// This function does *not* provide such automatically-populated bounds
     /// from the model. For that, use see MocoProblemRep::getControlInfo().
     const MocoVariableInfo& getControlInfo(const std::string& name) const;
+
+    const MocoBounds& getDefaultSpeedBounds() const {
+        return get_default_speed_bounds();
+    }
+    const MocoBounds& getKinematicConstraintBounds() const {
+        return get_kinematic_constraint_bounds();
+    }
+    const MocoBounds& getMultiplierBounds() const {
+        return get_multiplier_bounds();
+    }
 
     const MocoParameter& getParameter(const std::string& name) const;
     MocoParameter& updParameter(const std::string& name);
@@ -251,7 +289,7 @@ public:
     const MocoCost& getCost(const std::string& name) const;
     MocoCost& updCost(const std::string& name);
 
-    /// Get a MocoPathConstraint from this MocoPhase. Note: this does not 
+    /// Get a MocoPathConstraint from this MocoPhase. Note: this does not
     /// include MocoKinematicConstraints, use getKinematicConstraint() instead.
     const MocoPathConstraint& getPathConstraint(const std::string& name) const;
     MocoPathConstraint& updPathConstraint(const std::string& name);
@@ -259,43 +297,42 @@ public:
     /// @}
 
 protected: // Protected so that doxygen shows the properties.
-    OpenSim_DECLARE_PROPERTY(model, Model,
-            "OpenSim Model to provide dynamics.");
+    OpenSim_DECLARE_PROPERTY(
+            model, Model, "OpenSim Model to provide dynamics.");
     // TODO error if not provided.
-    OpenSim_DECLARE_PROPERTY(time_initial_bounds, MocoInitialBounds,
-            "Bounds on initial value.");
-    OpenSim_DECLARE_PROPERTY(time_final_bounds, MocoFinalBounds,
-            "Bounds on final value.");
+    OpenSim_DECLARE_PROPERTY(
+            time_initial_bounds, MocoInitialBounds, "Bounds on initial value.");
+    OpenSim_DECLARE_PROPERTY(
+            time_final_bounds, MocoFinalBounds, "Bounds on final value.");
     OpenSim_DECLARE_PROPERTY(default_speed_bounds, MocoBounds,
             "Bounds for coordinate speeds if not specified in "
             "state_infos (default: [-50, 50]).");
-    OpenSim_DECLARE_LIST_PROPERTY(state_infos, MocoVariableInfo,
-            "The state variables' bounds.");
-    OpenSim_DECLARE_LIST_PROPERTY(control_infos, MocoVariableInfo,
-            "The control variables' bounds.");
+    OpenSim_DECLARE_LIST_PROPERTY(
+            state_infos, MocoVariableInfo, "The state variables' bounds.");
+    OpenSim_DECLARE_LIST_PROPERTY(
+            control_infos, MocoVariableInfo, "The control variables' bounds.");
     OpenSim_DECLARE_LIST_PROPERTY(parameters, MocoParameter,
             "Parameter variables (model properties) to optimize.");
-    OpenSim_DECLARE_LIST_PROPERTY(costs, MocoCost,
-            "Quantities to minimize in the cost functional.");
+    OpenSim_DECLARE_LIST_PROPERTY(
+            costs, MocoCost, "Quantities to minimize in the cost functional.");
     OpenSim_DECLARE_LIST_PROPERTY(path_constraints, MocoPathConstraint,
             "Path constraints to enforce in the optimal control problem.");
     // TODO make this a list property of MocoConstraintInfos when we are able to
     // map OpenSim constraint names to Simbody constraints.
     OpenSim_DECLARE_PROPERTY(kinematic_constraint_bounds, MocoBounds,
-        "The bounds on all the kinematic constraints in the model to be "
-        "enforced. By default the constraints are strictly enforced (zero "
-        "bounds).");
+            "The bounds on all the kinematic constraints in the model to be "
+            "enforced. By default the constraints are strictly enforced (zero "
+            "bounds).");
     OpenSim_DECLARE_PROPERTY(multiplier_bounds, MocoBounds,
-        "Variable info to apply to all Lagrange multipliers in the problem. "
-        "The default bounds are [-1000 1000].");
+            "Variable info to apply to all Lagrange multipliers in the "
+            "problem. "
+            "The default bounds are [-1000 1000].");
 
 private:
     void constructProperties();
 
     friend MocoProblemRep;
-
 };
-
 
 // ============================================================================
 // MocoProblem
@@ -316,7 +353,8 @@ private:
 /// Use createRep() to create an instance of MocoProblemRep,
 /// which provides additional functionality.
 class OSIMMOCO_API MocoProblem : public Object {
-OpenSim_DECLARE_CONCRETE_OBJECT(MocoProblem, Object);
+    OpenSim_DECLARE_CONCRETE_OBJECT(MocoProblem, Object);
+
 public:
     MocoProblem();
 
@@ -383,12 +421,12 @@ public:
 
     /// Get a modifiable phase of the problem by index (starting index of 0).
     /// This accesses the internal phases property.
-    MocoPhase& updPhase(int index = 0)
-    {   return upd_phases(index); }
+    MocoPhase& updPhase(int index = 0) { return upd_phases(index); }
     /// Get a modifiable phase of the problem by index (starting index of 0).
     /// This accesses the internal phases property.
-    const MocoPhase& getPhase(int index = 0) const
-    {   return get_phases(index); }
+    const MocoPhase& getPhase(int index = 0) const { return get_phases(index); }
+    /// Returns a reference to the cost with name "name".
+    MocoCost& updCost(const std::string& name);
 
 #ifndef SWIG // MocoProblemRep() is not copyable.
     /// Create an instance of MocoProblemRep, which fills in additional
@@ -396,25 +434,24 @@ public:
     /// and evaluate the cost terms.
     ///
     /// This function will check your problem for various errors.
-    MocoProblemRep createRep() const
-    {   return MocoProblemRep(*this); }
+    MocoProblemRep createRep() const { return MocoProblemRep(*this); }
 #endif
     /// @cond
     /// For internal use. You must manage the memory for the returned pointer.
-    std::unique_ptr<MocoProblemRep> createRepHeap() const
-    {   return std::unique_ptr<MocoProblemRep>(new MocoProblemRep(*this)); }
+    std::unique_ptr<MocoProblemRep> createRepHeap() const {
+        return std::unique_ptr<MocoProblemRep>(new MocoProblemRep(*this));
+    }
     /// @endcond
 
     friend MocoProblemRep;
 
 protected: // We'd prefer private, but protected means it shows up in Doxygen.
     // TODO OpenSim_DECLARE_LIST_PROPERTY_ATLEAST(phases, MocoPhase, 1,
-    OpenSim_DECLARE_LIST_PROPERTY_SIZE(phases, MocoPhase, 1,
-            "List of 1 or more MocoPhases.");
+    OpenSim_DECLARE_LIST_PROPERTY_SIZE(
+            phases, MocoPhase, 1, "List of 1 or more MocoPhases.");
 
 private:
     void constructProperties();
-
 };
 
 } // namespace OpenSim

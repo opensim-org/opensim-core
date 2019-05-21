@@ -834,7 +834,7 @@ void testDoublePendulumPrescribedMotion(MocoSolution& couplerSolution,
     // related to velocity-level states not matching well or the how the model
     // constraints are enforced in the current formulation.
     SimTK_TEST_EQ_TOL(solution.compareContinuousVariablesRMS(couplerSolution,
-                              {{"controls", {"/tau0", "/tau1"}}}),
+            {{"controls", {"/tau0", "/tau1"}}}),
             0, 5);
 
     // Run a forward simulation using the solution controls in prescribed
@@ -1069,7 +1069,7 @@ void testDoublePendulumPointOnLineJointReaction(
     actuator->setName("push");
     actuator->set_point(endeff.get_location());
     actuator->set_point_is_global(false);
-    actuator->set_direction(SimTK::Vec3(0, 0, -1));
+    actuator->set_direction(Vec3(0, 0, -1));
     actuator->set_force_is_global(true);
     model->addComponent(actuator);
 

@@ -29,20 +29,7 @@ void MocoStateTrackingCost::initializeOnModelImpl(const Model& model) const {
     if (get_reference_file() != "") {
         // Should not be able to supply both.
         assert(m_table.getNumColumns() == 0);
-
-        auto tablesFromFile = FileAdapter::readFile(get_reference_file());
-        // There should only be one table.
-        OPENSIM_THROW_IF_FRMOBJ(tablesFromFile.size() != 1, Exception,
-                format("Expected reference file '%s' to contain 1 table, but "
-                       "it contains %i tables.",
-                       get_reference_file(), tablesFromFile.size()));
-        // Get the first table.
-        auto* firstTable =
-                dynamic_cast<TimeSeriesTable*>(tablesFromFile.begin()->second.get());
-        OPENSIM_THROW_IF_FRMOBJ(!firstTable, Exception,
-                "Expected reference file to contain a (scalar) "
-                "TimeSeriesTable, but it contains a different type of table.");
-        tableToUse = *firstTable;
+        tableToUse = readTableFromFile<double>(get_reference_file());
     } else if (m_table.getNumColumns() != 0) {
         tableToUse = m_table;
     } else {
@@ -75,13 +62,9 @@ void MocoStateTrackingCost::initializeOnModelImpl(const Model& model) const {
     // names in the references that don't correspond to a state variable. 
     for (int iref = 0; iref < allSplines.getSize(); ++iref) {
         const auto& refName = allSplines[iref].getName();
-        if (allSysYIndices.count(refName) == 0) {
-            if (get_allow_unused_references()) {
-                continue;
-            } else {
-                OPENSIM_THROW_FRMOBJ(Exception,
-                    "State '" + refName + "' unrecognized.");
-            }
+        if (!get_allow_unused_references()) {
+            OPENSIM_THROW_IF_FRMOBJ(allSysYIndices.count(refName) == 0,
+                Exception, "State reference '" + refName + "' unrecognized.");
         }
 
         m_sysYIndices.push_back(allSysYIndices[refName]);
@@ -102,6 +85,7 @@ void MocoStateTrackingCost::calcIntegralCostImpl(/*int meshIndex,*/
 
     // TODO cache the reference coordinate values at the mesh points, rather
     // than evaluating the spline.
+    integrand = 0;
     for (int iref = 0; iref < m_refsplines.getSize(); ++iref) {
         const auto& modelValue = state.getY()[m_sysYIndices[iref]];
         const auto& refValue = m_refsplines[iref].calcValue(timeVec);

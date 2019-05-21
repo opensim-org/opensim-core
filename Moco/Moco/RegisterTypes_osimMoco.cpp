@@ -22,7 +22,7 @@
 #include "MocoBounds.h"
 #include "MocoProblem.h"
 #include "MocoSolver.h"
-#include "MocoTool.h"
+#include "MocoStudy.h"
 #include "MocoTropterSolver.h"
 #include "InverseMuscleSolver/GlobalStaticOptimization.h"
 #include "InverseMuscleSolver/INDYGO.h"
@@ -31,7 +31,10 @@
 #include "MocoCost/MocoMarkerTrackingCost.h"
 #include "MocoCost/MocoMarkerEndpointCost.h"
 #include "MocoCost/MocoControlCost.h"
-#include "MocoCost/MocoJointReactionNormCost.h"
+#include "MocoCost/MocoControlTrackingCost.h"
+#include "MocoCost/MocoJointReactionCost.h"
+#include "MocoCost/MocoOrientationTrackingCost.h"
+#include "MocoCost/MocoTranslationTrackingCost.h"
 #include "MocoParameter.h"
 
 #include "MocoInverse.h"
@@ -64,14 +67,17 @@ OSIMMOCO_API void RegisterTypes_osimMoco() {
         Object::registerType(MocoMarkerTrackingCost());
         Object::registerType(MocoMarkerEndpointCost());
         Object::registerType(MocoControlCost());
-        Object::registerType(MocoJointReactionNormCost());
+        Object::registerType(MocoControlTrackingCost());
+        Object::registerType(MocoJointReactionCost());
+        Object::registerType(MocoOrientationTrackingCost());
+        Object::registerType(MocoTranslationTrackingCost());
         Object::registerType(MocoBounds());
         Object::registerType(MocoInitialBounds());
         Object::registerType(MocoFinalBounds());
         Object::registerType(MocoPhase());
         Object::registerType(MocoVariableInfo());
         Object::registerType(MocoProblem());
-        Object::registerType(MocoTool());
+        Object::registerType(MocoStudy());
         Object::registerType(MocoTropterSolver());
         Object::registerType(MocoParameter());
 

@@ -18,11 +18,12 @@
 
 #include "MocoInverse.h"
 
+#include "Components/ModelFactory.h"
 #include "Components/PositionMotion.h"
 #include "MocoCasADiSolver/MocoCasADiSolver.h"
 #include "MocoCost/MocoControlCost.h"
 #include "MocoProblem.h"
-#include "MocoTool.h"
+#include "MocoStudy.h"
 #include "MocoUtilities.h"
 
 #include <OpenSim/Common/STOFileAdapter.h>
@@ -117,14 +118,15 @@ MocoInverseSolution MocoInverse::solve() const {
     for (const auto& coord : coords) {
         coordSVNames.push_back(coord->getStateVariableNames()[0]);
     }
-    auto posmot = PositionMotion::createFromTable(model,
-            statesTraj.exportToTable(model, coordSVNames));
+    auto posmot = PositionMotion::createFromTable(
+            model, statesTraj.exportToTable(model, coordSVNames));
     posmot->setName("position_motion");
     model.addComponent(posmot.release());
 
     model.initSystem();
     if (get_create_reserve_actuators() != -1) {
-        createReserveActuators(model, get_create_reserve_actuators());
+        ModelFactory::createReserveActuators(
+                model, get_create_reserve_actuators());
     }
 
     problem.setModelCopy(model);
