@@ -182,9 +182,9 @@ int main(int argc, char **argv)
                     cout << "Done." << endl;
                     return 0;
                 }
-                else if ((option == "-Setup") || (option == "-S")) {
+                else if ((option == "-InverseKinematics") || (option == "-IK")) {
                     if (argc < 3) {
-                        cout << "A setup(.xml) file was expected but no file was provided. If no setup file exists, use the - PS option to print a default setup file that can be edited." << endl;
+                        cout << "An inverse kinematics settings (.xml) file was expected but no file was provided." << endl;
                         PrintUsage(argv[0], cout);
                         exit(-1);
                     }
