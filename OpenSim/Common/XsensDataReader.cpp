@@ -62,20 +62,19 @@ XsensDataReader::extendRead(const std::string& folderName) const {
                     dataRate = std::stod(tokens[3]);
                 }
             }
-            if (packetCounterIndex == -1) { // Find indices for PacketCounter, Acc_{X,Y,Z}, Gyr_{X,Y,Z}, Mag_{X,Y,Z} on line 5
-                std::vector<std::string> tokens = FileAdapter::tokenize(line, "\t");
-                packetCounterIndex = find_index(tokens, "PacketCounter");
-                if (packetCounterIndex == -1) {
-                    // Could be comment, skip over
-                    continue;
-                }
-                else {
-                    if (accIndex == -1) accIndex = find_index(tokens, "Acc_X");
-                    if (gyroIndex == -1) gyroIndex = find_index(tokens, "Gyr_X");
-                    if (magIndex == -1) magIndex = find_index(tokens, "Mag_X");
-                    if (rotationsIndex == -1) rotationsIndex = find_index(tokens, "Mat[1][1]");
-                }
+            // Find indices for PacketCounter, Acc_{X,Y,Z}, Gyr_{X,Y,Z}, Mag_{X,Y,Z} on line 5
+            std::vector<std::string> tokens = FileAdapter::tokenize(line, "\t");
+            packetCounterIndex = find_index(tokens, "PacketCounter");
+            if (packetCounterIndex == -1) {
+                // Could be comment, skip over
+                continue;
             }
+            else {
+                if (accIndex == -1) accIndex = find_index(tokens, "Acc_X");
+                if (gyroIndex == -1) gyroIndex = find_index(tokens, "Gyr_X");
+                if (magIndex == -1) magIndex = find_index(tokens, "Mag_X");
+                if (rotationsIndex == -1) rotationsIndex = find_index(tokens, "Mat[1][1]");
+            } 
         }
     }
     // internally keep track of what data was found in input files
