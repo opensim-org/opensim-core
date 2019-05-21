@@ -272,7 +272,7 @@ void PrintUsage(const char *aProgName, ostream &aOStream)
     aOStream << "Option             Argument             Action / Notes\n";
     aOStream << "------             --------             --------------\n";
     aOStream << "-Help, -H                               Print the command-line options for " << progName << ".\n";
-    aOStream << "-PrintSetup, -PS                        Generates a template Setup file to customize the scaling\n";
+    aOStream << "-PrintSetup, -PS                        Create a template inverse kinematics settings file that can be customized.\n";
     aOStream << "-PropertyInfo, -PI                      Print help information for properties in setup files.\n";
     aOStream << "-ReadX, -RX  directory settings.xml     Parse Xsens exported files from directory using settingsFile.xml.\n";
     aOStream << "-ReadA, -RA  datafile.csv settings.xml  Parse single csv file provided by APDM using specified settingsFile.xml.\n";
