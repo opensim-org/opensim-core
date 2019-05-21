@@ -273,16 +273,18 @@ void PrintUsage(const char *aProgName, ostream &aOStream)
     aOStream << "------             --------             --------------\n";
     aOStream << "-Help, -H                               Print the command-line options for " << progName << ".\n";
     aOStream << "-PrintSetup, -PS                        Generates a template Setup file to customize the scaling\n";
-    aOStream << "-Setup, -S         SetupFileName        Specify an xml setup file for solving an inverse kinematics problem.\n";
     aOStream << "-PropertyInfo, -PI                      Print help information for properties in setup files.\n";
-    aOStream << "-ReadX, -RX  directory settingsFile.xml   Parse Xsens exported files from directory using settingsFile.xml.\n";
-    aOStream << "-ReadA, -RA  datafile.csv settingsFile.xml   Parse single csv file provided by APDM using specified settingsFile.xml.\n";
-    aOStream << "-Calibrate, -C modelPoseFile.osim calibrationOrientations.sto  Calibrate the modelPoseFile.osim model by registering\n";
+    aOStream << "-ReadX, -RX  directory settings.xml     Parse Xsens exported files from directory using settingsFile.xml.\n";
+    aOStream << "-ReadA, -RA  datafile.csv settings.xml  Parse single csv file provided by APDM using specified settingsFile.xml.\n";
+    aOStream << "-Calibrate, -C modelPoseFile.osim calibrationOrientations.sto.\n";
+    aOStream << "                                        Calibrate the modelPoseFile.osim model by registering\n";
     aOStream << "                                        IMU frames whose orientations in the sensor world frame are\n";
     aOStream << "                                        specified in calibrationOrientations.sto. and assuming \n";
     aOStream << "                                        the model's default pose is the calibration pose. The resultant\n";
     aOStream << "                                        model with IMU frames registered is written to file as\n";
     aOStream << "                                        calibrated_modelPoseFile.osim\n";
+    aOStream << "-InverseKinematics, -IK ik_settings.xml Run IK using an xml settings file to define the inverse kinematics problem.\n";
+
     aOStream << endl;
 }
 
