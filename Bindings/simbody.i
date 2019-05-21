@@ -176,6 +176,10 @@ namespace SimTK {
 namespace SimTK {
 %template(Rotation) SimTK::Rotation_<double>;
 %template(InverseRotation) SimTK::InverseRotation_<double>;
+
+%template(RowVectorViewRotation) SimTK::RowVectorView_<Rotation>;
+%template(RowVectorRotation)     SimTK::RowVector_<Rotation>;
+
 }
 
 %extend SimTK::Rotation_<double> {
