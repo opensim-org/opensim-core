@@ -116,6 +116,14 @@ int main() {
         ASSERT(accelTable2.getNumRows() ==0);
         ASSERT(tables2.at(IMUDataReader::MagneticHeading)->getNumRows() == 0);
         ASSERT(tables2.at(IMUDataReader::AngularVelocity)->getNumRows() == 0);
+        // Now a file with extra comment in header as reported by user, has 3 rows
+        XsensDataReaderSettings readerSettings3;
+        ExperimentalSensor nextSensor2("test1_00B421E6", "test");
+        readerSettings3.append_ExperimentalSensors(nextSensor2);
+        DataAdapter::OutputTables tables3 =
+            XsensDataReader(readerSettings3).read("./");
+        auto accelTable3 = tables3.at(XsensDataReader::LinearAccelerations);
+        ASSERT(accelTable3->getNumRows() == 3);
     }
     catch (const std::exception& ex) {
         std::cout << "testXsensDataReader FAILED: " << ex.what() << std::endl;
