@@ -126,12 +126,16 @@ namespace OpenSim {
 %shared_ptr(OpenSim::DataTable_<double, SimTK::Quaternion>);
 %shared_ptr(OpenSim::DataTable_<double, SimTK::Vec6>);
 %shared_ptr(OpenSim::DataTable_<double, SimTK::SpatialVec>);
+%shared_ptr(OpenSim::DataTable_<double, SimTK::Mat33>);
+%shared_ptr(OpenSim::DataTable_<double, SimTK::Rotation>);
 %shared_ptr(OpenSim::TimeSeriesTable_<double>);
 %shared_ptr(OpenSim::TimeSeriesTable_<SimTK::Vec3>);
 %shared_ptr(OpenSim::TimeSeriesTable_<SimTK::UnitVec3>);
 %shared_ptr(OpenSim::TimeSeriesTable_<SimTK::Quaternion>);
 %shared_ptr(OpenSim::TimeSeriesTable_<SimTK::Vec6>);
 %shared_ptr(OpenSim::TimeSeriesTable_<SimTK::SpatialVec>);
+%shared_ptr(OpenSim::TimeSeriesTable_<SimTK::Mat33>);
+%shared_ptr(OpenSim::TimeSeriesTable_<SimTK::Rotation>);
 %ignore OpenSim::AbstractDataTable::clone;
 %ignore OpenSim::AbstractDataTable::getTableMetaData;
 %ignore OpenSim::AbstractDataTable::updTableMetaData;
@@ -332,6 +336,8 @@ DATATABLE_CLONE(double, SimTK::SpatialVec)
 %template(DataTableQuaternion) OpenSim::DataTable_<double, SimTK::Quaternion>;
 %template(DataTableVec6)       OpenSim::DataTable_<double, SimTK::Vec6>;
 %template(DataTableSpatialVec) OpenSim::DataTable_<double, SimTK::SpatialVec>;
+%template(DataTableMat33)      OpenSim::DataTable_<double, SimTK::Mat33>;
+%template(DataTableRotation)   OpenSim::DataTable_<double, SimTK::Rotation>;
 
 %template(TimeSeriesTable)         OpenSim::TimeSeriesTable_<double>;
 %template(TimeSeriesTableVec3)     OpenSim::TimeSeriesTable_<SimTK::Vec3>;
@@ -341,6 +347,8 @@ DATATABLE_CLONE(double, SimTK::SpatialVec)
 %template(TimeSeriesTableVec6)     OpenSim::TimeSeriesTable_<SimTK::Vec6>;
 %template(TimeSeriesTableSpatialVec)
                                    OpenSim::TimeSeriesTable_<SimTK::SpatialVec>;
+%template(TimeSeriesTableMat33)    OpenSim::TimeSeriesTable_<SimTK::Mat33>;
+%template(TimeSeriesTableRotation) OpenSim::TimeSeriesTable_<SimTK::Rotation>;
 
 %include <OpenSim/Common/Event.h>
 %template(StdVectorEvent) std::vector<OpenSim::Event>;
