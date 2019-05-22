@@ -196,12 +196,7 @@ runInverseKinematicsWithOrientationsFromFile(Model& model,
     // Convert to degrees to compare with marker-based IK
     // but only for rotational coordinates
     model.getSimbodyEngine().convertRadiansToDegrees(report);
-
     report.updTableMetaData().setValueForKey<string>("name", outName);
-    report.updTableMetaData().setValueForKey<size_t>("nRows", report.getNumRows());
-    // getNumColumns returns the number of dependent columns, but Storage expects time
-    report.updTableMetaData().setValueForKey<size_t>("nColumns", report.getNumColumns()+1);
-    report.updTableMetaData().setValueForKey<string>("inDegrees","yes");
 
     STOFileAdapter_<double>::write(report, outputFile + ".mot");
 
