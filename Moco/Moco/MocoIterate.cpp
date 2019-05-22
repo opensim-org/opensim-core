@@ -292,8 +292,6 @@ SimTK::VectorView MocoIterate::getControl(const std::string& name) const {
 }
 SimTK::VectorView MocoIterate::getMultiplier(const std::string& name) const {
     ensureUnsealed();
-    auto it = std::find(m_multiplier_names.cbegin(), m_multiplier_names.cend(),
-            name);
     auto it = std::find(
             m_multiplier_names.cbegin(), m_multiplier_names.cend(), name);
     OPENSIM_THROW_IF(it == m_multiplier_names.cend(), Exception,
