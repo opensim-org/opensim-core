@@ -284,8 +284,24 @@ void PrintUsage(const char *aProgName, ostream &aOStream)
     aOStream << "                                        model with IMU frames registered is written to file as\n";
     aOStream << "                                        calibrated_modelPoseFile.osim\n";
     aOStream << "-InverseKinematics, -IK ik_settings.xml Run IK using an xml settings file to define the inverse kinematics problem.\n";
-
     aOStream << endl;
+/** Advanced options for experimental validation. Uncomment if/when ready to make public
+    aOStream << "-Transform, -T markerFileWithIMUframes.trc  Transform experimental marker locations that define axes of IMUs, or the plates\n";
+    aOStream << "                                        upon which they are rigidly affixed, into the orientations of the IMUs expressed \n";
+    aOStream << "                                        in the motion capture(markers) lab frame.The orientations over the trial are \n";
+    aOStream << "                                        written out as quaternions to <markerFileWithIMUframes>_quaternions.sto.\n";
+    aOStream << "                                        Markers on IMUs(or plates) are assumed to be labeled:\n";
+    aOStream << "                                        '<base>_IMU_O', '<base>_IMU_X', '<base>_IMU_Y', '<base>_IMU_D', \n";
+    aOStream << "                                        where <base> is the label of the IMU, and O, X, Y and D denote\n";
+    aOStream << "                                        the origin, x - axis direction, y - axis direction and diagonal, respectively.\n";
+    aOStream << "                                        The resulting quaternions file as <base>_IMU as its column labels.\n";
+    aOStream << "-AddIMUs, -A modelFile.osim markerFileWithIMUframes.trc Add IMUs to the provided model based on marker data.\n";
+    aOStream << "                                        Marker data with the naming convention of '<base>_IMU_O', '<base>_IMU_X',\n";
+    aOStream << "                                        '<base>_IMU_Y', '<base>_IMU_D' are used to compute the location \n";
+    aOStream << "                                        and orientation the IMU frame which is then affixed to the same base segment(frame) \n";
+    aOStream << "                                        to which the markers are attached.Before the IMU frames are attached to the model, \n";
+    aOStream << "                                        the model is posed according to marker - based IK.\n";
+**/
 }
 
 TimeSeriesTable_<SimTK::Quaternion> readRotationsFromXSensFiles(const std::string& directory,
