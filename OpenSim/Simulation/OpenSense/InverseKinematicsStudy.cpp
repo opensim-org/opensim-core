@@ -113,18 +113,21 @@ runInverseKinematicsWithOrientationsFromFile(Model& model,
     TableReporter* ikReporter = new TableReporter();
     ikReporter->setName("ik_reporter");
     auto coordinates = model.updComponentList<Coordinate>();
-    std::vector<std::string> transCoordNames;
+    std::vector<std::string> rotCoordNames;
 
     // Hookup reporter inputs to the individual coordinate outputs
-    // and keep track of coordinates that are translations
+    // and keep track of coordinates that are rotational
     for (auto& coord : coordinates) {
         ikReporter->updInput("inputs").connect(
             coord.getOutput("value"), coord.getName());
-        if (coord.getMotionType() == Coordinate::Translational) {
-            transCoordNames.push_back(coord.getName());
-            coord.set_locked(true);
+        if (coord.getMotionType() == Coordinate::Rotational) {
+            rotCoordNames.push_back(coord.getName());
+        }
+        else if(coord.getMotionType() == Coordinate::Translational) {
+            coord.setDefaultLocked(true);
         }
     }
+
     model.addComponent(ikReporter);
 
     TimeSeriesTable_<SimTK::Quaternion> quatTable =
@@ -195,11 +198,11 @@ runInverseKinematicsWithOrientationsFromFile(Model& model,
     std::string outputFile = get_results_directory() + "/" + outName;
 
     // Convert to degrees to compare with marker-based IK
-    // but ignore translational coordinates
+    // but only for rotational coordinates
     for (size_t i = 0; i < report.getNumColumns(); ++i) {
-        auto it = find( transCoordNames.begin(), transCoordNames.end(),
+        auto it = find(rotCoordNames.begin(), rotCoordNames.end(),
                         report.getColumnLabel(i) );
-        if (it == transCoordNames.end()) { // not found = not translational
+        if (it != rotCoordNames.end()) { // found a rotational coordinate
             auto repVec = report.updDependentColumnAtIndex(i);
             repVec *= SimTK::Real(SimTK_RTD);
         }
