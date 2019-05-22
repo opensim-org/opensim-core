@@ -648,73 +648,56 @@ TEMPLATE_TEST_CASE(
         "Disable Actuators", "", MocoTropterSolver, MocoCasADiSolver) {
     std::cout.rdbuf(LogManager::cout.rdbuf());
     std::cout.rdbuf(LogManager::cout.rdbuf());
+
     MocoTool moco;
-    double finalTime = 5.0;
-    moco.setName("sliding_mass");
-    moco.set_write_solution("false");
+    moco.setName("double_pendulum");
+
     MocoProblem& mp = moco.updProblem();
-    mp.setModel(createSlidingMassModel());
-    mp.setTimeBounds(MocoInitialBounds(0), finalTime);
-    mp.setStateInfo("/slider/position/value", MocoBounds(0, 1),
-            MocoInitialBounds(0), MocoFinalBounds(1));
-    mp.setStateInfo("/slider/position/speed", {-100, 100}, 0, 0);
-    mp.setControlInfo("/actuator", MocoBounds(-50, 50));
+    auto model = OpenSim::ModelFactory::createDoublePendulum();
+
+    mp.setModelCopy(model);
+
+    mp.setTimeBounds(0, {0, 5});
+    mp.setStateInfo("/jointset/j0/q0/value", {-10, 10}, 0, SimTK::Pi);
+    mp.setStateInfo("/jointset/j0/q0/speed", {-50, 50}, 0);
+    mp.setStateInfo("/jointset/j1/q1/value", {-10, 10}, 0, 0);
+    mp.setStateInfo("/jointset/j1/q1/speed", {-50, 50}, 0);
+    mp.setControlInfo("/tau0", {-100, 100});
+    mp.setControlInfo("/tau1", {-100, 100});
+
     mp.addCost<MocoFinalTimeCost>();
-
-    MocoTool moco2;
-    moco.set_write_solution("false");
-    MocoProblem& mp2 = moco2.updProblem();
-    auto model2 = make_unique<Model>();
-    model2->setName("sliding_mass");
-    model2->set_gravity(SimTK::Vec3(0, 0, 0));
-    auto* body2 = new Body("body", 2.0, SimTK::Vec3(0), SimTK::Inertia(0));
-    model2->addComponent(body2);
-
-    // Allows translation along x.
-    auto* joint2 = new SliderJoint("slider", model2->getGround(), *body2);
-    auto& coord2 = joint2->updCoordinate(SliderJoint::Coord::TranslationX);
-    coord2.setName("position");
-    model2->addComponent(joint2);
-
-    auto* actu1 = new CoordinateActuator();
-    actu1->setCoordinate(&coord2);
-    actu1->setName("actuator");
-    actu1->setOptimalForce(1);
-    model2->addComponent(actu1);
-
-    auto* actu2 = new CoordinateActuator();
-    actu2->setCoordinate(&coord2);
-    actu2->setName("actuator2");
-    actu2->setOptimalForce(1);
-    model2->addComponent(actu2);
-
-    body2->attachGeometry(new Sphere(0.05));
-
-    model2->finalizeConnections();
-    auto state = model2->initSystem();
-
-    actu2->setAppliesForce(state, false);
-    model2->initSystem();
-
-    mp2.setModel(std::move(model2));
-    mp2.setTimeBounds(MocoInitialBounds(0), finalTime);
-    mp2.setStateInfo("/slider/position/value", MocoBounds(0, 1),
-            MocoInitialBounds(0), MocoFinalBounds(1));
-    mp2.setStateInfo("/slider/position/speed", {-100, 100}, 0, 0);
-    mp2.setControlInfo("/actuator", MocoBounds(-50, 50));
-    mp2.setControlInfo("/actuator2", MocoBounds(-50, 50));
-    mp2.addCost<MocoFinalTimeCost>();
-
-
     auto& ms = moco.initSolver<TestType>();
     ms.set_num_mesh_points(50);
     MocoSolution solution = moco.solve().unseal();
 
-    auto& ms2 = moco.initSolver<TestType>();
-    ms.set_num_mesh_points(50);
-    MocoSolution solution2 = moco2.solve().unseal();
+    MocoTool moco2;
+    moco2.setName("double_pendulum");
 
-    SimTK_TEST_EQ(solution.getObjective(),solution2.getObjective());
+    MocoProblem& mp2 = moco2.updProblem();
+    OpenSim::Model model2 = OpenSim::ModelFactory::createDoublePendulum();
+    SimTK::State state = model2.initSystem();
+    model2.updComponent<Force>("tau0").setAppliesForce(state, false);
+    mp2.setModelCopy(model2);
+    state = model2.initSystem();
+    mp2.setTimeBounds(0, {0, 5});
+    mp2.setStateInfo("/jointset/j0/q0/value", {-10, 10}, 0, SimTK::Pi);
+    mp2.setStateInfo("/jointset/j0/q0/speed", {-50, 50}, 0);
+    mp2.setStateInfo("/jointset/j1/q1/value", {-10, 10}, 0, 0);
+    mp2.setStateInfo("/jointset/j1/q1/speed", {-50, 50}, 0);
+    mp2.setControlInfo("/tau0", {-100, 100});
+    mp2.setControlInfo("/tau1", {-100, 100});
+
+    mp2.addCost<MocoFinalTimeCost>();
+    auto& ms2 = moco2.initSolver<TestType>();
+    ms2.set_num_mesh_points(50);
+    MocoSolution solution2 = moco2.solve().unseal();
+    moco2.visualize(solution2);
+
+    std::cout << "Solution 1 is: " << solution.getObjective() << std::endl;
+    std::cout << "Solution 2 is: " << solution2.getObjective() << std::endl;
+
+    SimTK_TEST_EQ(solution2.getObjective(), 6);
+    SimTK_TEST_EQ(solution2.getObjective(), solution2.getObjective());
 }
 
 TEMPLATE_TEST_CASE("State tracking", "", MocoTropterSolver, MocoCasADiSolver) {
