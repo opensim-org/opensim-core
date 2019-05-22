@@ -218,6 +218,8 @@ inline void convertToSimTKState(const double& time, const casadi::DM& states,
         SimTK::State& simtkState) {
     convertToSimTKState(time, states, model, yIndexMap, simtkState);
     auto& simtkControls = model.updControls(simtkState);
+    std::cout << "Debug Casadi Controls " << controls.numel() << std::endl;
+    std::cout << "Debug SimTKControls " << simtkControls.size() << std::endl;
     std::copy_n(controls.ptr(), simtkControls.size(),
             simtkControls.updContiguousScalarData());
     model.realizeVelocity(simtkState);

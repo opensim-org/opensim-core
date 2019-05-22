@@ -441,6 +441,9 @@ std::vector<std::string> OpenSim::createControlNamesFromModel(
     // use the actuator name with a control index appended for the control name.
     // TODO update when OpenSim supports named controls.
     for (const auto& actu : model.getComponentList<Actuator>()) {
+        if (!actu.get_appliesForce()) {
+            continue;
+        }
         std::string actuPath = actu.getAbsolutePathString();
         if (actu.numControls() == 1) {
             controlNames.push_back(actuPath);
