@@ -113,17 +113,13 @@ runInverseKinematicsWithOrientationsFromFile(Model& model,
     TableReporter* ikReporter = new TableReporter();
     ikReporter->setName("ik_reporter");
     auto coordinates = model.updComponentList<Coordinate>();
-    std::vector<std::string> rotCoordNames;
 
     // Hookup reporter inputs to the individual coordinate outputs
-    // and keep track of coordinates that are rotational
+    // and lock coordinates that are translational since they cannot be
     for (auto& coord : coordinates) {
         ikReporter->updInput("inputs").connect(
             coord.getOutput("value"), coord.getName());
-        if (coord.getMotionType() == Coordinate::Rotational) {
-            rotCoordNames.push_back(coord.getName());
-        }
-        else if(coord.getMotionType() == Coordinate::Translational) {
+        if(coord.getMotionType() == Coordinate::Translational) {
             coord.setDefaultLocked(true);
         }
     }
@@ -199,14 +195,7 @@ runInverseKinematicsWithOrientationsFromFile(Model& model,
 
     // Convert to degrees to compare with marker-based IK
     // but only for rotational coordinates
-    for (size_t i = 0; i < report.getNumColumns(); ++i) {
-        auto it = find(rotCoordNames.begin(), rotCoordNames.end(),
-                        report.getColumnLabel(i) );
-        if (it != rotCoordNames.end()) { // found a rotational coordinate
-            auto repVec = report.updDependentColumnAtIndex(i);
-            repVec *= SimTK::Real(SimTK_RTD);
-        }
-    }
+    model.getSimbodyEngine().convertRadiansToDegrees(report);
 
     report.updTableMetaData().setValueForKey<string>("name", outName);
     report.updTableMetaData().setValueForKey<size_t>("nRows", report.getNumRows());
