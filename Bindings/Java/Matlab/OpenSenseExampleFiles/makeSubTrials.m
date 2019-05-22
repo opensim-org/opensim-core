@@ -32,7 +32,8 @@ clear all; close all; clc;
 %% Instantiate a imuDataSlicer()
 
 % Path to Parent IMU File 
-trialpath = 'MT_012005D6_009-001-quaternions.sto';
+trialpath = 'imuOrientations.sto';
+accPath = 'imuAccelerations.sto';
 % Instantiate the data slicer to carve out smaller trial files
 ds = imuDataSlicer(trialpath);
 
@@ -40,7 +41,7 @@ ds = imuDataSlicer(trialpath);
 stime = 0.00;
 etime = 0.05;
 ds.setDataTimeIntervalInMinutes(stime, etime)
-ds.isStatic()
+ds.isStatic(accPath)
 ds.writeStaticTrial('calibration_trial')
 
 %% Export some walking data

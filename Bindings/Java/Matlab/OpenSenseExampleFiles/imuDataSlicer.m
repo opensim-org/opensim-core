@@ -54,15 +54,10 @@ classdef imuDataSlicer < matlab.mixin.SetGet
                 obj.oData = STOFileAdapterQuaternion().readFile(orientationsFilePath);
             end
             
-            % Read acceleration data
-            accFilePath = strrep(orientationsFilePath,'quaternions', 'accelerations');
-            if ~exist(accFilePath,'file')
-                obj.accFilePath = [];
-                warning('Accelerations does not exist and wont be used');
-            else
-                obj.accFilePath = accFilePath;
-                obj.accData = STOFileAdapterVec3().readFile(accFilePath);
-            end
+            % 
+            obj.accFilePath = [];
+            obj.accData = [];
+            
             % Get the time information from the sto file
             timeVec = obj.oData.getIndependentColumn();
             for i = 0 : timeVec.size() - 1
@@ -125,7 +120,7 @@ classdef imuDataSlicer < matlab.mixin.SetGet
             obj.isTimeIntervalSet()
             % Take a slice out of the bigger file
             disp('Getting Data Slice using Time Intervals.....');
-            dataTableSlice = obj.getSlice('quaternions', obj.t0,obj.tn);
+            dataTableSlice = obj.getSlice(obj.oData, obj.t0,obj.tn);
             subtrial = TimeSeriesTableQuaternion(dataTableSlice);
             for i = 0 : obj.oData.getTableMetaDataKeys().size() - 1
                 metakey = char(obj.oData.getTableMetaDataKeys().get(i));
@@ -137,17 +132,26 @@ classdef imuDataSlicer < matlab.mixin.SetGet
             obj.subtrial = subtrial;
             disp('Sub trial data added. Use getSubTrial() to return.')
         end
-        function isStatic(obj)
+        function isStatic(obj, accelerationsFilePath)
             import org.opensim.modeling.*
             % Check the time interval has been set.
             obj.isTimeIntervalSet()
+            
+            % Read acceleration data
+            accFilePath = fullfile(cd,accelerationsFilePath);
+            if ~exist(accFilePath,'file')
+               error(['File not found ' accFilePath])
+            else
+                obj.accFilePath = accFilePath;
+                obj.accData = STOFileAdapterVec3().readFile(accFilePath);
+            end
             
             % For the trial to be static, the data must be relatively
             % constant, i.e. no movement. We will set some arbitary level
             % of change for the sensors and compute if, at the time
             % interval given, if the it is below this level. 
             disp('Getting Data Slice using Time Intervals.....');
-            dataTableSlice = obj.getSlice('accelerations',obj.t0, obj.tn);
+            dataTableSlice = obj.getSlice(obj.accData ,obj.t0, obj.tn);
             
             % Convert the Data table to a Matlab Struct
             disp('Converting OpenSim Table to Matlab table for analysis...')
@@ -160,7 +164,7 @@ classdef imuDataSlicer < matlab.mixin.SetGet
             ta = dataTableSlice.getIndependentColumn().get(f0-1);
             tb = dataTableSlice.getIndependentColumn().get(f1-1);
             disp(['Static frames found between ' num2str(ta) ' & ' num2str(tb) ' seconds']);
-            staticTrial = TimeSeriesTableQuaternion( obj.getSlice('quaternions', ta,tb) );
+            staticTrial = TimeSeriesTableQuaternion( obj.getSlice(obj.oData, ta,tb) );
             for i = 0 : obj.oData.getTableMetaDataKeys().size() - 1
                 metakey = char(obj.oData.getTableMetaDataKeys().get(i));
                 value = char(obj.oData.getTableMetaDataAsString(metakey));
@@ -201,14 +205,12 @@ classdef imuDataSlicer < matlab.mixin.SetGet
         end
     end
     methods (Access = private)
-       function dataTableSlice = getSlice(obj, dataType ,t0, tn)
+       function dataTableSlice = getSlice(obj, dataTable ,t0, tn)
             import org.opensim.modeling.*
             
-            if strcmp(dataType, 'quaternions')
-               dataTable = obj.oData; 
+            if contains(char(dataTable.getClass), 'TimeSeriesTableQuaternion')
                dataTableSlice = DataTableQuaternion();
-            elseif strcmp(dataType, 'accelerations')
-               dataTable = obj.accData;
+            else
                dataTableSlice = DataTableVec3();
             end
             

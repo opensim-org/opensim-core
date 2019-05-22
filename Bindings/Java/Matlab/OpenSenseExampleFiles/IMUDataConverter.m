@@ -33,7 +33,7 @@ import org.opensim.modeling.*
 
 %% Build an Xsens Settings Object. 
 % Instantiate the Reader Settings Class
-xsensSettings = XsensDataReaderSettings('IMUData/MT_012005D6_009-001_Mappings.xml');
+xsensSettings = XsensDataReaderSettings('MT_012005D6_009-001_Mappings.xml');
 % Instantiate an XsensDataReader
 xsens = XsensDataReader(xsensSettings);
 % Get a table reference for the data
@@ -43,19 +43,19 @@ trial = char(xsensSettings.get_trial_prefix());
 %% Get Orientation Data
 quatTableTyped = xsens.getOrientationsTable(table);
 % Write to file
-STOFileAdapterQuaternion.write(quatTableTyped,  [trial '-quaternions.sto']);
+STOFileAdapterQuaternion.write(quatTableTyped,  'imuOrientations.sto');
 
 %% Get Acceleration Data
 accelTableTyped = xsens.getLinearAccelerationsTable(table);
 % Write to file
-STOFileAdapterVec3.write(accelTableTyped, [trial '-accelerations.sto']);
+STOFileAdapterVec3.write(accelTableTyped, 'imuAccelerations.sto');
 
 %% Get Magenometer Data
 magTableTyped = xsens.getMagneticHeadingTable(table);
 % Write to file
-STOFileAdapterVec3.write(magTableTyped,  [trial  '-magnetometers.sto']);
+STOFileAdapterVec3.write(magTableTyped, 'imuMagnetometers.sto');
 
 %% Get Gyro Data
 gyroTableTyped = xsens.getAngularVelocityTable(table);
 % Write to file
-STOFileAdapterVec3.write(gyroTableTyped,  [trial  '-gyros.sto']);
+STOFileAdapterVec3.write(gyroTableTyped, 'imuGyros.sto');

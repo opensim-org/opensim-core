@@ -36,10 +36,10 @@ ot = orientationTrackingHelper();
 % Setup the Model Calibration.
 ot.setModelCalibrationPoseFile('GenericModel.osim');
 % ot.setCalibrationTrialName('MT_012005D6_009-quaternions_calibration_trial_Facing_X.sto');
-ot.setCalibrationTrialName('MT_012005D6_009-001-quaternions.sto');
+ot.setCalibrationTrialName('imuOrientations.sto');
 ot.setBaseHeadingAxis(0)
 ot.setVisualizeCalibratedModel(0)
-ot.setCalibratedModelOutputName('CalibratedModel.osim')
+ot.setCalibratedModelOutputName('calibrated_GenericModel.osim')
 % Run the orientation calibration.
 ot.generateCalibratedModel()
 % Write the calibrated model to file. 
@@ -47,8 +47,8 @@ ot.writeCalibratedModel2File()
 
 %% Run IK Orientation Tracking
 
-% Set teh name of the orientation File to be tracked
-ot.setTrackingOrientationsFileName('MT_012005D6_009-001-quaternions.sto');
+% Set the name of the orientation File to be tracked
+ot.setTrackingOrientationsFileName('imuOrientations.sto');
 % Set the Output directory for the results file
 ot.setIKResultsDir('IKResults')
 % Set the time interval (in minutes) to be tracked. 
@@ -57,4 +57,8 @@ ot.setIKTimeIntervalInMinutes(0.05,0.10);
 ot.setVisualizeTracking(1);
 % Run orientation tracking
 ot.runOrientationTracking();
+
+
+
+
 
