@@ -41,7 +41,7 @@ public:
         }
     }
     void setMesh(std::vector<double> mesh) {
-        m_mesh = mesh;
+        m_mesh = std::move(mesh);
     }
 
     const std::vector<double>& getMesh() const {

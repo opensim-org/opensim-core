@@ -98,7 +98,6 @@ protected:
 
     const Solver& m_solver;
     const Problem& m_problem;
-    casadi::DM m_grid;
     int m_numGridPoints = 0;
     int m_numMeshPoints = 0;
     int m_numMeshIntervals = 0;
