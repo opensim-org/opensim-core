@@ -25,6 +25,7 @@
 #include "MocoCost/MocoStateTrackingCost.h"
 #include "MocoCost/MocoMarkerTrackingCost.h"
 #include "MocoCasADiSolver/MocoCasADiSolver.h"
+#include "MocoUtilities.h"
 
 #include <OpenSim/Common/FileAdapter.h>
 #include <OpenSim/Common/GCVSpline.h>
@@ -116,8 +117,14 @@ MocoStudy MocoTrack::initialize() {
     // Set the time bounds based on the time range in the states file.
     // Pad the beginning and end time points to allow room for finite 
     // difference calculations.
-    // TODO: Handle padding with filtering?
-    problem.setTimeBounds(m_initial_time + 1e-4, m_final_time - 1e-4);
+    double pad = 1e-5;
+    problem.setTimeBounds(m_initial_time + pad, m_final_time - pad);
+
+    // Activation states.
+    for (auto& musc : model.getComponentList<Muscle>()) {
+        const auto& path = musc.getAbsolutePathString();
+        problem.setStateInfo(format("%s/activation", path), {0, 1});
+    }
 
     // Configure solver.
     // -----------------
@@ -180,13 +187,6 @@ std::string MocoTrack::getFilePath(const std::string& file) const {
             setupDir, file);
 
     return filepath;
-}
-
-// TODO: redundant with MocoInverse, move to a base class
-void MocoTrack::writeTableToFile(const TimeSeriesTable& table,
-    const std::string& filepath) const {
-    DataAdapter::InputTables tables = {{"table", &table}};
-    FileAdapter::writeFile(tables, filepath);
 }
 
 void MocoTrack::configureStateTracking(MocoProblem& problem, Model& model) {
@@ -387,43 +387,6 @@ void MocoTrack::configureMarkerTracking(MocoProblem& problem, Model& model) {
         m_min_data_length = (int)markers.getNumRows();
     }
 }
-
-//void MocoTrack::configureForceTracking(MocoProblem& problem, Model& model) {
-//
-//    // Load loads.
-//    ExternalLoads extLoads(get_external_loads_file(), true);
-//
-//    // Read in force table associated with the ExternalLoads, and filter if
-//    // specified.
-//    auto forcesRaw = readTableFromFile<double>(extLoads.getDataFileName());
-//    TimeSeriesTable forces;
-//    if (get_lowpass_cutoff_frequency_for_forces() != -1) {
-//        forces = filterLowpass(forcesRaw,
-//            get_lowpass_cutoff_frequency_for_forces(), true);
-//    } else {
-//        forces = forcesRaw;
-//    }
-//
-//    size_t initialRow = forces.getNearestRowIndexForTime(m_initial_time, true);
-//    size_t finalRow = forces.getNearestRowIndexForTime(m_final_time, true);
-//
-//    auto forcesBlock = forces.getMatrixBlock(initialRow, 0, finalRow-initialRow,
-//        forces.getNumColumns());
-//
-//    // TODO contact model tracking support
-//    // {
-//    //      contact model tracking config code here
-//    // }
-//
-//    updateTimes(forces.getIndependentColumn().front(),
-//        forces.getIndependentColumn().back(), "forces");
-//
-//    m_forces = forces;
-//    if (m_min_data_length == -1 ||
-//        m_min_data_length > forces.getNumRows()) {
-//        m_min_data_length = (int)forces.getNumRows();
-//    }
-//}
 
 void MocoTrack::updateTimes(double dataStartTime, double dataEndTime,
     std::string dataType) {

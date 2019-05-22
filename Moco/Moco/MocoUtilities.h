@@ -19,12 +19,18 @@
  * -------------------------------------------------------------------------- */
 
 #include "osimMocoDLL.h"
+#include "MocoIterate.h"
+
 #include <set>
 #include <stack>
+#include <regex>
 
 #include <OpenSim/Common/GCVSplineSet.h>
 #include <OpenSim/Common/PiecewiseLinearFunction.h>
 #include <OpenSim/Common/Storage.h>
+#include <Simulation/Model/Model.h>
+#include <Simulation/StatesTrajectory.h>
+#include <Common/Reporter.h>
 
 namespace OpenSim {
 
@@ -258,6 +264,75 @@ OSIMMOCO_API void visualize(Model, Storage);
 /// This function is the same as visualize(Model, Storage), except that
 /// the states are provided in a TimeSeriesTable.
 OSIMMOCO_API void visualize(Model, TimeSeriesTable);
+
+/// Calculate the requested outputs using the model in the problem and the
+/// states and controls in the MocoIterate.
+/// The output paths can be regular expressions. For example,
+/// ".*activation" gives the activation of all muscles.
+/// Constraints are not enforced but prescribed motion (e.g.,
+/// PositionMotion) is.
+/// The output paths must correspond to outputs that match the type provided in
+/// the template argument, otherwise they are not included in the report.
+/// @note Parameters in the MocoIterate are **not** applied to the model.
+template <typename T>
+TimeSeriesTable_<T> analyze(Model model, const MocoIterate& iterate,
+        std::vector<std::string> outputPaths) {
+
+    // Create the reporter object to which we'll add the output data to create
+    // the report.
+    auto* reporter = new TableReporter_<T>();
+    // Loop through all the outputs for all components in the model, and if 
+    // the output path matches one provided in the argument and the output type
+    // agrees with the template argument type, add it to the report.
+    for (const auto& comp : model.getComponentList()) {
+        for (const auto& outputName : comp.getOutputNames()) {
+            const auto& output = comp.getOutput(outputName);
+            // Make sure the output type agrees with the template.
+            if (output.getTypeName() == Object_GetClassName<T>::name()) {
+                auto thisOutputPath = output.getPathName();
+                // Make sure the path is valid (i.e. no 'pipe' characters).
+                std::replace(thisOutputPath.begin(), thisOutputPath.end(),
+                    '|', '/');
+                for (const auto& outputPathArg : outputPaths) {
+                    if (std::regex_match(
+                        thisOutputPath, std::regex(outputPathArg))) {
+                        reporter->addToReport(output);
+                    }
+                }
+            }
+        }
+    }
+    model.addComponent(reporter);
+    model.initSystem();
+
+    // Get states trajectory.
+    Storage storage = iterate.exportToStatesStorage();
+    auto statesTraj = StatesTrajectory::createFromStatesStorage(model, storage);
+
+    // Loop through the states trajectory to create the report.
+    for (int i = 0; i < statesTraj.getSize(); ++i) {
+        // Get the current state.
+        auto state = statesTraj[i];
+
+        // Enforce any SimTK::Motion's included in the model.
+        model.getSystem().prescribe(state);
+
+        // Create a SimTK::Vector of the control values for the current state.
+        SimTK::RowVector controlsRow =
+            iterate.getControlsTrajectory().row(i);
+        SimTK::Vector controls(controlsRow.size(),
+            controlsRow.getContiguousScalarData(), true);
+
+        // Set the controls on the state object.
+        model.realizeVelocity(state);
+        model.setControls(state, controls);
+
+        // Generate report results for the current state.
+        model.realizeReport(state);
+    }
+
+    return reporter->getTable();
+}
 
 /// Given a MocoIterate and the associated OpenSim model, return the model with
 /// a prescribed controller appended that will compute the control values from
