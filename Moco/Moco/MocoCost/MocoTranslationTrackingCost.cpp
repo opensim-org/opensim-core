@@ -39,7 +39,7 @@ void MocoTranslationTrackingCost::initializeOnModelImpl(const Model& model)
             assert(get_states_reference_file() == "");
             assert(m_states_table.getNumColumns() == 0);
             assert(m_translation_table.getNumColumns() == 0);
-            translationTableToUse = readTableFromFile<Vec3>(
+            translationTableToUse = readTableFromFileT<Vec3>(
                     get_translation_reference_file());
 
         } else { // translation table
@@ -82,9 +82,7 @@ void MocoTranslationTrackingCost::initializeOnModelImpl(const Model& model)
             assert(m_states_table.getNumColumns() == 0);
             assert(get_translation_reference_file() != "");
             assert(m_translation_table.getNumColumns() == 0);
-            statesTableToUse = readTableFromFile<double>(
-                get_states_reference_file());
-
+            statesTableToUse = readTableFromFile(get_states_reference_file());
 
         } else if (m_states_table.getNumColumns() != 0) { // states reference
             // Should not be able to supply any two simultaneously.

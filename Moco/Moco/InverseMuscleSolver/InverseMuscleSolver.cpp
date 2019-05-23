@@ -115,7 +115,7 @@ void InverseMuscleSolver::loadModelAndData(Model& model,
                         setupDir, get_kinematics_file());
         DataAdapter::OutputTables tables =
                 FileAdapter::readFile(kinematicsFilePath);
-        kinematics = readTableFromFile<double>(get_kinematics_file());
+        kinematics = readTableFromFile(get_kinematics_file());
     } else if (_kinematics) {
         // The user called setKinematicsData().
         kinematics = TimeSeriesTable(*_kinematics.get());
@@ -146,8 +146,8 @@ void InverseMuscleSolver::loadModelAndData(Model& model,
                         setupDir, get_net_generalized_forces_file());
         DataAdapter::OutputTables tables =
                 FileAdapter::readFile(netGenForcesFilePath);
-        netGeneralizedForces = readTableFromFile<double>(
-                get_net_generalized_forces_file());
+        netGeneralizedForces = readTableFromFile(
+            get_net_generalized_forces_file());
     } else if (_netGeneralizedForces) {
         netGeneralizedForces = TimeSeriesTable(*_netGeneralizedForces.get());
     } else {

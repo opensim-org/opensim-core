@@ -192,8 +192,7 @@ std::string MocoTrack::getFilePath(const std::string& file) const {
 void MocoTrack::configureStateTracking(MocoProblem& problem, Model& model) {
 
     // Read in the states reference data, filter, and spline.
-    TimeSeriesTable statesRaw =
-        readTableFromFile<double>(get_states_tracking_file());
+    TimeSeriesTable statesRaw = readTableFromFile(get_states_tracking_file());
     TimeSeriesTable states;
     if (get_lowpass_cutoff_frequency_for_kinematics() != -1) {
         states = filterLowpass(statesRaw,
@@ -321,7 +320,7 @@ void MocoTrack::configureMarkerTracking(MocoProblem& problem, Model& model) {
 
     // Read in the markers reference data and filter.
     TimeSeriesTable_<SimTK::Vec3> markersRaw =
-        readTableFromFile<SimTK::Vec3>(get_markers_tracking_file());
+        readTableFromFileT<SimTK::Vec3>(get_markers_tracking_file());
     TimeSeriesTable markersRawFlat = markersRaw.flatten();
     TimeSeriesTable markersFlat;
     if (get_lowpass_cutoff_frequency_for_kinematics() != -1) {
@@ -348,7 +347,7 @@ void MocoTrack::configureMarkerTracking(MocoProblem& problem, Model& model) {
         if (get_guess_type() == "from_data") {
             iktool.run();
             TimeSeriesTable states =
-                readTableFromFile<double>(iktool.getOutputMotionFileName());
+                readTableFromFile(iktool.getOutputMotionFileName());
             // Update state labels to full paths. 
             for (const auto& coord : model.getComponentList<Coordinate>()) {
                 std::string path = coord.getAbsolutePathString();

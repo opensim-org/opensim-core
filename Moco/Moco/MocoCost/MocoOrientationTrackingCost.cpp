@@ -40,7 +40,7 @@ void MocoOrientationTrackingCost::initializeOnModelImpl(const Model& model)
             assert(get_states_reference_file() == "");
             assert(m_states_table.getNumColumns() == 0);
             assert(m_rotation_table.getNumColumns() == 0);
-            rotationTableToUse = readTableFromFile<Rotation>(
+            rotationTableToUse = readTableFromFileT<Rotation>(
                 get_rotation_reference_file());
 
         } else { // rotation table
@@ -83,8 +83,7 @@ void MocoOrientationTrackingCost::initializeOnModelImpl(const Model& model)
             assert(m_states_table.getNumColumns() == 0);
             assert(get_rotation_reference_file() == "");
             assert(m_rotation_table.getNumColumns() == 0);
-            statesTableToUse = readTableFromFile<double>(
-                    get_states_reference_file());
+            statesTableToUse = readTableFromFile(get_states_reference_file());
 
         } else if (m_states_table.getNumColumns() != 0) { // states table
             // Should not be able to supply any two simultaneously.

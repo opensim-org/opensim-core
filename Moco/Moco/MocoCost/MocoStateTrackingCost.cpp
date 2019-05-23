@@ -29,7 +29,7 @@ void MocoStateTrackingCost::initializeOnModelImpl(const Model& model) const {
     if (get_reference_file() != "") {
         // Should not be able to supply both.
         assert(m_table.getNumColumns() == 0);
-        tableToUse = readTableFromFile<double>(get_reference_file());
+        tableToUse = readTableFromFile(get_reference_file());
     } else if (m_table.getNumColumns() != 0) {
         tableToUse = m_table;
     } else {
