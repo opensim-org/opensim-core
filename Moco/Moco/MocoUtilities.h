@@ -301,6 +301,10 @@ TimeSeriesTable_<T> analyze(Model model, const MocoIterate& iterate,
                         reporter->addToReport(output);
                     }
                 }
+            } else {
+                std::cout << format("Warning: ignoring output %s of type %s.",
+                                     output.getPathName(), output.getTypeName())
+                          << std::endl;
             }
         }
     }
