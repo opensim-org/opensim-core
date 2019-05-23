@@ -41,7 +41,9 @@ class OSIMMOCO_API MocoControlTrackingCost : public MocoCost {
     OpenSim_DECLARE_CONCRETE_OBJECT(MocoControlTrackingCost, MocoCost);
 
 public:
-    MocoControlTrackingCost() { constructProperties(); };
+    MocoControlTrackingCost() {
+        constructProperties();
+    };
     MocoControlTrackingCost(std::string name) : MocoCost(std::move(name)) {
         constructProperties();
     }
@@ -54,8 +56,8 @@ public:
     /// control variable, e.g., `/forceset/soleus_r`. If the column in the 
     /// reference is for a control variable associated with an non-scalar 
     /// actuator, the name of the variable in the path must include the index 
-    /// for the actuator control, e.g., '/forceset/body_actuator_0', where 
-    /// 'body_actuator' is the name of the actuator and '_0' specifies the 
+    /// for the actuator control, e.g., `/forceset/body_actuator_0`, where 
+    /// 'body_actuator' is the name of the actuator and `_0` specifies the 
     /// control index. Calling this function clears the table provided via 
     /// setReference(), if any. The file is not loaded until the MocoProblem 
     /// is initialized.
@@ -74,7 +76,7 @@ public:
     /// Set the weight for an individual control variable. If a weight is
     /// already set for the requested control, then the provided weight
     /// replaces the previous weight. An exception is thrown if a weight
-    /// for an unknown state is provided.
+    /// for an unknown control is provided.
     void setWeight(const std::string& controlName, const double& weight) {
         if (get_control_weights().contains(controlName)) {
             upd_control_weights().get(controlName).setWeight(weight);
@@ -125,8 +127,8 @@ private:
     }
 
     TimeSeriesTable m_table;
-    mutable GCVSplineSet m_refsplines;
-    mutable std::vector<int> m_controlIndices;
+    mutable GCVSplineSet m_ref_splines;
+    mutable std::vector<int> m_control_indices;
     mutable std::vector<double> m_control_weights;
 };
 

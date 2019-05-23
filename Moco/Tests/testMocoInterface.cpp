@@ -676,8 +676,8 @@ TEMPLATE_TEST_CASE(
 
         mp.addCost<MocoFinalTimeCost>();
         auto& ms = moco.initSolver<TestType>();
-        ms.set_num_mesh_points(50);
-        solution = moco.solve().unseal();
+        ms.set_num_mesh_points(10);
+        solution = moco.solve();
     }
     {
         MocoTool moco2;
@@ -704,16 +704,13 @@ TEMPLATE_TEST_CASE(
 
         mp2.addCost<MocoFinalTimeCost>();
         auto& ms2 = moco2.initSolver<TestType>();
-        ms2.set_num_mesh_points(50);
-        solution2 = moco2.solve().unseal();
-        moco2.visualize(solution2);
+        ms2.set_num_mesh_points(20);
+        solution2 = moco2.solve();
     }
     std::cout << "Solution 1 is: " << solution.getObjective() << std::endl;
     std::cout << "Solution 2 is: " << solution2.getObjective() << std::endl;
 
-    SimTK_TEST_EQ(solution2.getObjective(), 6);
-    SimTK_TEST_EQ(solution2.getObjective(), solution2.getObjective());
-
+    CHECK(solution2.getObjective() != Approx(solution.getObjective()));
 }
 
 TEMPLATE_TEST_CASE("State tracking", "", MocoTropterSolver, MocoCasADiSolver) {

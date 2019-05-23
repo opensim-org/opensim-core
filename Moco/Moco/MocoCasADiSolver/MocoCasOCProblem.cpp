@@ -31,7 +31,9 @@ MocoCasOCProblem::MocoCasOCProblem(const MocoCasADiSolver& mocoCasADiSolver,
         const MocoProblemRep& problemRep,
         std::unique_ptr<ThreadsafeJar<const MocoProblemRep>> jar,
         std::string dynamicsMode)
-        : m_jar(std::move(jar)) {
+        : m_jar(std::move(jar)),
+          m_paramsRequireInitSystem(
+                  mocoCasADiSolver.get_parameters_require_initsystem()) {
 
     setDynamicsMode(dynamicsMode);
     const auto& model = problemRep.getModelBase();
@@ -52,7 +54,7 @@ MocoCasOCProblem::MocoCasOCProblem(const MocoCasADiSolver& mocoCasADiSolver,
                 convertBounds(info.getFinalBounds()));
     }
 
-    auto controlNames = createControlNamesFromModel(model);
+    auto controlNames = createControlNamesFromModel(model, m_modelControlIndices);
     for (const auto& controlName : controlNames) {
         const auto& info = problemRep.getControlInfo(controlName);
         addControl(controlName, convertBounds(info.getBounds()),

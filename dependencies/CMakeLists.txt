@@ -177,6 +177,7 @@ endfunction()
 SetDefaultCMakeInstallPrefix()
 SetDefaultCMakeBuildType()
 
+
 ####################### Add dependencies below.
 
 AddDependency(NAME eigen
@@ -304,6 +305,7 @@ include(opensim-core.cmake)
 #######################
 
 RemoveDefaultInstallDirIfEmpty("${DEFAULT_CMAKE_INSTALL_PREFIX}")
+
 
 
 

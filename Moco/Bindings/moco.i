@@ -11,6 +11,8 @@ typedef SimTK::RowVector_<double> RowVector;
 %include <Moco/MocoCost/MocoMarkerEndpointCost.h>
 %include <Moco/MocoCost/MocoControlCost.h>
 %include <Moco/MocoCost/MocoJointReactionCost.h>
+%include <Moco/MocoCost/MocoOrientationTrackingCost.h>
+%include <Moco/MocoCost/MocoTranslationTrackingCost.h>
 
 
 // %template(MocoBoundsVector) std::vector<OpenSim::MocoBounds>;
@@ -163,6 +165,7 @@ namespace OpenSim {
 %include <Moco/MocoStudy.h>
 
 %include <Moco/Components/ActivationCoordinateActuator.h>
+%include <Moco/Components/DeGrooteFregly2016Muscle.h>
 %include <Moco/MocoUtilities.h>
 
 %include <Moco/Components/ModelFactory.h>
