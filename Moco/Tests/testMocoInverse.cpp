@@ -131,9 +131,9 @@ TEST_CASE("MocoInverse gait10dof18musc") {
     inverse.setModel(model);
     inverse.set_ignore_activation_dynamics(true);
     inverse.set_ignore_tendon_compliance(true);
-    inverse.setKinematicsFile("walk_gait1018_state_reference.mot");
+    inverse.setKinematics(TableProcessor("walk_gait1018_state_reference.mot") |
+                          TableLowPassFilter(6));
     inverse.set_create_reserve_actuators(2.0);
-    inverse.set_lowpass_cutoff_frequency_for_kinematics(6);
     inverse.set_initial_time(0.01);
     inverse.set_final_time(1.3);
 

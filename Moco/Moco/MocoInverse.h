@@ -18,6 +18,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
+#include "Common/TableProcessor.h"
 #include "MocoIterate.h"
 #include "osimMocoDLL.h"
 
@@ -78,15 +79,10 @@ public:
             "The time duration of each mesh interval "
             "(default: 0.020 seconds).");
 
-    OpenSim_DECLARE_PROPERTY(kinematics_file, std::string,
+    OpenSim_DECLARE_PROPERTY(kinematics, TableProcessor,
             "Path to a STO file containing generalized coordinates "
             "to prescribe. The path can be absolute or relative to the setup "
             "file.");
-
-    OpenSim_DECLARE_PROPERTY(lowpass_cutoff_frequency_for_kinematics, double,
-            "The frequency (Hz) at which to filter the kinematics. "
-            "(default is -1, which means no filtering; for walking, "
-            "consider 6 Hz).");
 
     OpenSim_DECLARE_PROPERTY(external_loads_file, std::string,
             "XML file (.xml) containing the forces applied to the model as "
@@ -114,8 +110,8 @@ public:
 
     void setModel(Model model) { m_model = std::move(model); }
 
-    void setKinematicsFile(std::string fileName) {
-        set_kinematics_file(fileName);
+    void setKinematics(TableProcessor kinematics) {
+        set_kinematics(std::move(kinematics));
     }
 
     void setExternalLoadsFile(std::string fileName) {
