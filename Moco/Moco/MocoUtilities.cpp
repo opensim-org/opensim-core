@@ -299,44 +299,6 @@ void OpenSim::visualize(Model model, TimeSeriesTable table) {
     visualize(std::move(model), convertTableToStorage(table));
 }
 
-TimeSeriesTable OpenSim::analyze(const MocoProblem& problem,
-        const MocoIterate& iterate, std::vector<std::string> outputPaths) {
-    auto model = problem.createRep().getModelBase();
-    prescribeControlsToModel(iterate, model);
-
-    auto* reporter = new TableReporter();
-    for (const auto& comp : model.getComponentList()) {
-        for (const auto& outputName : comp.getOutputNames()) {
-            const auto& output = comp.getOutput(outputName);
-            if (output.getTypeName() == "double") {
-                const auto& thisOutputPath = output.getPathName();
-                for (const auto& outputPathArg : outputPaths) {
-                    if (std::regex_match(
-                                thisOutputPath, std::regex(outputPathArg))) {
-                        reporter->addToReport(output);
-                    }
-                }
-            } else {
-                std::cout << format("Warning: ignoring output %s of type %s.",
-                                     output.getPathName(), output.getTypeName())
-                          << std::endl;
-            }
-        }
-    }
-    model.addComponent(reporter);
-
-    model.initSystem();
-
-    auto statesTraj = iterate.exportToStatesTrajectory(problem);
-
-    for (auto state : statesTraj) {
-        model.getSystem().prescribe(state);
-        model.realizeReport(state);
-    }
-
-    return reporter->getTable();
-}
-
 namespace {
 template <typename FunctionType>
 std::unique_ptr<Function> createFunction(

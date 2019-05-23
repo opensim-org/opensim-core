@@ -108,5 +108,6 @@ void MocoStudy::visualize(const MocoIterate& it) const {
 
 TimeSeriesTable MocoStudy::analyze(const MocoIterate& iterate,
         std::vector<std::string> outputPaths) const {
-    return OpenSim::analyze(get_problem(), iterate, outputPaths);
+    return OpenSim::analyze<double>(get_problem().createRep().getModelBase(), 
+        iterate, outputPaths);
 }
