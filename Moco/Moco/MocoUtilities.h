@@ -324,7 +324,7 @@ TimeSeriesTable_<T> analyze(Model model, const MocoIterate& iterate,
     auto statesTraj = StatesTrajectory::createFromStatesStorage(model, storage);
 
     // Loop through the states trajectory to create the report.
-    for (int i = 0; i < statesTraj.getSize(); ++i) {
+    for (int i = 0; i < (int)statesTraj.getSize(); ++i) {
         // Get the current state.
         auto state = statesTraj[i];
 

@@ -250,7 +250,7 @@ void MocoTrack::configureStateTracking(MocoProblem& problem, Model& model) {
             auto value = states.getDependentColumnAtIndex(valueIdx);
             auto* valueSpline = stateSplines.getGCVSpline(valueIdx);
             SimTK::Vector speed((int)time.size());
-            for (int j = 0; j < time.size(); ++j) {
+            for (int j = 0; j < (int)time.size(); ++j) {
                 speed[j] = valueSpline->calcDerivative({0},
                     SimTK::Vector(1, time[j]));
             }
@@ -311,7 +311,7 @@ void MocoTrack::configureStateTracking(MocoProblem& problem, Model& model) {
     writeTableToFile(states, getName() + "_tracked_states.mot");
     m_states_from_file = states;
     if (m_min_data_length == -1 ||
-        m_min_data_length > states.getNumRows()) {
+        m_min_data_length > (int)states.getNumRows()) {
         m_min_data_length = (int)states.getNumRows();
     }
 }
@@ -351,7 +351,7 @@ void MocoTrack::configureMarkerTracking(MocoProblem& problem, Model& model) {
             // Update state labels to full paths. 
             for (const auto& coord : model.getComponentList<Coordinate>()) {
                 std::string path = coord.getAbsolutePathString();
-                for (int i = 0; i < states.getNumColumns(); ++i) {
+                for (int i = 0; i < (int)states.getNumColumns(); ++i) {
                     if (path.find(states.getColumnLabel(i))
                         != std::string::npos) {
                         states.setColumnLabel(i, path + "/value");
@@ -382,7 +382,7 @@ void MocoTrack::configureMarkerTracking(MocoProblem& problem, Model& model) {
     writeTableToFile(markers.flatten(), getName() + "_tracked_markers.mot");
 
     if (m_min_data_length == -1 ||
-        m_min_data_length > markers.getNumRows()) {
+        m_min_data_length > (int)markers.getNumRows()) {
         m_min_data_length = (int)markers.getNumRows();
     }
 }
@@ -421,7 +421,7 @@ void MocoTrack::applyStatesToGuess(const TimeSeriesTable& states,
     SimTK::Vector speed(m_min_data_length);
     for (const auto& coord : model.getComponentList<Coordinate>()) {
         auto path = coord.getAbsolutePathString();
-        for (int i = 0; i < states.getNumColumns(); ++i) {
+        for (int i = 0; i < (int)states.getNumColumns(); ++i) {
             auto label = states.getColumnLabel(i);
             if (path.find(label) != std::string::npos) {
 
