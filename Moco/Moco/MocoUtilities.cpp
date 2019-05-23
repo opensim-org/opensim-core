@@ -19,8 +19,10 @@
 #include "MocoUtilities.h"
 
 #include "MocoIterate.h"
+#include "MocoProblem.h"
 #include <cstdarg>
 #include <cstdio>
+#include <regex>
 
 #include <simbody/internal/Visualizer_InputListener.h>
 
@@ -97,14 +99,20 @@ Storage OpenSim::convertTableToStorage(const TimeSeriesTable& table) {
     sto.setColumnLabels(labels);
     const auto& times = table.getIndependentColumn();
     for (unsigned i_time = 0; i_time < table.getNumRows(); ++i_time) {
-        auto rowView = table.getRowAtIndex(i_time);
-        sto.append(times[i_time], SimTK::Vector(rowView.transpose()));
+        SimTK::Vector row(table.getRowAtIndex(i_time).transpose());
+        // This is a hack to allow creating a Storage with 0 columns.
+        double unused;
+        sto.append(times[i_time], row.size(),
+                row.size() ? row.getContiguousScalarData() : &unused);
     }
     return sto;
 }
 
 TimeSeriesTable OpenSim::filterLowpass(
         const TimeSeriesTable& table, double cutoffFreq, bool padData) {
+    OPENSIM_THROW_IF(cutoffFreq < 0, Exception,
+            format("Cutoff frequency must be non-negative; got %g.",
+                    cutoffFreq));
     auto storage = convertTableToStorage(table);
     if (padData) { storage.pad(storage.getSize() / 2); }
     storage.lowpassIIR(cutoffFreq);
@@ -288,6 +296,44 @@ void OpenSim::visualize(Model model, Storage statesSto) {
 
 void OpenSim::visualize(Model model, TimeSeriesTable table) {
     visualize(std::move(model), convertTableToStorage(table));
+}
+
+TimeSeriesTable OpenSim::analyze(const MocoProblem& problem,
+        const MocoIterate& iterate, std::vector<std::string> outputPaths) {
+    auto model = problem.createRep().getModelBase();
+    prescribeControlsToModel(iterate, model);
+
+    auto* reporter = new TableReporter();
+    for (const auto& comp : model.getComponentList()) {
+        for (const auto& outputName : comp.getOutputNames()) {
+            const auto& output = comp.getOutput(outputName);
+            if (output.getTypeName() == "double") {
+                const auto& thisOutputPath = output.getPathName();
+                for (const auto& outputPathArg : outputPaths) {
+                    if (std::regex_match(
+                                thisOutputPath, std::regex(outputPathArg))) {
+                        reporter->addToReport(output);
+                    }
+                }
+            } else {
+                std::cout << format("Warning: ignoring output %s of type %s.",
+                                     output.getPathName(), output.getTypeName())
+                          << std::endl;
+            }
+        }
+    }
+    model.addComponent(reporter);
+
+    model.initSystem();
+
+    auto statesTraj = iterate.exportToStatesTrajectory(problem);
+
+    for (auto state : statesTraj) {
+        model.getSystem().prescribe(state);
+        model.realizeReport(state);
+    }
+
+    return reporter->getTable();
 }
 
 namespace {

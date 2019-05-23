@@ -121,24 +121,24 @@ do {                                                                         \
     OpenSim_CATCH_MATRIX_INTERNAL(REQUIRE, actual, expected, tol, margin);   \
 } while (0)
 
-#define OpenSim_CHECK_MATRIX(actual, expected)                             \
+#define OpenSim_CHECK_MATRIX(actual, expected)                               \
 do {                                                                         \
     const auto& a = actual;                                                  \
     const auto& b = expected;                                                \
     using TypeA = std::remove_reference<decltype(a)>::type::E;               \
     using TypeB = std::remove_reference<decltype(b)>::type::E;               \
     const auto tol = SimTK::Test::defTol2<TypeA, TypeB>();                   \
-    OpenSim_CATCH_MATRIX_INTERNAL(CHECK, actual, expected, tol, epsilon);  \
+    OpenSim_CATCH_MATRIX_INTERNAL(CHECK, actual, expected, tol, epsilon);    \
 } while (0)
 
-#define OpenSim_CHECK_MATRIX_TOL(actual, expected, tol)                    \
+#define OpenSim_CHECK_MATRIX_TOL(actual, expected, tol)                      \
 do {                                                                         \
-    OpenSim_CATCH_MATRIX_INTERNAL(CHECK, actual, expected, tol, epsilon);  \
+    OpenSim_CATCH_MATRIX_INTERNAL(CHECK, actual, expected, tol, epsilon);    \
 } while (0)
 
-#define OpenSim_CHECK_MATRIX_ABSTOL(actual, expected, tol)                 \
+#define OpenSim_CHECK_MATRIX_ABSTOL(actual, expected, tol)                   \
 do {                                                                         \
-    OpenSim_CATCH_MATRIX_INTERNAL(CHECK, actual, expected, tol, margin);   \
+    OpenSim_CATCH_MATRIX_INTERNAL(CHECK, actual, expected, tol, margin);     \
 } while (0)
 
 #endif // MOCO_TESTING_H

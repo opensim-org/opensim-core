@@ -36,7 +36,7 @@ actu.setName('actuator');
 model.addComponent(actu);
 model.finalizeConnections();
 
-moco = MocoTool();
+moco = MocoStudy();
 moco.setName('sliding_mass');
 
 mp = moco.updProblem();
