@@ -36,8 +36,7 @@ void MocoInverse::constructProperties() {
     constructProperty_initial_time();
     constructProperty_final_time();
     constructProperty_mesh_interval(0.02);
-    constructProperty_kinematics_file("");
-    constructProperty_lowpass_cutoff_frequency_for_kinematics(-1);
+    constructProperty_kinematics(TableProcessor());
     constructProperty_external_loads_file("");
     constructProperty_ignore_activation_dynamics(false);
     constructProperty_ignore_tendon_compliance(false);
@@ -91,21 +90,8 @@ MocoInverseSolution MocoInverse::solve() const {
 
     model.initSystem();
 
-    std::string kinematicsFilePath =
-            Pathname::getAbsolutePathnameUsingSpecifiedWorkingDirectory(
-                    setupDir, get_kinematics_file());
-    auto kinematicsRaw = STOFileAdapter::read(get_kinematics_file());
-    if (kinematicsRaw.hasTableMetaDataKey("inDegrees") &&
-            kinematicsRaw.getTableMetaDataAsString("inDegrees") == "yes") {
-        model.getSimbodyEngine().convertDegreesToRadians(kinematicsRaw);
-    }
-    TimeSeriesTable kinematics;
-    if (get_lowpass_cutoff_frequency_for_kinematics() != -1) {
-        kinematics = filterLowpass(kinematicsRaw,
-                get_lowpass_cutoff_frequency_for_kinematics(), true);
-    } else {
-        kinematics = kinematicsRaw;
-    }
+    TimeSeriesTable kinematics = get_kinematics().process(setupDir,
+            &model);
 
     // allowMissingColumns = true: we only need kinematics.
     // allowExtraColumns = false: user might have made an error.
@@ -132,7 +118,7 @@ MocoInverseSolution MocoInverse::solve() const {
     problem.setModelCopy(model);
 
     const auto timeInfo = calcInitialAndFinalTimes(
-            kinematicsRaw.getIndependentColumn(), {}, get_mesh_interval());
+            kinematics.getIndependentColumn(), {}, get_mesh_interval());
     // const double spaceForFiniteDiff = 1e-3;
     problem.setTimeBounds(timeInfo.initialTime, timeInfo.finalTime);
 
