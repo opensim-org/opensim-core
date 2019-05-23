@@ -142,7 +142,7 @@ void MocoOrientationTrackingCost::initializeOnModelImpl(const Model& model)
 
     // Cache the model frames and rotation weights based on the order of the 
     // rotation table.
-    for (int i = 0; i < pathsToUse.size(); ++i) {
+    for (int i = 0; i < (int)pathsToUse.size(); ++i) {
         const auto& path = pathsToUse[i];
         const auto& frame = model.getComponent<Frame>(path);
         m_model_frames.emplace_back(&frame);
@@ -169,7 +169,7 @@ void MocoOrientationTrackingCost::initializeOnModelImpl(const Model& model)
     // element (e.g. "<frame-path>/quaternion_e0" for the first quaternion
     // element).
     std::vector<std::string> colLabels;
-    for (int irow = 0; irow < rotationTable.getNumRows(); ++irow) {
+    for (int irow = 0; irow < (int)rotationTable.getNumRows(); ++irow) {
         const auto row = rotationTable.getRowAtIndex(irow);
 
         // Get quaternion elements from rotations.

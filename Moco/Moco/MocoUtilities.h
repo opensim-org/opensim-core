@@ -31,6 +31,7 @@ namespace OpenSim {
 class StatesTrajectory;
 class Model;
 class MocoIterate;
+class MocoProblem;
 
 /// Since Moco does not require C++14 (which contains std::make_unique()),
 /// here is an implementation of make_unique().
@@ -168,13 +169,13 @@ TimeSeriesTable resample(const TimeSeriesTable& in, const TimeVector& newTime) {
     OPENSIM_THROW_IF(newTime.size() < 2, Exception,
             "Cannot resample if number of times is 0 or 1.");
     OPENSIM_THROW_IF(newTime[0] < time[0], Exception,
-            format("New initial time (%f) cannot be greater than existing "
+            format("New initial time (%f) cannot be less than existing "
                    "initial "
                    "time (%f)",
                     newTime[0], time[0]));
     OPENSIM_THROW_IF(newTime[newTime.size() - 1] > time[time.size() - 1],
             Exception,
-            format("New final time (%f) cannot be less than existing final "
+            format("New final time (%f) cannot be greater than existing final "
                    "time (%f)",
                     newTime[newTime.size() - 1], time[time.size() - 1]));
     for (int itime = 1; itime < (int)newTime.size(); ++itime) {
@@ -221,27 +222,26 @@ OSIMMOCO_API TimeSeriesTable filterLowpass(
 
 /// Read in a table of type TimeSeriesTable_<T> from file, where T is the type
 /// of the elements contained in the table's columns. The `filepath` argument
-/// should refer to a STO or CSV file (or other file types for which there is a 
-/// FileAdapter). This function assumes that only one table is contained in the 
+/// should refer to a STO or CSV file (or other file types for which there is a
+/// FileAdapter). This function assumes that only one table is contained in the
 /// file, and will throw an exception otherwise.
 template <typename T>
-TimeSeriesTable_<T> readTableFromFile(const std::string& filepath) 
-{
+TimeSeriesTable_<T> readTableFromFile(const std::string& filepath) {
     auto tablesFromFile = FileAdapter::readFile(filepath);
     // There should only be one table.
     OPENSIM_THROW_IF(tablesFromFile.size() != 1, Exception,
-        format("Expected file '%s' to contain 1 table, but "
-            "it contains %i tables.", filepath, tablesFromFile.size()));
+            format("Expected file '%s' to contain 1 table, but "
+                   "it contains %i tables.",
+                    filepath, tablesFromFile.size()));
     // Get the first table.
-    auto* firstTable =
-        dynamic_cast<TimeSeriesTable_<T>*>(
+    auto* firstTable = dynamic_cast<TimeSeriesTable_<T>*>(
             tablesFromFile.begin()->second.get());
     OPENSIM_THROW_IF(!firstTable, Exception,
-        "Expected file to contain a TimeSeriesTable_<T> where T is "
-        "the type specified in the template argument, but it contains a "
-        "different type of table.");
+            "Expected file to contain a TimeSeriesTable_<T> where T is "
+            "the type specified in the template argument, but it contains a "
+            "different type of table.");
 
-    return *firstTable;  
+    return *firstTable;
 }
 
 /// Write a single TimeSeriesTable to a file, using the FileAdapter associated
@@ -258,6 +258,9 @@ OSIMMOCO_API void visualize(Model, Storage);
 /// This function is the same as visualize(Model, Storage), except that
 /// the states are provided in a TimeSeriesTable.
 OSIMMOCO_API void visualize(Model, TimeSeriesTable);
+
+OSIMMOCO_API TimeSeriesTable analyze(const MocoProblem& model,
+        const MocoIterate& it, std::vector<std::string> outputPaths);
 
 /// Given a MocoIterate and the associated OpenSim model, return the model with
 /// a prescribed controller appended that will compute the control values from
