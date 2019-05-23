@@ -94,7 +94,7 @@ MocoInverseSolution MocoInverse::solve() const {
     std::string kinematicsFilePath =
             Pathname::getAbsolutePathnameUsingSpecifiedWorkingDirectory(
                     setupDir, get_kinematics_file());
-    auto kinematicsRaw = STOFileAdapter::read(get_kinematics_file());
+    auto kinematicsRaw = readTableFromFile(get_kinematics_file());
     if (kinematicsRaw.hasTableMetaDataKey("inDegrees") &&
             kinematicsRaw.getTableMetaDataAsString("inDegrees") == "yes") {
         model.getSimbodyEngine().convertDegreesToRadians(kinematicsRaw);
