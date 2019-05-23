@@ -76,7 +76,7 @@ time,<state-0-name>,...,<control-0-name>,...,<multiplier-0-name>,..., \
 @endsamplefile
 (If stored in a STO file, the delimiters are tabs, not commas.)
 
-Column labels starting with "lambda" are Lagrange multiplier, and columns
+Column labels starting with "lambda" are Lagrange multipliers, and columns
 starting with "gamma" are slack variables (probably velocity corrections at
 certain collocation points).
 
@@ -89,8 +89,6 @@ arguments of type SimTK::Matrix.
 iterate.getStateMat("<state-name>")
 iterate.getStatesTrajectoryMat()
 @endcode
-
-
 
 @par Implicit dynamics model
 If the solver uses an implicit dynamics mode, then there are "control"
