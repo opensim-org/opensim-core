@@ -663,8 +663,8 @@ MocoSolution runExoskeletonProblem(const std::string& trackedIterateFile,
     // Configure solver.
     // -----------------
     auto& solver = moco.updSolver<MocoCasADiSolver>();
-    solver.set_optim_constraint_tolerance(1e-3);
-    solver.set_optim_convergence_tolerance(1e-3);
+    solver.set_optim_constraint_tolerance(1e-2);
+    solver.set_optim_convergence_tolerance(1e-2);
 
     // Solve!
     // ------
