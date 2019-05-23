@@ -175,10 +175,19 @@ namespace SimTK {
 %include <SWIGSimTK/Rotation.h>
 namespace SimTK {
 %template(Rotation) SimTK::Rotation_<double>;
-%template(InverseRotation) SimTK::InverseRotation_<double>;
 
-%template(RowVectorViewRotation) SimTK::RowVectorView_<Rotation>;
-%template(RowVectorRotation)     SimTK::RowVector_<Rotation>;
+// TimeSeriesTableMat33 works perfectly as expected, while TimeSeriesTableRotation doesn't
+%template(MatrixBaseMat33)    SimTK::MatrixBase<Mat33>;
+%template(MatrixMat33)        SimTK::Matrix_<Mat33>;
+%template(RowVectorBaseMat33) SimTK::RowVectorBase<Mat33>;
+%template(RowVectorViewMat33) SimTK::RowVectorView_<Mat33>;
+%template(RowVectorMat33)     SimTK::RowVector_<Mat33>;
+
+//%template(MatrixBaseRotation)    SimTK::MatrixBase<Rotation>;
+//%template(MatrixRotation)        SimTK::Matrix_<Rotation>;
+//%template(RowVectorBaseRotation) SimTK::RowVectorBase<Rotation>;
+//%template(RowVectorViewRotation) SimTK::RowVectorView_<Rotation>;
+//%template(RowVectorRotation)     SimTK::RowVector_<Rotation>;
 
 }
 
