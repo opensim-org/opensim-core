@@ -278,6 +278,8 @@ template <typename T>
 TimeSeriesTable_<T> analyze(Model model, const MocoIterate& iterate,
         std::vector<std::string> outputPaths) {
 
+    // Initialize the system so we can access the outputs.
+    model.initSystem();
     // Create the reporter object to which we'll add the output data to create
     // the report.
     auto* reporter = new TableReporter_<T>();

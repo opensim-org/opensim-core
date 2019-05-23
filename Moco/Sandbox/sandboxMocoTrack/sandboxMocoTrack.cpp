@@ -207,7 +207,7 @@ Model createModel(bool removeMuscles = false, bool addAnkleExo = false) {
         for (auto& musc : model.updComponentList<Muscle>()) {
             musc.set_ignore_tendon_compliance(true);
             musc.set_ignore_activation_dynamics(false);
-            musc.set_max_isometric_force(1.5*musc.get_max_isometric_force());
+            //musc.set_max_isometric_force(1.5musc.get_max_isometric_force());
         }
     }
     model.initSystem();
@@ -311,12 +311,15 @@ void smoothSolutionControls(std::string statesFile,
             "_reactions.sto"));
 }
 
-MocoSolution runBaselineProblem(bool removeMuscles, 
+MocoSolution runBaselineProblem(bool removeMuscles, double controlWeight = 0.1,
         std::string guessFile = "", double penalizeCoordActs = 0.0) {
     
     Model model = createModel(removeMuscles);
     if (!removeMuscles) {
         DeGrooteFregly2016Muscle::replaceMuscles(model);
+        for (auto& musc : model.updComponentList<DeGrooteFregly2016Muscle>()) {
+            musc.set_ignore_passive_fiber_force(true);
+        }
     }
 
     // Baseline tracking problem.
@@ -329,7 +332,7 @@ MocoSolution runBaselineProblem(bool removeMuscles,
     track.set_external_loads_file("grf_walk.xml");
     track.set_initial_time(0.81);
     track.set_final_time(1.65);
-    track.set_minimize_controls(0.01);
+    track.set_minimize_controls(controlWeight);
 
     if (penalizeCoordActs) {
         MocoWeightSet controlWeights;
@@ -348,8 +351,8 @@ MocoSolution runBaselineProblem(bool removeMuscles,
 
     MocoStudy moco = track.initialize();
     auto& solver = moco.updSolver<MocoCasADiSolver>();
-    solver.set_optim_constraint_tolerance(1e-2);
-    solver.set_optim_convergence_tolerance(1e-2);
+    solver.set_optim_constraint_tolerance(1e-3);
+    solver.set_optim_convergence_tolerance(1e-3);
     if (guessFile != "") {
         solver.setGuessFile(guessFile);
     }
@@ -383,6 +386,9 @@ MocoSolution runKneeReactionMinimizationProblem(bool removeMuscles,
     Model model = createModel(removeMuscles);
     if (!removeMuscles) {
         DeGrooteFregly2016Muscle::replaceMuscles(model);
+        for (auto& musc : model.updComponentList<DeGrooteFregly2016Muscle>()) {
+            musc.set_ignore_passive_fiber_force(true);
+        }
     }
 
     MocoTrack track;
@@ -595,6 +601,9 @@ MocoSolution runExoskeletonProblem(const std::string& trackedIterateFile,
     // ----------------
     Model model = createModel(false, true);
     DeGrooteFregly2016Muscle::replaceMuscles(model);
+    for (auto& musc : model.updComponentList<DeGrooteFregly2016Muscle>()) {
+        musc.set_ignore_passive_fiber_force(true);
+    }
 
     // Configure tracking tool.
     // ------------------------
@@ -603,7 +612,7 @@ MocoSolution runExoskeletonProblem(const std::string& trackedIterateFile,
     track.set_states_tracking_file(trackedIterateFile);
     track.set_external_loads_file("grf_walk.xml");
     track.set_guess_type("from_file");
-    track.set_guess_file(trackedIterateFile);
+    track.set_guess_file("sandboxMocoTrack_solution_exoskeleton_muscles.sto");
     track.set_initial_time(0.811);
     track.set_final_time(1.649);
 
@@ -613,8 +622,8 @@ MocoSolution runExoskeletonProblem(const std::string& trackedIterateFile,
     track.set_minimize_controls(controlEffortWeight);
     // Don't penalize exoskeleton.
     MocoWeightSet controlWeights;
-    controlWeights.cloneAndAppend({"tau_ankle_angle_r", 0.0});
-    controlWeights.cloneAndAppend({"tau_ankle_angle_l", 0.0});
+    controlWeights.cloneAndAppend({"/tau_ankle_angle_r", 0.0});
+    controlWeights.cloneAndAppend({"/tau_ankle_angle_l", 0.0});
     track.set_control_weights(controlWeights);
 
     // Initialize MocoStudy and grab problem.
@@ -631,7 +640,7 @@ MocoSolution runExoskeletonProblem(const std::string& trackedIterateFile,
     // w4 from Fregly et al. 2007
     auto* footOrientationTracking =
         problem.addCost<MocoOrientationTrackingCost>(
-            "foot_orientation_tracking", 10);
+            "foot_orientation_tracking", 100);
     footOrientationTracking->setStatesReference(statesRef);
     footOrientationTracking->setFramePaths({"/bodyset/calcn_r",
         "/bodyset/calcn_l"});
@@ -639,7 +648,7 @@ MocoSolution runExoskeletonProblem(const std::string& trackedIterateFile,
     // w4 from Fregly et al. 2007
     auto* footTranslationTracking =
         problem.addCost<MocoTranslationTrackingCost>(
-            "foot_translation_tracking", 10);
+            "foot_translation_tracking", 100);
     footTranslationTracking->setStatesReference(statesRef);
     footTranslationTracking->setFramePaths({"/bodyset/calcn_r",
         "/bodyset/calcn_l"});
@@ -647,15 +656,15 @@ MocoSolution runExoskeletonProblem(const std::string& trackedIterateFile,
     // w5 from Fregly et al. 2007
     auto* torsoOrientationTracking =
         problem.addCost<MocoOrientationTrackingCost>(
-            "torso_orientation_tracking", 10);
+            "torso_orientation_tracking", 100);
     torsoOrientationTracking->setStatesReference(statesRef);
     torsoOrientationTracking->setFramePaths({"/bodyset/torso"});
 
     // Configure solver.
     // -----------------
     auto& solver = moco.updSolver<MocoCasADiSolver>();
-    solver.set_optim_constraint_tolerance(1e-2);
-    solver.set_optim_convergence_tolerance(1e-2);
+    solver.set_optim_constraint_tolerance(1e-3);
+    solver.set_optim_convergence_tolerance(1e-3);
 
     // Solve!
     // ------
@@ -668,14 +677,19 @@ MocoSolution runExoskeletonProblem(const std::string& trackedIterateFile,
 
 int main() {
 
+    std::cout.rdbuf(LogManager::cout.rdbuf());
+    std::cerr.rdbuf(LogManager::cerr.rdbuf());
+
+    const double controlWeight = 0.001;
+
     // Baseline tracking problem w/o muscles.
     // --------------------------------------
-    // MocoSolution baseline = runBaselineProblem(true);
+    // MocoSolution baseline = runBaselineProblem(true, controlWeight);
 
     // Baseline tracking problem w/ muscles.
     // -------------------------------------
-    MocoSolution baselineWithMuscles = runBaselineProblem(false, 
-        "sandboxMocoTrack_solution_baseline_muscles.sto");
+    //MocoSolution baselineWithMuscles = runBaselineProblem(false, controlWeight,
+    //   "sandboxMocoTrack_solution_baseline_muscles.sto");
 
     // Knee adduction minimization w/o muscles.
     // ----------------------------------------
@@ -684,7 +698,8 @@ int main() {
 
     // Minimize effort with exoskeleton device w/ muscles.
     // ---------------------------------------------------
-
+    runExoskeletonProblem("sandboxMocoTrack_solution_baseline_muscles.sto",
+        0.01, 1);
 
 
 
