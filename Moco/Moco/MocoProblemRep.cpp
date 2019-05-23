@@ -20,6 +20,7 @@
 
 #include "Components/AccelerationMotion.h"
 #include "Components/DiscreteForces.h"
+#include "Components/PositionMotion.h"
 #include "MocoProblem.h"
 #include <unordered_set>
 
@@ -45,7 +46,36 @@ void MocoProblemRep::initialize() {
 
     const auto& ph0 = m_problem->getPhase(0);
     m_model_base = ph0.getModel();
+    m_model_base.finalizeFromProperties();
+    int countMotion = 0;
+    for (const auto& comp : m_model_base.getComponentList<PositionMotion>()) {
+        comp.getName(); // Avoid "unused variable".
+        if (comp.getDefaultEnabled()) {
+            ++countMotion;
+            OPENSIM_THROW_IF(countMotion > 1, Exception,
+                    "The model cannot contain more than 1 PositionMotion.");
+            m_prescribedKinematics = true;
+        }
+    }
+
+    // We disable the PrescribedMotion by default so that,
+    // if there are constraints, the AssemblySolver does not complain about
+    // having 0 parameters with which to satisfy the constraints. After
+    // we're done with the assembly in initSystem(), we can re-enable the
+    // prescribed motion.
+    if (m_prescribedKinematics) {
+        auto& posmotBase =
+                *m_model_base.updComponentList<PositionMotion>().begin();
+        posmotBase.setDefaultEnabled(false);
+    }
+
     m_state_base = m_model_base.initSystem();
+
+    if (m_prescribedKinematics) {
+        m_position_motion_base.reset(
+                &*m_model_base.getComponentList<PositionMotion>().begin());
+        m_position_motion_base->setEnabled(m_state_base, true);
+    }
 
     // We would like to eventually compute the model accelerations through
     // realizing to Stage::Acceleration. However, if the model has constraints,
@@ -55,7 +85,10 @@ void MocoProblemRep::initialize() {
     // original model, disable the its constraints, and apply the constraint
     // forces equivalent to the solver's Lagrange multipliers before computing
     // the accelerations.
+    // If there's a PrescribedMotion in the model, it's disabled by default
+    // in this copied model.
     m_model_disabled_constraints = Model(m_model_base);
+
     // The constraint forces will be applied to the copied model via an
     // OpenSim::DiscreteForces component, a thin wrapper to Simbody's
     // DiscreteForces class, which adds discrete variables to the state.
@@ -64,17 +97,32 @@ void MocoProblemRep::initialize() {
     m_constraint_forces.reset(constraintForcesUPtr.get());
     m_model_disabled_constraints.addComponent(constraintForcesUPtr.release());
 
-    // The Acceleration motion is always added, but is only enabled by solvers
-    // if using an implicit dynamics mode. We use this motion to ensure that
-    // joint reaction forces can be computed correctly from the solver-supplied
-    // UDot (otherwise, Simbody will compute its own "incorrect" UDot using
-    // forward dynamics).
-    auto accelMotionUPtr = make_unique<AccelerationMotion>("motion");
-    m_acceleration_motion.reset(accelMotionUPtr.get());
-    m_model_disabled_constraints.addModelComponent(accelMotionUPtr.release());
+    if (!m_prescribedKinematics) {
+        // The Acceleration motion is always added if there is no
+        // PositionMotion, but is only enabled by solvers if using an implicit
+        // dynamics mode. We use this motion to ensure that joint reaction
+        // forces can be computed correctly from the solver-supplied UDot
+        // (otherwise, Simbody will compute its own "incorrect" UDot using
+        // forward dynamics).
+        auto accelMotionUPtr = make_unique<AccelerationMotion>("motion");
+        m_acceleration_motion.reset(accelMotionUPtr.get());
+        m_model_disabled_constraints.addModelComponent(
+                accelMotionUPtr.release());
+    }
+
     // Grab a writable state from the copied model -- we'll use this to disable
     // its constraints below.
     m_state_disabled_constraints = m_model_disabled_constraints.initSystem();
+
+    // See comment above for m_position_motion_base.
+    if (m_prescribedKinematics) {
+        m_position_motion_disabled_constraints.reset(
+                &*m_model_disabled_constraints
+                          .getComponentList<PositionMotion>()
+                          .begin());
+        m_position_motion_disabled_constraints->setEnabled(
+                m_state_disabled_constraints, true);
+    }
 
     // Get property values for constraints and Lagrange multipliers.
     const auto& kcBounds = ph0.get_kinematic_constraint_bounds();
@@ -184,7 +232,7 @@ void MocoProblemRep::initialize() {
     // TODO this code is from an upcoming commit that hasn't been merged yet.
     // I've left it here in case there's confusion of its placement. Uncomment
     // when the prescribed kinematics updates catch up.
-    // if (!m_prescribedKinematics) {
+    if (!m_prescribedKinematics) {
     for (const auto& coord : m_model_base.getComponentList<Coordinate>()) {
         const auto stateVarNames = coord.getStateVariableNames();
         {
@@ -211,7 +259,7 @@ void MocoProblemRep::initialize() {
             }
         }
     }
-    //}
+    }
 
     for (int i = 0; i < ph0.getProperty_control_infos().size(); ++i) {
         const auto& name = ph0.get_control_infos(i).getName();
@@ -327,6 +375,21 @@ MocoInitialBounds MocoProblemRep::getTimeInitialBounds() const {
 }
 MocoFinalBounds MocoProblemRep::getTimeFinalBounds() const {
     return m_problem->getPhase(0).get_time_final_bounds();
+}
+std::vector<std::string> MocoProblemRep::createStateVariableNamesInSystemOrder(
+        std::unordered_map<int, int>& yIndexMap) const {
+    auto stateNames = OpenSim::createStateVariableNamesInSystemOrder(
+            m_model_base, yIndexMap);
+    auto out = stateNames;
+    if (m_prescribedKinematics) {
+        for (int i = 0; i < (int)stateNames.size(); ++i) {
+            if (endsWith(stateNames[i], "/value") ||
+                    endsWith(stateNames[i], "/speed")) {
+                out.erase(std::find(out.begin(), out.end(), stateNames[i]));
+            }
+        }
+    }
+    return out;
 }
 std::vector<std::string> MocoProblemRep::createStateInfoNames() const {
     std::vector<std::string> names(m_state_infos.size());
@@ -455,12 +518,32 @@ void MocoProblemRep::applyParametersToModelProperties(
     }
     if (initSystemAndDisableConstraints) {
         // TODO: Avoid these const_casts.
-        const_cast<Model&>(m_model_base).initSystem();
 
+        // Model base.
+        // -----------
+        const_cast<Model&>(m_model_base).initSystem();
+        // The PrescribedMotion is disabled by default in the model so that,
+        // if there are constraints, the AssemblySolver does not complain about
+        // having 0 parameters with which to satisfy the constraints. After
+        // we're done with the assembly in initSystem(), we can re-enable the
+        // prescribed motion.
+        if (m_position_motion_base) {
+            m_position_motion_base->setEnabled(m_state_base, true);
+        }
+
+
+        // Model disable constraints.
+        // --------------------------
         Model& m_model_disabled_constraints_const_cast =
                 const_cast<Model&>(m_model_disabled_constraints);
+
         m_state_disabled_constraints =
                 m_model_disabled_constraints_const_cast.initSystem();
+        // See comment above for m_position_motion_base.
+        if (m_position_motion_disabled_constraints) {
+            m_position_motion_disabled_constraints->setEnabled(
+                    m_state_disabled_constraints, true);
+        }
 
         // Re-disable constraints if they were enabled by the previous
         // initSystem() call.

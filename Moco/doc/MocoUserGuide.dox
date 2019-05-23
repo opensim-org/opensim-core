@@ -68,7 +68,7 @@ After calling MocoStudy::solve(), you can edit the MocoProblem and/or the
 MocoSolver and call MocoStudy::solve() again, if you wish.
 
 
-@section MocoProblem
+@section problem MocoProblem
 
 A MocoProblem contains multiple phases.
 
@@ -85,12 +85,12 @@ TODO describe bounds (set automatically based on the model).
 
 See @ref mococost for more information.
 
-@section MocoSolver
+@section solver MocoSolver
 
 A MocoSolver attempts to use an optimal control method to solve the MocoProblem,
 and exposes the settings that you can use to
 
-@subsection MocoTropterSolver
+@subsection tropter MocoTropterSolver
 
 @par Dynamics mode: implicit
 
@@ -105,7 +105,7 @@ The following are not currently supported with implicit dynamics:
 3. Kinematic constraints.
 
 
-@subsection Kinematic constraints
+@subsection kincon Kinematic constraints
 
 Moco supports enforcing OpenSim kinematic constraints in optimal control 
 problems. When the MocoTropterSolver is initialized, any kinematic constraints 
@@ -141,7 +141,75 @@ Jacobian is rank-deficient, it is recommended that the Lagrange multiplier
 minimization term is added to the problem to provide impose uniqueness for 
 these variables.
 
+@subsection preskin Prescribed kinematics and MocoInverse
+
+You may wish to solve a problem in which you prescribe known kinematics for all
+degrees of freedom and optimize only auxiliary dynamics or actuator
+behavior. This allows you to remove the multibody dynamics from the optimization
+problem, which makes the problem more tractable. This is called a **muscle
+redundancy problem** if you are solving for muscle behavior that could
+have generated an observed motion; Static Optimization and Computed Muscle Control
+are methods for solving the muscle redundancy problem.
+In Moco, you can use the MocoInverse tool to solve optimization problems in
+which kinematics are known, including the muscle redundancy problem.
+
+Simbody provides two mechanisms for prescribing the value of a coordinate:
+adding a constraint with SimTK::Constraint::PrescribedMotion (see
+Coordinate's prescribed and prescribed_function properties), and removing a
+degree of freedom using SimTK::Motion. The former leads to a bigger system of
+equations (and does not avoid multibody dynamics), while the latter results in a
+smaller system of equations. In Moco, we use the PositionMotion component to
+prescribe the motion of all degrees of freedom using spline functions, as this
+leads to a more tractable direct collocation problem that often converges
+reliably and in far less time than a problem containing multibody dynamics.
+
+The MocoInverse tool adds a PrescribedMotion component to your model, with
+splines created from a kinematics data file that you provide.
+
+For an unconstrained system, the equations of motion are as follows:
+
+\f[
+M \dot{u} + f_{\mathrm{bias}} + \lambda_m = f_{\mathrm{app}}
+\f]
+
+The Lagrange multipliers \f$ \lambda_m \f$ are the mobility forces required for
+the system to follow the prescribed kinematics. In our case, we do not want any
+ficticious forces generated, and so we require that \f$\lambda_m = 0\f$. Note
+that the only unknown in this equation is \f$ f_{\mathrm{app}} \f$; the other
+quantities are known because they only depend on kinematics.
+
+
+@subsubsection preskinconstr Prescribed kinematics with kinematic constraints
+
+Prescribing kinematics is more complicated if the system contains kinematic
+constraints (e.g., weld constraints, point-on-line constraints, etc.). The
+equations of motion are
+
+\f[
+M \dot{u} + f_{\mathrm{bias}} + \lambda_m + G^T \lambda_c = f_{\mathrm{app}}
+\f]
+
+\f$ G \f$ is the kinematic constraint Jacobian and \f$ \lambda_c \f$ are the
+kiinematic constraint Langrange multipliers. We still require \f$ lambda_m = 0 \f$
+but we must allow the kinematic constraints to apply force. Consider a point
+mass with degrees of freedom \f$ x \f$ and \f$ y \f$ and generalized forces
+\f$ F_x \f$ and \f$ F_y \f$ constrained to the line \f$ y = x \f$ and with
+prescribed motion \f$ y(t) = x(t) = sin(t) \f$. Moco will solve for the forces
+\f$ F_x \f$ and \f$ F_y \f$ that can achieve this prescribed motion (by setting
+\f$ \lambda_m = 0 \f$ and solving for \f$ f_{\mathrm{app}} \f$, and the Lagrange
+multiplier \f$ \lambda_c \f$ will ensure that, regardless of the values of \f$
+F_x \f$ and \f$ F_y \f$, the mass will remain on the line.
+
+
+Importantly, the prescribed motion must already obey the kinematic constraints.
+MocoInverse attempts to alter your provided kinematics to satisfy the kinematic
+constraints, but PositionMotion permits you to prescribe kinematics that
+violate the constraints.
+
+
 @section tips Tips for solving a custom problem
+
+- Add reserve actuators!
 
 1. Make sure every variable has bounds.
 

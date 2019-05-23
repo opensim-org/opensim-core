@@ -177,6 +177,11 @@ protected:
     void addSlack(std::string name, Bounds bounds) {
         m_slackInfos.push_back({std::move(name), std::move(bounds)});
     }
+    void setPrescribedKinematics(bool tf, int numMultibodyDynamicsEquations) {
+        m_prescribedKinematics = tf;
+        m_numMultibodyDynamicsEquationsIfPrescribedKinematics =
+                numMultibodyDynamicsEquations;
+    }
     /// Set whether not constraint derivatives are to be enforced.
     void setEnforceConstraintDerivatives(bool tf) {
         m_enforceConstraintDerivatives = tf;
@@ -211,11 +216,10 @@ protected:
 
 public:
     virtual void calcIntegralCostIntegrand(
-            const ContinuousInput& input, double& integrand) const {
+            const ContinuousInput&, double& integrand) const {
         integrand = 0;
     }
-    virtual void calcEndpointCost(
-            const EndpointInput& final, double& cost) const {
+    virtual void calcEndpointCost(const EndpointInput&, double& cost) const {
         cost = 0;
     }
     virtual void calcMultibodySystemExplicit(const ContinuousInput& input,
@@ -227,8 +231,8 @@ public:
             const casadi::DM& parameters,
             casadi::DM& velocity_correction) const = 0;
 
-    virtual void calcPathConstraint(int constraintIndex,
-            const ContinuousInput& input, casadi::DM& path_constraint) const {}
+    virtual void calcPathConstraint(
+            int, const ContinuousInput&, casadi::DM&) const {}
 
     /// @}
 
@@ -350,16 +354,28 @@ public:
     int getNumCoordinates() const { return m_numCoordinates; }
     int getNumSpeeds() const { return m_numSpeeds; }
     int getNumAuxiliaryStates() const { return m_numAuxiliaryStates; }
+    bool isPrescribedKinematics() const { return m_prescribedKinematics; }
+    /// If the coordinates are prescribed, then the number of multibody dynamics
+    /// equations is not the same as the number of speeds.
+    int getNumMultibodyDynamicsEquations() const {
+        if (m_prescribedKinematics) {
+            return m_numMultibodyDynamicsEquationsIfPrescribedKinematics;
+        }
+        return getNumSpeeds();
+    }
     int getNumKinematicConstraintEquations() const {
+        // If all kinematics are prescribed, we assume that the prescribed
+        // kinematics obey any kinematic constraints. Therefore, the kinematic
+        // constraints would be redundant, and we need not enforce them.
+        if (m_prescribedKinematics) return 0;
         if (m_enforceConstraintDerivatives) {
             return 3 * m_numHolonomicConstraintEquations +
                    2 * m_numNonHolonomicConstraintEquations +
                    m_numAccelerationConstraintEquations;
-        } else {
-            return m_numHolonomicConstraintEquations +
-                   m_numNonHolonomicConstraintEquations +
-                   m_numAccelerationConstraintEquations;
         }
+        return m_numHolonomicConstraintEquations +
+               m_numNonHolonomicConstraintEquations +
+               m_numAccelerationConstraintEquations;
     }
     int getNumHolonomicConstraintEquations() const {
         return m_numHolonomicConstraintEquations;
@@ -444,6 +460,8 @@ private:
     int m_numAccelerationConstraintEquations = 0;
     bool m_enforceConstraintDerivatives = false;
     std::string m_dynamicsMode = "explicit";
+    bool m_prescribedKinematics = false;
+    int m_numMultibodyDynamicsEquationsIfPrescribedKinematics = 0;
     Bounds m_kinematicConstraintBounds;
     std::vector<ControlInfo> m_controlInfos;
     std::vector<MultiplierInfo> m_multiplierInfos;

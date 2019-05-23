@@ -38,6 +38,9 @@
 #include "MocoConstraint.h"
 #include "MocoTrack.h"
 
+#include "MocoInverse.h"
+
+#include "Components/PositionMotion.h"
 #include "Components/ActivationCoordinateActuator.h"
 #include "Components/StationPlaneContactForce.h"
 #include "Components/ModelFactory.h"

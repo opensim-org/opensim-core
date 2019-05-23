@@ -49,7 +49,8 @@ void Trapezoidal::applyConstraintsImpl(const VariablesMX& vars,
     // this way might have benefits for sparse linear algebra).
     const auto& states = vars.at(Var::states);
     const DM zeroS = casadi::DM::zeros(m_problem.getNumStates(), 1);
-    const DM zeroU = casadi::DM::zeros(m_problem.getNumSpeeds(), 1);
+    const DM zeroR = casadi::DM::zeros(
+            m_problem.getNumMultibodyDynamicsEquations(), 1);
     for (int itime = 0; itime < m_numGridPoints; ++itime) {
         if (itime > 0) {
             const auto h = m_times(itime) - m_times(itime - 1);
@@ -64,7 +65,7 @@ void Trapezoidal::applyConstraintsImpl(const VariablesMX& vars,
         }
 
         if (m_solver.isDynamicsModeImplicit()) {
-            addConstraints(zeroU, zeroU, residual(Slice(), itime));
+            addConstraints(zeroR, zeroR, residual(Slice(), itime));
         }
 
         // Kinematic constraint errors.

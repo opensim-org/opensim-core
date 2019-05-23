@@ -37,7 +37,12 @@ MocoCasOCProblem::MocoCasOCProblem(const MocoCasADiSolver& mocoCasADiSolver,
 
     setDynamicsMode(dynamicsMode);
     const auto& model = problemRep.getModelBase();
-    auto stateNames = createStateVariableNamesInSystemOrder(model, m_yIndexMap);
+    if (problemRep.isPrescribedKinematics()) {
+        setPrescribedKinematics(true, model.getWorkingState().getNU());
+    }
+
+    auto stateNames = problemRep.createStateVariableNamesInSystemOrder(
+            m_yIndexMap);
     setTimeBounds(convertBounds(problemRep.getTimeInitialBounds()),
             convertBounds(problemRep.getTimeFinalBounds()));
     for (const auto& stateName : stateNames) {
@@ -200,6 +205,7 @@ MocoCasOCProblem::MocoCasOCProblem(const MocoCasADiSolver& mocoCasADiSolver,
         setEnforceConstraintDerivatives(enforceConstraintDerivs);
         // The bounds are the same for all kinematic constraints in the
         // MocoProblem, so just grab the bounds from the first constraint.
+        // TODO: This behavior may be unexpected for users.
         const auto& kc = problemRep.getKinematicConstraint(kcNames.at(0));
         std::vector<MocoBounds> bounds = kc.getConstraintInfo().getBounds();
         setKinematicConstraintBounds(convertBounds(bounds.at(0)));
