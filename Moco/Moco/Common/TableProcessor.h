@@ -72,7 +72,8 @@ public:
     /// Process and obtain the table. If a filepath is provided, it will be
     /// evaluated relative `relativeToDirectory`, if provided.
     /// If a model is provided, it is used to convert columns from degrees to
-    /// radians (if the table has a header with inDegrees=yes).
+    /// radians (if the table has a header with inDegrees=yes) before any
+    /// operations are performed.
     TimeSeriesTable process(std::string relativeToDirectory = {},
             const Model* modelToConvertDegreesToRadians = nullptr) const {
         TimeSeriesTable table;
@@ -117,30 +118,19 @@ public:
         }
         return *this;
     }
+    /// This operator allows one to write the following code in C++:
+    /// @code
+    /// TableProcessor proc = TableProcessor("file.sto") |
+    ///         TabOpLowPassFilter(6);
+    /// @endcode
+    TableProcessor& operator|(const TableOperator& right) {
+        return append(right);
+    }
 
 private:
     bool m_tableProvided = false;
     TimeSeriesTable m_table;
 };
-
-/// This operator allows one to write the following code in C++:
-/// @code
-/// TableProcessor proc = TableProcessor("file.sto") | TabOpLowPassFilter(6);
-/// @endcode
-inline TableProcessor operator|(
-        TableProcessor left, const TableOperator& right) {
-    left.append(right);
-    return left;
-}
-
-/// This operator allows one to write the following code in C++:
-/// @code
-/// TableProcessor proc = TableProcessor("file.sto") | TabOpLowPassFilter(6);
-/// @endcode
-inline TableProcessor& operator|(
-        TableProcessor& left, const TableOperator& right) {
-    return left.append(right);
-}
 
 /// Apply a low-pass filter to the trajectory.
 class OSIMMOCO_API TabOpLowPassFilter : public TableOperator {

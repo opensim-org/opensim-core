@@ -4,6 +4,9 @@
 typedef SimTK::RowVector_<double> RowVector;
 
 %include <Moco/osimMocoDLL.h>
+
+%include <Moco/Common/TableProcessor.h>
+
 %include <Moco/MocoCost/MocoCost.h>
 %include <Moco/MocoWeightSet.h>
 %include <Moco/MocoCost/MocoStateTrackingCost.h>
@@ -163,8 +166,6 @@ namespace OpenSim {
 %include <Moco/MocoTropterSolver.h>
 %include <Moco/MocoCasADiSolver/MocoCasADiSolver.h>
 %include <Moco/MocoStudy.h>
-
-%include <Moco/Common/TableProcessor.h>
 
 %include <Moco/MocoInverse.h>
 %include <Moco/MocoTrack.h>
