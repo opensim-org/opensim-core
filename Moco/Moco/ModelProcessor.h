@@ -75,8 +75,9 @@ public:
                                 relativeToDirectory, path);
             }
             Model modelFromFile(path);
-            modelFromFile.finalizeConnections();
             model = std::move(modelFromFile);
+            model.finalizeFromProperties();
+            model.finalizeConnections();
         }
 
         for (int i = 0; i < getProperty_operators().size(); ++i) {
@@ -88,14 +89,6 @@ public:
     /// Append an operation to the end of the operations in this processor.
     ModelProcessor& append(const ModelOperator& op) {
         append_operators(op);
-        return *this;
-    }
-    /// Append all operations in another processor to this processor.
-    /// The source table of the provided trajectory is ignored.
-    ModelProcessor& append(const ModelProcessor& traj) {
-        for (int i = 0; i < traj.getProperty_operators().size(); ++i) {
-            append_operators(traj.get_operators(i));
-        }
         return *this;
     }
 
@@ -115,11 +108,6 @@ inline ModelProcessor& operator|(
     return left.append(right);
 }
 
-inline ModelProcessor& operator|(
-        ModelProcessor& left, const ModelProcessor& right) {
-    return left.append(right);
-}
-
 class OSIMMOCO_API ModelReplaceMusclesWithDeGrooteFregly2016
         : public ModelOperator {
     OpenSim_DECLARE_CONCRETE_OBJECT(
@@ -127,7 +115,6 @@ class OSIMMOCO_API ModelReplaceMusclesWithDeGrooteFregly2016
 
 public:
     void operate(Model& model) const override {
-        model.printBasicInfo(std::cout);
         model.finalizeConnections();
         DeGrooteFregly2016Muscle::replaceMuscles(model);
     }
