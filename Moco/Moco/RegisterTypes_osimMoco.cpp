@@ -94,7 +94,7 @@ OSIMMOCO_API void RegisterTypes_osimMoco() {
         Object::registerType(INDYGO());
 
         Object::registerType(TableProcessor());
-        Object::registerType(TableLowPassFilter());
+        Object::registerType(TabOpLowPassFilter());
 
         Object::registerType(AckermannVanDenBogert2010Force());
         Object::registerType(MeyerFregly2016Force());
