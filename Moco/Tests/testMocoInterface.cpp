@@ -676,7 +676,7 @@ TEMPLATE_TEST_CASE(
 
         mp.addCost<MocoFinalTimeCost>();
         auto& ms = moco.initSolver<TestType>();
-        ms.set_num_mesh_points(10);
+        ms.set_num_mesh_points(15);
         solution = moco.solve();
     }
     {
@@ -704,7 +704,7 @@ TEMPLATE_TEST_CASE(
 
         mp2.addCost<MocoFinalTimeCost>();
         auto& ms2 = moco2.initSolver<TestType>();
-        ms2.set_num_mesh_points(20);
+        ms2.set_num_mesh_points(15);
         solution2 = moco2.solve();
     }
     CHECK(solution2.getObjective() != Approx(solution.getObjective()));
