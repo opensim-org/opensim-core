@@ -47,6 +47,7 @@ set(MOCO_SOURCES
         InverseMuscleSolver/GlobalStaticOptimization.cpp
         InverseMuscleSolver/INDYGO.h
         InverseMuscleSolver/INDYGO.cpp
+        InverseMuscleSolver/INDYGOProblemInternal.h
         InverseMuscleSolver/DeGrooteFregly2016MuscleStandalone.h
         InverseMuscleSolver/InverseMuscleSolverMotionData.h
         InverseMuscleSolver/InverseMuscleSolverMotionData.cpp
