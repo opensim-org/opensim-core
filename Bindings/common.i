@@ -210,6 +210,7 @@ DATATABLE_CLONE(double, SimTK::UnitVec3)
 DATATABLE_CLONE(double, SimTK::Quaternion)
 DATATABLE_CLONE(double, SimTK::Vec6)
 DATATABLE_CLONE(double, SimTK::SpatialVec)
+DATATABLE_CLONE(double, SimTK::Rotation)
 %extend OpenSim::DataTable_<double, double> {
     DataTable_<double, SimTK::Vec3>
     packVec3() {
