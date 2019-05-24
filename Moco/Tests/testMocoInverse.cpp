@@ -128,12 +128,13 @@ TEST_CASE("MocoInverse gait10dof18musc") {
     inverse.setModel(ModelProcessor("testGait10dof18musc_subject01.osim") |
                      ModelReplaceMusclesWithDeGrooteFregly2016() |
                      ModelIgnoreActivationDynamics() |
-                     ModelIgnoreTendonCompliance() | ModelAddReserves(2) |
-                     ModelAddExternalLoads("walk_gait1018_subject01_grf.xml"));
+                     ModelIgnoreTendonCompliance() | ModOpAddReserves(2) |
+                     ModOpAddExternalLoads("walk_gait1018_subject01_grf.xml"));
     inverse.setKinematics(TableProcessor("walk_gait1018_state_reference.mot") |
                           TableLowPassFilter(6));
     inverse.set_initial_time(0.01);
     inverse.set_final_time(1.3);
+    inverse.print("testMocoInverse_setup.xml");
 
     MocoInverseSolution solution = inverse.solve();
 

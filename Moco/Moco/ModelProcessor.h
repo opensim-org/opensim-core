@@ -108,10 +108,10 @@ inline ModelProcessor& operator|(
     return left.append(right);
 }
 
-class OSIMMOCO_API ModelReplaceMusclesWithDeGrooteFregly2016
+class OSIMMOCO_API ModOpReplaceMusclesWithDeGrooteFregly2016
         : public ModelOperator {
     OpenSim_DECLARE_CONCRETE_OBJECT(
-            ModelReplaceMusclesWithDeGrooteFregly2016, ModelOperator);
+            ModOpReplaceMusclesWithDeGrooteFregly2016, ModelOperator);
 
 public:
     void operate(Model& model) const override {
@@ -120,9 +120,9 @@ public:
     }
 };
 
-class OSIMMOCO_API ModelIgnoreActivationDynamics : public ModelOperator {
+class OSIMMOCO_API ModOpIgnoreActivationDynamics : public ModelOperator {
     OpenSim_DECLARE_CONCRETE_OBJECT(
-            ModelIgnoreActivationDynamics, ModelOperator);
+            ModOpIgnoreActivationDynamics, ModelOperator);
 
 public:
     void operate(Model& model) const override {
@@ -133,8 +133,8 @@ public:
     }
 };
 
-class OSIMMOCO_API ModelIgnoreTendonCompliance : public ModelOperator {
-    OpenSim_DECLARE_CONCRETE_OBJECT(ModelIgnoreTendonCompliance, ModelOperator);
+class OSIMMOCO_API ModOpIgnoreTendonCompliance : public ModelOperator {
+    OpenSim_DECLARE_CONCRETE_OBJECT(ModOpIgnoreTendonCompliance, ModelOperator);
 
 public:
     void operate(Model& model) const override {
@@ -145,13 +145,13 @@ public:
     }
 };
 
-class OSIMMOCO_API ModelAddReserves : public ModelOperator {
-    OpenSim_DECLARE_CONCRETE_OBJECT(ModelAddReserves, ModelOperator);
+class OSIMMOCO_API ModOpAddReserves : public ModelOperator {
+    OpenSim_DECLARE_CONCRETE_OBJECT(ModOpAddReserves, ModelOperator);
     OpenSim_DECLARE_PROPERTY(optimal_force, double, "TODO");
 
 public:
-    ModelAddReserves() { constructProperty_optimal_force(1); }
-    ModelAddReserves(double optimalForce) : ModelAddReserves() {
+    ModOpAddReserves() { constructProperty_optimal_force(1); }
+    ModOpAddReserves(double optimalForce) : ModOpAddReserves() {
         set_optimal_force(optimalForce);
     }
     void operate(Model& model) const override {
@@ -160,13 +160,13 @@ public:
     }
 };
 
-class OSIMMOCO_API ModelAddExternalLoads : public ModelOperator {
-    OpenSim_DECLARE_CONCRETE_OBJECT(ModelAddExternalLoads, ModelOperator);
+class OSIMMOCO_API ModOpAddExternalLoads : public ModelOperator {
+    OpenSim_DECLARE_CONCRETE_OBJECT(ModOpAddExternalLoads, ModelOperator);
     OpenSim_DECLARE_PROPERTY(filepath, std::string, "TODO");
 
 public:
-    ModelAddExternalLoads() { constructProperty_filepath(""); }
-    ModelAddExternalLoads(std::string filepath) : ModelAddExternalLoads() {
+    ModOpAddExternalLoads() { constructProperty_filepath(""); }
+    ModOpAddExternalLoads(std::string filepath) : ModOpAddExternalLoads() {
         set_filepath(std::move(filepath));
     }
     void operate(Model& model) const override {
