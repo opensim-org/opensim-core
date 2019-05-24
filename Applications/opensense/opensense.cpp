@@ -276,13 +276,16 @@ void PrintUsage(const char *aProgName, ostream &aOStream)
     aOStream << "-PropertyInfo, -PI                      Print help information for properties in setup files.\n";
     aOStream << "-ReadX, -RX  directory settings.xml     Parse Xsens exported files from directory using settingsFile.xml.\n";
     aOStream << "-ReadA, -RA  datafile.csv settings.xml  Parse single csv file provided by APDM using specified settingsFile.xml.\n";
-    aOStream << "-Calibrate, -C modelPoseFile.osim calibrationOrientations.sto.\n";
+    aOStream << "-Calibrate, -C modelPoseFile.osim calibrationOrientations.sto. <base_imu> <base_heading_axis>\n";
     aOStream << "                                        Calibrate the modelPoseFile.osim model by registering\n";
     aOStream << "                                        IMU frames whose orientations in the sensor world frame are\n";
     aOStream << "                                        specified in calibrationOrientations.sto. and assuming \n";
     aOStream << "                                        the model's default pose is the calibration pose. The resultant\n";
     aOStream << "                                        model with IMU frames registered is written to file as\n";
-    aOStream << "                                        calibrated_modelPoseFile.osim\n";
+    aOStream << "                                        calibrated_modelPoseFile.osim. Optional arguments for identifying the\n";
+    aOStream << "                                        base IMU, e.g. 'pelvis imu' and its heading axis as 'x', 'y', or 'z',\n";
+    aOStream << "                                        to align all the IMU data so that base imu's heading axis is in the X\n";
+    aOStream << "                                        direction of OpenSim ground.\n";
     aOStream << "-InverseKinematics, -IK ik_settings.xml Run IK using an xml settings file to define the inverse kinematics problem.\n";
     aOStream << endl;
 /** Advanced options for experimental validation. Uncomment if/when ready to make public
