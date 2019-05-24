@@ -31,7 +31,7 @@ class OSIMMOCO_API TableOperator : public Object {
     OpenSim_DECLARE_ABSTRACT_OBJECT(TableOperator, Object);
 
 public:
-    virtual TimeSeriesTable operate(const TimeSeriesTable& in) const = 0;
+    virtual void operate(TimeSeriesTable& table) const = 0;
 };
 
 /// This class describes a workflow for processing a table using TableOperators.
@@ -40,7 +40,7 @@ public:
 /// In C++, one can easily chain together the operators in a processor using the
 /// C++ pipe operator:
 /// @code
-/// TableProcessor proc = TableProcessor("file.sto") | TableLowPassFilter(6);
+/// TableProcessor proc = TableProcessor("file.sto") | TabOpLowPassFilter(6);
 /// @endcode
 class OSIMMOCO_API TableProcessor : public Object {
     OpenSim_DECLARE_CONCRETE_OBJECT(TableProcessor, Object);
@@ -73,14 +73,14 @@ public:
     /// evaluated relative `relativeToDirectory`, if provided.
     /// If a model is provided, it is used to convert columns from degrees to
     /// radians (if the table has a header with inDegrees=yes).
-    virtual TimeSeriesTable process(std::string relativeToDirectory = {},
+    TimeSeriesTable process(std::string relativeToDirectory = {},
             const Model* modelToConvertDegreesToRadians = nullptr) const {
         TimeSeriesTable table;
         if (get_filepath().empty()) {
             if (m_tableProvided) {
                 table = m_table;
             } else {
-                OPENSIM_THROW_FRMOBJ(Exception, "No table provided.");
+                OPENSIM_THROW_FRMOBJ(Exception, "No source table.");
             }
         } else {
             std::string path = get_filepath();
@@ -100,7 +100,7 @@ public:
         }
 
         for (int i = 0; i < getProperty_operators().size(); ++i) {
-            table = get_operators(i).operate(table);
+            get_operators(i).operate(table);
         }
         return table;
     }
@@ -123,34 +123,9 @@ private:
     TimeSeriesTable m_table;
 };
 
-/// Apply a low-pass filter to the trajectory.
-class OSIMMOCO_API TableLowPassFilter : public TableOperator {
-    OpenSim_DECLARE_CONCRETE_OBJECT(TableLowPassFilter, TableOperator);
-
-public:
-    OpenSim_DECLARE_PROPERTY(cutoff_frequency, double,
-            "Low-pass cutoff frequency (Hz) (default is -1, which means no "
-            "filtering).");
-    TableLowPassFilter() { constructProperty_cutoff_frequency(-1); }
-    TableLowPassFilter(double cutoffFrequency) : TableLowPassFilter() {
-        set_cutoff_frequency(cutoffFrequency);
-    }
-    TimeSeriesTable operate(const TimeSeriesTable& table) const override {
-        if (get_cutoff_frequency() != -1) {
-            OPENSIM_THROW_IF(get_cutoff_frequency() <= 0, Exception,
-                    format("Expected cutoff frequency to be positive, "
-                           "but got %f.",
-                            get_cutoff_frequency()));
-
-            return filterLowpass(table, get_cutoff_frequency(), true);
-        }
-        return table;
-    }
-};
-
 /// This operator allows one to write the following code in C++:
 /// @code
-/// TableProcessor proc = TableProcessor("file.sto") | TableLowPassFilter(6);
+/// TableProcessor proc = TableProcessor("file.sto") | TabOpLowPassFilter(6);
 /// @endcode
 inline TableProcessor operator|(
         TableProcessor left, const TableOperator& right) {
@@ -160,17 +135,36 @@ inline TableProcessor operator|(
 
 /// This operator allows one to write the following code in C++:
 /// @code
-/// TableProcessor proc = TableProcessor("file.sto") | TableLowPassFilter(6);
+/// TableProcessor proc = TableProcessor("file.sto") | TabOpLowPassFilter(6);
 /// @endcode
 inline TableProcessor& operator|(
         TableProcessor& left, const TableOperator& right) {
     return left.append(right);
 }
 
-inline TableProcessor& operator|(
-        TableProcessor& left, const TableProcessor& right) {
-    return left.append(right);
-}
+/// Apply a low-pass filter to the trajectory.
+class OSIMMOCO_API TabOpLowPassFilter : public TableOperator {
+    OpenSim_DECLARE_CONCRETE_OBJECT(TabOpLowPassFilter, TableOperator);
+
+public:
+    OpenSim_DECLARE_PROPERTY(cutoff_frequency, double,
+            "Low-pass cutoff frequency (Hz) (default is -1, which means no "
+            "filtering).");
+    TabOpLowPassFilter() { constructProperty_cutoff_frequency(-1); }
+    TabOpLowPassFilter(double cutoffFrequency) : TabOpLowPassFilter() {
+        set_cutoff_frequency(cutoffFrequency);
+    }
+    void operate(TimeSeriesTable& table) const override {
+        if (get_cutoff_frequency() != -1) {
+            OPENSIM_THROW_IF(get_cutoff_frequency() <= 0, Exception,
+                    format("Expected cutoff frequency to be positive, "
+                           "but got %f.",
+                            get_cutoff_frequency()));
+
+            table = filterLowpass(table, get_cutoff_frequency(), true);
+        }
+    }
+};
 
 } // namespace OpenSim
 

@@ -31,11 +31,9 @@ TEST_CASE("TableProcessor") {
         OpenSim_DECLARE_CONCRETE_OBJECT(MyTableOperator, TableOperator);
 
     public:
-        TimeSeriesTable operate(const TimeSeriesTable& in) const override {
-            TimeSeriesTable out = in;
-            out.appendRow(
-                    10.0, ~createVectorLinspace((int)in.getNumColumns(), 0, 1));
-            return out;
+        void operate(TimeSeriesTable& table) const override {
+            table.appendRow(
+                    10.0, ~createVectorLinspace((int)table.getNumColumns(), 0, 1));
         }
     };
     Object::registerType(MyTableOperator());
