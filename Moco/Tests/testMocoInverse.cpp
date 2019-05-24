@@ -123,21 +123,17 @@ TEST_CASE("MocoInverse gait10dof18musc") {
     std::cout.rdbuf(LogManager::cout.rdbuf());
     std::cerr.rdbuf(LogManager::cerr.rdbuf());
 
-    Model model("testGait10dof18musc_subject01.osim");
-    model.finalizeConnections();
-    DeGrooteFregly2016Muscle::replaceMuscles(model);
-
     MocoInverse inverse;
-    inverse.setModel(model);
-    inverse.set_ignore_activation_dynamics(true);
-    inverse.set_ignore_tendon_compliance(true);
+
+    inverse.setModel(ModelProcessor("testGait10dof18musc_subject01.osim") |
+                     ModelReplaceMusclesWithDeGrooteFregly2016() |
+                     ModelIgnoreActivationDynamics() |
+                     ModelIgnoreTendonCompliance() | ModelAddReserves(2) |
+                     ModelAddExternalLoads("walk_gait1018_subject01_grf.xml"));
     inverse.setKinematics(TableProcessor("walk_gait1018_state_reference.mot") |
                           TableLowPassFilter(6));
-    inverse.set_create_reserve_actuators(2.0);
     inverse.set_initial_time(0.01);
     inverse.set_final_time(1.3);
-
-    inverse.setExternalLoadsFile("walk_gait1018_subject01_grf.xml");
 
     MocoInverseSolution solution = inverse.solve();
 
