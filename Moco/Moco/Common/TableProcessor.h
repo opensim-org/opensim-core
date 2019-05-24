@@ -73,14 +73,14 @@ public:
     /// evaluated relative `relativeToDirectory`, if provided.
     /// If a model is provided, it is used to convert columns from degrees to
     /// radians (if the table has a header with inDegrees=yes).
-    virtual TimeSeriesTable process(std::string relativeToDirectory = {},
+    TimeSeriesTable process(std::string relativeToDirectory = {},
             const Model* modelToConvertDegreesToRadians = nullptr) const {
         TimeSeriesTable table;
         if (get_filepath().empty()) {
             if (m_tableProvided) {
                 table = m_table;
             } else {
-                OPENSIM_THROW_FRMOBJ(Exception, "No table provided.");
+                OPENSIM_THROW_FRMOBJ(Exception, "No source table.");
             }
         } else {
             std::string path = get_filepath();
@@ -123,6 +123,30 @@ private:
     TimeSeriesTable m_table;
 };
 
+/// This operator allows one to write the following code in C++:
+/// @code
+/// TableProcessor proc = TableProcessor("file.sto") | TableLowPassFilter(6);
+/// @endcode
+inline TableProcessor operator|(
+        TableProcessor left, const TableOperator& right) {
+    left.append(right);
+    return left;
+}
+
+/// This operator allows one to write the following code in C++:
+/// @code
+/// TableProcessor proc = TableProcessor("file.sto") | TableLowPassFilter(6);
+/// @endcode
+inline TableProcessor& operator|(
+        TableProcessor& left, const TableOperator& right) {
+    return left.append(right);
+}
+
+inline TableProcessor& operator|(
+        TableProcessor& left, const TableProcessor& right) {
+    return left.append(right);
+}
+
 /// Apply a low-pass filter to the trajectory.
 class OSIMMOCO_API TableLowPassFilter : public TableOperator {
     OpenSim_DECLARE_CONCRETE_OBJECT(TableLowPassFilter, TableOperator);
@@ -147,30 +171,6 @@ public:
         return table;
     }
 };
-
-/// This operator allows one to write the following code in C++:
-/// @code
-/// TableProcessor proc = TableProcessor("file.sto") | TableLowPassFilter(6);
-/// @endcode
-inline TableProcessor operator|(
-        TableProcessor left, const TableOperator& right) {
-    left.append(right);
-    return left;
-}
-
-/// This operator allows one to write the following code in C++:
-/// @code
-/// TableProcessor proc = TableProcessor("file.sto") | TableLowPassFilter(6);
-/// @endcode
-inline TableProcessor& operator|(
-        TableProcessor& left, const TableOperator& right) {
-    return left.append(right);
-}
-
-inline TableProcessor& operator|(
-        TableProcessor& left, const TableProcessor& right) {
-    return left.append(right);
-}
 
 } // namespace OpenSim
 

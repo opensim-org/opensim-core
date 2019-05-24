@@ -24,6 +24,7 @@
 #include <OpenSim/Common/GCVSplineSet.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
+#include <OpenSim/Simulation/StatesTrajectory.h>
 
 using namespace OpenSim;
 
@@ -138,6 +139,18 @@ std::unique_ptr<PositionMotion> PositionMotion::createFromTable(
         }
     }
     return posmot;
+}
+
+std::unique_ptr<PositionMotion>
+PositionMotion::createFromStatesTrajectory(
+        const Model& model, const StatesTrajectory& statesTraj) {
+    const auto coords = model.getCoordinatesInMultibodyTreeOrder();
+    std::vector<std::string> coordSVNames;
+    for (const auto& coord : coords) {
+        coordSVNames.push_back(coord->getStateVariableNames()[0]);
+    }
+    return createFromTable(
+            model, statesTraj.exportToTable(model, coordSVNames));
 }
 
 void PositionMotion::extendAddToSystem(SimTK::MultibodySystem& system) const {

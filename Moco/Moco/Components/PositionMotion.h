@@ -30,6 +30,7 @@ namespace OpenSim {
 
 class Function;
 class Coordinate;
+class StatesTrajectory;
 
 class OSIMMOCO_API PositionMotion : public ModelComponent {
     OpenSim_DECLARE_CONCRETE_OBJECT(PositionMotion, ModelComponent);
@@ -71,6 +72,14 @@ public:
     /// @note This fuction ignores the inDegrees header metadata.
     static std::unique_ptr<PositionMotion> createFromTable(const Model& model,
             const TimeSeriesTable& coords, bool allowExtraColumns = false);
+    /// Create a PositionMotion that prescribes kinematics for all coordinates
+    /// in a model, given a StatesTrajectory.
+    ///
+    /// @note If the states trajectory violates kinematic constraints in the
+    /// model, the resulting PositionMotion will also violate the kinematic
+    /// constraints.
+    static std::unique_ptr<PositionMotion> createFromStatesTrajectory(
+            const Model& model, const StatesTrajectory& statesTraj);
 
 private:
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;

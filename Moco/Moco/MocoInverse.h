@@ -20,6 +20,7 @@
 
 #include "Common/TableProcessor.h"
 #include "MocoIterate.h"
+#include "ModelProcessor.h"
 #include "osimMocoDLL.h"
 
 #include <OpenSim/Common/Object.h>
@@ -63,6 +64,7 @@ class OSIMMOCO_API MocoInverse : public Object {
     OpenSim_DECLARE_CONCRETE_OBJECT(MocoInverse, Object);
 
 public:
+    OpenSim_DECLARE_PROPERTY(model, ModelProcessor, "TODO");
     OpenSim_DECLARE_OPTIONAL_PROPERTY(initial_time, double,
             "The start of the time interval in which to solve for muscle "
             "activity. "
@@ -108,7 +110,7 @@ public:
 
     MocoInverse() { constructProperties(); }
 
-    void setModel(Model model) { m_model = std::move(model); }
+    void setModel(ModelProcessor model) { set_model(std::move(model)); }
 
     void setKinematics(TableProcessor kinematics) {
         set_kinematics(std::move(kinematics));
@@ -132,9 +134,6 @@ private:
             const std::vector<double>& time0,
             // Time vector from a secondary data source.
             const std::vector<double>& time1, const double& meshInterval) const;
-
-    // TODO: Move to property.
-    Model m_model;
 };
 
 } // namespace OpenSim

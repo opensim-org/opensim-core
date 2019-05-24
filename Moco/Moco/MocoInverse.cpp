@@ -33,6 +33,7 @@ using namespace OpenSim;
 
 void MocoInverse::constructProperties() {
 
+    constructProperty_model(ModelProcessor());
     constructProperty_initial_time();
     constructProperty_final_time();
     constructProperty_mesh_interval(0.02);
@@ -54,16 +55,21 @@ MocoInverseSolution MocoInverse::solve() const {
                 dontApplySearchPath, setupDir, fileName, extension);
     }
 
-    Model model(m_model);
-    model.finalizeFromProperties();
-    for (auto& muscle : model.updComponentList<Muscle>()) {
-        if (get_ignore_activation_dynamics()) {
-            muscle.set_ignore_activation_dynamics(true);
-        }
-        if (get_ignore_tendon_compliance()) {
-            muscle.set_ignore_tendon_compliance(true);
-        }
-    }
+    // ModelProcessor modelProcessor = get_model();
+    // modelProcessor.append(ModelPrescribeMotion(get_kinematics()));
+
+    Model model = get_model().process();
+
+    // Model model(m_model);
+    // model.finalizeFromProperties();
+    // for (auto& muscle : model.updComponentList<Muscle>()) {
+    //     if (get_ignore_activation_dynamics()) {
+    //         muscle.set_ignore_activation_dynamics(true);
+    //     }
+    //     if (get_ignore_tendon_compliance()) {
+    //         muscle.set_ignore_tendon_compliance(true);
+    //     }
+    // }
 
     MocoTool moco;
     auto& problem = moco.updProblem();
@@ -83,10 +89,10 @@ MocoInverseSolution MocoInverse::solve() const {
         }
     }
 
-    InverseDynamicsTool idTool;
-    if (!get_external_loads_file().empty()) {
-        idTool.createExternalLoads(get_external_loads_file(), model);
-    }
+    // if (!get_external_loads_file().empty()) {
+    //     InverseDynamicsTool idTool;
+    //     idTool.createExternalLoads(get_external_loads_file(), model);
+    // }
 
     model.initSystem();
 
@@ -99,21 +105,16 @@ MocoInverseSolution MocoInverse::solve() const {
     auto statesTraj = StatesTrajectory::createFromStatesStorage(
             model, convertTableToStorage(kinematics), true, false, true);
 
-    const auto coords = model.getCoordinatesInMultibodyTreeOrder();
-    std::vector<std::string> coordSVNames;
-    for (const auto& coord : coords) {
-        coordSVNames.push_back(coord->getStateVariableNames()[0]);
-    }
-    auto posmot = PositionMotion::createFromTable(
-            model, statesTraj.exportToTable(model, coordSVNames));
+    auto posmot = PositionMotion::createFromStatesTrajectory(
+            model, statesTraj);
     posmot->setName("position_motion");
     model.addComponent(posmot.release());
 
     model.initSystem();
-    if (get_create_reserve_actuators() != -1) {
-        ModelFactory::createReserveActuators(
-                model, get_create_reserve_actuators());
-    }
+    // if (get_create_reserve_actuators() != -1) {
+    //     ModelFactory::createReserveActuators(
+    //             model, get_create_reserve_actuators());
+    // }
 
     problem.setModelCopy(model);
 

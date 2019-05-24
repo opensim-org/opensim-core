@@ -18,13 +18,13 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
+#include "Common/TableProcessor.h"
 #include "Components/ActivationCoordinateActuator.h"
 #include "Components/DeGrooteFregly2016Muscle.h"
 #include "Components/DiscreteForces.h"
 #include "Components/ModelFactory.h"
 #include "Components/PositionMotion.h"
 #include "Components/StationPlaneContactForce.h"
-#include "Common/TableProcessor.h"
 #include "MocoBounds.h"
 #include "MocoCasADiSolver/MocoCasADiSolver.h"
 #include "MocoConstraint.h"
@@ -46,6 +46,7 @@
 #include "MocoTropterSolver.h"
 #include "MocoUtilities.h"
 #include "MocoWeightSet.h"
+#include "ModelProcessor.h"
 #include "RegisterTypes_osimMoco.h"
 
 #endif // MOCO_OSIMMOCO_H
