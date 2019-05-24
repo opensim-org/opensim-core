@@ -1,9 +1,27 @@
 #ifndef MOCO_TABLEPROCESSOR_H
 #define MOCO_TABLEPROCESSOR_H
+/* -------------------------------------------------------------------------- *
+ * OpenSim Moco: TableProcessor.h                                             *
+ * -------------------------------------------------------------------------- *
+ * Copyright (c) 2019 Stanford University and the Authors                     *
+ *                                                                            *
+ * Author(s): Christopher Dembia, Nicholas Bianco                             *
+ *                                                                            *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
+ * not use this file except in compliance with the License. You may obtain a  *
+ * copy of the License at http://www.apache.org/licenses/LICENSE-2.0          *
+ *                                                                            *
+ * Unless required by applicable law or agreed to in writing, software        *
+ * distributed under the License is distributed on an "AS IS" BASIS,          *
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.   *
+ * See the License for the specific language governing permissions and        *
+ * limitations under the License.                                             *
+ * -------------------------------------------------------------------------- */
 
 #include "../MocoUtilities.h"
 
 #include <OpenSim/Common/TimeSeriesTable.h>
+#include <OpenSim/Simulation/Model/Model.h>
 
 namespace OpenSim {
 
@@ -19,6 +37,11 @@ public:
 /// This class describes a workflow for processing a table using TableOperators.
 /// The user must provide a source table either as a filepath to a table or an
 /// in-memory TimeSeriesTable.
+/// In C++, one can easily chain together the operators in a processor using the
+/// C++ pipe operator:
+/// @code
+/// TableProcessor proc = TableProcessor("file.sto") | TableLowPassFilter(6);
+/// @endcode
 class OSIMMOCO_API TableProcessor : public Object {
     OpenSim_DECLARE_CONCRETE_OBJECT(TableProcessor, Object);
 
@@ -54,8 +77,11 @@ public:
             const Model* modelToConvertDegreesToRadians = nullptr) const {
         TimeSeriesTable table;
         if (get_filepath().empty()) {
-            if (m_tableProvided) { table = m_table; }
-            OPENSIM_THROW_FRMOBJ(Exception, "No table provided.");
+            if (m_tableProvided) {
+                table = m_table;
+            } else {
+                OPENSIM_THROW_FRMOBJ(Exception, "No table provided.");
+            }
         } else {
             std::string path = get_filepath();
             if (!relativeToDirectory.empty()) {
@@ -64,7 +90,7 @@ public:
                         getAbsolutePathnameUsingSpecifiedWorkingDirectory(
                                 relativeToDirectory, path);
             }
-            table = readTableFromFile(path);
+            table = readTableFromFile<double>(path);
         }
 
         if (table.hasTableMetaDataKey("inDegrees") &&
@@ -74,7 +100,6 @@ public:
         }
 
         for (int i = 0; i < getProperty_operators().size(); ++i) {
-            std::cout << "DEBUG operating " << std::endl;
             table = get_operators(i).operate(table);
         }
         return table;
@@ -123,11 +148,20 @@ public:
     }
 };
 
+/// This operator allows one to write the following code in C++:
+/// @code
+/// TableProcessor proc = TableProcessor("file.sto") | TableLowPassFilter(6);
+/// @endcode
 inline TableProcessor operator|(
         TableProcessor left, const TableOperator& right) {
-    return left.append(right);
+    left.append(right);
+    return left;
 }
 
+/// This operator allows one to write the following code in C++:
+/// @code
+/// TableProcessor proc = TableProcessor("file.sto") | TableLowPassFilter(6);
+/// @endcode
 inline TableProcessor& operator|(
         TableProcessor& left, const TableOperator& right) {
     return left.append(right);

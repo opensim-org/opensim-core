@@ -24,6 +24,8 @@ endfunction()
 
 MocoAddTest(NAME testMocoInterface)
 
+MocoAddTest(NAME testTableProcessor)
+
 MocoAddTest(NAME testMocoCosts)
 
 MocoAddTest(NAME testMocoParameters)
