@@ -28,7 +28,7 @@
 
 using namespace OpenSim;
 
-/// This test case helps debug when it's necessary to calll prescribe() versus
+/// This test case helps debug when it's necessary to call prescribe() versus
 /// realize().
 TEST_CASE("PrescribedKinematics prescribe() and realize()") {
     Model model = ModelFactory::createPendulum();
