@@ -321,11 +321,9 @@ protected:
             // Stage::Velocity, so we don't ever need to set its controls.
             auto& osimControls = modelDisabledConstraints.updControls(
                     simTKStateDisabledConstraints);
-            // std::copy_n(in.controls.data(), in.controls.size(),
-            //        osimControls.updContiguousScalarData());
             for (int ic = 0; ic < in.controls.size(); ++ic) {
                 osimControls[m_modelControlIndices[ic]] =
-                        *(in.controls.data() + ic);
+                        in.controls[ic];
             }
             modelDisabledConstraints.realizeVelocity(
                     simTKStateDisabledConstraints);
