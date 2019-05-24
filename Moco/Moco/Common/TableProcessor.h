@@ -166,31 +166,6 @@ public:
     }
 };
 
-/// Apply a low-pass filter to the trajectory.
-class OSIMMOCO_API TableLowPassFilter : public TableOperator {
-    OpenSim_DECLARE_CONCRETE_OBJECT(TableLowPassFilter, TableOperator);
-
-public:
-    OpenSim_DECLARE_PROPERTY(cutoff_frequency, double,
-            "Low-pass cutoff frequency (Hz) (default is -1, which means no "
-            "filtering).");
-    TableLowPassFilter() { constructProperty_cutoff_frequency(-1); }
-    TableLowPassFilter(double cutoffFrequency) : TableLowPassFilter() {
-        set_cutoff_frequency(cutoffFrequency);
-    }
-    TimeSeriesTable operate(const TimeSeriesTable& table) const override {
-        if (get_cutoff_frequency() != -1) {
-            OPENSIM_THROW_IF(get_cutoff_frequency() <= 0, Exception,
-                    format("Expected cutoff frequency to be positive, "
-                           "but got %f.",
-                            get_cutoff_frequency()));
-
-            return filterLowpass(table, get_cutoff_frequency(), true);
-        }
-        return table;
-    }
-};
-
 } // namespace OpenSim
 
 #endif // MOCO_TABLEPROCESSOR_H
