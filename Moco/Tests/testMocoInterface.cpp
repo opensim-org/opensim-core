@@ -645,7 +645,7 @@ TEMPLATE_TEST_CASE("Workflow", "", MocoTropterSolver, MocoCasADiSolver) {
 }
 
 TEMPLATE_TEST_CASE(
-        "Disable Actuators", "", MocoTropterSolver, MocoCasADiSolver) {
+        "Disable Actuators", "", MocoCasADiSolver, MocoTropterSolver) {
     std::cout.rdbuf(LogManager::cout.rdbuf());
     std::cout.rdbuf(LogManager::cout.rdbuf());
 
@@ -692,7 +692,7 @@ TEMPLATE_TEST_CASE(
         model2.addComponent(tau2);
 
         SimTK::State state = model2.initSystem();
-        model2.updComponent<Force>("tau2").set_appliesForce(false);
+        model2.updComponent<Force>("tau1").set_appliesForce(false);
         mp2.setModelCopy(model2);
         mp2.setTimeBounds(0, {0, 5});
         mp2.setStateInfo("/jointset/j0/q0/value", {-10, 10}, 0, SimTK::Pi);
@@ -700,16 +700,13 @@ TEMPLATE_TEST_CASE(
         mp2.setStateInfo("/jointset/j1/q1/value", {-10, 10}, 0, 0);
         mp2.setStateInfo("/jointset/j1/q1/speed", {-50, 50}, 0);
         mp2.setControlInfo("/tau0", {-100, 100});
-        mp2.setControlInfo("/tau1", {-100, 100});
+        mp2.setControlInfo("/tau2", {-100, 100});
 
         mp2.addCost<MocoFinalTimeCost>();
         auto& ms2 = moco2.initSolver<TestType>();
         ms2.set_num_mesh_points(20);
         solution2 = moco2.solve();
     }
-    std::cout << "Solution 1 is: " << solution.getObjective() << std::endl;
-    std::cout << "Solution 2 is: " << solution2.getObjective() << std::endl;
-
     CHECK(solution2.getObjective() != Approx(solution.getObjective()));
 }
 

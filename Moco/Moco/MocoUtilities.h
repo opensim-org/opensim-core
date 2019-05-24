@@ -301,10 +301,10 @@ std::unordered_map<std::string, int> createSystemYIndexMap(const Model& model);
 /// actuators with one control (e.g. ScalarActuator) the control name is simply
 /// the actuator name. For actuators with multiple controls, each control name
 /// is the actuator name appended by the control index (e.g. "/actuator_0");
-/// modelControlIndices has length equal to the number of control associated
-/// with actuators that apply a force (appliesForce == True). Its elements are the indices of the
-/// controls in the Model::updControls() that are associated with actuators that
-/// apply a force.
+/// modelControlIndices has length equal to the number of controls associated
+/// with actuators that apply a force (appliesForce == True). Its elements are
+/// the indices of the controls in the Model::updControls() that are associated
+/// with actuators that apply a force.
 OSIMMOCO_API
 std::vector<std::string> createControlNamesFromModel(
         const Model& model, std::vector<int>& modelControlIndices);
