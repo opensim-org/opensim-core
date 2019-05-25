@@ -131,7 +131,7 @@ TEST_CASE("MocoInverse gait10dof18musc") {
                      ModOpIgnoreTendonCompliance() | ModOpAddReserves(2) |
                      ModOpAddExternalLoads("walk_gait1018_subject01_grf.xml"));
     inverse.setKinematics(TableProcessor("walk_gait1018_state_reference.mot") |
-                          TableLowPassFilter(6));
+                          TabOpLowPassFilter(6));
     inverse.set_initial_time(0.01);
     inverse.set_final_time(1.3);
     inverse.print("testMocoInverse_setup.xml");
