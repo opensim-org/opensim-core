@@ -91,22 +91,13 @@ public:
         append_operators(op);
         return *this;
     }
-
+    ModelProcessor& operator|(const ModelOperator& right) {
+        return append(right);
+    }
 private:
     bool m_modelProvided = false;
     mutable Model m_model;
 };
-
-inline ModelProcessor operator|(
-        ModelProcessor left, const ModelOperator& right) {
-    left.append(right);
-    return left;
-}
-
-inline ModelProcessor& operator|(
-        ModelProcessor& left, const ModelOperator& right) {
-    return left.append(right);
-}
 
 class OSIMMOCO_API ModOpReplaceMusclesWithDeGrooteFregly2016
         : public ModelOperator {
