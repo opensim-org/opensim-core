@@ -32,16 +32,11 @@
 using namespace OpenSim;
 
 void MocoInverse::constructProperties() {
-
-    constructProperty_model(ModelProcessor());
     constructProperty_initial_time();
     constructProperty_final_time();
     constructProperty_mesh_interval(0.02);
+    constructProperty_model(ModelProcessor());
     constructProperty_kinematics(TableProcessor());
-    constructProperty_external_loads_file("");
-    constructProperty_ignore_activation_dynamics(false);
-    constructProperty_ignore_tendon_compliance(false);
-    constructProperty_create_reserve_actuators(-1);
 }
 
 MocoInverseSolution MocoInverse::solve() const {
@@ -55,21 +50,7 @@ MocoInverseSolution MocoInverse::solve() const {
                 dontApplySearchPath, setupDir, fileName, extension);
     }
 
-    // ModelProcessor modelProcessor = get_model();
-    // modelProcessor.append(ModelPrescribeMotion(get_kinematics()));
-
     Model model = get_model().process();
-
-    // Model model(m_model);
-    // model.finalizeFromProperties();
-    // for (auto& muscle : model.updComponentList<Muscle>()) {
-    //     if (get_ignore_activation_dynamics()) {
-    //         muscle.set_ignore_activation_dynamics(true);
-    //     }
-    //     if (get_ignore_tendon_compliance()) {
-    //         muscle.set_ignore_tendon_compliance(true);
-    //     }
-    // }
 
     MocoTool moco;
     auto& problem = moco.updProblem();
@@ -89,11 +70,6 @@ MocoInverseSolution MocoInverse::solve() const {
         }
     }
 
-    // if (!get_external_loads_file().empty()) {
-    //     InverseDynamicsTool idTool;
-    //     idTool.createExternalLoads(get_external_loads_file(), model);
-    // }
-
     model.initSystem();
 
     TimeSeriesTable kinematics = get_kinematics().process(setupDir,
@@ -111,10 +87,6 @@ MocoInverseSolution MocoInverse::solve() const {
     model.addComponent(posmot.release());
 
     model.initSystem();
-    // if (get_create_reserve_actuators() != -1) {
-    //     ModelFactory::createReserveActuators(
-    //             model, get_create_reserve_actuators());
-    // }
 
     problem.setModelCopy(model);
 

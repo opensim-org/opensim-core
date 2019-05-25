@@ -64,7 +64,6 @@ class OSIMMOCO_API MocoInverse : public Object {
     OpenSim_DECLARE_CONCRETE_OBJECT(MocoInverse, Object);
 
 public:
-    OpenSim_DECLARE_PROPERTY(model, ModelProcessor, "TODO");
     OpenSim_DECLARE_OPTIONAL_PROPERTY(initial_time, double,
             "The start of the time interval in which to solve for muscle "
             "activity. "
@@ -81,32 +80,14 @@ public:
             "The time duration of each mesh interval "
             "(default: 0.020 seconds).");
 
+    OpenSim_DECLARE_PROPERTY(model, ModelProcessor,
+            "The musculoskeletal model upon which provided kinematics are "
+            "prescribed.");
+
     OpenSim_DECLARE_PROPERTY(kinematics, TableProcessor,
             "Path to a STO file containing generalized coordinates "
             "to prescribe. The path can be absolute or relative to the setup "
             "file.");
-
-    OpenSim_DECLARE_PROPERTY(external_loads_file, std::string,
-            "XML file (.xml) containing the forces applied to the model as "
-            "ExternalLoads.");
-
-    OpenSim_DECLARE_PROPERTY(ignore_activation_dynamics, bool,
-            "Ignore activation dynamics for all muscles in the model. "
-            "If false, the muscle's setting is not modified."
-            "(default: false).");
-
-    OpenSim_DECLARE_PROPERTY(ignore_tendon_compliance, bool,
-            "Ignore tendon_compliance for all muscles in the model. "
-            "If false, the muscle's setting is not modified."
-            "(default: false).");
-
-    OpenSim_DECLARE_PROPERTY(create_reserve_actuators, double,
-            "Create a reserve actuator (CoordinateActuator) for each "
-            "unconstrained coordinate in the model, and add each to the model. "
-            "Each actuator will have the specified `optimal_force`, which "
-            "should be set low to "
-            "discourage the use of the reserve actuators. (default is -1, "
-            "which means no reserves are created)");
 
     MocoInverse() { constructProperties(); }
 
@@ -114,10 +95,6 @@ public:
 
     void setKinematics(TableProcessor kinematics) {
         set_kinematics(std::move(kinematics));
-    }
-
-    void setExternalLoadsFile(std::string fileName) {
-        set_external_loads_file(std::move(fileName));
     }
 
     MocoInverseSolution solve() const;

@@ -94,6 +94,7 @@ public:
     ModelProcessor& operator|(const ModelOperator& right) {
         return append(right);
     }
+
 private:
     bool m_modelProvided = false;
     mutable Model m_model;
@@ -111,6 +112,7 @@ public:
     }
 };
 
+/// Ignore activation dynamics for all muscles in the model.
 class OSIMMOCO_API ModOpIgnoreActivationDynamics : public ModelOperator {
     OpenSim_DECLARE_CONCRETE_OBJECT(
             ModOpIgnoreActivationDynamics, ModelOperator);
@@ -124,6 +126,7 @@ public:
     }
 };
 
+/// Ignore tendon compliance for all muscles in the model.
 class OSIMMOCO_API ModOpIgnoreTendonCompliance : public ModelOperator {
     OpenSim_DECLARE_CONCRETE_OBJECT(ModOpIgnoreTendonCompliance, ModelOperator);
 
@@ -136,9 +139,13 @@ public:
     }
 };
 
+/// Add a reserve actuator (CoordinateActuator) for each
+/// unconstrained coordinate in the model.
+/// Each actuator will have the specified `optimal_force`.
 class OSIMMOCO_API ModOpAddReserves : public ModelOperator {
     OpenSim_DECLARE_CONCRETE_OBJECT(ModOpAddReserves, ModelOperator);
-    OpenSim_DECLARE_PROPERTY(optimal_force, double, "TODO");
+    OpenSim_DECLARE_PROPERTY(optimal_force, double,
+            "Optimal force to apply to each CoordinateActuator (default: 1).");
 
 public:
     ModOpAddReserves() { constructProperty_optimal_force(1); }
@@ -147,13 +154,20 @@ public:
     }
     void operate(Model& model) const override {
         model.initSystem();
+        OPENSIM_THROW_IF_FRMOBJ(get_optimal_force() < 0, Exception,
+                format("Expected optimal force to be non-negative, but got %f.",
+                        get_optimal_force()));
         ModelFactory::createReserveActuators(model, get_optimal_force());
     }
 };
 
+/// Add ExternalLoads (to model ground reaction forces, for example) to the
+/// model from an ExternalLoads XML file.
 class OSIMMOCO_API ModOpAddExternalLoads : public ModelOperator {
     OpenSim_DECLARE_CONCRETE_OBJECT(ModOpAddExternalLoads, ModelOperator);
-    OpenSim_DECLARE_PROPERTY(filepath, std::string, "TODO");
+    OpenSim_DECLARE_PROPERTY(filepath, std::string,
+            "XML file (.xml) containing the forces applied to the model as "
+            "ExternalLoads.");
 
 public:
     ModOpAddExternalLoads() { constructProperty_filepath(""); }
