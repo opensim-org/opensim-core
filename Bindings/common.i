@@ -228,11 +228,11 @@ DATATABLE_CLONE(double, SimTK::Rotation_<double>)
     packUnitVec3(std::vector<std::string> suffixes) {
         return $self->pack<SimTK::UnitVec3>();
     }
-    DataTable_<double, SimTK::Quaternion>
+    DataTable_<double, SimTK::Quaternion_<double>>
     packQuaternion() {
         return $self->pack<SimTK::Quaternion>();
     }
-    DataTable_<double, SimTK::Quaternion>
+    DataTable_<double, SimTK::Quaternion_<double>>
     packQuaternion(std::vector<std::string> suffixes) {
         return $self->pack<SimTK::Quaternion>();
     }
@@ -269,11 +269,11 @@ DATATABLE_CLONE(double, SimTK::Rotation_<double>)
     packUnitVec3(std::vector<std::string> suffixes) {
         return $self->pack<SimTK::UnitVec3>();
     }
-    TimeSeriesTable_<SimTK::Quaternion>
+    TimeSeriesTable_<SimTK::Quaternion_<double>>
     packQuaternion() {
         return $self->pack<SimTK::Quaternion>();
     }
-    TimeSeriesTable_<SimTK::Quaternion>
+    TimeSeriesTable_<SimTK::Quaternion_<double>>
     packQuaternion(std::vector<std::string> suffixes) {
         return $self->pack<SimTK::Quaternion>();
     }
