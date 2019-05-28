@@ -1481,6 +1481,67 @@ TEST_CASE("Skip over empty quaternion slots", "") {
     testSkippingOverQuaternionSlots<MocoCasADiSolver>(true, true, "implicit");
 }
 
+TEST_CASE("MocoPhase::bound_activation_from_excitation") {
+    MocoTool moco;
+    auto& problem = moco.updProblem();
+    Model& model = problem.updModel();
+    model.setName("muscle");
+    auto* body = new Body("body", 0.5, SimTK::Vec3(0), SimTK::Inertia(0));
+    model.addComponent(body);
+    auto* joint = new SliderJoint("joint", model.getGround(), *body);
+    auto& coord = joint->updCoordinate(SliderJoint::Coord::TranslationX);
+    coord.setName("x");
+    model.addComponent(joint);
+    auto* musclePtr = new DeGrooteFregly2016Muscle();
+    musclePtr->set_ignore_tendon_compliance(true);
+    musclePtr->set_fiber_damping(0);
+    musclePtr->setName("muscle");
+    musclePtr->addNewPathPoint("origin", model.updGround(), SimTK::Vec3(0));
+    musclePtr->addNewPathPoint("insertion", *body, SimTK::Vec3(0));
+    model.addComponent(musclePtr);
+    model.finalizeConnections();
+    SECTION("bound_activation_from_excitation is false") {
+        MocoPhase& ph0 = problem.updPhase(0);
+        ph0.setBoundActivationFromExcitation(false);
+        auto rep = problem.createRep();
+        CHECK_THROWS_WITH(
+                rep.getStateInfo("/muscle/activation"),
+                Catch::Contains("No info available for state '/muscle/activation'."));
+    }
+    SECTION("bound_activation_from_excitation is true") {
+        auto rep = problem.createRep();
+        CHECK(rep.getStateInfo("/muscle/activation").getBounds().getLower() ==
+                0);
+        CHECK(rep.getStateInfo("/muscle/activation").getBounds().getUpper() ==
+                1);
+    }
+    SECTION("bound_activation_from_excitation is true; non-default min/max "
+            "control") {
+        musclePtr->setMinControl(0.35);
+        musclePtr->setMaxControl(0.96);
+        auto rep = problem.createRep();
+        CHECK(rep.getStateInfo("/muscle/activation").getBounds().getLower() ==
+                Approx(0.35));
+        CHECK(rep.getStateInfo("/muscle/activation").getBounds().getUpper() ==
+                Approx(0.96));
+    }
+    SECTION("Custom excitation bounds") {
+        problem.setControlInfo("/muscle", {0.41, 0.63});
+        auto rep = problem.createRep();
+        CHECK(rep.getStateInfo("/muscle/activation").getBounds().getLower() ==
+                Approx(0.41));
+        CHECK(rep.getStateInfo("/muscle/activation").getBounds().getUpper() ==
+                Approx(0.63));
+    }
+    SECTION("ignore_activation_dynamics") {
+        musclePtr->set_ignore_activation_dynamics(true);
+        auto rep = problem.createRep();
+        CHECK_THROWS_WITH(
+                rep.getStateInfo("/muscle/activation"),
+                Catch::Contains("No info available for state '/muscle/activation'."));
+    }
+}
+
 // testCopy();
 // testSolveRepeatedly();
 // testOMUCOSerialization();
