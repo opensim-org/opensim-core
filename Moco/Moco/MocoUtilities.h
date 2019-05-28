@@ -40,6 +40,9 @@ std::unique_ptr<T> make_unique(Args&&... args) {
     return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
 }
 
+
+OSIMMOCO_API std::string getFormattedDateTime();
+
 /// Determine if `string` starts with the substring `start`.
 /// https://stackoverflow.com/questions/874134/find-if-string-ends-with-another-string-in-c
 inline bool startsWith(const std::string& string, const std::string& start) {

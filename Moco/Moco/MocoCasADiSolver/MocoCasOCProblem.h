@@ -364,19 +364,24 @@ private:
 
         m_jar->leave(std::move(mocoProblemRep));
     }
+    void intermediateCallback(const CasOC::Iterate& iterate) const override {
+        std::string filename = format("%s-%s.sto",
+                OpenSim::getFormattedDateTime(), iterate.iteration);
+        convertToMocoIterate(iterate).write(filename);
+
+    }
 
 private:
     /// Apply parameters to properties in the models returned by
     /// `mocoProblemRep.getModelBase()` and
     /// `mocoProblemRep.getModelDisabledConstraints()`.
-    inline void applyParametersToModelProperties(
-            const casadi::DM& parameters, const MocoProblemRep& mocoProblemRep)
-    const {
+    inline void applyParametersToModelProperties(const casadi::DM& parameters,
+            const MocoProblemRep& mocoProblemRep) const {
         if (parameters.numel()) {
             SimTK::Vector simtkParams(
                     (int)parameters.size1(), parameters.ptr(), true);
-            mocoProblemRep.applyParametersToModelProperties(simtkParams,
-                    m_paramsRequireInitSystem);
+            mocoProblemRep.applyParametersToModelProperties(
+                    simtkParams, m_paramsRequireInitSystem);
         }
     }
 
@@ -384,16 +389,16 @@ private:
     /// slots in Simbody's Y vector.
     /// It's fine for the size of `states` to be less than the size of Y; only
     /// the first states.size1() values are copied.
-    inline void convertToSimTKState(const double& time, const casadi::DM& states,
-            SimTK::State& simtkState) const {
+    inline void convertToSimTKState(const double& time,
+            const casadi::DM& states, SimTK::State& simtkState) const {
         simtkState.setTime(time);
         // Assign the generalized coordinates. We know we have NU generalized
         // speeds because we do not yet support quaternions.
         for (int isv = 0; isv < getNumCoordinates(); ++isv) {
             simtkState.updQ()[m_yIndexMap.at(isv)] = *(states.ptr() + isv);
         }
-        std::copy_n(states.ptr() + getNumCoordinates(),
-                getNumSpeeds(), simtkState.updY().updContiguousScalarData() +
+        std::copy_n(states.ptr() + getNumCoordinates(), getNumSpeeds(),
+                simtkState.updY().updContiguousScalarData() +
                         simtkState.getNQ());
         std::copy_n(states.ptr() + getNumCoordinates() + getNumSpeeds(),
                 getNumAuxiliaryStates(),
@@ -401,9 +406,9 @@ private:
                         simtkState.getNQ() + simtkState.getNU());
     }
 
-    inline void convertToSimTKState(const double& time, const casadi::DM& states,
-            const casadi::DM& controls, const Model& model,
-            SimTK::State& simtkState) const {
+    inline void convertToSimTKState(const double& time,
+            const casadi::DM& states, const casadi::DM& controls,
+            const Model& model, SimTK::State& simtkState) const {
         convertToSimTKState(time, states, simtkState);
         auto& simtkControls = model.updControls(simtkState);
         std::copy_n(controls.ptr(), simtkControls.size(),
@@ -429,8 +434,7 @@ private:
                 mocoProblemRep->updStateDisabledConstraints();
 
         // Update the model and state.
-        applyParametersToModelProperties(parameters,
-                *mocoProblemRep);
+        applyParametersToModelProperties(parameters, *mocoProblemRep);
 
         if (getNumDerivatives()) {
             auto& accel = mocoProblemRep->getAccelerationMotion();
@@ -440,8 +444,7 @@ private:
             accel.setUDot(simtkStateDisabledConstraints, udot);
         }
 
-        convertToSimTKState(
-                time, states, controls, modelBase, simtkStateBase);
+        convertToSimTKState(time, states, controls, modelBase, simtkStateBase);
         convertToSimTKState(time, states, controls, modelDisabledConstraints,
                 simtkStateDisabledConstraints);
         // If enabled constraints exist in the model, compute constraint forces

@@ -80,6 +80,13 @@ public:
         return m_finite_difference_scheme;
     }
 
+    void setOutputInterval(int output_interval) {
+        m_outputInterval = output_interval;
+    }
+
+    int getOutputInterval() const {
+        return m_outputInterval;
+    }
     /// "none" to use block sparsity (treat all CasOC::Function%s as dense;
     /// default), "initial-guess", or "random".
     void setSparsityDetection(const std::string& setting);
@@ -132,6 +139,7 @@ private:
     std::string m_finite_difference_scheme = "central";
     std::string m_sparsity_detection = "none";
     std::string m_write_sparsity;
+    int m_outputInterval;
     int m_sparsity_detection_random_count = 3;
     std::string m_parallelism = "serial";
     int m_numThreads = 1;

@@ -24,6 +24,60 @@ using casadi::Slice;
 
 namespace CasOC {
 
+// http://casadi.sourceforge.net/api/html/d7/df0/solvers_2callback_8py-example.html
+
+class NlpsolCallback : public casadi::Callback {
+public:
+    NlpsolCallback(const Transcription& transcription, const Problem& problem,
+            casadi_int numVariables, casadi_int numConstraints,
+            casadi_int outputInterval)
+            : m_transcription(transcription), m_problem(problem),
+              m_numVariables(numVariables), m_numConstraints(numConstraints),
+              m_outputInterval(outputInterval) {
+        construct("NlpsolCallback", {});
+    }
+    void init() override { std::cout << "DEBUGinit" << std::endl; }
+    casadi_int get_n_in() override { return casadi::nlpsol_n_out(); }
+    casadi_int get_n_out() override { return 1; }
+    std::string get_name_in(casadi_int i) override {
+        return casadi::nlpsol_out(i);
+    }
+    std::string get_name_out(casadi_int) override { return "ret"; }
+    casadi::Sparsity get_sparsity_in(casadi_int i) override {
+        auto n = casadi::nlpsol_out(i);
+        if (n == "f") {
+            return casadi::Sparsity::scalar();
+        } else if (n == "x" || n == "lam_x") {
+            return casadi::Sparsity::dense(m_numVariables, 1);
+        } else if (n == "g" || n == "lam_g") {
+            return casadi::Sparsity::dense(m_numConstraints, 1);
+        } else {
+            return casadi::Sparsity(0, 0);
+        }
+    }
+    std::vector<DM> eval(const std::vector<DM>& args) const override {
+        if (evalCount % m_outputInterval == 0) {
+            Iterate iterate = m_problem.createIterate<Iterate>();
+            iterate.variables = m_transcription.expand(args.at(0));
+            iterate.times =
+                    m_transcription.createTimes(iterate.variables[initial_time],
+                            iterate.variables[final_time]);
+            iterate.iteration = evalCount;
+            m_problem.intermediateCallback(iterate);
+            evalCount++;
+        }
+        return {0};
+    }
+
+private:
+    const Transcription& m_transcription;
+    const Problem& m_problem;
+    casadi_int m_numVariables;
+    casadi_int m_numConstraints;
+    casadi_int m_outputInterval;
+    mutable int evalCount = 0;
+};
+
 void Transcription::createVariablesAndSetBounds() {
     // Set the grid.
     // -------------
@@ -378,16 +432,30 @@ Solution Transcription::solve(const Iterate& guessOrig) {
     if (!options.empty()) {
         options[m_solver.getOptimSolver()] = m_solver.getSolverOptions();
     }
+
+    auto x = flatten(m_vars);
+    casadi_int numVariables = x.numel();
+
+    // veccat() concatenates std::vectors into a single MX vector.
+    auto g = casadi::MX::veccat(m_constraints);
+    casadi_int numConstraints = g.numel();
+
+    NlpsolCallback callback(*this, m_problem, numVariables, numConstraints,
+            m_solver.getOutputInterval());
+    if (m_solver.getOutputInterval() != 0) {
+        options["iteration_callback"] = callback;
+    }
+
     // The inputs to nlpsol() are symbolic (casadi::MX).
     casadi::MXDict nlp;
-    nlp.emplace(std::make_pair("x", flatten(m_vars)));
+    nlp.emplace(std::make_pair("x", x));
     // The m_objective symbolic variable holds an expression graph including
     // all the calculations performed on the variables x.
     nlp.emplace(std::make_pair("f", m_objective));
     // The m_constraints symbolic vector holds all of the expressions for
     // the constraint functions.
     // veccat() concatenates std::vectors into a single MX vector.
-    nlp.emplace(std::make_pair("g", casadi::MX::veccat(m_constraints)));
+    nlp.emplace(std::make_pair("g", g));
     if (!m_solver.getWriteSparsity().empty()) {
         const auto prefix = m_solver.getWriteSparsity();
         auto gradient = casadi::MX::gradient(nlp["f"], nlp["x"]);
