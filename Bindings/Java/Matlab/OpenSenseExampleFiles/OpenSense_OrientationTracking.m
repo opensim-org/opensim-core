@@ -1,7 +1,7 @@
-%% IMUDataConverter.m
-% Example code for reading, and converting, XSENS IMU sensor data to
-% OpenSense friendly format.
-% Run this script from the OpenSenseExampleFiles directory. 
+%% OpenSense_OrientationTracking.m
+% Example code to perform orienation tracking with OpenSense. This
+% script uses the OpenSense library functions and is part of the OpenSense
+% Example files. 
 
 % ----------------------------------------------------------------------- %
 % The OpenSim API is a toolkit for musculoskeletal modeling and           %
@@ -25,37 +25,41 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-%% Clear any variables in the workspace
-clear all; close all; clc; 
-
-%% Import OpenSim libraries
+%% Clear the Workspace variables. 
+clear all; close all; clc;
 import org.opensim.modeling.*
 
-%% Build an Xsens Settings Object. 
-% Instantiate the Reader Settings Class
-xsensSettings = XsensDataReaderSettings('MT_012005D6_009-001_Mappings.xml');
-% Instantiate an XsensDataReader
-xsens = XsensDataReader(xsensSettings);
-% Get a table reference for the data
-table = xsens.read('IMUData/');
-% get the trial name from the settings
-trial = char(xsensSettings.get_trial_prefix());
-%% Get Orientation Data
-quatTableTyped = xsens.getOrientationsTable(table);
-% Write to file
-STOFileAdapterQuaternion.write(quatTableTyped,  'imuOrientations.sto');
+%% Set variables to use
+modelFileName = 'calibrated_imuTrackingModel.osim';        % The path to an input model
+orientationsFileName = 'MT_012005D6_009-001_orientations.sto';   % The path to orientation data for calibration 
+baseIMUName = 'pelvis_imu';                     % The name of the base IMU to use for the model
+baseIMUHeading = 'z';             % The Coordinate Heading of the base IMU ('x', 'y', or 'z')
+visualizeTracking = 1;                        % Boolean to Visualize the tracking simulation
+startTime = 5;       % Start time (in seconds) of the tracking simulation. 
+endTime = 10;        % End time (in seconds) of the tracking simulation.
+resultsDirectory = 'IKResults';
 
-%% Get Acceleration Data
-accelTableTyped = xsens.getLinearAccelerationsTable(table);
-% Write to file
-STOFileAdapterVec3.write(accelTableTyped, 'imuAccelerations.sto');
+%% Instantiate an InverseKinematicsStudy
+ik = InverseKinematicsStudy();
+ 
+%% Set the model path to be used for tracking
+ik.set_model_file_name(modelFileName);
+ 
+% Set file with orientations to track
+ik.set_orientations_file_name(orientationsFileName);
+ 
+% Set time range in seconds
+ik.set_time_range(0, startTime); 
+ik.set_time_range(1, endTime);   
 
-%% Get Magenometer Data
-magTableTyped = xsens.getMagneticHeadingTable(table);
-% Write to file
-STOFileAdapterVec3.write(magTableTyped, 'imuMagnetometers.sto');
-
-%% Get Gyro Data
-gyroTableTyped = xsens.getAngularVelocityTable(table);
-% Write to file
-STOFileAdapterVec3.write(gyroTableTyped, 'imuGyros.sto');
+% Set the base IMU
+ik.set_base_imu_label(baseIMUName);
+ 
+% Set the axis heading
+ik.set_base_heading_axis(baseIMUHeading);
+ 
+% Set a directory for the results to be written to
+ik.set_results_directory(resultsDirectory)
+  
+% Run IK
+ik.run(visualizeTracking);

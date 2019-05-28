@@ -1,4 +1,4 @@
-%% makeSubTrials.m
+%% GenerateSubtrials_UsingConvenianceClasses.m
 % Example code generating sub-trials from a single, large, IMU data file.
 % This is usefull when many minutes of IMU data have been collected by
 % orienation tracking with OpenSense is only necessary during specific
@@ -30,8 +30,6 @@
 clear all; close all; clc;
 
 %% Instantiate a imuDataSlicer()
-
-% Path to Parent IMU File 
 trialpath = 'imuOrientations.sto';
 accPath = 'imuAccelerations.sto';
 % Instantiate the data slicer to carve out smaller trial files

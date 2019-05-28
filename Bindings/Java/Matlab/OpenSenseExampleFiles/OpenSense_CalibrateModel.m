@@ -1,6 +1,7 @@
-%% OrientationTacking.m
-% Example code to calibrate and track orienation data with OpenSense. This
-% script uses the Matlab Class orientationTrackingHelper(). 
+%% CalibrateOpenSenseModel.m
+% Example code to calibrate orienation data with OpenSense. This
+% script uses the OpenSense library functions and is part of the OpenSense
+% Example files. 
 
 % ----------------------------------------------------------------------- %
 % The OpenSim API is a toolkit for musculoskeletal modeling and           %
@@ -24,41 +25,25 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-%% Orientation Tracking
+%% Clear the Workspace variables. 
 clear all; close all; clc;
-% Instantiate an orienation tracking helper object. This is a Matlab Class
-% that wraps both Calibration and Tracking in the same object for greater
-% conveniance. 
-ot = orientationTrackingHelper();
+import org.opensim.modeling.*
 
-%% Calibrate the Model 
+%% Set variables to use
+modelFileName = 'imuTrackingModel.osim';        % The path to an input model
+orientationsFileName = 'MT_012005D6_009-001_orientations.sto';   % The path to orientation data for calibration 
+baseIMUName = 'pelvis_imu';                     % The name of the base IMU to use for the model
+baseIMUHeading = CoordinateAxis(2);             % The Coordinate Heading of the base IMU (0 for x, 1 for y, 2 for z)
+visulizeCalibration = 1;                        % Boolean to Visualize the Output model
 
-% Setup the Model Calibration.
-ot.setModelCalibrationPoseFile('GenericModel.osim');
-% ot.setCalibrationTrialName('MT_012005D6_009-quaternions_calibration_trial_Facing_X.sto');
-ot.setCalibrationTrialName('imuOrientations.sto');
-ot.setBaseHeadingAxis(0)
-ot.setVisualizeCalibratedModel(0)
-ot.setCalibratedModelOutputName('calibrated_GenericModel.osim')
-% Run the orientation calibration.
-ot.generateCalibratedModel()
-% Write the calibrated model to file. 
-ot.writeCalibratedModel2File()
-
-%% Run IK Orientation Tracking
-
-% Set the name of the orientation File to be tracked
-ot.setTrackingOrientationsFileName('imuOrientations.sto');
-% Set the Output directory for the results file
-ot.setIKResultsDir('IKResults')
-% Set the time interval (in minutes) to be tracked. 
-ot.setIKTimeIntervalInMinutes(0.05,0.10);
-% Set the Visualization Boolean.
-ot.setVisualizeTracking(1);
-% Run orientation tracking
-ot.runOrientationTracking();
-
-
-
-
-
+%% Instantiate an OpenSenseUtilities object
+ou = OpenSenseUtilities();
+ 
+%% Generate a model that calibrates the IMU sensors to a model pose.
+model = ou.calibrateModelFromOrientations(modelFileName,...           
+                                          orientationsFileName,... 
+                                          baseIMUName,...                  
+                                          baseIMUHeading,...            
+                                          visulizeCalibration);                               
+%% Print the calibrated model to file.
+model.print(['calibrated_' modelFileName])
