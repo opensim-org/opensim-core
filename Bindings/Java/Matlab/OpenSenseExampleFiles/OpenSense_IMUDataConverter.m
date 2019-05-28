@@ -33,7 +33,7 @@ import org.opensim.modeling.*
 
 %% Build an Xsens Settings Object. 
 % Instantiate the Reader Settings Class
-xsensSettings = XsensDataReaderSettings('imuMappings.xml');
+xsensSettings = XsensDataReaderSettings('myIMUMappings.xml');
 % Instantiate an XsensDataReader
 xsens = XsensDataReader(xsensSettings);
 % Get a table reference for the data
