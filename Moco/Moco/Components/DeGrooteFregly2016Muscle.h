@@ -289,7 +289,9 @@ public:
     /// Currently, only Millard2012EquilibriumMuscles are replaced.
     /// If the model has muscles of other types, an exception is thrown unless
     /// allowUnsupportedMuscles is true.
-    /// @note Pennation angle of the muscle is not currently carried over.
+    /// The resulting muscles will have ignore_tendon_compliance set as true,
+    /// regardless of the values in the original muscles, as this muscle class
+    /// does not yet support tendon compliance.
     static void replaceMuscles(
             Model& model, bool allowUnsupportedMuscles = false);
 

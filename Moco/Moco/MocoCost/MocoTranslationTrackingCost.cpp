@@ -143,7 +143,7 @@ void MocoTranslationTrackingCost::initializeOnModelImpl(const Model& model)
 
     // Cache the model frames and translation weights based on the order of the 
     // translation table.
-    for (int i = 0; i < (int) pathsToUse.size(); ++i) {
+    for (int i = 0; i < (int)pathsToUse.size(); ++i) {
         const auto& path = pathsToUse[i];
         const auto& frame = model.getComponent<Frame>(path);
         m_model_frames.emplace_back(&frame);
@@ -170,7 +170,7 @@ void MocoTranslationTrackingCost::initializeOnModelImpl(const Model& model)
     // element (e.g. "<frame-path>/position_p0" for the first position vector
     // element).
     std::vector<std::string> colLabels;
-    for (int irow = 0; irow < (int) translationTable.getNumRows(); ++irow) {
+    for (int irow = 0; irow < (int)translationTable.getNumRows(); ++irow) {
         const auto row = translationTable.getRowAtIndex(irow);
 
         // Get position vector elements.

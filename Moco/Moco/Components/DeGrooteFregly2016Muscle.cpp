@@ -392,8 +392,8 @@ void DeGrooteFregly2016Muscle::replaceMuscles(
             actu->setPennationAngleAtOptimalFiberLength(
                     musc->getPennationAngleAtOptimalFiberLength());
             actu->setMaxContractionVelocity(musc->getMaxContractionVelocity());
-            actu->set_ignore_tendon_compliance(
-                    musc->get_ignore_tendon_compliance());
+            actu->set_ignore_tendon_compliance(true);
+                    // TODO musc->get_ignore_tendon_compliance());
             actu->set_ignore_activation_dynamics(
                     musc->get_ignore_activation_dynamics());
 

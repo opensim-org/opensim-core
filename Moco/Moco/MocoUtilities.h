@@ -31,6 +31,7 @@ namespace OpenSim {
 class StatesTrajectory;
 class Model;
 class MocoIterate;
+class MocoProblem;
 
 /// Since Moco does not require C++14 (which contains std::make_unique()),
 /// here is an implementation of make_unique().
@@ -168,13 +169,13 @@ TimeSeriesTable resample(const TimeSeriesTable& in, const TimeVector& newTime) {
     OPENSIM_THROW_IF(newTime.size() < 2, Exception,
             "Cannot resample if number of times is 0 or 1.");
     OPENSIM_THROW_IF(newTime[0] < time[0], Exception,
-            format("New initial time (%f) cannot be greater than existing "
+            format("New initial time (%f) cannot be less than existing "
                    "initial "
                    "time (%f)",
                     newTime[0], time[0]));
     OPENSIM_THROW_IF(newTime[newTime.size() - 1] > time[time.size() - 1],
             Exception,
-            format("New final time (%f) cannot be less than existing final "
+            format("New final time (%f) cannot be greater than existing final "
                    "time (%f)",
                     newTime[newTime.size() - 1], time[time.size() - 1]));
     for (int itime = 1; itime < (int)newTime.size(); ++itime) {
@@ -257,6 +258,9 @@ OSIMMOCO_API void visualize(Model, Storage);
 /// This function is the same as visualize(Model, Storage), except that
 /// the states are provided in a TimeSeriesTable.
 OSIMMOCO_API void visualize(Model, TimeSeriesTable);
+
+OSIMMOCO_API TimeSeriesTable analyze(const MocoProblem& model,
+        const MocoIterate& it, std::vector<std::string> outputPaths);
 
 /// Given a MocoIterate and the associated OpenSim model, return the model with
 /// a prescribed controller appended that will compute the control values from
