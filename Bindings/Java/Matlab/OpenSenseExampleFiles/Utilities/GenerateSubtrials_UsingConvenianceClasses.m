@@ -1,8 +1,9 @@
 %% GenerateSubtrials_UsingConvenianceClasses.m
 % Example code generating sub-trials from a single, large, IMU data file.
-% This is usefull when many minutes of IMU data have been collected by
+% This is usefull when many minutes of IMU data have been collected but
 % orienation tracking with OpenSense is only necessary during specific
-% times of the trial. 
+% times of the trial. This script uses the OpenSense Matlab Class 
+% imuDataSlicer(). 
 
 % ----------------------------------------------------------------------- %
 % The OpenSim API is a toolkit for musculoskeletal modeling and           %
@@ -35,17 +36,17 @@ accPath = 'imuAccelerations.sto';
 % Instantiate the data slicer to carve out smaller trial files
 ds = imuDataSlicer(trialpath);
 
-%% Get the original calibration trial
+%% Slice the calibration trial and write it to file
 stime = 0.00;
 etime = 0.05;
 ds.setDataTimeIntervalInMinutes(stime, etime)
-ds.isStatic(accPath)
-ds.writeStaticTrial('calibration_trial')
+ds.generateSubTrial();
+ds.writeSubTrial('calibration_trial')
 
-%% Export some walking data
+%% Slice out a section of walking data and write it to file. 
 stime = 0.05;
 etime = 0.15;
 ds.setDataTimeIntervalInMinutes(stime, etime);
 ds.generateSubTrial();
-ds.writeSubTrial('Walking');
+ds.writeSubTrial('Walking_05_10');
 
