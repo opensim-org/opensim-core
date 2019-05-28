@@ -123,7 +123,7 @@ namespace OpenSim {
 %shared_ptr(OpenSim::DataTable_<double, double>);
 %shared_ptr(OpenSim::DataTable_<double, SimTK::Vec3>);
 %shared_ptr(OpenSim::DataTable_<double, SimTK::UnitVec3>);
-%shared_ptr(OpenSim::DataTable_<double, SimTK::Quaternion>);
+%shared_ptr(OpenSim::DataTable_<double, SimTK::Quaternion_<double>>);
 %shared_ptr(OpenSim::DataTable_<double, SimTK::Vec6>);
 %shared_ptr(OpenSim::DataTable_<double, SimTK::SpatialVec>);
 %shared_ptr(OpenSim::DataTable_<double, SimTK::Mat33>);
@@ -131,7 +131,7 @@ namespace OpenSim {
 %shared_ptr(OpenSim::TimeSeriesTable_<double>);
 %shared_ptr(OpenSim::TimeSeriesTable_<SimTK::Vec3>);
 %shared_ptr(OpenSim::TimeSeriesTable_<SimTK::UnitVec3>);
-%shared_ptr(OpenSim::TimeSeriesTable_<SimTK::Quaternion>);
+%shared_ptr(OpenSim::TimeSeriesTable_<SimTK::Quaternion_<double>>);
 %shared_ptr(OpenSim::TimeSeriesTable_<SimTK::Vec6>);
 %shared_ptr(OpenSim::TimeSeriesTable_<SimTK::SpatialVec>);
 %shared_ptr(OpenSim::TimeSeriesTable_<SimTK::Mat33>);
@@ -207,10 +207,10 @@ namespace OpenSim {
 DATATABLE_CLONE(double, double)
 DATATABLE_CLONE(double, SimTK::Vec3)
 DATATABLE_CLONE(double, SimTK::UnitVec3)
-DATATABLE_CLONE(double, SimTK::Quaternion)
+DATATABLE_CLONE(double, SimTK::Quaternion_<double>)
 DATATABLE_CLONE(double, SimTK::Vec6)
 DATATABLE_CLONE(double, SimTK::SpatialVec)
-DATATABLE_CLONE(double, SimTK::Rotation)
+DATATABLE_CLONE(double, SimTK::Rotation_<double>)
 %extend OpenSim::DataTable_<double, double> {
     DataTable_<double, SimTK::Vec3>
     packVec3() {
@@ -334,7 +334,7 @@ DATATABLE_CLONE(double, SimTK::Rotation)
 %template(DataTable)           OpenSim::DataTable_<double, double>;
 %template(DataTableVec3)       OpenSim::DataTable_<double, SimTK::Vec3>;
 %template(DataTableUnitVec3)   OpenSim::DataTable_<double, SimTK::UnitVec3>;
-%template(DataTableQuaternion) OpenSim::DataTable_<double, SimTK::Quaternion>;
+%template(DataTableQuaternion) OpenSim::DataTable_<double, SimTK::Quaternion_<double>>;
 %template(DataTableVec6)       OpenSim::DataTable_<double, SimTK::Vec6>;
 %template(DataTableSpatialVec) OpenSim::DataTable_<double, SimTK::SpatialVec>;
 %template(DataTableMat33)      OpenSim::DataTable_<double, SimTK::Mat33>;
@@ -344,7 +344,7 @@ DATATABLE_CLONE(double, SimTK::Rotation)
 %template(TimeSeriesTableVec3)     OpenSim::TimeSeriesTable_<SimTK::Vec3>;
 %template(TimeSeriesTableUnitVec3) OpenSim::TimeSeriesTable_<SimTK::UnitVec3>;
 %template(TimeSeriesTableQuaternion)
-                                   OpenSim::TimeSeriesTable_<SimTK::Quaternion>;
+                                   OpenSim::TimeSeriesTable_<SimTK::Quaternion_<double>>;
 %template(TimeSeriesTableVec6)     OpenSim::TimeSeriesTable_<SimTK::Vec6>;
 %template(TimeSeriesTableSpatialVec)
                                    OpenSim::TimeSeriesTable_<SimTK::SpatialVec>;

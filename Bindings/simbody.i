@@ -24,8 +24,10 @@ namespace SimTK {
 }
 %include <SWIGSimTK/CoordinateAxis.h>
 %include <SWIGSimTK/UnitVec.h>
+%include <SWIGSimTK/Quaternion.h>
 namespace SimTK {
 %template(UnitVec3)  SimTK::UnitVec<double,1>;
+%template(Quaternion)  SimTK::Quaternion_<double>;
 }
 
 // Vector and Matrix
@@ -164,12 +166,20 @@ namespace SimTK {
 %template(Vector ## ETY)        SimTK::Vector_<ETY>;
 %template(RowVectorBase ## ETY) SimTK::RowVectorBase<ETY>;
 %template(RowVectorView ## ETY) SimTK::RowVectorView_<ETY>;
-%template(RowVector##ETY)     SimTK::RowVector_<ETY>;
+%template(RowVector ## ETY)     SimTK::RowVector_<ETY>;
 %enddef
 
 INSTANTIATE_MATRIXTYPES(Vec3)
 INSTANTIATE_MATRIXTYPES(Vec6)
-INSTANTIATE_MATRIXTYPES(Quaternion)
+%template(MatrixBaseQuaternion)    SimTK::MatrixBase<Quaternion_<double>>;
+%template(MatrixViewQuaternion)    SimTK::MatrixView_<Quaternion_<double>>;
+%template(MatrixQuaternion)        SimTK::Matrix_<Quaternion_<double>>;
+%template(VectorBaseQuaternion)    SimTK::VectorBase<Quaternion_<double>>;
+%template(VectorViewQuaternion)    SimTK::VectorView_<Quaternion_<double>>;
+%template(VectorQuaternion)        SimTK::Vector_<Quaternion_<double>>;
+%template(RowVectorBaseQuaternion) SimTK::RowVectorBase<Quaternion_<double>>;
+%template(RowVectorViewQuaternion) SimTK::RowVectorView_<Quaternion_<double>>;
+%template(RowVectorQuaternion)     SimTK::RowVector_<Quaternion_<double>>;
 
 }
 
