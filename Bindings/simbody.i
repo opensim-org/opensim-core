@@ -186,7 +186,15 @@ namespace SimTK {
 %template(InverseRotation) SimTK::InverseRotation_<double>;
 
 INSTANTIATE_MATRIXTYPES(Mat33)
-INSTANTIATE_MATRIXTYPES(Rotation)
+%template(MatrixBaseRotation)    SimTK::MatrixBase<SimTK::Rotation_<double>>;
+%template(MatrixViewRotation)    SimTK::MatrixView_<SimTK::Rotation_<double>>;
+%template(MatrixRotation)        SimTK::Matrix_<SimTK::Rotation_<double>>;
+%template(VectorBaseRotation)    SimTK::VectorBase<SimTK::Rotation_<double>>;
+%template(VectorViewRotation)    SimTK::VectorView_<SimTK::Rotation_<double>>;
+%template(VectorRotation)        SimTK::Vector_<SimTK::Rotation_<double>>;
+%template(RowVectorBaseRotation) SimTK::RowVectorBase<SimTK::Rotation_<double>>;
+%template(RowVectorViewRotation) SimTK::RowVectorView_<SimTK::Rotation_<double>>;
+%template(RowVectorRotation)     SimTK::RowVector_<SimTK::Rotation_<double>>;
 
 }
 
