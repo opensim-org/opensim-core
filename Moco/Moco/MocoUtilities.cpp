@@ -112,6 +112,12 @@ TimeSeriesTable OpenSim::filterLowpass(
     return storage.exportToTable();
 }
 
+void OpenSim::writeTableToFile(
+        const TimeSeriesTable& table, const std::string& filepath) {
+    DataAdapter::InputTables tables = {{"table", &table}};
+    FileAdapter::writeFile(tables, filepath);
+}
+
 // Based on code from simtk.org/projects/predictivesim SimbiconExample/main.cpp.
 void OpenSim::visualize(Model model, Storage statesSto) {
 
@@ -284,8 +290,25 @@ void OpenSim::visualize(Model model, TimeSeriesTable table) {
     visualize(std::move(model), convertTableToStorage(table));
 }
 
+namespace {
+template <typename FunctionType>
+std::unique_ptr<Function> createFunction(
+        const SimTK::Vector& x, const SimTK::Vector& y) {
+    OPENSIM_THROW_IF(x.size() != y.size(), Exception, "x.size() != y.size()");
+    return make_unique<FunctionType>(
+            x.size(), x.getContiguousScalarData(), y.getContiguousScalarData());
+}
+template <>
+std::unique_ptr<Function> createFunction<GCVSpline>(
+        const SimTK::Vector& x, const SimTK::Vector& y) {
+    OPENSIM_THROW_IF(x.size() != y.size(), Exception, "x.size() != y.size()");
+    return make_unique<GCVSpline>(5, x.size(), x.getContiguousScalarData(),
+            y.getContiguousScalarData());
+}
+} // anonymous namespace
+
 void OpenSim::prescribeControlsToModel(
-        const MocoIterate& iterate, Model& model) {
+        const MocoIterate& iterate, Model& model, std::string functionType) {
     // Get actuator names.
     model.initSystem();
     OpenSim::Array<std::string> actuNames;
@@ -302,10 +325,19 @@ void OpenSim::prescribeControlsToModel(
     controller->setName("prescribed_controller");
     for (int i = 0; i < actuNames.size(); ++i) {
         const auto control = iterate.getControl(actuNames[i]);
-        auto* function = new GCVSpline(5, time.nrow(), &time[0], &control[0]);
+        std::unique_ptr<Function> function;
+        if (functionType == "GCVSpline") {
+            function = createFunction<GCVSpline>(time, control);
+        } else if (functionType == "PiecewiseLinearFunction") {
+            function = createFunction<PiecewiseLinearFunction>(time, control);
+        } else {
+            OPENSIM_THROW(Exception,
+                    format("Unexpected function type %s.", functionType));
+        }
         const auto& actu = model.getComponent<Actuator>(actuNames[i]);
         controller->addActuator(actu);
-        controller->prescribeControlForActuator(actu.getName(), function);
+        controller->prescribeControlForActuator(
+                actu.getName(), function.release());
     }
     model.addController(controller);
 }
@@ -313,7 +345,7 @@ void OpenSim::prescribeControlsToModel(
 MocoIterate OpenSim::simulateIterateWithTimeStepping(
         const MocoIterate& iterate, Model model, double integratorAccuracy) {
 
-    prescribeControlsToModel(iterate, model);
+    prescribeControlsToModel(iterate, model, "PiecewiseLinearFunction");
 
     // Add states reporter to the model.
     auto* statesRep = new StatesTrajectoryReporter();
@@ -350,7 +382,8 @@ MocoIterate OpenSim::simulateIterateWithTimeStepping(
 
     const auto& statesTimes = states.getIndependentColumn();
     SimTK::Vector timeVec((int)statesTimes.size(), statesTimes.data(), true);
-    TimeSeriesTable controls = resample(model.getControlsTable(), timeVec);
+    TimeSeriesTable controls = resample<SimTK::Vector, PiecewiseLinearFunction>(
+            model.getControlsTable(), timeVec);
     // Fix column labels. (TODO: Not general.)
     auto labels = controls.getColumnLabels();
     for (auto& label : labels) { label = "/forceset/" + label; }
@@ -361,7 +394,8 @@ MocoIterate OpenSim::simulateIterateWithTimeStepping(
 
     auto forwardSolution = MocoIterate(timeVec,
             {{"states", {states.getColumnLabels(), states.getMatrix()}},
-             {"controls", {controls.getColumnLabels(), controls.getMatrix()}}});
+                    {"controls", {controls.getColumnLabels(),
+                                         controls.getMatrix()}}});
 
     return forwardSolution;
 }
@@ -434,34 +468,50 @@ std::unordered_map<std::string, int> OpenSim::createSystemYIndexMap(
 }
 
 std::vector<std::string> OpenSim::createControlNamesFromModel(
-    const Model& model) {
+        const Model& model, std::vector<int>& modelControlIndices) {
     std::vector<std::string> controlNames;
-    // Loop through all actuators and create control names. For scalar actuators,
-    // use the actuator name for the control name. For non-scalar actuators,
-    // use the actuator name with a control index appended for the control name.
+    // Loop through all actuators and create control names. For scalar
+    // actuators, use the actuator name for the control name. For non-scalar
+    // actuators, use the actuator name with a control index appended for the
+    // control name.
     // TODO update when OpenSim supports named controls.
+    int count = 0;
+    modelControlIndices.clear();
     for (const auto& actu : model.getComponentList<Actuator>()) {
+        if (!actu.get_appliesForce()) {
+            count += actu.numControls();
+            continue;
+        }
         std::string actuPath = actu.getAbsolutePathString();
         if (actu.numControls() == 1) {
             controlNames.push_back(actuPath);
+            modelControlIndices.push_back(count);
+            count++;
         } else {
             for (int i = 0; i < actu.numControls(); ++i) {
                 controlNames.push_back(actuPath + "_" + std::to_string(i));
+                modelControlIndices.push_back(count);
+                count++;
             }
         }
     }
 
     return controlNames;
 }
+std::vector<std::string> OpenSim::createControlNamesFromModel(
+        const Model& model) {
+    std::vector<int> modelControlIndices;
+    return createControlNamesFromModel(model, modelControlIndices);
+}
 
 std::unordered_map<std::string, int> OpenSim::createSystemControlIndexMap(
-    const Model& model) {
+        const Model& model) {
     // We often assume that control indices in the state are in the same order
-    // as the actuators in the model. However, the control indices are 
-    // allocated in the order in which addToSystem() is invoked (not 
-    // necessarily the order used by getComponentList()). So until we can be 
-    // absolutely sure that the controls are in the same order as actuators, 
-    // we can run the following check: in order, set an actuator's control 
+    // as the actuators in the model. However, the control indices are
+    // allocated in the order in which addToSystem() is invoked (not
+    // necessarily the order used by getComponentList()). So until we can be
+    // absolutely sure that the controls are in the same order as actuators,
+    // we can run the following check: in order, set an actuator's control
     // signal(s) to NaN and ensure the i-th control is NaN.
     // TODO update when OpenSim supports named controls.
     std::unordered_map<std::string, int> controlIndices;
@@ -476,9 +526,9 @@ std::unordered_map<std::string, int> OpenSim::createSystemControlIndexMap(
         actu.setControls(nan, modelControls);
         std::string actuPath = actu.getAbsolutePathString();
         for (int j = 0; j < nc; ++j) {
-            OPENSIM_THROW_IF(!SimTK::isNaN(modelControls[i]),
-                Exception, "Internal error: actuators are not in the "
-                "expected order. Submit a bug report.");
+            OPENSIM_THROW_IF(!SimTK::isNaN(modelControls[i]), Exception,
+                    "Internal error: actuators are not in the "
+                    "expected order. Submit a bug report.");
             if (nc == 1) {
                 controlIndices[actuPath] = i;
             } else {

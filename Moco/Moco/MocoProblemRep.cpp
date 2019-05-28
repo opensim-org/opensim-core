@@ -170,7 +170,8 @@ void MocoProblemRep::initialize() {
         const auto& name = ph0.get_control_infos(i).getName();
         auto it = std::find(controlNames.begin(), controlNames.end(), name);
         OPENSIM_THROW_IF(it == controlNames.end(), Exception,
-                format("Control info provided for nonexistent actuator '%s'.",
+                format("Control info provided for nonexistent or disabled "
+                       "actuator '%s'.",
                         name));
     }
 

@@ -11,6 +11,8 @@
 #include <Moco/MocoCost/MocoMarkerEndpointCost.h>
 #include <Moco/MocoCost/MocoControlCost.h>
 #include <Moco/MocoCost/MocoJointReactionCost.h>
+#include <Moco/MocoCost/MocoOrientationTrackingCost.h>
+#include <Moco/MocoCost/MocoTranslationTrackingCost.h>
 #include <Moco/MocoBounds.h>
 #include <Moco/MocoProblem.h>
 #include <Moco/MocoParameter.h>
@@ -19,6 +21,7 @@
 #include <Moco/MocoCasADiSolver/MocoCasADiSolver.h>
 #include <Moco/MocoStudy.h>
 #include <Moco/Components/ActivationCoordinateActuator.h>
+#include <Moco/Components/DeGrooteFregly2016Muscle.h>
 #include <Moco/MocoUtilities.h>
 #include <Moco/Components/ModelFactory.h>
 
