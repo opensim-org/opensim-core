@@ -313,6 +313,7 @@ OSIMMOCO_API
 std::vector<std::string> createControlNamesFromModel(
         const Model& model, std::vector<int>& modelControlIndices);
 //// Same as above, but when there is no mapping to the modelControlIndices.
+OSIMMOCO_API
 std::vector<std::string> createControlNamesFromModel(const Model& model);
 /// The map provides the index of each control variable in the SimTK::Vector
 /// return by OpenSim::Model::getControls() from its control name.
