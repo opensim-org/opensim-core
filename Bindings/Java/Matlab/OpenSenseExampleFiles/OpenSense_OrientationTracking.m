@@ -37,7 +37,6 @@ baseIMUHeading = 'z';      % The Coordinate Heading of the base IMU ('x', 'y', o
 visualizeTracking = 1;     % Boolean to Visualize the tracking simulation
 startTime = 7.25;          % Start time (in seconds) of the tracking simulation. 
 endTime = 15;              % End time (in seconds) of the tracking simulation.
-accuracy = 1e-4;           % The accuracy of the solution in absolute terms
 resultsDirectory = 'IKResults';
 
 %% Instantiate an InverseKinematicsStudy
@@ -59,9 +58,6 @@ ik.set_base_imu_label(baseIMUName);
 % Set the axis heading
 ik.set_base_heading_axis(baseIMUHeading);
 
-% Set the accuracy 
-ik.set_accuracy(accuracy);
- 
 % Set a directory for the results to be written to
 ik.set_results_directory(resultsDirectory)
   

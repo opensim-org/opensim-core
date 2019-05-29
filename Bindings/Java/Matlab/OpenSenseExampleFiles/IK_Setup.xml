@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <OpenSimDocument Version="40000">
 	<InverseKinematicsStudy>
-        <!--The accuracy of the solution in absolute terms, i.e. the number of significant digits to which the solution can be trusted. Default 1e-6.-->
-		<accuracy>1e-4</accuracy>
-		<!--The time range for the study.-->
+        <!--The time range for the study.-->
 		<time_range>5 10</time_range>
 		<!--The label of the base IMU in the orientations_file used to account for the heading difference between the sensor data and the forward direction of the model. Leave blank if no heading correction is to be applied.-->
 		<base_imu_label>pelvis_imu</base_imu_label>
