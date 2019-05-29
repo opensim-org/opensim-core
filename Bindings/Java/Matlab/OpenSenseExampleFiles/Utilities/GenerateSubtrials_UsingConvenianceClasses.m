@@ -31,8 +31,8 @@
 clear all; close all; clc;
 
 %% Instantiate a imuDataSlicer()
-trialpath = 'imuOrientations.sto';
-accPath = 'imuAccelerations.sto';
+trialpath = 'MT_012005D6_009-001_orientations.sto';
+accPath = 'MT_012005D6_009-001_accelerations.sto';
 % Instantiate the data slicer to carve out smaller trial files
 ds = imuDataSlicer(trialpath);
 
