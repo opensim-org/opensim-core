@@ -101,6 +101,7 @@ protected:
     int m_numMeshPoints = 0;
     int m_numMeshIntervals = 0;
     int m_numPointsIgnoringConstraints = 0;
+    casadi::DM m_grid;
     casadi::MX m_times;
     casadi::MX m_duration;
 

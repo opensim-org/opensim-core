@@ -36,8 +36,8 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid) {
     m_numMeshIntervals = m_numMeshPoints - 1;
     m_numPointsIgnoringConstraints = m_numGridPoints - m_numMeshPoints;
     m_grid = grid;
-// Create variables.
 
+    // Create variables.
     // -----------------
     m_vars[initial_time] = MX::sym("initial_time");
     m_vars[final_time] = MX::sym("final_time");
