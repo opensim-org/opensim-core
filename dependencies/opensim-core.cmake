@@ -17,6 +17,7 @@ AddDependency(NAME       opensim-core
                     -DSIMBODY_HOME:PATH=${CMAKE_INSTALL_PREFIX}/simbody
                     -DCMAKE_PREFIX_PATH:PATH=${CMAKE_INSTALL_PREFIX}/docopt)
 
+
 if(SUPERBUILD_opensim-core)
 
     # OpenSim's dependencies.
