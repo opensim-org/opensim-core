@@ -54,7 +54,7 @@ MocoCasOCProblem::MocoCasOCProblem(const MocoCasADiSolver& mocoCasADiSolver,
                 convertBounds(info.getFinalBounds()));
     }
 
-    auto controlNames = createControlNamesFromModel(model);
+    auto controlNames = createControlNamesFromModel(model, m_modelControlIndices);
     for (const auto& controlName : controlNames) {
         const auto& info = problemRep.getControlInfo(controlName);
         addControl(controlName, convertBounds(info.getBounds()),
