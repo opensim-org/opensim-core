@@ -30,13 +30,14 @@ clear all; close all; clc;
 import org.opensim.modeling.*
 
 %% Set variables to use
-modelFileName = 'calibrated_imuTrackingModel.osim';        % The path to an input model
+modelFileName = 'calibrated_imuTrackingModel.osim';              % The path to an input model
 orientationsFileName = 'MT_012005D6_009-001_orientations.sto';   % The path to orientation data for calibration 
-baseIMUName = 'pelvis_imu';                     % The name of the base IMU to use for the model
-baseIMUHeading = 'z';             % The Coordinate Heading of the base IMU ('x', 'y', or 'z')
-visualizeTracking = 1;                        % Boolean to Visualize the tracking simulation
-startTime = 5;       % Start time (in seconds) of the tracking simulation. 
-endTime = 10;        % End time (in seconds) of the tracking simulation.
+baseIMUName = 'pelvis_imu';     % The name of the base IMU to use for the model
+baseIMUHeading = 'z';      % The Coordinate Heading of the base IMU ('x', 'y', or 'z')
+visualizeTracking = 1;     % Boolean to Visualize the tracking simulation
+startTime = 7.25;          % Start time (in seconds) of the tracking simulation. 
+endTime = 15;              % End time (in seconds) of the tracking simulation.
+accuracy = 1e-4;           % The accuracy of the solution in absolute terms
 resultsDirectory = 'IKResults';
 
 %% Instantiate an InverseKinematicsStudy
@@ -57,6 +58,9 @@ ik.set_base_imu_label(baseIMUName);
  
 % Set the axis heading
 ik.set_base_heading_axis(baseIMUHeading);
+
+% Set the accuracy 
+ik.set_accuracy(accuracy);
  
 % Set a directory for the results to be written to
 ik.set_results_directory(resultsDirectory)
