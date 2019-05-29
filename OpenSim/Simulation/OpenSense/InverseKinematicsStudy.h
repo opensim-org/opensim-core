@@ -12,8 +12,8 @@
  * Distribution Statement A – Approved for Public Release; Distribution is    *
  * Unlimited.                                                                 *
  *                                                                            *
- * InverseKinematicsStudy by AMJR consulting under a contract and in a        *
- * collaborative effort with The Johns Hopkins University Applied Physics     *
+ * InverseKinematicsStudy is written by AMJR consulting under a contract and  *
+ * in a collaborative effort with The Johns Hopkins University Applied Physics*
  * Laboratory for a project sponsored by the United States Army Natick Soldier*
  * Research Development and Engineering Center and supported by a the NAVAL   *
  * SEA SYSTEMS COMMAND (NAVSEA) under Contract No. N00024-13-D-6400,          *
