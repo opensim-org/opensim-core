@@ -52,7 +52,7 @@ public:
      * Custom accessors to retrieve tables of proper types without requiring users/scripters to cast.
      * Scripting friendly */
      /** get table of Orientations as TimeSeriesTableQuaternion */
-    static const TimeSeriesTableQuaternion& getOrientationsTable(const DataAdapter::OutputTables& tables) {
+    static const TimeSeriesTable_<SimTK::Quaternion_<double>>& getOrientationsTable(const DataAdapter::OutputTables& tables) {
         return dynamic_cast<const TimeSeriesTableQuaternion&>(*tables.at(Orientations));
     }
     /** get table of LinearAccelerations as TimeSeriesTableVec3 */
