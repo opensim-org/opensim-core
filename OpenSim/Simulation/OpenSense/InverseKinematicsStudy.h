@@ -9,6 +9,9 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
+ * Distribution Statement A – Approved for Public Release; Distribution is    *
+ * Unlimited.                                                                 *
+ *                                                                            *
  * InverseKinematicsStudy by AMJR consulting under a contract and in a        *
  * collaborative effort with The Johns Hopkins University Applied Physics     *
  * Laboratory for a project sponsored by the United States Army Natick Soldier*
