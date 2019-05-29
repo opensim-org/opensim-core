@@ -64,6 +64,10 @@ void MocoControlTrackingCost::initializeOnModelImpl(const Model& model) const {
         if (!get_allow_unused_references()) {
             OPENSIM_THROW_IF_FRMOBJ(allControlIndices.count(refName) == 0,
                 Exception, "Control reference '" + refName + "' unrecognized.");
+        } else {
+            // We allow the unused reference but skip the remaining lines so it
+            // is not added to the reference splines.
+            if (allControlIndices.count(refName) == 0) continue;
         }
 
         m_control_indices.push_back(allControlIndices[refName]);
