@@ -31,6 +31,10 @@ set(MOCO_SOURCES
         MocoCost/MocoControlTrackingCost.cpp
         MocoCost/MocoJointReactionCost.h
         MocoCost/MocoJointReactionCost.cpp
+        MocoCost/MocoOrientationTrackingCost.h
+        MocoCost/MocoOrientationTrackingCost.cpp
+        MocoCost/MocoTranslationTrackingCost.h
+        MocoCost/MocoTranslationTrackingCost.cpp
         MocoSolver.h
         MocoSolver.cpp
         MocoDirectCollocationSolver.h
@@ -52,6 +56,8 @@ set(MOCO_SOURCES
         InverseMuscleSolver/DeGrooteFregly2016MuscleStandalone.h
         InverseMuscleSolver/InverseMuscleSolverMotionData.h
         InverseMuscleSolver/InverseMuscleSolverMotionData.cpp
+        Components/DeGrooteFregly2016Muscle.h
+        Components/DeGrooteFregly2016Muscle.cpp
         Components/ActivationCoordinateActuator.h
         Components/StationPlaneContactForce.h
         Components/StationPlaneContactForce.cpp

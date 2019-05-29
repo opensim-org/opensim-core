@@ -70,6 +70,7 @@ MocoIterate MocoSolver::createGuessTimeStepping() const {
     controlsTable.setColumnLabels(labels);
 
     // TODO handle parameters.
+    // TODO handle derivatives.
     return MocoIterate::createFromStatesControlsTables(
             probrep, statesTable, controlsTable);
 }
