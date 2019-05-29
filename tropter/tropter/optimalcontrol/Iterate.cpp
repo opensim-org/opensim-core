@@ -195,7 +195,6 @@ MatrixXd interp1(const RowVectorXd& xin, const MatrixXd yin,
 
 Iterate 
 Iterate::interpolate(Eigen::VectorXd newTime) const {
-    assert(desired_num_columns > 0);
     TROPTER_THROW_IF(!std::is_sorted(time.data(), time.data() + time.size()),
         "Expected time to be non-decreasing.");
 

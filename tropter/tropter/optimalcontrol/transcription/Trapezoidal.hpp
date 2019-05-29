@@ -324,15 +324,12 @@ void Trapezoidal<T>::calc_constraints(const VectorX<T>& x,
         const auto& x_i = states.rightCols(N - 1);
         const auto& x_im1 = states.leftCols(N - 1);
         const auto& xdot_i = m_derivs.rightCols(N - 1);
-        //constr_view.defects = x_i-(x_im1+h*xdot_i);
-        // TODO Trapezoidal:
         const auto& xdot_im1 = m_derivs.leftCols(N-1);
-        //constr_view.defects = x_i-(x_im1+h*xdot_im1);
-        for (int i_mesh = 0; i_mesh < (int) N - 1; ++i_mesh) {
-            const auto& h = m_mesh_intervals[i_mesh];
-            constr_view.defects.col(i_mesh) = x_i.col(i_mesh)
-                    - (x_im1.col(i_mesh) + 0.5 * h * duration * (xdot_i.col
-         (i_mesh) + xdot_im1.col(i_mesh)));
+        for (int i_mesh = 0; i_mesh < (int)N - 1; ++i_mesh) {
+            const auto& h = duration * m_mesh_intervals[i_mesh];
+            const auto f = T(0.5) * (xdot_i.col(i_mesh) + xdot_im1.col(i_mesh));
+            constr_view.defects.col(i_mesh) =
+                    x_i.col(i_mesh) - (x_im1.col(i_mesh) + h * f);
         }
     }
 

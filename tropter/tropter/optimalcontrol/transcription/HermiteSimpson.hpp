@@ -254,7 +254,7 @@ void HermiteSimpson<T>::set_ocproblem(
     // For integrating the integral cost.
     // The duration of each mesh interval.
     m_mesh_eigen = Eigen::Map<VectorXd>(m_mesh.data(), m_mesh.size());
-    VectorXd mesh_intervals = m_mesh_eigen.tail(num_mesh_intervals) -
+    m_mesh_intervals = m_mesh_eigen.tail(num_mesh_intervals) -
                               m_mesh_eigen.head(num_mesh_intervals);
     // Simpson quadrature includes integrand evaluations at the midpoint.
     m_simpson_quadrature_coefficients = VectorXd::Zero(m_num_col_points);
@@ -272,7 +272,7 @@ void HermiteSimpson<T>::set_ocproblem(
                 m_simpson_quadrature_coefficients.data() + 2 * i_mesh, 3);
 
         // Update the total coefficients vector for this mesh interval.
-        mesh_interval_coefs_map += mesh_intervals[i_mesh] * fracs;
+        mesh_interval_coefs_map += m_mesh_intervals[i_mesh] * fracs;
     }
 
     // Allocate working memory.
@@ -285,7 +285,7 @@ void HermiteSimpson<T>::set_ocproblem(
 
     for (int i = 0; i < (int)m_num_col_points; ++i) {
         if (i % 2 == 0) {
-            m_mesh_and_midpoints[i] = (m_mesh[i / 2]);
+            m_mesh_and_midpoints[i] = m_mesh[i / 2];
         } else {
             m_mesh_and_midpoints[i] = 0.5 * (m_mesh[i / 2] + m_mesh[i / 2 + 1]);
         }
@@ -300,7 +300,6 @@ void HermiteSimpson<T>::calc_objective(
     const T& initial_time = x[0];
     const T& final_time = x[1];
     const T duration = final_time - initial_time;
-    const T step_size = duration / (m_num_col_points - 1);
 
     // TODO I don't actually need to make a new view each time; just change the
     // data pointer. TODO probably don't even need to update the data pointer!
@@ -329,7 +328,7 @@ void HermiteSimpson<T>::calc_objective(
     int i_diff = 0;
     VectorX<T> diffuse_to_use;
     for (int i_col = 0; i_col < m_num_col_points; ++i_col) {
-        const T time = step_size * i_col + initial_time;
+        const T time = duration * m_mesh_and_midpoints[i_col] + initial_time;
         // Only pass diffuse variables on the midpoints where they are
         // defined, otherwise pass an empty variable.
         if (i_col % 2) {
@@ -363,7 +362,6 @@ void HermiteSimpson<T>::calc_constraints(
     const T& initial_time = x[0];
     const T& final_time = x[1];
     const T duration = final_time - initial_time;
-    const T step_size = duration / (m_num_col_points - 1);
 
     auto states = make_states_trajectory_view(x);
     auto controls = make_controls_trajectory_view(x);
@@ -387,7 +385,7 @@ void HermiteSimpson<T>::calc_constraints(
     // Evaluate points on the mesh.
     int i_mesh = 0;
     for (int i_col = 0; i_col < m_num_col_points; i_col += 2) {
-        const T time = step_size * i_col + initial_time;
+        const T time = duration * m_mesh_and_midpoints[i_col] + initial_time;
         m_ocproblem->calc_differential_algebraic_equations(
                 {i_col, time, states.col(i_col), controls.col(i_col),
                         adjuncts.col(i_col), m_empty_diffuse_col, parameters},
@@ -398,7 +396,7 @@ void HermiteSimpson<T>::calc_constraints(
     // Evaluate points on the mesh interval interior.
     int i_mid = 0;
     for (int i_col = 1; i_col < m_num_col_points; i_col += 2) {
-        const T time = step_size * i_col + initial_time;
+        const T time = duration * m_mesh_and_midpoints[i_col] + initial_time;
         m_ocproblem->calc_differential_algebraic_equations(
                 {i_col, time, states.col(i_col), controls.col(i_col),
                         adjuncts.col(i_col), diffuses.col(i_mid), parameters},
@@ -416,7 +414,6 @@ void HermiteSimpson<T>::calc_constraints(
         // be grouped together, followed by all of the Simpson defect
         // constraints (eq. 4.104).
         const unsigned N = m_num_mesh_points;
-        const auto& h = duration / (N - 1);
 
         // States.
         auto x_mesh = make_states_trajectory_view_mesh(x);
@@ -435,15 +432,20 @@ void HermiteSimpson<T>::calc_constraints(
 
         // Hermite interpolant defects
         // ---------------------------
-        constr_view.defects.topRows(m_num_states) =
-                x_mid - T(0.5) * (x_i + x_im1) -
-                (h / T(8.0)) * (xdot_im1 - xdot_i);
+        for (int i = 0; i < (int)N - 1; ++i) {
 
-        // Simpson integration defects
-        // ---------------------------
-        constr_view.defects.bottomRows(m_num_states) =
-                x_i - x_im1 -
-                (h / T(6.0)) * (xdot_i + T(4.0) * xdot_mid + xdot_im1);
+            const auto& h = duration * m_mesh_intervals[i] + initial_time;
+            constr_view.defects.topRows(m_num_states).col(i) =
+                    x_mid.col(i) - T(0.5) * (x_i.col(i) + x_im1.col(i)) -
+                    (h / T(8.0)) * (xdot_im1.col(i) - xdot_i.col(i));
+
+            // Simpson integration defects
+            // ---------------------------
+            constr_view.defects.bottomRows(m_num_states).col(i) =
+                    x_i.col(i) - x_im1.col(i) -
+                    (h / T(6.0)) * (xdot_i.col(i) + T(4.0) * xdot_mid.col(i) +
+                                           xdot_im1.col(i));
+        }
     }
 }
 

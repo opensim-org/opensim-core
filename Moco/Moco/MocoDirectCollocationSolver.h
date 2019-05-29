@@ -102,7 +102,7 @@ public:
     /// to sample. Takes precedence over uniform mesh with num_mesh_points. The
     /// user-defined mesh must start with 0, be strictly increasing (no duplicate
     /// times), and end with 1.
-    void setMesh(std::vector<double> mesh);
+    void setMesh(const std::vector<double>& mesh);
 
 
 protected:
