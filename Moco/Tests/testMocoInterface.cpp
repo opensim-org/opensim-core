@@ -80,6 +80,68 @@ MocoTool createSlidingMassMocoTool() {
     return moco;
 }
 
+//TODO test Hermite-Simpson
+TEMPLATE_TEST_CASE("Non-uniform mesh", "", MocoTropterSolver, MocoCasADiSolver) {
+    std::cout.rdbuf(LogManager::cout.rdbuf());
+    std::cout.rdbuf(LogManager::cout.rdbuf());
+    MocoTool moco;
+    double finalTime = 5.0;
+    moco.setName("sliding_mass");
+    moco.set_write_solution("false");
+    MocoProblem& mp = moco.updProblem();
+    mp.setModel(createSlidingMassModel());
+    mp.setTimeBounds(MocoInitialBounds(0), finalTime);
+    mp.setStateInfo("/slider/position/value", MocoBounds(0, 1),
+            MocoInitialBounds(0), MocoFinalBounds(1));
+    mp.setStateInfo("/slider/position/speed", {-100, 100}, 0, 0);
+    mp.addCost<MocoControlCost>();
+    SECTION("Ensure integral handles non-uniform mesh") {
+        auto& ms = moco.initSolver<TestType>();
+        ms.set_optim_max_iterations(1);
+        std::vector<double> mesh = {
+                0.0, .05, .075, .1, .4, .41, .42, .58, .8, 1};
+        ms.setMesh(mesh);
+        auto solution = moco.solve().unseal();
+        auto u = solution.getControl("/actuator");
+        double manualIntegral = 0;
+
+        for (int i = 0; i < (int)(mesh.size() - 1); ++i) {
+            manualIntegral += 0.5 * finalTime * (mesh[i + 1] - mesh[i]) *
+                              (SimTK::square(u[i]) + SimTK::square(u[i + 1]));
+        }
+
+        for (int i = 0; i < (int)mesh.size(); ++i) {
+            SimTK_TEST_EQ(solution.getTime()[i], mesh[i] * finalTime);
+        }
+        SimTK_TEST_EQ(manualIntegral, solution.getObjective());
+    }
+
+    SECTION("First mesh point must be zero.") {
+        auto& ms = moco.initSolver<TestType>();
+        std::vector<double> mesh = {.5, 1};
+        ms.setMesh(mesh);
+        REQUIRE_THROWS_WITH(
+                moco.solve(), Catch::Contains("Invalid custom mesh; first mesh "
+                                              "point must be zero."));
+    }
+    SECTION("Mesh points must be strictly increasing") {
+        auto& ms = moco.initSolver<TestType>();
+        std::vector<double> mesh = {0, .5, .5, 1};
+        ms.setMesh(mesh);
+        REQUIRE_THROWS_WITH(moco.solve(),
+                Catch::Contains("Invalid custom mesh; mesh "
+                                "points must be strictly increasing."));
+    }
+    SECTION("Last mesh piont must be 1.") {
+        auto& ms = moco.initSolver<TestType>();
+        std::vector<double> mesh = {0, .4, .8};
+        ms.setMesh(mesh);
+        REQUIRE_THROWS_WITH(
+                moco.solve(), Catch::Contains("Invalid custom mesh; last mesh "
+                                              "point must be one."));
+    }
+}
+
 /// This model is torque-actuated.
 std::unique_ptr<Model> createPendulumModel() {
     auto model = make_unique<Model>();
@@ -555,6 +617,7 @@ TEMPLATE_TEST_CASE("Workflow", "", MocoTropterSolver, MocoCasADiSolver) {
 
         guess.setTime(createVectorLinspace(20, 0.0, 7.0));
         MocoSolution solution = moco.solve();
+        CAPTURE(solution.getObjective());
         CHECK(solution.getFinalTime() == Approx(5.8));
     }
 
@@ -739,7 +802,7 @@ TEMPLATE_TEST_CASE("Guess", "", MocoTropterSolver, MocoCasADiSolver) {
 
     SimTK::Matrix expectedStatesTraj(N, 2);
     expectedStatesTraj.col(0) = 0.5;  // bounds are [0, 1].
-    expectedStatesTraj(0, 0) = 0;     // initial value fixed to 0.
+    expectedStatesTraj(0, 0) = 0;     // initial value fixed to 0.f
     expectedStatesTraj(N - 1, 0) = 1; // final value fixed to 1.
     expectedStatesTraj.col(1) = 0.0;  // bounds are [-100, 100]
     expectedStatesTraj(0, 1) = 0;     // initial speed fixed to 0.
@@ -1321,7 +1384,8 @@ TEST_CASE("Interpolate", "") {
 }
 
 TEMPLATE_TEST_CASE("Sliding mass", "", MocoTropterSolver, MocoCasADiSolver) {
-
+    std::cout.rdbuf(LogManager::cout.rdbuf());
+    std::cout.rdbuf(LogManager::cout.rdbuf());
     MocoTool moco = createSlidingMassMocoTool<TestType>();
     MocoSolution solution = moco.solve();
     int numTimes = 20;

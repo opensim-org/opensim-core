@@ -22,6 +22,7 @@ using namespace OpenSim;
 
 void MocoDirectCollocationSolver::constructProperties() {
     constructProperty_num_mesh_points(100);
+    constructProperty_mesh();
     constructProperty_verbosity(2);
     constructProperty_transcription_scheme("trapezoidal");
     constructProperty_dynamics_mode("explicit");
@@ -38,4 +39,11 @@ void MocoDirectCollocationSolver::constructProperties() {
 
     // This is empty to allow user input error checking.
     constructProperty_enforce_constraint_derivatives();
+}
+
+void MocoDirectCollocationSolver::setMesh(const std::vector<double>& mesh) {
+    for(int i = 0; i < (int) mesh.size(); ++i) {
+        this->set_mesh(i, mesh[i]);
+    }
+
 }

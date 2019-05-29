@@ -86,7 +86,7 @@ int main() {
 
     // Initial position must be 0, final position must be 1.
     problem.setStateInfo("/slider/position/value", MocoBounds(-5, 5),
-            MocoInitialBounds(0), MocoFinalBounds(1));
+                         MocoInitialBounds(0), MocoFinalBounds(1));
     // Initial and final speed must be 0. Use compact syntax.
     problem.setStateInfo("/slider/position/speed", {-50, 50}, 0, 0);
 

@@ -80,7 +80,7 @@ struct Iterate {
     /// If the size of time matches desired_num_columns, then we return a copy 
     /// of this iterate (no interpolation).
     /// @returns the interpolated iterate.
-    Iterate interpolate(int desired_num_columns) const;
+    Iterate interpolate(const Eigen::VectorXd newTime) const;
     // TODO void validate(const std::string& error_message) const;
     /// Write the states and controls trajectories to a plain-text CSV file.
     virtual void write(const std::string& filepath) const;
