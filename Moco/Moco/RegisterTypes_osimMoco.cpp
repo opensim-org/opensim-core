@@ -37,7 +37,10 @@
 #include "MocoCost/MocoTranslationTrackingCost.h"
 #include "MocoParameter.h"
 
+#include "Common/TableProcessor.h"
+
 #include "MocoTrack.h"
+#include "MocoInverse.h"
 
 #include "MocoCasADiSolver/MocoCasADiSolver.h"
 
@@ -45,6 +48,7 @@
 #include "Components/StationPlaneContactForce.h"
 #include "Components/DiscreteForces.h"
 #include "Components/AccelerationMotion.h"
+#include "Components/PositionMotion.h"
 #include "Components/DeGrooteFregly2016Muscle.h"
 
 // TODO: Move to osimSimulation.
@@ -79,6 +83,7 @@ OSIMMOCO_API void RegisterTypes_osimMoco() {
         Object::registerType(MocoStudy());
         Object::registerType(MocoParameter());
 
+        Object::registerType(MocoInverse());
         Object::registerType(MocoTrack());
 
         Object::registerType(MocoTropterSolver());
@@ -88,9 +93,13 @@ OSIMMOCO_API void RegisterTypes_osimMoco() {
         Object::registerType(GlobalStaticOptimization());
         Object::registerType(INDYGO());
 
+        Object::registerType(TableProcessor());
+        Object::registerType(TabOpLowPassFilter());
+
         Object::registerType(AckermannVanDenBogert2010Force());
         Object::registerType(MeyerFregly2016Force());
         Object::registerType(EspositoMiller2018Force());
+        Object::registerType(PositionMotion());
         Object::registerType(DeGrooteFregly2016Muscle());
 
         Object::registerType(DiscreteForces());

@@ -159,10 +159,10 @@ VectorDM EndpointCost::eval(const VectorDM& args) const {
 }
 
 template <bool CalcKCErrors>
-casadi::Sparsity MultibodySystemExplicit<CalcKCErrors>::get_sparsity_out(
-        casadi_int i) {
+casadi::Sparsity MultibodySystemExplicit<CalcKCErrors>::get_sparsity_out(casadi_int i) {
     if (i == 0) {
-        return casadi::Sparsity::dense(m_casProblem->getNumSpeeds(), 1);
+        return casadi::Sparsity::dense(
+                m_casProblem->getNumMultibodyDynamicsEquations(), 1);
     } else if (i == 1) {
         return casadi::Sparsity::dense(
                 m_casProblem->getNumAuxiliaryStates(), 1);
@@ -242,7 +242,8 @@ template <bool CalcKCErrors>
 casadi::Sparsity MultibodySystemImplicit<CalcKCErrors>::get_sparsity_out(
         casadi_int i) {
     if (i == 0) {
-        return casadi::Sparsity::dense(m_casProblem->getNumSpeeds(), 1);
+        return casadi::Sparsity::dense(
+                m_casProblem->getNumMultibodyDynamicsEquations(), 1);
     } else if (i == 1) {
         return casadi::Sparsity::dense(
                 m_casProblem->getNumAuxiliaryStates(), 1);

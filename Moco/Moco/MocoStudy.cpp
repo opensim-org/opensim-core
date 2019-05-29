@@ -17,10 +17,12 @@
  * -------------------------------------------------------------------------- */
 #include "MocoStudy.h"
 
+#include "Components/PositionMotion.h"
 #include "MocoCasADiSolver/MocoCasADiSolver.h"
 #include "MocoProblem.h"
 #include "MocoTropterSolver.h"
 #include "MocoUtilities.h"
+#include <regex>
 
 #include <OpenSim/Common/IO.h>
 #include <OpenSim/Common/Reporter.h>

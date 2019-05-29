@@ -176,8 +176,7 @@ TimeSeriesTable resample(const TimeSeriesTable& in, const TimeVector& newTime) {
             "Cannot resample if number of times is 0 or 1.");
     OPENSIM_THROW_IF(newTime[0] < time[0], Exception,
             format("New initial time (%f) cannot be less than existing "
-                   "initial "
-                   "time (%f)",
+                   "initial time (%f)",
                     newTime[0], time[0]));
     OPENSIM_THROW_IF(newTime[newTime.size() - 1] > time[time.size() - 1],
             Exception,
@@ -250,9 +249,9 @@ TimeSeriesTable_<T> readTableFromFileT(const std::string& filepath) {
     return *firstTable;
 }
 
-/// Read in a TimeSeriesTable from file containing scalar elements. The 
-/// `filepath` argument should refer to a STO or CSV file (or other file types 
-/// for which there is a FileAdapter). This function assumes that only one table 
+/// Read in a TimeSeriesTable from file containing scalar elements. The
+/// `filepath` argument should refer to a STO or CSV file (or other file types
+/// for which there is a FileAdapter). This function assumes that only one table
 /// is contained in the file, and will throw an exception otherwise.
 OSIMMOCO_API inline TimeSeriesTable readTableFromFile(
         const std::string& filepath) {
@@ -292,7 +291,7 @@ TimeSeriesTable_<T> analyze(Model model, const MocoIterate& iterate,
     // Create the reporter object to which we'll add the output data to create
     // the report.
     auto* reporter = new TableReporter_<T>();
-    // Loop through all the outputs for all components in the model, and if 
+    // Loop through all the outputs for all components in the model, and if
     // the output path matches one provided in the argument and the output type
     // agrees with the template argument type, add it to the report.
     for (const auto& comp : model.getComponentList()) {
@@ -325,7 +324,7 @@ TimeSeriesTable_<T> analyze(Model model, const MocoIterate& iterate,
     auto statesTraj = StatesTrajectory::createFromStatesStorage(model, storage);
 
     // Loop through the states trajectory to create the report.
-    for (int i = 0; i < statesTraj.getSize(); ++i) {
+    for (int i = 0; i < (int)statesTraj.getSize(); ++i) {
         // Get the current state.
         auto state = statesTraj[i];
 

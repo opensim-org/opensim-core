@@ -26,6 +26,7 @@
 
 #include <simbody/internal/Visualizer_InputListener.h>
 
+#include <OpenSim/Actuators/CoordinateActuator.h>
 #include <OpenSim/Common/GCVSpline.h>
 #include <OpenSim/Common/PiecewiseLinearFunction.h>
 #include <OpenSim/Common/TimeSeriesTable.h>

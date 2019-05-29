@@ -20,6 +20,8 @@
 #include <Moco/MocoTropterSolver.h>
 #include <Moco/MocoCasADiSolver/MocoCasADiSolver.h>
 #include <Moco/MocoStudy.h>
+#include <Moco/Common/TableProcessor.h>
+#include <Moco/MocoInverse.h>
 #include <Moco/MocoTrack.h>
 #include <Moco/Components/ActivationCoordinateActuator.h>
 #include <Moco/Components/DeGrooteFregly2016Muscle.h>
