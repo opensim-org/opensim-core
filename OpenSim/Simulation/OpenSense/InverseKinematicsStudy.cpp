@@ -113,18 +113,17 @@ runInverseKinematicsWithOrientationsFromFile(Model& model,
     TableReporter* ikReporter = new TableReporter();
     ikReporter->setName("ik_reporter");
     auto coordinates = model.updComponentList<Coordinate>();
-    std::vector<std::string> transCoordNames;
 
     // Hookup reporter inputs to the individual coordinate outputs
-    // and keep track of coordinates that are translations
+    // and lock coordinates that are translational since they cannot be
     for (auto& coord : coordinates) {
         ikReporter->updInput("inputs").connect(
             coord.getOutput("value"), coord.getName());
-        if (coord.getMotionType() == Coordinate::Translational) {
-            transCoordNames.push_back(coord.getName());
-            coord.set_locked(true);
+        if(coord.getMotionType() == Coordinate::Translational) {
+            coord.setDefaultLocked(true);
         }
     }
+
     model.addComponent(ikReporter);
 
     TimeSeriesTable_<SimTK::Quaternion> quatTable =
@@ -195,21 +194,9 @@ runInverseKinematicsWithOrientationsFromFile(Model& model,
     std::string outputFile = get_results_directory() + "/" + outName;
 
     // Convert to degrees to compare with marker-based IK
-    // but ignore translational coordinates
-    for (size_t i = 0; i < report.getNumColumns(); ++i) {
-        auto it = find( transCoordNames.begin(), transCoordNames.end(),
-                        report.getColumnLabel(i) );
-        if (it == transCoordNames.end()) { // not found = not translational
-            auto repVec = report.updDependentColumnAtIndex(i);
-            repVec *= SimTK::Real(SimTK_RTD);
-        }
-    }
-
+    // but only for rotational coordinates
+    model.getSimbodyEngine().convertRadiansToDegrees(report);
     report.updTableMetaData().setValueForKey<string>("name", outName);
-    report.updTableMetaData().setValueForKey<size_t>("nRows", report.getNumRows());
-    // getNumColumns returns the number of dependent columns, but Storage expects time
-    report.updTableMetaData().setValueForKey<size_t>("nColumns", report.getNumColumns()+1);
-    report.updTableMetaData().setValueForKey<string>("inDegrees","yes");
 
     STOFileAdapter_<double>::write(report, outputFile + ".mot");
 

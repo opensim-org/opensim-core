@@ -182,9 +182,9 @@ int main(int argc, char **argv)
                     cout << "Done." << endl;
                     return 0;
                 }
-                else if ((option == "-Setup") || (option == "-S")) {
+                else if ((option == "-InverseKinematics") || (option == "-IK")) {
                     if (argc < 3) {
-                        cout << "A setup(.xml) file was expected but no file was provided. If no setup file exists, use the - PS option to print a default setup file that can be edited." << endl;
+                        cout << "An inverse kinematics settings (.xml) file was expected but no file was provided." << endl;
                         PrintUsage(argv[0], cout);
                         exit(-1);
                     }
@@ -272,11 +272,26 @@ void PrintUsage(const char *aProgName, ostream &aOStream)
     aOStream << "Option             Argument             Action / Notes\n";
     aOStream << "------             --------             --------------\n";
     aOStream << "-Help, -H                               Print the command-line options for " << progName << ".\n";
-    aOStream << "-PrintSetup, -PS                        Generates a template Setup file to customize the scaling\n";
-    aOStream << "-Setup, -S         SetupFileName        Specify an xml setup file for solving an inverse kinematics problem.\n";
+    aOStream << "-PrintSetup, -PS                        Create a template inverse kinematics settings file that can be customized.\n";
     aOStream << "-PropertyInfo, -PI                      Print help information for properties in setup files.\n";
-    aOStream << "-ReadX, -RX  directory settingsFile.xml   Parse Xsens exported files from directory using settingsFile.xml.\n";
-    aOStream << "-ReadA, -RA  datafile.csv settingsFile.xml   Parse single csv file provided by APDM using specified settingsFile.xml.\n";
+    aOStream << "-ReadX, -RX  directory settings.xml     Parse Xsens exported files from directory using settingsFile.xml.\n";
+    aOStream << "-ReadA, -RA  datafile.csv settings.xml  Parse single csv file provided by APDM using specified settingsFile.xml.\n";
+    aOStream << "-Calibrate, -C modelPoseFile.osim calibrationOrientations.sto. <base_imu_label> <base_heading_axis>\n";
+    aOStream << "                                        Calibrate the modelPoseFile.osim model by registering\n";
+    aOStream << "                                        IMU frames whose orientations in the sensor world frame are\n";
+    aOStream << "                                        specified in calibrationOrientations.sto. and assuming \n";
+    aOStream << "                                        the model's default pose is the calibration pose. The resultant\n";
+    aOStream << "                                        model with IMU frames registered is written to file as\n";
+    aOStream << "                                        calibrated_modelPoseFile.osim. Optional arguments for identifying the\n";
+    aOStream << "                                        base IMU by its label in the calibrationOrientations, e.g. 'pelvis imu'.\n";
+    aOStream << "                                        The base IMU and its heading axis as 'x', 'y', or 'z', are used to\n";
+    aOStream << "                                        align all the IMU data so that base imu's heading (forward) is in the X\n";
+    aOStream << "                                        direction of OpenSim ground. If no base IMU is specified, then the heading\n";
+    aOStream << "                                        correction is not applied. If the base_imu_label is provided but no axis,\n";
+    aOStream << "                                        then the 'z' axis of the base IMU is used to perform the heading correction.\n";
+    aOStream << "-InverseKinematics, -IK ik_settings.xml Run IK using an xml settings file to define the inverse kinematics problem.\n";
+    aOStream << endl;
+/** Advanced options for experimental validation. Uncomment if/when ready to make public
     aOStream << "-Transform, -T markerFileWithIMUframes.trc  Transform experimental marker locations that define axes of IMUs, or the plates\n";
     aOStream << "                                        upon which they are rigidly affixed, into the orientations of the IMUs expressed \n";
     aOStream << "                                        in the motion capture(markers) lab frame.The orientations over the trial are \n";
@@ -292,13 +307,7 @@ void PrintUsage(const char *aProgName, ostream &aOStream)
     aOStream << "                                        and orientation the IMU frame which is then affixed to the same base segment(frame) \n";
     aOStream << "                                        to which the markers are attached.Before the IMU frames are attached to the model, \n";
     aOStream << "                                        the model is posed according to marker - based IK.\n";
-    aOStream << "-Calibrate, -C modelPoseFile.osim calibrationOrientations.sto  Calibrate the modelPoseFile.osim model by registering\n";
-    aOStream << "                                        IMU frames whose orientations in the sensor world frame are\n";
-    aOStream << "                                        specified in calibrationOrientations.sto. and assuming \n";
-    aOStream << "                                        the model's default pose is the calibration pose. The resultant\n";
-    aOStream << "                                        model with IMU frames registered is written to file as\n";
-    aOStream << "                                        calibrated_modelPoseFile.osim\n";
-    aOStream << endl;
+**/
 }
 
 TimeSeriesTable_<SimTK::Quaternion> readRotationsFromXSensFiles(const std::string& directory,
@@ -309,7 +318,7 @@ TimeSeriesTable_<SimTK::Quaternion> readRotationsFromXSensFiles(const std::strin
     DataAdapter::OutputTables tables = reader.read(directory);
     const TimeSeriesTableQuaternion& quatTableTyped =  reader.getOrientationsTable(tables);
 
-    STOFileAdapter_<SimTK::Quaternion>::write(quatTableTyped, "imuOrientations.sto");
+    STOFileAdapter_<SimTK::Quaternion>::write(quatTableTyped, readerSettings.get_trial_prefix()+"_orientations.sto");
  
     return quatTableTyped;
 }
@@ -323,7 +332,8 @@ TimeSeriesTable_<SimTK::Quaternion> readRotationsFromAPDMFile(const std::string&
     DataAdapter::OutputTables tables = reader.read(apdmCsvFile);
     const TimeSeriesTableQuaternion& quatTableTyped = reader.getOrientationsTable(tables);
 
-    STOFileAdapter_<SimTK::Quaternion>::write(quatTableTyped, "imuOrientations.sto");
+    STOFileAdapter_<SimTK::Quaternion>::write(quatTableTyped, 
+        apdmCsvFile.substr(0, apdmCsvFile.rfind('.'))+"_orientations.sto");
 
     return quatTableTyped;
 }

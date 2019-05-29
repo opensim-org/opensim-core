@@ -239,14 +239,22 @@ Model OpenSenseUtilities::calibrateModelFromOrientations(
         const double accuracy = 1e-4;
         InverseKinematicsSolver ikSolver(model, mRefs, oRefs, coordRefs);
         ikSolver.setAccuracy(accuracy);
+        
+        SimTK::Visualizer& viz = model.updVisualizer().updSimbodyVisualizer();
+        // We use the input silo to get key presses.
+        auto silo = &model.updVisualizer().updInputSilo();
+        silo->clear(); // Ignore any previous key presses.
 
+        SimTK::DecorativeText help("Press any key to quit.");
+        help.setIsScreenText(true);
+        viz.addDecoration(SimTK::MobilizedBodyIndex(0), SimTK::Vec3(0), help);
         model.getVisualizer().getSimbodyVisualizer().setShowSimTime(true);
         ikSolver.assemble(s);
         model.getVisualizer().show(s);
 
-        char c;
-        std::cout << "Press any key and return to close visualizer." << std::endl;
-        std::cin >> c;
+        unsigned key, modifiers;
+        silo->waitForKeyHit(key, modifiers);
+        viz.shutdown();
     }
 
     return model;
