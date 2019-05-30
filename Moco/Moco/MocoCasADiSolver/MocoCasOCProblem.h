@@ -406,8 +406,9 @@ private:
             SimTK::State& simtkState) const {
         convertToSimTKState(time, states, simtkState);
         auto& simtkControls = model.updControls(simtkState);
-        std::copy_n(controls.ptr(), simtkControls.size(),
-                simtkControls.updContiguousScalarData());
+        for (int ic = 0; ic < getNumControls(); ++ic) {
+           simtkControls[m_modelControlIndices[ic]] = *(controls.ptr() + ic);
+        }
         model.realizeVelocity(simtkState);
         model.setControls(simtkState, simtkControls);
     }
@@ -543,6 +544,7 @@ private:
     std::unique_ptr<ThreadsafeJar<const MocoProblemRep>> m_jar;
     bool m_paramsRequireInitSystem = true;
     std::unordered_map<int, int> m_yIndexMap;
+    std::vector<int> m_modelControlIndices;
     // Local memory to hold constraint forces.
     static thread_local SimTK::Vector_<SimTK::SpatialVec>
             m_constraintBodyForces;

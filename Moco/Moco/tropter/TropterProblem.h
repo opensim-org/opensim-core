@@ -95,7 +95,8 @@ protected:
     }
 
     void addControlVariables() {
-        auto controlNames = createControlNamesFromModel(m_modelBase);
+        auto controlNames =
+                createControlNamesFromModel(m_modelBase, m_modelControlIndices);
         for (const auto& controlName : controlNames) {
             const auto& info = m_mocoProbRep.getControlInfo(controlName);
             this->add_control(controlName, convertBounds(info.getBounds()),
@@ -135,7 +136,7 @@ protected:
         }
         OPENSIM_THROW_IF(
                 m_mocoTropterSolver.getProperty_enforce_constraint_derivatives()
-                                   .empty(),
+                        .empty(),
                 Exception,
                 "Enabled kinematic constraints exist in the "
                 "provided model. Please set the solver property "
@@ -320,8 +321,10 @@ protected:
             // Stage::Velocity, so we don't ever need to set its controls.
             auto& osimControls = modelDisabledConstraints.updControls(
                     simTKStateDisabledConstraints);
-            std::copy_n(in.controls.data(), in.controls.size(),
-                    osimControls.updContiguousScalarData());
+            for (int ic = 0; ic < in.controls.size(); ++ic) {
+                osimControls[m_modelControlIndices[ic]] =
+                        in.controls[ic];
+            }
             modelDisabledConstraints.realizeVelocity(
                     simTKStateDisabledConstraints);
             modelDisabledConstraints.setControls(
@@ -383,6 +386,7 @@ protected:
 
     std::vector<std::string> m_svNamesInSysOrder;
     std::unordered_map<int, int> m_yIndexMap;
+    std::vector<int> m_modelControlIndices;
     mutable SimTK::Vector_<SimTK::SpatialVec> m_constraintBodyForces;
     mutable SimTK::Vector m_constraintMobilityForces;
     mutable SimTK::Vector qdot;

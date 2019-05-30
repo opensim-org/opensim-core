@@ -50,6 +50,7 @@ function(SetDefaultCMakeInstallPrefix)
     endif()
 endfunction()
 
+
 # CMake doesn't clear prefix directories when user changes it. 
 # Remove it to avoid confusion.
 function(RemoveDefaultInstallDirIfEmpty DIR)
@@ -306,6 +307,7 @@ include(opensim-core.cmake)
 #######################
 
 RemoveDefaultInstallDirIfEmpty("${DEFAULT_CMAKE_INSTALL_PREFIX}")
+
 
 
 

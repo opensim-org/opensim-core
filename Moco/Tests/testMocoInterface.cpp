@@ -27,6 +27,7 @@
 #include <OpenSim/Simulation/Manager/Manager.h>
 #include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/SliderJoint.h>
+#include <fstream>
 
 using namespace OpenSim;
 
@@ -644,6 +645,72 @@ TEMPLATE_TEST_CASE("Workflow", "", MocoTropterSolver, MocoCasADiSolver) {
     // }
 }
 
+TEMPLATE_TEST_CASE(
+        "Disable Actuators", "", MocoCasADiSolver, MocoTropterSolver) {
+    std::cout.rdbuf(LogManager::cout.rdbuf());
+    std::cout.rdbuf(LogManager::cout.rdbuf());
+
+    MocoSolution solution;
+    MocoSolution solution2;
+    {
+        MocoTool moco;
+        moco.setName("double_pendulum");
+
+        MocoProblem& mp = moco.updProblem();
+        auto model = OpenSim::ModelFactory::createDoublePendulum();
+
+        auto* tau2 = new CoordinateActuator("q1");
+        tau2->setName("tau2");
+        tau2->setOptimalForce(1);
+        model.addComponent(tau2);
+
+        mp.setModelCopy(model);
+
+        mp.setTimeBounds(0, {0, 5});
+        mp.setStateInfo("/jointset/j0/q0/value", {-10, 10}, 0, SimTK::Pi);
+        mp.setStateInfo("/jointset/j0/q0/speed", {-50, 50}, 0);
+        mp.setStateInfo("/jointset/j1/q1/value", {-10, 10}, 0, 0);
+        mp.setStateInfo("/jointset/j1/q1/speed", {-50, 50}, 0);
+        mp.setControlInfo("/tau0", {-100, 100});
+        mp.setControlInfo("/tau1", {-100, 100});
+        mp.setControlInfo("/tau2", {-100, 100});
+
+        mp.addCost<MocoFinalTimeCost>();
+        auto& ms = moco.initSolver<TestType>();
+        ms.set_num_mesh_points(15);
+        solution = moco.solve();
+    }
+    {
+        MocoTool moco2;
+        moco2.setName("double_pendulum");
+
+        MocoProblem& mp2 = moco2.updProblem();
+        OpenSim::Model model2 = OpenSim::ModelFactory::createDoublePendulum();
+
+        auto* tau2 = new CoordinateActuator("q1");
+        tau2->setName("tau2");
+        tau2->setOptimalForce(1);
+        model2.addComponent(tau2);
+
+        SimTK::State state = model2.initSystem();
+        model2.updComponent<Force>("tau1").set_appliesForce(false);
+        mp2.setModelCopy(model2);
+        mp2.setTimeBounds(0, {0, 5});
+        mp2.setStateInfo("/jointset/j0/q0/value", {-10, 10}, 0, SimTK::Pi);
+        mp2.setStateInfo("/jointset/j0/q0/speed", {-50, 50}, 0);
+        mp2.setStateInfo("/jointset/j1/q1/value", {-10, 10}, 0, 0);
+        mp2.setStateInfo("/jointset/j1/q1/speed", {-50, 50}, 0);
+        mp2.setControlInfo("/tau0", {-100, 100});
+        mp2.setControlInfo("/tau2", {-100, 100});
+
+        mp2.addCost<MocoFinalTimeCost>();
+        auto& ms2 = moco2.initSolver<TestType>();
+        ms2.set_num_mesh_points(15);
+        solution2 = moco2.solve();
+    }
+    CHECK(solution2.getObjective() != Approx(solution.getObjective()));
+}
+
 TEMPLATE_TEST_CASE("State tracking", "", MocoTropterSolver, MocoCasADiSolver) {
     // TODO move to another test file?
     auto makeTool = []() {
@@ -1102,6 +1169,30 @@ TEST_CASE("MocoIterate") {
 
         MocoIterate deserialized(fname);
         SimTK_TEST(deserialized.isNumericallyEqual(orig));
+    }
+
+    {
+        const std::string fname = "testMocoInterface_testMocoSolutionSuccess.sto";
+        MocoTool moco = createSlidingMassMocoTool();
+        auto& solver = dynamic_cast<MocoDirectCollocationSolver&>(moco.updSolver());
+
+        solver.set_optim_max_iterations(1);
+        MocoSolution failedSolution  = moco.solve();
+        failedSolution.unseal();
+        failedSolution.write(fname);
+        MocoIterate deserialized(fname);
+
+        std::ifstream mocoSolutionFile(fname);
+        for(std::string line; getline(mocoSolutionFile, line);) {
+            if (line.compare("success=false")) {
+                break;
+            }
+            else if (line.compare("success=true")) {
+                SimTK_TEST(false);
+            }
+
+        }
+
     }
 
     // Test sealing/unsealing.
