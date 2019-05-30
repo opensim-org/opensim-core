@@ -80,7 +80,7 @@ public:
         return m_finite_difference_scheme;
     }
 
-    void setOutputInterval(int output_interval) {
+    void getCallbackInterval(int output_interval) {
         m_outputInterval = output_interval;
     }
 

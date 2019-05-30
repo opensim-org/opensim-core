@@ -26,6 +26,8 @@ namespace CasOC {
 
 // http://casadi.sourceforge.net/api/html/d7/df0/solvers_2callback_8py-example.html
 
+/// This class allows for callback functionality and writing out intermediate
+/// iterates.
 class NlpsolCallback : public casadi::Callback {
 public:
     NlpsolCallback(const Transcription& transcription, const Problem& problem,
@@ -36,7 +38,6 @@ public:
               m_outputInterval(outputInterval) {
         construct("NlpsolCallback", {});
     }
-    void init() override { std::cout << "DEBUGinit" << std::endl; }
     casadi_int get_n_in() override { return casadi::nlpsol_n_out(); }
     casadi_int get_n_out() override { return 1; }
     std::string get_name_in(casadi_int i) override {

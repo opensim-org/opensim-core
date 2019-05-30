@@ -365,10 +365,9 @@ private:
         m_jar->leave(std::move(mocoProblemRep));
     }
     void intermediateCallback(const CasOC::Iterate& iterate) const override {
-        std::string filename = format("%s-%s.sto",
+        std::string filename = format("MocoCasADiSolver_%s_iterate%06i.sto",
                 OpenSim::getFormattedDateTime(), iterate.iteration);
         convertToMocoIterate(iterate).write(filename);
-
     }
 
 private:

@@ -136,10 +136,9 @@ public:
             "this number of threads. This overrides the OPENSIM_MOCO_PARALLEL "
             "environment variable.");
     OpenSim_DECLARE_PROPERTY(output_interval, int,
-            "Frequency with which intermediate iterates are saved to a file. "
-            "0, the default, indicates no intermediate iterates will be saved, "
-            "1 indicates each iteration be saved, 5 indicates every fifth "
-            "iteration be saved, etc.");
+            "Write intermediate iterates to file. 0, the default, indicates no "
+            "intermediate iterates are saved, 1 indicates each iteration "
+            "is saved, 5 indicates every fifth iteration is saved, etc.");
 
     MocoCasADiSolver();
 
