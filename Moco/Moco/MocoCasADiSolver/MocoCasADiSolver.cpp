@@ -260,6 +260,58 @@ MocoSolution MocoCasADiSolver::solveImpl() const {
     }
     CasOC::Solution casSolution = casSolver->solve(casGuess);
     MocoSolution mocoSolution = convertToMocoIterate<MocoSolution>(casSolution);
+
+    // If enforcing model constraints and not minimizing Lagrange multipliers,
+    // check the rank of the constraint Jacobian and if rank-deficient, print
+    // recommendation to the user to enable Lagrange multiplier minimization.
+    if (getProblemRep().getNumKinematicConstraintEquations() &&
+            !get_enforce_constraint_derivatives() &&
+            !get_minimize_lagrange_multipliers()) {
+        const auto& model = getProblemRep().getModelBase();
+        const auto& matter = model.getMatterSubsystem();
+        Storage storage = mocoSolution.exportToStatesStorage();
+        // TODO update when we support multiple phases.
+        auto statesTraj = StatesTrajectory::createFromStatesStorage(model,
+            storage);
+        SimTK::Matrix G;
+        SimTK::FactorQTZ G_qtz;
+        bool isJacobianFullRank = true;
+        int rank;
+        // Jacobian rank should be time-independent, but loop through states 
+        // until rank deficiency detected, just in case.
+        for (const auto& s : statesTraj) {
+            // Jacobian is at most velocity-dependent.
+            model.realizeVelocity(s);
+            matter.calcG(s, G);
+            G_qtz.factor<double>(G);
+            if (G_qtz.getRank() < G.nrow()) {
+                isJacobianFullRank = false;
+                rank = G_qtz.getRank();
+                break;
+            }
+        }
+
+        if (!isJacobianFullRank) {
+            std::cout << std::endl;
+            std::cout << "---------------------------------------------------"
+                      << "--\n";
+            std::cout << "WARNING: rank-deficient constraint Jacobian "
+                      << "detected.\n";
+            std::cout << "---------------------------------------------------"
+                      << "--\n";
+            std::cout << "The model constraint Jacobian has "
+                      << std::to_string(G.nrow()) + " row(s) but is only rank "
+                      << std::to_string(rank) + ".\nTry removing "
+                      << "redundant constraints from the model or enable \n"
+                      << "minimization of Lagrange multipliers by utilizing "
+                      << "the solver \nproperties "
+                      << "'minimize_lagrange_multipliers' and \n"
+                      << "'lagrange_multiplier_weight'.\n";
+            std::cout << "---------------------------------------------------"
+                      << "--\n\n";
+        }
+    }
+
     setSolutionStats(mocoSolution, casSolution.stats.at("success"),
             casSolution.objective,
             casSolution.stats.at("return_status"),

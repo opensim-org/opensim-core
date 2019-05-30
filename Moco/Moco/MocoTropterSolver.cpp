@@ -278,7 +278,8 @@ MocoSolution MocoTropterSolver::solveImpl() const {
     // If enforcing model constraints and not minimizing Lagrange multipliers,
     // check the rank of the constraint Jacobian and if rank-deficient, print
     // recommendation to the user to enable Lagrange multiplier minimization.
-    if (!get_enforce_constraint_derivatives() && 
+    if (getProblemRep().getNumKinematicConstraintEquations() &&
+             !get_enforce_constraint_derivatives() && 
              !get_minimize_lagrange_multipliers()) {
         const auto& model = getProblemRep().getModelBase();
         const auto& matter = model.getMatterSubsystem();
@@ -311,7 +312,7 @@ MocoSolution MocoTropterSolver::solveImpl() const {
             std::cout << "WARNING: rank-deficient constraint Jacobian "
                       << "detected.\n";
             std::cout << "---------------------------------------------------"
-                        << "--\n";
+                      << "--\n";
             std::cout << "The model constraint Jacobian has "
                       << std::to_string(G.nrow()) + " row(s) but is only rank "
                       << std::to_string(rank) + ".\nTry removing "

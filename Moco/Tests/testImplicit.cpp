@@ -81,10 +81,11 @@ MocoSolution solveDoublePendulumSwingup(const std::string& dynamics_mode) {
 
     // Configure the solver.
     // =====================
-    int N = 20;
+    int N = 30;
     auto& solver = moco.initSolver<SolverType>();
     solver.set_dynamics_mode(dynamics_mode);
     solver.set_num_mesh_points(N);
+    solver.set_transcription_scheme("trapezoidal");
     // solver.set_verbosity(2);
 
     MocoIterate guess = solver.createGuess();
