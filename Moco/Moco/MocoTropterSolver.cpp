@@ -278,7 +278,7 @@ MocoSolution MocoTropterSolver::solveImpl() const {
     // If enforcing model constraints and not minimizing Lagrange multipliers,
     // check the rank of the constraint Jacobian and if rank-deficient, print
     // recommendation to the user to enable Lagrange multiplier minimization.
-    if (!getProperty_enforce_constraint_derivatives().empty() && 
+    if (!get_enforce_constraint_derivatives() && 
              !get_minimize_lagrange_multipliers()) {
         const auto& model = getProblemRep().getModelBase();
         const auto& matter = model.getMatterSubsystem();
