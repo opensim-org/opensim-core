@@ -158,7 +158,7 @@ std::unique_ptr<CasOC::Solver> MocoCasADiSolver::createCasOCSolver(
             "trapezoidal transcription.");
     // Enforcing constraint derivatives is only supported when Hermite-Simpson
     // is set as the transcription scheme.
-    if (!getProperty_enforce_constraint_derivatives().empty()) {
+    if (casProblem.getNumKinematicConstraintEquations() != 0) {
         OPENSIM_THROW_IF(get_transcription_scheme() != "hermite-simpson" &&
                                  get_enforce_constraint_derivatives(),
                 Exception,

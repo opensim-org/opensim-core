@@ -1052,28 +1052,27 @@ void HermiteSimpson<T>::
             << std::setprecision(6) << std::fixed << time_of_max
             << std::endl;
     }
-    /*
+   
     stream << "Differential equation defects for each mesh interval:"
-    << std::endl;
+           << std::endl;
     stream << std::setw(9) << "time" << "  ";
     for (size_t i_state = 0; i_state < state_names.size(); ++i_state) {
-    stream << std::setw(9) << i_state << "  ";
+        stream << std::setw(9) << i_state << "  ";
     }
     stream << std::endl;
     for (int i_mesh = 0; i_mesh < (int)values.defects.cols(); ++i_mesh) {
 
-    stream << std::setw(4) << i_mesh << "  "
-    << ocp_vars.time[i_mesh] << "  ";
-    for (size_t i_state = 0; i_state < state_names.size(); ++i_state) {
-    auto& value = static_cast<const double&>(
-    values.defects(i_state, i_mesh));
-    stream << std::setprecision(2) << std::scientific << std::setw(9)
-    << value << "  ";
-    }
+        stream << std::setw(4) << i_mesh << "  "
+               << ocp_vars.time[i_mesh] << "  ";
+        for (size_t i_state = 0; i_state < state_names.size(); ++i_state) {
+            auto& value = static_cast<const double&>(
+            values.defects(i_state, i_mesh));
+            stream << std::setprecision(2) << std::scientific << std::setw(9)
+                   << value << "  ";
+        }
     stream << std::endl;
     }
-    */
-
+    
     // Path constraints.
     // -----------------
     stream << "\nPath constraints:";

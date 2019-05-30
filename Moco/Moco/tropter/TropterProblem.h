@@ -121,9 +121,7 @@ protected:
                     "was enabled but no enabled kinematic constraints exist in "
                     "the "
                     "model.");
-            // Do not add kinematic constraints, so we can return. This avoids
-            // attempting to access the `enforce_constraint_derivatives`
-            // property below, which is empty.
+            // Do not add kinematic constraints, so we can return.
             return;
         }
 

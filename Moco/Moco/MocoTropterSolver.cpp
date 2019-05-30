@@ -170,7 +170,7 @@ MocoSolution MocoTropterSolver::solveImpl() const {
         {"trapezoidal", "hermite-simpson"});
     // Enforcing constraint derivatives is only supported when Hermite-Simpson
     // is set as the transcription scheme.
-    if (!getProperty_enforce_constraint_derivatives().empty()) {
+    if (getProblemRep().getNumKinematicConstraintEquations()) {
         OPENSIM_THROW_IF(get_transcription_scheme() != "hermite-simpson" &&
                 get_enforce_constraint_derivatives(), Exception,
                 format("If enforcing derivatives of model kinematic "
