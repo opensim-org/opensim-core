@@ -80,8 +80,10 @@ MocoTool createSlidingMassMocoTool() {
     return moco;
 }
 
-//TODO test Hermite-Simpson
-TEMPLATE_TEST_CASE("Non-uniform mesh", "", MocoTropterSolver, MocoCasADiSolver) {
+TEMPLATE_TEST_CASE(
+        "Non-uniform mesh", "", MocoTropterSolver, MocoCasADiSolver) {
+    auto transcriptionScheme =
+            GENERATE(as<std::string>{}, "trapezoidal", "hermite-simpson");
     std::cout.rdbuf(LogManager::cout.rdbuf());
     std::cout.rdbuf(LogManager::cout.rdbuf());
     MocoTool moco;
@@ -90,34 +92,60 @@ TEMPLATE_TEST_CASE("Non-uniform mesh", "", MocoTropterSolver, MocoCasADiSolver) 
     moco.set_write_solution("false");
     MocoProblem& mp = moco.updProblem();
     mp.setModel(createSlidingMassModel());
-    mp.setTimeBounds(MocoInitialBounds(0), finalTime);
-    mp.setStateInfo("/slider/position/value", MocoBounds(0, 1),
-            MocoInitialBounds(0), MocoFinalBounds(1));
+    mp.setTimeBounds(0, finalTime);
+    mp.setStateInfo("/slider/position/value", {0, 1}, 0, 1);
     mp.setStateInfo("/slider/position/speed", {-100, 100}, 0, 0);
     mp.addCost<MocoControlCost>();
     SECTION("Ensure integral handles non-uniform mesh") {
         auto& ms = moco.initSolver<TestType>();
+        ms.set_transcription_scheme(transcriptionScheme);
         ms.set_optim_max_iterations(1);
         std::vector<double> mesh = {
                 0.0, .05, .075, .1, .4, .41, .42, .58, .8, 1};
         ms.setMesh(mesh);
         auto solution = moco.solve().unseal();
         auto u = solution.getControl("/actuator");
-        double manualIntegral = 0;
 
-        for (int i = 0; i < (int)(mesh.size() - 1); ++i) {
-            manualIntegral += 0.5 * finalTime * (mesh[i + 1] - mesh[i]) *
-                              (SimTK::square(u[i]) + SimTK::square(u[i + 1]));
-        }
+        using SimTK::square;
+        if (transcriptionScheme == "trapezoidal") {
+            for (int i = 0; i < (int)mesh.size(); ++i) {
+                CHECK(solution.getTime()[i] == Approx(mesh[i] * finalTime));
+            }
 
-        for (int i = 0; i < (int)mesh.size(); ++i) {
-            SimTK_TEST_EQ(solution.getTime()[i], mesh[i] * finalTime);
+            double manualIntegral = 0;
+            for (int i = 0; i < (int)(mesh.size() - 1); ++i) {
+                manualIntegral += 0.5 * (mesh[i + 1] - mesh[i]) *
+                                  (square(u[i]) + square(u[i + 1]));
+            }
+            manualIntegral *= finalTime;
+
+            CHECK(manualIntegral == Approx(solution.getObjective()));
+        } else if (transcriptionScheme == "hermite-simpson") {
+            for (int i = 0; i < (int)mesh.size() - 1; ++i) {
+                CHECK(solution.getTime()[2 * i] == Approx(mesh[i] * finalTime));
+                // Midpoints.
+                CHECK(solution.getTime()[2 * i + 1] ==
+                        Approx(0.5 * (mesh[i] + mesh[i + 1]) * finalTime));
+            }
+
+            // Simpson quadrature.
+            double manualIntegral = 0;
+            for (int i = 0; i < (int)mesh.size() - 1; ++i) {
+                const auto a = mesh[i];
+                const auto b = mesh[i + 1];
+                const auto fa = square(u[2 * i]);
+                const auto fmid = square(u[2 * i + 1]);
+                const auto fb = square(u[2 * i + 2]);
+                manualIntegral += (b - a) / 6.0 * (fa + 4 * fmid + fb);
+            }
+            manualIntegral *= finalTime;
+            CHECK(manualIntegral == Approx(solution.getObjective()));
         }
-        SimTK_TEST_EQ(manualIntegral, solution.getObjective());
     }
 
     SECTION("First mesh point must be zero.") {
         auto& ms = moco.initSolver<TestType>();
+        ms.set_transcription_scheme(transcriptionScheme);
         std::vector<double> mesh = {.5, 1};
         ms.setMesh(mesh);
         REQUIRE_THROWS_WITH(
@@ -126,6 +154,7 @@ TEMPLATE_TEST_CASE("Non-uniform mesh", "", MocoTropterSolver, MocoCasADiSolver) 
     }
     SECTION("Mesh points must be strictly increasing") {
         auto& ms = moco.initSolver<TestType>();
+        ms.set_transcription_scheme(transcriptionScheme);
         std::vector<double> mesh = {0, .5, .5, 1};
         ms.setMesh(mesh);
         REQUIRE_THROWS_WITH(moco.solve(),
@@ -134,6 +163,7 @@ TEMPLATE_TEST_CASE("Non-uniform mesh", "", MocoTropterSolver, MocoCasADiSolver) 
     }
     SECTION("Last mesh piont must be 1.") {
         auto& ms = moco.initSolver<TestType>();
+        ms.set_transcription_scheme(transcriptionScheme);
         std::vector<double> mesh = {0, .4, .8};
         ms.setMesh(mesh);
         REQUIRE_THROWS_WITH(

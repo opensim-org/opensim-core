@@ -26,7 +26,7 @@ namespace CasOC {
 DM HermiteSimpson::createQuadratureCoefficientsImpl() const {
 
     // The duration of each mesh interval.
-    const DM mesh = DM::linspace(0, 1, m_numMeshPoints);
+    const DM mesh(m_solver.getMesh());
     const DM meshIntervals = mesh(Slice(1, m_numMeshPoints)) -
                              mesh(Slice(0, m_numMeshPoints - 1));
     // Simpson quadrature includes integrand evaluations at the midpoint.
