@@ -242,6 +242,7 @@ namespace SimTK {
 %template(SimTKArrayDouble) SimTK::Array_<double>;
 %template(SimTKArrayVec3) SimTK::Array_<SimTK::Vec3>;
 %template(SimTKArrayInt) SimTK::Array_<int>;
+%template(SimTKArrayRotation) SimTK::Array_<SimTK::Rotation_<double>>;
 }
 
 typedef int SubsystemIndex;
