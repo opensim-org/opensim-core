@@ -361,7 +361,6 @@ TEMPLATE_TEST_CASE("Workflow", "", MocoTropterSolver, MocoCasADiSolver) {
         SimTK_TEST_MUST_THROW_EXC(
                 phase0.getStateInfo("/slider/position/value"), Exception);
         SECTION("User did not specify state info explicitly.") {
-            std::cout << "DEBUG" << std::endl;
             MocoProblemRep rep = problem.createRep();
             {
                 const auto& info = rep.getStateInfo("/slider/position/value");
