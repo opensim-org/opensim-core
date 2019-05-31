@@ -139,7 +139,7 @@ void HermiteSimpson::applyConstraintsImpl(const VariablesMX& vars,
         for (int ipc = 0; ipc < (int)path.size(); ++ipc) {
             const auto& pathInfo = m_problem.getPathConstraintInfos()[ipc];
             addConstraints(pathInfo.lowerBounds, pathInfo.upperBounds,
-                    path[ipc](Slice(), time_i));
+                    path[ipc](Slice(), imesh));
         }
     }
 }
