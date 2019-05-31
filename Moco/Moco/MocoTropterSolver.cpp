@@ -291,8 +291,6 @@ MocoSolution MocoTropterSolver::solveImpl() const {
         SimTK::FactorQTZ G_qtz;
         bool isJacobianFullRank = true;
         int rank;
-        // Jacobian rank should be time-independent, but loop through states 
-        // until rank deficiency detected, just in case.
         for (const auto& s : statesTraj) {
             // Jacobian is at most velocity-dependent.
             model.realizeVelocity(s);

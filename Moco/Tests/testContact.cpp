@@ -127,7 +127,7 @@ SimTK::Real testNormalForce(CreateContactFunction createContact) {
         // TODO: Hermite-Simpson has trouble converging
         ms.set_transcription_scheme("trapezoidal");
 
-        MocoSolution solution = moco.solve().unseal();
+        MocoSolution solution = moco.solve();
         solution.write("testContact_solution_testNormalForce.sto");
         // moco.visualize(solution);
 
@@ -224,7 +224,7 @@ void testFrictionForce(CreateContactFunction createContact,
         // TODO: Hermite-Simpson has trouble converging
         ms.set_transcription_scheme("trapezoidal");
 
-        MocoSolution solution = moco.solve().unseal();
+        MocoSolution solution = moco.solve();
         solution.write("testContact_testFrictionForce_solution.sto");
         // moco.visualize(solution);
 
