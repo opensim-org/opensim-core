@@ -49,8 +49,8 @@ public:
             "0 for silent. 1 for only Moco's own output. "
             "2 for output from CasADi and the underlying solver (default: 2).");
     OpenSim_DECLARE_PROPERTY(transcription_scheme, std::string,
-            "'trapezoidal' (default) for trapezoidal transcription, or "
-            "'hermite-simpson' for separated Hermite-Simpson transcription.");
+            "'trapezoidal' for trapezoidal transcription, or 'hermite-simpson' "
+            "(default) for separated Hermite-Simpson transcription.");
     OpenSim_DECLARE_PROPERTY(dynamics_mode, std::string,
             "Dynamics are expressed as 'explicit' (default) or 'implicit' "
             "differential equations.");
@@ -72,9 +72,9 @@ public:
     OpenSim_DECLARE_PROPERTY(optim_ipopt_print_level, int,
             "IPOPT's verbosity (see IPOPT documentation).");
     OpenSim_DECLARE_OPTIONAL_PROPERTY(enforce_constraint_derivatives, bool,
-            "'true' or 'false', whether or not derivatives of kinematic "
-            "constraints are enforced as path constraints in the optimal "
-            "control problem.");
+            "'true' (default) or 'false', whether or not derivatives of "
+            "kinematic constraints are enforced as path constraints in the "
+            "optimal control problem.");
     OpenSim_DECLARE_PROPERTY(minimize_lagrange_multipliers, bool,
             "If enabled, a term minimizing the weighted, squared sum of "
             "any existing Lagrange multipliers is added to the optimal control "

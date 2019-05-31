@@ -126,7 +126,7 @@ private:
 
     const Problem& m_problem;
     int m_numMeshPoints;
-    std::string m_transcriptionScheme = "trapezoidal";
+    std::string m_transcriptionScheme = "hermite-simpson";
     bool m_minimizeLagrangeMultipliers = false;
     double m_lagrangeMultiplierWeight = 1.0;
     std::string m_finite_difference_scheme = "central";

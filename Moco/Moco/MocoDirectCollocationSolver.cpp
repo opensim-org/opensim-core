@@ -23,7 +23,8 @@ using namespace OpenSim;
 void MocoDirectCollocationSolver::constructProperties() {
     constructProperty_num_mesh_points(100);
     constructProperty_verbosity(2);
-    constructProperty_transcription_scheme("trapezoidal");
+    constructProperty_transcription_scheme("hermite-simpson");
+    constructProperty_enforce_constraint_derivatives(true);
     constructProperty_dynamics_mode("explicit");
     constructProperty_optim_solver("ipopt");
     constructProperty_optim_max_iterations(-1);
@@ -35,7 +36,4 @@ void MocoDirectCollocationSolver::constructProperties() {
     constructProperty_velocity_correction_bounds({-0.1, 0.1});
     constructProperty_minimize_lagrange_multipliers(false);
     constructProperty_lagrange_multiplier_weight(1.0);
-
-    // This is empty to allow user input error checking.
-    constructProperty_enforce_constraint_derivatives();
 }

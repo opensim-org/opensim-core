@@ -170,7 +170,7 @@ MocoSolution MocoTropterSolver::solveImpl() const {
         {"trapezoidal", "hermite-simpson"});
     // Enforcing constraint derivatives is only supported when Hermite-Simpson
     // is set as the transcription scheme.
-    if (!getProperty_enforce_constraint_derivatives().empty()) {
+    if (getProblemRep().getNumKinematicConstraintEquations()) {
         OPENSIM_THROW_IF(get_transcription_scheme() != "hermite-simpson" &&
                 get_enforce_constraint_derivatives(), Exception,
                 format("If enforcing derivatives of model kinematic "
@@ -278,7 +278,8 @@ MocoSolution MocoTropterSolver::solveImpl() const {
     // If enforcing model constraints and not minimizing Lagrange multipliers,
     // check the rank of the constraint Jacobian and if rank-deficient, print
     // recommendation to the user to enable Lagrange multiplier minimization.
-    if (!getProperty_enforce_constraint_derivatives().empty() && 
+    if (getProblemRep().getNumKinematicConstraintEquations() &&
+             !get_enforce_constraint_derivatives() && 
              !get_minimize_lagrange_multipliers()) {
         const auto& model = getProblemRep().getModelBase();
         const auto& matter = model.getMatterSubsystem();
@@ -290,8 +291,6 @@ MocoSolution MocoTropterSolver::solveImpl() const {
         SimTK::FactorQTZ G_qtz;
         bool isJacobianFullRank = true;
         int rank;
-        // Jacobian rank should be time-independent, but loop through states 
-        // until rank deficiency detected, just in case.
         for (const auto& s : statesTraj) {
             // Jacobian is at most velocity-dependent.
             model.realizeVelocity(s);
@@ -311,7 +310,7 @@ MocoSolution MocoTropterSolver::solveImpl() const {
             std::cout << "WARNING: rank-deficient constraint Jacobian "
                       << "detected.\n";
             std::cout << "---------------------------------------------------"
-                        << "--\n";
+                      << "--\n";
             std::cout << "The model constraint Jacobian has "
                       << std::to_string(G.nrow()) + " row(s) but is only rank "
                       << std::to_string(rank) + ".\nTry removing "

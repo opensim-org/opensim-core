@@ -78,6 +78,8 @@ MocoTool createSlidingMassMocoTool() {
 
     auto& ms = moco.initSolver<SolverType>();
     ms.set_num_mesh_points(20);
+    ms.set_transcription_scheme("trapezoidal");
+    ms.set_enforce_constraint_derivatives(false);
     return moco;
 }
 
@@ -543,9 +545,11 @@ TEMPLATE_TEST_CASE("Workflow", "", MocoTropterSolver, MocoCasADiSolver) {
         problem.addCost<MocoFinalTimeCost>();
 
         auto& solver = moco.initSolver<TestType>();
-        solver.set_num_mesh_points(20);
+        const int N = 20; // mesh points
+        const int Nc = 2*N - 1; // collocation points
+        solver.set_num_mesh_points(N);
         MocoIterate guess = solver.createGuess("random");
-        guess.setTime(createVectorLinspace(20, 0.0, 3.0));
+        guess.setTime(createVectorLinspace(Nc, 0.0, 3.0));
         solver.setGuess(guess);
         MocoSolution solution0 = moco.solve();
 
@@ -554,7 +558,7 @@ TEMPLATE_TEST_CASE("Workflow", "", MocoTropterSolver, MocoCasADiSolver) {
         // the guess still exists.
         SimTK_TEST(!solver.getGuess().empty());
 
-        guess.setTime(createVectorLinspace(20, 0.0, 7.0));
+        guess.setTime(createVectorLinspace(Nc, 0.0, 7.0));
         MocoSolution solution = moco.solve();
         CHECK(solution.getFinalTime() == Approx(5.8));
     }
@@ -798,21 +802,22 @@ TEMPLATE_TEST_CASE("Guess", "", MocoTropterSolver, MocoCasADiSolver) {
     MocoTool moco = createSlidingMassMocoTool<TestType>();
     auto& ms = moco.initSolver<TestType>();
     const int N = 6;
+    const int Nc = 2*N - 1;
     ms.set_num_mesh_points(N);
 
     std::vector<std::string> expectedStateNames{
             "/slider/position/value", "/slider/position/speed"};
     std::vector<std::string> expectedControlNames{"/actuator"};
 
-    SimTK::Matrix expectedStatesTraj(N, 2);
+    SimTK::Matrix expectedStatesTraj(Nc, 2);
     expectedStatesTraj.col(0) = 0.5;  // bounds are [0, 1].
     expectedStatesTraj(0, 0) = 0;     // initial value fixed to 0.
-    expectedStatesTraj(N - 1, 0) = 1; // final value fixed to 1.
+    expectedStatesTraj(Nc - 1, 0) = 1; // final value fixed to 1.
     expectedStatesTraj.col(1) = 0.0;  // bounds are [-100, 100]
     expectedStatesTraj(0, 1) = 0;     // initial speed fixed to 0.
-    expectedStatesTraj(N - 1, 1) = 0; // final speed fixed to 1.
+    expectedStatesTraj(Nc - 1, 1) = 0; // final speed fixed to 1.
 
-    SimTK::Matrix expectedControlsTraj(N, 1);
+    SimTK::Matrix expectedControlsTraj(Nc, 1);
     expectedControlsTraj.col(0) = 0;
 
     // createGuess().
@@ -821,12 +826,12 @@ TEMPLATE_TEST_CASE("Guess", "", MocoTropterSolver, MocoCasADiSolver) {
     // Initial guess based on bounds.
     {
         MocoIterate guess = ms.createGuess("bounds");
-        SimTK_TEST(guess.getTime().size() == N);
+        SimTK_TEST(guess.getTime().size() == Nc);
         SimTK_TEST(guess.getStateNames() == expectedStateNames);
         SimTK_TEST(guess.getControlNames() == expectedControlNames);
         SimTK_TEST(guess.getTime()[0] == 0);
         SimTK_TEST_EQ(
-                guess.getTime()[N - 1], 5.0); // midpoint of bounds [0, 10]
+                guess.getTime()[Nc - 1], 5.0); // midpoint of bounds [0, 10]
 
         SimTK_TEST_EQ(guess.getStatesTrajectory(), expectedStatesTraj);
         SimTK_TEST_EQ(guess.getControlsTrajectory(), expectedControlsTraj);
@@ -835,7 +840,7 @@ TEMPLATE_TEST_CASE("Guess", "", MocoTropterSolver, MocoCasADiSolver) {
     // Random initial guess.
     {
         MocoIterate guess = ms.createGuess("random");
-        SimTK_TEST(guess.getTime().size() == N);
+        SimTK_TEST(guess.getTime().size() == Nc);
         SimTK_TEST(guess.getStateNames() == expectedStateNames);
         SimTK_TEST(guess.getControlNames() == expectedControlNames);
 
@@ -903,7 +908,7 @@ TEMPLATE_TEST_CASE("Guess", "", MocoTropterSolver, MocoCasADiSolver) {
     {
         MocoIterate guess = ms.createGuess("bounds");
         // Use weird number to ensure the solver actually loads the file:
-        guess.setControl("/actuator", SimTK::Vector(N, 13.28));
+        guess.setControl("/actuator", SimTK::Vector(Nc, 13.28));
         const std::string fname = "testMocoInterface_testGuess_file.sto";
         guess.write(fname);
         ms.setGuessFile(fname);
@@ -983,11 +988,13 @@ TEMPLATE_TEST_CASE("Guess", "", MocoTropterSolver, MocoCasADiSolver) {
 
     // Resampling.
     {
-        ms.set_num_mesh_points(5);
+        const int N = 5;
+        const int Nc = 2*N - 1;
+        ms.set_num_mesh_points(N);
         MocoIterate guess0 = ms.createGuess();
-        guess0.setControl("/actuator", createVectorLinspace(5, 2.8, 7.3));
-        SimTK_TEST(guess0.getTime().size() == 5); // midpoint of [0, 10]
-        SimTK_TEST_EQ(guess0.getTime()[4], 5);
+        guess0.setControl("/actuator", createVectorLinspace(Nc, 2.8, 7.3));
+        SimTK_TEST(guess0.getTime().size() == Nc); // midpoint of [0, 10]
+        SimTK_TEST_EQ(guess0.getTime()[Nc - 1], N);
 
         // resampleWithNumTimes
         {
@@ -1462,15 +1469,16 @@ TEMPLATE_TEST_CASE("Solving an empty MocoProblem", "", MocoTropterSolver,
     THEN("problem solves without error, solution trajectories are empty.") {
         MocoSolution solution = moco.solve();
         const int N = solver.get_num_mesh_points();
-        CHECK(solution.getTime().size() == solver.get_num_mesh_points());
+        const int Nc = 2*N - 1; // collocation points
+        CHECK(solution.getTime().size() == Nc);
         CHECK(solution.getStatesTrajectory().ncol() == 0);
-        CHECK(solution.getStatesTrajectory().nrow() == N);
+        CHECK(solution.getStatesTrajectory().nrow() == Nc);
         CHECK(solution.getControlsTrajectory().ncol() == 0);
-        CHECK(solution.getControlsTrajectory().nrow() == N);
+        CHECK(solution.getControlsTrajectory().nrow() == Nc);
         CHECK(solution.getMultipliersTrajectory().ncol() == 0);
-        CHECK(solution.getMultipliersTrajectory().nrow() == N);
+        CHECK(solution.getMultipliersTrajectory().nrow() == Nc);
         CHECK(solution.getDerivativesTrajectory().ncol() == 0);
-        CHECK(solution.getDerivativesTrajectory().nrow() == N);
+        CHECK(solution.getDerivativesTrajectory().nrow() == Nc);
     }
 }
 

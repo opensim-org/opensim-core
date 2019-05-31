@@ -50,7 +50,8 @@ std::unique_ptr<Model> createSlidingMassModel() {
 /// Test the result of a sliding mass minimum effort problem.
 TEMPLATE_TEST_CASE("Test MocoControlCost", "", MocoTropterSolver,
         MocoCasADiSolver) {
-    int N = 10;
+    const int N = 10; // mesh points
+    const int Nc = 2*N - 1; // collocation points (Hermite-Simpson)
     MocoSolution sol1;
     {
         MocoTool moco;
@@ -72,13 +73,13 @@ TEMPLATE_TEST_CASE("Test MocoControlCost", "", MocoTropterSolver,
 
         // Minimum effort solution is a linear control.
         SimTK_TEST_EQ_TOL(sol1.getControl("/actuator"),
-                createVectorLinspace(N, 2.23, -2.23), 0.25);
+                createVectorLinspace(Nc, 2.23, -2.23), 0.25);
         // Symmetry.
         SimTK_TEST_EQ_TOL(sol1.getControl("/actuator").getElt(0, 0),
-                -sol1.getControl("/actuator").getElt(N-1, 0), 1e-3);
+                -sol1.getControl("/actuator").getElt(Nc-1, 0), 1e-3);
 
         // Minimum effort solution takes as long as possible.
-        SimTK_TEST_EQ_TOL(sol1.getTime().getElt(N-1, 0), 5, 1e-7);
+        SimTK_TEST_EQ_TOL(sol1.getTime().getElt(Nc-1, 0), 5, 1e-7);
     }
 
     // TODO test that we can ignore specific actuators.
