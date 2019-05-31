@@ -22,6 +22,7 @@
 #include "Components/DiscreteForces.h"
 #include "MocoProblem.h"
 #include <unordered_set>
+#include <regex>
 
 using namespace OpenSim;
 
@@ -159,6 +160,16 @@ void MocoProblemRep::initialize() {
     // State and control infos.
     // ------------------------
     const auto stateNames = m_model_base.getStateVariableNames();
+    for (int i = 0; i < ph0.getProperty_state_infos_pattern().size(); ++i) {
+        const auto& pattern = ph0.get_state_infos_pattern(i).getName();
+        for(int j = 0; j < stateNames.size(); ++j)
+        {
+            if (std::regex_match(stateNames[j], std::regex (pattern)))
+            {
+                m_state_infos[stateNames[j]] = ph0.get_state_infos_pattern(i);
+            }
+        }
+    }
     for (int i = 0; i < ph0.getProperty_state_infos().size(); ++i) {
         const auto& name = ph0.get_state_infos(i).getName();
         OPENSIM_THROW_IF(stateNames.findIndex(name) == -1, Exception,
@@ -166,6 +177,16 @@ void MocoProblemRep::initialize() {
                         name));
     }
     auto controlNames = createControlNamesFromModel(m_model_base);
+    for (int i = 0; i < ph0.getProperty_control_infos_pattern().size(); ++i) {
+        const auto& pattern = ph0.get_control_infos_pattern(i).getName();
+        for(int j = 0; j < (int) controlNames.size(); ++j)
+        {
+            if (std::regex_match(controlNames[j], std::regex (pattern)))
+            {
+                m_control_infos[controlNames[j]] = ph0.get_control_infos_pattern(i);
+            }
+        }
+    }
     for (int i = 0; i < ph0.getProperty_control_infos().size(); ++i) {
         const auto& name = ph0.get_control_infos(i).getName();
         auto it = std::find(controlNames.begin(), controlNames.end(), name);
