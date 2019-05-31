@@ -218,7 +218,6 @@ TEST_CASE("Enabled Costs", "") {
 template <class SolverType>
 MocoTool setupMocoToolDoublePendulumMinimizeEffort() {
     using SimTK::Pi;
-    int N = 20;
     const Model doublePendulum = ModelFactory::createNLinkPendulum(2);
 
     MocoTool moco;

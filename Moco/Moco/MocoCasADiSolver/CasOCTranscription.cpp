@@ -24,17 +24,31 @@ using casadi::Slice;
 
 namespace CasOC {
 
-void Transcription::createVariablesAndSetBounds(const casadi::DM& grid) {
+void Transcription::createVariablesAndSetBounds(
+        const casadi::DM& grid, int numDefectsPerGridPoint) {
     // Set the grid.
     // -------------
     // The grid for a transcription scheme includes both mesh points (i.e.
     // points that lie on the endpoints of a mesh interval) and any
     // additional collocation points that may lie on mesh interior (as in
     // Hermite-Simpson collocation, etc.).
-    m_numMeshPoints = (int) m_solver.getMesh().size();
-    m_numGridPoints = (int) grid.numel();
+    m_numMeshPoints = (int)m_solver.getMesh().size();
+    m_numGridPoints = (int)grid.numel();
     m_numMeshIntervals = m_numMeshPoints - 1;
     m_numPointsIgnoringConstraints = m_numGridPoints - m_numMeshPoints;
+    m_numDefectsPerGridPoint = numDefectsPerGridPoint;
+    // TODO: Update when supporting prescribed kinematics.
+    m_numResiduals =
+            m_solver.isDynamicsModeImplicit() ? m_problem.getNumSpeeds() : 0;
+    m_numConstraints =
+            m_numDefectsPerGridPoint * m_numMeshIntervals +
+            m_numResiduals * m_numGridPoints +
+            m_problem.getNumKinematicConstraintEquations() * m_numMeshPoints;
+    m_constraints.path.resize(m_problem.getPathConstraintInfos().size());
+    for (int ipc = 0; ipc < (int)m_constraints.path.size(); ++ipc) {
+        const auto& info = m_problem.getPathConstraintInfos()[ipc];
+        m_numConstraints += info.size() * m_numMeshPoints;
+    }
     m_grid = grid;
 
     // Create variables.
@@ -178,14 +192,38 @@ void Transcription::transcribe() {
 
     // TODO: Does creating all this memory have efficiency implications in
     // CasADi?
-    // Initialize memory for state derivatives, implicit residuals, and
-    // constraint errors.
+    // Initialize memory for state derivatives and defects.
+    // ----------------------------------------------------
     m_xdot = MX(NS, m_numGridPoints);
+    m_constraints.defects = MX(
+            casadi::Sparsity::dense(m_numDefectsPerGridPoint, m_numMeshIntervals));
+    m_constraintsLowerBounds.defects =
+            DM::zeros(m_numDefectsPerGridPoint, m_numMeshIntervals);
+    m_constraintsUpperBounds.defects =
+            DM::zeros(m_numDefectsPerGridPoint, m_numMeshIntervals);
+
+    // Initialize memory for implicit residuals.
+    // -----------------------------------------
     if (m_solver.isDynamicsModeImplicit()) {
-        m_residual = MX(NU, m_numGridPoints);
+        const auto& NR = m_numResiduals;
+        m_constraints.residuals =
+                MX(casadi::Sparsity::dense(NR, m_numGridPoints));
+        m_constraintsLowerBounds.residuals = DM::zeros(NR, m_numGridPoints);
+        m_constraintsUpperBounds.residuals = DM::zeros(NR, m_numGridPoints);
     }
-    m_kcerr = MX(m_problem.getNumKinematicConstraintEquations(),
-            m_kinematicConstraintIndices.nnz());
+
+    // Initialize memory for kinematic constraints.
+    // --------------------------------------------
+    int numKinematicConstraints =
+            m_problem.getNumKinematicConstraintEquations();
+    m_constraints.kinematic = MX(
+            casadi::Sparsity::dense(numKinematicConstraints, m_numMeshPoints));
+
+    const auto& kcBounds = m_problem.getKinematicConstraintBounds();
+    m_constraintsLowerBounds.kinematic = casadi::DM::repmat(
+            kcBounds.lower, numKinematicConstraints, m_numMeshPoints);
+    m_constraintsUpperBounds.kinematic = casadi::DM::repmat(
+            kcBounds.upper, numKinematicConstraints, m_numMeshPoints);
 
     // qdot
     // ----
@@ -232,10 +270,10 @@ void Transcription::transcribe() {
             const auto out =
                     evalOnTrajectory(m_problem.getImplicitMultibodySystem(),
                             inputs, m_daeIndices);
-            m_residual(Slice(), m_daeIndices) = out.at(0);
+            m_constraints.residuals(Slice(), m_daeIndices) = out.at(0);
             // zdot.
             m_xdot(Slice(NQ + NU, NS), m_daeIndices) = out.at(1);
-            m_kcerr = out.at(2);
+            m_constraints.kinematic = out.at(2);
         }
 
         // Points where we ignore algebraic constraints.
@@ -243,7 +281,8 @@ void Transcription::transcribe() {
             const auto out = evalOnTrajectory(
                     m_problem.getImplicitMultibodySystemIgnoringConstraints(),
                     inputs, m_daeIndicesIgnoringConstraints);
-            m_residual(Slice(), m_daeIndicesIgnoringConstraints) = out.at(0);
+            m_constraints.residuals(Slice(), m_daeIndicesIgnoringConstraints) =
+                    out.at(0);
             // zdot.
             m_xdot(Slice(NQ + NU, NS), m_daeIndicesIgnoringConstraints) =
                     out.at(1);
@@ -261,7 +300,7 @@ void Transcription::transcribe() {
                     m_problem.getMultibodySystem(), inputs, m_daeIndices);
             m_xdot(Slice(NQ, NQ + NU), m_daeIndices) = out.at(0);
             m_xdot(Slice(NQ + NU, NS), m_daeIndices) = out.at(1);
-            m_kcerr = out.at(2);
+            m_constraints.kinematic = out.at(2);
         }
 
         // Points where we ignore algebraic constraints.
@@ -276,22 +315,26 @@ void Transcription::transcribe() {
         }
     }
 
+    // Calculate defects.
+    // ------------------
+    calcDefects();
+
     // Path constraints
     // ----------------
     // The individual path constraint functions are passed to CasADi to
     // maximize CasADi's ability to take derivatives efficiently.
-    m_path.resize(m_problem.getPathConstraintInfos().size());
-    for (int ipc = 0; ipc < (int)m_path.size(); ++ipc) {
+    m_constraints.path.resize(m_problem.getPathConstraintInfos().size());
+    for (int ipc = 0; ipc < (int)m_constraints.path.size(); ++ipc) {
         const auto& info = m_problem.getPathConstraintInfos()[ipc];
         // TODO: Is it sufficiently general to apply these to mesh points?
         const auto out = evalOnTrajectory(*info.function,
                 {states, controls, multipliers, derivatives}, m_daeIndices);
-        m_path[ipc] = out.at(0);
+        m_constraints.path[ipc] = out.at(0);
+        m_constraintsLowerBounds.path[ipc] =
+                casadi::DM::repmat(info.lowerBounds, 1, m_numMeshPoints);
+        m_constraintsUpperBounds.path[ipc] =
+                casadi::DM::repmat(info.upperBounds, 1, m_numMeshPoints);
     }
-
-    // Apply constraints.
-    // ------------------
-    applyConstraints();
 }
 
 void Transcription::setObjective() {
@@ -382,14 +425,17 @@ Solution Transcription::solve(const Iterate& guessOrig) {
     }
     // The inputs to nlpsol() are symbolic (casadi::MX).
     casadi::MXDict nlp;
-    nlp.emplace(std::make_pair("x", flatten(m_vars)));
+    auto x = flattenVariables(m_vars);
+    nlp.emplace(std::make_pair("x", x));
     // The m_objective symbolic variable holds an expression graph including
     // all the calculations performed on the variables x.
     nlp.emplace(std::make_pair("f", m_objective));
     // The m_constraints symbolic vector holds all of the expressions for
     // the constraint functions.
     // veccat() concatenates std::vectors into a single MX vector.
-    nlp.emplace(std::make_pair("g", casadi::MX::veccat(m_constraints)));
+
+    auto g = flattenConstraints(m_constraints);
+    nlp.emplace(std::make_pair("g", g));
     if (!m_solver.getWriteSparsity().empty()) {
         const auto prefix = m_solver.getWriteSparsity();
         auto gradient = casadi::MX::gradient(nlp["f"], nlp["x"]);
@@ -413,21 +459,287 @@ Solution Transcription::solve(const Iterate& guessOrig) {
     // Run the optimization (evaluate the CasADi NLP function).
     // --------------------------------------------------------
     // The inputs and outputs of nlpFunc are numeric (casadi::DM).
-    const casadi::DMDict nlpResult = nlpFunc(casadi::DMDict{
-            {"x0", flatten(guess.variables)}, {"lbx", flatten(m_lowerBounds)},
-            {"ubx", flatten(m_upperBounds)},
-            {"lbg", casadi::DM::veccat(m_constraintsLowerBounds)},
-            {"ubg", casadi::DM::veccat(m_constraintsUpperBounds)}});
+    const casadi::DMDict nlpResult =
+            nlpFunc(casadi::DMDict{{"x0", flattenVariables(guess.variables)},
+                    {"lbx", flattenVariables(m_lowerBounds)},
+                    {"ubx", flattenVariables(m_upperBounds)},
+                    {"lbg", flattenConstraints(m_constraintsLowerBounds)},
+                    {"ubg", flattenConstraints(m_constraintsUpperBounds)}});
 
     // Create a CasOC::Solution.
     // -------------------------
     Solution solution = m_problem.createIterate<Solution>();
-    solution.variables = expand(nlpResult.at("x"));
+    const auto finalVariables = nlpResult.at("x");
+    solution.variables = expandVariables(finalVariables);
     solution.objective = nlpResult.at("f").scalar();
     solution.times = createTimes(
             solution.variables[initial_time], solution.variables[final_time]);
     solution.stats = nlpFunc.stats();
+    if (!solution.stats.at("success")) {
+        printConstraintValues(solution, expandConstraints(nlpResult.at("g")));
+    }
     return solution;
+}
+
+void Transcription::printConstraintValues(const Iterate& it,
+        const Constraints<casadi::DM>& /*constraintValues*/) const {
+
+    auto& stream = std::cout;
+
+    // We want to be able to restore the stream's original formatting.
+    std::ios orig_fmt(nullptr);
+    orig_fmt.copyfmt(stream);
+
+    // Find the longest state, control, multiplier, derivative, or slack name.
+    auto compareSize = [](const std::string& a, const std::string& b) {
+        return a.size() < b.size();
+    };
+    int maxNameLength = 0;
+    auto updateMaxNameLength = [&maxNameLength, compareSize](
+                                       const std::vector<std::string>& names) {
+        if (!names.empty()) {
+            maxNameLength = (int)std::max_element(
+                    names.begin(), names.end(), compareSize)
+                                    ->size();
+        }
+    };
+    updateMaxNameLength(it.state_names);
+    updateMaxNameLength(it.control_names);
+    updateMaxNameLength(it.multiplier_names);
+    updateMaxNameLength(it.derivative_names);
+    updateMaxNameLength(it.slack_names);
+
+    stream << "\nActive or violated continuous variable bounds" << std::endl;
+    stream << "L and U indicate which bound is active; "
+              "'*' indicates a bound is violated. "
+           << std::endl;
+    stream << "The case of lower==upper==value is ignored." << std::endl;
+
+    // Bounds on time-varying variables.
+    // ---------------------------------
+    auto print_bounds = [&maxNameLength](const std::string& description,
+                                const std::vector<std::string>& names,
+                                const casadi::DM& times,
+                                const casadi::DM& values,
+                                const casadi::DM& lower,
+                                const casadi::DM& upper) {
+        stream << "\n" << description << ": ";
+
+        bool boundsActive = false;
+        bool boundsViolated = false;
+        for (casadi_int ivar = 0; ivar < values.rows(); ++ivar) {
+            for (casadi_int itime = 0; itime < times.numel(); ++itime) {
+                const auto& L = lower(ivar, itime).scalar();
+                const auto& V = values(ivar, itime).scalar();
+                const auto& U = upper(ivar, itime).scalar();
+                if (V <= L || V >= U) {
+                    if (V == L && L == U) continue;
+                    boundsActive = true;
+                    if (V < L || V > U) {
+                        boundsViolated = true;
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (!boundsActive && !boundsViolated) {
+            stream << "no bounds active or violated" << std::endl;
+            return;
+        }
+
+        if (!boundsViolated) {
+            stream << "some bounds active but no bounds violated";
+        } else {
+            stream << "some bounds active or violated";
+        }
+
+        stream << "\n"
+               << std::setw(maxNameLength) << "  " << std::setw(9) << "time "
+               << "  " << std::setw(9) << "lower"
+               << "    " << std::setw(9) << "value"
+               << "    " << std::setw(9) << "upper"
+               << " " << std::endl;
+
+        for (casadi_int ivar = 0; ivar < values.rows(); ++ivar) {
+            for (casadi_int itime = 0; itime < times.numel(); ++itime) {
+                const auto& L = lower(ivar, itime).scalar();
+                const auto& V = values(ivar, itime).scalar();
+                const auto& U = upper(ivar, itime).scalar();
+                if (V <= L || V >= U) {
+                    // In the case where lower==upper==value, there is no
+                    // issue; ignore.
+                    if (V == L && L == U) continue;
+                    const auto& time = times(itime);
+                    stream << std::setw(maxNameLength) << names[ivar] << "  "
+                           << std::setprecision(2) << std::scientific
+                           << std::setw(9) << time << "  " << std::setw(9) << L
+                           << " <= " << std::setw(9) << V
+                           << " <= " << std::setw(9) << U << " ";
+                    // Show if the constraint is violated.
+                    if (V <= L)
+                        stream << "L";
+                    else
+                        stream << " ";
+                    if (V >= U)
+                        stream << "U";
+                    else
+                        stream << " ";
+                    if (V < L || V > U) stream << "*";
+                    stream << std::endl;
+                }
+            }
+        }
+    };
+    const auto& vars = it.variables;
+    const auto& lower = m_lowerBounds;
+    const auto& upper = m_upperBounds;
+    print_bounds("State bounds", it.state_names, it.times, vars.at(states),
+            lower.at(states), upper.at(states));
+    print_bounds("Control bounds", it.state_names, it.times, vars.at(controls),
+            lower.at(controls), upper.at(controls));
+    print_bounds("Multiplier bounds", it.state_names, it.times,
+            vars.at(multipliers), lower.at(multipliers), upper.at(multipliers));
+    print_bounds("Derivative bounds", it.state_names, it.times,
+            vars.at(derivatives), lower.at(derivatives), upper.at(derivatives));
+    print_bounds("Slack bounds", it.state_names, it.times, vars.at(slacks),
+            lower.at(slacks), upper.at(slacks));
+
+    // Bounds on time and parameter variables.
+    // ---------------------------------------
+    maxNameLength = 0;
+    updateMaxNameLength(it.parameter_names);
+    std::vector<std::string> time_names = {"initial_time", "final_time"};
+    updateMaxNameLength(time_names);
+
+    stream << "\nActive or violated parameter bounds" << std::endl;
+    stream << "L and U indicate which bound is active; "
+              "'*' indicates a bound is violated. "
+           << std::endl;
+    stream << "The case of lower==upper==value is ignored." << std::endl;
+
+    auto printParameterBounds = [&maxNameLength](const std::string& description,
+                                        const std::vector<std::string>& names,
+                                        const casadi::DM& values,
+                                        const casadi::DM& lower,
+                                        const casadi::DM& upper) {
+        stream << "\n" << description << ": ";
+
+        bool boundsActive = false;
+        bool boundsViolated = false;
+        for (casadi_int ivar = 0; ivar < values.rows(); ++ivar) {
+            const auto& L = lower(ivar).scalar();
+            const auto& V = values(ivar).scalar();
+            const auto& U = upper(ivar).scalar();
+            if (V <= L || V >= U) {
+                if (V == L && L == U) continue;
+                boundsActive = true;
+                if (V < L || V > U) {
+                    boundsViolated = true;
+                    break;
+                }
+            }
+        }
+
+        if (!boundsActive && !boundsViolated) {
+            stream << "no bounds active or violated" << std::endl;
+            return;
+        }
+
+        if (!boundsViolated) {
+            stream << "some bounds active but no bounds violated";
+        } else {
+            stream << "some bounds active or violated";
+        }
+
+        stream << "\n"
+               << std::setw(maxNameLength) << "  " << std::setw(9) << "lower"
+               << "    " << std::setw(9) << "value"
+               << "    " << std::setw(9) << "upper"
+               << " " << std::endl;
+
+        for (casadi_int ivar = 0; ivar < values.rows(); ++ivar) {
+            const auto& L = lower(ivar).scalar();
+            const auto& V = values(ivar).scalar();
+            const auto& U = upper(ivar).scalar();
+            if (V <= L || V >= U) {
+                // In the case where lower==upper==value, there is no
+                // issue; ignore.
+                if (V == L && L == U) continue;
+                stream << std::setw(maxNameLength) << names[ivar] << "  "
+                       << std::setprecision(2) << std::scientific
+                       << std::setw(9) << L << " <= " << std::setw(9) << V
+                       << " <= " << std::setw(9) << U << " ";
+                // Show if the constraint is violated.
+                if (V <= L)
+                    stream << "L";
+                else
+                    stream << " ";
+                if (V >= U)
+                    stream << "U";
+                else
+                    stream << " ";
+                if (V < L || V > U) stream << "*";
+                stream << std::endl;
+            }
+        }
+    };
+    casadi::DM timeValues(2, 1);
+    timeValues(0) = vars.at(initial_time);
+    timeValues(1) = vars.at(final_time);
+
+    casadi::DM timeLower(2, 1);
+    timeLower(0) = lower.at(initial_time);
+    timeLower(1) = lower.at(final_time);
+
+    casadi::DM timeUpper(2, 1);
+    timeUpper(0) = upper.at(initial_time);
+    timeUpper(1) = upper.at(final_time);
+
+    printParameterBounds(
+            "Time bounds", time_names, timeValues, timeLower, timeUpper);
+    printParameterBounds("Parameter bounds", it.parameter_names,
+            vars.at(parameters), lower.at(parameters), upper.at(parameters));
+
+    // Constraints.
+    // ============
+    stream << "\nTotal number of constraints: " << m_numConstraints << "."
+           << std::endl;
+
+    // Differential equation defects.
+    // ------------------------------
+    stream << "\nDifferential equation defects:"
+           << "\n  L2 norm across mesh, max abs value (L1 norm), time of max "
+              "abs"
+           << std::endl;
+
+    // std::string spacer(7, ' ');
+    // casadi::DM row(1, defects.columns());
+    // for (size_t istate = 0; istate < it.state_names.size(); ++istate) {
+    //     row = defects(istate, Slice());
+    //     const double L2 = casadi::DM::norm_2(row).scalar();
+    //     double max = row(0).scalar();
+    //     int argmax = 0;
+    //     for (int itime = 1; itime < it.times.numel(); ++itime) {
+    //         if (row(itime).scalar() > max) {
+    //             max = row(itime).scalar();
+    //             argmax = itime;
+    //         }
+    //     }
+    //     const double L1 = max;
+    //     const double time_of_max = it.times(argmax).scalar();
+    //
+    //     stream << std::setw(maxNameLength) << it.state_names[istate] <<
+    //     spacer
+    //            << std::setprecision(2) << std::scientific << std::setw(9) <<
+    //            L2
+    //            << spacer << L1 << spacer << std::setprecision(6) <<
+    //            std::fixed
+    //            << time_of_max << std::endl;
+    // }
+
+    // Reset the IO format back to what it was before invoking this function.
+    stream.copyfmt(orig_fmt);
 }
 
 Iterate Transcription::createInitialGuessFromBounds() const {
@@ -531,16 +843,6 @@ casadi::MXVector Transcription::evalOnTrajectory(
 
     }
     }*/
-}
-
-void Transcription::addConstraints(const casadi::DM& lower,
-        const casadi::DM& upper, const casadi::MX& equations) {
-    OPENSIM_THROW_IF(
-            lower.size() != upper.size() || lower.size() != equations.size(),
-            OpenSim::Exception, "Arguments must have the same size.");
-    m_constraintsLowerBounds.push_back(lower);
-    m_constraintsUpperBounds.push_back(upper);
-    m_constraints.push_back(equations);
 }
 
 } // namespace CasOC
