@@ -275,12 +275,12 @@ void DeGrooteFregly2016Muscle::calcMuscleDynamicsInfo(
 }
 
 void DeGrooteFregly2016Muscle::calcMusclePotentialEnergyInfo(
-        const SimTK::State& s, MusclePotentialEnergyInfo& mpei) const {
+        const SimTK::State& /*s*/, MusclePotentialEnergyInfo& /*mpei*/) const {
     // TODO.
 }
 
 void DeGrooteFregly2016Muscle::computeInitialFiberEquilibrium(
-        SimTK::State& s) const {
+        SimTK::State& /*s*/) const {
     if (get_ignore_tendon_compliance()) return;
 }
 

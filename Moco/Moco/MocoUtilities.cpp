@@ -514,25 +514,40 @@ std::unordered_map<std::string, int> OpenSim::createSystemYIndexMap(
 }
 
 std::vector<std::string> OpenSim::createControlNamesFromModel(
-        const Model& model) {
+        const Model& model, std::vector<int>& modelControlIndices) {
     std::vector<std::string> controlNames;
     // Loop through all actuators and create control names. For scalar
     // actuators, use the actuator name for the control name. For non-scalar
     // actuators, use the actuator name with a control index appended for the
     // control name.
     // TODO update when OpenSim supports named controls.
+    int count = 0;
+    modelControlIndices.clear();
     for (const auto& actu : model.getComponentList<Actuator>()) {
+        if (!actu.get_appliesForce()) {
+            count += actu.numControls();
+            continue;
+        }
         std::string actuPath = actu.getAbsolutePathString();
         if (actu.numControls() == 1) {
             controlNames.push_back(actuPath);
+            modelControlIndices.push_back(count);
+            count++;
         } else {
             for (int i = 0; i < actu.numControls(); ++i) {
                 controlNames.push_back(actuPath + "_" + std::to_string(i));
+                modelControlIndices.push_back(count);
+                count++;
             }
         }
     }
 
     return controlNames;
+}
+std::vector<std::string> OpenSim::createControlNamesFromModel(
+        const Model& model) {
+    std::vector<int> modelControlIndices;
+    return createControlNamesFromModel(model, modelControlIndices);
 }
 
 std::unordered_map<std::string, int> OpenSim::createSystemControlIndexMap(

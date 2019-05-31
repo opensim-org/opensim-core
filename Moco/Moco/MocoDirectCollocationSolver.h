@@ -98,12 +98,11 @@ public:
 
     MocoDirectCollocationSolver() { constructProperties(); }
 
-    /// Sets the mesh to a, usually non-uniform, user-defined list of mesh points
-    /// to sample. Takes precedence over uniform mesh with num_mesh_points. The
-    /// user-defined mesh must start with 0, be strictly increasing (no duplicate
-    /// times), and end with 1.
+    /// Sets the mesh to a, usually non-uniform, user-defined list of mesh
+    /// points to sample. Takes precedence over uniform mesh with
+    /// num_mesh_points. The user-defined mesh must start with 0, be strictly
+    /// increasing (no duplicate times), and end with 1.
     void setMesh(const std::vector<double>& mesh);
-
 
 protected:
     OpenSim_DECLARE_PROPERTY(guess_file, std::string,
