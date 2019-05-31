@@ -648,6 +648,7 @@ TimeSeriesTable MocoIterate::convertToTable() const {
             "num_slacks", std::to_string(numSlacks));
     table.updTableMetaData().setValueForKey(
             "num_parameters", std::to_string(numParameters));
+    convertToTableImpl(table);
     return table;
 }
 
@@ -1015,4 +1016,14 @@ double MocoIterate::compareParametersRMS(const MocoIterate& other,
 
 void MocoIterate::ensureUnsealed() const {
     OPENSIM_THROW_IF(m_sealed, MocoIterateIsSealed);
+}
+
+void MocoSolution::convertToTableImpl(TimeSeriesTable& table) const {
+    if(m_success) {
+        table.updTableMetaData().setValueForKey(
+                "success", std::string("true"));
+    } else {
+        table.updTableMetaData().setValueForKey(
+                "success", std::string("false"));
+    }
 }
