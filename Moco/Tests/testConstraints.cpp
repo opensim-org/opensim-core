@@ -567,8 +567,8 @@ void testDoublePendulumPointOnLine(
     mp.setStateInfo("/jointset/j1/q1/value", {-10, 10}, SimTK::Pi - 2 * theta_i,
             SimTK::Pi - 2 * theta_f);
     mp.setStateInfo("/jointset/j1/q1/speed", {-50, 50});
-    mp.setControlInfo("/tau0", {-100, 100});
-    mp.setControlInfo("/tau1", {-100, 100});
+    mp.setControlInfo("/tau0", {-25, 25});
+    mp.setControlInfo("/tau1", {-25, 25});
 
     mp.addCost<MocoControlCost>();
 
@@ -584,7 +584,7 @@ void testDoublePendulumPointOnLine(
     ms.set_dynamics_mode(dynamics_mode);
     ms.setGuess("bounds");
 
-    MocoSolution solution = moco.solve();
+    MocoSolution solution = moco.solve().unseal();
     solution.write("testConstraints_testDoublePendulumPointOnLine.sto");
     // moco.visualize(solution);
 
@@ -746,7 +746,7 @@ void testDoublePendulumPrescribedMotion(MocoSolution& couplerSolution,
     ms.set_transcription_scheme("hermite-simpson");
     ms.set_enforce_constraint_derivatives(enforce_constraint_derivatives);
     ms.set_minimize_lagrange_multipliers(true);
-    ms.set_lagrange_multiplier_weight(10);
+    //ms.set_lagrange_multiplier_weight(10);
     ms.set_dynamics_mode(dynamics_mode);
 
     // Set guess based on coupler solution trajectory.
@@ -926,7 +926,7 @@ protected:
         const auto& controls = getModel().getControls(state);
         // In the problem below, the actuators are bilateral and act in
         // opposite directions, so we use addition to create the residual here.
-        errors[0] = abs(controls[1]) - abs(controls[0]);
+        errors[0] = controls[1] + controls[0];
     }
 };
 
@@ -966,6 +966,7 @@ TEMPLATE_TEST_CASE(
     ms.set_verbosity(2);
     ms.set_optim_solver("ipopt");
     ms.set_optim_convergence_tolerance(1e-3);
+    ms.set_transcription_scheme("hermite-simpson");
     ms.setGuess("bounds");
 
     MocoSolution solution = moco.solve();
@@ -975,7 +976,6 @@ TEMPLATE_TEST_CASE(
     const auto& control_tau0 = solution.getControl("/tau0");
     const auto& control_tau1 = solution.getControl("/tau1");
     const auto& control_res = control_tau1.abs() - control_tau0.abs();
-
     SimTK_TEST_EQ_TOL(control_res.normRMS(), 0, 1e-6);
 
     // Run a forward simulation using the solution controls in prescribed

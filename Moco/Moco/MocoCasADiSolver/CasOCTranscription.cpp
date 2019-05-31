@@ -35,6 +35,12 @@ void Transcription::createVariablesAndSetBounds() {
     m_numPointsIgnoringConstraints = m_numGridPoints - m_numMeshPoints;
     m_grid = DM::linspace(0, 1, m_numGridPoints);
 
+    bool isHermiteSimpson = false;
+    if (m_numGridPoints == (2*m_numMeshPoints - 1)) {
+        isHermiteSimpson = true;
+    }
+    bool useIterpolatedMidpointControl = true;
+
     // Create variables.
     // -----------------
     m_vars[initial_time] = MX::sym("initial_time");
@@ -44,7 +50,20 @@ void Transcription::createVariablesAndSetBounds() {
     m_vars[states] =
             MX::sym("states", m_problem.getNumStates(), m_numGridPoints);
     m_vars[controls] =
-            MX::sym("controls", m_problem.getNumControls(), m_numGridPoints);
+        MX::sym("controls", m_problem.getNumControls(), m_numGridPoints);
+    //if (isHermiteSimpson && useIterpolatedMidpointControl) {
+    //    m_controls_mesh = MX::sym("controls_mesh", m_problem.getNumControls(), 
+    //            m_numMeshPoints);
+    //    m_controls_midpoint = 
+    //            0.5*(m_controls_mesh(Slice(), Slice(0, m_numMeshPoints-1)) +
+    //                 m_controls_mesh(Slice(), Slice(1, m_numMeshPoints)));
+    //    std::cout << m_controls_mesh.size() << std::endl;
+    //    std::cout << m_controls_midpoint.size() << std::endl;
+    //    m_vars[controls](Slice(), Slice(0, m_numGridPoints, 2)) =
+    //            m_controls_mesh;
+    //    m_vars[controls](Slice(), Slice(1, m_numGridPoints-1, 2)) =
+    //            m_controls_midpoint;
+    //}
     m_vars[multipliers] = MX::sym(
             "multipliers", m_problem.getNumMultipliers(), m_numGridPoints);
     m_vars[derivatives] = MX::sym(

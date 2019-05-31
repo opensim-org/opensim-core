@@ -109,6 +109,8 @@ protected:
 
 private:
     VariablesMX m_vars;
+    casadi::MX m_controls_mesh;
+    casadi::MX m_controls_midpoint;
     casadi::MX m_paramsTrajGrid;
     casadi::MX m_paramsTraj;
     casadi::MX m_paramsTrajIgnoringConstraints;
@@ -119,7 +121,7 @@ private:
     casadi::Matrix<casadi_int> m_gridIndices;
     casadi::Matrix<casadi_int> m_daeIndices;
     casadi::Matrix<casadi_int> m_daeIndicesIgnoringConstraints;
-
+    
     casadi::MX m_xdot; // State derivatives.
     casadi::MX m_residual;
     casadi::MX m_kcerr;      // Kinematic constraint errors.

@@ -173,6 +173,12 @@ protected:
         make_controls_trajectory_view(const VectorX<S>& variables) const;
     template<typename S>
     TrajectoryViewConst<S>
+        make_controls_trajectory_view_mesh(const VectorX<S>& variables) const;
+    template<typename S>
+    TrajectoryViewConst<S>
+        make_controls_trajectory_view_mid(const VectorX<S>& variables) const;
+    template<typename S>
+    TrajectoryViewConst<S>
         make_adjuncts_trajectory_view(const VectorX<S>& variables) const;
     template<typename S>
     TrajectoryViewConst<S>
@@ -196,6 +202,12 @@ protected:
         make_controls_trajectory_view(VectorX<S>& variables) const;
     template<typename S>
     TrajectoryView<S>
+        make_controls_trajectory_view_mesh(VectorX<S>& variables) const;
+    template<typename S>
+    TrajectoryView<S>
+        make_controls_trajectory_view_mid(VectorX<S>& variables) const;
+    template<typename S>
+    TrajectoryView<S>
         make_adjuncts_trajectory_view(VectorX<S>& variables) const;
     template<typename S>
     TrajectoryView<S>
@@ -204,15 +216,19 @@ protected:
     // TODO templatize.
     using DefectsTrajectoryView = Eigen::Map<MatrixX<T>>;
     using PathConstraintsTrajectoryView = Eigen::Map<MatrixX<T>>;
+    using ControlMidpointsTrajectoryView = Eigen::Map<MatrixX<T>>;
 
     struct ConstraintsView {
         ConstraintsView(DefectsTrajectoryView d,
-            PathConstraintsTrajectoryView pc)
+            PathConstraintsTrajectoryView pc,
+            ControlMidpointsTrajectoryView cmid)
             : defects(d),
-            path_constraints(pc) {}
+            path_constraints(pc),
+            control_midpoints(cmid){}
         // TODO what is the proper name for this? dynamic defects?
         DefectsTrajectoryView defects = {nullptr, 0, 0};
         PathConstraintsTrajectoryView path_constraints = {nullptr, 0, 0};
+        ControlMidpointsTrajectoryView control_midpoints = {nullptr, 0, 0};
     };
 
     ConstraintsView
