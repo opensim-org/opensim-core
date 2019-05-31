@@ -117,7 +117,7 @@ MocoStudy MocoTrack::initialize() {
     // Set the time bounds based on the time range in the states file.
     // Pad the beginning and end time points to allow room for finite 
     // difference calculations.
-    double pad = 1e-5;
+    double pad = 1e-3;
     problem.setTimeBounds(m_initial_time + pad, m_final_time - pad);
 
     // Activation states.

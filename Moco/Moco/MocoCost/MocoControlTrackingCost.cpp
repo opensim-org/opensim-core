@@ -49,9 +49,12 @@ void MocoControlTrackingCost::initializeOnModelImpl(const Model& model) const {
     // names in the references that don't correspond to a control variable.
     for (int iref = 0; iref < allSplines.getSize(); ++iref) {
         const auto& refName = allSplines[iref].getName();
-        if (!get_allow_unused_references()) {
-            OPENSIM_THROW_IF_FRMOBJ(allControlIndices.count(refName) == 0,
-                Exception, "Control reference '" + refName + "' unrecognized.");
+        if (allControlIndices.count(refName) == 0) {
+            if (get_allow_unused_references()) {
+                continue;
+            }
+            OPENSIM_THROW_FRMOBJ(Exception,
+                "Control reference '" + refName + "' unrecognized.");
         }
 
         m_control_indices.push_back(allControlIndices[refName]);

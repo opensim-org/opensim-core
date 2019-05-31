@@ -329,7 +329,7 @@ private:
 
         // Update the model and state.
         applyParametersToModelProperties(parameters, *mocoProblemRep);
-        convertToSimTKState(time, multibody_states, modelBase, simtkStateBase);
+        convertToSimTKState(time, multibody_states, modelBase, simtkStateBase, false);
         modelBase.realizeVelocity(simtkStateBase);
 
         // Apply velocity correction to qdot if at a mesh interval midpoint.
@@ -385,8 +385,8 @@ private:
     /// slots in Simbody's Y vector.
     /// It's fine for the size of `states` to be less than the size of Y; only
     /// the first states.size1() values are copied.
-    void convertToSimTKState(const double& time, const casadi::DM& states,
-            const Model& model, SimTK::State& simtkState) const {
+    inline void convertToSimTKState(const double& time, const casadi::DM& states,
+            const Model& model, SimTK::State& simtkState, bool copyAuxStates) const {
         simtkState.setTime(time);
         // Assign the generalized coordinates. We know we have NU generalized
         // speeds because we do not yet support quaternions.
@@ -396,17 +396,19 @@ private:
         std::copy_n(states.ptr() + getNumCoordinates(), getNumSpeeds(),
                 simtkState.updY().updContiguousScalarData() +
                         simtkState.getNQ());
-        std::copy_n(states.ptr() + getNumCoordinates() + getNumSpeeds(),
-                getNumAuxiliaryStates(),
-                simtkState.updY().updContiguousScalarData() +
-                        simtkState.getNQ() + simtkState.getNU());
+        if (copyAuxStates) {
+            std::copy_n(states.ptr() + getNumCoordinates() + getNumSpeeds(),
+                    getNumAuxiliaryStates(),
+                    simtkState.updY().updContiguousScalarData() +
+                            simtkState.getNQ() + simtkState.getNU());
+        }
         model.getSystem().prescribe(simtkState);
     }
 
     void convertToSimTKState(const double& time, const casadi::DM& states,
             const casadi::DM& controls, const Model& model,
-            SimTK::State& simtkState) const {
-        convertToSimTKState(time, states, model, simtkState);
+            SimTK::State& simtkState, bool copyAuxStates) const {
+        convertToSimTKState(time, states, model, simtkState, copyAuxStates);
         auto& simtkControls = model.updControls(simtkState);
         std::copy_n(controls.ptr(), simtkControls.size(),
                 simtkControls.updContiguousScalarData());
@@ -444,9 +446,10 @@ private:
             accel.setUDot(simtkStateDisabledConstraints, udot);
         }
 
-        convertToSimTKState(time, states, controls, modelBase, simtkStateBase);
+        convertToSimTKState(
+                time, states, controls, modelBase, simtkStateBase, true);
         convertToSimTKState(time, states, controls, modelDisabledConstraints,
-                simtkStateDisabledConstraints);
+                simtkStateDisabledConstraints, true);
         // If enabled constraints exist in the model, compute constraint forces
         // based on Lagrange multipliers. This also updates the associated
         // discrete variables in the state.

@@ -45,9 +45,12 @@ void MocoStateTrackingCost::initializeOnModelImpl(const Model& model) const {
     // names in the references that don't correspond to a state variable.
     for (int iref = 0; iref < allSplines.getSize(); ++iref) {
         const auto& refName = allSplines[iref].getName();
-        if (!get_allow_unused_references()) {
-            OPENSIM_THROW_IF_FRMOBJ(allSysYIndices.count(refName) == 0,
-                Exception, "State reference '" + refName + "' unrecognized.");
+        if (allSysYIndices.count(refName) == 0) {
+            if (get_allow_unused_references()) {
+                continue;
+            } 
+            OPENSIM_THROW_FRMOBJ(Exception, 
+                "State reference '" + refName + "' unrecognized.");
         }
 
         m_sysYIndices.push_back(allSysYIndices[refName]);

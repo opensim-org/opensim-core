@@ -4,4 +4,4 @@ MocoAddSandboxExecutable(NAME sandboxMocoTrack
             grf_walk.mot
             grf_walk.xml
             coordinates_rra_adjusted.sto
-            subject_walk_rra_adjusted.osim)
+            subject_walk_rra_adjusted_armless.osim)
