@@ -30,6 +30,12 @@ void HermiteSimpson<T>::set_ocproblem(
         std::shared_ptr<const OCProblem> ocproblem) {
     m_ocproblem = ocproblem;
     m_num_mesh_points = (int)m_mesh.size();
+    // We define the set of collocation points to include any time point where
+    // derivatives of the state estimates are required to match the estimated
+    // dynamics. For Hermite-Simpson collocation, collocation points include
+    // both the mesh points and the mesh interval midpoints, so add N-1 points
+    // to the number of mesh points to get the number of collocation points.
+    // TODO rename to m_num_grid_points?
     m_num_col_points = 2 * m_num_mesh_points - 1;
     m_num_states = m_ocproblem->get_num_states();
     m_num_controls = m_ocproblem->get_num_controls();
@@ -255,7 +261,7 @@ void HermiteSimpson<T>::set_ocproblem(
     // The duration of each mesh interval.
     m_mesh_eigen = Eigen::Map<VectorXd>(m_mesh.data(), m_mesh.size());
     m_mesh_intervals = m_mesh_eigen.tail(num_mesh_intervals) -
-                              m_mesh_eigen.head(num_mesh_intervals);
+                       m_mesh_eigen.head(num_mesh_intervals);
     // Simpson quadrature includes integrand evaluations at the midpoint.
     m_simpson_quadrature_coefficients = VectorXd::Zero(m_num_col_points);
     // The fractional coefficients that, when multiplied by the mesh fraction
@@ -432,19 +438,19 @@ void HermiteSimpson<T>::calc_constraints(
 
         // Hermite interpolant defects
         // ---------------------------
-        for (int i = 0; i < (int)N - 1; ++i) {
+        for (int imesh = 0; imesh < m_num_mesh_points - 1; ++imesh) {
 
-            const auto& h = duration * m_mesh_intervals[i] + initial_time;
-            constr_view.defects.topRows(m_num_states).col(i) =
-                    x_mid.col(i) - T(0.5) * (x_i.col(i) + x_im1.col(i)) -
-                    (h / T(8.0)) * (xdot_im1.col(i) - xdot_i.col(i));
+            const auto& h = duration * m_mesh_intervals[imesh];
+            constr_view.defects.topRows(m_num_states).col(imesh) =
+                    x_mid.col(imesh) - T(0.5) * (x_i.col(imesh) + x_im1.col(imesh)) -
+                    (h / T(8.0)) * (xdot_im1.col(imesh) - xdot_i.col(imesh));
 
             // Simpson integration defects
             // ---------------------------
-            constr_view.defects.bottomRows(m_num_states).col(i) =
-                    x_i.col(i) - x_im1.col(i) -
-                    (h / T(6.0)) * (xdot_i.col(i) + T(4.0) * xdot_mid.col(i) +
-                                           xdot_im1.col(i));
+            constr_view.defects.bottomRows(m_num_states).col(imesh) =
+                    x_i.col(imesh) - x_im1.col(imesh) -
+                    (h / T(6.0)) * (xdot_i.col(imesh) + T(4.0) * xdot_mid.col(imesh) +
+                                           xdot_im1.col(imesh));
         }
     }
 }

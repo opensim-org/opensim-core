@@ -20,6 +20,7 @@
 #include <cstdio>
 #include <memory>
 #include <vector>
+#include <Eigen/Dense>
 
 std::string tropter::format(const char* format, ...) {
     // Get buffer size.
@@ -37,9 +38,7 @@ std::string tropter::format(const char* format, ...) {
 }
 
 std::vector<double> tropter::linspace(double start, double end, int length) {
-    double delta = (end - start) / (double)(length - 1);
-    std::vector<double> ret;
-    for (int i = 0; i < length; ++i) { ret.push_back(start + (i * delta)); }
-
+    Eigen::VectorXd tmp = Eigen::VectorXd::LinSpaced(length, start, end);
+    std::vector<double> ret(tmp.data(), tmp.data() + length);
     return ret;
 }
