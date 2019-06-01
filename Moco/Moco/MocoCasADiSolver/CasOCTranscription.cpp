@@ -487,8 +487,7 @@ void Transcription::printConstraintValues(const Iterate& it,
     auto& stream = std::cout;
 
     // We want to be able to restore the stream's original formatting.
-    std::ios orig_fmt(nullptr);
-    orig_fmt.copyfmt(stream);
+    OpenSim::StreamFormat streamFormat(stream);
 
     // Find the longest state, control, multiplier, derivative, or slack name.
     auto compareSize = [](const std::string& a, const std::string& b) {
@@ -737,9 +736,6 @@ void Transcription::printConstraintValues(const Iterate& it,
     //            std::fixed
     //            << time_of_max << std::endl;
     // }
-
-    // Reset the IO format back to what it was before invoking this function.
-    stream.copyfmt(orig_fmt);
 }
 
 Iterate Transcription::createInitialGuessFromBounds() const {
