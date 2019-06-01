@@ -109,8 +109,6 @@ protected:
 
 private:
     VariablesMX m_vars;
-    casadi::MX m_controls_mesh;
-    casadi::MX m_controls_midpoint;
     casadi::MX m_paramsTrajGrid;
     casadi::MX m_paramsTraj;
     casadi::MX m_paramsTrajIgnoringConstraints;
