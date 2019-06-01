@@ -1027,7 +1027,7 @@ TEMPLATE_TEST_CASE(
     solver.set_enforce_constraint_derivatives(true);
     solver.set_transcription_scheme("hermite-simpson");
     MocoSolution solution = moco.solve();
-    CHECK(solution.getParameter("mass") == Approx(1.0).epsilon(1e-4));
+    CHECK(solution.getParameter("mass") == Approx(1.0).epsilon(1e-3));
 }
 
 class MocoJointReactionComponentCost : public MocoCost {
