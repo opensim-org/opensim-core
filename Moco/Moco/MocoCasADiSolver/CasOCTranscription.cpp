@@ -44,7 +44,7 @@ void Transcription::createVariablesAndSetBounds() {
     m_vars[states] =
             MX::sym("states", m_problem.getNumStates(), m_numGridPoints);
     m_vars[controls] =
-        MX::sym("controls", m_problem.getNumControls(), m_numGridPoints);
+            MX::sym("controls", m_problem.getNumControls(), m_numGridPoints);
     m_vars[multipliers] = MX::sym(
             "multipliers", m_problem.getNumMultipliers(), m_numGridPoints);
     m_vars[derivatives] = MX::sym(

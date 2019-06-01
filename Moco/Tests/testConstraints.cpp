@@ -596,6 +596,10 @@ void testDoublePendulumPointOnLine(
         const SimTK::Vec3& loc = endeff.getLocationInGround(s);
 
         // The end-effector should not have moved in the x- or z-directions.
+        std::cout << "i: " << i << std::endl;
+        std::cout << "loc[0]: " << loc[0] << std::endl;
+        std::cout << "loc[2]: " << loc[0] << std::endl;
+        std::cout << std::endl;
         SimTK_TEST_EQ_TOL(loc[0], 0, 1e-4);
         SimTK_TEST_EQ_TOL(loc[2], 0, 1e-4);
     }
