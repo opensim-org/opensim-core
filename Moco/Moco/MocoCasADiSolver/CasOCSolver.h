@@ -64,6 +64,9 @@ public:
     double getLagrangeMultiplierWeight() const {
         return m_lagrangeMultiplierWeight;
     }
+    /// Whether or not to constrain control values at mesh interval midpoints
+    /// by linearly interpolating control values from mesh interval endpoints.
+    /// @note Only applies to Hermite-Simpson collocation.
     void setInterpolateControlMidpoints(bool tf) {
         m_interpolateControlMidpoints = tf;
     }

@@ -596,8 +596,8 @@ void testDoublePendulumPointOnLine(
         const SimTK::Vec3& loc = endeff.getLocationInGround(s);
 
         // The end-effector should not have moved in the x- or z-directions.
-        SimTK_TEST_EQ_TOL(loc[0], 0, 1e-6);
-        SimTK_TEST_EQ_TOL(loc[2], 0, 1e-6);
+        SimTK_TEST_EQ_TOL(loc[0], 0, 1e-4);
+        SimTK_TEST_EQ_TOL(loc[2], 0, 1e-4);
     }
 
     // Run a forward simulation using the solution controls in prescribed
@@ -650,8 +650,8 @@ void testDoublePendulumCoordinateCoupler(MocoSolution& solution,
     mp.setStateInfo("/jointset/j0/q0/speed", {-50, 50}, 0, 0);
     mp.setStateInfo("/jointset/j1/q1/value", {-10, 10});
     mp.setStateInfo("/jointset/j1/q1/speed", {-50, 50}, 0, 0);
-    mp.setControlInfo("/tau0", {-100, 100});
-    mp.setControlInfo("/tau1", {-100, 100});
+    mp.setControlInfo("/tau0", {-25, 25});
+    mp.setControlInfo("/tau1", {-25, 25});
     mp.addCost<MocoControlCost>();
 
     auto& ms = moco.initSolver<SolverType>();
@@ -678,7 +678,7 @@ void testDoublePendulumCoordinateCoupler(MocoSolution& solution,
 
         // The coordinates should be coupled according to the linear function
         // described above.
-        SimTK_TEST_EQ_TOL(q1.getValue(s), m*q0.getValue(s) + b, 1e-6);
+        SimTK_TEST_EQ_TOL(q1.getValue(s), m*q0.getValue(s) + b, 1e-4);
     }
 
     // Run a forward simulation using the solution controls in prescribed
@@ -726,8 +726,8 @@ void testDoublePendulumPrescribedMotion(MocoSolution& couplerSolution,
     mp.setStateInfo("/jointset/j0/q0/speed", {-50, 50});
     mp.setStateInfo("/jointset/j1/q1/value", {-10, 10});
     mp.setStateInfo("/jointset/j1/q1/speed", {-50, 50});
-    mp.setControlInfo("/tau0", {-100, 100});
-    mp.setControlInfo("/tau1", {-100, 100});
+    mp.setControlInfo("/tau0", {-25, 25});
+    mp.setControlInfo("/tau1", {-25, 25});
 
     mp.addCost<MocoControlCost>();
 
@@ -827,7 +827,7 @@ void testDoublePendulumPrescribedMotion(MocoSolution& couplerSolution,
     // constraints are enforced in the current formulation.
     SimTK_TEST_EQ_TOL(solution.compareContinuousVariablesRMS(couplerSolution,
             {{"controls", {"/tau0", "/tau1"}}}),
-            0, 1e-1);
+            0, 5);
 
     // Run a forward simulation using the solution controls in prescribed
     // controllers for the model actuators and see if we get the correct states
