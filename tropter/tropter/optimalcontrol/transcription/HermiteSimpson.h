@@ -69,10 +69,11 @@ public:
 
     // TODO why would we want a shared_ptr? A copy would use the same Problem.
     HermiteSimpson(std::shared_ptr<const OCProblem> ocproblem,
-        unsigned num_mesh_points = 50) {
+            bool interpolate_control_midpoints, unsigned num_mesh_points = 50) {
         if (std::is_same<T, double>::value) {
             this->set_use_supplied_sparsity_hessian_lagrangian(true);
         }
+        m_interpolate_control_midpoints = interpolate_control_midpoints;
         set_num_mesh_points(num_mesh_points);
         set_ocproblem(ocproblem);
     }
@@ -254,6 +255,7 @@ private:
     int m_num_dynamics_constraints = -1;
     int m_num_path_constraints = -1;
     Eigen::VectorXd m_simpson_quadrature_coefficients;
+    bool m_interpolate_control_midpoints = true;
 
     std::vector<std::string> m_variable_names;
     std::vector<std::string> m_constraint_names;

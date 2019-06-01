@@ -596,12 +596,8 @@ void testDoublePendulumPointOnLine(
         const SimTK::Vec3& loc = endeff.getLocationInGround(s);
 
         // The end-effector should not have moved in the x- or z-directions.
-        // If using Hermite-Simpson, only check on the mesh interval endpoints,
-        // where the path constraint is enforced.
-        if (ms.get_transcription_scheme() == "hermite-simpson" && !(i % 2)) {
-            SimTK_TEST_EQ_TOL(loc[0], 0, 1e-6);
-            SimTK_TEST_EQ_TOL(loc[2], 0, 1e-6);
-        }
+        SimTK_TEST_EQ_TOL(loc[0], 0, 1e-6);
+        SimTK_TEST_EQ_TOL(loc[2], 0, 1e-6);
     }
 
     // Run a forward simulation using the solution controls in prescribed
@@ -681,11 +677,8 @@ void testDoublePendulumCoordinateCoupler(MocoSolution& solution,
         model->realizePosition(s);
 
         // The coordinates should be coupled according to the linear function
-        // described above. If using Hermite-Simpson, only check on the mesh
-        // interval endpoints, where the path constraint is enforced.
-        if (ms.get_transcription_scheme() == "hermite-simpson" && !(i % 2)) {
-            SimTK_TEST_EQ_TOL(q1.getValue(s), m * q0.getValue(s) + b, 1e-6);
-        }
+        // described above.
+        SimTK_TEST_EQ_TOL(q1.getValue(s), m*q0.getValue(s) + b, 1e-6);
     }
 
     // Run a forward simulation using the solution controls in prescribed
@@ -834,7 +827,7 @@ void testDoublePendulumPrescribedMotion(MocoSolution& couplerSolution,
     // constraints are enforced in the current formulation.
     SimTK_TEST_EQ_TOL(solution.compareContinuousVariablesRMS(couplerSolution,
             {{"controls", {"/tau0", "/tau1"}}}),
-            0, 5);
+            0, 1e-1);
 
     // Run a forward simulation using the solution controls in prescribed
     // controllers for the model actuators and see if we get the correct states
@@ -844,8 +837,6 @@ void testDoublePendulumPrescribedMotion(MocoSolution& couplerSolution,
 
 TEMPLATE_TEST_CASE("DoublePendulum with and without constraint derivatives",
         "[explicit]", MocoTropterSolver, MocoCasADiSolver) {
-    // TODO test tolerances can be improved significantly by not including
-    // Hermite-Simpson midpoint values in comparisons.
     SECTION("DoublePendulum without constraint derivatives") {
         MocoSolution couplerSol;
         testDoublePendulumCoordinateCoupler<TestType>(
@@ -865,8 +856,6 @@ TEMPLATE_TEST_CASE("DoublePendulum with and without constraint derivatives",
 
 TEST_CASE("DoublePendulum with and without constraint derivatives",
         "[implicit]") {
-    // TODO test tolerances can be improved significantly by not including
-    // Hermite-Simpson midpoint values in comparisons.
     SECTION("DoublePendulum without constraint derivatives") {
         MocoSolution couplerSol;
         testDoublePendulumCoordinateCoupler<MocoCasADiSolver>(

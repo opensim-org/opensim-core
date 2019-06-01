@@ -36,4 +36,5 @@ void MocoDirectCollocationSolver::constructProperties() {
     constructProperty_velocity_correction_bounds({-0.1, 0.1});
     constructProperty_minimize_lagrange_multipliers(false);
     constructProperty_lagrange_multiplier_weight(1.0);
+    constructProperty_interpolate_control_midpoints(true);
 }

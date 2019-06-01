@@ -466,7 +466,7 @@ void HermiteSimpson<T>::calc_constraints(const VectorX<T>& x,
             x_i - x_im1 - (h / T(6.0)) * (xdot_i + T(4.0)*xdot_mid + xdot_im1);
     }
 
-    if (m_num_controls) {
+    if (m_num_controls && m_interpolate_control_midpoints) {
         const unsigned N = m_num_mesh_points;
         auto c_mesh = make_controls_trajectory_view_mesh(x);
         auto c_mid = make_controls_trajectory_view_mid(x);
@@ -1410,7 +1410,7 @@ HermiteSimpson<T>::make_constraints_view(Eigen::Ref<VectorX<T>> constr) const
                &constr[0] : nullptr;
     T* pc_ptr = m_num_path_constraints ?                  // path constraints.
                 &constr[m_num_dynamics_constraints] : nullptr;
-    T* cmid_ptr = m_num_controls ?
+    T* cmid_ptr = m_num_controls && m_interpolate_control_midpoints ?
                 &constr[m_num_mesh_points - 1] : nullptr;
     // Each column of the defects view contains all the Hermite interpolant 
     // defects (first m_num_states rows) followed by all the Simpson interpolant

@@ -64,6 +64,12 @@ public:
     double getLagrangeMultiplierWeight() const {
         return m_lagrangeMultiplierWeight;
     }
+    void setInterpolateControlMidpoints(bool tf) {
+        m_interpolateControlMidpoints = tf;
+    }
+    bool getInterpolateControlMidpoints() const {
+        return m_interpolateControlMidpoints;
+    }
 
     void setOptimSolver(std::string optimSolver) {
         m_optimSolver = std::move(optimSolver);
@@ -129,6 +135,7 @@ private:
     std::string m_transcriptionScheme = "hermite-simpson";
     bool m_minimizeLagrangeMultipliers = false;
     double m_lagrangeMultiplierWeight = 1.0;
+    bool m_interpolateControlMidpoints = true;
     std::string m_finite_difference_scheme = "central";
     std::string m_sparsity_detection = "none";
     std::string m_write_sparsity;

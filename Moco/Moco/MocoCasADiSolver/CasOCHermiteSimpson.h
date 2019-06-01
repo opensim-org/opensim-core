@@ -27,13 +27,17 @@ namespace CasOC {
 /// function is approximated by Simpson quadrature.
 class HermiteSimpson : public Transcription {
 public:
-    HermiteSimpson(const Solver& solver, const Problem& problem)
-            : Transcription(solver, problem, 2 * solver.getNumMeshPoints() - 1,
+    HermiteSimpson(const Solver& solver, const Problem& problem, 
+                bool interpolate_control_midpoints)
+            : Transcription(solver, problem, 2*solver.getNumMeshPoints() - 1,
                       solver.getNumMeshPoints()) {
+        m_interpolate_control_midpoints = interpolate_control_midpoints;
         createVariablesAndSetBounds();
     }
 
 private:
+    bool m_interpolate_control_midpoints = true;
+
     casadi::DM createQuadratureCoefficientsImpl() const override;
     casadi::DM createKinematicConstraintIndicesImpl() const override;
     void applyConstraintsImpl(const VariablesMX& vars, const casadi::MX& xdot,
