@@ -195,8 +195,8 @@ void Transcription::transcribe() {
     // Initialize memory for state derivatives and defects.
     // ----------------------------------------------------
     m_xdot = MX(NS, m_numGridPoints);
-    m_constraints.defects = MX(
-            casadi::Sparsity::dense(m_numDefectsPerGridPoint, m_numMeshIntervals));
+    m_constraints.defects = MX(casadi::Sparsity::dense(
+            m_numDefectsPerGridPoint, m_numMeshIntervals));
     m_constraintsLowerBounds.defects =
             DM::zeros(m_numDefectsPerGridPoint, m_numMeshIntervals);
     m_constraintsUpperBounds.defects =
@@ -476,13 +476,18 @@ Solution Transcription::solve(const Iterate& guessOrig) {
             solution.variables[initial_time], solution.variables[final_time]);
     solution.stats = nlpFunc.stats();
     if (!solution.stats.at("success")) {
-        printConstraintValues(solution, expandConstraints(nlpResult.at("g")));
+        // For some reason, nlpResult.at("g") is all 0. So we calculate the
+        // constraints ourselves.
+        casadi::Function constraintFunc("constraints", {x}, {g});
+        casadi::DMVector out;
+        constraintFunc.call(casadi::DMVector{finalVariables}, out);
+        printConstraintValues(solution, expandConstraints(out[0]));
     }
     return solution;
 }
 
 void Transcription::printConstraintValues(const Iterate& it,
-        const Constraints<casadi::DM>& /*constraintValues*/) const {
+        const Constraints<casadi::DM>& constraints) const {
 
     auto& stream = std::cout;
 
@@ -712,29 +717,91 @@ void Transcription::printConstraintValues(const Iterate& it,
               "abs"
            << std::endl;
 
-    // std::string spacer(7, ' ');
-    // casadi::DM row(1, defects.columns());
-    // for (size_t istate = 0; istate < it.state_names.size(); ++istate) {
-    //     row = defects(istate, Slice());
-    //     const double L2 = casadi::DM::norm_2(row).scalar();
-    //     double max = row(0).scalar();
-    //     int argmax = 0;
-    //     for (int itime = 1; itime < it.times.numel(); ++itime) {
-    //         if (row(itime).scalar() > max) {
-    //             max = row(itime).scalar();
-    //             argmax = itime;
-    //         }
-    //     }
-    //     const double L1 = max;
-    //     const double time_of_max = it.times(argmax).scalar();
+    auto calcL1Norm = [](const casadi::DM& v, int& argmax) {
+        double max = v(0).scalar();
+        argmax = 0;
+        for (int i = 1; i < v.numel(); ++i) {
+            if (v(i).scalar() > max) {
+                max = std::abs(v(i).scalar());
+                argmax = i;
+            }
+        }
+        return max;
+    };
+
+    std::string spacer(7, ' ');
+    casadi::DM row(1, constraints.defects.columns());
+    for (size_t istate = 0; istate < it.state_names.size(); ++istate) {
+        row = constraints.defects(istate, Slice());
+        const double L2 = casadi::DM::norm_2(row).scalar();
+        int argmax;
+        double max = calcL1Norm(row, argmax);
+        const double L1 = max;
+        const double time_of_max = it.times(argmax).scalar();
+
+        stream << std::setw(maxNameLength) << it.state_names[istate] << spacer
+               << std::setprecision(2) << std::scientific << std::setw(9) << L2
+               << spacer << L1 << spacer << std::setprecision(6) << std::fixed
+               << time_of_max << std::endl;
+    }
+    // Kinematic constraints.
+    // ----------------------
+    // TODO
+
+    // // Path constraints.
+    // // -----------------
+    // stream << "\nPath constraints:";
+    // auto pathcon_names = m_ocproblem->get_path_constraint_names();
     //
-    //     stream << std::setw(maxNameLength) << it.state_names[istate] <<
-    //     spacer
-    //            << std::setprecision(2) << std::scientific << std::setw(9) <<
-    //            L2
-    //            << spacer << L1 << spacer << std::setprecision(6) <<
-    //            std::fixed
-    //            << time_of_max << std::endl;
+    // if (pathcon_names.empty()) {
+    //     stream << " none" << std::endl;
+    //     // Return early if there are no path constraints.
+    //     return;
+    // }
+    // stream << std::endl;
+    //
+    // const int max_pathcon_name_length =
+    //         (int)std::max_element(pathcon_names.begin(), pathcon_names.end(),
+    //                 compare_size)->size();
+    // stream <<
+    //         "\n  L2 norm across mesh, max abs value (L1 norm), time of max abs"
+    //         << std::endl;
+    // rowd.resize(values.path_constraints.cols());
+    // for (size_t i_pc = 0; i_pc < pathcon_names.size(); ++i_pc) {
+    //     RowVectorX<T> rowT = values.path_constraints.row(i_pc);
+    //     for (int i = 0; i < rowd.size(); ++i)
+    //         rowd[i] = static_cast<const double&>(rowT[i]);
+    //     const double L2 = rowd.norm();
+    //     Eigen::Index argmax;
+    //     const double L1 = rowd.cwiseAbs().maxCoeff(&argmax);
+    //     const auto time_of_max = ocp_vars.time[argmax];
+    //
+    //     stream << std::setw(2) << i_pc << ":"
+    //             << std::setw(max_pathcon_name_length) << pathcon_names[i_pc]
+    //             << spacer
+    //             << std::setprecision(2) << std::scientific << std::setw(9)
+    //             << L2 << spacer << L1 << spacer
+    //             << std::setprecision(6) << std::fixed << time_of_max
+    //             << std::endl;
+    // }
+    // stream << "Path constraint values at each mesh point:" << std::endl;
+    // stream << std::setw(9) << "time" << "  ";
+    // for (size_t i_pc = 0; i_pc < pathcon_names.size(); ++i_pc) {
+    //     stream << std::setw(9) << i_pc << "  ";
+    // }
+    // stream << std::endl;
+    // for (size_t i_mesh = 0; i_mesh < size_t(values.path_constraints.cols());
+    //      ++i_mesh) {
+    //
+    //     stream << std::setw(4) << i_mesh << "  "
+    //             << ocp_vars.time[i_mesh] << "  ";
+    //     for (size_t i_pc = 0; i_pc < pathcon_names.size(); ++i_pc) {
+    //         auto& value = static_cast<const double&>(
+    //                 values.path_constraints(i_pc, i_mesh));
+    //         stream << std::setprecision(2) << std::scientific << std::setw(9)
+    //                 << value << "  ";
+    //     }
+    //     stream << std::endl;
     // }
 }
 
