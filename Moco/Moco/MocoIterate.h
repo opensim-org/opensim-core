@@ -76,6 +76,9 @@ time,<state-0-name>,...,<control-0-name>,...,<multiplier-0-name>,..., \
 @endsamplefile
 (If stored in a STO file, the delimiters are tabs, not commas.)
 
+Column labels starting with "lambda" are Lagrange multipliers, and columns
+starting with "gamma" are slack variables (probably velocity corrections at
+certain collocation points).
 
 @par Matlab and Python
 Many of the functions in this class have variants ending with "Mat" that
@@ -86,8 +89,6 @@ arguments of type SimTK::Matrix.
 iterate.getStateMat("<state-name>")
 iterate.getStatesTrajectoryMat()
 @endcode
-
-
 
 @par Implicit dynamics model
 If the solver uses an implicit dynamics mode, then there are "control"
@@ -471,6 +472,7 @@ public:
     /// Save the iterate to file(s). Use a ".sto" file extension.
     void write(const std::string& filepath) const;
 
+
     /// The Storage can be used in the OpenSim GUI to visualize a motion, or
     /// as input to OpenSim's conventional tools (e.g., AnalyzeTool).
     ///
@@ -537,6 +539,7 @@ protected:
 
 private:
     TimeSeriesTable convertToTable() const;
+    virtual void convertToTableImpl(TimeSeriesTable&) const {}
     double compareContinuousVariablesRMSInternal(const MocoIterate& other,
             std::vector<std::string> stateNames = {},
             std::vector<std::string> controlNames = {},
@@ -568,7 +571,7 @@ private:
     bool m_sealed = false;
 };
 
-/// Return type for MocoTool::solve(). Use success() to check if the solver
+/// Return type for MocoStudy::solve(). Use success() to check if the solver
 /// succeeded. You can also use this object as a boolean in an if-statement:
 /// @code
 /// auto solution = moco.solve();
@@ -581,12 +584,14 @@ private:
 /// If the solver was not successful, then this object is "sealed", which
 /// means you cannot do anything with it until calling `unseal()`. This
 /// prevents you from silently proceeding with a failed solution.
+/// Solver success can also be found in the header of a solution (.sto) file
+/// written out by write.
 class OSIMMOCO_API MocoSolution : public MocoIterate {
 public:
     /// Returns a dynamically-allocated copy of this solution. You must manage
     /// the memory for return value.
     /// @note This works even if the iterate is sealed.
-    virtual MocoSolution* clone() const { return new MocoSolution(*this); }
+    virtual MocoSolution* clone() const override { return new MocoSolution(*this); }
     /// Was the problem solved successfully? If not, then you cannot access
     /// the solution until you call unlock().
     bool success() const { return m_success; }
@@ -636,6 +641,7 @@ private:
     void setNumIterations(int numIterations) {
         m_numIterations = numIterations;
     };
+    void convertToTableImpl(TimeSeriesTable&) const override;
     bool m_success = true;
     double m_objective = -1;
     std::string m_status;

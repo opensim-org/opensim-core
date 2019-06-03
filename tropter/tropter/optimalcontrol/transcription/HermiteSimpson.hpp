@@ -688,7 +688,9 @@ Eigen::VectorXd HermiteSimpson<T>::construct_iterate(
     if (interpolate) {
         // TODO will actually need to provide the mesh spacing as well, when we
         // no longer have uniform mesh spacing.
-        traj_interp = traj.interpolate(m_mesh_and_midpoints);
+        const auto duration = traj.time.tail<1>()[0] - traj.time[0];
+        traj_interp = traj.interpolate(
+                duration * m_mesh_and_midpoints.array() + traj.time[0]);
         traj_to_use = &traj_interp;
     } else {
         traj_to_use = &traj;
@@ -1041,28 +1043,27 @@ void HermiteSimpson<T>::print_constraint_values(
                << spacer << L1 << spacer << std::setprecision(6) << std::fixed
                << time_of_max << std::endl;
     }
-    /*
-    stream << "Differential equation defects for each mesh interval:"
-    << std::endl;
-    stream << std::setw(9) << "time" << "  ";
-    for (size_t i_state = 0; i_state < state_names.size(); ++i_state) {
-    stream << std::setw(9) << i_state << "  ";
-    }
-    stream << std::endl;
-    for (int i_mesh = 0; i_mesh < (int)values.defects.cols(); ++i_mesh) {
+   
+    //stream << "Differential equation defects for each mesh interval:"
+    //       << std::endl;
+    //stream << std::setw(9) << "time" << "  ";
+    //for (size_t i_state = 0; i_state < state_names.size(); ++i_state) {
+    //    stream << std::setw(9) << i_state << "  ";
+    //}
+    //stream << std::endl;
+    //for (int i_mesh = 0; i_mesh < (int)values.defects.cols(); ++i_mesh) {
 
-    stream << std::setw(4) << i_mesh << "  "
-    << ocp_vars.time[i_mesh] << "  ";
-    for (size_t i_state = 0; i_state < state_names.size(); ++i_state) {
-    auto& value = static_cast<const double&>(
-    values.defects(i_state, i_mesh));
-    stream << std::setprecision(2) << std::scientific << std::setw(9)
-    << value << "  ";
-    }
-    stream << std::endl;
-    }
-    */
-
+    //    stream << std::setw(4) << i_mesh << "  "
+    //           << ocp_vars.time[i_mesh] << "  ";
+    //    for (size_t i_state = 0; i_state < state_names.size(); ++i_state) {
+    //        auto& value = static_cast<const double&>(
+    //        values.defects(i_state, i_mesh));
+    //        stream << std::setprecision(2) << std::scientific << std::setw(9)
+    //               << value << "  ";
+    //    }
+    //stream << std::endl;
+    //}
+    
     // Path constraints.
     // -----------------
     stream << "\nPath constraints:";

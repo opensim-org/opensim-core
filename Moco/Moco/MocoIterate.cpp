@@ -51,17 +51,24 @@ MocoIterate::MocoIterate(const SimTK::Vector& time,
         OPENSIM_THROW_IF(time.size() != m_states.nrow(), Exception,
                 format("Expected states to have %i rows but it has %i.",
                         time.size(), m_states.nrow()));
+    } else {
+        m_states.resize(m_time.size(), 0);
     }
     if (m_controls.ncol()) {
         OPENSIM_THROW_IF(time.size() != m_controls.nrow(), Exception,
                 format("Expected controls to have %i rows but it has %i.",
                         time.size(), m_controls.nrow()));
+    } else {
+        m_controls.resize(m_time.size(), 0);
     }
     if (m_multipliers.ncol()) {
         OPENSIM_THROW_IF(time.size() != m_multipliers.nrow(), Exception,
                 format("Expected multipliers to have %i rows but it has %i.",
                         time.size(), m_multipliers.nrow()));
+    } else {
+        m_multipliers.resize(m_time.size(), 0);
     }
+    m_derivatives.resize(m_time.size(), 0);
     OPENSIM_THROW_IF((int)m_parameter_names.size() != m_parameters.nelt(),
             Exception, "Inconsistent number of parameters.");
 }
@@ -87,6 +94,8 @@ MocoIterate::MocoIterate(const SimTK::Vector& time,
     if (m_derivatives.ncol()) {
         OPENSIM_THROW_IF((int)time.size() != m_derivatives.nrow(), Exception,
                 "Inconsistent number of times in derivatives trajectory.");
+    } else {
+        m_derivatives.resize(m_time.size(), 0);
     }
 }
 
@@ -393,18 +402,20 @@ void MocoIterate::resample(SimTK::Vector time) {
         // which requires strictly increasing time.
         int icol;
         for (icol = 0; icol < numStates; ++icol)
-            m_states.updCol(icol) = table.getDependentColumnAtIndex(icol)[0];
+            m_states.updCol(icol).setTo(
+                    table.getDependentColumnAtIndex(icol).getElt(0, 0));
         for (int icontr = 0; icontr < numControls; ++icontr, ++icol)
-            m_controls.updCol(icontr) =
-                    table.getDependentColumnAtIndex(icol)[0];
+            m_controls.updCol(icontr).setTo(
+                    table.getDependentColumnAtIndex(icol).getElt(0, 0));
         for (int imult = 0; imult < numMultipliers; ++imult, ++icol)
-            m_multipliers.updCol(imult) =
-                    table.getDependentColumnAtIndex(icol)[0];
+            m_multipliers.updCol(imult).setTo(
+                    table.getDependentColumnAtIndex(icol).getElt(0, 0));
         for (int ideriv = 0; ideriv < numDerivatives; ++ideriv, ++icol)
-            m_derivatives.updCol(ideriv) =
-                    table.getDependentColumnAtIndex(icol)[0];
+            m_derivatives.updCol(ideriv).setTo(
+                    table.getDependentColumnAtIndex(icol).getElt(0, 0));
         for (int islack = 0; islack < numDerivatives; ++islack, ++icol)
-            m_slacks.updCol(islack) = table.getDependentColumnAtIndex(icol)[0];
+            m_slacks.updCol(islack).setTo(
+                    table.getDependentColumnAtIndex(icol).getElt(0, 0));
 
     } else {
         SimTK::Vector curTime(1);
@@ -426,21 +437,8 @@ void MocoIterate::resample(SimTK::Vector time) {
 }
 
 MocoIterate::MocoIterate(const std::string& filepath) {
-    FileAdapter::OutputTables tables = FileAdapter::readFile(filepath);
-
-    // There should only be one table.
-    OPENSIM_THROW_IF(tables.size() != 1, Exception,
-            format("Expected MocoIterate file '%s' to contain 1 table, but it "
-                   "contains %i tables.",
-                    filepath, tables.size()));
-
-    // Get the first table.
-    auto* table = dynamic_cast<TimeSeriesTable*>(tables.begin()->second.get());
-    OPENSIM_THROW_IF(!table, Exception,
-            "Expected MocoIterate file to contain a (scalar) "
-            "TimeSeriesTable, but it contains a different type of table.");
-
-    const auto& metadata = table->getTableMetaData();
+    TimeSeriesTable table = readTableFromFile<double>(filepath);
+    const auto& metadata = table.getTableMetaData();
     // TODO: bug with file adapters.
     // auto numStates = metadata.getValueForKey("num_states").getValue<int>();
     // auto numControls =
@@ -480,7 +478,7 @@ MocoIterate::MocoIterate(const std::string& filepath) {
     OPENSIM_THROW_IF(numSlacks < 0, Exception, "Invalid num_slacks.");
     OPENSIM_THROW_IF(numParameters < 0, Exception, "Invalid num_parameters.");
 
-    const auto& labels = table->getColumnLabels();
+    const auto& labels = table.getColumnLabels();
     int offset = 0;
     m_state_names.insert(m_state_names.end(), labels.begin() + offset,
             labels.begin() + offset + numStates);
@@ -502,7 +500,7 @@ MocoIterate::MocoIterate(const std::string& filepath) {
 
     OPENSIM_THROW_IF(numStates + numControls + numMultipliers + numDerivatives +
                                      numSlacks + numParameters !=
-                             (int)table->getNumColumns(),
+                             (int)table.getNumColumns(),
             Exception,
             format("Expected num_states + num_controls + num_multipliers + "
                    "num_derivatives + num_slacks + num_parameters = "
@@ -511,34 +509,44 @@ MocoIterate::MocoIterate(const std::string& filepath) {
                    "num_multipliers=%i, num_derivatives=%i, num_slacks=%i, "
                    "num_parameters=%i, number of columns=%i.",
                     numStates, numControls, numMultipliers, numDerivatives,
-                    numSlacks, numParameters, table->getNumColumns()));
+                    numSlacks, numParameters, table.getNumColumns()));
 
-    const auto& time = table->getIndependentColumn();
+    const auto& time = table.getIndependentColumn();
     m_time = SimTK::Vector((int)time.size(), time.data());
 
     if (numStates) {
-        m_states = table->getMatrixBlock(0, 0, table->getNumRows(), numStates);
+        m_states = table.getMatrixBlock(0, 0, table.getNumRows(), numStates);
+    } else {
+        m_states.resize((int)table.getNumRows(), 0);
     }
     if (numControls) {
-        m_controls = table->getMatrixBlock(
-                0, numStates, table->getNumRows(), numControls);
+        m_controls = table.getMatrixBlock(
+                0, numStates, table.getNumRows(), numControls);
+    } else {
+        m_controls.resize((int)table.getNumRows(), 0);
     }
     if (numMultipliers) {
-        m_multipliers = table->getMatrixBlock(0, numStates + numControls,
-                table->getNumRows(), numMultipliers);
+        m_multipliers = table.getMatrixBlock(
+                0, numStates + numControls, table.getNumRows(), numMultipliers);
+    } else {
+        m_multipliers.resize((int)table.getNumRows(), 0);
     }
     if (numDerivatives) {
-        m_derivatives = table->getMatrixBlock(0,
-                numStates + numControls + numMultipliers, table->getNumRows(),
+        m_derivatives = table.getMatrixBlock(0,
+                numStates + numControls + numMultipliers, table.getNumRows(),
                 numDerivatives);
+    } else {
+        m_derivatives.resize((int)table.getNumRows(), 0);
     }
     if (numSlacks) {
-        m_slacks = table->getMatrixBlock(0,
+        m_slacks = table.getMatrixBlock(0,
                 numStates + numControls + numMultipliers + numDerivatives,
-                table->getNumRows(), numSlacks);
+                table.getNumRows(), numSlacks);
+    } else {
+        m_slacks.resize((int)table.getNumRows(), 0);
     }
     if (numParameters) {
-        m_parameters = table->getMatrixBlock(0,
+        m_parameters = table.getMatrixBlock(0,
                                     numStates + numControls + numMultipliers +
                                             numDerivatives + numSlacks,
                                     1, numParameters)
@@ -640,6 +648,7 @@ TimeSeriesTable MocoIterate::convertToTable() const {
             "num_slacks", std::to_string(numSlacks));
     table.updTableMetaData().setValueForKey(
             "num_parameters", std::to_string(numParameters));
+    convertToTableImpl(table);
     return table;
 }
 
@@ -660,7 +669,7 @@ StatesTrajectory MocoIterate::exportToStatesTrajectory(
     Storage storage = exportToStatesStorage();
     // TODO update when we support multiple phases.
     const auto& model = problem.getPhase(0).getModel();
-    return StatesTrajectory::createFromStatesStorage(model, storage);
+    return StatesTrajectory::createFromStatesStorage(model, storage, true);
 }
 
 /*static*/ MocoIterate MocoIterate::createFromStatesControlsTables(
@@ -816,8 +825,7 @@ void checkContains(std::string type, VecStr a, VecStr b, VecStr c) {
 }
 
 double MocoIterate::compareContinuousVariablesRMSInternal(
-        const MocoIterate& other,
-        std::vector<std::string> stateNames,
+        const MocoIterate& other, std::vector<std::string> stateNames,
         std::vector<std::string> controlNames,
         std::vector<std::string> multiplierNames,
         std::vector<std::string> derivativeNames) const {
@@ -951,9 +959,8 @@ double MocoIterate::compareContinuousVariablesRMSInternal(
 double MocoIterate::compareContinuousVariablesRMS(const MocoIterate& other,
         std::map<std::string, std::vector<std::string>> cols) const {
     ensureUnsealed();
-    std::vector<std::string> allowedKeys {
-        "states", "controls", "multipliers", "derivatives"
-    };
+    std::vector<std::string> allowedKeys{
+            "states", "controls", "multipliers", "derivatives"};
     for (auto kv : cols) {
         bool keyIsAllowed = false;
         for (auto allowedKey : allowedKeys) {
@@ -968,7 +975,7 @@ double MocoIterate::compareContinuousVariablesRMS(const MocoIterate& other,
     if (cols.size() == 0) {
         return compareContinuousVariablesRMSInternal(other);
     }
-    static const std::vector<std::string> none {"none"};
+    static const std::vector<std::string> none{"none"};
     return compareContinuousVariablesRMSInternal(other,
             cols.count("states") ? cols.at("states") : none,
             cols.count("controls") ? cols.at("controls") : none,
@@ -1009,4 +1016,14 @@ double MocoIterate::compareParametersRMS(const MocoIterate& other,
 
 void MocoIterate::ensureUnsealed() const {
     OPENSIM_THROW_IF(m_sealed, MocoIterateIsSealed);
+}
+
+void MocoSolution::convertToTableImpl(TimeSeriesTable& table) const {
+    if(m_success) {
+        table.updTableMetaData().setValueForKey(
+                "success", std::string("true"));
+    } else {
+        table.updTableMetaData().setValueForKey(
+                "success", std::string("false"));
+    }
 }

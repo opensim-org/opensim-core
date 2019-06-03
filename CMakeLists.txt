@@ -9,7 +9,7 @@ set(MOCO_COPY_DEPENDENCIES ON)
 option(MOCO_JAVA_BINDINGS "Build Java/MATLAB interface." OFF)
 
 option(MOCO_PYTHON_BINDINGS "Build Python interface." OFF)
-set(MOCO_PYTHON_VERSION 2 CACHE STRING
+set(MOCO_PYTHON_VERSION 3 CACHE STRING
     "The major Python version (2 or 3) for which to build the wrapping.")
 # To create a drop-down in the CMake GUI:
 set_property(CACHE MOCO_PYTHON_VERSION PROPERTY STRINGS "2" "3")

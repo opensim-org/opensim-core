@@ -45,7 +45,7 @@ class TestSlidingMass {
 
   public static void testSlidingMass() throws Exception {
 
-    MocoTool moco = new MocoTool();
+    MocoStudy moco = new MocoStudy();
     moco.setName("sliding_mass");
 
     // Define the optimal control problem.

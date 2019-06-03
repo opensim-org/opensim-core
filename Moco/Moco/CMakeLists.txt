@@ -6,8 +6,8 @@ set(MOCO_SOURCES
         RegisterTypes_osimMoco.cpp
         MocoUtilities.h
         MocoUtilities.cpp
-        MocoTool.h
-        MocoTool.cpp
+        MocoStudy.h
+        MocoStudy.cpp
         MocoBounds.h
         MocoBounds.cpp
         MocoVariableInfo.h
@@ -29,8 +29,12 @@ set(MOCO_SOURCES
         MocoCost/MocoControlCost.cpp
         MocoCost/MocoControlTrackingCost.h
         MocoCost/MocoControlTrackingCost.cpp
-        MocoCost/MocoJointReactionNormCost.h
-        MocoCost/MocoJointReactionNormCost.cpp
+        MocoCost/MocoJointReactionCost.h
+        MocoCost/MocoJointReactionCost.cpp
+        MocoCost/MocoOrientationTrackingCost.h
+        MocoCost/MocoOrientationTrackingCost.cpp
+        MocoCost/MocoTranslationTrackingCost.h
+        MocoCost/MocoTranslationTrackingCost.cpp
         MocoSolver.h
         MocoSolver.cpp
         MocoDirectCollocationSolver.h
@@ -49,9 +53,12 @@ set(MOCO_SOURCES
         InverseMuscleSolver/GlobalStaticOptimization.cpp
         InverseMuscleSolver/INDYGO.h
         InverseMuscleSolver/INDYGO.cpp
+        InverseMuscleSolver/INDYGOProblemInternal.h
         InverseMuscleSolver/DeGrooteFregly2016MuscleStandalone.h
         InverseMuscleSolver/InverseMuscleSolverMotionData.h
         InverseMuscleSolver/InverseMuscleSolverMotionData.cpp
+        Components/DeGrooteFregly2016Muscle.h
+        Components/DeGrooteFregly2016Muscle.cpp
         Components/ActivationCoordinateActuator.h
         Components/StationPlaneContactForce.h
         Components/StationPlaneContactForce.cpp
