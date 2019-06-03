@@ -366,7 +366,7 @@ private:
     }
     void intermediateCallback(const CasOC::Iterate& iterate) const override {
         std::string filename = format("MocoCasADiSolver_%s_iterate%06i.sto",
-                OpenSim::getFormattedDateTime(), iterate.iteration);
+                m_formattedTimeString, iterate.iteration);
         convertToMocoIterate(iterate).write(filename);
     }
 
@@ -544,6 +544,7 @@ private:
 
     std::unique_ptr<ThreadsafeJar<const MocoProblemRep>> m_jar;
     bool m_paramsRequireInitSystem = true;
+    std::string m_formattedTimeString;
     std::unordered_map<int, int> m_yIndexMap;
     // Local memory to hold constraint forces.
     static thread_local SimTK::Vector_<SimTK::SpatialVec>

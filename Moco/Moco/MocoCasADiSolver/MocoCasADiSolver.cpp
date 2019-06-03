@@ -241,6 +241,7 @@ std::unique_ptr<CasOC::Solver> MocoCasADiSolver::createCasOCSolver(
 MocoSolution MocoCasADiSolver::solveImpl() const {
     const Stopwatch stopwatch;
 
+
     if (get_verbosity()) {
         std::cout << std::string(79, '=') << "\n";
         std::cout << "MocoCasADiSolver starting.\n";

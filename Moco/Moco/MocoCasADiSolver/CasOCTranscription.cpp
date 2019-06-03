@@ -26,8 +26,8 @@ namespace CasOC {
 
 // http://casadi.sourceforge.net/api/html/d7/df0/solvers_2callback_8py-example.html
 
-/// This class allows for callback functionality and writing out intermediate
-/// iterates.
+/// This class allows us to observe intermediate iterates throughout the
+/// optimization.
 class NlpsolCallback : public casadi::Callback {
 public:
     NlpsolCallback(const Transcription& transcription, const Problem& problem,
