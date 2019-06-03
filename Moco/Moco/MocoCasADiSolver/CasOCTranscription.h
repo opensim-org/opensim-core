@@ -119,7 +119,7 @@ private:
     casadi::Matrix<casadi_int> m_gridIndices;
     casadi::Matrix<casadi_int> m_daeIndices;
     casadi::Matrix<casadi_int> m_daeIndicesIgnoringConstraints;
-    
+
     casadi::MX m_xdot; // State derivatives.
     casadi::MX m_residual;
     casadi::MX m_kcerr;      // Kinematic constraint errors.
