@@ -40,7 +40,8 @@ std::unique_ptr<T> make_unique(Args&&... args) {
     return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
 }
 
-
+/// Get a string with the current date and time formatted using the ISO standard
+/// extended datetime format (%Y-%m-%dT%X))
 OSIMMOCO_API std::string getFormattedDateTime();
 
 /// Determine if `string` starts with the substring `start`.
