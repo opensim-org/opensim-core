@@ -750,7 +750,56 @@ void Transcription::printConstraintValues(
 
     // Kinematic constraints.
     // ----------------------
-    // TODO
+    stream << "\nKinematic constraints:";
+    std::vector<std::string> kinconNames;
+    // TODO: Give better names to kinematic constraints, rather than using
+    // the multiplier names.
+    for (const auto& kc : m_problem.getMultiplierInfos()) {
+        kinconNames.push_back(kc.name);
+    }
+    if (kinconNames.empty()) { stream << " none" << std::endl; }
+
+    maxNameLength = 0;
+    updateMaxNameLength(kinconNames);
+    stream << "\n  L2 norm across mesh, max abs value (L1 norm), time of max "
+              "abs"
+           << std::endl;
+    row.resize(1, m_numMeshPoints);
+    {
+        for (int ikc = 0; ikc < (int)constraints.kinematic.rows(); ++ikc) {
+            row = constraints.kinematic(ikc, Slice());
+            const double L2 = casadi::DM::norm_2(row).scalar();
+            int argmax;
+            double max = calcL1Norm(row, argmax);
+            const double L1 = max;
+            const double time_of_max = it.times(argmax).scalar();
+
+            std::string label = kinconNames[ikc];
+            std::cout << std::setfill('0') << std::setw(2) << ikc << ":"
+                      << std::setfill(' ') << std::setw(maxNameLength) << label
+                      << spacer << std::setprecision(2) << std::scientific
+                      << std::setw(9) << L2 << spacer << L1 << spacer
+                      << std::setprecision(6) << std::fixed << time_of_max
+                      << std::endl;
+        }
+    }
+    stream << "Kinematic constraint values at each mesh point:" << std::endl;
+    stream << "      time  ";
+    for (int ipc = 0; ipc < (int)kinconNames.size(); ++ipc) {
+        stream << std::setw(9) << ipc << "  ";
+    }
+    stream << std::endl;
+    for (int imesh = 0; imesh < m_numMeshPoints; ++imesh) {
+        stream << std::setfill('0') << std::setw(3) << imesh << "  ";
+        stream.fill(' ');
+        stream << std::setw(9) << it.times(imesh).scalar() << "  ";
+        for (int ikc = 0; ikc < (int)kinconNames.size(); ++ikc) {
+            const auto& value = constraints.kinematic(ikc, imesh).scalar();
+            stream << std::setprecision(2) << std::scientific << std::setw(9)
+                   << value << "  ";
+        }
+        stream << std::endl;
+    }
 
     // Path constraints.
     // -----------------

@@ -973,7 +973,6 @@ std::cerr.rdbuf(LogManager::cerr.rdbuf());
     ms.set_verbosity(2);
     ms.set_optim_solver("ipopt");
     ms.set_optim_convergence_tolerance(1e-3);
-    ms.set_optim_max_iterations(2);
     ms.setGuess("bounds");
 
     MocoSolution solution = moco.solve();
