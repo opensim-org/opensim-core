@@ -472,6 +472,7 @@ public:
     /// Save the iterate to file(s). Use a ".sto" file extension.
     void write(const std::string& filepath) const;
 
+
     /// The Storage can be used in the OpenSim GUI to visualize a motion, or
     /// as input to OpenSim's conventional tools (e.g., AnalyzeTool).
     ///
@@ -538,6 +539,7 @@ protected:
 
 private:
     TimeSeriesTable convertToTable() const;
+    virtual void convertToTableImpl(TimeSeriesTable&) const {}
     double compareContinuousVariablesRMSInternal(const MocoIterate& other,
             std::vector<std::string> stateNames = {},
             std::vector<std::string> controlNames = {},
@@ -582,12 +584,14 @@ private:
 /// If the solver was not successful, then this object is "sealed", which
 /// means you cannot do anything with it until calling `unseal()`. This
 /// prevents you from silently proceeding with a failed solution.
+/// Solver success can also be found in the header of a solution (.sto) file
+/// written out by write.
 class OSIMMOCO_API MocoSolution : public MocoIterate {
 public:
     /// Returns a dynamically-allocated copy of this solution. You must manage
     /// the memory for return value.
     /// @note This works even if the iterate is sealed.
-    virtual MocoSolution* clone() const { return new MocoSolution(*this); }
+    virtual MocoSolution* clone() const override { return new MocoSolution(*this); }
     /// Was the problem solved successfully? If not, then you cannot access
     /// the solution until you call unlock().
     bool success() const { return m_success; }
@@ -637,6 +641,7 @@ private:
     void setNumIterations(int numIterations) {
         m_numIterations = numIterations;
     };
+    void convertToTableImpl(TimeSeriesTable&) const override;
     bool m_success = true;
     double m_objective = -1;
     std::string m_status;

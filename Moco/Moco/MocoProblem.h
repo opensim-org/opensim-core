@@ -143,19 +143,31 @@ public:
     /// are unconstrained.
     void setControlInfo(const std::string& name, const MocoBounds&,
             const MocoInitialBounds& = {}, const MocoFinalBounds& = {});
+
+    /// Set the bounds on generalized speed state variables
+    /// for which explicit bounds are not set.
     void setDefaultSpeedBounds(const MocoBounds& bounds) {
         set_default_speed_bounds(bounds);
     }
-    /// Set information about a single control variable in this phase using a
-    /// regular expression.
-    void setControlInfoPattern(const std::string& pattern, const MocoBounds&,
-            const MocoInitialBounds& = {}, const MocoFinalBounds& = {});
     /// Set information for control variables whose names match the provided
     /// regular expression. You can use this to set bounds for all muscle
     /// activations, etc. Infos provided via setStateInfo() take precedence over
     /// infos provided with setStateInfoPattern(). If a control variable name
     /// matches multiple patterns, the info provided with the last pattern is
     /// used for that control variable.
+    void setControlInfoPattern(const std::string& pattern, const MocoBounds&,
+            const MocoInitialBounds& = {}, const MocoFinalBounds& = {});
+    /// For muscles without explicit activation bounds, set the bounds for
+    /// muscle activation (if activation dynamics are enabled) from the bounds
+    /// for muscle control (excitation), using min/max control if explicit
+    /// control bounds are not provided. Default: true.
+    void setBoundActivationFromExcitation(bool value) {
+        set_bound_activation_from_excitation(value);
+    }
+    /// Set the bounds on *all* of the kinematic constraint equations in this
+    /// phase. When creating a MocoProblemRep, these bounds are used to create
+    /// MocoConstraintInfo's for each kinematic constraint equation in the
+    /// phase.
     void setKinematicConstraintBounds(const MocoBounds& bounds) {
         set_kinematic_constraint_bounds(bounds);
     }
@@ -291,6 +303,9 @@ public:
     const MocoBounds& getDefaultSpeedBounds() const {
         return get_default_speed_bounds();
     }
+    bool getBoundActivationFromExcitation() const {
+        return get_bound_activation_from_excitation();
+    }
     const MocoBounds& getKinematicConstraintBounds() const {
         return get_kinematic_constraint_bounds();
     }
@@ -322,6 +337,12 @@ protected: // Protected so that doxygen shows the properties.
     OpenSim_DECLARE_PROPERTY(default_speed_bounds, MocoBounds,
             "Bounds for coordinate speeds if not specified in "
             "state_infos (default: [-50, 50]).");
+    OpenSim_DECLARE_PROPERTY(bound_activation_from_excitation, bool,
+            "For muscles without explicit activation bounds, set the bounds "
+            "for muscle activation (if activation dynamics are enabled) from "
+            "the bounds for muscle control (excitation), using "
+            "min/max control if explicit control bounds are not "
+            "provided. (default: true).");
     OpenSim_DECLARE_LIST_PROPERTY(
             state_infos, MocoVariableInfo, "The state variables' bounds.");
     OpenSim_DECLARE_LIST_PROPERTY(state_infos_pattern, MocoVariableInfo,
@@ -452,7 +473,9 @@ public:
     /// Get a modifiable phase of the problem by index (starting index of 0).
     /// This accesses the internal phases property.
     const MocoPhase& getPhase(int index = 0) const { return get_phases(index); }
-    /// Returns a reference to the cost with name "name".
+    /// Update the model in phase 0.
+    Model& updModel() { return upd_phases(0).updModel(); }
+    /// Returns a reference to the cost with name "name" in phase 0.
     MocoCost& updCost(const std::string& name);
 
 #ifndef SWIG // MocoProblemRep() is not copyable.
