@@ -323,7 +323,10 @@ void Transcription::transcribe() {
     // ----------------
     // The individual path constraint functions are passed to CasADi to
     // maximize CasADi's ability to take derivatives efficiently.
-    m_constraints.path.resize(m_problem.getPathConstraintInfos().size());
+    int numPathConstraints = (int)m_problem.getPathConstraintInfos().size();
+    m_constraints.path.resize(numPathConstraints);
+    m_constraintsLowerBounds.path.resize(numPathConstraints);
+    m_constraintsUpperBounds.path.resize(numPathConstraints);
     for (int ipc = 0; ipc < (int)m_constraints.path.size(); ++ipc) {
         const auto& info = m_problem.getPathConstraintInfos()[ipc];
         // TODO: Is it sufficiently general to apply these to mesh points?
@@ -486,8 +489,8 @@ Solution Transcription::solve(const Iterate& guessOrig) {
     return solution;
 }
 
-void Transcription::printConstraintValues(const Iterate& it,
-        const Constraints<casadi::DM>& constraints) const {
+void Transcription::printConstraintValues(
+        const Iterate& it, const Constraints<casadi::DM>& constraints) const {
 
     auto& stream = std::cout;
 
@@ -744,65 +747,73 @@ void Transcription::printConstraintValues(const Iterate& it,
                << spacer << L1 << spacer << std::setprecision(6) << std::fixed
                << time_of_max << std::endl;
     }
+
     // Kinematic constraints.
     // ----------------------
     // TODO
 
-    // // Path constraints.
-    // // -----------------
-    // stream << "\nPath constraints:";
-    // auto pathcon_names = m_ocproblem->get_path_constraint_names();
-    //
-    // if (pathcon_names.empty()) {
-    //     stream << " none" << std::endl;
-    //     // Return early if there are no path constraints.
-    //     return;
-    // }
-    // stream << std::endl;
-    //
-    // const int max_pathcon_name_length =
-    //         (int)std::max_element(pathcon_names.begin(), pathcon_names.end(),
-    //                 compare_size)->size();
-    // stream <<
-    //         "\n  L2 norm across mesh, max abs value (L1 norm), time of max abs"
-    //         << std::endl;
-    // rowd.resize(values.path_constraints.cols());
-    // for (size_t i_pc = 0; i_pc < pathcon_names.size(); ++i_pc) {
-    //     RowVectorX<T> rowT = values.path_constraints.row(i_pc);
-    //     for (int i = 0; i < rowd.size(); ++i)
-    //         rowd[i] = static_cast<const double&>(rowT[i]);
-    //     const double L2 = rowd.norm();
-    //     Eigen::Index argmax;
-    //     const double L1 = rowd.cwiseAbs().maxCoeff(&argmax);
-    //     const auto time_of_max = ocp_vars.time[argmax];
-    //
-    //     stream << std::setw(2) << i_pc << ":"
-    //             << std::setw(max_pathcon_name_length) << pathcon_names[i_pc]
-    //             << spacer
-    //             << std::setprecision(2) << std::scientific << std::setw(9)
-    //             << L2 << spacer << L1 << spacer
-    //             << std::setprecision(6) << std::fixed << time_of_max
-    //             << std::endl;
-    // }
-    // stream << "Path constraint values at each mesh point:" << std::endl;
-    // stream << std::setw(9) << "time" << "  ";
-    // for (size_t i_pc = 0; i_pc < pathcon_names.size(); ++i_pc) {
-    //     stream << std::setw(9) << i_pc << "  ";
-    // }
-    // stream << std::endl;
-    // for (size_t i_mesh = 0; i_mesh < size_t(values.path_constraints.cols());
-    //      ++i_mesh) {
-    //
-    //     stream << std::setw(4) << i_mesh << "  "
-    //             << ocp_vars.time[i_mesh] << "  ";
-    //     for (size_t i_pc = 0; i_pc < pathcon_names.size(); ++i_pc) {
-    //         auto& value = static_cast<const double&>(
-    //                 values.path_constraints(i_pc, i_mesh));
-    //         stream << std::setprecision(2) << std::scientific << std::setw(9)
-    //                 << value << "  ";
-    //     }
-    //     stream << std::endl;
-    // }
+    // Path constraints.
+    // -----------------
+    stream << "\nPath constraints:";
+    std::vector<std::string> pathconNames;
+    for (const auto& pc : m_problem.getPathConstraintInfos()) {
+        pathconNames.push_back(pc.name);
+    }
+
+    if (pathconNames.empty()) {
+        stream << " none" << std::endl;
+        // Return early if there are no path constraints.
+        return;
+    }
+    stream << std::endl;
+
+    maxNameLength = 0;
+    updateMaxNameLength(pathconNames);
+    // To make space for indices.
+    maxNameLength += 3;
+    stream << "\n  L2 norm across mesh, max abs value (L1 norm), time of max "
+              "abs"
+           << std::endl;
+    row.resize(1, m_numMeshPoints);
+    {
+        int ipc = 0;
+        for (const auto& pc : m_problem.getPathConstraintInfos()) {
+            for (int ieq = 0; ieq < pc.size(); ++ieq) {
+                row = constraints.path[ipc](ieq, Slice());
+                const double L2 = casadi::DM::norm_2(row).scalar();
+                int argmax;
+                double max = calcL1Norm(row, argmax);
+                const double L1 = max;
+                const double time_of_max = it.times(argmax).scalar();
+
+                std::string label = OpenSim::format("%s_%02i", pc.name, ieq);
+                std::cout << std::setfill('0') << std::setw(2) << ipc << ":"
+                          << std::setfill(' ') << std::setw(maxNameLength)
+                          << label << spacer << std::setprecision(2)
+                          << std::scientific << std::setw(9) << L2 << spacer
+                          << L1 << spacer << std::setprecision(6) << std::fixed
+                          << time_of_max << std::endl;
+            }
+            ++ipc;
+        }
+    }
+    stream << "Path constraint values at each mesh point:" << std::endl;
+    stream << "      time  ";
+    for (int ipc = 0; ipc < (int)pathconNames.size(); ++ipc) {
+        stream << std::setw(9) << ipc << "  ";
+    }
+    stream << std::endl;
+    for (int imesh = 0; imesh < m_numMeshPoints; ++imesh) {
+        stream << std::setfill('0') << std::setw(3) << imesh << "  ";
+        stream.fill(' ');
+        stream << std::setw(9) << it.times(imesh).scalar() << "  ";
+        for (int ipc = 0; ipc < (int)pathconNames.size(); ++ipc) {
+            const auto& value = constraints.path[ipc](imesh).scalar();
+            stream << std::setprecision(2) << std::scientific << std::setw(9)
+                   << value << "  ";
+        }
+        stream << std::endl;
+    }
 }
 
 Iterate Transcription::createInitialGuessFromBounds() const {

@@ -715,6 +715,11 @@ void testDoublePendulumPrescribedMotion(MocoSolution& couplerSolution,
     TimeSeriesTable statesTrajCoupler =
             couplerSolution.exportToStatesTrajectory(mp).exportToTable(*model);
     GCVSplineSet statesSpline(statesTrajCoupler);
+    // TODO DEBUG
+    static_cast<GCVSpline&>(statesSpline.get("/jointset/j0/q0/value")).addPoint(-1, 0);
+    static_cast<GCVSpline&>(statesSpline.get("/jointset/j0/q0/value")).addPoint(2, 0);
+    static_cast<GCVSpline&>(statesSpline.get("/jointset/j0/q1/value")).addPoint(-1, 0);
+    static_cast<GCVSpline&>(statesSpline.get("/jointset/j0/q1/value")).addPoint(2, 0);
 
     // Apply the prescribed motion constraints.
     Coordinate& q0 = model->updJointSet().get("j0").updCoordinate();
@@ -935,6 +940,8 @@ protected:
 /// actuators must produce an equal control trajectory.
 TEMPLATE_TEST_CASE(
         "DoublePendulumEqualControl", "", MocoTropterSolver, MocoCasADiSolver) {
+std::cout.rdbuf(LogManager::cout.rdbuf());
+std::cerr.rdbuf(LogManager::cerr.rdbuf());
     OpenSim::Object::registerType(EqualControlConstraint());
     MocoTool moco;
     moco.setName("double_pendulum_equal_control");
@@ -966,6 +973,7 @@ TEMPLATE_TEST_CASE(
     ms.set_verbosity(2);
     ms.set_optim_solver("ipopt");
     ms.set_optim_convergence_tolerance(1e-3);
+    ms.set_optim_max_iterations(2);
     ms.setGuess("bounds");
 
     MocoSolution solution = moco.solve();
