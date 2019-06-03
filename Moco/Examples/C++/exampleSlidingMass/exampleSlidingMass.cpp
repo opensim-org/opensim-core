@@ -91,7 +91,7 @@ int main() {
     problem.setStateInfo("/slider/position/speed", {-50, 50}, 0, 0);
 
     // Applied force must be between -50 and 50.
-    problem.setControlInfoPattern(".*/actuator", MocoBounds(-50, 50));
+    problem.setControlInfo("/actuator", MocoBounds(-50, 50));
 
     // Cost.
     // -----
