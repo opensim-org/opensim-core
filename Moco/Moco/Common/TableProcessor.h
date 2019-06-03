@@ -84,6 +84,10 @@ public:
                 OPENSIM_THROW_FRMOBJ(Exception, "No source table.");
             }
         } else {
+            OPENSIM_THROW_IF_FRMOBJ(m_tableProvided, Exception,
+                    "Expected either an in-memory table or a filepath, but "
+                    "both were "
+                    "provided.");
             std::string path = get_filepath();
             if (!relativeToDirectory.empty()) {
                 using SimTK::Pathname;

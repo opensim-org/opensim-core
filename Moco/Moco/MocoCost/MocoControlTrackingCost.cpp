@@ -25,7 +25,7 @@ using namespace OpenSim;
 void MocoControlTrackingCost::initializeOnModelImpl(const Model& model) const {
 
     // TODO: set relativeToDirectory properly.
-    TimeSeriesTable tableToUse = get_reference().process("");
+    TimeSeriesTable tableToUse = get_reference().process();
 
     // Convert data table to spline set.
     auto allSplines = GCVSplineSet(tableToUse);
