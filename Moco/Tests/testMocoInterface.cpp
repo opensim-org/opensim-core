@@ -19,6 +19,7 @@
 #define CATCH_CONFIG_MAIN
 #include "Testing.h"
 #include <Moco/osimMoco.h>
+#include <fstream>
 
 #include <OpenSim/Actuators/BodyActuator.h>
 #include <OpenSim/Actuators/CoordinateActuator.h>
@@ -27,7 +28,6 @@
 #include <OpenSim/Simulation/Manager/Manager.h>
 #include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/SliderJoint.h>
-#include <fstream>
 
 using namespace OpenSim;
 
@@ -644,7 +644,36 @@ TEMPLATE_TEST_CASE("Workflow", "", MocoTropterSolver, MocoCasADiSolver) {
     //     }
     // }
 }
+TEMPLATE_TEST_CASE("Set infos with regular expression", "", MocoCasADiSolver,
+        MocoTropterSolver) {
+    MocoTool moco;
+    MocoProblem& problem = moco.updProblem();
+    problem.setModel(createSlidingMassModel());
+    problem.setTimeBounds(0, 10);
+    problem.setStateInfoPattern(".*/value", {2, 10});
+    problem.setStateInfoPattern(".*/speed", {3, 10});
+    MocoProblemRep problemRep = problem.createRep();
+    SimTK_TEST_EQ(problemRep.getStateInfo("/slider/position/value")
+                          .getBounds()
+                          .getLower(),
+            2);
+    SimTK_TEST_EQ(problemRep.getStateInfo("/slider/position/speed")
+                          .getBounds()
+                          .getLower(),
+            3);
 
+    problem.setStateInfo("/slider/position/value", {3, 10});
+    problem.setStateInfo("/slider/position/speed", {4, 10});
+    problemRep = problem.createRep();
+    SimTK_TEST_EQ(problemRep.getStateInfo("/slider/position/value")
+                          .getBounds()
+                          .getLower(),
+            3);
+    SimTK_TEST_EQ(problemRep.getStateInfo("/slider/position/speed")
+                          .getBounds()
+                          .getLower(),
+            4);
+}
 TEMPLATE_TEST_CASE(
         "Disable Actuators", "", MocoCasADiSolver, MocoTropterSolver) {
     std::cout.rdbuf(LogManager::cout.rdbuf());
@@ -1172,27 +1201,26 @@ TEST_CASE("MocoIterate") {
     }
 
     {
-        const std::string fname = "testMocoInterface_testMocoSolutionSuccess.sto";
+        const std::string fname =
+                "testMocoInterface_testMocoSolutionSuccess.sto";
         MocoTool moco = createSlidingMassMocoTool();
-        auto& solver = dynamic_cast<MocoDirectCollocationSolver&>(moco.updSolver());
+        auto& solver =
+                dynamic_cast<MocoDirectCollocationSolver&>(moco.updSolver());
 
         solver.set_optim_max_iterations(1);
-        MocoSolution failedSolution  = moco.solve();
+        MocoSolution failedSolution = moco.solve();
         failedSolution.unseal();
         failedSolution.write(fname);
         MocoIterate deserialized(fname);
 
         std::ifstream mocoSolutionFile(fname);
-        for(std::string line; getline(mocoSolutionFile, line);) {
+        for (std::string line; getline(mocoSolutionFile, line);) {
             if (line.compare("success=false")) {
                 break;
-            }
-            else if (line.compare("success=true")) {
+            } else if (line.compare("success=true")) {
                 SimTK_TEST(false);
             }
-
         }
-
     }
 
     // Test sealing/unsealing.
@@ -1595,9 +1623,9 @@ TEST_CASE("MocoPhase::bound_activation_from_excitation") {
         MocoPhase& ph0 = problem.updPhase(0);
         ph0.setBoundActivationFromExcitation(false);
         auto rep = problem.createRep();
-        CHECK_THROWS_WITH(
-                rep.getStateInfo("/muscle/activation"),
-                Catch::Contains("No info available for state '/muscle/activation'."));
+        CHECK_THROWS_WITH(rep.getStateInfo("/muscle/activation"),
+                Catch::Contains(
+                        "No info available for state '/muscle/activation'."));
     }
     SECTION("bound_activation_from_excitation is true") {
         auto rep = problem.createRep();
@@ -1627,9 +1655,9 @@ TEST_CASE("MocoPhase::bound_activation_from_excitation") {
     SECTION("ignore_activation_dynamics") {
         musclePtr->set_ignore_activation_dynamics(true);
         auto rep = problem.createRep();
-        CHECK_THROWS_WITH(
-                rep.getStateInfo("/muscle/activation"),
-                Catch::Contains("No info available for state '/muscle/activation'."));
+        CHECK_THROWS_WITH(rep.getStateInfo("/muscle/activation"),
+                Catch::Contains(
+                        "No info available for state '/muscle/activation'."));
     }
 }
 
