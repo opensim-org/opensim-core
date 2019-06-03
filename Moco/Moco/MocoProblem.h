@@ -123,11 +123,12 @@ public:
     void setStateInfo(const std::string& name, const MocoBounds& bounds,
             const MocoInitialBounds& init = {},
             const MocoFinalBounds& final = {});
-    /// Set information about a single state variable in this phase
-    /// using a regular expression. A control variable set with a regular
-    /// expression will be overriden by a control variable set explicitly. If a
-    /// control variable is referenced by two regular expressions, the later one
-    /// receives precedence.
+    /// Set information for state variables whose names match the provided
+    /// regular expression. You can use this to set bounds for all muscle
+    /// activations, etc. Infos provided via setStateInfo() take precedence over
+    /// infos provided with setStateInfoPattern(). If a state variable name
+    /// matches multiple patterns, the info provided with the last pattern is
+    /// used for that state variable.
     void setStateInfoPattern(const std::string& pattern,
             const MocoBounds& bounds, const MocoInitialBounds& init = {},
             const MocoFinalBounds& final = {});
@@ -149,10 +150,12 @@ public:
     /// regular expression.
     void setControlInfoPattern(const std::string& pattern, const MocoBounds&,
             const MocoInitialBounds& = {}, const MocoFinalBounds& = {});
-    /// Set the bounds on *all* of the kinematic constraint equations in this
-    /// phase. When creating a MocoProblemRep, these bounds are used to create
-    /// MocoConstraintInfo's for each kinematic constraint equation in the
-    /// phase.
+    /// Set information for control variables whose names match the provided
+    /// regular expression. You can use this to set bounds for all muscle
+    /// activations, etc. Infos provided via setStateInfo() take precedence over
+    /// infos provided with setStateInfoPattern(). If a control variable name
+    /// matches multiple patterns, the info provided with the last pattern is
+    /// used for that control variable.
     void setKinematicConstraintBounds(const MocoBounds& bounds) {
         set_kinematic_constraint_bounds(bounds);
     }
@@ -322,11 +325,11 @@ protected: // Protected so that doxygen shows the properties.
     OpenSim_DECLARE_LIST_PROPERTY(
             state_infos, MocoVariableInfo, "The state variables' bounds.");
     OpenSim_DECLARE_LIST_PROPERTY(state_infos_pattern, MocoVariableInfo,
-                                  "The state variables' bounds.");
+            "The bounds for state variables set with setStateInfoPattern.");
     OpenSim_DECLARE_LIST_PROPERTY(
             control_infos, MocoVariableInfo, "The control variables' bounds.");
     OpenSim_DECLARE_LIST_PROPERTY(control_infos_pattern, MocoVariableInfo,
-                                  "The control variables' bounds.");
+            "The control variables' bounds.");
     OpenSim_DECLARE_LIST_PROPERTY(parameters, MocoParameter,
             "Parameter variables (model properties) to optimize.");
     OpenSim_DECLARE_LIST_PROPERTY(
@@ -392,15 +395,15 @@ public:
             const MocoInitialBounds& = {}, const MocoFinalBounds& = {});
     /// Set bounds for all state variables for phase 0 whose path matches
     /// the provided pattern (e.g. ".*/activation").
-    void setStateInfoPattern(const std::string &pattern, const MocoBounds &bounds,
-                             const MocoInitialBounds &init = {},
-                             const MocoFinalBounds &final = {});
+    void setStateInfoPattern(const std::string& pattern,
+            const MocoBounds& bounds, const MocoInitialBounds& init = {},
+            const MocoFinalBounds& final = {});
     /// Set bounds for a control variable for phase 0.
     void setControlInfo(const std::string& name, const MocoBounds&,
             const MocoInitialBounds& = {}, const MocoFinalBounds& = {});
-    /// Set bounds for a control variable using a regEx.
-    void setControlInfoPattern(const std::string &pattern, const MocoBounds &,
-                               const MocoInitialBounds & = {}, const MocoFinalBounds & = {});
+    /// Set bounds for a control variable using a regular expression.
+    void setControlInfoPattern(const std::string& pattern, const MocoBounds&,
+            const MocoInitialBounds& = {}, const MocoFinalBounds& = {});
     /// Set bounds for the kinematic constraints in phase 0.
     void setKinematicConstraintBounds(const MocoBounds& bounds);
     /// Set bounds for the Lagrange multipliers in phase 0.
