@@ -213,6 +213,14 @@ INSTANTIATE_MATRIXTYPES(Mat33)
         return operator*(*$self, v);
     }
 
+    Rotation_<double> multiply(const Rotation_<double>& r) {
+        return operator*(*$self, r);
+    }
+
+    Rotation_<double> multiply(const InverseRotation_<double>& r) {
+        return operator*(*$self, r);
+    }
+
     RowVector_<Vec3> multiply(const RowVector_<Vec3>& row) {
         return operator*(*$self, row);
     }
