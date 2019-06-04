@@ -8,7 +8,7 @@
 		<!--The axis of the base IMU that corresponds to its heading direction.Options are 'x', 'y' or 'z'.-->
 		<base_heading_axis>z</base_heading_axis>
 		<!--Name/path to the xml .osim file used to load a model to be analyzed.-->
-		<model_file_name>calibrated_imuTrackingModel.osim</model_file_name>
+		<model_file_name>calibrated_Rajagopal_2015.osim</model_file_name>
 		<!--Name/path to a .sto file of sensor frame orientations as quaternions.-->
 		<orientations_file_name>MT_012005D6_009-001_orientations.sto</orientations_file_name>
 		<results_directory>IKResults</results_directory>
