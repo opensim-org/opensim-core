@@ -24,17 +24,17 @@
 import opensim as osim
 
 # Set variables to use
-modelFileName = 'imuTrackingModel.osim'        # The path to an input model
+modelFileName = 'Rajagopal_2015.osim'        # The path to an input model
 orientationsFileName = 'MT_012005D6_009-001_orientations.sto'   # The path to orientation data for calibration
-baseIMUName = 'pelvis_imu'                     # The name of the base IMU to use for the model
-baseIMUHeading = osim.CoordinateAxis(2)        # The Coordinate Heading of the base IMU (0 for x, 1 for y, 2 for z)
-visulizeCalibration = 1                        # Boolean to Visualize the Output model
+baseIMUName = 'pelvis_imu'                     # The base IMU is the IMU on the base body of the model that dictates the heading (forward) direction of the model.
+baseIMUHeading = osim.CoordinateAxis(2)        # The Coordinate Axis of the base IMU that points in the heading direction.
+visulizeCalibration = True                     # Boolean to Visualize the Output model
 
 # Instantiate an OpenSenseUtilities object
 ou = osim.OpenSenseUtilities()
 
 # Generate a model that calibrates the IMU sensors to a model pose.
-model = ou.calibrateModelFromOrientations(modelFileName,orientationsFileName,baseIMUName,baseIMUHeading, True)
+model = ou.calibrateModelFromOrientations(modelFileName,orientationsFileName,baseIMUName,baseIMUHeading, visulizeCalibration)
 
 # Print the calibrated model to file.
 model.printToXML('calibrated_' + modelFileName)

@@ -40,18 +40,15 @@ trial = xsensSettings.get_trial_prefix()
 quatTable = xsens.getOrientationsTable(tables)
 # Write to file
 osim.STOFileAdapterQuaternion.write(quatTable,  trial + '_orientations.sto')
-
 # Get Acceleration Data
 accelTable = xsens.getLinearAccelerationsTable(tables)
 # Write to file
-osim.STOFileAdapterVec3.write(accelTable, trial + '_accelerations.sto')
-
+osim.STOFileAdapterVec3.write(accelTable, trial + '_linearAccelerations.sto')
 # Get Magenometer Data
 magTable = xsens.getMagneticHeadingTable(tables)
 # Write to file
-osim.STOFileAdapterVec3.write(magTable, trial + '_magnetometers.sto')
-
+osim.STOFileAdapterVec3.write(magTable, trial + '_magneticNorthHeadings.sto')
 # Get Gyro Data
 gyroTable = xsens.getAngularVelocityTable(tables)
 # Write to file
-osim.STOFileAdapterVec3.write(gyroTable, trial + '_gyros.sto')
+osim.STOFileAdapterVec3.write(gyroTable, trial + '_angularVelocities.sto')
