@@ -41,6 +41,7 @@ void MocoCasADiSolver::constructProperties() {
     constructProperty_optim_write_sparsity("");
     constructProperty_optim_finite_difference_scheme("central");
     constructProperty_parallel();
+    constructProperty_output_interval(0);
 }
 
 MocoIterate MocoCasADiSolver::createGuess(const std::string& type) const {
@@ -218,6 +219,8 @@ std::unique_ptr<CasOC::Solver> MocoCasADiSolver::createCasOCSolver(
             {"central", "forward", "backward"});
     casSolver->setFiniteDifferenceScheme(get_optim_finite_difference_scheme());
 
+    casSolver->getCallbackInterval(get_output_interval());
+
     Dict pluginOptions;
     pluginOptions["verbose_init"] = true;
 
@@ -237,6 +240,7 @@ std::unique_ptr<CasOC::Solver> MocoCasADiSolver::createCasOCSolver(
 
 MocoSolution MocoCasADiSolver::solveImpl() const {
     const Stopwatch stopwatch;
+
 
     if (get_verbosity()) {
         std::cout << std::string(79, '=') << "\n";
