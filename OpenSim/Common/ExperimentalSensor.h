@@ -36,7 +36,7 @@ class OSIMCOMMON_API ExperimentalSensor : public Object {
 OpenSim_DECLARE_CONCRETE_OBJECT(ExperimentalSensor, Object);
 public:
     OpenSim_DECLARE_PROPERTY(name_in_model, std::string,
-        "The name of the PhysicalFrame representing a sensor (IMU) in Model." 
+        "The name of the PhysicalFrame representing a sensor (IMU) in Model. " 
         "When loading sensor data, it will be used as a table column label.");
 public:
     ExperimentalSensor(const std::string&  sensorName, const std::string& nameInModel) {
