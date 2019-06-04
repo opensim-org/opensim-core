@@ -221,8 +221,9 @@ void MocoProblemRep::initialize() {
     auto controlNames = createControlNamesFromModel(m_model_base);
     for (int i = 0; i < ph0.getProperty_control_infos_pattern().size(); ++i) {
         const auto& pattern = ph0.get_control_infos_pattern(i).getName();
+        auto regexPattern = std::regex(pattern);
         for (int j = 0; j < (int)controlNames.size(); ++j) {
-            if (std::regex_match(controlNames[j], std::regex(pattern))) {
+            if (std::regex_match(controlNames[j], regexPattern)) {
                 m_control_infos[controlNames[j]] =
                         ph0.get_control_infos_pattern(i);
                 m_control_infos[controlNames[j]].setName(controlNames[j]);
