@@ -48,14 +48,14 @@ STOFileAdapterQuaternion.write(quatTable,  [trial '_orientations.sto']);
 %% Get Acceleration Data
 accelTable = xsens.getLinearAccelerationsTable(tables);
 % Write to file
-STOFileAdapterVec3.write(accelTable, [trial '_accelerations.sto']);
+STOFileAdapterVec3.write(accelTable, [trial '_linearAccelerations.sto']);
 
 %% Get Magnetometer Data
 magTable = xsens.getMagneticHeadingTable(tables);
 % Write to file
-STOFileAdapterVec3.write(magTable, [trial '_magnetometer.sto']);
+STOFileAdapterVec3.write(magTable, [trial '_magneticNorthHeadings.sto']);
 
 %% Get Gyro Data
 gyroTable = xsens.getAngularVelocityTable(tables);
 % Write to file
-STOFileAdapterVec3.write(gyroTable, [trial '_gyros.sto']);
+STOFileAdapterVec3.write(gyroTable, [trial '_angularVelocities.sto']);

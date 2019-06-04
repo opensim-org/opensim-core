@@ -34,7 +34,7 @@ modelFileName = 'Rajagopal_2015.osim';        % The path to an input model
 orientationsFileName = 'MT_012005D6_009-001_orientations.sto';   % The path to orientation data for calibration 
 baseIMUName = 'pelvis_imu';                     % The base IMU is the IMU on the base body of the model that dictates the heading (forward) direction of the model.
 baseIMUHeading = CoordinateAxis(2);             % The Coordinate Axis of the base IMU that points in the heading direction. 
-visulizeCalibration = 1;                        % Boolean to Visualize the Output model
+visulizeCalibration = true;                     % Boolean to Visualize the Output model
 
 %% Instantiate an OpenSenseUtilities object
 ou = OpenSenseUtilities();
