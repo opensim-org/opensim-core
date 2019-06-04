@@ -569,7 +569,6 @@ void testDoublePendulumPointOnLine(
     mp.setStateInfo("/jointset/j1/q1/speed", {-10, 10});
     mp.setControlInfo("/tau0", {-10, 10});
     mp.setControlInfo("/tau1", {-10, 10});
-    mp.setMultiplierBounds({-1000, 1000});
 
     mp.addCost<MocoControlCost>();
 
@@ -581,11 +580,10 @@ void testDoublePendulumPointOnLine(
     ms.set_transcription_scheme("hermite-simpson");
     ms.set_enforce_constraint_derivatives(enforce_constraint_derivatives);
     ms.set_minimize_lagrange_multipliers(true);
-    //ms.set_interpolate_control_midpoints(false);
     ms.set_lagrange_multiplier_weight(10);
     ms.set_dynamics_mode(dynamics_mode);
     ms.setGuess("bounds");
-    //ms.set_optim_max_iterations(500);
+    ms.set_optim_max_iterations(10);
 
     MocoSolution solution = moco.solve().unseal();
     solution.write("testConstraints_testDoublePendulumPointOnLine.sto");
@@ -890,15 +888,15 @@ TEMPLATE_TEST_CASE("DoublePendulumPointOnLine with constraint derivatives",
     testDoublePendulumPointOnLine<TestType>(true, "explicit");
 }
 
-TEST_CASE("DoublePendulumPointOnLine without constraint derivatives",
-        "[implicit]") {
-    testDoublePendulumPointOnLine<MocoCasADiSolver>(false, "implicit");
-}
-
-TEST_CASE(
-        "DoublePendulumPointOnLine with constraint derivatives", "[implicit]") {
-    testDoublePendulumPointOnLine<MocoCasADiSolver>(true, "implicit");
-}
+//TEST_CASE("DoublePendulumPointOnLine without constraint derivatives",
+//        "[implicit]") {
+//    testDoublePendulumPointOnLine<MocoCasADiSolver>(false, "implicit");
+//}
+//
+//TEST_CASE(
+//        "DoublePendulumPointOnLine with constraint derivatives", "[implicit]") {
+//    testDoublePendulumPointOnLine<MocoCasADiSolver>(true, "implicit");
+//}
 
 class EqualControlConstraint : public MocoPathConstraint {
     OpenSim_DECLARE_CONCRETE_OBJECT(EqualControlConstraint, MocoPathConstraint);
@@ -1094,7 +1092,6 @@ void testDoublePendulumPointOnLineJointReaction(
     ms.set_lagrange_multiplier_weight(10);
     ms.set_dynamics_mode(dynamics_mode);
     ms.setGuess("bounds");
-    ms.set_interpolate_control_midpoints(false);
 
     MocoSolution solution = moco.solve().unseal();
     solution.write(
