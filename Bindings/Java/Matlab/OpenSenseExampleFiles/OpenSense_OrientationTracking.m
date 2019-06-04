@@ -30,11 +30,11 @@ clear all; close all; clc;
 import org.opensim.modeling.*
 
 %% Set variables to use
-modelFileName = 'calibrated_imuTrackingModel.osim';              % The path to an input model
+modelFileName = 'calibrated_Rajagopal_2015.osim';                % The path to an input model
 orientationsFileName = 'MT_012005D6_009-001_orientations.sto';   % The path to orientation data for calibration 
-baseIMUName = 'pelvis_imu';     % The name of the base IMU to use for the model
-baseIMUHeading = 'z';      % The Coordinate Heading of the base IMU ('x', 'y', or 'z')
-visualizeTracking = 1;     % Boolean to Visualize the tracking simulation
+baseIMUName = 'pelvis_imu';     % The base IMU is the IMU on the base body of the model that dictates the heading (forward) direction of the model.
+baseIMUHeading = 'z';      % The Coordinate Axis of the base IMU that points in the heading direction. 
+visualizeTracking = true;     % Boolean to Visualize the tracking simulation
 startTime = 7.25;          % Start time (in seconds) of the tracking simulation. 
 endTime = 15;              % End time (in seconds) of the tracking simulation.
 resultsDirectory = 'IKResults';

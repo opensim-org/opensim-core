@@ -10,31 +10,31 @@
 				<name_in_model>torso_imu</name_in_model>
 			</ExperimentalSensor>
 			<ExperimentalSensor name="_00B42279">
-				<!--The name of the PhysicalFrame representing a sensor (IMU) in Model.When loading sensor data, it will be used as a table column label.-->
+				<!--The name of the PhysicalFrame representing a sensor (IMU) in Model. When loading sensor data, it will be used as a table column label.-->
 				<name_in_model>pelvis_imu</name_in_model>
 			</ExperimentalSensor>
 			<ExperimentalSensor name="_00B4227D">
-				<!--The name of the PhysicalFrame representing a sensor (IMU) in Model.When loading sensor data, it will be used as a table column label.-->
+				<!--The name of the PhysicalFrame representing a sensor (IMU) in Model. When loading sensor data, it will be used as a table column label.-->
 				<name_in_model>tibia_r_imu</name_in_model>
 			</ExperimentalSensor>
 			<ExperimentalSensor name="_00B4227C">
-				<!--The name of the PhysicalFrame representing a sensor (IMU) in Model.When loading sensor data, it will be used as a table column label.-->
+				<!--The name of the PhysicalFrame representing a sensor (IMU) in Model. When loading sensor data, it will be used as a table column label.-->
 				<name_in_model>femur_r_imu</name_in_model>
 			</ExperimentalSensor>
 			<ExperimentalSensor name="_00B421ED">
-				<!--The name of the PhysicalFrame representing a sensor (IMU) in Model.When loading sensor data, it will be used as a table column label.-->
+				<!--The name of the PhysicalFrame representing a sensor (IMU) in Model. When loading sensor data, it will be used as a table column label.-->
 				<name_in_model>tibia_l_imu</name_in_model>
 			</ExperimentalSensor>
 			<ExperimentalSensor name="_00B421EE">
-				<!--The name of the PhysicalFrame representing a sensor (IMU) in Model.When loading sensor data, it will be used as a table column label.-->
+				<!--The name of the PhysicalFrame representing a sensor (IMU) in Model. When loading sensor data, it will be used as a table column label.-->
 				<name_in_model>femur_l_imu</name_in_model>
 			</ExperimentalSensor>
 			<ExperimentalSensor name="_00B421EF">
-				<!--The name of the PhysicalFrame representing a sensor (IMU) in Model.When loading sensor data, it will be used as a table column label.-->
+				<!--The name of the PhysicalFrame representing a sensor (IMU) in Model. When loading sensor data, it will be used as a table column label.-->
 				<name_in_model>calcn_r_imu</name_in_model>
 			</ExperimentalSensor>
 			<ExperimentalSensor name="_00B421E6">
-				<!--The name of the PhysicalFrame representing a sensor (IMU) in Model.When loading sensor data, it will be used as a table column label.-->
+				<!--The name of the PhysicalFrame representing a sensor (IMU) in Model. When loading sensor data, it will be used as a table column label.-->
 				<name_in_model>calcn_l_imu</name_in_model>
 			</ExperimentalSensor>
 		</ExperimentalSensors>

@@ -37,25 +37,25 @@ xsensSettings = XsensDataReaderSettings('myIMUMappings.xml');
 % Instantiate an XsensDataReader
 xsens = XsensDataReader(xsensSettings);
 % Get a table reference for the data
-table = xsens.read('IMUData/');
+tables = xsens.read('IMUData/');
 % get the trial name from the settings
 trial = char(xsensSettings.get_trial_prefix());
 %% Get Orientation Data
-quatTableTyped = xsens.getOrientationsTable(table);
+quatTable = xsens.getOrientationsTable(tables);
 % Write to file
-STOFileAdapterQuaternion.write(quatTableTyped,  [trial '_orientations.sto']);
+STOFileAdapterQuaternion.write(quatTable,  [trial '_orientations.sto']);
 
 %% Get Acceleration Data
-accelTableTyped = xsens.getLinearAccelerationsTable(table);
+accelTable = xsens.getLinearAccelerationsTable(tables);
 % Write to file
-STOFileAdapterVec3.write(accelTableTyped, [trial '_accelerations.sto']);
+STOFileAdapterVec3.write(accelTable, [trial '_accelerations.sto']);
 
-%% Get Magenometer Data
-magTableTyped = xsens.getMagneticHeadingTable(table);
+%% Get Magnetometer Data
+magTable = xsens.getMagneticHeadingTable(tables);
 % Write to file
-STOFileAdapterVec3.write(magTableTyped, [trial '_magnetometers.sto']);
+STOFileAdapterVec3.write(magTable, [trial '_magnetometer.sto']);
 
 %% Get Gyro Data
-gyroTableTyped = xsens.getAngularVelocityTable(table);
+gyroTable = xsens.getAngularVelocityTable(tables);
 % Write to file
-STOFileAdapterVec3.write(gyroTableTyped, [trial '_gyros.sto']);
+STOFileAdapterVec3.write(gyroTable, [trial '_gyros.sto']);
