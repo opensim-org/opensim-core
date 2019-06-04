@@ -38,6 +38,16 @@ class TestXsensDataReader {
         System.out.println("Body-Fixed Euler Angles (X,Y,Z)\n===============================");
         System.out.println(angles);
 
+        Rotation rot2 = rotsTable.getMatrix().getElt(0, 1);
+        Vec3 angles2 = rot2.convertRotationToBodyFixedXYZ();
+        System.out.println("Body-Fixed Euler Angles (X,Y,Z)\n===============================");
+        System.out.println(angles2);
+
+        Rotation diff = rot.multiply(rot2.transpose());
+        Vec4 errorAngleAxis = diff.convertRotationToAngleAxis();
+        System.out.println("Error Angle Axis\n===============================");
+        System.out.println(errorAngleAxis);
+
         //Verify that we can construct an OrientationsReference from a TimeSeriesTableRotation
         // Uncomment below to test.
         //OrientationsReference oRefs = new OrientationsReference(rotsTable);
