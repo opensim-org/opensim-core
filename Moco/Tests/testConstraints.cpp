@@ -666,7 +666,7 @@ void testDoublePendulumCoordinateCoupler(MocoSolution& solution,
     ms.set_dynamics_mode(dynamics_mode);
     ms.setGuess("bounds");
 
-    solution = moco.solve().unseal();
+    solution = moco.solve();
     solution.write("testConstraints_testDoublePendulumCoordinateCoupler.sto");
     //moco.visualize(solution);
 
@@ -887,7 +887,8 @@ TEMPLATE_TEST_CASE("DoublePendulumPointOnLine with constraint derivatives",
 
 // TODO the point-on-line tests are failing with implicit dynamics, even when
 // midpoint interpolation is turned off. I'm not sure if something changed, or
-// if they weren't actually converging before. 
+// if they weren't actually converging before and the tests were still passing
+// somehow.
 // TODO try adding an acceleration or jerk minimization term.
 //TEST_CASE("DoublePendulumPointOnLine without constraint derivatives",
 //        "[implicit]") {

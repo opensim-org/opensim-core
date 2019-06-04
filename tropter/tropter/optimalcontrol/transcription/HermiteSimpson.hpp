@@ -1427,6 +1427,7 @@ HermiteSimpson<T>::make_constraints_view(Eigen::Ref<VectorX<T>> constr) const
                &constr[0] : nullptr;
     T* pc_ptr = m_num_path_constraints ?                  // path constraints.
                &constr[m_num_dynamics_constraints] : nullptr;
+    // control midpoint constraints.
     T* cmid_ptr = m_num_controls && m_interpolate_control_midpoints ?
                &constr[m_num_dynamics_constraints + m_num_path_traj_constraints]
                     : nullptr;
