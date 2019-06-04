@@ -219,7 +219,6 @@ TEST_CASE("Enabled Costs", "") {
 template <class SolverType>
 MocoTool setupMocoToolDoublePendulumMinimizeEffort() {
     using SimTK::Pi;
-    int N = 20;
     const Model doublePendulum = ModelFactory::createNLinkPendulum(2);
 
     MocoTool moco;
@@ -237,6 +236,7 @@ MocoTool setupMocoToolDoublePendulumMinimizeEffort() {
     auto& solver = moco.initSolver<SolverType>();
     solver.set_num_mesh_points(20);
     solver.set_optim_convergence_tolerance(1e-6);
+    solver.set_optim_hessian_approximation("exact");
 
     return moco;
 }
@@ -263,7 +263,13 @@ TEMPLATE_TEST_CASE("Test MocoControlTrackingCost", "", MocoTropterSolver,
         solutionEffort.getControlNames());
     tracking->setReference(controlsRef);
 
-    moco.updSolver<TestType>().resetProblem(problem);
+    // Finding a solution with Hermite-Simpson and Tropter requires a better
+    // initial guess.
+    auto& solver = moco.updSolver<TestType>();
+    solver.resetProblem(problem);
+    MocoIterate guessTracking = solutionEffort;
+    guessTracking.randomizeAdd();
+    solver.setGuess(guessTracking);
     auto solutionTracking = moco.solve();
 
     // Make sure control tracking problem matches control effort problem.
