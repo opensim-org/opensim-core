@@ -85,6 +85,7 @@ MocoSolution solveDoublePendulumSwingup(const std::string& dynamics_mode) {
     auto& solver = moco.initSolver<SolverType>();
     solver.set_dynamics_mode(dynamics_mode);
     solver.set_num_mesh_points(N);
+    solver.set_transcription_scheme("trapezoidal");
     // solver.set_verbosity(2);
 
     MocoIterate guess = solver.createGuess();
@@ -194,12 +195,17 @@ TEMPLATE_TEST_CASE("Combining implicit dynamics mode with path constraints",
         pc->setConstraintInfo(info);
         auto& solver = moco.initSolver<TestType>();
         solver.set_dynamics_mode("implicit");
-        solver.set_num_mesh_points(5);
+        const int N = 5; // mesh points
+        const int Nc = 2*N - 1; // collocation points (Hermite-Simpson)
+        solver.set_num_mesh_points(N);
         MocoSolution solution = moco.solve();
 
         THEN("path constraints are still obeyed") {
-            OpenSim_REQUIRE_MATRIX_TOL(solution.getControlsTrajectory(),
-                    SimTK::Matrix(5, 1, 10.0), 1e-5);
+            // TODO: control midpoints as average of mesh points
+            auto controlTraj = solution.getControlsTrajectory().col(0);
+            for (int i = 0; i < controlTraj.size(); i += 2) {
+                SimTK_TEST_EQ_TOL(controlTraj[i], 10.0, 1e-5);
+            }
         }
     }
 }

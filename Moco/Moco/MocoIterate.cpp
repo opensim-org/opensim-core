@@ -648,6 +648,7 @@ TimeSeriesTable MocoIterate::convertToTable() const {
             "num_slacks", std::to_string(numSlacks));
     table.updTableMetaData().setValueForKey(
             "num_parameters", std::to_string(numParameters));
+    convertToTableImpl(table);
     return table;
 }
 
@@ -669,6 +670,33 @@ StatesTrajectory MocoIterate::exportToStatesTrajectory(
     // TODO update when we support multiple phases.
     const auto& model = problem.getPhase(0).getModel();
     return StatesTrajectory::createFromStatesStorage(model, storage, true);
+}
+
+namespace {
+template <typename T>
+void randomizeMatrix(bool add, const SimTK::Random& randGen, T& mat) {
+    for (int i = 0; i < mat.nrow(); ++i) {
+        for (int j = 0; j < mat.ncol(); ++j) {
+            auto& elt = mat.updElt(i, j);
+            const double rand = randGen.getValue();
+            if (add) {
+                elt += rand;
+            } else {
+                elt = rand;
+            }
+        }
+    }
+}
+} // namespace
+
+void MocoIterate::randomize(bool add, const SimTK::Random& randGen) {
+    ensureUnsealed();
+    randomizeMatrix(add, randGen, m_states);
+    randomizeMatrix(add, randGen, m_controls);
+    randomizeMatrix(add, randGen, m_multipliers);
+    randomizeMatrix(add, randGen, m_derivatives);
+    randomizeMatrix(add, randGen, m_slacks);
+    randomizeMatrix(add, randGen, m_parameters);
 }
 
 /*static*/ MocoIterate MocoIterate::createFromStatesControlsTables(
@@ -909,8 +937,10 @@ double MocoIterate::compareContinuousVariablesRMSInternal(
         TimeSeriesTable selfTable(selfTime, selfData, selfNames);
         TimeSeriesTable otherTable(otherTime, otherData, otherNames);
 
-        GCVSplineSet self(selfTable, namesToUse);
-        GCVSplineSet other(otherTable, namesToUse);
+        GCVSplineSet self(selfTable, namesToUse,
+                std::min((int)selfTable.getNumRows() - 1, 5));
+        GCVSplineSet other(otherTable, namesToUse,
+                std::min((int)otherTable.getNumRows() - 1, 5));
 
         SimTK::Vector sumSquaredError(numTimes, 0.0);
         for (int itime = 0; itime < numTimes; ++itime) {
@@ -1015,4 +1045,13 @@ double MocoIterate::compareParametersRMS(const MocoIterate& other,
 
 void MocoIterate::ensureUnsealed() const {
     OPENSIM_THROW_IF(m_sealed, MocoIterateIsSealed);
+}
+
+void MocoSolution::convertToTableImpl(TimeSeriesTable& table) const {
+    if (m_success) {
+        table.updTableMetaData().setValueForKey("success", std::string("true"));
+    } else {
+        table.updTableMetaData().setValueForKey(
+                "success", std::string("false"));
+    }
 }

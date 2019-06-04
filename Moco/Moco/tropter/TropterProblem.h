@@ -115,33 +115,15 @@ protected:
                 m_mocoProbRep.createKinematicConstraintNames();
         if (kcNames.empty()) {
             OPENSIM_THROW_IF(
-                    !m_mocoTropterSolver
-                             .getProperty_enforce_constraint_derivatives()
-                             .empty(),
-                    Exception,
-                    "Solver property 'enforce_constraint_derivatives' "
-                    "was set but no enabled kinematic constraints exist in the "
-                    "model.");
-            OPENSIM_THROW_IF(
                     m_mocoTropterSolver.get_minimize_lagrange_multipliers(),
                     Exception,
                     "Solver property 'minimize_lagrange_multipliers' "
                     "was enabled but no enabled kinematic constraints exist in "
                     "the "
                     "model.");
-            // Do not add kinematic constraints, so we can return. This avoids
-            // attempting to access the `enforce_constraint_derivatives`
-            // property below, which is empty.
+            // Do not add kinematic constraints, so we can return.
             return;
         }
-        OPENSIM_THROW_IF(
-                m_mocoTropterSolver.getProperty_enforce_constraint_derivatives()
-                        .empty(),
-                Exception,
-                "Enabled kinematic constraints exist in the "
-                "provided model. Please set the solver property "
-                "'enforce_constraint_derivatives' to either 'true' or "
-                "'false'.");
 
         int cid, mp, mv, ma;
         int numEquationsThisConstraint;

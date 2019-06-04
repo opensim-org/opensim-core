@@ -19,6 +19,7 @@
 #define CATCH_CONFIG_MAIN
 #include "Testing.h"
 #include <Moco/osimMoco.h>
+#include <fstream>
 
 #include <OpenSim/Actuators/BodyActuator.h>
 #include <OpenSim/Actuators/CoordinateActuator.h>
@@ -77,6 +78,8 @@ MocoTool createSlidingMassMocoTool() {
 
     auto& ms = moco.initSolver<SolverType>();
     ms.set_num_mesh_points(20);
+    ms.set_transcription_scheme("trapezoidal");
+    ms.set_enforce_constraint_derivatives(false);
     return moco;
 }
 
@@ -634,9 +637,11 @@ TEMPLATE_TEST_CASE("Workflow", "", MocoTropterSolver, MocoCasADiSolver) {
         problem.addCost<MocoFinalTimeCost>();
 
         auto& solver = moco.initSolver<TestType>();
-        solver.set_num_mesh_points(20);
+        const int N = 20;         // mesh points
+        const int Nc = 2 * N - 1; // collocation points
+        solver.set_num_mesh_points(N);
         MocoIterate guess = solver.createGuess("random");
-        guess.setTime(createVectorLinspace(20, 0.0, 3.0));
+        guess.setTime(createVectorLinspace(Nc, 0.0, 3.0));
         solver.setGuess(guess);
         MocoSolution solution0 = moco.solve();
 
@@ -645,7 +650,7 @@ TEMPLATE_TEST_CASE("Workflow", "", MocoTropterSolver, MocoCasADiSolver) {
         // the guess still exists.
         SimTK_TEST(!solver.getGuess().empty());
 
-        guess.setTime(createVectorLinspace(20, 0.0, 7.0));
+        guess.setTime(createVectorLinspace(Nc, 0.0, 7.0));
         MocoSolution solution = moco.solve();
         CAPTURE(solution.getObjective());
         CHECK(solution.getFinalTime() == Approx(5.8));
@@ -890,21 +895,22 @@ TEMPLATE_TEST_CASE("Guess", "", MocoTropterSolver, MocoCasADiSolver) {
     MocoTool moco = createSlidingMassMocoTool<TestType>();
     auto& ms = moco.initSolver<TestType>();
     const int N = 6;
+    const int Nc = 2 * N - 1;
     ms.set_num_mesh_points(N);
 
     std::vector<std::string> expectedStateNames{
             "/slider/position/value", "/slider/position/speed"};
     std::vector<std::string> expectedControlNames{"/actuator"};
 
-    SimTK::Matrix expectedStatesTraj(N, 2);
-    expectedStatesTraj.col(0) = 0.5;  // bounds are [0, 1].
-    expectedStatesTraj(0, 0) = 0;     // initial value fixed to 0.f
-    expectedStatesTraj(N - 1, 0) = 1; // final value fixed to 1.
-    expectedStatesTraj.col(1) = 0.0;  // bounds are [-100, 100]
-    expectedStatesTraj(0, 1) = 0;     // initial speed fixed to 0.
-    expectedStatesTraj(N - 1, 1) = 0; // final speed fixed to 1.
+    SimTK::Matrix expectedStatesTraj(Nc, 2);
+    expectedStatesTraj.col(0) = 0.5;   // bounds are [0, 1].
+    expectedStatesTraj(0, 0) = 0;      // initial value fixed to 0.
+    expectedStatesTraj(Nc - 1, 0) = 1; // final value fixed to 1.
+    expectedStatesTraj.col(1) = 0.0;   // bounds are [-100, 100]
+    expectedStatesTraj(0, 1) = 0;      // initial speed fixed to 0.
+    expectedStatesTraj(Nc - 1, 1) = 0; // final speed fixed to 1.
 
-    SimTK::Matrix expectedControlsTraj(N, 1);
+    SimTK::Matrix expectedControlsTraj(Nc, 1);
     expectedControlsTraj.col(0) = 0;
 
     // createGuess().
@@ -913,12 +919,12 @@ TEMPLATE_TEST_CASE("Guess", "", MocoTropterSolver, MocoCasADiSolver) {
     // Initial guess based on bounds.
     {
         MocoIterate guess = ms.createGuess("bounds");
-        SimTK_TEST(guess.getTime().size() == N);
-        SimTK_TEST(guess.getStateNames() == expectedStateNames);
-        SimTK_TEST(guess.getControlNames() == expectedControlNames);
-        SimTK_TEST(guess.getTime()[0] == 0);
-        SimTK_TEST_EQ(
-                guess.getTime()[N - 1], 5.0); // midpoint of bounds [0, 10]
+        CHECK(guess.getTime().size() == Nc);
+        CHECK(guess.getStateNames() == expectedStateNames);
+        CHECK(guess.getControlNames() == expectedControlNames);
+        CHECK(guess.getTime()[0] == 0);
+        // midpoint of bounds [0, 10]
+        CHECK(guess.getTime()[Nc - 1] == Approx(5.0));
 
         SimTK_TEST_EQ(guess.getStatesTrajectory(), expectedStatesTraj);
         SimTK_TEST_EQ(guess.getControlsTrajectory(), expectedControlsTraj);
@@ -927,9 +933,9 @@ TEMPLATE_TEST_CASE("Guess", "", MocoTropterSolver, MocoCasADiSolver) {
     // Random initial guess.
     {
         MocoIterate guess = ms.createGuess("random");
-        SimTK_TEST(guess.getTime().size() == N);
-        SimTK_TEST(guess.getStateNames() == expectedStateNames);
-        SimTK_TEST(guess.getControlNames() == expectedControlNames);
+        CHECK(guess.getTime().size() == Nc);
+        CHECK(guess.getStateNames() == expectedStateNames);
+        CHECK(guess.getControlNames() == expectedControlNames);
 
         // The numbers are random, so we don't what they are; only that they
         // are different from the guess from bounds.
@@ -952,30 +958,32 @@ TEMPLATE_TEST_CASE("Guess", "", MocoTropterSolver, MocoCasADiSolver) {
         ms.setGuess(ms.createGuess());
         MocoIterate solDefaultGuess = moco.solve().unseal();
 
-        SimTK_TEST(solDefaultGuess.isNumericallyEqual(solNoGuess));
+        CHECK(solDefaultGuess.isNumericallyEqual(solNoGuess));
+        std::cout << "DEBUG solDefaultGuess " << solDefaultGuess.getTime() << std::endl;
+        std::cout << "DEBUG solNoGuess " << solNoGuess.getTime() << std::endl;
 
         // Can also use convenience version of setGuess().
         ms.setGuess("bounds");
-        SimTK_TEST(moco.solve().unseal().isNumericallyEqual(solNoGuess));
+        CHECK(moco.solve().unseal().isNumericallyEqual(solNoGuess));
 
         // Using a random guess should give us a different "solution."
         ms.setGuess(ms.createGuess("random"));
         MocoIterate solRandomGuess = moco.solve().unseal();
-        SimTK_TEST(!solRandomGuess.isNumericallyEqual(solNoGuess));
+        CHECK(!solRandomGuess.isNumericallyEqual(solNoGuess));
 
         // Convenience.
         ms.setGuess("random");
-        SimTK_TEST(!moco.solve().unseal().isNumericallyEqual(solNoGuess));
+        CHECK(!moco.solve().unseal().isNumericallyEqual(solNoGuess));
 
         // Clearing the guess works (this check must come after using a
         // random guess).
         ms.clearGuess();
-        SimTK_TEST(moco.solve().unseal().isNumericallyEqual(solNoGuess));
+        CHECK(moco.solve().unseal().isNumericallyEqual(solNoGuess));
 
         // Can call clearGuess() multiple times with no weird issues.
         ms.clearGuess();
         ms.clearGuess();
-        SimTK_TEST(moco.solve().unseal().isNumericallyEqual(solNoGuess));
+        CHECK(moco.solve().unseal().isNumericallyEqual(solNoGuess));
     }
 
     // Guess is incompatible with problem.
@@ -983,37 +991,37 @@ TEMPLATE_TEST_CASE("Guess", "", MocoTropterSolver, MocoCasADiSolver) {
         MocoIterate guess = ms.createGuess();
         // Delete the second state variable name.
         const_cast<std::vector<std::string>&>(guess.getStateNames()).resize(1);
-        SimTK_TEST_MUST_THROW_EXC(ms.setGuess(std::move(guess)), Exception);
+        CHECK_THROWS_AS(ms.setGuess(std::move(guess)), Exception);
     }
 
     // Unrecognized guess type.
-    SimTK_TEST_MUST_THROW_EXC(ms.createGuess("unrecognized"), Exception);
-    SimTK_TEST_MUST_THROW_EXC(ms.setGuess("unrecognized"), Exception);
+    CHECK_THROWS_AS(ms.createGuess("unrecognized"), Exception);
+    CHECK_THROWS_AS(ms.setGuess("unrecognized"), Exception);
 
     // Setting a guess from a file.
     // ----------------------------
     {
         MocoIterate guess = ms.createGuess("bounds");
         // Use weird number to ensure the solver actually loads the file:
-        guess.setControl("/actuator", SimTK::Vector(N, 13.28));
+        guess.setControl("/actuator", SimTK::Vector(Nc, 13.28));
         const std::string fname = "testMocoInterface_testGuess_file.sto";
         guess.write(fname);
         ms.setGuessFile(fname);
 
-        SimTK_TEST(ms.getGuess().isNumericallyEqual(guess));
-        SimTK_TEST(!moco.solve().unseal().isNumericallyEqual(solNoGuess));
+        CHECK(ms.getGuess().isNumericallyEqual(guess));
+        CHECK(!moco.solve().unseal().isNumericallyEqual(solNoGuess));
 
         // Using setGuess(MocoIterate) overrides the file setting.
         ms.setGuess(ms.createGuess("bounds"));
-        SimTK_TEST(moco.solve().unseal().isNumericallyEqual(solNoGuess));
+        CHECK(moco.solve().unseal().isNumericallyEqual(solNoGuess));
 
         ms.setGuessFile(fname);
-        SimTK_TEST(ms.getGuess().isNumericallyEqual(guess));
-        SimTK_TEST(!moco.solve().unseal().isNumericallyEqual(solNoGuess));
+        CHECK(ms.getGuess().isNumericallyEqual(guess));
+        CHECK(!moco.solve().unseal().isNumericallyEqual(solNoGuess));
 
         // Clearing the file causes the default guess type to be used.
         ms.setGuessFile("");
-        SimTK_TEST(moco.solve().unseal().isNumericallyEqual(solNoGuess));
+        CHECK(moco.solve().unseal().isNumericallyEqual(solNoGuess));
 
         // TODO mismatched state/control names.
 
@@ -1027,9 +1035,9 @@ TEMPLATE_TEST_CASE("Guess", "", MocoTropterSolver, MocoCasADiSolver) {
     {
         MocoIterate guess = ms.createGuess();
         guess.setNumTimes(2);
-        SimTK_TEST(SimTK::isNaN(guess.getTime()[0]));
-        SimTK_TEST(SimTK::isNaN(guess.getStatesTrajectory()(0, 0)));
-        SimTK_TEST(SimTK::isNaN(guess.getControlsTrajectory()(0, 0)));
+        CHECK(SimTK::isNaN(guess.getTime()[0]));
+        CHECK(SimTK::isNaN(guess.getStatesTrajectory()(0, 0)));
+        CHECK(SimTK::isNaN(guess.getControlsTrajectory()(0, 0)));
 
         // TODO look at how TimeSeriesTable handles this.
         // Make sure this uses the initializer list variant.
@@ -1058,37 +1066,39 @@ TEMPLATE_TEST_CASE("Guess", "", MocoTropterSolver, MocoCasADiSolver) {
         // Errors.
 
         // Nonexistent state/control.
-        SimTK_TEST_MUST_THROW_EXC(
+        CHECK_THROWS_AS(
                 guess.setState("none", SimTK::Vector(2)), Exception);
-        SimTK_TEST_MUST_THROW_EXC(
+        CHECK_THROWS_AS(
                 guess.setControl("none", SimTK::Vector(2)), Exception);
         SimTK_TEST_MUST_THROW_EXC(guess.getState("none"), Exception);
         SimTK_TEST_MUST_THROW_EXC(guess.getControl("none"), Exception);
 
         // Incorrect length.
-        SimTK_TEST_MUST_THROW_EXC(
+        CHECK_THROWS_AS(
                 guess.setState("/slider/position/value", SimTK::Vector(1)),
                 Exception);
-        SimTK_TEST_MUST_THROW_EXC(
+        CHECK_THROWS_AS(
                 guess.setControl("/actuator", SimTK::Vector(3)), Exception);
     }
 
     // Resampling.
     {
-        ms.set_num_mesh_points(5);
+        const int N = 5;
+        const int Nc = 2 * N - 1;
+        ms.set_num_mesh_points(N);
         MocoIterate guess0 = ms.createGuess();
-        guess0.setControl("/actuator", createVectorLinspace(5, 2.8, 7.3));
-        SimTK_TEST(guess0.getTime().size() == 5); // midpoint of [0, 10]
-        SimTK_TEST_EQ(guess0.getTime()[4], 5);
+        guess0.setControl("/actuator", createVectorLinspace(Nc, 2.8, 7.3));
+        CHECK(guess0.getTime().size() == Nc); // midpoint of [0, 10]
+        SimTK_TEST_EQ(guess0.getTime()[Nc - 1], N);
 
         // resampleWithNumTimes
         {
             MocoIterate guess = guess0;
             guess.resampleWithNumTimes(10);
-            SimTK_TEST(guess.getTime().size() == 10);
-            SimTK_TEST_EQ(guess.getTime()[9], 5);
-            SimTK_TEST(guess.getStatesTrajectory().nrow() == 10);
-            SimTK_TEST(guess.getControlsTrajectory().nrow() == 10);
+            CHECK(guess.getTime().size() == 10);
+            CHECK(guess.getTime()[9] == Approx(5));
+            CHECK(guess.getStatesTrajectory().nrow() == 10);
+            CHECK(guess.getControlsTrajectory().nrow() == 10);
             SimTK_TEST_EQ(guess.getControl("/actuator"),
                     createVectorLinspace(10, 2.8, 7.3));
         }
@@ -1103,10 +1113,10 @@ TEMPLATE_TEST_CASE("Guess", "", MocoTropterSolver, MocoCasADiSolver) {
             auto actualInterval = guess.resampleWithInterval(0.9);
             int expectedNumTimes = (int)ceil(5 / 0.9) + 1;
             SimTK_TEST_EQ(actualInterval, 5 / ((double)expectedNumTimes - 1));
-            SimTK_TEST(guess.getTime().size() == expectedNumTimes);
+            CHECK(guess.getTime().size() == expectedNumTimes);
             SimTK_TEST_EQ(guess.getTime()[expectedNumTimes - 1], 5);
-            SimTK_TEST(guess.getStatesTrajectory().nrow() == expectedNumTimes);
-            SimTK_TEST(
+            CHECK(guess.getStatesTrajectory().nrow() == expectedNumTimes);
+            CHECK(
                     guess.getControlsTrajectory().nrow() == expectedNumTimes);
             SimTK_TEST_EQ(guess.getControl("/actuator"),
                     createVectorLinspace(expectedNumTimes, 2.8, 7.3));
@@ -1121,10 +1131,10 @@ TEMPLATE_TEST_CASE("Guess", "", MocoTropterSolver, MocoCasADiSolver) {
             auto actualFrequency = guess.resampleWithFrequency(0.7);
             int expectedNumTimes = (int)ceil(5 * 0.7); // 4
             SimTK_TEST_EQ(actualFrequency, (double)expectedNumTimes / 5);
-            SimTK_TEST(guess.getTime().size() == expectedNumTimes);
+            CHECK(guess.getTime().size() == expectedNumTimes);
             SimTK_TEST_EQ(guess.getTime()[expectedNumTimes - 1], 5);
-            SimTK_TEST(guess.getStatesTrajectory().nrow() == expectedNumTimes);
-            SimTK_TEST(
+            CHECK(guess.getStatesTrajectory().nrow() == expectedNumTimes);
+            CHECK(
                     guess.getControlsTrajectory().nrow() == expectedNumTimes);
             SimTK_TEST_EQ(guess.getControl("/actuator"),
                     createVectorLinspace(expectedNumTimes, 2.8, 7.3));
@@ -1133,14 +1143,14 @@ TEMPLATE_TEST_CASE("Guess", "", MocoTropterSolver, MocoCasADiSolver) {
         // resample
         {
             MocoIterate guess = guess0;
-            SimTK_TEST_MUST_THROW_EXC(
+            CHECK_THROWS_AS(
                     guess.resample(createVector(
                             {guess.getInitialTime() - 1e-15, 0, 1})),
                     Exception);
-            SimTK_TEST_MUST_THROW_EXC(guess.resample(createVector({0.5, 0.6,
+            CHECK_THROWS_AS(guess.resample(createVector({0.5, 0.6,
                                               guess.getFinalTime() + 1e15})),
                     Exception);
-            SimTK_TEST_MUST_THROW_EXC(
+            CHECK_THROWS_AS(
                     guess.resample(createVector({0.5, 0.6, 0.59999999, 0.8})),
                     Exception);
 
@@ -1167,7 +1177,7 @@ TEMPLATE_TEST_CASE("Guess", "", MocoTropterSolver, MocoCasADiSolver) {
         // 1 point is too few.
         MocoIterate guess1(guess2);
         guess1.setNumTimes(1);
-        SimTK_TEST_MUST_THROW_EXC(guess1.resampleWithNumTimes(10), Exception);
+        CHECK_THROWS_AS(guess1.resampleWithNumTimes(10), Exception);
     }
 
     // TODO ordering of states and controls in MocoIterate should not
@@ -1261,6 +1271,29 @@ TEST_CASE("MocoIterate") {
 
         MocoIterate deserialized(fname);
         SimTK_TEST(deserialized.isNumericallyEqual(orig));
+    }
+
+    {
+        const std::string fname =
+                "testMocoInterface_testMocoSolutionSuccess.sto";
+        MocoTool moco = createSlidingMassMocoTool();
+        auto& solver =
+                dynamic_cast<MocoDirectCollocationSolver&>(moco.updSolver());
+
+        solver.set_optim_max_iterations(1);
+        MocoSolution failedSolution = moco.solve();
+        failedSolution.unseal();
+        failedSolution.write(fname);
+        MocoIterate deserialized(fname);
+
+        std::ifstream mocoSolutionFile(fname);
+        for (std::string line; getline(mocoSolutionFile, line);) {
+            if (line.compare("success=false")) {
+                break;
+            } else if (line.compare("success=true")) {
+                SimTK_TEST(false);
+            }
+        }
     }
 
     // Test sealing/unsealing.
@@ -1456,6 +1489,30 @@ TEST_CASE("MocoIterate") {
     testCompareParametersRMS(100, 0.5);
 }
 
+TEST_CASE("MocoIterate randomize") {
+    SimTK::Vector time(3);
+    time[0] = 0;
+    time[1] = 0.1;
+    time[2] = 0.25;
+    MocoIterate orig(time, {"a", "b"}, {"g", "h", "i", "j"}, {"m"}, {"o", "p"},
+            SimTK::Test::randMatrix(3, 2), SimTK::Test::randMatrix(3, 4),
+            SimTK::Test::randMatrix(3, 1),
+            SimTK::Test::randVector(2).transpose());
+    SECTION("randomizeAdd") {
+        MocoIterate randomized = orig;
+        randomized.randomizeAdd(SimTK::Random::Uniform(-0.01, 0.01));
+        const auto rms = orig.compareContinuousVariablesRMS(randomized);
+        CHECK(0.001 < rms);
+        CHECK(rms < 0.01);
+    }
+    SECTION("randomizeReplace") {
+        MocoIterate randomized = orig;
+        randomized.randomizeReplace(SimTK::Random::Uniform(-0.01, 0.01));
+        const auto rms = orig.compareContinuousVariablesRMS(randomized);
+        CHECK(rms > 0.01);
+    }
+}
+
 TEST_CASE("Interpolate", "") {
     SimTK::Vector x(2);
     x[0] = 0;
@@ -1531,15 +1588,16 @@ TEMPLATE_TEST_CASE("Solving an empty MocoProblem", "", MocoTropterSolver,
     THEN("problem solves without error, solution trajectories are empty.") {
         MocoSolution solution = moco.solve();
         const int N = solver.get_num_mesh_points();
-        CHECK(solution.getTime().size() == solver.get_num_mesh_points());
+        const int Nc = 2 * N - 1; // collocation points
+        CHECK(solution.getTime().size() == Nc);
         CHECK(solution.getStatesTrajectory().ncol() == 0);
-        CHECK(solution.getStatesTrajectory().nrow() == N);
+        CHECK(solution.getStatesTrajectory().nrow() == Nc);
         CHECK(solution.getControlsTrajectory().ncol() == 0);
-        CHECK(solution.getControlsTrajectory().nrow() == N);
+        CHECK(solution.getControlsTrajectory().nrow() == Nc);
         CHECK(solution.getMultipliersTrajectory().ncol() == 0);
-        CHECK(solution.getMultipliersTrajectory().nrow() == N);
+        CHECK(solution.getMultipliersTrajectory().nrow() == Nc);
         CHECK(solution.getDerivativesTrajectory().ncol() == 0);
-        CHECK(solution.getDerivativesTrajectory().nrow() == N);
+        CHECK(solution.getDerivativesTrajectory().nrow() == Nc);
     }
 }
 
@@ -1639,6 +1697,67 @@ TEST_CASE("Skip over empty quaternion slots", "") {
     testSkippingOverQuaternionSlots<MocoCasADiSolver>(false, false, "implicit");
     testSkippingOverQuaternionSlots<MocoCasADiSolver>(true, false, "implicit");
     testSkippingOverQuaternionSlots<MocoCasADiSolver>(true, true, "implicit");
+}
+
+TEST_CASE("MocoPhase::bound_activation_from_excitation") {
+    MocoTool moco;
+    auto& problem = moco.updProblem();
+    Model& model = problem.updModel();
+    model.setName("muscle");
+    auto* body = new Body("body", 0.5, SimTK::Vec3(0), SimTK::Inertia(0));
+    model.addComponent(body);
+    auto* joint = new SliderJoint("joint", model.getGround(), *body);
+    auto& coord = joint->updCoordinate(SliderJoint::Coord::TranslationX);
+    coord.setName("x");
+    model.addComponent(joint);
+    auto* musclePtr = new DeGrooteFregly2016Muscle();
+    musclePtr->set_ignore_tendon_compliance(true);
+    musclePtr->set_fiber_damping(0);
+    musclePtr->setName("muscle");
+    musclePtr->addNewPathPoint("origin", model.updGround(), SimTK::Vec3(0));
+    musclePtr->addNewPathPoint("insertion", *body, SimTK::Vec3(0));
+    model.addComponent(musclePtr);
+    model.finalizeConnections();
+    SECTION("bound_activation_from_excitation is false") {
+        MocoPhase& ph0 = problem.updPhase(0);
+        ph0.setBoundActivationFromExcitation(false);
+        auto rep = problem.createRep();
+        CHECK_THROWS_WITH(rep.getStateInfo("/muscle/activation"),
+                Catch::Contains(
+                        "No info available for state '/muscle/activation'."));
+    }
+    SECTION("bound_activation_from_excitation is true") {
+        auto rep = problem.createRep();
+        CHECK(rep.getStateInfo("/muscle/activation").getBounds().getLower() ==
+                0);
+        CHECK(rep.getStateInfo("/muscle/activation").getBounds().getUpper() ==
+                1);
+    }
+    SECTION("bound_activation_from_excitation is true; non-default min/max "
+            "control") {
+        musclePtr->setMinControl(0.35);
+        musclePtr->setMaxControl(0.96);
+        auto rep = problem.createRep();
+        CHECK(rep.getStateInfo("/muscle/activation").getBounds().getLower() ==
+                Approx(0.35));
+        CHECK(rep.getStateInfo("/muscle/activation").getBounds().getUpper() ==
+                Approx(0.96));
+    }
+    SECTION("Custom excitation bounds") {
+        problem.setControlInfo("/muscle", {0.41, 0.63});
+        auto rep = problem.createRep();
+        CHECK(rep.getStateInfo("/muscle/activation").getBounds().getLower() ==
+                Approx(0.41));
+        CHECK(rep.getStateInfo("/muscle/activation").getBounds().getUpper() ==
+                Approx(0.63));
+    }
+    SECTION("ignore_activation_dynamics") {
+        musclePtr->set_ignore_activation_dynamics(true);
+        auto rep = problem.createRep();
+        CHECK_THROWS_WITH(rep.getStateInfo("/muscle/activation"),
+                Catch::Contains(
+                        "No info available for state '/muscle/activation'."));
+    }
 }
 
 // testCopy();

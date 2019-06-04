@@ -34,6 +34,7 @@ void MocoPhase::constructProperties() {
     constructProperty_time_initial_bounds(MocoInitialBounds());
     constructProperty_time_final_bounds(MocoFinalBounds());
     constructProperty_default_speed_bounds(MocoBounds(-50, 50));
+    constructProperty_bound_activation_from_excitation(true);
     constructProperty_state_infos();
     constructProperty_control_infos();
     constructProperty_parameters();
@@ -152,9 +153,6 @@ MocoProblem::MocoProblem() {
     constructProperties();
 }
 
-MocoCost& MocoProblem::updCost(const std::string& name) {
-    return upd_phases(0).updCost(name);
-}
 Model* MocoProblem::setModel(std::unique_ptr<Model> model) {
     return upd_phases(0).setModel(std::move(model));
 }
@@ -180,6 +178,9 @@ void MocoProblem::setKinematicConstraintBounds(const MocoBounds& bounds) {
 }
 void MocoProblem::setMultiplierBounds(const MocoBounds& bounds) {
     upd_phases(0).setMultiplierBounds(bounds);
+}
+MocoCost& MocoProblem::updCost(const std::string& name) {
+    return upd_phases(0).updCost(name);
 }
 void MocoProblem::constructProperties() {
     constructProperty_phases(Array<MocoPhase>(MocoPhase(), 1));
