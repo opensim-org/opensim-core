@@ -746,7 +746,7 @@ void testDoublePendulumPrescribedMotion(MocoSolution& couplerSolution,
     ms.set_transcription_scheme("hermite-simpson");
     ms.set_enforce_constraint_derivatives(enforce_constraint_derivatives);
     ms.set_minimize_lagrange_multipliers(true);
-    //ms.set_lagrange_multiplier_weight(10);
+    ms.set_lagrange_multiplier_weight(10);
     ms.set_dynamics_mode(dynamics_mode);
 
     // Set guess based on coupler solution trajectory.
@@ -842,24 +842,24 @@ void testDoublePendulumPrescribedMotion(MocoSolution& couplerSolution,
     runForwardSimulation(*model, solution, 1e-1);
 }
 
-//TEMPLATE_TEST_CASE("DoublePendulum with and without constraint derivatives",
-//        "[explicit]", MocoTropterSolver, MocoCasADiSolver) {
-//    SECTION("DoublePendulum without constraint derivatives") {
-//        MocoSolution couplerSol;
-//        testDoublePendulumCoordinateCoupler<TestType>(
-//                couplerSol, false, "explicit");
-//        testDoublePendulumPrescribedMotion<TestType>(
-//                couplerSol, false, "explicit");
-//    }
-//
-//    SECTION("DoublePendulum with constraint derivatives") {
-//        MocoSolution couplerSol;
-//        testDoublePendulumCoordinateCoupler<TestType>(
-//                couplerSol, true, "explicit");
-//        testDoublePendulumPrescribedMotion<TestType>(
-//                couplerSol, true, "explicit");
-//    }
-//}
+TEMPLATE_TEST_CASE("DoublePendulum with and without constraint derivatives",
+        "[explicit]", MocoTropterSolver, MocoCasADiSolver) {
+    SECTION("DoublePendulum without constraint derivatives") {
+        MocoSolution couplerSol;
+        testDoublePendulumCoordinateCoupler<TestType>(
+                couplerSol, false, "explicit");
+        testDoublePendulumPrescribedMotion<TestType>(
+                couplerSol, false, "explicit");
+    }
+
+    SECTION("DoublePendulum with constraint derivatives") {
+        MocoSolution couplerSol;
+        testDoublePendulumCoordinateCoupler<TestType>(
+                couplerSol, true, "explicit");
+        testDoublePendulumPrescribedMotion<TestType>(
+                couplerSol, true, "explicit");
+    }
+}
 
 TEST_CASE("DoublePendulum with and without constraint derivatives",
         "[implicit]") {
@@ -880,15 +880,15 @@ TEST_CASE("DoublePendulum with and without constraint derivatives",
     }
 }
 
-//TEMPLATE_TEST_CASE("DoublePendulumPointOnLine without constraint derivatives",
-//        "[explicit]", MocoTropterSolver, MocoCasADiSolver) {
-//    testDoublePendulumPointOnLine<TestType>(false, "explicit");
-//}
-//
-//TEMPLATE_TEST_CASE("DoublePendulumPointOnLine with constraint derivatives",
-//        "[explicit]", MocoTropterSolver, MocoCasADiSolver) {
-//    testDoublePendulumPointOnLine<TestType>(true, "explicit");
-//}
+TEMPLATE_TEST_CASE("DoublePendulumPointOnLine without constraint derivatives",
+        "[explicit]", MocoTropterSolver, MocoCasADiSolver) {
+    testDoublePendulumPointOnLine<TestType>(false, "explicit");
+}
+
+TEMPLATE_TEST_CASE("DoublePendulumPointOnLine with constraint derivatives",
+        "[explicit]", MocoTropterSolver, MocoCasADiSolver) {
+    testDoublePendulumPointOnLine<TestType>(true, "explicit");
+}
 
 TEST_CASE("DoublePendulumPointOnLine without constraint derivatives",
         "[implicit]") {
@@ -1087,7 +1087,7 @@ void testDoublePendulumPointOnLineJointReaction(
     ms.set_num_mesh_points(N);
     ms.set_verbosity(2);
     ms.set_optim_solver("ipopt");
-    ms.set_optim_convergence_tolerance(1e-4);
+    ms.set_optim_convergence_tolerance(1e-6);
     ms.set_transcription_scheme("hermite-simpson");
     ms.set_enforce_constraint_derivatives(enforce_constraint_derivatives);
     ms.set_minimize_lagrange_multipliers(true);
@@ -1096,7 +1096,7 @@ void testDoublePendulumPointOnLineJointReaction(
     ms.setGuess("bounds");
     ms.set_interpolate_control_midpoints(false);
 
-    MocoSolution solution = moco.solve();
+    MocoSolution solution = moco.solve().unseal();
     solution.write(
             "testConstraints_testDoublePendulumPointOnLineJointReaction.sto");
 

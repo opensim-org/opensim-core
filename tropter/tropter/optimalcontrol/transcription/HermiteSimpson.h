@@ -254,8 +254,10 @@ private:
     int m_num_continuous_variables = -1;
     int m_num_dynamics_constraints = -1;
     int m_num_path_constraints = -1;
+    int m_num_path_traj_constraints = -1;
     Eigen::VectorXd m_simpson_quadrature_coefficients;
     bool m_interpolate_control_midpoints = true;
+    int m_num_control_midpoint_constraints = -1;
 
     std::vector<std::string> m_variable_names;
     std::vector<std::string> m_constraint_names;
