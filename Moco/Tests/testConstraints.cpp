@@ -562,13 +562,13 @@ void testDoublePendulumPointOnLine(
     // point-on-line constraint.
     const double theta_i = 0.5;
     const double theta_f = SimTK::Pi / 2;
-    mp.setStateInfo("/jointset/j0/q0/value", {-5, 5}, theta_i, theta_f);
-    mp.setStateInfo("/jointset/j0/q0/speed", {-10, 10});
-    mp.setStateInfo("/jointset/j1/q1/value", {-5, 5}, SimTK::Pi - 2*theta_i,
+    mp.setStateInfo("/jointset/j0/q0/value", {-10, 10}, theta_i, theta_f);
+    mp.setStateInfo("/jointset/j0/q0/speed", {-50, 50});
+    mp.setStateInfo("/jointset/j1/q1/value", {-10, 10}, SimTK::Pi - 2*theta_i,
                                                       SimTK::Pi - 2*theta_f);
-    mp.setStateInfo("/jointset/j1/q1/speed", {-10, 10});
-    mp.setControlInfo("/tau0", {-10, 10});
-    mp.setControlInfo("/tau1", {-10, 10});
+    mp.setStateInfo("/jointset/j1/q1/speed", {-50, 50});
+    mp.setControlInfo("/tau0", {-100, 100});
+    mp.setControlInfo("/tau1", {-100, 100});
 
     mp.addCost<MocoControlCost>();
 
@@ -583,9 +583,8 @@ void testDoublePendulumPointOnLine(
     ms.set_lagrange_multiplier_weight(10);
     ms.set_dynamics_mode(dynamics_mode);
     ms.setGuess("bounds");
-    ms.set_optim_max_iterations(10);
 
-    MocoSolution solution = moco.solve().unseal();
+    MocoSolution solution = moco.solve();
     solution.write("testConstraints_testDoublePendulumPointOnLine.sto");
     // moco.visualize(solution);
 
@@ -679,10 +678,6 @@ void testDoublePendulumCoordinateCoupler(MocoSolution& solution,
 
         // The coordinates should be coupled according to the linear function
         // described above.
-        std::cout << "i: " << i << std::endl;
-        std::cout << "q1.getValue(s): " << q1.getValue(s) << std::endl;
-        std::cout << "m*q0.getValue(s) + b: " << m*q0.getValue(s) + b << std::endl;
-        std::cout << std::endl;
         SimTK_TEST_EQ_TOL(q1.getValue(s), m*q0.getValue(s) + b, 1e-2);
     }
 
@@ -820,11 +815,13 @@ void testDoublePendulumPrescribedMotion(MocoSolution& couplerSolution,
     // level errors are not enforced in the current problem formulation.
     SimTK_TEST_EQ_TOL(
             solution.compareContinuousVariablesRMS(mocoIterSpline,
-                    {{"states", {"/jointset/j0/q0/speed", "/jointset/j1/q1/speed"}}}),
+                    {{"states", {"/jointset/j0/q0/speed", 
+                                 "/jointset/j1/q1/speed"}}}),
             0, 1e-1);
     SimTK_TEST_EQ_TOL(
             solution.compareContinuousVariablesRMS(couplerSolution,
-                    {{"states", {"/jointset/j0/q0/speed", "/jointset/j1/q1/speed"}}}),
+                    {{"states", {"/jointset/j0/q0/speed", 
+                                 "/jointset/j1/q1/speed"}}}),
             0, 1e-1);
     // Compare only the actuator controls. These match worse compared to the
     // velocity-level states. It is currently unclear to what extent this is
@@ -888,6 +885,10 @@ TEMPLATE_TEST_CASE("DoublePendulumPointOnLine with constraint derivatives",
     testDoublePendulumPointOnLine<TestType>(true, "explicit");
 }
 
+// TODO the point-on-line tests are failing with implicit dynamics, even when
+// midpoint interpolation is turned off. I'm not sure if something changed, or
+// if they weren't actually converging before. 
+// TODO try adding an acceleration or jerk minimization term.
 //TEST_CASE("DoublePendulumPointOnLine without constraint derivatives",
 //        "[implicit]") {
 //    testDoublePendulumPointOnLine<MocoCasADiSolver>(false, "implicit");
@@ -950,8 +951,8 @@ TEMPLATE_TEST_CASE(
     mp.setStateInfo("/jointset/j0/q0/speed", {-50, 50});
     mp.setStateInfo("/jointset/j1/q1/value", {-10, 10}, SimTK::Pi, 0);
     mp.setStateInfo("/jointset/j1/q1/speed", {-50, 50});
-    mp.setControlInfo("/tau0", {-100, 100});
-    mp.setControlInfo("/tau1", {-100, 100});
+    mp.setControlInfo("/tau0", {-50, 50});
+    mp.setControlInfo("/tau1", {-50, 50});
 
     mp.addCost<MocoControlCost>();
 
