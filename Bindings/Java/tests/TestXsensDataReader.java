@@ -31,7 +31,7 @@ class TestXsensDataReader {
         // Test access to TimeSeriesTableRotation methods and individual Rotation matrices
         rotsTable.getNumColumns();
         rotsTable.getNumRows();
-        Rotation rot = rotsTable.getMatrix().getElt(0,0);
+        Rotation rot = rotsTable.getRowAtIndex(0).getElt(0,0);
         System.out.println("Rotation Matrix at rotsTable(0,0)\n=================================");
         System.out.println(rot);
         Vec3 angles = rot.convertRotationToBodyFixedXYZ();
@@ -50,7 +50,7 @@ class TestXsensDataReader {
 
         //Verify that we can construct an OrientationsReference from a TimeSeriesTableRotation
         // Uncomment below to test.
-        //OrientationsReference oRefs = new OrientationsReference(rotsTable);
+        OrientationsReference oRefs = new OrientationsReference(rotsTable);
     }
 
     public static void main(String[] args) {
