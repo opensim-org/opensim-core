@@ -125,10 +125,12 @@ public:
             const MocoFinalBounds& final = {});
     /// Set information for state variables whose names match the provided
     /// regular expression. You can use this to set bounds for all muscle
-    /// activations, etc. Infos provided via setStateInfo() take precedence over
-    /// infos provided with setStateInfoPattern(). If a state variable name
-    /// matches multiple patterns, the info provided with the last pattern is
-    /// used for that state variable.
+    /// activations, etc. Infos provided via setStateInfoPattern() take
+    /// precedence over the default values from the model. Infos provided via
+    /// setStateInfo() take precedence over infos provided with
+    /// setStateInfoPattern().  If a state variable name matches multiple
+    /// patterns, the info provided with the last pattern is used for that state
+    /// variable.
     void setStateInfoPattern(const std::string& pattern,
             const MocoBounds& bounds, const MocoInitialBounds& init = {},
             const MocoFinalBounds& final = {});
@@ -151,10 +153,12 @@ public:
     }
     /// Set information for control variables whose names match the provided
     /// regular expression. You can use this to set bounds for all muscle
-    /// activations, etc. Infos provided via setControlInfo() take precedence
-    /// over infos provided with setControlInfoPattern(). If a control variable
-    /// name matches multiple patterns, the info provided with the last pattern
-    /// is used for that control variable.
+    /// activations, etc. Infos provided via setControlInfoPattern() take
+    /// precedence over the default values from the model. Infos provided via
+    /// setControlInfo() take precedence over infos provided with
+    /// setControlInfoPattern().  If a state variable name matches multiple
+    /// patterns, the info provided with the last pattern is used for that
+    /// control variable.
     void setControlInfoPattern(const std::string& pattern, const MocoBounds&,
             const MocoInitialBounds& = {}, const MocoFinalBounds& = {});
     /// For muscles without explicit activation bounds, set the bounds for
