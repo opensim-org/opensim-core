@@ -715,11 +715,6 @@ void testDoublePendulumPrescribedMotion(MocoSolution& couplerSolution,
     TimeSeriesTable statesTrajCoupler =
             couplerSolution.exportToStatesTrajectory(mp).exportToTable(*model);
     GCVSplineSet statesSpline(statesTrajCoupler);
-    // TODO DEBUG
-    static_cast<GCVSpline&>(statesSpline.get("/jointset/j0/q0/value")).addPoint(-1, 0);
-    static_cast<GCVSpline&>(statesSpline.get("/jointset/j0/q0/value")).addPoint(2, 0);
-    static_cast<GCVSpline&>(statesSpline.get("/jointset/j0/q1/value")).addPoint(-1, 0);
-    static_cast<GCVSpline&>(statesSpline.get("/jointset/j0/q1/value")).addPoint(2, 0);
 
     // Apply the prescribed motion constraints.
     Coordinate& q0 = model->updJointSet().get("j0").updCoordinate();
