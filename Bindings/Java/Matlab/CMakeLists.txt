@@ -22,6 +22,7 @@ install(DIRECTORY Dynamic_Walking_Challenge
         )
 install(DIRECTORY Hopper_Device DESTINATION "${OPENSIM_INSTALL_MATLABEXDIR}")
 install(DIRECTORY Utilities DESTINATION "${OPENSIM_INSTALL_MATLABEXDIR}")
+install(DIRECTORY OpenSenseExampleFiles DESTINATION "${OPENSIM_INSTALL_MATLABEXDIR}")
 
 # Remove parts from the hopper device example that the tutorial audience is
 # expected to fill in.
