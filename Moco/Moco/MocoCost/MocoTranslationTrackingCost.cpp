@@ -76,29 +76,10 @@ void MocoTranslationTrackingCost::initializeOnModelImpl(const Model& model)
         }
 
     } else { // states reference file or states reference provided
-        TimeSeriesTable statesTableToUse;
-        if (get_states_reference_file() != "") { // states reference file
-            // Should not be able to supply any two simultaneously.
-            assert(m_states_table.getNumColumns() == 0);
-            assert(get_translation_reference_file() != "");
-            assert(m_translation_table.getNumColumns() == 0);
-            statesTableToUse = readTableFromFile<double>(
-                get_states_reference_file());
-
-
-        } else if (m_states_table.getNumColumns() != 0) { // states reference
-            // Should not be able to supply any two simultaneously.
-            assert(get_states_reference_file() == "");
-            assert(get_translation_reference_file() != "");
-            assert(m_translation_table.getNumColumns() == 0);
-            statesTableToUse = m_states_table;
-
-        } else {
-            OPENSIM_THROW_FRMOBJ(Exception,
-                "Expected user to either provide a reference "
-                "file or to programmatically provide a reference table, but "
-                "the user supplied neither.");
-        }
+        assert(get_translation_reference_file() != "");
+        assert(m_translation_table.getNumColumns() == 0);
+        // TODO: set relativeToDirectory properly.
+        TimeSeriesTable statesTableToUse = get_states_reference().process("", &model);
 
         // Check that the reference state names match the model state names.
         auto modelStateNames = model.getStateVariableNames();

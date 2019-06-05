@@ -322,6 +322,8 @@ private:
                 "Internal error.");
         return out;
     }
+
+    friend class NlpsolCallback;
 };
 
 } // namespace CasOC

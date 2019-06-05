@@ -231,7 +231,9 @@ public:
     virtual void calcPathConstraint(int /*constraintIndex*/,
             const ContinuousInput& /*input*/, casadi::DM& /*path_constraint*/) const {}
 
+    virtual void intermediateCallback(const CasOC::Iterate&) const {}
     /// @}
+
 
 public:
     /// Create an iterate with the variable names populated according to the

@@ -61,6 +61,7 @@ struct Iterate {
     std::vector<std::string> slack_names;
     std::vector<std::string> derivative_names;
     std::vector<std::string> parameter_names;
+    int iteration = -1;
     /// Return a new iterate in which the data is resampled at the times in
     /// newTimes.
     Iterate resample(const casadi::DM& newTimes) const;
