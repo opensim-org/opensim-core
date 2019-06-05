@@ -562,10 +562,15 @@ void testDoublePendulumPointOnLine(
     // point-on-line constraint.
     const double theta_i = 0.5;
     const double theta_f = SimTK::Pi / 2;
-    mp.setStateInfo("/jointset/j0/q0/value", {-10, 10}, theta_i, theta_f);
+    mp.setStateInfo(
+            "/jointset/j0/q0/value", {theta_i, theta_f}, theta_i, theta_f);
     mp.setStateInfo("/jointset/j0/q0/speed", {-50, 50});
-    mp.setStateInfo("/jointset/j1/q1/value", {-10, 10}, SimTK::Pi - 2*theta_i,
-                                                      SimTK::Pi - 2*theta_f);
+    {
+        double initial = SimTK::Pi - 2 * theta_i;
+        double final = SimTK::Pi - 2 * theta_f;
+        mp.setStateInfo(
+                "/jointset/j1/q1/value", {final, initial}, initial, final);
+    }
     mp.setStateInfo("/jointset/j1/q1/speed", {-50, 50});
     mp.setControlInfo("/tau0", {-100, 100});
     mp.setControlInfo("/tau1", {-100, 100});
@@ -668,7 +673,7 @@ void testDoublePendulumCoordinateCoupler(MocoSolution& solution,
 
     solution = moco.solve();
     solution.write("testConstraints_testDoublePendulumCoordinateCoupler.sto");
-    //moco.visualize(solution);
+    // moco.visualize(solution);
 
     model->initSystem();
     StatesTrajectory states = solution.exportToStatesTrajectory(mp);
@@ -678,7 +683,7 @@ void testDoublePendulumCoordinateCoupler(MocoSolution& solution,
 
         // The coordinates should be coupled according to the linear function
         // described above.
-        SimTK_TEST_EQ_TOL(q1.getValue(s), m*q0.getValue(s) + b, 1e-2);
+        SimTK_TEST_EQ_TOL(q1.getValue(s), m * q0.getValue(s) + b, 1e-2);
     }
 
     // Run a forward simulation using the solution controls in prescribed
@@ -813,22 +818,20 @@ void testDoublePendulumPrescribedMotion(MocoSolution& couplerSolution,
     // states and the states from the previous test (original and splined).
     // These won't match as well as the position-level values, since velocity-
     // level errors are not enforced in the current problem formulation.
-    SimTK_TEST_EQ_TOL(
-            solution.compareContinuousVariablesRMS(mocoIterSpline,
-                    {{"states", {"/jointset/j0/q0/speed", 
-                                 "/jointset/j1/q1/speed"}}}),
+    SimTK_TEST_EQ_TOL(solution.compareContinuousVariablesRMS(mocoIterSpline,
+                              {{"states", {"/jointset/j0/q0/speed",
+                                                  "/jointset/j1/q1/speed"}}}),
             0, 1e-1);
-    SimTK_TEST_EQ_TOL(
-            solution.compareContinuousVariablesRMS(couplerSolution,
-                    {{"states", {"/jointset/j0/q0/speed", 
-                                 "/jointset/j1/q1/speed"}}}),
+    SimTK_TEST_EQ_TOL(solution.compareContinuousVariablesRMS(couplerSolution,
+                              {{"states", {"/jointset/j0/q0/speed",
+                                                  "/jointset/j1/q1/speed"}}}),
             0, 1e-1);
     // Compare only the actuator controls. These match worse compared to the
     // velocity-level states. It is currently unclear to what extent this is
     // related to velocity-level states not matching well or the how the model
     // constraints are enforced in the current formulation.
     SimTK_TEST_EQ_TOL(solution.compareContinuousVariablesRMS(couplerSolution,
-            {{"controls", {"/tau0", "/tau1"}}}),
+                              {{"controls", {"/tau0", "/tau1"}}}),
             0, 5);
 
     // Run a forward simulation using the solution controls in prescribed
@@ -885,20 +888,15 @@ TEMPLATE_TEST_CASE("DoublePendulumPointOnLine with constraint derivatives",
     testDoublePendulumPointOnLine<TestType>(true, "explicit");
 }
 
-// TODO the point-on-line tests are failing with implicit dynamics, even when
-// midpoint interpolation is turned off. I'm not sure if something changed, or
-// if they weren't actually converging before and the tests were still passing
-// somehow.
-// TODO try adding an acceleration or jerk minimization term.
-//TEST_CASE("DoublePendulumPointOnLine without constraint derivatives",
-//        "[implicit]") {
-//    testDoublePendulumPointOnLine<MocoCasADiSolver>(false, "implicit");
-//}
-//
-//TEST_CASE(
-//        "DoublePendulumPointOnLine with constraint derivatives", "[implicit]") {
-//    testDoublePendulumPointOnLine<MocoCasADiSolver>(true, "implicit");
-//}
+TEST_CASE("DoublePendulumPointOnLine without constraint derivatives",
+        "[implicit]") {
+    testDoublePendulumPointOnLine<MocoCasADiSolver>(false, "implicit");
+}
+
+TEST_CASE(
+        "DoublePendulumPointOnLine with constraint derivatives", "[implicit]") {
+    testDoublePendulumPointOnLine<MocoCasADiSolver>(true, "implicit");
+}
 
 class EqualControlConstraint : public MocoPathConstraint {
     OpenSim_DECLARE_CONCRETE_OBJECT(EqualControlConstraint, MocoPathConstraint);
@@ -1112,8 +1110,8 @@ TEMPLATE_TEST_CASE(
     testDoublePendulumPointOnLineJointReaction<TestType>(true, "explicit");
 }
 
-TEMPLATE_TEST_CASE(
-        "DoublePendulumPointOnLineJointReaction implicit with constraint derivatives",
+TEMPLATE_TEST_CASE("DoublePendulumPointOnLineJointReaction implicit with "
+                   "constraint derivatives",
         "[implicit]", MocoCasADiSolver) {
     testDoublePendulumPointOnLineJointReaction<TestType>(true, "implicit");
 }
