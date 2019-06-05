@@ -454,7 +454,8 @@ public:
     /// Both iterates must have at least 6 time nodes.
     /// If the number of columns to compare is 0, this returns 0.
     double compareContinuousVariablesRMS(const MocoIterate& other,
-            std::map<std::string, std::vector<std::string>> columnsToUse = {}) const;
+            std::map<std::string, std::vector<std::string>> columnsToUse = {})
+            const;
     /// Compute the root-mean-square error between the parameters in this
     /// iterate and another. The RMS is computed by dividing the the sum of the
     /// squared errors between corresponding parameters and then dividing by the
@@ -472,7 +473,6 @@ public:
     /// Save the iterate to file(s). Use a ".sto" file extension.
     void write(const std::string& filepath) const;
 
-
     /// The Storage can be used in the OpenSim GUI to visualize a motion, or
     /// as input to OpenSim's conventional tools (e.g., AnalyzeTool).
     ///
@@ -486,6 +486,32 @@ public:
     StatesTrajectory exportToStatesTrajectory(const MocoProblem&) const;
     /// @}
 
+    /// @name Modify the data
+    /// @{
+
+    /// Randomize all data except time using the provided random number
+    /// generator. All data is replaced with the random numbers. Use this to
+    /// create a completely (pseudo-)random iterate, probably for a MocoSolver
+    /// guess.
+    /// The default random number generator samples uniformly within [-0.1,
+    /// 0.1].
+    void randomizeReplace(
+            const SimTK::Random& randGen = SimTK::Random::Uniform(-0.1, 0.1)) {
+        ensureUnsealed();
+        randomize(false, randGen);
+    }
+    /// Randomize all data except time using the provided random number
+    /// generator. The random numbers are added to the existing data. Use this
+    /// to perturb an existing solution, probably for a MocoSolver guess.
+    /// The default random number generator samples uniformly within [-0.1,
+    /// 0.1].
+    void randomizeAdd(
+            const SimTK::Random& randGen = SimTK::Random::Uniform(-0.1, 0.1)) {
+        ensureUnsealed();
+        randomize(true, randGen);
+    }
+    /// @}
+
     /// @name Convert from other formats
     /// @{
 
@@ -497,7 +523,7 @@ public:
     static MocoIterate createFromStatesControlsTables(const MocoProblemRep&,
             const TimeSeriesTable& statesTrajectory,
             const TimeSeriesTable& controlsTrajectory);
-/// @}
+    /// @}
 
 // User interaction with slack variables is limited to using previous
 // solution slack trajectories as initial guesses for subsequent problems.
@@ -528,7 +554,7 @@ public:
     // update the slack variable data member variables.
     void appendSlack(const std::string& name, const SimTK::Vector& trajectory);
 
-/// @endcond
+    /// @endcond
 #endif
 
 protected:
@@ -545,7 +571,7 @@ private:
             std::vector<std::string> controlNames = {},
             std::vector<std::string> multiplierNames = {},
             std::vector<std::string> derivativeNames = {}) const;
-    // TODO std::string m_name;
+    void randomize(bool add, const SimTK::Random& randGen);
     SimTK::Vector m_time;
     std::vector<std::string> m_state_names;
     std::vector<std::string> m_control_names;
@@ -591,7 +617,9 @@ public:
     /// Returns a dynamically-allocated copy of this solution. You must manage
     /// the memory for return value.
     /// @note This works even if the iterate is sealed.
-    virtual MocoSolution* clone() const override { return new MocoSolution(*this); }
+    virtual MocoSolution* clone() const override {
+        return new MocoSolution(*this);
+    }
     /// Was the problem solved successfully? If not, then you cannot access
     /// the solution until you call unlock().
     bool success() const { return m_success; }
