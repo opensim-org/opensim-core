@@ -76,8 +76,9 @@ void MocoControlCost::calcIntegralCostImpl(
     getModel().realizeVelocity(state); // TODO would avoid this, ideally.
     const auto& controls = getModel().getControls(state);
     integrand = 0;
-    assert((int)m_weights.size() == controls.size());
-    for (const auto& index : m_controlIndices) {
-        integrand += m_weights[index] * controls[index] * controls[index];
+    int iweight = 0;
+    for (const auto& icontrol : m_controlIndices) {
+        integrand += m_weights[iweight] * controls[icontrol] * controls[icontrol];
+        ++iweight;
     }
 }
