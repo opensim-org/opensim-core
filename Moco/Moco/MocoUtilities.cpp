@@ -39,6 +39,22 @@
 
 using namespace OpenSim;
 
+std::string OpenSim::getFormattedDateTime() {
+    using namespace std::chrono;
+    auto time_now = system_clock::to_time_t(system_clock::now());
+    std::stringstream ss;
+    // ISO standard extended datetime format.
+    // https://kjellkod.wordpress.com/2013/01/22/exploring-c11-part-2-localtime-and-time-again/
+    struct tm buf;
+#if defined(_WIN32)
+    localtime_s(&buf, &time_now);
+#else
+    localtime_r(&time_now, &buf);
+#endif
+    ss << std::put_time(&buf, "%Y-%m-%dT%X");
+    return ss.str();
+}
+
 SimTK::Vector OpenSim::createVectorLinspace(
         int length, double start, double end) {
     SimTK::Vector v(length);
@@ -477,25 +493,40 @@ std::unordered_map<std::string, int> OpenSim::createSystemYIndexMap(
 }
 
 std::vector<std::string> OpenSim::createControlNamesFromModel(
-        const Model& model) {
+        const Model& model, std::vector<int>& modelControlIndices) {
     std::vector<std::string> controlNames;
     // Loop through all actuators and create control names. For scalar
     // actuators, use the actuator name for the control name. For non-scalar
     // actuators, use the actuator name with a control index appended for the
     // control name.
     // TODO update when OpenSim supports named controls.
+    int count = 0;
+    modelControlIndices.clear();
     for (const auto& actu : model.getComponentList<Actuator>()) {
+        if (!actu.get_appliesForce()) {
+            count += actu.numControls();
+            continue;
+        }
         std::string actuPath = actu.getAbsolutePathString();
         if (actu.numControls() == 1) {
             controlNames.push_back(actuPath);
+            modelControlIndices.push_back(count);
+            count++;
         } else {
             for (int i = 0; i < actu.numControls(); ++i) {
                 controlNames.push_back(actuPath + "_" + std::to_string(i));
+                modelControlIndices.push_back(count);
+                count++;
             }
         }
     }
 
     return controlNames;
+}
+std::vector<std::string> OpenSim::createControlNamesFromModel(
+        const Model& model) {
+    std::vector<int> modelControlIndices;
+    return createControlNamesFromModel(model, modelControlIndices);
 }
 
 std::unordered_map<std::string, int> OpenSim::createSystemControlIndexMap(

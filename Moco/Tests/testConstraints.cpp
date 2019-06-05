@@ -967,6 +967,7 @@ TEMPLATE_TEST_CASE(
     ms.set_verbosity(2);
     ms.set_optim_solver("ipopt");
     ms.set_optim_convergence_tolerance(1e-3);
+    ms.set_transcription_scheme("trapezoidal");
     ms.setGuess("bounds");
 
     MocoSolution solution = moco.solve();
@@ -1025,8 +1026,6 @@ TEMPLATE_TEST_CASE(
     problem.addParameter("mass", "/bodyset/b", "mass", MocoBounds(0.5, 1.5));
     auto& solver = moco.initSolver<TestType>();
     solver.set_num_mesh_points(10);
-    solver.set_enforce_constraint_derivatives(true);
-    solver.set_transcription_scheme("hermite-simpson");
     MocoSolution solution = moco.solve();
     CHECK(solution.getParameter("mass") == Approx(1.0).epsilon(1e-4));
 }

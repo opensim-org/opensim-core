@@ -290,6 +290,7 @@ class TestWorkflow(unittest.TestCase):
         problem.addCost(osim.MocoFinalTimeCost())
 
         solver = moco.initTropterSolver()
+        solver.set_transcription_scheme("trapezoidal");
         solver.set_num_mesh_points(20)
         guess = solver.createGuess("random")
         guess.setTime(osim.createVectorLinspace(20, 0.0, 3.0))
@@ -315,6 +316,7 @@ class TestWorkflow(unittest.TestCase):
         problem.addCost(osim.MocoFinalTimeCost())
         solver = moco.initTropterSolver()
         solver.set_num_mesh_points(20)
+        solver.set_transcription_scheme("trapezoidal");
         finalTime0 = moco.solve().getFinalTime()
 
         self.assertAlmostEqual(finalTime0, 2.00, places=2)
@@ -335,6 +337,7 @@ class TestWorkflow(unittest.TestCase):
         problem.setModel(createSlidingMassModel())
         solver = moco.initTropterSolver()
         solver.set_num_mesh_points(20)
+        solver.set_transcription_scheme("trapezoidal");
         finalTime =  moco.solve().getFinalTime()
         self.assertAlmostEqual(finalTime, 2.0, places=2)
 
@@ -349,6 +352,8 @@ class TestWorkflow(unittest.TestCase):
         problem.updPhase().addCost(osim.MocoFinalTimeCost())
         effort = osim.MocoControlCost("effort")
         problem.updPhase().addCost(effort)
+        solver = moco.initTropterSolver()
+        solver.set_transcription_scheme("trapezoidal");
         finalTime0 = moco.solve().getFinalTime()
 
         # Change the weights of the costs.

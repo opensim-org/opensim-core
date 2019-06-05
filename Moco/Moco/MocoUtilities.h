@@ -46,6 +46,10 @@ std::unique_ptr<T> make_unique(Args&&... args) {
     return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
 }
 
+/// Get a string with the current date and time formatted using the ISO standard
+/// extended datetime format (%Y-%m-%dT%X))
+OSIMMOCO_API std::string getFormattedDateTime();
+
 /// Determine if `string` starts with the substring `start`.
 /// https://stackoverflow.com/questions/874134/find-if-string-ends-with-another-string-in-c
 inline bool startsWith(const std::string& string, const std::string& start) {
@@ -391,9 +395,16 @@ std::unordered_map<std::string, int> createSystemYIndexMap(const Model& model);
 /// actuators with one control (e.g. ScalarActuator) the control name is simply
 /// the actuator name. For actuators with multiple controls, each control name
 /// is the actuator name appended by the control index (e.g. "/actuator_0");
+/// modelControlIndices has length equal to the number of controls associated
+/// with actuators that apply a force (appliesForce == True). Its elements are
+/// the indices of the controls in the Model::updControls() that are associated
+/// with actuators that apply a force.
+OSIMMOCO_API
+std::vector<std::string> createControlNamesFromModel(
+        const Model& model, std::vector<int>& modelControlIndices);
+//// Same as above, but when there is no mapping to the modelControlIndices.
 OSIMMOCO_API
 std::vector<std::string> createControlNamesFromModel(const Model& model);
-
 /// The map provides the index of each control variable in the SimTK::Vector
 /// return by OpenSim::Model::getControls() from its control name.
 OSIMMOCO_API

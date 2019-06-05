@@ -33,7 +33,8 @@ MocoCasOCProblem::MocoCasOCProblem(const MocoCasADiSolver& mocoCasADiSolver,
         std::string dynamicsMode)
         : m_jar(std::move(jar)),
           m_paramsRequireInitSystem(
-                  mocoCasADiSolver.get_parameters_require_initsystem()) {
+                  mocoCasADiSolver.get_parameters_require_initsystem()),
+                  m_formattedTimeString(getFormattedDateTime()){
 
     setDynamicsMode(dynamicsMode);
     const auto& model = problemRep.getModelBase();
@@ -59,7 +60,7 @@ MocoCasOCProblem::MocoCasOCProblem(const MocoCasADiSolver& mocoCasADiSolver,
                 convertBounds(info.getFinalBounds()));
     }
 
-    auto controlNames = createControlNamesFromModel(model);
+    auto controlNames = createControlNamesFromModel(model, m_modelControlIndices);
     for (const auto& controlName : controlNames) {
         const auto& info = problemRep.getControlInfo(controlName);
         addControl(controlName, convertBounds(info.getBounds()),
@@ -74,27 +75,12 @@ MocoCasOCProblem::MocoCasOCProblem(const MocoCasADiSolver& mocoCasADiSolver,
     // set properly.
     const auto kcNames = problemRep.createKinematicConstraintNames();
     if (kcNames.empty()) {
-        OPENSIM_THROW_IF(
-                !mocoCasADiSolver.getProperty_enforce_constraint_derivatives()
-                         .empty(),
-                Exception,
-                "Solver property 'enforce_constraint_derivatives' "
-                "was set but no enabled kinematic constraints exist in the "
-                "model.");
         OPENSIM_THROW_IF(mocoCasADiSolver.get_minimize_lagrange_multipliers(),
                 Exception,
                 "Solver property 'minimize_lagrange_multipliers' "
                 "was enabled but no enabled kinematic constraints exist in the "
                 "model.");
     } else {
-        OPENSIM_THROW_IF(
-                mocoCasADiSolver.getProperty_enforce_constraint_derivatives()
-                        .empty(),
-                Exception,
-                "Enabled kinematic constraints exist in the "
-                "provided model. Please set the solver property "
-                "'enforce_constraint_derivatives' to either 'true' or "
-                "'false'.");
 
         int cid, mp, mv, ma;
         int multIndexThisConstraint;

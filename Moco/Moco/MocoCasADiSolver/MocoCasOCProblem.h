@@ -368,6 +368,11 @@ private:
 
         m_jar->leave(std::move(mocoProblemRep));
     }
+    void intermediateCallback(const CasOC::Iterate& iterate) const override {
+        std::string filename = format("MocoCasADiSolver_%s_iterate%06i.sto",
+                m_formattedTimeString, iterate.iteration);
+        convertToMocoIterate(iterate).write(filename);
+    }
 
 private:
     /// Apply parameters to properties in the models returned by
@@ -378,7 +383,8 @@ private:
         if (parameters.numel()) {
             SimTK::Vector simtkParams(
                     (int)parameters.size1(), parameters.ptr(), true);
-            mocoProblemRep.applyParametersToModelProperties(simtkParams, m_paramsRequireInitSystem);
+            mocoProblemRep.applyParametersToModelProperties(
+                    simtkParams, m_paramsRequireInitSystem);
         }
     }
     /// Copy values from `states` into `simtkState.updY()`, accounting for empty
@@ -408,12 +414,13 @@ private:
             SimTK::State& simtkState) const {
         convertToSimTKState(time, states, model, simtkState);
         auto& simtkControls = model.updControls(simtkState);
-        std::copy_n(controls.ptr(), simtkControls.size(),
-                simtkControls.updContiguousScalarData());
+        for (int ic = 0; ic < getNumControls(); ++ic) {
+           simtkControls[m_modelControlIndices[ic]] = *(controls.ptr() + ic);
+        }
         model.realizeVelocity(simtkState);
         model.setControls(simtkState, simtkControls);
     }
-    inline void applyInput(const double& time, const casadi::DM& states,
+    void applyInput(const double& time, const casadi::DM& states,
             const casadi::DM& controls, const casadi::DM& multipliers,
             const casadi::DM& derivatives, const casadi::DM& parameters,
             const std::unique_ptr<const MocoProblemRep>& mocoProblemRep) const {
@@ -431,7 +438,6 @@ private:
 
         // Update the model and state.
         applyParametersToModelProperties(parameters, *mocoProblemRep);
-
         modelBase.getSystem().prescribe(simtkStateBase);
         modelDisabledConstraints.getSystem().prescribe(
                 simtkStateDisabledConstraints);
@@ -550,7 +556,9 @@ private:
 
     std::unique_ptr<ThreadsafeJar<const MocoProblemRep>> m_jar;
     bool m_paramsRequireInitSystem = true;
+    std::string m_formattedTimeString;
     std::unordered_map<int, int> m_yIndexMap;
+    std::vector<int> m_modelControlIndices;
     // Local memory to hold constraint forces.
     static thread_local SimTK::Vector_<SimTK::SpatialVec>
             m_constraintBodyForces;

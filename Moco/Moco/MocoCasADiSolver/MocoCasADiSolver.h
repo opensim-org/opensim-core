@@ -135,6 +135,11 @@ public:
             "0: not parallel; 1: use all cores (default); greater than 1: use"
             "this number of threads. This overrides the OPENSIM_MOCO_PARALLEL "
             "environment variable.");
+    OpenSim_DECLARE_PROPERTY(output_interval, int,
+            "Write intermediate iterates to file. 0, the default, indicates no "
+            "intermediate iterates are saved, 1 indicates each iteration "
+            "is saved, 5 indicates every fifth iteration is saved, etc.");
+
     MocoCasADiSolver();
 
     /// @name Specifying an initial guess
@@ -178,9 +183,7 @@ public:
 
     /// @cond
     /// This is used to generate a warning.
-    void setRunningInPython(bool value) const {
-        m_runningInPython = value;
-    }
+    void setRunningInPython(bool value) const { m_runningInPython = value; }
     /// @endcond
 
 protected:
