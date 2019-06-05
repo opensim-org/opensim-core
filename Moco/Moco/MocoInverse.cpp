@@ -55,25 +55,9 @@ MocoInverseSolution MocoInverse::solve() const {
     MocoTool moco;
     auto& problem = moco.updProblem();
 
-    // TODO: Move this elsewhere!
-    for (const auto& muscle : model.getComponentList<Muscle>()) {
-        if (!muscle.get_ignore_activation_dynamics()) {
-            problem.setStateInfo(muscle.getAbsolutePathString() + "/activation",
-                    // TODO: Use the muscle's minimum_activation.
-                    {0.01, 1});
-        }
-        if (!muscle.get_ignore_tendon_compliance()) {
-            // TODO shouldn't be necessary.
-            problem.setStateInfo(
-                    muscle.getAbsolutePathString() + "/norm_fiber_length",
-                    {0.2, 1.8});
-        }
-    }
-
     model.initSystem();
 
-    TimeSeriesTable kinematics = get_kinematics().process(setupDir,
-            &model);
+    TimeSeriesTable kinematics = get_kinematics().process(setupDir, &model);
 
     // allowMissingColumns = true: we only need kinematics.
     // allowExtraColumns = false: user might have made an error.
@@ -81,8 +65,7 @@ MocoInverseSolution MocoInverse::solve() const {
     auto statesTraj = StatesTrajectory::createFromStatesStorage(
             model, convertTableToStorage(kinematics), true, false, true);
 
-    auto posmot = PositionMotion::createFromStatesTrajectory(
-            model, statesTraj);
+    auto posmot = PositionMotion::createFromStatesTrajectory(model, statesTraj);
     posmot->setName("position_motion");
     model.addComponent(posmot.release());
 
@@ -112,10 +95,6 @@ MocoInverseSolution MocoInverse::solve() const {
     solver.set_num_mesh_points(timeInfo.numMeshPoints);
     MocoInverseSolution solution;
     solution.setMocoSolution(moco.solve().unseal());
-    // TimeSeriesTable normFiberLengths =
-    //         moco.analyze(solution, {".*normalized_fiber_length"});
-    // STOFileAdapter::write(normFiberLengths,
-    //         "sandboxWalkingStatelessMuscles_norm_fiber_length.sto");
     return solution;
 }
 
