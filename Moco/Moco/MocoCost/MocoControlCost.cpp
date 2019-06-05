@@ -17,14 +17,14 @@
  * -------------------------------------------------------------------------- */
 
 #include "MocoControlCost.h"
-#include <OpenSim/Simulation/Model/Model.h>
+
 #include "../MocoUtilities.h"
+
+#include <OpenSim/Simulation/Model/Model.h>
 
 using namespace OpenSim;
 
-MocoControlCost::MocoControlCost() {
-    constructProperties();
-}
+MocoControlCost::MocoControlCost() { constructProperties(); }
 
 void MocoControlCost::constructProperties() {
     constructProperty_control_weights(MocoWeightSet());
@@ -46,14 +46,18 @@ void MocoControlCost::initializeOnModelImpl(const Model& model) const {
 
     // Check that the model controls are in the correct order.
     checkOrderSystemControls(model);
-    
+
     // Make sure there are no weights for nonexistent controls.
     for (int i = 0; i < get_control_weights().getSize(); ++i) {
         const auto& thisName = get_control_weights()[i].getName();
         if (std::find(controlNames.begin(), controlNames.end(), thisName) ==
                 controlNames.end()) {
-            OPENSIM_THROW_FRMOBJ(Exception,
-                    "Unrecognized control '" + thisName + "'.");
+            OPENSIM_THROW_FRMOBJ(
+                    Exception, "Unrecognized control '" + thisName + "'.");
+        }
+        if (get_control_weights().get(thisName).getWeight() != 0.0) {
+            m_controlIndices.push_back(
+                    createSystemControlIndexMap(model)[thisName]);
         }
     }
 
@@ -69,13 +73,14 @@ void MocoControlCost::initializeOnModelImpl(const Model& model) const {
     }
 }
 
-void MocoControlCost::calcIntegralCostImpl(const SimTK::State& state,
-        double& integrand) const {
+void MocoControlCost::calcIntegralCostImpl(
+        const SimTK::State& state, double& integrand) const {
     getModel().realizeVelocity(state); // TODO would avoid this, ideally.
     const auto& controls = getModel().getControls(state);
     integrand = 0;
     assert((int)m_weights.size() == controls.size());
-    for (int i = 0; i < controls.size(); ++i) {
-        integrand += m_weights[i] * controls[i] * controls[i];
+    for (int i = 0; i < (int) m_controlIndices.size(); ++i) {
+        const int index = m_controlIndices[i];
+        integrand += m_weights[index] * controls[index] * controls[index];
     }
 }

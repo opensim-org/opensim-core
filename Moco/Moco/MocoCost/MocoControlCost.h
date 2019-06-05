@@ -56,6 +56,7 @@ private:
             "The weights for each control; "
             "the weight for unspecified controls is 1.");
     mutable std::vector<double> m_weights;
+    mutable std::vector<int> m_controlIndices;
 };
 
 } // namespace OpenSim
