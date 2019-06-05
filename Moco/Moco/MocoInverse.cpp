@@ -107,6 +107,7 @@ MocoInverseSolution MocoInverse::solve() const {
     // solver.set_optim_hessian_approximation("exact");
     // Forward is 3x faster than central.
     solver.set_optim_finite_difference_scheme("forward");
+    solver.set_transcription_scheme("trapezoidal");
 
     solver.set_num_mesh_points(timeInfo.numMeshPoints);
     MocoInverseSolution solution;

@@ -112,6 +112,7 @@ TEST_CASE("PrescribedKinematics direct collocation auxiliary dynamics") {
     const double init_s = 0.2;
     problem.setStateInfo("/customdynamics/s", {0, 100}, init_s);
     auto& solver = moco.initCasADiSolver();
+    solver.set_transcription_scheme("trapezoidal");
     solver.set_dynamics_mode("implicit");
 
     MocoSolution solution = moco.solve();
@@ -137,11 +138,14 @@ TEST_CASE("MocoInverse gait10dof18musc") {
     inverse.print("testMocoInverse_setup.xml");
 
     MocoInverseSolution solution = inverse.solve();
+    solution.getMocoSolution().write(
+            "testMocoInverseGait10dof18musc_solution.sto");
 
     const auto actual = solution.getMocoSolution().getControlsTrajectory();
     MocoIterate std("std_testMocoInverseGait10dof18musc_solution.sto");
     const auto expected = std.getControlsTrajectory();
-    OpenSim_CHECK_MATRIX_TOL(actual, expected, 1e-3);
+    CHECK(std.compareContinuousVariablesRMS(
+                  solution.getMocoSolution(), {{"controls", {}}}) < 1e-4);
 
     // TODO: Implement cost minimization directly in CasADi.
     //      -> evaluating the integral cost only takes up like 5% of the
