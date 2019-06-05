@@ -92,6 +92,12 @@ public:
             "enforced, set the bounds on the slack variables performing the "
             "velocity correction to project the model coordinates back onto "
             "the constraint manifold. Default: [-0.1, 0.1]");
+    OpenSim_DECLARE_PROPERTY(interpolate_control_midpoints, bool,
+            "If the transcription scheme is set to 'hermite-simpson', then "
+            "enable this property to constrain the control values at mesh "
+            "interval midpoints to be determined by linear interpolation of "
+            "the control values at the mesh interval endpoints. "
+            "Default: true (recommended).")
 
     MocoDirectCollocationSolver() { constructProperties(); }
 

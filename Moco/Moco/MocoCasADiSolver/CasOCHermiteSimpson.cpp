@@ -76,9 +76,11 @@ void HermiteSimpson::applyConstraintsImpl(const VariablesMX& vars,
     // mesh point are grouped together (organizing the sparsity of the Jacobian
     // this way might have benefits for sparse linear algebra).
     const auto& states = vars.at(Var::states);
+    const auto& controls = vars.at(Var::controls);
     const DM zeroS = casadi::DM::zeros(m_problem.getNumStates(), 1);
     const DM zeroR =
             casadi::DM::zeros(m_problem.getNumMultibodyDynamicsEquations(), 1);
+    const DM zeroC = casadi::DM::zeros(m_problem.getNumControls(), 1);
 
     int time_i, time_mid, time_ip1;
     for (int imesh = 0; imesh < m_numMeshPoints; ++imesh) {
@@ -120,6 +122,13 @@ void HermiteSimpson::applyConstraintsImpl(const VariablesMX& vars,
                     addConstraints(zeroR, zeroR, residual(Slice(), time_ip1));
                 }
             }
+
+            if (m_problem.getNumControls() && m_interpolate_control_midpoints) {
+                const auto c_i = controls(Slice(), time_i);
+                const auto c_mid = controls(Slice(), time_mid);
+                const auto c_ip1 = controls(Slice(), time_ip1);
+                addConstraints(zeroC, zeroC, c_mid - 0.5 * (c_ip1 + c_i));
+            }   
         }
 
         // Kinematic constraint errors.
