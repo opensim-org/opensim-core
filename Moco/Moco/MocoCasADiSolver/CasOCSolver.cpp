@@ -31,8 +31,7 @@ std::unique_ptr<Transcription> Solver::createTranscription() const {
     if (m_transcriptionScheme == "trapezoidal") {
         transcription = OpenSim::make_unique<Trapezoidal>(*this, m_problem);
     } else if (m_transcriptionScheme == "hermite-simpson") {
-        transcription = OpenSim::make_unique<HermiteSimpson>(*this, m_problem,
-                m_interpolateControlMidpoints);
+        transcription = OpenSim::make_unique<HermiteSimpson>(*this, m_problem);
     } else {
         OPENSIM_THROW(Exception, format("Unknown transcription scheme '%s'.",
                                          m_transcriptionScheme));

@@ -122,7 +122,8 @@ void HermiteSimpson::applyConstraintsImpl(const VariablesMX& vars,
                 }
             }
 
-            if (m_problem.getNumControls() && m_interpolate_control_midpoints) {
+            if (m_problem.getNumControls() && 
+                    m_solver.getInterpolateControlMidpoints()) {
                 const auto c_i = controls(Slice(), time_i);
                 const auto c_mid = controls(Slice(), time_mid);
                 const auto c_ip1 = controls(Slice(), time_ip1);

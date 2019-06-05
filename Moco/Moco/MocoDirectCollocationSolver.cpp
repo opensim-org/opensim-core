@@ -24,6 +24,7 @@ void MocoDirectCollocationSolver::constructProperties() {
     constructProperty_num_mesh_points(100);
     constructProperty_verbosity(2);
     constructProperty_transcription_scheme("hermite-simpson");
+    constructProperty_interpolate_control_midpoints(true);
     constructProperty_enforce_constraint_derivatives(true);
     constructProperty_dynamics_mode("explicit");
     constructProperty_optim_solver("ipopt");
@@ -36,5 +37,4 @@ void MocoDirectCollocationSolver::constructProperties() {
     constructProperty_velocity_correction_bounds({-0.1, 0.1});
     constructProperty_minimize_lagrange_multipliers(false);
     constructProperty_lagrange_multiplier_weight(1.0);
-    constructProperty_interpolate_control_midpoints(true);
 }
