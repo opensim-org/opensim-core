@@ -765,7 +765,7 @@ TEMPLATE_TEST_CASE("State tracking", "", MocoTropterSolver, MocoCasADiSolver) {
         auto moco = makeTool();
         MocoProblem& mp = moco.updProblem();
         auto tracking = mp.addCost<MocoStateTrackingCost>();
-        tracking->setReferenceFile(fname);
+        tracking->setReference(fname);
         auto& ms = moco.template initSolver<TestType>();
         ms.set_num_mesh_points(5);
         ms.set_optim_hessian_approximation("exact");

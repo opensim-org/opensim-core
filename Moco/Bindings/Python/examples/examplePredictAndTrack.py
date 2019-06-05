@@ -223,7 +223,7 @@ def solveStateTracking(stateRef):
 
     # Cost: track provided state data.
     stateTracking = osim.MocoStateTrackingCost()
-    stateTracking.setReference(stateRef)
+    stateTracking.setReference(osim.TableProcessor(stateRef))
     problem.addCost(stateTracking)
 
     effort = osim.MocoControlCost()

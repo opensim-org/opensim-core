@@ -24,20 +24,8 @@ using namespace OpenSim;
 
 void MocoControlTrackingCost::initializeOnModelImpl(const Model& model) const {
 
-    TimeSeriesTable tableToUse;
-
-    if (get_reference_file() != "") {
-        // Should not be able to supply both.
-        assert(m_table.getNumColumns() == 0);
-        tableToUse = readTableFromFile<double>(get_reference_file());
-    } else if (m_table.getNumColumns() != 0) {
-        tableToUse = m_table;
-    } else {
-        OPENSIM_THROW_FRMOBJ(Exception,
-            "Expected user to either provide a reference"
-            " file or to programmatically provide a reference table, but "
-            " the user supplied neither.");
-    }
+    // TODO: set relativeToDirectory properly.
+    TimeSeriesTable tableToUse = get_reference().process();
 
     // Convert data table to spline set.
     auto allSplines = GCVSplineSet(tableToUse);

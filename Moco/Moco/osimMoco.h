@@ -37,6 +37,8 @@
 #include "MocoParameter.h"
 #include "MocoConstraint.h"
 
+#include "Common/TableProcessor.h"
+
 #include "Components/ActivationCoordinateActuator.h"
 #include "Components/StationPlaneContactForce.h"
 #include "Components/ModelFactory.h"
