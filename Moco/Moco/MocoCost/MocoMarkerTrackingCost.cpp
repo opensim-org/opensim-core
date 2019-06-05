@@ -49,9 +49,7 @@
             m_model_markers.emplace_back(&markerSet.get(iset));
             m_refindices.push_back(i);
         } else {
-            if (get_allow_unused_references()) {
-                continue;
-            } else {
+            if (!get_allow_unused_references()) {
                 OPENSIM_THROW_FRMOBJ(Exception,
                         format("Marker '%s' unrecognized by the "
                                "specified model.", markRefNames[i]));
