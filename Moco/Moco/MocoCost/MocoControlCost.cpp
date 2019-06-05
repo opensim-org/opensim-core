@@ -47,6 +47,7 @@ void MocoControlCost::initializeOnModelImpl(const Model& model) const {
     // Check that the model controls are in the correct order.
     checkOrderSystemControls(model);
 
+    auto systemControlIndexMap = createSystemControlIndexMap(model);
     // Make sure there are no weights for nonexistent controls.
     for (int i = 0; i < get_control_weights().getSize(); ++i) {
         const auto& thisName = get_control_weights()[i].getName();
@@ -55,21 +56,18 @@ void MocoControlCost::initializeOnModelImpl(const Model& model) const {
             OPENSIM_THROW_FRMOBJ(
                     Exception, "Unrecognized control '" + thisName + "'.");
         }
-        if (get_control_weights().get(thisName).getWeight() != 0.0) {
-            m_controlIndices.push_back(
-                    createSystemControlIndexMap(model)[thisName]);
-        }
     }
 
-    m_weights.resize(model.getNumControls());
-    int i = 0;
     for (const auto& controlName : controlNames) {
         double weight = 1.0;
         if (get_control_weights().contains(controlName)) {
             weight = get_control_weights().get(controlName).getWeight();
         }
-        m_weights[i] = weight;
-        ++i;
+
+        if (weight != 0.0) {
+            m_controlIndices.push_back(systemControlIndexMap[controlName]);
+            m_weights.push_back(weight);
+        }
     }
 }
 
@@ -79,7 +77,7 @@ void MocoControlCost::calcIntegralCostImpl(
     const auto& controls = getModel().getControls(state);
     integrand = 0;
     assert((int)m_weights.size() == controls.size());
-    for (int i = 0; i < (int) m_controlIndices.size(); ++i) {
+    for (int i = 0; i < (int)m_controlIndices.size(); ++i) {
         const int index = m_controlIndices[i];
         integrand += m_weights[index] * controls[index] * controls[index];
     }
