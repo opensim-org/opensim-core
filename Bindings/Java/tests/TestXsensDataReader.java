@@ -38,7 +38,7 @@ class TestXsensDataReader {
         System.out.println("Body-Fixed Euler Angles (X,Y,Z)\n===============================");
         System.out.println(angles);
 
-        Rotation rot2 = rotsTable.getMatrix().getElt(0, 1);
+        Rotation rot2 = rotsTable.getRowAtIndex(0).getElt(0, 1);
         Vec3 angles2 = rot2.convertRotationToBodyFixedXYZ();
         System.out.println("Body-Fixed Euler Angles (X,Y,Z)\n===============================");
         System.out.println(angles2);
