@@ -77,8 +77,7 @@ void MocoControlCost::calcIntegralCostImpl(
     const auto& controls = getModel().getControls(state);
     integrand = 0;
     assert((int)m_weights.size() == controls.size());
-    for (int i = 0; i < (int)m_controlIndices.size(); ++i) {
-        const int index = m_controlIndices[i];
+    for (const auto& index : m_controlIndices) {
         integrand += m_weights[index] * controls[index] * controls[index];
     }
 }

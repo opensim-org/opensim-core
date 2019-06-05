@@ -18,8 +18,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "MocoCost.h"
 #include "../MocoWeightSet.h"
+#include "MocoCost.h"
 
 namespace OpenSim {
 
@@ -31,7 +31,8 @@ namespace OpenSim {
 // activation.
 // TODO allow leaving out some controls.
 class OSIMMOCO_API MocoControlCost : public MocoCost {
-OpenSim_DECLARE_CONCRETE_OBJECT(MocoControlCost, MocoCost);
+    OpenSim_DECLARE_CONCRETE_OBJECT(MocoControlCost, MocoCost);
+
 public:
     MocoControlCost();
     MocoControlCost(std::string name) : MocoCost(std::move(name)) {
@@ -42,14 +43,19 @@ public:
         constructProperties();
     }
     /// Set the weight to use for the term in the cost associated with
-    /// `controlName` (the name or path of the corresponding actuator). If a
+    /// `controlName` (the name or path of the corresponding actuator). To
+    /// remove a control from the cost function, set its weight to 0. If a
     /// weight is already set for the requested state, then the provided
-    /// weight replaces the previous weight.
+    /// weight replaces the previous weight. Only controls with non-zero weights
+    /// that are associated with actuators for which appliesForce is True are
+    /// included in the cost function.
     void setWeight(const std::string& controlName, const double& weight);
+
 protected:
     void initializeOnModelImpl(const Model&) const override;
-    void calcIntegralCostImpl(const SimTK::State& state,
-            double& integrand) const override;
+    void calcIntegralCostImpl(
+            const SimTK::State& state, double& integrand) const override;
+
 private:
     void constructProperties();
     OpenSim_DECLARE_PROPERTY(control_weights, MocoWeightSet,
