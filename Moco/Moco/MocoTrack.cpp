@@ -68,18 +68,6 @@ MocoStudy MocoTrack::initialize() {
 
     // Costs.
     // ------
-    // TODO: -1 is a valid initial time.
-    if (getProperty_initial_time().empty()) {
-        m_initial_time = -1;
-    } else {
-        m_initial_time = get_initial_time();
-    }
-    // TODO: -1 is a valid final time.
-    if (getProperty_final_time().empty()) {
-        m_final_time = -1;
-    } else {
-        m_final_time = get_final_time();
-    }
 
     // State tracking cost.
     if (!get_states_tracking_file().empty()) {
@@ -126,7 +114,7 @@ MocoStudy MocoTrack::initialize() {
     // Pad the beginning and end time points to allow room for finite 
     // difference calculations.
     double pad = 1e-3;
-    problem.setTimeBounds(m_initial_time + pad, m_final_time - pad);
+    problem.setTimeBounds(m_timeInfo.initial + pad, m_timeInfo.final - pad);
 
     // Activation states.
     for (auto& musc : model.getComponentList<Muscle>()) {
@@ -137,7 +125,7 @@ MocoStudy MocoTrack::initialize() {
     // Configure solver.
     // -----------------
     MocoCasADiSolver& solver = moco.initCasADiSolver();
-    // TODO: Use MocoTool::mesh_interval property.
+    // TODO: Use MocoTool::mesh_interval property
     solver.set_num_mesh_points(25);
     solver.set_dynamics_mode("explicit");
     solver.set_optim_convergence_tolerance(1e-2);
@@ -307,8 +295,8 @@ void MocoTrack::configureStateTracking(MocoProblem& problem, Model& model) {
     stateTracking->setWeightSet(weights);
     stateTracking->setAllowUnusedReferences(true);
 
-    updateTimes(states.getIndependentColumn().front(),
-        states.getIndependentColumn().back(), "states");
+    updateTimeInfo("states", states.getIndependentColumn().front(),
+            states.getIndependentColumn().back(), m_timeInfo);
 
     // Update units before printing.
     if (states.hasTableMetaDataKey("inDegrees") &&
@@ -383,8 +371,8 @@ void MocoTrack::configureMarkerTracking(MocoProblem& problem, Model& model) {
     markerTracking->setMarkersReference(markersRef);
     markerTracking->setAllowUnusedReferences(true);
 
-    updateTimes(markers.getIndependentColumn().front(),
-        markers.getIndependentColumn().back(), "markers");
+    updateTimeInfo("markers", markers.getIndependentColumn().front(),
+            markers.getIndependentColumn().back(), m_timeInfo);
 
     // Write tracked markers to file in case any label updates or filtering
     // occured.
@@ -393,28 +381,6 @@ void MocoTrack::configureMarkerTracking(MocoProblem& problem, Model& model) {
     if (m_min_data_length == -1 ||
         m_min_data_length > (int)markers.getNumRows()) {
         m_min_data_length = (int)markers.getNumRows();
-    }
-}
-
-void MocoTrack::updateTimes(double dataStartTime, double dataEndTime,
-    std::string dataType) {
-
-    if (m_initial_time == -1) {
-        m_initial_time = dataStartTime;
-    }
-    else if (m_initial_time < dataStartTime) {
-        OPENSIM_THROW_IF(get_initial_time() != -1, Exception,
-            format("Initial time provided inconsisent with %s data.",
-                dataType));
-        m_initial_time = dataStartTime;
-    }
-    if (m_final_time == -1) {
-        m_final_time = dataEndTime;
-    }
-    else if (m_final_time > dataEndTime){
-        OPENSIM_THROW_IF(get_final_time() != -1, Exception,
-            format("Final time provided inconsisent with %s data.", dataType));
-        m_final_time = dataEndTime;
     }
 }
 

@@ -123,8 +123,7 @@ public:
 
 private:
     Model m_model;
-    double m_initial_time;
-    double m_final_time;
+    TimeInfo m_timeInfo;
     TimeSeriesTable m_states_from_file;
     TimeSeriesTable m_states_from_markers;
     int m_min_data_length;
@@ -139,8 +138,6 @@ private:
     void configureMarkerTracking(MocoProblem& problem, Model& model);
 
     // Convenience methods.
-    void updateTimes(double dataStartTime, double dataEndTime,
-        std::string dataType);
     void applyStatesToGuess(const TimeSeriesTable& states, const Model& model,
         MocoIterate& guess);
 };

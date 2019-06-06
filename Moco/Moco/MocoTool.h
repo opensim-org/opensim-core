@@ -18,8 +18,9 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include <OpenSim/Common/Object.h>
 #include "ModelProcessor.h"
+
+#include <OpenSim/Common/Object.h>
 
 namespace OpenSim {
 
@@ -27,8 +28,8 @@ namespace OpenSim {
 /// using Moco's optimal control methods.
 class MocoTool : public Object {
     OpenSim_DECLARE_ABSTRACT_OBJECT(MocoTool, Object);
-public:
 
+public:
     OpenSim_DECLARE_OPTIONAL_PROPERTY(initial_time, double,
             "The start of the time interval. "
             "All data must start at or before this time. "
@@ -43,8 +44,8 @@ public:
             "The time duration of each mesh interval "
             "(default: 0.020 seconds).");
 
-    OpenSim_DECLARE_PROPERTY(model, ModelProcessor,
-            "The musculoskeletal model to use.");
+    OpenSim_DECLARE_PROPERTY(
+            model, ModelProcessor, "The musculoskeletal model to use.");
 
     MocoTool() { constructProperties(); }
 
@@ -52,15 +53,19 @@ public:
 
 protected:
     struct TimeInfo {
-        double initialTime;
-        double finalTime;
-        int numMeshPoints;
+        double initial = -SimTK::Infinity;
+        double final = SimTK::Infinity;
+        int numMeshPoints = -1;
     };
-    TimeInfo calcInitialAndFinalTimes(
-            // Time vector from a primary data source.
-            const std::vector<double>& time0,
-            // Time vector from a secondary data source.
-            const std::vector<double>& time1, const double& meshInterval) const;
+    /// This function updates a TimeInfo so the initial and final times are
+    /// within the data times provided. If the user provided a value for the
+    /// initial_time or final_time properties, then this ensures the
+    /// user-provided times are within the data times, and the info is updated
+    /// to use the user-provided times.
+    /// Finally, the TimeInfo.numMeshPoints field is updated based on the
+    /// mesh_interval property.
+    void updateTimeInfo(const std::string& dataLabel, const double& dataInitial,
+            const double& dataFinal, TimeInfo& info) const;
 
 private:
     void constructProperties();

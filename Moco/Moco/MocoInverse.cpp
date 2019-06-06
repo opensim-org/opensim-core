@@ -69,10 +69,13 @@ MocoInverseSolution MocoInverse::solve() const {
 
     problem.setModelCopy(model);
 
-    const auto timeInfo = calcInitialAndFinalTimes(
-            kinematics.getIndependentColumn(), {}, get_mesh_interval());
+    TimeInfo timeInfo;
+    updateTimeInfo("kinematics",
+            kinematics.getIndependentColumn().front(),
+            kinematics.getIndependentColumn().back(),
+            timeInfo);
     // const double spaceForFiniteDiff = 1e-3;
-    problem.setTimeBounds(timeInfo.initialTime, timeInfo.finalTime);
+    problem.setTimeBounds(timeInfo.initial, timeInfo.final);
 
     // TODO: Allow users to specify costs flexibly.
     problem.addCost<MocoControlCost>("effort");
