@@ -199,7 +199,7 @@ void setModelAndBounds(MocoProblem& mp, bool useOptimizedModel = false) {
 /// Estimated time to solve: ~35 minutes.
 MocoSolution solveStateTrackingProblem() {
 
-    MocoTool moco;
+    MocoStudy moco;
     moco.setName("whole_body_state_tracking");
 
     // Define the optimal control problem.
@@ -270,7 +270,7 @@ MocoSolution solveStateTrackingProblem() {
 MocoSolution solveMarkerTrackingProblem(bool createGuess,
         bool useOptimizedModel) {
 
-    MocoTool moco;
+    MocoStudy moco;
     moco.setName("whole_body_marker_tracking");
 
     // Define the optimal control problem.

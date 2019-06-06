@@ -156,7 +156,7 @@ struct Options {
 };
 
 MocoSolution minimizeControlEffortRightLeg(const Options& opt) {
-    MocoTool moco;
+    MocoStudy moco;
     std::string weldedPelvisStr = "";
     if (opt.weldPelvis) { weldedPelvisStr = "weldedPelvis_"; }
     moco.setName("sandboxRightLeg_" + weldedPelvisStr + opt.actuatorType +
@@ -285,7 +285,7 @@ TimeSeriesTable createGuessFromGSO(const MocoSolution& torqueSolution,
 }
 
 MocoSolution stateTrackingRightLeg(const Options& opt) {
-    MocoTool moco;
+    MocoStudy moco;
     std::string weldedPelvisStr = "";
     if (opt.weldPelvis) { weldedPelvisStr = "weldedPelvis_"; }
     moco.setName("sandboxRightLeg_" + weldedPelvisStr + opt.actuatorType +

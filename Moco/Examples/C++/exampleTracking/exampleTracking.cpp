@@ -95,7 +95,7 @@ std::unique_ptr<Model> createDoublePendulumModel() {
 
 int main() {
 
-    MocoTool moco;
+    MocoStudy moco;
     moco.setName("double_pendulum_tracking");
 
     // Define the optimal control problem.

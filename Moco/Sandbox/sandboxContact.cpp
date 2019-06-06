@@ -161,7 +161,7 @@ void ball2d() {
     auto statesTimeSteppingTable = statesTimeStepping.exportToTable();
     STOFileAdapter::write(statesTimeSteppingTable, "ball2d_timestepping.sto");
 
-    MocoTool moco;
+    MocoStudy moco;
     moco.setName("ball2d");
 
     // Define the optimal control problem.
@@ -268,9 +268,7 @@ void pendulum() {
     auto statesTimeSteppingTable = statesTimeStepping.exportToTable();
     STOFileAdapter::write(statesTimeSteppingTable, "pendulum_timestepping.sto");
 
-
-
-    MocoTool moco;
+    MocoStudy moco;
     moco.setName("ball2d");
     MocoProblem& mp = moco.updProblem();
     mp.setModel(std::move(model));
@@ -360,7 +358,7 @@ void pendulumActivationCoordinateActuator() {
 
     /*
 
-    MocoTool moco;
+    MocoStudy moco;
     moco.setName("pendulumaca");
     MocoProblem& mp = moco.updProblem();
     mp.setModel(model);
@@ -605,8 +603,7 @@ void slip(double rzvalue0 = 0, double rzspeed0 = 0) {
     auto statesTimeSteppingTable = statesTimeStepping.exportToTable();
     STOFileAdapter::write(statesTimeSteppingTable, "slip_timestepping.sto");
 
-
-    MocoTool moco;
+    MocoStudy moco;
     moco.setName("slip");
     MocoProblem& mp = moco.updProblem();
     mp.setModel(std::move(model));
@@ -719,8 +716,7 @@ void slipSolveForForce(double rzvalue0 = 0, double rzspeed0 = 0) {
     markersToUse.setColumnLabels({"foot_COM", "pelvis_COM"});
     visualize(*modelTS, statesTimeStepping);
 
-
-    MocoTool moco;
+    MocoStudy moco;
     moco.setName("slipSolveForForce");
     MocoProblem& mp = moco.updProblem();
     //mp.setModel(modelTS);

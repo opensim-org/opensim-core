@@ -33,7 +33,7 @@ MocoSolution solveDoublePendulumSwingup(const std::string& dynamics_mode) {
 
     using SimTK::Vec3;
 
-    MocoTool moco;
+    MocoStudy moco;
     moco.setName("double_pendulum_swingup_" + dynamics_mode);
 
     // Define the optimal control problem.
@@ -183,7 +183,7 @@ TEMPLATE_TEST_CASE("Combining implicit dynamics mode with path constraints",
         }
     };
     GIVEN("MocoProblem with path constraints") {
-        MocoTool moco;
+        MocoStudy moco;
         auto& prob = moco.updProblem();
         auto model = ModelFactory::createPendulum();
         prob.setTimeBounds(0, 1);
@@ -212,7 +212,7 @@ TEMPLATE_TEST_CASE("Combining implicit dynamics with kinematic constraints",
     std::cout.rdbuf(LogManager::cout.rdbuf());
     std::cerr.rdbuf(LogManager::cerr.rdbuf());
     GIVEN("MocoProblem with a kinematic constraint") {
-        MocoTool moco;
+        MocoStudy moco;
         auto& prob = moco.updProblem();
         auto model = ModelFactory::createDoublePendulum();
         prob.setTimeBounds(0, 1);
