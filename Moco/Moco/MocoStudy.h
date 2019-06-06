@@ -169,8 +169,6 @@ OSIMMOCO_API MocoTropterSolver& MocoStudy::initSolver<MocoTropterSolver>();
 template <>
 OSIMMOCO_API MocoCasADiSolver& MocoStudy::initSolver<MocoCasADiSolver>();
 
-typedef MocoStudy MocoTool;
-
 } // namespace OpenSim
 
 #endif // MOCO_MOCOSTUDY_H

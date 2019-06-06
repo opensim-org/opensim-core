@@ -113,7 +113,7 @@ SimTK::Real testNormalForce(CreateContactFunction createContact) {
     // optimization.
     SimTK::Real finalHeightDircol;
     {
-        MocoTool moco;
+        MocoStudy moco;
         MocoProblem& mp = moco.updProblem();
         mp.setModelCopy(model);
         mp.setTimeBounds(0, finalTime);
@@ -210,7 +210,7 @@ void testFrictionForce(CreateContactFunction createContact,
     // This is a simulation (initial value problem), not a trajectory
     // optimization.
     {
-        MocoTool moco;
+        MocoStudy moco;
         MocoProblem& mp = moco.updProblem();
         mp.setModelCopy(model);
         mp.setTimeBounds(0, finalTime);
