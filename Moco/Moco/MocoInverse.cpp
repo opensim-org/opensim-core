@@ -32,10 +32,6 @@
 using namespace OpenSim;
 
 void MocoInverse::constructProperties() {
-    constructProperty_initial_time();
-    constructProperty_final_time();
-    constructProperty_mesh_interval(0.02);
-    constructProperty_model(ModelProcessor());
     constructProperty_kinematics(TableProcessor());
 }
 
@@ -52,7 +48,7 @@ MocoInverseSolution MocoInverse::solve() const {
 
     Model model = get_model().process();
 
-    MocoTool moco;
+    MocoStudy moco;
     auto& problem = moco.updProblem();
 
     model.initSystem();
@@ -96,45 +92,4 @@ MocoInverseSolution MocoInverse::solve() const {
     MocoInverseSolution solution;
     solution.setMocoSolution(moco.solve().unseal());
     return solution;
-}
-
-MocoInverse::TimeInfo MocoInverse::calcInitialAndFinalTimes(
-        const std::vector<double>& time0, const std::vector<double>& time1,
-        const double& meshInterval) const {
-
-    TimeInfo out;
-    double initialTimeFromData = time0.front();
-    double finalTimeFromData = time0.back();
-    if (time1.size()) {
-        initialTimeFromData = std::max(initialTimeFromData, time1.front());
-        finalTimeFromData = std::min(finalTimeFromData, time1.back());
-    }
-    if (!getProperty_initial_time().empty()) {
-        OPENSIM_THROW_IF_FRMOBJ(get_initial_time() < initialTimeFromData,
-                Exception,
-                format("Provided initial time of %g is less than what is "
-                       "available from data, %g.",
-                        get_initial_time(), initialTimeFromData));
-        out.initialTime = get_initial_time();
-    } else {
-        out.initialTime = initialTimeFromData;
-    }
-    if (!getProperty_final_time().empty()) {
-        OPENSIM_THROW_IF_FRMOBJ(get_final_time() > finalTimeFromData, Exception,
-                format("Provided final time of %g is greater than what "
-                       "is available from data, %g.",
-                        get_final_time(), finalTimeFromData));
-        out.finalTime = get_final_time();
-    } else {
-        out.finalTime = finalTimeFromData;
-    }
-    OPENSIM_THROW_IF_FRMOBJ(out.finalTime < out.initialTime, Exception,
-            format("Initial time of %g is greater than final time of %g.",
-                    out.initialTime, out.finalTime));
-
-    // We do not want to end up with a lower mesh frequency than requested.
-    out.numMeshPoints =
-            (int)std::ceil((out.finalTime - out.initialTime) / (meshInterval)) +
-            1;
-    return out;
 }

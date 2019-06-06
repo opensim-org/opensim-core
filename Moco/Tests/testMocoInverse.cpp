@@ -105,7 +105,7 @@ TEST_CASE("PrescribedKinematics direct collocation auxiliary dynamics") {
     model.addModelComponent(motion);
     model.addComponent(new CustomDynamics());
 
-    MocoTool moco;
+    MocoStudy moco;
     auto& problem = moco.updProblem();
     problem.setModelCopy(model);
     problem.setTimeBounds(0, 1);

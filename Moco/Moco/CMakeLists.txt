@@ -91,7 +91,10 @@ set(MOCO_SOURCES
         MocoCasADiSolver/CasOCIterate.h
         MocoInverse.cpp
         MocoInverse.h
-        Common/TableProcessor.h ModelProcessor.h)
+        Common/TableProcessor.h
+        ModelProcessor.h
+        MocoTool.cpp
+        MocoTool.h)
 if(MOCO_WITH_TROPTER)
     list(APPEND MOCO_SOURCES
             tropter/TropterProblem.h

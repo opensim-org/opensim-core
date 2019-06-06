@@ -20,10 +20,9 @@
 
 #include "Common/TableProcessor.h"
 #include "MocoIterate.h"
-#include "ModelProcessor.h"
+#include "MocoTool.h"
 #include "osimMocoDLL.h"
 
-#include <OpenSim/Common/Object.h>
 #include <OpenSim/Simulation/Model/Model.h>
 
 namespace OpenSim {
@@ -60,29 +59,10 @@ private:
 /// constraints.
 ///
 /// @underdevelopment
-class OSIMMOCO_API MocoInverse : public Object {
-    OpenSim_DECLARE_CONCRETE_OBJECT(MocoInverse, Object);
+class OSIMMOCO_API MocoInverse : public MocoTool {
+    OpenSim_DECLARE_CONCRETE_OBJECT(MocoInverse, MocoTool);
 
 public:
-    OpenSim_DECLARE_OPTIONAL_PROPERTY(initial_time, double,
-            "The start of the time interval in which to solve for muscle "
-            "activity. "
-            "All data must start at or before this time. "
-            "(default: earliest time available in all provided data)");
-
-    OpenSim_DECLARE_OPTIONAL_PROPERTY(final_time, double,
-            "The end of the time interval in which to solve for muscle "
-            "activity. "
-            "All data must end at or after this time. "
-            "(default: latest time available in all provided data)");
-
-    OpenSim_DECLARE_PROPERTY(mesh_interval, double,
-            "The time duration of each mesh interval "
-            "(default: 0.020 seconds).");
-
-    OpenSim_DECLARE_PROPERTY(model, ModelProcessor,
-            "The musculoskeletal model upon which provided kinematics are "
-            "prescribed.");
 
     OpenSim_DECLARE_PROPERTY(kinematics, TableProcessor,
             "Path to a STO file containing generalized coordinates "
@@ -90,8 +70,6 @@ public:
             "file.");
 
     MocoInverse() { constructProperties(); }
-
-    void setModel(ModelProcessor model) { set_model(std::move(model)); }
 
     void setKinematics(TableProcessor kinematics) {
         set_kinematics(std::move(kinematics));
@@ -101,16 +79,6 @@ public:
 
 private:
     void constructProperties();
-    struct TimeInfo {
-        double initialTime;
-        double finalTime;
-        int numMeshPoints;
-    };
-    TimeInfo calcInitialAndFinalTimes(
-            // Time vector from a primary data source.
-            const std::vector<double>& time0,
-            // Time vector from a secondary data source.
-            const std::vector<double>& time1, const double& meshInterval) const;
 };
 
 } // namespace OpenSim
