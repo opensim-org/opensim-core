@@ -1137,7 +1137,7 @@ TEST_CASE("Multipliers are correct", "") {
         model.finalizeConnections();
 
 
-        MocoTool moco;
+        MocoStudy moco;
         auto& problem = moco.updProblem();
         problem.setModelCopy(model);
 
@@ -1194,7 +1194,7 @@ TEST_CASE("Multipliers are correct", "") {
 
         model.finalizeConnections();
 
-        MocoTool moco;
+        MocoStudy moco;
         auto& problem = moco.updProblem();
         problem.setModelCopy(model);
 
@@ -1244,7 +1244,7 @@ TEST_CASE("Prescribed kinematics with kinematic constraints", "") {
 
     model.finalizeConnections();
 
-    MocoTool moco;
+    MocoStudy moco;
     auto& problem = moco.updProblem();
     problem.setModelCopy(model);
 
