@@ -19,6 +19,7 @@
 #define CATCH_CONFIG_MAIN
 #include "Testing.h"
 #include <Moco/Common/TableProcessor.h>
+
 #include <OpenSim/Common/LogManager.h>
 
 using namespace OpenSim;
@@ -32,8 +33,8 @@ TEST_CASE("TableProcessor") {
 
     public:
         void operate(TimeSeriesTable& table) const override {
-            table.appendRow(
-                    10.0, ~createVectorLinspace((int)table.getNumColumns(), 0, 1));
+            table.appendRow(10.0,
+                    ~createVectorLinspace((int)table.getNumColumns(), 0, 1));
         }
     };
     Object::registerType(MyTableOperator());
@@ -45,6 +46,13 @@ TEST_CASE("TableProcessor") {
         CHECK_THROWS(TableProcessor().process());
         // No exception if an empty table is provided.
         TableProcessor processor(TimeSeriesTable{});
+        {
+            TableProcessor proc(TimeSeriesTable{});
+            proc.set_filepath("file.sto");
+            CHECK_THROWS_WITH(proc.process(),
+                    Catch::Contains("Expected either an in-memory table or a "
+                                    "filepath"));
+        }
     }
 
     SECTION("Operators take effect") {

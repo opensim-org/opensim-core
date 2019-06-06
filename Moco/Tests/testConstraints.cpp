@@ -541,7 +541,7 @@ MocoIterate runForwardSimulation(
 template <typename TestType>
 void testDoublePendulumPointOnLine(
         bool enforce_constraint_derivatives, std::string dynamics_mode) {
-    MocoTool moco;
+    MocoStudy moco;
     moco.setName("double_pendulum_point_on_line");
     MocoProblem& mp = moco.updProblem();
     // Create double pendulum model and add the point-on-line constraint. The
@@ -621,7 +621,7 @@ void testDoublePendulumCoordinateCoupler(MocoSolution& solution,
         bool enforce_constraint_derivatives, std::string dynamics_mode) {
     std::cout.rdbuf(LogManager::cout.rdbuf());
     std::cerr.rdbuf(LogManager::cerr.rdbuf());
-    MocoTool moco;
+    MocoStudy moco;
     moco.setName("double_pendulum_coordinate_coupler");
 
     // Create double pendulum model and add the coordinate coupler constraint.
@@ -699,7 +699,7 @@ void testDoublePendulumCoordinateCoupler(MocoSolution& solution,
 template <typename SolverType>
 void testDoublePendulumPrescribedMotion(MocoSolution& couplerSolution,
         bool enforce_constraint_derivatives, std::string dynamics_mode) {
-    MocoTool moco;
+    MocoStudy moco;
     moco.setName("double_pendulum_prescribed_motion");
     MocoProblem& mp = moco.updProblem();
 
@@ -931,7 +931,7 @@ protected:
 TEMPLATE_TEST_CASE(
         "DoublePendulumEqualControl", "", MocoTropterSolver, MocoCasADiSolver) {
     OpenSim::Object::registerType(EqualControlConstraint());
-    MocoTool moco;
+    MocoStudy moco;
     moco.setName("double_pendulum_equal_control");
     MocoProblem& mp = moco.updProblem();
     auto model = createDoublePendulumModel();
@@ -985,7 +985,7 @@ TEMPLATE_TEST_CASE(
             "testConstraints_testDoublePendulumEqualControl.omoco";
     moco.print(setup_fname);
     MocoSolution solutionDeserialized;
-    MocoTool mocoDeserialize(setup_fname);
+    MocoStudy mocoDeserialize(setup_fname);
     solutionDeserialized = mocoDeserialize.solve();
     SimTK_TEST(solution.isNumericallyEqual(solutionDeserialized));
 }
@@ -1011,7 +1011,7 @@ TEMPLATE_TEST_CASE(
     model.addConstraint(constraint);
     model.finalizeConnections();
 
-    MocoTool moco;
+    MocoStudy moco;
     auto& problem = moco.updProblem();
     problem.setModelCopy(model);
     problem.setTimeBounds(0, 1);
@@ -1038,7 +1038,7 @@ public:
 template <typename TestType>
 void testDoublePendulumPointOnLineJointReaction(
         bool enforce_constraint_derivatives, std::string dynamics_mode) {
-    MocoTool moco;
+    MocoStudy moco;
     moco.setName("double_pendulum_point_on_line");
     MocoProblem& mp = moco.updProblem();
     // Create double pendulum model and add the point-on-line constraint. The
