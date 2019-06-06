@@ -48,8 +48,6 @@ void MocoTrack::constructProperties() {
     constructProperty_lowpass_cutoff_frequency_for_kinematics(-1);
     constructProperty_ik_setup_file("");
     constructProperty_external_loads_file("");
-    constructProperty_initial_time(-1);
-    constructProperty_final_time(-1);
     constructProperty_guess_type("bounds");
     constructProperty_guess_file("");
     constructProperty_minimize_controls(-1);
@@ -70,8 +68,18 @@ MocoStudy MocoTrack::initialize() {
 
     // Costs.
     // ------
-    m_initial_time = get_initial_time();
-    m_final_time = get_final_time();
+    // TODO: -1 is a valid initial time.
+    if (getProperty_initial_time().empty()) {
+        m_initial_time = -1;
+    } else {
+        m_initial_time = get_initial_time();
+    }
+    // TODO: -1 is a valid final time.
+    if (getProperty_final_time().empty()) {
+        m_final_time = -1;
+    } else {
+        m_final_time = get_final_time();
+    }
 
     // State tracking cost.
     if (!get_states_tracking_file().empty()) {
@@ -129,6 +137,7 @@ MocoStudy MocoTrack::initialize() {
     // Configure solver.
     // -----------------
     MocoCasADiSolver& solver = moco.initCasADiSolver();
+    // TODO: Use MocoTool::mesh_interval property.
     solver.set_num_mesh_points(25);
     solver.set_dynamics_mode("explicit");
     solver.set_optim_convergence_tolerance(1e-2);

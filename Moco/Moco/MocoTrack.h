@@ -20,8 +20,8 @@
 
 #include "osimMocoDLL.h"
 #include "MocoStudy.h"
+#include "MocoTool.h"
 
-#include <OpenSim/Common/Object.h>
 #include <OpenSim/Simulation/Model/Model.h>
 
 namespace OpenSim {
@@ -39,19 +39,10 @@ class MocoIterate;
 
 // TODO allowing extra columns for everything
 // TODO "from_data", states data will take precedence over data from markers
-class OSIMMOCO_API MocoTrack : public Object {
-OpenSim_DECLARE_CONCRETE_OBJECT(MocoTrack, Object);
+class OSIMMOCO_API MocoTrack : public MocoTool {
+OpenSim_DECLARE_CONCRETE_OBJECT(MocoTrack, MocoTool);
 
 public:
-    OpenSim_DECLARE_PROPERTY(initial_time, double,
-        "Set the initial time for the tracking problem. If no time is "
-        "provided, the earliest time that is consistent with all data "
-        "provided will be chosen.");
-
-    OpenSim_DECLARE_PROPERTY(final_time, double,
-        "Set the final time for the tracking problem. If no time is "
-        "provided, the latest time that is consistent with all data "
-        "provided will be chosen.");
 
     OpenSim_DECLARE_PROPERTY(states_tracking_file, std::string,
         "Path to a STO file containing reference state variable data "
