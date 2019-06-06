@@ -86,7 +86,6 @@ MocoInverseSolution MocoInverse::solve() const {
     solver.set_optim_constraint_tolerance(1e-3);
     // The sparsity detection works fine with DeGrooteFregly2016Muscle.
     solver.set_optim_sparsity_detection("random");
-    // solver.set_optim_hessian_approximation("exact");
     // Forward is 3x faster than central.
     solver.set_optim_finite_difference_scheme("forward");
     solver.set_transcription_scheme("trapezoidal");
