@@ -54,7 +54,7 @@ TEMPLATE_TEST_CASE("Test MocoControlCost", "", MocoTropterSolver,
     const int Nc = 2*N - 1; // collocation points (Hermite-Simpson)
     MocoSolution sol1;
     {
-        MocoTool moco;
+        MocoStudy moco;
         moco.setName("sliding_mass");
         MocoProblem& mp = moco.updProblem();
         mp.setModel(createSlidingMassModel());
@@ -86,7 +86,7 @@ TEMPLATE_TEST_CASE("Test MocoControlCost", "", MocoTropterSolver,
     // TODO for now, the weight can just be set to 0 (not ideal).
     //{
 
-    //    MocoTool moco;
+    //    MocoStudy moco;
     //    moco.setName("sliding_mass");
     //    MocoProblem& mp = moco.updProblem();
     //    MocoProblem& mp = moco.updProblem();
@@ -124,7 +124,7 @@ TEMPLATE_TEST_CASE("Test MocoControlCost", "", MocoTropterSolver,
     MocoSolution sol2;
     std::string omocoFile = "testMocoCosts_testMocoControlCost.omoco";
     {
-        MocoTool moco;
+        MocoStudy moco;
         moco.setName("sliding_mass");
         moco.set_write_solution("false");
         MocoProblem& mp = moco.updProblem();
@@ -164,7 +164,7 @@ TEMPLATE_TEST_CASE("Test MocoControlCost", "", MocoTropterSolver,
 
     // Cannot set a weight for a nonexistent control.
     {
-        MocoTool moco;
+        MocoStudy moco;
         moco.setName("sliding_mass");
         MocoProblem& mp = moco.updProblem();
         mp.setModel(createSlidingMassModel());
@@ -179,7 +179,7 @@ TEMPLATE_TEST_CASE("Test MocoControlCost", "", MocoTropterSolver,
 
     // De/serialization.
     {
-        MocoTool moco(omocoFile);
+        MocoStudy moco(omocoFile);
         MocoSolution solDeserialized = moco.solve();
         sol2.write("DEBUG_sol2.sto");
         solDeserialized.write("DEBUG_solDeserialized.sto");
@@ -189,7 +189,7 @@ TEMPLATE_TEST_CASE("Test MocoControlCost", "", MocoTropterSolver,
 
 /// Make sure that multiple costs are added together properly.
 TEST_CASE("Test multiple costs.") {
-    MocoTool moco;
+    MocoStudy moco;
     MocoProblem& problem = moco.updProblem();
 
     auto* ft0 = problem.addCost<MocoFinalTimeCost>("ft0", 0.1);
@@ -217,11 +217,11 @@ TEST_CASE("Enabled Costs", "") {
 }
 
 template <class SolverType>
-MocoTool setupMocoToolDoublePendulumMinimizeEffort() {
+MocoStudy setupMocoStudyDoublePendulumMinimizeEffort() {
     using SimTK::Pi;
     const Model doublePendulum = ModelFactory::createNLinkPendulum(2);
 
-    MocoTool moco;
+    MocoStudy moco;
     auto& problem = moco.updProblem();
     problem.setModelCopy(doublePendulum);
     problem.addCost<MocoControlCost>("effort");
@@ -246,7 +246,7 @@ TEMPLATE_TEST_CASE("Test MocoControlTrackingCost", "", MocoTropterSolver,
 
     // Start with double pendulum problem to minimize control effort to create
     // a controls trajectory to track.
-    MocoTool moco = setupMocoToolDoublePendulumMinimizeEffort<TestType>();
+    MocoStudy moco = setupMocoStudyDoublePendulumMinimizeEffort<TestType>();
     auto solutionEffort = moco.solve();
 
     // Re-run problem, now setting effort cost function to zero and adding a
@@ -283,7 +283,7 @@ template <typename SolverType, typename TrackingType>
 void testDoublePendulumTracking() {
     // Start with double pendulum problem to minimize control effort to create
     // a controls trajectory to track.
-    MocoTool moco = setupMocoToolDoublePendulumMinimizeEffort<SolverType>();
+    MocoStudy moco = setupMocoStudyDoublePendulumMinimizeEffort<SolverType>();
     auto solutionEffort = moco.solve();
 
     // Re-run problem, now setting effort cost function to zero and adding a
@@ -350,7 +350,7 @@ TEMPLATE_TEST_CASE("Test MocoJointReactionCost", "", MocoTropterSolver,
     model.addComponent(actuator);
     model.finalizeConnections();
 
-    MocoTool moco;
+    MocoStudy moco;
     moco.setName("counteract_gravity");
     MocoProblem& mp = moco.updProblem();
     mp.setModelCopy(model);
