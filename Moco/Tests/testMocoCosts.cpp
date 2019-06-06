@@ -239,7 +239,6 @@ MocoTool setupMocoToolDoublePendulumMinimizeEffort() {
     auto& solver = moco.initSolver<SolverType>();
     solver.set_num_mesh_points(20);
     solver.set_optim_convergence_tolerance(1e-6);
-    solver.set_optim_hessian_approximation("exact");
 
     return moco;
 }
@@ -289,6 +288,7 @@ void testDoublePendulumTracking() {
     // a controls trajectory to track.
     MocoTool moco = setupMocoToolDoublePendulumMinimizeEffort<SolverType>();
     auto solutionEffort = moco.solve();
+    solutionEffort.write("testMocoCosts_testMocoTranslationTrackingCost_effort_solution.sto");
 
     // Re-run problem, now setting effort cost function to zero and adding a
     // tracking cost.
@@ -300,6 +300,7 @@ void testDoublePendulumTracking() {
 
     moco.updSolver<SolverType>().resetProblem(problem);
     auto solutionTracking = moco.solve();
+    solutionTracking.write("testMocoCosts_testMocoTranslationTrackingCost_tracking_solution.sto");
 
     // Check that position-level states match the effort minimization solution.
     CHECK(solutionTracking.compareContinuousVariablesRMS(solutionEffort,
@@ -310,9 +311,10 @@ void testDoublePendulumTracking() {
     // Re-run problem again, now setting effort cost function weight to a low
     // non-zero value as a regularization to smooth controls and velocity
     // states.
-    problem.updPhase(0).updCost("effort").set_weight(0.0001);
+    problem.updPhase(0).updCost("effort").set_weight(0.001);
     moco.updSolver<SolverType>().resetProblem(problem);
     auto solutionTrackingWithRegularization = moco.solve();
+    solutionTrackingWithRegularization.write("testMocoCosts_testMocoTranslationTrackingCost_trackingWithReg_solution.sto");
 
     // Now the full states and controls trajectories should match the effort
     // minimization solution better.

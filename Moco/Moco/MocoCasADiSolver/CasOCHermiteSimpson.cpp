@@ -51,8 +51,8 @@ DM HermiteSimpson::createKinematicConstraintIndicesImpl() const {
     return indices;
 }
 
-void HermiteSimpson::calcDefectsImpl(
-        const casadi::MX& x, const casadi::MX& xdot, casadi::MX& defects) {
+void HermiteSimpson::calcDefectsImpl(const casadi::MX& x,
+        const casadi::MX& xdot, casadi::MX& defects) const {
     // For more information, see doxygen documentation for the class.
 
     const int NS = m_problem.getNumStates();
@@ -83,6 +83,25 @@ void HermiteSimpson::calcDefectsImpl(
         // Simpson integration defects.
         defects(Slice(NS, 2 * NS), imesh) =
                 x_ip1 - x_i - (h / 6.0) * (xdot_ip1 + 4.0 * xdot_mid + xdot_i);
+    }
+}
+
+void HermiteSimpson::calcInterpolatingControlsImpl(
+        const casadi::MX& controls, casadi::MX& interpControls) const {
+    if (m_problem.getNumControls() &&
+            m_solver.getInterpolateControlMidpoints()) {
+        int time_i;
+        int time_mid;
+        int time_ip1;
+        for (int imesh = 0; imesh < m_numMeshIntervals; ++imesh) {
+            time_i = 2 * imesh;
+            time_mid = 2 * imesh + 1;
+            time_ip1 = 2 * imesh + 2;
+            const auto c_i = controls(Slice(), time_i);
+            const auto c_mid = controls(Slice(), time_mid);
+            const auto c_ip1 = controls(Slice(), time_ip1);
+            interpControls(Slice(), imesh) = c_mid - 0.5 * (c_ip1 + c_i);
+        }
     }
 }
 

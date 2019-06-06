@@ -69,8 +69,11 @@ protected:
     /// overridden virtual methods are accessible to the base class. This
     /// implementation allows initialization to occur during construction,
     /// avoiding an extra call on the instantiated object.
-    void createVariablesAndSetBounds(
-            const casadi::DM& grid, int numDefectsPerGridPoint);
+    /// pointsForInterpControls are grid points at which the transcription
+    /// scheme applies constraints between control points.
+    void createVariablesAndSetBounds(const casadi::DM& grid,
+            int numDefectsPerGridPoint,
+            const casadi::DM& pointsForInterpControls = casadi::DM());
 
     /// We assume all functions depend on time and parameters.
     /// "inputs" is prepended by time and postpended (?) by parameters.
@@ -99,6 +102,7 @@ protected:
         T residuals;
         T kinematic;
         std::vector<T> path;
+        T interp_controls;
     };
     void printConstraintValues(const Iterate& it,
             const Constraints<casadi::DM>& constraints) const;
@@ -113,6 +117,7 @@ protected:
     int m_numResiduals = -1;
     int m_numConstraints = -1;
     casadi::DM m_grid;
+    casadi::DM m_pointsForInterpControls;
     casadi::MX m_times;
     casadi::MX m_duration;
 
@@ -150,12 +155,21 @@ private:
     /// Override this function in your derived class set the defect, kinematic,
     /// and path constraint errors required for your transcription scheme.
     virtual void calcDefectsImpl(const casadi::MX& x, const casadi::MX& xdot,
-            casadi::MX& defects) = 0;
+            casadi::MX& defects) const = 0;
+    virtual void calcInterpolatingControlsImpl(const casadi::MX& /*controls*/,
+            casadi::MX& /*interpControls*/) const {
+        OPENSIM_THROW_IF(m_pointsForInterpControls.numel(), OpenSim::Exception,
+                "Must provide constraints for interpolating controls.")
+    }
 
     void transcribe();
     void setObjective();
     void calcDefects() {
         calcDefectsImpl(m_vars.at(states), m_xdot, m_constraints.defects);
+    }
+    void calcInterpolatingControls() {
+        calcInterpolatingControlsImpl(
+                m_vars.at(controls), m_constraints.interp_controls);
     }
 
     /// Use this function to ensure you iterate through variables in the same
@@ -234,22 +248,27 @@ private:
         //    residual_0     x
         //    residual_0.5         x
         //    defect_0       x     x     x
+        //    interp_con_0   x     x     x
         //    kinematic_1                x
         //    path_1                     x
         //    residual_1                 x
         //    residual_1.5                     x
         //    defect_1                   x     x     x
+        //    interp_con_1               x     x     x
         //    kinematic_2                            x
         //    path_2                                 x
         //    residual_2                             x
         //    residual_2.5                                 x
         //    defect_2                               x     x     x
+        //    interp_con_2                           x     x     x
         //    kinematic_3                                        x
         //    path_3                                             x
         //    residual_3                                         x
         //                   0    0.5    1    1.5    2    2.5    3
 
         int igrid = 0;
+        // Index for pointsForInterpControls.
+        int icon = 0;
         for (int imesh = 0; imesh < m_numMeshPoints; ++imesh) {
             copyColumn(constraints.kinematic, imesh);
             for (const auto& path : constraints.path) {
@@ -261,6 +280,12 @@ private:
                     ++igrid;
                 }
                 copyColumn(constraints.defects, imesh);
+                while (icon < m_pointsForInterpControls.numel() &&
+                        m_pointsForInterpControls(icon).scalar() <
+                                m_solver.getMesh()[imesh + 1]) {
+                    copyColumn(constraints.interp_controls, icon);
+                    ++icon;
+                }
             }
         }
         // The loop above does not handle the residual at the final grid point.
@@ -290,6 +315,8 @@ private:
             const auto& info = m_problem.getPathConstraintInfos()[ipc];
             out.path[ipc] = init(info.size(), m_numMeshPoints);
         }
+        out.interp_controls = init(m_problem.getNumControls(),
+                (int)m_pointsForInterpControls.numel());
 
         int iflat = 0;
         auto copyColumn = [&flat, &iflat](T& matrix, int columnIndex) {
@@ -302,17 +329,24 @@ private:
         };
 
         int igrid = 0;
+        // Index for pointsForInterpControls.
+        int icon = 0;
         for (int imesh = 0; imesh < m_numMeshPoints; ++imesh) {
             copyColumn(out.kinematic, imesh);
-            for (auto& path : out.path) {
-                copyColumn(path, imesh);
-            }
+            for (auto& path : out.path) { copyColumn(path, imesh); }
             if (imesh < m_numMeshIntervals) {
                 while (m_grid(igrid).scalar() < m_solver.getMesh()[imesh + 1]) {
                     copyColumn(out.residuals, igrid);
                     ++igrid;
                 }
                 copyColumn(out.defects, imesh);
+                while (icon < m_pointsForInterpControls.numel() &&
+                        m_pointsForInterpControls(icon).scalar() <
+                                m_solver.getMesh()[imesh + 1]) {
+                    std::cout << "DEBUG pfic " << icon << " " << imesh << std::endl;
+                    copyColumn(out.interp_controls, icon);
+                    ++icon;
+                }
             }
         }
         // The loop above does not handle the residual at the final grid point.

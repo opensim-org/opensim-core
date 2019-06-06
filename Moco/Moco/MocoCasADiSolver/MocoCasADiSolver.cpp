@@ -257,6 +257,8 @@ std::unique_ptr<CasOC::Solver> MocoCasADiSolver::createCasOCSolver(
             get_minimize_lagrange_multipliers());
     casSolver->setLagrangeMultiplierWeight(get_lagrange_multiplier_weight());
     casSolver->setOptimSolver(get_optim_solver());
+    casSolver->setInterpolateControlMidpoints(
+            get_interpolate_control_midpoints());
     if (casProblem.getJarSize() > 1) {
         casSolver->setParallelism("thread", casProblem.getJarSize());
     }

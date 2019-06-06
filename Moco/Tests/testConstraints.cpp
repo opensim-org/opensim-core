@@ -562,10 +562,15 @@ void testDoublePendulumPointOnLine(
     // point-on-line constraint.
     const double theta_i = 0.5;
     const double theta_f = SimTK::Pi / 2;
-    mp.setStateInfo("/jointset/j0/q0/value", {-10, 10}, theta_i, theta_f);
+    mp.setStateInfo(
+            "/jointset/j0/q0/value", {theta_i, theta_f}, theta_i, theta_f);
     mp.setStateInfo("/jointset/j0/q0/speed", {-50, 50});
-    mp.setStateInfo("/jointset/j1/q1/value", {-10, 10}, SimTK::Pi - 2 * theta_i,
-            SimTK::Pi - 2 * theta_f);
+    {
+        double initial = SimTK::Pi - 2 * theta_i;
+        double final = SimTK::Pi - 2 * theta_f;
+        mp.setStateInfo(
+                "/jointset/j1/q1/value", {final, initial}, initial, final);
+    }
     mp.setStateInfo("/jointset/j1/q1/speed", {-50, 50});
     mp.setControlInfo("/tau0", {-100, 100});
     mp.setControlInfo("/tau1", {-100, 100});
@@ -573,7 +578,7 @@ void testDoublePendulumPointOnLine(
     mp.addCost<MocoControlCost>();
 
     auto& ms = moco.initSolver<TestType>();
-    ms.set_num_mesh_points(10);
+    ms.set_num_mesh_points(20);
     ms.set_verbosity(2);
     ms.set_optim_solver("ipopt");
     ms.set_optim_convergence_tolerance(1e-3);
@@ -596,12 +601,8 @@ void testDoublePendulumPointOnLine(
         const SimTK::Vec3& loc = endeff.getLocationInGround(s);
 
         // The end-effector should not have moved in the x- or z-directions.
-        // If using Hermite-Simpson, only check on the mesh interval endpoints,
-        // where the path constraint is enforced.
-        if (ms.get_transcription_scheme() == "hermite-simpson" && !(i % 2)) {
-            SimTK_TEST_EQ_TOL(loc[0], 0, 1e-6);
-            SimTK_TEST_EQ_TOL(loc[2], 0, 1e-6);
-        }
+        SimTK_TEST_EQ_TOL(loc[0], 0, 1e-2);
+        SimTK_TEST_EQ_TOL(loc[2], 0, 1e-2);
     }
 
     // Run a forward simulation using the solution controls in prescribed
@@ -650,12 +651,12 @@ void testDoublePendulumCoordinateCoupler(MocoSolution& solution,
     mp.setTimeBounds(0, 1);
     // Boundary conditions are only enforced for the first coordinate, so we can
     // test that the second coordinate is properly coupled.
-    mp.setStateInfo("/jointset/j0/q0/value", {-10, 10}, 0, SimTK::Pi / 2);
-    mp.setStateInfo("/jointset/j0/q0/speed", {-50, 50}, 0, 0);
+    mp.setStateInfo("/jointset/j0/q0/value", {-5, 5}, 0, SimTK::Pi / 2);
+    mp.setStateInfo("/jointset/j0/q0/speed", {-10, 10}, 0, 0);
     mp.setStateInfo("/jointset/j1/q1/value", {-10, 10});
-    mp.setStateInfo("/jointset/j1/q1/speed", {-50, 50}, 0, 0);
-    mp.setControlInfo("/tau0", {-100, 100});
-    mp.setControlInfo("/tau1", {-100, 100});
+    mp.setStateInfo("/jointset/j1/q1/speed", {-5, 5}, 0, 0);
+    mp.setControlInfo("/tau0", {-50, 50});
+    mp.setControlInfo("/tau1", {-50, 50});
     mp.addCost<MocoControlCost>();
 
     auto& ms = moco.initSolver<SolverType>();
@@ -681,11 +682,8 @@ void testDoublePendulumCoordinateCoupler(MocoSolution& solution,
         model->realizePosition(s);
 
         // The coordinates should be coupled according to the linear function
-        // described above. If using Hermite-Simpson, only check on the mesh
-        // interval endpoints, where the path constraint is enforced.
-        if (ms.get_transcription_scheme() == "hermite-simpson" && !(i % 2)) {
-            SimTK_TEST_EQ_TOL(q1.getValue(s), m * q0.getValue(s) + b, 1e-6);
-        }
+        // described above.
+        SimTK_TEST_EQ_TOL(q1.getValue(s), m * q0.getValue(s) + b, 1e-2);
     }
 
     // Run a forward simulation using the solution controls in prescribed
@@ -733,8 +731,8 @@ void testDoublePendulumPrescribedMotion(MocoSolution& couplerSolution,
     mp.setStateInfo("/jointset/j0/q0/speed", {-50, 50});
     mp.setStateInfo("/jointset/j1/q1/value", {-10, 10});
     mp.setStateInfo("/jointset/j1/q1/speed", {-50, 50});
-    mp.setControlInfo("/tau0", {-100, 100});
-    mp.setControlInfo("/tau1", {-100, 100});
+    mp.setControlInfo("/tau0", {-25, 25});
+    mp.setControlInfo("/tau1", {-25, 25});
 
     mp.addCost<MocoControlCost>();
 
@@ -820,20 +818,20 @@ void testDoublePendulumPrescribedMotion(MocoSolution& couplerSolution,
     // states and the states from the previous test (original and splined).
     // These won't match as well as the position-level values, since velocity-
     // level errors are not enforced in the current problem formulation.
-    SimTK_TEST_EQ_TOL(
-            solution.compareContinuousVariablesRMS(mocoIterSpline,
-                    {{"states", {"/jointset/j0/q0/speed", "/jointset/j1/q1/speed"}}}),
+    SimTK_TEST_EQ_TOL(solution.compareContinuousVariablesRMS(mocoIterSpline,
+                              {{"states", {"/jointset/j0/q0/speed",
+                                                  "/jointset/j1/q1/speed"}}}),
             0, 1e-1);
-    SimTK_TEST_EQ_TOL(
-            solution.compareContinuousVariablesRMS(couplerSolution,
-                    {{"states", {"/jointset/j0/q0/speed", "/jointset/j1/q1/speed"}}}),
+    SimTK_TEST_EQ_TOL(solution.compareContinuousVariablesRMS(couplerSolution,
+                              {{"states", {"/jointset/j0/q0/speed",
+                                                  "/jointset/j1/q1/speed"}}}),
             0, 1e-1);
     // Compare only the actuator controls. These match worse compared to the
     // velocity-level states. It is currently unclear to what extent this is
     // related to velocity-level states not matching well or the how the model
     // constraints are enforced in the current formulation.
     SimTK_TEST_EQ_TOL(solution.compareContinuousVariablesRMS(couplerSolution,
-            {{"controls", {"/tau0", "/tau1"}}}),
+                              {{"controls", {"/tau0", "/tau1"}}}),
             0, 5);
 
     // Run a forward simulation using the solution controls in prescribed
@@ -844,8 +842,6 @@ void testDoublePendulumPrescribedMotion(MocoSolution& couplerSolution,
 
 TEMPLATE_TEST_CASE("DoublePendulum with and without constraint derivatives",
         "[explicit]", MocoTropterSolver, MocoCasADiSolver) {
-    // TODO test tolerances can be improved significantly by not including
-    // Hermite-Simpson midpoint values in comparisons.
     SECTION("DoublePendulum without constraint derivatives") {
         MocoSolution couplerSol;
         testDoublePendulumCoordinateCoupler<TestType>(
@@ -865,8 +861,6 @@ TEMPLATE_TEST_CASE("DoublePendulum with and without constraint derivatives",
 
 TEST_CASE("DoublePendulum with and without constraint derivatives",
         "[implicit]") {
-    // TODO test tolerances can be improved significantly by not including
-    // Hermite-Simpson midpoint values in comparisons.
     SECTION("DoublePendulum without constraint derivatives") {
         MocoSolution couplerSol;
         testDoublePendulumCoordinateCoupler<MocoCasADiSolver>(
@@ -926,7 +920,7 @@ protected:
         const auto& controls = getModel().getControls(state);
         // In the problem below, the actuators are bilateral and act in
         // opposite directions, so we use addition to create the residual here.
-        errors[0] = abs(controls[1]) - abs(controls[0]);
+        errors[0] = controls[1] + controls[0];
     }
 };
 
@@ -958,8 +952,8 @@ std::cerr.rdbuf(LogManager::cerr.rdbuf());
     mp.setStateInfo("/jointset/j0/q0/speed", {-50, 50});
     mp.setStateInfo("/jointset/j1/q1/value", {-10, 10}, SimTK::Pi, 0);
     mp.setStateInfo("/jointset/j1/q1/speed", {-50, 50});
-    mp.setControlInfo("/tau0", {-100, 100});
-    mp.setControlInfo("/tau1", {-100, 100});
+    mp.setControlInfo("/tau0", {-50, 50});
+    mp.setControlInfo("/tau1", {-50, 50});
 
     mp.addCost<MocoControlCost>();
 
@@ -968,7 +962,6 @@ std::cerr.rdbuf(LogManager::cerr.rdbuf());
     ms.set_verbosity(2);
     ms.set_optim_solver("ipopt");
     ms.set_optim_convergence_tolerance(1e-3);
-    ms.set_transcription_scheme("trapezoidal");
     ms.setGuess("bounds");
 
     MocoSolution solution = moco.solve();
@@ -978,7 +971,6 @@ std::cerr.rdbuf(LogManager::cerr.rdbuf());
     const auto& control_tau0 = solution.getControl("/tau0");
     const auto& control_tau1 = solution.getControl("/tau1");
     const auto& control_res = control_tau1.abs() - control_tau0.abs();
-
     SimTK_TEST_EQ_TOL(control_res.normRMS(), 0, 1e-6);
 
     // Run a forward simulation using the solution controls in prescribed
@@ -1095,7 +1087,7 @@ void testDoublePendulumPointOnLineJointReaction(
     ms.set_num_mesh_points(N);
     ms.set_verbosity(2);
     ms.set_optim_solver("ipopt");
-    ms.set_optim_convergence_tolerance(1e-3);
+    ms.set_optim_convergence_tolerance(1e-6);
     ms.set_transcription_scheme("hermite-simpson");
     ms.set_enforce_constraint_derivatives(enforce_constraint_derivatives);
     ms.set_minimize_lagrange_multipliers(true);
@@ -1120,8 +1112,8 @@ TEMPLATE_TEST_CASE(
     testDoublePendulumPointOnLineJointReaction<TestType>(true, "explicit");
 }
 
-TEMPLATE_TEST_CASE(
-        "DoublePendulumPointOnLineJointReaction implicit with constraint derivatives",
+TEMPLATE_TEST_CASE("DoublePendulumPointOnLineJointReaction implicit with "
+                   "constraint derivatives",
         "[implicit]", MocoCasADiSolver) {
     testDoublePendulumPointOnLineJointReaction<TestType>(true, "implicit");
 }

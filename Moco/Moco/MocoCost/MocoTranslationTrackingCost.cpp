@@ -34,18 +34,14 @@ void MocoTranslationTrackingCost::initializeOnModelImpl(const Model& model)
     if (m_translation_table.getNumColumns() != 0 ||   // translation table or 
             get_translation_reference_file() != "") { // reference file provided
         TimeSeriesTableVec3 translationTableToUse;
+        // Should not be able to supply any two simultaneously.
+        assert(get_states_reference().empty());
         if (get_translation_reference_file() != "") { // translation ref file
-            // Should not be able to supply any two simultaneously.
-            assert(get_states_reference_file() == "");
-            assert(m_states_table.getNumColumns() == 0);
             assert(m_translation_table.getNumColumns() == 0);
             translationTableToUse = readTableFromFile<Vec3>(
                     get_translation_reference_file());
 
         } else { // translation table
-            // Should not be able to supply any two simultaneously.
-            assert(get_states_reference_file() == "");
-            assert(m_states_table.getNumColumns() == 0);
             assert(get_translation_reference_file() == "");
             translationTableToUse = m_translation_table;
         }

@@ -41,7 +41,7 @@ DM Trapezoidal::createKinematicConstraintIndicesImpl() const {
 }
 
 void Trapezoidal::calcDefectsImpl(
-        const casadi::MX& x, const casadi::MX& xdot, casadi::MX& defects) {
+        const casadi::MX& x, const casadi::MX& xdot, casadi::MX& defects) const {
 
     // We have arranged the code this way so that all constraints at a given
     // mesh point are grouped together (organizing the sparsity of the Jacobian

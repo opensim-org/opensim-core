@@ -79,8 +79,8 @@ private:
     mutable int evalCount = 0;
 };
 
-void Transcription::createVariablesAndSetBounds(
-        const casadi::DM& grid, int numDefectsPerGridPoint) {
+void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
+        int numDefectsPerGridPoint, const casadi::DM& pointsForInterpControls) {
     // Set the grid.
     // -------------
     // The grid for a transcription scheme includes both mesh points (i.e.
@@ -92,13 +92,15 @@ void Transcription::createVariablesAndSetBounds(
     m_numMeshIntervals = m_numMeshPoints - 1;
     m_numPointsIgnoringConstraints = m_numGridPoints - m_numMeshPoints;
     m_numDefectsPerGridPoint = numDefectsPerGridPoint;
+    m_pointsForInterpControls = pointsForInterpControls;
     // TODO: Update when supporting prescribed kinematics.
     m_numResiduals =
             m_solver.isDynamicsModeImplicit() ? m_problem.getNumSpeeds() : 0;
     m_numConstraints =
             m_numDefectsPerGridPoint * m_numMeshIntervals +
             m_numResiduals * m_numGridPoints +
-            m_problem.getNumKinematicConstraintEquations() * m_numMeshPoints;
+            m_problem.getNumKinematicConstraintEquations() * m_numMeshPoints +
+            m_problem.getNumControls() * (int)pointsForInterpControls.numel();
     m_constraints.path.resize(m_problem.getPathConstraintInfos().size());
     for (int ipc = 0; ipc < (int)m_constraints.path.size(); ++ipc) {
         const auto& info = m_problem.getPathConstraintInfos()[ipc];
@@ -370,8 +372,8 @@ void Transcription::transcribe() {
         }
     }
 
-    // Calculate defects.
-    // ------------------
+    // Calculate defects and constraints for interpolating controls.
+    // -------------------------------------------------------------
     calcDefects();
 
     // Path constraints
@@ -393,6 +395,18 @@ void Transcription::transcribe() {
         m_constraintsUpperBounds.path[ipc] =
                 casadi::DM::repmat(info.upperBounds, 1, m_numMeshPoints);
     }
+
+    // Interpolating controls.
+    // -----------------------
+    m_constraints.interp_controls =
+            casadi::DM(casadi::Sparsity::dense(m_problem.getNumControls(),
+                    (int)m_pointsForInterpControls.numel()));
+    const auto boundsOnInterpControls = casadi::DM::zeros(
+            m_problem.getNumControls(), (int)m_pointsForInterpControls.numel());
+    m_constraintsLowerBounds.interp_controls = boundsOnInterpControls;
+    m_constraintsUpperBounds.interp_controls = boundsOnInterpControls;
+
+    calcInterpolatingControls();
 }
 
 void Transcription::setObjective() {
@@ -821,49 +835,52 @@ void Transcription::printConstraintValues(
     for (const auto& kc : m_problem.getMultiplierInfos()) {
         kinconNames.push_back(kc.name);
     }
-    if (kinconNames.empty()) { stream << " none" << std::endl; }
+    if (kinconNames.empty()) {
+        stream << " none" << std::endl;
+    } else {
+        maxNameLength = 0;
+        updateMaxNameLength(kinconNames);
+        stream << "\n  L2 norm across mesh, max abs value (L1 norm), time of max "
+                  "abs"
+                << std::endl;
+        row.resize(1, m_numMeshPoints);
+        {
+            for (int ikc = 0; ikc < (int)constraints.kinematic.rows(); ++ikc) {
+                row = constraints.kinematic(ikc, Slice());
+                const double L2 = casadi::DM::norm_2(row).scalar();
+                int argmax;
+                double max = calcL1Norm(row, argmax);
+                const double L1 = max;
+                const double time_of_max = it.times(argmax).scalar();
 
-    maxNameLength = 0;
-    updateMaxNameLength(kinconNames);
-    stream << "\n  L2 norm across mesh, max abs value (L1 norm), time of max "
-              "abs"
-           << std::endl;
-    row.resize(1, m_numMeshPoints);
-    {
-        for (int ikc = 0; ikc < (int)constraints.kinematic.rows(); ++ikc) {
-            row = constraints.kinematic(ikc, Slice());
-            const double L2 = casadi::DM::norm_2(row).scalar();
-            int argmax;
-            double max = calcL1Norm(row, argmax);
-            const double L1 = max;
-            const double time_of_max = it.times(argmax).scalar();
-
-            std::string label = kinconNames[ikc];
-            std::cout << std::setfill('0') << std::setw(2) << ikc << ":"
-                      << std::setfill(' ') << std::setw(maxNameLength) << label
-                      << spacer << std::setprecision(2) << std::scientific
-                      << std::setw(9) << L2 << spacer << L1 << spacer
-                      << std::setprecision(6) << std::fixed << time_of_max
-                      << std::endl;
+                std::string label = kinconNames[ikc];
+                std::cout << std::setfill('0') << std::setw(2) << ikc << ":"
+                        << std::setfill(' ') << std::setw(maxNameLength) << label
+                        << spacer << std::setprecision(2) << std::scientific
+                        << std::setw(9) << L2 << spacer << L1 << spacer
+                        << std::setprecision(6) << std::fixed << time_of_max
+                        << std::endl;
+            }
         }
-    }
-    stream << "Kinematic constraint values at each mesh point:" << std::endl;
-    stream << "      time  ";
-    for (int ipc = 0; ipc < (int)kinconNames.size(); ++ipc) {
-        stream << std::setw(9) << ipc << "  ";
-    }
-    stream << std::endl;
-    for (int imesh = 0; imesh < m_numMeshPoints; ++imesh) {
-        stream << std::setfill('0') << std::setw(3) << imesh << "  ";
-        stream.fill(' ');
-        stream << std::setw(9) << it.times(imesh).scalar() << "  ";
-        for (int ikc = 0; ikc < (int)kinconNames.size(); ++ikc) {
-            const auto& value = constraints.kinematic(ikc, imesh).scalar();
-            stream << std::setprecision(2) << std::scientific << std::setw(9)
-                   << value << "  ";
+        stream << "Kinematic constraint values at each mesh point:" << std::endl;
+        stream << "      time  ";
+        for (int ipc = 0; ipc < (int)kinconNames.size(); ++ipc) {
+            stream << std::setw(9) << ipc << "  ";
         }
         stream << std::endl;
+        for (int imesh = 0; imesh < m_numMeshPoints; ++imesh) {
+            stream << std::setfill('0') << std::setw(3) << imesh << "  ";
+            stream.fill(' ');
+            stream << std::setw(9) << it.times(imesh).scalar() << "  ";
+            for (int ikc = 0; ikc < (int)kinconNames.size(); ++ikc) {
+                const auto& value = constraints.kinematic(ikc, imesh).scalar();
+                stream << std::setprecision(2) << std::scientific << std::setw(9)
+                        << value << "  ";
+            }
+            stream << std::endl;
+        }
     }
+
 
     // Path constraints.
     // -----------------
@@ -875,57 +892,57 @@ void Transcription::printConstraintValues(
 
     if (pathconNames.empty()) {
         stream << " none" << std::endl;
-        // Return early if there are no path constraints.
-        return;
-    }
-    stream << std::endl;
+    } else {
+        stream << std::endl;
 
-    maxNameLength = 0;
-    updateMaxNameLength(pathconNames);
-    // To make space for indices.
-    maxNameLength += 3;
-    stream << "\n  L2 norm across mesh, max abs value (L1 norm), time of max "
-              "abs"
-           << std::endl;
-    row.resize(1, m_numMeshPoints);
-    {
-        int ipc = 0;
-        for (const auto& pc : m_problem.getPathConstraintInfos()) {
-            for (int ieq = 0; ieq < pc.size(); ++ieq) {
-                row = constraints.path[ipc](ieq, Slice());
-                const double L2 = casadi::DM::norm_2(row).scalar();
-                int argmax;
-                double max = calcL1Norm(row, argmax);
-                const double L1 = max;
-                const double time_of_max = it.times(argmax).scalar();
+        maxNameLength = 0;
+        updateMaxNameLength(pathconNames);
+        // To make space for indices.
+        maxNameLength += 3;
+        stream << "\n  L2 norm across mesh, max abs value (L1 norm), time of max "
+                  "abs"
+                << std::endl;
+        row.resize(1, m_numMeshPoints);
+        {
+            int ipc = 0;
+            for (const auto& pc : m_problem.getPathConstraintInfos()) {
+                for (int ieq = 0; ieq < pc.size(); ++ieq) {
+                    row = constraints.path[ipc](ieq, Slice());
+                    const double L2 = casadi::DM::norm_2(row).scalar();
+                    int argmax;
+                    double max = calcL1Norm(row, argmax);
+                    const double L1 = max;
+                    const double time_of_max = it.times(argmax).scalar();
 
-                std::string label = OpenSim::format("%s_%02i", pc.name, ieq);
-                std::cout << std::setfill('0') << std::setw(2) << ipc << ":"
-                          << std::setfill(' ') << std::setw(maxNameLength)
-                          << label << spacer << std::setprecision(2)
-                          << std::scientific << std::setw(9) << L2 << spacer
-                          << L1 << spacer << std::setprecision(6) << std::fixed
-                          << time_of_max << std::endl;
+                    std::string label = OpenSim::format("%s_%02i", pc.name, ieq);
+                    std::cout << std::setfill('0') << std::setw(2) << ipc << ":"
+                            << std::setfill(' ') << std::setw(maxNameLength)
+                            << label << spacer << std::setprecision(2)
+                            << std::scientific << std::setw(9) << L2 << spacer
+                            << L1 << spacer << std::setprecision(6) << std::fixed
+                            << time_of_max << std::endl;
+                }
+                ++ipc;
             }
-            ++ipc;
         }
-    }
-    stream << "Path constraint values at each mesh point:" << std::endl;
-    stream << "      time  ";
-    for (int ipc = 0; ipc < (int)pathconNames.size(); ++ipc) {
-        stream << std::setw(9) << ipc << "  ";
-    }
-    stream << std::endl;
-    for (int imesh = 0; imesh < m_numMeshPoints; ++imesh) {
-        stream << std::setfill('0') << std::setw(3) << imesh << "  ";
-        stream.fill(' ');
-        stream << std::setw(9) << it.times(imesh).scalar() << "  ";
+        stream << "Path constraint values at each mesh point:" << std::endl;
+        stream << "      time  ";
         for (int ipc = 0; ipc < (int)pathconNames.size(); ++ipc) {
-            const auto& value = constraints.path[ipc](imesh).scalar();
-            stream << std::setprecision(2) << std::scientific << std::setw(9)
-                   << value << "  ";
+            stream << std::setw(9) << ipc << "  ";
         }
         stream << std::endl;
+        for (int imesh = 0; imesh < m_numMeshPoints; ++imesh) {
+            stream << std::setfill('0') << std::setw(3) << imesh << "  ";
+            stream.fill(' ');
+            stream << std::setw(9) << it.times(imesh).scalar() << "  ";
+            for (int ipc = 0; ipc < (int)pathconNames.size(); ++ipc) {
+                const auto& value = constraints.path[ipc](imesh).scalar();
+                stream << std::setprecision(2) << std::scientific << std::setw(9)
+                        << value << "  ";
+            }
+            stream << std::endl;
+        }
+
     }
 }
 

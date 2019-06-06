@@ -43,7 +43,7 @@ private:
     casadi::DM createKinematicConstraintIndicesImpl() const override;
 
     void calcDefectsImpl(const casadi::MX& x, const casadi::MX& xdot,
-            casadi::MX& defects) override;
+            casadi::MX& defects) const override;
 };
 
 } // namespace CasOC
