@@ -30,7 +30,7 @@ MocoPhase::MocoPhase() {
     constructProperties();
 }
 void MocoPhase::constructProperties() {
-    constructProperty_model(Model());
+    constructProperty_model(ModelProcessor(Model{}));
     constructProperty_time_initial_bounds(MocoInitialBounds());
     constructProperty_time_final_bounds(MocoFinalBounds());
     constructProperty_default_speed_bounds(MocoBounds(-50, 50));
@@ -46,13 +46,17 @@ void MocoPhase::constructProperties() {
 Model* MocoPhase::setModel(std::unique_ptr<Model> model) {
     // Write the connectee paths to properties.
     model->finalizeConnections();
-    updProperty_model().clear();
-    updProperty_model().adoptAndAppendValue(model.release());
-    return &upd_model();
+    return upd_model().setModel(std::move(model));
 }
 Model* MocoPhase::setModelCopy(Model model) {
+    set_model(ModelProcessor(std::move(model)));
+    return &upd_model().updModel();
+}
+void MocoPhase::setModelProcessor(ModelProcessor model) {
     set_model(std::move(model));
-    return &upd_model();
+}
+ModelProcessor& MocoPhase::updModelProcessor() {
+    return upd_model();
 }
 void MocoPhase::setTimeBounds(const MocoInitialBounds& initial,
         const MocoFinalBounds& final) {
@@ -158,6 +162,9 @@ Model* MocoProblem::setModel(std::unique_ptr<Model> model) {
 }
 Model* MocoProblem::setModelCopy(Model model) {
     return upd_phases(0).setModelCopy(std::move(model));
+}
+void MocoProblem::setModelProcessor(ModelProcessor model) {
+    upd_phases(0).setModelProcessor(std::move(model));
 }
 void MocoProblem::setTimeBounds(const MocoInitialBounds& initial,
         const MocoFinalBounds& final) {

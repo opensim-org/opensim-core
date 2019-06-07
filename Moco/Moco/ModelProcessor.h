@@ -73,8 +73,32 @@ public:
         set_filepath(std::move(filepath));
     }
 
+    /// Set the base model. This returns a raw pointer equal to the pointer
+    /// provided.
+    Model* setModel(std::unique_ptr<Model> model) {
+        // Write the connectee paths to properties.
+        model->finalizeConnections();
+        updProperty_model().clear();
+        updProperty_model().adoptAndAppendValue(model.release());
+        return &upd_model();
+    }
+
+    /// Obtain the base model, if one was provided. This ignores filepath.
+    const Model& getModel() const {
+        OPENSIM_THROW_IF_FRMOBJ(getProperty_model().empty(), Exception,
+                "No base model available.");
+        return get_model();
+    }
+
+    /// Obtain the base model, if one was provided. This ignores filepath.
+    Model& updModel() {
+        OPENSIM_THROW_IF_FRMOBJ(getProperty_model().empty(), Exception,
+                "No base model available.");
+        return upd_model();
+    }
+
     /// Process and obtain the model. If a filepath is provided, it will be
-    /// evaluated relative to `relativeToDirectory`, if provided.
+   /// evaluated relative to `relativeToDirectory`, if provided.
     Model process(const std::string& relativeToDirectory = {}) const {
         Model model;
         if (get_filepath().empty()) {
