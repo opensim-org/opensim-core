@@ -40,7 +40,8 @@ xsens = XsensDataReader(xsensSettings);
 tables = xsens.read('IMUData/');
 % get the trial name from the settings
 trial = char(xsensSettings.get_trial_prefix());
-%% Get Orientation Data
+
+%% Get Orientation Data as quaternions
 quatTable = xsens.getOrientationsTable(tables);
 % Write to file
 STOFileAdapterQuaternion.write(quatTable,  [trial '_orientations.sto']);
@@ -50,12 +51,12 @@ accelTable = xsens.getLinearAccelerationsTable(tables);
 % Write to file
 STOFileAdapterVec3.write(accelTable, [trial '_linearAccelerations.sto']);
 
-%% Get Magnetometer Data
+%% Get Magnetic (North) Heading Data
 magTable = xsens.getMagneticHeadingTable(tables);
 % Write to file
 STOFileAdapterVec3.write(magTable, [trial '_magneticNorthHeadings.sto']);
 
-%% Get Gyro Data
-gyroTable = xsens.getAngularVelocityTable(tables);
+%% Get Angular Velocity Data
+angVelTable = xsens.getAngularVelocityTable(tables);
 % Write to file
-STOFileAdapterVec3.write(gyroTable, [trial '_angularVelocities.sto']);
+STOFileAdapterVec3.write(angVelTable, [trial '_angularVelocities.sto']);
