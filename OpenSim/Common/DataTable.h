@@ -1477,6 +1477,22 @@ protected:
             }
         }
     }
+    template<int M, int N, typename Iter>
+    static
+        void makeElement_helper(SimTK::Mat<M, N>& elem,
+            Iter begin, Iter end) {
+        for (unsigned i = 0; i < M; ++i) {
+            for (unsigned j = 0; j < N; ++j) {
+                OPENSIM_THROW_IF(begin == end,
+                    Exception,
+                    "Iterators do not produce enough elements."
+                    "Expected: " + std::to_string(M * N) +
+                    " Received: " + std::to_string((i + 1) * j));
+
+                elem[i][j] = *begin++;
+            }
+        }
+    }
     template<typename Iter>
     static
     ETY makeElement(Iter begin, Iter end) {

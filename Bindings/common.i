@@ -123,15 +123,19 @@ namespace OpenSim {
 %shared_ptr(OpenSim::DataTable_<double, double>);
 %shared_ptr(OpenSim::DataTable_<double, SimTK::Vec3>);
 %shared_ptr(OpenSim::DataTable_<double, SimTK::UnitVec3>);
-%shared_ptr(OpenSim::DataTable_<double, SimTK::Quaternion>);
+%shared_ptr(OpenSim::DataTable_<double, SimTK::Quaternion_<double>>);
 %shared_ptr(OpenSim::DataTable_<double, SimTK::Vec6>);
 %shared_ptr(OpenSim::DataTable_<double, SimTK::SpatialVec>);
+%shared_ptr(OpenSim::DataTable_<double, SimTK::Mat33>);
+%shared_ptr(OpenSim::DataTable_<double, SimTK::Rotation_<double>>);
 %shared_ptr(OpenSim::TimeSeriesTable_<double>);
 %shared_ptr(OpenSim::TimeSeriesTable_<SimTK::Vec3>);
 %shared_ptr(OpenSim::TimeSeriesTable_<SimTK::UnitVec3>);
-%shared_ptr(OpenSim::TimeSeriesTable_<SimTK::Quaternion>);
+%shared_ptr(OpenSim::TimeSeriesTable_<SimTK::Quaternion_<double>>);
 %shared_ptr(OpenSim::TimeSeriesTable_<SimTK::Vec6>);
 %shared_ptr(OpenSim::TimeSeriesTable_<SimTK::SpatialVec>);
+%shared_ptr(OpenSim::TimeSeriesTable_<SimTK::Mat33>);
+%shared_ptr(OpenSim::TimeSeriesTable_<SimTK::Rotation_<double>>);
 %ignore OpenSim::AbstractDataTable::clone;
 %ignore OpenSim::AbstractDataTable::getTableMetaData;
 %ignore OpenSim::AbstractDataTable::updTableMetaData;
@@ -203,9 +207,10 @@ namespace OpenSim {
 DATATABLE_CLONE(double, double)
 DATATABLE_CLONE(double, SimTK::Vec3)
 DATATABLE_CLONE(double, SimTK::UnitVec3)
-DATATABLE_CLONE(double, SimTK::Quaternion)
+DATATABLE_CLONE(double, SimTK::Quaternion_<double>)
 DATATABLE_CLONE(double, SimTK::Vec6)
 DATATABLE_CLONE(double, SimTK::SpatialVec)
+DATATABLE_CLONE(double, SimTK::Rotation_<double>)
 %extend OpenSim::DataTable_<double, double> {
     DataTable_<double, SimTK::Vec3>
     packVec3() {
@@ -223,11 +228,11 @@ DATATABLE_CLONE(double, SimTK::SpatialVec)
     packUnitVec3(std::vector<std::string> suffixes) {
         return $self->pack<SimTK::UnitVec3>();
     }
-    DataTable_<double, SimTK::Quaternion>
+    DataTable_<double, SimTK::Quaternion_<double>>
     packQuaternion() {
         return $self->pack<SimTK::Quaternion>();
     }
-    DataTable_<double, SimTK::Quaternion>
+    DataTable_<double, SimTK::Quaternion_<double>>
     packQuaternion(std::vector<std::string> suffixes) {
         return $self->pack<SimTK::Quaternion>();
     }
@@ -264,11 +269,11 @@ DATATABLE_CLONE(double, SimTK::SpatialVec)
     packUnitVec3(std::vector<std::string> suffixes) {
         return $self->pack<SimTK::UnitVec3>();
     }
-    TimeSeriesTable_<SimTK::Quaternion>
+    TimeSeriesTable_<SimTK::Quaternion_<double>>
     packQuaternion() {
         return $self->pack<SimTK::Quaternion>();
     }
-    TimeSeriesTable_<SimTK::Quaternion>
+    TimeSeriesTable_<SimTK::Quaternion_<double>>
     packQuaternion(std::vector<std::string> suffixes) {
         return $self->pack<SimTK::Quaternion>();
     }
@@ -329,18 +334,22 @@ DATATABLE_CLONE(double, SimTK::SpatialVec)
 %template(DataTable)           OpenSim::DataTable_<double, double>;
 %template(DataTableVec3)       OpenSim::DataTable_<double, SimTK::Vec3>;
 %template(DataTableUnitVec3)   OpenSim::DataTable_<double, SimTK::UnitVec3>;
-%template(DataTableQuaternion) OpenSim::DataTable_<double, SimTK::Quaternion>;
+%template(DataTableQuaternion) OpenSim::DataTable_<double, SimTK::Quaternion_<double>>;
 %template(DataTableVec6)       OpenSim::DataTable_<double, SimTK::Vec6>;
 %template(DataTableSpatialVec) OpenSim::DataTable_<double, SimTK::SpatialVec>;
+%template(DataTableMat33)      OpenSim::DataTable_<double, SimTK::Mat33>;
+%template(DataTableRotation)   OpenSim::DataTable_<double, SimTK::Rotation_<double>>;
 
 %template(TimeSeriesTable)         OpenSim::TimeSeriesTable_<double>;
 %template(TimeSeriesTableVec3)     OpenSim::TimeSeriesTable_<SimTK::Vec3>;
 %template(TimeSeriesTableUnitVec3) OpenSim::TimeSeriesTable_<SimTK::UnitVec3>;
 %template(TimeSeriesTableQuaternion)
-                                   OpenSim::TimeSeriesTable_<SimTK::Quaternion>;
+                                   OpenSim::TimeSeriesTable_<SimTK::Quaternion_<double>>;
 %template(TimeSeriesTableVec6)     OpenSim::TimeSeriesTable_<SimTK::Vec6>;
 %template(TimeSeriesTableSpatialVec)
                                    OpenSim::TimeSeriesTable_<SimTK::SpatialVec>;
+%template(TimeSeriesTableMat33)    OpenSim::TimeSeriesTable_<SimTK::Mat33>;
+%template(TimeSeriesTableRotation) OpenSim::TimeSeriesTable_<SimTK::Rotation_<double>>;
 
 %include <OpenSim/Common/Event.h>
 %template(StdVectorEvent) std::vector<OpenSim::Event>;

@@ -207,7 +207,7 @@ OpenSim::ModelComponentSet<OpenSim::Controller>;
 
 %template(ReferenceVec3) OpenSim::Reference_<SimTK::Vec3>;
 %template(ReferenceDouble) OpenSim::Reference_<double>;
-%template(ReferenceRotation) OpenSim::Reference_<SimTK::Rotation>;
+%template(ReferenceRotation) OpenSim::Reference_<SimTK::Rotation_<double>>;
 %template(SimTKArrayCoordinateReference) SimTK::Array_<OpenSim::CoordinateReference>;
 
 

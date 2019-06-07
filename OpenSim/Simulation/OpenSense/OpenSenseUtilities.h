@@ -46,8 +46,8 @@ namespace OpenSim {
             when tracking rotation data, the initial pose of the model is facing
             forward. If the baseImuName is empty, no correction is made. If no
             axis is specified, the default is the Z axis.*/
-        static TimeSeriesTableRotation  convertQuaternionsToRotations(
-            const TimeSeriesTableQuaternion& qauternionsTable,
+        static  OpenSim::TimeSeriesTable_<SimTK::Rotation_<double>>  convertQuaternionsToRotations(
+            const OpenSim::TimeSeriesTable_<SimTK::Quaternion_<double>>& qauternionsTable,
             const SimTK::Array_<int>& startEnd = { 0, 1 },
             const std::string& baseImuName = "",
             const SimTK::CoordinateAxis& baseHeadingAxis = SimTK::ZAxis

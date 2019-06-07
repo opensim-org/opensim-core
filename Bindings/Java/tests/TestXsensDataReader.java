@@ -24,6 +24,33 @@ class TestXsensDataReader {
         assert accelTableTyped.getNumColumns() == 1;
         assert accelTableTyped.
                getTableMetaDataString("DataRate").equals("100.000000");
+
+        TimeSeriesTableQuaternion quatsTable = IMUDataReader.getOrientationsTable(tables);
+        TimeSeriesTableRotation rotsTable = OpenSenseUtilities.convertQuaternionsToRotations(quatsTable);
+
+        // Test access to TimeSeriesTableRotation methods and individual Rotation matrices
+        rotsTable.getNumColumns();
+        rotsTable.getNumRows();
+        Rotation rot = rotsTable.getRowAtIndex(0).getElt(0,0);
+        System.out.println("Rotation Matrix at rotsTable(0,0)\n=================================");
+        System.out.println(rot);
+        Vec3 angles = rot.convertRotationToBodyFixedXYZ();
+        System.out.println("Body-Fixed Euler Angles (X,Y,Z)\n===============================");
+        System.out.println(angles);
+
+        Rotation rot2 = rotsTable.getRowAtIndex(0).getElt(0, 1);
+        Vec3 angles2 = rot2.convertRotationToBodyFixedXYZ();
+        System.out.println("Body-Fixed Euler Angles (X,Y,Z)\n===============================");
+        System.out.println(angles2);
+
+        Rotation diff = rot.multiply(rot2.transpose());
+        Vec4 errorAngleAxis = diff.convertRotationToAngleAxis();
+        System.out.println("Error Angle Axis\n===============================");
+        System.out.println(errorAngleAxis);
+
+        //Verify that we can construct an OrientationsReference from a TimeSeriesTableRotation
+        // Uncomment below to test.
+        OrientationsReference oRefs = new OrientationsReference(rotsTable);
     }
 
     public static void main(String[] args) {
