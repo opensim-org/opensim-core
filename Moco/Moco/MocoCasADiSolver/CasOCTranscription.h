@@ -187,6 +187,7 @@ private:
         }
         return out;
     }
+    friend class NlpsolCallback;
 };
 
 } // namespace CasOC

@@ -77,7 +77,7 @@ protected:
 };
 
 void minimizePendulumReactionLoads() {
-    MocoTool moco;
+    MocoStudy moco;
     moco.setName("minimize_pendulum_reaction_loads");
     MocoProblem& mp = moco.updProblem();
     mp.setModel(createInvertedPendulumModel());
@@ -105,7 +105,7 @@ void minimizePendulumReactionLoads() {
 }
 
 void minimizeControlEffort() {
-    MocoTool moco;
+    MocoStudy moco;
     moco.setName("minimize_pendulum_reaction_loads");
     MocoProblem& mp = moco.updProblem();
     mp.setModel(createInvertedPendulumModel());

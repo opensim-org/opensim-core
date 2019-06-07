@@ -50,10 +50,11 @@ std::unique_ptr<Model> createSlidingMassModel() {
 /// Test the result of a sliding mass minimum effort problem.
 TEMPLATE_TEST_CASE("Test MocoControlCost", "", MocoTropterSolver,
         MocoCasADiSolver) {
-    int N = 10;
+    const int N = 10; // mesh points
+    const int Nc = 2*N - 1; // collocation points (Hermite-Simpson)
     MocoSolution sol1;
     {
-        MocoTool moco;
+        MocoStudy moco;
         moco.setName("sliding_mass");
         MocoProblem& mp = moco.updProblem();
         mp.setModel(createSlidingMassModel());
@@ -72,20 +73,20 @@ TEMPLATE_TEST_CASE("Test MocoControlCost", "", MocoTropterSolver,
 
         // Minimum effort solution is a linear control.
         SimTK_TEST_EQ_TOL(sol1.getControl("/actuator"),
-                createVectorLinspace(N, 2.23, -2.23), 0.25);
+                createVectorLinspace(Nc, 2.23, -2.23), 0.25);
         // Symmetry.
         SimTK_TEST_EQ_TOL(sol1.getControl("/actuator").getElt(0, 0),
-                -sol1.getControl("/actuator").getElt(N-1, 0), 1e-3);
+                -sol1.getControl("/actuator").getElt(Nc-1, 0), 1e-3);
 
         // Minimum effort solution takes as long as possible.
-        SimTK_TEST_EQ_TOL(sol1.getTime().getElt(N-1, 0), 5, 1e-7);
+        SimTK_TEST_EQ_TOL(sol1.getTime().getElt(Nc-1, 0), 5, 1e-7);
     }
 
     // TODO test that we can ignore specific actuators.
     // TODO for now, the weight can just be set to 0 (not ideal).
     //{
 
-    //    MocoTool moco;
+    //    MocoStudy moco;
     //    moco.setName("sliding_mass");
     //    MocoProblem& mp = moco.updProblem();
     //    MocoProblem& mp = moco.updProblem();
@@ -123,7 +124,7 @@ TEMPLATE_TEST_CASE("Test MocoControlCost", "", MocoTropterSolver,
     MocoSolution sol2;
     std::string omocoFile = "testMocoCosts_testMocoControlCost.omoco";
     {
-        MocoTool moco;
+        MocoStudy moco;
         moco.setName("sliding_mass");
         moco.set_write_solution("false");
         MocoProblem& mp = moco.updProblem();
@@ -163,7 +164,7 @@ TEMPLATE_TEST_CASE("Test MocoControlCost", "", MocoTropterSolver,
 
     // Cannot set a weight for a nonexistent control.
     {
-        MocoTool moco;
+        MocoStudy moco;
         moco.setName("sliding_mass");
         MocoProblem& mp = moco.updProblem();
         mp.setModel(createSlidingMassModel());
@@ -178,7 +179,7 @@ TEMPLATE_TEST_CASE("Test MocoControlCost", "", MocoTropterSolver,
 
     // De/serialization.
     {
-        MocoTool moco(omocoFile);
+        MocoStudy moco(omocoFile);
         MocoSolution solDeserialized = moco.solve();
         sol2.write("DEBUG_sol2.sto");
         solDeserialized.write("DEBUG_solDeserialized.sto");
@@ -188,7 +189,7 @@ TEMPLATE_TEST_CASE("Test MocoControlCost", "", MocoTropterSolver,
 
 /// Make sure that multiple costs are added together properly.
 TEST_CASE("Test multiple costs.") {
-    MocoTool moco;
+    MocoStudy moco;
     MocoProblem& problem = moco.updProblem();
 
     auto* ft0 = problem.addCost<MocoFinalTimeCost>("ft0", 0.1);
@@ -216,12 +217,11 @@ TEST_CASE("Enabled Costs", "") {
 }
 
 template <class SolverType>
-MocoTool setupMocoToolDoublePendulumMinimizeEffort() {
+MocoStudy setupMocoStudyDoublePendulumMinimizeEffort() {
     using SimTK::Pi;
-    int N = 20;
     const Model doublePendulum = ModelFactory::createNLinkPendulum(2);
 
-    MocoTool moco;
+    MocoStudy moco;
     auto& problem = moco.updProblem();
     problem.setModelCopy(doublePendulum);
     problem.addCost<MocoControlCost>("effort");
@@ -236,6 +236,7 @@ MocoTool setupMocoToolDoublePendulumMinimizeEffort() {
     auto& solver = moco.initSolver<SolverType>();
     solver.set_num_mesh_points(20);
     solver.set_optim_convergence_tolerance(1e-6);
+    solver.set_optim_hessian_approximation("exact");
 
     return moco;
 }
@@ -245,7 +246,7 @@ TEMPLATE_TEST_CASE("Test MocoControlTrackingCost", "", MocoTropterSolver,
 
     // Start with double pendulum problem to minimize control effort to create
     // a controls trajectory to track.
-    MocoTool moco = setupMocoToolDoublePendulumMinimizeEffort<TestType>();
+    MocoStudy moco = setupMocoStudyDoublePendulumMinimizeEffort<TestType>();
     auto solutionEffort = moco.solve();
 
     // Re-run problem, now setting effort cost function to zero and adding a
@@ -262,7 +263,13 @@ TEMPLATE_TEST_CASE("Test MocoControlTrackingCost", "", MocoTropterSolver,
         solutionEffort.getControlNames());
     tracking->setReference(controlsRef);
 
-    moco.updSolver<TestType>().resetProblem(problem);
+    // Finding a solution with Hermite-Simpson and Tropter requires a better
+    // initial guess.
+    auto& solver = moco.updSolver<TestType>();
+    solver.resetProblem(problem);
+    MocoIterate guessTracking = solutionEffort;
+    guessTracking.randomizeAdd();
+    solver.setGuess(guessTracking);
     auto solutionTracking = moco.solve();
 
     // Make sure control tracking problem matches control effort problem.
@@ -276,8 +283,9 @@ template <typename SolverType, typename TrackingType>
 void testDoublePendulumTracking() {
     // Start with double pendulum problem to minimize control effort to create
     // a controls trajectory to track.
-    MocoTool moco = setupMocoToolDoublePendulumMinimizeEffort<SolverType>();
+    MocoStudy moco = setupMocoStudyDoublePendulumMinimizeEffort<SolverType>();
     auto solutionEffort = moco.solve();
+    solutionEffort.write("testMocoCosts_testMocoTranslationTrackingCost_effort_solution.sto");
 
     // Re-run problem, now setting effort cost function to zero and adding a
     // tracking cost.
@@ -289,6 +297,7 @@ void testDoublePendulumTracking() {
 
     moco.updSolver<SolverType>().resetProblem(problem);
     auto solutionTracking = moco.solve();
+    solutionTracking.write("testMocoCosts_testMocoTranslationTrackingCost_tracking_solution.sto");
 
     // Check that position-level states match the effort minimization solution.
     SimTK_TEST_EQ_TOL(solutionTracking.compareContinuousVariablesRMS(
@@ -299,9 +308,10 @@ void testDoublePendulumTracking() {
     // Re-run problem again, now setting effort cost function weight to a low
     // non-zero value as a regularization to smooth controls and velocity 
     // states.
-    problem.updPhase(0).updCost("effort").set_weight(0.0001);
+    problem.updPhase(0).updCost("effort").set_weight(0.001);
     moco.updSolver<SolverType>().resetProblem(problem);
     auto solutionTrackingWithRegularization = moco.solve();
+    solutionTrackingWithRegularization.write("testMocoCosts_testMocoTranslationTrackingCost_trackingWithReg_solution.sto");
 
     // Now the full states and controls trajectories should match the effort
     // minimization solution better.
@@ -343,7 +353,7 @@ TEMPLATE_TEST_CASE("Test MocoJointReactionCost", "", MocoTropterSolver,
     model.addComponent(actuator);
     model.finalizeConnections();
 
-    MocoTool moco;
+    MocoStudy moco;
     moco.setName("counteract_gravity");
     MocoProblem& mp = moco.updProblem();
     mp.setModelCopy(model);
