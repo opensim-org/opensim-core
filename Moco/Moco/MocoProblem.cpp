@@ -22,13 +22,10 @@
 
 using namespace OpenSim;
 
-
 // ============================================================================
 // MocoPhase
 // ============================================================================
-MocoPhase::MocoPhase() {
-    constructProperties();
-}
+MocoPhase::MocoPhase() { constructProperties(); }
 void MocoPhase::constructProperties() {
     constructProperty_model(Model());
     constructProperty_time_initial_bounds(MocoInitialBounds());
@@ -54,27 +51,89 @@ Model* MocoPhase::setModelCopy(Model model) {
     set_model(std::move(model));
     return &upd_model();
 }
-void MocoPhase::setTimeBounds(const MocoInitialBounds& initial,
-        const MocoFinalBounds& final) {
+void MocoPhase::setTimeBounds(
+        const MocoInitialBounds& initial, const MocoFinalBounds& final) {
     set_time_initial_bounds(initial);
     set_time_final_bounds(final);
+}
+void MocoPhase::printStateNamesWithSubstring(const std::string& name) {
+    std::vector<std::string> foundNames;
+    Model model = get_model();
+    model.initSystem();
+    const auto stateNames = model.getStateVariableNames();
+    for (int i = 0; i < (int)stateNames.size(); ++i) {
+        if (stateNames[i].find(name) != std::string::npos) {
+            foundNames.push_back(stateNames[i]);
+        }
+    }
+    if (foundNames.size() == 1) {
+        std::cout << "State name found matching substring \"" << name
+                  << "\":" << std::endl;
+        std::cout << "========================================================="
+                  << std::endl;
+        std::cout << foundNames[0] << std::endl;
+    } else if (foundNames.size() > 1) {
+        std::cout << "State names found matching substring \"" << name
+                  << "\":" << std::endl;
+        std::cout << "========================================================="
+                  << std::endl;
+        for (std::string iname : foundNames) {
+            std::cout << iname << std::endl;
+        }
+    } else {
+        std::cout << "No state names found matching substring \"" << name
+                  << "\"." << std::endl;
+    };
 }
 void MocoPhase::setStateInfo(const std::string& name, const MocoBounds& bounds,
         const MocoInitialBounds& initial, const MocoFinalBounds& final) {
     int idx = getProperty_state_infos().findIndexForName(name);
 
     MocoVariableInfo info(name, bounds, initial, final);
-    if (idx == -1) append_state_infos(info);
-    else           upd_state_infos(idx) = info;
+    if (idx == -1)
+        append_state_infos(info);
+    else
+        upd_state_infos(idx) = info;
+}
+void MocoPhase::printControlNamesWithSubstring(const std::string& name) {
+    std::vector<std::string> foundNames;
+    Model model = get_model();
+    model.initSystem();
+    const auto controlNames = createControlNamesFromModel(model);
+    for (int i = 0; i < (int)controlNames.size(); ++i) {
+        if (controlNames[i].find(name) != std::string::npos) {
+            foundNames.push_back(controlNames[i]);
+        }
+    }
+    if (foundNames.size() == 1) {
+        std::cout << "Control name found matching substring \"" << name
+                  << "\":" << std::endl;
+        std::cout << "========================================================="
+                  << std::endl;
+        std::cout << foundNames[0] << std::endl;
+    } else if (foundNames.size() > 1) {
+        std::cout << "Control names found matching substring \"" << name
+                  << "\":" << std::endl;
+        std::cout << "========================================================="
+                  << std::endl;
+        for (std::string iname : foundNames) {
+            std::cout << iname << std::endl;
+        }
+    } else {
+        std::cout << "No control names found matching substring \"" << name
+                  << "\"." << std::endl;
+    };
 }
 void MocoPhase::setControlInfo(const std::string& name,
-        const MocoBounds& bounds,
-        const MocoInitialBounds& initial, const MocoFinalBounds& final) {
+        const MocoBounds& bounds, const MocoInitialBounds& initial,
+        const MocoFinalBounds& final) {
     int idx = getProperty_control_infos().findIndexForName(name);
 
     MocoVariableInfo info(name, bounds, initial, final);
-    if (idx == -1) append_control_infos(info);
-    else           upd_control_infos(idx) = info;
+    if (idx == -1)
+        append_control_infos(info);
+    else
+        upd_control_infos(idx) = info;
 }
 MocoInitialBounds MocoPhase::getTimeInitialBounds() const {
     return get_time_initial_bounds();
@@ -82,8 +141,7 @@ MocoInitialBounds MocoPhase::getTimeInitialBounds() const {
 MocoFinalBounds MocoPhase::getTimeFinalBounds() const {
     return get_time_final_bounds();
 }
-const MocoVariableInfo& MocoPhase::getStateInfo(
-        const std::string& name) const {
+const MocoVariableInfo& MocoPhase::getStateInfo(const std::string& name) const {
 
     int idx = getProperty_state_infos().findIndexForName(name);
     OPENSIM_THROW_IF_FRMOBJ(idx == -1, Exception,
@@ -98,16 +156,14 @@ const MocoVariableInfo& MocoPhase::getControlInfo(
             format("No info available for control '%s'.", name));
     return get_control_infos(idx);
 }
-const MocoParameter& MocoPhase::getParameter(
-        const std::string& name) const {
+const MocoParameter& MocoPhase::getParameter(const std::string& name) const {
 
     int idx = getProperty_parameters().findIndexForName(name);
     OPENSIM_THROW_IF_FRMOBJ(idx == -1, Exception,
             format("No parameter with name '%s' found.", name));
     return get_parameters(idx);
 }
-MocoParameter& MocoPhase::updParameter(
-    const std::string& name) {
+MocoParameter& MocoPhase::updParameter(const std::string& name) {
 
     int idx = getProperty_parameters().findIndexForName(name);
     OPENSIM_THROW_IF_FRMOBJ(idx == -1, Exception,
@@ -136,8 +192,7 @@ const MocoPathConstraint& MocoPhase::getPathConstraint(
             format("No path constraint with name '%s' found.", name));
     return get_path_constraints(idx);
 }
-MocoPathConstraint& MocoPhase::updPathConstraint(
-        const std::string& name) {
+MocoPathConstraint& MocoPhase::updPathConstraint(const std::string& name) {
 
     int idx = updProperty_path_constraints().findIndexForName(name);
     OPENSIM_THROW_IF_FRMOBJ(idx == -1, Exception,
@@ -145,13 +200,10 @@ MocoPathConstraint& MocoPhase::updPathConstraint(
     return upd_path_constraints(idx);
 }
 
-
 // ============================================================================
 // MocoProblem
 // ============================================================================
-MocoProblem::MocoProblem() {
-    constructProperties();
-}
+MocoProblem::MocoProblem() { constructProperties(); }
 
 Model* MocoProblem::setModel(std::unique_ptr<Model> model) {
     return upd_phases(0).setModel(std::move(model));
@@ -159,18 +211,24 @@ Model* MocoProblem::setModel(std::unique_ptr<Model> model) {
 Model* MocoProblem::setModelCopy(Model model) {
     return upd_phases(0).setModelCopy(std::move(model));
 }
-void MocoProblem::setTimeBounds(const MocoInitialBounds& initial,
-        const MocoFinalBounds& final) {
+void MocoProblem::setTimeBounds(
+        const MocoInitialBounds& initial, const MocoFinalBounds& final) {
     upd_phases(0).setTimeBounds(initial, final);
 }
+void MocoProblem::printStateNamesWithSubstring(const std::string& name) {
+    upd_phases(0).printStateNamesWithSubstring(name);
+}
 void MocoProblem::setStateInfo(const std::string& name,
-        const MocoBounds& bounds,
-        const MocoInitialBounds& initial, const MocoFinalBounds& final) {
+        const MocoBounds& bounds, const MocoInitialBounds& initial,
+        const MocoFinalBounds& final) {
     upd_phases(0).setStateInfo(name, bounds, initial, final);
 }
+void MocoProblem::printControlNamesWithSubstring(const std::string& name) {
+    upd_phases(0).printControlNamesWithSubstring(name);
+}
 void MocoProblem::setControlInfo(const std::string& name,
-        const MocoBounds& bounds,
-        const MocoInitialBounds& initial, const MocoFinalBounds& final) {
+        const MocoBounds& bounds, const MocoInitialBounds& initial,
+        const MocoFinalBounds& final) {
     upd_phases(0).setControlInfo(name, bounds, initial, final);
 }
 void MocoProblem::setKinematicConstraintBounds(const MocoBounds& bounds) {
