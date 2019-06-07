@@ -128,8 +128,8 @@ MocoTropterSolver::createTropterSolver(
     std::unique_ptr<tropter::DirectCollocationSolver<double>> dircol;
 
     if (getProperty_mesh().empty()) {
-        dircol = make_unique<tropter::DirectCollocationSolver<double>>(ocp,
-                get_transcription_scheme(), get_optim_solver(),
+        dircol = OpenSim::make_unique<tropter::DirectCollocationSolver<double>>(
+                ocp, get_transcription_scheme(), get_optim_solver(),
                 get_num_mesh_points());
     } else {
         std::vector<double> mesh;
