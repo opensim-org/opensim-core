@@ -32,11 +32,11 @@ import opensim as osim
 xsensSettings = osim.XsensDataReaderSettings('myIMUMappings.xml')
 # Instantiate an XsensDataReader
 xsens = osim.XsensDataReader(xsensSettings)
-# Get a table reference for the data
+# Read in seprate tables of data from the specified IMU file(s)
 tables = xsens.read('IMUData/')
 # get the trial name from the settings
 trial = xsensSettings.get_trial_prefix()
-# Get Orientation Data
+# Get Orientation Data as quaternions
 quatTable = xsens.getOrientationsTable(tables)
 # Write to file
 osim.STOFileAdapterQuaternion.write(quatTable,  trial + '_orientations.sto')
@@ -44,11 +44,11 @@ osim.STOFileAdapterQuaternion.write(quatTable,  trial + '_orientations.sto')
 accelTable = xsens.getLinearAccelerationsTable(tables)
 # Write to file
 osim.STOFileAdapterVec3.write(accelTable, trial + '_linearAccelerations.sto')
-# Get Magenometer Data
+# Get Magenometic (North) Heading Data
 magTable = xsens.getMagneticHeadingTable(tables)
 # Write to file
 osim.STOFileAdapterVec3.write(magTable, trial + '_magneticNorthHeadings.sto')
-# Get Gyro Data
-gyroTable = xsens.getAngularVelocityTable(tables)
+# Get Angular Velocity
+angVelTable = xsens.getAngularVelocityTable(tables)
 # Write to file
-osim.STOFileAdapterVec3.write(gyroTable, trial + '_angularVelocities.sto')
+osim.STOFileAdapterVec3.write(angVelTable, trial + '_angularVelocities.sto')
