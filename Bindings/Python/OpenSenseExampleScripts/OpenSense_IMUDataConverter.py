@@ -48,7 +48,7 @@ osim.STOFileAdapterVec3.write(accelTable, trial + '_linearAccelerations.sto')
 magTable = xsens.getMagneticHeadingTable(tables)
 # Write to file
 osim.STOFileAdapterVec3.write(magTable, trial + '_magneticNorthHeadings.sto')
-# Get Angular Velocity
+# Get Angular Velocity Data
 angVelTable = xsens.getAngularVelocityTable(tables)
 # Write to file
 osim.STOFileAdapterVec3.write(angVelTable, trial + '_angularVelocities.sto')
