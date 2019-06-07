@@ -44,7 +44,7 @@ osim.STOFileAdapterQuaternion.write(quatTable,  trial + '_orientations.sto')
 accelTable = xsens.getLinearAccelerationsTable(tables)
 # Write to file
 osim.STOFileAdapterVec3.write(accelTable, trial + '_linearAccelerations.sto')
-# Get Magenometic (North) Heading Data
+# Get Magnetic (North) Heading Data
 magTable = xsens.getMagneticHeadingTable(tables)
 # Write to file
 osim.STOFileAdapterVec3.write(magTable, trial + '_magneticNorthHeadings.sto')
