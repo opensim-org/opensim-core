@@ -19,7 +19,6 @@
 #include <cstdarg>
 #include <cstdio>
 #include <memory>
-#include <vector>
 #include <Eigen/Dense>
 
 std::string tropter::format(const char* format, ...) {

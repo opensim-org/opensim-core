@@ -17,6 +17,7 @@
 // ----------------------------------------------------------------------------
 
 #include <string>
+#include <vector>
 
 namespace tropter {
 /// Format a string in the style of sprintf.
