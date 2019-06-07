@@ -85,7 +85,9 @@ set(MOCO_SOURCES
         MocoCasADiSolver/CasOCHermiteSimpson.h
         MocoCasADiSolver/CasOCHermiteSimpson.cpp
         MocoCasADiSolver/CasOCIterate.h
-        Common/TableProcessor.h)
+        Common/TableProcessor.h
+        ModelProcessor.h
+        ModelOperators.h)
 if(MOCO_WITH_TROPTER)
     list(APPEND MOCO_SOURCES
             tropter/TropterProblem.h
