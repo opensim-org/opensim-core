@@ -1290,14 +1290,17 @@ TEMPLATE_TEST_CASE(
         constr->setEqualityWithLower(true);
         auto& solver = moco.initSolver<TestType>();
         MocoSolution solution = moco.solve();
-        SimTK::Vector expected(solution.getNumTimes());
-        for (int itime = 0; itime < expected.size(); ++itime) {
+        SimTK::Vector expectedV(solution.getNumTimes());
+        for (int itime = 0; itime < expectedV.size(); ++itime) {
             SimTK::Vector arg(1);
             arg[0] = solution.getTime()[itime];
-            expected[itime] = violateLower.calcValue(arg);
+            expectedV[itime] = violateLower.calcValue(arg);
         }
-        OpenSim_CHECK_MATRIX_ABSTOL(
-                solution.getControlsTrajectory(), expected, 1e-6);
+        MocoIterate expected = solution;
+        expected.setControl("/tau0", expectedV);
+
+        CHECK(solution.compareContinuousVariablesRMS(
+                      expected, {{"controls", {}}}) < 1e-3);
     }
 
     SECTION("Time range of bounds function is too small.") {
