@@ -227,7 +227,7 @@ TimeSeriesTable_<SimTK::Rotation> convertMotionFileToRotations(
     const std::string& motionFile)
 {
     SimTK::State& s0 = model.initSystem();
-    auto anglesTable = STOFileAdapter::read(motionFile);
+    auto anglesTable = STOFileAdapter::readFile(motionFile);
 
     int nt = int(anglesTable.getNumRows());
     const auto& coordNames = anglesTable.getColumnLabels();
@@ -418,7 +418,7 @@ void testInverseKinematicsSolverWithOrientations()
     }
 
     auto report = ikReporter->getTable();
-    const auto standard = STOFileAdapter::read("std_subject01_walk1_ik.mot");
+    const auto standard = STOFileAdapter::readFile("std_subject01_walk1_ik.mot");
 
     compareMotionTables(report, standard);
 }
@@ -471,6 +471,6 @@ void testInverseKinematicsSolverWithEulerAnglesFromFile()
     auto report = ikReporter->getTable();
     STOFileAdapter::write(report, "ik_euler_tracking_results.sto");
 
-    const auto standard = STOFileAdapter::read("std_subject01_walk1_ik.mot");
+    const auto standard = STOFileAdapter::readFile("std_subject01_walk1_ik.mot");
     compareMotionTables(report, standard);
 }
