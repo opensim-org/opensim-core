@@ -148,6 +148,10 @@ MocoSolution MocoTropterSolver::solveImpl() const {
 #ifdef MOCO_WITH_TROPTER
     const Stopwatch stopwatch;
 
+    OPENSIM_THROW_IF_FRMOBJ(getProblemRep().isPrescribedKinematics(), Exception,
+            "MocoTropterSolver does not support prescribed kinematics. "
+            "Try using prescribed motion constraints in the Coordinates.");
+
     auto ocp = createTropterProblem();
 
     // Apply settings/options.

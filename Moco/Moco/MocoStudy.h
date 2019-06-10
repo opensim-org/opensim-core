@@ -125,10 +125,9 @@ public:
     /// @precondition
     ///     The MocoProblem must contain the model corresponding to
     ///     the provided iterate.
-    // TODO should visualize be here or in MocoProblem? Should MocoProblem
-    // know aobut MocoIterate?
     void visualize(const MocoIterate& it) const;
 
+    /// TODO
     TimeSeriesTable analyze(
             const MocoIterate& it, std::vector<std::string> outputPaths) const;
 
@@ -139,7 +138,7 @@ public:
         set_solver(SolverType());
     }
 
-    /// @precondition If not using MucoTropterSolver or MucoCasADiSolver, you
+    /// @precondition If not using MocoTropterSolver or MocoCasADiSolver, you
     /// must invoke setCustomSolver() first.
     template <typename SolverType>
     SolverType& initSolver() {
