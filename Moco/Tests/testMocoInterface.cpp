@@ -650,7 +650,7 @@ TEMPLATE_TEST_CASE("Workflow", "", MocoTropterSolver, MocoCasADiSolver) {
 }
 TEMPLATE_TEST_CASE("Set infos with regular expression", "", MocoCasADiSolver,
         MocoTropterSolver) {
-    MocoTool moco;
+    MocoStudy moco;
     MocoProblem& problem = moco.updProblem();
     problem.setModelCopy(OpenSim::ModelFactory::createDoublePendulum());
     problem.setTimeBounds(0, 10);
