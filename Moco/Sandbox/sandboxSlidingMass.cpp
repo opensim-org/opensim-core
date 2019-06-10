@@ -278,6 +278,7 @@ public:
 private:
     void constructProperties() {
         constructProperty_model_file("");
+
         constructProperty_time_initial_bounds();
         constructProperty_time_final_bounds();
         constructProperty_state_info();
