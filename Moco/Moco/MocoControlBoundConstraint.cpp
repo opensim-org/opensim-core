@@ -38,37 +38,11 @@ void MocoControlBoundConstraint::constructProperties() {
 void MocoControlBoundConstraint::initializeOnModelImpl(
         const Model& model, const MocoProblemInfo& problemInfo) const {
 
-    std::vector<std::string> actuPaths;
-    for (const auto& actu : model.getComponentList<Actuator>()) {
-        OPENSIM_THROW_IF_FRMOBJ(actu.numControls() != 1, Exception,
-                "Currently, only ScalarActuators are supported.");
-        actuPaths.push_back(actu.getAbsolutePathString());
-    }
+    // Get all expected control names.
+    auto controlNames = createControlNamesFromModel(model);
 
-    // TODO this assumes controls are in the same order as actuators.
-    // The loop that processes weights (two down) assumes that controls are in
-    // the same order as actuators. However, the control indices are allocated
-    // in the order in which addToSystem() is invoked (not necessarily the order
-    // used by getComponentList()). So until we can be absolutely sure that the
-    // controls are in the same order as actuators, we run the following check:
-    // in order, set an actuator's control signal to NaN and ensure the i-th
-    // control is NaN.
-    {
-        SimTK::Vector nan(1, SimTK::NaN);
-        const SimTK::State state = model.getWorkingState();
-        int i = 0;
-        auto modelControls = model.updControls(state);
-        for (const auto& actu : model.getComponentList<Actuator>()) {
-            SimTK::Vector origControls(1);
-            actu.getControls(modelControls, origControls);
-            actu.setControls(nan, modelControls);
-            OPENSIM_THROW_IF_FRMOBJ(!SimTK::isNaN(modelControls[i]), Exception,
-                    "Internal error: actuators are not in the expected order. "
-                    "Submit a bug report.");
-            actu.setControls(origControls, modelControls);
-            ++i;
-        }
-    }
+    // Check that the model controls are in the correct order.
+    checkOrderSystemControls(model);
 
     // Make sure there are no weights for nonexistent controls.
     m_hasLower = !getProperty_lower_bound().empty();
@@ -80,15 +54,12 @@ void MocoControlBoundConstraint::initializeOnModelImpl(
                   << std::endl;
     }
     if (m_hasLower || m_hasUpper) {
+        auto systemControlIndexMap = createSystemControlIndexMap(model);
         for (int i = 0; i < getProperty_control_paths().size(); ++i) {
             const auto& thisName = get_control_paths(i);
-            auto loc = std::find(actuPaths.begin(), actuPaths.end(), thisName);
-            if (loc == actuPaths.end()) {
-                OPENSIM_THROW_FRMOBJ(
-                        Exception, "Unrecognized control '" + thisName + "'.");
-            }
-            m_controlIndices.push_back(
-                    (int)std::distance(actuPaths.begin(), loc));
+            OPENSIM_THROW_IF_FRMOBJ(systemControlIndexMap.count(thisName) == 0,
+                    Exception, "Unrecognized control '" + thisName + "'.");
+            m_controlIndices.push_back(systemControlIndexMap[thisName]);
         }
     }
 
