@@ -31,8 +31,10 @@ class OSIMMOCO_API ModelOperator : public Object {
     OpenSim_DECLARE_ABSTRACT_OBJECT(ModelOperator, Object);
 
 public:
-    virtual void operate(Model& model,
-            const std::string& relativeToDirectory) const = 0;
+    /// Perform an operation on the model, using `relativeToDirectory` to locate
+    /// any files that this operator reads.
+    virtual void operate(
+            Model& model, const std::string& relativeToDirectory) const = 0;
 };
 
 /// This class describes a workflow for processing a Model using
@@ -83,22 +85,27 @@ public:
         return &upd_model();
     }
 
-    /// Obtain the base model, if one was provided. This ignores filepath.
+    /// Obtain the base model, if one was provided via the model property or
+    /// setModel(). This ignores base models specified via the filepath
+    /// property.
     const Model& getModel() const {
         OPENSIM_THROW_IF_FRMOBJ(getProperty_model().empty(), Exception,
                 "No base model available.");
         return get_model();
     }
 
-    /// Obtain the base model, if one was provided. This ignores filepath.
+    /// Obtain a mutable reference to the base model, if one was provided via
+    /// the model property or setModel(). This ignores base models specified
+    /// via the filepath property.
     Model& updModel() {
         OPENSIM_THROW_IF_FRMOBJ(getProperty_model().empty(), Exception,
                 "No base model available.");
         return upd_model();
     }
 
-    /// Process and obtain the model. If a filepath is provided, it will be
-   /// evaluated relative to `relativeToDirectory`, if provided.
+    /// Process and obtain the model. If the base model is specified via the
+    /// filepath property, the filepath will be evaluated relative to
+    /// `relativeToDirectory`, if provided.
     Model process(const std::string& relativeToDirectory = {}) const {
         Model model;
         if (get_filepath().empty()) {

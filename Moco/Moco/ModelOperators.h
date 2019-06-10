@@ -84,20 +84,20 @@ public:
 };
 
 /// Add external loads (e.g., ground reaction forces) to the model from a
-/// .xml file.
+/// XML file.
 class OSIMMOCO_API ModOpAddExternalLoads : public ModelOperator {
     OpenSim_DECLARE_CONCRETE_OBJECT(ModOpAddExternalLoads, ModelOperator);
     OpenSim_DECLARE_PROPERTY(
-            filepath, std::string, "External loads .xml file.");
+            filepath, std::string, "External loads XML file.");
 
 public:
     ModOpAddExternalLoads() { constructProperty_filepath(""); }
     ModOpAddExternalLoads(std::string filepath) : ModOpAddExternalLoads() {
         set_filepath(std::move(filepath));
     }
+    /// The ExternalLoads XML file is located relative to `relativeToDirectory`.
     void operate(Model& model,
             const std::string& relativeToDirectory) const override {
-        // TODO directory?
         std::string path = get_filepath();
         if (!relativeToDirectory.empty()) {
             using SimTK::Pathname;
