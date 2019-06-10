@@ -37,6 +37,8 @@
 #include "MocoCost/MocoTranslationTrackingCost.h"
 #include "MocoParameter.h"
 
+#include "MocoControlBoundConstraint.h"
+
 #include "Common/TableProcessor.h"
 
 #include "MocoCasADiSolver/MocoCasADiSolver.h"
@@ -79,6 +81,9 @@ OSIMMOCO_API void RegisterTypes_osimMoco() {
         Object::registerType(MocoProblem());
         Object::registerType(MocoStudy());
         Object::registerType(MocoTropterSolver());
+
+        Object::registerType(MocoControlBoundConstraint());
+
         Object::registerType(MocoCasADiSolver());
 
         Object::registerType(ActivationCoordinateActuator());
