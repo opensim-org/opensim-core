@@ -42,7 +42,7 @@ DirectCollocationSolver<T>::DirectCollocationSolver(
                                                              num_mesh_points));
     } else if (transcrip_lower == "hermite-simpson") {
         m_transcription.reset(new transcription::HermiteSimpson<T>(ocproblem,
-                                                             num_mesh_points));
+                        get_interpolate_control_midpoints(), num_mesh_points));
     } else {
         TROPTER_THROW("Unrecognized transcription method %s.", transcrip);
     }
@@ -77,6 +77,11 @@ void DirectCollocationSolver<T>::set_exact_hessian_block_sparsity_mode(
         "Hessian block sparsity mode", mode, "dense or sparse");
     m_transcription->set_exact_hessian_block_sparsity_mode(mode);
     m_exact_hessian_block_sparsity_mode = mode;
+}
+
+template<typename T>
+void DirectCollocationSolver<T>::set_interpolate_control_midpoints(bool tf) {
+    m_interpolate_control_midpoints = tf;
 }
 
 template<typename T>

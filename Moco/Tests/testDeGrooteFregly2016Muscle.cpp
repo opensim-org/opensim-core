@@ -579,7 +579,7 @@ TEMPLATE_TEST_CASE("Hanging muscle minimum time", "", MocoCasADiSolver) {
     const auto svn = model.getStateVariableNames();
     MocoSolution solutionTrajOpt;
     {
-        MocoTool moco;
+        MocoStudy moco;
         MocoProblem& problem = moco.updProblem();
         problem.setModelCopy(model);
         problem.setTimeBounds(0, {0.05, 1.0});
@@ -653,7 +653,7 @@ TEMPLATE_TEST_CASE("Hanging muscle minimum time", "", MocoCasADiSolver) {
     {
         std::cout << "Tracking the trajectory optimization coordinate solution."
                   << std::endl;
-        MocoTool moco;
+        MocoStudy moco;
         MocoProblem& problem = moco.updProblem();
         problem.setModelCopy(model);
         // Using an equality constraint for the time bounds was essential for

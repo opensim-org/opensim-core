@@ -85,6 +85,14 @@ public:
     std::string get_exact_hessian_block_sparsity_mode() const
     { return m_exact_hessian_block_sparsity_mode; }
 
+    /// If using a Hermite-Simpson collocation scheme, enable this setting to 
+    /// contrain control values at mesh interval midpoints by linearly
+    /// interpolating the values at the mesh interval endpoints. Default: true.
+    void set_interpolate_control_midpoints(bool tf);
+    /// @copydoc set_interpolate_control_midpoints()
+    bool get_interpolate_control_midpoints() const
+    { return m_interpolate_control_midpoints; }
+
     /// Solve the problem using an initial guess that is based on the bounds
     /// on the variables.
     Solution solve() const;
@@ -129,6 +137,7 @@ private:
 
     int m_verbosity = 1;
     std::string m_exact_hessian_block_sparsity_mode{"dense"};
+    bool m_interpolate_control_midpoints = true;
 };
 
 } // namespace tropter
