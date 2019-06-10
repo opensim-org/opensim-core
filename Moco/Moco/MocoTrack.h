@@ -23,6 +23,7 @@
 #include "MocoTool.h"
 
 #include <OpenSim/Simulation/Model/Model.h>
+#include "Common/TableProcessor.h"
 
 namespace OpenSim {
 
@@ -39,18 +40,13 @@ class MocoIterate;
 
 // TODO allowing extra columns for everything
 // TODO "from_data", states data will take precedence over data from markers
+// TODO tell users how to access control cost 
 class OSIMMOCO_API MocoTrack : public MocoTool {
 OpenSim_DECLARE_CONCRETE_OBJECT(MocoTrack, MocoTool);
 
 public:
-
-    OpenSim_DECLARE_PROPERTY(states_tracking_file, std::string,
-        "Path to a STO file containing reference state variable data "
-        "to track via a MocoStateTrackingCost. "
-        "The path can be absolute or relative to the setup file."
-        "If the state file columns are labeled using only model "
-        "coordinate names, it is assumed that position-level state "
-        "should track this data.");
+    OpenSim_DECLARE_PROPERTY(states_reference, TableProcessor,
+        "TODO.");
 
     OpenSim_DECLARE_PROPERTY(states_tracking_weight, double,
         "The weight for the MocoStateTrackingCost. ");
@@ -68,10 +64,8 @@ public:
         "coordinates without speed reference data. "
         "(default: false)");
 
-    OpenSim_DECLARE_PROPERTY(markers_tracking_file, std::string,
-        "Path to a STO file containing reference marker data to track "
-        "via a MocoMarkerTrackingCost. "
-        "The path can be absolute or relative to the setup file.");
+    OpenSim_DECLARE_PROPERTY(markers_reference, TableProcessor,
+        "TODO.");
 
     OpenSim_DECLARE_PROPERTY(markers_tracking_weight, double,
         "The weight for the MocoMarkerTrackingCost. ");
@@ -81,16 +75,6 @@ public:
         "be used to specify individual tracking weights for markers in "
         "problem. It is also used to create an initial guess for the state "
         "variables when the 'guess_type' property is set to 'from_data'.");
-
-    OpenSim_DECLARE_PROPERTY(lowpass_cutoff_frequency_for_kinematics, double,
-        "The frequency (Hz) at which to filter the kinematics "
-        "(markers and states). "
-        "(default is -1, which means no filtering; for walking, "
-        "consider 6 Hz).");
-
-    OpenSim_DECLARE_PROPERTY(external_loads_file, std::string,
-        "Path to an XML file describing ExternalForces to be tracked or "
-        "applied to the model.");
 
     OpenSim_DECLARE_PROPERTY(guess_type, std::string,
         "Options: 'bounds', 'from_data', or 'from_file'. "
@@ -110,14 +94,16 @@ public:
         "the internal MocoControlCost."
         "(default: -1, meaning no control cost.");
 
-    OpenSim_DECLARE_PROPERTY(control_weights, MocoWeightSet,
-        "Individual control weights to be applied to the MocoControlCost "
-        "in the problem (if enabled by the 'minimize_controls' property).");
-
     MocoTrack() { constructProperties(); }
 
-    void setModel(Model model) { m_model = std::move(model); }
+    void setStatesReference(TableProcessor states) {
+        set_states_reference(std::move(states));
+    }
+    void setMarkersReference(TableProcessor markers) {
+        set_markers_reference(std::move(markers));
+    }
 
+    // TODO make these const?
     MocoStudy initialize();
     void solve();
 

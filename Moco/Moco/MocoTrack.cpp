@@ -39,19 +39,16 @@ using namespace OpenSim;
 
 void MocoTrack::constructProperties() {
 
-    constructProperty_states_tracking_file("");
+    constructProperty_states_reference(TableProcessor());
     constructProperty_states_tracking_weight(1);
     constructProperty_state_weights(MocoWeightSet());
     constructProperty_track_state_reference_derivatives(false);
-    constructProperty_markers_tracking_file("");
+    constructProperty_markers_reference(TableProcessor());
     constructProperty_markers_tracking_weight(1);
-    constructProperty_lowpass_cutoff_frequency_for_kinematics(-1);
     constructProperty_ik_setup_file("");
-    constructProperty_external_loads_file("");
     constructProperty_guess_type("bounds");
     constructProperty_guess_file("");
     constructProperty_minimize_controls(-1);
-    constructProperty_control_weights(MocoWeightSet());
 }
 
 MocoStudy MocoTrack::initialize() {
@@ -62,7 +59,7 @@ MocoStudy MocoTrack::initialize() {
 
     // Modeling.
     // ---------
-    Model model(m_model);
+    Model model = get_model().process();
     model.finalizeFromProperties();
     model.initSystem();
 
@@ -70,20 +67,13 @@ MocoStudy MocoTrack::initialize() {
     // ------
 
     // State tracking cost.
-    if (!get_states_tracking_file().empty()) {
+    if (get_states_reference().hasTable()) {
         configureStateTracking(problem, model);
     }
 
     // Marker tracking cost.
-    if (!get_markers_tracking_file().empty()) {
+    if (get_markers_reference().hasTable()) {
         configureMarkerTracking(problem, model);
-    }
-
-    // Apply external loads, if any.
-    if (!get_external_loads_file().empty()) {
-        InverseDynamicsTool idtool;
-        idtool.createExternalLoads(get_external_loads_file(), model);
-        model.initSystem();
     }
 
     // Set the model on the MocoProblem, now that we're done configuring costs.
@@ -95,17 +85,6 @@ MocoStudy MocoTrack::initialize() {
         auto* effort = problem.addCost<MocoControlCost>("control_effort");
         assert(get_minimize_controls() > 0);
         effort->set_weight(get_minimize_controls());
-
-        const auto& control_weights = get_control_weights();
-        for (int c = 0; c < control_weights.getSize(); ++c) {
-            const auto& control_weight = control_weights.get(c);
-            effort->setWeight(control_weight.getName(),
-                control_weight.getWeight());
-        }
-    } else {
-        OPENSIM_THROW_IF(get_control_weights().getSize() != 0, Exception,
-            "Control weight set provided, but control minimization was not "
-            "specified by the user.");
     }
 
     // Set the time range.
@@ -124,14 +103,12 @@ MocoStudy MocoTrack::initialize() {
 
     // Configure solver.
     // -----------------
+    // TODO how to set defaults?
     MocoCasADiSolver& solver = moco.initCasADiSolver();
-    // TODO: Use MocoTool::mesh_interval property
-    solver.set_num_mesh_points(25);
+    solver.set_num_mesh_points(m_timeInfo.numMeshPoints);
     solver.set_dynamics_mode("explicit");
     solver.set_optim_convergence_tolerance(1e-2);
     solver.set_optim_constraint_tolerance(1e-2);
-    solver.set_enforce_constraint_derivatives(true);
-    solver.set_transcription_scheme("hermite-simpson");
     solver.set_optim_finite_difference_scheme("forward");
 
     // Set the problem guess.
@@ -188,15 +165,8 @@ std::string MocoTrack::getFilePath(const std::string& file) const {
 
 void MocoTrack::configureStateTracking(MocoProblem& problem, Model& model) {
 
-    // Read in the states reference data, filter, and spline.
-    TimeSeriesTable statesRaw = readTableFromFile(get_states_tracking_file());
-    TimeSeriesTable states;
-    if (get_lowpass_cutoff_frequency_for_kinematics() != -1) {
-        states = filterLowpass(statesRaw,
-            get_lowpass_cutoff_frequency_for_kinematics(), true);
-    } else {
-        states = statesRaw;
-    }
+    // Read in the states reference data and spline.
+    TimeSeriesTable states = get_states_reference().process("", &model);
     auto stateSplines = GCVSplineSet(states, states.getColumnLabels());
 
     // Check that there are no redundant columns in the reference data.
@@ -298,11 +268,6 @@ void MocoTrack::configureStateTracking(MocoProblem& problem, Model& model) {
     updateTimeInfo("states", states.getIndependentColumn().front(),
             states.getIndependentColumn().back(), m_timeInfo);
 
-    // Update units before printing.
-    if (states.hasTableMetaDataKey("inDegrees") &&
-        states.getTableMetaDataAsString("inDegrees") == "yes") {
-        model.getSimbodyEngine().convertDegreesToRadians(states);
-    }
     // Write tracked states to file in case any label updates or filtering
     // occured.
     writeTableToFile(states, getName() + "_tracked_states.mot");
@@ -315,17 +280,8 @@ void MocoTrack::configureStateTracking(MocoProblem& problem, Model& model) {
 
 void MocoTrack::configureMarkerTracking(MocoProblem& problem, Model& model) {
 
-    // Read in the markers reference data and filter.
-    TimeSeriesTable_<SimTK::Vec3> markersRaw =
-        readTableFromFileT<SimTK::Vec3>(get_markers_tracking_file());
-    TimeSeriesTable markersRawFlat = markersRaw.flatten();
-    TimeSeriesTable markersFlat;
-    if (get_lowpass_cutoff_frequency_for_kinematics() != -1) {
-        markersFlat = filterLowpass(markersRawFlat,
-            get_lowpass_cutoff_frequency_for_kinematics(), true);
-    } else {
-        markersFlat = markersRawFlat;
-    }
+    // Read in the markers reference data.
+    TimeSeriesTable markersFlat = get_markers_reference().process("", &model);
     TimeSeriesTable_<SimTK::Vec3> markers = markersFlat.pack<SimTK::Vec3>();
     MarkersReference markersRef(markers);
 

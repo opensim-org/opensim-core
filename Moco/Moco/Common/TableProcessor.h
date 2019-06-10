@@ -131,6 +131,12 @@ public:
         return append(right);
     }
 
+    /// Check to see if a table has been provided via the API or if a path to a 
+    /// file containing a table has been provided.
+    bool hasTable() const {
+        return m_tableProvided || !get_filepath().empty();
+    }
+
 private:
     bool m_tableProvided = false;
     TimeSeriesTable m_table;
