@@ -59,6 +59,7 @@ We use the following notation:
 
 @section Example
 
+TODO
 
 @section Overview
 
@@ -123,7 +124,8 @@ See @ref mococost for more information.
 @section MocoSolver
 
 A MocoSolver attempts to use an optimal control method to solve the MocoProblem,
-and exposes the settings that you can use to TODO.
+and exposes settings you can use to control the transcription to a generic
+optimization problem and the optimization process.
 
 @subsection trapezoidal Trapezoidal transcription
 
@@ -195,12 +197,6 @@ When using the implicit dynamics mode, the differential equations for multibody
 dynamics are expressed as implicit differential equations. That is, they are
 in the form \f$ 0 = f(x, \dot{x}) \f$ rather than \f$ \dot{x} = f(x) \f$.
 
-The following are not currently supported with implicit dynamics:
-
-1. Auxiliary dynamics (e.g., activation and fiber dynamics).
-2. Acceleration-level quantities (e.g., MocoJointReactionNormCost).
-3. Kinematic constraints.
-
 
 @subsection kincon Kinematic constraints
 
@@ -240,7 +236,7 @@ these variables.
 
 @section prescribedmotion Prescribed motion
 
-A common goal in musculoskeletal biomechanics is to estimate for muscle and
+A common goal in musculoskeletal biomechanics is to estimate muscle and
 actuator behavior that drove an observed motion. We can solve this
 problem by tracking the observed motion, as with Computed Muscle Control (using
 the "slow target") or MocoTrack. Alternatively, we can prescribe the motion
@@ -279,7 +275,7 @@ of freedom from the system (using SimTK::Motion). Moco supports this
 
 In this formulation, the kinematic variables \f$ q \f$ and \f$ u \f$ are
 replaced with known quantities \f$ \hat{q} \f$ and \f$ \hat{u} \f$. The system
-still contains auxiliary state variables \f$ z \f$, and control variables \f$ x
+still contains auxiliary state variables \f$ z \f$, control variables \f$ x
 \f$, and auxiliary dynamics. If none of the parameter variables affect the
 multibody system, then the multibody dynamics is reduced to a force balance:
 applied forces must match the net generalized forces determined by the
@@ -291,12 +287,13 @@ support prescribing a subset of the degrees of freedom.
 
 If a model contains kinematic constraints, you must ensure that the
 prescribed motion obeys the kinematic constraints. PositionMotion does not
-ensure this for you. Otherwise, your answers will be nonphysical. TODO
-MocoInverse assembles. Even though the kinematic constraint equations no longer
-appear, we must still include constraint forces \f$ G^T \lambda \f$, as the
-applied forces affect what the constraint forces must be. Consider a point mass
-welded in place: the constraint forces must counter any applied forces to
-maintain the weld constraint.
+ensure this for you. Otherwise, your answers will be nonphysical. Note that
+the MocoInverse tool modifies the provided kinematics so they obey the
+constraints (using Model::assemble()). Even though the kinematic constraint
+equations no longer appear, we must still include constraint forces \f$ G^T
+\lambda \f$, as the applied forces affect what the constraint forces must be.
+Consider a point mass welded in place: the constraint forces must counter any
+applied forces to maintain the weld constraint.
 
 
 @section tips Tips for solving a custom problem

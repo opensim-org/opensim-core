@@ -23,10 +23,6 @@
 
 namespace OpenSim {
 
-// ============================================================================
-// MocoPhase
-// ============================================================================
-
 /// The states, controls, dynamics, parameters, costs, and constraints for a
 /// phase of the problem.
 /// The dynamics are provided by the %OpenSim Model.

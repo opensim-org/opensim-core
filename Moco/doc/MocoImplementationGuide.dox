@@ -2,6 +2,9 @@
 
 @page mocoimplguide Moco Implementation Guide
 
+This guide explains how direct collocation schemes are implemented using an
+OpenSim model.
+
 TODO API design: why we have MocoProblemRep
 TODO PositionMotion
 TODO AccelerationMotion

@@ -25,6 +25,8 @@
 #include <OpenSim/Common/GCVSplineSet.h>
 #include <OpenSim/Common/TimeSeriesTable.h>
 #include <OpenSim/Simulation/Model/Frame.h>
+namespace OpenSim {
+
 
 /// The squared difference between a model frame's origin position and a
 /// reference position value, summed over the frames for which a reference is
@@ -50,8 +52,6 @@
 /// data, so it is recommended to filter the data in the reference you provide
 /// to the cost.
 /// @ingroup mococost
-namespace OpenSim {
-
 class OSIMMOCO_API MocoTranslationTrackingCost : public MocoCost {
     OpenSim_DECLARE_CONCRETE_OBJECT(MocoTranslationTrackingCost, MocoCost);
 
