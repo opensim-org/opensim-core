@@ -68,12 +68,16 @@ public:
 
     void setLowerBound(const Function& f) { set_lower_bound(f); }
     void clearLowerBound() { updProperty_lower_bound().clear(); }
-    bool hasLowerBound() const { return getProperty_lower_bound().size(); }
+    bool hasLowerBound() const {
+        return (bool)getProperty_lower_bound().size();
+    }
     const Function& getLowerBound() const { return get_lower_bound(); }
 
     void setUpperBound(const Function& f) { set_upper_bound(f); }
     void clearUpperBound() { updProperty_upper_bound().clear(); }
-    bool hasUpperBound() const { return getProperty_upper_bound().size(); }
+    bool hasUpperBound() const {
+        return (bool)getProperty_upper_bound().size();
+    }
     const Function& getUpperBound() const { return get_upper_bound(); }
 
     /// Should the control be constrained to be equal to the lower bound (rather
