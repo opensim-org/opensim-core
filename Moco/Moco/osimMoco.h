@@ -39,6 +39,9 @@
 
 #include "Common/TableProcessor.h"
 
+#include "ModelProcessor.h"
+#include "ModelOperators.h"
+
 #include "Components/ActivationCoordinateActuator.h"
 #include "Components/StationPlaneContactForce.h"
 #include "Components/ModelFactory.h"
