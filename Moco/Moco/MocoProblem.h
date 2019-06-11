@@ -19,6 +19,7 @@
  * -------------------------------------------------------------------------- */
 
 #include "MocoProblemRep.h"
+#include "ModelProcessor.h"
 
 namespace OpenSim {
 
@@ -56,6 +57,12 @@ public:
     /// This function returns a pointer to the model stored in the phase
     /// (the copy).
     Model* setModelCopy(Model model);
+    /// Set a model processor for creating the model for this phase. Use this
+    /// to provide a model as a .osim file.
+    void setModelProcessor(ModelProcessor model);
+    /// Get a mutable reference to the internal ModelProcessor. Use this to
+    /// set the processor's base model or to add operators to the processor.
+    ModelProcessor& updModelProcessor();
     /// Set the bounds on the initial and final time for this phase.
     /// If you want to constrain the initial time to a single value, pass
     /// that value to the constructor of MocoInitialBounds. If you want the
@@ -285,8 +292,14 @@ public:
         return ptr;
     }
 
-    const Model& getModel() const { return get_model(); }
-    Model& updModel() { return upd_model(); }
+    /// Get the base model in the internal ModelProcessor. This throws an
+    /// exception if the ModelProcessor does not have a base model. By default,
+    /// the model is an empty model.
+    const Model& getModel() const { return get_model().getModel(); }
+    /// Get a mutable reference to the base model in the internal
+    /// ModelProcessor. This throws an exception if the ModelProcessor does not
+    /// have a base model. By default, the model is an empty model.
+    Model& updModel() { return upd_model().updModel(); }
 
     /// @details Note: the return value is constructed fresh on every call from
     /// the internal property. Avoid repeated calls to this function.
@@ -332,7 +345,7 @@ public:
 
 protected: // Protected so that doxygen shows the properties.
     OpenSim_DECLARE_PROPERTY(
-            model, Model, "OpenSim Model to provide dynamics.");
+            model, ModelProcessor, "OpenSim Model to provide dynamics.");
     // TODO error if not provided.
     OpenSim_DECLARE_PROPERTY(
             time_initial_bounds, MocoInitialBounds, "Bounds on initial value.");
@@ -415,6 +428,9 @@ public:
     /// Set the model to use for phase 0.
     /// @see MocoPhase::setModelCopy().
     Model* setModelCopy(Model model);
+    /// Set a model processor for phase 0.
+    /// @see MocoPhase::setModelProcessor().
+    void setModelProcessor(ModelProcessor model);
     /// Set time bounds for phase 0.
     void setTimeBounds(const MocoInitialBounds&, const MocoFinalBounds&);
     /// Set bounds for a state variable for phase 0.
