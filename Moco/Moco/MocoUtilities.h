@@ -301,23 +301,26 @@ TimeSeriesTable_<T> analyze(Model model, const MocoIterate& iterate,
     for (const auto& comp : model.getComponentList()) {
         for (const auto& outputName : comp.getOutputNames()) {
             const auto& output = comp.getOutput(outputName);
-            // Make sure the output type agrees with the template.
-            if (output.getTypeName() == Object_GetClassName<T>::name()) {
-                auto thisOutputPath = output.getPathName();
-                // Make sure the path is valid (i.e. no 'pipe' characters).
-                std::replace(thisOutputPath.begin(), thisOutputPath.end(),
-                    '|', '/');
-                for (const auto& outputPathArg : outputPaths) {
-                    if (std::regex_match(
-                        thisOutputPath, std::regex(outputPathArg))) {
+            auto thisOutputPath = output.getPathName();
+            // Make sure the path is valid (i.e. no 'pipe' characters).
+            std::replace(thisOutputPath.begin(), thisOutputPath.end(),
+                '|', '/');
+            for (const auto& outputPathArg : outputPaths) {
+                if (std::regex_match(thisOutputPath, 
+                        std::regex(outputPathArg))) {
+                    // Make sure the output type agrees with the template.
+                    if (output.getTypeName() == 
+                            Object_GetClassName<T>::name()) {
                         reporter->addToReport(output);
+                    } else {
+                        std::cout << format("Warning: ignoring output %s of "
+                                            "type %s.", output.getPathName(), 
+                                            output.getTypeName())
+                                  << std::endl;
                     }
                 }
-            } else {
-                std::cout << format("Warning: ignoring output %s of type %s.",
-                                     output.getPathName(), output.getTypeName())
-                          << std::endl;
             }
+       
         }
     }
     model.addComponent(reporter);

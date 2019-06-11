@@ -287,8 +287,7 @@ void MocoTrack::configureMarkerTracking(MocoProblem& problem, Model& model) {
 void MocoTrack::applyStatesToGuess(const TimeSeriesTable& states,
         const Model& model, MocoIterate& guess) {
 
-    const int numTimes = states.getNumRows();
-    guess.resampleWithNumTimes(numTimes);
+    guess.resampleWithNumTimes((int)states.getNumRows());
     for (int i = 0; i < (int)states.getNumColumns(); ++i) {
         const auto& label = states.getColumnLabel(i);
         const auto& col = states.getDependentColumnAtIndex(i);
