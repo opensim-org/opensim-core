@@ -187,6 +187,7 @@ AddDependency(NAME eigen
 
 include(colpack.cmake)
 
+
 set(SUPERBUILD_adolc ON CACHE BOOL 
     "Automatically download, configure, build and install adolc")
 set(SUPERBUILD_ipopt ON CACHE BOOL 

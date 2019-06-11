@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: testTableProcessor.cpp                                       *
+ * OpenSim Moco: testModelProcessor.cpp                                       *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2019 Stanford University and the Authors                     *
  *                                                                            *
@@ -18,62 +18,61 @@
 
 #define CATCH_CONFIG_MAIN
 #include "Testing.h"
-#include <Moco/Common/TableProcessor.h>
+#include <Moco/ModelProcessor.h>
 
+#include <OpenSim/Analyses/MuscleAnalysis.h>
 #include <OpenSim/Common/LogManager.h>
 
 using namespace OpenSim;
 
-TEST_CASE("TableProcessor") {
+TEST_CASE("ModelProcessor") {
     std::cout.rdbuf(LogManager::cout.rdbuf());
     std::cerr.rdbuf(LogManager::cerr.rdbuf());
 
-    class MyTableOperator : public TableOperator {
-        OpenSim_DECLARE_CONCRETE_OBJECT(MyTableOperator, TableOperator);
+    class MyModelOperator : public ModelOperator {
+        OpenSim_DECLARE_CONCRETE_OBJECT(MyModelOperator, ModelOperator);
 
     public:
-        void operate(TimeSeriesTable& table) const override {
-            table.appendRow(10.0,
-                    ~createVectorLinspace((int)table.getNumColumns(), 0, 1));
+        void operate(Model& model, const std::string&) const override {
+            model.addAnalysis(new MuscleAnalysis());
         }
     };
-    Object::registerType(MyTableOperator());
-    TimeSeriesTable table(std::vector<double>{1, 2, 3},
-            SimTK::Test::randMatrix(3, 2), std::vector<std::string>{"a", "b"});
+    Object::registerType(MyModelOperator());
+    Model model = ModelFactory::createPendulum();
 
     SECTION("Exceptions") {
-        // Exception if no table was provided.
-        CHECK_THROWS(TableProcessor().process());
-        // No exception if an empty table is provided.
-        TableProcessor(TimeSeriesTable{}).process();
+        // Exception if no model was provided.
+        CHECK_THROWS(ModelProcessor().process());
+        // No exception if an empty model is provided.
+        ModelProcessor(Model{}).process();
         {
-            TableProcessor proc(TimeSeriesTable{});
-            proc.set_filepath("file.sto");
+            ModelProcessor proc(Model{});
+            proc.set_filepath("file.osim");
             CHECK_THROWS_WITH(proc.process(),
-                    Catch::Contains("Expected either an in-memory table or a "
+                    Catch::Contains("Expected either a Model object or a "
                                     "filepath"));
         }
     }
 
     SECTION("Operators take effect") {
-        TableProcessor proc = TableProcessor(table) | MyTableOperator();
-        CHECK(proc.process().getNumRows() == 4);
+        ModelProcessor proc = ModelProcessor(model) | MyModelOperator();
+        CHECK(proc.process().getAnalysisSet().getSize() == 1);
     }
 
     SECTION("Serialization") {
-        writeTableToFile(table, "testTableProcessor_table.sto");
+        model.print("testModelProcessor_model.osim");
         {
-            TableProcessor proc =
-                    TableProcessor("testTableProcessor_table.sto") |
-                    MyTableOperator();
-            proc.print("testTableProcessor_TableProcessor.xml");
+            ModelProcessor proc =
+                    ModelProcessor("testModelProcessor_model.osim") |
+                    MyModelOperator();
+            proc.print("testModelProcessor_ModelProcessor.xml");
         }
         {
             std::unique_ptr<Object> obj(Object::makeObjectFromFile(
-                    "testTableProcessor_TableProcessor.xml"));
-            auto* proc = dynamic_cast<TableProcessor*>(obj.get());
-            TimeSeriesTable out = proc->process();
-            CHECK(out.getNumRows() == 4);
+                    "testModelProcessor_ModelProcessor.xml"));
+            auto* proc = dynamic_cast<ModelProcessor*>(obj.get());
+            Model modelDeserialized = proc->process();
+            CHECK(modelDeserialized.getAnalysisSet().getSize() == 1);
         }
     }
 }

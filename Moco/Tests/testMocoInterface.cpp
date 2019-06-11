@@ -741,7 +741,51 @@ TEMPLATE_TEST_CASE("Workflow", "", MocoTropterSolver, MocoCasADiSolver) {
     //     }
     // }
 }
-
+TEMPLATE_TEST_CASE("Set infos with regular expression", "", MocoCasADiSolver,
+        MocoTropterSolver) {
+    MocoStudy moco;
+    MocoProblem& problem = moco.updProblem();
+    problem.setModelCopy(OpenSim::ModelFactory::createDoublePendulum());
+    problem.setTimeBounds(0, 10);
+    problem.setStateInfoPattern(".*/value", {2, 10});
+    problem.setStateInfoPattern(".*/speed", {3, 10});
+    MocoProblemRep problemRep = problem.createRep();
+    SimTK_TEST_EQ(problemRep.getStateInfo("/jointset/j0/q0/value")
+                          .getBounds()
+                          .getLower(),
+            2);
+    SimTK_TEST_EQ(problemRep.getStateInfo("/jointset/j1/q1/value")
+                          .getBounds()
+                          .getLower(),
+            2);
+    SimTK_TEST_EQ(problemRep.getStateInfo("/jointset/j0/q0/speed")
+                          .getBounds()
+                          .getLower(),
+            3);
+    SimTK_TEST_EQ(problemRep.getStateInfo("/jointset/j1/q1/speed")
+                          .getBounds()
+                          .getLower(),
+            3);
+    problem.setStateInfo("/jointset/j0/q0/value", {3, 10});
+    problem.setStateInfo("/jointset/j1/q1/speed", {4, 10});
+    problemRep = problem.createRep();
+    SimTK_TEST_EQ(problemRep.getStateInfo("/jointset/j0/q0/value")
+                          .getBounds()
+                          .getLower(),
+            3);
+    SimTK_TEST_EQ(problemRep.getStateInfo("/jointset/j1/q1/value")
+                          .getBounds()
+                          .getLower(),
+            2);
+    SimTK_TEST_EQ(problemRep.getStateInfo("/jointset/j0/q0/speed")
+                          .getBounds()
+                          .getLower(),
+            3);
+    SimTK_TEST_EQ(problemRep.getStateInfo("/jointset/j1/q1/speed")
+                          .getBounds()
+                          .getLower(),
+            4);
+}
 TEMPLATE_TEST_CASE(
         "Disable Actuators", "", MocoCasADiSolver, MocoTropterSolver) {
     std::cout.rdbuf(LogManager::cout.rdbuf());
