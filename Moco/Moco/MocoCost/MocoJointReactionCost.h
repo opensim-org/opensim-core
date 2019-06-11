@@ -1,7 +1,7 @@
 #ifndef MOCO_MOCOJOINTREACTIONCOST_H
 #define MOCO_MOCOJOINTREACTIONCOST_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: MocoJointReactionNormCost.h                                  *
+ * OpenSim Moco: MocoJointReactionCost.h                                      *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2019 Stanford University and the Authors                     *
  *                                                                            *

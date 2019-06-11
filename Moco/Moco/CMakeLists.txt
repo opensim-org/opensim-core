@@ -31,6 +31,10 @@ set(MOCO_SOURCES
         MocoCost/MocoControlTrackingCost.cpp
         MocoCost/MocoJointReactionCost.h
         MocoCost/MocoJointReactionCost.cpp
+        MocoCost/MocoOrientationTrackingCost.h
+        MocoCost/MocoOrientationTrackingCost.cpp
+        MocoCost/MocoTranslationTrackingCost.h
+        MocoCost/MocoTranslationTrackingCost.cpp
         MocoSolver.h
         MocoSolver.cpp
         MocoDirectCollocationSolver.h
@@ -49,9 +53,12 @@ set(MOCO_SOURCES
         InverseMuscleSolver/GlobalStaticOptimization.cpp
         InverseMuscleSolver/INDYGO.h
         InverseMuscleSolver/INDYGO.cpp
+        InverseMuscleSolver/INDYGOProblemInternal.h
         InverseMuscleSolver/DeGrooteFregly2016MuscleStandalone.h
         InverseMuscleSolver/InverseMuscleSolverMotionData.h
         InverseMuscleSolver/InverseMuscleSolverMotionData.cpp
+        Components/DeGrooteFregly2016Muscle.h
+        Components/DeGrooteFregly2016Muscle.cpp
         Components/ActivationCoordinateActuator.h
         Components/StationPlaneContactForce.h
         Components/StationPlaneContactForce.cpp
@@ -78,7 +85,9 @@ set(MOCO_SOURCES
         MocoCasADiSolver/CasOCHermiteSimpson.h
         MocoCasADiSolver/CasOCHermiteSimpson.cpp
         MocoCasADiSolver/CasOCIterate.h
-        )
+        Common/TableProcessor.h
+        ModelProcessor.h
+        ModelOperators.h)
 if(MOCO_WITH_TROPTER)
     list(APPEND MOCO_SOURCES
             tropter/TropterProblem.h

@@ -24,6 +24,10 @@ endfunction()
 
 MocoAddTest(NAME testMocoInterface)
 
+MocoAddTest(NAME testTableProcessor)
+
+MocoAddTest(NAME testModelProcessor)
+
 MocoAddTest(NAME testMocoCosts)
 
 MocoAddTest(NAME testMocoParameters)
@@ -76,3 +80,5 @@ MocoAddTest(NAME testGait10dof18musc RESOURCES
         std_testGait10dof18musc_GSO_solution_tendon_force.sto
         std_testGait10dof18musc_GSO_solution_norm_tendon_force.sto
         )
+
+MocoAddTest(NAME testDeGrooteFregly2016Muscle)

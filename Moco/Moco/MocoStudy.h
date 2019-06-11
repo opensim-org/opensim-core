@@ -18,12 +18,10 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include <OpenSim/Common/Object.h>
-#include <OpenSim/Simulation/Model/Model.h>
-
 #include "MocoSolver.h"
 
-
+#include <OpenSim/Common/Object.h>
+#include <OpenSim/Simulation/Model/Model.h>
 
 namespace OpenSim {
 
@@ -39,15 +37,17 @@ class MocoCasADiSolver;
 ///
 /// Workflow
 /// --------
-/// When building a MocoStudy programmatically (e.g., in C++), the workflow is as
-/// follows:
+/// When building a MocoStudy programmatically (e.g., in C++), the workflow is
+/// as follows:
 ///
 /// 1. Build the MocoProblem (set the model, constraints, etc.).
-/// 2. Call MocoStudy::initSolver(), which returns a reference to the MocoSolver.
+/// 2. Call MocoStudy::initSolver(), which returns a reference to the
+/// MocoSolver.
 ///    After this, you cannot edit the MocoProblem.
 /// 3. Edit the settings of the MocoSolver (returned by initSolver()).
 /// 4. Call MocoStudy::solve(). This returns the MocoSolution.
-/// 5. (Optional) Postprocess the solution, perhaps using MocoStudy::visualize().
+/// 5. (Optional) Postprocess the solution, perhaps using
+/// MocoStudy::visualize().
 ///
 /// After calling solve(), you can edit the MocoProblem and/or the MocoSolver.
 /// You can then call solve() again, if you wish.
@@ -62,23 +62,24 @@ class MocoCasADiSolver;
 /// ------
 /// The default solver uses the **tropter** direct
 /// collocation library. We also provide the **CasADi** solver, which
-/// depends on the **CasADi** automatic differentiation and optimization library.
-/// If you want to use CasADi programmatically, call initCasADiSolver() before
-/// solve().
-/// We would like to support users plugging in their own
+/// depends on the **CasADi** automatic differentiation and optimization
+/// library. If you want to use CasADi programmatically, call initCasADiSolver()
+/// before solve(). We would like to support users plugging in their own
 /// solvers, but there is no timeline for this. If you require additional
 /// features or enhancements to the solver, please consider contributing to
 /// **tropter**.
 
 // TODO rename to MocoFramework.
 
-class OSIMMOCO_API MocoStudy:public Object {
+class OSIMMOCO_API MocoStudy : public Object {
     OpenSim_DECLARE_CONCRETE_OBJECT(MocoStudy, Object);
+
 public:
     OpenSim_DECLARE_PROPERTY(write_solution, std::string,
-    "Provide the folder path (relative to working directory) to which the "
-    "solution files should be written. Set to 'false' to not write the "
-    "solution to disk.");
+            "Provide the folder path (relative to working directory) to which "
+            "the "
+            "solution files should be written. Set to 'false' to not write the "
+            "solution to disk.");
 
     MocoStudy();
 
@@ -128,6 +129,9 @@ public:
     // know aobut MocoIterate?
     void visualize(const MocoIterate& it) const;
 
+    TimeSeriesTable analyze(
+            const MocoIterate& it, std::vector<std::string> outputPaths) const;
+
     /// @name Using other solvers
     /// @{
     template <typename SolverType>
@@ -149,26 +153,21 @@ public:
     /// @}
 
 protected:
-    OpenSim_DECLARE_PROPERTY(problem, MocoProblem,
-    "The optimal control problem to solve.");
+    OpenSim_DECLARE_PROPERTY(
+            problem, MocoProblem, "The optimal control problem to solve.");
     OpenSim_DECLARE_PROPERTY(solver, MocoSolver,
-    "The optimal control algorithm for solving the problem.");
+            "The optimal control algorithm for solving the problem.");
 
 private:
-
     MocoSolver& initSolverInternal();
     void constructProperties();
 };
 
 template <>
-OSIMMOCO_API
-MocoTropterSolver& MocoStudy::initSolver<MocoTropterSolver>();
+OSIMMOCO_API MocoTropterSolver& MocoStudy::initSolver<MocoTropterSolver>();
 
 template <>
-OSIMMOCO_API
-MocoCasADiSolver& MocoStudy::initSolver<MocoCasADiSolver>();
-
-typedef MocoStudy MocoTool;
+OSIMMOCO_API MocoCasADiSolver& MocoStudy::initSolver<MocoCasADiSolver>();
 
 } // namespace OpenSim
 

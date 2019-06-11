@@ -50,22 +50,16 @@ public:
     void calcPrescribedPosition(
             const State& s, int nq, Real* q) const override {
         const auto& t = s.getTime();
-        for (int i = 0; i < nq; ++i) {
-            q[i] = t * t;
-        }
+        for (int i = 0; i < nq; ++i) { q[i] = t * t; }
     }
     void calcPrescribedPositionDot(
             const State& s, int nq, Real* qdot) const override {
         const auto& t = s.getTime();
-        for (int i = 0; i < nq; ++i) {
-            qdot[i] = 2 * t;
-        }
+        for (int i = 0; i < nq; ++i) { qdot[i] = 2 * t; }
     }
     void calcPrescribedPositionDotDot(
             const State& s, int nq, Real* qdotdot) const override {
-        for (int i = 0; i < nq; ++i) {
-            qdotdot[i] = 2;
-        }
+        for (int i = 0; i < nq; ++i) { qdotdot[i] = 2; }
     }
 };
 
@@ -75,38 +69,60 @@ public:
             : Motion::Custom(mobod, new MyMotionImplementation()) {}
 };
 
-class PrescribedAccelerationMotionImplementation :
-        public Motion::Custom::Implementation {
+class SplineMotionImplementation : public Motion::Custom::Implementation {
     Motion::Level getLevel(const State&) const override {
-        return Motion::Level::Acceleration;
+        return Motion::Level::Position;
     }
+
 public:
     void calcPrescribedPosition(
             const State& s, int nq, Real* q) const override {
         const auto& t = s.getTime();
-        for (int i = 0; i < nq; ++i) {
-            q[i] = t * t;
-        }
     }
     void calcPrescribedPositionDot(
             const State& s, int nq, Real* qdot) const override {
         const auto& t = s.getTime();
-        for (int i = 0; i < nq; ++i) {
-            qdot[i] = 2 * t;
-        }
+        for (int i = 0; i < nq; ++i) { qdot[i] = 2 * t; }
     }
     void calcPrescribedPositionDotDot(
             const State& s, int nq, Real* qdotdot) const override {
-        for (int i = 0; i < nq; ++i) {
-            qdotdot[i] = 2;
-        }
+        for (int i = 0; i < nq; ++i) { qdotdot[i] = 2; }
+    }
+};
+
+class SplineMotion : public Motion::Custom {
+public:
+    SplineMotion(MobilizedBody& mobod)
+            : Motion::Custom(mobod, new MyMotionImplementation()) {}
+};
+
+class PrescribedAccelerationMotionImplementation
+        : public Motion::Custom::Implementation {
+    Motion::Level getLevel(const State&) const override {
+        return Motion::Level::Acceleration;
+    }
+
+public:
+    void calcPrescribedPosition(
+            const State& s, int nq, Real* q) const override {
+        const auto& t = s.getTime();
+        for (int i = 0; i < nq; ++i) { q[i] = t * t; }
+    }
+    void calcPrescribedPositionDot(
+            const State& s, int nq, Real* qdot) const override {
+        const auto& t = s.getTime();
+        for (int i = 0; i < nq; ++i) { qdot[i] = 2 * t; }
+    }
+    void calcPrescribedPositionDotDot(
+            const State& s, int nq, Real* qdotdot) const override {
+        for (int i = 0; i < nq; ++i) { qdotdot[i] = 2; }
     }
 };
 
 class PrescribedAccelerationMotion : public Motion::Custom {
     PrescribedAccelerationMotion(MobilizedBody& mobod)
-    : Motion::Custom(mobod, new PrescribedAccelerationMotionImplementation()) {}
-
+            : Motion::Custom(mobod,
+                      new PrescribedAccelerationMotionImplementation()) {}
 };
 
 int main() {

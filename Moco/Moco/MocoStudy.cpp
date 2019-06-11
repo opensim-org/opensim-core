@@ -16,19 +16,19 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 #include "MocoStudy.h"
+
+#include "MocoCasADiSolver/MocoCasADiSolver.h"
 #include "MocoProblem.h"
 #include "MocoTropterSolver.h"
-#include "MocoCasADiSolver/MocoCasADiSolver.h"
 #include "MocoUtilities.h"
 
-#include <OpenSim/Simulation/StatesTrajectory.h>
 #include <OpenSim/Common/IO.h>
+#include <OpenSim/Common/Reporter.h>
+#include <OpenSim/Simulation/StatesTrajectory.h>
 
 using namespace OpenSim;
 
-MocoStudy::MocoStudy() {
-    constructProperties();
-}
+MocoStudy::MocoStudy() { constructProperties(); }
 
 MocoStudy::MocoStudy(const std::string& omocoFile) : Object(omocoFile) {
     constructProperties();
@@ -41,13 +41,9 @@ void MocoStudy::constructProperties() {
     constructProperty_solver(MocoTropterSolver());
 }
 
-const MocoProblem& MocoStudy::getProblem() const {
-    return get_problem();
-}
+const MocoProblem& MocoStudy::getProblem() const { return get_problem(); }
 
-MocoProblem& MocoStudy::updProblem() {
-    return upd_problem();
-}
+MocoProblem& MocoStudy::updProblem() { return upd_problem(); }
 
 MocoSolver& MocoStudy::initSolverInternal() {
     // TODO what to do if we already have a solver (from cloning?)
@@ -76,9 +72,7 @@ MocoCasADiSolver& MocoStudy::initCasADiSolver() {
     return initSolver<MocoCasADiSolver>();
 }
 
-MocoSolver& MocoStudy::updSolver() {
-    return updSolver<MocoSolver>();
-}
+MocoSolver& MocoStudy::updSolver() { return updSolver<MocoSolver>(); }
 
 MocoSolution MocoStudy::solve() const {
     // TODO avoid const_cast.
@@ -90,12 +84,13 @@ MocoSolution MocoStudy::solve() const {
         std::string prefix = getName().empty() ? "MocoStudy" : getName();
         solution.unseal();
         const std::string filename = get_write_solution() +
-                SimTK::Pathname::getPathSeparator() + prefix + "_solution.sto";
+                                     SimTK::Pathname::getPathSeparator() +
+                                     prefix + "_solution.sto";
         try {
             solution.write(filename);
         } catch (const TimestampGreaterThanEqualToNext&) {
             std::cout << "Could not write solution to file...skipping."
-                    << std::endl;
+                      << std::endl;
         }
         if (originallySealed) solution.seal();
     }
@@ -107,4 +102,9 @@ void MocoStudy::visualize(const MocoIterate& it) const {
     // MocoProblem.
     const auto& model = get_problem().getPhase(0).getModel();
     OpenSim::visualize(model, it.exportToStatesStorage());
+}
+
+TimeSeriesTable MocoStudy::analyze(const MocoIterate& iterate,
+        std::vector<std::string> outputPaths) const {
+    return OpenSim::analyze(get_problem(), iterate, outputPaths);
 }

@@ -21,6 +21,7 @@
 #include "Components/AccelerationMotion.h"
 #include "Components/DiscreteForces.h"
 #include "MocoProblem.h"
+#include <regex>
 #include <unordered_set>
 
 using namespace OpenSim;
@@ -156,21 +157,23 @@ void MocoProblemRep::initialize() {
                              m_state_disabled_constraints.getNUDotErr() != 0,
             Exception, "Internal error.");
 
-    // State and control infos.
-    // ------------------------
+    // State infos.
+    // ------------
     const auto stateNames = m_model_base.getStateVariableNames();
+    for (int i = 0; i < ph0.getProperty_state_infos_pattern().size(); ++i) {
+        const auto& pattern =
+                std::regex(ph0.get_state_infos_pattern(i).getName());
+        for (int j = 0; j < stateNames.size(); ++j) {
+            if (std::regex_match(stateNames[j], pattern)) {
+                m_state_infos[stateNames[j]] = ph0.get_state_infos_pattern(i);
+                m_state_infos[stateNames[j]].setName(stateNames[j]);
+            }
+        }
+    }
     for (int i = 0; i < ph0.getProperty_state_infos().size(); ++i) {
         const auto& name = ph0.get_state_infos(i).getName();
         OPENSIM_THROW_IF(stateNames.findIndex(name) == -1, Exception,
                 format("State info provided for nonexistent state '%s'.",
-                        name));
-    }
-    auto controlNames = createControlNamesFromModel(m_model_base);
-    for (int i = 0; i < ph0.getProperty_control_infos().size(); ++i) {
-        const auto& name = ph0.get_control_infos(i).getName();
-        auto it = std::find(controlNames.begin(), controlNames.end(), name);
-        OPENSIM_THROW_IF(it == controlNames.end(), Exception,
-                format("Control info provided for nonexistent actuator '%s'.",
                         name));
     }
 
@@ -213,6 +216,29 @@ void MocoProblemRep::initialize() {
     }
     //}
 
+    // Control infos.
+    // --------------
+    auto controlNames = createControlNamesFromModel(m_model_base);
+    for (int i = 0; i < ph0.getProperty_control_infos_pattern().size(); ++i) {
+        const auto& pattern = ph0.get_control_infos_pattern(i).getName();
+        auto regexPattern = std::regex(pattern);
+        for (int j = 0; j < (int)controlNames.size(); ++j) {
+            if (std::regex_match(controlNames[j], regexPattern)) {
+                m_control_infos[controlNames[j]] =
+                        ph0.get_control_infos_pattern(i);
+                m_control_infos[controlNames[j]].setName(controlNames[j]);
+            }
+        }
+    }
+    for (int i = 0; i < ph0.getProperty_control_infos().size(); ++i) {
+        const auto& name = ph0.get_control_infos(i).getName();
+        auto it = std::find(controlNames.begin(), controlNames.end(), name);
+        OPENSIM_THROW_IF(it == controlNames.end(), Exception,
+                format("Control info provided for nonexistent or disabled "
+                       "actuator '%s'.",
+                        name));
+    }
+
     for (int i = 0; i < ph0.getProperty_control_infos().size(); ++i) {
         const auto& name = ph0.get_control_infos(i).getName();
         m_control_infos[name] = ph0.get_control_infos(i);
@@ -240,6 +266,15 @@ void MocoProblemRep::initialize() {
                 } else {
                     m_control_infos[actuName].setBounds(
                             MocoBounds::unconstrained());
+                }
+            }
+            if (ph0.get_bound_activation_from_excitation()) {
+                const auto* muscle = dynamic_cast<const Muscle*>(&actu);
+                if (muscle && !muscle->get_ignore_activation_dynamics()) {
+                    auto& info = m_state_infos[actuName + "/activation"];
+                    if (!info.getBounds().isSet()) {
+                        info.setBounds(m_control_infos[actuName].getBounds());
+                    }
                 }
             }
         } else {

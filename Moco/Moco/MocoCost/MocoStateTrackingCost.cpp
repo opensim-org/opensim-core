@@ -24,39 +24,9 @@ using namespace OpenSim;
 
 void MocoStateTrackingCost::initializeOnModelImpl(const Model& model) const {
 
-    TimeSeriesTable tableToUse;
-    
-    if (get_reference_file() != "") {
-        // Should not be able to supply both.
-        assert(m_table.getNumColumns() == 0);
+    // TODO: set relativeToDirectory properly.
+    TimeSeriesTable tableToUse = get_reference().process("", &model);
 
-        auto tablesFromFile = FileAdapter::readFile(get_reference_file());
-        // There should only be one table.
-        OPENSIM_THROW_IF_FRMOBJ(tablesFromFile.size() != 1, Exception,
-                format("Expected reference file '%s' to contain 1 table, but "
-                       "it contains %i tables.",
-                       get_reference_file(), tablesFromFile.size()));
-        // Get the first table.
-        auto* firstTable =
-                dynamic_cast<TimeSeriesTable*>(tablesFromFile.begin()->second.get());
-        OPENSIM_THROW_IF_FRMOBJ(!firstTable, Exception,
-                "Expected reference file to contain a (scalar) "
-                "TimeSeriesTable, but it contains a different type of table.");
-        tableToUse = *firstTable;
-    } else if (m_table.getNumColumns() != 0) {
-        tableToUse = m_table;
-    } else {
-        OPENSIM_THROW_FRMOBJ(Exception,
-                "Expected user to either provide a reference"
-                " file or to programmatically provide a reference table, but "
-                " the user supplied neither.");
-    }
-
-    // Convert to degrees if needed and create spline set.
-    if (tableToUse.hasTableMetaDataKey("inDegrees") &&
-        tableToUse.getTableMetaDataAsString("inDegrees") == "yes") {
-        model.getSimbodyEngine().convertDegreesToRadians(tableToUse);
-    }
     auto allSplines = GCVSplineSet(tableToUse);
 
     // Throw exception if a weight is specified for a nonexistent state.
@@ -72,7 +42,7 @@ void MocoStateTrackingCost::initializeOnModelImpl(const Model& model) const {
 
     // Populate member variables need to compute cost. Unless the property
     // allow_unused_references is set to true, an exception is thrown for
-    // names in the references that don't correspond to a state variable. 
+    // names in the references that don't correspond to a state variable.
     for (int iref = 0; iref < allSplines.getSize(); ++iref) {
         const auto& refName = allSplines[iref].getName();
         if (!get_allow_unused_references()) {

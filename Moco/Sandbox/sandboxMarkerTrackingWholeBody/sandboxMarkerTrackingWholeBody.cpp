@@ -212,7 +212,7 @@ void addCoordinateActuator(std::unique_ptr<Model>& model, std::string coordName,
 MocoSolution solveMarkerTrackingProblem(
         bool prevSolutionInitialization) {
 
-    MocoTool moco;
+    MocoStudy moco;
     moco.setName("whole_body_marker_tracking");
 
     // Define the optimal control problem.

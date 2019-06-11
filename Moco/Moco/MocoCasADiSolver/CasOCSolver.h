@@ -64,6 +64,15 @@ public:
     double getLagrangeMultiplierWeight() const {
         return m_lagrangeMultiplierWeight;
     }
+    /// Whether or not to constrain control values at mesh interval midpoints
+    /// by linearly interpolating control values from mesh interval endpoints.
+    /// @note Only applies to Hermite-Simpson collocation.
+    void setInterpolateControlMidpoints(bool tf) {
+        m_interpolateControlMidpoints = tf;
+    }
+    bool getInterpolateControlMidpoints() const {
+        return m_interpolateControlMidpoints;
+    }
 
     void setOptimSolver(std::string optimSolver) {
         m_optimSolver = std::move(optimSolver);
@@ -80,6 +89,13 @@ public:
         return m_finite_difference_scheme;
     }
 
+    void getCallbackInterval(int output_interval) {
+        m_outputInterval = output_interval;
+    }
+
+    int getOutputInterval() const {
+        return m_outputInterval;
+    }
     /// "none" to use block sparsity (treat all CasOC::Function%s as dense;
     /// default), "initial-guess", or "random".
     void setSparsityDetection(const std::string& setting);
@@ -126,12 +142,14 @@ private:
 
     const Problem& m_problem;
     int m_numMeshPoints;
-    std::string m_transcriptionScheme = "trapezoidal";
+    std::string m_transcriptionScheme = "hermite-simpson";
     bool m_minimizeLagrangeMultipliers = false;
     double m_lagrangeMultiplierWeight = 1.0;
+    bool m_interpolateControlMidpoints = true;
     std::string m_finite_difference_scheme = "central";
     std::string m_sparsity_detection = "none";
     std::string m_write_sparsity;
+    int m_outputInterval;
     int m_sparsity_detection_random_count = 3;
     std::string m_parallelism = "serial";
     int m_numThreads = 1;

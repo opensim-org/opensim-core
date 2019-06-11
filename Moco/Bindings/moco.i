@@ -4,6 +4,21 @@
 typedef SimTK::RowVector_<double> RowVector;
 
 %include <Moco/osimMocoDLL.h>
+
+%include <Moco/Common/TableProcessor.h>
+
+
+namespace OpenSim {
+        %ignore ModelProcessor::setModel(std::unique_ptr<Model>);
+}
+
+%extend OpenSim::ModelProcessor {
+        void setModel(Model* model) {
+            $self->setModel(std::unique_ptr<Model>(model));
+        }
+};
+%include <Moco/ModelProcessor.h>
+
 %include <Moco/MocoCost/MocoCost.h>
 %include <Moco/MocoWeightSet.h>
 %include <Moco/MocoCost/MocoStateTrackingCost.h>
@@ -11,6 +26,8 @@ typedef SimTK::RowVector_<double> RowVector;
 %include <Moco/MocoCost/MocoMarkerEndpointCost.h>
 %include <Moco/MocoCost/MocoControlCost.h>
 %include <Moco/MocoCost/MocoJointReactionCost.h>
+%include <Moco/MocoCost/MocoOrientationTrackingCost.h>
+%include <Moco/MocoCost/MocoTranslationTrackingCost.h>
 
 
 // %template(MocoBoundsVector) std::vector<OpenSim::MocoBounds>;
@@ -88,11 +105,18 @@ moco_unique_ptr(OpenSim::MocoProblemRep);
 %rename(createRep) OpenSim::MocoProblem::createRepHeap;
 
 namespace OpenSim {
+    %ignore ModelProcessor::setModel(std::unique_ptr<Model>);
     %ignore MocoPhase::setModel(Model);
     %ignore MocoPhase::setModel(std::unique_ptr<Model>);
     %ignore MocoProblem::setModel(Model);
     %ignore MocoProblem::setModel(std::unique_ptr<Model>);
 }
+
+%extend OpenSim::ModelProcessor {
+    void setModel(Model* model) {
+        $self->setModel(std::unique_ptr<Model>(model));
+    }
+};
 
 %extend OpenSim::MocoPhase {
     void setModel(Model* model) {
@@ -163,6 +187,9 @@ namespace OpenSim {
 %include <Moco/MocoStudy.h>
 
 %include <Moco/Components/ActivationCoordinateActuator.h>
+%include <Moco/Components/DeGrooteFregly2016Muscle.h>
 %include <Moco/MocoUtilities.h>
 
 %include <Moco/Components/ModelFactory.h>
+
+%include <Moco/ModelOperators.h>
