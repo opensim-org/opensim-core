@@ -68,7 +68,7 @@ A MocoStudy contains a MocoProblem and a MocoSolver.
       functional of the optimal control problem, using an OpenSim model.
   - MocoSolver: solves the MocoProblem using direct collocation.
 
-When building a MocoStudy programmatically, the workflow is as
+When building a MocoStudy programmatically (e.g., in C++), the workflow is as
 follows:
 
 1. Build the MocoProblem (set the model, constraints, etc.).

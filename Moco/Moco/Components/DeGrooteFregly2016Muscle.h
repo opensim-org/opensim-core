@@ -51,7 +51,7 @@ namespace OpenSim {
 ///
 /// @underdevelopment
 ///
-/// @subsection Departures from the Muscle base class
+/// @section departures Departures from the Muscle base class
 ///
 /// The documentation for Muscle::MuscleLengthInfo states that the
 /// optimalFiberLength of a muscle is also its resting length, but this is not
