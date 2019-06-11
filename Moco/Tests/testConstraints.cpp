@@ -1256,8 +1256,6 @@ TEST_CASE("Prescribed kinematics with kinematic constraints", "") {
     auto& solver = moco.initCasADiSolver();
     solver.set_num_mesh_points(10);
     solver.set_dynamics_mode("implicit");
-    solver.set_transcription_scheme("hermite-simpson");
-    solver.set_enforce_constraint_derivatives(true);
     MocoSolution solution = moco.solve();
     const auto Fx = solution.getControl("/forceset/force_x");
     const auto Fy = solution.getControl("/forceset/force_y");
