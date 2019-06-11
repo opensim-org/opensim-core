@@ -89,7 +89,7 @@ TEMPLATE_TEST_CASE(
             GENERATE(as<std::string>{}, "trapezoidal", "hermite-simpson");
     std::cout.rdbuf(LogManager::cout.rdbuf());
     std::cout.rdbuf(LogManager::cout.rdbuf());
-    MocoTool moco;
+    MocoStudy moco;
     double finalTime = 5.0;
     moco.setName("sliding_mass");
     moco.set_write_solution("false");
