@@ -136,7 +136,7 @@ MocoTropterSolver::createTropterSolver(
         for (int i = 0; i < getProperty_mesh().size(); ++i) {
             mesh.push_back(get_mesh(i));
         }
-        dircol = make_unique<tropter::DirectCollocationSolver<double>>(
+        dircol = OpenSim::make_unique<tropter::DirectCollocationSolver<double>>(
                 ocp, get_transcription_scheme(), get_optim_solver(), mesh);
     }
 
