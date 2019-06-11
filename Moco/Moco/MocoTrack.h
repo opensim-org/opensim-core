@@ -31,61 +31,95 @@ class MocoWeightSet;
 class MocoProblem;
 class MocoIterate;
 
-/// This tool constructs problems in which any combination of state trajectory
-/// data, marker trajectory data, or external force data is tracked while
-/// solving for the model's kinematics and actuator controls in a prescribed
-/// time window. It is upon the user to ensure that the tracking data and model
-/// provided are consistent, but this tool will try to construct a valid problem 
-/// for certain assumed data formats.
-
-// TODO allowing extra columns for everything
-// TODO "from_data", states data will take precedence over data from markers
-// TODO tell users how to access control cost 
+/// This tool constructs problems in which state and/or marker trajectory data 
+/// are tracked while solving for model kinematics and actuator controls. 
+/// "Tracking" refers to cost terms that minimize the error between provided 
+/// reference data and the associated model quantities (joint angles, joint 
+/// velocities, marker positions, etc). 
+///
+/// State reference data (joint angles and velocities), marker reference data 
+/// (x/y/z marker motion capture trajectories), or both may be provided via the
+/// `states_reference` and `markers_reference` properties. For each set of 
+/// reference data provided, a tracking cost term is added to the internal 
+/// MocoProblem. 
+///
+/// A time range that is compatible with all reference data may be provided. 
+/// If no time range is set, the widest time range that is compatible will all 
+/// reference data will be used. 
+///
+/// The `states_global_tracking_weight` and `markers_global_tracking_weight` 
+/// properties apply a cost function weight to all tracking error associated 
+/// provided reference data. The `states_weight_set` and `markers_weight_set`
+/// properties give you finer control over the tracking costs, letting you set
+/// weights for individual reference data tracking errors.
+///     
+/// If you would like to track joint velocities but only have joint angles in 
+/// your states reference, enable the `track_reference_position_derivatives` 
+/// property. When enabled, the provided position-level states reference data 
+/// will be splined in order to compute derivatives. If some velocity-level 
+/// information exists in the reference, this option will fill in the missing 
+/// data with position derivatives and leave the existing velocity data intact. 
+///
+/// Default solver settings:
+///  - Explicit dynamics
+///  - Constraint and convergence tolerances: 1e-2
+///  - Finite difference scheme: 'forward'
+/// 
+/// @underdevelopment
 class OSIMMOCO_API MocoTrack : public MocoTool {
 OpenSim_DECLARE_CONCRETE_OBJECT(MocoTrack, MocoTool);
 
 public:
     OpenSim_DECLARE_PROPERTY(states_reference, TableProcessor,
-        "TODO.");
+        "States reference data to be tracked. If provided, a "
+        "MocoStateTrackingCost term is created and added to the internal "
+        "MocoProblem. ");
 
-    OpenSim_DECLARE_PROPERTY(states_tracking_weight, double,
-        "The weight for the MocoStateTrackingCost. ");
+    OpenSim_DECLARE_PROPERTY(states_global_tracking_weight, double,
+        "The weight for the MocoStateTrackingCost which applies to tracking " 
+        "errors for all states in the reference.");
 
-    OpenSim_DECLARE_PROPERTY(state_weights, MocoWeightSet,
+    OpenSim_DECLARE_PROPERTY(states_weight_set, MocoWeightSet,
         "A set of tracking weights for individual state variables. The "
         "weight names should match the names of the column labels in the "
-        "file associated with the 'states_file' property.");
+        "file associated with the 'states_reference' property.");
 
-    OpenSim_DECLARE_PROPERTY(track_state_reference_derivatives, bool,
+    OpenSim_DECLARE_PROPERTY(track_reference_position_derivatives, bool,
         "Option to track the derivative of position-level state reference "
         "data if no velocity-level state reference data was included in "
-        "the `states_file`. If speed reference data was provided for some "
-        "coordinates but not others, this option will only apply to the "
-        "coordinates without speed reference data. "
+        "the `states_reference`. If velocity-reference reference data was "
+        "provided for some coordinates but not others, this option will only "
+        "apply to the coordinates without speed reference data. "
         "(default: false)");
 
     OpenSim_DECLARE_PROPERTY(markers_reference, TableProcessor,
-        "TODO.");
+        "Motion capture marker reference data to be tracked. If provided, a "
+        "MocoMarkerTrackingCost term is create and added to the internal "
+        "MocoProblem.");
 
-    OpenSim_DECLARE_PROPERTY(markers_tracking_weight, double,
-        "The weight for the MocoMarkerTrackingCost. ");
+    OpenSim_DECLARE_PROPERTY(markers_global_tracking_weight, double,
+        "The weight for the MocoMarkerTrackingCost which applies to tracking "
+        "errors for all markers in the reference.");
 
-    OpenSim_DECLARE_PROPERTY(ik_setup_file, std::string,
-        "Path to an OpenSim::InverseKinematicsTool setup file. This can "
-        "be used to specify individual tracking weights for markers in "
-        "problem. It is also used to create an initial guess for the state "
-        "variables when the 'guess_type' property is set to 'from_data'.");
+    OpenSim_DECLARE_PROPERTY(markers_weight_set, MocoWeightSet,
+        "A set of tracking weights for individual marker positions. The "
+        "weight names should match the names of the column labels in the "
+        "file associated with the 'markers_reference' property.");
 
     OpenSim_DECLARE_PROPERTY(guess_type, std::string,
-        "Options: 'bounds', 'from_data', or 'from_file'. "
+        "Options: 'bounds', 'from_file'. "
         "'bounds' uses variable bound midpoint values to create an initial "
-        "guess. 'from_data' creates an initial guess with the data "
-        "provided. 'from_file' creates an initial guess from the file set "
+        "guess.  'from_file' creates an initial guess from the file set "
         "on the 'guess_file' property (see below)."
         "(default: 'bounds').");
 
+    OpenSim_DECLARE_PROPERTY(apply_tracked_states_to_guess, bool,
+        "If a `states_reference` has been provided and the `guess_type` "
+        "property is set to 'bounds', use this setting to replace the states "
+        "in the bounds guess with the states reference data.")
+
     OpenSim_DECLARE_PROPERTY(guess_file, std::string,
-        "Path to a STO file containing reference marker data to track. "
+        "Path to a STO file containing a guess for the problem. "
         "The path can be absolute or relative to the setup file.");
 
     OpenSim_DECLARE_PROPERTY(minimize_controls, double,
@@ -103,27 +137,23 @@ public:
         set_markers_reference(std::move(markers));
     }
 
-    // TODO make these const?
     MocoStudy initialize();
     void solve();
 
 private:
     Model m_model;
     TimeInfo m_timeInfo;
-    TimeSeriesTable m_states_from_file;
-    TimeSeriesTable m_states_from_markers;
-    int m_min_data_length;
 
     void constructProperties();
 
-    // Utilities.
-    std::string getFilePath(const std::string& file) const;
-
     // Cost configuration methods.
-    void configureStateTracking(MocoProblem& problem, Model& model);
+    // ---------------------------
+    TimeSeriesTable configureStateTracking(MocoProblem& problem, Model& model);
     void configureMarkerTracking(MocoProblem& problem, Model& model);
 
     // Convenience methods.
+    // --------------------
+    std::string getFilePath(const std::string& file) const;
     void applyStatesToGuess(const TimeSeriesTable& states, const Model& model,
         MocoIterate& guess);
 };

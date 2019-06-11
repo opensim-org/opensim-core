@@ -31,23 +31,20 @@
 #include <OpenSim/Common/GCVSpline.h>
 #include <OpenSim/Common/GCVSplineSet.h>
 #include <OpenSim/Simulation/MarkersReference.h>
-#include <OpenSim/Tools/InverseKinematicsTool.h>
-#include <OpenSim/Tools/IKTaskSet.h>
-#include <OpenSim/Tools/InverseDynamicsTool.h>
 
 using namespace OpenSim;
 
 void MocoTrack::constructProperties() {
-
     constructProperty_states_reference(TableProcessor());
-    constructProperty_states_tracking_weight(1);
-    constructProperty_state_weights(MocoWeightSet());
-    constructProperty_track_state_reference_derivatives(false);
+    constructProperty_states_global_tracking_weight(1);
+    constructProperty_states_weight_set(MocoWeightSet());
+    constructProperty_track_reference_position_derivatives(false);
     constructProperty_markers_reference(TableProcessor());
-    constructProperty_markers_tracking_weight(1);
-    constructProperty_ik_setup_file("");
+    constructProperty_markers_global_tracking_weight(1);
+    constructProperty_markers_weight_set(MocoWeightSet());
     constructProperty_guess_type("bounds");
     constructProperty_guess_file("");
+    constructProperty_apply_tracked_states_to_guess(false);
     constructProperty_minimize_controls(-1);
 }
 
@@ -60,15 +57,14 @@ MocoStudy MocoTrack::initialize() {
     // Modeling.
     // ---------
     Model model = get_model().process();
-    model.finalizeFromProperties();
     model.initSystem();
 
     // Costs.
     // ------
-
     // State tracking cost.
+    TimeSeriesTable tracked_states;
     if (get_states_reference().hasTable()) {
-        configureStateTracking(problem, model);
+        tracked_states = configureStateTracking(problem, model);
     }
 
     // Marker tracking cost.
@@ -82,8 +78,8 @@ MocoStudy MocoTrack::initialize() {
     // Control effort minimization.
     // ----------------------------
     if (get_minimize_controls() != -1) {
-        auto* effort = problem.addCost<MocoControlCost>("control_effort");
         assert(get_minimize_controls() > 0);
+        auto* effort = problem.addCost<MocoControlCost>("control_effort");
         effort->set_weight(get_minimize_controls());
     }
 
@@ -92,18 +88,11 @@ MocoStudy MocoTrack::initialize() {
     // Set the time bounds based on the time range in the states file.
     // Pad the beginning and end time points to allow room for finite 
     // difference calculations.
-    double pad = 1e-3;
+    double pad = 1e-4;
     problem.setTimeBounds(m_timeInfo.initial + pad, m_timeInfo.final - pad);
-
-    // Activation states.
-    for (auto& musc : model.getComponentList<Muscle>()) {
-        const auto& path = musc.getAbsolutePathString();
-        problem.setStateInfo(format("%s/activation", path), {0, 1});
-    }
 
     // Configure solver.
     // -----------------
-    // TODO how to set defaults?
     MocoCasADiSolver& solver = moco.initCasADiSolver();
     solver.set_num_mesh_points(m_timeInfo.numMeshPoints);
     solver.set_dynamics_mode("explicit");
@@ -113,30 +102,30 @@ MocoStudy MocoTrack::initialize() {
 
     // Set the problem guess.
     // ----------------------
-    checkPropertyInSet(*this, getProperty_guess_type(),
-        {"bounds", "from_data", "from_file"});
+    checkPropertyInSet(*this, getProperty_guess_type(), 
+        {"bounds", "from_file"});
     OPENSIM_THROW_IF(get_guess_type() == "from_file" &&
         get_guess_file().empty(), Exception,
         "Guess type set to 'from_file' but no guess file was provided.");
 
     if (get_guess_type() == "from_file") {
         solver.setGuessFile(getFilePath(get_guess_file()));
-    } else if (get_guess_type() == "from_data") {
+    } else if (get_guess_type() == "bounds") {
         auto guess = solver.createGuess("bounds");
-        if (m_states_from_file.getNumRows()) {
-            applyStatesToGuess(m_states_from_file, model, guess);
-        } else if (m_states_from_markers.getNumRows()) {
-            applyStatesToGuess(m_states_from_markers, model, guess);
+        if (get_apply_tracked_states_to_guess()) {
+            OPENSIM_THROW_IF(!tracked_states.getNumRows(), Exception,
+                "Property 'apply_tracked_states_to_guess' was enabled, but no "
+                "states reference data was provided.")
+            applyStatesToGuess(tracked_states, model, guess);
         }
         solver.setGuess(guess);
-    } else {
-        solver.setGuess("bounds");
     }
 
     return moco;
 }
 
 void MocoTrack::solve() {
+    // Generate the base MocoStudy.
     MocoStudy moco = initialize();
 
     // Solve!
@@ -163,7 +152,8 @@ std::string MocoTrack::getFilePath(const std::string& file) const {
     return filepath;
 }
 
-void MocoTrack::configureStateTracking(MocoProblem& problem, Model& model) {
+TimeSeriesTable MocoTrack::configureStateTracking(MocoProblem& problem, 
+        Model& model) {
 
     // Read in the states reference data and spline.
     TimeSeriesTable states = get_states_reference().process("", &model);
@@ -182,12 +172,11 @@ void MocoTrack::configureStateTracking(MocoProblem& problem, Model& model) {
     auto labels = states.getColumnLabels();
     int numRefStates = (int)states.getNumColumns();
     MocoWeightSet weights;
-    MocoWeightSet user_weights = get_state_weights();
+    MocoWeightSet user_weights = get_states_weight_set();
     for (const auto& coord : model.getComponentList<Coordinate>()) {
         std::string coordPath = coord.getAbsolutePathString();
         std::string valueName = coordPath + "/value";
         std::string speedName = coordPath + "/speed";
-        std::string coordName = coord.getName();
         bool trackingValue = false;
         bool trackingSpeed = false;
         int valueIdx;
@@ -195,16 +184,7 @@ void MocoTrack::configureStateTracking(MocoProblem& problem, Model& model) {
             if (labels[i] == valueName) {
                 trackingValue = true;
                 valueIdx = i;
-            }
-            else if (labels[i] == coordName) {
-                // Accept reference data labeled with coordinate names only, 
-                // but set only for position data. Also, update the column label
-                // to the complete state variable path.
-                states.setColumnLabel(i, valueName);
-                trackingValue = true;
-                valueIdx = i;
-            }
-            else if (labels[i] == speedName) {
+            } else if (labels[i] == speedName) {
                 trackingSpeed = true;
             }
         }
@@ -213,7 +193,7 @@ void MocoTrack::configureStateTracking(MocoProblem& problem, Model& model) {
         // but no corresponding speed, append the derivative of the coordinate
         // value to the tracking reference.
         if (trackingValue && !trackingSpeed &&
-            get_track_state_reference_derivatives()) {
+                get_track_reference_position_derivatives()) {
             auto value = states.getDependentColumnAtIndex(valueIdx);
             auto* valueSpline = stateSplines.getGCVSpline(valueIdx);
             SimTK::Vector speed((int)time.size());
@@ -232,15 +212,7 @@ void MocoTrack::configureStateTracking(MocoProblem& problem, Model& model) {
             if (user_weight.getName() == valueName) {
                 weights.cloneAndAppend(user_weight);
                 valueWeightProvided = true;
-            }
-            else if (user_weight.getName() == coordName) {
-                // Similar to reference data, accept weights labeled with 
-                // coordinate names only, but set only for position data. Also, 
-                // update the column label to the complete state variable path.
-                weights.cloneAndAppend({valueName, user_weight.getWeight()});
-                speedWeightProvided = true;
-            }
-            else if (user_weight.getName() == speedName) {
+            } else if (user_weight.getName() == speedName) {
                 weights.cloneAndAppend(user_weight);
                 speedWeightProvided = true;
             }
@@ -260,22 +232,21 @@ void MocoTrack::configureStateTracking(MocoProblem& problem, Model& model) {
     // Add state tracking cost to the MocoProblem.
     auto* stateTracking =
         problem.addCost<MocoStateTrackingCost>("state_tracking",
-            get_states_tracking_weight());
+            get_states_global_tracking_weight());
     stateTracking->setReference(states);
     stateTracking->setWeightSet(weights);
     stateTracking->setAllowUnusedReferences(true);
 
+    // Update the time info struct.
     updateTimeInfo("states", states.getIndependentColumn().front(),
             states.getIndependentColumn().back(), m_timeInfo);
 
     // Write tracked states to file in case any label updates or filtering
     // occured.
     writeTableToFile(states, getName() + "_tracked_states.mot");
-    m_states_from_file = states;
-    if (m_min_data_length == -1 ||
-        m_min_data_length > (int)states.getNumRows()) {
-        m_min_data_length = (int)states.getNumRows();
-    }
+
+    // Update member variables for creating a guess.
+    return states;
 }
 
 void MocoTrack::configureMarkerTracking(MocoProblem& problem, Model& model) {
@@ -285,88 +256,42 @@ void MocoTrack::configureMarkerTracking(MocoProblem& problem, Model& model) {
     TimeSeriesTable_<SimTK::Vec3> markers = markersFlat.pack<SimTK::Vec3>();
     MarkersReference markersRef(markers);
 
-    // If the user provided an IK setup file, get the marker weights and add
-    // them to the MarkersReference.
-    if (!get_ik_setup_file().empty()) {
-        InverseKinematicsTool iktool(get_ik_setup_file());
-        iktool.setModel(model);
-        auto& iktasks = iktool.getIKTaskSet();
+    // If the user provided marker weights, append them to the markers
+    // reference.
+    if (get_markers_weight_set().getSize()) {
         Set<MarkerWeight> markerWeights;
-        iktasks.createMarkerWeightSet(markerWeights);
-        markersRef.setMarkerWeightSet(markerWeights);
-
-        // Create an initial guess with inverse kinematics if the guess_type 
-        // property was set to "from_data".
-        if (get_guess_type() == "from_data") {
-            iktool.run();
-            TimeSeriesTable states =
-                readTableFromFile(iktool.getOutputMotionFileName());
-            // Update state labels to full paths. 
-            for (const auto& coord : model.getComponentList<Coordinate>()) {
-                std::string path = coord.getAbsolutePathString();
-                for (int i = 0; i < (int)states.getNumColumns(); ++i) {
-                    if (path.find(states.getColumnLabel(i))
-                        != std::string::npos) {
-                        states.setColumnLabel(i, path + "/value");
-                    }
-                }
-            }
-            // Update units.
-            if (states.hasTableMetaDataKey("inDegrees") &&
-                states.getTableMetaDataAsString("inDegrees") == "yes") {
-                model.getSimbodyEngine().convertDegreesToRadians(states);
-            }
-            m_states_from_markers = states;
+        for (int i = 0; i < get_markers_weight_set().getSize(); ++i) {
+            const auto& weight = get_markers_weight_set().get(i);
+            markerWeights.cloneAndAppend(MarkerWeight(weight.getName(),
+                weight.getWeight()));
         }
+        markersRef.setMarkerWeightSet(markerWeights);
     }
-
+    
     // Add marker tracking cost to the MocoProblem.
     auto* markerTracking =
         problem.addCost<MocoMarkerTrackingCost>("marking_tracking",
-            get_markers_tracking_weight());
+            get_markers_global_tracking_weight());
     markerTracking->setMarkersReference(markersRef);
     markerTracking->setAllowUnusedReferences(true);
 
+    // Update the time info struct.
     updateTimeInfo("markers", markers.getIndependentColumn().front(),
             markers.getIndependentColumn().back(), m_timeInfo);
 
     // Write tracked markers to file in case any label updates or filtering
     // occured.
     writeTableToFile(markers.flatten(), getName() + "_tracked_markers.mot");
-
-    if (m_min_data_length == -1 ||
-        m_min_data_length > (int)markers.getNumRows()) {
-        m_min_data_length = (int)markers.getNumRows();
-    }
 }
 
 void MocoTrack::applyStatesToGuess(const TimeSeriesTable& states,
-    const Model& model, MocoIterate& guess) {
+        const Model& model, MocoIterate& guess) {
 
-    guess.resampleWithNumTimes(m_min_data_length);
-    auto time = guess.getTime();
-    GCVSplineSet stateSplines(states);
-
-    SimTK::Vector currTime(1);
-    SimTK::Vector value(m_min_data_length);
-    SimTK::Vector speed(m_min_data_length);
-    for (const auto& coord : model.getComponentList<Coordinate>()) {
-        auto path = coord.getAbsolutePathString();
-        for (int i = 0; i < (int)states.getNumColumns(); ++i) {
-            auto label = states.getColumnLabel(i);
-            if (path.find(label) != std::string::npos) {
-
-                for (int j = 0; j < m_min_data_length; ++i) {
-                    currTime[0] = time[j];
-                    auto* spline = stateSplines.getGCVSpline(i);
-
-                    value[j] = spline->calcValue(currTime);
-                    speed[j] = spline->calcDerivative({0}, currTime);
-                }
-
-                guess.setState(path + "/value", value);
-                guess.setState(path + "/speed", speed);
-            }
-        }
+    const int numTimes = states.getNumRows();
+    guess.resampleWithNumTimes(numTimes);
+    for (int i = 0; i < (int)states.getNumColumns(); ++i) {
+        const auto& label = states.getColumnLabel(i);
+        const auto& col = states.getDependentColumnAtIndex(i);
+        guess.setState(label, col);
     }
 }
