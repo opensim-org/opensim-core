@@ -44,7 +44,6 @@ void MocoControlBoundConstraint::initializeOnModelImpl(
     // Check that the model controls are in the correct order.
     checkOrderSystemControls(model);
 
-    // Make sure there are no weights for nonexistent controls.
     m_hasLower = !getProperty_lower_bound().empty();
     m_hasUpper = !getProperty_upper_bound().empty();
     if (getProperty_control_paths().size() && !m_hasLower && !m_hasUpper) {
@@ -53,12 +52,15 @@ void MocoControlBoundConstraint::initializeOnModelImpl(
                      " are provided."
                   << std::endl;
     }
+    // Make sure there are no nonexistent controls.
     if (m_hasLower || m_hasUpper) {
         auto systemControlIndexMap = createSystemControlIndexMap(model);
         for (int i = 0; i < getProperty_control_paths().size(); ++i) {
             const auto& thisName = get_control_paths(i);
             OPENSIM_THROW_IF_FRMOBJ(systemControlIndexMap.count(thisName) == 0,
-                    Exception, "Unrecognized control '" + thisName + "'.");
+                    Exception,
+                    format("Control path '%s' was provided but no such control "
+                           "exists in the model.", thisName));
             m_controlIndices.push_back(systemControlIndexMap[thisName]);
         }
     }
@@ -73,13 +75,13 @@ void MocoControlBoundConstraint::initializeOnModelImpl(
         if (auto* spline = dynamic_cast<const GCVSpline*>(&f)) {
             OPENSIM_THROW_IF_FRMOBJ(
                     spline->getMinX() > problemInfo.minInitialTime, Exception,
-                    format("The function's minimum X (%f) must "
+                    format("The function's minimum domain value (%f) must "
                            "be less than or equal to the minimum possible "
                            "initial time (%f).",
                             spline->getMinX(), problemInfo.minInitialTime));
             OPENSIM_THROW_IF_FRMOBJ(
                     spline->getMaxX() < problemInfo.maxFinalTime, Exception,
-                    format("The function's maximum X (%f) must "
+                    format("The function's maximum domain value (%f) must "
                            "be greater than or equal to the maximum possible "
                            "final time (%f).",
                             spline->getMaxX(), problemInfo.maxFinalTime));
@@ -104,9 +106,21 @@ void MocoControlBoundConstraint::initializeOnModelImpl(
         if (get_equality_with_lower()) {
             bounds.emplace_back(0, 0);
         } else {
-            // lower <= control becomes 0 <= control - lower <= inf
+            // The lower and upper bounds on the path constraint must be
+            // constants, so we cannot use the lower and upper bound functions
+            // directly. Therefore, we use a pair of constraints where the
+            // lower/upper bound functions are part of the path constraint
+            // functions and the lower/upper bounds for the path constraints are
+            // -inf, 0, and/or inf.
+            // If a lower bound function is provided, we enforce
+            //      lower_bound_function <= control
+            // by creating the constraint
+            //      0 <= control - lower_bound_function <= inf
             if (m_hasLower) { bounds.emplace_back(0, SimTK::Infinity); }
-            // control <= upper becomes -inf <= control - upper <= 0
+            // If an upper bound function is provided, we enforce
+            //      control <= upper_bound_function
+            // by creating the constraint
+            //      -inf <= control - upper_bound_function <= 0
             if (m_hasUpper) { bounds.emplace_back(-SimTK::Infinity, 0); }
         }
     }

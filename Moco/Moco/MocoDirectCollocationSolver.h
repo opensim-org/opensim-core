@@ -51,11 +51,12 @@ namespace OpenSim {
 /// Path constraints on controls with Hermite-Simpson transcription
 /// ---------------------------------------------------------------
 /// For Hermite-Simpson transcription, the direct collocation solvers enforce
-/// the path constraints (e.g., MocoPathConstraint) at only the mesh points
-/// (not midpoints), but control signal variables exist at both mesh points
-/// and midpoints. Keep this in mind when using path constraints on controls
-/// (e.g., MocoControlBoundConstraint). The values of a control at midpoints may
-/// differ greatly from the values at nearby mesh points.
+/// the path constraints (e.g., MocoPathConstraint) at only the mesh interval
+/// endpoints (not midpoints), but control signal variables exist at both mesh
+/// interval endpoints and midpoints. Keep this in mind when using path
+/// constraints on controls (e.g., MocoControlBoundConstraint). If
+/// `interpolate_control_midpoints` is false, the values of a control at
+/// midpoints may differ greatly from the values at mesh interval endpoints.
 ///
 /// Dynamics mode
 /// -------------
