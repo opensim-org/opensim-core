@@ -41,8 +41,5 @@ void MocoDirectCollocationSolver::constructProperties() {
 }
 
 void MocoDirectCollocationSolver::setMesh(const std::vector<double>& mesh) {
-    for(int i = 0; i < (int) mesh.size(); ++i) {
-        this->set_mesh(i, mesh[i]);
-    }
-
+    for (int i = 0; i < (int)mesh.size(); ++i) { set_mesh(i, mesh[i]); }
 }

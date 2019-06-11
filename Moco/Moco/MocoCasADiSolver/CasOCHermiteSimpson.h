@@ -29,14 +29,14 @@ class HermiteSimpson : public Transcription {
 public:
     HermiteSimpson(const Solver& solver, const Problem& problem)
             : Transcription(solver, problem) {
-        casadi::DM grid = casadi::DM::zeros(1, (2*m_solver.getMesh().size())-1);
+        casadi::DM grid =
+                casadi::DM::zeros(1, (2 * m_solver.getMesh().size()) - 1);
         const auto& mesh = m_solver.getMesh();
-        for(int i = 0; i < grid.numel(); ++i) {
-            if(i%2==0) {
-                grid(i) = mesh[i/2];
-            }
-            else {
-                grid(i) = .5 * (mesh[i/2] + mesh[i/2 +1]);
+        for (int i = 0; i < grid.numel(); ++i) {
+            if (i % 2 == 0) {
+                grid(i) = mesh[i / 2];
+            } else {
+                grid(i) = .5 * (mesh[i / 2] + mesh[i / 2 + 1]);
             }
         }
         createVariablesAndSetBounds(grid);

@@ -713,8 +713,6 @@ Eigen::VectorXd HermiteSimpson<T>::construct_iterate(
     Iterate traj_interp;
     const Iterate* traj_to_use;
     if (interpolate) {
-        // TODO will actually need to provide the mesh spacing as well, when we
-        // no longer have uniform mesh spacing.
         const auto duration = traj.time.tail<1>()[0] - traj.time[0];
         traj_interp = traj.interpolate(
                 duration * m_mesh_and_midpoints.array() + traj.time[0]);

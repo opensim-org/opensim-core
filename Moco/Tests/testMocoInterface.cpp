@@ -959,8 +959,6 @@ TEMPLATE_TEST_CASE("Guess", "", MocoTropterSolver, MocoCasADiSolver) {
         MocoIterate solDefaultGuess = moco.solve().unseal();
 
         CHECK(solDefaultGuess.isNumericallyEqual(solNoGuess));
-        std::cout << "DEBUG solDefaultGuess " << solDefaultGuess.getTime() << std::endl;
-        std::cout << "DEBUG solNoGuess " << solNoGuess.getTime() << std::endl;
 
         // Can also use convenience version of setGuess().
         ms.setGuess("bounds");

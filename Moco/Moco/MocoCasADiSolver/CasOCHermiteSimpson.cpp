@@ -122,13 +122,13 @@ void HermiteSimpson::applyConstraintsImpl(const VariablesMX& vars,
                 }
             }
 
-            if (m_problem.getNumControls() && 
+            if (m_problem.getNumControls() &&
                     m_solver.getInterpolateControlMidpoints()) {
                 const auto c_i = controls(Slice(), time_i);
                 const auto c_mid = controls(Slice(), time_mid);
                 const auto c_ip1 = controls(Slice(), time_ip1);
                 addConstraints(zeroC, zeroC, c_mid - 0.5 * (c_ip1 + c_i));
-            }   
+            }
         }
 
         // Kinematic constraint errors.
