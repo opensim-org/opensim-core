@@ -95,7 +95,7 @@ public:
                         getAbsolutePathnameUsingSpecifiedWorkingDirectory(
                                 relativeToDirectory, path);
             }
-            table = readTableFromFile(path);
+            table = readTableFromFile<double>(path);
         }
 
         if (table.hasTableMetaDataKey("inDegrees") &&
