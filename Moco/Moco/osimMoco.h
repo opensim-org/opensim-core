@@ -28,6 +28,7 @@
 #include "MocoBounds.h"
 #include "MocoCasADiSolver/MocoCasADiSolver.h"
 #include "MocoConstraint.h"
+#include "MocoControlBoundConstraint.h"
 #include "MocoCost/MocoControlCost.h"
 #include "MocoCost/MocoControlTrackingCost.h"
 #include "MocoCost/MocoJointReactionCost.h"
@@ -45,6 +46,7 @@
 #include "MocoTropterSolver.h"
 #include "MocoUtilities.h"
 #include "MocoWeightSet.h"
+#include "ModelOperators.h"
 #include "ModelProcessor.h"
 #include "RegisterTypes_osimMoco.h"
 

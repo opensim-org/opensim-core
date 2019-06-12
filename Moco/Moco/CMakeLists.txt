@@ -14,6 +14,7 @@ set(MOCO_SOURCES
         MocoVariableInfo.cpp
         MocoProblem.h
         MocoProblem.cpp
+        MocoProblemInfo.h
         MocoProblemRep.h
         MocoProblemRep.cpp
         MocoCost/MocoCost.h
@@ -47,6 +48,8 @@ set(MOCO_SOURCES
         MocoParameter.cpp
         MocoConstraint.h
         MocoConstraint.cpp
+        MocoControlBoundConstraint.cpp
+        MocoControlBoundConstraint.h
         InverseMuscleSolver/InverseMuscleSolver.h
         InverseMuscleSolver/InverseMuscleSolver.cpp
         InverseMuscleSolver/GlobalStaticOptimization.h
@@ -91,8 +94,10 @@ set(MOCO_SOURCES
         MocoInverse.h
         Common/TableProcessor.h
         ModelProcessor.h
+        ModelOperators.h
         MocoTool.cpp
-        MocoTool.h)
+        MocoTool.h
+        )
 if(MOCO_WITH_TROPTER)
     list(APPEND MOCO_SOURCES
             tropter/TropterProblem.h

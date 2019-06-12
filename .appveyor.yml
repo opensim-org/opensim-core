@@ -34,7 +34,7 @@ cache:
   - C:\projects\deps\colpack -> dependencies\colpack.cmake
   - C:\projects\deps\adol-c -> dependencies\CMakeLists.txt
   - C:\projects\deps\ipopt -> dependencies\CMakeLists.txt
-  # - C:\projects\deps\casadi -> dependencies\CMakeLists.txt
+  - C:\projects\deps\casadi -> dependencies\CMakeLists.txt
   - C:\projects\deps\opensim-core -> dependencies\opensim-core.cmake
   
   - C:\ProgramData\chocolatey\bin -> .appveyor.yml # swig.exe
@@ -84,6 +84,18 @@ install:
   - IF NOT EXIST C:\projects\deps mkdir C:\projects\deps
   - dir C:\projects\
   - dir C:\projects\deps
+  - ps: if (Test-Path C:\projects\deps\eigen) { ls C:\projects\deps\eigen }
+  - ps: if (Test-Path C:\projects\deps\colpack) { ls C:\projects\deps\colpack }
+  - ps: if (Test-Path C:\projects\deps\adol-c) { ls C:\projects\deps\adol-c }
+  - ps: if (Test-Path C:\projects\deps\ipopt) { ls C:\projects\deps\ipopt }
+  - ps: if (Test-Path C:\projects\deps\casadi) { ls C:\projects\deps\casadi }
+  - ps: if (Test-Path C:\projects\deps\opensim-core) { ls C:\projects\deps\opensim-core }
+
+  # Make sure that CasADi can find IPOPT and ADOL-C can find ColPack during
+  # the superbuild.
+  - ps: if (Test-Path C:\projects\deps\colpack) { cmake -E copy_directory C:\projects\deps\colpack C:\projects\opensim-moco_deps_install\colpack }
+  - ps: if (Test-Path C:\projects\deps\ipopt) { cmake -E copy_directory C:\projects\deps\ipopt C:\projects\opensim-moco_deps_install\ipopt }
+  
   - ps: if (Test-Path C:\projects\deps\eigen) { Add-Content .\CMakeCacheInit.cmake -Value 'set(SUPERBUILD_eigen OFF CACHE BOOL "")' }
   - ps: if (Test-Path C:\projects\deps\colpack) { Add-Content .\CMakeCacheInit.cmake -Value 'set(SUPERBUILD_colpack OFF CACHE BOOL "")' }
   - ps: if (Test-Path C:\projects\deps\adol-c) { Add-Content .\CMakeCacheInit.cmake -Value 'set(SUPERBUILD_adol-c OFF CACHE BOOL "")' }
