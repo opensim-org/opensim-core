@@ -48,6 +48,10 @@ public:
             model, ModelProcessor, "The musculoskeletal model to use.");
 
     MocoTool() { constructProperties(); }
+    MocoTool(const std::string& setupFile) : Object(setupFile, true) {
+        constructProperties();
+        updateFromXMLDocument();
+    }
 
     void setModel(ModelProcessor model) { set_model(std::move(model)); }
 

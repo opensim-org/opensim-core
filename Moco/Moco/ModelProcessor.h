@@ -139,6 +139,17 @@ public:
     }
 };
 
+/// Remove all muscles contained in the model's ForceSet.
+class OSIMMOCO_API ModOpRemoveMuscles : public ModelOperator {
+    OpenSim_DECLARE_CONCRETE_OBJECT(ModOpRemoveMuscles, ModelOperator);
+
+public:
+    void operate(Model& model) const override {
+        model.finalizeConnections();
+        ModelFactory::removeMuscles(model);
+    }
+};
+
 /// Add a reserve actuator (CoordinateActuator) for each
 /// unconstrained coordinate in the model.
 /// Each actuator will have the specified `optimal_force`.

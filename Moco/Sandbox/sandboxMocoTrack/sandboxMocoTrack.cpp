@@ -34,12 +34,7 @@ void addCoordinateActuator(Model& model, std::string coordName,
     actu->setCoordinate(&coordSet.get(coordName));
     actu->setOptimalForce(optimalForce);
     actu->setMinControl(-1);
-    actu->setMinControl(1);
-    //if (coordName.find("ankle_angle") != std::string::npos) {
-    //    actu->setMaxControl(0);
-    //} else {
-    //    actu->setMaxControl(1);
-    //}
+    actu->setMaxControl(1);
     model.addComponent(actu);
 }
 
@@ -324,6 +319,7 @@ MocoSolution runBaselineProblem(bool removeMuscles, double controlWeight = 0.1,
     track.set_initial_time(0.81);
     track.set_final_time(1.65);
     track.set_minimize_controls(controlWeight);
+    //track.set_apply_tracked_states_to_guess(true);
 
     MocoStudy moco = track.initialize();
 
@@ -343,6 +339,8 @@ MocoSolution runBaselineProblem(bool removeMuscles, double controlWeight = 0.1,
     }
 
     auto& solver = moco.updSolver<MocoCasADiSolver>();
+    solver.set_optim_constraint_tolerance(1e-2);
+    solver.set_optim_convergence_tolerance(1e-2);
     if (guessFile != "") {
         solver.setGuessFile(guessFile);
     }
@@ -699,7 +697,7 @@ int main() {
     std::cout.rdbuf(LogManager::cout.rdbuf());
     std::cerr.rdbuf(LogManager::cerr.rdbuf());
 
-    const double controlWeight = 1;
+    const double controlWeight = 0.01;
 
     // Baseline tracking problem w/o muscles.
     // --------------------------------------
@@ -707,8 +705,8 @@ int main() {
 
     // Baseline tracking problem w/ muscles.
     // -------------------------------------
-    MocoSolution baselineWithMuscles = runBaselineProblem(false, controlWeight,
-      "sandboxMocoTrack_solution_baseline_muscles.sto");
+    //MocoSolution baselineWithMuscles = runBaselineProblem(false, controlWeight,
+    //  "sandboxMocoTrack_solution_baseline_muscles.sto");
 
     // Knee adduction minimization w/o muscles.
     // ----------------------------------------

@@ -138,7 +138,7 @@ public:
     }
 
     MocoStudy initialize();
-    void solve();
+    MocoSolution solve();
 
 private:
     Model m_model;

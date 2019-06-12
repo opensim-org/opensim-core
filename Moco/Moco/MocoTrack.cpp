@@ -59,6 +59,10 @@ MocoStudy MocoTrack::initialize() {
     Model model = get_model().process();
     model.initSystem();
 
+    //InverseDynamicsTool idtool;
+    //idtool.createExternalLoads("grf_walk.xml", model);
+    //model.initSystem();
+
     // Costs.
     // ------
     // State tracking cost.
@@ -124,14 +128,13 @@ MocoStudy MocoTrack::initialize() {
     return moco;
 }
 
-void MocoTrack::solve() {
+MocoSolution MocoTrack::solve() {
     // Generate the base MocoStudy.
     MocoStudy moco = initialize();
 
     // Solve!
     // ------
-    MocoSolution solution = moco.solve();
-    moco.visualize(solution);
+    return moco.solve();
 }
 
 std::string MocoTrack::getFilePath(const std::string& file) const {
@@ -245,7 +248,7 @@ TimeSeriesTable MocoTrack::configureStateTracking(MocoProblem& problem,
     // occured.
     writeTableToFile(states, getName() + "_tracked_states.mot");
 
-    // Update member variables for creating a guess.
+    // Return tracked states to possibly include in the guess.
     return states;
 }
 
@@ -291,6 +294,7 @@ void MocoTrack::applyStatesToGuess(const TimeSeriesTable& states,
     for (int i = 0; i < (int)states.getNumColumns(); ++i) {
         const auto& label = states.getColumnLabel(i);
         const auto& col = states.getDependentColumnAtIndex(i);
+
         guess.setState(label, col);
     }
 }
