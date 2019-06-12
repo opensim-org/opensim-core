@@ -95,6 +95,8 @@ private:
                            Number obj_value, const Ipopt::IpoptData* ip_data,
                            Ipopt::IpoptCalculatedQuantities* ip_cq) override;
     /*
+    /// This allows us to inspect intermediate iterations while solving the
+    /// problem.
     virtual bool intermediate_callback(Ipopt::AlgorithmMode mode,
             Index iter, Number obj_value,
             Number inf_pr, Number inf_du,
@@ -104,9 +106,6 @@ private:
             Index ls_trials,
             const Ipopt::IpoptData* ip_data,
             Ipopt::IpoptCalculatedQuantities* ip_cq) override {
-        auto c = ip_cq->curr_c();
-        for (int i = 0; i < c->N)
-
     }*/
 
     // Members.
@@ -192,6 +191,15 @@ Solution IPOPTSolver::optimize_impl(const VectorXd& guess) const {
         ipoptions->SetNumericValue("constr_viol_tol", opt.value());
         ipoptions->SetNumericValue("acceptable_constr_viol_tol", opt.value());
     }
+
+    const auto& jacobian_approx = get_jacobian_approximation();
+    TROPTER_THROW_IF(jacobian_approx != "exact" &&
+                     jacobian_approx != "finite-difference-values",
+        "When using Ipopt, the 'jacobian_approximation' setting must be "
+        "either 'exact' or 'finite-difference-values', but '%s' was "
+        "provided.", jacobian_approx);
+    ipoptions->SetStringValue("jacobian_approximation", jacobian_approx);
+
     if (const auto opt = get_hessian_approximation()) {
         const auto& value = opt.value();
         TROPTER_THROW_IF(value != "exact" && value != "limited-memory",
@@ -199,6 +207,15 @@ Solution IPOPTSolver::optimize_impl(const VectorXd& guess) const {
                 "either 'exact' or 'limited-memory', but '%s' was provided.",
                 value);
         ipoptions->SetStringValue("hessian_approximation", value);
+
+        TROPTER_THROW_IF(jacobian_approx == "finite-difference-values" &&
+                         value == "exact",
+            "The 'hessian_approximation' setting for Ipopt was set to 'exact' "
+            "(i.e. computed by tropter) while the 'jacobian_approximation' "
+            "setting was set to 'finite-difference-values' (i.e. computed by "
+            "Ipopt). This may lead to a mismatch in derivative information, so "
+            "please set 'jacobian_approximation' to 'exact' if using tropter-"
+            "computed Hessian information.");
     }
 
     // Set advanced options.
@@ -233,7 +250,7 @@ Solution IPOPTSolver::optimize_impl(const VectorXd& guess) const {
     //std::string all_options;
     //app->Options()->PrintList(all_options);
     //std::cout << all_options << std::endl;
-    // TODO app->Options()->SetStringValue("derivative_test", "second-order");
+    //app->Options()->SetStringValue("derivative_test", "first-order");
     //app->Options()->SetStringValue("linear_solver", "ma97");
     //app->Options()->SetNumericValue("tol", 1e-5);
     Ipopt::ApplicationReturnStatus status;

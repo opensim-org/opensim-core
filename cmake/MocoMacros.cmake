@@ -17,13 +17,13 @@ function(MocoCopyDLLs)
     set(options)
     set(oneValueArgs DEP_NAME DEP_BIN_DIR INSTALL_DLLS)
     set(multiValueArgs)
-    cmake_parse_arguments(MUCOCOPY
+    cmake_parse_arguments(MOCOCOPY
             "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
     if(WIN32)
-        file(GLOB DLLS ${MUCOCOPY_DEP_BIN_DIR}/*.dll)
+        file(GLOB DLLS ${MOCOCOPY_DEP_BIN_DIR}/*.dll)
         if(NOT DLLS)
             message(FATAL_ERROR "Zero DLLs found in directory "
-                                "${MUCOCOPY_DEP_BIN_DIR}.")
+                                "${MOCOCOPY_DEP_BIN_DIR}.")
         endif()
         set(DEST_DIR "${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR}")
         foreach(DLL IN LISTS DLLS)
@@ -33,13 +33,13 @@ function(MocoCopyDLLs)
                 COMMAND ${CMAKE_COMMAND} -E make_directory ${DEST_DIR}
                 COMMAND ${CMAKE_COMMAND} -E copy ${DLL} ${DEST_DIR}
                 DEPENDS ${DLL}
-                COMMENT "Copying ${DLL_NAME} from ${MUCOCOPY_DEP_BIN_DIR} to ${DEST_DIR}.")
+                COMMENT "Copying ${DLL_NAME} from ${MOCOCOPY_DEP_BIN_DIR} to ${DEST_DIR}.")
         endforeach()
-        add_custom_target(Copy_${MUCOCOPY_DEP_NAME}_DLLs ALL DEPENDS ${DLLS_DEST})
-        set_target_properties(Copy_${MUCOCOPY_DEP_NAME}_DLLs PROPERTIES
-            PROJECT_LABEL "Copy ${MUCOCOPY_DEP_NAME} DLLs" FOLDER "Moco")
-        if(MUCOCOPY_INSTALL_DLLS)
-            install(FILES ${DLLS} DESTINATION ${MUCOCOPY_INSTALL_DLLS})
+        add_custom_target(Copy_${MOCOCOPY_DEP_NAME}_DLLs ALL DEPENDS ${DLLS_DEST})
+        set_target_properties(Copy_${MOCOCOPY_DEP_NAME}_DLLs PROPERTIES
+            PROJECT_LABEL "Copy ${MOCOCOPY_DEP_NAME} DLLs" FOLDER "Moco")
+        if(MOCOCOPY_INSTALL_DLLS)
+            install(FILES ${DLLS} DESTINATION ${MOCOCOPY_INSTALL_DLLS})
         endif()
     endif()
 endfunction()
@@ -55,23 +55,23 @@ function(MocoAddExampleCXX)
     set(options)
     set(oneValueArgs NAME)
     set(multiValueArgs RESOURCES)
-    cmake_parse_arguments(MUCOEX
+    cmake_parse_arguments(MOCOEX
             "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
-    add_executable(${MUCOEX_NAME} ${MUCOEX_NAME}.cpp)
-    set_target_properties(${MUCOEX_NAME} PROPERTIES
+    add_executable(${MOCOEX_NAME} ${MOCOEX_NAME}.cpp)
+    set_target_properties(${MOCOEX_NAME} PROPERTIES
             FOLDER "Moco/Examples")
-    target_link_libraries(${MUCOEX_NAME} osimMoco)
-    file(COPY ${MUCOEX_RESOURCES} DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
+    target_link_libraries(${MOCOEX_NAME} osimMoco)
+    file(COPY ${MOCOEX_RESOURCES} DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
 
     install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-            DESTINATION ${MUSCOLLO_INSTALL_EXAMPLEDIR}/C++
+            DESTINATION ${MOCO_INSTALL_EXAMPLEDIR}/C++
             PATTERN "CMakeLists.txt" EXCLUDE)
 
-    set(_example_install_dir ${MUSCOLLO_INSTALL_EXAMPLEDIR}/C++/${MUCOEX_NAME})
+    set(_example_install_dir ${MOCO_INSTALL_EXAMPLEDIR}/C++/${MOCOEX_NAME})
     # These next two variables are to be configured below (they are not used
     # here, but within CMakeListsToInstall.txt.in).
-    set(_example_name ${MUCOEX_NAME})
+    set(_example_name ${MOCOEX_NAME})
     file(RELATIVE_PATH _moco_install_hint
             "${CMAKE_INSTALL_PREFIX}/${_example_install_dir}"
             "${CMAKE_INSTALL_PREFIX}")

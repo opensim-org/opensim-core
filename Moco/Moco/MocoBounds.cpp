@@ -53,10 +53,7 @@ MocoBounds::MocoBounds(const Property<double>& p) : MocoBounds() {
                 "detected. Please provide a non-NaN value for the bounds.");
             append_bounds(p[1]);
         }
-    }/* TODO else {
-        append_bounds(-SimTK::Infinity);
-        append_bounds(SimTK::Infinity);
-    }*/
+    }
 }
 
 void MocoBounds::constructProperties() {

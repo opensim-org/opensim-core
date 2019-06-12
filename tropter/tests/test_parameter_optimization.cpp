@@ -49,6 +49,8 @@ TEST_CASE("Unconstrained, IPOPT") {
     SECTION("Finite differences, limited memory") {
         auto ocp = std::make_shared<Unconstrained<double>>();
         DirectCollocationSolver<double> dircol(ocp, "trapezoidal", "ipopt");
+        dircol.get_opt_solver()
+            .set_jacobian_approximation("finite-difference-values");
         dircol.get_opt_solver().set_hessian_approximation("limited-memory");
         Solution solution = dircol.solve();
 
@@ -61,6 +63,7 @@ TEST_CASE("Unconstrained, IPOPT") {
         auto ocp = std::make_shared<Unconstrained<double>>();
         DirectCollocationSolver<double> dircol(ocp, "trapezoidal", "ipopt");
         dircol.get_opt_solver().set_findiff_hessian_step_size(1e-3);
+        dircol.get_opt_solver().set_jacobian_approximation("exact");
         dircol.get_opt_solver().set_hessian_approximation("exact");
         Solution solution = dircol.solve();
 
@@ -105,12 +108,10 @@ public:
         out.dynamics[1] = in.parameters[0];
     }
 
-    void calc_endpoint_cost(const T& /*final_time*/,
-        const VectorX<T>& final_states,
-        const VectorX<T>& /*parameters*/,
-        T& cost) const override {
-        cost = (final_states[0] - GRAV_ACCEL * 0.5) * 
-               (final_states[0] - GRAV_ACCEL * 0.5);
+    void calc_endpoint_cost(const Input<T>& in,
+            T& cost) const override {
+        cost = (in.states[0] - GRAV_ACCEL * 0.5) * 
+               (in.states[0] - GRAV_ACCEL * 0.5);
     }
 
 };
@@ -119,6 +120,8 @@ TEST_CASE("GravitationalAcceleration, IPOPT") {
     SECTION("Finite differences, limited memory") {
         auto ocp = std::make_shared<GravitationalAcceleration<double>>();
         DirectCollocationSolver<double> dircol(ocp, "trapezoidal", "ipopt");
+        dircol.get_opt_solver()
+            .set_jacobian_approximation("finite-difference-values");
         dircol.get_opt_solver().set_hessian_approximation("limited-memory");
         Solution solution = dircol.solve();
 
@@ -129,6 +132,7 @@ TEST_CASE("GravitationalAcceleration, IPOPT") {
         auto ocp = std::make_shared<GravitationalAcceleration<double>>();
         DirectCollocationSolver<double> dircol(ocp, "trapezoidal", "ipopt");
         dircol.get_opt_solver().set_findiff_hessian_step_size(1e-3);
+        dircol.get_opt_solver().set_jacobian_approximation("exact");
         dircol.get_opt_solver().set_hessian_approximation("exact");
         Solution solution = dircol.solve();
 
@@ -170,12 +174,10 @@ public:
         out.dynamics[1] = -(STIFFNESS / in.parameters[0]) * in.states[0];
     }
 
-    void calc_endpoint_cost(const T& /*final_time*/,
-            const VectorX<T>& final_states,
-            const VectorX<T>& /*parameters*/,
+    void calc_endpoint_cost(const Input<T>& in,
             T& cost) const override {
         
-        cost = (final_states[0] - 0.5) * (final_states[0] - 0.5);
+        cost = (in.states[0] - 0.5) * (in.states[0] - 0.5);
 
         // TODO: Final time cost approach not finding correct mass parameter.
         // double frequency = sqrt(STIFFNESS / MASS) / (2 * PI);
@@ -193,6 +195,8 @@ TEST_CASE("OscillatorMass, IPOPT") {
     SECTION("Finite differences, limited memory, trapezoidal") {
         auto ocp = std::make_shared<OscillatorMass<double>>();
         DirectCollocationSolver<double> dircol(ocp, "trapezoidal", "ipopt", N);
+        dircol.get_opt_solver()
+            .set_jacobian_approximation("finite-difference-values");
         dircol.get_opt_solver().set_hessian_approximation("limited-memory");
         dircol.get_opt_solver().set_sparsity_detection("random");
         Solution solution = dircol.solve();
@@ -204,6 +208,7 @@ TEST_CASE("OscillatorMass, IPOPT") {
         auto ocp = std::make_shared<OscillatorMass<double>>();
         DirectCollocationSolver<double> dircol(ocp, "trapezoidal", "ipopt", N);
         dircol.get_opt_solver().set_findiff_hessian_step_size(1e-3);
+        dircol.get_opt_solver().set_jacobian_approximation("exact");
         dircol.get_opt_solver().set_hessian_approximation("exact");
         dircol.get_opt_solver().set_sparsity_detection("random");
         Solution solution = dircol.solve();
@@ -226,6 +231,8 @@ TEST_CASE("OscillatorMass, IPOPT") {
         auto ocp = std::make_shared<OscillatorMass<double>>();
         DirectCollocationSolver<double> dircol(ocp, "hermite-simpson", "ipopt", 
             N / 25);
+        dircol.get_opt_solver()
+            .set_jacobian_approximation("finite-difference-values");
         dircol.get_opt_solver().set_hessian_approximation("limited-memory");
         dircol.get_opt_solver().set_sparsity_detection("random");
         Solution solution = dircol.solve();
@@ -238,6 +245,7 @@ TEST_CASE("OscillatorMass, IPOPT") {
         DirectCollocationSolver<double> dircol(ocp, "hermite-simpson", "ipopt", 
             N / 25);
         dircol.get_opt_solver().set_findiff_hessian_step_size(1e-3);
+        dircol.get_opt_solver().set_jacobian_approximation("exact");
         dircol.get_opt_solver().set_hessian_approximation("exact");
         dircol.get_opt_solver().set_sparsity_detection("random");
         Solution solution = dircol.solve();

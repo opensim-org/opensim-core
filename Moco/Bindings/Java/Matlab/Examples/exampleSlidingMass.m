@@ -40,9 +40,9 @@ body.attachGeometry(Sphere(0.05));
 
 model.finalizeConnections();
 
-% Create MocoTool.
+% Create MocoStudy.
 % ================
-moco = MocoTool();
+moco = MocoStudy();
 moco.setName('sliding_mass');
 
 % Define the optimal control problem.
@@ -69,11 +69,13 @@ problem.setControlInfo('/actuator', MocoBounds(-50, 50));
 
 % Cost.
 % -----
-problem.addCost(MocoFinalTimeCost());
+problem.addCost(MocoFinalTimeCost('final_time'));
+
+
 
 % Configure the solver.
 % =====================
-solver = moco.initSolver();
+solver = moco.initTropterSolver();
 solver.set_num_mesh_points(50);
 
 % Now that we've finished setting up the tool, print it to a file.

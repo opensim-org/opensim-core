@@ -18,7 +18,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "MocoSolver.h"
+#include "MocoDirectCollocationSolver.h"
 
 #include <SimTKcommon/internal/ResetOnCopy.h>
 
@@ -31,6 +31,15 @@ namespace OpenSim {
 
 class MocoProblem;
 
+class MocoTropterSolverNotAvailable : public Exception {
+public:
+    MocoTropterSolverNotAvailable(const std::string& file, int line,
+            const std::string& func)
+            : Exception(file, line, func) {
+        addMessage("MocoTropterSolver is not available.");
+    }
+};
+
 /// Solve the MocoProblem using the **tropter** direct collocation library.
 /// **tropter** is a free and open-source C++ library that supports computing
 /// the Jacobian and Hessian via either automatic differentiation or finite
@@ -38,66 +47,40 @@ class MocoProblem;
 ///
 /// This class allows you to configure tropter's settings.
 ///
+/// Supported optimization solvers
+/// ==============================
+/// The following optimization solvers can be specified for the optim_solver
+/// property:
+/// - ipopt
+/// - snopt
+///
 /// Using this solver in C++ requires that a tropter shared library is
 /// available, but tropter header files are not required. No tropter symbols
 /// are exposed in Moco's interface.
-class OSIMMOCO_API MocoTropterSolver : public MocoSolver {
-OpenSim_DECLARE_CONCRETE_OBJECT(MocoTropterSolver, MocoSolver);
+class OSIMMOCO_API MocoTropterSolver : public MocoDirectCollocationSolver {
+    OpenSim_DECLARE_CONCRETE_OBJECT(
+            MocoTropterSolver, MocoDirectCollocationSolver);
+
 public:
-    OpenSim_DECLARE_PROPERTY(num_mesh_points, int,
-    "The number of mesh points for discretizing the problem (default: 100).");
-    OpenSim_DECLARE_PROPERTY(verbosity, int,
-    "0 for silent. 1 for only Moco's own output. "
-    "2 for output from tropter and the underlying solver (default: 2).");
-    OpenSim_DECLARE_PROPERTY(dynamics_mode, std::string,
-    "Dynamics are expressed as 'explicit' (default) or 'implicit' "
-    "differential equations.");
-    OpenSim_DECLARE_PROPERTY(optim_solver, std::string,
-    "The optimization solver for tropter to use; ipopt (default), or snopt.");
-    OpenSim_DECLARE_PROPERTY(optim_max_iterations, int,
-    "Maximum number of iterations in the optimization solver "
-    "(-1 for solver's default).");
-    OpenSim_DECLARE_PROPERTY(optim_convergence_tolerance, double,
-    "Tolerance used to determine if the objective is minimized "
-    "(-1 for solver's default)");
-    OpenSim_DECLARE_PROPERTY(optim_constraint_tolerance, double,
-    "Tolerance used to determine if the constraints are satisfied "
-    "(-1 for solver's default)");
-    OpenSim_DECLARE_PROPERTY(optim_hessian_approximation, std::string,
-    "'limited-memory' (default) for quasi-Newton, or 'exact' for full Newton.");
+    OpenSim_DECLARE_PROPERTY(optim_jacobian_approximation, std::string,
+            "When using IPOPT, 'finite-difference-values' for Jacobian "
+            "calculations "
+            "by the solver, or 'exact' for Jacobian calculations by "
+            "tropter (default).");
     OpenSim_DECLARE_PROPERTY(optim_sparsity_detection, std::string,
-    "Iterate used to detect sparsity pattern of Jacobian/Hessian; "
-    "'random' (default) or 'initial-guess'");
-    OpenSim_DECLARE_PROPERTY(optim_ipopt_print_level, int,
-    "IPOPT's verbosity (see IPOPT documentation).");
-    OpenSim_DECLARE_PROPERTY(transcription_scheme, std::string,
-    "'trapezoidal' (default) for trapezoidal transcription, or "
-    "'hermite-simpson' for separated Hermite-Simpson transcription.");
-    OpenSim_DECLARE_OPTIONAL_PROPERTY(exact_hessian_block_sparsity_mode, 
-    std::string, "'dense' for dense blocks on the Hessian diagonal, or "
-    "'sparse' for sparse blocks on the Hessian diagonal, detected from the "
-    "optimal control problem. If using an 'exact' Hessian approximation, this "
-    "property must be set.");
-    OpenSim_DECLARE_OPTIONAL_PROPERTY(enforce_constraint_derivatives, bool,
-    "'true' or 'false', whether or not derivatives of kinematic constraints"
-    "are enforced as path constraints in the optimal control problem.");
-    OpenSim_DECLARE_PROPERTY(minimize_lagrange_multipliers, bool,
-    "If enabled, a term minimizing the weighted, squared sum of "
-    "any existing Lagrange multipliers is added to the optimal control "
-    "problem. This may be useful for imposing uniqueness in the Lagrange "
-    "multipliers when not enforcing model kinematic constraint derivatives or "
-    "when the constraint Jacobian is singular. To set the weight for this term "
-    "use the 'lagrange_multiplier weight' property. Default: false");
-    OpenSim_DECLARE_PROPERTY(lagrange_multiplier_weight, double,
-    "If the 'minimize_lagrange_multipliers' property is enabled, this defines "
-    "the weight for the cost term added to the optimal control problem. "
-    "Default: 1")
-    OpenSim_DECLARE_PROPERTY(velocity_correction_bounds, MocoBounds,
-    "For problems where model kinematic constraint derivatives are enforced, "
-    "set the bounds on the slack varia1bles performing the velocity correction "
-    "to project the model coordinates back onto the constraint manifold. "
-    "Default: [-0.1, 0.1]");
-    // TODO OpenSim_DECLARE_LIST_PROPERTY(enforce_constraint_kinematic_levels, 
+            "Iterate used to detect sparsity pattern of Jacobian/Hessian; "
+            "'random' (default) or 'initial-guess'");
+    OpenSim_DECLARE_OPTIONAL_PROPERTY(exact_hessian_block_sparsity_mode,
+            std::string,
+            "'dense' for dense blocks on the Hessian diagonal, or "
+            "'sparse' for sparse blocks on the Hessian diagonal, detected from "
+            "the "
+            "optimal control problem. If using an 'exact' Hessian "
+            "approximation, this "
+            "property must be set. Note: this option only takes effect when "
+            "using "
+            "IPOPT.");
+    // TODO OpenSim_DECLARE_LIST_PROPERTY(enforce_constraint_kinematic_levels,
     //   std::string, "");
     // TODO must make more general for multiple phases, mesh refinement.
     // TODO mesh_point_frequency if time is fixed.
@@ -147,7 +130,6 @@ public:
     static void printOptimizationSolverOptions(std::string solver = "ipopt");
 
 protected:
-
     /// Internal tropter optimal control problem.
     template <typename T>
     class OCProblem;
@@ -163,15 +145,10 @@ protected:
     std::shared_ptr<const TropterProblemBase<double>>
     createTropterProblem() const;
 
-    void resetProblemImpl(const MocoProblemRep&) const override;
     // TODO ensure that user-provided guess is within bounds.
     MocoSolution solveImpl() const override;
 
 private:
-
-    OpenSim_DECLARE_PROPERTY(guess_file, std::string,
-            "A MocoIterate file storing an initial guess.");
-
     void constructProperties();
 
     // When a copy of the solver is made, we want to keep any guess specified

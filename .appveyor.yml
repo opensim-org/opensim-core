@@ -17,11 +17,11 @@ skip_branch_with_pr: true
 
 environment:
   JAVA_DIR: "C:\\Program Files\\Java\\jdk1.8.0"
-  PYTHON_DIR: "C:\\Python27-x64"
+  PYTHON_DIR: "C:\\Python37-x64"
 
 init:
   - SET BTYPE=Release
-  - SET PATH=%PYTHON_DIR%;%PATH%
+  - "SET PATH=%PYTHON_DIR%;%PYTHON_DIR%\\Scripts;%PATH%"
   - SET JAVA_HOME=%JAVA_DIR%
   - SET PATH=%JAVA_HOME%\bin;%PATH%
 
@@ -34,6 +34,7 @@ cache:
   - C:\projects\deps\colpack -> dependencies\colpack.cmake
   - C:\projects\deps\adol-c -> dependencies\CMakeLists.txt
   - C:\projects\deps\ipopt -> dependencies\CMakeLists.txt
+  - C:\projects\deps\casadi -> dependencies\CMakeLists.txt
   - C:\projects\deps\opensim-core -> dependencies\opensim-core.cmake
   
   - C:\ProgramData\chocolatey\bin -> .appveyor.yml # swig.exe
@@ -42,10 +43,15 @@ cache:
 install:
   - cmake --version
 
+  # Moco's python bindings require numpy.
+  - python -m pip install numpy
+
   # - choco install doxygen.portable # <-- too unreliable.
   - ps: (New-Object System.Net.WebClient).DownloadFile("https://sourceforge.net/projects/myosin/files/doxygen-1.8.14.windows.x64.bin.zip/download", "C:\doxygen.zip")
   - 7z x C:\doxygen.zip -oC:\doxygen
   - SET PATH=C:\doxygen;%PATH%
+  
+  - echo %PATH%
 
   ## Use Chocolatey to install SWIG.
   # Only install swig if it isn't present (as a result of AppVeyor's caching).
@@ -55,7 +61,7 @@ install:
 
   # Install dependencies.
   # We are using superbuild for opensim-core, as that allows us to specify
-  # specific commits to use. Also, for some reason, Muscollo couldn't find
+  # specific commits to use. Also, for some reason, Moco couldn't find
   # OpenSim headers when using NuGet.
   # TODO - nuget sources add -name opensim-core --source https://ci.appveyor.com/nuget/opensim-core-kd63opes1em0
   # TODO - nuget install opensim-core -Version 0.0.0 -ExcludeVersion -OutputDirectory C:\
@@ -73,22 +79,37 @@ install:
   # TODO vcpkg is pretty slow; using superbuild for now.
   #- vcpkg install eigen3:x64-windows
 
-  - mkdir ..\moco_deps_build
-  - cd ..\moco_deps_build
+  - mkdir ..\opensim-moco_deps_build
+  - cd ..\opensim-moco_deps_build
+  - IF NOT EXIST C:\projects\deps mkdir C:\projects\deps
+  - dir C:\projects\
+  - dir C:\projects\deps
+  - ps: if (Test-Path C:\projects\deps\eigen) { ls C:\projects\deps\eigen }
+  - ps: if (Test-Path C:\projects\deps\colpack) { ls C:\projects\deps\colpack }
+  - ps: if (Test-Path C:\projects\deps\adol-c) { ls C:\projects\deps\adol-c }
+  - ps: if (Test-Path C:\projects\deps\ipopt) { ls C:\projects\deps\ipopt }
+  - ps: if (Test-Path C:\projects\deps\casadi) { ls C:\projects\deps\casadi }
+  - ps: if (Test-Path C:\projects\deps\opensim-core) { ls C:\projects\deps\opensim-core }
+
+  # Make sure that CasADi can find IPOPT and ADOL-C can find ColPack during
+  # the superbuild.
+  - ps: if (Test-Path C:\projects\deps\colpack) { cmake -E copy_directory C:\projects\deps\colpack C:\projects\opensim-moco_deps_install\colpack }
+  - ps: if (Test-Path C:\projects\deps\ipopt) { cmake -E copy_directory C:\projects\deps\ipopt C:\projects\opensim-moco_deps_install\ipopt }
+  
+  - ps: if (Test-Path C:\projects\deps\eigen) { Add-Content .\CMakeCacheInit.cmake -Value 'set(SUPERBUILD_eigen OFF CACHE BOOL "")' }
+  - ps: if (Test-Path C:\projects\deps\colpack) { Add-Content .\CMakeCacheInit.cmake -Value 'set(SUPERBUILD_colpack OFF CACHE BOOL "")' }
+  - ps: if (Test-Path C:\projects\deps\adol-c) { Add-Content .\CMakeCacheInit.cmake -Value 'set(SUPERBUILD_adol-c OFF CACHE BOOL "")' }
+  - ps: if (Test-Path C:\projects\deps\ipopt) { Add-Content .\CMakeCacheInit.cmake -Value 'set(SUPERBUILD_ipopt OFF CACHE BOOL "")' }
+  - ps: if (Test-Path C:\projects\deps\casadi) { Add-Content .\CMakeCacheInit.cmake -Value 'set(SUPERBUILD_casadi OFF CACHE BOOL "")' }
+  - ps: if (Test-Path C:\projects\deps\opensim-core) { Add-Content .\CMakeCacheInit.cmake -Value 'set(SUPERBUILD_opensim-core OFF CACHE BOOL "")' }
+  - ps: Add-Content .\CMakeCacheInit.cmake -Value 'set(CMAKE_INSTALL_PREFIX "C:/projects/opensim-moco_deps_install" CACHE PATH "")'
+  - ps: Add-Content .\CMakeCacheInit.cmake -Value 'set(OPENSIM_JAVA_WRAPPING ON CACHE BOOL "")'
+  - ps: Add-Content .\CMakeCacheInit.cmake -Value 'set(OPENSIM_PYTHON_WRAPPING ON CACHE BOOL "")'
   # /W0 disables warnings. The other CXX flags are copied from CMake's default
   # CMAKE_CXX_FLAGS.
   # https://msdn.microsoft.com/en-us/library/19z1t1wy.aspx
   # - set CXXFLAGS="/W0"
-  - cmake ..\moco\dependencies -G"Visual Studio 14 2015 Win64" -DCMAKE_INSTALL_PREFIX="C:\projects\moco_deps_install" -DCMAKE_CXX_FLAGS="/DWIN32 /D_WINDOWS /W0 /GR /EHsc" -DOPENSIM_JAVA_WRAPPING=ON -DOPENSIM_PYTHON_WRAPPING=ON -DSUPERBUILD_eigen=OFF -DSUPERBUILD_colpack=OFF -DSUPERBUILD_adolc=OFF -DSUPERBUILD_ipopt=OFF -DSUPERBUILD_opensim-core=OFF
-
-  - IF NOT EXIST C:\projects\deps mkdir C:\projects\deps
-  - dir C:\projects\
-  - dir C:\projects\deps
-  - IF NOT EXIST C:\projects\deps\eigen cmake . -DSUPERBUILD_eigen=ON
-  - IF NOT EXIST C:\projects\deps\colpack cmake . -DSUPERBUILD_colpack=ON
-  - IF NOT EXIST C:\projects\deps\adol-c cmake . -DSUPERBUILD_adolc=ON
-  - IF NOT EXIST C:\projects\deps\ipopt cmake . -DSUPERBUILD_ipopt=ON
-  - IF NOT EXIST C:\projects\deps\opensim-core cmake . -DSUPERBUILD_opensim-core=ON
+  - cmake ..\opensim-moco\dependencies -G"Visual Studio 14 2015 Win64" -DCMAKE_CXX_FLAGS="/DWIN32 /D_WINDOWS /W0 /GR /EHsc" -C CMakeCacheInit.cmake
   # List the values of the CMake variables.
   - cmake . -LAH
 
@@ -96,16 +117,17 @@ install:
   # difficult to read.
   - cmake --build . --config %BTYPE% -- /maxcpucount:4 # TODO /verbosity:quiet
   - dir C:\projects\
-  - IF EXIST C:\projects\moco_deps_install dir C:\projects\moco_deps_install
+  - IF EXIST C:\projects\opensim-moco_deps_install dir C:\projects\opensim-moco_deps_install
 
   # To get the caching mechanism to work, we had to use a different directory
   # for the cache (maybe b/c CMake makes empty folders in
-  # moco_deps_install?).
-  - IF NOT EXIST C:\projects\deps\eigen cmake -E copy_directory C:\projects\moco_deps_install\eigen C:\projects\deps\eigen
-  - IF NOT EXIST C:\projects\deps\colpack cmake -E copy_directory C:\projects\moco_deps_install\colpack C:\projects\deps\colpack
-  - IF NOT EXIST C:\projects\deps\adol-c cmake -E copy_directory C:\projects\moco_deps_install\adol-c C:\projects\deps\adol-c
-  - IF NOT EXIST C:\projects\deps\ipopt cmake -E copy_directory C:\projects\moco_deps_install\ipopt C:\projects\deps\ipopt
-  - IF NOT EXIST C:\projects\deps\opensim-core cmake -E copy_directory C:\projects\moco_deps_install\opensim-core C:\projects\deps\opensim-core
+  # opensim-moco_deps_install?).
+  - IF NOT EXIST C:\projects\deps\eigen cmake -E copy_directory C:\projects\opensim-moco_deps_install\eigen C:\projects\deps\eigen
+  - IF NOT EXIST C:\projects\deps\colpack cmake -E copy_directory C:\projects\opensim-moco_deps_install\colpack C:\projects\deps\colpack
+  - IF NOT EXIST C:\projects\deps\adol-c cmake -E copy_directory C:\projects\opensim-moco_deps_install\adol-c C:\projects\deps\adol-c
+  - IF NOT EXIST C:\projects\deps\ipopt cmake -E copy_directory C:\projects\opensim-moco_deps_install\ipopt C:\projects\deps\ipopt
+  - IF NOT EXIST C:\projects\deps\casadi cmake -E copy_directory C:\projects\opensim-moco_deps_install\casadi C:\projects\deps\casadi
+  - IF NOT EXIST C:\projects\deps\opensim-core cmake -E copy_directory C:\projects\opensim-moco_deps_install\opensim-core C:\projects\deps\opensim-core
 
 build_script:
 
@@ -113,7 +135,7 @@ build_script:
   - mkdir ..\build
   - cd ..\build
   # Turn warnings into errors (/WX)
-  - cmake -E env CXXFLAGS="/WX" cmake ..\moco -G"Visual Studio 14 2015 Win64" -DCMAKE_INSTALL_PREFIX="C:\moco" -DADOLC_DIR="..\deps\adol-c" -DCMAKE_PREFIX_PATH="C:\projects\deps\eigen;C:\projects\deps\colpack;C:\projects\deps\opensim-core;C:\projects\deps\ipopt" -DMUSCOLLO_PYTHON_BINDINGS=ON -DMUSCOLLO_JAVA_BINDINGS=ON
+  - cmake -E env CXXFLAGS="/WX" cmake ..\opensim-moco -G"Visual Studio 14 2015 Win64" -DCMAKE_INSTALL_PREFIX="C:\opensim-moco" -DADOLC_DIR="..\deps\adol-c" -DCMAKE_PREFIX_PATH="C:\projects\deps\eigen;C:\projects\deps\colpack;C:\projects\deps\opensim-core;C:\projects\deps\ipopt;C:\projects\deps\casadi" -DMOCO_PYTHON_BINDINGS=ON -DMOCO_JAVA_BINDINGS=ON
   #-DCMAKE_TOOLCHAIN_FILE="C:\Tools\vcpkg\scripts\buildsystems\vcpkg.cmake"
   - cmake --build . --config %BTYPE% -- /maxcpucount:4 /verbosity:minimal
 
@@ -122,7 +144,7 @@ test_script:
 
    # Build doxygen.
   - cmake --build . --config %BTYPE% --target tropter_doxygen -- /verbosity:minimal
-  - cmake --build . --config %BTYPE% --target Muscollo_doxygen -- /verbosity:minimal
+  - cmake --build . --config %BTYPE% --target Moco_doxygen -- /verbosity:minimal
 
   # Install.
   - cmake --build . --config %BTYPE% --target install -- /verbosity:quiet
@@ -136,7 +158,7 @@ after_test:
   # - IF %APPVEYOR_REPO_BRANCH% EQU master IF NOT DEFINED APPVEYOR_PULL_REQUEST_NUMBER SET DISTR=TRUE
   # Deploy always.
   - SET DISTR=TRUE
-  - IF DEFINED DISTR 7z a C:\opensim-moco.zip C:\moco
+  - IF DEFINED DISTR 7z a C:\opensim-moco.zip C:\opensim-moco
   - IF DEFINED DISTR appveyor PushArtifact C:\opensim-moco.zip
   # Upload pre-built dependencies to speed up local development.
   # Change the modified timestamp of dependencies because otherwise these files
@@ -151,7 +173,7 @@ after_test:
   - appveyor PushArtifact C:\opensim-moco-dependencies.zip
   # The published binaries can be downloaded from this link: https://ci.appveyor.com/api/projects/opensim-org/opensim-moco/artifacts/opensim-moco.zip
   # Create and upload NuGet package.
-  #- IF DEFINED DISTR nuget pack .github/opensim-moco.nuspec -BasePath C:\moco
+  #- IF DEFINED DISTR nuget pack .github/opensim-moco.nuspec -BasePath C:\opensim-moco
   #- IF DEFINED DISTR appveyor PushArtifact opensim-moco.0.0.0.nupkg
  
  

@@ -2,14 +2,14 @@ cmake_minimum_required(VERSION 3.2)
 project(Moco VERSION 0.1)
 
 # Moco settings.
-# ------------------
+# --------------
 # Copy dependencies' libraries into Moco's installation?
 set(MOCO_COPY_DEPENDENCIES ON)
 
 option(MOCO_JAVA_BINDINGS "Build Java/MATLAB interface." OFF)
 
 option(MOCO_PYTHON_BINDINGS "Build Python interface." OFF)
-set(MOCO_PYTHON_VERSION 2 CACHE STRING
+set(MOCO_PYTHON_VERSION 3 CACHE STRING
     "The major Python version (2 or 3) for which to build the wrapping.")
 # To create a drop-down in the CMake GUI:
 set_property(CACHE MOCO_PYTHON_VERSION PROPERTY STRINGS "2" "3")
@@ -19,11 +19,20 @@ option(MOCO_BUILD_EXECUTABLE
 option(MOCO_BUILD_EXAMPLES
     "Build, test, and install Moco C++ examples." ON)
 
+option(MOCO_WITH_TROPTER
+    "Build the tropter optimal control library." ON)
+if(NOT MOCO_WITH_TROPTER)
+    # TODO
+    message(WARNING "MOCO_WITH_TROPTER=OFF is not supported yet.")
+endif()
+
 
 # CMake settings.
 # ---------------
 # To allow a folder hierarchy within Visual Studio's Solution Explorer.
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+
+set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 
 # Add "_d" to the end of debug libraries, so both debug and non-debug libraries
 # can be installed.
@@ -134,7 +143,9 @@ endif()
 enable_testing()
 include(CTest)
 
-add_subdirectory(tropter)
+if(MOCO_WITH_TROPTER)
+    add_subdirectory(tropter)
+endif()
 
 add_subdirectory(Moco)
 

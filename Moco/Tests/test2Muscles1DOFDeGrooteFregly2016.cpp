@@ -100,11 +100,9 @@ public:
                                                                 speed); 
         out.dynamics[1] = g - (tendonForce_1 + tendonForce_2) / mass;
     }
-    void calc_endpoint_cost(const T& final_time,
-            const tropter::VectorX<T>& /*final_states*/,
-            const tropter::VectorX<T>& /*parameters*/,
+    void calc_endpoint_cost(const tropter::Input<T>& in,
             T& cost) const override {
-        cost = final_time;
+        cost = in.time;
     }
 private:
     DeGrooteFregly2016MuscleStandalone<T> m_muscle_1;
@@ -269,11 +267,9 @@ public:
         out.dynamics[4] = max_contraction_velocity * normFibVel_1;
         out.dynamics[5] = max_contraction_velocity * normFibVel_2;
     }
-    void calc_endpoint_cost(const T& final_time,
-        const tropter::VectorX<T>& /*final_states*/,
-        const tropter::VectorX<T>& /*parameters*/,
-        T& cost) const override {
-        cost = final_time;
+    void calc_endpoint_cost(const tropter::Input<T>& in, 
+            T& cost) const override {
+        cost = in.time;
     }
 private:
     DeGrooteFregly2016MuscleStandalone<T> m_muscle_1;

@@ -1,7 +1,7 @@
 #ifndef MOCO_MOCOCASADISOLVER_H
 #define MOCO_MOCOCASADISOLVER_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Muscollo: MocoCasADiSolver.h                                       *
+ * OpenSim Moco: MocoCasADiSolver.h                                           *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2017 Stanford University and the Authors                     *
  *                                                                            *
@@ -18,43 +18,127 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "../osimMocoDLL.h"
+#include "../MocoDirectCollocationSolver.h"
 
-#include "../MocoSolver.h"
-
-class CasADiTranscription;
+namespace CasOC {
+class Solver;
+} // namespace CasOC
 
 namespace OpenSim {
 
+class MocoCasOCProblem;
+
+/// This solver uses the CasADi library (https://casadi.org) to convert the
+/// MocoProblem into a generic nonlinear programming problem. CasADi efficiently
+/// calculcates the derivatives required to solve MocoProblem%s, and may
+/// solve your MocoProblem more quickly that MocoTropterSolver. In general,
+/// we hope that the feature sets of MocoCasADiSolver and MocoTropterSolver
+/// are the same.
+/// Note, however, that parameter optimization problems are implemented much
+/// less efficiently in this solver; for parameter optimization, first try
+/// MocoTropterSolver.
+///
+/// Sparsity
+/// ========
+/// Direct collocation is fast because the derivative matrices (Jacobian and
+/// Hessian) in the optimization problem are extremely sparse. By default,
+/// CasADi determines the sparsity pattern of these matrices to be block
+/// patterns: the individual functions that invoke OpenSim are treated as dense,
+/// but this dense pattern is repeated in a sparse way. This is conservative
+/// because we ensure that no "nonzeros" are accidentally treated as "zeros."
+/// However, the problem may solve faster if we discover more "zeros."
+///
+/// See the optim_sparsity_detection setting for more information. In the case
+/// of "random", we use 3 random iterates and combine the resulting sparsity
+/// patterns. The seed used for these 3 random iterates is always exactly the
+/// same, ensuring that the sparsity pattern is deterministic.
+///
+/// To explore the sparsity pattern for your problem, set optim_write_sparsity
+/// and run the resulting files with the plot_casadi_sparsity.py Python script.
+///
+/// Finite difference scheme
+/// ========================
+/// The "central" finite difference is more accurate but can be 2 times
+/// slower than "forward" (tested on exampleSlidingMass). Sometimes, problems
+/// may struggle to converge with "forward".
+///
+/// Parallelization
+/// ===============
+/// By default, CasADi evaluate the integral cost integrand and the
+/// differential-algebraic equations in parallel.
+/// This should work fine for almost all models, but if you have custom model
+/// components, ensure they are threadsafe. Make sure that threads do not
+/// access shared resources like files or global variables at the same time.
+///
+/// You can turn off or change the number of cores used for individual problems
+/// via either the OPENSIM_MOCO_PARALLEL environment variable (see
+/// getMocoParallelEnvironmentVariable()) or the `parallel` property of this
+/// class. For example, if you plan to solve two problems at the same time on
+/// a machine with 4 cores, you could set OPENSIM_MOCO_PARALLEL to 2 to use
+/// all 4 cores.
+///
+/// Note that there is overhead in the parallelization; if you plan to solve
+/// many problems, it is better to turn off parallelization here and parallelize
+/// the solving of your multiple problems using your system (e.g., invoke the
+/// opensim-moco command-line tool in multiple Terminals or Command Prompts).
+///
+/// Note that the `parallel` property overrides the environment variable,
+/// allowing more granular control over parallelization. However, the
+/// parallelization setting does not logically belong as a property, as it does
+/// not affect the solution. We encourage you to use the environment variable
+/// instead, as this allows different users to solve the same problem in their
+/// preferred way.
+///
+/// Parameter variables
+/// ===================
+/// By default, MocoCasADiSolver is much slower than MocoTroperSolver at
+/// handling problems with MocoParameters. Many parameters require invoking
+/// Model::initSystem() to take effect, and this function is expensive (for
+/// CasADi, we must invoke this function for every time point, while in Tropter,
+/// we can invoke the function only once for every NLP iterate). However, if you
+/// know that all parameters in your problem do not require Model::initSystem(),
+/// you can substantially speed up your optimization by setting the
+/// parameters_require_initsystem property to false. Be careful, though: you
+/// will end up with incorrect results if your parameter does indeed require
+/// Model::initSystem(). To protect against this, ensure that you obtain the
+/// same results whether this setting is true or false.
+///
+/// @note The software license of CasADi (LGPL) is more restrictive than that of
+/// the rest of Moco (Apache 2.0).
 /// @note This solver currently only supports systems for which \f$ \dot{q} = u
 /// \f$ (e.g., no quaternions).
-class OSIMMOCO_API MocoCasADiSolver : public MocoSolver {
-    OpenSim_DECLARE_CONCRETE_OBJECT(MocoCasADiSolver, MocoSolver);
-public:
-    OpenSim_DECLARE_PROPERTY(num_mesh_points, int,
-    "The number of mesh points for discretizing the problem (default: 100).");
-    OpenSim_DECLARE_PROPERTY(verbosity, int,
-    "0 for silent. 1 for only Muscollo's own output. "
-    "2 for output from CasADi and the underlying solver (default: 2).");
-    OpenSim_DECLARE_PROPERTY(dynamics_mode, std::string,
-    "Dynamics are expressed as 'explicit' (default) or 'implicit' "
-    "differential equations.");
-    OpenSim_DECLARE_PROPERTY(optim_solver, std::string,
-    "The optimization solver for CasADi to use (default: ipopt).");
-    OpenSim_DECLARE_PROPERTY(optim_max_iterations, int,
-    "Maximum number of iterations in the optimization solver "
-    "(-1 for solver's default).");
-    OpenSim_DECLARE_PROPERTY(optim_convergence_tolerance, double,
-    "Tolerance used to determine if the objective is minimized "
-    "(-1 for solver's default)");
-    OpenSim_DECLARE_PROPERTY(optim_constraint_tolerance, double,
-    "Tolerance used to determine if the constraints are satisfied "
-    "(-1 for solver's default)");
-    OpenSim_DECLARE_PROPERTY(optim_hessian_approximation, std::string,
-    "'limited-memory' (default) for quasi-Newton, or 'exact' for full Newton.");
-    OpenSim_DECLARE_PROPERTY(optim_ipopt_print_level, int,
-    "IPOPT's verbosity (see IPOPT documentation).");
+class OSIMMOCO_API MocoCasADiSolver : public MocoDirectCollocationSolver {
+    OpenSim_DECLARE_CONCRETE_OBJECT(
+            MocoCasADiSolver, MocoDirectCollocationSolver);
 
+public:
+    OpenSim_DECLARE_PROPERTY(parameters_require_initsystem, bool,
+            "Do some MocoParameters in the problem require invoking "
+            "initSystem() to take effect properly? "
+            "This substantialy slows down problems with parameter variables "
+            "(default: true).");
+    OpenSim_DECLARE_PROPERTY(optim_sparsity_detection, std::string,
+            "Detect the sparsity pattern of derivatives; 'none' "
+            "(for safe block sparsity; default), 'random', or "
+            "'initial-guess'.");
+    OpenSim_DECLARE_PROPERTY(optim_write_sparsity, std::string,
+            "Write files for the sparsity pattern of the gradient, Jacobian, "
+            "and Hessian to the working directory using this as a prefix; "
+            "empty (default) to not write such files.");
+    OpenSim_DECLARE_PROPERTY(optim_finite_difference_scheme, std::string,
+            "The finite difference scheme CasADi will use to calculate problem "
+            "derivatives (default: 'central').");
+
+    OpenSim_DECLARE_OPTIONAL_PROPERTY(parallel, int,
+            "Evaluate integral costs and the differential-algebraic "
+            "equations in parallel across grid points? "
+            "0: not parallel; 1: use all cores (default); greater than 1: use"
+            "this number of threads. This overrides the OPENSIM_MOCO_PARALLEL "
+            "environment variable.");
+    OpenSim_DECLARE_PROPERTY(output_interval, int,
+            "Write intermediate iterates to file. 0, the default, indicates no "
+            "intermediate iterates are saved, 1 indicates each iteration "
+            "is saved, 5 indicates every fifth iteration is saved, etc.");
 
     MocoCasADiSolver();
 
@@ -97,17 +181,19 @@ public:
 
     /// @}
 
+    /// @cond
+    /// This is used to generate a warning.
+    void setRunningInPython(bool value) const { m_runningInPython = value; }
+    /// @endcond
+
 protected:
-    void resetProblemImpl(const MocoProblemRep&) const override {}
     MocoSolution solveImpl() const override;
 
-    std::unique_ptr<CasADiTranscription> createCasADiProblem() const;
+    std::unique_ptr<MocoCasOCProblem> createCasOCProblem() const;
+    std::unique_ptr<CasOC::Solver> createCasOCSolver(
+            const MocoCasOCProblem&) const;
 
 private:
-
-    OpenSim_DECLARE_PROPERTY(guess_file, std::string,
-            "A MocoIterate file storing an initial guess.");
-
     void constructProperties();
 
     // When a copy of the solver is made, we want to keep any guess specified
@@ -115,9 +201,10 @@ private:
     MocoIterate m_guessFromAPI;
     mutable SimTK::ResetOnCopy<MocoIterate> m_guessFromFile;
     mutable SimTK::ReferencePtr<const MocoIterate> m_guessToUse;
+
+    mutable bool m_runningInPython = false;
 };
 
 } // namespace OpenSim
-
 
 #endif // MOCO_MOCOCASADISOLVER_H

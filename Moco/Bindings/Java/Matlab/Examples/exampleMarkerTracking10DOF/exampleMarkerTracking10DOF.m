@@ -39,9 +39,9 @@ addCoordinateActuator(model, 'hip_flexion_l', 100);
 addCoordinateActuator(model, 'knee_angle_l', 100);
 addCoordinateActuator(model, 'ankle_angle_l', 100);
 
-% Create MocoTool.
+% Create MocoStudy.
 % ================
-moco = MocoTool();
+moco = MocoStudy();
 moco.setName('marker_tracking_10dof');
 
 % Define the optimal control problem.
@@ -110,14 +110,11 @@ problem.addCost(controlCost);
 
 % Configure the solver.
 % =====================
-% solver = muco.initCasADiSolver();
 solver = muco.initTropterSolver();
 % 10 mesh points ~ 1 minute to solve
 % 25 mesh points ~ 5 minutes to solve
 solver.set_num_mesh_points(10);
 solver.set_optim_hessian_approximation('exact');
-% solver.set_optim_max_iterations(3000);
-% TODO solver.setGuess('bounds');
 solver.set_hessian_block_sparsity_mode('dense');
 
 solver.setGuess('bounds');

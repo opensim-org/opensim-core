@@ -16,30 +16,37 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 #include "RegisterTypes_osimMoco.h"
-#include <OpenSim/Common/Object.h>
 
-#include "MocoCost.h"
-#include "MocoBounds.h"
-#include "MocoProblem.h"
-#include "MocoSolver.h"
-#include "MocoTool.h"
-#include "MocoTropterSolver.h"
+#include "Common/TableProcessor.h"
+#include "Components/AccelerationMotion.h"
+#include "Components/ActivationCoordinateActuator.h"
+#include "Components/DeGrooteFregly2016Muscle.h"
+#include "Components/DiscreteForces.h"
+#include "Components/StationPlaneContactForce.h"
 #include "InverseMuscleSolver/GlobalStaticOptimization.h"
 #include "InverseMuscleSolver/INDYGO.h"
-#include "MocoWeightSet.h"
-#include "MocoStateTrackingCost.h"
-#include "MocoMarkerTrackingCost.h"
-#include "MocoMarkerEndpointCost.h"
-#include "MocoControlCost.h"
-#include "MocoJointReactionNormCost.h"
-#include "MocoParameter.h"
-#include "ActivationCoordinateActuator.h"
-
+#include "MocoBounds.h"
 #include "MocoCasADiSolver/MocoCasADiSolver.h"
+#include "MocoControlBoundConstraint.h"
+#include "MocoCost/MocoControlCost.h"
+#include "MocoCost/MocoControlTrackingCost.h"
+#include "MocoCost/MocoCost.h"
+#include "MocoCost/MocoJointReactionCost.h"
+#include "MocoCost/MocoMarkerEndpointCost.h"
+#include "MocoCost/MocoMarkerTrackingCost.h"
+#include "MocoCost/MocoOrientationTrackingCost.h"
+#include "MocoCost/MocoStateTrackingCost.h"
+#include "MocoCost/MocoTranslationTrackingCost.h"
+#include "MocoParameter.h"
+#include "MocoProblem.h"
+#include "MocoSolver.h"
+#include "MocoStudy.h"
+#include "MocoTropterSolver.h"
+#include "MocoWeightSet.h"
+#include "ModelOperators.h"
+#include "osimMoco.h"
 
-#include "Components/StationPlaneContactForce.h"
-
-// TODO: Move to osimSimulation.
+#include <OpenSim/Common/Object.h>
 #include <OpenSim/Simulation/MarkersReference.h>
 
 #include <exception>
@@ -58,16 +65,21 @@ OSIMMOCO_API void RegisterTypes_osimMoco() {
         Object::registerType(MocoMarkerTrackingCost());
         Object::registerType(MocoMarkerEndpointCost());
         Object::registerType(MocoControlCost());
-        Object::registerType(MocoJointReactionNormCost());
+        Object::registerType(MocoControlTrackingCost());
+        Object::registerType(MocoJointReactionCost());
+        Object::registerType(MocoOrientationTrackingCost());
+        Object::registerType(MocoTranslationTrackingCost());
         Object::registerType(MocoBounds());
         Object::registerType(MocoInitialBounds());
         Object::registerType(MocoFinalBounds());
-        Object::registerType(MocoPhase());
         Object::registerType(MocoVariableInfo());
-        Object::registerType(MocoProblem());
-        Object::registerType(MocoTool());
-        Object::registerType(MocoTropterSolver());
         Object::registerType(MocoParameter());
+        Object::registerType(MocoPhase());
+        Object::registerType(MocoProblem());
+        Object::registerType(MocoStudy());
+        Object::registerType(MocoTropterSolver());
+
+        Object::registerType(MocoControlBoundConstraint());
 
         Object::registerType(MocoCasADiSolver());
 
@@ -75,9 +87,23 @@ OSIMMOCO_API void RegisterTypes_osimMoco() {
         Object::registerType(GlobalStaticOptimization());
         Object::registerType(INDYGO());
 
+        Object::registerType(TableProcessor());
+        Object::registerType(TabOpLowPassFilter());
+
+        Object::registerType(ModelProcessor());
+        Object::registerType(ModOpReplaceMusclesWithDeGrooteFregly2016());
+        Object::registerType(ModOpIgnoreActivationDynamics());
+        Object::registerType(ModOpIgnoreTendonCompliance());
+        Object::registerType(ModOpAddReserves());
+        Object::registerType(ModOpAddExternalLoads());
+
         Object::registerType(AckermannVanDenBogert2010Force());
         Object::registerType(MeyerFregly2016Force());
         Object::registerType(EspositoMiller2018Force());
+        Object::registerType(DeGrooteFregly2016Muscle());
+
+        Object::registerType(DiscreteForces());
+        Object::registerType(AccelerationMotion());
 
         // TODO: Move to osimSimulation.
         Object::registerType(MarkersReference());
@@ -85,14 +111,10 @@ OSIMMOCO_API void RegisterTypes_osimMoco() {
         Object::registerType(Set<MarkerWeight>());
     } catch (const std::exception& e) {
         std::cerr << "ERROR during osimMoco Object registration:\n"
-                << e.what() << std::endl;
+                  << e.what() << std::endl;
     }
 }
 
-osimMocoInstantiator::osimMocoInstantiator() {
-    registerDllClasses();
-}
+osimMocoInstantiator::osimMocoInstantiator() { registerDllClasses(); }
 
-void osimMocoInstantiator::registerDllClasses() {
-    RegisterTypes_osimMoco();
-}
+void osimMocoInstantiator::registerDllClasses() { RegisterTypes_osimMoco(); }

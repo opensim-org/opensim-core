@@ -1,7 +1,7 @@
 #include <iostream>
 #include <Moco/InverseMuscleSolver/GlobalStaticOptimization.h>
 #include <Moco/InverseMuscleSolver/INDYGO.h>
-#include <Moco/MocoTool.h>
+#include <Moco/MocoStudy.h>
 #include <Moco/MocoProblem.h>
 #include <Moco/MocoUtilities.h>
 
@@ -14,7 +14,7 @@ static const char helpMessage[] =
 R"(OpenSim Moco. Use this command to run a setup file for the following:
   - Global Static Optimization,
   - INDYGO: Inverse, Dynamic, Global Optimization (tracking),
-  - MocoTool: flexible optimal control framework (.omoco file).
+  - MocoStudy: flexible optimal control framework (.omoco file).
 
 Usage:
   opensim-moco -h | --help
@@ -24,19 +24,19 @@ Usage:
   opensim-moco run-tool [--visualize] <setup-file>
 
     Run the tool specified in the provided setup file.
-    Only MocoTool supports visualizing.
+    Only MocoStudy supports visualizing.
 
   opensim-moco print-xml <tool>
 
     Print a template XML file for the provided tool.
-    <tool> can be "GlobalStaticOptimization", "INDYGO", or "MocoTool"
+    <tool> can be "GlobalStaticOptimization", "INDYGO", or "MocoStudy"
 
   opensim-moco visualize <model-or-omoco-file> [<iterate-file>]
 
     Visualize an OpenSim model (.osim file) with a MocoIterate, if provided.
     If an iterate is not provided, the model is visualized with its default
     state.
-    You can provide a MocoTool setup file (.omoco) instead of a model.
+    You can provide a MocoStudy setup file (.omoco) instead of a model.
 
 )";
 
@@ -61,7 +61,7 @@ int main(int argc, char* argv[]) {
 
             std::string className(argv[2]);
             if (className != "GlobalStaticOptimization" &&
-                    className != "INDYGO" && className != "MocoTool") {
+                    className != "INDYGO" && className != "MocoStudy") {
                 throw Exception("Unexpected argument: " + className);
             }
             const auto* obj = Object::getDefaultInstanceOfType(argv[2]);
@@ -70,7 +70,7 @@ int main(int argc, char* argv[]) {
                         ".");
             }
             std::string fileName = "default_" + className;
-            if (className == "MocoTool") fileName += ".omoco";
+            if (className == "MocoStudy") fileName += ".omoco";
             else fileName += ".xml";
             std::cout << "Printing '" << fileName << "'." << std::endl;
             Object::setSerializeAllDefaults(true);
@@ -83,8 +83,8 @@ int main(int argc, char* argv[]) {
 
             std::string arg2(argv[2]);
             OPENSIM_THROW_IF(argc == 4 && arg2 != "--visualize", Exception,
-                    "Unrecognized option '" + arg2 +
-                    "'; did you mean '--visualize'?");
+                    format("Unrecognized option '%s'; did you mean "
+                           "'--visualize'?", arg2));
             std::string setupFile;
             bool visualize = false;
             if (argc == 3) {
@@ -98,8 +98,8 @@ int main(int argc, char* argv[]) {
                     Object::makeObjectFromFile(setupFile));
 
             OPENSIM_THROW_IF(obj == nullptr, Exception,
-                    "A problem occurred when trying to load file '" + setupFile
-                            + "'.");
+                    format("A problem occurred when trying to load file '%s'.",
+                            setupFile));
 
             if (const auto* gso =
                     dynamic_cast<const GlobalStaticOptimization*>(obj.get())) {
@@ -112,14 +112,14 @@ int main(int argc, char* argv[]) {
                 if (visualize)
                     std::cout << "Ignoring --visualize flag." << std::endl;
             } else if (const auto* moco
-                    = dynamic_cast<const MocoTool*>(obj.get())) {
+                    = dynamic_cast<const MocoStudy*>(obj.get())) {
                 auto solution = moco->solve();
                 if (visualize) moco->visualize(solution);
             } else {
                 throw Exception("The provided file '" + setupFile +
                         "' yields a '" + obj->getConcreteClassName() +
                         "' but only GlobalStaticOptimization, INDYGO, and "
-                                "MocoTool are acceptable.");
+                                "MocoStudy are acceptable.");
             }
         } else if (arg1 == "visualize") {
             OPENSIM_THROW_IF(argc < 3 || argc > 4, Exception,
@@ -130,7 +130,7 @@ int main(int argc, char* argv[]) {
             if (file.rfind(".osim") != std::string::npos) {
                 model = OpenSim::make_unique<Model>(file);
             } else {
-                MocoTool moco(file);
+                MocoStudy moco(file);
                 const MocoPhase& phase = moco.getProblem().getPhase(0);
                 model.reset(phase.getModel().clone());
             }

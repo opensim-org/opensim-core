@@ -395,7 +395,7 @@ Model createModel(DOFs dofs) {
 
 int main() {
 
-    MocoTool moco;
+    MocoStudy moco;
     moco.setName("whole_body_tracking");
 
     // Define the optimal control problem.
@@ -520,7 +520,7 @@ int main() {
 
     // Configure the solver.
     // =====================
-    MocoTropterSolver& ms = moco.initSolver();
+    MocoTropterSolver& ms = moco.initTropterSolver();
     ms.set_dynamics_mode("implicit");
     ms.set_num_mesh_points(50);
     ms.set_optim_max_iterations(1000);

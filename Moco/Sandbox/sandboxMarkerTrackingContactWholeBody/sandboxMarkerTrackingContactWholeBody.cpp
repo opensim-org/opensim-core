@@ -199,7 +199,7 @@ void setModelAndBounds(MocoProblem& mp, bool useOptimizedModel = false) {
 /// Estimated time to solve: ~35 minutes.
 MocoSolution solveStateTrackingProblem() {
 
-    MocoTool moco;
+    MocoStudy moco;
     moco.setName("whole_body_state_tracking");
 
     // Define the optimal control problem.
@@ -230,11 +230,10 @@ MocoSolution solveStateTrackingProblem() {
 
     // Configure the solver.
     // =====================
-    MocoTropterSolver& ms = moco.initSolver();
+    MocoTropterSolver& ms = moco.initTropterSolver();
     ms.set_num_mesh_points(50);
     ms.set_verbosity(2);
     ms.set_optim_solver("ipopt");
-    ms.set_optim_hessian_approximation("exact");
     ms.set_dynamics_mode("implicit");
 
     // Create guess.
@@ -271,7 +270,7 @@ MocoSolution solveStateTrackingProblem() {
 MocoSolution solveMarkerTrackingProblem(bool createGuess,
         bool useOptimizedModel) {
 
-    MocoTool moco;
+    MocoStudy moco;
     moco.setName("whole_body_marker_tracking");
 
     // Define the optimal control problem.
@@ -366,7 +365,7 @@ MocoSolution solveMarkerTrackingProblem(bool createGuess,
 
     // Configure the solver.
     // =====================
-    MocoTropterSolver& ms = moco.initSolver();
+    MocoTropterSolver& ms = moco.initTropterSolver();
     ms.set_num_mesh_points(50);
     ms.set_verbosity(2);
     ms.set_optim_solver("ipopt");

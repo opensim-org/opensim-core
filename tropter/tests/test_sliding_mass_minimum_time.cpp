@@ -46,10 +46,9 @@ public:
     }
     // TODO alternate form that takes a matrix; state at every time.
     //virtual void continuous(const MatrixXd& x, MatrixXd& xdot) const = 0;
-    void calc_endpoint_cost(const T& final_time, const VectorX<T>&, 
-            const VectorX<T>&, T& cost)
+    void calc_endpoint_cost(const Input<T>& in, T& cost)
             const override {
-        cost = final_time;
+        cost = in.time;
     }
     Solution actual_solution(const VectorXd& time) const {
         Solution sol;
@@ -100,14 +99,14 @@ public:
 };
 
 TEST_CASE("Sliding mass minimum time.") {
-
-    OCPDerivativesComparison<SlidingMassMinimumTime> comp;
-    comp.num_mesh_points = 4;
-    comp.compare();
-
+    SECTION("derivative comparison") {
+        OCPDerivativesComparison<SlidingMassMinimumTime> comp;
+        comp.num_mesh_points = 4;
+        comp.compare();
+    }
     SECTION("trapezoidal") {
-        SlidingMassMinimumTime<adouble>::run_test(40, "trapezoidal", 0.001);
-        SlidingMassMinimumTime<double>::run_test(40, "trapezoidal", 0.001);
+        SlidingMassMinimumTime<adouble>::run_test(100, "trapezoidal", 0.001);
+        SlidingMassMinimumTime<double>::run_test(100, "trapezoidal", 0.001);
     }
     // TODO midpoint discontinuity causes the RMS error to be quite high for
     // hermite-simpson.

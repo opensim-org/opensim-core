@@ -36,6 +36,7 @@ void HermiteSimpson<T>::set_num_mesh_points(unsigned N) {
     // dynamics. For Hermite-Simpson collocation, collocation points include 
     // both the mesh points and the mesh interval midpoints, so add N-1 points 
     // to the number of mesh points to get the number of collocation points.
+    // TODO rename to m_num_grid_points?
     m_num_col_points = 2*N - 1;
 }
 
@@ -63,9 +64,11 @@ void HermiteSimpson<T>::set_ocproblem(
     m_num_dynamics_constraints = m_num_defects * m_num_states;
     m_num_path_constraints = m_ocproblem->get_num_path_constraints();
     // TODO rename..."total_path_constraints"?
-    int num_path_traj_constraints = m_num_mesh_points * m_num_path_constraints;
+    m_num_path_traj_constraints = m_num_mesh_points * m_num_path_constraints;
+    m_num_control_midpoint_constraints = m_interpolate_control_midpoints ? 
+        m_num_controls * (m_num_mesh_points - 1) : 0;
     int num_constraints = m_num_dynamics_constraints +
-        num_path_traj_constraints;
+        m_num_path_traj_constraints + m_num_control_midpoint_constraints;
     this->set_num_constraints(num_constraints);
 
     // Variable and constraint names.
@@ -185,6 +188,17 @@ void HermiteSimpson<T>::set_ocproblem(
             m_constraint_names.push_back(ss.str());
         }
     }
+    if (m_interpolate_control_midpoints) {
+        for (int i_mesh = 1; i_mesh < m_num_mesh_points; ++i_mesh) {
+            for (const auto& control_name : control_names) {
+                std::stringstream ss;
+                ss << control_name << "_midpoint_"
+                    << std::setfill('0') << std::setw(num_digits_max_mesh_index)
+                    << i_mesh;
+                m_constraint_names.push_back(ss.str());
+            }
+        }
+    }
 
     // Bounds.
     // -------
@@ -269,8 +283,12 @@ void HermiteSimpson<T>::set_ocproblem(
         path_constraints_lower.replicate(m_num_mesh_points, 1);
     VectorXd path_constraints_traj_upper =
         path_constraints_upper.replicate(m_num_mesh_points, 1);
-    constraint_lower << dynamics_bounds, path_constraints_traj_lower;
-    constraint_upper << dynamics_bounds, path_constraints_traj_upper;
+    VectorXd control_midpoint_bounds = 
+            VectorXd::Zero(m_num_control_midpoint_constraints);
+    constraint_lower << dynamics_bounds, path_constraints_traj_lower, 
+                        control_midpoint_bounds;
+    constraint_upper << dynamics_bounds, path_constraints_traj_upper,
+                        control_midpoint_bounds;
     this->set_constraint_bounds(constraint_lower, constraint_upper);
     // TODO won't work if the bounds don't include zero!
     // TODO set_initial_guess(std::vector<double>(num_variables)); // TODO user
@@ -331,16 +349,16 @@ void HermiteSimpson<T>::calc_objective(const VectorX<T>& x, T& obj_value) const
     auto diffuses = make_diffuses_trajectory_view(x);
     auto parameters = make_parameters_view(x);
 
-
     // Initialize on iterate.
     // ----------------------
     m_ocproblem->initialize_on_iterate(parameters);
 
     // Endpoint cost.
     // --------------
-    // TODO does this cause the final_states to get copied?
-    m_ocproblem->calc_endpoint_cost(final_time, states.rightCols(1), parameters,
-        obj_value);
+    // TODO does this cause variables to get copied?
+    m_ocproblem->calc_endpoint_cost({m_num_col_points - 1, final_time,
+            states.rightCols(1), controls.rightCols(1), adjuncts.rightCols(1), 
+            m_empty_diffuse_col, parameters}, obj_value);
 
     // Integral cost.
     // --------------
@@ -464,6 +482,16 @@ void HermiteSimpson<T>::calc_constraints(const VectorX<T>& x,
         constr_view.defects.bottomRows(m_num_states) =
             x_i - x_im1 - (h / T(6.0)) * (xdot_i + T(4.0)*xdot_mid + xdot_im1);
     }
+
+    if (m_num_controls && m_interpolate_control_midpoints) {
+        const unsigned N = m_num_mesh_points;
+        auto c_mesh = make_controls_trajectory_view_mesh(x);
+        auto c_mid = make_controls_trajectory_view_mid(x);
+        const auto& c_i = c_mesh.rightCols(N - 1);
+        const auto& c_im1 = c_mesh.leftCols(N - 1);
+
+        constr_view.control_midpoints = c_mid - T(0.5)*(c_i + c_im1);
+    }
 }
 
 template<typename T>
@@ -533,22 +561,26 @@ void HermiteSimpson<T>::calc_sparsity_hessian_lagrangian(
 
     // Endpoint cost depends on final time and final state only.
     std::function<T(const VectorX<T>&)> calc_endpoint_cost =
-        [this, &x](const VectorX<T>& vars) {
+            [this, &x](const VectorX<T>& vars) {
         T t = x[1]; // final time. TODO see if endpoint cost actually
                     // depends on final time; put it in vars.
-        VectorX<T> s = vars;
+        VectorX<T> s = vars.head(m_num_states);
+        VectorX<T> c = vars.segment(m_num_states, m_num_controls);
+        VectorX<T> a = vars.tail(m_num_adjuncts);
+        VectorX<T> d; // empty, endpoint is a meshpoint 
         VectorX<T> p = x.segment(m_num_time_variables,
             m_num_parameters).template cast<T>();
         T cost = 0;
-        m_ocproblem->calc_endpoint_cost(t, s, p, cost);
+        m_ocproblem->calc_endpoint_cost({m_num_col_points-1, t, s, c, a, d, p}, 
+            cost);
         return cost;
     };
     const auto lastmeshstart = m_num_dense_variables +
         (m_num_col_points - 1) * num_con_vars;
     SymmetricSparsityPattern endpoint_cost_sparsity =
         calc_hessian_sparsity_with_perturbation(
-            // Grab the final state.
-            x.segment(lastmeshstart, m_num_states),
+            // Grab the final mesh point continuous variables.
+            x.segment(lastmeshstart, m_num_continuous_variables),
             calc_endpoint_cost);
     hesobj_sparsity.set_nonzero_block(lastmeshstart, lastmeshstart,
         endpoint_cost_sparsity);
@@ -1047,28 +1079,27 @@ void HermiteSimpson<T>::
             << std::setprecision(6) << std::fixed << time_of_max
             << std::endl;
     }
-    /*
-    stream << "Differential equation defects for each mesh interval:"
-    << std::endl;
-    stream << std::setw(9) << "time" << "  ";
-    for (size_t i_state = 0; i_state < state_names.size(); ++i_state) {
-    stream << std::setw(9) << i_state << "  ";
-    }
-    stream << std::endl;
-    for (int i_mesh = 0; i_mesh < (int)values.defects.cols(); ++i_mesh) {
+   
+    //stream << "Differential equation defects for each mesh interval:"
+    //       << std::endl;
+    //stream << std::setw(9) << "time" << "  ";
+    //for (size_t i_state = 0; i_state < state_names.size(); ++i_state) {
+    //    stream << std::setw(9) << i_state << "  ";
+    //}
+    //stream << std::endl;
+    //for (int i_mesh = 0; i_mesh < (int)values.defects.cols(); ++i_mesh) {
 
-    stream << std::setw(4) << i_mesh << "  "
-    << ocp_vars.time[i_mesh] << "  ";
-    for (size_t i_state = 0; i_state < state_names.size(); ++i_state) {
-    auto& value = static_cast<const double&>(
-    values.defects(i_state, i_mesh));
-    stream << std::setprecision(2) << std::scientific << std::setw(9)
-    << value << "  ";
-    }
-    stream << std::endl;
-    }
-    */
-
+    //    stream << std::setw(4) << i_mesh << "  "
+    //           << ocp_vars.time[i_mesh] << "  ";
+    //    for (size_t i_state = 0; i_state < state_names.size(); ++i_state) {
+    //        auto& value = static_cast<const double&>(
+    //        values.defects(i_state, i_mesh));
+    //        stream << std::setprecision(2) << std::scientific << std::setw(9)
+    //               << value << "  ";
+    //    }
+    //stream << std::endl;
+    //}
+    
     // Path constraints.
     // -----------------
     stream << "\nPath constraints:";
@@ -1203,6 +1234,35 @@ HermiteSimpson<T>::make_controls_trajectory_view(const VectorX<S>& x) const
 template<typename T>
 template<typename S>
 typename HermiteSimpson<T>::template TrajectoryViewConst<S>
+HermiteSimpson<T>::make_controls_trajectory_view_mesh(const VectorX<S>& x) const
+{
+    return{
+            // Start of controls for first mesh interval.
+            x.data() + m_num_dense_variables + m_num_states,
+            m_num_controls,          // Number of rows.
+            m_num_mesh_points,       // Number of columns.
+            // Distance between the start of each column.
+            Eigen::OuterStride<Eigen::Dynamic>(2*m_num_continuous_variables)};
+}
+
+template<typename T>
+template<typename S>
+typename HermiteSimpson<T>::template TrajectoryViewConst<S>
+HermiteSimpson<T>::make_controls_trajectory_view_mid(const VectorX<S>& x) const
+{
+    return{
+            // Start of controls for first mesh interval.
+            x.data() + m_num_dense_variables + m_num_states +
+                    m_num_continuous_variables,
+            m_num_controls,          // Number of rows.
+            m_num_mesh_points - 1,   // Number of columns.
+            // Distance between the start of each column.
+            Eigen::OuterStride<Eigen::Dynamic>(2*m_num_continuous_variables)};
+}
+
+template<typename T>
+template<typename S>
+typename HermiteSimpson<T>::template TrajectoryViewConst<S>
 HermiteSimpson<T>::make_adjuncts_trajectory_view(const VectorX<S>& x) const
 {
     return{
@@ -1303,6 +1363,35 @@ HermiteSimpson<T>::make_controls_trajectory_view(VectorX<S>& x) const
 template<typename T>
 template<typename S>
 typename HermiteSimpson<T>::template TrajectoryView<S>
+HermiteSimpson<T>::make_controls_trajectory_view_mesh(VectorX<S>& x) const
+{
+    return{
+            // Start of controls for first mesh interval.
+            x.data() + m_num_dense_variables + m_num_states,
+            m_num_controls,          // Number of rows.
+            m_num_mesh_points,       // Number of columns.
+            // Distance between the start of each column.
+            Eigen::OuterStride<Eigen::Dynamic>(2*m_num_continuous_variables)};
+}
+
+template<typename T>
+template<typename S>
+typename HermiteSimpson<T>::template TrajectoryView<S>
+HermiteSimpson<T>::make_controls_trajectory_view_mid(VectorX<S>& x) const
+{
+    return{
+            // Start of controls for first mesh interval.
+            x.data() + m_num_dense_variables + m_num_states +
+                m_num_continuous_variables,
+            m_num_controls,          // Number of rows.
+            m_num_mesh_points - 1,   // Number of columns.
+            // Distance between the start of each column.
+            Eigen::OuterStride<Eigen::Dynamic>(2*m_num_continuous_variables)};
+}
+
+template<typename T>
+template<typename S>
+typename HermiteSimpson<T>::template TrajectoryView<S>
 HermiteSimpson<T>::make_adjuncts_trajectory_view(VectorX<S>& x) const
 {
     return{
@@ -1334,16 +1423,22 @@ typename HermiteSimpson<T>::ConstraintsView
 HermiteSimpson<T>::make_constraints_view(Eigen::Ref<VectorX<T>> constr) const
 {
     // Starting indices of different parts of the constraints vector.
-    T* d_ptr = m_num_defects ?                           // defects.
+    T* d_ptr = m_num_defects ?                            // defects.
                &constr[0] : nullptr;
-    T* pc_ptr= m_num_path_constraints ?                  // path constraints.
+    T* pc_ptr = m_num_path_constraints ?                  // path constraints.
                &constr[m_num_dynamics_constraints] : nullptr;
+    // control midpoint constraints.
+    T* cmid_ptr = m_num_controls && m_interpolate_control_midpoints ?
+               &constr[m_num_dynamics_constraints + m_num_path_traj_constraints]
+                    : nullptr;
     // Each column of the defects view contains all the Hermite interpolant 
     // defects (first m_num_states rows) followed by all the Simpson interpolant
     // defects (bottom m_num_states rows) for each mesh interval.
     return{DefectsTrajectoryView(d_ptr, 2*m_num_states, m_num_mesh_points-1),
            PathConstraintsTrajectoryView(pc_ptr, m_num_path_constraints,
-                   m_num_mesh_points)};
+                   m_num_mesh_points),
+           ControlMidpointsTrajectoryView(cmid_ptr, m_num_controls,
+                   m_num_mesh_points - 1)};
 }
 
 } // namespace transcription

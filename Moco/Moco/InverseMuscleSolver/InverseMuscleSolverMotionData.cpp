@@ -227,13 +227,11 @@ void InverseMuscleSolverMotionData::interpolateNetGeneralizedForces(
         const Eigen::VectorXd& times,
         Eigen::MatrixXd& desiredMoments) const {
     OPENSIM_THROW_IF(times[0] < getInitialTime(), Exception,
-            "Requested initial time (" + std::to_string(times[0])
-            + ") is lower than permitted (" + std::to_string(getInitialTime())
-            + ").");
+            format("Requested initial time (%g) is lower than permitted (%g).",
+                    times[0], getInitialTime()));
     OPENSIM_THROW_IF(times.tail<1>().value() > getFinalTime(), Exception,
-            "Requested final time (" + std::to_string(times.tail<1>().value())
-            + ") is greater than permitted (" + std::to_string(getFinalTime())
-            + ").");
+            format("Requested final time (%g) is greater than permitted (%g).",
+                    times.tail<1>().value(), getFinalTime()));
 
     desiredMoments.resize(_netGeneralizedForces.getSize(), times.size());
     for (size_t i_time = 0; i_time < size_t(times.size()); ++i_time) {
@@ -251,13 +249,11 @@ void InverseMuscleSolverMotionData::interpolateMuscleTendonLengths(
         const Eigen::VectorXd& times,
         Eigen::MatrixXd& muscleTendonLengths) const {
     OPENSIM_THROW_IF(times[0] < getInitialTime(), Exception,
-            "Requested initial time (" + std::to_string(times[0])
-            + ") is lower than permitted (" + std::to_string(getInitialTime())
-            + ").");
+            format("Requested initial time (%g) is lower than permitted (%g).",
+                    times[0], getInitialTime()));
     OPENSIM_THROW_IF(times.tail<1>().value() > getFinalTime(), Exception,
-            "Requested final time (" + std::to_string(times.tail<1>().value())
-            + ") is greater than permitted (" + std::to_string(getFinalTime())
-            + ").");
+            format("Requested final time (%g) is greater than permitted (%g).",
+                    times.tail<1>().value(), getFinalTime()));
 
     muscleTendonLengths.resize(_numActiveMuscles, times.size());
     // The matrix is in column-major format.
@@ -274,13 +270,11 @@ void InverseMuscleSolverMotionData::interpolateMuscleTendonVelocities(
         const Eigen::VectorXd& times,
         Eigen::MatrixXd& muscleTendonVelocities) const {
     OPENSIM_THROW_IF(times[0] < getInitialTime(), Exception,
-            "Requested initial time (" + std::to_string(times[0])
-            + ") is lower than permitted (" + std::to_string(getInitialTime())
-            + ").");
+            format("Requested initial time (%g) is lower than permitted (%g).",
+                    times[0], getInitialTime()));
     OPENSIM_THROW_IF(times.tail<1>().value() > getFinalTime(), Exception,
-            "Requested final time (" + std::to_string(times.tail<1>().value())
-            + ") is greater than permitted (" + std::to_string(getFinalTime())
-            + ").");
+            format("Requested final time (%g) is greater than permitted (%g).",
+                    times.tail<1>().value(), getFinalTime()));
 
     muscleTendonVelocities.resize(_numActiveMuscles, times.size());
     // The matrix is in column-major format.
@@ -302,13 +296,12 @@ void InverseMuscleSolverMotionData::interpolateMomentArms(
         const Eigen::VectorXd& times,
         std::vector<Eigen::MatrixXd>& momentArms) const {
     OPENSIM_THROW_IF(times[0] < getInitialTime(), Exception,
-            "Requested initial time (" + std::to_string(times[0])
-            + ") is lower than permitted (" + std::to_string(getInitialTime())
-            + ").");
+            format("Requested initial time (%g) is lower than permitted (%g).",
+                    times[0], getInitialTime()));
     OPENSIM_THROW_IF(times.tail<1>().value() > getFinalTime(), Exception,
-            "Requested final time (" + std::to_string(times.tail<1>().value())
-            + ") is greater than permitted (" + std::to_string(getFinalTime())
-            + ").");
+            format("Requested final time (%g) is greater than permitted (%g).",
+                    times.tail<1>().value(), getFinalTime()));
+
 
     momentArms.resize(times.size());
     for (size_t i_mesh = 0; i_mesh < size_t(times.size()); ++i_mesh) {

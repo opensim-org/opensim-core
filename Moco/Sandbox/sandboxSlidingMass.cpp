@@ -278,6 +278,7 @@ public:
 private:
     void constructProperties() {
         constructProperty_model_file("");
+
         constructProperty_time_initial_bounds();
         constructProperty_time_final_bounds();
         constructProperty_state_info();
@@ -636,9 +637,12 @@ public:
             integrand += m_mocoProb.get_costs(i).calcIntegralCost(m_state);
         }
     }
-    void calc_endpoint_cost(const T& final_time, const VectorX<T>& states,
-            const VectorX<T>& /*parameters*/, T& cost) const override {
+    void calc_endpoint_cost(const tropter::Input<T>& in, 
+            T& cost) const override {
         cost = 0;
+        const auto& final_time = in.time;
+        const auto& states = in.states;
+
         m_state.setTime(final_time);
         std::copy(states.data(), states.data() + states.size(),
                 &m_state.updY()[0]);

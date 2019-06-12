@@ -18,6 +18,8 @@
 
 #include "InverseMuscleSolver.h"
 
+#include "../MocoUtilities.h"
+
 #include <OpenSim/Common/TimeSeriesTable.h>
 
 using namespace OpenSim;
@@ -113,21 +115,7 @@ void InverseMuscleSolver::loadModelAndData(Model& model,
                         setupDir, get_kinematics_file());
         DataAdapter::OutputTables tables =
                 FileAdapter::readFile(kinematicsFilePath);
-
-        // There should only be one table.
-        OPENSIM_THROW_IF_FRMOBJ(tables.size() != 1, Exception,
-                "Expected kinematics file '" + get_kinematics_file() +
-                "' to contain 1 table, but it contains " +
-                std::to_string(tables.size()) + " tables.");
-
-        // Get the first table.
-        auto* firstTable =
-                dynamic_cast<TimeSeriesTable*>(tables.begin()->second.get());
-        OPENSIM_THROW_IF_FRMOBJ(!firstTable, Exception,
-                "Expected kinematics file to contain a (scalar) "
-                "TimeSeriesTable, but it contains a different type of table.");
-
-        kinematics = *firstTable;
+        kinematics = readTableFromFile<double>(get_kinematics_file());
     } else if (_kinematics) {
         // The user called setKinematicsData().
         kinematics = TimeSeriesTable(*_kinematics.get());
@@ -158,21 +146,8 @@ void InverseMuscleSolver::loadModelAndData(Model& model,
                         setupDir, get_net_generalized_forces_file());
         DataAdapter::OutputTables tables =
                 FileAdapter::readFile(netGenForcesFilePath);
-
-        // There should only be one table.
-        OPENSIM_THROW_IF_FRMOBJ(tables.size() != 1, Exception,
-                "Expected net generalized forces file '" +
-                get_net_generalized_forces_file() + "' to contain 1 table, but "
-                "it contains " + std::to_string(tables.size()) + " tables.");
-
-        // Get the first table.
-        auto* firstTable =
-                dynamic_cast<TimeSeriesTable*>(tables.begin()->second.get());
-        OPENSIM_THROW_IF_FRMOBJ(!firstTable, Exception,
-                "Expected net generalized forces file to contain a (scalar) "
-                "TimeSeriesTable, but it contains a different type of table.");
-
-        netGeneralizedForces = *firstTable;
+        netGeneralizedForces = readTableFromFile<double>(
+                get_net_generalized_forces_file());
     } else if (_netGeneralizedForces) {
         netGeneralizedForces = TimeSeriesTable(*_netGeneralizedForces.get());
     } else {

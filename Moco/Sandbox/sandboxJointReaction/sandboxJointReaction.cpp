@@ -77,7 +77,7 @@ protected:
 };
 
 void minimizePendulumReactionLoads() {
-    MocoTool moco;
+    MocoStudy moco;
     moco.setName("minimize_pendulum_reaction_loads");
     MocoProblem& mp = moco.updProblem();
     mp.setModel(createInvertedPendulumModel());
@@ -97,7 +97,6 @@ void minimizePendulumReactionLoads() {
     ms.set_optim_solver("ipopt");
     ms.set_optim_convergence_tolerance(1e-3);
     //ms.set_optim_ipopt_print_level(5);
-    ms.set_optim_hessian_approximation("exact");
     ms.setGuess("bounds");
 
     MocoSolution solution = moco.solve();
@@ -106,7 +105,7 @@ void minimizePendulumReactionLoads() {
 }
 
 void minimizeControlEffort() {
-    MocoTool moco;
+    MocoStudy moco;
     moco.setName("minimize_pendulum_reaction_loads");
     MocoProblem& mp = moco.updProblem();
     mp.setModel(createInvertedPendulumModel());
@@ -125,7 +124,6 @@ void minimizeControlEffort() {
     ms.set_optim_solver("ipopt");
     ms.set_optim_convergence_tolerance(1e-3);
     //ms.set_optim_ipopt_print_level(5);
-    ms.set_optim_hessian_approximation("exact");
     ms.setGuess("bounds");
 
     MocoSolution solution = moco.solve();

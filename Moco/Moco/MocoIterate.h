@@ -18,10 +18,10 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include <OpenSim/Simulation/StatesTrajectory.h>
-#include <OpenSim/Common/Storage.h>
-
 #include "osimMocoDLL.h"
+
+#include <OpenSim/Common/Storage.h>
+#include <OpenSim/Simulation/StatesTrajectory.h>
 
 namespace OpenSim {
 
@@ -32,10 +32,11 @@ class MocoProblemRep;
 /// while the iterate is sealed.
 class OSIMMOCO_API MocoIterateIsSealed : public Exception {
 public:
-    MocoIterateIsSealed(const std::string& file, size_t line,
-            const std::string& func) : Exception(file, line, func) {
+    MocoIterateIsSealed(
+            const std::string& file, size_t line, const std::string& func)
+            : Exception(file, line, func) {
         addMessage("This iterate is sealed, to force you to acknowledge the "
-                "solver failed; call unseal() to gain access.");
+                   "solver failed; call unseal() to gain access.");
     }
 };
 
@@ -50,7 +51,7 @@ kinematic constraints), derivatives (non-zero if the dynamics mode is implict),
 slacks (for special solver implmentations), and parameters (order does
 not matter). Order does matter for the column names and corresponding data
 columns. The columns *must* follow this order: time, states, controls,
-multipliers, derivatives, slacks, parameters. 
+multipliers, derivatives, slacks, parameters.
 @note Slack columns may contain real number or NaN values, depending on their
 use. For example, values for velocity correction variables used in problems
 with model kinematic constraints are defined only at the midpoint of a Hermite-
@@ -64,7 +65,6 @@ num_controls=<number-of-control-variables>
 num_derivatives=<number-of-derivative-variables>
 num_multipliers=<number-of-multiplier-variables>
 num_parameters=<number-of-parameter-variables>
-num_states=<number-of-state-variables>
 num_slacks=<number-of-slack-variables>
 num_states=<number-of-state-variables>
 time,<state-0-name>,...,<control-0-name>,...,<multiplier-0-name>,..., \
@@ -76,6 +76,19 @@ time,<state-0-name>,...,<control-0-name>,...,<multiplier-0-name>,..., \
 @endsamplefile
 (If stored in a STO file, the delimiters are tabs, not commas.)
 
+Column labels starting with "lambda" are Lagrange multipliers, and columns
+starting with "gamma" are slack variables (probably velocity corrections at
+certain collocation points).
+
+@par Matlab and Python
+Many of the functions in this class have variants ending with "Mat" that
+provide convenient access to the data directly in Matlab or Python (NumPy).
+In Python, the constructors can also accept NumPy matrices in addition to
+arguments of type SimTK::Matrix.
+@code
+iterate.getStateMat("<state-name>")
+iterate.getStatesTrajectoryMat()
+@endcode
 
 @par Implicit dynamics model
 If the solver uses an implicit dynamics mode, then there are "control"
@@ -85,8 +98,7 @@ accelerations. These are stored in the iterate as derivative variables. */
 class OSIMMOCO_API MocoIterate {
 public:
     MocoIterate() = default;
-    MocoIterate(const SimTK::Vector& time,
-            std::vector<std::string> state_names,
+    MocoIterate(const SimTK::Vector& time, std::vector<std::string> state_names,
             std::vector<std::string> control_names,
             std::vector<std::string> multiplier_names,
             std::vector<std::string> parameter_names,
@@ -96,8 +108,7 @@ public:
             const SimTK::RowVector& parameters);
     /// This constructor is for use with the implicit dynamics mode, and
     /// allows specifying a derivativesTrajectory.
-    MocoIterate(const SimTK::Vector& time,
-            std::vector<std::string> state_names,
+    MocoIterate(const SimTK::Vector& time, std::vector<std::string> state_names,
             std::vector<std::string> control_names,
             std::vector<std::string> multiplier_names,
             std::vector<std::string> derivative_names,
@@ -107,6 +118,18 @@ public:
             const SimTK::Matrix& multipliersTrajectory,
             const SimTK::Matrix& derivativesTrajectory,
             const SimTK::RowVector& parameters);
+#ifndef SWIG
+    /// This constructor allows you to control which
+    /// data you provide for the iterate. The possible keys for continuousVars
+    /// are "states", "controls", "multipliers", and "derivatives". The names
+    /// and data are grouped together, and you can leave out any of the keys.
+    template <typename T>
+    using NamesAndData = std::pair<std::vector<std::string>, T>;
+    MocoIterate(const SimTK::Vector& time,
+            const std::map<std::string, NamesAndData<SimTK::Matrix>>&
+                    continuousVars,
+            const NamesAndData<SimTK::RowVector>& parameters = {});
+#endif
     /// Read a MocoIterate from a data file (e.g., STO, CSV). See output of
     /// write() for the correct format.
     explicit MocoIterate(const std::string& filepath);
@@ -121,11 +144,11 @@ public:
     bool empty() const {
         ensureUnsealed();
         return !(m_time.size() || m_states.nelt() || m_controls.nelt() ||
-                m_multipliers.nelt() || m_derivatives.nelt() || 
-                m_slacks.nelt() || m_parameters.nelt() || 
-                m_state_names.size() || m_control_names.size() || 
-                m_multiplier_names.size() || m_derivative_names.size() ||
-                m_slack_names.size() || m_parameter_names.size());
+                 m_multipliers.nelt() || m_derivatives.nelt() ||
+                 m_slacks.nelt() || m_parameters.nelt() ||
+                 m_state_names.size() || m_control_names.size() ||
+                 m_multiplier_names.size() || m_derivative_names.size() ||
+                 m_slack_names.size() || m_parameter_names.size());
     }
 
     /// @name Change the length of the trajectory
@@ -184,7 +207,7 @@ public:
     /// If all times have the same value (e.g., 0.0), then the value of each
     /// variable for all time is its previous value at the initial time.
     /// @throws Exception if new times are not within existing initial and final
-    /// times or if the new times are decreasing, or if getNumTimes() < 2.
+    /// times, if the new times are decreasing, or if getNumTimes() < 2.
     void resample(SimTK::Vector newTime);
     /// @}
 
@@ -212,11 +235,11 @@ public:
     /// Set the value of a single Lagrange multiplier variable across time. The
     /// provided vector must have length getNumTimes().
     /// @note Using `setMultiplier(name, {5, 10})` uses the initializer list
-    /// overload below; it does *not* construct a 5-element vector with the 
+    /// overload below; it does *not* construct a 5-element vector with the
     /// value 10.
-    void setMultiplier(const std::string& name, 
-                       const SimTK::Vector& trajectory);
-    
+    void setMultiplier(
+            const std::string& name, const SimTK::Vector& trajectory);
+
     /// Set the value of a single parameter variable. This value is invariant
     /// across time.
     void setParameter(const std::string& name, const SimTK::Real& value);
@@ -232,8 +255,7 @@ public:
         ensureUnsealed();
         SimTK::Vector v((int)time.size());
         int i = 0;
-        for (auto it = time.begin(); it != time.end(); ++it, ++i)
-            v[i] = *it;
+        for (auto it = time.begin(); it != time.end(); ++it, ++i) v[i] = *it;
         setTime(v);
     }
     /// Set the value of a single state variable across time. The provided
@@ -242,8 +264,8 @@ public:
     /// @code{.cpp}
     /// iterate.setState("/jointset/knee/flexion/value", {0, 0.5, 1.0});
     /// @endcode
-    void setState(const std::string& name,
-            std::initializer_list<double> trajectory) {
+    void setState(
+            const std::string& name, std::initializer_list<double> trajectory) {
         ensureUnsealed();
         SimTK::Vector v((int)trajectory.size());
         int i = 0;
@@ -257,8 +279,8 @@ public:
     /// @code{.cpp}
     /// iterate.setControl("/forceset/soleus", {0, 0.5, 1.0});
     /// @endcode
-    void setControl(const std::string& name,
-            std::initializer_list<double> trajectory) {
+    void setControl(
+            const std::string& name, std::initializer_list<double> trajectory) {
         ensureUnsealed();
         SimTK::Vector v((int)trajectory.size());
         int i = 0;
@@ -272,8 +294,8 @@ public:
     /// @code{.cpp}
     /// iterate.setMultiplier("lambda_cid0_p0", {0, 0.5, 1.0});
     /// @endcode
-    void setMultiplier(const std::string& name,
-            std::initializer_list<double> trajectory) {
+    void setMultiplier(
+            const std::string& name, std::initializer_list<double> trajectory) {
         ensureUnsealed();
         SimTK::Vector v((int)trajectory.size());
         int i = 0;
@@ -315,10 +337,14 @@ public:
     /// @name Accessors
     /// @{
 
-    int getNumTimes() const
-    {   ensureUnsealed(); return m_time.size(); }
-    const SimTK::Vector& getTime() const
-    {   ensureUnsealed(); return m_time; }
+    int getNumTimes() const {
+        ensureUnsealed();
+        return m_time.size();
+    }
+    const SimTK::Vector& getTime() const {
+        ensureUnsealed();
+        return m_time;
+    }
     /// The first time in the time vector.
     /// @throws Exception If numTimes is 0.
     double getInitialTime() const;
@@ -327,30 +353,51 @@ public:
     double getFinalTime() const;
 
     // TODO inconsistent plural "state names" vs "states trajectory"
-    const std::vector<std::string>& getStateNames() const
-    {   ensureUnsealed(); return m_state_names; }
-    const std::vector<std::string>& getControlNames() const
-    {   ensureUnsealed(); return m_control_names; }
-    const std::vector<std::string>& getMultiplierNames() const
-    {   ensureUnsealed(); return m_multiplier_names; }
-    const std::vector<std::string>& getDerivativeNames() const
-    {   ensureUnsealed(); return m_derivative_names; }
-    const std::vector<std::string>& getParameterNames() const
-    {   ensureUnsealed(); return m_parameter_names; }
+    const std::vector<std::string>& getStateNames() const {
+        ensureUnsealed();
+        return m_state_names;
+    }
+    const std::vector<std::string>& getControlNames() const {
+        ensureUnsealed();
+        return m_control_names;
+    }
+    const std::vector<std::string>& getMultiplierNames() const {
+        ensureUnsealed();
+        return m_multiplier_names;
+    }
+    const std::vector<std::string>& getDerivativeNames() const {
+        ensureUnsealed();
+        return m_derivative_names;
+    }
+    const std::vector<std::string>& getParameterNames() const {
+        ensureUnsealed();
+        return m_parameter_names;
+    }
     SimTK::VectorView_<double> getState(const std::string& name) const;
     SimTK::VectorView_<double> getControl(const std::string& name) const;
     SimTK::VectorView_<double> getMultiplier(const std::string& name) const;
+    SimTK::VectorView_<double> getDerivative(const std::string& name) const;
     const SimTK::Real& getParameter(const std::string& name) const;
-    const SimTK::Matrix& getStatesTrajectory() const
-    {   ensureUnsealed(); return m_states; }
-    const SimTK::Matrix& getControlsTrajectory() const
-    {   ensureUnsealed(); return m_controls; }
-    const SimTK::Matrix& getMultipliersTrajectory() const
-    {   ensureUnsealed(); return m_multipliers; }
-    const SimTK::Matrix& getDerivativesTrajectory() const
-    {   ensureUnsealed(); return m_derivatives; }
-    const SimTK::RowVector& getParameters() const
-    {   ensureUnsealed(); return m_parameters; }
+    const SimTK::Matrix& getStatesTrajectory() const {
+        ensureUnsealed();
+        return m_states;
+    }
+    const SimTK::Matrix& getControlsTrajectory() const {
+        ensureUnsealed();
+        return m_controls;
+    }
+    const SimTK::Matrix& getMultipliersTrajectory() const {
+        ensureUnsealed();
+        return m_multipliers;
+    }
+    const SimTK::Matrix& getDerivativesTrajectory() const {
+        ensureUnsealed();
+        return m_derivatives;
+    }
+    const SimTK::RowVector& getParameters() const {
+        ensureUnsealed();
+        return m_parameters;
+    }
 
     /// @}
 
@@ -367,8 +414,8 @@ public:
     /// Accordingly, the tolerance is both a relative and absolute tolerance
     /// (depending on the magnitude of quantities being compared).
     bool isNumericallyEqual(const MocoIterate& other,
-            double tol = SimTK::NTraits<SimTK::Real>::getDefaultTolerance())
-            const;
+            double tol =
+                    SimTK::NTraits<SimTK::Real>::getDefaultTolerance()) const;
     /// Compute the root-mean-square error between the continuous variables of
     /// this iterate and another. The RMS is computed by numerically integrating
     /// the sum of squared error across
@@ -398,16 +445,17 @@ public:
     /// states,
     /// controls,
     /// multipliers, and
-    /// derivatives to compare. To skip over all states, specify a single
-    /// element of "none" for stateNames; likewise for controlNames,
-    /// multiplierNames, and derivativeNames. Both iterates must have at least 6
-    /// time nodes.
+    /// derivatives to compare as keys for `columnsToUse`.
+    /// Values are an empty vector to compare all columns for that key,
+    /// `{"none"}` (single-entry vector with value "none") to compare none of
+    /// the columns for that key, or a vector of column labels to compare
+    /// for that key. Leaving out a key means no columns for that
+    /// key are compared.
+    /// Both iterates must have at least 6 time nodes.
     /// If the number of columns to compare is 0, this returns 0.
     double compareContinuousVariablesRMS(const MocoIterate& other,
-            std::vector<std::string> stateNames = {},
-            std::vector<std::string> controlNames = {},
-            std::vector<std::string> multiplierNames = {},
-            std::vector<std::string> derivativeNames = {}) const;
+            std::map<std::string, std::vector<std::string>> columnsToUse = {})
+            const;
     /// Compute the root-mean-square error between the parameters in this
     /// iterate and another. The RMS is computed by dividing the the sum of the
     /// squared errors between corresponding parameters and then dividing by the
@@ -416,7 +464,7 @@ public:
     /// iterates have the same parameters. Alternatively, you can specify the
     /// specific parameters to compare.
     double compareParametersRMS(const MocoIterate& other,
-        std::vector<std::string> parameterNames = {}) const;
+            std::vector<std::string> parameterNames = {}) const;
     /// @}
 
     /// @name Convert to other formats
@@ -438,6 +486,32 @@ public:
     StatesTrajectory exportToStatesTrajectory(const MocoProblem&) const;
     /// @}
 
+    /// @name Modify the data
+    /// @{
+
+    /// Randomize all data except time using the provided random number
+    /// generator. All data is replaced with the random numbers. Use this to
+    /// create a completely (pseudo-)random iterate, probably for a MocoSolver
+    /// guess.
+    /// The default random number generator samples uniformly within [-0.1,
+    /// 0.1].
+    void randomizeReplace(
+            const SimTK::Random& randGen = SimTK::Random::Uniform(-0.1, 0.1)) {
+        ensureUnsealed();
+        randomize(false, randGen);
+    }
+    /// Randomize all data except time using the provided random number
+    /// generator. The random numbers are added to the existing data. Use this
+    /// to perturb an existing solution, probably for a MocoSolver guess.
+    /// The default random number generator samples uniformly within [-0.1,
+    /// 0.1].
+    void randomizeAdd(
+            const SimTK::Random& randGen = SimTK::Random::Uniform(-0.1, 0.1)) {
+        ensureUnsealed();
+        randomize(true, randGen);
+    }
+    /// @}
+
     /// @name Convert from other formats
     /// @{
 
@@ -446,21 +520,20 @@ public:
     /// Model::getControlsTable()). The time columns from the two tables must
     /// match exactly. The times in the iterate will be those from the tables.
     /// This does not (yet) handle parameters.
-    static MocoIterate createFromStatesControlsTables(
-            const MocoProblemRep&,
+    static MocoIterate createFromStatesControlsTables(const MocoProblemRep&,
             const TimeSeriesTable& statesTrajectory,
             const TimeSeriesTable& controlsTrajectory);
     /// @}
 
-    // User interaction with slack variables is limited to using previous
-    // solution slack trajectories as initial guesses for subsequent problems.
-    // Therefore, these methods are hidden from doxygen and the bindings to 
-    // discourage use.
-    #ifndef SWIG
+// User interaction with slack variables is limited to using previous
+// solution slack trajectories as initial guesses for subsequent problems.
+// Therefore, these methods are hidden from doxygen and the bindings to
+// discourage use.
+#ifndef SWIG
     /// @cond
     void setSlack(const std::string& name, const SimTK::Vector& trajectory);
-    void setSlack(const std::string& name,
-        std::initializer_list<double> trajectory) {
+    void setSlack(
+            const std::string& name, std::initializer_list<double> trajectory) {
         ensureUnsealed();
         SimTK::Vector v((int)trajectory.size());
         int i = 0;
@@ -468,17 +541,21 @@ public:
             v[i] = *it;
         setSlack(name, v);
     }
-    const std::vector<std::string>& getSlackNames() const
-    {   ensureUnsealed(); return m_slack_names; }
-    const SimTK::Matrix& getSlacksTrajectory() const
-    {   ensureUnsealed(); return m_slacks; }
+    const std::vector<std::string>& getSlackNames() const {
+        ensureUnsealed();
+        return m_slack_names;
+    }
+    const SimTK::Matrix& getSlacksTrajectory() const {
+        ensureUnsealed();
+        return m_slacks;
+    }
     SimTK::VectorView_<double> getSlack(const std::string& name) const;
-    // This additional mutator is necessary since no constructor exists to 
+    // This additional mutator is necessary since no constructor exists to
     // update the slack variable data member variables.
     void appendSlack(const std::string& name, const SimTK::Vector& trajectory);
 
     /// @endcond
-    #endif
+#endif
 
 protected:
     void setSealed(bool sealed) { m_sealed = sealed; }
@@ -488,7 +565,13 @@ protected:
 
 private:
     TimeSeriesTable convertToTable() const;
-    // TODO std::string m_name;
+    virtual void convertToTableImpl(TimeSeriesTable&) const {}
+    double compareContinuousVariablesRMSInternal(const MocoIterate& other,
+            std::vector<std::string> stateNames = {},
+            std::vector<std::string> controlNames = {},
+            std::vector<std::string> multiplierNames = {},
+            std::vector<std::string> derivativeNames = {}) const;
+    void randomize(bool add, const SimTK::Random& randGen);
     SimTK::Vector m_time;
     std::vector<std::string> m_state_names;
     std::vector<std::string> m_control_names;
@@ -514,7 +597,7 @@ private:
     bool m_sealed = false;
 };
 
-/// Return type for MocoTool::solve(). Use success() to check if the solver
+/// Return type for MocoStudy::solve(). Use success() to check if the solver
 /// succeeded. You can also use this object as a boolean in an if-statement:
 /// @code
 /// auto solution = moco.solve();
@@ -527,15 +610,20 @@ private:
 /// If the solver was not successful, then this object is "sealed", which
 /// means you cannot do anything with it until calling `unseal()`. This
 /// prevents you from silently proceeding with a failed solution.
+/// Solver success can also be found in the header of a solution (.sto) file
+/// written out by write.
 class OSIMMOCO_API MocoSolution : public MocoIterate {
 public:
     /// Returns a dynamically-allocated copy of this solution. You must manage
     /// the memory for return value.
     /// @note This works even if the iterate is sealed.
-    virtual MocoSolution* clone() const { return new MocoSolution(*this); }
+    virtual MocoSolution* clone() const override {
+        return new MocoSolution(*this);
+    }
     /// Was the problem solved successfully? If not, then you cannot access
     /// the solution until you call unlock().
     bool success() const { return m_success; }
+    double getObjective() const { return m_objective; }
     /// Same as success().
     explicit operator bool() const { return success(); }
     /// Obtain a solver-dependent string describing the return status of the
@@ -551,8 +639,20 @@ public:
     /// If the solver did not succeed, call this to enable read and write
     /// access to the (failed) solution. If the solver succeeded, then the
     /// solution is already unsealed.
-    MocoSolution& unseal() { MocoIterate::setSealed(false); return *this; }
-    MocoSolution& seal() { MocoIterate::setSealed(true); return *this; }
+    /// @note In Python, you must invoke this function on a separate line:
+    /// @code
+    /// solution = moco.solve()
+    /// solution.unseal()
+    /// @endcode
+    /// Otherwise, Moco will cause a crash.
+    MocoSolution& unseal() {
+        MocoIterate::setSealed(false);
+        return *this;
+    }
+    MocoSolution& seal() {
+        MocoIterate::setSealed(true);
+        return *this;
+    }
     bool isSealed() const { return MocoIterate::isSealed(); }
     /// @}
 
@@ -564,10 +664,14 @@ private:
         if (!success) setSealed(true);
         m_success = success;
     }
+    void setObjective(double objective) { m_objective = objective; }
     void setStatus(std::string status) { m_status = std::move(status); }
-    void setNumIterations(int numIterations)
-    {   m_numIterations = numIterations; };
+    void setNumIterations(int numIterations) {
+        m_numIterations = numIterations;
+    };
+    void convertToTableImpl(TimeSeriesTable&) const override;
     bool m_success = true;
+    double m_objective = -1;
     std::string m_status;
     int m_numIterations = -1;
     // Allow solvers to set success, status, and construct a solution.

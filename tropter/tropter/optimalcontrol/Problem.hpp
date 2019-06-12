@@ -138,7 +138,7 @@ calc_differential_algebraic_equations(const Input<T>&, Output<T>) const
 
 template<typename T>
 void Problem<T>::
-calc_endpoint_cost(const T&, const VectorX<T>&, const VectorX<T>&, T&) const
+calc_endpoint_cost(const Input<T>&, T&) const
 {}
 
 template<typename T>
