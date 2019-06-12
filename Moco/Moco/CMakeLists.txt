@@ -14,6 +14,7 @@ set(MOCO_SOURCES
         MocoVariableInfo.cpp
         MocoProblem.h
         MocoProblem.cpp
+        MocoProblemInfo.h
         MocoProblemRep.h
         MocoProblemRep.cpp
         MocoCost/MocoCost.h
@@ -47,6 +48,8 @@ set(MOCO_SOURCES
         MocoParameter.cpp
         MocoConstraint.h
         MocoConstraint.cpp
+        MocoControlBoundConstraint.cpp
+        MocoControlBoundConstraint.h
         InverseMuscleSolver/InverseMuscleSolver.h
         InverseMuscleSolver/InverseMuscleSolver.cpp
         InverseMuscleSolver/GlobalStaticOptimization.h

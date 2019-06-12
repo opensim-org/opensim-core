@@ -44,6 +44,8 @@ namespace OpenSim {
 
 %include <Moco/MocoConstraint.h>
 
+%include <Moco/MocoControlBoundConstraint.h>
+
 // unique_ptr
 // ----------
 // https://stackoverflow.com/questions/27693812/how-to-handle-unique-ptrs-with-swig

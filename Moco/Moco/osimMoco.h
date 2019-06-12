@@ -36,6 +36,7 @@
 #include "MocoUtilities.h"
 #include "MocoParameter.h"
 #include "MocoConstraint.h"
+#include "MocoControlBoundConstraint.h"
 
 #include "Common/TableProcessor.h"
 

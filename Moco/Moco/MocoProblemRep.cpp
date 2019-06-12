@@ -21,6 +21,7 @@
 #include "Components/AccelerationMotion.h"
 #include "Components/DiscreteForces.h"
 #include "MocoProblem.h"
+#include "MocoProblemInfo.h"
 #include <regex>
 #include <unordered_set>
 
@@ -333,6 +334,10 @@ void MocoProblemRep::initialize() {
         m_costs[i]->initializeOnModel(m_model_disabled_constraints);
     }
 
+    MocoProblemInfo problemInfo;
+    problemInfo.minInitialTime = getTimeInitialBounds().getLower();
+    problemInfo.maxFinalTime = getTimeFinalBounds().getUpper();
+
     // Auxiliary path constraints.
     // ---------------------------
     m_num_path_constraint_equations = 0;
@@ -348,7 +353,8 @@ void MocoProblemRep::initialize() {
         pcNames.insert(pc.getName());
         m_path_constraints[i] = std::unique_ptr<MocoPathConstraint>(pc.clone());
         m_path_constraints[i]->initializeOnModel(
-                m_model_disabled_constraints, m_num_path_constraint_equations);
+                m_model_disabled_constraints, problemInfo,
+                m_num_path_constraint_equations);
         m_num_path_constraint_equations +=
                 m_path_constraints[i]->getConstraintInfo().getNumEquations();
     }
