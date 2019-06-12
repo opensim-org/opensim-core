@@ -128,9 +128,6 @@ namespace {
 TimeSeriesTable StatesTrajectory::exportToTable(const Model& model,
         const std::vector<std::string>& requestedStateVars) const {
 
-    OPENSIM_THROW_IF(!isCompatibleWith(model),
-                     StatesTrajectory::IncompatibleModel, model);
-
     // This code is based on DelimFileAdapter::extendRead().
     TimeSeriesTable table;
 
