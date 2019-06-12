@@ -16,9 +16,10 @@
 
 #include "utilities.h"
 
-#include <memory>
 #include <cstdarg>
 #include <cstdio>
+#include <memory>
+#include <Eigen/Dense>
 
 std::string tropter::format(const char* format, ...) {
     // Get buffer size.
@@ -33,4 +34,10 @@ std::string tropter::format(const char* format, ...) {
     vsnprintf(buf.get(), bufsize, format, args);
     va_end(args);
     return std::string(buf.get());
+}
+
+std::vector<double> tropter::linspace(double start, double end, int length) {
+    Eigen::VectorXd tmp = Eigen::VectorXd::LinSpaced(length, start, end);
+    std::vector<double> ret(tmp.data(), tmp.data() + length);
+    return ret;
 }
