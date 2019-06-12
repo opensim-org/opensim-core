@@ -16,6 +16,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 #include "MocoTool.h"
+#include "MocoUtilities.h"
 
 using namespace OpenSim;
 
