@@ -55,8 +55,7 @@ private:
 /// are set to NaN.
 ///
 /// The provided trajectory is altered to satisfy any enabled kinematic
-/// constraints in the model. Filtering is performed before satisfying the
-/// constraints.
+/// constraints in the model.
 ///
 /// @underdevelopment
 class OSIMMOCO_API MocoInverse : public MocoTool {
