@@ -98,7 +98,7 @@ install:
   # place CasADi's installation back in its original location.
   - ps: if (Test-Path C:\projects\deps\colpack) { cmake -E copy_directory C:\projects\deps\colpack C:\projects\opensim-moco_deps_install\colpack }
   - ps: if (Test-Path C:\projects\deps\ipopt) { cmake -E copy_directory C:\projects\deps\ipopt C:\projects\opensim-moco_deps_install\ipopt }
-  - ps: if (Test-Path C:\projects\deps\casadi) { cmake -E copy_directory C:\projects\deps\ipopt C:\projects\opensim-moco_deps_install\casadi }
+  - ps: if (Test-Path C:\projects\deps\casadi) { cmake -E copy_directory C:\projects\deps\casadi C:\projects\opensim-moco_deps_install\casadi }
 
   - ps: if (Test-Path C:\projects\deps\eigen) { Add-Content .\CMakeCacheInit.cmake -Value 'set(SUPERBUILD_eigen OFF CACHE BOOL "")' }
   - ps: if (Test-Path C:\projects\deps\colpack) { Add-Content .\CMakeCacheInit.cmake -Value 'set(SUPERBUILD_colpack OFF CACHE BOOL "")' }
