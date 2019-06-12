@@ -2,13 +2,16 @@ bash .github/travis_common.sh
 
 # Download dependencies
 wget https://sourceforge.net/projects/myosin/files/opensim-moco/opensim-moco-deps.zip/download ~/opensim-moco-deps.zip
-unzip ~/opensim-moco-deps.zip -d ~/moco_dependendencies_install
-ls ~/moco_dependencies_install
+unzip ~/opensim-moco-deps.zip -d $TRAVIS_BUILD_DIR/../moco_dependendencies_install
+ls $TRAVIS_BUILD_DIR/..
+ls $TRAVIS_BUILD_DIR/../moco_dependencies_install
 
-mkdir ~/opensim-moco-build && cd ~/opensim-moco-build
+mkdir $TRAVIS_BUILD_DIR/../opensim-moco-build && cd $TRAVIS_BUILD_DIR/../opensim-moco-build
 ## Store CMake arguments in bash array.
 # https://stackoverflow.com/questions/1951506/add-a-new-element-to-an-array-without-specifying-the-index-in-bash
 OSIM_CMAKE_ARGS=($TRAVIS_BUILD_DIR -DCMAKE_BUILD_TYPE=$BTYPE)
+
+OSIM_CMAKE_ARGS+=(-DCMAKE_INSTALL_PREFIX=~/opensim-moco)
 
 # The minimum macOS/OSX version we support.
 if [ "$TRAVIS_OS_NAME" = "osx" ]; then OSIM_CMAKE_ARGS+=(-DCMAKE_OSX_DEPLOYMENT_TARGET=$OSX_TARGET); fi
@@ -41,7 +44,7 @@ make -j8 install > /dev/null
 # Zip up the installation using a file name that identifies where
 # the binaries were built.
 mkdir ~/to_deploy
-# Zip up opensim relative to where it's installed.
-cd $TRAVIS_BUILD_DIR/
+# Zip up Moco relative to where it's installed.
+cd ~
 # Leave symlinks intact.
-zip --symlinks --recurse-paths --quiet ~/to_deploy/$ZIPNAME opensim-moco-install
+zip --symlinks --recurse-paths --quiet ~/to_deploy/$ZIPNAME opensim-moco

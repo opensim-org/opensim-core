@@ -1,8 +1,8 @@
 bash .github/travis_common.sh 
 
 # Run superbuild to download, configure, build and install dependencies.
-mkdir ~/opensim-moco_dependencies_build
-cd ~/opensim-moco_dependencies_build 
+mkdir $TRAVIS_BUILD_DIR/../opensim-moco_dependencies_build
+cd $TRAVIS_BUILD_DIR/../opensim-moco_dependencies_build 
 DEP_CMAKE_ARGS=($TRAVIS_BUILD_DIR/dependencies)
 DEP_CMAKE_ARGS+=(-DCMAKE_BUILD_TYPE=$BTYPE)
 DEP_CMAKE_ARGS+=(-DOPENSIM_JAVA_WRAPPING=on -DOPENSIM_PYTHON_WRAPPING=on -DSWIG_EXECUTABLE=$HOME/swig/bin/swig)
@@ -21,9 +21,11 @@ make -j$NPROC ipopt
 # the binaries were built.
 mkdir ~/to_deploy
 ZIPNAME=opensim-moco-deps.zip
-# Zip up opensim relative to where it's installed.
-cd $TRAVIS_BUILD_DIR/
-ls ~
+# Zip up Moco relative to where it's installed.
+ls $TRAVIS_BUILD_DIR
+ls $TRAVIS_BUILD_DIR/..
+ls $TRAVIS_BUILD_DIR/../moco_dependencies_install
+cd $TRAVIS_BUILD_DIR/../moco_dependencies_install
 # Leave symlinks intact.
-zip --symlinks --recurse-paths --quiet ~/to_deploy/$ZIPNAME ~/moco_dependencies_install
+zip --symlinks --recurse-paths --quiet ~/to_deploy/$ZIPNAME .
 
