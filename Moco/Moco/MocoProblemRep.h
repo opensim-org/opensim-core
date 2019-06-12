@@ -103,7 +103,11 @@ public:
     int getNumStates() const { return (int)m_state_infos.size(); }
     int getNumControls() const { return (int)m_control_infos.size(); }
     int getNumParameters() const { return (int)m_parameters.size(); }
+    /// Does the model contain a PositionMotion to prescribe all generalized
+    /// coordinates, speeds, and accelerations?
     bool isPrescribedKinematics() const { return m_prescribedKinematics; }
+    /// This excludes generalized coordinate and speed states if
+    /// isPrescribedKinematics() is true.
     std::vector<std::string> createStateVariableNamesInSystemOrder(
             std::unordered_map<int, int>& yIndexMap) const;
     /// Get the state names of all the state infos.

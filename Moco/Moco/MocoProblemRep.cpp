@@ -233,36 +233,35 @@ void MocoProblemRep::initialize() {
         m_state_infos[name] = ph0.get_state_infos(i);
     }
 
-    // TODO this code is from an upcoming commit that hasn't been merged yet.
-    // I've left it here in case there's confusion of its placement. Uncomment
-    // when the prescribed kinematics updates catch up.
     if (!m_prescribedKinematics) {
-    for (const auto& coord : m_model_base.getComponentList<Coordinate>()) {
-        const auto stateVarNames = coord.getStateVariableNames();
-        {
-            const std::string coordValueName = stateVarNames[0];
-            // TODO document: Range used even if not clamped.
-            if (m_state_infos.count(coordValueName) == 0) {
-                const auto info = MocoVariableInfo(coordValueName, {}, {}, {});
-                m_state_infos[coordValueName] = info;
+        for (const auto& coord : m_model_base.getComponentList<Coordinate>()) {
+            const auto stateVarNames = coord.getStateVariableNames();
+            {
+                const std::string coordValueName = stateVarNames[0];
+                // TODO document: Range used even if not clamped.
+                if (m_state_infos.count(coordValueName) == 0) {
+                    const auto info =
+                            MocoVariableInfo(coordValueName, {}, {}, {});
+                    m_state_infos[coordValueName] = info;
+                }
+                if (!m_state_infos[coordValueName].getBounds().isSet()) {
+                    m_state_infos[coordValueName].setBounds(
+                            {coord.getRangeMin(), coord.getRangeMax()});
+                }
             }
-            if (!m_state_infos[coordValueName].getBounds().isSet()) {
-                m_state_infos[coordValueName].setBounds(
-                        {coord.getRangeMin(), coord.getRangeMax()});
+            {
+                const std::string coordSpeedName = stateVarNames[1];
+                if (m_state_infos.count(coordSpeedName) == 0) {
+                    const auto info =
+                            MocoVariableInfo(coordSpeedName, {}, {}, {});
+                    m_state_infos[coordSpeedName] = info;
+                }
+                if (!m_state_infos[coordSpeedName].getBounds().isSet()) {
+                    m_state_infos[coordSpeedName].setBounds(
+                            ph0.get_default_speed_bounds());
+                }
             }
         }
-        {
-            const std::string coordSpeedName = stateVarNames[1];
-            if (m_state_infos.count(coordSpeedName) == 0) {
-                const auto info = MocoVariableInfo(coordSpeedName, {}, {}, {});
-                m_state_infos[coordSpeedName] = info;
-            }
-            if (!m_state_infos[coordSpeedName].getBounds().isSet()) {
-                m_state_infos[coordSpeedName].setBounds(
-                        ph0.get_default_speed_bounds());
-            }
-        }
-    }
     }
 
     // Control infos.
@@ -400,9 +399,8 @@ void MocoProblemRep::initialize() {
                         pc.getName()));
         pcNames.insert(pc.getName());
         m_path_constraints[i] = std::unique_ptr<MocoPathConstraint>(pc.clone());
-        m_path_constraints[i]->initializeOnModel(
-                m_model_disabled_constraints, problemInfo,
-                m_num_path_constraint_equations);
+        m_path_constraints[i]->initializeOnModel(m_model_disabled_constraints,
+                problemInfo, m_num_path_constraint_equations);
         m_num_path_constraint_equations +=
                 m_path_constraints[i]->getConstraintInfo().getNumEquations();
     }
@@ -571,7 +569,6 @@ void MocoProblemRep::applyParametersToModelProperties(
         if (m_position_motion_base) {
             m_position_motion_base->setEnabled(m_state_base, true);
         }
-
 
         // Model disable constraints.
         // --------------------------

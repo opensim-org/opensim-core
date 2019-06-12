@@ -29,7 +29,7 @@ namespace OpenSim {
 
 class MocoInverse;
 
-/// This class holds the solution from MocoInverseTool.
+/// This class holds the solution from MocoInverse.
 class MocoInverseSolution {
 public:
     const MocoSolution& getMocoSolution() const { return m_mocoSolution; }

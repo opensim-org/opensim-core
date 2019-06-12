@@ -32,6 +32,14 @@ class Function;
 class Coordinate;
 class StatesTrajectory;
 
+/// This class prescribes the value, speed, and acceleration of all coordinates
+/// in the model using SimTK::Motion. SimTK::Motion%s remove degrees of freedom
+/// from the system rather than add constraints. This is an alternative to
+/// prescribing kinematics using Coordinate's prescribed_function, which uses a
+/// kinematic constraint. When prescribing motion, the system must compute
+/// constraint forces to apply to enforce the prescribed motion;
+/// such forces are available via SimbodyMatterSubsystem::findMotionForces().
+/// @note This class requires that *all* coordinates are prescribed.
 class OSIMMOCO_API PositionMotion : public ModelComponent {
     OpenSim_DECLARE_CONCRETE_OBJECT(PositionMotion, ModelComponent);
 
@@ -49,6 +57,9 @@ public:
         setName(std::move(name));
     }
     ~PositionMotion() = default;
+    /// Set a function to calculate the position for a given coordinate.
+    /// The speed and acceleration of the coordinate are obtained as derivatives
+    /// of the provided function.
     void setPositionForCoordinate(
             const Coordinate& coord, const Function& position);
     /// This determines if, after Model::initSystem(), these prescribed
@@ -61,9 +72,9 @@ public:
     bool getEnabled(const SimTK::State& state) const;
     /// Create a PositionMotion that prescribes kinematics for all coordinates
     /// in a model, given a data table containing coordinate values for all
-    /// coordinates. If the table contains any columns that are not the names
-    /// of coordinate value state variables, an exception is thrown (unless
-    /// allowExtraColumns is true).
+    /// coordinates using GCVSpline. If the table contains any columns that are
+    /// not the names of coordinate value state variables, an exception is
+    /// thrown (unless allowExtraColumns is true).
     ///
     /// @note If the data in the table violates kinematic constraints in the
     /// model, the resulting PositionMotion will also violate the kinematic
@@ -82,7 +93,10 @@ public:
             const Model& model, const StatesTrajectory& statesTraj);
 
 private:
+    /// Allocate SimTK::Motion%s.
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
+    /// Set the functions on the SimTK::Motions. We need to wait until Topology
+    /// so that we can iterate through the system's MobilizedBodies.
     void extendRealizeTopology(SimTK::State& state) const override;
     mutable SimTK::ResetOnCopy<std::vector<SimTK::Motion>> m_motions;
 };
