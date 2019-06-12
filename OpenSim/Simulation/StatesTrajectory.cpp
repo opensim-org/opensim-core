@@ -98,10 +98,12 @@ bool StatesTrajectory::isCompatibleWith(const Model& model) const {
     // need to check if the first one is compatible with the model.
     const auto& state0 = get(0);
 
-    if (model.getNumStateVariables() != state0.getNY()) {
+    // This check uses an inequality because the SimTK::State might have
+    // unused quaternion slots.
+    if (model.getNumStateVariables() <= state0.getNY()) {
         return false;
     }
-    if (model.getNumCoordinates() != state0.getNQ()) {
+    if (model.getNumCoordinates() <= state0.getNQ()) {
         return false;
     }
     if (model.getNumSpeeds() != state0.getNU()) {
