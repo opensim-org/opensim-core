@@ -17,6 +17,7 @@
  * -------------------------------------------------------------------------- */
 
 #include "MocoConstraint.h"
+#include "MocoProblemInfo.h"
 
 using namespace OpenSim;
 
@@ -173,14 +174,14 @@ void MocoPathConstraint::constructProperties() {
 }
 
 void MocoPathConstraint::initializeOnModel(const Model& model,
+        const MocoProblemInfo& problemInfo,
         const int& pathConstraintIndex) const {
 
     m_model.reset(&model);
-    initializeOnModelImpl(model);
+    initializeOnModelImpl(model, problemInfo);
 
-    OPENSIM_THROW_IF_FRMOBJ(get_MocoConstraintInfo().getNumEquations() <= 0,
-        Exception, "Invalid number of equations. Either no equation number was "
-        "set or a non-positive integer was provided.");
+    OPENSIM_THROW_IF_FRMOBJ(get_MocoConstraintInfo().getNumEquations() <  0,
+        Exception, "Number of equations cannot be negative.");
 
     OPENSIM_THROW_IF_FRMOBJ(pathConstraintIndex < 0, Exception, "Invalid "
         "constraint index provided. The index must be greater than or equal to "

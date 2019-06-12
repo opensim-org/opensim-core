@@ -16,6 +16,7 @@
 #include <Moco/MocoBounds.h>
 #include <Moco/MocoProblem.h>
 #include <Moco/MocoParameter.h>
+#include <Moco/MocoControlBoundConstraint.h>
 #include <Moco/MocoIterate.h>
 #include <Moco/MocoTropterSolver.h>
 #include <Moco/MocoCasADiSolver/MocoCasADiSolver.h>

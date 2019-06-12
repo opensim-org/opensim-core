@@ -25,7 +25,11 @@
 namespace tropter {
 template <typename T>
 class Problem;
+template <typename T>
+class DirectCollocationSolver;
 }
+
+
 
 namespace OpenSim {
 
@@ -33,8 +37,8 @@ class MocoProblem;
 
 class MocoTropterSolverNotAvailable : public Exception {
 public:
-    MocoTropterSolverNotAvailable(const std::string& file, int line,
-            const std::string& func)
+    MocoTropterSolverNotAvailable(
+            const std::string& file, int line, const std::string& func)
             : Exception(file, line, func) {
         addMessage("MocoTropterSolver is not available.");
     }
@@ -144,6 +148,10 @@ protected:
 
     std::shared_ptr<const TropterProblemBase<double>>
     createTropterProblem() const;
+    std::unique_ptr<tropter::DirectCollocationSolver<double>>
+    createTropterSolver(
+            std::shared_ptr<const TropterProblemBase<double>>
+                    ocp) const;
 
     // TODO ensure that user-provided guess is within bounds.
     MocoSolution solveImpl() const override;

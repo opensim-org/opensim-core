@@ -28,6 +28,7 @@ set_property(CACHE OPENSIM_PYTHON_VERSION PROPERTY STRINGS "2" "3")
 include(ExternalProject)
 include(CMakeParseArguments)
 
+
 # Set the default for CMAKE_INSTALL_PREFIX.
 function(SetDefaultCMakeInstallPrefix)
     get_filename_component(BASE_DIR ${CMAKE_SOURCE_DIR} DIRECTORY)

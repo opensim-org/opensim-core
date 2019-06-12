@@ -27,6 +27,7 @@
 #include "InverseMuscleSolver/INDYGO.h"
 #include "MocoBounds.h"
 #include "MocoCasADiSolver/MocoCasADiSolver.h"
+#include "MocoControlBoundConstraint.h"
 #include "MocoCost/MocoControlCost.h"
 #include "MocoCost/MocoControlTrackingCost.h"
 #include "MocoCost/MocoCost.h"
@@ -46,12 +47,10 @@
 #include "osimMoco.h"
 
 #include <OpenSim/Common/Object.h>
+#include <OpenSim/Simulation/MarkersReference.h>
 
-// TODO: Move to osimSimulation.
 #include <exception>
 #include <iostream>
-
-#include <OpenSim/Simulation/MarkersReference.h>
 
 using namespace OpenSim;
 
@@ -79,6 +78,9 @@ OSIMMOCO_API void RegisterTypes_osimMoco() {
         Object::registerType(MocoProblem());
         Object::registerType(MocoStudy());
         Object::registerType(MocoTropterSolver());
+
+        Object::registerType(MocoControlBoundConstraint());
+
         Object::registerType(MocoCasADiSolver());
 
         Object::registerType(ActivationCoordinateActuator());
