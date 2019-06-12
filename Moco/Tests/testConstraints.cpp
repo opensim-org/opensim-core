@@ -1021,7 +1021,7 @@ TEMPLATE_TEST_CASE(
     auto& solver = moco.initSolver<TestType>();
     solver.set_num_mesh_points(10);
     MocoSolution solution = moco.solve();
-    CHECK(solution.getParameter("mass") == Approx(1.0).epsilon(1e-4));
+    CHECK(solution.getParameter("mass") == Approx(1.0).epsilon(1e-3));
 }
 
 class MocoJointReactionComponentCost : public MocoCost {

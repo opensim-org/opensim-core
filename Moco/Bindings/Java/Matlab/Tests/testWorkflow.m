@@ -104,6 +104,7 @@ function testChangingTimeBounds(testCase)
     problem.addCost(MocoFinalTimeCost());
 
     solver = moco.initTropterSolver();
+    solver.set_transcription_scheme('trapezoidal')
     solver.set_num_mesh_points(20);
     solver.set_transcription_scheme('trapezoidal')
     guess = solver.createGuess('random');

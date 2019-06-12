@@ -15,12 +15,13 @@
 // ----------------------------------------------------------------------------
 
 #include "Iterate.h"
-#include <tropter/Exception.hpp>
 
 #include <fstream>
 #include <iostream>
 
-// For interpolating.	
+#include <tropter/Exception.hpp>
+
+// For interpolating.
 #include <unsupported/Eigen/Splines>
 
 using namespace tropter;
@@ -50,16 +51,15 @@ Iterate::Iterate(const std::string& filepath) {
     int num_adjuncts = std::stoi(num_adjuncts_str);
 
     TROPTER_THROW_IF(!std::getline(f, line) || line.find("num_diffuses=") != 0,
-        "Could not read num_diffuses from '%s'.", filepath);
+            "Could not read num_diffuses from '%s'.", filepath);
     std::string num_diffuses_str = line.substr(line.find('=') + 1);
     int num_diffuses = std::stoi(num_diffuses_str);
 
-    TROPTER_THROW_IF(!std::getline(f, line) || 
-            line.find("num_parameters=") != 0,
+    TROPTER_THROW_IF(
+            !std::getline(f, line) || line.find("num_parameters=") != 0,
             "Could not read num_parameters from '%s'.", filepath);
     std::string num_parameters_str = line.substr(line.find('=') + 1);
     int num_parameters = std::stoi(num_parameters_str);
-
 
     // Grab the column labels.
     // -----------------------
@@ -80,19 +80,20 @@ Iterate::Iterate(const std::string& filepath) {
             control_names.push_back(label);
         else if (i_label < num_states + num_controls + num_adjuncts)
             adjunct_names.push_back(label);
-        else if (i_label < num_states + num_controls + num_adjuncts 
-                                                     + num_diffuses)
+        else if (i_label <
+                 num_states + num_controls + num_adjuncts + num_diffuses)
             diffuse_names.push_back(label);
         else
             parameter_names.push_back(label);
         ++i_label;
     }
-    TROPTER_THROW_IF(i_label != num_states + num_controls + num_adjuncts + 
-                num_diffuses + num_parameters,
+    TROPTER_THROW_IF(i_label != num_states + num_controls + num_adjuncts +
+                                        num_diffuses + num_parameters,
             "In '%s', expected %i columns but got %i columns.",
             // Add 1 for the time column.
-            filepath, 1 + num_states + num_controls + num_adjuncts + 
-                num_diffuses + num_parameters, 
+            filepath,
+            1 + num_states + num_controls + num_adjuncts + num_diffuses +
+                    num_parameters,
             1 + i_label);
 
     // Get number of times.
@@ -133,16 +134,16 @@ Iterate::Iterate(const std::string& filepath) {
             else if (i_var < num_states + num_controls)
                 element_ss >> controls(i_var - num_states, i_time);
             else if (i_var < num_states + num_controls + num_adjuncts)
-                element_ss >> adjuncts(i_var - num_states - num_controls, 
-                    i_time);
-            else if (i_var < num_states + num_controls + num_adjuncts 
-                                                       + num_diffuses)
-                element_ss >> diffuses(i_var - num_states - num_controls
-                    - num_adjuncts, i_time);
-            else 
-                if (i_time == 0)
-                    element_ss >> parameters(i_var - num_states - num_controls
-                        - num_adjuncts - num_diffuses);
+                element_ss >>
+                        adjuncts(i_var - num_states - num_controls, i_time);
+            else if (i_var <
+                     num_states + num_controls + num_adjuncts + num_diffuses)
+                element_ss >> diffuses(i_var - num_states - num_controls -
+                                               num_adjuncts,
+                                      i_time);
+            else if (i_time == 0)
+                element_ss >> parameters(i_var - num_states - num_controls -
+                                         num_adjuncts - num_diffuses);
             ++i_var;
         }
         ++i_time;
@@ -168,8 +169,8 @@ RowVectorXd normalize(RowVectorXd x) {
     return x;
 }
 
-MatrixXd interp1(const RowVectorXd& xin, const MatrixXd yin,
-    const RowVectorXd& xout) {
+MatrixXd interp1(
+        const RowVectorXd& xin, const MatrixXd yin, const RowVectorXd& xout) {
     // Make sure we're not extrapolating.
     assert(xout[0] >= xin[0]);
     assert(xout.tail<1>()[0] <= xin.tail<1>()[0]);
@@ -181,9 +182,9 @@ MatrixXd interp1(const RowVectorXd& xin, const MatrixXd yin,
     RowVectorXd xout_norm = normalize(xout);
     for (Index irow = 0; irow < yin.rows(); ++irow) {
         const Spline1d spline = SplineFitting<Spline1d>::Interpolate(
-            yin.row(irow), // dependent variable.
-            1, // linear interp
-            xin_norm); // "knot points" (independent variable).
+                yin.row(irow), // dependent variable.
+                1,             // linear interp
+                xin_norm);     // "knot points" (independent variable).
         for (Index icol = 0; icol < xout.size(); ++icol) {
             yout(irow, icol) = spline(xout_norm[icol]).value();
         }
@@ -191,23 +192,22 @@ MatrixXd interp1(const RowVectorXd& xin, const MatrixXd yin,
     return yout;
 }
 
-}
+} // namespace
 
-Iterate 
-Iterate::interpolate(int desired_num_columns) const {
-    if (time.size() == desired_num_columns) return *this;
-
-    assert(desired_num_columns > 0);
+Iterate Iterate::interpolate(Eigen::VectorXd newTime) const {
     TROPTER_THROW_IF(!std::is_sorted(time.data(), time.data() + time.size()),
-        "Expected time to be non-decreasing.");
+            "Expected time to be non-decreasing.");
+    TROPTER_THROW_IF(
+            !std::is_sorted(newTime.data(), newTime.data() + newTime.size()),
+            "Expected newTime to be non-decreasing.");
 
     Iterate out;
     out.state_names = state_names;
     out.control_names = control_names;
     out.adjunct_names = adjunct_names;
     out.diffuse_names = diffuse_names;
-    out.time = Eigen::RowVectorXd::LinSpaced(desired_num_columns,
-                                             time[0], time.tail<1>()[0]);
+    out.parameter_names = parameter_names;
+    out.time = std::move(newTime);
 
     out.states = interp1(time, states, out.time);
     out.controls = interp1(time, controls, out.time);
@@ -225,19 +225,21 @@ Iterate::interpolate(int desired_num_columns) const {
             }
         }
         MatrixXd diffuses_no_nans(diffuses.rows(), cols_no_nans);
+        Eigen::RowVectorXd time_no_nans(cols_no_nans);
         for (int icol_no_nan = 0; icol_no_nan < cols_no_nans; ++icol_no_nan) {
-            diffuses_no_nans.col(icol_no_nan) 
-                = diffuses.col(no_nan_indices[icol_no_nan]);
+            diffuses_no_nans.col(icol_no_nan) =
+                    diffuses.col(no_nan_indices[icol_no_nan]);
+            time_no_nans[icol_no_nan] = time[no_nan_indices[icol_no_nan]];
         }
         // Use the whole time range so we don't get NaNs during interpolation.
-        auto time_no_nans = Eigen::RowVectorXd::LinSpaced(cols_no_nans,
-            time[0], time.tail<1>()[0]);
 
         out.diffuses = interp1(time_no_nans, diffuses_no_nans, out.time);
     } else {
         // If no NaNs, create interpolant as normal.
         out.diffuses = interp1(time, diffuses, out.time);
     }
+
+    out.parameters = parameters;
 
     return out;
 }
@@ -302,7 +304,7 @@ void Iterate::write(const std::string& filepath) const {
             } else {
                 f << "," << std::numeric_limits<double>::quiet_NaN();
             }
-            
+
         f << std::endl;
     }
     f.close();
