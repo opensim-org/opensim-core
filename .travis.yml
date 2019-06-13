@@ -22,6 +22,12 @@ env:
 jobs:
   include:
     - stage: dependencies
-      script: bash .github/travis_dependencies.sh
+      script: bash .github/travis_dependencies.sh opensim-core
+    - stage: dependencies
+      script: bash .github/travis_dependencies.sh adolc
+    - stage: dependencies
+      script: bash .github/travis_dependencies.sh casadi
+    - stage: dependencies
+      script: bash .github/travis_dependencies.sh eigen
     - stage: buildtest
       script: bash .github/travis_buildtest.sh

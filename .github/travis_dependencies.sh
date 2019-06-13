@@ -11,17 +11,12 @@ if [ "$TRAVIS_OS_NAME" = "osx" ]; then DEP_CMAKE_ARGS+=(-DCMAKE_OSX_DEPLOYMENT_T
 printf '%s\n' "${DEP_CMAKE_ARGS[@]}"
 cmake "${DEP_CMAKE_ARGS[@]}"
 ls ~
-make -j$NPROC opensim-core
-make -j$NPROC colpack
-make -j$NPROC adolc
-make -j$NPROC ipopt
-make -j$NPROC casadi
-make -j$NPROC
+make -j$NPROC $1
 
 # Zip up the installation using a file name that identifies where
 # the binaries were built.
 mkdir ~/to_deploy
-ZIPNAME=opensim-moco-deps.zip
+ZIPNAME=opensim-moco-dep-$1.zip
 # Zip up Moco relative to where it's installed.
 ls $TRAVIS_BUILD_DIR
 ls $TRAVIS_BUILD_DIR/..
