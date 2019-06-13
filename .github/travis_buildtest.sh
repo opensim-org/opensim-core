@@ -2,7 +2,7 @@ bash .github/travis_common.sh
 
 # Download dependencies
 wget https://sourceforge.net/projects/myosin/files/opensim-moco/opensim-moco-deps.zip/download ~/opensim-moco-deps.zip
-unzip ~/opensim-moco-deps.zip -d $TRAVIS_BUILD_DIR/../moco_dependendencies_install
+unzip ~/opensim-moco-deps.zip -d $TRAVIS_BUILD_DIR/../
 ls $TRAVIS_BUILD_DIR/..
 ls $TRAVIS_BUILD_DIR/../moco_dependencies_install
 
