@@ -44,9 +44,6 @@ if [[ "$WRAP" = "on" ]]; then wget https://github.com/swig/swig/archive/rel-$SWI
 if [[ "$WRAP" = "on" ]]; then tar xzf rel-$SWIG_VER.tar.gz && cd swig-rel-$SWIG_VER; fi
 if [[ "$WRAP" = "on" ]]; then sh autogen.sh && ./configure --prefix=$HOME/swig --disable-ccache && make && make -j8 install; fi
 
-## Python 3.
-if [[ "$WRAP" = "on" && "$TRAVIS_OS_NAME" = "osx" ]]; then brew install python; fi
-
 # Below is a description of the process for securely uploading files to
 # Sourceforge, taken from https://oncletom.io/2016/travis-ssh-deploy/.
 #
