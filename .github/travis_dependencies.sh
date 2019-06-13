@@ -12,8 +12,9 @@ printf '%s\n' "${DEP_CMAKE_ARGS[@]}"
 cmake "${DEP_CMAKE_ARGS[@]}"
 ls ~
 # make -j$NPROC opensim-core
+make -j$NPROC colpack
 # make -j$NPROC adolc
-make -j$NPROC ipopt
+# make -j$NPROC ipopt
 # make -j$NPROC casadi
 # make -j$NPROC
 
