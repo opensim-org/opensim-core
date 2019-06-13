@@ -11,6 +11,9 @@ if [ "$TRAVIS_OS_NAME" = "osx" ]; then DEP_CMAKE_ARGS+=(-DCMAKE_OSX_DEPLOYMENT_T
 printf '%s\n' "${DEP_CMAKE_ARGS[@]}"
 cmake "${DEP_CMAKE_ARGS[@]}"
 ls ~
+if [ $1 = "casadi" ]; then
+    make -j$NPROC ipopt
+fi
 make -j$NPROC $1
 
 # Zip up the installation using a file name that identifies where

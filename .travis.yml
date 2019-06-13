@@ -22,8 +22,8 @@ env:
 jobs:
   include:
     - stage: dependencies
-      name: "ipopt"
-      script: bash .github/travis_dependencies.sh ipopt
+      name: "casadi"
+      script: bash .github/travis_dependencies.sh casadi
     - stage: buildtest
       script: bash .github/travis_buildtest.sh
 

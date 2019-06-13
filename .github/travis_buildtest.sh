@@ -7,9 +7,6 @@ unzip ~/opensim-moco-dep-opensim-core.zip -d $TRAVIS_BUILD_DIR/../
 wget https://sourceforge.net/projects/myosin/files/opensim-moco/opensim-moco-dep-adolc.zip/download -O ~/opensim-moco-dep-adolc.zip
 unzip ~/opensim-moco-dep-adolc.zip -d $TRAVIS_BUILD_DIR/../
 
-wget https://sourceforge.net/projects/myosin/files/opensim-moco/opensim-moco-dep-ipopt.zip/download -O ~/opensim-moco-dep-ipopt.zip
-unzip ~/opensim-moco-dep-ipopt.zip -d $TRAVIS_BUILD_DIR/../
-
 wget https://sourceforge.net/projects/myosin/files/opensim-moco/opensim-moco-dep-casadi.zip/download -O ~/opensim-moco-dep-casadi.zip
 unzip ~/opensim-moco-dep-casadi.zip -d $TRAVIS_BUILD_DIR/../
 
