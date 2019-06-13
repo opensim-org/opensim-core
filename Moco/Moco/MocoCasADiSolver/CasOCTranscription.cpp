@@ -237,7 +237,8 @@ void Transcription::transcribe() {
     // constraint errors.
     m_xdot = MX(NS, m_numGridPoints);
     if (m_solver.isDynamicsModeImplicit()) {
-        m_residual = MX(NU, m_numGridPoints);
+        m_residual = MX(
+                m_problem.getNumMultibodyDynamicsEquations(), m_numGridPoints);
     }
     m_kcerr = MX(m_problem.getNumKinematicConstraintEquations(),
             m_kinematicConstraintIndices.nnz());

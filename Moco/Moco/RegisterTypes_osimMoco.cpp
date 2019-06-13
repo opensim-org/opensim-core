@@ -22,6 +22,7 @@
 #include "Components/ActivationCoordinateActuator.h"
 #include "Components/DeGrooteFregly2016Muscle.h"
 #include "Components/DiscreteForces.h"
+#include "Components/PositionMotion.h"
 #include "Components/StationPlaneContactForce.h"
 #include "InverseMuscleSolver/GlobalStaticOptimization.h"
 #include "InverseMuscleSolver/INDYGO.h"
@@ -37,6 +38,7 @@
 #include "MocoCost/MocoOrientationTrackingCost.h"
 #include "MocoCost/MocoStateTrackingCost.h"
 #include "MocoCost/MocoTranslationTrackingCost.h"
+#include "MocoInverse.h"
 #include "MocoParameter.h"
 #include "MocoProblem.h"
 #include "MocoSolver.h"
@@ -46,11 +48,10 @@
 #include "ModelOperators.h"
 #include "osimMoco.h"
 
-#include <OpenSim/Common/Object.h>
-#include <OpenSim/Simulation/MarkersReference.h>
-
 #include <exception>
 #include <iostream>
+
+#include <OpenSim/Simulation/MarkersReference.h>
 
 using namespace OpenSim;
 
@@ -77,6 +78,9 @@ OSIMMOCO_API void RegisterTypes_osimMoco() {
         Object::registerType(MocoPhase());
         Object::registerType(MocoProblem());
         Object::registerType(MocoStudy());
+
+        Object::registerType(MocoInverse());
+
         Object::registerType(MocoTropterSolver());
 
         Object::registerType(MocoControlBoundConstraint());
@@ -100,6 +104,7 @@ OSIMMOCO_API void RegisterTypes_osimMoco() {
         Object::registerType(AckermannVanDenBogert2010Force());
         Object::registerType(MeyerFregly2016Force());
         Object::registerType(EspositoMiller2018Force());
+        Object::registerType(PositionMotion());
         Object::registerType(DeGrooteFregly2016Muscle());
 
         Object::registerType(DiscreteForces());

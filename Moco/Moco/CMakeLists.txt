@@ -65,6 +65,8 @@ set(MOCO_SOURCES
         Components/ActivationCoordinateActuator.h
         Components/StationPlaneContactForce.h
         Components/StationPlaneContactForce.cpp
+        Components/PositionMotion.h
+        Components/PositionMotion.cpp
         Components/ModelFactory.h
         Components/ModelFactory.cpp
         Components/DiscreteForces.h
@@ -88,9 +90,14 @@ set(MOCO_SOURCES
         MocoCasADiSolver/CasOCHermiteSimpson.h
         MocoCasADiSolver/CasOCHermiteSimpson.cpp
         MocoCasADiSolver/CasOCIterate.h
+        MocoInverse.cpp
+        MocoInverse.h
         Common/TableProcessor.h
         ModelProcessor.h
-        ModelOperators.h)
+        ModelOperators.h
+        MocoTool.cpp
+        MocoTool.h
+        )
 if (MOCO_WITH_TROPTER)
     list(APPEND MOCO_SOURCES
             tropter/TropterProblem.h

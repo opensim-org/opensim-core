@@ -18,39 +18,36 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "MocoWeightSet.h"
-#include "MocoCost/MocoStateTrackingCost.h"
-#include "MocoCost/MocoMarkerTrackingCost.h"
-#include "MocoCost/MocoMarkerEndpointCost.h"
+#include "Common/TableProcessor.h"
+#include "Components/ActivationCoordinateActuator.h"
+#include "Components/DeGrooteFregly2016Muscle.h"
+#include "Components/DiscreteForces.h"
+#include "Components/ModelFactory.h"
+#include "Components/PositionMotion.h"
+#include "Components/StationPlaneContactForce.h"
+#include "MocoBounds.h"
+#include "MocoCasADiSolver/MocoCasADiSolver.h"
+#include "MocoConstraint.h"
+#include "MocoControlBoundConstraint.h"
 #include "MocoCost/MocoControlCost.h"
 #include "MocoCost/MocoControlTrackingCost.h"
 #include "MocoCost/MocoJointReactionCost.h"
+#include "MocoCost/MocoMarkerEndpointCost.h"
+#include "MocoCost/MocoMarkerTrackingCost.h"
 #include "MocoCost/MocoOrientationTrackingCost.h"
+#include "MocoCost/MocoStateTrackingCost.h"
 #include "MocoCost/MocoTranslationTrackingCost.h"
+#include "MocoInverse.h"
 #include "MocoIterate.h"
-#include "MocoBounds.h"
+#include "MocoParameter.h"
 #include "MocoProblem.h"
 #include "MocoSolver.h"
 #include "MocoStudy.h"
 #include "MocoTropterSolver.h"
 #include "MocoUtilities.h"
-#include "MocoParameter.h"
-#include "MocoConstraint.h"
-#include "MocoControlBoundConstraint.h"
-
-#include "Common/TableProcessor.h"
-
-#include "ModelProcessor.h"
+#include "MocoWeightSet.h"
 #include "ModelOperators.h"
-
-#include "Components/ActivationCoordinateActuator.h"
-#include "Components/StationPlaneContactForce.h"
-#include "Components/ModelFactory.h"
-#include "Components/DeGrooteFregly2016Muscle.h"
-#include "Components/DiscreteForces.h"
-
-#include "MocoCasADiSolver/MocoCasADiSolver.h"
-
+#include "ModelProcessor.h"
 #include "RegisterTypes_osimMoco.h"
 
 #endif // MOCO_OSIMMOCO_H

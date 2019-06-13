@@ -78,12 +78,13 @@ void HermiteSimpson::applyConstraintsImpl(const VariablesMX& vars,
     const auto& states = vars.at(Var::states);
     const auto& controls = vars.at(Var::controls);
     const DM zeroS = casadi::DM::zeros(m_problem.getNumStates(), 1);
-    const DM zeroU = casadi::DM::zeros(m_problem.getNumSpeeds(), 1);
+    const DM zeroR =
+            casadi::DM::zeros(m_problem.getNumMultibodyDynamicsEquations(), 1);
     const DM zeroC = casadi::DM::zeros(m_problem.getNumControls(), 1);
 
     int time_i, time_mid, time_ip1;
     for (int imesh = 0; imesh < m_numMeshPoints; ++imesh) {
-        time_i = 2 * imesh; // Needed for defects and path constraints.
+        time_i = 2 * imesh; // Needed for defects and residuals.
 
         // We enforce defect constraints on a mesh interval basis, so add
         // constraints until the number of mesh intervals is reached.
@@ -111,14 +112,14 @@ void HermiteSimpson::applyConstraintsImpl(const VariablesMX& vars,
 
             // The residuals are enforced at the mesh interval midpoints.
             if (m_solver.isDynamicsModeImplicit()) {
-                addConstraints(zeroU, zeroU, residual(Slice(), time_i));
-                addConstraints(zeroU, zeroU, residual(Slice(), time_mid));
+                addConstraints(zeroR, zeroR, residual(Slice(), time_i));
+                addConstraints(zeroR, zeroR, residual(Slice(), time_mid));
                 // We only need to add a constraint on this time point for the
                 // last mesh interval since, for all other mesh intervals, the
                 // time_ip1 point for a given mesh interval is covered by the
                 // next mesh interval's time_i point.
                 if (imesh == m_numMeshIntervals - 1) {
-                    addConstraints(zeroU, zeroU, residual(Slice(), time_ip1));
+                    addConstraints(zeroR, zeroR, residual(Slice(), time_ip1));
                 }
             }
 

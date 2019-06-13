@@ -20,7 +20,6 @@
 #include "Testing.h"
 using Catch::Contains;
 #include <Moco/osimMoco.h>
-#include <catch.hpp>
 
 #include <simbody/internal/Constraint.h>
 #include <simbody/internal/Constraint_Ball.h>
@@ -31,6 +30,7 @@ using Catch::Contains;
 #include <OpenSim/Common/GCVSpline.h>
 #include <OpenSim/Common/LinearFunction.h>
 #include <OpenSim/Common/LogManager.h>
+#include <OpenSim/Common/Sine.h>
 #include <OpenSim/Common/TimeSeriesTable.h>
 #include <OpenSim/Simulation/osimSimulation.h>
 
@@ -1220,6 +1220,52 @@ TEST_CASE("Multipliers are correct", "") {
 
         OpenSim_CHECK_MATRIX_TOL(lambda, 0.5 * (Fx - Fy), 1e-5);
     }
+}
+
+// Ensure that we correctly handle the combination of prescribed kinematics
+// (PositionMotion) and kinematic constraints. This test is similar to the one
+// above except that we prescribe motions for tx and ty.
+TEST_CASE("Prescribed kinematics with kinematic constraints", "") {
+    std::cout.rdbuf(LogManager::cout.rdbuf());
+    std::cerr.rdbuf(LogManager::cerr.rdbuf());
+    Model model = ModelFactory::createPlanarPointMass();
+    model.set_gravity(Vec3(0));
+    CoordinateCouplerConstraint* constraint = new CoordinateCouplerConstraint();
+    Array<std::string> names;
+    names.append("tx");
+    constraint->setIndependentCoordinateNames(names);
+    constraint->setDependentCoordinateName("ty");
+    LinearFunction func(1.0, 0.0);
+    constraint->setFunction(func);
+    model.addConstraint(constraint);
+
+    auto* posmot = new PositionMotion();
+    Sine function = Sine(1.0, 1.0, 0, 1.0);
+    posmot->setPositionForCoordinate(model.getCoordinateSet().get(0), function);
+    posmot->setPositionForCoordinate(model.getCoordinateSet().get(1), function);
+    model.addComponent(posmot);
+
+    model.finalizeConnections();
+
+    MocoStudy moco;
+    auto& problem = moco.updProblem();
+    problem.setModelCopy(model);
+
+    problem.setTimeBounds(0, 3);
+    problem.setControlInfo("/forceset/force_x", 0.5);
+
+    problem.addCost<MocoControlCost>();
+
+    auto& solver = moco.initCasADiSolver();
+    solver.set_num_mesh_points(10);
+    solver.set_dynamics_mode("implicit");
+    solver.set_interpolate_control_midpoints(false);
+    MocoSolution solution = moco.solve();
+    const auto Fx = solution.getControl("/forceset/force_x");
+    const auto Fy = solution.getControl("/forceset/force_y");
+    const auto lambda = solution.getMultiplier("lambda_cid2_p0");
+
+    OpenSim_CHECK_MATRIX_TOL(lambda, 0.5 * (Fx - Fy), 1e-5);
 }
 
 TEMPLATE_TEST_CASE(
