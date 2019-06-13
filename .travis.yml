@@ -23,17 +23,5 @@ jobs:
   include:
     - stage: dependencies
       script: bash .github/travis_dependencies.sh
-
     - stage: buildtest
       script: bash .github/travis_buildtest.sh
-      deploy:
-        # Uploads to sourceforge.net/projects/myosin
-        # See https://docs.travis-ci.com/user/deployment/custom/
-        # '--archive' preserves symlinks.
-        provider: script
-        skip_cleanup: true
-        script: rsync --archive --compress --verbose ~/to_deploy/$ZIPNAME opensim-bot@frs.sourceforge.net:/home/frs/project/myosin/opensim-moco/
-        on:
-          all_branches: true
-
-
