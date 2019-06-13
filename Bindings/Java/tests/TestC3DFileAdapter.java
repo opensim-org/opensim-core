@@ -5,7 +5,7 @@ class TestC3DFileAdapter {
     public static void test_C3DFileAdapter() {
         C3DFileAdapter c3dAdapter = new C3DFileAdapter();
         StdMapStringTimeSeriesTableVec3 tables =
-            c3dAdapter.read("walking5.c3d", 
+            c3dAdapter.readFile("walking5.c3d", 
             C3DFileAdapter.ForceLocation.CenterOfPressure);
 
         // Marker data read from C3D.
@@ -25,7 +25,7 @@ class TestC3DFileAdapter {
         String markerFileName = new String("markers.mot");
         STOFileAdapter stoAdapter = new STOFileAdapter();
         stoAdapter.write(markerTableFlat, markerFileName);
-        TimeSeriesTable markerTableDouble = stoAdapter.read(markerFileName);
+        TimeSeriesTable markerTableDouble = stoAdapter.readFile(markerFileName);
         assert markerTableDouble.getNumRows()    == 1103;
         assert markerTableDouble.getNumColumns() == 40 * 3;
 
@@ -86,7 +86,7 @@ class TestC3DFileAdapter {
         String forceFileName = new String("forces.mot");
         stoAdapter = new STOFileAdapter();
         stoAdapter.write(forceTableFlat, forceFileName);
-        TimeSeriesTable forceTableDouble = stoAdapter.read(forceFileName);
+        TimeSeriesTable forceTableDouble = stoAdapter.readFile(forceFileName);
         assert forceTableDouble.getNumRows()    == 8824;
         assert forceTableDouble.getNumColumns() == 6 * 3;
 

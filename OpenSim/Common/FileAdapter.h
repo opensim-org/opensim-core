@@ -184,13 +184,13 @@ public:
     FileAdapter& operator=(const FileAdapter&) = default;
     FileAdapter& operator=(FileAdapter&&)      = default;
     virtual ~FileAdapter()                     = default;
-
+#ifndef SWIG
     /** Read a file with the given name. Returns a collection of tables 
     depending on the contents of the file read. For example, a TRC file contains
     just one table whereas a C3D file might contain multiple tables. Refer to
     the specific adapter's documentation to see what was returned.            */
     static OutputTables readFile(const std::string& fileName);
-
+#endif
     /** Write a collection of tables to the given file. Different file formats
     require different number/type of tables. See specific adapter's 
     documentation to see what is required.                                    */
@@ -205,8 +205,7 @@ public:
     the given delimiters.                                                     */
     static std::vector<std::string> getNextLine(std::istream& stream,
         const std::string& delims);
-
-protected:    
+   
     /** Tokenize/split a given string using the given delimiters. The delimiters
     are each required to be one character and the string is split if/when any 
     of those characters are found. For example, a delimiter string " \t" 

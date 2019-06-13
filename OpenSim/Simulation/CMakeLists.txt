@@ -5,7 +5,8 @@ set(SIMULATION_SUBDIRS
         Manager
         Model
         Wrap
-        SimbodyEngine)
+        SimbodyEngine
+        OpenSense)
 
 set(SOURCES)
 set(INCLUDES)
