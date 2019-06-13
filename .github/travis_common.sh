@@ -44,9 +44,10 @@ if [[ "$WRAP" = "on" ]]; then tar xzf rel-$SWIG_VER.tar.gz && cd swig-rel-$SWIG_
 if [[ "$WRAP" = "on" ]]; then sh autogen.sh && ./configure --prefix=$HOME/swig --disable-ccache && make && make -j8 install; fi
 
 ## Set up ssh for sourceforge.
+cd $TRAVIS_BUILD_DIR
 if [[ "$DEPLOY" = "yes" ]]; then PREP_SOURCEFORGE_SSH=0; else PREP_SOURCEFORGE_SSH=1; fi
 # Decrypt the private key stored in the repository to the tmp dir.
-if [ $PREP_SOURCEFORGE_SSH = "0" ]; then openssl aes-256-cbc -K $encrypted_115b27a55ea5_key -iv $encrypted_115b27a55ea5_iv -in .github/deploy_myosin_sourceforge_rsa.enc -out .github/.deploy_myosin_sourceforge_rsa -d; fi
+if [ $PREP_SOURCEFORGE_SSH = "0" ]; then openssl aes-256-cbc -K $encrypted_115b27a55ea5_key -iv $encrypted_115b27a55ea5_iv -in .github/deploy_myosin_sourceforge_rsa.enc -out /tmp/.deploy_myosin_sourceforge_rsa -d; fi
 # Start the ssh agent.
 if [ $PREP_SOURCEFORGE_SSH = "0" ]; then eval "$(ssh-agent -s)"; fi
 # Register this private key with this client (the travis machine).
