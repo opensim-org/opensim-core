@@ -62,7 +62,7 @@ classdef osimC3D < matlab.mixin.SetGet
             % load java libs
             import org.opensim.modeling.*
             % Use a c3dAdapter to read the c3d file
-            tables = C3DFileAdapter().read(path2c3d, ForceLocation);
+            tables = C3DFileAdapter().readFile(path2c3d, ForceLocation);
             % Set the marker and force data into OpenSim tables
             obj.markers = tables.get('markers');
             obj.forces = tables.get('forces');

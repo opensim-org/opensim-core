@@ -1,3 +1,9 @@
+%% Convert Matlab Struct to OpenSim time Series Table
+%  Input is an OpenSim TimesSeriesTable or TimesSeriesTableVec3
+%
+%  Output is a Maltab stucture where data.label = nX1 or nx3 array
+%  eg structdata.LASI = [2 3 4; 4 5 6, ...
+
 % ----------------------------------------------------------------------- %
 % The OpenSim API is a toolkit for musculoskeletal modeling and           %
 % simulation. See http://opensim.stanford.edu and the NOTICE file         %
@@ -5,7 +11,7 @@
 % and supported by the US National Institutes of Health (U54 GM072970,    %
 % R24 HD065690) and by DARPA through the Warrior Web program.             %
 %                                                                         %
-% Copyright (c) 2005-2016 Stanford University and the Authors             %
+% Copyright (c) 2005-2019 Stanford University and the Authors             %
 % Author(s): James Dunne                                                  %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
@@ -20,15 +26,10 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-%% Convert Matlab Struct to OpenSim time Series Table
-%  Input is an OpenSim TimesSeriesTable or TimesSeriesTableVec3
-%
-%  Output is a Maltab stucture where data.label = nX1 or nx3 array
-%  eg structdata.LASI = [2 3 4; 4 5 6, ...
-
 % Author: James Dunne, Tom Uchida, Shrinidhi K. Lakshmikanth, Chris Dembia, 
-% Ajay Seth, Ayman Habib, Jen Hicks.
+%         Ajay Seth, Ayman Habib, Jen Hicks, Apoorva Rajagopal.
 
+%%
 function structdata = osimTableToStruct(osimtable)
 
 % Import Java libraries 
@@ -85,7 +86,7 @@ for iLabel = 0 : nLabels - 1
         col_label(~(isstrprop(col_label,'alphanum'))) = '_';
         % Check if first character is a letter, and append 'Z' if not
         if ~(isletter(col_label(1)))
-            col_label = ['marker', col_label];
+            col_label = ['unlabeled', col_label];
         end
         % Last check for too long a name 
         % Have user input a new name, and make them keep doing it until the
