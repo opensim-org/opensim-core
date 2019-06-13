@@ -30,19 +30,19 @@ jobs:
     - stage: dependencies
       name: "opensim-core"
       script: bash .github/travis_dependencies.sh opensim-core
-      if: commit_message =~ rebuild deps
+      # if: commit_message =~ rebuild deps
     - stage: dependencies
       name: "adolc"
       script: bash .github/travis_dependencies.sh adolc
-      if: commit_message =~ rebuild deps
+      # if: commit_message =~ rebuild deps
     - stage: dependencies
       name: "casadi"
       script: bash .github/travis_dependencies.sh casadi
-      if: commit_message =~ rebuild deps
+      # if: commit_message =~ rebuild deps
     - stage: dependencies
       name: "eigen"
       script: bash .github/travis_dependencies.sh eigen
-      if: commit_message =~ rebuild deps
+      # if: commit_message =~ rebuild deps
     - stage: buildtest
       script: bash .github/travis_buildtest.sh
 
