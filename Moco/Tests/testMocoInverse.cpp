@@ -16,9 +16,6 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/// In this file, we attempt to solve
-/// This file contains a problem we hope to solve robustly in the future.
-/// It serves as a goal.
 #include <Moco/osimMoco.h>
 
 #include <OpenSim/Common/LogManager.h>

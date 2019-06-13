@@ -57,6 +57,16 @@ private:
 /// The provided trajectory is altered to satisfy any enabled kinematic
 /// constraints in the model.
 ///
+/// Default solver settings
+/// -----------------------
+/// - solver: MocoCasADiSolver
+/// - dynamics_mode: implicit
+/// - transcription_sceheme: trapezoidal
+/// - optim_convergence_tolerance: 1e-3
+/// - optim_constraint_tolerance: 1e-3
+/// - optim_sparsity_detection: random
+/// - optim_finite_difference_scheme: forward
+///
 /// @underdevelopment
 class OSIMMOCO_API MocoInverse : public MocoTool {
     OpenSim_DECLARE_CONCRETE_OBJECT(MocoInverse, MocoTool);
@@ -67,6 +77,10 @@ public:
             "Path to a STO file containing generalized coordinates "
             "to prescribe. The path can be absolute or relative to the setup "
             "file.");
+
+    OpenSim_DECLARE_PROPERTY(clip_time_range, bool,
+            "Set the time range to be 1e-3 shorter on both ends to leave space "
+            "for finite difference estimates (default: false).");
 
     MocoInverse() { constructProperties(); }
 

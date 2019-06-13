@@ -51,7 +51,8 @@ void MocoProblemRep::initialize() {
     m_model_base.finalizeFromProperties();
     int countMotion = 0;
     for (const auto& comp : m_model_base.getComponentList<PositionMotion>()) {
-        comp.getName(); // Avoid "unused variable".
+        // Next line exists only to avoid an "unused variable" compiler warning.
+        comp.getName();
         if (comp.getDefaultEnabled()) {
             ++countMotion;
             OPENSIM_THROW_IF(countMotion > 1, Exception,

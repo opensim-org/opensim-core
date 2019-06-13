@@ -177,6 +177,11 @@ protected:
     void addSlack(std::string name, Bounds bounds) {
         m_slackInfos.push_back({std::move(name), std::move(bounds)});
     }
+    /// Set if all kinematics are prescribed. This means that there are no
+    /// coordinate or speed states. Typically, we assume the number of multibody
+    /// dynamics equations is equal to the number of speeds. But if kinematics
+    /// are prescribed, there are no speeds, so you must provide the number of
+    /// multibody dynamics equations separately.
     void setPrescribedKinematics(bool tf, int numMultibodyDynamicsEquations) {
         m_prescribedKinematics = tf;
         m_numMultibodyDynamicsEquationsIfPrescribedKinematics =

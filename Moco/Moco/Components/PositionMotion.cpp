@@ -38,6 +38,8 @@ public:
     SimTK::Motion::Level getLevel(const SimTK::State&) const override {
         return SimTK::Motion::Level::Position;
     }
+    /// nq: The number of generalized coordinates for this MobilizedBody.
+    /// q: The values of the generalized coordinates to set. Length nq
     void calcPrescribedPosition(
             const SimTK::State& s, int nq, SimTK::Real* q) const override {
         if (m_functions.size()) {
@@ -173,7 +175,7 @@ void PositionMotion::extendRealizeTopology(SimTK::State& state) const {
                 format("No function provided for coordinate '%s'.", path));
     }
 
-    // Create a mapping frm SimTK position DOFs to OpenSim Coordinates.
+    // Create a mapping from SimTK position DOFs to OpenSim Coordinates.
     // We identify a SimTK DOF as a MobilizedBodyIndex and a Q index.
     std::map<std::pair<SimTK::MobilizedBodyIndex, int>, std::string>
             indicesToCoordName;

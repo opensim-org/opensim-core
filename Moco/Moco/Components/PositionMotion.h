@@ -45,7 +45,8 @@ class OSIMMOCO_API PositionMotion : public ModelComponent {
 
 public:
     OpenSim_DECLARE_PROPERTY(default_enabled, bool,
-            "Is this motion enabled by default? (default value: true)");
+            "Whether or not this motion is enabled by default (default value: "
+            "true).");
     OpenSim_DECLARE_PROPERTY(functions, FunctionSet,
             "Functions specifying the values of each coordinate.");
 
