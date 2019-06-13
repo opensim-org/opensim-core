@@ -177,11 +177,13 @@ protected:
     void addSlack(std::string name, Bounds bounds) {
         m_slackInfos.push_back({std::move(name), std::move(bounds)});
     }
-    /// Set if all kinematics are prescribed. This means that there are no
-    /// coordinate or speed states. Typically, we assume the number of multibody
-    /// dynamics equations is equal to the number of speeds. But if kinematics
-    /// are prescribed, there are no speeds, so you must provide the number of
-    /// multibody dynamics equations separately.
+    /// Set if all kinematics are prescribed. In this case, do not add state
+    /// variables for coordinates or speeds. The number of multibody dynamics
+    /// equations is equal to the number of speeds in the original system. But
+    /// if kinematics are prescribed, you must provide the number of multibody
+    /// dynamics equations directly. This is because no speed state variables
+    /// are added and CasOCProblem can't obtain the number of multibody
+    /// equations by counting the number of speed state variables.
     void setPrescribedKinematics(bool tf, int numMultibodyDynamicsEquations) {
         m_prescribedKinematics = tf;
         m_numMultibodyDynamicsEquationsIfPrescribedKinematics =

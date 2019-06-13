@@ -24,6 +24,7 @@ void MocoTool::constructProperties() {
     constructProperty_initial_time();
     constructProperty_final_time();
     constructProperty_mesh_interval(0.02);
+    constructProperty_clip_time_range(false);
     constructProperty_model(ModelProcessor());
 }
 

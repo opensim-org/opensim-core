@@ -44,6 +44,10 @@ public:
             "The time duration of each mesh interval "
             "(default: 0.020 seconds).");
 
+    OpenSim_DECLARE_PROPERTY(clip_time_range, bool,
+            "Set the time range to be 1e-3 shorter on both ends to leave space "
+            "for finite difference estimates (default: false).");
+
     OpenSim_DECLARE_PROPERTY(
             model, ModelProcessor, "The musculoskeletal model to use.");
 

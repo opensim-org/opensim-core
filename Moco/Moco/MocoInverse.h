@@ -78,10 +78,6 @@ public:
             "to prescribe. The path can be absolute or relative to the setup "
             "file.");
 
-    OpenSim_DECLARE_PROPERTY(clip_time_range, bool,
-            "Set the time range to be 1e-3 shorter on both ends to leave space "
-            "for finite difference estimates (default: false).");
-
     MocoInverse() { constructProperties(); }
 
     void setKinematics(TableProcessor kinematics) {

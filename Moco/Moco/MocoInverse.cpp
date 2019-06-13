@@ -33,7 +33,6 @@ using namespace OpenSim;
 
 void MocoInverse::constructProperties() {
     constructProperty_kinematics(TableProcessor());
-    constructProperty_clip_time_range(false);
 }
 
 MocoInverseSolution MocoInverse::solve() const {

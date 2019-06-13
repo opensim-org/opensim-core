@@ -39,7 +39,7 @@ public:
         return SimTK::Motion::Level::Position;
     }
     /// nq: The number of generalized coordinates for this MobilizedBody.
-    /// q: The values of the generalized coordinates to set. Length nq
+    /// q: The values of the generalized coordinates to set, with length nq.
     void calcPrescribedPosition(
             const SimTK::State& s, int nq, SimTK::Real* q) const override {
         if (m_functions.size()) {
