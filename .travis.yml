@@ -16,8 +16,14 @@ env:
   global:
     - SWIG_VER=3.0.8
     - ZIPNAME=opensim-moco-${TRAVIS_OS_NAME}_${TRAVIS_BRANCH}_${TRAVIS_PULL_REQUEST_BRANCH}.zip
-  matrix:
-    - BTYPE=Release NPROC=2 DEPLOY=yes DOXY=on WRAP=on OSX_TARGET=10.10
+    - BTYPE=Release
+    - NPROC=2
+    - DEPLOY=yes
+    - DOXY=on
+    - WRAP=on
+    - OSX_TARGET=10.10
+#  matrix:
+#    - BTYPE=Release NPROC=2 DEPLOY=yes DOXY=on WRAP=on OSX_TARGET=10.10
 
 jobs:
   include:
