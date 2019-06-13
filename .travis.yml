@@ -30,6 +30,8 @@ jobs:
         provider: script
         skip_cleanup: true
         script: rsync --archive --compress --verbose ~/to_deploy/ opensim-bot@frs.sourceforge.net:/home/frs/project/myosin/opensim-moco/
+        on:
+          all_branches: true
 
     - stage: buildtest
       script: bash .github/travis_buildtest.sh
@@ -40,5 +42,7 @@ jobs:
         provider: script
         skip_cleanup: true
         script: rsync --archive --compress --verbose ~/to_deploy/$ZIPNAME opensim-bot@frs.sourceforge.net:/home/frs/project/myosin/opensim-moco/
+        on:
+          all_branches: true
 
 
