@@ -18,6 +18,18 @@ Converting from v4.0 to v4.1
   conversion, you will need to update your code to use the constructor
   explicitly.
 
+Bug Fixes
+---------
+- Fixed a bug in the OpenSim GUI that added an offset when previewing experimental data. (PR opensim-org/opensim-gui#1118)
+
+
+Documentation
+-------------
+
+
+Other Changes
+-------------
+- Performance of reading large data files has been significantly improved. A 50MB .sto file would take 10-11 min to read now takes 2-3 seconds. (PR #2399)
 
 v4.0
 ====
