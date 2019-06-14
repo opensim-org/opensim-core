@@ -687,8 +687,9 @@ void Transcription::printConstraintValues(
             vars.at(multipliers), lower.at(multipliers), upper.at(multipliers));
     print_bounds("Derivative bounds", it.state_names, it.times,
             vars.at(derivatives), lower.at(derivatives), upper.at(derivatives));
-    print_bounds("Slack bounds", it.state_names, it.times, vars.at(slacks),
-            lower.at(slacks), upper.at(slacks));
+    // Need to update times for the slacks:
+    // print_bounds("Slack bounds", it.slack_names, it.times, vars.at(slacks),
+    //         lower.at(slacks), upper.at(slacks));
 
     // Bounds on time and parameter variables.
     // ---------------------------------------
@@ -829,12 +830,8 @@ void Transcription::printConstraintValues(
     // Kinematic constraints.
     // ----------------------
     stream << "\nKinematic constraints:";
-    std::vector<std::string> kinconNames;
-    // TODO: Give better names to kinematic constraints, rather than using
-    // the multiplier names.
-    for (const auto& kc : m_problem.getMultiplierInfos()) {
-        kinconNames.push_back(kc.name);
-    }
+    std::vector<std::string> kinconNames =
+            m_problem.createKinematicConstraintNames();
     if (kinconNames.empty()) {
         stream << " none" << std::endl;
     } else {
@@ -853,7 +850,7 @@ void Transcription::printConstraintValues(
                 const double L1 = max;
                 const double time_of_max = it.times(argmax).scalar();
 
-                std::string label = kinconNames[ikc];
+                std::string label = kinconNames.at(ikc);
                 std::cout << std::setfill('0') << std::setw(2) << ikc << ":"
                         << std::setfill(' ') << std::setw(maxNameLength) << label
                         << spacer << std::setprecision(2) << std::scientific

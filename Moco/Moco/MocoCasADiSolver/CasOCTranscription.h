@@ -343,7 +343,6 @@ private:
                 while (icon < m_pointsForInterpControls.numel() &&
                         m_pointsForInterpControls(icon).scalar() <
                                 m_solver.getMesh()[imesh + 1]) {
-                    std::cout << "DEBUG pfic " << icon << " " << imesh << std::endl;
                     copyColumn(out.interp_controls, icon);
                     ++icon;
                 }

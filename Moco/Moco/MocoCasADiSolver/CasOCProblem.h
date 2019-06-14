@@ -69,6 +69,7 @@ struct MultiplierInfo {
     Bounds bounds;
     Bounds initialBounds;
     Bounds finalBounds;
+    KinematicLevel level;
 };
 struct SlackInfo {
     std::string name;
@@ -164,7 +165,8 @@ protected:
         clipEndpointBounds(multbounds, multInitialBounds);
         clipEndpointBounds(multbounds, multFinalBounds);
         m_multiplierInfos.push_back({std::move(multName), std::move(multbounds),
-                std::move(multInitialBounds), std::move(multFinalBounds)});
+                std::move(multInitialBounds), std::move(multFinalBounds),
+                kinLevel});
 
         if (kinLevel == KinematicLevel::Position)
             ++m_numHolonomicConstraintEquations;
@@ -219,6 +221,13 @@ public:
             const EndpointInput&, double& cost) const {
         cost = 0;
     }
+    /// Kinematic constraint errors should be ordered as so:
+    /// - position-level constraints
+    /// - first derivative of position-level constraints
+    /// - velocity-level constraints
+    /// - second derivative of position-level constraints
+    /// - first derivative of velocity-level constraints
+    /// - acceleration-level constraints
     virtual void calcMultibodySystemExplicit(const ContinuousInput& input,
             bool calcKCErrors, MultibodySystemExplicitOutput& output) const = 0;
     virtual void calcMultibodySystemImplicit(const ContinuousInput& input,
@@ -229,11 +238,11 @@ public:
             casadi::DM& velocity_correction) const = 0;
 
     virtual void calcPathConstraint(int /*constraintIndex*/,
-            const ContinuousInput& /*input*/, casadi::DM& /*path_constraint*/) const {}
+            const ContinuousInput& /*input*/,
+            casadi::DM& /*path_constraint*/) const {}
 
     virtual void intermediateCallback(const CasOC::Iterate&) const {}
     /// @}
-
 
 public:
     /// Create an iterate with the variable names populated according to the
@@ -267,7 +276,7 @@ public:
         return it;
     }
 
-    void constructFunctions(const std::string& finiteDiffScheme,
+    void initialize(const std::string& finiteDiffScheme,
             std::shared_ptr<const std::vector<VariablesDM>>
                     pointsForSparsityDetection) const {
         auto* mutThis = const_cast<Problem*>(this);
@@ -363,6 +372,55 @@ public:
                    m_numNonHolonomicConstraintEquations +
                    m_numAccelerationConstraintEquations;
         }
+    }
+    /// Create a vector of names for scalar kinematic constraint equations.
+    /// The length of the vector is getNumKinematicConstraintEquations().
+    std::vector<std::string> createKinematicConstraintNames() const {
+        std::vector<std::string> names;
+        if (!m_enforceConstraintDerivatives) {
+            for (const auto& info : getMultiplierInfos()) {
+                names.push_back(info.name);
+            }
+            return names;
+        }
+
+        for (const auto& info : getMultiplierInfos()) {
+            if (info.level == KinematicLevel::Position) {
+                names.push_back(info.name + "_p");
+            }
+        }
+
+        for (const auto& info : getMultiplierInfos()) {
+            if (info.level == KinematicLevel::Position) {
+                names.push_back(info.name + "_dp");
+            }
+        }
+        for (const auto& info : getMultiplierInfos()) {
+            if (info.level == KinematicLevel::Velocity) {
+                names.push_back(info.name + "_v");
+            }
+        }
+
+        for (const auto& info : getMultiplierInfos()) {
+            if (info.level == KinematicLevel::Position) {
+                names.push_back(info.name + "_ddp");
+            }
+        }
+        for (const auto& info : getMultiplierInfos()) {
+            if (info.level == KinematicLevel::Velocity) {
+                names.push_back(info.name + "_dv");
+            }
+        }
+        for (const auto& info : getMultiplierInfos()) {
+            if (info.level == KinematicLevel::Acceleration) {
+                names.push_back(info.name + "_a");
+            }
+        }
+
+        OPENSIM_THROW_IF(
+                (int)names.size() != getNumKinematicConstraintEquations(),
+                OpenSim::Exception, "Internal error.");
+        return names;
     }
     int getNumHolonomicConstraintEquations() const {
         return m_numHolonomicConstraintEquations;
