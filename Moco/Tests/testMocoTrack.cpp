@@ -44,7 +44,7 @@ TEST_CASE("MocoTrack gait10dof18musc") {
     MocoTrack track;
 
     track.setModel(ModelProcessor("testGait10dof18musc_subject01.osim") |
-            ModOpRemoveMuscles() | ModOpAddReserves(250) |
+            ModOpRemoveMuscles() | ModOpAddReserves(100) |
             ModOpAddExternalLoads("walk_gait1018_subject01_grf.xml"));
     track.setStatesReference(
             TableProcessor("walk_gait1018_state_reference.mot") |
