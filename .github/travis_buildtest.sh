@@ -27,16 +27,18 @@ OSIM_CMAKE_ARGS+=(-DCMAKE_INSTALL_PREFIX=~/opensim-moco)
 if [ "$TRAVIS_OS_NAME" = "osx" ]; then OSIM_CMAKE_ARGS+=(-DCMAKE_OSX_DEPLOYMENT_TARGET=$OSX_TARGET); fi
   
 # Dependencies.
-OSIM_CMAKE_ARGS+=(-DMOCO_JAVA_BINDINGS=on -DMOCO_PYTHON_BINDINGS=on)
+OSIM_CMAKE_ARGS+=(-DMOCO_JAVA_BINDINGS=$WRAP -DMOCO_PYTHON_BINDINGS=$WRAP)
   
 # Bindings.
-OSIM_CMAKE_ARGS+=(-DBUILD_PYTHON_WRAPPING=$WRAP -DBUILD_JAVA_WRAPPING=$WRAP -DSWIG_EXECUTABLE=$HOME/swig/bin/swig)
+OSIM_CMAKE_ARGS+=(-DSWIG_EXECUTABLE=$HOME/swig/bin/swig)
   
 # Doxygen.
 if [[ "$DOXY" = "on" && "$TRAVIS_OS_NAME" = "linux" ]]; then OSIM_CMAKE_ARGS+=(-DDOXYGEN_EXECUTABLE=$HOME/doxygen/doxygen-1.8.10/bin/doxygen); fi
   
 printf '%s\n' "${OSIM_CMAKE_ARGS[@]}"
 cmake "${OSIM_CMAKE_ARGS[@]}"
+
+cmake . -LAH
   
 make -j$NPROC;
 
