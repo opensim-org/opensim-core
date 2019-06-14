@@ -13,7 +13,7 @@ CSVFileAdapter::clone() const {
 }
 
 TimeSeriesTable
-CSVFileAdapter::read(const std::string& fileName) {
+CSVFileAdapter::readFile(const std::string& fileName) {
     auto abs_table = CSVFileAdapter{}.extendRead(fileName).at(tableString());
     return static_cast<TimeSeriesTable&>(*abs_table);
 }
