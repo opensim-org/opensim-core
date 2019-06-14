@@ -1,3 +1,9 @@
+%% Convert Matlab Struct to OpenSim time Series Table
+%  Input is an OpenSim TimesSeriesTable or TimesSeriesTableVec3
+%
+%  Output is a Maltab stucture where data.label = nX1 or nx3 array
+%  eg structdata.LASI = [2 3 4; 4 5 6, ...
+
 % ----------------------------------------------------------------------- %
 % The OpenSim API is a toolkit for musculoskeletal modeling and           %
 % simulation. See http://opensim.stanford.edu and the NOTICE file         %
@@ -5,7 +11,7 @@
 % and supported by the US National Institutes of Health (U54 GM072970,    %
 % R24 HD065690) and by DARPA through the Warrior Web program.             %
 %                                                                         %
-% Copyright (c) 2005-2016 Stanford University and the Authors             %
+% Copyright (c) 2005-2019 Stanford University and the Authors             %
 % Author(s): James Dunne                                                  %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
@@ -20,15 +26,10 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-%% Convert Matlab Struct to OpenSim time Series Table
-%  Input is an OpenSim TimesSeriesTable or TimesSeriesTableVec3
-%
-%  Output is a Maltab stucture where data.label = nX1 or nx3 array
-%  eg structdata.LASI = [2 3 4; 4 5 6, ...
-
 % Author: James Dunne, Tom Uchida, Shrinidhi K. Lakshmikanth, Chris Dembia, 
-% Ajay Seth, Ayman Habib, Jen Hicks.
+%         Ajay Seth, Ayman Habib, Jen Hicks, Apoorva Rajagopal.
 
+%%
 function structdata = osimTableToStruct(osimtable)
 
 % Import Java libraries 
@@ -78,12 +79,24 @@ for iLabel = 0 : nLabels - 1
     % Get the osim table column label
     col_label  = char(osimtable.getColumnLabels.get(iLabel));
     disp_label = col_label;
-    % MATLAB structs must start with a letter, and can only contain
-    % letters, digits, and underscores.
-    illegalChars = [{' '} {'*'} {'.'} {'/'} {'-'} {'|'}];
-    for i = 1 : length(illegalChars)
-        if ~isempty(strfind(col_label, illegalChars{i}))
-           col_label = strrep(col_label,illegalChars{i}, '_'); 
+    % MATLAB variable names must start with a letter, can only contain letters,
+    % digits, and underscores, and be under a maximum length
+    if ~isvarname(col_label)
+        % Find any non-alphanumeric characters and replace with '_'
+        col_label(~(isstrprop(col_label,'alphanum'))) = '_';
+        % Check if first character is a letter, and append 'unlabeled' if not
+        if ~(isletter(col_label(1)))
+            col_label = ['unlabeled', col_label];
+        end
+        % Last check for too long a name 
+        % Have user input a new name, and make them keep doing it until the
+        % variable name is valid
+        while ~isvarname(col_label)
+            disp(['Error: ', disp_label ' is an invalid label name; enter a new name that:'])
+            disp('  - starts with a letter')
+            disp('  - contains only letters, numbers, and/or underscores (_)')
+            disp(['  - is no longer than ', num2str(namelengthmax), ' characters'])
+            col_label = input('New name (no quotes): ', 's');
         end
     end
     % If the label has changed, inform the User.
