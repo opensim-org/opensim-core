@@ -71,6 +71,10 @@ protected:
     void updateTimeInfo(const std::string& dataLabel, const double& dataInitial,
             const double& dataFinal, TimeInfo& info) const;
 
+    /// This function accepts a setup file name and returns the full file path 
+    /// containing the setup file directory and file name.
+    std::string getFilePath(const std::string& file) const;
+
 private:
     void constructProperties();
 };

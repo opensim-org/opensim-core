@@ -44,7 +44,8 @@ void MocoTrack::constructProperties() {
     constructProperty_markers_weight_set(MocoWeightSet());
     constructProperty_guess_file("");
     constructProperty_apply_tracked_states_to_guess(false);
-    constructProperty_minimize_controls(-1);
+    constructProperty_minimize_control_effort(true);
+    constructProperty_control_effort_weight(0.001);
 }
 
 MocoStudy MocoTrack::initialize() {
@@ -76,19 +77,23 @@ MocoStudy MocoTrack::initialize() {
 
     // Control effort minimization.
     // ----------------------------
-    if (get_minimize_controls() != -1) {
-        assert(get_minimize_controls() > 0);
+    if (get_minimize_control_effort()) {
+        OPENSIM_THROW_IF(get_control_effort_weight() < 0, Exception,
+                format("Expected a non-negative control effort weight, but "
+                       "got a weight with value %d.", 
+                        get_control_effort_weight()));
+      
         auto* effort = problem.addCost<MocoControlCost>("control_effort");
-        effort->set_weight(get_minimize_controls());
+        effort->set_weight(get_control_effort_weight());
     }
 
     // Set the time range.
     // -------------------
-    // Set the time bounds based on the time range in the states file.
-    // Pad the beginning and end time points to allow room for finite 
-    // difference calculations.
-    double pad = 1e-4;
-    problem.setTimeBounds(m_timeInfo.initial + pad, m_timeInfo.final - pad);
+    if (get_clip_time_range()) {
+        m_timeInfo.initial += 1e-3;
+        m_timeInfo.final -= 1e-3;
+    }
+    problem.setTimeBounds(m_timeInfo.initial, m_timeInfo.final);
 
     // Configure solver.
     // -----------------
@@ -127,24 +132,6 @@ MocoSolution MocoTrack::solve() {
     // Solve!
     // ------
     return moco.solve();
-}
-
-std::string MocoTrack::getFilePath(const std::string& file) const {
-    using SimTK::Pathname;
-    // Get the directory containing the setup file.
-    std::string setupDir;
-    {
-        bool dontApplySearchPath;
-        std::string fileName, extension;
-        Pathname::deconstructPathname(getDocumentFileName(),
-            dontApplySearchPath, setupDir, fileName, extension);
-    }
-
-    std::string filepath =
-        Pathname::getAbsolutePathnameUsingSpecifiedWorkingDirectory(
-            setupDir, file);
-
-    return filepath;
 }
 
 TimeSeriesTable MocoTrack::configureStateTracking(MocoProblem& problem, 
@@ -230,7 +217,7 @@ TimeSeriesTable MocoTrack::configureStateTracking(MocoProblem& problem,
 
     // Write tracked states to file in case any label updates or filtering
     // occured.
-    writeTableToFile(states, getName() + "_tracked_states.mot");
+    writeTableToFile(states, getName() + "_tracked_states.sto");
 
     // Return tracked states to possibly include in the guess.
     return states;
@@ -267,7 +254,7 @@ void MocoTrack::configureMarkerTracking(MocoProblem& problem, Model& model) {
 
     // Write tracked markers to file in case any label updates or filtering
     // occured.
-    writeTableToFile(markers.flatten(), getName() + "_tracked_markers.mot");
+    writeTableToFile(markers.flatten(), getName() + "_tracked_markers.sto");
 }
 
 void MocoTrack::applyStatesToGuess(const TimeSeriesTable& states,

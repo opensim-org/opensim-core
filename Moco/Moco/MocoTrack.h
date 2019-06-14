@@ -24,6 +24,7 @@
 
 #include <OpenSim/Simulation/Model/Model.h>
 #include "Common/TableProcessor.h"
+#include "ModelOperators.h"
 
 namespace OpenSim {
 
@@ -31,27 +32,45 @@ class MocoWeightSet;
 class MocoProblem;
 class MocoIterate;
 
+/// MocoTrack
+/// ---------
 /// This tool constructs problems in which state and/or marker trajectory data 
 /// are tracked while solving for model kinematics and actuator controls. 
 /// "Tracking" refers to cost terms that minimize the error between provided 
 /// reference data and the associated model quantities (joint angles, joint 
 /// velocities, marker positions, etc). 
 ///
+/// State and marker tracking
+/// -------------------------
 /// State reference data (joint angles and velocities), marker reference data 
 /// (x/y/z marker motion capture trajectories), or both may be provided via the
 /// `states_reference` and `markers_reference` properties. For each set of 
 /// reference data provided, a tracking cost term is added to the internal 
 /// MocoProblem. 
 ///
-/// A time range that is compatible with all reference data may be provided. 
-/// If no time range is set, the widest time range that is compatible will all 
-/// reference data will be used. 
+/// @note setMarkersReference() only accepts a scalar TimeSeriesTable (either
+/// directly or via a TableProcessor) containing x/y/x marker position values.
+/// TimeSeriesTableVec3 is not supported.
 ///
 /// The `states_global_tracking_weight` and `markers_global_tracking_weight` 
 /// properties apply a cost function weight to all tracking error associated 
 /// provided reference data. The `states_weight_set` and `markers_weight_set`
 /// properties give you finer control over the tracking costs, letting you set
 /// weights for individual reference data tracking errors.
+///
+/// Control effort minimization
+/// ---------------------------
+/// By default, a MocoControlCost term is added to the underlying problem with
+/// a weight of 0.001. Control effort terms often help smooth the problem
+/// solution controls, and minimally affect the states tracking solution with a
+/// sufficiently low weight. Use the `minimize_control_effort` and 
+/// `control_effort_weight` properties to customize these settings.
+///
+/// Problem configuration options
+/// -----------------------------
+/// A time range that is compatible with all reference data may be provided. 
+/// If no time range is set, the widest time range that is compatible will all 
+/// reference data will be used. 
 ///     
 /// If you would like to track joint velocities but only have joint angles in 
 /// your states reference, enable the `track_reference_position_derivatives` 
@@ -59,13 +78,66 @@ class MocoIterate;
 /// will be splined in order to compute derivatives. If some velocity-level 
 /// information exists in the reference, this option will fill in the missing 
 /// data with position derivatives and leave the existing velocity data intact. 
-///
-/// Default solver settings:
-///  - Explicit dynamics
-///  - Constraint tolerance: 1e-2
-///  - Convergence tolerance: 1e-2
-///  - Finite difference scheme: 'forward'
 /// 
+/// Since the data in the provided references may be altered by TableProcessor 
+/// operations or appended to by `track_reference_position_derivatives`, the 
+/// tracked data is printed to file in addition to the problem solution. The 
+/// tracked data files have the following format 
+/// "<tool_name>_tracked_<data_type>.sto" (e.g. "MocoTool_tracked_states.sto").
+///
+/// Default solver settings
+/// -----------------------
+/// - solver: MocoCasADiSolver
+/// - dynamics_mode: explicit
+/// - transcription_scheme: Hermite-Simpson
+/// - optim_convergence_tolerance: 1e-2
+/// - optim_constraint_tolerance: 1e-2
+/// - optim_sparsity_detection: random
+/// - optim_finite_difference_scheme: 'forward'
+/// 
+/// Basic example
+/// -------------
+/// Construct a tracking problem by setting property values and calling solve():
+///
+/// @code
+/// MocoTrack track;
+/// track.setName("states_tracking_with_reserves");
+/// track.setModel(ModelProcessor("model_file.xml") |
+///                ModOpAddExternalLoads() | 
+///                ModOpAddReserves(1000));
+/// track.setStatesReference("states_reference_file.sto");
+/// track.set_track_reference_position_derivatives(true);
+/// track.set_control_effort_weight(0.1);
+/// MocoSolution solution = track.solve();
+/// @endcode
+///
+/// Customizing a tracking problem
+/// ------------------------------
+/// If you wish to further customize the underlying MocoProblem before solving,
+/// instead of calling solve(), call initialize() which returns a pre-configured
+/// MocoStudy object:
+///
+/// @code
+/// MocoTrack track;
+/// track.setName("track_and_minimize_hip_compressive_force");
+/// track.setModel(ModelProcessor("model_file.xml") |
+///                ModOpAddExternalLoads());
+/// track.setStatesReference("states_reference_file.sto");
+///
+/// MocoStudy moco = track.initialize();
+///
+/// auto& problem = moco.updProblem(); 
+/// auto* hipForceCost = problem.addCost<MocoJointReactionCost>("hip_force");
+/// hipForceCost->set_weight(10);
+/// hipForceCost->setJointPath("/jointset/hip_r");
+/// hipForceCost->setReactionMeasures({"force-y"});
+///
+/// auto& solver = moco.updSolver<MocoCasADiSolver>();
+/// solver.set_dynamics_mode("implicit");
+///
+/// MocoSolution solution = moco.solve();
+/// @endcode
+///
 /// @underdevelopment
 class OSIMMOCO_API MocoTrack : public MocoTool {
 OpenSim_DECLARE_CONCRETE_OBJECT(MocoTrack, MocoTool);
@@ -94,12 +166,14 @@ public:
         "(default: false)");
 
     OpenSim_DECLARE_PROPERTY(markers_reference, TableProcessor,
-        "Motion capture marker reference data to be tracked. If provided, a "
-        "MocoMarkerTrackingCost term is create and added to the internal "
+        "Motion capture marker reference data to be tracked. The columns in "
+        "the table should correspond to individual x/y/z marker position "
+        "values; you may *not* provide a TimeSeriesTableVec3. If provided, a "
+        "MocoMarkerTrackingCost term is created and added to the internal "
         "MocoProblem.");
 
     OpenSim_DECLARE_PROPERTY(markers_global_tracking_weight, double,
-        "The weight for the MocoMarkerTrackingCost which applies to tracking "
+        "The weight for the MocoMarkerTrackingCost which that to tracking "
         "errors for all markers in the reference.");
 
     OpenSim_DECLARE_PROPERTY(markers_weight_set, MocoWeightSet,
@@ -118,11 +192,13 @@ public:
         "replace the states in the guess with the states reference data. This "
         "will override any guess information provided via `guess_file`.");
 
-    OpenSim_DECLARE_PROPERTY(minimize_controls, double,
-        "Whether or not to minimize actuator controls in the problem. The "
-        "property value enabling the control cost is the weight passed to "
-        "the internal MocoControlCost."
-        "(default: -1, meaning no control cost.");
+    OpenSim_DECLARE_PROPERTY(minimize_control_effort, bool,
+        "Whether or not to minimize actuator control effort in the problem."
+        "Default: true.");
+
+    OpenSim_DECLARE_PROPERTY(control_effort_weight, double, 
+        "The weight on the control effort minimization cost term, if it "
+        "exists. Default: 0.001")
 
     MocoTrack() { constructProperties(); }
 
@@ -143,13 +219,10 @@ private:
     void constructProperties();
 
     // Cost configuration methods.
-    // ---------------------------
     TimeSeriesTable configureStateTracking(MocoProblem& problem, Model& model);
     void configureMarkerTracking(MocoProblem& problem, Model& model);
-
-    // Convenience methods.
-    // --------------------
-    std::string getFilePath(const std::string& file) const;
+    // Convenience method for applying data from a states reference to the 
+    // problem guess.
     void applyStatesToGuess(const TimeSeriesTable& states, const Model& model,
         MocoIterate& guess);
 };

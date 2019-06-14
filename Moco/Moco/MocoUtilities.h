@@ -302,15 +302,13 @@ TimeSeriesTable_<T> analyze(Model model, const MocoIterate& iterate,
         for (const auto& outputName : comp.getOutputNames()) {
             const auto& output = comp.getOutput(outputName);
             auto thisOutputPath = output.getPathName();
-            // Make sure the path is valid (i.e. no 'pipe' characters).
-            std::replace(thisOutputPath.begin(), thisOutputPath.end(),
-                '|', '/');
+            // Make sure the path is valid.
+            std::replace(thisOutputPath.begin(), thisOutputPath.end(), '/');
             for (const auto& outputPathArg : outputPaths) {
                 if (std::regex_match(thisOutputPath, 
                         std::regex(outputPathArg))) {
                     // Make sure the output type agrees with the template.
-                    if (output.getTypeName() == 
-                            Object_GetClassName<T>::name()) {
+                    if (dynamic_cast<Output<T>*>(&output)) {
                         reporter->addToReport(output);
                     } else {
                         std::cout << format("Warning: ignoring output %s of "

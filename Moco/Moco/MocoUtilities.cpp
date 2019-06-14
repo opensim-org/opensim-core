@@ -574,7 +574,7 @@ void OpenSim::checkRedundantLabels(std::vector<std::string> labels) {
     std::sort(labels.begin(), labels.end());
     auto it = std::adjacent_find(labels.begin(), labels.end());
     OPENSIM_THROW_IF(it != labels.end(), Exception,
-        "Multiple reference data provided for the same variable.");
+        format("Multiple reference data provided for the variable %s.", *it));
 }
 
 std::string OpenSim::format_c(const char* format, ...) {

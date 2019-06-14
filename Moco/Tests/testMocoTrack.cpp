@@ -35,6 +35,14 @@ TEST_CASE("MocoTrack interface") {
             Catch::Contains("Property 'apply_tracked_states_to_guess' was "
                     "enabled, but no states reference data was provided."));
     }
+    track.set_apply_tracked_states_to_guess(false);
+
+    SECTION("negative control effort weight") {
+        track.set_control_effort_weight(-1);
+        CHECK_THROWS_WITH(track.initialize(),
+            Catch::Contains("Expected a non-negative control effort weight, " 
+                    "but got a weight with value"));
+    }
 }
 
 TEST_CASE("MocoTrack gait10dof18musc") {

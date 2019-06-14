@@ -263,11 +263,10 @@ void smoothSolutionControls(Model model, std::string statesFile,
     TableProcessor tableProcessor = TableProcessor(statesFile) | 
                                     TabOpLowPassFilter(6);
     track.set_states_reference(tableProcessor);
-    track.set_guess_type("from_file");
     track.set_guess_file(guessFile);
     track.set_initial_time(0.812);
     track.set_final_time(1.648);
-    track.set_minimize_controls(0.05);
+    track.set_control_effort_weight(0.05);
 
     MocoStudy moco = track.initialize();
 
@@ -318,7 +317,7 @@ MocoSolution runBaselineProblem(bool removeMuscles, double controlWeight = 0.1,
     track.set_track_reference_position_derivatives(true);
     track.set_initial_time(0.81);
     track.set_final_time(1.65);
-    track.set_minimize_controls(controlWeight);
+    track.set_control_effort_weight(controlWeight);
     //track.set_apply_tracked_states_to_guess(true);
 
     MocoStudy moco = track.initialize();
@@ -427,8 +426,7 @@ MocoSolution runKneeReactionMinimizationProblem(bool removeMuscles,
     }
     track.set_states_weight_set(coordinateWeights);
     // Keep the low weighted control minimization term to help smooth controls.
-    track.set_minimize_controls(0.001);
-    track.set_guess_type("from_file");
+    track.set_control_effort_weight(0.001);
     track.set_guess_file(trackedIterateFile);
     track.set_initial_time(0.811);
     track.set_final_time(1.649);
@@ -608,7 +606,6 @@ MocoSolution runExoskeletonProblem(const std::string& trackedIterateFile,
             TabOpLowPassFilter(6);
     track.set_states_reference(tableProcessor);
     track.set_track_reference_position_derivatives(true);    
-    track.set_guess_type("from_file");
     track.set_guess_file("sandboxMocoTrack_solution_exoskeleton_muscles.sto");
     track.set_initial_time(0.811);
     track.set_final_time(1.649);
@@ -616,7 +613,7 @@ MocoSolution runExoskeletonProblem(const std::string& trackedIterateFile,
     // Cost weights.
     // -------------
     track.set_states_global_tracking_weight(stateTrackingWeight);
-    track.set_minimize_controls(controlEffortWeight);
+    track.set_control_effort_weight(controlEffortWeight);
 
     // Initialize MocoStudy and grab problem.
     // --------------------------------------
