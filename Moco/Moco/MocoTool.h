@@ -56,6 +56,7 @@ public:
     void setModel(ModelProcessor model) { set_model(std::move(model)); }
 
 protected:
+#ifndef SWIG
     struct TimeInfo {
         double initial = -SimTK::Infinity;
         double final = SimTK::Infinity;
@@ -70,7 +71,7 @@ protected:
     /// mesh_interval property.
     void updateTimeInfo(const std::string& dataLabel, const double& dataInitial,
             const double& dataFinal, TimeInfo& info) const;
-
+#endif
 private:
     void constructProperties();
 };
