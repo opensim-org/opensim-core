@@ -20,7 +20,7 @@ Converting from v4.0 to v4.1
 
 Bug Fixes
 ---------
-- Fixed a bug in the OpenSim GUI that added an offset when previewing experimental data. (PR opensim-org/opensim-gui#1118)
+
 
 
 Documentation
