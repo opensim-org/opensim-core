@@ -38,6 +38,8 @@ public:
     SimTK::Motion::Level getLevel(const SimTK::State&) const override {
         return SimTK::Motion::Level::Position;
     }
+    /// nq: The number of generalized coordinates for this MobilizedBody.
+    /// q: The values of the generalized coordinates to set, with length nq.
     void calcPrescribedPosition(
             const SimTK::State& s, int nq, SimTK::Real* q) const override {
         if (m_functions.size()) {
@@ -141,8 +143,7 @@ std::unique_ptr<PositionMotion> PositionMotion::createFromTable(
     return posmot;
 }
 
-std::unique_ptr<PositionMotion>
-PositionMotion::createFromStatesTrajectory(
+std::unique_ptr<PositionMotion> PositionMotion::createFromStatesTrajectory(
         const Model& model, const StatesTrajectory& statesTraj) {
     const auto coords = model.getCoordinatesInMultibodyTreeOrder();
     std::vector<std::string> coordSVNames;
@@ -166,6 +167,7 @@ void PositionMotion::extendAddToSystem(SimTK::MultibodySystem& system) const {
 
 void PositionMotion::extendRealizeTopology(SimTK::State& state) const {
     Super::extendRealizeTopology(state);
+    // Ensure all coordinates are prescribed.
     const auto coords = getModel().getComponentList<Coordinate>();
     for (const auto& coord : coords) {
         const auto& path = coord.getAbsolutePathString();
@@ -173,6 +175,8 @@ void PositionMotion::extendRealizeTopology(SimTK::State& state) const {
                 format("No function provided for coordinate '%s'.", path));
     }
 
+    // Create a mapping from SimTK position DOFs to OpenSim Coordinates.
+    // We identify a SimTK DOF as a MobilizedBodyIndex and a Q index.
     std::map<std::pair<SimTK::MobilizedBodyIndex, int>, std::string>
             indicesToCoordName;
     for (int i = 0; i < get_functions().getSize(); ++i) {
@@ -186,16 +190,15 @@ void PositionMotion::extendRealizeTopology(SimTK::State& state) const {
     auto& matter = getSystem().getMatterSubsystem();
     for (SimTK::MobilizedBodyIndex mbi(0); mbi < matter.getNumBodies(); ++mbi) {
         auto& mobod = matter.getMobilizedBody(mbi);
+        // Create the vector of functions to provide to the SimTK::Motion for
+        // this MobilizedBody.
         std::vector<Function*> mobodFunctions;
         for (int iq = 0; iq < mobod.getNumQ(state); ++iq) {
             const auto key = std::make_pair(mbi, iq);
-            // This skips over unused quaternion slots.
+            // This skips over unused quaternion slots, as indicesToCoordName
+            // doesn't have entries for such slots.
             if (indicesToCoordName.count(key)) {
                 const auto& coordName = indicesToCoordName.at(key);
-                OPENSIM_THROW_IF_FRMOBJ(!get_functions().contains(coordName),
-                        Exception,
-                        format("No function provided for coordinate '%s'.",
-                                coordName));
                 mobodFunctions.push_back(
                         const_cast<Function*>(&get_functions().get(coordName)));
             }

@@ -46,15 +46,15 @@ MocoInverseSolution MocoInverse::solve() const {
                 dontApplySearchPath, setupDir, fileName, extension);
     }
 
+    // Processs inputs.
+    // ----------------
     Model model = get_model().process();
-
-    MocoStudy moco;
-    auto& problem = moco.updProblem();
-
     model.initSystem();
 
     TimeSeriesTable kinematics = get_kinematics().process(setupDir, &model);
 
+    // Prescribe the kinematics.
+    // -------------------------
     // allowMissingColumns = true: we only need kinematics.
     // allowExtraColumns = false: user might have made an error.
     // assemble = true: we must obey the kinematic constraints.
@@ -67,6 +67,11 @@ MocoInverseSolution MocoInverse::solve() const {
 
     model.initSystem();
 
+    // Set up the MocoProblem.
+    // -----------------------
+
+    MocoStudy moco;
+    auto& problem = moco.updProblem();
     problem.setModelCopy(model);
 
     TimeInfo timeInfo;
@@ -74,23 +79,30 @@ MocoInverseSolution MocoInverse::solve() const {
             kinematics.getIndependentColumn().front(),
             kinematics.getIndependentColumn().back(),
             timeInfo);
-    // const double spaceForFiniteDiff = 1e-3;
+    if (get_clip_time_range()) {
+        timeInfo.initial += 1e-3;
+        timeInfo.final -= 1e-3;
+    }
     problem.setTimeBounds(timeInfo.initial, timeInfo.final);
 
     // TODO: Allow users to specify costs flexibly.
     problem.addCost<MocoControlCost>("effort");
 
+    // Configure the MocoSolver.
+    // -------------------------
     auto& solver = moco.initCasADiSolver();
     solver.set_dynamics_mode("implicit");
+    solver.set_transcription_scheme("trapezoidal");
     solver.set_optim_convergence_tolerance(1e-3);
     solver.set_optim_constraint_tolerance(1e-3);
     // The sparsity detection works fine with DeGrooteFregly2016Muscle.
     solver.set_optim_sparsity_detection("random");
     // Forward is 3x faster than central.
     solver.set_optim_finite_difference_scheme("forward");
-    solver.set_transcription_scheme("trapezoidal");
-
     solver.set_num_mesh_points(timeInfo.numMeshPoints);
+
+    // Solve the problem.
+    // ------------------
     MocoInverseSolution solution;
     solution.setMocoSolution(moco.solve().unseal());
     return solution;

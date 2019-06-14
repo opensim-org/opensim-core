@@ -79,16 +79,18 @@ private:
     mutable int evalCount = 0;
 };
 
-void Transcription::createVariablesAndSetBounds() {
+void Transcription::createVariablesAndSetBounds(const casadi::DM& grid) {
     // Set the grid.
     // -------------
     // The grid for a transcription scheme includes both mesh points (i.e.
     // points that lie on the endpoints of a mesh interval) and any
     // additional collocation points that may lie on mesh interior (as in
     // Hermite-Simpson collocation, etc.).
+    m_numMeshPoints = (int) m_solver.getMesh().size();
+    m_numGridPoints = (int) grid.numel();
     m_numMeshIntervals = m_numMeshPoints - 1;
     m_numPointsIgnoringConstraints = m_numGridPoints - m_numMeshPoints;
-    m_grid = DM::linspace(0, 1, m_numGridPoints);
+    m_grid = grid;
 
     // Create variables.
     // -----------------

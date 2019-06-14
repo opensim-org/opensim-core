@@ -1,5 +1,7 @@
+#ifndef MOCO_MOCOPROBLEMINFO_H
+#define MOCO_MOCOPROBLEMINFO_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: MocoDirectCollocationSolver.cpp                              *
+ * OpenSim Moco: MocoProblemInfo.h                                            *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2019 Stanford University and the Authors                     *
  *                                                                            *
@@ -16,30 +18,17 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "MocoDirectCollocationSolver.h"
+namespace OpenSim {
 
-using namespace OpenSim;
+/// This class is mostly for internal use for MocoProblemRep to pass select
+/// information about a problem to the MocoCost%s and MocoPathConstraint%s of
+/// the problem during initializeOnModel().
+class MocoProblemInfo {
+public:
+    double minInitialTime;
+    double maxFinalTime;
+};
 
-void MocoDirectCollocationSolver::constructProperties() {
-    constructProperty_num_mesh_points(100);
-    constructProperty_mesh();
-    constructProperty_verbosity(2);
-    constructProperty_transcription_scheme("hermite-simpson");
-    constructProperty_interpolate_control_midpoints(true);
-    constructProperty_enforce_constraint_derivatives(true);
-    constructProperty_dynamics_mode("explicit");
-    constructProperty_optim_solver("ipopt");
-    constructProperty_optim_max_iterations(-1);
-    constructProperty_optim_convergence_tolerance(-1);
-    constructProperty_optim_constraint_tolerance(-1);
-    constructProperty_optim_hessian_approximation("limited-memory");
-    constructProperty_optim_ipopt_print_level(-1);
-    constructProperty_guess_file("");
-    constructProperty_velocity_correction_bounds({-0.1, 0.1});
-    constructProperty_minimize_lagrange_multipliers(false);
-    constructProperty_lagrange_multiplier_weight(1.0);
-}
+} // namespace OpenSim
 
-void MocoDirectCollocationSolver::setMesh(const std::vector<double>& mesh) {
-    for (int i = 0; i < (int)mesh.size(); ++i) { set_mesh(i, mesh[i]); }
-}
+#endif // MOCO_MOCOPROBLEMINFO_H

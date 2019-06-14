@@ -22,6 +22,8 @@
 #include "Components/DiscreteForces.h"
 #include "Components/PositionMotion.h"
 #include "MocoProblem.h"
+#include "MocoProblemInfo.h"
+#include <regex>
 #include <unordered_set>
 
 using namespace OpenSim;
@@ -49,7 +51,8 @@ void MocoProblemRep::initialize() {
     m_model_base.finalizeFromProperties();
     int countMotion = 0;
     for (const auto& comp : m_model_base.getComponentList<PositionMotion>()) {
-        comp.getName(); // Avoid "unused variable".
+        // Next line exists only to avoid an "unused variable" compiler warning.
+        comp.getName();
         if (comp.getDefaultEnabled()) {
             ++countMotion;
             OPENSIM_THROW_IF(countMotion > 1, Exception,
@@ -207,6 +210,16 @@ void MocoProblemRep::initialize() {
     // State infos.
     // ------------
     const auto stateNames = m_model_base.getStateVariableNames();
+    for (int i = 0; i < ph0.getProperty_state_infos_pattern().size(); ++i) {
+        const auto& pattern =
+                std::regex(ph0.get_state_infos_pattern(i).getName());
+        for (int j = 0; j < stateNames.size(); ++j) {
+            if (std::regex_match(stateNames[j], pattern)) {
+                m_state_infos[stateNames[j]] = ph0.get_state_infos_pattern(i);
+                m_state_infos[stateNames[j]].setName(stateNames[j]);
+            }
+        }
+    }
     for (int i = 0; i < ph0.getProperty_state_infos().size(); ++i) {
         const auto& name = ph0.get_state_infos(i).getName();
         OPENSIM_THROW_IF(stateNames.findIndex(name) == -1, Exception,
@@ -221,41 +234,51 @@ void MocoProblemRep::initialize() {
         m_state_infos[name] = ph0.get_state_infos(i);
     }
 
-    // TODO this code is from an upcoming commit that hasn't been merged yet.
-    // I've left it here in case there's confusion of its placement. Uncomment
-    // when the prescribed kinematics updates catch up.
     if (!m_prescribedKinematics) {
-    for (const auto& coord : m_model_base.getComponentList<Coordinate>()) {
-        const auto stateVarNames = coord.getStateVariableNames();
-        {
-            const std::string coordValueName = stateVarNames[0];
-            // TODO document: Range used even if not clamped.
-            if (m_state_infos.count(coordValueName) == 0) {
-                const auto info = MocoVariableInfo(coordValueName, {}, {}, {});
-                m_state_infos[coordValueName] = info;
+        for (const auto& coord : m_model_base.getComponentList<Coordinate>()) {
+            const auto stateVarNames = coord.getStateVariableNames();
+            {
+                const std::string coordValueName = stateVarNames[0];
+                // TODO document: Range used even if not clamped.
+                if (m_state_infos.count(coordValueName) == 0) {
+                    const auto info =
+                            MocoVariableInfo(coordValueName, {}, {}, {});
+                    m_state_infos[coordValueName] = info;
+                }
+                if (!m_state_infos[coordValueName].getBounds().isSet()) {
+                    m_state_infos[coordValueName].setBounds(
+                            {coord.getRangeMin(), coord.getRangeMax()});
+                }
             }
-            if (!m_state_infos[coordValueName].getBounds().isSet()) {
-                m_state_infos[coordValueName].setBounds(
-                        {coord.getRangeMin(), coord.getRangeMax()});
+            {
+                const std::string coordSpeedName = stateVarNames[1];
+                if (m_state_infos.count(coordSpeedName) == 0) {
+                    const auto info =
+                            MocoVariableInfo(coordSpeedName, {}, {}, {});
+                    m_state_infos[coordSpeedName] = info;
+                }
+                if (!m_state_infos[coordSpeedName].getBounds().isSet()) {
+                    m_state_infos[coordSpeedName].setBounds(
+                            ph0.get_default_speed_bounds());
+                }
             }
         }
-        {
-            const std::string coordSpeedName = stateVarNames[1];
-            if (m_state_infos.count(coordSpeedName) == 0) {
-                const auto info = MocoVariableInfo(coordSpeedName, {}, {}, {});
-                m_state_infos[coordSpeedName] = info;
-            }
-            if (!m_state_infos[coordSpeedName].getBounds().isSet()) {
-                m_state_infos[coordSpeedName].setBounds(
-                        ph0.get_default_speed_bounds());
-            }
-        }
-    }
     }
 
     // Control infos.
     // --------------
     auto controlNames = createControlNamesFromModel(m_model_base);
+    for (int i = 0; i < ph0.getProperty_control_infos_pattern().size(); ++i) {
+        const auto& pattern = ph0.get_control_infos_pattern(i).getName();
+        auto regexPattern = std::regex(pattern);
+        for (int j = 0; j < (int)controlNames.size(); ++j) {
+            if (std::regex_match(controlNames[j], regexPattern)) {
+                m_control_infos[controlNames[j]] =
+                        ph0.get_control_infos_pattern(i);
+                m_control_infos[controlNames[j]].setName(controlNames[j]);
+            }
+        }
+    }
     for (int i = 0; i < ph0.getProperty_control_infos().size(); ++i) {
         const auto& name = ph0.get_control_infos(i).getName();
         auto it = std::find(controlNames.begin(), controlNames.end(), name);
@@ -359,6 +382,10 @@ void MocoProblemRep::initialize() {
         m_costs[i]->initializeOnModel(m_model_disabled_constraints);
     }
 
+    MocoProblemInfo problemInfo;
+    problemInfo.minInitialTime = getTimeInitialBounds().getLower();
+    problemInfo.maxFinalTime = getTimeFinalBounds().getUpper();
+
     // Auxiliary path constraints.
     // ---------------------------
     m_num_path_constraint_equations = 0;
@@ -373,8 +400,8 @@ void MocoProblemRep::initialize() {
                         pc.getName()));
         pcNames.insert(pc.getName());
         m_path_constraints[i] = std::unique_ptr<MocoPathConstraint>(pc.clone());
-        m_path_constraints[i]->initializeOnModel(
-                m_model_disabled_constraints, m_num_path_constraint_equations);
+        m_path_constraints[i]->initializeOnModel(m_model_disabled_constraints,
+                problemInfo, m_num_path_constraint_equations);
         m_num_path_constraint_equations +=
                 m_path_constraints[i]->getConstraintInfo().getNumEquations();
     }
@@ -543,7 +570,6 @@ void MocoProblemRep::applyParametersToModelProperties(
         if (m_position_motion_base) {
             m_position_motion_base->setEnabled(m_state_base, true);
         }
-
 
         // Model disable constraints.
         // --------------------------

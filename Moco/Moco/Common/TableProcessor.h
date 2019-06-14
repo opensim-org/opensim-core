@@ -26,7 +26,7 @@
 namespace OpenSim {
 
 /// This abstract class describes *any* operation that consumes a
-/// TimeSeriesTable and produces a TimeSeriesTable, as part of a TableProcessor.
+/// modifies a TimeSeriesTable as part of a TableProcessor.
 class OSIMMOCO_API TableOperator : public Object {
     OpenSim_DECLARE_ABSTRACT_OBJECT(TableOperator, Object);
 
@@ -34,11 +34,10 @@ public:
     virtual void operate(TimeSeriesTable& table) const = 0;
 };
 
-/// This class describes a workflow for processing a table using TableOperators.
-/// The user must provide a source table either as a filepath to a table or an
-/// in-memory TimeSeriesTable.
-/// In C++, one can easily chain together the operators in a processor using the
-/// C++ pipe operator:
+/// This class describes a workflow for processing a table using
+/// TableOperator%s. The user must provide a source table either as a filepath
+/// to a table or an in-memory TimeSeriesTable. In C++, one can easily chain
+/// together the operators in a processor using the C++ pipe operator:
 /// @code
 /// TableProcessor proc = TableProcessor("file.sto") | TabOpLowPassFilter(6);
 /// @endcode
@@ -58,7 +57,7 @@ public:
     }
     /// Use an in-memory TimeSeriesTable as the source table.
     /// Since this constructor is not explicit, you can provide a
-    /// TimeSeriesTable to any function that takes a TableProcessor.
+    /// TimeSeriesTable to any function that takes a TableProcessor (in C++).
     TableProcessor(TimeSeriesTable table) : TableProcessor() {
         m_tableProvided = true;
         m_table = std::move(table);
@@ -86,8 +85,7 @@ public:
         } else {
             OPENSIM_THROW_IF_FRMOBJ(m_tableProvided, Exception,
                     "Expected either an in-memory table or a filepath, but "
-                    "both were "
-                    "provided.");
+                    "both were provided.");
             std::string path = get_filepath();
             if (!relativeToDirectory.empty()) {
                 using SimTK::Pathname;

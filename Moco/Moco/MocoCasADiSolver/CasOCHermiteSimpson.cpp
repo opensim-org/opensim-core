@@ -26,7 +26,7 @@ namespace CasOC {
 DM HermiteSimpson::createQuadratureCoefficientsImpl() const {
 
     // The duration of each mesh interval.
-    const DM mesh = DM::linspace(0, 1, m_numMeshPoints);
+    const DM mesh(m_solver.getMesh());
     const DM meshIntervals = mesh(Slice(1, m_numMeshPoints)) -
                              mesh(Slice(0, m_numMeshPoints - 1));
     // Simpson quadrature includes integrand evaluations at the midpoint.
@@ -84,7 +84,7 @@ void HermiteSimpson::applyConstraintsImpl(const VariablesMX& vars,
 
     int time_i, time_mid, time_ip1;
     for (int imesh = 0; imesh < m_numMeshPoints; ++imesh) {
-        time_i = 2 * imesh; // Needed for defects.
+        time_i = 2 * imesh; // Needed for defects and residuals.
 
         // We enforce defect constraints on a mesh interval basis, so add
         // constraints until the number of mesh intervals is reached.
@@ -123,12 +123,13 @@ void HermiteSimpson::applyConstraintsImpl(const VariablesMX& vars,
                 }
             }
 
-            if (m_problem.getNumControls() && m_interpolate_control_midpoints) {
+            if (m_problem.getNumControls() &&
+                    m_solver.getInterpolateControlMidpoints()) {
                 const auto c_i = controls(Slice(), time_i);
                 const auto c_mid = controls(Slice(), time_mid);
                 const auto c_ip1 = controls(Slice(), time_ip1);
                 addConstraints(zeroC, zeroC, c_mid - 0.5 * (c_ip1 + c_i));
-            }   
+            }
         }
 
         // Kinematic constraint errors.

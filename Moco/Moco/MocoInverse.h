@@ -29,7 +29,7 @@ namespace OpenSim {
 
 class MocoInverse;
 
-/// This class holds the solution from MocoInverseTool.
+/// This class holds the solution from MocoInverse.
 class MocoInverseSolution {
 public:
     const MocoSolution& getMocoSolution() const { return m_mocoSolution; }
@@ -55,8 +55,17 @@ private:
 /// are set to NaN.
 ///
 /// The provided trajectory is altered to satisfy any enabled kinematic
-/// constraints in the model. Filtering is performed before satisfying the
-/// constraints.
+/// constraints in the model.
+///
+/// Default solver settings
+/// -----------------------
+/// - solver: MocoCasADiSolver
+/// - dynamics_mode: implicit
+/// - transcription_sceheme: trapezoidal
+/// - optim_convergence_tolerance: 1e-3
+/// - optim_constraint_tolerance: 1e-3
+/// - optim_sparsity_detection: random
+/// - optim_finite_difference_scheme: forward
 ///
 /// @underdevelopment
 class OSIMMOCO_API MocoInverse : public MocoTool {

@@ -26,6 +26,8 @@ MocoAddTest(NAME testMocoInterface)
 
 MocoAddTest(NAME testTableProcessor)
 
+MocoAddTest(NAME testModelProcessor)
+
 MocoAddTest(NAME testMocoCosts)
 
 MocoAddTest(NAME testMocoParameters)
@@ -94,4 +96,5 @@ MocoAddTest(NAME testMocoTrack RESOURCES
         walk_gait1018_state_reference.mot
         walk_gait1018_subject01_grf.xml
         walk_gait1018_subject01_grf.mot
+        std_testMocoTrackGait10dof18musc_solution.sto
         )

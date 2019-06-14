@@ -16,6 +16,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 #include "MocoTool.h"
+#include "MocoUtilities.h"
 
 using namespace OpenSim;
 
@@ -23,6 +24,7 @@ void MocoTool::constructProperties() {
     constructProperty_initial_time();
     constructProperty_final_time();
     constructProperty_mesh_interval(0.02);
+    constructProperty_clip_time_range(false);
     constructProperty_model(ModelProcessor());
 }
 
@@ -47,12 +49,16 @@ void MocoTool::updateTimeInfo(const std::string& dataLabel,
                         get_final_time(), dataLabel, dataFinal));
         final = get_final_time();
     } else {
-        final = std::min(final, dataFinal);
+        final = std::min(info.final, dataFinal);
     }
 
     OPENSIM_THROW_IF_FRMOBJ(final < initial, Exception,
             format("Initial time of %g is greater than final time of %g.",
                     initial, final));
+
+    OPENSIM_THROW_IF_FRMOBJ(get_mesh_interval() <= 0, Exception,
+            format("Expected mesh_interval to be positive but got %f.",
+                    get_mesh_interval()));
 
     info.initial = initial;
     info.final = final;
