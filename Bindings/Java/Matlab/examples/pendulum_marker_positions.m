@@ -2,7 +2,28 @@
 % OpenSim API example to build, simulate, and generate outputs for a
 % double-pendulum model. Writes the results to .sto and .trc files.
 
+% -------------------------------------------------------------------------- %
+% The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  %
+% See http://opensim.stanford.edu and the NOTICE file for more information.  %
+% OpenSim is developed at Stanford University and supported by the US        %
+% National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    %
+% through the Warrior Web program.                                           %
+%                                                                            %
+% Copyright (c) 2005-2019 Stanford University and the Authors                %
 % Author(s): James Dunne, Tom Uchida, Chris Dembia                           %
+%                                                                            %
+% Licensed under the Apache License, Version 2.0 (the "License"); you may    %
+% not use this file except in compliance with the License. You may obtain a  %
+% copy of the License at http://www.apache.org/licenses/LICENSE-2.0.         %
+%                                                                            %
+% Unless required by applicable law or agreed to in writing, software        %
+% distributed under the License is distributed on an "AS IS" BASIS,          %
+% WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.   %
+% See the License for the specific language governing permissions and        %
+% limitations under the License.                                             %
+% -------------------------------------------------------------------------- %
+
+% Author(s): James Dunne, Tom Uchida, Chris Dembia.                           %
 
 %% Import Java libraries
 import org.opensim.modeling.*
@@ -86,37 +107,16 @@ STOFileAdapter.write(cReporter.getTable(), filename);
 fprintf('Joint angles written to %s\n', filename);
 
 %% Write marker locations to .sto file.
-filename = 'marker_locations.sto';
+filename = 'pendulum_markerLocations.sto';
 markerTable = mReporter.getTable();
 STOFileAdapterVec3.write(markerTable, filename);
 fprintf('Marker locations written to %s\n', filename);
 
 %% Write marker locations to .trc file.
-filename = 'marker_locations.trc';
+filename = 'pendulum_markerLocations.trc';
 markerTable.addTableMetaDataString('DataRate', num2str(reportTimeInterval));
 markerTable.addTableMetaDataString('Units', 'm');
 TRCFileAdapter.write(markerTable, filename);
 
 fprintf('Marker locations written to %s\n', filename);
 fprintf('Success!\n');
-
-% -------------------------------------------------------------------------- %
-% The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  %
-% See http://opensim.stanford.edu and the NOTICE file for more information.  %
-% OpenSim is developed at Stanford University and supported by the US        %
-% National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    %
-% through the Warrior Web program.                                           %
-%                                                                            %
-% Copyright (c) 2005-2019 Stanford University and the Authors                %
-% Author(s): James Dunne, Tom Uchida, Chris Dembia                           %
-%                                                                            %
-% Licensed under the Apache License, Version 2.0 (the "License"); you may    %
-% not use this file except in compliance with the License. You may obtain a  %
-% copy of the License at http://www.apache.org/licenses/LICENSE-2.0.         %
-%                                                                            %
-% Unless required by applicable law or agreed to in writing, software        %
-% distributed under the License is distributed on an "AS IS" BASIS,          %
-% WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.   %
-% See the License for the specific language governing permissions and        %
-% limitations under the License.                                             %
-% -------------------------------------------------------------------------- %

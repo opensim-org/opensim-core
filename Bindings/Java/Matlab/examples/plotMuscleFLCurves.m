@@ -1,10 +1,32 @@
 function plotMuscleFLCurves(modelpath)
-%% This function computes and plots the active and passive force--length curves
-%   for a specified muscle over the range of possible fiber lengths. (This range
-%   is only approximate for muscles that cross more than one degree of freedom.)
-% modelpath input is a full path string to an OpenSim model.
+%% Function for computing and ploting the active and passive force--length 
+%   curves for a specified muscle over the range of possible fiber lengths. 
+%   This range is only approximate for muscles that cross more than one 
+%   degree of freedom.
+%   'modelpath' input is a full path string to an OpenSim model.
 
-% Author: James Dunne, Chris Dembia, Tom Uchida, Ajay Seth.
+% -------------------------------------------------------------------------- %
+% The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  %
+% See http://opensim.stanford.edu and the NOTICE file for more information.  %
+% OpenSim is developed at Stanford University and supported by the US        %
+% National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    %
+% through the Warrior Web program.                                           %
+%                                                                            %
+% Copyright (c) 2005-2019 Stanford University and the Authors                %
+% Author(s): James Dunne                                                     %
+%                                                                            %
+% Licensed under the Apache License, Version 2.0 (the "License"); you may    %
+% not use this file except in compliance with the License. You may obtain a  %
+% copy of the License at http://www.apache.org/licenses/LICENSE-2.0.         %
+%                                                                            %
+% Unless required by applicable law or agreed to in writing, software        %
+% distributed under the License is distributed on an "AS IS" BASIS,          %
+% WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.   %
+% See the License for the specific language governing permissions and        %
+% limitations under the License.                                             %
+% -------------------------------------------------------------------------- %
+
+% Author: James Dunne, Tom Uchida, Chris Dembia, Ajay Seth.
 
 %% Import OpenSim libraries.
 import org.opensim.modeling.*
@@ -232,23 +254,3 @@ fl_active = flMatrix(:,[1 2]);
 fl_passive = flMatrix(:,[1 3]);
 
 end
-
-% The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  %
-% See http://opensim.stanford.edu and the NOTICE file for more information.  %
-% OpenSim is developed at Stanford University and supported by the US        %
-% National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    %
-% through the Warrior Web program.                                           %
-%                                                                            %
-% Copyright (c) 2005-2017 Stanford University and the Authors                %
-% Author(s): James Dunne                                                     %
-%                                                                            %
-% Licensed under the Apache License, Version 2.0 (the "License"); you may    %
-% not use this file except in compliance with the License. You may obtain a  %
-% copy of the License at http://www.apache.org/licenses/LICENSE-2.0.         %
-%                                                                            %
-% Unless required by applicable law or agreed to in writing, software        %
-% distributed under the License is distributed on an "AS IS" BASIS,          %
-% WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.   %
-% See the License for the specific language governing permissions and        %
-% limitations under the License.                                             %
-% -------------------------------------------------------------------------- %

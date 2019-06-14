@@ -3,6 +3,27 @@
 % consisting of two bodies, two joints, a muscle, and a controller. The API
 % visualizer and a reporter are used to display the simulation results.
 
+% -------------------------------------------------------------------------- %
+% The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  %
+% See http://opensim.stanford.edu and the NOTICE file for more information.  %
+% OpenSim is developed at Stanford University and supported by the US        %
+% National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    %
+% through the Warrior Web program.                                           %
+%                                                                            %
+% Copyright (c) 2005-2019 Stanford University and the Authors                %
+% Author(s): James Dunne, Chris Dembia, Tom Uchida                           %
+%                                                                            %
+% Licensed under the Apache License, Version 2.0 (the "License"); you may    %
+% not use this file except in compliance with the License. You may obtain a  %
+% copy of the License at http://www.apache.org/licenses/LICENSE-2.0.         %
+%                                                                            %
+% Unless required by applicable law or agreed to in writing, software        %
+% distributed under the License is distributed on an "AS IS" BASIS,          %
+% WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.   %
+% See the License for the specific language governing permissions and        %
+% limitations under the License.                                             %
+% -------------------------------------------------------------------------- %
+
 % Author(s): James Dunne, Chris Dembia, Tom Uchida                           %
 
 %% Import Java libraries
@@ -20,7 +41,7 @@ radius  = Body('radius',  1, Vec3(0), Inertia(0));
 % Connect the bodies with pin joints. Assume each body is 1 m long.
 shoulder = PinJoint('shoulder', ...
                     model.getGround(), ...  % Parent body
-                    Vec3(0,2,0), ...            % Location in parent
+                    Vec3(0,2,0), ...        % Location in parent
                     Vec3(0), ...            % Orientation in parent
                     humerus, ...            % Child body
                     Vec3(0, 1, 0), ...      % Location in child
@@ -40,8 +61,10 @@ brain.addActuator(biceps);
 brain.prescribeControlForActuator('biceps', StepFunction(0.5, 3, 0.3, 1));
 
 % Add components to the model.
-model.addBody(humerus);    model.addBody(radius);
-model.addJoint(shoulder);  model.addJoint(elbow);
+model.addBody(humerus);    
+model.addBody(radius);
+model.addJoint(elbow);
+model.addJoint(shoulder);  
 model.addForce(biceps);
 model.addController(brain);
 
@@ -84,29 +107,3 @@ manager = Manager(model);
 finalTime = 10;
 manager.initialize( state );
 manager.integrate( finalTime );
-
-% Display results recorded by ConsoleReporter.
-if (exist('out.log', 'file') ~= 2), error('log file (out.log) not found'); end
-type('out.log');
-fprintf('Success!\n');
-
-% -------------------------------------------------------------------------- %
-% The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  %
-% See http://opensim.stanford.edu and the NOTICE file for more information.  %
-% OpenSim is developed at Stanford University and supported by the US        %
-% National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    %
-% through the Warrior Web program.                                           %
-%                                                                            %
-% Copyright (c) 2005-2019 Stanford University and the Authors                %
-% Author(s): James Dunne, Chris Dembia, Tom Uchida                           %
-%                                                                            %
-% Licensed under the Apache License, Version 2.0 (the "License"); you may    %
-% not use this file except in compliance with the License. You may obtain a  %
-% copy of the License at http://www.apache.org/licenses/LICENSE-2.0.         %
-%                                                                            %
-% Unless required by applicable law or agreed to in writing, software        %
-% distributed under the License is distributed on an "AS IS" BASIS,          %
-% WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.   %
-% See the License for the specific language governing permissions and        %
-% limitations under the License.                                             %
-% -------------------------------------------------------------------------- %
