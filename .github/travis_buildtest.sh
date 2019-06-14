@@ -31,9 +31,15 @@ OSIM_CMAKE_ARGS+=(-DMOCO_JAVA_BINDINGS=$WRAP -DMOCO_PYTHON_BINDINGS=$WRAP)
   
 # Bindings.
 OSIM_CMAKE_ARGS+=(-DSWIG_EXECUTABLE=$HOME/swig/bin/swig)
+
+ls /usr/lib
+OSIM_CMAKE_ARGS+=(-Dpkgcfg_lib_IPOPT_m=/usr/lib/libm.dylib)
+OSIM_CMAKE_ARGS+=(-Dpkgcfg_lib_IPOPT_dl=/usr/lib/libdl.dylib)
+OSIM_CMAKE_ARGS+=(-Dpkgcfg_lib_IPOPT_System=/System/Library/Frameworks/System.framework)
   
 # Doxygen.
 if [[ "$DOXY" = "on" && "$TRAVIS_OS_NAME" = "linux" ]]; then OSIM_CMAKE_ARGS+=(-DDOXYGEN_EXECUTABLE=$HOME/doxygen/doxygen-1.8.10/bin/doxygen); fi
+
   
 printf '%s\n' "${OSIM_CMAKE_ARGS[@]}"
 cmake "${OSIM_CMAKE_ARGS[@]}"
