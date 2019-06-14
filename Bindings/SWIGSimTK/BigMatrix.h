@@ -593,12 +593,11 @@ public:
     /// scalarAssignInPlace() method which also assign the scalar to every element.
     template <class S> inline MatrixBase&
     elementwiseAssign(const S& s);
-#endif
+
     /// Overloaded to allow an integer argument, which is converted to Real.
     MatrixBase& elementwiseAssign(int s)
     {   return elementwiseAssign<Real>(Real(s)); }
 
-#ifndef SWIG
     /// Set M(i,j) = M(i,j)^-1.
     MatrixBase& elementwiseInvertInPlace();
 

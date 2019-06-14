@@ -50,7 +50,7 @@ using SimTK::Vec3;
 // columns in the matrix plus 1 (for time).
 inline void addNumRowsNumColumns(const std::string& filenameOld,
     const std::string& filenameNew) {
-    auto table = OpenSim::STOFileAdapter_<double>::read(filenameOld);
+    auto table = OpenSim::STOFileAdapter_<double>::readFile(filenameOld);
     std::regex endheader{ R"( *endheader *)" };
     std::ifstream fileOld{ filenameOld };
     std::ofstream fileNew{ filenameNew };

@@ -207,14 +207,20 @@ OpenSim::ModelComponentSet<OpenSim::Controller>;
 
 %template(ReferenceVec3) OpenSim::Reference_<SimTK::Vec3>;
 %template(ReferenceDouble) OpenSim::Reference_<double>;
+%template(ReferenceRotation) OpenSim::Reference_<SimTK::Rotation_<double>>;
 %template(SimTKArrayCoordinateReference) SimTK::Array_<OpenSim::CoordinateReference>;
 
 
 %include <OpenSim/Simulation/MarkersReference.h>
 %template(SetMarkerWeights) OpenSim::Set<MarkerWeight, OpenSim::Object>;
 %include <OpenSim/Simulation/CoordinateReference.h>
+%template (SetOientationWeights) OpenSim::Set<OrientationWeight, OpenSim::Object>;
+%include <OpenSim/Simulation/OrientationsReference.h>
+
 %include <OpenSim/Simulation/AssemblySolver.h>
 %include <OpenSim/Simulation/InverseKinematicsSolver.h>
+%include <OpenSim/Simulation/OpenSense/OpenSenseUtilities.h>
+%include <OpenSim/Simulation/OpenSense/InverseKinematicsStudy.h>
 
 %include <OpenSim/Simulation/StatesTrajectory.h>
 // This enables iterating using the getBetween() method.

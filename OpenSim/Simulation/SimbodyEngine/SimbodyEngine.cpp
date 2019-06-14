@@ -1018,23 +1018,33 @@ void SimbodyEngine::convertRadiansToDegrees(Storage &rStorage) const
 }
 
 void SimbodyEngine::convertRadiansToDegrees(TimeSeriesTable& table) const {
-    OPENSIM_THROW_IF(table.getTableMetaData<std::string>("inDegrees") == "yes",
-                     Exception,
-                     "Columns of the table provided are already in degrees.");
+    if (table.hasTableMetaDataKey("inDegrees")) {
+        OPENSIM_THROW_IF(
+            table.getTableMetaData<std::string>("inDegrees") == "yes",
+            Exception,
+            "Columns of the table provided are already in degrees.");
+        table.removeTableMetaDataKey("inDegrees");
+    }
 
     scaleRotationalDofColumns(table, SimTK_RADIAN_TO_DEGREE);
-    table.removeTableMetaDataKey("inDegrees");
     table.addTableMetaData("inDegrees", std::string{"yes"});
 }
 
 void SimbodyEngine::convertDegreesToRadians(TimeSeriesTable& table) const {
-    OPENSIM_THROW_IF(table.getTableMetaData<std::string>("inDegrees") == "no",
-                     Exception,
-                     "Columns of the table provided are already in radians.");
-
-    scaleRotationalDofColumns(table, SimTK_DEGREE_TO_RADIAN);
-    table.removeTableMetaDataKey("inDegrees");
-    table.addTableMetaData("inDegrees", std::string{"no"});
+    if (table.hasTableMetaDataKey("inDegrees")) {
+        OPENSIM_THROW_IF(
+            table.getTableMetaData<std::string>("inDegrees") == "no",
+            Exception,
+            "Columns of the table provided are already in radians.");
+        table.removeTableMetaDataKey("inDegrees");
+        scaleRotationalDofColumns(table, SimTK_DEGREE_TO_RADIAN);
+        table.addTableMetaData("inDegrees", std::string{ "no" });
+    }
+    else {
+        OPENSIM_THROW(Exception,
+            "Table provided does not specify rotations to be in degrees.\n"
+            "No conversion can be applied.");
+    }
 }
 
 //_____________________________________________________________________________

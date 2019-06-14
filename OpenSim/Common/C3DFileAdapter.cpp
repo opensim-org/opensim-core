@@ -44,7 +44,7 @@ C3DFileAdapter::clone() const {
 }
 
 C3DFileAdapter::Tables
-C3DFileAdapter::read(const std::string& fileName, ForceLocation wrt)
+C3DFileAdapter::readFile(const std::string& fileName, ForceLocation wrt)
 {
     C3DFileAdapter c3dreader{};
     c3dreader.setLocationForForceExpression(wrt);

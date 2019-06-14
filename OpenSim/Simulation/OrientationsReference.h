@@ -65,7 +65,7 @@ private:
  *
  * @author Ajay Seth
  */
-class OSIMSIMULATION_API OrientationsReference : public Reference_<SimTK::Rotation> {
+class OSIMSIMULATION_API OrientationsReference : public Reference_<SimTK::Rotation_<double>> {
     OpenSim_DECLARE_CONCRETE_OBJECT(OrientationsReference, Reference_<SimTK::Rotation>);
 //=============================================================================
 // Properties
@@ -98,7 +98,7 @@ public:
     orientation weights. The input orientatonWeightSet is used to initialize
     Reference weightings for individual Orientations. Weights are associated
     to Orientations by name.*/
-    OrientationsReference(const TimeSeriesTable_<SimTK::Rotation>& orientationData,
+    OrientationsReference(const TimeSeriesTable_<SimTK::Rotation_<double>>& orientationData,
         const Set<OrientationWeight>* orientationWeightSet=nullptr);
 
     virtual ~OrientationsReference() {}
@@ -122,7 +122,7 @@ public:
     const SimTK::Array_<std::string>& getNames() const override;
     /** get the value of the OrientationsReference */
     void getValues(const SimTK::State& s,
-        SimTK::Array_<SimTK::Rotation>& values) const override;
+        SimTK::Array_<SimTK::Rotation_<double>>& values) const override;
     /** get the weighting (importance) of meeting this OrientationsReference in the
         same order as names*/
     void getWeights(const SimTK::State& s,
