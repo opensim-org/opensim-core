@@ -51,8 +51,6 @@ namespace OpenSim {
 ///
 /// @underdevelopment
 ///
-/// @underdevelopment
-///
 /// @subsection Departures from the Muscle base class
 ///
 /// The documentation for Muscle::MuscleLengthInfo states that the

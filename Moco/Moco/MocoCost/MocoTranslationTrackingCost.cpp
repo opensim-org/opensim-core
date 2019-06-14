@@ -122,6 +122,9 @@ void MocoTranslationTrackingCost::initializeOnModelImpl(const Model& model)
 
     }
 
+    // Check that there are no redundant columns in the reference data.
+    checkRedundantLabels(translationTable.getColumnLabels());
+
     // Cache the model frames and translation weights based on the order of the 
     // translation table.
     for (int i = 0; i < (int)pathsToUse.size(); ++i) {

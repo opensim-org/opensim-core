@@ -107,6 +107,11 @@ public:
         }
         return table;
     }
+    /// Returns true if neither a filepath nor an in-memory table have been
+    /// provided.
+    bool empty() const {
+        return !m_tableProvided && get_filepath().empty();
+    }
     /// Append an operation to the end of the operations in this processor.
     TableProcessor& append(const TableOperator& op) {
         append_operators(op);
@@ -127,12 +132,6 @@ public:
     /// @endcode
     TableProcessor& operator|(const TableOperator& right) {
         return append(right);
-    }
-
-    /// Check to see if a table has been provided via the API or if a path to a 
-    /// file containing a table has been provided.
-    bool hasTable() const {
-        return m_tableProvided || !get_filepath().empty();
     }
 
 private:

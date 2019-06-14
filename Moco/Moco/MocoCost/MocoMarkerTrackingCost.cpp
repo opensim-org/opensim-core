@@ -26,12 +26,17 @@
 
  void MocoMarkerTrackingCost::initializeOnModelImpl(const Model& model) const {
 
-    // Cache reference pointers to model markers.
     // TODO: When should we load a markers file?
     if (get_markers_reference().get_marker_file() != "") {
         const_cast<MocoMarkerTrackingCost*>(this)->upd_markers_reference().
                 loadMarkersFile(get_markers_reference().get_marker_file());
     }
+
+    // Check that there are no redundant columns in the reference data.
+    checkRedundantLabels(
+        get_markers_reference().getMarkerTable().getColumnLabels());
+
+    // Cache reference pointers to model markers.
     const auto& markRefNames = get_markers_reference().getNames();
     const auto& markerSet = model.getMarkerSet();
     int iset = -1;

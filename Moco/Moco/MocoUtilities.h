@@ -418,6 +418,11 @@ std::unordered_map<std::string, int> createSystemControlIndexMap(
 /// same as the order of the actuators in the model.
 OSIMMOCO_API void checkOrderSystemControls(const Model& model);
 
+/// Throws an exception if the same label appears twice in the list of labels.
+/// The argument copies the provided labels since we need to sort them to check
+/// for redundancies.
+OSIMMOCO_API void checkRedundantLabels(std::vector<std::string> labels);
+
 /// Throw an exception if the property's value is not in the provided set.
 /// We assume that `p` is a single-value property.
 template <typename T>

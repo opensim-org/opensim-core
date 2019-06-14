@@ -62,12 +62,12 @@ MocoStudy MocoTrack::initialize() {
     // ------
     // State tracking cost.
     TimeSeriesTable tracked_states;
-    if (get_states_reference().hasTable()) {
+    if (!get_states_reference().empty()) {
         tracked_states = configureStateTracking(problem, model);
     }
 
     // Marker tracking cost.
-    if (get_markers_reference().hasTable()) {
+    if (!get_markers_reference().empty()) {
         configureMarkerTracking(problem, model);
     }
 
@@ -223,7 +223,6 @@ TimeSeriesTable MocoTrack::configureStateTracking(MocoProblem& problem,
             get_states_global_tracking_weight());
     stateTracking->setReference(states);
     stateTracking->setWeightSet(weights);
-    //stateTracking->setAllowUnusedReferences(true);
 
     // Update the time info struct.
     updateTimeInfo("states", states.getIndependentColumn().front(),
@@ -261,7 +260,6 @@ void MocoTrack::configureMarkerTracking(MocoProblem& problem, Model& model) {
         problem.addCost<MocoMarkerTrackingCost>("marking_tracking",
             get_markers_global_tracking_weight());
     markerTracking->setMarkersReference(markersRef);
-    //markerTracking->setAllowUnusedReferences(true);
 
     // Update the time info struct.
     updateTimeInfo("markers", markers.getIndependentColumn().front(),

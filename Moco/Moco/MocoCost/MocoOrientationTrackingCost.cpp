@@ -122,6 +122,9 @@ void MocoOrientationTrackingCost::initializeOnModelImpl(const Model& model)
         rotationTable.setColumnLabels(pathsToUse);
     }
 
+    // Check that there are no redundant columns in the reference data.
+    checkRedundantLabels(rotationTable.getColumnLabels());
+
     // Cache the model frames and rotation weights based on the order of the 
     // rotation table.
     for (int i = 0; i < (int)pathsToUse.size(); ++i) {

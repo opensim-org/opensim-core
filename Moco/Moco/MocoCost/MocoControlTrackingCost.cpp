@@ -27,6 +27,9 @@ void MocoControlTrackingCost::initializeOnModelImpl(const Model& model) const {
     // TODO: set relativeToDirectory properly.
     TimeSeriesTable tableToUse = get_reference().process();
 
+    // Check that there are no redundant columns in the reference data.
+    checkRedundantLabels(tableToUse.getColumnLabels());
+
     // Convert data table to spline set.
     auto allSplines = GCVSplineSet(tableToUse);
 

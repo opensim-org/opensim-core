@@ -59,7 +59,6 @@ public:
     /// states you want to track. Each column label must be the path of a state
     /// variable, e.g., `knee/flexion/value`.
     /// The table is not loaded until the MocoProblem is initialized.
-    // TODO path relative to working directory or setup file?
     void setReference(TableProcessor ref) {
         set_reference(std::move(ref));
     }
