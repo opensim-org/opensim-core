@@ -93,9 +93,9 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
     m_numPointsIgnoringConstraints = m_numGridPoints - m_numMeshPoints;
     m_numDefectsPerGridPoint = numDefectsPerGridPoint;
     m_pointsForInterpControls = pointsForInterpControls;
-    // TODO: Update when supporting prescribed kinematics.
-    m_numResiduals =
-            m_solver.isDynamicsModeImplicit() ? m_problem.getNumSpeeds() : 0;
+    m_numResiduals = m_solver.isDynamicsModeImplicit()
+                             ? m_problem.getNumMultibodyDynamicsEquations()
+                             : 0;
     m_numConstraints =
             m_numDefectsPerGridPoint * m_numMeshIntervals +
             m_numResiduals * m_numGridPoints +
@@ -837,9 +837,10 @@ void Transcription::printConstraintValues(
     } else {
         maxNameLength = 0;
         updateMaxNameLength(kinconNames);
-        stream << "\n  L2 norm across mesh, max abs value (L1 norm), time of max "
+        stream << "\n  L2 norm across mesh, max abs value (L1 norm), time of "
+                  "max "
                   "abs"
-                << std::endl;
+               << std::endl;
         row.resize(1, m_numMeshPoints);
         {
             for (int ikc = 0; ikc < (int)constraints.kinematic.rows(); ++ikc) {
@@ -852,14 +853,15 @@ void Transcription::printConstraintValues(
 
                 std::string label = kinconNames.at(ikc);
                 std::cout << std::setfill('0') << std::setw(2) << ikc << ":"
-                        << std::setfill(' ') << std::setw(maxNameLength) << label
-                        << spacer << std::setprecision(2) << std::scientific
-                        << std::setw(9) << L2 << spacer << L1 << spacer
-                        << std::setprecision(6) << std::fixed << time_of_max
-                        << std::endl;
+                          << std::setfill(' ') << std::setw(maxNameLength)
+                          << label << spacer << std::setprecision(2)
+                          << std::scientific << std::setw(9) << L2 << spacer
+                          << L1 << spacer << std::setprecision(6) << std::fixed
+                          << time_of_max << std::endl;
             }
         }
-        stream << "Kinematic constraint values at each mesh point:" << std::endl;
+        stream << "Kinematic constraint values at each mesh point:"
+               << std::endl;
         stream << "      time  ";
         for (int ipc = 0; ipc < (int)kinconNames.size(); ++ipc) {
             stream << std::setw(9) << ipc << "  ";
@@ -871,13 +873,12 @@ void Transcription::printConstraintValues(
             stream << std::setw(9) << it.times(imesh).scalar() << "  ";
             for (int ikc = 0; ikc < (int)kinconNames.size(); ++ikc) {
                 const auto& value = constraints.kinematic(ikc, imesh).scalar();
-                stream << std::setprecision(2) << std::scientific << std::setw(9)
-                        << value << "  ";
+                stream << std::setprecision(2) << std::scientific
+                       << std::setw(9) << value << "  ";
             }
             stream << std::endl;
         }
     }
-
 
     // Path constraints.
     // -----------------
@@ -896,9 +897,10 @@ void Transcription::printConstraintValues(
         updateMaxNameLength(pathconNames);
         // To make space for indices.
         maxNameLength += 3;
-        stream << "\n  L2 norm across mesh, max abs value (L1 norm), time of max "
+        stream << "\n  L2 norm across mesh, max abs value (L1 norm), time of "
+                  "max "
                   "abs"
-                << std::endl;
+               << std::endl;
         row.resize(1, m_numMeshPoints);
         {
             int ipc = 0;
@@ -911,13 +913,14 @@ void Transcription::printConstraintValues(
                     const double L1 = max;
                     const double time_of_max = it.times(argmax).scalar();
 
-                    std::string label = OpenSim::format("%s_%02i", pc.name, ieq);
+                    std::string label =
+                            OpenSim::format("%s_%02i", pc.name, ieq);
                     std::cout << std::setfill('0') << std::setw(2) << ipc << ":"
-                            << std::setfill(' ') << std::setw(maxNameLength)
-                            << label << spacer << std::setprecision(2)
-                            << std::scientific << std::setw(9) << L2 << spacer
-                            << L1 << spacer << std::setprecision(6) << std::fixed
-                            << time_of_max << std::endl;
+                              << std::setfill(' ') << std::setw(maxNameLength)
+                              << label << spacer << std::setprecision(2)
+                              << std::scientific << std::setw(9) << L2 << spacer
+                              << L1 << spacer << std::setprecision(6)
+                              << std::fixed << time_of_max << std::endl;
                 }
                 ++ipc;
             }
@@ -934,12 +937,11 @@ void Transcription::printConstraintValues(
             stream << std::setw(9) << it.times(imesh).scalar() << "  ";
             for (int ipc = 0; ipc < (int)pathconNames.size(); ++ipc) {
                 const auto& value = constraints.path[ipc](imesh).scalar();
-                stream << std::setprecision(2) << std::scientific << std::setw(9)
-                        << value << "  ";
+                stream << std::setprecision(2) << std::scientific
+                       << std::setw(9) << value << "  ";
             }
             stream << std::endl;
         }
-
     }
 }
 
