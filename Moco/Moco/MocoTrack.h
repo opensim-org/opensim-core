@@ -62,7 +62,8 @@ class MocoIterate;
 ///
 /// Default solver settings:
 ///  - Explicit dynamics
-///  - Constraint and convergence tolerances: 1e-2
+///  - Constraint tolerance: 1e-2
+///  - Convergence tolerance: 1e-2
 ///  - Finite difference scheme: 'forward'
 /// 
 /// @underdevelopment
@@ -106,21 +107,16 @@ public:
         "weight names should match the names of the column labels in the "
         "file associated with the 'markers_reference' property.");
 
-    OpenSim_DECLARE_PROPERTY(guess_type, std::string,
-        "Options: 'bounds', 'from_file'. "
-        "'bounds' uses variable bound midpoint values to create an initial "
-        "guess.  'from_file' creates an initial guess from the file set "
-        "on the 'guess_file' property (see below)."
-        "(default: 'bounds').");
+    OpenSim_DECLARE_PROPERTY(guess_file, std::string,
+        "Path to a STO file containing a guess for the problem. The path can "
+        "be absolute or relative to the setup file. If no file is provided, "
+        "then a guess constructed from the variable bounds midpoints will be "
+        "used.");
 
     OpenSim_DECLARE_PROPERTY(apply_tracked_states_to_guess, bool,
-        "If a `states_reference` has been provided and the `guess_type` "
-        "property is set to 'bounds', use this setting to replace the states "
-        "in the bounds guess with the states reference data.")
-
-    OpenSim_DECLARE_PROPERTY(guess_file, std::string,
-        "Path to a STO file containing a guess for the problem. "
-        "The path can be absolute or relative to the setup file.");
+        "If a `states_reference` has been provided, use this setting to "
+        "replace the states in the guess with the states reference data. This "
+        "will override any guess information provided via `guess_file`.");
 
     OpenSim_DECLARE_PROPERTY(minimize_controls, double,
         "Whether or not to minimize actuator controls in the problem. The "

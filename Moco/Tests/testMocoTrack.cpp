@@ -25,6 +25,18 @@
 
 using namespace OpenSim;
 
+TEST_CASE("MocoTrack interface") {
+    MocoTrack track;
+    track.setModel(ModelProcessor("testGait10dof18musc_subject01.osim"));
+
+    SECTION("apply_tracked_states_to_guess() true, but no states reference") {
+        track.set_apply_tracked_states_to_guess(true);
+        CHECK_THROWS_WITH(track.initialize(),
+            Catch::Contains("Property 'apply_tracked_states_to_guess' was "
+                    "enabled, but no states reference data was provided."));
+    }
+}
+
 TEST_CASE("MocoTrack gait10dof18musc") {
     std::cout.rdbuf(LogManager::cout.rdbuf());
     std::cerr.rdbuf(LogManager::cerr.rdbuf());

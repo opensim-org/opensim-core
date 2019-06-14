@@ -42,7 +42,6 @@ void MocoTrack::constructProperties() {
     constructProperty_markers_reference(TableProcessor());
     constructProperty_markers_global_tracking_weight(1);
     constructProperty_markers_weight_set(MocoWeightSet());
-    constructProperty_guess_type("bounds");
     constructProperty_guess_file("");
     constructProperty_apply_tracked_states_to_guess(false);
     constructProperty_minimize_controls(-1);
@@ -58,10 +57,6 @@ MocoStudy MocoTrack::initialize() {
     // ---------
     Model model = get_model().process();
     model.initSystem();
-
-    //InverseDynamicsTool idtool;
-    //idtool.createExternalLoads("grf_walk.xml", model);
-    //model.initSystem();
 
     // Costs.
     // ------
@@ -106,22 +101,19 @@ MocoStudy MocoTrack::initialize() {
 
     // Set the problem guess.
     // ----------------------
-    checkPropertyInSet(*this, getProperty_guess_type(), 
-        {"bounds", "from_file"});
-    OPENSIM_THROW_IF(get_guess_type() == "from_file" &&
-        get_guess_file().empty(), Exception,
-        "Guess type set to 'from_file' but no guess file was provided.");
-
-    if (get_guess_type() == "from_file") {
+    // If the user provided a guess file, use that guess in the solver.
+    if (!get_guess_file().empty()) {
         solver.setGuessFile(getFilePath(get_guess_file()));
-    } else if (get_guess_type() == "bounds") {
-        auto guess = solver.createGuess("bounds");
-        if (get_apply_tracked_states_to_guess()) {
-            OPENSIM_THROW_IF(!tracked_states.getNumRows(), Exception,
-                "Property 'apply_tracked_states_to_guess' was enabled, but no "
-                "states reference data was provided.")
+    }
+
+    // Apply states from the reference data the to solver guess if specified by
+    // the user.
+    if (get_apply_tracked_states_to_guess()) {
+        auto guess = solver.getGuess();
+        OPENSIM_THROW_IF(!tracked_states.getNumRows(), Exception,
+            "Property 'apply_tracked_states_to_guess' was enabled, but no "
+            "states reference data was provided.")
             applyStatesToGuess(tracked_states, model, guess);
-        }
         solver.setGuess(guess);
     }
 
@@ -161,13 +153,6 @@ TimeSeriesTable MocoTrack::configureStateTracking(MocoProblem& problem,
     // Read in the states reference data and spline.
     TimeSeriesTable states = get_states_reference().process("", &model);
     auto stateSplines = GCVSplineSet(states, states.getColumnLabels());
-
-    // Check that there are no redundant columns in the reference data.
-    auto labelsSorted = states.getColumnLabels();
-    std::sort(labelsSorted.begin(), labelsSorted.end());
-    auto it = std::adjacent_find(labelsSorted.begin(), labelsSorted.end());
-    OPENSIM_THROW_IF(it != labelsSorted.end(), Exception,
-        "Multiple reference data provided for the same state variable.");
 
     // Loop through all coordinates and compare labels in the reference data
     // to coordinate variable names. 
@@ -238,7 +223,7 @@ TimeSeriesTable MocoTrack::configureStateTracking(MocoProblem& problem,
             get_states_global_tracking_weight());
     stateTracking->setReference(states);
     stateTracking->setWeightSet(weights);
-    stateTracking->setAllowUnusedReferences(true);
+    //stateTracking->setAllowUnusedReferences(true);
 
     // Update the time info struct.
     updateTimeInfo("states", states.getIndependentColumn().front(),
@@ -276,7 +261,7 @@ void MocoTrack::configureMarkerTracking(MocoProblem& problem, Model& model) {
         problem.addCost<MocoMarkerTrackingCost>("marking_tracking",
             get_markers_global_tracking_weight());
     markerTracking->setMarkersReference(markersRef);
-    markerTracking->setAllowUnusedReferences(true);
+    //markerTracking->setAllowUnusedReferences(true);
 
     // Update the time info struct.
     updateTimeInfo("markers", markers.getIndependentColumn().front(),
