@@ -180,6 +180,18 @@ protected:
     void addSlack(std::string name, Bounds bounds) {
         m_slackInfos.push_back({std::move(name), std::move(bounds)});
     }
+    /// Set if all kinematics are prescribed. In this case, do not add state
+    /// variables for coordinates or speeds. The number of multibody dynamics
+    /// equations is equal to the number of speeds in the original system. But
+    /// if kinematics are prescribed, you must provide the number of multibody
+    /// dynamics equations directly. This is because no speed state variables
+    /// are added and CasOCProblem can't obtain the number of multibody
+    /// equations by counting the number of speed state variables.
+    void setPrescribedKinematics(bool tf, int numMultibodyDynamicsEquations) {
+        m_prescribedKinematics = tf;
+        m_numMultibodyDynamicsEquationsIfPrescribedKinematics =
+                numMultibodyDynamicsEquations;
+    }
     /// Set whether not constraint derivatives are to be enforced.
     void setEnforceConstraintDerivatives(bool tf) {
         m_enforceConstraintDerivatives = tf;
@@ -217,8 +229,7 @@ public:
             const ContinuousInput&, double& integrand) const {
         integrand = 0;
     }
-    virtual void calcEndpointCost(
-            const EndpointInput&, double& cost) const {
+    virtual void calcEndpointCost(const EndpointInput&, double& cost) const {
         cost = 0;
     }
     /// Kinematic constraint errors should be ordered as so:
@@ -362,16 +373,28 @@ public:
     int getNumCoordinates() const { return m_numCoordinates; }
     int getNumSpeeds() const { return m_numSpeeds; }
     int getNumAuxiliaryStates() const { return m_numAuxiliaryStates; }
+    bool isPrescribedKinematics() const { return m_prescribedKinematics; }
+    /// If the coordinates are prescribed, then the number of multibody dynamics
+    /// equations is not the same as the number of speeds.
+    int getNumMultibodyDynamicsEquations() const {
+        if (m_prescribedKinematics) {
+            return m_numMultibodyDynamicsEquationsIfPrescribedKinematics;
+        }
+        return getNumSpeeds();
+    }
     int getNumKinematicConstraintEquations() const {
+        // If all kinematics are prescribed, we assume that the prescribed
+        // kinematics obey any kinematic constraints. Therefore, the kinematic
+        // constraints would be redundant, and we need not enforce them.
+        if (m_prescribedKinematics) return 0;
         if (m_enforceConstraintDerivatives) {
             return 3 * m_numHolonomicConstraintEquations +
                    2 * m_numNonHolonomicConstraintEquations +
                    m_numAccelerationConstraintEquations;
-        } else {
-            return m_numHolonomicConstraintEquations +
-                   m_numNonHolonomicConstraintEquations +
-                   m_numAccelerationConstraintEquations;
         }
+        return m_numHolonomicConstraintEquations +
+               m_numNonHolonomicConstraintEquations +
+               m_numAccelerationConstraintEquations;
     }
     /// Create a vector of names for scalar kinematic constraint equations.
     /// The length of the vector is getNumKinematicConstraintEquations().
@@ -505,6 +528,8 @@ private:
     int m_numAccelerationConstraintEquations = 0;
     bool m_enforceConstraintDerivatives = false;
     std::string m_dynamicsMode = "explicit";
+    bool m_prescribedKinematics = false;
+    int m_numMultibodyDynamicsEquationsIfPrescribedKinematics = 0;
     Bounds m_kinematicConstraintBounds;
     std::vector<ControlInfo> m_controlInfos;
     std::vector<MultiplierInfo> m_multiplierInfos;

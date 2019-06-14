@@ -17,14 +17,14 @@
  * -------------------------------------------------------------------------- */
 
 #include "MocoControlCost.h"
-#include <OpenSim/Simulation/Model/Model.h>
+
 #include "../MocoUtilities.h"
+
+#include <OpenSim/Simulation/Model/Model.h>
 
 using namespace OpenSim;
 
-MocoControlCost::MocoControlCost() {
-    constructProperties();
-}
+MocoControlCost::MocoControlCost() { constructProperties(); }
 
 void MocoControlCost::constructProperties() {
     constructProperty_control_weights(MocoWeightSet());
@@ -46,36 +46,39 @@ void MocoControlCost::initializeOnModelImpl(const Model& model) const {
 
     // Check that the model controls are in the correct order.
     checkOrderSystemControls(model);
-    
+
+    auto systemControlIndexMap = createSystemControlIndexMap(model);
     // Make sure there are no weights for nonexistent controls.
     for (int i = 0; i < get_control_weights().getSize(); ++i) {
         const auto& thisName = get_control_weights()[i].getName();
         if (std::find(controlNames.begin(), controlNames.end(), thisName) ==
                 controlNames.end()) {
-            OPENSIM_THROW_FRMOBJ(Exception,
-                    "Unrecognized control '" + thisName + "'.");
+            OPENSIM_THROW_FRMOBJ(
+                    Exception, "Unrecognized control '" + thisName + "'.");
         }
     }
 
-    m_weights.resize(model.getNumControls());
-    int i = 0;
     for (const auto& controlName : controlNames) {
         double weight = 1.0;
         if (get_control_weights().contains(controlName)) {
             weight = get_control_weights().get(controlName).getWeight();
         }
-        m_weights[i] = weight;
-        ++i;
+
+        if (weight != 0.0) {
+            m_controlIndices.push_back(systemControlIndexMap[controlName]);
+            m_weights.push_back(weight);
+        }
     }
 }
 
-void MocoControlCost::calcIntegralCostImpl(const SimTK::State& state,
-        double& integrand) const {
+void MocoControlCost::calcIntegralCostImpl(
+        const SimTK::State& state, double& integrand) const {
     getModel().realizeVelocity(state); // TODO would avoid this, ideally.
     const auto& controls = getModel().getControls(state);
     integrand = 0;
-    assert((int)m_weights.size() == controls.size());
-    for (int i = 0; i < controls.size(); ++i) {
-        integrand += m_weights[i] * controls[i] * controls[i];
+    int iweight = 0;
+    for (const auto& icontrol : m_controlIndices) {
+        integrand += m_weights[iweight] * controls[icontrol] * controls[icontrol];
+        ++iweight;
     }
 }

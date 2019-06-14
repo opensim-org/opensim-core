@@ -262,7 +262,7 @@ void Transcription::transcribe() {
     // Initialize memory for implicit residuals.
     // -----------------------------------------
     if (m_solver.isDynamicsModeImplicit()) {
-        const auto& NR = m_numResiduals;
+        const auto& NR = m_problem.getNumMultibodyDynamicsEquations();
         m_constraints.residuals =
                 MX(casadi::Sparsity::dense(NR, m_numGridPoints));
         m_constraintsLowerBounds.residuals = DM::zeros(NR, m_numGridPoints);

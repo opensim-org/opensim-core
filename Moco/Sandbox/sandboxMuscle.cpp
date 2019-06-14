@@ -299,7 +299,7 @@ void testHangingMuscleMinimumTime(
     for (int i = 0; i < svn.size(); ++i) { std::cout << svn[i] << std::endl; }
     MocoSolution solutionTrajOpt;
     {
-        MocoTool moco;
+        MocoStudy moco;
         MocoProblem& problem = moco.updProblem();
         problem.setModelCopy(model);
         problem.setTimeBounds(0, {0.05, 1.0});
@@ -379,7 +379,7 @@ void testHangingMuscleMinimumTime(
     {
         std::cout << "Tracking the trajectory optimization coordinate solution."
                   << std::endl;
-        MocoTool moco;
+        MocoStudy moco;
         MocoProblem& problem = moco.updProblem();
         problem.setModelCopy(model);
         // Using an equality constraint for the time bounds was essential for

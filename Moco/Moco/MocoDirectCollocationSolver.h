@@ -48,6 +48,16 @@ namespace OpenSim {
 /// including model kinematic constraints, the 'hermite-simpson' option is 
 /// required (see Kinematic constraints section below).
 ///
+/// Path constraints on controls with Hermite-Simpson transcription
+/// ---------------------------------------------------------------
+/// For Hermite-Simpson transcription, the direct collocation solvers enforce
+/// the path constraints (e.g., MocoPathConstraint) at only the mesh interval
+/// endpoints (not midpoints), but control signal variables exist at both mesh
+/// interval endpoints and midpoints. Keep this in mind when using path
+/// constraints on controls (e.g., MocoControlBoundConstraint). If
+/// `interpolate_control_midpoints` is false, the values of a control at
+/// midpoints may differ greatly from the values at mesh interval endpoints.
+///
 /// Dynamics mode
 /// -------------
 /// The `dynamics_mode` setting allows you to choose between expressing
@@ -72,7 +82,7 @@ namespace OpenSim {
 /// constraint manifold when necessary to properly enforce defect constraints
 /// (see Posa et al. 2016 for details).
 
-class MocoDirectCollocationSolver : public MocoSolver {
+class OSIMMOCO_API MocoDirectCollocationSolver : public MocoSolver {
     OpenSim_DECLARE_ABSTRACT_OBJECT(MocoDirectCollocationSolver, MocoSolver);
 
 public:

@@ -128,15 +128,15 @@ MocoTropterSolver::createTropterSolver(
     std::unique_ptr<tropter::DirectCollocationSolver<double>> dircol;
 
     if (getProperty_mesh().empty()) {
-        dircol = make_unique<tropter::DirectCollocationSolver<double>>(ocp,
-                get_transcription_scheme(), get_optim_solver(),
+        dircol = OpenSim::make_unique<tropter::DirectCollocationSolver<double>>(
+                ocp, get_transcription_scheme(), get_optim_solver(),
                 get_num_mesh_points());
     } else {
         std::vector<double> mesh;
         for (int i = 0; i < getProperty_mesh().size(); ++i) {
             mesh.push_back(get_mesh(i));
         }
-        dircol = make_unique<tropter::DirectCollocationSolver<double>>(
+        dircol = OpenSim::make_unique<tropter::DirectCollocationSolver<double>>(
                 ocp, get_transcription_scheme(), get_optim_solver(), mesh);
     }
 
@@ -283,6 +283,10 @@ void MocoTropterSolver::printOptimizationSolverOptions(std::string solver) {
 MocoSolution MocoTropterSolver::solveImpl() const {
 #ifdef MOCO_WITH_TROPTER
     const Stopwatch stopwatch;
+
+    OPENSIM_THROW_IF_FRMOBJ(getProblemRep().isPrescribedKinematics(), Exception,
+            "MocoTropterSolver does not support prescribed kinematics. "
+            "Try using prescribed motion constraints in the Coordinates.");
 
     auto ocp = createTropterProblem();
 

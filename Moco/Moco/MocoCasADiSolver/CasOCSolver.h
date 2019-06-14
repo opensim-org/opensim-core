@@ -36,26 +36,20 @@ class Solver {
 public:
     Solver(const Problem& problem) : m_problem(problem) {}
     void setNumMeshPoints(int numMeshPoints) {
-        for(int i = 0; i < numMeshPoints; ++i) {
-            m_mesh.push_back(i/((double)(numMeshPoints-1)));
+        for (int i = 0; i < numMeshPoints; ++i) {
+            m_mesh.push_back(i / (double)(numMeshPoints - 1));
         }
     }
-    void setMesh(std::vector<double> mesh) {
-        m_mesh = std::move(mesh);
-    }
+    void setMesh(std::vector<double> mesh) { m_mesh = std::move(mesh); }
 
-    const std::vector<double>& getMesh() const {
-        return m_mesh;
-    }
+    const std::vector<double>& getMesh() const { return m_mesh; }
     void setTranscriptionScheme(std::string scheme) {
         m_transcriptionScheme = std::move(scheme);
     }
     const std::string& getTranscriptionScheme() const {
         return m_transcriptionScheme;
     }
-    std::string getDynamicsMode() const {
-        return m_problem.getDynamicsMode();
-    }
+    std::string getDynamicsMode() const { return m_problem.getDynamicsMode(); }
     bool isDynamicsModeImplicit() const {
         return m_problem.getDynamicsMode() == "implicit";
     }
@@ -100,9 +94,7 @@ public:
         m_outputInterval = output_interval;
     }
 
-    int getOutputInterval() const {
-        return m_outputInterval;
-    }
+    int getOutputInterval() const { return m_outputInterval; }
     /// "none" to use block sparsity (treat all CasOC::Function%s as dense;
     /// default), "initial-guess", or "random".
     void setSparsityDetection(const std::string& setting);

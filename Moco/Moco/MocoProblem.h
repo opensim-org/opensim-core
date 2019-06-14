@@ -19,6 +19,7 @@
  * -------------------------------------------------------------------------- */
 
 #include "MocoProblemRep.h"
+#include "ModelProcessor.h"
 
 namespace OpenSim {
 
@@ -56,6 +57,12 @@ public:
     /// This function returns a pointer to the model stored in the phase
     /// (the copy).
     Model* setModelCopy(Model model);
+    /// Set a model processor for creating the model for this phase. Use this
+    /// to provide a model as a .osim file.
+    void setModelProcessor(ModelProcessor model);
+    /// Get a mutable reference to the internal ModelProcessor. Use this to
+    /// set the processor's base model or to add operators to the processor.
+    ModelProcessor& updModelProcessor();
     /// Set the bounds on the initial and final time for this phase.
     /// If you want to constrain the initial time to a single value, pass
     /// that value to the constructor of MocoInitialBounds. If you want the
@@ -123,6 +130,17 @@ public:
     void setStateInfo(const std::string& name, const MocoBounds& bounds,
             const MocoInitialBounds& init = {},
             const MocoFinalBounds& final = {});
+    /// Set information for state variables whose names match the provided
+    /// regular expression. You can use this to set bounds for all muscle
+    /// activations, etc. Infos provided via setStateInfoPattern() take
+    /// precedence over the default values from the model. Infos provided via
+    /// setStateInfo() take precedence over infos provided with
+    /// setStateInfoPattern().  If a state variable name matches multiple
+    /// patterns, the info provided with the last pattern is used for that state
+    /// variable.
+    void setStateInfoPattern(const std::string& pattern,
+            const MocoBounds& bounds, const MocoInitialBounds& init = {},
+            const MocoFinalBounds& final = {});
     /// Set information about a single control variable in this phase.
     /// Similar to setStateInfo(). The name for a control is the path to the
     /// associated actuator (e.g., "/forceset/soleus_r"). If setting a control
@@ -140,6 +158,16 @@ public:
     void setDefaultSpeedBounds(const MocoBounds& bounds) {
         set_default_speed_bounds(bounds);
     }
+    /// Set information for control variables whose names match the provided
+    /// regular expression. You can use this to set bounds for all muscle
+    /// activations, etc. Infos provided via setControlInfoPattern() take
+    /// precedence over the default values from the model. Infos provided via
+    /// setControlInfo() take precedence over infos provided with
+    /// setControlInfoPattern().  If a state variable name matches multiple
+    /// patterns, the info provided with the last pattern is used for that
+    /// control variable.
+    void setControlInfoPattern(const std::string& pattern, const MocoBounds&,
+            const MocoInitialBounds& = {}, const MocoFinalBounds& = {});
     /// For muscles without explicit activation bounds, set the bounds for
     /// muscle activation (if activation dynamics are enabled) from the bounds
     /// for muscle control (excitation), using min/max control if explicit
@@ -264,8 +292,14 @@ public:
         return ptr;
     }
 
-    const Model& getModel() const { return get_model(); }
-    Model& updModel() { return upd_model(); }
+    /// Get the base model in the internal ModelProcessor. This throws an
+    /// exception if the ModelProcessor does not have a base model. By default,
+    /// the model is an empty model.
+    const Model& getModel() const { return get_model().getModel(); }
+    /// Get a mutable reference to the base model in the internal
+    /// ModelProcessor. This throws an exception if the ModelProcessor does not
+    /// have a base model. By default, the model is an empty model.
+    Model& updModel() { return upd_model().updModel(); }
 
     /// @details Note: the return value is constructed fresh on every call from
     /// the internal property. Avoid repeated calls to this function.
@@ -311,7 +345,7 @@ public:
 
 protected: // Protected so that doxygen shows the properties.
     OpenSim_DECLARE_PROPERTY(
-            model, Model, "OpenSim Model to provide dynamics.");
+            model, ModelProcessor, "OpenSim Model to provide dynamics.");
     // TODO error if not provided.
     OpenSim_DECLARE_PROPERTY(
             time_initial_bounds, MocoInitialBounds, "Bounds on initial value.");
@@ -328,8 +362,14 @@ protected: // Protected so that doxygen shows the properties.
             "provided. (default: true).");
     OpenSim_DECLARE_LIST_PROPERTY(
             state_infos, MocoVariableInfo, "The state variables' bounds.");
+    OpenSim_DECLARE_LIST_PROPERTY(state_infos_pattern, MocoVariableInfo,
+            "Set state variable bounds for all states matching a regular "
+            "expression.");
     OpenSim_DECLARE_LIST_PROPERTY(
             control_infos, MocoVariableInfo, "The control variables' bounds.");
+    OpenSim_DECLARE_LIST_PROPERTY(control_infos_pattern, MocoVariableInfo,
+            "Set control variable bounds for all controls matching a regular "
+            "expression.");
     OpenSim_DECLARE_LIST_PROPERTY(parameters, MocoParameter,
             "Parameter variables (model properties) to optimize.");
     OpenSim_DECLARE_LIST_PROPERTY(
@@ -388,13 +428,24 @@ public:
     /// Set the model to use for phase 0.
     /// @see MocoPhase::setModelCopy().
     Model* setModelCopy(Model model);
+    /// Set a model processor for phase 0.
+    /// @see MocoPhase::setModelProcessor().
+    void setModelProcessor(ModelProcessor model);
     /// Set time bounds for phase 0.
     void setTimeBounds(const MocoInitialBounds&, const MocoFinalBounds&);
     /// Set bounds for a state variable for phase 0.
     void setStateInfo(const std::string& name, const MocoBounds&,
             const MocoInitialBounds& = {}, const MocoFinalBounds& = {});
+    /// Set bounds for all state variables for phase 0 whose path matches
+    /// the provided pattern (e.g. ".*/activation").
+    void setStateInfoPattern(const std::string& pattern,
+            const MocoBounds& bounds, const MocoInitialBounds& init = {},
+            const MocoFinalBounds& final = {});
     /// Set bounds for a control variable for phase 0.
     void setControlInfo(const std::string& name, const MocoBounds&,
+            const MocoInitialBounds& = {}, const MocoFinalBounds& = {});
+    /// Set bounds for a control variable using a regular expression.
+    void setControlInfoPattern(const std::string& pattern, const MocoBounds&,
             const MocoInitialBounds& = {}, const MocoFinalBounds& = {});
     /// Set bounds for the kinematic constraints in phase 0.
     void setKinematicConstraintBounds(const MocoBounds& bounds);

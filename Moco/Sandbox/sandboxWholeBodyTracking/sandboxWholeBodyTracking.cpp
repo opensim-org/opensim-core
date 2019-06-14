@@ -395,7 +395,7 @@ Model createModel(DOFs dofs) {
 
 int main() {
 
-    MocoTool moco;
+    MocoStudy moco;
     moco.setName("whole_body_tracking");
 
     // Define the optimal control problem.

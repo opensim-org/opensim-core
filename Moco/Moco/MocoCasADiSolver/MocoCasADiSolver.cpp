@@ -131,6 +131,11 @@ std::unique_ptr<MocoCasOCProblem> MocoCasADiSolver::createCasOCProblem() const {
 
     checkPropertyInSet(
             *this, getProperty_dynamics_mode(), {"explicit", "implicit"});
+    if (problemRep.isPrescribedKinematics()) {
+        OPENSIM_THROW_IF(get_dynamics_mode() != "implicit", Exception,
+                "Prescribed kinematics (PositionMotion) requires implicit "
+                "dynamics mode.");
+    }
 
     const auto& model = problemRep.getModelBase();
     OPENSIM_THROW_IF(!model.getMatterSubsystem().getUseEulerAngles(
@@ -142,7 +147,7 @@ std::unique_ptr<MocoCasOCProblem> MocoCasADiSolver::createCasOCProblem() const {
 
 std::unique_ptr<CasOC::Solver> MocoCasADiSolver::createCasOCSolver(
         const MocoCasOCProblem& casProblem) const {
-    auto casSolver = make_unique<CasOC::Solver>(casProblem);
+    auto casSolver = OpenSim::make_unique<CasOC::Solver>(casProblem);
 
     // Set solver options.
     // -------------------

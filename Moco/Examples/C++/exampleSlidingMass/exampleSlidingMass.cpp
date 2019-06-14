@@ -68,7 +68,7 @@ std::unique_ptr<Model> createSlidingMassModel() {
 
 int main() {
 
-    MocoTool moco;
+    MocoStudy moco;
     moco.setName("sliding_mass");
 
     // Define the optimal control problem.
