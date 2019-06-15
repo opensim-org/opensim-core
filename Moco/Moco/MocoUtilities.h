@@ -302,8 +302,6 @@ TimeSeriesTable_<T> analyze(Model model, const MocoIterate& iterate,
         for (const auto& outputName : comp.getOutputNames()) {
             const auto& output = comp.getOutput(outputName);
             auto thisOutputPath = output.getPathName();
-            // Make sure the path is valid.
-            std::replace(thisOutputPath.begin(), thisOutputPath.end(), '/');
             for (const auto& outputPathArg : outputPaths) {
                 if (std::regex_match(thisOutputPath, 
                         std::regex(outputPathArg))) {
