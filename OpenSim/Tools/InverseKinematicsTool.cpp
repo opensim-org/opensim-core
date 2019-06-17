@@ -620,20 +620,17 @@ void InverseKinematicsTool::populateReferences(MarkersReference& markersReferenc
         }
         else if (IKMarkerTask *markerTask = dynamic_cast<IKMarkerTask *>(&_ikTaskSet[i])) {
             if (markerTask->getApply()) {
+                // Only track markers that have a task and it is "applied"
                 markerWeights.adoptAndAppend(
                     new MarkerWeight(markerTask->getName(), markerTask->getWeight()));
             }
         }
     }
 
-    // Set the default weight for markers
-    markersReference.setDefaultWeight(1.0);
-    // Set the weights for markers (markers in the model and the marker file
-    // but not assigned a weight in the markerWeightSet will use the default
-    // weight
-    markersReference.setMarkerWeightSet(markerWeights);
-    //Load the makers
-    markersReference.loadMarkersFile(_markerFileName);
+    //Read in the marker data file and set the weights for associated markers.
+    //Markers in the model and the marker file but not in the markerWeights are
+    //ignored
+    markersReference.loadMarkersFile(_markerFileName, &markerWeights);
 }
 
 
