@@ -56,6 +56,7 @@ public:
     void setModel(ModelProcessor model) { set_model(std::move(model)); }
 
 protected:
+#ifndef SWIG
     struct TimeInfo {
         double initial = -SimTK::Infinity;
         double final = SimTK::Infinity;
@@ -75,6 +76,7 @@ protected:
     /// including the file's directory.
     std::string getFilePath(const std::string& file) const;
 
+#endif
 private:
     void constructProperties();
 };
