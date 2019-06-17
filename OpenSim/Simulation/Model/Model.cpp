@@ -103,6 +103,12 @@ Model::Model(const string &aFileName) :
     constructProperties();
     setNull();
     updateFromXMLDocument();
+    // Check is done below because only Model files have migration issues, version is not available until 
+    // updateFromXMLDocument is called. Fixes core issue #2395
+    OPENSIM_THROW_IF(getDocument()->getDocumentVersion() < 30000,
+        Exception,
+        "Model file " + aFileName + " is using unsupported file format"
+        ". Please open model and save it in OpenSim version 3.3 to upgrade.");
 
     _fileName = aFileName;
     cout << "Loaded model " << getName() << " from file " << getInputFileName() << endl;
