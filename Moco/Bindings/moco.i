@@ -190,6 +190,7 @@ namespace OpenSim {
 
 %include <Moco/MocoTool.h>
 %include <Moco/MocoInverse.h>
+%include <Moco/MocoTrack.h>
 
 %include <Moco/Components/ActivationCoordinateActuator.h>
 %include <Moco/Components/DeGrooteFregly2016Muscle.h>

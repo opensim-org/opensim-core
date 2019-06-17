@@ -93,7 +93,7 @@ public:
                         getAbsolutePathnameUsingSpecifiedWorkingDirectory(
                                 relativeToDirectory, path);
             }
-            table = readTableFromFile<double>(path);
+            table = readTableFromFile(path);
         }
 
         if (table.hasTableMetaDataKey("inDegrees") &&
@@ -106,6 +106,11 @@ public:
             get_operators(i).operate(table);
         }
         return table;
+    }
+    /// Returns true if neither a filepath nor an in-memory table have been
+    /// provided.
+    bool empty() const {
+        return !m_tableProvided && get_filepath().empty();
     }
     /// Append an operation to the end of the operations in this processor.
     TableProcessor& append(const TableOperator& op) {
