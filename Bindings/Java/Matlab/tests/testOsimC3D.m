@@ -5,11 +5,15 @@ c3dpath = fullfile(cd,'walking2.c3d');
 %% import opensim libraries
 import org.opensim.modeling.*
 
+% Integer value for representation of force from plate
+% 0 = forceplate orgin, 1 = COP, 2 = Point Of Wrench Application
+ForceLocation = 0;
+
 %% Get path to c3d file in tests. 
 c3dpath = fullfile(cd,'walking2.c3d');
-c3d = osimC3D(c3dpath,1);
+c3d = osimC3D(c3dpath,ForceLocation);
 % Get tables directly from c3d file adapter
-tables = C3DFileAdapter().readFile('walking2.c3d',1);
+tables = C3DFileAdapter().readFile('walking2.c3d',ForceLocation);
 markers = tables.get('markers');
 forces = tables.get('forces');
 
