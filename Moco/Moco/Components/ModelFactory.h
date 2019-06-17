@@ -66,7 +66,7 @@ public:
     ///       connectees are PhysicalOffsetFrames.
     static void replaceJointWithWeldJoint(
             Model& model, const std::string& jointName);
-  
+
     /// Add CoordinateActuator%s for each unconstrained coordinate (e.g.,
     /// `! Coordinate::isConstrained()`) in the model, using the provided optimal
     /// force. Increasing the optimal force decreases the required control

@@ -205,10 +205,10 @@ void ModelFactory::replaceJointWithWeldJoint(
 
     // Create the new joint and add it to the model.
     auto* new_joint = new WeldJoint(jointName,
-                                    model.getComponent<PhysicalFrame>(parent_body_path),
-                                    parent_offset->get_translation(), parent_offset->get_orientation(),
-                                    model.getComponent<PhysicalFrame>(child_body_path),
-                                    child_offset->get_translation(), child_offset->get_orientation());
+            model.getComponent<PhysicalFrame>(parent_body_path),
+            parent_offset->get_translation(), parent_offset->get_orientation(),
+            model.getComponent<PhysicalFrame>(child_body_path),
+            child_offset->get_translation(), child_offset->get_orientation());
     model.addJoint(new_joint);
 
     model.finalizeConnections();

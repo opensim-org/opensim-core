@@ -30,6 +30,7 @@ namespace OpenSim {
 
 class MocoProblem;
 class DiscreteForces;
+class PositionMotion;
 class AccelerationMotion;
 
 /// The primary intent of this class is for use by MocoSolver%s, but users
@@ -102,6 +103,13 @@ public:
     int getNumStates() const { return (int)m_state_infos.size(); }
     int getNumControls() const { return (int)m_control_infos.size(); }
     int getNumParameters() const { return (int)m_parameters.size(); }
+    /// Does the model contain a PositionMotion to prescribe all generalized
+    /// coordinates, speeds, and accelerations?
+    bool isPrescribedKinematics() const { return m_prescribedKinematics; }
+    /// This excludes generalized coordinate and speed states if
+    /// isPrescribedKinematics() is true.
+    std::vector<std::string> createStateVariableNamesInSystemOrder(
+            std::unordered_map<int, int>& yIndexMap) const;
     /// Get the state names of all the state infos.
     std::vector<std::string> createStateInfoNames() const;
     /// Get the control names of all the control infos.
@@ -257,10 +265,15 @@ private:
 
     Model m_model_base;
     mutable SimTK::State m_state_base;
+    SimTK::ReferencePtr<const PositionMotion> m_position_motion_base;
     Model m_model_disabled_constraints;
     mutable SimTK::State m_state_disabled_constraints;
+    SimTK::ReferencePtr<const PositionMotion>
+            m_position_motion_disabled_constraints;
     SimTK::ReferencePtr<DiscreteForces> m_constraint_forces;
     SimTK::ReferencePtr<AccelerationMotion> m_acceleration_motion;
+
+    bool m_prescribedKinematics = false;
 
     std::unordered_map<std::string, MocoVariableInfo> m_state_infos;
     std::unordered_map<std::string, MocoVariableInfo> m_control_infos;
