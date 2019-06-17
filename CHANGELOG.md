@@ -20,7 +20,7 @@ Converting from v4.0 to v4.1
 
 Bug Fixes
 ---------
-
+- Fixed bug in osimTable2Struct.m for renaming unlabelled markers (PR #2491)
 
 
 Documentation
@@ -30,6 +30,10 @@ Documentation
 Other Changes
 -------------
 - Performance of reading large data files has been significantly improved. A 50MB .sto file would take 10-11 min to read now takes 2-3 seconds. (PR #2399)
+- Added Matlab example script of plotting the Force-length properties of muscles in a models.
+- Added Matlab example script for creating an Actuator file from a model. 
+- Added Matlab example script for building and simulating a simple arm model. 
+- Added Matlab example script for building and simulating a simple pendulum model. Includes the use of OutputReporters to print the location of Markers on the model and model coordinate values.  
 
 v4.0
 ====
