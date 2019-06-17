@@ -10,7 +10,7 @@ c3dpath = fullfile(cd,'walking2.c3d');
 c3d = osimC3D(c3dpath,1);
 % Get tables directly from c3d file adapter
 c3dAdapter = C3DFileAdapter();
-data = c3dAdapter.read('walking2.c3d');
+data = c3dAdapter.readFile('walking2.c3d',1);
 markers = data.get('markers');
 forces = data.get('forces');
 
