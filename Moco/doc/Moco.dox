@@ -32,11 +32,6 @@ Parts of the documentation:
   - @ref mocostudy
   - @ref mocoimplguide
 
-
-@page mocotrack MocoTrack: motion tracking
-
-@page mocoinverse MocoInverse: solving muscle/actuator redundancy
-
 */
 
 /**
