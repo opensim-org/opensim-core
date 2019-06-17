@@ -318,7 +318,7 @@ MocoSolution runBaselineProblem(bool removeMuscles, double controlWeight = 0.1,
     track.set_initial_time(0.81);
     track.set_final_time(1.65);
     track.set_control_effort_weight(controlWeight);
-    //track.set_apply_tracked_states_to_guess(true);
+    track.set_allow_unused_references(true);
 
     MocoStudy moco = track.initialize();
 
@@ -698,12 +698,12 @@ int main() {
 
     // Baseline tracking problem w/o muscles.
     // --------------------------------------
-    MocoSolution baseline = runBaselineProblem(true, controlWeight);
+    //MocoSolution baseline = runBaselineProblem(true, controlWeight);
 
     // Baseline tracking problem w/ muscles.
     // -------------------------------------
-    //MocoSolution baselineWithMuscles = runBaselineProblem(false, controlWeight,
-    //  "sandboxMocoTrack_solution_baseline_muscles.sto");
+    MocoSolution baselineWithMuscles = runBaselineProblem(false, controlWeight,
+      "sandboxMocoTrack_solution_baseline_muscles.sto");
 
     // Knee adduction minimization w/o muscles.
     // ----------------------------------------

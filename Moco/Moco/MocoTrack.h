@@ -149,7 +149,7 @@ public:
         "MocoProblem. ");
 
     OpenSim_DECLARE_PROPERTY(states_global_tracking_weight, double,
-        "The weight for the MocoStateTrackingCost which applies to tracking " 
+        "The weight for the MocoStateTrackingCost that applies to tracking " 
         "errors for all states in the reference.");
 
     OpenSim_DECLARE_PROPERTY(states_weight_set, MocoWeightSet,
@@ -173,13 +173,17 @@ public:
         "MocoProblem.");
 
     OpenSim_DECLARE_PROPERTY(markers_global_tracking_weight, double,
-        "The weight for the MocoMarkerTrackingCost which that to tracking "
+        "The weight for the MocoMarkerTrackingCost that applies to tracking "
         "errors for all markers in the reference.");
 
     OpenSim_DECLARE_PROPERTY(markers_weight_set, MocoWeightSet,
         "A set of tracking weights for individual marker positions. The "
         "weight names should match the names of the column labels in the "
         "file associated with the 'markers_reference' property.");
+
+    OpenSim_DECLARE_PROPERTY(allow_unused_references, bool, 
+        "Allow references to contain data not associated with any components "
+        "in the model (such data would be ignored). Default: false.");
 
     OpenSim_DECLARE_PROPERTY(guess_file, std::string,
         "Path to a STO file containing a guess for the problem. The path can "

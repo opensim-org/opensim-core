@@ -298,9 +298,9 @@ TimeSeriesTable_<T> analyze(Model model, const MocoIterate& iterate,
     // Loop through all the outputs for all components in the model, and if
     // the output path matches one provided in the argument and the output type
     // agrees with the template argument type, add it to the report.
-    for (const auto& comp : model.getComponentList()) {
+    for (auto& comp : model.updComponentList()) {
         for (const auto& outputName : comp.getOutputNames()) {
-            const auto& output = comp.getOutput(outputName);
+            auto& output = comp.updOutput(outputName);
             auto thisOutputPath = output.getPathName();
             for (const auto& outputPathArg : outputPaths) {
                 if (std::regex_match(thisOutputPath, 

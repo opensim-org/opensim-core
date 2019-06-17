@@ -72,8 +72,9 @@ protected:
     void updateTimeInfo(const std::string& dataLabel, const double& dataInitial,
             const double& dataFinal, TimeInfo& info) const;
 
-    /// This function accepts a file name and returns the full file path 
-    /// including the file's directory.
+    /// Get the canonicalized absolute pathname from a given pathname which can
+    /// be relative or absolute. Here, canonicalized means that the pathname is
+    /// analyzed and possibly modified to conform to the current platform.
     std::string getFilePath(const std::string& file) const;
 
 #endif

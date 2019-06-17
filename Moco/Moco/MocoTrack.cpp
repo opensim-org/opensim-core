@@ -42,6 +42,7 @@ void MocoTrack::constructProperties() {
     constructProperty_markers_reference(TableProcessor());
     constructProperty_markers_global_tracking_weight(1);
     constructProperty_markers_weight_set(MocoWeightSet());
+    constructProperty_allow_unused_references(false);
     constructProperty_guess_file("");
     constructProperty_apply_tracked_states_to_guess(false);
     constructProperty_minimize_control_effort(true);
@@ -210,6 +211,7 @@ TimeSeriesTable MocoTrack::configureStateTracking(MocoProblem& problem,
             get_states_global_tracking_weight());
     stateTracking->setReference(states);
     stateTracking->setWeightSet(weights);
+    stateTracking->setAllowUnusedReferences(get_allow_unused_references());
 
     // Update the time info struct.
     updateTimeInfo("states", states.getIndependentColumn().front(),
@@ -247,6 +249,7 @@ void MocoTrack::configureMarkerTracking(MocoProblem& problem, Model& model) {
         problem.addCost<MocoMarkerTrackingCost>("marking_tracking",
             get_markers_global_tracking_weight());
     markerTracking->setMarkersReference(markersRef);
+    markerTracking->setAllowUnusedReferences(get_allow_unused_references());
 
     // Update the time info struct.
     updateTimeInfo("markers", markers.getIndependentColumn().front(),
