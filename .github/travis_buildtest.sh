@@ -64,7 +64,7 @@ mkdir ~/to_deploy
 cd ~
 # Leave symlinks intact.
 ZIPNAME=opensim-moco-${TRAVIS_OS_NAME}
-if [ $TRAVIS_PULL_REQUEST_BRANCH != "" ]; then
+if [ ! -z "$TRAVIS_PULL_REQUEST_BRANCH" ]; then
     ZIPNAME=$ZIPNAME_${TRAVIS_PULL_REQUEST_BRANCH}
 fi
 ZIPNAME=$ZIPNAME_${TRAVIS_BRANCH}.zip
