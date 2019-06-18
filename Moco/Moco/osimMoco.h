@@ -38,6 +38,7 @@
 #include "MocoCost/MocoStateTrackingCost.h"
 #include "MocoCost/MocoTranslationTrackingCost.h"
 #include "MocoInverse.h"
+#include "MocoTrack.h"
 #include "MocoIterate.h"
 #include "MocoParameter.h"
 #include "MocoProblem.h"
