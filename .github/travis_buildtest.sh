@@ -32,7 +32,8 @@ OSIM_CMAKE_ARGS+=(-DMOCO_JAVA_BINDINGS=$WRAP -DMOCO_PYTHON_BINDINGS=$WRAP)
 # Bindings.
 OSIM_CMAKE_ARGS+=(-DSWIG_EXECUTABLE=$HOME/swig/bin/swig)
 
-ls /usr/lib
+# CMake wasn't finding these libraries for some reason, so we hardcode their
+# locations.
 OSIM_CMAKE_ARGS+=(-Dpkgcfg_lib_IPOPT_m=/usr/lib/libm.dylib)
 OSIM_CMAKE_ARGS+=(-Dpkgcfg_lib_IPOPT_dl=/usr/lib/libdl.dylib)
 OSIM_CMAKE_ARGS+=(-Dpkgcfg_lib_IPOPT_System=/System/Library/Frameworks/System.framework)
@@ -51,7 +52,7 @@ make -j$NPROC;
 ctest -j8 --output-on-failure $CTEST_FLAGS --exclude-regex $TESTS_TO_EXCLUDE
 
 ## Build doxygen documentation.
-if [ "$DOXY" = "on" ]; then make doxygen; fi
+if [ "$DOXY" = "on" ]; then make Moco_doxygen; fi
   
 ## Install. Suppress output.
 make -j8 install > /dev/null
@@ -62,6 +63,11 @@ mkdir ~/to_deploy
 # Zip up Moco relative to where it's installed.
 cd ~
 # Leave symlinks intact.
+ZIPNAME=opensim-moco-${TRAVIS_OS_NAME}
+if [ $TRAVIS_PULL_REQUEST_BRANCH != "" ]; then
+    ZIPNAME=$ZIPNAME_${TRAVIS_PULL_REQUEST_BRANCH}
+fi
+ZIPNAME=$ZIPNAME_${TRAVIS_BRANCH}.zip
 zip --symlinks --recurse-paths --quiet ~/to_deploy/$ZIPNAME opensim-moco
 
 ## Set up ssh for sourceforge.
