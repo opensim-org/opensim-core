@@ -42,14 +42,6 @@ TimeSeriesTable_<SimTK::Rotation> OpenSenseUtilities::
     // OpenSim ground reference frame with Y up and X forward.
     SimTK::Rotation R_XG = sensorToOpenSim;
 
-    //SimTK::Vec3 grav(9.807, 0., 0.);
-    //double theta = acos(avg_accel.transpose() * grav / (avg_accel.norm() * grav.norm()));
-    //SimTK::Vec3 C = SimTK::cross(avg_accel, grav);
-    //C = C / C.norm();
-
-    //SimTK::Rotation tilt_correction = SimTK::Rotation(axisAngleToRotation(C, theta));
-    //R_XG = R_XG * tilt_correction;
-
     int nc = int(quaternionsTable.getNumColumns());
 
     const auto& times = quaternionsTable.getIndependentColumn();
