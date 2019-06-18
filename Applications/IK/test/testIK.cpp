@@ -185,7 +185,7 @@ void testMarkerWeightAssignments(const std::string& ikSetupFile)
     // update the tasks of the IK Tool
     ik.getIKTaskSet() = tasks;
 
-    // perform the check: superfluous tasks should be ignored
+    // perform the check: superfluous tasks should also be ignored
     checkMarkersReferenceConsistencyFromTool(ik);
 }
 
@@ -214,10 +214,8 @@ void checkMarkersReferenceConsistencyFromTool(InverseKinematicsTool& ik)
                 "Mismatched weight to marker task");
         }
         else {
-            cout << " default: " << markersReference.get_default_weight() << endl;
-            SimTK_ASSERT_ALWAYS(
-                weights[i] == markersReference.get_default_weight(),
-                "Mismatched weight to default weight");
+            OPENSIM_THROW(Exception,
+                "Removed IK Task " + names[i] + " still has a Reference.")
         }
     }
 }
