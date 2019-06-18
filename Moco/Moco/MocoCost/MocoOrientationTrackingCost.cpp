@@ -40,7 +40,7 @@ void MocoOrientationTrackingCost::initializeOnModelImpl(const Model& model)
             assert(get_states_reference_file() == "");
             assert(m_states_table.getNumColumns() == 0);
             assert(m_rotation_table.getNumColumns() == 0);
-            rotationTableToUse = readTableFromFile<Rotation>(
+            rotationTableToUse = readTableFromFileT<Rotation>(
                 get_rotation_reference_file());
 
         } else { // rotation table
@@ -121,6 +121,9 @@ void MocoOrientationTrackingCost::initializeOnModelImpl(const Model& model)
         }
         rotationTable.setColumnLabels(pathsToUse);
     }
+
+    // Check that there are no redundant columns in the reference data.
+    checkRedundantLabels(rotationTable.getColumnLabels());
 
     // Cache the model frames and rotation weights based on the order of the 
     // rotation table.

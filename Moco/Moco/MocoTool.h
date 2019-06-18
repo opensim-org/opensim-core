@@ -71,6 +71,13 @@ protected:
     /// mesh_interval property.
     void updateTimeInfo(const std::string& dataLabel, const double& dataInitial,
             const double& dataFinal, TimeInfo& info) const;
+
+    /// Get the canonicalized absolute pathname with respect to the setup file
+    /// directory from a given pathname which can be relative or absolute. Here, 
+    /// canonicalized means that the pathname is analyzed and possibly modified 
+    /// to conform to the current platform.
+    std::string getFilePath(const std::string& file) const;
+
 #endif
 private:
     void constructProperties();

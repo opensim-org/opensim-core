@@ -92,6 +92,8 @@ set(MOCO_SOURCES
         MocoCasADiSolver/CasOCIterate.h
         MocoInverse.cpp
         MocoInverse.h
+        MocoTrack.h
+        MocoTrack.cpp
         Common/TableProcessor.h
         ModelProcessor.h
         ModelOperators.h
