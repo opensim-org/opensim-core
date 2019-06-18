@@ -568,9 +568,8 @@ Solution Transcription::solve(const Iterate& guessOrig) {
 }
 
 void Transcription::printConstraintValues(
-        const Iterate& it, const Constraints<casadi::DM>& constraints) const {
-
-    auto& stream = std::cout;
+        const Iterate& it, const Constraints<casadi::DM>& constraints,
+        std::ostream& stream) const {
 
     // We want to be able to restore the stream's original formatting.
     OpenSim::StreamFormat streamFormat(stream);
@@ -602,7 +601,7 @@ void Transcription::printConstraintValues(
 
     // Bounds on time-varying variables.
     // ---------------------------------
-    auto print_bounds = [&maxNameLength](const std::string& description,
+    auto print_bounds = [&stream, maxNameLength](const std::string& description,
                                 const std::vector<std::string>& names,
                                 const casadi::DM& times,
                                 const casadi::DM& values,
@@ -704,7 +703,8 @@ void Transcription::printConstraintValues(
            << std::endl;
     stream << "The case of lower==upper==value is ignored." << std::endl;
 
-    auto printParameterBounds = [&maxNameLength](const std::string& description,
+    auto printParameterBounds = [&stream, maxNameLength](
+                                        const std::string& description,
                                         const std::vector<std::string>& names,
                                         const casadi::DM& values,
                                         const casadi::DM& lower,

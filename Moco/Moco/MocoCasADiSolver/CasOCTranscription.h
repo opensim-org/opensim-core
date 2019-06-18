@@ -105,7 +105,8 @@ protected:
         T interp_controls;
     };
     void printConstraintValues(const Iterate& it,
-            const Constraints<casadi::DM>& constraints) const;
+            const Constraints<casadi::DM>& constraints,
+            std::ostream& stream = std::cout) const;
 
     const Solver& m_solver;
     const Problem& m_problem;
