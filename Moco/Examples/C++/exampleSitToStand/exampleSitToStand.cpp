@@ -42,7 +42,7 @@ Model createTorqueDrivenModel() {
 
     Model model("sitToStand_3dof9musc.osim");
 
-    removeMuscles(model);
+    ModelFactory::removeMuscles(model);
     addCoordinateActuator(model, "hip_flexion_r", 100);
     addCoordinateActuator(model, "knee_angle_r", 300);
     addCoordinateActuator(model, "ankle_angle_r", 100);
@@ -69,12 +69,12 @@ Model createMuscleDrivenModel() {
     return model;
 }
 
-MocoTool configureMocoTool() {
+MocoStudy configureMocoStudy() {
 
-    // Create a MocoTool instance.
-    MocoTool moco;
+    // Create a MocoStudy instance.
+    MocoStudy moco;
 
-    // Get the empty MocoSolver (here MocoCasADiSolver) from the MocoTool.
+    // Get the empty MocoSolver (here MocoCasADiSolver) from the MocoStudy.
     auto& solver = moco.initCasADiSolver();
     solver.set_num_mesh_points(25);
     solver.set_dynamics_mode("implicit"); // default: "explicit"
@@ -85,7 +85,7 @@ MocoTool configureMocoTool() {
     solver.set_optim_hessian_approximation("limited-memory");
     solver.set_optim_finite_difference_scheme("forward");
 
-    // Get the empty MocoProblem from the MocoTool.
+    // Get the empty MocoProblem from the MocoStudy.
     auto& problem = moco.updProblem();
     // Set the bounds for the MocoProblem.
     problem.setTimeBounds(0, 1);
@@ -108,7 +108,7 @@ MocoTool configureMocoTool() {
 
 int main() {
 
-    //MocoTool moco = configureMocoTool();
+    //MocoStudy moco = configureMocoStudy();
     //auto& problem = moco.updProblem();
     //problem.setModelCopy(createTorqueDrivenModel());
     //problem.addCost<MocoControlCost>();
@@ -122,7 +122,7 @@ int main() {
     //moco.visualize(predictSolution);
 
 
-    //MocoTool mocoTracking = configureMocoTool();
+    //MocoStudy mocoTracking = configureMocoStudy();
     //auto& problemTracking = mocoTracking.updProblem();
     //problemTracking.setModelCopy(createTorqueDrivenModel());
 
@@ -142,7 +142,7 @@ int main() {
     //mocoTracking.visualize(trackingSolution);
 
 
-    MocoTool mocoMusclePredict = configureMocoTool();
+    MocoStudy mocoMusclePredict = configureMocoStudy();
     auto& problemMusclePredict = mocoMusclePredict.updProblem();
     problemMusclePredict.setModelCopy(createMuscleDrivenModel());
 

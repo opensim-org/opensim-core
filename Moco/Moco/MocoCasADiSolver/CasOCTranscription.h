@@ -28,10 +28,8 @@ namespace CasOC {
 /// and obey the settings that the user specified in the CasOC::Solver.
 class Transcription {
 public:
-    Transcription(const Solver& solver, const Problem& problem,
-            const int& numGridPoints, const int& numMeshPoints)
-            : m_solver(solver), m_problem(problem),
-              m_numGridPoints(numGridPoints), m_numMeshPoints(numMeshPoints) {}
+    Transcription(const Solver& solver, const Problem& problem)
+            : m_solver(solver), m_problem(problem) {}
     virtual ~Transcription() = default;
     Iterate createInitialGuessFromBounds() const;
     /// Use the provided random number generator to generate an iterate.
@@ -71,7 +69,7 @@ protected:
     /// overridden virtual methods are accessible to the base class. This
     /// implementation allows initialization to occur during construction,
     /// avoiding an extra call on the instantiated object.
-    void createVariablesAndSetBounds();
+    void createVariablesAndSetBounds(const casadi::DM& grid);
 
     /// We assume all functions depend on time and parameters.
     /// "inputs" is prepended by time and postpended (?) by parameters.
@@ -88,10 +86,9 @@ protected:
             const auto& upper = bounds.upper;
             m_upperBounds[var](rowIndices, columnIndices) = upper;
         } else {
-            m_lowerBounds[var](rowIndices, columnIndices) =
-                    -std::numeric_limits<double>::infinity();
-            m_upperBounds[var](rowIndices, columnIndices) =
-                    std::numeric_limits<double>::infinity();
+            const auto inf = std::numeric_limits<double>::infinity();
+            m_lowerBounds[var](rowIndices, columnIndices) = -inf;
+            m_upperBounds[var](rowIndices, columnIndices) =  inf;
         }
     }
 
@@ -100,11 +97,11 @@ protected:
 
     const Solver& m_solver;
     const Problem& m_problem;
-    casadi::DM m_grid;
     int m_numGridPoints = 0;
     int m_numMeshPoints = 0;
     int m_numMeshIntervals = 0;
     int m_numPointsIgnoringConstraints = 0;
+    casadi::DM m_grid;
     casadi::MX m_times;
     casadi::MX m_duration;
 
@@ -188,6 +185,7 @@ private:
         }
         return out;
     }
+    friend class NlpsolCallback;
 };
 
 } // namespace CasOC

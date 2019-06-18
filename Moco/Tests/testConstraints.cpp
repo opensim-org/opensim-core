@@ -18,6 +18,7 @@
 
 #define CATCH_CONFIG_MAIN
 #include "Testing.h"
+using Catch::Contains;
 #include <Moco/osimMoco.h>
 
 #include <simbody/internal/Constraint.h>
@@ -541,7 +542,7 @@ MocoIterate runForwardSimulation(
 template <typename TestType>
 void testDoublePendulumPointOnLine(
         bool enforce_constraint_derivatives, std::string dynamics_mode) {
-    MocoTool moco;
+    MocoStudy moco;
     moco.setName("double_pendulum_point_on_line");
     MocoProblem& mp = moco.updProblem();
     // Create double pendulum model and add the point-on-line constraint. The
@@ -563,10 +564,15 @@ void testDoublePendulumPointOnLine(
     // point-on-line constraint.
     const double theta_i = 0.5;
     const double theta_f = SimTK::Pi / 2;
-    mp.setStateInfo("/jointset/j0/q0/value", {-10, 10}, theta_i, theta_f);
+    mp.setStateInfo(
+            "/jointset/j0/q0/value", {theta_i, theta_f}, theta_i, theta_f);
     mp.setStateInfo("/jointset/j0/q0/speed", {-50, 50});
-    mp.setStateInfo("/jointset/j1/q1/value", {-10, 10}, SimTK::Pi - 2 * theta_i,
-            SimTK::Pi - 2 * theta_f);
+    {
+        double initial = SimTK::Pi - 2 * theta_i;
+        double final = SimTK::Pi - 2 * theta_f;
+        mp.setStateInfo(
+                "/jointset/j1/q1/value", {final, initial}, initial, final);
+    }
     mp.setStateInfo("/jointset/j1/q1/speed", {-50, 50});
     mp.setControlInfo("/tau0", {-100, 100});
     mp.setControlInfo("/tau1", {-100, 100});
@@ -574,7 +580,7 @@ void testDoublePendulumPointOnLine(
     mp.addCost<MocoControlCost>();
 
     auto& ms = moco.initSolver<TestType>();
-    ms.set_num_mesh_points(10);
+    ms.set_num_mesh_points(20);
     ms.set_verbosity(2);
     ms.set_optim_solver("ipopt");
     ms.set_optim_convergence_tolerance(1e-3);
@@ -597,12 +603,8 @@ void testDoublePendulumPointOnLine(
         const SimTK::Vec3& loc = endeff.getLocationInGround(s);
 
         // The end-effector should not have moved in the x- or z-directions.
-        // If using Hermite-Simpson, only check on the mesh interval endpoints,
-        // where the path constraint is enforced.
-        if (ms.get_transcription_scheme() == "hermite-simpson" && !(i % 2)) {
-            SimTK_TEST_EQ_TOL(loc[0], 0, 1e-6);
-            SimTK_TEST_EQ_TOL(loc[2], 0, 1e-6);
-        }
+        SimTK_TEST_EQ_TOL(loc[0], 0, 1e-2);
+        SimTK_TEST_EQ_TOL(loc[2], 0, 1e-2);
     }
 
     // Run a forward simulation using the solution controls in prescribed
@@ -620,7 +622,7 @@ void testDoublePendulumCoordinateCoupler(MocoSolution& solution,
         bool enforce_constraint_derivatives, std::string dynamics_mode) {
     std::cout.rdbuf(LogManager::cout.rdbuf());
     std::cerr.rdbuf(LogManager::cerr.rdbuf());
-    MocoTool moco;
+    MocoStudy moco;
     moco.setName("double_pendulum_coordinate_coupler");
 
     // Create double pendulum model and add the coordinate coupler constraint.
@@ -651,12 +653,12 @@ void testDoublePendulumCoordinateCoupler(MocoSolution& solution,
     mp.setTimeBounds(0, 1);
     // Boundary conditions are only enforced for the first coordinate, so we can
     // test that the second coordinate is properly coupled.
-    mp.setStateInfo("/jointset/j0/q0/value", {-10, 10}, 0, SimTK::Pi / 2);
-    mp.setStateInfo("/jointset/j0/q0/speed", {-50, 50}, 0, 0);
+    mp.setStateInfo("/jointset/j0/q0/value", {-5, 5}, 0, SimTK::Pi / 2);
+    mp.setStateInfo("/jointset/j0/q0/speed", {-10, 10}, 0, 0);
     mp.setStateInfo("/jointset/j1/q1/value", {-10, 10});
-    mp.setStateInfo("/jointset/j1/q1/speed", {-50, 50}, 0, 0);
-    mp.setControlInfo("/tau0", {-100, 100});
-    mp.setControlInfo("/tau1", {-100, 100});
+    mp.setStateInfo("/jointset/j1/q1/speed", {-5, 5}, 0, 0);
+    mp.setControlInfo("/tau0", {-50, 50});
+    mp.setControlInfo("/tau1", {-50, 50});
     mp.addCost<MocoControlCost>();
 
     auto& ms = moco.initSolver<SolverType>();
@@ -682,11 +684,8 @@ void testDoublePendulumCoordinateCoupler(MocoSolution& solution,
         model->realizePosition(s);
 
         // The coordinates should be coupled according to the linear function
-        // described above. If using Hermite-Simpson, only check on the mesh
-        // interval endpoints, where the path constraint is enforced.
-        if (ms.get_transcription_scheme() == "hermite-simpson" && !(i % 2)) {
-            SimTK_TEST_EQ_TOL(q1.getValue(s), m * q0.getValue(s) + b, 1e-6);
-        }
+        // described above.
+        SimTK_TEST_EQ_TOL(q1.getValue(s), m * q0.getValue(s) + b, 1e-2);
     }
 
     // Run a forward simulation using the solution controls in prescribed
@@ -701,7 +700,7 @@ void testDoublePendulumCoordinateCoupler(MocoSolution& solution,
 template <typename SolverType>
 void testDoublePendulumPrescribedMotion(MocoSolution& couplerSolution,
         bool enforce_constraint_derivatives, std::string dynamics_mode) {
-    MocoTool moco;
+    MocoStudy moco;
     moco.setName("double_pendulum_prescribed_motion");
     MocoProblem& mp = moco.updProblem();
 
@@ -734,8 +733,8 @@ void testDoublePendulumPrescribedMotion(MocoSolution& couplerSolution,
     mp.setStateInfo("/jointset/j0/q0/speed", {-50, 50});
     mp.setStateInfo("/jointset/j1/q1/value", {-10, 10});
     mp.setStateInfo("/jointset/j1/q1/speed", {-50, 50});
-    mp.setControlInfo("/tau0", {-100, 100});
-    mp.setControlInfo("/tau1", {-100, 100});
+    mp.setControlInfo("/tau0", {-25, 25});
+    mp.setControlInfo("/tau1", {-25, 25});
 
     mp.addCost<MocoControlCost>();
 
@@ -845,8 +844,6 @@ void testDoublePendulumPrescribedMotion(MocoSolution& couplerSolution,
 
 TEMPLATE_TEST_CASE("DoublePendulum with and without constraint derivatives",
         "[explicit]", MocoTropterSolver, MocoCasADiSolver) {
-    // TODO test tolerances can be improved significantly by not including
-    // Hermite-Simpson midpoint values in comparisons.
     SECTION("DoublePendulum without constraint derivatives") {
         MocoSolution couplerSol;
         testDoublePendulumCoordinateCoupler<TestType>(
@@ -866,8 +863,6 @@ TEMPLATE_TEST_CASE("DoublePendulum with and without constraint derivatives",
 
 TEST_CASE("DoublePendulum with and without constraint derivatives",
         "[implicit]") {
-    // TODO test tolerances can be improved significantly by not including
-    // Hermite-Simpson midpoint values in comparisons.
     SECTION("DoublePendulum without constraint derivatives") {
         MocoSolution couplerSol;
         testDoublePendulumCoordinateCoupler<MocoCasADiSolver>(
@@ -909,7 +904,8 @@ class EqualControlConstraint : public MocoPathConstraint {
     OpenSim_DECLARE_CONCRETE_OBJECT(EqualControlConstraint, MocoPathConstraint);
 
 protected:
-    void initializeOnModelImpl(const Model& model) const override {
+    void initializeOnModelImpl(
+            const Model& model, const MocoProblemInfo&) const override {
         // Make sure the model generates a state object with the two controls we
         // expect, no more and no less.
         const auto state = model.getWorkingState();
@@ -927,7 +923,7 @@ protected:
         const auto& controls = getModel().getControls(state);
         // In the problem below, the actuators are bilateral and act in
         // opposite directions, so we use addition to create the residual here.
-        errors[0] = abs(controls[1]) - abs(controls[0]);
+        errors[0] = controls[1] + controls[0];
     }
 };
 
@@ -937,7 +933,7 @@ protected:
 TEMPLATE_TEST_CASE(
         "DoublePendulumEqualControl", "", MocoTropterSolver, MocoCasADiSolver) {
     OpenSim::Object::registerType(EqualControlConstraint());
-    MocoTool moco;
+    MocoStudy moco;
     moco.setName("double_pendulum_equal_control");
     MocoProblem& mp = moco.updProblem();
     auto model = createDoublePendulumModel();
@@ -957,8 +953,8 @@ TEMPLATE_TEST_CASE(
     mp.setStateInfo("/jointset/j0/q0/speed", {-50, 50});
     mp.setStateInfo("/jointset/j1/q1/value", {-10, 10}, SimTK::Pi, 0);
     mp.setStateInfo("/jointset/j1/q1/speed", {-50, 50});
-    mp.setControlInfo("/tau0", {-100, 100});
-    mp.setControlInfo("/tau1", {-100, 100});
+    mp.setControlInfo("/tau0", {-50, 50});
+    mp.setControlInfo("/tau1", {-50, 50});
 
     mp.addCost<MocoControlCost>();
 
@@ -976,7 +972,6 @@ TEMPLATE_TEST_CASE(
     const auto& control_tau0 = solution.getControl("/tau0");
     const auto& control_tau1 = solution.getControl("/tau1");
     const auto& control_res = control_tau1.abs() - control_tau0.abs();
-
     SimTK_TEST_EQ_TOL(control_res.normRMS(), 0, 1e-6);
 
     // Run a forward simulation using the solution controls in prescribed
@@ -992,7 +987,7 @@ TEMPLATE_TEST_CASE(
             "testConstraints_testDoublePendulumEqualControl.omoco";
     moco.print(setup_fname);
     MocoSolution solutionDeserialized;
-    MocoTool mocoDeserialize(setup_fname);
+    MocoStudy mocoDeserialize(setup_fname);
     solutionDeserialized = mocoDeserialize.solve();
     SimTK_TEST(solution.isNumericallyEqual(solutionDeserialized));
 }
@@ -1018,17 +1013,15 @@ TEMPLATE_TEST_CASE(
     model.addConstraint(constraint);
     model.finalizeConnections();
 
-    MocoTool moco;
+    MocoStudy moco;
     auto& problem = moco.updProblem();
     problem.setModelCopy(model);
     problem.setTimeBounds(0, 1);
     problem.addParameter("mass", "/bodyset/b", "mass", MocoBounds(0.5, 1.5));
     auto& solver = moco.initSolver<TestType>();
     solver.set_num_mesh_points(10);
-    solver.set_enforce_constraint_derivatives(true);
-    solver.set_transcription_scheme("hermite-simpson");
     MocoSolution solution = moco.solve();
-    CHECK(solution.getParameter("mass") == Approx(1.0).epsilon(1e-4));
+    CHECK(solution.getParameter("mass") == Approx(1.0).epsilon(1e-3));
 }
 
 class MocoJointReactionComponentCost : public MocoCost {
@@ -1047,7 +1040,7 @@ public:
 template <typename TestType>
 void testDoublePendulumPointOnLineJointReaction(
         bool enforce_constraint_derivatives, std::string dynamics_mode) {
-    MocoTool moco;
+    MocoStudy moco;
     moco.setName("double_pendulum_point_on_line");
     MocoProblem& mp = moco.updProblem();
     // Create double pendulum model and add the point-on-line constraint. The
@@ -1069,7 +1062,7 @@ void testDoublePendulumPointOnLineJointReaction(
     actuator->setName("push");
     actuator->set_point(endeff.get_location());
     actuator->set_point_is_global(false);
-    actuator->set_direction(SimTK::Vec3(0, 0, -1));
+    actuator->set_direction(Vec3(0, 0, -1));
     actuator->set_force_is_global(true);
     model->addComponent(actuator);
 
@@ -1095,7 +1088,7 @@ void testDoublePendulumPointOnLineJointReaction(
     ms.set_num_mesh_points(N);
     ms.set_verbosity(2);
     ms.set_optim_solver("ipopt");
-    ms.set_optim_convergence_tolerance(1e-3);
+    ms.set_optim_convergence_tolerance(1e-6);
     ms.set_transcription_scheme("hermite-simpson");
     ms.set_enforce_constraint_derivatives(enforce_constraint_derivatives);
     ms.set_minimize_lagrange_multipliers(true);
@@ -1130,7 +1123,8 @@ TEST_CASE("Multipliers are correct", "") {
     std::cout.rdbuf(LogManager::cout.rdbuf());
     std::cerr.rdbuf(LogManager::cerr.rdbuf());
     SECTION("Body welded to ground") {
-        auto dynamics_mode = GENERATE(as<std::string>{}, "implicit", "explicit");
+        auto dynamics_mode =
+                GENERATE(as<std::string>{}, "implicit", "explicit");
 
         Model model;
         const double mass = 1.3169;
@@ -1145,8 +1139,7 @@ TEST_CASE("Multipliers are correct", "") {
         model.addConstraint(constr);
         model.finalizeConnections();
 
-
-        MocoTool moco;
+        MocoStudy moco;
         auto& problem = moco.updProblem();
         problem.setModelCopy(model);
 
@@ -1187,7 +1180,8 @@ TEST_CASE("Multipliers are correct", "") {
     // This test ensures that the multiplier has the correct value.
     SECTION("Planar point mass with CoordinateCouplerConstraint") {
 
-        auto dynamics_mode = GENERATE(as<std::string>{}, "implicit", "explicit");
+        auto dynamics_mode =
+                GENERATE(as<std::string>{}, "implicit", "explicit");
 
         Model model = ModelFactory::createPlanarPointMass();
         model.set_gravity(Vec3(0));
@@ -1203,7 +1197,7 @@ TEST_CASE("Multipliers are correct", "") {
 
         model.finalizeConnections();
 
-        MocoTool moco;
+        MocoStudy moco;
         auto& problem = moco.updProblem();
         problem.setModelCopy(model);
 
@@ -1253,7 +1247,7 @@ TEST_CASE("Prescribed kinematics with kinematic constraints", "") {
 
     model.finalizeConnections();
 
-    MocoTool moco;
+    MocoStudy moco;
     auto& problem = moco.updProblem();
     problem.setModelCopy(model);
 
@@ -1265,12 +1259,143 @@ TEST_CASE("Prescribed kinematics with kinematic constraints", "") {
     auto& solver = moco.initCasADiSolver();
     solver.set_num_mesh_points(10);
     solver.set_dynamics_mode("implicit");
-    solver.set_transcription_scheme("hermite-simpson");
-    solver.set_enforce_constraint_derivatives(true);
+    solver.set_interpolate_control_midpoints(false);
     MocoSolution solution = moco.solve();
     const auto Fx = solution.getControl("/forceset/force_x");
     const auto Fy = solution.getControl("/forceset/force_y");
     const auto lambda = solution.getMultiplier("lambda_cid2_p0");
 
     OpenSim_CHECK_MATRIX_TOL(lambda, 0.5 * (Fx - Fy), 1e-5);
+}
+
+TEMPLATE_TEST_CASE(
+        "MocoControlBoundConstraint", "", MocoTropterSolver, MocoCasADiSolver) {
+    SECTION("Lower bound only") {
+        MocoStudy moco;
+        auto& problem = moco.updProblem();
+        problem.setModelCopy(ModelFactory::createPendulum());
+        problem.setTimeBounds(0, 1);
+        problem.setStateInfo("/jointset/j0/q0/value", {-10, 10}, 0);
+        problem.setStateInfo("/jointset/j0/q0/speed", {-10, 10}, 0);
+        problem.setControlInfo("/tau0", {-5, 5});
+        problem.addCost<MocoControlCost>();
+        auto* constr = problem.addPathConstraint<MocoControlBoundConstraint>();
+        const double lowerBound = 0.1318;
+        constr->addControlPath("/tau0");
+        constr->setLowerBound(Constant(lowerBound));
+
+        auto& solver = moco.initSolver<TestType>();
+        MocoSolution solution = moco.solve();
+        SimTK::Vector expected(solution.getNumTimes());
+        expected = lowerBound;
+        OpenSim_CHECK_MATRIX_ABSTOL(
+                solution.getControlsTrajectory(), expected, 1e-6);
+    }
+
+    SECTION("Upper bound only") {
+        MocoStudy moco;
+        auto& problem = moco.updProblem();
+        problem.setModelCopy(ModelFactory::createPendulum());
+        problem.setTimeBounds(0, {0.1, 10});
+        problem.setStateInfo("/jointset/j0/q0/value", {0, 1}, 0, 0.53);
+        problem.setStateInfo("/jointset/j0/q0/speed", {-10, 10}, 0, 0);
+        problem.setControlInfo("/tau0", {-20, 20});
+        problem.addCost<MocoFinalTimeCost>();
+        auto* constr = problem.addPathConstraint<MocoControlBoundConstraint>();
+        constr->addControlPath("/tau0");
+        const double upperBound = 11.236;
+        constr->setUpperBound(Constant(upperBound));
+
+        auto& solver = moco.initSolver<TestType>();
+        MocoSolution solution = moco.solve();
+        SimTK::Vector expected(solution.getNumTimes());
+        expected = upperBound;
+        CHECK(SimTK::max(solution.getControlsTrajectory())[0] ==
+                Approx(upperBound).margin(1e-6));
+        CHECK(SimTK::min(solution.getControlsTrajectory())[0] ==
+                Approx(-20).margin(1e-6));
+    }
+
+    SECTION("Upper and lower bounds are the same") {
+        MocoStudy moco;
+        auto& problem = moco.updProblem();
+        problem.setModelCopy(ModelFactory::createPendulum());
+        problem.setTimeBounds(0, 1);
+        problem.setStateInfo("/jointset/j0/q0/value", {-10, 10}, 0);
+        problem.setStateInfo("/jointset/j0/q0/speed", {-10, 10}, 0);
+        problem.setControlInfo("/tau0", {-5, 5});
+        problem.addCost<MocoControlCost>();
+        PiecewiseLinearFunction violateLower;
+        violateLower.addPoint(0, 0);
+        violateLower.addPoint(0.2, 0.5316);
+        violateLower.addPoint(0.7, -0.3137);
+        violateLower.addPoint(1, .0319);
+        auto* constr = problem.addPathConstraint<MocoControlBoundConstraint>();
+        constr->addControlPath("/tau0");
+        constr->setLowerBound(violateLower);
+        constr->setEqualityWithLower(true);
+        auto& solver = moco.initSolver<TestType>();
+        MocoSolution solution = moco.solve();
+        SimTK::Vector expectedV(solution.getNumTimes());
+        for (int itime = 0; itime < expectedV.size(); ++itime) {
+            SimTK::Vector arg(1);
+            arg[0] = solution.getTime()[itime];
+            expectedV[itime] = violateLower.calcValue(arg);
+        }
+        MocoIterate expected = solution;
+        expected.setControl("/tau0", expectedV);
+
+        CHECK(solution.compareContinuousVariablesRMS(
+                      expected, {{"controls", {}}}) < 1e-3);
+    }
+
+    SECTION("Time range of bounds function is too small.") {
+        MocoStudy moco;
+        auto& problem = moco.updProblem();
+        problem.setModelCopy(ModelFactory::createPendulum());
+        problem.setTimeBounds({-31, 0}, {1, 50});
+        problem.addCost<MocoControlCost>();
+        GCVSpline violateLower;
+        violateLower.setDegree(5);
+        violateLower.addPoint(-30.9999, 0);
+        violateLower.addPoint(0, 0);
+        violateLower.addPoint(0.5, 0);
+        violateLower.addPoint(0.7, 0);
+        violateLower.addPoint(0.8, 0);
+        violateLower.addPoint(0.9, 0);
+        violateLower.addPoint(50, 0.319);
+        auto* constr = problem.addPathConstraint<MocoControlBoundConstraint>();
+        constr->addControlPath("/tau0");
+        constr->setLowerBound(violateLower);
+        CHECK_THROWS_WITH(moco.solve(),
+                Contains("must be less than or equal to the minimum"));
+        constr->clearLowerBound();
+        GCVSpline violateUpper;
+        violateUpper.setDegree(5);
+        violateUpper.addPoint(-31, 0);
+        violateUpper.addPoint(0, 0);
+        violateUpper.addPoint(0.5, 0);
+        violateUpper.addPoint(0.7, 0);
+        violateUpper.addPoint(0.8, 0);
+        violateUpper.addPoint(0.9, 0);
+        violateUpper.addPoint(49.99999, .0319);
+        constr->setUpperBound(violateUpper);
+        CHECK_THROWS_WITH(moco.solve(),
+                Contains("must be greater than or equal to the maximum"));
+    }
+
+    SECTION("Can omit both bounds.") {
+        MocoStudy moco;
+        auto& problem = moco.updProblem();
+        problem.setModelCopy(ModelFactory::createPendulum());
+        problem.setTimeBounds(0, 1);
+        problem.setStateInfo("/jointset/j0/q0/value", {-10, 10}, 0);
+        problem.setStateInfo("/jointset/j0/q0/speed", {-10, 10}, 0);
+        problem.setControlInfo("/tau0", {-5, 5});
+        problem.addCost<MocoControlCost>();
+        auto* constr = problem.addPathConstraint<MocoControlBoundConstraint>();
+        moco.solve();
+        constr->addControlPath("/tau0");
+        moco.solve();
+    }
 }

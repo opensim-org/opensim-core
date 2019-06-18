@@ -89,6 +89,20 @@ class MocoCasOCProblem;
 /// instead, as this allows different users to solve the same problem in their
 /// preferred way.
 ///
+/// Parameter variables
+/// ===================
+/// By default, MocoCasADiSolver is much slower than MocoTroperSolver at
+/// handling problems with MocoParameters. Many parameters require invoking
+/// Model::initSystem() to take effect, and this function is expensive (for
+/// CasADi, we must invoke this function for every time point, while in Tropter,
+/// we can invoke the function only once for every NLP iterate). However, if you
+/// know that all parameters in your problem do not require Model::initSystem(),
+/// you can substantially speed up your optimization by setting the
+/// parameters_require_initsystem property to false. Be careful, though: you
+/// will end up with incorrect results if your parameter does indeed require
+/// Model::initSystem(). To protect against this, ensure that you obtain the
+/// same results whether this setting is true or false.
+///
 /// @note The software license of CasADi (LGPL) is more restrictive than that of
 /// the rest of Moco (Apache 2.0).
 /// @note This solver currently only supports systems for which \f$ \dot{q} = u
@@ -98,6 +112,11 @@ class OSIMMOCO_API MocoCasADiSolver : public MocoDirectCollocationSolver {
             MocoCasADiSolver, MocoDirectCollocationSolver);
 
 public:
+    OpenSim_DECLARE_PROPERTY(parameters_require_initsystem, bool,
+            "Do some MocoParameters in the problem require invoking "
+            "initSystem() to take effect properly? "
+            "This substantialy slows down problems with parameter variables "
+            "(default: true).");
     OpenSim_DECLARE_PROPERTY(optim_sparsity_detection, std::string,
             "Detect the sparsity pattern of derivatives; 'none' "
             "(for safe block sparsity; default), 'random', or "
@@ -116,6 +135,11 @@ public:
             "0: not parallel; 1: use all cores (default); greater than 1: use"
             "this number of threads. This overrides the OPENSIM_MOCO_PARALLEL "
             "environment variable.");
+    OpenSim_DECLARE_PROPERTY(output_interval, int,
+            "Write intermediate iterates to file. 0, the default, indicates no "
+            "intermediate iterates are saved, 1 indicates each iteration "
+            "is saved, 5 indicates every fifth iteration is saved, etc.");
+
     MocoCasADiSolver();
 
     /// @name Specifying an initial guess
@@ -159,9 +183,7 @@ public:
 
     /// @cond
     /// This is used to generate a warning.
-    void setRunningInPython(bool value) const {
-        m_runningInPython = value;
-    }
+    void setRunningInPython(bool value) const { m_runningInPython = value; }
     /// @endcond
 
 protected:

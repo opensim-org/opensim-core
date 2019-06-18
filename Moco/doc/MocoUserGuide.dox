@@ -44,7 +44,7 @@ HELLO
 
 TODO
 
-The interface to Moco starts with the MocoTool. The MocoTool contains a
+The interface to Moco starts with the MocoStudy. The MocoStudy contains a
 MocoProblem and a MocoSolver.
 
   - MocoProblem: describes the variables, dynamics, constraints, and cost
@@ -54,18 +54,18 @@ MocoProblem and a MocoSolver.
 
 @section Workflow
 
-When building a MocoTool programmatically (e.g., in C++), the workflow is as
+When building a MocoStudy programmatically (e.g., in C++), the workflow is as
 follows:
 
 1. Build the MocoProblem (set the model, constraints, etc.).
-2. Call MocoTool::initTropterSolver() (or MocoTool::initCasADiSolver()), which
+2. Call MocoStudy::initTropterSolver() (or MocoStudy::initCasADiSolver()), which
    returns a reference to a MocoSolver.
 3. Edit the settings of the MocoSolver (returned by initSolver()).
-4. Call MocoTool::solve(). This returns the MocoSolution.
-5. (Optional) Postprocess the solution, perhaps using MocoTool::visualize().
+4. Call MocoStudy::solve(). This returns the MocoSolution.
+5. (Optional) Postprocess the solution, perhaps using MocoStudy::visualize().
 
-After calling MocoTool::solve(), you can edit the MocoProblem and/or the
-MocoSolver and call MocoTool::solve() again, if you wish.
+After calling MocoStudy::solve(), you can edit the MocoProblem and/or the
+MocoSolver and call MocoStudy::solve() again, if you wish.
 
 
 @section problem MocoProblem
@@ -158,12 +158,13 @@ adding a constraint with SimTK::Constraint::PrescribedMotion (see
 Coordinate's prescribed and prescribed_function properties), and removing a
 degree of freedom using SimTK::Motion. The former leads to a bigger system of
 equations (and does not avoid multibody dynamics), while the latter results in a
-smaller system of equations. In Moco, we use the PositionMotion component to
-prescribe the motion of all degrees of freedom using spline functions, as this
-leads to a more tractable direct collocation problem that often converges
-reliably and in far less time than a problem containing multibody dynamics.
+smaller system of equations. In Moco, we use the PositionMotion component (which
+uses SimTK::Motion) to prescribe the motion of all degrees of freedom using
+spline functions, as this leads to a more tractable direct collocation problem
+that often converges reliably and in far less time than a problem containing
+multibody dynamics.
 
-The MocoInverse tool adds a PrescribedMotion component to your model, with
+The MocoInverse tool adds a PositionMotion component to your model, with
 splines created from a kinematics data file that you provide.
 
 For an unconstrained system, the equations of motion are as follows:
@@ -190,21 +191,20 @@ M \dot{u} + f_{\mathrm{bias}} + \lambda_m + G^T \lambda_c = f_{\mathrm{app}}
 \f]
 
 \f$ G \f$ is the kinematic constraint Jacobian and \f$ \lambda_c \f$ are the
-kiinematic constraint Langrange multipliers. We still require \f$ lambda_m = 0 \f$
-but we must allow the kinematic constraints to apply force. Consider a point
-mass with degrees of freedom \f$ x \f$ and \f$ y \f$ and generalized forces
-\f$ F_x \f$ and \f$ F_y \f$ constrained to the line \f$ y = x \f$ and with
+kiinematic constraint Langrange multipliers. We still require \f$ \lambda_m = 0
+\f$ but we must allow the kinematic constraints to apply force. Consider a point
+mass with degrees of freedom \f$ x \f$ and \f$ y \f$ and generalized forces \f$
+F_x \f$ and \f$ F_y \f$ constrained to the line \f$ y = x \f$ and with
 prescribed motion \f$ y(t) = x(t) = sin(t) \f$. Moco will solve for the forces
 \f$ F_x \f$ and \f$ F_y \f$ that can achieve this prescribed motion (by setting
 \f$ \lambda_m = 0 \f$ and solving for \f$ f_{\mathrm{app}} \f$, and the Lagrange
 multiplier \f$ \lambda_c \f$ will ensure that, regardless of the values of \f$
 F_x \f$ and \f$ F_y \f$, the mass will remain on the line.
 
-
-Importantly, the prescribed motion must already obey the kinematic constraints.
-MocoInverse attempts to alter your provided kinematics to satisfy the kinematic
-constraints, but PositionMotion permits you to prescribe kinematics that
-violate the constraints.
+@note Importantly, the prescribed motion must already obey the kinematic
+constraints. MocoInverse attempts to alter your provided kinematics to satisfy
+the kinematic constraints, but PositionMotion permits you to prescribe
+kinematics that violate the constraints.
 
 
 @section tips Tips for solving a custom problem

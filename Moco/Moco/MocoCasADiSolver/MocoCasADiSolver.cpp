@@ -21,7 +21,6 @@
 #include "../MocoUtilities.h"
 #include "CasOCSolver.h"
 #include "MocoCasOCProblem.h"
-
 #include <casadi/casadi.hpp>
 
 using casadi::Callback;
@@ -36,10 +35,12 @@ using namespace OpenSim;
 MocoCasADiSolver::MocoCasADiSolver() { constructProperties(); }
 
 void MocoCasADiSolver::constructProperties() {
+    constructProperty_parameters_require_initsystem(true);
     constructProperty_optim_sparsity_detection("none");
     constructProperty_optim_write_sparsity("");
     constructProperty_optim_finite_difference_scheme("central");
     constructProperty_parallel();
+    constructProperty_output_interval(0);
 }
 
 MocoIterate MocoCasADiSolver::createGuess(const std::string& type) const {
@@ -138,16 +139,15 @@ std::unique_ptr<MocoCasOCProblem> MocoCasADiSolver::createCasOCProblem() const {
 
     const auto& model = problemRep.getModelBase();
     OPENSIM_THROW_IF(!model.getMatterSubsystem().getUseEulerAngles(
-            model.getWorkingState()),
+                             model.getWorkingState()),
             Exception, "Quaternions are not supported.");
     return OpenSim::make_unique<MocoCasOCProblem>(*this, problemRep,
-            createProblemRepJar(numThreads),
-            get_dynamics_mode());
+            createProblemRepJar(numThreads), get_dynamics_mode());
 }
 
 std::unique_ptr<CasOC::Solver> MocoCasADiSolver::createCasOCSolver(
         const MocoCasOCProblem& casProblem) const {
-    auto casSolver = make_unique<CasOC::Solver>(casProblem);
+    auto casSolver = OpenSim::make_unique<CasOC::Solver>(casProblem);
 
     // Set solver options.
     // -------------------
@@ -162,7 +162,7 @@ std::unique_ptr<CasOC::Solver> MocoCasADiSolver::createCasOCSolver(
             "trapezoidal transcription.");
     // Enforcing constraint derivatives is only supported when Hermite-Simpson
     // is set as the transcription scheme.
-    if (!getProperty_enforce_constraint_derivatives().empty()) {
+    if (casProblem.getNumKinematicConstraintEquations() != 0) {
         OPENSIM_THROW_IF(get_transcription_scheme() != "hermite-simpson" &&
                                  get_enforce_constraint_derivatives(),
                 Exception,
@@ -174,6 +174,26 @@ std::unique_ptr<CasOC::Solver> MocoCasADiSolver::createCasOCSolver(
     }
 
     checkPropertyIsPositive(*this, getProperty_num_mesh_points());
+
+    if (getProperty_mesh().size() > 0) {
+ 
+        OPENSIM_THROW_IF_FRMOBJ((get_mesh(0) != 0), Exception,
+                "Invalid custom mesh; first mesh "
+                "point must be zero.");
+
+        for (int i = 1; i < (int)this->getProperty_mesh().size(); ++i) {
+
+            OPENSIM_THROW_IF_FRMOBJ((get_mesh(i) <= get_mesh(i - 1)), Exception,
+                    "Invalid custom mesh; mesh "
+                    "points must be strictly increasing.");
+        }
+
+        OPENSIM_THROW_IF_FRMOBJ((get_mesh(getProperty_mesh().size() - 1) != 1),
+                Exception,
+                "Invalid custom mesh; last mesh "
+                "point must be one.");
+    }
+
     checkPropertyInRangeOrSet(*this, getProperty_optim_max_iterations(), 0,
             std::numeric_limits<int>::max(), {-1});
     checkPropertyInRangeOrSet(*this, getProperty_optim_convergence_tolerance(),
@@ -222,15 +242,28 @@ std::unique_ptr<CasOC::Solver> MocoCasADiSolver::createCasOCSolver(
             {"central", "forward", "backward"});
     casSolver->setFiniteDifferenceScheme(get_optim_finite_difference_scheme());
 
+    casSolver->getCallbackInterval(get_output_interval());
+
     Dict pluginOptions;
     pluginOptions["verbose_init"] = true;
 
-    casSolver->setNumMeshPoints(get_num_mesh_points());
+    if (getProperty_mesh().empty()) {
+        casSolver->setNumMeshPoints(get_num_mesh_points());
+    } else {
+        casSolver->setNumMeshPoints((int)getProperty_mesh().size());
+        std::vector<double> mesh;
+        for (int i = 0; i < getProperty_mesh().size(); ++i) {
+            mesh.push_back(get_mesh(i));
+        }
+        casSolver->setMesh(mesh);
+    }
     casSolver->setTranscriptionScheme(get_transcription_scheme());
     casSolver->setMinimizeLagrangeMultipliers(
             get_minimize_lagrange_multipliers());
     casSolver->setLagrangeMultiplierWeight(get_lagrange_multiplier_weight());
     casSolver->setOptimSolver(get_optim_solver());
+    casSolver->setInterpolateControlMidpoints(
+            get_interpolate_control_midpoints());
     if (casProblem.getJarSize() > 1) {
         casSolver->setParallelism("thread", casProblem.getJarSize());
     }
@@ -241,6 +274,7 @@ std::unique_ptr<CasOC::Solver> MocoCasADiSolver::createCasOCSolver(
 
 MocoSolution MocoCasADiSolver::solveImpl() const {
     const Stopwatch stopwatch;
+
 
     if (get_verbosity()) {
         std::cout << std::string(79, '=') << "\n";
@@ -264,9 +298,58 @@ MocoSolution MocoCasADiSolver::solveImpl() const {
     }
     CasOC::Solution casSolution = casSolver->solve(casGuess);
     MocoSolution mocoSolution = convertToMocoIterate<MocoSolution>(casSolution);
+
+    // If enforcing model constraints and not minimizing Lagrange multipliers,
+    // check the rank of the constraint Jacobian and if rank-deficient, print
+    // recommendation to the user to enable Lagrange multiplier minimization.
+    if (getProblemRep().getNumKinematicConstraintEquations() &&
+            !get_enforce_constraint_derivatives() &&
+            !get_minimize_lagrange_multipliers()) {
+        const auto& model = getProblemRep().getModelBase();
+        const auto& matter = model.getMatterSubsystem();
+        Storage storage = mocoSolution.exportToStatesStorage();
+        // TODO update when we support multiple phases.
+        auto statesTraj = StatesTrajectory::createFromStatesStorage(model,
+            storage);
+        SimTK::Matrix G;
+        SimTK::FactorQTZ G_qtz;
+        bool isJacobianFullRank = true;
+        int rank;
+        for (const auto& s : statesTraj) {
+            // Jacobian is at most velocity-dependent.
+            model.realizeVelocity(s);
+            matter.calcG(s, G);
+            G_qtz.factor<double>(G);
+            if (G_qtz.getRank() < G.nrow()) {
+                isJacobianFullRank = false;
+                rank = G_qtz.getRank();
+                break;
+            }
+        }
+
+        if (!isJacobianFullRank) {
+            std::cout << std::endl;
+            std::cout << "---------------------------------------------------"
+                      << "--\n";
+            std::cout << "WARNING: rank-deficient constraint Jacobian "
+                      << "detected.\n";
+            std::cout << "---------------------------------------------------"
+                      << "--\n";
+            std::cout << "The model constraint Jacobian has "
+                      << std::to_string(G.nrow()) + " row(s) but is only rank "
+                      << std::to_string(rank) + ".\nTry removing "
+                      << "redundant constraints from the model or enable \n"
+                      << "minimization of Lagrange multipliers by utilizing "
+                      << "the solver \nproperties "
+                      << "'minimize_lagrange_multipliers' and \n"
+                      << "'lagrange_multiplier_weight'.\n";
+            std::cout << "---------------------------------------------------"
+                      << "--\n\n";
+        }
+    }
+
     setSolutionStats(mocoSolution, casSolution.stats.at("success"),
-            casSolution.objective,
-            casSolution.stats.at("return_status"),
+            casSolution.objective, casSolution.stats.at("return_status"),
             casSolution.stats.at("iter_count"));
 
     if (get_verbosity()) {

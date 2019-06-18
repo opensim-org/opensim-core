@@ -17,11 +17,13 @@
 // ----------------------------------------------------------------------------
 
 #include <string>
+#include <vector>
 
 namespace tropter {
 /// Format a string in the style of sprintf.
 std::string format(const char* format, ...);
 
+std::vector<double> linspace(double start, double end, int length);
 } //namespace tropter
 
 #endif // TROPTER_UTILITIES_H_

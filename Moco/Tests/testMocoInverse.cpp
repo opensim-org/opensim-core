@@ -16,9 +16,6 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/// In this file, we attempt to solve
-/// This file contains a problem we hope to solve robustly in the future.
-/// It serves as a goal.
 #include <Moco/osimMoco.h>
 
 #include <OpenSim/Common/LogManager.h>
@@ -28,7 +25,7 @@
 
 using namespace OpenSim;
 
-/// This test case helps debug when it's necessary to calll prescribe() versus
+/// This test case helps debug when it's necessary to call prescribe() versus
 /// realize().
 TEST_CASE("PrescribedKinematics prescribe() and realize()") {
     Model model = ModelFactory::createPendulum();
@@ -105,13 +102,14 @@ TEST_CASE("PrescribedKinematics direct collocation auxiliary dynamics") {
     model.addModelComponent(motion);
     model.addComponent(new CustomDynamics());
 
-    MocoTool moco;
+    MocoStudy moco;
     auto& problem = moco.updProblem();
     problem.setModelCopy(model);
     problem.setTimeBounds(0, 1);
     const double init_s = 0.2;
     problem.setStateInfo("/customdynamics/s", {0, 100}, init_s);
     auto& solver = moco.initCasADiSolver();
+    solver.set_transcription_scheme("trapezoidal");
     solver.set_dynamics_mode("implicit");
 
     MocoSolution solution = moco.solve();
@@ -123,38 +121,26 @@ TEST_CASE("MocoInverse gait10dof18musc") {
     std::cout.rdbuf(LogManager::cout.rdbuf());
     std::cerr.rdbuf(LogManager::cerr.rdbuf());
 
-    Model model("testGait10dof18musc_subject01.osim");
-    model.finalizeConnections();
-    DeGrooteFregly2016Muscle::replaceMuscles(model);
-
     MocoInverse inverse;
-    inverse.setModel(model);
-    inverse.set_ignore_activation_dynamics(true);
-    inverse.set_ignore_tendon_compliance(true);
-    inverse.setKinematicsFile("walk_gait1018_state_reference.mot");
-    inverse.set_create_reserve_actuators(2.0);
-    inverse.set_lowpass_cutoff_frequency_for_kinematics(6);
+
+    inverse.setModel(ModelProcessor("testGait10dof18musc_subject01.osim") |
+                     ModOpReplaceMusclesWithDeGrooteFregly2016() |
+                     ModOpIgnoreActivationDynamics() |
+                     ModOpIgnoreTendonCompliance() | ModOpAddReserves(2) |
+                     ModOpAddExternalLoads("walk_gait1018_subject01_grf.xml"));
+    inverse.setKinematics(TableProcessor("walk_gait1018_state_reference.mot") |
+                          TabOpLowPassFilter(6));
     inverse.set_initial_time(0.01);
     inverse.set_final_time(1.3);
-
-    inverse.setExternalLoadsFile("walk_gait1018_subject01_grf.xml");
+    inverse.print("testMocoInverse_setup.xml");
 
     MocoInverseSolution solution = inverse.solve();
+    solution.getMocoSolution().write(
+            "testMocoInverseGait10dof18musc_solution.sto");
 
     const auto actual = solution.getMocoSolution().getControlsTrajectory();
     MocoIterate std("std_testMocoInverseGait10dof18musc_solution.sto");
     const auto expected = std.getControlsTrajectory();
-    OpenSim_CHECK_MATRIX_ABSTOL(actual, expected, 1e-2);
-
-    // TODO: Implement cost minimization directly in CasADi.
-    //      -> evaluating the integral cost only takes up like 5% of the
-    //         computational time; the only benefit would be accurate
-    //         derivatives.
-    // TODO: Activation dynamics.: can solve but takes way longer.
-    //      Without, solves in 4 seconds.
-    // TODO parallelization is changing the number of iterations for a
-    // solution.
-    // TODO: are results reproducible?? stochasticity in Millard model?
-    // TODO: problem scaling.
-    // TODO: solve with toy problem (single muscle).
+    CHECK(std.compareContinuousVariablesRMS(
+                  solution.getMocoSolution(), {{"controls", {}}}) < 1e-4);
 }

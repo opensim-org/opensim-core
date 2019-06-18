@@ -26,12 +26,20 @@
 
 namespace tropter {
 
+template <typename T>
+DirectCollocationSolver<T>::DirectCollocationSolver(
+        std::shared_ptr<const OCProblem> ocproblem,
+        const std::string& transcrip, const std::string& optsolver,
+        const unsigned& num_mesh_points)
+        : DirectCollocationSolver(ocproblem, transcrip, optsolver,
+                  linspace(0, 1, num_mesh_points)){}
+
 template<typename T>
 DirectCollocationSolver<T>::DirectCollocationSolver(
         std::shared_ptr<const OCProblem> ocproblem,
         const std::string& transcrip,
         const std::string& optsolver,
-        const unsigned& num_mesh_points)
+        const std::vector<double>& mesh)
         : m_ocproblem(ocproblem)
 {
     std::string transcrip_lower = transcrip;
@@ -39,10 +47,10 @@ DirectCollocationSolver<T>::DirectCollocationSolver(
             transcrip_lower.begin(), ::tolower);
     if (transcrip_lower == "trapezoidal") {
         m_transcription.reset(new transcription::Trapezoidal<T>(ocproblem,
-                                                             num_mesh_points));
+                                                             mesh));
     } else if (transcrip_lower == "hermite-simpson") {
         m_transcription.reset(new transcription::HermiteSimpson<T>(ocproblem,
-                                                             num_mesh_points));
+                        get_interpolate_control_midpoints(), mesh));
     } else {
         TROPTER_THROW("Unrecognized transcription method %s.", transcrip);
     }
@@ -77,6 +85,11 @@ void DirectCollocationSolver<T>::set_exact_hessian_block_sparsity_mode(
         "Hessian block sparsity mode", mode, "dense or sparse");
     m_transcription->set_exact_hessian_block_sparsity_mode(mode);
     m_exact_hessian_block_sparsity_mode = mode;
+}
+
+template<typename T>
+void DirectCollocationSolver<T>::set_interpolate_control_midpoints(bool tf) {
+    m_interpolate_control_midpoints = tf;
 }
 
 template<typename T>

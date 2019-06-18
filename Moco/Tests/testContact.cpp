@@ -113,19 +113,22 @@ SimTK::Real testNormalForce(CreateContactFunction createContact) {
     // optimization.
     SimTK::Real finalHeightDircol;
     {
-        MocoTool moco;
+        MocoStudy moco;
         MocoProblem& mp = moco.updProblem();
         mp.setModelCopy(model);
         mp.setTimeBounds(0, finalTime);
-        mp.setStateInfo("/tx/tx/value", {-5, 5}, 0);
+        mp.setStateInfo("/tx/tx/value", {-1, 1}, 0);
         mp.setStateInfo("/ty/ty/value", {-0.5, 1}, y0);
         mp.setStateInfo("/tx/tx/speed", {-10, 10}, 0);
         mp.setStateInfo("/ty/ty/speed", {-10, 10}, 0);
 
         auto& ms = moco.initTropterSolver();
         ms.set_num_mesh_points(50);
+        // TODO: Hermite-Simpson has trouble converging
+        ms.set_transcription_scheme("trapezoidal");
 
         MocoSolution solution = moco.solve();
+        solution.write("testContact_solution_testNormalForce.sto");
         // moco.visualize(solution);
 
         auto statesTraj = solution.exportToStatesTrajectory(mp);
@@ -207,19 +210,22 @@ void testFrictionForce(CreateContactFunction createContact,
     // This is a simulation (initial value problem), not a trajectory
     // optimization.
     {
-        MocoTool moco;
+        MocoStudy moco;
         MocoProblem& mp = moco.updProblem();
         mp.setModelCopy(model);
         mp.setTimeBounds(0, finalTime);
-        mp.setStateInfo("/tx/tx/value", {-5, 5}, 0);
+        mp.setStateInfo("/tx/tx/value", {-1, 1}, 0);
         mp.setStateInfo("/ty/ty/value", {-0.5, 1}, y0);
         mp.setStateInfo("/tx/tx/speed", {-10, 10}, vx0);
         mp.setStateInfo("/ty/ty/speed", {-10, 10}, 0);
 
         auto& ms = moco.initTropterSolver();
         ms.set_num_mesh_points(25);
+        // TODO: Hermite-Simpson has trouble converging
+        ms.set_transcription_scheme("trapezoidal");
 
         MocoSolution solution = moco.solve();
+        solution.write("testContact_testFrictionForce_solution.sto");
         // moco.visualize(solution);
 
         auto statesTraj = solution.exportToStatesTrajectory(mp);

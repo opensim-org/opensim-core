@@ -144,7 +144,7 @@ VectorDM PathConstraint::eval(const VectorDM& args) const {
 
 VectorDM IntegralCostIntegrand::eval(const VectorDM& args) const {
     Problem::ContinuousInput input{args.at(0).scalar(), args.at(1), args.at(2),
-                                   args.at(3), args.at(4), args.at(5)};
+            args.at(3), args.at(4), args.at(5)};
     VectorDM out{casadi::DM(casadi::Sparsity::scalar())};
     m_casProblem->calcIntegralCostIntegrand(input, *out[0].ptr());
     return out;
@@ -152,7 +152,7 @@ VectorDM IntegralCostIntegrand::eval(const VectorDM& args) const {
 
 VectorDM EndpointCost::eval(const VectorDM& args) const {
     Problem::EndpointInput input{args.at(0).scalar(), args.at(1), args.at(2),
-                                   args.at(3), args.at(4), args.at(5)};
+            args.at(3), args.at(4), args.at(5)};
     VectorDM out{casadi::DM(casadi::Sparsity::scalar())};
     m_casProblem->calcEndpointCost(input, *out[0].ptr());
     return out;
@@ -179,14 +179,15 @@ casadi::Sparsity MultibodySystemExplicit<CalcKCErrors>::get_sparsity_out(casadi_
 }
 
 template <bool CalcKCErrors>
-VectorDM MultibodySystemExplicit<CalcKCErrors>::eval(const VectorDM& args) const {
+VectorDM MultibodySystemExplicit<CalcKCErrors>::eval(
+        const VectorDM& args) const {
     Problem::ContinuousInput input{args.at(0).scalar(), args.at(1), args.at(2),
-                                   args.at(3), args.at(4), args.at(5)};
+            args.at(3), args.at(4), args.at(5)};
     VectorDM out((int)n_out());
     for (casadi_int i = 0; i < n_out(); ++i) {
         out[i] = casadi::DM(sparsity_out(i));
     }
-    Problem::MultibodySystemExplicitOutput output {out[0], out[1], out[2]};
+    Problem::MultibodySystemExplicitOutput output{out[0], out[1], out[2]};
     m_casProblem->calcMultibodySystemExplicit(input, CalcKCErrors, output);
     return out;
 }
@@ -232,8 +233,8 @@ casadi::DM VelocityCorrection::getSubsetPoint(
 
 VectorDM VelocityCorrection::eval(const VectorDM& args) const {
     VectorDM out{casadi::DM(sparsity_out(0))};
-    m_casProblem->calcVelocityCorrection(args.at(0).scalar(), args.at(1),
-            args.at(2), args.at(3), out[0]);
+    m_casProblem->calcVelocityCorrection(
+            args.at(0).scalar(), args.at(1), args.at(2), args.at(3), out[0]);
     return out;
 }
 
@@ -259,15 +260,16 @@ casadi::Sparsity MultibodySystemImplicit<CalcKCErrors>::get_sparsity_out(
 }
 
 template <bool CalcKCErrors>
-VectorDM MultibodySystemImplicit<CalcKCErrors>::eval(const VectorDM& args) const {
+VectorDM MultibodySystemImplicit<CalcKCErrors>::eval(
+        const VectorDM& args) const {
     Problem::ContinuousInput input{args.at(0).scalar(), args.at(1), args.at(2),
-                                   args.at(3), args.at(4), args.at(5)};
+            args.at(3), args.at(4), args.at(5)};
     VectorDM out((int)n_out());
     for (casadi_int i = 0; i < n_out(); ++i) {
         out[i] = casadi::DM(sparsity_out(i));
     }
 
-    Problem::MultibodySystemImplicitOutput output {out[0], out[1], out[2]};
+    Problem::MultibodySystemImplicitOutput output{out[0], out[1], out[2]};
     m_casProblem->calcMultibodySystemImplicit(input, CalcKCErrors, output);
     return out;
 }

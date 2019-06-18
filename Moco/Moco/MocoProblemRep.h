@@ -103,7 +103,11 @@ public:
     int getNumStates() const { return (int)m_state_infos.size(); }
     int getNumControls() const { return (int)m_control_infos.size(); }
     int getNumParameters() const { return (int)m_parameters.size(); }
+    /// Does the model contain a PositionMotion to prescribe all generalized
+    /// coordinates, speeds, and accelerations?
     bool isPrescribedKinematics() const { return m_prescribedKinematics; }
+    /// This excludes generalized coordinate and speed states if
+    /// isPrescribedKinematics() is true.
     std::vector<std::string> createStateVariableNamesInSystemOrder(
             std::unordered_map<int, int>& yIndexMap) const;
     /// Get the state names of all the state infos.
@@ -124,13 +128,13 @@ public:
     MocoInitialBounds getTimeInitialBounds() const;
     /// @copydoc getTimeInitialBounds()
     MocoFinalBounds getTimeFinalBounds() const;
-    /// Get information for state variables. If info was not specified for
-    /// a coordinate value, the coordinate range is used for the bounds.
-    /// If info was not specified for a coordinate speed, the
-    /// default_speed_bounds property is used.
+    /// Get information for state variables. See MocoPhase::setStateInfo().
     const MocoVariableInfo& getStateInfo(const std::string& name) const;
-    /// Get information for actuator controls. If info was not specified for
-    /// an actuator, the actuator's min and max control are used for the bounds.
+    /// Get information for actuator controls.
+    /// If the control is associated with a non-scalar actuator (i.e. uses
+    /// multiple control variables), then the control name will be the actuator
+    /// path appended by the control index (e.g. "/actuator_0");
+    /// See MocoPhase::setControlInfo().
     const MocoVariableInfo& getControlInfo(const std::string& name) const;
     const MocoParameter& getParameter(const std::string& name) const;
     /// Get a MocoPathConstraint from this MocoPhase. Note: this does not

@@ -23,7 +23,7 @@ MocoAddSandboxExecutable(NAME sandboxImplicitActivationDynamics
         LIB_DEPENDS osimMoco tropter)
 
 
-# MocoTool-related.
+# MocoStudy-related.
 MocoAddSandboxExecutable(NAME sandboxSlidingMass
         LIB_DEPENDS osimMoco tropter)
 MocoAddSandboxExecutable(NAME sandboxContact
@@ -45,4 +45,4 @@ add_subdirectory(sandboxJointReaction)
 add_subdirectory(sandboxOneLegCouplerKnee)
 add_subdirectory(sandboxMarkerTrackingContactWholeBody)
 add_subdirectory(sandboxSitToStand)
-
+add_subdirectory(sandboxMocoTrack)

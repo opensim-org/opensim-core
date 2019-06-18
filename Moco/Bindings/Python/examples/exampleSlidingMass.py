@@ -41,9 +41,9 @@ body.attachGeometry(osim.Sphere(0.05))
 
 model.finalizeConnections()
 
-# Create MocoTool.
+# Create MocoStudy.
 # ================
-moco = osim.MocoTool()
+moco = osim.MocoStudy()
 moco.setName('sliding_mass')
 
 # Define the optimal control problem.
@@ -77,7 +77,7 @@ problem.addCost(osim.MocoFinalTimeCost())
 solver = moco.initTropterSolver()
 solver.set_num_mesh_points(100)
 
-# Now that we've finished setting up the tool, print it to a file.
+# Now that we've finished setting up the study, print it to a file.
 moco.printToXML('sliding_mass.omoco')
 
 # Solve the problem.

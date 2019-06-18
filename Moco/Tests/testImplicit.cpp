@@ -33,7 +33,7 @@ MocoSolution solveDoublePendulumSwingup(const std::string& dynamics_mode) {
 
     using SimTK::Vec3;
 
-    MocoTool moco;
+    MocoStudy moco;
     moco.setName("double_pendulum_swingup_" + dynamics_mode);
 
     // Define the optimal control problem.
@@ -85,6 +85,7 @@ MocoSolution solveDoublePendulumSwingup(const std::string& dynamics_mode) {
     auto& solver = moco.initSolver<SolverType>();
     solver.set_dynamics_mode(dynamics_mode);
     solver.set_num_mesh_points(N);
+    solver.set_transcription_scheme("trapezoidal");
     // solver.set_verbosity(2);
 
     MocoIterate guess = solver.createGuess();
@@ -173,7 +174,8 @@ TEMPLATE_TEST_CASE("Combining implicit dynamics mode with path constraints",
     std::cerr.rdbuf(LogManager::cerr.rdbuf());
     class MyPathConstraint : public MocoPathConstraint {
         OpenSim_DECLARE_CONCRETE_OBJECT(MyPathConstraint, MocoPathConstraint);
-        void initializeOnModelImpl(const Model& model) const override {
+        void initializeOnModelImpl(
+                const Model& model, const MocoProblemInfo&) const override {
             setNumEquations(model.getNumControls());
         }
         void calcPathConstraintErrorsImpl(const SimTK::State& state,
@@ -182,7 +184,7 @@ TEMPLATE_TEST_CASE("Combining implicit dynamics mode with path constraints",
         }
     };
     GIVEN("MocoProblem with path constraints") {
-        MocoTool moco;
+        MocoStudy moco;
         auto& prob = moco.updProblem();
         auto model = ModelFactory::createPendulum();
         prob.setTimeBounds(0, 1);
@@ -194,12 +196,14 @@ TEMPLATE_TEST_CASE("Combining implicit dynamics mode with path constraints",
         pc->setConstraintInfo(info);
         auto& solver = moco.initSolver<TestType>();
         solver.set_dynamics_mode("implicit");
-        solver.set_num_mesh_points(5);
+        const int N = 5;          // mesh points
+        const int Nc = 2 * N - 1; // collocation points (Hermite-Simpson)
+        solver.set_num_mesh_points(N);
         MocoSolution solution = moco.solve();
 
         THEN("path constraints are still obeyed") {
-            OpenSim_REQUIRE_MATRIX_TOL(solution.getControlsTrajectory(),
-                    SimTK::Matrix(5, 1, 10.0), 1e-5);
+            SimTK_TEST_EQ_TOL(solution.getControlsTrajectory(),
+                    SimTK::Matrix(Nc, 1, 10.0), 1e-5);
         }
     }
 }
@@ -209,7 +213,7 @@ TEMPLATE_TEST_CASE("Combining implicit dynamics with kinematic constraints",
     std::cout.rdbuf(LogManager::cout.rdbuf());
     std::cerr.rdbuf(LogManager::cerr.rdbuf());
     GIVEN("MocoProblem with a kinematic constraint") {
-        MocoTool moco;
+        MocoStudy moco;
         auto& prob = moco.updProblem();
         auto model = ModelFactory::createDoublePendulum();
         prob.setTimeBounds(0, 1);
@@ -232,10 +236,7 @@ TEMPLATE_TEST_CASE("Combining implicit dynamics with kinematic constraints",
         THEN("kinematic constraint is still obeyed") {
             const auto q0value = solution.getStatesTrajectory().col(0);
             const auto q1value = solution.getStatesTrajectory().col(1);
-            // Only check at the mesh points.
-            for (int i = 0; i < q0value.size(); i += 2) {
-                SimTK_TEST_EQ_TOL(q0value[i], q1value[i], 1e-6);
-            }
+            SimTK_TEST_EQ_TOL(q0value, q1value, 1e-6);
         }
     }
 }

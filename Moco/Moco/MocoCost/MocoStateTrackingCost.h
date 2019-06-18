@@ -18,15 +18,16 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "MocoCost.h"
+#include "../Common/TableProcessor.h"
 #include "../MocoWeightSet.h"
+#include "MocoCost.h"
 
-#include <OpenSim/Common/TimeSeriesTable.h>
 #include <OpenSim/Common/GCVSplineSet.h>
+#include <OpenSim/Common/TimeSeriesTable.h>
 
 namespace OpenSim {
 
-// TODO can we track generailzed speeds too?
+// TODO can we track generalized speeds too?
 // TODO allow raising error to different powers (cubed).
 // TODO allow a "deadband."
 
@@ -38,9 +39,13 @@ namespace OpenSim {
 /// other file types for which there is a FileAdapter), or programmatically
 /// as a TimeSeriesTable. If columns for rotational coordinates are in degrees,
 /// those columns will be converted to radians.
+/// Tracking problems in direct collocation perform best when tracking smooth
+/// data, so it is recommended to filter the data in the reference you provide
+/// to the cost.
 /// @ingroup mococost
 class OSIMMOCO_API MocoStateTrackingCost : public MocoCost {
-OpenSim_DECLARE_CONCRETE_OBJECT(MocoStateTrackingCost, MocoCost);
+    OpenSim_DECLARE_CONCRETE_OBJECT(MocoStateTrackingCost, MocoCost);
+
 public:
     MocoStateTrackingCost() { constructProperties(); }
     MocoStateTrackingCost(std::string name) : MocoCost(std::move(name)) {
@@ -50,22 +55,12 @@ public:
             : MocoCost(std::move(name), weight) {
         constructProperties();
     }
-    /// Provide the path to a data file containing reference values for the
+    /// Provide a table containing reference values for the
     /// states you want to track. Each column label must be the path of a state
-    /// variable, e.g., `knee/flexion/value`. Calling this function clears the
-    /// table provided via setReference(), if any.
-    /// The file is not loaded until the MocoProblem is initialized.
-    // TODO path relative to working directory or setup file?
-    void setReferenceFile(const std::string& filepath) {
-        m_table = TimeSeriesTable();
-        set_reference_file(filepath);
-    }
-    /// Each column label must be the path of a state variable, e.g.,
-    /// `/knee/flexion/value`. Calling this function clears the `reference_file`
-    /// property.
-    void setReference(const TimeSeriesTable& ref) {
-        set_reference_file("");
-        m_table = ref;
+    /// variable, e.g., `knee/flexion/value`.
+    /// The table is not loaded until the MocoProblem is initialized.
+    void setReference(TableProcessor ref) {
+        set_reference(std::move(ref));
     }
 
     /// Set the weight for an individual state variable. If a weight is
@@ -86,24 +81,23 @@ public:
         upd_state_weights() = weightSet;
     }
 
-    /// If no reference file has been provided, this returns an empty string.
-    std::string getReferenceFile() const { return get_reference_file(); }
+    /// If no reference has been provided, this returns an empty processor.
+    const TableProcessor& getReference() const { return get_reference(); }
 
     /// Specify whether or not extra columns in the reference are allowed.
     /// If set true, the extra references will be ignored by the cost.
     /// If false, extra reference will cause an Exception to be raised.
-    void setAllowUnusedReferences(bool tf) {
-        set_allow_unused_references(tf);
-    }
+    void setAllowUnusedReferences(bool tf) { set_allow_unused_references(tf); }
 
 protected:
     // TODO check that the reference covers the entire possible time range.
     void initializeOnModelImpl(const Model&) const override;
-    void calcIntegralCostImpl(const SimTK::State& state,
-            double& integrand) const override;
+    void calcIntegralCostImpl(
+            const SimTK::State& state, double& integrand) const override;
+
 private:
-    OpenSim_DECLARE_PROPERTY(reference_file, std::string,
-            "Path to file (.sto, .csv, ...) containing values of states "
+    OpenSim_DECLARE_PROPERTY(reference, TableProcessor,
+            "Trajectories of states "
             "(coordinates, speeds, activation, etc.) to track. Column labels "
             "should be state variable paths, e.g., 'knee/flexion/value'");
 
@@ -116,17 +110,15 @@ private:
             "state variables in the cost.");
 
     void constructProperties() {
-        constructProperty_reference_file("");
+        constructProperty_reference(TableProcessor());
         constructProperty_allow_unused_references(false);
         constructProperty_state_weights(MocoWeightSet());
     }
 
-    TimeSeriesTable m_table;
     mutable GCVSplineSet m_refsplines;
     /// The indices in Y corresponding to the provided reference coordinates.
     mutable std::vector<int> m_sysYIndices;
     mutable std::vector<double> m_state_weights;
-
 };
 
 } // namespace OpenSim
