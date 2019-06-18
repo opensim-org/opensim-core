@@ -23,7 +23,7 @@
 
 using namespace OpenSim;
 
-MocoIterate MocoSolver::createGuessTimeStepping() const {
+MocoTrajectory MocoSolver::createGuessTimeStepping() const {
     const auto& probrep = getProblemRep();
     const auto& initialTime = probrep.getTimeInitialBounds().getUpper();
     const auto& finalTime = probrep.getTimeFinalBounds().getLower();
@@ -71,7 +71,7 @@ MocoIterate MocoSolver::createGuessTimeStepping() const {
 
     // TODO handle parameters.
     // TODO handle derivatives.
-    return MocoIterate::createFromStatesControlsTables(
+    return MocoTrajectory::createFromStatesControlsTables(
             probrep, statesTable, controlsTable);
 }
 

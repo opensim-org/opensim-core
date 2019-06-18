@@ -238,7 +238,7 @@ MocoSolution solveStateTrackingProblem() {
 
     // Create guess.
     // =============
-    MocoIterate guess = ms.createGuess();
+    MocoTrajectory guess = ms.createGuess();
     auto model = mp.getPhase().getModel();
     model.initSystem();
     auto refFilt2 = refFilt;
@@ -378,11 +378,11 @@ MocoSolution solveMarkerTrackingProblem(bool createGuess,
     // Create guess.
     // =============
     if (!createGuess) {
-        MocoIterate guess("sandboxMarkerTrackingContactWholeBody_guess.sto");
+        MocoTrajectory guess("sandboxMarkerTrackingContactWholeBody_guess.sto");
         ms.setGuess(guess);
         // moco.visualize(guess);
     }
-    //MocoIterate guess = ms.createGuess();
+    //MocoTrajectory guess = ms.createGuess();
     //auto model = mp.getPhase().getModel();
     //model.initSystem();
     //auto statesRef = STOFileAdapter::read("walk_gait1018_state_reference.mot");

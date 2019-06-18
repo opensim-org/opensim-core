@@ -201,7 +201,7 @@ MocoTropterSolver::createTropterSolver(
     return dircol;
 }
 
-MocoIterate MocoTropterSolver::createGuess(const std::string& type) const {
+MocoTrajectory MocoTropterSolver::createGuess(const std::string& type) const {
 #ifdef MOCO_WITH_TROPTER
     OPENSIM_THROW_IF_FRMOBJ(
             type != "bounds" && type != "random" && type != "time-stepping",
@@ -222,13 +222,13 @@ MocoIterate MocoTropterSolver::createGuess(const std::string& type) const {
     } else if (type == "random") {
         tropIter = dircol->make_random_iterate_within_bounds();
     }
-    return ocp->convertToMocoIterate(tropIter);
+    return ocp->convertToMocoTrajectory(tropIter);
 #else
     OPENSIM_THROW(MocoTropterSolverNotAvailable);
 #endif
 }
 
-void MocoTropterSolver::setGuess(MocoIterate guess) {
+void MocoTropterSolver::setGuess(MocoTrajectory guess) {
     // Ensure the guess is compatible with this solver/problem.
     // Make sure to initialize the problem. TODO put in a better place.
     createTropterProblem();
@@ -241,19 +241,19 @@ void MocoTropterSolver::setGuessFile(const std::string& file) {
     set_guess_file(file);
 }
 void MocoTropterSolver::clearGuess() {
-    m_guessFromAPI = MocoIterate();
-    m_guessFromFile = MocoIterate();
+    m_guessFromAPI = MocoTrajectory();
+    m_guessFromFile = MocoTrajectory();
     set_guess_file("");
     m_guessToUse.reset();
 }
-const MocoIterate& MocoTropterSolver::getGuess() const {
+const MocoTrajectory& MocoTropterSolver::getGuess() const {
     if (!m_guessToUse) {
         if (get_guess_file() != "" && m_guessFromFile.empty()) {
             // The API should make it impossible for both guessFromFile and
             // guessFromAPI to be non-empty.
             assert(m_guessFromAPI.empty());
             // No need to load from file again if we've already loaded it.
-            MocoIterate guessFromFile(get_guess_file());
+            MocoTrajectory guessFromFile(get_guess_file());
             guessFromFile.isCompatible(getProblemRep(), true);
             m_guessFromFile = guessFromFile;
             m_guessToUse.reset(&m_guessFromFile);

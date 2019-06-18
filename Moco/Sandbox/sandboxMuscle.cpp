@@ -342,7 +342,7 @@ void testHangingMuscleMinimumTime(
         solver.set_optim_constraint_tolerance(1e-3);
         // TODO if compliant tendon, use rigid tendon as initial guess.
         // solver.set_optim_sparsity_detection("initial-guess");
-        MocoIterate guessForwardSim = solver.createGuess("time-stepping");
+        MocoTrajectory guessForwardSim = solver.createGuess("time-stepping");
         // solver.setGuess(guessForwardSim);
         guessForwardSim.write("sandboxMuscle_guess_forward_sim.sto");
         std::cout << "Guess from forward sim: "

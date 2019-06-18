@@ -54,7 +54,7 @@ using namespace SimTK;
 // }
 //
 // // When const SimTK::Vector& is the return type.
-// // Change the implementation of, e.g., MocoIterate.setTime() in MocoIterate.java
+// // Change the implementation of, e.g., MocoTrajectory.setTime() in MocoTrajectory.java
 // // from "return new Vector($jnicall)" to "return $jnicall" (since we no longer
 // // return a Vector).
 // %typemap(javaout) (const SimTK::Vector&) {
@@ -279,7 +279,7 @@ SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
 /* SWIG does not support initializer_list, but we can use Java arrays to
  * achieve similar syntax in MATLAB.
  * TODO create Vector(double[]) constructor. */
-%typemap(javacode) OpenSim::MocoIterate %{
+%typemap(javacode) OpenSim::MocoTrajectory %{
     public void setTime(double[] time) {
         Vector v = new Vector();
         v.resize(time.length);

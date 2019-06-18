@@ -67,7 +67,7 @@ inline casadi::DM convertToCasADiDM(const SimTK::Vector& simtkVec) {
 }
 
 /// This resamples the iterate to obtain values that lie on the mesh.
-inline CasOC::Iterate convertToCasOCIterate(const MocoIterate& mocoIt) {
+inline CasOC::Iterate convertToCasOCIterate(const MocoTrajectory& mocoIt) {
     CasOC::Iterate casIt;
     CasOC::VariablesDM& casVars = casIt.variables;
     using CasOC::Var;
@@ -125,8 +125,8 @@ inline SimTK::Matrix convertToSimTKMatrix(const casadi::DM& casMatrix) {
     return simtkMatrix;
 }
 
-template <typename TOut = MocoIterate>
-TOut convertToMocoIterate(const CasOC::Iterate& casIt) {
+template <typename TOut = MocoTrajectory>
+TOut convertToMocoTrajectory(const CasOC::Iterate& casIt) {
     SimTK::Matrix simtkStates;
     const auto& casVars = casIt.variables;
     using CasOC::Var;
@@ -163,12 +163,12 @@ TOut convertToMocoIterate(const CasOC::Iterate& casIt) {
     }
     SimTK::Vector simtkTimes = convertToSimTKVector(casIt.times);
 
-    TOut mocoIterate(simtkTimes, casIt.state_names, casIt.control_names,
+    TOut mocoTraj(simtkTimes, casIt.state_names, casIt.control_names,
             casIt.multiplier_names, derivativeNames, casIt.parameter_names,
             simtkStates, simtkControls, simtkMultipliers, simtkDerivatives,
             simtkParameters);
 
-    // Append slack variables. MocoIterate requires the slack variables to be
+    // Append slack variables. MocoTrajectory requires the slack variables to be
     // the same length as its time vector, but it will not be if the
     // CasOC::Iterate was generated from a CasOC::Transcription object.
     // Therefore, slack variables are interpolated as necessary.
@@ -178,15 +178,15 @@ TOut convertToMocoIterate(const CasOC::Iterate& casIt) {
                 simtkTimes[0], simtkTimes[simtkTimes.size() - 1]);
         for (int i = 0; i < (int)casIt.slack_names.size(); ++i) {
             if (simtkSlacksLength != simtkTimes.size()) {
-                mocoIterate.appendSlack(casIt.slack_names[i],
+                mocoTraj.appendSlack(casIt.slack_names[i],
                         interpolate(slackTime, simtkSlacks.col(i), simtkTimes));
             } else {
-                mocoIterate.appendSlack(
+                mocoTraj.appendSlack(
                         casIt.slack_names[i], simtkSlacks.col(i));
             }
         }
     }
-    return mocoIterate;
+    return mocoTraj;
 }
 
 class MocoCasOCProblem : public CasOC::Problem {
@@ -371,7 +371,7 @@ private:
     void intermediateCallback(const CasOC::Iterate& iterate) const override {
         std::string filename = format("MocoCasADiSolver_%s_iterate%06i.sto",
                 m_formattedTimeString, iterate.iteration);
-        convertToMocoIterate(iterate).write(filename);
+        convertToMocoTrajectory(iterate).write(filename);
     }
 
 private:

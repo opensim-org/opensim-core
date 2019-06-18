@@ -18,25 +18,24 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
+#include "MocoTrajectory.h"
 #include "osimMocoDLL.h"
-#include "MocoIterate.h"
-
+#include <Common/Reporter.h>
+#include <Simulation/Model/Model.h>
+#include <Simulation/StatesTrajectory.h>
+#include <regex>
 #include <set>
 #include <stack>
-#include <regex>
 
 #include <OpenSim/Common/GCVSplineSet.h>
 #include <OpenSim/Common/PiecewiseLinearFunction.h>
 #include <OpenSim/Common/Storage.h>
-#include <Simulation/Model/Model.h>
-#include <Simulation/StatesTrajectory.h>
-#include <Common/Reporter.h>
 
 namespace OpenSim {
 
 class StatesTrajectory;
 class Model;
-class MocoIterate;
+class MocoTrajectory;
 class MocoProblem;
 
 /// Since Moco does not require C++14 (which contains std::make_unique()),
@@ -293,16 +292,16 @@ OSIMMOCO_API void visualize(Model, Storage);
 OSIMMOCO_API void visualize(Model, TimeSeriesTable);
 
 /// Calculate the requested outputs using the model in the problem and the
-/// states and controls in the MocoIterate.
+/// states and controls in the MocoTrajectory.
 /// The output paths can be regular expressions. For example,
 /// ".*activation" gives the activation of all muscles.
 /// Constraints are not enforced but prescribed motion (e.g.,
 /// PositionMotion) is.
 /// The output paths must correspond to outputs that match the type provided in
 /// the template argument, otherwise they are not included in the report.
-/// @note Parameters in the MocoIterate are **not** applied to the model.
+/// @note Parameters in the MocoTrajectory are **not** applied to the model.
 template <typename T>
-TimeSeriesTable_<T> analyze(Model model, const MocoIterate& iterate,
+TimeSeriesTable_<T> analyze(Model model, const MocoTrajectory& iterate,
         std::vector<std::string> outputPaths) {
 
     // Initialize the system so we can access the outputs.
@@ -366,22 +365,22 @@ TimeSeriesTable_<T> analyze(Model model, const MocoIterate& iterate,
     return reporter->getTable();
 }
 
-/// Given a MocoIterate and the associated OpenSim model, return the model with
+/// Given a MocoTrajectory and the associated OpenSim model, return the model with
 /// a prescribed controller appended that will compute the control values from
 /// the MocoSolution. This can be useful when computing state-dependent model
 /// quantities that require realization to the Dynamics stage or later.
 /// The function used to fit the controls can either be GCVSpline or
 /// PiecewiseLinearFunction.
-OSIMMOCO_API void prescribeControlsToModel(const MocoIterate& iterate,
+OSIMMOCO_API void prescribeControlsToModel(const MocoTrajectory& iterate,
         Model& model, std::string functionType = "GCVSpline");
 
 /// Use the controls and initial state in the provided iterate to simulate the
 /// model using an ODE time stepping integrator (OpenSim::Manager), and return
-/// the resulting states and controls. We return a MocoIterate (rather than a
+/// the resulting states and controls. We return a MocoTrajectory (rather than a
 /// StatesTrajectory) to facilitate comparing optimal control solutions with
 /// time stepping. Use integratorAccuracy to override the default setting.
-OSIMMOCO_API MocoIterate simulateIterateWithTimeStepping(
-        const MocoIterate& iterate, Model model,
+OSIMMOCO_API MocoTrajectory simulateIterateWithTimeStepping(
+        const MocoTrajectory& iterate, Model model,
         double integratorAccuracy = -1);
 
 /// The map provides the index of each state variable in
