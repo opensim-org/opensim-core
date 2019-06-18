@@ -35,16 +35,12 @@ TimeSeriesTable_<SimTK::Rotation> OpenSenseUtilities::
         const TimeSeriesTableQuaternion& quaternionsTable,
         const SimTK::Array_<int>& startEnd,
         const std::string& baseImuName,
-        const SimTK::CoordinateAxis& baseHeadingAxis)
+        const SimTK::CoordinateAxis& baseHeadingAxis,
+        const SimTK::Rotation& sensorToOpenSim)
 {
-
     // Fixed transform to rotate sensor orientations in world with Z up into the 
     // OpenSim ground reference frame with Y up and X forward.
-    SimTK::Rotation R_XG = SimTK::Rotation(
-        SimTK::BodyOrSpaceType::BodyRotationSequence,
-        -SimTK_PI / 2, SimTK::XAxis,
-        0, SimTK::YAxis,
-        0, SimTK::ZAxis);
+    SimTK::Rotation R_XG = sensorToOpenSim;
 
     //SimTK::Vec3 grav(9.807, 0., 0.);
     //double theta = acos(avg_accel.transpose() * grav / (avg_accel.norm() * grav.norm()));

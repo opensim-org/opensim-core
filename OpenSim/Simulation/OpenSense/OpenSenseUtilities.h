@@ -46,11 +46,14 @@ namespace OpenSim {
             when tracking rotation data, the initial pose of the model is facing
             forward. If the baseImuName is empty, no correction is made. If no
             axis is specified, the default is the Z axis.*/
-        static  OpenSim::TimeSeriesTable_<SimTK::Rotation_<double>>  convertQuaternionsToRotations(
-            const OpenSim::TimeSeriesTable_<SimTK::Quaternion_<double>>& qauternionsTable,
-            const SimTK::Array_<int>& startEnd = { 0, 1 },
-            const std::string& baseImuName = "",
-            const SimTK::CoordinateAxis& baseHeadingAxis = SimTK::ZAxis
+        static  OpenSim::TimeSeriesTable_<SimTK::Rotation_<double>> 
+            convertQuaternionsToRotations(
+                const OpenSim::TimeSeriesTable_<SimTK::Quaternion_<double>>& qauternionsTable,
+                const SimTK::Array_<int>& startEnd = { 0, 1 },
+                const std::string& baseImuName = "",
+                const SimTK::CoordinateAxis& baseHeadingAxis = SimTK::ZAxis,
+                const SimTK::Rotation& sensorToOpenSim = 
+                    SimTK::Rotation(-SimTK_PI/2, SimTK::XAxis)
         );
         /// @}
         /** Create a calibrated model from a model in the calibration pose and 
