@@ -252,6 +252,8 @@ public:
             const ContinuousInput& /*input*/,
             casadi::DM& /*path_constraint*/) const {}
 
+    virtual std::vector<std::string> createKinematicConstraintEquationNamesImpl() const;
+
     virtual void intermediateCallback(const CasOC::Iterate&) const {}
     /// @}
 
@@ -398,48 +400,11 @@ public:
     }
     /// Create a vector of names for scalar kinematic constraint equations.
     /// The length of the vector is getNumKinematicConstraintEquations().
-    std::vector<std::string> createKinematicConstraintNames() const {
-        std::vector<std::string> names;
-        if (!m_enforceConstraintDerivatives) {
-            for (const auto& info : getMultiplierInfos()) {
-                names.push_back(info.name);
-            }
-            return names;
-        }
-
-        for (const auto& info : getMultiplierInfos()) {
-            if (info.level == KinematicLevel::Position) {
-                names.push_back(info.name + "_p");
-            }
-        }
-
-        for (const auto& info : getMultiplierInfos()) {
-            if (info.level == KinematicLevel::Position) {
-                names.push_back(info.name + "_dp");
-            }
-        }
-        for (const auto& info : getMultiplierInfos()) {
-            if (info.level == KinematicLevel::Velocity) {
-                names.push_back(info.name + "_v");
-            }
-        }
-
-        for (const auto& info : getMultiplierInfos()) {
-            if (info.level == KinematicLevel::Position) {
-                names.push_back(info.name + "_ddp");
-            }
-        }
-        for (const auto& info : getMultiplierInfos()) {
-            if (info.level == KinematicLevel::Velocity) {
-                names.push_back(info.name + "_dv");
-            }
-        }
-        for (const auto& info : getMultiplierInfos()) {
-            if (info.level == KinematicLevel::Acceleration) {
-                names.push_back(info.name + "_a");
-            }
-        }
-
+    /// `includeDerivatives` determines if names for derivatives of
+    /// position-level and velocity-level constraints should be included.
+    std::vector<std::string> createKinematicConstraintEquationNames() const {
+        std::vector<std::string> names =
+                createKinematicConstraintEquationNamesImpl();
         OPENSIM_THROW_IF(
                 (int)names.size() != getNumKinematicConstraintEquations(),
                 OpenSim::Exception, "Internal error.");
