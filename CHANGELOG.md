@@ -30,9 +30,9 @@ Documentation
 Other Changes
 -------------
 - Performance of reading large data files has been significantly improved. A 50MB .sto file would take 10-11 min to read now takes 2-3 seconds. (PR #2399)
-- For C3DFileAdapter(), you should only use the .readFile() method. 
 - Added Matlab example script of plotting the Force-length properties of muscles in a models; creating an Actuator file from a model; 
 building and simulating a simple arm model;  using OutputReporters to record and write marker location and coordinate values to file.
+
 
 v4.0
 ====
