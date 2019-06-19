@@ -49,7 +49,7 @@ void MocoControlBoundConstraint::initializeOnModelImpl(
     if (getProperty_control_paths().size() && !m_hasLower && !m_hasUpper) {
         std::cout << "Warning: In MocoControlBoundConstraint '" << getName()
                   << "', control paths are specified but no bounds "
-                     " are provided."
+                     "are provided."
                   << std::endl;
     }
     // Make sure there are no nonexistent controls.

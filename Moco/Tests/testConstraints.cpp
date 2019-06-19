@@ -932,6 +932,8 @@ protected:
 /// actuators must produce an equal control trajectory.
 TEMPLATE_TEST_CASE(
         "DoublePendulumEqualControl", "", MocoTropterSolver, MocoCasADiSolver) {
+    std::cout.rdbuf(LogManager::cout.rdbuf());
+    std::cerr.rdbuf(LogManager::cerr.rdbuf());
     OpenSim::Object::registerType(EqualControlConstraint());
     MocoStudy moco;
     moco.setName("double_pendulum_equal_control");
