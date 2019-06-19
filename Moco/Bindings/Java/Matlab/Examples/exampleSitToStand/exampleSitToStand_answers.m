@@ -4,33 +4,49 @@ function exampleSitToStand_answers
 import org.opensim.modeling.*;
 
 %% Part 1: Torque-driven Predictive Problem
-% Part 1a: Get a pre-configured MocoStudy and set a torque-driven model on
-% the underlying MocoProblem.
-moco = configureMocoStudy();
-problem = moco.updProblem();
-problem.setModelCopy(getTorqueDrivenModel());
 
-% Part 1b: Add a MocoControlCost to the problem.
+% Part 1a: Create a new MocoStudy.
+moco = MocoStudy();
+
+% Part 1b: Initialize the problem and set the model.
+problem = moco.updProblem();
+problem.setModel(getTorqueDrivenModel());
+
+% Part 1c: Set bounds on the problem.
+problem.setTimeBounds(0, 1);
+% The position bounds specify that the model should start in a crouch and
+% finish standing up.
+problem.setStateInfo('/jointset/hip_r/hip_flexion_r/value', ...
+    MocoBounds(-2, 0.5), MocoInitialBounds(-2), MocoFinalBounds(0));
+problem.setStateInfo('/jointset/knee_r/knee_angle_r/value', [-2, 0], -2, 0);
+problem.setStateInfo('/jointset/ankle_r/ankle_angle_r/value', ...
+    [-0.5, 0.7], -0.5, 0);
+% The velocity bounds specify that the model coordinates should start and
+% end at zero.
+problem.setStateInfoPattern('/jointset/*/speed', MocoBounds(), ...
+    MocoInitialBounds(0), MocoFinalBounds(0));
+
+% Part 1d: Add a MocoControlCost to the problem.
 problem.addCost(MocoControlCost('effort'));
 
-% Part 1c: Update the underlying MocoCasADiSolver with the new problem.
-solver = MocoCasADiSolver.safeDownCast(moco.updSolver());
-solver.resetProblem(problem);
-solver.setGuess('bounds'); % This is also the default setting.
+% Part 1e: Configure the solver.
+solver = moco.initCasADiSolver();
+solver.set_num_mesh_points(25);
+solver.set_dynamics_mode('implicit');
+solver.set_optim_convergence_tolerance(1e-4);
+solver.set_optim_constraint_tolerance(1e-4);
+solver.set_optim_finite_difference_scheme('forward');
 
-% Part 1d: Solve, write the solution to file, and visualize.
+% Part 1f: Solve, write the solution to file, and visualize.
 predictSolution = moco.solve();
 predictSolution.write('predictSolution.sto');
 moco.visualize(predictSolution);
 
-%% Part 2: Torque-driven Tracking Problem
-% Part 2a: Get a fresh MocoStudy and set the torque-driven model on the
-% problem.
-moco = configureMocoStudy();
-problem = moco.updProblem();
-problem.setModelCopy(getTorqueDrivenModel());
+keyboard
 
-% Part 2b: Add a MocoStateTrackingCost() to the problem using the states
+%% Part 2: Torque-driven Tracking Problem
+
+% Part 2a: Add a MocoStateTrackingCost() to the problem using the states
 % from the predictive problem, and set weights to zero for states associated
 % with the dependent coordinate in the model's knee CoordinateCoupler
 % constraint.
@@ -42,9 +58,9 @@ tracking.setWeight('/jointset/patellofemoral_r/knee_angle_r_beta/value', 0);
 tracking.setWeight('/jointset/patellofemoral_r/knee_angle_r_beta/speed', 0);
 problem.addCost(tracking);
 
-% Part 2c: Add a MocoControlCost() with a low weight to avoid oscillations
+% Part 2b: Set the low MocoControlCost() to a lower weight to avoid oscillations
 % in the solution.
-problem.addCost(MocoControlCost('effort', 0.01));
+problem.updCost('effort').set_weight(0.01);
 
 % Part 2d: Update the underlying MocoCasADiSolver with the new problem.
 solver = MocoCasADiSolver.safeDownCast(moco.updSolver());
@@ -77,8 +93,8 @@ inverse.set_minimize_sum_squared_states(true);
 inverse.set_tolerance(1e-4);
 inverse.set_initial_time(0);
 inverse.set_final_time(1);
-inverse.append_output_paths('.*normalized_fiber_length');
-inverse.append_output_paths('.*passive_force_multiplier');
+% inverse.append_output_paths('.*normalized_fiber_length');
+% inverse.append_output_paths('.*passive_force_multiplier');
 inverseSolution = inverse.solve();
 inverseSolution.getMocoSolution().write('inverseSolution.sto');
 inverseOutputs = inverseSolution.getOutputs();
@@ -93,7 +109,7 @@ device.setStiffness(50);
 device.setRestLength(0);
 device.setViscosity(0);
 model.addForce(device);
-inverse.setModel(model);
+inverse.setModel(ModelProcessor(model));
 inverseDeviceSolution = inverse.solve();
 inverseDeviceSolution.getMocoSolution().write('inverseDeviceSolution.sto');
 fprintf('Cost with device: %f\n', ...
@@ -101,47 +117,6 @@ fprintf('Cost with device: %f\n', ...
 
 %% Part 6: Compare unassisted and assisted Inverse Problems.
 compareInverseSolutions(inverseSolution, inverseDeviceSolution);
-
-end
-
-function [moco] = configureMocoStudy()
-
-import org.opensim.modeling.*;
-
-% Create a new MocoStudy.
-moco = MocoStudy();
-
-% Configure the solver.
-solver = moco.initCasADiSolver();
-solver.set_num_mesh_points(25);
-solver.set_dynamics_mode('implicit');
-solver.set_optim_convergence_tolerance(1e-4);
-solver.set_optim_constraint_tolerance(1e-4);
-solver.set_optim_solver('ipopt');
-solver.set_transcription_scheme('hermite-simpson');
-solver.set_enforce_constraint_derivatives(true);
-solver.set_optim_hessian_approximation('limited-memory');
-solver.set_optim_finite_difference_scheme('forward');
-
-% Set bounds on the problem.
-problem = moco.updProblem();
-problem.setTimeBounds(0, 1);
-% The position bounds specify that the model should start in a crouch and
-% finish standing up.
-problem.setStateInfo('/jointset/hip_r/hip_flexion_r/value', ...
-    MocoBounds(-2, 0.5), MocoInitialBounds(-2), MocoFinalBounds(0));
-problem.setStateInfo('/jointset/knee_r/knee_angle_r/value', ...
-    [-2, 0], -2, 0);
-problem.setStateInfo('/jointset/ankle_r/ankle_angle_r/value', ...
-    [-0.5, 0.7], -0.5, 0);
-% The velocity bounds specify that the model coordinates should start and
-% end at zero.
-problem.setStateInfo('/jointset/hip_r/hip_flexion_r/speed', ...
-    MocoBounds(-50, 50), MocoInitialBounds(0), MocoFinalBounds(0));
-problem.setStateInfo('/jointset/knee_r/knee_angle_r/speed', ...
-    [-50, 50], 0, 0);
-problem.setStateInfo('/jointset/ankle_r/ankle_angle_r/speed', ...
-    [-50, 50], 0, 0);
 
 end
 
