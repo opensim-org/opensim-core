@@ -30,10 +30,10 @@ jobs:
 #      name: "opensim-core"
 #      script: bash .github/travis_dependencies.sh opensim-core
 #      # if: commit_message =~ rebuild deps
-#    - stage: dependencies
-#      name: "adolc"
-#      script: bash .github/travis_dependencies.sh adolc
-#      # if: commit_message =~ rebuild deps
+    - stage: dependencies
+      name: "adolc"
+      script: bash .github/travis_dependencies.sh adolc
+      if: commit_message =~ /rebuild deps/
 #    - stage: dependencies
 #      name: "casadi"
 #      script: bash .github/travis_dependencies.sh casadi
