@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.2)
-project(Moco VERSION 0.1)
+project(OpenSimMoco VERSION 0.1)
 
 # Moco settings.
 # --------------
@@ -162,7 +162,7 @@ endif()
 include(FeatureSummary)
 
 # Include CMake macros that we wrote to reduce duplication in this project.
-include(cmake/MocoMacros.cmake)
+include(cmake/OpenSimMocoMacros.cmake)
 
 # Compiler flags.
 # ---------------

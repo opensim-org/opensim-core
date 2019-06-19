@@ -136,7 +136,7 @@ if (WIN32)
     add_dependencies(osimMoco Copy_OpenSim_DLLs)
 endif ()
 
-install(TARGETS osimMoco EXPORT MocoTargets
+install(TARGETS osimMoco EXPORT OpenSimMocoTargets
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
