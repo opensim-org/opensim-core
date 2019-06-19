@@ -11,7 +11,10 @@ MocoCopyDLLs(DEP_NAME casadi
     DEP_BIN_DIR "${CASADI_BIN_DIR}" INSTALL_DLLS "${CMAKE_INSTALL_BINDIR}")
 
 # Copy CasADi into our installation.
-install(DIRECTORY "${CASADI_CMAKE_DIR}/../../../"
+install(DIRECTORY "${CASADI_CMAKE_DIR}/../../../include/"
+        DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
+        USE_SOURCE_PERMISSIONS)
+install(DIRECTORY "${CASADI_CMAKE_DIR}/../../../lib/"
         DESTINATION "${CMAKE_INSTALL_PREFIX}"
         USE_SOURCE_PERMISSIONS)
 

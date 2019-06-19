@@ -86,25 +86,77 @@ endif()
 set(EXECUTABLE_OUTPUT_PATH "${CMAKE_BINARY_DIR}")
 set(LIBRARY_OUTPUT_PATH "${CMAKE_BINARY_DIR}")
 
-# Define variables that help describe the layout of the installation.
-include(GNUInstallDirs)
-set(MOCO_INSTALL_INCLUDEDIR ${CMAKE_INSTALL_INCLUDEDIR})
-set(MOCO_INSTALL_EXAMPLEDIR ${CMAKE_INSTALL_DOCDIR}/Examples)
+## MOCO_INSTALL_UNIX_FHS option.
+option(MOCO_INSTALL_UNIX_FHS
+        "Organize installation according to UNIX Filesystem Hierarchy Standard."
+        OFF)
+
 if(WIN32)
-    set(MOCO_INSTALL_CMAKEDIR cmake)
-    set(MOCO_INSTALL_PYTHONDIR sdk/python)
-    set(MOCO_INSTALL_SCRIPTSDIR sdk/Scripts)
+    # Windows users probably aren't interested in this option.
+    mark_as_advanced(MOCO_INSTALL_UNIX_FHS)
+endif()
+
+## Set variables describing where everything gets installed.
+if(${MOCO_INSTALL_UNIX_FHS})
+
+    # Sets CMAKE_INSTALL_*DIR variables, some of which are used below.
+    include(GNUInstallDirs)
+    # Do *NOT* try to use the CMAKE_INSTALL_FULL_*DIR variables created by
+    # GNUInstallDirs; they are only defined if MOCO_INSTALL_UNIX_FHS is ON.
+
+    # Now set variables that depend on those set by GNUInstallDirs.
+
+    # There's a difference between the locations of these files we'd want
+    # when using apt-get, and what a build-from-source user would want. Fo
+    # now the focus is making sure that if a build-from-source user installs
+    # into /usr or /usr/local, they have a FHS-compliant OpenSim installation.
+
+    set(MOCO_INSTALL_ARCHIVEDIR "${CMAKE_INSTALL_LIBDIR}")
+    set(MOCO_INSTALL_CMAKEDIR "${CMAKE_INSTALL_LIBDIR}/cmake/Moco")
+    # Location of the opensim python package in the installation.
+    # On Ubuntu/Debian (apt-get), would want lib/python2.7/dist-packages.
+    # We replace VERSION with the correct version once we know it (in
+    # Bindings/Python/CMakeLists.txt).
+    # The _LIBDIR variable might contain something like x86-64-linux-gnu on
+    # some systems, but for python, we really just want lib/, no matter what.
+    set(MOCO_INSTALL_PYTHONDIR "lib/pythonVERSION/site-packages")
+    # share/java, as expected on Ubuntu/Debian (apt-get).
+    set(MOCO_INSTALL_JAVAJARDIR "${CMAKE_INSTALL_DATAROOTDIR}/java")
+    # Don't want to put source files in share/java.
+    set(MOCO_INSTALL_JAVASRCDIR "${CMAKE_INSTALL_DATAROOTDIR}/OpenSim/java")
+    set(MOCO_INSTALL_APIEXDIR "${CMAKE_INSTALL_DOCDIR}/Code")
+
+else()
+
+    # Use our own installation layout.
+
+    # Set the variables that would have otherwise been set by GNUInstallDirs.
+    set(CMAKE_INSTALL_BINDIR bin)
+    set(CMAKE_INSTALL_INCLUDEDIR sdk/include)
+    set(CMAKE_INSTALL_LIBDIR sdk/lib)
+    set(CMAKE_INSTALL_DOCDIR sdk/doc)
+    # SYSCONFDIR holds read-only single-machine machine-dependent data.
     set(CMAKE_INSTALL_SYSCONFDIR sdk)
+
+    set(MOCO_INSTALL_ARCHIVEDIR "${CMAKE_INSTALL_LIBDIR}")
+    set(MOCO_INSTALL_CMAKEDIR cmake)
+    set(MOCO_INSTALL_PYTHONDIR sdk/Python)
+    set(MOCO_INSTALL_JAVAJARDIR sdk/Java)
+    set(MOCO_INSTALL_JAVASRCDIR sdk/Java)
+    set(MOCO_INSTALL_APIEXDIR Resources/Code)
+
+endif()
+
+set(MOCO_INSTALL_CPPEXDIR "${MOCO_INSTALL_APIEXDIR}/CPP")
+set(MOCO_INSTALL_MATLABEXDIR "${MOCO_INSTALL_APIEXDIR}/Matlab")
+set(MOCO_INSTALL_PYTHONEXDIR "${MOCO_INSTALL_APIEXDIR}/Python")
+
+# Cross-platform location of shared libraries. Used in configureOpenSim.m.
+if(WIN32)
     set(MOCO_INSTALL_SHAREDLIBDIR "${CMAKE_INSTALL_BINDIR}")
 else()
-    set(MOCO_INSTALL_CMAKEDIR ${CMAKE_INSTALL_LIBDIR}/cmake/Moco)
-    set(MOCO_INSTALL_PYTHONDIR "lib/pythonVERSION/site-packages")
-    set(MOCO_INSTALL_SCRIPTSDIR "${CMAKE_INSTALL_DOCDIR}/Scripts")
     set(MOCO_INSTALL_SHAREDLIBDIR "${CMAKE_INSTALL_LIBDIR}")
 endif()
-set(MOCO_INSTALL_JAVAJARDIR "${CMAKE_INSTALL_DATAROOTDIR}/java")
-set(MOCO_INSTALL_MATLABEXDIR "${MOCO_INSTALL_SCRIPTSDIR}/Matlab")
-set(MOCO_INSTALL_PYTHONEXDIR "${MOCO_INSTALL_SCRIPTSDIR}/Python")
 
 # This is used to provide the user with information about config. options.
 include(FeatureSummary)

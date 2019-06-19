@@ -34,7 +34,7 @@ configure_package_config_file(
             CMAKE_INSTALL_PREFIX
             CMAKE_INSTALL_LIBDIR
             CMAKE_INSTALL_BINDIR
-            MOCO_INSTALL_INCLUDEDIR
+            CMAKE_INSTALL_INCLUDEDIR
             MOCO_INSTALL_CMAKEDIR
 )
 

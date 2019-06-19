@@ -143,5 +143,5 @@ install(TARGETS osimMoco EXPORT MocoTargets
 
 # TODO do not install InverseMuscleSolverMotionData.h b/c it uses Eigen.
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
-        DESTINATION ${MOCO_INSTALL_INCLUDEDIR}/Moco
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/Moco
         FILES_MATCHING PATTERN "*.h*")

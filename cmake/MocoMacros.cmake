@@ -65,10 +65,10 @@ function(MocoAddExampleCXX)
     file(COPY ${MOCOEX_RESOURCES} DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
 
     install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-            DESTINATION ${MOCO_INSTALL_EXAMPLEDIR}/C++
+            DESTINATION ${MOCO_INSTALL_CPPEXDIR}
             PATTERN "CMakeLists.txt" EXCLUDE)
 
-    set(_example_install_dir ${MOCO_INSTALL_EXAMPLEDIR}/C++/${MOCOEX_NAME})
+    set(_example_install_dir ${MOCO_INSTALL_CPPEXDIR}/${MOCOEX_NAME})
     # These next two variables are to be configured below (they are not used
     # here, but within CMakeListsToInstall.txt.in).
     set(_example_name ${MOCOEX_NAME})
