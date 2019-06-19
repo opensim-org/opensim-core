@@ -332,6 +332,13 @@ public:
     // TODO handle rotational coordinates specified in degrees.
     void setStatesTrajectory(const TimeSeriesTable& states,
             bool allowMissingColumns = false, bool allowExtraColumns = false);
+
+    /// Add additional state columns. The provided data are interpolated using
+    /// GCV splines to match the times in this iterate. By default, we do not
+    /// overwrite data for states that already exist in the iterate; you can
+    /// change this behavior with `overwrite`.
+    void insertStatesTrajectory(
+            const TimeSeriesTable& subsetOfStates, bool overwrite = false);
     /// @}
 
     /// @name Accessors
@@ -571,6 +578,10 @@ private:
             std::vector<std::string> controlNames = {},
             std::vector<std::string> multiplierNames = {},
             std::vector<std::string> derivativeNames = {}) const;
+    static std::vector<std::string>::const_iterator find(
+            const std::vector<std::string>& v, const std::string& elem) {
+        return std::find(v.cbegin(), v.cend(), elem);
+    }
     void randomize(bool add, const SimTK::Random& randGen);
     SimTK::Vector m_time;
     std::vector<std::string> m_state_names;

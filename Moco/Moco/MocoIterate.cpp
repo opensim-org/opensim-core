@@ -228,10 +228,6 @@ void MocoIterate::setStatesTrajectory(const TimeSeriesTable& states,
 
     const auto& labels = states.getColumnLabels();
 
-    auto find = [](const std::vector<std::string>& v, const std::string& elem) {
-        return std::find(v.cbegin(), v.cend(), elem);
-    };
-
     if (!allowMissingColumns) {
         for (const auto& iterate_state : m_state_names) {
             OPENSIM_THROW_IF(find(labels, iterate_state) == labels.end(),
@@ -244,8 +240,7 @@ void MocoIterate::setStatesTrajectory(const TimeSeriesTable& states,
 
     std::vector<std::string> labelsToUse;
     for (const auto& label : labels) {
-        if (std::find(m_state_names.begin(), m_state_names.end(), label) !=
-                m_state_names.end()) {
+        if (find(m_state_names, label) != m_state_names.end()) {
             labelsToUse.push_back(label);
         } else {
             if (!allowExtraColumns) {
@@ -267,6 +262,35 @@ void MocoIterate::setStatesTrajectory(const TimeSeriesTable& states,
         for (int itime = 0; itime < m_time.size(); ++itime) {
             curTime[0] = m_time[itime];
             m_states(itime, istate) = splines.get(label).calcValue(curTime);
+        }
+    }
+}
+
+void MocoIterate::insertStatesTrajectory(
+        const TimeSeriesTable& subsetOfStates, bool overwrite) {
+    ensureUnsealed();
+
+    const auto origStateNames = m_state_names;
+    const auto& labelsToInsert = subsetOfStates.getColumnLabels();
+    for (const auto& label : labelsToInsert) {
+        auto it = find(m_state_names, label);
+        if (it == m_state_names.cend()) { m_state_names.push_back(label); }
+    }
+
+    m_states.resizeKeep(getNumTimes(), (int)m_state_names.size());
+
+    const int numTimesTable = (int)subsetOfStates.getNumRows();
+
+    GCVSplineSet splines(subsetOfStates, {}, std::min(numTimesTable - 1, 5));
+    SimTK::Vector curTime(1, SimTK::NaN);
+    for (const auto& label : labelsToInsert) {
+        if (find(origStateNames, label) == origStateNames.cend() || overwrite) {
+            auto it = find(m_state_names, label);
+            int istate = (int)std::distance(m_state_names.cbegin(), it);
+            for (int itime = 0; itime < m_time.size(); ++itime) {
+                curTime[0] = m_time[itime];
+                m_states(itime, istate) = splines.get(label).calcValue(curTime);
+            }
         }
     }
 }
@@ -413,7 +437,7 @@ void MocoIterate::resample(SimTK::Vector time) {
         for (int ideriv = 0; ideriv < numDerivatives; ++ideriv, ++icol)
             m_derivatives.updCol(ideriv).setTo(
                     table.getDependentColumnAtIndex(icol).getElt(0, 0));
-        for (int islack = 0; islack < numDerivatives; ++islack, ++icol)
+        for (int islack = 0; islack < numSlacks; ++islack, ++icol)
             m_slacks.updCol(islack).setTo(
                     table.getDependentColumnAtIndex(icol).getElt(0, 0));
 
