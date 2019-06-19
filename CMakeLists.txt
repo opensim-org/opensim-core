@@ -133,7 +133,9 @@ if(CMAKE_CXX_COMPILER_ID MATCHES Clang # includes AppleClang
     add_compile_options($<$<NOT:$<CONFIG:Debug>>:-Wno-unused-variable>
                         $<$<NOT:$<CONFIG:Debug>>:-Wno-unused-parameter>)
 
-    add_compile_options(-Wno-unused-local-typedef)
+    if(CMAKE_CXX_COMPILER_ID MATCHES Clang)
+        add_compile_options(-Wno-unused-local-typedef)
+    endif()
 endif()
 
 # TODO add /WX flag for Windows.
