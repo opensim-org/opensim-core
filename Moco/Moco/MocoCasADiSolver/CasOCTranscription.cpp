@@ -80,7 +80,7 @@ private:
 };
 
 void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
-        int numDefectsPerMeshPoint, const casadi::DM& pointsForInterpControls) {
+        int numDefectsPerMeshInterval, const casadi::DM& pointsForInterpControls) {
     // Set the grid.
     // -------------
     // The grid for a transcription scheme includes both mesh points (i.e.
@@ -91,13 +91,13 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
     m_numGridPoints = (int)grid.numel();
     m_numMeshIntervals = m_numMeshPoints - 1;
     m_numPointsIgnoringConstraints = m_numGridPoints - m_numMeshPoints;
-    m_numDefectsPerMeshPoint = numDefectsPerMeshPoint;
+    m_numDefectsPerMeshInterval = numDefectsPerMeshInterval;
     m_pointsForInterpControls = pointsForInterpControls;
     m_numResiduals = m_solver.isDynamicsModeImplicit()
                              ? m_problem.getNumMultibodyDynamicsEquations()
                              : 0;
     m_numConstraints =
-            m_numDefectsPerMeshPoint * m_numMeshIntervals +
+            m_numDefectsPerMeshInterval * m_numMeshIntervals +
             m_numResiduals * m_numGridPoints +
             m_problem.getNumKinematicConstraintEquations() * m_numMeshPoints +
             m_problem.getNumControls() * (int)pointsForInterpControls.numel();
@@ -253,11 +253,11 @@ void Transcription::transcribe() {
     // ----------------------------------------------------
     m_xdot = MX(NS, m_numGridPoints);
     m_constraints.defects = MX(casadi::Sparsity::dense(
-            m_numDefectsPerMeshPoint, m_numMeshIntervals));
+            m_numDefectsPerMeshInterval, m_numMeshIntervals));
     m_constraintsLowerBounds.defects =
-            DM::zeros(m_numDefectsPerMeshPoint, m_numMeshIntervals);
+            DM::zeros(m_numDefectsPerMeshInterval, m_numMeshIntervals);
     m_constraintsUpperBounds.defects =
-            DM::zeros(m_numDefectsPerMeshPoint, m_numMeshIntervals);
+            DM::zeros(m_numDefectsPerMeshInterval, m_numMeshIntervals);
 
     // Initialize memory for implicit residuals.
     // -----------------------------------------

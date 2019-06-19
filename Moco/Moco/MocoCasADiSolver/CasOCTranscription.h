@@ -72,7 +72,7 @@ protected:
     /// pointsForInterpControls are grid points at which the transcription
     /// scheme applies constraints between control points.
     void createVariablesAndSetBounds(const casadi::DM& grid,
-            int numDefectsPerMeshPoint,
+            int numDefectsPerMeshInterval,
             const casadi::DM& pointsForInterpControls = casadi::DM());
 
     /// We assume all functions depend on time and parameters.
@@ -114,7 +114,7 @@ protected:
     int m_numMeshPoints = -1;
     int m_numMeshIntervals = -1;
     int m_numPointsIgnoringConstraints = -1;
-    int m_numDefectsPerMeshPoint = -1;
+    int m_numDefectsPerMeshInterval = -1;
     int m_numResiduals = -1;
     int m_numConstraints = -1;
     casadi::DM m_grid;
@@ -307,7 +307,7 @@ private:
             return T(casadi::Sparsity::dense(numRows, numColumns));
         };
         Constraints<T> out;
-        out.defects = init(m_numDefectsPerMeshPoint, m_numMeshPoints - 1);
+        out.defects = init(m_numDefectsPerMeshInterval, m_numMeshPoints - 1);
         out.residuals = init(m_numResiduals, m_numGridPoints);
         out.kinematic = init(m_problem.getNumKinematicConstraintEquations(),
                 m_numMeshPoints);

@@ -121,12 +121,11 @@ public:
     StreamFormat(std::ostream& stream) : m_stream(stream) {
         m_format.copyfmt(stream);
     }
-    ~StreamFormat() {
-        m_stream.copyfmt(m_format);
-    }
+    ~StreamFormat() { m_stream.copyfmt(m_format); }
+
 private:
     std::ostream& m_stream;
-    std::ios m_format {nullptr};
+    std::ios m_format{nullptr};
 }; // StreamFormat
 
 /// Create a SimTK::Vector with the provided length whose elements are
