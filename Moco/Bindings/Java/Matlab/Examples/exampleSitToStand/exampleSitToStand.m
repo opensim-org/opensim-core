@@ -4,7 +4,7 @@ function exampleSitToStand
 import org.opensim.modeling.*;
 
 %% Part 1: Torque-driven Predictive Problem
-% Part 1a: Get a pre-configured MocoTool and set a torque-driven model on
+% Part 1a: Get a pre-configured MocoStudy and set a torque-driven model on
 % the underlying MocoProblem.
 
 % Part 1b: Add a MocoControlCost to the problem.
@@ -14,7 +14,7 @@ import org.opensim.modeling.*;
 % Part 1d: Solve, write the solution to file, and visualize.
 
 %% Part 2: Torque-driven Tracking Problem
-% Part 2a: Get a fresh MocoTool and set the torque-driven model on the
+% Part 2a: Get a fresh MocoStudy and set the torque-driven model on the
 % problem.
 
 % Part 2b: Add a MocoStateTrackingCost() to the problem using the states
@@ -45,12 +45,12 @@ compareInverseSolutions(inverseSolution, inverseDeviceSolution);
 
 end
 
-function [moco] = configureMocoTool()
+function [moco] = configureMocoStudy()
 
 import org.opensim.modeling.*;
 
-% Create a new MocoTool.
-moco = MocoTool();
+% Create a new MocoStudy.
+moco = MocoStudy();
 
 % Configure the solver.
 solver = moco.initCasADiSolver();
