@@ -36,7 +36,7 @@ problem.setModelCopy(getTorqueDrivenModel());
 % constraint.
 tracking = MocoStateTrackingCost();
 tracking.setName('tracking');
-tracking.setReferenceFile('predictSolution.sto');
+tracking.setReference(TableProcessor('predictSolution.sto'));
 tracking.setAllowUnusedReferences(true);
 tracking.setWeight('/jointset/patellofemoral_r/knee_angle_r_beta/value', 0);
 tracking.setWeight('/jointset/patellofemoral_r/knee_angle_r_beta/speed', 0);
@@ -65,14 +65,18 @@ compareSolutions(predictSolution, trackingSolution)
 
 %% Part 4: Muscle-driven Inverse Problem
 inverse = MocoInverse();
-inverse.setModel(getMuscleDrivenModel());
-inverse.setKinematicsFile('predictSolution.sto');
+modelP = ModelProcessor(getMuscleDrivenModel());
+modelP.append(ModOpAddReserves(2));
+inverse.setModel(modelP);
+kinematics = TableProcessor('predictSolution.sto');
+kinematics.append(TabOpLowPassFilter(6));
+inverse.setKinematics(kinematics);
 inverse.set_kinematics_allow_extra_columns(true);
-inverse.set_lowpass_cutoff_frequency_for_kinematics(6);
 inverse.set_mesh_interval(0.05);
-inverse.set_create_reserve_actuators(2);
 inverse.set_minimize_sum_squared_states(true);
 inverse.set_tolerance(1e-4);
+inverse.set_initial_time(0);
+inverse.set_final_time(1);
 inverse.append_output_paths('.*normalized_fiber_length');
 inverse.append_output_paths('.*passive_force_multiplier');
 inverseSolution = inverse.solve();
