@@ -39,6 +39,7 @@
 #include "MocoCost/MocoStateTrackingCost.h"
 #include "MocoCost/MocoTranslationTrackingCost.h"
 #include "MocoInverse.h"
+#include "MocoTrack.h"
 #include "MocoParameter.h"
 #include "MocoProblem.h"
 #include "MocoSolver.h"
@@ -80,6 +81,7 @@ OSIMMOCO_API void RegisterTypes_osimMoco() {
         Object::registerType(MocoStudy());
 
         Object::registerType(MocoInverse());
+        Object::registerType(MocoTrack());
 
         Object::registerType(MocoTropterSolver());
 
@@ -92,6 +94,7 @@ OSIMMOCO_API void RegisterTypes_osimMoco() {
         Object::registerType(INDYGO());
 
         Object::registerType(TableProcessor());
+
         Object::registerType(TabOpLowPassFilter());
 
         Object::registerType(ModelProcessor());

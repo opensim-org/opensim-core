@@ -38,7 +38,7 @@ void MocoTranslationTrackingCost::initializeOnModelImpl(const Model& model)
         assert(get_states_reference().empty());
         if (get_translation_reference_file() != "") { // translation ref file
             assert(m_translation_table.getNumColumns() == 0);
-            translationTableToUse = readTableFromFile<Vec3>(
+            translationTableToUse = readTableFromFileT<Vec3>(
                     get_translation_reference_file());
 
         } else { // translation table
@@ -117,6 +117,9 @@ void MocoTranslationTrackingCost::initializeOnModelImpl(const Model& model)
         translationTable.setColumnLabels(pathsToUse);
 
     }
+
+    // Check that there are no redundant columns in the reference data.
+    checkRedundantLabels(translationTable.getColumnLabels());
 
     // Cache the model frames and translation weights based on the order of the 
     // translation table.
