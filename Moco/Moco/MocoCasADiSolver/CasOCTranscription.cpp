@@ -80,7 +80,7 @@ private:
 };
 
 void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
-        int numDefectsPerGridPoint, const casadi::DM& pointsForInterpControls) {
+        int numDefectsPerMeshInterval, const casadi::DM& pointsForInterpControls) {
     // Set the grid.
     // -------------
     // The grid for a transcription scheme includes both mesh points (i.e.
@@ -91,13 +91,13 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
     m_numGridPoints = (int)grid.numel();
     m_numMeshIntervals = m_numMeshPoints - 1;
     m_numPointsIgnoringConstraints = m_numGridPoints - m_numMeshPoints;
-    m_numDefectsPerGridPoint = numDefectsPerGridPoint;
+    m_numDefectsPerMeshInterval = numDefectsPerMeshInterval;
     m_pointsForInterpControls = pointsForInterpControls;
     m_numResiduals = m_solver.isDynamicsModeImplicit()
                              ? m_problem.getNumMultibodyDynamicsEquations()
                              : 0;
     m_numConstraints =
-            m_numDefectsPerGridPoint * m_numMeshIntervals +
+            m_numDefectsPerMeshInterval * m_numMeshIntervals +
             m_numResiduals * m_numGridPoints +
             m_problem.getNumKinematicConstraintEquations() * m_numMeshPoints +
             m_problem.getNumControls() * (int)pointsForInterpControls.numel();
@@ -253,11 +253,11 @@ void Transcription::transcribe() {
     // ----------------------------------------------------
     m_xdot = MX(NS, m_numGridPoints);
     m_constraints.defects = MX(casadi::Sparsity::dense(
-            m_numDefectsPerGridPoint, m_numMeshIntervals));
+            m_numDefectsPerMeshInterval, m_numMeshIntervals));
     m_constraintsLowerBounds.defects =
-            DM::zeros(m_numDefectsPerGridPoint, m_numMeshIntervals);
+            DM::zeros(m_numDefectsPerMeshInterval, m_numMeshIntervals);
     m_constraintsUpperBounds.defects =
-            DM::zeros(m_numDefectsPerGridPoint, m_numMeshIntervals);
+            DM::zeros(m_numDefectsPerMeshInterval, m_numMeshIntervals);
 
     // Initialize memory for implicit residuals.
     // -----------------------------------------
@@ -568,9 +568,8 @@ Solution Transcription::solve(const Iterate& guessOrig) {
 }
 
 void Transcription::printConstraintValues(
-        const Iterate& it, const Constraints<casadi::DM>& constraints) const {
-
-    auto& stream = std::cout;
+        const Iterate& it, const Constraints<casadi::DM>& constraints,
+        std::ostream& stream) const {
 
     // We want to be able to restore the stream's original formatting.
     OpenSim::StreamFormat streamFormat(stream);
@@ -602,7 +601,7 @@ void Transcription::printConstraintValues(
 
     // Bounds on time-varying variables.
     // ---------------------------------
-    auto print_bounds = [&maxNameLength](const std::string& description,
+    auto print_bounds = [&stream, maxNameLength](const std::string& description,
                                 const std::vector<std::string>& names,
                                 const casadi::DM& times,
                                 const casadi::DM& values,
@@ -704,7 +703,8 @@ void Transcription::printConstraintValues(
            << std::endl;
     stream << "The case of lower==upper==value is ignored." << std::endl;
 
-    auto printParameterBounds = [&maxNameLength](const std::string& description,
+    auto printParameterBounds = [&stream, maxNameLength](
+                                        const std::string& description,
                                         const std::vector<std::string>& names,
                                         const casadi::DM& values,
                                         const casadi::DM& lower,
@@ -831,7 +831,7 @@ void Transcription::printConstraintValues(
     // ----------------------
     stream << "\nKinematic constraints:";
     std::vector<std::string> kinconNames =
-            m_problem.createKinematicConstraintNames();
+            m_problem.createKinematicConstraintEquationNames();
     if (kinconNames.empty()) {
         stream << " none" << std::endl;
     } else {

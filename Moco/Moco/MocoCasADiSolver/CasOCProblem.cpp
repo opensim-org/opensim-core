@@ -39,4 +39,13 @@ Iterate Iterate::resample(const casadi::DM& newTimes) const {
     return OpenSim::convertToCasOCIterate(mocoIt);
 }
 
+std::vector<std::string>
+Problem::createKinematicConstraintEquationNamesImpl() const {
+    std::vector<std::string> names(getNumKinematicConstraintEquations());
+    for (int i = 0; i < getNumKinematicConstraintEquations(); ++i) {
+        names[i] = format("kinematic_constraint_%03i", i);
+    }
+    return names;
+}
+
 } // namespace CasOC

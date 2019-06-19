@@ -512,6 +512,7 @@ TEMPLATE_TEST_CASE("Workflow", "", MocoTropterSolver, MocoCasADiSolver) {
                 SimTK_TEST_EQ(info3.getBounds().getUpper(), 10);
             }
         }
+
         SECTION("Setting only initial/final bounds explicitly.") {
             SECTION("Initial coordinate value") {
                 problem.setStateInfo("/slider/position/value", {}, {-5.0, 3.6});
