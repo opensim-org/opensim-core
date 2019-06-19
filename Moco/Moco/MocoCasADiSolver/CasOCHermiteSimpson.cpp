@@ -26,7 +26,7 @@ namespace CasOC {
 DM HermiteSimpson::createQuadratureCoefficientsImpl() const {
 
     // The duration of each mesh interval.
-    const DM mesh = DM::linspace(0, 1, m_numMeshPoints);
+    const DM mesh(m_solver.getMesh());
     const DM meshIntervals = mesh(Slice(1, m_numMeshPoints)) -
                              mesh(Slice(0, m_numMeshPoints - 1));
     // Simpson quadrature includes integrand evaluations at the midpoint.
@@ -78,12 +78,13 @@ void HermiteSimpson::applyConstraintsImpl(const VariablesMX& vars,
     const auto& states = vars.at(Var::states);
     const auto& controls = vars.at(Var::controls);
     const DM zeroS = casadi::DM::zeros(m_problem.getNumStates(), 1);
-    const DM zeroU = casadi::DM::zeros(m_problem.getNumSpeeds(), 1);
+    const DM zeroR =
+            casadi::DM::zeros(m_problem.getNumMultibodyDynamicsEquations(), 1);
     const DM zeroC = casadi::DM::zeros(m_problem.getNumControls(), 1);
 
     int time_i, time_mid, time_ip1;
     for (int imesh = 0; imesh < m_numMeshPoints; ++imesh) {
-        time_i = 2 * imesh; // Needed for defects and path constraints.
+        time_i = 2 * imesh; // Needed for defects and residuals.
 
         // We enforce defect constraints on a mesh interval basis, so add
         // constraints until the number of mesh intervals is reached.
@@ -111,24 +112,24 @@ void HermiteSimpson::applyConstraintsImpl(const VariablesMX& vars,
 
             // The residuals are enforced at the mesh interval midpoints.
             if (m_solver.isDynamicsModeImplicit()) {
-                addConstraints(zeroU, zeroU, residual(Slice(), time_i));
-                addConstraints(zeroU, zeroU, residual(Slice(), time_mid));
+                addConstraints(zeroR, zeroR, residual(Slice(), time_i));
+                addConstraints(zeroR, zeroR, residual(Slice(), time_mid));
                 // We only need to add a constraint on this time point for the
                 // last mesh interval since, for all other mesh intervals, the
                 // time_ip1 point for a given mesh interval is covered by the
                 // next mesh interval's time_i point.
                 if (imesh == m_numMeshIntervals - 1) {
-                    addConstraints(zeroU, zeroU, residual(Slice(), time_ip1));
+                    addConstraints(zeroR, zeroR, residual(Slice(), time_ip1));
                 }
             }
 
-            if (m_problem.getNumControls() && 
+            if (m_problem.getNumControls() &&
                     m_solver.getInterpolateControlMidpoints()) {
                 const auto c_i = controls(Slice(), time_i);
                 const auto c_mid = controls(Slice(), time_mid);
                 const auto c_ip1 = controls(Slice(), time_ip1);
                 addConstraints(zeroC, zeroC, c_mid - 0.5 * (c_ip1 + c_i));
-            }   
+            }
         }
 
         // Kinematic constraint errors.

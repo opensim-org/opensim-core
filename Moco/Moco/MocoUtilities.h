@@ -19,12 +19,18 @@
  * -------------------------------------------------------------------------- */
 
 #include "osimMocoDLL.h"
+#include "MocoIterate.h"
+
 #include <set>
 #include <stack>
+#include <regex>
 
 #include <OpenSim/Common/GCVSplineSet.h>
 #include <OpenSim/Common/PiecewiseLinearFunction.h>
 #include <OpenSim/Common/Storage.h>
+#include <Simulation/Model/Model.h>
+#include <Simulation/StatesTrajectory.h>
+#include <Common/Reporter.h>
 
 namespace OpenSim {
 
@@ -174,8 +180,7 @@ TimeSeriesTable resample(const TimeSeriesTable& in, const TimeVector& newTime) {
             "Cannot resample if number of times is 0 or 1.");
     OPENSIM_THROW_IF(newTime[0] < time[0], Exception,
             format("New initial time (%f) cannot be less than existing "
-                   "initial "
-                   "time (%f)",
+                   "initial time (%f)",
                     newTime[0], time[0]));
     OPENSIM_THROW_IF(newTime[newTime.size() - 1] > time[time.size() - 1],
             Exception,
@@ -230,7 +235,7 @@ OSIMMOCO_API TimeSeriesTable filterLowpass(
 /// FileAdapter). This function assumes that only one table is contained in the
 /// file, and will throw an exception otherwise.
 template <typename T>
-TimeSeriesTable_<T> readTableFromFile(const std::string& filepath) {
+TimeSeriesTable_<T> readTableFromFileT(const std::string& filepath) {
     auto tablesFromFile = FileAdapter::readFile(filepath);
     // There should only be one table.
     OPENSIM_THROW_IF(tablesFromFile.size() != 1, Exception,
@@ -248,6 +253,15 @@ TimeSeriesTable_<T> readTableFromFile(const std::string& filepath) {
     return *firstTable;
 }
 
+/// Read in a TimeSeriesTable from file containing scalar elements. The
+/// `filepath` argument should refer to a STO or CSV file (or other file types
+/// for which there is a FileAdapter). This function assumes that only one table
+/// is contained in the file, and will throw an exception otherwise.
+OSIMMOCO_API inline TimeSeriesTable readTableFromFile(
+        const std::string& filepath) {
+    return readTableFromFileT<double>(filepath);
+}
+
 /// Write a single TimeSeriesTable to a file, using the FileAdapter associated
 /// with the provided file extension.
 OSIMMOCO_API void writeTableToFile(const TimeSeriesTable&, const std::string&);
@@ -263,8 +277,79 @@ OSIMMOCO_API void visualize(Model, Storage);
 /// the states are provided in a TimeSeriesTable.
 OSIMMOCO_API void visualize(Model, TimeSeriesTable);
 
-OSIMMOCO_API TimeSeriesTable analyze(const MocoProblem& model,
-        const MocoIterate& it, std::vector<std::string> outputPaths);
+/// Calculate the requested outputs using the model in the problem and the
+/// states and controls in the MocoIterate.
+/// The output paths can be regular expressions. For example,
+/// ".*activation" gives the activation of all muscles.
+/// Constraints are not enforced but prescribed motion (e.g.,
+/// PositionMotion) is.
+/// The output paths must correspond to outputs that match the type provided in
+/// the template argument, otherwise they are not included in the report.
+/// @note Parameters in the MocoIterate are **not** applied to the model.
+template <typename T>
+TimeSeriesTable_<T> analyze(Model model, const MocoIterate& iterate,
+        std::vector<std::string> outputPaths) {
+
+    // Initialize the system so we can access the outputs.
+    model.initSystem();
+    // Create the reporter object to which we'll add the output data to create
+    // the report.
+    auto* reporter = new TableReporter_<T>();
+    // Loop through all the outputs for all components in the model, and if
+    // the output path matches one provided in the argument and the output type
+    // agrees with the template argument type, add it to the report.
+    for (const auto& comp : model.getComponentList()) {
+        for (const auto& outputName : comp.getOutputNames()) {
+            const auto& output = comp.getOutput(outputName);
+            auto thisOutputPath = output.getPathName();
+            for (const auto& outputPathArg : outputPaths) {
+                if (std::regex_match(thisOutputPath, 
+                        std::regex(outputPathArg))) {
+                    // Make sure the output type agrees with the template.
+                    if (dynamic_cast<const Output<T>*>(&output)) {
+                        reporter->addToReport(output);
+                    } else {
+                        std::cout << format("Warning: ignoring output %s of "
+                                            "type %s.", output.getPathName(), 
+                                            output.getTypeName())
+                                  << std::endl;
+                    }
+                }
+            }
+       
+        }
+    }
+    model.addComponent(reporter);
+    model.initSystem();
+
+    // Get states trajectory.
+    Storage storage = iterate.exportToStatesStorage();
+    auto statesTraj = StatesTrajectory::createFromStatesStorage(model, storage);
+
+    // Loop through the states trajectory to create the report.
+    for (int i = 0; i < (int)statesTraj.getSize(); ++i) {
+        // Get the current state.
+        auto state = statesTraj[i];
+
+        // Enforce any SimTK::Motion's included in the model.
+        model.getSystem().prescribe(state);
+
+        // Create a SimTK::Vector of the control values for the current state.
+        SimTK::RowVector controlsRow =
+            iterate.getControlsTrajectory().row(i);
+        SimTK::Vector controls(controlsRow.size(),
+            controlsRow.getContiguousScalarData(), true);
+
+        // Set the controls on the state object.
+        model.realizeVelocity(state);
+        model.setControls(state, controls);
+
+        // Generate report results for the current state.
+        model.realizeReport(state);
+    }
+
+    return reporter->getTable();
+}
 
 /// Given a MocoIterate and the associated OpenSim model, return the model with
 /// a prescribed controller appended that will compute the control values from
@@ -328,6 +413,11 @@ std::unordered_map<std::string, int> createSystemControlIndexMap(
 /// Throws an exception if the order of the controls in the model is not the
 /// same as the order of the actuators in the model.
 OSIMMOCO_API void checkOrderSystemControls(const Model& model);
+
+/// Throws an exception if the same label appears twice in the list of labels.
+/// The argument copies the provided labels since we need to sort them to check
+/// for redundancies.
+OSIMMOCO_API void checkRedundantLabels(std::vector<std::string> labels);
 
 /// Throw an exception if the property's value is not in the provided set.
 /// We assume that `p` is a single-value property.

@@ -1,0 +1,347 @@
+namespace OpenSim {
+
+/**
+@page mocostudy MocoStudy: generic problems
+
+@tableofcontents
+
+MocoStudy allows one to solve a generic optimal control problem, where the
+costs, constraints, and solver settings are fully defined by the user. That is,
+we solve the following problem:
+
+\f[
+    \begin{alignat*}{2}
+        \mbox{minimize}
+         \quad & \sum_j w_{E,j} \left(J_{E,j}(t_0, t_f, y_0, y_f, x_{0}, x_{f}, \lambda_0, \lambda_f, p)
+         + \int_{t_0}^{t_f} J_{I,j}(t, y, x, \lambda, p)~dt\right) &&  \\
+        \mbox{subject to}
+         \quad & \dot{q} = u \\
+         & M(q, p)\dot{u} + G(q, p)^T \lambda = f_{\textrm{app}}(t, y, x, p) - f_{\textrm{bias}}(q, u, p) \\
+         & \dot{z}(t) = f_{\textrm{aux}}(t, y, x, \lambda, p) \\
+         & 0 = \phi(q, p) \\
+         & 0 = \nu(q, u, p) \\
+         & 0 = \alpha(q, u, \dot{u}, p) \\
+         & g_{L} \leq g(t, y, x, \lambda, p) \leq g_{U} \\
+         & y_{0,L} \leq y_0 \leq y_{0,U} \\
+         & x_{0,L} \leq x_0 \leq x_{0,U} \\
+         & y_{f,L} \leq y_f \leq y_{f,U} \\
+         & x_{f,L} \leq x_f \leq x_{f,U} \\
+         \mbox{with respect to} \quad
+         & y \in [y_{L}, y_{U}] \\
+         & x \in [x_{L}, x_{U}] \\
+         & p \in [p_{L}, p_{U}] \\
+         & t_0 \in [t_{0,L}, t_{0,U}] \\
+         & t_f \in [t_{f,L}, t_{f,U}]
+    \end{alignat*}
+\f]
+
+We use the following notation:
+
+- \f$ t \f$: time
+- \f$ q(t) \f$: generalized coordinates
+- \f$ u(t) \f$: generalized speeds
+- \f$ z(t) \f$: auxiliary states (muscle fiber length and activation)
+- \f$ y(t) = (q(t), u(t), z(t))\f$
+- \f$ x(t) \f$: controls (including muscle activation)
+- \f$ p \f$: constant parameters
+- \f$ \lambda \f$: kinematic constraint multipliers
+- \f$ w_j \f$: weight for \f$ j \f$-th cost
+- \f$ J_{E,j} \f$: endpoint portion of the \f$ j \f$-th cost
+- \f$ J_{I,j} \f$: integrand portion of the \f$ j \f$-th cost
+- \f$ M \f$: mass matrix
+- \f$ f_{\textrm{bias}} \f$: centripetal and coriolis forces
+- \f$ G \f$: kinematic constraint Jacobian
+- \f$ f_{\textrm{app}} \f$: applied forces (gravity, muscles, etc.)
+- \f$ f_{\textrm{aux}} \f$: auxiliary dynamics (muscle activation dynamics, etc.)
+- \f$ \phi \f$: position-level (holonomic) kinematic constraints
+- \f$ \nu \f$: velocity-level (non-holonomic) kinematic constraints
+- \f$ \alpha \f$: acceleration-level kinematic constraints
+- \f$ g \f$: path constraints
+- subscript \f$ U \f$: an upper bound
+- subscript \f$ L \f$: a lower bound
+
+@section Example
+
+TODO
+
+@section Overview
+
+A MocoStudy contains a MocoProblem and a MocoSolver.
+
+  - MocoProblem: describes the variables, dynamics, constraints, and cost
+      functional of the optimal control problem, using an OpenSim model.
+  - MocoSolver: solves the MocoProblem using direct collocation.
+
+When building a MocoStudy programmatically (e.g., in C++), the workflow is as
+follows:
+
+1. Build the MocoProblem (set the model, constraints, etc.).
+2. Call MocoStudy::initTropterSolver() or MocoStudy::initCasADiSolver(), which
+   returns a reference to a MocoSolver.
+3. Edit the settings of the MocoSolver.
+4. Call MocoStudy::solve(). This returns the MocoSolution.
+5. (Optional) Postprocess the solution, perhaps using MocoStudy::visualize().
+
+After calling MocoStudy::solve(), you can edit the MocoProblem and/or the
+MocoSolver and call MocoStudy::solve() again, if you wish.
+
+@section MocoProblem
+
+A MocoProblem is a list of MocoPhase%s, but Moco currently supports only
+single-phase problems. A MocoPhase consists of the following:
+
+1. an OpenSim model that describe states, controls, dynamics, and kinematic
+   constraints.
+2. MocoCost%s: describes the cost functional to minimize.
+3. MocoPathConstraint%s: describes non-kinematic algebraic constraints to
+   enforce over the entire phase.
+4. MocoParameter%s: describes Model (time-invariant) properties to optimize.
+5. Bounds on initial and final time.
+6. Bounds (initial, final, and over all time) for state variables, stored in
+   MocoVariableInfo.
+7. Bounds (initial, final, and over all time) for control variables, stored in
+   MocoVariableInfo.
+
+@subsection Bounds
+
+@subsubsection Time
+
+By default, the initial time and final time are unconstrained. However, this is
+rarely what you want, and often causes a problem to behave poorly. Moco issues a
+warning if you do not set bounds for initial or final time.
+
+@subsubsection Defaults
+
+Setting bounds for state and control variables is an important but often tedious
+process. To help, Moco sets some variable bounds automatically. See
+MocoPhase::setStateInfo() and MocoPhase::setControlInfo() for details.
+
+Although we support setting initial and final bounds for controls, such
+functionality is not too useful: the initial and final values of a control have
+little influence on the value of the control at nearby times.
+
+@subsection costfunctional Defining the cost functional
+
+See @ref mococost for more information.
+
+@subsection preskin Prescribed kinematics
+
+You may wish to solve a problem in which you prescribe known kinematics for all
+degrees of freedom and optimize only auxiliary dynamics or actuator
+behavior.
+
+Simbody provides two mechanisms for prescribing the value of a coordinate:
+adding a constraint with SimTK::Constraint::PrescribedMotion (see
+Coordinate's prescribed and prescribed_function properties), and removing a
+degree of freedom using SimTK::Motion. The former leads to a bigger system of
+equations (and does not avoid multibody dynamics), while the latter results in a
+smaller system of equations. In Moco, we use the PositionMotion component (which
+uses SimTK::Motion) to prescribe the motion of all degrees of freedom using
+spline functions, as this leads to a more tractable direct collocation problem
+that often converges reliably and in far less time than a problem containing
+multibody dynamics.
+
+In this formulation, the kinematic variables \f$ q \f$ and \f$ u \f$ are
+replaced with known quantities \f$ \hat{q} \f$ and \f$ \hat{u} \f$:
+
+\f[
+    \begin{alignat*}{2}
+        \mbox{minimize} \quad & \sum_j w_{E,j} \left(J_{E,j}(t_0, t_f, \hat{q}_0, \hat{q}_f, \hat{u}_0, \hat{u}_f, z_0, z_f, x_{0}, x_{f}, \lambda_0, \lambda_f, p)
+         + \int_{t_0}^{t_f} J_{I,j}(t, \hat{q}, \hat{u}, z, x, \lambda, p)~dt\right) &&  \\
+        \mbox{subject to} \quad &
+         M(\hat{q}, p)\dot{\hat{u}} + G(\hat{q}, p)^T \lambda = f_{\textrm{app}}(t, \hat{q}, \hat{u}, z, x, p) - f_{\textrm{bias}}(\hat{q}, \hat{u}, p) \\
+         & \dot{z}(t) = f_{\textrm{aux}}(t, \hat{q}, \hat{u}, x, \lambda, p) \\
+         & g_{L} \leq g(t, \hat{q}, \hat{u}, z, x, \lambda, p) \leq g_{U} \\
+         & z_{0,L} \leq z_0 \leq z_{0,U} \\
+         & x_{0,L} \leq x_0 \leq x_{0,U} \\
+         & z_{f,L} \leq z_f \leq z_{f,U} \\
+         & x_{f,L} \leq x_f \leq x_{f,U} \\
+         \mbox{with respect to} \quad
+         & z \in [z_{L}, z_{U}] \\
+         & x \in [x_{L}, x_{U}] \\
+         & p \in [p_{L}, p_{U}] \\
+         & t_0 \in [t_{0,L}, t_{0,U}] \\
+         & t_f \in [t_{f,L}, t_{f,U}].
+    \end{alignat*}
+\f]
+
+The system still contains auxiliary state variables \f$ z \f$, control variables
+\f$ x \f$, and auxiliary dynamics. If none of the parameter variables affect the
+multibody system, then the multibody dynamics is reduced to a force balance:
+applied forces must match the net generalized forces determined by the
+kinematics (that is, inverse dynamics).
+
+To prescribe motion in the "reduce-DOF" way, add a PositionMotion component
+to your model. PositionMotion requires that all DOFs are prescribed; we do not
+support prescribing a subset of the degrees of freedom.
+
+See @ref mocoinverse and @ref preskinimpl for more information.
+
+@subsubsection preskinconstr Prescribed kinematics with kinematic constraints
+
+Prescribing kinematics is more complicated if the system contains kinematic
+constraints (e.g., weld constraints, point-on-line constraints, etc.), as such
+constraints can conflict with the prescribed kinematics (which is also
+essentially a constraint).
+
+@note If a model contains kinematic constraints, you must ensure that the
+prescribed motion obeys the kinematic constraints. PositionMotion does not
+ensure this for you. MocoInverse attempts to alter your provided kinematics to
+satisfy the kinematic constraints (using Model::assemble()).
+
+
+@section MocoSolver
+
+A MocoSolver attempts to use an optimal control method to solve the MocoProblem,
+and exposes settings you can use to control the transcription to a generic
+optimization problem and the optimization process.
+
+@subsection Implicit dynamics mode
+
+MocoSolvers support two modes for expressing differential equations for
+multibody dynamics. When using the implicit dynamics mode, the differential
+equations for multibody dynamics are expressed as implicit differential
+equations. That is, they are in the form \f$ 0 = f(y, \dot{y}) \f$ rather than
+\f$ \dot{y} = f(y) \f$. See the descriptions for the specific transcription schemes for more detail.
+
+@subsection trapezoidal Trapezoidal transcription
+
+With Trapezoidal transcription, we discretize the continuous variables along \f$
+n + 1 \f$ mesh points, leading to \f$ n \f$ mesh intervals:
+
+\f[
+    \begin{alignat*}{1}
+        0 &= \tau_0 < \tau_1 < \tau_2 < \ldots < \tau_i < \ldots < \tau_{n - 1} < \tau_n = 1 \\
+         t_i &= (t_f - t_0) \tau_i + t_0 \\
+         h_i &= (t_f - t_0)(\tau_i - \tau_{i-1})
+    \end{alignat*}
+\f]
+
+We use the trapezoidal rule to remove integrals and derivatives from the
+original continuous time problem,
+
+\f[
+    \textrm{trap}_i(F(\eta, p)) = \frac{1}{2} h_i (F(\eta_{i-1}, p) + F(\eta_i, p)),
+\f]
+
+where \f$ \eta \f$ is any continuous variable in the optimal control problem
+(e.g., \f$ y \f$) and \f$ F \f$ is any function.
+
+Combining the discretization with the trapezoidal rule yields the following
+finite-dimensional nonlinear optimization problem (or nonlinear program, abbreviated as NLP).
+
+\f[
+    \begin{alignat*}{2}
+        \mbox{minimize} \quad
+         & \sum_j w_j \left(J_{E,j}(t_0, t_f, y_0, y_n, x_{0}, x_{n}, \lambda_0, \lambda_n, p) +
+         \sum_{i=1}^{n} \textrm{trap}_i(J_{I,j}(t, y, x, \lambda, p)) \right) \\
+         & \quad + w_{\lambda} \sum_{i=1}^{n} \textrm{trap}_i(\|\lambda_i\|_2^2) &  \\
+        \mbox{subject to} \quad
+         & q_i = q_{i-1} + \textrm{trap}_i(u) & i \in 1, \ldots, n \\
+         & u_i = u_{i-1} + \textrm{trap}_i(f_{\textrm{mb}}(t, y, x, \lambda, p))  & i \in 1, \ldots, n \\
+         & z_i = z_{i-1} + \textrm{trap}_i(f_{\textrm{aux}}(t, y, x, \lambda, p)) & i \in 1, \ldots, n \\
+         & 0 = \phi(q_i)  & i \in 0, \ldots, n\\
+         & g_{L} \leq g(t_i, y_i, x_{i}, p) \leq g_{U}  & i \in 0, \ldots, n\\
+         \mbox{with respect to} \quad
+         & y_0 \in [y_{0,L}, y_{0,U}] \\
+         & x_0 \in [x_{0,L}, x_{0,U}] \\
+         & y_i \in [y_{L}, y_{U}] & \forall~i \in 1, \ldots, n - 1\\
+         & x_i \in [x_{L}, x_{U}] & \forall~i \in 1, \ldots, n - 1\\
+         & y_n \in [y_{f,L}, y_{f,U}] \\
+         & x_n \in [x_{f,L}, x_{f,U}] \\
+         & p \in [p_{L}, p_{U}] \\
+         & t_0 \in [t_{0,L}, t_{0,U}] \\
+         & t_n \in [t_{f,L}, t_{f,U}] \\
+         & \lambda_i \in [\lambda_L, \lambda_U] & \forall~i \in 0, \ldots, n
+    \end{alignat*}
+\f]
+
+Above, the multibody dynamics \f$ f_{\textrm{mb}} \f$ are expressed as explicit
+differential equations:
+
+\f[
+    f_{\textrm{mb}}(t, y, x, \lambda, p) =
+          M(q, p)^{-1}\big[(f_{\textrm{app}}(t, y, x, p) - f_{\textrm{bias}}(q, u, p) - G(q, p)^T \lambda\big]
+\f]
+
+
+If the multibody dynamics are enforced as implicit differential equations, then
+the constraint involving \f$ f_\textrm{mb} \f$ is replaced with the following:
+
+\f[
+    \begin{alignat*}{2}
+    \mbox{subject to} \quad
+         & u_i = u_{i-1} + \textrm{trap}_i(\gamma)  & i \in 1, \ldots, n \\
+         & M(q_i, p)w_i + G(q_i, p)^T \lambda_i =
+          f_{\textrm{app}}(t, y_i, x_{i}, p) -
+            f_{\textrm{bias}}(q_i, u_{i}, p) & \quad i \in 0, \ldots, n \\
+    \mbox{with respect to} \quad
+         & \gamma_i \in [-\gamma_{B}, \gamma_{B}] & \forall~i \in 0, \ldots, n,\\
+    \end{alignat*}
+\f]
+
+where \f$ \gamma \f$ is generalized acceleration and \f$ \gamma_B \f$ is a large number.
+
+@subsection hermitesimpson Hermite–Simpson transcription
+
+TODO
+
+\f[
+    \begin{alignat*}{2}
+         & 0 = \dot{\phi}(q, p) = G(q, p) u\\
+         & 0 = \ddot{\phi}(q, p) = G(q, p) \dot{u} + \dot{G}(q, p) u \\
+         & 0 = \dot{\nu}(q, u, p)
+    \end{alignat*}
+\f]
+
+@subsection kincon Kinematic constraints
+
+Moco supports enforcing OpenSim kinematic constraints in optimal control
+problems. When a solver is initialized, any kinematic constraints
+enabled in the model are automatically detected, and additional information
+about each constraint is stored. This information includes the number of scalar
+path constraints (including derivatives if they exist), the scalar constraint
+kinematic levels (i.e. holonomic, non-holonomic, or acceleration), and the
+number of Lagrange multipliers that are added to the problem to enforce the
+constraints.
+
+The solvers have options if the user desires to enforce kinematic
+constraint derivatives or minimize Lagrange multipliers in the problem.
+
+\code{.cpp}
+MocoTropterSolver& solver = moco.initTropterSolver();
+ms.set_enforce_constraint_derivatives(true);
+ms.set_lagrange_multiplier_weight(10);
+\endcode
+
+If constraint derivatives are enforced, velocity correction variables are added
+to the problem according to the method described in Posa, Kuindersma, and
+Tedrake, 2016, "Optimization and stabilization of trajectories for constrained
+dynamical systems." It is also possible to modify the default bounds on these
+velocity correction variables:
+
+\code{.cpp}
+// Default bounds: [-0.1, 0.1]
+ms.set_velocity_correction_bounds({-0.25, 0.25});
+\endcode
+
+If constraint derivatives are not enforced or if the multibody constraint
+Jacobian is rank-deficient, it is recommended that the Lagrange multiplier
+minimization term is added to the problem to impose uniqueness for
+these variables.
+
+
+@section tips Tips for solving a custom problem
+
+1. Make sure every variable has bounds.
+
+*/
+
+/**
+@defgroup mococost Available cost terms
+
+These are the available cost terms you can use in your cost functional. If none
+of these satisfy your needs, you can define your own using a plugin.
+*/
+
+} // namespace OpenSim

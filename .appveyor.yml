@@ -89,13 +89,17 @@ install:
   - ps: if (Test-Path C:\projects\deps\adol-c) { ls C:\projects\deps\adol-c }
   - ps: if (Test-Path C:\projects\deps\ipopt) { ls C:\projects\deps\ipopt }
   - ps: if (Test-Path C:\projects\deps\casadi) { ls C:\projects\deps\casadi }
+  - ps: if (Test-Path C:\projects\deps\casadi\casadi) { ls C:\projects\deps\casadi\casadi }
   - ps: if (Test-Path C:\projects\deps\opensim-core) { ls C:\projects\deps\opensim-core }
 
   # Make sure that CasADi can find IPOPT and ADOL-C can find ColPack during
   # the superbuild.
+  # Furthermore, CasADi's CMake Config file is not relocatable, so we must
+  # place CasADi's installation back in its original location.
   - ps: if (Test-Path C:\projects\deps\colpack) { cmake -E copy_directory C:\projects\deps\colpack C:\projects\opensim-moco_deps_install\colpack }
   - ps: if (Test-Path C:\projects\deps\ipopt) { cmake -E copy_directory C:\projects\deps\ipopt C:\projects\opensim-moco_deps_install\ipopt }
-  
+  - ps: if (Test-Path C:\projects\deps\casadi) { cmake -E copy_directory C:\projects\deps\casadi C:\projects\opensim-moco_deps_install\casadi }
+
   - ps: if (Test-Path C:\projects\deps\eigen) { Add-Content .\CMakeCacheInit.cmake -Value 'set(SUPERBUILD_eigen OFF CACHE BOOL "")' }
   - ps: if (Test-Path C:\projects\deps\colpack) { Add-Content .\CMakeCacheInit.cmake -Value 'set(SUPERBUILD_colpack OFF CACHE BOOL "")' }
   - ps: if (Test-Path C:\projects\deps\adol-c) { Add-Content .\CMakeCacheInit.cmake -Value 'set(SUPERBUILD_adol-c OFF CACHE BOOL "")' }
@@ -135,7 +139,7 @@ build_script:
   - mkdir ..\build
   - cd ..\build
   # Turn warnings into errors (/WX)
-  - cmake -E env CXXFLAGS="/WX" cmake ..\opensim-moco -G"Visual Studio 14 2015 Win64" -DCMAKE_INSTALL_PREFIX="C:\opensim-moco" -DADOLC_DIR="..\deps\adol-c" -DCMAKE_PREFIX_PATH="C:\projects\deps\eigen;C:\projects\deps\colpack;C:\projects\deps\opensim-core;C:\projects\deps\ipopt;C:\projects\deps\casadi" -DMOCO_PYTHON_BINDINGS=ON -DMOCO_JAVA_BINDINGS=ON
+  - cmake -E env CXXFLAGS="/WX" cmake ..\opensim-moco -G"Visual Studio 14 2015 Win64" -DCMAKE_INSTALL_PREFIX="C:\opensim-moco" -DADOLC_DIR="..\deps\adol-c" -DCMAKE_PREFIX_PATH="C:\projects\deps\eigen;C:\projects\deps\colpack;C:\projects\deps\opensim-core;C:\projects\deps\ipopt;C:\projects\deps\casadi;C:\projects\deps\casadi\casadi" -DMOCO_PYTHON_BINDINGS=ON -DMOCO_JAVA_BINDINGS=ON
   #-DCMAKE_TOOLCHAIN_FILE="C:\Tools\vcpkg\scripts\buildsystems\vcpkg.cmake"
   - cmake --build . --config %BTYPE% -- /maxcpucount:4 /verbosity:minimal
 

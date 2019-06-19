@@ -69,18 +69,15 @@ public:
 
     // TODO why would we want a shared_ptr? A copy would use the same Problem.
     HermiteSimpson(std::shared_ptr<const OCProblem> ocproblem,
-            bool interpolate_control_midpoints, unsigned num_mesh_points = 50) {
+            bool interpolate_control_midpoints,
+            std::vector<double> mesh) : m_mesh(mesh)  {
         if (std::is_same<T, double>::value) {
             this->set_use_supplied_sparsity_hessian_lagrangian(true);
         }
         m_interpolate_control_midpoints = interpolate_control_midpoints;
-        set_num_mesh_points(num_mesh_points);
         set_ocproblem(ocproblem);
     }
-    /// The number of mesh points must be at least 2.
-    // TODO order of calls?
-    // TODO right now, must call this BEFORE set_problem.
-    void set_num_mesh_points(unsigned N);
+
     void set_ocproblem(std::shared_ptr<const OCProblem> ocproblem);
 
     void calc_objective(const VectorX<T>& x, T& obj_value) const override;
@@ -238,6 +235,11 @@ protected:
 private:
 
     std::shared_ptr<const OCProblem> m_ocproblem;
+
+    std::vector<double> m_mesh;
+    Eigen::VectorXd m_mesh_intervals;
+    Eigen::VectorXd m_mesh_and_midpoints;
+    Eigen::VectorXd m_mesh_eigen;
     int m_num_mesh_points;
     int m_num_col_points;
     int m_num_time_variables = -1;

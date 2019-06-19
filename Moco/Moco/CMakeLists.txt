@@ -65,6 +65,8 @@ set(MOCO_SOURCES
         Components/ActivationCoordinateActuator.h
         Components/StationPlaneContactForce.h
         Components/StationPlaneContactForce.cpp
+        Components/PositionMotion.h
+        Components/PositionMotion.cpp
         Components/ModelFactory.h
         Components/ModelFactory.cpp
         Components/DiscreteForces.h
@@ -88,17 +90,24 @@ set(MOCO_SOURCES
         MocoCasADiSolver/CasOCHermiteSimpson.h
         MocoCasADiSolver/CasOCHermiteSimpson.cpp
         MocoCasADiSolver/CasOCIterate.h
+        MocoInverse.cpp
+        MocoInverse.h
+        MocoTrack.h
+        MocoTrack.cpp
         Common/TableProcessor.h
         ModelProcessor.h
-        ModelOperators.h)
-if(MOCO_WITH_TROPTER)
+        ModelOperators.h
+        MocoTool.cpp
+        MocoTool.h
+        )
+if (MOCO_WITH_TROPTER)
     list(APPEND MOCO_SOURCES
             tropter/TropterProblem.h
             tropter/TropterProblem.cpp)
-endif()
+endif ()
 add_library(osimMoco SHARED ${MOCO_SOURCES})
 target_link_libraries(osimMoco PUBLIC osimTools
-                               PRIVATE tropter casadi)
+        PRIVATE tropter casadi)
 
 target_include_directories(osimMoco INTERFACE
         $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/Moco>
@@ -109,23 +118,23 @@ set_target_properties(osimMoco PROPERTIES
         PROJECT_LABEL "Library - osimMoco"
         FOLDER "Moco"
         )
-if(MOCO_WITH_TROPTER)
+if (MOCO_WITH_TROPTER)
     target_compile_definitions(osimMoco PUBLIC MOCO_WITH_TROPTER)
-endif()
+endif ()
 
-if(MOCO_COPY_DEPENDENCIES)
-    if(APPLE)
+if (MOCO_COPY_DEPENDENCIES)
+    if (APPLE)
         set(rpath_macro "\@loader_path")
-    elseif(UNIX)
+    elseif (UNIX)
         set(rpath_macro "\$ORIGIN")
-    endif()
+    endif ()
     set_property(TARGET osimMoco APPEND PROPERTY
             INSTALL_RPATH "${rpath_macro}/")
-endif()
+endif ()
 
-if(WIN32)
-   add_dependencies(osimMoco Copy_OpenSim_DLLs)
-endif()
+if (WIN32)
+    add_dependencies(osimMoco Copy_OpenSim_DLLs)
+endif ()
 
 install(TARGETS osimMoco EXPORT MocoTargets
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}

@@ -1,0 +1,50 @@
+/**
+
+@page mocoimplguide Moco Implementation Guide
+
+This guide explains how direct collocation schemes are implemented using an
+OpenSim model.
+
+TODO API design: why we have MocoProblemRep
+TODO AccelerationMotion
+TODO DiscreteForces
+TODO Why we need two OpenSim Models.
+
+@section preskinimpl Implementation of prescribed kinematics
+
+For a system without kinematic constraints, the equations of motion are:
+
+\f[
+M \dot{u} + f_{\mathrm{bias}} + \lambda_m = f_{\mathrm{app}}.
+\f]
+
+The Lagrange multipliers \f$ \lambda_m \f$ are the mobility forces required for
+the system to follow the prescribed kinematics. In our case, we do not want any
+ficticious forces generated, and so we require that \f$\lambda_m = 0\f$. Simbody
+gives us access to these multipliers via
+SimTK::SimbodyMatterSubsystem::findMotionForces(), and we constrain the output
+of this function to be 0. Note that the only unknown in this equation is \f$
+f_{\mathrm{app}} \f$; the other quantities are known because they only depend on
+kinematics.
+
+With kinematic constraints, the equations of motion are
+
+\f[
+M \dot{u} + f_{\mathrm{bias}} + \lambda_m + G^T \lambda_c = f_{\mathrm{app}}
+\f]
+
+\f$ G \f$ is the kinematic constraint Jacobian and \f$ \lambda_c \f$ are the
+kiinematic constraint Langrange multipliers. We still require \f$ \lambda_m = 0
+\f$ but we must allow the kinematic constraints to apply force. Applied forces
+affect what the constraint forces must be. Consider a point mass with degrees of
+freedom \f$ x \f$ and \f$ y \f$ and generalized forces \f$ F_x \f$ and \f$ F_y
+\f$ constrained to the line \f$ y = x \f$ and with prescribed motion \f$ y(t) =
+x(t) = \sin(t) \f$. Moco will solve for the forces \f$ F_x \f$ and \f$ F_y \f$
+that can achieve this prescribed motion (by setting \f$ \lambda_m = 0 \f$ and
+solving for \f$ f_{\mathrm{app}} \f$, and the Lagrange multiplier \f$ \lambda_c
+\f$ will ensure that, regardless of the values of \f$ F_x \f$ and \f$ F_y \f$,
+the mass will remain on the line.
+
+*/
+
+
