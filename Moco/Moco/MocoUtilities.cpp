@@ -36,6 +36,13 @@
 #include <OpenSim/Simulation/SimbodyEngine/WeldJoint.h>
 #include <OpenSim/Simulation/StatesTrajectory.h>
 #include <OpenSim/Simulation/StatesTrajectoryReporter.h>
+#include <simbody/internal/Visualizer_InputListener.h>
+#include <OpenSim/Simulation/Control/PrescribedController.h>
+#include <OpenSim/Common/GCVSpline.h>
+
+#include <cstdarg>
+#include <cstdio>
+#include <iomanip>
 
 using namespace OpenSim;
 

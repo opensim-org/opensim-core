@@ -158,10 +158,8 @@ SimTK::Real testNormalForce(CreateContactFunction createContact) {
 void testFrictionForce(CreateContactFunction createContact,
         const SimTK::Real& equilibriumHeight) {
     Model model(create2DPointMassModel(createContact));
-    SimTK::Real weight;
     {
         SimTK::State state = model.initSystem();
-        weight = model.getTotalMass(state) * (-model.getGravity()[1]);
     }
 
     const SimTK::Real y0 = equilibriumHeight;
