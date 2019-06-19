@@ -136,11 +136,11 @@ SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
 %typemap(javacode) OpenSim::MocoPhase %{
     public static MocoBounds convertArrayToMB(double[] arr) throws Exception {
         MocoBounds bounds = new MocoBounds();
-        if (arr.length > 2) {
+        if (arr == null) {
+            return bounds;
+        } else if (arr.length > 2) {
             throw new RuntimeException(
                     "Bounds cannot have more than 2 elements.");
-        } else if (arr.length == 0) {
-            bounds = new MocoBounds();
         } else if (arr.length == 1) {
             bounds = new MocoBounds(arr[0]);
         } else if (arr.length == 2) {
@@ -151,11 +151,11 @@ SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
     public static MocoInitialBounds convertArrayToMIB(double[] arr)
             throws Exception {
         MocoInitialBounds bounds = new MocoInitialBounds();
-        if (arr.length > 2) {
+        if (arr == null) {
+            return bounds;
+        } else if (arr.length > 2) {
             throw new RuntimeException(
                     "Bounds cannot have more than 2 elements.");
-        } else if (arr.length == 0) {
-            bounds = new MocoBounds();
         } else if (arr.length == 1) {
             bounds = new MocoInitialBounds(arr[0]);
         } else if (arr.length == 2) {
@@ -166,11 +166,11 @@ SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
     public static MocoFinalBounds convertArrayToMFB(double[] arr)
             throws Exception {
         MocoFinalBounds bounds = new MocoFinalBounds();
-        if (arr.length > 2) {
+        if (arr == null) {
+            return bounds;
+        } else if (arr.length > 2) {
             throw new RuntimeException(
                     "Bounds cannot have more than 2 elements.");
-        } else if (arr.length == 0) {
-            bounds = new MocoBounds();
         } else if (arr.length == 1) {
             bounds = new MocoFinalBounds(arr[0]);
         } else if (arr.length == 2) {
@@ -213,15 +213,16 @@ SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
     }
     public void setStateInfoPattern(String pattern, double[] b) 
         throws Exception {
-        setStateInfoPattern(name, this.convertArrayToMB(b));
+        setStateInfoPattern(pattern, this.convertArrayToMB(b));
     }
     public void setStateInfoPattern(String pattern, double[] b, double[] ib)
         throws Exception {
         setStateInfoPattern(pattern, this.convertArrayToMB(b),
                 this.convertArrayToMIB(ib));
     }
-    public void setStateInfoPattern(String pattern, double[] b, double[] ib, 
-        double[] fb) throws Exception {
+    public void 
+    setStateInfoPattern(String pattern, double[] b, double[] ib, double[] fb) 
+        throws Exception {
         setStateInfoPattern(pattern, this.convertArrayToMB(b),
                 this.convertArrayToMIB(ib), this.convertArrayToMFB(fb));
     }
@@ -248,8 +249,9 @@ SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
         setControlInfoPattern(pattern, this.convertArrayToMB(b),
                 this.convertArrayToMIB(ib));
     }
-    public void setControlInfoPattern(String pattern, double[] b, double[] ib, 
-        double[] fb) throws Exception {
+    public void 
+    setControlInfoPattern(String pattern, double[] b, double[] ib, double[] fb) 
+        throws Exception {
         setControlInfoPattern(pattern, this.convertArrayToMB(b),
                 this.convertArrayToMIB(ib), this.convertArrayToMFB(fb));
     }
@@ -300,8 +302,9 @@ SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
         setStateInfoPattern(pattern, MocoPhase.convertArrayToMB(b),
                 MocoPhase.convertArrayToMIB(ib));
     }
-    public void setStateInfoPattern(String pattern, double[] b, double[] ib, 
-        double[] fb) throws Exception {
+    public void 
+    setStateInfoPattern(String pattern, double[] b, double[] ib, double[] fb) 
+        throws Exception {
         setStateInfoPattern(pattern, MocoPhase.convertArrayToMB(b),
                 MocoPhase.convertArrayToMIB(ib), 
                 MocoPhase.convertArrayToMFB(fb));
@@ -332,8 +335,8 @@ SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
         setControlInfoPattern(pattern, MocoPhase.convertArrayToMB(b),
                 MocoPhase.convertArrayToMIB(ib));
     }
-    public void setControlInfoPattern(String pattern, double[] b, double[] ib,
-            double[] fb)
+    public void 
+    setControlInfoPattern(String pattern, double[] b, double[] ib, double[] fb)
         throws Exception {
         setControlInfoPattern(pattern, MocoPhase.convertArrayToMB(b),
                 MocoPhase.convertArrayToMIB(ib), 

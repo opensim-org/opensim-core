@@ -211,10 +211,10 @@ void MocoProblemRep::initialize() {
     // ------------
     const auto stateNames = m_model_base.getStateVariableNames();
     for (int i = 0; i < ph0.getProperty_state_infos_pattern().size(); ++i) {
-        const auto& pattern =
-                std::regex(ph0.get_state_infos_pattern(i).getName());
+        const auto& pattern = ph0.get_state_infos_pattern(i).getName();
+        auto regexPattern = std::regex(pattern);
         for (int j = 0; j < stateNames.size(); ++j) {
-            if (std::regex_match(stateNames[j], pattern)) {
+            if (std::regex_match(stateNames[j], regexPattern)) {
                 m_state_infos[stateNames[j]] = ph0.get_state_infos_pattern(i);
                 m_state_infos[stateNames[j]].setName(stateNames[j]);
             }
