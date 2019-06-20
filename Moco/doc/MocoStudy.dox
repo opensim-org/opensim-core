@@ -334,6 +334,9 @@ these variables.
 @section tips Tips for solving a custom problem
 
 1. Make sure every variable has bounds.
+2. Add reserve actuators.
+3. If controls display high frequency oscillations, try tightening the solver's
+  convergence and constraint tolerances.
 
 */
 
