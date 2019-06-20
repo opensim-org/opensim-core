@@ -77,10 +77,8 @@ struct Iterate {
     /// (i.e. states and controls) within this iterate to produce a new iterate 
     /// with a desired number of columns with equally spaced time points. This 
     /// is useful when forming an initial guess for an optimal control problem. 
-    /// If the size of time matches desired_num_columns, then we return a copy 
-    /// of this iterate (no interpolation).
     /// @returns the interpolated iterate.
-    Iterate interpolate(int desired_num_columns) const;
+    Iterate interpolate(Eigen::VectorXd newTime) const;
     // TODO void validate(const std::string& error_message) const;
     /// Write the states and controls trajectories to a plain-text CSV file.
     virtual void write(const std::string& filepath) const;

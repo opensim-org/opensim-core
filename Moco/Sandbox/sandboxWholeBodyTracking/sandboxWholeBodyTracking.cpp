@@ -395,7 +395,7 @@ Model createModel(DOFs dofs) {
 
 int main() {
 
-    MocoTool moco;
+    MocoStudy moco;
     moco.setName("whole_body_tracking");
 
     // Define the optimal control problem.
@@ -528,10 +528,10 @@ int main() {
     ms.set_optim_solver("ipopt");
     ms.set_optim_hessian_approximation("exact");
 
-    MocoIterate guess = ms.createGuess();
+    MocoTrajectory guess = ms.createGuess();
     guess.setStatesTrajectory(refFilt2, true, true);
     guess.write("states_guess.sto");
-    //MocoIterate guess("sandboxWholeBodyTracking_solution.sto");
+    //MocoTrajectory guess("sandboxWholeBodyTracking_solution.sto");
     ms.setGuess(guess);
     // Using the correct initial guess reduces computational time by 4x.
 

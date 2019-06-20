@@ -69,12 +69,9 @@ public:
         // between 0 and 1.
         return (x - 1) * (x + 1) * x*x;
     }
-    void calc_endpoint_cost(const T& /*final_time*/,
-                       const VectorX<T>& final_states,
-                       const VectorX<T>& parameters,
-                       T& cost) const override {
-        cost = 100.0 * (two_minima(final_states[0]) + 
-                        two_minima(parameters[0]));
+    void calc_endpoint_cost(const Input<T>& in, T& cost) const override {
+        cost = 100.0 * (two_minima(in.states[0]) + 
+                        two_minima(in.parameters[0]));
     }
 };
 
@@ -265,12 +262,10 @@ public:
         // between 0 and 1.
         return (x - 1) * (x + 1) * x*x;
     }
-    void calc_endpoint_cost(const T& /*final_time*/,
-        const VectorX<T>& final_states,
-        const VectorX<T>& parameters,
-        T& cost) const override {
-        cost = 100.0 * (two_minima(final_states[0]) +
-            two_minima(parameters[0]));
+    void calc_endpoint_cost(const Input<T>& in,
+            T& cost) const override {
+        cost = 100.0 * (two_minima(in.states[0]) +
+            two_minima(in.parameters[0]));
     }
 };
 
@@ -538,7 +533,7 @@ TEST_CASE("Interpolating an initial guess") {
         it0.diffuse_names = {"gamma"};
 
         // Upsampling.
-        Iterate it1 = it0.interpolate(9);
+        Iterate it1 = it0.interpolate(VectorXd::LinSpaced(9, 0.0, 5.0));
         REQUIRE(it1.state_names == it0.state_names);
         REQUIRE(it1.control_names == it0.control_names);
         REQUIRE(it1.adjunct_names == it0.adjunct_names);
@@ -567,9 +562,9 @@ TEST_CASE("Interpolating an initial guess") {
         TROPTER_REQUIRE_EIGEN(it1.diffuses.row(0),
                 vec({1, 0.375, 0.5, 1.75, 1, 0.1875, 1.125, 2.0625, 3}), 1e-15);
 
-        SECTION("Requesting the same number of points") {
+        SECTION("Requesting the same points") {
             // We use it0 here.
-            auto it2 = it0.interpolate(5);
+            auto it2 = it0.interpolate(it0.time);
             REQUIRE(it2.state_names == it0.state_names);
             REQUIRE(it2.control_names == it0.control_names);
             REQUIRE(it2.adjunct_names == it0.adjunct_names);
@@ -607,8 +602,8 @@ TEST_CASE("Interpolating an initial guess") {
         it0.control_names = {"rho", "phi","omega"};
         it0.adjunct_names = {"lambda"};
         it0.diffuse_names = {"gamma"};
-        auto it1 = it0.interpolate(9);
-        auto it2 = it1.interpolate(5);
+        auto it1 = it0.interpolate(VectorXd::LinSpaced(9, 0.0, 5.0));
+        auto it2 = it1.interpolate(it0.time);
         REQUIRE(it2.state_names == it0.state_names);
         REQUIRE(it2.control_names == it0.control_names);
         REQUIRE(it2.adjunct_names == it0.adjunct_names);
@@ -624,7 +619,7 @@ TEST_CASE("Interpolating an initial guess") {
         Iterate it;
         it.time.resize(5);
         it.time << 0, 1, 2, 1.5, 3;
-        REQUIRE_THROWS_WITH(it.interpolate(20),
+        REQUIRE_THROWS_WITH(it.interpolate(VectorXd::LinSpaced(20, 0, 3)),
                 Contains("Expected time to be non-decreasing"));
     }
 

@@ -1,77 +1,113 @@
 
-add_library(osimMoco SHARED
+set(MOCO_SOURCES
         osimMoco.h
         osimMocoDLL.h
         RegisterTypes_osimMoco.h
         RegisterTypes_osimMoco.cpp
         MocoUtilities.h
         MocoUtilities.cpp
-        MocoTool.h
-        MocoTool.cpp
+        MocoStudy.h
+        MocoStudy.cpp
         MocoBounds.h
         MocoBounds.cpp
         MocoVariableInfo.h
         MocoVariableInfo.cpp
         MocoProblem.h
         MocoProblem.cpp
+        MocoProblemInfo.h
         MocoProblemRep.h
         MocoProblemRep.cpp
-        MocoCost.h
-        MocoCost.cpp
-        MocoMarkerEndpointCost.h
-        MocoMarkerEndpointCost.cpp
-        MocoMarkerTrackingCost.h
-        MocoMarkerTrackingCost.cpp
+        MocoCost/MocoCost.h
+        MocoCost/MocoCost.cpp
+        MocoCost/MocoMarkerEndpointCost.h
+        MocoCost/MocoMarkerEndpointCost.cpp
+        MocoCost/MocoMarkerTrackingCost.h
+        MocoCost/MocoMarkerTrackingCost.cpp
         MocoWeightSet.h
-        MocoStateTrackingCost.h
-        MocoStateTrackingCost.cpp
-        MocoControlCost.h
-        MocoControlCost.cpp
-        MocoJointReactionNormCost.h
-        MocoJointReactionNormCost.cpp
+        MocoCost/MocoStateTrackingCost.h
+        MocoCost/MocoStateTrackingCost.cpp
+        MocoCost/MocoControlCost.h
+        MocoCost/MocoControlCost.cpp
+        MocoCost/MocoControlTrackingCost.h
+        MocoCost/MocoControlTrackingCost.cpp
+        MocoCost/MocoJointReactionCost.h
+        MocoCost/MocoJointReactionCost.cpp
+        MocoCost/MocoOrientationTrackingCost.h
+        MocoCost/MocoOrientationTrackingCost.cpp
+        MocoCost/MocoTranslationTrackingCost.h
+        MocoCost/MocoTranslationTrackingCost.cpp
         MocoSolver.h
         MocoSolver.cpp
-        MocoIterate.h
-        MocoIterate.cpp
+        MocoDirectCollocationSolver.h
+        MocoDirectCollocationSolver.cpp
+        MocoTrajectory.h
+        MocoTrajectory.cpp
         MocoTropterSolver.h
         MocoTropterSolver.cpp
-        tropter/TropterProblem.h
-        tropter/TropterProblem.cpp
         MocoParameter.h
         MocoParameter.cpp
         MocoConstraint.h
         MocoConstraint.cpp
-        ActivationCoordinateActuator.h
+        MocoControlBoundConstraint.cpp
+        MocoControlBoundConstraint.h
         InverseMuscleSolver/InverseMuscleSolver.h
         InverseMuscleSolver/InverseMuscleSolver.cpp
         InverseMuscleSolver/GlobalStaticOptimization.h
         InverseMuscleSolver/GlobalStaticOptimization.cpp
         InverseMuscleSolver/INDYGO.h
         InverseMuscleSolver/INDYGO.cpp
+        InverseMuscleSolver/INDYGOProblemInternal.h
         InverseMuscleSolver/DeGrooteFregly2016MuscleStandalone.h
         InverseMuscleSolver/InverseMuscleSolverMotionData.h
         InverseMuscleSolver/InverseMuscleSolverMotionData.cpp
+        Components/DeGrooteFregly2016Muscle.h
+        Components/DeGrooteFregly2016Muscle.cpp
+        Components/ActivationCoordinateActuator.h
         Components/StationPlaneContactForce.h
         Components/StationPlaneContactForce.cpp
+        Components/PositionMotion.h
+        Components/PositionMotion.cpp
         Components/ModelFactory.h
         Components/ModelFactory.cpp
+        Components/DiscreteForces.h
+        Components/DiscreteForces.cpp
+        Components/AccelerationMotion.h
+        Components/AccelerationMotion.cpp
         MocoCasADiSolver/MocoCasADiSolver.h
         MocoCasADiSolver/MocoCasADiSolver.cpp
-        MocoCasADiSolver/MocoCasADiMisc.h
-        MocoCasADiSolver/CasOCProblem.cpp
+        MocoCasADiSolver/MocoCasOCProblem.h
+        MocoCasADiSolver/MocoCasOCProblem.cpp
         MocoCasADiSolver/CasOCProblem.h
-        MocoCasADiSolver/CasOCSolver.cpp
+        MocoCasADiSolver/CasOCProblem.cpp
         MocoCasADiSolver/CasOCSolver.h
-        MocoCasADiSolver/CasOCFunction.cpp
+        MocoCasADiSolver/CasOCSolver.cpp
         MocoCasADiSolver/CasOCFunction.h
-        MocoCasADiSolver/CasOCTranscription.cpp
+        MocoCasADiSolver/CasOCFunction.cpp
         MocoCasADiSolver/CasOCTranscription.h
-        MocoCasADiSolver/CasOCTrapezoidal.cpp
+        MocoCasADiSolver/CasOCTranscription.cpp
         MocoCasADiSolver/CasOCTrapezoidal.h
-        MocoDirectCollocationSolver.cpp
-        MocoDirectCollocationSolver.h)
+        MocoCasADiSolver/CasOCTrapezoidal.cpp
+        MocoCasADiSolver/CasOCHermiteSimpson.h
+        MocoCasADiSolver/CasOCHermiteSimpson.cpp
+        MocoCasADiSolver/CasOCIterate.h
+        MocoInverse.cpp
+        MocoInverse.h
+        MocoTrack.h
+        MocoTrack.cpp
+        Common/TableProcessor.h
+        ModelProcessor.h
+        ModelOperators.h
+        MocoTool.cpp
+        MocoTool.h
+        )
+if (MOCO_WITH_TROPTER)
+    list(APPEND MOCO_SOURCES
+            tropter/TropterProblem.h
+            tropter/TropterProblem.cpp)
+endif ()
+add_library(osimMoco SHARED ${MOCO_SOURCES})
 target_link_libraries(osimMoco PUBLIC osimTools
-                               PRIVATE tropter casadi)
+        PRIVATE tropter casadi)
 
 target_include_directories(osimMoco INTERFACE
         $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/Moco>
@@ -82,20 +118,23 @@ set_target_properties(osimMoco PROPERTIES
         PROJECT_LABEL "Library - osimMoco"
         FOLDER "Moco"
         )
+if (MOCO_WITH_TROPTER)
+    target_compile_definitions(osimMoco PUBLIC MOCO_WITH_TROPTER)
+endif ()
 
-if(MOCO_COPY_DEPENDENCIES)
-    if(APPLE)
+if (MOCO_COPY_DEPENDENCIES)
+    if (APPLE)
         set(rpath_macro "\@loader_path")
-    elseif(UNIX)
+    elseif (UNIX)
         set(rpath_macro "\$ORIGIN")
-    endif()
+    endif ()
     set_property(TARGET osimMoco APPEND PROPERTY
             INSTALL_RPATH "${rpath_macro}/")
-endif()
+endif ()
 
-if(WIN32)
-   add_dependencies(osimMoco Copy_OpenSim_DLLs)
-endif()
+if (WIN32)
+    add_dependencies(osimMoco Copy_OpenSim_DLLs)
+endif ()
 
 install(TARGETS osimMoco EXPORT MocoTargets
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}

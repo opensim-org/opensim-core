@@ -18,10 +18,15 @@ endif()
 
 option(OPENSIM_JAVA_WRAPPING "Build opensim-core Java/MATLAB interface." OFF)
 option(OPENSIM_PYTHON_WRAPPING "Build opensim-core Python interface." OFF)
+set(OPENSIM_PYTHON_VERSION 3 CACHE STRING
+    "The major Python version (2 or 3) for opensim-core.")
+# To create a drop-down in the CMake GUI:
+set_property(CACHE OPENSIM_PYTHON_VERSION PROPERTY STRINGS "2" "3")
 
 
 include(ExternalProject)
 include(CMakeParseArguments)
+
 
 # Set the default for CMAKE_INSTALL_PREFIX.
 function(SetDefaultCMakeInstallPrefix)
@@ -45,6 +50,7 @@ function(SetDefaultCMakeInstallPrefix)
             FORCE)
     endif()
 endfunction()
+
 
 # CMake doesn't clear prefix directories when user changes it. 
 # Remove it to avoid confusion.
@@ -139,6 +145,9 @@ function(AddDependency)
             list(APPEND CMAKE_ARGS
                  -DCMAKE_OSX_DEPLOYMENT_TARGET:STRING=${CMAKE_OSX_DEPLOYMENT_TARGET})
         endif()
+        if(SWIG_EXECUTABLE)
+            list(APPEND CMAKE_ARGS -DSWIG_EXECUTABLE:FILEPATH=${SWIG_EXECUTABLE})
+        endif()
 
         if(DEP_GIT_URL)
             ExternalProject_Add(${DEP_NAME}
@@ -170,12 +179,14 @@ endfunction()
 SetDefaultCMakeInstallPrefix()
 SetDefaultCMakeBuildType()
 
+
 ####################### Add dependencies below.
 
 AddDependency(NAME eigen
-              URL  https://bitbucket.org/eigen/eigen/get/3.3.4.zip)
+              URL  https://bitbucket.org/eigen/eigen/get/3.3.7.zip)
 
 include(colpack.cmake)
+
 
 set(SUPERBUILD_adolc ON CACHE BOOL 
     "Automatically download, configure, build and install adolc")
@@ -256,6 +267,7 @@ else()
                 COMMAND <SOURCE_DIR>/configure --prefix=<INSTALL_DIR>
                                                --enable-sparse
                                                --with-colpack=${CMAKE_INSTALL_PREFIX}/colpack
+                                               --with-boost=no
             BUILD_COMMAND ${CMAKE_MAKE_PROGRAM} ${BUILD_FLAGS}
             INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install)
     endif()
@@ -282,8 +294,10 @@ if(SUPERBUILD_casadi)
     AddDependency(NAME casadi
                   DEPENDS ipopt
                   GIT_URL    https://github.com/stanfordnmbl/casadi.git
-                  GIT_TAG    6200c02d332588d93a038f42bcd4ba26b6f64680
+                  # Include threadsafe SharedObject.
+                  GIT_TAG    1555e79ea59cbd25d05894f2e9b351d92bacf348
                   CMAKE_ARGS -DWITH_IPOPT:BOOL=ON
+                             -DWITH_THREAD:BOOL=ON
                              -DWITH_EXAMPLES:BOOL=OFF
                              -DPKG_CONFIG_USE_CMAKE_PREFIX_PATH:BOOL=ON
                              -DCMAKE_PREFIX_PATH:PATH=${CMAKE_INSTALL_PREFIX}/ipopt
@@ -296,4 +310,11 @@ include(opensim-core.cmake)
 #######################
 
 RemoveDefaultInstallDirIfEmpty("${DEFAULT_CMAKE_INSTALL_PREFIX}")
+
+
+
+
+
+
+
 

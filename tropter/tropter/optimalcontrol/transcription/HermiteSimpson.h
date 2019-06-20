@@ -69,17 +69,15 @@ public:
 
     // TODO why would we want a shared_ptr? A copy would use the same Problem.
     HermiteSimpson(std::shared_ptr<const OCProblem> ocproblem,
-        unsigned num_mesh_points = 50) {
+            bool interpolate_control_midpoints,
+            std::vector<double> mesh) : m_mesh(mesh)  {
         if (std::is_same<T, double>::value) {
             this->set_use_supplied_sparsity_hessian_lagrangian(true);
         }
-        set_num_mesh_points(num_mesh_points);
+        m_interpolate_control_midpoints = interpolate_control_midpoints;
         set_ocproblem(ocproblem);
     }
-    /// The number of mesh points must be at least 2.
-    // TODO order of calls?
-    // TODO right now, must call this BEFORE set_problem.
-    void set_num_mesh_points(unsigned N);
+
     void set_ocproblem(std::shared_ptr<const OCProblem> ocproblem);
 
     void calc_objective(const VectorX<T>& x, T& obj_value) const override;
@@ -173,6 +171,12 @@ protected:
         make_controls_trajectory_view(const VectorX<S>& variables) const;
     template<typename S>
     TrajectoryViewConst<S>
+        make_controls_trajectory_view_mesh(const VectorX<S>& variables) const;
+    template<typename S>
+    TrajectoryViewConst<S>
+        make_controls_trajectory_view_mid(const VectorX<S>& variables) const;
+    template<typename S>
+    TrajectoryViewConst<S>
         make_adjuncts_trajectory_view(const VectorX<S>& variables) const;
     template<typename S>
     TrajectoryViewConst<S>
@@ -196,6 +200,12 @@ protected:
         make_controls_trajectory_view(VectorX<S>& variables) const;
     template<typename S>
     TrajectoryView<S>
+        make_controls_trajectory_view_mesh(VectorX<S>& variables) const;
+    template<typename S>
+    TrajectoryView<S>
+        make_controls_trajectory_view_mid(VectorX<S>& variables) const;
+    template<typename S>
+    TrajectoryView<S>
         make_adjuncts_trajectory_view(VectorX<S>& variables) const;
     template<typename S>
     TrajectoryView<S>
@@ -204,15 +214,19 @@ protected:
     // TODO templatize.
     using DefectsTrajectoryView = Eigen::Map<MatrixX<T>>;
     using PathConstraintsTrajectoryView = Eigen::Map<MatrixX<T>>;
+    using ControlMidpointsTrajectoryView = Eigen::Map<MatrixX<T>>;
 
     struct ConstraintsView {
         ConstraintsView(DefectsTrajectoryView d,
-            PathConstraintsTrajectoryView pc)
+            PathConstraintsTrajectoryView pc,
+            ControlMidpointsTrajectoryView cmid)
             : defects(d),
-            path_constraints(pc) {}
+            path_constraints(pc),
+            control_midpoints(cmid){}
         // TODO what is the proper name for this? dynamic defects?
         DefectsTrajectoryView defects = {nullptr, 0, 0};
         PathConstraintsTrajectoryView path_constraints = {nullptr, 0, 0};
+        ControlMidpointsTrajectoryView control_midpoints = {nullptr, 0, 0};
     };
 
     ConstraintsView
@@ -221,6 +235,11 @@ protected:
 private:
 
     std::shared_ptr<const OCProblem> m_ocproblem;
+
+    std::vector<double> m_mesh;
+    Eigen::VectorXd m_mesh_intervals;
+    Eigen::VectorXd m_mesh_and_midpoints;
+    Eigen::VectorXd m_mesh_eigen;
     int m_num_mesh_points;
     int m_num_col_points;
     int m_num_time_variables = -1;
@@ -237,7 +256,10 @@ private:
     int m_num_continuous_variables = -1;
     int m_num_dynamics_constraints = -1;
     int m_num_path_constraints = -1;
+    int m_num_path_traj_constraints = -1;
     Eigen::VectorXd m_simpson_quadrature_coefficients;
+    bool m_interpolate_control_midpoints = true;
+    int m_num_control_midpoint_constraints = -1;
 
     std::vector<std::string> m_variable_names;
     std::vector<std::string> m_constraint_names;

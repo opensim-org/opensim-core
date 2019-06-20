@@ -23,7 +23,7 @@
 
 using namespace OpenSim;
 
-MocoIterate MocoSolver::createGuessTimeStepping() const {
+MocoTrajectory MocoSolver::createGuessTimeStepping() const {
     const auto& probrep = getProblemRep();
     const auto& initialTime = probrep.getTimeInitialBounds().getUpper();
     const auto& finalTime = probrep.getTimeFinalBounds().getLower();
@@ -32,7 +32,7 @@ MocoIterate MocoSolver::createGuessTimeStepping() const {
                    "upper bound on initial time, but "
                    "final_time.lower: %g; initial_time.upper: %g.",
                     finalTime, initialTime));
-    Model model(probrep.getModel());
+    Model model(probrep.getModelBase());
 
     // Disable all controllers?
     SimTK::State state = model.initSystem();
@@ -70,14 +70,14 @@ MocoIterate MocoSolver::createGuessTimeStepping() const {
     controlsTable.setColumnLabels(labels);
 
     // TODO handle parameters.
-    return MocoIterate::createFromStatesControlsTables(
+    // TODO handle derivatives.
+    return MocoTrajectory::createFromStatesControlsTables(
             probrep, statesTable, controlsTable);
 }
 
 void MocoSolver::resetProblem(const MocoProblem& problem) {
     m_problem.reset(&problem);
     m_problemRep = problem.createRep();
-    resetProblemImpl(m_problemRep);
 }
 
 MocoSolution MocoSolver::solve() const {
@@ -86,8 +86,19 @@ MocoSolution MocoSolver::solve() const {
 }
 
 void MocoSolver::setSolutionStats(MocoSolution& sol, bool success,
+        double objective,
         const std::string& status, int numIterations) {
     sol.setSuccess(success);
+    sol.setObjective(objective);
     sol.setStatus(status);
     sol.setNumIterations(numIterations);
+}
+
+std::unique_ptr<ThreadsafeJar<const MocoProblemRep>>
+        MocoSolver::createProblemRepJar(int size) const {
+    auto jar = OpenSim::make_unique<ThreadsafeJar<const MocoProblemRep>>();
+    for (int i = 0; i < size; ++i) {
+        jar->leave(std::unique_ptr<MocoProblemRep>(m_problem->createRepHeap()));
+    }
+    return jar;
 }

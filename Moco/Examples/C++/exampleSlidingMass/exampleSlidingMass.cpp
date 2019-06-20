@@ -68,7 +68,7 @@ std::unique_ptr<Model> createSlidingMassModel() {
 
 int main() {
 
-    MocoTool moco;
+    MocoStudy moco;
     moco.setName("sliding_mass");
 
     // Define the optimal control problem.
@@ -86,7 +86,7 @@ int main() {
 
     // Initial position must be 0, final position must be 1.
     problem.setStateInfo("/slider/position/value", MocoBounds(-5, 5),
-            MocoInitialBounds(0), MocoFinalBounds(1));
+                         MocoInitialBounds(0), MocoFinalBounds(1));
     // Initial and final speed must be 0. Use compact syntax.
     problem.setStateInfo("/slider/position/speed", {-50, 50}, 0, 0);
 
@@ -99,13 +99,8 @@ int main() {
 
     // Configure the solver.
     // =====================
-    MocoTropterSolver& solver = moco.initTropterSolver();
+    MocoCasADiSolver& solver = moco.initCasADiSolver();
     solver.set_num_mesh_points(50);
-
-    // TODO interface for setting these options:
-    // TODO solver.setOption("optim.hessian-approximation", "limited-memory");
-    // TODO solver.set_optimizer_algorithm("ipopt");
-
 
     // Now that we've finished setting up the tool, print it to a file.
     moco.print("sliding_mass.omoco");
