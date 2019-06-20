@@ -52,6 +52,7 @@ std::unique_ptr<T> make_unique(Args&&... args) {
 /// %Y-%m-%dT%H:%M:%S.
 /// See https://en.cppreference.com/w/cpp/io/manip/put_time.
 OSIMMOCO_API std::string getFormattedDateTime(
+        bool appendMicroseconds = false,
         std::string format = "%Y-%m-%dT%H%M%S");
 
 /// Determine if `string` starts with the substring `start`.
