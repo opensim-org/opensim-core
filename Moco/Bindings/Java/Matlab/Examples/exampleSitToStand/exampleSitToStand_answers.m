@@ -4,7 +4,6 @@ function exampleSitToStand_answers
 import org.opensim.modeling.*;
 
 %% Part 1: Torque-driven Predictive Problem
-
 % Part 1a: Create a new MocoStudy.
 moco = MocoStudy();
 
@@ -34,11 +33,9 @@ problem.addCost(MocoControlCost('effort'));
 
 % Part 1e: Configure the solver.
 solver = moco.initCasADiSolver();
-solver.set_dynamics_mode('implicit');
 solver.set_num_mesh_points(25);
 solver.set_optim_convergence_tolerance(1e-4);
 solver.set_optim_constraint_tolerance(1e-4);
-solver.set_optim_finite_difference_scheme('forward');
 
 % Part 1f: Solve, write the solution to file, and visualize.
 predictSolution = moco.solve();
@@ -46,17 +43,16 @@ predictSolution.write('predictSolution.sto');
 moco.visualize(predictSolution);
 
 %% Part 2: Torque-driven Tracking Problem
-
 % Part 2a: Construct a tracking reference TimeSeriesTable using filtered data 
-% from the previous solution. Use a TableProcessor with a low pass filter 
-% operator to create the table.
+% from the previous solution. Use a TableProcessor, which accepts a base table
+% and can append operations to modify the table.
 tableProcessor = TableProcessor('predictSolution.sto');
 tableProcessor.append(TabOpLowPassFilter(6));
 
 % Part 2b: Add a MocoStateTrackingCost() to the problem using the states
-% from the predictive problem, and set weights to zero for states associated
-% with the dependent coordinate in the model's knee CoordinateCoupler
-% constraint.
+% from the predictive problem (via the TableProcessor we just created), and set 
+% weights to zero for states associated with the dependent coordinate in the 
+% model's knee CoordinateCoupler constraint. 
 tracking = MocoStateTrackingCost();
 tracking.setName('tracking');
 tracking.setReference(tableProcessor);
@@ -65,8 +61,9 @@ tracking.setWeight('/jointset/patellofemoral_r/knee_angle_r_beta/value', 0);
 tracking.setWeight('/jointset/patellofemoral_r/knee_angle_r_beta/speed', 0);
 problem.addCost(tracking);
 
-% Part 2c: Reduce the control cost weight so it acts as a regularization term.
-problem.updCost('effort').set_weight(0.01);
+% Part 2c: Reduce the control cost weight so it now acts as a regularization 
+% term.
+problem.updCost('effort').set_weight(0.001);
 
 % Part 2d: Set the initial guess using the predictive problem solution.
 solver.setGuess(predictSolution);
@@ -82,47 +79,57 @@ moco.visualize(trackingSolution);
 compareSolutions(predictSolution, trackingSolution)
 
 %% Part 4: Muscle-driven Inverse Problem
-
 % Part 4a: Create a MocoInverse tool instance.
 inverse = MocoInverse();
 
-% Part 4b: Provide the model via ModelProcessor. Similar to the TableProcessor,
+% Part 4b: Provide the model via a ModelProcessor. Similar to the TableProcessor,
 % you can add operators to modify the base model.
 modelProcessor = ModelProcessor(getMuscleDrivenModel());
 modelProcessor.append(ModOpAddReserves(2));
 inverse.setModel(modelProcessor);
 
-% Part 4c: Set the reference kinematics using the same reference table we used
-% in the tracking problem. Allow extra columns in the kinematics to skip
-% controls in the reference and set the time range.
+% Part 4c: Set the reference kinematics using the same TableProcessor we used
+% in the tracking problem. Set the time range and allow extra columns in the 
+% kinematics to skip controls data in the reference.
 inverse.setKinematics(tableProcessor);
 inverse.set_kinematics_allow_extra_columns(true);
 inverse.set_initial_time(0);
 inverse.set_final_time(1);
 
-% Part 4d: Additional inverse problem settings.
+% Part 4d: Set the mesh interval and convergence tolerance, and enable
+% minimizing muscle activation states.
 inverse.set_mesh_interval(0.05);
-inverse.set_minimize_sum_squared_states(true);
 inverse.set_tolerance(1e-4);
+inverse.set_minimize_sum_squared_states(true);
 
-% Part 4e: Append outputs.
+% Part 4e: Append additional outputs path for quantities that are calculated 
+% post-hoc using the inverse problem solution.
 % inverse.append_output_paths('.*normalized_fiber_length');
 % inverse.append_output_paths('.*passive_force_multiplier');
 
-% Part 4f: Solve! Write solution and outputs.
+% Part 4f: Solve! Write the solution and outputs.
 inverseSolution = inverse.solve();
 inverseSolution.getMocoSolution().write('inverseSolution.sto');
 % inverseOutputs = inverseSolution.getOutputs();
 % STOFileAdapter.write(inverseOutputs, 'muscle_outputs.sto');
 
-%% Part 5: Add an assistive device to the knee.
+%% Part 5: Muscle-driven Inverse Problem with Passive Assistance
+% Part 5a: Create a new muscle-driven model, now adding a SpringGeneralizedForce 
+% about the knee coordinate.
 model = getMuscleDrivenModel();
 device = SpringGeneralizedForce('knee_angle_r');
 device.setStiffness(50);
 device.setRestLength(0);
 device.setViscosity(0);
 model.addForce(device);
+
+% Part 5b: Create a ModelProcessor similar to the previous one, using the same 
+% reserve actuator strength so we can compare muscle activity accurately.
+modelProcessor = ModelProcessor(model);
+modelProcessor.append(ModOpAddReserves(2));
 inverse.setModel(ModelProcessor(model));
+
+% Part 5c: Solve and write solution.
 inverseDeviceSolution = inverse.solve();
 inverseDeviceSolution.getMocoSolution().write('inverseDeviceSolution.sto');
 
@@ -131,9 +138,13 @@ fprintf('Cost without device: %f\n', ...
         inverseSolution.getMocoSolution().getObjective());
 fprintf('Cost with device: %f\n', ...
     inverseDeviceSolution.getMocoSolution().getObjective());
+% This is a convenience function provided for you. See below for the
+% implementation details.
 compareInverseSolutions(inverseSolution, inverseDeviceSolution);
 
 end
+
+%% Model Creation and Plotting Convenience Functions 
 
 function addCoordinateActuator(model, coordName, optForce)
 
@@ -186,12 +197,11 @@ model.finalizeConnections();
 % twice differentiable, etc).
 DeGrooteFregly2016Muscle().replaceMuscles(model);
 
-% Turn off activation dynamics and muscle-tendon dynamics to keep the
-% problem simple.
+% Make a few adjustments to help the muscle-driven problems converge.
 for m = 0:model.getMuscles().getSize()-1
     musc = model.updMuscles().get(m);
     musc.set_ignore_tendon_compliance(true);
-    musc.set_max_isometric_force(2 * musc.get_max_isometric_force());
+    musc.set_max_isometric_force(2*musc.get_max_isometric_force());
     dgf = DeGrooteFregly2016Muscle.safeDownCast(musc);
     dgf.set_active_force_width_scale(1.5);
     if strcmp(char(musc.getName()), 'soleus_r')
@@ -206,7 +216,7 @@ end
 
 function compareSolutions(predictSolution, trackingSolution) 
 
-%% States.
+% States.
 figure(1);
 stateNames = predictSolution.getStateNames();
 numStates = stateNames.size();
@@ -234,7 +244,7 @@ for i = 0:numStates-1
     end
 end
 
-%% Controls.
+% Controls.
 figure(2);
 controlNames = predictSolution.getControlNames();
 numControls = controlNames.size();
