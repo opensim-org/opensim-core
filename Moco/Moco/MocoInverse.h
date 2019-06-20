@@ -65,7 +65,9 @@ private:
 /// Cost
 /// ----
 /// By default, MocoInverse minimizes the sum of squared controls. To customize
-/// the cost, invoke initialize() and add costs manually.
+/// the cost, invoke initialize(), add costs manually, and solve the problem
+/// using the solver directly. Note, however, that kinematic states are not
+/// included in the solution if you use the solver directly.
 ///
 /// Default solver settings
 /// -----------------------
@@ -97,7 +99,7 @@ public:
             "Minimize the sum of squared states (e.g., activations). "
             "Do not use this if tendon compliance is enabled. Default: false.");
 
-    OpenSim_DECLARE_OPTIONAL_PROPERTY(tolerance, double,
+    OpenSim_DECLARE_PROPERTY(tolerance, double,
             "The convergence and constraint tolerances (default: 1e-3).");
 
     OpenSim_DECLARE_OPTIONAL_PROPERTY(max_iterations, int,

@@ -51,7 +51,7 @@ std::pair<MocoStudy, TimeSeriesTable> MocoInverse::initializeInternal() const {
                 dontApplySearchPath, setupDir, fileName, extension);
     }
 
-    // Processs inputs.
+    // Process inputs.
     // ----------------
     Model model = get_model().process();
     model.initSystem();
@@ -97,13 +97,10 @@ std::pair<MocoStudy, TimeSeriesTable> MocoInverse::initializeInternal() const {
     // -------------------------
     auto& solver = moco.initCasADiSolver();
     solver.set_dynamics_mode("implicit");
-    if (getProperty_tolerance().size()) {
-        OPENSIM_THROW_IF_FRMOBJ(get_tolerance() <= 0, Exception,
-                format("Tolerance must be positive, but got %g.",
-                        get_tolerance()));
-        solver.set_optim_convergence_tolerance(get_tolerance());
-        solver.set_optim_constraint_tolerance(get_tolerance());
-    }
+    OPENSIM_THROW_IF_FRMOBJ(get_tolerance() <= 0, Exception,
+            format("Tolerance must be positive, but got %g.", get_tolerance()));
+    solver.set_optim_convergence_tolerance(get_tolerance());
+    solver.set_optim_constraint_tolerance(get_tolerance());
     // The sparsity detection works fine with DeGrooteFregly2016Muscle.
     solver.set_optim_sparsity_detection("random");
     // Forward is 3x faster than central.
