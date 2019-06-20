@@ -108,12 +108,10 @@ public:
         out.dynamics[1] = in.parameters[0];
     }
 
-    void calc_endpoint_cost(const T& /*final_time*/,
-        const VectorX<T>& final_states,
-        const VectorX<T>& /*parameters*/,
-        T& cost) const override {
-        cost = (final_states[0] - GRAV_ACCEL * 0.5) * 
-               (final_states[0] - GRAV_ACCEL * 0.5);
+    void calc_endpoint_cost(const Input<T>& in,
+            T& cost) const override {
+        cost = (in.states[0] - GRAV_ACCEL * 0.5) * 
+               (in.states[0] - GRAV_ACCEL * 0.5);
     }
 
 };
@@ -176,12 +174,10 @@ public:
         out.dynamics[1] = -(STIFFNESS / in.parameters[0]) * in.states[0];
     }
 
-    void calc_endpoint_cost(const T& /*final_time*/,
-            const VectorX<T>& final_states,
-            const VectorX<T>& /*parameters*/,
+    void calc_endpoint_cost(const Input<T>& in,
             T& cost) const override {
         
-        cost = (final_states[0] - 0.5) * (final_states[0] - 0.5);
+        cost = (in.states[0] - 0.5) * (in.states[0] - 0.5);
 
         // TODO: Final time cost approach not finding correct mass parameter.
         // double frequency = sqrt(STIFFNESS / MASS) / (2 * PI);

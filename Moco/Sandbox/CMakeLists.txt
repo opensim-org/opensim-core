@@ -23,21 +23,25 @@ MocoAddSandboxExecutable(NAME sandboxImplicitActivationDynamics
         LIB_DEPENDS osimMoco tropter)
 
 
-# MocoTool-related.
+# MocoStudy-related.
 MocoAddSandboxExecutable(NAME sandboxSlidingMass
         LIB_DEPENDS osimMoco tropter)
 MocoAddSandboxExecutable(NAME sandboxContact
         LIB_DEPENDS osimMoco osimAnalyses tropter)
 MocoAddSandboxExecutable(NAME sandboxMuscle
-        SOURCE_FILES
-            shared/DeGrooteFregly2016Muscle.h
-            shared/DeGrooteFregly2016Muscle.cpp
         LIB_DEPENDS osimMoco)
 MocoAddSandboxExecutable(NAME sandboxCasADi
-        LIB_DEPENDS osimMuscollo casadi tropter)
+        LIB_DEPENDS osimMoco casadi tropter)
+
+MocoAddSandboxExecutable(NAME sandboxCasADiParallelMap
+        LIB_DEPENDS SimTKcommon casadi)
+
+MocoAddSandboxExecutable(NAME sandboxSimTKMotion
+        LIB_DEPENDS SimTKsimbody)
 
 add_subdirectory(sandboxWholeBodyTracking)
 add_subdirectory(sandboxMarkerTrackingWholeBody)
 add_subdirectory(sandboxJointReaction)
 add_subdirectory(sandboxOneLegCouplerKnee)
 add_subdirectory(sandboxMarkerTrackingContactWholeBody)
+add_subdirectory(sandboxMocoTrack)

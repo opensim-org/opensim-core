@@ -15,14 +15,18 @@ function(MocoAddTest)
     target_include_directories(${MOCOTEST_NAME}
             PRIVATE "${CMAKE_SOURCE_DIR}/tropter/external/catch")
     add_test(NAME ${MOCOTEST_NAME} COMMAND ${MOCOTEST_NAME})
-    #if(WIN32) # Instead, we are copying dependencies' DLLs.
-    #    set_property(TEST ${MOCOTEST_NAME} APPEND PROPERTY
-    #        ENVIRONMENT "PATH=${IPOPT_DIR}/bin\;${ADOLC_DIR}/bin\;${OpenSim_ROOT_DIR}/bin")
-    #endif()
+    # Tests likely run faster if we parallelize the tests rather than the
+    # individual problems.
+    set_property(TEST ${MOCOTEST_NAME} APPEND PROPERTY
+            ENVIRONMENT "OPENSIM_MOCO_PARALLEL=0")
     file(COPY ${MOCOTEST_RESOURCES} DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
 endfunction()
 
 MocoAddTest(NAME testMocoInterface)
+
+MocoAddTest(NAME testTableProcessor)
+
+MocoAddTest(NAME testModelProcessor)
 
 MocoAddTest(NAME testMocoCosts)
 
@@ -75,4 +79,22 @@ MocoAddTest(NAME testGait10dof18musc RESOURCES
         std_testGait10dof18musc_GSO_solution_other_controls.sto
         std_testGait10dof18musc_GSO_solution_tendon_force.sto
         std_testGait10dof18musc_GSO_solution_norm_tendon_force.sto
+        )
+
+MocoAddTest(NAME testDeGrooteFregly2016Muscle)
+
+MocoAddTest(NAME testMocoInverse RESOURCES
+        testGait10dof18musc_subject01.osim
+        walk_gait1018_state_reference.mot
+        walk_gait1018_subject01_grf.xml
+        walk_gait1018_subject01_grf.mot
+        std_testMocoInverseGait10dof18musc_solution.sto
+        )
+        
+MocoAddTest(NAME testMocoTrack RESOURCES
+        testGait10dof18musc_subject01.osim
+        walk_gait1018_state_reference.mot
+        walk_gait1018_subject01_grf.xml
+        walk_gait1018_subject01_grf.mot
+        std_testMocoTrackGait10dof18musc_solution.sto
         )

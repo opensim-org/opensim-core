@@ -34,15 +34,15 @@ import argparse
 ## Input parsing.
 ## =============
 parser = argparse.ArgumentParser(
-    description="Generate a report given a MocoIterate and an associated "
+    description="Generate a report given a MocoTrajectory and an associated "
                 "OpenSim Model. Optionally, additional reference data "
-                "compatible with the MocoIterate may be plotted "
+                "compatible with the MocoTrajectory may be plotted "
                 "simultaneously.")
 # Required arguments.
 parser.add_argument('model', type=str,
                     help="OpenSim Model file name (including path).")
 parser.add_argument('iterate', type=str,
-                    help="MocoIterate file name (including path).")
+                    help="MocoTrajectory file name (including path).")
 # Optional arguments.
 parser.add_argument('--bilateral', action='store_true',
                     help="Plot left and right limb states and controls "
@@ -53,10 +53,10 @@ parser.add_argument('--colormap', type=str,
                     help="Matplotlib colormap from which plot colors are "
                          "sampled from.")
 args = parser.parse_args()
-# Load the Model and MocoIterate from file.
+# Load the Model and MocoTrajectory from file.
 model = osim.Model(args.model)
 iterate_dir = args.iterate
-iterate = osim.MocoIterate(iterate_dir)
+iterate = osim.MocoTrajectory(iterate_dir)
 # Store 'bilateral' boolean option.
 bilateral = args.bilateral
 # Get any reference files provided by the user and create a list of NumPy
@@ -77,7 +77,7 @@ if ref_files != None:
         refs.append(this_ref)
 # Load the colormap provided by the user. Use a default colormap ('jet') if 
 # not provided. Uniformly sample the colormap based on the number of reference
-# data sets, plus one for the MocoIterate. 
+# data sets, plus one for the MocoTrajectory.
 colormap = args.colormap
 if colormap is None: colormap = 'jet'
 cmap_samples = np.linspace(0.1, 0.9, len(refs)+1)
@@ -245,10 +245,10 @@ def plotVariables(var_type, var_dict, ls_dict, label_dict):
                              y, ls=ls,
                              color=cmap(cmap_samples[r]),
                              linewidth=2.5)
-                    ymin = np.min(ymin, y)
-                    ymax = np.max(ymax, y)
+                    ymin = np.minimum(ymin, np.min(y))
+                    ymax = np.maximum(ymax, np.max(y))
 
-            # Plot the variable values from the MocoIterate.
+            # Plot the variable values from the MocoTrajectory.
             plt.plot(time, var, ls=ls, color=cmap(
                      cmap_samples[len(refs)]),
                      linewidth=1.5)
@@ -257,7 +257,7 @@ def plotVariables(var_type, var_dict, ls_dict, label_dict):
         plt.title(truncate(key, 38), fontsize=10)
         plt.xlabel('time (s)', fontsize=8)
         plt.ylabel(label_dict[key], fontsize=8)
-        if timeticks:
+        if timeticks.any():
             plt.xticks(timeticks)
         plt.xticks(fontsize=6)
         plt.yticks(fontsize=6)
@@ -455,6 +455,6 @@ with PdfPages(iterate_fname + '_report.pdf') as pdf:
 
     # Slacks
     # ------
-    # TODO slacks not accessible through MocoIterate
+    # TODO slacks not accessible through MocoTrajectory
     # TODO should we even plot these?
 

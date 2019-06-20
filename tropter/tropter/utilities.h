@@ -16,12 +16,35 @@
 // limitations under the License.
 // ----------------------------------------------------------------------------
 
+#include <iostream>
 #include <string>
+#include <vector>
 
 namespace tropter {
 /// Format a string in the style of sprintf.
 std::string format(const char* format, ...);
 
-} //namespace tropter
+std::vector<double> linspace(double start, double end, int length);
+
+/// This class stores the formatting of a stream and restores that format
+/// when the StreamFormat is destructed.
+class StreamFormat {
+public:
+    StreamFormat(std::ostream& stream)
+            : m_stream(stream), m_format_flags(stream.flags()) {
+        // m_format.copyfmt(stream);
+    }
+    ~StreamFormat() {
+        m_stream.flags(m_format_flags);
+        // m_stream.copyfmt(m_format);
+    }
+
+private:
+    std::ostream& m_stream;
+    std::ios_base::fmtflags m_format_flags;
+    // std::ios m_format{nullptr};
+}; // StreamFormat
+
+} // namespace tropter
 
 #endif // TROPTER_UTILITIES_H_

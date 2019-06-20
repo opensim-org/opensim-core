@@ -53,7 +53,7 @@ end
 
 function testDefaultBounds(testCase)
     import org.opensim.modeling.*;
-    moco = MocoTool();
+    moco = MocoStudy();
     problem = moco.updProblem();
     model = createSlidingMassModel();
     model.finalizeFromProperties();
@@ -94,7 +94,7 @@ end
 
 function testChangingTimeBounds(testCase)
     import org.opensim.modeling.*;
-    moco = MocoTool();
+    moco = MocoStudy();
     problem = moco.updProblem();
     problem.setModel(createSlidingMassModel());
     problem.setTimeBounds(0, [0, 10]);
@@ -104,7 +104,9 @@ function testChangingTimeBounds(testCase)
     problem.addCost(MocoFinalTimeCost());
 
     solver = moco.initTropterSolver();
+    solver.set_transcription_scheme('trapezoidal')
     solver.set_num_mesh_points(20);
+    solver.set_transcription_scheme('trapezoidal')
     guess = solver.createGuess('random');
     guess.setTime(opensimMoco.createVectorLinspace(20, 0.0, 3.0));
     solver.setGuess(guess);
@@ -122,7 +124,7 @@ end
 
 function testChangingModel(testCase)
     import org.opensim.modeling.*;
-    moco = MocoTool();
+    moco = MocoStudy();
     problem = moco.updProblem();
     model = createSlidingMassModel();
     problem.setModel(model);
@@ -145,7 +147,7 @@ end
 function testOrder(testCase)
     import org.opensim.modeling.*;
     % Can set the cost and model in any order.
-    moco = MocoTool();
+    moco = MocoStudy();
     problem = moco.updProblem();
     problem.setTimeBounds(0, [0, 10]);
     problem.setStateInfo('/slider/position/value', [0, 1], 0, 1);
@@ -162,7 +164,7 @@ end
 function testChangingCosts(testCase)
     import org.opensim.modeling.*;
     % Changes to the costs are obeyed.
-    moco = MocoTool();
+    moco = MocoStudy();
     problem = moco.updProblem();
     problem.setModel(createSlidingMassModel());
     problem.setTimeBounds(0, [0, 10]);

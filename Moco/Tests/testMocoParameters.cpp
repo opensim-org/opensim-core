@@ -75,7 +75,7 @@ protected:
 TEMPLATE_TEST_CASE("Oscillator mass", "", MocoTropterSolver, MocoCasADiSolver) {
     int N = 25;
 
-    MocoTool moco;
+    MocoStudy moco;
     moco.setName("oscillator_mass");
     MocoProblem& mp = moco.updProblem();
     mp.setModel(createOscillatorModel());
@@ -136,7 +136,7 @@ TEMPLATE_TEST_CASE("One parameter two springs", "",
         MocoTropterSolver, MocoCasADiSolver) {
     int N = 25;
 
-    MocoTool moco;
+    MocoStudy moco;
     moco.setName("oscillator_spring_stiffnesses");
     MocoProblem& mp = moco.updProblem();
     mp.setModel(createOscillatorTwoSpringsModel());
@@ -208,7 +208,7 @@ TEMPLATE_TEST_CASE("See-saw center of mass", "",
         MocoTropterSolver, MocoCasADiSolver) {
     int N = 25;
 
-    MocoTool moco;
+    MocoStudy moco;
     moco.setName("seesaw_com");
     MocoProblem& mp = moco.updProblem();
     mp.setModel(createSeeSawModel());
@@ -230,12 +230,12 @@ TEMPLATE_TEST_CASE("See-saw center of mass", "",
     auto& ms = moco.initSolver<TestType>();
     ms.set_num_mesh_points(N);
 
-    MocoSolution sol = moco.solve().unseal();
+    MocoSolution sol = moco.solve();
     const auto& sol_xCOM = sol.getParameter("com_location");
     sol.write("testMocoParameters_testSeeSawCOM_sol.sto");
     
     // Update problem model with new mass center.
-    // TODO: create method for this, or have MocoTool do it automatically
+    // TODO: create method for this, or have MocoStudy do it automatically
     // SimTK::Vec3 sol_COM(sol_xCOM, 0, 0);
     // mp.updPhase(0).updModel().updComponent<Body>("body").setMassCenter(sol_COM);
 

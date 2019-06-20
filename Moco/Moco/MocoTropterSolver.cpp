@@ -16,34 +16,29 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 #include "MocoTropterSolver.h"
+
 #include "MocoProblemRep.h"
 #include "MocoUtilities.h"
 
-#include "tropter/TropterProblem.h"
+#ifdef MOCO_WITH_TROPTER
+#    include "tropter/TropterProblem.h"
+#endif
 
 using namespace OpenSim;
 
-MocoTropterSolver::MocoTropterSolver() {
-    constructProperties();
-}
+MocoTropterSolver::MocoTropterSolver() { constructProperties(); }
 
 void MocoTropterSolver::constructProperties() {
     constructProperty_optim_jacobian_approximation("exact");
     constructProperty_optim_sparsity_detection("random");
-    constructProperty_transcription_scheme("trapezoidal");
-    constructProperty_velocity_correction_bounds({-0.1, 0.1});
     constructProperty_exact_hessian_block_sparsity_mode();
-    constructProperty_minimize_lagrange_multipliers(false);
-    constructProperty_lagrange_multiplier_weight(1);
-
-    // This is empty to allow user input error checking.
-    constructProperty_enforce_constraint_derivatives();
 }
 
 std::shared_ptr<const MocoTropterSolver::TropterProblemBase<double>>
 MocoTropterSolver::createTropterProblem() const {
-    checkPropertyInSet(*this, getProperty_dynamics_mode(), {"explicit",
-                                                            "implicit"});
+#ifdef MOCO_WITH_TROPTER
+    checkPropertyInSet(
+            *this, getProperty_dynamics_mode(), {"explicit", "implicit"});
     if (get_dynamics_mode() == "explicit") {
         return std::make_shared<ExplicitTropterProblem<double>>(*this);
     } else if (get_dynamics_mode() == "implicit") {
@@ -51,47 +46,189 @@ MocoTropterSolver::createTropterProblem() const {
     } else {
         OPENSIM_THROW_FRMOBJ(Exception, "Internal error.");
     }
+#else
+    OPENSIM_THROW(MocoTropterSolverNotAvailable);
+#endif
 }
+std::unique_ptr<tropter::DirectCollocationSolver<double>>
+MocoTropterSolver::createTropterSolver(
+        std::shared_ptr<const MocoTropterSolver::TropterProblemBase<double>>
+                ocp) const {
+    // Check that a positive number of mesh points was provided.
+    checkPropertyIsPositive(*this, getProperty_num_mesh_points());
 
-void MocoTropterSolver::resetProblemImpl(const MocoProblemRep&) const {
-}
+    if (getProperty_mesh().size() > 0) {
 
-MocoIterate MocoTropterSolver::createGuess(const std::string& type) const {
-    OPENSIM_THROW_IF_FRMOBJ(
-               type != "bounds"
-            && type != "random"
-            && type != "time-stepping",
+        OPENSIM_THROW_IF_FRMOBJ((get_mesh(0) != 0), Exception,
+                "Invalid custom mesh; first mesh "
+                "point must be zero.");
+
+        for (int i = 1; i < (int)this->getProperty_mesh().size(); ++i) {
+
+            OPENSIM_THROW_IF_FRMOBJ((get_mesh(i) <= get_mesh(i - 1)), Exception,
+                    "Invalid custom mesh; mesh "
+                    "points must be strictly increasing.");
+        }
+
+        OPENSIM_THROW_IF_FRMOBJ((get_mesh(getProperty_mesh().size() - 1) != 1),
+                Exception,
+                "Invalid custom mesh; last mesh "
+                "point must be one.");
+    }
+    // Check that a valid optimization solver was specified.
+    checkPropertyInSet(*this, getProperty_optim_solver(), {"ipopt", "snopt"});
+    // Check that a valid transcription scheme was specified.
+    checkPropertyInSet(*this, getProperty_transcription_scheme(),
+            {"trapezoidal", "hermite-simpson"});
+    // Enforcing constraint derivatives is only supported when Hermite-Simpson
+    // is set as the transcription scheme.
+
+    if (getProblemRep().getNumKinematicConstraintEquations()) {
+        OPENSIM_THROW_IF(get_transcription_scheme() != "hermite-simpson" &&
+                                 get_enforce_constraint_derivatives(),
+                Exception,
+                format("If enforcing derivatives of model kinematic "
+                       "constraints, then the property 'transcription_scheme' "
+                       "must be set to 'hermite-simpson'. "
+                       "Currently, it is set to '%s'.",
+                        get_transcription_scheme()));
+    }
+    // Block sparsity detected is only in effect when using an exact Hessian
+    // approximation.
+    OPENSIM_THROW_IF(
+            get_optim_hessian_approximation() == "limited-memory" &&
+                    !getProperty_exact_hessian_block_sparsity_mode().empty(),
             Exception,
-            format("Unexpected guess type '%s'; supported types are 'bounds', "
-                   "'random', and 'time-stepping'.", type));
+            "A value for solver property 'exact_hessian_block_sparsity_mode' "
+            "was "
+            "provided, but is unused when using a 'limited-memory' Hessian "
+            "approximation. Set solver property 'optim_hessian_approximation' "
+            "to "
+            "'exact' for Hessian block sparsity to take effect.");
+    if (!getProperty_exact_hessian_block_sparsity_mode().empty()) {
+        checkPropertyInSet(*this,
+                getProperty_exact_hessian_block_sparsity_mode(),
+                {"dense", "sparse"});
+    }
+    // Hessian information is not used in SNOPT.
+    OPENSIM_THROW_IF(get_optim_hessian_approximation() == "exact" &&
+                             get_optim_solver() == "snopt",
+            Exception,
+            "The property 'optim_hessian_approximation' was set to exact while "
+            "using SNOPT as the optimization solver, but SNOPT does not "
+            "utilize "
+            "Hessian information.");
 
-    if (type == "time-stepping") {
-        return createGuessTimeStepping();
+    // Check that the Lagrange multiplier weight is positive
+    checkPropertyIsPositive(*this, getProperty_lagrange_multiplier_weight());
+
+    // Create direct collocation solver.
+    // ---------------------------------
+
+    std::unique_ptr<tropter::DirectCollocationSolver<double>> dircol;
+
+    if (getProperty_mesh().empty()) {
+        dircol = OpenSim::make_unique<tropter::DirectCollocationSolver<double>>(
+                ocp, get_transcription_scheme(), get_optim_solver(),
+                get_num_mesh_points());
+    } else {
+        std::vector<double> mesh;
+        for (int i = 0; i < getProperty_mesh().size(); ++i) {
+            mesh.push_back(get_mesh(i));
+        }
+        dircol = OpenSim::make_unique<tropter::DirectCollocationSolver<double>>(
+                ocp, get_transcription_scheme(), get_optim_solver(), mesh);
     }
 
-    // TODO avoid performing error checks multiple times; use
-    // isObjectUpToDateWithProperties();
-    checkPropertyIsPositive(*this, getProperty_num_mesh_points());
-    int N = get_num_mesh_points();
+    dircol->set_verbosity(get_verbosity() >= 1);
+    if (getProperty_exact_hessian_block_sparsity_mode().empty()) {
+        dircol->set_exact_hessian_block_sparsity_mode("dense");
+    } else {
+        dircol->set_exact_hessian_block_sparsity_mode(
+                get_exact_hessian_block_sparsity_mode());
+    }
 
-    checkPropertyInSet(*this, getProperty_optim_solver(), {"ipopt", "snopt"});
-    checkPropertyInSet(*this, getProperty_transcription_scheme(), 
-        {"trapezoidal", "hermite-simpson"});
+    // Get optimization solver to check the remaining property settings.
+    auto& optsolver = dircol->get_opt_solver();
+
+    // Check that number of max iterations is valid.
+    checkPropertyInRangeOrSet(*this, getProperty_optim_max_iterations(), 0,
+            std::numeric_limits<int>::max(), {-1});
+    if (get_optim_max_iterations() != -1)
+        optsolver.set_max_iterations(get_optim_max_iterations());
+    // Check that convergence tolerance is valid.
+    checkPropertyInRangeOrSet(*this, getProperty_optim_convergence_tolerance(),
+            0.0, SimTK::NTraits<double>::getInfinity(), {-1.0});
+    if (get_optim_convergence_tolerance() != -1)
+        optsolver.set_convergence_tolerance(get_optim_convergence_tolerance());
+    // Check that constraint tolerance is valid.
+    checkPropertyInRangeOrSet(*this, getProperty_optim_constraint_tolerance(),
+            0.0, SimTK::NTraits<double>::getInfinity(), {-1.0});
+    if (get_optim_constraint_tolerance() != -1)
+        optsolver.set_constraint_tolerance(get_optim_constraint_tolerance());
+
+    optsolver.set_jacobian_approximation(get_optim_jacobian_approximation());
+    optsolver.set_hessian_approximation(get_optim_hessian_approximation());
+
+    if (get_optim_solver() == "ipopt") {
+        // Check that IPOPT print level is valid.
+        checkPropertyInRangeOrSet(
+                *this, getProperty_optim_ipopt_print_level(), 0, 12, {-1});
+        if (get_verbosity() < 2) {
+            optsolver.set_advanced_option_int("print_level", 0);
+        } else {
+            if (get_optim_ipopt_print_level() != -1) {
+                optsolver.set_advanced_option_int(
+                        "print_level", get_optim_ipopt_print_level());
+            }
+        }
+    }
+    // Check that sparsity detection mode is valid.
+    checkPropertyInSet(*this, getProperty_optim_sparsity_detection(),
+            {"random", "initial-guess"});
+    optsolver.set_sparsity_detection(get_optim_sparsity_detection());
+
+    // Set advanced settings.
+    // for (int i = 0; i < getProperty_optim_solver_options(); ++i) {
+    //    optsolver.set_advanced_option(TODO);
+    //}
+    // optsolver.set_advanced_option_string("print_timing_statistics",
+    // "yes");
+    // TODO optsolver.set_advanced_option_string("derivative_test",
+    // "second-order");
+    // TODO optsolver.set_findiff_hessian_step_size(1e-3);
+
+    return dircol;
+}
+
+MocoTrajectory MocoTropterSolver::createGuess(const std::string& type) const {
+#ifdef MOCO_WITH_TROPTER
+    OPENSIM_THROW_IF_FRMOBJ(
+            type != "bounds" && type != "random" && type != "time-stepping",
+            Exception,
+            format("Unexpected guess type '%s'; supported types are "
+                   "'bounds', "
+                   "'random', and 'time-stepping'.",
+                    type));
+
+    if (type == "time-stepping") { return createGuessTimeStepping(); }
+
     auto ocp = createTropterProblem();
-    tropter::DirectCollocationSolver<double> dircol(ocp, 
-            get_transcription_scheme(),
-            get_optim_solver(), N);
+    auto dircol = createTropterSolver(ocp);
 
     tropter::Iterate tropIter;
     if (type == "bounds") {
-        tropIter = dircol.make_initial_guess_from_bounds();
+        tropIter = dircol->make_initial_guess_from_bounds();
     } else if (type == "random") {
-        tropIter = dircol.make_random_iterate_within_bounds();
+        tropIter = dircol->make_random_iterate_within_bounds();
     }
-    return ocp->convertToMocoIterate(tropIter);
+    return ocp->convertToMocoTrajectory(tropIter);
+#else
+    OPENSIM_THROW(MocoTropterSolverNotAvailable);
+#endif
 }
 
-void MocoTropterSolver::setGuess(MocoIterate guess) {
+void MocoTropterSolver::setGuess(MocoTrajectory guess) {
     // Ensure the guess is compatible with this solver/problem.
     // Make sure to initialize the problem. TODO put in a better place.
     createTropterProblem();
@@ -104,25 +241,25 @@ void MocoTropterSolver::setGuessFile(const std::string& file) {
     set_guess_file(file);
 }
 void MocoTropterSolver::clearGuess() {
-    m_guessFromAPI = MocoIterate();
-    m_guessFromFile = MocoIterate();
+    m_guessFromAPI = MocoTrajectory();
+    m_guessFromFile = MocoTrajectory();
     set_guess_file("");
     m_guessToUse.reset();
 }
-const MocoIterate& MocoTropterSolver::getGuess() const {
+const MocoTrajectory& MocoTropterSolver::getGuess() const {
     if (!m_guessToUse) {
         if (get_guess_file() != "" && m_guessFromFile.empty()) {
             // The API should make it impossible for both guessFromFile and
             // guessFromAPI to be non-empty.
             assert(m_guessFromAPI.empty());
             // No need to load from file again if we've already loaded it.
-            MocoIterate guessFromFile(get_guess_file());
+            MocoTrajectory guessFromFile(get_guess_file());
             guessFromFile.isCompatible(getProblemRep(), true);
             m_guessFromFile = guessFromFile;
             m_guessToUse.reset(&m_guessFromFile);
         } else {
-            // This will either be a guess specified via the API, or empty to
-            // signal that tropter should use the default guess.
+            // This will either be a guess specified via the API, or empty
+            // to signal that tropter should use the default guess.
             m_guessToUse.reset(&m_guessFromAPI);
         }
     }
@@ -131,16 +268,25 @@ const MocoIterate& MocoTropterSolver::getGuess() const {
 }
 
 void MocoTropterSolver::printOptimizationSolverOptions(std::string solver) {
+#ifdef MOCO_WITH_TROPTER
     if (solver == "ipopt") {
         tropter::optimization::IPOPTSolver::print_available_options();
     } else {
-        std::cout << "No info available for " << solver << " options." <<
-                std::endl;
+        std::cout << "No info available for " << solver << " options."
+                  << std::endl;
     }
+#else
+    OPENSIM_THROW(MocoTropterSolverNotAvailable);
+#endif
 }
 
 MocoSolution MocoTropterSolver::solveImpl() const {
+#ifdef MOCO_WITH_TROPTER
     const Stopwatch stopwatch;
+
+    OPENSIM_THROW_IF_FRMOBJ(getProblemRep().isPrescribedKinematics(), Exception,
+            "MocoTropterSolver does not support prescribed kinematics. "
+            "Try using prescribed motion constraints in the Coordinates.");
 
     auto ocp = createTropterProblem();
 
@@ -155,137 +301,31 @@ MocoSolution MocoTropterSolver::solveImpl() const {
         std::cout << std::string(79, '-') << std::endl;
         getProblemRep().printDescription();
     }
-    // Check that a positive number of mesh points was provided.
-    checkPropertyIsPositive(*this, getProperty_num_mesh_points());
-    // Check that a valid optimization solver was specified.
-    checkPropertyInSet(*this, getProperty_optim_solver(), {"ipopt", "snopt"});
-    // Check that a valid transcription scheme was specified.
-    checkPropertyInSet(*this, getProperty_transcription_scheme(),
-        {"trapezoidal", "hermite-simpson"});
-    // Enforcing constraint derivatives is only supported when Hermite-Simpson
-    // is set as the transcription scheme.
-    if (!getProperty_enforce_constraint_derivatives().empty()) {
-        OPENSIM_THROW_IF(get_transcription_scheme() != "hermite-simpson" &&
-                get_enforce_constraint_derivatives(), Exception,
-                format("If enforcing derivatives of model kinematic "
-                       "constraints, then the property 'transcription_scheme' "
-                       "must be set to 'hermite-simpson'. "
-                       "Currently, it is set to '%s'.",
-                        get_transcription_scheme()));
-    }
-    // Block sparsity detected is only in effect when using an exact Hessian
-    // approximation.
-    OPENSIM_THROW_IF(get_optim_hessian_approximation() == "limited-memory" &&
-        !getProperty_exact_hessian_block_sparsity_mode().empty(), Exception, 
-        "A value for solver property 'exact_hessian_block_sparsity_mode' was "
-        "provided, but is unused when using a 'limited-memory' Hessian "
-        "approximation. Set solver property 'optim_hessian_approximation' to "
-        "'exact' for Hessian block sparsity to take effect.");
-    if (!getProperty_exact_hessian_block_sparsity_mode().empty()) {
-        checkPropertyInSet(*this, 
-            getProperty_exact_hessian_block_sparsity_mode(),
-            {"dense", "sparse"});
-    }
-    // Hessian information is not used in SNOPT.
-    OPENSIM_THROW_IF(get_optim_hessian_approximation() == "exact" &&
-        get_optim_solver() == "snopt", Exception,
-        "The property 'optim_hessian_approximation' was set to exact while "
-        "using SNOPT as the optimization solver, but SNOPT does not utilize "
-        "Hessian information.");
-
-    // Check that the Lagrange multiplier weight is positive
-     checkPropertyIsPositive(*this, getProperty_lagrange_multiplier_weight());
-
-    // Create direct collocation solver.
-    // ---------------------------------
-    tropter::DirectCollocationSolver<double> dircol(ocp,
-        get_transcription_scheme(),
-        get_optim_solver(), 
-        get_num_mesh_points());
-    dircol.set_verbosity(get_verbosity() >= 1);
-    if (getProperty_exact_hessian_block_sparsity_mode().empty()) {
-        dircol.set_exact_hessian_block_sparsity_mode("dense");
-    } else {
-        dircol.set_exact_hessian_block_sparsity_mode(
-            get_exact_hessian_block_sparsity_mode());
-    }
-
-    // Get optimization solver to check the remaining property settings.
-    auto& optsolver = dircol.get_opt_solver();
-
-    // Check that number of max iterations is valid.
-    checkPropertyInRangeOrSet(*this, getProperty_optim_max_iterations(),
-            0, std::numeric_limits<int>::max(), {-1});
-    if (get_optim_max_iterations() != -1)
-        optsolver.set_max_iterations(get_optim_max_iterations());
-    // Check that convergence tolerance is valid.
-    checkPropertyInRangeOrSet(*this,
-            getProperty_optim_convergence_tolerance(),
-            0.0, SimTK::NTraits<double>::getInfinity(), {-1.0});
-    if (get_optim_convergence_tolerance() != -1)
-        optsolver.set_convergence_tolerance(get_optim_convergence_tolerance());
-    // Check that constraint tolerance is valid.
-    checkPropertyInRangeOrSet(*this,
-            getProperty_optim_constraint_tolerance(),
-            0.0, SimTK::NTraits<double>::getInfinity(), {-1.0});
-    if (get_optim_constraint_tolerance() != -1)
-        optsolver.set_constraint_tolerance(get_optim_constraint_tolerance());
-
-    optsolver.set_jacobian_approximation(get_optim_jacobian_approximation());
-    optsolver.set_hessian_approximation(get_optim_hessian_approximation());
-
-    if (get_optim_solver() == "ipopt") {
-        // Check that IPOPT print level is valid.
-        checkPropertyInRangeOrSet(*this, getProperty_optim_ipopt_print_level(),
-                0, 12, {-1});
-        if (get_verbosity() < 2) {
-            optsolver.set_advanced_option_int("print_level", 0);
-        } else {
-            if (get_optim_ipopt_print_level() != -1) {
-                optsolver.set_advanced_option_int("print_level",
-                        get_optim_ipopt_print_level());
-            }
-        }
-    }
-    // Check that sparsity detection mode is valid.
-    checkPropertyInSet(*this, getProperty_optim_sparsity_detection(),
-            {"random", "initial-guess"});
-    optsolver.set_sparsity_detection(get_optim_sparsity_detection());
-
-    // Set advanced settings.
-    //for (int i = 0; i < getProperty_optim_solver_options(); ++i) {
-    //    optsolver.set_advanced_option(TODO);
-    //}
-    //optsolver.set_advanced_option_string("print_timing_statistics", "yes");
-    // TODO optsolver.set_advanced_option_string("derivative_test", "second-order");
-    // TODO optsolver.set_findiff_hessian_step_size(1e-3);
-
+    auto dircol = createTropterSolver(ocp);
     tropter::Iterate tropIterate = ocp->convertToTropterIterate(getGuess());
-    tropter::Solution tropSolution = dircol.solve(tropIterate);
+    tropter::Solution tropSolution = dircol->solve(tropIterate);
 
-    if (get_verbosity()) {
-        dircol.print_constraint_values(tropSolution);
-    }
+    if (get_verbosity()) { dircol->print_constraint_values(tropSolution); }
 
     MocoSolution mocoSolution = ocp->convertToMocoSolution(tropSolution);
 
-    // If enforcing model constraints and not minimizing Lagrange multipliers,
-    // check the rank of the constraint Jacobian and if rank-deficient, print
-    // recommendation to the user to enable Lagrange multiplier minimization.
-    if (!getProperty_enforce_constraint_derivatives().empty() && 
-             !get_minimize_lagrange_multipliers()) {
-        const auto& model = getProblemRep().getModel();
+    // If enforcing model constraints and not minimizing Lagrange
+    // multipliers, check the rank of the constraint Jacobian and if
+    // rank-deficient, print recommendation to the user to enable Lagrange
+    // multiplier minimization.
+    if (getProblemRep().getNumKinematicConstraintEquations() &&
+            !get_enforce_constraint_derivatives() &&
+            !get_minimize_lagrange_multipliers()) {
+        const auto& model = getProblemRep().getModelBase();
         const auto& matter = model.getMatterSubsystem();
         Storage storage = mocoSolution.exportToStatesStorage();
         // TODO update when we support multiple phases.
-        auto statesTraj = StatesTrajectory::createFromStatesStorage(model, 
-            storage);
+        auto statesTraj =
+                StatesTrajectory::createFromStatesStorage(model, storage);
         SimTK::Matrix G;
         SimTK::FactorQTZ G_qtz;
         bool isJacobianFullRank = true;
         int rank;
-        // Jacobian rank should be time-independent, but loop through states 
-        // until rank deficiency detected, just in case.
         for (const auto& s : statesTraj) {
             // Jacobian is at most velocity-dependent.
             model.realizeVelocity(s);
@@ -305,11 +345,11 @@ MocoSolution MocoTropterSolver::solveImpl() const {
             std::cout << "WARNING: rank-deficient constraint Jacobian "
                       << "detected.\n";
             std::cout << "---------------------------------------------------"
-                        << "--\n";
+                      << "--\n";
             std::cout << "The model constraint Jacobian has "
                       << std::to_string(G.nrow()) + " row(s) but is only rank "
                       << std::to_string(rank) + ".\nTry removing "
-                      << "redundant constraints from the model or enable \n" 
+                      << "redundant constraints from the model or enable \n"
                       << "minimization of Lagrange multipliers by utilizing "
                       << "the solver \nproperties "
                       << "'minimize_lagrange_multipliers' and \n"
@@ -321,12 +361,13 @@ MocoSolution MocoTropterSolver::solveImpl() const {
 
     // TODO move this to convert():
     MocoSolver::setSolutionStats(mocoSolution, tropSolution.success,
-            tropSolution.status, tropSolution.num_iterations);
+            tropSolution.objective, tropSolution.status,
+            tropSolution.num_iterations);
 
     if (get_verbosity()) {
         std::cout << std::string(79, '-') << "\n";
         std::cout << "Elapsed real time: "
-                << stopwatch.getElapsedTimeFormatted() << ".\n";
+                  << stopwatch.getElapsedTimeFormatted() << ".\n";
         if (mocoSolution) {
             std::cout << "MocoTropterSolver succeeded!\n";
         } else {
@@ -338,4 +379,7 @@ MocoSolution MocoTropterSolver::solveImpl() const {
     }
 
     return mocoSolution;
+#else
+    OPENSIM_THROW(MocoTropterSolverNotAvailable);
+#endif
 }

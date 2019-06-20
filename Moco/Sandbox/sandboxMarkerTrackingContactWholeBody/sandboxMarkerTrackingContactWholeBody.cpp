@@ -199,7 +199,7 @@ void setModelAndBounds(MocoProblem& mp, bool useOptimizedModel = false) {
 /// Estimated time to solve: ~35 minutes.
 MocoSolution solveStateTrackingProblem() {
 
-    MocoTool moco;
+    MocoStudy moco;
     moco.setName("whole_body_state_tracking");
 
     // Define the optimal control problem.
@@ -238,7 +238,7 @@ MocoSolution solveStateTrackingProblem() {
 
     // Create guess.
     // =============
-    MocoIterate guess = ms.createGuess();
+    MocoTrajectory guess = ms.createGuess();
     auto model = mp.getPhase().getModel();
     model.initSystem();
     auto refFilt2 = refFilt;
@@ -270,7 +270,7 @@ MocoSolution solveStateTrackingProblem() {
 MocoSolution solveMarkerTrackingProblem(bool createGuess,
         bool useOptimizedModel) {
 
-    MocoTool moco;
+    MocoStudy moco;
     moco.setName("whole_body_marker_tracking");
 
     // Define the optimal control problem.
@@ -378,11 +378,11 @@ MocoSolution solveMarkerTrackingProblem(bool createGuess,
     // Create guess.
     // =============
     if (!createGuess) {
-        MocoIterate guess("sandboxMarkerTrackingContactWholeBody_guess.sto");
+        MocoTrajectory guess("sandboxMarkerTrackingContactWholeBody_guess.sto");
         ms.setGuess(guess);
         // moco.visualize(guess);
     }
-    //MocoIterate guess = ms.createGuess();
+    //MocoTrajectory guess = ms.createGuess();
     //auto model = mp.getPhase().getModel();
     //model.initSystem();
     //auto statesRef = STOFileAdapter::read("walk_gait1018_state_reference.mot");
