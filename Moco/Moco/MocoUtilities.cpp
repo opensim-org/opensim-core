@@ -18,8 +18,8 @@
 
 #include "MocoUtilities.h"
 
-#include "MocoIterate.h"
 #include "MocoProblem.h"
+#include "MocoTrajectory.h"
 #include <cstdarg>
 #include <cstdio>
 #include <iomanip>
@@ -327,7 +327,7 @@ std::unique_ptr<Function> createFunction<GCVSpline>(
 } // anonymous namespace
 
 void OpenSim::prescribeControlsToModel(
-        const MocoIterate& iterate, Model& model, std::string functionType) {
+        const MocoTrajectory& iterate, Model& model, std::string functionType) {
     // Get actuator names.
     model.initSystem();
     OpenSim::Array<std::string> actuNames;
@@ -361,8 +361,8 @@ void OpenSim::prescribeControlsToModel(
     model.addController(controller);
 }
 
-MocoIterate OpenSim::simulateIterateWithTimeStepping(
-        const MocoIterate& iterate, Model model, double integratorAccuracy) {
+MocoTrajectory OpenSim::simulateIterateWithTimeStepping(
+        const MocoTrajectory& iterate, Model model, double integratorAccuracy) {
 
     prescribeControlsToModel(iterate, model, "PiecewiseLinearFunction");
 
@@ -408,10 +408,10 @@ MocoIterate OpenSim::simulateIterateWithTimeStepping(
     for (auto& label : labels) { label = "/forceset/" + label; }
     controls.setColumnLabels(labels);
 
-    // Create a MocoIterate to facilitate states trajectory comparison (with
+    // Create a MocoTrajectory to facilitate states trajectory comparison (with
     // dummy data for the multipliers, which we'll ignore).
 
-    auto forwardSolution = MocoIterate(timeVec,
+    auto forwardSolution = MocoTrajectory(timeVec,
             {{"states", {states.getColumnLabels(), states.getMatrix()}},
                     {"controls", {controls.getColumnLabels(),
                                          controls.getMatrix()}}});

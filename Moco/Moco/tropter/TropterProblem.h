@@ -497,15 +497,15 @@ protected:
     }
 
 public:
-    template <typename MocoIterateType, typename tropIterateType>
-    MocoIterateType convertIterateTropterToMoco(
+    template <typename MocoTrajectoryType, typename tropIterateType>
+    MocoTrajectoryType convertIterateTropterToMoco(
             const tropIterateType& tropSol) const;
 
-    MocoIterate convertToMocoIterate(const tropter::Iterate& tropSol) const;
+    MocoTrajectory convertToMocoTrajectory(const tropter::Iterate& tropSol) const;
 
     MocoSolution convertToMocoSolution(const tropter::Solution& tropSol) const;
 
-    tropter::Iterate convertToTropterIterate(const MocoIterate& mocoIter) const;
+    tropter::Iterate convertToTropterIterate(const MocoTrajectory& mocoIter) const;
 };
 
 template <typename T>

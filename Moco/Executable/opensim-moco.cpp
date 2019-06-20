@@ -33,7 +33,7 @@ Usage:
 
   opensim-moco visualize <model-or-omoco-file> [<iterate-file>]
 
-    Visualize an OpenSim model (.osim file) with a MocoIterate, if provided.
+    Visualize an OpenSim model (.osim file) with a MocoTrajectory, if provided.
     If an iterate is not provided, the model is visualized with its default
     state.
     You can provide a MocoStudy setup file (.omoco) instead of a model.
@@ -143,7 +143,7 @@ int main(int argc, char* argv[]) {
                 // Wait for user input.
                 std::cin.get();
             } else {
-                MocoIterate iterate(argv[3]);
+                MocoTrajectory iterate(argv[3]);
                 visualize(*model, iterate.exportToStatesStorage());
             }
         } else {
