@@ -252,9 +252,19 @@ public:
             const ContinuousInput& /*input*/,
             casadi::DM& /*path_constraint*/) const {}
 
-    virtual std::vector<std::string> createKinematicConstraintEquationNamesImpl() const;
+    virtual std::vector<std::string>
+    createKinematicConstraintEquationNamesImpl() const;
 
-    virtual void intermediateCallback(const CasOC::Iterate&) const {}
+    void intermediateCallback() const { intermediateCallbackImpl(); }
+    void intermediateCallbackWithIterate(const CasOC::Iterate& it) const {
+        intermediateCallbackWithIterateImpl(it);
+    }
+    /// This is invoked once for each iterate in the optimization process.
+    virtual void intermediateCallbackImpl() const {}
+    /// Process an intermediate iterate. The frequency with which this is
+    /// evaluated is governed by Solver::getOutputInterval().
+    virtual void intermediateCallbackWithIterateImpl(
+            const CasOC::Iterate&) const {}
     /// @}
 
 public:

@@ -46,19 +46,20 @@
 
 using namespace OpenSim;
 
-std::string OpenSim::getFormattedDateTime() {
+std::string OpenSim::getFormattedDateTime(std::string format) {
     using namespace std::chrono;
     auto time_now = system_clock::to_time_t(system_clock::now());
     std::stringstream ss;
-    // ISO standard extended datetime format.
-    // https://kjellkod.wordpress.com/2013/01/22/exploring-c11-part-2-localtime-and-time-again/
     struct tm buf;
 #if defined(_WIN32)
     localtime_s(&buf, &time_now);
 #else
     localtime_r(&time_now, &buf);
 #endif
-    ss << std::put_time(&buf, "%Y-%m-%dT%X");
+    if (format == "ISO") {
+        format = "%Y-%m-%dT%H:%M:%S";
+    }
+    ss << std::put_time(&buf, format.c_str());
     return ss.str();
 }
 
@@ -188,21 +189,7 @@ void OpenSim::visualize(Model model, Storage statesSto) {
     std::string title = "Visualizing model '" + modelName + "'";
     if (!statesSto.getName().empty() && statesSto.getName() != "UNKNOWN")
         title += " with motion '" + statesSto.getName() + "'";
-    {
-        using namespace std::chrono;
-        auto time_now = system_clock::to_time_t(system_clock::now());
-        std::stringstream ss;
-        // ISO standard extended datetime format.
-        // https://kjellkod.wordpress.com/2013/01/22/exploring-c11-part-2-localtime-and-time-again/
-        struct tm buf;
-#if defined(_WIN32)
-        localtime_s(&buf, &time_now);
-#else
-        localtime_r(&time_now, &buf);
-#endif
-        ss << std::put_time(&buf, "%Y-%m-%dT%X");
-        title += " (" + ss.str() + ")";
-    }
+    title += " (" + getFormattedDateTime("ISO") + ")";
     viz.setWindowTitle(title);
     viz.setMode(SimTK::Visualizer::RealTime);
     // Buffering causes issues when the user adjusts the "Speed" slider.
