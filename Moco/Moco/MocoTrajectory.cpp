@@ -266,7 +266,7 @@ void MocoTrajectory::setStatesTrajectory(const TimeSeriesTable& states,
     }
 }
 
-void MocoIterate::insertStatesTrajectory(
+void MocoTrajectory::insertStatesTrajectory(
         const TimeSeriesTable& subsetOfStates, bool overwrite) {
     ensureUnsealed();
 
