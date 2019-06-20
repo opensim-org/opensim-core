@@ -1,4 +1,3 @@
-# Temporary hack to package dependencies on Macs. TODO
 
 set(bindir "@CMAKE_INSTALL_PREFIX@/@CMAKE_INSTALL_BINDIR@")
 set(libdir "@CMAKE_INSTALL_PREFIX@/@CMAKE_INSTALL_LIBDIR@")

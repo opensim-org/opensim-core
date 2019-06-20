@@ -85,3 +85,127 @@ function(MocoAddExampleCXX)
             DESTINATION ${_example_install_dir}
             RENAME CMakeLists.txt)
 endfunction()
+
+# Add a relative path to the run-path of a shared library. The run-path allows
+# a library to find the libraries it depends on without the need to set the
+# (DY)LD_LIBRARY_PATH environment variable. This function only affects UNIX
+# systems. Here are the arguments:
+#
+# TARGET: The CMake target to which the run-path should be added.
+# EXECUTABLE, LOADER: Specify one of these flags to indicate whether the
+#   run-path is relative to the executable's location or relative to the loader
+#   (the library/executable that attempts to load the dependent library). Only
+#   affects Mac.
+# FROM: The path (relative to the Moco installation root) of the
+#   executable/library that is loading a dependent library.
+# TO: The path (relative to the Moco installation root) where the dependent
+#   library is located.
+function(MocoAddInstallRPATH)
+    set(options EXECUTABLE LOADER)
+    set(oneValueArgs TARGET FROM TO)
+    set(multiValueArgs)
+    cmake_parse_arguments(
+            MOCORP "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+    if(MOCORP_EXECUTABLE EQUAL MOCORP_LOADER)
+        message(AUTHOR_WARNING "Cannot specify both EXECUTABLE and LOADER.")
+    endif()
+
+    if(APPLE)
+        if(MOCORP_EXECUTABLE)
+            set(rpath_macro "\@executable_path")
+        elseif(MOCORP_LOADER)
+            set(rpath_macro "\@loader_path")
+        endif()
+    elseif(UNIX)
+        set(rpath_macro "\$ORIGIN")
+    endif()
+
+    file(RELATIVE_PATH to_root "${CMAKE_INSTALL_PREFIX}/${MOCORP_FROM}"
+            "${CMAKE_INSTALL_PREFIX}")
+    set_property(TARGET ${MOCORP_TARGET} APPEND PROPERTY INSTALL_RPATH
+            "${rpath_macro}/${to_root}${MOCORP_TO}")
+endfunction()
+
+# Similar to MocoAddInstallRPATH except the run-path is the same directory
+# loader (e.g., "@loader_path/"). Arguments:
+#
+# TARGET: The CMake target to which the run-path should be added.
+function(MocoAddInstallRPATHSelf)
+    set(options)
+    set(oneValueArgs TARGET)
+    set(multiValueArgs)
+    cmake_parse_arguments(
+            MOCORP "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+
+    # By specifing "" and "" for FROM and TO, the resulting RPATH will simply
+    # be "${rpath_macro}/".
+    MocoAddInstallRPATH(TARGET ${MOCORP_TARGET} LOADER FROM "" TO "")
+
+endfunction()
+
+# Similar to MocoAddInstallRPATH, but specifically for adding a run-path to
+# the Simbody libraries copied into the Moco installation. If Simbody is not
+# copied into the Moco installation (MOCO_COPY_DEPENDENCIES=OFF) or the
+# copied Simbody libraries are installed to the same folder as the Moco
+# libraries (MOCO_INSTALL_UNIX_FHS=ON), then this function does nothing.
+#
+# TARGET: The CMake target to which the run-path should be added.
+# ABSOLUTE: Add an absolute run-path to the Simbody libraries in the Moco
+#   installation. If you specify this argument, then you should not specify
+#   EXECTUABLE, LOADER, or FROM.
+# EXECUTABLE, LOADER: Specify one of these flags to indicate whether the
+#   run-path is relative to the executable's location or relative to the loader
+#   (the library/executable that attempts to load the dependent library). Only
+#   affects Mac.
+# FROM: The path (relative to the Moco installation root) of the
+#   executable/library that is loading a dependent Simbody library.
+function(MocoAddInstallRPATHSimbody)
+    set(options EXECUTABLE LOADER ABSOLUTE)
+    set(oneValueArgs TARGET FROM)
+    set(multiValueArgs)
+    cmake_parse_arguments(
+            MOCORP "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+    if(MOCORP_ABSOLUTE AND (MOCORP_FROM OR MOCORP_EXECUTABLE OR MOCORP_LOADER))
+        message(AUTHOR_WARNING
+                "Cannot specify both ABSOLUTE and FROM, EXECUTABLE, or LOADER.")
+    endif()
+
+    if(NOT MOCO_COPY_DEPENDENCIES OR MOCO_INSTALL_UNIX_FHS)
+        return()
+    endif()
+
+    file(RELATIVE_PATH simbody_root_to_simbody_lib_dir
+            "${Simbody_ROOT_DIR}" "${Simbody_LIB_DIR}")
+    set(root_to_simbody_lib_dir
+            "${MOCO_INSTALL_SIMBODYDIR}/${simbody_root_to_simbody_lib_dir}")
+
+    if(MOCORP_ABSOLUTE)
+        set_property(TARGET ${MOCORP_TARGET} APPEND PROPERTY INSTALL_RPATH
+                "${CMAKE_INSTALL_PREFIX}/${root_to_simbody_lib_dir}")
+    else()
+        if(MOCORP_EXECUTABLE)
+            MocoAddInstallRPATH(TARGET ${MOCORP_TARGET} EXECUTABLE
+                    FROM ${MOCORP_FROM} TO ${root_to_simbody_lib_dir})
+        elseif(MOCORP_LOADER)
+            MocoAddInstallRPATH(TARGET ${MOCORP_TARGET} LOADER
+                    FROM ${MOCORP_FROM} TO ${root_to_simbody_lib_dir})
+        endif()
+    endif()
+endfunction()
+
+# Similar to MocoAddInstallRPATH, but specifically for adding an absolute
+# run-path.
+#
+# TARGET: The CMake target to which the run-path should be added.
+# TO: The path (relative to the Moco installation root) where the dependent
+#   library is located.
+function(MocoAddInstallRPATHAbsolute)
+    set(options)
+    set(oneValueArgs TARGET TO)
+    set(multiValueArgs)
+    cmake_parse_arguments(
+            MOCORP "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+
+    set_property(TARGET ${MOCORP_TARGET} APPEND PROPERTY INSTALL_RPATH
+            "${CMAKE_INSTALL_PREFIX}/${MOCORP_TO}")
+endfunction()

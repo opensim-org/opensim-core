@@ -125,6 +125,8 @@ if(${MOCO_INSTALL_UNIX_FHS})
     # Don't want to put source files in share/java.
     set(MOCO_INSTALL_JAVASRCDIR "${CMAKE_INSTALL_DATAROOTDIR}/OpenSim/java")
     set(MOCO_INSTALL_APIEXDIR "${CMAKE_INSTALL_DOCDIR}/Code")
+    # Actually determined by OpenSim's OPENSIM_INSTALL_UNIX_FHS:
+    set(MOCO_INSTALL_SIMBODYDIR ".")
 
 else()
 
@@ -144,6 +146,7 @@ else()
     set(MOCO_INSTALL_JAVAJARDIR sdk/Java)
     set(MOCO_INSTALL_JAVASRCDIR sdk/Java)
     set(MOCO_INSTALL_APIEXDIR Resources/Code)
+    set(MOCO_INSTALL_SIMBODYDIR sdk/Simbody)
 
 endif()
 

@@ -29,5 +29,6 @@
 #include <Moco/Components/DeGrooteFregly2016Muscle.h>
 #include <Moco/MocoUtilities.h>
 #include <Moco/Components/ModelFactory.h>
+#include <Moco/Components/PositionMotion.h>
 
 #endif // MOCO_OPENSIM_HEADERS_MOCO_H_

@@ -122,15 +122,9 @@ if (MOCO_WITH_TROPTER)
     target_compile_definitions(osimMoco PUBLIC MOCO_WITH_TROPTER)
 endif ()
 
-if (MOCO_COPY_DEPENDENCIES)
-    if (APPLE)
-        set(rpath_macro "\@loader_path")
-    elseif (UNIX)
-        set(rpath_macro "\$ORIGIN")
-    endif ()
-    set_property(TARGET osimMoco APPEND PROPERTY
-            INSTALL_RPATH "${rpath_macro}/")
-endif ()
+MocoAddInstallRPATHSelf(TARGET osimMoco LOADER)
+MocoAddInstallRPATHSimbody(TARGET osimMoco LOADER
+        FROM "${CMAKE_INSTALL_LIBDIR}")
 
 if (WIN32)
     add_dependencies(osimMoco Copy_OpenSim_DLLs)
