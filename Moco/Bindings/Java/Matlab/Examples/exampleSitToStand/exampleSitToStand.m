@@ -4,32 +4,49 @@ function exampleSitToStand
 import org.opensim.modeling.*;
 
 %% Part 1: Torque-driven Predictive Problem
-% Part 1a: Get a pre-configured MocoStudy and set a torque-driven model on
-% the underlying MocoProblem.
+% Part 1a: Create a new MocoStudy.
 
-% Part 1b: Add a MocoControlCost to the problem.
+% Part 1b: Initialize the problem and set the model.
 
-% Part 1c: Update the underlying MocoCasADiSolver with the new problem.
+% Part 1c: Set bounds on the problem.
+problem.setTimeBounds(0, 1);
+% The position bounds specify that the model should start in a crouch and
+% finish standing up.
+problem.setStateInfo('/jointset/hip_r/hip_flexion_r/value', ...
+    MocoBounds(-2, 0.5), MocoInitialBounds(-2), MocoFinalBounds(0));
+% Use the compact syntax.
+problem.setStateInfo('/jointset/knee_r/knee_angle_r/value', [-2, 0], -2, 0);
+problem.setStateInfo('/jointset/ankle_r/ankle_angle_r/value', ...
+    [-0.5, 0.7], -0.5, 0);
+% The velocity bounds specify that the model coordinates should start and
+% end at zero. This function accepts string patterns to set multiple state infos
+% at once. The '.*' is replaced to match any states compatible with the pattern.
+% The empty brackets indicate that the default speed range, [-50, 50], will be
+% used for all speed states.
+problem.setStateInfoPattern('/jointset/.*/speed', [], 0, 0);
 
-% Part 1d: Solve, write the solution to file, and visualize.
+% Part 1d: Add a MocoControlCost to the problem.
+
+% Part 1e: Configure the solver.
+
+% Part 1f: Solve, write the solution to file, and visualize.
 
 %% Part 2: Torque-driven Tracking Problem
-% Part 2a: Get a fresh MocoStudy and set the torque-driven model on the
-% problem.
+% Part 2a: Construct a tracking reference TimeSeriesTable using filtered data 
+% from the previous solution. Use a TableProcessor, which accepts a base table
+% and can append operations to modify the table.
 
 % Part 2b: Add a MocoStateTrackingCost() to the problem using the states
-% from the predictive problem, and set weights to zero for states associated
-% with the dependent coordinate in the model's knee CoordinateCoupler
-% constraint.
+% from the predictive problem (via the TableProcessor we just created), and set 
+% weights to zero for states associated with the dependent coordinate in the 
+% model's knee CoordinateCoupler constraint. 
 
-% Part 2c: Add a MocoControlCost() with a low weight to avoid oscillations
-% in the solution.
+% Part 2c: Reduce the control cost weight so it now acts as a regularization 
+% term.
 
-% Part 2d: Update the underlying MocoCasADiSolver with the new problem.
+% Part 2d: Set the initial guess using the predictive problem solution.
 
-% Part 2e: Set the initial guess using the predictive problem solution.
-
-% Part 2f: Solve, write the solution to file, and visualize.
+% Part 2e: Solve, write the solution to file, and visualize.
 
 %% Part 3: Compare Predictive and Tracking Solutions
 % This is a convenience function provided for you. See below for the
@@ -37,54 +54,46 @@ import org.opensim.modeling.*;
 compareSolutions(predictSolution, trackingSolution)
 
 %% Part 4: Muscle-driven Inverse Problem
+% Part 4a: Create a MocoInverse tool instance.
 
-%% Part 5: Add an assistive device to the knee.
+% Part 4b: Provide the model via a ModelProcessor. Similar to the TableProcessor,
+% you can add operators to modify the base model.
+
+% Part 4c: Set the reference kinematics using the same TableProcessor we used
+% in the tracking problem. Set the time range and allow extra columns in the 
+% kinematics to skip controls data in the reference.
+
+% Part 4d: Set the mesh interval and convergence tolerance, and enable
+% minimizing muscle activation states.
+
+% Part 4e: Append additional outputs path for quantities that are calculated 
+% post-hoc using the inverse problem solution.
+% inverse.append_output_paths('.*normalized_fiber_length');
+% inverse.append_output_paths('.*passive_force_multiplier');
+
+% Part 4f: Solve! Write the solution and outputs.
+
+%% Part 5: Muscle-driven Inverse Problem with Passive Assistance
+% Part 5a: Create a new muscle-driven model, now adding a SpringGeneralizedForce 
+% about the knee coordinate.
+
+% Part 5b: Create a ModelProcessor similar to the previous one, using the same 
+% reserve actuator strength so we can compare muscle activity accurately.
+
+% Part 5c: Solve and write solution.
 
 %% Part 6: Compare unassisted and assisted Inverse Problems.
+fprintf('Cost without device: %f\n', ...
+        inverseSolution.getMocoSolution().getObjective());
+fprintf('Cost with device: %f\n', ...
+    inverseDeviceSolution.getMocoSolution().getObjective());
+% This is a convenience function provided for you. See below for the
+% implementation details.
 compareInverseSolutions(inverseSolution, inverseDeviceSolution);
 
 end
 
-function [moco] = configureMocoStudy()
-
-import org.opensim.modeling.*;
-
-% Create a new MocoStudy.
-moco = MocoStudy();
-
-% Configure the solver.
-solver = moco.initCasADiSolver();
-solver.set_num_mesh_points(25);
-solver.set_dynamics_mode('implicit');
-solver.set_optim_convergence_tolerance(1e-4);
-solver.set_optim_constraint_tolerance(1e-4);
-solver.set_optim_solver('ipopt');
-solver.set_transcription_scheme('hermite-simpson');
-solver.set_enforce_constraint_derivatives(true);
-solver.set_optim_hessian_approximation('limited-memory');
-solver.set_optim_finite_difference_scheme('forward');
-
-% Set bounds on the problem.
-problem = moco.updProblem();
-problem.setTimeBounds(0, 1);
-% The position bounds specify that the model should start in a crouch and
-% finish standing up.
-problem.setStateInfo('/jointset/hip_r/hip_flexion_r/value', ...
-    MocoBounds(-2, 0.5), MocoInitialBounds(-2), MocoFinalBounds(0));
-problem.setStateInfo('/jointset/knee_r/knee_angle_r/value', ...
-    [-2, 0], -2, 0);
-problem.setStateInfo('/jointset/ankle_r/ankle_angle_r/value', ...
-    [-0.5, 0.7], -0.5, 0);
-% The velocity bounds specify that the model coordinates should start and
-% end at zero.
-problem.setStateInfo('/jointset/hip_r/hip_flexion_r/speed', ...
-    MocoBounds(-50, 50), MocoInitialBounds(0), MocoFinalBounds(0));
-problem.setStateInfo('/jointset/knee_r/knee_angle_r/speed', ...
-    [-50, 50], 0, 0);
-problem.setStateInfo('/jointset/ankle_r/ankle_angle_r/speed', ...
-    [-50, 50], 0, 0);
-
-end
+%% Model Creation and Plotting Convenience Functions 
 
 function addCoordinateActuator(model, coordName, optForce)
 
@@ -129,20 +138,19 @@ import org.opensim.modeling.*;
 model = Model('sitToStand_3dof9musc.osim');
 model.finalizeConnections();
 
-% Replace the muscles in the model with muscles from DeGroote, Fregly,
-% et al. 2016, "Evaluation of Direct Collocation Optimal Control Problem
+% Replace the muscles in the model with muscles from DeGroote, Fregly, 
+% et al. 2016, "Evaluation of Direct Collocation Optimal Control Problem 
 % Formulations for Solving the Muscle Redundancy Problem". These muscles
 % have the same properties as the original muscles but their characteristic
-% curves are optimized for direct collocation (i.e. no discontinuities,
+% curves are optimized for direct collocation (i.e. no discontinuities, 
 % twice differentiable, etc).
 DeGrooteFregly2016Muscle().replaceMuscles(model);
 
-% Turn off activation dynamics and muscle-tendon dynamics to keep the
-% problem simple.
+% Make a few adjustments to help the muscle-driven problems converge.
 for m = 0:model.getMuscles().getSize()-1
     musc = model.updMuscles().get(m);
     musc.set_ignore_tendon_compliance(true);
-    musc.set_max_isometric_force(2 * musc.get_max_isometric_force());
+    musc.set_max_isometric_force(2*musc.get_max_isometric_force());
     dgf = DeGrooteFregly2016Muscle.safeDownCast(musc);
     dgf.set_active_force_width_scale(1.5);
     if strcmp(char(musc.getName()), 'soleus_r')
@@ -155,9 +163,9 @@ end
 
 end
 
-function compareSolutions(predictSolution, trackingSolution)
+function compareSolutions(predictSolution, trackingSolution) 
 
-%% States.
+% States.
 figure(1);
 stateNames = predictSolution.getStateNames();
 numStates = stateNames.size();
@@ -185,7 +193,7 @@ for i = 0:numStates-1
     end
 end
 
-%% Controls.
+% Controls.
 figure(2);
 controlNames = predictSolution.getControlNames();
 numControls = controlNames.size();
@@ -200,7 +208,7 @@ for i = 0:numControls-1
          trackingSolution.getControlMat(controlNames.get(i)), '--b', ...
          'linewidth', 2.5);
     hold off
-    title(controlNames.get(i).toCharArray', 'Interpreter', 'none')
+    title(controlNames.get(i).toCharArray', 'Interpreter', 'none')        
     xlabel('time (s)')
     ylabel('value')
     if i == 0
