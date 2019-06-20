@@ -32,10 +32,10 @@ Usage:
     Print a template XML file for the provided tool.
     <tool> can be "GlobalStaticOptimization", "INDYGO", or "MocoStudy"
 
-  opensim-moco [--library=<path>] visualize <model-or-omoco-file> [<iterate-file>]
+  opensim-moco [--library=<path>] visualize <model-or-omoco-file> [<trajectory-file>]
 
-    Visualize an OpenSim model (.osim file) with a MocoIterate, if provided.
-    If an iterate is not provided, the model is visualized with its default
+    Visualize an OpenSim model (.osim file) with a MocoTrajectory, if provided.
+    If a trajectory is not provided, the model is visualized with its default
     state.
     You can provide a MocoStudy setup file (.omoco) instead of a model.
 
@@ -89,7 +89,7 @@ void print_xml(std::string className) {
     Object::setSerializeAllDefaults(false);
 }
 
-void visualize(std::string file, std::string iterate_file) {
+void visualize(std::string file, std::string trajectory_file) {
     std::unique_ptr<Model> model;
     if (file.rfind(".osim") != std::string::npos) {
         model = OpenSim::make_unique<Model>(file);
@@ -98,7 +98,7 @@ void visualize(std::string file, std::string iterate_file) {
         const MocoPhase& phase = moco.getProblem().getPhase(0);
         model.reset(phase.getModel().clone());
     }
-    if (iterate_file.empty()) {
+    if (trajectory_file.empty()) {
         // No motion provided.
         model->setUseVisualizer(true);
         auto state = model->initSystem();
@@ -107,8 +107,8 @@ void visualize(std::string file, std::string iterate_file) {
         // Wait for user input.
         std::cin.get();
     } else {
-        MocoIterate iterate(iterate_file);
-        visualize(*model, iterate.exportToStatesStorage());
+        MocoTrajectory trajectory(trajectory_file);
+        visualize(*model, trajectory.exportToStatesStorage());
     }
 }
 
@@ -169,11 +169,11 @@ int main(int argc, char* argv[]) {
                     "Incorrect number of arguments.");
 
             std::string file(argv[2 + offset]);
-            std::string iterate;
+            std::string trajectory;
             if (argc == 4) {
-                iterate = argv[3 + offset];
+                trajectory = argv[3 + offset];
             }
-            visualize(file, iterate);
+            visualize(file, trajectory);
 
         } else {
             std::cout << "Unrecognized arguments. See usage with -h or --help"
