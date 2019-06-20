@@ -1,0 +1,7 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Run Tests" type="CLionExternalRunConfiguration" factoryName="Application" WORKING_DIR="file://$CMakeCurrentBuildDir$" PASS_PARENT_ENVS_2="true" PROJECT_NAME="Moco" TARGET_NAME="CTest" CONFIG_NAME="CTest">
+    <method v="2">
+      <option name="CLION.EXTERNAL.BUILD" enabled="true" />
+    </method>
+  </configuration>
+</component>

@@ -17,10 +17,13 @@ file(COPY "Examples/exampleSitToStand/sitToStand_3dof9musc.osim"
      DESTINATION 
         "${CMAKE_BINARY_DIR}/Moco/Sandbox/sandboxSitToStand")
       
-# Copy example model and data files to used in Examples.      
+# Copy example model and data files to use in Examples.
 file(COPY "Examples/exampleSitToStand/sitToStand_3dof9musc.osim"
      DESTINATION 
         "${CMAKE_BINARY_DIR}/Moco/Examples/C++/exampleSitToStand")
+
+install(DIRECTORY "${CMAKE_SOURCE_DIR}/Moco/Geometry"
+        DESTINATION "${MOCO_INSTALL_MATLABEXDIR}/exampleSitToStand")
     
 # The configureMoco.m script contains paths into the Moco installation
 # that may be different on different platforms, so we configure it with CMake

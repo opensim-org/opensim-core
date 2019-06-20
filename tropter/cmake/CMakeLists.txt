@@ -1,8 +1,10 @@
 
 if(TROPTER_COPY_DEPENDENCIES AND APPLE)
-    # Temporary hack to package dependencies on Macs.
-    # TODO if we're building a standalone binary distribution, we should
-    # use superbuild to build the dependencies.
+    get_filename_component(gcc_libdir "${pkgcfg_lib_IPOPT_gfortran}" DIRECTORY)
+
+    file(GLOB gfortran "${gcc_libdir}/libgfortran*.dylib")
+    file(GLOB quadmath "${gcc_libdir}/libquadmath*.dylib")
+
     install(FILES
             ${ADOLC_DIR}/lib64/libadolc.2.dylib
             ${ADOLC_DIR}/lib64/libadolc.dylib
@@ -18,16 +20,9 @@ if(TROPTER_COPY_DEPENDENCIES AND APPLE)
             ${IPOPT_LIBDIR}/libcoinmetis.1.dylib
             ${IPOPT_LIBDIR}/libcoinmetis.dylib
 
-            # From Homebrew:
-            /usr/local/opt/gcc/lib/gcc/8/libgfortran.5.dylib
-            /usr/local/lib/gcc/7/libgcc_s.1.dylib
-            /usr/local/opt/gcc/lib/gcc/8/libquadmath.0.dylib
-
-            # TODO: Parse and use
-            # ${pkgcfg_lib_IPOPT_gfortran}
-            # ${pkgcfg_lib_IPOPT_quadmath}
-            # ${pkgcfg_lib_IPOPT_coinmetis}
-            # ${pkgcfg_lib_IPOPT_coinmumps}
+            ${gfortran}
+            ${quadmath}
+            ${gcc_libdir}/libgcc_s.1.dylib
 
             DESTINATION ${CMAKE_INSTALL_LIBDIR})
 

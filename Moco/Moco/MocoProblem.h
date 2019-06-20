@@ -341,12 +341,9 @@ public:
     const MocoPathConstraint& getPathConstraint(const std::string& name) const;
     MocoPathConstraint& updPathConstraint(const std::string& name);
 
-    /// @}
-
 protected: // Protected so that doxygen shows the properties.
     OpenSim_DECLARE_PROPERTY(
             model, ModelProcessor, "OpenSim Model to provide dynamics.");
-    // TODO error if not provided.
     OpenSim_DECLARE_PROPERTY(
             time_initial_bounds, MocoInitialBounds, "Bounds on initial value.");
     OpenSim_DECLARE_PROPERTY(
@@ -404,6 +401,7 @@ private:
 ///   - parameter variables (model properties)
 ///   - cost terms
 ///   - constraint equations
+///
 /// Currently, only single-phase problems are supported.
 /// This class has convenience methods to configure the first (0-th) phase.
 ///
@@ -428,6 +426,8 @@ public:
     /// Set the model to use for phase 0.
     /// @see MocoPhase::setModelCopy().
     Model* setModelCopy(Model model);
+    /// Update the model in phase 0.
+    Model& updModel() { return upd_phases(0).updModel(); }
     /// Set a model processor for phase 0.
     /// @see MocoPhase::setModelProcessor().
     void setModelProcessor(ModelProcessor model);
@@ -437,7 +437,9 @@ public:
     void setStateInfo(const std::string& name, const MocoBounds&,
             const MocoInitialBounds& = {}, const MocoFinalBounds& = {});
     /// Set bounds for all state variables for phase 0 whose path matches
-    /// the provided pattern (e.g. ".*/activation").
+    /// the provided pattern.
+    // TODO: We tried to give an example regex but it had characters that caused
+    // doxygen to not produce documentation for this entire file.
     void setStateInfoPattern(const std::string& pattern,
             const MocoBounds& bounds, const MocoInitialBounds& init = {},
             const MocoFinalBounds& final = {});
@@ -475,6 +477,8 @@ public:
     MocoCostType* addCost(std::unique_ptr<MocoCostType> cost) {
         return upd_phases(0).addCost(std::move(cost));
     }
+    /// Returns a reference to the cost with name "name" in phase 0.
+    MocoCost& updCost(const std::string& name);
     /// Add a constraint for phase 0.
     /// @see MocoPhase::addPathConstraint()
     template <typename MocoPCType, typename... Args>
@@ -495,10 +499,6 @@ public:
     /// Get a modifiable phase of the problem by index (starting index of 0).
     /// This accesses the internal phases property.
     const MocoPhase& getPhase(int index = 0) const { return get_phases(index); }
-    /// Update the model in phase 0.
-    Model& updModel() { return upd_phases(0).updModel(); }
-    /// Returns a reference to the cost with name "name" in phase 0.
-    MocoCost& updCost(const std::string& name);
 
 #ifndef SWIG // MocoProblemRep() is not copyable.
     /// Create an instance of MocoProblemRep, which fills in additional

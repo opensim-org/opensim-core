@@ -183,7 +183,7 @@ SetDefaultCMakeBuildType()
 ####################### Add dependencies below.
 
 AddDependency(NAME eigen
-              URL  https://bitbucket.org/eigen/eigen/get/3.3.4.zip)
+              URL  https://bitbucket.org/eigen/eigen/get/3.3.7.zip)
 
 include(colpack.cmake)
 
@@ -267,6 +267,7 @@ else()
                 COMMAND <SOURCE_DIR>/configure --prefix=<INSTALL_DIR>
                                                --enable-sparse
                                                --with-colpack=${CMAKE_INSTALL_PREFIX}/colpack
+                                               --with-boost=no
             BUILD_COMMAND ${CMAKE_MAKE_PROGRAM} ${BUILD_FLAGS}
             INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install)
     endif()

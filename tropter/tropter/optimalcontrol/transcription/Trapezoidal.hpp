@@ -626,8 +626,7 @@ print_constraint_values(const Iterate& ocp_vars,
     // bound.
 
     // We want to be able to restore the stream's original formatting.
-    std::ios orig_fmt(nullptr);
-    orig_fmt.copyfmt(stream);
+    StreamFormat streamFormat(stream);
 
     // Gather and organize all constraint values and bounds.
     VectorX<T> vars = construct_iterate(ocp_vars).template cast<T>();
@@ -974,9 +973,6 @@ print_constraint_values(const Iterate& ocp_vars,
         }
         stream << std::endl;
     }
-
-    // Reset the IO format back to what it was before invoking this function.
-    stream.copyfmt(orig_fmt);
 }
 
 template<typename T>

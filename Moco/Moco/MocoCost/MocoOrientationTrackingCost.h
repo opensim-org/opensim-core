@@ -26,6 +26,10 @@
 #include <OpenSim/Common/TimeSeriesTable.h>
 #include <OpenSim/Simulation/Model/Frame.h>
 
+namespace OpenSim {
+
+using SimTK::Rotation;
+
 /// The squared difference between a model frame's orientation and a reference
 /// orientation value, summed over the frames for which a reference is provided,
 /// and integrated over the phase. This can be used to track orientation
@@ -51,10 +55,6 @@
 /// data, so it is recommended to filter the data in the reference you provide
 /// to the cost.
 /// @ingroup mococost
-namespace OpenSim {
-
-using SimTK::Rotation;
-
 class OSIMMOCO_API MocoOrientationTrackingCost : public MocoCost {
     OpenSim_DECLARE_CONCRETE_OBJECT(MocoOrientationTrackingCost, MocoCost);
 

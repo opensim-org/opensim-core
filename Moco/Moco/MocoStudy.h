@@ -53,7 +53,7 @@ class MocoCasADiSolver;
 /// You can then call solve() again, if you wish.
 ///
 /// Saving the study setup to a file
-/// -------------------------------
+/// --------------------------------
 /// You can save the MocoStudy to a file by calling MocoStudy::print(), and you
 /// can load the setup using MocoStudy(const std::string& omocoFile).
 /// MocoStudy setup files have a `.omoco` extension.
@@ -68,9 +68,6 @@ class MocoCasADiSolver;
 /// solvers, but there is no timeline for this. If you require additional
 /// features or enhancements to the solver, please consider contributing to
 /// **tropter**.
-
-// TODO rename to MocoFramework.
-
 class OSIMMOCO_API MocoStudy : public Object {
     OpenSim_DECLARE_CONCRETE_OBJECT(MocoStudy, Object);
 

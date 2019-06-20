@@ -1,0 +1,51 @@
+<?xml version="1.0"?>
+<VTKFile type="PolyData" version="0.1" byte_order="LittleEndian" compressor="vtkZLibDataCompressor">
+  <PolyData>
+    <Piece NumberOfPoints="7" NumberOfVerts="0" NumberOfLines="1" NumberOfStrips="0" NumberOfPolys="0">
+      <PointData TCoords="TCoords_">
+        <DataArray type="Float32" Name="TCoords_" NumberOfComponents="2" format="ascii" RangeMin="0" RangeMax="1">
+          0 0 0.16666667163 0 0.33333334327 0
+          0.5 0 0.66666668653 0 0.83333331347 0
+          1 0
+        </DataArray>
+      </PointData>
+      <CellData>
+      </CellData>
+      <Points>
+        <DataArray type="Float32" Name="Array 10BB1DF8" NumberOfComponents="3" format="ascii" RangeMin="0" RangeMax="0.5">
+          -0.5 0 0 -0.33333334327 0 0
+          -0.16666667163 0 0 0 0 0
+          0.16666667163 0 0 0.33333334327 0 0
+          0.5 0 0
+        </DataArray>
+      </Points>
+      <Verts>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="1e+299" RangeMax="-1e+299">
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="1e+299" RangeMax="-1e+299">
+        </DataArray>
+      </Verts>
+      <Lines>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="1e+299" RangeMax="-1e+299">
+          0 1 2 3 4 5
+          6
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="1e+299" RangeMax="-1e+299">
+          7
+        </DataArray>
+      </Lines>
+      <Strips>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="1e+299" RangeMax="-1e+299">
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="1e+299" RangeMax="-1e+299">
+        </DataArray>
+      </Strips>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii" RangeMin="1e+299" RangeMax="-1e+299">
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii" RangeMin="1e+299" RangeMax="-1e+299">
+        </DataArray>
+      </Polys>
+    </Piece>
+  </PolyData>
+</VTKFile>

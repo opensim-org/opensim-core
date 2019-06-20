@@ -330,7 +330,8 @@ private:
 
         // Update the model and state.
         applyParametersToModelProperties(parameters, *mocoProblemRep);
-        convertToSimTKState(time, multibody_states, modelBase, simtkStateBase, false);
+        convertToSimTKState(
+                time, multibody_states, modelBase, simtkStateBase, false);
         modelBase.realizeVelocity(simtkStateBase);
 
         // Apply velocity correction to qdot if at a mesh interval midpoint.
@@ -369,6 +370,13 @@ private:
 
         m_jar->leave(std::move(mocoProblemRep));
     }
+    std::vector<std::string> createKinematicConstraintEquationNamesImpl() const override {
+        auto mocoProblemRep = m_jar->take();
+        const auto names = mocoProblemRep->getKinematicConstraintEquationNames(
+                getEnforceConstraintDerivatives());
+        m_jar->leave(std::move(mocoProblemRep));
+        return names;
+    }
     void intermediateCallback(const CasOC::Iterate& iterate) const override {
         std::string filename = format("MocoCasADiSolver_%s_iterate%06i.sto",
                 m_formattedTimeString, iterate.iteration);
@@ -392,8 +400,9 @@ private:
     /// slots in Simbody's Y vector.
     /// It's fine for the size of `states` to be less than the size of Y; only
     /// the first states.size1() values are copied.
-    inline void convertToSimTKState(const double& time, const casadi::DM& states,
-            const Model& model, SimTK::State& simtkState, bool copyAuxStates) const {
+    inline void convertToSimTKState(const double& time,
+            const casadi::DM& states, const Model& model,
+            SimTK::State& simtkState, bool copyAuxStates) const {
         simtkState.setTime(time);
         // Assign the generalized coordinates. We know we have NU generalized
         // speeds because we do not yet support quaternions.
@@ -418,7 +427,7 @@ private:
         convertToSimTKState(time, states, model, simtkState, copyAuxStates);
         auto& simtkControls = model.updControls(simtkState);
         for (int ic = 0; ic < getNumControls(); ++ic) {
-           simtkControls[m_modelControlIndices[ic]] = *(controls.ptr() + ic);
+            simtkControls[m_modelControlIndices[ic]] = *(controls.ptr() + ic);
         }
         model.realizeVelocity(simtkState);
         model.setControls(simtkState, simtkControls);

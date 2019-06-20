@@ -153,7 +153,6 @@ public:
     /// increasing (no duplicate times), and end with 1.
     void setMesh(const std::vector<double>& mesh);
 
-
 protected:
     OpenSim_DECLARE_PROPERTY(guess_file, std::string,
             "A MocoIterate file storing an initial guess.");
