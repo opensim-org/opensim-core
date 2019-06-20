@@ -187,7 +187,7 @@ void ball2d() {
     MocoTropterSolver& ms = moco.initSolver();
     ms.set_num_mesh_points(500);
 
-    MocoIterate guess = ms.createGuess();
+    MocoTrajectory guess = ms.createGuess();
 
     // Setting this guess reduces the number of iterations from 90 to 6.
     // Can tweak the guess to test convergence (~50 iterations):
@@ -281,7 +281,7 @@ void pendulum() {
 
     MocoTropterSolver& ms = moco.initSolver();
     ms.set_num_mesh_points(500);
-    MocoIterate guess = ms.createGuess();
+    MocoTrajectory guess = ms.createGuess();
     guess.setStatesTrajectory(statesTimeSteppingTable);
 
     ms.setGuess(guess);
@@ -371,7 +371,7 @@ void pendulumActivationCoordinateActuator() {
 
     MocoTropterSolver& ms = moco.initSolver();
     ms.set_num_mesh_points(500);
-    MocoIterate guess = ms.createGuess();
+    MocoTrajectory guess = ms.createGuess();
     guess.setStatesTrajectory(statesTimeSteppingTable);
 
     ms.setGuess(guess);
@@ -621,7 +621,7 @@ void slip(double rzvalue0 = 0, double rzspeed0 = 0) {
     MocoTropterSolver& ms = moco.initSolver();
     ms.set_num_mesh_points(500);
     //ms.set_optim_max_iterations(2);
-    MocoIterate guess = ms.createGuess();
+    MocoTrajectory guess = ms.createGuess();
     //statesTimeSteppingTable.updMatrix() +=
     //        0.1 * SimTK::Test::randMatrix(guess.getNumTimes(), 6);
     //statesTimeSteppingTable.updDependentColumn("planar/ty/value") +=
@@ -790,7 +790,7 @@ void slipSolveForForce(double rzvalue0 = 0, double rzspeed0 = 0) {
     // time is about 5 minutes whether or not the convergence tolerance is set.
     // ms.set_optim_convergence_tolerance(1e-2);
     // ms.set_optim_constraint_tolerance(1e-2);
-    MocoIterate guess = ms.createGuess();
+    MocoTrajectory guess = ms.createGuess();
     guess.setStatesTrajectory(statesToTrack, true);
     ms.setGuess(guess);
 

@@ -449,7 +449,7 @@ std::unique_ptr<Model> createDoublePendulumModel() {
 
 /// Run a forward simulation using controls from an OCP solution and compare the
 /// state trajectories.
-MocoIterate runForwardSimulation(
+MocoTrajectory runForwardSimulation(
         Model model, const MocoSolution& solution, const double& tol) {
 
     // Get actuator names.
@@ -507,11 +507,11 @@ MocoIterate runForwardSimulation(
     TimeSeriesTable controls;
     controls = controlsRep->getTable();
 
-    // Create a MocoIterate to facilitate states trajectory comparison (with
+    // Create a MocoTrajectory to facilitate states trajectory comparison (with
     // dummy data for the multipliers, which we'll ignore).
     const auto& statesTimes = states.getIndependentColumn();
     SimTK::Vector timeVec((int)statesTimes.size(), statesTimes.data(), true);
-    auto forwardSolution = MocoIterate(timeVec, states.getColumnLabels(),
+    auto forwardSolution = MocoTrajectory(timeVec, states.getColumnLabels(),
             controls.getColumnLabels(), states.getColumnLabels(), {},
             states.getMatrix(), controls.getMatrix(), states.getMatrix(),
             SimTK::RowVector(0));
@@ -750,7 +750,7 @@ void testDoublePendulumPrescribedMotion(MocoSolution& couplerSolution,
     ms.set_dynamics_mode(dynamics_mode);
 
     // Set guess based on coupler solution trajectory.
-    MocoIterate guess(ms.createGuess("bounds"));
+    MocoTrajectory guess(ms.createGuess("bounds"));
     guess.setStatesTrajectory(statesTrajCoupler);
     ms.setGuess(guess);
 
@@ -792,11 +792,11 @@ void testDoublePendulumPrescribedMotion(MocoSolution& couplerSolution,
     TimeSeriesTable splineStateValues(
             indVec, depData, solution.getStateNames());
 
-    // Create a MocoIterate containing the splined state values. The splined
+    // Create a MocoTrajectory containing the splined state values. The splined
     // state values are also set for the controls and adjuncts as dummy data.
     const auto& statesTimes = splineStateValues.getIndependentColumn();
     SimTK::Vector time((int)statesTimes.size(), statesTimes.data(), true);
-    auto mocoIterSpline = MocoIterate(time, splineStateValues.getColumnLabels(),
+    auto mocoIterSpline = MocoTrajectory(time, splineStateValues.getColumnLabels(),
             splineStateValues.getColumnLabels(),
             splineStateValues.getColumnLabels(), {},
             splineStateValues.getMatrix(), splineStateValues.getMatrix(),
@@ -980,7 +980,7 @@ TEMPLATE_TEST_CASE(
     // controllers for the model actuators and see if we get the correct states
     // trajectory back.
     // TODO why does the forward solution match so poorly here?
-    MocoIterate forwardSolution = runForwardSimulation(*model, solution, 2);
+    MocoTrajectory forwardSolution = runForwardSimulation(*model, solution, 2);
     // moco.visualize(forwardSolution);
 
     // Test de/serialization.
@@ -1344,7 +1344,7 @@ TEMPLATE_TEST_CASE(
             arg[0] = solution.getTime()[itime];
             expectedV[itime] = violateLower.calcValue(arg);
         }
-        MocoIterate expected = solution;
+        MocoTrajectory expected = solution;
         expected.setControl("/tau0", expectedV);
 
         CHECK(solution.compareContinuousVariablesRMS(

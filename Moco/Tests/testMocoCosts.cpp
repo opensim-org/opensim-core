@@ -270,7 +270,7 @@ TEMPLATE_TEST_CASE("Test MocoControlTrackingCost", "", MocoTropterSolver,
     // initial guess.
     auto& solver = moco.updSolver<TestType>();
     solver.resetProblem(problem);
-    MocoIterate guessTracking = solutionEffort;
+    MocoTrajectory guessTracking = solutionEffort;
     guessTracking.randomizeAdd();
     solver.setGuess(guessTracking);
     auto solutionTracking = moco.solve();

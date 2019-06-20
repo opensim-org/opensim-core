@@ -122,11 +122,11 @@ public:
     /// @precondition
     ///     The MocoProblem must contain the model corresponding to
     ///     the provided iterate.
-    void visualize(const MocoIterate& it) const;
+    void visualize(const MocoTrajectory& it) const;
 
     /// TODO
     TimeSeriesTable analyze(
-            const MocoIterate& it, std::vector<std::string> outputPaths) const;
+            const MocoTrajectory& it, std::vector<std::string> outputPaths) const;
 
     /// @name Using other solvers
     /// @{

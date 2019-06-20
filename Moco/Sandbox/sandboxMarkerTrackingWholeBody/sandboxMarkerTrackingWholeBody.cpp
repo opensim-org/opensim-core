@@ -273,7 +273,7 @@ MocoSolution solveMarkerTrackingProblem(
     // Create guess.
     // =============
     if (prevSolutionInitialization) {
-        MocoIterate prevSolution(
+        MocoTrajectory prevSolution(
             "sandboxMarkerTrackingWholeBody_marker_solution.sto");
         ms.setGuess(prevSolution);
     } else {

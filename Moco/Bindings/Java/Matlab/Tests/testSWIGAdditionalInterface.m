@@ -100,7 +100,7 @@ assert(18 == ph0.getControlInfo('/actuator').getBounds().getLower());
 assert(18 == ph0.getControlInfo('/actuator').getBounds().getUpper());
 
 
-%% MocoIterate
+%% MocoTrajectory
 time = Vector(3, 0);
 time.set(0, 0);
 time.set(1, 0.1);
@@ -121,7 +121,7 @@ st = Matrix(3, 2);
 ct = Matrix(3, 3);
 mt = Matrix(3, 1);
 p = RowVector(2, 0.0);
-it = MocoIterate(time, sn, cn, mn, pn, st, ct, mt, p);
+it = MocoTrajectory(time, sn, cn, mn, pn, st, ct, mt, p);
 
 it.setTime([15, 25, 35]);
 assert(it.getTime().get(0) == 15);

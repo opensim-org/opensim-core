@@ -18,7 +18,7 @@ using namespace OpenSim;
 using namespace SimTK;
 %}
 
-// Add support for converting between NumPy and C arrays (for MocoIterate).
+// Add support for converting between NumPy and C arrays (for MocoTrajectory).
 %include "numpy.i"
 %init %{
     import_array();
@@ -133,7 +133,7 @@ using namespace SimTK;
         args[3] = self._convert(MocoFinalBounds, args[3])
 %}
 
-// MocoIterate's functions contain lots of matrices, and Python users
+// MocoTrajectory's functions contain lots of matrices, and Python users
 // feel more comfortable providing/getting these matrices as NumPy types rather
 // than as SimTK numeric types. We can use SWIG NumPy typemaps to accomplish
 // this.
@@ -180,8 +180,8 @@ using namespace SimTK;
     (int nrow, int ncol, double* multsOut),
     (int nrow, int ncol, double* derivsOut)
 };
-%extend OpenSim::MocoIterate {
-    MocoIterate(
+%extend OpenSim::MocoTrajectory {
+    MocoTrajectory(
             int ntime,
             double* time,
             std::vector<std::string> state_names,
@@ -192,7 +192,7 @@ using namespace SimTK;
             int nrowcontrols, int ncolcontrols, double* controls,
             int nrowmults, int ncolmults, double* mults,
             int nparams, double* params) {
-        return new MocoIterate(SimTK::Vector(ntime, time, true),
+        return new MocoTrajectory(SimTK::Vector(ntime, time, true),
                         std::move(state_names),
                         std::move(control_names),
                         std::move(multiplier_names),
@@ -202,7 +202,7 @@ using namespace SimTK;
                         SimTK::Matrix(nrowmults, ncolmults, mults),
                         SimTK::RowVector(nparams, params, true));
     }
-    MocoIterate(
+    MocoTrajectory(
             int ntime,
             double* time,
             std::vector<std::string> state_names,
@@ -215,7 +215,7 @@ using namespace SimTK;
             int nrowmults, int ncolmults, double* mults,
             int nrowderivs, int ncolderivs, double* derivs,
             int nparams, double* params) {
-        return new MocoIterate(SimTK::Vector(ntime, time, true),
+        return new MocoTrajectory(SimTK::Vector(ntime, time, true),
                 std::move(state_names),
                 std::move(control_names),
                 std::move(multiplier_names),
