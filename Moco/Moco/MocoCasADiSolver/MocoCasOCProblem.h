@@ -67,7 +67,7 @@ inline casadi::DM convertToCasADiDM(const SimTK::Vector& simtkVec) {
 }
 
 /// This resamples the iterate to obtain values that lie on the mesh.
-inline CasOC::Iterate convertToCasOCIterate(const MocoIterate& mocoIt) {
+inline CasOC::Iterate convertToCasOCIterate(const MocoTrajectory& mocoIt) {
     CasOC::Iterate casIt;
     CasOC::VariablesDM& casVars = casIt.variables;
     using CasOC::Var;
@@ -125,8 +125,8 @@ inline SimTK::Matrix convertToSimTKMatrix(const casadi::DM& casMatrix) {
     return simtkMatrix;
 }
 
-template <typename TOut = MocoIterate>
-TOut convertToMocoIterate(const CasOC::Iterate& casIt) {
+template <typename TOut = MocoTrajectory>
+TOut convertToMocoTrajectory(const CasOC::Iterate& casIt) {
     SimTK::Matrix simtkStates;
     const auto& casVars = casIt.variables;
     using CasOC::Var;
@@ -163,12 +163,12 @@ TOut convertToMocoIterate(const CasOC::Iterate& casIt) {
     }
     SimTK::Vector simtkTimes = convertToSimTKVector(casIt.times);
 
-    TOut mocoIterate(simtkTimes, casIt.state_names, casIt.control_names,
+    TOut mocoTraj(simtkTimes, casIt.state_names, casIt.control_names,
             casIt.multiplier_names, derivativeNames, casIt.parameter_names,
             simtkStates, simtkControls, simtkMultipliers, simtkDerivatives,
             simtkParameters);
 
-    // Append slack variables. MocoIterate requires the slack variables to be
+    // Append slack variables. MocoTrajectory requires the slack variables to be
     // the same length as its time vector, but it will not be if the
     // CasOC::Iterate was generated from a CasOC::Transcription object.
     // Therefore, slack variables are interpolated as necessary.
@@ -178,15 +178,15 @@ TOut convertToMocoIterate(const CasOC::Iterate& casIt) {
                 simtkTimes[0], simtkTimes[simtkTimes.size() - 1]);
         for (int i = 0; i < (int)casIt.slack_names.size(); ++i) {
             if (simtkSlacksLength != simtkTimes.size()) {
-                mocoIterate.appendSlack(casIt.slack_names[i],
+                mocoTraj.appendSlack(casIt.slack_names[i],
                         interpolate(slackTime, simtkSlacks.col(i), simtkTimes));
             } else {
-                mocoIterate.appendSlack(
+                mocoTraj.appendSlack(
                         casIt.slack_names[i], simtkSlacks.col(i));
             }
         }
     }
-    return mocoIterate;
+    return mocoTraj;
 }
 
 class MocoCasOCProblem : public CasOC::Problem {
@@ -329,7 +329,8 @@ private:
 
         // Update the model and state.
         applyParametersToModelProperties(parameters, *mocoProblemRep);
-        convertToSimTKState(time, multibody_states, modelBase, simtkStateBase, false);
+        convertToSimTKState(
+                time, multibody_states, modelBase, simtkStateBase, false);
         modelBase.realizeVelocity(simtkStateBase);
 
         // Apply velocity correction to qdot if at a mesh interval midpoint.
@@ -368,10 +369,17 @@ private:
 
         m_jar->leave(std::move(mocoProblemRep));
     }
+    std::vector<std::string> createKinematicConstraintEquationNamesImpl() const override {
+        auto mocoProblemRep = m_jar->take();
+        const auto names = mocoProblemRep->getKinematicConstraintEquationNames(
+                getEnforceConstraintDerivatives());
+        m_jar->leave(std::move(mocoProblemRep));
+        return names;
+    }
     void intermediateCallback(const CasOC::Iterate& iterate) const override {
         std::string filename = format("MocoCasADiSolver_%s_iterate%06i.sto",
                 m_formattedTimeString, iterate.iteration);
-        convertToMocoIterate(iterate).write(filename);
+        convertToMocoTrajectory(iterate).write(filename);
     }
 
 private:
@@ -391,8 +399,9 @@ private:
     /// slots in Simbody's Y vector.
     /// It's fine for the size of `states` to be less than the size of Y; only
     /// the first states.size1() values are copied.
-    inline void convertToSimTKState(const double& time, const casadi::DM& states,
-            const Model& model, SimTK::State& simtkState, bool copyAuxStates) const {
+    inline void convertToSimTKState(const double& time,
+            const casadi::DM& states, const Model& model,
+            SimTK::State& simtkState, bool copyAuxStates) const {
         simtkState.setTime(time);
         // Assign the generalized coordinates. We know we have NU generalized
         // speeds because we do not yet support quaternions.
@@ -417,7 +426,7 @@ private:
         convertToSimTKState(time, states, model, simtkState, copyAuxStates);
         auto& simtkControls = model.updControls(simtkState);
         for (int ic = 0; ic < getNumControls(); ++ic) {
-           simtkControls[m_modelControlIndices[ic]] = *(controls.ptr() + ic);
+            simtkControls[m_modelControlIndices[ic]] = *(controls.ptr() + ic);
         }
         model.realizeVelocity(simtkState);
         model.setControls(simtkState, simtkControls);

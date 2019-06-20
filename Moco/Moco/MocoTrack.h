@@ -30,7 +30,7 @@ namespace OpenSim {
 
 class MocoWeightSet;
 class MocoProblem;
-class MocoIterate;
+class MocoTrajectory;
 
 /// MocoTrack
 /// ---------
@@ -202,7 +202,7 @@ public:
 
     OpenSim_DECLARE_PROPERTY(control_effort_weight, double, 
         "The weight on the control effort minimization cost term, if it "
-        "exists. Default: 0.001")
+        "exists. Default: 0.001");
 
     MocoTrack() { constructProperties(); }
 
@@ -228,7 +228,7 @@ private:
     // Convenience method for applying data from a states reference to the 
     // problem guess.
     void applyStatesToGuess(const TimeSeriesTable& states, const Model& model,
-        MocoIterate& guess);
+            MocoTrajectory& guess);
 };
 
 } // namespace OpenSim
