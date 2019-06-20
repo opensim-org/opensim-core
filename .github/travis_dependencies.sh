@@ -1,4 +1,7 @@
-bash .github/travis_common.sh 
+# Terminate on error, print every line
+set -ev
+
+bash .github/travis_common.sh
 
 # Run superbuild to download, configure, build and install dependencies.
 mkdir $TRAVIS_BUILD_DIR/../opensim-moco_dependencies_build
