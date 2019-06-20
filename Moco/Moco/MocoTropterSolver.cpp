@@ -360,14 +360,16 @@ MocoSolution MocoTropterSolver::solveImpl() const {
     }
 
     // TODO move this to convert():
+    const long long elapsed = stopwatch.getElapsedTimeInNs();
     MocoSolver::setSolutionStats(mocoSolution, tropSolution.success,
             tropSolution.objective, tropSolution.status,
-            tropSolution.num_iterations);
+            tropSolution.num_iterations,
+            SimTK::nsToSec(elapsed));
 
     if (get_verbosity()) {
         std::cout << std::string(79, '-') << "\n";
         std::cout << "Elapsed real time: "
-                  << stopwatch.getElapsedTimeFormatted() << ".\n";
+                  << stopwatch.formatNs(elapsed) << ".\n";
         if (mocoSolution) {
             std::cout << "MocoTropterSolver succeeded!\n";
         } else {
