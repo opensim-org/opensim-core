@@ -68,5 +68,5 @@ TEST_CASE("MocoTrack gait10dof18musc") {
     MocoTrajectory std("std_testMocoTrackGait10dof18musc_solution.sto");
     const auto expected = std.getControlsTrajectory();
     CHECK(std.compareContinuousVariablesRMS(
-            solution, {{"controls",{}}}) < 1e-4);
+            solution, {{"controls",{}}}) < 1e-2);
 }
