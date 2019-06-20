@@ -1,3 +1,6 @@
+# Terminate on error, print every line
+set -ev
+
 cd $TRAVIS_BUILD_DIR
 # Stop build if comment contains [skip travis].
 if $(git log -n1 --format="%B" | grep --quiet '\[skip travis\]'); then exit; fi 
