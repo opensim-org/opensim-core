@@ -88,7 +88,7 @@ MocoSolution solveDoublePendulumSwingup(const std::string& dynamics_mode) {
     solver.set_transcription_scheme("trapezoidal");
     // solver.set_verbosity(2);
 
-    MocoIterate guess = solver.createGuess();
+    MocoTrajectory guess = solver.createGuess();
     guess.resampleWithNumTimes(2);
     guess.setTime({0, 1});
     guess.setState("/jointset/j0/q0/value", {0, -SimTK::Pi});
@@ -158,7 +158,7 @@ TEMPLATE_TEST_CASE("Similar solutions between implicit and explicit dynamics",
             derivTraj(i, 1) = explicitAccel[1];
             ++i;
         }
-        MocoIterate explicitWithDeriv(solution.getTime(),
+        MocoTrajectory explicitWithDeriv(solution.getTime(),
                 {{"derivatives",
                         {solutionImplicit.getDerivativeNames(), derivTraj}}});
         const double RMS = solutionImplicit.compareContinuousVariablesRMS(
@@ -241,22 +241,22 @@ TEMPLATE_TEST_CASE("Combining implicit dynamics with kinematic constraints",
     }
 }
 
-SCENARIO("Using MocoIterate with the implicit dynamics mode",
+SCENARIO("Using MocoTrajectory with the implicit dynamics mode",
         "[implicit][iterate]") {
-    GIVEN("MocoIterate with only derivatives") {
-        MocoIterate iterate;
+    GIVEN("MocoTrajectory with only derivatives") {
+        MocoTrajectory iterate;
         const_cast<SimTK::Matrix*>(&iterate.getDerivativesTrajectory())
                 ->resize(3, 2);
         THEN("it is not empty") { REQUIRE(!iterate.empty()); }
     }
-    GIVEN("MocoIterate with only derivative names") {
-        MocoIterate iterate;
+    GIVEN("MocoTrajectory with only derivative names") {
+        MocoTrajectory iterate;
         const_cast<std::vector<std::string>*>(&iterate.getDerivativeNames())
                 ->resize(3);
         THEN("it is not empty") { REQUIRE(!iterate.empty()); }
     }
-    GIVEN("MocoIterate with derivative data") {
-        MocoIterate iter(createVectorLinspace(6, 0, 1), {}, {}, {}, {"a", "b"},
+    GIVEN("MocoTrajectory with derivative data") {
+        MocoTrajectory iter(createVectorLinspace(6, 0, 1), {}, {}, {}, {"a", "b"},
                 {}, {}, {}, {}, {6, 2, 0.5}, {});
         WHEN("calling setNumTimes()") {
             REQUIRE(iter.getDerivativesTrajectory().nrow() != 4);
@@ -266,21 +266,21 @@ SCENARIO("Using MocoIterate with the implicit dynamics mode",
             }
         }
         WHEN("deserializing") {
-            const std::string filename = "testImplicit_MocoIterate.sto";
+            const std::string filename = "testImplicit_MocoTrajectory.sto";
             iter.write(filename);
             THEN("derivatives trajectory is preserved") {
-                MocoIterate deserialized(filename);
+                MocoTrajectory deserialized(filename);
                 REQUIRE(iter.getDerivativesTrajectory().nrow() == 6);
                 REQUIRE(iter.isNumericallyEqual(deserialized));
             }
         }
     }
-    GIVEN("two MocoIterates with different derivative data") {
+    GIVEN("two MocoTrajectorys with different derivative data") {
         const double valueA = 0.5;
         const double valueB = 0.499999;
-        MocoIterate iterA(createVectorLinspace(6, 0, 1), {}, {}, {}, {"a", "b"},
+        MocoTrajectory iterA(createVectorLinspace(6, 0, 1), {}, {}, {}, {"a", "b"},
                 {}, {}, {}, {}, {6, 2, valueA}, {});
-        MocoIterate iterB(createVectorLinspace(6, 0, 1), {}, {}, {}, {"a", "b"},
+        MocoTrajectory iterB(createVectorLinspace(6, 0, 1), {}, {}, {}, {"a", "b"},
                 {}, {}, {}, {}, {6, 2, valueB}, {});
         THEN("not numerically equal") {
             REQUIRE(!iterA.isNumericallyEqual(iterB));

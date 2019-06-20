@@ -39,7 +39,7 @@ void addCoordinateActuator(Model& model, std::string coordName,
 }
 
 void transformReactionToBodyFrame(const MocoStudy& moco, 
-        const MocoIterate& iterate, 
+        const MocoTrajectory& iterate, 
         TimeSeriesTable_<SimTK::SpatialVec>& reactionTable) {
     auto model = moco.getProblem().createRep().getModelBase();
     model.initSystem();
@@ -411,7 +411,7 @@ MocoSolution runKneeReactionMinimizationProblem(bool removeMuscles,
     coordWeightMap.insert(std::pair<std::string, double>("subtalar_angle_l", 0));
 
     // Set coordinate tracking weights.
-    MocoIterate trackedIterate(trackedIterateFile);
+    MocoTrajectory trackedIterate(trackedIterateFile);
     MocoWeightSet coordinateWeights;
     for (const auto& statePath : trackedIterate.getStateNames()) {
         for (auto elt : coordWeightMap) {
@@ -647,7 +647,7 @@ MocoSolution runExoskeletonProblem(const std::string& trackedIterateFile,
 
     // Truck and foot global position tracking costs.
     // ----------------------------------------------
-    MocoIterate trackedIterate(trackedIterateFile);
+    MocoTrajectory trackedIterate(trackedIterateFile);
     auto statesRef = trackedIterate.exportToStatesTable();
 
     // Foot orientation tracking cost.

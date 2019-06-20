@@ -151,7 +151,7 @@ test_script:
   - cmake --build . --config %BTYPE% --target Moco_doxygen -- /verbosity:minimal
 
   # Install.
-  - cmake --build . --config %BTYPE% --target install -- /verbosity:quiet
+  - cmake --build . --config %BTYPE% --target install # -- /verbosity:quiet
 
 after_test:
 

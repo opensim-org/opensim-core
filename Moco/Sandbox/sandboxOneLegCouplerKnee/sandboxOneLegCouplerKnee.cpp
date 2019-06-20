@@ -152,7 +152,7 @@ struct Options {
     std::string solver = "ipopt";
     std::string dynamics_mode = "explicit";
     TimeSeriesTable controlsGuess = {};
-    MocoIterate previousSolution = {};
+    MocoTrajectory previousSolution = {};
 };
 
 MocoSolution minimizeControlEffortRightLeg(const Options& opt) {
@@ -294,7 +294,7 @@ MocoSolution stateTrackingRightLeg(const Options& opt) {
     Model model = createRightLegModel(opt.actuatorType, opt.weldPelvis);
 
     // Get previous solution.
-    MocoIterate prevSol = opt.previousSolution;
+    MocoTrajectory prevSol = opt.previousSolution;
 
     // Get states trajectory from previous solution. Need to set the problem
     // model and call initSystem() to create the table internally.

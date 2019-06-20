@@ -19,8 +19,8 @@
  * -------------------------------------------------------------------------- */
 
 #include "Common/TableProcessor.h"
-#include "MocoIterate.h"
 #include "MocoTool.h"
+#include "MocoTrajectory.h"
 #include "osimMocoDLL.h"
 
 #include <OpenSim/Simulation/Model/Model.h>

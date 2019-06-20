@@ -1,5 +1,5 @@
 # -------------------------------------------------------------------------- #
-# OpenSim Moco: plot_iterate.py                                              #
+# OpenSim Moco: plot_trajectory.py                                           #
 # -------------------------------------------------------------------------- #
 # Copyright (c) 2017 Stanford University and the Authors                     #
 #                                                                            #
@@ -26,9 +26,9 @@ import pylab as pl
 import argparse
 
 parser = argparse.ArgumentParser(
-    description="Plot 1 or more MocoIterates on the same axes.")
+    description="Plot 1 or more MocoTrajectorys on the same axes.")
 parser.add_argument('file', type=str, nargs='+',
-                    help="Paths to MocoIterate files.")
+                    help="Paths to MocoTrajectory files.")
 parser.add_argument('--zero', action='store_true',
                     help="Plot y=0 on all plots.")
 parser.add_argument('--common', action='store_true',

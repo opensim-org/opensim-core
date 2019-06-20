@@ -168,15 +168,15 @@ EXPOSE_BOUNDS_CONSTRUCTORS_HELPER(MocoFinalBounds);
 
 // SWIG does not support initializer_list, but we can use Java arrays to
 // achieve similar syntax in MATLAB.
-%ignore OpenSim::MocoIterate::setTime(std::initializer_list<double>);
-%ignore OpenSim::MocoIterate::setState(const std::string&,
+%ignore OpenSim::MocoTrajectory::setTime(std::initializer_list<double>);
+%ignore OpenSim::MocoTrajectory::setState(const std::string&,
         std::initializer_list<double>);
-%ignore OpenSim::MocoIterate::setControl(const std::string&,
+%ignore OpenSim::MocoTrajectory::setControl(const std::string&,
         std::initializer_list<double>);
-%ignore OpenSim::MocoIterate::setMultiplier(const std::string&,
+%ignore OpenSim::MocoTrajectory::setMultiplier(const std::string&,
         std::initializer_list<double>);
 
-%include <Moco/MocoIterate.h>
+%include <Moco/MocoTrajectory.h>
 
 %include <Moco/MocoSolver.h>
 %include <Moco/MocoDirectCollocationSolver.h>

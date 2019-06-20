@@ -42,8 +42,8 @@ set(MOCO_SOURCES
         MocoSolver.cpp
         MocoDirectCollocationSolver.h
         MocoDirectCollocationSolver.cpp
-        MocoIterate.h
-        MocoIterate.cpp
+        MocoTrajectory.h
+        MocoTrajectory.cpp
         MocoTropterSolver.h
         MocoTropterSolver.cpp
         MocoParameter.h

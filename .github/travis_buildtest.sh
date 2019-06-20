@@ -1,4 +1,7 @@
-bash .github/travis_common.sh  
+# Terminate on error, print every line
+set -ev
+
+bash .github/travis_common.sh
 
 # Download dependencies
 wget https://sourceforge.net/projects/myosin/files/opensim-moco/opensim-moco-dep-opensim-core.zip/download -O ~/opensim-moco-dep-opensim-core.zip

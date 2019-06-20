@@ -114,7 +114,7 @@ int main() {
 
     // Specify an initial guess.
     // -------------------------
-    MocoIterate guess = solver.createGuess("bounds");
+    MocoTrajectory guess = solver.createGuess("bounds");
     guess.resampleWithNumTimes(2);
     guess.setTime({0, 0.5});
     guess.setState("/slider/position/value", {0.0, 1.0});

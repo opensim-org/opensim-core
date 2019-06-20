@@ -387,7 +387,7 @@ install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/examples/"
         DESTINATION "${MOCO_INSTALL_PYTHONEXDIR}")
 
 install(FILES
-        "${CMAKE_SOURCE_DIR}/Moco/plot_iterate.py"
+        "${CMAKE_SOURCE_DIR}/Moco/plot_trajectory.py"
         "${CMAKE_SOURCE_DIR}/Moco/plot_casadi_sparsity.py"
         DESTINATION "${MOCO_INSTALL_PYTHONEXDIR}"
         )

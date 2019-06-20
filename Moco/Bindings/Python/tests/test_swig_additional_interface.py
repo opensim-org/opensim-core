@@ -116,7 +116,7 @@ class TestSwigAddtlInterface(unittest.TestCase):
         assert 18 == ph0.getControlInfo('actuator').getBounds().getLower()
         assert 18 == ph0.getControlInfo('actuator').getBounds().getUpper()
 
-    def test_MocoIterate(self):
+    def test_MocoTrajectory(self):
         time = osim.Vector(3, 0)
         time.set(0, 0)
         time.set(1, 0.1)
@@ -125,7 +125,7 @@ class TestSwigAddtlInterface(unittest.TestCase):
         ct = osim.Matrix(3, 3)
         mt = osim.Matrix(3, 1)
         p = osim.RowVector(2, 0.0)
-        it = osim.MocoIterate(time, ['s0', 's1'], ['c0', 'c1', 'c2'],
+        it = osim.MocoTrajectory(time, ['s0', 's1'], ['c0', 'c1', 'c2'],
                               ['m0'],
                               ['p0', 'p1'], st, ct, mt, p)
         
@@ -170,7 +170,7 @@ class TestSwigAddtlInterface(unittest.TestCase):
         p0 = it.getParameter('p0')
         assert(p0 == 25)
 
-    def test_MocoIterate_numpy(self):
+    def test_MocoTrajectory_numpy(self):
         try:
             import numpy as np
         except ImportError as e:
@@ -182,7 +182,7 @@ class TestSwigAddtlInterface(unittest.TestCase):
         ct = np.random.rand(3, 3)
         mt = np.random.rand(3, 1)
         p = np.random.rand(2)
-        it = osim.MocoIterate(time, ['s0', 's1'], ['c0', 'c1', 'c2'],
+        it = osim.MocoTrajectory(time, ['s0', 's1'], ['c0', 'c1', 'c2'],
                               ['m0'],
                               ['p0', 'p1'], st, ct, mt, p)
         assert (it.getTimeMat() == time).all()
@@ -198,7 +198,7 @@ class TestSwigAddtlInterface(unittest.TestCase):
         mt = np.random.rand(3, 1)
         dt = np.random.rand(3, 4)
         p = np.random.rand(2)
-        it = osim.MocoIterate(time, ['s0', 's1'], ['c0', 'c1', 'c2'],
+        it = osim.MocoTrajectory(time, ['s0', 's1'], ['c0', 'c1', 'c2'],
                               ['m0'], ['d0', 'd1', 'd2', 'd3'],
                               ['p0', 'p1'], st, ct, mt, dt, p)
         np.allclose(it.getTimeMat(), time)

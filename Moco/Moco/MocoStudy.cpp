@@ -99,14 +99,14 @@ MocoSolution MocoStudy::solve() const {
     return solution;
 }
 
-void MocoStudy::visualize(const MocoIterate& it) const {
+void MocoStudy::visualize(const MocoTrajectory& it) const {
     // TODO this does not need the Solver at all, so this could be moved to
     // MocoProblem.
     const auto& model = get_problem().getPhase(0).getModel();
     OpenSim::visualize(model, it.exportToStatesStorage());
 }
 
-TimeSeriesTable MocoStudy::analyze(const MocoIterate& iterate,
+TimeSeriesTable MocoStudy::analyze(const MocoTrajectory& iterate,
         std::vector<std::string> outputPaths) const {
     return OpenSim::analyze<double>(get_problem().createRep().getModelBase(), 
         iterate, outputPaths);
