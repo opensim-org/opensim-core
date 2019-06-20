@@ -349,7 +349,11 @@ void MocoProblemRep::initialize() {
             if (ph0.get_bound_activation_from_excitation()) {
                 const auto* muscle = dynamic_cast<const Muscle*>(&actu);
                 if (muscle && !muscle->get_ignore_activation_dynamics()) {
-                    auto& info = m_state_infos[actuName + "/activation"];
+                    const std::string stateName = actuName + "/activation";
+                    auto& info = m_state_infos[stateName];
+                    if (info.getName().empty()) {
+                        info.setName(stateName);
+                    }
                     if (!info.getBounds().isSet()) {
                         info.setBounds(m_control_infos[actuName].getBounds());
                     }
