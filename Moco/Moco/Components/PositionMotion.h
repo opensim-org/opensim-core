@@ -92,6 +92,7 @@ public:
     /// constraints.
     static std::unique_ptr<PositionMotion> createFromStatesTrajectory(
             const Model& model, const StatesTrajectory& statesTraj);
+    TimeSeriesTable exportToTable(const std::vector<double>& time) const;
 
 private:
     /// Allocate SimTK::Motion%s.

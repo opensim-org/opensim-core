@@ -154,6 +154,27 @@ std::unique_ptr<PositionMotion> PositionMotion::createFromStatesTrajectory(
             model, statesTraj.exportToTable(model, coordSVNames));
 }
 
+TimeSeriesTable PositionMotion::exportToTable(
+        const std::vector<double>& time) const {
+    TimeSeriesTable table(time);
+    std::vector<std::string> labels;
+    SimTK::Vector value((int)time.size());
+    SimTK::Vector speed((int)time.size());
+    SimTK::Vector thisTime(1);
+    for (int ifunc = 0; ifunc < get_functions().getSize(); ++ifunc) {
+        for (int itime = 0; itime < (int)time.size(); ++itime) {
+            thisTime[0] = time[itime];
+            value[itime] = get_functions().get(ifunc).calcValue(thisTime);
+            speed[itime] = get_functions().get(ifunc).calcDerivative(
+                    std::vector<int>{0}, thisTime);
+        }
+        const std::string& name = get_functions().get(ifunc).getName();
+        table.appendColumn(name + "/value", value);
+        table.appendColumn(name + "/speed", speed);
+    }
+    return table;
+}
+
 void PositionMotion::extendAddToSystem(SimTK::MultibodySystem& system) const {
     Super::extendAddToSystem(system);
     auto& matter = system.updMatterSubsystem();
