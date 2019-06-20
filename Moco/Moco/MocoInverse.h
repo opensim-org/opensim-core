@@ -86,9 +86,7 @@ class OSIMMOCO_API MocoInverse : public MocoTool {
 public:
 
     OpenSim_DECLARE_PROPERTY(kinematics, TableProcessor,
-            "Path to a STO file containing generalized coordinates "
-            "to prescribe. The path can be absolute or relative to the setup "
-            "file.");
+            "Generalized coordinate values to prescribe.");
 
     OpenSim_DECLARE_PROPERTY(kinematics_allow_extra_columns, bool,
             "Allow the kinematics file to contain columns that do not name "
@@ -116,6 +114,8 @@ public:
     }
 
     MocoStudy initialize() const;
+    /// Solve the problem returned by initialize() and compute the outputs
+    /// listed in output_paths.
     MocoInverseSolution solve() const;
 
 private:

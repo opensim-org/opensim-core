@@ -135,5 +135,8 @@ MocoInverseSolution MocoInverse::solve() const {
         solution.setOutputs(
                 moco.analyze(solution.getMocoSolution(), outputPaths));
     }
+    if (!mocoSolution.success()) {
+        solution.m_mocoSolution.seal();
+    }
     return solution;
 }
