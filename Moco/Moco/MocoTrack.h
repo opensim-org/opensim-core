@@ -30,7 +30,7 @@ namespace OpenSim {
 
 class MocoWeightSet;
 class MocoProblem;
-class MocoIterate;
+class MocoTrajectory;
 
 /// MocoTrack
 /// ---------
@@ -228,7 +228,7 @@ private:
     // Convenience method for applying data from a states reference to the 
     // problem guess.
     void applyStatesToGuess(const TimeSeriesTable& states, const Model& model,
-        MocoIterate& guess);
+            MocoTrajectory& guess);
 };
 
 } // namespace OpenSim

@@ -18,13 +18,12 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "MocoIterate.h"
-
 #include "MocoProblemRep.h"
-
-#include <OpenSim/Common/Object.h>
+#include "MocoTrajectory.h"
 
 #include <SimTKcommon/internal/ReferencePtr.h>
+
+#include <OpenSim/Common/Object.h>
 
 namespace OpenSim {
 
@@ -86,7 +85,7 @@ public:
     /// general; it's just that this function doesn't support it.
     ///
     /// @precondition You must have called resetProblem().
-    MocoIterate createGuessTimeStepping() const;
+    MocoTrajectory createGuessTimeStepping() const;
 
 protected:
 
