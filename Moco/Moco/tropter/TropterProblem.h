@@ -267,6 +267,7 @@ protected:
 
     void initialize_on_iterate(
             const Eigen::VectorXd& parameters) const override final {
+        m_fileDeletionThrower->throwIfDeleted();
         // If they exist, apply parameter values to the model.
         this->applyParametersToModelProperties(parameters);
     }
@@ -355,7 +356,6 @@ protected:
 
     void calc_endpoint_cost(
             const tropter::Input<T>& in, T& cost) const override {
-        m_fileDeletionThrower->throwIfDeleted();
         // TODO avoid all of this if there are no endpoint costs.
 
         // Update the state.

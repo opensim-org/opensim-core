@@ -35,7 +35,7 @@ public:
             casadi_int outputInterval)
             : m_transcription(transcription), m_problem(problem),
               m_numVariables(numVariables), m_numConstraints(numConstraints),
-              m_outputInterval(outputInterval) {
+              m_callbackInterval(outputInterval) {
         construct("NlpsolCallback", {});
     }
     casadi_int get_n_in() override { return casadi::nlpsol_n_out(); }
@@ -57,7 +57,7 @@ public:
         }
     }
     std::vector<DM> eval(const std::vector<DM>& args) const override {
-        if (m_outputInterval > 0 && evalCount % m_outputInterval == 0) {
+        if (m_callbackInterval > 0 && evalCount % m_callbackInterval == 0) {
             Iterate iterate = m_problem.createIterate<Iterate>();
             iterate.variables = m_transcription.expandVariables(args.at(0));
             iterate.times =
@@ -76,7 +76,7 @@ private:
     const Problem& m_problem;
     casadi_int m_numVariables;
     casadi_int m_numConstraints;
-    casadi_int m_outputInterval;
+    casadi_int m_callbackInterval;
     mutable int evalCount = 0;
 };
 
