@@ -28,7 +28,7 @@ problem.setStateInfo('/jointset/ankle_r/ankle_angle_r/value', ...
 problem.setStateInfoPattern('/jointset/.*/speed', [], 0, 0);
 
 % Part 1d: Add a MocoControlCost to the problem.
-problem.addCost(MocoControlCost('effort'));
+problem.addCost(MocoControlCost('myeffort'));
 
 % Part 1e: Configure the solver.
 solver = moco.initCasADiSolver();
@@ -53,7 +53,7 @@ tableProcessor.append(TabOpLowPassFilter(6));
 % weights to zero for states associated with the dependent coordinate in the
 % model's knee CoordinateCoupler constraint. 
 tracking = MocoStateTrackingCost();
-tracking.setName('tracking');
+tracking.setName('mytracking');
 tracking.setReference(tableProcessor);
 tracking.setAllowUnusedReferences(true);
 tracking.setWeight('/jointset/patellofemoral_r/knee_angle_r_beta/value', 0);
@@ -62,7 +62,7 @@ problem.addCost(tracking);
 
 % Part 2c: Reduce the control cost weight so it now acts as a regularization 
 % term.
-problem.updCost('effort').set_weight(0.001);
+problem.updCost('myeffort').set_weight(0.001);
 
 % Part 2d: Set the initial guess using the predictive problem solution.
 solver.setGuess(predictSolution);
@@ -103,14 +103,14 @@ inverse.set_minimize_sum_squared_states(true);
 
 % Part 4c: Append additional outputs path for quantities that are calculated
 % post-hoc using the inverse problem solution.
-% TODO: inverse.append_output_paths('.*normalized_fiber_length');
-% TODO:inverse.append_output_paths('.*passive_force_multiplier');
+inverse.append_output_paths('.*normalized_fiber_length');
+inverse.append_output_paths('.*passive_force_multiplier');
 
 % Part 4d: Solve! Write the solution and outputs.
 inverseSolution = inverse.solve();
 inverseSolution.getMocoSolution().write('inverseSolution.sto');
-% TODO: inverseOutputs = inverseSolution.getOutputs();
-% TODO: STOFileAdapter.write(inverseOutputs, 'muscle_outputs.sto');
+inverseOutputs = inverseSolution.getOutputs();
+STOFileAdapter.write(inverseOutputs, 'muscleOutputs.sto');
 
 %% Part 5: Muscle-driven Inverse Problem with Passive Assistance
 % Part 5a: Create a new muscle-driven model, now adding a SpringGeneralizedForce 
@@ -217,30 +217,34 @@ function compareInverseSolutions(unassistedSolution, assistedSolution)
 
 unassistedSolution = unassistedSolution.getMocoSolution();
 assistedSolution = assistedSolution.getMocoSolution();
-figure(3);
+figure;
 stateNames = unassistedSolution.getStateNames();
 numStates = stateNames.size();
-dim = ceil(sqrt(numStates));
+dim = 3;
+iplot = 0;
 for i = 0:numStates-1
-    subplot(dim, dim, i+1);
-    plot(unassistedSolution.getTimeMat(), ...
-         unassistedSolution.getStateMat(stateNames.get(i)), '-r', ...
-         'linewidth', 3);
-    hold on
-    plot(assistedSolution.getTimeMat(), ...
-         assistedSolution.getStateMat(stateNames.get(i)), '--b', ...
-         'linewidth', 2.5);
-    hold off
-    stateName = stateNames.get(i).toCharArray';
-    plotTitle = stateName;
-    plotTitle = strrep(plotTitle, '/forceset/', '');
-    plotTitle = strrep(plotTitle, '/activation', '');
-    title(plotTitle, 'Interpreter', 'none');
-    xlabel('time (s)');
-    ylabel('activation (-)');
-    ylim([0, 1]);
-    if i == 0
-       legend('unassisted', 'assisted');
+    if contains(char(stateNames.get(i)), 'activation')
+        iplot = iplot + 1;
+        subplot(dim, dim, iplot);
+        plot(unassistedSolution.getTimeMat(), ...
+             unassistedSolution.getStateMat(stateNames.get(i)), '-r', ...
+             'linewidth', 3);
+        hold on
+        plot(assistedSolution.getTimeMat(), ...
+             assistedSolution.getStateMat(stateNames.get(i)), '--b', ...
+             'linewidth', 2.5);
+        hold off
+        stateName = stateNames.get(i).toCharArray';
+        plotTitle = stateName;
+        plotTitle = strrep(plotTitle, '/forceset/', '');
+        plotTitle = strrep(plotTitle, '/activation', '');
+        title(plotTitle, 'Interpreter', 'none');
+        xlabel('time (s)');
+        ylabel('activation (-)');
+        ylim([0, 1]);
+        if iplot == 0
+           legend('unassisted', 'assisted');
+        end
     end
 end
 

@@ -25,7 +25,6 @@ if ~exist('subject2UnassistedSolution.sto', 'file')
     subject2UnassistedSolution.write('subject2UnassistedSolution.sto');
 else
     subject2UnassistedSolution = MocoTrajectory('subject2UnassistedSolution.sto');
-    % TODO: get objective from file header.
     table = STOFileAdapter.read('subject2UnassistedSolution.sto');
     subject2UnassistedObjective = ...
         str2double(table.getTableMetaDataAsString('objective'));
@@ -88,7 +87,7 @@ problem.setStateInfo('/jointset/ankle_r/ankle_angle_r/value', ...
 problem.setStateInfoPattern('/jointset/.*/speed', [], 0, 0);
 problem.setStateInfoPattern('.*/activation', [], 0);
 
-problem.addCost(MocoControlCost('effort'));
+problem.addCost(MocoControlCost('myeffort'));
 
 solver = moco.initCasADiSolver();
 solver.set_dynamics_mode('implicit');
