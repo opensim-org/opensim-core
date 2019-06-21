@@ -64,7 +64,7 @@ void MocoPhase::setTimeBounds(
 }
 void MocoPhase::printStateNamesWithSubstring(const std::string& substring) {
     std::vector<std::string> foundNames;
-    Model model = get_model();
+    Model model = get_model().process();
     model.initSystem();
     const auto stateNames = model.getStateVariableNames();
     for (int i = 0; i < (int)stateNames.size(); ++i) {
@@ -72,23 +72,15 @@ void MocoPhase::printStateNamesWithSubstring(const std::string& substring) {
             foundNames.push_back(stateNames[i]);
         }
     }
-    if (foundNames.size() == 1) {
-        std::cout << "State name found matching substring \"" << substring
-                  << "\":" << std::endl;
-        std::cout << "========================================================="
-                  << std::endl;
-        std::cout << foundNames[0] << std::endl;
-    } else if (foundNames.size() > 1) {
-        std::cout << "State names found matching substring \"" << substring
-                  << "\":" << std::endl;
-        std::cout << "========================================================="
-                  << std::endl;
+    if (foundNames.size() > 0) {
+        std::cout << "State name(s) found matching substring '" << substring
+                  << "':" << std::endl;
         for (std::string iname : foundNames) {
             std::cout << iname << std::endl;
         }
     } else {
-        std::cout << "No state names found matching substring \"" << substring
-                  << "\"." << std::endl;
+        std::cout << "No state names found matching substring '" << substring
+                  << "'." << std::endl;
     };
 }
 void MocoPhase::setStateInfo(const std::string& name, const MocoBounds& bounds,
@@ -114,7 +106,7 @@ void MocoPhase::setStateInfoPattern(const std::string& pattern,
 }
 void MocoPhase::printControlNamesWithSubstring(const std::string& substring) {
     std::vector<std::string> foundNames;
-    Model model = get_model();
+    Model model = get_model().process();
     model.initSystem();
     const auto controlNames = createControlNamesFromModel(model);
     for (int i = 0; i < (int)controlNames.size(); ++i) {
@@ -122,24 +114,16 @@ void MocoPhase::printControlNamesWithSubstring(const std::string& substring) {
             foundNames.push_back(controlNames[i]);
         }
     }
-    if (foundNames.size() == 1) {
-        std::cout << "Control name found matching substring \"" << substring
-                  << "\":" << std::endl;
-        std::cout << "========================================================="
-                  << std::endl;
-        std::cout << foundNames[0] << std::endl;
-    } else if (foundNames.size() > 1) {
-        std::cout << "Control names found matching substring \"" << substring
-                  << "\":" << std::endl;
-        std::cout << "========================================================="
-                  << std::endl;
+    if (foundNames.size() > 0) {
+        std::cout << "Control name(s) found matching substring '" << substring
+                  << "':" << std::endl;
         for (std::string iname : foundNames) {
             std::cout << iname << std::endl;
         }
     } else {
-        std::cout << "No control names found matching substring \"" << substring
-                  << "\"." << std::endl;
-    };
+        std::cout << "No control names found matching substring '" << substring
+                  << "'." << std::endl;
+    }
 }
 void MocoPhase::setControlInfo(const std::string& name,
         const MocoBounds& bounds, const MocoInitialBounds& initial,
