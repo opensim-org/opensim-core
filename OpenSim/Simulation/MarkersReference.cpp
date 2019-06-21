@@ -40,7 +40,7 @@ MarkersReference::MarkersReference(const std::string& markerFile,
                                    const Set<MarkerWeight>& markerWeightSet,
                                    Units modelUnits) :
     MarkersReference() {
-    loadMarkersFile(markerFile, markerWeightSet, modelUnits);
+    initializeFromMarkersFile(markerFile, markerWeightSet, modelUnits);
 }
 
 MarkersReference::
@@ -55,9 +55,9 @@ MarkersReference(const TimeSeriesTable_<SimTK::Vec3>& markerTable,
     populateFromMarkerData(_markerTable, markerWeightSet, units.getAbbreviation());
 }
 
-void MarkersReference::loadMarkersFile(const std::string& markerFile,
-                            const Set<MarkerWeight>& markerWeightSet,
-                            Units modelUnits) {
+void MarkersReference::initializeFromMarkersFile(const std::string& markerFile,
+                                        const Set<MarkerWeight>& markerWeightSet,
+                                        Units modelUnits) {
     auto fileExt = FileAdapter::findExtension(markerFile);
     OPENSIM_THROW_IF(!(fileExt == "sto" || fileExt == "trc"),
                      UnsupportedFileType,

@@ -124,13 +124,13 @@ public:
 
     virtual ~MarkersReference() {}
 
-    /** load the marker data for this MarkersReference from markerFile that
-        correspond to the markers that have weights. If no markers are provided,
+    /** Initialize this MarkersReference from data in a markerFile such that it
+        corresponds to the markers that have weights. If weights is empty Set,
         all corresponding markers are tracked at default reference weight.
         @See setDefaultWeight()*/
-    void loadMarkersFile(const std::string& markerFile,
-                         const Set<MarkerWeight>& markerWeightSet,
-                         Units modelUnits = Units(Units::Meters));
+    void initializeFromMarkersFile(const std::string& markerFile,
+                                   const Set<MarkerWeight>& markerWeightSet,
+                                   Units modelUnits = Units(Units::Meters));
 
     //--------------------------------------------------------------------------
     // Reference Interface

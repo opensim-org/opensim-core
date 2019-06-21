@@ -630,7 +630,7 @@ void InverseKinematicsTool::populateReferences(MarkersReference& markersReferenc
     //Read in the marker data file and set the weights for associated markers.
     //Markers in the model and the marker file but not in the markerWeights are
     //ignored
-    markersReference.loadMarkersFile(_markerFileName, markerWeights);
+    markersReference.initializeFromMarkersFile(_markerFileName, markerWeights);
 }
 
 
