@@ -122,26 +122,20 @@ if (MOCO_WITH_TROPTER)
     target_compile_definitions(osimMoco PUBLIC MOCO_WITH_TROPTER)
 endif ()
 
-if (MOCO_COPY_DEPENDENCIES)
-    if (APPLE)
-        set(rpath_macro "\@loader_path")
-    elseif (UNIX)
-        set(rpath_macro "\$ORIGIN")
-    endif ()
-    set_property(TARGET osimMoco APPEND PROPERTY
-            INSTALL_RPATH "${rpath_macro}/")
-endif ()
+MocoAddInstallRPATHSelf(TARGET osimMoco LOADER)
+MocoAddInstallRPATHSimbody(TARGET osimMoco LOADER
+        FROM "${CMAKE_INSTALL_LIBDIR}")
 
 if (WIN32)
     add_dependencies(osimMoco Copy_OpenSim_DLLs)
 endif ()
 
-install(TARGETS osimMoco EXPORT MocoTargets
+install(TARGETS osimMoco EXPORT OpenSimMocoTargets
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
 # TODO do not install InverseMuscleSolverMotionData.h b/c it uses Eigen.
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
-        DESTINATION ${MOCO_INSTALL_INCLUDEDIR}/Moco
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/Moco
         FILES_MATCHING PATTERN "*.h*")
