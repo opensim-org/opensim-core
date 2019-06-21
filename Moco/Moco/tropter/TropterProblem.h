@@ -82,6 +82,11 @@ protected:
         addKinematicConstraints();
         addGenericPathConstraints();
         addParameters();
+
+        std::string formattedTimeString(getFormattedDateTime(true));
+        m_fileDeletionThrower = OpenSim::make_unique<FileDeletionThrower>(
+                format("delete_this_to_stop_optimization_%s_%s.txt",
+                        m_mocoProbRep.getName(), formattedTimeString));
     }
 
     void addStateVariables() {
@@ -262,6 +267,7 @@ protected:
 
     void initialize_on_iterate(
             const Eigen::VectorXd& parameters) const override final {
+        m_fileDeletionThrower->throwIfDeleted();
         // If they exist, apply parameter values to the model.
         this->applyParametersToModelProperties(parameters);
     }
@@ -366,6 +372,8 @@ protected:
     const Model& m_modelDisabledConstraints;
     SimTK::State& m_stateDisabledConstraints;
     const bool m_implicit;
+
+    std::unique_ptr<FileDeletionThrower> m_fileDeletionThrower;
 
     std::vector<std::string> m_svNamesInSysOrder;
     std::unordered_map<int, int> m_yIndexMap;
