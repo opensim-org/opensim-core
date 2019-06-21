@@ -45,9 +45,15 @@ std::unique_ptr<T> make_unique(Args&&... args) {
     return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
 }
 
-/// Get a string with the current date and time formatted using the ISO standard
-/// extended datetime format (%Y-%m-%dT%X))
-OSIMMOCO_API std::string getFormattedDateTime();
+/// Get a string with the current date and time formatted as %Y-%m-%dT%H%M%S
+/// (year, month, day, "T", hour, minute, second). You can change the datetime
+/// format via the `format` parameter.
+/// If you specify "ISO", then we use the ISO 8601 extended datetime format
+/// %Y-%m-%dT%H:%M:%S.
+/// See https://en.cppreference.com/w/cpp/io/manip/put_time.
+OSIMMOCO_API std::string getFormattedDateTime(
+        bool appendMicroseconds = false,
+        std::string format = "%Y-%m-%dT%H%M%S");
 
 /// Determine if `string` starts with the substring `start`.
 /// https://stackoverflow.com/questions/874134/find-if-string-ends-with-another-string-in-c
@@ -316,20 +322,20 @@ TimeSeriesTable_<T> analyze(Model model, const MocoTrajectory& iterate,
             const auto& output = comp.getOutput(outputName);
             auto thisOutputPath = output.getPathName();
             for (const auto& outputPathArg : outputPaths) {
-                if (std::regex_match(thisOutputPath,
-                        std::regex(outputPathArg))) {
+                if (std::regex_match(
+                        thisOutputPath, std::regex(outputPathArg))) {
                     // Make sure the output type agrees with the template.
                     if (dynamic_cast<const Output<T>*>(&output)) {
                         reporter->addToReport(output);
                     } else {
                         std::cout << format("Warning: ignoring output %s of "
-                                            "type %s.", output.getPathName(),
-                                            output.getTypeName())
+                                            "type %s.",
+                                             output.getPathName(),
+                                             output.getTypeName())
                                   << std::endl;
                     }
                 }
             }
-
         }
     }
     model.addComponent(reporter);
@@ -348,10 +354,9 @@ TimeSeriesTable_<T> analyze(Model model, const MocoTrajectory& iterate,
         model.getSystem().prescribe(state);
 
         // Create a SimTK::Vector of the control values for the current state.
-        SimTK::RowVector controlsRow =
-            iterate.getControlsTrajectory().row(i);
+        SimTK::RowVector controlsRow = iterate.getControlsTrajectory().row(i);
         SimTK::Vector controls(controlsRow.size(),
-            controlsRow.getContiguousScalarData(), true);
+                controlsRow.getContiguousScalarData(), true);
 
         // Set the controls on the state object.
         model.realizeVelocity(state);
@@ -613,6 +618,54 @@ private:
     std::stack<std::unique_ptr<T>> m_entries;
     mutable std::mutex m_mutex;
     std::condition_variable m_inventoryMonitor;
+};
+
+/// Thrown by FileDeletionThrower::throwIfDeleted().
+class FileDeletionThrowerException : public Exception {
+public:
+    FileDeletionThrowerException(const std::string& file, size_t line,
+            const std::string& func, const std::string& deletedFile)
+            : Exception(file, line, func) {
+        addMessage("File '" + deletedFile + "' deleted.");
+    }
+};
+/// This class helps a user cause an exception within the code. The constructor
+/// writes a file, and the destructor deletes the file. The programmer can call
+/// throwIfDeleted() to throw the FileDeletionThrowerException exception if the
+/// file is deleted (by a user) before the object is destructed. If the file
+/// could not be written by the constructor, then throwIfDeleted() does not
+/// throw an exception.
+class FileDeletionThrower {
+public:
+    FileDeletionThrower()
+            : FileDeletionThrower(
+                      "OpenSimMoco_delete_this_to_throw_exception_" +
+                      getFormattedDateTime() + ".txt") {}
+    FileDeletionThrower(std::string filepath)
+            : m_filepath(std::move(filepath)) {
+        std::ofstream f(m_filepath);
+        m_wroteInitialFile = f.good();
+        f.close();
+    }
+    ~FileDeletionThrower() {
+        if (m_wroteInitialFile) {
+            std::ifstream f(m_filepath);
+            if (f.good()) {
+                f.close();
+                std::remove(m_filepath.c_str());
+            }
+        }
+    }
+    void throwIfDeleted() const {
+        if (m_wroteInitialFile) {
+            OPENSIM_THROW_IF(!std::ifstream(m_filepath).good(),
+                    FileDeletionThrowerException, m_filepath);
+        }
+    }
+
+private:
+    bool m_wroteInitialFile = false;
+    const std::string m_filepath;
 };
 
 } // namespace OpenSim

@@ -31,15 +31,34 @@ Parts of the documentation:
   - @ref mocoinverse
   - @ref mocostudy
   - @ref mocoimplguide
+  - @ref faq
 
-*/
 
-/**
+
+
+
 @defgroup mococost Available cost terms
 
 These are the available cost terms you can use in your cost functional. If none
 of these satisfy your needs, you can define your own using a plugin.
+
+
+
+
+@defgroup faq Frequently Asked Questions
+
+@section How do I interrupt an optimization in MATLAB?
+
+Sometimes, you may want to interrupt an optimization before it is complete. In
+MATLAB, we commonly use Ctrl-C to interrupt code, but this does not work during
+a Moco optimization.
+
+Use this alternative: During an optimization, Moco tries to write a text file to
+your current directory named "delete_this...". Delete this file to interrupt the
+optimization.
+
 */
+
 
 } // namespace OpenSim
 

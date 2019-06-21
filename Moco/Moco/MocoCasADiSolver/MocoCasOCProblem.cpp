@@ -34,7 +34,7 @@ MocoCasOCProblem::MocoCasOCProblem(const MocoCasADiSolver& mocoCasADiSolver,
         : m_jar(std::move(jar)),
           m_paramsRequireInitSystem(
                   mocoCasADiSolver.get_parameters_require_initsystem()),
-                  m_formattedTimeString(getFormattedDateTime()){
+          m_formattedTimeString(getFormattedDateTime(true)) {
 
     setDynamicsMode(dynamicsMode);
     const auto& model = problemRep.getModelBase();
@@ -42,8 +42,8 @@ MocoCasOCProblem::MocoCasOCProblem(const MocoCasADiSolver& mocoCasADiSolver,
         setPrescribedKinematics(true, model.getWorkingState().getNU());
     }
 
-    auto stateNames = problemRep.createStateVariableNamesInSystemOrder(
-            m_yIndexMap);
+    auto stateNames =
+            problemRep.createStateVariableNamesInSystemOrder(m_yIndexMap);
     setTimeBounds(convertBounds(problemRep.getTimeInitialBounds()),
             convertBounds(problemRep.getTimeFinalBounds()));
     for (const auto& stateName : stateNames) {
@@ -60,7 +60,8 @@ MocoCasOCProblem::MocoCasOCProblem(const MocoCasADiSolver& mocoCasADiSolver,
                 convertBounds(info.getFinalBounds()));
     }
 
-    auto controlNames = createControlNamesFromModel(model, m_modelControlIndices);
+    auto controlNames =
+            createControlNamesFromModel(model, m_modelControlIndices);
     for (const auto& controlName : controlNames) {
         const auto& info = problemRep.getControlInfo(controlName);
         addControl(controlName, convertBounds(info.getBounds()),
@@ -211,4 +212,8 @@ MocoCasOCProblem::MocoCasOCProblem(const MocoCasADiSolver& mocoCasADiSolver,
         }
         addPathConstraint(name, casBounds);
     }
+
+    m_fileDeletionThrower = OpenSim::make_unique<FileDeletionThrower>(
+            format("delete_this_to_stop_optimization_%s_%s.txt",
+                    problemRep.getName(), m_formattedTimeString));
 }

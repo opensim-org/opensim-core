@@ -35,7 +35,7 @@ public:
             casadi_int outputInterval)
             : m_transcription(transcription), m_problem(problem),
               m_numVariables(numVariables), m_numConstraints(numConstraints),
-              m_outputInterval(outputInterval) {
+              m_callbackInterval(outputInterval) {
         construct("NlpsolCallback", {});
     }
     casadi_int get_n_in() override { return casadi::nlpsol_n_out(); }
@@ -57,16 +57,17 @@ public:
         }
     }
     std::vector<DM> eval(const std::vector<DM>& args) const override {
-        if (evalCount % m_outputInterval == 0) {
+        if (m_callbackInterval > 0 && evalCount % m_callbackInterval == 0) {
             Iterate iterate = m_problem.createIterate<Iterate>();
             iterate.variables = m_transcription.expandVariables(args.at(0));
             iterate.times =
                     m_transcription.createTimes(iterate.variables[initial_time],
                             iterate.variables[final_time]);
             iterate.iteration = evalCount;
-            m_problem.intermediateCallback(iterate);
+            m_problem.intermediateCallbackWithIterate(iterate);
             evalCount++;
         }
+        m_problem.intermediateCallback();
         return {0};
     }
 
@@ -75,7 +76,7 @@ private:
     const Problem& m_problem;
     casadi_int m_numVariables;
     casadi_int m_numConstraints;
-    casadi_int m_outputInterval;
+    casadi_int m_callbackInterval;
     mutable int evalCount = 0;
 };
 
@@ -506,10 +507,8 @@ Solution Transcription::solve(const Iterate& guessOrig) {
     casadi_int numConstraints = g.numel();
 
     NlpsolCallback callback(*this, m_problem, numVariables, numConstraints,
-            m_solver.getOutputInterval());
-    if (m_solver.getOutputInterval() != 0) {
-        options["iteration_callback"] = callback;
-    }
+            m_solver.getCallbackInterval());
+    options["iteration_callback"] = callback;
 
     // The inputs to nlpsol() are symbolic (casadi::MX).
     casadi::MXDict nlp;

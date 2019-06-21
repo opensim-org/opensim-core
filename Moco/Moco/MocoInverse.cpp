@@ -27,7 +27,6 @@
 #include "MocoStudy.h"
 #include "MocoUtilities.h"
 
-#include <OpenSim/Common/FileAdapter.h>
 #include <OpenSim/Tools/InverseDynamicsTool.h>
 
 using namespace OpenSim;
@@ -37,11 +36,14 @@ void MocoInverse::constructProperties() {
     constructProperty_kinematics(TableProcessor());
     constructProperty_kinematics_allow_extra_columns(false);
     constructProperty_minimize_sum_squared_states(false);
+    constructProperty_max_iterations();
     constructProperty_tolerance(1e-3);
     constructProperty_output_paths();
 }
 
-MocoInverseSolution MocoInverse::solve() const {
+MocoStudy MocoInverse::initialize() const { return initializeInternal().first; }
+
+std::pair<MocoStudy, TimeSeriesTable> MocoInverse::initializeInternal() const {
     using SimTK::Pathname;
     // Get the directory containing the setup file.
     std::string setupDir;
@@ -52,7 +54,7 @@ MocoInverseSolution MocoInverse::solve() const {
                 dontApplySearchPath, setupDir, fileName, extension);
     }
 
-    // Processs inputs.
+    // Process inputs.
     // ----------------
     Model model = get_model().process();
     model.initSystem();
@@ -70,6 +72,7 @@ MocoInverseSolution MocoInverse::solve() const {
 
     auto posmot = PositionMotion::createFromStatesTrajectory(model, statesTraj);
     posmot->setName("position_motion");
+    const auto* posmotPtr = posmot.get();
     model.addComponent(posmot.release());
 
     model.initSystem();
@@ -82,10 +85,8 @@ MocoInverseSolution MocoInverse::solve() const {
     problem.setModelCopy(model);
 
     TimeInfo timeInfo;
-    updateTimeInfo("kinematics",
-            kinematics.getIndependentColumn().front(),
-            kinematics.getIndependentColumn().back(),
-            timeInfo);
+    updateTimeInfo("kinematics", kinematics.getIndependentColumn().front(),
+            kinematics.getIndependentColumn().back(), timeInfo);
     if (get_clip_time_range()) {
         timeInfo.initial += 1e-3;
         timeInfo.final -= 1e-3;
@@ -102,29 +103,38 @@ MocoInverseSolution MocoInverse::solve() const {
     // -------------------------
     auto& solver = moco.initCasADiSolver();
     solver.set_dynamics_mode("implicit");
+    OPENSIM_THROW_IF_FRMOBJ(get_tolerance() <= 0, Exception,
+            format("Tolerance must be positive, but got %g.", get_tolerance()));
+    solver.set_optim_convergence_tolerance(get_tolerance());
+    solver.set_optim_constraint_tolerance(get_tolerance());
     solver.set_transcription_scheme("trapezoidal");
     if (model.getWorkingState().getNMultipliers()) {
         solver.set_transcription_scheme("hermite-simpson");
         solver.set_enforce_constraint_derivatives(true);
     }
-    if (getProperty_tolerance().size()) {
-        OPENSIM_THROW_IF_FRMOBJ(get_tolerance() <= 0, Exception,
-                format("Tolerance must be positive, but got %g.",
-                        get_tolerance()));
-        solver.set_optim_convergence_tolerance(get_tolerance());
-        solver.set_optim_constraint_tolerance(get_tolerance());
-    }
     // The sparsity detection works fine with DeGrooteFregly2016Muscle.
     solver.set_optim_sparsity_detection("random");
     // Forward is 3x faster than central.
     solver.set_optim_finite_difference_scheme("forward");
-
     solver.set_num_mesh_points(timeInfo.numMeshPoints);
+    if (!getProperty_max_iterations().empty()) {
+        solver.set_optim_max_iterations(get_max_iterations());
+    }
 
-    // Solve the problem.
-    // ------------------
+    return std::make_pair(
+            moco, posmotPtr->exportToTable(kinematics.getIndependentColumn()));
+}
+
+MocoInverseSolution MocoInverse::solve() const {
+    std::pair<MocoStudy, TimeSeriesTable> init = initializeInternal();
+    const auto& moco = init.first;
+
+    MocoSolution mocoSolution = moco.solve().unseal();
+
+    const auto& statesTrajTable = init.second;
+    mocoSolution.insertStatesTrajectory(statesTrajTable);
     MocoInverseSolution solution;
-    solution.setMocoSolution(moco.solve().unseal());
+    solution.setMocoSolution(mocoSolution);
 
     if (getProperty_output_paths().size()) {
         std::vector<std::string> outputPaths;
@@ -133,6 +143,9 @@ MocoInverseSolution MocoInverse::solve() const {
         }
         solution.setOutputs(
                 moco.analyze(solution.getMocoSolution(), outputPaths));
+    }
+    if (!mocoSolution.success()) {
+        solution.m_mocoSolution.seal();
     }
     return solution;
 }
