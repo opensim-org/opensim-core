@@ -246,6 +246,7 @@ Model createModel(bool removeMuscles = false, bool addAnkleExo = false) {
         model.print("subject_walk_rra_adjusted_armless_updated_muscles.osim");
     }
 
+    model.printSubcomponentInfo();
     return model;
 }
 
