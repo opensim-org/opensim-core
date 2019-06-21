@@ -38,9 +38,13 @@ void muscleDrivenStateTracking() {
     track.set_track_reference_position_derivatives(true);
     track.set_initial_time(0.81);
     track.set_final_time(1.65);
+    track.set_mesh_interval(0.05);
+    track.set_guess_file("muscle_driven_state_tracking_solution.sto");
 
-    MocoSolution solution = track.solve();
-    
+    //MocoSolution solution = track.solve();
+    MocoStudy moco = track.initialize();
+    MocoSolution solution = moco.solve();
+    moco.visualize(solution);
 }
 
 
