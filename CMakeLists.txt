@@ -106,11 +106,6 @@ if(${MOCO_INSTALL_UNIX_FHS})
 
     # Now set variables that depend on those set by GNUInstallDirs.
 
-    # There's a difference between the locations of these files we'd want
-    # when using apt-get, and what a build-from-source user would want. Fo
-    # now the focus is making sure that if a build-from-source user installs
-    # into /usr or /usr/local, they have a FHS-compliant OpenSim installation.
-
     set(MOCO_INSTALL_ARCHIVEDIR "${CMAKE_INSTALL_LIBDIR}")
     set(MOCO_INSTALL_CMAKEDIR "${CMAKE_INSTALL_LIBDIR}/cmake/Moco")
     # Location of the opensim python package in the installation.
