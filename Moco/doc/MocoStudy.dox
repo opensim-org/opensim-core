@@ -448,6 +448,9 @@ ms.set_interpolate_control_midpoints(false);
 1. Make sure every variable has bounds. 
 2. Create a dynamically-consistent initial guess by solving a feasibility problem 
 (i.e. no cost terms).
+3. Actuators should only be as strong as they need to be. Problems tend to 
+converge slower if some actuator controls are too strong and they're controls
+are very small compared to other actuators in the model.
 
 */
 
