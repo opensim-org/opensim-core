@@ -107,7 +107,7 @@ public:
 
     /** Convenience load markers from a file. See below. */
     MarkersReference(const std::string& markerFileName,
-                     const Set<MarkerWeight>* markerWeightSet = nullptr,
+                     const Set<MarkerWeight>& markerWeightSet,
                      Units modelUnits = Units(Units::Meters));
     /** Form a Reference from TimeSeriesTable and corresponding marker weights. 
     The marker weights are used to initialize the weightings of the markers
@@ -119,7 +119,7 @@ public:
     units of the columns, as table metadata. In absence of 'Units' metadata,
     columns are assumed to be of units 'meters'.                              */
     MarkersReference(const TimeSeriesTable_<SimTK::Vec3>& markerData,
-                     const Set<MarkerWeight>* markerWeightSet = nullptr,
+        const Set<MarkerWeight>& markerWeightSet,
                      Units units = Units(Units::Meters));
 
     virtual ~MarkersReference() {}
@@ -128,8 +128,8 @@ public:
         correspond to the markers that have weights. If no markers are provided,
         all corresponding markers are tracked at default reference weight.
         @See setDefaultWeight()*/
-    void loadMarkersFile(const std::string markerFile,
-                         const Set<MarkerWeight>* markerWeightSet = nullptr,
+    void loadMarkersFile(const std::string& markerFile,
+                         const Set<MarkerWeight>& markerWeightSet,
                          Units modelUnits = Units(Units::Meters));
 
     //--------------------------------------------------------------------------
@@ -179,7 +179,7 @@ private:
     void constructProperties();
     void
     populateFromMarkerData(const TimeSeriesTable_<SimTK::Vec3>& markerData,
-                           const Set<MarkerWeight>* markerWeightSet = nullptr,
+                           const Set<MarkerWeight>& markerWeightSet,
                            const std::string& units = "Meters");
     void updateInternalWeights() const;
 
