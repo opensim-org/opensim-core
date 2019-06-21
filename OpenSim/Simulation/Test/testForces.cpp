@@ -73,7 +73,7 @@ int main()
 {
     SimTK::Array_<std::string> failures;
 
-    testPathSpringPath();
+    //testPathSpringPath();
 
     try { testPathSpring(); }
     catch (const std::exception& e){
