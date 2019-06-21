@@ -763,5 +763,40 @@ int main() {
                 TimestampLessThanEqualToPrevious);
     }
 
+    {
+        //Test removing columns and rows and their performance;
+        int nr = 50000;
+        int nc = 25;
+        std::vector<double> indColumn(size_t(nr), 1.0);
+        SimTK::Matrix huge(nr, nc, SimTK::NaN);
+        std::vector<std::string> labels(size_t(nc), "");
+        int c = 0;
+        for (auto& label : labels) {
+            label = "c" + std::to_string(c++);
+        }
+        for (int r = 0; r < nr; ++r)
+            indColumn[r] = 0.001*r;
+    
+        TimeSeriesTable table{ indColumn, huge, labels };
+
+        std::clock_t t0 = std::clock();
+        for (int i = 1; i < nc; ++i)
+            table.removeColumnAtIndex(1);
+
+        double dTc = 1.e3*(std::clock() - t0) / CLOCKS_PER_SEC;
+       
+        std::cout << "\tRemoving columns took:"   << dTc << "ms" << std::endl;
+
+        TimeSeriesTable table2{ indColumn, huge, labels };
+
+        t0 = std::clock();
+        for (int i = 1; i < nc; ++i)
+            table2.removeRowAtIndex(1);
+
+        double dTr = 1.e3*(std::clock() - t0) / CLOCKS_PER_SEC;
+
+        std::cout << "\tRemoving rows took:" << dTr << "ms" << std::endl;
+    }
+
     return 0;
 }
