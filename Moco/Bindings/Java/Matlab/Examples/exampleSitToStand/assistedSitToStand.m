@@ -1,62 +1,106 @@
 function assistedSitToStand
-import org.opensim.modeling.*;
 
-% TODO: Use analysis to see if glut passive forces are too large.
+global verbosity;
 
-subject1Info = createSubjectInfo();
+% Use the verbosity variable to control console output (0 or 1).
+verbosity = 0;
 
-subject2Info = createSubjectInfo();
-subject2Info.psoas_r = 1.2;
-subject2Info.vas_int_r = 0.8;
+% TODO add options for visualizing
+% TODO add options for creating additional subjects.
 
-if ~exist('subject1UnassistedSolution.sto', 'file')
-    subject1UnassistedSolution = solve(subject1Info);
-    subject1UnassistedObjective = subject1UnassistedSolution.getObjective();
-    subject1UnassistedSolution.write('subject1UnassistedSolution.sto');
-else
-    subject1UnassistedSolution = MocoTrajectory('subject1UnassistedSolution.sto');
-    table = STOFileAdapter.read('subject1UnassistedSolution.sto');
-    subject1UnassistedObjective = ...
-        str2double(table.getTableMetaDataAsString('objective'));
-end
-if ~exist('subject2UnassistedSolution.sto', 'file')
-    subject2UnassistedSolution = solve(subject2Info);
-    subject2UnassistedObjective = subject2UnassistedSolution.getObjective();
-    subject2UnassistedSolution.write('subject2UnassistedSolution.sto');
-else
-    subject2UnassistedSolution = MocoTrajectory('subject2UnassistedSolution.sto');
-    table = STOFileAdapter.read('subject2UnassistedSolution.sto');
-    subject2UnassistedObjective = ...
-        str2double(table.getTableMetaDataAsString('objective'));
-end
-
-subject1AssistedSolution = solve(subject1Info, @addSpringToKnee);
-subject2AssistedSolution = solve(subject2Info, @addSpringToKnee);
-
-mocoPlotTrajectory(subject1UnassistedSolution, subject1AssistedSolution);
-mocoPlotTrajectory(subject2UnassistedSolution, subject2AssistedSolution);
-
-fprintf('Subject 1 unassisted: %f\n', subject1UnassistedObjective);
-fprintf('Subject 1 assisted: %f\n', subject1AssistedSolution.getObjective());
-fprintf('Subject 1 unassisted: %f\n', subject2UnassistedObjective);
-fprintf('Subject 1 assisted: %f\n', subject2AssistedSolution.getObjective());
+evaluateDevice(@addSpringToKnee);
 
 end
 
-% TODO: Give users examples of other devices they can add.
-% hip_flexion_r
-% knee_angle_r
-% ankle_angle_r
-function addSpringToKnee(model)
+% Competition rules:
+% 1. Add any number of SpringGeneralizedForce components to the model.
+% 2. The springs can be applied to the following coordinates:
+%       hip_flexion_r
+%       knee_angle_r
+%       ankle_angle_r
+% 3. Set Stiffness, RestLength, and Viscosity to any non-negative value.
+% 4. The sum of all Stiffnesses must be less than 15.
+% 5. Do not add any other types of components to the model.
+% 6. Do not edit or remove any components already in the model.
+
+%
+% Information:
+% 1. To help with experimenting with different designs, create a separate function
+%    for each design and change the argument to the run() function above.
+% 2. The unassisted solutions are cached as subject1_unassisted_solution.sto
+%    and subject2_unassisted_solution.sto. If you want to re-run the unassisted
+%    optimizations, delete these STO files.
+
+function name = addSpringToKnee(model)
+name = 'knee_spring';
 import org.opensim.modeling.*;
 device = SpringGeneralizedForce('knee_angle_r');
-device.setStiffness(50);
+device.setStiffness(15);
 device.setRestLength(0);
 device.setViscosity(0);
 model.addForce(device);
 end
 
-function subjectInfo = createSubjectInfo()
+function name = addSpringToAnkle(model)
+name = 'ankle_spring';
+import org.opensim.modeling.*;
+device = SpringGeneralizedForce('ankle_angle_r');
+device.setStiffness(10);
+device.setRestLength(0);
+device.setViscosity(5);
+model.addForce(device);
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% DO NOT EDIT BELOW THIS LINE                                                  %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+function evaluateDevice(addDeviceFunction)
+import org.opensim.modeling.*;
+
+subjectInfos{1} = createSubjectInfo(1);
+subjectInfos{1}.tib_ant_r = 0.8;
+
+subjectInfos{2} = createSubjectInfo(2);
+subjectInfos{2}.vas_int_r = 0.8;
+
+subjects = [1, 2];
+
+for subject = subjects
+    info = subjectInfos{subject};
+    str = sprintf('subject%i', subject);
+    if ~exist([str '_unassisted_solution.sto'], 'file')
+        unassistedSolution = solve(info);
+        unassistedObjective = unassistedSolution.getObjective();
+        unassistedSolution.write([str '_unassisted_solution.sto']);
+    else
+        unassistedSolution = MocoTrajectory([str '_unassisted_solution.sto']);
+        table = STOFileAdapter.read([str '_unassisted_solution.sto']);
+        unassistedObjective = ...
+            str2double(table.getTableMetaDataAsString('objective'));
+    end
+
+    assistedSolution = solve(info, addDeviceFunction);
+
+    mocoPlotTrajectory(unassistedSolution, assistedSolution);
+
+    fprintf('Subject %i unassisted: %f\n', subject, unassistedObjective);
+    fprintf('Subject %i assisted: %f\n', subject, assistedSolution.getObjective());
+
+    percentChange{subject} = ...
+            100.0 * (assistedSolution.getObjective() / unassistedObjective - 1);
+end
+
+
+for subject = subjects
+    fprintf('Subject %i percent change: %f\n', subject, percentChange{subject});
+end
+
+end
+
+
+function subjectInfo = createSubjectInfo(number)
+subjectInfo.name = sprintf('subject%i', number);
 subjectInfo.bifemsh_r = 1;
 subjectInfo.med_gas_r = 1;
 subjectInfo.glut_max2_r = 1;
@@ -69,13 +113,17 @@ subjectInfo.vas_int_r = 1;
 end
 
 function [solution] = solve(subjectInfo, addDeviceFunction)
+global verbosity;
 import org.opensim.modeling.*;
 moco = MocoStudy();
 
 problem = moco.updProblem();
 model = getMuscleDrivenModel(subjectInfo);
 if nargin > 1
-    addDeviceFunction(model);
+    name = addDeviceFunction(model);
+    problem.setName([subjectInfo.name '_assisted_' name])
+else
+    problem.setName([subjectInfo.name '_unassisted'])
 end
 problem.setModel(model);
 
@@ -85,7 +133,7 @@ problem.setStateInfo('/jointset/knee_r/knee_angle_r/value', [-2, 0], -2, 0);
 problem.setStateInfo('/jointset/ankle_r/ankle_angle_r/value', ...
     [-0.5, 0.7], -0.5, 0);
 problem.setStateInfoPattern('/jointset/.*/speed', [], 0, 0);
-problem.setStateInfoPattern('.*/activation', [], 0);
+
 
 problem.addCost(MocoControlCost('myeffort'));
 
@@ -95,13 +143,26 @@ solver.set_num_mesh_points(25);
 solver.set_optim_convergence_tolerance(1e-3);
 solver.set_optim_constraint_tolerance(1e-3);
 solver.set_optim_finite_difference_scheme('forward');
+if ~verbosity
+    solver.set_verbosity(0);
+    solver.set_optim_ipopt_print_level(1);
+end
 
 solution = moco.solve();
+
+if nargin > 1
+    solution.write([char(problem.getName()) '_solution.sto']);
+end
+
+% outputPaths = StdVectorString();
+% outputPaths.add('.*multiplier');
+% outputTable = moco.analyze(solution, outputPaths);
+% STOFileAdapter.write(outputTable, "assistedOutputs.sto");
+
+% moco.visualize(solution);
 end
 
 function [model] = getMuscleDrivenModel(subjectInfo)
-
-% TODO modify model according to subject info.
 
 import org.opensim.modeling.*;
 
@@ -119,10 +180,12 @@ DeGrooteFregly2016Muscle().replaceMuscles(model);
 
 fields = fieldnames(subjectInfo);
 for ifield = 1:numel(fields)
-    musc = model.updMuscles().get(fields{ifield});
-    origFmax = musc.getMaxIsometricForce();
-    factor = subjectInfo.(fields{ifield});
-    musc.setMaxIsometricForce(factor * origFmax);
+    if ~strcmp(fields{ifield}, 'name')
+        musc = model.updMuscles().get(fields{ifield});
+        origFmax = musc.getMaxIsometricForce();
+        factor = subjectInfo.(fields{ifield});
+        musc.setMaxIsometricForce(factor * origFmax);
+    end
 end
 
 % Turn off activation dynamics and muscle-tendon dynamics to keep the
