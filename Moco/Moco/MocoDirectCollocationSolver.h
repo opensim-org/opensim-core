@@ -48,6 +48,16 @@ namespace OpenSim {
 /// including model kinematic constraints, the 'hermite-simpson' option is 
 /// required (see Kinematic constraints section below).
 ///
+/// Path constraints on controls with Hermite-Simpson transcription
+/// ---------------------------------------------------------------
+/// For Hermite-Simpson transcription, the direct collocation solvers enforce
+/// the path constraints (e.g., MocoPathConstraint) at only the mesh interval
+/// endpoints (not midpoints), but control signal variables exist at both mesh
+/// interval endpoints and midpoints. Keep this in mind when using path
+/// constraints on controls (e.g., MocoControlBoundConstraint). If
+/// `interpolate_control_midpoints` is false, the values of a control at
+/// midpoints may differ greatly from the values at mesh interval endpoints.
+///
 /// Dynamics mode
 /// -------------
 /// The `dynamics_mode` setting allows you to choose between expressing
@@ -72,13 +82,16 @@ namespace OpenSim {
 /// constraint manifold when necessary to properly enforce defect constraints
 /// (see Posa et al. 2016 for details).
 
-class MocoDirectCollocationSolver : public MocoSolver {
+class OSIMMOCO_API MocoDirectCollocationSolver : public MocoSolver {
     OpenSim_DECLARE_ABSTRACT_OBJECT(MocoDirectCollocationSolver, MocoSolver);
 
 public:
     OpenSim_DECLARE_PROPERTY(num_mesh_points, int,
-            "The number of mesh points for discretizing the problem (default: "
-            "100).");
+            "The number of uniformly-spaced mesh points for the problem "
+            "(default: "
+            "100). If a non-uniform mesh exists, the non-uniform mesh is used "
+            "instead.");
+
     OpenSim_DECLARE_PROPERTY(verbosity, int,
             "0 for silent. 1 for only Moco's own output. "
             "2 for output from CasADi and the underlying solver (default: 2).");
@@ -134,10 +147,18 @@ public:
 
     MocoDirectCollocationSolver() { constructProperties(); }
 
+    /// Sets the mesh to a, usually non-uniform, user-defined list of mesh
+    /// points to sample. Takes precedence over uniform mesh with
+    /// num_mesh_points. The user-defined mesh must start with 0, be strictly
+    /// increasing (no duplicate times), and end with 1.
+    void setMesh(const std::vector<double>& mesh);
+
 protected:
     OpenSim_DECLARE_PROPERTY(guess_file, std::string,
-            "A MocoIterate file storing an initial guess.");
-
+            "A MocoTrajectory file storing an initial guess.");
+    OpenSim_DECLARE_LIST_PROPERTY(mesh, double,
+            "Usually non-uniform, user-defined list of mesh points to sample. "
+            "Takes precedence over uniform mesh with num_mesh_points.");
     void constructProperties();
 };
 

@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: MocoStudy.cpp                                                 *
+ * OpenSim Moco: MocoStudy.cpp                                                *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2017 Stanford University and the Authors                     *
  *                                                                            *
@@ -17,10 +17,12 @@
  * -------------------------------------------------------------------------- */
 #include "MocoStudy.h"
 
+#include "Components/PositionMotion.h"
 #include "MocoCasADiSolver/MocoCasADiSolver.h"
 #include "MocoProblem.h"
 #include "MocoTropterSolver.h"
 #include "MocoUtilities.h"
+#include <regex>
 
 #include <OpenSim/Common/IO.h>
 #include <OpenSim/Common/Reporter.h>
@@ -97,14 +99,15 @@ MocoSolution MocoStudy::solve() const {
     return solution;
 }
 
-void MocoStudy::visualize(const MocoIterate& it) const {
+void MocoStudy::visualize(const MocoTrajectory& it) const {
     // TODO this does not need the Solver at all, so this could be moved to
     // MocoProblem.
     const auto& model = get_problem().getPhase(0).getModel();
     OpenSim::visualize(model, it.exportToStatesStorage());
 }
 
-TimeSeriesTable MocoStudy::analyze(const MocoIterate& iterate,
+TimeSeriesTable MocoStudy::analyze(const MocoTrajectory& iterate,
         std::vector<std::string> outputPaths) const {
-    return OpenSim::analyze(get_problem(), iterate, outputPaths);
+    return OpenSim::analyze<double>(get_problem().createRep().getModelBase(), 
+        iterate, outputPaths);
 }

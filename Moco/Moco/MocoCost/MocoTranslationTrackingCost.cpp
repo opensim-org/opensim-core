@@ -34,18 +34,14 @@ void MocoTranslationTrackingCost::initializeOnModelImpl(const Model& model)
     if (m_translation_table.getNumColumns() != 0 ||   // translation table or 
             get_translation_reference_file() != "") { // reference file provided
         TimeSeriesTableVec3 translationTableToUse;
+        // Should not be able to supply any two simultaneously.
+        assert(get_states_reference().empty());
         if (get_translation_reference_file() != "") { // translation ref file
-            // Should not be able to supply any two simultaneously.
-            assert(get_states_reference_file() == "");
-            assert(m_states_table.getNumColumns() == 0);
             assert(m_translation_table.getNumColumns() == 0);
-            translationTableToUse = readTableFromFile<Vec3>(
+            translationTableToUse = readTableFromFileT<Vec3>(
                     get_translation_reference_file());
 
         } else { // translation table
-            // Should not be able to supply any two simultaneously.
-            assert(get_states_reference_file() == "");
-            assert(m_states_table.getNumColumns() == 0);
             assert(get_translation_reference_file() == "");
             translationTableToUse = m_translation_table;
         }
@@ -121,6 +117,9 @@ void MocoTranslationTrackingCost::initializeOnModelImpl(const Model& model)
         translationTable.setColumnLabels(pathsToUse);
 
     }
+
+    // Check that there are no redundant columns in the reference data.
+    checkRedundantLabels(translationTable.getColumnLabels());
 
     // Cache the model frames and translation weights based on the order of the 
     // translation table.

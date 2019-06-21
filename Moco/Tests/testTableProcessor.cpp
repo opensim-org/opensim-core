@@ -45,7 +45,7 @@ TEST_CASE("TableProcessor") {
         // Exception if no table was provided.
         CHECK_THROWS(TableProcessor().process());
         // No exception if an empty table is provided.
-        TableProcessor processor(TimeSeriesTable{});
+        TableProcessor(TimeSeriesTable{}).process();
         {
             TableProcessor proc(TimeSeriesTable{});
             proc.set_filepath("file.sto");

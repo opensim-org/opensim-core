@@ -67,7 +67,7 @@ inline casadi::DM convertToCasADiDM(const SimTK::Vector& simtkVec) {
 }
 
 /// This resamples the iterate to obtain values that lie on the mesh.
-inline CasOC::Iterate convertToCasOCIterate(const MocoIterate& mocoIt) {
+inline CasOC::Iterate convertToCasOCIterate(const MocoTrajectory& mocoIt) {
     CasOC::Iterate casIt;
     CasOC::VariablesDM& casVars = casIt.variables;
     using CasOC::Var;
@@ -125,8 +125,8 @@ inline SimTK::Matrix convertToSimTKMatrix(const casadi::DM& casMatrix) {
     return simtkMatrix;
 }
 
-template <typename TOut = MocoIterate>
-TOut convertToMocoIterate(const CasOC::Iterate& casIt) {
+template <typename TOut = MocoTrajectory>
+TOut convertToMocoTrajectory(const CasOC::Iterate& casIt) {
     SimTK::Matrix simtkStates;
     const auto& casVars = casIt.variables;
     using CasOC::Var;
@@ -163,12 +163,12 @@ TOut convertToMocoIterate(const CasOC::Iterate& casIt) {
     }
     SimTK::Vector simtkTimes = convertToSimTKVector(casIt.times);
 
-    TOut mocoIterate(simtkTimes, casIt.state_names, casIt.control_names,
+    TOut mocoTraj(simtkTimes, casIt.state_names, casIt.control_names,
             casIt.multiplier_names, derivativeNames, casIt.parameter_names,
             simtkStates, simtkControls, simtkMultipliers, simtkDerivatives,
             simtkParameters);
 
-    // Append slack variables. MocoIterate requires the slack variables to be
+    // Append slack variables. MocoTrajectory requires the slack variables to be
     // the same length as its time vector, but it will not be if the
     // CasOC::Iterate was generated from a CasOC::Transcription object.
     // Therefore, slack variables are interpolated as necessary.
@@ -178,15 +178,15 @@ TOut convertToMocoIterate(const CasOC::Iterate& casIt) {
                 simtkTimes[0], simtkTimes[simtkTimes.size() - 1]);
         for (int i = 0; i < (int)casIt.slack_names.size(); ++i) {
             if (simtkSlacksLength != simtkTimes.size()) {
-                mocoIterate.appendSlack(casIt.slack_names[i],
+                mocoTraj.appendSlack(casIt.slack_names[i],
                         interpolate(slackTime, simtkSlacks.col(i), simtkTimes));
             } else {
-                mocoIterate.appendSlack(
+                mocoTraj.appendSlack(
                         casIt.slack_names[i], simtkSlacks.col(i));
             }
         }
     }
-    return mocoIterate;
+    return mocoTraj;
 }
 
 class MocoCasOCProblem : public CasOC::Problem {
@@ -294,6 +294,10 @@ private:
                 simtkStateDisabledConstraints);
 
         // Compute kinematic constraint errors if they exist.
+        // TODO: Do not enforce kinematic constraints if prescribedKinematics,
+        // but must make sure the prescribedKinematics already obey the
+        // constraints. This is simple at the q and u level (using assemble()),
+        // but what do we do for the acceleration level?
         if (getNumMultipliers() && calcKCErrors) {
             calcKinematicConstraintErrors(modelBase, simtkStateBase,
                     simtkStateDisabledConstraints,
@@ -325,7 +329,8 @@ private:
 
         // Update the model and state.
         applyParametersToModelProperties(parameters, *mocoProblemRep);
-        convertToSimTKState(time, multibody_states, simtkStateBase);
+        convertToSimTKState(
+                time, multibody_states, modelBase, simtkStateBase, false);
         modelBase.realizeVelocity(simtkStateBase);
 
         // Apply velocity correction to qdot if at a mesh interval midpoint.
@@ -364,17 +369,29 @@ private:
 
         m_jar->leave(std::move(mocoProblemRep));
     }
-    void intermediateCallback(const CasOC::Iterate& iterate) const override {
+    std::vector<std::string>
+    createKinematicConstraintEquationNamesImpl() const override {
+        auto mocoProblemRep = m_jar->take();
+        const auto names = mocoProblemRep->getKinematicConstraintEquationNames(
+                getEnforceConstraintDerivatives());
+        m_jar->leave(std::move(mocoProblemRep));
+        return names;
+    }
+    void intermediateCallbackImpl() const override {
+        m_fileDeletionThrower->throwIfDeleted();
+    }
+    void intermediateCallbackWithIterateImpl(
+            const CasOC::Iterate& iterate) const override {
         std::string filename = format("MocoCasADiSolver_%s_iterate%06i.sto",
                 m_formattedTimeString, iterate.iteration);
-        convertToMocoIterate(iterate).write(filename);
+        convertToMocoTrajectory(iterate).write(filename);
     }
 
 private:
     /// Apply parameters to properties in the models returned by
     /// `mocoProblemRep.getModelBase()` and
     /// `mocoProblemRep.getModelDisabledConstraints()`.
-    inline void applyParametersToModelProperties(const casadi::DM& parameters,
+    void applyParametersToModelProperties(const casadi::DM& parameters,
             const MocoProblemRep& mocoProblemRep) const {
         if (parameters.numel()) {
             SimTK::Vector simtkParams(
@@ -383,13 +400,13 @@ private:
                     simtkParams, m_paramsRequireInitSystem);
         }
     }
-
     /// Copy values from `states` into `simtkState.updY()`, accounting for empty
     /// slots in Simbody's Y vector.
     /// It's fine for the size of `states` to be less than the size of Y; only
     /// the first states.size1() values are copied.
     inline void convertToSimTKState(const double& time,
-            const casadi::DM& states, SimTK::State& simtkState) const {
+            const casadi::DM& states, const Model& model,
+            SimTK::State& simtkState, bool copyAuxStates) const {
         simtkState.setTime(time);
         // Assign the generalized coordinates. We know we have NU generalized
         // speeds because we do not yet support quaternions.
@@ -399,25 +416,27 @@ private:
         std::copy_n(states.ptr() + getNumCoordinates(), getNumSpeeds(),
                 simtkState.updY().updContiguousScalarData() +
                         simtkState.getNQ());
-        std::copy_n(states.ptr() + getNumCoordinates() + getNumSpeeds(),
-                getNumAuxiliaryStates(),
-                simtkState.updY().updContiguousScalarData() +
-                        simtkState.getNQ() + simtkState.getNU());
+        if (copyAuxStates) {
+            std::copy_n(states.ptr() + getNumCoordinates() + getNumSpeeds(),
+                    getNumAuxiliaryStates(),
+                    simtkState.updY().updContiguousScalarData() +
+                            simtkState.getNQ() + simtkState.getNU());
+        }
+        model.getSystem().prescribe(simtkState);
     }
 
-    inline void convertToSimTKState(const double& time,
-            const casadi::DM& states, const casadi::DM& controls,
-            const Model& model, SimTK::State& simtkState) const {
-        convertToSimTKState(time, states, simtkState);
+    void convertToSimTKState(const double& time, const casadi::DM& states,
+            const casadi::DM& controls, const Model& model,
+            SimTK::State& simtkState, bool copyAuxStates) const {
+        convertToSimTKState(time, states, model, simtkState, copyAuxStates);
         auto& simtkControls = model.updControls(simtkState);
         for (int ic = 0; ic < getNumControls(); ++ic) {
-           simtkControls[m_modelControlIndices[ic]] = *(controls.ptr() + ic);
+            simtkControls[m_modelControlIndices[ic]] = *(controls.ptr() + ic);
         }
         model.realizeVelocity(simtkState);
         model.setControls(simtkState, simtkControls);
     }
-
-    inline void applyInput(const double& time, const casadi::DM& states,
+    void applyInput(const double& time, const casadi::DM& states,
             const casadi::DM& controls, const casadi::DM& multipliers,
             const casadi::DM& derivatives, const casadi::DM& parameters,
             const std::unique_ptr<const MocoProblemRep>& mocoProblemRep) const {
@@ -435,6 +454,9 @@ private:
 
         // Update the model and state.
         applyParametersToModelProperties(parameters, *mocoProblemRep);
+        modelBase.getSystem().prescribe(simtkStateBase);
+        modelDisabledConstraints.getSystem().prescribe(
+                simtkStateDisabledConstraints);
 
         if (getNumDerivatives()) {
             auto& accel = mocoProblemRep->getAccelerationMotion();
@@ -444,9 +466,10 @@ private:
             accel.setUDot(simtkStateDisabledConstraints, udot);
         }
 
-        convertToSimTKState(time, states, controls, modelBase, simtkStateBase);
+        convertToSimTKState(
+                time, states, controls, modelBase, simtkStateBase, true);
         convertToSimTKState(time, states, controls, modelDisabledConstraints,
-                simtkStateDisabledConstraints);
+                simtkStateDisabledConstraints, true);
         // If enabled constraints exist in the model, compute constraint forces
         // based on Lagrange multipliers. This also updates the associated
         // discrete variables in the state.
@@ -482,6 +505,12 @@ private:
             const SimTK::State& stateBase,
             const SimTK::State& simtkStateDisabledConstraints,
             casadi::DM& kinematic_constraint_errors) const {
+
+        // If all kinematics are prescribed, we assume that the prescribed
+        // kinematics obey any kinematic constraints. Therefore, the kinematic
+        // constraints would be redundant, and we need not enforce them.
+        if (isPrescribedKinematics()) return;
+
         // The total number of scalar holonomic, non-holonomic, and acceleration
         // constraint equations enabled in the model. This does not count
         // equations for derivatives of holonomic and non-holonomic constraints.
@@ -496,10 +525,9 @@ private:
             // Calculuate udoterr. We cannot use State::getUDotErr()
             // because that uses Simbody's multiplilers and UDot,
             // whereas we have our own multipliers and UDot. Here, we use
-            // the udot computed from the base model (with enabled constraints)
-            // since we cannot use (nor do we have availabe) udot computed
+            // the udot computed from the model with disabled constraints
+            // since we cannot use (nor do we have available) udot computed
             // from the original model.
-            // TODO: realize the base model to Acceleration and use UDotErr?
             const auto& matter = modelBase.getMatterSubsystem();
             matter.calcConstraintAccelerationErrors(stateBase,
                     simtkStateDisabledConstraints.getUDot(), m_pvaerr);
@@ -548,6 +576,7 @@ private:
     std::string m_formattedTimeString;
     std::unordered_map<int, int> m_yIndexMap;
     std::vector<int> m_modelControlIndices;
+    std::unique_ptr<FileDeletionThrower> m_fileDeletionThrower;
     // Local memory to hold constraint forces.
     static thread_local SimTK::Vector_<SimTK::SpatialVec>
             m_constraintBodyForces;

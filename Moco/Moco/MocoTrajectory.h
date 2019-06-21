@@ -1,7 +1,7 @@
-#ifndef MOCO_MOCOITERATE_H
-#define MOCO_MOCOITERATE_H
+#ifndef MOCO_MOCOTRAJECTORY_H
+#define MOCO_MOCOTRAJECTORY_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: MocoIterate.h                                                *
+ * OpenSim Moco: MocoTrajectory.h                                                *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2017 Stanford University and the Authors                     *
  *                                                                            *
@@ -28,11 +28,11 @@ namespace OpenSim {
 class MocoProblem;
 class MocoProblemRep;
 
-/// This exception is thrown if you try to invoke most methods on MocoIterate
+/// This exception is thrown if you try to invoke most methods on MocoTrajectory
 /// while the iterate is sealed.
-class OSIMMOCO_API MocoIterateIsSealed : public Exception {
+class OSIMMOCO_API MocoTrajectoryIsSealed : public Exception {
 public:
-    MocoIterateIsSealed(
+    MocoTrajectoryIsSealed(
             const std::string& file, size_t line, const std::string& func)
             : Exception(file, line, func) {
         addMessage("This iterate is sealed, to force you to acknowledge the "
@@ -44,7 +44,7 @@ public:
 This can be used for specifying an initial guess, or holding the solution
 returned by a solver.
 
-The file format for reading and writing a MocoIterate is comprised of a
+The file format for reading and writing a MocoTrajectory is comprised of a
 file header followed by a row of column names and the stored data. The file
 header contains the number of states, controls, Lagrange multipliers (for
 kinematic constraints), derivatives (non-zero if the dynamics mode is implict),
@@ -95,10 +95,10 @@ If the solver uses an implicit dynamics mode, then there are "control"
 variables ("adjunct" variables in tropter's terminology) for the generalized
 accelerations. These are stored in the iterate as derivative variables. */
 // Not using three-slash doxygen comments because that messes up verbatim.
-class OSIMMOCO_API MocoIterate {
+class OSIMMOCO_API MocoTrajectory {
 public:
-    MocoIterate() = default;
-    MocoIterate(const SimTK::Vector& time, std::vector<std::string> state_names,
+    MocoTrajectory() = default;
+    MocoTrajectory(const SimTK::Vector& time, std::vector<std::string> state_names,
             std::vector<std::string> control_names,
             std::vector<std::string> multiplier_names,
             std::vector<std::string> parameter_names,
@@ -108,7 +108,7 @@ public:
             const SimTK::RowVector& parameters);
     /// This constructor is for use with the implicit dynamics mode, and
     /// allows specifying a derivativesTrajectory.
-    MocoIterate(const SimTK::Vector& time, std::vector<std::string> state_names,
+    MocoTrajectory(const SimTK::Vector& time, std::vector<std::string> state_names,
             std::vector<std::string> control_names,
             std::vector<std::string> multiplier_names,
             std::vector<std::string> derivative_names,
@@ -125,21 +125,21 @@ public:
     /// and data are grouped together, and you can leave out any of the keys.
     template <typename T>
     using NamesAndData = std::pair<std::vector<std::string>, T>;
-    MocoIterate(const SimTK::Vector& time,
+    MocoTrajectory(const SimTK::Vector& time,
             const std::map<std::string, NamesAndData<SimTK::Matrix>>&
                     continuousVars,
             const NamesAndData<SimTK::RowVector>& parameters = {});
 #endif
-    /// Read a MocoIterate from a data file (e.g., STO, CSV). See output of
+    /// Read a MocoTrajectory from a data file (e.g., STO, CSV). See output of
     /// write() for the correct format.
-    explicit MocoIterate(const std::string& filepath);
+    explicit MocoTrajectory(const std::string& filepath);
 
-    virtual ~MocoIterate() = default;
+    virtual ~MocoTrajectory() = default;
 
     /// Returns a dynamically-allocated copy of this iterate. You must manage
     /// the memory for return value.
     /// @note This works even if the iterate is sealed.
-    virtual MocoIterate* clone() const { return new MocoIterate(*this); }
+    virtual MocoTrajectory* clone() const { return new MocoTrajectory(*this); }
 
     bool empty() const {
         ensureUnsealed();
@@ -332,6 +332,13 @@ public:
     // TODO handle rotational coordinates specified in degrees.
     void setStatesTrajectory(const TimeSeriesTable& states,
             bool allowMissingColumns = false, bool allowExtraColumns = false);
+
+    /// Add additional state columns. The provided data are interpolated using
+    /// GCV splines to match the times in this iterate. By default, we do not
+    /// overwrite data for states that already exist in the iterate; you can
+    /// change this behavior with `overwrite`.
+    void insertStatesTrajectory(
+            const TimeSeriesTable& subsetOfStates, bool overwrite = false);
     /// @}
 
     /// @name Accessors
@@ -413,7 +420,7 @@ public:
     /// This uses SimTK::Test::numericallyEqual() internally.
     /// Accordingly, the tolerance is both a relative and absolute tolerance
     /// (depending on the magnitude of quantities being compared).
-    bool isNumericallyEqual(const MocoIterate& other,
+    bool isNumericallyEqual(const MocoTrajectory& other,
             double tol =
                     SimTK::NTraits<SimTK::Real>::getDefaultTolerance()) const;
     /// Compute the root-mean-square error between the continuous variables of
@@ -453,7 +460,7 @@ public:
     /// key are compared.
     /// Both iterates must have at least 6 time nodes.
     /// If the number of columns to compare is 0, this returns 0.
-    double compareContinuousVariablesRMS(const MocoIterate& other,
+    double compareContinuousVariablesRMS(const MocoTrajectory& other,
             std::map<std::string, std::vector<std::string>> columnsToUse = {})
             const;
     /// Compute the root-mean-square error between the parameters in this
@@ -463,7 +470,7 @@ public:
     /// By default, all parameters are compared, and it is expected that both
     /// iterates have the same parameters. Alternatively, you can specify the
     /// specific parameters to compare.
-    double compareParametersRMS(const MocoIterate& other,
+    double compareParametersRMS(const MocoTrajectory& other,
             std::vector<std::string> parameterNames = {}) const;
     /// @}
 
@@ -520,7 +527,7 @@ public:
     /// Model::getControlsTable()). The time columns from the two tables must
     /// match exactly. The times in the iterate will be those from the tables.
     /// This does not (yet) handle parameters.
-    static MocoIterate createFromStatesControlsTables(const MocoProblemRep&,
+    static MocoTrajectory createFromStatesControlsTables(const MocoProblemRep&,
             const TimeSeriesTable& statesTrajectory,
             const TimeSeriesTable& controlsTrajectory);
     /// @}
@@ -560,17 +567,21 @@ public:
 protected:
     void setSealed(bool sealed) { m_sealed = sealed; }
     bool isSealed() const { return m_sealed; }
-    /// @throws MocoIterateIsSealed if the iterate is sealed.
+    /// @throws MocoTrajectoryIsSealed if the iterate is sealed.
     void ensureUnsealed() const;
 
 private:
     TimeSeriesTable convertToTable() const;
     virtual void convertToTableImpl(TimeSeriesTable&) const {}
-    double compareContinuousVariablesRMSInternal(const MocoIterate& other,
+    double compareContinuousVariablesRMSInternal(const MocoTrajectory& other,
             std::vector<std::string> stateNames = {},
             std::vector<std::string> controlNames = {},
             std::vector<std::string> multiplierNames = {},
             std::vector<std::string> derivativeNames = {}) const;
+    static std::vector<std::string>::const_iterator find(
+            const std::vector<std::string>& v, const std::string& elem) {
+        return std::find(v.cbegin(), v.cend(), elem);
+    }
     void randomize(bool add, const SimTK::Random& randGen);
     SimTK::Vector m_time;
     std::vector<std::string> m_state_names;
@@ -612,7 +623,7 @@ private:
 /// prevents you from silently proceeding with a failed solution.
 /// Solver success can also be found in the header of a solution (.sto) file
 /// written out by write.
-class OSIMMOCO_API MocoSolution : public MocoIterate {
+class OSIMMOCO_API MocoSolution : public MocoTrajectory {
 public:
     /// Returns a dynamically-allocated copy of this solution. You must manage
     /// the memory for return value.
@@ -632,6 +643,9 @@ public:
     /// Number of solver iterations at which this solution was obtained
     /// (-1 if not set).
     int getNumIterations() const { return m_numIterations; }
+    /// Get the amount of time (clock time, not CPU time) spent within solve().
+    /// Units: seconds.
+    double getSolverDuration() const { return m_solverDuration; }
 
     /// @name Access control
     /// @{
@@ -646,20 +660,20 @@ public:
     /// @endcode
     /// Otherwise, Moco will cause a crash.
     MocoSolution& unseal() {
-        MocoIterate::setSealed(false);
+        MocoTrajectory::setSealed(false);
         return *this;
     }
     MocoSolution& seal() {
-        MocoIterate::setSealed(true);
+        MocoTrajectory::setSealed(true);
         return *this;
     }
-    bool isSealed() const { return MocoIterate::isSealed(); }
+    bool isSealed() const { return MocoTrajectory::isSealed(); }
     /// @}
 
     // TODO num_iterations
     // TODO store the optimizer settings that were used.
 private:
-    using MocoIterate::MocoIterate;
+    using MocoTrajectory::MocoTrajectory;
     void setSuccess(bool success) {
         if (!success) setSealed(true);
         m_success = success;
@@ -669,15 +683,17 @@ private:
     void setNumIterations(int numIterations) {
         m_numIterations = numIterations;
     };
+    void setSolverDuration(double duration) { m_solverDuration = duration; }
     void convertToTableImpl(TimeSeriesTable&) const override;
     bool m_success = true;
     double m_objective = -1;
     std::string m_status;
     int m_numIterations = -1;
+    double m_solverDuration = -1;
     // Allow solvers to set success, status, and construct a solution.
     friend class MocoSolver;
 };
 
 } // namespace OpenSim
 
-#endif // MOCO_MOCOITERATE_H
+#endif // MOCO_MOCOTRAJECTORY_H

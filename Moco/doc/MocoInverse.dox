@@ -1,0 +1,30 @@
+/**
+
+@page mocoinverse MocoInverse: solving muscle and actuator redundancy
+
+A common goal in musculoskeletal biomechanics is to estimate muscle and actuator
+behavior that drove an observed motion; this is often called the **muscle
+redundancy problem**. We can solve this problem by tracking the observed motion,
+as with Computed Muscle Control (using the "slow target") or MocoTrack.
+Alternatively, we can prescribe the motion exactly, as with Static Optimization,
+EMG-driven simulation [TODO cite Arnold2013, Jackson2016, etc.], and the Muscle
+Redundancy Solver [DeGroote2016]. The advantage of prescribing the motion is the
+problem is more robust and solves faster, as the nonlinear multibody dynamics
+are no longer part of the optimization problem. The disadvantage is that we
+cannot predict deviations from the observed motion.
+
+In Moco, you can use the MocoInverse tool to solve optimization problems in
+which kinematics are known, including the muscle redundancy problem.
+
+The MocoInverse tool adds a PositionMotion component to your model, with
+splines created from a kinematics data file that you provide.
+
+@note The kinematics you provide should already obey any kinematic constraints
+in your model. MocoInverse attempts to alter your provided kinematics to satisfy
+the kinematic constraints (using Model::assemble()), so the tool will not
+actually track the kinematics as provided if they violate constraints.
+
+See @ref preskin, @ref preskinconstr, and @ref preskinimpl for more information.
+
+
+*/

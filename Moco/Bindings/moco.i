@@ -7,6 +7,18 @@ typedef SimTK::RowVector_<double> RowVector;
 
 %include <Moco/Common/TableProcessor.h>
 
+
+namespace OpenSim {
+        %ignore ModelProcessor::setModel(std::unique_ptr<Model>);
+}
+
+%extend OpenSim::ModelProcessor {
+        void setModel(Model* model) {
+            $self->setModel(std::unique_ptr<Model>(model));
+        }
+};
+%include <Moco/ModelProcessor.h>
+
 %include <Moco/MocoCost/MocoCost.h>
 %include <Moco/MocoWeightSet.h>
 %include <Moco/MocoCost/MocoStateTrackingCost.h>
@@ -31,6 +43,8 @@ typedef SimTK::RowVector_<double> RowVector;
 %ignore OpenSim::MocoProblemRep::getMultiplierInfos;
 
 %include <Moco/MocoConstraint.h>
+
+%include <Moco/MocoControlBoundConstraint.h>
 
 // unique_ptr
 // ----------
@@ -93,11 +107,18 @@ moco_unique_ptr(OpenSim::MocoProblemRep);
 %rename(createRep) OpenSim::MocoProblem::createRepHeap;
 
 namespace OpenSim {
+    %ignore ModelProcessor::setModel(std::unique_ptr<Model>);
     %ignore MocoPhase::setModel(Model);
     %ignore MocoPhase::setModel(std::unique_ptr<Model>);
     %ignore MocoProblem::setModel(Model);
     %ignore MocoProblem::setModel(std::unique_ptr<Model>);
 }
+
+%extend OpenSim::ModelProcessor {
+    void setModel(Model* model) {
+        $self->setModel(std::unique_ptr<Model>(model));
+    }
+};
 
 %extend OpenSim::MocoPhase {
     void setModel(Model* model) {
@@ -146,15 +167,15 @@ EXPOSE_BOUNDS_CONSTRUCTORS_HELPER(MocoFinalBounds);
 
 // SWIG does not support initializer_list, but we can use Java arrays to
 // achieve similar syntax in MATLAB.
-%ignore OpenSim::MocoIterate::setTime(std::initializer_list<double>);
-%ignore OpenSim::MocoIterate::setState(const std::string&,
+%ignore OpenSim::MocoTrajectory::setTime(std::initializer_list<double>);
+%ignore OpenSim::MocoTrajectory::setState(const std::string&,
         std::initializer_list<double>);
-%ignore OpenSim::MocoIterate::setControl(const std::string&,
+%ignore OpenSim::MocoTrajectory::setControl(const std::string&,
         std::initializer_list<double>);
-%ignore OpenSim::MocoIterate::setMultiplier(const std::string&,
+%ignore OpenSim::MocoTrajectory::setMultiplier(const std::string&,
         std::initializer_list<double>);
 
-%include <Moco/MocoIterate.h>
+%include <Moco/MocoTrajectory.h>
 
 %include <Moco/MocoSolver.h>
 %include <Moco/MocoDirectCollocationSolver.h>
@@ -167,8 +188,16 @@ namespace OpenSim {
 %include <Moco/MocoCasADiSolver/MocoCasADiSolver.h>
 %include <Moco/MocoStudy.h>
 
+%include <Moco/MocoTool.h>
+%include <Moco/MocoInverse.h>
+%include <Moco/MocoTrack.h>
+
 %include <Moco/Components/ActivationCoordinateActuator.h>
 %include <Moco/Components/DeGrooteFregly2016Muscle.h>
+moco_unique_ptr(OpenSim::PositionMotion);
+%include <Moco/Components/PositionMotion.h>
 %include <Moco/MocoUtilities.h>
 
 %include <Moco/Components/ModelFactory.h>
+
+%include <Moco/ModelOperators.h>

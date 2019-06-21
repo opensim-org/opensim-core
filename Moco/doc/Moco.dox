@@ -1,0 +1,64 @@
+namespace OpenSim {
+/** @mainpage
+
+OpenSim Moco is a software package for solving optimal control problems for
+musculoskeletal systems modeled in OpenSim. The package has Python, MATLAB, and
+XML (command-line) interfaces; the core library is written in C++. Here are some
+problems you can solve with Moco:
+
+1. Solve for the muscle activity that tracks a known motion.
+2. Solve for a new motion that optimizes some cost (e.g., effort).
+3. Solve for mass properties that minimize residual (unrealistic) forces.
+
+The optimal control problems are solved using the direct collocation method.
+Direct collocation itself is beyond the scope of this documentation; see
+the following excellent material:
+
+  - Short paper: Kelly, M. (2017). An introduction to trajectory optimization:
+    how to do your own direct collocation. SIAM Review, 59(4), 849-904.
+    https://doi.org/10.1137/16M1062569
+  - Textbook: Betts, J. T. (2010). Practical methods for optimal control and
+    estimation using nonlinear programming (Vol. 19). Siam.
+
+Moco can solve specific classes of problems, such as motion tracking and muscle
+redundancy, and has a generic interface for solving custom optimal control
+problems. Solving a custom optimal control problem with direct collocation
+requires substantial tuning of the direct collocation method's settings. Use the
+more specific interfaces if possible.
+
+Parts of the documentation:
+  - @ref mocotrack
+  - @ref mocoinverse
+  - @ref mocostudy
+  - @ref mocoimplguide
+  - @ref faq
+
+
+
+
+
+@defgroup mococost Available cost terms
+
+These are the available cost terms you can use in your cost functional. If none
+of these satisfy your needs, you can define your own using a plugin.
+
+
+
+
+@defgroup faq Frequently Asked Questions
+
+@section How do I interrupt an optimization in MATLAB?
+
+Sometimes, you may want to interrupt an optimization before it is complete. In
+MATLAB, we commonly use Ctrl-C to interrupt code, but this does not work during
+a Moco optimization.
+
+Use this alternative: During an optimization, Moco tries to write a text file to
+your current directory named "delete_this...". Delete this file to interrupt the
+optimization.
+
+*/
+
+
+} // namespace OpenSim
+

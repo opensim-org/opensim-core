@@ -16,7 +16,6 @@ if(MSVC AND NOT ${CMAKE_GENERATOR} MATCHES "Win64")
     message(FATAL_ERROR ${MSG})
 endif()
 
-
 option(OPENSIM_JAVA_WRAPPING "Build opensim-core Java/MATLAB interface." OFF)
 option(OPENSIM_PYTHON_WRAPPING "Build opensim-core Python interface." OFF)
 set(OPENSIM_PYTHON_VERSION 3 CACHE STRING
@@ -27,6 +26,7 @@ set_property(CACHE OPENSIM_PYTHON_VERSION PROPERTY STRINGS "2" "3")
 
 include(ExternalProject)
 include(CMakeParseArguments)
+
 
 # Set the default for CMAKE_INSTALL_PREFIX.
 function(SetDefaultCMakeInstallPrefix)
@@ -183,9 +183,10 @@ SetDefaultCMakeBuildType()
 ####################### Add dependencies below.
 
 AddDependency(NAME eigen
-              URL  https://bitbucket.org/eigen/eigen/get/3.3.4.zip)
+              URL  https://bitbucket.org/eigen/eigen/get/3.3.7.zip)
 
 include(colpack.cmake)
+
 
 set(SUPERBUILD_adolc ON CACHE BOOL 
     "Automatically download, configure, build and install adolc")
@@ -266,6 +267,7 @@ else()
                 COMMAND <SOURCE_DIR>/configure --prefix=<INSTALL_DIR>
                                                --enable-sparse
                                                --with-colpack=${CMAKE_INSTALL_PREFIX}/colpack
+                                               --with-boost=no
             BUILD_COMMAND ${CMAKE_MAKE_PROGRAM} ${BUILD_FLAGS}
             INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install)
     endif()

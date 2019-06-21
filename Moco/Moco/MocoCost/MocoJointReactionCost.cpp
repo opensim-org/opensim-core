@@ -39,7 +39,7 @@ void MocoJointReactionCost::initializeOnModelImpl(const Model& model) const {
     // Cache the joint.
     OPENSIM_THROW_IF_FRMOBJ(get_joint_path().empty(), Exception,
         "Expected a joint path, but property joint_path is empty.");
-    m_joint = &getModel().getComponent<Joint>(get_joint_path());
+    m_joint = &model.getComponent<Joint>(get_joint_path());
 
     // Get the frame from which the loads are computed.
     checkPropertyInSet(*this, getProperty_loads_frame(), {"parent", "child"});
@@ -57,8 +57,7 @@ void MocoJointReactionCost::initializeOnModelImpl(const Model& model) const {
             m_frame = &m_joint->getChildFrame();
         }
     } else {
-        m_frame = 
-            &getModel().getComponent<Frame>(get_expressed_in_frame_path());
+        m_frame = &model.getComponent<Frame>(get_expressed_in_frame_path());
     }
 
     // If user provided no reaction measure names, then set all measures to

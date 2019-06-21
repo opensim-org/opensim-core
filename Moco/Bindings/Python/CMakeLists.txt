@@ -46,7 +46,7 @@ if(APPLE AND ${MOCO_PYTHON_VERSION} STREQUAL "2")
         CACHE FILEPATH "${pylib_desc}")
 endif()
 find_package(PythonLibs ${required_python_version} REQUIRED)
-find_package(NumPy)
+find_package(NumPy REQUIRED)
 
 # Location of the opensim python package in the build directory, for testing.
 if(MSVC OR XCODE)
@@ -201,36 +201,21 @@ macro(MocoAddPythonModule)
         # Defaults to .dylib; change to .so.
         set_target_properties(${_libname} PROPERTIES SUFFIX ".${UNIXLIBSUFFIX}")
     endif()
-    
-    if(MOCO_COPY_DEPENDENCIES)
-        # We always set a relative RPATH but only use an absolute RPATH if the
-        # python package is not standalone, as the libraries are not copied
-        # into the python package.
-        if(APPLE)
-            set(rpath_macro "\@loader_path")
-        elseif(UNIX)
-            set(rpath_macro "\$ORIGIN")
-        endif()
 
-        set(run_path_list "${rpath_macro}/")
-
-        # Locate osim libraries, etc in the lib dir.
-        file(RELATIVE_PATH py_dir_to_install_dir
-            "${CMAKE_INSTALL_PREFIX}/${MOCO_INSTALL_PYTHONDIR}/opensim"
-            "${CMAKE_INSTALL_PREFIX}")
-        set(py_dir_to_lib_dir
-            "${py_dir_to_install_dir}${CMAKE_INSTALL_LIBDIR}")
-        list(APPEND run_path_list "${rpath_macro}/${py_dir_to_lib_dir}")
-
-        # Absolute RPATH.
-        # TODO we don't yet support a standalone python package.
-        #if(NOT OPENSIM_PYTHON_STANDALONE)
-            list(APPEND run_path_list
-                    "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
-        #endif()
-        set_property(TARGET ${_libname} APPEND PROPERTY
-            INSTALL_RPATH "${run_path_list}")
-    endif()
+    MocoAddInstallRPATHSelf(TARGET ${_libname})
+    MocoAddInstallRPATH(TARGET ${_libname} LOADER
+            FROM "${MOCO_INSTALL_PYTHONDIR}/opensim"
+            TO "${CMAKE_INSTALL_LIBDIR}")
+    # TODO we don't yet support a standalone python package.
+    # if(NOT OPENSIM_PYTHON_STANDALONE)
+        MocoAddInstallRPATHAbsolute(TARGET ${_libname}
+                TO "${CMAKE_INSTALL_LIBDIR}")
+    # endif()
+    MocoAddInstallRPATHSimbody(TARGET ${_libname} LOADER
+            FROM "${CMAKE_INSTALL_LIBDIR}/opensim")
+    # if(NOT OPENSIM_PYTHON_STANDALONE)
+        MocoAddInstallRPATHSimbody(TARGET ${_libname} ABSOLUTE)
+    # endif()
 
     # Copy files into the build tree python package.
     # ----------------------------------------------
@@ -387,7 +372,7 @@ install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/examples/"
         DESTINATION "${MOCO_INSTALL_PYTHONEXDIR}")
 
 install(FILES
-        "${CMAKE_SOURCE_DIR}/Moco/plot_iterate.py"
+        "${CMAKE_SOURCE_DIR}/Moco/plot_trajectory.py"
         "${CMAKE_SOURCE_DIR}/Moco/plot_casadi_sparsity.py"
         DESTINATION "${MOCO_INSTALL_PYTHONEXDIR}"
         )

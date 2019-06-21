@@ -18,7 +18,12 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
+#include "MocoTrajectory.h"
 #include "osimMocoDLL.h"
+#include <Common/Reporter.h>
+#include <Simulation/Model/Model.h>
+#include <Simulation/StatesTrajectory.h>
+#include <regex>
 #include <set>
 #include <stack>
 
@@ -30,7 +35,7 @@ namespace OpenSim {
 
 class StatesTrajectory;
 class Model;
-class MocoIterate;
+class MocoTrajectory;
 class MocoProblem;
 
 /// Since Moco does not require C++14 (which contains std::make_unique()),
@@ -40,9 +45,15 @@ std::unique_ptr<T> make_unique(Args&&... args) {
     return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
 }
 
-/// Get a string with the current date and time formatted using the ISO standard
-/// extended datetime format (%Y-%m-%dT%X))
-OSIMMOCO_API std::string getFormattedDateTime();
+/// Get a string with the current date and time formatted as %Y-%m-%dT%H%M%S
+/// (year, month, day, "T", hour, minute, second). You can change the datetime
+/// format via the `format` parameter.
+/// If you specify "ISO", then we use the ISO 8601 extended datetime format
+/// %Y-%m-%dT%H:%M:%S.
+/// See https://en.cppreference.com/w/cpp/io/manip/put_time.
+OSIMMOCO_API std::string getFormattedDateTime(
+        bool appendMicroseconds = false,
+        std::string format = "%Y-%m-%dT%H%M%S");
 
 /// Determine if `string` starts with the substring `start`.
 /// https://stackoverflow.com/questions/874134/find-if-string-ends-with-another-string-in-c
@@ -114,6 +125,20 @@ void printMessage(const std::string& formatString, Types... args) {
 
 /// @}
 
+/// This class stores the formatting of a stream and restores that format
+/// when the StreamFormat is destructed.
+class StreamFormat {
+public:
+    StreamFormat(std::ostream& stream) : m_stream(stream) {
+        m_format.copyfmt(stream);
+    }
+    ~StreamFormat() { m_stream.copyfmt(m_format); }
+
+private:
+    std::ostream& m_stream;
+    std::ios m_format{nullptr};
+}; // StreamFormat
+
 /// Create a SimTK::Vector with the provided length whose elements are
 /// linearly spaced between start and end.
 OSIMMOCO_API
@@ -174,8 +199,7 @@ TimeSeriesTable resample(const TimeSeriesTable& in, const TimeVector& newTime) {
             "Cannot resample if number of times is 0 or 1.");
     OPENSIM_THROW_IF(newTime[0] < time[0], Exception,
             format("New initial time (%f) cannot be less than existing "
-                   "initial "
-                   "time (%f)",
+                   "initial time (%f)",
                     newTime[0], time[0]));
     OPENSIM_THROW_IF(newTime[newTime.size() - 1] > time[time.size() - 1],
             Exception,
@@ -230,7 +254,7 @@ OSIMMOCO_API TimeSeriesTable filterLowpass(
 /// FileAdapter). This function assumes that only one table is contained in the
 /// file, and will throw an exception otherwise.
 template <typename T>
-TimeSeriesTable_<T> readTableFromFile(const std::string& filepath) {
+TimeSeriesTable_<T> readTableFromFileT(const std::string& filepath) {
     auto tablesFromFile = FileAdapter::readFile(filepath);
     // There should only be one table.
     OPENSIM_THROW_IF(tablesFromFile.size() != 1, Exception,
@@ -248,6 +272,15 @@ TimeSeriesTable_<T> readTableFromFile(const std::string& filepath) {
     return *firstTable;
 }
 
+/// Read in a TimeSeriesTable from file containing scalar elements. The
+/// `filepath` argument should refer to a STO or CSV file (or other file types
+/// for which there is a FileAdapter). This function assumes that only one table
+/// is contained in the file, and will throw an exception otherwise.
+OSIMMOCO_API inline TimeSeriesTable readTableFromFile(
+        const std::string& filepath) {
+    return readTableFromFileT<double>(filepath);
+}
+
 /// Write a single TimeSeriesTable to a file, using the FileAdapter associated
 /// with the provided file extension.
 OSIMMOCO_API void writeTableToFile(const TimeSeriesTable&, const std::string&);
@@ -263,25 +296,95 @@ OSIMMOCO_API void visualize(Model, Storage);
 /// the states are provided in a TimeSeriesTable.
 OSIMMOCO_API void visualize(Model, TimeSeriesTable);
 
-OSIMMOCO_API TimeSeriesTable analyze(const MocoProblem& model,
-        const MocoIterate& it, std::vector<std::string> outputPaths);
+/// Calculate the requested outputs using the model in the problem and the
+/// states and controls in the MocoTrajectory.
+/// The output paths can be regular expressions. For example,
+/// ".*activation" gives the activation of all muscles.
+/// Constraints are not enforced but prescribed motion (e.g.,
+/// PositionMotion) is.
+/// The output paths must correspond to outputs that match the type provided in
+/// the template argument, otherwise they are not included in the report.
+/// @note Parameters in the MocoTrajectory are **not** applied to the model.
+template <typename T>
+TimeSeriesTable_<T> analyze(Model model, const MocoTrajectory& iterate,
+        std::vector<std::string> outputPaths) {
 
-/// Given a MocoIterate and the associated OpenSim model, return the model with
+    // Initialize the system so we can access the outputs.
+    model.initSystem();
+    // Create the reporter object to which we'll add the output data to create
+    // the report.
+    auto* reporter = new TableReporter_<T>();
+    // Loop through all the outputs for all components in the model, and if
+    // the output path matches one provided in the argument and the output type
+    // agrees with the template argument type, add it to the report.
+    for (const auto& comp : model.getComponentList()) {
+        for (const auto& outputName : comp.getOutputNames()) {
+            const auto& output = comp.getOutput(outputName);
+            auto thisOutputPath = output.getPathName();
+            for (const auto& outputPathArg : outputPaths) {
+                if (std::regex_match(
+                            thisOutputPath, std::regex(outputPathArg))) {
+                    // Make sure the output type agrees with the template.
+                    if (dynamic_cast<const Output<T>*>(&output)) {
+                        reporter->addToReport(output);
+                    } else {
+                        std::cout << format("Warning: ignoring output %s of "
+                                            "type %s.",
+                                             output.getPathName(),
+                                             output.getTypeName())
+                                  << std::endl;
+                    }
+                }
+            }
+        }
+    }
+    model.addComponent(reporter);
+    model.initSystem();
+
+    // Get states trajectory.
+    Storage storage = iterate.exportToStatesStorage();
+    auto statesTraj = StatesTrajectory::createFromStatesStorage(model, storage);
+
+    // Loop through the states trajectory to create the report.
+    for (int i = 0; i < (int)statesTraj.getSize(); ++i) {
+        // Get the current state.
+        auto state = statesTraj[i];
+
+        // Enforce any SimTK::Motion's included in the model.
+        model.getSystem().prescribe(state);
+
+        // Create a SimTK::Vector of the control values for the current state.
+        SimTK::RowVector controlsRow = iterate.getControlsTrajectory().row(i);
+        SimTK::Vector controls(controlsRow.size(),
+                controlsRow.getContiguousScalarData(), true);
+
+        // Set the controls on the state object.
+        model.realizeVelocity(state);
+        model.setControls(state, controls);
+
+        // Generate report results for the current state.
+        model.realizeReport(state);
+    }
+
+    return reporter->getTable();
+}
+
+/// Given a MocoTrajectory and the associated OpenSim model, return the model with
 /// a prescribed controller appended that will compute the control values from
 /// the MocoSolution. This can be useful when computing state-dependent model
 /// quantities that require realization to the Dynamics stage or later.
 /// The function used to fit the controls can either be GCVSpline or
 /// PiecewiseLinearFunction.
-OSIMMOCO_API void prescribeControlsToModel(const MocoIterate& iterate,
+OSIMMOCO_API void prescribeControlsToModel(const MocoTrajectory& iterate,
         Model& model, std::string functionType = "GCVSpline");
 
 /// Use the controls and initial state in the provided iterate to simulate the
 /// model using an ODE time stepping integrator (OpenSim::Manager), and return
-/// the resulting states and controls. We return a MocoIterate (rather than a
+/// the resulting states and controls. We return a MocoTrajectory (rather than a
 /// StatesTrajectory) to facilitate comparing optimal control solutions with
 /// time stepping. Use integratorAccuracy to override the default setting.
-OSIMMOCO_API MocoIterate simulateIterateWithTimeStepping(
-        const MocoIterate& iterate, Model model,
+OSIMMOCO_API MocoTrajectory simulateIterateWithTimeStepping(
+        const MocoTrajectory& iterate, Model model,
         double integratorAccuracy = -1);
 
 /// The map provides the index of each state variable in
@@ -328,6 +431,11 @@ std::unordered_map<std::string, int> createSystemControlIndexMap(
 /// Throws an exception if the order of the controls in the model is not the
 /// same as the order of the actuators in the model.
 OSIMMOCO_API void checkOrderSystemControls(const Model& model);
+
+/// Throws an exception if the same label appears twice in the list of labels.
+/// The argument copies the provided labels since we need to sort them to check
+/// for redundancies.
+OSIMMOCO_API void checkRedundantLabels(std::vector<std::string> labels);
 
 /// Throw an exception if the property's value is not in the provided set.
 /// We assume that `p` is a single-value property.
@@ -510,6 +618,54 @@ private:
     std::stack<std::unique_ptr<T>> m_entries;
     mutable std::mutex m_mutex;
     std::condition_variable m_inventoryMonitor;
+};
+
+/// Thrown by FileDeletionThrower::throwIfDeleted().
+class FileDeletionThrowerException : public Exception {
+public:
+    FileDeletionThrowerException(const std::string& file, size_t line,
+            const std::string& func, const std::string& deletedFile)
+            : Exception(file, line, func) {
+        addMessage("File '" + deletedFile + "' deleted.");
+    }
+};
+/// This class helps a user cause an exception within the code. The constructor
+/// writes a file, and the destructor deletes the file. The programmer can call
+/// throwIfDeleted() to throw the FileDeletionThrowerException exception if the
+/// file is deleted (by a user) before the object is destructed. If the file
+/// could not be written by the constructor, then throwIfDeleted() does not
+/// throw an exception.
+class FileDeletionThrower {
+public:
+    FileDeletionThrower()
+            : FileDeletionThrower(
+                      "OpenSimMoco_delete_this_to_throw_exception_" +
+                      getFormattedDateTime() + ".txt") {}
+    FileDeletionThrower(std::string filepath)
+            : m_filepath(std::move(filepath)) {
+        std::ofstream f(m_filepath);
+        m_wroteInitialFile = f.good();
+        f.close();
+    }
+    ~FileDeletionThrower() {
+        if (m_wroteInitialFile) {
+            std::ifstream f(m_filepath);
+            if (f.good()) {
+                f.close();
+                std::remove(m_filepath.c_str());
+            }
+        }
+    }
+    void throwIfDeleted() const {
+        if (m_wroteInitialFile) {
+            OPENSIM_THROW_IF(!std::ifstream(m_filepath).good(),
+                    FileDeletionThrowerException, m_filepath);
+        }
+    }
+
+private:
+    bool m_wroteInitialFile = false;
+    const std::string m_filepath;
 };
 
 } // namespace OpenSim

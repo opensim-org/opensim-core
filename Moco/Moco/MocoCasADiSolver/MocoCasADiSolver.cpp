@@ -21,7 +21,6 @@
 #include "../MocoUtilities.h"
 #include "CasOCSolver.h"
 #include "MocoCasOCProblem.h"
-
 #include <casadi/casadi.hpp>
 
 using casadi::Callback;
@@ -44,7 +43,7 @@ void MocoCasADiSolver::constructProperties() {
     constructProperty_output_interval(0);
 }
 
-MocoIterate MocoCasADiSolver::createGuess(const std::string& type) const {
+MocoTrajectory MocoCasADiSolver::createGuess(const std::string& type) const {
     OPENSIM_THROW_IF_FRMOBJ(
             type != "bounds" && type != "random" && type != "time-stepping",
             Exception,
@@ -58,16 +57,17 @@ MocoIterate MocoCasADiSolver::createGuess(const std::string& type) const {
     auto casSolver = createCasOCSolver(*casProblem);
 
     if (type == "bounds") {
-        return convertToMocoIterate(casSolver->createInitialGuessFromBounds());
+        return convertToMocoTrajectory(
+                casSolver->createInitialGuessFromBounds());
     } else if (type == "random") {
-        return convertToMocoIterate(
+        return convertToMocoTrajectory(
                 casSolver->createRandomIterateWithinBounds());
     } else {
         OPENSIM_THROW(Exception, "Internal error.");
     }
 }
 
-void MocoCasADiSolver::setGuess(MocoIterate guess) {
+void MocoCasADiSolver::setGuess(MocoTrajectory guess) {
     // Ensure the guess is compatible with this solver/problem.
     guess.isCompatible(getProblemRep(), true);
     clearGuess();
@@ -78,19 +78,19 @@ void MocoCasADiSolver::setGuessFile(const std::string& file) {
     set_guess_file(file);
 }
 void MocoCasADiSolver::clearGuess() {
-    m_guessFromAPI = MocoIterate();
-    m_guessFromFile = MocoIterate();
+    m_guessFromAPI = MocoTrajectory();
+    m_guessFromFile = MocoTrajectory();
     set_guess_file("");
     m_guessToUse.reset();
 }
-const MocoIterate& MocoCasADiSolver::getGuess() const {
+const MocoTrajectory& MocoCasADiSolver::getGuess() const {
     if (!m_guessToUse) {
         if (get_guess_file() != "" && m_guessFromFile.empty()) {
             // The API should make it impossible for both guessFromFile and
             // guessFromAPI to be non-empty.
             assert(m_guessFromAPI.empty());
             // No need to load from file again if we've already loaded it.
-            MocoIterate guessFromFile(get_guess_file());
+            MocoTrajectory guessFromFile(get_guess_file());
             guessFromFile.isCompatible(getProblemRep(), true);
             m_guessFromFile = guessFromFile;
             m_guessToUse.reset(&m_guessFromFile);
@@ -119,7 +119,7 @@ std::unique_ptr<MocoCasOCProblem> MocoCasADiSolver::createCasOCProblem() const {
                      "Set the environment variable OPENSIM_MOCO_PARALLEL or "
                      "MocoCasADiSolver's 'parallel' property to 0, "
                      "or use the command-line or Matlab interfaces."
-                << std::endl;
+                  << std::endl;
     }
     int numThreads;
     if (parallel == 0) {
@@ -132,19 +132,23 @@ std::unique_ptr<MocoCasOCProblem> MocoCasADiSolver::createCasOCProblem() const {
 
     checkPropertyInSet(
             *this, getProperty_dynamics_mode(), {"explicit", "implicit"});
+    if (problemRep.isPrescribedKinematics()) {
+        OPENSIM_THROW_IF(get_dynamics_mode() != "implicit", Exception,
+                "Prescribed kinematics (PositionMotion) requires implicit "
+                "dynamics mode.");
+    }
 
     const auto& model = problemRep.getModelBase();
     OPENSIM_THROW_IF(!model.getMatterSubsystem().getUseEulerAngles(
-            model.getWorkingState()),
+                             model.getWorkingState()),
             Exception, "Quaternions are not supported.");
     return OpenSim::make_unique<MocoCasOCProblem>(*this, problemRep,
-            createProblemRepJar(numThreads),
-            get_dynamics_mode());
+            createProblemRepJar(numThreads), get_dynamics_mode());
 }
 
 std::unique_ptr<CasOC::Solver> MocoCasADiSolver::createCasOCSolver(
         const MocoCasOCProblem& casProblem) const {
-    auto casSolver = make_unique<CasOC::Solver>(casProblem);
+    auto casSolver = OpenSim::make_unique<CasOC::Solver>(casProblem);
 
     // Set solver options.
     // -------------------
@@ -171,6 +175,26 @@ std::unique_ptr<CasOC::Solver> MocoCasADiSolver::createCasOCSolver(
     }
 
     checkPropertyIsPositive(*this, getProperty_num_mesh_points());
+
+    if (getProperty_mesh().size() > 0) {
+
+        OPENSIM_THROW_IF_FRMOBJ((get_mesh(0) != 0), Exception,
+                "Invalid custom mesh; first mesh "
+                "point must be zero.");
+
+        for (int i = 1; i < (int)this->getProperty_mesh().size(); ++i) {
+
+            OPENSIM_THROW_IF_FRMOBJ((get_mesh(i) <= get_mesh(i - 1)), Exception,
+                    "Invalid custom mesh; mesh "
+                    "points must be strictly increasing.");
+        }
+
+        OPENSIM_THROW_IF_FRMOBJ((get_mesh(getProperty_mesh().size() - 1) != 1),
+                Exception,
+                "Invalid custom mesh; last mesh "
+                "point must be one.");
+    }
+
     checkPropertyInRangeOrSet(*this, getProperty_optim_max_iterations(), 0,
             std::numeric_limits<int>::max(), {-1});
     checkPropertyInRangeOrSet(*this, getProperty_optim_convergence_tolerance(),
@@ -219,12 +243,21 @@ std::unique_ptr<CasOC::Solver> MocoCasADiSolver::createCasOCSolver(
             {"central", "forward", "backward"});
     casSolver->setFiniteDifferenceScheme(get_optim_finite_difference_scheme());
 
-    casSolver->getCallbackInterval(get_output_interval());
+    casSolver->setCallbackInterval(get_output_interval());
 
     Dict pluginOptions;
     pluginOptions["verbose_init"] = true;
 
-    casSolver->setNumMeshPoints(get_num_mesh_points());
+    if (getProperty_mesh().empty()) {
+        casSolver->setNumMeshPoints(get_num_mesh_points());
+    } else {
+        casSolver->setNumMeshPoints((int)getProperty_mesh().size());
+        std::vector<double> mesh;
+        for (int i = 0; i < getProperty_mesh().size(); ++i) {
+            mesh.push_back(get_mesh(i));
+        }
+        casSolver->setMesh(mesh);
+    }
     casSolver->setTranscriptionScheme(get_transcription_scheme());
     casSolver->setMinimizeLagrangeMultipliers(
             get_minimize_lagrange_multipliers());
@@ -257,7 +290,7 @@ MocoSolution MocoCasADiSolver::solveImpl() const {
                   << std::endl;
     }
 
-    MocoIterate guess = getGuess();
+    MocoTrajectory guess = getGuess();
     CasOC::Iterate casGuess;
     if (guess.empty()) {
         casGuess = casSolver->createInitialGuessFromBounds();
@@ -265,7 +298,8 @@ MocoSolution MocoCasADiSolver::solveImpl() const {
         casGuess = convertToCasOCIterate(*m_guessToUse);
     }
     CasOC::Solution casSolution = casSolver->solve(casGuess);
-    MocoSolution mocoSolution = convertToMocoIterate<MocoSolution>(casSolution);
+    MocoSolution mocoSolution =
+            convertToMocoTrajectory<MocoSolution>(casSolution);
 
     // If enforcing model constraints and not minimizing Lagrange multipliers,
     // check the rank of the constraint Jacobian and if rank-deficient, print
@@ -316,15 +350,16 @@ MocoSolution MocoCasADiSolver::solveImpl() const {
         }
     }
 
+    const long long elapsed = stopwatch.getElapsedTimeInNs();
     setSolutionStats(mocoSolution, casSolution.stats.at("success"),
-            casSolution.objective,
-            casSolution.stats.at("return_status"),
-            casSolution.stats.at("iter_count"));
+            casSolution.objective, casSolution.stats.at("return_status"),
+            casSolution.stats.at("iter_count"),
+            SimTK::nsToSec(elapsed));
 
     if (get_verbosity()) {
         std::cout << std::string(79, '-') << "\n";
         std::cout << "Elapsed real time: "
-                  << stopwatch.getElapsedTimeFormatted() << ".\n";
+                << stopwatch.formatNs(elapsed) << ".\n";
         if (mocoSolution) {
             std::cout << "MocoCasADiSolver succeeded!\n";
         } else {

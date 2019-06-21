@@ -14,6 +14,7 @@ set(MOCO_SOURCES
         MocoVariableInfo.cpp
         MocoProblem.h
         MocoProblem.cpp
+        MocoProblemInfo.h
         MocoProblemRep.h
         MocoProblemRep.cpp
         MocoCost/MocoCost.h
@@ -39,14 +40,16 @@ set(MOCO_SOURCES
         MocoSolver.cpp
         MocoDirectCollocationSolver.h
         MocoDirectCollocationSolver.cpp
-        MocoIterate.h
-        MocoIterate.cpp
+        MocoTrajectory.h
+        MocoTrajectory.cpp
         MocoTropterSolver.h
         MocoTropterSolver.cpp
         MocoParameter.h
         MocoParameter.cpp
         MocoConstraint.h
         MocoConstraint.cpp
+        MocoControlBoundConstraint.cpp
+        MocoControlBoundConstraint.h
         InverseMuscleSolver/InverseMuscleSolver.h
         InverseMuscleSolver/InverseMuscleSolver.cpp
         InverseMuscleSolver/GlobalStaticOptimization.h
@@ -62,6 +65,8 @@ set(MOCO_SOURCES
         Components/ActivationCoordinateActuator.h
         Components/StationPlaneContactForce.h
         Components/StationPlaneContactForce.cpp
+        Components/PositionMotion.h
+        Components/PositionMotion.cpp
         Components/ModelFactory.h
         Components/ModelFactory.cpp
         Components/DiscreteForces.h
@@ -85,15 +90,24 @@ set(MOCO_SOURCES
         MocoCasADiSolver/CasOCHermiteSimpson.h
         MocoCasADiSolver/CasOCHermiteSimpson.cpp
         MocoCasADiSolver/CasOCIterate.h
-        Common/TableProcessor.h)
-if(MOCO_WITH_TROPTER)
+        MocoInverse.cpp
+        MocoInverse.h
+        MocoTrack.h
+        MocoTrack.cpp
+        Common/TableProcessor.h
+        ModelProcessor.h
+        ModelOperators.h
+        MocoTool.cpp
+        MocoTool.h
+        )
+if (MOCO_WITH_TROPTER)
     list(APPEND MOCO_SOURCES
             tropter/TropterProblem.h
             tropter/TropterProblem.cpp)
-endif()
+endif ()
 add_library(osimMoco SHARED ${MOCO_SOURCES})
 target_link_libraries(osimMoco PUBLIC osimTools
-                               PRIVATE tropter casadi)
+        PRIVATE tropter casadi)
 
 target_include_directories(osimMoco INTERFACE
         $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/Moco>
@@ -104,30 +118,24 @@ set_target_properties(osimMoco PROPERTIES
         PROJECT_LABEL "Library - osimMoco"
         FOLDER "Moco"
         )
-if(MOCO_WITH_TROPTER)
+if (MOCO_WITH_TROPTER)
     target_compile_definitions(osimMoco PUBLIC MOCO_WITH_TROPTER)
-endif()
+endif ()
 
-if(MOCO_COPY_DEPENDENCIES)
-    if(APPLE)
-        set(rpath_macro "\@loader_path")
-    elseif(UNIX)
-        set(rpath_macro "\$ORIGIN")
-    endif()
-    set_property(TARGET osimMoco APPEND PROPERTY
-            INSTALL_RPATH "${rpath_macro}/")
-endif()
+MocoAddInstallRPATHSelf(TARGET osimMoco LOADER)
+MocoAddInstallRPATHSimbody(TARGET osimMoco LOADER
+        FROM "${CMAKE_INSTALL_LIBDIR}")
 
-if(WIN32)
-   add_dependencies(osimMoco Copy_OpenSim_DLLs)
-endif()
+if (WIN32)
+    add_dependencies(osimMoco Copy_OpenSim_DLLs)
+endif ()
 
-install(TARGETS osimMoco EXPORT MocoTargets
+install(TARGETS osimMoco EXPORT OpenSimMocoTargets
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
 # TODO do not install InverseMuscleSolverMotionData.h b/c it uses Eigen.
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
-        DESTINATION ${MOCO_INSTALL_INCLUDEDIR}/Moco
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/Moco
         FILES_MATCHING PATTERN "*.h*")

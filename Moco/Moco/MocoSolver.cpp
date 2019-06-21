@@ -23,7 +23,7 @@
 
 using namespace OpenSim;
 
-MocoIterate MocoSolver::createGuessTimeStepping() const {
+MocoTrajectory MocoSolver::createGuessTimeStepping() const {
     const auto& probrep = getProblemRep();
     const auto& initialTime = probrep.getTimeInitialBounds().getUpper();
     const auto& finalTime = probrep.getTimeFinalBounds().getLower();
@@ -71,7 +71,7 @@ MocoIterate MocoSolver::createGuessTimeStepping() const {
 
     // TODO handle parameters.
     // TODO handle derivatives.
-    return MocoIterate::createFromStatesControlsTables(
+    return MocoTrajectory::createFromStatesControlsTables(
             probrep, statesTable, controlsTable);
 }
 
@@ -87,16 +87,17 @@ MocoSolution MocoSolver::solve() const {
 
 void MocoSolver::setSolutionStats(MocoSolution& sol, bool success,
         double objective,
-        const std::string& status, int numIterations) {
+        const std::string& status, int numIterations, double duration) {
     sol.setSuccess(success);
     sol.setObjective(objective);
     sol.setStatus(status);
     sol.setNumIterations(numIterations);
+    sol.setSolverDuration(duration);
 }
 
 std::unique_ptr<ThreadsafeJar<const MocoProblemRep>>
         MocoSolver::createProblemRepJar(int size) const {
-    auto jar = make_unique<ThreadsafeJar<const MocoProblemRep>>();
+    auto jar = OpenSim::make_unique<ThreadsafeJar<const MocoProblemRep>>();
     for (int i = 0; i < size; ++i) {
         jar->leave(std::unique_ptr<MocoProblemRep>(m_problem->createRepHeap()));
     }

@@ -28,22 +28,22 @@ namespace CasOC {
 class Trapezoidal : public Transcription {
 public:
     Trapezoidal(const Solver& solver, const Problem& problem)
-        : Transcription(solver, problem, solver.getNumMeshPoints(), 
-            solver.getNumMeshPoints()) { 
+            : Transcription(solver, problem) {
 
         OPENSIM_THROW_IF(problem.getEnforceConstraintDerivatives(),
-            OpenSim::Exception, "Enforcing kinematic constraint derivatives "
-            "not supported with trapezoidal transcription.");
-        createVariablesAndSetBounds();
+                OpenSim::Exception,
+                "Enforcing kinematic constraint derivatives "
+                "not supported with trapezoidal transcription.");
+        createVariablesAndSetBounds(m_solver.getMesh(),
+                m_problem.getNumStates());
     }
 
 private:
     casadi::DM createQuadratureCoefficientsImpl() const override;
     casadi::DM createKinematicConstraintIndicesImpl() const override;
-    void applyConstraintsImpl(const VariablesMX& vars, const casadi::MX& xdot,
-            const casadi::MX& residual, const casadi::MX& kcerr,
-            const casadi::MXVector& path) override;
 
+    void calcDefectsImpl(const casadi::MX& x, const casadi::MX& xdot,
+            casadi::MX& defects) const override;
 };
 
 } // namespace CasOC
