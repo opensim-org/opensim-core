@@ -22,6 +22,7 @@
 #include "MocoTrajectory.h"
 #include <cstdarg>
 #include <cstdio>
+#include <iomanip>
 #include <regex>
 
 #include <simbody/internal/Visualizer_InputListener.h>
@@ -36,29 +37,29 @@
 #include <OpenSim/Simulation/SimbodyEngine/WeldJoint.h>
 #include <OpenSim/Simulation/StatesTrajectory.h>
 #include <OpenSim/Simulation/StatesTrajectoryReporter.h>
-#include <simbody/internal/Visualizer_InputListener.h>
-#include <OpenSim/Simulation/Control/PrescribedController.h>
-#include <OpenSim/Common/GCVSpline.h>
-
-#include <cstdarg>
-#include <cstdio>
-#include <iomanip>
 
 using namespace OpenSim;
 
-std::string OpenSim::getFormattedDateTime() {
+std::string OpenSim::getFormattedDateTime(
+        bool appendMicroseconds, std::string format) {
     using namespace std::chrono;
-    auto time_now = system_clock::to_time_t(system_clock::now());
-    std::stringstream ss;
-    // ISO standard extended datetime format.
-    // https://kjellkod.wordpress.com/2013/01/22/exploring-c11-part-2-localtime-and-time-again/
+    auto now = system_clock::now();
+    auto time_now = system_clock::to_time_t(now);
     struct tm buf;
 #if defined(_WIN32)
     localtime_s(&buf, &time_now);
 #else
     localtime_r(&time_now, &buf);
 #endif
-    ss << std::put_time(&buf, "%Y-%m-%dT%X");
+    if (format == "ISO") { format = "%Y-%m-%dT%H:%M:%S"; }
+    std::stringstream ss;
+    ss << std::put_time(&buf, format.c_str());
+    if (appendMicroseconds) {
+        // Get number of microseconds since last second.
+        auto microsec =
+                duration_cast<microseconds>(now.time_since_epoch()) % 1000000;
+        ss << '.' << std::setfill('0') << std::setw(6) << microsec.count();
+    }
     return ss.str();
 }
 
@@ -188,21 +189,7 @@ void OpenSim::visualize(Model model, Storage statesSto) {
     std::string title = "Visualizing model '" + modelName + "'";
     if (!statesSto.getName().empty() && statesSto.getName() != "UNKNOWN")
         title += " with motion '" + statesSto.getName() + "'";
-    {
-        using namespace std::chrono;
-        auto time_now = system_clock::to_time_t(system_clock::now());
-        std::stringstream ss;
-        // ISO standard extended datetime format.
-        // https://kjellkod.wordpress.com/2013/01/22/exploring-c11-part-2-localtime-and-time-again/
-        struct tm buf;
-#if defined(_WIN32)
-        localtime_s(&buf, &time_now);
-#else
-        localtime_r(&time_now, &buf);
-#endif
-        ss << std::put_time(&buf, "%Y-%m-%dT%X");
-        title += " (" + ss.str() + ")";
-    }
+    title += " (" + getFormattedDateTime(false, "ISO") + ")";
     viz.setWindowTitle(title);
     viz.setMode(SimTK::Visualizer::RealTime);
     // Buffering causes issues when the user adjusts the "Speed" slider.
@@ -334,8 +321,8 @@ template <>
 std::unique_ptr<Function> createFunction<GCVSpline>(
         const SimTK::Vector& x, const SimTK::Vector& y) {
     OPENSIM_THROW_IF(x.size() != y.size(), Exception, "x.size() != y.size()");
-    return OpenSim::make_unique<GCVSpline>(5, x.size(), x.getContiguousScalarData(),
-            y.getContiguousScalarData());
+    return OpenSim::make_unique<GCVSpline>(5, x.size(),
+            x.getContiguousScalarData(), y.getContiguousScalarData());
 }
 } // anonymous namespace
 
@@ -581,7 +568,8 @@ void OpenSim::checkRedundantLabels(std::vector<std::string> labels) {
     std::sort(labels.begin(), labels.end());
     auto it = std::adjacent_find(labels.begin(), labels.end());
     OPENSIM_THROW_IF(it != labels.end(), Exception,
-        format("Multiple reference data provided for the variable %s.", *it));
+            format("Multiple reference data provided for the variable %s.",
+                    *it));
 }
 
 std::string OpenSim::format_c(const char* format, ...) {

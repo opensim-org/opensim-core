@@ -369,14 +369,19 @@ private:
 
         m_jar->leave(std::move(mocoProblemRep));
     }
-    std::vector<std::string> createKinematicConstraintEquationNamesImpl() const override {
+    std::vector<std::string>
+    createKinematicConstraintEquationNamesImpl() const override {
         auto mocoProblemRep = m_jar->take();
         const auto names = mocoProblemRep->getKinematicConstraintEquationNames(
                 getEnforceConstraintDerivatives());
         m_jar->leave(std::move(mocoProblemRep));
         return names;
     }
-    void intermediateCallback(const CasOC::Iterate& iterate) const override {
+    void intermediateCallbackImpl() const override {
+        m_fileDeletionThrower->throwIfDeleted();
+    }
+    void intermediateCallbackWithIterateImpl(
+            const CasOC::Iterate& iterate) const override {
         std::string filename = format("MocoCasADiSolver_%s_iterate%06i.sto",
                 m_formattedTimeString, iterate.iteration);
         convertToMocoTrajectory(iterate).write(filename);
@@ -571,6 +576,7 @@ private:
     std::string m_formattedTimeString;
     std::unordered_map<int, int> m_yIndexMap;
     std::vector<int> m_modelControlIndices;
+    std::unique_ptr<FileDeletionThrower> m_fileDeletionThrower;
     // Local memory to hold constraint forces.
     static thread_local SimTK::Vector_<SimTK::SpatialVec>
             m_constraintBodyForces;

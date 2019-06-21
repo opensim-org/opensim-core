@@ -1072,10 +1072,13 @@ void MocoTrajectory::ensureUnsealed() const {
 }
 
 void MocoSolution::convertToTableImpl(TimeSeriesTable& table) const {
-    if (m_success) {
-        table.updTableMetaData().setValueForKey("success", std::string("true"));
-    } else {
-        table.updTableMetaData().setValueForKey(
-                "success", std::string("false"));
-    }
+    std::string success = m_success ? "true" : "false";
+    table.updTableMetaData().setValueForKey("success", success);
+    table.updTableMetaData().setValueForKey("status", m_status);
+    table.updTableMetaData().setValueForKey(
+            "objective", std::to_string(m_objective));
+    table.updTableMetaData().setValueForKey(
+            "num_iterations", std::to_string(m_numIterations));
+    table.updTableMetaData().setValueForKey(
+            "solver_duration", std::to_string(m_solverDuration));
 }
