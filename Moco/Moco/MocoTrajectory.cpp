@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: MocoTrajectory.cpp                                              *
+ * OpenSim Moco: MocoTrajectory.cpp                                           *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2017 Stanford University and the Authors                     *
  *                                                                            *
@@ -726,8 +726,8 @@ void MocoTrajectory::randomize(bool add, const SimTK::Random& randGen) {
     // The "true" means to not copy the data.
     SimTK::Vector time((int)statesTimes.size(), statesTimes.data(), true);
 
-    // TODO MocoProblem should be able to produce a MocoTrajectory template; it's
-    // what knows the state, control, and parameter names.
+    // TODO MocoProblem should be able to produce a MocoTrajectory template;
+    // it's what knows the state, control, and parameter names.
     return MocoTrajectory(time, statesTrajectory.getColumnLabels(),
             controlsTrajectory.getColumnLabels(), {}, // TODO (multiplier_names)
             {},                                       // TODO (parameter_names)
@@ -985,7 +985,8 @@ double MocoTrajectory::compareContinuousVariablesRMSInternal(
     return sqrt(ISS / (finalTime - initialTime) / numColumns);
 }
 
-double MocoTrajectory::compareContinuousVariablesRMS(const MocoTrajectory& other,
+double MocoTrajectory::compareContinuousVariablesRMS(
+        const MocoTrajectory& other,
         std::map<std::string, std::vector<std::string>> cols) const {
     ensureUnsealed();
     std::vector<std::string> allowedKeys{
@@ -1048,10 +1049,13 @@ void MocoTrajectory::ensureUnsealed() const {
 }
 
 void MocoSolution::convertToTableImpl(TimeSeriesTable& table) const {
-    if (m_success) {
-        table.updTableMetaData().setValueForKey("success", std::string("true"));
-    } else {
-        table.updTableMetaData().setValueForKey(
-                "success", std::string("false"));
-    }
+    std::string success = m_success ? "true" : "false";
+    table.updTableMetaData().setValueForKey("success", success);
+    table.updTableMetaData().setValueForKey("status", m_status);
+    table.updTableMetaData().setValueForKey(
+            "objective", std::to_string(m_objective));
+    table.updTableMetaData().setValueForKey(
+            "num_iterations", std::to_string(m_numIterations));
+    table.updTableMetaData().setValueForKey(
+            "solver_duration", std::to_string(m_solverDuration));
 }

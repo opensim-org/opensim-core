@@ -11,7 +11,7 @@ if nargin > 1 && ischar(trajB)
     trajB = MocoTrajectory(trajB);
 end
 %% States.
-figure(1);
+figure;
 stateNames = trajA.getStateNames();
 numStates = stateNames.size();
 dim = sqrt(numStates);
@@ -58,7 +58,7 @@ for i = 0:numStates-1
 end
 
 %% Controls.
-figure(2);
+figure;
 controlNames = trajA.getControlNames();
 numControls = controlNames.size();
 dim = sqrt(numControls);
@@ -75,13 +75,11 @@ end
 for i = 0:numControls-1
     subplot(numRows, numCols, i+1);
     yA = trajA.getControlMat(controlNames.get(i));
-    plot(trajA.getTimeMat(), yA, '-r', ...
-         'linewidth', 3);
+    plot(trajA.getTimeMat(), yA, '-r', 'linewidth', 3);
     if nargin > 1
         hold on
         yB = trajB.getControlMat(controlNames.get(i));
-        plot(trajB.getTimeMat(), yB, '--b', ...
-             'linewidth', 2.5);
+        plot(trajB.getTimeMat(), yB, '--b', 'linewidth', 2.5);
         hold off
     end
     title(controlNames.get(i).toCharArray', 'Interpreter', 'none')
