@@ -65,6 +65,44 @@ public:
     }
 };
 
+/// Turn off passive fiber forces for all DeGrooteFregly2016Muscle%s in the
+/// model.
+class OSIMMOCO_API ModOpIgnorePassiveFiberForces : public ModelOperator {
+    OpenSim_DECLARE_CONCRETE_OBJECT(
+        ModOpIgnorePassiveFiberForces, ModelOperator);
+
+public:
+    void operate(Model& model, const std::string&) const override {
+        model.finalizeFromProperties();
+        for (auto& muscle : 
+                model.updComponentList<DeGrooteFregly2016Muscle>()) {
+            muscle.set_ignore_passive_fiber_force(true);
+        }
+    }
+};
+
+/// Scale the active fiber force curve width for all DeGrooteFregly2016Muscle%s 
+/// in the model.
+class OSIMMOCO_API ModOpScaleActiveFiberForceCurveWidth : public ModelOperator {
+    OpenSim_DECLARE_CONCRETE_OBJECT(
+        ModOpScaleActiveFiberForceCurveWidth, ModelOperator);
+    OpenSim_DECLARE_PROPERTY(scale_factor, double,
+            "The active fiber force curve width scale factor.");
+public:
+    ModOpScaleActiveFiberForceCurveWidth() { constructProperty_scale_factor(1); }
+    ModOpScaleActiveFiberForceCurveWidth(double scaleFactor) :
+        ModOpScaleActiveFiberForceCurveWidth() {
+        set_scale_factor(scaleFactor);
+    }
+    void operate(Model& model, const std::string&) const override {
+        model.finalizeFromProperties();
+        for (auto& muscle :
+                model.updComponentList<DeGrooteFregly2016Muscle>()) {
+            muscle.set_active_force_width_scale(get_scale_factor());
+        }
+    }
+};
+
 /// Remove all muscles contained in the model's ForceSet.
 class OSIMMOCO_API ModOpRemoveMuscles : public ModelOperator {
     OpenSim_DECLARE_CONCRETE_OBJECT(ModOpRemoveMuscles, ModelOperator);
