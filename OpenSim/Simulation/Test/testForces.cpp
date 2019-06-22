@@ -53,7 +53,6 @@ const static SimTK::Vec3 gravity_vec = SimTK::Vec3(0, -9.8065, 0);
 //==============================================================================
 
 void testPathSpring();
-void testPathSpringPath();
 void testExternalForce();
 void testSpringMass();
 void testBushingForce();
@@ -72,8 +71,6 @@ void testSerializeDeserialize();
 int main()
 {
     SimTK::Array_<std::string> failures;
-
-    //testPathSpringPath();
 
     try { testPathSpring(); }
     catch (const std::exception& e){
@@ -361,20 +358,7 @@ void testExpressionBasedPointToPointForce()
 
     model.disownAllComponents();
 }
-// issue 2418
-void testPathSpringPath()
-{
-    Model model("Tug_of_War.osim");
-    model.print("Tug_of_War_40.osim");
-    auto& musc1 = model.getMuscles().get("muscle1");
-    PathSpring* pathSpring = new PathSpring("BiarticularSpringDamper", 0.4, 1000, 0.01);
-    pathSpring->set_GeometryPath(musc1.getGeometryPath());
-    cout << pathSpring->dump() << endl;
-    model.addForce(pathSpring);
-    model.print("Tug_of_War_with_pathspring.osim");
-    auto& prop = pathSpring->getGeometryPath().getPathPointSet().get(0).getPropertyByName("socket_parent_frame");
 
-}
 void testPathSpring()
 {
     using namespace SimTK;
