@@ -170,8 +170,7 @@ void Component::prependComponentPathToConnecteePath(
                 it.second->prependComponentPathToConnecteePath(compPath);
         }
         for (auto& it : comp._inputsTable) {
-            if (!root.hasComponent(it.second->getConnecteePath()))
-                it.second->prependComponentPathToConnecteePath(compPath);
+            it.second->prependComponentPathToConnecteePath(compPath);
         }
     }
 }
