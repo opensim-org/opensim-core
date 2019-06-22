@@ -112,14 +112,14 @@ def truncate(string, max_length):
 class Report(object):
     def __init__(self,
                  model,
-                 iterate_filepath,
+                 trajectory_filepath,
                  bilateral=True,
                  ref_files=None,
                  colormap=None,
                  ):
         self.model = model
-        self.iterate_filepath = iterate_filepath
-        self.iterate = osim.MocoIterate(self.iterate_filepath)
+        self.trajectory_filepath = trajectory_filepath
+        self.trajectory = osim.MocoTrajectory(self.trajectory_filepath)
         self.bilateral = bilateral
         self.ref_files = ref_files
         self.colormap = colormap
@@ -142,7 +142,7 @@ class Report(object):
 
         # Load the colormap provided by the user. Use a default colormap ('jet') if
         # not provided. Uniformly sample the colormap based on the number of reference
-        # data sets, plus one for the MocoIterate.
+        # data sets, plus one for the MocoTrajectory.
         if colormap is None: colormap = 'jet'
         self.cmap_samples = np.linspace(0.1, 0.9, len(self.refs)+1)
         self.cmap = cm.get_cmap(colormap)
@@ -155,7 +155,7 @@ class Report(object):
         self.legend_labels = list()
         all_files = list()
         if ref_files != None: all_files += ref_files
-        all_files.append(iterate_filepath)
+        all_files.append(trajectory_filepath)
         for sample, file in zip(self.cmap_samples, all_files):
             color = self.cmap(sample)
             if bilateral:
@@ -172,8 +172,8 @@ class Report(object):
 
         # Time
         # -----
-        # Convert iterate time vector to a plotting-friendly NumPy array.
-        self.time = convert(self.iterate.getTime())
+        # Convert trajectory time vector to a plotting-friendly NumPy array.
+        self.time = convert(self.trajectory.getTime())
         # Create a conservative set of x-tick values based on the time vector.
         nexttime = math.ceil(self.time[0] * 10) / 10
         nexttolast = math.floor(self.time[-1] * 10) / 10
@@ -189,14 +189,14 @@ class Report(object):
 
     def getVariable(self, type, path):
         if type == 'state':
-            var = convert(self.iterate.getState(path))
+            var = convert(self.trajectory.getState(path))
         elif type == 'control':
-            var = convert(self.iterate.getControl(path))
+            var = convert(self.trajectory.getControl(path))
         elif type == 'multiplier':
-            var = convert(self.iterate.getMultiplier(path))
+            var = convert(self.trajectory.getMultiplier(path))
         elif type == 'derivative':
-            derivativesTraj = self.iterate.getDerivativesTrajectory()
-            derivativeNames = self.iterate.getDerivativeNames()
+            derivativesTraj = self.trajectory.getDerivativesTrajectory()
+            derivativeNames = self.trajectory.getDerivativeNames()
             count = 0
             col = 0
             for derivName in derivativeNames:
@@ -209,9 +209,9 @@ class Report(object):
             for row in range(n):
                 var[row] = derivativesTraj.get(row, col)
         elif type == 'slack':
-            var = convert(self.iterate.getSlack(path))
+            var = convert(self.trajectory.getSlack(path))
         elif type == 'parameter':
-            var = convert(self.iterate.getParameter(path))
+            var = convert(self.trajectory.getParameter(path))
 
         return var
 
@@ -249,7 +249,7 @@ class Report(object):
                         ymin = np.minimum(ymin, np.min(y))
                         ymax = np.maximum(ymax, np.max(y))
 
-                # Plot the variable values from the MocoIterate.
+                # Plot the variable values from the MocoTrajectory.
                 plt.plot(self.time, var, ls=ls, color=self.cmap(
                     self.cmap_samples[len(self.refs)]),
                          linewidth=1.5)
@@ -293,15 +293,15 @@ class Report(object):
         # =================
 
         # TODO is ntpath cross-platform?
-        iterate_fname = ntpath.basename(self.iterate_filepath)
-        iterate_fname = iterate_fname.replace('.sto', '')
-        iterate_fname = iterate_fname.replace('.mot', '')
-        with PdfPages(iterate_fname + '_report.pdf') as self.pdf:
+        trajectory_fname = ntpath.basename(self.trajectory_filepath)
+        trajectory_fname = trajectory_fname.replace('.sto', '')
+        trajectory_fname = trajectory_fname.replace('.mot', '')
+        with PdfPages(trajectory_fname + '_report.pdf') as self.pdf:
 
             # States & Derivatives
             # --------------------
-            state_names = self.iterate.getStateNames()
-            derivative_names = self.iterate.getDerivativeNames()
+            state_names = self.trajectory.getStateNames()
+            derivative_names = self.trajectory.getDerivativeNames()
             derivs = True if (len(derivative_names) > 0) else False
             if len(state_names) > 0:
                 # Loop through the model's joints and cooresponding coordinates to
@@ -369,7 +369,7 @@ class Report(object):
 
             # Controls
             # --------
-            control_names = self.iterate.getControlNames()
+            control_names = self.trajectory.getControlNames()
             if len(control_names) > 0:
                 control_dict = OrderedDict()
                 ls_dict = defaultdict(list)
@@ -394,7 +394,7 @@ class Report(object):
 
             # Multipliers
             # -----------
-            multiplier_names = self.iterate.getMultiplierNames()
+            multiplier_names = self.trajectory.getMultiplierNames()
             if len(multiplier_names) > 0:
                 multiplier_dict = OrderedDict()
                 ls_dict = defaultdict(list)
@@ -420,19 +420,19 @@ class Report(object):
             # Parameters
             # ----------
             # TODO: this is a crude first attempt, need to refine.
-            parameter_names = self.iterate.getParameterNames()
+            parameter_names = self.trajectory.getParameterNames()
             if len(parameter_names) > 0:
                 fig = plt.figure(figsize=(8.5, 11))
                 fig.patch.set_visible(False)
                 ax = plt.axes()
 
                 cell_text = []
-                parameters = convert(iterate.getParameters())
+                parameters = convert(trajectory.getParameters())
                 cell_text.append(['%10.5f' % p for p in parameters])
 
-                print('iterate name', iterate_fname)
+                print('trajectory name', trajectory_fname)
                 plt.table(cellText=cell_text, rowLabels=parameter_names,
-                          colLabels=[iterate_fname], loc='center')
+                          colLabels=[trajectory_fname], loc='center')
                 ax.axis('off')
                 ax.axis('tight')
 
@@ -446,7 +446,7 @@ class Report(object):
 
             # Slacks
             # ------
-            # TODO slacks not accessible through MocoIterate
+            # TODO slacks not accessible through MocoTrajectory
             # TODO should we even plot these?
 
 
@@ -456,15 +456,15 @@ if __name__ == "__main__":
     ## Input parsing.
     ## =============
     parser = argparse.ArgumentParser(
-        description="Generate a report given a MocoIterate and an associated "
+        description="Generate a report given a MocoTrajectory and an associated "
                     "OpenSim Model. Optionally, additional reference data "
-                    "compatible with the MocoIterate may be plotted "
+                    "compatible with the MocoTrajectory may be plotted "
                     "simultaneously.")
     # Required arguments.
     parser.add_argument('model', type=str,
                         help="OpenSim Model file name (including path).")
-    parser.add_argument('iterate', type=str,
-                        help="MocoIterate file name (including path).")
+    parser.add_argument('trajectory', type=str,
+                        help="MocoTrajectory file name (including path).")
     # Optional arguments.
     parser.add_argument('--bilateral', action='store_true',
                         help="Plot left and right limb states and controls "
@@ -476,13 +476,13 @@ if __name__ == "__main__":
                              "sampled from.")
     args = parser.parse_args()
 
-    # Load the Model and MocoIterate from file.
+    # Load the Model and MocoTrajectory from file.
     model = osim.Model(args.model)
 
     ref_files = args.refs
 
     report = Report(model=model,
-                    iterate_filepath=args.iterate,
+                    trajectory_filepath=args.trajectory,
                     bilateral=args.bilateral,
                     colormap=args.colormap,
                     ref_files=ref_files,
