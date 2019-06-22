@@ -25,7 +25,7 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include "Common/TableProcessor.h"
 #include "ModelOperators.h"
-#include "../../opensim-core/OpenSim/Common/TRCFileAdapter.h"
+#include "Common/TRCFileAdapter.h"
 
 namespace OpenSim {
 
