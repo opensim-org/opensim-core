@@ -11,6 +11,8 @@ v4.1
 - Added `OrientationsReference` as the frame orientation analog to the location of experimental markers. Enables experimentally measured orientations from wearable sensors (e.g. from IMUs) to be tracked by reference frames in the model. A correspondence between the experimental (IMU frame) orientation column label and that of the virtual frame on the `Model` is expected. The `InverseKinematicsSolver` was extended to simultaneously track the `OrientationsReference` if provided. (PR #2412)
 - Removed the undocumented `bool dumpName` argument from `Object::dump()` and made the method `const` so it can be safely called on `const` objects. (PR #2412)
 - `MarkersReference` convenience constructors were updated to take a const reference to a `MarkerWeightSet` as its second argument. If a `Set` is not empty, then only the markers listed are used as reference signals. That means `InverseKinematicsTool` no longer tracks all experimental markers even those not in the `MarkerWeightSet`. One can quickly track all experimental markers (that have a corresponding model marker) by simply providing an empty `Set`, in which case all markers are assigned the default weight (typically 1.0).
+- Model files from very old versions (pre 1.8.1) are not supported, an exception is thrown rather than fail quietly (issue #2395).
+- Initializing a Component from an existing Component with correct socket connectees yields invalid paths (issue #2418).
 
 Converting from v4.0 to v4.1
 ----------------------------
