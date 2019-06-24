@@ -70,6 +70,8 @@ public:
     /// to the constructor of MocoInitialBounds. Likewise for MocoFinalBounds.
     /// This will overwrite bounds that were set previously, if any.
     void setTimeBounds(const MocoInitialBounds&, const MocoFinalBounds&);
+    /// Find and print the names of all state variables containing a substring.
+    void printStateNamesWithSubstring (const std::string& name);
     /// Set information about a single state variable in this phase.
     /// @param name
     ///     The name must match the path of a state variable in the
@@ -141,6 +143,8 @@ public:
     void setStateInfoPattern(const std::string& pattern,
             const MocoBounds& bounds, const MocoInitialBounds& init = {},
             const MocoFinalBounds& final = {});
+    /// Find and print the names of all control variables containing a substring.
+    void printControlNamesWithSubstring (const std::string& name);
     /// Set information about a single control variable in this phase.
     /// Similar to setStateInfo(). The name for a control is the path to the
     /// associated actuator (e.g., "/forceset/soleus_r"). If setting a control
@@ -300,6 +304,8 @@ public:
     /// ModelProcessor. This throws an exception if the ModelProcessor does not
     /// have a base model. By default, the model is an empty model.
     Model& updModel() { return upd_model().updModel(); }
+    /// Get the ModelProcessor.
+    const ModelProcessor& getModelProcessor() const { return get_model(); }
 
     /// @details Note: the return value is constructed fresh on every call from
     /// the internal property. Avoid repeated calls to this function.
@@ -433,6 +439,8 @@ public:
     void setModelProcessor(ModelProcessor model);
     /// Set time bounds for phase 0.
     void setTimeBounds(const MocoInitialBounds&, const MocoFinalBounds&);
+    /// Find and print the names of all state variables containing a substring.
+    void printStateNamesWithSubstring(const std::string& name);
     /// Set bounds for a state variable for phase 0.
     void setStateInfo(const std::string& name, const MocoBounds&,
             const MocoInitialBounds& = {}, const MocoFinalBounds& = {});
@@ -443,6 +451,8 @@ public:
     void setStateInfoPattern(const std::string& pattern,
             const MocoBounds& bounds, const MocoInitialBounds& init = {},
             const MocoFinalBounds& final = {});
+    /// Find and print the names of all state variables containing a substring.
+    void printControlNamesWithSubstring(const std::string& name);
     /// Set bounds for a control variable for phase 0.
     void setControlInfo(const std::string& name, const MocoBounds&,
             const MocoInitialBounds& = {}, const MocoFinalBounds& = {});

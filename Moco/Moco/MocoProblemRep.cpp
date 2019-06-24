@@ -47,7 +47,8 @@ void MocoProblemRep::initialize() {
     }
 
     const auto& ph0 = m_problem->getPhase(0);
-    m_model_base = ph0.getModel();
+    // TODO: Provide directory from which to load model file.
+    m_model_base = ph0.getModelProcessor().process();
     m_model_base.finalizeFromProperties();
     int countMotion = 0;
     for (const auto& comp : m_model_base.getComponentList<PositionMotion>()) {

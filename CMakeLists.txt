@@ -210,6 +210,18 @@ add_subdirectory(Moco)
 
 add_subdirectory(cmake)
 
+# RunTestsParallel
+# ----------------
+include(ProcessorCount)
+ProcessorCount(PROCESSOR_COUNT)
+if(MSVC OR XCODE)
+    set(MOCO_TEST_BUILD_CONFIG --build-config ${CMAKE_CFG_INTDIR})
+endif()
+add_custom_target(RunTestsParallel
+        COMMAND "${CMAKE_CTEST_COMMAND}" --parallel ${PROCESSOR_COUNT}
+        ${MOCO_TEST_BUILD_CONFIG}
+        --output-on-failure)
+
 # Print a list of the dependencies that were found, and the features the user
 # chose.
 feature_summary(WHAT ALL)
