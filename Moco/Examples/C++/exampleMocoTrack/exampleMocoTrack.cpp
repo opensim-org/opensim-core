@@ -17,6 +17,8 @@
  * -------------------------------------------------------------------------- */
 
 #include <Moco/osimMoco.h>
+#include <OpenSim/Common/TimeSeriesTable.h>
+#include <OpenSim/Common/TRCFileAdapter.h>
 
 using namespace OpenSim;
 
@@ -33,7 +35,8 @@ void torqueDrivenMarkerTracking() {
     TimeSeriesTableVec3 markers = 
             TRCFileAdapter::read("motion_capture_walk.trc");
     TimeSeriesTable markersFlat = markers.flatten();
-    markersFlat.updMatrix().scalarMultiplyInPlace(0.001);
+    const SimTK::Real scale = 0.001;
+    markersFlat.updMatrix() *= scale;
     track.setMarkersReference(TableProcessor(markersFlat) |
         TabOpLowPassFilter(6));
     track.set_allow_unused_references(true);
