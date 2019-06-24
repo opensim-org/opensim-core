@@ -35,6 +35,12 @@ parser.add_argument('--common', action='store_true',
                     help="Plot only common data columns across files.")
 parser.add_argument('--title', action='store',
                     help="Set the title for the plot window")
+parser.add_argument('--save', action='store',
+                    help="Save the plot using the provided filename "
+                         "(cannot use with --pdf).")
+parser.add_argument('--pdf', action='store',
+                    help="Save the plots as a PDF file with the given "
+                         "filename.")
 args = parser.parse_args()
 
 datafiles = args.file
@@ -108,42 +114,96 @@ legend_nsuffix = len(os.path.commonprefix([s[::-1] for s in datafiles]))
 legend_entries = [df[legend_nprefix:(len(df)-legend_nsuffix)]
                   for df in datafiles]
 
-if num_plots < 5:
-    num_rows = num_plots
-    num_cols = 1
-else:
-    aspect_ratio = 0.50 # width of figure is 0.75 * height of figure.
-    num_rows = math.ceil(math.sqrt(float(num_plots) / aspect_ratio))
-    num_cols = math.ceil(aspect_ratio * num_rows)
-    if (num_rows * num_cols) > (num_plots + num_cols):
-        # There's an extra row that we don't need.
-        num_rows -= 1
 
-now = datetime.datetime.now()
-if not window_title: 
-    window_title = args.file[0]
-    if len(args.file) > 1: window_title += ' and others'
-    window_title += ' (%s)' % now.strftime('%Y-%m-%dT%H:%M')
-fig = pl.figure(figsize=(4 * num_cols, 2 * num_rows), num=window_title)
 
-for i in range(num_plots):
-    ax = fig.add_subplot(num_rows, num_cols, i + 1)
+def truncate(string, max_length):
+    """https://www.xormedia.com/string-truncate-middle-with-ellipsis/"""
+    if len(string) <= max_length:
+        # string is already short-enough
+        return string
+    # half of the size, minus the 3 .'s
+    n_2 = int(max_length / 2 - 3)
+    # whatever's left
+    n_1 = max_length - n_2 - 3
+    return '{0}...{1}'.format(string[:n_1], string[-n_2:])
+
+def plot_datacolumn(ax, datacolumn_index):
     if include_zero:
         ax.axhline(0, color='gray', alpha=0.5)
-    if i == num_plots - 1:
-        ax.set_xlabel('time')
-    ax.set_title(plot_names[i])
-    for idat, dat in enumerate(data):
-        if column_names[i] in dat.dtype.names:
-            ax.plot(dat['time'], dat[column_names[i]], 'o-', markersize=3)
+    title = plot_names[datacolumn_index]
+    if len(title) > 50:
+        ax.set_title(truncate(title, 75), fontsize=6)
+    elif len(title) > 38:
+        ax.set_title(truncate(title, 50), fontsize=8)
+    else:
+        ax.set_title(truncate(title, 38), fontsize=10)
+    for dat in data:
+        if column_names[datacolumn_index] in dat.dtype.names:
+            ax.plot(dat['time'], dat[column_names[datacolumn_index]], 'o-',
+                    markersize=3)
         else:
-            # If not plotting only common data commons, plot something so that 
+            # If not plotting only common data commons, plot something so that
             # the datafile colors are consistent across plots, but have
             # nothing show up on the graph.
             if not common_cols:
                 ax.plot(np.nan, np.nan)
-    if i == 0:
-        ax.legend(legend_entries)
+
+if not args.pdf:
+    if num_plots < 5:
+        num_rows = num_plots
+        num_cols = 1
+    else:
+        aspect_ratio = 0.50 # width of figure is 0.75 * height of figure.
+        num_rows = math.ceil(math.sqrt(float(num_plots) / aspect_ratio))
+        num_cols = math.ceil(aspect_ratio * num_rows)
+        if (num_rows * num_cols) > (num_plots + num_cols):
+            # There's an extra row that we don't need.
+            num_rows -= 1
+    if not window_title:
+        window_title = args.file[0]
+        if len(args.file) > 1: window_title += ' and others'
+        now = datetime.datetime.now()
+        window_title += ' (%s)' % now.strftime('%Y-%m-%dT%H:%M')
+    fig = pl.figure(figsize=(4 * num_cols, 2 * num_rows), num=window_title)
+    for i in range(num_plots):
+        ax = fig.add_subplot(num_rows, num_cols, i + 1)
+        plot_datacolumn(ax, i)
+        if i == num_plots - 1:
+            ax.set_xlabel('time')
+        if i == 0:
+            ax.legend(legend_entries)
+    if args.save:
+        fig.savefig(args.save, dpi=600)
+else:
+    from matplotlib.backends.backend_pdf import PdfPages
+    import matplotlib.pyplot as plt
+    # Based on report.py.
+    plots_per_page = 15.0
+    num_cols = 3
+    # Add an extra row to hold the legend and other infromation.
+    num_rows = (plots_per_page / 3) + 1
+    with PdfPages(args.pdf) as pdf:
+
+        p = 1 # Counter to keep track of number of plots per page.
+
+        for i in range(num_plots):
+            if p % plots_per_page == 1:
+                fig = plt.figure(figsize=(8.5, 11))
+
+            ax = plt.subplot(num_rows, num_cols, p + 3)
+            plot_datacolumn(ax, i)
+
+            if p % plots_per_page == 0 or i == num_plots - 1:
+                fig.tight_layout()
+                plt.figlegend(legend_entries,
+                          loc='upper center', bbox_to_anchor=(0.5, 0.97),
+                          fancybox=True, shadow=True)
+                pdf.savefig(fig)
+                plt.close()
+                p = 1
+            else:
+                p += 1
+
 
 #fig.subplots_adjust()
 fig.tight_layout()
