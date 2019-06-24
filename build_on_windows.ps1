@@ -9,12 +9,12 @@ git submodule update --init
 mkdir ..\moco_dependencies_build
 cd ..\moco_dependencies_build
 cmake ..\opensim-moco\dependencies `
-    -G"Visual Studio 15 2017 Win64"
+    -G"Visual Studio 14 2015 Win64"
 cmake --build . --config RelWithDebInfo -- /maxcpucount:8
 mkdir ..\build
 cd ..\build
 cmake ..\opensim-moco `
-    -G"Visual Studio 15 2017 Win64"
+    -G"Visual Studio 14 2015 Win64"
 cmake --build . --config RelWithDebInfo -- /maxcpucount:8
 ctest --build-config RelWithDebInfo --parallel 8
 cmake --build . --config RelWithDebInfo --target install -- /maxcpucount:8
