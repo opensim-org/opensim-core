@@ -126,49 +126,70 @@ void ExternalForce::setDataSource(const Storage &dataSource)
 
 void ExternalForce::extendFinalizeFromProperties() {
     Super::extendFinalizeFromProperties();
+
     if( getProperty_force_identifier().empty() 
         && getProperty_torque_identifier().empty()){
-        throw Exception("ExternalForce:: no force or torque identified.");
+        OPENSIM_THROW_FRMOBJ(InvalidPropertyValue, 
+            getName(), "ExternalForce:: no force or torque identified.");
     }
+    
+    _appliesForce = appliesForce();
+    _specifiesPoint = specifiesPoint();
+    _appliesTorque = appliesTorque();
 }
 
 void ExternalForce::extendConnectToModel(Model& model)
 {
     Super::extendConnectToModel(model);
 
+    //TODO Use Sockets!
     const string& appliedToBodyName = get_applied_to_body();
     const string& forceExpressedInBodyName = get_force_expressed_in_body();
+    const string& pointExpressedInBodyName =  get_point_expressed_in_body();
 
     // This might not have been supplied in which case it will have size()==0.
     const Property<string>& dataSourceProp = getProperty_data_source_name();
-
-    _appliesForce = appliesForce();
-    _specifiesPoint = specifiesPoint();
-    _appliesTorque = appliesTorque();
 
     // hook up body pointers from names
     _appliedToBody.reset();
     _forceExpressedInBody.reset();
     _pointExpressedInBody.reset();
-    if (_model) {
-        if (_model->hasComponent<PhysicalFrame>(appliedToBodyName))
+    if (hasModel()) {
+        if (getModel().hasComponent<PhysicalFrame>(appliedToBodyName))
             _appliedToBody = &_model->getComponent<PhysicalFrame>(
                     appliedToBodyName);
-        if (_model->hasComponent<PhysicalFrame>(forceExpressedInBodyName))
-            _forceExpressedInBody = &_model->getComponent<PhysicalFrame>(
-                    forceExpressedInBodyName);
+        else if(getModel().hasComponent<PhysicalFrame>(
+            "./bodyset/" + appliedToBodyName))
+            _appliedToBody = &getModel().getComponent<PhysicalFrame>(
+                "./bodyset/" + appliedToBodyName);
 
-        if (_specifiesPoint && _model->hasComponent<PhysicalFrame>(
-                    get_point_expressed_in_body()))
-            _pointExpressedInBody = &_model->getComponent<PhysicalFrame>(
-                    get_point_expressed_in_body());
+        if (getModel().hasComponent<PhysicalFrame>(forceExpressedInBodyName))
+            _forceExpressedInBody = &getModel().getComponent<PhysicalFrame>(
+                    forceExpressedInBodyName);
+        else if(getModel().hasComponent<PhysicalFrame>(
+            "./bodyset/" + forceExpressedInBodyName))
+            _forceExpressedInBody = &_model->getComponent<PhysicalFrame>(
+                "./bodyset/" + forceExpressedInBodyName);
+
+        if (_specifiesPoint) {
+            if (getModel().hasComponent<PhysicalFrame>(
+                pointExpressedInBodyName))
+                _pointExpressedInBody = &_model->getComponent<PhysicalFrame>(
+                    pointExpressedInBodyName);
+            else if (getModel().hasComponent<PhysicalFrame>(
+                "./bodyset/" + pointExpressedInBodyName))
+                _pointExpressedInBody = &_model->getComponent<PhysicalFrame>(
+                    "./bodyset/" + pointExpressedInBodyName);
+        }
     }
 
     if(!_appliedToBody){
-        throw(Exception("ExternalForce: Could not find body '"+appliedToBodyName+"' to apply force to." ));
+        throw(Exception("ExternalForce: Could not find body '" + appliedToBodyName +
+            "' to apply force to." ));
     }
     if(!_forceExpressedInBody) {
-        cout << "WARNING::ExternalForce could not find body '"+forceExpressedInBodyName+"' that force is expressed in-"
+        cout << "WARNING::ExternalForce could not find body '" +
+            forceExpressedInBodyName + "' that force is expressed in-"
                 "  ground is being assumed." << endl;
         _forceExpressedInBody = &_model->getGround();
     }
@@ -179,11 +200,8 @@ void ExternalForce::extendConnectToModel(Model& model)
     }
 
     if(!_dataSource){
-        // No property set either
-        if((dataSourceProp.size()==0) || (dataSourceProp.getValue(0) == "")){
-            throw(Exception("ExternalForce: Not Data source has been set."));
-        }
-        // else: TODO load the data from the source. Currently this is overly
+        throw Exception("ExternalForce: No Data source has been set.");
+        // TODO: Load the data from dataSourceProp. Currently this is overly
         // complicated and handled by the ExternalLoads class.
     }
     else if(dataSourceProp.size()) {

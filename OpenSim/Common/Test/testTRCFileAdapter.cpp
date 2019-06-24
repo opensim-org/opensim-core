@@ -145,7 +145,7 @@ int main() {
         std::cout << "  " << filename << std::endl;
         TRCFileAdapter trcfileadapter{};
         try {
-            auto table = trcfileadapter.read(filename);
+            auto table = trcfileadapter.readFile(filename);
             trcfileadapter.write(table, tmpfile);
             compareFiles(filename, tmpfile);
         }

@@ -31,6 +31,7 @@ in-memory container for data access and manipulation.                         */
 #include "AbstractDataTable.h"
 #include "FileAdapter.h"
 #include "SimTKcommon/internal/BigMatrix.h"
+#include "SimTKcommon/internal/Quaternion.h"
 #include <OpenSim/Common/IO.h>
 
 #include <iomanip>
@@ -213,7 +214,7 @@ public:
                            that.numComponentsPerElement());
         for(const auto& label : that.getColumnLabels()) {
             if(suffixes.empty()) {
-                for(unsigned i = 1; i <= that.numComponentsPerElement(); ++i)
+                for(unsigned i = 1; i <= that.numComponentsPerElement(); ++i) 
                     thisLabels.push_back(label + "_" + std::to_string(i));
             } else {
                 for(const auto& suffix : suffixes)
@@ -223,14 +224,19 @@ public:
         // This calls validateDependentsMetadata, so no need for explicit call.
         setColumnLabels(thisLabels);
 
+        // Construct matrix for this table from that table.
+        _depData.resize((int)that.getNumRows(), 
+            (int)that.getNumColumns() * that.numComponentsPerElement());
         for(unsigned r = 0; r < that.getNumRows(); ++r) {
-            const auto& thatInd = that.getIndependentColumn().at(r);
             const auto& thatRow = that.getRowAtIndex(r);
-            std::vector<ETY> thisRow{};
-            for(unsigned c = 0; c < that.getNumColumns(); ++c)
-                splitElementAndPushBack(thisRow, thatRow[c]);
-            appendRow(thatInd, thisRow);
+            for (unsigned c = 0; c < that.getNumColumns(); ++c) {
+                splitAndAssignElement(_depData.updRow(r).begin() +
+                                        c*that.numComponentsPerElement(), 
+                                      _depData.updRow(r).end(),
+                                      thatRow[c]);
+            }
         }
+        _indData = that.getIndependentColumn();
     }
 
     /** Construct this DataTable from a DataTable_<double, double>. This is the
@@ -375,19 +381,18 @@ public:
         }
         setColumnLabels(thisLabels);
 
-        // Form rows for this table from that table.
+        // Construct matrix for this table from that table.
+        _depData.resize((int)that.getNumRows(), 
+            (int)that.getNumColumns() / numComponentsPerElement());
         for(unsigned r = 0; r < that.getNumRows(); ++r) {
-            const auto& thatInd = that.getIndependentColumn().at(r);
             auto thatRow = that.getRowAtIndex(r).getAsRowVector();
-            std::vector<ETY> thisRow{};
-            for(unsigned c = 0;
-                c < that.getNumColumns();
-                c += numComponentsPerElement()) {
-                thisRow.push_back(makeElement(thatRow.begin() + c,
-                                              thatRow.end()));
+            for(unsigned c = 0; c < this->getNumColumns(); ++c) {
+                _depData.updElt(r,c) = makeElement(
+                    thatRow.begin() + c*numComponentsPerElement(), 
+                    thatRow.end());
             }
-            appendRow(thatInd, thisRow);
         }
+        _indData = that.getIndependentColumn();
     }
 
     /** Construct DataTable_<double, double> from 
@@ -943,6 +948,45 @@ public:
         appendColumnLabel(columnLabel);
     }
 
+    /** Remove column corresponding to the given column index.
+
+    \throws ColumnIndexOutOfRange If the index is out of range.                  */
+        void removeColumnAtIndex(size_t index) {
+        OPENSIM_THROW_IF(isColumnIndexOutOfRange(index),
+            ColumnIndexOutOfRange,
+            index, 0, static_cast<unsigned>(_depData.ncol() - 1));
+
+        // get copy of labels
+        auto labels = getColumnLabels();
+
+        assert(labels.size() == _depData.ncol());
+
+        // shift columns unless we're already at the last column
+        for (size_t c = index; c < getNumColumns()-1; ++c) {
+            _depData.updCol((int)c) = _depData.col((int)(c + 1));
+            labels[c] = labels[c + 1];
+        }
+
+        _depData.resizeKeep(_depData.nrow(), _depData.ncol()-1);
+        labels.resize(_depData.ncol());
+        setColumnLabels(labels);
+    }
+
+    /** Remove column corresponding to the given dependent column label. The
+    independent column cannot be removed.
+
+    \throws KeyNotFound If the independent column has no entry with the given
+    value.                                                */
+    void removeColumn(const std::string& columnLabel) {
+        const auto& labels = getColumnLabels();
+        auto iter = std::find(labels.cbegin(), labels.cend(), columnLabel);
+
+        OPENSIM_THROW_IF(iter == labels.cend(),
+            KeyNotFound, columnLabel);
+
+        return removeColumnAtIndex(std::distance(labels.cbegin(), iter));
+    }
+
     /** Get dependent column at index.
 
     \throws EmptyTable If the table is empty.
@@ -1348,28 +1392,72 @@ protected:
         return result;
     }
 
-    // Split element into constituent components and append the components to
-    // the given vector. For example Vec3 has 3 components.
-    template<int N>
+    // Split element into constituent components and assign the components
+    // according to the iterator argument. This function will write N elements 
+    // starting from *begin* but not necessarily up to *end*. An exception is
+    // thrown if *end* is reached before assigning all components.
+    // Example: Vec3 has 3 components.
+    template<int N, typename Iter>
     static
-    void splitElementAndPushBack(std::vector<double>& row,
-                                 const SimTK::Vec<N>& elem) {
-        for(unsigned i = 0; i < N; ++i)
-            row.push_back(elem[i]);
+    void splitAndAssignElement(Iter begin, Iter end, 
+                               const SimTK::Vec<N>& elem) {
+        for(unsigned i = 0; i < N; ++i) {
+            OPENSIM_THROW_IF(begin == end,
+                Exception,
+                "Iterators do not produce enough elements. "
+                "Expected: " + std::to_string(N) + " Received: " +
+                std::to_string(i));
+
+            *begin++ = elem[i];
+        }
     }
-    // Split element into constituent components and append the components to 
-    // the given vector. . For example Vec<2, Vec3> has 6 components.
-    template<int M, int N>
+    // Split element into constituent components and assign the components 
+    // according to the iterator argument. This function will write M*N elements 
+    // starting from *begin* but not necessarily up to *end*. An exception is
+    // thrown if *end* is reached before assigning all components.
+    // Example: Vec<2, Vec3> has 6 components.
+    template<int M, int N, typename Iter>
     static
-    void splitElementAndPushBack(std::vector<double>& row,
-                                 const SimTK::Vec<M, SimTK::Vec<N>>& elem) {
-        for(unsigned i = 0; i < M; ++i)
-            for(unsigned j = 0; j < N; ++j)
-                row.push_back(elem[i][j]);
+    void splitAndAssignElement(Iter begin, Iter end, 
+                               const SimTK::Vec<M, SimTK::Vec<N>>& elem) {
+        for(unsigned i = 0; i < M; ++i) {
+            for(unsigned j = 0; j < N; ++j) {
+                OPENSIM_THROW_IF(begin == end,
+                    Exception,
+                    "Iterators do not produce enough elements. "
+                    "Expected: " + std::to_string(M * N) +
+                    " Received: " + std::to_string((i + 1) * j));
+
+                *begin++ = elem[i][j];
+            }
+        }
+    }
+    // Split element into constituent components and assign the components 
+    // according to the iterator argument. This function will write MxN matrix
+    // elements starting from *begin* but not necessarily up to *end*. 
+    // Elements are written out row-wise.
+    // An exception is thrown if *end* is reached before assigning all components.
+    // Example: Mat<3, 3> has 9 components.
+    template<int M, int N, typename Iter>
+    static
+        void splitAndAssignElement(Iter begin, Iter end,
+            const SimTK::Mat<M, N>& elem) {
+        for (unsigned i = 0; i < M; ++i) {
+            for (unsigned j = 0; j < N; ++j) {
+                OPENSIM_THROW_IF(begin == end,
+                    Exception,
+                    "Iterators do not produce enough elements. "
+                    "Expected: " + std::to_string(M * N) +
+                    " Received: " + std::to_string((i + 1) * j));
+
+                *begin++ = elem[i][j];
+            }
+        }
     }
     // Unsupported type.
+    template<typename Iter>
     static
-    void splitElementAndPushBack(std::vector<double>&,
+    void splitAndAssignElement(Iter begin, Iter end,
                                  ...) {
         static_assert(!std::is_same<ETY, double>::value,
                       "This constructor cannot be used to construct from "
@@ -1378,14 +1466,14 @@ protected:
     }
     template<typename ELT>
     static
-    std::vector<double> splitElement(const ELT& elt) {
-        std::vector<double> result{};
-        splitElementAndPushBack(result, elt);
+    SimTK::RowVector_<double> splitElement(const ELT& elt) {
+        SimTK::RowVector_<double> result(numComponentsPerElement_impl(elt));
+        splitAndAssignElement(result.begin(), result.end(), elt);
         return result;
     }
     static
-    std::vector<double> splitElement(const double& elt) {
-        return {elt};
+    SimTK::RowVector_<double> splitElement(const double& elt) {
+        return SimTK::RowVector_<double>(1, elt);
     }
 
     template<typename Iter>
@@ -1393,8 +1481,8 @@ protected:
     void makeElement_helper(double& elem,
                             Iter begin, Iter end) {
         OPENSIM_THROW_IF(begin == end,
-                         InvalidArgument,
-                         "Iterators do not produce enough elements."
+                         Exception,
+                         "Iterators do not produce enough elements. "
                          "Expected: 1 Received: 0");
         elem = *begin;
     }
@@ -1404,8 +1492,8 @@ protected:
                             Iter begin, Iter end) {
         for(unsigned i = 0; i < N; ++i) {
             OPENSIM_THROW_IF(begin == end,
-                             InvalidArgument,
-                             "Iterators do not produce enough elements."
+                             Exception,
+                             "Iterators do not produce enough elements. "
                              "Expected: " + std::to_string(N) + " Received: " +
                              std::to_string(i));
 
@@ -1419,10 +1507,26 @@ protected:
         for(unsigned i = 0; i < M; ++i) {
             for(unsigned j = 0; j < N; ++j) {
                 OPENSIM_THROW_IF(begin == end,
-                                 InvalidArgument,
+                                 Exception,
                                  "Iterators do not produce enough elements."
                                  "Expected: " + std::to_string(M * N) +
                                  " Received: " + std::to_string((i + 1) * j));
+
+                elem[i][j] = *begin++;
+            }
+        }
+    }
+    template<int M, int N, typename Iter>
+    static
+        void makeElement_helper(SimTK::Mat<M, N>& elem,
+            Iter begin, Iter end) {
+        for (unsigned i = 0; i < M; ++i) {
+            for (unsigned j = 0; j < N; ++j) {
+                OPENSIM_THROW_IF(begin == end,
+                    Exception,
+                    "Iterators do not produce enough elements."
+                    "Expected: " + std::to_string(M * N) +
+                    " Received: " + std::to_string((i + 1) * j));
 
                 elem[i][j] = *begin++;
             }
@@ -1545,6 +1649,11 @@ protected:
     static constexpr
     unsigned numComponentsPerElement_impl(SimTK::Vec<M>) {
         return M;
+    }
+    template<int M, int N>
+    static constexpr
+        unsigned numComponentsPerElement_impl(SimTK::Mat<M, N>) {
+        return M * N;
     }
     template<int M, int N>
     static constexpr

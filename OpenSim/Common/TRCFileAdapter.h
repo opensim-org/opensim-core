@@ -148,7 +148,7 @@ public:
 
     /** Read a given TRC file. The filename provided need not contain ".trc". */
     static
-    TimeSeriesTableVec3 read(const std::string& filename);
+    TimeSeriesTableVec3 readFile(const std::string& filename);
 
     /** Write a table to a TRC file. The filename provided need not contain 
     ".trc".                                                                   */

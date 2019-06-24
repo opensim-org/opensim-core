@@ -10,22 +10,22 @@ test_dir = os.path.join(os.path.dirname(os.path.abspath(osim.__file__)),
 class TestDataAdapter(unittest.TestCase):
     def test_TRCFileAdapter(self):
         adapter = osim.TRCFileAdapter()
-        table = adapter.read(os.path.join(test_dir, 
+        table = adapter.readFile(os.path.join(test_dir, 
                              'futureOrientationInverseKinematics.trc'))
         assert table.getNumRows()    == 1202
         assert table.getNumColumns() == 2
 
-        table = adapter.read(os.path.join(test_dir, 'dataWithNaNsOfDifferentCases.trc'))
+        table = adapter.readFile(os.path.join(test_dir, 'dataWithNaNsOfDifferentCases.trc'))
         assert table.getNumRows()    == 5
         assert table.getNumColumns() == 14
 
     def test_STOFileAdapter(self):
         adapter = osim.STOFileAdapter()
-        table = adapter.read(os.path.join(test_dir, 'subject02_grf_HiFreq.mot'))
+        table = adapter.readFile(os.path.join(test_dir, 'subject02_grf_HiFreq.mot'))
         assert table.getNumRows()    == 439
         assert table.getNumColumns() == 18
 
-        table = adapter.read(os.path.join(test_dir, 
+        table = adapter.readFile(os.path.join(test_dir, 
                                           'std_subject01_walk1_ik.mot'))
         assert table.getNumRows()    == 73
         assert table.getNumColumns() == 23
@@ -36,7 +36,7 @@ class TestDataAdapter(unittest.TestCase):
         except AttributeError:
             # C3D support not available. OpenSim was not compiled with BTK.
             return
-        tables = adapter.read(os.path.join(test_dir, 'walking2.c3d'), 0)
+        tables = adapter.readFile(os.path.join(test_dir, 'walking2.c3d'), 0)
         markers = tables['markers']
         forces = tables['forces']
         
@@ -45,7 +45,7 @@ class TestDataAdapter(unittest.TestCase):
         assert forces.getNumRows()     == 9992
         assert forces.getNumColumns()  == 6
 
-        tables = adapter.read(os.path.join(test_dir, 'walking5.c3d'), 1)
+        tables = adapter.readFile(os.path.join(test_dir, 'walking5.c3d'), 1)
 
         # Marker data read from C3D.
         markers = tables['markers']
@@ -63,7 +63,7 @@ class TestDataAdapter(unittest.TestCase):
         markersFilename = 'markers.sto'
         stoAdapter = osim.STOFileAdapter()
         stoAdapter.write(markersFlat, markersFilename)
-        markersDouble = stoAdapter.read(markersFilename)
+        markersDouble = stoAdapter.readFile(markersFilename)
         assert markersDouble.getNumRows()    == 1103
         assert markersDouble.getNumColumns() == 40 * 3
 
@@ -102,7 +102,7 @@ class TestDataAdapter(unittest.TestCase):
         # Make sure flattenned forces data is writable/readable to/from file.
         forcesFilename = 'forces.sto'
         stoAdapter.write(forcesFlat, forcesFilename)
-        forcesDouble = stoAdapter.read(forcesFilename)
+        forcesDouble = stoAdapter.readFile(forcesFilename)
         assert forcesDouble.getNumRows()    == 8824
         assert forcesDouble.getNumColumns() == 6 * 3
 

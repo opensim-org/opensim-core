@@ -127,8 +127,12 @@ protected:
     /** Name of the file containing the external loads applied to the model. */
     OpenSim::PropertyStr _externalLoadsFileNameProp;
     std::string &_externalLoadsFileName;
-    /** Actual external forces being applied. e.g. GRF */
+    
+    /** ExternalLoads member for creating and editing applied external forces
+        (e.g. GRFS through the GUI) prior to running the Tool */
     ExternalLoads   _externalLoads;
+    // Reference to external loads added to the model but not owned by the Tool
+    SimTK::ReferencePtr<ExternalLoads> _modelExternalLoads;
 
 //=============================================================================
 // METHODS
@@ -256,6 +260,7 @@ public:
     const ExternalLoads& getExternalLoads() const { return _externalLoads; }
     ExternalLoads& updExternalLoads() { return _externalLoads; }
     void setExternalLoads(ExternalLoads& el) { _externalLoads = el; }
+    bool modelHasExternalLoads() {return !_modelExternalLoads.empty(); }
 
     // External loads get/set
     const std::string &getExternalLoadsFileName() const { return _externalLoadsFileName; }
@@ -363,8 +368,9 @@ public:
     virtual void printResults(const std::string &aBaseName,const std::string &aDir="",
         double aDT=-1.0,const std::string &aExtension=".sto");
 
-    bool createExternalLoads( const std::string &aExternalLoadsFileName,
-                                     Model& aModel, const Storage *loadKinematics=NULL);
+    bool createExternalLoads( const std::string& externalLoadsFileName,
+                              Model& model);
+    void removeExternalLoadsFromModel();
 
     void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber) override;
     virtual void loadQStorage (const std::string& statesFileName, Storage& rQStore) const;

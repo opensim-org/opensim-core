@@ -23,6 +23,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
+#include "About.h"
 #include "Object.h"
 #include "RegisterTypes_osimCommon.h"
 #include "FunctionSet.h"

@@ -478,9 +478,9 @@ void simulateModelWithoutMuscles(const string &modelFile, double finalTime)
     osimModel.setUseVisualizer(true);
 
     // remove all forces
-    Set<OpenSim::Force> &forces = osimModel.updForceSet();
+    auto& forces = osimModel.updForceSet();
     for(int i = 0; i<forces.getSize(); ++i){
-        forces.remove(&forces[i]);
+        forces.remove(i);
     }
 
     SimTK::State& si = osimModel.initSystem();
@@ -867,24 +867,22 @@ void simulate(Model& osimModel, State& si, double initialTime, double finalTime)
     // Dump model back out; no automated test provided here though.
     // osimModel.print(osimModel.getName() + "_out.osim");
 
-    // Create the integrator and manager for the simulation.
+    // Create the Manager for the simulation.
     const double accuracy = 1.0e-4;
-    SimTK::RungeKuttaMersonIntegrator integrator(osimModel.getMultibodySystem());
-    integrator.setAccuracy(accuracy);
-
-    Manager manager(osimModel, integrator);
+    Manager manager(osimModel);
+    manager.setIntegratorAccuracy(accuracy);
 
     // Integrate from initial time to final time
     si.setTime(initialTime);
     cout << "\nIntegrating from " << initialTime << " to " << finalTime << endl;
 
     const double start = SimTK::realTime();
-    integrator.resetAllStatistics();
     manager.initialize(si);
     manager.integrate(finalTime);
     cout << "simulation time = " << SimTK::realTime()-start
          << " seconds (wallclock time)\n" << endl;
 
+    auto& integrator = manager.getIntegrator();
     cout << "integrator iterations = " << integrator.getNumStepsTaken() << endl;
 
     // Save the simulation results

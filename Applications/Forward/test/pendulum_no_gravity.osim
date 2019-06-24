@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <OpenSimDocument Version="20302">
-	<Model name="pendulum_no_gravity">
+	<Model name="pendulum">
 		<credits> Model authors names.. </credits>
 		<publications> List of publications related to model... </publications>
 		<ForceSet name="">

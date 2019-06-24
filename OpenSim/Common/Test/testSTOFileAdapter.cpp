@@ -86,6 +86,9 @@ void compareHeaders(std::ifstream& filenameA,
         if(line.find("version") != std::string::npos)
           continue;
 
+        if(line.find("OpenSimVersion") != std::string::npos)
+            continue;
+
         headerA.insert(line);
     }
     while(std::getline(filenameB, line)) {
@@ -108,6 +111,9 @@ void compareHeaders(std::ifstream& filenameA,
         // will have older version number.
         if(line.find("version") != std::string::npos)
           continue;
+
+        if(line.find("OpenSimVersion") != std::string::npos)
+            continue;
 
         headerB.insert(line);
     }
@@ -183,7 +189,7 @@ void testReadingWriting() {
             table.appendRow(t, {elem, elem, elem});
         }
         STOFileAdapter_<T>::write(table, fileA);
-        auto table_copy = STOFileAdapter_<T>::read(fileA);
+        auto table_copy = STOFileAdapter_<T>::readFile(fileA);
         auto table_ptr = FileAdapter::readFile(fileA).at("table");
         DataAdapter::InputTables inputTables{};
         inputTables.emplace(std::string{"table"}, table_ptr.get());
@@ -197,7 +203,7 @@ void testReadingWriting() {
         // Empty table.
         TimeSeriesTable_<T> table{};
         STOFileAdapter_<T>::write(table, fileA);
-        auto table_copy = STOFileAdapter_<T>::read(fileA);
+        auto table_copy = STOFileAdapter_<T>::readFile(fileA);
         auto table_ptr = FileAdapter::readFile(fileA).at("table");
         DataAdapter::InputTables inputTables{};
         inputTables.emplace(std::string{"table"}, table_ptr.get());
@@ -211,7 +217,7 @@ void testReadingWriting() {
         // No columns.
         TimeSeriesTable_<T> table{std::vector<double>{0, 0.1, 0.2}};
         STOFileAdapter_<T>::write(table, fileA);
-        auto table_copy = STOFileAdapter_<T>::read(fileA);
+        auto table_copy = STOFileAdapter_<T>::readFile(fileA);
         auto table_ptr = FileAdapter::readFile(fileA).at("table");
         DataAdapter::InputTables inputTables{};
         inputTables.emplace(std::string{"table"}, table_ptr.get());
@@ -242,7 +248,7 @@ int main() {
     for(const auto& filename : filenames) {
         std::cout << "  " << filename << std::endl;
         STOFileAdapter_<double> stofileadapter{};
-        auto table = stofileadapter.read(filename);
+        auto table = stofileadapter.readFile(filename);
         stofileadapter.write(table, tmpfile);
         compareFiles(filename, tmpfile);
     }
@@ -316,7 +322,7 @@ int main() {
               << std::endl;
     std::string emptyFileName("testSTOFileAdapter_empty.sto");
     std::ofstream emptyFile(emptyFileName);
-    SimTK_TEST_MUST_THROW_EXC(STOFileAdapter::read(emptyFileName), FileIsEmpty);
+    SimTK_TEST_MUST_THROW_EXC(STOFileAdapter::readFile(emptyFileName), FileIsEmpty);
     std::remove(emptyFileName.c_str());
 
     std::cout << "Testing reading STO version 1.0 using "

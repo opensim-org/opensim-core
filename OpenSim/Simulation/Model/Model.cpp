@@ -103,6 +103,12 @@ Model::Model(const string &aFileName) :
     constructProperties();
     setNull();
     updateFromXMLDocument();
+    // Check is done below because only Model files have migration issues, version is not available until 
+    // updateFromXMLDocument is called. Fixes core issue #2395
+    OPENSIM_THROW_IF(getDocument()->getDocumentVersion() < 10901,
+        Exception,
+        "Model file " + aFileName + " is using unsupported file format"
+        ". Please open model and save it in OpenSim version 3.3 to upgrade.");
 
     _fileName = aFileName;
     cout << "Loaded model " << getName() << " from file " << getInputFileName() << endl;
@@ -337,34 +343,49 @@ void Model::constructProperties()
     _forceUnits = Units::Newtons;
 
     BodySet bodies;
+    bodies.setName(IO::Lowercase(bodies.getConcreteClassName()));
     constructProperty_BodySet(bodies);
 
     JointSet joints;
+    joints.setName(IO::Lowercase(joints.getConcreteClassName()));
     constructProperty_JointSet(joints);
 
-    ControllerSet controllerSet;
-    constructProperty_ControllerSet(controllerSet);
+    ControllerSet controllers;
+    controllers.setName(IO::Lowercase(controllers.getConcreteClassName()));
+    constructProperty_ControllerSet(controllers);
 
-    ConstraintSet constraintSet;
-    constructProperty_ConstraintSet(constraintSet);
+    ConstraintSet constraints;
+    constraints.setName(IO::Lowercase(constraints.getConcreteClassName()));
+    constructProperty_ConstraintSet(constraints);
 
-    ForceSet forceSet;
-    constructProperty_ForceSet(forceSet);
+    ForceSet forces;
+    forces.setName(IO::Lowercase(forces.getConcreteClassName()));
+    constructProperty_ForceSet(forces);
 
-    MarkerSet markerSet;
-    constructProperty_MarkerSet(markerSet);
+    MarkerSet markers;
+    markers.setName(IO::Lowercase(markers.getConcreteClassName()));
+    constructProperty_MarkerSet(markers);
 
-    ContactGeometrySet contactGeometrySet;
-    constructProperty_ContactGeometrySet(contactGeometrySet);
+    ContactGeometrySet contacts;
+    contacts.setName(IO::Lowercase(contacts.getConcreteClassName()));
+    constructProperty_ContactGeometrySet(contacts);
 
-    ComponentSet componentSet;
-    constructProperty_ComponentSet(componentSet);
+    ProbeSet probes;
+    probes.setName(IO::Lowercase(probes.getConcreteClassName()));
+    constructProperty_ProbeSet(probes);
 
-    ProbeSet probeSet;
-    constructProperty_ProbeSet(probeSet);
+    ComponentSet miscComponents;
+    miscComponents.setName(IO::Lowercase(miscComponents.getConcreteClassName()));
+    constructProperty_ComponentSet(miscComponents);
 
-    ModelVisualPreferences md;
-    constructProperty_ModelVisualPreferences(md);
+    ModelVisualPreferences mvps;
+    mvps.setName(IO::Lowercase(mvps.getConcreteClassName()));
+    constructProperty_ModelVisualPreferences(mvps);
+}
+
+// Append to the Model's validation log
+void Model::appendToValidationLog(const std::string& note) {
+    _validationLog.append(note);
 }
 
 //------------------------------------------------------------------------------
@@ -614,6 +635,54 @@ std::vector<SimTK::ReferencePtr<const Coordinate>>
     return coordinatesInTreeOrder;
 }
 
+std::string Model::getWarningMesssageForMotionTypeInconsistency() const
+{
+    std::string message;
+
+    auto enumToString = [](Coordinate::MotionType mt)->std::string {
+        switch (mt) {
+        case Coordinate::MotionType::Rotational :
+            return "Rotational";
+        case Coordinate::MotionType::Translational :
+            return "Translational";
+        case Coordinate::MotionType::Coupled :
+            return "Coupled";
+        default:
+            return "Undefined";
+        }
+    };
+
+    auto coordinates = getComponentList<Coordinate>();
+    for (auto& coord : coordinates) {
+        const Coordinate::MotionType oldMotionType = 
+            coord.getUserSpecifiedMotionTypePriorTo40();
+        const Coordinate::MotionType motionType = coord.getMotionType();
+
+        if( (oldMotionType != Coordinate::MotionType::Undefined ) &&
+            (oldMotionType != motionType) ){
+            message += "Coordinate '" + coord.getName() +
+                "' was labeled as '" + enumToString(oldMotionType) +
+                "' but was found to be '" + enumToString(motionType) + "' based on the joint definition.\n";
+        }
+    }
+
+    // We have a reason to provide a warning. Add more details about the model
+    // and how to resolve future issues.
+    if (message.size()) {
+        message = "\nModel '" + getName() + "' has inconsistencies:\n" + message;
+        message += 
+            "You must update any motion files you generated in versions prior to 4.0. You can:\n"
+            "  (1) Run the updatePre40KinematicsFilesFor40MotionType() utility (in the scripting shell) OR\n"
+            "  (2) Re-run the Inverse Kinematics Tool with the updated model in 4.0.\n"
+            "In versions prior to 4.0, we allowed some Coupled coordinates to be incorrectly\n"
+            "labeled as Rotational. This leads to incorrect motion when playing back a pre-4.0\n"
+            "motion file (.mot or .sto in degrees) and incorrect inverse dynamics and\n"
+            "static optimization results.";
+    }
+
+    return message;
+}
+
 void Model::extendFinalizeFromProperties()
 {
     Super::extendFinalizeFromProperties();
@@ -632,11 +701,8 @@ void Model::extendFinalizeFromProperties()
         fs.updMuscles();
     }
 
-    if (getValidationLog().size() > 0) {
-        cout << "The following Errors/Warnings were encountered ";
-        cout << "interpreting properties of the model. " <<
-            getValidationLog() << endl;
-    }
+    std::string warn = getWarningMesssageForMotionTypeInconsistency();
+    appendToValidationLog(warn);
 
     updCoordinateSet().populate(*this);
 }
@@ -943,6 +1009,7 @@ void Model::addModelComponent(ModelComponent* component)
     if(component){
         upd_ComponentSet().adoptAndAppend(component);
         finalizeFromProperties();
+        prependComponentPathToConnecteePath(*component);
     }
 }
 
@@ -952,6 +1019,7 @@ void Model::addBody(OpenSim::Body* body)
     if (body){
         updBodySet().adoptAndAppend(body);
         finalizeFromProperties();
+        prependComponentPathToConnecteePath(*body);
     }
 }
 
@@ -961,6 +1029,7 @@ void Model::addMarker(OpenSim::Marker* marker)
     if (marker){
         updMarkerSet().adoptAndAppend(marker);
         finalizeFromProperties();
+        prependComponentPathToConnecteePath(*marker);
     }
 }
 
@@ -971,6 +1040,7 @@ void Model::addJoint(Joint* joint)
         updJointSet().adoptAndAppend(joint);
         finalizeFromProperties();
         updCoordinateSet().populate(*this);
+        prependComponentPathToConnecteePath(*joint);
     }
 }
 
@@ -980,6 +1050,7 @@ void Model::addConstraint(OpenSim::Constraint *constraint)
     if(constraint){
         updConstraintSet().adoptAndAppend(constraint);
         finalizeFromProperties();
+        prependComponentPathToConnecteePath(*constraint);
     }
 }
 
@@ -989,6 +1060,7 @@ void Model::addForce(OpenSim::Force *force)
     if(force){
         updForceSet().adoptAndAppend(force);
         finalizeFromProperties();
+        prependComponentPathToConnecteePath(*force);
     }
 }
 
@@ -998,6 +1070,7 @@ void Model::addProbe(OpenSim::Probe *probe)
     if(probe){
         updProbeSet().adoptAndAppend(probe);
         finalizeFromProperties();
+        prependComponentPathToConnecteePath(*probe);
     }
 }
 
@@ -1015,15 +1088,17 @@ void Model::addContactGeometry(OpenSim::ContactGeometry *contactGeometry)
     if (contactGeometry) {
         updContactGeometrySet().adoptAndAppend(contactGeometry);
         finalizeFromProperties();
+        prependComponentPathToConnecteePath(*contactGeometry);
     }
 }
 
 // Add a controller to the Model
-void Model::addController(Controller *aController)
+void Model::addController(Controller *controller)
 {
-    if (aController) {
-        updControllerSet().adoptAndAppend(aController);
+    if (controller) {
+        updControllerSet().adoptAndAppend(controller);
         finalizeFromProperties();
+        prependComponentPathToConnecteePath(*controller);
     }
 }
 //_____________________________________________________________________________
@@ -1038,7 +1113,7 @@ void Model::setup()
     // automatically marks properties that are Components as subcomponents
     finalizeFromProperties();
     //now connect the Model and all its subcomponents all up
-    finalizeConnections(*this);
+    finalizeConnections();
 }
 
 //_____________________________________________________________________________
@@ -1890,40 +1965,7 @@ void Model::formStateStorage(const Storage& originalStorage,
     Array<int> mapColumns(-1, rStateNames.getSize());
     for(int i=0; i< rStateNames.getSize(); i++){
         // the index is -1 if not found, >=1 otherwise since time has index 0 by defn.
-        int fix = originalStorage.getColumnLabels().findIndex(rStateNames[i]);
-        if (fix==-1){
-            // try removing the complete path name to identify the state_name in storage
-            string::size_type last = rStateNames[i].rfind("/");
-            string name = rStateNames[i].substr(last+1, rStateNames[i].length()-last);
-            fix = originalStorage.getColumnLabels().findIndex(name);
-            // this whole method is one big hack and needs to be eliminated- aseth
-            // for the time being, allow the new coordinate labeling to be
-            // handled from storages generated by older versions
-            if (fix == -1){
-                if (name == "value"){
-                    // old formats did not have "/value" so remove it if here
-                    name = rStateNames[i].substr(0, last);
-                    last = name.rfind("/");
-                    name = name.substr(last + 1, name.length());
-                    fix = originalStorage.getColumnLabels().findIndex(name);
-                }
-                else if (name == "speed"){
-                    // replace "/speed" (the latest labeling for speeds) with "_u"
-                    name = rStateNames[i].substr(0, last);
-                    last = name.rfind("/");
-                    name = name.substr(last + 1, name.length() - last) + "_u";
-                    fix = originalStorage.getColumnLabels().findIndex(name);
-                }
-                else {
-                    // try replacing the '/' with '.' in the last connection
-                    name = rStateNames[i];
-                    name.replace(last, 1, ".");
-                    last = name.rfind("/");
-                    name = name.substr(last + 1, rStateNames[i].length() - last);
-                    fix = originalStorage.getColumnLabels().findIndex(name);
-                }
-            }
-        }
+        int fix = originalStorage.getStateIndex(rStateNames[i]);
         mapColumns[i] = fix;
         if (fix==-1 && warnUnspecifiedStates){
             cout << "Column "<< rStateNames[i] << 
@@ -1941,7 +1983,7 @@ void Model::formStateStorage(const Storage& originalStorage,
         stateVec.getData().setSize(numStates); 
         for(int column=0; column< numStates; column++) {
             if (mapColumns[column] != -1)
-                originalVec->getDataValue(mapColumns[column] - 1, assignedValue);
+                originalVec->getDataValue(mapColumns[column], assignedValue);
             else
                 assignedValue = defaultStateValues[column];
 

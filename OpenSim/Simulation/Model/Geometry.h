@@ -153,7 +153,7 @@ protected:
     virtual void implementCreateDecorativeGeometry(
         SimTK::Array_<SimTK::DecorativeGeometry>&) const = 0;
 
-    void extendConnect(Component& root) override;
+    void extendFinalizeConnections(Component& root) override;
 
 private:
     // Compute Transform of this geometry relative to its base frame, utilizing 
@@ -293,51 +293,19 @@ private:
 
 
 /**
- * Utility class used to abstract analytic geometry. This will need to be 
- * revisited when wrapping is re-done to handle quadrants or analytic shapes
- * that were supported in earlier releases before 4.0. 
- *
- * TODO: using start/end angle may be a better choice.
+ * Abstract class for analytical geometry (e.g. surfaces of revolution) whose
+ * rendering is optimized by the graphics library (e.g. threejs). Unlike other
+ * geometry, property edits require a recreation of the AnalyticGeometry on
+ * the renderer and not simple updates. AnalyticGeometry is the base class for
+ * Sphere, Cylinder, Cone, Ellipsoid and Torus geometry.
  */
 class OSIMSIMULATION_API AnalyticGeometry : public Geometry
 {    
     OpenSim_DECLARE_ABSTRACT_OBJECT(AnalyticGeometry, Geometry);
-    // Amended with a quadrants array to support pieces of analytic geometry (for wrapping)
-    OpenSim_DECLARE_LIST_PROPERTY(quadrants, std::string,
-        "Quadrants to use: combination of +X -X +Y -Y +Z -Z space separated."); 
-private:
-    bool                    _bounds[6];     //-X, +X, -Y, +Y, -Z, +Z
-    bool                    _piece;
+
 public:
-    AnalyticGeometry():
-        _piece(false)
-    {
-        constructProperties();
-        for(int i=0; i<6; i++) _bounds[i]=true;
-    }
+    AnalyticGeometry() {}
     virtual ~AnalyticGeometry() {}
-    void setQuadrants(const bool quadrants[6])
-    {
-        _piece=false;
-        for(int i=0; i<6; i++){
-            _bounds[i]=quadrants[i];
-            _piece = _piece || (!quadrants[i]);
-        }
-    }
-    void getQuadrants(bool quadrants[6])
-    {
-        for(int i=0; i<6; i++){
-            quadrants[i]=_bounds[i];
-        }
-    }
-    const bool isPiece() const
-    {
-        return _piece;
-    }
-private:
-    void constructProperties() {
-        constructProperty_quadrants();
-    }
 };
 /**
  * A class to represent Sphere geometry. 
@@ -591,14 +559,16 @@ public:
     /// Default constructor
     Mesh() :
         Geometry(),
-        cachedMesh(nullptr)
+        cachedMesh(nullptr),
+        warningGiven(false)
     {
         constructProperty_mesh_file("");
     }
     /// Constructor that takes a mesh file name
     Mesh(const std::string& geomFile) :
         Geometry(),
-        cachedMesh(nullptr)
+        cachedMesh(nullptr),
+        warningGiven(false)
     {
         constructProperty_mesh_file("");
         upd_mesh_file() = geomFile;
@@ -623,6 +593,7 @@ private:
     // load the mesh from file so we don't try loading from disk every frame.
     // This is mutable since it is not part of the public interface.
     mutable SimTK::ResetOnCopy<std::unique_ptr<SimTK::DecorativeMeshFile>> cachedMesh;
+    mutable bool warningGiven;
 };
 
 /**

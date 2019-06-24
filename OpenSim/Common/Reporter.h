@@ -225,8 +225,8 @@ protected:
         }
     }
 
-    void extendConnect(Component& root) override {
-        Super::extendConnect(root);
+    void extendFinalizeConnections(Component& root) override {
+        Super::extendFinalizeConnections(root);
 
         const auto& input = this->template getInput<InputT>("inputs");
 

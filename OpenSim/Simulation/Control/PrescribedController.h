@@ -100,7 +100,7 @@ public:
                          SimTK::Vector& controls) const override;
 
     /**
-     *  Assign a prescribe control function for the desired actuator identified 
+     *  Assign a prescribed control function for the desired actuator identified 
      *  by its index. Controller takes ownership of the function.
      *  @param index                the actuator's index in the controller's set
      *  @param prescribedFunction   the actuator's control function
@@ -108,7 +108,7 @@ public:
     void prescribeControlForActuator(int index, Function *prescribedFunction);
 
     /**
-     *  Assign a prescribe control function for the desired actuator identified
+     *  Assign a prescribed control function for the desired actuator identified
      *  by its name. Controller takes ownership of the function.
      *  @param actName                the actuator's name in the controller's set
      *  @param prescribedFunction     the actuator's control function

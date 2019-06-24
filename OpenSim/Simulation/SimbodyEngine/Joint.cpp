@@ -258,6 +258,17 @@ bool Joint::isCoordinateUsed(const Coordinate& aCoordinate) const
     return false;
 }
 
+
+void Joint::addFrame(PhysicalOffsetFrame* frame)
+{
+    OPENSIM_THROW_IF(isComponentInOwnershipTree(frame),
+                     ComponentAlreadyPartOfOwnershipTree,
+                     frame->getName(), getName());
+    updProperty_frames().adoptAndAppendValue(frame);
+    finalizeFromProperties();
+    prependComponentPathToConnecteePath(*frame);
+}
+
 const SimTK::MobilizedBodyIndex Joint::
     getMobilizedBodyIndex(const OpenSim::Body& body) const
 {
@@ -578,22 +589,15 @@ void Joint::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
                 orientChildElt->getValueAs<Vec3>(orientation_in_child);
             }
 
-            // now append updated frames to the property list if they are not
-            // identity transforms.
-            if ((location_in_parent.norm() > 0.0) ||
-                (orientation_in_parent.norm() > 0.0)) {
-                XMLDocument::addPhysicalOffsetFrame30505(aNode, parentFrameName+"_offset",
-                    parentFrameName, location_in_parent, orientation_in_parent);
-                parentNameElt->setValue(parentFrameName + "_offset");
-            }
+            // now append updated frames to the property list for
+            // both parent and child
+            XMLDocument::addPhysicalOffsetFrame30505_30517(aNode, parentFrameName+"_offset",
+                parentFrameName, location_in_parent, orientation_in_parent);
+            parentNameElt->setValue(parentFrameName + "_offset");
 
-            // again for the offset frame on the child
-            if ((location_in_child.norm() > 0.0) ||
-                (orientation_in_child.norm() > 0.0)) {
-                XMLDocument::addPhysicalOffsetFrame30505(aNode, childFrameName + "_offset",
-                    childFrameName, location_in_child, orientation_in_child);
-                childNameElt->setValue(childFrameName + "_offset");
-            }
+            XMLDocument::addPhysicalOffsetFrame30505_30517(aNode, childFrameName + "_offset",
+                childFrameName, location_in_child, orientation_in_child);
+            childNameElt->setValue(childFrameName + "_offset");
         }
 
         // Version 30507 replaced Joint's CoordinateSet with a "coordinates"

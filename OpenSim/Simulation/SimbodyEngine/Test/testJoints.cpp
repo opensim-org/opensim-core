@@ -207,7 +207,7 @@ int main()
     // test that kinematic loops are broken to form a tree with constraints
     try { ++itc; testAutomaticLoopJointBreaker(); }
     catch (const std::exception& e){
-        cout << e.what() <<endl; 
+        cout << e.what() <<endl;
         failures.push_back("testAutomaticLoopJointBreaker");
     }
 
@@ -250,7 +250,7 @@ int main()
     // Compare previous OpenSim model but with randomized body order in BodySet to test connectBodies
     try { ++itc; testWeldJoint(true); }
     catch (const std::exception& e){
-        cout << e.what() <<endl; 
+        cout << e.what() <<endl;
         failures.push_back("testWeldJoint (random order)");
     }
 
@@ -261,7 +261,7 @@ int main()
     catch (const std::exception& e){
         cout << e.what() <<endl; failures.push_back("testBallJoint");
     }
-    // Compare behavior of a Free hip and pin knee 
+    // Compare behavior of a Free hip and pin knee
     // OpenSim, system restricted to using Euler angles exclusively to support EllipsoidJoint
     // and the fact that coordinates cannot map to/from quaternions
     try { ++itc; testFreeJoint(); }
@@ -372,9 +372,9 @@ void integrateOpenSimModel(Model *osimModel, SimTK::State &osim_state)
 
     // SETUP OpenSim SIMULATION Manager
     osimModel->getMultibodySystem().realize(osim_state, Stage::Velocity);
-    RungeKuttaFeldbergIntegrator integrator(osimModel->getMultibodySystem() );
-    integrator.setAccuracy(integ_accuracy);
-    Manager manager(*osimModel, integrator);
+    Manager manager(*osimModel);
+    manager.setIntegratorMethod(Manager::IntegratorMethod::RungeKuttaFeldberg);
+    manager.setIntegratorAccuracy(integ_accuracy);
 
     // Specify the initial and final times of the simulation.
     // In this case, the initial and final times are set based on
@@ -576,6 +576,7 @@ void testCustomVsUniversalPin()
 
     std::cout << osimModel.getCoordinateSet().getSize() << std::endl;
 
+    osimModel.finalizeConnections();
     osimModel.print("testCustomVsUniversalPin.osim");
 
     testEquivalentBodyForceForGenForces(osimModel);
@@ -1344,13 +1345,15 @@ void testPinJoint()
     ASSERT(knee2.numCoordinates() == knee.numCoordinates());
     ASSERT(knee2.get_coordinates(0).getName() == "knee_q");
 
-    PhysicalOffsetFrame thigh_offset("thigh_offset", osim_thigh,
+    auto* thigh_offset = new PhysicalOffsetFrame(
+        "thigh_offset", osim_thigh,
         SimTK::Transform(Rotation(BodyRotationSequence,
             oInP[0], XAxis,
             oInP[1], YAxis,
             oInP[2], ZAxis), kneeInFemur));
 
-    PhysicalOffsetFrame shank_offset("shank_offset", osim_shank,
+    auto* shank_offset = new PhysicalOffsetFrame(
+        "shank_offset", osim_shank,
         SimTK::Transform(Rotation(BodyRotationSequence,
             oInB[0], XAxis,
             oInB[1], YAxis,
@@ -1358,21 +1361,11 @@ void testPinJoint()
 
     // Exercise new convenience constructor with common use case of adding
     // offsets to the body of interest
-    PinJoint knee3("knee", thigh_offset, shank_offset);
-    knee3.append_frames(thigh_offset);
-    knee3.append_frames(shank_offset);
+    PinJoint knee3("knee", *thigh_offset, *shank_offset);
+    knee3.addFrame(thigh_offset);
+    knee3.addFrame(shank_offset);
     // use the same coordinate name
     knee3.upd_coordinates(0).setName("knee_q");
-
-    knee3.finalizeConnections(*osimModel);
-    knee3.printSocketInfo();
-    knee3.printInputInfo();
-    knee3.printSubcomponentInfo();
-
-    knee.finalizeConnections(*osimModel);
-    knee.printSocketInfo();
-    knee.printInputInfo();
-    knee.printSubcomponentInfo();
 
     // once connected the two ways of constructing the knee joint should
     // yield identical definitions
@@ -1978,7 +1971,8 @@ void testEquivalentBodyForceForGenForces(Model& model)
     model.getMultibodySystem().realize(state, SimTK::Stage::Acceleration);
     matter.calcAcceleration(state, genForces, bodyForces, udot1, bodyAccs);
 
-    // Construct the system vector of body forces from a Joint's  equivalence to generalized force calculations
+    // Construct the system vector of body forces from a Joint's equivalence to
+    // generalized force calculations
     for(int j=0; j < model.getJointSet().getSize(); ++j){
         Joint &joint = model.getJointSet()[j];
         const PhysicalFrame& B = joint.getChildFrame();
@@ -2147,8 +2141,8 @@ void testAutomaticJointReversal()
     modelConstrained.finalizeFromProperties();
 
     const Ground& cground = modelConstrained.getGround();
-    const Body& cpelvis = modelConstrained.getComponent<Body>("pelvis");
-    const Body& cfoot = modelConstrained.getComponent<Body>("foot");
+    const Body& cpelvis = modelConstrained.getComponent<Body>("./bodyset/pelvis");
+    const Body& cfoot = modelConstrained.getComponent<Body>("./bodyset/foot");
 
     // free the pelvis
     auto pelvisFree = new FreeJoint("pelvisFree", cground, zvec, zvec,
@@ -2168,7 +2162,7 @@ void testAutomaticJointReversal()
                                   cfoot, zvec, zvec, cground, footInGround, zvec);
     modelConstrained.addConstraint(footConstraint);
 
-    auto fcpath = footConstraint->getRelativePathName(cfoot);
+    auto fcpath = footConstraint->getRelativePathString(cfoot);
 
     auto& off1 = footConstraint->getFrame1();
     auto& sock1 = off1.getSocket<PhysicalFrame>("parent");
@@ -2178,11 +2172,11 @@ void testAutomaticJointReversal()
     auto off1Path = off1.getAbsolutePathString();
     auto off2Path = off2.getAbsolutePathString();
 
-    /*auto& pathOff1 = */sock1.getConnecteeName();
-    /*auto& pathOff2 = */sock2.getConnecteeName();
+    /*auto& pathOff1 = */sock1.getConnecteePath();
+    /*auto& pathOff2 = */sock2.getConnecteePath();
 
-    auto relPathOff1 = cfoot.getRelativePathName(off1);
-    auto relPathOff2 = cground.getRelativePathName(off2);
+    auto relPathOff1 = cfoot.getRelativePathString(off1);
+    auto relPathOff2 = cground.getRelativePathString(off2);
 
     //modelConstrained.setUseVisualizer(true);
     modelConstrained.printSubcomponentInfo();
@@ -2241,7 +2235,7 @@ void testUserJointReversal()
 
     // Open model.
     auto model = Model("double_pendulum_testReverse.osim");
-    model.finalizeConnections(model); //calls finalizeFromProperties internally
+    model.finalizeConnections(); //calls finalizeFromProperties internally
 
     // In this model file:
     // - pin1's parent is ground and child is rod1
@@ -2250,7 +2244,7 @@ void testUserJointReversal()
     // deserialization, the following should be true:
     // - pin1's parent is ground and child is rod1
     // - pin2's parent is rod2 and child is rod1 (parent and child are swapped)
-    auto& pin1 = model.getComponent<Joint>("pin1");
+    auto& pin1 = model.getComponent<Joint>("./jointset/pin1");
     ASSERT(pin1.getParentFrame().findBaseFrame().getName() == "ground",
         __FILE__, __LINE__,
         "Incorrect parent frame when 'reverse' element is set to 'false'");
@@ -2258,7 +2252,7 @@ void testUserJointReversal()
         __FILE__, __LINE__,
         "Incorrect child frame when 'reverse' element is set to 'false'");
 
-    auto& pin2 = model.getComponent<Joint>("pin2");
+    auto& pin2 = model.getComponent<Joint>("./jointset/pin2");
     ASSERT(pin2.getParentFrame().findBaseFrame().getName() == "rod2",
         __FILE__, __LINE__,
         "Incorrect parent frame when 'reverse' element is set to 'true'");

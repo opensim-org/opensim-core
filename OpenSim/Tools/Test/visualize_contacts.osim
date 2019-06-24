@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<OpenSimDocument Version="30507">
+<OpenSimDocument Version="30517">
 	<Model name="EF_Mesh_to_Mesh">
 		<!--The model's ground reference frame.-->
 		<Ground name="ground">
@@ -25,17 +25,10 @@
 		<JointSet>
 			<objects>
 				<FreeJoint name="free">
-					<!--List of connectors (structural dependencies) that this component has.-->
-					<connectors>
-						<Connector_PhysicalFrame_ name="parent_frame">
-							<!--Name of the component this Connector should be connected to.-->
-							<connectee_name>ground_offset</connectee_name>
-						</Connector_PhysicalFrame_>
-						<Connector_PhysicalFrame_ name="child_frame">
-							<!--Name of the component this Connector should be connected to.-->
-							<connectee_name>ball_offset</connectee_name>
-						</Connector_PhysicalFrame_>
-					</connectors>
+					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The parent frame for the joint.).-->
+					<socket_parent_frame>ground_offset</socket_parent_frame>
+					<!--Path to a Component that satisfies the Socket 'child_frame' of type PhysicalFrame (description: The child frame for the joint.).-->
+					<socket_child_frame>ball_offset</socket_child_frame>
 					<!--List containing the generalized coordinates (q's) that parameterize this joint.-->
 					<coordinates>
 						<Coordinate name="free_coord_0">
@@ -57,34 +50,22 @@
 							<!--All properties of this object have their default values.-->
 						</Coordinate>
 					</coordinates>
-					<!--Advanced option. Specify the direction of the joint in the multibody tree: parent->child (forward, reverse is false) or child->parent (reverse is true) NOTE: the Joint transform and its coordinates maintain a parent->child sense, even if the Joint is reversed.-->
-					<reverse>false</reverse>
-					<!--Physical frames owned by the Joint that are used to satisfy the Joint's parent and child frame connections. For examples, PhysicalOffsetFrames are often used to offset the connection from a Body's origin to another location of interest (e.g. the joint center). That offset can be added to the Joint. When the joint is delete so are the Frames in this list.-->
+					<!--Physical offset frames owned by the Joint that are typically used to satisfy the owning Joint's parent and child frame connections (sockets). PhysicalOffsetFrames are often used to describe the fixed transformation from a Body's origin to another location of interest on the Body (e.g., the joint center). When the joint is deleted, so are the PhysicalOffsetFrame components in this list.-->
 					<frames>
 						<PhysicalOffsetFrame name="ground_offset">
-							<!--List of connectors (structural dependencies) that this component has.-->
-							<connectors>
-								<Connector_PhysicalFrame_ name="parent">
-									<!--Name of the component this Connector should be connected to.-->
-									<connectee_name>../../model_/ground</connectee_name>
-								</Connector_PhysicalFrame_>
-							</connectors>
-							<!--Translational offset of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
+							<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
+							<socket_parent>../../../ground</socket_parent>
+							<!--Translational offset (in meters) of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
 							<translation>0 0 0</translation>
-							<!--Orientation offset of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
+							<!--Orientation offset (in radians) of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
 							<orientation>0 0 0</orientation>
 						</PhysicalOffsetFrame>
 						<PhysicalOffsetFrame name="ball_offset">
-							<!--List of connectors (structural dependencies) that this component has.-->
-							<connectors>
-								<Connector_PhysicalFrame_ name="parent">
-									<!--Name of the component this Connector should be connected to.-->
-									<connectee_name>ball</connectee_name>
-								</Connector_PhysicalFrame_>
-							</connectors>
-							<!--Translational offset of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
+							<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
+							<socket_parent>../../../bodyset/ball</socket_parent>
+							<!--Translational offset (in meters) of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
 							<translation>0 0 0</translation>
-							<!--Orientation offset of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
+							<!--Orientation offset (in radians) of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
 							<orientation>0 0 0</orientation>
 						</PhysicalOffsetFrame>
 					</frames>
@@ -111,24 +92,7 @@
 						</objects>
 						<groups />
 					</ElasticFoundationForce::ContactParametersSet>
-          <HuntCrossleyForce name="contact2">
-            <!--Material properties.-->
-            <HuntCrossleyForce::ContactParametersSet name="contact_parameters">
-              <objects>
-                <HuntCrossleyForce::ContactParameters>
-                  <!--Names of geometry objects affected by these parameters.-->
-                  <geometry>ball3 plane</geometry>
-                  <stiffness>1000000</stiffness>
-                  <dissipation>0.001</dissipation>
-                  <static_friction>0</static_friction>
-                  <dynamic_friction>0</dynamic_friction>
-                  <viscous_friction>0</viscous_friction>
-                </HuntCrossleyForce::ContactParameters>
-              </objects>
-              <groups />
-            </HuntCrossleyForce::ContactParametersSet>
-          </HuntCrossleyForce>
-        </ElasticFoundationForce>
+				</ElasticFoundationForce>
 			</objects>
 			<groups />
 		</ForceSet>
@@ -136,13 +100,8 @@
 		<ContactGeometrySet>
 			<objects>
 				<ContactMesh name="ball1">
-					<!--List of connectors (structural dependencies) that this component has.-->
-					<connectors>
-						<Connector_PhysicalFrame_ name="frame">
-							<!--Name of the component this Connector should be connected to.-->
-							<connectee_name>model_/ground</connectee_name>
-						</Connector_PhysicalFrame_>
-					</connectors>
+					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
+					<socket_frame>../../ground</socket_frame>
 					<!--Location of geometry center in the PhysicalFrame.-->
 					<location>1 2 0</location>
 					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
@@ -151,13 +110,8 @@
 					<filename>sphere.vtp</filename>
 				</ContactMesh>
 				<ContactMesh name="ball2">
-					<!--List of connectors (structural dependencies) that this component has.-->
-					<connectors>
-						<Connector_PhysicalFrame_ name="frame">
-							<!--Name of the component this Connector should be connected to.-->
-							<connectee_name>model_/ball</connectee_name>
-						</Connector_PhysicalFrame_>
-					</connectors>
+					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
+					<socket_frame>../../bodyset/ball</socket_frame>
 					<!--Location of geometry center in the PhysicalFrame.-->
 					<location>1 1 0</location>
 					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
@@ -165,51 +119,41 @@
 					<!--Path to mesh geometry file (supports .obj, .stl, .vtp). Mesh should be closed and water-tight.-->
 					<filename>sphere.vtp</filename>
 				</ContactMesh>
-        <ContactSphere name="ball3">
-          <!--List of connectors (structural dependencies) that this component has.-->
-          <connectors>
-            <Connector_PhysicalFrame_ name="frame">
-              <!--Name of the component this Connector should be connected to.-->
-              <connectee_name>model_/ball</connectee_name>
-            </Connector_PhysicalFrame_>
-          </connectors>
-          <!--Location of geometry center in the PhysicalFrame.-->
-          <location>0 1 0</location>
-          <!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
-          <orientation>0 0 0</orientation>
-          <!--Radius of the sphere (default: 0).-->
-          <radius>0.250000000000000001</radius>
-        </ContactSphere>
-        <ContactHalfSpace name="plane">
-          <!--List of connectors (structural dependencies) that this component has.-->
-          <connectors>
-            <Connector_PhysicalFrame_ name="frame">
-              <!--Name of the component this Connector should be connected to.-->
-              <connectee_name>model_/ground</connectee_name>
-            </Connector_PhysicalFrame_>
-          </connectors>
-          <!--List of components that this component owns and serializes.-->
-          <components />
-          <!--Location of geometry center in the PhysicalFrame.-->
-          <location>0 0 0</location>
-          <!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
-          <orientation>0  0 .5</orientation>
-          <!--Default appearance for this Geometry-->
-          <Appearance>
-            <!--Flag indicating whether the associated Geometry is visible or hidden.-->
-            <visible>true</visible>
-            <!--The opacity used to display the geometry between 0:transparent, 1:opaque.-->
-            <opacity>0.7</opacity>
-            <!--The color, (red, green, blue), [0, 1], used to display the geometry. -->
-            <color>0 1 1</color>
-            <!--Visuals applied to surfaces associated with this Appearance.-->
-            <SurfaceProperties>
-              <!--The representation (1:Points, 2:Wire, 3:Shaded) used to display the object.-->
-              <representation>3</representation>
-            </SurfaceProperties>
-          </Appearance>
-        </ContactHalfSpace>
-      </objects>
+				<ContactSphere name="ball3">
+					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
+					<socket_frame>../../bodyset/ball</socket_frame>
+					<!--Location of geometry center in the PhysicalFrame.-->
+					<location>0 1 0</location>
+					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
+					<orientation>0 0 0</orientation>
+					<!--Radius of the sphere (default: 0).-->
+					<radius>0.25</radius>
+				</ContactSphere>
+				<ContactHalfSpace name="plane">
+					<!--List of components that this component owns and serializes.-->
+					<components />
+					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
+					<socket_frame>../../ground</socket_frame>
+					<!--Location of geometry center in the PhysicalFrame.-->
+					<location>0 0 0</location>
+					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
+					<orientation>0 0 0.5</orientation>
+					<!--Default appearance for this Geometry-->
+					<Appearance>
+						<!--Flag indicating whether the associated Geometry is visible or hidden.-->
+						<visible>true</visible>
+						<!--The opacity used to display the geometry between 0:transparent, 1:opaque.-->
+						<opacity>0.69999999999999996</opacity>
+						<!--The color, (red, green, blue), [0, 1], used to display the geometry. -->
+						<color>0 1 1</color>
+						<!--Visuals applied to surfaces associated with this Appearance.-->
+						<SurfaceProperties>
+							<!--The representation (1:Points, 2:Wire, 3:Shaded) used to display the object.-->
+							<representation>3</representation>
+						</SurfaceProperties>
+					</Appearance>
+				</ContactHalfSpace>
+			</objects>
 			<groups />
 		</ContactGeometrySet>
 	</Model>

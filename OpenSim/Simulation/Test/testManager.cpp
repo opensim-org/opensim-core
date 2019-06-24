@@ -35,7 +35,8 @@ Manager Tests:
 3. testExcitationUpdatesWithManager: Update the excitation of a muscle in the
    arm26 model between subsequent integrations.
 4. testConstructors: Ensure different constructors work as intended.
-5. testSimulate: Ensure the simulate() method works as intended.
+5. testIntegratorInterface: Ensure setting integrator options works as intended.
+6. testExceptions: Test that misuse actually triggers exceptions.
 
 //=============================================================================*/
 #include <OpenSim/Simulation/Model/Model.h>
@@ -46,7 +47,6 @@ Manager Tests:
 #include <OpenSim/Common/LoadOpenSimLibrary.h>
 #include <OpenSim/Simulation/Control/PrescribedController.h>
 #include <OpenSim/Common/Constant.h>
-#include <OpenSim/Simulation/SimulationUtilities.h>
 
 using namespace OpenSim;
 using namespace std;
@@ -54,7 +54,8 @@ void testStationCalcWithManager();
 void testStateChangesBetweenIntegration();
 void testExcitationUpdatesWithManager();
 void testConstructors();
-void testSimulate();
+void testIntegratorInterface();
+void testExceptions();
 
 int main()
 {
@@ -84,10 +85,16 @@ int main()
         failures.push_back("testConstructors");
     }
 
-    try { testSimulate(); }
+    try { testIntegratorInterface(); }
     catch (const std::exception& e) {
         cout << e.what() << endl;
-        failures.push_back("testSimulate");
+        failures.push_back("testIntegratorInterface");
+    }
+
+    try { testExceptions(); }
+    catch (const std::exception& e) {
+        cout << e.what() << endl;
+        failures.push_back("testExceptions");
     }
 
     if (!failures.empty()) {
@@ -140,8 +147,6 @@ void testStationCalcWithManager()
     SimTK::MobilizedBody mb = frame.getMobilizedBody();
 
     // Do a simulation
-    SimTK::RungeKuttaMersonIntegrator integrator(pendulum.getSystem());
-
     double finalT = 1.0;
     double dt = 0.01;
     int n = int(round(finalT / dt));
@@ -149,7 +154,7 @@ void testStationCalcWithManager()
     // Hold the computed kinematics from OpenSim and Simbody
     SimTK::Vec3 lo, vo, ao, l, v, a;
     
-    Manager manager(pendulum, integrator);
+    Manager manager(pendulum);
     manager.setPerformAnalyses(false);
     manager.setWriteToStorage(false);
     state.setTime(0.0);
@@ -360,8 +365,7 @@ void testConstructors()
     SimTK_TEST_EQ(sliderCoord.getValue(outState1), finalHeight);
     SimTK_TEST_EQ(sliderCoord.getSpeedValue(outState1), finalSpeed);
 
-    SimTK::RungeKuttaMersonIntegrator integ2(model.getMultibodySystem());
-    Manager manager2(model, integ2);
+    Manager manager2(model);
     manager2.initialize(initState);
     SimTK::State outState2 = manager2.integrate(duration);
     SimTK_TEST_EQ(sliderCoord.getValue(outState2), finalHeight);
@@ -372,16 +376,15 @@ void testConstructors()
     SimTK_TEST_EQ(sliderCoord.getValue(outState3), finalHeight);
     SimTK_TEST_EQ(sliderCoord.getSpeedValue(outState3), finalSpeed);
 
-    SimTK::RungeKuttaMersonIntegrator integ4(model.getMultibodySystem());
-    Manager manager4(model, initState, integ4);
+    Manager manager4(model, initState);
     SimTK::State outState4 = manager4.integrate(duration);
     SimTK_TEST_EQ(sliderCoord.getValue(outState4), finalHeight);
     SimTK_TEST_EQ(sliderCoord.getSpeedValue(outState4), finalSpeed);
 }
 
-void testSimulate()
+void testIntegratorInterface()
 {
-    cout << "Running testSimulate" << endl;
+    cout << "Running testIntegratorInterface" << endl;
 
     using SimTK::Vec3;
     const double gravity = 9.81;
@@ -393,30 +396,85 @@ void testSimulate()
     model.addBody(ball);
     auto freeJoint = new FreeJoint("freeJoint", model.getGround(), *ball);
     model.addJoint(freeJoint);
+    auto state = model.initSystem();
 
-    // Simulate from time t0 to t1. The ball should end up at -1/2*g*duration^2.
-    auto testSim = [&](double t0, double t1) -> void {
-        cout << "- simulating from t = " << t0 << " to " << t1 << "..." << endl;
-        SimTK::State& s = model.initSystem();
-        const double y1expected = -0.5 * gravity * (t1-t0) * (t1-t0);
-        s.setTime(t0);
-        s = simulate(model, s, t1);
+    Manager manager(model);
 
-        SimTK_TEST_EQ(s.getTime(), t1);
-        model.realizePosition(s);
-        const Vec3 pos1 = model.getBodySet().get("ball").getPositionInGround(s);
-        SimTK_TEST_EQ(pos1[SimTK::YAxis], y1expected);
-    };
-    testSim(0., 10.);
-    testSim(5., 15.);
+    // getMethodName returns char* so convert to string first for tests
+    std::string method = manager.getIntegrator().getMethodName();
+    // Default is RungeKuttaMerson
+    SimTK_TEST(method == "RungeKuttaMerson");
+    
+    // Test setIntegratorMethod()
+    //manager.setIntegratorMethod(Manager::IntegratorMethod::CPodes);
+    //method = manager.getIntegrator().getMethodName();
+    //SimTK_TEST(method == "CPodesBDF");
 
-    // No simulation should occur if t1 <= t0.
-    {
-        cout << "- ensuring simulation aborts if t1 <= t0..." << endl;
-        SimTK::State& s = model.initSystem();
-        const double t0 = 2.;
-        s.setTime(t0);
-        s = simulate(model, s, t0-1.);
-        SimTK_TEST_EQ(s.getTime(), t0);
-    }
+    manager.setIntegratorMethod(Manager::IntegratorMethod::ExplicitEuler);
+    method = manager.getIntegrator().getMethodName();
+    SimTK_TEST(method == "ExplicitEuler");
+
+    manager.setIntegratorMethod(Manager::IntegratorMethod::RungeKutta2);
+    method = manager.getIntegrator().getMethodName();
+    SimTK_TEST(method == "RungeKutta2");
+
+    manager.setIntegratorMethod(Manager::IntegratorMethod::RungeKutta3);
+    method = manager.getIntegrator().getMethodName();
+    SimTK_TEST(method == "RungeKutta3");
+
+    manager.setIntegratorMethod(Manager::IntegratorMethod::RungeKuttaFeldberg);
+    method = manager.getIntegrator().getMethodName();
+    SimTK_TEST(method == "RungeKuttaFeldberg");
+
+    manager.setIntegratorMethod(Manager::IntegratorMethod::RungeKuttaMerson);
+    method = manager.getIntegrator().getMethodName();
+    SimTK_TEST(method == "RungeKuttaMerson");
+
+    manager.setIntegratorMethod(Manager::IntegratorMethod::SemiExplicitEuler2);
+    method = manager.getIntegrator().getMethodName();
+    SimTK_TEST(method == "SemiExplicitEuler2");
+
+    manager.setIntegratorMethod(Manager::IntegratorMethod::Verlet);
+    method = manager.getIntegrator().getMethodName();
+    SimTK_TEST(method == "Verlet");
+
+    // Make some changes to the settings. We can't check to see if these 
+    // actually changed because IntegratorRep is not exposed.
+    double accuracy = 0.314;
+    double hmin = 0.11;
+    double hmax = 0.22;
+    int nSteps = 999;
+    manager.setIntegratorAccuracy(accuracy);
+    manager.setIntegratorMinimumStepSize(hmin);
+    manager.setIntegratorMaximumStepSize(hmax);
+    manager.setIntegratorInternalStepLimit(nSteps);
+}
+
+void testExceptions()
+{
+    cout << "Running testExceptions" << endl;
+    LoadOpenSimLibrary("osimActuators");
+    Model arm1("arm26.osim");
+    Model arm2("arm26.osim");
+
+    // model must have initSystem() called first
+    ASSERT_THROW(Exception, Manager manager(arm1));
+    SimTK::State s1 = arm1.initSystem();
+    SimTK::State s2 = arm2.initSystem();
+    Manager manager(arm1);
+
+    // ok to switch models
+    manager.setModel(arm2);
+
+    // can't integrate if not initialized
+    ASSERT_THROW(Exception, manager.integrate(1.0));
+    manager.initialize(s2);
+
+    // can't change model or integrator method now
+    ASSERT_THROW(Exception, manager.setModel(arm1));
+    ASSERT_THROW(Exception, manager.setIntegratorMethod(Manager::IntegratorMethod::ExplicitEuler));
+
+    // but integrator options can change
+    manager.setIntegratorAccuracy(1e-4);
+    manager.setIntegratorMinimumStepSize(0.01);
 }

@@ -44,7 +44,7 @@ Geometry::Geometry() {
 
 void Geometry::setFrame(const Frame& frame)
 {
-    updSocket<Frame>("frame").setConnecteeName(frame.getRelativePathName(*this));
+    updSocket<Frame>("frame").setConnecteePath(frame.getRelativePathString(*this));
 }
 
 const OpenSim::Frame& Geometry::getFrame() const
@@ -52,9 +52,9 @@ const OpenSim::Frame& Geometry::getFrame() const
     return getSocket<Frame>("frame").getConnectee();
 }
 
-void Geometry::extendConnect(Component& root)
+void Geometry::extendFinalizeConnections(Component& root)
 {
-    Super::extendConnect(root);
+    Super::extendFinalizeConnections(root);
 
     bool attachedToFrame = getSocket<Frame>("frame").isConnected();
     bool hasInputTransform = getInput("transform").isConnected();
@@ -261,10 +261,12 @@ void Mesh::extendFinalizeFromProperties() {
         bool foundIt = ModelVisualizer::findGeometryFile(model, file, isAbsolutePath, attempts);
 
         if (!foundIt) {
-            if (getDebugLevel()==0) { return; }
-
-            std::cout << "ModelVisualizer couldn't find file '" << file
-                << "'; tried\n";
+            if (!warningGiven) {
+                std::cout << "Couldn't find file '" << file << "'." << std::endl;
+                warningGiven = true;
+            }
+            if (getDebugLevel() == 0) { return; }
+            std::cout << "The following locations were tried:\n";
             for (unsigned i = 0; i < attempts.size(); ++i)
                 std::cout << "\n  " << attempts[i];
             std::cout << std::endl;

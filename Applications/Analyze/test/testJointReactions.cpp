@@ -33,7 +33,8 @@ int main()
     try {
         AnalyzeTool analyze("SinglePin_Setup_JointReaction.xml");
         analyze.run();
-        Storage result1("SinglePin_JointReaction_ReactionLoads.sto"), standard1("std_SinglePin_JointReaction_ReactionLoads.sto");
+        Storage result1("SinglePin_JointReaction_ReactionLoads.sto"),
+            standard1("std_SinglePin_JointReaction_ReactionLoads.sto");
         CHECK_STORAGE_AGAINST_STANDARD(result1, standard1, 
             std::vector<double>(standard1.getSmallestNumberOfStates(), 1e-5), __FILE__, __LINE__,
             "SinglePin failed");
@@ -41,7 +42,8 @@ int main()
 
         AnalyzeTool analyze2("DoublePendulum3D_Setup_JointReaction.xml");
         analyze2.run();
-        Storage result2("DoublePendulum3D_JointReaction_ReactionLoads.sto"), standard2("std_DoublePendulum3D_JointReaction_ReactionLoads.sto");
+        Storage result2("DoublePendulum3D_JointReaction_ReactionLoads.sto"),
+            standard2("std_DoublePendulum3D_JointReaction_ReactionLoads.sto");
         CHECK_STORAGE_AGAINST_STANDARD(result2, standard2, 
             std::vector<double>(standard2.getSmallestNumberOfStates(), 1e-5), __FILE__, __LINE__,
             "DoublePendulum3D failed");
@@ -49,7 +51,8 @@ int main()
 
         AnalyzeTool analyze3("SinglePin_Setup_JointReaction_FrameKeyword.xml");
         analyze.run();
-        Storage result3("SinglePin_JointReaction_ReactionLoads.sto"), standard3("std_SinglePin_JointReaction_ReactionLoads_FrameKeyword.sto");
+        Storage result3("SinglePin_JointReaction_ReactionLoads.sto"),
+            standard3("std_SinglePin_JointReaction_ReactionLoads_FrameKeyword.sto");
         CHECK_STORAGE_AGAINST_STANDARD(result3, standard3,
             std::vector<double>(standard3.getSmallestNumberOfStates(), 1e-5), __FILE__, __LINE__,
             "SinglePin_FrameKeyword failed");
@@ -57,14 +60,15 @@ int main()
 
         AnalyzeTool analyze4("DoublePendulum3D_Setup_JointReaction.xml");
         analyze2.run();
-        Storage result4("DoublePendulum3D_JointReaction_ReactionLoads.sto"), standard4("std_DoublePendulum3D_JointReaction_ReactionLoads_FrameKeyword.sto");
+        Storage result4("DoublePendulum3D_JointReaction_ReactionLoads.sto"),
+            standard4("std_DoublePendulum3D_JointReaction_ReactionLoads_FrameKeyword.sto");
         CHECK_STORAGE_AGAINST_STANDARD(result4, standard4,
             std::vector<double>(standard4.getSmallestNumberOfStates(), 1e-5), __FILE__, __LINE__,
             "DoublePendulum3D_FrameKeyword failed");
         cout << "DoublePendulum3D_FrameKeyword passed" << endl;
     }
-    catch (const Exception& e) {
-        e.print(cerr);
+    catch (const std::exception& e) {
+        cout << e.what() << endl;
         return 1;
     }
     cout << "Done" << endl;

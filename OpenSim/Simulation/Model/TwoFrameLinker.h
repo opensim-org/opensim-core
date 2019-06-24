@@ -80,6 +80,15 @@ public:
     TwoFrameLinker();
 
     /** Convenience Constructor.
+    Create a TwoFrameLinker Component between two Frames.
+
+    @param[in] name         the name of this TwoFrameLinker component
+    @param[in] frame1       the name of the first Frame being linked
+    @param[in] frame2       the name of the second Frame being linked
+    */
+    TwoFrameLinker(const std::string &name, const F& frame1, const F& frame2);
+
+    /** Convenience Constructor.
     Create a TwoFrameLinker Component between two Frames identified by name.
 
     @param[in] name         the name of this TwoFrameLinker component
@@ -119,6 +128,28 @@ public:
         const SimTK::Transform& offsetOnFrame1,
         const std::string& frame2Name,
         const SimTK::Transform& offsetOnFrame2);
+
+    /** Backwards compatible Convenience Constructor
+    TwoFrameLinker with offsets specified in terms of the location and
+    orientation in respective PhysicalFrames.
+
+    @param[in] name             the name of this TwoFrameLinker component
+    @param[in] frame1              the first Frame being linked
+    @param[in] locationInFrame1    Vec3 of offset location on the first frame
+    @param[in] orientationInFrame1 Vec3 of orientation offset expressed as
+                                   XYZ body-fixed Euler angles w.r.t frame1.
+    @param[in] frame2              the second Frame being linked
+    @param[in] locationInFrame2    Vec3 of offset location on the second frame
+    @param[in] orientationInFrame2 Vec3 of orientation offset expressed as
+                                   XYZ body-fixed Euler angles w.r.t frame2.
+    */
+    TwoFrameLinker(const std::string &name,
+                   const PhysicalFrame& frame1,
+                   const SimTK::Vec3& locationInFrame1,
+                   const SimTK::Vec3& orientationInFrame1,
+                   const PhysicalFrame& frame2,
+                   const SimTK::Vec3& locationInFrame2,
+                   const SimTK::Vec3& orientationInFrame2);
 
     /** Backwards compatible Convenience Constructor
     TwoFrameLinker with offsets specified in terms of the location and 
@@ -253,6 +284,16 @@ TwoFrameLinker<C, F>::TwoFrameLinker() : C()
     this->constructProperties();
 }
 
+template <class C, class F>
+TwoFrameLinker<C, F>::TwoFrameLinker(const std::string &name,
+    const F& frame1,
+    const F& frame2) : TwoFrameLinker<C, F>()
+{
+    this->setName(name);
+    this->template updSocket<F>("frame1").connect(frame1);
+    this->template updSocket<F>("frame2").connect(frame2);
+}
+
 // Convenience constructors
 template <class C, class F>
 TwoFrameLinker<C, F>::TwoFrameLinker(const std::string &name,
@@ -260,8 +301,8 @@ TwoFrameLinker<C, F>::TwoFrameLinker(const std::string &name,
     const std::string& frame2Name) : TwoFrameLinker<C, F>()
 {
     this->setName(name);
-    this->template updSocket<F>("frame1").setConnecteeName(frame1Name);
-    this->template updSocket<F>("frame2").setConnecteeName(frame2Name);
+    this->template updSocket<F>("frame1").setConnecteePath(frame1Name);
+    this->template updSocket<F>("frame2").setConnecteePath(frame2Name);
 }
 
 template <class C, class F>
@@ -313,6 +354,25 @@ TwoFrameLinker<C, F>::TwoFrameLinker(const std::string &name,
     this->connectSocket_frame1(get_frames(ix1));
     this->connectSocket_frame2(get_frames(ix2));
 }
+
+template <class C, class F>
+TwoFrameLinker<C, F>::TwoFrameLinker(const std::string &name,
+               const PhysicalFrame& frame1,
+               const SimTK::Vec3& locationInFrame1,
+               const SimTK::Vec3& orientationInFrame1,
+               const PhysicalFrame& frame2,
+               const SimTK::Vec3& locationInFrame2,
+               const SimTK::Vec3& orientationInFrame2)
+    : TwoFrameLinker(name,
+        frame1, SimTK::Transform(SimTK::Rotation(SimTK::BodyRotationSequence,
+            orientationInFrame1[0], SimTK::XAxis,
+            orientationInFrame1[1], SimTK::YAxis,
+            orientationInFrame1[2], SimTK::ZAxis), locationInFrame1),
+        frame2, SimTK::Transform(SimTK::Rotation(SimTK::BodyRotationSequence,
+            orientationInFrame2[0], SimTK::XAxis,
+            orientationInFrame2[1], SimTK::YAxis,
+            orientationInFrame2[2], SimTK::ZAxis), locationInFrame2))
+{}
 
 template <class C, class F>
 TwoFrameLinker<C, F>::TwoFrameLinker(const std::string& name,
@@ -572,7 +632,6 @@ void TwoFrameLinker<C, F>::updateFromXMLNode(SimTK::Xml::Element& aNode,
             Vec3 locationInFrame2(0);
             Vec3 orientationInFrame2(0);
 
-
             if (locBody1Elt != aNode.element_end()) {
                 locBody1Elt->getValueAs<Vec3>(locationInFrame1);
             }
@@ -596,29 +655,35 @@ void TwoFrameLinker<C, F>::updateFromXMLNode(SimTK::Xml::Element& aNode,
             if ((locationInFrame1.norm() > 0.0) ||
                 (orientationInFrame1.norm() > 0.0)) {
                 frame1_connectee_name = frame1Name + "_offset";
-                XMLDocument::addPhysicalOffsetFrame30505(aNode,
+                XMLDocument::addPhysicalOffsetFrame30505_30517(aNode,
                         frame1_connectee_name,
                         frame1Name, locationInFrame1, orientationInFrame1);
-            } else {
-                // In pre-4.0 models, BushingForces, Constraints, and all other
-                // classes upgraded to use TwoFrameLinker, and the
-                // Bodies they depended on, are necessarily 1 level deep
-                // (subcomponent of model). Therefore, prepend "../" to get the
-                // correct relative path.
-                frame1_connectee_name = "../" + frame1Name;
+            }
+            // Prior to 4.0, all bodies lived in the Model's BodySet and
+            // Constraints and Forces (current TwoFrameLinker) were always
+            // in the ConstraintSet and ForceSet, which means we need to go
+            // two levels up (../../)  and into the bodyset to find the 
+            // Bodies (frames) being linked.
+            else {
+                frame1_connectee_name =
+                        XMLDocument::updateConnecteePath30517("bodyset",
+                                                              frame1Name);
             }
 
             // again for the offset frame on the child
             if ((locationInFrame2.norm() > 0.0) ||
                 (orientationInFrame2.norm() > 0.0)) {
                 frame2_connectee_name = frame2Name + "_offset";
-                XMLDocument::addPhysicalOffsetFrame30505(aNode,
+                XMLDocument::addPhysicalOffsetFrame30505_30517(aNode,
                         frame2_connectee_name,
                         frame2Name, locationInFrame2, orientationInFrame2);
                 body2Element->setValue(frame2Name + "_offset");
             } else {
-                frame2_connectee_name = "../" + frame2Name;
+                frame2_connectee_name =
+                        XMLDocument::updateConnecteePath30517("bodyset",
+                                                              frame2Name);
             }
+
 
             // Now we know whether to use the original body_1 and body_2
             // strings or if we should use the offsets.

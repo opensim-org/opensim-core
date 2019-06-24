@@ -266,6 +266,14 @@ public:
     **/
     explicit Model(const std::string& filename) SWIG_DECLARE_EXCEPTION;
 
+    /** Satisfy all connections (Sockets and Inputs) in the model, using this
+     * model as the root Component. This is a convenience form of
+     * Component::finalizeConnections() that uses this model as root.
+     */
+    void finalizeConnections() { finalizeConnections(*this); }
+    // Allow overloading.
+   using Component::finalizeConnections;
+
     /**
      * Perform some set up functions that happen after the
      * object has been deserialized. TODO: this method is
@@ -538,24 +546,31 @@ public:
 
     /**@}**/
 
-    //--------------------------------------------------------------------------
-    // CREATE THE MULTIBODY SYSTEM
-    //--------------------------------------------------------------------------
-    /** @name Add components to the model
-     * Model takes ownership of the Components.
+    /** @name Adding components to the Model
+     * Model takes ownership of the ModelComponent and adds it to a specialized
+     * (typed) Set within the model. Model will maintain Components added using
+     * these methods in separate %Sets of the corresponding type and they will
+     * serialize as part of type specific %Sets. These sets can be useful for
+     * uniquely identifying components that share the same name, but are of
+     * different types since they  live in different %Sets. For example, using
+     * addBody(toesBody) and addJoint(toesJoint) will have unique paths:
+     * "/bodyset/toes" and "/jointset/toes", respectively, even when they have
+     * the same name, "toes".
      * @note these are legacy methods and remain as a convenience alternative to
-     * using Component::addComponent(). Model will maintain Components added
-     * using these methods in separate %Sets of the corresponding type and they
-     * will serialize as part of type specific %Sets. In contrast, components
-     * added using addComponent() are not stored in the model's %Sets but live in
-     * a flat components list (which is also serialized). Component provides
-     * access via getComponentList<%SpecificType> or getComponent<%SpecificType> 
-     * to get any subcomponent, including those that are contained in Model's %Sets.
+     * using Component::addComponent().
+     * In contrast, components added using addComponent() are not stored in the
+     * model's %Sets but live in a flat components list (which is also serialized).
+     * Component provides access via getComponentList<%SpecificType> or 
+     * getComponent<%SpecificType> to get any subcomponent, including those that
+     * are contained in Model's %Sets. In this case, either a Body or a Joint has
+     * the pathname "/toes" but both cannot share the same name and will throw
+     * SubcomponentsWithDuplicateName.
      * Future versions of OpenSim are likely to deprecate the use of Sets and
-     * these methods, because they cannot support new types without modifying the
-     * API (for more add####() methods), whereas getComponentList<%SpecificType>()
-     * and getComponent<%SpecificType> are more general: they do not have these
-     * limitations and are applicable for any Component not just Model.
+     * these methods, because they cannot support new Component types without
+     * modifying the API (for more add####() methods), whereas
+     * getComponentList<%SpecificType>() and getComponent<%SpecificType> will
+     * generalize: they do not have these limitations and are applicable for
+     * adding to any Component not just Model.
      */
     // @{
     void addModelComponent(ModelComponent* adoptee);
@@ -570,9 +585,7 @@ public:
 
     /** remove passed in Probe from model **/
     void removeProbe(Probe *probe);
-    //--------------------------------------------------------------------------
-    // FILE NAME
-    //--------------------------------------------------------------------------
+
     /** 
      * Get the XML file name used to construct the model. 
      *
@@ -586,10 +599,6 @@ public:
      * @param fileName The XML file name.
      */
     void setInputFileName(const std::string& fileName) { _fileName = fileName; }
-
-    //--------------------------------------------------------------------------
-    // CREDITS
-    //--------------------------------------------------------------------------
 
     /** 
      * Get the credits (e.g., model author names) associated with the model. 
@@ -619,9 +628,6 @@ public:
      */
     void setPublications(const std::string& aPublications) { upd_publications() = aPublications; }
 
-    //--------------------------------------------------------------------------
-    // UNITS
-    //--------------------------------------------------------------------------
     /** 
      * Get the length units associated with the model. 
      *
@@ -636,9 +642,6 @@ public:
      */
     const Units& getForceUnits() const { return _forceUnits; }
 
-    //--------------------------------------------------------------------------
-    // GRAVITY
-    //--------------------------------------------------------------------------
     /**
      * Get the gravity vector in the global frame.
      *
@@ -654,9 +657,6 @@ public:
      */
     bool setGravity(const SimTK::Vec3& aGrav);
 
-    //--------------------------------------------------------------------------
-    // NUMBERS
-    //--------------------------------------------------------------------------
     /**
      * Get the number of markers in the model.
      * @return Number of markers.
@@ -744,9 +744,6 @@ public:
      */
     int getNumAnalyses() const;
 
-    //--------------------------------------------------------------------------
-    // CONTROLS
-    //--------------------------------------------------------------------------
     /**
      * Get the number of controls for this the model.
      * Only valid once underlying system for the model has been created.
@@ -816,14 +813,9 @@ public:
     bool getAllControllersEnabled() const;
     void setAllControllersEnabled( bool enabled );
 
-    //--------------------------------------------------------------------------
-    // CONFIGURATION
-    //--------------------------------------------------------------------------
     void applyDefaultConfiguration(SimTK::State& s );
 
-    //--------------------------------------------------------------------------
-    // DYNAMICS ENGINE
-    //--------------------------------------------------------------------------
+
     /**
      * Get the model's dynamics engine
      *
@@ -849,9 +841,6 @@ public:
     double calcPotentialEnergy(const SimTK::State &s) const {
         return getMultibodySystem().calcPotentialEnergy(s);
     }
-    //--------------------------------------------------------------------------
-    // STATES
-    //--------------------------------------------------------------------------
 
     int getNumMuscleStates() const;
     int getNumProbeStates() const;
@@ -883,6 +872,10 @@ public:
     std::vector<SimTK::ReferencePtr<const Coordinate>>
         getCoordinatesInMultibodyTreeOrder() const;
 
+    /** Get a warning message if any Coordinates have a MotionType that is NOT
+        consistent with its previous user-specified value that existed in 
+        Model files prior to OpenSim 4.0 */
+    std::string getWarningMesssageForMotionTypeInconsistency() const;
 
     BodySet& updBodySet() { return upd_BodySet(); }
     const BodySet& getBodySet() const { return get_BodySet(); }
@@ -1008,7 +1001,9 @@ public:
     /**
      * Get a log of errors/warnings encountered when loading/constructing the model
      */
-    const std::string& getValidationLog() { return _validationLog; };
+    const std::string& getValidationLog() const { return _validationLog; };
+    /** Append to the Model's validation log without affecting is current contents */
+    void appendToValidationLog(const std::string& note);
     void clearValidationLog() { _validationLog = ""; };
 
     /**

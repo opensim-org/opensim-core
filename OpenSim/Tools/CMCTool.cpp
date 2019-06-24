@@ -614,7 +614,6 @@ bool CMCTool::run()
         GCVSplineSet* stateFuntcions = new GCVSplineSet(3, &stateStorage);
         for (int i=0; i< stateFuntcions->getSize(); i++)
             qAndPosSet->cloneAndAppend(stateFuntcions->get(i));
-
     }
 
     taskSet.setFunctions(*qAndPosSet);
@@ -736,11 +735,10 @@ bool CMCTool::run()
     // ---- SIMULATION ----
     //
     // Manager
-    RungeKuttaMersonIntegrator integrator(_model->getMultibodySystem());
-    integrator.setMaximumStepSize(_maxDT);
-    integrator.setMinimumStepSize(_minDT);
-    integrator.setAccuracy(_errorTolerance);
-    Manager manager(*_model, integrator);
+    Manager manager(*_model);
+    manager.setIntegratorMaximumStepSize(_maxDT);
+    manager.setIntegratorMinimumStepSize(_minDT);
+    manager.setIntegratorAccuracy(_errorTolerance);
     
     _model->setAllControllersEnabled( true );
 

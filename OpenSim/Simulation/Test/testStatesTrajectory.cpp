@@ -164,8 +164,7 @@ void createStateStorageFile() {
     model.addController(controller);
 
     auto& initState = model.initSystem();
-    SimTK::RungeKuttaMersonIntegrator integrator(model.getSystem());
-    Manager manager(model, integrator);
+    Manager manager(model);
     initState.setTime(0.0);
     manager.initialize(initState);
     manager.integrate(0.15);
@@ -200,37 +199,36 @@ void testFromStatesStorageGivesCorrectStates() {
         // Multibody states.
         for (int ic = 0; ic < model.getCoordinateSet().getSize(); ++ic) {
             const auto& coord = model.getCoordinateSet().get(ic);
-            auto coordName = coord.getName();
-            auto jointName = coord.getJoint().getName();
-            auto coordPath = jointName + "/" + coordName;
+            // get value and speed state names for this coordinate
+            const auto coordStateNames = coord.getStateVariableNames();
+
             // Coordinate.
-            SimTK_TEST_EQ(getStorageEntry(sto, itime, coordPath + "/value"),
+            SimTK_TEST_EQ(getStorageEntry(sto, itime, coordStateNames[0]),
                     coord.getValue(state));
 
             // Speed.
-            SimTK_TEST_EQ(getStorageEntry(sto, itime, coordPath + "/speed"),
+            SimTK_TEST_EQ(getStorageEntry(sto, itime, coordStateNames[1]),
                     coord.getSpeedValue(state));
         }
 
         // Muscle states.
         for (int im = 0; im < model.getMuscles().getSize(); ++im) {
             const auto& muscle = model.getMuscles().get(im);
-            auto muscleName = muscle.getName();
+            // get the activation and fiber_length state names of the muscles
+            const auto muscleStateNames = muscle.getStateVariableNames();
 
             // Activation.
             {
-                std::string stateVarName = muscleName + "/activation";
                 SimTK_TEST_EQ(
-                        getStorageEntry(sto, itime, stateVarName),
-                        muscle.getStateVariableValue(state, "activation"));
+                    getStorageEntry(sto, itime, muscleStateNames[0]),
+                        muscle.getStateVariableValue(state, "activation") );
             }
 
             // Fiber length.
             {
-                std::string stateVarName = muscleName + "/fiber_length";
                 SimTK_TEST_EQ(
-                        getStorageEntry(sto, itime, stateVarName), 
-                        muscle.getStateVariableValue(state, "fiber_length"));
+                    getStorageEntry(sto, itime, muscleStateNames[1]),
+                        muscle.getStateVariableValue(state, "fiber_length") );
             }
 
         }
@@ -759,10 +757,12 @@ void testExport() {
     }
 
     // Exporting only certain columns.
+    std::vector<std::string> columns{
+        gait.getCoordinateSet().get("knee_angle_l").getStateVariableNames()[0],
+        gait.getCoordinateSet().get("knee_angle_r").getStateVariableNames()[0],
+        gait.getCoordinateSet().get("knee_angle_r").getStateVariableNames()[1]};
+
     {
-        std::vector<std::string> columns {"knee_l/knee_angle_l/value",
-                                          "knee_r/knee_angle_r/value",
-                                          "knee_r/knee_angle_r/speed"};
         auto tableKnee = states.exportToTable(gait, columns);
         tableAndTrajectoryMatch(gait, tableKnee, states, columns);
     }
@@ -777,20 +777,19 @@ void testExport() {
 
     // Exception if given a non-existent column name.
     SimTK_TEST_MUST_THROW_EXC(
-            states.exportToTable(gait, {"knee_l/knee_angle_l/value",
+            states.exportToTable(gait, {columns[0],
                                         "not_an_actual_state",
-                                        "knee_r/knee_angle_r/speed"}),
+                                        columns[2]}),
             OpenSim::Exception);
     SimTK_TEST_MUST_THROW_EXC(
-            states.exportToTable(gait, {"knee_l/knee_angle_l/value",
+            states.exportToTable(gait, {columns[0],
                                         "nor/is/this",
-                                        "knee_r/knee_angle_r/speed"}),
+                                        columns[2]}),
             OpenSim::Exception);
 }
 
 int main() {
     SimTK_START_TEST("testStatesTrajectory");
-
         // actuators library is not loaded automatically (unless using clang).
         #if !defined(__clang__)
             LoadOpenSimLibrary("osimActuators");

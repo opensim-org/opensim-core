@@ -527,6 +527,19 @@ getStateIndex(const std::string &aColumnName, int startIndex) const
         thisColumnIndex = _columnLabels.findIndex(aColumnName);
         if (thisColumnIndex != -1) break;
 
+        // 4.0 and its beta versions differ slightly in the absolute path but
+        // the <joint>/<coordinate>/value (or speed) will be common to both.
+        // Likewise, for muscle states <muscle>/activation (or fiber_length)
+        // must be common to the state variable (path) name and column label.
+        std::string shortPath = aColumnName;
+        std::string::size_type front = shortPath.find("/");
+        while (thisColumnIndex < 0 && front < std::string::npos) {
+            shortPath = shortPath.substr(front + 1, aColumnName.length());
+            thisColumnIndex = _columnLabels.findIndex(shortPath);
+            front = shortPath.find("/");
+        }
+        if (thisColumnIndex != -1) break;
+
         // Assume column labels follow pre-v4.0 state variable labeling.
         // Redo search with what the pre-v4.0 label might have been.
 
@@ -534,7 +547,7 @@ getStateIndex(const std::string &aColumnName, int startIndex) const
         std::string::size_type back = aColumnName.rfind("/");
         std::string prefix = aColumnName.substr(0, back);
         std::string shortName = aColumnName.substr(back + 1,
-                                                   aColumnName.length() - back);
+            aColumnName.length() - back);
         thisColumnIndex = _columnLabels.findIndex(shortName);
         if (thisColumnIndex != -1) break;
 
@@ -551,7 +564,7 @@ getStateIndex(const std::string &aColumnName, int startIndex) const
             // replace "/speed" (the v4.0 labeling for speeds) with "_u"
             back = prefix.rfind("/");
             shortName =
-                    prefix.substr(back + 1, prefix.length() - back) + "_u";
+                prefix.substr(back + 1, prefix.length() - back) + "_u";
             thisColumnIndex = _columnLabels.findIndex(shortName);
         }
         else if (back < aColumnName.length()) {
@@ -560,7 +573,7 @@ getStateIndex(const std::string &aColumnName, int startIndex) const
             shortName.replace(back, 1, ".");
             back = shortName.rfind("/");
             shortName = shortName.substr(back + 1,
-                                         shortName.length() - back);
+                shortName.length() - back);
             thisColumnIndex = _columnLabels.findIndex(shortName);
         }
         if (thisColumnIndex != -1) break;

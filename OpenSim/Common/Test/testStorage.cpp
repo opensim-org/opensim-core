@@ -23,12 +23,28 @@
 #include <fstream>
 #include <OpenSim/Common/Storage.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
+#include <OpenSim/Common/STOFileAdapter.h>
 
 using namespace OpenSim;
 using namespace std;
 
 
-void testStorageLoadingFromFile(const std::string& fileName, const int ncols);
+void testStorageLoadingFromFile(const std::string& fileName, const int numCols)
+{
+    Storage storage{ fileName};
+    // remove extension
+    auto ix = fileName.rfind(".");
+    if (ix == std::string::npos) {
+        throw Exception("File name for Storage loading '" + fileName +
+                        "' must have a valid extension.");
+    }
+    std::string name = fileName.substr(0, ix-1);
+    Array<std::string> labels = storage.getColumnLabels();
+
+    storage.print("test_" + name + ".sto");
+
+    ASSERT(numCols == labels.size());
+}
 
 void testStorageLegacy() {
     // Create a storage from a std file "std_storage.sto"
@@ -98,6 +114,62 @@ void testStorageLegacy() {
     }
 }
 
+void testStorageGetStateIndexBackwardsCompatibility() {
+    auto convert = [](const std::vector<std::string>& vec) {
+        OpenSim::Array<std::string> out({}, 0);
+        for (const auto& element : vec) out.append(element);
+        return out;
+    };
+    Storage sto;
+
+    // States file column labels from OpenSim 3.3.
+    sto.setColumnLabels(convert({
+        "time",
+        "hip_flexion",
+        "hip_flexion_u",
+        "soleus.activation",
+        "soleus.fiber_length"
+        }));
+    SimTK_TEST(sto.getStateIndex("nonexistant") == -1);
+    SimTK_TEST(sto.getStateIndex("/jointset/hip/hip_flexion/value") == 0);
+    SimTK_TEST(sto.getStateIndex("/jointset/hip/hip_flexion/speed") == 1);
+    SimTK_TEST(sto.getStateIndex("/forceset/soleus/activation") == 2);
+    SimTK_TEST(sto.getStateIndex("/forceset/soleus/fiber_length") == 3);
+    // Random checks.
+    SimTK_TEST(sto.getStateIndex("value") == -1);
+    SimTK_TEST(sto.getStateIndex("fiber_length") == -1);
+
+    // States file column labels from OpenSim 4.0 development.
+    sto.setColumnLabels(convert({
+        "time",
+        "hip/hip_flexion/value",
+        "hip/hip_flexion/speed",
+        "soleus/activation",
+        "soleus/fiber_length"
+    }));
+    SimTK_TEST(sto.getStateIndex("nonexistant") == -1);
+    SimTK_TEST(sto.getStateIndex("/jointset/hip/hip_flexion/value") == 0);
+    SimTK_TEST(sto.getStateIndex("/jointset/hip/hip_flexion/speed") == 1);
+    SimTK_TEST(sto.getStateIndex("/forceset/soleus/activation") == 2);
+    SimTK_TEST(sto.getStateIndex("/forceset/soleus/fiber_length") == 3);
+
+    // States file from OpenSim 4.0.
+    sto.setColumnLabels(convert({
+        "time",
+        "/jointset/hip/hip_flexion/value",
+        "/jointset/hip/hip_flexion/speed",
+        "/forceset/soleus/activation",
+        "/forceset/soleus/fiber_length"
+    }));
+    SimTK_TEST(sto.getStateIndex("nonexistant") == -1);
+    SimTK_TEST(sto.getStateIndex("/jointset/hip/hip_flexion/value") == 0);
+    SimTK_TEST(sto.getStateIndex("/jointset/hip/hip_flexion/speed") == 1);
+    SimTK_TEST(sto.getStateIndex("/forceset/soleus/activation") == 2);
+    SimTK_TEST(sto.getStateIndex("/forceset/soleus/fiber_length") == 3);
+
+    // TODO: Put XML document version in Storage header.
+}
+
 int main() {
     SimTK_START_TEST("testStorage");
 
@@ -120,22 +192,8 @@ int main() {
         #endif
 
         SimTK_SUBTEST(testStorageLegacy);
+
+        SimTK_SUBTEST(testStorageGetStateIndexBackwardsCompatibility);
     SimTK_END_TEST();
 }
 
-void testStorageLoadingFromFile(const std::string& fileName, const int numCols)
-{
-    Storage storage{ fileName};
-    // remove extension
-    auto ix = fileName.rfind(".");
-    if (ix == std::string::npos) {
-        throw Exception("File name for Storage loading '" + fileName +
-            "' must have a valid extension.");
-    }
-    std::string name = fileName.substr(0, ix-1);
-    Array<std::string> labels = storage.getColumnLabels();
-
-    storage.print("test_" + name + ".sto");
-
-    ASSERT(numCols == labels.size());
-}

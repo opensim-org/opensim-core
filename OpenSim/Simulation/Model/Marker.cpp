@@ -87,7 +87,7 @@ void Marker::constructProperties()
 
 void Marker::setParentFrameName(const string& name)
 {
-    updSocket<PhysicalFrame>("parent_frame").setConnecteeName(name);
+    updSocket<PhysicalFrame>("parent_frame").setConnecteePath(name);
 }
 
 //_____________________________________________________________________________
@@ -98,7 +98,7 @@ void Marker::setParentFrameName(const string& name)
 
 const string& Marker::getParentFrameName() const
 {
-    return getSocket<PhysicalFrame>("parent_frame").getConnecteeName();
+    return getSocket<PhysicalFrame>("parent_frame").getConnecteePath();
 }
 
 
@@ -146,9 +146,10 @@ void Marker::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
             frameElement.setAttributeValue("name", "parent_frame");
             SimTK::Xml::Element connecteeElement("connectee_name");
             // Markers in pre-4.0 models are necessarily 1 level deep
-            // (model, markers), and Bodies were necessarily 1 level deep:
-            // prepend "../" to get the correct relative path.
-            if (!bName.empty()) bName = "../" + bName;
+            // (model, markers), and Bodies were necessarily 1 level deep;
+            // here we create the correct relative path (accounting for sets
+            // being components).
+            bName = XMLDocument::updateConnecteePath30517("bodyset", bName);
             connecteeElement.setValue(bName);
             frameElement.insertNodeAfter(frameElement.node_end(), connecteeElement);
             aNode.insertNodeAfter(bIter, connectorsElement);
@@ -173,7 +174,7 @@ void Marker::generateDecorations(bool fixed, const ModelDisplayHints& hints, con
     //SimTK::Transform bTrans = frame.findTransformInBaseFrame();
     //const Vec3& p_BM = bTrans*get_location();
     appendToThis.push_back(
-        SimTK::DecorativeSphere(.005).setBodyId(frame.getMobilizedBodyIndex())
+        SimTK::DecorativeSphere(.01).setBodyId(frame.getMobilizedBodyIndex())
         .setColor(color).setOpacity(1.0)
         .setTransform(get_location()));
     
