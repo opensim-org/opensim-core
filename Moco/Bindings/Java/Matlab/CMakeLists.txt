@@ -13,33 +13,6 @@ file(COPY "Examples/exampleMarkerTracking10DOF/marker_trajectories.trc"
           "Examples/exampleMarkerTracking10DOF/subject01.osim"
           "Examples/exampleMarkerTracking10DOF/state_reference.mot"
      DESTINATION "${SANDBOX_MARKER_TRACKING_DIR}")
- 
-set(SANDBOX_MOCO_TRACK_DIR 
-    "${CMAKE_BINARY_DIR}/Moco/Sandbox/sandboxMocoTrack")
-file(COPY "Examples/exampleMocoTrack/coordinates_rra_adjusted.sto"
-          "Examples/exampleMocoTrack/grf_walk.mot"
-          "Examples/exampleMocoTrack/grf_walk.xml"
-          "Examples/exampleMocoTrack/motion_capture_walk.trc"
-          "Examples/exampleMocoTrack/subject_walk_rra_adjusted_armless.osim"
-     DESTINATION "${SANDBOX_MOCO_TRACK_DIR}")
-     
-set(EXAMPLE_MOCO_TRACK_DIR 
-    "${CMAKE_BINARY_DIR}/Moco/Examples/C++/exampleMocoTrack")
-file(COPY "Examples/exampleMocoTrack/coordinates_rra_adjusted.sto"
-          "Examples/exampleMocoTrack/grf_walk.mot"
-          "Examples/exampleMocoTrack/grf_walk.xml"
-          "Examples/exampleMocoTrack/motion_capture_walk.trc"
-          "Examples/exampleMocoTrack/subject_walk_rra_adjusted_armless.osim"
-     DESTINATION "${EXAMPLE_MOCO_TRACK_DIR}")
-    
-set(EXAMPLE_MOCO_TRACK_PYTHON_DIR 
-    "${CMAKE_BINARY_DIR}/Moco/Bindings/Python/examples/exampleMocoTrack")
-file(COPY "Examples/exampleMocoTrack/coordinates_rra_adjusted.sto"
-          "Examples/exampleMocoTrack/grf_walk.mot"
-          "Examples/exampleMocoTrack/grf_walk.xml"
-          "Examples/exampleMocoTrack/motion_capture_walk.trc"
-          "Examples/exampleMocoTrack/subject_walk_rra_adjusted_armless.osim"
-     DESTINATION "${EXAMPLE_MOCO_TRACK_PYTHON_DIR}")
     
 # The configureMoco.m script contains paths into the Moco installation
 # that may be different on different platforms, so we configure it with CMake

@@ -136,8 +136,8 @@ public:
 /// XML file.
 class OSIMMOCO_API ModOpAddExternalLoads : public ModelOperator {
     OpenSim_DECLARE_CONCRETE_OBJECT(ModOpAddExternalLoads, ModelOperator);
-    OpenSim_DECLARE_PROPERTY(
-            filepath, std::string, "External loads XML file.");
+    OpenSim_DECLARE_PROPERTY(filepath, std::string, 
+            "External loads XML file.");
 
 public:
     ModOpAddExternalLoads() { constructProperty_filepath(""); }
@@ -155,6 +155,25 @@ public:
         }
         InverseDynamicsTool idTool;
         idTool.createExternalLoads(path, model);
+    }
+};
+
+class OSIMMOCO_API ModOpReplaceJointsWithWelds : public ModelOperator {
+    OpenSim_DECLARE_CONCRETE_OBJECT(ModOpReplaceJointsWithWelds, ModelOperator);
+    OpenSim_DECLARE_LIST_PROPERTY(joint_paths, std::string,
+            "Paths to joints to replace with WeldJoints.");
+
+public:
+    ModOpReplaceJointsWithWelds() { constructProperty_joint_paths(); }
+    ModOpReplaceJointsWithWelds(const std::vector<std::string>& paths) :
+            ModOpReplaceJointsWithWelds() {
+        for (const auto& path : paths) { append_joint_paths(path); }
+    }
+    void operate(Model& model, const std::string&) const override {
+        model.initSystem();
+        for (int i = 0; i < getProperty_joint_paths().size(); ++i) {
+            ModelFactory::replaceJointWithWeldJoint(model, get_joint_paths(i));
+        }
     }
 };
 

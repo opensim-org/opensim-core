@@ -248,7 +248,17 @@ void ModelFactory::createReserveActuators(Model& model, double optimalForce) {
     // Borrowed from
     // CoordinateActuator::CreateForceSetOfCoordinateAct...
     for (const auto& coord : modelCopy.getComponentList<Coordinate>()) {
-        if (!coord.isConstrained(state)) {
+        // Don't add a reserve if a CoordinateActuator already exists.
+        bool skipCoord = false;
+        for (const auto& coordAct : 
+                modelCopy.getComponentList<CoordinateActuator>()) {
+            if (coordAct.getCoordinate() == &coord) {
+                skipCoord = true;
+                break;
+            }
+        }
+
+        if (!coord.isConstrained(state) || skipCoord) {
             auto* actu = new CoordinateActuator();
             actu->setCoordinate(&model.updComponent<Coordinate>(
                     coord.getAbsolutePathString()));

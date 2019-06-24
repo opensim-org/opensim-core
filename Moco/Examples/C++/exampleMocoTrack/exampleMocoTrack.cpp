@@ -20,12 +20,60 @@
 
 using namespace OpenSim;
 
+void torqueDrivenMarkerTracking() {
+    
+    MocoTrack track;
+    track.setName("torque_driven_marker_tracking");
+    track.setModel(ModelProcessor("subject_walk_rra_adjusted_armless.osim") |
+        ModOpReplaceJointsWithWelds({"mtp_l", "mtp_r"}) |
+        ModOpAddExternalLoads("grf_walk.xml") |
+        ModOpRemoveMuscles() |
+        ModOpAddReserves(250));
+
+    TimeSeriesTableVec3 markers = 
+            TRCFileAdapter::read("motion_capture_walk.trc");
+    TimeSeriesTable markersFlat = markers.flatten();
+    markersFlat.updMatrix().scalarMultiplyInPlace(0.001);
+    track.setMarkersReference(TableProcessor(markersFlat) |
+        TabOpLowPassFilter(6));
+    track.set_allow_unused_references(true);
+
+    track.set_initial_time(0.81);
+    track.set_final_time(1.65);
+    track.set_mesh_interval(0.05);    
+
+    MocoStudy moco = track.initialize();
+
+    MocoProblem& problem = moco.updProblem();
+    MocoControlCost& effort = 
+        dynamic_cast<MocoControlCost&>(problem.updCost("control_effort"));
+    
+    double residualWeight = 100;
+    effort.setWeight("/forceset/reserve_jointset_ground_pelvis_pelvis_tilt",
+            residualWeight);
+    effort.setWeight("/forceset/reserve_jointset_ground_pelvis_pelvis_list",
+            residualWeight);
+    effort.setWeight("/forceset/reserve_jointset_ground_pelvis_pelvis_rotation",
+            residualWeight);
+    effort.setWeight("/forceset/reserve_jointset_ground_pelvis_pelvis_tx",
+            residualWeight);
+    effort.setWeight("/forceset/reserve_jointset_ground_pelvis_pelvis_ty",
+            residualWeight);
+    effort.setWeight("/forceset/reserve_jointset_ground_pelvis_pelvis_tz",
+            residualWeight);
+
+    MocoSolution solution = moco.solve();
+    moco.visualize(solution);
+
+}
+
 void muscleDrivenStateTracking() {
 
     MocoTrack track;
     track.setName("muscle_driven_state_tracking");
 
     track.setModel(ModelProcessor("subject_walk_rra_adjusted_armless.osim") |
+        //ModOpReplaceJointsWithWelds({"/jointset/mtp_l", "/jointset/mtp_r"}) |
         ModOpAddExternalLoads("grf_walk.xml") |
         ModOpAddReserves(5) |
         ModOpReplaceMusclesWithDeGrooteFregly2016() |
@@ -39,17 +87,15 @@ void muscleDrivenStateTracking() {
     track.set_initial_time(0.81);
     track.set_final_time(1.65);
     track.set_mesh_interval(0.075);
-    //track.set_guess_file("muscle_driven_state_tracking_solution.sto");
 
-    //MocoSolution solution = track.solve();
-    MocoStudy moco = track.initialize();
-    MocoSolution solution = moco.solve();
-    moco.visualize(solution);
+    MocoSolution solution = track.solve(true);
+
 }
 
 
 int main() {
     
+    torqueDrivenMarkerTracking();
     muscleDrivenStateTracking();
 
     return EXIT_SUCCESS;

@@ -73,6 +73,8 @@ public:
     /// signal to generate a given actuation level. The actuators are added to
     /// the model's ForceSet and are named "reserve_<coordinate-path>" with
     /// forward slashes converted to underscores.
+    /// @note Reserve actuators will not be added to model Coordinates that 
+    ///       already have CoordinateActuator%s assigned to them.  
     static void createReserveActuators(Model& model, double optimalForce);
 
     /// @}

@@ -232,7 +232,7 @@ public:
     }
 
     MocoStudy initialize();
-    MocoSolution solve();
+    MocoSolution solve(bool visualize = false);
 
 private:
     Model m_model;
