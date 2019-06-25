@@ -1,17 +1,5 @@
 function assistedSitToStand
 
-global verbosity;
-
-% Use the verbosity variable to control console output (0 or 1).
-verbosity = 0;
-
-% TODO add options for visualizing
-% TODO add options for creating additional subjects.
-
-evaluateDevice(@addSpringToKnee);
-
-end
-
 % Competition rules:
 % 1. Add any number of SpringGeneralizedForce components to the model.
 % 2. The springs can be applied to the following coordinates:
@@ -22,14 +10,28 @@ end
 % 4. The sum of all Stiffnesses must be less than 15.
 % 5. Do not add any other types of components to the model.
 % 6. Do not edit or remove any components already in the model.
-
 %
 % Information:
-% 1. To help with experimenting with different designs, create a separate function
-%    for each design and change the argument to the run() function above.
-% 2. The unassisted solutions are cached as subject1_unassisted_solution.sto
+% 1. We started you off with two different device designs, stored in the
+%    addSpringToKnee() and addSpringToAnkle functions() below.
+% 2. To help with experimenting with different designs, create a separate
+%    function for each design and change the argument to the evaluateDevice()
+%    function below.
+% 3. The unassisted solutions are cached as subject1_unassisted_solution.sto
 %    and subject2_unassisted_solution.sto. If you want to re-run the unassisted
 %    optimizations, delete these STO files.
+
+global verbosity;
+
+% Use the verbosity variable to control console output (0 or 1).
+verbosity = 1;
+
+% TODO add options for visualizing
+% TODO add options for creating additional subjects.
+
+evaluateDevice(@addSpringToKnee);
+
+end
 
 function name = addSpringToKnee(model)
 name = 'knee_spring';
@@ -59,25 +61,27 @@ function evaluateDevice(addDeviceFunction)
 import org.opensim.modeling.*;
 
 subjectInfos{1} = createSubjectInfo(1);
-subjectInfos{1}.tib_ant_r = 0.8;
+subjectInfos{1}.tib_ant_r = 0.5;
 
 subjectInfos{2} = createSubjectInfo(2);
 subjectInfos{2}.vas_int_r = 0.8;
 
 subjects = [1, 2];
 
+doCache = true;
+
 for subject = subjects
     info = subjectInfos{subject};
     str = sprintf('subject%i', subject);
-    if ~exist([str '_unassisted_solution.sto'], 'file')
-        unassistedSolution = solve(info);
-        unassistedObjective = unassistedSolution.getObjective();
-        unassistedSolution.write([str '_unassisted_solution.sto']);
-    else
+    if doCache && exist([str '_unassisted_solution.sto'], 'file')
         unassistedSolution = MocoTrajectory([str '_unassisted_solution.sto']);
         table = STOFileAdapter.read([str '_unassisted_solution.sto']);
         unassistedObjective = ...
             str2double(table.getTableMetaDataAsString('objective'));
+    else
+        unassistedSolution = solve(info);
+        unassistedObjective = unassistedSolution.getObjective();
+        unassistedSolution.write([str '_unassisted_solution.sto']);
     end
 
     assistedSolution = solve(info, addDeviceFunction);
@@ -122,6 +126,21 @@ model = getMuscleDrivenModel(subjectInfo);
 if nargin > 1
     name = addDeviceFunction(model);
     problem.setName([subjectInfo.name '_assisted_' name])
+    compList = model.getComponentsList();
+    it = compList.begin();
+    sumStiffness = 0;
+    while ~it.equals(compList.end())
+        if strcmp(it.getConcreteClassName(), 'SpringGeneralizedForce')
+            object = model.getComponent(it.getAbsolutePathString());
+            property = object.getPropertyByName('stiffness');
+            stiffness = PropertyHelper.getValueDouble(property);
+            sumStiffness = sumStiffness + stiffness;
+        end
+        it.next();
+    end
+    if sumStiffness > 15
+        error('Sum of SpringGeneralizedForce stiffness must not exceed 15!');
+    end
 else
     problem.setName([subjectInfo.name '_unassisted'])
 end
