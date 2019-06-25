@@ -562,7 +562,7 @@ int StaticOptimization::begin(const SimTK::State& s )
         sWorkingCopy.setTime(s.getTime());
         sWorkingCopy.setQ(s.getQ());
         sWorkingCopy.setU(s.getU());
-        sWorkingCopy.setZ(s.getZ());
+        // No need to copy Z as Actuators could be disabled/removed from _modelWorkingCopy
         _modelWorkingCopy->getMultibodySystem().realize(s,SimTK::Stage::Velocity);
         _modelWorkingCopy->equilibrateMuscles(sWorkingCopy);
         // Gather indices into speed set corresponding to the unconstrained degrees of freedom 
