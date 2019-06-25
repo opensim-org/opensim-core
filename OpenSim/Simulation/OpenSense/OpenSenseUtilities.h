@@ -55,7 +55,7 @@ namespace OpenSim {
                 const OpenSim::TimeSeriesTable_<SimTK::Quaternion_<double>>& qauternionsTable,
                 const SimTK::Array_<int>& startEnd = { 0, 1 },
                 const std::string& baseImuName = "",
-                const SimTK::CoordinateAxis& baseHeadingAxis = SimTK::ZAxis,
+                const SimTK::CoordinateDirection& baseHeadingDirection = SimTK::ZAxis,
                 const SimTK::Rotation_<double>& sensorToOpenSim = 
                     SimTK::Rotation(-SimTK_PI/2, SimTK::XAxis)
         );

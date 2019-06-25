@@ -35,7 +35,7 @@ TimeSeriesTable_<SimTK::Rotation> OpenSenseUtilities::
         const TimeSeriesTableQuaternion& quaternionsTable,
         const SimTK::Array_<int>& startEnd,
         const std::string& baseImuName,
-        const SimTK::CoordinateAxis& baseHeadingAxis,
+        const SimTK::CoordinateDirection& baseHeadingDirection,
         const SimTK::Rotation& sensorToOpenSim)
 {
     // Fixed transform to rotate sensor orientations in world with Z up into the 
@@ -89,7 +89,9 @@ TimeSeriesTable_<SimTK::Rotation> OpenSenseUtilities::
         const Rotation& base_R = startRow.getElt(0, int(pix));
 
         // Heading direction of the base IMU in this case the pelvis_imu heading is its ZAxis
-        UnitVec3 pelvisHeading = base_R(baseHeadingAxis);
+        UnitVec3 pelvisHeading = base_R(baseHeadingDirection.getAxis());
+        if(baseHeadingDirection.getDirection() < 0) 
+            pelvisHeading = pelvisHeading.negate();
         UnitVec3 groundX = UnitVec3(1, 0, 0);
         SimTK::Real angularDifference = acos(~pelvisHeading*groundX);
 
