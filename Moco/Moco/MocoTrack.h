@@ -232,7 +232,9 @@ public:
     }
     /// Set the markers reference directly from a TRC file. By default, the 
     /// marker data is lowpass filtered with a 6 Hz cutoff frequency, but you
-    /// may set any frequency using the optional argument.
+    /// may set any frequency using the optional argument. If the markers data
+    /// is in millimeters (detected via the 'Units' metadata tag), then it is
+    /// converted to meters.
     /// @note Overrides any existing TableProcessor for 'markers_reference'.
     void setMarkersReferenceFromTRC(const std::string& filename, 
             double lowpassFilterFreq = 6.0) {
@@ -242,7 +244,6 @@ public:
                 markersFlat.getTableMetaDataAsString("Units") == "mm") {
             markersFlat.updMatrix() *= 0.001;
         }
-
         set_markers_reference(TableProcessor(markersFlat) |
                               TabOpLowPassFilter(lowpassFilterFreq));
     }

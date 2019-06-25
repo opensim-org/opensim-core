@@ -103,6 +103,28 @@ public:
     }
 };
 
+/// Scale the max isometric force for all muscles in the model.
+class OSIMMOCO_API ModOpScaleMaxIsometricForce : public ModelOperator {
+    OpenSim_DECLARE_CONCRETE_OBJECT(ModOpScaleMaxIsometricForce, ModelOperator);
+    OpenSim_DECLARE_PROPERTY(scale_factor, double,
+            "The max isometric force scale factor.");
+
+public:
+    ModOpScaleMaxIsometricForce() {
+        constructProperty_scale_factor(1);
+    }
+    ModOpScaleMaxIsometricForce(double scaleFactor)
+            : ModOpScaleMaxIsometricForce() {
+        set_scale_factor(scaleFactor);
+    }
+    void operate(Model& model, const std::string&) const override {
+        model.finalizeFromProperties();
+        for (auto& muscle : model.updComponentList<Muscle>()) {
+            muscle.set_max_isometric_force(get_scale_factor());
+        }
+    }
+};
+
 /// Remove all muscles contained in the model's ForceSet.
 class OSIMMOCO_API ModOpRemoveMuscles : public ModelOperator {
     OpenSim_DECLARE_CONCRETE_OBJECT(ModOpRemoveMuscles, ModelOperator);
