@@ -17,58 +17,8 @@
  * -------------------------------------------------------------------------- */
 
 #include <Moco/osimMoco.h>
-#include <OpenSim/Common/TimeSeriesTable.h>
-#include <OpenSim/Common/TRCFileAdapter.h>
 
 using namespace OpenSim;
-
-void torqueDrivenMarkerTracking() {
-    
-    MocoTrack track;
-    track.setName("torque_driven_marker_tracking");
-    track.setModel(ModelProcessor("subject_walk_rra_adjusted_armless.osim") |
-        ModOpReplaceJointsWithWelds({"mtp_l", "mtp_r"}) |
-        ModOpAddExternalLoads("grf_walk.xml") |
-        ModOpRemoveMuscles() |
-        ModOpAddReserves(250));
-
-    TimeSeriesTableVec3 markers = 
-            TRCFileAdapter::read("motion_capture_walk.trc");
-    TimeSeriesTable markersFlat = markers.flatten();
-    const SimTK::Real scale = 0.001;
-    markersFlat.updMatrix() *= scale;
-    track.setMarkersReference(TableProcessor(markersFlat) |
-        TabOpLowPassFilter(6));
-    track.set_allow_unused_references(true);
-
-    track.set_initial_time(0.81);
-    track.set_final_time(1.65);
-    track.set_mesh_interval(0.05);    
-
-    MocoStudy moco = track.initialize();
-
-    MocoProblem& problem = moco.updProblem();
-    MocoControlCost& effort = 
-        dynamic_cast<MocoControlCost&>(problem.updCost("control_effort"));
-    
-    double residualWeight = 100;
-    effort.setWeight("/forceset/reserve_jointset_ground_pelvis_pelvis_tilt",
-            residualWeight);
-    effort.setWeight("/forceset/reserve_jointset_ground_pelvis_pelvis_list",
-            residualWeight);
-    effort.setWeight("/forceset/reserve_jointset_ground_pelvis_pelvis_rotation",
-            residualWeight);
-    effort.setWeight("/forceset/reserve_jointset_ground_pelvis_pelvis_tx",
-            residualWeight);
-    effort.setWeight("/forceset/reserve_jointset_ground_pelvis_pelvis_ty",
-            residualWeight);
-    effort.setWeight("/forceset/reserve_jointset_ground_pelvis_pelvis_tz",
-            residualWeight);
-
-    MocoSolution solution = moco.solve();
-    moco.visualize(solution);
-
-}
 
 void muscleDrivenStateTracking() {
 
@@ -76,7 +26,6 @@ void muscleDrivenStateTracking() {
     track.setName("muscle_driven_state_tracking");
 
     track.setModel(ModelProcessor("subject_walk_rra_adjusted_armless.osim") |
-        //ModOpReplaceJointsWithWelds({"/jointset/mtp_l", "/jointset/mtp_r"}) |
         ModOpAddExternalLoads("grf_walk.xml") |
         ModOpAddReserves(5) |
         ModOpReplaceMusclesWithDeGrooteFregly2016() |
@@ -95,11 +44,65 @@ void muscleDrivenStateTracking() {
 
 }
 
+void torqueDrivenMarkerTracking() {
+
+    MocoTrack track;
+    track.setName("torque_driven_marker_tracking");
+
+
+    ModelProcessor modelProcessor =
+            ModelProcessor("subject_walk_rra_adjusted_armless.osim") |
+            ModOpAddExternalLoads("grf_walk.xml") | ModOpRemoveMuscles() |
+            ModOpAddReserves(250);
+    track.setModel(modelProcessor);
+    track.setMarkersReferenceFromTRC("motion_capture_walk.trc");
+    track.set_allow_unused_references(true);
+
+    MocoWeightSet markerWeights;
+    markerWeights.cloneAndAppend({"R.ASIS", 20});
+    markerWeights.cloneAndAppend({"L.ASIS", 20});
+    markerWeights.cloneAndAppend({"R.PSIS", 20});
+    markerWeights.cloneAndAppend({"L.PSIS", 20});
+    markerWeights.cloneAndAppend({"R.Knee", 10});
+    markerWeights.cloneAndAppend({"R.Ankle", 10});
+    markerWeights.cloneAndAppend({"R.Heel", 10});
+    markerWeights.cloneAndAppend({"R.MT5", 5});
+    markerWeights.cloneAndAppend({"R.Toe", 2});
+    markerWeights.cloneAndAppend({"L.Knee", 10});
+    markerWeights.cloneAndAppend({"L.Ankle", 10});
+    markerWeights.cloneAndAppend({"L.Heel", 10});
+    markerWeights.cloneAndAppend({"L.MT5", 5});
+    markerWeights.cloneAndAppend({"L.Toe", 2});
+    track.set_markers_weight_set(markerWeights);
+
+    track.set_initial_time(0.81);
+    track.set_final_time(1.65);
+    track.set_mesh_interval(0.05);
+
+    MocoStudy moco = track.initialize();
+
+    MocoProblem& problem = moco.updProblem();
+    MocoControlCost& effort =
+            dynamic_cast<MocoControlCost&>(problem.updCost("control_effort"));
+
+    Model model = modelProcessor.process();
+    for (const auto& coordAct : model.getComponentList<CoordinateActuator>()) {
+        auto coordName = coordAct.getName();
+        if (coordName.find("pelvis") != std::string::npos) {
+            effort.setWeight(coordName, 100);
+        }
+    }
+
+    MocoSolution solution = moco.solve();
+    moco.visualize(solution);
+}
+
 
 int main() {
     
+    //muscleDrivenStateTracking();
+
     torqueDrivenMarkerTracking();
-    muscleDrivenStateTracking();
 
     return EXIT_SUCCESS;
 }

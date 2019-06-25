@@ -220,15 +220,31 @@ public:
 
     MocoTrack() { constructProperties(); }
 
+    /// Set the states reference TableProcessor.
+    /// @note Overrides any existing TableProcessor for 'states_reference'.
     void setStatesReference(TableProcessor states) {
         set_states_reference(std::move(states));
     }
+    /// Set the markers reference TableProcessor.
+    /// @note Overrides any existing TableProcessor for 'markers_reference'.
     void setMarkersReference(TableProcessor markers) {
         set_markers_reference(std::move(markers));
     }
-    void setMarkersReferenceFromTRC(const std::string& filename) {
+    /// Set the markers reference directly from a TRC file. By default, the 
+    /// marker data is lowpass filtered with a 6 Hz cutoff frequency, but you
+    /// may set any frequency using the optional argument.
+    /// @note Overrides any existing TableProcessor for 'markers_reference'.
+    void setMarkersReferenceFromTRC(const std::string& filename, 
+            double lowpassFilterFreq = 6.0) {
         auto markers = TRCFileAdapter::read(filename);
-        set_markers_reference(TimeSeriesTable(markers.flatten()));
+        TimeSeriesTable markersFlat = markers.flatten();
+        if (markersFlat.hasTableMetaDataKey("Units") &&
+                markersFlat.getTableMetaDataAsString("Units") == "mm") {
+            markersFlat.updMatrix() *= 0.001;
+        }
+
+        set_markers_reference(TableProcessor(markersFlat) |
+                              TabOpLowPassFilter(lowpassFilterFreq));
     }
 
     MocoStudy initialize();
