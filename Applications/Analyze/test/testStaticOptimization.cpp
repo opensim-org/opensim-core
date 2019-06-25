@@ -38,6 +38,8 @@ using namespace std;
 */
 void testArm26(const string& muscleModelClassName, double atol, double ftol);
 
+void testArm26DisabledMuscles();
+
 void testLapackErrorDLASD4();
 
 void testModelWithPassiveForces();
@@ -93,6 +95,14 @@ int main()
     catch (const std::exception& e) {
         cout << e.what() << endl;
         failures.push_back("testRelativePathInExternalLoads");
+    }
+
+    try {
+        testArm26DisabledMuscles();
+    }
+    catch (const std::exception& e) {
+        cout << e.what() << endl;
+        failures.push_back("testArm26DisabledMuscles");
     }
 
     if (!failures.empty()) {
@@ -237,4 +247,15 @@ void testRelativePathInExternalLoads() {
     AnalyzeTool analyze("UsingRelativePaths/Setup_SO.xml");
     analyze.setResultsDir("Results_UsingRelativePaths");
     analyze.run();
+}
+
+void testArm26DisabledMuscles() {
+    AnalyzeTool analyze("arm26_disabled_Setup_StaticOptimization.xml");
+    analyze.setResultsDir("Results_arm26_StaticOptimization_Disabled");
+    analyze.run();
+    Storage activations(analyze.getResultsDir() + "/arm26_StaticOptimization_activation.sto");
+    ASSERT_EQUAL(activations.getColumnLabels().size(), 5);
+    Storage forces(analyze.getResultsDir() + "/arm26_StaticOptimization_force.sto");
+    ASSERT_EQUAL(forces.getColumnLabels().size(), 5);
+
 }
