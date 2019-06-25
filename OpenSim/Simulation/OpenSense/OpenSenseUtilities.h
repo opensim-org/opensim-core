@@ -45,7 +45,7 @@ namespace OpenSim {
             a heading correction on all the experimental (quaternion) data so that
             when tracking rotation data, the initial pose of the model is facing
             forward. If the baseImuName is empty, no correction is made. If no
-            axis is specified, the default is the Z axis. Final optional argument
+            direction is specified, the default is the Z axis. Final optional argument
             is the Rotation matrix that maps the IMU World reference frame to
             OpenSim's ground reference frame. The default is to rotate -Pi/2
             about the IMU world X-axis to get IMU World Z-axis to point up as
