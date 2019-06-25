@@ -1,16 +1,134 @@
+namespace OpenSim {
 /**
 
 @page mocoimplguide Moco Implementation Guide
 
-This guide explains how direct collocation schemes are implemented using an
-OpenSim model.
+@tableofcontents
 
-TODO API design: why we have MocoProblemRep
 TODO AccelerationMotion
 TODO DiscreteForces
 TODO Why we need two OpenSim Models.
 
-@section preskinimpl Implementation of prescribed kinematics
+This guide explains the organization of code in Moco and how direct collocation
+schemes are implemented using an OpenSim model.
+
+@section implorg Organization of classes
+
+Moco is organized as pairs of Problem and Solver classes.
+
+@image html MocoImplementationDiagram.svg width=700px
+
+MocoProblem describes a direct collocation problem using an OpenSim Model, and
+MocoSolver is an abstract class for solving MocoProblems. Moco provides two
+MocoSolvers: MocoTropterSolver and MocoCasADiSolver. MocoTropterSolver contains
+a problem-solver pair for optimal control problems: TropterProblem (which
+derives from tropter::Problem) and tropter::DirectCollocation. To solve the
+optimal control problem, tropter::DirectCollocation employs a problem-solver
+pair for generic nonlinear optimization: tropter::Transcription (which derives
+from tropter::optimization::Problem) and tropter::optimization::Solver. The
+MocoCasADiSolver employs the problem-solver pair of MocoCasOCProblem (deriving
+from CasOC::Problem) and CasOC::Solver.
+
+These pairs of classes allow a separation between how a user specifies a
+problem and the method used to solve the problem.
+The MocoProblem class contains only user input and describes the physical
+optimal control problem. The MocoSolver classes allow the user to configure the
+numerical method used to solve the problem.
+
+@subsection implmocoproblemrep The MocoProblemRep class
+
+The MocoSolver interacts with the MocoProblem through the intermediate class
+MocoProblemRep. This class exists to:
+
+1. Validate the MocoProblem and cache useful quantities.
+2. Provide functionality, such as evaluating cost terms.
+3. Prevent solvers from accidentally editing any user input; the solvers do not
+have access to the original MocoProblem.
+
+The MocoProblemRep allows us not to worry about using invalid caches. Every
+time the Solver solves a problem, a new MocoProblemRep is created, ensuring that
+the most up-to-date settings in MocoProblem are obeyed.
+
+@section impldiverse Supporting diverse formulations using OpenSim and Simbody
+
+The following problem formulations in Moco require careful consideration:
+
+1. kinematic constraints,
+2. expressing multibody dynamics as implicit differential equations, and
+3. prescribing kinematics.
+
+Next, we describe how Moco handles each of these formulations.
+
+@subsection implkincon Kinematic constraints
+
+When performing musculoskeletal simulations, we must satisfy the following
+equations:
+
+\f[
+    \begin{alignat*}{2}
+         M(q, p)\dot{u} + G(q, p)^T \lambda &= f_{\textrm{app}}(t, y, x, p) - f_{\textrm{bias}}(q, u, p) \\
+         0 &= \phi(q, p) \\
+         \dot{z}(t) &= f_{\textrm{aux}}(t, y, x, \lambda, p) \\
+    \end{alignat*}
+\f]
+
+The common way to solve these equations is to differentiate the kinematic
+constraints until generalized accelerations appear linearly, and then solve for
+generalized accelerations and Lagrange multipliers.
+
+\f[
+    \begin{alignat*}{2}
+    \begin{bmatrix}
+    M(q, p) & G(q, p)^T \\
+    G(q, p) & 0
+    \end{bmatrix}
+    \begin{bmatrix}
+    \dot{u} \\
+    \lambda
+    \end{bmatrix}
+    &=
+    \begin{bmatrix}
+        f_{\textrm{app}}(t, y, x, p) - f_{\textrm{bias}}(q, u, p) \\
+        b(q, u)
+        \end{bmatrix} \\
+         \dot{z}(t) &= f_{\textrm{aux}}(t, y, x, \lambda, p) \\
+    \end{alignat*}
+\f]
+
+Simbody then integrates \f$ u \f$ and \f$ z \f$ using \f$ \dot{u} \f$ and \f$
+\dot{z} \f$. If the kinematic constraints are obeyed in the initial state, then
+theoretically, enforcing the constraints at the acceleration level (as done
+above) should cause the accelerations to remain enforced at the position and
+velocity levels.
+
+
+
+A common way to use an OpenSim model is to perform a forward integration using
+state derivatives available via SimTK::State::getYDot() after realizing the
+SimTK::State to SimTK::Stage::Acceleration (e.g., Model::realizeAcceleration()).
+This method computes Lagrange multipliers and generalized accelerations that
+satisfy the system's kinematic constraints at the acceleration level.
+Theoretically, this should cause the constraints to remain satisfied at the
+position and velocity levels. However, numerical integrators generate errors,
+and would generally cause the constraints to no longer be satisfied at the
+position and velocity levels. To fix this, Simbody's integrators project the
+generalized coordinates and speeds onto the "constraint manifold" (that is, the
+multidimensional surface on which the system's kinematic constraints are
+satisfied TODO; see SimTK::System::project()).
+
+Handling kinematic constraints in direct collocation requires a different
+approach, because we cannot perform an internal "projection" within the
+direct collocation optimization problem.
+
+
+
+
+This method supports all following
+
+While Simbody and OpenSim provide many ways
+
+
+@subsection implpreskin Implementation of prescribed kinematics
 
 For a system without kinematic constraints, the equations of motion are:
 
@@ -46,5 +164,5 @@ solving for \f$ f_{\mathrm{app}} \f$, and the Lagrange multiplier \f$ \lambda_c
 the mass will remain on the line.
 
 */
-
+} // namespace OpenSim
 
