@@ -59,6 +59,18 @@ The following problem formulations in Moco require careful consideration:
 
 Next, we describe how Moco handles each of these formulations.
 
+There are multiple ways to use a SimTK::System to compute desired quantities.
+For example, SimTK::SimbodyMatterSubsystem contains many useful operators.
+However, the conventional way to use a SimTK::System is to realize the system's
+SimTK::State through the Position, Velocity, Dynamics, and Acceleration stages.
+Using the SimTK::System in this way ensures that all calculations use the same
+input variables (this is described more concretely later). While the three
+formulations above could more easily be achieved using the
+SimTK::SimbodyMatterSubsystem operators, we employ strategies to handle these
+formulations using the standard realization stages. The goal of the following
+sections is to explain how we work the formulations above into the realization
+stages.
+
 @subsection implkincon Kinematic constraints
 
 When performing musculoskeletal simulations, we must satisfy the following
@@ -74,7 +86,8 @@ equations:
 
 The common way to solve these equations is to differentiate the kinematic
 constraints until generalized accelerations appear linearly, and then solve for
-generalized accelerations and Lagrange multipliers.
+generalized accelerations and Lagrange multipliers. This solve occurs when
+realizing a SimTK::System to SimTK::Stage::Acceleration.
 
 \f[
     \begin{alignat*}{2}
@@ -99,36 +112,43 @@ Simbody then integrates \f$ u \f$ and \f$ z \f$ using \f$ \dot{u} \f$ and \f$
 \dot{z} \f$. If the kinematic constraints are obeyed in the initial state, then
 theoretically, enforcing the constraints at the acceleration level (as done
 above) should cause the accelerations to remain enforced at the position and
-velocity levels.
-
-
-
-A common way to use an OpenSim model is to perform a forward integration using
-state derivatives available via SimTK::State::getYDot() after realizing the
-SimTK::State to SimTK::Stage::Acceleration (e.g., Model::realizeAcceleration()).
-This method computes Lagrange multipliers and generalized accelerations that
-satisfy the system's kinematic constraints at the acceleration level.
-Theoretically, this should cause the constraints to remain satisfied at the
-position and velocity levels. However, numerical integrators generate errors,
-and would generally cause the constraints to no longer be satisfied at the
-position and velocity levels. To fix this, Simbody's integrators project the
-generalized coordinates and speeds onto the "constraint manifold" (that is, the
-multidimensional surface on which the system's kinematic constraints are
-satisfied TODO; see SimTK::System::project()).
+velocity levels. However, numerical integrators generate errors, causing the
+constraints to no longer be satisfied at the position and velocity levels. To
+fix this, Simbody projects the generalized coordinates and speeds
+onto the "constraint manifold" (that is, the multidimensional surface on which
+the system's kinematic constraints are satisfied; see SimTK::System::project()).
 
 Handling kinematic constraints in direct collocation requires a different
 approach, because we cannot perform an internal "projection" within the
-direct collocation optimization problem.
+direct collocation optimization problem. We use the method described by Posa et
+al., 2015 (TODO)
+
+In this scheme, the optimization solver searches for Lagrange multipliers that
+satisfy the equations above. This means that, when we use Simbody to evaluate
+multibody equations, we must tell Simbody what the multipliers are. However,
+this flow of data does not fit with Simbody's realization scheme, in which
+Simbody computes Lagrange multipliers itself. Some quantities such as joint
+reaction loads depend on Lagrange multipliers, and it is essential that we use
+the correct multipliers when computing such quantities; that is, the multipliers
+from the optimization instead of those computed by Simbody. To circumvent this
+issue, we employ two OpenSim Models: the original user-provided model with
+kinematic constraints, and model in which all kinematic constraints are
+disabled. We use the first (constrained) model to calculate kinematic constraint
+violations and to convert the optimization solver's Lagrange multipliers into
+body and mobilizer forces using the constrained model's constraint Jacobian.
+Then we apply those multiplier-derived forces to the unconstrained model. The
+unconstrained model is used in MocoCost and MocoPathConstraint, in which users
+can safely employ joint reaction loads in their calculations.
+
+Note however that MocoCosts and MocoPathConstraints do not have direct access
+to the Lagrange multipliers; the unconstrained model does not have multipliers.
+
+@subsection implimplicitmultibody Implicit multibody dynamics
 
 
 
 
-This method supports all following
-
-While Simbody and OpenSim provide many ways
-
-
-@subsection implpreskin Implementation of prescribed kinematics
+@subsection implpreskin Prescribed kinematics
 
 For a system without kinematic constraints, the equations of motion are:
 
