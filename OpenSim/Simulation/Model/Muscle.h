@@ -96,6 +96,8 @@ public:
         "Compute muscle dynamics ignoring tendon compliance. Tendon is assumed to be rigid.");
     OpenSim_DECLARE_PROPERTY(ignore_activation_dynamics, bool,
         "Compute muscle dynamics ignoring activation dynamics. Activation is equivalent to excitation.");
+    OpenSim_DECLARE_PROPERTY(allow_negative_force, bool,
+        "Don't print warnings if muscle force is negative. Useful for optimization.")
 
 //=============================================================================
 // OUTPUTS
