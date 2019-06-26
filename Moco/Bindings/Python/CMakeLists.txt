@@ -280,6 +280,8 @@ MocoPutFileInPythonPackage("${CMAKE_CURRENT_SOURCE_DIR}/setup.py" ".")
 # __init__.py.
 MocoPutFileInPythonPackage("${CMAKE_CURRENT_SOURCE_DIR}/__init__.py" opensim)
 
+MocoPutFileInPythonPackage("${CMAKE_CURRENT_SOURCE_DIR}/report.py" opensim)
+
 # Test files. If you require more test resource files, list them here.
 foreach(test_file
         # None yet.

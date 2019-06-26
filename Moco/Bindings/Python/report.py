@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -------------------------------------------------------------------------- #
-# OpenSim Moco: generate_report.py                                           #
+# OpenSim Moco: report.py                                                    #
 # -------------------------------------------------------------------------- #
 # Copyright (c) 2019 Stanford University and the Authors                     #
 #                                                                            #
@@ -312,7 +312,7 @@ class Report(object):
                 derivative_dict = OrderedDict()
                 derivative_ls_dict = defaultdict(list)
                 derivative_label_dict = dict()
-                coordSet = model.getCoordinateSet()
+                coordSet = self.model.getCoordinateSet()
                 for c in range(coordSet.getSize()):
                     coord = coordSet.get(c)
                     coordName = coord.getName()
@@ -449,8 +449,7 @@ class Report(object):
             # TODO slacks not accessible through MocoTrajectory
             # TODO should we even plot these?
 
-
-if __name__ == "__main__":
+def main():
     import argparse
 
     ## Input parsing.
@@ -488,4 +487,7 @@ if __name__ == "__main__":
                     ref_files=ref_files,
                     )
     report.generate()
+
+if __name__ == "__main__":
+    main()
 
