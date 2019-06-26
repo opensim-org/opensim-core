@@ -153,6 +153,7 @@ void Muscle::constructProperties()
     constructProperty_max_contraction_velocity(10.0);
     constructProperty_ignore_tendon_compliance(false);
     constructProperty_ignore_activation_dynamics(false);
+    constructProperty_allow_negative_force(false);
 
     // By default the min and max controls on muscle are 0.0 and 1.0
     setMinControl(0.0);
@@ -665,7 +666,8 @@ void Muscle::computeForce(const SimTK::State& s,
     // NOTE: Actuation could be negative, in particular during CMC, when the optimizer
     // is computing gradients, but in those cases the actuation will be 
     // overridden and will not be computed by the muscle
-    if (!isActuationOverridden(s) && (getActuation(s) < -SimTK::SqrtEps)) {
+    if (!isActuationOverridden(s) && !get_allow_negative_force() && 
+            (getActuation(s) < -SimTK::SqrtEps)) {
         string msg = getConcreteClassName()
             + "::computeForce, muscle "+ getName() + " force < 0";
         cout << msg << " at time = " << s.getTime() << endl;
