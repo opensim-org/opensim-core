@@ -47,10 +47,10 @@ track.setName("muscle_driven_state_tracking");
 % parameters.
 modelProcessor = ModelProcessor("subject_walk_armless.osim");
 modelProcessor.append(ModOpAddExternalLoads("grf_walk.xml"));
-modelProcessor.append(ModOpAddReserves(1));
+modelProcessor.append(ModOpAddReserves(10));
 modelProcessor.append(ModOpReplaceMusclesWithDeGrooteFregly2016());
 modelProcessor.append(ModOpIgnorePassiveFiberForces());
-modelProcessor.append(ModOpScaleMaxIsometricForce(5));
+modelProcessor.append(ModOpScaleMaxIsometricForce(1.2));
 modelProcessor.append(ModOpScaleActiveFiberForceCurveWidth(1.5));
 track.setModel(modelProcessor);
 
@@ -72,8 +72,8 @@ track.set_track_reference_position_derivatives(true);
 % Initial time, final time, and mesh interval.
 track.set_initial_time(0.81);
 track.set_final_time(1.65);
-track.set_mesh_interval(0.05);
-track.set_control_effort_weight(0.01);
+track.set_mesh_interval(0.1);
+track.set_control_effort_weight(0.1);
 
 % Solve! The boolean argument indicates to visualize the solution.
 % solution = track.solve(true);
