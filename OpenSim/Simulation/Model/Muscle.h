@@ -96,8 +96,6 @@ public:
         "Compute muscle dynamics ignoring tendon compliance. Tendon is assumed to be rigid.");
     OpenSim_DECLARE_PROPERTY(ignore_activation_dynamics, bool,
         "Compute muscle dynamics ignoring activation dynamics. Activation is equivalent to excitation.");
-    OpenSim_DECLARE_PROPERTY(allow_negative_force, bool,
-        "Don't print warnings if muscle force is negative. Useful for optimization.")
 
 //=============================================================================
 // OUTPUTS
@@ -335,6 +333,15 @@ public:
         and applied by the tendon to bones (i.e. not the fiber force) */
     double computeActuation(const SimTK::State& s) const override = 0;
 
+    /** Whether or not to print a warning when muscle force goes negative. May
+        be useful for optimization (e.g. computing finite differences). **/
+    static void setPrintNegativeForceWarning(bool tf) {
+        _printNegativeForceWarning = tf;
+    };
+    /** Get the current setting of the negative force warning flag. **/
+    static bool getPrintNegativeForceWarning() {
+        return _printNegativeForceWarning;
+    };
 
     /** @name Muscle initialization 
      */ 
@@ -865,6 +872,9 @@ protected:
     double _optimalFiberLength;
     double _pennationAngleAtOptimal;
     double _tendonSlackLength;
+
+private:
+    static bool _printNegativeForceWarning;
 
 //=============================================================================
 };  // END of class Muscle
