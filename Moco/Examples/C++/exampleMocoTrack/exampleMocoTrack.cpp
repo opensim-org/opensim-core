@@ -23,7 +23,6 @@
 /// features of the tool interface. 
 
 #include <Moco/osimMoco.h>
-#include <Common/LogManager.h>
 
 using namespace OpenSim;
 
@@ -41,10 +40,10 @@ void muscleDrivenStateTracking() {
     // parameters.
     track.setModel(ModelProcessor("subject_walk_armless.osim") |
         ModOpAddExternalLoads("grf_walk.xml") |
-        ModOpAddReserves(2) |
+        ModOpAddReserves(1) |
         ModOpReplaceMusclesWithDeGrooteFregly2016() |
         ModOpIgnorePassiveFiberForces() |
-        ModOpScaleMaxIsometricForce(2) |
+        ModOpScaleMaxIsometricForce(10) |
         ModOpScaleActiveFiberForceCurveWidth(1.5));
 
     // Construct a TableProcessor of filtered coordinate value data from an 
@@ -64,8 +63,9 @@ void muscleDrivenStateTracking() {
     // Initial time, final time, and mesh interval.
     track.set_initial_time(0.81);
     track.set_final_time(1.65);
+    track.set_clip_time_range(true);
     track.set_mesh_interval(0.05);
-    track.set_control_effort_weight(0.01);
+    track.set_control_effort_weight(0.1);
 
     // Solve! The boolean argument indicates to visualize the solution.
     MocoSolution solution = track.solve(true);
@@ -145,15 +145,12 @@ void torqueDrivenMarkerTracking() {
 }
 
 int main() {
-
-    std::cout.rdbuf(LogManager::cout.rdbuf());
-    std::cerr.rdbuf(LogManager::cerr.rdbuf());
     
     // Solve the muscle-driven state tracking problem.
     muscleDrivenStateTracking();
      
     // Solve the torque-driven marker tracking problem.
-    torqueDrivenMarkerTracking();
+    //torqueDrivenMarkerTracking();
 
     return EXIT_SUCCESS;
 }

@@ -28,7 +28,7 @@ function exampleMocoTrack()
 muscleDrivenStateTracking();
 
 % Solve the torque-driven marker tracking problem.
-torqueDrivenMarkerTracking();
+% torqueDrivenMarkerTracking();
 end
 
 function muscleDrivenStateTracking()
@@ -47,17 +47,17 @@ track.setName("muscle_driven_state_tracking");
 % parameters.
 modelProcessor = ModelProcessor("subject_walk_armless.osim");
 modelProcessor.append(ModOpAddExternalLoads("grf_walk.xml"));
-modelProcessor.append(ModOpAddReserves(5));
+modelProcessor.append(ModOpAddReserves(1));
 modelProcessor.append(ModOpReplaceMusclesWithDeGrooteFregly2016());
 modelProcessor.append(ModOpIgnorePassiveFiberForces());
-modelProcessor.append(ModOpScaleMaxIsometricForce(2));
+modelProcessor.append(ModOpScaleMaxIsometricForce(5));
 modelProcessor.append(ModOpScaleActiveFiberForceCurveWidth(1.5));
 track.setModel(modelProcessor);
 
 % Construct a TableProcessor of filtered coordinate value data from an
 % OpenSim InverseKinematics solution.
 tableProcessor = TableProcessor("coordinates.sto");
-tableProcessor.append(TabOpLowPasFilter(6));
+tableProcessor.append(TabOpLowPassFilter(6));
 track.setStatesReference(tableProcessor);
 
 % This setting allow extra data columns contained in the states reference
@@ -73,14 +73,23 @@ track.set_track_reference_position_derivatives(true);
 track.set_initial_time(0.81);
 track.set_final_time(1.65);
 track.set_mesh_interval(0.05);
-track.set_control_effort_weight(0.1);
+track.set_control_effort_weight(0.01);
 
 % Solve! The boolean argument indicates to visualize the solution.
-solution = track.solve(true);
+% solution = track.solve(true);
+
+moco = track.initialize();
+solver = MocoCasADiSolver.safeDownCast(moco.updSolver());
+solver.set_parallel(8);
+
+solution = moco.solve();
+moco.visualize(solution);
 
 end
 
 function torqueDrivenMarkerTracking()
+
+import org.opensim.modeling.*;
 
 % Create and name an instance of the MocoTrack tool.
 track = MocoTrack();
@@ -105,20 +114,20 @@ track.set_allow_unused_references(true);
 % Increase the tracking weights for markers in the data set placed on bony
 % landmarks compared to markers located on soft tissue.
 markerWeights = MocoWeightSet();
-markerWeights.cloneAndAppend({"R.ASIS", 20});
-markerWeights.cloneAndAppend({"L.ASIS", 20});
-markerWeights.cloneAndAppend({"R.PSIS", 20});
-markerWeights.cloneAndAppend({"L.PSIS", 20});
-markerWeights.cloneAndAppend({"R.Knee", 10});
-markerWeights.cloneAndAppend({"R.Ankle", 10});
-markerWeights.cloneAndAppend({"R.Heel", 10});
-markerWeights.cloneAndAppend({"R.MT5", 5});
-markerWeights.cloneAndAppend({"R.Toe", 2});
-markerWeights.cloneAndAppend({"L.Knee", 10});
-markerWeights.cloneAndAppend({"L.Ankle", 10});
-markerWeights.cloneAndAppend({"L.Heel", 10});
-markerWeights.cloneAndAppend({"L.MT5", 5});
-markerWeights.cloneAndAppend({"L.Toe", 2});
+markerWeights.cloneAndAppend(MocoWeight("R.ASIS", 20));
+markerWeights.cloneAndAppend(MocoWeight("L.ASIS", 20));
+markerWeights.cloneAndAppend(MocoWeight("R.PSIS", 20));
+markerWeights.cloneAndAppend(MocoWeight("L.PSIS", 20));
+markerWeights.cloneAndAppend(MocoWeight("R.Knee", 10));
+markerWeights.cloneAndAppend(MocoWeight("R.Ankle", 10));
+markerWeights.cloneAndAppend(MocoWeight("R.Heel", 10));
+markerWeights.cloneAndAppend(MocoWeight("R.MT5", 5));
+markerWeights.cloneAndAppend(MocoWeight("R.Toe", 2));
+markerWeights.cloneAndAppend(MocoWeight("L.Knee", 10));
+markerWeights.cloneAndAppend(MocoWeight("L.Ankle", 10));
+markerWeights.cloneAndAppend(MocoWeight("L.Heel", 10));
+markerWeights.cloneAndAppend(MocoWeight("L.MT5", 5));
+markerWeights.cloneAndAppend(MocoWeight("L.Toe", 2));
 track.set_markers_weight_set(markerWeights);
 
 % Initial time, final time, and mesh interval.
@@ -139,16 +148,18 @@ effort = MocoControlCost.safeDownCast(problem.updCost("control_effort"));
 % Put a large weight on the pelvis CoordinateActuators, which act as the
 % residual, or 'hand-of-god', forces which we would like to keep as small
 % as possible.
-% model = modelProcessor.process();
-% for (const auto& coordAct : model.getComponentList<CoordinateActuator>()) {
-%      coordPath = coordAct.getAbsolutePathString();
-%     if (coordPath.find("pelvis") != std::string::npos) {
-%         effort.setWeight(coordPath, 1000);
-%     end
-% end
-% 
-% % Solve and visualize.
-% MocoSolution solution = moco.solve();
-% moco.visualize(solution);
+model = modelProcessor.process();
+model.initSystem();
+forceSet = model.getForceSet();
+for i = 1:forceSet.getSize()
+   forcePath = forceSet.get(i-1).getAbsolutePathString();
+   if contains(string(forcePath), 'pelvis')
+       effort.setWeight(forcePath, 1000);
+   end
+end
+
+% Solve and visualize.
+solution = moco.solve();
+moco.visualize(solution);
 
 end

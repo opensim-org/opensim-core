@@ -129,6 +129,13 @@ void DeGrooteFregly2016Muscle::extendInitStateFromProperties(
         setStateVariableValue(
                 s, STATE_ACTIVATION_NAME, get_default_activation());
     }
+
+    // Set the overrideActuation flag to true so the output stream isn't flooded
+    // warning messages about muscle forces going negative when gradients are 
+    // being computed. This shouldn't affect anything else since the discrete
+    // variable for overriding actuation exists by default. Here, we don't
+    // actually set the variable, just the flag.
+    overrideActuation(s, true);
 }
 
 void DeGrooteFregly2016Muscle::extendSetPropertiesFromState(
