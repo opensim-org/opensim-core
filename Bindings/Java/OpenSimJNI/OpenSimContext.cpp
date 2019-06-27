@@ -19,6 +19,7 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
+#include <OpenSim/Common/Exception.h>
 #include <OpenSim/Common/Function.h>
 #include <OpenSim/Common/MarkerData.h>
 #include <OpenSim/Simulation/SimbodyEngine/Body.h>
@@ -431,5 +432,38 @@ void OpenSimContext::restoreStateFromCachedModel()
     }
     this->setState(&(_model->updWorkingState()));
     this->realizePosition();
+}
+
+void OpenSimContext::setSocketConnecteePath(AbstractSocket& socket,
+                                   const std::string& componentPathName) {
+    // Since some socket changes can form an invalid system
+    // we will make the change in a more conservative manner, by:
+    // 1. Making clone of this OpenSimContext's _model and State
+    // 2. Find the socket in the cloned model and apply the change to it
+    // 3. If successful, change is safe, continue with edit on socket
+    // 4. If failure, then exception is thrown and we return and model is
+    //    unchanged.
+    cacheModelAndState();
+
+    const Component& comp = socket.getOwner();
+    Component& componentInClone = clonedModel->updComponent(comp.getAbsolutePath());
+    auto& clonesocket = componentInClone.updSocket(socket.getName());
+    clonesocket.setConnecteePath(componentPathName);
+    // The following line either succeeds or throws, if the latter happens then
+    // neither model or socket are changed and the message will be caught by GUI
+    try {
+        clonedModel->initSystem();
+    }
+    catch(const std::exception& ex) {
+        std::string message = "Unable to connect Socket<"
+            + socket.getConnecteeTypeName() + "> '" + socket.getName() +
+            "' to Component '" + componentPathName + "'.\n Reason: " +
+            ex.what();
+        throw OpenSim::Exception(message);
+    }
+    // if we made it to this line then the change is safe, redo in actual model/comp/socket
+    socket.disconnect();
+    socket.setConnecteePath(componentPathName);
+    restoreStateFromCachedModel();
 }
 } // namespace

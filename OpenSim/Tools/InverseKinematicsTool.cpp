@@ -272,6 +272,7 @@ bool InverseKinematicsTool::run()
 {
     bool success = false;
     bool modelFromFile=true;
+    Kinematics* kinematicsReporter = nullptr;
     try{
         //Load and create the indicated model
         if (!_model) {
@@ -294,10 +295,10 @@ bool InverseKinematicsTool::run()
         IO::chDir(directoryOfSetupFile);
 
         // Define reporter for output
-        Kinematics kinematicsReporter;
-        kinematicsReporter.setRecordAccelerations(false);
-        kinematicsReporter.setInDegrees(true);
-        _model->addAnalysis(&kinematicsReporter);
+        kinematicsReporter = new Kinematics();
+        kinematicsReporter->setRecordAccelerations(false);
+        kinematicsReporter->setInDegrees(true);
+        _model->addAnalysis(kinematicsReporter);
 
         cout<<"Running tool "<<getName()<<".\n";
 
@@ -341,7 +342,7 @@ bool InverseKinematicsTool::run()
         ikSolver.setAccuracy(_accuracy);
         s.updTime() = times[start_ix];
         ikSolver.assemble(s);
-        kinematicsReporter.begin(s);
+        kinematicsReporter->begin(s);
 
         AnalysisSet& analysisSet = _model->updAnalysisSet();
         analysisSet.begin(s);
@@ -403,17 +404,17 @@ bool InverseKinematicsTool::run()
 
             }
 
-            kinematicsReporter.step(s, i);
+            kinematicsReporter->step(s, i);
             analysisSet.step(s, i);
         }
 
         // Do the maneuver to change then restore working directory 
         // so that output files are saved to same folder as setup file.
         if (_outputMotionFileName!= "" && _outputMotionFileName!="Unassigned"){
-            kinematicsReporter.getPositionStorage()->print(_outputMotionFileName);
+            kinematicsReporter->getPositionStorage()->print(_outputMotionFileName);
         }
-        // Remove the analysis we added, don't delete as it was allocated on stack
-        _model->removeAnalysis(&kinematicsReporter, false);
+        // Remove the analysis we added to the model, this also deletes it
+        _model->removeAnalysis(kinematicsReporter);
 
         if (modelMarkerErrors) {
             Array<string> labels("", 4);
@@ -463,6 +464,9 @@ bool InverseKinematicsTool::run()
     }
     catch (const std::exception& ex) {
         std::cout << "InverseKinematicsTool Failed: " << ex.what() << std::endl;
+        // If failure happened after kinematicsReporter was added, make sure to cleanup
+        if (kinematicsReporter!= nullptr)
+            _model->removeAnalysis(kinematicsReporter);
         throw (Exception("InverseKinematicsTool Failed, "
             "please see messages window for details..."));
     }
@@ -616,20 +620,17 @@ void InverseKinematicsTool::populateReferences(MarkersReference& markersReferenc
         }
         else if (IKMarkerTask *markerTask = dynamic_cast<IKMarkerTask *>(&_ikTaskSet[i])) {
             if (markerTask->getApply()) {
+                // Only track markers that have a task and it is "applied"
                 markerWeights.adoptAndAppend(
                     new MarkerWeight(markerTask->getName(), markerTask->getWeight()));
             }
         }
     }
 
-    // Set the default weight for markers
-    markersReference.setDefaultWeight(1.0);
-    // Set the weights for markers (markers in the model and the marker file
-    // but not assigned a weight in the markerWeightSet will use the default
-    // weight
-    markersReference.setMarkerWeightSet(markerWeights);
-    //Load the makers
-    markersReference.loadMarkersFile(_markerFileName);
+    //Read in the marker data file and set the weights for associated markers.
+    //Markers in the model and the marker file but not in the markerWeights are
+    //ignored
+    markersReference.initializeFromMarkersFile(_markerFileName, markerWeights);
 }
 
 

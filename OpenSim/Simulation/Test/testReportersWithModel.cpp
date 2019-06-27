@@ -50,15 +50,14 @@ void testConsoleReporterLabels() {
     reporter->addToReport(slider->getCoordinate().getOutput("value"), "height");
     model.addComponent(reporter);
 
-    // Redirect cout to stringstream so ConsoleReporter output can be tested.
-    stringstream buf;
-    streambuf* oldBuf = cout.rdbuf(buf.rdbuf());
-
-    // Simulate.
     State& state = model.initSystem();
     Manager manager(model);
     state.setTime(0.0);
     manager.initialize(state);
+
+    // Redirect cout to stringstream so ConsoleReporter output can be tested.
+    stringstream buf;
+    streambuf* oldBuf = cout.rdbuf(buf.rdbuf());
     manager.integrate(1.0);
 
     // Restore original destination for cout and display ConsoleReporter output.
@@ -109,9 +108,9 @@ void testTableReporterLabels() {
     manager.integrate(1.0);
 
     // Check column headings for dependent variables reported by TableReporter,
-    // which should be "/world/slider/sliderCoord/value" and "height".
+    // which should be "slider/sliderCoord/value" and "height".
     const auto headings = reporter->getTable().getColumnLabels();
-    SimTK_TEST(headings[0] == "/world/slider/sliderCoord|value");
+    SimTK_TEST(headings[0] == "/jointset/slider/sliderCoord|value");
     SimTK_TEST(headings[1] == "height");
 }
 

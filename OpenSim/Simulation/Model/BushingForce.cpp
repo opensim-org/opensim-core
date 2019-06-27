@@ -47,16 +47,39 @@ BushingForce::BushingForce() : TwoFrameLinker<Force, PhysicalFrame>()
     constructProperties();
 }
 
-BushingForce::BushingForce( const std::string& name,
-                            const std::string& frame1Name,
-                            const std::string& frame2Name)
-    : TwoFrameLinker<Force, PhysicalFrame>(name, frame1Name, frame2Name)
+BushingForce::BushingForce(const std::string& name,
+                           const PhysicalFrame& frame1,
+                           const PhysicalFrame& frame2)
+    : Super(name, frame1, frame2)
 {
     setNull();
     constructProperties();
 }
 
-/* Convenience construction with BushingForce's material properties */
+BushingForce::BushingForce( const std::string& name,
+                            const std::string& frame1Name,
+                            const std::string& frame2Name)
+    : Super(name, frame1Name, frame2Name)
+{
+    setNull();
+    constructProperties();
+}
+
+BushingForce::BushingForce(const std::string& name,
+                           const PhysicalFrame& frame1,
+                           const PhysicalFrame& frame2,
+                           const SimTK::Vec3& transStiffness,
+                           const SimTK::Vec3& rotStiffness,
+                           const SimTK::Vec3& transDamping,
+                           const SimTK::Vec3& rotDamping)
+        : BushingForce(name, frame1, frame2)
+{
+    set_rotational_stiffness(rotStiffness);
+    set_translational_stiffness(transStiffness);
+    set_rotational_damping(rotDamping);
+    set_translational_damping(transDamping);
+}
+
 BushingForce::BushingForce( const std::string &name,
                             const std::string& frame1Name,
                             const std::string& frame2Name,
@@ -72,6 +95,23 @@ BushingForce::BushingForce( const std::string &name,
     set_translational_damping(transDamping);
 }
 
+BushingForce::BushingForce(const std::string& name, const PhysicalFrame& frame1,
+                           const SimTK::Transform& transformInFrame1,
+                           const PhysicalFrame& frame2,
+                           const SimTK::Transform& transformInFrame2,
+                           const SimTK::Vec3& transStiffness,
+                           const SimTK::Vec3& rotStiffness,
+                           const SimTK::Vec3& transDamping,
+                           const SimTK::Vec3& rotDamping)
+    : Super(name, frame1, transformInFrame1, frame2, transformInFrame2)
+{
+    setNull();
+    constructProperties();
+    set_rotational_stiffness(rotStiffness);
+    set_translational_stiffness(transStiffness);
+    set_rotational_damping(rotDamping);
+    set_translational_damping(transDamping);
+}
 
 BushingForce::BushingForce(const std::string& name,
     const std::string& frame1Name, const SimTK::Transform& transformInFrame1,
@@ -80,8 +120,7 @@ BushingForce::BushingForce(const std::string& name,
     const SimTK::Vec3& rotStiffness,
     const SimTK::Vec3& transDamping,
     const SimTK::Vec3& rotDamping)
-    : TwoFrameLinker<Force, PhysicalFrame>(name,
-        frame1Name, transformInFrame1, frame2Name, transformInFrame2)
+    : Super(name,frame1Name, transformInFrame1, frame2Name, transformInFrame2)
 {
     setNull();
     constructProperties();

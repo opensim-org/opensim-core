@@ -25,7 +25,8 @@
 
 // INCLUDES
 #include <OpenSim/Simulation/osimSimulationDLL.h>
-#include "OpenSim/Common/Set.h"
+#include <OpenSim/Common/IO.h>
+#include <OpenSim/Common/Set.h>
 #include "ModelComponent.h"
 
 #ifdef SWIG
@@ -38,7 +39,6 @@
 namespace OpenSim {
 
 class Model;
-class ModelDisplayHints;
 
 //=============================================================================
 //=============================================================================
@@ -50,148 +50,35 @@ class ModelDisplayHints;
  * @tparam  T   This must be a concrete class derived from ModelComponent.
  */
 
+template<typename T>
+using SetTModelComponent = Set<T, ModelComponent>;
+
 template <class T=ModelComponent>
-class ModelComponentSet : public Set<T> {
-OpenSim_DECLARE_CONCRETE_OBJECT_T(ModelComponentSet, T, Set<T>);
+class ModelComponentSet : public Set<T, ModelComponent> {
+    OpenSim_DECLARE_CONCRETE_OBJECT_T(ModelComponentSet, T, SetTModelComponent<T>);
 
-private:
-    SimTK::ReferencePtr<Model> _model;
-
-//=============================================================================
+//============================================================================
 // METHODS
 //=============================================================================
 public:
-    /** Default constructor creates an empty Set with no associated Model. **/
-    ModelComponentSet() : _model(nullptr)
-    {
-    }
-    /** Create an empty set associated to the specified Model. **/
-    explicit ModelComponentSet(Model& model) : _model(&model)
-    {
-    }
-    /**
-     * Construct from file.
-     *
-     * @param[in]   model       The Model to which this set is associated.
-     * @param[in]   fileName    Name of the file.
-     * @param[in]   aUpdateFromXMLNode  
-     *                          (Advanced) Used to avoid duplicate XML parsing.
-     */
-    ModelComponentSet(Model& model, const std::string& fileName, 
-                      bool aUpdateFromXMLNode = true) 
-    :   Set<T>(fileName, aUpdateFromXMLNode), _model(&model)
-    {
-    }
-    /**
-     * Copy constructor.
-     *
-     * @param[in]   source      Set to be copied.
-     */
-    ModelComponentSet(const ModelComponentSet<T>& source) : Set<T>(source)
-    {
-    }
+    using Super::Super;
+    void extendFinalizeFromProperties() override final {
+        Super::extendFinalizeFromProperties();
+        // ModelComponentSets are unnamed properties of models, but as
+        // components they must have a unique name. There is also nothing
+        // stopping users from editing the XML to add a name.
+        // We maintain consistency by overwriting any user set names with
+        // the class name, which is also the default for the unnamed property.
+        const std::string& name = this->getName();
+        if (name != IO::Lowercase(getConcreteClassName())) {
+            std::string msg = getConcreteClassName() + " '" + name + "' ";
+            this->setName(IO::Lowercase(getConcreteClassName()));
 
-    /** Does this Set have a Model associated with it? */
-    bool hasModel() const { return !_model.empty(); }
-    /**
-     * Get this Model this set is part of.
-     */
-    const Model& getModel() const
-    {
-        if (hasModel()){
-            return _model.getRef();
-        }
-        else{
-            std::string msg = getClassName();
-            msg += "::getModel() - has no associated Model (nullptr)";
-            throw Exception(msg);
+            msg += "was renamed and is being reset to '" + name
+                + "'.";
+            std::cout << msg << std::endl;
         }
     }
-    /**
-     * Get a modifiable reference to the Model this set is part of.
-     */
-    Model& updModel()
-    {
-        return *this->_model.get();
-    }
-
-    void setModel(Model& model) { _model = &model; }
-
-
-    /**
-     * Adding an object to the set causes its Model field to be set.
-     */
-    bool insert(int aIndex, T* aObject) override
-    {
-        return Set<T>::insert(aIndex, aObject);
-    }
-    /**
-     * Adding an object to the set causes its Model field to be set.
-     */
-    bool set(int aIndex, T* aObject, bool preserveGroups = false) override
-    {
-        return Set<T>::set(aIndex, aObject, preserveGroups);
-    }
-
-    // The following methods dispatch calls to the corresponding ModelComponent
-    // methods. We have to upcast each concrete ModelComponent of type T to
-    // ModelComponent so that we can invoke the methods, which are protected.
-    // ModelComponent however declares ModelComponentSet as a friend.
-    //
-    // These methods are virtual because some derived sets need to override
-    // them.
-
-    /**
-     * %Set the Model this object is part of and allow each contained
-     * ModelComponent to connect itself to the Model by invoking its 
-     * connectToModel() method.
-     * @see ModelComponent::connectToModel()
-     */
-    virtual void invokeConnectToModel(Model& model)
-    {
-        _model = &model;
-        for (int i = 0; i < Set<T>::getSize(); i++){
-            static_cast<ModelComponent&>(Set<T>::get(i)).connectToModel(model);
-        }
-        Set<T>::setupGroups(); // make sure group members are populated
-    }
-
-    /**
-     * Invoke initStateFromProperties() on each element of the Set.
-     * @see ModelComponent::initStateFromProperties()
-     */
-    virtual void invokeInitStateFromProperties(SimTK::State& state) const
-    {
-        for (int i = 0; i < Set<T>::getSize(); i++)
-            static_cast<const ModelComponent&>(Set<T>::get(i)).initStateFromProperties(state);
-    }
-
-    /**
-     * Invoke setPropertiesFromState() on each element of the Set.
-     * @see ModelComponent::setPropertiesFromState()
-     */
-    virtual void invokeSetPropertiesFromState(const SimTK::State& state)
-    {
-        for (int i = 0; i < Set<T>::getSize(); i++)
-            static_cast<ModelComponent&>(Set<T>::get(i)).setPropertiesFromState(state);
-    }
-
-    /** 
-     * Invoke generateDecorations() on each of the contained 
-     * ModelComponent objects. 
-     * @see ModelComponent::generateDecorations()
-     */
-    virtual void invokeGenerateDecorations
-       (bool                                        fixed, 
-        const ModelDisplayHints&                    hints,
-        const SimTK::State&                         state,
-        SimTK::Array_<SimTK::DecorativeGeometry>&   appendToThis) const
-    {
-        for (int i = 0; i < Set<T>::getSize(); i++)
-            static_cast<const ModelComponent&>(Set<T>::get(i))
-                    .generateDecorations(fixed,hints,state,appendToThis);
-    }
-
 
 //=============================================================================
 };  // END of class ModelComponentSet

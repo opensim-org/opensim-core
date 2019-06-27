@@ -64,7 +64,9 @@ using namespace std;
 // 30514 for removing "reverse" property from Joint
 // 30515 for WrapObject color, display_preference, VisibleObject -> Appearance
 // 30516 for GeometryPath default_color -> Appearance
-const int XMLDocument::LatestVersion = 30516;
+// 30517 for removal of _connectee_name suffix to shorten XML for socket, input
+// 40000 for OpenSim 4.0 release
+const int XMLDocument::LatestVersion = 40000;
 //=============================================================================
 // DESTRUCTOR AND CONSTRUCTOR(S)
 //=============================================================================
@@ -470,7 +472,7 @@ void XMLDocument::updateConnectors30508(SimTK::Xml::Element& componentElt)
     componentElt.eraseNode(connectors_node);
 }
 
-void XMLDocument::addPhysicalOffsetFrame30505(SimTK::Xml::Element& element,
+void XMLDocument::addPhysicalOffsetFrame30505_30517(SimTK::Xml::Element& element,
     const std::string& frameName,
     const std::string& parentFrameName, 
     const SimTK::Vec3& location, const SimTK::Vec3& orientation)
@@ -489,11 +491,16 @@ void XMLDocument::addPhysicalOffsetFrame30505(SimTK::Xml::Element& element,
     //newFrameElement.writeToString(debug);
 
     // This function always adds the frame as a subcomponent of a component
-    // that is 1 level deep, making this frame two levels deep. The connectee
-    // is always only 1 level deep, so prepending "../../" yields the correct
-    // relative path.
-    XMLDocument::addConnector(newFrameElement, "Connector_PhysicalFrame_",
-            "parent", "../../" + parentFrameName);
+    // that is a member of the forceset, making this frame three levels
+    // deep. The connectee is either ground or a member of bodyset.
+    if(parentFrameName == "ground")
+        XMLDocument::addConnector(newFrameElement,
+            "Connector_PhysicalFrame_", "parent", "../../../"
+            + parentFrameName);
+    else
+        XMLDocument::addConnector(newFrameElement,
+            "Connector_PhysicalFrame_", "parent", "../../../bodyset/"
+            + parentFrameName);
 
     std::ostringstream transValue;
     transValue << location[0] << " " << location[1] << " " << location[2];
@@ -507,6 +514,18 @@ void XMLDocument::addPhysicalOffsetFrame30505(SimTK::Xml::Element& element,
 
     frames_node->insertNodeAfter(frames_node->element_end(), newFrameElement);
     //frames_node->writeToString(debug);
+}
+
+string XMLDocument::updateConnecteePath30517(
+        const std::string& connecteeSetName,
+        const std::string& connecteeName) {
+    std::string connecteePath;
+    if (connecteeSetName == "bodyset" && connecteeName == "ground") {
+        connecteePath = "/" + connecteeName;
+    } else{
+        connecteePath = "/" + connecteeSetName + "/" + connecteeName;
+    }
+    return connecteePath;
 }
 
 SimTK::Xml::Element XMLDocument::findElementWithName(

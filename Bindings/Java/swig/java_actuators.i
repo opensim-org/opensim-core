@@ -9,7 +9,6 @@
 #include <Bindings/OpenSimHeaders_actuators.h>
 #include <Bindings/OpenSimHeaders_analyses.h>
 #include <Bindings/OpenSimHeaders_tools.h>
-#include <OpenSim/Utilities/simmFileWriterDLL/SimmFileWriter.h>
 
 #include <Bindings/Java/OpenSimJNI/Hooks/SimtkLogCallback.h>
 #include <Bindings/Java/OpenSimJNI/OpenSimContext.h>
@@ -52,8 +51,6 @@ using namespace SimTK;
 %}
 
 %include <Bindings/tools.i>
-%include <OpenSim/Utilities/simmFileWriterDLL/SimmFileWriter.h>
-
 %include <Bindings/Java/OpenSimJNI/OpenSimContext.h>
 
 %include <Bindings/Java/OpenSimJNI/Hooks/SimtkLogCallback.h>

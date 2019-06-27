@@ -126,10 +126,11 @@ public:
     double getHeight(const SimTK::State& s) const {
         //TODO: Provide the name of the coordinate corresponding to the
         //      hopper's height. You found this in Step 1, Task A.
-        //const std::string hopperHeightCoord = "/Dennis/?????"; //fill this in
+        //const std::string hopperHeightCoord = "/?????"; //fill this in
         #pragma region Step2_TaskA_solution
 
-        static const std::string hopperHeightCoord = "/Dennis/slider/yCoord";
+        static const std::string hopperHeightCoord =
+                "/jointset/slider/yCoord";
 
         #pragma endregion
 

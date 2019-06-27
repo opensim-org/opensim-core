@@ -18,7 +18,7 @@ class TestEditMarkers {
         Marker newMarker = new Marker();
         newMarker.setName(newMarkerName);
         newMarker.set_location(offset);
-        newMarker.setParentFrameName(body.getName());
+        newMarker.setParentFrame(body);
         context.cacheModelAndState();
         model.addMarker(newMarker);
         try {
@@ -40,7 +40,7 @@ class TestEditMarkers {
 		// Exercise saveToFile
         markerset.print("savedMarkers.xml");
         // Now create a new MarkerSet from the file
-        MarkerSet newMarkerSet = new MarkerSet(model, "savedMarkers.xml");
+        MarkerSet newMarkerSet = new MarkerSet("savedMarkers.xml");
         Marker newMarkerRenamed = newMarkerSet.get(0);
         String addedMarkerName = newMarkerRenamed.getName()+"_renamed";
         newMarkerRenamed.setName(addedMarkerName);

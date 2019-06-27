@@ -49,6 +49,8 @@
 #include "TableSource.h"
 
 #include "ModelDisplayHints.h"
+#include "ExperimentalSensor.h"
+#include "XsensDataReaderSettings.h"
 
 #include <string>
 #include <iostream>
@@ -97,7 +99,9 @@ OSIMCOMMON_API void RegisterTypes_osimCommon()
     Object::registerType( ConsoleReporter() );
     Object::registerType( ConsoleReporterVec3() );
 
-    Object::registerType( ModelDisplayHints());
+    Object::registerType(ModelDisplayHints());
+    Object::registerType(ExperimentalSensor());
+    Object::registerType(XsensDataReaderSettings());
 
     // TODO: temporarily map old NaturalCubicSpline (which wasn't a
     // natural cubic spline) to renamed SimmSpline class. Later we

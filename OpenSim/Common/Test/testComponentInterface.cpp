@@ -201,8 +201,8 @@ public:
 
 protected:
     /** Component Interface */
-    void extendConnect(Component& root) override {
-        Super::extendConnect(root);
+    void extendFinalizeConnections(Component& root) override {
+        Super::extendFinalizeConnections(root);
         // do any internal wiring
         world = dynamic_cast<TheWorld*>(&root);
     }
@@ -284,18 +284,22 @@ public:
     double getCopytestingMemVar(const SimTK::State& s) const
     { return copytestingViaMemberVariable; }
 
+    class ParentAndFooAreSame : OpenSim::Exception {
+    public:
+        using OpenSim::Exception::Exception;
+    };
 protected:
     /** Component Interface */
-    void extendConnect(Component& root) override{
-        Super::extendConnect(root);
+    void extendFinalizeConnections(Component& root) override{
+        Super::extendFinalizeConnections(root);
         // do any internal wiring
         world = dynamic_cast<TheWorld*>(&root);
         // perform custom checking
         if (&updSocket<Foo>("parentFoo").getConnectee()
                 == &updSocket<Foo>("childFoo").getConnectee()){
-            string msg = "ERROR - Bar::extendConnect()\n";
+            string msg = "ERROR - Bar::extendFinalizeConnections()\n";
             msg += " parentFoo and childFoo cannot be the same component.";
-            throw OpenSim::Exception(msg);
+            throw ParentAndFooAreSame(msg);
         }
     }
 
@@ -480,12 +484,13 @@ void testMisc() {
 
     //Configure the socket to look for its dependency by this name
     //Will get resolved and connected automatically at Component connect
-    bar.updSocket<Foo>("parentFoo").setConnecteeName(foo.getAbsolutePathString());
+    bar.updSocket<Foo>("parentFoo").setConnecteePath(
+            foo.getAbsolutePathString());
     bar.connectSocket_childFoo(foo);
-        
+
     // add a subcomponent
     // connect internals
-    ASSERT_THROW( OpenSim::Exception,
+    ASSERT_THROW( Bar::ParentAndFooAreSame,
                   theWorld.connect() );
 
 
@@ -531,6 +536,9 @@ void testMisc() {
     bar.connectSocket_childFoo(foo2);
     string socketName = bar.updSocket<Foo>("childFoo").getName();
 
+    // do any other input/output connections
+    foo.connectInput_input1(bar.getOutput("PotentialEnergy"));
+
     // Bar should connect now
     theWorld.connect();
     theWorld.buildUpSystem(system);
@@ -538,9 +546,6 @@ void testMisc() {
     const Foo& foo2found = theWorld.getComponent<Foo>("Foo2");
     ASSERT(foo2 == foo2found);
 
-    // do any other input/output connections
-    foo.connectInput_input1(bar.getOutput("PotentialEnergy"));
-    
     // check how this model serializes
     string modelFile("testComponentInterfaceModel.osim");
     theWorld.print(modelFile);
@@ -609,7 +614,7 @@ void testMisc() {
 
     MultibodySystem system2;
     TheWorld *world2 = new TheWorld(modelFile, true);
-        
+
     world2->updComponent("Bar").getSocket<Foo>("childFoo");
     // We haven't called connect yet, so this connection isn't made yet.
     SimTK_TEST_MUST_THROW_EXC(
@@ -673,14 +678,14 @@ void testMisc() {
 
     //Configure the socket to look for its dependency by this name
     //Will get resolved and connected automatically at Component connect
-    bar2.updSocket<Foo>("parentFoo")
-    .setConnecteeName(compFoo.getRelativePathName(bar2));
+    bar2.updSocket<Foo>("parentFoo").setConnecteePath(
+            compFoo.getRelativePathString(bar2));
     
-    bar2.connectSocket_childFoo(foo);
+    bar2.connectSocket_childFoo(compFoo.get_Foo1());
     compFoo.upd_Foo1().updInput("input1")
         .connect(bar2.getOutput("PotentialEnergy"));
 
-    world3.finalizeFromProperties();
+    world3.connect();
     world3.print("Compound_" + modelFile);
 
     cout << "Adding world3 to theWorld" << endl;
@@ -701,14 +706,15 @@ void testMisc() {
     reporter->set_report_time_interval(0.1);
     reporter->connectInput_inputs(foo.getOutput("Qs"));
     theWorld.add(reporter);
+    
+    // Connect our state variables.
+    foo.connectInput_fiberLength(bar.getOutput("fiberLength"));
+    foo.connectInput_activation(bar.getOutput("activation"));
 
     MultibodySystem system3;
     cout << "Building theWorld's system:" << endl;
     theWorld.buildUpSystem(system3);
 
-    // Connect our state variables.
-    foo.connectInput_fiberLength(bar.getOutput("fiberLength"));
-    foo.connectInput_activation(bar.getOutput("activation"));
     // Since hiddenStateVar is a hidden state variable, it has no
     // corresponding output.
     ASSERT_THROW( OpenSim::Exception,
@@ -818,7 +824,7 @@ void testExceptionsFinalizeFromPropertiesAfterCopy() {
     }
     {
         TheWorld copy = theWorld;
-        SimTK_TEST_MUST_THROW(copy.getComponentList());
+        SimTK_TEST_MUST_THROW_EXC(copy.getComponentList(), ComponentIsAnOrphan);
     }
 }
 
@@ -841,9 +847,9 @@ void testListInputs() {
     bar.setName("Bar");
     theWorld.add(&bar);
 
-    bar.updSocket<Foo>("parentFoo").setConnecteeName("Foo");
-    bar.updSocket<Foo>("childFoo").setConnecteeName("Foo2");
-    
+    bar.connectSocket_parentFoo(foo);
+    bar.connectSocket_childFoo(foo2);
+
     auto* reporter = new ConsoleReporter();
     reporter->setName("rep0");
     theWorld.add(reporter);
@@ -899,9 +905,9 @@ void testListSockets() {
     theWorld.add(&bar);
     
     // Non-list sockets.
-    bar.updSocket<Foo>("parentFoo").setConnecteeName("foo");
-    bar.updSocket<Foo>("childFoo").setConnecteeName("foo2");
-    
+    bar.connectSocket_parentFoo(foo);
+    bar.connectSocket_childFoo(foo2);
+
     // Ensure that calling connect() on bar's "parentFoo" doesn't increase
     // its number of connectees.
     bar.connectSocket_parentFoo(foo);
@@ -956,27 +962,27 @@ void testComponentPathNames()
     top.printOutputInfo();
 
     std::string absPathC = C->getAbsolutePathString();
-    ASSERT(absPathC == "/Top/A/B/C");
+    ASSERT(absPathC == "/A/B/C");
 
     std::string absPathE = E->getAbsolutePathString();
-    ASSERT(absPathE == "/Top/A/D/E");
+    ASSERT(absPathE == "/A/D/E");
 
     // Specific tests to relative path name facilities
-    std::string EWrtB = E->getRelativePathName(*B);
+    std::string EWrtB = E->getRelativePathString(*B);
     ASSERT(EWrtB == "../D/E"); // "/A/B/" as common
 
-    std::string BWrtE = B->getRelativePathName(*E);
-    ASSERT(BWrtE == "../../B"); // "/Top/A/" as common
+    std::string BWrtE = B->getRelativePathString(*E);
+    ASSERT(BWrtE == "../../B"); // "/A/" as common
 
     // null case component wrt itself
-    std::string fooWrtFoo = D->getRelativePathName(*D);
+    std::string fooWrtFoo = D->getRelativePathString(*D);
     ASSERT(fooWrtFoo == "");
 
-    std::string CWrtOtherTop = C->getRelativePathName(otherTop);
-    ASSERT(CWrtOtherTop == "../Top/A/B/C");
+    std::string CWrtOtherTop = C->getRelativePathString(otherTop);
+    ASSERT(CWrtOtherTop == "A/B/C");
 
-    std::string OtherTopWrtC = otherTop.getRelativePathName(*C);
-    ASSERT(OtherTopWrtC == "../../../../OtherTop");
+    std::string OtherTopWrtC = otherTop.getRelativePathString(*C);
+    ASSERT(OtherTopWrtC == "../../../");
 
     // Must specify a unique path to E
     ASSERT_THROW(OpenSim::ComponentNotFoundOnSpecifiedPath,
@@ -985,10 +991,10 @@ void testComponentPathNames()
     auto& cref = top.getComponent(absPathC);
     auto& eref = top.getComponent(absPathE);
 
-    auto cFromE = cref.getRelativePathName(eref);
+    auto cFromE = cref.getRelativePathString(eref);
     ASSERT(cFromE == "../../B/C");
 
-    auto eFromC = eref.getRelativePathName(cref);
+    auto eFromC = eref.getRelativePathString(cref);
     ASSERT(eFromC == "../../D/E");
 
     // verify that we can also navigate relative paths properly
@@ -1018,11 +1024,11 @@ void testComponentPathNames()
     std::string aBar2AbsPath = 
         A->getComponent<Bar>("Bar2").getAbsolutePathString();
     auto bar2FromBarFoo = 
-        bar2->getRelativePathName(F->getComponent<Foo>("Foo1"));
+        bar2->getRelativePathString(F->getComponent<Foo>("Foo1"));
 
     // Verify deep copy of subcomponents
-    const Foo& foo1inA = top.getComponent<Foo>("/Top/A/Foo1");
-    const Foo& foo1inF = top.getComponent<Foo>("/Top/F/Foo1");
+    const Foo& foo1inA = top.getComponent<Foo>("/A/Foo1");
+    const Foo& foo1inF = top.getComponent<Foo>("/F/Foo1");
     ASSERT(&foo1inA != &foo1inF);
 
     // double check that we have the original Foo foo1 in A
@@ -1041,11 +1047,66 @@ void testComponentPathNames()
 
     fbar2.connectSocket_parentFoo(*foo1);
     fbar2.updSocket<Foo>("childFoo")
-        .setConnecteeName("../Foo1");
+            .setConnecteePath("../Foo1");
 
     top.printSubcomponentInfo();
     top.printOutputInfo();
     top.connect();
+}
+
+void testFindComponent() {
+    class A : public Component {
+        OpenSim_DECLARE_CONCRETE_OBJECT(A, Component);
+    public:
+        A(const std::string& name) { setName(name); }
+    };
+    class B : public Component {
+        OpenSim_DECLARE_CONCRETE_OBJECT(B, Component);
+    public:
+        OpenSim_DECLARE_SOCKET(socket_a, A, "");
+        B(const std::string& name) { setName(name); }
+    };
+
+    // Build a model.
+    A top("top");
+    B* b1 = new B("b1");
+    b1->connectSocket_socket_a(top);
+    top.addComponent(b1);
+    B* b2 = new B("b2");
+    b1->addComponent(b2);
+    B* b3 = new B("b3");
+    b2->addComponent(b3);
+
+    // Test findComponent().
+    B* duplicate1 = new B("duplicate");
+    b1->addComponent(duplicate1);
+    B* duplicate2 = new B("duplicate");
+    b2->addComponent(duplicate2);
+    SimTK_TEST(top.findComponent("nonexistant") == nullptr);
+    SimTK_TEST(top.findComponent("b1") == b1);
+    SimTK_TEST(top.findComponent<B>("b1") == b1);
+    SimTK_TEST(b3->findComponent("b1") == nullptr);
+    SimTK_TEST(top.findComponent<A>("b1") == nullptr);
+
+    SimTK_TEST_MUST_THROW_EXC(top.findComponent("duplicate"),
+            OpenSim::Exception);
+
+    // Test AbstractSocket::findAndConnect().
+    b3->updSocket("socket_a").findAndConnect("top");
+    SimTK_TEST(&b3->getConnectee<A>("socket_a") == &top);
+    // Connectee has the wrong type.
+    SimTK_TEST_MUST_THROW_EXC(b3->updSocket("socket_a").findAndConnect("b1"),
+            OpenSim::Exception);
+
+    // Test partial paths.
+    A* a3 = new A("a3");
+    b2->addComponent(a3);
+    b3->updSocket("socket_a").findAndConnect("b2/a3");
+    SimTK_TEST(&b3->getConnectee<A>("socket_a") == a3);
+
+    // This works, even though a3 is not in b3.
+    b3->updSocket("socket_a").findAndConnect("b3/a3");
+    SimTK_TEST(&b3->getConnectee<A>("socket_a") == a3);
 }
 
 void testTraversePathToComponent() {
@@ -1110,9 +1171,10 @@ void testTraversePathToComponent() {
     SimTK_TEST(&a1->getComponent<B>("../b1") == b1);
     SimTK_TEST(&a1->getComponent<B>("../a1/b2") == b2);
     // Absolute paths.
-    SimTK_TEST(&top.getComponent<A>("/top/a1") == a1);
-    SimTK_TEST(&b1->getComponent<B>("/top/a1/b2") == b2);
-    SimTK_TEST(&b2->getComponent<A>("/top/a1/a2") == a2);
+    SimTK_TEST(&top.getComponent<A>("/a1") == a1);
+    SimTK_TEST(&b1->getComponent<B>("/a1/b2") == b2);
+    SimTK_TEST(&b2->getComponent<A>("/a1/a2") == a2);
+    SimTK_TEST(&top.getComponent<A>("/") == &top);
 
 
     // No component.
@@ -1123,7 +1185,6 @@ void testTraversePathToComponent() {
     // Wrong type.
     SimTK_TEST_MUST_THROW(top.getComponent<B>("a1/a2"));
     // Going too high up.
-    SimTK_TEST_MUST_THROW(top.getComponent<A>("/"));
     SimTK_TEST_MUST_THROW(top.getComponent<A>(".."));
     SimTK_TEST_MUST_THROW(top.getComponent<A>("../"));
     SimTK_TEST_MUST_THROW(top.getComponent<A>("../.."));
@@ -1280,11 +1341,12 @@ void testInputOutputConnections()
     }
 }
 
-void testInputConnecteeNames() {
+void testInputConnecteePaths() {
     {
         std::string componentPath, outputName, channelName, alias;
-        AbstractInput::parseConnecteeName("/foo/bar|output",
-                componentPath, outputName, channelName, alias);
+        AbstractInput::parseConnecteePath("/foo/bar|output",
+                                          componentPath, outputName,
+                                          channelName, alias);
         SimTK_TEST(componentPath == "/foo/bar");
         SimTK_TEST(outputName == "output");
         SimTK_TEST(channelName == "");
@@ -1292,8 +1354,9 @@ void testInputConnecteeNames() {
     }
     {
         std::string componentPath, outputName, channelName, alias;
-        AbstractInput::parseConnecteeName("/foo/bar|output:channel",
-                componentPath, outputName, channelName, alias);
+        AbstractInput::parseConnecteePath("/foo/bar|output:channel",
+                                          componentPath, outputName,
+                                          channelName, alias);
         SimTK_TEST(componentPath == "/foo/bar");
         SimTK_TEST(outputName == "output");
         SimTK_TEST(channelName == "channel");
@@ -1301,8 +1364,9 @@ void testInputConnecteeNames() {
     }
     {
         std::string componentPath, outputName, channelName, alias;
-        AbstractInput::parseConnecteeName("/foo/bar|output(baz)",
-                componentPath, outputName, channelName, alias);
+        AbstractInput::parseConnecteePath("/foo/bar|output(baz)",
+                                          componentPath, outputName,
+                                          channelName, alias);
         SimTK_TEST(componentPath == "/foo/bar");
         SimTK_TEST(outputName == "output");
         SimTK_TEST(channelName == "");
@@ -1310,8 +1374,9 @@ void testInputConnecteeNames() {
     }
     {
         std::string componentPath, outputName, channelName, alias;
-        AbstractInput::parseConnecteeName("/foo/bar|output:channel(baz)",
-                componentPath, outputName, channelName, alias);
+        AbstractInput::parseConnecteePath("/foo/bar|output:channel(baz)",
+                                          componentPath, outputName,
+                                          channelName, alias);
         SimTK_TEST(componentPath == "/foo/bar");
         SimTK_TEST(outputName == "output");
         SimTK_TEST(channelName == "channel");
@@ -1408,7 +1473,7 @@ void testExceptionsForConnecteeTypeMismatch() {
         B* b = new B(); b->setName("b");
         C* c = new C(); c->setName("c");
         model.add(b); model.add(c);
-        c->updSocket("socket1").setConnecteeName("../b");
+        c->updSocket("socket1").setConnecteePath("../b");
         SimTK_TEST_MUST_THROW_EXC(model.connect(), OpenSim::Exception);
     }
     { // single-value output -> single-value input.
@@ -1416,7 +1481,7 @@ void testExceptionsForConnecteeTypeMismatch() {
         A* a = new A(); a->setName("a");
         B* b = new B(); b->setName("b");
         model.add(a); model.add(b);
-        b->updInput("in1").setConnecteeName("../a/out1");
+        b->updInput("in1").setConnecteePath("../a/out1");
         SimTK_TEST_MUST_THROW_EXC(model.connect(), OpenSim::Exception);
     }
     { // single-value output -> list input.
@@ -1424,7 +1489,7 @@ void testExceptionsForConnecteeTypeMismatch() {
         A* a = new A(); a->setName("a");
         B* b = new B(); b->setName("b");
         model.add(a); model.add(b);
-        b->updInput("inL").appendConnecteeName("../a/out1");
+        b->updInput("inL").appendConnecteePath("../a/out1");
         SimTK_TEST_MUST_THROW_EXC(model.connect(), OpenSim::Exception);
     }
     { // list output -> single-value input.
@@ -1432,7 +1497,7 @@ void testExceptionsForConnecteeTypeMismatch() {
         A* a = new A(); a->setName("a");
         B* b = new B(); b->setName("b");
         model.add(a); model.add(b);
-        b->updInput("in1").setConnecteeName("../a/outL:2");
+        b->updInput("in1").setConnecteePath("../a/outL:2");
         SimTK_TEST_MUST_THROW_EXC(model.connect(), OpenSim::Exception);
     }
     { // list output -> list input.
@@ -1440,7 +1505,7 @@ void testExceptionsForConnecteeTypeMismatch() {
         A* a = new A(); a->setName("a");
         B* b = new B(); b->setName("b");
         model.add(a); model.add(b);
-        b->updInput("inL").appendConnecteeName("../a/outL:0");
+        b->updInput("inL").appendConnecteePath("../a/outL:0");
         SimTK_TEST_MUST_THROW_EXC(model.connect(), OpenSim::Exception);
     }
 }
@@ -1796,27 +1861,27 @@ void writeTimeSeriesTableForInputConnecteeSerialization() {
 }
 
 void testListInputConnecteeSerialization() {
-    // We build a model, store the input connectee names, then
+    // We build a model, store the input connectee paths, then
     // recreate the same model from a serialization, and make sure the
-    // connectee names are the same.
+    // connectee paths are the same.
 
     // Helper function.
-    auto getConnecteeNames = [](const AbstractInput& in) {
+    auto getConnecteePaths = [](const AbstractInput& in) {
         const auto numConnectees = in.getNumConnectees();
-        std::vector<std::string> connecteeNames(numConnectees);
+        std::vector<std::string> connecteePaths(numConnectees);
         for (unsigned ic = 0u; ic < numConnectees; ++ic) {
-            connecteeNames[ic] = in.getConnecteeName(ic);
+            connecteePaths[ic] = in.getConnecteePath(ic);
         }
-        return connecteeNames;
+        return connecteePaths;
     };
 
     // Build a model and serialize it.
     std::string modelFileName = "testComponentInterface_"
                                 "testListInputConnecteeSerialization_world.xml";
-    std::vector<std::string> expectedConnecteeNames{
-            "../producer|column:a",
-            "../producer|column:c",
-            "../producer|column:b(berry)"};
+    std::vector<std::string> expectedConnecteePaths{
+            "/producer|column:a",
+            "/producer|column:c",
+            "/producer|column:b(berry)"};
     SimTK::Vector expectedInputValues;
     {
         // Create the "model," which just contains a reporter.
@@ -1835,7 +1900,7 @@ void testListInputConnecteeSerialization() {
         // Add to world.
         world.add(source);
         world.add(reporter);
-        
+
         // Connect, finalize, etc.
         const auto& output = source->getOutput("column");
         // See if we preserve the ordering of the channels.
@@ -1843,14 +1908,16 @@ void testListInputConnecteeSerialization() {
         reporter->addToReport(output.getChannel("c"));
         // We want to make sure aliases are preserved.
         reporter->addToReport(output.getChannel("b"), "berry");
+        // Ensure that re-finalizing from properties does not cause Inputs
+        // to hold onto stale references to the outputs' channels.
         world.finalizeFromProperties();
         world.connect();
         MultibodySystem system;
         world.buildUpSystem(system);
         
-        // Grab the connectee names.
+        // Grab the connectee paths.
         const auto& input = reporter->getInput("inputs");
-        SimTK_TEST(getConnecteeNames(input) == expectedConnecteeNames);
+        SimTK_TEST(getConnecteePaths(input) == expectedConnecteePaths);
         
         // Get the value of the input at some given time.
         State s = system.realizeTopology();
@@ -1869,11 +1936,11 @@ void testListInputConnecteeSerialization() {
         const auto& reporter = world.getComponent("consumer");
         const auto& input = reporter.getInput("inputs");
         SimTK_TEST(input.isListSocket());
-        // Check connectee names before *and* after connecting, since
+        // Check connectee paths before *and* after connecting, since
         // the connecting process edits the connectee_name property.
-        SimTK_TEST(getConnecteeNames(input) == expectedConnecteeNames);
+        SimTK_TEST(getConnecteePaths(input) == expectedConnecteePaths);
         world.connect();
-        SimTK_TEST(getConnecteeNames(input) == expectedConnecteeNames);
+        SimTK_TEST(getConnecteePaths(input) == expectedConnecteePaths);
         // Check aliases.
         SimTK_TEST(input.getAlias(0) == ""); // default.
         SimTK_TEST(input.getAlias(1) == ""); // default.
@@ -1886,7 +1953,7 @@ void testListInputConnecteeSerialization() {
         system.realize(s, Stage::Model);
         s.setTime(0.3);
         auto actualInputValues = Input<double>::downcast(input).getVector(s);
-        
+
         SimTK_TEST_EQ(expectedInputValues, actualInputValues);
     }
 }
@@ -1921,13 +1988,15 @@ void testSingleValueInputConnecteeSerialization() {
         // Add to world.
         world.add(source);
         world.add(foo);
-        
+
         // Connect, finalize, etc.
         const auto& output = source->getOutput("column");
         // See if we preserve the ordering of the channels.
         foo->connectInput_input1(output.getChannel("b"));
         // We want to make sure aliases are preserved.
         foo->connectInput_fiberLength(output.getChannel("d"), "desert");
+        // Ensure that re-finalizing from properties does not cause Inputs
+        // to hold onto stale references to the outputs' channels.
         world.finalizeFromProperties();
         world.connect();
         MultibodySystem system;
@@ -1940,9 +2009,9 @@ void testSingleValueInputConnecteeSerialization() {
         const auto& input1 = foo->getInput("input1");
         expectedInput1Value = Input<double>::downcast(input1).getValue(s);
         
-        // We won't wire up this input, but its connectee name should still
+        // We won't wire up this input, but its connectee path should still
         // (de)serialize.
-        foo->updInput("activation").setConnecteeName("non/existent");
+        foo->updInput("activation").setConnecteePath("non/existent");
         
         // Serialize.
         world.print(modelFileName);
@@ -1962,16 +2031,16 @@ void testSingleValueInputConnecteeSerialization() {
         SimTK_TEST(!fiberLength.isListSocket());
         SimTK_TEST(!activation.isListSocket());
         
-        // Check connectee names before *and* after connecting, since
+        // Check connectee paths before *and* after connecting, since
         // the connecting process edits the connectee_name property.
-        SimTK_TEST(input1.getConnecteeName() == "../producer|column:b");
-        SimTK_TEST(fiberLength.getConnecteeName() ==
-                   "../producer|column:d(desert)");
+        SimTK_TEST(input1.getConnecteePath() == "/producer|column:b");
+        SimTK_TEST(fiberLength.getConnecteePath() ==
+                   "/producer|column:d(desert)");
         // Even if we hadn't wired this up, its name still deserializes:
-        SimTK_TEST(activation.getConnecteeName() == "non/existent");
+        SimTK_TEST(activation.getConnecteePath() == "non/existent");
         // Now we must clear this before trying to connect, since the connectee
         // doesn't exist.
-        activation.setConnecteeName("");
+        activation.setConnecteePath("");
         
         // Connect.
         world.connect();
@@ -1981,9 +2050,9 @@ void testSingleValueInputConnecteeSerialization() {
         SimTK_TEST(!fiberLength.isListSocket());
         SimTK_TEST(!activation.isListSocket());
         
-        SimTK_TEST(input1.getConnecteeName() == "../producer|column:b");
-        SimTK_TEST(fiberLength.getConnecteeName() ==
-                   "../producer|column:d(desert)");
+        SimTK_TEST(input1.getConnecteePath() == "/producer|column:b");
+        SimTK_TEST(fiberLength.getConnecteePath() ==
+                   "/producer|column:d(desert)");
         
         // Check aliases.
         SimTK_TEST(input1.getAlias(0) == "");
@@ -2013,9 +2082,9 @@ void testSingleValueInputConnecteeSerialization() {
         
         // Hack into the Foo and modify its properties! The typical interface
         // for editing the input's connectee_name does not allow multiple
-        // connectee names for a single-value input.
+        // connectee paths for a single-value input.
         auto& connectee_name = Property<std::string>::updAs(
-                        foo->updPropertyByName("input_input1_connectee_name"));
+                        foo->updPropertyByName("input_input1"));
         connectee_name.setAllowableListSize(0, 10);
         connectee_name.appendValue("apple");
         connectee_name.appendValue("banana");
@@ -2041,9 +2110,9 @@ void testSingleValueInputConnecteeSerialization() {
         auto* foo = new Foo();
         world.add(foo);
         auto& input1 = foo->updInput("input1");
-        input1.setConnecteeName("abc+def"); // '+' is invalid for ComponentPath.
+        input1.setConnecteePath("abc+def"); // '+' is invalid for ComponentPath.
         // The check for invalid names occurs in
-        // AbstractSocket::checkConnecteeNameProperty(), which is invoked
+        // AbstractSocket::checkConnecteePathProperty(), which is invoked
         // by the following function:
         SimTK_TEST_MUST_THROW_EXC(foo->finalizeFromProperties(),
                                   OpenSim::Exception);
@@ -2059,7 +2128,7 @@ void testSingleValueInputConnecteeSerialization() {
 }
 
 void testAliasesAndLabels() {
-    TheWorld* theWorld = new TheWorld();
+    auto theWorld = std::unique_ptr<TheWorld>(new TheWorld());
     theWorld->setName("world");
 
     Foo* foo = new Foo();  foo->setName("foo");
@@ -2077,8 +2146,9 @@ void testAliasesAndLabels() {
 
     // Non-list Input, no alias.
     foo->connectInput_input1( bar->getOutput("Output1") );
+    theWorld->connect();
     SimTK_TEST(foo->getInput("input1").getAlias().empty());
-    SimTK_TEST(foo->getInput("input1").getLabel() == "/world/bar|Output1");
+    SimTK_TEST(foo->getInput("input1").getLabel() == "/bar|Output1");
 
     // Set alias.
     foo->updInput("input1").setAlias("waldo");
@@ -2098,27 +2168,30 @@ void testAliasesAndLabels() {
 
     // Non-list Input, with alias.
     foo->connectInput_input1( bar->getOutput("Output1"), "baz" );
+    theWorld->connect();
     SimTK_TEST(foo->getInput("input1").getAlias() == "baz");
     SimTK_TEST(foo->getInput("input1").getLabel() == "baz");
 
     // List Input, no aliases.
     foo->connectInput_listInput1( bar->getOutput("Output1") );
     foo->connectInput_listInput1( bar->getOutput("Output3") );
+    theWorld->connect();
 
     ASSERT_THROW(OpenSim::Exception, foo->getInput("listInput1").getAlias());
     ASSERT_THROW(OpenSim::Exception, foo->getInput("listInput1").getLabel());
 
     SimTK_TEST(foo->getInput("listInput1").getAlias(0).empty());
-    SimTK_TEST(foo->getInput("listInput1").getLabel(0) == "/world/bar|Output1");
+    SimTK_TEST(foo->getInput("listInput1").getLabel(0) == "/bar|Output1");
 
     SimTK_TEST(foo->getInput("listInput1").getAlias(1).empty());
-    SimTK_TEST(foo->getInput("listInput1").getLabel(1) == "/world/bar|Output3");
+    SimTK_TEST(foo->getInput("listInput1").getLabel(1) == "/bar|Output3");
 
     foo->updInput("listInput1").disconnect();
 
     // List Input, with aliases.
     foo->connectInput_listInput1( bar->getOutput("Output1"), "plugh" );
     foo->connectInput_listInput1( bar->getOutput("Output3"), "thud" );
+    theWorld->connect();
 
     SimTK_TEST(foo->getInput("listInput1").getAlias(0) == "plugh");
     SimTK_TEST(foo->getInput("listInput1").getLabel(0) == "plugh");
@@ -2200,10 +2273,11 @@ int main() {
         SimTK_SUBTEST(testListInputs);
         SimTK_SUBTEST(testListSockets);
         SimTK_SUBTEST(testComponentPathNames);
+        SimTK_SUBTEST(testFindComponent);
         SimTK_SUBTEST(testTraversePathToComponent);
         SimTK_SUBTEST(testGetStateVariableValue);
         SimTK_SUBTEST(testInputOutputConnections);
-        SimTK_SUBTEST(testInputConnecteeNames);
+        SimTK_SUBTEST(testInputConnecteePaths);
         SimTK_SUBTEST(testExceptionsForConnecteeTypeMismatch);
         SimTK_SUBTEST(testExceptionsSocketNameExistsAlready);
         SimTK_SUBTEST(testExceptionsInputNameExistsAlready);

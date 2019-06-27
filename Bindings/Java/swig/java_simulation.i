@@ -18,6 +18,8 @@ using namespace SimTK;
 
 %typemap(out) OpenSim::Joint %{ $result = $1; markAdopted(); %}
 
+%rename OpenSim::OrientationsReference::clone  unused_clone;
+
 %javamethodmodifiers OpenSim::ForceSet::append "private";
 %rename OpenSim::ForceSet::append private_append;
 %typemap(javacode) OpenSim::ForceSet %{
@@ -26,6 +28,8 @@ using namespace SimTK;
        return private_append(aForce);
    }
 %}
+
+%rename OpenSim::PathPointSet::clone unused_clone;
 
 %extend OpenSim::Body {
     void getInertia(Array<double>& rInertia) {

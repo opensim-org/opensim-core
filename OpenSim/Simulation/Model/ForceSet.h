@@ -66,31 +66,19 @@ protected:
     // CONSTRUCTION
     //--------------------------------------------------------------------------
 public:
-    ForceSet();
-    ForceSet(Model& model);
-    ForceSet(Model& model, const std::string &aFileName, bool aUpdateFromXMLNode = true);
-    ForceSet(const ForceSet &aForceSet);
-    virtual ~ForceSet();
+    /** Use Super's constructors. @see ModelComponentSet */
+    using Super::Super;
 
 private:
-    void setNull();
-    void setupSerializedMembers();
     void updateActuators();
     void updateMuscles();
 
-    //--------------------------------------------------------------------------
-    // OPERATORS
-    //--------------------------------------------------------------------------
-public:
-#ifndef SWIG
-    ForceSet& operator=(const ForceSet &aSet);
-#endif
     //--------------------------------------------------------------------------
     // GET AND SET
     //--------------------------------------------------------------------------
 public:
     // Override ModelComponentSet method.
-    void invokeConnectToModel(Model& aModel) override;
+    void extendConnectToModel(Model& aModel) override;
 
     // FORCE
     bool remove(int aIndex) override;

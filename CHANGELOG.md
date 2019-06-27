@@ -6,10 +6,40 @@ request related to the change, then we may provide the commit.
 
 This is not a comprehensive list of changes but rather a hand-curated collection of the more notable ones. For a comprehensive history, see the [OpenSim Core GitHub repo](https://github.com/opensim-org/opensim-core).
 
-**Note**: This document is currently under construction.
+v4.1
+====
+- Added `OrientationsReference` as the frame orientation analog to the location of experimental markers. Enables experimentally measured orientations from wearable sensors (e.g. from IMUs) to be tracked by reference frames in the model. A correspondence between the experimental (IMU frame) orientation column label and that of the virtual frame on the `Model` is expected. The `InverseKinematicsSolver` was extended to simultaneously track the `OrientationsReference` if provided. (PR #2412)
+- Removed the undocumented `bool dumpName` argument from `Object::dump()` and made the method `const` so it can be safely called on `const` objects. (PR #2412)
+- `MarkersReference` convenience constructors were updated to take a const reference to a `MarkerWeightSet` as its second argument. If a `Set` is not empty, then only the markers listed are used as reference signals. That means `InverseKinematicsTool` no longer tracks all experimental markers even those not in the `MarkerWeightSet`. One can quickly track all experimental markers (that have a corresponding model marker) by simply providing an empty `Set`, in which case all markers are assigned the default weight (typically 1.0).
+- Model files from very old versions (pre 1.8.1) are not supported, an exception is thrown rather than fail quietly (issue #2395).
+- Initializing a Component from an existing Component with correct socket connectees yields invalid paths (issue #2418).
 
-v4.0 (in development)
-=====================
+Converting from v4.0 to v4.1
+----------------------------
+- The `OpenSim::Array` constructor is now marked explicit, which prevents
+  accidental implicit conversion to `Array`. If you relied on this implicit
+  conversion, you will need to update your code to use the constructor
+  explicitly.
+
+Bug Fixes
+---------
+- Fixed bug in osimTable2Struct.m for renaming unlabelled markers (PR #2491)
+- Fixed bug that resulted in an exception when reading C3D files without forces. Now, if the C3D doesn't contain markers or forces, an empty table will be returned (PR #2421) 
+- OpenSim no longer supports model file formats predating version 1.8.1 (PR #2498)
+
+Documentation
+-------------
+
+
+Other Changes
+-------------
+- Performance of reading large data files has been significantly improved. A 50MB .sto file would take 10-11 min to read now takes 2-3 seconds. (PR #2399)
+- Added Matlab example script of plotting the Force-length properties of muscles in a models; creating an Actuator file from a model; 
+building and simulating a simple arm model;  using OutputReporters to record and write marker location and coordinate values to file.
+
+
+v4.0
+====
 
 Converting from v3.x to v4.0
 -----------------------------
@@ -96,7 +126,7 @@ Converting from v3.x to v4.0
 - `Manager::setIntegrator(SimTK::Integrator)` has been removed and replaced by
   `Manager::setIntegratorMethod(IntegratorMethod)` which uses an enum and can
   be used by the MATLAB/Python interface. See the method's documentation for
-  examples. Integrator settings are now handled by the Manager through the 
+  examples. Integrator settings are now handled by the Manager through the
   following new functions:
   - setIntegratorAccuracy(double)
   - setIntegratorMinimumStepSize(double)
@@ -135,6 +165,7 @@ Model. (PR #1948)
 - The JointReaction analysis interface has changed in a few ways:
   - "express_in_frame" now takes a `Frame` name. "child" and "parent" keywords are also still accepted, provided that no Frame is named "child" or "parent"
   - If the number of elements in "apply_on_bodies" or "express_in_frame" is neither of length 1 or the same length as indicated by "joint_names", an exception is thrown. This was previously a warning.
+- Updated wrapping properties
 
 
 Composing a Component from other components
@@ -182,6 +213,7 @@ New Classes
 
 - Added OutputReporter as an Analysis so that users can use the existing AnalyzeTool and ForwardTool to extract Output values of interest, without modifications to the GUI. (PR #1991)
 
+
 Removed Classes
 ---------------
 The following classes are no longer supported in OpenSim and are removed in OpenSim 4.0.
@@ -199,6 +231,7 @@ MATLAB interface
 - The configureOpenSim.m function should no longer require administrator
   privileges for most users, and gives more verbose output to assist with
   troubleshooting.
+- New MATLAB examples were added: Hopper-Device and Knee-Reflex.
 
 Python interface
 ----------------
@@ -241,17 +274,13 @@ programmatically in MATLAB or python.
 - The source code for the "From the Ground Up: Building a Passive Dynamic
   Walker Example" was added to this repository.
 - OpenSim no longer looks for the simbody-visualizer using the environment
-  variable `OPENSIM_HOME`.
+  variable `OPENSIM_HOME`. OpenSim uses `PATH` instead.
+- The Thelen2003Muscle now depend on separate components for modeling pennation,
+  and activation dynamics.
 
 Documentation
---------------
+-------------
 - Improved Doxygen layout and fixed several bugs and warnings (various)
 - All mentions of SimTK/Simbody classes in OpenSim's Doxygen now provide links directly to SimTK/Simbody's doxygen.
 - Added a detailed README.md wtith build instructions, as well as guides to contributing and developing (CONTRIBUTING.md).
 - Included GIFs in Doxygen for several commonly used Joint types
-
-STILL NEED TO ADD:
-- Additional changes to Model Component Interface, Iterator (any PRs labeled "New MCI")
-- PR #364
-- PR #370
-- PR #378

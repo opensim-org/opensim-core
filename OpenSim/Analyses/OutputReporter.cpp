@@ -46,10 +46,13 @@ int OutputReporter::begin(const SimTK::State& s)
 
     _tableReporterDouble = new TableReporter_<double>();
     _tableReporterDouble->setName("ReporterDouble");
+    auto& inputDouble = _tableReporterDouble->updInput("inputs");
     _tableReporterVec3 = new TableReporter_<SimTK::Vec3>();
     _tableReporterVec3->setName("ReporterVec3");
+    auto& inputVec3 = _tableReporterVec3->updInput("inputs");
     _tableReporterSpatialVec = new TableReporter_<SimTK::SpatialVec>();
     _tableReporterSpatialVec->setName("ReporterSpatialVec");
+    auto& inputSpatialVec = _tableReporterSpatialVec->updInput("inputs");
 
     _pvtModel->addComponent(_tableReporterDouble.get());
     _pvtModel->addComponent(_tableReporterVec3.get());
@@ -58,31 +61,30 @@ int OutputReporter::begin(const SimTK::State& s)
     _minimumStageToRealize = SimTK::Stage::Time;
 
     for (int i = 0; i < getProperty_output_paths().size(); ++i) {
-        auto outpath = ComponentPath(get_output_paths(i));
-        // assume that Outputs are for the Model
-        string compName = _pvtModel->getAbsolutePathString();
-        // if a a ComponentPath is specified then use the parent path
-        if (outpath.getNumPathLevels()) {
-            compName = outpath.getParentPathString();
+        std::string componentPath;
+        std::string outputName;
+        std::string channelName;
+        std::string alias;
+        AbstractInput::parseConnecteePath(get_output_paths(i),
+                                          componentPath, outputName,
+                                          channelName, alias);
+        // The user supplied a path relative to the model, but that won't be a
+        // valid relative path from the reporters. Form an absolue path.
+        if (componentPath.empty() || componentPath[0] != '/') {
+            componentPath = "/" + componentPath;
         }
-        auto outputName = outpath.getComponentName();
-
-        // In keeping with assumption of Outputs for the Model (Component)
-        const Component* comp = _pvtModel.get();
-
-        // If the ComponentPath has a Component name get that Component
-        if (!compName.empty())
-            comp = &_pvtModel->getComponent(compName);
-
-        auto& out = comp->getOutput(outputName);
+        const auto path = AbstractInput::composeConnecteePath(
+                componentPath, outputName, channelName, alias);
+        const auto& comp = _pvtModel->getComponent(componentPath);
+        auto& out = comp.getOutput(outputName);
         if (out.getTypeName() == "double") {
-            _tableReporterDouble->addToReport(out);
+            inputDouble.appendConnecteePath(path);
         }
         else if (out.getTypeName() == "Vec3") {
-            _tableReporterVec3->addToReport(out);
+            inputVec3.appendConnecteePath(path);
         }
         else if (out.getTypeName() == "SpatialVec") {
-            _tableReporterSpatialVec->addToReport(out);
+            inputSpatialVec.appendConnecteePath(path);
         }
         else {
             cout << "Output '" << out.getPathName() << "' of type "

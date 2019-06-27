@@ -348,17 +348,28 @@ void populate_doublePendulumPrimitives(SimTK::Array_<DecorativeGeometry>& stdPri
         .setIndexOnBody(0).setScaleFactors(Vec3{ 1, 1.5, 2 }).setOpacity(1)
         .setRepresentation(SimTK::DecorativeGeometry::DrawSurface));
 
-    // Two more offset frames
+    // Two more offset frames and 2 for the Joint
+    stdPrimitives.push_back(
+        DecorativeFrame(1).setBodyId(0).setColor(SimTK::White)
+        .setIndexOnBody(0).setScale(0.2).setOpacity(1)
+        .setRepresentation(SimTK::DecorativeGeometry::DrawSurface)
+        .setTransform(SimTK::Transform(Vec3{ 0., 0, 0 })));
     stdPrimitives.push_back(
         DecorativeFrame(1).setBodyId(1).setColor(SimTK::White)
         .setIndexOnBody(0).setScale(0.2).setOpacity(1)
         .setRepresentation(SimTK::DecorativeGeometry::DrawSurface)
         .setTransform(SimTK::Transform(Vec3{ 0., .5, 0 })));
     stdPrimitives.push_back(
+        DecorativeFrame(1).setBodyId(1).setColor(SimTK::White)
+        .setIndexOnBody(0).setScale(0.2).setOpacity(1)
+        .setRepresentation(SimTK::DecorativeGeometry::DrawSurface)
+        .setTransform(SimTK::Transform(Vec3{ 0., 0, 0 })));
+    stdPrimitives.push_back(
         DecorativeFrame(1).setBodyId(2).setColor(SimTK::White)
         .setIndexOnBody(0).setScale(0.2).setOpacity(1)
         .setRepresentation(SimTK::DecorativeGeometry::DrawSurface)
         .setTransform(SimTK::Transform(Vec3{ 0., .5, 0 })));
+
 }
 
 void populate_composedTransformPrimitives(SimTK::Array_<DecorativeGeometry>& stdPrimitives) {

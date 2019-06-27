@@ -55,8 +55,8 @@
 
 namespace OpenSim {
 
+class Model;
 class ModelDisplayHints;
-
 
 //==============================================================================
 /// Component Exceptions
@@ -91,7 +91,7 @@ public:
     }
 };
 
-class ComponentNotFoundOnSpecifiedPath : public Exception {
+class ComponentNotFoundOnSpecifiedPath : public ComponentNotFound {
 public:
     ComponentNotFoundOnSpecifiedPath(const std::string& file,
         size_t line,
@@ -99,7 +99,7 @@ public:
         const std::string& toFindName,
         const std::string& toFindClassName,
         const std::string& thisName) :
-        Exception(file, line, func) {
+        ComponentNotFound(file, line, func) {
         std::string msg = "Component '" + thisName;
         msg += "' could not find '" + toFindName;
         msg += "' of type " + toFindClassName + ". ";
@@ -557,6 +557,10 @@ public:
     * Component has not added itself to the System.  */
     bool hasSystem() const { return !_system.empty(); }
 
+    /** Does the provided component already exist anywhere in the ownership
+     * tree (not just subcomponents of this component)? */
+    bool isComponentInOwnershipTree(const Component* component) const;
+
     /**
     * Add a Component (as a subcomponent) of this component.
     * This component takes ownership of the subcomponent and it will be
@@ -684,9 +688,13 @@ public:
      * need the path as a string. */
     ComponentPath getAbsolutePath() const;
 
-    /** Get the relative pathname of this Component with respect to another
+    /** Get the relative path of this Component with respect to another
+     * Component, as a string. */
+    std::string getRelativePathString(const Component& wrt) const;
+
+    /** Get the relative path of this Component with respect to another
      * Component. */
-    std::string getRelativePathName(const Component& wrt) const;
+    ComponentPath getRelativePath(const Component& wrt) const;
 
     /** Query if there is a component (of any type) at the specified
      * path name. For example,
@@ -949,13 +957,13 @@ public:
         if (it != _socketsTable.end()) {
             // The following allows one to use a Socket immediately after
             // copying the component;
-            // e.g., myComponent.clone().getSocket("a").getConnecteeName().
+            // e.g., myComponent.clone().getSocket("a").getConnecteePath().
             // Since we use the default copy constructor for Component,
             // the copied AbstractSocket cannot know its new owner
             // immediately after copying.
             if (!it->second->hasOwner()) {
                 // The `this` pointer must be non-const because the Socket
-                // will want to be able to modify the connectee_name property.
+                // will want to be able to modify the connectee path property.
                 const_cast<AbstractSocket*>(it->second.get())->setOwner(
                         const_cast<Self&>(*this));
             }
@@ -1070,7 +1078,7 @@ public:
         if (it != _inputsTable.end()) {
             // The following allows one to use an Input immediately after
             // copying the component;
-            // e.g., myComponent.clone().getInput("a").getConnecteeName().
+            // e.g., myComponent.clone().getInput("a").getConnecteePath().
             // Since we use the default copy constructor for Component,
             // the copied AbstractSocket (base class of AbstractInput)
             // cannot know its new owner immediately after copying.
@@ -1577,11 +1585,11 @@ public:
     void printSubcomponentInfo() const;
     
     /** List all the Sockets of this component and whether or not they are 
-    connected. Also list the connectee names for sockets that are connected. */
+    connected. Also list the connectee paths for sockets that are connected. */
     void printSocketInfo() const;
 
     /** List all the inputs of this component and whether or not they are 
-    connected. Also list the (desired) connectee names for the inputs.       */
+    connected. Also list the (desired) connectee paths for the inputs.       */
     void printInputInfo() const;
 
     template<typename C>
@@ -1793,12 +1801,12 @@ protected:
     If you override this method, be sure to invoke the base class method first, 
     using code like this:
     @code
-    void MyComponent::extendConnect(Component& root) {
-        Super::extendConnect(root); // invoke parent class method
+    void MyComponent::extendFinalizeConnections(Component& root) {
+        Super::extendFinalizeConnections(root); // invoke parent class method
         // ... your code goes here
     }
     @endcode   */
-    virtual void extendConnect(Component& root) {};
+    virtual void extendFinalizeConnections(Component& root) {};
 
     /** Build the tree of Components from this component through its descendants.
     This method is invoked whenever a ComponentList<C> is requested. Note that
@@ -2193,37 +2201,44 @@ protected:
     // End of System Creation and Access Methods.
     //@} 
 
-#if defined(__clang__)
-    #pragma clang diagnostic push
-    #pragma clang diagnostic ignored "-Wunsupported-friend"
-#endif
-    template<class C>
-    friend void Socket<C>::findAndConnect(const Component& root);
-    template<class T>
-    friend void Input<T>::findAndConnect(const Component& root);
-#if defined(__clang__)
-    #pragma clang diagnostic pop
-#endif
+public:
 
-    /** Utility method to find a component in the list of sub components of
-    this component and any of their sub components, etc..., by name or state
-    variable name. The search can be sped up considerably if the "path" or even
-    partial path name is known. For example name = "forearm/elbow/elbow_flexion"
-    will find the Coordinate component of the elbow joint that connects the
-    forearm body in linear time (linear search for name at each component level.
-    Whereas supplying "elbow_flexion" requires a tree search. Returns NULL if
-    Component of that specified name cannot be found. If the name provided is a
-    component's state variable name and a StateVariable pointer is provided, the
-    pointer will be set to the StateVariable object that was found. This
-    facilitates the getting and setting of StateVariables by name. 
+    /** Find a Component to which this Component is an ancestor---in other
+    words, a Component that is directly owned by this Component or is owned
+    by one of its sub-components, sub-sub-components, etc. The Component can
+    be found by type (by specifying a template argument) and either path or
+    name.
+
+    Here is an example of searching for a component of any type with the name
+    'elbow_flexion':
+    @code{.cpp}
+    if (const Component* found =
+            model.findComponent(ComponentPath("elbow_flexion"))) {
+        std::cout << found.getName() << std::endl;
+    }
+    @endcode
+
+    Here, we require that 'elbow_flexion' is of type Coordinate.
+    @code{.cpp}
+    if (const Coordinate* found =
+            model.findComponent<Coordinate>(ComponentPath("elbow_flexion"))) {
+        std::cout << "Coordinate " << found.getName() << std::endl;
+    }
+    @endcode
+
+    The search can be sped up considerably if the path or even partial path
+    name is known. For example, "forearm/elbow/elbow_flexion" will find
+    the Coordinate component of the elbow joint that connects the forearm body
+    in linear time (linear search for name at each component level). Whereas
+    supplying "elbow_flexion" requires a tree search. Returns nullptr (None in
+    Python, empty array in Matlab) if Component of that specified name cannot
+    be found.
         
-    NOTE: If the component name or the state variable name is ambiguous, 
-    an exception is thrown. To disambiguate use the absolute path provided
-    by owning component(s). */
-#ifndef SWIG // StateVariable is protected.
+    NOTE: If the component name is ambiguous, an exception is thrown. To
+    disambiguate, more information must be provided, such as the template
+    argument to specify the type and/or a path rather than just the name. */
     template<class C = Component>
-    const C* findComponent(const ComponentPath& pathToFind,
-                           const StateVariable** rsv = nullptr) const {
+    const C* findComponent(const ComponentPath& pathToFind) const {
         const std::string name = pathToFind.toString();
         std::string msg = getConcreteClassName() + "'" + getName() +
                           "'::findComponent() ";
@@ -2288,15 +2303,6 @@ protected:
             return foundCs[0];
         }
 
-        std::map<std::string, StateVariableInfo>::const_iterator it;
-        it = _namedStateVariableInfo.find(name);
-        if (it != _namedStateVariableInfo.end()) {
-            if (rsv) {
-                *rsv = it->second.stateVariable.get();
-            }
-            return dynamic_cast<const C*>(this);
-        }
-
         // Only error cases remain
         // too many components of the right type with the same name
         if (foundCs.size() > 1) {
@@ -2308,7 +2314,15 @@ protected:
         // Not found
         return nullptr;
     }
-#endif
+
+    /** Same as findComponent(const ComponentPath&), but accepting a string (a
+    path or just a name) as input. */
+    template<class C = Component>
+    const C* findComponent(const std::string& pathToFind) const {
+        return findComponent<C>(ComponentPath(pathToFind));
+    }
+
+protected:
 
     template<class C>
     const C* traversePathToComponent(ComponentPath path) const
@@ -2321,12 +2335,7 @@ protected:
         size_t iPathEltStart = 0u;
         const Component* current = this;
         if (path.isAbsolute()) {
-            while (current->hasOwner()) current = &current->getOwner();
-            if (path.getNumPathLevels() == 0 ||
-                    current->getName() != path.getSubcomponentNameAtLevel(0))
-                return nullptr;
-            // Skip over the root name.
-            iPathEltStart = 1u;
+            current = &current->getRoot();
         } else {
             while (iPathEltStart < path.getNumPathLevels() &&
                     path.getSubcomponentNameAtLevel(iPathEltStart) == "..") {
@@ -2390,6 +2399,10 @@ public:
      * (2) has not been added to another component */
     bool hasOwner() const;
 
+    /** Obtain the root %Component, which is this component if it is orphaned.
+     */
+    const Component& getRoot() const;
+
 protected:
     /** %Set this %Component's reference to its owning %Component */
     void setOwner(const Component& owner);
@@ -2418,7 +2431,7 @@ protected:
     * type and enables the Component to automatically traverse its dependencies
     * and provide a meaningful message if the provided Component is
     * incompatible or non-existent. This function also creates a Property in
-    * this component to store the connectee name for this socket; the
+    * this component to store the connectee path for this socket; the
     * propertyComment argument is the comment to use for that Property. */
     template <typename T>
     PropertyIndex constructSocket(const std::string& name,
@@ -2433,7 +2446,7 @@ protected:
         // create a custom-copy-ctor version of all of this?
         // TODO property type should be ComponentPath or something like that.
         PropertyIndex propIndex = this->template addProperty<std::string>(
-                "socket_" + name + "_connectee_name", propertyComment, "");
+                "socket_" + name , propertyComment, "");
         // We must create the Property first: the Socket needs the property's
         // index in order to access the property later on.
         _socketsTable[name].reset(
@@ -2550,7 +2563,7 @@ protected:
      * dependsOnStage is above the Input's requiredAtStage, an Exception is
      * thrown because the output cannot satisfy the Input's requirement. 
      * This function also creates a Property in this component to store the
-     * connectee names for this input; the
+     * connectee paths for this input; the
      * propertyComment argument is the comment to use for that Property. */
     template <typename T>
     PropertyIndex constructInput(const std::string& name, bool isList,
@@ -2567,11 +2580,11 @@ protected:
         // TODO property type should be OutputPath or ChannelPath.
         if (isList) {
             propIndex = this->template addListProperty<std::string>(
-                    "input_" + name + "_connectee_names", propertyComment,
+                    "input_" + name, propertyComment,
                     0, std::numeric_limits<int>::max());
         } else {
             propIndex = this->template addProperty<std::string>(
-                    "input_" + name + "_connectee_name", propertyComment, "");
+                    "input_" + name, propertyComment, "");
         }
         // We must create the Property first: the Input needs the property's
         // index in order to access the property later on.
@@ -2580,6 +2593,11 @@ protected:
         return propIndex;
     }
     /// @}
+
+    /// For internal use. Update absolute connectee paths in all sockets and
+    /// inputs in the subcomponent by prepending the absolute path of the
+    /// subcomponent. To be used when adding subcomponent to another component.
+    static void prependComponentPathToConnecteePath(Component& subcomponent);
 
 private:
 
@@ -2597,7 +2615,7 @@ private:
     void componentsFinalizeFromProperties() const;
 
     /// Invoke connect() on the (sub)components of this Component.
-    void componentsConnect(Component& root);
+    void componentsFinalizeConnections(Component& root);
 
     /// Base Component must create underlying resources in computational System.
     void baseAddToSystem(SimTK::MultibodySystem& system) const;
@@ -2641,7 +2659,7 @@ private:
     // managed by this Component.
     int getNumStateVariablesAddedByComponent() const 
     {   return (int)_namedStateVariableInfo.size(); }
-    Array<std::string> getStateVariablesNamesAddedByComponent() const;
+    Array<std::string> getStateVariableNamesAddedByComponent() const;
 
     const SimTK::DefaultSystemSubsystem& getDefaultSubsystem() const
         {   return getSystem().getDefaultSubsystem(); }
@@ -2654,6 +2672,8 @@ private:
 
     // Reset by clearing underlying system indices.
     void reset();
+
+    void warnBeforePrint() const override;
 
 protected:
     //Derived Components must create concrete StateVariables to expose their state 
@@ -2727,24 +2747,24 @@ protected:
     /// Helper method to enable Component makers to specify the order of their
     /// subcomponents to be added to the System during addToSystem(). It is
     /// highly unlikely that you will need to reorder the subcomponents of your
-    /// custom component. This ability is primarily intended for Model (and 
+    /// custom component. This ability is primarily intended for Model (and
     /// other top-level) components that have the responsibility of creating a
-    /// valid SimTK::MultibodySystem. MultibodySystem (Simbody) elements such
-    /// as MobilizedBodies must be added sequentially to form a Multibody tree.
+    /// valid SimTK::MultibodySystem. MultibodySystem (Simbody) elements such as
+    /// MobilizedBodies must be added sequentially to form a Multibody tree.
     /// SimTK::Constraints and SimTK::Forces must be applied to MobilizedBodies
     /// that are already present in the MultibodySystem. The Model component
     /// handles this order for you and should handle user-defined Components
     /// without any issues. You should rarely need to use this method yourself.
-    /// If needed, use this method in extendConnect() of your Component (or
-    /// within your extendConnectToModel() for ModelComponents) to set the
-    /// order of your subcomponents. For example, Model orders subcomponents
-    /// according to the Multibody tree and adds bodies and joints in order
-    /// starting from Ground and growing outward.
-    /// If the subcomponent already appears in the ordered list setting it
-    /// later in the list has no effect. The list remains unique.
-    /// NOTE: If you do need to set the order of your subcomponents, you must
-    /// do so for all your immediate subcomponents, otherwise those
-    /// components not in the ordered list will not be added to the System.
+    /// If needed, use this method in extendFinalizeConnections() of your
+    /// Component (or within your extendConnectToModel() for ModelComponents) to
+    /// set the order of your subcomponents. For example, Model orders
+    /// subcomponents according to the Multibody tree and adds bodies and joints
+    /// in order starting from Ground and growing outward. If the subcomponent
+    /// already appears in the ordered list setting it later in the list has no
+    /// effect. The list remains unique. NOTE: If you do need to set the order
+    /// of your subcomponents, you must do so for all your immediate
+    /// subcomponents, otherwise those components not in the ordered list will
+    /// not be added to the System.
     void setNextSubcomponentInSystem(const Component& sub) const;
 
     /// resetSubcomponentOrder clears this Component's list of ordered
@@ -2999,38 +3019,69 @@ void ComponentListIterator<T>::advanceToNextValidComponent() {
     }
     return;
 }
+    
+
+class ConnecteeNotSpecified : public Exception {
+public:
+    ConnecteeNotSpecified(const std::string& file,
+                          size_t line,
+                          const std::string& func,
+                          const AbstractSocket& socket,
+                          const Component& owner) :
+    Exception(file, line, func) {
+        std::string msg = "Connectee for Socket '" + socket.getName() +
+                "' of type " + socket.getConnecteeTypeName() + " in " +
+                owner.getConcreteClassName() + " at " +
+                owner.getAbsolutePathString() + " is unspecified. "
+                "If this model was built programmatically, perhaps "
+                "finalizeConnections() was not called before "
+                "printing.";
+        addMessage(msg);
+    }
+};
+
 
 
 template<class C>
-void Socket<C>::findAndConnect(const Component& root) {
- 
-    ComponentPath path(getConnecteeName());
-    const C* comp = nullptr;
+void Socket<C>::finalizeConnection(const Component& root) {
 
-    try {
+    // If the reference to the connectee is set, use that. Otherwise, use the
+    // connectee path property.
+    if (isConnected()) {
+        const auto& comp = *connectee;
+        const auto& rootOfConnectee = comp.getRoot();
+        const auto& myRoot = getOwner().getRoot();
+        OPENSIM_THROW_IF(&myRoot != &rootOfConnectee, Exception,
+            "Socket<" + getConnecteeTypeName() + "> '" + getName() +
+            "' in " + getOwner().getConcreteClassName() + " at " +
+            getOwner().getAbsolutePathString() + " cannot connect to " +
+            comp.getConcreteClassName() + " at " +
+            comp.getAbsolutePathString() + ": components do not have the same "
+            "root component. Did you intend to add '" +
+            rootOfConnectee.getName() + "' to '" + myRoot.getName() + "'?");
+
+        ComponentPath connecteePath = connectee->getRelativePath(getOwner());
+        // If the relative path starts with ".." then use an absolute path
+        // instead.
+        if (connecteePath.getNumPathLevels() > 1 &&
+                connecteePath.getSubcomponentNameAtLevel(0) == "..")
+            connecteePath = connectee->getAbsolutePath();
+        updConnecteePathProp().setValue(0, connecteePath.toString());
+        
+    } else {
+        const auto connecteePath = getConnecteePath();
+        OPENSIM_THROW_IF(connecteePath.empty(), ConnecteeNotSpecified,
+                        *this, getOwner());
+
+        ComponentPath path(connecteePath);
+        const C* comp = nullptr;
         if (path.isAbsolute()) {
-            comp =  &root.template getComponent<C>(path);
+            comp = &root.template getComponent<C>(path);
+        } else {
+            comp = &getOwner().template getComponent<C>(path);
         }
-        else {
-            comp =  &getOwner().template getComponent<C>(path);
-        }
+        connectInternal(*comp);
     }
-    catch (const ComponentNotFoundOnSpecifiedPath& ex) {
-        if (Object::getDebugLevel() > 0) {
-            // TODO once we fix how connections are established when building
-            // models programmatically, we should show this warning even for
-            // debug level 0.
-            std::cout << ex.getMessage() << std::endl;
-        }
-        comp =  root.template findComponent<C>(path);
-    }
-    if (comp)
-        connect(*comp);
-    else
-        OPENSIM_THROW(ComponentNotFoundOnSpecifiedPath,
-            path.toString(),
-            C::getClassName(),
-            getName() );
 }
 
 template<class T>
@@ -3045,142 +3096,114 @@ void Input<T>::connect(const AbstractOutput& output,
             << "' of type " << output.getTypeName() << ".";
         OPENSIM_THROW(Exception, msg.str());
     }
-    
-    if (!isListSocket() && outT->isListOutput()) {
+
+    if (!isListSocket() && outT->getChannels().size() > 1) {
         OPENSIM_THROW(Exception,
             "Non-list input '" + getName() +
-            "' cannot connect to list output '" + output.getPathName() + ".");
+            "' cannot connect to output '" + output.getPathName() +
+            " with more than 1 channel");
     }
 
     // For a non-list socket, there will only be one channel.
     for (const auto& chan : outT->getChannels()) {
-    
-        // Record the number of pre-existing satisfied connections...
-        const size_t numPreexistingSatisfiedConnections(_connectees.size());
-        // ...which happens to be the index of this new connectee.
-        const size_t idxThisConnectee = numPreexistingSatisfiedConnections;
-        _connectees.push_back(
-            SimTK::ReferencePtr<const Channel>(&chan.second) );
-
-        // Update the connectee name as
-        // <RelOwnerPath>/<Output><:Channel><(annotation)>
-        ComponentPath path(output.getOwner().getRelativePathName(getOwner()));
-
-        auto pathStr =
-            composeConnecteeName(path.toString(),
-                                 chan.second.getOutput().getName(),
-                                 chan.second.getOutput().isListOutput() ?
-                                 chan.second.getChannelName() :
-                                 "",
-                                 alias);
-    
-        // set the connectee name so that the connection can be
-        // serialized
-        const unsigned numDesiredConnections = getNumConnectees();
-        if (idxThisConnectee < numDesiredConnections)
-            setConnecteeName(pathStr, unsigned(idxThisConnectee));
-        else
-            appendConnecteeName(pathStr);
-
-        // Use the provided alias for all channels.
-        _aliases.push_back(alias);
+        registerChannel(chan.second, alias);
     }
 }
 
 template<class T>
 void Input<T>::connect(const AbstractChannel& channel,
                        const std::string& alias) {
-    const auto* chanT = dynamic_cast<const Channel*>(&channel);
-    if (!chanT) {
-        std::stringstream msg;
-        msg << "Type mismatch between Input and Output: Input '" << getName()
-            << "' of type " << getConnecteeTypeName()
-            << " cannot connect to Output (channel) '" << channel.getPathName()
-            << "' of type " << channel.getTypeName() << ".";
-        OPENSIM_THROW(Exception, msg.str());
-    }
-    
-    if (!isListSocket()) {
-        // Remove the existing connectee (if it exists).
-        disconnect();
-    }
-    
-    // Record the number of pre-existing satisfied connections...
-    const size_t numPreexistingSatisfiedConnections(_connectees.size());
-    // ...which happens to be the index of this new connectee.
-    const size_t idxThisConnectee{ numPreexistingSatisfiedConnections };
-    _connectees.push_back(SimTK::ReferencePtr<const Channel>(chanT));
-    
-    // Update the connectee name as
-    // <RelOwnerPath>/<Output><:Channel><(annotation)>
-    ComponentPath
-        path(chanT->getOutput().getOwner().getRelativePathName(getOwner()));
-
-    auto pathStr = composeConnecteeName(path.toString(),
-                                        chanT->getOutput().getName(),
-                                        chanT->getOutput().isListOutput() ?
-                                        chanT->getChannelName() :
-                                        "",
-                                        alias);
-    
-    // Set the connectee name so the connection can be serialized.
-    const unsigned numDesiredConnections = getNumConnectees();
-
-    if (idxThisConnectee < numDesiredConnections)
-        // satisifed <= desired
-        setConnecteeName(pathStr, unsigned(idxThisConnectee));
-    else
-        appendConnecteeName(pathStr);
-    
-    // Store the provided alias.
-    _aliases.push_back(alias);
+    registerChannel(channel, alias);
 }
 
 template<class T>
-void Input<T>::findAndConnect(const Component& root) {
-    std::string compPathStr, outputName, channelName, alias;
-    for (unsigned ix = 0; ix < getNumConnectees(); ++ix) {
-        parseConnecteeName(getConnecteeName(ix),
-                           compPathStr, outputName, channelName, alias);
-        ComponentPath compPath(compPathStr);
-        const AbstractOutput* output = nullptr;
+void Input<T>::finalizeConnection(const Component& root) {
 
-        if (compPath.isAbsolute()) { //absolute path string
-            if (compPathStr.empty()) {
-                output = &root.getOutput(outputName);
-            }
-            else {
-                output = &root.getComponent(compPathStr).getOutput(outputName);
-            }
+    _connectees.clear();
+    _aliases.clear();
+    if (!_registeredChannels.empty()) {
+        clearConnecteePath();
+        OPENSIM_THROW_IF(!isListSocket() && getChannels().size() > 1,
+                         Exception,
+                         "Cannot connect single-value input to multiple channels.");
+        for (const auto& reg : _registeredChannels) {
+            const Output<T>& output = std::get<0>(reg).getRef();
+            std::string channelName = std::get<1>(reg);
+            const AbstractChannel& channel = output.getChannel(channelName);
+            const std::string& alias = std::get<2>(reg);
+            connectInternal(channel, std::get<2>(reg));
         }
 
-        else { // relative path string
-            const Component* comp = nullptr;
-            if (compPathStr.empty()) {
-                comp = &getOwner();
-            }
-            else {
-                try {
-                    comp = &getOwner().getComponent(compPathStr);
-                } catch (const ComponentNotFoundOnSpecifiedPath& ex) {
-                    // If we cannot find the component at the specified path,
-                    // look for the component anywhere in the model.
-                    if (Object::getDebugLevel() > 0) {
-                        // TODO once we fix how connections are established
-                        // when building models programmatically, we should
-                        // show this warning even for debug level 0.
-                        std::cout << ex.getMessage() << std::endl;
-                    }
-                    comp = root.findComponent(compPath);
+        int i = -1;
+        for (const auto& chan : getChannels()) {
+
+            const auto& rootOfConnectee =
+                    chan->getOutput().getOwner().getRoot();
+            const auto& myRoot = getOwner().getRoot();
+            OPENSIM_THROW_IF(&myRoot != &rootOfConnectee, Exception,
+                "Input<" + getConnecteeTypeName() + "> '" + getName() +
+                "' in " + getOwner().getConcreteClassName() + " at " +
+                getOwner().getAbsolutePathString() + " cannot connect to " +
+                "Channel " + chan->getPathName() + ": components do not have "
+                "the same root component. Did you intend to add '" +
+                rootOfConnectee.getName() + "' to '" + myRoot.getName() + "'?");
+
+            ++i;
+            // Update the connectee path as
+            // <OwnerPath>/<Output><:Channel><(annotation)>
+            const auto& outputOwner = chan->getOutput().getOwner();
+            ComponentPath path = outputOwner.getRelativePath(getOwner());
+            // If the relative path starts with ".." then use an absolute path
+            // instead.
+            if (path.getNumPathLevels() > 1 &&
+                    path.getSubcomponentNameAtLevel(0) == "..")
+                path = outputOwner.getAbsolutePath();
+
+            auto pathStr = composeConnecteePath(path.toString(),
+                                                chan->getOutput().getName(),
+                                                chan->getOutput().isListOutput()
+                                                ?
+                                                chan->getChannelName() :
+                                                "",
+                                                _aliases[i]);
+
+            if (isListSocket())
+                updConnecteePathProp().appendValue(pathStr);
+            else
+                updConnecteePathProp().setValue(pathStr);
+        }
+    } else {
+        if (!isListSocket() && getConnecteePath().empty()) return;
+        std::string compPathStr, outputName, channelName, alias;
+        for (unsigned ix = 0; ix < getNumConnectees(); ++ix) {
+            parseConnecteePath(getConnecteePath(ix),
+                               compPathStr, outputName, channelName, alias);
+            ComponentPath compPath(compPathStr);
+            const AbstractOutput* output = nullptr;
+            
+            if (compPath.isAbsolute()) { //absolute path string
+                if (compPathStr.empty()) {
+                    output = &root.getOutput(outputName);
+                } else {
+                    output = &root.getComponent(compPathStr).getOutput(
+                            outputName);
                 }
+            } else { // relative path string
+                const Component* comp = nullptr;
+                if (compPathStr.empty()) {
+                    comp = &getOwner();
+                } else {
+                    comp = &getOwner().getComponent(compPathStr);
+                }
+                // comp should never be null at this point.
+                OPENSIM_THROW_IF(!comp, Exception, "Internal error: "
+                                 "could not find component '" +
+                                 compPathStr + ".");
+                output = &comp->getOutput(outputName);
             }
-            // comp should never be null at this point.
-            OPENSIM_THROW_IF(!comp, Exception, "Internal error: "
-                             "could not find component '" + compPathStr + ".");
-            output = &comp->getOutput(outputName);
+            const auto& channel = output->getChannel(channelName);
+            connectInternal(channel, alias);
         }
-        const auto& channel = output->getChannel(channelName);
-        connect(channel, alias);
     }
 }
 

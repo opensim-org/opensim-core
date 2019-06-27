@@ -47,6 +47,8 @@ void testModelFinalizePropertiesAndConnections()
 {
         Model model("arm26.osim");
 
+        model.printSubcomponentInfo();
+
         // all subcomponents are accounted for since Model constructor invokes
         // finalizeFromProperties().
         ASSERT(model.countNumComponents() > 0);
@@ -108,14 +110,14 @@ void testModelFinalizePropertiesAndConnections()
         // Test for the effects of calling finalizeConnections() on the model
         // after initSystem() has been called.
         // In this case, there are no changes to the connections to be finalized.
-        model.finalizeConnections(model);
+        model.finalizeConnections();
 
         // verify that finalizeConnections() does not wipe out the underlying 
         // System when there are no changes to the connections
         auto& sys = model.getSystem();
 
         auto elbowInHumerus = new PhysicalOffsetFrame("elbow_in_humerus",
-            model.getComponent<Body>("r_humerus"),
+            model.getComponent<Body>("./bodyset/r_humerus"),
             SimTK::Transform(SimTK::Vec3(0, -0.33, 0)) );
 
         model.addComponent(elbowInHumerus);
@@ -125,19 +127,19 @@ void testModelFinalizePropertiesAndConnections()
         state = model.initSystem();
 
         // update the elbow Joint and connect its socket to the new frame
-        Joint& elbow = model.updComponent<Joint>("r_elbow");
+        Joint& elbow = model.updComponent<Joint>("./jointset/r_elbow");
         elbow.connectSocket_parent_frame(*elbowInHumerus);
 
         // satisfy the new connections in the model
-        model.finalizeConnections(model);
+        model.finalizeConnections();
 
         // now finalizing the connections will invalidate the System because
         // a Component (the elbow Joint and its connection) was updated
         ASSERT_THROW(ComponentHasNoSystem, model.getSystem());
 
         // verify the new connection was made
-        ASSERT(model.getComponent<Joint>("r_elbow").getParentFrame().getName()
-                == "elbow_in_humerus");
+        ASSERT(model.getComponent<Joint>("./jointset/r_elbow")
+            .getParentFrame().getName() == "elbow_in_humerus");
 }
 
 void testModelTopologyErrors()
@@ -148,7 +150,7 @@ void testModelTopologyErrors()
     // connect the shoulder joint from torso to ground instead of r_humerus
     // this is an invalid tree since the underlying PhysicalFrame in both
     // cases is ground.
-    Joint& shoulder = model.updComponent<Joint>("r_shoulder");
+    Joint& shoulder = model.updComponent<Joint>("./jointset/r_shoulder");
     const PhysicalFrame& shoulderOnHumerus = shoulder.getChildFrame();
     shoulder.connectSocket_child_frame(model.getGround());
 
@@ -161,13 +163,13 @@ void testModelTopologyErrors()
 
     // create and offset for the elbow joint in the humerus
     auto elbowInHumerus = new PhysicalOffsetFrame("elbow_in_humerus",
-        model.getComponent<Body>("r_humerus"),
+        model.getComponent<Body>("./bodyset/r_humerus"),
         SimTK::Transform(SimTK::Vec3(0, -0.33, 0)));
 
     model.addComponent(elbowInHumerus);
 
     // update the elbow to connect to the elbow in the humerus frame
-    Joint& elbow = model.updComponent<Joint>("r_elbow");
+    Joint& elbow = model.updComponent<Joint>("./jointset/r_elbow");
     const PhysicalFrame& elbowOnUlna = elbow.getChildFrame();
     elbow.connectSocket_child_frame(*elbowInHumerus);
 
@@ -191,9 +193,9 @@ void testModelTopologyErrors()
 
 
     Model degenerate;
-    auto frame1 = new PhysicalOffsetFrame("frame1", model.getGround(),
+    auto frame1 = new PhysicalOffsetFrame("frame1", degenerate.getGround(),
         SimTK::Transform(SimTK::Vec3(0, -0.1, 0)));
-    auto frame2 = new PhysicalOffsetFrame("frame2", model.getGround(),
+    auto frame2 = new PhysicalOffsetFrame("frame2", degenerate.getGround(),
         SimTK::Transform(SimTK::Vec3(0, 0.2, 0)));
 
     degenerate.addComponent(frame1);
@@ -208,7 +210,7 @@ void testModelTopologyErrors()
     // Expose infinite recursion in the case that Joint explicitly invokes
     // finalizeConnections on its parent and child frames AND the Joint itself
     // is a subcomponent of either the parent or child frame. This test is why
-    //  the Joint cannot resolve whether two frames have the same base  frame.
+    // the Joint cannot resolve whether two frames have the same base frame.
     frame1->addComponent(joint1);
     
     // Parent and child frames of a Joint cannot be the same frame
@@ -225,7 +227,3 @@ void testModelTopologyErrors()
 
     ASSERT_THROW(JointFramesHaveSameBaseFrame, degenerate.initSystem());
 }
-
-
-
-

@@ -44,7 +44,7 @@ C3DFileAdapter::clone() const {
 }
 
 C3DFileAdapter::Tables
-C3DFileAdapter::read(const std::string& fileName, ForceLocation wrt)
+C3DFileAdapter::readFile(const std::string& fileName, ForceLocation wrt)
 {
     C3DFileAdapter c3dreader{};
     c3dreader.setLocationForForceExpression(wrt);
@@ -136,25 +136,32 @@ C3DFileAdapter::extendRead(const std::string& fileName) const {
         }
 
         // Create the data
-        auto& marker_table = *new 
-            TimeSeriesTableVec3(marker_times, marker_matrix, marker_labels);
+        auto marker_table = 
+            std::make_shared<TimeSeriesTableVec3>(marker_times, 
+                                                  marker_matrix, 
+                                                  marker_labels);
 
-        marker_table.
+        marker_table->
             updTableMetaData().
             setValueForKey("DataRate",
                 std::to_string(acquisition->GetPointFrequency()));
 
-        marker_table.
+        marker_table->
             updTableMetaData().
             setValueForKey("Units",
                 acquisition->GetPointUnit());
 
-        marker_table.updTableMetaData().setValueForKey("events", event_table);
+        marker_table->updTableMetaData().setValueForKey("events", event_table);
 
-        tables.emplace(_markers,
-            std::shared_ptr<TimeSeriesTableVec3>(&marker_table));
+        tables.emplace(_markers, marker_table);
     }
-
+    else { // insert empty table
+        std::vector<double> emptyTimes;
+        std::vector<std::string> emptyLabels;
+        SimTK::Matrix_<SimTK::Vec3> noData;
+        auto emptyMarkersTable = std::make_shared<TimeSeriesTableVec3>(emptyTimes, noData, emptyLabels);
+        tables.emplace(_markers, emptyMarkersTable);
+    }
     // This is probably the right way to get the raw forces data from force 
     // platforms. Extract the collection of force platforms.
     auto force_platforms_extractor = btk::ForcePlatformsExtractor::New();
@@ -294,6 +301,13 @@ C3DFileAdapter::extendRead(const std::string& fileName) const {
             std::shared_ptr<TimeSeriesTableVec3>(&force_table));
 
         force_table.updTableMetaData().setValueForKey("events", event_table);
+    }
+    else { // insert empty table
+        std::vector<double> emptyTimes;
+        std::vector<std::string> emptyLabels;
+        SimTK::Matrix_<SimTK::Vec3> noData;
+        auto emptyforcesTable = std::make_shared<TimeSeriesTableVec3>(emptyTimes, noData, emptyLabels);
+        tables.emplace(_forces, emptyforcesTable);
     }
 
     return tables;

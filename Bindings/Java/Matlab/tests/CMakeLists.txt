@@ -63,6 +63,9 @@ add_custom_target(RunMatlabTests
     COMMAND ${CMAKE_CTEST_COMMAND} --tests-regex Matlab
                                    ${OPENSIM_TEST_BUILD_CONFIG}
                                    --extra-verbose
+                                   )
+
+set_target_properties(RunMatlabTests PROPERTIES
     PROJECT_LABEL "Matlab - run tests"
     FOLDER "Bindings"
     )
@@ -89,7 +92,10 @@ OpenSimAddMatlabTest(AccessSubcomponents testAccessSubcomponents.m)
 OpenSimAddMatlabTest(Simbody testSimbody.m)
 OpenSimAddMatlabTest(osimTableStruct testosimTableStruct.m)
 OpenSimAddMatlabTest(testOsimVec3 testOsimVec3.m)
-OpenSimAddMatlabTest(testOsimC3D testOsimC3D.m)
+if(WITH_BTK)
+    OpenSimAddMatlabTest(testOsimC3D testOsimC3D.m)
+endif()
+OpenSimAddMatlabTest(testOsimList2MatlabCell testOsimList2MatlabCell.m)
 
 # Copy resources.
 file(COPY "${OPENSIM_SHARED_TEST_FILES_DIR}/arm26.osim"

@@ -204,7 +204,7 @@ int main()
     std::cout << pathAfterDeletionInXML << endl;
     
     // Test adding PathPoint to TRIlong muscle (Stationary)
-    Component& frame = model->updComponent(saveFrameName);
+    Component& frame = model->updBodySet().updComponent(saveFrameName);
     PhysicalFrame* physFrame = PhysicalFrame::safeDownCast(&frame);
     context->addPathPoint(dTRIlong->updGeometryPath(), 3, *physFrame);
     assert(pathPoints.getSize() == origSize);
@@ -223,21 +223,38 @@ int main()
     std::cout << pathAfterTypeChangeToViaInXML << endl;
  
     // Make a change to a socket that is invalid and verify that we can recover
-    // from that invalid change by restoring from a cached model and state.
+    // from that invalid change by not making it on model directly
+    // context has reference to the model already
     context->cacheModelAndState();
-    Joint& shoulder = model->updComponent<Joint>("r_shoulder");
+    Joint& shoulder = model->updJointSet().updComponent<Joint>("r_shoulder");
     AbstractSocket& socket = shoulder.updSocket("child_frame");
-    const std::string originalConnecteeName = socket.getConnecteeName();
     try {
-        // create an invalid model where joint connects two frames on ground
-        socket.setConnecteeName("ground"); 
-        context->restoreStateFromCachedModel();
+        // create an invalid model where joint connects two frames on ground,
+        // the test will verify the connectee has not been changed 
+        context->setSocketConnecteePath(socket, "ground");
     }
-    catch (...) {
-        // undo the change
-        socket.setConnecteeName(originalConnecteeName);
-        context->restoreStateFromCachedModel();
+    catch (const std::exception& e) {
+        // Expect meaningful error message explaining why initsystem failed
+        // in GUI use case this gets propagated to users
+        cout << "Exception: " << e.what() << endl;
     }
+    AbstractSocket& psocket = shoulder.updSocket("parent_frame");
+    const Object& connecteeBefore = psocket.getConnecteeAsObject();
+    try {
+        // Try to create an invalid model again, this call should leave the 
+        // model untouched since change invalidates psocket
+        context->setSocketConnecteePath(psocket, "r_ulna_radius_hand");
+
+    }
+    catch (const std::exception& e) {
+        // Expect meaningful error message explaining why initsystem failed
+        // in GUI use case this gets propagated to users
+        cout << "Exception: " << e.what() << endl;
+    }
+    const Object& connecteeAfter = psocket.getConnecteeAsObject();
+    OPENSIM_THROW_IF(&connecteeAfter != &connecteeBefore, OpenSim::Exception, 
+        "Connectee changed after unsuccessful edit");
+    // model is still valid here despite attempts to make invalid edits
     return status;
   } catch (const std::exception& e) {
       cout << "Exception: " << e.what() << endl;

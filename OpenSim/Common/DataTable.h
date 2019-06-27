@@ -31,6 +31,7 @@ in-memory container for data access and manipulation.                         */
 #include "AbstractDataTable.h"
 #include "FileAdapter.h"
 #include "SimTKcommon/internal/BigMatrix.h"
+#include "SimTKcommon/internal/Quaternion.h"
 #include <OpenSim/Common/IO.h>
 
 #include <iomanip>
@@ -947,6 +948,45 @@ public:
         appendColumnLabel(columnLabel);
     }
 
+    /** Remove column corresponding to the given column index.
+
+    \throws ColumnIndexOutOfRange If the index is out of range.                  */
+        void removeColumnAtIndex(size_t index) {
+        OPENSIM_THROW_IF(isColumnIndexOutOfRange(index),
+            ColumnIndexOutOfRange,
+            index, 0, static_cast<unsigned>(_depData.ncol() - 1));
+
+        // get copy of labels
+        auto labels = getColumnLabels();
+
+        assert(labels.size() == _depData.ncol());
+
+        // shift columns unless we're already at the last column
+        for (size_t c = index; c < getNumColumns()-1; ++c) {
+            _depData.updCol((int)c) = _depData.col((int)(c + 1));
+            labels[c] = labels[c + 1];
+        }
+
+        _depData.resizeKeep(_depData.nrow(), _depData.ncol()-1);
+        labels.resize(_depData.ncol());
+        setColumnLabels(labels);
+    }
+
+    /** Remove column corresponding to the given dependent column label. The
+    independent column cannot be removed.
+
+    \throws KeyNotFound If the independent column has no entry with the given
+    value.                                                */
+    void removeColumn(const std::string& columnLabel) {
+        const auto& labels = getColumnLabels();
+        auto iter = std::find(labels.cbegin(), labels.cend(), columnLabel);
+
+        OPENSIM_THROW_IF(iter == labels.cend(),
+            KeyNotFound, columnLabel);
+
+        return removeColumnAtIndex(std::distance(labels.cbegin(), iter));
+    }
+
     /** Get dependent column at index.
 
     \throws EmptyTable If the table is empty.
@@ -1392,6 +1432,28 @@ protected:
             }
         }
     }
+    // Split element into constituent components and assign the components 
+    // according to the iterator argument. This function will write MxN matrix
+    // elements starting from *begin* but not necessarily up to *end*. 
+    // Elements are written out row-wise.
+    // An exception is thrown if *end* is reached before assigning all components.
+    // Example: Mat<3, 3> has 9 components.
+    template<int M, int N, typename Iter>
+    static
+        void splitAndAssignElement(Iter begin, Iter end,
+            const SimTK::Mat<M, N>& elem) {
+        for (unsigned i = 0; i < M; ++i) {
+            for (unsigned j = 0; j < N; ++j) {
+                OPENSIM_THROW_IF(begin == end,
+                    Exception,
+                    "Iterators do not produce enough elements. "
+                    "Expected: " + std::to_string(M * N) +
+                    " Received: " + std::to_string((i + 1) * j));
+
+                *begin++ = elem[i][j];
+            }
+        }
+    }
     // Unsupported type.
     template<typename Iter>
     static
@@ -1449,6 +1511,22 @@ protected:
                                  "Iterators do not produce enough elements."
                                  "Expected: " + std::to_string(M * N) +
                                  " Received: " + std::to_string((i + 1) * j));
+
+                elem[i][j] = *begin++;
+            }
+        }
+    }
+    template<int M, int N, typename Iter>
+    static
+        void makeElement_helper(SimTK::Mat<M, N>& elem,
+            Iter begin, Iter end) {
+        for (unsigned i = 0; i < M; ++i) {
+            for (unsigned j = 0; j < N; ++j) {
+                OPENSIM_THROW_IF(begin == end,
+                    Exception,
+                    "Iterators do not produce enough elements."
+                    "Expected: " + std::to_string(M * N) +
+                    " Received: " + std::to_string((i + 1) * j));
 
                 elem[i][j] = *begin++;
             }
@@ -1571,6 +1649,11 @@ protected:
     static constexpr
     unsigned numComponentsPerElement_impl(SimTK::Vec<M>) {
         return M;
+    }
+    template<int M, int N>
+    static constexpr
+        unsigned numComponentsPerElement_impl(SimTK::Mat<M, N>) {
+        return M * N;
     }
     template<int M, int N>
     static constexpr

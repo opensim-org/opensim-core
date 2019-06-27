@@ -36,22 +36,22 @@ device = BuildDevice();
 %% Connect the device to the hopper.
 % ----------------------------------
 
-% TODO: Add the device to the hopper model.
-% [Step 2, Task A]
-% ANSWER{
-hopper.addComponent(device);
-% }
-% Note: After this step, simulating will not work until after completing Task F.
-
 % TODO: Print the names of the device's subcomponents, and locate the
 %       subcomponents named 'anchorA' and 'anchorB'. Also, print the names of
 %       the hopper's subcomponents, and locate the two subcomponents named
 %       'deviceAttach'.
-% [Step 2, Task B]
+% [Step 2, Task A]
 % ANSWER{
 device.printSubcomponentInfo();
 hopper.printSubcomponentInfo();
 % }
+
+% TODO: Add the device to the hopper model.
+% [Step 2, Task B]
+% ANSWER{
+hopper.addComponent(device);
+% }
+% Note: After this step, simulating will not work until after completing Task F.
 
 % TODO: Get the 'anchor' joints in the device, and downcast them to the
 %       WeldJoint class. Get the 'deviceAttach' frames in the hopper
@@ -61,9 +61,9 @@ hopper.printSubcomponentInfo();
 anchorA = WeldJoint.safeDownCast(device.updComponent('anchorA'));
 anchorB = WeldJoint.safeDownCast(device.updComponent('anchorB'));
 thighAttach = PhysicalFrame.safeDownCast(...
-        hopper.getComponent('thigh/deviceAttach'));
+        hopper.getComponent('bodyset/thigh/deviceAttach'));
 shankAttach = PhysicalFrame.safeDownCast(...
-        hopper.getComponent('shank/deviceAttach'));
+        hopper.getComponent('bodyset/shank/deviceAttach'));
 % }
 
 % TODO: Connect the parent frame sockets of the device's anchor joints to the
@@ -78,7 +78,7 @@ anchorB.connectSocket_parent_frame(shankAttach);
 % (Done for you) Configure the device to wrap over the patella.
 if hopper.hasComponent('device_active') || hopper.hasComponent('device_passive') 
     cable = PathActuator.safeDownCast(device.updComponent('cableAtoBactive'));
-    patellaPath = 'thigh/patellaFrame/patella';
+    patellaPath = 'bodyset/thigh/patellaFrame/wrapobjectset/patella';
     wrapObject = WrapCylinder.safeDownCast(hopper.updComponent(patellaPath));
     cable.updGeometryPath().addPathWrap(wrapObject);
 end
@@ -88,7 +88,7 @@ end
 %       subcomponent 'controller'.
 % [Step 2, Task E]
 % ANSWER{
-hopper.getComponent('vastus').printOutputInfo(false);
+hopper.getComponent('forceset/vastus').printOutputInfo(false);
 device.getComponent('controller').printInputInfo();
 device.getComponent('controller').printOutputInfo();
 % }
@@ -99,7 +99,7 @@ device.getComponent('controller').printOutputInfo();
 % ANSWER{
 contr = ToyPropMyoController.safeDownCast(device.updComponent('controller'));
 contr.connectInput_activation(...
-    hopper.getComponent('vastus').getOutput('activation'));
+    hopper.getComponent('forceset/vastus').getOutput('activation'));
 % }
 
 
@@ -119,17 +119,17 @@ reporter = TableReporter();
 reporter.setName('hopper_device_results');
 reporter.set_report_time_interval(0.2); % seconds.
 reporter.addToReport(...
-    hopper.getComponent('slider/yCoord').getOutput('value'), 'height');
+    hopper.getComponent('jointset/slider/yCoord').getOutput('value'), 'height');
 reporter.addToReport(...
-    hopper.getComponent('vastus').getOutput('activation'), 'vastus_activation');
+    hopper.getComponent('forceset/vastus').getOutput('activation'), 'vastus_activation');
 reporter.addToReport(...
     device.getComponent('controller').getOutput('myo_control'), 'myo_control');
 hopper.addComponent(reporter);
 % }
 
-sHD = hopper.initSystem();
-% The last argument determines if the simbody-visualizer should be used.
-Simulate(hopper, sHD, true);
+% The second argument determines if the simbody-visualizer should be used.
+% The third argument is the simulation duration.
+osimSimulate(hopper, true, 5.0);
 
 if exist('reporter') == 1
     % (Done for you) Display the TableReporter's data, and save it to a file.
