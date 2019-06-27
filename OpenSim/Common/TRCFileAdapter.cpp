@@ -281,24 +281,13 @@ TRCFileAdapter::extendWrite(const InputTables& absTables,
     } catch(KeyNotFound&) {
         out_stream << datarate << _delimiterWrite;
     }
-    try {
-        out_stream << table->
-                      getTableMetaData().
-                      getValueForKey(_metadataKeys[2]).
-                      getValue<std::string>()
-                   << _delimiterWrite;
-    } catch(KeyNotFound&) {
-        out_stream << table->getNumRows() << _delimiterWrite;
-    }
-    try {
-        out_stream << table->
-                      getTableMetaData().
-                      getValueForKey(_metadataKeys[3]).
-                      getValue<std::string>()
-                   << _delimiterWrite;
-    } catch(KeyNotFound&) {
-        out_stream << table->getNumColumns() << _delimiterWrite;
-    }
+
+    // Next is _metadataKeys[2] is NumFrames
+    out_stream << table->getNumRows() << _delimiterWrite;
+
+    // Next is _metadataKeys[3] is NumMarkers
+    out_stream << table->getNumColumns() << _delimiterWrite;
+
     try {
         out_stream << table->
                       getTableMetaData().
