@@ -75,10 +75,11 @@ void AbstractPathPoint::updateFromXMLNode(SimTK::Xml::Element& aNode,
             if (bodyElement != aNode.element_end()) {
                 bodyElement->getValueAs<std::string>(bodyName);
                 // PathPoints in pre-4.0 models are necessarily 3 levels deep
-                // (model, muscle, geometry path), and Bodies are necessarily
-                // 1 level deep: prepend "../../../" to get the correct
-                // relative path.
-                if (!bodyName.empty()) bodyName = "../../../" + bodyName;
+                // (model, muscle, geometry path), and Bodies are
+                // necessarily 1 levels deep; here we create the correct
+                // relative path (accounting for sets being components).
+                bodyName = XMLDocument::updateConnecteePath30517("bodyset",
+                                                                 bodyName);
                 XMLDocument::addConnector(aNode, "Connector_PhysicalFrame_",
                     "parent_frame", bodyName);
             }

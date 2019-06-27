@@ -128,10 +128,19 @@ public:
     If there is no `<connectors>` element, then this function does not edit
     componentElt. */
     static void updateConnectors30508(SimTK::Xml::Element& componentElt);
-    static void addPhysicalOffsetFrame30505(SimTK::Xml::Element& element,
+    static void addPhysicalOffsetFrame30505_30517(SimTK::Xml::Element& element,
         const std::string& frameName,
         const std::string& parentFrameName,
         const SimTK::Vec3& location, const SimTK::Vec3& orientation);
+    /** Convert component names into the appropriate paths based on where we
+     * know components were located in version 30000 model files.
+     * @param connecteeSetName "bodyset", "jointset", etc.
+     * @param connecteeName The name of the connectee from the version 30000
+     *      file.
+     * Note: It is okay for connecteePath to be a reference to connecteeName. */
+    static std::string updateConnecteePath30517(
+            const std::string& connecteeSetName,
+            const std::string& connecteeName);
     /** Find the first XML Element (depth-first search) with the provided
     `name`, anywhere in the XML document that contains `element`. If the XML
     document does not contain an element with name `name`, or if `name` is

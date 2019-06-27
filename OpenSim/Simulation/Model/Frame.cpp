@@ -180,6 +180,8 @@ void Frame::attachGeometry(OpenSim::Geometry* geom)
 
     geom->setFrame(*this);
     updProperty_attached_geometry().adoptAndAppendValue(geom);
+    finalizeFromProperties();
+    prependComponentPathToConnecteePath(*geom);
 }
 
 void Frame::scaleAttachedGeometry(const SimTK::Vec3& scaleFactors)

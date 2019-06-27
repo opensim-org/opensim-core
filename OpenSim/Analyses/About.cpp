@@ -70,7 +70,7 @@ using namespace std;
 
 extern "C" {
 
-void opensim_version_Analyses(int* major, int* minor, int* build) {
+void opensim_version_analyses(int* major, int* minor, int* build) {
     static const char* l = "OPENSIM library="   GET_LIBRARY_STRING;
     static const char* t = "OPENSIM type="      GET_TYPE_STRING;
     static const char* d = "OPENSIM debug="     GET_DEBUG_STRING;
@@ -89,7 +89,7 @@ void opensim_version_Analyses(int* major, int* minor, int* build) {
     }
 }
 
-void opensim_about_Analyses(const char* key, int maxlen, char* value) {
+void opensim_about_analyses(const char* key, int maxlen, char* value) {
     if (maxlen <= 0 || value==0) return;
     value[0] = '\0'; // in case we don't find a match
     if (key==0) return;

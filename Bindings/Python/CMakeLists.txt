@@ -118,6 +118,12 @@ macro(OpenSimAddPythonModule)
         # 4114: "const const T"
         set(_COMPILE_FLAGS "/wd4996 /wd4114")
     endif()
+    if(${CMAKE_CXX_COMPILER_ID} MATCHES "Clang" AND
+            NOT (${CMAKE_CXX_COMPILER_VERSION} VERSION_LESS "10"))
+        # SWIG uses the register keyword, which is deprecated in C++17.
+        set(_COMPILE_FLAGS "${_COMPILE_FLAGS} -Wno-deprecated-register")
+    endif()
+
     set_source_files_properties("${_output_cxx_file}"
         PROPERTIES COMPILE_FLAGS "${_COMPILE_FLAGS}")
 

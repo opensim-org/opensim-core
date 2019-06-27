@@ -54,6 +54,11 @@ namespace OpenSim {
  *   - `<results-file-name>Vec3.sto`, and
  *   - `<results-file-name>SpatialVec.sto`.
  *
+ * Output paths can be absolute (e.g., `/joint/slider/tx|value`) or relative
+ * to the model (by leaving off the first slash; `joint/slider/tx|value`).
+ * For outputs on the model itself, you can use `|com_position`, etc. As
+ * explained for AbstractInput, the vertical bar denotes the output name.
+ *
  * Note that the internal tables are reset at the beginning of a simulation or
  * AnalyzeTool::run() and does not append results to previous tables.
  */
@@ -63,8 +68,9 @@ OpenSim_DECLARE_CONCRETE_OBJECT(OutputReporter, Analysis);
 public:
 OpenSim_DECLARE_LIST_PROPERTY(output_paths, std::string,
     "The names of Outputs to be reported. To select specific Component Outputs"
-    ", provide its path name. For example, 'slider/tx/value' is an Output for "
-    "the value of a Coordinate 'tx' belonging to the Joint 'slider'.");
+    ", provide its path name. For example, '/jointset/slider/tx|value' is an "
+    "Output for the value of a Coordinate 'tx' belonging to the Joint "
+    "'slider'.");
 
 //=============================================================================
 // METHODS

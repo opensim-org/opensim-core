@@ -27,7 +27,6 @@
 #include <OpenSim/Common/Function.h>
 #include <OpenSim/Common/LinearFunction.h>
 #include <OpenSim/Common/PropertyObjArray.h>
-#include "OpenSim/Common/STOFileAdapter.h"
 #include "getRSS.h"
 
 #include <fstream>
@@ -294,11 +293,15 @@ OpenSim::Object* randomize(OpenSim::Object* obj)
             }
             else{
                 Property<Function>& prop = Property<Function>::updAs(ap);
-                prop = LinearFunction();
+                LinearFunction f;
+                randomize(&f);
+                prop = f;
             }
             
         } else if (ap.isObjectProperty() && !isList) {
             randomize(&ap.updValueAsObject(0));
+            if (ap.isUnnamedProperty())
+                ap.updValueAsObject(0).setName("");
             ap.setValueIsDefault(false);
         } else {
             //cerr << "Unrecognized Property:"<< ap.getName()<< ":" 
@@ -327,26 +330,6 @@ inline bool revertToVersionNumber1(const std::string& filenameOld,
             fileNew << line << "\n";
     }
     return changedVersion;
-}
-
-// Add number of rows (nRows) and number of columns (nColumns) to the header of
-// the STO file. Note that nColumns will include time, so it will be number of
-// columns in the matrix plus 1 (for time).
-inline void addNumRowsNumColumns(const std::string& filenameOld,
-                                 const std::string& filenameNew) {
-    auto table = OpenSim::STOFileAdapter_<double>::read(filenameOld);
-    std::regex endheader{ R"( *endheader *)" };
-    std::ifstream fileOld{ filenameOld };
-    std::ofstream fileNew{ filenameNew };
-    std::string line{};
-    while (std::getline(fileOld, line)) {
-        if (std::regex_match(line, endheader))
-            fileNew << "nRows="    << table.getNumRows()        << "\n"
-                    << "nColumns=" << table.getNumColumns() + 1 << "\n"
-                    << "endheader\n";
-        else
-            fileNew << line << "\n";
-    }
 }
 
 // Estimate the memory usage of a *creator* that heap allocates an object

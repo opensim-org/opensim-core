@@ -96,11 +96,12 @@ Object::Object(const string &aFileName, bool aUpdateFromXMLNode)
     // going all the way down to the parser to throw an exception for null document!
     // -Ayman 8/06
     OPENSIM_THROW_IF(aFileName.empty(), Exception,
-        "Object: Cannot construct from empty filename. No filename specified.");
+        getClassName() + 
+        ": Cannot construct from empty filename. No filename specified.");
 
     OPENSIM_THROW_IF(!ifstream(aFileName.c_str(), ios_base::in).good(),
         Exception,
-        "Object: Cannot not open file " + aFileName +
+        getClassName() + ": Cannot open file " + aFileName +
         ". It may not exist or you do not have permission to read it.");
 
     _document = new XMLDocument(aFileName);
@@ -125,7 +126,6 @@ Object::Object(const string &aFileName, bool aUpdateFromXMLNode)
         }
         IO::chDir(saveWorkingDirectory);
     }
-
 }
 //_____________________________________________________________________________
 /**
@@ -236,23 +236,55 @@ void Object::setNull()
 // operator.
 bool Object::operator==(const Object& other) const
 {
-    if (getConcreteClassName()  != other.getConcreteClassName()) return false;
-    if (getName()               != other.getName())         return false;
-    if (getDescription()        != other.getDescription())  return false;
-    if (getAuthors()            != other.getAuthors())      return false;
-    if (getReferences()         != other.getReferences())   return false;
+    auto printDiff = [](const std::string& name,
+                            const std::string& thisValue,
+                            const std::string& otherValue) {
+        if (Object::getDebugLevel() > 0) {
+            std::cout << "In Object::operator==(), differing " << name << ":\n"
+                << "left: " << thisValue
+                << "\nright: " << otherValue << std::endl;
+        }
+
+    };
+    if (getConcreteClassName()  != other.getConcreteClassName()) {
+        printDiff("ConcreteClassName", getConcreteClassName(),
+                  other.getConcreteClassName());
+        return false;
+    }
+    if (getName()               != other.getName()) {
+        printDiff("name", getName(), other.getName());
+        return false;
+    }
+    if (getDescription()        != other.getDescription()) {
+        printDiff("description", getDescription(), other.getDescription());
+        return false;
+    }
+    if (getAuthors()            != other.getAuthors()) {
+        printDiff("authors", getAuthors(), other.getAuthors());
+        return false;
+    }
+    if (getReferences()         != other.getReferences()) {
+        printDiff("references", getReferences(), other.getReferences());
+        return false;
+    }
 
     // Must have the same number of properties, in the same order.
     const int numProps = getNumProperties();
-    if (other.getNumProperties() != numProps)
+    if (other.getNumProperties() != numProps) {
+        printDiff("number of properties", std::to_string(numProps),
+                  std::to_string(other.getNumProperties()));
         return false;
+    }
 
     for (int px = 0; px < numProps; ++px) {
         const AbstractProperty& myProp    = getPropertyByIndex(px);
         const AbstractProperty& otherProp = other.getPropertyByIndex(px);
 
-        if (!myProp.equals(otherProp))
+        if (!myProp.equals(otherProp)) {
+            printDiff("property '" + myProp.getName() + "'",
+                      myProp.toString(), otherProp.toString());
             return false;
+        }
     }
 
     return true;
@@ -1017,8 +1049,8 @@ updateDefaultObjectsFromXMLNode()
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
 
-void Object::
-updateXMLNode(SimTK::Xml::Element& aParent) const
+void Object::updateXMLNode(SimTK::Xml::Element& aParent,
+                           const AbstractProperty* prop) const
 {
     // Handle non-inlined object
     if(!getInlined()) {
@@ -1026,35 +1058,43 @@ updateXMLNode(SimTK::Xml::Element& aParent) const
         // Handle not-inlined objects first.
         if (!aParent.isValid()) {
             cout<<"Root node must be inlined"<<*this<<endl;
-        } else {
-            // Can we make this more efficient than recreating the node again?
-            // We can possibly check when setInlined() is invoked if we need to do it or not
-            // Create a new document and write object to it
-            string offlineFileName = getDocumentFileName();
-            if(IO::GetPrintOfflineDocuments()) {
-                // The problem is that generateChildXMLDocument makes a root which allows print
-                // to do its job but root is duplicated. If we don't create the node then generateXMLDocument
-                // is invoked which messes up the whole _childDocument mechanism as _document is overwritten.
-                _inlined=true;
-                print(offlineFileName);
-                _inlined=false;
-                SimTK::Xml::Element myObjectElement(getConcreteClassName());
-                myObjectElement.setAttributeValue("file", offlineFileName);
-                aParent.insertNodeAfter(aParent.node_end(), myObjectElement);
-            }
-            /*
-            if (!_refNode) _refNode = XMLNode::AppendNewElementWithComment(aParent,getType(),getName());
-            XMLNode::SetAttribute(_refNode,"file",offlineFileName);
-            XMLNode::RemoveAttribute(_refNode,"name"); // Shouldn't have a name attribute in the reference document
-            XMLNode::RemoveChildren(_refNode); // Shouldn't have any children in the reference document*/
+        }
+        else {
+        // Can we make this more efficient than recreating the node again?
+        // We can possibly check when setInlined() is invoked if we need to do it or not
+        // Create a new document and write object to it
+        string offlineFileName = getDocumentFileName();
+        if(IO::GetPrintOfflineDocuments()) {
+            // The problem is that generateChildXMLDocument makes a root which allows print
+            // to do its job but root is duplicated. If we don't create the node then generateXMLDocument
+            // is invoked which messes up the whole _childDocument mechanism as _document is overwritten.
+            _inlined=true;
+            print(offlineFileName);
+            _inlined=false;
+            SimTK::Xml::Element myObjectElement(getConcreteClassName());
+            myObjectElement.setAttributeValue("file", offlineFileName);
+            aParent.insertNodeAfter(aParent.node_end(), myObjectElement);
+        }
+        /*
+        if (!_refNode) _refNode = XMLNode::AppendNewElementWithComment(aParent,getType(),getName());
+        XMLNode::SetAttribute(_refNode,"file",offlineFileName);
+        XMLNode::RemoveAttribute(_refNode,"name"); // Shouldn't have a name attribute in the reference document
+        XMLNode::RemoveChildren(_refNode); // Shouldn't have any children in the reference document*/
         }
         return;
     }
     
     // GENERATE XML NODE for object
     SimTK::Xml::Element myObjectElement(getConcreteClassName());
-    if (!getName().empty())
+    
+    // if property is provided and it is not of unnamed type, use the property name
+    if(prop && prop->isOneObjectProperty() && !prop->isUnnamedProperty()) {
+        myObjectElement.setAttributeValue("name", prop->getName());
+    } // otherwise if object has a name use it as the name value
+    else if (!getName().empty()) { 
         myObjectElement.setAttributeValue("name", getName());
+    }
+
     aParent.insertNodeAfter(aParent.node_end(), myObjectElement);
 
     // DEFAULT OBJECTS
@@ -1327,6 +1367,9 @@ setAllPropertiesUseDefault(bool aUseDefault)
 bool Object::
 print(const string &aFileName) const
 {
+    try {
+        warnBeforePrint();
+    } catch (...) {}
     // Temporarily change current directory so that inlined files are written to correct relative directory
     std::string savedCwd = IO::getCwd();
     IO::chDir(IO::getParentDirectory(aFileName));
@@ -1552,17 +1595,44 @@ makeObjectFromFile(const std::string &aFileName)
 
     catch(const std::exception& x) {
         cout << x.what() << endl;
-        return 0;
+        return nullptr;
     }
     catch(...){ // Document couldn't be opened, or something went really bad
-        return 0;
+        return nullptr;
     }
     assert(!"Shouldn't be here");
-    return 0;
+    return nullptr;
 }
 
+void Object::makeObjectNamesConsistentWithProperties()
+{
+    // Cycle through this object's Object properties and make sure those
+    // that are objects have names that are consistent with object property. 
+    for (int i = 0; i < getNumProperties(); ++i) {
+        auto& prop = updPropertyByIndex(i);
+        // check if property is of type Object
+        if (prop.isObjectProperty()) {
+            // a property is a list so cycle through its contents
+            for (int j = 0; j < prop.size(); ++j) {
+                Object& obj = prop.updValueAsObject(j);
+                // If a single object property, set the object's name to the
+                // property's name, otherwise it will be inconsistent with
+                // what is serialized (property name).
+                if (!prop.isUnnamedProperty() && prop.isOneObjectProperty()) {
+                    obj.setName(prop.getName());
+                }
+                // In any case, any objects that are properties of this object
+                // also need to be processed
+                obj.makeObjectNamesConsistentWithProperties();
+            }
+        }
+    }
+}
 
-
+void Object::setObjectIsUpToDateWithProperties()
+{
+    _objectIsUpToDate = true;
+}
 
 void Object::updateFromXMLDocument()
 {
@@ -1577,19 +1647,17 @@ void Object::updateFromXMLDocument()
     IO::chDir(saveWorkingDirectory);
 }
 
-std::string Object::dump(bool dumpName) {
+std::string Object::dump() const {
     SimTK::String outString;
     XMLDocument doc;
-    std::string saveName = getName();
-    if (!dumpName) setName("");
     Object::setSerializeAllDefaults(true);
     SimTK::Xml::Element elem = doc.getRootElement();
     updateXMLNode(elem);
     Object::setSerializeAllDefaults(false);
-    setName(saveName);
     doc.getRootElement().node_begin()->writeToString(outString);
     return outString;
-    }
+}
+
 /** 
     * The following code accounts for an object made up to call 
     * RegisterTypes_osimCommon function on entry to the DLL in a cross platform manner 

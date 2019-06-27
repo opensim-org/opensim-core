@@ -140,12 +140,12 @@ void PointOnLineConstraint::extendAddToSystem(SimTK::MultibodySystem& system) co
  * Following methods set attributes of the point on line constraint */
 void PointOnLineConstraint::setLineBodyByName(const std::string& aBodyName)
 {
-    updSocket<PhysicalFrame>("line_body").setConnecteeName(aBodyName);
+    updSocket<PhysicalFrame>("line_body").setConnecteePath(aBodyName);
 }
 
 void PointOnLineConstraint::setFollowerBodyByName(const std::string& aBodyName)
 {
-    updSocket<PhysicalFrame>("follower_body").setConnecteeName(aBodyName);
+    updSocket<PhysicalFrame>("follower_body").setConnecteePath(aBodyName);
 
 }
 
@@ -182,14 +182,17 @@ void PointOnLineConstraint::updateFromXMLNode(SimTK::Xml::Element& aNode, int ve
             // extract their values.
             // Constraints in pre-4.0 models are necessarily 1 level deep
             // (model, constraints), and Bodies are necessarily 1 level deep.
-            // Prepend "../" to get the correct relative path.
+            // Here we create the correct relative path (accounting for sets
+            // being components).
             if (body1Element != aNode.element_end()) {
                 body1Element->getValueAs<std::string>(body1_name);
-                body1_name = "../" + body1_name;
+                body1_name = XMLDocument::updateConnecteePath30517("bodyset",
+                                                                   body1_name);
             }
             if (body2Element != aNode.element_end()) {
                 body2Element->getValueAs<std::string>(body2_name);
-                body2_name = "../" + body2_name;
+                body2_name = XMLDocument::updateConnecteePath30517("bodyset",
+                                                                   body2_name);
             }
             XMLDocument::addConnector(aNode, "Connector_PhysicalFrame_",
                     "line_body", body1_name);

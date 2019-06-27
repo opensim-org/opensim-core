@@ -33,7 +33,7 @@ model.addComponent(rep);
 
 
 % Sockets
-% ==========
+% =======
 
 % Access (and iterate through) a component's AbstractSockets, using names.
 names = joint.getSocketNames();
@@ -56,7 +56,8 @@ assert(body.getMass() == 2);
 % Connect a socket. Try the different methods to ensure they all work.
 offset.connectSocket_parent(ground);
 offset.updSocket('parent').connect(ground);
-assert(strcmp(offset.getSocket('parent').getConnecteeName(), '../ground'));
+model.finalizeConnections()
+assert(strcmp(offset.getSocket('parent').getConnecteePath(), '/ground'));
 
 
 
@@ -81,7 +82,7 @@ concreteOutput.getValue(state);
 % --------
 % Access AbstractChannels.
 assert(strcmp(coord.getOutput('speed').getChannel('').getPathName(), ...
-              '/leg/pin/pin_coord_0|speed'));
+              '/jointset/pin/pin_coord_0|speed'));
 
 % Access the value of a concrete Channel.
 % TODO Concrete channels are not wrapped yet.
@@ -99,7 +100,7 @@ rep.connectInput_inputs(coord.getOutput('speed'), 'target');
 rep.addToReport(source.getOutput('column').getChannel('c1'));
 rep.updInput('inputs').connect(source.getOutput('column').getChannel('c2'), ...
                                'second_col');
-
+model.finalizeConnections()
 
 % Inputs
 % ======
@@ -107,8 +108,8 @@ rep.updInput('inputs').connect(source.getOutput('column').getChannel('c2'), ...
 % Access (and iterate through) the AbstractInputs, using names.
 names = rep.getInputNames();
 expectedAliases = {'', 'target', '', 'second_col'};
-expectedLabels  = {'/leg/pin/pin_coord_0|value', 'target', ...
-                   '/leg/source|column:c1', 'second_col'};
+expectedLabels  = {'/jointset/pin/pin_coord_0|value', 'target', ...
+                   '/source|column:c1', 'second_col'};
 for i = 0:(names.size() - 1)
     % Actually, there is only one Input, named 'inputs'.
     % We connected it to 4 channels.

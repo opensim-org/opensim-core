@@ -191,13 +191,16 @@ void TorqueActuator::extendConnectToModel(Model& model)
             "TorqueActuator::extendConnectToModel(): body name properties "
             "were not set.");
 
-    // Look up the bodies by name in the Model, and record pointers to the
-    // corresponding body objects.
-    _bodyA =
-        static_cast<const PhysicalFrame*>(&getModel().getComponent(get_bodyA()));
-    _bodyB =
-        static_cast<const PhysicalFrame*>(&getModel().getComponent(get_bodyB()));
+    // TODO: Replace this custom lookup with Sockets
+    if(getModel().hasComponent<PhysicalFrame>(get_bodyA()))
+        _bodyA = &getModel().getComponent<PhysicalFrame>(get_bodyA());
+    else
+        _bodyA = &getModel().getComponent<PhysicalFrame>("./bodyset/"+get_bodyA());
 
+    if (getModel().hasComponent<PhysicalFrame>(get_bodyB()))
+        _bodyB = &getModel().getComponent<PhysicalFrame>(get_bodyB());
+    else
+        _bodyB = &getModel().getComponent<PhysicalFrame>("./bodyset/" + get_bodyB());
 }
 
 //==============================================================================

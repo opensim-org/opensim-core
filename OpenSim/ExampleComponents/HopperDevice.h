@@ -86,7 +86,8 @@ public:
         return getComponent<PathActuator>(get_actuator_name()).getPower(s);
     }
     double getHeight(const SimTK::State& s) const {
-        static const std::string hopperHeightCoord = "/Dennis/slider/yCoord";
+        static const std::string hopperHeightCoord = 
+            "/Dennis/jointset/slider/yCoord";
         return getModel().getComponent(hopperHeightCoord)
             .getOutputValue<double>(s, "value");
     }

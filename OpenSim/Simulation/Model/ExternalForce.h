@@ -250,9 +250,9 @@ private:
     const Storage* _dataSource;
 
     /** characterize the force/torque being applied */
-    bool _appliesForce;
-    bool _specifiesPoint;
-    bool _appliesTorque;
+    bool _appliesForce {false};
+    bool _specifiesPoint {false};
+    bool _appliesTorque {false};
 
     /** force data as a function of time used internally */
     ArrayPtrs<Function> _forceFunctions;

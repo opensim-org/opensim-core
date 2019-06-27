@@ -59,10 +59,12 @@ def print_model():
     # one-body system. The (optional) second argument is an alias for the name
     # of the output; it is used as the column label in the table.
     reporter.addToReport(model.getOutput('com_position'), 'com_pos')
+
+    model.addComponent(reporter)
+    model.finalizeConnections()
+
     # Display what input-output connections look like in XML (in .osim files).
     print("Reporter input-output connections in XML:\n" + reporter.dump())
-    
-    model.addComponent(reporter)
 
     model.printToXML(model_filename)
 
@@ -79,7 +81,7 @@ reporter = osim.TableReporterVec3.safeDownCast(
 # We can access the names of the outputs that the reporter is connected to.
 print('Outputs connected to the reporter:')
 for i in range(reporter.getInput('inputs').getNumConnectees()):
-    print(reporter.getInput('inputs').getConnecteeName(i))
+    print(reporter.getInput('inputs').getConnecteePath(i))
 
 # Simulate the model.
 manager = osim.Manager(deserialized_model)
@@ -96,8 +98,6 @@ sto = osim.STOFileAdapterVec3()
 sto.write(table, 'wiring_inputs_and_outputs_with_TableReporter.sto')
 # You can open the .sto file in a text editor and see that both outputs
 # (position of body's origin, and position of system mass center) are the same.
-
-
 
 
 

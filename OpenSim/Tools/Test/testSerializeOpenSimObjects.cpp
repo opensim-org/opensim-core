@@ -77,11 +77,13 @@ int main()
         //Test serialization for all ModelComponents
         ArrayPtrs<OpenSim::ModelComponent> availableComponentTypes;
         Object::getRegisteredObjectsOfGivenType<OpenSim::ModelComponent>(availableComponentTypes);
+
         for (int i=0; i< availableComponentTypes.getSize(); i++){
             Object* clone = availableComponentTypes[i]->clone();
             Object* randClone = randomize(clone);
             try {
-                testModel.addModelComponent(ModelComponent::safeDownCast(randClone));
+                ModelComponent* comp = ModelComponent::safeDownCast(randClone);
+                testModel.addModelComponent(comp);
             } //Ignore the validity of the property values
             catch (const InvalidPropertyValue&) {
                 // const string& errMsg = err.getMessage();
@@ -92,10 +94,12 @@ int main()
         int nc = testModel.getMiscModelComponentSet().getSize();
         cout << nc << " model components were serialized in testModel." << endl;
 
+
         //Serialize all the components
         testModel.print("allComponents.osim");
 
         Model deserializedModel("allComponents.osim");
+        deserializedModel.print("allComponents_reserialized.osim");
 
         nc = deserializedModel.getMiscModelComponentSet().getSize();
         cout << nc << " model components were deserialized from file." << endl;

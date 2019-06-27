@@ -84,10 +84,10 @@ int main()
 
         LoadOpenSimLibrary("osimActuators");
         testCopyModel("arm26.osim", 2, "ground", 6);
-        testCopyModel("Neck3dof_point_constraint.osim", 25, "spine", 1);
+        testCopyModel("Neck3dof_point_constraint.osim", 25, "bodyset/spine", 1);
     }
     catch (const Exception& e) {
-        e.print(cerr);
+        cout << e.what() << endl;
         return 1;
     }
     cout << "Done" << endl;
@@ -115,10 +115,8 @@ void testCopyModel(const string& fileName, const int nbod,
         test = new Model(fileName);
         delete test;
     }
-    
-        //model->print("clone_" + fileName);
-
-    //SimTK::State& defaultState = model->initSystem();
+    // verify that the print is const and has no side-effects on the model
+    model->print("clone_" + fileName);
     
     Model* modelCopy = new Model(*model);
     modelCopy->finalizeFromProperties();
@@ -152,13 +150,13 @@ void testCopyModel(const string& fileName, const int nbod,
 
     Model* modelSerialized = new Model(latestFile);
 
+    ASSERT(*model == *modelSerialized);
     ASSERT(*modelSerialized == *modelCopy);
 
     int nb = modelSerialized->getNumBodies();
 
-
-    const PhysicalFrame& physFrame =
-        modelSerialized->getComponent<PhysicalFrame>("./"+physicalFrameName);
+    const PhysicalFrame& physFrame = 
+        modelSerialized->getComponent<PhysicalFrame>(physicalFrameName);
 
     int ng = physFrame.getProperty_attached_geometry().size();
 

@@ -44,7 +44,13 @@
 				</ForceReporter>
 				<OutputReporter name="OutputReporter">
 					<!--The names of Outputs to be reported. To select specific Component Outputs, provide its path name. For example, 'slider/tx/value' is an Output for the value of a Coordinate 'tx' belonging to the Joint 'slider'.-->
-					<output_paths>LeftMuscle/fiber_length LeftMuscle/tendon_force com_position LeftMuscle/active_force_length_multiplier ground_block/reaction_on_child</output_paths>
+					<output_paths>
+						forceset/LeftMuscle|fiber_length
+						forceset/LeftMuscle|tendon_force
+						|com_position
+						forceset/LeftMuscle|active_force_length_multiplier
+						jointset/ground_block|reaction_on_child
+					</output_paths>
 					<!--Flag (true or false) specifying whether on. True by default.-->
 					<on>true</on>
 					<!--Start time.-->

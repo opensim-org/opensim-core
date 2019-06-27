@@ -58,11 +58,11 @@ class TestStatesTrajectory(unittest.TestCase):
 
         model.initSystem()
         self.assertNotAlmostEqual(model.getStateVariableValue(states[2],
-                "ground_pelvis/pelvis_tilt/value"), 8)
+                "jointset/ground_pelvis/pelvis_tilt/value"), 8)
         model.setStateVariableValue(states[2],
-                "ground_pelvis/pelvis_tilt/value", 8)
+                "jointset/ground_pelvis/pelvis_tilt/value", 8)
         self.assertAlmostEqual(model.getStateVariableValue(states[2],
-                "ground_pelvis/pelvis_tilt/value"), 8)
+                "jointset/ground_pelvis/pelvis_tilt/value"), 8)
 
         # Assigning is not allowed, since it easily allows people to violate
         # the ordering of the trajectory.

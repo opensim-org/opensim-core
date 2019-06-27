@@ -43,6 +43,7 @@
 namespace OpenSim {
 
 class Component;
+class AbstractInput;
 
 /** One of the values of an Output. */
 class AbstractChannel {
@@ -246,9 +247,12 @@ public:
             throw Exception("Channel name cannot be empty.");
         _channels[channelName] = Channel(this, channelName);
     }
-    
+
+    /** For a single-value output, name must be empty or must be the output's
+     * name. */
     const AbstractChannel& getChannel(const std::string& name) const override {
         try {
+            if (!isListOutput() && name == getName()) return _channels.at("");
             return _channels.at(name);
         } catch (const std::out_of_range&) {
             OPENSIM_THROW(Exception, "Output '" + getName() + "' does not have "

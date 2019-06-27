@@ -909,8 +909,7 @@ bool RRATool::run()
 //=============================================================================
 // UTILITY
 //=============================================================================
-void RRATool::
-writeAdjustedModel() 
+void RRATool::writeAdjustedModel() 
 {
     if(_outputModelFile=="") {
         cerr<<"Warning: A name for the output model was not set.\n";
@@ -932,6 +931,8 @@ writeAdjustedModel()
     // So we need to put back the muscles before writing out the adjusted model.
     // NOTE: use operator= so actuator groups are properly copied over
     _model->updForceSet() = _originalForceSet;
+
+    removeExternalLoadsFromModel();
 
     // CMC was added as a model controller, now remove before printing out
     int c = _model->updControllerSet().getIndex("CMC");
