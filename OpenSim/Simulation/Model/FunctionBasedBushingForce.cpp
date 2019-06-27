@@ -186,6 +186,7 @@ SimTK::Vec6 FunctionBasedBushingForce::
     calcDampingForce(const SimTK::State& s) const
 {
     Vec6 dqdot = computeDeflectionRate(s);
+    // This _dampingMatrix is initialized to zero and never updated!
     return -_dampingMatrix * dqdot;
 }
 
