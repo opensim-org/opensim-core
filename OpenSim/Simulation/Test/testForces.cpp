@@ -808,7 +808,7 @@ void testFunctionBasedBushingForce()
                     transStiffness, rotStiffness, transDamping, rotDamping);
 
     osimModel.addForce(&spring);
-
+    osimModel.finalizeConnections(); // fix warning on write that results in invalid model file
     osimModel.print("FunctionBasedBushingForceModel.osim");
 
     // Create the force reporter
