@@ -23,7 +23,7 @@ Bug Fixes
 ---------
 - Fixed bug in osimTable2Struct.m for renaming unlabelled markers (PR #2491)
 - Fixed bug that resulted in an exception when reading C3D files without forces. Now, if the C3D doesn't contain markers or forces, an empty table will be returned (PR #2421) 
-- Fix bug that resulted in activations and forces reported for Actuators that are disabled during StaticOptimization (issue #2438)
+- Fix bug that resulted in activations and forces reported for Actuators that are disabled during StaticOptimization (issue #2438) Disabled actuators are now ignored in StaticOptimization.
 
 Documentation
 -------------

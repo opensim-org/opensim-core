@@ -250,12 +250,19 @@ void testRelativePathInExternalLoads() {
 }
 
 void testArm26DisabledMuscles() {
-    AnalyzeTool analyze("arm26_disabled_Setup_StaticOptimization.xml");
+    AnalyzeTool analyze("arm26_Setup_StaticOptimization.xml");
     analyze.setResultsDir("Results_arm26_StaticOptimization_Disabled");
+    Model& model=analyze.getModel();
+    model.updComponent<Actuator>("/forceset/TRIlat").set_appliesForce(false);
+    model.updComponent<Actuator>("/forceset/TRImed").set_appliesForce(false);
     analyze.run();
     Storage activations(analyze.getResultsDir() + "/arm26_StaticOptimization_activation.sto");
     ASSERT_EQUAL(activations.getColumnLabels().size(), 5);
+    ASSERT_EQUAL(activations.getColumnLabels().findIndex("TRIlat"), -1);
+    ASSERT_EQUAL(activations.getColumnLabels().findIndex("TRImed"), -1);
     Storage forces(analyze.getResultsDir() + "/arm26_StaticOptimization_force.sto");
     ASSERT_EQUAL(forces.getColumnLabels().size(), 5);
+    ASSERT_EQUAL(forces.getColumnLabels().findIndex("TRIlat"), -1);
+    ASSERT_EQUAL(forces.getColumnLabels().findIndex("TRImed"), -1);
 
 }
