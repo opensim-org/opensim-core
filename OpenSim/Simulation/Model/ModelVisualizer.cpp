@@ -239,18 +239,19 @@ void ModelVisualizer::createVisualizer() {
         std::string buffer{};
         for(const auto ch : path) {
             if(ch == ':' || ch == ';') {
-                std::ifstream ifs(buffer + "../" 
-                    + MAKE_STRING(OPENSIM_INSTALL_SYSCONFDIR) 
-                    + "/OpenSim_buildinfo.txt");
-                std::string line;
-                if (ifs.is_open() && std::getline(ifs, line)) {
-                    std::string thisOpenSimVersion = 
-                    std::to_string(OPENSIM_SIMULATION_MAJOR_VERSION) + "." +
-                    std::to_string(OPENSIM_SIMULATION_MINOR_VERSION);
-                    if (line.find(thisOpenSimVersion) != std::string::npos) {
-                        searchPath.push_back(buffer);
-                    }
-                }
+                //std::ifstream ifs(buffer + "../" 
+                //    + MAKE_STRING(OPENSIM_INSTALL_SYSCONFDIR) 
+                //    + "/OpenSim_buildinfo.txt");
+                //std::string line;
+                //if (ifs.is_open() && std::getline(ifs, line)) {
+                //    std::string thisOpenSimVersion = 
+                //    std::to_string(OPENSIM_SIMULATION_MAJOR_VERSION) + "." +
+                //    std::to_string(OPENSIM_SIMULATION_MINOR_VERSION);
+                //    if (line.find(thisOpenSimVersion) != std::string::npos) {
+                //        searchPath.push_back(buffer);
+                //    }
+                //}
+                searchPath.push_back(buffer);
                 buffer.clear();
             } else
                 buffer.push_back(ch);
