@@ -22,12 +22,11 @@ function assistedSitToStand
 %    optimizations, delete these STO files.
 
 global verbosity;
+global visualize;
 
 % Use the verbosity variable to control console output (0 or 1).
 verbosity = 1;
-
-% TODO add options for visualizing
-% TODO add options for creating additional subjects.
+visualize = 1;
 
 evaluateDevice(@addSpringToKnee);
 
@@ -58,6 +57,8 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function evaluateDevice(addDeviceFunction)
+global visualize;
+
 import org.opensim.modeling.*;
 
 subjectInfos{1} = createSubjectInfo(1);
@@ -67,6 +68,8 @@ subjectInfos{2} = createSubjectInfo(2);
 subjectInfos{2}.vas_int_r = 0.8;
 
 subjects = [1, 2];
+
+percentChange = zeros(length(subjects), 1);
 
 doCache = true;
 
@@ -86,19 +89,22 @@ for subject = subjects
 
     assistedSolution = solve(info, addDeviceFunction);
 
-    mocoPlotTrajectory(unassistedSolution, assistedSolution);
+    if visualize
+        mocoPlotTrajectory(unassistedSolution, assistedSolution);
+    end
 
     fprintf('Subject %i unassisted: %f\n', subject, unassistedObjective);
     fprintf('Subject %i assisted: %f\n', subject, assistedSolution.getObjective());
 
-    percentChange{subject} = ...
+    percentChange(subject) = ...
             100.0 * (assistedSolution.getObjective() / unassistedObjective - 1);
 end
 
 
 for subject = subjects
-    fprintf('Subject %i percent change: %f\n', subject, percentChange{subject});
+    fprintf('Subject %i percent change: %f\n', subject, percentChange(subject));
 end
+fprintf('Score (lower is better): %f\n', sum(percentChange));
 
 end
 
@@ -118,6 +124,8 @@ end
 
 function [solution] = solve(subjectInfo, addDeviceFunction)
 global verbosity;
+global visualize;
+
 import org.opensim.modeling.*;
 moco = MocoStudy();
 
@@ -178,7 +186,10 @@ end
 % outputTable = moco.analyze(solution, outputPaths);
 % STOFileAdapter.write(outputTable, "assistedOutputs.sto");
 
-% moco.visualize(solution);
+if visualize
+    moco.visualize(solution);
+end
+
 end
 
 function [model] = getMuscleDrivenModel(subjectInfo)
