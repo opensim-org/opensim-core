@@ -124,6 +124,11 @@ little influence on the value of the control at nearby times.
 
 See @ref mococost for more information.
 
+@subsection params Parameter optimization with MocoParameter
+
+Moco allows you to optimize most model parameters by adding a %MocoParameter
+to your MocoProblem. See MocoParameter for more information.
+
 @subsection preskin Prescribed kinematics
 
 You may wish to solve a problem in which you prescribe known kinematics for all
