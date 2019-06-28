@@ -43,9 +43,8 @@ import org.opensim.modeling.*;
 % Part 2e: Solve! Write the solution to file, and visualize.
 
 %% Part 3: Compare Predictive and Tracking Solutions
-% This is a convenience function provided for you. See below for the
-% implementation details.
-compareSolutions(predictSolution, trackingSolution)
+% This is a convenience function provided for you. See mocoPlotTrajectory.m
+mocoPlotTrajectory(predictSolution, trackingSolution, 'predict', 'track');
 
 %% Part 4: Muscle-driven Inverse Problem
 % Create a MocoInverse tool instance.
@@ -98,7 +97,7 @@ compareInverseSolutions(inverseSolution, inverseDeviceSolution);
 
 end
 
-%% Model Creation and Plotting Convenience Functions 
+%% Model Creation and Plotting Convenience Functions
 
 function addCoordinateActuator(model, coordName, optForce)
 
@@ -135,40 +134,7 @@ addCoordinateActuator(model, 'ankle_angle_r', 150);
 
 end
 
-function [model] = getMuscleDrivenModel()
-
-import org.opensim.modeling.*;
-
-% Load the base model.
-model = Model('sitToStand_3dof9musc.osim');
-model.finalizeConnections();
-
-% Replace the muscles in the model with muscles from DeGroote, Fregly, 
-% et al. 2016, "Evaluation of Direct Collocation Optimal Control Problem 
-% Formulations for Solving the Muscle Redundancy Problem". These muscles
-% have the same properties as the original muscles but their characteristic
-% curves are optimized for direct collocation (i.e. no discontinuities, 
-% twice differentiable, etc).
-DeGrooteFregly2016Muscle().replaceMuscles(model);
-
-% Make a few adjustments to help the muscle-driven problems converge.
-for m = 0:model.getMuscles().getSize()-1
-    musc = model.updMuscles().get(m);
-    musc.set_ignore_tendon_compliance(true);
-    musc.set_max_isometric_force(2*musc.get_max_isometric_force());
-    dgf = DeGrooteFregly2016Muscle.safeDownCast(musc);
-    dgf.set_active_force_width_scale(1.5);
-    if strcmp(char(musc.getName()), 'soleus_r')
-        % Soleus has a very long tendon, so modeling its tendon as rigid
-        % causes the fiber to be unrealistically long and generate
-        % excessive passive fiber force.
-        dgf.set_ignore_passive_fiber_force(true);
-    end
-end
-
-end
-
-function compareSolutions(predictSolution, trackingSolution) 
+function compareSolutions(predictSolution, trackingSolution)
 
 % States.
 figure(1);
@@ -213,7 +179,7 @@ for i = 0:numControls-1
          trackingSolution.getControlMat(controlNames.get(i)), '--b', ...
          'linewidth', 2.5);
     hold off
-    title(controlNames.get(i).toCharArray', 'Interpreter', 'none')        
+    title(controlNames.get(i).toCharArray', 'Interpreter', 'none')
     xlabel('time (s)')
     ylabel('value')
     if i == 0
