@@ -97,9 +97,11 @@ protected:
     /// @code
     /// getModel().realizeVelocity(state);
     /// @endcode
+    /// The Lagrange multipliers for kinematic constraints are not available.
     virtual void calcIntegralCostImpl(const SimTK::State& state,
             double& integrand) const;
     /// The endpoint cost cannot depend on actuator controls.
+    /// The Lagrange multipliers for kinematic constraints are not available.
     virtual void calcEndpointCostImpl(const SimTK::State& finalState,
             SimTK::Real& cost) const;
     /// For use within virtual function implementations.

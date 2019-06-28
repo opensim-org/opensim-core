@@ -24,7 +24,7 @@ in your model. MocoInverse attempts to alter your provided kinematics to satisfy
 the kinematic constraints (using Model::assemble()), so the tool will not
 actually track the kinematics as provided if they violate constraints.
 
-See @ref preskin, @ref preskinconstr, and @ref preskinimpl for more information.
+See @ref preskin, @ref preskinconstr, and @ref implpreskin for more information.
 
 
 */
