@@ -39,7 +39,7 @@ using SimTK::Vec3;
 
 static const Vec3 DefaultMuscleColor(.8, .1, .1); // Red for backward compatibility
 //static int counter=0;
-bool Muscle::_printNegativeForceWarning = false;
+bool Muscle::_printWarnings = true;
 
 //=============================================================================
 // CONSTRUCTOR
@@ -667,7 +667,7 @@ void Muscle::computeForce(const SimTK::State& s,
     // NOTE: Actuation could be negative, in particular during CMC, when the optimizer
     // is computing gradients, but in those cases the actuation will be 
     // overridden and will not be computed by the muscle
-    if (!isActuationOverridden(s) && _printNegativeForceWarning &&
+    if (!isActuationOverridden(s) && _printWarnings &&
             (getActuation(s) < -SimTK::SqrtEps)) {
         string msg = getConcreteClassName()
             + "::computeForce, muscle "+ getName() + " force < 0";
