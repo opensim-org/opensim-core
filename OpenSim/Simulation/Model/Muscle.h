@@ -331,14 +331,15 @@ public:
         and applied by the tendon to bones (i.e. not the fiber force) */
     double computeActuation(const SimTK::State& s) const override = 0;
 
-    /** Whether or not to print a warning when muscle force goes negative. May
-        be useful for optimization (e.g. computing finite differences). **/
-    static void setPrintNegativeForceWarning(bool tf) {
-        _printNegativeForceWarning = tf;
+    /** Whether or not to print warnings (e.g. when muscle force goes negative). 
+        May be useful for optimization to ingore warnings when computing finite
+        differences. **/
+    static void setPrintWarnings(bool tf) {
+        _printWarnings = tf;
     };
-    /** Get the current setting of the negative force warning flag. **/
-    static bool getPrintNegativeForceWarning() {
-        return _printNegativeForceWarning;
+    /** Get the current setting of the print warning flag. **/
+    static bool getPrintWarnings() {
+        return _printWarnings;
     };
 
     /** @name Muscle initialization 
@@ -871,7 +872,7 @@ protected:
     double _tendonSlackLength;
 
 private:
-    static bool _printNegativeForceWarning;
+    static bool _printWarnings;
 
 //=============================================================================
 };  // END of class Muscle
