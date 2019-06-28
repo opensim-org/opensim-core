@@ -1,11 +1,11 @@
 # -------------------------------------------------------------------------- #
-# OpenSim Moco: exampleSlidingMass.py                                        #
+# OpenSim Moco: exampleMocoTrack.py                                          #
 # -------------------------------------------------------------------------- #
-# Copyright (c) 2017 Stanford University and the Authors                     #
+# Copyright (c) 2019 Stanford University and the Authors                     #
 #                                                                            #
-# Author(s): Christopher Dembia                                              #
+# Author(s): Nicholas Bianco                                                 #
 #                                                                            #
-# Licensed under the Apache License, Version 2.0 (the "License"); you may    #
+# Licensed under the Apache License, Version 2.0 (the "License") you may    #
 # not use this file except in compliance with the License. You may obtain a  #
 # copy of the License at http://www.apache.org/licenses/LICENSE-2.0          #
 #                                                                            #
@@ -19,72 +19,128 @@
 import os
 import opensim as osim
 
-model = osim.Model()
-model.setName('sliding_mass')
-model.set_gravity(osim.Vec3(0, 0, 0))
-body = osim.Body('body', 2.0, osim.Vec3(0), osim.Inertia(0))
-model.addComponent(body)
+# This example features two different tracking problems solved using the
+# MocoTrack tool. The first demonstrates the basic usage of the tool interface
+# to solve a muscle-driven state tracking problem. The second problem shows
+# how to customize a torque-driven marker tracking problem using more advanced
+# features of the tool interface.
 
-# Allows translation along x.
-joint = osim.SliderJoint('slider', model.getGround(), body)
-coord = joint.updCoordinate()
-coord.setName('position')
-model.addComponent(joint)
+def muscleDrivenStateTracking():
 
-actu = osim.CoordinateActuator()
-actu.setCoordinate(coord)
-actu.setName('actuator')
-actu.setOptimalForce(1)
-model.addComponent(actu)
+    # Create and name an instance of the MocoTrack tool.
+    track = osim.MocoTrack()
+    track.setName("muscle_driven_state_tracking")
 
-body.attachGeometry(osim.Sphere(0.05))
+    # Construct a ModelProcessor and set it on the tool. Here, external ground
+    # reaction forces are added in lieu of a foot-ground contact model and
+    # reserve actuators are added to supplement muscle forces. The default
+    # muscles in the model are replaced with optimization-friendly
+    # DeGrooteFregly2016Muscles, and adjustments are made to the default muscle
+    # parameters.
+    modelProcessor = osim.ModelProcessor("subject_walk_armless.osim")
+    modelProcessor.append(osim.ModOpAddExternalLoads("grf_walk.xml"))
+    modelProcessor.append(osim.ModOpAddReserves(10))
+    modelProcessor.append(osim.ModOpReplaceMusclesWithDeGrooteFregly2016())
+    modelProcessor.append(osim.ModOpIgnorePassiveFiberForces())
+    # modelProcessor.append(osim.ModOpScaleMaxIsometricForce(1.2))
+    modelProcessor.append(osim.ModOpScaleActiveFiberForceCurveWidth(1.5))
+    track.setModel(modelProcessor)
 
-model.finalizeConnections()
+    # Construct a TableProcessor of filtered coordinate value data from an
+    # OpenSim InverseKinematics solution.
+    tableProcessor = osim.TableProcessor("coordinates.sto")
+    track.setStatesReference(tableProcessor)
 
-# Create MocoStudy.
-# ================
-moco = osim.MocoStudy()
-moco.setName('sliding_mass')
+    # This setting allow extra data columns contained in the states reference
+    # that don't correspond to model coordinates.
+    track.set_allow_unused_references(True)
 
-# Define the optimal control problem.
-# ===================================
-problem = moco.updProblem()
+    # Since there is only coordinate position data the states references, this
+    # setting is enable to fill in the missing coordinate speed data using
+    # the derivative of splined position data.
+    track.set_track_reference_position_derivatives(True)
 
-# Model (dynamics).
-# -----------------
-problem.setModel(model)
+    # Initial time, final time, and mesh interval.
+    track.set_initial_time(0.81)
+    track.set_final_time(1.65)
+    track.set_mesh_interval(0.1)
 
-# Bounds.
-# -------
-# Initial time must be 0, final time can be within [0, 5].
-problem.setTimeBounds(osim.MocoInitialBounds(0.), osim.MocoFinalBounds(0., 5.))
+    # Solve! The boolean argument indicates to visualize the solution.
+    solution = track.solve(True)
 
-# Initial position must be 0, final position must be 1.
-problem.setStateInfo('/slider/position/value', osim.MocoBounds(-5, 5),
-                     osim.MocoInitialBounds(0), osim.MocoFinalBounds(1))
-# Initial and final speed must be 0. Use compact syntax.
-problem.setStateInfo('/slider/position/speed', [-50, 50], [0], [0])
+def torqueDrivenMarkerTracking():
 
-# Applied force must be between -50 and 50.
-problem.setControlInfo('/actuator', osim.MocoBounds(-50, 50))
+    # Create and name an instance of the MocoTrack tool.
+    track = osim.MocoTrack()
+    track.setName("torque_driven_marker_tracking")
 
-# Cost.
-# -----
-problem.addCost(osim.MocoFinalTimeCost())
+    # Construct a ModelProcessor adding the external ground reaction forces as
+    # in the previous problem. Remove the muscles in the model and add reserve
+    # actuators which now act as the primary actuators in the system.
+    modelProcessor = osim.ModelProcessor("subject_walk_armless.osim")
+    modelProcessor.append(osim.ModOpAddExternalLoads("grf_walk.xml"))
+    modelProcessor.append(osim.ModOpRemoveMuscles())
+    modelProcessor.append(osim.ModOpAddReserves(250))
+    track.setModel(modelProcessor)
 
-# Configure the solver.
-# =====================
-solver = moco.initTropterSolver()
-solver.set_num_mesh_points(100)
+    # Use this convenience function to set the MocoTrack markers reference
+    # directly from a TRC file. By default, the markers data is filtered at
+    # 6 Hz and if in millimeters, converted to meters. Also, allow extra marker
+    # data columns as in the previous problem.
+    track.setMarkersReferenceFromTRC("marker_trajectories.trc")
+    track.set_allow_unused_references(True)
 
-# Now that we've finished setting up the study, print it to a file.
-moco.printToXML('sliding_mass.omoco')
+    # Increase the tracking weights for markers in the data set placed on bony
+    # landmarks compared to markers located on soft tissue.
+    markerWeights = osim.MocoWeightSet()
+    markerWeights.cloneAndAppend(osim.MocoWeight("R.ASIS", 20))
+    markerWeights.cloneAndAppend(osim.MocoWeight("L.ASIS", 20))
+    markerWeights.cloneAndAppend(osim.MocoWeight("R.PSIS", 20))
+    markerWeights.cloneAndAppend(osim.MocoWeight("L.PSIS", 20))
+    markerWeights.cloneAndAppend(osim.MocoWeight("R.Knee", 10))
+    markerWeights.cloneAndAppend(osim.MocoWeight("R.Ankle", 10))
+    markerWeights.cloneAndAppend(osim.MocoWeight("R.Heel", 10))
+    markerWeights.cloneAndAppend(osim.MocoWeight("R.MT5", 5))
+    markerWeights.cloneAndAppend(osim.MocoWeight("R.Toe", 2))
+    markerWeights.cloneAndAppend(osim.MocoWeight("L.Knee", 10))
+    markerWeights.cloneAndAppend(osim.MocoWeight("L.Ankle", 10))
+    markerWeights.cloneAndAppend(osim.MocoWeight("L.Heel", 10))
+    markerWeights.cloneAndAppend(osim.MocoWeight("L.MT5", 5))
+    markerWeights.cloneAndAppend(osim.MocoWeight("L.Toe", 2))
+    track.set_markers_weight_set(markerWeights)
 
-# Solve the problem.
-# ==================
-solution = moco.solve();
+    # Initial time, final time, and mesh interval.
+    track.set_initial_time(0.81)
+    track.set_final_time(1.65)
+    track.set_mesh_interval(0.05)
 
-solution.write('sliding_mass_solution.sto')
+    # Instead of calling solve(), call initialize() to receive a pre-configured
+    # MocoStudy object based on the settings above. Use this to customize the
+    # problem beyond the MocoTrack interface.
+    moco = track.initialize()
 
-if os.getenv('OPENSIM_USE_VISUALIZER') != '0':
-    moco.visualize(solution);
+    # Get a reference to the MocoControlCost that is added to every MocoTrack
+    # problem by default.
+    problem = moco.updProblem()
+    effort = osim.MocoControlCost.safeDownCast(problem.updCost("control_effort"))
+
+    # Put a large weight on the pelvis CoordinateActuators, which act as the
+    # residual, or 'hand-of-god', forces which we would like to keep as small
+    # as possible.
+    model = modelProcessor.process()
+    model.initSystem()
+    forceSet = model.getForceSet()
+    for i in range(forceSet.getSize()):
+       forcePath = forceSet.get(i).getAbsolutePathString()
+       if 'pelvis' in str(forcePath):
+           effort.setWeight(forcePath, 1000)
+
+    # Solve and visualize.
+    solution = moco.solve()
+    moco.visualize(solution)
+    
+# Solve the muscle-driven state tracking problem.
+muscleDrivenStateTracking()
+
+# Solve the torque-driven marker tracking problem.
+torqueDrivenMarkerTracking()

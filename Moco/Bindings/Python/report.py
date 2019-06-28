@@ -261,9 +261,6 @@ class Report(object):
                     # slashes.
                     pathNoSlashes = path.replace('/', '')
                     if pathNoSlashes in ref.dtype.names:
-                        # print(ref)
-                        # import pdb
-                        # pdb.set_trace()
                         init = getIndexForNearestValue(ref['time'], self.time[0])
                         final = getIndexForNearestValue(ref['time'], 
                             self.time[-1])

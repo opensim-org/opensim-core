@@ -173,7 +173,8 @@ void DeGrooteFregly2016Muscle::calcMuscleLengthInfo(
         const SimTK::State& s, MuscleLengthInfo& mli) const {
 
     const auto& MTULength = getLength(s);
-    if (MTULength < get_tendon_slack_length()) {
+    if (MTULength < get_tendon_slack_length() && 
+            getPrintNegativeForceWarning()) {
         // TODO: Refer to what Millard muscle does when buckling.
         std::cout << "Warning: DeGrooteFregly2016Muscle '" << getName()
                   << "' is buckling (length < tendon_slack_length) at time "

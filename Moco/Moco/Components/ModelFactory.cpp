@@ -258,7 +258,7 @@ void ModelFactory::createReserveActuators(Model& model, double optimalForce) {
             }
         }
 
-        if (!coord.isConstrained(state) || skipCoord) {
+        if (!coord.isConstrained(state) && !skipCoord) {
             auto* actu = new CoordinateActuator();
             actu->setCoordinate(&model.updComponent<Coordinate>(
                     coord.getAbsolutePathString()));

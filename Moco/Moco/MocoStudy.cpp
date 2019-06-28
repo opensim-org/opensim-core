@@ -79,7 +79,20 @@ MocoSolver& MocoStudy::updSolver() { return updSolver<MocoSolver>(); }
 MocoSolution MocoStudy::solve() const {
     // TODO avoid const_cast.
     const_cast<Self*>(this)->initSolverInternal();
-    MocoSolution solution = get_solver().solve();
+
+    // Temporarily disable printing of negative muscle force warnings so the
+    // output stream isn't flooded while computing finite differences.
+    bool oldWarningFlag = Muscle::getPrintNegativeForceWarning();
+    Muscle::setPrintNegativeForceWarning(false);
+    MocoSolution solution;
+    try {
+        solution = get_solver().solve();
+    } catch (Exception& e) { 
+        Muscle::setPrintNegativeForceWarning(oldWarningFlag);
+        throw;
+    }
+    Muscle::setPrintNegativeForceWarning(oldWarningFlag);
+
     bool originallySealed = solution.isSealed();
     if (get_write_solution() != "false") {
         OpenSim::IO::makeDir(get_write_solution());

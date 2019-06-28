@@ -151,8 +151,8 @@ effort = MocoControlCost.safeDownCast(problem.updCost("control_effort"));
 model = modelProcessor.process();
 model.initSystem();
 forceSet = model.getForceSet();
-for i = 1:forceSet.getSize()
-   forcePath = forceSet.get(i-1).getAbsolutePathString();
+for i = 0:forceSet.getSize()-1
+   forcePath = forceSet.get(i).getAbsolutePathString();
    if contains(string(forcePath), 'pelvis')
        effort.setWeight(forcePath, 1000);
    end

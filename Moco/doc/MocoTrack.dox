@@ -3,17 +3,17 @@
 @page mocotrack MocoTrack: motion tracking
 
 For some research applications in musculoskeletal biomechanics, it is not 
-sufficient to perform simulation where model kinematics are prescribed directly
-from experimental. These approaches, called 'inverse' problems, are ubiquitous
-and quite useful (see MocoInverse), but have no way to explain how a change in
-a system parameter or optimization criteria might affect the optimal kinematics 
-of the system. A different class of problems, called 'tracking' problems, tries 
-to address this limitation by freeing up model kinematics while adding an 
-objective term that computes the error between experimental data and the 
-associated model quanities. While tracking problems have been historically either
-difficult to pose or computationally burdensome, recent methods using direct 
-collocation for solving tracking problems in biomechanics have proven this now 
-to be a viable tool [1,2].
+sufficient to perform simulations where model kinematics are prescribed directly
+from experimental data. These approaches, called 'inverse' problems, 
+are ubiquitous and useful (see MocoInverse), but provide no way to explain how a 
+change in a system parameter or optimization criteria might affect the optimal 
+kinematics of the system. A different class of problems, called 'tracking' 
+problems, tries to address this limitation by freeing up model kinematics while 
+adding an objective term that computes the error between experimental data and 
+the associated model quanities. While tracking problems have been historically 
+either difficult to pose or computationally burdensome, recent methods using 
+direct  collocation for solving tracking problems in biomechanics have proven 
+this now to be a viable tool [1,2].
 
 In Moco, you can use the MocoTrack tool to solve tracking optimization problems.
 The MocoTrack tool accepts both marker trajectory and model coordinate kinematic
