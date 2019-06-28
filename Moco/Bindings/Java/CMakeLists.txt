@@ -116,21 +116,9 @@ set_source_files_properties(
         ${SWIG_JAVA_MOCO_CXX_FILE}
         PROPERTIES COMPILE_FLAGS "${COMPILE_FLAGS}")
 
-if(MOCO_COPY_DEPENDENCIES)
-    # The osim libraries that osimJavaJNI needs are in the same folder as
-    # osimJavaJNI.
-    if(APPLE)
-        # Adding @loader_rpath (the \ is to escape the @) to the run-path list
-        # will let osimJavaJNI find osimTools, etc. 
-        set(install_rpath "\@loader_path/")
-    elseif(UNIX)
-        # $ORIGIN is the equivalent mechanism on Linux.
-        set(install_rpath "\$ORIGIN/")
-    endif()
-    set_property(TARGET osimMocoJavaJNI APPEND PROPERTY
-        INSTALL_RPATH "${install_rpath}"
-        )
-endif()
+MocoAddInstallRPATHSelf(TARGET osimMocoJavaJNI LOADER)
+MocoAddInstallRPATHSimbody(TARGET osimMocoJavaJNI LOADER
+        FROM "${CMAKE_INSTALL_LIBDIR}")
 
 install(TARGETS osimMocoJavaJNI EXPORT MocoTargets
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}

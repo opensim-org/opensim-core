@@ -73,7 +73,7 @@ namespace OpenSim {
 /// constraints are automatically detected if present in the model and are 
 /// converted to path constraints in the optimal control problem based on the 
 /// method presented in Posa et al. 2016, 'Optimization and stabilization of 
-/// trajectories for constrained dynamical systems'. The 
+/// trajectories for constrained dynamical systems'; see @ref implkincon. The
 /// `minimize_lagrange_multipliers` and `lagrange_multiplier_weight` settings
 /// allow you to enable and set the weight for the minimization of all 
 /// Lagrange multipliers associated with kinematic constraints in the problem.

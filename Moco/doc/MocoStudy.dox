@@ -180,7 +180,7 @@ To prescribe motion in the "reduce-DOF" way, add a PositionMotion component
 to your model. PositionMotion requires that all DOFs are prescribed; we do not
 support prescribing a subset of the degrees of freedom.
 
-See @ref mocoinverse and @ref preskinimpl for more information.
+See @ref mocoinverse and @ref implpreskin for more information.
 
 @subsubsection preskinconstr Prescribed kinematics with kinematic constraints
 

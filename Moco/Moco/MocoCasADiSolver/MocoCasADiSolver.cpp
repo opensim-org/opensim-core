@@ -243,7 +243,7 @@ std::unique_ptr<CasOC::Solver> MocoCasADiSolver::createCasOCSolver(
             {"central", "forward", "backward"});
     casSolver->setFiniteDifferenceScheme(get_optim_finite_difference_scheme());
 
-    casSolver->getCallbackInterval(get_output_interval());
+    casSolver->setCallbackInterval(get_output_interval());
 
     Dict pluginOptions;
     pluginOptions["verbose_init"] = true;

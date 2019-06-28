@@ -1,6 +1,6 @@
-# Temporary hack to package dependencies on Macs. TODO
+# Temporary hack to package dependencies on Macs.
 
-set(libdir "${CMAKE_INSTALL_PREFIX}/lib")
+set(libdir "@CMAKE_INSTALL_PREFIX@/@CMAKE_INSTALL_LIBDIR@")
 message(STATUS "Editing RPATH of tropter dependency libraries")
 
 macro(install_name_tool_change lib dep_name dep_oldpath)

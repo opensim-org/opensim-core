@@ -10,14 +10,14 @@ set_and_check(@CMAKE_PROJECT_NAME@_LIB_DIR "@PACKAGE_CMAKE_INSTALL_LIBDIR@")
 set_and_check(@CMAKE_PROJECT_NAME@_BIN_DIR "@PACKAGE_CMAKE_INSTALL_BINDIR@")
 
 set_and_check(@CMAKE_PROJECT_NAME@_INCLUDE_DIRS
-        "@PACKAGE_MOCO_INSTALL_INCLUDEDIR@")
+        "@PACKAGE_CMAKE_INSTALL_INCLUDEDIR@")
         
 set_and_check(@CMAKE_PROJECT_NAME@_USE_FILE
         "@PACKAGE_MOCO_INSTALL_CMAKEDIR@/Use@CMAKE_PROJECT_NAME@.cmake")
 
 include("@PACKAGE_MOCO_INSTALL_CMAKEDIR@/@CMAKE_PROJECT_NAME@Targets.cmake")
 
-list(APPEND @CMAKE_PROJECT_NAME@_LIBRARIES osimMuscollo)
+list(APPEND @CMAKE_PROJECT_NAME@_LIBRARIES osimMoco)
 
 # TODO add logic for if depenendencies are not copied.
 find_package(tropter REQUIRED PATHS "@PACKAGE_CMAKE_INSTALL_PREFIX@"
@@ -27,4 +27,4 @@ find_package(OpenSim 4.0 REQUIRED PATHS "@PACKAGE_CMAKE_INSTALL_PREFIX@"
         NO_MODULE NO_DEFAULT_PATH)
 
 # Are all the components requested (required) by the user available?
-check_required_components(Muscollo)
+check_required_components(Moco)

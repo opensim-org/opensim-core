@@ -47,7 +47,8 @@ void MocoProblemRep::initialize() {
     }
 
     const auto& ph0 = m_problem->getPhase(0);
-    m_model_base = ph0.getModel();
+    // TODO: Provide directory from which to load model file.
+    m_model_base = ph0.getModelProcessor().process();
     m_model_base.finalizeFromProperties();
     int countMotion = 0;
     for (const auto& comp : m_model_base.getComponentList<PositionMotion>()) {
@@ -349,7 +350,11 @@ void MocoProblemRep::initialize() {
             if (ph0.get_bound_activation_from_excitation()) {
                 const auto* muscle = dynamic_cast<const Muscle*>(&actu);
                 if (muscle && !muscle->get_ignore_activation_dynamics()) {
-                    auto& info = m_state_infos[actuName + "/activation"];
+                    const std::string stateName = actuName + "/activation";
+                    auto& info = m_state_infos[stateName];
+                    if (info.getName().empty()) {
+                        info.setName(stateName);
+                    }
                     if (!info.getBounds().isSet()) {
                         info.setBounds(m_control_infos[actuName].getBounds());
                     }
