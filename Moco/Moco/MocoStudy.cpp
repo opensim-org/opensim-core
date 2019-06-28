@@ -82,16 +82,16 @@ MocoSolution MocoStudy::solve() const {
 
     // Temporarily disable printing of negative muscle force warnings so the
     // output stream isn't flooded while computing finite differences.
-    bool oldWarningFlag = Muscle::getPrintNegativeForceWarning();
-    Muscle::setPrintNegativeForceWarning(false);
+    bool oldWarningFlag = Muscle::getPrintWarnings();
+    Muscle::setPrintWarnings(false);
     MocoSolution solution;
     try {
         solution = get_solver().solve();
     } catch (Exception& e) { 
-        Muscle::setPrintNegativeForceWarning(oldWarningFlag);
+        Muscle::setPrintWarnings(oldWarningFlag);
         throw;
     }
-    Muscle::setPrintNegativeForceWarning(oldWarningFlag);
+    Muscle::setPrintWarnings(oldWarningFlag);
 
     bool originallySealed = solution.isSealed();
     if (get_write_solution() != "false") {
