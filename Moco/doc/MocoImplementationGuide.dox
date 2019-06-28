@@ -72,7 +72,7 @@ stages.
 @subsection implkincon Kinematic constraints
 
 When performing musculoskeletal simulations, we must satisfy the following
-equations:
+equations for the multibody dynamics, kinematic constraints, and auxiliary dynamics (in that order):
 
 \f[
     \begin{alignat*}{2}
@@ -159,14 +159,14 @@ f_{\mathrm{residual}} = M \dot{u} + f_{\mathrm{bias}} - f_{\mathrm{app}}.
 Simbody provides the SimTK::SimbodyMatterSubsystem::calcResidual() "inverse
 dynamics" operator to compute this residual force, and we could use this
 residual force in a path constraint to enforce multibody dynamics implicitly.
-However, the accelerations we provide to calcResidual() are different from the
-ones computed by realizing to SimTK::Stage::Acceleration, and computing joint
-reaction loads would use the incorrect "forward" accelerations. Therefore, we
-use an alternate scheme: we use SimTK::Motion to prescribe generalized
-accelerations, using the AccelerationMotion component. The SimTK::Motion comes
-with motion Lagrange multipliers \f$ \lambda_m \f$ that, when realizing to
-SimTK::Stage::Acceleration, are set to be the forces required for multibody
-dynamics to hold.
+However, the accelerations computed by realizing to SimTK::Stage::Acceleration
+(e.g., when computing a joint reaction load for a cost term) are different from
+the acceleration values we receive from the optimizer to perform calcResidual().
+Therefore, we use an alternate scheme: we use SimTK::Motion to prescribe
+generalized accelerations, using the AccelerationMotion component. The
+SimTK::Motion comes with motion Lagrange multipliers \f$ \lambda_m \f$ that,
+when realizing to SimTK::Stage::Acceleration, are set to be the forces required
+for multibody dynamics to hold.
 
 \f[
 M \dot{u} + f_{\mathrm{bias}} + \lambda_m = f_{\mathrm{app}}.
@@ -179,7 +179,15 @@ To enforce multibody dynamics, we use a path constraint to enforce the motion
 multipliers to be 0; that is, the force elements in the model must generate the
 forces necessary to satisfy the equations of motion.
 
-@subsubsection implcombined Implicit multibody dynamics with kinematic constraints
+@subsubsection implimplicitkincon Implicit multibody dynamics with kinematic constraints
+
+With kinematic constraints, the equations of motion contain both kinematic
+constraint Lagrange multipliers \f$ \lambda_c \f$ and motion Lagrange multpliers
+\f$ \lambda_m \f$:
+
+\f[
+M(q)\dot{u} + f_{\textrm{bias}}(q, u) + G(q)^T \lambda_c + \lambda_m = f_{\textrm{app}}(t, q, u, z, x).
+\f]
 
 Handling kinematic constraints with implicit multibody dynamics is no different
 than how kinematic constraints are handled with explicit multibody dynamics.
@@ -196,12 +204,17 @@ and updating these accelerations with each optimization iteration. For
 prescribed kinematics, we prescribe coordinates, speeds, and accelerations based
 on user input. Given the similarity, we again use SimTK::Motion, but this time
 we enforce the motion at the position level using the PositionMotion component.
+No constraints are added (unlike with the prescribed_function property of
+OpenSim::Coordinate); instead, variables are replaced with data.
 
 For a system without kinematic constraints, the equations of motion are:
 
 \f[
-M \dot{u} + f_{\mathrm{bias}} + \lambda_m = f_{\mathrm{app}}.
+M(\hat{q})\dot{\hat{u}} + f_{\textrm{bias}}(\hat{q}, \hat{u}) + \lambda_m = f_{\textrm{app}}(t, \hat{q}, \hat{u}, z, x) \\
 \f]
+
+The hat denotes known quantities; the only variables are  \f$ z \f$ and \f$ x
+\f$.
 
 The Lagrange multipliers \f$ \lambda_m \f$ are the mobility forces required for
 the system to follow the prescribed kinematics. In our case, we do not want any
@@ -223,7 +236,7 @@ does not contain a PositionMotion.
 With kinematic constraints, the equations of motion are
 
 \f[
-M \dot{u} + f_{\mathrm{bias}} + \lambda_m + G^T \lambda_c = f_{\mathrm{app}}
+M(\hat{q})\dot{\hat{u}} + f_{\textrm{bias}}(\hat{q}, \hat{u}) + G(\hat{q})^T \lambda_c + \lambda_m = f_{\textrm{app}}(t, \hat{q}, \hat{u}, z, x) \\
 \f]
 
 \f$ G \f$ is the kinematic constraint Jacobian and \f$ \lambda_c \f$ are the
