@@ -7,7 +7,7 @@
 %                                                                            %
 % Licensed under the Apache License, Version 2.0 (the "License"); you may    %
 % not use this file except in compliance with the License. You may obtain a  %
-% copy of the License at http://www.apache.org/licenses/LICENSE-2.0          %
+% copy of the License at http:%www.apache.org/licenses/LICENSE-2.0           %
 %                                                                            %
 % Unless required by applicable law or agreed to in writing, software        %
 % distributed under the License is distributed on an "AS IS" BASIS,          %
@@ -18,72 +18,35 @@
 
 % This example features two different tracking problems solved using the
 % MocoTrack tool. The first demonstrates the basic usage of the tool interface
-% to solve a muscle-driven state tracking problem. The second problem shows
-% how to customize a torque-driven marker tracking problem using more advanced
+% to solve a torque-driven marker tracking problem. The second problem shows
+% how to customize a muscle-driven state tracking problem using more advanced
 % features of the tool interface.
+% 
+% Data and model source: https:%simtk.org/projects/full_body
+% 
+% Model
+% -----
+% The model described in the file 'subject_walk_armless.osim' included in this
+% file is a modified version of the Rajagopoal et al. 2016 musculoskeletal 
+% model. The lumbar, subtalar, and mtp coordinates have been replaced with
+% WeldJoint%s and residual actuators have been added to the pelvis (1 N-m for
+% rotational coordinates and 10 N for translational coordinates). Finally, the
+% arms and all associated components have been removed for simplicity.
+% 
+% Data
+% ----
+% The coordinate and marker data included in the 'coordinates.sto' and 
+% 'marker_trajectories.trc' files also come from the Rajagopal et al. 2016
+% model distribution. The coordinates were computed using inverse kinematics
+% and modified via the Residual Reduction Algorithm (RRA). 
 
 function exampleMocoTrack()
 
+% Solve the torque-driven marker tracking problem.
+torqueDrivenMarkerTracking();
+
 % Solve the muscle-driven state tracking problem.
 muscleDrivenStateTracking();
-
-% Solve the torque-driven marker tracking problem.
-% torqueDrivenMarkerTracking();
-end
-
-function muscleDrivenStateTracking()
-
-import org.opensim.modeling.*;
-
-% Create and name an instance of the MocoTrack tool.
-track = MocoTrack();
-track.setName("muscle_driven_state_tracking");
-
-% Construct a ModelProcessor and set it on the tool. Here, external ground
-% reaction forces are added in lieu of a foot-ground contact model and
-% reserve actuators are added to supplement muscle forces. The default
-% muscles in the model are replaced with optimization-friendly
-% DeGrooteFregly2016Muscles, and adjustments are made to the default muscle
-% parameters.
-modelProcessor = ModelProcessor("subject_walk_armless.osim");
-modelProcessor.append(ModOpAddExternalLoads("grf_walk.xml"));
-modelProcessor.append(ModOpAddReserves(10));
-modelProcessor.append(ModOpReplaceMusclesWithDeGrooteFregly2016());
-modelProcessor.append(ModOpIgnorePassiveFiberForces());
-modelProcessor.append(ModOpScaleMaxIsometricForce(1.2));
-modelProcessor.append(ModOpScaleActiveFiberForceCurveWidth(1.5));
-track.setModel(modelProcessor);
-
-% Construct a TableProcessor of filtered coordinate value data from an
-% OpenSim InverseKinematics solution.
-tableProcessor = TableProcessor("coordinates.sto");
-tableProcessor.append(TabOpLowPassFilter(6));
-track.setStatesReference(tableProcessor);
-
-% This setting allow extra data columns contained in the states reference
-% that don't correspond to model coordinates.
-track.set_allow_unused_references(true);
-
-% Since there is only coordinate position data the states references, this
-% setting is enable to fill in the missing coordinate speed data using
-% the derivative of splined position data.
-track.set_track_reference_position_derivatives(true);
-
-% Initial time, final time, and mesh interval.
-track.set_initial_time(0.81);
-track.set_final_time(1.65);
-track.set_mesh_interval(0.1);
-track.set_control_effort_weight(0.1);
-
-% Solve! The boolean argument indicates to visualize the solution.
-% solution = track.solve(true);
-
-moco = track.initialize();
-solver = MocoCasADiSolver.safeDownCast(moco.updSolver());
-solver.set_parallel(8);
-
-solution = moco.solve();
-moco.visualize(solution);
 
 end
 
@@ -92,27 +55,41 @@ function torqueDrivenMarkerTracking()
 import org.opensim.modeling.*;
 
 % Create and name an instance of the MocoTrack tool.
-track = MocoTrack();
+MocoTrack track;
 track.setName("torque_driven_marker_tracking");
 
-% Construct a ModelProcessor adding the external ground reaction forces as
-% in the previous problem. Remove the muscles in the model and add reserve
-% actuators which now act as the primary actuators in the system.
+% Construct a ModelProcessor and add it to the tool. ModelProcessors
+% accept a base model and allow you to easily modify the model by appending
+% ModelOperators. Operations are performed in the order that they are
+% appended to the model.
+% Create the base ModelOperator by passing in the model file.
 modelProcessor = ModelProcessor("subject_walk_armless.osim");
+% Add ground reaction external loads in lieu of a ground-contact model.
 modelProcessor.append(ModOpAddExternalLoads("grf_walk.xml"));
+% Remove all the muscles in the model's ForceSet.
 modelProcessor.append(ModOpRemoveMuscles());
+% Add CoordinateActuators to the model degrees-of-freedom. This
+% ignores the pelvis coordinates which already have residual 
+% CoordinateActuators.
 modelProcessor.append(ModOpAddReserves(250));
 track.setModel(modelProcessor);
 
 % Use this convenience function to set the MocoTrack markers reference
 % directly from a TRC file. By default, the markers data is filtered at
-% 6 Hz and if in millimeters, converted to meters. Also, allow extra marker
-% data columns as in the previous problem.
+% 6 Hz and if in millimeters, converted to meters.
 track.setMarkersReferenceFromTRC("marker_trajectories.trc");
+
+% There is marker data in the 'marker_trajectories.trc' associated with
+% model markers that no longer exists (i.e. markers on the arms). Set this
+% flag to avoid an exception from being thrown.
 track.set_allow_unused_references(true);
 
-% Increase the tracking weights for markers in the data set placed on bony
-% landmarks compared to markers located on soft tissue.
+% Increase the global marker tracking weight, which is the weight
+% associated with the internal MocoMarkerTrackingCost term.
+track.set_markers_global_tracking_weight(10);
+
+% Increase the tracking weights for individual markers in the data set 
+% placed on bony landmarks compared to markers located on soft tissue.
 markerWeights = MocoWeightSet();
 markerWeights.cloneAndAppend(MocoWeight("R.ASIS", 20));
 markerWeights.cloneAndAppend(MocoWeight("L.ASIS", 20));
@@ -130,15 +107,70 @@ markerWeights.cloneAndAppend(MocoWeight("L.MT5", 5));
 markerWeights.cloneAndAppend(MocoWeight("L.Toe", 2));
 track.set_markers_weight_set(markerWeights);
 
-% Initial time, final time, and mesh interval.
+% Initial time, final time, and mesh interval. The number of mesh points
+% used to discretize the problem is computed internally using these values.
 track.set_initial_time(0.81);
 track.set_final_time(1.65);
 track.set_mesh_interval(0.05);
+
+% Solve! The boolean argument indicates to visualize the solution.
+solution = track.solve(true);
+
+end
+
+function muscleDrivenStateTracking()
+
+import org.opensim.modeling.*;
+
+% Create and name an instance of the MocoTrack tool. 
+track = MocoTrack();
+track.setName("muscle_driven_state_tracking");
+
+% Construct a ModelProcessor and set it on the tool. The default
+% muscles in the model are replaced with optimization-friendly
+% DeGrooteFregly2016Muscles, and adjustments are made to the default muscle
+% parameters.
+modelProcessor = ModelProcessor("subject_walk_armless.osim");
+modelProcessor.append(ModOpAddExternalLoads("grf_walk.xml"));
+modelProcessor.append(ModOpReplaceMusclesWithDeGrooteFregly2016());
+% Only valid for DeGrooteFregly2016Muscles.
+modelProcessor.append(ModOpIgnorePassiveFiberForces());
+% Only valid for DeGrooteFregly2016Muscles.
+modelProcessor.append(ModOpScaleActiveFiberForceCurveWidth(1.5));
+track.setModel(modelProcessor);
+
+% Construct a TableProcessor of the coordinate data and pass it to the 
+% tracking tool. TableProcessors can be used in the same way as
+% ModelProcessors by appending TableOperators to modify the base table.
+% A TableProcessor with no operators, as we have here, simply returns the
+% base table.
+track.setStatesReference(TableProcessor("coordinates.sto"));
+track.set_states_global_tracking_weight(10);
+
+% This setting allow extra data columns contained in the states
+% reference that don't correspond to model coordinates.
+track.set_allow_unused_references(true);
+
+% Since there is only coordinate position data the states references, this
+% setting is enabled to fill in the missing coordinate speed data using
+% the derivative of splined position data.
+track.set_track_reference_position_derivatives(true);
+
+% Initial time, final time, and mesh interval.
+track.set_initial_time(0.81);
+track.set_final_time(1.65);
+track.set_mesh_interval(0.08);
 
 % Instead of calling solve(), call initialize() to receive a pre-configured
 % MocoStudy object based on the settings above. Use this to customize the
 % problem beyond the MocoTrack interface.
 moco = track.initialize();
+
+% By default, the MocoTrack tool uses explicit dynamics for the model 
+% defect constraints. Here, get a reference to the MocoSolver and set the 
+% dynamics mode to "implicit" instead.
+solver = MocoCasADiSolver.safeDownCast(moco.updSolver());
+solver.set_dynamics_mode("implicit");
 
 % Get a reference to the MocoControlCost that is added to every MocoTrack
 % problem by default.
@@ -154,7 +186,7 @@ forceSet = model.getForceSet();
 for i = 0:forceSet.getSize()-1
    forcePath = forceSet.get(i).getAbsolutePathString();
    if contains(string(forcePath), 'pelvis')
-       effort.setWeight(forcePath, 1000);
+       effort.setWeight(forcePath, 10);
    end
 end
 
@@ -163,3 +195,5 @@ solution = moco.solve();
 moco.visualize(solution);
 
 end
+
+

@@ -3,42 +3,6 @@
 	<Model name="subject_scale_walk">
 		<!--List of components that this component owns and serializes.-->
 		<components>
-			<CoordinateActuator name="tau_pelvis_tilt">
-				<!--Name of the generalized coordinate to which the actuator applies.-->
-				<coordinate>pelvis_tilt</coordinate>
-				<!--The maximum generalized force produced by this actuator.-->
-				<optimal_force>100</optimal_force>
-			</CoordinateActuator>
-			<CoordinateActuator name="tau_pelvis_list">
-				<!--Name of the generalized coordinate to which the actuator applies.-->
-				<coordinate>pelvis_list</coordinate>
-				<!--The maximum generalized force produced by this actuator.-->
-				<optimal_force>100</optimal_force>
-			</CoordinateActuator>
-			<CoordinateActuator name="tau_pelvis_rotation">
-				<!--Name of the generalized coordinate to which the actuator applies.-->
-				<coordinate>pelvis_rotation</coordinate>
-				<!--The maximum generalized force produced by this actuator.-->
-				<optimal_force>100</optimal_force>
-			</CoordinateActuator>
-			<CoordinateActuator name="tau_pelvis_tx">
-				<!--Name of the generalized coordinate to which the actuator applies.-->
-				<coordinate>pelvis_tx</coordinate>
-				<!--The maximum generalized force produced by this actuator.-->
-				<optimal_force>1000</optimal_force>
-			</CoordinateActuator>
-			<CoordinateActuator name="tau_pelvis_ty">
-				<!--Name of the generalized coordinate to which the actuator applies.-->
-				<coordinate>pelvis_ty</coordinate>
-				<!--The maximum generalized force produced by this actuator.-->
-				<optimal_force>1000</optimal_force>
-			</CoordinateActuator>
-			<CoordinateActuator name="tau_pelvis_tz">
-				<!--Name of the generalized coordinate to which the actuator applies.-->
-				<coordinate>pelvis_tz</coordinate>
-				<!--The maximum generalized force produced by this actuator.-->
-				<optimal_force>1000</optimal_force>
-			</CoordinateActuator>
 		</components>
 		<!--The model's ground reference frame.-->
 		<Ground name="ground">
@@ -11689,6 +11653,42 @@
 						<!--All properties of this object have their default values.-->
 					</TendonForceLengthCurve>
 				</Millard2012EquilibriumMuscle>
+                <CoordinateActuator name="tau_pelvis_tilt">
+                    <!--Name of the generalized coordinate to which the actuator applies.-->
+                    <coordinate>pelvis_tilt</coordinate>
+                    <!--The maximum generalized force produced by this actuator.-->
+                    <optimal_force>1</optimal_force>
+                </CoordinateActuator>
+                <CoordinateActuator name="tau_pelvis_list">
+                    <!--Name of the generalized coordinate to which the actuator applies.-->
+                    <coordinate>pelvis_list</coordinate>
+                    <!--The maximum generalized force produced by this actuator.-->
+                    <optimal_force>1</optimal_force>
+                </CoordinateActuator>
+                <CoordinateActuator name="tau_pelvis_rotation">
+                    <!--Name of the generalized coordinate to which the actuator applies.-->
+                    <coordinate>pelvis_rotation</coordinate>
+                    <!--The maximum generalized force produced by this actuator.-->
+                    <optimal_force>1</optimal_force>
+                </CoordinateActuator>
+                <CoordinateActuator name="tau_pelvis_tx">
+                    <!--Name of the generalized coordinate to which the actuator applies.-->
+                    <coordinate>pelvis_tx</coordinate>
+                    <!--The maximum generalized force produced by this actuator.-->
+                    <optimal_force>10</optimal_force>
+                </CoordinateActuator>
+                <CoordinateActuator name="tau_pelvis_ty">
+                    <!--Name of the generalized coordinate to which the actuator applies.-->
+                    <coordinate>pelvis_ty</coordinate>
+                    <!--The maximum generalized force produced by this actuator.-->
+                    <optimal_force>10</optimal_force>
+                </CoordinateActuator>
+                <CoordinateActuator name="tau_pelvis_tz">
+                    <!--Name of the generalized coordinate to which the actuator applies.-->
+                    <coordinate>pelvis_tz</coordinate>
+                    <!--The maximum generalized force produced by this actuator.-->
+                    <optimal_force>10</optimal_force>
+                </CoordinateActuator>
 			</objects>
 			<groups />
 		</ForceSet>
