@@ -857,7 +857,7 @@ void testFunctionBasedBushingForce()
     SimTK::State& osim_state2 = osimModel.initSystem();
 
     // set the initial height of the ball on slider
-    sliderCoord.setValue(osim_state, start_h);
+    sliderCoord.setValue(osim_state2, start_h);
     osimModel.getMultibodySystem().realize(osim_state2, Stage::Position);
 
     //==========================================================================
@@ -1005,7 +1005,7 @@ void testExpressionBasedBushingForceTranslational()
     SimTK::State& osim_state2 = osimModel.initSystem();
 
     // set the initial height of the ball on slider
-    sliderCoord.setValue(osim_state, start_h);
+    sliderCoord.setValue(osim_state2, start_h);
     osimModel.getMultibodySystem().realize(osim_state2, Stage::Position);
 
     //==========================================================================
