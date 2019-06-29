@@ -19,8 +19,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "../MocoUtilities.h" //TODO
-#include "../osimMocoDLL.h" //TODO
+#include "../MocoUtilities.h"
+#include "../osimMocoDLL.h"
 
 #include <OpenSim/Simulation/Model/Force.h>
 #include <OpenSim/Common/Set.h>
@@ -43,9 +43,9 @@ public:
     OpenSim_DECLARE_PROPERTY(dissipation, double,
             "The dissipation coefficient, default is 0 (s/m).");
     OpenSim_DECLARE_PROPERTY(static_friction, double,
-            "The coefficient of static frictiont, default is 0.");
+            "The coefficient of static friction, default is 0.");
     OpenSim_DECLARE_PROPERTY(dynamic_friction, double,
-            "The coefficient of dynamic frictiont, default is 0.");
+            "The coefficient of dynamic friction, default is 0.");
     OpenSim_DECLARE_PROPERTY(viscous_friction, double,
             "The coefficient of viscous friction, default is 0.");
     OpenSim_DECLARE_PROPERTY(transition_velocity, double,
@@ -82,47 +82,15 @@ public:
 // PUBLIC METHODS
 //=============================================================================
     SmoothSphereHalfSpaceForce();
-#ifndef SWIG
-    /** The force takes ownership of the passed-in params. */
-    // TODO
-    /*explicit SmoothSphereHalfSpaceForce();*/
-#endif
 
-    // TODO
     SmoothSphereHalfSpaceForce(const std::string& name,
-		const Frame& contactSphereBodyFrame,
+        const Frame& contactSphereBodyFrame,
         Vec3 contactSphereLocation, double contactSphereRadius,
         const Frame& contactHalfSpaceBodyFrame,
         Transform contactHalfSpaceTransform, double stiffness,
         double dissipation, double staticFriction, double dynamicFriction,
         double viscousFriction, double transitionVelocity, double cf,
         double bd, double bv);
-
-    //// TODO const and override
-    //Vec3 getContactSphereLocation() const;
-    //void setContactSphereLocation(Vec3 contactSphereLocation);
-    //double getContactSphereRadius() const;
-    //void setContactSphereRadius(double contactSphereRadius);
-    //Transform getContactHalfSpaceTransform() const;
-    //void setContactHalfSpaceTransform(Transform contactHalfSpaceTransform);
-    //double getStiffness() const;
-    //void setStiffness(double stiffness);
-    //double getDissipation() const;
-    //void setDissipation(double dissipation);
-    //double getStaticFriction() const;
-    //void setStaticFriction(double staticFriction);
-    //double getDynamicFriction() const;
-    //void setDynamicFriction(double dynamicFriction);
-    //double getViscousFriction() const;
-    //void setViscousFriction(double viscousFriction);
-    //double getTransitionVelocity() const;
-    //void setTransitionVelocity(double transitionVelocity);
-    //double getConstantContactForce() const;
-    //void setConstantContactForce(double cf);
-    //double getHertzSmoothing() const;
-    //void setHertzSmoothing(double bd);
-    //double getHuntCrossleySmoothing() const;
-    //void setHuntCrossleySmoothing(double bv);
 
 //=============================================================================
 // REPORTING

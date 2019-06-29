@@ -380,22 +380,30 @@ using namespace OpenSim;
     Array<double> Force_values_heel_r = HC_heel_r->getRecordValues(*state);
     Array<double> Force_values_front_r = HC_front_r->getRecordValues(*state);
     SimTK::SpatialVec GRF_heel_r;
-    GRF_heel_r[0] = Vec3(Force_values_heel_r[9], Force_values_heel_r[10], Force_values_heel_r[11]);
-    GRF_heel_r[1] = Vec3(Force_values_heel_r[6], Force_values_heel_r[7], Force_values_heel_r[8]);
+    /*GRF_heel_r[0] = Vec3(Force_values_heel_r[9], Force_values_heel_r[10], Force_values_heel_r[11]);
+    GRF_heel_r[1] = Vec3(Force_values_heel_r[6], Force_values_heel_r[7], Force_values_heel_r[8]);*/
+    GRF_heel_r[0] = Vec3(Force_values_heel_r[3], Force_values_heel_r[4], Force_values_heel_r[5]);
+    GRF_heel_r[1] = Vec3(Force_values_heel_r[0], Force_values_heel_r[1], Force_values_heel_r[2]);
     SimTK::SpatialVec GRF_front_r;
-    GRF_front_r[0] = Vec3(Force_values_front_r[9], Force_values_front_r[10], Force_values_front_r[11]);
-    GRF_front_r[1] = Vec3(Force_values_front_r[6], Force_values_front_r[7], Force_values_front_r[8]);
+    /*GRF_front_r[0] = Vec3(Force_values_front_r[9], Force_values_front_r[10], Force_values_front_r[11]);
+    GRF_front_r[1] = Vec3(Force_values_front_r[6], Force_values_front_r[7], Force_values_front_r[8]);*/
+    GRF_front_r[0] = Vec3(Force_values_front_r[3], Force_values_front_r[4], Force_values_front_r[5]);
+    GRF_front_r[1] = Vec3(Force_values_front_r[0], Force_values_front_r[1], Force_values_front_r[2]);
     int nfoot_r = model->getBodySet().get("calcn_r").getMobilizedBodyIndex();
     appliedBodyForces[nfoot_r] = appliedBodyForces[nfoot_r] + GRF_heel_r + GRF_front_r;
     /// left
     Array<double> Force_values_heel_l = HC_heel_l->getRecordValues(*state);
     Array<double> Force_values_front_l = HC_front_l->getRecordValues(*state);
     SimTK::SpatialVec GRF_heel_l;
-    GRF_heel_l[0] = Vec3(Force_values_heel_l[9], Force_values_heel_l[10], Force_values_heel_l[11]);
-    GRF_heel_l[1] = Vec3(Force_values_heel_l[6], Force_values_heel_l[7], Force_values_heel_l[8]);
+    /*GRF_heel_l[0] = Vec3(Force_values_heel_l[9], Force_values_heel_l[10], Force_values_heel_l[11]);
+    GRF_heel_l[1] = Vec3(Force_values_heel_l[6], Force_values_heel_l[7], Force_values_heel_l[8]);*/
+    GRF_heel_l[0] = Vec3(Force_values_heel_l[3], Force_values_heel_l[4], Force_values_heel_l[5]);
+    GRF_heel_l[1] = Vec3(Force_values_heel_l[0], Force_values_heel_l[1], Force_values_heel_l[2]);
     SimTK::SpatialVec GRF_front_l;
-    GRF_front_l[0] = Vec3(Force_values_front_l[9], Force_values_front_l[10], Force_values_front_l[11]);
-    GRF_front_l[1] = Vec3(Force_values_front_l[6], Force_values_front_l[7], Force_values_front_l[8]);
+   /* GRF_front_l[0] = Vec3(Force_values_front_l[9], Force_values_front_l[10], Force_values_front_l[11]);
+    GRF_front_l[1] = Vec3(Force_values_front_l[6], Force_values_front_l[7], Force_values_front_l[8]);*/
+    GRF_front_l[0] = Vec3(Force_values_front_l[3], Force_values_front_l[4], Force_values_front_l[5]);
+    GRF_front_l[1] = Vec3(Force_values_front_l[0], Force_values_front_l[1], Force_values_front_l[2]);
     int nfoot_l = model->getBodySet().get("calcn_l").getMobilizedBodyIndex();
     appliedBodyForces[nfoot_l] = appliedBodyForces[nfoot_l] + GRF_heel_l + GRF_front_l;
     /// inverse dynamics
