@@ -21,5 +21,7 @@ if(DOXYGEN_FOUND)
 
     install(DIRECTORY "${html_binary_dir}"
             DESTINATION "${CMAKE_INSTALL_DOCDIR}/MocoAPI")
+    install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/MocoAPI.html"
+            DESTINATION "${CMAKE_INSTALL_DOCDIR}/")
 
 endif()
