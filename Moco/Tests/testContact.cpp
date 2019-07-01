@@ -154,7 +154,7 @@ SimTK::Real testNormalForce(CreateContactFunction createContact) {
 
 // Test the friction component of the contact force by ensuring that the point
 // mass travels the expected horizontal distance if it starts in the ground.
-// To make the friction force roughly constant, we want the equilibruim height
+// To make the friction force roughly constant, we want the equilibrium height
 // of the mass (from testNormalForce()).
 void testFrictionForce(CreateContactFunction createContact,
         const SimTK::Real& equilibriumHeight) {
@@ -248,7 +248,7 @@ void testStationPlaneContactForce(CreateContactFunction createContact) {
 // Test our wrapping of SmoothSphereHalfSpaceForce in Moco
 // Simple simulation of bouncing ball with dissipation should generate contact
 // forces that settle to ball weight.
-void testSmoothSphereHalfSpaceForce_NormalForce()
+SimTK::Real testSmoothSphereHalfSpaceForce_NormalForce()
 {
     // Setup OpenSim model
     Model* model = new Model();
@@ -270,9 +270,9 @@ void testSmoothSphereHalfSpaceForce_NormalForce()
     double radius = 0.5;
     double stiffness = 10000;
     double dissipation = 0.75;
-    double staticFriction = 0.3;
-    double dynamicFriction = 0.3;
-    double viscousFriction = 0.3;
+    double staticFriction = 0.7;
+    double dynamicFriction = 0.7;
+    double viscousFriction = 0.7;
     double transitionVelocity = 0.1;
     double cf = 1e-5;
     double bd = 300;
@@ -289,7 +289,7 @@ void testSmoothSphereHalfSpaceForce_NormalForce()
         model->getGround());
 
     const SimTK::Real y0 = 0.5;
-    const SimTK::Real finalTime = 2.0;
+    const SimTK::Real finalTime = 2.5;
 
     // Time stepping.
     // --------------
@@ -344,7 +344,6 @@ void testSmoothSphereHalfSpaceForce_NormalForce()
         auto& ms = moco.initCasADiSolver();
         ms.set_num_mesh_points(50);
         ms.set_verbosity(2);
-        ms.set_optim_max_iterations(500);
         ms.set_optim_solver("ipopt");
 
         MocoSolution solution = moco.solve();
@@ -369,6 +368,154 @@ void testSmoothSphereHalfSpaceForce_NormalForce()
 
     SimTK_TEST_EQ_TOL(finalHeightTimeStepping, finalHeightDircol, 1e-5);
 
+    return finalHeightTimeStepping;
+
+}
+
+// Test the friction component of the contact force by ensuring that the ball
+// travels the expected horizontal distance if it starts in the ground.
+// To make the friction force roughly constant, we want the equilibrium height
+// of the mass (from testNormalForce()).
+void testSmoothSphereHalfSpaceForce_FrictionForce(
+    const SimTK::Real& equilibriumHeight) {
+
+    // Setup OpenSim model
+    Model* model = new Model();
+    model->setName("BouncingBall_SmoothSphereHalfSpaceForce");
+    auto* ball = new Body("ball", 1, Vec3(0), SimTK::Inertia(1));
+    model->addComponent(ball);
+    auto* groundBall = new PlanarJoint("groundBall", model->getGround(),
+        Vec3(0), Vec3(0), *ball, Vec3(0), Vec3(0));
+    model->addComponent(groundBall);
+    // Add display geometry.
+    Sphere bodyGeometry(0.5);
+    bodyGeometry.setColor(SimTK::Gray);
+    // Attach an ellipsoid to a frame located at the center of each body.
+    PhysicalOffsetFrame* ballCenter = new PhysicalOffsetFrame(
+        "ballCenter", *ball, Transform(Vec3(0)));
+    ball->addComponent(ballCenter);
+    ballCenter->attachGeometry(bodyGeometry.clone());
+    // Setup contact model
+    double radius = 0.5;
+    double stiffness = 10000;
+    double dissipation = 0.75;
+    double staticFriction = 0.7;
+    double dynamicFriction = 0.7;
+    double viscousFriction = 0.7;
+    double transitionVelocity = 0.1;
+    double cf = 1e-5;
+    double bd = 300;
+    double bv = 50;
+    Vec3 sphereLocation(0);
+    SimTK::Transform halfSpaceFrame(Rotation(0, SimTK::ZAxis), Vec3(0));
+    auto* contactBallHalfSpace = new SmoothSphereHalfSpaceForce(
+        "contactBallHalfSpace",*ball,sphereLocation,radius,model->getGround(),
+        halfSpaceFrame,stiffness,dissipation,staticFriction,dynamicFriction,
+        viscousFriction,transitionVelocity,cf,bd,bv);
+    model->addComponent(contactBallHalfSpace);
+    contactBallHalfSpace->connectSocket_body_contact_sphere(*ball);
+    contactBallHalfSpace->connectSocket_body_contact_half_space(
+        model->getGround());
+
+    const SimTK::Real y0 = equilibriumHeight;
+    const SimTK::Real finalTime = 0.5;
+    const SimTK::Real vx0 = 2.5;
+
+    const SimTK::Real g = -model->getGravity()[1];
+
+    // Expected final x position.
+    // --------------------------
+    // m * vxdot = F = - mu * m * g
+    // vx(t) = -mu * g * t + vx0
+    // x(t) = -0.5 * mu * g * t^2 + vx0 * t
+    // The time at which the point reaches rest:
+    // t_rest = vx0 / (mu * g)
+    // Final position: x(t_rest)
+    const double& mu = 0.7;
+    const SimTK::Real restTime = vx0 / (mu * g);
+    assert(restTime < finalTime);
+    const SimTK::Real expectedFinalX =
+            -0.5 * mu * g * pow(restTime, 2) + vx0 * restTime;
+
+    // Time stepping.
+    // --------------
+    {
+        SimTK::State state = model->initSystem();
+        model->setStateVariableValue(state,
+            "groundBall/groundBall_coord_2/value", y0);
+        model->setStateVariableValue(state,
+            "groundBall/groundBall_coord_1/speed", vx0);
+        Manager manager(*model, state);
+        state = manager.integrate(finalTime);
+
+        /*visualize(*model, manager.getStateStorage());*/
+
+        const SimTK::Real finalTX = model->getStateVariableValue(state,
+            "groundBall/groundBall_coord_1/value");
+
+        std::cout << "Time stepping, actual TX: " << finalTX << std::endl;
+        std::cout << "Time stepping, expectd TX: " << expectedFinalX << std::endl;
+        std::cout << "Time stepping, actual U: " << state.getU() << std::endl;
+
+        //SimTK_TEST_EQ_TOL(finalTX, expectedFinalX, 0.005);
+
+        //// The system should be at rest.
+        //SimTK_TEST_EQ_TOL(state.getU(),
+        //        SimTK::Vector(state.getNU(), 0.0), 1e-3);
+
+    }
+
+    // Direct collocation.
+    // -------------------
+    // This is a simulation (initial value problem), not a trajectory
+    // optimization.
+    {
+        MocoStudy moco;
+        MocoProblem& mp = moco.updProblem();
+        mp.setModelCopy(*model);
+        mp.setTimeBounds(0, finalTime);
+        mp.setStateInfo("/groundBall/groundBall_coord_0/value", {-1, 1}, 0);
+        mp.setStateInfo("/groundBall/groundBall_coord_1/value", {-1, 1}, 0);
+        mp.setStateInfo("/groundBall/groundBall_coord_2/value", {-1, 1}, y0);
+        mp.setStateInfo("/groundBall/groundBall_coord_0/speed", {-10, 10}, 0);
+        mp.setStateInfo("/groundBall/groundBall_coord_1/speed", {-10, 10},vx0);
+        mp.setStateInfo("/groundBall/groundBall_coord_2/speed", {-10, 10}, 0);
+
+        //auto& ms = moco.initTropterSolver();
+        //ms.set_num_mesh_points(25);
+        //// TODO: Hermite-Simpson has trouble converging
+        //ms.set_transcription_scheme("trapezoidal");
+
+        auto& ms = moco.initCasADiSolver();
+        ms.set_num_mesh_points(50);
+        ms.set_verbosity(2);
+        ms.set_optim_solver("ipopt");
+
+        MocoSolution solution = moco.solve();
+        /*solution.write("testContact_testFrictionForce_solution.sto");*/
+         /*moco.visualize(solution);*/
+
+        auto statesTraj = solution.exportToStatesTrajectory(mp);
+        const auto& finalState = statesTraj.back();
+        const SimTK::Real finalTX =
+                model->getStateVariableValue(finalState, "groundBall/groundBall_coord_1/value");
+
+        std::cout << "DC, actual TX: " << finalTX << std::endl;
+        std::cout << "DC, expect TX: " << expectedFinalX << std::endl;
+        std::cout << "DC, actual U: " << finalState.getU() << std::endl;
+
+        //SimTK_TEST_EQ_TOL(finalTX, expectedFinalX, 0.005);
+
+        //// The system should be at rest.
+        //SimTK_TEST_EQ_TOL(finalState.getU(),
+        //        SimTK::Vector(finalState.getNU(), 0.0), 1e-3);
+    }
+}
+
+void testSmoothSphereHalfSpaceForce() {
+    const SimTK::Real equilibriumHeight =
+        testSmoothSphereHalfSpaceForce_NormalForce();
+    testSmoothSphereHalfSpaceForce_FrictionForce(equilibriumHeight);
 }
 
 
@@ -402,6 +549,6 @@ int main() {
         ////SimTK_SUBTEST1(testStationPlaneContactForce, createEspositoMiller);
         ////// TODO does not pass:
         ////// SimTK_SUBTEST1(testStationPlaneContactForce, createMeyerFregly);
-        SimTK_SUBTEST(testSmoothSphereHalfSpaceForce_NormalForce);
+        SimTK_SUBTEST(testSmoothSphereHalfSpaceForce);
     SimTK_END_TEST();
 }
