@@ -20,6 +20,7 @@
 
 #include <Moco/osimMoco.h>
 #include <OpenSim/Simulation/Manager/Manager.h>
+#include <Moco/Components/SmoothSphereHalfSpaceForce.h>
 
 const double FRICTION_COEFFICIENT = 0.7;
 
@@ -244,6 +245,132 @@ void testStationPlaneContactForce(CreateContactFunction createContact) {
     testFrictionForce(createContact, equilibriumHeight);
 }
 
+// Test our wrapping of SmoothSphereHalfSpaceForce in Moco
+// Simple simulation of bouncing ball with dissipation should generate contact
+// forces that settle to ball weight.
+void testSmoothSphereHalfSpaceForce_NormalForce()
+{
+    // Setup OpenSim model
+    Model* model = new Model();
+    model->setName("BouncingBall_SmoothSphereHalfSpaceForce");
+    auto* ball = new Body("ball", 1, Vec3(0), SimTK::Inertia(1));
+    model->addComponent(ball);
+    auto* groundBall = new PlanarJoint("groundBall", model->getGround(),
+        Vec3(0), Vec3(0), *ball, Vec3(0), Vec3(0));
+    model->addComponent(groundBall);
+    // Add display geometry.
+    Sphere bodyGeometry(0.5);
+    bodyGeometry.setColor(SimTK::Gray);
+    // Attach an ellipsoid to a frame located at the center of each body.
+    PhysicalOffsetFrame* ballCenter = new PhysicalOffsetFrame(
+        "ballCenter", *ball, Transform(Vec3(0)));
+    ball->addComponent(ballCenter);
+    ballCenter->attachGeometry(bodyGeometry.clone());
+    // Setup contact model
+    double radius = 0.5;
+    double stiffness = 10000;
+    double dissipation = 0.75;
+    double staticFriction = 0.3;
+    double dynamicFriction = 0.3;
+    double viscousFriction = 0.3;
+    double transitionVelocity = 0.1;
+    double cf = 1e-5;
+    double bd = 300;
+    double bv = 50;
+    Vec3 sphereLocation(0);
+    SimTK::Transform halfSpaceFrame(Rotation(0, SimTK::ZAxis), Vec3(0));
+    auto* contactBallHalfSpace = new SmoothSphereHalfSpaceForce(
+        "contactBallHalfSpace",*ball,sphereLocation,radius,model->getGround(),
+        halfSpaceFrame,stiffness,dissipation,staticFriction,dynamicFriction,
+        viscousFriction,transitionVelocity,cf,bd,bv);
+    model->addComponent(contactBallHalfSpace);
+    contactBallHalfSpace->connectSocket_body_contact_sphere(*ball);
+    contactBallHalfSpace->connectSocket_body_contact_half_space(
+        model->getGround());
+
+    const SimTK::Real y0 = 0.5;
+    const SimTK::Real finalTime = 2.0;
+
+    // Time stepping.
+    // --------------
+    SimTK::Real finalHeightTimeStepping;
+    {
+        SimTK::State state = model->initSystem();
+        model->setStateVariableValue(state,
+            "groundBall/groundBall_coord_2/value", y0);
+        Manager manager(*model);
+        manager.setIntegratorAccuracy(1e-6);
+        manager.initialize(state);
+        state = manager.integrate(finalTime);
+
+        model->realizeVelocity(state);
+        Array<double> contactForces =
+        contactBallHalfSpace->getRecordValues(state);
+        SimTK_TEST_EQ_TOL(contactForces[0], 0.0, 1e-4); // no horizontal force
+        SimTK_TEST_EQ_TOL(contactForces[1],-ball->getMass()*
+            model->getGravity()[1], 1e-3); // vertical force is weight
+        SimTK_TEST_EQ_TOL(contactForces[2], 0.0, 1e-4); // no horizontal force
+        SimTK_TEST_EQ_TOL(contactForces[3], 0.0, 1e-4); // no torque
+        SimTK_TEST_EQ_TOL(contactForces[4], 0.0, 1e-4); // no torque
+        SimTK_TEST_EQ_TOL(contactForces[5], 0.0, 1e-4); // no torque
+
+        finalHeightTimeStepping = model->getStateVariableValue(state,
+            "groundBall/groundBall_coord_2/value");
+    }
+
+    // Direct collocation.
+    // -------------------
+    // This is a simulation (initial value problem), not a trajectory
+    // optimization.
+    SimTK::Real finalHeightDircol;
+    {
+        MocoStudy moco;
+        MocoProblem& mp = moco.updProblem();
+        mp.setModelCopy(*model);
+        mp.setTimeBounds(0, finalTime);
+        mp.setStateInfo("/groundBall/groundBall_coord_0/value", {-1, 1}, 0);
+        mp.setStateInfo("/groundBall/groundBall_coord_1/value", {-1, 1}, 0);
+        mp.setStateInfo("/groundBall/groundBall_coord_2/value", {-1, 1}, 0.5);
+        mp.setStateInfo("/groundBall/groundBall_coord_0/speed", {-10, 10}, 0);
+        mp.setStateInfo("/groundBall/groundBall_coord_1/speed", {-10, 10}, 0);
+        mp.setStateInfo("/groundBall/groundBall_coord_2/speed", {-10, 10}, 0);
+
+        // TODO: Tropter both with trapezoidal and hermite-simpson has trouble
+        // converging
+        /*auto& ms = moco.initTropterSolver();
+        ms.set_num_mesh_points(50);
+        ms.set_transcription_scheme("trapezoidal");*/
+
+        auto& ms = moco.initCasADiSolver();
+        ms.set_num_mesh_points(50);
+        ms.set_verbosity(2);
+        ms.set_optim_max_iterations(500);
+        ms.set_optim_solver("ipopt");
+
+        MocoSolution solution = moco.solve();
+
+        auto statesTraj = solution.exportToStatesTrajectory(mp);
+        const auto& finalState = statesTraj.back();
+        model->realizeVelocity(finalState);
+
+        Array<double> contactForces =
+        contactBallHalfSpace->getRecordValues(finalState);
+        SimTK_TEST_EQ_TOL(contactForces[0], 0.0, 1e-4); // no horizontal force
+        SimTK_TEST_EQ_TOL(contactForces[1],-ball->getMass()*
+            model->getGravity()[1], 1e-3); // vertical force is weight
+        SimTK_TEST_EQ_TOL(contactForces[2], 0.0, 1e-4); // no horizontal force
+        SimTK_TEST_EQ_TOL(contactForces[3], 0.0, 1e-4); // no torque
+        SimTK_TEST_EQ_TOL(contactForces[4], 0.0, 1e-4); // no torque
+        SimTK_TEST_EQ_TOL(contactForces[5], 0.0, 1e-4); // no torque
+
+        finalHeightDircol = model->getStateVariableValue(finalState,
+            "groundBall/groundBall_coord_2/value");
+    }
+
+    SimTK_TEST_EQ_TOL(finalHeightTimeStepping, finalHeightDircol, 1e-5);
+
+}
+
 
 AckermannVanDenBogert2010Force* createAVDB() {
     auto* contact = new AckermannVanDenBogert2010Force();
@@ -271,9 +398,10 @@ MeyerFregly2016Force* createMeyerFregly() {
 
 int main() {
     SimTK_START_TEST("testContact");
-        SimTK_SUBTEST1(testStationPlaneContactForce, createAVDB);
-        SimTK_SUBTEST1(testStationPlaneContactForce, createEspositoMiller);
-        // TODO does not pass:
-        // SimTK_SUBTEST1(testStationPlaneContactForce, createMeyerFregly);
+        ////SimTK_SUBTEST1(testStationPlaneContactForce, createAVDB);
+        ////SimTK_SUBTEST1(testStationPlaneContactForce, createEspositoMiller);
+        ////// TODO does not pass:
+        ////// SimTK_SUBTEST1(testStationPlaneContactForce, createMeyerFregly);
+        SimTK_SUBTEST(testSmoothSphereHalfSpaceForce_NormalForce);
     SimTK_END_TEST();
 }
