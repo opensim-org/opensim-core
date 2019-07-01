@@ -109,7 +109,8 @@ problem = moco.updProblem();
 
 % Set the model.
 subjectInfo = subjectInfos{subjectIndex};
-model = getMuscleDrivenModel(subjectInfo);
+ignoreActivationDynamics = true;
+model = getMuscleDrivenModel(ignoreActivationDynamics, subjectInfo);
 
 % Add the device to the model.
 if nargin > 1
@@ -187,7 +188,7 @@ import org.opensim.modeling.*;
 
 % Check the stiffness constraint.
 if nargin > 1
-    model = getMuscleDrivenModel(subjectInfos{1});
+    model = getMuscleDrivenModel(true, subjectInfos{1});
     name = addDeviceFunction(model);
     compList = model.getComponentsList();
     it = compList.begin();

@@ -20,6 +20,7 @@ namespace OpenSim {
 %include <Moco/ModelProcessor.h>
 
 %include <Moco/MocoCost/MocoCost.h>
+%template(SetMocoWeight) OpenSim::Set<OpenSim::MocoWeight, OpenSim::Object>;
 %include <Moco/MocoWeightSet.h>
 %include <Moco/MocoCost/MocoStateTrackingCost.h>
 %include <Moco/MocoCost/MocoMarkerTrackingCost.h>

@@ -33,9 +33,9 @@ import org.opensim.modeling.*;
 % Part 2b: Add a MocoStateTrackingCost() to the problem using the states
 % from the predictive problem (via the TableProcessor we just created), and set
 % weights to zero for states associated with the dependent coordinate in the
-% model's knee CoordinateCoupler constraint.
+% model's knee CoordinateCoupler constraint. 
 
-% Part 2c: Reduce the control cost weight so it now acts as a regularization
+% Part 2c: Reduce the control cost weight so it now acts as a regularization 
 % term.
 
 % Part 2d: Set the initial guess using the predictive problem solution.
@@ -69,20 +69,17 @@ inverse.set_minimize_sum_squared_states(true);
 
 % Part 4c: Append additional outputs path for quantities that are calculated
 % post-hoc using the inverse problem solution.
-% inverse.append_output_paths('.*normalized_fiber_length');
-% inverse.append_output_paths('.*passive_force_multiplier');
+inverse.append_output_paths('.*normalized_fiber_length');
+inverse.append_output_paths('.*passive_force_multiplier');q
 
 % Part 4d: Solve! Write the solution and outputs.
 
 %% Part 5: Muscle-driven Inverse Problem with Passive Assistance
-% Part 5a: Create a new muscle-driven model, now adding a SpringGeneralizedForce
+% Part 5a: Create a new muscle-driven model, now adding a SpringGeneralizedForce 
 % about the knee coordinate.
 
 % Create a ModelProcessor similar to the previous one, using the same
 % reserve actuator strength so we can compare muscle activity accurately.
-modelProcessor = ModelProcessor(model);
-modelProcessor.append(ModOpAddReserves(2));
-inverse.setModel(ModelProcessor(model));
 
 % Part 5b: Solve! Write solution.
 
@@ -97,7 +94,7 @@ compareInverseSolutions(inverseSolution, inverseDeviceSolution);
 
 end
 
-%% Model Creation and Plotting Convenience Functions
+%% Model Creation and Plotting Convenience Functions 
 
 function addCoordinateActuator(model, coordName, optForce)
 
@@ -134,89 +131,38 @@ addCoordinateActuator(model, 'ankle_angle_r', 150);
 
 end
 
-function compareSolutions(predictSolution, trackingSolution)
-
-% States.
-figure(1);
-stateNames = predictSolution.getStateNames();
-numStates = stateNames.size();
-dim = ceil(sqrt(numStates));
-for i = 0:numStates-1
-    subplot(dim, dim, i+1);
-    plot(predictSolution.getTimeMat(), ...
-         predictSolution.getStateMat(stateNames.get(i)), '-r', ...
-         'linewidth', 3);
-    hold on
-    plot(trackingSolution.getTimeMat(), ...
-         trackingSolution.getStateMat(stateNames.get(i)), '--b', ...
-         'linewidth', 2.5);
-    hold off
-    stateName = stateNames.get(i).toCharArray';
-    title(stateName(11:end), 'Interpreter', 'none')
-    xlabel('time (s)')
-    if contains(stateName, 'value')
-        ylabel('position (rad)')
-    else
-        ylabel('speed (rad/s)')
-    end
-    if i == 0
-       legend('predict', 'track')
-    end
-end
-
-% Controls.
-figure(2);
-controlNames = predictSolution.getControlNames();
-numControls = controlNames.size();
-dim = ceil(sqrt(numControls));
-for i = 0:numControls-1
-    subplot(dim, dim, i+1);
-    plot(predictSolution.getTimeMat(), ...
-         predictSolution.getControlMat(controlNames.get(i)), '-r', ...
-         'linewidth', 3);
-    hold on
-    plot(trackingSolution.getTimeMat(), ...
-         trackingSolution.getControlMat(controlNames.get(i)), '--b', ...
-         'linewidth', 2.5);
-    hold off
-    title(controlNames.get(i).toCharArray', 'Interpreter', 'none')
-    xlabel('time (s)')
-    ylabel('value')
-    if i == 0
-       legend('predict', 'track')
-    end
-end
-
-end
-
 function compareInverseSolutions(unassistedSolution, assistedSolution)
 
 unassistedSolution = unassistedSolution.getMocoSolution();
 assistedSolution = assistedSolution.getMocoSolution();
-figure(3);
+figure;
 stateNames = unassistedSolution.getStateNames();
 numStates = stateNames.size();
-dim = ceil(sqrt(numStates));
+dim = 3;
+iplot = 0;
 for i = 0:numStates-1
-    subplot(dim, dim, i+1);
-    plot(unassistedSolution.getTimeMat(), ...
-         unassistedSolution.getStateMat(stateNames.get(i)), '-r', ...
-         'linewidth', 3);
-    hold on
-    plot(assistedSolution.getTimeMat(), ...
-         assistedSolution.getStateMat(stateNames.get(i)), '--b', ...
-         'linewidth', 2.5);
-    hold off
-    stateName = stateNames.get(i).toCharArray';
-    plotTitle = stateName;
-    plotTitle = strrep(plotTitle, '/forceset/', '');
-    plotTitle = strrep(plotTitle, '/activation', '');
-    title(plotTitle, 'Interpreter', 'none');
-    xlabel('time (s)');
-    ylabel('activation (-)');
-    ylim([0, 1]);
-    if i == 0
-       legend('unassisted', 'assisted');
+    if contains(char(stateNames.get(i)), 'activation')
+        iplot = iplot + 1;
+        subplot(dim, dim, iplot);
+        plot(unassistedSolution.getTimeMat(), ...
+             unassistedSolution.getStateMat(stateNames.get(i)), '-r', ...
+             'linewidth', 3);
+        hold on
+        plot(assistedSolution.getTimeMat(), ...
+             assistedSolution.getStateMat(stateNames.get(i)), '--b', ...
+             'linewidth', 2.5);
+        hold off
+        stateName = stateNames.get(i).toCharArray';
+        plotTitle = stateName;
+        plotTitle = strrep(plotTitle, '/forceset/', '');
+        plotTitle = strrep(plotTitle, '/activation', '');
+        title(plotTitle, 'Interpreter', 'none');
+        xlabel('time (s)');
+        ylabel('activation (-)');
+        ylim([0, 1]);
+        if iplot == 0
+           legend('unassisted', 'assisted');
+        end
     end
 end
 

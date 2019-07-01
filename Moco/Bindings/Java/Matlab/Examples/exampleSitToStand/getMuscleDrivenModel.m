@@ -1,4 +1,4 @@
-function [model] = getMuscleDrivenModel(subjectInfo)
+function [model] = getMuscleDrivenModel(ignoreActDyn, subjectInfo)
 
 import org.opensim.modeling.*;
 
@@ -15,8 +15,13 @@ model.finalizeConnections();
 DeGrooteFregly2016Muscle().replaceMuscles(model);
 
 % TODO move this function to a separate file.
+if nargin >= 1
+    ignore_act_dyn = ignoreActDyn;
+else
+    ignore_act_dyn = false;
+end
 
-if nargin > 0
+if nargin == 2
     fields = fieldnames(subjectInfo);
     for ifield = 1:numel(fields)
         if ~strcmp(fields{ifield}, 'name')
@@ -33,7 +38,7 @@ end
 for m = 0:model.getMuscles().getSize()-1
     musc = model.updMuscles().get(m);
     musc.setMinControl(0);
-    musc.set_ignore_activation_dynamics(true);
+    musc.set_ignore_activation_dynamics(ignore_act_dyn);
     musc.set_ignore_tendon_compliance(true);
     musc.set_max_isometric_force(2 * musc.get_max_isometric_force());
     dgf = DeGrooteFregly2016Muscle.safeDownCast(musc);
@@ -47,3 +52,4 @@ for m = 0:model.getMuscles().getSize()-1
 end
 
 end
+
