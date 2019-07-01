@@ -848,12 +848,35 @@ void testFunctionBasedBushingForce()
         ASSERT_EQUAL(analytical_force, model_force[7], 2e-4);
     }
 
-    osimModel.disownAllComponents();
-
     manager.getStateStorage().print("function_based_bushing_model_states.sto");
 
     // Save the forces
     reporter->getForceStorage().print("function_based_bushing_forces.mot");  
+    // Now add damping to the bushing force and make sure energy is monotonically decreasing
+    spring.set_translational_damping(Vec3(100.0));
+    SimTK::State& osim_state2 = osimModel.initSystem();
+
+    // set the initial height of the ball on slider
+    sliderCoord.setValue(osim_state2, start_h);
+    osimModel.getMultibodySystem().realize(osim_state2, Stage::Position);
+
+    //==========================================================================
+    // Compute the Energy to make sure it goes down due to damping
+    Manager manager2(osimModel);
+    manager2.setIntegratorAccuracy(1e-6);
+    osim_state2.setTime(0.0);
+    manager2.initialize(osim_state2);
+
+    double lastEnergy = 1E20;   // Large
+    for (int i = 1; i <= nsteps; ++i) {
+        osim_state2 = manager2.integrate(dt*i);
+        osimModel.getMultibodySystem().realize(osim_state2, Stage::Acceleration);
+        double newEnergy = osimModel.calcKineticEnergy(osim_state2) + osimModel.calcPotentialEnergy(osim_state2);
+        ASSERT(newEnergy < lastEnergy);
+        lastEnergy = newEnergy;
+    }
+
+    osimModel.disownAllComponents();
 
     // Before exiting lets see if copying the spring works
     FunctionBasedBushingForce *copyOfSpring = spring.clone();
@@ -971,14 +994,37 @@ void testExpressionBasedBushingForceTranslational()
         // in the Y direction, index = 7
         ASSERT_EQUAL(analytical_force, model_force[7], 2e-4);
     }
-    
-    osimModel.disownAllComponents();
-    
+        
     manager.getStateStorage().print("expression_based_bushing_translational_model_states.sto");
     
     // Save the forces
     reporter->getForceStorage().print("expression_based_bushing_translational_model_forces.mot");
     
+    // Now add damping to the bushing force and make sure energy is monotonically decreasing
+    spring.set_translational_damping(Vec3(100.0));
+    SimTK::State& osim_state2 = osimModel.initSystem();
+
+    // set the initial height of the ball on slider
+    sliderCoord.setValue(osim_state2, start_h);
+    osimModel.getMultibodySystem().realize(osim_state2, Stage::Position);
+
+    //==========================================================================
+    // Compute the total energy to make sure it goes down due to damping
+    Manager manager2(osimModel);
+    manager2.setIntegratorAccuracy(1e-6);
+    osim_state2.setTime(0.0);
+    manager2.initialize(osim_state2);
+
+    double lastEnergy = 1E20;   // Large
+    for (int i = 1; i <= nsteps; ++i) {
+        osim_state2 = manager2.integrate(dt*i);
+        osimModel.getMultibodySystem().realize(osim_state2, Stage::Acceleration);
+        double newEnergy = osimModel.calcKineticEnergy(osim_state2) + osimModel.calcPotentialEnergy(osim_state2);
+        ASSERT(newEnergy < lastEnergy);
+        lastEnergy = newEnergy;
+    }
+    osimModel.disownAllComponents();
+
     // Before exiting lets see if copying the spring works
     ExpressionBasedBushingForce *copyOfSpring = spring.clone();
     
@@ -1096,12 +1142,35 @@ void testExpressionBasedBushingForceRotational()
         ASSERT_EQUAL(analytical_moment, model_forces[4], 2e-4);
     }
 
-    osimModel.disownAllComponents();
-
     manager.getStateStorage().print("expression_based_bushing_rotational_model_states.sto");
 
     // Save the forces
     reporter->getForceStorage().print("expression_based_bushing_rotational_model_forces.mot");
+
+    // Now add damping to the bushing force and make sure energy is monotonically decreasing
+    spring.set_rotational_damping(Vec3(100.0));
+
+    SimTK::State& osim_state2 = osimModel.initSystem();
+    // set the initial pin joint angle
+    pinCoord.setValue(osim_state2, start_theta);
+    osimModel.getMultibodySystem().realize(osim_state2, Stage::Position);
+
+    //==========================================================================
+    // Compute the force and torque at the specified times.
+    Manager manager2(osimModel);
+    manager2.setIntegratorAccuracy(1e-6);
+    osim_state2.setTime(0.0);
+    manager2.initialize(osim_state2);
+
+    double lastEnergy = 1E20;   // Large
+    for (int i = 1; i <= nsteps; ++i) {
+        osim_state2 = manager2.integrate(dt*i);
+        osimModel.getMultibodySystem().realize(osim_state2, Stage::Acceleration);
+        double newEnergy = osimModel.calcKineticEnergy(osim_state2) + osimModel.calcPotentialEnergy(osim_state2);
+        ASSERT(newEnergy < lastEnergy);
+        lastEnergy = newEnergy;
+    }
+    osimModel.disownAllComponents();
 
     // Before exiting lets see if copying the spring works
     ExpressionBasedBushingForce *copyOfSpring = spring.clone();

@@ -27,6 +27,7 @@ Bug Fixes
 - Fixed bug that resulted in an exception when reading C3D files without forces. Now, if the C3D doesn't contain markers or forces, an empty table will be returned (PR #2421) 
 - Fix bug that resulted in activations and forces reported for Actuators that are disabled during StaticOptimization (issue #2438) Disabled actuators are now ignored in StaticOptimization.
 - OpenSim no longer supports model file formats predating version 1.8.1 (PR #2498)
+- FunctionBasedBushingForce now applies damping if specified (it was incorrectly ignored in 4.0) issue #2512
 
 Documentation
 -------------
