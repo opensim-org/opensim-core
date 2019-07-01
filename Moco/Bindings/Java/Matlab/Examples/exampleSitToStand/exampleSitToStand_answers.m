@@ -48,7 +48,7 @@ moco.visualize(predictSolution);
 tableProcessor = TableProcessor('predictSolution.sto');
 tableProcessor.append(TabOpLowPassFilter(6));
 
-% Part 2b: Add a MocoStateTrackingCost() to the problem using the states
+% Part 2b: Add a MocoStateTrackingCost to the problem using the states
 % from the predictive problem (via the TableProcessor we just created), and set
 % weights to zero for states associated with the dependent coordinate in the
 % model's knee CoordinateCoupler constraint. 
@@ -138,7 +138,7 @@ fprintf('Cost without device: %f\n', ...
 fprintf('Cost with device: %f\n', ...
         inverseDeviceSolution.getMocoSolution().getObjective());
 % This is a convenience function provided for you. See below for the
-% implementation .
+% implementation.
 compareInverseSolutions(inverseSolution, inverseDeviceSolution);
 
 end

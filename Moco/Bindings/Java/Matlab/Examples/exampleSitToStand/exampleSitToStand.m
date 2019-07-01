@@ -30,7 +30,7 @@ import org.opensim.modeling.*;
 % from the previous solution. Use a TableProcessor, which accepts a base table
 % and can append operations to modify the table.
 
-% Part 2b: Add a MocoStateTrackingCost() to the problem using the states
+% Part 2b: Add a MocoStateTrackingCost to the problem using the states
 % from the predictive problem (via the TableProcessor we just created), and set
 % weights to zero for states associated with the dependent coordinate in the
 % model's knee CoordinateCoupler constraint. 
@@ -70,7 +70,7 @@ inverse.set_minimize_sum_squared_states(true);
 % Part 4c: Append additional outputs path for quantities that are calculated
 % post-hoc using the inverse problem solution.
 inverse.append_output_paths('.*normalized_fiber_length');
-inverse.append_output_paths('.*passive_force_multiplier');q
+inverse.append_output_paths('.*passive_force_multiplier');
 
 % Part 4d: Solve! Write the solution and outputs.
 
@@ -89,7 +89,7 @@ fprintf('Cost without device: %f\n', ...
 fprintf('Cost with device: %f\n', ...
         inverseDeviceSolution.getMocoSolution().getObjective());
 % This is a convenience function provided for you. See below for the
-% implementation .
+% implementation.
 compareInverseSolutions(inverseSolution, inverseDeviceSolution);
 
 end
