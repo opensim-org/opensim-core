@@ -312,7 +312,8 @@ MocoSolution runBaselineProblem(bool removeMuscles, double controlWeight = 0.1,
                                     ModOpAddExternalLoads("grf_walk.xml");
     track.setModel(model);
     TableProcessor tableProcessor = 
-            TableProcessor("coordinates_rra_adjusted.sto");
+            TableProcessor("coordinates_rra_adjusted.sto") |
+            TabOpLowPassFilter(6);
     track.set_states_reference(tableProcessor);
     track.set_track_reference_position_derivatives(true);
     track.set_initial_time(0.81);
@@ -698,12 +699,12 @@ int main() {
 
     // Baseline tracking problem w/o muscles.
     // --------------------------------------
-    //MocoSolution baseline = runBaselineProblem(true, controlWeight);
+    MocoSolution baseline = runBaselineProblem(true, controlWeight);
 
     // Baseline tracking problem w/ muscles.
     // -------------------------------------
-    MocoSolution baselineWithMuscles = runBaselineProblem(false, controlWeight,
-      "sandboxMocoTrack_solution_baseline_muscles.sto");
+    //MocoSolution baselineWithMuscles = runBaselineProblem(false, controlWeight,
+    //  "sandboxMocoTrack_solution_baseline_muscles.sto");
 
     // Knee adduction minimization w/o muscles.
     // ----------------------------------------
