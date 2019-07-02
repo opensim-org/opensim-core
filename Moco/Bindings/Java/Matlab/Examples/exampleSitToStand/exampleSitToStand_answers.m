@@ -36,10 +36,12 @@ solver.set_num_mesh_points(25);
 solver.set_optim_convergence_tolerance(1e-4);
 solver.set_optim_constraint_tolerance(1e-4);
 
+if ~exist('predictSolution.sto', 'file')
 % Part 1f: Solve! Write the solution to file, and visualize.
 predictSolution = moco.solve();
 predictSolution.write('predictSolution.sto');
 moco.visualize(predictSolution);
+end
 
 %% Part 2: Torque-driven Tracking Problem
 % Part 2a: Construct a tracking reference TimeSeriesTable using filtered data
@@ -65,16 +67,21 @@ problem.addCost(tracking);
 problem.updCost('myeffort').set_weight(0.001);
 
 % Part 2d: Set the initial guess using the predictive problem solution.
-solver.setGuess(predictSolution);
+% Tighten convergence tolerance to ensure smooth controls.
+solver.setGuessFile('predictSolution.sto');
+solver.set_optim_convergence_tolerance(1e-6);
 
+if ~exist('trackingSolution.sto', 'file')
 % Part 2e: Solve! Write the solution to file, and visualize.
 trackingSolution = moco.solve();
 trackingSolution.write('trackingSolution.sto');
 moco.visualize(trackingSolution);
+end
 
 %% Part 3: Compare Predictive and Tracking Solutions
 % This is a convenience function provided for you. See mocoPlotTrajectory.m
-mocoPlotTrajectory(predictSolution, trackingSolution, 'predict', 'track');
+mocoPlotTrajectory('predictSolution.sto', 'trackingSolution.sto', ...
+        'predict', 'track');
 
 %% Part 4: Muscle-driven Inverse Problem
 % Create a MocoInverse tool instance.

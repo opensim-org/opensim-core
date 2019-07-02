@@ -23,7 +23,10 @@ import org.opensim.modeling.*;
 
 % Part 1e: Configure the solver.
 
+if ~exist('predictSolution.sto', 'file')
 % Part 1f: Solve! Write the solution to file, and visualize.
+
+end
 
 %% Part 2: Torque-driven Tracking Problem
 % Part 2a: Construct a tracking reference TimeSeriesTable using filtered data
@@ -40,11 +43,15 @@ import org.opensim.modeling.*;
 
 % Part 2d: Set the initial guess using the predictive problem solution.
 
+if ~exist('trackingSolution.sto', 'file')
 % Part 2e: Solve! Write the solution to file, and visualize.
+
+end
 
 %% Part 3: Compare Predictive and Tracking Solutions
 % This is a convenience function provided for you. See mocoPlotTrajectory.m
-mocoPlotTrajectory(predictSolution, trackingSolution, 'predict', 'track');
+mocoPlotTrajectory('predictSolution.sto', 'trackingSolution.sto', ...
+        'predict', 'track');
 
 %% Part 4: Muscle-driven Inverse Problem
 % Create a MocoInverse tool instance.
