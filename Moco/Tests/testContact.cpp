@@ -18,6 +18,9 @@
 
 // TODO add 3D tests (contact models are currently only 2D).
 
+#define CATCH_CONFIG_MAIN
+#include "Testing.h"
+
 #include <Moco/osimMoco.h>
 #include <OpenSim/Simulation/Manager/Manager.h>
 #include <Moco/Components/SmoothSphereHalfSpaceForce.h>
@@ -99,10 +102,10 @@ SimTK::Real testNormalForce(CreateContactFunction createContact) {
         const Vec3 contactForce = contact.calcContactForceOnStation(state);
         // The horizontal force is not quite zero, maybe from a buildup of
         // numerical error (tightening the accuracy reduces this force).
-        SimTK_TEST_EQ_TOL(contactForce[0], 0, 0.01);
-        SimTK_TEST_EQ_TOL(contactForce[1], weight, 0.01);
+        CHECK(contactForce[0] == Approx(0).margin(0.01));
+        CHECK(contactForce[1] == Approx(weight).epsilon(0.01));
         // The system is planar, so there is no force in the z direction.
-        SimTK_TEST_EQ(contactForce[2], 0);
+        CHECK(contactForce[2] == 0);
 
         finalHeightTimeStepping =
                 model.getStateVariableValue(state, "ty/ty/value");
@@ -139,15 +142,15 @@ SimTK::Real testNormalForce(CreateContactFunction createContact) {
         const Vec3 contactForce = contact.calcContactForceOnStation(finalState);
         // For some reason, direct collocation doesn't produce the same
         // numerical issues with the x component of the force as seen above.
-        SimTK_TEST_EQ(contactForce[0], 0);
-        SimTK_TEST_EQ_TOL(contactForce[1], weight, 0.01);
-        SimTK_TEST_EQ(contactForce[2], 0);
+        CHECK(contactForce[0] == Approx(0).margin(1e-15));
+        CHECK(contactForce[1] == Approx(weight).epsilon(0.01));
+        CHECK(contactForce[2] == 0);
 
         finalHeightDircol =
                 model.getStateVariableValue(finalState, "ty/ty/value");
     }
 
-    SimTK_TEST_EQ_TOL(finalHeightTimeStepping, finalHeightDircol, 1e-5);
+    CHECK(finalHeightTimeStepping == Approx(finalHeightDircol).margin(1e-5));
 
     return finalHeightTimeStepping;
 }
@@ -179,7 +182,7 @@ void testFrictionForce(CreateContactFunction createContact,
     // Final position: x(t_rest)
     const double& mu = FRICTION_COEFFICIENT;
     const SimTK::Real restTime = vx0 / (mu * g);
-    assert(restTime < finalTime);
+    CHECK(restTime < finalTime);
     const SimTK::Real expectedFinalX =
             -0.5 * mu * g * pow(restTime, 2) + vx0 * restTime;
 
@@ -196,12 +199,11 @@ void testFrictionForce(CreateContactFunction createContact,
 
         const SimTK::Real finalTX =
                 model.getStateVariableValue(state, "tx/tx/value");
-        SimTK_TEST_EQ_TOL(finalTX, expectedFinalX, 0.005);
+        CHECK(finalTX == Approx(expectedFinalX).margin(0.005));
 
         // The system should be at rest.
-        SimTK_TEST_EQ_TOL(state.getU(),
+        OpenSim_CHECK_MATRIX_ABSTOL(state.getU(),
                 SimTK::Vector(state.getNU(), 0.0), 1e-3);
-
     }
 
     // Direct collocation.
@@ -232,10 +234,10 @@ void testFrictionForce(CreateContactFunction createContact,
         const SimTK::Real finalTX =
                 model.getStateVariableValue(finalState, "tx/tx/value");
 
-        SimTK_TEST_EQ_TOL(finalTX, expectedFinalX, 0.005);
+        CHECK(finalTX == Approx(expectedFinalX).margin(0.005));
 
         // The system should be at rest.
-        SimTK_TEST_EQ_TOL(finalState.getU(),
+        OpenSim_CHECK_MATRIX_ABSTOL(finalState.getU(),
                 SimTK::Vector(finalState.getNU(), 0.0), 1e-3);
     }
 }
@@ -259,7 +261,7 @@ Model createBallHalfSpaceModel() {
     // Add display geometry.
     Sphere bodyGeometry(0.5);
     bodyGeometry.setColor(SimTK::Gray);
-    PhysicalOffsetFrame* ballCenter = new PhysicalOffsetFrame(
+    auto* ballCenter = new PhysicalOffsetFrame(
     "ballCenter", *ball, Transform(Vec3(0)));
     ball->addComponent(ballCenter);
     ballCenter->attachGeometry(bodyGeometry.clone());
@@ -326,12 +328,12 @@ SimTK::Real testSmoothSphereHalfSpaceForce_NormalForce()
 
         Array<double> contactForces =
             contactBallHalfSpace.getRecordValues(state);
-        SimTK_TEST_EQ_TOL(contactForces[0], 0.0, 1e-4); // no horizontal force
-        SimTK_TEST_EQ_TOL(contactForces[1],weight, 1e-3); // vertical is weight
-        SimTK_TEST_EQ_TOL(contactForces[2], 0.0, 1e-4); // no horizontal force
-        SimTK_TEST_EQ_TOL(contactForces[3], 0.0, 1e-4); // no torque
-        SimTK_TEST_EQ_TOL(contactForces[4], 0.0, 1e-4); // no torque
-        SimTK_TEST_EQ_TOL(contactForces[5], 0.0, 1e-4); // no torque
+        CHECK(contactForces[0] == Approx(0.0).margin(1e-4)); // no horizontal force
+        CHECK(contactForces[1] == Approx(weight).margin(1e-3)); // vertical is weight
+        CHECK(contactForces[2] == Approx(0.0).margin(1e-4)); // no horizontal force
+        CHECK(contactForces[3] == Approx(0.0).margin(1e-4)); // no torque
+        CHECK(contactForces[4] == Approx(0.0).margin(1e-4)); // no torque
+        CHECK(contactForces[5] == Approx(0.0).margin(1e-4)); // no torque
 
         finalHeightTimeStepping =model.getStateVariableValue(state,
             "groundBall/groundBall_coord_2/value");
@@ -353,7 +355,7 @@ SimTK::Real testSmoothSphereHalfSpaceForce_NormalForce()
         mp.setStateInfo("/groundBall/groundBall_coord_0/speed", {-10, 10}, 0);
         mp.setStateInfo("/groundBall/groundBall_coord_1/speed", {-10, 10}, 0);
         mp.setStateInfo("/groundBall/groundBall_coord_2/speed", {-10, 10}, 0);
-        
+
         auto& ms = moco.initCasADiSolver();
         ms.set_num_mesh_points(50);
         ms.set_verbosity(2);
@@ -371,18 +373,18 @@ SimTK::Real testSmoothSphereHalfSpaceForce_NormalForce()
 
         Array<double> contactForces =
         contactBallHalfSpace.getRecordValues(finalState);
-        SimTK_TEST_EQ_TOL(contactForces[0], 0.0, 1e-4); // no horizontal force
-        SimTK_TEST_EQ_TOL(contactForces[1],weight, 1e-3); // vertical is weight
-        SimTK_TEST_EQ_TOL(contactForces[2], 0.0, 1e-4); // no horizontal force
-        SimTK_TEST_EQ_TOL(contactForces[3], 0.0, 1e-4); // no torque
-        SimTK_TEST_EQ_TOL(contactForces[4], 0.0, 1e-4); // no torque
-        SimTK_TEST_EQ_TOL(contactForces[5], 0.0, 1e-4); // no torque
+        CHECK(contactForces[0] == Approx(0.0).margin(1e-4)); // no horizontal force
+        CHECK(contactForces[1] == Approx(weight).margin(1e-3)); // vertical is weight
+        CHECK(contactForces[2] == Approx(0.0).margin(1e-4)); // no horizontal force
+        CHECK(contactForces[3] == Approx(0.0).margin(1e-4)); // no torque
+        CHECK(contactForces[4] == Approx(0.0).margin(1e-4)); // no torque
+        CHECK(contactForces[5] == Approx(0.0).margin(1e-4)); // no torque
 
         finalHeightDircol = model.getStateVariableValue(finalState,
             "groundBall/groundBall_coord_2/value");
     }
 
-    SimTK_TEST_EQ_TOL(finalHeightTimeStepping, finalHeightDircol, 1e-5);
+    CHECK(finalHeightTimeStepping == Approx(finalHeightDircol).margin(1e-5));
 
     return finalHeightTimeStepping;
 
@@ -414,7 +416,7 @@ void testSmoothSphereHalfSpaceForce_FrictionForce(
     // Final position: x(t_rest)
     const double& mu = FRICTION_COEFFICIENT;
     const SimTK::Real restTime = vx0 / (mu * g);
-    assert(restTime < finalTime);
+    CHECK(restTime < finalTime);
     const SimTK::Real expectedFinalX =
             -0.5 * mu * g * pow(restTime, 2) + vx0 * restTime;
 
@@ -429,15 +431,15 @@ void testSmoothSphereHalfSpaceForce_FrictionForce(
         Manager manager(model, state);
         state = manager.integrate(finalTime);
 
-        //visualize(model, manager.getStateStorage());
+        visualize(model, manager.getStateStorage());
 
         const SimTK::Real finalTX = model.getStateVariableValue(state,
             "groundBall/groundBall_coord_1/value");
 
-        SimTK_TEST_EQ_TOL(finalTX, expectedFinalX, 0.005);
+        CHECK(finalTX == Approx(expectedFinalX).margin(0.005));
 
         // The system should be at rest.
-        SimTK_TEST_EQ_TOL(state.getU(),
+        OpenSim_CHECK_MATRIX_ABSTOL(state.getU(),
                 SimTK::Vector(state.getNU(), 0.0), 1e-3);
 
     }
@@ -473,21 +475,13 @@ void testSmoothSphereHalfSpaceForce_FrictionForce(
             model.getStateVariableValue(finalState,
             "groundBall/groundBall_coord_1/value");
 
-        SimTK_TEST_EQ_TOL(finalTX, expectedFinalX, 0.005);
+        CHECK(finalTX == Approx(expectedFinalX).margin(0.005));
 
         // The system should be at rest.
-        SimTK_TEST_EQ_TOL(finalState.getU(),
+        OpenSim_CHECK_MATRIX_ABSTOL(finalState.getU(),
                 SimTK::Vector(finalState.getNU(), 0.0), 1e-3);
     }
 }
-
-void testSmoothSphereHalfSpaceForce() {
-    const SimTK::Real equilibriumHeight =
-        testSmoothSphereHalfSpaceForce_NormalForce();
-    // TODO does not pass:
-    //testSmoothSphereHalfSpaceForce_FrictionForce(equilibriumHeight);
-}
-
 
 AckermannVanDenBogert2010Force* createAVDB() {
     auto* contact = new AckermannVanDenBogert2010Force();
@@ -513,12 +507,24 @@ MeyerFregly2016Force* createMeyerFregly() {
     return contact;
 }
 
-int main() {
-    SimTK_START_TEST("testContact");
-        SimTK_SUBTEST1(testStationPlaneContactForce, createAVDB);
-        SimTK_SUBTEST1(testStationPlaneContactForce, createEspositoMiller);
-        // TODO does not pass:
-        // SimTK_SUBTEST1(testStationPlaneContactForce, createMeyerFregly);
-        SimTK_SUBTEST(testSmoothSphereHalfSpaceForce);
-    SimTK_END_TEST();
+TEST_CASE("testStationPlaneContactForce AckermannVanDenBogert2010Force") {
+testStationPlaneContactForce(createAVDB);
 }
+
+TEST_CASE("testStationPlaneContactForce EspositoMiller2018Force") {
+testStationPlaneContactForce(createEspositoMiller);
+}
+
+// TODO does not pass:
+// TEST_CASE("testStationPlaneContactForce MeyerFregly2016Force") {
+//     testStationPlaneContactForce(createMeyerFregly);
+// }
+
+
+TEST_CASE("testSmoothSphereHalfSpaceForce") {
+    const SimTK::Real equilibriumHeight =
+        testSmoothSphereHalfSpaceForce_NormalForce();
+    // TODO does not pass:
+    testSmoothSphereHalfSpaceForce_FrictionForce(equilibriumHeight);
+}
+
