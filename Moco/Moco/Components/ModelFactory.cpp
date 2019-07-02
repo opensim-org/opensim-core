@@ -233,7 +233,8 @@ void ModelFactory::removeMuscles(Model& model) {
     }
 }
 
-void ModelFactory::createReserveActuators(Model& model, double optimalForce) {
+void ModelFactory::createReserveActuators(Model& model, double optimalForce,
+        bool skipCoordinatesWithExistingActuators) {
     OPENSIM_THROW_IF(optimalForce <= 0, Exception,
             format("Invalid value (%g) for create_reserve_actuators; "
                    "should be -1 or positive.",
@@ -250,11 +251,13 @@ void ModelFactory::createReserveActuators(Model& model, double optimalForce) {
     for (const auto& coord : modelCopy.getComponentList<Coordinate>()) {
         // Don't add a reserve if a CoordinateActuator already exists.
         bool skipCoord = false;
-        for (const auto& coordAct : 
-                modelCopy.getComponentList<CoordinateActuator>()) {
-            if (coordAct.getCoordinate() == &coord) {
-                skipCoord = true;
-                break;
+        if (skipCoordinatesWithExistingActuators) {
+            for (const auto& coordAct : 
+                    modelCopy.getComponentList<CoordinateActuator>()) {
+                if (coordAct.getCoordinate() == &coord) {
+                    skipCoord = true;
+                    break;
+                }
             }
         }
 

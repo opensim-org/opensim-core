@@ -17,10 +17,11 @@
  * -------------------------------------------------------------------------- */
 
 /// This example features two different tracking problems solved using the
-/// MocoTrack tool. The first demonstrates the basic usage of the tool interface
-/// to solve a torque-driven marker tracking problem. The second problem shows
-/// how to customize a muscle-driven state tracking problem using more advanced
-/// features of the tool interface.
+/// MocoTrack tool. 
+///  - The first problem demonstrates the basic usage of the tool interface
+///    to solve a torque-driven marker tracking problem. 
+///  - The second problem shows how to customize a muscle-driven state tracking 
+///    problem using more advanced features of the tool interface.
 /// 
 /// Data and model source: https://simtk.org/projects/full_body
 /// 
@@ -41,6 +42,7 @@
 /// and modified via the Residual Reduction Algorithm (RRA). 
 
 #include <Moco/osimMoco.h>
+#include <Actuators/CoordinateActuator.h>
 
 using namespace OpenSim;
 
@@ -56,7 +58,7 @@ void torqueDrivenMarkerTracking() {
     // appended to the model. In C++, you may use the pipe operator '|' to 
     // append ModelOperators.
     track.setModel(
-            // Create the base ModelOperator by passing in the model file.
+            // Create the base Model by passing in the model file.
             ModelProcessor("subject_walk_armless.osim") |
             // Add ground reaction external loads in lieu of a ground-contact
             // model.
@@ -126,9 +128,9 @@ void muscleDrivenStateTracking() {
             ModOpAddExternalLoads("grf_walk.xml") |
             ModOpReplaceMusclesWithDeGrooteFregly2016() |
             // Only valid for DeGrooteFregly2016Muscles.
-            ModOpIgnorePassiveFiberForces() |
+            ModOpIgnorePassiveFiberForcesDGF() |
             // Only valid for DeGrooteFregly2016Muscles.
-            ModOpScaleActiveFiberForceCurveWidth(1.5);
+            ModOpScaleActiveFiberForceCurveWidthDGF(1.5);
     track.setModel(modelProcessor);
 
     // Construct a TableProcessor of the coordinate data and pass it to the 
@@ -139,7 +141,7 @@ void muscleDrivenStateTracking() {
     track.setStatesReference(TableProcessor("coordinates.sto"));
     track.set_states_global_tracking_weight(10);
 
-    // This setting allow extra data columns contained in the states
+    // This setting allows extra data columns contained in the states
     // reference that don't correspond to model coordinates.
     track.set_allow_unused_references(true);
 
@@ -189,9 +191,13 @@ void muscleDrivenStateTracking() {
 int main() {
 
     // Solve the torque-driven marker tracking problem.
+    // This problem takes a few minutes to solve.
     torqueDrivenMarkerTracking();
 
     // Solve the muscle-driven state tracking problem.
+    // This problem could take an hour or more to solve, depending on the 
+    // number of processor cores available for parallelization. With 12 cores,
+    // it takes around 25 minutes.
     muscleDrivenStateTracking();
 
     return EXIT_SUCCESS;

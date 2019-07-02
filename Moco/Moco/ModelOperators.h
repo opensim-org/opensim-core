@@ -67,9 +67,9 @@ public:
 
 /// Turn off passive fiber forces for all DeGrooteFregly2016Muscle%s in the
 /// model.
-class OSIMMOCO_API ModOpIgnorePassiveFiberForces : public ModelOperator {
+class OSIMMOCO_API ModOpIgnorePassiveFiberForcesDGF : public ModelOperator {
     OpenSim_DECLARE_CONCRETE_OBJECT(
-        ModOpIgnorePassiveFiberForces, ModelOperator);
+            ModOpIgnorePassiveFiberForcesDGF, ModelOperator);
 
 public:
     void operate(Model& model, const std::string&) const override {
@@ -83,15 +83,18 @@ public:
 
 /// Scale the active fiber force curve width for all DeGrooteFregly2016Muscle%s 
 /// in the model.
-class OSIMMOCO_API ModOpScaleActiveFiberForceCurveWidth : public ModelOperator {
+class OSIMMOCO_API ModOpScaleActiveFiberForceCurveWidthDGF : 
+        public ModelOperator {
     OpenSim_DECLARE_CONCRETE_OBJECT(
-        ModOpScaleActiveFiberForceCurveWidth, ModelOperator);
+            ModOpScaleActiveFiberForceCurveWidthDGF, ModelOperator);
     OpenSim_DECLARE_PROPERTY(scale_factor, double,
             "The active fiber force curve width scale factor.");
 public:
-    ModOpScaleActiveFiberForceCurveWidth() { constructProperty_scale_factor(1); }
-    ModOpScaleActiveFiberForceCurveWidth(double scaleFactor) :
-        ModOpScaleActiveFiberForceCurveWidth() {
+    ModOpScaleActiveFiberForceCurveWidthDGF() {
+        constructProperty_scale_factor(1); 
+    }
+    ModOpScaleActiveFiberForceCurveWidthDGF(double scaleFactor) 
+            : ModOpScaleActiveFiberForceCurveWidthDGF() {
         set_scale_factor(scaleFactor);
     }
     void operate(Model& model, const std::string&) const override {
@@ -142,15 +145,26 @@ class OSIMMOCO_API ModOpAddReserves : public ModelOperator {
     OpenSim_DECLARE_CONCRETE_OBJECT(ModOpAddReserves, ModelOperator);
     OpenSim_DECLARE_PROPERTY(optimal_force, double,
             "The optimal force for all added reserve actuators.");
-
+    OpenSim_DECLARE_PROPERTY(skip_coordinates_with_actuators, bool,
+            "Whether or not to skip coordinates with existing actuators. " 
+            "Default: true.")
 public:
-    ModOpAddReserves() { constructProperty_optimal_force(1); }
+    ModOpAddReserves() {
+        constructProperty_optimal_force(1);
+        constructProperty_skip_coordinates_with_actuators(true);
+    }
     ModOpAddReserves(double optimalForce) : ModOpAddReserves() {
         set_optimal_force(optimalForce);
     }
+    ModOpAddReserves(double optimalForce, bool skipCoordsWithActu) 
+            : ModOpAddReserves() {
+        set_optimal_force(optimalForce);
+        set_skip_coordinates_with_actuators(skipCoordsWithActu);
+    }
     void operate(Model& model, const std::string&) const override {
         model.initSystem();
-        ModelFactory::createReserveActuators(model, get_optimal_force());
+        ModelFactory::createReserveActuators(model, get_optimal_force(),
+                get_skip_coordinates_with_actuators());
     }
 };
 

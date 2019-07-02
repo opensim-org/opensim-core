@@ -215,14 +215,14 @@ kinematic levels (i.e. holonomic, non-holonomic, or acceleration), and the
 number of Lagrange multipliers that are added to the problem to enforce the
 constraints.
 
-The solvers have options if the user desires to enforce kinematic
-constraint derivatives or minimize Lagrange multipliers in the problem.
+The solvers allow the user to choose whether to enforce kinematic constraint 
+derivatives or minimize Lagrange multipliers in the problem.
 
-\code{.cpp}
+@code{.cpp}
 MocoTropterSolver& solver = moco.initTropterSolver();
 ms.set_enforce_constraint_derivatives(true);
 ms.set_lagrange_multiplier_weight(10);
-\endcode
+@endcode
 
 If constraint derivatives are enforced, velocity correction variables are added
 to the problem according to the method described in Posa, Kuindersma, and
@@ -234,13 +234,13 @@ transcription, since this scheme is necessary for implementing the method
 described in Posa et al. 2016. See @ref hermitesimpson for implementation
 details.
 
-It is also possible to modify the default bounds on these
-velocity correction variables:
+It is possible to modify the default bounds on these velocity correction 
+variables:
 
-\code{.cpp}
+@code{.cpp}
 // Default bounds: [-0.1, 0.1]
 ms.set_velocity_correction_bounds({-0.25, 0.25});
-\endcode
+@endcode
 
 If constraint derivatives are not enforced or if the multibody constraint
 Jacobian is rank-deficient, it is recommended that the Lagrange multiplier
@@ -255,8 +255,8 @@ n + 1 \f$ mesh points, leading to \f$ n \f$ mesh intervals:
 \f[
     \begin{alignat*}{1}
         0 &= \tau_0 < \tau_1 < \tau_2 < \ldots < \tau_i < \ldots < \tau_{n - 1} < \tau_n = 1 \\
-         t_i &= (t_f - t_0) \tau_i + t_0 \\
-         h_i &= (t_f - t_0)(\tau_i - \tau_{i-1})
+        t_i &= (t_f - t_0) \tau_i + t_0 \\
+        h_i &= (t_f - t_0)(\tau_i - \tau_{i-1})
     \end{alignat*}
 \f]
 
@@ -330,16 +330,16 @@ where \f$ \zeta \f$ is generalized acceleration and \f$ \zeta_B \f$ is a large n
 With Hermite-Simpson transcription, we have \f$ n + 1 \f$ mesh points and
 \f$ n \f$ mesh intervals like Trapezoidal transcription, but we also introduce
 additional collocation points at the mesh interval midpoints. This leads to a 
-total of \f$ 2n - 1 \f$ grid points on which we discretize the continuous 
+total of \f$ 2n + 1 \f$ grid points on which we discretize the continuous 
 variables:
 
 \f[
     \begin{alignat*}{1}
-        0 &= \tau_0 < \bar{\tau}_1 < \tau_1 < \bar{\tau}_2 < \ldots < \tau_i < \bar{\tau}_{i+1} < \ldots < \tau_{n - 1} < \bar{\tau}_{n} < \tau_n = 1 \\
-         t_i &= (t_f - t_0) \tau_i + t_0 \\
-         \bar{t}_i &= (t_f - t_0) \bar{\tau}_i + t_0 \\
-         h_i &= (t_f - t_0)(\tau_i - \tau_{i-1}) \\
-         0.5 h_i &= (t_f - t_0)(\bar{\tau}_i - \tau_i)
+        0 &= \tau_0 < \tau_1 < \tau_2 < \ldots < \tau_i < \ldots < \tau_{n - 1} < \tau_n = 1 \\
+        \bar{\tau}_i &= 0.5 * (\tau_{i-1} + \tau_i) \\
+        t_i &= (t_f - t_0) \tau_i + t_0 \\
+        \bar{t}_i &= (t_f - t_0) \bar{\tau}_i + t_0 \\
+        h_i &= (t_f - t_0)(\tau_i - \tau_{i-1}) \\
     \end{alignat*}
 \f]
 
@@ -374,8 +374,8 @@ The resulting finite-dimensional NLP is as follows:
          & z_i = z_{i-1} + \textrm{simpson}_i(f_{\textrm{aux}}(t, y, x, \lambda, p)) & i \in 1, \ldots, n \\
          & \bar{x}_i = (x_{i-1} + x_i)/2 & i \in 1, \ldots, n \\
          & 0 = \phi(q_i)  & i \in 0, \ldots, n\\
-         & 0 = \dot{\phi}(q, p) = G(q, p) u  & i \in 0, \ldots, n\\
-         & 0 = \ddot{\phi}(q, p) = G(q, p) \dot{u} + \dot{G}(q, p) u  & i \in 0, \ldots, n\\
+         & 0 = \dot{\phi}(q_i, u_i, p) = G(q_i, p) u_i  & i \in 0, \ldots, n\\
+         & 0 = \ddot{\phi}(q_i, u_i, \dot{u}_i, p) = G(q_i, p) \dot{u}_i + \dot{G}(q_i, p) u_i  & i \in 0, \ldots, n\\
          & g_{L} \leq g(t_i, y_i, x_{i}, p) \leq g_{U}  & i \in 0, \ldots, n\\
          \mbox{with respect to} \quad
          & y_0 \in [y_{0,L}, y_{0,U}] \\
@@ -390,7 +390,8 @@ The resulting finite-dimensional NLP is as follows:
          & t_0 \in [t_{0,L}, t_{0,U}] \\
          & t_n \in [t_{f,L}, t_{f,U}] \\
          & \lambda_i \in [\lambda_L, \lambda_U] & \forall~i \in 0, \ldots, n \\
-         & \bar{\lambda}_i \in [\lambda_L, \lambda_U] & \forall~i \in 1, \ldots, n
+         & \bar{\lambda}_i \in [\lambda_L, \lambda_U] & \forall~i \in 1, \ldots, n \\
+         & \bar{\gamma}_i \in [\bar{\gamma}_L, \bar{\gamma}_U] & \forall~i \in 1, \ldots, n
     \end{alignat*}
 \f]
 
@@ -425,13 +426,14 @@ position-level, or holonomic, constraints, represented by the equations:
 
 \f[
     \begin{alignat*}{2}
-         & 0 = \dot{\phi}(q, p) = G(q, p) u\\
-         & 0 = \ddot{\phi}(q, p) = G(q, p) \dot{u} + \dot{G}(q, p) u \\
+         & 0 = \dot{\phi}(q, u, p) = G(q, p) u\\
+         & 0 = \ddot{\phi}(q, u, \dot{u}, p) = G(q, p) \dot{u} + \dot{G}(q, p) u \\
     \end{alignat*}
 \f] 
 
-Derivatives of velocity-level, or non-holonomic, constraints which take the form 
-\f$ 0 = \dot{\nu}(q, u, p) \f$, are not supported.
+Even though OpenSim support non-holonomic constraints (that is, 
+\f$ \nu(q, u, p) = 0 \f$), we only support holonomic constraints; that is, 
+\f$ \phi(q) = 0 \f$.
 
 By default, the controls at mesh interval midpoints are constrained by linear
 interpolation of control mesh endpoint values (represented by 
@@ -449,8 +451,8 @@ ms.set_interpolate_control_midpoints(false);
 2. Create a dynamically-consistent initial guess by solving a feasibility problem 
 (i.e. no cost terms).
 3. Actuators should only be as strong as they need to be. Problems tend to 
-converge slower if some actuator controls are too strong and their controls
-are very small compared to other actuators in the model.
+converge slower if some actuator controls are very small compared to those of
+other actuators in the model due to unecessarily large max force settings.
 
 */
 

@@ -90,7 +90,9 @@ class MocoTrajectory;
 /// property. When enabled, the provided position-level states reference data 
 /// will be splined in order to compute derivatives. If some velocity-level 
 /// information exists in the reference, this option will fill in the missing 
-/// data with position derivatives and leave the existing velocity data intact. 
+/// data with position derivatives and leave the existing velocity data intact.
+/// This is not enabled by default, but is recommended for improving tracking
+/// performance and reducing convergence times. 
 /// 
 /// Since the data in the provided references may be altered by TableProcessor 
 /// operations or appended to by `track_reference_position_derivatives`, the 

@@ -7,7 +7,7 @@
 %                                                                            %
 % Licensed under the Apache License, Version 2.0 (the "License"); you may    %
 % not use this file except in compliance with the License. You may obtain a  %
-% copy of the License at http:%www.apache.org/licenses/LICENSE-2.0           %
+% copy of the License at http://www.apache.org/licenses/LICENSE-2.0           %
 %                                                                            %
 % Unless required by applicable law or agreed to in writing, software        %
 % distributed under the License is distributed on an "AS IS" BASIS,          %
@@ -17,19 +17,20 @@
 % -------------------------------------------------------------------------- %
 
 % This example features two different tracking problems solved using the
-% MocoTrack tool. The first demonstrates the basic usage of the tool interface
-% to solve a torque-driven marker tracking problem. The second problem shows
-% how to customize a muscle-driven state tracking problem using more advanced
-% features of the tool interface.
+% MocoTrack tool. 
+%  - The first problem demonstrates the basic usage of the tool interface
+%    to solve a torque-driven marker tracking problem. 
+%  - The second problem shows how to customize a muscle-driven state tracking 
+%    problem using more advanced features of the tool interface.
 % 
-% Data and model source: https:%simtk.org/projects/full_body
+% Data and model source: https://simtk.org/projects/full_body
 % 
 % Model
 % -----
 % The model described in the file 'subject_walk_armless.osim' included in this
 % file is a modified version of the Rajagopoal et al. 2016 musculoskeletal 
 % model. The lumbar, subtalar, and mtp coordinates have been replaced with
-% WeldJoint%s and residual actuators have been added to the pelvis (1 N-m for
+% WeldJoints and residual actuators have been added to the pelvis (1 N-m for
 % rotational coordinates and 10 N for translational coordinates). Finally, the
 % arms and all associated components have been removed for simplicity.
 % 
@@ -43,9 +44,13 @@
 function exampleMocoTrack()
 
 % Solve the torque-driven marker tracking problem.
+% This problem takes a few minutes to solve.
 torqueDrivenMarkerTracking();
 
 % Solve the muscle-driven state tracking problem.
+% This problem could take an hour or more to solve, depending on the number of
+% processor cores available for parallelization. With 12 cores, it takes around
+% 25 minutes.
 muscleDrivenStateTracking();
 
 end
@@ -62,7 +67,7 @@ track.setName("torque_driven_marker_tracking");
 % accept a base model and allow you to easily modify the model by appending
 % ModelOperators. Operations are performed in the order that they are
 % appended to the model.
-% Create the base ModelOperator by passing in the model file.
+% Create the base Model by passing in the model file.
 modelProcessor = ModelProcessor("subject_walk_armless.osim");
 % Add ground reaction external loads in lieu of a ground-contact model.
 modelProcessor.append(ModOpAddExternalLoads("grf_walk.xml"));
@@ -134,9 +139,9 @@ modelProcessor = ModelProcessor("subject_walk_armless.osim");
 modelProcessor.append(ModOpAddExternalLoads("grf_walk.xml"));
 modelProcessor.append(ModOpReplaceMusclesWithDeGrooteFregly2016());
 % Only valid for DeGrooteFregly2016Muscles.
-modelProcessor.append(ModOpIgnorePassiveFiberForces());
+modelProcessor.append(ModOpIgnorePassiveFiberForcesDGF());
 % Only valid for DeGrooteFregly2016Muscles.
-modelProcessor.append(ModOpScaleActiveFiberForceCurveWidth(1.5));
+modelProcessor.append(ModOpScaleActiveFiberForceCurveWidthDGF(1.5));
 track.setModel(modelProcessor);
 
 % Construct a TableProcessor of the coordinate data and pass it to the 
@@ -147,7 +152,7 @@ track.setModel(modelProcessor);
 track.setStatesReference(TableProcessor("coordinates.sto"));
 track.set_states_global_tracking_weight(10);
 
-% This setting allow extra data columns contained in the states
+% This setting allows extra data columns contained in the states
 % reference that don't correspond to model coordinates.
 track.set_allow_unused_references(true);
 

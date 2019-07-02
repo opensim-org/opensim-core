@@ -103,8 +103,8 @@ OSIMMOCO_API void RegisterTypes_osimMoco() {
         Object::registerType(ModOpIgnoreTendonCompliance());
         Object::registerType(ModOpAddReserves());
         Object::registerType(ModOpAddExternalLoads());
-        Object::registerType(ModOpIgnorePassiveFiberForces());
-        Object::registerType(ModOpScaleActiveFiberForceCurveWidth());
+        Object::registerType(ModOpIgnorePassiveFiberForcesDGF());
+        Object::registerType(ModOpScaleActiveFiberForceCurveWidthDGF());
         Object::registerType(ModOpReplaceJointsWithWelds());
         Object::registerType(ModOpScaleMaxIsometricForce());
 
