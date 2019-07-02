@@ -144,6 +144,7 @@ public:
     * @param aName Name of the wrap object.
     * @return const Pointer to the wrap object.
     */
+    
     const WrapObject* getWrapObject(const std::string& aName) const;
     const WrapObjectSet& getWrapObjectSet() const { return get_WrapObjectSet(); }
 
