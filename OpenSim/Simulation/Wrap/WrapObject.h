@@ -86,6 +86,7 @@ public:
     };                  // points are on the constrained side of the wrap object)
 
 
+
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -131,12 +132,10 @@ public:
                          WrapResult& aWrapResult) const;
 
 protected:
-/** @cond **/ // hide from Doxygen
     virtual int wrapLine(const SimTK::State& state,
                          SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
                          const PathWrap& aPathWrap,
                          WrapResult& aWrapResult, bool& aFlag) const = 0;
-/** @endcond **/
 
     /**
      * Compute the transform of the wrap geomerty w.r.t. the mobilized body 
