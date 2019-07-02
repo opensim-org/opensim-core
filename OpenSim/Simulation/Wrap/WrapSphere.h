@@ -1,5 +1,5 @@
-#ifndef __WrapSphere_h__
-#define __WrapSphere_h__
+#ifndef OPENSIM_WRAP_SPHERE_H_
+#define OPENSIM_WRAP_SPHERE_H_
 /* -------------------------------------------------------------------------- *
  *                           OpenSim:  WrapSphere.h                           *
  * -------------------------------------------------------------------------- *
@@ -26,11 +26,9 @@
 
 // INCLUDE
 #include "WrapObject.h"
-#include <OpenSim/Common/PropertyDbl.h>
 
 namespace OpenSim {
 
-class Model;
 class PathWrap;
 class WrapResult;
 
@@ -44,13 +42,11 @@ class WrapResult;
  */
 class OSIMSIMULATION_API WrapSphere : public WrapObject {
 OpenSim_DECLARE_CONCRETE_OBJECT(WrapSphere, WrapObject);
-
-//=============================================================================
-// DATA
-//=============================================================================
-
-    PropertyDbl _radiusProp;
-    double& _radius;
+public:
+//==============================================================================
+// PROPERTIES
+//==============================================================================
+    OpenSim_DECLARE_PROPERTY(radius, double, "The radius of the sphere.");
 
 //=============================================================================
 // METHODS
@@ -60,13 +56,8 @@ OpenSim_DECLARE_CONCRETE_OBJECT(WrapSphere, WrapObject);
     //--------------------------------------------------------------------------
 public:
     WrapSphere();
-    WrapSphere(const WrapSphere& aWrapSphere);
     virtual ~WrapSphere();
 
-#ifndef SWIG
-    WrapSphere& operator=(const WrapSphere& aWrapSphere);
-#endif
-    void copyData(const WrapSphere& aWrapSphere);
     const char* getWrapTypeName() const override;
     std::string getDimensionsString() const override;
     double getRadius() const;
@@ -76,17 +67,17 @@ public:
         body's reference frame. */
     void extendScale(const SimTK::State& s, const ScaleSet& scaleSet) override;
 
-    void connectToModelAndBody(Model& aModel, PhysicalFrame& aBody) override;
 protected:
     int wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
         const PathWrap& aPathWrap, WrapResult& aWrapResult, bool& aFlag) const override;
+
     /// Implement generateDecorations to draw geometry in visualizer
     void generateDecorations(bool fixed, const ModelDisplayHints& hints, const SimTK::State& state,
         SimTK::Array_<SimTK::DecorativeGeometry>& appendToThis) const override;
-    void setupProperties();
 
+    void extendFinalizeFromProperties() override;
 private:
-    void setNull();
+    void constructProperties();
 
 //=============================================================================
 };  // END of class WrapSphere
@@ -95,6 +86,6 @@ private:
 
 } // end of namespace OpenSim
 
-#endif // __WrapSphere_h__
+#endif // OPENSIM_WRAP_SPHERE_H_
 
 
