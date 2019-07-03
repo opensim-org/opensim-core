@@ -62,6 +62,15 @@ class Model;
 /// MocoParameter p0("torso_mass", "torso", "mass", MocoBounds(60, 80));
 /// @endcode
 ///
+/// Here is a Matlab example of optimizing the optimal fiber length of a muscle:
+/// @code
+/// moco = MocoStudy();
+/// problem = moco.updProblem();
+/// param = MocoParameter('my_param_name', /forceset/soleus_r', 'optimal_fiber_length', ...
+/// MocoBounds(0.04, 0.06));
+/// problem.addParameter(param);
+/// @endcode
+///
 /// The generic constructor can be used for more complex MocoParameter 
 /// assignments. Here, we create a MocoParameter for the y-position of the mass
 /// center of three different rigid bodies in the model:
