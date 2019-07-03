@@ -14,7 +14,6 @@ model.finalizeConnections();
 % twice differentiable, etc).
 DeGrooteFregly2016Muscle().replaceMuscles(model);
 
-% TODO move this function to a separate file.
 if nargin >= 1
     ignore_act_dyn = ignoreActDyn;
 else

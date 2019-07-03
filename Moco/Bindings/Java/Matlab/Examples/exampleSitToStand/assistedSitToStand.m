@@ -18,7 +18,7 @@ function assistedSitToStand
 %
 % Information:
 % 1. We started you off with two different device designs, stored in the
-%    addSpringToKnee() and addSpringToAnkle functions() below.
+%    addSpringToKnee() and addSpringToAnkle() functions below.
 % 2. To help with experimenting with different designs, create a separate
 %    function for each design and change the argument to the evaluateDevice()
 %    function below.
