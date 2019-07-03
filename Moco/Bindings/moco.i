@@ -199,5 +199,6 @@ moco_unique_ptr(OpenSim::PositionMotion);
 %include <Moco/MocoUtilities.h>
 
 %include <Moco/Components/ModelFactory.h>
+%include <Moco/Components/SmoothSphereHalfSpaceForce.h>
 
 %include <Moco/ModelOperators.h>

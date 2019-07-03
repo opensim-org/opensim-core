@@ -25,9 +25,6 @@
 #include <OpenSim/Simulation/Model/Force.h>
 #include <OpenSim/Common/Set.h>
 
-using SimTK::Vec3;
-using SimTK::Transform;
-
 namespace OpenSim {
 
 class OSIMMOCO_API SmoothSphereHalfSpaceForce : public Force {
@@ -50,7 +47,7 @@ public:
             "The coefficient of viscous friction, default is 0.");
     OpenSim_DECLARE_PROPERTY(transition_velocity, double,
             "The transition velocity, default is 0.01 (m/s).");
-    OpenSim_DECLARE_PROPERTY(constant_contact_force, double,
+    OpenSim_DECLARE_PROPERTY(derivative_smoothing, double,
             "The constant that enforces non-null derivatives,"
             "default is 1e-5.");
     OpenSim_DECLARE_PROPERTY(hertz_smoothing, double,
@@ -65,17 +62,22 @@ public:
             "default is 50.");
     OpenSim_DECLARE_PROPERTY(contact_sphere_radius, double,
             "The radius of the contact sphere.");
-    OpenSim_DECLARE_PROPERTY(contact_sphere_location, Vec3,
+    OpenSim_DECLARE_PROPERTY(contact_sphere_location, SimTK::Vec3,
             "The location of the contact sphere in the body frame.");
-    OpenSim_DECLARE_PROPERTY(contact_half_space_transform, Transform,
-            "The transform of the contact half space in the body frame.");
+    OpenSim_DECLARE_PROPERTY(contact_half_space_location, SimTK::Vec3,
+            "The location of the contact half space in the body frame,"
+            "default is Vec3(0).");
+    OpenSim_DECLARE_PROPERTY(contact_half_space_orientation, SimTK::Vec3,
+            "The orientation of the contact half space in the body frame."
+            "(body-fixed XYZ Euler angles), default is Vec3(0).");
+
 
 //=============================================================================
 // SOCKETS
 //=============================================================================
-    OpenSim_DECLARE_SOCKET(body_contact_sphere, PhysicalFrame,
+    OpenSim_DECLARE_SOCKET(sphere_frame, PhysicalFrame,
             "The body to which the contact sphere is attached.");
-    OpenSim_DECLARE_SOCKET(body_contact_half_space, PhysicalFrame,
+    OpenSim_DECLARE_SOCKET(half_space_frame, PhysicalFrame,
             "The body to which the contact half space is attached.");
 
 //=============================================================================
@@ -85,31 +87,25 @@ public:
 
     SmoothSphereHalfSpaceForce(const std::string& name,
         const Frame& contactSphereBodyFrame,
-        Vec3 contactSphereLocation, double contactSphereRadius,
+        SimTK::Vec3 contactSphereLocation, double contactSphereRadius,
         const Frame& contactHalfSpaceBodyFrame,
-        Transform contactHalfSpaceTransform, double stiffness,
-        double dissipation, double staticFriction, double dynamicFriction,
-        double viscousFriction, double transitionVelocity, double cf,
-        double bd, double bv);
+        SimTK::Vec3 contactHalfSpaceLocation,
+        SimTK::Vec3 contactHalfSpaceOrientation);
 
 //=============================================================================
 // REPORTING
 //=============================================================================
-    /**
-    * Provide name(s) of the quantities (column labels) of the force value(s)
-    * to be reported
-    */
+    /// Provide name(s) of the quantities (column labels) of the force value(s)
+    /// to be reported. The order is the three forces and three torques applied
+    /// on the sphere followed by the three forces and three torques applied
+    /// on the half space.
     OpenSim::Array<std::string> getRecordLabels() const override ;
-    /**
-    *  Provide the value(s) to be reported that correspond to the labels
-    */
+    /// Provide the value(s) to be reported that correspond to the labels
     OpenSim::Array<double> getRecordValues(const SimTK::State& state) const
         override ;
 
 protected:
-    /**
-    * Create a SimTK::Force which implements this Force.
-    */
+    /// Create a SimTK::Force which implements this Force.
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
 
 private:

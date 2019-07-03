@@ -40,29 +40,19 @@ SmoothSphereHalfSpaceForce::SmoothSphereHalfSpaceForce()
 SmoothSphereHalfSpaceForce::SmoothSphereHalfSpaceForce(
     const std::string& name,
     const Frame& contactSphereBodyFrame,
-    Vec3 contactSphereLocation, double contactSphereRadius,
+    SimTK::Vec3 contactSphereLocation, double contactSphereRadius,
     const Frame& contactHalfSpaceBodyFrame,
-    Transform contactHalfSpaceTransform, double stiffness,
-    double dissipation, double staticFriction, double dynamicFriction,
-    double viscousFriction, double transitionVelocity, double cf,
-    double bd, double bv)
+    SimTK::Vec3 contactHalfSpaceLocation,
+    SimTK::Vec3 contactHalfSpaceOrientation)
 {
-    this->connectSocket_body_contact_sphere(contactSphereBodyFrame);
-    this->connectSocket_body_contact_half_space(contactHalfSpaceBodyFrame);
+    this->connectSocket_sphere_frame(contactSphereBodyFrame);
+    this->connectSocket_half_space_frame(contactHalfSpaceBodyFrame);
 
     constructProperties();
     set_contact_sphere_location(contactSphereLocation);
     set_contact_sphere_radius(contactSphereRadius);
-    set_contact_half_space_transform(contactHalfSpaceTransform);
-    set_stiffness(stiffness);
-    set_dissipation(dissipation);
-    set_static_friction(staticFriction);
-    set_dynamic_friction(dynamicFriction);
-    set_viscous_friction(viscousFriction);
-    set_transition_velocity(transitionVelocity);
-    set_constant_contact_force(cf);
-    set_hertz_smoothing(bd);
-    set_hunt_crossley_smoothing(bv);
+    set_contact_half_space_location(contactHalfSpaceLocation);
+    set_contact_half_space_orientation(contactHalfSpaceOrientation);
 }
 
 void SmoothSphereHalfSpaceForce::extendAddToSystem(
@@ -70,11 +60,8 @@ void SmoothSphereHalfSpaceForce::extendAddToSystem(
 
     Super::extendAddToSystem(system);
 
-    // TODO not sure about const and &
-    const Vec3& contactSphereLocation = get_contact_sphere_location();
+    const SimTK::Vec3& contactSphereLocation = get_contact_sphere_location();
     const double& contactSphereRadius = get_contact_sphere_radius();
-    const Transform& contactHalfSpaceTransform =
-        get_contact_half_space_transform();
 
     double stiffness = get_stiffness();
     double dissipation = get_dissipation();
@@ -82,16 +69,16 @@ void SmoothSphereHalfSpaceForce::extendAddToSystem(
     double dynamicFriction = get_dynamic_friction();
     double viscousFriction = get_viscous_friction();
     double transitionVelocity = get_transition_velocity();
-    double cf = get_constant_contact_force();
+    double cf = get_derivative_smoothing();
     double bd = get_hertz_smoothing();
     double bv = get_hunt_crossley_smoothing();
 
     SimTK::SmoothSphereHalfSpaceForce force(_model->updForceSubsystem());
 
     const PhysicalFrame& contactSphereFrame =
-        getConnectee<PhysicalFrame>("body_contact_sphere");
+        getConnectee<PhysicalFrame>("sphere_frame");
     const PhysicalFrame& contactHalfSpaceFrame =
-        getConnectee<PhysicalFrame>("body_contact_half_space");
+        getConnectee<PhysicalFrame>("half_space_frame");
 
     force.setStiffness(stiffness);
     force.setDissipation(dissipation);
@@ -109,8 +96,15 @@ void SmoothSphereHalfSpaceForce::extendAddToSystem(
 
     force.setContactHalfSpaceBody(
         contactHalfSpaceFrame.getMobilizedBody());
-    force.setContactHalfSpaceFrame(Transform(
-        SimTK::Rotation(-0.5*SimTK::Pi, SimTK::ZAxis), Vec3(0)));
+
+    SimTK::Transform halfSpaceFrame(
+        SimTK::Rotation(SimTK::BodyRotationSequence,
+            get_contact_half_space_orientation()[0], SimTK::XAxis,
+            get_contact_half_space_orientation()[1], SimTK::YAxis,
+            get_contact_half_space_orientation()[2], SimTK::ZAxis),
+        get_contact_half_space_location());
+
+    force.setContactHalfSpaceFrame(halfSpaceFrame);
 
     SmoothSphereHalfSpaceForce* mutableThis =
         const_cast<SmoothSphereHalfSpaceForce *>(this);
@@ -119,29 +113,25 @@ void SmoothSphereHalfSpaceForce::extendAddToSystem(
 
 void SmoothSphereHalfSpaceForce::constructProperties()
 {
-    constructProperty_contact_sphere_location(Vec3(0));
-    constructProperty_contact_sphere_radius(double(0));
-    constructProperty_contact_half_space_transform(
-        Transform(SimTK::Rotation(0, SimTK::ZAxis), Vec3(0)));
-
-    constructProperty_stiffness(double(0));
-    constructProperty_dissipation(double(0));
-    constructProperty_static_friction(double(0));
-    constructProperty_dynamic_friction(double(0));
-    constructProperty_viscous_friction(double(0));
-    constructProperty_transition_velocity(double(0));
-    constructProperty_constant_contact_force(double(0));
-    constructProperty_hertz_smoothing(double(0));
-    constructProperty_hunt_crossley_smoothing(double(0));
+    constructProperty_contact_sphere_location(SimTK::Vec3(0));
+    constructProperty_contact_sphere_radius(0.0);
+    constructProperty_contact_half_space_location(SimTK::Vec3(0));
+    constructProperty_contact_half_space_orientation(SimTK::Vec3(0));
+    constructProperty_stiffness(1.0);
+    constructProperty_dissipation(0.0);
+    constructProperty_static_friction(0.0);
+    constructProperty_dynamic_friction(0.0);
+    constructProperty_viscous_friction(0.0);
+    constructProperty_transition_velocity(0.01);
+    constructProperty_derivative_smoothing(1e-5);
+    constructProperty_hertz_smoothing(300.0);
+    constructProperty_hunt_crossley_smoothing(50.0);
 }
 
 //=============================================================================
 //  REPORTING
 //=============================================================================
-/**
-* Provide names of the quantities (column labels) of the force value(s)
-* reported
-*/
+// Provide names of the quantities (column labels) of the force value(s)
 OpenSim::Array<std::string> SmoothSphereHalfSpaceForce::getRecordLabels()
     const
 {
@@ -164,25 +154,24 @@ OpenSim::Array<std::string> SmoothSphereHalfSpaceForce::getRecordLabels()
     return labels;
 }
 
-/**
-* Provide the value(s) to be reported that correspond to the labels
-*/
+// Provide the value(s) to be reported that correspond to the labels
 OpenSim::Array<double> SmoothSphereHalfSpaceForce::
     getRecordValues(const SimTK::State& state) const {
 
     OpenSim::Array<double> values(1);
 
     const PhysicalFrame& contactSphereFrame =
-        getConnectee<PhysicalFrame>("body_contact_sphere");
+        getConnectee<PhysicalFrame>("sphere_frame");
     SimTK::MobilizedBodyIndex contactSphereIdx =
         contactSphereFrame.getMobilizedBody();
 
     const PhysicalFrame& contactHalfSpaceFrame =
-        getConnectee<PhysicalFrame>("body_contact_half_space");
+        getConnectee<PhysicalFrame>("half_space_frame");
     SimTK::MobilizedBodyIndex contactHalfSpaceIdx =
         contactHalfSpaceFrame.getMobilizedBody();
 
-    const auto& forceSubsys = _model->getForceSubsystem();
+    const Model& model = getModel();
+    const auto& forceSubsys = model.getForceSubsystem();
     const SimTK::Force& abstractForce = forceSubsys.getForce(_index);
     const auto& simtkForce =
         (SimTK::SmoothSphereHalfSpaceForce &)(abstractForce);

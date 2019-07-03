@@ -20,7 +20,6 @@
 
 #include <Moco/osimMoco.h>
 #include <OpenSim/Simulation/Manager/Manager.h>
-#include <Moco/Components/SmoothSphereHalfSpaceForce.h>
 
 const double FRICTION_COEFFICIENT = 0.7;
 
@@ -259,10 +258,7 @@ Model createBallHalfSpaceModel() {
     // Add display geometry.
     Sphere bodyGeometry(0.5);
     bodyGeometry.setColor(SimTK::Gray);
-    PhysicalOffsetFrame* ballCenter = new PhysicalOffsetFrame(
-    "ballCenter", *ball, Transform(Vec3(0)));
-    ball->addComponent(ballCenter);
-    ballCenter->attachGeometry(bodyGeometry.clone());
+    ball->attachGeometry(bodyGeometry.clone());
     // Setup contact.
     double radius = 0.5;
     double stiffness = 10000;
@@ -275,16 +271,23 @@ Model createBallHalfSpaceModel() {
     double bd = 300;
     double bv = 50;
     Vec3 sphereLocation(0);
-    SimTK::Transform halfSpaceFrame(Rotation(0, SimTK::ZAxis), Vec3(0));
+    Vec3 halfSpaceLocation(0);
+    // Set the plane parallel to the ground.
+    Vec3 halfSpaceOrientation(0,0,-0.5*SimTK::Pi);
     auto* contactBallHalfSpace = new SmoothSphereHalfSpaceForce(
         "contactBallHalfSpace",*ball,sphereLocation,radius,model.getGround(),
-        halfSpaceFrame,stiffness,dissipation,staticFriction,dynamicFriction,
-        viscousFriction,transitionVelocity,cf,bd,bv);
+        halfSpaceLocation,halfSpaceOrientation);
+    contactBallHalfSpace->set_stiffness(stiffness);
+    contactBallHalfSpace->set_dissipation(dissipation);
+    contactBallHalfSpace->set_static_friction(staticFriction);
+    contactBallHalfSpace->set_dynamic_friction(dynamicFriction);
+    contactBallHalfSpace->set_viscous_friction(viscousFriction);
+    contactBallHalfSpace->set_transition_velocity(transitionVelocity);
+    contactBallHalfSpace->set_derivative_smoothing(cf);
+    contactBallHalfSpace->set_hertz_smoothing(bd);
+    contactBallHalfSpace->set_hunt_crossley_smoothing(bv);
     contactBallHalfSpace->setName("contactBallHalfSpace");
     model.addComponent(contactBallHalfSpace);
-    contactBallHalfSpace->connectSocket_body_contact_sphere(*ball);
-    contactBallHalfSpace->connectSocket_body_contact_half_space(
-        model.getGround());
 
     return model;
 }
@@ -322,18 +325,19 @@ SimTK::Real testSmoothSphereHalfSpaceForce_NormalForce()
 
         auto& contactBallHalfSpace =
             model.getComponent<SmoothSphereHalfSpaceForce>(
-                "contactBallHalfSpace");
+            "contactBallHalfSpace");
 
         Array<double> contactForces =
             contactBallHalfSpace.getRecordValues(state);
         SimTK_TEST_EQ_TOL(contactForces[0], 0.0, 1e-4); // no horizontal force
-        SimTK_TEST_EQ_TOL(contactForces[1],weight, 1e-3); // vertical is weight
+        // vertical force is weight
+        SimTK_TEST_EQ_TOL(contactForces[1], weight, 1e-3);
         SimTK_TEST_EQ_TOL(contactForces[2], 0.0, 1e-4); // no horizontal force
         SimTK_TEST_EQ_TOL(contactForces[3], 0.0, 1e-4); // no torque
         SimTK_TEST_EQ_TOL(contactForces[4], 0.0, 1e-4); // no torque
         SimTK_TEST_EQ_TOL(contactForces[5], 0.0, 1e-4); // no torque
 
-        finalHeightTimeStepping =model.getStateVariableValue(state,
+        finalHeightTimeStepping = model.getStateVariableValue(state,
             "groundBall/groundBall_coord_2/value");
     }
 
@@ -349,11 +353,11 @@ SimTK::Real testSmoothSphereHalfSpaceForce_NormalForce()
         mp.setTimeBounds(0, finalTime);
         mp.setStateInfo("/groundBall/groundBall_coord_0/value", {-1, 1}, 0);
         mp.setStateInfo("/groundBall/groundBall_coord_1/value", {-1, 1}, 0);
-        mp.setStateInfo("/groundBall/groundBall_coord_2/value", {-1, 1}, 0.5);
+        mp.setStateInfo("/groundBall/groundBall_coord_2/value", {-1, 1}, y0);
         mp.setStateInfo("/groundBall/groundBall_coord_0/speed", {-10, 10}, 0);
         mp.setStateInfo("/groundBall/groundBall_coord_1/speed", {-10, 10}, 0);
         mp.setStateInfo("/groundBall/groundBall_coord_2/speed", {-10, 10}, 0);
-        
+
         auto& ms = moco.initCasADiSolver();
         ms.set_num_mesh_points(50);
         ms.set_verbosity(2);
@@ -363,16 +367,17 @@ SimTK::Real testSmoothSphereHalfSpaceForce_NormalForce()
 
         auto statesTraj = solution.exportToStatesTrajectory(mp);
         const auto& finalState = statesTraj.back();
-       model.realizeVelocity(finalState);
+        model.realizeVelocity(finalState);
 
-       auto& contactBallHalfSpace =
+        auto& contactBallHalfSpace =
            model.getComponent<SmoothSphereHalfSpaceForce>(
                "contactBallHalfSpace");
 
         Array<double> contactForces =
         contactBallHalfSpace.getRecordValues(finalState);
         SimTK_TEST_EQ_TOL(contactForces[0], 0.0, 1e-4); // no horizontal force
-        SimTK_TEST_EQ_TOL(contactForces[1],weight, 1e-3); // vertical is weight
+        // vertical force is weight
+        SimTK_TEST_EQ_TOL(contactForces[1], weight, 1e-3);
         SimTK_TEST_EQ_TOL(contactForces[2], 0.0, 1e-4); // no horizontal force
         SimTK_TEST_EQ_TOL(contactForces[3], 0.0, 1e-4); // no torque
         SimTK_TEST_EQ_TOL(contactForces[4], 0.0, 1e-4); // no torque

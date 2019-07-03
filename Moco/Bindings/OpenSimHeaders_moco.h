@@ -8,6 +8,7 @@
 #include <Moco/Components/DeGrooteFregly2016Muscle.h>
 #include <Moco/Components/ModelFactory.h>
 #include <Moco/Components/PositionMotion.h>
+#include <Moco/Components/SmoothSphereHalfSpaceForce.h>
 #include <Moco/MocoBounds.h>
 #include <Moco/MocoCasADiSolver/MocoCasADiSolver.h>
 #include <Moco/MocoControlBoundConstraint.h>
