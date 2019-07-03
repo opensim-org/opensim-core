@@ -139,6 +139,7 @@ class Report(object):
                 # If the reference is a file with metadata indicating that
                 # rotational data is in degrees, convert to radians and write to
                 # a new file to be used for plotting.
+                # TODO: don't write the extra file permanently
                 if file_ext == '.sto' or file_ext == '.mot':
                     sto_adapter = osim.STOFileAdapter()
                     ref = sto_adapter.read(ref_file)

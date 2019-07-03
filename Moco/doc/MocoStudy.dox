@@ -336,7 +336,7 @@ variables:
 \f[
     \begin{alignat*}{1}
         0 &= \tau_0 < \tau_1 < \tau_2 < \ldots < \tau_i < \ldots < \tau_{n - 1} < \tau_n = 1 \\
-        \bar{\tau}_i &= 0.5 * (\tau_{i-1} + \tau_i) \\
+        \bar{\tau}_i &= 0.5 (\tau_{i-1} + \tau_i) \\
         t_i &= (t_f - t_0) \tau_i + t_0 \\
         \bar{t}_i &= (t_f - t_0) \bar{\tau}_i + t_0 \\
         h_i &= (t_f - t_0)(\tau_i - \tau_{i-1}) \\
@@ -431,7 +431,7 @@ position-level, or holonomic, constraints, represented by the equations:
     \end{alignat*}
 \f] 
 
-Even though OpenSim support non-holonomic constraints (that is, 
+Even though OpenSim supports non-holonomic constraints (that is, 
 \f$ \nu(q, u, p) = 0 \f$), we only support holonomic constraints; that is, 
 \f$ \phi(q) = 0 \f$.
 
