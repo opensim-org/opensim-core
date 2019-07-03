@@ -28,16 +28,16 @@ model = Model(fullfile(scriptdir, 'subject01.osim'));
 
 % Add CoordinateActuators for each DOF in the model using a 
 % convenience function. See below for details.
-addCoordinateActuator(model, 'lumbar_extension', 500);
-addCoordinateActuator(model, 'pelvis_tilt', 500);
-addCoordinateActuator(model, 'pelvis_tx', 1000);
-addCoordinateActuator(model, 'pelvis_ty', 2500);
-addCoordinateActuator(model, 'hip_flexion_r', 100);
-addCoordinateActuator(model, 'knee_angle_r', 100);
-addCoordinateActuator(model, 'ankle_angle_r', 100);
-addCoordinateActuator(model, 'hip_flexion_l', 100);
-addCoordinateActuator(model, 'knee_angle_l', 100);
-addCoordinateActuator(model, 'ankle_angle_l', 100);
+addCoordinateActuator(model, 'lumbar_extension', 100);
+addCoordinateActuator(model, 'pelvis_tilt', 100);
+addCoordinateActuator(model, 'pelvis_tx', 200);
+addCoordinateActuator(model, 'pelvis_ty', 1500);
+addCoordinateActuator(model, 'hip_flexion_r', 50);
+addCoordinateActuator(model, 'knee_angle_r', 20);
+addCoordinateActuator(model, 'ankle_angle_r', 5);
+addCoordinateActuator(model, 'hip_flexion_l', 50);
+addCoordinateActuator(model, 'knee_angle_l', 20);
+addCoordinateActuator(model, 'ankle_angle_l', 5);
 
 % Create MocoStudy.
 % ================
@@ -105,17 +105,15 @@ problem.addCost(markerTrackingCost);
 % Add a low-weighted control effort cost to reduce oscillations in the 
 % actuator controls.
 controlCost = MocoControlCost();
-controlCost.set_weight(0.1);
+controlCost.set_weight(0.001);
 problem.addCost(controlCost);
 
 % Configure the solver.
 % =====================
-solver = muco.initTropterSolver();
-% 10 mesh points ~ 1 minute to solve
-% 25 mesh points ~ 5 minutes to solve
-solver.set_num_mesh_points(10);
-solver.set_optim_hessian_approximation('exact');
-solver.set_hessian_block_sparsity_mode('dense');
+solver = moco.initCasADiSolver();
+solver.set_num_mesh_points(20);
+solver.set_optim_constraint_tolerance(1e-3);
+solver.set_optim_convergence_tolerance(1e-3);
 
 solver.setGuess('bounds');
 
@@ -142,7 +140,7 @@ states = solution.getStatesTrajectoryMat();
 stateNames = solution.getStateNames();
 for i = 1:size(states ,2)
     subplot(4, 5, i)
-    plot(time, states(:,i))
+    plot(time, states(:,i), 'linewidth', 2)
     xlabel('time (s)')
     title(char(stateNames.get(i-1)))
 end
@@ -154,7 +152,7 @@ controls = solution.getControlsTrajectoryMat();
 controlNames = solution.getControlNames();
 for i = 1:size(controls ,2)
     subplot(2, 5, i)
-    plot(time, controls(:,i))
+    plot(time, controls(:,i), 'linewidth', 2)
     xlabel('time (s)')
     title(char(controlNames.get(i-1)))
 end

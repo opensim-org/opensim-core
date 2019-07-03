@@ -126,13 +126,16 @@ MocoStudy MocoTrack::initialize() {
     return moco;
 }
 
-MocoSolution MocoTrack::solve() {
+MocoSolution MocoTrack::solve(bool visualize) {
     // Generate the base MocoStudy.
     MocoStudy moco = initialize();
 
     // Solve!
     // ------
-    return moco.solve();
+    MocoSolution solution = moco.solve();
+    if (visualize) { moco.visualize(solution); }
+
+    return solution;
 }
 
 TimeSeriesTable MocoTrack::configureStateTracking(MocoProblem& problem, 
@@ -271,3 +274,5 @@ void MocoTrack::applyStatesToGuess(const TimeSeriesTable& states,
         guess.setState(label, col);
     }
 }
+
+

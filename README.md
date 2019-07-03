@@ -20,7 +20,7 @@ Moco depends on the following software:
 1. **OpenSim**: Platform for simulating musculoskeletal systems.
    1. **Simbody**: Multibody dynamics.
 2. **Tropter**: C++ library for solving general optimal control problems with 
-direct collocation. Currently, Tropter's source code is part of Muscollo.
+direct collocation. Currently, Tropter's source code is part of Moco.
    1. **Ipopt**: Nonlinear programming solver.
    2. **Eigen**: C++ matrix library.
    3. **ColPack**: Used to efficiently 
@@ -44,7 +44,7 @@ Install Eigen, ColPack, ADOL-C, and OpenSim using the CMake project in the
 `dependencies` directory (TODO improve instructions).
 
 For some reason, the ADOL-C in the Ubuntu package repositories does not work well
-with Muscollo/tropter.
+with Moco/tropter.
 
 Mac
 ---
@@ -78,7 +78,7 @@ Windows
 -------
 
 On **Windows**, you can run the `build_on_windows.ps1` PowerShell script to 
-obtain Muscollo's dependencies and to build Muscollo. This script assumes you
+obtain Moco's dependencies and to build Moco. This script assumes you
 have installed **Microsoft Visual Studio 2015** (with C++ support) and **CMake**
 3.2 or greater.
 
@@ -125,7 +125,7 @@ Design goals
    computer, but should provide the option to only use 1 thread (if the user is 
    solving multiple problems in parallel).
    
-7. Users can construct a Muscollo problem in MATLAB and Python.
+7. Users can construct a Moco problem in MATLAB and Python.
 
 8. The software is easy to build from source.
 
