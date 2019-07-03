@@ -12,17 +12,35 @@ problem = moco.updProblem();
 problem.setModel(getTorqueDrivenModel());
 
 % Part 1c: Set bounds on the problem.
-% Time bounds
+%
+% problem.setTimeBounds(initial_bounds, final_bounds)
+% problem.setStateInfo(path, trajectory_bounds, inital_bounds, final_bounds)
+%
+% All *_bounds arguments can be set to a range, [lower upper], or to a single 
+% value (equal lower and upper bounds).
+%
+% You may set multiple state infos at once using setStateInfoPattern().
+%
+% problem.setStateInfoPattern(pattern, trajectory_bounds, inital_bounds, ...
+%       final_bounds)
+%
+% This function support globbing in the 'pattern' argument; anywhere '.*' 
+% appears, it is replaced to match any states compatible with the pattern. 
+% For example, the following will set all coordinate value state infos:
+%
+% problem.setStateInfoPattern('/path/to/states/.*/value', ...)
+
+% Set time bounds
 problem.setTimeBounds(0, 1);
 
-% Position bounds: the model should start in a crouch and finish standing up.
+% Set position bounds: the model should start in a crouch and finish standing up.
 problem.setStateInfo('/jointset/hip_r/hip_flexion_r/value', ...
     MocoBounds(-2, 0.5), MocoInitialBounds(-2), MocoFinalBounds(0));
 problem.setStateInfo('/jointset/knee_r/knee_angle_r/value', [-2, 0], -2, 0);
 problem.setStateInfo('/jointset/ankle_r/ankle_angle_r/value', ...
     [-0.5, 0.7], -0.5, 0);
 
-% Velocity bounds: the model coordinates should start and end at rest.
+% Set velocity bounds: the model coordinates should start and end at rest.
 % This function accepts string patterns to set multiple state infos
 % at once. The '.*' is replaced to match any states compatible with the pattern.
 % The empty brackets indicate that the default speed range, [-50, 50], is
