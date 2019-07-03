@@ -41,7 +41,7 @@ class WrapResult;
  * algorithm presented in Garner & Pandy (2000).
  *
  * @author Brian Garner, derived from Peter Loan
- * @version 0.1
+ * @updated for OpenSim 4.0 by Benjamin Michaud, 2019.
  */
 class OSIMSIMULATION_API WrapSphereObst : public WrapObject {
 OpenSim_DECLARE_CONCRETE_OBJECT(WrapSphereObst, WrapObject);

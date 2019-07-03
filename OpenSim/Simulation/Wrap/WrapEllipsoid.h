@@ -38,7 +38,7 @@ class WrapResult;
  * A class implementing an ellipsoid for muscle wrapping.
  *
  * @author Peter Loan
- * @version 1.0
+ * @updated for OpenSim 4.0 by Benjamin Michaud, 2019.
  */
 class OSIMSIMULATION_API WrapEllipsoid : public WrapObject {
 OpenSim_DECLARE_CONCRETE_OBJECT(WrapEllipsoid, WrapObject);
