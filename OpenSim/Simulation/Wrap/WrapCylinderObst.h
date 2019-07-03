@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2017 Stanford University and the Authors                *
+ * Copyright (c) 2005-2019 Stanford University and the Authors                *
  * Author(s): Brian Garner, Peter Loan                                        *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -32,6 +32,8 @@ namespace OpenSim {
 class PathWrap;
 class WrapResult;
 
+/** @cond **/ // hide from Doxygen
+
 //=============================================================================
 //=============================================================================
 /**
@@ -39,7 +41,7 @@ class WrapResult;
  * algorithm presented in Garner & Pandy (2000).
  *
  * @author Brian Garner, derived from Peter Loan
- * @version 0.1
+ * updated for OpenSim 4.0 by Benjamin Michaud, 2019.
  */
 class OSIMSIMULATION_API WrapCylinderObst : public WrapObject {
 OpenSim_DECLARE_CONCRETE_OBJECT(WrapCylinderObst, WrapObject);
@@ -101,6 +103,8 @@ private:
 };  // END of class WrapCylinder
 //=============================================================================
 //=============================================================================
+
+/** @endcond **/
 
 } // end of namespace OpenSim
 

@@ -127,7 +127,7 @@ public:
     /** Initialize this MarkersReference from data in a markerFile such that it
         corresponds to the markers that have weights. If weights is empty Set,
         all corresponding markers are tracked at default reference weight.
-        @See setDefaultWeight()*/
+        See setDefaultWeight()*/
     void initializeFromMarkersFile(const std::string& markerFile,
                                    const Set<MarkerWeight>& markerWeightSet,
                                    Units modelUnits = Units(Units::Meters));
