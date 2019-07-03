@@ -22,6 +22,7 @@
 #include "Testing.h"
 
 #include <Moco/osimMoco.h>
+#include <OpenSim/Common/LogManager.h>
 #include <OpenSim/Simulation/Manager/Manager.h>
 #include <Moco/Components/SmoothSphereHalfSpaceForce.h>
 
@@ -257,22 +258,25 @@ Model createBallHalfSpaceModel() {
     model.addComponent(ball);
     auto* groundBall = new PlanarJoint("groundBall",model.getGround(),
     Vec3(0), Vec3(0), *ball, Vec3(0), Vec3(0));
+    auto& rz = groundBall->updCoordinate(PlanarJoint::Coord::RotationZ);
+    rz.setPrescribedFunction(Constant(0));
+    rz.setDefaultIsPrescribed(true);
     model.addComponent(groundBall);
     // Add display geometry.
-    Sphere bodyGeometry(0.5);
+    double radius = 0.10;
+    Sphere bodyGeometry(radius);
     bodyGeometry.setColor(SimTK::Gray);
     auto* ballCenter = new PhysicalOffsetFrame(
     "ballCenter", *ball, Transform(Vec3(0)));
     ball->addComponent(ballCenter);
     ballCenter->attachGeometry(bodyGeometry.clone());
     // Setup contact.
-    double radius = 0.5;
     double stiffness = 10000;
-    double dissipation = 0.75;
+    double dissipation = 1.0;
     double staticFriction = FRICTION_COEFFICIENT;
     double dynamicFriction = FRICTION_COEFFICIENT;
-    double viscousFriction = FRICTION_COEFFICIENT;
-    double transitionVelocity = 0.1;
+    double viscousFriction = 0;
+    double transitionVelocity = 0.05;
     double cf = 1e-5;
     double bd = 300;
     double bv = 50;
@@ -365,7 +369,7 @@ SimTK::Real testSmoothSphereHalfSpaceForce_NormalForce()
 
         auto statesTraj = solution.exportToStatesTrajectory(mp);
         const auto& finalState = statesTraj.back();
-       model.realizeVelocity(finalState);
+        model.realizeDynamics(finalState);
 
        auto& contactBallHalfSpace =
            model.getComponent<SmoothSphereHalfSpaceForce>(
@@ -397,6 +401,8 @@ SimTK::Real testSmoothSphereHalfSpaceForce_NormalForce()
 // of the mass (from testSmoothSphereHalfSpaceForce_NormalForce()).
 void testSmoothSphereHalfSpaceForce_FrictionForce(
     const SimTK::Real& equilibriumHeight) {
+    std::cout.rdbuf(LogManager::cout.rdbuf());
+    std::cout.rdbuf(LogManager::cout.rdbuf());
 
     Model model(createBallHalfSpaceModel());
 
@@ -431,7 +437,7 @@ void testSmoothSphereHalfSpaceForce_FrictionForce(
         Manager manager(model, state);
         state = manager.integrate(finalTime);
 
-        visualize(model, manager.getStateStorage());
+        // visualize(model, manager.getStateStorage());
 
         const SimTK::Real finalTX = model.getStateVariableValue(state,
             "groundBall/groundBall_coord_1/value");
