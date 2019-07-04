@@ -75,7 +75,7 @@
         get_markers_reference().getMarkerTable().flatten());
  }
 
- void MocoMarkerTrackingCost::calcIntegralCostImpl(const SimTK::State& state,
+ void MocoMarkerTrackingCost::calcIntegrandImpl(const SimTK::State& state,
         double& integrand) const {
      const auto& time = state.getTime();
      getModel().realizePosition(state);

@@ -72,8 +72,13 @@ public:
 
 protected:
     void initializeOnModelImpl(const Model&) const override;
-    void calcIntegralCostImpl(const SimTK::State& state,
+    void calcIntegrandImpl(const SimTK::State& state,
         double& integrand) const override;
+    void calcCostImpl(
+            const CostInput& input, SimTK::Real& cost) const override {
+        cost = input.integral;
+    }
+
     OpenSim_DECLARE_PROPERTY(markers_reference, MarkersReference,
             "MarkersReference object containing the marker trajectories to be "
             "tracked by a model. Marker weights can be optionally specified "

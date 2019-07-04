@@ -122,12 +122,20 @@ protected:
     int m_numEquations = -1;
 };
 
-class IntegralCostIntegrand : public Function {
+class Integrand : public Function {
 public:
+    void constructFunction(const Problem* casProblem, const std::string& name,
+            int index, const std::string& finiteDiffScheme,
+            std::shared_ptr<const std::vector<VariablesDM>>
+                    pointsForSparsityDetection) {
+        m_index = index;
+        Function::constructFunction(
+                casProblem, name, finiteDiffScheme, pointsForSparsityDetection);
+    }
     casadi_int get_n_out() override final { return 1; }
     std::string get_name_out(casadi_int i) override final {
         switch (i) {
-        case 0: return "integral_cost_integrand";
+        case 0: return "integrand";
         default: OPENSIM_THROW(OpenSim::Exception, "Internal error.");
         }
     }
@@ -138,25 +146,46 @@ public:
             return casadi::Sparsity(0, 0);
     }
     VectorDM eval(const VectorDM& args) const override;
+
+protected:
+    int m_index = -1;
 };
 
-class EndpointCost : public Function {
+class Cost : public Function {
 public:
-    casadi_int get_n_out() override final { return 1; }
+    void constructFunction(const Problem* casProblem, const std::string& name,
+            int index,
+            const std::string& finiteDiffScheme,
+            std::shared_ptr<const std::vector<VariablesDM>>
+            pointsForSparsityDetection) {
+        m_index = index;
+        Function::constructFunction(
+                casProblem, name, finiteDiffScheme, pointsForSparsityDetection);
+    }
+    casadi_int get_n_in() override { return 12; }
     std::string get_name_in(casadi_int i) override final {
         switch (i) {
-        case 0: return "final_time";
-        case 1: return "final_states";
-        case 2: return "final_controls";
-        case 3: return "final_multipliers";
-        case 4: return "final_derivatives";
-        case 5: return "parameters";
+        case 0: return "initial_time";
+        case 1: return "initial_states";
+        case 2: return "initial_controls";
+        case 3: return "initial_multipliers";
+        case 4: return "initial_derivatives";
+        case 5: return "final_time";
+        case 6: return "final_states";
+        case 7: return "final_controls";
+        case 8: return "final_multipliers";
+        case 9: return "final_derivatives";
+        case 10: return "parameters";
+        // TODO: be more clever about which integrals we say a given cost depends on.
+        case 11: return "integrals";
         default: OPENSIM_THROW(OpenSim::Exception, "Internal error.");
         }
     }
+    casadi::Sparsity get_sparsity_in(casadi_int i) override;
+    casadi_int get_n_out() override final { return 1; }
     std::string get_name_out(casadi_int i) override final {
         switch (i) {
-        case 0: return "endpoint_cost";
+        case 0: return "cost";
         default: OPENSIM_THROW(OpenSim::Exception, "Internal error.");
         }
     }
@@ -169,13 +198,21 @@ public:
     VectorDM eval(const VectorDM& args) const override;
     casadi::DM getSubsetPoint(const VariablesDM& fullPoint) const override {
         using casadi::Slice;
-        return casadi::DM::vertcat(
-                {fullPoint.at(final_time), fullPoint.at(states)(Slice(), -1),
-                        fullPoint.at(controls)(Slice(), -1),
-                        fullPoint.at(multipliers)(Slice(), -1),
-                        fullPoint.at(derivatives)(Slice(), -1),
-                        fullPoint.at(parameters)});
+        return casadi::DM::vertcat({fullPoint.at(initial_time),
+                fullPoint.at(states)(Slice(), 0),
+                fullPoint.at(controls)(Slice(), 0),
+                fullPoint.at(multipliers)(Slice(), 0),
+                fullPoint.at(derivatives)(Slice(), 0), fullPoint.at(final_time),
+                fullPoint.at(states)(Slice(), -1),
+                fullPoint.at(controls)(Slice(), -1),
+                fullPoint.at(multipliers)(Slice(), -1),
+                fullPoint.at(derivatives)(Slice(), -1),
+                fullPoint.at(parameters),
+                // TODO: not right.
+                fullPoint.at(integrals)});
     }
+private:
+    int m_index = -1;
 };
 
 /// This function should compute forward dynamics (explicit multibody dynamics),

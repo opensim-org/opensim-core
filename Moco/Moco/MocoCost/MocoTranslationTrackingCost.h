@@ -138,8 +138,12 @@ public:
 
 protected:
     void initializeOnModelImpl(const Model& model) const override;
-    void calcIntegralCostImpl(
+    void calcIntegrandImpl(
             const SimTK::State& state, double& integrand) const override;
+    void calcCostImpl(
+            const CostInput& input, SimTK::Real& cost) const override {
+        cost = input.integral;
+    }
 
 private:
     OpenSim_DECLARE_PROPERTY(states_reference, TableProcessor,

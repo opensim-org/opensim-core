@@ -60,9 +60,9 @@ std::unique_ptr<Model> createOscillatorModel() {
 class FinalPositionCost : public MocoCost {
 OpenSim_DECLARE_CONCRETE_OBJECT(FinalPositionCost, MocoCost);
 protected:
-    void calcEndpointCostImpl(const SimTK::State& finalState,
+    void calcCostImpl(const CostInput& input,
             SimTK::Real& cost) const override {
-       const auto& finalPosition = finalState.getY()[0];
+       const auto& finalPosition = input.final_state.getY()[0];
 
        cost = (finalPosition - 0.5) * (finalPosition - 0.5);
     }
@@ -189,7 +189,7 @@ std::unique_ptr<Model> createSeeSawModel() {
 class RotationalAccelerationCost : public MocoCost {
 OpenSim_DECLARE_CONCRETE_OBJECT(RotationalAccelerationCost, MocoCost);
 protected:
-    void calcIntegralCostImpl(const SimTK::State& state,
+    void calcIntegrandImpl(const SimTK::State& state,
         SimTK::Real& integrand) const override {
 
         getModel().realizeAcceleration(state); // TODO would avoid this, ideally.
@@ -197,6 +197,10 @@ protected:
             state, "pin/rotation/speed");
 
         integrand = accel * accel;
+    }
+    void calcCostImpl(
+            const CostInput& input, SimTK::Real& cost) const override {
+        cost = input.integral;
     }
 };
 

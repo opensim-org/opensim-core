@@ -90,8 +90,12 @@ public:
 protected:
     // TODO check that the reference covers the entire possible time range.
     void initializeOnModelImpl(const Model& model) const override;
-    void calcIntegralCostImpl(
+    void calcIntegrandImpl(
             const SimTK::State& state, double& integrand) const override;
+    void calcCostImpl(
+            const CostInput& input, SimTK::Real& cost) const override {
+        cost = input.integral;
+    }
 
 private:
     OpenSim_DECLARE_PROPERTY(reference, TableProcessor,

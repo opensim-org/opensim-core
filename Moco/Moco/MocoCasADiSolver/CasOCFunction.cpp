@@ -142,24 +142,55 @@ VectorDM PathConstraint::eval(const VectorDM& args) const {
     return out;
 }
 
-VectorDM IntegralCostIntegrand::eval(const VectorDM& args) const {
+VectorDM Integrand::eval(const VectorDM& args) const {
     Problem::ContinuousInput input{args.at(0).scalar(), args.at(1), args.at(2),
             args.at(3), args.at(4), args.at(5)};
     VectorDM out{casadi::DM(casadi::Sparsity::scalar())};
-    m_casProblem->calcIntegralCostIntegrand(input, *out[0].ptr());
+    m_casProblem->calcIntegrand(m_index, input, *out[0].ptr());
     return out;
 }
 
-VectorDM EndpointCost::eval(const VectorDM& args) const {
+casadi::Sparsity Cost::get_sparsity_in(casadi_int i) {
+    if (i == 0) {
+        return casadi::Sparsity::dense(1, 1);
+    } else if (i == 1) {
+        return casadi::Sparsity::dense(m_casProblem->getNumStates(), 1);
+    } else if (i == 2) {
+        return casadi::Sparsity::dense(m_casProblem->getNumControls(), 1);
+    } else if (i == 3) {
+        return casadi::Sparsity::dense(m_casProblem->getNumMultipliers(), 1);
+    } else if (i == 4) {
+        return casadi::Sparsity::dense(m_casProblem->getNumDerivatives(), 1);
+    } else if (i == 5) {
+        return casadi::Sparsity::dense(1, 1);
+    } else if (i == 6) {
+        return casadi::Sparsity::dense(m_casProblem->getNumStates(), 1);
+    } else if (i == 7) {
+        return casadi::Sparsity::dense(m_casProblem->getNumControls(), 1);
+    } else if (i == 8) {
+        return casadi::Sparsity::dense(m_casProblem->getNumMultipliers(), 1);
+    } else if (i == 9) {
+        return casadi::Sparsity::dense(m_casProblem->getNumDerivatives(), 1);
+    } else if (i == 10) {
+        return casadi::Sparsity::dense(m_casProblem->getNumParameters(), 1);
+    } else if (i == 11) {
+        return casadi::Sparsity::dense(m_casProblem->getNumIntegrals(), 1);
+    } else {
+        return casadi::Sparsity(0, 0);
+    }
+}
+VectorDM Cost::eval(const VectorDM& args) const {
     Problem::EndpointInput input{args.at(0).scalar(), args.at(1), args.at(2),
-            args.at(3), args.at(4), args.at(5)};
+            args.at(3), args.at(4), args.at(5).scalar(), args.at(6), args.at(7),
+            args.at(8), args.at(9), args.at(10), args.at(11)};
     VectorDM out{casadi::DM(casadi::Sparsity::scalar())};
-    m_casProblem->calcEndpointCost(input, *out[0].ptr());
+    m_casProblem->calcCost(m_index, input, *out[0].ptr());
     return out;
 }
 
 template <bool CalcKCErrors>
-casadi::Sparsity MultibodySystemExplicit<CalcKCErrors>::get_sparsity_out(casadi_int i) {
+casadi::Sparsity MultibodySystemExplicit<CalcKCErrors>::get_sparsity_out(
+        casadi_int i) {
     if (i == 0) {
         return casadi::Sparsity::dense(
                 m_casProblem->getNumMultibodyDynamicsEquations(), 1);

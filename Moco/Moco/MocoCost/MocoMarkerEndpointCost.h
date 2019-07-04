@@ -53,8 +53,8 @@ public:
 
 protected:
     void initializeOnModelImpl(const Model&) const override;
-    void calcEndpointCostImpl(const SimTK::State& finalState,
-        double& cost) const override;
+    void calcCostImpl(
+            const CostInput& input, SimTK::Real& cost) const override;
 private:
 
     OpenSim_DECLARE_PROPERTY(point_name, std::string,

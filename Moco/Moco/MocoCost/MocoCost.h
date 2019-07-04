@@ -18,11 +18,11 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include <OpenSim/Common/Object.h>
+#include "../osimMocoDLL.h"
 
 #include <SimTKcommon/internal/State.h>
 
-#include "../osimMocoDLL.h"
+#include <OpenSim/Common/Object.h>
 
 namespace OpenSim {
 
@@ -39,13 +39,14 @@ class Model;
 /// solves.
 /// @ingroup mococost
 class OSIMMOCO_API MocoCost : public Object {
-OpenSim_DECLARE_ABSTRACT_OBJECT(MocoCost, Object);
+    OpenSim_DECLARE_ABSTRACT_OBJECT(MocoCost, Object);
+
 public:
     OpenSim_DECLARE_PROPERTY(weight, double,
             "The cost value is multiplied by this weight (default: 1).");
 
-    OpenSim_DECLARE_PROPERTY(enabled, bool,
-                             "This bool indicates whether this cost is enabled.");
+    OpenSim_DECLARE_PROPERTY(
+            enabled, bool, "This bool indicates whether this cost is enabled.");
 
     MocoCost();
 
@@ -53,31 +54,30 @@ public:
 
     MocoCost(std::string name, double weight);
 
-    /// This includes the weight.
-    SimTK::Real calcIntegralCost(const SimTK::State& state) const {
+    // TODO: Allow multiple integrands.
+    SimTK::Real calcIntegrand(const SimTK::State& state) const {
         double integrand = 0;
-        if (!get_enabled()) {
-            return integrand;
-        }
-        calcIntegralCostImpl(state, integrand);
-        return get_weight() * integrand;
+        if (!get_enabled()) { return integrand; }
+        calcIntegrandImpl(state, integrand);
+        return integrand;
     }
     /// This includes the weight.
     // We use SimTK::Real instead of double for when we support adoubles.
-    SimTK::Real calcEndpointCost(const SimTK::State& finalState) const {
+    struct CostInput {
+        const SimTK::State& initial_state;
+        const SimTK::State& final_state;
+        const double& integral;
+    };
+    SimTK::Real calcCost(const CostInput& input) const {
         double cost = 0;
-        if(!get_enabled()) {
-            return cost;
-        }
-        calcEndpointCostImpl(finalState, cost);
+        if (!get_enabled()) { return cost; }
+        calcCostImpl(input, cost);
         return get_weight() * cost;
     }
     /// For use by solvers. This also performs error checks on the Problem.
     void initializeOnModel(const Model& model) const {
         m_model.reset(&model);
-        if(!get_enabled()) {
-            return;
-        }
+        if (!get_enabled()) { return; }
         initializeOnModelImpl(model);
     }
 
@@ -98,47 +98,45 @@ protected:
     /// getModel().realizeVelocity(state);
     /// @endcode
     /// The Lagrange multipliers for kinematic constraints are not available.
-    virtual void calcIntegralCostImpl(const SimTK::State& state,
-            double& integrand) const;
+    virtual void calcIntegrandImpl(
+            const SimTK::State& state, double& integrand) const;
     /// The endpoint cost cannot depend on actuator controls.
     /// The Lagrange multipliers for kinematic constraints are not available.
-    virtual void calcEndpointCostImpl(const SimTK::State& finalState,
-            SimTK::Real& cost) const;
+    virtual void calcCostImpl(
+            const CostInput& input, SimTK::Real& cost) const = 0;
     /// For use within virtual function implementations.
     const Model& getModel() const {
         OPENSIM_THROW_IF(!m_model, Exception,
                 "Model is not available until the start of initializing.");
         return m_model.getRef();
     }
+
 private:
     void constructProperties();
 
     mutable SimTK::ReferencePtr<const Model> m_model;
-
 };
 
-inline void MocoCost::calcIntegralCostImpl(const SimTK::State&,
-        double&) const {}
-
-inline void MocoCost::calcEndpointCostImpl(const SimTK::State&,
-        double&) const {}
+inline void MocoCost::calcIntegrandImpl(
+        const SimTK::State& state, double& integrand) const {}
 
 /// Endpoint cost for final time.
 /// @ingroup mococost
 class OSIMMOCO_API MocoFinalTimeCost : public MocoCost {
-OpenSim_DECLARE_CONCRETE_OBJECT(MocoFinalTimeCost, MocoCost);
+    OpenSim_DECLARE_CONCRETE_OBJECT(MocoFinalTimeCost, MocoCost);
+
 public:
     MocoFinalTimeCost() = default;
     MocoFinalTimeCost(std::string name) : MocoCost(std::move(name)) {}
     MocoFinalTimeCost(std::string name, double weight)
             : MocoCost(std::move(name), weight) {}
+
 protected:
-    void calcEndpointCostImpl(const SimTK::State& finalState,
-            SimTK::Real& cost) const override {
-        cost = finalState.getTime();
+    void calcCostImpl(
+            const CostInput& input, SimTK::Real& cost) const override {
+        cost = input.final_state.getTime();
     }
 };
-
 
 } // namespace OpenSim
 

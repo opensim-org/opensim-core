@@ -202,6 +202,14 @@ MocoCasOCProblem::MocoCasOCProblem(const MocoCasADiSolver& mocoCasADiSolver,
         const auto& param = problemRep.getParameter(paramName);
         addParameter(paramName, convertBounds(param.getBounds()));
     }
+
+    const auto costNames = problemRep.createCostNames();
+    for (const auto& name : costNames) {
+        // TODO: convey these bounds in a better way. From the MocoCost itself?
+        addIntegral(name, {-1e10, 1e10});
+        addCost(name);
+    }
+
     const auto pathConstraintNames = problemRep.createPathConstraintNames();
     for (const auto& name : pathConstraintNames) {
         const auto& pathCon = problemRep.getPathConstraint(name);

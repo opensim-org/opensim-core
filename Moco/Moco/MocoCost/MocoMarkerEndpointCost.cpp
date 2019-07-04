@@ -26,10 +26,10 @@ void MocoMarkerEndpointCost::initializeOnModelImpl(const Model& model) const {
     m_point.reset(&model.getComponent<Point>(get_point_name()));
 }
 
-void MocoMarkerEndpointCost::calcEndpointCostImpl(
-        const SimTK::State& finalState, double& cost) const {
-    getModel().realizePosition(finalState);
-    const auto& actualLocation = m_point->getLocationInGround(finalState);
+void MocoMarkerEndpointCost::calcCostImpl(
+        const CostInput& input, SimTK::Real& cost) const {
+    getModel().realizePosition(input.final_state);
+    const auto& actualLocation = m_point->getLocationInGround(input.final_state);
     cost = (actualLocation - get_reference_location()).normSqr();
 }
 

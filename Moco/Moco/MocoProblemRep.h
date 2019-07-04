@@ -84,9 +84,11 @@ public:
         return m_model_disabled_constraints;
     }
     /// This is a state object that solvers can use with
-    /// ModelDisabledConstraints.
-    SimTK::State& updStateDisabledConstraints() const {
-        return m_state_disabled_constraints;
+    /// ModelDisabledConstraints. Some solvers may need to use 2 state objects
+    /// at once; you can supply an index of 1 to get a second state object.
+    SimTK::State& updStateDisabledConstraints(int index = 0) const {
+        assert(index <= 1);
+        return m_state_disabled_constraints[index];
     }
     /// This is a component inside ModelDisabledConstraints that you can use
     /// to set the value of discrete forces, intended to hold the constraint
@@ -116,6 +118,8 @@ public:
     std::vector<std::string> createControlInfoNames() const;
     /// Get the names of all the parameters.
     std::vector<std::string> createParameterNames() const;
+    /// Get the names of all the costs.
+    std::vector<std::string> createCostNames() const;
     /// Get the names of all the MocoPathConstraint%s.
     std::vector<std::string> createPathConstraintNames() const;
     /// Get the names of all the Lagrange multiplier infos.
@@ -151,7 +155,12 @@ public:
     /// See MocoPhase::setControlInfo().
     const MocoVariableInfo& getControlInfo(const std::string& name) const;
     const MocoParameter& getParameter(const std::string& name) const;
-    /// Get a MocoPathConstraint from this MocoPhase. Note: this does not
+    /// Get a MocoCost by name.
+    const MocoCost& getCost(const std::string& name) const;
+    /// Get a cost by index. The order is the same as in getCostNames().
+    /// Note: this does not perform a bounds check.
+    const MocoCost& getCostByIndex(int index) const;
+    /// Get a MocoPathConstraint. Note: this does not
     /// include MocoKinematicConstraints, use getKinematicConstraint() instead.
     const MocoPathConstraint& getPathConstraint(const std::string& name) const;
     /// Get a path constraint by index. The order is the same as
@@ -196,13 +205,14 @@ public:
     /// These functions are for use by MocoSolver%s, but can also be called
     /// by users for debugging.
     /// @{
+    /* TODO
     /// Calculate the sum of integrand over all the integral cost terms in this
     /// phase for the provided state. That is, the returned value is *not* an
     /// integral over time.
     SimTK::Real calcIntegralCost(const SimTK::State& state) const {
         SimTK::Real integrand = 0;
         for (const auto& cost : m_costs) {
-            integrand += cost->calcIntegralCost(state);
+            integrand += cost->calcIntegrand(state);
         }
         return integrand;
     }
@@ -211,10 +221,11 @@ public:
         SimTK::Real sum = 0;
         // TODO cannot use controls.
         for (const auto& cost : m_costs) {
-            sum += cost->calcEndpointCost(finalState);
+            sum += cost->calcCost(finalState);
         }
         return sum;
     }
+    */
     /// Calculate the errors in all the scalar path constraint equations in this
     /// phase.
     void calcPathConstraintErrors(
@@ -281,7 +292,7 @@ private:
     mutable SimTK::State m_state_base;
     SimTK::ReferencePtr<const PositionMotion> m_position_motion_base;
     Model m_model_disabled_constraints;
-    mutable SimTK::State m_state_disabled_constraints;
+    mutable std::array<SimTK::State, 2> m_state_disabled_constraints;
     SimTK::ReferencePtr<const PositionMotion>
             m_position_motion_disabled_constraints;
     SimTK::ReferencePtr<DiscreteForces> m_constraint_forces;

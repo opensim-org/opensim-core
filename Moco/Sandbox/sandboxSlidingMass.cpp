@@ -106,7 +106,7 @@ public:
     // TODO allow alternate interface that does not require creating a SimTK
     // state (if just minimizing the control signal).
     // TODO create separate integral and endpoint cost types?
-    double calcIntegralCost(const SimTK::State& state) const {
+    double calcIntegrandCost(const SimTK::State& state) const {
         double integrand = 0;
         calcIntegralCostImpl(state, integrand);
         return get_weight() * integrand;

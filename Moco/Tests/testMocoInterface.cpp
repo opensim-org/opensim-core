@@ -722,8 +722,8 @@ TEMPLATE_TEST_CASE("Workflow", "", MocoTropterSolver, MocoCasADiSolver) {
     // TODO     MocoFinalTimeCost cost;
     // TODO     // TODO must be initialized first.
     // TODO     // TODO MocoPhase shouldn't even have a public
-    // calcEndpointCost function.
-    // TODO     SimTK_TEST_MUST_THROW_EXC(cost.calcEndpointCost(state),
+    // calcCost function.
+    // TODO     SimTK_TEST_MUST_THROW_EXC(cost.calcCost(state),
     // Exception);
     // TODO }
 

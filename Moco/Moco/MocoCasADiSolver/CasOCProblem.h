@@ -80,6 +80,17 @@ struct ParameterInfo {
     Bounds bounds;
 };
 
+struct IntegralInfo {
+    std::string name;
+    Bounds bounds;
+    std::unique_ptr<Integrand> function;
+};
+
+struct CostInfo {
+    std::string name;
+    std::unique_ptr<Cost> function;
+};
+
 /// The number outputs in the function must match the size of
 /// lowerBounds and upperBounds.
 struct PathConstraintInfo {
@@ -106,12 +117,18 @@ public:
         const casadi::DM& parameters;
     };
     struct EndpointInput {
+        const double& initial_time;
+        const casadi::DM& initial_states;
+        const casadi::DM& initial_controls;
+        const casadi::DM& initial_multipliers;
+        const casadi::DM& initial_derivatives;
         const double& final_time;
         const casadi::DM& final_states;
         const casadi::DM& final_controls;
         const casadi::DM& final_multipliers;
         const casadi::DM& final_derivatives;
         const casadi::DM& parameters;
+        const casadi::DM& integrals;
     };
     struct MultibodySystemExplicitOutput {
         casadi::DM& multibody_derivatives;
@@ -204,6 +221,15 @@ protected:
     void addParameter(std::string name, Bounds bounds) {
         m_paramInfos.push_back({std::move(name), std::move(bounds)});
     }
+    void addIntegral(std::string name, Bounds bounds) {
+        m_integralInfos.push_back(
+                {std::move(name), std::move(bounds),
+                 OpenSim::make_unique<Integrand>()});
+    }
+    /// Add a cost term to the problem.
+    void addCost(std::string name) {
+        m_costInfos.push_back({std::move(name), OpenSim::make_unique<Cost>()});
+    }
     /// The size of bounds must match the number of outputs in the function.
     /// Use variadic template arguments to pass arguments to the constructor of
     /// FunctionType.
@@ -225,13 +251,6 @@ protected:
     }
 
 public:
-    virtual void calcIntegralCostIntegrand(
-            const ContinuousInput&, double& integrand) const {
-        integrand = 0;
-    }
-    virtual void calcEndpointCost(const EndpointInput&, double& cost) const {
-        cost = 0;
-    }
     /// Kinematic constraint errors should be ordered as so:
     /// - position-level constraints
     /// - first derivative of position-level constraints
@@ -248,6 +267,10 @@ public:
             const casadi::DM& parameters,
             casadi::DM& velocity_correction) const = 0;
 
+    virtual void calcIntegrand(int /*integralIndex*/,
+            const ContinuousInput& /*input*/, double& integrand) const {}
+    virtual void calcCost(int /*costIndex*/, const EndpointInput& /*input*/,
+            double& /*cost*/) const {}
     virtual void calcPathConstraint(int /*constraintIndex*/,
             const ContinuousInput& /*input*/,
             casadi::DM& /*path_constraint*/) const {}
@@ -306,6 +329,22 @@ public:
 
         {
             int index = 0;
+            for (const auto& integralInfo : mutThis->m_integralInfos) {
+                integralInfo.function->constructFunction(this,
+                        "integrand_" + integralInfo.name, index,
+                        finiteDiffScheme, pointsForSparsityDetection);
+            }
+        }
+        {
+            int index = 0;
+            for (const auto& costInfo : mutThis->m_costInfos) {
+                costInfo.function->constructFunction(this,
+                        "cost_" + costInfo.name, index, finiteDiffScheme,
+                        pointsForSparsityDetection);
+            }
+        }
+        {
+            int index = 0;
             for (const auto& pathInfo : mutThis->m_pathInfos) {
                 pathInfo.function->constructFunction(this,
                         "path_constraint_" + pathInfo.name, index,
@@ -314,15 +353,6 @@ public:
                 ++index;
             }
         }
-        mutThis->m_integralCostFunc =
-                OpenSim::make_unique<IntegralCostIntegrand>();
-        mutThis->m_integralCostFunc->constructFunction(this,
-                "integral_cost_integrand", finiteDiffScheme,
-                pointsForSparsityDetection);
-
-        mutThis->m_endpointCostFunc = OpenSim::make_unique<EndpointCost>();
-        mutThis->m_endpointCostFunc->constructFunction(this, "endpoint_cost",
-                finiteDiffScheme, pointsForSparsityDetection);
 
         if (m_dynamicsMode == "implicit") {
             // Construct a full implicit multibody system (i.e. including
@@ -385,6 +415,8 @@ public:
     int getNumCoordinates() const { return m_numCoordinates; }
     int getNumSpeeds() const { return m_numSpeeds; }
     int getNumAuxiliaryStates() const { return m_numAuxiliaryStates; }
+    int getNumIntegrals() const { return (int)m_integralInfos.size(); }
+    int getNumCosts() const { return (int)m_costInfos.size(); }
     bool isPrescribedKinematics() const { return m_prescribedKinematics; }
     /// If the coordinates are prescribed, then the number of multibody dynamics
     /// equations is not the same as the number of speeds.
@@ -448,14 +480,14 @@ public:
     const std::vector<ParameterInfo>& getParameterInfos() const {
         return m_paramInfos;
     }
+    const std::vector<IntegralInfo>& getIntegralInfos() const {
+        return m_integralInfos;
+    }
+    const std::vector<CostInfo>& getCostInfos() const {
+        return m_costInfos;
+    }
     const std::vector<PathConstraintInfo>& getPathConstraintInfos() const {
         return m_pathInfos;
-    }
-    const casadi::Function& getIntegralCostIntegrand() const {
-        return *m_integralCostFunc;
-    }
-    const casadi::Function& getEndpointCost() const {
-        return *m_endpointCostFunc;
     }
     /// Get a function to the full multibody system (i.e. including kinematic
     /// constraints errors).
@@ -509,10 +541,10 @@ private:
     std::vector<ControlInfo> m_controlInfos;
     std::vector<MultiplierInfo> m_multiplierInfos;
     std::vector<SlackInfo> m_slackInfos;
-    std::vector<PathConstraintInfo> m_pathInfos;
     std::vector<ParameterInfo> m_paramInfos;
-    std::unique_ptr<IntegralCostIntegrand> m_integralCostFunc;
-    std::unique_ptr<EndpointCost> m_endpointCostFunc;
+    std::vector<IntegralInfo> m_integralInfos;
+    std::vector<CostInfo> m_costInfos;
+    std::vector<PathConstraintInfo> m_pathInfos;
     std::unique_ptr<MultibodySystemExplicit<true>> m_multibodyFunc;
     std::unique_ptr<MultibodySystemExplicit<false>>
             m_multibodyFuncIgnoringConstraints;
