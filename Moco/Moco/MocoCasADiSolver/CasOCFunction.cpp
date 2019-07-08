@@ -174,7 +174,7 @@ casadi::Sparsity Cost::get_sparsity_in(casadi_int i) {
     } else if (i == 10) {
         return casadi::Sparsity::dense(m_casProblem->getNumParameters(), 1);
     } else if (i == 11) {
-        return casadi::Sparsity::dense(m_casProblem->getNumIntegrals(), 1);
+        return casadi::Sparsity::dense(1, 1);
     } else {
         return casadi::Sparsity(0, 0);
     }

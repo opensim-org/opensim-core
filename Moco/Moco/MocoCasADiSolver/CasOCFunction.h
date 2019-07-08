@@ -177,7 +177,7 @@ public:
         case 9: return "final_derivatives";
         case 10: return "parameters";
         // TODO: be more clever about which integrals we say a given cost depends on.
-        case 11: return "integrals";
+        case 11: return "integral";
         default: OPENSIM_THROW(OpenSim::Exception, "Internal error.");
         }
     }
@@ -196,6 +196,7 @@ public:
             return casadi::Sparsity(0, 0);
     }
     VectorDM eval(const VectorDM& args) const override;
+    // TODO must override get_sparsity() to add a nonzero for the last integral.
     casadi::DM getSubsetPoint(const VariablesDM& fullPoint) const override {
         using casadi::Slice;
         return casadi::DM::vertcat({fullPoint.at(initial_time),
@@ -207,9 +208,9 @@ public:
                 fullPoint.at(controls)(Slice(), -1),
                 fullPoint.at(multipliers)(Slice(), -1),
                 fullPoint.at(derivatives)(Slice(), -1),
-                fullPoint.at(parameters),
+                fullPoint.at(parameters)});
                 // TODO: not right.
-                fullPoint.at(integrals)});
+                // fullPoint.at(integrals)});
     }
 private:
     int m_index = -1;

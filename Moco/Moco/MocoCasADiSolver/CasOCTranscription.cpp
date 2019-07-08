@@ -411,18 +411,8 @@ void Transcription::transcribe() {
 }
 
 void Transcription::setObjective() {
+    m_objective = 0;
     DM quadCoeffs = this->createQuadratureCoefficients();
-    MX integrandTraj;
-    {
-        // Here, we include evaluations of the integral cost
-        // integrand into the symbolic expression graph for the integral
-        // cost. We are *not* numerically evaluating the integral cost
-        // integrand here--that occurs when the function by casadi::nlpsol()
-        // is evaluated.
-        integrandTraj = evalOnTrajectory(m_problem.getIntegralCostIntegrand(),
-                {states, controls, multipliers, derivatives}, m_gridIndices)
-                                .at(0);
-    }
 
     // Minimize Lagrange multipliers if specified by the solver.
     if (m_solver.getMinimizeLagrangeMultipliers() &&
@@ -430,20 +420,39 @@ void Transcription::setObjective() {
         const auto mults = m_vars[multipliers];
         const double multiplierWeight = m_solver.getLagrangeMultiplierWeight();
         // Sum across constraints of each multiplier element squared.
-        integrandTraj += multiplierWeight * MX::sum1(MX::sq(mults));
+        MX integrandTraj = multiplierWeight * MX::sum1(MX::sq(mults));
+        m_objective += m_duration * dot(quadCoeffs.T(), integrandTraj);
     }
-    MX integralCost = m_duration * dot(quadCoeffs.T(), integrandTraj);
 
-    MXVector endpointCostOut;
-    m_problem.getEndpointCost().call(
-            {m_vars[final_time], m_vars[states](Slice(), -1),
-                    m_vars[controls](Slice(), -1),
-                    m_vars[multipliers](Slice(), -1),
-                    m_vars[derivatives](Slice(), -1), m_vars[parameters]},
-            endpointCostOut);
-    const auto endpointCost = endpointCostOut.at(0);
+    for (int ic = 0; ic < m_problem.getNumCosts(); ++ic) {
+        const auto& info = m_problem.getCostInfos()[ic];
 
-    m_objective = integralCost + endpointCost;
+        // Here, we include evaluations of the integral cost
+        // integrand into the symbolic expression graph for the integral
+        // cost. We are *not* numerically evaluating the integral cost
+        // integrand here--that occurs when the function by casadi::nlpsol()
+        // is evaluated.
+        MX integrandTraj = evalOnTrajectory(*info.integrand_function,
+                {states, controls, multipliers, derivatives}, m_gridIndices)
+                .at(0);
+
+        MX integral = m_duration * dot(quadCoeffs.T(), integrandTraj);
+
+        MXVector costOut;
+
+        info.endpoint_function->call(
+                {m_vars[initial_time], m_vars[states](Slice(), 0),
+                        m_vars[controls](Slice(), 0),
+                        m_vars[multipliers](Slice(), 0),
+                        m_vars[derivatives](Slice(), 0), m_vars[final_time],
+                        m_vars[states](Slice(), -1),
+                        m_vars[controls](Slice(), -1),
+                        m_vars[multipliers](Slice(), -1),
+                        m_vars[derivatives](Slice(), -1), m_vars[parameters],
+                        integral},
+                costOut);
+        m_objective += costOut.at(0);
+    }
 }
 
 Solution Transcription::solve(const Iterate& guessOrig) {

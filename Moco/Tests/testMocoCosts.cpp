@@ -253,6 +253,7 @@ TEMPLATE_TEST_CASE("Test MocoControlTrackingCost", "", MocoTropterSolver,
     // a controls trajectory to track.
     MocoStudy moco = setupMocoStudyDoublePendulumMinimizeEffort<TestType>();
     auto solutionEffort = moco.solve();
+    solutionEffort.write("testMocoCosts_MocoControlTrackingCost_effort_solution.sto");
 
     // Re-run problem, now setting effort cost function to zero and adding a
     // control tracking cost.
@@ -275,6 +276,7 @@ TEMPLATE_TEST_CASE("Test MocoControlTrackingCost", "", MocoTropterSolver,
     guessTracking.randomizeAdd();
     solver.setGuess(guessTracking);
     auto solutionTracking = moco.solve();
+    solutionEffort.write("testMocoCosts_MocoControlTrackingCost_tracking_solution.sto");
 
     // Make sure control tracking problem matches control effort problem.
     OpenSim_CHECK_MATRIX_ABSTOL(solutionEffort.getControlsTrajectory(),
@@ -289,7 +291,8 @@ void testDoublePendulumTracking() {
     // a controls trajectory to track.
     MocoStudy moco = setupMocoStudyDoublePendulumMinimizeEffort<SolverType>();
     auto solutionEffort = moco.solve();
-    solutionEffort.write("testMocoCosts_testMocoTranslationTrackingCost_effort_solution.sto");
+    const std::string typeString = TrackingType::getClassName();
+    solutionEffort.write("testMocoCosts_" + typeString + "_effort_solution.sto");
 
     // Re-run problem, now setting effort cost function to zero and adding a
     // tracking cost.
@@ -301,7 +304,7 @@ void testDoublePendulumTracking() {
 
     moco.updSolver<SolverType>().resetProblem(problem);
     auto solutionTracking = moco.solve();
-    solutionTracking.write("testMocoCosts_testMocoTranslationTrackingCost_tracking_solution.sto");
+    solutionTracking.write("testMocoCosts_" + typeString + "_tracking_solution.sto");
 
     // Check that position-level states match the effort minimization solution.
     CHECK(solutionTracking.compareContinuousVariablesRMS(solutionEffort,
@@ -315,7 +318,7 @@ void testDoublePendulumTracking() {
     problem.updPhase(0).updCost("effort").set_weight(0.001);
     moco.updSolver<SolverType>().resetProblem(problem);
     auto solutionTrackingWithRegularization = moco.solve();
-    solutionTrackingWithRegularization.write("testMocoCosts_testMocoTranslationTrackingCost_trackingWithReg_solution.sto");
+    solutionTrackingWithRegularization.write("testMocoCosts_" + typeString + "_trackingWithReg_solution.sto");
 
     // Now the full states and controls trajectories should match the effort
     // minimization solution better.
