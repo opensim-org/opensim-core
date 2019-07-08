@@ -411,6 +411,17 @@ void MocoTrajectory::resample(SimTK::Vector time) {
     int numDerivatives = (int)m_derivative_names.size();
     int numSlacks = (int)m_slack_names.size();
 
+    // If slack variables contain any NaNs, then we cannot resample as is since 
+    // splining will produce all NaNs. In this case, set the slack variables to
+    // zeros.
+    bool slacksHasNaNs = false; 
+    for (int i = 0; i < m_slacks.nrow(); ++i) {
+        for (int j = 0; j < m_slacks.ncol(); ++j) {
+            if (SimTK::isNaN(m_slacks.get(i, j))) slacksHasNaNs = true;
+        }
+    }
+    if (slacksHasNaNs) { m_slacks.setToZero(); }
+
     const TimeSeriesTable table = convertToTable();
     const GCVSplineSet splines(table, {}, std::min(m_time.size() - 1, 5));
 

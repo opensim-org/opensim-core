@@ -182,6 +182,8 @@ public:
     /// The degree is reduced as necessary if getNumTimes() < 6, and
     /// resampling is not possible if getNumTimes() < 2.
     /// @returns the resulting time interval between time points.
+    /// @note If slack variables contain NaNs, these variables are set to zeros
+    /// to avoid NaNs propagating to all time points after interpolation.
     double resampleWithNumTimes(int numTimes);
     /// Uniformly resample (interpolate) the iterate to try to achieve the
     /// provided time interval between mesh points, while preserving the
@@ -192,6 +194,8 @@ public:
     /// and controls and evaluating the spline at the new time points.
     /// The degree is reduced as necessary if getNumTimes() < 6, and
     /// resampling is not possible if getNumTimes() < 2.
+    /// @note If slack variables contain NaNs, these variables are set to zeros
+    /// to avoid NaNs propagating to all time points after interpolation.
     double resampleWithInterval(double desiredTimeInterval);
     /// Uniformly resample (interpolate) the iterate to try to achieve the
     /// provided frequency of time points per second of the trajectory, while
@@ -202,12 +206,16 @@ public:
     /// and controls and evaluating the spline at the new time points.
     /// The degree is reduced as necessary if getNumTimes() < 6, and
     /// resampling is not possible if getNumTimes() < 2.
+    /// @note If slack variables contain NaNs, these variables are set to zeros
+    /// to avoid NaNs propagating to all time points after interpolation.
     double resampleWithFrequency(double desiredNumTimePointsPerSecond);
     /// Resample (interpolate) the data in this iterate at the provided times.
     /// If all times have the same value (e.g., 0.0), then the value of each
     /// variable for all time is its previous value at the initial time.
     /// @throws Exception if new times are not within existing initial and final
     /// times, if the new times are decreasing, or if getNumTimes() < 2.
+    /// @note If slack variables contain NaNs, these variables are set to zeros
+    /// to avoid NaNs propagating to all time points after interpolation.
     void resample(SimTK::Vector newTime);
     /// @}
 
