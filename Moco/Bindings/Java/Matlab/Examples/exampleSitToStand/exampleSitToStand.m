@@ -1,27 +1,56 @@
 function exampleSitToStand
 
-%% Part 0: Load the OpenSim and Moco libraries.
+%% Part 0: Load the Moco libraries and pre-configured Models.
 import org.opensim.modeling.*;
+% These models are provided for you here (i.e. they are not part of Moco).
+torqueDrivenModel = getTorqueDrivenModel();
+muscleDrivenModel = getMuscleDrivenModel();
 
 %% Part 1: Torque-driven Predictive Problem
 % Part 1a: Create a new MocoStudy.
 
+
 % Part 1b: Initialize the problem and set the model.
 
+
 % Part 1c: Set bounds on the problem.
+%
+% problem.setTimeBounds(initial_bounds, final_bounds)
+% problem.setStateInfo(path, trajectory_bounds, inital_bounds, final_bounds)
+%
+% All *_bounds arguments can be set to a range, [lower upper], or to a 
+% single value (equal lower and upper bounds). Empty brackets, [], will use 
+% the default bounds (if they exist). You may set multiple state infos at 
+% once using setStateInfoPattern():
+%
+% problem.setStateInfoPattern(pattern, trajectory_bounds, inital_bounds, ...
+%       final_bounds)
+%
+% This function supports globbing in the 'pattern' argument; anywhere '.*' 
+% appears, it is replaced to match any states compatible with the pattern. 
+% For example, the following will set all coordinate value state infos:
+%
+% problem.setStateInfoPattern('/path/to/states/.*/value', ...)
+
 % Time bounds
+problem.setTimeBounds( );
 
 % Position bounds: the model should start in a crouch and finish standing up.
+problem.setStateInfo('/jointset/hip_r/hip_flexion_r/value', );
+problem.setStateInfo('/jointset/knee_r/knee_angle_r/value', );
+problem.setStateInfo('/jointset/ankle_r/ankle_angle_r/value', );
 
-% Velocity bounds: the model coordinates should start and end at rest.
-% This function accepts string patterns to set multiple state infos
-% at once. The '.*' is replaced to match any states compatible with the pattern.
-% The empty brackets indicate that the default speed range, [-50, 50], is
-% used for all speed states.
+% Velocity bounds: all model coordinates should start and end at rest.
+problem.setStateInfoPattern('/jointset/.*/speed', );
 
 % Part 1d: Add a MocoControlCost to the problem.
 
+
 % Part 1e: Configure the solver.
+solver = moco.initCasADiSolver();
+solver.set_num_mesh_points( );
+solver.set_optim_convergence_tolerance( );
+solver.set_optim_constraint_tolerance( );
 
 if ~exist('predictSolution.sto', 'file')
 % Part 1f: Solve! Write the solution to file, and visualize.
@@ -33,18 +62,26 @@ end
 % from the previous solution. Use a TableProcessor, which accepts a base table
 % and can append operations to modify the table.
 
+
 % Part 2b: Add a MocoStateTrackingCost to the problem using the states
 % from the predictive problem (via the TableProcessor we just created), and set
 % weights to zero for states associated with the dependent coordinate in the
-% model's knee CoordinateCoupler constraint. 
+% model's knee CoordinateCoupler constraint:
+%       '/jointset/patellofemoral_r/knee_angle_r_beta/value'
+%       '/jointset/patellofemoral_r/knee_angle_r_beta/speed'
+
 
 % Part 2c: Reduce the control cost weight so it now acts as a regularization 
 % term.
 
+
 % Part 2d: Set the initial guess using the predictive problem solution.
+% Tighten convergence tolerance to ensure smooth controls.
+
 
 if ~exist('trackingSolution.sto', 'file')
 % Part 2e: Solve! Write the solution to file, and visualize.
+
 
 end
 
@@ -55,23 +92,25 @@ mocoPlotTrajectory('predictSolution.sto', 'trackingSolution.sto', ...
 
 %% Part 4: Muscle-driven Inverse Problem
 % Create a MocoInverse tool instance.
-inverse = MocoInverse();
+
 
 % Part 4a: Provide the model via a ModelProcessor. Similar to the TableProcessor,
 % you can add operators to modify the base model.
 
+
+
 % Part 4b: Set the reference kinematics using the same TableProcessor we used
 % in the tracking problem.
 
-% Set the time range and allow extra (unused) columns in the kinematics.
-inverse.set_kinematics_allow_extra_columns(true);
-inverse.set_initial_time(0);
-inverse.set_final_time(1);
 
-% Set the mesh interval and convergence tolerance, and enable minimizing
-% muscle activation states.
-inverse.set_mesh_interval(0.05);
-inverse.set_tolerance(1e-4);
+% Set the time range, mesh interval, and convergence tolerance.
+inverse.set_initial_time( );
+inverse.set_final_time( );
+inverse.set_mesh_interval( );
+inverse.set_tolerance( );
+
+% Allow extra (unused) columns in the kinematics and minimize activations.
+inverse.set_kinematics_allow_extra_columns(true);
 inverse.set_minimize_sum_squared_states(true);
 
 % Part 4c: Append additional outputs path for quantities that are calculated
@@ -81,14 +120,18 @@ inverse.append_output_paths('.*passive_force_multiplier');
 
 % Part 4d: Solve! Write the solution and outputs.
 
+
 %% Part 5: Muscle-driven Inverse Problem with Passive Assistance
 % Part 5a: Create a new muscle-driven model, now adding a SpringGeneralizedForce 
 % about the knee coordinate.
 
+
 % Create a ModelProcessor similar to the previous one, using the same
 % reserve actuator strength so we can compare muscle activity accurately.
 
+
 % Part 5b: Solve! Write solution.
+
 
 %% Part 6: Compare unassisted and assisted Inverse Problems.
 fprintf('Cost without device: %f\n', ...
