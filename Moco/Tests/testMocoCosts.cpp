@@ -235,7 +235,7 @@ MocoStudy setupMocoStudyDoublePendulumMinimizeEffort() {
     problem.setStateInfo("/jointset/j0/q0/value", {-10, 10}, 0, Pi / 2);
     problem.setStateInfo("/jointset/j0/q0/speed", {-50, 50}, 0, 0);
     problem.setStateInfo("/jointset/j1/q1/value", {-10, 10}, Pi, 0);
-    problem.setStateInfo("/jointset/j0/q0/speed", {-50, 50}, 0, 0);
+    problem.setStateInfo("/jointset/j1/q1/speed", {-50, 50}, 0, 0);
 
     auto& solver = moco.initSolver<SolverType>();
     solver.set_num_mesh_points(20);

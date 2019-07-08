@@ -128,7 +128,7 @@ public:
         const casadi::DM& final_multipliers;
         const casadi::DM& final_derivatives;
         const casadi::DM& parameters;
-        const casadi::DM& integrals;
+        const double& integral;
     };
     struct MultibodySystemExplicitOutput {
         casadi::DM& multibody_derivatives;
@@ -337,6 +337,7 @@ public:
                 costInfo.integrand_function->constructFunction(this,
                         "cost_integrand_" + costInfo.name, index,
                         finiteDiffScheme, pointsForSparsityDetection);
+                ++index;
             }
         }
         {

@@ -357,7 +357,7 @@ private:
             simtkStateDisabledConstraintsInitial,
             simtkStateDisabledConstraintsFinal,
             // TODO: assumes integral and cost indices are the same.
-            input.integrals(index).scalar()});
+            input.integral});
 
         m_jar->leave(std::move(mocoProblemRep));
     }
