@@ -111,7 +111,7 @@ MocoStudy MocoTrack::initialize() {
     if (!get_guess_file().empty()) {
         solver.setGuessFile(getFilePath(get_guess_file()));
     } else {
-        solver.setGuess(solver.createGuess("bounds"));
+        solver.setGuess("bounds");
     }
 
     // Apply states from the reference data the to solver guess if specified by

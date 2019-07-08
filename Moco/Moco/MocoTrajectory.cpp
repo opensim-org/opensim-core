@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: MocoTrajectory.cpp                                              *
+ * OpenSim Moco: MocoTrajectory.cpp                                           *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2017 Stanford University and the Authors                     *
  *                                                                            *
@@ -411,16 +411,12 @@ void MocoTrajectory::resample(SimTK::Vector time) {
     int numDerivatives = (int)m_derivative_names.size();
     int numSlacks = (int)m_slack_names.size();
 
-    // If slack variables contain any NaNs, then we cannot resample as is since 
-    // splining will produce all NaNs. In this case, set the slack variables to
-    // zeros.
-    bool slacksHasNaNs = false; 
-    for (int i = 0; i < m_slacks.nrow(); ++i) {
-        for (int j = 0; j < m_slacks.ncol(); ++j) {
-            if (SimTK::isNaN(m_slacks.get(i, j))) slacksHasNaNs = true;
-        }
+    // This interpolate step removes any NaN values in the slack variables. It
+    // does not resize the slacks trajectory.
+    for (int icol = 0; icol < m_slacks.ncol(); ++icol) {
+        m_slacks.updCol(icol) =
+                interpolate(m_time, m_slacks.col(icol), m_time, true);
     }
-    if (slacksHasNaNs) { m_slacks.setToZero(); }
 
     const TimeSeriesTable table = convertToTable();
     const GCVSplineSet splines(table, {}, std::min(m_time.size() - 1, 5));
@@ -761,8 +757,8 @@ void MocoTrajectory::randomize(bool add, const SimTK::Random& randGen) {
     // The "true" means to not copy the data.
     SimTK::Vector time((int)statesTimes.size(), statesTimes.data(), true);
 
-    // TODO MocoProblem should be able to produce a MocoTrajectory template; it's
-    // what knows the state, control, and parameter names.
+    // TODO MocoProblem should be able to produce a MocoTrajectory template;
+    // it's what knows the state, control, and parameter names.
     return MocoTrajectory(time, statesTrajectory.getColumnLabels(),
             controlsTrajectory.getColumnLabels(), {}, // TODO (multiplier_names)
             {},                                       // TODO (parameter_names)
@@ -1020,7 +1016,8 @@ double MocoTrajectory::compareContinuousVariablesRMSInternal(
     return sqrt(ISS / (finalTime - initialTime) / numColumns);
 }
 
-double MocoTrajectory::compareContinuousVariablesRMS(const MocoTrajectory& other,
+double MocoTrajectory::compareContinuousVariablesRMS(
+        const MocoTrajectory& other,
         std::map<std::string, std::vector<std::string>> cols) const {
     ensureUnsealed();
     std::vector<std::string> allowedKeys{
