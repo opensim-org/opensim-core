@@ -281,7 +281,6 @@ void MocoTrack::applyStatesToGuess(const TimeSeriesTable& states,
                 format("Tried to apply data for state '%s' to guess, but this "
                     "state does not exist in the model.", label));
         }
-
     }
 }
 
