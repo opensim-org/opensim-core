@@ -2,7 +2,7 @@ function exampleSitToStand_answers
 
 %% Part 0: Load the Moco libraries and pre-configured Models.
 import org.opensim.modeling.*;
-% These models are provided for you (i.e. they are not part of Moco).
+% These models are provided for you (i.e., they are not part of Moco).
 torqueDrivenModel = getTorqueDrivenModel();
 muscleDrivenModel = getMuscleDrivenModel();
 
@@ -20,15 +20,15 @@ problem.setModel(torqueDrivenModel);
 % problem.setStateInfo(path, trajectory_bounds, inital_bounds, final_bounds)
 %
 % All *_bounds arguments can be set to a range, [lower upper], or to a 
-% single value (equal lower and upper bounds). Empty brackets, [], will use 
-% the default bounds (if they exist). You may set multiple state infos at 
+% single value (equal lower and upper bounds). Empty brackets, [], indicate
+% using default bounds (if they exist). You may set multiple state infos at
 % once using setStateInfoPattern():
 %
 % problem.setStateInfoPattern(pattern, trajectory_bounds, inital_bounds, ...
 %       final_bounds)
 %
-% This function supports globbing in the 'pattern' argument; anywhere '.*' 
-% appears, it is replaced to match any states compatible with the pattern. 
+% This function supports regular expressions in the 'pattern' argument;
+% use '.*' to match any substring of the state/control path
 % For example, the following will set all coordinate value state infos:
 %
 % problem.setStateInfoPattern('/path/to/states/.*/value', ...)
@@ -65,13 +65,13 @@ end
 %% Part 2: Torque-driven Tracking Problem
 % Part 2a: Construct a tracking reference TimeSeriesTable using filtered 
 % data from the previous solution. Use a TableProcessor, which accepts a 
-% base table and can append operations to modify the table.
+% base table and allows appending operations to modify the table.
 tableProcessor = TableProcessor('predictSolution.sto');
 tableProcessor.append(TabOpLowPassFilter(6));
 
 % Part 2b: Add a MocoStateTrackingCost to the problem using the states
 % from the predictive problem (via the TableProcessor we just created). 
-% Enable the setAllowUnusedReferences() setting to ignore the controls in 
+% Enable the setAllowUnusedReferences() setting to ignore the controls in
 % the predictive solution.  
 tracking = MocoStateTrackingCost();
 tracking.setName('mytracking');
