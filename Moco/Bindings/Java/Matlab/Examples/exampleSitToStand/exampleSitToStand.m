@@ -1,8 +1,7 @@
 function exampleSitToStand
-
 %% Part 0: Load the Moco libraries and pre-configured Models.
 import org.opensim.modeling.*;
-% These models are provided for you here (i.e. they are not part of Moco).
+% These models are provided for you (i.e. they are not part of Moco).
 torqueDrivenModel = getTorqueDrivenModel();
 muscleDrivenModel = getMuscleDrivenModel();
 
@@ -55,20 +54,19 @@ solver.set_optim_constraint_tolerance( );
 if ~exist('predictSolution.sto', 'file')
 % Part 1f: Solve! Write the solution to file, and visualize.
 
+
 end
 
 %% Part 2: Torque-driven Tracking Problem
-% Part 2a: Construct a tracking reference TimeSeriesTable using filtered data
-% from the previous solution. Use a TableProcessor, which accepts a base table
-% and can append operations to modify the table.
+% Part 2a: Construct a tracking reference TimeSeriesTable using filtered 
+% data from the previous solution. Use a TableProcessor, which accepts a 
+% base table and can append operations to modify the table.
 
 
 % Part 2b: Add a MocoStateTrackingCost to the problem using the states
-% from the predictive problem (via the TableProcessor we just created), and set
-% weights to zero for states associated with the dependent coordinate in the
-% model's knee CoordinateCoupler constraint:
-%       '/jointset/patellofemoral_r/knee_angle_r_beta/value'
-%       '/jointset/patellofemoral_r/knee_angle_r_beta/speed'
+% from the predictive problem (via the TableProcessor we just created). 
+% Enable the setAllowUnusedReferences() setting to ignore the controls in 
+% the predictive solution.  
 
 
 % Part 2c: Reduce the control cost weight so it now acts as a regularization 
@@ -98,7 +96,6 @@ mocoPlotTrajectory('predictSolution.sto', 'trackingSolution.sto', ...
 % you can add operators to modify the base model.
 
 
-
 % Part 4b: Set the reference kinematics using the same TableProcessor we used
 % in the tracking problem.
 
@@ -118,7 +115,10 @@ inverse.set_minimize_sum_squared_states(true);
 inverse.append_output_paths('.*normalized_fiber_length');
 inverse.append_output_paths('.*passive_force_multiplier');
 
-% Part 4d: Solve! Write the solution and outputs.
+% Part 4d: Solve! Write the MocoSolution to file.
+
+
+% Part 4e: Get the outputs we calculated from the inverse solution.
 
 
 %% Part 5: Muscle-driven Inverse Problem with Passive Assistance
