@@ -147,19 +147,23 @@ end
 
 end
 
-function [solution] = solve(subjectInfo, addDeviceFunction)
+function [solution] = solve(subjectIndex, varargin)
 % This function solves a MocoStudy created by createStudy() and may
 % visualize the solution.
 global visualize;
 
 import org.opensim.modeling.*;
 
-moco = createStudy(subjectInfo, addDeviceFunction);
+if nargin > 1
+    moco = createStudy(subjectIndex, varargin{1});
+else
+    moco = createStudy(subjectIndex);
+end
 
 solution = moco.solve();
 
 if nargin > 1
-    solution.write([char(problem.getName()) '_solution.sto']);
+    solution.write([char(moco.getProblem().getName()) '_solution.sto']);
 end
 
 % outputPaths = StdVectorString();
@@ -176,7 +180,7 @@ end
 
 %% The remainder of the file contains utility functions.
 
-function evaluateDevice(addDeviceFunction)
+function score = evaluateDevice(addDeviceFunction)
 % This function runs unassisted and assisted optimizations on 2 subjects
 % and prints the score for the device.
 
@@ -212,7 +216,6 @@ subjects = [1, 2];
 percentChange = zeros(length(subjects), 1);
 
 for subject = subjects
-    info = subjectInfos{subject};
     str = sprintf('subject%i', subject);
     if cacheUnassisted && exist([str '_unassisted_solution.sto'], 'file')
         unassistedSolution = MocoTrajectory([str '_unassisted_solution.sto']);
@@ -220,12 +223,12 @@ for subject = subjects
         unassistedObjective = ...
             str2double(table.getTableMetaDataAsString('objective'));
     else
-        unassistedSolution = solve(info);
+        unassistedSolution = solve(subject);
         unassistedObjective = unassistedSolution.getObjective();
         unassistedSolution.write([str '_unassisted_solution.sto']);
     end
 
-    assistedSolution = solve(info, addDeviceFunction);
+    assistedSolution = solve(subject, addDeviceFunction);
 
     if visualize
         mocoPlotTrajectory(unassistedSolution, assistedSolution);
@@ -238,11 +241,11 @@ for subject = subjects
             100.0 * (assistedSolution.getObjective() / unassistedObjective - 1);
 end
 
-
+score = sum(percentChange);
 for subject = subjects
     fprintf('Subject %i percent change: %f\n', subject, percentChange(subject));
 end
-fprintf('Score (lower is better): %f\n', sum(percentChange));
+fprintf('Score (lower is better): %f\n', score);
 
 end
 
