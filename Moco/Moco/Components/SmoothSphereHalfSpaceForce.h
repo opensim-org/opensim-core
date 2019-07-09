@@ -35,7 +35,7 @@ public:
 // PROPERTIES
 //=============================================================================
     OpenSim_DECLARE_PROPERTY(stiffness, double,
-            "The stiffness constant (i.e., plain strain modulus),"
+            "The stiffness constant (i.e., plain strain modulus), "
             "default is 1 (N/m^2)");
     OpenSim_DECLARE_PROPERTY(dissipation, double,
             "The dissipation coefficient, default is 0 (s/m).");
@@ -48,27 +48,27 @@ public:
     OpenSim_DECLARE_PROPERTY(transition_velocity, double,
             "The transition velocity, default is 0.01 (m/s).");
     OpenSim_DECLARE_PROPERTY(derivative_smoothing, double,
-            "The constant that enforces non-null derivatives,"
+            "The constant that enforces non-null derivatives, "
             "default is 1e-5.");
     OpenSim_DECLARE_PROPERTY(hertz_smoothing, double,
-            "The parameter that determines the smoothness of the transition"
-            "of the tanh used to smooth the Hertz force. The larger the"
-            "steeper the transition but also the more discontinuous-like,"
+            "The parameter that determines the smoothness of the transition "
+            "of the tanh used to smooth the Hertz force. The larger the "
+            "steeper the transition but also the more discontinuous-like, "
             "default is 300.");
     OpenSim_DECLARE_PROPERTY(hunt_crossley_smoothing, double,
-            "The parameter that determines the smoothness of the transition"
-            "of the tanh used to smooth the Hunt-Crossley force. The larger"
-            "the steeper the transition but also the more discontinuous-like,"
+            "The parameter that determines the smoothness of the transition "
+            "of the tanh used to smooth the Hunt-Crossley force. The larger "
+            "the steeper the transition but also the more discontinuous-like, "
             "default is 50.");
     OpenSim_DECLARE_PROPERTY(contact_sphere_radius, double,
             "The radius of the contact sphere.");
     OpenSim_DECLARE_PROPERTY(contact_sphere_location, SimTK::Vec3,
             "The location of the contact sphere in the body frame.");
     OpenSim_DECLARE_PROPERTY(contact_half_space_location, SimTK::Vec3,
-            "The location of the contact half space in the body frame,"
+            "The location of the contact half space in the body frame, "
             "default is Vec3(0).");
     OpenSim_DECLARE_PROPERTY(contact_half_space_orientation, SimTK::Vec3,
-            "The orientation of the contact half space in the body frame."
+            "The orientation of the contact half space in the body frame. "
             "(body-fixed XYZ Euler angles), default is Vec3(0).");
 
 
