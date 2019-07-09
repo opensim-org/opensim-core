@@ -66,6 +66,10 @@ MocoStudy MocoTrack::initialize() {
     TimeSeriesTable tracked_states;
     if (!get_states_reference().empty()) {
         tracked_states = configureStateTracking(problem, model);
+    } else {
+        OPENSIM_THROW_IF(get_apply_tracked_states_to_guess(), Exception,
+                "Property 'apply_tracked_states_to_guess' was enabled, but no "
+                "states reference data was provided.")
     }
 
     // Marker tracking cost.
@@ -118,9 +122,6 @@ MocoStudy MocoTrack::initialize() {
     // the user.
     if (get_apply_tracked_states_to_guess()) {
         auto guess = solver.getGuess();
-        OPENSIM_THROW_IF(!tracked_states.getNumRows(), Exception,
-            "Property 'apply_tracked_states_to_guess' was enabled, but no "
-            "states reference data was provided.")
         applyStatesToGuess(tracked_states, model, guess);
         solver.setGuess(guess);
     }
