@@ -53,6 +53,7 @@ your component produces. The currently-supported flags are:
   - show frames
   - show labels
   - show debug geometry
+  - no visualization
 
 This class is intended to provide some minimal user control over generated
 geometry in a form that is easy for a ModelComponent author to deal with, since
@@ -102,6 +103,10 @@ public:
     OpenSim_DECLARE_PROPERTY(show_debug_geometry, bool,
         "Flag to indicate whether or not to show debug geometry, default to false.");
 
+    OpenSim_DECLARE_PROPERTY(no_visualization, bool,
+        "Flag to indicate whether or not to show geometry from mesh files, default to false.");
+
+
     /** Default construction creates a valid display hints object with all
     hints set to their default values. **/
     ModelDisplayHints() { constructProperties(); }
@@ -120,6 +125,7 @@ private:
         constructProperty_show_labels(false);
         constructProperty_show_forces(true);
         constructProperty_show_debug_geometry(false);
+        constructProperty_no_visualization(false);
     }
 };
 
