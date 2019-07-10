@@ -69,7 +69,7 @@ void SmoothSphereHalfSpaceForce::extendAddToSystem(
     double dynamicFriction = get_dynamic_friction();
     double viscousFriction = get_viscous_friction();
     double transitionVelocity = get_transition_velocity();
-    double cf = get_derivative_smoothing();
+    double cf = get_constant_contact_force();
     double bd = get_hertz_smoothing();
     double bv = get_hunt_crossley_smoothing();
 
@@ -91,7 +91,8 @@ void SmoothSphereHalfSpaceForce::extendAddToSystem(
     force.setHuntCrossleySmoothing(bv);
 
     force.setContactSphereBody(contactSphereFrame.getMobilizedBody());
-    force.setContactSphereLocationInBody(contactSphereLocation);
+    force.setContactSphereLocationInBody(
+        contactSphereFrame.findTransformInBaseFrame()*contactSphereLocation);
     force.setContactSphereRadius(contactSphereRadius);
 
     force.setContactHalfSpaceBody(
@@ -104,7 +105,8 @@ void SmoothSphereHalfSpaceForce::extendAddToSystem(
             get_contact_half_space_orientation()[2], SimTK::ZAxis),
         get_contact_half_space_location());
 
-    force.setContactHalfSpaceFrame(halfSpaceFrame);
+    force.setContactHalfSpaceFrame(
+        contactHalfSpaceFrame.findTransformInBaseFrame()*halfSpaceFrame);
 
     SmoothSphereHalfSpaceForce* mutableThis =
         const_cast<SmoothSphereHalfSpaceForce *>(this);
@@ -116,14 +118,15 @@ void SmoothSphereHalfSpaceForce::constructProperties()
     constructProperty_contact_sphere_location(SimTK::Vec3(0));
     constructProperty_contact_sphere_radius(0.0);
     constructProperty_contact_half_space_location(SimTK::Vec3(0));
-    constructProperty_contact_half_space_orientation(SimTK::Vec3(0));
+    constructProperty_contact_half_space_orientation(
+        SimTK::Vec3(0,0,-0.5*SimTK::Pi));
     constructProperty_stiffness(1.0);
     constructProperty_dissipation(0.0);
     constructProperty_static_friction(0.0);
     constructProperty_dynamic_friction(0.0);
     constructProperty_viscous_friction(0.0);
     constructProperty_transition_velocity(0.01);
-    constructProperty_derivative_smoothing(1e-5);
+    constructProperty_constant_contact_force(1e-5);
     constructProperty_hertz_smoothing(300.0);
     constructProperty_hunt_crossley_smoothing(50.0);
 }
@@ -174,7 +177,7 @@ OpenSim::Array<double> SmoothSphereHalfSpaceForce::
     const auto& forceSubsys = model.getForceSubsystem();
     const SimTK::Force& abstractForce = forceSubsys.getForce(_index);
     const auto& simtkForce =
-        (SimTK::SmoothSphereHalfSpaceForce &)(abstractForce);
+        static_cast<const SimTK::SmoothSphereHalfSpaceForce&>(abstractForce);
 
     SimTK::Vector_<SimTK::SpatialVec> bodyForces(0);
     SimTK::Vector_<SimTK::Vec3> particleForces(0);

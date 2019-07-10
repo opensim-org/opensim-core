@@ -256,7 +256,7 @@ Model createBallHalfSpaceModel() {
     model.setName("BouncingBall_SmoothSphereHalfSpaceForce");
     auto* ball = new Body("ball", 1, Vec3(0), SimTK::Inertia(1));
     model.addComponent(ball);
-    auto* groundBall = new PlanarJoint("groundBall",model.getGround(),
+    auto* groundBall = new PlanarJoint("groundBall", model.getGround(),
     Vec3(0), Vec3(0), *ball, Vec3(0), Vec3(0));
     auto& rz = groundBall->updCoordinate(PlanarJoint::Coord::RotationZ);
     rz.setPrescribedFunction(Constant(0));
@@ -282,15 +282,15 @@ Model createBallHalfSpaceModel() {
     // Set the plane parallel to the ground.
     Vec3 halfSpaceOrientation(0,0,-0.5*SimTK::Pi);
     auto* contactBallHalfSpace = new SmoothSphereHalfSpaceForce(
-        "contactBallHalfSpace",*ball,sphereLocation,radius,model.getGround(),
-        halfSpaceLocation,halfSpaceOrientation);
+        "contactBallHalfSpace", *ball, sphereLocation, radius,
+        model.getGround(), halfSpaceLocation, halfSpaceOrientation);
     contactBallHalfSpace->set_stiffness(stiffness);
     contactBallHalfSpace->set_dissipation(dissipation);
     contactBallHalfSpace->set_static_friction(staticFriction);
     contactBallHalfSpace->set_dynamic_friction(dynamicFriction);
     contactBallHalfSpace->set_viscous_friction(viscousFriction);
     contactBallHalfSpace->set_transition_velocity(transitionVelocity);
-    contactBallHalfSpace->set_derivative_smoothing(cf);
+    contactBallHalfSpace->set_constant_contact_force(cf);
     contactBallHalfSpace->set_hertz_smoothing(bd);
     contactBallHalfSpace->set_hunt_crossley_smoothing(bv);
     contactBallHalfSpace->setName("contactBallHalfSpace");
@@ -376,11 +376,11 @@ SimTK::Real testSmoothSphereHalfSpaceForce_NormalForce()
 
         auto statesTraj = solution.exportToStatesTrajectory(mp);
         const auto& finalState = statesTraj.back();
-        model.realizeDynamics(finalState);
+        model.realizeVelocity(finalState);
 
         auto& contactBallHalfSpace =
-           model.getComponent<SmoothSphereHalfSpaceForce>(
-               "contactBallHalfSpace");
+            model.getComponent<SmoothSphereHalfSpaceForce>(
+                "contactBallHalfSpace");
 
         Array<double> contactForces =
         contactBallHalfSpace.getRecordValues(finalState);

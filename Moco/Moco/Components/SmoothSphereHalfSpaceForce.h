@@ -47,29 +47,30 @@ public:
             "The coefficient of viscous friction, default is 0.");
     OpenSim_DECLARE_PROPERTY(transition_velocity, double,
             "The transition velocity, default is 0.01 (m/s).");
-    OpenSim_DECLARE_PROPERTY(derivative_smoothing, double,
+    OpenSim_DECLARE_PROPERTY(constant_contact_force, double,
             "The constant that enforces non-null derivatives, "
             "default is 1e-5.");
     OpenSim_DECLARE_PROPERTY(hertz_smoothing, double,
             "The parameter that determines the smoothness of the transition "
             "of the tanh used to smooth the Hertz force. The larger the "
-            "steeper the transition but also the more discontinuous-like, "
+            "steeper the transition but the worse for optimization, "
             "default is 300.");
     OpenSim_DECLARE_PROPERTY(hunt_crossley_smoothing, double,
             "The parameter that determines the smoothness of the transition "
             "of the tanh used to smooth the Hunt-Crossley force. The larger "
-            "the steeper the transition but also the more discontinuous-like, "
+            "the steeper the transition but the worse for optimization, "
             "default is 50.");
     OpenSim_DECLARE_PROPERTY(contact_sphere_radius, double,
             "The radius of the contact sphere.");
     OpenSim_DECLARE_PROPERTY(contact_sphere_location, SimTK::Vec3,
-            "The location of the contact sphere in the body frame.");
+            "The location of the contact sphere in the sphere frame.");
     OpenSim_DECLARE_PROPERTY(contact_half_space_location, SimTK::Vec3,
-            "The location of the contact half space in the body frame, "
+            "The location of the contact half space in the half space frame, "
             "default is Vec3(0).");
     OpenSim_DECLARE_PROPERTY(contact_half_space_orientation, SimTK::Vec3,
-            "The orientation of the contact half space in the body frame. "
-            "(body-fixed XYZ Euler angles), default is Vec3(0).");
+            "The orientation of the contact half space in the half space "
+            "frame (body-fixed XYZ Euler angles), default represents ground "
+            "(0,0,-0.5*SimTK::Pi).");
 
 
 //=============================================================================
@@ -95,12 +96,14 @@ public:
 //=============================================================================
 // REPORTING
 //=============================================================================
-    /// Provide name(s) of the quantities (column labels) of the force value(s)
-    /// to be reported. The order is the three forces and three torques applied
+    /// Obtain names of the quantities (column labels) of the force values to
+    /// be reported. The order is the three forces and three torques applied
     /// on the sphere followed by the three forces and three torques applied
-    /// on the half space.
+    /// on the half space. Forces and torques are expressed in the ground
+    /// frame.
     OpenSim::Array<std::string> getRecordLabels() const override ;
-    /// Provide the value(s) to be reported that correspond to the labels
+    /// Obtain the values to be reported that correspond to the labels. The
+    /// values are expressed in the ground frame.
     OpenSim::Array<double> getRecordValues(const SimTK::State& state) const
         override ;
 
