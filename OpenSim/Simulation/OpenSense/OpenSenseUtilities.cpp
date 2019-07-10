@@ -35,24 +35,12 @@ TimeSeriesTable_<SimTK::Rotation> OpenSenseUtilities::
         const TimeSeriesTableQuaternion& quaternionsTable,
         const SimTK::Array_<int>& startEnd,
         const std::string& baseImuName,
-        const SimTK::CoordinateAxis& baseHeadingAxis)
+        const SimTK::CoordinateDirection& baseHeadingDirection,
+        const SimTK::Rotation& sensorToOpenSim)
 {
-
     // Fixed transform to rotate sensor orientations in world with Z up into the 
     // OpenSim ground reference frame with Y up and X forward.
-    SimTK::Rotation R_XG = SimTK::Rotation(
-        SimTK::BodyOrSpaceType::BodyRotationSequence,
-        -SimTK_PI / 2, SimTK::XAxis,
-        0, SimTK::YAxis,
-        0, SimTK::ZAxis);
-
-    //SimTK::Vec3 grav(9.807, 0., 0.);
-    //double theta = acos(avg_accel.transpose() * grav / (avg_accel.norm() * grav.norm()));
-    //SimTK::Vec3 C = SimTK::cross(avg_accel, grav);
-    //C = C / C.norm();
-
-    //SimTK::Rotation tilt_correction = SimTK::Rotation(axisAngleToRotation(C, theta));
-    //R_XG = R_XG * tilt_correction;
+    SimTK::Rotation R_XG = sensorToOpenSim;
 
     int nc = int(quaternionsTable.getNumColumns());
 
@@ -101,7 +89,9 @@ TimeSeriesTable_<SimTK::Rotation> OpenSenseUtilities::
         const Rotation& base_R = startRow.getElt(0, int(pix));
 
         // Heading direction of the base IMU in this case the pelvis_imu heading is its ZAxis
-        UnitVec3 pelvisHeading = base_R(baseHeadingAxis);
+        UnitVec3 pelvisHeading = base_R(baseHeadingDirection.getAxis());
+        if(baseHeadingDirection.getDirection() < 0) 
+            pelvisHeading = pelvisHeading.negate();
         UnitVec3 groundX = UnitVec3(1, 0, 0);
         SimTK::Real angularDifference = acos(~pelvisHeading*groundX);
 
