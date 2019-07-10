@@ -53,7 +53,7 @@ When you are ready to make a PR, please adhere to the following guidelines:
 
 5. Updates to comments, Doxygen, compiler compatibility, CMake files, or continuous integration files must be reviewed by at least one member of the Dev Team before being merged. The original author or the reviewer(s) may merge the pull request.
 
-6. Any other changes to the code require review by at least two members of the Dev Team. If the pull request involves adding a new class or performing a major object/algorithm refactor, one of these reviewers must be an Owner. The Owners and Dev Team are Teams within the opensim-org GitHub organization. The original author may NOT merge the pull request.
+6. Any other changes to the code require review by one member of the Dev Team, and manual testing by one member of the Dev Team. If the pull request involves adding a new class or performing a major object/algorithm refactor, one of these reviewers must be an Owner. The first reviewer determines if a second reviewer is required for the pull request to be accepted; you may also suggest whether the pull request should require one or two reviewers. The Owners and Dev Team are Teams within the opensim-org GitHub organization. You or the reviewers may merge the pull request once the reviewers accept the pull request.
 
 7. As the changes introduced by your pull request become finalized throughout the review process, you should decide if your changes warrant being mentioned in the change log. If so, update the [CHANGELOG.md](https://github.com/opensim-org/opensim-core/blob/master/CHANGELOG.md) with an additional commit to your pull request.
 
