@@ -54,6 +54,9 @@ public:
     OpenSim_DECLARE_UNNAMED_PROPERTY(ModelDisplayHints,
         "Model display preferences");
 
+    OpenSim_DECLARE_PROPERTY(no_visualization, bool,
+        "Flag to indicate whether or not to show geometry from mesh files, default to false.");
+
     //--------------------------------------------------------------------------
     // CONSTRUCTION
     //--------------------------------------------------------------------------
@@ -66,6 +69,7 @@ public:
 private:
     void constructProperties() {
         constructProperty_ModelDisplayHints(ModelDisplayHints());
+        constructProperty_no_visualization(false);
     }
 //=============================================================================
 };  // END of class ModelVisualPreferences

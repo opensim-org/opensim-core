@@ -1064,7 +1064,16 @@ public:
         SimTK::Array_<SimTK::DecorativeGeometry>&   appendToThis) const 
                                                                 override;
     /**@}**/
-    
+    // Turn off visualization/loading of meshes for this model
+    // initSystem must be invoked after this call for it to take effect. 
+    void disableVisualization() {
+        upd_ModelVisualPreferences().set_no_visualization(true);
+    }
+    // Return flag indicating if visualization has been turned off
+    bool isVisualizationDisabled() const {
+        return get_ModelVisualPreferences().get_no_visualization();
+    }
+
     //--------------------------------------------------------------------------
 
 private:

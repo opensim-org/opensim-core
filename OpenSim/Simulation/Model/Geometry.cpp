@@ -240,7 +240,7 @@ void Mesh::extendFinalizeFromProperties() {
         const Model* ownerModel = dynamic_cast<const Model*>(rootModel);
 
         //No visualization don't try to load meshes
-        if (ownerModel->get_ModelVisualPreferences().get_ModelDisplayHints().get_no_visualization())
+        if (ownerModel->isVisualizationDisabled())
             return;
 
         // Current interface to Visualizer calls generateDecorations on every
