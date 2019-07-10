@@ -1030,6 +1030,7 @@ class MocoJointReactionComponentCost : public MocoCost {
     OpenSim_DECLARE_CONCRETE_OBJECT(MocoJointReactionComponentCost, MocoCost);
 
 public:
+    int getNumIntegralsImpl() const override { return 1; }
     void calcIntegrandImpl(
             const SimTK::State& state, double& integrand) const override {
         getModel().realizeAcceleration(state);

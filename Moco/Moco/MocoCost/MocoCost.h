@@ -54,6 +54,13 @@ public:
 
     MocoCost(std::string name, double weight);
 
+    int getNumIntegrals() const {
+        int num = getNumIntegralsImpl();
+        OPENSIM_THROW_IF(num < 0, Exception,
+                "Number of integrals must be non-negative.");
+        return num;
+    }
+
     // TODO: Allow multiple integrands.
     SimTK::Real calcIntegrand(const SimTK::State& state) const {
         double integrand = 0;
@@ -61,13 +68,13 @@ public:
         calcIntegrandImpl(state, integrand);
         return integrand;
     }
-    /// This includes the weight.
-    // We use SimTK::Real instead of double for when we support adoubles.
     struct CostInput {
         const SimTK::State& initial_state;
         const SimTK::State& final_state;
         const double& integral;
     };
+    /// The returned cost includes the weight.
+    // We use SimTK::Real instead of double for when we support adoubles.
     SimTK::Real calcCost(const CostInput& input) const {
         double cost = 0;
         if (!get_enabled()) { return cost; }
@@ -92,6 +99,8 @@ protected:
     /// Use this opportunity to check for errors in user input.
     // TODO: Rename to extendInitializeOnModel().
     virtual void initializeOnModelImpl(const Model&) const {}
+    // TODO
+    virtual int getNumIntegralsImpl() const = 0;
     /// @precondition The state is realized to SimTK::Stage::Position.
     /// If you need access to the controls, you must realize to Velocity:
     /// @code
@@ -132,6 +141,7 @@ public:
             : MocoCost(std::move(name), weight) {}
 
 protected:
+    int getNumIntegralsImpl() const override { return 0; }
     void calcCostImpl(
             const CostInput& input, SimTK::Real& cost) const override {
         cost = input.final_state.getTime();

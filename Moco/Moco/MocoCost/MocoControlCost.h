@@ -53,6 +53,7 @@ public:
 
 protected:
     void initializeOnModelImpl(const Model&) const override;
+    int getNumIntegralsImpl() const override { return 1; }
     void calcIntegrandImpl(
             const SimTK::State& state, double& integrand) const override;
     void calcCostImpl(

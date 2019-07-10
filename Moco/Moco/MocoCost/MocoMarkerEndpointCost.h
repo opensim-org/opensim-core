@@ -53,6 +53,7 @@ public:
 
 protected:
     void initializeOnModelImpl(const Model&) const override;
+    int getNumIntegralsImpl() const override { return 0; }
     void calcCostImpl(
             const CostInput& input, SimTK::Real& cost) const override;
 private:

@@ -239,7 +239,7 @@ MocoStudy setupMocoStudyDoublePendulumMinimizeEffort() {
 
     auto& solver = moco.initSolver<SolverType>();
     solver.set_num_mesh_points(20);
-    solver.set_optim_convergence_tolerance(1e-6);
+    solver.set_optim_convergence_tolerance(1e-5);
 
     return moco;
 }

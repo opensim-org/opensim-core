@@ -60,6 +60,7 @@ std::unique_ptr<Model> createOscillatorModel() {
 class FinalPositionCost : public MocoCost {
 OpenSim_DECLARE_CONCRETE_OBJECT(FinalPositionCost, MocoCost);
 protected:
+    int getNumIntegralsImpl() const override { return 0; }
     void calcCostImpl(const CostInput& input,
             SimTK::Real& cost) const override {
        const auto& finalPosition = input.final_state.getY()[0];
@@ -189,6 +190,7 @@ std::unique_ptr<Model> createSeeSawModel() {
 class RotationalAccelerationCost : public MocoCost {
 OpenSim_DECLARE_CONCRETE_OBJECT(RotationalAccelerationCost, MocoCost);
 protected:
+    int getNumIntegralsImpl() const override { return 1; }
     void calcIntegrandImpl(const SimTK::State& state,
         SimTK::Real& integrand) const override {
 
