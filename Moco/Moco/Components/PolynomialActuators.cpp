@@ -35,10 +35,9 @@ PolynomialActuators::PolynomialActuators()
 double PolynomialActuators::getLength(const SimTK::State& s) const
 {
     int nc = getProperty_coordinate_list().size();
-    double* coordinateValues = new double[nc]; // TODO, is this ok? Should I delete later?
+    SimTK::Vector x(nc);
     for (int i = 0; i < nc; ++i)
-        coordinateValues[i] = coordinates[i]->getValue(s);
-    SimTK::Vector x(nc,coordinateValues,true);
+        x[i] = coordinates[i]->getValue(s);
 
     return get_function().calcValue(x);
 
@@ -47,10 +46,9 @@ double PolynomialActuators::getLength(const SimTK::State& s) const
 double PolynomialActuators::getLengtheningSpeed(const SimTK::State& s) const
 {
     int nc = getProperty_coordinate_list().size();
-    double* coordinateValues = new double[nc]; // TODO, is this ok? Should I delete later?
+    SimTK::Vector x(nc);
     for (int i = 0; i < nc; ++i)
-        coordinateValues[i] = coordinates[i]->getValue(s);
-    SimTK::Vector x(nc,coordinateValues,true);
+        x[i] = coordinates[i]->getValue(s);
 
     std::vector<int> derivComponents(1);
     double value = 0;
@@ -63,29 +61,40 @@ double PolynomialActuators::getLengtheningSpeed(const SimTK::State& s) const
 
 }
 
-// TODO
 void PolynomialActuators::addInEquivalentForces(const SimTK::State& s,
     const double& tension,
     SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
     SimTK::Vector& mobilityForces) const
 {
     int nc = getProperty_coordinate_list().size();
-    double* coordinateValues = new double[nc];
+    SimTK::Vector x(nc);
     for (int i = 0; i < nc; ++i)
-        coordinateValues[i] = coordinates[i]->getValue(s);
-    SimTK::Vector x(nc,coordinateValues,true);
+        x[i] = coordinates[i]->getValue(s);
 
+    const SimTK::SimbodyMatterSubsystem& matter =
+            getModel().getMatterSubsystem();
+
+    double muscleTorque;
     std::vector<int> derivComponents(1);
     double value = 0;
     for (int i = 0; i < nc; ++i) {
         derivComponents[0] = i;
-        -get_function().calcDerivative(derivComponents, x); // this is the dM
+        muscleTorque = (-get_function().calcDerivative(derivComponents, x) *
+                tension);
+
+        // get the mobilized body the coordinate is couple to.
+        const SimTK::MobilizedBody& mpbod = matter.getMobilizedBody(
+                coordinates[i]->getBodyIndex());
+
+        mpbod.applyOneMobilityForce(s,
+                    coordinates[i]->getMobilizerQIndex(),
+                    muscleTorque, mobilityForces);
     }
 
 }
 
 void PolynomialActuators::extendConnectToModel(Model& model) {
-    Super::extendConnectToModel(model); // TODO would be good to understand this, not sure needed?
+    Super::extendConnectToModel(model);
 
     int nc = getProperty_coordinate_list().size();
     for (int i = 0; i < nc; ++i) {
