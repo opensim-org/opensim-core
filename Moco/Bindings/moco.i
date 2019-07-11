@@ -9,16 +9,20 @@ typedef SimTK::RowVector_<double> RowVector;
 
 
 namespace OpenSim {
-        %ignore ModelProcessor::setModel(std::unique_ptr<Model>);
+    %ignore ModelProcessor::setModel(std::unique_ptr<Model>);
 }
 
 %extend OpenSim::ModelProcessor {
-        void setModel(Model* model) {
-            $self->setModel(std::unique_ptr<Model>(model));
-        }
+    void setModel(Model* model) {
+        $self->setModel(std::unique_ptr<Model>(model));
+    }
 };
 %include <Moco/ModelProcessor.h>
 
+namespace OpenSim {
+    %ignore MocoCost::CostInput;
+    %ignore MocoCost::calcCost;
+}
 %include <Moco/MocoCost/MocoCost.h>
 %template(SetMocoWeight) OpenSim::Set<OpenSim::MocoWeight, OpenSim::Object>;
 %include <Moco/MocoWeightSet.h>

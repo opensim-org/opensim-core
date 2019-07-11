@@ -625,8 +625,7 @@ TEMPLATE_TEST_CASE("Workflow", "", MocoTropterSolver, MocoCasADiSolver) {
         }
     }
 
-    // Ensure that changes to time bounds are obeyed.
-    {
+    SECTION("Changes to time bounds are obeyed") {
         MocoStudy moco;
         MocoProblem& problem = moco.updProblem();
         problem.setModel(createSlidingMassModel());
@@ -657,7 +656,7 @@ TEMPLATE_TEST_CASE("Workflow", "", MocoTropterSolver, MocoCasADiSolver) {
         CHECK(solution.getFinalTime() == Approx(5.8));
     }
 
-    {
+    SECTION("Changes to model are obeyed; set costs and model in any order.") {
         double finalTime0;
         {
             // Ensure that changes to the model are obeyed.
@@ -694,8 +693,7 @@ TEMPLATE_TEST_CASE("Workflow", "", MocoTropterSolver, MocoCasADiSolver) {
         }
     }
 
-    // Changes to the costs are obeyed.
-    {
+    SECTION("Changes to costs are obeyed") {
         MocoStudy moco;
         MocoProblem& problem = moco.updProblem();
         problem.setModel(createSlidingMassModel());
@@ -713,9 +711,7 @@ TEMPLATE_TEST_CASE("Workflow", "", MocoTropterSolver, MocoCasADiSolver) {
     }
 
     // Invoking functions without initializing.
-    {
-        // TODO
-    }
+    // TODO
 
     // TODO MocoCost and MocoParameter cache pointers into some model.
     // TODO {
