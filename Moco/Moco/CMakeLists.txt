@@ -76,7 +76,6 @@ set(MOCO_SOURCES
         Components/PolynomialActuators.h
         Components/PolynomialActuators.cpp
         Components/MultivariatePolynomialFunction.h
-        Components/MultivariatePolynomialFunction.cpp
         MocoCasADiSolver/MocoCasADiSolver.h
         MocoCasADiSolver/MocoCasADiSolver.cpp
         MocoCasADiSolver/MocoCasOCProblem.h
