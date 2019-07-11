@@ -420,54 +420,73 @@ void Trapezoidal<T>::calc_sparsity_hessian_lagrangian(const Eigen::VectorXd& x,
         }
     }
 
+    // To get the sparsity of the objective, combine the sparsity of each cost
+    // term.
     for (int icost = 0; icost < m_ocproblem->get_num_costs(); ++icost) {
-        SymmetricSparsityPattern integral_cost_sparsity(num_con_vars);
-        if (this->get_exact_hessian_block_sparsity_mode() == "sparse") {
-            TROPTER_THROW("sparse not supported");
-            // // Integral cost depends on states and controls at all times.
-            // // Determine how the integrand depends on the state and control
-            // at mesh
-            // // point 0, then repeat this block down the diagonal.
-            // std::function<T(const VectorX<T>&)> calc_integral_cost =
-            //         [this, icost, &x](const VectorX<T>& vars) {
-            //             T t = x[0]; // initial time.
-            //             VectorX<T> s = vars.head(m_num_states);
-            //             VectorX<T> c = vars.segment(m_num_states,
-            //             m_num_controls); VectorX<T> a =
-            //             vars.tail(m_num_adjuncts); VectorX<T> d; // empty
-            //             VectorX<T> p =
-            //                     x.segment(m_num_time_variables,
-            //                     m_num_parameters)
-            //                             .template cast<T>();
-            //             T integrand = 0;
-            //             m_ocproblem->calc_cost_integrand(
-            //                     icost, {0, t, s, c, a, d, p}, integrand);
-            //             return integrand;
-            //         };
-            // integral_cost_sparsity = calc_hessian_sparsity_with_perturbation(
-            //         // Grab the first state, first controls and first
-            //         adjuncts. x.segment(m_num_dense_variables, num_con_vars),
-            //         calc_integral_cost);
-        } else if (this->get_exact_hessian_block_sparsity_mode() == "dense") {
-            integral_cost_sparsity.set_dense();
+        if (m_ocproblem->get_cost_requires_integral(icost)) {
+            SymmetricSparsityPattern integral_cost_sparsity(num_con_vars);
+            if (this->get_exact_hessian_block_sparsity_mode() == "sparse") {
+                // Despite our attempt to correctly implementing the sparse
+                // sparsity detection for costs, we disable this functionality
+                // until we add adequate tests.
+                TROPTER_THROW(
+                        "Automatic sparsity detection for Hessian diagonal "
+                        "blocks not implemented for Trapezoidal "
+                        "transcription.");
+                // Integral cost depends on states and controls at all times.
+                // Determine how the integrand depends on the state and control
+                // at mesh point 0, then repeat this block down the diagonal.
+                std::function<T(const VectorX<T>&)> calc_cost_integrand =
+                        [this, icost, &x](const VectorX<T>& vars) {
+                            T t = x[0]; // initial time.
+                            VectorX<T> s = vars.head(m_num_states);
+                            VectorX<T> c =
+                                    vars.segment(m_num_states, m_num_controls);
+                            VectorX<T> a = vars.tail(m_num_adjuncts);
+                            VectorX<T> d; // empty
+                            VectorX<T> p = x.segment(m_num_time_variables,
+                                                    m_num_parameters)
+                                                   .template cast<T>();
+                            T integrand = 0;
+                            m_ocproblem->calc_cost_integrand(
+                                    icost, {0, t, s, c, a, d, p}, integrand);
+                            return integrand;
+                        };
+                integral_cost_sparsity =
+                        calc_hessian_sparsity_with_perturbation(
+                                // Grab the first state, first controls and
+                                // first adjuncts.
+                                x.segment(m_num_dense_variables, num_con_vars),
+                                calc_cost_integrand);
+            } else if (this->get_exact_hessian_block_sparsity_mode() ==
+                       "dense") {
+                integral_cost_sparsity.set_dense();
+            }
+
+            // Repeat the block down the diagonal of the Hessian of the
+            // objective.
+            for (int imesh = 0; imesh < m_num_mesh_points; ++imesh) {
+                const auto istart =
+                        m_num_dense_variables + imesh * num_con_vars;
+                hesobj_sparsity.set_nonzero_block(
+                        istart, integral_cost_sparsity);
+            }
         }
 
-        // Repeat the block down the diagonal of the Hessian of the objective.
-        for (int imesh = 0; imesh < m_num_mesh_points; ++imesh) {
-            const auto istart = m_num_dense_variables + imesh * num_con_vars;
-            hesobj_sparsity.set_nonzero_block(istart, integral_cost_sparsity);
-        }
-
+        // The cost depends on the initial state/controls, final state/controls,
+        // and the integral if it exists.
         SymmetricSparsityPattern cost_initial_sparsity(num_con_vars);
         SymmetricSparsityPattern cost_final_sparsity(num_con_vars);
         const auto lastmeshstart =
                 m_num_dense_variables + (m_num_mesh_points - 1) * num_con_vars;
         if (this->get_exact_hessian_block_sparsity_mode() == "sparse") {
-            TROPTER_THROW("sparse not supported");
-            // Endpoint cost depends on final time and final state only.
             auto st = make_states_trajectory_view(x);
             auto ct = make_controls_trajectory_view(x);
             auto at = make_adjuncts_trajectory_view(x);
+            // This function evaluates the cost using a dummy integral value
+            // and states/controls from the provided x. But only either the
+            // initial OR final states/controls are perturbed. The non-perturbed
+            // values come directly from x.
             std::function<T(const VectorX<T>&, bool)> calc_cost =
                     [this, icost, &x, &st, &ct, &at](
                             const VectorX<T>& vars, bool initial) {
@@ -506,19 +525,23 @@ void Trapezoidal<T>::calc_sparsity_hessian_lagrangian(const Eigen::VectorXd& x,
                         T integral = 0.0;
                         m_ocproblem->calc_cost(icost,
                                 {0, it, is, ic, ia, m_num_mesh_points - 1, ft,
-                                        fs, fc, fa, p, 0.0},
+                                        fs, fc, fa, p, integral},
                                 cost);
                         return cost;
                     };
+            // This is a function of the initial states/controls, and the
+            // final states/controls come from x.
             std::function<T(const VectorX<T>&)> calc_cost_perturb_initial =
                     std::bind(calc_cost, std::placeholders::_1, true);
-            std::function<T(const VectorX<T>&)> calc_cost_perturb_final =
-                    std::bind(calc_cost, std::placeholders::_1, false);
             cost_initial_sparsity = calc_hessian_sparsity_with_perturbation(
                     // Grab the initial mesh point continuous variables.
                     x.segment(
                             m_num_dense_variables, m_num_continuous_variables),
                     calc_cost_perturb_initial);
+            // This is a function of the final states/controls, and the
+            // initial states/controls come from x.
+            std::function<T(const VectorX<T>&)> calc_cost_perturb_final =
+                    std::bind(calc_cost, std::placeholders::_1, false);
             cost_final_sparsity = calc_hessian_sparsity_with_perturbation(
                     // Grab the final mesh point continuous variables.
                     x.segment(lastmeshstart, m_num_continuous_variables),

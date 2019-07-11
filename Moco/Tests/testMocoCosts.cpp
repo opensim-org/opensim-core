@@ -190,25 +190,6 @@ TEMPLATE_TEST_CASE(
     }
 }
 
-/// Make sure that multiple costs are added together properly.
-// TODO can we bring this back somehow?
-// TEST_CASE("Test multiple costs.") {
-//     MocoStudy moco;
-//     MocoProblem& problem = moco.updProblem();
-//
-//     auto* ft0 = problem.addCost<MocoFinalTimeCost>("ft0", 0.1);
-//
-//     auto* ft1 = problem.addCost<MocoFinalTimeCost>("ft1", 0.2);
-//
-//     MocoProblemRep rep = problem.createRep();
-//     SimTK::State state = rep.getModelBase().getWorkingState();
-//     const double ft = 0.35;
-//     state.setTime(ft);
-//
-//     const double cost = rep.calcCost({state, state, 0});
-//     CHECK(cost == Approx((ft0->get_weight() + ft1->get_weight()) * ft));
-// }
-
 TEST_CASE("Enabled Costs", "") {
     double x = 23920;
     MocoFinalTimeCost cost;

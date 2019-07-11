@@ -80,11 +80,6 @@ struct ParameterInfo {
     Bounds bounds;
 };
 
-// struct IntegralInfo {
-//     std::string name;
-//     Bounds bounds;
-// };
-
 struct CostInfo {
     std::string name;
     std::unique_ptr<Integrand> integrand_function;
@@ -221,14 +216,16 @@ protected:
     void addParameter(std::string name, Bounds bounds) {
         m_paramInfos.push_back({std::move(name), std::move(bounds)});
     }
-    // void addIntegral(std::string name, Bounds bounds) {
-    //     m_integralInfos.push_back({std::move(name), std::move(bounds),
-    //             OpenSim::make_unique<Integrand>()});
-    // }
     /// Add a cost term to the problem.
-    void addCost(std::string name) {
+    void addCost(std::string name, int numIntegrals) {
+        OPENSIM_THROW_IF(numIntegrals < 0 || numIntegrals > 1, OpenSim::Exception,
+                "numIntegrals must be 0 or 1.");
+        std::unique_ptr<Integrand> integrand_function;
+        if (numIntegrals) {
+            integrand_function = OpenSim::make_unique<Integrand>();
+        }
         m_costInfos.push_back(
-                {std::move(name), OpenSim::make_unique<Integrand>(),
+                {std::move(name), std::move(integrand_function),
                         OpenSim::make_unique<Cost>()});
     }
     /// The size of bounds must match the number of outputs in the function.
@@ -334,9 +331,11 @@ public:
                 costInfo.endpoint_function->constructFunction(this,
                         "cost_endpoint_" + costInfo.name, index,
                         finiteDiffScheme, pointsForSparsityDetection);
-                costInfo.integrand_function->constructFunction(this,
-                        "cost_integrand_" + costInfo.name, index,
-                        finiteDiffScheme, pointsForSparsityDetection);
+                if (costInfo.integrand_function) {
+                    costInfo.integrand_function->constructFunction(this,
+                            "cost_integrand_" + costInfo.name, index,
+                            finiteDiffScheme, pointsForSparsityDetection);
+                }
                 ++index;
             }
         }
@@ -412,7 +411,6 @@ public:
     int getNumCoordinates() const { return m_numCoordinates; }
     int getNumSpeeds() const { return m_numSpeeds; }
     int getNumAuxiliaryStates() const { return m_numAuxiliaryStates; }
-    // int getNumIntegrals() const { return (int)m_integralInfos.size(); }
     int getNumCosts() const { return (int)m_costInfos.size(); }
     bool isPrescribedKinematics() const { return m_prescribedKinematics; }
     /// If the coordinates are prescribed, then the number of multibody dynamics
@@ -477,9 +475,6 @@ public:
     const std::vector<ParameterInfo>& getParameterInfos() const {
         return m_paramInfos;
     }
-    // const std::vector<IntegralInfo>& getIntegralInfos() const {
-    //     return m_integralInfos;
-    // }
     const std::vector<CostInfo>& getCostInfos() const { return m_costInfos; }
     const std::vector<PathConstraintInfo>& getPathConstraintInfos() const {
         return m_pathInfos;
@@ -537,7 +532,6 @@ private:
     std::vector<MultiplierInfo> m_multiplierInfos;
     std::vector<SlackInfo> m_slackInfos;
     std::vector<ParameterInfo> m_paramInfos;
-    // std::vector<IntegralInfo> m_integralInfos;
     std::vector<CostInfo> m_costInfos;
     std::vector<PathConstraintInfo> m_pathInfos;
     std::unique_ptr<MultibodySystemExplicit<true>> m_multibodyFunc;

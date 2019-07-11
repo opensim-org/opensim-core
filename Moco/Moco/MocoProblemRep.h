@@ -205,27 +205,6 @@ public:
     /// These functions are for use by MocoSolver%s, but can also be called
     /// by users for debugging.
     /// @{
-    /* TODO
-    /// Calculate the sum of integrand over all the integral cost terms in this
-    /// phase for the provided state. That is, the returned value is *not* an
-    /// integral over time.
-    SimTK::Real calcIntegralCost(const SimTK::State& state) const {
-        SimTK::Real integrand = 0;
-        for (const auto& cost : m_costs) {
-            integrand += cost->calcIntegrand(state);
-        }
-        return integrand;
-    }
-    /// Calculate the sum of all the endpoint cost terms in this phase.
-    SimTK::Real calcEndpointCost(const SimTK::State& finalState) const {
-        SimTK::Real sum = 0;
-        // TODO cannot use controls.
-        for (const auto& cost : m_costs) {
-            sum += cost->calcCost(finalState);
-        }
-        return sum;
-    }
-    */
     /// Calculate the errors in all the scalar path constraint equations in this
     /// phase.
     void calcPathConstraintErrors(

@@ -176,7 +176,6 @@ public:
         case 8: return "final_multipliers";
         case 9: return "final_derivatives";
         case 10: return "parameters";
-        // TODO: be more clever about which integrals we say a given cost depends on.
         case 11: return "integral";
         default: OPENSIM_THROW(OpenSim::Exception, "Internal error.");
         }
@@ -215,7 +214,7 @@ public:
                 fullPoint.at(derivatives)(Slice(), -1),
                 fullPoint.at(parameters),
                 // TODO: We should find a way to actually compute the integral
-                // from fullPoint. Or, make the integral and optimization
+                // from fullPoint. Or, make the integral an optimization
                 // variable.
                 casadi::DM::zeros(1, 1)});
     }

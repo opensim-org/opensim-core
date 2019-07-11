@@ -81,7 +81,8 @@ private:
 };
 
 void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
-        int numDefectsPerMeshInterval, const casadi::DM& pointsForInterpControls) {
+        int numDefectsPerMeshInterval,
+        const casadi::DM& pointsForInterpControls) {
     // Set the grid.
     // -------------
     // The grid for a transcription scheme includes both mesh points (i.e.
@@ -427,16 +428,21 @@ void Transcription::setObjective() {
     for (int ic = 0; ic < m_problem.getNumCosts(); ++ic) {
         const auto& info = m_problem.getCostInfos()[ic];
 
-        // Here, we include evaluations of the integral cost
-        // integrand into the symbolic expression graph for the integral
-        // cost. We are *not* numerically evaluating the integral cost
-        // integrand here--that occurs when the function by casadi::nlpsol()
-        // is evaluated.
-        MX integrandTraj = evalOnTrajectory(*info.integrand_function,
-                {states, controls, multipliers, derivatives}, m_gridIndices)
-                .at(0);
+        MX integral;
+        if (info.integrand_function) {
+            // Here, we include evaluations of the integral cost
+            // integrand into the symbolic expression graph for the integral
+            // cost. We are *not* numerically evaluating the integral cost
+            // integrand here--that occurs when the function by casadi::nlpsol()
+            // is evaluated.
+            MX integrandTraj = evalOnTrajectory(*info.integrand_function,
+                    {states, controls, multipliers, derivatives}, m_gridIndices)
+                                       .at(0);
 
-        MX integral = m_duration * dot(quadCoeffs.T(), integrandTraj);
+            integral = m_duration * dot(quadCoeffs.T(), integrandTraj);
+        } else {
+            integral = MX::nan(1, 1);
+        }
 
         MXVector costOut;
 
@@ -575,8 +581,8 @@ Solution Transcription::solve(const Iterate& guessOrig) {
     return solution;
 }
 
-void Transcription::printConstraintValues(
-        const Iterate& it, const Constraints<casadi::DM>& constraints,
+void Transcription::printConstraintValues(const Iterate& it,
+        const Constraints<casadi::DM>& constraints,
         std::ostream& stream) const {
 
     // We want to be able to restore the stream's original formatting.

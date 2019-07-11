@@ -246,7 +246,9 @@ public:
         }
         return names;
     }
-    // TODO
+    /// Get the names of all the cost terms in the order they were added
+    /// to the problem (and the order in which they are evaluated).
+    /// Note: this function is not free to call.
     std::vector<std::string> get_cost_names() const {
         std::vector<std::string> names;
         for (const auto& info : m_cost_infos) {
@@ -254,7 +256,8 @@ public:
         }
         return names;
     }
-    // TODO
+    /// Obtain whether the cost at the provided index requires an integral. That
+    /// is, must the problem override calc_cost_integral()?
     bool get_cost_requires_integral(int index) const {
         return m_cost_infos[index].requires_integral;
     }

@@ -116,7 +116,6 @@ protected:
         const auto costNames = m_mocoProbRep.createCostNames();
         for (const auto& name : costNames) {
             const auto& cost = m_mocoProbRep.getCost(name);
-            std::cout << "DEBUG addCosts() " << name << std::endl;
             this->add_cost(name, cost.getNumIntegrals());
         }
         if (m_mocoTropterSolver.get_minimize_lagrange_multipliers()) {
@@ -296,30 +295,30 @@ protected:
         }
     }
 
-    void setSimTKState(const tropter::Input<T>& in, int index = 0) const {
-        setSimTKState(in.time, in.states, in.controls, in.adjuncts, index);
+    void setSimTKState(const tropter::Input<T>& in) const {
+        setSimTKState(in.time, in.states, in.controls, in.adjuncts, 0);
     }
     void setSimTKStateForCostInitial(
-            const tropter::CostInput<T>& in, int index = 0) const {
+            const tropter::CostInput<T>& in) const {
         setSimTKState(in.initial_time, in.initial_states, in.initial_controls,
-                in.initial_adjuncts, index);
+                in.initial_adjuncts, 0);
     }
     void setSimTKStateForCostFinal(
-            const tropter::CostInput<T>& in, int index = 0) const {
+            const tropter::CostInput<T>& in) const {
         setSimTKState(in.final_time, in.final_states, in.final_controls,
-                in.final_adjuncts, index);
+                in.final_adjuncts, 1);
     }
-    /// Use `index` to specify which of the 2 stateDisabledConstraints from
-    /// MocoProblemRep to update.
+    /// Use `stateDisConIndex` to specify which of the two
+    /// stateDisabledConstraints from MocoProblemRep to update.
     void setSimTKState(const T& time,
             const Eigen::Ref<const tropter::VectorX<T>>& states,
             const Eigen::Ref<const tropter::VectorX<T>>& controls,
             const Eigen::Ref<const tropter::VectorX<T>>& adjuncts,
-            int index = 0) const {
+            int stateDisConIndex = 0) const {
 
         auto& simTKStateBase = this->m_stateBase;
         auto& simTKStateDisabledConstraints =
-                m_mocoProbRep.updStateDisabledConstraints(index);
+                m_mocoProbRep.updStateDisabledConstraints(stateDisConIndex);
         auto& modelDisabledConstraints = this->m_modelDisabledConstraints;
 
         if (m_implicit && !m_mocoProbRep.isPrescribedKinematics()) {
@@ -364,7 +363,6 @@ protected:
         if (cost_index == m_multiplierCostIndex) {
             // Unpack variables.
             const auto& adjuncts = in.adjuncts;
-            // TODO move to its own cost term!!!
             // If specified, add squared multiplers cost to the integrand.
             const auto& multiplierWeight =
                     m_mocoTropterSolver.get_lagrange_multiplier_weight();
@@ -392,8 +390,8 @@ protected:
         }
 
         // Update the state.
-        this->setSimTKStateForCostInitial(in, 0);
-        this->setSimTKStateForCostFinal(in, 1);
+        this->setSimTKStateForCostInitial(in);
+        this->setSimTKStateForCostFinal(in);
 
         const auto& initialState = m_mocoProbRep.updStateDisabledConstraints(0);
         const auto& finalState = m_mocoProbRep.updStateDisabledConstraints(1);

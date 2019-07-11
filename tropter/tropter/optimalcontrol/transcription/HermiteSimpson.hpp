@@ -546,33 +546,45 @@ void HermiteSimpson<T>::calc_sparsity_hessian_lagrangian(
     }
 
     for (int icost = 0; icost < m_ocproblem->get_num_costs(); ++icost) {
-        SymmetricSparsityPattern integral_cost_sparsity(num_con_vars);
-        if (this->get_exact_hessian_block_sparsity_mode() == "sparse") {
-            TROPTER_THROW("Automatic sparsity detection for Hessian diagonal "
-                          "blocks not implemented for Hermite-Simpson "
-                          "transcription.");
-        } else if (this->get_exact_hessian_block_sparsity_mode() == "dense") {
-            integral_cost_sparsity.set_dense();
+        if (m_ocproblem->get_cost_requires_integral(icost)) {
+            SymmetricSparsityPattern integral_cost_sparsity(num_con_vars);
+            if (this->get_exact_hessian_block_sparsity_mode() == "sparse") {
+                TROPTER_THROW(
+                        "Automatic sparsity detection for Hessian diagonal "
+                        "blocks not implemented for Hermite-Simpson "
+                        "transcription.");
+            } else if (this->get_exact_hessian_block_sparsity_mode() ==
+                       "dense") {
+                integral_cost_sparsity.set_dense();
+            }
+
+            // Repeat the block down the diagonal of the Hessian of the
+            // objective.
+            // TODO may need to move this into each branch of if-statement
+            // above, depending on how automatic sparsity detection is
+            // implemented.
+            for (int i_col = 0; i_col < m_num_col_points; ++i_col) {
+                const auto istart =
+                        m_num_dense_variables + i_col * num_con_vars;
+                hesobj_sparsity.set_nonzero_block(
+                        istart, integral_cost_sparsity);
+            }
         }
 
-        // Repeat the block down the diagonal of the Hessian of the objective.
-        // TODO may need to move this into each branch of if-statement above,
-        // depending on how automatic sparsity detection is implemented.
-        for (int i_col = 0; i_col < m_num_col_points; ++i_col) {
-            const auto istart = m_num_dense_variables + i_col * num_con_vars;
-            hesobj_sparsity.set_nonzero_block(istart, integral_cost_sparsity);
-        }
-
+        // The cost depends on the initial state/controls, final state/controls,
+        // and the integral if it exists.
         SymmetricSparsityPattern cost_initial_sparsity(num_con_vars);
         SymmetricSparsityPattern cost_final_sparsity(num_con_vars);
         const auto lastmeshstart =
                 m_num_dense_variables + (m_num_col_points - 1) * num_con_vars;
         if (this->get_exact_hessian_block_sparsity_mode() == "sparse") {
-            TROPTER_THROW("sparse not supported");
-            // Endpoint cost depends on final time and final state only.
             auto st = make_states_trajectory_view(x);
             auto ct = make_controls_trajectory_view(x);
             auto at = make_adjuncts_trajectory_view(x);
+            // This function evaluates the cost using a dummy integral value
+            // and states/controls from the provided x. But only either the
+            // initial OR final states/controls are perturbed. The non-perturbed
+            // values come directly from x.
             std::function<T(const VectorX<T>&, bool)> calc_cost =
                     [this, icost, &x, &st, &ct, &at](
                             const VectorX<T>& vars, bool initial) {
@@ -611,19 +623,22 @@ void HermiteSimpson<T>::calc_sparsity_hessian_lagrangian(
                         T integral = 0.0;
                         m_ocproblem->calc_cost(icost,
                                 {0, it, is, ic, ia, m_num_mesh_points - 1, ft,
-                                        fs, fc, fa, p, 0.0},
+                                        fs, fc, fa, p, integral},
                                 cost);
                         return cost;
                     };
+            // final states/controls come from x.
             std::function<T(const VectorX<T>&)> calc_cost_perturb_initial =
                     std::bind(calc_cost, std::placeholders::_1, true);
-            std::function<T(const VectorX<T>&)> calc_cost_perturb_final =
-                    std::bind(calc_cost, std::placeholders::_1, false);
             cost_initial_sparsity = calc_hessian_sparsity_with_perturbation(
                     // Grab the initial mesh point continuous variables.
                     x.segment(
                             m_num_dense_variables, m_num_continuous_variables),
                     calc_cost_perturb_initial);
+            // This is a function of the final states/controls, and the
+            // initial states/controls come from x.
+            std::function<T(const VectorX<T>&)> calc_cost_perturb_final =
+                    std::bind(calc_cost, std::placeholders::_1, false);
             cost_final_sparsity = calc_hessian_sparsity_with_perturbation(
                     // Grab the final mesh point continuous variables.
                     x.segment(lastmeshstart, m_num_continuous_variables),
