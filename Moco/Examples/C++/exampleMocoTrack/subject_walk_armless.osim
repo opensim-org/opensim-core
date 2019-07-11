@@ -406,7 +406,7 @@
 								<color>1 1 1</color>
 							</Appearance>
 							<!--Name of geometry file.-->
-							<mesh_file>femur_r.vtp</mesh_file>
+							<mesh_file>r_femur.vtp</mesh_file>
 						</Mesh>
 					</attached_geometry>
 					<!--Set of wrap objects fixed to this body that GeometryPaths can wrap over.This property used to be a member of Body but was moved up with the introduction of Frames.-->
@@ -697,7 +697,7 @@
 								<color>1 1 1</color>
 							</Appearance>
 							<!--Name of geometry file.-->
-							<mesh_file>tibia_r.vtp</mesh_file>
+							<mesh_file>r_tibia.vtp</mesh_file>
 						</Mesh>
 						<Mesh name="tibia_r_geom_2">
 							<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
@@ -712,7 +712,7 @@
 								<color>1 1 1</color>
 							</Appearance>
 							<!--Name of geometry file.-->
-							<mesh_file>fibula_r.vtp</mesh_file>
+							<mesh_file>r_fibula.vtp</mesh_file>
 						</Mesh>
 					</attached_geometry>
 					<!--Set of wrap objects fixed to this body that GeometryPaths can wrap over.This property used to be a member of Body but was moved up with the introduction of Frames.-->
@@ -1073,7 +1073,7 @@
 								<color>1 1 1</color>
 							</Appearance>
 							<!--Name of geometry file.-->
-							<mesh_file>femur_l.vtp</mesh_file>
+							<mesh_file>l_femur.vtp</mesh_file>
 						</Mesh>
 					</attached_geometry>
 					<!--Set of wrap objects fixed to this body that GeometryPaths can wrap over.This property used to be a member of Body but was moved up with the introduction of Frames.-->
@@ -1364,7 +1364,7 @@
 								<color>1 1 1</color>
 							</Appearance>
 							<!--Name of geometry file.-->
-							<mesh_file>tibia_l.vtp</mesh_file>
+							<mesh_file>l_tibia.vtp</mesh_file>
 						</Mesh>
 						<Mesh name="tibia_l_geom_2">
 							<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
@@ -1379,7 +1379,7 @@
 								<color>1 1 1</color>
 							</Appearance>
 							<!--Name of geometry file.-->
-							<mesh_file>fibula_l.vtp</mesh_file>
+							<mesh_file>l_fibula.vtp</mesh_file>
 						</Mesh>
 					</attached_geometry>
 					<!--Set of wrap objects fixed to this body that GeometryPaths can wrap over.This property used to be a member of Body but was moved up with the introduction of Frames.-->
@@ -1586,7 +1586,7 @@
 								<color>1 1 1</color>
 							</Appearance>
 							<!--Name of geometry file.-->
-							<mesh_file>l_pat.vtp</mesh_file>
+							<mesh_file>l_patella.vtp</mesh_file>
 						</Mesh>
 					</attached_geometry>
 					<!--Set of wrap objects fixed to this body that GeometryPaths can wrap over.This property used to be a member of Body but was moved up with the introduction of Frames.-->
