@@ -60,7 +60,7 @@ function torqueDrivenMarkerTracking()
 import org.opensim.modeling.*;
 
 % Create and name an instance of the MocoTrack tool.
-MocoTrack track;
+track = MocoTrack();
 track.setName("torque_driven_marker_tracking");
 
 % Construct a ModelProcessor and add it to the tool. ModelProcessors
