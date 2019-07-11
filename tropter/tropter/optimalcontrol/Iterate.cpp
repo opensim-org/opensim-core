@@ -232,7 +232,6 @@ Iterate Iterate::interpolate(Eigen::VectorXd newTime) const {
             time_no_nans[icol_no_nan] = time[no_nan_indices[icol_no_nan]];
         }
         // Use the whole time range so we don't get NaNs during interpolation.
-
         out.diffuses = interp1(time_no_nans, diffuses_no_nans, out.time);
     } else {
         // If no NaNs, create interpolant as normal.

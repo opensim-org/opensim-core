@@ -25,6 +25,7 @@
 #include "Components/ModelFactory.h"
 #include "Components/PositionMotion.h"
 #include "Components/StationPlaneContactForce.h"
+#include "Components/SmoothSphereHalfSpaceForce.h"
 #include "MocoBounds.h"
 #include "MocoCasADiSolver/MocoCasADiSolver.h"
 #include "MocoConstraint.h"

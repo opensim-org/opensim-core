@@ -233,7 +233,8 @@ void ModelFactory::removeMuscles(Model& model) {
     }
 }
 
-void ModelFactory::createReserveActuators(Model& model, double optimalForce) {
+void ModelFactory::createReserveActuators(Model& model, double optimalForce,
+        bool skipCoordinatesWithExistingActuators) {
     OPENSIM_THROW_IF(optimalForce <= 0, Exception,
             format("Invalid value (%g) for create_reserve_actuators; "
                    "should be -1 or positive.",
@@ -248,7 +249,19 @@ void ModelFactory::createReserveActuators(Model& model, double optimalForce) {
     // Borrowed from
     // CoordinateActuator::CreateForceSetOfCoordinateAct...
     for (const auto& coord : modelCopy.getComponentList<Coordinate>()) {
-        if (!coord.isConstrained(state)) {
+        // Don't add a reserve if a CoordinateActuator already exists.
+        bool skipCoord = false;
+        if (skipCoordinatesWithExistingActuators) {
+            for (const auto& coordAct : 
+                    modelCopy.getComponentList<CoordinateActuator>()) {
+                if (coordAct.getCoordinate() == &coord) {
+                    skipCoord = true;
+                    break;
+                }
+            }
+        }
+
+        if (!coord.isConstrained(state) && !skipCoord) {
             auto* actu = new CoordinateActuator();
             actu->setCoordinate(&model.updComponent<Coordinate>(
                     coord.getAbsolutePathString()));

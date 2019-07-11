@@ -21,6 +21,7 @@
 #include "Components/AccelerationMotion.h"
 #include "Components/ActivationCoordinateActuator.h"
 #include "Components/DeGrooteFregly2016Muscle.h"
+#include "Components/SmoothSphereHalfSpaceForce.h"
 #include "Components/DiscreteForces.h"
 #include "Components/PositionMotion.h"
 #include "Components/StationPlaneContactForce.h"
@@ -108,12 +109,17 @@ OSIMMOCO_API void RegisterTypes_osimMoco() {
         Object::registerType(ModOpIgnoreTendonCompliance());
         Object::registerType(ModOpAddReserves());
         Object::registerType(ModOpAddExternalLoads());
+        Object::registerType(ModOpIgnorePassiveFiberForcesDGF());
+        Object::registerType(ModOpScaleActiveFiberForceCurveWidthDGF());
+        Object::registerType(ModOpReplaceJointsWithWelds());
+        Object::registerType(ModOpScaleMaxIsometricForce());
 
         Object::registerType(AckermannVanDenBogert2010Force());
         Object::registerType(MeyerFregly2016Force());
         Object::registerType(EspositoMiller2018Force());
         Object::registerType(PositionMotion());
         Object::registerType(DeGrooteFregly2016Muscle());
+        Object::registerType(SmoothSphereHalfSpaceForce());
 
         Object::registerType(DiscreteForces());
         Object::registerType(AccelerationMotion());

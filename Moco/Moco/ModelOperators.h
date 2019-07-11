@@ -65,6 +65,69 @@ public:
     }
 };
 
+/// Turn off passive fiber forces for all DeGrooteFregly2016Muscle%s in the
+/// model.
+class OSIMMOCO_API ModOpIgnorePassiveFiberForcesDGF : public ModelOperator {
+    OpenSim_DECLARE_CONCRETE_OBJECT(
+            ModOpIgnorePassiveFiberForcesDGF, ModelOperator);
+
+public:
+    void operate(Model& model, const std::string&) const override {
+        model.finalizeFromProperties();
+        for (auto& muscle : 
+                model.updComponentList<DeGrooteFregly2016Muscle>()) {
+            muscle.set_ignore_passive_fiber_force(true);
+        }
+    }
+};
+
+/// Scale the active fiber force curve width for all DeGrooteFregly2016Muscle%s 
+/// in the model.
+class OSIMMOCO_API ModOpScaleActiveFiberForceCurveWidthDGF : 
+        public ModelOperator {
+    OpenSim_DECLARE_CONCRETE_OBJECT(
+            ModOpScaleActiveFiberForceCurveWidthDGF, ModelOperator);
+    OpenSim_DECLARE_PROPERTY(scale_factor, double,
+            "The active fiber force curve width scale factor.");
+public:
+    ModOpScaleActiveFiberForceCurveWidthDGF() {
+        constructProperty_scale_factor(1); 
+    }
+    ModOpScaleActiveFiberForceCurveWidthDGF(double scaleFactor) 
+            : ModOpScaleActiveFiberForceCurveWidthDGF() {
+        set_scale_factor(scaleFactor);
+    }
+    void operate(Model& model, const std::string&) const override {
+        model.finalizeFromProperties();
+        for (auto& muscle :
+                model.updComponentList<DeGrooteFregly2016Muscle>()) {
+            muscle.set_active_force_width_scale(get_scale_factor());
+        }
+    }
+};
+
+/// Scale the max isometric force for all muscles in the model.
+class OSIMMOCO_API ModOpScaleMaxIsometricForce : public ModelOperator {
+    OpenSim_DECLARE_CONCRETE_OBJECT(ModOpScaleMaxIsometricForce, ModelOperator);
+    OpenSim_DECLARE_PROPERTY(scale_factor, double,
+            "The max isometric force scale factor.");
+
+public:
+    ModOpScaleMaxIsometricForce() {
+        constructProperty_scale_factor(1);
+    }
+    ModOpScaleMaxIsometricForce(double scaleFactor)
+            : ModOpScaleMaxIsometricForce() {
+        set_scale_factor(scaleFactor);
+    }
+    void operate(Model& model, const std::string&) const override {
+        model.finalizeFromProperties();
+        for (auto& muscle : model.updComponentList<Muscle>()) {
+            muscle.set_max_isometric_force(get_scale_factor());
+        }
+    }
+};
+
 /// Remove all muscles contained in the model's ForceSet.
 class OSIMMOCO_API ModOpRemoveMuscles : public ModelOperator {
     OpenSim_DECLARE_CONCRETE_OBJECT(ModOpRemoveMuscles, ModelOperator);
@@ -82,15 +145,26 @@ class OSIMMOCO_API ModOpAddReserves : public ModelOperator {
     OpenSim_DECLARE_CONCRETE_OBJECT(ModOpAddReserves, ModelOperator);
     OpenSim_DECLARE_PROPERTY(optimal_force, double,
             "The optimal force for all added reserve actuators.");
-
+    OpenSim_DECLARE_PROPERTY(skip_coordinates_with_actuators, bool,
+            "Whether or not to skip coordinates with existing actuators. " 
+            "Default: true.")
 public:
-    ModOpAddReserves() { constructProperty_optimal_force(1); }
+    ModOpAddReserves() {
+        constructProperty_optimal_force(1);
+        constructProperty_skip_coordinates_with_actuators(true);
+    }
     ModOpAddReserves(double optimalForce) : ModOpAddReserves() {
         set_optimal_force(optimalForce);
     }
+    ModOpAddReserves(double optimalForce, bool skipCoordsWithActu) 
+            : ModOpAddReserves() {
+        set_optimal_force(optimalForce);
+        set_skip_coordinates_with_actuators(skipCoordsWithActu);
+    }
     void operate(Model& model, const std::string&) const override {
         model.initSystem();
-        ModelFactory::createReserveActuators(model, get_optimal_force());
+        ModelFactory::createReserveActuators(model, get_optimal_force(),
+                get_skip_coordinates_with_actuators());
     }
 };
 
@@ -98,8 +172,8 @@ public:
 /// XML file.
 class OSIMMOCO_API ModOpAddExternalLoads : public ModelOperator {
     OpenSim_DECLARE_CONCRETE_OBJECT(ModOpAddExternalLoads, ModelOperator);
-    OpenSim_DECLARE_PROPERTY(
-            filepath, std::string, "External loads XML file.");
+    OpenSim_DECLARE_PROPERTY(filepath, std::string, 
+            "External loads XML file.");
 
 public:
     ModOpAddExternalLoads() { constructProperty_filepath(""); }
@@ -117,6 +191,25 @@ public:
         }
         InverseDynamicsTool idTool;
         idTool.createExternalLoads(path, model);
+    }
+};
+
+class OSIMMOCO_API ModOpReplaceJointsWithWelds : public ModelOperator {
+    OpenSim_DECLARE_CONCRETE_OBJECT(ModOpReplaceJointsWithWelds, ModelOperator);
+    OpenSim_DECLARE_LIST_PROPERTY(joint_paths, std::string,
+            "Paths to joints to replace with WeldJoints.");
+
+public:
+    ModOpReplaceJointsWithWelds() { constructProperty_joint_paths(); }
+    ModOpReplaceJointsWithWelds(const std::vector<std::string>& paths) :
+            ModOpReplaceJointsWithWelds() {
+        for (const auto& path : paths) { append_joint_paths(path); }
+    }
+    void operate(Model& model, const std::string&) const override {
+        model.initSystem();
+        for (int i = 0; i < getProperty_joint_paths().size(); ++i) {
+            ModelFactory::replaceJointWithWeldJoint(model, get_joint_paths(i));
+        }
     }
 };
 
