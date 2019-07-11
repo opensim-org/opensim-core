@@ -21,8 +21,6 @@
 #include "../MocoUtilities.h"
 #include "../osimMocoDLL.h"
 
-//#include <OpenSim/Common/Function.h>
-
 namespace OpenSim {
 
 template <class T>
