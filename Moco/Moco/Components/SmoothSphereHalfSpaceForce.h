@@ -31,9 +31,9 @@ class OSIMMOCO_API SmoothSphereHalfSpaceForce : public Force {
     OpenSim_DECLARE_CONCRETE_OBJECT(SmoothSphereHalfSpaceForce, Force);
 
 public:
-    //=============================================================================
+    //=========================================================================
     // PROPERTIES
-    //=============================================================================
+    //=========================================================================
     OpenSim_DECLARE_PROPERTY(stiffness, double,
             "The stiffness constant (i.e., plain strain modulus), "
             "default is 1 (N/m^2)");
@@ -74,17 +74,17 @@ public:
     OpenSim_DECLARE_UNNAMED_PROPERTY(
             Appearance, "Default appearance for this Geometry");
 
-    //=============================================================================
+    //=========================================================================
     // SOCKETS
-    //=============================================================================
+    //=========================================================================
     OpenSim_DECLARE_SOCKET(sphere_frame, PhysicalFrame,
             "The body to which the contact sphere is attached.");
     OpenSim_DECLARE_SOCKET(half_space_frame, PhysicalFrame,
             "The body to which the contact half space is attached.");
 
-    //=============================================================================
+    //=========================================================================
     // PUBLIC METHODS
-    //=============================================================================
+    //=========================================================================
     SmoothSphereHalfSpaceForce();
 
     SmoothSphereHalfSpaceForce(const std::string& name,
@@ -96,9 +96,9 @@ public:
 
     SimTK::Transform getHalfSpaceTransformInHalfSpaceFrame() const;
 
-    //=============================================================================
+    //=========================================================================
     // REPORTING
-    //=============================================================================
+    //=========================================================================
     /// Obtain names of the quantities (column labels) of the force values to
     /// be reported. The order is the three forces and three torques applied
     /// on the sphere followed by the three forces and three torques applied
@@ -122,7 +122,7 @@ private:
     // INITIALIZATION
     void constructProperties();
 
-    //=============================================================================
+//=============================================================================
 }; // END of class SmoothSphereHalfSpaceForce
 //=============================================================================
 //=============================================================================
