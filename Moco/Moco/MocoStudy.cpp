@@ -87,7 +87,8 @@ MocoSolution MocoStudy::solve() const {
     MocoSolution solution;
     try {
         solution = get_solver().solve();
-    } catch (const Exception&) { 
+    } catch (const Exception& e) { 
+        std::cout << e.getMessage() << std::endl;
         Muscle::setPrintWarnings(oldWarningFlag);
         throw;
     }

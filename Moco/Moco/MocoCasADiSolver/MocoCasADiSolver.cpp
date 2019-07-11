@@ -295,7 +295,14 @@ MocoSolution MocoCasADiSolver::solveImpl() const {
     if (guess.empty()) {
         casGuess = casSolver->createInitialGuessFromBounds();
     } else {
-        casGuess = convertToCasOCIterate(*m_guessToUse);
+        // Implicit mode: if the guess is compatible with the problem, but
+        // does not contain acceleration variables, generate accelerations
+        // from the speed data.
+        if (get_dynamics_mode() == "implicit" &&
+                !guess.getDerivativeNames().size()) {
+            guess.computeAccelerationsFromSpeedsAndAppend();
+        }
+        casGuess = convertToCasOCIterate(guess);
     }
     CasOC::Solution casSolution = casSolver->solve(casGuess);
     MocoSolution mocoSolution =

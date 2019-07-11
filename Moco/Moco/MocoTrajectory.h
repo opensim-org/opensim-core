@@ -339,6 +339,7 @@ public:
     /// change this behavior with `overwrite`.
     void insertStatesTrajectory(
             const TimeSeriesTable& subsetOfStates, bool overwrite = false);
+    void computeAccelerationsFromSpeedsAndAppend();
     /// @}
 
     /// @name Accessors

@@ -295,6 +295,42 @@ void MocoTrajectory::insertStatesTrajectory(
     }
 }
 
+void MocoTrajectory::computeAccelerationsFromSpeedsAndAppend() {
+    // Spline the states trajectory.
+    auto statesTable = exportToStatesTable();
+    GCVSplineSet splines(statesTable, {}, std::min(getNumTimes() - 1, 5));
+    // Initialize memory for the accelerations.
+    int numCoords = 0;
+    for (auto name : m_state_names) {
+        auto leafpos = name.find("value");
+        if (leafpos != std::string::npos) ++numCoords;
+    }
+    m_derivatives.resizeKeep(getNumTimes(), numCoords);
+
+    std::vector<std::string> accelNames;
+    SimTK::Vector curTime(1, SimTK::NaN);
+    int iaccel = 0;
+    for (auto name : m_state_names) {
+        auto leafpos = name.find("speed");
+        if (leafpos != std::string::npos) {
+            // Compute the derivative from the splined speed and assign to this
+            // acceleration memory.
+            for (int itime = 0; itime < m_time.size(); ++itime) {
+                curTime[0] = m_time[itime];
+                m_derivatives(itime, iaccel) =
+                        splines.get(name).calcDerivative({0}, curTime);
+            }
+            // Re-use the speed name to create the acceleration name.
+            name.replace(leafpos, name.size(), "accel");
+            accelNames.push_back(name);
+
+            ++iaccel;
+        }
+    }
+    // Assign acceleration names.
+    m_derivative_names = accelNames;
+}
+
 double MocoTrajectory::getInitialTime() const {
     ensureUnsealed();
     OPENSIM_THROW_IF(m_time.size() == 0, Exception, "Time vector is empty.");
