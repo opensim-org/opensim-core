@@ -29,20 +29,20 @@ namespace OpenSim {
 class OSIMMOCO_API PolynomialActuators : public GeometryPath {
     OpenSim_DECLARE_CONCRETE_OBJECT(PolynomialActuators, GeometryPath);
 public:
-//=============================================================================
-// PROPERTIES
-//=============================================================================
+    //=========================================================================
+    // PROPERTIES
+    //=========================================================================
     OpenSim_DECLARE_PROPERTY(function, Function,
             "The function approximating the geometry: MultivariatePolynomial "
             "or spline (TODO not supported yet)");
 
-    OpenSim_DECLARE_LIST_PROPERTY(coordinates, Coordinate,
+    OpenSim_DECLARE_LIST_PROPERTY(coordinate_list, std::string,
         "List containing the generalized coordinates (q's) that parameterize "
         "the function.");
 
-//=============================================================================
-// METHODS
-//=============================================================================
+    //=========================================================================
+    // METHODS
+    //=========================================================================
     PolynomialActuators();
 
     // Length and Speed of actuator
@@ -64,6 +64,7 @@ public:
 private:
     void constructProperties();
     void extendConnectToModel(Model& model) override;
+    std::vector<SimTK::ReferencePtr<const Coordinate>> coordinates;
 
 //=============================================================================
 };  // END of class PolynomialActuators
