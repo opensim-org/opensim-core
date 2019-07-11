@@ -1066,12 +1066,12 @@ public:
     /**@}**/
     // Turn off visualization/loading of meshes for this model
     // initSystem must be invoked after this call for it to take effect. 
-    void disableVisualization() {
-        upd_ModelVisualPreferences().set_no_visualization(true);
+    void disableMeshVisualization() {
+        upd_ModelVisualPreferences().set_load_mesh_files(false);
     }
-    // Return flag indicating if visualization has been turned off
-    bool isVisualizationDisabled() const {
-        return get_ModelVisualPreferences().get_no_visualization();
+    // Return flag indicating visualization status for meshes
+    bool isMeshVisualizationEnabled() const {
+        return get_ModelVisualPreferences().get_load_mesh_files();
     }
 
     //--------------------------------------------------------------------------
