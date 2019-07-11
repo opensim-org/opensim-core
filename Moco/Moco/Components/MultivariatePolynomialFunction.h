@@ -177,7 +177,7 @@ private:
     void constructProperties(){
         double coefficientDefaultValues[6] = {1,1,1,1,1,1};
         constructProperty_coefficients(
-            SimTK::Vector(6,coefficientDefaultValues,true));
+            SimTK::Vector(6,coefficientDefaultValues));
         constructProperty_dimension(2);
         constructProperty_order(2);
     }

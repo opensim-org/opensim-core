@@ -64,7 +64,7 @@ public:
 private:
     void constructProperties();
     void extendConnectToModel(Model& model) override;
-    std::vector<SimTK::ReferencePtr<const Coordinate>> coordinates;
+    mutable std::vector<SimTK::ReferencePtr<const Coordinate>> coordinates;
 
 //=============================================================================
 };  // END of class PolynomialActuators

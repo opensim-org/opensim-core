@@ -97,9 +97,10 @@ void PolynomialActuators::extendConnectToModel(Model& model) {
     Super::extendConnectToModel(model);
 
     int nc = getProperty_coordinate_list().size();
+    coordinates.clear();
     for (int i = 0; i < nc; ++i) {
-        coordinates[i] =
-                model.getComponent<Coordinate>(get_coordinate_list(i));
+        coordinates.push_back(SimTK::ReferencePtr<const Coordinate>(
+                &model.getComponent<Coordinate>(get_coordinate_list(i))));
     }
 
 }
