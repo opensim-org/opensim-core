@@ -38,6 +38,7 @@ public:
         this->add_state("x", {0, 1}, {0}, {1});
         this->add_state("u", {-100, 100}, {0}, {0});
         this->add_control("F", {-Fmax, Fmax});
+        this->add_cost("final_time", 0);
     }
     void calc_differential_algebraic_equations(
             const Input<T>& in, Output<T> out) const override {
@@ -46,9 +47,9 @@ public:
     }
     // TODO alternate form that takes a matrix; state at every time.
     //virtual void continuous(const MatrixXd& x, MatrixXd& xdot) const = 0;
-    void calc_endpoint_cost(const Input<T>& in, T& cost)
-            const override {
-        cost = in.time;
+    void calc_cost(
+            int cost_index, const CostInput<T>& in, T& cost) const override {
+        cost = in.final_time;
     }
     Solution actual_solution(const VectorXd& time) const {
         Solution sol;

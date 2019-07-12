@@ -1,7 +1,7 @@
-#ifndef MOCO_MOCOMARKERENDPOINTCOST_H
-#define MOCO_MOCOMARKERENDPOINTCOST_H
+#ifndef MOCO_MOCOMARKERFINALCOST_H
+#define MOCO_MOCOMARKERFINALCOST_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: MocoMarkerEndpointCost.h                                     *
+ * OpenSim Moco: MocoMarkerFinalCost.h                                        *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2017 Stanford University and the Authors                     *
  *                                                                            *
@@ -27,15 +27,14 @@ class Point;
 /// The squared distance between a single model point location and reference
 /// location in the final state.
 /// @ingroup mococost
-class OSIMMOCO_API MocoMarkerEndpointCost : public MocoCost {
-    OpenSim_DECLARE_CONCRETE_OBJECT(MocoMarkerEndpointCost, MocoCost);
+class OSIMMOCO_API MocoMarkerFinalCost : public MocoCost {
+    OpenSim_DECLARE_CONCRETE_OBJECT(MocoMarkerFinalCost, MocoCost);
 public:
-
-    MocoMarkerEndpointCost() { constructProperties(); }
-    MocoMarkerEndpointCost(std::string name) : MocoCost(std::move(name)) {
+    MocoMarkerFinalCost() { constructProperties(); }
+    MocoMarkerFinalCost(std::string name) : MocoCost(std::move(name)) {
         constructProperties();
     }
-    MocoMarkerEndpointCost(std::string name, double weight)
+    MocoMarkerFinalCost(std::string name, double weight)
             : MocoCost(std::move(name), weight) {
         constructProperties();
     }
@@ -53,8 +52,9 @@ public:
 
 protected:
     void initializeOnModelImpl(const Model&) const override;
-    void calcEndpointCostImpl(const SimTK::State& finalState,
-        double& cost) const override;
+    int getNumIntegralsImpl() const override { return 0; }
+    void calcCostImpl(
+            const CostInput& input, SimTK::Real& cost) const override;
 private:
 
     OpenSim_DECLARE_PROPERTY(point_name, std::string,
@@ -70,4 +70,4 @@ private:
 
 } // namespace OpenSim
 
-#endif // MOCO_MOCOMARKERENDPOINTCOST_H
+#endif // MOCO_MOCOMARKERFINALCOST_H

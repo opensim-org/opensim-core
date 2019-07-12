@@ -85,9 +85,9 @@ public:
     /// Only upper triangular elements can be appended.
     void set_nonzero(unsigned int row_index, unsigned int col_index) override;
     /// Add in a nonzero block, placing the block's upper left corner at
-    /// (irowstart, icolstart) in this matrix.
+    /// (startindex, startindex) in this matrix.
     /// Note, no nonzeros are "removed", only added.
-    void set_nonzero_block(unsigned int irowstart, unsigned int icolstart,
+    void set_nonzero_block(unsigned int startindex,
         SymmetricSparsityPattern& block);
 
     /// Create a non-symmetric sparsity pattern of this matrix where the

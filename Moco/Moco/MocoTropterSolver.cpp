@@ -54,6 +54,7 @@ std::unique_ptr<tropter::DirectCollocationSolver<double>>
 MocoTropterSolver::createTropterSolver(
         std::shared_ptr<const MocoTropterSolver::TropterProblemBase<double>>
                 ocp) const {
+#ifdef MOCO_WITH_TROPTER
     // Check that a positive number of mesh points was provided.
     checkPropertyIsPositive(*this, getProperty_num_mesh_points());
 
@@ -199,6 +200,9 @@ MocoTropterSolver::createTropterSolver(
     // TODO optsolver.set_findiff_hessian_step_size(1e-3);
 
     return dircol;
+#else
+    OPENSIM_THROW(MocoTropterSolverNotAvailable);
+#endif
 }
 
 MocoTrajectory MocoTropterSolver::createGuess(const std::string& type) const {

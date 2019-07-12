@@ -93,19 +93,20 @@ public:
         this->add_state("u1", {-50, 50}, {0}, {0});
         this->add_control("tau0", {-50, 50});
         this->add_control("tau1", {-50, 50});
+        this->add_cost("target", 0);
     }
-    void calc_endpoint_cost(const tropter::Input<T>& in, T& cost) const override
-    {
+    void calc_cost(
+            int cost_index, const CostInput<T>& in, T& cost) const override {
         // TODO a final state constraint probably makes more sense.
-        const auto& q0 = in.states[0];
-        const auto& q1 = in.states[1];
+        const auto& q0 = in.final_states[0];
+        const auto& q1 = in.final_states[1];
         const auto& L0 = this->L0;
         const auto& L1 = this->L1;
         Vector2<T> actual_location(L0 * cos(q0) + L1 * cos(q0 + q1),
-                                   L0 * sin(q0) + L1 * sin(q0 + q1));
+                L0 * sin(q0) + L1 * sin(q0 + q1));
         const Vector2<T> desired_location(0, 2);
         cost = 1000.0 * (actual_location - desired_location).squaredNorm() +
-                0.001 * in.time;
+                0.001 * in.final_time;
     }
 
     static void run_test(std::string solver, std::string hessian_approx,
@@ -212,15 +213,21 @@ public:
         this->add_state("u1", {-50, 50});
         this->add_control("tau0", {-100, 100});
         this->add_control("tau1", {-100, 100});
+        this->add_cost("tracking", 1);
     }
-    void calc_integral_cost(const Input<T>& in, T& integrand) const {
-        
+    void calc_cost(
+            int cost_index, const CostInput<T>& in, T& cost) const override {
+        cost = in.integral;
+    }
+    void calc_cost_integrand(
+            int cost_index, const Input<T>& in, T& integrand) const override {
+
         const auto& time = in.time;
         const auto& states = in.states;
 
         VectorX<T> desired(2);
         desired << (time / 1.0) * 0.50 * PI,
-                   (time / 1.0) * 0.25 * PI;
+                (time / 1.0) * 0.25 * PI;
         integrand = (states.head(2) - desired).squaredNorm();
     }
 
@@ -318,11 +325,17 @@ public:
         this->add_control("udot1", {-100, 100});
         this->add_control("tau0", {-100, 100});
         this->add_control("tau1", {-100, 100});
+        this->add_cost("tracking", 1);
         this->add_path_constraint("u0", 0);
         this->add_path_constraint("u1", 0);
     }
-    void calc_integral_cost(const Input<T>& in, T& integrand) const {
-        
+    void calc_cost(
+            int cost_index, const CostInput<T>& in, T& cost) const override {
+        cost = in.integral;
+    }
+    void calc_cost_integrand(
+            int cost_index, const Input<T>& in, T& integrand) const override {
+
         const auto& time = in.time;
         const auto& states = in.states;
 

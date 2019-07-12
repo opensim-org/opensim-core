@@ -27,24 +27,19 @@ direct collocation. Currently, Tropter's source code is part of Moco.
    4. **ADOL-C**: Automatic differentiation.
 3. **CasADi**: Algorithmic differentiation and interface to nonlinear solvers.
 
-On **Linux** and **macOS**, you must obtain these packages on your own. Most of
-them can be found in a package manager (`apt-get` on Ubuntu, Homebrew on macOS).
-
 Build the dependencies by building the CMake project in the `dependencies`
 folder.
 
-Ubuntu
-------
 
-```bash
-sudo apt install git cmake pkg-config liblapack-dev coinor-libipopt-dev
-```
+Windows
+-------
 
-Install Eigen, ColPack, ADOL-C, and OpenSim using the CMake project in the
-`dependencies` directory (TODO improve instructions).
+On **Windows**, you can run the `build_on_windows.ps1` PowerShell script to 
+obtain Moco's dependencies and to build Moco. This script assumes you
+have installed **Microsoft Visual Studio 2017** (with C++ support) and **CMake**
+3.2 or greater. You can alternatively use **Microsoft Visual Studio 2015**,
+but no other versions of Visual Studio will work with Moco.
 
-For some reason, the ADOL-C in the Ubuntu package repositories does not work well
-with Moco/tropter.
 
 Mac
 ---
@@ -67,20 +62,26 @@ brew install cmake pkgconfig gcc autoconf libtool automake wget doxygen
 
 Nagivate to the directory where you placed the opensim-moco source code.
 
-ex: `cd /Users/xxxx/Documents/github/opensim-moco`
+ex: `cd ~/opensim-moco`
 
 Run build_on_mac from the terminal.
 
 ex `./build_on_mac.sh`
 
 
-Windows
--------
+Ubuntu
+------
 
-On **Windows**, you can run the `build_on_windows.ps1` PowerShell script to 
-obtain Moco's dependencies and to build Moco. This script assumes you
-have installed **Microsoft Visual Studio 2015** (with C++ support) and **CMake**
-3.2 or greater.
+```bash
+sudo apt install git cmake pkg-config liblapack-dev
+```
+
+Install Eigen, ColPack, ADOL-C, and OpenSim using the CMake project in the
+`dependencies` directory (TODO improve instructions).
+
+For some reason, the ADOL-C in the Ubuntu package repositories does not work well
+with Moco/tropter.
+
 
 Design goals
 ============

@@ -38,48 +38,50 @@ MocoAddTest(NAME testConstraints)
 
 MocoAddTest(NAME testContact)
 
-MocoAddTest(NAME testHangingMassRoundtrip)
+if (MOCO_WITH_TROPTER)
+    MocoAddTest(NAME testHangingMassRoundtrip)
 
-MocoAddTest(NAME testSingleMuscle)
+    MocoAddTest(NAME testSingleMuscle)
 
-MocoAddTest(NAME testSingleMuscleDeGrooteFregly2016 LIB_DEPENDS tropter)
+    MocoAddTest(NAME testSingleMuscleDeGrooteFregly2016 LIB_DEPENDS tropter)
 
-MocoAddTest(NAME testSingleMuscleDeGrooteFregly2016MomentArms
-        LIB_DEPENDS tropter)
+    MocoAddTest(NAME testSingleMuscleDeGrooteFregly2016MomentArms
+            LIB_DEPENDS tropter)
 
-MocoAddTest(NAME testTugOfWarDeGrooteFregly2016 LIB_DEPENDS tropter
-        RESOURCES
-        testTugOfWarDeGrooteFregly2016_INDYGO_initial_guess.csv)
+    MocoAddTest(NAME testTugOfWarDeGrooteFregly2016 LIB_DEPENDS tropter
+            RESOURCES
+            testTugOfWarDeGrooteFregly2016_INDYGO_initial_guess.csv)
 
-MocoAddTest(NAME test2Muscles2DOFsDeGrooteFregly2016 LIB_DEPENDS tropter
-        RESOURCES
-        test2Muscles2DOFsDeGrooteFregly2016_INDYGO_initial_guess.csv
-        test2Muscles2DOFsDeGrooteFregly2016_GSO_setup.xml
-        test2Muscles2DOFsDeGrooteFregly2016_INDYGO_setup.xml)
+    MocoAddTest(NAME test2Muscles2DOFsDeGrooteFregly2016 LIB_DEPENDS tropter
+            RESOURCES
+            test2Muscles2DOFsDeGrooteFregly2016_INDYGO_initial_guess.csv
+            test2Muscles2DOFsDeGrooteFregly2016_GSO_setup.xml
+            test2Muscles2DOFsDeGrooteFregly2016_INDYGO_setup.xml)
 
-MocoAddTest(NAME test2Muscles1DOFDeGrooteFregly2016 LIB_DEPENDS tropter)
-        
-MocoAddTest(NAME testGait10dof18musc RESOURCES
-        testGait10dof18musc_subject01.osim
-        testGait10dof18musc_kinematics.mot
-        testGait10dof18musc_netgeneralizedforces.mot
-        testGait10dof18musc_GSO_setup.xml
-        testGait10dof18musc_INDYGO_setup.xml
-        std_testGait10dof18musc_INDYGO_solution_activation.sto
-        std_testGait10dof18musc_INDYGO_solution_excitation.sto
-        std_testGait10dof18musc_INDYGO_solution_norm_fiber_length.sto
-        std_testGait10dof18musc_INDYGO_solution_norm_fiber_velocity.sto
-        std_testGait10dof18musc_INDYGO_solution_other_controls.sto
-        std_testGait10dof18musc_INDYGO_solution_tendon_force.sto
-        std_testGait10dof18musc_INDYGO_solution_norm_tendon_force.sto
-        std_testGait10dof18musc_INDYGO_solution_tendon_force_rate_control.sto
-        std_testGait10dof18musc_GSO_solution_activation.sto
-        std_testGait10dof18musc_GSO_solution_norm_fiber_length.sto
-        std_testGait10dof18musc_GSO_solution_norm_fiber_velocity.sto
-        std_testGait10dof18musc_GSO_solution_other_controls.sto
-        std_testGait10dof18musc_GSO_solution_tendon_force.sto
-        std_testGait10dof18musc_GSO_solution_norm_tendon_force.sto
-        )
+    MocoAddTest(NAME test2Muscles1DOFDeGrooteFregly2016 LIB_DEPENDS tropter)
+
+    MocoAddTest(NAME testGait10dof18musc RESOURCES
+            testGait10dof18musc_subject01.osim
+            testGait10dof18musc_kinematics.mot
+            testGait10dof18musc_netgeneralizedforces.mot
+            testGait10dof18musc_GSO_setup.xml
+            testGait10dof18musc_INDYGO_setup.xml
+            std_testGait10dof18musc_INDYGO_solution_activation.sto
+            std_testGait10dof18musc_INDYGO_solution_excitation.sto
+            std_testGait10dof18musc_INDYGO_solution_norm_fiber_length.sto
+            std_testGait10dof18musc_INDYGO_solution_norm_fiber_velocity.sto
+            std_testGait10dof18musc_INDYGO_solution_other_controls.sto
+            std_testGait10dof18musc_INDYGO_solution_tendon_force.sto
+            std_testGait10dof18musc_INDYGO_solution_norm_tendon_force.sto
+            std_testGait10dof18musc_INDYGO_solution_tendon_force_rate_control.sto
+            std_testGait10dof18musc_GSO_solution_activation.sto
+            std_testGait10dof18musc_GSO_solution_norm_fiber_length.sto
+            std_testGait10dof18musc_GSO_solution_norm_fiber_velocity.sto
+            std_testGait10dof18musc_GSO_solution_other_controls.sto
+            std_testGait10dof18musc_GSO_solution_tendon_force.sto
+            std_testGait10dof18musc_GSO_solution_norm_tendon_force.sto
+            )
+endif()
 
 MocoAddTest(NAME testDeGrooteFregly2016Muscle)
 

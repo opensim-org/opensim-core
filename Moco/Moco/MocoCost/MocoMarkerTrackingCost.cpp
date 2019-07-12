@@ -78,11 +78,11 @@ void MocoMarkerTrackingCost::initializeOnModelImpl(const Model& model) const {
             GCVSplineSet(get_markers_reference().getMarkerTable().flatten());
 }
 
-void MocoMarkerTrackingCost::calcIntegralCostImpl(
-        const SimTK::State& state, double& integrand) const {
-    const auto& time = state.getTime();
-    getModel().realizePosition(state);
-    SimTK::Vector timeVec(1, time);
+ void MocoMarkerTrackingCost::calcIntegrandImpl(const SimTK::State& state,
+        double& integrand) const {
+     const auto& time = state.getTime();
+     getModel().realizePosition(state);
+     SimTK::Vector timeVec(1, time);
 
     for (int i = 0; i < (int)m_model_markers.size(); ++i) {
         const auto& modelValue = m_model_markers[i]->getLocationInGround(state);

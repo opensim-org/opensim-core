@@ -173,7 +173,7 @@ void MocoOrientationTrackingCost::initializeOnModelImpl(const Model& model)
     m_ref_splines = GCVSplineSet(flatTable);
 }
 
-void MocoOrientationTrackingCost::calcIntegralCostImpl(const SimTK::State& state,
+void MocoOrientationTrackingCost::calcIntegrandImpl(const SimTK::State& state,
         double& integrand) const {
     const auto& time = state.getTime();
     getModel().realizePosition(state);
