@@ -86,7 +86,7 @@ struct Input {
     /// input, see the note above for the `states` variable.
     const Eigen::Ref<const VectorX<T>>& parameters;
 };
-/// This is the input for Problem::calc_TODO_cost(). Refer to Input for
+/// This is the input for Problem::calc_cost(). Refer to Input for
 /// details. Diffuse variables do not exist at phase endpoints.
 template<typename T>
 struct CostInput {
@@ -398,10 +398,13 @@ public:
     //    out.dynamics[0] =
     //    out.path[0] = ...
     //}
+    /// Compute cost terms as a function of the initial and final states/controls,
+    /// and perhaps integrals (for cost terms involving integrals).
+    /// Use cost_index to ensure determine which cost to compute.
     virtual void calc_cost(
             int cost_index, const CostInput<T>& in, T& cost) const;
-    /// Compute the integrand for the total integral cost in your optimal 
-    /// control problem.  TODO edit
+    /// For cost terms with integrals, compute the integrand. Use cost_index
+    /// to ensure determine which cost to compute.
     virtual void calc_cost_integrand(
             int cost_index, const Input<T>& in, T& integrand) const;
     /// @}
