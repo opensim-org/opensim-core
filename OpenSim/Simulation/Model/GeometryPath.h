@@ -61,7 +61,7 @@ OpenSim_DECLARE_CONCRETE_OBJECT(GeometryPath, ModelComponent);
     // OUTPUTS
     //=============================================================================
     OpenSim_DECLARE_OUTPUT(length, double, getLength, SimTK::Stage::Position);
-    // 
+    //
     OpenSim_DECLARE_OUTPUT(lengthening_speed, double, getLengtheningSpeed,
         SimTK::Stage::Velocity);
 
@@ -86,7 +86,7 @@ private:
     // but we cannot simply use a unique_ptr because we want the pointer to be
     // cleared on copy.
     SimTK::ResetOnCopy<std::unique_ptr<MomentArmSolver> > _maSolver;
-    
+
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -107,16 +107,16 @@ public:
     //--------------------------------------------------------------------------
     AbstractPathPoint* addPathPoint(const SimTK::State& s, int index,
         const PhysicalFrame& frame);
-    AbstractPathPoint* appendNewPathPoint(const std::string& proposedName, 
+    AbstractPathPoint* appendNewPathPoint(const std::string& proposedName,
         const PhysicalFrame& frame, const SimTK::Vec3& locationOnFrame);
     bool canDeletePathPoint( int index);
     bool deletePathPoint(const SimTK::State& s, int index);
-    
+
     void moveUpPathWrap(const SimTK::State& s, int index);
     void moveDownPathWrap(const SimTK::State& s, int index);
     void deletePathWrap(const SimTK::State& s, int index);
     bool replacePathPoint(const SimTK::State& s, AbstractPathPoint* oldPathPoint,
-        AbstractPathPoint* newPathPoint); 
+        AbstractPathPoint* newPathPoint);
 
     //--------------------------------------------------------------------------
     // GET
@@ -127,7 +127,7 @@ public:
     default which varies depending on owner. **/
     void setDefaultColor(const SimTK::Vec3& color) {
         updProperty_Appearance().setValueIsDefault(false);
-        upd_Appearance().set_color(color); 
+        upd_Appearance().set_color(color);
     };
     /** Returns the color that will be used to initialize the color cache
     at the next extendAddToSystem() call. The actual color used to draw the path
@@ -136,8 +136,8 @@ public:
 
     /** %Set the value of the color cache variable owned by this %GeometryPath
     object, in the cache of the given state. The value of this variable is used
-    as the color when the path is drawn, which occurs with the state realized 
-    to Stage::Dynamics. So you must call this method during realizeDynamics() or 
+    as the color when the path is drawn, which occurs with the state realized
+    to Stage::Dynamics. So you must call this method during realizeDynamics() or
     earlier in order for it to have any effect. **/
     void setColor(const SimTK::State& s, const SimTK::Vec3& color) const;
 
@@ -149,29 +149,29 @@ public:
     @see setDefaultColor() **/
     SimTK::Vec3 getColor(const SimTK::State& s) const;
 
-    double getLength( const SimTK::State& s) const;
+    virtual double getLength( const SimTK::State& s) const;
     void setLength( const SimTK::State& s, double length) const;
     double getPreScaleLength( const SimTK::State& s) const;
     void setPreScaleLength( const SimTK::State& s, double preScaleLength);
     const Array<AbstractPathPoint*>& getCurrentPath( const SimTK::State& s) const;
 
-    double getLengtheningSpeed(const SimTK::State& s) const;
+    virtual double getLengtheningSpeed(const SimTK::State& s) const;
     void setLengtheningSpeed( const SimTK::State& s, double speed ) const;
 
     /** get the path as PointForceDirections directions, which can be used
         to apply tension to bodies the points are connected to.*/
-    void getPointForceDirections(const SimTK::State& s, 
+    void getPointForceDirections(const SimTK::State& s,
         OpenSim::Array<PointForceDirection*> *rPFDs) const;
 
-    /** add in the equivalent body and generalized forces to be applied to the 
-        multibody system resulting from a tension along the GeometryPath 
+    /** add in the equivalent body and generalized forces to be applied to the
+        multibody system resulting from a tension along the GeometryPath
     @param state    state used to evaluate forces
-    @param[in]  tension      scalar (double) of the applied (+ve) tensile force 
+    @param[in]  tension      scalar (double) of the applied (+ve) tensile force
     @param[in,out] bodyForces   Vector of SpatialVec's (torque, force) on bodies
-    @param[in,out] mobilityForces  Vector of generalized forces, one per mobility   
+    @param[in,out] mobilityForces  Vector of generalized forces, one per mobility
     */
-    void addInEquivalentForces(const SimTK::State& state,
-                               const double& tension, 
+    virtual void addInEquivalentForces(const SimTK::State& state,
+                               const double& tension,
                                SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
                                SimTK::Vector& mobilityForces) const;
 
@@ -222,15 +222,15 @@ private:
     void computePath(const SimTK::State& s ) const;
     void computeLengtheningSpeed(const SimTK::State& s) const;
     void applyWrapObjects(const SimTK::State& s, Array<AbstractPathPoint*>& path ) const;
-    double calcPathLengthChange(const SimTK::State& s, const WrapObject& wo, 
-                                const WrapResult& wr, 
-                                const Array<AbstractPathPoint*>& path) const; 
+    double calcPathLengthChange(const SimTK::State& s, const WrapObject& wo,
+                                const WrapResult& wr,
+                                const Array<AbstractPathPoint*>& path) const;
     double calcLengthAfterPathComputation
        (const SimTK::State& s, const Array<AbstractPathPoint*>& currentPath) const;
 
     void constructProperties();
     void namePathPoints(int aStartingIndex);
-    void placeNewPathPoint(const SimTK::State& s, SimTK::Vec3& aOffset, 
+    void placeNewPathPoint(const SimTK::State& s, SimTK::Vec3& aOffset,
                            int index, const PhysicalFrame& frame);
     //--------------------------------------------------------------------------
     // Implement Object interface.
