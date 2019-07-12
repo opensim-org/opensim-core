@@ -36,8 +36,8 @@ Windows
 
 On **Windows**, you can run the `build_on_windows.ps1` PowerShell script to 
 obtain Moco's dependencies and to build Moco. This script assumes you
-have installed **Microsoft Visual Studio 2015** (with C++ support) and **CMake**
-3.2 or greater. You can alternatively use **Microsoft Visual Studio 2017**,
+have installed **Microsoft Visual Studio 2017** (with C++ support) and **CMake**
+3.2 or greater. You can alternatively use **Microsoft Visual Studio 2015**,
 but no other versions of Visual Studio will work with Moco.
 
 
