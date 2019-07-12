@@ -401,6 +401,8 @@ Model createGait2D() {
 
     model.finalizeConnections();
 
+    model.print("test_polyMuscles");
+
     return model;
 }
 
@@ -416,7 +418,6 @@ void testPolynomialApproximation() {
     stateValues[18] = -1;
     stateValues[22] = 1;
     stateValues[26] = 0.5;
-
 
     model.setStateVariableValues(state, stateValues);
     model.realizeVelocity(state);
