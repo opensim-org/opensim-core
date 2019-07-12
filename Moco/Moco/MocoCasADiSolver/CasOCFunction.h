@@ -67,6 +67,8 @@ protected:
     const Problem* m_casProblem;
 
 private:
+    /// Here, "point" refers to a vector of all variables in the optimization
+    /// problem.
     VectorDM getSubsetPointsForSparsityDetection() const {
         VectorDM out(m_fullPointsForSparsityDetection->size());
         for (int i = 0; i < (int)out.size(); ++i) {

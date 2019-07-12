@@ -377,7 +377,7 @@ protected:
         // point, so that each can preserve their cache?
         this->setSimTKState(in);
 
-        // Compute the integrand for all MocoCosts.
+        // Compute the integrand for this cost term.
         const auto& cost = m_mocoProbRep.getCostByIndex(cost_index);
         integrand = cost.calcIntegrand(this->m_stateDisabledConstraints);
     }
@@ -396,7 +396,7 @@ protected:
         const auto& initialState = m_mocoProbRep.updStateDisabledConstraints(0);
         const auto& finalState = m_mocoProbRep.updStateDisabledConstraints(1);
 
-        // Compute the endpoint cost for all MocoCosts.
+        // Compute the cost for this cost term.
         const auto& cost = m_mocoProbRep.getCostByIndex(cost_index);
         cost_value = cost.calcCost({initialState, finalState, in.integral});
     }

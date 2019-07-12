@@ -347,7 +347,7 @@ private:
         auto& simtkStateDisabledConstraintsFinal =
                 mocoProblemRep->updStateDisabledConstraints(1);
 
-        // Compute the endpoint cost for all MocoCosts.
+        // Compute the cost for this cost term.
         const auto& mocoCost = mocoProblemRep->getCostByIndex(index);
         cost = mocoCost.calcCost({simtkStateDisabledConstraintsInitial,
                 simtkStateDisabledConstraintsFinal, input.integral});
