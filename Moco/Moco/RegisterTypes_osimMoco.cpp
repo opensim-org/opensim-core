@@ -115,7 +115,7 @@ OSIMMOCO_API void RegisterTypes_osimMoco() {
         Object::registerType(EspositoMiller2018Force());
         Object::registerType(PositionMotion());
         Object::registerType(DeGrooteFregly2016Muscle());
-        //Object::registerType(PolynomialActuators());
+        Object::registerType(PolynomialActuators());
         Object::registerType(MultivariatePolynomialFunction());
 
         Object::registerType(DiscreteForces());
