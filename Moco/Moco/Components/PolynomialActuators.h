@@ -33,29 +33,34 @@ public:
     // PROPERTIES
     //=========================================================================
     OpenSim_DECLARE_PROPERTY(function, Function,
-            "The function approximating the geometry: MultivariatePolynomial "
-            "or spline (TODO not supported yet)");
+            "Function approximating the geometry path (only "
+            "MultivariatePolynomial supported for now)");
 
     OpenSim_DECLARE_LIST_PROPERTY(coordinate_list, std::string,
-        "List containing the generalized coordinates (q's) that parameterize "
-        "the function.");
+            "List containing the generalized coordinates (q's) that "
+            "parameterize the function.");
 
     //=========================================================================
     // METHODS
     //=========================================================================
     PolynomialActuators();
 
-    // Length and Speed of actuator
+    /// Length of actuator
     double getLength(const SimTK::State& s) const;
+
+    /// Speed of actuator
     double getLengtheningSpeed(const SimTK::State& s) const;
 
-    // TODO
-    /// Add in the equivalent body and generalized forces to be applied to the
-    /// multibody system resulting from a tension along the GeometryPath
-    /// @param state    state used to evaluate forces
-    /// @param[in]  tension      scalar (double) of the applied (+ve) tensile force
-    /// @param[in,out] bodyForces   Vector of SpatialVec's (torque, force) on bodies
-    /// @param[in,out] mobilityForces  Vector of generalized forces, one per mobility
+    /// Add in the equivalent generalized forces to be applied to the multibody
+    /// system resulting from an applied tension. No body forces are added to
+    /// the system, since the path of the actuator is unkown (only its effect
+    /// relative to the MobilizedBody is approximated).
+    /// @param state   state used to evaluate forces
+    /// @param[in] tension   scalar (double) of the applied (+ve) tensile force
+    /// @param[in,out] bodyForces   Vector of SpatialVec's (torque, force) on
+    ///                             bodies
+    /// @param[in,out] mobilityForces   Vector of generalized forces, one per
+    ///                                 mobility
     void addInEquivalentForces(const SimTK::State& state,
                                const double& tension,
                                SimTK::Vector_<SimTK::SpatialVec>& bodyForces,

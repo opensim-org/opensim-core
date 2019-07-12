@@ -31,9 +31,8 @@ public:
     /// @param dimension the number of dimensions
     /// @param order the polynomial order
     SimTKMultivariatePolynomial(const SimTK::Vector_<T>& coefficients,
-        const int& dimension, const int& order) : coefficients(coefficients),
-        dimension(dimension), order(order) {
-    }
+            const int& dimension, const int& order) :
+            coefficients(coefficients), dimension(dimension), order(order) {}
     T calcValue(const SimTK::Vector& x) const override {
         T value = static_cast<T>(0);
         int coeff_nr = 0;
@@ -142,30 +141,28 @@ private:
     int order;
 };
 
-
-
 class OSIMMOCO_API MultivariatePolynomialFunction : public Function {
 OpenSim_DECLARE_CONCRETE_OBJECT(MultivariatePolynomialFunction, Function);
 
-//=============================================================================
-// PROPERTIES
-//=============================================================================
+    //=========================================================================
+    // PROPERTIES
+    //=========================================================================
+    // TODO ajust after discussing "format"
     OpenSim_DECLARE_PROPERTY(coefficients, SimTK::Vector,
-        "Coefficients of a multivariate polynomial function, TODO.");
+            "Coefficients of a multivariate polynomial function.");
     OpenSim_DECLARE_PROPERTY(dimension, int,
-        "Number of dimensions of a multivariate polynomial function, TODO.");
+            "Number of dimensions of a multivariate polynomial function.");
     OpenSim_DECLARE_PROPERTY(order, int,
-        "Order of a multivariate polynomial function, TODO.");
+            "Order of a multivariate polynomial function.");
 
-//=============================================================================
-// PUBLIC METHODS
-//=============================================================================
 public:
-
+    //=========================================================================
+    // METHODS
+    //=========================================================================
     MultivariatePolynomialFunction() { constructProperties(); }
 
     MultivariatePolynomialFunction(SimTK::Vector coefficients, int dimension,
-        int order){
+            int order) {
         constructProperties();
         set_coefficients(coefficients);
         set_dimension(dimension);
@@ -183,28 +180,27 @@ public:
     /// Set dimension TODO
     void setDimension(int dimension)
     {   set_dimension(dimension); }
-    /// Get dimension
+    /// Get dimension TODO
     const int getDimension() const
     {   return get_dimension(); }
     /// Set order TODO
     void setOrder(int order)
     {   set_order(order); }
-    /// Get order
+    /// Get order TODO
     const int getOrder() const
     {   return get_order(); }
 
     /// Return function
-    SimTK::Function* createSimTKFunction() const override
-    {
+    SimTK::Function* createSimTKFunction() const override {
         return new SimTKMultivariatePolynomial<SimTK::Real>(get_coefficients(),
-            get_dimension(), getOrder());
+                get_dimension(), getOrder());
     }
 
 private:
-    void constructProperties(){
+    void constructProperties() {
         double coefficientDefaultValues[6] = {1,1,1,1,1,1};
         constructProperty_coefficients(
-            SimTK::Vector(6,coefficientDefaultValues));
+                SimTK::Vector(6,coefficientDefaultValues));
         constructProperty_dimension(2);
         constructProperty_order(2);
     }

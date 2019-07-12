@@ -32,24 +32,19 @@ PolynomialActuators::PolynomialActuators()
     constructProperties();
 }
 
-double PolynomialActuators::getLength(const SimTK::State& s) const
-{
+double PolynomialActuators::getLength(const SimTK::State& s) const {
     int nc = getProperty_coordinate_list().size();
     SimTK::Vector x(nc);
     for (int i = 0; i < nc; ++i)
         x[i] = coordinates[i]->getValue(s);
-
     return get_function().calcValue(x);
-
 }
 
-double PolynomialActuators::getLengtheningSpeed(const SimTK::State& s) const
-{
+double PolynomialActuators::getLengtheningSpeed(const SimTK::State& s) const {
     int nc = getProperty_coordinate_list().size();
     SimTK::Vector x(nc);
     for (int i = 0; i < nc; ++i)
         x[i] = coordinates[i]->getValue(s);
-
     std::vector<int> derivComponents(1);
     double value = 0;
     for (int i = 0; i < nc; ++i) {
@@ -58,55 +53,43 @@ double PolynomialActuators::getLengtheningSpeed(const SimTK::State& s) const
                 coordinates[i]->getSpeedValue(s);
     }
     return value;
-
 }
 
 void PolynomialActuators::addInEquivalentForces(const SimTK::State& s,
-    const double& tension,
-    SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
-    SimTK::Vector& mobilityForces) const
-{
+        const double& tension, SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
+        SimTK::Vector& mobilityForces) const {
     int nc = getProperty_coordinate_list().size();
     SimTK::Vector x(nc);
     for (int i = 0; i < nc; ++i)
         x[i] = coordinates[i]->getValue(s);
-
     const SimTK::SimbodyMatterSubsystem& matter =
             getModel().getMatterSubsystem();
-
-    double muscleTorque;
+    double appliedTension;
     std::vector<int> derivComponents(1);
     double value = 0;
     for (int i = 0; i < nc; ++i) {
         derivComponents[0] = i;
-        muscleTorque = (-get_function().calcDerivative(derivComponents, x) *
+        appliedTension = (-get_function().calcDerivative(derivComponents, x) *
                 tension);
-
         // get the mobilized body the coordinate is coupled to.
         const SimTK::MobilizedBody& mob = matter.getMobilizedBody(
                 coordinates[i]->getBodyIndex());
-
         mob.applyOneMobilityForce(s, coordinates[i]->getMobilizerQIndex(),
-                muscleTorque, mobilityForces);
+                appliedTension, mobilityForces);
     }
-
 }
 
 void PolynomialActuators::extendConnectToModel(Model& model) {
     Super::extendConnectToModel(model);
-
     int nc = getProperty_coordinate_list().size();
     coordinates.clear();
     for (int i = 0; i < nc; ++i) {
         coordinates.push_back(SimTK::ReferencePtr<const Coordinate>(
                 &model.getComponent<Coordinate>(get_coordinate_list(i))));
     }
-
 }
 
 void PolynomialActuators::constructProperties() {
-
     constructProperty_function(MultivariatePolynomialFunction());
     constructProperty_coordinate_list();
-
 }

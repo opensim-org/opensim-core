@@ -20,8 +20,6 @@
 #include "Testing.h"
 
 #include <Moco/osimMoco.h>
-#include <OpenSim/Common/LogManager.h>
-#include <OpenSim/Simulation/Manager/Manager.h>
 
 using namespace OpenSim;
 
@@ -34,7 +32,6 @@ Model createGait2D() {
     model.setName("gait_2D");
     using SimTK::Vec3;
     using SimTK::Inertia;
-    using SimTK::Transform;
 
     ///////////////////////////////////////////////////////////////////////////
     // Add bodies
@@ -177,6 +174,7 @@ Model createGait2D() {
 
     ///////////////////////////////////////////////////////////////////////////
     // Add muscles
+    // Coefficients for polynomial approximations computed with MATLAB code.
     ///////////////////////////////////////////////////////////////////////////
 
     int dimHamstrings = 2;
@@ -297,10 +295,8 @@ Model createGait2D() {
     TA_f->setCoefficients(
             SimTK::Vector(nCoeffTA,coeffTA));
 
-    PolynomialActuators hamstrings_p_r;;
+    PolynomialActuators hamstrings_p_r;
     hamstrings_p_r.set_function(*hamstrings_f);
-    //hamstrings_p_r.appendNewPathPoint("P1", *tibia_r, Vec3(0));
-    //hamstrings_p_r.appendNewPathPoint("P2", *calcn_r, Vec3(0));
     hamstrings_p_r.append_coordinate_list("/jointset/hip_r/hip_q_r");
     hamstrings_p_r.append_coordinate_list("/jointset/knee_r/knee_q_r");
     auto* hamstrings_r = new DeGrooteFregly2016Muscle();
@@ -309,10 +305,8 @@ Model createGait2D() {
     hamstrings_r->setName("hamstrings_r");
     model.addComponent(hamstrings_r);
 
-    PolynomialActuators BFSH_p_r;;
+    PolynomialActuators BFSH_p_r;
     BFSH_p_r.set_function(*BFSH_f);
-    //BFSH_p_r.appendNewPathPoint("P1", *tibia_r, Vec3(0));
-    //BFSH_p_r.appendNewPathPoint("P2", *calcn_r, Vec3(0));
     BFSH_p_r.append_coordinate_list("/jointset/knee_r/knee_q_r");
     auto* BFSH_r = new DeGrooteFregly2016Muscle();
     BFSH_r->set_GeometryPath(BFSH_p_r);
@@ -320,10 +314,8 @@ Model createGait2D() {
     BFSH_r->setName("BFSH_r");
     model.addComponent(BFSH_r);
 
-    PolynomialActuators GLU_p_r;;
+    PolynomialActuators GLU_p_r;
     GLU_p_r.set_function(*GLU_f);
-    //GLU_p_r.appendNewPathPoint("P1", *tibia_r, Vec3(0));
-    //GLU_p_r.appendNewPathPoint("P2", *calcn_r, Vec3(0));
     GLU_p_r.append_coordinate_list("/jointset/hip_r/hip_q_r");
     auto* GLU_r = new DeGrooteFregly2016Muscle();
     GLU_r->set_GeometryPath(GLU_p_r);
@@ -331,10 +323,8 @@ Model createGait2D() {
     GLU_r->setName("GLU_r");
     model.addComponent(GLU_r);
 
-    PolynomialActuators IlioPsoas_p_r;;
+    PolynomialActuators IlioPsoas_p_r;
     IlioPsoas_p_r.set_function(*IlioPsoas_f);
-    //IlioPsoas_p_r.appendNewPathPoint("P1", *tibia_r, Vec3(0));
-    //IlioPsoas_p_r.appendNewPathPoint("P2", *calcn_r, Vec3(0));
     IlioPsoas_p_r.append_coordinate_list("/jointset/hip_r/hip_q_r");
     auto* IlioPsoas_r = new DeGrooteFregly2016Muscle();
     IlioPsoas_r->set_GeometryPath(IlioPsoas_p_r);
@@ -342,10 +332,8 @@ Model createGait2D() {
     IlioPsoas_r->setName("IlioPsoas_r");
     model.addComponent(IlioPsoas_r);
 
-    PolynomialActuators RF_p_r;;
+    PolynomialActuators RF_p_r;
     RF_p_r.set_function(*RF_f);
-    //RF_p_r.appendNewPathPoint("P1", *tibia_r, Vec3(0));
-    //RF_p_r.appendNewPathPoint("P2", *calcn_r, Vec3(0));
     RF_p_r.append_coordinate_list("/jointset/hip_r/hip_q_r");
     RF_p_r.append_coordinate_list("/jointset/knee_r/knee_q_r");
     auto* RF_r = new DeGrooteFregly2016Muscle();
@@ -354,10 +342,8 @@ Model createGait2D() {
     RF_r->setName("RF_r");
     model.addComponent(RF_r);
 
-    PolynomialActuators VAS_p_r;;
+    PolynomialActuators VAS_p_r;
     VAS_p_r.set_function(*VAS_f);
-    //VAS_p_r.appendNewPathPoint("P1", *tibia_r, Vec3(0));
-    //VAS_p_r.appendNewPathPoint("P2", *calcn_r, Vec3(0));
     VAS_p_r.append_coordinate_list("/jointset/knee_r/knee_q_r");
     auto* VAS_r = new DeGrooteFregly2016Muscle();
     VAS_r->set_GeometryPath(VAS_p_r);
@@ -365,10 +351,8 @@ Model createGait2D() {
     VAS_r->setName("VAS_r");
     model.addComponent(VAS_r);
 
-    PolynomialActuators GAS_p_r;;
+    PolynomialActuators GAS_p_r;
     GAS_p_r.set_function(*GAS_f);
-    //GAS_p_r.appendNewPathPoint("P1", *tibia_r, Vec3(0));
-    //GAS_p_r.appendNewPathPoint("P2", *calcn_r, Vec3(0));
     GAS_p_r.append_coordinate_list("/jointset/knee_r/knee_q_r");
     GAS_p_r.append_coordinate_list("/jointset/ankle_r/ankle_q_r");
     auto* GAS_r = new DeGrooteFregly2016Muscle();
@@ -377,10 +361,8 @@ Model createGait2D() {
     GAS_r->setName("GAS_r");
     model.addComponent(GAS_r);
 
-    PolynomialActuators SOL_p_r;;
+    PolynomialActuators SOL_p_r;
     SOL_p_r.set_function(*SOL_f);
-    //SOL_p_r.appendNewPathPoint("P1", *tibia_r, Vec3(0));
-    //SOL_p_r.appendNewPathPoint("P2", *calcn_r, Vec3(0));
     SOL_p_r.append_coordinate_list("/jointset/ankle_r/ankle_q_r");
     auto* SOL_r = new DeGrooteFregly2016Muscle();
     SOL_r->set_GeometryPath(SOL_p_r);
@@ -388,10 +370,8 @@ Model createGait2D() {
     SOL_r->setName("SOL_r");
     model.addComponent(SOL_r);
 
-    PolynomialActuators TA_p_r;;
+    PolynomialActuators TA_p_r;
     TA_p_r.set_function(*TA_f);
-    //TA_p_r.appendNewPathPoint("P1", *tibia_r, Vec3(0));
-    //TA_p_r.appendNewPathPoint("P2", *calcn_r, Vec3(0));
     TA_p_r.append_coordinate_list("/jointset/ankle_r/ankle_q_r");
     auto* TA_r = new DeGrooteFregly2016Muscle();
     TA_r->set_GeometryPath(TA_p_r);
@@ -401,11 +381,11 @@ Model createGait2D() {
 
     model.finalizeConnections();
 
-    model.print("test_polyMuscles");
-
     return model;
 }
 
+// Test comparing muscle-tendon lengths and lengthening speeds obtained with
+// original MATLAB code and current implementation.
 void testPolynomialApproximation() {
 
     Model model(createGait2D());
@@ -415,6 +395,7 @@ void testPolynomialApproximation() {
     SimTK::Vector stateValues(nStates);
     stateValues.setTo(0);
 
+    // Set values for speeds to have non-null muscle-tendon lengthening speeds
     stateValues[18] = -1;
     stateValues[22] = 1;
     stateValues[26] = 0.5;
@@ -486,8 +467,6 @@ void testPolynomialApproximation() {
     CHECK(-0.021960474948139 == TA_vmt_r);
 
 }
-
-
 
 TEST_CASE("testPolynomialApproximation") {
     testPolynomialApproximation();
