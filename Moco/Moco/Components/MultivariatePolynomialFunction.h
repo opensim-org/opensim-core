@@ -50,7 +50,9 @@ public:
                     if (dimension < 4) n_q4_s = 0;
                     else n_q4_s = order-nq_1-n_q2-n_q3;
                     for (int n_q4 = 0; n_q4 < n_q4_s + 1; ++n_q4) {
-                        value += (std::pow(x[0],nq_1)*std::pow(x[1],n_q2)*std::pow(x[2],n_q3)*std::pow(x[3],n_q4))*coefficients[coeff_nr];
+                        value += (std::pow(x[0], nq_1) * std::pow(x[1], n_q2) *
+                                std::pow(x[2], n_q3) * std::pow(x[3], n_q4)) *
+                                coefficients[coeff_nr];
                         ++coeff_nr;
                     }
                 }
@@ -61,6 +63,7 @@ public:
     T calcDerivative(const SimTK::Array_<int>& derivComponents,
                      const SimTK::Vector& x) const override {
         T value = static_cast<T>(0);
+        int temp = 0;
         int coeff_nr = 0;
         for (int nq_1 = 0; nq_1 < order+1; ++nq_1) {
             int n_q2_s;
@@ -76,16 +79,40 @@ public:
                     else n_q4_s = order-nq_1-n_q2-n_q3;
                     for (int n_q4 = 0; n_q4 < n_q4_s + 1; ++n_q4) {
                         if (derivComponents[0] == 0) {
-                            value += (nq_1*std::pow(x[0],nq_1-1)*std::pow(x[1],n_q2)*std::pow(x[2],n_q3)*std::pow(x[3],n_q4))*coefficients[coeff_nr];
+                            temp = nq_1-1; // TODO dirty fix
+                            if (temp < 0) temp = 0;
+                            value += (nq_1 * std::pow(x[0], temp)*
+                                    std::pow(x[1], n_q2) *
+                                    std::pow(x[2], n_q3) *
+                                    std::pow(x[3], n_q4)) *
+                                    coefficients[coeff_nr];
                         }
                         else if (derivComponents[0] == 1) {
-                            value += (std::pow(x[0],nq_1)*n_q2*std::pow(x[1],n_q2-1)*std::pow(x[2],n_q3)*std::pow(x[3],n_q4))*coefficients[coeff_nr];
+                            temp = n_q2-1; // TODO dirty fix
+                            if (temp < 0) temp = 0;
+                            value += (std::pow(x[0], nq_1) *
+                                    n_q2 * std::pow(x[1], temp) *
+                                    std::pow(x[2], n_q3) *
+                                    std::pow(x[3], n_q4)) *
+                                    coefficients[coeff_nr];
                         }
                         else if (derivComponents[0] == 2) {
-                            value += (std::pow(x[0],nq_1)*std::pow(x[1],n_q2)*n_q3*std::pow(x[2],n_q3-1)*std::pow(x[3],n_q4))*coefficients[coeff_nr];
+                            temp = n_q3-1; // TODO dirty fix
+                            if (temp < 0) temp = 0;
+                            value += (std::pow(x[0], nq_1) *
+                                    std::pow(x[1], n_q2) *
+                                    n_q3 * std::pow(x[2], temp) *
+                                    std::pow(x[3], n_q4)) *
+                                    coefficients[coeff_nr];
                         }
                         else if (derivComponents[0] == 3) {
-                            value += (std::pow(x[0],nq_1)*std::pow(x[1],n_q2)*std::pow(x[2],n_q3)*n_q4*std::pow(x[3],n_q4-1))*coefficients[coeff_nr];
+                            temp = n_q4-1; // TODO dirty fix
+                            if (temp < 0) temp = 0;
+                            value += (std::pow(x[0], nq_1) *
+                                    std::pow(x[1], n_q2) *
+                                    std::pow(x[2], n_q3) *
+                                    n_q4 * std::pow(x[3], temp)) *
+                                    coefficients[coeff_nr];
                         }
                         ++coeff_nr;
                     }

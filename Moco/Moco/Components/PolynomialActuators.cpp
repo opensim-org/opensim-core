@@ -82,13 +82,12 @@ void PolynomialActuators::addInEquivalentForces(const SimTK::State& s,
         muscleTorque = (-get_function().calcDerivative(derivComponents, x) *
                 tension);
 
-        // get the mobilized body the coordinate is couple to.
-        const SimTK::MobilizedBody& mpbod = matter.getMobilizedBody(
+        // get the mobilized body the coordinate is coupled to.
+        const SimTK::MobilizedBody& mob = matter.getMobilizedBody(
                 coordinates[i]->getBodyIndex());
 
-        mpbod.applyOneMobilityForce(s,
-                    coordinates[i]->getMobilizerQIndex(),
-                    muscleTorque, mobilityForces);
+        mob.applyOneMobilityForce(s, coordinates[i]->getMobilizerQIndex(),
+                muscleTorque, mobilityForces);
     }
 
 }

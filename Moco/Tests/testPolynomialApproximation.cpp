@@ -179,7 +179,7 @@ Model createGait2D() {
     // Add muscles
     ///////////////////////////////////////////////////////////////////////////
 
-    int dimHamstrings = 1;
+    int dimHamstrings = 2;
     int orderHamstrings = 3;
     const int nCoeffHamstrings = 10;
     double coeffHamstrings[nCoeffHamstrings] = {0.420495248805280,
@@ -187,14 +187,61 @@ Model createGait2D() {
         0.053690588126276, 0.002092858497112, 0.001164874424056,
         0.016799961996946, 1.886801073680048e-04, 0.009576337870147};
 
-    //int dimBFSH = 2;
-    //int orderBFSH = 3;
-    //const int nCoeffBFSH = 10;
-    //double coeffBFSH[nCoeffBFSH] = {0.4205, 0.0288, -0.0183,
-    //        -0.0070, 0.0537, 0.0021, 0.0012, 0.0168, 1.8868e-04, -0.0096};
+    int dimBFSH = 1;
+    int orderBFSH = 3;
+    const int nCoeffBFSH = 4;
+    double coeffBFSH[nCoeffBFSH] = {0.244916441634551, 0.021846865400467,
+        -0.020950072312087, -0.006400711591235};
 
+    int dimGLU = 1;
+    int orderGLU = 4;
+    const int nCoeffGLU = 5;
+    double coeffGLU[nCoeffGLU] = {0.201384070841096, 0.056529803505131,
+        -0.001007247819865, -0.013044763452684, 0.004357279476748};
 
+    int dimIlioPsoas = 1;
+    int orderIlioPsoas = 3;
+    const int nCoeffIlioPsoas = 4;
+    double coeffIlioPsoas[nCoeffIlioPsoas] = {0.254156701045543,
+        -0.038230025226882, 0.005210532284289, 0.002534168005785};
 
+    int dimRF = 2;
+    int orderRF = 5;
+    const int nCoeffRF = 21;
+    double coeffRF[nCoeffRF] = {0.411041216316924, -0.041901285727185,
+        0.015455075788113, 0.035343831737396, 0.019052568915166,
+        0.003490516739746, -0.041198556780086, -0.002495169893594,
+        -0.001467645187366, -8.011395917540590e-04, -2.062908241814378e-04,
+        -0.014671630141187, 0.001472708873289, 4.702571981803344e-04,
+        2.278861920386511e-05, 0.005544930296365, 2.921882702941324e-04,
+        6.068963635841811e-05, 0.001214860648500, -4.506103418022895e-05,
+        -1.110736612700566e-04};
+
+    int dimVAS = 1;
+    int orderVAS = 3;
+    const int nCoeffVAS = 4;
+    double coeffVAS[nCoeffVAS] = {0.184215306369091, -0.040084488603560,
+        -0.006524542229607, 3.197777963362615e-04};
+
+    int dimGAS = 2;
+    int orderGAS = 3;
+    const int nCoeffGAS = 10;
+    double coeffGAS[nCoeffGAS] = {0.434930944648804, 0.043988148379275,
+        -0.005155011706555, -0.006729667224386, 0.025377138303286,
+        3.450897747676789e-04, 7.482682035176111e-04, 0.007819367321315,
+        -3.278790906939024e-05, 6.958181391218760e-05};
+
+    int dimSOL = 1;
+    int orderSOL = 3;
+    const int nCoeffSOL = 4;
+    double coeffSOL[nCoeffSOL] = {0.280659364908914, 0.042682272678384,
+        -0.007031377756060, -0.006261791606827};
+
+    int dimTA = 1;
+    int orderTA = 3;
+    const int nCoeffTA = 4;
+    double coeffTA[nCoeffTA] = {0.290611643802287, -0.043920949896278,
+        -0.004349864686700, 0.003846471985262};
 
     auto* hamstrings_f = new MultivariatePolynomialFunction();
     hamstrings_f->setDimension(dimHamstrings);
@@ -202,20 +249,155 @@ Model createGait2D() {
     hamstrings_f->setCoefficients(
             SimTK::Vector(nCoeffHamstrings,coeffHamstrings));
 
+    auto* BFSH_f = new MultivariatePolynomialFunction();
+    BFSH_f->setDimension(dimBFSH);
+    BFSH_f->setOrder(orderBFSH);
+    BFSH_f->setCoefficients(
+            SimTK::Vector(nCoeffBFSH,coeffBFSH));
+
+    auto* GLU_f = new MultivariatePolynomialFunction();
+    GLU_f->setDimension(dimGLU);
+    GLU_f->setOrder(orderGLU);
+    GLU_f->setCoefficients(
+            SimTK::Vector(nCoeffGLU,coeffGLU));
+
+    auto* IlioPsoas_f = new MultivariatePolynomialFunction();
+    IlioPsoas_f->setDimension(dimIlioPsoas);
+    IlioPsoas_f->setOrder(orderIlioPsoas);
+    IlioPsoas_f->setCoefficients(
+            SimTK::Vector(nCoeffIlioPsoas,coeffIlioPsoas));
+
+    auto* RF_f = new MultivariatePolynomialFunction();
+    RF_f->setDimension(dimRF);
+    RF_f->setOrder(orderRF);
+    RF_f->setCoefficients(
+            SimTK::Vector(nCoeffRF,coeffRF));
+
+    auto* VAS_f = new MultivariatePolynomialFunction();
+    VAS_f->setDimension(dimVAS);
+    VAS_f->setOrder(orderVAS);
+    VAS_f->setCoefficients(
+            SimTK::Vector(nCoeffVAS,coeffVAS));
+
+    auto* GAS_f = new MultivariatePolynomialFunction();
+    GAS_f->setDimension(dimGAS);
+    GAS_f->setOrder(orderGAS);
+    GAS_f->setCoefficients(
+            SimTK::Vector(nCoeffGAS,coeffGAS));
+
+    auto* SOL_f = new MultivariatePolynomialFunction();
+    SOL_f->setDimension(dimSOL);
+    SOL_f->setOrder(orderSOL);
+    SOL_f->setCoefficients(
+            SimTK::Vector(nCoeffSOL,coeffSOL));
+
+    auto* TA_f = new MultivariatePolynomialFunction();
+    TA_f->setDimension(dimTA);
+    TA_f->setOrder(orderTA);
+    TA_f->setCoefficients(
+            SimTK::Vector(nCoeffTA,coeffTA));
+
     PolynomialActuators hamstrings_p_r;;
     hamstrings_p_r.set_function(*hamstrings_f);
-
     //hamstrings_p_r.appendNewPathPoint("P1", *tibia_r, Vec3(0));
     //hamstrings_p_r.appendNewPathPoint("P2", *calcn_r, Vec3(0));
-
     hamstrings_p_r.append_coordinate_list("/jointset/hip_r/hip_q_r");
     hamstrings_p_r.append_coordinate_list("/jointset/knee_r/knee_q_r");
-
     auto* hamstrings_r = new DeGrooteFregly2016Muscle();
     hamstrings_r->set_GeometryPath(hamstrings_p_r);
     hamstrings_r->set_ignore_tendon_compliance(true);
     hamstrings_r->setName("hamstrings_r");
     model.addComponent(hamstrings_r);
+
+    PolynomialActuators BFSH_p_r;;
+    BFSH_p_r.set_function(*BFSH_f);
+    //BFSH_p_r.appendNewPathPoint("P1", *tibia_r, Vec3(0));
+    //BFSH_p_r.appendNewPathPoint("P2", *calcn_r, Vec3(0));
+    BFSH_p_r.append_coordinate_list("/jointset/knee_r/knee_q_r");
+    auto* BFSH_r = new DeGrooteFregly2016Muscle();
+    BFSH_r->set_GeometryPath(BFSH_p_r);
+    BFSH_r->set_ignore_tendon_compliance(true);
+    BFSH_r->setName("BFSH_r");
+    model.addComponent(BFSH_r);
+
+    PolynomialActuators GLU_p_r;;
+    GLU_p_r.set_function(*GLU_f);
+    //GLU_p_r.appendNewPathPoint("P1", *tibia_r, Vec3(0));
+    //GLU_p_r.appendNewPathPoint("P2", *calcn_r, Vec3(0));
+    GLU_p_r.append_coordinate_list("/jointset/hip_r/hip_q_r");
+    auto* GLU_r = new DeGrooteFregly2016Muscle();
+    GLU_r->set_GeometryPath(GLU_p_r);
+    GLU_r->set_ignore_tendon_compliance(true);
+    GLU_r->setName("GLU_r");
+    model.addComponent(GLU_r);
+
+    PolynomialActuators IlioPsoas_p_r;;
+    IlioPsoas_p_r.set_function(*IlioPsoas_f);
+    //IlioPsoas_p_r.appendNewPathPoint("P1", *tibia_r, Vec3(0));
+    //IlioPsoas_p_r.appendNewPathPoint("P2", *calcn_r, Vec3(0));
+    IlioPsoas_p_r.append_coordinate_list("/jointset/hip_r/hip_q_r");
+    auto* IlioPsoas_r = new DeGrooteFregly2016Muscle();
+    IlioPsoas_r->set_GeometryPath(IlioPsoas_p_r);
+    IlioPsoas_r->set_ignore_tendon_compliance(true);
+    IlioPsoas_r->setName("IlioPsoas_r");
+    model.addComponent(IlioPsoas_r);
+
+    PolynomialActuators RF_p_r;;
+    RF_p_r.set_function(*RF_f);
+    //RF_p_r.appendNewPathPoint("P1", *tibia_r, Vec3(0));
+    //RF_p_r.appendNewPathPoint("P2", *calcn_r, Vec3(0));
+    RF_p_r.append_coordinate_list("/jointset/hip_r/hip_q_r");
+    RF_p_r.append_coordinate_list("/jointset/knee_r/knee_q_r");
+    auto* RF_r = new DeGrooteFregly2016Muscle();
+    RF_r->set_GeometryPath(RF_p_r);
+    RF_r->set_ignore_tendon_compliance(true);
+    RF_r->setName("RF_r");
+    model.addComponent(RF_r);
+
+    PolynomialActuators VAS_p_r;;
+    VAS_p_r.set_function(*VAS_f);
+    //VAS_p_r.appendNewPathPoint("P1", *tibia_r, Vec3(0));
+    //VAS_p_r.appendNewPathPoint("P2", *calcn_r, Vec3(0));
+    VAS_p_r.append_coordinate_list("/jointset/knee_r/knee_q_r");
+    auto* VAS_r = new DeGrooteFregly2016Muscle();
+    VAS_r->set_GeometryPath(VAS_p_r);
+    VAS_r->set_ignore_tendon_compliance(true);
+    VAS_r->setName("VAS_r");
+    model.addComponent(VAS_r);
+
+    PolynomialActuators GAS_p_r;;
+    GAS_p_r.set_function(*GAS_f);
+    //GAS_p_r.appendNewPathPoint("P1", *tibia_r, Vec3(0));
+    //GAS_p_r.appendNewPathPoint("P2", *calcn_r, Vec3(0));
+    GAS_p_r.append_coordinate_list("/jointset/knee_r/knee_q_r");
+    GAS_p_r.append_coordinate_list("/jointset/ankle_r/ankle_q_r");
+    auto* GAS_r = new DeGrooteFregly2016Muscle();
+    GAS_r->set_GeometryPath(GAS_p_r);
+    GAS_r->set_ignore_tendon_compliance(true);
+    GAS_r->setName("GAS_r");
+    model.addComponent(GAS_r);
+
+    PolynomialActuators SOL_p_r;;
+    SOL_p_r.set_function(*SOL_f);
+    //SOL_p_r.appendNewPathPoint("P1", *tibia_r, Vec3(0));
+    //SOL_p_r.appendNewPathPoint("P2", *calcn_r, Vec3(0));
+    SOL_p_r.append_coordinate_list("/jointset/ankle_r/ankle_q_r");
+    auto* SOL_r = new DeGrooteFregly2016Muscle();
+    SOL_r->set_GeometryPath(SOL_p_r);
+    SOL_r->set_ignore_tendon_compliance(true);
+    SOL_r->setName("SOL_r");
+    model.addComponent(SOL_r);
+
+    PolynomialActuators TA_p_r;;
+    TA_p_r.set_function(*TA_f);
+    //TA_p_r.appendNewPathPoint("P1", *tibia_r, Vec3(0));
+    //TA_p_r.appendNewPathPoint("P2", *calcn_r, Vec3(0));
+    TA_p_r.append_coordinate_list("/jointset/ankle_r/ankle_q_r");
+    auto* TA_r = new DeGrooteFregly2016Muscle();
+    TA_r->set_GeometryPath(TA_p_r);
+    TA_r->set_ignore_tendon_compliance(true);
+    TA_r->setName("TA_r");
+    model.addComponent(TA_r);
 
     model.finalizeConnections();
 
@@ -227,57 +409,80 @@ void testPolynomialApproximation() {
     Model model(createGait2D());
     SimTK::State& state = model.initSystem();
 
-    int ndof = model.getNumStateVariables()/2;
-    SimTK::Vector QsUs(2*ndof);
-    QsUs.setTo(0);
-    QsUs[1] = -1;
-    QsUs[3] = 1;
-    QsUs[5] = 0.5;
+    int nStates = model.getNumStateVariables();
+    SimTK::Vector stateValues(nStates);
+    stateValues.setTo(0);
+
+    stateValues[18] = -1;
+    stateValues[22] = 1;
+    stateValues[26] = 0.5;
 
 
-    model.setStateVariableValues(state, QsUs);
+    model.setStateVariableValues(state, stateValues);
     model.realizeVelocity(state);
 
     double hamstrings_lmt_r = model.getComponent<PathActuator>(
                 "hamstrings_r").getGeometryPath().getLength(state);
     double hamstrings_vmt_r = model.getComponent<PathActuator>(
                 "hamstrings_r").getGeometryPath().getLengtheningSpeed(state);
-
-    CAPTURE(hamstrings_lmt_r);
-
     CHECK(0.420495248805280 == hamstrings_lmt_r);
+    CHECK(-0.024935333185797 == Approx(hamstrings_vmt_r).margin(1e-10));
 
-    //CHECK(0.244916441634551
-    //CHECK(0.201384070841096
-    //CHECK(0.254156701045543
-    //CHECK(0.411041216316924
-    //CHECK(0.184215306369091
-    //CHECK(0.434930944648804
-    //CHECK(0.280659364908914
-    //CHECK(0.290611643802287
+    double BFSH_lmt_r = model.getComponent<PathActuator>(
+                "BFSH_r").getGeometryPath().getLength(state);
+    double BFSH_vmt_r = model.getComponent<PathActuator>(
+                "BFSH_r").getGeometryPath().getLengtheningSpeed(state);
+    CHECK(0.244916441634551 == BFSH_lmt_r);
+    CHECK(0.021846865400467 == BFSH_vmt_r);
 
-    CAPTURE(hamstrings_vmt_r);
-    CHECK(-0.024935333185797 == hamstrings_vmt_r);
-    //CHECK(0.021846865400467
-    //CHECK(-0.056529803505131
-    //CHECK(0.038230025226882
-    //CHECK(-7.027289470986353e-04
-    //CHECK(-0.040084488603560
-    //CHECK(0.047371212492924
-    //CHECK(0.021341136339192
-    //CHECK(-0.021960474948139
+    double GLU_lmt_r = model.getComponent<PathActuator>(
+                "GLU_r").getGeometryPath().getLength(state);
+    double GLU_vmt_r = model.getComponent<PathActuator>(
+                "GLU_r").getGeometryPath().getLengtheningSpeed(state);
+    CHECK(0.201384070841096 == GLU_lmt_r);
+    CHECK(-0.056529803505131 == GLU_vmt_r);
 
+    double IlioPsoas_lmt_r = model.getComponent<PathActuator>(
+                "IlioPsoas_r").getGeometryPath().getLength(state);
+    double IlioPsoas_vmt_r = model.getComponent<PathActuator>(
+                "IlioPsoas_r").getGeometryPath().getLengtheningSpeed(state);
+    CHECK(0.254156701045543 == IlioPsoas_lmt_r);
+    CHECK(0.038230025226882 == IlioPsoas_vmt_r);
 
+    double RF_lmt_r = model.getComponent<PathActuator>(
+                "RF_r").getGeometryPath().getLength(state);
+    double RF_vmt_r = model.getComponent<PathActuator>(
+                "RF_r").getGeometryPath().getLengtheningSpeed(state);
+    CHECK(0.411041216316924 == RF_lmt_r);
+    CHECK(-7.027289470986353e-04 == Approx(RF_vmt_r).margin(1e-10));
 
+    double VAS_lmt_r = model.getComponent<PathActuator>(
+                "VAS_r").getGeometryPath().getLength(state);
+    double VAS_vmt_r = model.getComponent<PathActuator>(
+                "VAS_r").getGeometryPath().getLengtheningSpeed(state);
+    CHECK(0.184215306369091 == VAS_lmt_r);
+    CHECK(-0.040084488603560 == VAS_vmt_r);
 
+    double GAS_lmt_r = model.getComponent<PathActuator>(
+                "GAS_r").getGeometryPath().getLength(state);
+    double GAS_vmt_r = model.getComponent<PathActuator>(
+                "GAS_r").getGeometryPath().getLengtheningSpeed(state);
+    CHECK(0.434930944648804 == GAS_lmt_r);
+    CHECK(0.047371212492924 == Approx(GAS_vmt_r).margin(1e-10));
 
-    ////model.getComponent("hamstrings_r").
+    double SOL_lmt_r = model.getComponent<PathActuator>(
+                "SOL_r").getGeometryPath().getLength(state);
+    double SOL_vmt_r = model.getComponent<PathActuator>(
+                "SOL_r").getGeometryPath().getLengtheningSpeed(state);
+    CHECK(0.280659364908914 == SOL_lmt_r);
+    CHECK(0.021341136339192 == SOL_vmt_r);
 
-    //[0.420495, 0.244916, 0.201384, 0.254157, 0.411041, 0.184215, 0.434931, 0.280659, 0.290612]
-
-    ////[-0.0249353, 0.0218469, -0.0565298, 0.03823, -0.000702729, -0.0400845, 0.0473712, 0.0213411, -0.0219605]
-
-    //[lMTk_l,vMTk_l,MA_l] = f_lMT_vMT_dM([0,0,0],[-1,1,0.5]);
+    double TA_lmt_r = model.getComponent<PathActuator>(
+                "TA_r").getGeometryPath().getLength(state);
+    double TA_vmt_r = model.getComponent<PathActuator>(
+                "TA_r").getGeometryPath().getLengtheningSpeed(state);
+    CHECK(0.290611643802287 == TA_lmt_r);
+    CHECK(-0.021960474948139 == TA_vmt_r);
 
 }
 
