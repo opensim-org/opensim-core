@@ -8,9 +8,14 @@ set(EXAMPLE_MOCO_TRACK_FILES
 MocoAddExampleCXX(NAME exampleMocoTrack
         RESOURCES "${EXAMPLE_MOCO_TRACK_FILES}")
 
-file(COPY "${CMAKE_SOURCE_DIR}/Moco/Geometry"
+file(GLOB GEOMETRY "${CMAKE_SOURCE_DIR}/opensim-models/Geometry/*"
+    "${CMAKE_SOURCE_DIR}/opensim-models/Models/RajagopalModel/Geometry/*")
+
+file(COPY ${GEOMETRY} 
         DESTINATION
-        "${CMAKE_BINARY_DIR}/Moco/Examples/C++/exampleMocoTrack")
+        "${CMAKE_BINARY_DIR}/Moco/Examples/C++/exampleMocoTrack/Geometry")
+install(FILES ${GEOMETRY}
+        DESTINATION "${MOCO_INSTALL_CPPEXDIR}/exampleMocoTrack/Geometry")
 
 file(COPY ${EXAMPLE_MOCO_TRACK_FILES}
         DESTINATION "${CMAKE_BINARY_DIR}/Moco/Sandbox/sandboxMocoTrack")
@@ -19,14 +24,14 @@ file(COPY ${EXAMPLE_MOCO_TRACK_FILES}
         DESTINATION
         "${CMAKE_BINARY_DIR}/Moco/Bindings/Java/Matlab/Examples/exampleMocoTrack")
 install(FILES ${EXAMPLE_MOCO_TRACK_FILES}
-        DESTINATION "${MOCO_INSTALL_APIEXDIR}/Matlab/exampleMocoTrack")
-install(DIRECTORY "${CMAKE_SOURCE_DIR}/Moco/Geometry"
-        DESTINATION "${MOCO_INSTALL_APIEXDIR}/Matlab/exampleMocoTrack")
+        DESTINATION "${MOCO_INSTALL_MATLABEXDIR}/exampleMocoTrack")
+install(FILES ${GEOMETRY}
+        DESTINATION "${MOCO_INSTALL_MATLABEXDIR}/exampleMocoTrack/Geometry")
 
 file(COPY ${EXAMPLE_MOCO_TRACK_FILES}
         DESTINATION
         "${CMAKE_BINARY_DIR}/Moco/Bindings/Python/examples/exampleMocoTrack")
 install(FILES ${EXAMPLE_MOCO_TRACK_FILES}
-        DESTINATION "${MOCO_INSTALL_APIEXDIR}/Python/exampleMocoTrack")
-install(DIRECTORY "${CMAKE_SOURCE_DIR}/Moco/Geometry"
-        DESTINATION "${MOCO_INSTALL_APIEXDIR}/Python/exampleMocoTrack")
+        DESTINATION "${MOCO_INSTALL_PYTHONEXDIR}/exampleMocoTrack")
+install(FILES ${GEOMETRY}
+        DESTINATION "${MOCO_INSTALL_PYTHONEXDIR}/exampleMocoTrack/Geometry")
