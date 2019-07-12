@@ -81,12 +81,15 @@ if(UNIX)
 else()
     target_link_libraries(tropter PRIVATE ipopt)
 endif()
-# if(LINUX)
-#     # On Ubuntu, this is useful for setting the HAVE_CSTDDEF definition.
-#     # We only include Ipopt in cpp files, so our clients don't need
-#     # this flag.
-#     target_compile_options(tropter PRIVATE ${IPOPT_CFLAGS_OTHER})
-# endif()
+if(LINUX)
+    # On Ubuntu, this is useful for setting the HAVE_CSTDDEF definition.
+    # We only include Ipopt in cpp files, so our clients don't need
+    # this flag.
+    target_compile_options(tropter PRIVATE ${IPOPT_CFLAGS_OTHER})
+    # We must use this flag on Linux for tropter to link to gfortran.
+    # In CMake 3.13, we could use target_link_options().
+    set_target_properties(tropter PROPERTIES LINK_FLAGS ${IPOPT_LDFLAGS})
+endif()
 # TODO IPOPT_DEFINITIONS, IPOPT_LINK_FLAGS
 
 if(TROPTER_WITH_SNOPT)
