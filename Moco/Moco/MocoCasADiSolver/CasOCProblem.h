@@ -83,7 +83,7 @@ struct ParameterInfo {
 struct CostInfo {
     std::string name;
     std::unique_ptr<Integrand> integrand_function;
-    std::unique_ptr<Cost> endpoint_function;
+    std::unique_ptr<Cost> cost_function;
 };
 
 /// The number outputs in the function must match the size of
@@ -111,7 +111,7 @@ public:
         const casadi::DM& derivatives;
         const casadi::DM& parameters;
     };
-    struct EndpointInput {
+    struct CostInput {
         const double& initial_time;
         const casadi::DM& initial_states;
         const casadi::DM& initial_controls;
@@ -267,7 +267,7 @@ public:
 
     virtual void calcIntegrand(int /*integralIndex*/,
             const ContinuousInput& /*input*/, double& integrand) const {}
-    virtual void calcCost(int /*costIndex*/, const EndpointInput& /*input*/,
+    virtual void calcCost(int /*costIndex*/, const CostInput& /*input*/,
             double& /*cost*/) const {}
     virtual void calcPathConstraint(int /*constraintIndex*/,
             const ContinuousInput& /*input*/,
@@ -328,7 +328,7 @@ public:
         {
             int index = 0;
             for (const auto& costInfo : mutThis->m_costInfos) {
-                costInfo.endpoint_function->constructFunction(this,
+                costInfo.cost_function->constructFunction(this,
                         "cost_endpoint_" + costInfo.name, index,
                         finiteDiffScheme, pointsForSparsityDetection);
                 if (costInfo.integrand_function) {

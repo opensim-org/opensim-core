@@ -115,7 +115,6 @@ protected:
     /// The Lagrange multipliers for kinematic constraints are not available.
     virtual void calcIntegrandImpl(
             const SimTK::State& state, double& integrand) const;
-    /// The endpoint cost cannot depend on actuator controls.
     /// The Lagrange multipliers for kinematic constraints are not available.
     virtual void calcCostImpl(
             const CostInput& input, SimTK::Real& cost) const = 0;

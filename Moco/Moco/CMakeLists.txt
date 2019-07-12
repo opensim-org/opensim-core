@@ -19,8 +19,8 @@ set(MOCO_SOURCES
         MocoProblemRep.cpp
         MocoCost/MocoCost.h
         MocoCost/MocoCost.cpp
-        MocoCost/MocoMarkerEndpointCost.h
-        MocoCost/MocoMarkerEndpointCost.cpp
+        MocoCost/MocoMarkerFinalCost.h
+        MocoCost/MocoMarkerFinalCost.cpp
         MocoCost/MocoMarkerTrackingCost.h
         MocoCost/MocoMarkerTrackingCost.cpp
         MocoWeightSet.h

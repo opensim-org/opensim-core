@@ -180,7 +180,7 @@ casadi::Sparsity Cost::get_sparsity_in(casadi_int i) {
     }
 }
 VectorDM Cost::eval(const VectorDM& args) const {
-    Problem::EndpointInput input{args.at(0).scalar(), args.at(1), args.at(2),
+    Problem::CostInput input{args.at(0).scalar(), args.at(1), args.at(2),
             args.at(3), args.at(4), args.at(5).scalar(), args.at(6), args.at(7),
             args.at(8), args.at(9), args.at(10), args.at(11).scalar()};
     VectorDM out{casadi::DM(casadi::Sparsity::scalar())};

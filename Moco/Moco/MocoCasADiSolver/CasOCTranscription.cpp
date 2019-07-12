@@ -446,7 +446,7 @@ void Transcription::setObjective() {
 
         MXVector costOut;
 
-        info.endpoint_function->call(
+        info.cost_function->call(
                 {m_vars[initial_time], m_vars[states](Slice(), 0),
                         m_vars[controls](Slice(), 0),
                         m_vars[multipliers](Slice(), 0),

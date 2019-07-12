@@ -86,8 +86,8 @@ struct Input {
     /// input, see the note above for the `states` variable.
     const Eigen::Ref<const VectorX<T>>& parameters;
 };
-/// This is the input for Problem::calc_cost(). Refer to Input for
-/// details. Diffuse variables do not exist at phase endpoints.
+/// This is the input for Problem::calc_cost(). Refer to the documentation for
+/// Input above for details. Diffuse variables do not exist at phase endpoints.
 template<typename T>
 struct CostInput {
     const int initial_time_index;

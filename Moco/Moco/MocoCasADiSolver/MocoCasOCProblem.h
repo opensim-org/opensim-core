@@ -329,7 +329,7 @@ private:
 
         m_jar->leave(std::move(mocoProblemRep));
     }
-    void calcCost(int index, const EndpointInput& input,
+    void calcCost(int index, const CostInput& input,
             double& cost) const override {
         auto mocoProblemRep = m_jar->take();
 

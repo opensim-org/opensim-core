@@ -21,13 +21,13 @@
 #include "Components/AccelerationMotion.h"
 #include "Components/ActivationCoordinateActuator.h"
 #include "Components/DeGrooteFregly2016Muscle.h"
-#include "Components/SmoothSphereHalfSpaceForce.h"
 #include "Components/DiscreteForces.h"
 #include "Components/PositionMotion.h"
+#include "Components/SmoothSphereHalfSpaceForce.h"
 #include "Components/StationPlaneContactForce.h"
 #ifdef MOCO_WITH_TROPTER
-#include "InverseMuscleSolver/GlobalStaticOptimization.h"
-#include "InverseMuscleSolver/INDYGO.h"
+#    include "InverseMuscleSolver/GlobalStaticOptimization.h"
+#    include "InverseMuscleSolver/INDYGO.h"
 #endif
 #include "MocoBounds.h"
 #include "MocoCasADiSolver/MocoCasADiSolver.h"
@@ -36,22 +36,19 @@
 #include "MocoCost/MocoControlTrackingCost.h"
 #include "MocoCost/MocoCost.h"
 #include "MocoCost/MocoJointReactionCost.h"
-#include "MocoCost/MocoMarkerEndpointCost.h"
+#include "MocoCost/MocoMarkerFinalCost.h"
 #include "MocoCost/MocoMarkerTrackingCost.h"
 #include "MocoCost/MocoOrientationTrackingCost.h"
 #include "MocoCost/MocoStateTrackingCost.h"
 #include "MocoCost/MocoTranslationTrackingCost.h"
 #include "MocoInverse.h"
-#include "MocoTrack.h"
 #include "MocoParameter.h"
 #include "MocoProblem.h"
-#include "MocoSolver.h"
 #include "MocoStudy.h"
+#include "MocoTrack.h"
 #include "MocoTropterSolver.h"
 #include "MocoWeightSet.h"
 #include "ModelOperators.h"
-#include "osimMoco.h"
-
 #include <exception>
 #include <iostream>
 
@@ -68,7 +65,7 @@ OSIMMOCO_API void RegisterTypes_osimMoco() {
         Object::registerType(MocoWeightSet());
         Object::registerType(MocoStateTrackingCost());
         Object::registerType(MocoMarkerTrackingCost());
-        Object::registerType(MocoMarkerEndpointCost());
+        Object::registerType(MocoMarkerFinalCost());
         Object::registerType(MocoControlCost());
         Object::registerType(MocoControlTrackingCost());
         Object::registerType(MocoJointReactionCost());
