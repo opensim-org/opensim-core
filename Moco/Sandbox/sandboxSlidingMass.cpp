@@ -106,7 +106,7 @@ public:
     // TODO allow alternate interface that does not require creating a SimTK
     // state (if just minimizing the control signal).
     // TODO create separate integral and endpoint cost types?
-    double calcIntegralCost(const SimTK::State& state) const {
+    double calcIntegrandCost(const SimTK::State& state) const {
         double integrand = 0;
         calcIntegralCostImpl(state, integrand);
         return get_weight() * integrand;
@@ -173,14 +173,14 @@ protected:
 // components, etc. Maybe these should have a method where they get to add
 // arbitrary components to the model.
 // TODO should also have an initialization routine to cache quantities.
-class MocoMarkerEndpointCost : public MocoCost {
-OpenSim_DECLARE_CONCRETE_OBJECT(MocoMarkerEndpointCost, MocoCost);
+class MocoMarkerFinalCost : public MocoCost {
+OpenSim_DECLARE_CONCRETE_OBJECT(MocoMarkerFinalCost, MocoCost);
 public:
     OpenSim_DECLARE_PROPERTY(frame_name, std::string, "TODO");
     OpenSim_DECLARE_PROPERTY(point_on_frame, SimTK::Vec3, "TODO");
     OpenSim_DECLARE_PROPERTY(point_to_track, SimTK::Vec3,
             "TODO Expressed in ground.");
-    MocoMarkerEndpointCost() {
+    MocoMarkerFinalCost() {
         constructProperties();
     }
 protected:
@@ -817,7 +817,7 @@ int main() {
 
         mp.print("DEBUG_MocoProblemDoublePendulumSwingUp.xml");
 
-        MocoMarkerEndpointCost endpointCost;
+        MocoMarkerFinalCost endpointCost;
         endpointCost.set_frame_name("b1");
         endpointCost.set_weight(1000.0);
         endpointCost.set_point_on_frame(SimTK::Vec3(0));

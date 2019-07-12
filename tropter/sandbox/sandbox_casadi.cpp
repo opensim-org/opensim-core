@@ -82,7 +82,7 @@ public:
         }
         Eigen::VectorXd parameters;
         double cost;
-        p.calc_endpoint_cost(final_time, final_states, parameters, cost);
+        p.calc_cost(0, final_time, final_states);
         DM f = cost;
         return {f};
     }
@@ -117,7 +117,7 @@ public:
         double integrand;
         tropter::Input<double> in {
             0, time, states, controls, Eigen::VectorXd(), Eigen::VectorXd()};
-        p.calc_integral_cost(in, integrand);
+        p.calc_cost_integrand(0, in, integrand);
         DM f = integrand;
         return {f};
     }

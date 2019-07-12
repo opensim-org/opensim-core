@@ -74,6 +74,7 @@ public:
         this->add_state("position", {0, 0.3}, 0.15, 0.10);
         this->add_state("speed", {-10, 10}, 0, 0);
         this->add_control("activation", {0, 1});
+        this->add_cost("final_time", 0);
         // TODO move this to a constructor parameter.
         m_muscle = DeGrooteFregly2016MuscleStandalone<T>(
                 max_isometric_force, optimal_fiber_length, tendon_slack_length,
@@ -96,9 +97,9 @@ public:
                                                               position, speed);
         out.dynamics[1] = g - tendonForce / mass;
     }
-    void calc_endpoint_cost(const tropter::Input<T>& in,
+    void calc_cost(int cost_index, const tropter::CostInput<adouble>& in,
             T& cost) const override {
-        cost = in.time;
+        cost = in.final_time;
     }
 private:
     DeGrooteFregly2016MuscleStandalone<T> m_muscle;
@@ -224,6 +225,7 @@ public:
         this->add_state("norm_fiber_length", {0.2, 1.8});
         this->add_control("excitation", {0, 1});
         this->add_control("norm_fiber_velocity", {-1, 1}, 0);
+        this->add_cost("final_time", 0);
         this->add_path_constraint("fiber_equilibrium", 0);
         m_muscle = DeGrooteFregly2016MuscleStandalone<T>(
                 max_isometric_force, optimal_fiber_length, tendon_slack_length,
@@ -265,9 +267,9 @@ public:
         // Fiber dynamics.
         out.dynamics[3] = max_contraction_velocity * normFibVel;
     }
-    void calc_endpoint_cost(const tropter::Input<T>& in,
+    void calc_cost(int cost_index, const tropter::CostInput<adouble>& in,
             T& cost) const override {
-        cost = in.time;
+        cost = in.final_time;
     }
 private:
     DeGrooteFregly2016MuscleStandalone<T> m_muscle;
@@ -679,12 +681,12 @@ int main() {
 //
 //        constraints[0] = normFibForceAlongTen - normTenForce;
 //    }
-//    void calc_endpoint_cost(const T& final_time,
+//    void calc_cost(const T& final_time,
 //                       const tropter::VectorX<T>& /*final_states*/,
 //                       T& cost) const override {
 //        cost = final_time;
 //    }
-//    //void calc_integral_cost(const tropter::Input<T>& in,
+//    //void calc_cost_integrand(const tropter::Input<T>& in,
 //    //                   T& integrand) const override {
 //    //
 //    //    const auto& controls = in.controls;
