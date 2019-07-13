@@ -82,6 +82,8 @@ addons:
       - valgrind
       # To build doxygen documentation.
       # TOO OLD; see below. - doxygen
+      - "python3"
+      - "python3-pip"
   # To avoid being prompted when ssh'ing into sourceforge.
   ssh_known_hosts:
       # For uploading doxygen.
