@@ -287,7 +287,7 @@ int main()
 
         // To print (serialize) the latest connections of the model, it is
         // necessary to finalizeConnections() first.
-        osimModel.finalizeConnecttions();
+        osimModel.finalizeConnections();
         // Save the model to a file
         osimModel.print("tugOfWar_model.osim");
 
