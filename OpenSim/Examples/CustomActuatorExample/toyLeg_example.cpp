@@ -216,8 +216,13 @@ int main()
     
         //Examine the model
         osimModel.printDetailedInfo(si, std::cout);
+
+	// To print (serialize) the latest connections of the model, it is
+	// necessary to finalizeConnections() first.`
+	osimModel.finalizeConnections();
         // Save the model
         osimModel.print("toyLeg.osim");
+
         // Print out the initial position and velocity states
         si.getQ().dump("Initial q's");
         si.getU().dump("Initial u's");
