@@ -47,6 +47,7 @@ void MocoTrack::constructProperties() {
     constructProperty_apply_tracked_states_to_guess(false);
     constructProperty_minimize_control_effort(true);
     constructProperty_control_effort_weight(0.001);
+	constructProperty_update_col_labels_with_full_path(false);
 }
 
 MocoStudy MocoTrack::initialize() {
@@ -148,6 +149,10 @@ TimeSeriesTable MocoTrack::configureStateTracking(MocoProblem& problem,
     TimeSeriesTable states = get_states_reference().process("", &model);
     auto stateSplines = GCVSplineSet(states, states.getColumnLabels());
 
+    // update state table column headers to full path if required
+    if (get_update_col_labels_with_full_path())
+        updateTableCoordLabelsWithFullPath(model, states);
+	
     // Loop through all coordinates and compare labels in the reference data
     // to coordinate variable names. 
     auto time = states.getIndependentColumn();
