@@ -194,9 +194,9 @@ int main()
         muscle2->setDefaultFiberLength(optimalFiberLength);
         muscle1->setDefaultFiberLength(optimalFiberLength);
 
-	// To print (serialize) the latest connections of the model, it is 
-	// necessary to finalizeConnections() first.
-	osimModel.finalizeConnections();
+        // To print (serialize) the latest connections of the model, it is 
+        // necessary to finalizeConnections() first.
+        osimModel.finalizeConnections();
         // Save the model to a file
         osimModel.print("tugOfWar_model.osim");
 
