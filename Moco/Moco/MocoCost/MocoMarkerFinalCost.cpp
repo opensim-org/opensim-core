@@ -27,10 +27,10 @@ void MocoMarkerFinalCost::initializeOnModelImpl(const Model& model) const {
 }
 
 void MocoMarkerFinalCost::calcCostImpl(
-        const CostInput& input, SimTK::Real& cost) const {
+        const CostInput& input, SimTK::Vector& cost) const {
     getModel().realizePosition(input.final_state);
     const auto& actualLocation = m_point->getLocationInGround(input.final_state);
-    cost = (actualLocation - get_reference_location()).normSqr();
+    cost[0] = (actualLocation - get_reference_location()).normSqr();
 }
 
 void MocoMarkerFinalCost::constructProperties() {

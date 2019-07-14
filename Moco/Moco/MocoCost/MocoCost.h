@@ -19,6 +19,7 @@
  * -------------------------------------------------------------------------- */
 
 #include "../osimMocoDLL.h"
+#include "../MocoBounds.h"
 
 #include <SimTKcommon/internal/State.h>
 
@@ -28,6 +29,10 @@ namespace OpenSim {
 
 class Model;
 
+// TODO Rename MocoCost to MocoThing, MocoQuantity, MocoTerm, or to
+// MocoEndpoint.
+// Maybe whether this is used as a cost or endpoint depends on whether
+// MocoEndpoint is added as addCost() or addEndpointConstraint().
 // TODO give option to specify gradient and Hessian analytically.
 
 /// A term in the cost functional, to be minimized. Costs depend on the phase's
@@ -44,17 +49,59 @@ class OSIMMOCO_API MocoCost : public Object {
     OpenSim_DECLARE_ABSTRACT_OBJECT(MocoCost, Object);
 
 public:
-    OpenSim_DECLARE_PROPERTY(weight, double,
-            "The cost value is multiplied by this weight (default: 1).");
 
     OpenSim_DECLARE_PROPERTY(
             enabled, bool, "This bool indicates whether this cost is enabled.");
+
+    OpenSim_DECLARE_PROPERTY(weight, double,
+            "The cost value is multiplied by this weight (default: 1).");
+
+    OpenSim_DECLARE_OPTIONAL_PROPERTY(endpoint_constraint, bool, "TODO");
+
+    // TODO make private.
+    OpenSim_DECLARE_LIST_PROPERTY(endpoint_constraint_bounds, MocoBounds, "TODO");
 
     MocoCost();
 
     MocoCost(std::string name);
 
     MocoCost(std::string name, double weight);
+
+    // TODO: an Endpoint should have a default as to whether it's applied as a
+    // cost or a constraint.
+    bool getSupportsEndpointConstraint() const {
+        return getSupportsEndpointConstraintImpl();
+    }
+
+    bool getDefaultEndpointConstraint() const {
+        return getDefaultEndpointConstraintImpl();
+    }
+
+    int getNumOutputs() const {
+        // TODO: Should just be set in initialize().
+        return getNumOutputsImpl();
+    }
+
+    // TODO rename getApplyAsConstraint(). or getApplyAsEndpointConstraint().
+    bool getEndpointConstraint() const {
+        bool endpoint_constraint;
+        if (getProperty_endpoint_constraint().empty()) {
+            endpoint_constraint = getDefaultEndpointConstraint();
+        } else {
+            endpoint_constraint = get_endpoint_constraint();
+        }
+        OPENSIM_THROW_IF(endpoint_constraint && !getSupportsEndpointConstraint(),
+                Exception, "Endpoint constraint not supported TODO.");
+        return endpoint_constraint;
+    }
+    std::vector<MocoBounds> getEndpointConstraintBounds() const {
+        // TODO make general! look at MocoConstraintInfo!!! Might be able to use
+        // it exactly.
+        std::vector<MocoBounds> bounds;
+        bounds.push_back({0});
+        bounds.push_back({0});
+        return bounds;
+    }
 
     /// Get the number of integrals required by this cost.
     /// This returns either 0 (for a strictly-endpoint cost) or 1.
@@ -78,11 +125,15 @@ public:
         /// This is computed by integrating calcIntegrand().
         const double& integral;
     };
+    // TODO: rename to calcValue().
     /// The returned cost includes the weight.
     // We use SimTK::Real instead of double for when we support adoubles.
-    SimTK::Real calcCost(const CostInput& input) const {
-        double cost = 0;
-        if (!get_enabled()) { return cost; }
+    SimTK::Vector calcCost(const CostInput& input) const {
+        SimTK::Vector cost(getNumOutputs());
+        cost = 0;
+        if (!get_enabled()) {
+            return cost;
+        }
         calcCostImpl(input, cost);
         return get_weight() * cost;
     }
@@ -104,6 +155,9 @@ protected:
     /// Use this opportunity to check for errors in user input.
     // TODO: Rename to extendInitializeOnModel().
     virtual void initializeOnModelImpl(const Model&) const {}
+    virtual int getNumOutputsImpl() const { return 1; }
+    virtual bool getDefaultEndpointConstraintImpl() const { return false; }
+    virtual bool getSupportsEndpointConstraintImpl() const { return false; }
     /// Return the number if integral terms required by this cost.
     /// This must be either 0 or 1.
     virtual int getNumIntegralsImpl() const = 0;
@@ -117,7 +171,7 @@ protected:
             const SimTK::State& state, double& integrand) const;
     /// The Lagrange multipliers for kinematic constraints are not available.
     virtual void calcCostImpl(
-            const CostInput& input, SimTK::Real& cost) const = 0;
+            const CostInput& input, SimTK::Vector& cost) const = 0;
     /// For use within virtual function implementations.
     const Model& getModel() const {
         OPENSIM_THROW_IF(!m_model, Exception,
@@ -148,8 +202,8 @@ public:
 protected:
     int getNumIntegralsImpl() const override { return 0; }
     void calcCostImpl(
-            const CostInput& input, SimTK::Real& cost) const override {
-        cost = input.final_state.getTime();
+            const CostInput& input, SimTK::Vector& cost) const override {
+        cost[0] = input.final_state.getTime();
     }
 };
 

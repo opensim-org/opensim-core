@@ -41,6 +41,9 @@ void MocoCost::printDescription(std::ostream& stream) const {
 }
 
 void MocoCost::constructProperties() {
-    constructProperty_weight(1);
     constructProperty_enabled(true);
+    constructProperty_weight(1);
+    constructProperty_endpoint_constraint();
+    // TODO
+    constructProperty_endpoint_constraint_bounds();
 }

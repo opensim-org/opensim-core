@@ -101,6 +101,7 @@ protected:
         T defects;
         T residuals;
         T kinematic;
+        std::vector<T> endpoint;
         std::vector<T> path;
         T interp_controls;
     };
@@ -227,6 +228,7 @@ private:
 
         // Trapezidal sparsity pattern for mesh intervals 0, 1 and 2:
         //                   0    1    2    3
+        //    endpoint       x    x    x    x
         //    path_0         x
         //    kinematic_0    x
         //    residual_0     x
@@ -244,6 +246,7 @@ private:
 
         // Hermite-Simpson sparsity pattern for mesh intervals 0, 1 and 2:
         //                   0    0.5    1    1.5    2    2.5    3
+        //    endpoint       x     x     x     x     x     x     x
         //    path_0         x
         //    kinematic_0    x
         //    residual_0     x
@@ -266,6 +269,10 @@ private:
         //    path_3                                             x
         //    residual_3                                         x
         //                   0    0.5    1    1.5    2    2.5    3
+
+        for (const auto& endpoint : constraints.endpoint) {
+            copyColumn(endpoint, 0);
+        }
 
         int igrid = 0;
         // Index for pointsForInterpControls.
@@ -311,6 +318,11 @@ private:
         out.residuals = init(m_numResiduals, m_numGridPoints);
         out.kinematic = init(m_problem.getNumKinematicConstraintEquations(),
                 m_numMeshPoints);
+        out.endpoint.resize(m_problem.getEndpointConstraintInfos().size());
+        for (int iec = 0; iec < (int)m_constraints.endpoint.size(); ++iec) {
+            const auto& info = m_problem.getEndpointConstraintInfos()[iec];
+            out.endpoint[iec] = init(info.num_outputs, 1);
+        }
         out.path.resize(m_problem.getPathConstraintInfos().size());
         for (int ipc = 0; ipc < (int)m_constraints.path.size(); ++ipc) {
             const auto& info = m_problem.getPathConstraintInfos()[ipc];
@@ -328,6 +340,10 @@ private:
                 iflat += matrix.rows();
             }
         };
+
+        for (auto& endpoint : out.endpoint) {
+            copyColumn(endpoint, 0);
+        }
 
         int igrid = 0;
         // Index for pointsForInterpControls.

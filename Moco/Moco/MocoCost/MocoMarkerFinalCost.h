@@ -54,7 +54,7 @@ protected:
     void initializeOnModelImpl(const Model&) const override;
     int getNumIntegralsImpl() const override { return 0; }
     void calcCostImpl(
-            const CostInput& input, SimTK::Real& cost) const override;
+            const CostInput& input, SimTK::Vector& cost) const override;
 private:
 
     OpenSim_DECLARE_PROPERTY(point_name, std::string,

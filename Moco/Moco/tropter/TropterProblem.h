@@ -398,7 +398,7 @@ protected:
 
         // Compute the cost for this cost term.
         const auto& cost = m_mocoProbRep.getCostByIndex(cost_index);
-        cost_value = cost.calcCost({initialState, finalState, in.integral});
+        cost_value = cost.calcCost({initialState, finalState, in.integral}).sum();
     }
 
     const MocoTropterSolver& m_mocoTropterSolver;

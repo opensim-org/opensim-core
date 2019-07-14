@@ -153,14 +153,16 @@ protected:
     int m_index = -1;
 };
 
-class Cost : public Function {
+class Endpoint : public Function {
 public:
     void constructFunction(const Problem* casProblem, const std::string& name,
             int index,
+            int numEquations,
             const std::string& finiteDiffScheme,
             std::shared_ptr<const std::vector<VariablesDM>>
             pointsForSparsityDetection) {
         m_index = index;
+        m_numEquations = numEquations;
         Function::constructFunction(
                 casProblem, name, finiteDiffScheme, pointsForSparsityDetection);
     }
@@ -186,13 +188,13 @@ public:
     casadi_int get_n_out() override final { return 1; }
     std::string get_name_out(casadi_int i) override final {
         switch (i) {
-        case 0: return "cost";
+        case 0: return "value";
         default: OPENSIM_THROW(OpenSim::Exception, "Internal error.");
         }
     }
     casadi::Sparsity get_sparsity_out(casadi_int i) override final {
         if (i == 0)
-            return casadi::Sparsity::scalar();
+            return casadi::Sparsity::dense(m_numEquations, 1);
         else
             return casadi::Sparsity(0, 0);
     }
@@ -222,6 +224,8 @@ public:
     }
 private:
     int m_index = -1;
+    // TODO rename to numOutputs? not quite right. numValues?
+    int m_numEquations = -1;
 };
 
 /// This function should compute forward dynamics (explicit multibody dynamics),

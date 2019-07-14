@@ -1105,10 +1105,8 @@ TEMPLATE_TEST_CASE("Guess", "", MocoTropterSolver, MocoCasADiSolver) {
         // Errors.
 
         // Nonexistent state/control.
-        CHECK_THROWS_AS(
-                guess.setState("none", SimTK::Vector(2)), Exception);
-        CHECK_THROWS_AS(
-                guess.setControl("none", SimTK::Vector(2)), Exception);
+        CHECK_THROWS_AS(guess.setState("none", SimTK::Vector(2)), Exception);
+        CHECK_THROWS_AS(guess.setControl("none", SimTK::Vector(2)), Exception);
         SimTK_TEST_MUST_THROW_EXC(guess.getState("none"), Exception);
         SimTK_TEST_MUST_THROW_EXC(guess.getControl("none"), Exception);
 
@@ -1155,8 +1153,7 @@ TEMPLATE_TEST_CASE("Guess", "", MocoTropterSolver, MocoCasADiSolver) {
             CHECK(guess.getTime().size() == expectedNumTimes);
             SimTK_TEST_EQ(guess.getTime()[expectedNumTimes - 1], 5);
             CHECK(guess.getStatesTrajectory().nrow() == expectedNumTimes);
-            CHECK(
-                    guess.getControlsTrajectory().nrow() == expectedNumTimes);
+            CHECK(guess.getControlsTrajectory().nrow() == expectedNumTimes);
             SimTK_TEST_EQ(guess.getControl("/actuator"),
                     createVectorLinspace(expectedNumTimes, 2.8, 7.3));
         }
@@ -1173,8 +1170,7 @@ TEMPLATE_TEST_CASE("Guess", "", MocoTropterSolver, MocoCasADiSolver) {
             CHECK(guess.getTime().size() == expectedNumTimes);
             SimTK_TEST_EQ(guess.getTime()[expectedNumTimes - 1], 5);
             CHECK(guess.getStatesTrajectory().nrow() == expectedNumTimes);
-            CHECK(
-                    guess.getControlsTrajectory().nrow() == expectedNumTimes);
+            CHECK(guess.getControlsTrajectory().nrow() == expectedNumTimes);
             SimTK_TEST_EQ(guess.getControl("/actuator"),
                     createVectorLinspace(expectedNumTimes, 2.8, 7.3));
         }
@@ -1182,12 +1178,11 @@ TEMPLATE_TEST_CASE("Guess", "", MocoTropterSolver, MocoCasADiSolver) {
         // resample
         {
             MocoTrajectory guess = guess0;
-            CHECK_THROWS_AS(
-                    guess.resample(createVector(
-                            {guess.getInitialTime() - 1e-15, 0, 1})),
+            CHECK_THROWS_AS(guess.resample(createVector(
+                                    {guess.getInitialTime() - 1e-15, 0, 1})),
                     Exception);
-            CHECK_THROWS_AS(guess.resample(createVector({0.5, 0.6,
-                                              guess.getFinalTime() + 1e15})),
+            CHECK_THROWS_AS(guess.resample(createVector(
+                                    {0.5, 0.6, guess.getFinalTime() + 1e15})),
                     Exception);
             CHECK_THROWS_AS(
                     guess.resample(createVector({0.5, 0.6, 0.59999999, 0.8})),
@@ -1352,9 +1347,11 @@ TEST_CASE("MocoTrajectory") {
         SimTK_TEST(!iterate.isSealedD());
         iterate.setSealedD(true);
         SimTK_TEST(iterate.isSealedD());
-        SimTK_TEST_MUST_THROW_EXC(iterate.getNumTimes(), MocoTrajectoryIsSealed);
+        SimTK_TEST_MUST_THROW_EXC(
+                iterate.getNumTimes(), MocoTrajectoryIsSealed);
         SimTK_TEST_MUST_THROW_EXC(iterate.getTime(), MocoTrajectoryIsSealed);
-        SimTK_TEST_MUST_THROW_EXC(iterate.getStateNames(), MocoTrajectoryIsSealed);
+        SimTK_TEST_MUST_THROW_EXC(
+                iterate.getStateNames(), MocoTrajectoryIsSealed);
         SimTK_TEST_MUST_THROW_EXC(
                 iterate.getControlNames(), MocoTrajectoryIsSealed);
         SimTK_TEST_MUST_THROW_EXC(
@@ -1364,7 +1361,8 @@ TEST_CASE("MocoTrajectory") {
         // should preserve the value of m_sealed.
         std::unique_ptr<MocoTrajectoryDerived> ptr(iterate.clone());
         SimTK_TEST(ptr->isSealedD());
-        SimTK_TEST_MUST_THROW_EXC(iterate.getNumTimes(), MocoTrajectoryIsSealed);
+        SimTK_TEST_MUST_THROW_EXC(
+                iterate.getNumTimes(), MocoTrajectoryIsSealed);
     }
 
     // getInitialTime(), getFinalTime()
@@ -1533,9 +1531,9 @@ TEST_CASE("MocoTrajectory randomize") {
     time[0] = 0;
     time[1] = 0.1;
     time[2] = 0.25;
-    MocoTrajectory orig(time, {"a", "b"}, {"g", "h", "i", "j"}, {"m"}, {"o", "p"},
-            SimTK::Test::randMatrix(3, 2), SimTK::Test::randMatrix(3, 4),
-            SimTK::Test::randMatrix(3, 1),
+    MocoTrajectory orig(time, {"a", "b"}, {"g", "h", "i", "j"}, {"m"},
+            {"o", "p"}, SimTK::Test::randMatrix(3, 2),
+            SimTK::Test::randMatrix(3, 4), SimTK::Test::randMatrix(3, 1),
             SimTK::Test::randVector(2).transpose());
     SECTION("randomizeAdd") {
         MocoTrajectory randomized = orig;
@@ -1797,6 +1795,42 @@ TEST_CASE("MocoPhase::bound_activation_from_excitation") {
                 Catch::Contains(
                         "No info available for state '/muscle/activation'."));
     }
+}
+
+class MocoPeriodic : public MocoCost {
+    OpenSim_DECLARE_CONCRETE_OBJECT(MocoPeriodic, MocoCost);
+public:
+    MocoPeriodic() = default;
+    // TODO should be able to vary, with initializeImpl().
+    bool getSupportsEndpointConstraintImpl() const override { return true; }
+    bool getDefaultEndpointConstraintImpl() const override { return true; }
+    int getNumOutputsImpl() const override { return 2; }
+    int getNumIntegralsImpl() const override { return 0; }
+    // TODO this would actually support multiple constraint equations...
+    void calcCostImpl(
+            const CostInput& in, SimTK::Vector& values) const override {
+        values[0] = in.initial_state.getQ()[0] - in.final_state.getQ()[0];
+        values[1] = in.final_state.getU()[0];
+    }
+};
+
+TEST_CASE("Endpoint constraints") {
+
+    MocoStudy study;
+    auto& problem = study.updProblem();
+    problem.setModelCopy(ModelFactory::createPendulum());
+
+    problem.setTimeBounds(0, 1);
+    problem.setStateInfo("/jointset/j0/q0/value", {-0.3, 0.3}, -0.3);
+    problem.setControlInfo("/tau0", 0);
+
+    problem.addCost<MocoPeriodic>();
+
+    study.initCasADiSolver();
+
+    MocoSolution solution = study.solve();
+    study.visualize(solution);
+
 }
 
 // testCopy();

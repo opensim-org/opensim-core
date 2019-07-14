@@ -206,7 +206,16 @@ MocoCasOCProblem::MocoCasOCProblem(const MocoCasADiSolver& mocoCasADiSolver,
     const auto costNames = problemRep.createCostNames();
     for (const auto& name : costNames) {
         const auto& cost = problemRep.getCost(name);
-        addCost(name, cost.getNumIntegrals());
+        if (cost.getEndpointConstraint()) {
+            std::vector<CasOC::Bounds> casBounds;
+            for (const auto& bounds : cost.getEndpointConstraintBounds()) {
+                casBounds.push_back(convertBounds(bounds));
+            }
+            addEndpointConstraint(name, cost.getNumIntegrals(),
+                    casBounds);
+        } else {
+            addCost(name, cost.getNumIntegrals(), cost.getNumOutputs());
+        }
     }
 
     const auto pathConstraintNames = problemRep.createPathConstraintNames();

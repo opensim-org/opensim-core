@@ -144,8 +144,8 @@ protected:
     void calcIntegrandImpl(
             const SimTK::State& state, double& integrand) const override;
     void calcCostImpl(
-            const CostInput& input, SimTK::Real& cost) const override {
-        cost = input.integral;
+            const CostInput& input, SimTK::Vector& cost) const override {
+        cost[0] = input.integral;
     }
 
 private:
