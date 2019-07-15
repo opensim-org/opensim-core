@@ -37,11 +37,11 @@ Ubuntu
 ------
 
 ```bash
-sudo apt install git cmake pkg-config liblapack-dev coinor-libipopt-dev
+sudo apt install git wget build-essential libtool autoconf cmake pkg-config gfortran liblapack-dev
 ```
 
-Install Eigen, ColPack, ADOL-C, and OpenSim using the CMake project in the
-`dependencies` directory (TODO improve instructions).
+Use the CMake project in the
+`dependencies` directory to install remaining dependencies.
 
 For some reason, the ADOL-C in the Ubuntu package repositories does not work well
 with Moco/tropter.
