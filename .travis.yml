@@ -113,8 +113,6 @@ before_install:
   # Avoid "Homebrew must be run under Ruby 2.3!"
   # https://github.com/PowerShell/PowerShell/issues/5062
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update; fi
-  # install python3 from brew
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install python; fi
   
   ## Ensure that there are no tabs in source code.
   # GREP returns 0 (true) if there are any matches, and
@@ -228,7 +226,7 @@ install:
   # Bindings.
   - OSIM_CMAKE_ARGS+=(-DBUILD_PYTHON_WRAPPING=$WRAP -DBUILD_JAVA_WRAPPING=$WRAP -DSWIG_EXECUTABLE=$HOME/swig/bin/swig)
   # On Mac, use system python instead of Homebrew python.
-  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then OSIM_CMAKE_ARGS+=(-DPYTHON_EXECUTABLE=/usr/bin/python3); fi
+  #- if [ "$TRAVIS_OS_NAME" = "osx" ]; then OSIM_CMAKE_ARGS+=(-DPYTHON_EXECUTABLE=/usr/bin/python3); fi
   
   # Doxygen.
   - OSIM_CMAKE_ARGS+=(-DOPENSIM_DOXYGEN_USE_MATHJAX=off -DOPENSIM_SIMBODY_DOXYGEN_LOCATION="https://simtk.org/api_docs/simbody/latest/")
