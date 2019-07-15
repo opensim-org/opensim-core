@@ -303,6 +303,9 @@ void testCoordinateTracking_CoordinateActuators() {
     // Add symmetry cost
     auto* symmetryCost = problem.addCost<MocoSymmetryCost>("symmetryCost");
     symmetryCost->set_weight(10);
+    // Add effort cots
+    auto* effortCost = problem.addCost<MocoControlCost>("effortCost");
+    effortCost->set_weight(10);
     // Adjust bounds
     problem.setStateInfo("/jointset/groundPelvis/pelvis_tilt/value",
             {-20*SimTK::Pi/180,-10*SimTK::Pi/180});
@@ -328,7 +331,7 @@ void testCoordinateTracking_CoordinateActuators() {
 }
 
 int main() {
-   testCoordinateTracking_MusclePolynomials();
-   testCoordinateTracking_MuscleGeometryPath();
+   //testCoordinateTracking_MusclePolynomials();
+   //testCoordinateTracking_MuscleGeometryPath();
    testCoordinateTracking_CoordinateActuators();
 }
