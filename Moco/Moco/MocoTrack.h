@@ -222,7 +222,7 @@ public:
 
     OpenSim_DECLARE_PROPERTY(update_col_labels_with_full_path, bool,
             "Set this if column labels in the states table need to be updated "
-            "with the full path to the component.");
+            "with the full path to the component. Default: false.");
 			
     MocoTrack() { constructProperties(); }
 
