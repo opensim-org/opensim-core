@@ -36,6 +36,8 @@ set(MOCO_SOURCES
         MocoCost/MocoOrientationTrackingCost.cpp
         MocoCost/MocoTranslationTrackingCost.h
         MocoCost/MocoTranslationTrackingCost.cpp
+		MocoCost/MocoUserControlCost.h
+		MocoCost/MocoUserControlCost.cpp		
         MocoSolver.h
         MocoSolver.cpp
         MocoDirectCollocationSolver.h

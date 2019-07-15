@@ -1,2 +1,2 @@
-MocoAddSandboxExecutable(NAME sandboxUserControlCost
+MocoAddSandboxExecutable(NAME sandboxMocoUserControlCost
         LIB_DEPENDS osimMoco)
