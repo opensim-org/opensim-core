@@ -217,9 +217,8 @@ int main()
         //Examine the model
         osimModel.printDetailedInfo(si, std::cout);
 
-        // To print (serialize) the latest connections of the model, it is
-        // necessary to finalizeConnections() first.`
-        osimModel.finalizeConnections();
+        // No need to call the finalizeConnections() as it is 
+	// already called by the initSystem()
         // Save the model
         osimModel.print("toyLeg.osim");
 
