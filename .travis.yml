@@ -82,6 +82,7 @@ addons:
       - valgrind
       # To build doxygen documentation.
       # TOO OLD; see below. - doxygen
+      # python3 as linux and osx are still on python2
       - python3
       - python3-pip
   # To avoid being prompted when ssh'ing into sourceforge.
@@ -112,6 +113,8 @@ before_install:
   # Avoid "Homebrew must be run under Ruby 2.3!"
   # https://github.com/PowerShell/PowerShell/issues/5062
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update; fi
+  # install python3 from brew
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install python; fi
   
   ## Ensure that there are no tabs in source code.
   # GREP returns 0 (true) if there are any matches, and
