@@ -155,7 +155,13 @@ C3DFileAdapter::extendRead(const std::string& fileName) const {
 
         tables.emplace(_markers, marker_table);
     }
-
+    else { // insert empty table
+        std::vector<double> emptyTimes;
+        std::vector<std::string> emptyLabels;
+        SimTK::Matrix_<SimTK::Vec3> noData;
+        auto emptyMarkersTable = std::make_shared<TimeSeriesTableVec3>(emptyTimes, noData, emptyLabels);
+        tables.emplace(_markers, emptyMarkersTable);
+    }
     // This is probably the right way to get the raw forces data from force 
     // platforms. Extract the collection of force platforms.
     auto force_platforms_extractor = btk::ForcePlatformsExtractor::New();
@@ -295,6 +301,13 @@ C3DFileAdapter::extendRead(const std::string& fileName) const {
             std::shared_ptr<TimeSeriesTableVec3>(&force_table));
 
         force_table.updTableMetaData().setValueForKey("events", event_table);
+    }
+    else { // insert empty table
+        std::vector<double> emptyTimes;
+        std::vector<std::string> emptyLabels;
+        SimTK::Matrix_<SimTK::Vec3> noData;
+        auto emptyforcesTable = std::make_shared<TimeSeriesTableVec3>(emptyTimes, noData, emptyLabels);
+        tables.emplace(_forces, emptyforcesTable);
     }
 
     return tables;

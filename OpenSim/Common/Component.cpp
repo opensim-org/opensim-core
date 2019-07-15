@@ -163,9 +163,11 @@ void Component::addComponent(Component* subcomponent)
 void Component::prependComponentPathToConnecteePath(
         Component& subcomponent) {
     const std::string compPath = subcomponent.getAbsolutePathString();
+    const Component& root = subcomponent.getRoot();
     for (auto& comp : subcomponent.updComponentList()) {
         for (auto& it : comp._socketsTable) {
-            it.second->prependComponentPathToConnecteePath(compPath);
+            if (!root.hasComponent(it.second->getConnecteePath()))
+                it.second->prependComponentPathToConnecteePath(compPath);
         }
         for (auto& it : comp._inputsTable) {
             it.second->prependComponentPathToConnecteePath(compPath);
