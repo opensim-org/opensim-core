@@ -3,7 +3,7 @@
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2017 Stanford University and the Authors                     *
  *                                                                            *
- * Author(s): Prasanna, Sritharan, Christopher Dembia                         *
+ * Author(s): Prasanna Sritharan, Christopher Dembia                          *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -28,7 +28,8 @@ MocoUserControlCost::MocoUserControlCost() { constructProperties(); }
 
 void MocoUserControlCost::constructProperties() {
     constructProperty_control_weights(MocoWeightSet());
-    constructProperty_utility_vector(std::vector<double>());
+    constructProperty_utility_vector(std::vector<double>()));
+    constructProperty_user_control_cost_fun_ptr(nullptr);
 }
 
 void MocoUserControlCost::setWeight(
@@ -74,12 +75,31 @@ void MocoUserControlCost::initializeOnModelImpl(const Model& model) const {
 
 void MocoUserControlCost::calcIntegrandImpl(
         const SimTK::State& state, double& integrand) const {
-    getModel().realizeVelocity(state); // TODO would avoid this, ideally.
-    const auto& controls = getModel().getControls(state);
+
     integrand = 0;
-    int iweight = 0;
-    for (const auto& icontrol : m_controlIndices) {
-        integrand += m_weights[iweight] * controls[icontrol] * controls[icontrol];
-        ++iweight;
+
+    // user-defined integrand function
+    if (get_user_control_cost_fun_ptr()) {
+
+        // get the function
+        auto userfunc = get_user_control_cost_fun_ptr();
+
+        // get the vector of utility values
+        auto utilvec = get_utility_vector();
+
+		// compute the integrand
+        integrand = userfunc(
+                state, getModel(), utilvec, m_weights, m_controlIndices);
+
     }
+
+    // getModel().realizeVelocity(state); // TODO would avoid this, ideally.
+    // const auto& controls = getModel().getControls(state);
+    // integrand = 0;
+    // int iweight = 0;
+    // for (const auto& icontrol : m_controlIndices) {
+    //	integrand += m_weights[iweight] * controls[icontrol] *
+    // controls[icontrol];
+    //	++iweight;
+    //}
 }
