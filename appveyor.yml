@@ -40,7 +40,7 @@ branches:
   - /^(?i:devprop).*$/
 
 init:
-  # Note: python 3.7 32bit is already on the path. We want v3.7 64bit,
+  # Note: There could be other versions of python on the path. We want v3.7 64bit,
   # so we must add v3.7 64bit earlier on the PATH so that CMake finds it when
   # configuring.
   # The Scripts directory is for putting nosetests on the path.
