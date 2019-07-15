@@ -218,7 +218,7 @@ int main()
         osimModel.printDetailedInfo(si, std::cout);
 
         // No need to call the finalizeConnections() as it is 
-	// already called by the initSystem()
+        // already called by the initSystem()
         // Save the model
         osimModel.print("toyLeg.osim");
 
