@@ -34,6 +34,13 @@ public:
             const int& dimension, const int& order) :
             coefficients(coefficients), dimension(dimension), order(order) {}
     T calcValue(const SimTK::Vector& x) const override {
+        // TODO: not sure this is necessary but this implementation assumes 4
+        // dimensions so it might be good to make sure the vector has only 0 to
+        // start with. I have not been very successful in coming up with a
+        // generic expression so far...
+        SimTK::Vector y(4);
+        y.setToZero();
+        for (int i = 0; i < 4; ++i) y[i] = x[i];
         T value = static_cast<T>(0);
         int coeff_nr = 0;
         for (int nq_1 = 0; nq_1 < order+1; ++nq_1) {
@@ -49,8 +56,8 @@ public:
                     if (dimension < 4) n_q4_s = 0;
                     else n_q4_s = order-nq_1-n_q2-n_q3;
                     for (int n_q4 = 0; n_q4 < n_q4_s + 1; ++n_q4) {
-                        value += (std::pow(x[0], nq_1) * std::pow(x[1], n_q2) *
-                                std::pow(x[2], n_q3) * std::pow(x[3], n_q4)) *
+                        value += (std::pow(y[0], nq_1) * std::pow(y[1], n_q2) *
+                                std::pow(y[2], n_q3) * std::pow(y[3], n_q4)) *
                                 coefficients[coeff_nr];
                         ++coeff_nr;
                     }
@@ -61,6 +68,10 @@ public:
     }
     T calcDerivative(const SimTK::Array_<int>& derivComponents,
                      const SimTK::Vector& x) const override {
+        // TODO: idem as above.
+        SimTK::Vector y(4);
+        y.setToZero();
+        for (int i = 0; i < 4; ++i) y[i] = x[i];
         T value = static_cast<T>(0);
         int temp = 0;
         int coeff_nr = 0;
@@ -80,37 +91,37 @@ public:
                         if (derivComponents[0] == 0) {
                             temp = nq_1-1; // TODO dirty fix
                             if (temp < 0) temp = 0;
-                            value += (nq_1 * std::pow(x[0], temp)*
-                                    std::pow(x[1], n_q2) *
-                                    std::pow(x[2], n_q3) *
-                                    std::pow(x[3], n_q4)) *
+                            value += (nq_1 * std::pow(y[0], temp)*
+                                    std::pow(y[1], n_q2) *
+                                    std::pow(y[2], n_q3) *
+                                    std::pow(y[3], n_q4)) *
                                     coefficients[coeff_nr];
                         }
                         else if (derivComponents[0] == 1) {
                             temp = n_q2-1; // TODO dirty fix
                             if (temp < 0) temp = 0;
-                            value += (std::pow(x[0], nq_1) *
-                                    n_q2 * std::pow(x[1], temp) *
-                                    std::pow(x[2], n_q3) *
-                                    std::pow(x[3], n_q4)) *
+                            value += (std::pow(y[0], nq_1) *
+                                    n_q2 * std::pow(y[1], temp) *
+                                    std::pow(y[2], n_q3) *
+                                    std::pow(y[3], n_q4)) *
                                     coefficients[coeff_nr];
                         }
                         else if (derivComponents[0] == 2) {
                             temp = n_q3-1; // TODO dirty fix
                             if (temp < 0) temp = 0;
-                            value += (std::pow(x[0], nq_1) *
-                                    std::pow(x[1], n_q2) *
-                                    n_q3 * std::pow(x[2], temp) *
-                                    std::pow(x[3], n_q4)) *
+                            value += (std::pow(y[0], nq_1) *
+                                    std::pow(y[1], n_q2) *
+                                    n_q3 * std::pow(y[2], temp) *
+                                    std::pow(y[3], n_q4)) *
                                     coefficients[coeff_nr];
                         }
                         else if (derivComponents[0] == 3) {
                             temp = n_q4-1; // TODO dirty fix
                             if (temp < 0) temp = 0;
-                            value += (std::pow(x[0], nq_1) *
-                                    std::pow(x[1], n_q2) *
-                                    std::pow(x[2], n_q3) *
-                                    n_q4 * std::pow(x[3], temp)) *
+                            value += (std::pow(y[0], nq_1) *
+                                    std::pow(y[1], n_q2) *
+                                    std::pow(y[2], n_q3) *
+                                    n_q4 * std::pow(y[3], temp)) *
                                     coefficients[coeff_nr];
                         }
                         ++coeff_nr;
