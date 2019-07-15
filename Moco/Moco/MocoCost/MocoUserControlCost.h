@@ -39,7 +39,7 @@ public:
     
 	/// Functor that points to the user-defined control cost function. The functional 
 	/// description must match the definition here, however, not all input parameters 
-	/// need to be used.
+	/// need to be used within the function itself.
 	OpenSim_DECLARE_PROPERTY(user_control_cost_fun_ptr,
             std::function<double(const SimTK::State&, const Model&,
                     std::vector<double>, std::vector<double>,

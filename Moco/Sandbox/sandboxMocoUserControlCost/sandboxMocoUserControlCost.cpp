@@ -1,9 +1,9 @@
 /* -------------------------------------------------------------------------- *
  * OpenSim Moco: sandboxMocoUserControlCost.cpp                               *
  * -------------------------------------------------------------------------- *
- * Copyright (c) 2017 Stanford University and the Authors                     *
+ * Copyright (c) 2019 Stanford University and the Authors                     *
  *                                                                            *
- * Author(s): Nicholas Bianco                                                 *
+ * Author(s): Prasanna Sritharan                                              *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
