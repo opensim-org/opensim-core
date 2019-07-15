@@ -118,6 +118,8 @@ protected:
             const auto& cost = m_mocoProbRep.getCost(name);
             this->add_cost(name, cost.getNumIntegrals());
         }
+        OPENSIM_THROW_IF(m_mocoProbRep.getNumEndpointConstraints(), Exception,
+                "MocoTropterSolver does not support endpoint constraints.");
         if (m_mocoTropterSolver.get_minimize_lagrange_multipliers()) {
             m_multiplierCostIndex = this->add_cost("multipliers", 1);
         }

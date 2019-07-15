@@ -1,9 +1,9 @@
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: MocoCost.cpp                                                 *
+ * OpenSim Moco: MocoConstraintInfo.h                                         *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2017 Stanford University and the Authors                     *
  *                                                                            *
- * Author(s): Christopher Dembia                                              *
+ * Author(s): Nicholas Bianco                                                 *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -15,34 +15,45 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
-#include "MocoCost.h"
+
+#include "MocoConstraintInfo.h"
 
 using namespace OpenSim;
 
-MocoCost::MocoCost() {
+MocoConstraintInfo::MocoConstraintInfo() {
     constructProperties();
-    if (getName().empty()) setName("cost");
+    // TODO: used to be path_constraint.
+    if (getName().empty()) setName("constraint");
 }
 
-MocoCost::MocoCost(std::string name) {
-    setName(std::move(name));
-    constructProperties();
+std::vector<std::string> MocoConstraintInfo::getConstraintLabels() const {
+    std::vector<std::string> labels(getNumEquations());
+    for (int i = 0; i < getNumEquations(); ++i) {
+        if (getProperty_suffixes().empty()) {
+            labels[i] = getName() + "_" + std::to_string(i);
+        }
+        else {
+            labels[i] = getName() + "_" + get_suffixes(i);
+        }
+    }
+    return labels;
 }
 
-MocoCost::MocoCost(std::string name, double weight)
-        : MocoCost(std::move(name)) {
-    set_weight(weight);
-}
-
-
-void MocoCost::printDescription(std::ostream& stream) const {
+void MocoConstraintInfo::printDescription(std::ostream& stream) const {
     stream << getName() << ". " << getConcreteClassName() <<
-            " enabled: " << get_enabled() << " weight: " << get_weight() << std::endl;
+            ". number of scalar equations: " << getNumEquations();
+
+    const std::vector<MocoBounds> bounds = getBounds();
+    stream << ". bounds: ";
+    for (int i = 0; i < (int)bounds.size(); ++i) {
+        bounds[i].printDescription(stream);
+        if (i < (int)bounds.size() - 1)
+            stream << ", ";
+    }
+    stream << std::endl;
 }
 
-void MocoCost::constructProperties() {
-    constructProperty_enabled(true);
-    constructProperty_weight(1);
-    constructProperty_apply_as_endpoint_constraint();
-    constructProperty_MocoConstraintInfo(MocoConstraintInfo());
+void MocoConstraintInfo::constructProperties() {
+    constructProperty_bounds();
+    constructProperty_suffixes();
 }

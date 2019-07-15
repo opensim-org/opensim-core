@@ -198,7 +198,6 @@ public:
         else
             return casadi::Sparsity(0, 0);
     }
-    VectorDM eval(const VectorDM& args) const override;
     /// The cost input is not simply a subset of the NLP variables; the cost
     /// also depends on an integral, computed from an integrand function and
     /// using a transcription's quadrature scheme. Ideally, the value for the
@@ -222,10 +221,21 @@ public:
                 // variable.
                 casadi::DM::zeros(1, 1)});
     }
-private:
+protected:
     int m_index = -1;
     // TODO rename to numOutputs? not quite right. numValues?
     int m_numEquations = -1;
+};
+
+class Cost : public Endpoint {
+public:
+    VectorDM eval(const VectorDM& args) const override;
+};
+
+class EndpointConstraint : public Endpoint {
+public:
+    VectorDM eval(const VectorDM& args) const override;
+
 };
 
 /// This function should compute forward dynamics (explicit multibody dynamics),

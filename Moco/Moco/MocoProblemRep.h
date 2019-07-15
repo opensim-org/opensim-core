@@ -105,6 +105,13 @@ public:
     int getNumStates() const { return (int)m_state_infos.size(); }
     int getNumControls() const { return (int)m_control_infos.size(); }
     int getNumParameters() const { return (int)m_parameters.size(); }
+    int getNumCosts() const { return (int)m_costs.size(); }
+    int getNumEndpointConstraints() const {
+        return (int)m_endpoint_constraints.size();
+    }
+    int getNumKinematicConstraints() const {
+        return (int)m_kinematic_constraints.size();
+    }
     /// Does the model contain a PositionMotion to prescribe all generalized
     /// coordinates, speeds, and accelerations?
     bool isPrescribedKinematics() const { return m_prescribedKinematics; }
@@ -120,6 +127,8 @@ public:
     std::vector<std::string> createParameterNames() const;
     /// Get the names of all the costs.
     std::vector<std::string> createCostNames() const;
+    /// Get the names of all endpoint constraints.
+    std::vector<std::string> createEndpointConstraintNames() const;
     /// Get the names of all the MocoPathConstraint%s.
     std::vector<std::string> createPathConstraintNames() const;
     /// Get the names of all the Lagrange multiplier infos.
@@ -160,6 +169,12 @@ public:
     /// Get a cost by index. The order is the same as in getCostNames().
     /// Note: this does not perform a bounds check.
     const MocoCost& getCostByIndex(int index) const;
+    /// Get an endpoint constraint by name.
+    const MocoCost& getEndpointConstraint(const std::string& name) const;
+    /// Get an endpoint constraint by index.
+    /// The order is the same as in getEndpointConstraintNames().
+    /// Note: this does not perform a bounds check.
+    const MocoCost& getEndpointConstraintByIndex(int index) const;
     /// Get a MocoPathConstraint. Note: this does not
     /// include MocoKinematicConstraints, use getKinematicConstraint() instead.
     const MocoPathConstraint& getPathConstraint(const std::string& name) const;
@@ -284,13 +299,15 @@ private:
 
     std::vector<std::unique_ptr<MocoParameter>> m_parameters;
     std::vector<std::unique_ptr<MocoCost>> m_costs;
+    std::vector<std::unique_ptr<MocoCost>> m_endpoint_constraints;
     std::vector<std::unique_ptr<MocoPathConstraint>> m_path_constraints;
     int m_num_path_constraint_equations = -1;
     int m_num_kinematic_constraint_equations = -1;
     std::vector<MocoKinematicConstraint> m_kinematic_constraints;
     std::map<std::string, std::vector<MocoVariableInfo>> m_multiplier_infos_map;
     std::vector<std::string> m_kinematic_constraint_eq_names_with_derivatives;
-    std::vector<std::string> m_kinematic_constraint_eq_names_without_derivatives;
+    std::vector<std::string>
+            m_kinematic_constraint_eq_names_without_derivatives;
 };
 
 } // namespace OpenSim

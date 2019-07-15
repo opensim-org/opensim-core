@@ -203,19 +203,23 @@ MocoCasOCProblem::MocoCasOCProblem(const MocoCasADiSolver& mocoCasADiSolver,
         addParameter(paramName, convertBounds(param.getBounds()));
     }
 
-    const auto costNames = problemRep.createCostNames();
-    for (const auto& name : costNames) {
-        const auto& cost = problemRep.getCost(name);
-        // TODO: check if enabled.
-        if (cost.getEndpointConstraint()) {
+    {
+        const auto costNames = problemRep.createCostNames();
+        for (const auto& name : costNames) {
+            const auto& cost = problemRep.getCost(name);
+            addCost(name, cost.getNumIntegrals(), cost.getNumOutputs());
+        }
+    }
+    {
+        const auto endpointConNames =
+                problemRep.createEndpointConstraintNames();
+        for (const auto& name : endpointConNames) {
+            const auto& cost = problemRep.getEndpointConstraint(name);
             std::vector<CasOC::Bounds> casBounds;
-            for (const auto& bounds : cost.getEndpointConstraintBounds()) {
+            for (const auto& bounds : cost.getConstraintInfo().getBounds()) {
                 casBounds.push_back(convertBounds(bounds));
             }
-            addEndpointConstraint(name, cost.getNumIntegrals(),
-                    casBounds);
-        } else {
-            addCost(name, cost.getNumIntegrals(), cost.getNumOutputs());
+            addEndpointConstraint(name, cost.getNumIntegrals(), casBounds);
         }
     }
 

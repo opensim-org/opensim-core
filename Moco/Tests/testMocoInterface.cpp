@@ -1830,8 +1830,9 @@ TEST_CASE("Endpoint constraints") {
 
 
     MocoSolution solution = study.solve();
-    study.visualize(solution);
-
+    const int N = solution.getNumTimes();
+    CHECK(solution.getState("/jointset/j0/q0/value")[N - 1] == Approx(-0.3));
+    CHECK(solution.getState("/jointset/j0/q0/speed")[N - 1] == Approx(0));
 }
 
 // testCopy();

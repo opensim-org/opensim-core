@@ -1,3 +1,6 @@
+- 2019-07-15: MocoCosts can be enforced either as objective terms or as endpoint
+              constraints. Applying a MocoCost as an endpoint constraint is
+              supported by MocoCasADiSolver (not MocoTropterSolver).
 - 2019-07-09: Cost terms can now depend on initial states/controls, not just
               final states/controls. Endpoint and integral costs are combined: a
               single cost can depend on both an integral and initial/final

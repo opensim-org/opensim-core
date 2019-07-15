@@ -251,7 +251,7 @@ protected:
         }
         m_costInfos.emplace_back(std::move(name), numOutputs,
                 std::move(integrand_function),
-                OpenSim::make_unique<Endpoint>());
+                OpenSim::make_unique<Cost>());
     }
     void addEndpointConstraint(
             std::string name, int numIntegrals, std::vector<Bounds> bounds) {
@@ -270,7 +270,7 @@ protected:
         }
         m_endpointConstraintInfos.emplace_back(std::move(name),
                 (int)bounds.size(), std::move(integrand_function),
-                OpenSim::make_unique<Endpoint>(), std::move(lower),
+                OpenSim::make_unique<EndpointConstraint>(), std::move(lower),
                 std::move(upper));
     }
     /// The size of bounds must match the number of outputs in the function.
@@ -373,16 +373,15 @@ public:
         auto* mutThis = const_cast<Problem*>(this);
 
         {
-            // TODO: index should be assigned in addCost(), etc, not here!
             int index = 0;
             for (const auto& costInfo : mutThis->m_costInfos) {
                 costInfo.endpoint_function->constructFunction(this,
-                        "cost_endpoint_" + costInfo.name, index,
+                        "cost_" + costInfo.name + "_endpoint", index,
                         costInfo.num_outputs, finiteDiffScheme,
                         pointsForSparsityDetection);
                 if (costInfo.integrand_function) {
                     costInfo.integrand_function->constructFunction(this,
-                            "cost_integrand_" + costInfo.name, index,
+                            "cost_" + costInfo.name + "_integrand", index,
                             finiteDiffScheme, pointsForSparsityDetection);
                 }
                 ++index;
@@ -392,12 +391,12 @@ public:
             int index = 0;
             for (const auto& info : mutThis->m_endpointConstraintInfos) {
                 info.endpoint_function->constructFunction(this,
-                        "endpoint_constraint_endpoint_" + info.name, index,
+                        "endpoint_constraint_" + info.name + "_endpoint", index,
                         info.num_outputs, finiteDiffScheme,
                         pointsForSparsityDetection);
                 if (info.integrand_function) {
                     info.integrand_function->constructFunction(this,
-                            "endpoint_constraint_integrand_" + info.name, index,
+                            "endpoint_constraint_" + info.name + "_integrand", index,
                             finiteDiffScheme, pointsForSparsityDetection);
                 }
                 ++index;

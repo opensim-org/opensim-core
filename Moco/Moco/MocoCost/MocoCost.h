@@ -20,6 +20,7 @@
 
 #include "../osimMocoDLL.h"
 #include "../MocoBounds.h"
+#include "../MocoConstraintInfo.h"
 
 #include <SimTKcommon/internal/State.h>
 
@@ -56,10 +57,7 @@ public:
     OpenSim_DECLARE_PROPERTY(weight, double,
             "The cost value is multiplied by this weight (default: 1).");
 
-    OpenSim_DECLARE_OPTIONAL_PROPERTY(endpoint_constraint, bool, "TODO");
-
-    // TODO make private.
-    OpenSim_DECLARE_LIST_PROPERTY(endpoint_constraint_bounds, MocoBounds, "TODO");
+    OpenSim_DECLARE_OPTIONAL_PROPERTY(apply_as_endpoint_constraint, bool, "TODO");
 
     MocoCost();
 
@@ -77,30 +75,32 @@ public:
         return getDefaultEndpointConstraintImpl();
     }
 
+    const MocoConstraintInfo& getConstraintInfo() const {
+        // TODO hack to setNumEquations().
+        getNumOutputs();
+        return get_MocoConstraintInfo();
+    }
+
+    // TODO: the issue with relying on constraintinfo for num outputs is that
+    // we don't use constraint info when applying as cost.
     int getNumOutputs() const {
-        // TODO: Should just be set in initialize().
-        return getNumOutputsImpl();
+        int n = getNumOutputsImpl();
+        // TODO this is a bit hacky.
+        setNumEquations(n);
+        return n;
     }
 
     // TODO rename getApplyAsConstraint(). or getApplyAsEndpointConstraint().
-    bool getEndpointConstraint() const {
+    bool getApplyAsEndpointConstraint() const {
         bool endpoint_constraint;
-        if (getProperty_endpoint_constraint().empty()) {
+        if (getProperty_apply_as_endpoint_constraint().empty()) {
             endpoint_constraint = getDefaultEndpointConstraint();
         } else {
-            endpoint_constraint = get_endpoint_constraint();
+            endpoint_constraint = get_apply_as_endpoint_constraint();
         }
         OPENSIM_THROW_IF(endpoint_constraint && !getSupportsEndpointConstraint(),
                 Exception, "Endpoint constraint not supported TODO.");
         return endpoint_constraint;
-    }
-    std::vector<MocoBounds> getEndpointConstraintBounds() const {
-        // TODO make general! look at MocoConstraintInfo!!! Might be able to use
-        // it exactly.
-        std::vector<MocoBounds> bounds;
-        bounds.push_back({0});
-        bounds.push_back({0});
-        return bounds;
     }
 
     /// Get the number of integrals required by this cost.
@@ -142,7 +142,11 @@ public:
     void initializeOnModel(const Model& model) const {
         m_model.reset(&model);
         if (!get_enabled()) { return; }
+        // TODO hack to setNumEquations().
+        // TODO setNumEquations inside initializeOnModel().
+        setNumEquations(getNumOutputs());
         initializeOnModelImpl(model);
+        // TODO check numEquations to ensure it's set.
     }
 
     /// Print the name, type, and weight for this cost.
@@ -156,6 +160,7 @@ protected:
     /// Use this opportunity to check for errors in user input.
     // TODO: Rename to extendInitializeOnModel().
     virtual void initializeOnModelImpl(const Model&) const {}
+
     virtual int getNumOutputsImpl() const { return 1; }
     virtual bool getDefaultEndpointConstraintImpl() const { return false; }
     virtual bool getSupportsEndpointConstraintImpl() const { return false; }
@@ -180,7 +185,19 @@ protected:
         return m_model.getRef();
     }
 
+
 private:
+    OpenSim_DECLARE_UNNAMED_PROPERTY(MocoConstraintInfo,
+            "The bounds and labels for this MocoCost, if applied as an "
+            "endpoint constraint.");
+
+    void setNumEquations(int numEqs) const {
+        // TODO avoid const_cast
+        const_cast<MocoCost*>(this)
+                ->upd_MocoConstraintInfo()
+                .setNumEquations(numEqs);
+    }
+
     void constructProperties();
 
     mutable SimTK::ReferencePtr<const Model> m_model;
