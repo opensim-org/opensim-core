@@ -62,10 +62,10 @@ OpenSim_DECLARE_CONCRETE_OBJECT(FinalPositionCost, MocoCost);
 protected:
     int getNumIntegralsImpl() const override { return 0; }
     void calcCostImpl(const CostInput& input,
-            SimTK::Real& cost) const override {
+            SimTK::Vector& cost) const override {
        const auto& finalPosition = input.final_state.getY()[0];
 
-       cost = (finalPosition - 0.5) * (finalPosition - 0.5);
+       cost[0] = (finalPosition - 0.5) * (finalPosition - 0.5);
     }
 };
 
@@ -201,8 +201,8 @@ protected:
         integrand = accel * accel;
     }
     void calcCostImpl(
-            const CostInput& input, SimTK::Real& cost) const override {
-        cost = input.integral;
+            const CostInput& input, SimTK::Vector& cost) const override {
+        cost[0] = input.integral;
     }
 };
 

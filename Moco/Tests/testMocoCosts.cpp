@@ -196,9 +196,9 @@ TEST_CASE("Enabled Costs", "") {
     Model model;
     auto state = model.initSystem();
     state.setTime(x);
-    CHECK(cost.calcCost({state, state, 0}) == Approx(x));
+    CHECK(cost.calcCost({state, state, 0})[0] == Approx(x));
     cost.set_enabled(false);
-    CHECK(cost.calcCost({state, state, 0})  == 0);
+    CHECK(cost.calcCost({state, state, 0})[0] == 0);
 }
 
 template <class SolverType>
