@@ -206,6 +206,7 @@ MocoCasOCProblem::MocoCasOCProblem(const MocoCasADiSolver& mocoCasADiSolver,
     const auto costNames = problemRep.createCostNames();
     for (const auto& name : costNames) {
         const auto& cost = problemRep.getCost(name);
+        // TODO: check if enabled.
         if (cost.getEndpointConstraint()) {
             std::vector<CasOC::Bounds> casBounds;
             for (const auto& bounds : cost.getEndpointConstraintBounds()) {
