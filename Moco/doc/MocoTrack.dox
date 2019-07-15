@@ -10,7 +10,7 @@ change in a system parameter or optimization criteria might affect the optimal
 kinematics of the system. A different class of problems, called 'tracking' 
 problems, addresses this limitation by freeing up model kinematics while 
 adding an cost term that computes the error between experimental data and 
-the associated model quanities. While tracking problems have been historically 
+the associated model quantities. While tracking problems have been historically 
 either difficult to pose or computationally burdensome, recent methods using 
 direct collocation for solving tracking problems in biomechanics have proven 
 this now to be a viable tool [1,2].
