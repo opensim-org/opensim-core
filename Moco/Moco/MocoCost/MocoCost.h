@@ -134,6 +134,7 @@ public:
         if (!get_enabled()) {
             return cost;
         }
+        // TODO: ignore weight if apply_as_endpoint_constraint.
         calcCostImpl(input, cost);
         return get_weight() * cost;
     }

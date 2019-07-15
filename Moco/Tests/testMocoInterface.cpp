@@ -1822,11 +1822,12 @@ TEST_CASE("Endpoint constraints") {
 
     problem.setTimeBounds(0, 1);
     problem.setStateInfo("/jointset/j0/q0/value", {-0.3, 0.3}, -0.3);
-    problem.setControlInfo("/tau0", 0);
 
     problem.addCost<MocoPeriodic>();
+    problem.addCost<MocoControlCost>("control");
 
     study.initCasADiSolver();
+
 
     MocoSolution solution = study.solve();
     study.visualize(solution);
