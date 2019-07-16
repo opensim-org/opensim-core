@@ -705,7 +705,7 @@ TEMPLATE_TEST_CASE("Workflow", "", MocoTropterSolver, MocoCasADiSolver) {
         const double finalTime0 = moco.solve().getFinalTime();
 
         // Change the weights of the costs.
-        effort->set_weight(0.1);
+        effort->setWeight(0.1);
         const double finalTime1 = moco.solve().getFinalTime();
         SimTK_TEST(finalTime1 < 0.8 * finalTime0);
     }

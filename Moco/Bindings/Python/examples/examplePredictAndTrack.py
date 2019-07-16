@@ -123,15 +123,15 @@ def solvePrediction():
     problem.setControlInfo("/tau0", [-100, 100])
     problem.setControlInfo("/tau1", [-100, 100])
 
-    # Cost: minimize final time and error from desired 
+    # Cost: minimize final time and error from desired
     #       end effector position.
-    ftCost = osim.MocoFinalTimeCost()
-    ftCost.set_weight(0.001)
+    ftCost = osim.MocoFinalTimeGoal()
+    ftCost.setWeight(0.001)
     problem.addGoal(ftCost)
 
-    finalCost = osim.MocoMarkerFinalCost()
+    finalCost = osim.MocoMarkerFinalGoal()
     finalCost.setName("final")
-    finalCost.set_weight(1000.0)
+    finalCost.setWeight(1000.0)
     finalCost.setPointName("/markerset/m1")
     finalCost.setReferenceLocation(osim.Vec3(0, 2, 0))
     problem.addGoal(finalCost)
@@ -222,13 +222,13 @@ def solveStateTracking(stateRef):
     problem.setControlInfo("/tau1", [-150, 150])
 
     # Cost: track provided state data.
-    stateTracking = osim.MocoStateTrackingCost()
+    stateTracking = osim.MocoStateTrackingGoal()
     stateTracking.setReference(osim.TableProcessor(stateRef))
     problem.addGoal(stateTracking)
 
-    effort = osim.MocoControlCost()
+    effort = osim.MocoControlGoal()
     effort.setName("effort")
-    effort.set_weight(0.001)
+    effort.setWeight(0.001)
     # TODO problem.addGoal(effort)
 
     # Configure the solver.
@@ -277,13 +277,13 @@ def solveMarkerTracking(markersRef, guess):
     problem.setControlInfo("/tau1", [-100, 100])
 
     # Cost: track provided marker data.
-    markerTracking = osim.MocoMarkerTrackingCost()
+    markerTracking = osim.MocoMarkerTrackingGoal()
     markerTracking.setMarkersReference(markersRef)
     problem.addGoal(markerTracking)
     
-    effort = osim.MocoControlCost()
+    effort = osim.MocoControlGoal()
     effort.setName("effort")
-    effort.set_weight(0.0001)
+    effort.setWeight(0.0001)
     # problem.addGoal(effort)
 
     # Configure the solver.

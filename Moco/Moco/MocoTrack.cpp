@@ -90,7 +90,7 @@ MocoStudy MocoTrack::initialize() {
                         get_control_effort_weight()));
       
         auto* effort = problem.addGoal<MocoControlGoal>("control_effort");
-        effort->set_weight(get_control_effort_weight());
+        effort->setWeight(get_control_effort_weight());
     }
 
     // Set the time range.

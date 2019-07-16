@@ -52,7 +52,6 @@ public:
 
 protected:
     void initializeOnModelImpl(const Model&) const override;
-    int getNumIntegralsImpl() const override { return 0; }
     void calcGoalImpl(
             const GoalInput& input, SimTK::Vector& cost) const override;
 private:

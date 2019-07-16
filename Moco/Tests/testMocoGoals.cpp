@@ -147,7 +147,7 @@ TEMPLATE_TEST_CASE(
         mp.setControlInfo("/actuator2", MocoBounds(-10, 10));
 
         auto effort = mp.addGoal<MocoControlGoal>();
-        effort->setWeight("/actuator2", 2.0);
+        effort->setWeightForControl("/actuator2", 2.0);
 
         auto& ms = moco.initSolver<TestType>();
         ms.set_num_mesh_points(N);
@@ -176,7 +176,7 @@ TEMPLATE_TEST_CASE(
         mp.setStateInfo("/slider/position/speed", {-100, 100}, 0, 0);
         mp.setControlInfo("/actuator", MocoBounds(-10, 10));
         auto effort = mp.addGoal<MocoControlGoal>();
-        effort->setWeight("nonexistent", 1.5);
+        effort->setWeightForControl("nonexistent", 1.5);
         CHECK_THROWS_AS(mp.createRep(), Exception);
     }
 
@@ -191,14 +191,20 @@ TEMPLATE_TEST_CASE(
 }
 
 TEST_CASE("Enabled Goals", "") {
+    std::cout.rdbuf(LogManager::cout.rdbuf());
+    std::cout.rdbuf(LogManager::cout.rdbuf());
     double x = 23920;
     MocoFinalTimeGoal cost;
     Model model;
     auto state = model.initSystem();
     state.setTime(x);
-    CHECK(cost.calcGoal({state, state, 0})[0] == Approx(x));
-    cost.set_enabled(false);
-    CHECK(cost.calcGoal({state, state, 0})[0] == 0);
+    cost.initializeOnModel(model);
+    SimTK::Vector goal;
+    cost.calcGoal({state, state, 0}, goal);
+    CHECK(goal[0] == Approx(x));
+    cost.setEnabled(false);
+    cost.calcGoal({state, state, 0}, goal);
+    CHECK(goal[0] == Approx(0));
 }
 
 template <class SolverType>
@@ -240,7 +246,7 @@ TEMPLATE_TEST_CASE("Test MocoControlTrackingGoal", "", MocoTropterSolver,
     // Re-run problem, now setting effort cost function to zero and adding a
     // control tracking cost.
     auto& problem = moco.updProblem();
-    problem.updPhase(0).updGoal("effort").set_weight(0);
+    problem.updPhase(0).updGoal("effort").setWeight(0);
     auto* tracking =
             problem.addGoal<MocoControlTrackingGoal>("control_tracking");
     std::vector<double> time(solutionEffort.getTime().getContiguousScalarData(),
@@ -281,7 +287,7 @@ void testDoublePendulumTracking() {
     // Re-run problem, now setting effort cost function to zero and adding a
     // tracking cost.
     auto& problem = moco.updProblem();
-    problem.updPhase(0).updGoal("effort").set_weight(0);
+    problem.updPhase(0).updGoal("effort").setWeight(0);
     auto* tracking = problem.addGoal<TrackingType>("tracking");
     tracking->setStatesReference(solutionEffort.exportToStatesTable());
     tracking->setFramePaths({"/bodyset/b0", "/bodyset/b1"});
@@ -300,7 +306,7 @@ void testDoublePendulumTracking() {
     // Re-run problem again, now setting effort cost function weight to a low
     // non-zero value as a regularization to smooth controls and velocity
     // states.
-    problem.updPhase(0).updGoal("effort").set_weight(0.001);
+    problem.updPhase(0).updGoal("effort").setWeight(0.001);
     moco.updSolver<SolverType>().resetProblem(problem);
     auto solutionTrackingWithRegularization = moco.solve();
     solutionTrackingWithRegularization.write(
@@ -380,9 +386,12 @@ public:
     MocoPeriodic() = default;
     // TODO should be able to vary, with initializeImpl().
     bool getSupportsEndpointConstraintImpl() const override { return true; }
-    bool getDefaultEndpointConstraintImpl() const override { return true; }
-    int getNumOutputsImpl() const override { return 2; }
-    int getNumIntegralsImpl() const override { return 0; }
+    Mode getDefaultModeImpl() const override {
+        return Mode::EndpointConstraint;
+    }
+    void initializeOnModelImpl(const Model&) const override {
+        setNumIntegralsAndOutputs(0, 2);
+    }
     // TODO this would actually support multiple constraint equations...
     void calcGoalImpl(
             const GoalInput& in, SimTK::Vector& values) const override {
@@ -391,7 +400,8 @@ public:
     }
 };
 
-TEST_CASE("Endpoint constraints") {
+TEMPLATE_TEST_CASE("Endpoint constraints", "", MocoCasADiSolver) {
+    // TODO test with CasADi.
 
     MocoStudy study;
     auto& problem = study.updProblem();
@@ -403,7 +413,7 @@ TEST_CASE("Endpoint constraints") {
     problem.addGoal<MocoPeriodic>();
     problem.addGoal<MocoControlGoal>("control");
 
-    study.initCasADiSolver();
+    study.initSolver<TestType>();
 
     MocoSolution solution = study.solve();
     const int N = solution.getNumTimes();
@@ -415,3 +425,5 @@ TEST_CASE("Endpoint constraints") {
 // TODO add MocoInitialActivationExcitationGoal.
 
 // TODO test endpoint goal where bounds are custom.
+
+// TODO test using a cost with multiple terms.

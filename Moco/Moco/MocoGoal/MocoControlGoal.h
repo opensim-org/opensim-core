@@ -49,11 +49,10 @@ public:
     /// weight replaces the previous weight. Only controls with non-zero weights
     /// that are associated with actuators for which appliesForce is True are
     /// included in the cost function.
-    void setWeight(const std::string& controlName, const double& weight);
+    void setWeightForControl(const std::string& controlName, const double& weight);
 
 protected:
     void initializeOnModelImpl(const Model&) const override;
-    int getNumIntegralsImpl() const override { return 1; }
     void calcIntegrandImpl(
             const SimTK::State& state, double& integrand) const override;
     void calcGoalImpl(

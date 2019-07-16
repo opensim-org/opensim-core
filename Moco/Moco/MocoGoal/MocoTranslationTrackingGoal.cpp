@@ -172,6 +172,8 @@ void MocoTranslationTrackingGoal::initializeOnModelImpl(const Model& model)
     flatTable.setColumnLabels(colLabels);
 
     m_ref_splines = GCVSplineSet(flatTable);
+
+    setNumIntegralsAndOutputs(1, 1);
 }
 
 void MocoTranslationTrackingGoal::calcIntegrandImpl(const SimTK::State& state,

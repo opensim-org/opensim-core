@@ -417,9 +417,9 @@ void MocoProblemRep::initialize() {
                 format("A goal with name '%s' already exists.",
                         goal.getName()));
         goalNames.insert(goal.getName());
-        if (goal.get_enabled()) {
+        if (goal.getEnabled()) {
             std::unique_ptr<MocoGoal> item(goal.clone());
-            if (goal.getApplyAsEndpointConstraint()) {
+            if (goal.getModeIsEndpointConstraint()) {
                 m_endpoint_constraints.push_back(std::move(item));
                 m_endpoint_constraints.back()->initializeOnModel(
                         m_model_disabled_constraints);

@@ -66,6 +66,8 @@ void MocoStateTrackingGoal::initializeOnModelImpl(const Model& model) const {
         m_state_weights.push_back(refWeight);
         m_refsplines.cloneAndAppend(allSplines[iref]);
     }
+
+    setNumIntegralsAndOutputs(1, 1);
 }
 
 void MocoStateTrackingGoal::calcIntegrandImpl(/*int meshIndex,*/

@@ -183,7 +183,7 @@ VectorDM Cost::eval(const VectorDM& args) const {
     Problem::CostInput input{args.at(0).scalar(), args.at(1), args.at(2),
             args.at(3), args.at(4), args.at(5).scalar(), args.at(6), args.at(7),
             args.at(8), args.at(9), args.at(10), args.at(11).scalar()};
-    VectorDM out{casadi::DM(casadi::Sparsity::dense(m_numEquations, 1))};
+    VectorDM out{casadi::DM(sparsity_out(0))};
     m_casProblem->calcCost(m_index, input, out.at(0));
     return out;
 }
@@ -191,7 +191,7 @@ VectorDM EndpointConstraint::eval(const VectorDM& args) const {
     Problem::CostInput input{args.at(0).scalar(), args.at(1), args.at(2),
                              args.at(3), args.at(4), args.at(5).scalar(), args.at(6), args.at(7),
                              args.at(8), args.at(9), args.at(10), args.at(11).scalar()};
-    VectorDM out{casadi::DM(casadi::Sparsity::dense(m_numEquations, 1))};
+    VectorDM out{casadi::DM(sparsity_out(0))};
     m_casProblem->calcEndpointConstraint(m_index, input, out.at(0));
     return out;
 }

@@ -191,7 +191,7 @@ forceSet = model.getForceSet();
 for i = 0:forceSet.getSize()-1
    forcePath = forceSet.get(i).getAbsolutePathString();
    if contains(string(forcePath), 'pelvis')
-       effort.setWeight(forcePath, 10);
+       effort.setWeightForControl(forcePath, 10);
    end
 end
 

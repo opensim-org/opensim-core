@@ -67,7 +67,7 @@ public:
     /// already set for the requested state, then the provided weight
     /// replaces the previous weight. An exception is thrown if a weight
     /// for an unknown state is provided.
-    void setWeight(const std::string& stateName, const double& weight) {
+    void setWeightForState(const std::string& stateName, const double& weight) {
         if (get_state_weights().contains(stateName)) {
             upd_state_weights().get(stateName).setWeight(weight);
         } else {
@@ -92,7 +92,6 @@ public:
 protected:
     // TODO check that the reference covers the entire possible time range.
     void initializeOnModelImpl(const Model&) const override;
-    int getNumIntegralsImpl() const override { return 1; }
     void calcIntegrandImpl(
             const SimTK::State& state, double& integrand) const override;
     void calcGoalImpl(

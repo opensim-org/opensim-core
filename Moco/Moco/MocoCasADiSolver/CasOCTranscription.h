@@ -165,7 +165,7 @@ private:
     }
 
     void transcribe();
-    void setObjective();
+    void setObjectiveAndEndpointConstraints();
     void calcDefects() {
         calcDefectsImpl(m_vars.at(states), m_xdot, m_constraints.defects);
     }

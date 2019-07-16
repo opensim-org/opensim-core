@@ -70,6 +70,8 @@ void MocoControlTrackingGoal::initializeOnModelImpl(const Model& model) const {
         m_control_weights.push_back(refWeight);
         m_ref_splines.cloneAndAppend(allSplines[iref]);
     }
+    
+    setNumIntegralsAndOutputs(1, 1);
 }
 
 void MocoControlTrackingGoal::calcIntegrandImpl(const SimTK::State& state,

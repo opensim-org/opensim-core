@@ -1026,16 +1026,18 @@ TEMPLATE_TEST_CASE(
     CHECK(solution.getParameter("mass") == Approx(1.0).epsilon(1e-3));
 }
 
-class MocoJointReactionComponentCost : public MocoGoal {
-    OpenSim_DECLARE_CONCRETE_OBJECT(MocoJointReactionComponentCost, MocoGoal);
+class MocoJointReactionComponentGoal : public MocoGoal {
+    OpenSim_DECLARE_CONCRETE_OBJECT(MocoJointReactionComponentGoal, MocoGoal);
 
 public:
-    int getNumIntegralsImpl() const override { return 1; }
+    void initializeOnModelImpl(const Model&) const override {
+        setNumIntegralsAndOutputs(1, 1);
+    }
     void calcIntegrandImpl(
             const SimTK::State& state, double& integrand) const override {
         getModel().realizeAcceleration(state);
         const auto& joint = getModel().getComponent<Joint>("jointset/j1");
-        // Minus sign since we are maximizng.
+        // Minus sign since we are maximizing.
         integrand = -joint.calcReactionOnChildExpressedInGround(state)[0][0];
     }
     void calcGoalImpl(
@@ -1088,7 +1090,7 @@ void testDoublePendulumPointOnLineJointReaction(
     // This cost tries to *maximize* joint j1's reaction torque in the
     // x-direction, which should cause the actuator "push" to hit its upper
     // bound.
-    mp.addGoal<MocoJointReactionComponentCost>();
+    mp.addGoal<MocoJointReactionComponentGoal>();
 
     auto& ms = moco.initSolver<TestType>();
     int N = 5;
