@@ -331,7 +331,6 @@ private:
     }
     void calcCost(int index, const CostInput& input,
             casadi::DM& cost) const override {
-        // TODO:index is incorrect; could be for either cost or endpoint.
         auto mocoProblemRep = m_jar->take();
 
         applyInput(input.initial_time, input.initial_states,
@@ -361,7 +360,6 @@ private:
 
     void calcEndpointConstraint(int index, const CostInput& input,
             casadi::DM& values) const override {
-        // TODO:index is incorrect; could be for either cost or endpoint.
         auto mocoProblemRep = m_jar->take();
 
         applyInput(input.initial_time, input.initial_states,

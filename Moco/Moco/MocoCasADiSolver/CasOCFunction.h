@@ -226,7 +226,6 @@ public:
     }
 protected:
     int m_index = -1;
-    // TODO rename to numOutputs? not quite right. numValues?
     int m_numEquations = -1;
 };
 

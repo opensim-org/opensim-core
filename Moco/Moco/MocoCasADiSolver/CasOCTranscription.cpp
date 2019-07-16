@@ -465,8 +465,6 @@ void Transcription::setObjectiveAndEndpointConstraints() {
                         m_vars[derivatives](Slice(), -1), m_vars[parameters],
                         integral},
                 costOut);
-        // TODO check sum1? test this!!!!!! Don't be lazy about this one!
-        // TODO should we use sum2?
         m_objective += casadi::MX::sum1(costOut.at(0));
     }
 

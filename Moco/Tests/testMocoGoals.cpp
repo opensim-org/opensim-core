@@ -391,7 +391,6 @@ public:
     void initializeOnModelImpl(const Model&) const override {
         setNumIntegralsAndOutputs(0, 2);
     }
-    // TODO this would actually support multiple constraint equations...
     void calcGoalImpl(
             const GoalInput& in, SimTK::Vector& values) const override {
         values[0] = in.initial_state.getQ()[0] - in.final_state.getQ()[0];
