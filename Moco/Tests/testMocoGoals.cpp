@@ -379,12 +379,11 @@ TEMPLATE_TEST_CASE(
     CHECK(solution.getObjective() == Approx(0.0).margin(1e-6));
 }
 
-class MocoPeriodic : public MocoGoal {
-    OpenSim_DECLARE_CONCRETE_OBJECT(MocoPeriodic, MocoGoal);
+class MocoPeriodicish : public MocoGoal {
+    OpenSim_DECLARE_CONCRETE_OBJECT(MocoPeriodicish, MocoGoal);
 
 public:
-    MocoPeriodic() = default;
-    // TODO should be able to vary, with initializeImpl().
+    MocoPeriodicish() = default;
     bool getSupportsEndpointConstraintImpl() const override { return true; }
     Mode getDefaultModeImpl() const override {
         return Mode::EndpointConstraint;
@@ -397,11 +396,17 @@ public:
             const GoalInput& in, SimTK::Vector& values) const override {
         values[0] = in.initial_state.getQ()[0] - in.final_state.getQ()[0];
         values[1] = in.final_state.getU()[0];
+        if (getModeIsCost()) {
+            values[0] = SimTK::square(values[0]);
+            values[1] = SimTK::square(values[1]);
+        }
     }
 };
 
 TEMPLATE_TEST_CASE("Endpoint constraints", "", MocoCasADiSolver) {
-    // TODO test with CasADi.
+    // TODO test with Tropter.
+    std::cout.rdbuf(LogManager::cout.rdbuf());
+    std::cout.rdbuf(LogManager::cout.rdbuf());
 
     MocoStudy study;
     auto& problem = study.updProblem();
@@ -410,20 +415,46 @@ TEMPLATE_TEST_CASE("Endpoint constraints", "", MocoCasADiSolver) {
     problem.setTimeBounds(0, 1);
     problem.setStateInfo("/jointset/j0/q0/value", {-0.3, 0.3}, -0.3);
 
-    problem.addGoal<MocoPeriodic>();
-    problem.addGoal<MocoControlGoal>("control");
+    auto* periodic = problem.addGoal<MocoPeriodicish>();
+    auto* effort = problem.addGoal<MocoControlGoal>("control");
 
     study.initSolver<TestType>();
 
-    MocoSolution solution = study.solve();
-    const int N = solution.getNumTimes();
-    CHECK(solution.getState("/jointset/j0/q0/value")[N - 1] == Approx(-0.3));
-    CHECK(solution.getState("/jointset/j0/q0/speed")[N - 1] ==
-            Approx(0).margin(1e-10));
+    SECTION("Endpoint constraint is satisfied.") {
+        MocoSolution solution = study.solve();
+        const int N = solution.getNumTimes();
+        CHECK(solution.getState("/jointset/j0/q0/value")[N - 1] ==
+                Approx(-0.3));
+        CHECK(solution.getState("/jointset/j0/q0/speed")[N - 1] ==
+                Approx(0).margin(1e-10));
+    }
+
+    SECTION("Bounds has incorrect size.") {
+        periodic->updConstraintInfo().setBounds({{0.0}});
+        CHECK_THROWS_WITH(study.solve(), Catch::Contains("Size of property"));
+    }
+
+    SECTION("Non-tight bounds.") {
+        periodic->updConstraintInfo().setBounds({{0.0}, {-0.05, 0}});
+        MocoSolution solution = study.solve();
+        const int N = solution.getNumTimes();
+        CHECK(solution.getState("/jointset/j0/q0/value")[N - 1] ==
+                Approx(-0.3));
+        // Since we are minimizing effort, we should reduce breaking and allow
+        // the pendulum to end with some downward velocity.
+        CHECK(solution.getState("/jointset/j0/q0/speed")[N - 1] ==
+                Approx(-0.05).margin(1e-10));
+    }
+
+    SECTION("Goal works in cost mode.") {
+        periodic->setMode("cost");
+        periodic->setWeight(10.0);
+        effort->setEnabled(false);
+        MocoSolution solution = study.solve();
+        const int N = solution.getNumTimes();
+        CHECK(solution.getState("/jointset/j0/q0/value")[N - 1] ==
+                Approx(-0.3).margin(1e-4));
+        CHECK(solution.getState("/jointset/j0/q0/speed")[N - 1] ==
+                Approx(0).margin(1e-6));
+    }
 }
-
-// TODO add MocoInitialActivationExcitationGoal.
-
-// TODO test endpoint goal where bounds are custom.
-
-// TODO test using a cost with multiple terms.

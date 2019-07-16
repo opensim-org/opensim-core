@@ -41,6 +41,8 @@ class Model;
 /// mode, then the default mode is available via getMode(). Use endpoint
 /// constraint mode if you require the goal to be met strictly and do not want
 /// to allow a trade-off between this goal and other goals.
+/// The calculation of the goal may differ between cost and endpoint constraint
+/// modes; cost mode may require that outputs are squared, for example.
 ///
 /// @par For developers
 /// Every time the problem is solved, a copy of this goal is used. An individual
@@ -69,25 +71,24 @@ public:
     double getWeight() const { return get_weight(); }
 
     enum class Mode { Cost, EndpointConstraint };
+    /// Set the mode property to either 'cost' or 'endpoint_constraint'. This
+    /// should be set before initializing. Setting to 'endpoint_constraint' if
+    /// getSupportsEndpointConstraint() is false causes an exception during
+    /// initializing.
     void setMode(std::string mode) { set_mode(mode); }
-    std::string getMode() const {
-        std::string mode;
-        if (getProperty_mode().empty()) {
-            mode = getDefaultMode() == Mode::Cost ? "cost "
-                                                  : "endpoint_constraint";
-        } else {
-            checkMode(get_mode());
-            mode = get_mode();
-        }
-        OPENSIM_THROW_IF_FRMOBJ(mode == "endpoint_constraint" &&
-                                        !getSupportsEndpointConstraint(),
-                Exception,
-                "Endpoint constraint mode not supported by this goal.");
-        return mode;
+    /// This returns the default mode of the goal, unless the user overrode
+    /// the default using setMode().
+    std::string getModeAsString() const {
+        return getMode() == Mode::Cost ? "cost" : "endpoint_constraint";
     }
-    bool getModeIsCost() const { return getMode() == "cost"; }
+    Mode getMode() const {
+        OPENSIM_THROW_IF_FRMOBJ(
+                !m_model, Exception, "Getting the mode requires initializing.");
+        return m_modeToUse;
+    }
+    bool getModeIsCost() const { return getMode() == Mode::Cost; }
     bool getModeIsEndpointConstraint() const {
-        return getMode() == "endpoint_constraint";
+        return getMode() == Mode::EndpointConstraint;
     }
 
     /// Types of goals have a class-level default for whether they are enforced
@@ -104,6 +105,7 @@ public:
     const MocoConstraintInfo& getConstraintInfo() const {
         return get_MocoConstraintInfo();
     }
+    MocoConstraintInfo& updConstraintInfo() { return upd_MocoConstraintInfo(); }
 
     /// Get the length of the return value of calcGoal().
     int getNumOutputs() const {
@@ -151,11 +153,27 @@ public:
     void initializeOnModel(const Model& model) const {
         m_model.reset(&model);
         if (!get_enabled()) { return; }
-        if (getModeIsEndpointConstraint()) {
+
+        // Set mode.
+        Mode mode;
+        if (getProperty_mode().empty()) {
+            mode = getDefaultMode();
+        } else {
+            checkMode(get_mode());
+            mode = (get_mode() == "cost") ? Mode::Cost
+                                          : Mode::EndpointConstraint;
+        }
+        OPENSIM_THROW_IF_FRMOBJ(mode == Mode::EndpointConstraint &&
+                !getSupportsEndpointConstraint(),
+                Exception,
+                "Endpoint constraint mode not supported by this goal.");
+        m_modeToUse = mode;
+        if (m_modeToUse == Mode::EndpointConstraint) {
             m_weightToUse = 1;
         } else {
             m_weightToUse = get_weight();
         }
+
         initializeOnModelImpl(model);
 
         OPENSIM_THROW_IF_FRMOBJ(m_numIntegrals == -1, Exception,
@@ -238,6 +256,7 @@ private:
 
     mutable SimTK::ReferencePtr<const Model> m_model;
     mutable double m_weightToUse;
+    mutable Mode m_modeToUse;
     mutable int m_numIntegrals = -1;
 };
 

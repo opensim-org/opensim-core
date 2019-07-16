@@ -419,13 +419,11 @@ void MocoProblemRep::initialize() {
         goalNames.insert(goal.getName());
         if (goal.getEnabled()) {
             std::unique_ptr<MocoGoal> item(goal.clone());
-            if (goal.getModeIsEndpointConstraint()) {
+            item->initializeOnModel(m_model_disabled_constraints);
+            if (item->getModeIsEndpointConstraint()) {
                 m_endpoint_constraints.push_back(std::move(item));
-                m_endpoint_constraints.back()->initializeOnModel(
-                        m_model_disabled_constraints);
             } else {
                 m_costs.push_back(std::move(item));
-                m_costs.back()->initializeOnModel(m_model_disabled_constraints);
             }
         }
     }
