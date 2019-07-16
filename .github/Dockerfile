@@ -36,12 +36,12 @@ RUN apt-get update && apt-get install -y \
 
 # TODO: this embeds the token in git settings!
 RUN git config --global url."https://$GITHUBTOKEN:@github.com/".insteadOf "https://github.com/" \
-        && git clone https://github.com/stanfordnmbl/opensim-moco.git ~/opensim-moco \
-        && cd ~/opensim-moco \
+        && git clone https://github.com/stanfordnmbl/opensim-moco.git /opensim-moco \
+        && cd /opensim-moco \
         && git checkout $MOCOBRANCH \
         && rm ~/.gitconfig
 
-RUN cd ~/opensim-moco \
+RUN cd /opensim-moco \
         && git submodule update --init \
         && mkdir ../moco_dependencies_build \
         && cd ../moco_dependencies_build \
@@ -53,5 +53,12 @@ RUN cd ~/opensim-moco \
         && cd build \
         && cmake ../opensim-moco \
         && make --jobs 4 install \
-        && rm -r ~/moco_dependencies_build \
-        && rm -r ~/build
+        && "/opensim-moco-install/sdk/lib" > /etc/ld.so.conf.d/moco.conf \
+        && "/moco_dependencies_install/adol-c/lib" > /etc/ld.so.conf.d/moco.conf \
+        && "/moco_dependencies_install/ipopt/lib" > /etc/ld.so.conf.d/moco.conf \
+        && ldconfig \
+        && rm -r /moco_dependencies_build \
+        && rm -r /build
+
+# TODO build python bindings.
+
