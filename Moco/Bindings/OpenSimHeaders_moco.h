@@ -14,6 +14,7 @@
 #include <Moco/MocoControlBoundConstraint.h>
 #include <Moco/MocoGoal/MocoControlGoal.h>
 #include <Moco/MocoGoal/MocoGoal.h>
+#include <Moco/MocoGoal/MocoInitialActivationGoal.h>
 #include <Moco/MocoGoal/MocoJointReactionGoal.h>
 #include <Moco/MocoGoal/MocoMarkerFinalGoal.h>
 #include <Moco/MocoGoal/MocoMarkerTrackingGoal.h>
