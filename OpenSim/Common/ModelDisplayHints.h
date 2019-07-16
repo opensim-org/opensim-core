@@ -53,7 +53,6 @@ your component produces. The currently-supported flags are:
   - show frames
   - show labels
   - show debug geometry
-  - no visualization
 
 This class is intended to provide some minimal user control over generated
 geometry in a form that is easy for a ModelComponent author to deal with, since

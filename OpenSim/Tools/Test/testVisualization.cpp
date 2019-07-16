@@ -121,14 +121,16 @@ int main()
         LoadOpenSimLibrary("osimActuators");
         
         Model testModel("BuiltinGeometry.osim");
+        testModel.enableVisualization(true);
         testVisModel(testModel, "vis_BuiltinGeometry.txt");
         std::cout << "BuiltinGeometry Passed" << std::endl;
         Model testModel2 = createModel4AppearanceTest();
+        testModel2.enableVisualization(true);
         testVisModel(testModel2, "vis_AppearanceTest.txt");
         std::cout << "Appearance test Passed" << std::endl;
         // Load Model in 3.3 format that had transforms attached to Geometry
         Model testModel3("double_pendulum33.osim");
-        
+        testModel3.enableVisualization(true);
         SimTK::Array_<DecorativeGeometry> standard;
         testModel3.updDisplayHints().set_show_frames(true);
         populate_doublePendulumPrimitives(standard);
@@ -138,17 +140,20 @@ int main()
         // Now a model from 3.3 where both GeometrySet and individual DisplayGeometry 
         // have a non-trivial transform.
         Model composedTransformsModel("doubletransform33.osim");
+        composedTransformsModel.enableVisualization(true);
         composedTransformsModel.updDisplayHints().set_show_frames(true);
         populate_composedTransformPrimitives(standard);
         testVisModelAgainstStandard(composedTransformsModel, standard);
         // Model with contacts
         Model modelWithContacts("visualize_contacts.osim");
+        modelWithContacts.enableVisualization(true);
         modelWithContacts.updDisplayHints().set_show_frames(true);
         populate_contactModelPrimitives(standard);
         testVisModelAgainstStandard(modelWithContacts, standard);
         
         // Model with WrapObjects
         Model modelWithWrap("test_wrapAllVis.osim");
+        modelWithWrap.enableVisualization(true);
         modelWithWrap.updDisplayHints().set_show_frames(true);
         populate_wrapModelPrimitives(standard);
         modelWithWrap.updDisplayHints().set_show_frames(false);
