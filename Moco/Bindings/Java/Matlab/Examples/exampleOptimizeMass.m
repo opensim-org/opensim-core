@@ -18,7 +18,7 @@
 
 % Optimize the mass of a simple harmonic oscillator such that it follows the
 % correct trajectory specified by the state bounds 
-% and the MocoMarkerFinalCost.
+% and the MocoMarkerFinalGoal.
 
 stiffness = 100.0;
 mass = 5.0;
@@ -77,11 +77,11 @@ problem.setStateInfo('/slider/position/speed', [-20, 20], [0], [0]);
 problem.addParameter(MocoParameter('oscillator_mass', 'body', 'mass',... 
     MocoBounds(0, 10)));
 
-endpointCost = MocoMarkerFinalCost();
+endpointCost = MocoMarkerFinalGoal();
 endpointCost.setPointName('/markerset/marker');
 endpointCost.setReferenceLocation(Vec3(0.5, 0, 0));
 
-problem.addCost(endpointCost);
+problem.addGoal(endpointCost);
 
 solver = moco.initTropterSolver();
 

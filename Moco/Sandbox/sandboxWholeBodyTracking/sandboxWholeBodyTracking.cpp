@@ -508,15 +508,15 @@ int main() {
     //trackingCost.setWeight("gp/p_tx/value", 25.0);
     //trackingCost.setWeight("gp/p_ty/value", 10.0);
     //trackingCost.setWeight("hip/hip_rz/value", 2.0);
-    mp.addCost(trackingCost);
+    mp.addGoal(trackingCost);
 
     // Takes longer to solve with this cost:
     // With implicit, and 5e4 stiffness, doesn't not converge within 1000
     // iterations:
-    //MocoControlCost controlCost;
+    //MocoControlGoal controlCost;
     //controlCost.setName("effort");
     //controlCost.set_weight(0.00000001);
-    //mp.addCost(controlCost);
+    //mp.addGoal(controlCost);
 
     // Configure the solver.
     // =====================

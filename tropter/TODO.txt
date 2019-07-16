@@ -214,7 +214,7 @@ TomuProblem p;
 p.setModel(pendulum);
 MuscleActivationCost cost;
 cost.setPower(2);
-p.addCost(cost);
+p.addGoal(cost);
 p.setTimeBounds(0, 1);
 p.setStateBounds("position", {-5, 5}, -2, 2);
 p.setStateBounds("speed", {-10, 10}, 0, 0);

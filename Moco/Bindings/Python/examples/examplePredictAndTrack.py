@@ -127,14 +127,14 @@ def solvePrediction():
     #       end effector position.
     ftCost = osim.MocoFinalTimeCost()
     ftCost.set_weight(0.001)
-    problem.addCost(ftCost)
+    problem.addGoal(ftCost)
 
     finalCost = osim.MocoMarkerFinalCost()
     finalCost.setName("final")
     finalCost.set_weight(1000.0)
     finalCost.setPointName("/markerset/m1")
     finalCost.setReferenceLocation(osim.Vec3(0, 2, 0))
-    problem.addCost(finalCost)
+    problem.addGoal(finalCost)
 
 
     # Configure the solver.
@@ -224,12 +224,12 @@ def solveStateTracking(stateRef):
     # Cost: track provided state data.
     stateTracking = osim.MocoStateTrackingCost()
     stateTracking.setReference(osim.TableProcessor(stateRef))
-    problem.addCost(stateTracking)
+    problem.addGoal(stateTracking)
 
     effort = osim.MocoControlCost()
     effort.setName("effort")
     effort.set_weight(0.001)
-    # TODO problem.addCost(effort)
+    # TODO problem.addGoal(effort)
 
     # Configure the solver.
     solver = moco.initTropterSolver()
@@ -279,12 +279,12 @@ def solveMarkerTracking(markersRef, guess):
     # Cost: track provided marker data.
     markerTracking = osim.MocoMarkerTrackingCost()
     markerTracking.setMarkersReference(markersRef)
-    problem.addCost(markerTracking)
+    problem.addGoal(markerTracking)
     
     effort = osim.MocoControlCost()
     effort.setName("effort")
     effort.set_weight(0.0001)
-    # problem.addCost(effort)
+    # problem.addGoal(effort)
 
     # Configure the solver.
     solver = moco.initTropterSolver()

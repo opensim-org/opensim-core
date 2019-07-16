@@ -339,7 +339,7 @@ int main() {
     problem.setStateInfo("/slider/position/value", MocoBounds(0, 1),
             MocoInitialBounds(0), MocoFinalBounds(1));
     problem.setStateInfo("/slider/position/speed", {-100, 100}, 0, 0);
-    problem.addCost<MocoFinalTimeCost>();
+    problem.addGoal<MocoFinalTimeGoal>();
 
     MocoCasADiSolver solver;
     solver.resetProblem(problem);

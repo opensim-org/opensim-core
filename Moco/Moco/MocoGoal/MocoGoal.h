@@ -1,7 +1,7 @@
-#ifndef MOCO_MOCOCOST_H
-#define MOCO_MOCOCOST_H
+#ifndef MOCO_MOCOGOAL_H
+#define MOCO_MOCOGOAL_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: MocoCost.h                                                   *
+ * OpenSim Moco: MocoGoal.h                                                   *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2017 Stanford University and the Authors                     *
  *                                                                            *
@@ -18,9 +18,9 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "../osimMocoDLL.h"
 #include "../MocoBounds.h"
 #include "../MocoConstraintInfo.h"
+#include "../osimMocoDLL.h"
 
 #include <SimTKcommon/internal/State.h>
 
@@ -30,40 +30,38 @@ namespace OpenSim {
 
 class Model;
 
-// TODO Rename MocoCost to MocoThing, MocoQuantity, MocoTerm, or to
-// MocoEndpoint.
-// Maybe whether this is used as a cost or endpoint depends on whether
-// MocoEndpoint is added as addCost() or addEndpointConstraint().
 // TODO give option to specify gradient and Hessian analytically.
 
 /// A term in the cost functional, to be minimized. Costs depend on the phase's
 /// initial and final states and controls, and optionally on the integral of a
 /// quantity over the phase.
+/// TODO document that this can also be an endpoint constraint.
 /// @par For developers
 /// Every time the problem is solved, a copy of this cost is used. An individual
 /// instance of a cost is only ever used in a single problem. Therefore, there
 /// is no need to clear cache variables that you create in initializeImpl().
 /// Also, information stored in this cost does not persist across multiple
 /// solves.
-/// @ingroup mococost
-class OSIMMOCO_API MocoCost : public Object {
-    OpenSim_DECLARE_ABSTRACT_OBJECT(MocoCost, Object);
+/// @ingroup mocogoal
+class OSIMMOCO_API MocoGoal : public Object {
+    OpenSim_DECLARE_ABSTRACT_OBJECT(MocoGoal, Object);
 
 public:
-
     OpenSim_DECLARE_PROPERTY(
             enabled, bool, "This bool indicates whether this cost is enabled.");
 
     OpenSim_DECLARE_PROPERTY(weight, double,
             "The cost value is multiplied by this weight (default: 1).");
 
-    OpenSim_DECLARE_OPTIONAL_PROPERTY(apply_as_endpoint_constraint, bool, "TODO");
+    // TODO rename to "mode", which is either "cost" or "endpoint_constraint"
+    OpenSim_DECLARE_OPTIONAL_PROPERTY(
+            apply_as_endpoint_constraint, bool, "TODO");
 
-    MocoCost();
+    MocoGoal();
 
-    MocoCost(std::string name);
+    MocoGoal(std::string name);
 
-    MocoCost(std::string name, double weight);
+    MocoGoal(std::string name, double weight);
 
     // TODO: an Endpoint should have a default as to whether it's applied as a
     // cost or a constraint.
@@ -98,7 +96,8 @@ public:
         } else {
             endpoint_constraint = get_apply_as_endpoint_constraint();
         }
-        OPENSIM_THROW_IF(endpoint_constraint && !getSupportsEndpointConstraint(),
+        OPENSIM_THROW_IF(
+                endpoint_constraint && !getSupportsEndpointConstraint(),
                 Exception, "Endpoint constraint not supported TODO.");
         return endpoint_constraint;
     }
@@ -119,7 +118,7 @@ public:
         calcIntegrandImpl(state, integrand);
         return integrand;
     }
-    struct CostInput {
+    struct GoalInput {
         const SimTK::State& initial_state;
         const SimTK::State& final_state;
         /// This is computed by integrating calcIntegrand().
@@ -128,15 +127,15 @@ public:
     // TODO: rename to calcValue().
     /// The returned cost includes the weight.
     // We use SimTK::Real instead of double for when we support adoubles.
-    SimTK::Vector calcCost(const CostInput& input) const {
-        SimTK::Vector cost(getNumOutputs());
-        cost = 0;
-        if (!get_enabled()) {
-            return cost;
+    SimTK::Vector calcGoal(const GoalInput& input) const {
+        SimTK::Vector goal(getNumOutputs());
+        goal = 0;
+        if (!get_enabled()) { return goal; }
+        calcGoalImpl(input, goal);
+        if (!getApplyAsEndpointConstraint()) {
+            goal *= get_weight();
         }
-        // TODO: ignore weight if apply_as_endpoint_constraint.
-        calcCostImpl(input, cost);
-        return get_weight() * cost;
+        return goal;
     }
     /// For use by solvers. This also performs error checks on the Problem.
     void initializeOnModel(const Model& model) const {
@@ -176,8 +175,8 @@ protected:
     virtual void calcIntegrandImpl(
             const SimTK::State& state, double& integrand) const;
     /// The Lagrange multipliers for kinematic constraints are not available.
-    virtual void calcCostImpl(
-            const CostInput& input, SimTK::Vector& cost) const = 0;
+    virtual void calcGoalImpl(
+            const GoalInput& input, SimTK::Vector& cost) const = 0;
     /// For use within virtual function implementations.
     const Model& getModel() const {
         OPENSIM_THROW_IF(!m_model, Exception,
@@ -185,17 +184,15 @@ protected:
         return m_model.getRef();
     }
 
-
 private:
     OpenSim_DECLARE_UNNAMED_PROPERTY(MocoConstraintInfo,
-            "The bounds and labels for this MocoCost, if applied as an "
+            "The bounds and labels for this MocoGoal, if applied as an "
             "endpoint constraint.");
 
     void setNumEquations(int numEqs) const {
         // TODO avoid const_cast
-        const_cast<MocoCost*>(this)
-                ->upd_MocoConstraintInfo()
-                .setNumEquations(numEqs);
+        const_cast<MocoGoal*>(this)->upd_MocoConstraintInfo().setNumEquations(
+                numEqs);
     }
 
     void constructProperties();
@@ -203,28 +200,28 @@ private:
     mutable SimTK::ReferencePtr<const Model> m_model;
 };
 
-inline void MocoCost::calcIntegrandImpl(
+inline void MocoGoal::calcIntegrandImpl(
         const SimTK::State& state, double& integrand) const {}
 
 /// Endpoint cost for final time.
-/// @ingroup mococost
-class OSIMMOCO_API MocoFinalTimeCost : public MocoCost {
-    OpenSim_DECLARE_CONCRETE_OBJECT(MocoFinalTimeCost, MocoCost);
+/// @ingroup mocogoal
+class OSIMMOCO_API MocoFinalTimeGoal : public MocoGoal {
+    OpenSim_DECLARE_CONCRETE_OBJECT(MocoFinalTimeGoal, MocoGoal);
 
 public:
-    MocoFinalTimeCost() = default;
-    MocoFinalTimeCost(std::string name) : MocoCost(std::move(name)) {}
-    MocoFinalTimeCost(std::string name, double weight)
-            : MocoCost(std::move(name), weight) {}
+    MocoFinalTimeGoal() = default;
+    MocoFinalTimeGoal(std::string name) : MocoGoal(std::move(name)) {}
+    MocoFinalTimeGoal(std::string name, double weight)
+            : MocoGoal(std::move(name), weight) {}
 
 protected:
     int getNumIntegralsImpl() const override { return 0; }
-    void calcCostImpl(
-            const CostInput& input, SimTK::Vector& cost) const override {
+    void calcGoalImpl(
+            const GoalInput& input, SimTK::Vector& cost) const override {
         cost[0] = input.final_state.getTime();
     }
 };
 
 } // namespace OpenSim
 
-#endif // MOCO_MOCOCOST_H
+#endif // MOCO_MOCOGOAL_H

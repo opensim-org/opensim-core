@@ -92,7 +92,8 @@ single-phase problems. A MocoPhase consists of the following:
 
 1. An OpenSim model that describes states, controls, dynamics, and kinematic
    constraints.
-2. MocoCost%s: describes the cost functional to minimize.
+2. MocoGoal%s: describes the cost functional to minimize or endpoint constraints
+   to enforce.
 3. MocoPathConstraint%s: describes non-kinematic algebraic constraints to
    enforce over the entire phase.
 4. MocoParameter%s: describes Model (time-invariant) properties to optimize.
@@ -122,7 +123,7 @@ little influence on the value of the control at nearby times.
 
 @subsection costfunctional Defining the cost functional
 
-See @ref mococost for more information.
+See @ref mocogoal for more information.
 
 @subsection params Parameter optimization with MocoParameter
 
@@ -462,7 +463,7 @@ other actuators in the model due to unecessarily large max force settings.
 */
 
 /**
-@defgroup mococost Available cost terms
+@defgroup mocogoal Available cost terms
 
 These are the available cost terms you can use in your cost functional. If none
 of these satisfy your needs, you can define your own using a plugin.

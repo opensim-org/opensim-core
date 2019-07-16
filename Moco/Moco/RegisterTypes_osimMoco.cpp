@@ -32,15 +32,15 @@
 #include "MocoBounds.h"
 #include "MocoCasADiSolver/MocoCasADiSolver.h"
 #include "MocoControlBoundConstraint.h"
-#include "MocoCost/MocoControlCost.h"
-#include "MocoCost/MocoControlTrackingCost.h"
-#include "MocoCost/MocoCost.h"
-#include "MocoCost/MocoJointReactionCost.h"
-#include "MocoCost/MocoMarkerFinalCost.h"
-#include "MocoCost/MocoMarkerTrackingCost.h"
-#include "MocoCost/MocoOrientationTrackingCost.h"
-#include "MocoCost/MocoStateTrackingCost.h"
-#include "MocoCost/MocoTranslationTrackingCost.h"
+#include "MocoGoal/MocoControlGoal.h"
+#include "MocoGoal/MocoControlTrackingGoal.h"
+#include "MocoGoal/MocoGoal.h"
+#include "MocoGoal/MocoJointReactionGoal.h"
+#include "MocoGoal/MocoMarkerFinalGoal.h"
+#include "MocoGoal/MocoMarkerTrackingGoal.h"
+#include "MocoGoal/MocoOrientationTrackingGoal.h"
+#include "MocoGoal/MocoStateTrackingGoal.h"
+#include "MocoGoal/MocoTranslationTrackingGoal.h"
 #include "MocoInverse.h"
 #include "MocoParameter.h"
 #include "MocoProblem.h"
@@ -60,17 +60,17 @@ static osimMocoInstantiator instantiator;
 
 OSIMMOCO_API void RegisterTypes_osimMoco() {
     try {
-        Object::registerType(MocoFinalTimeCost());
+        Object::registerType(MocoFinalTimeGoal());
         Object::registerType(MocoWeight());
         Object::registerType(MocoWeightSet());
-        Object::registerType(MocoStateTrackingCost());
-        Object::registerType(MocoMarkerTrackingCost());
-        Object::registerType(MocoMarkerFinalCost());
-        Object::registerType(MocoControlCost());
-        Object::registerType(MocoControlTrackingCost());
-        Object::registerType(MocoJointReactionCost());
-        Object::registerType(MocoOrientationTrackingCost());
-        Object::registerType(MocoTranslationTrackingCost());
+        Object::registerType(MocoStateTrackingGoal());
+        Object::registerType(MocoMarkerTrackingGoal());
+        Object::registerType(MocoMarkerFinalGoal());
+        Object::registerType(MocoControlGoal());
+        Object::registerType(MocoControlTrackingGoal());
+        Object::registerType(MocoJointReactionGoal());
+        Object::registerType(MocoOrientationTrackingGoal());
+        Object::registerType(MocoTranslationTrackingGoal());
         Object::registerType(MocoBounds());
         Object::registerType(MocoInitialBounds());
         Object::registerType(MocoFinalBounds());

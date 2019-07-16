@@ -27,7 +27,7 @@ namespace OpenSim {
 // MocoPhase
 // ============================================================================
 
-/// The states, controls, dynamics, parameters, costs, and constraints for a
+/// The states, controls, dynamics, parameters, goals, and constraints for a
 /// phase of the problem.
 /// The dynamics are provided by the %OpenSim Model.
 ///
@@ -226,38 +226,38 @@ public:
         updProperty_parameters().adoptAndAppendValue(param.release());
         return ptr;
     }
-    /// Add a cost term to this phase.
-    /// Cost terms must have a name (MocoCost::setName()), and the name must be
-    /// unique. Note that costs have the name "cost" by default, so if you
-    /// only have one cost, you don't need to set its name manually.
+    /// Add a goal to this phase.
+    /// Goal must have a name (MocoGoal::setName()), and the name must be
+    /// unique. Note that goals have the name "goal" by default, so if you
+    /// only have one goal, you don't need to set its name manually.
     /// C++ example:
     /// @code{.cpp}
-    /// auto cost0Ptr = phase.addCost<MocoFinalTimeCost>();
-    /// auto cost1Ptr = phase.addCost<MocoFinalTimeCost>("final_time");
+    /// auto goal0Ptr = phase.addGoal<MocoFinalTimeGoal>();
+    /// auto goal1Ptr = phase.addGoal<MocoFinalTimeGoal>("final_time");
     /// @endcode
-    /// You can edit the cost using the returned pointer.
+    /// You can edit the goal using the returned pointer.
     /// Python example:
     /// @code{.py}
-    /// cost = opensim.MocoFinalTimeCost()
-    /// phase.addCost(cost)
+    /// goal = opensim.MocoFinalTimeGoal()
+    /// phase.addGoal(goal)
     /// @endcode
     /// Matlab example:
     /// @code
-    /// cost = org.opensim.modeling.MocoFinalTimeCost();
-    /// phase.addCost(cost);
+    /// goal = org.opensim.modeling.MocoFinalTimeGoal();
+    /// phase.addGoal(goal);
     /// @endcode
-    /// In both Python and Matlab, changes to `cost` will affect your problem.
-    template <typename MocoCostType, typename... Args>
-    MocoCostType* addCost(Args&&... args) {
-        return addCost(std::unique_ptr<MocoCostType>(
-                new MocoCostType(std::forward<Args>(args)...)));
+    /// In both Python and Matlab, changes to `goal` will affect your problem.
+    template <typename MocoGoalType, typename... Args>
+    MocoGoalType* addGoal(Args&&... args) {
+        return addGoal(std::unique_ptr<MocoGoalType>(
+                new MocoGoalType(std::forward<Args>(args)...)));
     }
-    /// Add a cost term to this phase.
+    /// Add a goal term to this phase.
     /// Similar to above.
-    template <typename MocoCostType>
-    MocoCostType* addCost(std::unique_ptr<MocoCostType> cost) {
-        MocoCostType* ptr = cost.get();
-        updProperty_costs().adoptAndAppendValue(cost.release());
+    template <typename MocoGoalType>
+    MocoGoalType* addGoal(std::unique_ptr<MocoGoalType> goal) {
+        MocoGoalType* ptr = goal.get();
+        updProperty_goals().adoptAndAppendValue(goal.release());
         return ptr;
     }
 
@@ -339,8 +339,8 @@ public:
     const MocoParameter& getParameter(const std::string& name) const;
     MocoParameter& updParameter(const std::string& name);
 
-    const MocoCost& getCost(const std::string& name) const;
-    MocoCost& updCost(const std::string& name);
+    const MocoGoal& getGoal(const std::string& name) const;
+    MocoGoal& updGoal(const std::string& name);
 
     /// Get a MocoPathConstraint from this MocoPhase. Note: this does not
     /// include MocoKinematicConstraints, use getKinematicConstraint() instead.
@@ -376,7 +376,8 @@ protected: // Protected so that doxygen shows the properties.
     OpenSim_DECLARE_LIST_PROPERTY(parameters, MocoParameter,
             "Parameter variables (model properties) to optimize.");
     OpenSim_DECLARE_LIST_PROPERTY(
-            costs, MocoCost, "Quantities to minimize in the cost functional.");
+            goals, MocoGoal,
+            "Integral/endpoint quantities to minimize or constrain.");
     OpenSim_DECLARE_LIST_PROPERTY(path_constraints, MocoPathConstraint,
             "Path constraints to enforce in the optimal control problem.");
     // TODO make this a list property of MocoConstraintInfos when we are able to
@@ -405,8 +406,8 @@ private:
 ///   - OpenSim Model
 ///   - state and control variable info (e.g., bounds)
 ///   - parameter variables (model properties)
-///   - cost terms
-///   - constraint equations
+///   - goals (costs and endpoint constraints)
+///   - path constraints
 ///
 /// Currently, only single-phase problems are supported.
 /// This class has convenience methods to configure the first (0-th) phase.
@@ -475,20 +476,20 @@ public:
     MocoParamType* addParameter(std::unique_ptr<MocoParamType> param) {
         return upd_phases(0).addParameter(std::move(param));
     }
-    /// Add a cost term for phase 0.
-    /// @see MocoPhase::addCost()
-    template <typename MocoCostType, typename... Args>
-    MocoCostType* addCost(Args&&... args) {
-        return upd_phases(0).addCost(std::unique_ptr<MocoCostType>(
-                new MocoCostType(std::forward<Args>(args)...)));
+    /// Add a goal for phase 0.
+    /// @see MocoPhase::addGoal()
+    template <typename MocoGoalType, typename... Args>
+    MocoGoalType* addGoal(Args&&... args) {
+        return upd_phases(0).addGoal(std::unique_ptr<MocoGoalType>(
+                new MocoGoalType(std::forward<Args>(args)...)));
     }
-    /// Add a cost term for phase 0.
-    template <typename MocoCostType>
-    MocoCostType* addCost(std::unique_ptr<MocoCostType> cost) {
-        return upd_phases(0).addCost(std::move(cost));
+    /// Add a goal for phase 0.
+    template <typename MocoGoalType>
+    MocoGoalType* addGoal(std::unique_ptr<MocoGoalType> goal) {
+        return upd_phases(0).addGoal(std::move(goal));
     }
-    /// Returns a reference to the cost with name "name" in phase 0.
-    MocoCost& updCost(const std::string& name);
+    /// Returns a reference to the goal with name "name" in phase 0.
+    MocoGoal& updGoal(const std::string& name);
     /// Add a constraint for phase 0.
     /// @see MocoPhase::addPathConstraint()
     template <typename MocoPCType, typename... Args>
@@ -513,7 +514,7 @@ public:
 #ifndef SWIG // MocoProblemRep() is not copyable.
     /// Create an instance of MocoProblemRep, which fills in additional
     /// state and control bounds, and allows you to apply parameter values
-    /// and evaluate the cost terms.
+    /// and evaluate the goals.
     ///
     /// This function will check your problem for various errors.
     MocoProblemRep createRep() const { return MocoProblemRep(*this); }

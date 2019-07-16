@@ -17,25 +17,25 @@ set(MOCO_SOURCES
         MocoProblemInfo.h
         MocoProblemRep.h
         MocoProblemRep.cpp
-        MocoCost/MocoCost.h
-        MocoCost/MocoCost.cpp
-        MocoCost/MocoMarkerFinalCost.h
-        MocoCost/MocoMarkerFinalCost.cpp
-        MocoCost/MocoMarkerTrackingCost.h
-        MocoCost/MocoMarkerTrackingCost.cpp
+        MocoGoal/MocoGoal.h
+        MocoGoal/MocoGoal.cpp
+        MocoGoal/MocoMarkerFinalGoal.h
+        MocoGoal/MocoMarkerFinalGoal.cpp
+        MocoGoal/MocoMarkerTrackingGoal.h
+        MocoGoal/MocoMarkerTrackingGoal.cpp
         MocoWeightSet.h
-        MocoCost/MocoStateTrackingCost.h
-        MocoCost/MocoStateTrackingCost.cpp
-        MocoCost/MocoControlCost.h
-        MocoCost/MocoControlCost.cpp
-        MocoCost/MocoControlTrackingCost.h
-        MocoCost/MocoControlTrackingCost.cpp
-        MocoCost/MocoJointReactionCost.h
-        MocoCost/MocoJointReactionCost.cpp
-        MocoCost/MocoOrientationTrackingCost.h
-        MocoCost/MocoOrientationTrackingCost.cpp
-        MocoCost/MocoTranslationTrackingCost.h
-        MocoCost/MocoTranslationTrackingCost.cpp
+        MocoGoal/MocoStateTrackingGoal.h
+        MocoGoal/MocoStateTrackingGoal.cpp
+        MocoGoal/MocoControlGoal.h
+        MocoGoal/MocoControlGoal.cpp
+        MocoGoal/MocoControlTrackingGoal.h
+        MocoGoal/MocoControlTrackingGoal.cpp
+        MocoGoal/MocoJointReactionGoal.h
+        MocoGoal/MocoJointReactionGoal.cpp
+        MocoGoal/MocoOrientationTrackingGoal.h
+        MocoGoal/MocoOrientationTrackingGoal.cpp
+        MocoGoal/MocoTranslationTrackingGoal.h
+        MocoGoal/MocoTranslationTrackingGoal.cpp
         MocoSolver.h
         MocoSolver.cpp
         MocoDirectCollocationSolver.h

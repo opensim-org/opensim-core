@@ -21,7 +21,7 @@
 #include "Components/ModelFactory.h"
 #include "Components/PositionMotion.h"
 #include "MocoCasADiSolver/MocoCasADiSolver.h"
-#include "MocoCost/MocoControlCost.h"
+#include "MocoGoal/MocoControlGoal.h"
 #include "MocoProblem.h"
 #include "MocoStudy.h"
 #include "MocoUtilities.h"
@@ -91,7 +91,7 @@ std::pair<MocoStudy, TimeSeriesTable> MocoInverse::initializeInternal() const {
     problem.setTimeBounds(timeInfo.initial, timeInfo.final);
 
     // TODO: Allow users to specify costs flexibly.
-    problem.addCost<MocoControlCost>("excitation_effort");
+    problem.addGoal<MocoControlGoal>("excitation_effort");
 
     // Configure the MocoSolver.
     // -------------------------

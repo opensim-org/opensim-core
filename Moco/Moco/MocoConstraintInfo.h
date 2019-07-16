@@ -114,7 +114,7 @@ private:
     }
     friend class MocoPathConstraint;
     friend class MocoKinematicConstraint;
-    friend class MocoCost;
+    friend class MocoGoal;
 
     void updateNumEquationsFromProperty(const AbstractProperty& prop) {
         if (!m_num_equations) {

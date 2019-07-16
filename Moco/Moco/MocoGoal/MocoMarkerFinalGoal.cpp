@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: MocoCost.cpp                                                 *
+ * OpenSim Moco: MocoMarkerFinalGoal.cpp                                      *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2017 Stanford University and the Authors                     *
  *                                                                            *
@@ -15,34 +15,25 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
-#include "MocoCost.h"
+
+#include "MocoMarkerFinalGoal.h"
+
+#include <OpenSim/Simulation/Model/Model.h>
 
 using namespace OpenSim;
 
-MocoCost::MocoCost() {
-    constructProperties();
-    if (getName().empty()) setName("cost");
+void MocoMarkerFinalGoal::initializeOnModelImpl(const Model& model) const {
+    m_point.reset(&model.getComponent<Point>(get_point_name()));
 }
 
-MocoCost::MocoCost(std::string name) {
-    setName(std::move(name));
-    constructProperties();
+void MocoMarkerFinalGoal::calcGoalImpl(
+        const GoalInput& input, SimTK::Vector& cost) const {
+    getModel().realizePosition(input.final_state);
+    const auto& actualLocation = m_point->getLocationInGround(input.final_state);
+    cost[0] = (actualLocation - get_reference_location()).normSqr();
 }
 
-MocoCost::MocoCost(std::string name, double weight)
-        : MocoCost(std::move(name)) {
-    set_weight(weight);
-}
-
-
-void MocoCost::printDescription(std::ostream& stream) const {
-    stream << getName() << ". " << getConcreteClassName() <<
-            " enabled: " << get_enabled() << " weight: " << get_weight() << std::endl;
-}
-
-void MocoCost::constructProperties() {
-    constructProperty_enabled(true);
-    constructProperty_weight(1);
-    constructProperty_apply_as_endpoint_constraint();
-    constructProperty_MocoConstraintInfo(MocoConstraintInfo());
+void MocoMarkerFinalGoal::constructProperties() {
+    constructProperty_point_name("");
+    constructProperty_reference_location(SimTK::Vec3(0));
 }

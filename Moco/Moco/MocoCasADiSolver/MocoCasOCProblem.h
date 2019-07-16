@@ -351,7 +351,7 @@ private:
         // Compute the cost for this cost term.
         const auto& mocoCost = mocoProblemRep->getCostByIndex(index);
         SimTK::Vector simtkCost =
-                mocoCost.calcCost({simtkStateDisabledConstraintsInitial,
+                mocoCost.calcGoal({simtkStateDisabledConstraintsInitial,
                         simtkStateDisabledConstraintsFinal, input.integral});
         cost = convertToCasADiDM(simtkCost);
 
@@ -381,7 +381,7 @@ private:
         const auto& mocoEC = mocoProblemRep->getEndpointConstraintByIndex(index);
         // TODO pass in the argument.
         SimTK::Vector simtkValues =
-                mocoEC.calcCost({simtkStateDisabledConstraintsInitial,
+                mocoEC.calcGoal({simtkStateDisabledConstraintsInitial,
                         simtkStateDisabledConstraintsFinal, input.integral});
         values = convertToCasADiDM(simtkValues);
 

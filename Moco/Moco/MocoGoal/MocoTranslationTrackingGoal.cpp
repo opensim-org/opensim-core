@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: MocoTranslationTrackingCost.h                                *
+ * OpenSim Moco: MocoTranslationTrackingGoal.h                                *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2019 Stanford University and the Authors                     *
  *                                                                            *
@@ -16,17 +16,18 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "MocoTranslationTrackingCost.h"
+#include "MocoTranslationTrackingGoal.h"
 
-#include <algorithm>
 #include "../MocoUtilities.h"
-#include <OpenSim/Simulation/StatesTrajectory.h>
+#include <algorithm>
+
 #include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/StatesTrajectory.h>
 
 using namespace OpenSim;
 using SimTK::Vec3;
 
-void MocoTranslationTrackingCost::initializeOnModelImpl(const Model& model)
+void MocoTranslationTrackingGoal::initializeOnModelImpl(const Model& model)
         const {
     // Get the reference data.
     TimeSeriesTableVec3 translationTable;
@@ -173,7 +174,7 @@ void MocoTranslationTrackingCost::initializeOnModelImpl(const Model& model)
     m_ref_splines = GCVSplineSet(flatTable);
 }
 
-void MocoTranslationTrackingCost::calcIntegrandImpl(const SimTK::State& state,
+void MocoTranslationTrackingGoal::calcIntegrandImpl(const SimTK::State& state,
     double& integrand) const {
     const auto& time = state.getTime();
     getModel().realizePosition(state);
