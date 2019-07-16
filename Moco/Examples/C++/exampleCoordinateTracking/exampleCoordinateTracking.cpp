@@ -331,7 +331,7 @@ void testCoordinateTracking_CoordinateActuators() {
 }
 
 int main() {
-   //testCoordinateTracking_MusclePolynomials();
-   //testCoordinateTracking_MuscleGeometryPath();
+   testCoordinateTracking_MusclePolynomials();
+   testCoordinateTracking_MuscleGeometryPath();
    testCoordinateTracking_CoordinateActuators();
 }

@@ -403,7 +403,7 @@
                 <!--Resting length of the tendon-->
                 <tendon_slack_length>0.155999336003954</tendon_slack_length>
                 <!--Angle between tendon and fibers at optimal fiber length expressed in radians-->
-                <pennation_angle_at_optimal>0</pennation_angle_at_optimal>
+                <pennation_angle_at_optimal>0.13962634</pennation_angle_at_optimal>
                 <!--Maximum contraction velocity of the fibers, in optimal fiberlengths/second-->
                 <max_contraction_velocity>10</max_contraction_velocity>
                 <!--Compute muscle dynamics ignoring tendon compliance. Tendon is assumed to be rigid.-->
@@ -1095,7 +1095,7 @@
                 <!--Resting length of the tendon-->
                 <tendon_slack_length>0.155999336003954</tendon_slack_length>
                 <!--Angle between tendon and fibers at optimal fiber length expressed in radians-->
-                <pennation_angle_at_optimal>0</pennation_angle_at_optimal>
+                <pennation_angle_at_optimal>0.13962634</pennation_angle_at_optimal>
                 <!--Maximum contraction velocity of the fibers, in optimal fiberlengths/second-->
                 <max_contraction_velocity>10</max_contraction_velocity>
                 <!--Compute muscle dynamics ignoring tendon compliance. Tendon is assumed to be rigid.-->
