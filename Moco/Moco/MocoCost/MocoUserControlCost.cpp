@@ -24,12 +24,14 @@
 
 using namespace OpenSim;
 
-MocoUserControlCost::MocoUserControlCost() { constructProperties(); }
+MocoUserControlCost::MocoUserControlCost() { 	
+	user_control_cost_fun_ptr = nullptr;
+    utility_vector = std::vector<double>();
+	constructProperties(); 
+}
 
 void MocoUserControlCost::constructProperties() {
     constructProperty_control_weights(MocoWeightSet());
-    constructProperty_utility_vector(std::vector<double>()));
-    constructProperty_user_control_cost_fun_ptr(nullptr);
 }
 
 void MocoUserControlCost::setWeight(
@@ -73,24 +75,14 @@ void MocoUserControlCost::initializeOnModelImpl(const Model& model) const {
     }
 }
 
+
+// compute the user-defined integrand
 void MocoUserControlCost::calcIntegrandImpl(
         const SimTK::State& state, double& integrand) const {
-
     integrand = 0;
-
-    // user-defined integrand function
-    if (get_user_control_cost_fun_ptr()) {
-
-        // get the function
-        auto userfunc = get_user_control_cost_fun_ptr();
-
-        // get the vector of utility values
-        auto utilvec = get_utility_vector();
-
-		// compute the integrand
-        integrand = userfunc(
-                state, getModel(), utilvec, m_weights, m_controlIndices);
-
+    if (user_control_cost_fun_ptr) {
+        integrand = user_control_cost_fun_ptr(
+                state, getModel(), utility_vector, m_weights, m_controlIndices);
     }
 
     // getModel().realizeVelocity(state); // TODO would avoid this, ideally.

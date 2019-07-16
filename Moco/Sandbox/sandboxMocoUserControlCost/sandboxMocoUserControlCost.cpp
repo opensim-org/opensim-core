@@ -17,12 +17,26 @@
  * -------------------------------------------------------------------------- */
 
 #include <Moco/osimMoco.h>
+
 #include <OpenSim/OpenSim.h>
 
 using namespace OpenSim;
 
-
 int main() {
+
+    // create a new MocoStudy
+    MocoStudy moco;
+    moco.setName("mystudy");
+
+    // DEFINE THE OPTIMAL CONTROL PROBLEM
+    // ----------------------------------
+
+    // get the MocoProblem
+    MocoProblem problem = moco.updProblem();
+
+    // get the model
+    Model model("subject01.osim");
+    //problem.setModel(model);
 
 
 

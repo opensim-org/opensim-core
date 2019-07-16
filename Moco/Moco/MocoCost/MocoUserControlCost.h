@@ -20,8 +20,8 @@
 
 #include "../MocoWeightSet.h"
 #include "MocoCost.h"
-#include <vector>
 #include <functional>
+#include <vector>
 
 namespace OpenSim {
 
@@ -36,25 +36,19 @@ class OSIMMOCO_API MocoUserControlCost : public MocoCost {
     OpenSim_DECLARE_CONCRETE_OBJECT(MocoUserControlCost, MocoCost);
 
 public:
-    
-	/// Functor that points to the user-defined control cost function. The functional 
-	/// description must match the definition here, however, not all input parameters 
-	/// need to be used within the function itself.
-	OpenSim_DECLARE_PROPERTY(user_control_cost_fun_ptr,
-            std::function<double(const SimTK::State&, const Model&,
-                    std::vector<double>, std::vector<double>,
-                    std::vector<int>)>,
-            "Functor representing the user-defined control cost function. "
-            "Default: nullptr.");
-    
-	/// An optional utility vector to pass additional parameters into the user-defined 
-	/// control cost function. Unpack this vector within your user-defined function to 
-	/// utilise the individual values as required.
-    OpenSim_DECLARE_PROPERTY(utility_vector, std::vector<double>,
-            "Vector of parameters for use in user-defined control cost "
-            "function. This is provided as a convenience. Unpack this vector "
-            "within your user-defined function to use the individual values. "
-            "Default: empty.");
+
+    // Function reference for user defined control cost, ideally this should be
+    // a property. Default: nullptr
+    std::function<double(const SimTK::State&, const Model&, std::vector<double>,
+            std::vector<double>, std::vector<int>)>
+            user_control_cost_fun_ptr;
+
+    // Vector of parameters for use in user-defined control cost function. This
+    // is provided as a convenience. Unpack this vector within your user-defined
+    // function to use the individual values,  ideally this should be a
+	// property. Default: empty vector.
+    std::vector<double> utility_vector;
+
 
 
     MocoUserControlCost();
