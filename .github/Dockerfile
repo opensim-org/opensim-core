@@ -48,16 +48,18 @@ RUN cd /opensim-moco \
         && cmake ../opensim-moco/dependencies \
         && make --jobs 4 ipopt \
         && make --jobs 4 \
-        && cd .. \
+        && echo "/moco_dependencies_install/adol-c/lib64" >> /etc/ld.so.conf.d/moco.conf \
+        && echo "/moco_dependencies_install/ipopt/lib" >> /etc/ld.so.conf.d/moco.conf \
+        && ldconfig \
+        && rm -r /moco_dependencies_build
+
+RUN cd / \
         && mkdir build \
         && cd build \
         && cmake ../opensim-moco \
         && make --jobs 4 install \
-        && "/opensim-moco-install/sdk/lib" > /etc/ld.so.conf.d/moco.conf \
-        && "/moco_dependencies_install/adol-c/lib" > /etc/ld.so.conf.d/moco.conf \
-        && "/moco_dependencies_install/ipopt/lib" > /etc/ld.so.conf.d/moco.conf \
+        && echo "/opensim-moco-install/sdk/lib" >> /etc/ld.so.conf.d/moco.conf \
         && ldconfig \
-        && rm -r /moco_dependencies_build \
         && rm -r /build
 
 # TODO build python bindings.
