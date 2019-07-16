@@ -161,7 +161,7 @@ function testOrder(testCase)
     testCase.assertEqual(finalTime, 2.0, 'AbsTol', 0.01);
 end
 
-function testChangingCosts(testCase)
+function testChangingGoals(testCase)
     import org.opensim.modeling.*;
     % Changes to the costs are obeyed.
     moco = MocoStudy();

@@ -462,11 +462,4 @@ other actuators in the model due to unecessarily large max force settings.
 
 */
 
-/**
-@defgroup mocogoal Available cost terms
-
-These are the available cost terms you can use in your cost functional. If none
-of these satisfy your needs, you can define your own using a plugin.
-*/
-
 } // namespace OpenSim
