@@ -84,14 +84,4 @@ void MocoUserControlCost::calcIntegrandImpl(
         integrand = user_control_cost_fun_ptr(
                 state, getModel(), utility_vector, m_weights, m_controlIndices);
     }
-
-    // getModel().realizeVelocity(state); // TODO would avoid this, ideally.
-    // const auto& controls = getModel().getControls(state);
-    // integrand = 0;
-    // int iweight = 0;
-    // for (const auto& icontrol : m_controlIndices) {
-    //	integrand += m_weights[iweight] * controls[icontrol] *
-    // controls[icontrol];
-    //	++iweight;
-    //}
 }
