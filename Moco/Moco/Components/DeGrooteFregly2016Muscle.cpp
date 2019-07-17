@@ -478,7 +478,7 @@ void DeGrooteFregly2016Muscle::replaceMuscles(
 
 			actu->set_fiber_damping(0);
 			actu->set_tendon_strain_at_one_norm_force(
-                    musc->get_FmaxTendonStrain());	// I may be wrong here...
+                    musc->get_FmaxTendonStrain());
 
             const auto& pathPointSet =
                     musc->getGeometryPath().getPathPointSet();
