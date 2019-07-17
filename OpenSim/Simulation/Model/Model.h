@@ -332,11 +332,15 @@ public:
         _useVisualizer=visualize;
         enableVisualization(visualize);
     }
-
+    // Enable visualization overall, loading mesh files etc.
     void enableVisualization(bool enable) {
         // Propagate flag so that meshes are loaded (or not)
         upd_ModelVisualPreferences().setVisualize(enable);
         finalizeFromProperties();
+    }
+    // Return status if visualize flag (different from useVisualizer)
+    bool visualizationIsEnabled() const {
+        return get_ModelVisualPreferences().visualize();
     }
     /** Return the current setting of the "use visualizer" flag, which will
     take effect at the next call to initSystem() on this %Model. **/
