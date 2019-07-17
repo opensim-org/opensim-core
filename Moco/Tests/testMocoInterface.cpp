@@ -1219,6 +1219,21 @@ TEMPLATE_TEST_CASE("Guess", "", MocoTropterSolver, MocoCasADiSolver) {
         CHECK_THROWS_AS(guess1.resampleWithNumTimes(10), Exception);
     }
 
+    // Can't use a guess from explicit dynamics in implicit dynamics mode.
+    {
+        MocoTrajectory explicitGuess = ms.createGuess();
+        ms.set_dynamics_mode("implicit");
+        ms.setGuess(explicitGuess);
+        CHECK_THROWS_WITH(moco.solve(), 
+            Catch::Contains(
+                "'dynamics_mode' set to 'implicit' and coordinate states "
+                "exist in the guess, but no coordinate accelerations were "
+                "found in the guess. Consider using "
+                "MocoTrajectory::generateAccelerationsFromValues() or "
+                "MocoTrajectory::generateAccelerationsFromSpeeds() to "
+                "construct an appropriate guess."));
+    }
+
     // TODO ordering of states and controls in MocoTrajectory should not
     // matter!
 

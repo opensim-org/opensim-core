@@ -295,13 +295,15 @@ MocoSolution MocoCasADiSolver::solveImpl() const {
     if (guess.empty()) {
         casGuess = casSolver->createInitialGuessFromBounds();
     } else {
-        // Implicit mode: if the guess is compatible with the problem, but
-        // does not contain acceleration variables, generate accelerations
-        // from the speed data.
-        if (get_dynamics_mode() == "implicit" &&
-                !guess.getDerivativeNames().size()) {
-            guess.computeAccelerationsFromSpeedsAndAppend();
-        }
+        OPENSIM_THROW_IF(get_dynamics_mode() == "implicit" &&
+                guess.hasCoordinateStates() &&
+                guess.getDerivativeNames().empty(), Exception,
+            "'dynamics_mode' set to 'implicit' and coordinate states exist in "
+            "the guess, but no coordinate accelerations were found in the "
+            "guess. Consider using "
+            "MocoTrajectory::generateAccelerationsFromValues() or "
+            "MocoTrajectory::generateAccelerationsFromSpeeds() to construct an "
+            "appropriate guess.")
         casGuess = convertToCasOCIterate(guess);
     }
     CasOC::Solution casSolution = casSolver->solve(casGuess);

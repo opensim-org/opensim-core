@@ -237,13 +237,6 @@ void MocoTropterSolver::setGuess(MocoTrajectory guess) {
     // Make sure to initialize the problem. TODO put in a better place.
     createTropterProblem();
     guess.isCompatible(getProblemRep(), true);
-    // Implicit mode: if the guess is compatible with the problem, but does not 
-    // contain acceleration variables, generate accelerations from the speed
-    // data.
-    if (get_dynamics_mode() == "implicit" && 
-            !guess.getDerivativeNames().size()) {
-        guess.computeAccelerationsFromSpeedsAndAppend();
-    }
     clearGuess();
     m_guessFromAPI = std::move(guess);
 }
@@ -266,13 +259,6 @@ const MocoTrajectory& MocoTropterSolver::getGuess() const {
             // No need to load from file again if we've already loaded it.
             MocoTrajectory guessFromFile(get_guess_file());
             guessFromFile.isCompatible(getProblemRep(), true);
-            // Implicit mode: if the guess is compatible with the problem, but
-            // does not contain acceleration variables, generate accelerations 
-            // from the speed data.
-            if (get_dynamics_mode() == "implicit" &&
-                    !guessFromFile.getDerivativeNames().size()) {
-                guessFromFile.computeAccelerationsFromSpeedsAndAppend();
-            }
             m_guessFromFile = guessFromFile;
             m_guessToUse.reset(&m_guessFromFile);
         } else {
@@ -321,14 +307,14 @@ MocoSolution MocoTropterSolver::solveImpl() const {
     }
     auto dircol = createTropterSolver(ocp);
     MocoTrajectory guess = getGuess();
-    // Implicit mode: if the guess is compatible with the problem, but
-    // does not contain acceleration variables, generate accelerations
-    // from the speed data.
-    if (get_dynamics_mode() == "implicit" &&
-            !guess.getDerivativeNames().size() &&
-            !guess.empty()) {
-        guess.computeAccelerationsFromSpeedsAndAppend();
-    }
+    OPENSIM_THROW_IF(get_dynamics_mode() == "implicit" &&
+            guess.hasCoordinateStates() &&
+            guess.getDerivativeNames().empty(), Exception,
+        "'dynamics_mode' set to 'implicit' and coordinate states exist in the "
+        "guess, but no coordinate accelerations were found in the guess. "
+        "Consider using MocoTrajectory::generateAccelerationsFromValues() or "
+        "MocoTrajectory::generateAccelerationsFromSpeeds() to construct an "
+        "appropriate guess.")
     tropter::Iterate tropIterate = ocp->convertToTropterIterate(guess);
     tropter::Solution tropSolution = dircol->solve(tropIterate);
 
