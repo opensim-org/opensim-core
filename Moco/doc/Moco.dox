@@ -48,7 +48,7 @@ of these satisfy your needs, you can define your own using a plugin.
 
 @page utilities Utilities
 
-Moco contains utilties for creating models, modifying models,
+Moco contains utilities for creating models, modifying models,
 working with data, and postprocessing results.
 
 1. ModelFactory: Create standard models and modify existing models.

@@ -129,12 +129,12 @@ def solvePrediction():
     ftCost.set_weight(0.001)
     problem.addCost(ftCost)
 
-    endpointCost = osim.MocoMarkerEndpointCost()
-    endpointCost.setName("endpoint")
-    endpointCost.set_weight(1000.0)
-    endpointCost.setPointName("/markerset/m1")
-    endpointCost.setReferenceLocation(osim.Vec3(0, 2, 0))
-    problem.addCost(endpointCost)
+    finalCost = osim.MocoMarkerFinalCost()
+    finalCost.setName("final")
+    finalCost.set_weight(1000.0)
+    finalCost.setPointName("/markerset/m1")
+    finalCost.setReferenceLocation(osim.Vec3(0, 2, 0))
+    problem.addCost(finalCost)
 
 
     # Configure the solver.

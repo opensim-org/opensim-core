@@ -99,8 +99,13 @@ public:
 
 protected:
     void initializeOnModelImpl(const Model&) const override;
-    void calcIntegralCostImpl(const SimTK::State& state,
+    int getNumIntegralsImpl() const override { return 1; }
+    void calcIntegrandImpl(const SimTK::State& state,
             double& integrand) const override;
+    void calcCostImpl(
+            const CostInput& input, SimTK::Real& cost) const override {
+        cost = input.integral;
+    }
 
 private:
     OpenSim_DECLARE_PROPERTY(joint_path, std::string, 

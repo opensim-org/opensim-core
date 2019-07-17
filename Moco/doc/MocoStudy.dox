@@ -90,7 +90,7 @@ MocoSolver and call MocoStudy::solve() again, if you wish.
 A MocoProblem is a list of MocoPhase%s, but Moco currently supports only
 single-phase problems. A MocoPhase consists of the following:
 
-1. an OpenSim model that describe states, controls, dynamics, and kinematic
+1. An OpenSim model that describes states, controls, dynamics, and kinematic
    constraints.
 2. MocoCost%s: describes the cost functional to minimize.
 3. MocoPathConstraint%s: describes non-kinematic algebraic constraints to

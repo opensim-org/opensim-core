@@ -173,7 +173,7 @@ void MocoTranslationTrackingCost::initializeOnModelImpl(const Model& model)
     m_ref_splines = GCVSplineSet(flatTable);
 }
 
-void MocoTranslationTrackingCost::calcIntegralCostImpl(const SimTK::State& state,
+void MocoTranslationTrackingCost::calcIntegrandImpl(const SimTK::State& state,
     double& integrand) const {
     const auto& time = state.getTime();
     getModel().realizePosition(state);
