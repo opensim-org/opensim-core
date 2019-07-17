@@ -16,11 +16,10 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "MocoUserControlCost.h"
 
-#include "../MocoUtilities.h"
-
+#include <Moco/MocoUtilities.h>
 #include <OpenSim/Simulation/Model/Model.h>
+#include "MocoUserControlCost.h"
 
 using namespace OpenSim;
 

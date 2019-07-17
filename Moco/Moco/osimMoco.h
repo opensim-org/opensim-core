@@ -31,7 +31,6 @@
 #include "MocoConstraint.h"
 #include "MocoControlBoundConstraint.h"
 #include "MocoCost/MocoControlCost.h"
-#include "MocoCost/MocoUserControlCost.h"
 #include "MocoCost/MocoControlTrackingCost.h"
 #include "MocoCost/MocoJointReactionCost.h"
 #include "MocoCost/MocoMarkerFinalCost.h"

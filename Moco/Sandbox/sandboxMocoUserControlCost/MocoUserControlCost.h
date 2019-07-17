@@ -18,8 +18,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "../MocoWeightSet.h"
-#include "MocoCost.h"
+#include <Moco/MocoWeightSet.h>
+#include <Moco/MocoCost/MocoCost.h>
 #include <functional>
 #include <vector>
 
@@ -32,11 +32,10 @@ namespace OpenSim {
 // TODO want a related cost for minimizing the value of state variables like
 // activation.
 // TODO allow leaving out some controls.
-class OSIMMOCO_API MocoUserControlCost : public MocoCost {
+class MocoUserControlCost : public MocoCost {
     OpenSim_DECLARE_CONCRETE_OBJECT(MocoUserControlCost, MocoCost);
 
 public:
-
     // Function reference for user defined control cost, ideally this should be
     // a property. Default: nullptr
     std::function<double(const SimTK::State&, const Model&, std::vector<double>,
@@ -46,10 +45,8 @@ public:
     // Vector of parameters for use in user-defined control cost function. This
     // is provided as a convenience. Unpack this vector within your user-defined
     // function to use the individual values,  ideally this should be a
-	// property. Default: empty vector.
+    // property. Default: empty vector.
     std::vector<double> utility_vector;
-
-
 
     MocoUserControlCost();
     MocoUserControlCost(std::string name) : MocoCost(std::move(name)) {

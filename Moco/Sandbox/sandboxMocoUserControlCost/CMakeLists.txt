@@ -3,4 +3,7 @@ MocoAddSandboxExecutable(NAME sandboxMocoUserControlCost
 		RESOURCES
 			subject01.osim 
 			state_reference.mot 
-			marker_trajectories.trc)
+			marker_trajectories.trc
+		SOURCE_FILES
+			MocoUserControlCost.cpp
+			MocoUserControlCost.h)

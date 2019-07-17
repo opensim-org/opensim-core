@@ -18,10 +18,9 @@
 
 #include <Moco/osimMoco.h>
 #include <OpenSim/OpenSim.h>
-
+#include "MocoUserControlCost.h"
 
 using namespace OpenSim;
-
 
 // user-defined constraint function (currently same as MocoConstraintCost)
 double my_constraint_cost_function(const SimTK::State& state,
@@ -42,8 +41,6 @@ double my_constraint_cost_function(const SimTK::State& state,
     return integrand;
 }
 
-
-
 /// Convenience function to apply an CoordinateActuator to the model.
 void addCoordinateActuator(std::unique_ptr<Model>& model, std::string coordName,
         double optimalForce) {
@@ -59,24 +56,20 @@ void addCoordinateActuator(std::unique_ptr<Model>& model, std::string coordName,
     model->addComponent(actu);
 }
 
-
-
 int main() {
 
     // create a new MocoStudy
     MocoStudy moco;
     moco.setName("my_study");
 
-
-
     // PREPARE THE MODEL
     // ----------------------------------
 
-	// get the base model
+    // get the base model
     auto model = make_unique<Model>("subject01.osim");
-    
-	// add coordinate actuators	
-	addCoordinateActuator(model, "lumbar_extension", 500);
+
+    // add coordinate actuators
+    addCoordinateActuator(model, "lumbar_extension", 500);
     addCoordinateActuator(model, "pelvis_tilt", 500);
     addCoordinateActuator(model, "pelvis_tx", 1000);
     addCoordinateActuator(model, "pelvis_ty", 2500);
@@ -86,8 +79,6 @@ int main() {
     addCoordinateActuator(model, "hip_flexion_l", 100);
     addCoordinateActuator(model, "knee_angle_l", 100);
     addCoordinateActuator(model, "ankle_angle_l", 100);
-    
-
 
     // DEFINE THE OPTIMAL CONTROL PROBLEM
     // ----------------------------------
@@ -95,7 +86,7 @@ int main() {
     // get the MocoProblem
     MocoProblem& problem = moco.updProblem();
 
-	// set the model
+    // set the model
     problem.setModelCopy(*model);
 
     // set time bounds
@@ -137,28 +128,24 @@ int main() {
     // (no utility parameters in this example)
     controlcost->user_control_cost_fun_ptr = my_constraint_cost_function;
 
+    // SOLVE OPTIMAL CONTROL PROBLEM
+    // ----------------------------------
 
+    // get the NLP solver
+    MocoCasADiSolver& solver = moco.initCasADiSolver();
+    solver.set_num_mesh_points(20);
+    solver.set_optim_constraint_tolerance(1e-3);
+    solver.set_optim_convergence_tolerance(1e-3);
 
-	// SOLVE OPTIMAL CONTROL PROBLEM
-	// ----------------------------------
+    // set initial guess
+    solver.setGuess("bounds"); // not sure what this does
 
-	// get the NLP solver
-	MocoCasADiSolver& solver = moco.initCasADiSolver();
-	solver.set_num_mesh_points(20);
-	solver.set_optim_constraint_tolerance(1e-3);
-	solver.set_optim_convergence_tolerance(1e-3);
-
-	// set initial guess
-    solver.setGuess("bounds");  // not sure what this does
-
-	// solve and write to file
+    // solve and write to file
     MocoSolution solution = moco.solve();
     solution.write("sandboxMocoUserControlCost_marker_tracking_solution.sto");
 
-	// visualise solution
+    // visualise solution
     moco.visualize(solution);
-
-
 
     return EXIT_SUCCESS;
 }
