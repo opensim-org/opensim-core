@@ -25,6 +25,7 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include "Common/TableProcessor.h"
 #include "ModelOperators.h"
+#include "Common/TRCFileAdapter.h"
 
 namespace OpenSim {
 
@@ -48,9 +49,21 @@ class MocoTrajectory;
 /// reference data provided, a tracking cost term is added to the internal 
 /// MocoProblem. 
 ///
-/// @note setMarkersReference() only accepts a scalar TimeSeriesTable (either
+/// setMarkersReference() only accepts a scalar TimeSeriesTable (either
 /// directly or via a TableProcessor) containing x/y/x marker position values.
-/// TimeSeriesTableVec3 is not supported.
+/// A TimeSeriesTableVec3 of markers is not accepted, but you may use the 
+/// flatten() method to convert to a scalar TimeSeriesTable:
+/// 
+/// @code 
+/// MocoTrack track;
+/// 
+/// TimeSeriesTableVec3 markers = TRCFileAdapter("marker_trajectories.trc");
+/// TimeSeriesTable markersFlat(markers.flatten());
+/// track.setMarkersReference(TableProcessor(markersFlat));
+/// @endcode
+/// 
+/// If you wish to set the markers reference directly from a TRC file, use 
+/// setMarkersReferenceFromTRC().
 ///
 /// The `states_global_tracking_weight` and `markers_global_tracking_weight` 
 /// properties apply a cost function weight to all tracking error associated 
@@ -77,7 +90,9 @@ class MocoTrajectory;
 /// property. When enabled, the provided position-level states reference data 
 /// will be splined in order to compute derivatives. If some velocity-level 
 /// information exists in the reference, this option will fill in the missing 
-/// data with position derivatives and leave the existing velocity data intact. 
+/// data with position derivatives and leave the existing velocity data intact.
+/// This is not enabled by default, but is recommended for improving tracking
+/// performance and reducing convergence times. 
 /// 
 /// Since the data in the provided references may be altered by TableProcessor 
 /// operations or appended to by `track_reference_position_derivatives`, the 
@@ -167,8 +182,9 @@ public:
 
     OpenSim_DECLARE_PROPERTY(markers_reference, TableProcessor,
         "Motion capture marker reference data to be tracked. The columns in "
-        "the table should correspond to individual x/y/z marker position "
-        "values; you may *not* provide a TimeSeriesTableVec3. If provided, a "
+        "the table should correspond to scalar x/y/z marker position "
+        "values and the columns labels should have consistent suffixes "
+        "appended to the model marker names. If provided, a "
         "MocoMarkerTrackingCost term is created and added to the internal "
         "MocoProblem.");
 
@@ -178,7 +194,7 @@ public:
 
     OpenSim_DECLARE_PROPERTY(markers_weight_set, MocoWeightSet,
         "A set of tracking weights for individual marker positions. The "
-        "weight names should match the names of the column labels in the "
+        "weight names should match the marker names in the "
         "file associated with the 'markers_reference' property.");
 
     OpenSim_DECLARE_PROPERTY(allow_unused_references, bool, 
@@ -206,15 +222,36 @@ public:
 
     MocoTrack() { constructProperties(); }
 
+    /// Set the states reference TableProcessor.
+    /// @note Overrides any existing TableProcessor for 'states_reference'.
     void setStatesReference(TableProcessor states) {
         set_states_reference(std::move(states));
     }
+    /// Set the markers reference TableProcessor.
+    /// @note Overrides any existing TableProcessor for 'markers_reference'.
     void setMarkersReference(TableProcessor markers) {
         set_markers_reference(std::move(markers));
     }
+    /// Set the markers reference directly from a TRC file. By default, the 
+    /// marker data is lowpass filtered with a 6 Hz cutoff frequency, but you
+    /// may set any frequency using the optional argument. If the markers data
+    /// is in millimeters (detected via the 'Units' metadata tag), then it is
+    /// converted to meters.
+    /// @note Overrides any existing TableProcessor for 'markers_reference'.
+    void setMarkersReferenceFromTRC(const std::string& filename, 
+            double lowpassFilterFreq = 6.0) {
+        auto markers = TRCFileAdapter::read(filename);
+        TimeSeriesTable markersFlat = markers.flatten();
+        if (markersFlat.hasTableMetaDataKey("Units") &&
+                markersFlat.getTableMetaDataAsString("Units") == "mm") {
+            markersFlat.updMatrix() *= 0.001;
+        }
+        set_markers_reference(TableProcessor(markersFlat) |
+                              TabOpLowPassFilter(lowpassFilterFreq));
+    }
 
     MocoStudy initialize();
-    MocoSolution solve();
+    MocoSolution solve(bool visualize = false);
 
 private:
     Model m_model;

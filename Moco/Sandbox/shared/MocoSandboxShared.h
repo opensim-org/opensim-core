@@ -50,7 +50,10 @@ protected:
         }
     }
 
-    void calcIntegralCostImpl(const SimTK::State& state, double& integrand)
+    void calcCostImpl(const CostInput& input, double& cost) const override {
+        cost = input.integral;
+    }
+    void calcIntegrandImpl(const SimTK::State& state, double& integrand)
             const override {
         getModel().realizeVelocity(state);
         SimTK::Vec3 netForce(0);
@@ -109,7 +112,10 @@ public:
     }
 protected:
 
-    void calcIntegralCostImpl(const SimTK::State& state,
+    void calcCostImpl(const CostInput& input, double& cost) const override {
+        cost = input.integral;
+    }
+    void calcIntegrandImpl(const SimTK::State& state,
             double& integrand) const override {
         const auto& time = state.getTime();
         getModel().realizePosition(state);

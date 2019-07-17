@@ -51,8 +51,7 @@ inline casadi::DM convertToCasADiDMTranspose(const SimTK::Matrix& simtkMatrix) {
     return out;
 }
 
-template <typename T>
-casadi::DM convertToCasADiDMTemplate(const T& simtk) {
+template <typename T> casadi::DM convertToCasADiDMTemplate(const T& simtk) {
     casadi::DM out(casadi::Sparsity::dense(simtk.size(), 1));
     std::copy_n(simtk.getContiguousScalarData(), simtk.size(), out.ptr());
     return out;
@@ -181,8 +180,7 @@ TOut convertToMocoTrajectory(const CasOC::Iterate& casIt) {
                 mocoTraj.appendSlack(casIt.slack_names[i],
                         interpolate(slackTime, simtkSlacks.col(i), simtkTimes));
             } else {
-                mocoTraj.appendSlack(
-                        casIt.slack_names[i], simtkSlacks.col(i));
+                mocoTraj.appendSlack(casIt.slack_names[i], simtkSlacks.col(i));
             }
         }
     }
@@ -199,40 +197,6 @@ public:
     int getJarSize() const { return (int)m_jar->size(); }
 
 private:
-    void calcIntegralCostIntegrand(
-            const ContinuousInput& input, double& integrand) const override {
-        auto mocoProblemRep = m_jar->take();
-        applyInput(input.time, input.states, input.controls, input.multipliers,
-                input.derivatives, input.parameters, mocoProblemRep);
-
-        auto& simtkStateDisabledConstraints =
-                mocoProblemRep->updStateDisabledConstraints();
-
-        // Compute the integrand for all MocoCosts.
-        // TODO: Create separate functions for each cost term.
-        integrand =
-                mocoProblemRep->calcIntegralCost(simtkStateDisabledConstraints);
-
-        m_jar->leave(std::move(mocoProblemRep));
-    }
-
-    void calcEndpointCost(
-            const EndpointInput& input, double& cost) const override {
-        auto mocoProblemRep = m_jar->take();
-
-        applyInput(input.final_time, input.final_states, input.final_controls,
-                input.final_multipliers, input.final_derivatives,
-                input.parameters, mocoProblemRep);
-
-        auto& simtkStateDisabledConstraints =
-                mocoProblemRep->updStateDisabledConstraints();
-
-        // Compute the endpoint cost for all MocoCosts.
-        cost = mocoProblemRep->calcEndpointCost(simtkStateDisabledConstraints);
-
-        m_jar->leave(std::move(mocoProblemRep));
-    }
-
     void calcMultibodySystemExplicit(const ContinuousInput& input,
             bool calcKCErrors,
             MultibodySystemExplicitOutput& output) const override {
@@ -352,6 +316,46 @@ private:
 
         m_jar->leave(std::move(mocoProblemRep));
     }
+    void calcIntegrand(int integralIndex, const ContinuousInput& input,
+            double& integrand) const override {
+        auto mocoProblemRep = m_jar->take();
+        applyInput(input.time, input.states, input.controls, input.multipliers,
+                input.derivatives, input.parameters, mocoProblemRep);
+
+        auto& simtkStateDisabledConstraints =
+                mocoProblemRep->updStateDisabledConstraints();
+
+        const auto& mocoCost = mocoProblemRep->getCostByIndex(integralIndex);
+        integrand = mocoCost.calcIntegrand(simtkStateDisabledConstraints);
+
+        m_jar->leave(std::move(mocoProblemRep));
+    }
+    void calcCost(int index, const CostInput& input,
+            double& cost) const override {
+        auto mocoProblemRep = m_jar->take();
+
+        applyInput(input.initial_time, input.initial_states,
+                input.initial_controls, input.initial_multipliers,
+                input.initial_derivatives, input.parameters, mocoProblemRep, 0);
+
+        auto& simtkStateDisabledConstraintsInitial =
+                mocoProblemRep->updStateDisabledConstraints(0);
+
+        applyInput(input.final_time, input.final_states, input.final_controls,
+                input.final_multipliers, input.final_derivatives,
+                input.parameters, mocoProblemRep, 1);
+
+        auto& simtkStateDisabledConstraintsFinal =
+                mocoProblemRep->updStateDisabledConstraints(1);
+
+        // Compute the cost for this cost term.
+        const auto& mocoCost = mocoProblemRep->getCostByIndex(index);
+        cost = mocoCost.calcCost({simtkStateDisabledConstraintsInitial,
+                simtkStateDisabledConstraintsFinal, input.integral});
+
+        m_jar->leave(std::move(mocoProblemRep));
+    }
+
     void calcPathConstraint(int constraintIndex, const ContinuousInput& input,
             casadi::DM& path_constraint) const override {
         auto mocoProblemRep = m_jar->take();
@@ -440,7 +444,8 @@ private:
     void applyInput(const double& time, const casadi::DM& states,
             const casadi::DM& controls, const casadi::DM& multipliers,
             const casadi::DM& derivatives, const casadi::DM& parameters,
-            const std::unique_ptr<const MocoProblemRep>& mocoProblemRep) const {
+            const std::unique_ptr<const MocoProblemRep>& mocoProblemRep,
+            int stateDisConIndex = 0) const {
         // Original model and its associated state. These are used to calculate
         // kinematic constraint forces and errors.
         const auto& modelBase = mocoProblemRep->getModelBase();
@@ -451,7 +456,7 @@ private:
         const auto& modelDisabledConstraints =
                 mocoProblemRep->getModelDisabledConstraints();
         auto& simtkStateDisabledConstraints =
-                mocoProblemRep->updStateDisabledConstraints();
+                mocoProblemRep->updStateDisabledConstraints(stateDisConIndex);
 
         // Update the model and state.
         applyParametersToModelProperties(parameters, *mocoProblemRep);

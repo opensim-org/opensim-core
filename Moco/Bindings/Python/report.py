@@ -71,26 +71,31 @@ def getLabelFromMotionType(motionTypeEnum, level):
 # corresponding to the right leg (solid line) or left leg (dashed line); it is
 # updated here for convenience.
 def bilateralize(name, ls_dict):
-    if '_r/' in name:
-        name = name.replace('_r/', '/')
-        ls_dict[name].append('-')
-    elif '_l/' in name:
-        name = name.replace('_l/', '/')
-        ls_dict[name].append('--')
-    elif '_r_' in name:
-        name = name.replace('_r_', '_')
-        ls_dict[name].append('-')
-    elif '_l_' in name:
-        name = name.replace('_l_', '_')
-        ls_dict[name].append('--')
-    elif name[-2:] == '_r':
-        name = name[:-2]
-        ls_dict[name].append('-')
-    elif name[-2:] == '_l':
-        name = name[:-2]
-        ls_dict[name].append('--')
-    else:
-        ls_dict[name].append('-')
+    # Keep modifying the name until no side tags remain.
+    isRightLeg = True
+    while True:
+        if '_r/' in name:
+            name = name.replace('_r/', '/')
+        elif '_l/' in name:
+            name = name.replace('_l/', '/')
+            isRightLeg = False
+        elif '_r_' in name:
+            name = name.replace('_r_', '_')
+        elif '_l_' in name:
+            name = name.replace('_l_', '_')
+            isRightLeg = False
+        elif name[-2:] == '_r':
+            name = name[:-2]
+        elif name[-2:] == '_l':
+            name = name[:-2]
+            isRightLeg = False
+        else:
+            if isRightLeg:
+                ls_dict[name].append('-')
+            else:
+                ls_dict[name].append('--')
+
+            break
 
     return name, ls_dict
 
@@ -129,6 +134,24 @@ class Report(object):
         self.refs = list()
         if ref_files != None:
             for ref_file in ref_files:
+                filename, file_ext = os.path.splitext(ref_file)
+
+                # If the reference is a file with metadata indicating that
+                # rotational data is in degrees, convert to radians and write to
+                # a new file to be used for plotting.
+                # TODO: don't write the extra file permanently
+                if file_ext == '.sto' or file_ext == '.mot':
+                    sto_adapter = osim.STOFileAdapter()
+                    ref = sto_adapter.read(ref_file)
+                    if (ref.hasTableMetaDataKey('inDegrees') and 
+                            ref.getTableMetaDataAsString('inDegrees') == 'yes'):
+                        self.model.initSystem()
+                        simbodyEngine = self.model.getSimbodyEngine()
+                        simbodyEngine.convertDegreesToRadians(ref)
+                        ref_file = ref_file.replace(file_ext, 
+                                '_radians' + file_ext)
+                        sto_adapter.write(ref, ref_file)                        
+
                 num_header_rows = 1
                 with open(ref_file) as f:
                     for line in f:
@@ -140,17 +163,17 @@ class Report(object):
                                          skip_header=num_header_rows)
                 self.refs.append(this_ref)
 
-        # Load the colormap provided by the user. Use a default colormap ('jet') if
-        # not provided. Uniformly sample the colormap based on the number of reference
-        # data sets, plus one for the MocoTrajectory.
+        # Load the colormap provided by the user. Use a default colormap ('jet') 
+        # if not provided. Uniformly sample the colormap based on the number of 
+        # reference data sets, plus one for the MocoTrajectory.
         if colormap is None: colormap = 'jet'
         self.cmap_samples = np.linspace(0.1, 0.9, len(self.refs)+1)
         self.cmap = cm.get_cmap(colormap)
 
         ## Legend handles and labels.
         # ===========================
-        # Create legend handles and labels that can be used to create a figure legend
-        # that is applicable all figures.
+        # Create legend handles and labels that can be used to create a figure 
+        # legend that is applicable all figures.
         self.legend_handles = list()
         self.legend_labels = list()
         all_files = list()
@@ -239,12 +262,13 @@ class Report(object):
                     # slashes.
                     pathNoSlashes = path.replace('/', '')
                     if pathNoSlashes in ref.dtype.names:
-                        init = getIndexForNearestValue(ref['time'], time[0])
-                        final = getIndexForNearestValue(ref['time'], time[-1])
+                        init = getIndexForNearestValue(ref['time'], self.time[0])
+                        final = getIndexForNearestValue(ref['time'], 
+                            self.time[-1])
                         y = ref[pathNoSlashes][init:final]
                         plt.plot(ref['time'][init:final],
                                  y, ls=ls,
-                                 color=cmap(cmap_samples[r]),
+                                 color=self.cmap(self.cmap_samples[r]),
                                  linewidth=2.5)
                         ymin = np.minimum(ymin, np.min(y))
                         ymax = np.maximum(ymax, np.max(y))
@@ -362,10 +386,11 @@ class Report(object):
                         derivative_label_dict[accelName] = \
                             getLabelFromMotionType(coordMotType, 'accel')
 
-                self.plotVariables('state', state_dict, state_ls_dict, state_label_dict)
+                self.plotVariables('state', state_dict, state_ls_dict, 
+                        state_label_dict)
                 if derivs:
-                    self.plotVariables('derivative', derivative_dict, derivative_ls_dict,
-                            derivative_label_dict)
+                    self.plotVariables('derivative', derivative_dict, 
+                            derivative_ls_dict, derivative_label_dict)
 
             # Controls
             # --------
@@ -468,7 +493,7 @@ def main():
     parser.add_argument('--bilateral', action='store_true',
                         help="Plot left and right limb states and controls "
                              "together.")
-    parser.add_argument('--refs', type=str, nargs='+',
+    parser.add_argument('--ref_files', type=str, nargs='+',
                         help="Paths to reference data files.")
     parser.add_argument('--colormap', type=str,
                         help="Matplotlib colormap from which plot colors are "
@@ -478,7 +503,7 @@ def main():
     # Load the Model and MocoTrajectory from file.
     model = osim.Model(args.model)
 
-    ref_files = args.refs
+    ref_files = args.ref_files
 
     report = Report(model=model,
                     trajectory_filepath=args.trajectory,

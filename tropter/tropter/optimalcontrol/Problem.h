@@ -46,8 +46,8 @@ struct FinalBounds : public Bounds {
 };
 
 /// This struct holds inputs to
-/// OptimalControlProblem::calc_differntial_algebraic_equations() and
-/// OptimalControlProblem::calc_integral_cost().
+/// Problem::calc_differntial_algebraic_equations() and
+/// Problem::calc_integral_cost().
 /// @ingroup optimalcontrol
 template<typename T>
 struct Input {
@@ -86,8 +86,25 @@ struct Input {
     /// input, see the note above for the `states` variable.
     const Eigen::Ref<const VectorX<T>>& parameters;
 };
+/// This is the input for Problem::calc_cost(). Refer to the documentation for
+/// Input above for details. Diffuse variables do not exist at phase endpoints.
+template<typename T>
+struct CostInput {
+    const int initial_time_index;
+    const T& initial_time;
+    const Eigen::Ref<const VectorX<T>>& initial_states;
+    const Eigen::Ref<const VectorX<T>>& initial_controls;
+    const Eigen::Ref<const VectorX<T>>& initial_adjuncts;
+    const int final_time_index;
+    const T& final_time;
+    const Eigen::Ref<const VectorX<T>>& final_states;
+    const Eigen::Ref<const VectorX<T>>& final_controls;
+    const Eigen::Ref<const VectorX<T>>& final_adjuncts;
+    const Eigen::Ref<const VectorX<T>>& parameters;
+    const T& integral;
+};
 /// This struct holds the outputs of
-/// OptimalControlProblem::calc_differntial_algebraic_equations().
+/// Problem::calc_differntial_algebraic_equations().
 /// @ingroup optimalcontrol
 template<typename T>
 struct Output {
@@ -142,15 +159,19 @@ private:
         InitialBounds initial_bounds;
         FinalBounds final_bounds;
     };
-    struct PathConstraintInfo {
-        std::string name;
-        Bounds bounds;
-    };
     struct ParameterInfo {
         std::string name;
         Bounds bounds;
     };
     struct DiffuseInfo {
+        std::string name;
+        Bounds bounds;
+    };
+    struct CostInfo {
+        std::string name;
+        bool requires_integral;
+    };
+    struct PathConstraintInfo {
         std::string name;
         Bounds bounds;
     };
@@ -171,6 +192,8 @@ public:
     {   return (int)m_diffuse_infos.size(); }
     int get_num_parameters() const
     {   return (int)m_parameter_infos.size(); }
+    int get_num_costs() const
+    {   return (int)m_cost_infos.size(); }
     int get_num_path_constraints() const
     {   return (int)m_path_constraint_infos.size(); }
     /// Get the names of all the states in the order they appear in the
@@ -222,6 +245,21 @@ public:
             names.push_back(info.name);
         }
         return names;
+    }
+    /// Get the names of all the cost terms in the order they were added
+    /// to the problem (and the order in which they are evaluated).
+    /// Note: this function is not free to call.
+    std::vector<std::string> get_cost_names() const {
+        std::vector<std::string> names;
+        for (const auto& info : m_cost_infos) {
+            names.push_back(info.name);
+        }
+        return names;
+    }
+    /// Obtain whether the cost at the provided index requires an integral. That
+    /// is, must the problem override calc_cost_integral()?
+    bool get_cost_requires_integral(int index) const {
+        return m_cost_infos[index].requires_integral;
     }
     /// Get the names of all the path constraints in the order they appear in
     /// the 'path' output to calc_differential_algebraic_equations(), etc.
@@ -291,6 +329,16 @@ public:
         m_parameter_infos.push_back({name, bounds});
         return (int)m_parameter_infos.size() - 1;
     }
+    /// Add a cost term to the problem. Implement the cost via
+    /// calc_cost_integrand() and calc_cost(). The index of the cost term is
+    /// passed into these functions. The cost can depend only on endpoints of
+    /// the phase (e.g., initial and final state) or also on an integral across
+    /// the phase.
+    /// Use num_integrals to specify whether or not the cost involves an
+    /// integral (in which case you must implement calc_cost_integrand()).
+    /// num_integrals can be either 0 or 1. In the future, we may support
+    /// multiple integrals per cost.
+    int add_cost(const std::string& name, int num_integrals);
     /// This returns an index that can be used to access this specific path
     /// constraint element within `path_constraints()`.
     /// TODO check if a path constraint with the provided name already exists.
@@ -350,11 +398,15 @@ public:
     //    out.dynamics[0] =
     //    out.path[0] = ...
     //}
-    // TODO endpoint or terminal cost?
-    virtual void calc_endpoint_cost(const Input<T>& in, T& cost) const;
-    /// Compute the integrand for the total integral cost in your optimal 
-    /// control problem. 
-    virtual void calc_integral_cost(const Input<T>& in, T& integrand) const;
+    /// Compute cost terms as a function of the initial and final states/controls,
+    /// and perhaps integrals (for cost terms involving integrals).
+    /// Use cost_index to ensure determine which cost to compute.
+    virtual void calc_cost(
+            int cost_index, const CostInput<T>& in, T& cost) const;
+    /// For cost terms with integrals, compute the integrand. Use cost_index
+    /// to ensure determine which cost to compute.
+    virtual void calc_cost_integrand(
+            int cost_index, const Input<T>& in, T& integrand) const;
     /// @}
 
     /// @name Helpers for setting an initial guess
@@ -495,6 +547,7 @@ private:
     std::vector<ContinuousVariableInfo> m_adjunct_infos;
     std::vector<DiffuseInfo> m_diffuse_infos;
     std::vector<ParameterInfo> m_parameter_infos;
+    std::vector<CostInfo> m_cost_infos;
     std::vector<PathConstraintInfo> m_path_constraint_infos;
 };
 

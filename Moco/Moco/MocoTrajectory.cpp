@@ -411,6 +411,13 @@ void MocoTrajectory::resample(SimTK::Vector time) {
     int numDerivatives = (int)m_derivative_names.size();
     int numSlacks = (int)m_slack_names.size();
 
+    // This interpolate step removes any NaN values in the slack variables. It
+    // does not resize the slacks trajectory.
+    for (int icol = 0; icol < m_slacks.ncol(); ++icol) {
+        m_slacks.updCol(icol) =
+                interpolate(m_time, m_slacks.col(icol), m_time, true);
+    }
+
     const TimeSeriesTable table = convertToTable();
     const GCVSplineSet splines(table, {}, std::min(m_time.size() - 1, 5));
 

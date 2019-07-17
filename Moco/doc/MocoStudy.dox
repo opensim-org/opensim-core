@@ -90,7 +90,7 @@ MocoSolver and call MocoStudy::solve() again, if you wish.
 A MocoProblem is a list of MocoPhase%s, but Moco currently supports only
 single-phase problems. A MocoPhase consists of the following:
 
-1. an OpenSim model that describe states, controls, dynamics, and kinematic
+1. An OpenSim model that describes states, controls, dynamics, and kinematic
    constraints.
 2. MocoCost%s: describes the cost functional to minimize.
 3. MocoPathConstraint%s: describes non-kinematic algebraic constraints to
@@ -151,7 +151,7 @@ replaced with known quantities \f$ \hat{q} \f$ and \f$ \hat{u} \f$:
 
 \f[
     \begin{alignat*}{2}
-        \mbox{minimize} \quad & \sum_j w_{E,j} \left(J_{E,j}(t_0, t_f, \hat{q}_0, \hat{q}_f, \hat{u}_0, \hat{u}_f, z_0, z_f, x_{0}, x_{f}, \lambda_0, \lambda_f, p)
+        \mbox{minimize} \quad & \sum_j w_j \left(J_{E,j}(t_0, t_f, \hat{q}_0, \hat{q}_f, \hat{u}_0, \hat{u}_f, z_0, z_f, x_{0}, x_{f}, \lambda_0, \lambda_f, p)
          + \int_{t_0}^{t_f} J_{I,j}(t, \hat{q}, \hat{u}, z, x, \lambda, p)~dt\right) &&  \\
         \mbox{subject to} \quad &
          M(\hat{q}, p)\dot{\hat{u}} + G(\hat{q}, p)^T \lambda = f_{\textrm{app}}(t, \hat{q}, \hat{u}, z, x, p) - f_{\textrm{bias}}(\hat{q}, \hat{u}, p) \\
@@ -209,6 +209,49 @@ equations for multibody dynamics are expressed as implicit differential
 equations. That is, they are in the form \f$ 0 = f(y, \dot{y}) \f$ rather than
 \f$ \dot{y} = f(y) \f$. See the descriptions for the specific transcription schemes for more detail.
 
+@subsection kincon Kinematic constraints
+
+Moco supports enforcing OpenSim kinematic constraints in optimal control
+problems. When a solver is initialized, any kinematic constraints
+enabled in the model are automatically detected, and additional information
+about each constraint is stored. This information includes the number of scalar
+path constraints (including derivatives if they exist), the scalar constraint
+kinematic levels (i.e. holonomic, non-holonomic, or acceleration), and the
+number of Lagrange multipliers that are added to the problem to enforce the
+constraints.
+
+The solvers allow the user to choose whether to enforce kinematic constraint
+derivatives or minimize Lagrange multipliers in the problem.
+
+@code{.cpp}
+MocoTropterSolver& solver = moco.initTropterSolver();
+ms.set_enforce_constraint_derivatives(true);
+ms.set_lagrange_multiplier_weight(10);
+@endcode
+
+If constraint derivatives are enforced, velocity correction variables are added
+to the problem according to the method described in Posa, Kuindersma, and
+Tedrake, 2016, "Optimization and stabilization of trajectories for constrained
+dynamical systems."
+
+@note Enforcing kinematic constraints is only supported with Hermite-Simpson
+transcription, since this scheme is necessary for implementing the method
+described in Posa et al. 2016. See @ref hermitesimpson for implementation
+details.
+
+It is possible to modify the default bounds on these velocity correction
+variables:
+
+@code{.cpp}
+// Default bounds: [-0.1, 0.1]
+ms.set_velocity_correction_bounds({-0.25, 0.25});
+@endcode
+
+If constraint derivatives are not enforced or if the multibody constraint
+Jacobian is rank-deficient, it is recommended that the Lagrange multiplier
+minimization term is added to the problem to impose uniqueness for
+these variables.
+
 @subsection trapezoidal Trapezoidal transcription
 
 With Trapezoidal transcription, we discretize the continuous variables along \f$
@@ -217,8 +260,8 @@ n + 1 \f$ mesh points, leading to \f$ n \f$ mesh intervals:
 \f[
     \begin{alignat*}{1}
         0 &= \tau_0 < \tau_1 < \tau_2 < \ldots < \tau_i < \ldots < \tau_{n - 1} < \tau_n = 1 \\
-         t_i &= (t_f - t_0) \tau_i + t_0 \\
-         h_i &= (t_f - t_0)(\tau_i - \tau_{i-1})
+        t_i &= (t_f - t_0) \tau_i + t_0 \\
+        h_i &= (t_f - t_0)(\tau_i - \tau_{i-1})
     \end{alignat*}
 \f]
 
@@ -226,7 +269,7 @@ We use the trapezoidal rule to remove integrals and derivatives from the
 original continuous time problem,
 
 \f[
-    \textrm{trap}_i(F(\eta, p)) = \frac{1}{2} h_i (F(\eta_{i-1}, p) + F(\eta_i, p)),
+    \textrm{trap}_i(F(\eta, p)) = \frac{1}{2} h_i (F(\eta_{i-1}, p) + F(\eta_i, p))
 \f]
 
 where \f$ \eta \f$ is any continuous variable in the optimal control problem
@@ -240,7 +283,7 @@ finite-dimensional nonlinear optimization problem (or nonlinear program, abbrevi
         \mbox{minimize} \quad
          & \sum_j w_j \left(J_{E,j}(t_0, t_f, y_0, y_n, x_{0}, x_{n}, \lambda_0, \lambda_n, p) +
          \sum_{i=1}^{n} \textrm{trap}_i(J_{I,j}(t, y, x, \lambda, p)) \right) \\
-         & \quad + w_{\lambda} \sum_{i=1}^{n} \textrm{trap}_i(\|\lambda_i\|_2^2) &  \\
+         & \quad + w_{\lambda} \sum_{i=1}^{n} \textrm{trap}_i(\|\lambda\|_2^2) &  \\
         \mbox{subject to} \quad
          & q_i = q_{i-1} + \textrm{trap}_i(u) & i \in 1, \ldots, n \\
          & u_i = u_{i-1} + \textrm{trap}_i(f_{\textrm{mb}}(t, y, x, \lambda, p))  & i \in 1, \ldots, n \\
@@ -276,72 +319,148 @@ the constraint involving \f$ f_\textrm{mb} \f$ is replaced with the following:
 \f[
     \begin{alignat*}{2}
     \mbox{subject to} \quad
-         & u_i = u_{i-1} + \textrm{trap}_i(\gamma)  & i \in 1, \ldots, n \\
-         & M(q_i, p)w_i + G(q_i, p)^T \lambda_i =
-          f_{\textrm{app}}(t, y_i, x_{i}, p) -
+         & u_i = u_{i-1} + \textrm{trap}_i(\zeta)  & i \in 1, \ldots, n \\
+         & M(q_i, p)\zeta_i + G(q_i, p)^T \lambda_i =
+          f_{\textrm{app}}(t_i, y_i, x_{i}, p) -
             f_{\textrm{bias}}(q_i, u_{i}, p) & \quad i \in 0, \ldots, n \\
     \mbox{with respect to} \quad
-         & \gamma_i \in [-\gamma_{B}, \gamma_{B}] & \forall~i \in 0, \ldots, n,\\
+         & \zeta_i \in [-\zeta_{B}, \zeta_{B}] & \forall~i \in 0, \ldots, n\\
     \end{alignat*}
 \f]
 
-where \f$ \gamma \f$ is generalized acceleration and \f$ \gamma_B \f$ is a large number.
+where \f$ \zeta \f$ is generalized acceleration and \f$ \zeta_B \f$ is a large number.
 
 @subsection hermitesimpson Hermite–Simpson transcription
 
-TODO
+With Hermite-Simpson transcription, we have \f$ n + 1 \f$ mesh points and
+\f$ n \f$ mesh intervals like Trapezoidal transcription, but we also introduce
+additional collocation points at the mesh interval midpoints. This leads to a
+total of \f$ 2n + 1 \f$ grid points on which we discretize the continuous
+variables:
 
 \f[
-    \begin{alignat*}{2}
-         & 0 = \dot{\phi}(q, p) = G(q, p) u\\
-         & 0 = \ddot{\phi}(q, p) = G(q, p) \dot{u} + \dot{G}(q, p) u \\
-         & 0 = \dot{\nu}(q, u, p)
+    \begin{alignat*}{1}
+        0 &= \tau_0 < \tau_1 < \tau_2 < \ldots < \tau_i < \ldots < \tau_{n - 1} < \tau_n = 1 \\
+        \bar{\tau}_i &= 0.5 (\tau_{i-1} + \tau_i) \\
+        t_i &= (t_f - t_0) \tau_i + t_0 \\
+        \bar{t}_i &= (t_f - t_0) \bar{\tau}_i + t_0 \\
+        h_i &= (t_f - t_0)(\tau_i - \tau_{i-1}) \\
     \end{alignat*}
 \f]
 
-@subsection kincon Kinematic constraints
+where \f$ \bar{\tau}_i \f$ denote mesh interval midpoints.
 
-Moco supports enforcing OpenSim kinematic constraints in optimal control
-problems. When a solver is initialized, any kinematic constraints
-enabled in the model are automatically detected, and additional information
-about each constraint is stored. This information includes the number of scalar
-path constraints (including derivatives if they exist), the scalar constraint
-kinematic levels (i.e. holonomic, non-holonomic, or acceleration), and the
-number of Lagrange multipliers that are added to the problem to enforce the
-constraints.
+Derivatives and integrals are removed from the original continuous time problem
+with the Hermite interpolant and Simpson integration rule:
 
-The solvers have options if the user desires to enforce kinematic
-constraint derivatives or minimize Lagrange multipliers in the problem.
+\f[
+    \textrm{hermite}_i(\eta, F(\eta, p)) = \frac{1}{2} (\eta_{i-1} + \eta_i) + \frac{h_i}{8} (F(\eta_{i-1}, p) - F(\eta_i, p)) \\
+    \textrm{simpson}_i(F(\eta, p)) = \frac{h_i}{6} (F(\eta_{i-1}, p) + 4 F(\bar{\eta}_i, p) + F(\eta_i, p))
+\f]
+
+where \f$ \eta \f$ is any continuous variable in the optimal control problem
+(e.g., \f$ y \f$) and \f$ F \f$ is any function. Note the midpoint function
+evaluation in the Simpson integration rule.
+
+The resulting finite-dimensional NLP is as follows:
+
+\f[
+    \begin{alignat*}{2}
+        \mbox{minimize} \quad
+         & \sum_j w_j \left(J_{E,j}(t_0, t_f, y_0, y_n, x_{0}, x_{n}, \lambda_0, \lambda_n, p) +
+         \sum_{i=1}^{n} \textrm{simpson}_i(J_{I,j}(t, y, x, \lambda, p)) \right) \\
+         & \quad + w_{\lambda} \sum_{i=1}^{n} \textrm{simpson}_i(\|\lambda\|_2^2) &  \\
+        \mbox{subject to} \quad
+         & \bar{q}_i = \textrm{hermite}_i(q, u) & i \in 1, \ldots, n \\
+         & q_i = q_{i-1} + \textrm{simpson}_i(u) & i \in 1, \ldots, n \\
+         & \bar{u}_i = \textrm{hermite}_i(u, f_{\textrm{mb}}(t, y, x, \lambda, p)) + G(\bar{q}_i, p)^T \bar{\gamma}_i & i \in 1, \ldots, n \\
+         & u_i = u_{i-1} + \textrm{simpson}_i(f_{\textrm{mb}}(t, y, x, \lambda, p))  & i \in 1, \ldots, n \\
+         & \bar{z}_i = \textrm{hermite}_i(z, f_{\textrm{aux}}(t, y, x, \lambda, p)) & i \in 1, \ldots, n \\
+         & z_i = z_{i-1} + \textrm{simpson}_i(f_{\textrm{aux}}(t, y, x, \lambda, p)) & i \in 1, \ldots, n \\
+         & \bar{x}_i = (x_{i-1} + x_i)/2 & i \in 1, \ldots, n \\
+         & 0 = \phi(q_i)  & i \in 0, \ldots, n\\
+         & 0 = \dot{\phi}(q_i, u_i, p) = G(q_i, p) u_i  & i \in 0, \ldots, n\\
+         & 0 = \ddot{\phi}(q_i, u_i, \dot{u}_i, p) = G(q_i, p) \dot{u}_i + \dot{G}(q_i, p) u_i  & i \in 0, \ldots, n\\
+         & g_{L} \leq g(t_i, y_i, x_{i}, p) \leq g_{U}  & i \in 0, \ldots, n\\
+         \mbox{with respect to} \quad
+         & y_0 \in [y_{0,L}, y_{0,U}] \\
+         & x_0 \in [x_{0,L}, x_{0,U}] \\
+         & y_i \in [y_{L}, y_{U}] & \forall~i \in 1, \ldots, n - 1 \\
+         & x_i \in [x_{L}, x_{U}] & \forall~i \in 1, \ldots, n - 1 \\
+         & \bar{y}_i \in [y_{L}, y_{U}] & \forall~i \in 1, \ldots, n \\
+         & \bar{x}_i \in [x_{L}, x_{U}] & \forall~i \in 1, \ldots, n \\
+         & y_n \in [y_{f,L}, y_{f,U}] \\
+         & x_n \in [x_{f,L}, x_{f,U}] \\
+         & p \in [p_{L}, p_{U}] \\
+         & t_0 \in [t_{0,L}, t_{0,U}] \\
+         & t_n \in [t_{f,L}, t_{f,U}] \\
+         & \lambda_i \in [\lambda_L, \lambda_U] & \forall~i \in 0, \ldots, n \\
+         & \bar{\lambda}_i \in [\lambda_L, \lambda_U] & \forall~i \in 1, \ldots, n \\
+         & \bar{\gamma}_i \in [\bar{\gamma}_L, \bar{\gamma}_U] & \forall~i \in 1, \ldots, n
+    \end{alignat*}
+\f]
+
+The explicit multibody dynamics function \f$ f_{\textrm{mb}} \f$ is the same as
+in Trapezoidal transcription. The implicit dynamics formulation is as follows:
+
+\f[
+    \begin{alignat*}{2}
+    \mbox{subject to} \quad
+         & \bar{u}_i = \textrm{hermite}_i(u, \zeta)  & i \in 1, \ldots, n \\
+         & u_i = u_{i-1} + \textrm{simpson}_i(\zeta)  & i \in 1, \ldots, n \\
+         & M(q_i, p)\zeta_i + G(q_i, p)^T \lambda_i =
+          f_{\textrm{app}}(t_i, y_i, x_{i}, p) -
+            f_{\textrm{bias}}(q_i, u_{i}, p) & \quad i \in 0, \ldots, n \\
+         & M(\bar{q}_i, p)\bar{\zeta}_i + G(\bar{q}_i, p)^T \bar{\lambda}_i =
+          f_{\textrm{app}}(\bar{t}_i, \bar{y}_i, \bar{x}_{i}, p) -
+            f_{\textrm{bias}}(\bar{q}_i, \bar{u}_i, p) & \quad i \in 1, \ldots, n \\
+    \mbox{with respect to} \quad
+         & \zeta_i \in [-\zeta_{B}, \zeta_{B}] & \forall~i \in 0, \ldots, n \\
+         & \bar{\zeta}_i \in [-\zeta_{B}, \zeta_{B}] & \forall~i \in 1, \ldots, n
+    \end{alignat*}
+\f]
+
+The \f$ G(\bar{q}_i, p)^T \bar{\gamma}_i \f$ term represents a velocity
+correction that is necessary to impose when enforcing derivatives of kinematic
+constraints in the NLP. The additional variables \f$ \bar{\gamma}_i \f$ help
+avoid problems becoming overconstrained, and the kinematic Jacobian transpose
+operator, \f$ G(\bar{q}_i, p)^T \f$, restricts the velocity correction to the
+tangent plane of the constraint manifold (see Posa et al. 2016 described in @ref
+kincon for more details). Currently, we only support enforcing derivatives of
+position-level, or holonomic, constraints, represented by the equations:
+
+\f[
+    \begin{alignat*}{2}
+         & 0 = \dot{\phi}(q, u, p) = G(q, p) u\\
+         & 0 = \ddot{\phi}(q, u, \dot{u}, p) = G(q, p) \dot{u} + \dot{G}(q, p) u \\
+    \end{alignat*}
+\f]
+
+Even though OpenSim supports non-holonomic constraints (that is,
+\f$ \nu(q, u, p) = 0 \f$), we only support holonomic constraints; that is,
+\f$ \phi(q) = 0 \f$.
+
+By default, the controls at mesh interval midpoints are constrained by linear
+interpolation of control mesh endpoint values (represented by
+\f$ \bar{x}_i = (x_{i-1} + x_i)/2 \f$ above) and is the recommended setting.
+However, you may disable this behavior in the solver:
 
 \code{.cpp}
-MocoTropterSolver& solver = moco.initTropterSolver();
-ms.set_enforce_constraint_derivatives(true);
-ms.set_lagrange_multiplier_weight(10);
+MocoCasADiSolver& solver = moco.initCasADiSolver();
+ms.set_interpolate_control_midpoints(false);
 \endcode
-
-If constraint derivatives are enforced, velocity correction variables are added
-to the problem according to the method described in Posa, Kuindersma, and
-Tedrake, 2016, "Optimization and stabilization of trajectories for constrained
-dynamical systems." It is also possible to modify the default bounds on these
-velocity correction variables:
-
-\code{.cpp}
-// Default bounds: [-0.1, 0.1]
-ms.set_velocity_correction_bounds({-0.25, 0.25});
-\endcode
-
-If constraint derivatives are not enforced or if the multibody constraint
-Jacobian is rank-deficient, it is recommended that the Lagrange multiplier
-minimization term is added to the problem to impose uniqueness for
-these variables.
-
 
 @section tips Tips for solving a custom problem
 
 1. Make sure every variable has bounds.
-2. Add reserve actuators.
-3. If controls display high frequency oscillations, try tightening the solver's
-  convergence and constraint tolerances.
+2. Create a dynamically-consistent initial guess by solving a feasibility problem
+(i.e. no cost terms).
+3. Actuators should only be as strong as they need to be. Problems tend to
+converge slower if some actuator controls are very small compared to those of
+other actuators in the model due to unecessarily large max force settings.
+4. Add reserve actuators.
+5. If controls display high frequency oscillations, try tightening the solver's
+convergence and constraint tolerances.
 
 */
 

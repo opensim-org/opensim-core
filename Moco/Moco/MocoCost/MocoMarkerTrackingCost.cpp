@@ -16,25 +16,27 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
+#include "MocoMarkerTrackingCost.h"
 
- #include "MocoMarkerTrackingCost.h"
- #include "../MocoUtilities.h"
- #include <OpenSim/Simulation/Model/Model.h>
- #include <OpenSim/Simulation/Model/Marker.h>
+#include "../MocoUtilities.h"
 
- using namespace OpenSim;
+#include <OpenSim/Simulation/Model/Marker.h>
+#include <OpenSim/Simulation/Model/Model.h>
 
- void MocoMarkerTrackingCost::initializeOnModelImpl(const Model& model) const {
+using namespace OpenSim;
+
+void MocoMarkerTrackingCost::initializeOnModelImpl(const Model& model) const {
 
     // TODO: When should we load a markers file?
     if (get_markers_reference().get_marker_file() != "") {
-        const_cast<MocoMarkerTrackingCost*>(this)->upd_markers_reference().
-                loadMarkersFile(get_markers_reference().get_marker_file());
+        const_cast<MocoMarkerTrackingCost*>(this)
+                ->upd_markers_reference()
+                .loadMarkersFile(get_markers_reference().get_marker_file());
     }
 
     // Check that there are no redundant columns in the reference data.
     checkRedundantLabels(
-        get_markers_reference().getMarkerTable().getColumnLabels());
+            get_markers_reference().getMarkerTable().getColumnLabels());
 
     // Cache reference pointers to model markers.
     const auto& markRefNames = get_markers_reference().getNames();
@@ -55,9 +57,10 @@
             m_refindices.push_back(i);
         } else {
             if (!get_allow_unused_references()) {
-                OPENSIM_THROW_FRMOBJ(Exception,
-                        format("Marker '%s' unrecognized by the "
-                               "specified model.", markRefNames[i]));
+                OPENSIM_THROW_FRMOBJ(
+                        Exception, format("Marker '%s' unrecognized by the "
+                                          "specified model.",
+                                           markRefNames[i]));
             }
         }
     }
@@ -71,30 +74,29 @@
     // Get and flatten TimeSeriesTableVec3 to doubles and create a set of
     // reference splines, one for each component of the coordinate
     // trajectories.
-    m_refsplines = GCVSplineSet(
-        get_markers_reference().getMarkerTable().flatten());
- }
+    m_refsplines =
+            GCVSplineSet(get_markers_reference().getMarkerTable().flatten());
+}
 
- void MocoMarkerTrackingCost::calcIntegralCostImpl(const SimTK::State& state,
+ void MocoMarkerTrackingCost::calcIntegrandImpl(const SimTK::State& state,
         double& integrand) const {
      const auto& time = state.getTime();
      getModel().realizePosition(state);
      SimTK::Vector timeVec(1, time);
 
-     for (int i = 0; i < (int)m_model_markers.size(); ++i) {
-         const auto& modelValue =
-             m_model_markers[i]->getLocationInGround(state);
-         SimTK::Vec3 refValue;
+    for (int i = 0; i < (int)m_model_markers.size(); ++i) {
+        const auto& modelValue = m_model_markers[i]->getLocationInGround(state);
+        SimTK::Vec3 refValue;
 
-         // Get the markers reference index corresponding to the current
-         // model marker and get the reference value.
-         int refidx = m_refindices[i];
-         refValue[0] = m_refsplines[3*refidx].calcValue(timeVec);
-         refValue[1] = m_refsplines[3*refidx + 1].calcValue(timeVec);
-         refValue[2] = m_refsplines[3*refidx + 2].calcValue(timeVec);
+        // Get the markers reference index corresponding to the current
+        // model marker and get the reference value.
+        int refidx = m_refindices[i];
+        refValue[0] = m_refsplines[3 * refidx].calcValue(timeVec);
+        refValue[1] = m_refsplines[3 * refidx + 1].calcValue(timeVec);
+        refValue[2] = m_refsplines[3 * refidx + 2].calcValue(timeVec);
 
-         double distance = (modelValue - refValue).normSqr();
+        double distance = (modelValue - refValue).normSqr();
 
-         integrand += m_marker_weights[refidx] * distance;
-     }
- }
+        integrand += m_marker_weights[refidx] * distance;
+    }
+}

@@ -74,10 +74,10 @@ MocoSolution solveDoublePendulumSwingup(const std::string& dynamics_mode) {
     auto* ftCost = mp.addCost<MocoFinalTimeCost>();
     ftCost->set_weight(0.001);
 
-    auto* endpointCost = mp.addCost<MocoMarkerEndpointCost>("endpoint");
-    endpointCost->set_weight(1000.0);
-    endpointCost->setPointName("/markerset/marker1");
-    endpointCost->setReferenceLocation(SimTK::Vec3(0, 2, 0));
+    auto* finalCost = mp.addCost<MocoMarkerFinalCost>("final");
+    finalCost->set_weight(1000.0);
+    finalCost->setPointName("/markerset/marker1");
+    finalCost->setReferenceLocation(SimTK::Vec3(0, 2, 0));
 
     // Configure the solver.
     // =====================

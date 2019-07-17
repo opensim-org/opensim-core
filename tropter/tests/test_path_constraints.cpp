@@ -38,6 +38,7 @@ public:
         this->add_state("u", {-100, 100}, {0}, {0});
         this->add_control("a", {-100, 100});
         this->add_control("F", {-Fmax, Fmax});
+        this->add_cost("cost", 0);
         this->add_path_constraint("F=ma", 0);
     }
     void calc_differential_algebraic_equations(
@@ -50,9 +51,9 @@ public:
             out.path[0] = in.controls[1] - mass*in.controls[0];
         }
     }
-    void calc_endpoint_cost(const Input<T>& in, T& cost)
-            const override {
-        cost = in.time;
+    void calc_cost(
+            int cost_index, const CostInput<T>& in, T& cost) const override {
+        cost = in.final_time;
     }
     Solution actual_solution(const VectorXd& time) const
     {

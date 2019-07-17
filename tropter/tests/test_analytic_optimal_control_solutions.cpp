@@ -37,6 +37,7 @@ public:
         this->add_state("x0", {-10, 10}, {0}, {5});
         this->add_state("x1", {-10, 10}, {0}, {2});
         this->add_control("u", {-50, 50});
+        this->add_cost("effort", 1);
     }
     void calc_differential_algebraic_equations(
             const Input<T>& in, Output<T> out) const override {
@@ -47,8 +48,12 @@ public:
         // xdot.row(0) = x.row(1);
         // xdot.row(1) = -x.row(1) + u.row(0);
     }
-    void calc_integral_cost(const Input<T>& in, T& integrand) const override {
-
+    void calc_cost(
+            int cost_index, const CostInput<T>& in, T& cost) const override {
+        cost = in.integral;
+    }
+    void calc_cost_integrand(
+            int cost_index, const Input<T>& in, T& integrand) const override {
         const auto& u = in.controls;
         integrand = 0.5 * u[0] * u[0];
     }

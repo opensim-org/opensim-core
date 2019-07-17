@@ -203,6 +203,13 @@ MocoCasOCProblem::MocoCasOCProblem(const MocoCasADiSolver& mocoCasADiSolver,
         const auto& param = problemRep.getParameter(paramName);
         addParameter(paramName, convertBounds(param.getBounds()));
     }
+
+    const auto costNames = problemRep.createCostNames();
+    for (const auto& name : costNames) {
+        const auto& cost = problemRep.getCost(name);
+        addCost(name, cost.getNumIntegrals());
+    }
+
     const auto pathConstraintNames = problemRep.createPathConstraintNames();
     for (const auto& name : pathConstraintNames) {
         const auto& pathCon = problemRep.getPathConstraint(name);

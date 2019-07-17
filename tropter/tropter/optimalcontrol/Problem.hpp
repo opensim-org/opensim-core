@@ -75,6 +75,19 @@ void Problem<T>::set_time(const InitialBounds& initial_time,
 }
 
 template<typename T>
+int Problem<T>::add_cost(const std::string& name, int num_integrals) {
+    for (const auto& info : m_cost_infos) {
+        TROPTER_THROW_IF(info.name == name, "Cost with name %s already exists.",
+                name);
+    }
+    TROPTER_THROW_IF(num_integrals < 0 || num_integrals > 1,
+            "num_integrals must be 0 or 1, but got %i.", num_integrals);
+
+    m_cost_infos.push_back({name, num_integrals == 1});
+    return (int)m_cost_infos.size() - 1;
+}
+
+template<typename T>
 void Problem<T>::print_description() const {
     using std::cout;
     using std::endl;
@@ -131,20 +144,19 @@ void Problem<T>::
 initialize_on_iterate(const VectorX<T>&) const
 {}
 
-template<typename T>    
+template<typename T>
 void Problem<T>::
 calc_differential_algebraic_equations(const Input<T>&, Output<T>) const
 {}
 
 template<typename T>
-void Problem<T>::
-calc_endpoint_cost(const Input<T>&, T&) const
-{}
+void Problem<T>::calc_cost(int cost_index, const CostInput<T>&, T&) const
+{ TROPTER_THROW("calc_cost() not implemented."); }
 
 template<typename T>
-void Problem<T>::
-calc_integral_cost(const Input<T>&, T&) const
-{}
+void Problem<T>::calc_cost_integrand(
+        int cost_index, const Input<T>&, T&) const
+{ TROPTER_THROW("calc_cost_integrand() not implemented."); }
 
 template<typename T>
 void Problem<T>::

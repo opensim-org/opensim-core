@@ -105,7 +105,7 @@ void MocoJointReactionCost::initializeOnModelImpl(const Model& model) const {
     }
 }
 
-void MocoJointReactionCost::calcIntegralCostImpl(const SimTK::State& state,
+void MocoJointReactionCost::calcIntegrandImpl(const SimTK::State& state,
         double& integrand) const {
 
     getModel().realizeAcceleration(state);

@@ -8,13 +8,14 @@
 #include <Moco/Components/DeGrooteFregly2016Muscle.h>
 #include <Moco/Components/ModelFactory.h>
 #include <Moco/Components/PositionMotion.h>
+#include <Moco/Components/SmoothSphereHalfSpaceForce.h>
 #include <Moco/MocoBounds.h>
 #include <Moco/MocoCasADiSolver/MocoCasADiSolver.h>
 #include <Moco/MocoControlBoundConstraint.h>
 #include <Moco/MocoCost/MocoControlCost.h>
 #include <Moco/MocoCost/MocoCost.h>
 #include <Moco/MocoCost/MocoJointReactionCost.h>
-#include <Moco/MocoCost/MocoMarkerEndpointCost.h>
+#include <Moco/MocoCost/MocoMarkerFinalCost.h>
 #include <Moco/MocoCost/MocoMarkerTrackingCost.h>
 #include <Moco/MocoCost/MocoOrientationTrackingCost.h>
 #include <Moco/MocoCost/MocoStateTrackingCost.h>

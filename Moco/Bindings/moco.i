@@ -9,22 +9,26 @@ typedef SimTK::RowVector_<double> RowVector;
 
 
 namespace OpenSim {
-        %ignore ModelProcessor::setModel(std::unique_ptr<Model>);
+    %ignore ModelProcessor::setModel(std::unique_ptr<Model>);
 }
 
 %extend OpenSim::ModelProcessor {
-        void setModel(Model* model) {
-            $self->setModel(std::unique_ptr<Model>(model));
-        }
+    void setModel(Model* model) {
+        $self->setModel(std::unique_ptr<Model>(model));
+    }
 };
 %include <Moco/ModelProcessor.h>
 
+namespace OpenSim {
+    %ignore MocoCost::CostInput;
+    %ignore MocoCost::calcCost;
+}
 %include <Moco/MocoCost/MocoCost.h>
 %template(SetMocoWeight) OpenSim::Set<OpenSim::MocoWeight, OpenSim::Object>;
 %include <Moco/MocoWeightSet.h>
 %include <Moco/MocoCost/MocoStateTrackingCost.h>
 %include <Moco/MocoCost/MocoMarkerTrackingCost.h>
-%include <Moco/MocoCost/MocoMarkerEndpointCost.h>
+%include <Moco/MocoCost/MocoMarkerFinalCost.h>
 %include <Moco/MocoCost/MocoControlCost.h>
 %include <Moco/MocoCost/MocoSumSquaredStateCost.h>
 %include <Moco/MocoCost/MocoJointReactionCost.h>
@@ -201,5 +205,6 @@ moco_unique_ptr(OpenSim::PositionMotion);
 %include <Moco/MocoUtilities.h>
 
 %include <Moco/Components/ModelFactory.h>
+%include <Moco/Components/SmoothSphereHalfSpaceForce.h>
 
 %include <Moco/ModelOperators.h>
