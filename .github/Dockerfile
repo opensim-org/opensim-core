@@ -24,6 +24,9 @@ ARG GITHUBTOKEN
 
 ARG MOCOBRANCH=master
 
+# Avoid interactive timezone prompt when installing packages.
+ENV DEBIAN_FRONTEND=noninteractive
+
 RUN apt-get update && apt-get install -y \
         git \
         build-essential libtool autoconf \
@@ -32,9 +35,11 @@ RUN apt-get update && apt-get install -y \
         wget \
         pkg-config \
         libopenblas-dev \
-        liblapack-dev
+        liblapack-dev \
+        python3 python3-dev python3-numpy python3-matplotlib python3-setuptools \
+        swig
 
-# TODO: this embeds the token in git settings!
+# Must be careful to not embed the GitHub token in the image.
 RUN git config --global url."https://$GITHUBTOKEN:@github.com/".insteadOf "https://github.com/" \
         && git clone https://github.com/stanfordnmbl/opensim-moco.git /opensim-moco \
         && cd /opensim-moco \
@@ -45,7 +50,7 @@ RUN cd /opensim-moco \
         && git submodule update --init \
         && mkdir ../moco_dependencies_build \
         && cd ../moco_dependencies_build \
-        && cmake ../opensim-moco/dependencies \
+        && cmake ../opensim-moco/dependencies -DOPENSIM_PYTHON_WRAPPING=on \
         && make --jobs 4 ipopt \
         && make --jobs 4 \
         && echo "/moco_dependencies_install/adol-c/lib64" >> /etc/ld.so.conf.d/moco.conf \
@@ -57,10 +62,13 @@ RUN cd / \
         && mkdir build \
         && cd build \
         && cmake ../opensim-moco \
+            -DMOCO_PYTHON_BINDINGS=on \
+            -DBUILD_TESTING=off \
+            -DBUILD_EXAMPLES=off \
         && make --jobs 4 install \
         && echo "/opensim-moco-install/sdk/lib" >> /etc/ld.so.conf.d/moco.conf \
+        && echo "/opensim-moco-install/sdk/Simbody/lib" >> /etc/ld.so.conf.d/moco.conf \
         && ldconfig \
+        && cd /opensim-moco-install/sdk/Python && python3 setup.py install \
         && rm -r /build
-
-# TODO build python bindings.
 
