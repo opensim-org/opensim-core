@@ -9,13 +9,13 @@ from pathlib import Path
 
 parser = argparse.ArgumentParser(
         description="Submit a Moco job to the Stanford Sherlock computing cluster.")
-# TODO ask for a description/note for the job, and write it to the job
-# directory.
 parser.add_argument('directory', type=str, help="Location of input files.")
 parser.add_argument('--duration', type=str, default="00:30:00",
         help="Maximum duration for the job in HH:MM:SS.")
 parser.add_argument('--name', type=str, default="",
         help="A name for the job (default: directory name).")
+parser.add_argument('--note', type=str, default="",
+        help="A note to save to the directory (as note.txt).")
 
 parser.add_argument('--sshmaster', dest='sshmaster', action='store_true',
         help="Start master SSH session (default).")
@@ -31,6 +31,7 @@ parser.set_defaults(sshmaster=True, sshexit=True)
 # TODO windows
 # TODO initial configuring gdrive on Sherlock.
 # TODO building a docker container from a branch (as a separate step?).
+# TODO allow customizing where files are saved in Google Drive.
 
 
 args = parser.parse_args()
@@ -40,6 +41,7 @@ if args.name != "":
 else:
     name = Path(directory).name
 duration = args.duration
+note = args.note
 sshmaster = args.sshmaster
 sshexit = args.sshexit
 
@@ -57,6 +59,11 @@ sunetid = config['sunetid']
 if not os.path.exists(os.path.join(directory, 'setup.omoco')):
     raise Exception(f"setup.omoco is missing from {directory}.")
 
+# if note:
+#     with open(os.path.join(directory, 'note.txt'), 'w') as f:
+#         f.write(note)
+
+
 home = str(Path.home()) # Should work on Windows and UNIX.
 if not os.path.exists(f'{home}/.ssh/controlmasters/'):
     os.makedirs(f'{home}/.ssh/controlmasters')
@@ -66,6 +73,7 @@ if not os.path.exists(f'{home}/.ssh/controlmasters/'):
 control_path = "~/.ssh/controlmasters/%C"
 server = f"{sunetid}@login.sherlock.stanford.edu"
 now = datetime.datetime.now()
+date = now.strftime('%Y-%m-%d')
 time = '%s.%i' % (now.strftime('%Y-%m-%dT%H%M%S'), now.microsecond)
 job_directory = '%s-%s' % (time, name)
 print(f"Submitting {job_directory}")
@@ -91,7 +99,8 @@ singularity exec $GROUP_HOME/opensim-moco/opensim-moco_latest.sif /opensim-moco-
 # Upload results to Google Drive.
 module load system gdrive
 
-opensim_moco_folder_id=$(gdrive list | grep 'opensim-moco' | cut -d" " -f1)
+# TODO: What happens when we hit max files to list (--max)?
+opensim_moco_folder_id=$(gdrive list --absolute | grep 'opensim-moco ' | cut -d" " -f1)
 if [[ -z "$opensim_moco_folder_id" ]]; then
     echo "Creating opensim-moco folder."
     opensim_moco_folder_id=$(gdrive mkdir opensim-moco | cut -d" " -f2)
@@ -99,7 +108,13 @@ else
     echo "opensim-moco folder exists."
 fi
 
+# date_folder_id=$(gdrive list | grep 'opensim-moco/{date}' | cut -d" " -f1)
+# if [[ -z "$date_folder_id" ]]; then
+#     date_folder_id=$(gdrive mkdir --parent $opensim_moco_folder_id {date} | cut -d" " -f2)
+# fi
+
 # Copy results.
+# gdrive upload --recursive --parent $date_folder_id {server_job_dir}
 gdrive upload --recursive --parent $opensim_moco_folder_id {server_job_dir}
 
 """
@@ -112,7 +127,7 @@ with open(f'{directory}/{name}.batch', 'w') as f:
 os.system(f'ssh -S {control_path} {server} "mkdir -p {mocojobs_dir}"')
 os.system(f"scp -o ControlPath={control_path} -r '{directory}/' {server}:{server_job_dir}")
 
-os.system(f'ssh -S {control_path} {server} "cd {server_job_dir} && sbatch {name}.batch"')
+os.system(f'ssh -S {control_path} {server} "cd {server_job_dir} && echo \"{note}\" > note.txt && sbatch {name}.batch"')
 
 if sshexit:
     os.system(f'ssh -S {control_path} -O exit {server}')
