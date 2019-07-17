@@ -379,6 +379,8 @@ void DeGrooteFregly2016Muscle::replaceMuscles(
     auto& muscleSet = model.updMuscles();
     for (int im = 0; im < muscleSet.getSize(); ++im) {
         auto& muscBase = muscleSet.get(im);
+		
+		// replace Millard2012EquilibriumMuscle
         if (auto musc = dynamic_cast<Millard2012EquilibriumMuscle*>(
                     &muscBase)) {
             auto* actu = new DeGrooteFregly2016Muscle();
@@ -450,7 +452,7 @@ void DeGrooteFregly2016Muscle::replaceMuscles(
             }
             musclesToDelete.push_back(musc);
 		
-		// Thelen2003Muscle
+		// replace Thelen2003Muscle
 		} else if (auto musc = dynamic_cast<Thelen2003Muscle*>(&muscBase)) {
 
 			auto* actu = new DeGrooteFregly2016Muscle();
