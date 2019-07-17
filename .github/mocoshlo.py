@@ -16,9 +16,13 @@ parser.add_argument('--duration', type=str, default="00:30:00",
         help="Maximum duration for the job in HH:MM:SS.")
 parser.add_argument('--name', type=str, default="",
         help="A name for the job (default: directory name).")
-# TODO:
-parser.add_argument('--ssh-existing-master', action='store_true',
-        help="Use an existing SSH master session.")
+
+parser.add_argument('--sshmaster', dest='sshmaster', action='store_true')
+parser.add_argument('--no-sshmaster', dest='sshmaster', action='store_false')
+parser.add_argument('--sshexit', dest='sshexit', action='store_true')
+parser.add_argument('--no-sshexit', dest='sshexit', action='store_false')
+parser.set_defaults(sshmaster=True, sshexit=True)
+
 
 args = parser.parse_args()
 directory = args.directory
@@ -27,6 +31,8 @@ if args.name != "":
 else:
     name = Path(directory).name
 duration = args.duration
+sshmaster = args.sshmaster
+sshexit = args.sshexit
 
 if ' ' in name:
     raise Exception("Cannot have spaces in name.")
@@ -58,7 +64,8 @@ job_directory = '%s-%s' % (name, time)
 print(f"Submitting {job_directory}")
 mocojobs_dir = f"~/nmbl/mocojobs/"
 server_job_dir = f"{mocojobs_dir}{job_directory}"
-os.system(f'ssh -M -f -N -S {control_path} {server}')
+if sshmaster:
+    os.system(f'ssh -M -f -N -S {control_path} {server}')
 
 batch = f"""#!/bin/bash
 #SBATCH --job-name={name}
@@ -107,4 +114,5 @@ os.system(f"scp -o ControlPath={control_path} -r '{directory}/' {server}:{server
 
 os.system(f'ssh -S {control_path} {server} "cd {server_job_dir} && sbatch {name}.batch"')
 
-os.system(f'ssh -S {control_path} -O exit {server}')
+if sshexit:
+    os.system(f'ssh -S {control_path} -O exit {server}')
