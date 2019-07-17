@@ -30,7 +30,7 @@ void MocoSumSquaredStateCost::constructProperties() {
 void MocoSumSquaredStateCost::initializeOnModelImpl(const Model& model) const {
 }
 
-void MocoSumSquaredStateCost::calcIntegralCostImpl(const SimTK::State& state,
+void MocoSumSquaredStateCost::calcIntegrandImpl(const SimTK::State& state,
         double& integrand) const {
     integrand = state.getY().normSqr();
 }

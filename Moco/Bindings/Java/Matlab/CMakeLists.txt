@@ -22,8 +22,10 @@ file(COPY "Examples/exampleSitToStand/sitToStand_3dof9musc.osim"
      DESTINATION
         "${CMAKE_BINARY_DIR}/Moco/Examples/C++/exampleSitToStand")
 
-install(DIRECTORY "${CMAKE_SOURCE_DIR}/Moco/Geometry"
-        DESTINATION "${MOCO_INSTALL_MATLABEXDIR}/exampleSitToStand")
+file(GLOB GEOMETRY "${CMAKE_SOURCE_DIR}/opensim-models/Geometry/*"
+    "${CMAKE_SOURCE_DIR}/opensim-models/Models/RajagopalModel/Geometry/*")
+install(FILES ${GEOMETRY}
+    DESTINATION "${MOCO_INSTALL_MATLABEXDIR}/exampleSitToStand/Geometry")
 
 # The configureMoco.m script contains paths into the Moco installation
 # that may be different on different platforms, so we configure it with CMake
