@@ -13,8 +13,8 @@ function assistedSitToStand
 %       ankle_angle_r
 % 3. Set Stiffness, RestLength, and Viscosity to any non-negative value.
 % 4. The sum of all Stiffnesses must be less than 15.
-% 5. Do not add any other types of components to the model.
-% 6. Do not edit or remove any components already in the model.
+% 5. Do not add any other types of components, and do not remove or edit any
+% other components.
 %
 % Information:
 % 1. We started you off with two different device designs, stored in the
@@ -26,8 +26,9 @@ function assistedSitToStand
 %    and subject2_unassisted_solution.sto. If you want to re-run the unassisted
 %    optimizations, delete these STO files or set cacheUnassisted to false.
 % 4. To make Moco optimize the device parameters for you, do the following:
-%       a. Create a MocoStudy using createStudy().
-%       b. Add a MocoParameter to your problem representing
+%       a. Create a MocoStudy for one of the subjects using createStudy().
+%       b. Add a MocoParameter to your problem representing the model property
+%          you want to optimize.
 %       c. (optional) Set an initial guess for your parameter.
 %          See createGuess() and setGuess() in MocoDirectCollocationSolver.
 %       d. Solve the study returned from createStudy().
@@ -57,7 +58,7 @@ score = evaluateDevice(@addSpringToKnee);
 
 end
 
-% Edit these device functions or create your own!
+% Edit these device functions, or create your own :)
 
 % This is the default function used in evaluateDevice() above.
 function name = addSpringToKnee(model)
@@ -65,13 +66,17 @@ name = 'knee_spring';
 import org.opensim.modeling.*;
 device = SpringGeneralizedForce('knee_angle_r');
 device.setName('knee_spring');
+% Stiffness units: N/radians
 device.setStiffness(15);
+% Rest length units: radians
 device.setRestLength(0);
+% Viscosity units: N-s/radians
 device.setViscosity(0);
 model.addForce(device);
 end
 
-% By default, this function is not used.
+% By default, this function is not used. To use it, pass the function name
+% as the argument to evaluateDevice() above (prefixed with @).
 function name = addSpringToAnkle(model)
 name = 'ankle_spring';
 import org.opensim.modeling.*;
