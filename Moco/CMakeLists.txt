@@ -11,7 +11,7 @@ install(DIRECTORY "${CASADI_CMAKE_DIR}/../../../"
         DESTINATION "${CMAKE_INSTALL_PREFIX}/${MOCO_INSTALL_CASADIDIR}"
         USE_SOURCE_PERMISSIONS)
 
-find_package(OpenSim 4.0 REQUIRED)
+find_package(OpenSim 4.1 REQUIRED)
 set_package_properties(OpenSim PROPERTIES
         URL http://opensim.stanford.edu
         TYPE REQUIRED

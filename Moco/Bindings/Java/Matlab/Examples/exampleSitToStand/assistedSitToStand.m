@@ -115,6 +115,21 @@ model = getMuscleDrivenModel(ignoreActivationDynamics, subjectInfo);
 % Add the device to the model.
 if nargin > 1
     name = addDeviceFunction(model);
+    compList = model.getComponentsList();
+    it = compList.begin();
+    while ~it.equals(compList.end())
+        if strcmp(it.getConcreteClassName(), 'SpringGeneralizedForce')
+            object = model.getComponent(it.getAbsolutePathString());
+            force = SpringGeneralizedForce.safeDownCast(object);
+            coord = char(force.get_coordinate());
+            if (~strcmp(coord, 'hip_flexion_r') && ...
+                    ~strcmp(coord, 'knee_angle_r') && ...
+                    ~strcmp(coord, 'ankle_angle_r'))
+                error("Coordinate name is incorrect.");
+            end
+        end
+        it.next();
+    end
     problem.setName([subjectInfo.name '_assisted_' name])
 else
     problem.setName([subjectInfo.name '_unassisted'])
@@ -191,7 +206,7 @@ global subjectInfos;
 import org.opensim.modeling.*;
 
 % Check the stiffness constraint.
-if nargin > 1
+if nargin > 0
     model = getMuscleDrivenModel(true, subjectInfos{1});
     name = addDeviceFunction(model);
     compList = model.getComponentsList();
@@ -200,8 +215,8 @@ if nargin > 1
     while ~it.equals(compList.end())
         if strcmp(it.getConcreteClassName(), 'SpringGeneralizedForce')
             object = model.getComponent(it.getAbsolutePathString());
-            property = object.getPropertyByName('stiffness');
-            stiffness = PropertyHelper.getValueDouble(property);
+            force = SpringGeneralizedForce.safeDownCast(object);
+            stiffness = force.getStiffness();
             sumStiffness = sumStiffness + stiffness;
         end
         it.next();
