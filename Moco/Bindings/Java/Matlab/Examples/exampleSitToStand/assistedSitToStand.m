@@ -53,11 +53,13 @@ cacheUnassisted = 1;
 % Edit the argument to evaluateDevice() to any device function you create below.
 score = evaluateDevice(@addSpringToKnee);
 
-% Use this space to perform a parameter optimization, if you wish.
+% Use this space to perform a parameter optimization.
 
 end
 
 % Edit these device functions or create your own!
+
+% This is the default function used in evaluateDevice() above.
 function name = addSpringToKnee(model)
 name = 'knee_spring';
 import org.opensim.modeling.*;
@@ -69,6 +71,7 @@ device.setViscosity(0);
 model.addForce(device);
 end
 
+% By default, this function is not used.
 function name = addSpringToAnkle(model)
 name = 'ankle_spring';
 import org.opensim.modeling.*;
