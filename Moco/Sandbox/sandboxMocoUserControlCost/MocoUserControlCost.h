@@ -1,11 +1,11 @@
-#ifndef MOCO_MOCOCONTROLCOST_H
-#define MOCO_MOCOCONTROLCOST_H
+#ifndef MOCO_MOCOUSERCONTROLCOST_H
+#define MOCO_MOCOUSERCONTROLCOST_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: MocoControlCost.h                                            *
+ * OpenSim Moco: MocoUserControlCost.h                                        *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2017 Stanford University and the Authors                     *
  *                                                                            *
- * Author(s): Christopher Dembia                                              *
+ * Author(s): Prasanna Sritharan, Christopher Dembia                          *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -18,8 +18,10 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "../MocoWeightSet.h"
-#include "MocoCost.h"
+#include <Moco/MocoWeightSet.h>
+#include <Moco/MocoCost/MocoCost.h>
+#include <functional>
+#include <vector>
 
 namespace OpenSim {
 
@@ -30,15 +32,27 @@ namespace OpenSim {
 // TODO want a related cost for minimizing the value of state variables like
 // activation.
 // TODO allow leaving out some controls.
-class OSIMMOCO_API MocoControlCost : public MocoCost {
-    OpenSim_DECLARE_CONCRETE_OBJECT(MocoControlCost, MocoCost);
+class MocoUserControlCost : public MocoCost {
+    OpenSim_DECLARE_CONCRETE_OBJECT(MocoUserControlCost, MocoCost);
 
 public:
-    MocoControlCost();
-    MocoControlCost(std::string name) : MocoCost(std::move(name)) {
+    // Function reference for user defined control cost, ideally this should be
+    // a property. Default: nullptr
+    std::function<double(const SimTK::State&, const Model&, std::vector<double>,
+            std::vector<double>, std::vector<int>)>
+            user_control_cost_fun_ptr;
+
+    // Vector of parameters for use in user-defined control cost function. This
+    // is provided as a convenience. Unpack this vector within your user-defined
+    // function to use the individual values,  ideally this should be a
+    // property. Default: empty vector.
+    std::vector<double> utility_vector;
+
+    MocoUserControlCost();
+    MocoUserControlCost(std::string name) : MocoCost(std::move(name)) {
         constructProperties();
     }
-    MocoControlCost(std::string name, double weight)
+    MocoUserControlCost(std::string name, double weight)
             : MocoCost(std::move(name), weight) {
         constructProperties();
     }
@@ -56,6 +70,7 @@ protected:
     int getNumIntegralsImpl() const override { return 1; }
     void calcIntegrandImpl(
             const SimTK::State& state, double& integrand) const override;
+
     void calcCostImpl(
             const CostInput& input, SimTK::Real& cost) const override {
         cost = input.integral;
@@ -72,4 +87,4 @@ private:
 
 } // namespace OpenSim
 
-#endif // MOCO_MOCOCONTROLCOST_H
+#endif // MOCO_MOCOUSERCONTROLCOST_H

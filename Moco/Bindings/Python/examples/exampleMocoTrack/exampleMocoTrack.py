@@ -153,12 +153,6 @@ def muscleDrivenStateTracking():
     # problem beyond the MocoTrack interface.
     moco = track.initialize()
 
-    # By default, the MocoTrack tool uses explicit dynamics for the model 
-    # defect constraints. Here, get a reference to the MocoSolver and set the 
-    # dynamics mode to "implicit" instead.
-    solver = osim.MocoCasADiSolver.safeDownCast(moco.updSolver())
-    solver.set_dynamics_mode("implicit")
-
     # Get a reference to the MocoControlCost that is added to every MocoTrack
     # problem by default.
     problem = moco.updProblem()

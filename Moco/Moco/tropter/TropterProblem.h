@@ -79,9 +79,10 @@ protected:
 
         addStateVariables();
         addControlVariables();
+        addParameters();
+        addCosts();
         addKinematicConstraints();
         addGenericPathConstraints();
-        addParameters();
 
         std::string formattedTimeString(getFormattedDateTime(true));
         m_fileDeletionThrower = OpenSim::make_unique<FileDeletionThrower>(
@@ -108,6 +109,17 @@ protected:
             this->add_control(controlName, convertBounds(info.getBounds()),
                     convertBounds(info.getInitialBounds()),
                     convertBounds(info.getFinalBounds()));
+        }
+    }
+
+    void addCosts() {
+        const auto costNames = m_mocoProbRep.createCostNames();
+        for (const auto& name : costNames) {
+            const auto& cost = m_mocoProbRep.getCost(name);
+            this->add_cost(name, cost.getNumIntegrals());
+        }
+        if (m_mocoTropterSolver.get_minimize_lagrange_multipliers()) {
+            m_multiplierCostIndex = this->add_cost("multipliers", 1);
         }
     }
 
@@ -284,12 +296,29 @@ protected:
     }
 
     void setSimTKState(const tropter::Input<T>& in) const {
-        const auto& time = in.time;
-        const auto& states = in.states;
-        const auto& adjuncts = in.adjuncts;
+        setSimTKState(in.time, in.states, in.controls, in.adjuncts, 0);
+    }
+    void setSimTKStateForCostInitial(
+            const tropter::CostInput<T>& in) const {
+        setSimTKState(in.initial_time, in.initial_states, in.initial_controls,
+                in.initial_adjuncts, 0);
+    }
+    void setSimTKStateForCostFinal(
+            const tropter::CostInput<T>& in) const {
+        setSimTKState(in.final_time, in.final_states, in.final_controls,
+                in.final_adjuncts, 1);
+    }
+    /// Use `stateDisConIndex` to specify which of the two
+    /// stateDisabledConstraints from MocoProblemRep to update.
+    void setSimTKState(const T& time,
+            const Eigen::Ref<const tropter::VectorX<T>>& states,
+            const Eigen::Ref<const tropter::VectorX<T>>& controls,
+            const Eigen::Ref<const tropter::VectorX<T>>& adjuncts,
+            int stateDisConIndex = 0) const {
 
         auto& simTKStateBase = this->m_stateBase;
-        auto& simTKStateDisabledConstraints = this->m_stateDisabledConstraints;
+        auto& simTKStateDisabledConstraints =
+                m_mocoProbRep.updStateDisabledConstraints(stateDisConIndex);
         auto& modelDisabledConstraints = this->m_modelDisabledConstraints;
 
         if (m_implicit && !m_mocoProbRep.isPrescribedKinematics()) {
@@ -310,9 +339,8 @@ protected:
             // Stage::Velocity, so we don't ever need to set its controls.
             auto& osimControls = modelDisabledConstraints.updControls(
                     simTKStateDisabledConstraints);
-            for (int ic = 0; ic < in.controls.size(); ++ic) {
-                osimControls[m_modelControlIndices[ic]] =
-                        in.controls[ic];
+            for (int ic = 0; ic < controls.size(); ++ic) {
+                osimControls[m_modelControlIndices[ic]] = controls[ic];
             }
             modelDisabledConstraints.realizeVelocity(
                     simTKStateDisabledConstraints);
@@ -330,39 +358,47 @@ protected:
         }
     }
 
-    void calc_integral_cost(
-            const tropter::Input<T>& in, T& integrand) const override {
-        // Unpack variables.
-        const auto& adjuncts = in.adjuncts;
+    void calc_cost_integrand(int cost_index, const tropter::Input<T>& in,
+            T& integrand) const override {
+        if (cost_index == m_multiplierCostIndex) {
+            // Unpack variables.
+            const auto& adjuncts = in.adjuncts;
+            // If specified, add squared multiplers cost to the integrand.
+            const auto& multiplierWeight =
+                    m_mocoTropterSolver.get_lagrange_multiplier_weight();
+            for (int i = 0; i < m_numMultipliers; ++i) {
+                integrand += multiplierWeight * adjuncts[i] * adjuncts[i];
+            }
+            return;
+        }
 
         // Update the state.
         // TODO would it make sense to a vector of States, one for each mesh
         // point, so that each can preserve their cache?
         this->setSimTKState(in);
 
-        // Compute the integrand for all MocoCosts.
-        integrand = m_mocoProbRep.calcIntegralCost(
-                this->m_stateDisabledConstraints);
-
-        // If specified, add squared multiplers cost to the integrand.
-        const auto& multiplierWeight =
-                m_mocoTropterSolver.get_lagrange_multiplier_weight();
-        if (m_mocoTropterSolver.get_minimize_lagrange_multipliers()) {
-            for (int i = 0; i < m_numMultipliers; ++i) {
-                integrand += multiplierWeight * adjuncts[i] * adjuncts[i];
-            }
-        }
+        // Compute the integrand for this cost term.
+        const auto& cost = m_mocoProbRep.getCostByIndex(cost_index);
+        integrand = cost.calcIntegrand(this->m_stateDisabledConstraints);
     }
 
-    void calc_endpoint_cost(
-            const tropter::Input<T>& in, T& cost) const override {
-        // TODO avoid all of this if there are no endpoint costs.
+    void calc_cost(int cost_index, const tropter::CostInput<T>& in,
+            T& cost_value) const override {
+        if (cost_index == m_multiplierCostIndex) {
+            cost_value = in.integral;
+            return;
+        }
 
         // Update the state.
-        this->setSimTKState(in);
+        this->setSimTKStateForCostInitial(in);
+        this->setSimTKStateForCostFinal(in);
 
-        // Compute the endpoint cost for all MocoCosts.
-        cost = m_mocoProbRep.calcEndpointCost(this->m_stateDisabledConstraints);
+        const auto& initialState = m_mocoProbRep.updStateDisabledConstraints(0);
+        const auto& finalState = m_mocoProbRep.updStateDisabledConstraints(1);
+
+        // Compute the cost for this cost term.
+        const auto& cost = m_mocoProbRep.getCostByIndex(cost_index);
+        cost_value = cost.calcCost({initialState, finalState, in.integral});
     }
 
     const MocoTropterSolver& m_mocoTropterSolver;
@@ -372,6 +408,7 @@ protected:
     const Model& m_modelDisabledConstraints;
     SimTK::State& m_stateDisabledConstraints;
     const bool m_implicit;
+    int m_multiplierCostIndex = -1;
 
     std::unique_ptr<FileDeletionThrower> m_fileDeletionThrower;
 
@@ -501,11 +538,13 @@ public:
     MocoTrajectoryType convertIterateTropterToMoco(
             const tropIterateType& tropSol) const;
 
-    MocoTrajectory convertToMocoTrajectory(const tropter::Iterate& tropSol) const;
+    MocoTrajectory convertToMocoTrajectory(
+            const tropter::Iterate& tropSol) const;
 
     MocoSolution convertToMocoSolution(const tropter::Solution& tropSol) const;
 
-    tropter::Iterate convertToTropterIterate(const MocoTrajectory& mocoIter) const;
+    tropter::Iterate convertToTropterIterate(
+            const MocoTrajectory& mocoIter) const;
 };
 
 template <typename T>
@@ -591,8 +630,7 @@ public:
                 "Cannot use implicit dynamics mode with kinematic "
                 "constraints.");
 
-        auto& simTKStateDisabledConstraints =
-                this->m_stateDisabledConstraints;
+        auto& simTKStateDisabledConstraints = this->m_stateDisabledConstraints;
         if (!this->m_mocoProbRep.isPrescribedKinematics()) {
             const auto& accel = this->m_mocoProbRep.getAccelerationMotion();
             accel.setEnabled(simTKStateDisabledConstraints, true);

@@ -1,9 +1,9 @@
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: MocoControlCost.cpp                                          *
+ * OpenSim Moco: MocoUserControlCost.cpp                                      *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2017 Stanford University and the Authors                     *
  *                                                                            *
- * Author(s): Christopher Dembia                                              *
+ * Author(s): Prasanna Sritharan, Christopher Dembia                          *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -16,21 +16,24 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "MocoControlCost.h"
 
-#include "../MocoUtilities.h"
-
+#include <Moco/MocoUtilities.h>
 #include <OpenSim/Simulation/Model/Model.h>
+#include "MocoUserControlCost.h"
 
 using namespace OpenSim;
 
-MocoControlCost::MocoControlCost() { constructProperties(); }
+MocoUserControlCost::MocoUserControlCost() { 	
+	user_control_cost_fun_ptr = nullptr;
+    utility_vector = std::vector<double>();
+	constructProperties(); 
+}
 
-void MocoControlCost::constructProperties() {
+void MocoUserControlCost::constructProperties() {
     constructProperty_control_weights(MocoWeightSet());
 }
 
-void MocoControlCost::setWeight(
+void MocoUserControlCost::setWeight(
         const std::string& controlName, const double& weight) {
     if (get_control_weights().contains(controlName)) {
         upd_control_weights().get(controlName).setWeight(weight);
@@ -39,7 +42,7 @@ void MocoControlCost::setWeight(
     }
 }
 
-void MocoControlCost::initializeOnModelImpl(const Model& model) const {
+void MocoUserControlCost::initializeOnModelImpl(const Model& model) const {
 
     // Get all expected control names.
     auto controlNames = createControlNamesFromModel(model);
@@ -71,14 +74,13 @@ void MocoControlCost::initializeOnModelImpl(const Model& model) const {
     }
 }
 
-void MocoControlCost::calcIntegrandImpl(
+
+// compute the user-defined integrand
+void MocoUserControlCost::calcIntegrandImpl(
         const SimTK::State& state, double& integrand) const {
-    getModel().realizeVelocity(state); // TODO would avoid this, ideally.
-    const auto& controls = getModel().getControls(state);
     integrand = 0;
-    int iweight = 0;
-    for (const auto& icontrol : m_controlIndices) {
-        integrand += m_weights[iweight] * controls[icontrol] * controls[icontrol];
-        ++iweight;
+    if (user_control_cost_fun_ptr) {
+        integrand = user_control_cost_fun_ptr(
+                state, getModel(), utility_vector, m_weights, m_controlIndices);
     }
 }

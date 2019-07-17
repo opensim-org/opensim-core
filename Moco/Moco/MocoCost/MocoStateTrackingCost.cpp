@@ -66,7 +66,7 @@ void MocoStateTrackingCost::initializeOnModelImpl(const Model& model) const {
     }
 }
 
-void MocoStateTrackingCost::calcIntegralCostImpl(/*int meshIndex,*/
+void MocoStateTrackingCost::calcIntegrandImpl(/*int meshIndex,*/
         const SimTK::State& state, double& integrand) const {
     const auto& time = state.getTime();
 

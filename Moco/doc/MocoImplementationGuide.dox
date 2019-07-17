@@ -14,7 +14,7 @@ Moco is organized as pairs of Problem and Solver classes.
 
 @image html MocoImplementationDiagram.svg width=700px
 
-Figure: Oragnization of classes in Moco. Abstract classes are denoted by dashed lines.
+Figure: Organization of classes in Moco. Abstract classes are denoted by dashed lines.
 
 MocoProblem describes a direct collocation problem using an OpenSim Model, and
 MocoSolver is an abstract class for solving MocoProblems. Moco provides two
@@ -240,7 +240,7 @@ M(\hat{q})\dot{\hat{u}} + f_{\textrm{bias}}(\hat{q}, \hat{u}) + G(\hat{q})^T \la
 \f]
 
 \f$ G \f$ is the kinematic constraint Jacobian and \f$ \lambda_c \f$ are the
-kinematic constraint Langrange multipliers. We still require \f$ \lambda_m = 0
+kinematic constraint Lagrange multipliers. We still require \f$ \lambda_m = 0
 \f$ but we must allow the kinematic constraints to apply forces. Applied forces
 affect what the constraint forces must be. Consider a point mass with degrees of
 freedom \f$ x \f$ and \f$ y \f$ and generalized forces \f$ F_x \f$ and \f$ F_y
