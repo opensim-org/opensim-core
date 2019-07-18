@@ -20,6 +20,7 @@
 #include <Moco/MocoCost/MocoOrientationTrackingCost.h>
 #include <Moco/MocoCost/MocoStateTrackingCost.h>
 #include <Moco/MocoCost/MocoTranslationTrackingCost.h>
+#include <Moco/MocoCost/MocoPeriodicityCost.h>
 #include <Moco/MocoInverse.h>
 #include <Moco/MocoParameter.h>
 #include <Moco/MocoProblem.h>

@@ -33,6 +33,7 @@ namespace OpenSim {
 %include <Moco/MocoCost/MocoJointReactionCost.h>
 %include <Moco/MocoCost/MocoOrientationTrackingCost.h>
 %include <Moco/MocoCost/MocoTranslationTrackingCost.h>
+%include <Moco/MocoCost/MocoPeriodicityCost.h>
 
 
 // %template(MocoBoundsVector) std::vector<OpenSim::MocoBounds>;
