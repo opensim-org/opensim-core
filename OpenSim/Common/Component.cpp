@@ -1791,12 +1791,14 @@ void Component::warnBeforePrint() const {
         }
     }
     if (!message.empty()) {
-        std::cout << "Warning in " << getConcreteClassName()
+        std::stringstream buffer;
+        buffer << "Warning in " << getConcreteClassName()
                 << "::print(): The following connections are not finalized "
                    "and will not appear in the resulting XML file. "
                    "Call finalizeConnections() before print().\n"
                    "To ignore, please call Object::setDebugLevel(1) first.\n"
                 << message << std::endl;
+        OPENSIM_THROW_FRMOBJ(Exception, buffer.str());
     }
 }
 
