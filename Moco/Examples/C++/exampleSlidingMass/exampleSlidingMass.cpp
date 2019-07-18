@@ -95,7 +95,7 @@ int main() {
 
     // Cost.
     // -----
-    problem.addCost<MocoFinalTimeCost>();
+    problem.addGoal<MocoFinalTimeGoal>();
 
     // Configure the solver.
     // =====================

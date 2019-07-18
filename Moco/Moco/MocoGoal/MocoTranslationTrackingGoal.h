@@ -1,7 +1,7 @@
-#ifndef MOCO_MOCOTRANSLATIONTRACKINGCOST_H
-#define MOCO_MOCOTRANSLATIONTRACKINGCOST_H
+#ifndef MOCO_MOCOTRANSLATIONTRACKINGGOAL_H
+#define MOCO_MOCOTRANSLATIONTRACKINGGOAL_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: MocoTranslationTrackingCost.h                                *
+ * OpenSim Moco: MocoTranslationTrackingGoal.h                                *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2019 Stanford University and the Authors                     *
  *                                                                            *
@@ -20,7 +20,7 @@
 
 #include "../Common/TableProcessor.h"
 #include "../MocoWeightSet.h"
-#include "MocoCost.h"
+#include "MocoGoal.h"
 
 #include <OpenSim/Common/GCVSplineSet.h>
 #include <OpenSim/Common/TimeSeriesTable.h>
@@ -51,17 +51,17 @@ namespace OpenSim {
 /// Tracking problems in direct collocation perform best when tracking smooth
 /// data, so it is recommended to filter the data in the reference you provide
 /// to the cost.
-/// @ingroup mococost
-class OSIMMOCO_API MocoTranslationTrackingCost : public MocoCost {
-    OpenSim_DECLARE_CONCRETE_OBJECT(MocoTranslationTrackingCost, MocoCost);
+/// @ingroup mocogoal
+class OSIMMOCO_API MocoTranslationTrackingGoal : public MocoGoal {
+    OpenSim_DECLARE_CONCRETE_OBJECT(MocoTranslationTrackingGoal, MocoGoal);
 
 public:
-    MocoTranslationTrackingCost() { constructProperties(); }
-    MocoTranslationTrackingCost(std::string name) : MocoCost(std::move(name)) {
+    MocoTranslationTrackingGoal() { constructProperties(); }
+    MocoTranslationTrackingGoal(std::string name) : MocoGoal(std::move(name)) {
         constructProperties();
     }
-    MocoTranslationTrackingCost(std::string name, double weight)
-            : MocoCost(std::move(name), weight) {
+    MocoTranslationTrackingGoal(std::string name, double weight)
+            : MocoGoal(std::move(name), weight) {
         constructProperties();
     }
 
@@ -113,7 +113,7 @@ public:
     /// weight is already set for the requested frame, then the provided weight
     /// replaces the previous weight. An exception is thrown if a weight
     /// for an unknown frame is provided.
-    void setWeight(const std::string& frameName, const double& weight) {
+    void setWeightForFrame(const std::string& frameName, const double& weight) {
         if (get_translation_weights().contains(frameName)) {
             upd_translation_weights().get(frameName).setWeight(weight);
         } else {
@@ -138,11 +138,10 @@ public:
 
 protected:
     void initializeOnModelImpl(const Model& model) const override;
-    int getNumIntegralsImpl() const override { return 1; }
     void calcIntegrandImpl(
             const SimTK::State& state, double& integrand) const override;
-    void calcCostImpl(
-            const CostInput& input, SimTK::Vector& cost) const override {
+    void calcGoalImpl(
+            const GoalInput& input, SimTK::Vector& cost) const override {
         cost[0] = input.integral;
     }
 
@@ -180,4 +179,4 @@ private:
 
 } // namespace OpenSim
 
-#endif // MOCO_MOCOTRANSLATIONTRACKINGCOST_H
+#endif // MOCO_MOCOTRANSLATIONTRACKINGGOAL_H

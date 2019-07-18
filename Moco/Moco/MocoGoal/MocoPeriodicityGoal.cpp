@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: MocoPeriodicityCost.cpp                                          *
+ * OpenSim Moco: MocoPeriodicityGoal.cpp                                          *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2017 Stanford University and the Authors                     *
  *                                                                            *
@@ -16,7 +16,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "MocoPeriodicityCost.h"
+#include "MocoPeriodicityGoal.h"
 
 #include "../MocoUtilities.h"
 
@@ -27,26 +27,26 @@ using namespace OpenSim;
 //  MOCO PERIODICITY PAIR
 //=============================================================================
 
-MocoPeriodicityCostPair::MocoPeriodicityCostPair() { constructProperties(); }
+MocoPeriodicityGoalPair::MocoPeriodicityGoalPair() { constructProperties(); }
 
-MocoPeriodicityCostPair::MocoPeriodicityCostPair(std::string name) {
+MocoPeriodicityGoalPair::MocoPeriodicityGoalPair(std::string name) {
     setName(std::move(name));
     constructProperties();
 }
 
-void MocoPeriodicityCostPair::constructProperties() {
+void MocoPeriodicityGoalPair::constructProperties() {
     constructProperty_first("");
     constructProperty_second("");
 }
 
 //=============================================================================
-//  MOCO PERIODICITY COST
+//  MOCO PERIODICITY GOAL
 //=============================================================================
 
-MocoPeriodicityCost::MocoPeriodicityCost() { constructProperties(); }
+MocoPeriodicityGoal::MocoPeriodicityGoal() { constructProperties(); }
 
-void MocoPeriodicityCost::calcCostImpl(
-        const CostInput& input, SimTK::Vector& values) const {
+void MocoPeriodicityGoal::calcGoalImpl(
+        const GoalInput& input, SimTK::Vector& values) const {
 
     const auto& initialStates = input.initial_state.getY();
     const auto& finalStates = input.final_state.getY();
@@ -66,9 +66,12 @@ void MocoPeriodicityCost::calcCostImpl(
         ++j;
     }
 
+    setNumIntegralsAndOutputs(0,
+            (int)m_indices_controls.size() + (int)m_indices_controls.size());
+
 }
 
-void MocoPeriodicityCost::initializeOnModelImpl(const Model& model) const {
+void MocoPeriodicityGoal::initializeOnModelImpl(const Model& model) const {
 
     auto allSysYIndices = createSystemYIndexMap(model);
     int nStatePairs = getProperty_state_pairs().size();
@@ -82,7 +85,6 @@ void MocoPeriodicityCost::initializeOnModelImpl(const Model& model) const {
 
         m_indices_states.emplace_back(stateIndex1,stateIndex2);
     }
-
 
     auto systemControlIndexMap = createSystemControlIndexMap(model);
     int nControlPairs = getProperty_control_pairs().size();
@@ -98,12 +100,7 @@ void MocoPeriodicityCost::initializeOnModelImpl(const Model& model) const {
     }
 }
 
-int MocoPeriodicityCost::getNumOutputsImpl() const {
-    return getProperty_state_pairs().size() +
-            getProperty_control_pairs().size();
-}
-
-void MocoPeriodicityCost::constructProperties() {
+void MocoPeriodicityGoal::constructProperties() {
     constructProperty_state_pairs();
     constructProperty_control_pairs();
 }

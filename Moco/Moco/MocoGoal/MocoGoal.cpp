@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: MocoCost.cpp                                                 *
+ * OpenSim Moco: MocoGoal.cpp                                                 *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2017 Stanford University and the Authors                     *
  *                                                                            *
@@ -15,34 +15,38 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
-#include "MocoCost.h"
+#include "MocoGoal.h"
 
 using namespace OpenSim;
 
-MocoCost::MocoCost() {
+MocoGoal::MocoGoal() {
     constructProperties();
-    if (getName().empty()) setName("cost");
+    if (getName().empty()) setName("goal");
 }
 
-MocoCost::MocoCost(std::string name) {
+MocoGoal::MocoGoal(std::string name) {
     setName(std::move(name));
     constructProperties();
 }
 
-MocoCost::MocoCost(std::string name, double weight)
-        : MocoCost(std::move(name)) {
+MocoGoal::MocoGoal(std::string name, double weight)
+        : MocoGoal(std::move(name)) {
     set_weight(weight);
 }
 
 
-void MocoCost::printDescription(std::ostream& stream) const {
+void MocoGoal::printDescription(std::ostream& stream) const {
+    const auto mode = getModeAsString();
     stream << getName() << ". " << getConcreteClassName() <<
-            " enabled: " << get_enabled() << " weight: " << get_weight() << std::endl;
+            " enabled: " << get_enabled() << " mode: " << mode;
+    if (mode == "cost") {
+        stream << " weight: " << get_weight() << std::endl;
+    }
 }
 
-void MocoCost::constructProperties() {
+void MocoGoal::constructProperties() {
     constructProperty_enabled(true);
     constructProperty_weight(1);
-    constructProperty_apply_as_endpoint_constraint();
+    constructProperty_mode();
     constructProperty_MocoConstraintInfo(MocoConstraintInfo());
 }

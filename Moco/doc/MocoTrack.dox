@@ -17,7 +17,7 @@ this now to be a viable tool [1,2].
 
 In Moco, you can use the MocoTrack tool to solve tracking optimization problems.
 The MocoTrack tool accepts both marker trajectory and model coordinate kinematic
-data sets and adds a MocoMarkerTrackingCost and/or MocoStateTrackingCost term(s) 
+data sets and adds a MocoMarkerTrackingGoal and/or MocoStateTrackingGoal term(s)
 accordingly. Both types of kinematic data can be tracked simultaneously and
 weights for each cost term can be supplied. In addition, weights can be set for 
 individual components of tracked data sets (e.g., tracking markers on bony 

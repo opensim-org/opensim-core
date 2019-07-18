@@ -57,11 +57,13 @@ std::unique_ptr<Model> createOscillatorModel() {
     return model;
 }
 
-class FinalPositionCost : public MocoCost {
-OpenSim_DECLARE_CONCRETE_OBJECT(FinalPositionCost, MocoCost);
+class FinalPositionGoal : public MocoGoal {
+OpenSim_DECLARE_CONCRETE_OBJECT(FinalPositionGoal, MocoGoal);
 protected:
-    int getNumIntegralsImpl() const override { return 0; }
-    void calcCostImpl(const CostInput& input,
+    void initializeOnModelImpl(const Model&) const override {
+        setNumIntegralsAndOutputs(0, 1);
+    }
+    void calcGoalImpl(const GoalInput& input,
             SimTK::Vector& cost) const override {
        const auto& finalPosition = input.final_state.getY()[0];
 
@@ -86,7 +88,7 @@ TEMPLATE_TEST_CASE("Oscillator mass", "", MocoTropterSolver, MocoCasADiSolver) {
     
     mp.addParameter("oscillator_mass", "body", "mass", MocoBounds(0, 10));
 
-    mp.addCost<FinalPositionCost>();
+    mp.addGoal<FinalPositionGoal>();
 
     auto& ms = moco.initSolver<TestType>();
     ms.set_num_mesh_points(N);
@@ -150,7 +152,7 @@ TEMPLATE_TEST_CASE("One parameter two springs", "",
     mp.addParameter("spring_stiffness", components, "stiffness",
         MocoBounds(0, 100));
 
-    mp.addCost<FinalPositionCost>();
+    mp.addGoal<FinalPositionGoal>();
 
     auto& ms = moco.initSolver<TestType>();
     ms.set_num_mesh_points(N);
@@ -187,10 +189,12 @@ std::unique_ptr<Model> createSeeSawModel() {
     return model;
 }
 
-class RotationalAccelerationCost : public MocoCost {
-OpenSim_DECLARE_CONCRETE_OBJECT(RotationalAccelerationCost, MocoCost);
+class RotationalAccelerationGoal : public MocoGoal {
+OpenSim_DECLARE_CONCRETE_OBJECT(RotationalAccelerationGoal, MocoGoal);
 protected:
-    int getNumIntegralsImpl() const override { return 1; }
+    void initializeOnModelImpl(const Model&) const override {
+        setNumIntegralsAndOutputs(1, 1);
+    }
     void calcIntegrandImpl(const SimTK::State& state,
         SimTK::Real& integrand) const override {
 
@@ -200,8 +204,8 @@ protected:
 
         integrand = accel * accel;
     }
-    void calcCostImpl(
-            const CostInput& input, SimTK::Vector& cost) const override {
+    void calcGoalImpl(
+            const GoalInput& input, SimTK::Vector& cost) const override {
         cost[0] = input.integral;
     }
 };
@@ -231,7 +235,7 @@ TEMPLATE_TEST_CASE("See-saw center of mass", "",
     mp.addParameter("com_location", "body", "mass_center",
             MocoBounds(-0.7*L, 0), centerOfMassElt);
 
-    mp.addCost<RotationalAccelerationCost>();
+    mp.addGoal<RotationalAccelerationGoal>();
 
     auto& ms = moco.initSolver<TestType>();
     ms.set_num_mesh_points(N);

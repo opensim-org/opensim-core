@@ -1,7 +1,7 @@
-#ifndef MOCO_MOCOJOINTREACTIONCOST_H
-#define MOCO_MOCOJOINTREACTIONCOST_H
+#ifndef MOCO_MOCOJOINTREACTIONGOAL_H
+#define MOCO_MOCOJOINTREACTIONGOAL_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: MocoJointReactionCost.h                                      *
+ * OpenSim Moco: MocoJointReactionGoal.h                                      *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2019 Stanford University and the Authors                     *
  *                                                                            *
@@ -18,8 +18,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "MocoCost.h"
 #include "../MocoWeightSet.h"
+#include "MocoGoal.h"
 
 #include <OpenSim/Simulation/SimbodyEngine/Joint.h>
 
@@ -35,7 +35,7 @@ namespace OpenSim {
 /// Minimizing the y-direction reaction force on the child frame of the right
 /// knee joint expressed in the right tibia frame:
 /// @code 
-/// auto* cost = problem.addCost<MocoJointReactionCost>();
+/// auto* cost = problem.addGoal<MocoJointReactionCost>();
 /// cost->setName("tibiofemoral_compressive_force");
 /// cost->setJointPath("/jointset/knee_r");
 /// cost->setLoadsFrame("child");
@@ -44,16 +44,16 @@ namespace OpenSim {
 /// @endcode
 ///
 /// This cost requires realizing to the Acceleration stage.
-/// @ingroup mococost
-class OSIMMOCO_API MocoJointReactionCost : public MocoCost {
-OpenSim_DECLARE_CONCRETE_OBJECT(MocoJointReactionCost, MocoCost);
-public: 
-    MocoJointReactionCost();
-    MocoJointReactionCost(std::string name) : MocoCost(std::move(name)) {
+/// @ingroup mocogoal
+class OSIMMOCO_API MocoJointReactionGoal : public MocoGoal {
+OpenSim_DECLARE_CONCRETE_OBJECT(MocoJointReactionGoal, MocoGoal);
+public:
+    MocoJointReactionGoal();
+    MocoJointReactionGoal(std::string name) : MocoGoal(std::move(name)) {
         constructProperties();
     }
-    MocoJointReactionCost(std::string name, double weight)
-            : MocoCost(std::move(name), weight) {
+    MocoJointReactionGoal(std::string name, double weight)
+            : MocoGoal(std::move(name), weight) {
         constructProperties();
     }
 
@@ -99,11 +99,10 @@ public:
 
 protected:
     void initializeOnModelImpl(const Model&) const override;
-    int getNumIntegralsImpl() const override { return 1; }
     void calcIntegrandImpl(const SimTK::State& state,
             double& integrand) const override;
-    void calcCostImpl(
-            const CostInput& input, SimTK::Vector& cost) const override {
+    void calcGoalImpl(
+            const GoalInput& input, SimTK::Vector& cost) const override {
         cost[0] = input.integral;
     }
 
@@ -135,4 +134,4 @@ private:
 
 } // namespace OpenSim
 
-#endif // MOCO_MOCOJOINTREACTIONCOST_H
+#endif // MOCO_MOCOJOINTREACTIONGOAL_H

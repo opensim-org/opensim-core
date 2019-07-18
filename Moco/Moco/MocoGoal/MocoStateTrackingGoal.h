@@ -1,11 +1,11 @@
-#ifndef MOCO_MOCOCONTROLTRACKINGCOST_H
-#define MOCO_MOCOCONTROLTRACKINGCOST_H
+#ifndef MOCO_MOCOSTATETRACKINGGOAL_H
+#define MOCO_MOCOSTATETRACKINGGOAL_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: MocoControlTrackingCost.h                                    *
+ * OpenSim Moco: MocoStateTrackingGoal.h                                      *
  * -------------------------------------------------------------------------- *
- * Copyright (c) 2019 Stanford University and the Authors                     *
+ * Copyright (c) 2017 Stanford University and the Authors                     *
  *                                                                            *
- * Author(s): Nicholas Bianco                                                 *
+ * Author(s): Christopher Dembia                                              *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -20,63 +20,65 @@
 
 #include "../Common/TableProcessor.h"
 #include "../MocoWeightSet.h"
-#include "MocoCost.h"
+#include "MocoGoal.h"
 
 #include <OpenSim/Common/GCVSplineSet.h>
 #include <OpenSim/Common/TimeSeriesTable.h>
 
 namespace OpenSim {
 
-/// The squared difference between a control variable value and a reference
-/// control variable value, summed over the control variables for which a
+// TODO can we track generalized speeds too?
+// TODO allow raising error to different powers (cubed).
+// TODO allow a "deadband."
+
+/// The squared difference between a state variable value and a reference
+/// state variable value, summed over the state variables for which a
 /// reference is provided, and integrated over the phase. This can be used to
-/// track actuator controls, muscle excitations, etc.
+/// track joint angles, activations, etc.
 /// The reference can be provided as a file name to a STO or CSV file (or
 /// other file types for which there is a FileAdapter), or programmatically
-/// as a TimeSeriesTable.
+/// as a TimeSeriesTable. If columns for rotational coordinates are in degrees,
+/// those columns will be converted to radians.
 /// Tracking problems in direct collocation perform best when tracking smooth
 /// data, so it is recommended to filter the data in the reference you provide
 /// to the cost.
-/// @ingroup mococost
-class OSIMMOCO_API MocoControlTrackingCost : public MocoCost {
-    OpenSim_DECLARE_CONCRETE_OBJECT(MocoControlTrackingCost, MocoCost);
+/// @ingroup mocogoal
+class OSIMMOCO_API MocoStateTrackingGoal : public MocoGoal {
+    OpenSim_DECLARE_CONCRETE_OBJECT(MocoStateTrackingGoal, MocoGoal);
 
 public:
-    MocoControlTrackingCost() { constructProperties(); };
-    MocoControlTrackingCost(std::string name) : MocoCost(std::move(name)) {
+    MocoStateTrackingGoal() { constructProperties(); }
+    MocoStateTrackingGoal(std::string name) : MocoGoal(std::move(name)) {
         constructProperties();
     }
-    MocoControlTrackingCost(std::string name, double weight)
-            : MocoCost(std::move(name), weight) {
+    MocoStateTrackingGoal(std::string name, double weight)
+            : MocoGoal(std::move(name), weight) {
         constructProperties();
     }
     /// Provide a table containing reference values for the
-    /// controls you want to track. Each column label must be the path of a
-    /// control variable, e.g., `/forceset/soleus_r`. If the column in the
-    /// reference is for a control variable associated with an non-scalar
-    /// actuator, the name of the variable in the path must include the index
-    /// for the actuator control, e.g., `/forceset/body_actuator_0`, where
-    /// 'body_actuator' is the name of the actuator and `_0` specifies the
-    /// control index. The table is not loaded until the MocoProblem
-    /// is initialized.
-    void setReference(const TableProcessor& ref) {
+    /// states you want to track. Each column label must be the path of a state
+    /// variable, e.g., `knee/flexion/value`.
+    /// The table is not loaded until the MocoProblem is initialized.
+    void setReference(TableProcessor ref) {
         set_reference(std::move(ref));
     }
-    /// Set the weight for an individual control variable. If a weight is
-    /// already set for the requested control, then the provided weight
+
+    /// Set the weight for an individual state variable. If a weight is
+    /// already set for the requested state, then the provided weight
     /// replaces the previous weight. An exception is thrown if a weight
-    /// for an unknown control is provided.
-    void setWeight(const std::string& controlName, const double& weight) {
-        if (get_control_weights().contains(controlName)) {
-            upd_control_weights().get(controlName).setWeight(weight);
+    /// for an unknown state is provided.
+    void setWeightForState(const std::string& stateName, const double& weight) {
+        if (get_state_weights().contains(stateName)) {
+            upd_state_weights().get(stateName).setWeight(weight);
         } else {
-            upd_control_weights().cloneAndAppend({controlName, weight});
+            upd_state_weights().cloneAndAppend({stateName, weight});
         }
     }
-    /// Provide a MocoWeightSet to weight the control variables in the cost.
+
+    /// Provide a MocoWeightSet to weight the state variables in the cost.
     /// Replaces the weight set if it already exists.
     void setWeightSet(const MocoWeightSet& weightSet) {
-        upd_control_weights() = weightSet;
+        upd_state_weights() = weightSet;
     }
 
     /// If no reference has been provided, this returns an empty processor.
@@ -84,45 +86,45 @@ public:
 
     /// Specify whether or not extra columns in the reference are allowed.
     /// If set true, the extra references will be ignored by the cost.
-    /// If false, extra references will cause an Exception to be raised.
+    /// If false, extra reference will cause an Exception to be raised.
     void setAllowUnusedReferences(bool tf) { set_allow_unused_references(tf); }
 
 protected:
     // TODO check that the reference covers the entire possible time range.
-    void initializeOnModelImpl(const Model& model) const override;
-    int getNumIntegralsImpl() const override { return 1; }
+    void initializeOnModelImpl(const Model&) const override;
     void calcIntegrandImpl(
             const SimTK::State& state, double& integrand) const override;
-    void calcCostImpl(
-            const CostInput& input, SimTK::Vector& cost) const override {
+    void calcGoalImpl(
+            const GoalInput& input, SimTK::Vector& cost) const override {
         cost[0] = input.integral;
     }
 
 private:
     OpenSim_DECLARE_PROPERTY(reference, TableProcessor,
-            "Trajectories of controls "
-            "(joint moments, excitations, etc.) to track. Column labels "
-            "should be control variable paths, e.g., '/forceset/soleus_r'");
+            "Trajectories of states "
+            "(coordinates, speeds, activation, etc.) to track. Column labels "
+            "should be state variable paths, e.g., 'knee/flexion/value'");
 
     OpenSim_DECLARE_PROPERTY(allow_unused_references, bool,
             "Flag to determine whether or not references contained in the "
             "reference_file are allowed to be ignored by the cost.");
 
-    OpenSim_DECLARE_PROPERTY(control_weights, MocoWeightSet,
+    OpenSim_DECLARE_PROPERTY(state_weights, MocoWeightSet,
             "Set of weight objects to weight the tracking of individual "
-            "control variables in the cost.");
+            "state variables in the cost.");
 
     void constructProperties() {
         constructProperty_reference(TableProcessor());
         constructProperty_allow_unused_references(false);
-        constructProperty_control_weights(MocoWeightSet());
+        constructProperty_state_weights(MocoWeightSet());
     }
 
-    mutable GCVSplineSet m_ref_splines;
-    mutable std::vector<int> m_control_indices;
-    mutable std::vector<double> m_control_weights;
+    mutable GCVSplineSet m_refsplines;
+    /// The indices in Y corresponding to the provided reference coordinates.
+    mutable std::vector<int> m_sysYIndices;
+    mutable std::vector<double> m_state_weights;
 };
 
 } // namespace OpenSim
 
-#endif // MOCO_MOCOCONTROLTRACKINGCOST_H
+#endif // MOCO_MOCOSTATETRACKINGGOAL_H

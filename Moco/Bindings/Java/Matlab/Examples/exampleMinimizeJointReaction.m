@@ -23,7 +23,7 @@ import org.opensim.modeling.*;
 % Control effort minimization problem.
 % ====================================
 % This problem minimizes the squared control effort, integrated over the phase.
-effort = MocoControlCost();
+effort = MocoControlGoal();
 runInvertedPendulumProblem('minimize_control_effort', effort);
 
 % Joint reaction load minimization problem.
@@ -97,7 +97,7 @@ problem.setControlInfo('/forceset/actuator', MocoBounds(-100, 100));
 
 % Cost.
 % -----
-problem.addCost(cost);
+problem.addGoal(cost);
 
 % Configure the solver.
 % =====================

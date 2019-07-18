@@ -90,7 +90,7 @@ track.setMarkersReferenceFromTRC("marker_trajectories.trc");
 track.set_allow_unused_references(true);
 
 % Increase the global marker tracking weight, which is the weight
-% associated with the internal MocoMarkerTrackingCost term.
+% associated with the internal MocoMarkerTrackingGoal term.
 track.set_markers_global_tracking_weight(10);
 
 % Increase the tracking weights for individual markers in the data set 
@@ -177,10 +177,10 @@ moco = track.initialize();
 solver = MocoCasADiSolver.safeDownCast(moco.updSolver());
 solver.set_dynamics_mode("implicit");
 
-% Get a reference to the MocoControlCost that is added to every MocoTrack
+% Get a reference to the MocoControlGoal that is added to every MocoTrack
 % problem by default.
 problem = moco.updProblem();
-effort = MocoControlCost.safeDownCast(problem.updCost("control_effort"));
+effort = MocoControlGoal.safeDownCast(problem.updGoal("control_effort"));
 
 % Put a large weight on the pelvis CoordinateActuators, which act as the
 % residual, or 'hand-of-god', forces which we would like to keep as small
@@ -191,7 +191,7 @@ forceSet = model.getForceSet();
 for i = 0:forceSet.getSize()-1
    forcePath = forceSet.get(i).getAbsolutePathString();
    if contains(string(forcePath), 'pelvis')
-       effort.setWeight(forcePath, 10);
+       effort.setWeightForControl(forcePath, 10);
    end
 end
 

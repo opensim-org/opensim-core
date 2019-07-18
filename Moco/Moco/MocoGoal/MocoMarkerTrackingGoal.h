@@ -1,7 +1,7 @@
-#ifndef MOCO_MOCOMARKERTRACKINGCOST_H
-#define MOCO_MOCOMARKERTRACKINGCOST_H
+#ifndef MOCO_MOCOMARKERTRACKINGGOAL_H
+#define MOCO_MOCOMARKERTRACKINGGOAL_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: MocoMarkerTrackingCost.h                                     *
+ * OpenSim Moco: MocoMarkerTrackingGoal.h                                     *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2017 Stanford University and the Authors                     *
  *                                                                            *
@@ -18,10 +18,10 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "MocoCost.h"
+#include "MocoGoal.h"
 
-#include <OpenSim/Common/TimeSeriesTable.h>
 #include <OpenSim/Common/GCVSplineSet.h>
+#include <OpenSim/Common/TimeSeriesTable.h>
 #include <OpenSim/Simulation/MarkersReference.h>
 
 namespace OpenSim {
@@ -33,16 +33,16 @@ class Marker;
 /// experimental data location is provided, and integrated over the phase.
 /// The reference can be provided as a file name to a TRC file, or 
 /// programmatically as a TimeSeriesTable.
-/// @ingroup mococost
-class OSIMMOCO_API MocoMarkerTrackingCost : public MocoCost {
-OpenSim_DECLARE_CONCRETE_OBJECT(MocoMarkerTrackingCost, MocoCost);
+/// @ingroup mocogoal
+class OSIMMOCO_API MocoMarkerTrackingGoal : public MocoGoal {
+OpenSim_DECLARE_CONCRETE_OBJECT(MocoMarkerTrackingGoal, MocoGoal);
 public:
-    MocoMarkerTrackingCost() { constructProperties(); }
-    MocoMarkerTrackingCost(std::string name) : MocoCost(std::move(name)) {
+    MocoMarkerTrackingGoal() { constructProperties(); }
+    MocoMarkerTrackingGoal(std::string name) : MocoGoal(std::move(name)) {
         constructProperties();
     }
-    MocoMarkerTrackingCost(std::string name, double weight)
-            : MocoCost(std::move(name), weight) {
+    MocoMarkerTrackingGoal(std::string name, double weight)
+            : MocoGoal(std::move(name), weight) {
         constructProperties();
     }
 
@@ -72,11 +72,10 @@ public:
 
 protected:
     void initializeOnModelImpl(const Model&) const override;
-    int getNumIntegralsImpl() const override { return 1; }
     void calcIntegrandImpl(const SimTK::State& state,
         double& integrand) const override;
-    void calcCostImpl(
-            const CostInput& input, SimTK::Vector& cost) const override {
+    void calcGoalImpl(
+            const GoalInput& input, SimTK::Vector& cost) const override {
         cost[0] = input.integral;
     }
 
@@ -106,4 +105,4 @@ private:
 
 } // namespace OpenSim
 
-#endif // MOCO_MOCOMARKERTRACKINGCOST_H
+#endif // MOCO_MOCOMARKERTRACKINGGOAL_H

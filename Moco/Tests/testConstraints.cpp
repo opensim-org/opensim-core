@@ -577,7 +577,7 @@ void testDoublePendulumPointOnLine(
     mp.setControlInfo("/tau0", {-100, 100});
     mp.setControlInfo("/tau1", {-100, 100});
 
-    mp.addCost<MocoControlCost>();
+    mp.addGoal<MocoControlGoal>();
 
     auto& ms = moco.initSolver<TestType>();
     ms.set_num_mesh_points(20);
@@ -659,7 +659,7 @@ void testDoublePendulumCoordinateCoupler(MocoSolution& solution,
     mp.setStateInfo("/jointset/j1/q1/speed", {-5, 5}, 0, 0);
     mp.setControlInfo("/tau0", {-50, 50});
     mp.setControlInfo("/tau1", {-50, 50});
-    mp.addCost<MocoControlCost>();
+    mp.addGoal<MocoControlGoal>();
 
     auto& ms = moco.initSolver<SolverType>();
     ms.set_num_mesh_points(20);
@@ -736,7 +736,7 @@ void testDoublePendulumPrescribedMotion(MocoSolution& couplerSolution,
     mp.setControlInfo("/tau0", {-25, 25});
     mp.setControlInfo("/tau1", {-25, 25});
 
-    mp.addCost<MocoControlCost>();
+    mp.addGoal<MocoControlGoal>();
 
     auto& ms = moco.initSolver<SolverType>();
     ms.set_num_mesh_points(20);
@@ -958,7 +958,7 @@ TEMPLATE_TEST_CASE(
     mp.setControlInfo("/tau0", {-50, 50});
     mp.setControlInfo("/tau1", {-50, 50});
 
-    mp.addCost<MocoControlCost>();
+    mp.addGoal<MocoControlGoal>();
 
     auto& ms = moco.initSolver<TestType>();
     ms.set_num_mesh_points(25);
@@ -1026,20 +1026,22 @@ TEMPLATE_TEST_CASE(
     CHECK(solution.getParameter("mass") == Approx(1.0).epsilon(1e-3));
 }
 
-class MocoJointReactionComponentCost : public MocoCost {
-    OpenSim_DECLARE_CONCRETE_OBJECT(MocoJointReactionComponentCost, MocoCost);
+class MocoJointReactionComponentGoal : public MocoGoal {
+    OpenSim_DECLARE_CONCRETE_OBJECT(MocoJointReactionComponentGoal, MocoGoal);
 
 public:
-    int getNumIntegralsImpl() const override { return 1; }
+    void initializeOnModelImpl(const Model&) const override {
+        setNumIntegralsAndOutputs(1, 1);
+    }
     void calcIntegrandImpl(
             const SimTK::State& state, double& integrand) const override {
         getModel().realizeAcceleration(state);
         const auto& joint = getModel().getComponent<Joint>("jointset/j1");
-        // Minus sign since we are maximizng.
+        // Minus sign since we are maximizing.
         integrand = -joint.calcReactionOnChildExpressedInGround(state)[0][0];
     }
-    void calcCostImpl(
-            const CostInput& input, SimTK::Vector& cost) const override {
+    void calcGoalImpl(
+            const GoalInput& input, SimTK::Vector& cost) const override {
         cost[0] = input.integral;
     }
 };
@@ -1088,7 +1090,7 @@ void testDoublePendulumPointOnLineJointReaction(
     // This cost tries to *maximize* joint j1's reaction torque in the
     // x-direction, which should cause the actuator "push" to hit its upper
     // bound.
-    mp.addCost<MocoJointReactionComponentCost>();
+    mp.addGoal<MocoJointReactionComponentGoal>();
 
     auto& ms = moco.initSolver<TestType>();
     int N = 5;
@@ -1213,7 +1215,7 @@ TEST_CASE("Multipliers are correct", "") {
         problem.setStateInfo("/jointset/tx/tx/speed", {-5, 5}, 0, 0);
         problem.setControlInfo("/forceset/force_x", 0.5);
 
-        problem.addCost<MocoControlCost>();
+        problem.addGoal<MocoControlGoal>();
 
         auto& solver = moco.initCasADiSolver();
         solver.set_num_mesh_points(10);
@@ -1261,7 +1263,7 @@ TEST_CASE("Prescribed kinematics with kinematic constraints", "") {
     problem.setTimeBounds(0, 3);
     problem.setControlInfo("/forceset/force_x", 0.5);
 
-    problem.addCost<MocoControlCost>();
+    problem.addGoal<MocoControlGoal>();
 
     auto& solver = moco.initCasADiSolver();
     solver.set_num_mesh_points(10);
@@ -1285,7 +1287,7 @@ TEMPLATE_TEST_CASE(
         problem.setStateInfo("/jointset/j0/q0/value", {-10, 10}, 0);
         problem.setStateInfo("/jointset/j0/q0/speed", {-10, 10}, 0);
         problem.setControlInfo("/tau0", {-5, 5});
-        problem.addCost<MocoControlCost>();
+        problem.addGoal<MocoControlGoal>();
         auto* constr = problem.addPathConstraint<MocoControlBoundConstraint>();
         const double lowerBound = 0.1318;
         constr->addControlPath("/tau0");
@@ -1307,7 +1309,7 @@ TEMPLATE_TEST_CASE(
         problem.setStateInfo("/jointset/j0/q0/value", {0, 1}, 0, 0.53);
         problem.setStateInfo("/jointset/j0/q0/speed", {-10, 10}, 0, 0);
         problem.setControlInfo("/tau0", {-20, 20});
-        problem.addCost<MocoFinalTimeCost>();
+        problem.addGoal<MocoFinalTimeGoal>();
         auto* constr = problem.addPathConstraint<MocoControlBoundConstraint>();
         constr->addControlPath("/tau0");
         const double upperBound = 11.236;
@@ -1331,7 +1333,7 @@ TEMPLATE_TEST_CASE(
         problem.setStateInfo("/jointset/j0/q0/value", {-10, 10}, 0);
         problem.setStateInfo("/jointset/j0/q0/speed", {-10, 10}, 0);
         problem.setControlInfo("/tau0", {-5, 5});
-        problem.addCost<MocoControlCost>();
+        problem.addGoal<MocoControlGoal>();
         PiecewiseLinearFunction violateLower;
         violateLower.addPoint(0, 0);
         violateLower.addPoint(0.2, 0.5316);
@@ -1361,7 +1363,7 @@ TEMPLATE_TEST_CASE(
         auto& problem = moco.updProblem();
         problem.setModelCopy(ModelFactory::createPendulum());
         problem.setTimeBounds({-31, 0}, {1, 50});
-        problem.addCost<MocoControlCost>();
+        problem.addGoal<MocoControlGoal>();
         GCVSpline violateLower;
         violateLower.setDegree(5);
         violateLower.addPoint(-30.9999, 0);
@@ -1399,7 +1401,7 @@ TEMPLATE_TEST_CASE(
         problem.setStateInfo("/jointset/j0/q0/value", {-10, 10}, 0);
         problem.setStateInfo("/jointset/j0/q0/speed", {-10, 10}, 0);
         problem.setControlInfo("/tau0", {-5, 5});
-        problem.addCost<MocoControlCost>();
+        problem.addGoal<MocoControlGoal>();
         auto* constr = problem.addPathConstraint<MocoControlBoundConstraint>();
         moco.solve();
         constr->addControlPath("/tau0");

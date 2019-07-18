@@ -323,8 +323,8 @@ MocoSolution runBaselineProblem(bool removeMuscles, double controlWeight = 0.1,
     MocoStudy moco = track.initialize();
 
     if (penalizeCoordActs) {
-        auto& effort = dynamic_cast<MocoControlCost&>(
-            moco.updProblem().updCost("control_effort"));
+        auto& effort = dynamic_cast<MocoControlGoal&>(
+                moco.updProblem().updGoal("control_effort"));
 
         for (const auto& coordAct : 
                 model.getComponentList<CoordinateActuator>()) {
@@ -482,7 +482,7 @@ MocoSolution runKneeReactionMinimizationProblem(bool removeMuscles,
     }
 
     auto* controlTracking =
-        problem.addCost<MocoControlTrackingCost>("control_tracking", 1);
+            problem.addGoal<MocoControlTrackingCost>("control_tracking", 1);
     controlTracking->setReference(controlsRef);
     controlTracking->setWeightSet(controlTrackingWeights);
 
@@ -493,24 +493,24 @@ MocoSolution runKneeReactionMinimizationProblem(bool removeMuscles,
     // Foot orientation tracking cost.
     // w4 from Fregly et al. 2007
     auto* footOrientationTracking =
-        problem.addCost<MocoOrientationTrackingCost>(
-            "foot_orientation_tracking", 10);
+            problem.addGoal<MocoOrientationTrackingCost>(
+                    "foot_orientation_tracking", 10);
     footOrientationTracking->setStatesReference(statesRef);
     footOrientationTracking->setFramePaths({"/bodyset/calcn_r",
                                             "/bodyset/calcn_l"});
     // Foot translation tracking cost.
     // w4 from Fregly et al. 2007
     auto* footTranslationTracking =
-        problem.addCost<MocoTranslationTrackingCost>(
-            "foot_translation_tracking", 10);
+            problem.addGoal<MocoTranslationTrackingCost>(
+                    "foot_translation_tracking", 10);
     footTranslationTracking->setStatesReference(statesRef);
     footTranslationTracking->setFramePaths({"/bodyset/calcn_r",
                                             "/bodyset/calcn_l"});
     // Torso orientation tracking cost.
     // w5 from Fregly et al. 2007
     auto* torsoOrientationTracking =
-        problem.addCost<MocoOrientationTrackingCost>(
-            "torso_orientation_tracking", 10);
+            problem.addGoal<MocoOrientationTrackingCost>(
+                    "torso_orientation_tracking", 10);
     torsoOrientationTracking->setStatesReference(statesRef);
     torsoOrientationTracking->setFramePaths({"/bodyset/torso"});
 
@@ -518,12 +518,12 @@ MocoSolution runKneeReactionMinimizationProblem(bool removeMuscles,
     // --------------------
     // w1 from Fregly et al. 2007
     auto* kneeAdductionCost_l =
-        problem.addCost<MocoJointReactionCost>("knee_adduction_cost_l", 10);
+            problem.addGoal<MocoJointReactionCost>("knee_adduction_cost_l", 10);
     kneeAdductionCost_l->setJointPath("/jointset/walker_knee_l");
     kneeAdductionCost_l->setExpressedInFramePath("/bodyset/tibia_l");
     kneeAdductionCost_l->setReactionMeasures({"moment_x"});
     auto* kneeAdductionCost_r =
-        problem.addCost<MocoJointReactionCost>("knee_adduction_cost_r", 10);
+            problem.addGoal<MocoJointReactionCost>("knee_adduction_cost_r", 10);
     kneeAdductionCost_r->setJointPath("/jointset/walker_knee_r");
     kneeAdductionCost_r->setExpressedInFramePath("/bodyset/tibia_r");
     kneeAdductionCost_r->setReactionMeasures({"moment_x"});
@@ -620,8 +620,8 @@ MocoSolution runExoskeletonProblem(const std::string& trackedIterateFile,
     MocoStudy moco = track.initialize();
     auto& problem = moco.updProblem();
     // Don't penalize exoskeleton.
-    auto& effort = dynamic_cast<MocoControlCost&>(
-        moco.updProblem().updCost("control_effort"));
+    auto& effort = dynamic_cast<MocoControlGoal&>(
+            moco.updProblem().updGoal("control_effort"));
     double coordActWeight = 10000;
     effort.setWeight("/tau_ankle_angle_r", 0.001*controlEffortWeight);
     effort.setWeight("/tau_ankle_angle_l", 0.001*controlEffortWeight);
@@ -653,24 +653,24 @@ MocoSolution runExoskeletonProblem(const std::string& trackedIterateFile,
     // Foot orientation tracking cost.
     // w4 from Fregly et al. 2007
     auto* footOrientationTracking =
-        problem.addCost<MocoOrientationTrackingCost>(
-            "foot_orientation_tracking", 1e6);
+            problem.addGoal<MocoOrientationTrackingCost>(
+                    "foot_orientation_tracking", 1e6);
     footOrientationTracking->setStatesReference(statesRef);
     footOrientationTracking->setFramePaths({"/bodyset/calcn_r",
         "/bodyset/calcn_l"});
     // Foot translation tracking cost.
     // w4 from Fregly et al. 2007
     auto* footTranslationTracking =
-        problem.addCost<MocoTranslationTrackingCost>(
-            "foot_translation_tracking", 1e6);
+            problem.addGoal<MocoTranslationTrackingCost>(
+                    "foot_translation_tracking", 1e6);
     footTranslationTracking->setStatesReference(statesRef);
     footTranslationTracking->setFramePaths({"/bodyset/calcn_r",
         "/bodyset/calcn_l"});
     // Torso orientation tracking cost.
     // w5 from Fregly et al. 2007
     auto* torsoOrientationTracking =
-        problem.addCost<MocoOrientationTrackingCost>(
-            "torso_orientation_tracking", 1e6);
+            problem.addGoal<MocoOrientationTrackingCost>(
+                    "torso_orientation_tracking", 1e6);
     torsoOrientationTracking->setStatesReference(statesRef);
     torsoOrientationTracking->setFramePaths({"/bodyset/torso"});
 

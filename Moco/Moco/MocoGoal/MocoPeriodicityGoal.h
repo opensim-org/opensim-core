@@ -1,7 +1,7 @@
-#ifndef MOCO_MOCOPERIODICITYCOST_H
-#define MOCO_MOCOPERIODICITYCOST_H
+#ifndef MOCO_MOCOPERIODICITYGOAL_H
+#define MOCO_MOCOPERIODICITYGOAL_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: MocoPeriodicityCost.h                                        *
+ * OpenSim Moco: MocoPeriodicityGoal.h                                        *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2017-19 Stanford University and the Authors                  *
  *                                                                            *
@@ -19,12 +19,12 @@
  * -------------------------------------------------------------------------- */
 
 #include "../MocoWeightSet.h"
-#include "MocoCost.h"
+#include "MocoGoal.h"
 
 namespace OpenSim {
 
-class OSIMMOCO_API MocoPeriodicityCostPair : public Object {
-    OpenSim_DECLARE_CONCRETE_OBJECT(MocoPeriodicityCostPair, Object);
+class OSIMMOCO_API MocoPeriodicityGoalPair : public Object {
+    OpenSim_DECLARE_CONCRETE_OBJECT(MocoPeriodicityGoalPair, Object);
 
 public:
     OpenSim_DECLARE_PROPERTY(
@@ -32,8 +32,8 @@ public:
     OpenSim_DECLARE_PROPERTY(
             second, std::string, "Second element of the pair.");
 
-    MocoPeriodicityCostPair();
-    MocoPeriodicityCostPair(std::string name);
+    MocoPeriodicityGoalPair();
+    MocoPeriodicityGoalPair(std::string name);
 
 private:
     void constructProperties();
@@ -45,32 +45,29 @@ private:
 /// The default weight for each control is 1.0; this can be changed by
 /// calling setWeight() or editing the `control_weights` property in XML.
 /// @ingroup mococost
-class OSIMMOCO_API MocoPeriodicityCost : public MocoCost {
-    OpenSim_DECLARE_CONCRETE_OBJECT(MocoPeriodicityCost, MocoCost);
+class OSIMMOCO_API MocoPeriodicityGoal : public MocoGoal {
+    OpenSim_DECLARE_CONCRETE_OBJECT(MocoPeriodicityGoal, MocoGoal);
 
 public:
     OpenSim_DECLARE_LIST_PROPERTY(
-            state_pairs, MocoPeriodicityCostPair, "Periodic pair.");
+            state_pairs, MocoPeriodicityGoalPair, "Periodic pair.");
     OpenSim_DECLARE_LIST_PROPERTY(
-            control_pairs, MocoPeriodicityCostPair, "Periodic pair.");
+            control_pairs, MocoPeriodicityGoalPair, "Periodic pair.");
 
-    MocoPeriodicityCost();
-    MocoPeriodicityCost(std::string name) : MocoCost(std::move(name)) {
+    MocoPeriodicityGoal();
+    MocoPeriodicityGoal(std::string name) : MocoGoal(std::move(name)) {
         constructProperties();
     }
 
 protected:
 
     bool getSupportsEndpointConstraintImpl() const override { return true; }
-    bool getDefaultEndpointConstraintImpl() const override { return true; }
-
-    int getNumOutputsImpl() const override;
-    int getNumIntegralsImpl() const override { return 0; }
+    Mode getDefaultModeImpl() const { return Mode::EndpointConstraint; }
 
     void initializeOnModelImpl(const Model& model) const override;
 
-    void calcCostImpl(
-            const CostInput& input, SimTK::Vector& cost) const override;
+    void calcGoalImpl(
+            const GoalInput& input, SimTK::Vector& cost) const override;
 
 private:
     void constructProperties();
@@ -80,4 +77,4 @@ private:
 
 } // namespace OpenSim
 
-#endif // MOCO_MOCOPERIODICITYCOST_H
+#endif // MOCO_MOCOPERIODICITYGOAL_H

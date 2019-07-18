@@ -400,7 +400,9 @@ protected:
 
         // Compute the cost for this cost term.
         const auto& cost = m_mocoProbRep.getCostByIndex(cost_index);
-        cost_value = cost.calcCost({initialState, finalState, in.integral}).sum();
+        SimTK::Vector costVector(cost.getNumOutputs());
+        cost.calcGoal({initialState, finalState, in.integral}, costVector);
+        cost_value = costVector.sum();
     }
 
     const MocoTropterSolver& m_mocoTropterSolver;

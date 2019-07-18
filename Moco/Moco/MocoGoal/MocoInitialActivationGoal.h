@@ -1,7 +1,7 @@
-#ifndef MOCO_MOCOPROBLEMINFO_H
-#define MOCO_MOCOPROBLEMINFO_H
+#ifndef MOCO_MOCOINITIALACTIVATIONGOAL_H
+#define MOCO_MOCOINITIALACTIVATIONGOAL_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: MocoProblemInfo.h                                            *
+ * OpenSim Moco: MocoInitialActivationGoal.h                                  *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2019 Stanford University and the Authors                     *
  *                                                                            *
@@ -18,17 +18,37 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
+#include "MocoGoal.h"
+
 namespace OpenSim {
 
-/// This class is mostly for internal use for MocoProblemRep to pass select
-/// information about a problem to the MocoGoal%s and MocoPathConstraint%s of
-/// the problem during initializeOnModel().
-class MocoProblemInfo {
+/// For all muscles with activation dynamics, the initial activation and initial
+/// excitation should be the same.
+/// Without this goal, muscle activation may undesirably start at its maximum
+/// possible value in inverse/tracking problems which penalize only excitations
+/// (such activation is "free").
+/// This is an endpoint constraint goal by default.
+/// @ingroup mocogoal
+class OSIMMOCO_API MocoInitialActivationGoal : public MocoGoal {
+    OpenSim_DECLARE_CONCRETE_OBJECT(MocoInitialActivationGoal, MocoGoal);
+
 public:
-    double minInitialTime;
-    double maxFinalTime;
+    MocoInitialActivationGoal() = default;
+    MocoInitialActivationGoal(std::string name) : MocoGoal(std::move(name)) {}
+
+protected:
+    bool getSupportsEndpointConstraintImpl() const override { return true; }
+    Mode getDefaultModeImpl() const override {
+        return Mode::EndpointConstraint;
+    }
+    void initializeOnModelImpl(const Model&) const override;
+    void calcGoalImpl(
+            const GoalInput& input, SimTK::Vector& goal) const override;
+
+private:
+    mutable std::vector<std::pair<int, int>> m_indices;
 };
 
 } // namespace OpenSim
 
-#endif // MOCO_MOCOPROBLEMINFO_H
+#endif // MOCO_MOCOINITIALACTIVATIONGOAL_H

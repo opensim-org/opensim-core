@@ -74,7 +74,7 @@ MocoStudy createSlidingMassMocoStudy() {
     mp.setStateInfo("/slider/position/value", MocoBounds(0, 1),
             MocoInitialBounds(0), MocoFinalBounds(1));
     mp.setStateInfo("/slider/position/speed", {-100, 100}, 0, 0);
-    mp.addCost<MocoFinalTimeCost>();
+    mp.addGoal<MocoFinalTimeGoal>();
 
     auto& ms = moco.initSolver<SolverType>();
     ms.set_num_mesh_points(20);
@@ -98,7 +98,7 @@ TEMPLATE_TEST_CASE(
     mp.setTimeBounds(0, finalTime);
     mp.setStateInfo("/slider/position/value", {0, 1}, 0, 1);
     mp.setStateInfo("/slider/position/speed", {-100, 100}, 0, 0);
-    mp.addCost<MocoControlCost>();
+    mp.addGoal<MocoControlGoal>();
     SECTION("Ensure integral handles non-uniform mesh") {
         auto& ms = moco.initSolver<TestType>();
         ms.set_transcription_scheme(transcriptionScheme);
@@ -381,21 +381,21 @@ TEST_CASE("Building a problem", "") {
         MocoProblem& mp = moco.updProblem();
         mp.setModel(createSlidingMassModel());
 
-        // Costs have the name "cost" by default.
+        // Goals have the name "cost" by default.
         {
-            auto c0 = make_unique<MocoFinalTimeCost>();
-            SimTK_TEST(c0->getName() == "cost");
-            mp.addCost(std::move(c0));
+            auto c0 = make_unique<MocoFinalTimeGoal>();
+            SimTK_TEST(c0->getName() == "goal");
+            mp.addGoal(std::move(c0));
         }
         // Names of costs must be unique.
         {
-            auto* c1 = mp.addCost<MocoFinalTimeCost>();
+            auto* c1 = mp.addGoal<MocoFinalTimeGoal>();
             SimTK_TEST_MUST_THROW_EXC(mp.createRep(), Exception);
             c1->setName("c1");
         }
-        // Costs must have a name.
+        // Goals must have a name.
         {
-            auto* cEmptyName = mp.addCost<MocoFinalTimeCost>("");
+            auto* cEmptyName = mp.addGoal<MocoFinalTimeGoal>("");
             SimTK_TEST_MUST_THROW_EXC(mp.createRep(), Exception);
             cEmptyName->setName("cost1");
         }
@@ -634,7 +634,7 @@ TEMPLATE_TEST_CASE("Workflow", "", MocoTropterSolver, MocoCasADiSolver) {
         problem.setStateInfo("/slider/position/value", {0, 1}, 0, 1);
         problem.setStateInfo("/slider/position/speed", {-100, 100}, 0, 0);
         problem.setControlInfo("/actuator", {-10, 10});
-        problem.addCost<MocoFinalTimeCost>();
+        problem.addGoal<MocoFinalTimeGoal>();
 
         auto& solver = moco.initSolver<TestType>();
         const int N = 20;         // mesh points
@@ -666,7 +666,7 @@ TEMPLATE_TEST_CASE("Workflow", "", MocoTropterSolver, MocoCasADiSolver) {
             problem.setTimeBounds(0, {0, 10});
             problem.setStateInfo("/slider/position/value", {0, 1}, 0, 1);
             problem.setStateInfo("/slider/position/speed", {-100, 100}, 0, 0);
-            problem.addCost<MocoFinalTimeCost>();
+            problem.addGoal<MocoFinalTimeGoal>();
             auto& solver = moco.initSolver<TestType>();
             solver.set_num_mesh_points(20);
             finalTime0 = moco.solve().getFinalTime();
@@ -682,7 +682,7 @@ TEMPLATE_TEST_CASE("Workflow", "", MocoTropterSolver, MocoCasADiSolver) {
             MocoStudy moco;
             MocoProblem& problem = moco.updProblem();
             problem.setTimeBounds(0, {0, 10});
-            problem.addCost<MocoFinalTimeCost>();
+            problem.addGoal<MocoFinalTimeGoal>();
             problem.setStateInfo("/slider/position/value", {0, 1}, 0, 1);
             problem.setStateInfo("/slider/position/speed", {-100, 100}, 0, 0);
             problem.setModel(createSlidingMassModel());
@@ -700,12 +700,12 @@ TEMPLATE_TEST_CASE("Workflow", "", MocoTropterSolver, MocoCasADiSolver) {
         problem.setTimeBounds(0, {0, 10});
         problem.setStateInfo("/slider/position/value", {0, 1}, 0, 1);
         problem.setStateInfo("/slider/position/speed", {-100, 100}, 0, 0);
-        problem.updPhase().addCost<MocoFinalTimeCost>();
-        auto effort = problem.updPhase().addCost<MocoControlCost>("effort");
+        problem.updPhase().addGoal<MocoFinalTimeGoal>();
+        auto effort = problem.updPhase().addGoal<MocoControlGoal>("effort");
         const double finalTime0 = moco.solve().getFinalTime();
 
         // Change the weights of the costs.
-        effort->set_weight(0.1);
+        effort->setWeight(0.1);
         const double finalTime1 = moco.solve().getFinalTime();
         SimTK_TEST(finalTime1 < 0.8 * finalTime0);
     }
@@ -713,13 +713,13 @@ TEMPLATE_TEST_CASE("Workflow", "", MocoTropterSolver, MocoCasADiSolver) {
     // Invoking functions without initializing.
     // TODO
 
-    // TODO MocoCost and MocoParameter cache pointers into some model.
+    // TODO MocoGoal and MocoParameter cache pointers into some model.
     // TODO {
-    // TODO     MocoFinalTimeCost cost;
+    // TODO     MocoFinalTimeGoal cost;
     // TODO     // TODO must be initialized first.
     // TODO     // TODO MocoPhase shouldn't even have a public
-    // calcCost function.
-    // TODO     SimTK_TEST_MUST_THROW_EXC(cost.calcCost(state),
+    // calcGoal function.
+    // TODO     SimTK_TEST_MUST_THROW_EXC(cost.calcGoal(state),
     // Exception);
     // TODO }
 
@@ -730,7 +730,7 @@ TEMPLATE_TEST_CASE("Workflow", "", MocoTropterSolver, MocoCasADiSolver) {
     //     MocoProblem& problem = moco.updProblem();
     //     {
     //         // Remove by name.
-    //         auto& cost = problem.addCost<MocoFinalTimeCost>();
+    //         auto& cost = problem.addGoal<MocoFinalTimeGoal>();
     //         cost.setName("cost0");
     //         problem.removeCost(cost);
     //         SimTK_TEST_MUST_THROW_EXC(problem.getCost("cost0"),
@@ -813,7 +813,7 @@ TEMPLATE_TEST_CASE(
         mp.setControlInfo("/tau1", {-100, 100});
         mp.setControlInfo("/tau2", {-100, 100});
 
-        mp.addCost<MocoFinalTimeCost>();
+        mp.addGoal<MocoFinalTimeGoal>();
         auto& ms = moco.initSolver<TestType>();
         ms.set_num_mesh_points(15);
         solution = moco.solve();
@@ -841,7 +841,7 @@ TEMPLATE_TEST_CASE(
         mp2.setControlInfo("/tau0", {-100, 100});
         mp2.setControlInfo("/tau2", {-100, 100});
 
-        mp2.addCost<MocoFinalTimeCost>();
+        mp2.addGoal<MocoFinalTimeGoal>();
         auto& ms2 = moco2.initSolver<TestType>();
         ms2.set_num_mesh_points(15);
         solution2 = moco2.solve();
@@ -882,7 +882,7 @@ TEMPLATE_TEST_CASE("State tracking", "", MocoTropterSolver, MocoCasADiSolver) {
     {
         auto moco = makeTool();
         MocoProblem& mp = moco.updProblem();
-        auto tracking = mp.addCost<MocoStateTrackingCost>();
+        auto tracking = mp.addGoal<MocoStateTrackingGoal>();
         tracking->setReference(STOFileAdapter::read(fname));
         auto& ms = moco.template initSolver<TestType>();
         ms.set_num_mesh_points(5);
@@ -898,7 +898,7 @@ TEMPLATE_TEST_CASE("State tracking", "", MocoTropterSolver, MocoCasADiSolver) {
 
         auto moco = makeTool();
         MocoProblem& mp = moco.updProblem();
-        auto tracking = mp.addCost<MocoStateTrackingCost>();
+        auto tracking = mp.addGoal<MocoStateTrackingGoal>();
         tracking->setReference(fname);
         auto& ms = moco.template initSolver<TestType>();
         ms.set_num_mesh_points(5);
@@ -921,8 +921,7 @@ TEMPLATE_TEST_CASE("State tracking", "", MocoTropterSolver, MocoCasADiSolver) {
     {
         auto moco = makeTool();
         MocoProblem& mp = moco.updProblem();
-        MocoStateTrackingCost tracking;
-        mp.addCost<MocoStateTrackingCost>();
+        mp.addGoal<MocoStateTrackingGoal>();
         SimTK_TEST_MUST_THROW_EXC(moco.solve(), Exception);
     }
 
@@ -1693,7 +1692,7 @@ void testSkippingOverQuaternionSlots(
     problem.setStateInfo("/jointset/j2/j2_coord_0/value", {-10, 10}, 0);
     problem.setStateInfo("/jointset/j2/j2_coord_0/speed", speed);
 
-    problem.addCost<MocoControlCost>();
+    problem.addGoal<MocoControlGoal>();
 
     auto& solver = moco.initSolver<SolverType>();
     const int N = 5;
@@ -1795,44 +1794,6 @@ TEST_CASE("MocoPhase::bound_activation_from_excitation") {
                 Catch::Contains(
                         "No info available for state '/muscle/activation'."));
     }
-}
-
-class MocoPeriodic : public MocoCost {
-    OpenSim_DECLARE_CONCRETE_OBJECT(MocoPeriodic, MocoCost);
-public:
-    MocoPeriodic() = default;
-    // TODO should be able to vary, with initializeImpl().
-    bool getSupportsEndpointConstraintImpl() const override { return true; }
-    bool getDefaultEndpointConstraintImpl() const override { return true; }
-    int getNumOutputsImpl() const override { return 2; }
-    int getNumIntegralsImpl() const override { return 0; }
-    // TODO this would actually support multiple constraint equations...
-    void calcCostImpl(
-            const CostInput& in, SimTK::Vector& values) const override {
-        values[0] = in.initial_state.getQ()[0] - in.final_state.getQ()[0];
-        values[1] = in.final_state.getU()[0];
-    }
-};
-
-TEST_CASE("Endpoint constraints") {
-
-    MocoStudy study;
-    auto& problem = study.updProblem();
-    problem.setModelCopy(ModelFactory::createPendulum());
-
-    problem.setTimeBounds(0, 1);
-    problem.setStateInfo("/jointset/j0/q0/value", {-0.3, 0.3}, -0.3);
-
-    problem.addCost<MocoPeriodic>();
-    problem.addCost<MocoControlCost>("control");
-
-    study.initCasADiSolver();
-
-
-    MocoSolution solution = study.solve();
-    const int N = solution.getNumTimes();
-    CHECK(solution.getState("/jointset/j0/q0/value")[N - 1] == Approx(-0.3));
-    CHECK(solution.getState("/jointset/j0/q0/speed")[N - 1] == Approx(0));
 }
 
 // testCopy();

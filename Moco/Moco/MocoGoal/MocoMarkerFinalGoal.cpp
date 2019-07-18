@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: MocoMarkerFinalCost.cpp                                      *
+ * OpenSim Moco: MocoMarkerFinalGoal.cpp                                      *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2017 Stanford University and the Authors                     *
  *                                                                            *
@@ -16,24 +16,25 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "MocoMarkerFinalCost.h"
+#include "MocoMarkerFinalGoal.h"
 
 #include <OpenSim/Simulation/Model/Model.h>
 
 using namespace OpenSim;
 
-void MocoMarkerFinalCost::initializeOnModelImpl(const Model& model) const {
+void MocoMarkerFinalGoal::initializeOnModelImpl(const Model& model) const {
     m_point.reset(&model.getComponent<Point>(get_point_name()));
+    setNumIntegralsAndOutputs(0, 1);
 }
 
-void MocoMarkerFinalCost::calcCostImpl(
-        const CostInput& input, SimTK::Vector& cost) const {
+void MocoMarkerFinalGoal::calcGoalImpl(
+        const GoalInput& input, SimTK::Vector& cost) const {
     getModel().realizePosition(input.final_state);
     const auto& actualLocation = m_point->getLocationInGround(input.final_state);
     cost[0] = (actualLocation - get_reference_location()).normSqr();
 }
 
-void MocoMarkerFinalCost::constructProperties() {
+void MocoMarkerFinalGoal::constructProperties() {
     constructProperty_point_name("");
     constructProperty_reference_location(SimTK::Vec3(0));
 }

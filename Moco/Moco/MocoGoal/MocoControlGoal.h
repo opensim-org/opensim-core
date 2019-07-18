@@ -1,7 +1,7 @@
-#ifndef MOCO_MOCOCONTROLCOST_H
-#define MOCO_MOCOCONTROLCOST_H
+#ifndef MOCO_MOCOCONTROLGOAL_H
+#define MOCO_MOCOCONTROLGOAL_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: MocoControlCost.h                                            *
+ * OpenSim Moco: MocoControlGoal.h                                            *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2017 Stanford University and the Authors                     *
  *                                                                            *
@@ -19,27 +19,27 @@
  * -------------------------------------------------------------------------- */
 
 #include "../MocoWeightSet.h"
-#include "MocoCost.h"
+#include "MocoGoal.h"
 
 namespace OpenSim {
 
 /// Minimize the sum of squared controls, integrated over the phase.
 /// The default weight for each control is 1.0; this can be changed by
 /// calling setWeight() or editing the `control_weights` property in XML.
-/// @ingroup mococost
+/// @ingroup mocogoal
 // TODO want a related cost for minimizing the value of state variables like
 // activation.
 // TODO allow leaving out some controls.
-class OSIMMOCO_API MocoControlCost : public MocoCost {
-    OpenSim_DECLARE_CONCRETE_OBJECT(MocoControlCost, MocoCost);
+class OSIMMOCO_API MocoControlGoal : public MocoGoal {
+    OpenSim_DECLARE_CONCRETE_OBJECT(MocoControlGoal, MocoGoal);
 
 public:
-    MocoControlCost();
-    MocoControlCost(std::string name) : MocoCost(std::move(name)) {
+    MocoControlGoal();
+    MocoControlGoal(std::string name) : MocoGoal(std::move(name)) {
         constructProperties();
     }
-    MocoControlCost(std::string name, double weight)
-            : MocoCost(std::move(name), weight) {
+    MocoControlGoal(std::string name, double weight)
+            : MocoGoal(std::move(name), weight) {
         constructProperties();
     }
     /// Set the weight to use for the term in the cost associated with
@@ -49,15 +49,14 @@ public:
     /// weight replaces the previous weight. Only controls with non-zero weights
     /// that are associated with actuators for which appliesForce is True are
     /// included in the cost function.
-    void setWeight(const std::string& controlName, const double& weight);
+    void setWeightForControl(const std::string& controlName, const double& weight);
 
 protected:
     void initializeOnModelImpl(const Model&) const override;
-    int getNumIntegralsImpl() const override { return 1; }
     void calcIntegrandImpl(
             const SimTK::State& state, double& integrand) const override;
-    void calcCostImpl(
-            const CostInput& input, SimTK::Vector& cost) const override {
+    void calcGoalImpl(
+            const GoalInput& input, SimTK::Vector& cost) const override {
         cost[0] = input.integral;
     }
 
@@ -72,4 +71,4 @@ private:
 
 } // namespace OpenSim
 
-#endif // MOCO_MOCOCONTROLCOST_H
+#endif // MOCO_MOCOCONTROLGOAL_H
