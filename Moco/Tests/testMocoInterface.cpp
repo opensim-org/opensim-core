@@ -1232,6 +1232,10 @@ TEMPLATE_TEST_CASE("Guess", "", MocoTropterSolver, MocoCasADiSolver) {
                 "MocoTrajectory::generateAccelerationsFromValues() or "
                 "MocoTrajectory::generateAccelerationsFromSpeeds() to "
                 "construct an appropriate guess."));
+        CHECK(explicitGuess.getDerivativeNames().empty());
+        explicitGuess.generateAccelerationsFromSpeeds();
+        // Only one coordinate in the sliding mass model.
+        CHECK(explicitGuess.getDerivativeNames().size() == 1);
     }
 
     // TODO ordering of states and controls in MocoTrajectory should not
