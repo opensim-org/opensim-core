@@ -22,6 +22,8 @@
 #include <OpenSim/Actuators/Thelen2003Muscle.h>
 #include <OpenSim/Simulation/Model/Model.h>
 
+#include <iostream>
+
 using namespace OpenSim;
 
 const std::string DeGrooteFregly2016Muscle::STATE_ACTIVATION_NAME("activation");
@@ -380,25 +382,14 @@ void DeGrooteFregly2016Muscle::replaceMuscles(
     for (int im = 0; im < muscleSet.getSize(); ++im) {
         auto& muscBase = muscleSet.get(im);
 		
-		// replace Millard2012EquilibriumMuscle
-        if (auto musc = dynamic_cast<Millard2012EquilibriumMuscle*>(
-                    &muscBase)) {
-            auto* actu = new DeGrooteFregly2016Muscle();
-            actu->setName(musc->getName());
-            musc->setName(musc->getName() + "_delete");
-            actu->setMinControl(musc->getMinControl());
-            actu->setMaxControl(musc->getMaxControl());
 
-            actu->setMaxIsometricForce(musc->getMaxIsometricForce());
-            actu->setOptimalFiberLength(musc->getOptimalFiberLength());
-            actu->setTendonSlackLength(musc->getTendonSlackLength());
-            actu->setPennationAngleAtOptimalFiberLength(
-                    musc->getPennationAngleAtOptimalFiberLength());
-            actu->setMaxContractionVelocity(musc->getMaxContractionVelocity());
-            actu->set_ignore_tendon_compliance(true);
-                    // TODO musc->get_ignore_tendon_compliance());
-            actu->set_ignore_activation_dynamics(
-                    musc->get_ignore_activation_dynamics());
+        // pre-emptively create a default DeGrooteFregly2016Muscle (this is not ideal)
+        auto* actu = new DeGrooteFregly2016Muscle();
+
+        // peform muscle-model-specific mappings or throw error if muscle not supported
+        if (auto musc = dynamic_cast<Millard2012EquilibriumMuscle*>(
+            &muscBase)) {
+
 
             // TODO: There is a bug in Millard2012EquilibriumMuscle where
             // the default fiber length is 0.1 by default instead of
@@ -414,6 +405,7 @@ void DeGrooteFregly2016Muscle::replaceMuscles(
                     musc->get_activation_time_constant());
             actu->set_deactivation_time_constant(
                     musc->get_deactivation_time_constant());
+            
             // TODO
             actu->set_fiber_damping(0);
             // actu->set_fiber_damping(musc->get_fiber_damping());
@@ -421,110 +413,89 @@ void DeGrooteFregly2016Muscle::replaceMuscles(
                     musc->get_TendonForceLengthCurve()
                             .get_strain_at_one_norm_force());
 
-            const auto& pathPointSet =
-                    musc->getGeometryPath().getPathPointSet();
-            auto& geomPath = actu->updGeometryPath();
-            for (int ipp = 0; ipp < pathPointSet.getSize(); ++ipp) {
-                auto* pathPoint = pathPointSet.get(ipp).clone();
-                const auto& socketNames = pathPoint->getSocketNames();
-                for (const auto& socketName : socketNames) {
-                    pathPoint->updSocket(socketName)
-                            .connect(pathPointSet.get(ipp)
-                                             .getSocket(socketName)
-                                             .getConnecteeAsObject());
-                }
-                geomPath.updPathPointSet().adoptAndAppend(pathPoint);
-            }
-            model.addForce(actu);
 
-            // Workaround for a bug in prependComponentPathToConnecteePath().
-            for (auto& comp : model.updComponentList()) {
-                const auto& socketNames = comp.getSocketNames();
-                for (const auto& socketName : socketNames) {
-                    auto& socket = comp.updSocket(socketName);
-                    auto connecteePath = socket.getConnecteePath();
-                    std::string prefix = "/forceset/" + actu->getName();
-                    if (startsWith(connecteePath, prefix)) {
-                        connecteePath = connecteePath.substr(prefix.length());
-                        socket.setConnecteePath(connecteePath);
-                    }
-                }
-            }
-            musclesToDelete.push_back(musc);
-		
-		// replace Thelen2003Muscle
-		} else if (auto musc = dynamic_cast<Thelen2003Muscle*>(&muscBase)) {
 
-			auto* actu = new DeGrooteFregly2016Muscle();
-            actu->setName(musc->getName());
-            musc->setName(musc->getName() + "_delete");
-            actu->setMinControl(musc->getMinControl());
-            actu->setMaxControl(musc->getMaxControl());
-
-            actu->setMaxIsometricForce(musc->getMaxIsometricForce());
-            actu->setOptimalFiberLength(musc->getOptimalFiberLength());
-            actu->setTendonSlackLength(musc->getTendonSlackLength());
-            actu->setPennationAngleAtOptimalFiberLength(
-                    musc->getPennationAngleAtOptimalFiberLength());
-            actu->setMaxContractionVelocity(musc->getMaxContractionVelocity());            
-            actu->set_ignore_tendon_compliance(true);
-                // TODO musc->get_ignore_tendon_compliance());
-            actu->set_ignore_activation_dynamics(
-                    musc->get_ignore_activation_dynamics());
-
+        } else if (auto musc = dynamic_cast<Thelen2003Muscle*>(&muscBase)) { 
+        
             actu->set_default_normalized_fiber_length(
-                    musc->get_default_fiber_length() /
-                    musc->get_optimal_fiber_length());
-			actu->set_default_activation(musc->getDefaultActivation());
+            musc->get_default_fiber_length() /
+            musc->get_optimal_fiber_length());
+            actu->set_default_activation(musc->getDefaultActivation());
             actu->set_activation_time_constant(
                     musc->get_activation_time_constant());
             actu->set_deactivation_time_constant(
                     musc->get_deactivation_time_constant());
-            
-            // TODO
-			actu->set_fiber_damping(0);
-            // actu->set_fiber_damping(musc->get_fiber_damping());
-			actu->set_tendon_strain_at_one_norm_force(
+	
+			// TODO: currently needs to be hardcoded for Thelen2003Muscle as 
+			// damping is not a property
+            actu->set_fiber_damping(0);
+            actu->set_tendon_strain_at_one_norm_force(
                     musc->get_FmaxTendonStrain());
-
-            const auto& pathPointSet =
-                    musc->getGeometryPath().getPathPointSet();
-            auto& geomPath = actu->updGeometryPath();
-            for (int ipp = 0; ipp < pathPointSet.getSize(); ++ipp) {
-                auto* pathPoint = pathPointSet.get(ipp).clone();
-                const auto& socketNames = pathPoint->getSocketNames();
-                for (const auto& socketName : socketNames) {
-                    pathPoint->updSocket(socketName)
-                            .connect(pathPointSet.get(ipp)
-                                             .getSocket(socketName)
-                                             .getConnecteeAsObject());
-                }
-                geomPath.updPathPointSet().adoptAndAppend(pathPoint);
-            }
-            model.addForce(actu);
-			
-            // Workaround for a bug in prependComponentPathToConnecteePath().
-            for (auto& comp : model.updComponentList()) {
-                const auto& socketNames = comp.getSocketNames();
-                for (const auto& socketName : socketNames) {
-                    auto& socket = comp.updSocket(socketName);
-                    auto connecteePath = socket.getConnecteePath();
-                    std::string prefix = "/forceset/" + actu->getName();
-                    if (startsWith(connecteePath, prefix)) {
-                        connecteePath = connecteePath.substr(prefix.length());
-                        socket.setConnecteePath(connecteePath);
-                    }
-                }
-            }
-            musclesToDelete.push_back(musc);			
-
+        
+        
+        
         } else {
             OPENSIM_THROW_IF(!allowUnsupportedMuscles, Exception,
-                    format("Muscle '%s' of type %s is unsupported and "
-                           "allowUnsupportedMuscles=false.",
-                            muscBase.getName(),
-                            muscBase.getConcreteClassName()));
+                format("Muscle '%s' of type %s is unsupported and "
+                        "allowUnsupportedMuscles=false.",
+                        muscBase.getName(), muscBase.getConcreteClassName()));
+            delete actu;
+            continue;
         }
+
+
+
+
+
+        // Perform all the common mappings at base class level (OpenSim::Muscle)
+
+        actu->setName(muscBase.getName());
+        muscBase.setName(muscBase.getName() + "_delete");
+        actu->setMinControl(muscBase.getMinControl());
+        actu->setMaxControl(muscBase.getMaxControl());
+
+        actu->setMaxIsometricForce(muscBase.getMaxIsometricForce());
+        actu->setOptimalFiberLength(muscBase.getOptimalFiberLength());
+        actu->setTendonSlackLength(muscBase.getTendonSlackLength());
+        actu->setPennationAngleAtOptimalFiberLength(
+                muscBase.getPennationAngleAtOptimalFiberLength());
+        actu->setMaxContractionVelocity(muscBase.getMaxContractionVelocity());
+        actu->set_ignore_tendon_compliance(true);
+        // TODO muscBase.get_ignore_tendon_compliance());
+        actu->set_ignore_activation_dynamics(
+                muscBase.get_ignore_activation_dynamics());
+
+
+        const auto& pathPointSet = muscBase.getGeometryPath().getPathPointSet();
+        auto& geomPath = actu->updGeometryPath();
+        for (int ipp = 0; ipp < pathPointSet.getSize(); ++ipp) {
+            auto* pathPoint = pathPointSet.get(ipp).clone();
+            const auto& socketNames = pathPoint->getSocketNames();
+            for (const auto& socketName : socketNames) {
+                pathPoint->updSocket(socketName)
+                        .connect(pathPointSet.get(ipp)
+                                         .getSocket(socketName)
+                                         .getConnecteeAsObject());
+            }
+            geomPath.updPathPointSet().adoptAndAppend(pathPoint);
+        }
+        model.addForce(actu);
+
+        // Workaround for a bug in prependComponentPathToConnecteePath().
+        for (auto& comp : model.updComponentList()) {
+            const auto& socketNames = comp.getSocketNames();
+            for (const auto& socketName : socketNames) {
+                auto& socket = comp.updSocket(socketName);
+                auto connecteePath = socket.getConnecteePath();
+                std::string prefix = "/forceset/" + actu->getName();
+                if (startsWith(connecteePath, prefix)) {
+                    connecteePath = connecteePath.substr(prefix.length());
+                    socket.setConnecteePath(connecteePath);
+                }
+            }
+        }
+        musclesToDelete.push_back(&muscBase);
+
     }
 
     // Delete the muscles.
