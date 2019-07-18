@@ -387,7 +387,7 @@ void DeGrooteFregly2016Muscle::replaceMuscles(
         auto* actu = new DeGrooteFregly2016Muscle();
 
         // peform muscle-model-specific mappings or throw exception if muscle not
-		// supported
+        // supported
         if (auto musc = dynamic_cast<Millard2012EquilibriumMuscle*>(
                     &muscBase)) {
 
