@@ -61,7 +61,7 @@ private:
 /// variables (e.g., pelvis tilt values), the constraints should enforce that
 /// the values should be the same at the beginning and half of the gait cycle.
 /// The example code below illustrates how to enforce the aforementioned
-/// constraints cwith different constructors.
+/// constraints with different constructors.
 /// @code
 /// periodicGoal = problem.addGoal<MocoPeriodicityGoal>("periodicGoal");
 /// @endcode
