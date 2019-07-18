@@ -28,6 +28,7 @@
 #include <OpenSim/Simulation/osimSimulationDLL.h>
 #include "OpenSim/Simulation/Model/ModelComponent.h"
 #include "PathPointSet.h"
+#include <OpenSim/Common/Function.h>
 #include <OpenSim/Simulation/Wrap/PathWrapSet.h>
 #include <OpenSim/Simulation/MomentArmSolver.h>
 
@@ -52,6 +53,35 @@ class WrapObject;
 /**
  * A base class representing a path (muscle, ligament, etc.).
  *
+ * For some applications, it is desirable to approximate the length, lengthening
+ * speed, and moment arms of the path using a function approximation. Function
+ * approximations may be smoother and faster than the path calculations, which
+ * is useful for numerical optimization. To use a function approximation, set
+ * the length_approximation, approximation_coordinates, and use_approximation
+ * properties. You are responsible for developing the function approxmation
+ * yourself (perhaps using a fitting algorithm in Matlab); this class will not
+ * create the function approximation for you. The lengthening speed \f$
+ * \dot{L}(q) \f$ and moment arm for coordinate \f$ i \f$, \f$ r_i(q) \f$, are
+ * computed from the length approximation \f$ L(q) ]\f$ as follows:
+ *
+ * \f[
+ * \begin{alignat*}{2}
+ *     r_i(q) &= -\frac{\partial L}{\partial q_i} \\
+ *     \dot{L}(q) &= \sum_i \frac{\partial L}{\partial q_i} \dot{q}_i
+ * \end{alignat*}
+ * \f]
+ *
+ * Visualization (generateDecorations()) and getPointForceDirections() always
+ * use the path points, even if the object is set to use the approximation.
+ * Avoid these functions if you want to avoid the more expensive path point
+ * calculations. Scaling the model clears the length approximation. You should
+ * update your function approximation yourself after scaling your model.
+ *
+ * @note When using the function approximation, joint reaction calculations will
+ * not correctly account for muscles, as muscle forces are applied via
+ * generalized forces (mobility forces), not at the geometry path's path points.
+ *
+ *
  * @author Peter Loan
  * @version 1.0
  */
@@ -61,7 +91,7 @@ OpenSim_DECLARE_CONCRETE_OBJECT(GeometryPath, ModelComponent);
     // OUTPUTS
     //=============================================================================
     OpenSim_DECLARE_OUTPUT(length, double, getLength, SimTK::Stage::Position);
-    // 
+    //
     OpenSim_DECLARE_OUTPUT(lengthening_speed, double, getLengtheningSpeed,
         SimTK::Stage::Velocity);
 
@@ -71,6 +101,18 @@ OpenSim_DECLARE_CONCRETE_OBJECT(GeometryPath, ModelComponent);
 public:
     OpenSim_DECLARE_UNNAMED_PROPERTY(Appearance,
         "Default appearance attributes for this GeometryPath");
+
+    OpenSim_DECLARE_OPTIONAL_PROPERTY(length_approximation, Function,
+        "An approximation for path length as a function of coordinate values.");
+
+    OpenSim_DECLARE_LIST_PROPERTY(approximation_coordinates, std::string,
+        "The component paths of coordinates whose values are inputs to "
+        "length_approximation. The order must match the order of arguments "
+        "for length_approximation.");
+
+    OpenSim_DECLARE_PROPERTY(use_approximation, bool,
+        "Default setting for using the length_approximation to "
+        "compute length, lengthening speed, and moment arms.");
 
 private:
     OpenSim_DECLARE_UNNAMED_PROPERTY(PathPointSet,
@@ -86,7 +128,9 @@ private:
     // but we cannot simply use a unique_ptr because we want the pointer to be
     // cleared on copy.
     SimTK::ResetOnCopy<std::unique_ptr<MomentArmSolver> > _maSolver;
-    
+
+    mutable std::vector<SimTK::ReferencePtr<const Coordinate>> m_approxCoords;
+
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -107,27 +151,39 @@ public:
     //--------------------------------------------------------------------------
     AbstractPathPoint* addPathPoint(const SimTK::State& s, int index,
         const PhysicalFrame& frame);
-    AbstractPathPoint* appendNewPathPoint(const std::string& proposedName, 
+    AbstractPathPoint* appendNewPathPoint(const std::string& proposedName,
         const PhysicalFrame& frame, const SimTK::Vec3& locationOnFrame);
     bool canDeletePathPoint( int index);
     bool deletePathPoint(const SimTK::State& s, int index);
-    
+
     void moveUpPathWrap(const SimTK::State& s, int index);
     void moveDownPathWrap(const SimTK::State& s, int index);
     void deletePathWrap(const SimTK::State& s, int index);
     bool replacePathPoint(const SimTK::State& s, AbstractPathPoint* oldPathPoint,
-        AbstractPathPoint* newPathPoint); 
+        AbstractPathPoint* newPathPoint);
 
     //--------------------------------------------------------------------------
     // GET
     //--------------------------------------------------------------------------
+    bool getUseApproximation(const SimTK::State& s) const {
+        return getModelingOption(s, USE_APPROXIMATION_NAME) == 1;
+    }
+    void setUseApproximation(SimTK::State& s, bool approx) const {
+        if (approx) {
+            OPENSIM_THROW_IF(getProperty_length_approximation().empty(),
+                             Exception,
+                             "Cannot use length approximation; no function "
+                             "provided.");
+        }
+        setModelingOption(s, USE_APPROXIMATION_NAME, int(approx));
+    }
 
     /** If you call this prior to extendAddToSystem() it will be used to initialize
     the color cache variable. Otherwise %GeometryPath will choose its own
     default which varies depending on owner. **/
     void setDefaultColor(const SimTK::Vec3& color) {
         updProperty_Appearance().setValueIsDefault(false);
-        upd_Appearance().set_color(color); 
+        upd_Appearance().set_color(color);
     };
     /** Returns the color that will be used to initialize the color cache
     at the next extendAddToSystem() call. The actual color used to draw the path
@@ -136,8 +192,8 @@ public:
 
     /** %Set the value of the color cache variable owned by this %GeometryPath
     object, in the cache of the given state. The value of this variable is used
-    as the color when the path is drawn, which occurs with the state realized 
-    to Stage::Dynamics. So you must call this method during realizeDynamics() or 
+    as the color when the path is drawn, which occurs with the state realized
+    to Stage::Dynamics. So you must call this method during realizeDynamics() or
     earlier in order for it to have any effect. **/
     void setColor(const SimTK::State& s, const SimTK::Vec3& color) const;
 
@@ -160,18 +216,18 @@ public:
 
     /** get the path as PointForceDirections directions, which can be used
         to apply tension to bodies the points are connected to.*/
-    void getPointForceDirections(const SimTK::State& s, 
+    void getPointForceDirections(const SimTK::State& s,
         OpenSim::Array<PointForceDirection*> *rPFDs) const;
 
-    /** add in the equivalent body and generalized forces to be applied to the 
-        multibody system resulting from a tension along the GeometryPath 
+    /** add in the equivalent body and generalized forces to be applied to the
+        multibody system resulting from a tension along the GeometryPath
     @param state    state used to evaluate forces
-    @param[in]  tension      scalar (double) of the applied (+ve) tensile force 
+    @param[in]  tension      scalar (double) of the applied (+ve) tensile force
     @param[in,out] bodyForces   Vector of SpatialVec's (torque, force) on bodies
-    @param[in,out] mobilityForces  Vector of generalized forces, one per mobility   
+    @param[in,out] mobilityForces  Vector of generalized forces, one per mobility
     */
     void addInEquivalentForces(const SimTK::State& state,
-                               const double& tension, 
+                               const double& tension,
                                SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
                                SimTK::Vector& mobilityForces) const;
 
@@ -179,7 +235,8 @@ public:
     //--------------------------------------------------------------------------
     // COMPUTATIONS
     //--------------------------------------------------------------------------
-    virtual double computeMomentArm(const SimTK::State& s, const Coordinate& aCoord) const;
+    virtual double computeMomentArm(
+            const SimTK::State& s, const Coordinate& aCoord) const;
 
     //--------------------------------------------------------------------------
     // SCALING
@@ -204,6 +261,7 @@ public:
 protected:
     // ModelComponent interface.
     void extendConnectToModel(Model& aModel) override;
+    void extendSetPropertiesFromState(const SimTK::State& s) override;
     void extendInitStateFromProperties(SimTK::State& s) const override;
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
 
@@ -222,21 +280,29 @@ private:
     void computePath(const SimTK::State& s ) const;
     void computeLengtheningSpeed(const SimTK::State& s) const;
     void applyWrapObjects(const SimTK::State& s, Array<AbstractPathPoint*>& path ) const;
-    double calcPathLengthChange(const SimTK::State& s, const WrapObject& wo, 
-                                const WrapResult& wr, 
-                                const Array<AbstractPathPoint*>& path) const; 
+    double calcPathLengthChange(const SimTK::State& s, const WrapObject& wo,
+                                const WrapResult& wr,
+                                const Array<AbstractPathPoint*>& path) const;
     double calcLengthAfterPathComputation
        (const SimTK::State& s, const Array<AbstractPathPoint*>& currentPath) const;
 
+    /// Compute a moment arm for a coordinate in m_approxCoords, identified by
+    /// approxCoordIndex, using the length_approximation function.
+    /// The length of approxQ should be the length of approximation_coordinates.
+    double computeMomentArmWithApproximation(
+            int approxCoordIndex, const SimTK::Vector& approxQ) const;
+
     void constructProperties();
     void namePathPoints(int aStartingIndex);
-    void placeNewPathPoint(const SimTK::State& s, SimTK::Vec3& aOffset, 
+    void placeNewPathPoint(const SimTK::State& s, SimTK::Vec3& aOffset,
                            int index, const PhysicalFrame& frame);
     //--------------------------------------------------------------------------
     // Implement Object interface.
     //--------------------------------------------------------------------------
     /** Override of the default implementation to account for versioning. */
     void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber = -1) override;
+
+    static const std::string USE_APPROXIMATION_NAME;
 
 //=============================================================================
 };  // END of class GeometryPath

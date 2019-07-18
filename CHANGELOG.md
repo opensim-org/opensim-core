@@ -6,6 +6,11 @@ request related to the change, then we may provide the commit.
 
 This is not a comprehensive list of changes but rather a hand-curated collection of the more notable ones. For a comprehensive history, see the [OpenSim Core GitHub repo](https://github.com/opensim-org/opensim-core).
 
+v4.1
+====
+- Added support for function approximations to a GeometryPath's length,
+  lengthening speed, and moment arms.
+
 v4.0
 ====
 

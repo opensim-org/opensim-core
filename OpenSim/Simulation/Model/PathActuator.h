@@ -70,7 +70,7 @@ public:
     GeometryPath& updGeometryPath() { return upd_GeometryPath(); }
     const GeometryPath& getGeometryPath() const 
     {   return get_GeometryPath(); }
-    bool hasGeometryPath() const override { return true;};
+    bool hasGeometryPath() const override { return true; }
 
     // OPTIMAL FORCE
     void setOptimalForce(double aOptimalForce);

@@ -34,12 +34,14 @@
 //     Add more test cases to address specific problems with moment-arms
 //
 //=============================================================================
-#include <OpenSim/Simulation/osimSimulation.h>
+#include "SimulationComponentsForTesting.h"
+
 #include <OpenSim/Actuators/Thelen2003Muscle.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 #include <OpenSim/Common/LoadOpenSimLibrary.h>
-
-#include "SimulationComponentsForTesting.h"
+#include <OpenSim/Common/PolynomialFunction.h>
+#include <OpenSim/Common/Sine.h>
+#include <OpenSim/Simulation/osimSimulation.h>
 
 using namespace OpenSim;
 using namespace std;
@@ -55,6 +57,8 @@ void testMomentArmDefinitionForModel(const string &filename,
                                      double mass = -1.0, string errorMessage = "");
 
 void testMomentArmsAcrossCompoundJoint();
+
+void testGeometryPathApproximation();
 
 int main()
 {
@@ -128,6 +132,9 @@ int main()
 
         testMomentArmDefinitionForModel("CoupledCoordinatesMPPsMomentArmTest.osim", "foot_angle", "vas_int_r", SimTK::Vec2(-2*SimTK::Pi/3, SimTK::Pi/18), -1.0, "Multiple moving path points: FAILED");
         cout << "Multiple moving path points coupled coordinates test: PASSED\n" << endl;
+
+        testGeometryPathApproximation();
+        cout << "Geometry path approximation: PASSED\n" << endl;
     }
     catch (const Exception& e) {
         e.print(cerr);
@@ -252,7 +259,7 @@ SimTK::Vector computeGenForceScaling(const Model &osimModel, const SimTK::State 
                 && (ac.getJoint().getName() != "tib_pat_r") ){
             MobilizedBodyIndex modbodIndex = ac.getBodyIndex();
             const MobilizedBody& mobod = osimModel.getMatterSubsystem().getMobilizedBody(modbodIndex);
-            SpatialVec Hcol = mobod.getHCol(s, SimTK::MobilizerUIndex(0)); //ac.getMobilizerQIndex())); // get n’th column of H
+            SpatialVec Hcol = mobod.getHCol(s, SimTK::MobilizerUIndex(0)); //ac.getMobilizerQIndex())); // get nï¿½th column of H
 
             /*double thetaScale = */Hcol[0].norm(); // magnitude of the rotational part of this column of H
             
@@ -441,4 +448,116 @@ void testMomentArmDefinitionForModel(const string &filename, const string &coord
     // Minimum requirement to pass is that calculated moment-arm satisfies either
     // dL/dTheta definition or is at least dynamically consistent, in which dL/dTheta is not
     ASSERT(passesDefinition || passesDynamicConsistency, __FILE__, __LINE__, errorMessage);
+}
+
+void testGeometryPathApproximation() {
+    using namespace SimTK;
+
+    // Create a point mass sliding along a sinusoid (1-DOF).
+    Model model;
+    model.updGround().attachGeometry(new Sphere(0.05));
+    auto* body = new OpenSim::Body("body", 1, Vec3(0), Inertia(1));
+    body->attachGeometry(new Sphere(0.05));
+
+    SpatialTransform transform;
+    TransformAxis& tx = transform.updTransformAxis(3);
+    tx.append_coordinates("q");
+    tx.setFunction(LinearFunction(1, 0));
+
+    TransformAxis& ty = transform.updTransformAxis(4);
+    ty.append_coordinates("q");
+    ty.setFunction(Sine(0.3, 2 * SimTK::Pi, 0.5 * SimTK::Pi));
+
+    auto* joint = new CustomJoint("joint", model.getGround(), *body, transform);
+
+    model.addBody(body);
+    model.addJoint(joint);
+
+    auto* actu = new PathActuator();
+    actu->addNewPathPoint("origin", model.getGround(), Vec3(0));
+    actu->addNewPathPoint("insertion", *body, Vec3(0));
+    model.addForce(actu);
+
+    // model.setUseVisualizer(true);
+    // model.setGravity(Vec3(2.0, 0, 0));
+
+    auto state = model.initSystem();
+
+    // Manager manager(model, state);
+    // state = manager.integrate(10.0);
+    // model.getVisualizer().show(state);
+
+
+    // TODO: add utility to compute error in function approximation!
+
+    class FitLength : public OptimizerSystem {
+    public:
+        FitLength(int numParams, double maxQ, Model& model, State& state,
+                GeometryPath& path)
+                : OptimizerSystem(numParams), m_model(model), m_state(state),
+                  m_path(path) {
+
+            int N = 20;
+            m_q.resize(N);
+            for (int i = 0; i < N; ++i) {
+                m_q[i] = i * maxQ / (N - 1);
+            }
+            m_lengthWithPoints.resize(N);
+            m_lengthWithApprox.resize(N);
+        }
+        int objectiveFunc(const Vector& params, bool, Real& f) const override {
+            m_path.set_length_approximation(PolynomialFunction(params));
+
+            m_path.setUseApproximation(m_state, false);
+            for (int i = 0; i < m_q.size(); ++i) {
+                m_state.updQ()[0] = m_q[i];
+                m_model.realizePosition(m_state);
+                m_lengthWithPoints[i] = m_path.getLength(m_state);
+            }
+
+            m_path.setUseApproximation(m_state, true);
+            for (int i = 0; i < m_q.size(); ++i) {
+                m_state.updQ()[0] = m_q[i];
+                m_model.realizePosition(m_state);
+                m_lengthWithApprox[i] = m_path.getLength(m_state);
+            }
+            f = (m_lengthWithPoints - m_lengthWithApprox).normSqr();
+            // TODO use utility for computing the error.
+            return 0;
+        }
+
+    private:
+        Model& m_model;
+        State& m_state;
+        GeometryPath& m_path;
+        SimTK::Vector m_q;
+        mutable SimTK::Vector m_lengthWithPoints;
+        mutable SimTK::Vector m_lengthWithApprox;
+    };
+
+    // TODO create a more formal range.
+    int nParams = 8;
+    auto& path = actu->updGeometryPath();
+    path.set_length_approximation(PolynomialFunction(Vector(nParams)));
+    path.append_approximation_coordinates("/jointset/joint/q");
+    model.initSystem();
+    double maxQ = 1.0;
+    FitLength sys(nParams, maxQ, model, state, path);
+    Optimizer opt(sys);
+    opt.useNumericalGradient(true);
+    Vector params(nParams);
+    params = 0.2;
+    double obj = opt.optimize(params);
+    // If obj is zero, that probably means we are not using the approximation.
+    SimTK_TEST(obj > 1e-5);
+
+    // Requesting to use the approximation when no function is set.
+    // Cannot use the approximation if a function is not set.
+
+    // The number of arguments for the function must match the number of
+    // provided coordinates.
+
+    // The lengthening speed of the approximation is close to that using points.
+
+    // Check the moment arm.
 }
