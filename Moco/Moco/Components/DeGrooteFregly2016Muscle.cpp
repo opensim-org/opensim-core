@@ -458,25 +458,32 @@ void DeGrooteFregly2016Muscle::replaceMuscles(
 			auto* actu = new DeGrooteFregly2016Muscle();
             actu->setName(musc->getName());
             musc->setName(musc->getName() + "_delete");
-            actu->setMinControl(0.01);
-            actu->setMaxControl(1.0);
+            actu->setMinControl(musc->getMinControl());
+            actu->setMaxControl(musc->getMaxControl());
 
             actu->setMaxIsometricForce(musc->getMaxIsometricForce());
             actu->setOptimalFiberLength(musc->getOptimalFiberLength());
             actu->setTendonSlackLength(musc->getTendonSlackLength());
             actu->setPennationAngleAtOptimalFiberLength(
                     musc->getPennationAngleAtOptimalFiberLength());
-            actu->setMaxContractionVelocity(musc->getMaxContractionVelocity());
+            actu->setMaxContractionVelocity(musc->getMaxContractionVelocity());            
             actu->set_ignore_tendon_compliance(true);
-			actu->set_ignore_activation_dynamics(false);
+                // TODO musc->get_ignore_tendon_compliance());
+            actu->set_ignore_activation_dynamics(
+                    musc->get_ignore_activation_dynamics());
 
-			actu->set_default_activation(0.01);
+            actu->set_default_normalized_fiber_length(
+                    musc->get_default_fiber_length() /
+                    musc->get_optimal_fiber_length());
+			actu->set_default_activation(musc->getDefaultActivation());
             actu->set_activation_time_constant(
-            musc->get_activation_time_constant());
+                    musc->get_activation_time_constant());
             actu->set_deactivation_time_constant(
                     musc->get_deactivation_time_constant());
-
+            
+            // TODO
 			actu->set_fiber_damping(0);
+            // actu->set_fiber_damping(musc->get_fiber_damping());
 			actu->set_tendon_strain_at_one_norm_force(
                     musc->get_FmaxTendonStrain());
 
