@@ -388,7 +388,7 @@ void DeGrooteFregly2016Muscle::replaceMuscles(
 
         // peform muscle-model-specific mappings or throw error if muscle not supported
         if (auto musc = dynamic_cast<Millard2012EquilibriumMuscle*>(
-                &muscBase)) {
+                    &muscBase)) {
 
 
             // TODO: There is a bug in Millard2012EquilibriumMuscle where
