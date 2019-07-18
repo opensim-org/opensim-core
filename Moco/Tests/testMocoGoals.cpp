@@ -457,3 +457,42 @@ TEMPLATE_TEST_CASE("Endpoint constraints", "", MocoCasADiSolver) {
                 Approx(0).margin(1e-6));
     }
 }
+
+TEMPLATE_TEST_CASE("Periodic constraints", "", MocoCasADiSolver) {
+    std::cout.rdbuf(LogManager::cout.rdbuf());
+    std::cout.rdbuf(LogManager::cout.rdbuf());
+
+    MocoStudy study;
+    auto& problem = study.updProblem();
+    problem.setModelCopy(ModelFactory::createPendulum());
+
+    problem.setTimeBounds(0, 1);
+    problem.setStateInfo("/jointset/j0/q0/value", {-0.3, 0.3});
+
+    auto* periodic = problem.addGoal<MocoPeriodicityGoal>("periodic");
+    MocoPeriodicityGoalPair pair_q0_value;
+    pair_q0_value.set_first("/jointset/j0/q0/value");
+    pair_q0_value.set_second("/jointset/j0/q0/value");
+    MocoPeriodicityGoalPair pair_q0_speed;
+    pair_q0_speed.set_first("/jointset/j0/q0/speed");
+    pair_q0_speed.set_second("/jointset/j0/q0/speed");
+    MocoPeriodicityGoalPair pait_tau0;
+    pait_tau0.set_first("/tau0");
+    pait_tau0.set_second("/tau0");
+    periodic->append_state_pair(pair_q0_value);
+    periodic->append_state_pair(pair_q0_speed);
+    auto* effort = problem.addGoal<MocoControlGoal>("control");
+
+    study.initSolver<TestType>();
+
+    SECTION("Perodic constraint is satisfied.") {
+        MocoSolution solution = study.solve();
+        const int N = solution.getNumTimes();
+        CHECK(solution.getState("/jointset/j0/q0/value")[N - 1] ==
+                solution.getState("/jointset/j0/q0/value")[0]);
+        CHECK(solution.getState("/jointset/j0/q0/speed")[N - 1] ==
+                solution.getState("/jointset/j0/q0/speed")[0]);
+        CHECK(solution.getControl("/tau0")[N - 1] ==
+                Approx(solution.getControl("/tau0")[0]).margin(1e-6));
+    }
+}
