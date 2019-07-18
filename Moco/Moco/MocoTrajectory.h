@@ -155,7 +155,7 @@ public:
 
     bool hasCoordinateStates() const {
         for (auto name : m_state_names) {
-            auto leafpos = name.find("value");
+            auto leafpos = name.find("/value");
             if (leafpos != std::string::npos) return true;
         }
         return false;    
