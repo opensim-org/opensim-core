@@ -26,14 +26,22 @@ using namespace OpenSim;
 
 MocoPeriodicityGoalPair::MocoPeriodicityGoalPair() { constructProperties(); }
 
-MocoPeriodicityGoalPair::MocoPeriodicityGoalPair(std::string name) {
-    setName(std::move(name));
+MocoPeriodicityGoalPair::MocoPeriodicityGoalPair(
+        std::string initial, std::string final) {
     constructProperties();
+    set_initial(initial);
+    set_final(final);
+}
+
+MocoPeriodicityGoalPair::MocoPeriodicityGoalPair(std::string initialIsFinal) {
+    constructProperties();
+    set_initial(initialIsFinal);
+    set_final(initialIsFinal);
 }
 
 void MocoPeriodicityGoalPair::constructProperties() {
-    constructProperty_first("");
-    constructProperty_second("");
+    constructProperty_initial("");
+    constructProperty_final("");
 }
 
 //=============================================================================
@@ -53,22 +61,30 @@ void MocoPeriodicityGoal::initializeOnModelImpl(const Model& model) const {
     int nStatePairs = getProperty_state_pairs().size();
 
     for (int i = 0; i < nStatePairs; ++i) {
-        const auto path1 = get_state_pairs(i).get_first();
-        const auto path2 = get_state_pairs(i).get_second();
+        const auto path1 = get_state_pairs(i).get_initial();
+        OPENSIM_THROW_IF(allSysYIndices.count(path1) == 0,
+                Exception, format("Could not find state '%s'.", path1));
+        const auto path2 = get_state_pairs(i).get_final();
+        OPENSIM_THROW_IF(allSysYIndices.count(path2) == 0,
+                Exception, format("Could not find state '%s'.", path2));
         int stateIndex1 = allSysYIndices[path1];
         int stateIndex2 = allSysYIndices[path2];
-        m_indices_states.emplace_back(stateIndex1,stateIndex2);
+        m_indices_states.emplace_back(stateIndex1, stateIndex2);
     }
 
     auto systemControlIndexMap = createSystemControlIndexMap(model);
     int nControlPairs = getProperty_control_pairs().size();
 
     for (int i = 0; i < nControlPairs; ++i) {
-        const auto path1 = get_control_pairs(i).get_first();
-        const auto path2 = get_control_pairs(i).get_second();
+        const auto path1 = get_control_pairs(i).get_initial();
+        OPENSIM_THROW_IF(systemControlIndexMap.count(path1) == 0,
+                Exception, format("Could not find control '%s'.", path1));
+        const auto path2 = get_control_pairs(i).get_final();
+        OPENSIM_THROW_IF(systemControlIndexMap.count(path2) == 0,
+                Exception, format("Could not find control '%s'.", path2));
         int controlIndex1 = systemControlIndexMap[path1];
         int controlIndex2 = systemControlIndexMap[path2];
-        m_indices_controls.emplace_back(controlIndex1,controlIndex2);
+        m_indices_controls.emplace_back(controlIndex1, controlIndex2);
     }
 
     setNumIntegralsAndOutputs(0,
@@ -84,6 +100,9 @@ void MocoPeriodicityGoal::calcGoalImpl(
     for (const auto& index_state : m_indices_states) {
         goal[i] = initialStates[index_state.first] -
                 finalStates[index_state.second];
+        if (getModeIsCost()) {
+            goal[i] = SimTK::square(goal[i]);
+        }
         ++i;
     }
 
@@ -93,6 +112,9 @@ void MocoPeriodicityGoal::calcGoalImpl(
     for (const auto& index_control : m_indices_controls) {
         goal[i+j] = initialControls[index_control.first] -
                 finalControls[index_control.second];
+        if (getModeIsCost()) {
+            goal[i+j] = SimTK::square(goal[i+j]);
+        }
         ++j;
     }
 }
