@@ -26,6 +26,7 @@
 #include <regex>
 #include <set>
 #include <stack>
+#include <condition_variable>
 
 #include <OpenSim/Common/GCVSplineSet.h>
 #include <OpenSim/Common/PiecewiseLinearFunction.h>
