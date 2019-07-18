@@ -386,7 +386,8 @@ void DeGrooteFregly2016Muscle::replaceMuscles(
         // pre-emptively create a default DeGrooteFregly2016Muscle (this is not ideal)
         auto* actu = new DeGrooteFregly2016Muscle();
 
-        // peform muscle-model-specific mappings or throw error if muscle not supported
+        // peform muscle-model-specific mappings or throw exception if muscle not
+		// supported
         if (auto musc = dynamic_cast<Millard2012EquilibriumMuscle*>(
                     &muscBase)) {
 
