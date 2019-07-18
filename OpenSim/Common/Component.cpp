@@ -1795,6 +1795,7 @@ void Component::warnBeforePrint() const {
                 << "::print(): The following connections are not finalized "
                    "and will not appear in the resulting XML file. "
                    "Call finalizeConnections() before print().\n"
+                   "To ignore, please call Object::setDebugLevel(1) first.\n"
                 << message << std::endl;
     }
 }
