@@ -21,7 +21,7 @@
 using namespace OpenSim;
 
 //=============================================================================
-//  MOCO PERIODICITY GOAL PAIR
+//  MocoPeriodicityGoalPair
 //=============================================================================
 
 MocoPeriodicityGoalPair::MocoPeriodicityGoalPair() { constructProperties(); }
@@ -37,30 +37,35 @@ void MocoPeriodicityGoalPair::constructProperties() {
 }
 
 //=============================================================================
-//  MOCO PERIODICITY GOAL
+//  MocoPeriodicityGoal
 //=============================================================================
 
 MocoPeriodicityGoal::MocoPeriodicityGoal() { constructProperties(); }
 
+void MocoPeriodicityGoal::constructProperties() {
+    constructProperty_state_pairs();
+    constructProperty_control_pairs();
+}
+
 void MocoPeriodicityGoal::initializeOnModelImpl(const Model& model) const {
 
     auto allSysYIndices = createSystemYIndexMap(model);
-    int nStatePairs = getProperty_state_pair().size();
+    int nStatePairs = getProperty_state_pairs().size();
 
     for (int i = 0; i < nStatePairs; ++i) {
-        const auto path1 = get_state_pair(i).get_first();
-        const auto path2 = get_state_pair(i).get_second();
+        const auto path1 = get_state_pairs(i).get_first();
+        const auto path2 = get_state_pairs(i).get_second();
         int stateIndex1 = allSysYIndices[path1];
         int stateIndex2 = allSysYIndices[path2];
         m_indices_states.emplace_back(stateIndex1,stateIndex2);
     }
 
     auto systemControlIndexMap = createSystemControlIndexMap(model);
-    int nControlPairs = getProperty_control_pair().size();
+    int nControlPairs = getProperty_control_pairs().size();
 
     for (int i = 0; i < nControlPairs; ++i) {
-        const auto path1 = get_control_pair(i).get_first();
-        const auto path2 = get_control_pair(i).get_second();
+        const auto path1 = get_control_pairs(i).get_first();
+        const auto path2 = get_control_pairs(i).get_second();
         int controlIndex1 = systemControlIndexMap[path1];
         int controlIndex2 = systemControlIndexMap[path2];
         m_indices_controls.emplace_back(controlIndex1,controlIndex2);
@@ -90,9 +95,4 @@ void MocoPeriodicityGoal::calcGoalImpl(
                 finalControls[index_control.second];
         ++j;
     }
-}
-
-void MocoPeriodicityGoal::constructProperties() {
-    constructProperty_state_pair();
-    constructProperty_control_pair();
 }

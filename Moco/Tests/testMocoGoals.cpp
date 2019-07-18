@@ -473,14 +473,15 @@ TEMPLATE_TEST_CASE("Periodic constraints", "", MocoCasADiSolver) {
     MocoPeriodicityGoalPair pair_q0_value;
     pair_q0_value.set_first("/jointset/j0/q0/value");
     pair_q0_value.set_second("/jointset/j0/q0/value");
+    periodic->append_state_pairs(pair_q0_value);
     MocoPeriodicityGoalPair pair_q0_speed;
     pair_q0_speed.set_first("/jointset/j0/q0/speed");
     pair_q0_speed.set_second("/jointset/j0/q0/speed");
+    periodic->append_state_pairs(pair_q0_speed);
     MocoPeriodicityGoalPair pair_tau0;
     pair_tau0.set_first("/tau0");
     pair_tau0.set_second("/tau0");
-    periodic->append_state_pair(pair_q0_value);
-    periodic->append_state_pair(pair_q0_speed);
+    periodic->append_control_pairs(pair_tau0);
     auto* effort = problem.addGoal<MocoControlGoal>("control");
 
     study.initSolver<TestType>();
@@ -493,6 +494,6 @@ TEMPLATE_TEST_CASE("Periodic constraints", "", MocoCasADiSolver) {
         CHECK(solution.getState("/jointset/j0/q0/speed")[N - 1] ==
                 solution.getState("/jointset/j0/q0/speed")[0]);
         CHECK(solution.getControl("/tau0")[N - 1] ==
-                Approx(solution.getControl("/tau0")[0]).margin(1e-6));
+                solution.getControl("/tau0")[0]);
     }
 }
