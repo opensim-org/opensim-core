@@ -18,11 +18,11 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "../MocoWeightSet.h"
 #include "MocoGoal.h"
 
 namespace OpenSim {
 
+/// Create pair of elements for use when imposing periodic constraints.
 class OSIMMOCO_API MocoPeriodicityGoalPair : public Object {
     OpenSim_DECLARE_CONCRETE_OBJECT(MocoPeriodicityGoalPair, Object);
 
@@ -40,19 +40,20 @@ private:
 
 };
 
-// TODO
-/// Minimize the sum of squared controls, integrated over the phase.
-/// The default weight for each control is 1.0; this can be changed by
-/// calling setWeight() or editing the `control_weights` property in XML.
-/// @ingroup mococost
+/// The initial state of the first element of the pair should be the same as
+/// the final state of the second element of the pair. Pairs of states should
+/// be distinguished from pairs of controls by appending a `state_pair` or
+/// a `control_pair` to the MocoPeriodicityGoal.
+/// This is an endpoint constraint goal by default.
+/// @ingroup mocogoal
 class OSIMMOCO_API MocoPeriodicityGoal : public MocoGoal {
     OpenSim_DECLARE_CONCRETE_OBJECT(MocoPeriodicityGoal, MocoGoal);
 
 public:
-    OpenSim_DECLARE_LIST_PROPERTY(
-            state_pairs, MocoPeriodicityGoalPair, "Periodic pair.");
-    OpenSim_DECLARE_LIST_PROPERTY(
-            control_pairs, MocoPeriodicityGoalPair, "Periodic pair.");
+    OpenSim_DECLARE_LIST_PROPERTY(state_pair, MocoPeriodicityGoalPair,
+            "Periodic pair of states.");
+    OpenSim_DECLARE_LIST_PROPERTY(control_pair, MocoPeriodicityGoalPair,
+            "Periodic pair of controls.");
 
     MocoPeriodicityGoal();
     MocoPeriodicityGoal(std::string name) : MocoGoal(std::move(name)) {
@@ -60,14 +61,13 @@ public:
     }
 
 protected:
-
     bool getSupportsEndpointConstraintImpl() const override { return true; }
-    Mode getDefaultModeImpl() const { return Mode::EndpointConstraint; }
-
+    Mode getDefaultModeImpl() const override {
+        return Mode::EndpointConstraint;
+    }
     void initializeOnModelImpl(const Model& model) const override;
-
     void calcGoalImpl(
-            const GoalInput& input, SimTK::Vector& cost) const override;
+            const GoalInput& input, SimTK::Vector& goal) const override;
 
 private:
     void constructProperties();

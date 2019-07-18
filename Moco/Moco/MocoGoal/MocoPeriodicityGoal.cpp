@@ -1,9 +1,9 @@
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: MocoPeriodicityGoal.cpp                                          *
+ * OpenSim Moco: MocoPeriodicityGoal.cpp                                      *
  * -------------------------------------------------------------------------- *
- * Copyright (c) 2017 Stanford University and the Authors                     *
+ * Copyright (c) 2017-19 Stanford University and the Authors                  *
  *                                                                            *
- * Author(s): Christopher Dembia                                              *
+ * Author(s): Antoine Falisse                                                 *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -18,13 +18,10 @@
 
 #include "MocoPeriodicityGoal.h"
 
-#include "../MocoUtilities.h"
-
 using namespace OpenSim;
 
-
 //=============================================================================
-//  MOCO PERIODICITY PAIR
+//  MOCO PERIODICITY GOAL PAIR
 //=============================================================================
 
 MocoPeriodicityGoalPair::MocoPeriodicityGoalPair() { constructProperties(); }
@@ -45,63 +42,57 @@ void MocoPeriodicityGoalPair::constructProperties() {
 
 MocoPeriodicityGoal::MocoPeriodicityGoal() { constructProperties(); }
 
+void MocoPeriodicityGoal::initializeOnModelImpl(const Model& model) const {
+
+    auto allSysYIndices = createSystemYIndexMap(model);
+    int nStatePairs = getProperty_state_pair().size();
+
+    for (int i = 0; i < nStatePairs; ++i) {
+        const auto path1 = get_state_pair(i).get_first();
+        const auto path2 = get_state_pair(i).get_second();
+        int stateIndex1 = allSysYIndices[path1];
+        int stateIndex2 = allSysYIndices[path2];
+        m_indices_states.emplace_back(stateIndex1,stateIndex2);
+    }
+
+    auto systemControlIndexMap = createSystemControlIndexMap(model);
+    int nControlPairs = getProperty_control_pair().size();
+
+    for (int i = 0; i < nControlPairs; ++i) {
+        const auto path1 = get_control_pair(i).get_first();
+        const auto path2 = get_control_pair(i).get_second();
+        int controlIndex1 = systemControlIndexMap[path1];
+        int controlIndex2 = systemControlIndexMap[path2];
+        m_indices_controls.emplace_back(controlIndex1,controlIndex2);
+    }
+
+    setNumIntegralsAndOutputs(0,
+            (int)m_indices_states.size() + (int)m_indices_controls.size());
+}
+
 void MocoPeriodicityGoal::calcGoalImpl(
-        const GoalInput& input, SimTK::Vector& values) const {
+        const GoalInput& input, SimTK::Vector& goal) const {
 
     const auto& initialStates = input.initial_state.getY();
     const auto& finalStates = input.final_state.getY();
     int i = 0;
-    for (const auto& indices_states : m_indices_states) {
-        values[i] = initialStates[indices_states.first] -
-                finalStates[indices_states.second];
+    for (const auto& index_state : m_indices_states) {
+        goal[i] = initialStates[index_state.first] -
+                finalStates[index_state.second];
         ++i;
     }
 
     const auto& initialControls = getModel().getControls(input.initial_state);
     const auto& finalControls = getModel().getControls(input.final_state);
     int j = 0;
-    for (const auto& indices_controls : m_indices_controls) {
-        values[i+j] = initialControls[indices_controls.first] -
-                finalControls[indices_controls.second];
+    for (const auto& index_control : m_indices_controls) {
+        goal[i+j] = initialControls[index_control.first] -
+                finalControls[index_control.second];
         ++j;
-    }
-
-    setNumIntegralsAndOutputs(0,
-            (int)m_indices_controls.size() + (int)m_indices_controls.size());
-
-}
-
-void MocoPeriodicityGoal::initializeOnModelImpl(const Model& model) const {
-
-    auto allSysYIndices = createSystemYIndexMap(model);
-    int nStatePairs = getProperty_state_pairs().size();
-    for (int i = 0; i < nStatePairs; ++i) {
-
-        auto path1 = get_state_pairs(i).get_first();
-        auto path2 = get_state_pairs(i).get_second();
-
-        int stateIndex1 = allSysYIndices[path1];
-        int stateIndex2 = allSysYIndices[path2];
-
-        m_indices_states.emplace_back(stateIndex1,stateIndex2);
-    }
-
-    auto systemControlIndexMap = createSystemControlIndexMap(model);
-    int nControlPairs = getProperty_control_pairs().size();
-    for (int i = 0; i < nControlPairs; ++i) {
-
-        auto path1 = get_control_pairs(i).get_first();
-        auto path2 = get_control_pairs(i).get_second();
-
-        int controlIndex1 = systemControlIndexMap[path1];
-        int controlIndex2 = systemControlIndexMap[path2];
-
-        m_indices_controls.emplace_back(controlIndex1,controlIndex2);
     }
 }
 
 void MocoPeriodicityGoal::constructProperties() {
-    constructProperty_state_pairs();
-    constructProperty_control_pairs();
+    constructProperty_state_pair();
+    constructProperty_control_pair();
 }
-

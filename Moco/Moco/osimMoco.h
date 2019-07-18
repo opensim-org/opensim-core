@@ -39,6 +39,7 @@
 #include "MocoGoal/MocoOrientationTrackingGoal.h"
 #include "MocoGoal/MocoStateTrackingGoal.h"
 #include "MocoGoal/MocoTranslationTrackingGoal.h"
+#include "MocoGoal/MocoPeriodicityGoal.h"
 #include "MocoInverse.h"
 #include "MocoParameter.h"
 #include "MocoProblem.h"
