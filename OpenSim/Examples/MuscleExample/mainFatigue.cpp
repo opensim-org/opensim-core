@@ -239,6 +239,9 @@ int main()
         IO::makeDir("MuscleAnalysisResults");
         muscAnalysis->printResults("fatigue", "MuscleAnalysisResults");
 
+        // To print (serialize) the latest connections of the model, it is 
+        // necessary to finalizeConnections() first.
+        osimModel.finalizeConnections();
         // Save the OpenSim model to a file
         osimModel.print("tugOfWar_fatigue_model.osim");
     }

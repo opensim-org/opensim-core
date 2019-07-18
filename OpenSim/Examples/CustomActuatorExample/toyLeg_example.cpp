@@ -216,8 +216,12 @@ int main()
     
         //Examine the model
         osimModel.printDetailedInfo(si, std::cout);
+
+        // No need to call the finalizeConnections() as it is 
+        // already called by the initSystem()
         // Save the model
         osimModel.print("toyLeg.osim");
+
         // Print out the initial position and velocity states
         si.getQ().dump("Initial q's");
         si.getU().dump("Initial u's");
