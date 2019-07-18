@@ -476,9 +476,9 @@ TEMPLATE_TEST_CASE("Periodic constraints", "", MocoCasADiSolver) {
     MocoPeriodicityGoalPair pair_q0_speed;
     pair_q0_speed.set_first("/jointset/j0/q0/speed");
     pair_q0_speed.set_second("/jointset/j0/q0/speed");
-    MocoPeriodicityGoalPair pait_tau0;
-    pait_tau0.set_first("/tau0");
-    pait_tau0.set_second("/tau0");
+    MocoPeriodicityGoalPair pair_tau0;
+    pair_tau0.set_first("/tau0");
+    pair_tau0.set_second("/tau0");
     periodic->append_state_pair(pair_q0_value);
     periodic->append_state_pair(pair_q0_speed);
     auto* effort = problem.addGoal<MocoControlGoal>("control");
