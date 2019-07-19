@@ -315,3 +315,75 @@ TEST_CASE("AccelerationMotion") {
     model.realizeAcceleration(state);
     CHECK(state.getUDot()[0] == Approx(0).margin(1e-10));
 }
+
+class MyAuxiliaryImplicitDynamics : public Component {
+    OpenSim_DECLARE_CONCRETE_OBJECT(MyAuxiliaryImplicitDynamics, Component);
+
+public:
+    OpenSim_DECLARE_PROPERTY(default_fiber_length, double, "");
+    OpenSim_DECLARE_OUTPUT(implicitresidual_fiber_length, double,
+            getImplicitResidualFiberLength, SimTK::Stage::Dynamics);
+    MyAuxiliaryImplicitDynamics() {
+        constructProperty_default_fiber_length(1.0);
+    }
+    double getImplicitResidualFiberLength(const SimTK::State& s) const {
+        // TODO: Use index instead.
+        if (!isCacheVariableValid(s, "implicitresidual_fiber_equilibrium")) {
+            const double fiberVel =
+                    getDiscreteVariableValue(s, "implicitderiv_fiber_length");
+            const double fiberLength = getStateVariableValue(s, "fiber_length");
+            // y y' = 1
+            double residual = fiberVel * fiberLength - 1;
+            setCacheVariableValue(
+                    s, "implicitresidual_fiber_equilibrium", residual);
+            markCacheVariableValid(s, "implicitresidual_fiber_equilibrium");
+        }
+        return getCacheVariableValue<double>(
+                s, "implicitresidual_fiber_equilibrium");
+    }
+
+private:
+    void extendInitStateFromProperties(SimTK::State& s) const override {
+        Super::extendInitStateFromProperties(s);
+        setStateVariableValue(s, "fiber_length", get_default_fiber_length());
+    }
+    void extendSetPropertiesFromState(const SimTK::State& s) override {
+        Super::extendSetPropertiesFromState(s);
+        set_default_fiber_length(getStateVariableValue(s, "fiber_length"));
+    }
+    void computeStateVariableDerivatives(const SimTK::State& s) const override {
+        const double fiberLength = getStateVariableValue(s, "fiber_length");
+        setStateVariableDerivativeValue(s, "fiber_length", 1.0 / fiberLength);
+    }
+    void extendAddToSystem(SimTK::MultibodySystem& system) const override {
+        Super::extendAddToSystem(system);
+        addStateVariable("fiber_length");
+        addDiscreteVariable(
+                "implicitderiv_fiber_length", SimTK::Stage::Velocity);
+        addCacheVariable("implicitresidual_fiber_length", double(0),
+                SimTK::Stage::Dynamics);
+    }
+};
+
+TEST_CASE("Auxiliary implicit dynamics") {
+    SECTION("Time stepping") {
+        Model model;
+        model.addComponent(new MyAuxiliaryImplicitDynamics());
+        auto initState = model.initSystem();
+        Manager manager(model, initState);
+        auto finalState = manager.integrate(1.0);
+        std::cout << "DEBUG " << finalState.getY() << std::endl;
+    }
+    SECTION("Direct collocation implicit") {
+        MocoStudy study;
+        auto& problem = study.updProblem();
+        auto model = OpenSim::make_unique<Model>();
+        model->addComponent(new MyAuxiliaryImplicitDynamics());
+        model->initSystem();
+        model->printSubcomponentInfo();
+        problem.setModel(std::move(model));
+        problem.setTimeBounds(0, 1);
+        problem.setStateInfo("/myauxiliaryimplicitdynamics/fiber_length", {}, 1.0);
+        auto solution = study.solve();
+    }
+}

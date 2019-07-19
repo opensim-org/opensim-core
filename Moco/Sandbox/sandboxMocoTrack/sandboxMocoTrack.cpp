@@ -207,7 +207,6 @@ Model createModel(bool removeMuscles = false, bool addAnkleExo = false) {
         for (auto& musc : model.updComponentList<Muscle>()) {
             musc.set_ignore_tendon_compliance(true);
             musc.set_ignore_activation_dynamics(false);
-            //musc.set_max_isometric_force(1.5musc.get_max_isometric_force());
         }
     }
     model.initSystem();
@@ -216,15 +215,15 @@ Model createModel(bool removeMuscles = false, bool addAnkleExo = false) {
     ModelFactory::replaceJointWithWeldJoint(model, "mtp_l");
     ModelFactory::replaceJointWithWeldJoint(model, "mtp_r");
     // coordinate actuators
-    addCoordinateActuator(model, "lumbar_bending", 100);
-    addCoordinateActuator(model, "lumbar_extension", 100);
-    addCoordinateActuator(model, "lumbar_rotation", 100);
-    addCoordinateActuator(model, "pelvis_tilt", 100);
-    addCoordinateActuator(model, "pelvis_list", 100);
-    addCoordinateActuator(model, "pelvis_rotation", 100);
-    addCoordinateActuator(model, "pelvis_tx", 1000);
-    addCoordinateActuator(model, "pelvis_ty", 5000);
-    addCoordinateActuator(model, "pelvis_tz", 1000);
+    addCoordinateActuator(model, "lumbar_bending", 1);
+    addCoordinateActuator(model, "lumbar_extension", 1);
+    addCoordinateActuator(model, "lumbar_rotation", 1);
+    addCoordinateActuator(model, "pelvis_tilt", 1);
+    addCoordinateActuator(model, "pelvis_list", 1);
+    addCoordinateActuator(model, "pelvis_rotation", 1);
+    addCoordinateActuator(model, "pelvis_tx", 10);
+    addCoordinateActuator(model, "pelvis_ty", 10);
+    addCoordinateActuator(model, "pelvis_tz", 10);
     if (removeMuscles) {
         addCoordinateActuator(model, "hip_adduction_l", 100);
         addCoordinateActuator(model, "hip_adduction_r", 100);
@@ -293,7 +292,7 @@ void smoothSolutionControls(Model model, std::string statesFile,
 }
 
 MocoSolution runBaselineProblem(bool removeMuscles, double controlWeight = 0.1,
-        std::string guessFile = "", double penalizeCoordActs = 0.0) {
+        std::string guessFile = "") {
     
     Model model = createModel(removeMuscles);
     if (!removeMuscles) {
@@ -310,8 +309,8 @@ MocoSolution runBaselineProblem(bool removeMuscles, double controlWeight = 0.1,
     track.setName("baseline");
     ModelProcessor modelProcessor = ModelProcessor(model) |
                                     ModOpAddExternalLoads("grf_walk.xml");
-    track.setModel(model);
-    TableProcessor tableProcessor = 
+    track.setModel(modelProcessor);
+    TableProcessor tableProcessor =
             TableProcessor("coordinates_rra_adjusted.sto");
     track.set_states_reference(tableProcessor);
     track.set_track_reference_position_derivatives(true);
@@ -319,31 +318,20 @@ MocoSolution runBaselineProblem(bool removeMuscles, double controlWeight = 0.1,
     track.set_final_time(1.65);
     track.set_control_effort_weight(controlWeight);
     track.set_allow_unused_references(true);
+    track.set_mesh_interval(0.05);
+
+    track.print("sandboxMocoTrack_baseline_muscles_MocoTrack.omoco");
 
     MocoStudy moco = track.initialize();
 
-    if (penalizeCoordActs) {
-        auto& effort = dynamic_cast<MocoControlCost&>(
-            moco.updProblem().updCost("control_effort"));
-
-        for (const auto& coordAct : 
-                model.getComponentList<CoordinateActuator>()) {
-            const auto& coordName = coordAct.getName();
-            if (coordName.find("hip") != std::string::npos ||
-                    coordName.find("knee") != std::string::npos ||
-                    coordName.find("ankle") != std::string::npos) {
-                effort.setWeight("/" + coordName, penalizeCoordActs);
-            }
-        }       
-    }
-
     auto& solver = moco.updSolver<MocoCasADiSolver>();
-    solver.set_optim_constraint_tolerance(1e-2);
-    solver.set_optim_convergence_tolerance(1e-2);
+    solver.set_optim_constraint_tolerance(1e-3);
+    solver.set_optim_convergence_tolerance(1e-3);
     if (guessFile != "") {
         solver.setGuessFile(guessFile);
     }
 
+    moco.print("sandboxMocoTrack_baseline_muscles_MocoStudy.omoco");
     MocoSolution solution = moco.solve().unseal();
     std::string filename;
     if (removeMuscles) {
@@ -381,7 +369,7 @@ MocoSolution runKneeReactionMinimizationProblem(bool removeMuscles,
     MocoTrack track;
     ModelProcessor modelProcessor = ModelProcessor(model) |
                                     ModOpAddExternalLoads("grf_walk.xml");
-    track.setModel(model);
+    track.setModel(modelProcessor);
     TableProcessor tableProcessor = TableProcessor(trackedIterateFile) |
                                     TabOpLowPassFilter(6);
     track.set_states_reference(tableProcessor);
@@ -680,6 +668,9 @@ MocoSolution runExoskeletonProblem(const std::string& trackedIterateFile,
     solver.set_optim_constraint_tolerance(1e-2);
     solver.set_optim_convergence_tolerance(1e-2);
 
+    // Save to setup file.
+    moco.print("sandboxMocoTrack_exoskeleton_muscles.omoco");
+
     // Solve!
     // ------
     MocoSolution solution = moco.solve().unseal();
@@ -694,15 +685,13 @@ int main() {
     std::cout.rdbuf(LogManager::cout.rdbuf());
     std::cerr.rdbuf(LogManager::cerr.rdbuf());
 
-    const double controlWeight = 0.01;
-
     // Baseline tracking problem w/o muscles.
     // --------------------------------------
     //MocoSolution baseline = runBaselineProblem(true, controlWeight);
 
     // Baseline tracking problem w/ muscles.
     // -------------------------------------
-    MocoSolution baselineWithMuscles = runBaselineProblem(false, controlWeight);
+    MocoSolution baselineWithMuscles = runBaselineProblem(false, 0.001);
 
     // Knee adduction minimization w/o muscles.
     // ----------------------------------------
@@ -711,8 +700,8 @@ int main() {
 
     // Minimize effort with exoskeleton device w/ muscles.
     // ---------------------------------------------------
-    runExoskeletonProblem("sandboxMocoTrack_solution_baseline_muscles.sto",
-        0.1, controlWeight);
+    //runExoskeletonProblem("sandboxMocoTrack_solution_baseline_muscles.sto",
+       // 0.1, controlWeight);
     
 
     return EXIT_SUCCESS;
