@@ -28,9 +28,9 @@ class OSIMMOCO_API MocoPeriodicityGoalPair : public Object {
 
 public:
     OpenSim_DECLARE_PROPERTY(
-            initialVariable, std::string, "Initial variable of the pair.");
+            initial_variable, std::string, "Initial variable of the pair.");
     OpenSim_DECLARE_PROPERTY(
-            finalVariable, std::string, "Final variable of the pair.");
+            final_variable, std::string, "Final variable of the pair.");
 
     MocoPeriodicityGoalPair();
     MocoPeriodicityGoalPair(std::string initialVariable,
@@ -46,10 +46,10 @@ private:
 /// the optimal control problem. The initial and final values can belong to
 /// separate continuous variables or the same continuous variable, as long as
 /// they are the same type of variable (e.g., state or control). Value pairs
-/// are specified via a MocoPeriodicityGoalPair, where the initialVariable of
-/// the pair indicates the initial state/control variable and the finalVariable
-/// indicates the final state/control variable. Set the initial and final
-/// variables to the same variable to enforce periodicity on a single
+/// are specified via a MocoPeriodicityGoalPair, where the initial variable of
+/// the pair indicates the initial state/control variable and the final
+/// variable indicates the final state/control variable. Set the initial and
+/// final variables to the same variable to enforce periodicity on a single
 /// continuous variable. Only state and control continuous variable pairs are
 /// supported, and are specified via the 'state_pairs' and 'control_pairs'
 /// properties.
@@ -80,12 +80,12 @@ private:
 /// Periodic contraints for the hamstrings controls:
 /// @code
 /// MocoPeriodicityGoalPair pair_hamstrings1;
-/// pair_hamstrings1.set_initialVariable("/hamstrings_r");
-/// pair_hamstrings1.set_finalVariable("/hamstrings_l");
+/// pair_hamstrings1.set_initial_variable("/hamstrings_r");
+/// pair_hamstrings1.set_final_variable("/hamstrings_l");
 /// periodicGoal->append_control_pairs(pair_hamstrings1);
 /// MocoPeriodicityGoalPair pair_hamstrings2;
-/// pair_hamstrings2.set_initialVariable("/hamstrings_l");
-/// pair_hamstrings2.set_finalVariable("/hamstrings_r");
+/// pair_hamstrings2.set_initial_variable("/hamstrings_l");
+/// pair_hamstrings2.set_final_variable("/hamstrings_r");
 /// periodicGoal->append_control_pairs(pair_hamstrings2);
 /// @endcode
 /// This is an endpoint constraint goal by default.

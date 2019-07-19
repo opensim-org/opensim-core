@@ -27,22 +27,22 @@ using namespace OpenSim;
 MocoPeriodicityGoalPair::MocoPeriodicityGoalPair() { constructProperties(); }
 
 MocoPeriodicityGoalPair::MocoPeriodicityGoalPair(
-        std::string initialVariable, std::string finalVariable) {
+        std::string initial_variable, std::string final_variable) {
     constructProperties();
-    set_initialVariable(initialVariable);
-    set_finalVariable(finalVariable);
+    set_initial_variable(initial_variable);
+    set_final_variable(final_variable);
 }
 
 MocoPeriodicityGoalPair::MocoPeriodicityGoalPair(
-        std::string initialVariableIsFinalVariable) {
+        std::string initial_variableIsfinal_variable) {
     constructProperties();
-    set_initialVariable(initialVariableIsFinalVariable);
-    set_finalVariable(initialVariableIsFinalVariable);
+    set_initial_variable(initial_variableIsfinal_variable);
+    set_final_variable(initial_variableIsfinal_variable);
 }
 
 void MocoPeriodicityGoalPair::constructProperties() {
-    constructProperty_initialVariable("");
-    constructProperty_finalVariable("");
+    constructProperty_initial_variable("");
+    constructProperty_final_variable("");
 }
 
 //=============================================================================
@@ -62,10 +62,10 @@ void MocoPeriodicityGoal::initializeOnModelImpl(const Model& model) const {
     int nStatePairs = getProperty_state_pairs().size();
 
     for (int i = 0; i < nStatePairs; ++i) {
-        const auto path1 = get_state_pairs(i).get_initialVariable();
+        const auto path1 = get_state_pairs(i).get_initial_variable();
         OPENSIM_THROW_IF(allSysYIndices.count(path1) == 0,
                 Exception, format("Could not find state '%s'.", path1));
-        const auto path2 = get_state_pairs(i).get_finalVariable();
+        const auto path2 = get_state_pairs(i).get_final_variable();
         OPENSIM_THROW_IF(allSysYIndices.count(path2) == 0,
                 Exception, format("Could not find state '%s'.", path2));
         int stateIndex1 = allSysYIndices[path1];
@@ -77,10 +77,10 @@ void MocoPeriodicityGoal::initializeOnModelImpl(const Model& model) const {
     int nControlPairs = getProperty_control_pairs().size();
 
     for (int i = 0; i < nControlPairs; ++i) {
-        const auto path1 = get_control_pairs(i).get_initialVariable();
+        const auto path1 = get_control_pairs(i).get_initial_variable();
         OPENSIM_THROW_IF(systemControlIndexMap.count(path1) == 0,
                 Exception, format("Could not find control '%s'.", path1));
-        const auto path2 = get_control_pairs(i).get_finalVariable();
+        const auto path2 = get_control_pairs(i).get_final_variable();
         OPENSIM_THROW_IF(systemControlIndexMap.count(path2) == 0,
                 Exception, format("Could not find control '%s'.", path2));
         int controlIndex1 = systemControlIndexMap[path1];
