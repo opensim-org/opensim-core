@@ -109,9 +109,7 @@ public:
     }
     /// Returns true if neither a filepath nor an in-memory table have been
     /// provided.
-    bool empty() const {
-        return !m_tableProvided && get_filepath().empty();
-    }
+    bool empty() const { return !m_tableProvided && get_filepath().empty(); }
     /// Append an operation to the end of the operations in this processor.
     TableProcessor& append(const TableOperator& op) {
         append_operators(op);
@@ -163,40 +161,47 @@ public:
     }
 };
 
-
-
-/// Update table column headers to show full path to object
+/// Update table column headers to show full path to components in a model
+/// tree. If a column header matches a component name, the column header is 
+/// replaced by the full path to the component. This operation applies the 
+/// findComponent() method on the column header string, therefore the column 
+/// header string may already contain a full or partial path to the component. 
+/// Optionally, append a "/value" or "/speed" suffix to the end of the full 
+/// path to the component. If a component given by the column header is not 
+/// found in the model, the column header is left unchanged.
 class OSIMMOCO_API TabOpUpdColLabelFullPath : public TableOperator {
     OpenSim_DECLARE_CONCRETE_OBJECT(TabOpUpdColLabelFullPath, TableOperator);
-    OpenSim_DECLARE_PROPERTY(refmodel, Model, "Reference model used to find full paths.");
+    OpenSim_DECLARE_PROPERTY(refmodel, Model,
+            "Reference model used to find full paths to components.");
+    OpenSim_DECLARE_PROPERTY(suffix,
+            int, "Flag to append /value or /speed suffix to full path. "
+                "0=no suffix, 1=value, 2=speed. Default: 0.");
+    std::vector<std::string> suffix_string = {"","/value","/speed"};
+
 public:
-    TabOpUpdColLabelFullPath() { constructProperty_refmodel(Model()); };
+    TabOpUpdColLabelFullPath() {
+        constructProperty_refmodel(Model());
+        constructProperty_suffix(0);
+    }
     TabOpUpdColLabelFullPath(const Model model) : TabOpUpdColLabelFullPath() {
         set_refmodel(model);
     };
+    TabOpUpdColLabelFullPath(const Model model, int suffval) :
+            TabOpUpdColLabelFullPath() {
+        set_refmodel(model);        
+        set_suffix((suffval < 0 || suffval > 2) ? 0 : suffval);
+    };
 
     void operate(TimeSeriesTable& table) const override {
-        
-        
-        ComponentList<const Coordinate> coords =
-                get_refmodel().getComponentList<Coordinate>();
         for (int i = 0; i < table.getNumColumns(); i++) {
-            for (const auto& coord : coords) {
-                if (table.getColumnLabel(i).compare(coord.getName())) {
-                    table.setColumnLabel(
-                            i, coord.getAbsolutePathString() + "/value");
-                    break;
-                }
+            if (const Component* found = get_refmodel().findComponent(
+                        ComponentPath(table.getColumnLabel(i)))) {
+                table.setColumnLabel(i, found->getAbsolutePathString() +
+                                                suffix_string[get_suffix()]);
             }
         }
-
-
-
     }
-
- };
-
-
+};
 
 } // namespace OpenSim
 

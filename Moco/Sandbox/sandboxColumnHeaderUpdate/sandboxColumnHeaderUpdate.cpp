@@ -36,7 +36,7 @@ int main() {
     TableProcessor tp = TableProcessor("FAIDC1_INITIAL_WALK01_ik.mot");
 
 
-    // get updated column headers
+    // get original column headers
     TimeSeriesTable oldiktable = tp.process();
     std::vector<std::string> oldikcols = oldiktable.getColumnLabels();
 
@@ -46,7 +46,7 @@ int main() {
 
 
     // update column headers
-    tp.append(TabOpUpdColLabelFullPath(model));
+    tp.append(TabOpUpdColLabelFullPath(model, 2));
 
 
     // get updated column headers
