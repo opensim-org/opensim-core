@@ -46,3 +46,5 @@ add_subdirectory(sandboxOneLegCouplerKnee)
 add_subdirectory(sandboxMarkerTrackingContactWholeBody)
 add_subdirectory(sandboxMocoTrack)
 add_subdirectory(sandboxMocoUserControlCost)
+add_subdirectory(sandboxColumnHeaderUpdate)
+

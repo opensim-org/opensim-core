@@ -219,10 +219,6 @@ public:
     OpenSim_DECLARE_PROPERTY(control_effort_weight, double, 
         "The weight on the control effort minimization cost term, if it "
         "exists. Default: 0.001");
-
-    OpenSim_DECLARE_PROPERTY(update_col_labels_with_full_path, bool,
-            "Set this if column labels in the states table need to be updated "
-            "with the full path to the component. Default: false.");
 			
     MocoTrack() { constructProperties(); }
 
@@ -252,22 +248,6 @@ public:
         }
         set_markers_reference(TableProcessor(markersFlat) |
                               TabOpLowPassFilter(lowpassFilterFreq));
-    }
-
-	/// Update coordinate column headers with full path to coordinate
-    void MocoTrack::updateTableCoordLabelsWithFullPath(
-            Model& model, TimeSeriesTable& table) {
-		ComponentList<const Coordinate> coords =
-                model.getComponentList<Coordinate>();
-        for (int i = 0; i < table.getNumColumns(); i++) {
-            for (const auto& coord : coords) {
-                if (table.getColumnLabel(i).compare(coord.getName()) == 0) {
-                    table.setColumnLabel(
-                            i, coord.getAbsolutePathString() + "/value");
-                    break;
-                }
-            }
-        }
     }
 
     MocoStudy initialize();

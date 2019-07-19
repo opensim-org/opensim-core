@@ -163,6 +163,41 @@ public:
     }
 };
 
+
+
+/// Update table column headers to show full path to object
+class OSIMMOCO_API TabOpUpdColLabelFullPath : public TableOperator {
+    OpenSim_DECLARE_CONCRETE_OBJECT(TabOpUpdColLabelFullPath, TableOperator);
+    OpenSim_DECLARE_PROPERTY(refmodel, Model, "Reference model used to find full paths.");
+public:
+    TabOpUpdColLabelFullPath() { constructProperty_refmodel(Model()); };
+    TabOpUpdColLabelFullPath(const Model model) : TabOpUpdColLabelFullPath() {
+        set_refmodel(model);
+    };
+
+    void operate(TimeSeriesTable& table) const override {
+        
+        
+        ComponentList<const Coordinate> coords =
+                get_refmodel().getComponentList<Coordinate>();
+        for (int i = 0; i < table.getNumColumns(); i++) {
+            for (const auto& coord : coords) {
+                if (table.getColumnLabel(i).compare(coord.getName())) {
+                    table.setColumnLabel(
+                            i, coord.getAbsolutePathString() + "/value");
+                    break;
+                }
+            }
+        }
+
+
+
+    }
+
+ };
+
+
+
 } // namespace OpenSim
 
 #endif // MOCO_TABLEPROCESSOR_H
