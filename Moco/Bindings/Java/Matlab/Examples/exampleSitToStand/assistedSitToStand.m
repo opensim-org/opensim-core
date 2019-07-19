@@ -26,16 +26,17 @@ function assistedSitToStand
 %    and subject2_unassisted_solution.sto. If you want to re-run the unassisted
 %    optimizations, delete these STO files or set cacheUnassisted to false.
 % 4. To make Moco optimize the device parameters for you, do the following:
-%       a. Create a MocoStudy for one of the subjects using createStudy(),
+%       a. Temporarily comment out the call to evaluateDevice().
+%       b. Create a MocoStudy for one of the subjects using createStudy(),
 %          the second subfunction below.
-%       b. Add a MocoParameter to your problem representing the model property
+%       c. Add a MocoParameter to your problem representing the model property
 %          you want to optimize.
-%       c. (optional) Set an initial guess for your parameter.
+%       d. (optional) Set an initial guess for your parameter.
 %          See createGuess() and setGuess() in MocoDirectCollocationSolver.
-%       d. Solve the study returned from createStudy().
-%       e. Get the parameter values out of the MocoSolution returned by solve().
+%       e. Solve the study returned from createStudy().
+%       f. Get the parameter values out of the MocoSolution returned by solve().
 %          See the documentation for MocoTrajectory.
-%       f. Copy the parameter values into your device function, and evaluate
+%       g. Copy the parameter values into your device function, and evaluate
 %          the optimized design.
 
 import org.opensim.modeling.*;
@@ -53,6 +54,19 @@ visualize = 1;
 cacheUnassisted = 1;
 
 % Edit the argument to evaluateDevice() to any device function you create below.
+% This function performs the following steps:
+%   1. Predicts subject 1 unassisted sit-to-stand (skipped in subsequent calls).
+%   2. Predicts subject 1 assisted sit-to-stand.
+%   3. Plots comparison of assisted vs unassisted solutions for subject 1.
+%   3. Predicts subject 2 unassisted sit-to-stand (skipped in subsequent calls).
+%   4. Predicts subject 2 assisted sit-to-stand.
+%   3. Plots comparison of assisted vs unassisted solutions for subject 2.
+%   5. Computes the score for the assistive device.
+% Up to 4 Visualizer windows are created. The function only proceeds
+% to the next optimization after you hit ESC in the Visualizer window.
+%
+% The subfunction evaluateDevice() is defined toward the bottom of this file,
+% but you don't need to read its definition to perform the challenge.
 score = evaluateDevice(@addSpringToKnee);
 
 % Use this space to perform a parameter optimization.
