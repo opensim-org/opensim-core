@@ -147,7 +147,7 @@ TimeSeriesTable MocoTrack::configureStateTracking(MocoProblem& problem,
     // Read in the states reference data and spline.
     TimeSeriesTable states = get_states_reference().process("", &model);
     auto stateSplines = GCVSplineSet(states, states.getColumnLabels());
-	
+    
     // Loop through all coordinates and compare labels in the reference data
     // to coordinate variable names. 
     auto time = states.getIndependentColumn();

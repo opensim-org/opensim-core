@@ -219,7 +219,7 @@ public:
     OpenSim_DECLARE_PROPERTY(control_effort_weight, double, 
         "The weight on the control effort minimization cost term, if it "
         "exists. Default: 0.001");
-			
+	
     MocoTrack() { constructProperties(); }
 
     /// Set the states reference TableProcessor.

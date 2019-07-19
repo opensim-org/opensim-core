@@ -1,6 +1,7 @@
 MocoAddSandboxExecutable(NAME sandboxColumnHeaderUpdate
         LIB_DEPENDS
 			osimMoco
-		SOURCE_FILES
+		RESOURCES
 			FAIDC1.osim
-			FAIDC1_INITIAL_WALK01_ik.mot)
+			FAIDC1_INITIAL_WALK01_ik.mot
+			fai_walk_track_trc_torque_driven_solution.sto)
