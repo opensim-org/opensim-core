@@ -77,6 +77,10 @@ class WrapObject;
  * calculations. Scaling the model clears the length approximation. You should
  * update your function approximation yourself after scaling your model.
  *
+ * OpenSim currently contains only single-variable Function%s. To use the length
+ * approximation feature for a path that crosses more than one degree of
+ * freedom, you must define your own custom multivariable Function%s.
+ *
  * @note When using the function approximation, joint reaction calculations will
  * not correctly account for muscles, as muscle forces are applied via
  * generalized forces (mobility forces), not at the geometry path's path points.
