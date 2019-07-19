@@ -41,7 +41,7 @@ OpenSim_DECLARE_CONCRETE_OBJECT(PathPointSet, Set<AbstractPathPoint>);
 
 public:
     /** Use Super's constructors. @see Set */
-    using OpenSim::Set<OpenSim::AbstractPathPoint, OpenSim::Object>::Set;
+    using Super::Super;
 
     // default copy, assignment operator, and destructor
 

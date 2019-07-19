@@ -228,24 +228,24 @@ Array<std::string> Constraint::getRecordLabels() const
     // number of mobilities being directly constrained
     int ncm = simConstraint.getNumConstrainedU(ds);
 
-    const BodySet &bodies = _model->getBodySet();
+    const auto& physicalFrames = _model->getComponentList<PhysicalFrame>();
     
     Array<std::string> labels("");
 
     for(int i=0; i<ncb; ++i){
         const SimTK::MobilizedBody &b = simConstraint.getMobilizedBodyFromConstrainedBody(SimTK::ConstrainedBodyIndex(i));
         const SimTK::MobilizedBodyIndex &bx =  b.getMobilizedBodyIndex();
-        Body *bod = NULL;
-        for(int j=0; j<bodies.getSize(); ++j ){
-            if(bodies[j].getMobilizedBodyIndex() == bx){
-                bod = &bodies[j];
+        const PhysicalFrame *frame = nullptr;
+        for(auto& phf : physicalFrames){
+            if(phf.getMobilizedBodyIndex() == bx){
+                frame = &phf;
                 break;
             }
         }
-        if(bod == NULL){
+        if(frame == nullptr){
             throw Exception("Constraint "+getName()+" does not have an identifiable body index.");
         }
-        string prefix = getName()+"_"+bod->getName();
+        string prefix = getName()+"_"+frame->getName();
         labels.append(prefix+"_Fx");
         labels.append(prefix+"_Fy");
         labels.append(prefix+"_Fz");

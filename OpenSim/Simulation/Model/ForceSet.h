@@ -67,7 +67,7 @@ protected:
     //--------------------------------------------------------------------------
 public:
     /** Use Super's constructors. @see ModelComponentSet */
-    using Super::ModelComponentSet;
+    using Super::Super;
 
 private:
     void updateActuators();

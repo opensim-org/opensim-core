@@ -159,6 +159,15 @@ void FunctionBasedBushingForce::constructProperties()
     constructProperty_visual_aspect_ratio(1.0);
 }
 
+void FunctionBasedBushingForce::extendFinalizeFromProperties()
+{
+    Super::extendFinalizeFromProperties();
+
+    for (int i = 0; i < 3; i++) {
+        _dampingMatrix[i][i] = get_rotational_damping(0)[i];
+        _dampingMatrix[i + 3][i + 3] = get_translational_damping(0)[i];
+    }
+}
 //=============================================================================
 // COMPUTATION
 //=============================================================================
@@ -186,6 +195,7 @@ SimTK::Vec6 FunctionBasedBushingForce::
     calcDampingForce(const SimTK::State& s) const
 {
     Vec6 dqdot = computeDeflectionRate(s);
+    // _dampingMatrix is initialized from Properties in extendFinalizeFromProperties (issue #2512)
     return -_dampingMatrix * dqdot;
 }
 

@@ -432,6 +432,9 @@ typedef TimeSeriesTable_<SimTK::Real> TimeSeriesTable;
 
 /** See TimeSeriesTable_ for details on the interface.                        */
 typedef TimeSeriesTable_<SimTK::Vec3> TimeSeriesTableVec3;
+
+/** See TimeSeriesTable_ for details on the interface.                        */
+typedef TimeSeriesTable_<SimTK::Quaternion> TimeSeriesTableQuaternion;
 } // namespace OpenSim
 
 #endif // OPENSIM_TIME_SERIES_DATA_TABLE_H_

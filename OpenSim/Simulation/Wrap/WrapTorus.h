@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2017 Stanford University and the Authors                *
+ * Copyright (c) 2005-2019 Stanford University and the Authors                *
  * Author(s): Peter Loan                                                      *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -18,7 +18,7 @@
  *                                                                            *
  * Unless required by applicable law or agreed to in writing, software        *
  * distributed under the License is distributed on an "AS IS" BASIS,          *
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.   *
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.   *
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
@@ -37,8 +37,8 @@ class WrapResult;
 /**
  * A class implementing a torus for muscle wrapping.
  *
- * @author Peter Loan
- * @version 1.0
+ * @author Peter Loan  
+ * updated for OpenSim 4.0 by Benjamin Michaud, 2019.
  */
 class OSIMSIMULATION_API WrapTorus : public WrapObject {
 OpenSim_DECLARE_CONCRETE_OBJECT(WrapTorus, WrapObject);

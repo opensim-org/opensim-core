@@ -94,6 +94,8 @@ public:
 //=============================================================================
     OpenSim_DECLARE_OUTPUT(position, SimTK::Vec3, getPositionInGround,
         SimTK::Stage::Position);
+    OpenSim_DECLARE_OUTPUT(rotation, SimTK::Rotation, getRotationInGround,
+        SimTK::Stage::Position);
     OpenSim_DECLARE_OUTPUT(transform, SimTK::Transform, getTransformInGround,
         SimTK::Stage::Position);
     OpenSim_DECLARE_OUTPUT(velocity, SimTK::SpatialVec, getVelocityInGround,
@@ -317,6 +319,11 @@ public:
     /** Accessor for position of the origin of the Frame in Ground. */
     SimTK::Vec3 getPositionInGround(const SimTK::State& state) const {
         return getTransformInGround(state).p();
+    };
+
+    /** Accessor for Rotation matrix of the Frame in Ground. */
+    SimTK::Rotation getRotationInGround(const SimTK::State& state) const {
+        return getTransformInGround(state).R();
     };
 
     // End of Base Frame and Transform accessors

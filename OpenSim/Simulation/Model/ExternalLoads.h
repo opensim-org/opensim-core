@@ -100,7 +100,9 @@ public:
     ExternalLoads();
 
     /**  Construct an actuator set from file.
-    * @param fileName Name of the file. */
+    * @param fileName Name of the file.
+    * @param aUpdateFromXMLNode Should the ExternalLoads be updated from the
+    * file? */
     ExternalLoads(const std::string &fileName, bool aUpdateFromXMLNode);
 
     ExternalLoads(const ExternalLoads &aExternalLoads);
