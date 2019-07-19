@@ -340,6 +340,7 @@ int main()
         addComponentsToModel(osimModel);
 
         osimModel.printSubcomponentInfo();
+        osimModel.finalizeConnections(); // Needed so sockets have correct absolute path on print
 
         // Save the model to a file
         osimModel.print(osimModel.getName()+".osim");
