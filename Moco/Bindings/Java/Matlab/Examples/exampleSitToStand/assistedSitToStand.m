@@ -103,9 +103,10 @@ subjectInfos{2}.torso = 1.5;
 end
 
 function [moco] = createStudy(subjectIndex, addDeviceFunction)
-% This function builds a MocoProblem for predicting a sit-to-stand motion given
+% This function builds a study for predicting a sit-to-stand motion given
 % adjustments to a model (given a subject index; 1 or 2) and, optionally, a
-% function for adding a device to a model.
+% function for adding a device to a model. This returns a MocoStudy, and you can
+% access and modify the problem via updProblem().
 global verbosity;
 global subjectInfos;
 
