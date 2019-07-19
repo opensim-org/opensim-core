@@ -31,12 +31,10 @@ function assistedSitToStand
 %          the second subfunction below.
 %       c. Add a MocoParameter to your problem representing the model property
 %          you want to optimize.
-%       d. (optional) Set an initial guess for your parameter.
-%          See createGuess() and setGuess() in MocoDirectCollocationSolver.
-%       e. Solve the study returned from createStudy().
-%       f. Get the parameter values out of the MocoSolution returned by solve().
+%       d. Solve the study returned from createStudy().
+%       e. Get the parameter values out of the MocoSolution returned by solve().
 %          See the documentation for MocoTrajectory.
-%       g. Copy the parameter values into your device function, and evaluate
+%       f. Copy the parameter values into your device function, and evaluate
 %          the optimized design.
 
 import org.opensim.modeling.*;
@@ -82,11 +80,11 @@ import org.opensim.modeling.*;
 device = SpringGeneralizedForce('knee_angle_r');
 device.setName('knee_spring');
 % Stiffness units: N/radians
-device.setStiffness(15);
+device.setStiffness(5);
 % Rest length units: radians
-device.setRestLength(0);
+device.setRestLength(0.05);
 % Viscosity units: N-s/radians
-device.setViscosity(0);
+device.setViscosity(1.5);
 model.addForce(device);
 end
 
@@ -97,7 +95,7 @@ name = 'ankle_spring';
 import org.opensim.modeling.*;
 device = SpringGeneralizedForce('ankle_angle_r');
 device.setName('ankle_spring');
-device.setStiffness(10);
+device.setStiffness(3);
 device.setRestLength(0);
 device.setViscosity(5);
 model.addForce(device);
@@ -270,7 +268,8 @@ for subject = subjects
     assistedSolution = solve(subject, addDeviceFunction);
 
     if visualize
-        mocoPlotTrajectory(unassistedSolution, assistedSolution);
+        mocoPlotTrajectory(unassistedSolution, assistedSolution, ...
+            'unassisted', 'assisted');
     end
 
     fprintf('Subject %i unassisted: %f\n', subject, unassistedObjective);
