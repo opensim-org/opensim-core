@@ -27,21 +27,21 @@ using namespace OpenSim;
 MocoPeriodicityGoalPair::MocoPeriodicityGoalPair() { constructProperties(); }
 
 MocoPeriodicityGoalPair::MocoPeriodicityGoalPair(
-        std::string initial, std::string final) {
+        std::string initial, std::string last) {
     constructProperties();
     set_initial(initial);
-    set_final(final);
+    set_last(last);
 }
 
 MocoPeriodicityGoalPair::MocoPeriodicityGoalPair(std::string initialIsFinal) {
     constructProperties();
     set_initial(initialIsFinal);
-    set_final(initialIsFinal);
+    set_last(initialIsFinal);
 }
 
 void MocoPeriodicityGoalPair::constructProperties() {
     constructProperty_initial("");
-    constructProperty_final("");
+    constructProperty_last("");
 }
 
 //=============================================================================
@@ -64,7 +64,7 @@ void MocoPeriodicityGoal::initializeOnModelImpl(const Model& model) const {
         const auto path1 = get_state_pairs(i).get_initial();
         OPENSIM_THROW_IF(allSysYIndices.count(path1) == 0,
                 Exception, format("Could not find state '%s'.", path1));
-        const auto path2 = get_state_pairs(i).get_final();
+        const auto path2 = get_state_pairs(i).get_last();
         OPENSIM_THROW_IF(allSysYIndices.count(path2) == 0,
                 Exception, format("Could not find state '%s'.", path2));
         int stateIndex1 = allSysYIndices[path1];
@@ -79,7 +79,7 @@ void MocoPeriodicityGoal::initializeOnModelImpl(const Model& model) const {
         const auto path1 = get_control_pairs(i).get_initial();
         OPENSIM_THROW_IF(systemControlIndexMap.count(path1) == 0,
                 Exception, format("Could not find control '%s'.", path1));
-        const auto path2 = get_control_pairs(i).get_final();
+        const auto path2 = get_control_pairs(i).get_last();
         OPENSIM_THROW_IF(systemControlIndexMap.count(path2) == 0,
                 Exception, format("Could not find control '%s'.", path2));
         int controlIndex1 = systemControlIndexMap[path1];

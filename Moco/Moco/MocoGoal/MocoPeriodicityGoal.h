@@ -30,11 +30,11 @@ public:
     OpenSim_DECLARE_PROPERTY(
             initial, std::string, "Initial variable of the pair.");
     OpenSim_DECLARE_PROPERTY(
-            final, std::string, "Final variable of the pair.");
+            last, std::string, "Last variable of the pair.");
 
     MocoPeriodicityGoalPair();
-    MocoPeriodicityGoalPair(std::string initial, std::string final);
-    MocoPeriodicityGoalPair(std::string initialIsFinal);
+    MocoPeriodicityGoalPair(std::string initial, std::string last);
+    MocoPeriodicityGoalPair(std::string initialIsLast);
 
 private:
     void constructProperties();
@@ -46,9 +46,9 @@ private:
 /// separate continuous variables or the same continuous variable, as long as
 /// they are the same type of variable (e.g., state or control). Value pairs
 /// are specified via a MocoPeriodicityGoalPair, where the initial variable of
-/// the pair indicates the initial state/control variable and the final
+/// the pair indicates the initial state/control variable and the last
 /// variable indicates the final state/control variable. Set the initial and
-/// final variables to the same variable to enforce periodicity on a single
+/// last variables to the same variable to enforce periodicity on a single
 /// continuous variable. Only state and control continuous variable pairs are
 /// supported, and are specified via the 'state_pairs' and 'control_pairs'
 /// properties.
@@ -80,11 +80,11 @@ private:
 /// @code
 /// MocoPeriodicityGoalPair pair_hamstrings1;
 /// pair_hamstrings1.set_initial("/hamstrings_r");
-/// pair_hamstrings1.set_final("/hamstrings_l");
+/// pair_hamstrings1.set_last("/hamstrings_l");
 /// periodicGoal->append_control_pairs(pair_hamstrings1);
 /// MocoPeriodicityGoalPair pair_hamstrings2;
 /// pair_hamstrings2.set_initial("/hamstrings_l");
-/// pair_hamstrings2.set_final("/hamstrings_r");
+/// pair_hamstrings2.set_last("/hamstrings_r");
 /// periodicGoal->append_control_pairs(pair_hamstrings2);
 /// @endcode
 /// This is an endpoint constraint goal by default.

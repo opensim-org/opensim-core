@@ -472,7 +472,7 @@ TEMPLATE_TEST_CASE("MocoPeriodicityGoal", "", MocoCasADiSolver) {
     auto* periodic = problem.addGoal<MocoPeriodicityGoal>("periodic");
     MocoPeriodicityGoalPair pair_q0_value;
     pair_q0_value.set_initial("/jointset/j0/q0/value");
-    pair_q0_value.set_final("/jointset/j0/q0/value");
+    pair_q0_value.set_last("/jointset/j0/q0/value");
     periodic->addStatePair(pair_q0_value);
     periodic->addStatePair({"/jointset/j0/q0/speed", "/jointset/j0/q0/speed"});
     periodic->addControlPair({"/tau0"});
