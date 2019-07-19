@@ -1,4 +1,5 @@
 function exampleSitToStand
+
 %% Part 0: Load the Moco libraries and pre-configured Models.
 import org.opensim.modeling.*;
 % These models are provided for you (i.e., they are not part of Moco).
@@ -100,7 +101,7 @@ mocoPlotTrajectory('predictSolution.sto', 'trackingSolution.sto', ...
 % in the tracking problem.
 
 
-% Set the time range, mesh interval, and convergence tolerance.
+% Part 4c: Set the time range, mesh interval, and convergence tolerance.
 inverse.set_initial_time( );
 inverse.set_final_time( );
 inverse.set_mesh_interval( );
@@ -110,9 +111,9 @@ inverse.set_tolerance( );
 inverse.set_kinematics_allow_extra_columns(true);
 inverse.set_minimize_sum_squared_states(true);
 
-% Part 4c: Append additional outputs path for quantities that are calculated
+% Append additional outputs path for quantities that are calculated
 % post-hoc using the inverse problem solution.
-inverse.append_output_paths('.*normalized_fiber_length');
+inverse.append_output_paths(know'.*normalized_fiber_length');
 inverse.append_output_paths('.*passive_force_multiplier');
 
 % Part 4d: Solve! Write the MocoSolution to file.
@@ -126,11 +127,11 @@ inverse.append_output_paths('.*passive_force_multiplier');
 % about the knee coordinate.
 
 
-% Create a ModelProcessor similar to the previous one, using the same
+% Part 5b: Create a ModelProcessor similar to the previous one, using the same
 % reserve actuator strength so we can compare muscle activity accurately.
 
 
-% Part 5b: Solve! Write solution.
+% Part 5c: Solve! Write solution.
 
 
 %% Part 6: Compare unassisted and assisted Inverse Problems.
