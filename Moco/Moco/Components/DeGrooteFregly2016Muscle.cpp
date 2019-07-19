@@ -21,8 +21,6 @@
 #include <OpenSim/Actuators/Millard2012EquilibriumMuscle.h>
 #include <OpenSim/Simulation/Model/Model.h>
 
-#include <OpenSim/Common/FileAdapter.h>
-
 using namespace OpenSim;
 
 const std::string DeGrooteFregly2016Muscle::STATE_ACTIVATION_NAME("activation");

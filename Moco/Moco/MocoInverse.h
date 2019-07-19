@@ -97,28 +97,6 @@ private:
 /// Try solving your problem with decreasing mesh intervals and choose a mesh
 /// interval at which the solution stops changing noticeably.
 ///
-/// ### Reserve actuators
-///
-/// Sometimes it is not possible to achieve the desired motion using
-/// muscles alone. There are multiple possible causes for this:
-///   - the muscles are not strong enough to achieve the required
-///     net joint moments,
-///   - the net joint moments change more rapidly than activation and
-///     deactivation time constants allow,
-///   - the filtering of the data causes unrealistic desired net joint moments.
-/// You may want to add "reserve" actuators to your model.
-/// This can be done automatically for you if you set the property
-/// `create_reserve_actuators` appropriately. This option will cause a
-/// CoordinateActuator to be added to the model for each unconstrained
-/// coordinate. The main knob on these actuators is their `optimal_force`. If
-/// the optimal force is $F$ and the actuator's control signal is $e$, then the
-/// cost of using the actuator is $e*e$, but the generalized force it applies is
-/// $F*e$. A smaller optimal force means a greater control value is required to
-/// generate a given force.
-/// The reserve actuators *can* generate (generalized) forces larger than their
-/// optimal force. The optimal force for reserve actuators should be set very
-/// low (e.g., 1.0) to discourage their use.
-///
 /// @underdevelopment
 class OSIMMOCO_API MocoInverse : public MocoTool {
     OpenSim_DECLARE_CONCRETE_OBJECT(MocoInverse, MocoTool);
