@@ -141,12 +141,6 @@ void DeGrooteFregly2016Muscle::extendSetPropertiesFromState(
     }
 }
 
-void DeGrooteFregly2016Muscle::writeTableToFile(const TimeSeriesTable& table,
-        const std::string& filepath) const {
-    DataAdapter::InputTables tables = {{"table", &table}};
-    FileAdapter::writeFile(tables, filepath);
-}
-
 void DeGrooteFregly2016Muscle::computeStateVariableDerivatives(
         const SimTK::State& s) const {
 

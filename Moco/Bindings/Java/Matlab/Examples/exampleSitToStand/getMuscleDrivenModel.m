@@ -32,8 +32,8 @@ if nargin == 2
     end
 end
 
-% Turn off activation dynamics and muscle-tendon dynamics to keep the
-% problem simple.
+% Make problems easier to solve by strengthening the model and widening the
+% active force-length curve.
 for m = 0:model.getMuscles().getSize()-1
     musc = model.updMuscles().get(m);
     musc.setMinControl(0);

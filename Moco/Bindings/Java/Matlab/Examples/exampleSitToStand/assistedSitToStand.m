@@ -26,7 +26,8 @@ function assistedSitToStand
 %    and subject2_unassisted_solution.sto. If you want to re-run the unassisted
 %    optimizations, delete these STO files or set cacheUnassisted to false.
 % 4. To make Moco optimize the device parameters for you, do the following:
-%       a. Create a MocoStudy for one of the subjects using createStudy().
+%       a. Create a MocoStudy for one of the subjects using createStudy(),
+%          the second subfunction below.
 %       b. Add a MocoParameter to your problem representing the model property
 %          you want to optimize.
 %       c. (optional) Set an initial guess for your parameter.

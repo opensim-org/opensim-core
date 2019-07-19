@@ -24,7 +24,7 @@ namespace OpenSim {
 
 /// Minimize the sum of squared states, integrated over the phase. This
 /// can be used to minimize muscle activations (if those are the only states
-/// in the system).
+/// in the system), as is done in MocoInverse.
 /// @underdevelopment
 /// In the future, this class will allow you to select which states to
 /// minimize.

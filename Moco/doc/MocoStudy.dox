@@ -458,7 +458,9 @@ ms.set_interpolate_control_midpoints(false);
 3. Actuators should only be as strong as they need to be. Problems tend to
 converge slower if some actuator controls are very small compared to those of
 other actuators in the model due to unecessarily large max force settings.
-4. Add reserve actuators.
+4. Add reserve actuators to muscle-driven problems (whether inverse,
+tracking, predicdtive, etc.) to improve convergence and identify muscles that
+are too weak to drive a desired motion.
 5. If controls display high frequency oscillations, try tightening the solver's
 convergence and constraint tolerances.
 

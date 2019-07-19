@@ -299,7 +299,6 @@ public:
 
 private:
     void constructProperties();
-    void writeTableToFile(const TimeSeriesTable&, const std::string&) const;
 
     /// This is a Gaussian-like function used in the active force-length curve.
     /// A proper Gaussian function does not have the variable in the denominator
