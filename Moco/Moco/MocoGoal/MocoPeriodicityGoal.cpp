@@ -27,21 +27,22 @@ using namespace OpenSim;
 MocoPeriodicityGoalPair::MocoPeriodicityGoalPair() { constructProperties(); }
 
 MocoPeriodicityGoalPair::MocoPeriodicityGoalPair(
-        std::string initial, std::string last) {
+        std::string initialVariable, std::string finalVariable) {
     constructProperties();
-    set_initial(initial);
-    set_last(last);
+    set_initialVariable(initialVariable);
+    set_finalVariable(finalVariable);
 }
 
-MocoPeriodicityGoalPair::MocoPeriodicityGoalPair(std::string initialIsFinal) {
+MocoPeriodicityGoalPair::MocoPeriodicityGoalPair(
+        std::string initialVariableIsFinalVariable) {
     constructProperties();
-    set_initial(initialIsFinal);
-    set_last(initialIsFinal);
+    set_initialVariable(initialVariableIsFinalVariable);
+    set_finalVariable(initialVariableIsFinalVariable);
 }
 
 void MocoPeriodicityGoalPair::constructProperties() {
-    constructProperty_initial("");
-    constructProperty_last("");
+    constructProperty_initialVariable("");
+    constructProperty_finalVariable("");
 }
 
 //=============================================================================
@@ -61,10 +62,10 @@ void MocoPeriodicityGoal::initializeOnModelImpl(const Model& model) const {
     int nStatePairs = getProperty_state_pairs().size();
 
     for (int i = 0; i < nStatePairs; ++i) {
-        const auto path1 = get_state_pairs(i).get_initial();
+        const auto path1 = get_state_pairs(i).get_initialVariable();
         OPENSIM_THROW_IF(allSysYIndices.count(path1) == 0,
                 Exception, format("Could not find state '%s'.", path1));
-        const auto path2 = get_state_pairs(i).get_last();
+        const auto path2 = get_state_pairs(i).get_finalVariable();
         OPENSIM_THROW_IF(allSysYIndices.count(path2) == 0,
                 Exception, format("Could not find state '%s'.", path2));
         int stateIndex1 = allSysYIndices[path1];
@@ -76,10 +77,10 @@ void MocoPeriodicityGoal::initializeOnModelImpl(const Model& model) const {
     int nControlPairs = getProperty_control_pairs().size();
 
     for (int i = 0; i < nControlPairs; ++i) {
-        const auto path1 = get_control_pairs(i).get_initial();
+        const auto path1 = get_control_pairs(i).get_initialVariable();
         OPENSIM_THROW_IF(systemControlIndexMap.count(path1) == 0,
                 Exception, format("Could not find control '%s'.", path1));
-        const auto path2 = get_control_pairs(i).get_last();
+        const auto path2 = get_control_pairs(i).get_finalVariable();
         OPENSIM_THROW_IF(systemControlIndexMap.count(path2) == 0,
                 Exception, format("Could not find control '%s'.", path2));
         int controlIndex1 = systemControlIndexMap[path1];
