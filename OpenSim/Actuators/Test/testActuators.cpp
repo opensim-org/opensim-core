@@ -796,7 +796,7 @@ void testActuatorsCombination()
     pointActuator->set_direction(forceUnitAxis);
     pointActuator->set_point(Vec3(0, blockSideLength/2,0));
     model->addForce(pointActuator);
-
+    model->finalizeConnections(); // Needed so connections have correct path
     // ------ build the model -----
     model->print("TestActuatorCombinationModel.osim");
     model->setUseVisualizer(false);
