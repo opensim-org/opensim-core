@@ -453,6 +453,59 @@ void testMomentArmDefinitionForModel(const string &filename, const string &coord
 void testGeometryPathApproximation() {
     using namespace SimTK;
 
+
+    class FitLength : public OptimizerSystem {
+    public:
+        FitLength(int numParams, double minQ, double maxQ, Model& model, State& state,
+                GeometryPath& path, const Coordinate& coord)
+                : OptimizerSystem(numParams), m_model(model), m_state(state),
+                  m_path(path), m_coord(coord) {
+
+            int N = 40;
+            m_q.resize(N);
+            for (int i = 0; i < N; ++i) {
+                m_q[i] = minQ + i * (maxQ - minQ) / (N - 1);
+            }
+            m_lengthWithPoints.resize(N);
+            m_momArmWithPoints.resize(N);
+            m_lengthWithApprox.resize(N);
+            m_momArmWithApprox.resize(N);
+        }
+        int objectiveFunc(const Vector& params, bool, Real& f) const override {
+            m_path.set_length_approximation(PolynomialFunction(params));
+
+            m_path.setUseApproximation(m_state, false);
+            for (int i = 0; i < m_q.size(); ++i) {
+                m_state.updQ()[0] = m_q[i];
+                m_model.realizePosition(m_state);
+                m_lengthWithPoints[i] = m_path.getLength(m_state);
+                m_momArmWithPoints[i] = m_path.computeMomentArm(m_state, m_coord);
+            }
+
+            m_path.setUseApproximation(m_state, true);
+            for (int i = 0; i < m_q.size(); ++i) {
+                m_state.updQ()[0] = m_q[i];
+                m_model.realizePosition(m_state);
+                m_lengthWithApprox[i] = m_path.getLength(m_state);
+                m_momArmWithApprox[i] = m_path.computeMomentArm(m_state, m_coord);
+            }
+            f = (m_lengthWithPoints - m_lengthWithApprox).normSqr() +
+                    (m_momArmWithPoints - m_momArmWithApprox).normSqr();
+            return 0;
+        }
+
+    private:
+        Model& m_model;
+        State& m_state;
+        GeometryPath& m_path;
+        const Coordinate& m_coord;
+        SimTK::Vector m_q;
+        mutable SimTK::Vector m_lengthWithPoints;
+        mutable SimTK::Vector m_lengthWithApprox;
+        mutable SimTK::Vector m_momArmWithPoints;
+        mutable SimTK::Vector m_momArmWithApprox;
+    };
+
     // Create a point mass sliding along a sinusoid (1-DOF).
     Model model;
     model.updGround().attachGeometry(new Sphere(0.05));
@@ -483,81 +536,98 @@ void testGeometryPathApproximation() {
 
     auto state = model.initSystem();
 
+    double minQ = -0.5;
+    double maxQ = 0.5;
+    joint->upd_coordinates(0).setRangeMin(minQ);
+    joint->upd_coordinates(0).setRangeMax(maxQ);
+
     // Manager manager(model, state);
     // state = manager.integrate(10.0);
     // model.getVisualizer().show(state);
 
-
-    // TODO: add utility to compute error in function approximation!
-
-    class FitLength : public OptimizerSystem {
-    public:
-        FitLength(int numParams, double maxQ, Model& model, State& state,
-                GeometryPath& path)
-                : OptimizerSystem(numParams), m_model(model), m_state(state),
-                  m_path(path) {
-
-            int N = 20;
-            m_q.resize(N);
-            for (int i = 0; i < N; ++i) {
-                m_q[i] = i * maxQ / (N - 1);
-            }
-            m_lengthWithPoints.resize(N);
-            m_lengthWithApprox.resize(N);
-        }
-        int objectiveFunc(const Vector& params, bool, Real& f) const override {
-            m_path.set_length_approximation(PolynomialFunction(params));
-
-            m_path.setUseApproximation(m_state, false);
-            for (int i = 0; i < m_q.size(); ++i) {
-                m_state.updQ()[0] = m_q[i];
-                m_model.realizePosition(m_state);
-                m_lengthWithPoints[i] = m_path.getLength(m_state);
-            }
-
-            m_path.setUseApproximation(m_state, true);
-            for (int i = 0; i < m_q.size(); ++i) {
-                m_state.updQ()[0] = m_q[i];
-                m_model.realizePosition(m_state);
-                m_lengthWithApprox[i] = m_path.getLength(m_state);
-            }
-            f = (m_lengthWithPoints - m_lengthWithApprox).normSqr();
-            // TODO use utility for computing the error.
-            return 0;
-        }
-
-    private:
-        Model& m_model;
-        State& m_state;
-        GeometryPath& m_path;
-        SimTK::Vector m_q;
-        mutable SimTK::Vector m_lengthWithPoints;
-        mutable SimTK::Vector m_lengthWithApprox;
-    };
-
-    // TODO create a more formal range.
-    int nParams = 8;
+    int nParams = 12;
     auto& path = actu->updGeometryPath();
     path.set_length_approximation(PolynomialFunction(Vector(nParams)));
     path.append_approximation_coordinates("/jointset/joint/q");
     model.initSystem();
-    double maxQ = 1.0;
-    FitLength sys(nParams, maxQ, model, state, path);
+    const auto& coord = joint->get_coordinates(0);
+    FitLength sys(nParams, minQ, maxQ, model, state, path, coord);
     Optimizer opt(sys);
     opt.useNumericalGradient(true);
     Vector params(nParams);
     params = 0.2;
     double obj = opt.optimize(params);
+    SimTK_TEST(obj < 0.10);
     // If obj is zero, that probably means we are not using the approximation.
     SimTK_TEST(obj > 1e-5);
 
-    // Requesting to use the approximation when no function is set.
+    double lengthError = path.computeApproximationErrorOnGrid(40, "length");
+    SimTK_TEST(lengthError < 0.01);
+    // Something is wrong if the error is too small:
+    SimTK_TEST(lengthError > 1e-10);
+
+    // Check the moment arm.
+    double momArmError = path.computeApproximationErrorOnGrid(
+            40, "moment_arm", &coord);
+    SimTK_TEST(momArmError < 0.05);
+    // Something is wrong if the error is too small:
+    SimTK_TEST(momArmError > 1e-10);
+
+    // The lengthening speed of the approximation is close to that using points.
+    double speedError = path.computeApproximationErrorOnGrid(40,
+            "lengthening_speed");
+    SimTK_TEST(speedError < 0.05);
+    SimTK_TEST(speedError > 1e-10);
+
+
     // Cannot use the approximation if a function is not set.
+    {
+        path.updProperty_length_approximation().clear();
+        SimTK_TEST_MUST_THROW(path.setUseApproximation(state, true));
+    }
 
     // The number of arguments for the function must match the number of
     // provided coordinates.
+    {
+        path.set_length_approximation(PolynomialFunction());
+        path.append_approximation_coordinates("dummy");
+        SimTK_TEST_MUST_THROW(path.finalizeFromProperties());
+    }
 
-    // The lengthening speed of the approximation is close to that using points.
-
-    // Check the moment arm.
+    // Ensure the N-dimensional grid iteration is correct.
+    class My3DFunction : public OpenSim::Function {
+        OpenSim_DECLARE_CONCRETE_OBJECT(My3DFunction, Function);
+    public:
+        double calcValue(const SimTK::Vector& x) const override {
+            ++numEvals;
+            return x.sum();
+        }
+        int getArgumentSize() const override { return 3; }
+        int getMaxDerivativeOrder() const override { return 0; }
+        SimTK::Function* createSimTKFunction() const override {
+            throw OpenSim::Exception();
+        }
+        mutable int numEvals = 0;
+    };
+    {
+        path.updProperty_length_approximation().clear();
+        path.updProperty_approximation_coordinates().clear();
+        model.updJointSet().clearAndDestroy();
+        auto* joint = new PlanarJoint("joint", model.getGround(), *body);
+        joint->upd_coordinates(0).setName("q1");
+        joint->upd_coordinates(1).setName("q2");
+        joint->upd_coordinates(2).setName("q3");
+        model.addJoint(joint);
+        model.initSystem();
+        SimTK_TEST(model.getCoordinateSet().getSize() == 3);
+        path.set_length_approximation(My3DFunction());
+        path.append_approximation_coordinates("/jointset/joint/q1");
+        path.append_approximation_coordinates("/jointset/joint/q2");
+        path.append_approximation_coordinates("/jointset/joint/q3");
+        model.initSystem();
+        path.computeApproximationErrorOnGrid(3);
+        const auto& func = static_cast<const My3DFunction&>(
+                        path.get_length_approximation());
+        SimTK_TEST(func.numEvals == 27);
+    }
 }

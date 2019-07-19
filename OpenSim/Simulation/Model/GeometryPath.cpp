@@ -74,10 +74,12 @@ void GeometryPath::extendFinalizeFromProperties()
     }
 
     if (!getProperty_length_approximation().empty()) {
-        OPENSIM_THROW_IF(get_length_approximation().getArgumentSize() !=
+        OPENSIM_THROW_IF_FRMOBJ(get_length_approximation().getArgumentSize() !=
                                  getProperty_approximation_coordinates().size(),
-                Exception, "Number of arguments for length approximation "
-                           "must equal the length of approximation_coordinates.");
+                Exception, "Number of arguments for length approximation (" +
+                std::to_string(get_length_approximation().getArgumentSize()) +
+                ") must equal the length of approximation_coordinates (" +
+                std::to_string(getProperty_approximation_coordinates().size()) + ").");
     }
 }
 
@@ -101,8 +103,14 @@ void GeometryPath::extendConnectToModel(Model& aModel)
     if (!getProperty_length_approximation().empty()) {
         for (int ic = 0; ic < getProperty_approximation_coordinates().size();
                 ++ic) {
-            m_approxCoords.emplace_back(&aModel.getComponent<Coordinate>(
-                    get_approximation_coordinates(ic)));
+            auto* coordToAdd = &aModel.getComponent<Coordinate>(
+                    get_approximation_coordinates(ic));
+            for (const auto& existingCoord : m_approxCoords) {
+                OPENSIM_THROW_IF_FRMOBJ(existingCoord.get() == coordToAdd,
+                        Exception, "Coordinate " + coordToAdd->getName() +
+                        "' listed multiple times.");
+            }
+            m_approxCoords.emplace_back(coordToAdd);
         }
     }
 }
@@ -1261,6 +1269,140 @@ double GeometryPath::computeMomentArmWithApproximation(
     std::vector<int> derivComponents(1);
     derivComponents[0] = approxCoordIndex;
     return -get_length_approximation().calcDerivative(derivComponents, approxQ);
+}
+
+double GeometryPath::computeApproximationErrorOnGrid(int numSamplesPerDim,
+        std::string quantity, const Coordinate* coord) const {
+
+    SimTK::State state = getModel().getWorkingState();
+    std::function<double(const Self*, const SimTK::State&)> func;
+    if (quantity == "length") {
+        func = std::mem_fn(&Self::getLength);
+    } else if (quantity == "lengthening_speed") {
+        func = std::mem_fn(&Self::getLengtheningSpeed);
+        // The generalized speeds must be non-zero to get non-zero speed.
+        state.updU() = 0.5;
+    } else if (quantity == "moment_arm") {
+        using namespace std::placeholders;
+        OPENSIM_THROW_IF(!coord, Exception, "For 'moment_arm', a Coordinate "
+                                            "must be provided.");
+        auto momArmsFunc = [coord](const Self* p, const SimTK::State& s) {
+          return p->computeMomentArm(s, *coord);
+        };
+        func = momArmsFunc;
+    } else {
+        OPENSIM_THROW(Exception,
+                      "quantity must be 'length', 'lengthening_speed', or "
+                      "'moment_arm'.");
+    }
+
+    std::vector<std::vector<double>> grid;
+    for (const auto& coord : m_approxCoords) {
+        OPENSIM_THROW_IF(!SimTK::isFinite(coord->getRangeMin()) ||
+                         !SimTK::isFinite(coord->getRangeMax()),
+                         Exception,
+                         "Computing error approximation requires finite ranges for "
+                         "approximation coordinates.");
+        grid.emplace_back(numSamplesPerDim);
+        const double start = coord->getRangeMin();
+        const double end = coord->getRangeMax();
+        for (int i = 0; i < numSamplesPerDim; ++i) {
+            grid.back()[i] = start + i * (end - start) / (numSamplesPerDim - 1);
+        }
+    }
+
+    int numDims = (int)grid.size();
+    // Initialize all indices to 0.
+    std::vector<int> indices(numDims, 0);
+    double sumSquare = 0;
+    // https://stackoverflow.com/questions/56042958/iterating-over-an-n-dimensional-matrix-with-variable-dimension-sizes-in-c
+    auto increment = [&numDims, &numSamplesPerDim](std::vector<int>& indices) -> bool {
+      for (int d = 0; d < numDims; ++d) {
+          ++indices[d];
+          if (indices[d] >= numSamplesPerDim) {
+              indices[d] = 0;
+          } else {
+              return true;
+          }
+      }
+      return false;
+    };
+
+    do {
+        for (int d = 0; d < numDims; ++d) {
+            m_approxCoords[d]->setValue(state, grid[d][indices[d]]);
+        }
+
+        setUseApproximation(state, false);
+        getModel().realizeVelocity(state);
+        double fromPoints = func(this, state);
+
+        setUseApproximation(state, true);
+        getModel().realizeVelocity(state);
+        double fromApprox = func(this, state);
+
+        sumSquare += SimTK::square(fromPoints - fromApprox);
+
+    } while (increment(indices));
+
+    return sqrt(sumSquare / pow(numSamplesPerDim, numDims));
+}
+
+double GeometryPath::computeApproximationErrorWithRandomSamples(int numSamples,
+        std::string quantity, const Coordinate* coord) const {
+
+    SimTK::State state = getModel().getWorkingState();
+    std::function<double(const Self*, const SimTK::State&)> func;
+    if (quantity == "length") {
+        func = std::mem_fn(&Self::getLength);
+    } else if (quantity == "lengthening_speed") {
+        func = std::mem_fn(&Self::getLengtheningSpeed);
+        // The generalized speeds must be non-zero to get non-zero speed.
+        state.updU() = 0.5;
+    } else if (quantity == "moment_arm") {
+        using namespace std::placeholders;
+        OPENSIM_THROW_IF(!coord, Exception, "For 'moment_arm', a Coordinate "
+                                            "must be provided.");
+        auto momArmsFunc = [coord](const Self* p, const SimTK::State& s) {
+            return p->computeMomentArm(s, *coord);
+        };
+        func = momArmsFunc;
+    } else {
+        OPENSIM_THROW(Exception,
+                      "quantity must be 'length', 'lengthening_speed', or "
+                      "'moment_arm'.");
+    }
+
+    std::vector<std::unique_ptr<SimTK::Random::Uniform>> rand;
+    for (const auto& coord : m_approxCoords) {
+        OPENSIM_THROW_IF(!SimTK::isFinite(coord->getRangeMin()) ||
+                                 !SimTK::isFinite(coord->getRangeMax()),
+                                 Exception,
+            "Computing error approximation requires finite ranges for "
+            "approximation coordinates.");
+        rand.push_back(std::unique_ptr<SimTK::Random::Uniform>(
+                new SimTK::Random::Uniform(
+                        coord->getRangeMin(), coord->getRangeMax())));
+    }
+    double sumSquare = 0;
+
+    for (int isample = 0; isample < numSamples; ++isample) {
+        for (int ic = 0; ic < (int)m_approxCoords.size(); ++ic) {
+            m_approxCoords[ic]->setValue(state, rand[ic]->getValue());
+        }
+
+        setUseApproximation(state, false);
+
+        getModel().realizeVelocity(state);
+        double fromPoints = func(this, state);
+
+        setUseApproximation(state, true);
+        getModel().realizeVelocity(state);
+        double fromApprox = func(this, state);
+
+        sumSquare += SimTK::square(fromPoints - fromApprox);
+    }
+    return sqrt(sumSquare / numSamples);
 }
 
 //_____________________________________________________________________________

@@ -238,6 +238,28 @@ public:
     virtual double computeMomentArm(
             const SimTK::State& s, const Coordinate& aCoord) const;
 
+    /// Compute the root-mean-square error between the approximation and the
+    /// path point-based calculations for either "length", "lengthening_speed",
+    /// or "moment_arm" quantities. If quantity is "moment_arm", you must
+    /// provide a Coordinate. This function evaluates the error on a
+    /// N-dimensional grid, where N is the length of the
+    /// approximation_coordinates property, with numSamplesPerDim points in each
+    /// dimension. The bounds of the grid are taken from the coordinates'
+    /// ranges; this function throws an exception if the coordinates' ranges
+    /// contain Inf or NaN.
+    /// When computing lengthening speeds, all generalized speeds are set to 0.5.
+    double computeApproximationErrorOnGrid(int numSamplesPerDim,
+            std::string quantity = "length", const Coordinate* = nullptr) const;
+    /// Compute the root-mean-square error between the approximation and the
+    /// path point-based calculations for either "length", "lengthening_speed",
+    /// or "moment_arm" quantities. If quantity is "moment_arm", you must
+    /// provide a Coordinate. This function evaluates the error using points
+    /// randomly samplped between the coordinates' ranges. This function throws
+    /// an exception if the coordinates' ranges contain Inf or NaN.
+    /// When computing lengthening speeds, all generalized speeds are set to 0.5.
+    double computeApproximationErrorWithRandomSamples(int numSamples,
+            std::string quantity = "length", const Coordinate* = nullptr) const;
+
     //--------------------------------------------------------------------------
     // SCALING
     //--------------------------------------------------------------------------
