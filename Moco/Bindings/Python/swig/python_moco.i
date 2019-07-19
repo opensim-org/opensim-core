@@ -57,6 +57,8 @@ using namespace SimTK;
         if hasattr(v, '__len__'):
             if len(v) > 2:
                 raise Exception("Bounds cannot have more than 2 elements.")
+            elif len(v) == 0:
+                return cls()
             elif len(v) == 1:
                 return cls(v[0])
             elif len(v) == 2:
@@ -82,7 +84,25 @@ using namespace SimTK;
     if len(args) >= 4 and not type(args[3]) is MocoFinalBounds:
         args[3] = self._convert(MocoFinalBounds, args[3])
 %}
+%pythonprepend OpenSim::MocoPhase::setStateInfoPattern %{
+    args = list(args)
+    if len(args) >= 2 and not type(args[1]) is MocoBounds:
+        args[1] = self._convert(MocoBounds, args[1])
+    if len(args) >= 3 and not type(args[2]) is MocoInitialBounds:
+        args[2] = self._convert(MocoInitialBounds, args[2])
+    if len(args) >= 4 and not type(args[3]) is MocoFinalBounds:
+        args[3] = self._convert(MocoFinalBounds, args[3])
+%}
 %pythonprepend OpenSim::MocoPhase::setControlInfo %{
+    args = list(args)
+    if len(args) >= 2 and not type(args[1]) is MocoBounds:
+        args[1] = self._convert(MocoBounds, args[1])
+    if len(args) >= 3 and not type(args[2]) is MocoInitialBounds:
+        args[2] = self._convert(MocoInitialBounds, args[2])
+    if len(args) >= 4 and not type(args[3]) is MocoFinalBounds:
+        args[3] = self._convert(MocoFinalBounds, args[3])
+%}
+%pythonprepend OpenSim::MocoPhase::setControlInfoPattern %{
     args = list(args)
     if len(args) >= 2 and not type(args[1]) is MocoBounds:
         args[1] = self._convert(MocoBounds, args[1])
@@ -98,6 +118,8 @@ using namespace SimTK;
         if hasattr(v, '__len__'):
             if len(v) > 2:
                 raise Exception("Bounds cannot have more than 2 elements.")
+            elif len(v) == 0:
+                return cls()
             elif len(v) == 1:
                 return cls(v[0])
             elif len(v) == 2:
@@ -123,7 +145,25 @@ using namespace SimTK;
     if len(args) >= 4 and not type(args[3]) is MocoFinalBounds:
         args[3] = self._convert(MocoFinalBounds, args[3])
 %}
+%pythonprepend OpenSim::MocoProblem::setStateInfoPattern %{
+    args = list(args)
+    if len(args) >= 2 and not type(args[1]) is MocoBounds:
+        args[1] = self._convert(MocoBounds, args[1])
+    if len(args) >= 3 and not type(args[2]) is MocoInitialBounds:
+        args[2] = self._convert(MocoInitialBounds, args[2])
+    if len(args) >= 4 and not type(args[3]) is MocoFinalBounds:
+        args[3] = self._convert(MocoFinalBounds, args[3])
+%}
 %pythonprepend OpenSim::MocoProblem::setControlInfo %{
+    args = list(args)
+    if len(args) >= 2 and not type(args[1]) is MocoBounds:
+        args[1] = self._convert(MocoBounds, args[1])
+    if len(args) >= 3 and not type(args[2]) is MocoInitialBounds:
+        args[2] = self._convert(MocoInitialBounds, args[2])
+    if len(args) >= 4 and not type(args[3]) is MocoFinalBounds:
+        args[3] = self._convert(MocoFinalBounds, args[3])
+%}
+%pythonprepend OpenSim::MocoProblem::setControlInfoPattern %{
     args = list(args)
     if len(args) >= 2 and not type(args[1]) is MocoBounds:
         args[1] = self._convert(MocoBounds, args[1])

@@ -139,7 +139,7 @@ TimeSeriesTable OpenSim::filterLowpass(
             format("Cutoff frequency must be non-negative; got %g.",
                     cutoffFreq));
     auto storage = convertTableToStorage(table);
-    if (padData) { storage.pad(storage.getSize() / 2); }
+    if (padData) { storage.pad((int)table.getNumRows() / 2); }
     storage.lowpassIIR(cutoffFreq);
 
     return storage.exportToTable();
