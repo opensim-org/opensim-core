@@ -54,6 +54,19 @@ visualize = 1;
 cacheUnassisted = 1;
 
 % Edit the argument to evaluateDevice() to any device function you create below.
+% This function performs the following steps:
+%   1. Predicts subject 1 unassisted sit-to-stand (skipped in subsequent calls).
+%   2. Predicts subject 1 assisted sit-to-stand.
+%   3. Plots comparison of assisted vs unassisted solutions for subject 1.
+%   3. Predicts subject 2 unassisted sit-to-stand (skipped in subsequent calls).
+%   4. Predicts subject 2 assisted sit-to-stand.
+%   3. Plots comparison of assisted vs unassisted solutions for subject 2.
+%   5. Computes the score for the assistive device.
+% Up to 4 Visualizer windows are created. The function only proceeds
+% to the next optimization after you hit ESC in the Visualizer window.
+%
+% The subfunction evaluateDevice() is defined toward the bottom of this file,
+% but you don't need to read its definition to perform the challenge.
 score = evaluateDevice(@addSpringToKnee);
 
 % Use this space to perform a parameter optimization.
