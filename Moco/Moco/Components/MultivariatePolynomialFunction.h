@@ -132,7 +132,7 @@ public:
         return value;
     }
     int getArgumentSize() const override {
-        return 1;
+        return dimension;
     }
     int getMaxDerivativeOrder() const override {
         return std::numeric_limits<int>::max();

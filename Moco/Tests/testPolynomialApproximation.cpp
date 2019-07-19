@@ -89,60 +89,60 @@ Model createGait2D() {
     // Add joints
     ///////////////////////////////////////////////////////////////////////////
     // Ground pelvis
-    auto* groundPelvis = new PlanarJoint("groundPelvis", model.getGround(),
+    auto* ground_pelvis = new PlanarJoint("ground_pelvis", model.getGround(),
         Vec3(0), Vec3(0), *pelvis, Vec3(0), Vec3(0));
-    auto& groundPelvis_q_rz =
-        groundPelvis->updCoordinate(PlanarJoint::Coord::RotationZ);
-    groundPelvis_q_rz.setName("groundPelvis_q_rz");
-    auto& groundPelvis_q_tx =
-        groundPelvis->updCoordinate(PlanarJoint::Coord::TranslationX);
-    groundPelvis_q_tx.setName("groundPelvis_q_tx");
-    auto& groundPelvis_q_ty =
-        groundPelvis->updCoordinate(PlanarJoint::Coord::TranslationY);
-    groundPelvis_q_ty.setName("groundPelvis_q_ty");
-    model.addJoint(groundPelvis);
+    auto& pelvis_tilt =
+        ground_pelvis->updCoordinate(PlanarJoint::Coord::RotationZ);
+    pelvis_tilt.setName("pelvis_tilt");
+    auto& pelvis_tx =
+        ground_pelvis->updCoordinate(PlanarJoint::Coord::TranslationX);
+    pelvis_tx.setName("pelvis_tx");
+    auto& pelvis_ty =
+        ground_pelvis->updCoordinate(PlanarJoint::Coord::TranslationY);
+    pelvis_ty.setName("pelvis_ty");
+    model.addJoint(ground_pelvis);
 
     // Hip left
     auto* hip_l = new PinJoint("hip_l", *pelvis, Vec3(-0.0682778001711179,
         -0.0638353973311301,-0.0823306940058688), Vec3(0), *femur_l, Vec3(0),
         Vec3(0));
-    auto& hip_q_l = hip_l->updCoordinate();
-    hip_q_l.setName("hip_q_l");
+    auto& hip_flexion_l = hip_l->updCoordinate();
+    hip_flexion_l.setName("hip_flexion_l");
     model.addJoint(hip_l);
 
     // Hip right
     auto* hip_r = new PinJoint("hip_r", *pelvis, Vec3(-0.0682778001711179,
         -0.0638353973311301, 0.0823306940058688), Vec3(0), *femur_r, Vec3(0),
         Vec3(0));
-    auto& hip_q_r = hip_r->updCoordinate();
-    hip_q_r.setName("hip_q_r");
+    auto& hip_flexion_r = hip_r->updCoordinate();
+    hip_flexion_r.setName("hip_flexion_r");
     model.addJoint(hip_r);
 
     // Knee left
     auto* knee_l = new PinJoint("knee_l", *femur_l, Vec3(-0.00451221232146798,
         -0.396907245921447, 0), Vec3(0), *tibia_l, Vec3(0), Vec3(0));
-    auto& knee_q_l = knee_l->updCoordinate();
-    knee_q_l.setName("knee_q_l");
+    auto& knee_angle_l = knee_l->updCoordinate();
+    knee_angle_l.setName("knee_angle_l");
     model.addJoint(knee_l);
 
     // Knee right
     auto* knee_r = new PinJoint("knee_r", *femur_r, Vec3(-0.00451221232146798,
         -0.396907245921447, 0), Vec3(0), *tibia_r, Vec3(0), Vec3(0));
-    auto& knee_q_r = knee_r->updCoordinate();
-    knee_q_r.setName("knee_q_r");
+    auto& knee_angle_r = knee_r->updCoordinate();
+    knee_angle_r.setName("knee_angle_r");
     model.addJoint(knee_r);
 
     // Ankle left
     auto* ankle_l = new PinJoint("ankle_l", *tibia_l,
         Vec3(0, -0.415694825374905, 0), Vec3(0), *talus_l, Vec3(0), Vec3(0));
-    auto& ankle_q_l = ankle_l->updCoordinate();
-    ankle_q_l.setName("ankle_q_l");
+    auto& ankle_angle_l = ankle_l->updCoordinate();
+    ankle_angle_l.setName("ankle_angle_l");
     model.addJoint(ankle_l);
     // Ankle right
     auto* ankle_r = new PinJoint("ankle_r", *tibia_r,
         Vec3(0, -0.415694825374905, 0), Vec3(0), *talus_r, Vec3(0), Vec3(0));
-    auto& ankle_q_r = ankle_r->updCoordinate();
-    ankle_q_r.setName("ankle_q_r");
+    auto& ankle_angle_r = ankle_r->updCoordinate();
+    ankle_angle_r.setName("ankle_angle_r");
     model.addJoint(ankle_r);
     // Subtalar left
     auto* subtalar_l = new WeldJoint("subtalar_l", *talus_l,
@@ -168,8 +168,8 @@ Model createGait2D() {
     auto* lumbar = new PinJoint("lumbar", *pelvis,
         Vec3(-0.0972499926058214, 0.0787077894476112, 0), Vec3(0),
         *torso, Vec3(0), Vec3(0));
-    auto& lumbar_q = lumbar->updCoordinate();
-    lumbar_q.setName("lumbar_q");
+    auto& lumbar_extension = lumbar->updCoordinate();
+    lumbar_extension.setName("lumbar_extension");
     model.addJoint(lumbar);
 
     ///////////////////////////////////////////////////////////////////////////
@@ -295,87 +295,112 @@ Model createGait2D() {
     TA_f->setCoefficients(
             SimTK::Vector(nCoeffTA,coeffTA));
 
-    PolynomialActuators hamstrings_p_r;
-    hamstrings_p_r.set_function(*hamstrings_f);
-    hamstrings_p_r.append_coordinate_list("/jointset/hip_r/hip_q_r");
-    hamstrings_p_r.append_coordinate_list("/jointset/knee_r/knee_q_r");
     auto* hamstrings_r = new DeGrooteFregly2016Muscle();
-    hamstrings_r->set_GeometryPath(hamstrings_p_r);
+    auto& hamstrings_p_r = hamstrings_r->updGeometryPath();
+    hamstrings_p_r.set_use_approximation(true);
+    hamstrings_p_r.append_length_approximation(*hamstrings_f);
+    hamstrings_p_r.append_approximation_coordinates("/jointset/hip_r/hip_flexion_r");
+    hamstrings_p_r.append_approximation_coordinates("/jointset/knee_r/knee_angle_r");
     hamstrings_r->set_ignore_tendon_compliance(true);
+    hamstrings_r->addNewPathPoint("hamstrings_r-P1", *pelvis, Vec3(-0.121645, -0.0990559, 0.0684676));
+    hamstrings_r->addNewPathPoint("hamstrings_r-P2", *tibia_r, Vec3(-0.0290986, -0.0348024, 0.0284509));
+    hamstrings_r->addNewPathPoint("hamstrings_r-P3", *tibia_r, Vec3(-0.0226215, -0.054427, 0.0331589));
     hamstrings_r->setName("hamstrings_r");
     model.addComponent(hamstrings_r);
 
-    PolynomialActuators BFSH_p_r;
-    BFSH_p_r.set_function(*BFSH_f);
-    BFSH_p_r.append_coordinate_list("/jointset/knee_r/knee_q_r");
     auto* BFSH_r = new DeGrooteFregly2016Muscle();
-    BFSH_r->set_GeometryPath(BFSH_p_r);
+    auto& BFSH_p_r = BFSH_r->updGeometryPath();
+    BFSH_p_r.set_use_approximation(true);
+    BFSH_p_r.append_length_approximation(*BFSH_f);
+    BFSH_p_r.append_approximation_coordinates("/jointset/knee_r/knee_angle_r");
     BFSH_r->set_ignore_tendon_compliance(true);
+    BFSH_r->addNewPathPoint("bifemsh_r-P1", *femur_r, Vec3(0.00501373, -0.211679, 0.0234642));
+    BFSH_r->addNewPathPoint("bifemsh_r-P2", *tibia_r, Vec3(-0.0290986, -0.0348024, 0.0284509));
+    BFSH_r->addNewPathPoint("bifemsh_r-P3", *tibia_r, Vec3(-0.0226215, -0.054427, 0.0331589));
     BFSH_r->setName("BFSH_r");
     model.addComponent(BFSH_r);
 
-    PolynomialActuators GLU_p_r;
-    GLU_p_r.set_function(*GLU_f);
-    GLU_p_r.append_coordinate_list("/jointset/hip_r/hip_q_r");
     auto* GLU_r = new DeGrooteFregly2016Muscle();
-    GLU_r->set_GeometryPath(GLU_p_r);
+    auto& GLU_p_r = GLU_r->updGeometryPath();
+    GLU_p_r.set_use_approximation(true);
+    GLU_p_r.append_length_approximation(*GLU_f);
+    GLU_p_r.append_approximation_coordinates("/jointset/hip_r/hip_flexion_r");
     GLU_r->set_ignore_tendon_compliance(true);
+    GLU_r->addNewPathPoint("glut_max_r-P1", *pelvis, Vec3(-0.127188, 0.00840194, 0.045553));
+    GLU_r->addNewPathPoint("glut_max_r-P2", *pelvis, Vec3(-0.129795, -0.0588136, 0.0801615));
+    GLU_r->addNewPathPoint("glut_max_r-P3", *femur_r, Vec3(-0.0451235, -0.0585603, 0.0252692));
+    GLU_r->addNewPathPoint("glut_max_r-P4", *femur_r, Vec3(-0.0156428, -0.101879, 0.042015));
     GLU_r->setName("GLU_r");
     model.addComponent(GLU_r);
 
-    PolynomialActuators IlioPsoas_p_r;
-    IlioPsoas_p_r.set_function(*IlioPsoas_f);
-    IlioPsoas_p_r.append_coordinate_list("/jointset/hip_r/hip_q_r");
     auto* IlioPsoas_r = new DeGrooteFregly2016Muscle();
-    IlioPsoas_r->set_GeometryPath(IlioPsoas_p_r);
+    auto& IlioPsoas_p_r = IlioPsoas_r->updGeometryPath();
+    IlioPsoas_p_r.set_use_approximation(true);
+    IlioPsoas_p_r.append_length_approximation(*IlioPsoas_f);
+    IlioPsoas_p_r.append_approximation_coordinates("/jointset/hip_r/hip_flexion_r");
     IlioPsoas_r->set_ignore_tendon_compliance(true);
+    IlioPsoas_r->addNewPathPoint("IlioPsoas_r-P1", *pelvis, Vec3(-0.0624834, 0.0856611, 0.0284953));
+    IlioPsoas_r->addNewPathPoint("IlioPsoas_r-P5", *femur_r, Vec3(-0.0188516, -0.0598639, 0.0104285));
     IlioPsoas_r->setName("IlioPsoas_r");
     model.addComponent(IlioPsoas_r);
 
-    PolynomialActuators RF_p_r;
-    RF_p_r.set_function(*RF_f);
-    RF_p_r.append_coordinate_list("/jointset/hip_r/hip_q_r");
-    RF_p_r.append_coordinate_list("/jointset/knee_r/knee_q_r");
     auto* RF_r = new DeGrooteFregly2016Muscle();
-    RF_r->set_GeometryPath(RF_p_r);
+    auto& RF_p_r = RF_r->updGeometryPath();
+    RF_p_r.set_use_approximation(true);
+    RF_p_r.append_length_approximation(*RF_f);
+    RF_p_r.append_approximation_coordinates("/jointset/hip_r/hip_flexion_r");
+    RF_p_r.append_approximation_coordinates("/jointset/knee_r/knee_angle_r");
     RF_r->set_ignore_tendon_compliance(true);
+    RF_r->addNewPathPoint("RF_r-P1", *pelvis, Vec3(-0.0284893, -0.0300345, 0.0954444));
+    RF_r->addNewPathPoint("RF_r-P2", *femur_r, Vec3(0.0334917, -0.404106, 0.00190522)); // cond
     RF_r->setName("RF_r");
     model.addComponent(RF_r);
 
-    PolynomialActuators VAS_p_r;
-    VAS_p_r.set_function(*VAS_f);
-    VAS_p_r.append_coordinate_list("/jointset/knee_r/knee_q_r");
     auto* VAS_r = new DeGrooteFregly2016Muscle();
-    VAS_r->set_GeometryPath(VAS_p_r);
+    auto& VAS_p_r = VAS_r->updGeometryPath();
+    VAS_p_r.set_use_approximation(true);
+    VAS_p_r.append_length_approximation(*VAS_f);
+    VAS_p_r.append_approximation_coordinates("/jointset/knee_r/knee_angle_r");
     VAS_r->set_ignore_tendon_compliance(true);
+    VAS_r->addNewPathPoint("VAS_r-P1", *femur_r, Vec3(-0.0190522, -0.393979, -0.0235645));
+    VAS_r->addNewPathPoint("VAS_r-P2", *femur_r, Vec3(-0.0300824, -0.403304, -0.0258708)); // cond
+    VAS_r->addNewPathPoint("VAS_r-P3", *calcn_r, Vec3(0, 0.0283317, -0.0048438)); // cond
     VAS_r->setName("VAS_r");
     model.addComponent(VAS_r);
 
-    PolynomialActuators GAS_p_r;
-    GAS_p_r.set_function(*GAS_f);
-    GAS_p_r.append_coordinate_list("/jointset/knee_r/knee_q_r");
-    GAS_p_r.append_coordinate_list("/jointset/ankle_r/ankle_q_r");
     auto* GAS_r = new DeGrooteFregly2016Muscle();
-    GAS_r->set_GeometryPath(GAS_p_r);
+    auto& GAS_p_r = GAS_r->updGeometryPath();
+    GAS_p_r.set_use_approximation(true);
+    GAS_p_r.append_length_approximation(*GAS_f);
+    GAS_p_r.append_approximation_coordinates("/jointset/knee_r/knee_angle_r");
+    GAS_p_r.append_approximation_coordinates("/jointset/ankle_r/ankle_angle_r");
     GAS_r->set_ignore_tendon_compliance(true);
+    GAS_r->addNewPathPoint("GAS_r-P1", *femur_r, Vec3(-0.0190522, -0.393979, -0.0235645));
+    GAS_r->addNewPathPoint("GAS_r-P2", *femur_r, Vec3(-0.0300824, -0.403304, -0.0258708)); // cond
+    GAS_r->addNewPathPoint("GAS_r-P3", *calcn_r, Vec3(0, 0.0283317, -0.0048438));
     GAS_r->setName("GAS_r");
     model.addComponent(GAS_r);
 
-    PolynomialActuators SOL_p_r;
-    SOL_p_r.set_function(*SOL_f);
-    SOL_p_r.append_coordinate_list("/jointset/ankle_r/ankle_q_r");
     auto* SOL_r = new DeGrooteFregly2016Muscle();
-    SOL_r->set_GeometryPath(SOL_p_r);
+    auto& SOL_p_r = SOL_r->updGeometryPath();
+    SOL_p_r.set_use_approximation(true);
+    SOL_p_r.append_length_approximation(*SOL_f);
+    SOL_p_r.append_approximation_coordinates("/jointset/ankle_r/ankle_angle_r");
     SOL_r->set_ignore_tendon_compliance(true);
+    SOL_r->addNewPathPoint("SOL_r-P1", *tibia_r, Vec3(-0.00232016, -0.1482, 0.0068638));
+    SOL_r->addNewPathPoint("SOL_r-P2", *calcn_r, Vec3(0, 0.0283317, -0.0048438));
     SOL_r->setName("SOL_r");
     model.addComponent(SOL_r);
 
-    PolynomialActuators TA_p_r;
-    TA_p_r.set_function(*TA_f);
-    TA_p_r.append_coordinate_list("/jointset/ankle_r/ankle_q_r");
     auto* TA_r = new DeGrooteFregly2016Muscle();
-    TA_r->set_GeometryPath(TA_p_r);
+    auto& TA_p_r = TA_r->updGeometryPath();
+    TA_p_r.set_use_approximation(true);
+    TA_p_r.append_length_approximation(*TA_f);
+    TA_p_r.append_approximation_coordinates("/jointset/ankle_r/ankle_angle_r");
     TA_r->set_ignore_tendon_compliance(true);
+    TA_r->addNewPathPoint("TA_r-P1", *tibia_r, Vec3(0.0173045, -0.156997, 0.0111174));
+    TA_r->addNewPathPoint("TA_r-P2", *tibia_r, Vec3(0.0318055, -0.381956, -0.0171112));
+    TA_r->addNewPathPoint("TA_r-P3", *calcn_r, Vec3(0.106564, 0.0162679, -0.0278747));
     TA_r->setName("TA_r");
     model.addComponent(TA_r);
 
@@ -396,9 +421,10 @@ void testPolynomialApproximation() {
     stateValues.setTo(0);
 
     // Set values for speeds to have non-null muscle-tendon lengthening speeds
-    stateValues[18] = -1;
-    stateValues[22] = 1;
-    stateValues[26] = 0.5;
+
+    stateValues[18] = -1; // hip_flexion_r speed
+    stateValues[22] = 1; // knee_angle_r speed
+    stateValues[26] = 0.5; // ankle_angle_r speed
 
     model.setStateVariableValues(state, stateValues);
     model.realizeVelocity(state);
