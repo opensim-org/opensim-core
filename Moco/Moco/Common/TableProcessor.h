@@ -109,8 +109,8 @@ public:
     }
     /// Returns true if neither a filepath nor an in-memory table have been
     /// provided.
-    bool empty() const { 
-        return !m_tableProvided && get_filepath().empty(); 
+    bool empty() const {
+        return !m_tableProvided && get_filepath().empty();
     }
     /// Append an operation to the end of the operations in this processor.
     TableProcessor& append(const TableOperator& op) {
