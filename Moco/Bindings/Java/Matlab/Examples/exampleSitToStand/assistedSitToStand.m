@@ -26,16 +26,17 @@ function assistedSitToStand
 %    and subject2_unassisted_solution.sto. If you want to re-run the unassisted
 %    optimizations, delete these STO files or set cacheUnassisted to false.
 % 4. To make Moco optimize the device parameters for you, do the following:
-%       a. Create a MocoStudy for one of the subjects using createStudy(),
+%       a. Temporarily comment out the call to evaluateDevice().
+%       b. Create a MocoStudy for one of the subjects using createStudy(),
 %          the second subfunction below.
-%       b. Add a MocoParameter to your problem representing the model property
+%       c. Add a MocoParameter to your problem representing the model property
 %          you want to optimize.
-%       c. (optional) Set an initial guess for your parameter.
+%       d. (optional) Set an initial guess for your parameter.
 %          See createGuess() and setGuess() in MocoDirectCollocationSolver.
-%       d. Solve the study returned from createStudy().
-%       e. Get the parameter values out of the MocoSolution returned by solve().
+%       e. Solve the study returned from createStudy().
+%       f. Get the parameter values out of the MocoSolution returned by solve().
 %          See the documentation for MocoTrajectory.
-%       f. Copy the parameter values into your device function, and evaluate
+%       g. Copy the parameter values into your device function, and evaluate
 %          the optimized design.
 
 import org.opensim.modeling.*;
