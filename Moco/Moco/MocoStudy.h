@@ -95,11 +95,16 @@ public:
     /// If using this method in C++, make sure to include the "&" in the
     /// return type; otherwise, you'll make a copy of the solver, and the copy
     /// will have no effect on this MocoStudy.
-    MocoTropterSolver& initTropterSolver();
-
-    // TODO document
-    /// This returns a fresh MucoCasADiSolver and deletes the previous solver.
+    /// This deletes the previous solver if one exists.
     MocoCasADiSolver& initCasADiSolver();
+
+    /// Call this method once you have finished setting up your MocoProblem.
+    /// This returns a reference to the MocoSolver, which you can then edit.
+    /// If using this method in C++, make sure to include the "&" in the
+    /// return type; otherwise, you'll make a copy of the solver, and the copy
+    /// will have no effect on this MocoStudy.
+    /// This deletes the previous solver if one exists.
+    MocoTropterSolver& initTropterSolver();
 
     /// Access the solver. Make sure to call `initSolver()` beforehand.
     /// If using this method in C++, make sure to include the "&" in the
