@@ -21,14 +21,26 @@
 \usepackage{xcolor}
 \definecolor{oblue}{rgb}{0.4745,0.6,0.8}
 
+
+
 % \tikzset{
 %  font={\fontsize{10pt}{12}\selectfont}}
 
 %  \vfill\null
 %\columnbreak
 
+% TODO rounded code block frames does not work with a background color
+% (background color spills out of the rounded corner).
+\lstset{
+%frameround=tttt,
+backgroundcolor=\color{oblue!10!white}
+}
+
 \begin{document}
 \begin{center}
+
+{\large\textbf{OpenSim Moco Cheat Sheet for Matlab Interface}}
+
   \begin{tikzpicture}[auto]
     
     
@@ -36,7 +48,7 @@
     	rectangle, rounded corners, inner sep=5pt, inner ysep=5pt]
     
 \node (studybody) [align=left, text width=7in] {
-\vspace{-7pt}
+\vspace{-15pt}
 \begin{center}\textbf{\textcolor{oblue}{MocoStudy}}\end{center}
 };
     
@@ -62,7 +74,7 @@ problem.setTimeBounds(0, [0.5, 1.5]);
 The coordinate value must be between 0 and $\pi$ over the phase, 
 and its initial value is 0 and its final value is $\pi/2$.
 \begin{lstlisting}[style=Matlab-editor, basicstyle=\mlttfamily\small, linewidth=0.48\textwidth]
-problem.setStateInfo('/jointset/j0/q0/value',  ...
+problem.setStateInfo('/jointset/j0/q0/value', 
     [0, pi], 0, pi/2);
 \end{lstlisting}
 The control for actuator '/tau0' must be within [-50, 50] over the phase.
@@ -74,7 +86,7 @@ problem.setControlInfo('/tau0', [-50, 50]);
 \textbf{Optimize static model properties.}\\
 Optimize the mass of Body `/bodyset/b0' within [0.1, 0.5].
 \begin{lstlisting}[style=Matlab-editor, basicstyle=\mlttfamily\small, linewidth=0.48\textwidth]
-problem.addParameter(MocoParameter('myparam', ...
+problem.addParameter(MocoParameter('myparam',
     '/bodyset/b0', 'mass', MocoBounds(0.1, 0.5)));
 \end{lstlisting}
 \vspace{10pt}
@@ -93,7 +105,6 @@ problem.addCost(MocoControlCost('effort', 1.5));
 Bound controls for an actuator.
 \begin{lstlisting}[style=Matlab-editor, basicstyle=\mlttfamily\small, linewidth=0.48\textwidth]
 pathCon = MocoControlBoundConstraint();
-...
 problem.addPathConstraint(pathCon);
 \end{lstlisting}
 \end{multicols}
@@ -138,7 +149,7 @@ solver.setGuess(guess);
 \end{lstlisting}
 Set the guess from a MocoTrajectory or MocoSolution file.
 \begin{lstlisting}[style=Matlab-editor, basicstyle=\mlttfamily\small, linewidth=0.48\textwidth]
-solver.setGuessFile("previous_solution.sto");
+solver.setGuessFile('previous_solution.sto');
 \end{lstlisting}
 
 \vspace{10pt}
