@@ -306,7 +306,16 @@ MocoSolution MocoTropterSolver::solveImpl() const {
         getProblemRep().printDescription();
     }
     auto dircol = createTropterSolver(ocp);
-    tropter::Iterate tropIterate = ocp->convertToTropterIterate(getGuess());
+    MocoTrajectory guess = getGuess();
+    OPENSIM_THROW_IF(get_dynamics_mode() == "implicit" &&
+            guess.hasCoordinateStates() &&
+            guess.getDerivativeNames().empty(), Exception,
+        "'dynamics_mode' set to 'implicit' and coordinate states exist in the "
+        "guess, but no coordinate accelerations were found in the guess. "
+        "Consider using MocoTrajectory::generateAccelerationsFromValues() or "
+        "MocoTrajectory::generateAccelerationsFromSpeeds() to construct an "
+        "appropriate guess.")
+    tropter::Iterate tropIterate = ocp->convertToTropterIterate(guess);
     tropter::Solution tropSolution = dircol->solve(tropIterate);
 
     if (get_verbosity()) { dircol->print_constraint_values(tropSolution); }

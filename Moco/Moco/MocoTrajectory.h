@@ -1,7 +1,7 @@
 #ifndef MOCO_MOCOTRAJECTORY_H
 #define MOCO_MOCOTRAJECTORY_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: MocoTrajectory.h                                                *
+ * OpenSim Moco: MocoTrajectory.h *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2017 Stanford University and the Authors                     *
  *                                                                            *
@@ -98,7 +98,8 @@ accelerations. These are stored in the iterate as derivative variables. */
 class OSIMMOCO_API MocoTrajectory {
 public:
     MocoTrajectory() = default;
-    MocoTrajectory(const SimTK::Vector& time, std::vector<std::string> state_names,
+    MocoTrajectory(const SimTK::Vector& time,
+            std::vector<std::string> state_names,
             std::vector<std::string> control_names,
             std::vector<std::string> multiplier_names,
             std::vector<std::string> parameter_names,
@@ -108,7 +109,8 @@ public:
             const SimTK::RowVector& parameters);
     /// This constructor is for use with the implicit dynamics mode, and
     /// allows specifying a derivativesTrajectory.
-    MocoTrajectory(const SimTK::Vector& time, std::vector<std::string> state_names,
+    MocoTrajectory(const SimTK::Vector& time,
+            std::vector<std::string> state_names,
             std::vector<std::string> control_names,
             std::vector<std::string> multiplier_names,
             std::vector<std::string> derivative_names,
@@ -149,6 +151,14 @@ public:
                  m_state_names.size() || m_control_names.size() ||
                  m_multiplier_names.size() || m_derivative_names.size() ||
                  m_slack_names.size() || m_parameter_names.size());
+    }
+
+    bool hasCoordinateStates() const {
+        for (auto name : m_state_names) {
+            auto leafpos = name.find("/value");
+            if (leafpos != std::string::npos) return true;
+        }
+        return false;    
     }
 
     /// @name Change the length of the trajectory
@@ -339,6 +349,22 @@ public:
     /// change this behavior with `overwrite`.
     void insertStatesTrajectory(
             const TimeSeriesTable& subsetOfStates, bool overwrite = false);
+
+    /// Compute coordinate speeds based on coordinate position values and append
+    /// to the trajectory. Coordinate values must exist in the original
+    /// trajectory.
+    /// @note Overrides any existing speed values in the trajectory.
+    void generateSpeedsFromValues();
+    /// Compute coordinate accelerations based on coordinate position values and
+    /// append to the trajectory. Coordinate values must exist in the original
+    /// trajectory.
+    /// @note Overrides any existing acceleration values in the trajectory.
+    void generateAccelerationsFromValues();
+    /// Compute coordinate accelerations based on coordinate speeds and append
+    /// to the trajectory. Coordinate speeds must exist in the original
+    /// trajectory.
+    /// @note Overrides any existing acceleration values in the trajectory.
+    void generateAccelerationsFromSpeeds();
     /// @}
 
     /// @name Accessors

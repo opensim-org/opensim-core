@@ -224,7 +224,7 @@ kinematic levels (i.e. holonomic, non-holonomic, or acceleration), and the
 number of Lagrange multipliers that are added to the problem to enforce the
 constraints.
 
-The solvers allow the user to choose whether to enforce kinematic constraint 
+The solvers allow the user to choose whether to enforce kinematic constraint
 derivatives or minimize Lagrange multipliers in the problem.
 
 @code{.cpp}
@@ -236,14 +236,14 @@ ms.set_lagrange_multiplier_weight(10);
 If constraint derivatives are enforced, velocity correction variables are added
 to the problem according to the method described in Posa, Kuindersma, and
 Tedrake, 2016, "Optimization and stabilization of trajectories for constrained
-dynamical systems."  
+dynamical systems."
 
-@note Enforcing kinematic constraints is only supported with Hermite-Simpson 
-transcription, since this scheme is necessary for implementing the method 
+@note Enforcing kinematic constraints is only supported with Hermite-Simpson
+transcription, since this scheme is necessary for implementing the method
 described in Posa et al. 2016. See @ref hermitesimpson for implementation
 details.
 
-It is possible to modify the default bounds on these velocity correction 
+It is possible to modify the default bounds on these velocity correction
 variables:
 
 @code{.cpp}
@@ -339,8 +339,8 @@ where \f$ \zeta \f$ is generalized acceleration and \f$ \zeta_B \f$ is a large n
 
 With Hermite-Simpson transcription, we have \f$ n + 1 \f$ mesh points and
 \f$ n \f$ mesh intervals like Trapezoidal transcription, but we also introduce
-additional collocation points at the mesh interval midpoints. This leads to a 
-total of \f$ 2n + 1 \f$ grid points on which we discretize the continuous 
+additional collocation points at the mesh interval midpoints. This leads to a
+total of \f$ 2n + 1 \f$ grid points on which we discretize the continuous
 variables:
 
 \f[
@@ -359,12 +359,12 @@ Derivatives and integrals are removed from the original continuous time problem
 with the Hermite interpolant and Simpson integration rule:
 
 \f[
-    \textrm{hermite}_i(\eta, F(\eta, p)) = \frac{1}{2} (\eta_{i-1} + \eta_i) + \frac{h_i}{8} (F(\eta_{i-1}, p) - F(\eta_i, p)) \\ 
+    \textrm{hermite}_i(\eta, F(\eta, p)) = \frac{1}{2} (\eta_{i-1} + \eta_i) + \frac{h_i}{8} (F(\eta_{i-1}, p) - F(\eta_i, p)) \\
     \textrm{simpson}_i(F(\eta, p)) = \frac{h_i}{6} (F(\eta_{i-1}, p) + 4 F(\bar{\eta}_i, p) + F(\eta_i, p))
 \f]
 
 where \f$ \eta \f$ is any continuous variable in the optimal control problem
-(e.g., \f$ y \f$) and \f$ F \f$ is any function. Note the midpoint function 
+(e.g., \f$ y \f$) and \f$ F \f$ is any function. Note the midpoint function
 evaluation in the Simpson integration rule.
 
 The resulting finite-dimensional NLP is as follows:
@@ -426,13 +426,13 @@ in Trapezoidal transcription. The implicit dynamics formulation is as follows:
     \end{alignat*}
 \f]
 
-The \f$ G(\bar{q}_i, p)^T \bar{\gamma}_i \f$ term represents a velocity 
+The \f$ G(\bar{q}_i, p)^T \bar{\gamma}_i \f$ term represents a velocity
 correction that is necessary to impose when enforcing derivatives of kinematic
-constraints in the NLP. The additional variables \f$ \bar{\gamma}_i \f$ help 
-avoid problems becoming overconstrained, and the kinematic Jacobian transpose 
-operator, \f$ G(\bar{q}_i, p)^T \f$, restricts the velocity correction to the 
-tangent plane of the constraint manifold (see Posa et al. 2016 described in @ref 
-kincon for more details). Currently, we only support enforcing derivatives of 
+constraints in the NLP. The additional variables \f$ \bar{\gamma}_i \f$ help
+avoid problems becoming overconstrained, and the kinematic Jacobian transpose
+operator, \f$ G(\bar{q}_i, p)^T \f$, restricts the velocity correction to the
+tangent plane of the constraint manifold (see Posa et al. 2016 described in @ref
+kincon for more details). Currently, we only support enforcing derivatives of
 position-level, or holonomic, constraints, represented by the equations:
 
 \f[
@@ -440,14 +440,14 @@ position-level, or holonomic, constraints, represented by the equations:
          & 0 = \dot{\phi}(q, u, p) = G(q, p) u\\
          & 0 = \ddot{\phi}(q, u, \dot{u}, p) = G(q, p) \dot{u} + \dot{G}(q, p) u \\
     \end{alignat*}
-\f] 
+\f]
 
-Even though OpenSim supports non-holonomic constraints (that is, 
-\f$ \nu(q, u, p) = 0 \f$), we only support holonomic constraints; that is, 
+Even though OpenSim supports non-holonomic constraints (that is,
+\f$ \nu(q, u, p) = 0 \f$), we only support holonomic constraints; that is,
 \f$ \phi(q) = 0 \f$.
 
 By default, the controls at mesh interval midpoints are constrained by linear
-interpolation of control mesh endpoint values (represented by 
+interpolation of control mesh endpoint values (represented by
 \f$ \bar{x}_i = (x_{i-1} + x_i)/2 \f$ above) and is the recommended setting.
 However, you may disable this behavior in the solver:
 
@@ -458,12 +458,17 @@ ms.set_interpolate_control_midpoints(false);
 
 @section tips Tips for solving a custom problem
 
-1. Make sure every variable has bounds. 
-2. Create a dynamically-consistent initial guess by solving a feasibility problem 
+1. Make sure every variable has bounds.
+2. Create a dynamically-consistent initial guess by solving a feasibility problem
 (i.e. no cost terms).
-3. Actuators should only be as strong as they need to be. Problems tend to 
+3. Actuators should only be as strong as they need to be. Problems tend to
 converge slower if some actuator controls are very small compared to those of
 other actuators in the model due to unecessarily large max force settings.
+4. Add reserve actuators to muscle-driven problems (whether inverse,
+tracking, predicdtive, etc.) to improve convergence and identify muscles that
+are too weak to drive a desired motion.
+5. If controls display high frequency oscillations, try tightening the solver's
+convergence and constraint tolerances.
 
 */
 

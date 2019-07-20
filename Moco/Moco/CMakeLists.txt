@@ -38,6 +38,8 @@ set(MOCO_SOURCES
         MocoGoal/MocoTranslationTrackingGoal.cpp
         MocoGoal/MocoInitialActivationGoal.cpp
         MocoGoal/MocoInitialActivationGoal.h
+        MocoCost/MocoSumSquaredStateCost.h
+        MocoCost/MocoSumSquaredStateCost.cpp
         MocoSolver.h
         MocoSolver.cpp
         MocoDirectCollocationSolver.h
@@ -96,7 +98,7 @@ set(MOCO_SOURCES
         MocoConstraintInfo.cpp
         MocoConstraintInfo.h
         )
-if (MOCO_WITH_TROPTER)
+if(MOCO_WITH_TROPTER)
     list(APPEND MOCO_SOURCES
             tropter/TropterProblem.h
             tropter/TropterProblem.cpp

@@ -162,7 +162,7 @@ TimeSeriesTable MocoTrack::configureStateTracking(MocoProblem& problem,
         std::string speedName = coordPath + "/speed";
         bool trackingValue = false;
         bool trackingSpeed = false;
-        int valueIdx;
+        int valueIdx = -1;
         for (int i = 0; i < numRefStates; ++i) {
             if (labels[i] == valueName) {
                 trackingValue = true;

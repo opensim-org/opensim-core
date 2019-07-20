@@ -286,9 +286,9 @@ public:
     void printCurvesToSTOFiles(const std::string& directory = ".") const;
 
     /// Replace muscles of other types in the model with muscles of this type.
-    /// Currently, only Millard2012EquilibriumMuscles are replaced.
-    /// If the model has muscles of other types, an exception is thrown unless
-    /// allowUnsupportedMuscles is true.
+    /// Currently, only Millard2012EquilibriumMuscles and Thelen2003Muscles
+    /// are replaced. If the model has muscles of other types, an exception is
+    /// thrown unless allowUnsupportedMuscles is true.
     /// The resulting muscles will have ignore_tendon_compliance set as true,
     /// regardless of the values in the original muscles, as this muscle class
     /// does not yet support tendon compliance.

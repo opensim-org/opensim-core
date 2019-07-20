@@ -1,3 +1,8 @@
+- 2019-07-18: Three new methods for MocoTrajectory are now available to compute
+              missing states trajectory data given existing data. For example,
+              you may now use a guess generated for explicit dynamics in implicit
+              dynamics by calling generateAccelerationsFromSpeeds() on the guess
+              before passing it to the solver.
 - 2019-07-15: MocoGoals can be enforced either as objective terms or as endpoint
               constraints. Applying a MocoGoal as an endpoint constraint is
               supported by MocoCasADiSolver (not MocoTropterSolver).

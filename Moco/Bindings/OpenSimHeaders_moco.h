@@ -20,6 +20,7 @@
 #include <Moco/MocoGoal/MocoMarkerTrackingGoal.h>
 #include <Moco/MocoGoal/MocoOrientationTrackingGoal.h>
 #include <Moco/MocoGoal/MocoStateTrackingGoal.h>
+#include <Moco/MocoCost/MocoSumSquaredStateCost.h>
 #include <Moco/MocoGoal/MocoTranslationTrackingGoal.h>
 #include <Moco/MocoInverse.h>
 #include <Moco/MocoParameter.h>
