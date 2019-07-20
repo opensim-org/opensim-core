@@ -308,59 +308,61 @@ set_target_properties(MocoPythonBindings PROPERTIES
 
 # Test.
 # =====
-# This test runs all the python tests in the tests directory from the
-# source tree. It's important to run the tests in the source tree so that
-# one can edit the tests and immediately re-run the tests without any
-# intermediate file copying.
-# It so happens that ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG> is the same as
-# ${MOCO_PYTHON_BINARY_DIR}, but the former avoids an `if(MSVC OR XCODE)`.
-add_test(NAME python_tests
-    WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>"
-    COMMAND "${PYTHON_EXECUTABLE}" -m unittest discover
-                --start-directory "${CMAKE_CURRENT_SOURCE_DIR}/tests"
-                --verbose
-    )
-set_tests_properties(python_tests PROPERTIES
-    ENVIRONMENT "OPENSIM_USE_VISUALIZER=0")
-# Similar as above, but for the example files. These files aren't named as
-# test_*.py, so we must specify a more general search pattern.
-add_test(NAME python_examples
-    WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>"
-    COMMAND "${PYTHON_EXECUTABLE}" -m unittest discover
-                --start-directory "${CMAKE_CURRENT_SOURCE_DIR}/examples"
-                --pattern *.py
-                --verbose
-    )
-set_property(TEST python_examples APPEND PROPERTY
-    ENVIRONMENT "OPENSIM_USE_VISUALIZER=0")
-
-if(WIN32)
-    # On Windows, CMake cannot use RPATH to hard code the location of libraries
-    # in the binary directory (DLL's don't have RPATH), so we must set PATH to
-    # find the right libraries. The location of the libraries depends on the
-    # build configuration, which is filled in for `$<CONFIG>`. We also don't
-    # want to accidentally use a different OpenSim build/installation somewhere
-    # on the machine.
-    foreach(folder tests examples)
-        set_property(TEST python_${folder} APPEND PROPERTY ENVIRONMENT
-            "PATH=${CMAKE_BINARY_DIR}/$<CONFIG>"
+if (BUILD_TESTING)
+    # This test runs all the python tests in the tests directory from the
+    # source tree. It's important to run the tests in the source tree so that
+    # one can edit the tests and immediately re-run the tests without any
+    # intermediate file copying.
+    # It so happens that ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG> is the same as
+    # ${MOCO_PYTHON_BINARY_DIR}, but the former avoids an `if(MSVC OR XCODE)`.
+    add_test(NAME python_tests
+            WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>"
+            COMMAND "${PYTHON_EXECUTABLE}" -m unittest discover
+            --start-directory "${CMAKE_CURRENT_SOURCE_DIR}/tests"
+            --verbose
             )
-    endforeach()
+    set_tests_properties(python_tests PROPERTIES
+            ENVIRONMENT "OPENSIM_USE_VISUALIZER=0")
+    # Similar as above, but for the example files. These files aren't named as
+    # test_*.py, so we must specify a more general search pattern.
+    add_test(NAME python_examples
+            WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>"
+            COMMAND "${PYTHON_EXECUTABLE}" -m unittest discover
+            --start-directory "${CMAKE_CURRENT_SOURCE_DIR}/examples"
+            --pattern *.py
+            --verbose
+            )
+    set_property(TEST python_examples APPEND PROPERTY
+            ENVIRONMENT "OPENSIM_USE_VISUALIZER=0")
+
+    if(WIN32)
+        # On Windows, CMake cannot use RPATH to hard code the location of
+        # libraries in the binary directory (DLL's don't have RPATH), so we must
+        # set PATH to find the right libraries. The location of the libraries
+        # depends on the build configuration, which is filled in for
+        # `$<CONFIG>`. We also don't want to accidentally use a different
+        # OpenSim build/installation somewhere on the machine.
+        foreach(folder tests examples)
+            set_property(TEST python_${folder} APPEND PROPERTY ENVIRONMENT
+                    "PATH=${CMAKE_BINARY_DIR}/$<CONFIG>"
+                    )
+        endforeach()
+    endif()
+
+    # Allow MSVC users to run only the python tests directly from the MSVC GUI.
+    # The python tests are run from RUN_TESTS, so no need to run this target as
+    # part of `BUILD_ALL` (e.g, in MSVC). Might need to set
+    # EXCLUDE_FROM_DEFAULT_BUILD to achieve this?
+    add_custom_target(RunMocoPythonTests
+            COMMAND ${CMAKE_CTEST_COMMAND} --tests-regex python
+            --build-config ${CMAKE_CFG_INTDIR}
+            --extra-verbose)
+    set_target_properties(RunMocoPythonTests PROPERTIES
+            PROJECT_LABEL "Python - run tests"
+            FOLDER "Moco/Bindings")
+
+    add_dependencies(RunMocoPythonTests MocoPythonBindings)
 endif()
-
-# Allow MSVC users to run only the python tests directly from the MSVC GUI.
-# The python tests are run from RUN_TESTS, so no need to run this target as
-# part of `BUILD_ALL` (e.g, in MSVC). Might need to set
-# EXCLUDE_FROM_DEFAULT_BUILD to achieve this?
-add_custom_target(RunMocoPythonTests
-    COMMAND ${CMAKE_CTEST_COMMAND} --tests-regex python
-                                   --build-config ${CMAKE_CFG_INTDIR}
-                                   --extra-verbose)
-set_target_properties(RunMocoPythonTests PROPERTIES
-    PROJECT_LABEL "Python - run tests"
-    FOLDER "Moco/Bindings")
-
-add_dependencies(RunMocoPythonTests MocoPythonBindings)
 
 # Install python package.
 # =======================
