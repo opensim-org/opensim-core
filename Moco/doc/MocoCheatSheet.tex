@@ -18,6 +18,8 @@
 \usepackage[scaled]{beramono}
 \usepackage{multicol}
 
+\usepackage{xcolor}
+\definecolor{oblue}{rgb}{0.4745,0.6,0.8}
 
 % \tikzset{
 %  font={\fontsize{10pt}{12}\selectfont}}
@@ -30,15 +32,17 @@
   \begin{tikzpicture}[auto]
     
     
-	\tikzstyle{object} = [draw=black, very thick,
+	\tikzstyle{object} = [draw=oblue, very thick,
     	rectangle, rounded corners, inner sep=5pt, inner ysep=5pt]
     
 \node (studybody) [align=left, text width=7in] {
-\begin{center}\textbf{MocoStudy}\end{center}
+\vspace{-7pt}
+\begin{center}\textbf{\textcolor{oblue}{MocoStudy}}\end{center}
 };
     
     \node (problem) [object, below=of studybody, align=left, text width=7.5in] {
-    \begin{center}\textbf{MocoProblem}\end{center}
+\vspace{-10pt}
+\begin{center}\textbf{\textcolor{oblue}{MocoProblem}}\end{center}
 \begin{multicols}{2}% 2-column layout
 Access the MocoProblem from the study.
 \begin{lstlisting}[style=Matlab-editor, basicstyle=\mlttfamily\small, linewidth=0.48\textwidth]
@@ -103,7 +107,8 @@ problem.addPathConstraint(pathCon);
 };
     
 \node (solver) [object, below=of problem, align=left, text width=7.5in] {
-\begin{center}\textbf{MocoSolver}\end{center}
+\vspace{-10pt}
+\begin{center}\textbf{\textcolor{oblue}{MocoSolver}}\end{center}
 \begin{multicols}{2}% 2-column layout
 \textbf{Initialize the CasADi or Tropter solver.}\\
 \begin{lstlisting}[style=Matlab-editor, basicstyle=\mlttfamily\small, linewidth=0.48\textwidth]
@@ -133,14 +138,23 @@ By default, the Hessian is approximated from first derivatives). Set to 'exact' 
 \begin{lstlisting}[style=Matlab-editor, basicstyle=\mlttfamily\small, linewidth=0.48\textwidth]
 solver.set_optim_hessian_approximation('exact');
 \end{lstlisting}
-% TODO guess.
+Create a guess, randomize it, then set the guess.
+\begin{lstlisting}[style=Matlab-editor, basicstyle=\mlttfamily\small, linewidth=0.48\textwidth]
+guess = solver.createGuess(); guess.randomizeAdd();
+solver.setGuess(guess);
+\end{lstlisting}
+Set the guess from a MocoTrajectory or MocoSolution file.
+\begin{lstlisting}[style=Matlab-editor, basicstyle=\mlttfamily\small, linewidth=0.48\textwidth]
+solver.setGuessFile("previous_solution.sto");
+\end{lstlisting}
+
 \vspace{10pt}
 \textbf{Settings for only CasADi solver.}\\
 By default, CasADi uses 'central' finite differences; 'forward' differences are faster but less accurate.
 \begin{lstlisting}[style=Matlab-editor, basicstyle=\mlttfamily\small, linewidth=0.48\textwidth]
 solver.set_finite_difference_scheme('forward');
 \end{lstlisting}
-Turn off parallel calculation of integrals, dynamics, and path constraints.
+Turn off parallel calculations.
 \begin{lstlisting}[style=Matlab-editor, basicstyle=\mlttfamily\small, linewidth=0.48\textwidth]
 solver.set_parallel(0);
 \end{lstlisting}
@@ -180,6 +194,9 @@ solver.set_output_interval(10);
 %    \end{equation*}
   \end{tikzpicture}
 \end{center}
+\newpage
+
+
 \end{document}
 
 % TODO
