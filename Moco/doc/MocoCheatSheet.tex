@@ -4,7 +4,7 @@
 % License : Creative Commons attribution license
 \documentclass{article}
 \usepackage[latin1]{inputenc}
-\usepackage[margin=0.25in]{geometry}
+\usepackage[margin=0.2in]{geometry}
 \usepackage{tikz}
 \usetikzlibrary{positioning,shapes,arrows,fit}
 \usepackage{caption}
@@ -22,6 +22,9 @@
 % \tikzset{
 %  font={\fontsize{10pt}{12}\selectfont}}
 
+%  \vfill\null
+%\columnbreak
+
 \begin{document}
 \begin{center}
   \begin{tikzpicture}[auto]
@@ -32,50 +35,45 @@
     
 \node (studybody) [align=left, text width=7in] {
 \begin{center}\textbf{MocoStudy}\end{center}
-Create a MocoStudy.
-\begin{lstlisting}[style=Matlab-editor, basicstyle=\mlttfamily\small, linewidth=10cm]
-study = MocoStudy();
-\end{lstlisting}
-Access the MocoProblem from the study.
-\begin{lstlisting}[style=Matlab-editor, basicstyle=\mlttfamily\small, linewidth=10cm]
-problem = study.updProblem();
-\end{lstlisting}
 };
     
-    \node (problem) [object, below=of studybody, align=left, text width=7in] {
+    \node (problem) [object, below=of studybody, align=left, text width=7.5in] {
     \begin{center}\textbf{MocoProblem}\end{center}
-Set the OpenSim model that describes the dynamics and kinematic constraints.
-\begin{lstlisting}[style=Matlab-editor, basicstyle=\mlttfamily\small, linewidth=15cm]
-% Set the model to a single pendulum using the ModelFactory.
+\begin{multicols}{2}% 2-column layout
+Access the MocoProblem from the study.
+\begin{lstlisting}[style=Matlab-editor, basicstyle=\mlttfamily\small, linewidth=0.48\textwidth]
+problem = study.updProblem();
+\end{lstlisting}
+\vspace{10pt}
+\textbf{Set the model.}\\
+\begin{lstlisting}[style=Matlab-editor, basicstyle=\mlttfamily\small, linewidth=0.48\textwidth]
 problem.setModel(ModelFactory.createPendulum());
 \end{lstlisting}
-Set bounds on the initial and final time.
-\begin{lstlisting}[style=Matlab-editor, basicstyle=\mlttfamily\small, linewidth=15cm]
-% Initial time is 0, final time is between 0.5 and 1.5 s.
+\vspace{10pt}
+\textbf{Set variable bounds.}\\
+Set initial time to 0; final time between 0.5 and 1.5 s.
+\begin{lstlisting}[style=Matlab-editor, basicstyle=\mlttfamily\small, linewidth=0.48\textwidth]
 problem.setTimeBounds(0, [0.5, 1.5]);
 \end{lstlisting}
-Set bounds on state and control variables.
-\begin{lstlisting}[style=Matlab-editor, basicstyle=\mlttfamily\small, linewidth=15cm]
-% The q0 coordinate value must be between 0 and pi over the phase, 
-% and its initial value is 0 and its final value is pi/2.
-problem.setStateInfo('/jointset/j0/q0/value', [0, pi], 0, pi/2);
-% The control signal for actuator '/tau0' must be within [-50, 50] over the phase.
+The coordinate value must be between 0 and $\pi$ over the phase, 
+and its initial value is 0 and its final value is $\pi/2$.
+\begin{lstlisting}[style=Matlab-editor, basicstyle=\mlttfamily\small, linewidth=0.48\textwidth]
+problem.setStateInfo('/jointset/j0/q0/value',  ...
+    [0, pi], 0, pi/2);
+\end{lstlisting}
+The control for actuator '/tau0' must be within [-50, 50] over the phase.
+\begin{lstlisting}[style=Matlab-editor, basicstyle=\mlttfamily\small, linewidth=0.48\textwidth]
 problem.setControlInfo('/tau0', [-50, 50]);
 \end{lstlisting}
-\begin{multicols}{2}% 2-column layout
-  \begin{minipage}{0.48\textwidth}
-\textbf{Optimize static model properties.}
-  \end{minipage}
-  \vfill\null
-\columnbreak
-Optimize the mass of Body with path `/bodyset/b0` with bounds [0.1, 0.5].
+\vspace{10pt}
+\textbf{Optimize static model properties.}\\
+Optimize the mass of Body `/bodyset/b0' within [0.1, 0.5].
 \begin{lstlisting}[style=Matlab-editor, basicstyle=\mlttfamily\small, linewidth=0.48\textwidth]
 problem.addParameter(MocoParameter('myparam', ...
     '/bodyset/b0', 'mass', MocoBounds(0.1, 0.5)));
 \end{lstlisting}
-\end{multicols}
-\begin{multicols}{2}% 2-column layout
-  \begin{minipage}{0.48\textwidth}
+  \vfill\null
+\columnbreak
 \textbf{Add cost terms to the problem.}
 \begin{center}
 Control $\cdot $ FinalTime\\
@@ -83,9 +81,6 @@ StateTracking $\cdot$ MarkerTracking\\
 TranslationTracking $\cdot$ OrientationTracking\\
 ControlTracking $\cdot$ JointReaction
 \end{center}
-  \end{minipage}
-  \vfill\null
-\columnbreak
 Minimize the final time with weight 7.5.
 \begin{lstlisting}[style=Matlab-editor, basicstyle=\mlttfamily\small, linewidth=0.48\textwidth]
 problem.addCost(MocoFinalTimeCost('time', 7.5));
@@ -94,13 +89,8 @@ Minimize the sum of squared controls with weight 1.5.
 \begin{lstlisting}[style=Matlab-editor, basicstyle=\mlttfamily\small, linewidth=0.48\textwidth]
 problem.addCost(MocoControlCost('effort', 1.5));    
 \end{lstlisting}
-\end{multicols}
-\begin{multicols}{2}% 2-column layout
-  \begin{minipage}{0.48\textwidth}
-\textbf{Add path constraints to the problem.}
-  \end{minipage}
-  \vfill\null
-\columnbreak
+\vspace{10pt}
+\textbf{Add path constraints to the problem.}\\
 Bound control for actuator '/tau0' between 0.5t and 0.7t.
 \begin{lstlisting}[style=Matlab-editor, basicstyle=\mlttfamily\small, linewidth=0.48\textwidth]
 pathCon = MocoControlBoundConstraint();
@@ -112,7 +102,54 @@ problem.addPathConstraint(pathCon);
 \end{multicols}
 };
     
-    \node (solver) [object, below=of problem] {MocoSolver};
+\node (solver) [object, below=of problem, align=left, text width=7.5in] {
+\begin{center}\textbf{MocoSolver}\end{center}
+\begin{multicols}{2}% 2-column layout
+\textbf{Initialize the CasADi or Tropter solver.}\\
+\begin{lstlisting}[style=Matlab-editor, basicstyle=\mlttfamily\small, linewidth=0.48\textwidth]
+solver = study.initCasADiSolver();
+% alternative: solver = study.initTropterSolver();
+\end{lstlisting}
+\vspace{10pt}
+\textbf{Settings for Tropter and CasADi solvers.}\\
+Solve the problem on a grid of 51 mesh points.
+\begin{lstlisting}[style=Matlab-editor, basicstyle=\mlttfamily\small, linewidth=0.48\textwidth]
+solver.set_num_mesh_points(51);
+\end{lstlisting}
+Transcribe the optimal control problem with the Hermite-Simpson scheme (alternative: `trapezoidal').
+\begin{lstlisting}[style=Matlab-editor, basicstyle=\mlttfamily\small, linewidth=0.48\textwidth]
+solver.set_transcription_scheme('hermite-simpson');
+\end{lstlisting}
+Loosen the convergence and constraint tolerances.
+\begin{lstlisting}[style=Matlab-editor, basicstyle=\mlttfamily\small, linewidth=0.48\textwidth]
+solver.set_convergence_tolerance(1e-3);
+solver.set_constraint_tolerance(1e-3);
+\end{lstlisting}
+Stop optimization after 500 iterations.
+\begin{lstlisting}[style=Matlab-editor, basicstyle=\mlttfamily\small, linewidth=0.48\textwidth]
+solver.set_max_iterations(500);
+\end{lstlisting}
+By default, the Hessian is approximated from first derivatives). Set to 'exact' to use an exact Hessian.
+\begin{lstlisting}[style=Matlab-editor, basicstyle=\mlttfamily\small, linewidth=0.48\textwidth]
+solver.set_optim_hessian_approximation('exact');
+\end{lstlisting}
+% TODO guess.
+\vspace{10pt}
+\textbf{Settings for only CasADi solver.}\\
+By default, CasADi uses 'central' finite differences; 'forward' differences are faster but less accurate.
+\begin{lstlisting}[style=Matlab-editor, basicstyle=\mlttfamily\small, linewidth=0.48\textwidth]
+solver.set_finite_difference_scheme('forward');
+\end{lstlisting}
+Turn off parallel calculation of integrals, dynamics, and path constraints.
+\begin{lstlisting}[style=Matlab-editor, basicstyle=\mlttfamily\small, linewidth=0.48\textwidth]
+solver.set_parallel(0);
+\end{lstlisting}
+Monitor solver progress by writing every 10th iterate to file.
+\begin{lstlisting}[style=Matlab-editor, basicstyle=\mlttfamily\small, linewidth=0.48\textwidth]
+solver.set_output_interval(10);
+\end{lstlisting}
+\end{multicols}
+};
     
     
     \node (study) [object, fit={(studybody) (problem) (solver)}] {};
@@ -145,7 +182,14 @@ problem.addPathConstraint(pathCon);
 \end{center}
 \end{document}
 
-
+% TODO
+% add equations to the back side
+% add MocoTrajectory interface
+% add generic functions in MocoStudy.
+% solve()
+% visualize()
+% analyze()
+% add Utilities
 
 %    block_center/.style ={
 %    	rectangle, rounded corners,
