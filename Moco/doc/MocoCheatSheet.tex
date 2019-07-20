@@ -157,9 +157,29 @@ solver.set_output_interval(10);
 \end{lstlisting}
 \end{multicols}
 };
+
+\node (studypost) at ([shift={(270:1.6)}]solver.south) [align=left, text width=7.5in] {
+\begin{multicols}{2}% 2-column layout
+    
+Solve the study and obtain a MocoSolution.
+\begin{lstlisting}[style=Matlab-editor, basicstyle=\mlttfamily\small, linewidth=0.48\textwidth]
+solution = study.solve();
+\end{lstlisting}
+Visualize the solution.
+\begin{lstlisting}[style=Matlab-editor, basicstyle=\mlttfamily\small, linewidth=0.48\textwidth]
+study.visualize(solution);
+\end{lstlisting}
+Create a table of all muscle multipliers from the solution.
+\begin{lstlisting}[style=Matlab-editor, basicstyle=\mlttfamily\small, linewidth=0.48\textwidth]
+outputs = StdVectorString();
+outputs.add('.*multiplier');
+table = study.analyze(solution, outputs);
+\end{lstlisting}
+\end{multicols}
+};
     
     
-    \node (study) [object, fit={(studybody) (problem) (solver)}] {};
+    \node (study) [object, fit={(studybody) (problem) (solver) (studypost)}] {};
 %      	\begin{equation*}
 %      	    \begin{alignat*}{2}
 %        \mbox{minimize}
@@ -188,6 +208,7 @@ solver.set_output_interval(10);
   \end{tikzpicture}
 \end{center}
 \newpage
+
 
 
 \end{document}
