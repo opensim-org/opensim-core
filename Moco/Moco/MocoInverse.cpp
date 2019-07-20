@@ -23,7 +23,7 @@
 #include "MocoCasADiSolver/MocoCasADiSolver.h"
 #include "MocoGoal/MocoControlGoal.h"
 #include "MocoGoal/MocoInitialActivationGoal.h"
-#include "MocoCost/MocoSumSquaredStateCost.h"
+#include "MocoGoal/MocoSumSquaredStateGoal.h"
 #include "MocoProblem.h"
 #include "MocoStudy.h"
 #include "MocoUtilities.h"
@@ -101,7 +101,7 @@ std::pair<MocoStudy, TimeSeriesTable> MocoInverse::initializeInternal() const {
     problem.addGoal<MocoInitialActivationGoal>("initial_activation");
 
     if (get_minimize_sum_squared_states()) {
-        problem.addGoal<MocoSumSquaredStateCost>("activation_effort");
+        problem.addGoal<MocoSumSquaredStateGoal>("activation_effort");
     }
 
     // Configure the MocoSolver.

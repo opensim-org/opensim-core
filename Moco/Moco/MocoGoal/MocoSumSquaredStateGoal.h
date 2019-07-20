@@ -1,7 +1,7 @@
-#ifndef MOCO_MOCOSUMSQUAREDSTATECOST_H
-#define MOCO_MOCOSUMSQUAREDSTATECOST_H
+#ifndef MOCO_MOCOSUMSQUAREDSTATEGOAL_H
+#define MOCO_MOCOSUMSQUAREDSTATEGOAL_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: MocoSumSquaredStateCost.h                                    *
+ * OpenSim Moco: MocoSumSquaredStateGoal.h                                    *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2019 Stanford University and the Authors                     *
  *                                                                            *
@@ -18,7 +18,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "MocoCost.h"
+#include "MocoGoal.h"
 
 namespace OpenSim {
 
@@ -28,27 +28,26 @@ namespace OpenSim {
 /// @underdevelopment
 /// In the future, this class will allow you to select which states to
 /// minimize.
-class OSIMMOCO_API MocoSumSquaredStateCost : public MocoCost {
-    OpenSim_DECLARE_CONCRETE_OBJECT(MocoSumSquaredStateCost, MocoCost);
+class OSIMMOCO_API MocoSumSquaredStateGoal : public MocoGoal {
+    OpenSim_DECLARE_CONCRETE_OBJECT(MocoSumSquaredStateGoal, MocoGoal);
 
 public:
-    MocoSumSquaredStateCost();
-    MocoSumSquaredStateCost(std::string name) : MocoCost(std::move(name)) {
+    MocoSumSquaredStateGoal();
+    MocoSumSquaredStateGoal(std::string name) : MocoGoal(std::move(name)) {
         constructProperties();
     }
-    MocoSumSquaredStateCost(std::string name, double weight)
-            : MocoCost(std::move(name), weight) {
+    MocoSumSquaredStateGoal(std::string name, double weight)
+            : MocoGoal(std::move(name), weight) {
         constructProperties();
     }
 
 protected:
     void initializeOnModelImpl(const Model&) const override;
-    int getNumIntegralsImpl() const override { return 1; }
     void calcIntegrandImpl(
             const SimTK::State& state, double& integrand) const override;
-    void calcCostImpl(
-            const CostInput& input, SimTK::Real& cost) const override {
-        cost = input.integral;
+    void calcGoalImpl(
+            const GoalInput& input, SimTK::Vector& cost) const override {
+        cost[0] = input.integral;
     }
 
 private:
@@ -57,4 +56,4 @@ private:
 
 } // namespace OpenSim
 
-#endif // MOCO_MOCOSUMSQUAREDSTATECOST_H
+#endif // MOCO_MOCOSUMSQUAREDSTATEGOAL_H

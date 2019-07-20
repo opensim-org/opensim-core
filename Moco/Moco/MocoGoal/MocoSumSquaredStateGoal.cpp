@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: MocoSumSquaredStateCost.cpp                                  *
+ * OpenSim Moco: MocoSumSquaredStateGoal.cpp                                  *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2019 Stanford University and the Authors                     *
  *                                                                            *
@@ -15,22 +15,24 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
-#include "MocoSumSquaredStateCost.h"
+#include "MocoSumSquaredStateGoal.h"
+
 #include <OpenSim/Simulation/Model/Model.h>
 
 using namespace OpenSim;
 
-MocoSumSquaredStateCost::MocoSumSquaredStateCost() {
+MocoSumSquaredStateGoal::MocoSumSquaredStateGoal() {
     constructProperties();
 }
 
-void MocoSumSquaredStateCost::constructProperties() {
+void MocoSumSquaredStateGoal::constructProperties() {
 }
 
-void MocoSumSquaredStateCost::initializeOnModelImpl(const Model& model) const {
+void MocoSumSquaredStateGoal::initializeOnModelImpl(const Model& model) const {
+    setNumIntegralsAndOutputs(1, 1);
 }
 
-void MocoSumSquaredStateCost::calcIntegrandImpl(const SimTK::State& state,
+void MocoSumSquaredStateGoal::calcIntegrandImpl(const SimTK::State& state,
         double& integrand) const {
     integrand = state.getY().normSqr();
 }
