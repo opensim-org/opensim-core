@@ -16,7 +16,11 @@
 \renewcommand\familydefault{\sfdefault} 
 \usepackage[T1]{fontenc}
 \usepackage[scaled]{beramono}
+\usepackage{multicol}
 
+
+% \tikzset{
+%  font={\fontsize{10pt}{12}\selectfont}}
 
 \begin{document}
 \begin{center}
@@ -24,60 +28,94 @@
     
     
 	\tikzstyle{object} = [draw=black, very thick,
-    	rectangle, rounded corners, inner sep=10pt, inner ysep=10pt]
+    	rectangle, rounded corners, inner sep=5pt, inner ysep=5pt]
     
-    \node (studytitle) {MocoStudy};
-    
-
-\node (studyfunctions) [below=of studytitle, align=left, text width=7in] {
+\node (studybody) [align=left, text width=7in] {
+\begin{center}\textbf{MocoStudy}\end{center}
 Create a MocoStudy.
-\begin{lstlisting}[style=Matlab-editor, basicstyle=\mlttfamily, linewidth=10cm]
+\begin{lstlisting}[style=Matlab-editor, basicstyle=\mlttfamily\small, linewidth=10cm]
 study = MocoStudy();
 \end{lstlisting}
 Access the MocoProblem from the study.
-\begin{lstlisting}[style=Matlab-editor, basicstyle=\mlttfamily, linewidth=10cm]
-problem = updProblem();
+\begin{lstlisting}[style=Matlab-editor, basicstyle=\mlttfamily\small, linewidth=10cm]
+problem = study.updProblem();
 \end{lstlisting}
 };
     
-    \node (problem) [object, below=of studyfunctions, align=left, text width=7in] {
-    \textbf{MocoProblem}\\
-Set the OpenSim model that desscribes the dynamics and kinematic constraints.
-\begin{lstlisting}[style=Matlab-editor, basicstyle=\mlttfamily, linewidth=15cm]
+    \node (problem) [object, below=of studybody, align=left, text width=7in] {
+    \begin{center}\textbf{MocoProblem}\end{center}
+Set the OpenSim model that describes the dynamics and kinematic constraints.
+\begin{lstlisting}[style=Matlab-editor, basicstyle=\mlttfamily\small, linewidth=15cm]
 % Set the model to a single pendulum using the ModelFactory.
 problem.setModel(ModelFactory.createPendulum());
 \end{lstlisting}
 Set bounds on the initial and final time.
-\begin{lstlisting}[style=Matlab-editor, basicstyle=\mlttfamily, linewidth=15cm]
+\begin{lstlisting}[style=Matlab-editor, basicstyle=\mlttfamily\small, linewidth=15cm]
 % Initial time is 0, final time is between 0.5 and 1.5 s.
 problem.setTimeBounds(0, [0.5, 1.5]);
 \end{lstlisting}
 Set bounds on state and control variables.
-\begin{lstlisting}[style=Matlab-editor, basicstyle=\mlttfamily, linewidth=15cm]
+\begin{lstlisting}[style=Matlab-editor, basicstyle=\mlttfamily\small, linewidth=15cm]
 % The q0 coordinate value must be between 0 and pi over the phase, 
 % and its initial value is 0 and its final value is pi/2.
 problem.setStateInfo('/jointset/j0/q0/value', [0, pi], 0, pi/2);
+% The control signal for actuator '/tau0' must be within [-50, 50] over the phase.
+problem.setControlInfo('/tau0', [-50, 50]);
 \end{lstlisting}
-Create a parameter named, 'myparam' to optimize the mass property of Body 
-with path '/bodyset/b0'. The parameter is within [0.1, 0.5].
-\begin{lstlisting}[style=Matlab-editor, basicstyle=\mlttfamily, linewidth=15cm]
-problem.addParameter(MocoParameter('myparam', '/bodyset/b0', 'mass', MocoBounds(0.1, 0.5)));
+\begin{multicols}{2}% 2-column layout
+  \begin{minipage}{0.48\textwidth}
+\textbf{Optimize static model properties.}
+  \end{minipage}
+  \vfill\null
+\columnbreak
+Optimize the mass of Body with path `/bodyset/b0` with bounds [0.1, 0.5].
+\begin{lstlisting}[style=Matlab-editor, basicstyle=\mlttfamily\small, linewidth=0.48\textwidth]
+problem.addParameter(MocoParameter('myparam', ...
+    '/bodyset/b0', 'mass', MocoBounds(0.1, 0.5)));
 \end{lstlisting}
-Add path constraints to the problem.
-\begin{lstlisting}[style=Matlab-editor, basicstyle=\mlttfamily, linewidth=15cm]
-% Bound the control for actuator '/tau0' between x = 0.5t and x = 0.7t.
+\end{multicols}
+\begin{multicols}{2}% 2-column layout
+  \begin{minipage}{0.48\textwidth}
+\textbf{Add cost terms to the problem.}
+\begin{center}
+Control $\cdot $ FinalTime\\
+StateTracking $\cdot$ MarkerTracking\\
+TranslationTracking $\cdot$ OrientationTracking\\
+ControlTracking $\cdot$ JointReaction
+\end{center}
+  \end{minipage}
+  \vfill\null
+\columnbreak
+Minimize the final time with weight 7.5.
+\begin{lstlisting}[style=Matlab-editor, basicstyle=\mlttfamily\small, linewidth=0.48\textwidth]
+problem.addCost(MocoFinalTimeCost('time', 7.5));
+\end{lstlisting}
+Minimize the sum of squared controls with weight 1.5.
+\begin{lstlisting}[style=Matlab-editor, basicstyle=\mlttfamily\small, linewidth=0.48\textwidth]
+problem.addCost(MocoControlCost('effort', 1.5));    
+\end{lstlisting}
+\end{multicols}
+\begin{multicols}{2}% 2-column layout
+  \begin{minipage}{0.48\textwidth}
+\textbf{Add path constraints to the problem.}
+  \end{minipage}
+  \vfill\null
+\columnbreak
+Bound control for actuator '/tau0' between 0.5t and 0.7t.
+\begin{lstlisting}[style=Matlab-editor, basicstyle=\mlttfamily\small, linewidth=0.48\textwidth]
 pathCon = MocoControlBoundConstraint();
 pathCon.addControlPath('/tau0');
 pathCon.setLowerBound(LinearFunction(0.5, 0));
 pathCon.setUpperBound(LinearFunction(0.7, 0));
 problem.addPathConstraint(pathCon);
 \end{lstlisting}
+\end{multicols}
 };
     
     \node (solver) [object, below=of problem] {MocoSolver};
     
     
-    \node (study) [object, fit={(studytitle) (studyfunctions) (problem) (solver)}] {};
+    \node (study) [object, fit={(studybody) (problem) (solver)}] {};
 %      	\begin{equation*}
 %      	    \begin{alignat*}{2}
 %        \mbox{minimize}
