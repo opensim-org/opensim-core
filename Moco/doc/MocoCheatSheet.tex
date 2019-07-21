@@ -37,6 +37,8 @@
 backgroundcolor=\color{oblue!10!white}
 }
 
+	\tikzstyle{object} = [draw=oblue, very thick,
+    	rectangle, rounded corners, inner sep=5pt, inner ysep=5pt]
 \begin{document}
 \begin{center}
 
@@ -44,9 +46,7 @@ backgroundcolor=\color{oblue!10!white}
 
   \begin{tikzpicture}[auto]
     
-    
-	\tikzstyle{object} = [draw=oblue, very thick,
-    	rectangle, rounded corners, inner sep=5pt, inner ysep=5pt]
+
     
 \node (studybody) [align=left, text width=7in] {
 \vspace{-15pt}
@@ -196,10 +196,93 @@ table = study.analyze(solution, outputs);
 \end{center}
     
     \newpage
-\begin{equation*}
+    
+    
+    \begin{tikzpicture}[auto]
+    \node (trajectory) [object, align=left, text width=7.5in] {
+\vspace{-10pt}
+\begin{center}\textbf{\textcolor{oblue}{MocoTrajectory and MocoSolution}}\end{center}
+\vspace{-15pt}
+\begin{multicols}{2}% 2-column layout
+Create a MocoTrajectory.
+\begin{lstlisting}[style=Matlab-editor, basicstyle=\mlttfamily\small, linewidth=0.48\textwidth]
+traj = MocoTrajectory('MocoStudy_solution.sto');
+traj = MocoTrajectory.createFromStatesControlsTables(states, controls);
+\end{lstlisting}
+Get time information.
+\begin{lstlisting}[style=Matlab-editor, basicstyle=\mlttfamily\small, linewidth=0.48\textwidth]
+traj.getNumTimes();
+traj.getInitialTime(); trajectory.getFinalTime();
+traj.getTimeMat();
+\end{lstlisting}
+Get names of variables.
+\begin{lstlisting}[style=Matlab-editor, basicstyle=\mlttfamily\small, linewidth=0.48\textwidth]
+traj.getStateNames(); traj.getControlNames();
+traj.getMultiplierNames(); traj.getParameterNames();
+\end{lstlisting}
+Get the trajectory/value for a single variable by name.
+\begin{lstlisting}[style=Matlab-editor, basicstyle=\mlttfamily\small, linewidth=0.48\textwidth]
+traj.getStateMat(name); traj.getControlMat(name);
+traj.getMultiplierMat(name); traj.getParameter(name);
+\end{lstlisting}
+Get the trajectories/values for all variables of a given type.
+\begin{lstlisting}[style=Matlab-editor, basicstyle=\mlttfamily\small, linewidth=0.48\textwidth]
+traj.getStatesTrajectoryMat();
+traj.getControlsTrajectoryMat();
+traj.getMultipliersTrajectoryMat();
+traj.getParametersMat();
+\end{lstlisting}
+
+Change the number of times in the trajectory.
+\begin{lstlisting}[style=Matlab-editor, basicstyle=\mlttfamily\small, linewidth=0.48\textwidth]
+traj.resampleWithNumTimes(150);
+\end{lstlisting}
+Set variable values.
+\begin{lstlisting}[style=Matlab-editor, basicstyle=\mlttfamily\small, linewidth=0.48\textwidth]
+traj.setTime(times)
+traj.setState(stateTraj); traj.setControl(controlTraj);
+traj.setParameter(value);
+traj.setStatesTrajectory(statesTraj);
+traj.insertStatesTrajectory(subsetStates);
+\end{lstlisting}
+Randomize the variable values.
+\begin{lstlisting}[style=Matlab-editor, basicstyle=\mlttfamily\small, linewidth=0.48\textwidth]
+traj.randomizeAdd();
+\end{lstlisting}
+Export the trajectory.
+\begin{lstlisting}[style=Matlab-editor, basicstyle=\mlttfamily\small, linewidth=0.48\textwidth]
+traj.write('mocotrajectory.sto');
+traj.exportToStatesTable()
+traj.exportToStateTrajectory(mocoProblem)
+\end{lstlisting}
+Compare two trajectories.
+\begin{lstlisting}[style=Matlab-editor, basicstyle=\mlttfamily\small, linewidth=0.48\textwidth]
+traj.isNumericallyEqual(otherTraj);
+traj.compareContinuousVariablesRMS(otherTraj);
+traj.compareParametersRMS(otherTraj);
+\end{lstlisting}
+Functions on only MocoSolution.
+\begin{lstlisting}[style=Matlab-editor, basicstyle=\mlttfamily\small, linewidth=0.48\textwidth]
+solution.success(); solution.getStatus();
+solution.getObjective();
+solution.getNumIterations();
+solution.getSolverDuration();
+solution.unseal(); % Access a failed solution.
+\end{lstlisting}
+\end{multicols}
+};    
+    \end{tikzpicture}
+    
+    
+% TODO put in a tikz box.
+\begin{tikzpicture}
+\node (ocp) [object, align=left, text width=7.5in] {
+\vspace{-10pt}
+\begin{center}\textbf{\textcolor{oblue}{The Moco Optimal Control Problem}}\end{center}
+\vspace{-15pt}
     \begin{alignat*}{2}
         \mbox{minimize}
-         \quad & \sum_j w_{j} J_{j}(t_0, t_f, y_0, y_f, x_{0}, x_{f}, \lambda_0, \lambda_f, p, S_{c,j}) &\quad
+         \quad & \sum_j w_{j} J_{j}(t_0, t_f, y_0, y_f, x_{0}, x_{f}, \lambda_0, \lambda_f, p, S_{c,j}) \quad\quad
          S_{c,j} = \int_{t_0}^{t_f} s_{c,j}(t, y, x, \lambda, p)~dt &&  \\
         \mbox{subject to}
          \quad & \dot{q} = u \\
@@ -207,18 +290,22 @@ table = study.analyze(solution, outputs);
          & \dot{z}(t) = f_{\textrm{aux}}(t, y, x, \lambda, p) \\
          & 0 = \phi(q, p) \\
          & 0 = \nu(q, u, p) \\
-         & 0 = \alpha(q, u, \dot{u}, p) \\
+         &  0 = \alpha(q, u, \dot{u}, p)\\
          & g_{L} \leq g(t, y, x, \lambda, p) \leq g_{U} \\
-         & y_{0,L} \leq y_0 \leq y_{0,U} \\
-         & x_{0,L} \leq x_0 \leq x_{0,U} \\
-         & y_{f,L} \leq y_f \leq y_{f,U} \\
-         & x_{f,L} \leq x_f \leq x_{f,U} \\
+         & y_{0,L} \leq y_0 \leq y_{0,U} \quad\quad y_{f,L} \leq y_f \leq y_{f,U} \\
+         & x_{0,L} \leq x_0 \leq x_{0,U} \quad\quad x_{f,L} \leq x_f \leq x_{f,U} \\
          \mbox{with respect to} \quad
-         & y \in [y_{L}, y_{U}] & p \in [p_{L}, p_{U}] \\
-         & x \in [x_{L}, x_{U}] & t_0 \in [t_{0,L}, t_{0,U}] \\
-         & & t_f \in [t_{f,L}, t_{f,U}]
+         & y \in [y_{L}, y_{U}] \quad\quad  t_0 \in [t_{0,L}, t_{0,U}] \\
+         & x \in [x_{L}, x_{U}] \quad\quad  t_f \in [t_{f,L}, t_{f,U}] \\
+         & p \in [p_{L}, p_{U}] \\
     \end{alignat*}
-\end{equation*}
+%};
+%\end{tikzpicture}
+
+%\begin{tikzpicture}
+%\node [object, align=left, text width=7.5in, below=of ocp] {
+\vspace{-20pt}
+%\begin{center}\textbf{\textcolor{oblue}{Terminology}}\end{center}
 \begin{multicols}{2}
 \begin{itemize}[noitemsep]
 \item $ t $: time
@@ -236,7 +323,7 @@ table = study.analyze(solution, outputs);
 \item $ f_{\textrm{bias}} $: centripetal and coriolis forces
 \item $ G $: kinematic constraint Jacobian
 \item $ f_{\textrm{app}} $: applied forces (gravity, muscles, etc.)
-\item $ f_{\textrm{aux}} $: auxiliary dynamics (muscle activation dynamics, etc.)
+\item $ f_{\textrm{aux}} $: auxiliary (muscle) dynamics
 \item $ \phi $: position-level (holonomic) kinematic constraints
 \item $ \nu $: velocity-level (non-holonomic) kinematic constraints
 \item $ \alpha $: acceleration-level kinematic constraints
@@ -246,6 +333,8 @@ table = study.analyze(solution, outputs);
 \item subscript $ L $: a lower bound    
 \end{itemize}
 \end{multicols}
+};
+\end{tikzpicture}
 
 \end{document}
 
