@@ -457,3 +457,51 @@ TEMPLATE_TEST_CASE("Endpoint constraints", "", MocoCasADiSolver) {
                 Approx(0).margin(1e-6));
     }
 }
+
+TEMPLATE_TEST_CASE("MocoPeriodicityGoal", "", MocoCasADiSolver) {
+    std::cout.rdbuf(LogManager::cout.rdbuf());
+    std::cout.rdbuf(LogManager::cout.rdbuf());
+
+    MocoStudy study;
+    auto& problem = study.updProblem();
+    problem.setModelCopy(ModelFactory::createPendulum());
+
+    problem.setTimeBounds(0, 1);
+    problem.setStateInfo("/jointset/j0/q0/value", {-0.3, 0.3});
+
+    auto* periodic = problem.addGoal<MocoPeriodicityGoal>("periodic");
+    MocoPeriodicityGoalPair pair_q0_value;
+    pair_q0_value.set_initial_variable("/jointset/j0/q0/value");
+    pair_q0_value.set_final_variable("/jointset/j0/q0/value");
+    periodic->addStatePair(pair_q0_value);
+    periodic->addStatePair({"/jointset/j0/q0/speed", "/jointset/j0/q0/speed"});
+    periodic->addControlPair({"/tau0"});
+    auto* effort = problem.addGoal<MocoControlGoal>("control");
+
+    study.initSolver<TestType>();
+
+    SECTION("Perodic constraint is satisfied.") {
+        MocoSolution solution = study.solve();
+        const int N = solution.getNumTimes();
+        CHECK(solution.getState("/jointset/j0/q0/value")[N - 1] ==
+                solution.getState("/jointset/j0/q0/value")[0]);
+        CHECK(solution.getState("/jointset/j0/q0/speed")[N - 1] ==
+                solution.getState("/jointset/j0/q0/speed")[0]);
+        CHECK(solution.getControl("/tau0")[N - 1] ==
+                solution.getControl("/tau0")[0]);
+    }
+
+    SECTION("Goal works in cost mode.") {
+        periodic->setMode("cost");
+        periodic->setWeight(10.0);
+        effort->setEnabled(false);
+        MocoSolution solution = study.solve();
+        const int N = solution.getNumTimes();
+        CHECK(solution.getState("/jointset/j0/q0/value")[N - 1] == Approx(
+                solution.getState("/jointset/j0/q0/value")[0]).margin(1e-6));
+        CHECK(solution.getState("/jointset/j0/q0/speed")[N - 1] == Approx(
+                solution.getState("/jointset/j0/q0/speed")[0]).margin(1e-6));
+        CHECK(solution.getControl("/tau0")[N - 1] ==
+                Approx(solution.getControl("/tau0")[0]).margin(1e-6));
+    }
+}

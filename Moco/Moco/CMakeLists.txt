@@ -38,6 +38,8 @@ set(MOCO_SOURCES
         MocoGoal/MocoTranslationTrackingGoal.cpp
         MocoGoal/MocoInitialActivationGoal.cpp
         MocoGoal/MocoInitialActivationGoal.h
+        MocoGoal/MocoPeriodicityGoal.h
+        MocoGoal/MocoPeriodicityGoal.cpp
         MocoSolver.h
         MocoSolver.cpp
         MocoDirectCollocationSolver.h
