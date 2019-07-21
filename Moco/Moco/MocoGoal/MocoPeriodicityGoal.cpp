@@ -27,17 +27,17 @@ using namespace OpenSim;
 MocoPeriodicityGoalPair::MocoPeriodicityGoalPair() { constructProperties(); }
 
 MocoPeriodicityGoalPair::MocoPeriodicityGoalPair(
-        std::string initial_variable, std::string final_variable) {
+        std::string initialVariable, std::string finalVariable) {
     constructProperties();
-    set_initial_variable(initial_variable);
-    set_final_variable(final_variable);
+    set_initial_variable(initialVariable);
+    set_final_variable(finalVariable);
 }
 
 MocoPeriodicityGoalPair::MocoPeriodicityGoalPair(
-        std::string initial_variableIsfinal_variable) {
+        std::string initialVariableIsFinalVariable) {
     constructProperties();
-    set_initial_variable(initial_variableIsfinal_variable);
-    set_final_variable(initial_variableIsfinal_variable);
+    set_initial_variable(initialVariableIsFinalVariable);
+    set_final_variable(initialVariableIsFinalVariable);
 }
 
 void MocoPeriodicityGoalPair::constructProperties() {
