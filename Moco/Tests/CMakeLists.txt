@@ -101,4 +101,4 @@ MocoAddTest(NAME testMocoTrack RESOURCES
         std_testMocoTrackGait10dof18musc_solution.sto
         )
         
-MocoAddTest(NAME testPolynomialApproximation)
+MocoAddTest(NAME testMultivariatePolynomial)
