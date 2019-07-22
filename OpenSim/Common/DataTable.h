@@ -99,7 +99,7 @@ public:
                             this DataTable_ type.                             */
     DataTable_(const std::string& filename,
                const std::string& tablename) {
-        auto absTables = FileAdapter::readFile(filename);
+        auto absTables = FileAdapter::createAdapterBasedOnExtension(filename).read(filename);
 
         OPENSIM_THROW_IF(absTables.size() > 1 && tablename.empty(),
                          InvalidArgument,

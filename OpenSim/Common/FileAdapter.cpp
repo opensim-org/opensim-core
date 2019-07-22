@@ -1,5 +1,6 @@
 #include "FileAdapter.h"
 #include <OpenSim/Common/IO.h>
+#include "STOFileAdapter.h"
 
 namespace OpenSim {
 
@@ -8,7 +9,7 @@ createSTOFileAdapterForReading(const std::string&);
 
 std::shared_ptr<DataAdapter>
 createSTOFileAdapterForWriting(const DataAdapter::InputTables&);
-
+#if 0
 FileAdapter::OutputTables
 FileAdapter::readFile(const std::string& fileName) {
     auto extension = findExtension(fileName);
@@ -20,7 +21,7 @@ FileAdapter::readFile(const std::string& fileName) {
     auto& fileAdapter = static_cast<FileAdapter&>(*dataAdapter);
     return fileAdapter.extendRead(fileName);
 }
-
+#endif
 void 
 FileAdapter::writeFile(const InputTables& tables, 
                        const std::string& fileName) {
@@ -91,4 +92,15 @@ FileAdapter::getNextLine(std::istream& stream,
     return {};
 }
 
+FileAdapter& 
+FileAdapter::createAdapterBasedOnExtension(const std::string& fileName) {
+    auto extension = FileAdapter::findExtension(fileName);
+    std::shared_ptr<DataAdapter> dataAdapter{};
+    if (extension == "sto")
+        dataAdapter = createSTOFileAdapterForReading(fileName);
+    else
+        dataAdapter = createAdapter(extension);
+    auto& fileAdapter = static_cast<FileAdapter&>(*dataAdapter);
+    return fileAdapter;
+}
 } // namespace OpenSim

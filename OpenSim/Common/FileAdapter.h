@@ -175,7 +175,7 @@ public:
 };
 
 /** FileAdapter is a DataAdapter that reads and writes files with methods
-readFile and writeFile respectively.                                          */
+read and writeFile respectively.                                          */
 class OSIMCOMMON_API FileAdapter : public DataAdapter {
 public:
     FileAdapter()                              = default;
@@ -184,7 +184,7 @@ public:
     FileAdapter& operator=(const FileAdapter&) = default;
     FileAdapter& operator=(FileAdapter&&)      = default;
     virtual ~FileAdapter()                     = default;
-#ifndef SWIG
+#if 0
     /** Read a file with the given name. Returns a collection of tables 
     depending on the contents of the file read. For example, a TRC file contains
     just one table whereas a C3D file might contain multiple tables. Refer to
@@ -212,6 +212,10 @@ public:
     specifies that either a space or a tab can act as the delimiter.          */
     static std::vector<std::string> tokenize(const std::string& str, 
                                       const std::string& delims);
+    /** Create a concerte FileAdapter based on the extensionof the passed in file and return it.
+     This serves as a Factory of FileAdapters so clients don't need to know about concrete 
+     subclasses, as long as the generic base class read interface is used */
+    static FileAdapter& createAdapterBasedOnExtension(const std::string& fileName);
 };
 
 } // OpenSim namespace
