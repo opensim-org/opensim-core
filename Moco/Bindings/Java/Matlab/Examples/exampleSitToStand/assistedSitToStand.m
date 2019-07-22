@@ -56,10 +56,10 @@ cacheUnassisted = 1;
 %   1. Predicts subject 1 unassisted sit-to-stand (skipped in subsequent calls).
 %   2. Predicts subject 1 assisted sit-to-stand.
 %   3. Plots comparison of assisted vs unassisted solutions for subject 1.
-%   3. Predicts subject 2 unassisted sit-to-stand (skipped in subsequent calls).
-%   4. Predicts subject 2 assisted sit-to-stand.
-%   3. Plots comparison of assisted vs unassisted solutions for subject 2.
-%   5. Computes the score for the assistive device.
+%   4. Predicts subject 2 unassisted sit-to-stand (skipped in subsequent calls).
+%   5. Predicts subject 2 assisted sit-to-stand.
+%   6. Plots comparison of assisted vs unassisted solutions for subject 2.
+%   7. Computes the score for the assistive device.
 % Up to 4 Visualizer windows are created. The function only proceeds
 % to the next optimization after you hit ESC in the Visualizer window.
 %
