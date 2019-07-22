@@ -113,7 +113,7 @@ inverse.set_minimize_sum_squared_states(true);
 
 % Append additional outputs path for quantities that are calculated
 % post-hoc using the inverse problem solution.
-inverse.append_output_paths(know'.*normalized_fiber_length');
+inverse.append_output_paths('.*normalized_fiber_length');
 inverse.append_output_paths('.*passive_force_multiplier');
 
 % Part 4d: Solve! Write the MocoSolution to file.
