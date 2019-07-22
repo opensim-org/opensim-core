@@ -4,7 +4,7 @@
 % License : Creative Commons attribution license
 \documentclass{article}
 \usepackage[latin1]{inputenc}
-\usepackage[margin=0.2in]{geometry}
+\usepackage[left=0.2in,right=0.2in,top=0.25in,bottom=0.2in]{geometry}
 \usepackage{tikz}
 \usetikzlibrary{positioning,shapes,arrows,fit,calc}
 \usepackage{caption}
@@ -38,7 +38,7 @@ backgroundcolor=\color{oblue!10!white}
 }
 
 	\tikzstyle{object} = [draw=oblue, very thick,
-    	rectangle, rounded corners, inner sep=5pt, inner ysep=5pt]
+    	rectangle, rounded corners, inner sep=7pt]
 \begin{document}
 \begin{center}
 
@@ -61,16 +61,16 @@ Access the MocoProblem from the study.
 \begin{lstlisting}[style=Matlab-editor, basicstyle=\mlttfamily\small, linewidth=0.48\textwidth]
 problem = study.updProblem();
 \end{lstlisting}
-\vspace{10pt}
+\vspace{5pt}
 \textbf{Set the model.}\\
 \begin{lstlisting}[style=Matlab-editor, basicstyle=\mlttfamily\small, linewidth=0.48\textwidth]
-problem.setModel(ModelFactory.createPendulum());
+problem.setModel(Model('model_file.osim'));
 \end{lstlisting}
-\vspace{10pt}
+\vspace{5pt}
 \textbf{Set variable bounds.}\\
 Set initial time to 0; final time between 0.5 and 1.5 s.
 \begin{lstlisting}[style=Matlab-editor, basicstyle=\mlttfamily\small, linewidth=0.48\textwidth]
-problem.setTimeBounds(0, [0.5, 1.5]);
+problem.setTimeBounds(MocoInitialBounds(0), MocoFinalBounds(0.5, 1.5));
 \end{lstlisting}
 The coordinate value must be between 0 and $\pi$ over the phase, 
 and its initial value is 0 and its final value is $\pi/2$.
@@ -78,19 +78,19 @@ and its initial value is 0 and its final value is $\pi/2$.
 problem.setStateInfo('/jointset/j0/q0/value', 
     [0, pi], 0, pi/2);
 \end{lstlisting}
-The control for actuator '/tau0' must be within [-50, 50] over the phase.
+The control for actuator `/tau0' must be within [-50, 50] over the phase.
 \begin{lstlisting}[style=Matlab-editor, basicstyle=\mlttfamily\small, linewidth=0.48\textwidth]
 problem.setControlInfo('/tau0', [-50, 50]);
 \end{lstlisting}
   \vfill\null
 \columnbreak
 \textbf{Optimize static model properties.}\\
-Optimize the mass of Body `/bodyset/b0' within [0.1, 0.5].
+Create parameter `myparam' to optimize the mass of Body `/bodyset/b0' within [0.1, 0.5].
 \begin{lstlisting}[style=Matlab-editor, basicstyle=\mlttfamily\small, linewidth=0.48\textwidth]
 problem.addParameter(MocoParameter('myparam',
     '/bodyset/b0', 'mass', MocoBounds(0.1, 0.5)));
 \end{lstlisting}
-\vspace{10pt}
+\vspace{5pt}
 \textbf{Add cost terms to the problem.}
 \begin{center}
 Control $\cdot $ ControlTracking $\cdot$ FinalTime \\
@@ -101,9 +101,9 @@ Minimize the sum of squared controls with weight 1.5.
 \begin{lstlisting}[style=Matlab-editor, basicstyle=\mlttfamily\small, linewidth=0.48\textwidth]
 problem.addCost(MocoControlCost('effort', 1.5));    
 \end{lstlisting}
-\vspace{10pt}
+\vspace{5pt}
 \textbf{Add path constraints to the problem.}\\
-Bound controls for an actuator.
+Define time-dependent bounds for controls.
 \begin{lstlisting}[style=Matlab-editor, basicstyle=\mlttfamily\small, linewidth=0.48\textwidth]
 pathCon = MocoControlBoundConstraint();
 problem.addPathConstraint(pathCon);
@@ -120,7 +120,7 @@ problem.addPathConstraint(pathCon);
 solver = study.initCasADiSolver();
 % alternative: solver = study.initTropterSolver();
 \end{lstlisting}
-\vspace{10pt}
+\vspace{5pt}
 \textbf{Settings for Tropter and CasADi solvers.}\\
 Solve the problem on a grid of 51 mesh points.
 \begin{lstlisting}[style=Matlab-editor, basicstyle=\mlttfamily\small, linewidth=0.48\textwidth]
@@ -139,10 +139,11 @@ Stop optimization after 500 iterations.
 \begin{lstlisting}[style=Matlab-editor, basicstyle=\mlttfamily\small, linewidth=0.48\textwidth]
 solver.set_max_iterations(500);
 \end{lstlisting}
-By default, the Hessian is approximated from first derivatives). Set to 'exact' to use an exact Hessian.
+By default, the Hessian is approximated from first derivatives. Set to 'exact' to use an exact Hessian.
 \begin{lstlisting}[style=Matlab-editor, basicstyle=\mlttfamily\small, linewidth=0.48\textwidth]
 solver.set_optim_hessian_approximation('exact');
 \end{lstlisting}
+\columnbreak
 Create a guess, randomize it, then set the guess.
 \begin{lstlisting}[style=Matlab-editor, basicstyle=\mlttfamily\small, linewidth=0.48\textwidth]
 guess = solver.createGuess(); guess.randomizeAdd();
@@ -153,7 +154,7 @@ Set the guess from a MocoTrajectory or MocoSolution file.
 solver.setGuessFile('previous_solution.sto');
 \end{lstlisting}
 
-\vspace{10pt}
+\vspace{5pt}
 \textbf{Settings for only CasADi solver.}\\
 By default, CasADi uses 'central' finite differences; 'forward' differences are faster but less accurate.
 \begin{lstlisting}[style=Matlab-editor, basicstyle=\mlttfamily\small, linewidth=0.48\textwidth]
@@ -181,10 +182,10 @@ Visualize the solution.
 \begin{lstlisting}[style=Matlab-editor, basicstyle=\mlttfamily\small, linewidth=0.48\textwidth]
 study.visualize(solution);
 \end{lstlisting}
-Create a table of all muscle multipliers from the solution.
+Compute outputs from the solution.
 \begin{lstlisting}[style=Matlab-editor, basicstyle=\mlttfamily\small, linewidth=0.48\textwidth]
 outputs = StdVectorString();
-outputs.add('.*multiplier');
+outputs.add('.*active_force_length_multiplier');
 table = study.analyze(solution, outputs);
 \end{lstlisting}
 \end{multicols}
@@ -264,8 +265,7 @@ traj.compareParametersRMS(otherTraj);
 Functions on only MocoSolution.
 \begin{lstlisting}[style=Matlab-editor, basicstyle=\mlttfamily\small, linewidth=0.48\textwidth]
 solution.success(); solution.getStatus();
-solution.getObjective();
-solution.getNumIterations();
+solution.getObjective(); solution.getNumIterations();
 solution.getSolverDuration();
 solution.unseal(); % Access a failed solution.
 \end{lstlisting}
@@ -280,25 +280,24 @@ solution.unseal(); % Access a failed solution.
 \vspace{-10pt}
 \begin{center}\textbf{\textcolor{oblue}{The Moco Optimal Control Problem}}\end{center}
 \vspace{-15pt}
-    \begin{alignat*}{2}
+    \begin{align*}
         \mbox{minimize}
-         \quad & \sum_j w_{j} J_{j}(t_0, t_f, y_0, y_f, x_{0}, x_{f}, \lambda_0, \lambda_f, p, S_{c,j}) \quad\quad
-         S_{c,j} = \int_{t_0}^{t_f} s_{c,j}(t, y, x, \lambda, p)~dt &&  \\
+         \quad & \sum_j w_{j} J_{j}\displaystyle\left(t_0, t_f, y_0, y_f, x_{0}, x_{f}, \lambda_0, \lambda_f, p, \int_{t_0}^{t_f} s_{c,j}(t, y, x, \lambda, p)~dt \displaystyle\right) && \texttt{problem.addCost()}   \\
         \mbox{subject to}
-         \quad & \dot{q} = u \\
+         \quad & \dot{q} = u && \texttt{problem.setModel()} \\
          & M(q, p)\dot{u} + G(q, p)^T \lambda = f_{\textrm{app}}(t, y, x, p) - f_{\textrm{bias}}(q, u, p) \\
          & \dot{z}(t) = f_{\textrm{aux}}(t, y, x, \lambda, p) \\
          & 0 = \phi(q, p) \\
          & 0 = \nu(q, u, p) \\
          &  0 = \alpha(q, u, \dot{u}, p)\\
-         & g_{L} \leq g(t, y, x, \lambda, p) \leq g_{U} \\
-         & y_{0,L} \leq y_0 \leq y_{0,U} \quad\quad y_{f,L} \leq y_f \leq y_{f,U} \\
-         & x_{0,L} \leq x_0 \leq x_{0,U} \quad\quad x_{f,L} \leq x_f \leq x_{f,U} \\
+         & g_{L} \leq g(t, y, x, \lambda, p) \leq g_{U} && \texttt{problem.addPathConstraint()} \\
+         & y_{0,L} \leq y_0 \leq y_{0,U} \quad\quad y_{f,L} \leq y_f \leq y_{f,U} && \texttt{problem.setStateInfo()} \\
+         & x_{0,L} \leq x_0 \leq x_{0,U} \quad\quad x_{f,L} \leq x_f \leq x_{f,U} && \texttt{problem.setControlInfo()} \\
          \mbox{with respect to} \quad
-         & y \in [y_{L}, y_{U}] \quad\quad  t_0 \in [t_{0,L}, t_{0,U}] \\
-         & x \in [x_{L}, x_{U}] \quad\quad  t_f \in [t_{f,L}, t_{f,U}] \\
-         & p \in [p_{L}, p_{U}] \\
-    \end{alignat*}
+         & y \in [y_{L}, y_{U}] \quad\quad x \in [x_{L}, x_{U}] \\
+         & t_0 \in [t_{0,L}, t_{0,U}] \quad\quad  t_f \in [t_{f,L}, t_{f,U}] && \texttt{problem.setTimeBounds()} \\
+         & p \in [p_{L}, p_{U}] && \texttt{problem.addParameter()} \\
+    \end{align*}
 %};
 %\end{tikzpicture}
 
