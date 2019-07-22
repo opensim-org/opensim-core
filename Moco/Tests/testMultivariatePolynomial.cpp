@@ -236,20 +236,20 @@ void testPolynomialApproximation() {
             "hamstrings").getGeometryPath();
     double hamstrings_lengthError =
             hamstringsPath.computeApproximationErrorOnGrid(40, "length");
-    CHECK(hamstrings_lengthError < 3e-3); // 3mm allowed difference
+    CHECK(hamstrings_lengthError < 3e-3); // allowed difference: 3 mm
     auto& RFPath = model.getComponent<PathActuator>("RF").getGeometryPath();
     double RF_lengthError =
             RFPath.computeApproximationErrorOnGrid(40, "length");
-    CHECK(RF_lengthError < 3e-3); // 3mm allowed difference
+    CHECK(RF_lengthError < 3e-3); // allowed difference: 3 mm
 
     // Lengthening speeds
     double hamstrings_lengtheningSpeedError =
             hamstringsPath.computeApproximationErrorOnGrid(40,
                     "lengthening_speed");
-    CHECK(hamstrings_lengtheningSpeedError < 3e-3); // 3mm/s allowed difference
+    CHECK(hamstrings_lengtheningSpeedError < 3e-3); // allowed difference: 3mm/s
     double RF_lengtheningSpeedError =
             RFPath.computeApproximationErrorOnGrid(40, "lengthening_speed");
-    CHECK(RF_lengtheningSpeedError < 3e-3); // 3mm/s allowed difference
+    CHECK(RF_lengtheningSpeedError < 3e-3); // allowed difference: 3mm/s
 
     // Moment arms
     const auto& hip_flexion = model.getCoordinateSet().get("hip_flexion");
@@ -260,16 +260,16 @@ void testPolynomialApproximation() {
     double hamstrings_momArmErrorKnee =
             hamstringsPath.computeApproximationErrorOnGrid(40,
                     "moment_arm", &knee_angle);
-    CHECK(hamstrings_momArmErrorHip < 3e-3); // 3mm allowed difference
-    CHECK(hamstrings_momArmErrorKnee < 3e-3); // 3mm allowed difference
+    CHECK(hamstrings_momArmErrorHip < 3e-3); // allowed difference: 3 mm
+    CHECK(hamstrings_momArmErrorKnee < 3e-3); // allowed difference: 3 mm
     double RF_momArmErrorHip =
             RFPath.computeApproximationErrorOnGrid(40,"moment_arm",
                     &hip_flexion);
     double RF_momArmErrorKnee =
             RFPath.computeApproximationErrorOnGrid(40,"moment_arm",
                     &knee_angle);
-     CHECK(RF_momArmErrorHip < 3e-3); // 3mm allowed difference
-     CHECK(RF_momArmErrorKnee < 3e-3); // 3mm allowed difference
+     CHECK(RF_momArmErrorHip < 3e-3); // allowed difference: 3 mm
+     CHECK(RF_momArmErrorKnee < 3e-3); // allowed difference: 3 mm
 }
 
 TEST_CASE("testPolynomialApproximation") {

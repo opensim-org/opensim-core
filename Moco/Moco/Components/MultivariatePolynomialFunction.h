@@ -30,10 +30,11 @@ public:
     /// This implementation assumes a maximum of four dimensions and allows
     /// computation of order one derivatives only.
     /// @param coefficients the polynomial coefficients in order of ascending
-    /// powers starting from the last dependent coordinate. For a polynomial of
-    /// third order dependent on three coordinates (qi: i = 1,2,3), the order
-    /// is a follows:
-    /// Index | q1 q2 q3
+    /// powers starting from the last dependent component.
+    /// For a polynomial of third order dependent on three components
+    /// (X, Y, Z), the order is a follows:
+    /// <pre>
+    /// Index | X  Y  Z
     /// 1     | 0  0  0
     /// 2     | 0  0  1
     /// 3     | 0  0  2
@@ -54,11 +55,16 @@ public:
     /// 18    | 2  0  1
     /// 19    | 2  1  0
     /// 20    | 3  0  0
-    /// @param dimension the number of dependent coordinates
+    /// </pre>
+    /// @param dimension the number of dependent components
     /// @param order the polynomial order
     SimTKMultivariatePolynomial(const SimTK::Vector_<T>& coefficients,
             const int& dimension, const int& order) :
             coefficients(coefficients), dimension(dimension), order(order) {}
+    /// Calculate the value of this function at a particular point.
+    /// @param x the Vector of input arguments (e.g., x[0] is the value of the
+    /// first component). The size of x must equal the value returned by
+    /// getArgumentSize().
     T calcValue(const SimTK::Vector& x) const override {
         SimTK::Vector y(4);
         y.setToZero();
@@ -88,7 +94,19 @@ public:
         }
         return value;
     }
-    T calcDerivative(const SimTK::Array_<int>& derivComponents,
+    /// Calculate a partial derivative of this function at a particular point.
+    /// Which derivative to take is specified by listing the input components
+    /// with which to take it. This implementation allows computation of order
+    /// one derivatives only. For example, if derivComponent=={0}, that
+    /// indicates a first derivative with respective to component 0. If
+    /// derivComponent=={2}, that indicates a first derivative with
+    /// respective to component 2.
+    /// @param derivComponent the input component with respect to which the
+    /// derivative should be taken.  Its size must be one.
+    /// @param x the Vector of input arguments (e.g., x[0] is the value of the
+    /// first component). The size of x must equal the value returned by
+    /// getArgumentSize().
+    T calcDerivative(const SimTK::Array_<int>& derivComponent,
                      const SimTK::Vector& x) const override {
         SimTK::Vector y(4);
         y.setToZero();
@@ -109,7 +127,7 @@ public:
                     if (dimension < 4) nq4_s = 0;
                     else nq4_s = order - nq1 - nq2 - nq3;
                     for (int nq4 = 0; nq4 < nq4_s + 1; ++nq4) {
-                        if (derivComponents[0] == 0) {
+                        if (derivComponent[0] == 0) {
                             nqNonNegative = nq1 - 1;
                             if (nqNonNegative < 0) nqNonNegative = 0;
                             value += (nq1 * std::pow(y[0], nqNonNegative)*
@@ -118,7 +136,7 @@ public:
                                     std::pow(y[3], nq4)) *
                                     coefficients[coeff_nr];
                         }
-                        else if (derivComponents[0] == 1) {
+                        else if (derivComponent[0] == 1) {
                             nqNonNegative = nq2 - 1;
                             if (nqNonNegative < 0) nqNonNegative = 0;
                             value += (std::pow(y[0], nq1) *
@@ -127,7 +145,7 @@ public:
                                     std::pow(y[3], nq4)) *
                                     coefficients[coeff_nr];
                         }
-                        else if (derivComponents[0] == 2) {
+                        else if (derivComponent[0] == 2) {
                             nqNonNegative = nq3 - 1;
                             if (nqNonNegative < 0) nqNonNegative = 0;
                             value += (std::pow(y[0], nq1) *
@@ -136,7 +154,7 @@ public:
                                     std::pow(y[3], nq4)) *
                                     coefficients[coeff_nr];
                         }
-                        else if (derivComponents[0] == 3) {
+                        else if (derivComponent[0] == 3) {
                             nqNonNegative = nq4 - 1;
                             if (nqNonNegative < 0) nqNonNegative = 0;
                             value += (std::pow(y[0], nq1) *
@@ -152,9 +170,11 @@ public:
         }
         return value;
     }
+    /// Get the number of components expected in the input vector.
     int getArgumentSize() const override {
         return dimension;
     }
+    /// Get the maximum derivative order this function can calculate.
     int getMaxDerivativeOrder() const override {
         return 1;
     }
@@ -163,9 +183,9 @@ public:
     }
     /// This provides compatibility with std::vector without requiring any
     /// copying.
-    T calcDerivative(const std::vector<int>& derivComponents,
+    T calcDerivative(const std::vector<int>& derivComponent,
         const SimTK::Vector& x) const {
-        return calcDerivative(SimTK::ArrayViewConst_<int>(derivComponents), x);
+        return calcDerivative(SimTK::ArrayViewConst_<int>(derivComponent), x);
     }
 private:
     SimTK::Vector_<T> coefficients;
@@ -178,12 +198,12 @@ OpenSim_DECLARE_CONCRETE_OBJECT(MultivariatePolynomialFunction, Function);
 
 public:
     OpenSim_DECLARE_PROPERTY(coefficients, SimTK::Vector,
-            "Coefficients of a multivariate polynomial function in order of "
-            "ascending powers starting from the last dependent coordinate (see"
-            " SimTKMultivariatePolynomial for example)");
+            "Coefficients of a multivariate polynomial function in order of"
+            " ascending powers starting from the last dependent component ("
+            " see SimTKMultivariatePolynomial for example)");
     OpenSim_DECLARE_PROPERTY(dimension, int,
-            "Number of dimensions (i.e., dependent coordinates) of a "
-            "multivariate polynomial function.");
+            "Number of dimensions (i.e., dependent components) of a"
+            " multivariate polynomial function.");
     OpenSim_DECLARE_PROPERTY(order, int,
             "Order of a multivariate polynomial function.");
 
