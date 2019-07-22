@@ -24,8 +24,6 @@
 #include <OpenSim/Common/TimeSeriesTable.h>
 #include <OpenSim/Simulation/Model/Model.h>
 
-#include <iostream>
-
 namespace OpenSim {
 
 /// This abstract class describes *any* operation that consumes a
