@@ -815,7 +815,7 @@ private:
      * printing is aborted.
      * Derived classes can use this as an opportunity to issue warnings to users.
      */
-    virtual void warnBeforePrint(bool debug) const {}
+    virtual void warnBeforePrint() const {}
 
 //==============================================================================
 // DATA
