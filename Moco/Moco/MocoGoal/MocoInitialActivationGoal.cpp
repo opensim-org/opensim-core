@@ -39,6 +39,8 @@ void MocoInitialActivationGoal::initializeOnModelImpl(const Model& model) const 
 
 void MocoInitialActivationGoal::calcGoalImpl(
         const GoalInput& input, SimTK::Vector& goal) const {
+    getModel().realizeVelocity(input.initial_state);
+
     {
         const auto& controls = getModel().getControls(input.initial_state);
         const auto& states = input.initial_state.getY();

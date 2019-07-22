@@ -76,6 +76,7 @@ void MocoControlTrackingGoal::initializeOnModelImpl(const Model& model) const {
 
 void MocoControlTrackingGoal::calcIntegrandImpl(const SimTK::State& state,
     double& integrand) const {
+    getModel().realizeVelocity(state);
 
     const auto& time = state.getTime();
     SimTK::Vector timeVec(1, time);

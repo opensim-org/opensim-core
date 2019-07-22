@@ -19,6 +19,7 @@
  * -------------------------------------------------------------------------- */
 
 #include "../Components/AccelerationMotion.h"
+#include "../Components/DiscreteController.h"
 #include "../Components/DiscreteForces.h"
 #include "../MocoBounds.h"
 #include "../MocoProblemRep.h"
@@ -465,14 +466,15 @@ private:
 
     void convertToSimTKState(const double& time, const casadi::DM& states,
             const casadi::DM& controls, const Model& model,
-            SimTK::State& simtkState, bool copyAuxStates) const {
+            SimTK::State& simtkState,
+            const DiscreteController& discreteController,
+            bool copyAuxStates) const {
         convertToSimTKState(time, states, model, simtkState, copyAuxStates);
-        auto& simtkControls = model.updControls(simtkState);
+        SimTK::Vector& simtkControls =
+                discreteController.updDiscreteControls(simtkState);
         for (int ic = 0; ic < getNumControls(); ++ic) {
             simtkControls[m_modelControlIndices[ic]] = *(controls.ptr() + ic);
         }
-        model.realizeVelocity(simtkState);
-        model.setControls(simtkState, simtkControls);
     }
     void applyInput(const double& time, const casadi::DM& states,
             const casadi::DM& controls, const casadi::DM& multipliers,
@@ -505,10 +507,16 @@ private:
             accel.setUDot(simtkStateDisabledConstraints, udot);
         }
 
+        // TODO!
+        // TODO do not need copyAuxiliary flag: just put it in the long-form
+        // convertToSimTKState().
         convertToSimTKState(
-                time, states, controls, modelBase, simtkStateBase, true);
+                time, states, modelBase, simtkStateBase,
+                false);
         convertToSimTKState(time, states, controls, modelDisabledConstraints,
-                simtkStateDisabledConstraints, true);
+                simtkStateDisabledConstraints,
+                mocoProblemRep->getDiscreteControllerDisabledConstraints(),
+                true);
         // If enabled constraints exist in the model, compute constraint forces
         // based on Lagrange multipliers. This also updates the associated
         // discrete variables in the state.

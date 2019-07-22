@@ -97,7 +97,7 @@ set(MOCO_SOURCES
         MocoTool.h
         MocoConstraintInfo.cpp
         MocoConstraintInfo.h
-        )
+        Components/DiscreteController.cpp Components/DiscreteController.h)
 if(MOCO_WITH_TROPTER)
     list(APPEND MOCO_SOURCES
             tropter/TropterProblem.h
