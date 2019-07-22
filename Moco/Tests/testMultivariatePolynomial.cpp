@@ -25,7 +25,10 @@ using namespace OpenSim;
 
 // Create a single leg 2D model with two muscles to test the estimation of
 // muscle-tendon lengths, lengthening speeds, and moment arms based on
-// polynomial approximation of joint coordinates.
+// polynomial approximation of joint coordinates. We optimized the polynomial
+// coefficients using custom MATLAB code to fit muscle-tendon lengths and
+// moment arms (maximal root mean square deviation: 3 mm) obtained from OpenSim
+// using a wide range of coordinate values.
 Model createModel() {
     using SimTK::Vec3;
     using SimTK::Inertia;
@@ -84,7 +87,6 @@ Model createModel() {
     knee_angle.setName("knee_angle");
     model.addJoint(knee);
     // Add muscles
-    // Coefficients of MultivariatePolynomialFunctions computed with MATLAB.
     int dimHamstrings = 2;
     int orderHamstrings = 3;
     const int nCoeffHamstrings = 10;
@@ -197,15 +199,10 @@ void testPolynomialApproximationImpl() {
 
     Model model(createModel());
     SimTK::State& state = model.initSystem();
-    int nStates = model.getNumStateVariables();
-    SimTK::Vector stateValues(nStates);
-    stateValues.setTo(0);
     // Set non-null values hip_flexion and knee_angle speeds to have non-null
     // muscle-tendon lengthening speeds
-    stateValues[9] = -1; // hip_flexion speed
-    stateValues[11] = 1; // knee_angle speed
-
-    model.setStateVariableValues(state, stateValues);
+    model.getCoordinateSet().get("hip_flexion").setSpeedValue(state,-1);
+    model.getCoordinateSet().get("knee_angle").setSpeedValue(state,1);
     model.realizeVelocity(state);
 
     double hamstrings_lmt = model.getComponent<PathActuator>(

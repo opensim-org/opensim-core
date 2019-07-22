@@ -35,58 +35,57 @@ public:
     /// (X, Y, Z), the order is a follows:
     /// <pre>
     /// Index | X  Y  Z
-    /// 1     | 0  0  0
-    /// 2     | 0  0  1
-    /// 3     | 0  0  2
-    /// 4     | 0  0  3
-    /// 5     | 0  1  0
-    /// 6     | 0  1  1
-    /// 7     | 0  1  2
-    /// 8     | 0  2  0
-    /// 9     | 0  2  1
-    /// 10    | 0  3  0
-    /// 11    | 1  0  0
-    /// 12    | 1  0  1
-    /// 13    | 1  0  2
-    /// 14    | 1  1  0
-    /// 15    | 1  1  1
-    /// 16    | 1  2  0
-    /// 17    | 2  0  0
-    /// 18    | 2  0  1
-    /// 19    | 2  1  0
-    /// 20    | 3  0  0
+    /// 0     | 0  0  0
+    /// 1     | 0  0  1
+    /// 2     | 0  0  2
+    /// 3     | 0  0  3
+    /// 4     | 0  1  0
+    /// 5     | 0  1  1
+    /// 6     | 0  1  2
+    /// 7     | 0  2  0
+    /// 8     | 0  2  1
+    /// 9     | 0  3  0
+    /// 10    | 1  0  0
+    /// 11    | 1  0  1
+    /// 12    | 1  0  2
+    /// 13    | 1  1  0
+    /// 14    | 1  1  1
+    /// 15    | 1  2  0
+    /// 16    | 2  0  0
+    /// 17    | 2  0  1
+    /// 18    | 2  1  0
+    /// 19    | 3  0  0
     /// </pre>
     /// @param dimension the number of dependent components
     /// @param order the polynomial order
     SimTKMultivariatePolynomial(const SimTK::Vector_<T>& coefficients,
             const int& dimension, const int& order) :
-            coefficients(coefficients), dimension(dimension), order(order) {}
-    /// Calculate the value of this function at a particular point.
-    /// @param x the Vector of input arguments (e.g., x[0] is the value of the
-    /// first component). The size of x must equal the value returned by
-    /// getArgumentSize().
+            coefficients(coefficients), dimension(dimension), order(order) {
+        OPENSIM_THROW_IF(dimension < 0 || dimension > 4, Exception, format(
+                "Expected dimension >= 0 && <=4 but got %i.", dimension));
+    }
     T calcValue(const SimTK::Vector& x) const override {
-        SimTK::Vector y(4);
-        y.setToZero();
-        for (int i = 0; i < 4; ++i) y[i] = x[i];
+        std::array<int, 4> nq{0};
         T value = static_cast<T>(0);
         int coeff_nr = 0;
-        for (int nq1 = 0; nq1 < order + 1; ++nq1) {
+        for (nq[0] = 0; nq[0] < order + 1; ++nq[0]) {
             int nq2_s;
             if (dimension < 2) nq2_s = 0;
-            else nq2_s = order - nq1;
-            for (int nq2 = 0; nq2 < nq2_s + 1; ++nq2) {
+            else nq2_s = order - nq[0];
+            for (nq[1] = 0; nq[1] < nq2_s + 1; ++nq[1]) {
                 int nq3_s;
                 if (dimension < 3) nq3_s = 0;
-                else nq3_s = order - nq1 - nq2;
-                for (int nq3 = 0; nq3 < nq3_s + 1; ++nq3) {
+                else nq3_s = order - nq[0] - nq[1];
+                for (nq[2] = 0; nq[2] < nq3_s + 1; ++nq[2]) {
                     int nq4_s;
                     if (dimension < 4) nq4_s = 0;
-                    else nq4_s = order - nq1 - nq2 - nq3;
-                    for (int nq4 = 0; nq4 < nq4_s + 1; ++nq4) {
-                        value += (std::pow(y[0], nq1) * std::pow(y[1], nq2) *
-                                std::pow(y[2], nq3) * std::pow(y[3], nq4)) *
-                                coefficients[coeff_nr];
+                    else nq4_s = order - nq[0] - nq[1] - nq[2];
+                    for (nq[3] = 0; nq[3] < nq4_s + 1; ++nq[3]) {
+                        T valueP = static_cast<T>(1);
+                        for (int i = 0; i < dimension; ++i) {
+                            valueP *= std::pow(x[i], nq[i]);
+                        }
+                        value += valueP * coefficients[coeff_nr];
                         ++coeff_nr;
                     }
                 }
@@ -94,74 +93,64 @@ public:
         }
         return value;
     }
-    /// Calculate a partial derivative of this function at a particular point.
-    /// Which derivative to take is specified by listing the input components
-    /// with which to take it. This implementation allows computation of order
-    /// one derivatives only. For example, if derivComponent=={0}, that
-    /// indicates a first derivative with respective to component 0. If
-    /// derivComponent=={2}, that indicates a first derivative with
-    /// respective to component 2.
-    /// @param derivComponent the input component with respect to which the
-    /// derivative should be taken.  Its size must be one.
-    /// @param x the Vector of input arguments (e.g., x[0] is the value of the
-    /// first component). The size of x must equal the value returned by
-    /// getArgumentSize().
     T calcDerivative(const SimTK::Array_<int>& derivComponent,
                      const SimTK::Vector& x) const override {
-        SimTK::Vector y(4);
-        y.setToZero();
-        for (int i = 0; i < 4; ++i) y[i] = x[i];
+        std::array<int, 4> nq{0};
         T value = static_cast<T>(0);
-        int nqNonNegative = 0;
+        int nqNonNegative;
         int coeff_nr = 0;
-        for (int nq1 = 0; nq1 < order + 1; ++nq1) {
+        for (nq[0] = 0; nq[0] < order + 1; ++nq[0]) {
             int nq2_s;
             if (dimension < 2) nq2_s = 0;
-            else nq2_s = order - nq1;
-            for (int nq2 = 0; nq2 < nq2_s + 1; ++nq2) {
+            else nq2_s = order - nq[0];
+            for (nq[1] = 0; nq[1] < nq2_s + 1; ++nq[1]) {
                 int nq3_s;
                 if (dimension < 3) nq3_s = 0;
-                else nq3_s = order - nq1 - nq2;
-                for (int nq3 = 0; nq3 < nq3_s + 1; ++nq3) {
+                else nq3_s = order - nq[0] - nq[1];
+                for (nq[2] = 0; nq[2] < nq3_s + 1; ++nq[2]) {
                     int nq4_s;
                     if (dimension < 4) nq4_s = 0;
-                    else nq4_s = order - nq1 - nq2 - nq3;
-                    for (int nq4 = 0; nq4 < nq4_s + 1; ++nq4) {
+                    else nq4_s = order - nq[0] - nq[1] - nq[2];
+                    for (nq[3] = 0; nq[3] < nq4_s + 1; ++nq[3]) {
                         if (derivComponent[0] == 0) {
-                            nqNonNegative = nq1 - 1;
+                            nqNonNegative = nq[0] - 1;
                             if (nqNonNegative < 0) nqNonNegative = 0;
-                            value += (nq1 * std::pow(y[0], nqNonNegative)*
-                                    std::pow(y[1], nq2) *
-                                    std::pow(y[2], nq3) *
-                                    std::pow(y[3], nq4)) *
-                                    coefficients[coeff_nr];
+                            T valueP = nq[0] * std::pow(x[0], nqNonNegative);
+                            for (int i = 0; i < dimension; ++i) {
+                                if (i == derivComponent[0]) continue;
+                                valueP *= std::pow(x[i], nq[i]);
+                            }
+                            value += valueP * coefficients[coeff_nr];
                         }
                         else if (derivComponent[0] == 1) {
-                            nqNonNegative = nq2 - 1;
+                            nqNonNegative = nq[1] - 1;
                             if (nqNonNegative < 0) nqNonNegative = 0;
-                            value += (std::pow(y[0], nq1) *
-                                    nq2 * std::pow(y[1], nqNonNegative) *
-                                    std::pow(y[2], nq3) *
-                                    std::pow(y[3], nq4)) *
-                                    coefficients[coeff_nr];
+                            T valueP = nq[1] * std::pow(x[1], nqNonNegative);
+                            for (int i = 0; i < dimension; ++i) {
+                                if (i == derivComponent[0]) continue;
+                                valueP *= std::pow(x[i], nq[i]);
+                            }
+                            value += valueP * coefficients[coeff_nr];
                         }
                         else if (derivComponent[0] == 2) {
-                            nqNonNegative = nq3 - 1;
+                            nqNonNegative = nq[2] - 1;
                             if (nqNonNegative < 0) nqNonNegative = 0;
-                            value += (std::pow(y[0], nq1) *
-                                    std::pow(y[1], nq2) *
-                                    nq3 * std::pow(y[2], nqNonNegative) *
-                                    std::pow(y[3], nq4)) *
-                                    coefficients[coeff_nr];
+                            T valueP = nq[2] * std::pow(x[2], nqNonNegative);
+                            for (int i = 0; i < dimension; ++i) {
+                                if (i == derivComponent[0]) continue;
+                                valueP *= std::pow(x[i], nq[i]);
+                            }
+                            value += valueP * coefficients[coeff_nr];
                         }
                         else if (derivComponent[0] == 3) {
-                            nqNonNegative = nq4 - 1;
+                            nqNonNegative = nq[3] - 1;
                             if (nqNonNegative < 0) nqNonNegative = 0;
-                            value += (std::pow(y[0], nq1) *
-                                    std::pow(y[1], nq2) *
-                                    std::pow(y[2], nq3) *
-                                    nq4 * std::pow(y[3], nqNonNegative)) *
-                                    coefficients[coeff_nr];
+                            T valueP = nq[3] * std::pow(x[3], nqNonNegative);
+                            for (int i = 0; i < dimension; ++i) {
+                                if (i == derivComponent[0]) continue;
+                                valueP *= std::pow(x[i], nq[i]);
+                            }
+                            value += valueP * coefficients[coeff_nr];
                         }
                         ++coeff_nr;
                     }
@@ -170,19 +159,15 @@ public:
         }
         return value;
     }
-    /// Get the number of components expected in the input vector.
     int getArgumentSize() const override {
         return dimension;
     }
-    /// Get the maximum derivative order this function can calculate.
     int getMaxDerivativeOrder() const override {
         return 1;
     }
     SimTKMultivariatePolynomial* clone() const override {
         return new SimTKMultivariatePolynomial(*this);
     }
-    /// This provides compatibility with std::vector without requiring any
-    /// copying.
     T calcDerivative(const std::vector<int>& derivComponent,
         const SimTK::Vector& x) const {
         return calcDerivative(SimTK::ArrayViewConst_<int>(derivComponent), x);
@@ -246,11 +231,9 @@ public:
 
 private:
     void constructProperties() {
-        double coefficientDefaultValues[6] = {1,1,1,1,1,1};
-        constructProperty_coefficients(
-                SimTK::Vector(6, &coefficientDefaultValues[0]));
-        constructProperty_dimension(2);
-        constructProperty_order(2);
+        constructProperty_coefficients(SimTK::Vector(0));
+        constructProperty_dimension(0);
+        constructProperty_order(0);
     }
 
 };
