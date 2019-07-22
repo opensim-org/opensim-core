@@ -58,7 +58,7 @@ class WrapObject;
  * approximations may be smoother and faster than the path calculations, which
  * is useful for numerical optimization. To use a function approximation, set
  * the length_approximation, approximation_coordinates, and use_approximation
- * properties. You are responsible for developing the function approxmation
+ * properties. You are responsible for developing the function approximation
  * yourself (perhaps using a fitting algorithm in Matlab); this class will not
  * create the function approximation for you. The lengthening speed \f$
  * \dot{L}(q) \f$ and moment arm for coordinate \f$ i \f$, \f$ r_i(q) \f$, are
@@ -258,7 +258,7 @@ public:
     /// path point-based calculations for either "length", "lengthening_speed",
     /// or "moment_arm" quantities. If quantity is "moment_arm", you must
     /// provide a Coordinate. This function evaluates the error using points
-    /// randomly samplped between the coordinates' ranges. This function throws
+    /// randomly sampled between the coordinates' ranges. This function throws
     /// an exception if the coordinates' ranges contain Inf or NaN.
     /// When computing lengthening speeds, all generalized speeds are set to 0.5.
     double computeApproximationErrorWithRandomSamples(int numSamples,
