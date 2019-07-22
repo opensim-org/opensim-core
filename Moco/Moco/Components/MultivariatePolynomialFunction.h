@@ -27,37 +27,59 @@ template <class T>
 class SimTKMultivariatePolynomial : public SimTK::Function_<T> {
 public:
     /// Create a SimTKMultivariatePolynomial object.
-    /// @param coefficients the polynomial coefficients
-    /// @param dimension the number of dimensions
+    /// This implementation assumes a maximum of four dimensions and allows
+    /// computation of order one derivatives only.
+    /// @param coefficients the polynomial coefficients in order of ascending
+    /// powers starting from the last dependent coordinate. For a polynomial of
+    /// third order dependent on three coordinates (qi: i = 1,2,3), the order
+    /// is a follows:
+    /// Index | q1 q2 q3
+    /// 1     | 0  0  0
+    /// 2     | 0  0  1
+    /// 3     | 0  0  2
+    /// 4     | 0  0  3
+    /// 5     | 0  1  0
+    /// 6     | 0  1  1
+    /// 7     | 0  1  2
+    /// 8     | 0  2  0
+    /// 9     | 0  2  1
+    /// 10    | 0  3  0
+    /// 11    | 1  0  0
+    /// 12    | 1  0  1
+    /// 13    | 1  0  2
+    /// 14    | 1  1  0
+    /// 15    | 1  1  1
+    /// 16    | 1  2  0
+    /// 17    | 2  0  0
+    /// 18    | 2  0  1
+    /// 19    | 2  1  0
+    /// 20    | 3  0  0
+    /// @param dimension the number of dependent coordinates
     /// @param order the polynomial order
     SimTKMultivariatePolynomial(const SimTK::Vector_<T>& coefficients,
             const int& dimension, const int& order) :
             coefficients(coefficients), dimension(dimension), order(order) {}
     T calcValue(const SimTK::Vector& x) const override {
-        // TODO: not sure this is necessary but this implementation assumes 4
-        // dimensions so it might be good to make sure the vector has only 0 to
-        // start with. I have not been very successful in coming up with a
-        // generic expression so far...
         SimTK::Vector y(4);
         y.setToZero();
         for (int i = 0; i < 4; ++i) y[i] = x[i];
         T value = static_cast<T>(0);
         int coeff_nr = 0;
-        for (int nq_1 = 0; nq_1 < order+1; ++nq_1) {
-            int n_q2_s;
-            if (dimension < 2) n_q2_s = 0;
-            else n_q2_s = order-nq_1;
-            for (int n_q2 = 0; n_q2 < n_q2_s + 1; ++n_q2) {
-                int n_q3_s;
-                if (dimension < 3) n_q3_s = 0;
-                else n_q3_s = order-nq_1-n_q2;
-                for (int n_q3 = 0; n_q3 < n_q3_s + 1; ++n_q3) {
-                    int n_q4_s;
-                    if (dimension < 4) n_q4_s = 0;
-                    else n_q4_s = order-nq_1-n_q2-n_q3;
-                    for (int n_q4 = 0; n_q4 < n_q4_s + 1; ++n_q4) {
-                        value += (std::pow(y[0], nq_1) * std::pow(y[1], n_q2) *
-                                std::pow(y[2], n_q3) * std::pow(y[3], n_q4)) *
+        for (int nq1 = 0; nq1 < order + 1; ++nq1) {
+            int nq2_s;
+            if (dimension < 2) nq2_s = 0;
+            else nq2_s = order - nq1;
+            for (int nq2 = 0; nq2 < nq2_s + 1; ++nq2) {
+                int nq3_s;
+                if (dimension < 3) nq3_s = 0;
+                else nq3_s = order - nq1 - nq2;
+                for (int nq3 = 0; nq3 < nq3_s + 1; ++nq3) {
+                    int nq4_s;
+                    if (dimension < 4) nq4_s = 0;
+                    else nq4_s = order - nq1 - nq2 - nq3;
+                    for (int nq4 = 0; nq4 < nq4_s + 1; ++nq4) {
+                        value += (std::pow(y[0], nq1) * std::pow(y[1], nq2) *
+                                std::pow(y[2], nq3) * std::pow(y[3], nq4)) *
                                 coefficients[coeff_nr];
                         ++coeff_nr;
                     }
@@ -68,60 +90,59 @@ public:
     }
     T calcDerivative(const SimTK::Array_<int>& derivComponents,
                      const SimTK::Vector& x) const override {
-        // TODO: idem as above.
         SimTK::Vector y(4);
         y.setToZero();
         for (int i = 0; i < 4; ++i) y[i] = x[i];
         T value = static_cast<T>(0);
-        int temp = 0;
+        int nqNonNegative = 0;
         int coeff_nr = 0;
-        for (int nq_1 = 0; nq_1 < order+1; ++nq_1) {
-            int n_q2_s;
-            if (dimension < 2) n_q2_s = 0;
-            else n_q2_s = order-nq_1;
-            for (int n_q2 = 0; n_q2 < n_q2_s + 1; ++n_q2) {
-                int n_q3_s;
-                if (dimension < 3) n_q3_s = 0;
-                else n_q3_s = order-nq_1-n_q2;
-                for (int n_q3 = 0; n_q3 < n_q3_s + 1; ++n_q3) {
-                    int n_q4_s;
-                    if (dimension < 4) n_q4_s = 0;
-                    else n_q4_s = order-nq_1-n_q2-n_q3;
-                    for (int n_q4 = 0; n_q4 < n_q4_s + 1; ++n_q4) {
+        for (int nq1 = 0; nq1 < order + 1; ++nq1) {
+            int nq2_s;
+            if (dimension < 2) nq2_s = 0;
+            else nq2_s = order - nq1;
+            for (int nq2 = 0; nq2 < nq2_s + 1; ++nq2) {
+                int nq3_s;
+                if (dimension < 3) nq3_s = 0;
+                else nq3_s = order - nq1 - nq2;
+                for (int nq3 = 0; nq3 < nq3_s + 1; ++nq3) {
+                    int nq4_s;
+                    if (dimension < 4) nq4_s = 0;
+                    else nq4_s = order - nq1 - nq2 - nq3;
+                    for (int nq4 = 0; nq4 < nq4_s + 1; ++nq4) {
                         if (derivComponents[0] == 0) {
-                            temp = nq_1-1; // TODO dirty fix
-                            if (temp < 0) temp = 0;
-                            value += (nq_1 * std::pow(y[0], temp)*
-                                    std::pow(y[1], n_q2) *
-                                    std::pow(y[2], n_q3) *
-                                    std::pow(y[3], n_q4)) *
+                            nqNonNegative = nq1 - 1;
+                            if (nqNonNegative < 0) nqNonNegative = 0;
+                            value += (nq1 * std::pow(y[0], nqNonNegative)*
+                                    std::pow(y[1], nq2) *
+                                    std::pow(y[2], nq3) *
+                                    std::pow(y[3], nq4)) *
                                     coefficients[coeff_nr];
                         }
                         else if (derivComponents[0] == 1) {
-                            temp = n_q2-1; // TODO dirty fix
-                            if (temp < 0) temp = 0;
-                            value += (std::pow(y[0], nq_1) *
-                                    n_q2 * std::pow(y[1], temp) *
-                                    std::pow(y[2], n_q3) *
-                                    std::pow(y[3], n_q4)) *
+                            nqNonNegative = nq2 - 1;
+                            if (nqNonNegative < 0) nqNonNegative = 0;
+                            value += (std::pow(y[0], nq1) *
+                                    nq2 * std::pow(y[1], nqNonNegative) *
+                                    std::pow(y[2], nq3) *
+                                    std::pow(y[3], nq4)) *
                                     coefficients[coeff_nr];
                         }
                         else if (derivComponents[0] == 2) {
-                            temp = n_q3-1; // TODO dirty fix
-                            if (temp < 0) temp = 0;
-                            value += (std::pow(y[0], nq_1) *
-                                    std::pow(y[1], n_q2) *
-                                    n_q3 * std::pow(y[2], temp) *
-                                    std::pow(y[3], n_q4)) *
+                            nqNonNegative = nq3 - 1;
+                            if (nqNonNegative < 0) nqNonNegative = 0;
+                            value += (std::pow(y[0], nq1) *
+                                    std::pow(y[1], nq2) *
+                                    nq3 * std::pow(y[2], nqNonNegative) *
+                                    std::pow(y[3], nq4)) *
                                     coefficients[coeff_nr];
                         }
                         else if (derivComponents[0] == 3) {
-                            temp = n_q4-1; // TODO dirty fix
-                            if (temp < 0) temp = 0;
-                            value += (std::pow(y[0], nq_1) *
-                                    std::pow(y[1], n_q2) *
-                                    std::pow(y[2], n_q3) *
-                                    n_q4 * std::pow(y[3], temp)) *
+                            nqNonNegative = nq4 - 1;
+                            if (nqNonNegative < 0) nqNonNegative = 0;
+                            value += (std::pow(y[0], nq1) *
+                                    std::pow(y[1], nq2) *
+                                    std::pow(y[2], nq3) *
+                                    nq4 * std::pow(y[3], nqNonNegative)) *
                                     coefficients[coeff_nr];
                         }
                         ++coeff_nr;
@@ -135,7 +156,7 @@ public:
         return dimension;
     }
     int getMaxDerivativeOrder() const override {
-        return std::numeric_limits<int>::max();
+        return 1;
     }
     SimTKMultivariatePolynomial* clone() const override {
         return new SimTKMultivariatePolynomial(*this);
@@ -155,21 +176,17 @@ private:
 class OSIMMOCO_API MultivariatePolynomialFunction : public Function {
 OpenSim_DECLARE_CONCRETE_OBJECT(MultivariatePolynomialFunction, Function);
 
-    //=========================================================================
-    // PROPERTIES
-    //=========================================================================
-    // TODO ajust after discussing "format"
+public:
     OpenSim_DECLARE_PROPERTY(coefficients, SimTK::Vector,
-            "Coefficients of a multivariate polynomial function.");
+            "Coefficients of a multivariate polynomial function in order of "
+            "ascending powers starting from the last dependent coordinate (see"
+            " SimTKMultivariatePolynomial for example)");
     OpenSim_DECLARE_PROPERTY(dimension, int,
-            "Number of dimensions of a multivariate polynomial function.");
+            "Number of dimensions (i.e., dependent coordinates) of a "
+            "multivariate polynomial function.");
     OpenSim_DECLARE_PROPERTY(order, int,
             "Order of a multivariate polynomial function.");
 
-public:
-    //=========================================================================
-    // METHODS
-    //=========================================================================
     MultivariatePolynomialFunction() { constructProperties(); }
 
     MultivariatePolynomialFunction(SimTK::Vector coefficients, int dimension,
@@ -182,22 +199,22 @@ public:
 
     virtual ~MultivariatePolynomialFunction() {};
 
-    /// Set coefficients TODO
+    /// Set coefficients
     void setCoefficients(SimTK::Vector coefficients)
     {   set_coefficients(coefficients); }
-    /// Get coefficients TODO
+    /// Get coefficients
     const SimTK::Vector getCoefficients() const
     {   return get_coefficients(); }
-    /// Set dimension TODO
+    /// Set dimension
     void setDimension(int dimension)
     {   set_dimension(dimension); }
-    /// Get dimension TODO
+    /// Get dimension
     const int getDimension() const
     {   return get_dimension(); }
-    /// Set order TODO
+    /// Set order
     void setOrder(int order)
     {   set_order(order); }
-    /// Get order TODO
+    /// Get order
     const int getOrder() const
     {   return get_order(); }
 
@@ -211,15 +228,12 @@ private:
     void constructProperties() {
         double coefficientDefaultValues[6] = {1,1,1,1,1,1};
         constructProperty_coefficients(
-                SimTK::Vector(6,coefficientDefaultValues));
+                SimTK::Vector(6, &coefficientDefaultValues[0]));
         constructProperty_dimension(2);
         constructProperty_order(2);
     }
 
-//=============================================================================
-};  // END class MultivariatePolynomialFunction
-//=============================================================================
-//=============================================================================
+};
 
 } // end of namespace OpenSim
 

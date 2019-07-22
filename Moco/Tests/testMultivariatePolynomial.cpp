@@ -23,15 +23,15 @@
 
 using namespace OpenSim;
 
-// Create a single leg 2D model with two muscles to test the implementation of
-// polynomial approximations of muscle-tendon lengths, lengthening speeds,
-// and moment arms based on joint coordinates and speeds.
+// Create a single leg 2D model with two muscles to test the estimation of
+// muscle-tendon lengths, lengthening speeds, and moment arms based on
+// polynomial approximation of joint coordinates.
 Model createModel() {
-    // Create model
-    Model model;
-    model.setName("singleLeg2DModel");
     using SimTK::Vec3;
     using SimTK::Inertia;
+    // Create Model
+    Model model;
+    model.setName("singleLeg2DModel");
     // Add bodies
     auto* pelvis = new OpenSim::Body("pelvis", 9.7143336091724,
         Vec3(-0.0682778, 0, 0), Inertia(0.0814928846050306, 0.0814928846050306,
@@ -84,7 +84,7 @@ Model createModel() {
     knee_angle.setName("knee_angle");
     model.addJoint(knee);
     // Add muscles
-    // Coefficients for polynomial approximations computed with MATLAB code.
+    // Coefficients of MultivariatePolynomialFunctions computed with MATLAB.
     int dimHamstrings = 2;
     int orderHamstrings = 3;
     const int nCoeffHamstrings = 10;
@@ -127,8 +127,7 @@ Model createModel() {
     auto* RF_f = new MultivariatePolynomialFunction();
     RF_f->setDimension(dimRF);
     RF_f->setOrder(orderRF);
-    RF_f->setCoefficients(
-            SimTK::Vector(nCoeffRF,coeffRF));
+    RF_f->setCoefficients(SimTK::Vector(nCoeffRF,coeffRF));
     auto* RF = new DeGrooteFregly2016Muscle();
     auto& RF_p = RF->updGeometryPath();
     RF_p.set_use_approximation(true);
@@ -150,38 +149,38 @@ Model createModel() {
     RF_P3->setName("RF-P3");
     RF_P3->setBody(*tibia);
     double scale = 0.966732152034662;
-    int np_rfX = 17;
-    double rfX_x[] = { -2.0944, -1.99997, -1.5708, -1.45752, -1.39626, -1.0472,
+    int np_RFX = 17;
+    double RFX_x[] = { -2.0944, -1.99997, -1.5708, -1.45752, -1.39626, -1.0472,
             -0.698132, -0.526391, -0.349066, -0.174533, 0, 0.00017453,
             0.00034907, 0.0279253, 0.0872665, 0.174533, 2.0944 };
-    double rfX_y[] = { 0.0155805, 0.0179938, 0.0275081, 0.0296564, 0.0307615,
+    double RFX_y[] = { 0.0155805, 0.0179938, 0.0275081, 0.0296564, 0.0307615,
             0.0365695, 0.0422074, 0.0450902, 0.048391, 0.0534299, 0.0617576,
             0.0617669, 0.0617762, 0.0633083, 0.066994, 0.0733035, 0.0573481 };
-    SimTK::Vector rfX_y_s(np_rfX,&rfX_y[0]);
-    rfX_y_s = scale * rfX_y_s;
-    SimmSpline SS_rf_x(np_rfX, rfX_x, &rfX_y_s[0]);
-    RF_P3->set_x_location(SS_rf_x);
+    SimTK::Vector RFX_y_s(np_RFX, &RFX_y[0]);
+    RFX_y_s = scale * RFX_y_s;
+    SimmSpline SS_RF_x(np_RFX, RFX_x, &RFX_y_s[0]);
+    RF_P3->set_x_location(SS_RF_x);
     RF_P3->setXCoordinate(knee_angle);
-    int np_rfY = 17;
-    double rfY_x[] = { -2.0944, -1.99997, -1.5708, -1.45752, -1.39626, -1.0472,
+    int np_RFY = 17;
+    double RFY_x[] = { -2.0944, -1.99997, -1.5708, -1.45752, -1.39626, -1.0472,
             -0.698132, -0.526391, -0.349066, -0.174533, 0, 0.00017453,
             0.00034907, 0.0279253, 0.0872665, 0.174533, 2.0944 };
-    double rfY_y[] = { 0.0234116, 0.0237613, 0.0251141, 0.0252795, 0.0253146,
+    double RFY_y[] = { 0.0234116, 0.0237613, 0.0251141, 0.0252795, 0.0253146,
             0.0249184, 0.0242373, 0.0238447, 0.0234197, 0.0227644, 0.020984,
             0.0209814, 0.0209788, 0.0205225, 0.0191754, 0.0159554,
             -0.0673774 };
-    SimTK::Vector rfY_y_s(np_rfY,&rfY_y[0]);
-    rfY_y_s = scale * rfY_y_s;
-    SimmSpline SS_rf_y(np_rfY, rfY_x, &rfY_y_s[0]);
-    RF_P3->set_y_location(SS_rf_y);
+    SimTK::Vector RFY_y_s(np_RFY, &RFY_y[0]);
+    RFY_y_s = scale * RFY_y_s;
+    SimmSpline SS_RF_y(np_RFY, RFY_x, &RFY_y_s[0]);
+    RF_P3->set_y_location(SS_RF_y);
     RF_P3->setYCoordinate(knee_angle);
-    int np_rfZ = 2;
-    double rfZ_x[] = { -2.0944, 0.1745 };
-    double rfZ_y[] = { 0.0014, 0.0014 };
-    SimTK::Vector rfZ_y_s(np_rfZ,&rfZ_y[0]);
-    rfZ_y_s = scale * rfZ_y_s;
-    SimmSpline SS_rf_z(np_rfZ, rfZ_x, &rfZ_y_s[0]);
-    RF_P3->set_z_location(SS_rf_z);
+    int np_RFZ = 2;
+    double RFZ_x[] = { -2.0944, 0.1745 };
+    double RFZ_y[] = { 0.0014, 0.0014 };
+    SimTK::Vector RFZ_y_s(np_RFZ, &RFZ_y[0]);
+    RFZ_y_s = scale * RFZ_y_s;
+    SimmSpline SS_RF_z(np_RFZ, RFZ_x, &RFZ_y_s[0]);
+    RF_P3->set_z_location(SS_RF_z);
     RF_P3->setZCoordinate(knee_angle);
     RF->updGeometryPath().updPathPointSet().adoptAndAppend(RF_P3);
     RF->setName("RF");
@@ -193,7 +192,7 @@ Model createModel() {
 }
 
 // Muscle-tendon lengths and lengthening speeds should be the same as those
-// obtained in original MATLAB code (hard coded values).
+// obtained wih original MATLAB code (hard coded values).
 void testPolynomialApproximationImpl() {
 
     Model model(createModel());
@@ -201,8 +200,8 @@ void testPolynomialApproximationImpl() {
     int nStates = model.getNumStateVariables();
     SimTK::Vector stateValues(nStates);
     stateValues.setTo(0);
-    // Set non-null values for speeds to have non-null muscle-tendon
-    // lengthening speeds
+    // Set non-null values hip_flexion and knee_angle speeds to have non-null
+    // muscle-tendon lengthening speeds
     stateValues[9] = -1; // hip_flexion speed
     stateValues[11] = 1; // knee_angle speed
 
