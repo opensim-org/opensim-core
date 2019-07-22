@@ -24,6 +24,16 @@ in your model. MocoInverse attempts to alter your provided kinematics to satisfy
 the kinematic constraints (using Model::assemble()), so the tool will not
 actually track the kinematics as provided if they violate constraints.
 
+Sometimes it is not possible to achieve the desired motion using
+muscles alone. There are multiple possible causes for this:
+  - the muscles are not strong enough to achieve the required
+    net joint moments,
+  - the net joint moments change more rapidly than activation and
+    deactivation time constants allow,
+  - the filtering of the data causes unrealistic desired net joint moments.
+For these reasons, you may want to add "reserve" actuators to your model. See
+ModelFactory::createReserveActuators() and ModOpAddReserves.
+
 See @ref preskin, @ref preskinconstr, and @ref implpreskin for more information.
 
 

@@ -22,6 +22,7 @@
 #include "Components/PositionMotion.h"
 #include "MocoCasADiSolver/MocoCasADiSolver.h"
 #include "MocoCost/MocoControlCost.h"
+#include "MocoCost/MocoSumSquaredStateCost.h"
 #include "MocoProblem.h"
 #include "MocoStudy.h"
 #include "MocoUtilities.h"
@@ -31,10 +32,12 @@
 using namespace OpenSim;
 
 void MocoInverse::constructProperties() {
+
     constructProperty_kinematics(TableProcessor());
     constructProperty_kinematics_allow_extra_columns(false);
-    constructProperty_tolerance(1e-3);
+    constructProperty_minimize_sum_squared_states(false);
     constructProperty_max_iterations();
+    constructProperty_tolerance(1e-3);
     constructProperty_output_paths();
 }
 
@@ -92,6 +95,9 @@ std::pair<MocoStudy, TimeSeriesTable> MocoInverse::initializeInternal() const {
 
     // TODO: Allow users to specify costs flexibly.
     problem.addCost<MocoControlCost>("excitation_effort");
+    if (get_minimize_sum_squared_states()) {
+        problem.addCost<MocoSumSquaredStateCost>("activation_effort");
+    }
 
     // Configure the MocoSolver.
     // -------------------------
@@ -101,12 +107,16 @@ std::pair<MocoStudy, TimeSeriesTable> MocoInverse::initializeInternal() const {
             format("Tolerance must be positive, but got %g.", get_tolerance()));
     solver.set_optim_convergence_tolerance(get_tolerance());
     solver.set_optim_constraint_tolerance(get_tolerance());
+    solver.set_transcription_scheme("trapezoidal");
+    if (model.getWorkingState().getNMultipliers()) {
+        solver.set_transcription_scheme("hermite-simpson");
+        solver.set_enforce_constraint_derivatives(true);
+        solver.set_interpolate_control_midpoints(false);
+    }
     // The sparsity detection works fine with DeGrooteFregly2016Muscle.
     solver.set_optim_sparsity_detection("random");
     // Forward is 3x faster than central.
     solver.set_optim_finite_difference_scheme("forward");
-    solver.set_transcription_scheme("trapezoidal");
-
     solver.set_num_mesh_points(timeInfo.numMeshPoints);
     if (!getProperty_max_iterations().empty()) {
         solver.set_optim_max_iterations(get_max_iterations());

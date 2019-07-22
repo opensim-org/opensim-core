@@ -26,6 +26,7 @@
 #include <regex>
 #include <set>
 #include <stack>
+#include <condition_variable>
 
 #include <OpenSim/Common/GCVSplineSet.h>
 #include <OpenSim/Common/PiecewiseLinearFunction.h>
@@ -323,7 +324,7 @@ TimeSeriesTable_<T> analyze(Model model, const MocoTrajectory& iterate,
             auto thisOutputPath = output.getPathName();
             for (const auto& outputPathArg : outputPaths) {
                 if (std::regex_match(
-                            thisOutputPath, std::regex(outputPathArg))) {
+                        thisOutputPath, std::regex(outputPathArg))) {
                     // Make sure the output type agrees with the template.
                     if (dynamic_cast<const Output<T>*>(&output)) {
                         reporter->addToReport(output);

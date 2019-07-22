@@ -124,7 +124,14 @@ public:
     ///     the provided iterate.
     void visualize(const MocoTrajectory& it) const;
 
-    /// TODO
+    /// Calculate the requested outputs using the model in the problem and the
+    /// states and controls in the MocoTrajectory.
+    /// The output paths can be regular expressions. For example,
+    /// ".*activation" gives the activation of all muscles.
+    /// Constraints are not enforced but prescribed motion (e.g.,
+    /// PositionMotion) is.
+    /// @see OpenSim::analyze()
+    /// @note Parameters in the MocoTrajectory are **not** applied to the model.
     TimeSeriesTable analyze(
             const MocoTrajectory& it, std::vector<std::string> outputPaths) const;
 

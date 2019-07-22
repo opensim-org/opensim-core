@@ -82,7 +82,14 @@ TEST_CASE("DeGrooteFregly2016Muscle basics") {
             REQUIRE_THROWS_AS(musc.finalizeFromProperties(),
                     SimTK::Exception::ErrorCheck);
         }
+        SECTION("active_force_width_scale"){
+            DeGrooteFregly2016Muscle musc = muscle;
+            musc.set_active_force_width_scale(0.99999999);
+            SimTK_TEST_MUST_THROW_EXC(musc.finalizeFromProperties(),
+                    SimTK::Exception::ErrorCheck);
+        }
         SECTION("fiber_damping") {
+            DeGrooteFregly2016Muscle musc = muscle;
             musc.set_fiber_damping(-0.0001);
             REQUIRE_THROWS_AS(musc.finalizeFromProperties(),
                     SimTK::Exception::ErrorCheck);

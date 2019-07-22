@@ -26,6 +26,8 @@ set(MOCO_SOURCES
         MocoWeightSet.h
         MocoCost/MocoStateTrackingCost.h
         MocoCost/MocoStateTrackingCost.cpp
+        MocoCost/MocoSumSquaredStateCost.h
+        MocoCost/MocoSumSquaredStateCost.cpp
         MocoCost/MocoControlCost.h
         MocoCost/MocoControlCost.cpp
         MocoCost/MocoControlTrackingCost.h
@@ -35,7 +37,7 @@ set(MOCO_SOURCES
         MocoCost/MocoOrientationTrackingCost.h
         MocoCost/MocoOrientationTrackingCost.cpp
         MocoCost/MocoTranslationTrackingCost.h
-        MocoCost/MocoTranslationTrackingCost.cpp
+        MocoCost/MocoTranslationTrackingCost.cpp		
         MocoSolver.h
         MocoSolver.cpp
         MocoDirectCollocationSolver.h
@@ -93,7 +95,7 @@ set(MOCO_SOURCES
         MocoTool.cpp
         MocoTool.h
         )
-if (MOCO_WITH_TROPTER)
+if(MOCO_WITH_TROPTER)
     list(APPEND MOCO_SOURCES
             tropter/TropterProblem.h
             tropter/TropterProblem.cpp

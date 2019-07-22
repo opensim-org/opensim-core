@@ -1,15 +1,6 @@
 
 set(CMAKE_CXX_STANDARD 11)
 
-find_package(casadi 3.4.4 REQUIRED)
-set_package_properties(casadi PROPERTIES
-        URL https://web.casadi.org
-        TYPE REQUIRED
-        PURPOSE "Differentiation and optimizer interface.")
-get_filename_component(CASADI_BIN_DIR "${casadi_DIR}/../" ABSOLUTE)
-MocoCopyDLLs(DEP_NAME casadi
-    DEP_BIN_DIR "${CASADI_BIN_DIR}" INSTALL_DLLS "${CMAKE_INSTALL_BINDIR}")
-
 # Copy CasADi into our installation.
 if (${MOCO_INSTALL_UNIX_FHS})
     set(MOCO_INSTALL_CASADIDIR "")
@@ -20,7 +11,7 @@ install(DIRECTORY "${CASADI_CMAKE_DIR}/../../../"
         DESTINATION "${CMAKE_INSTALL_PREFIX}/${MOCO_INSTALL_CASADIDIR}"
         USE_SOURCE_PERMISSIONS)
 
-find_package(OpenSim 4.0 REQUIRED)
+find_package(OpenSim 4.1 REQUIRED)
 set_package_properties(OpenSim PROPERTIES
         URL http://opensim.stanford.edu
         TYPE REQUIRED
