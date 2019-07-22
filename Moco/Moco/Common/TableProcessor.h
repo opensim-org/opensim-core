@@ -155,7 +155,8 @@ public:
     TabOpLowPassFilter(double cutoffFrequency) : TabOpLowPassFilter() {
         set_cutoff_frequency(cutoffFrequency);
     }
-    void operate(TimeSeriesTable& table, const Model* model) const override {
+    void operate(TimeSeriesTable& table, const Model* model = nullptr) 
+            const override {
         if (get_cutoff_frequency() != -1) {
             OPENSIM_THROW_IF(get_cutoff_frequency() <= 0, Exception,
                     format("Expected cutoff frequency to be positive, "
