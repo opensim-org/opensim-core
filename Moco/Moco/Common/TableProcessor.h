@@ -19,9 +19,12 @@
  * -------------------------------------------------------------------------- */
 
 #include "../MocoUtilities.h"
+#include <algorithm>
 
 #include <OpenSim/Common/TimeSeriesTable.h>
 #include <OpenSim/Simulation/Model/Model.h>
+
+#include <iostream>
 
 namespace OpenSim {
 
@@ -31,7 +34,7 @@ class OSIMMOCO_API TableOperator : public Object {
     OpenSim_DECLARE_ABSTRACT_OBJECT(TableOperator, Object);
 
 public:
-    virtual void operate(TimeSeriesTable& table) const = 0;
+    virtual void operate(TimeSeriesTable& table, const Model* model) const = 0;
 };
 
 /// This class describes a workflow for processing a table using
@@ -72,9 +75,10 @@ public:
     /// evaluated relative `relativeToDirectory`, if provided.
     /// If a model is provided, it is used to convert columns from degrees to
     /// radians (if the table has a header with inDegrees=yes) before any
-    /// operations are performed.
+    /// operations are performed. This model is accessible by any 
+    /// TableOperator that require it.
     TimeSeriesTable process(std::string relativeToDirectory = {},
-            const Model* modelToConvertDegreesToRadians = nullptr) const {
+            const Model* model = nullptr) const {
         TimeSeriesTable table;
         if (get_filepath().empty()) {
             if (m_tableProvided) {
@@ -98,20 +102,20 @@ public:
 
         if (table.hasTableMetaDataKey("inDegrees") &&
                 table.getTableMetaDataAsString("inDegrees") == "yes") {
-            modelToConvertDegreesToRadians->getSimbodyEngine()
-                    .convertDegreesToRadians(table);
+            model->getSimbodyEngine().convertDegreesToRadians(table);
         }
 
         for (int i = 0; i < getProperty_operators().size(); ++i) {
-            get_operators(i).operate(table);
+            get_operators(i).operate(table, model);
         }
         return table;
     }
+    TimeSeriesTable process(const Model* model = nullptr) {
+        return process({}, model);
+    }
     /// Returns true if neither a filepath nor an in-memory table have been
     /// provided.
-    bool empty() const {
-        return !m_tableProvided && get_filepath().empty();
-    }
+    bool empty() const { return !m_tableProvided && get_filepath().empty(); }
     /// Append an operation to the end of the operations in this processor.
     TableProcessor& append(const TableOperator& op) {
         append_operators(op);
@@ -151,7 +155,7 @@ public:
     TabOpLowPassFilter(double cutoffFrequency) : TabOpLowPassFilter() {
         set_cutoff_frequency(cutoffFrequency);
     }
-    void operate(TimeSeriesTable& table) const override {
+    void operate(TimeSeriesTable& table, const Model* model) const override {
         if (get_cutoff_frequency() != -1) {
             OPENSIM_THROW_IF(get_cutoff_frequency() <= 0, Exception,
                     format("Expected cutoff frequency to be positive, "
@@ -163,43 +167,93 @@ public:
     }
 };
 
-/// Update table column headers to show full path to components in a model
+/// Update table column headers to show full path to components in a model 
 /// tree. If a column header matches a component name, the column header is 
 /// replaced by the full path to the component. This operation applies the 
 /// findComponent() method on the column header string, therefore the column 
 /// header string may already contain a full or partial path to the component. 
-/// Optionally, append a "/value" or "/speed" suffix to the end of the full 
-/// path to the component. If a component given by the column header is not 
-/// found in the model, the column header is left unchanged.
-class OSIMMOCO_API TabOpUpdColLabelFullPath : public TableOperator {
-    OpenSim_DECLARE_CONCRETE_OBJECT(TabOpUpdColLabelFullPath, TableOperator);
-    OpenSim_DECLARE_PROPERTY(refmodel, Model,
-            "Reference model used to find full paths to components.");
-    OpenSim_DECLARE_PROPERTY(suffix,
-            int, "Flag to append /value or /speed suffix to full path. "
-                "0=no suffix, 1=value, 2=speed. Default: 0.");
-    std::vector<std::string> suffix_string = {"","/value","/speed"};
+///
+/// The user may append a "/value" or "/speed" suffix to the end of the full 
+/// path to the component.
+///
+/// However, for column headers with the suffix "_u" to represent speeds, 
+/// a flag may be optionally set to automatically replace the "_u" with 
+/// "/speeds" for these columns only (overriding the above).
+///
+/// If a component given by the column header is not found in the model, the 
+/// column header is left unchanged.
+///
+/// Assumption: all column headers names are unique.
+class OSIMMOCO_API TabOpAbsolutePathColumnLabels : public TableOperator {
+    OpenSim_DECLARE_CONCRETE_OBJECT(TabOpAbsolutePathColumnLabels, TableOperator);
+    OpenSim_DECLARE_PROPERTY(suffix, std::string,
+            "Append optional \"value\" or \"speed\" suffix to full path. "
+            "Default: no suffix.");
+    OpenSim_DECLARE_PROPERTY(auto_change_u_to_speed, bool,
+            "If the column name contains a \"_u\" suffix, set this flag to "
+            "automatically change \"_u\" to \"/speed\". This will override any "
+            "previously-set suffix. Default: false.");
 
 public:
-    TabOpUpdColLabelFullPath() {
-        constructProperty_refmodel(Model());
-        constructProperty_suffix(0);
-    }
-    TabOpUpdColLabelFullPath(const Model model) : TabOpUpdColLabelFullPath() {
-        set_refmodel(model);
+    TabOpAbsolutePathColumnLabels() {
+        constructProperty_suffix("");
+        constructProperty_auto_change_u_to_speed(false);
     };
-    TabOpUpdColLabelFullPath(const Model model, int suffval) :
-            TabOpUpdColLabelFullPath() {
-        set_refmodel(model);        
-        set_suffix((suffval < 0 || suffval > 2) ? 0 : suffval);
+    TabOpAbsolutePathColumnLabels(std::string suffval, 
+            bool auto_change_u_flag = false)
+                : TabOpAbsolutePathColumnLabels() {
+        std::transform(
+                suffval.begin(), suffval.end(), suffval.begin(), ::tolower);
+        set_suffix(suffval);
+        set_auto_change_u_to_speed(auto_change_u_flag);
     };
 
-    void operate(TimeSeriesTable& table) const override {
+    void operate(TimeSeriesTable& table, const Model* model) const override {
+
         for (int i = 0; i < table.getNumColumns(); i++) {
-            if (const Component* found = get_refmodel().findComponent(
-                        ComponentPath(table.getColumnLabel(i)))) {
-                table.setColumnLabel(i, found->getAbsolutePathString() +
-                                                suffix_string[get_suffix()]);
+
+            // check model nullptr
+            OPENSIM_THROW_IF(!model, Exception,
+                    format("Expected a model, but no model was provided."));
+
+            // check valid suffix
+            OPENSIM_THROW_IF(get_suffix().compare("") &&
+                                     get_suffix().compare("value") &&
+                                     get_suffix().compare("speed"),
+                    Exception,
+                    format("Expected suffix \"value\", \"speed\" or no "
+                           "suffix. The provided suffix \"%s\" did not match "
+                           "these options.",
+                            get_suffix()));
+
+            // get the column header
+            std::string colheader = table.getColumnLabel(i);
+
+            // trim the "_u" if column header has suffix "_u" and auto changed flagged
+            bool autospeedflag = get_auto_change_u_to_speed() &&
+                                 (colheader.rfind("_u") == (colheader.length() - 2));
+            if (autospeedflag)
+                colheader.erase(colheader.end() - 2, colheader.end());
+            
+            // find the component with the same name as the current column header
+            if (const Component* found =
+                model->findComponent(ComponentPath(colheader))) {
+
+                // get the full path
+                std::string pathstring = found->getAbsolutePathString();
+
+                // automatically append "/speed" if flag is set
+                if (autospeedflag) {
+                    pathstring.append("/speed");
+                }
+                // otherwise just append the suffix provided (if any)
+                else {
+                    pathstring.append(
+                            get_suffix().compare("") ? "/" + get_suffix() : "");
+                }
+
+                // update the column label
+                table.setColumnLabel(i, pathstring);
             }
         }
     }
