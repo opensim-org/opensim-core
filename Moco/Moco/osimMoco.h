@@ -37,6 +37,7 @@
 #include "MocoCost/MocoMarkerTrackingCost.h"
 #include "MocoCost/MocoOrientationTrackingCost.h"
 #include "MocoCost/MocoStateTrackingCost.h"
+#include "MocoCost/MocoSumSquaredStateCost.h"
 #include "MocoCost/MocoTranslationTrackingCost.h"
 #include "MocoInverse.h"
 #include "MocoParameter.h"
