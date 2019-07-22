@@ -1820,3 +1820,25 @@ TEST_CASE("MocoPhase::bound_activation_from_excitation") {
 // testOMUCOSerialization();
 
 // TODO specifying optimizer options.
+
+TEMPLATE_TEST_CASE("Controllers in the model", "",
+        MocoCasADiSolver, MocoTropterSolver) {
+    MocoStudy study;
+    auto& problem = study.updProblem();
+    auto model = createSlidingMassModel();
+    auto* controller = new PrescribedController();
+    controller->addActuator(model->getComponent<Actuator>("actuator"));
+    controller->prescribeControlForActuator("actuator", new Constant(0.4));
+    model->addController(controller);
+    problem.setModel(std::move(model));
+    problem.setTimeBounds(0, {0, 10});
+    problem.setStateInfo("/slider/position/value", {0, 1}, 0, 1);
+    problem.setStateInfo("/slider/position/speed", {-100, 100}, 0, 0);
+    problem.addGoal<MocoFinalTimeGoal>();
+
+    auto& solver = study.initSolver<TestType>();
+    solver.set_num_mesh_points(20);
+    MocoSolution solution = study.solve();
+    std::cout << "DEBUG " << solution.getControl("/actuator") << std::endl;
+
+}
