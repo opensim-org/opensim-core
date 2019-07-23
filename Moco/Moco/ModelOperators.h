@@ -74,16 +74,16 @@ class OSIMMOCO_API ModOpIgnorePassiveFiberForcesDGF : public ModelOperator {
 public:
     void operate(Model& model, const std::string&) const override {
         model.finalizeFromProperties();
-        for (auto& muscle : 
+        for (auto& muscle :
                 model.updComponentList<DeGrooteFregly2016Muscle>()) {
             muscle.set_ignore_passive_fiber_force(true);
         }
     }
 };
 
-/// Scale the active fiber force curve width for all DeGrooteFregly2016Muscle%s 
+/// Scale the active fiber force curve width for all DeGrooteFregly2016Muscle%s
 /// in the model.
-class OSIMMOCO_API ModOpScaleActiveFiberForceCurveWidthDGF : 
+class OSIMMOCO_API ModOpScaleActiveFiberForceCurveWidthDGF :
         public ModelOperator {
     OpenSim_DECLARE_CONCRETE_OBJECT(
             ModOpScaleActiveFiberForceCurveWidthDGF, ModelOperator);
@@ -91,9 +91,9 @@ class OSIMMOCO_API ModOpScaleActiveFiberForceCurveWidthDGF :
             "The active fiber force curve width scale factor.");
 public:
     ModOpScaleActiveFiberForceCurveWidthDGF() {
-        constructProperty_scale_factor(1); 
+        constructProperty_scale_factor(1);
     }
-    ModOpScaleActiveFiberForceCurveWidthDGF(double scaleFactor) 
+    ModOpScaleActiveFiberForceCurveWidthDGF(double scaleFactor)
             : ModOpScaleActiveFiberForceCurveWidthDGF() {
         set_scale_factor(scaleFactor);
     }
@@ -146,7 +146,7 @@ class OSIMMOCO_API ModOpAddReserves : public ModelOperator {
     OpenSim_DECLARE_PROPERTY(optimal_force, double,
             "The optimal force for all added reserve actuators.");
     OpenSim_DECLARE_PROPERTY(skip_coordinates_with_actuators, bool,
-            "Whether or not to skip coordinates with existing actuators. " 
+            "Whether or not to skip coordinates with existing actuators. "
             "Default: true.")
 public:
     ModOpAddReserves() {
@@ -156,7 +156,7 @@ public:
     ModOpAddReserves(double optimalForce) : ModOpAddReserves() {
         set_optimal_force(optimalForce);
     }
-    ModOpAddReserves(double optimalForce, bool skipCoordsWithActu) 
+    ModOpAddReserves(double optimalForce, bool skipCoordsWithActu)
             : ModOpAddReserves() {
         set_optimal_force(optimalForce);
         set_skip_coordinates_with_actuators(skipCoordsWithActu);
@@ -172,7 +172,7 @@ public:
 /// XML file.
 class OSIMMOCO_API ModOpAddExternalLoads : public ModelOperator {
     OpenSim_DECLARE_CONCRETE_OBJECT(ModOpAddExternalLoads, ModelOperator);
-    OpenSim_DECLARE_PROPERTY(filepath, std::string, 
+    OpenSim_DECLARE_PROPERTY(filepath, std::string,
             "External loads XML file.");
 
 public:
@@ -209,6 +209,31 @@ public:
         model.initSystem();
         for (int i = 0; i < getProperty_joint_paths().size(); ++i) {
             ModelFactory::replaceJointWithWeldJoint(model, get_joint_paths(i));
+        }
+    }
+};
+
+/// Turn on or off path length approximation for all GeometryPath components in
+/// the model.
+class OSIMMOCO_API ModOpUsePathLengthApproximation : public ModelOperator {
+    OpenSim_DECLARE_CONCRETE_OBJECT(
+            ModOpUsePathLengthApproximation, ModelOperator);
+    OpenSim_DECLARE_PROPERTY(use_approximation, bool, "Whether or not to use "
+            "path length approximation for GeometryPath components. "
+            "Default: false.")
+
+public:
+    ModOpUsePathLengthApproximation() {
+        constructProperty_use_approximation(false);
+    }
+    ModOpUsePathLengthApproximation(bool useApproximation)
+            : ModOpUsePathLengthApproximation() {
+        set_use_approximation(useApproximation);
+    }
+    void operate(Model& model, const std::string&) const override {
+        model.finalizeFromProperties();
+        for (auto& geometryPath  : model.updComponentList<GeometryPath>()) {
+            geometryPath.set_use_approximation(get_use_approximation());
         }
     }
 };
