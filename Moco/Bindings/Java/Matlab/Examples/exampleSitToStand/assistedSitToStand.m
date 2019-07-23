@@ -26,12 +26,11 @@ function assistedSitToStand
 %    and subject2_unassisted_solution.sto. If you want to re-run the unassisted
 %    optimizations, delete these STO files or set cacheUnassisted to false.
 % 4. To make Moco optimize the device parameters for you, do the following:
-%       a. Create a MocoStudy for one of the subjects using createStudy(),
+%       a. Temporarily comment out the call to evaluateDevice().
+%       b. Create a MocoStudy for one of the subjects using createStudy(),
 %          the second subfunction below.
-%       b. Add a MocoParameter to your problem representing the model property
+%       c. Add a MocoParameter to your problem representing the model property
 %          you want to optimize.
-%       c. (optional) Set an initial guess for your parameter.
-%          See createGuess() and setGuess() in MocoDirectCollocationSolver.
 %       d. Solve the study returned from createStudy().
 %       e. Get the parameter values out of the MocoSolution returned by solve().
 %          See the documentation for MocoTrajectory.
@@ -53,6 +52,19 @@ visualize = 1;
 cacheUnassisted = 1;
 
 % Edit the argument to evaluateDevice() to any device function you create below.
+% This function performs the following steps:
+%   1. Predicts subject 1 unassisted sit-to-stand (skipped in subsequent calls).
+%   2. Predicts subject 1 assisted sit-to-stand.
+%   3. Plots comparison of assisted vs unassisted solutions for subject 1.
+%   4. Predicts subject 2 unassisted sit-to-stand (skipped in subsequent calls).
+%   5. Predicts subject 2 assisted sit-to-stand.
+%   6. Plots comparison of assisted vs unassisted solutions for subject 2.
+%   7. Computes the score for the assistive device.
+% Up to 4 Visualizer windows are created. The function only proceeds
+% to the next optimization after you hit ESC in the Visualizer window.
+%
+% The subfunction evaluateDevice() is defined toward the bottom of this file,
+% but you don't need to read its definition to perform the challenge.
 score = evaluateDevice(@addSpringToKnee);
 
 % Use this space to perform a parameter optimization.
@@ -68,11 +80,11 @@ import org.opensim.modeling.*;
 device = SpringGeneralizedForce('knee_angle_r');
 device.setName('knee_spring');
 % Stiffness units: N/radians
-device.setStiffness(15);
+device.setStiffness(5);
 % Rest length units: radians
-device.setRestLength(0);
+device.setRestLength(0.05);
 % Viscosity units: N-s/radians
-device.setViscosity(0);
+device.setViscosity(1.5);
 model.addForce(device);
 end
 
@@ -83,7 +95,7 @@ name = 'ankle_spring';
 import org.opensim.modeling.*;
 device = SpringGeneralizedForce('ankle_angle_r');
 device.setName('ankle_spring');
-device.setStiffness(10);
+device.setStiffness(3);
 device.setRestLength(0);
 device.setViscosity(5);
 model.addForce(device);
@@ -103,9 +115,10 @@ subjectInfos{2}.torso = 1.5;
 end
 
 function [moco] = createStudy(subjectIndex, addDeviceFunction)
-% This function builds a MocoProblem for predicting a sit-to-stand motion given
+% This function builds a study for predicting a sit-to-stand motion given
 % adjustments to a model (given a subject index; 1 or 2) and, optionally, a
-% function for adding a device to a model.
+% function for adding a device to a model. This returns a MocoStudy, and you can
+% access and modify the problem via updProblem().
 global verbosity;
 global subjectInfos;
 
@@ -255,7 +268,8 @@ for subject = subjects
     assistedSolution = solve(subject, addDeviceFunction);
 
     if visualize
-        mocoPlotTrajectory(unassistedSolution, assistedSolution);
+        mocoPlotTrajectory(unassistedSolution, assistedSolution, ...
+            'unassisted', 'assisted');
     end
 
     fprintf('Subject %i unassisted: %f\n', subject, unassistedObjective);
