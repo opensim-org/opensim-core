@@ -28,6 +28,7 @@ Bug Fixes
 - Fix bug that resulted in activations and forces reported for Actuators that are disabled during StaticOptimization (issue #2438) Disabled actuators are now ignored in StaticOptimization.
 - OpenSim no longer supports model file formats predating version 1.8.1 (PR #2498)
 - FunctionBasedBushingForce now applies damping if specified (it was incorrectly ignored in 4.0) issue #2512
+- TRCFileAdapter.write() uses the number of columns and rows in the supplied dataTable to set the "NumMarkers" and "NumRows" Metadata in the output file. Users won't have to set this metadata string manually.  #2510
 
 Documentation
 -------------
