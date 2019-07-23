@@ -339,7 +339,6 @@ MocoSolution stateTrackingRightLeg(const Options& opt) {
     ms.set_minimize_lagrange_multipliers(false);
     ms.set_lagrange_multiplier_weight(10);
     ms.set_optim_hessian_approximation(opt.hessian_approximation);
-    ms.set_optim_finite_difference_scheme("forward");
   
     // Create guess.
     // -------------

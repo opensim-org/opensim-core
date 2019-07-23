@@ -26,6 +26,8 @@ set(MOCO_SOURCES
         MocoWeightSet.h
         MocoGoal/MocoStateTrackingGoal.h
         MocoGoal/MocoStateTrackingGoal.cpp
+        MocoCost/MocoSumSquaredStateCost.h
+        MocoCost/MocoSumSquaredStateCost.cpp
         MocoGoal/MocoControlGoal.h
         MocoGoal/MocoControlGoal.cpp
         MocoGoal/MocoControlTrackingGoal.h
@@ -98,7 +100,7 @@ set(MOCO_SOURCES
         MocoConstraintInfo.cpp
         MocoConstraintInfo.h
         )
-if (MOCO_WITH_TROPTER)
+if(MOCO_WITH_TROPTER)
     list(APPEND MOCO_SOURCES
             tropter/TropterProblem.h
             tropter/TropterProblem.cpp

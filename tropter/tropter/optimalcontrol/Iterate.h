@@ -23,30 +23,32 @@
 
 namespace tropter {
 
-/// This struct holds the values the variables in an optimal control problem.
-/// Iterates can be written to and read from CSV files. The file format is as
-/// follows. 
-/// @note Parameter values only appear in the first row, while the remaining 
-/// rows in parameter columns are filled with NaNs. 
-/// @note Diffuses are special variables that may not be defined at all time
-/// points. For example, you may want variables defined on the points on either
-/// either end of the mesh interval, or only defined on the mesh interval 
-/// interior. Therefore, diffuses are real numbers at the time points where they
-/// are defined and NaN everywhere else.
-/// @verbatim
-/// num_states=<number-of-state-variables>
-/// num_controls=<number-of-control-variables>
-/// num_adjuncts=<number-of-adjunct-variables>
-/// num_diffuses=<number-of-diffuse-variables>
-/// num_parameters=<number-of-parameter-variables>
-/// time,<state-0-name>,...,<control-0-name>,...,<adjunct-0-name>,... \
-///                                 <diffuse-0-name>,...,<parameter-0-name>,...
-/// <#>,<#>,...,<#>,...,<#>,...,<#-or-NaN>,...,<#>,...
-/// <#>,<#>,...,<#>,...,<#>,...,<#-or-NaN>,...,<NaN>,...
-///  : , : ,..., : ,..., : ,...,    :     ,...,  :  ,...
-/// <#>,<#>,...,<#>,...,<#>,...,<#-or-NaN>,...,<NaN>,...
-/// @endverbatim
-/// @ingroup optimalcontrol
+/**
+This struct holds the values the variables in an optimal control problem.
+Iterates can be written to and read from CSV files. The file format is as
+follows. 
+@note Parameter values only appear in the first row, while the remaining 
+rows in parameter columns are filled with NaNs. 
+@note Diffuses are special variables that may not be defined at all time
+points. For example, you may want variables defined on the points on either
+either end of the mesh interval, or only defined on the mesh interval 
+interior. Therefore, diffuses are real numbers at the time points where they
+are defined and NaN everywhere else.
+@verbatim
+num_states=<number-of-state-variables>
+num_controls=<number-of-control-variables>
+num_adjuncts=<number-of-adjunct-variables>
+num_diffuses=<number-of-diffuse-variables>
+num_parameters=<number-of-parameter-variables>
+time,<state-0-name>,...,<control-0-name>,...,<adjunct-0-name>,... \
+                                <diffuse-0-name>,...,<parameter-0-name>,...
+<#>,<#>,...,<#>,...,<#>,...,<#-or-NaN>,...,<#>,...
+<#>,<#>,...,<#>,...,<#>,...,<#-or-NaN>,...,<NaN>,...
+ : , : ,..., : ,..., : ,...,    :     ,...,  :  ,...
+<#>,<#>,...,<#>,...,<#>,...,<#-or-NaN>,...,<NaN>,...
+@endverbatim
+@ingroup optimalcontrol
+*/
 // TODO rename to Variables?
 struct Iterate {
     Eigen::RowVectorXd time;

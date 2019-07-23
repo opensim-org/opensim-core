@@ -40,7 +40,7 @@ MocoStudy::MocoStudy(const std::string& omocoFile) : Object(omocoFile) {
 void MocoStudy::constructProperties() {
     constructProperty_write_solution("./");
     constructProperty_problem(MocoProblem());
-    constructProperty_solver(MocoTropterSolver());
+    constructProperty_solver(MocoCasADiSolver());
 }
 
 const MocoProblem& MocoStudy::getProblem() const { return get_problem(); }
