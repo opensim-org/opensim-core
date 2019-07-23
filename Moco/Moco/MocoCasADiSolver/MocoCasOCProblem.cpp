@@ -215,12 +215,12 @@ MocoCasOCProblem::MocoCasOCProblem(const MocoCasADiSolver& mocoCasADiSolver,
         const auto endpointConNames =
                 problemRep.createEndpointConstraintNames();
         for (const auto& name : endpointConNames) {
-            const auto& cost = problemRep.getEndpointConstraint(name);
+            const auto& ec = problemRep.getEndpointConstraint(name);
             std::vector<CasOC::Bounds> casBounds;
-            for (const auto& bounds : cost.getConstraintInfo().getBounds()) {
+            for (const auto& bounds : ec.getConstraintInfo().getBounds()) {
                 casBounds.push_back(convertBounds(bounds));
             }
-            addEndpointConstraint(name, cost.getNumIntegrals(), casBounds);
+            addEndpointConstraint(name, ec.getNumIntegrals(), casBounds);
         }
     }
 
