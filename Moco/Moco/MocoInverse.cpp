@@ -23,7 +23,7 @@
 #include "MocoCasADiSolver/MocoCasADiSolver.h"
 #include "MocoGoal/MocoControlGoal.h"
 #include "MocoGoal/MocoInitialActivationGoal.h"
-#include "MocoCost/MocoSumSquaredStateCost.h"
+#include "MocoGoal/MocoSumSquaredStateGoal.h"
 #include "MocoProblem.h"
 #include "MocoStudy.h"
 #include "MocoUtilities.h"

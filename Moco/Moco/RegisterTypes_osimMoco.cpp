@@ -32,7 +32,6 @@
 #include "MocoBounds.h"
 #include "MocoCasADiSolver/MocoCasADiSolver.h"
 #include "MocoControlBoundConstraint.h"
-#include "MocoCost/MocoSumSquaredStateCost.h"
 #include "MocoGoal/MocoControlGoal.h"
 #include "MocoGoal/MocoControlTrackingGoal.h"
 #include "MocoGoal/MocoGoal.h"
@@ -43,6 +42,7 @@
 #include "MocoGoal/MocoOrientationTrackingGoal.h"
 #include "MocoGoal/MocoPeriodicityGoal.h"
 #include "MocoGoal/MocoStateTrackingGoal.h"
+#include "MocoGoal/MocoSumSquaredStateGoal.h"
 #include "MocoGoal/MocoTranslationTrackingGoal.h"
 #include "MocoInverse.h"
 #include "MocoParameter.h"
@@ -70,7 +70,7 @@ OSIMMOCO_API void RegisterTypes_osimMoco() {
         Object::registerType(MocoMarkerTrackingGoal());
         Object::registerType(MocoMarkerFinalGoal());
         Object::registerType(MocoControlGoal());
-        Object::registerType(MocoSumSquaredStateCost());
+        Object::registerType(MocoSumSquaredStateGoal());
         Object::registerType(MocoControlTrackingGoal());
         Object::registerType(MocoInitialActivationGoal());
         Object::registerType(MocoJointReactionGoal());

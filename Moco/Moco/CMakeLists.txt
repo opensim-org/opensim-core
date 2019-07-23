@@ -26,8 +26,8 @@ set(MOCO_SOURCES
         MocoWeightSet.h
         MocoGoal/MocoStateTrackingGoal.h
         MocoGoal/MocoStateTrackingGoal.cpp
-        MocoCost/MocoSumSquaredStateCost.h
-        MocoCost/MocoSumSquaredStateCost.cpp
+        MocoGoal/MocoSumSquaredStateGoal.h
+        MocoGoal/MocoSumSquaredStateGoal.cpp
         MocoGoal/MocoControlGoal.h
         MocoGoal/MocoControlGoal.cpp
         MocoGoal/MocoControlTrackingGoal.h

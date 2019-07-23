@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: MocoSumSquaredStateCost.cpp                                  *
+ * OpenSim Moco: MocoSumSquaredStateGoal.cpp                                  *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2019 Stanford University and the Authors                     *
  *                                                                            *
@@ -15,7 +15,8 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
-#include "MocoSumSquaredStateCost.h"
+#include "MocoSumSquaredStateGoal.h"
+
 #include <OpenSim/Simulation/Model/Model.h>
 
 using namespace OpenSim;

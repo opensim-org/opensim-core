@@ -19,10 +19,10 @@
 #include <Moco/MocoGoal/MocoMarkerFinalGoal.h>
 #include <Moco/MocoGoal/MocoMarkerTrackingGoal.h>
 #include <Moco/MocoGoal/MocoOrientationTrackingGoal.h>
-#include <Moco/MocoGoal/MocoStateTrackingGoal.h>
-#include <Moco/MocoGoal/MocoTranslationTrackingGoal.h>
-#include <Moco/MocoCost/MocoSumSquaredStateCost.h>
 #include <Moco/MocoGoal/MocoPeriodicityGoal.h>
+#include <Moco/MocoGoal/MocoStateTrackingGoal.h>
+#include <Moco/MocoGoal/MocoSumSquaredStateGoal.h>
+#include <Moco/MocoGoal/MocoTranslationTrackingGoal.h>
 #include <Moco/MocoInverse.h>
 #include <Moco/MocoParameter.h>
 #include <Moco/MocoProblem.h>
