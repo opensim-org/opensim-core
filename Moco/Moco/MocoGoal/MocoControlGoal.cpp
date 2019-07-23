@@ -30,7 +30,7 @@ void MocoControlGoal::constructProperties() {
     constructProperty_control_weights(MocoWeightSet());
 }
 
-void MocoControlGoal::setWeight(
+void MocoControlGoal::setWeightForControl(
         const std::string& controlName, const double& weight) {
     if (get_control_weights().contains(controlName)) {
         upd_control_weights().get(controlName).setWeight(weight);
@@ -69,6 +69,8 @@ void MocoControlGoal::initializeOnModelImpl(const Model& model) const {
             m_weights.push_back(weight);
         }
     }
+
+    setNumIntegralsAndOutputs(1, 1);
 }
 
 void MocoControlGoal::calcIntegrandImpl(

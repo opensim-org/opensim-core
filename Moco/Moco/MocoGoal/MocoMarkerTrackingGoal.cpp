@@ -76,6 +76,8 @@ void MocoMarkerTrackingGoal::initializeOnModelImpl(const Model& model) const {
     // trajectories.
     m_refsplines =
             GCVSplineSet(get_markers_reference().getMarkerTable().flatten());
+
+    setNumIntegralsAndOutputs(1, 1);
 }
 
  void MocoMarkerTrackingGoal::calcIntegrandImpl(const SimTK::State& state,

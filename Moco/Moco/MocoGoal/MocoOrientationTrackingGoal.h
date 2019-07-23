@@ -115,7 +115,7 @@ public:
     /// is already set for the requested frame, then the provided weight
     /// replaces the previous weight. An exception is thrown if a weight
     /// for an unknown frame is provided.
-    void setWeight(const std::string& frameName, const double& weight) {
+    void setWeightForFrame(const std::string& frameName, const double& weight) {
         if (get_rotation_weights().contains(frameName)) {
             upd_rotation_weights().get(frameName).setWeight(weight);
         } else {
@@ -140,7 +140,6 @@ public:
 
 protected:
     void initializeOnModelImpl(const Model& model) const override;
-    int getNumIntegralsImpl() const override { return 1; }
     void calcIntegrandImpl(
             const SimTK::State& state, double& integrand) const override;
     void calcGoalImpl(

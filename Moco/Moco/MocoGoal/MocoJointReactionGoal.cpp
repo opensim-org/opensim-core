@@ -105,6 +105,8 @@ void MocoJointReactionGoal::initializeOnModelImpl(const Model& model) const {
         }
         m_measureWeights.push_back(compWeight);
     }
+
+    setNumIntegralsAndOutputs(1, 1);
 }
 
 void MocoJointReactionGoal::calcIntegrandImpl(const SimTK::State& state,

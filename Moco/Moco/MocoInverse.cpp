@@ -22,6 +22,7 @@
 #include "Components/PositionMotion.h"
 #include "MocoCasADiSolver/MocoCasADiSolver.h"
 #include "MocoGoal/MocoControlGoal.h"
+#include "MocoGoal/MocoInitialActivationGoal.h"
 #include "MocoProblem.h"
 #include "MocoStudy.h"
 #include "MocoUtilities.h"
@@ -92,6 +93,9 @@ std::pair<MocoStudy, TimeSeriesTable> MocoInverse::initializeInternal() const {
 
     // TODO: Allow users to specify costs flexibly.
     problem.addGoal<MocoControlGoal>("excitation_effort");
+
+    // Prevent "free" activation at the beginning of the motion.
+    problem.addGoal<MocoInitialActivationGoal>("initial_activation");
 
     // Configure the MocoSolver.
     // -------------------------

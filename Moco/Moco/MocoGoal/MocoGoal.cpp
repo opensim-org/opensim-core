@@ -36,13 +36,17 @@ MocoGoal::MocoGoal(std::string name, double weight)
 
 
 void MocoGoal::printDescription(std::ostream& stream) const {
+    const auto mode = getModeAsString();
     stream << getName() << ". " << getConcreteClassName() <<
-            " enabled: " << get_enabled() << " weight: " << get_weight() << std::endl;
+            " enabled: " << get_enabled() << " mode: " << mode;
+    if (mode == "cost") {
+        stream << " weight: " << get_weight() << std::endl;
+    }
 }
 
 void MocoGoal::constructProperties() {
     constructProperty_enabled(true);
     constructProperty_weight(1);
-    constructProperty_apply_as_endpoint_constraint();
+    constructProperty_mode();
     constructProperty_MocoConstraintInfo(MocoConstraintInfo());
 }

@@ -139,7 +139,7 @@ void MocoPathConstraint::initializeOnModel(const Model& model,
     m_model.reset(&model);
     initializeOnModelImpl(model, problemInfo);
 
-    OPENSIM_THROW_IF_FRMOBJ(get_MocoConstraintInfo().getNumEquations() <  0,
+    OPENSIM_THROW_IF_FRMOBJ(get_MocoConstraintInfo().getNumEquations() < 0,
         Exception, "Number of equations cannot be negative.");
 
     OPENSIM_THROW_IF_FRMOBJ(pathConstraintIndex < 0, Exception, "Invalid "

@@ -105,7 +105,9 @@ public:
     int getNumStates() const { return (int)m_state_infos.size(); }
     int getNumControls() const { return (int)m_control_infos.size(); }
     int getNumParameters() const { return (int)m_parameters.size(); }
+    /// Get the number of goals in cost mode.
     int getNumCosts() const { return (int)m_costs.size(); }
+    /// Get the number of goals in endpoint constraint mode.
     int getNumEndpointConstraints() const {
         return (int)m_endpoint_constraints.size();
     }
@@ -125,9 +127,9 @@ public:
     std::vector<std::string> createControlInfoNames() const;
     /// Get the names of all the parameters.
     std::vector<std::string> createParameterNames() const;
-    /// Get the names of all the costs.
+    /// Get the names of all the goals in cost mode.
     std::vector<std::string> createCostNames() const;
-    /// Get the names of all endpoint constraints.
+    /// Get the names of all the goals in endpoint constraint mode.
     std::vector<std::string> createEndpointConstraintNames() const;
     /// Get the names of all the MocoPathConstraint%s.
     std::vector<std::string> createPathConstraintNames() const;

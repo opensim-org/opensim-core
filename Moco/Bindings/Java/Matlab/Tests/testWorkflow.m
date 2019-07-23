@@ -176,6 +176,6 @@ function testChangingGoals(testCase)
     finalTime0 = moco.solve().getFinalTime();
 
     % Change the weights of the costs.
-    effort.set_weight(0.1);
+    effort.setWeight(0.1);
     assert(moco.solve().getFinalTime() < 0.8 * finalTime0);
 end

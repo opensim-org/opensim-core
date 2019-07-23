@@ -36,6 +36,10 @@ set(MOCO_SOURCES
         MocoGoal/MocoOrientationTrackingGoal.cpp
         MocoGoal/MocoTranslationTrackingGoal.h
         MocoGoal/MocoTranslationTrackingGoal.cpp
+        MocoGoal/MocoInitialActivationGoal.cpp
+        MocoGoal/MocoInitialActivationGoal.h
+        MocoGoal/MocoPeriodicityGoal.h
+        MocoGoal/MocoPeriodicityGoal.cpp
         MocoSolver.h
         MocoSolver.cpp
         MocoDirectCollocationSolver.h
@@ -92,7 +96,8 @@ set(MOCO_SOURCES
         MocoTool.cpp
         MocoTool.h
         MocoConstraintInfo.cpp
-        MocoConstraintInfo.h)
+        MocoConstraintInfo.h
+        )
 if (MOCO_WITH_TROPTER)
     list(APPEND MOCO_SOURCES
             tropter/TropterProblem.h
@@ -114,7 +119,7 @@ target_link_libraries(osimMoco PUBLIC osimTools
         PRIVATE casadi)
 if (MOCO_WITH_TROPTER)
     target_link_libraries(osimMoco PRIVATE tropter)
-endif()
+endif ()
 
 target_include_directories(osimMoco INTERFACE
         $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/Moco>

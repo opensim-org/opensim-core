@@ -22,7 +22,6 @@ using namespace OpenSim;
 
 MocoConstraintInfo::MocoConstraintInfo() {
     constructProperties();
-    // TODO: used to be path_constraint.
     if (getName().empty()) setName("constraint");
 }
 

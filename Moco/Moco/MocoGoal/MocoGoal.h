@@ -32,83 +32,96 @@ class Model;
 
 // TODO give option to specify gradient and Hessian analytically.
 
-/// A term in the cost functional, to be minimized. Costs depend on the phase's
-/// initial and final states and controls, and optionally on the integral of a
-/// quantity over the phase.
-/// TODO document that this can also be an endpoint constraint.
+/// A goal is term in the cost functional to be minimized, or a set of endpoint
+/// constraints that must lie within provided bounds. Goals depend on the
+/// phase's initial and final states and controls, and optionally on the
+/// integral of a quantity over the phase.
+/// Not all goals support endpoint constraint mode; see
+/// getSupportsEndpointConstraint(). If a goal does support endpoint constraint
+/// mode, then the default mode is available via getMode(). Use endpoint
+/// constraint mode if you require the goal to be met strictly and do not want
+/// to allow a trade-off between this goal and other goals.
+/// The calculation of the goal may differ between cost and endpoint constraint
+/// modes; cost mode may require that outputs are squared, for example.
+///
 /// @par For developers
-/// Every time the problem is solved, a copy of this cost is used. An individual
-/// instance of a cost is only ever used in a single problem. Therefore, there
+/// Every time the problem is solved, a copy of this goal is used. An individual
+/// instance of a goal is only ever used in a single problem. Therefore, there
 /// is no need to clear cache variables that you create in initializeImpl().
-/// Also, information stored in this cost does not persist across multiple
+/// Also, information stored in this goal does not persist across multiple
 /// solves.
 /// @ingroup mocogoal
 class OSIMMOCO_API MocoGoal : public Object {
     OpenSim_DECLARE_ABSTRACT_OBJECT(MocoGoal, Object);
 
 public:
-    OpenSim_DECLARE_PROPERTY(
-            enabled, bool, "This bool indicates whether this cost is enabled.");
-
-    OpenSim_DECLARE_PROPERTY(weight, double,
-            "The cost value is multiplied by this weight (default: 1).");
-
-    // TODO rename to "mode", which is either "cost" or "endpoint_constraint"
-    OpenSim_DECLARE_OPTIONAL_PROPERTY(
-            apply_as_endpoint_constraint, bool, "TODO");
-
     MocoGoal();
 
     MocoGoal(std::string name);
 
     MocoGoal(std::string name, double weight);
 
-    // TODO: an Endpoint should have a default as to whether it's applied as a
-    // cost or a constraint.
+    /// %Set whether this goal is used in the problem.
+    void setEnabled(bool enabled) { set_enabled(enabled); }
+    bool getEnabled() const { return get_enabled(); }
+
+    /// In cost mode, the goal is multiplied by this weight. Use the weight to
+    /// control the relative importance of terms in the cost functional.
+    void setWeight(double weight) { set_weight(weight); }
+    double getWeight() const { return get_weight(); }
+
+    enum class Mode { Cost, EndpointConstraint };
+    /// Set the mode property to either 'cost' or 'endpoint_constraint'. This
+    /// should be set before initializing. Setting to 'endpoint_constraint' if
+    /// getSupportsEndpointConstraint() is false causes an exception during
+    /// initializing.
+    void setMode(std::string mode) { set_mode(mode); }
+    /// This returns the default mode of the goal, unless the user overrode
+    /// the default using setMode().
+    std::string getModeAsString() const {
+        return getMode() == Mode::Cost ? "cost" : "endpoint_constraint";
+    }
+    Mode getMode() const {
+        OPENSIM_THROW_IF_FRMOBJ(
+                !m_model, Exception, "Getting the mode requires initializing.");
+        return m_modeToUse;
+    }
+    bool getModeIsCost() const { return getMode() == Mode::Cost; }
+    bool getModeIsEndpointConstraint() const {
+        return getMode() == Mode::EndpointConstraint;
+    }
+
+    /// Types of goals have a class-level default for whether they are enforced
+    /// as a cost or endpoint constraint.
+    Mode getDefaultMode() const { return getDefaultModeImpl(); }
+
+    /// Can this constraint be used in endpoint constraint mode?
     bool getSupportsEndpointConstraint() const {
         return getSupportsEndpointConstraintImpl();
     }
 
-    bool getDefaultEndpointConstraint() const {
-        return getDefaultEndpointConstraintImpl();
-    }
-
+    /// Get bounds for the constraints when using this goal in endpoint
+    /// constraint mode.
     const MocoConstraintInfo& getConstraintInfo() const {
-        // TODO hack to setNumEquations().
-        getNumOutputs();
         return get_MocoConstraintInfo();
     }
+    MocoConstraintInfo& updConstraintInfo() { return upd_MocoConstraintInfo(); }
 
-    // TODO: the issue with relying on constraintinfo for num outputs is that
-    // we don't use constraint info when applying as cost.
+    /// Get the length of the return value of calcGoal().
     int getNumOutputs() const {
-        int n = getNumOutputsImpl();
-        // TODO this is a bit hacky.
-        setNumEquations(n);
-        return n;
-    }
-
-    // TODO rename getApplyAsConstraint(). or getApplyAsEndpointConstraint().
-    bool getApplyAsEndpointConstraint() const {
-        bool endpoint_constraint;
-        if (getProperty_apply_as_endpoint_constraint().empty()) {
-            endpoint_constraint = getDefaultEndpointConstraint();
-        } else {
-            endpoint_constraint = get_apply_as_endpoint_constraint();
-        }
-        OPENSIM_THROW_IF(
-                endpoint_constraint && !getSupportsEndpointConstraint(),
-                Exception, "Endpoint constraint not supported TODO.");
-        return endpoint_constraint;
+        OPENSIM_THROW_IF_FRMOBJ(!m_model, Exception,
+                "Getting the number of outputs requires initializing.");
+        return getConstraintInfo().getNumEquations();
     }
 
     /// Get the number of integrals required by this cost.
     /// This returns either 0 (for a strictly-endpoint cost) or 1.
+    /// @precondition This goal must be initialized.
     int getNumIntegrals() const {
-        int num = getNumIntegralsImpl();
-        OPENSIM_THROW_IF(num < 0, Exception,
-                "Number of integrals must be non-negative.");
-        return num;
+        OPENSIM_THROW_IF_FRMOBJ(m_numIntegrals == -1, Exception,
+                "The goal must be initialized for the number of integrals to "
+                "be available.");
+        return m_numIntegrals;
     }
     /// Calculate the integrand that should be integrated and passed to
     /// calcCost(). If getNumIntegrals() is not zero, this must be implemented.
@@ -124,48 +137,80 @@ public:
         /// This is computed by integrating calcIntegrand().
         const double& integral;
     };
-    // TODO: rename to calcValue().
-    /// The returned cost includes the weight.
-    // We use SimTK::Real instead of double for when we support adoubles.
-    SimTK::Vector calcGoal(const GoalInput& input) const {
-        SimTK::Vector goal(getNumOutputs());
+    /// In cost mode, the returned cost includes the weight, and the elements of
+    /// the returned vector should be summed by the caller to obtain the total
+    /// cost. In endpoint constraint mode, each element of the vector is a
+    /// different scalar equation to enforce as a constraint.
+    /// The length of the returned vector is getNumOutputs().
+    void calcGoal(const GoalInput& input, SimTK::Vector& goal) const {
+        goal.resize(getNumOutputs());
         goal = 0;
-        if (!get_enabled()) { return goal; }
+        if (!get_enabled()) { return; }
         calcGoalImpl(input, goal);
-        if (!getApplyAsEndpointConstraint()) {
-            goal *= get_weight();
-        }
-        return goal;
+        goal *= m_weightToUse;
     }
     /// For use by solvers. This also performs error checks on the Problem.
     void initializeOnModel(const Model& model) const {
         m_model.reset(&model);
         if (!get_enabled()) { return; }
-        // TODO hack to setNumEquations().
-        // TODO setNumEquations inside initializeOnModel().
-        setNumEquations(getNumOutputs());
+
+        // Set mode.
+        Mode mode;
+        if (getProperty_mode().empty()) {
+            mode = getDefaultMode();
+        } else {
+            checkMode(get_mode());
+            mode = (get_mode() == "cost") ? Mode::Cost
+                                          : Mode::EndpointConstraint;
+        }
+        OPENSIM_THROW_IF_FRMOBJ(mode == Mode::EndpointConstraint &&
+                !getSupportsEndpointConstraint(),
+                Exception,
+                "Endpoint constraint mode not supported by this goal.");
+        m_modeToUse = mode;
+        if (m_modeToUse == Mode::EndpointConstraint) {
+            m_weightToUse = 1;
+        } else {
+            m_weightToUse = get_weight();
+        }
+
         initializeOnModelImpl(model);
-        // TODO check numEquations to ensure it's set.
+
+        OPENSIM_THROW_IF_FRMOBJ(m_numIntegrals == -1, Exception,
+                "Expected setNumIntegralsAndOutputs() to be invoked, "
+                "but it was not.");
     }
 
-    /// Print the name, type, and weight for this cost.
+    /// Print the name type and mode of this goal. In cost mode, this prints the
+    /// weight.
     void printDescription(std::ostream& stream = std::cout) const;
 
 protected:
     /// Perform any caching before the problem is solved.
+    /// You must override this function and invoke setNumIntegralsAndOutputs().
     /// @precondition The model is initialized (initSystem()) and getModel()
     /// is available.
     /// The passed-in model is equivalent to getModel().
     /// Use this opportunity to check for errors in user input.
-    // TODO: Rename to extendInitializeOnModel().
-    virtual void initializeOnModelImpl(const Model&) const {}
+    virtual void initializeOnModelImpl(const Model&) const = 0;
 
-    virtual int getNumOutputsImpl() const { return 1; }
-    virtual bool getDefaultEndpointConstraintImpl() const { return false; }
+    /// Set the number of integral terms required by this goal and the length
+    /// of the vector passed into calcGoalImpl().
+    /// This must be set within initializeOnModelImpl(), otherwise an exception
+    /// is thrown during initialization.
+    /// The number of integrals must be either 0 or 1.
+    void setNumIntegralsAndOutputs(int numIntegrals, int numOutputs) const {
+        OPENSIM_THROW_IF(numIntegrals < 0 || numIntegrals > 1, Exception,
+                "Number of integrals must be 0 or 1.");
+        OPENSIM_THROW_IF(numOutputs < 0, Exception,
+                "Number of outputs must be non-negative.");
+        m_numIntegrals = numIntegrals;
+        const_cast<MocoGoal*>(this)->upd_MocoConstraintInfo().setNumEquations(
+                numOutputs);
+    }
+
+    virtual Mode getDefaultModeImpl() const { return Mode::Cost; }
     virtual bool getSupportsEndpointConstraintImpl() const { return false; }
-    /// Return the number if integral terms required by this cost.
-    /// This must be either 0 or 1.
-    virtual int getNumIntegralsImpl() const = 0;
     /// @precondition The state is realized to SimTK::Stage::Position.
     /// If you need access to the controls, you must realize to Velocity:
     /// @code
@@ -176,28 +221,43 @@ protected:
             const SimTK::State& state, double& integrand) const;
     /// The Lagrange multipliers for kinematic constraints are not available.
     virtual void calcGoalImpl(
-            const GoalInput& input, SimTK::Vector& cost) const = 0;
+            const GoalInput& input, SimTK::Vector& goal) const = 0;
     /// For use within virtual function implementations.
     const Model& getModel() const {
-        OPENSIM_THROW_IF(!m_model, Exception,
+        OPENSIM_THROW_IF_FRMOBJ(!m_model, Exception,
                 "Model is not available until the start of initializing.");
         return m_model.getRef();
     }
 
 private:
+    OpenSim_DECLARE_PROPERTY(
+            enabled, bool, "This bool indicates whether this goal is enabled.");
+
+    OpenSim_DECLARE_PROPERTY(weight, double,
+            "In cost mode, the goal is multiplied by this weight (default: "
+            "1).");
+
+    OpenSim_DECLARE_OPTIONAL_PROPERTY(mode, std::string,
+            "'cost' to enforce as a penalty, 'endpoint_constraint' to enforce "
+            "as a constraint.");
     OpenSim_DECLARE_UNNAMED_PROPERTY(MocoConstraintInfo,
             "The bounds and labels for this MocoGoal, if applied as an "
             "endpoint constraint.");
 
-    void setNumEquations(int numEqs) const {
-        // TODO avoid const_cast
-        const_cast<MocoGoal*>(this)->upd_MocoConstraintInfo().setNumEquations(
-                numEqs);
-    }
-
     void constructProperties();
 
+    void checkMode(const std::string& mode) const {
+        OPENSIM_THROW_IF_FRMOBJ(mode != "cost" && mode != "endpoint_constraint",
+                Exception,
+                format("Expected mode to be 'cost' or 'endpoint_constraint' "
+                       "but got %s.",
+                        mode));
+    }
+
     mutable SimTK::ReferencePtr<const Model> m_model;
+    mutable double m_weightToUse;
+    mutable Mode m_modeToUse;
+    mutable int m_numIntegrals = -1;
 };
 
 inline void MocoGoal::calcIntegrandImpl(
@@ -215,7 +275,9 @@ public:
             : MocoGoal(std::move(name), weight) {}
 
 protected:
-    int getNumIntegralsImpl() const override { return 0; }
+    void initializeOnModelImpl(const Model&) const override {
+        setNumIntegralsAndOutputs(0, 1);
+    }
     void calcGoalImpl(
             const GoalInput& input, SimTK::Vector& cost) const override {
         cost[0] = input.final_state.getTime();

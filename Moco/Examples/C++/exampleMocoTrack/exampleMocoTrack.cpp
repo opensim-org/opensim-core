@@ -179,7 +179,7 @@ void muscleDrivenStateTracking() {
      for (const auto& coordAct : model.getComponentList<CoordinateActuator>()) {
         auto coordPath = coordAct.getAbsolutePathString();
         if (coordPath.find("pelvis") != std::string::npos) {
-            effort.setWeight(coordPath, 10);
+            effort.setWeightForControl(coordPath, 10);
         }
     }
     

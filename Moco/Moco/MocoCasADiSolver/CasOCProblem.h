@@ -107,6 +107,7 @@ struct EndpointConstraintInfo : EndpointInfo {
                       std::move(efunc)),
               lowerBounds(std::move(lowerBounds)),
               upperBounds(std::move(upperBounds)) {}
+    // The number of rows in these bounds must be num_outputs.
     casadi::DM lowerBounds;
     casadi::DM upperBounds;
 };
@@ -253,9 +254,9 @@ protected:
                 std::move(integrand_function),
                 OpenSim::make_unique<Cost>());
     }
+    /// Add an endpoint constraint to the problem.
     void addEndpointConstraint(
             std::string name, int numIntegrals, std::vector<Bounds> bounds) {
-        // TODO
         OPENSIM_THROW_IF(numIntegrals < 0 || numIntegrals > 1,
                 OpenSim::Exception, "numIntegrals must be 0 or 1.");
         std::unique_ptr<Integrand> integrand_function;

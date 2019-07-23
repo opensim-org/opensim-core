@@ -504,10 +504,10 @@ int main() {
 
     trackingCost.setReference(refFilt);
     trackingCost.setAllowUnusedReferences(true);
-    //trackingCost.setWeight("gp/p_rz/value", 100.0);
-    //trackingCost.setWeight("gp/p_tx/value", 25.0);
-    //trackingCost.setWeight("gp/p_ty/value", 10.0);
-    //trackingCost.setWeight("hip/hip_rz/value", 2.0);
+    //trackingCost.setWeightForState("gp/p_rz/value", 100.0);
+    //trackingCost.setWeightForState("gp/p_tx/value", 25.0);
+    //trackingCost.setWeightForState("gp/p_ty/value", 10.0);
+    //trackingCost.setWeightForState("hip/hip_rz/value", 2.0);
     mp.addGoal(trackingCost);
 
     // Takes longer to solve with this cost:

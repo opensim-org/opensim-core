@@ -172,6 +172,8 @@ void MocoOrientationTrackingGoal::initializeOnModelImpl(const Model& model)
     flatTable.setColumnLabels(colLabels);
 
     m_ref_splines = GCVSplineSet(flatTable);
+
+    setNumIntegralsAndOutputs(1, 1);
 }
 
 void MocoOrientationTrackingGoal::calcIntegrandImpl(const SimTK::State& state,
