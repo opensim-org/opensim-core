@@ -215,19 +215,19 @@ public:
 
 /// Turn on or off path length approximation for all GeometryPath components in
 /// the model.
-class OSIMMOCO_API ModOpUsePathLengthApproximation : public ModelOperator {
+class OSIMMOCO_API ModOpSetPathLengthApproximation : public ModelOperator {
     OpenSim_DECLARE_CONCRETE_OBJECT(
-            ModOpUsePathLengthApproximation, ModelOperator);
+            ModOpSetPathLengthApproximation, ModelOperator);
     OpenSim_DECLARE_PROPERTY(use_approximation, bool, "Whether or not to use "
             "path length approximation for GeometryPath components. "
             "Default: false.")
 
 public:
-    ModOpUsePathLengthApproximation() {
+    ModOpSetPathLengthApproximation() {
         constructProperty_use_approximation(false);
     }
-    ModOpUsePathLengthApproximation(bool useApproximation)
-            : ModOpUsePathLengthApproximation() {
+    ModOpSetPathLengthApproximation(bool useApproximation)
+            : ModOpSetPathLengthApproximation() {
         set_use_approximation(useApproximation);
     }
     void operate(Model& model, const std::string&) const override {

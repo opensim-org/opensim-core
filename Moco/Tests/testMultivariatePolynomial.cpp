@@ -99,6 +99,7 @@ Model createModel() {
     hamstrings_f->setOrder(orderHamstrings);
     hamstrings_f->setCoefficients(
             SimTK::Vector(nCoeffHamstrings,coeffHamstrings));
+
     auto* hamstrings = new DeGrooteFregly2016Muscle();
     auto& hamstrings_p = hamstrings->updGeometryPath();
     hamstrings_p.set_use_approximation(true);

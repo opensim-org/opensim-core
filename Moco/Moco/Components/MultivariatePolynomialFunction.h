@@ -56,6 +56,7 @@ public:
     /// 18    | 2  1  0
     /// 19    | 3  0  0
     /// </pre>
+    /// Assuming c6 the index 6 coefficient, the corresponding term is Y Z^2.
     /// @param dimension the number of dependent components
     /// @param order the polynomial order
     SimTKMultivariatePolynomial(const SimTK::Vector_<T>& coefficients,
@@ -91,6 +92,9 @@ public:
                 }
             }
         }
+        OPENSIM_THROW_IF(coefficients.size() != coeff_nr, Exception,
+                format("Expected %i coefficients but got %i.",
+                        coeff_nr, coefficients.size()));
         return value;
     }
     T calcDerivative(const SimTK::Array_<int>& derivComponent,
@@ -157,6 +161,9 @@ public:
                 }
             }
         }
+        OPENSIM_THROW_IF(coefficients.size() != coeff_nr, Exception,
+                format("Expected %i coefficients but got %i.",
+                        coeff_nr, coefficients.size()));
         return value;
     }
     int getArgumentSize() const override {
