@@ -38,6 +38,7 @@
 #include "MocoGoal/MocoMarkerFinalGoal.h"
 #include "MocoGoal/MocoMarkerTrackingGoal.h"
 #include "MocoGoal/MocoOrientationTrackingGoal.h"
+#include "MocoGoal/MocoPeriodicityGoal.h"
 #include "MocoGoal/MocoStateTrackingGoal.h"
 #include "MocoGoal/MocoTranslationTrackingGoal.h"
 #include "MocoInverse.h"

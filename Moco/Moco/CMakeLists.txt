@@ -26,6 +26,8 @@ set(MOCO_SOURCES
         MocoWeightSet.h
         MocoGoal/MocoStateTrackingGoal.h
         MocoGoal/MocoStateTrackingGoal.cpp
+        MocoGoal/MocoSumSquaredStateGoal.h
+        MocoGoal/MocoSumSquaredStateGoal.cpp
         MocoGoal/MocoControlGoal.h
         MocoGoal/MocoControlGoal.cpp
         MocoGoal/MocoControlTrackingGoal.h
@@ -38,8 +40,8 @@ set(MOCO_SOURCES
         MocoGoal/MocoTranslationTrackingGoal.cpp
         MocoGoal/MocoInitialActivationGoal.cpp
         MocoGoal/MocoInitialActivationGoal.h
-        MocoGoal/MocoSumSquaredStateGoal.h
-        MocoGoal/MocoSumSquaredStateGoal.cpp
+        MocoGoal/MocoPeriodicityGoal.h
+        MocoGoal/MocoPeriodicityGoal.cpp
         MocoSolver.h
         MocoSolver.cpp
         MocoDirectCollocationSolver.h
