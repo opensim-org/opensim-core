@@ -21,17 +21,18 @@
 
 using namespace OpenSim;
 
-MocoSumSquaredStateCost::MocoSumSquaredStateCost() {
+MocoSumSquaredStateGoal::MocoSumSquaredStateGoal() {
     constructProperties();
 }
 
-void MocoSumSquaredStateCost::constructProperties() {
+void MocoSumSquaredStateGoal::constructProperties() {
 }
 
-void MocoSumSquaredStateCost::initializeOnModelImpl(const Model& model) const {
+void MocoSumSquaredStateGoal::initializeOnModelImpl(const Model& model) const {
+    setNumIntegralsAndOutputs(1, 1);
 }
 
-void MocoSumSquaredStateCost::calcIntegrandImpl(const SimTK::State& state,
+void MocoSumSquaredStateGoal::calcIntegrandImpl(const SimTK::State& state,
         double& integrand) const {
     integrand = state.getY().normSqr();
 }
