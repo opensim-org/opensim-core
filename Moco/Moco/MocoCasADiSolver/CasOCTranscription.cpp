@@ -65,9 +65,9 @@ public:
                             iterate.variables[final_time]);
             iterate.iteration = evalCount;
             m_problem.intermediateCallbackWithIterate(iterate);
-            evalCount++;
         }
         m_problem.intermediateCallback();
+        ++evalCount;
         return {0};
     }
 
