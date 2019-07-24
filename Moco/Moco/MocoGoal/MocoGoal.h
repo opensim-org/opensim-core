@@ -164,7 +164,7 @@ public:
                                           : Mode::EndpointConstraint;
         }
         OPENSIM_THROW_IF_FRMOBJ(mode == Mode::EndpointConstraint &&
-                !getSupportsEndpointConstraint(),
+                                        !getSupportsEndpointConstraint(),
                 Exception,
                 "Endpoint constraint mode not supported by this goal.");
         m_modeToUse = mode;

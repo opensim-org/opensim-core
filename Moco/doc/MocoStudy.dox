@@ -49,6 +49,7 @@ We use the following notation:
 - \f$ w_j \f$: weight for \f$ j \f$-th cost goal
 - \f$ J_{j} \f$: the \f$ j \f$-th cost goal
 - \f$ s_{c,j} \f$: integrand used in the \f$ j \f$-th cost goal
+- \f$ S_{c,j} \f$: integral of \f$ s_{c,j} \f$
 - \f$ M \f$: mass matrix
 - \f$ f_{\textrm{bias}} \f$: centripetal and coriolis forces
 - \f$ G \f$: kinematic constraint Jacobian
@@ -60,6 +61,7 @@ We use the following notation:
 - \f$ g \f$: path constraints
 - \f$ V_k \f$: the \f$ k \f$-th endpoint constraint goal
 - \f$ s_{e,k} \f$: the integrand used in the \f$ k \f$-th endpoint constraint goal
+- \f$ S_{e,k} \f$: the integral of \f$ s_{e,k} \f$
 - \f$ K \f$: number of endpoint constraint goals
 - subscript \f$ U \f$: an upper bound
 - subscript \f$ L \f$: a lower bound
