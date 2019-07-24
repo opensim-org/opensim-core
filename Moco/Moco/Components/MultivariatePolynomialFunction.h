@@ -64,6 +64,30 @@ public:
             coefficients(coefficients), dimension(dimension), order(order) {
         OPENSIM_THROW_IF(dimension < 0 || dimension > 4, Exception, format(
                 "Expected dimension >= 0 && <=4 but got %i.", dimension));
+        std::array<int, 4> nq{0};
+        int coeff_nr = 0;
+        for (nq[0] = 0; nq[0] < order + 1; ++nq[0]) {
+            int nq2_s;
+            if (dimension < 2) nq2_s = 0;
+            else nq2_s = order - nq[0];
+            for (nq[1] = 0; nq[1] < nq2_s + 1; ++nq[1]) {
+                int nq3_s;
+                if (dimension < 3) nq3_s = 0;
+                else nq3_s = order - nq[0] - nq[1];
+                for (nq[2] = 0; nq[2] < nq3_s + 1; ++nq[2]) {
+                    int nq4_s;
+                    if (dimension < 4) nq4_s = 0;
+                    else nq4_s = order - nq[0] - nq[1] - nq[2];
+                    for (nq[3] = 0; nq[3] < nq4_s + 1; ++nq[3]) {
+                        ++coeff_nr;
+                    }
+                }
+            }
+        }
+        OPENSIM_THROW_IF(coefficients.size() != coeff_nr, Exception,
+                format("Expected %i coefficients but got %i.",
+                        coeff_nr, coefficients.size()));
+
     }
     T calcValue(const SimTK::Vector& x) const override {
         std::array<int, 4> nq{0};
@@ -92,9 +116,6 @@ public:
                 }
             }
         }
-        OPENSIM_THROW_IF(coefficients.size() != coeff_nr, Exception,
-                format("Expected %i coefficients but got %i.",
-                        coeff_nr, coefficients.size()));
         return value;
     }
     T calcDerivative(const SimTK::Array_<int>& derivComponent,
@@ -161,9 +182,6 @@ public:
                 }
             }
         }
-        OPENSIM_THROW_IF(coefficients.size() != coeff_nr, Exception,
-                format("Expected %i coefficients but got %i.",
-                        coeff_nr, coefficients.size()));
         return value;
     }
     int getArgumentSize() const override {
