@@ -1,10 +1,10 @@
 namespace OpenSim {
 /** @mainpage
 
-OpenSim Moco is a software package for solving optimal control problems for
-musculoskeletal systems modeled in OpenSim. The package has Python, MATLAB, and
-XML (command-line) interfaces; the core library is written in C++. Here are some
-problems you can solve with Moco:
+Moco is a module of OpenSim for solving optimal control problems for
+musculoskeletal systems defined as OpenSim models.
+The package has Python, MATLAB, and XML (command-line) interfaces; the core
+library is written in C++. Here are some problems you can solve with Moco:
 
 1. Solve for the muscle activity that tracks a known motion.
 2. Solve for a new motion that optimizes some cost (e.g., effort).
@@ -26,13 +26,15 @@ problems. Solving a custom optimal control problem with direct collocation
 requires substantial tuning of the direct collocation method's settings. Use the
 more specific interfaces if possible.
 
+
+
 Parts of the documentation:
   - @ref mocotrack
   - @ref mocoinverse
   - @ref mocostudy
   - MocoTrajectory
   - @ref utilities
-  - @ref mocoimplguide
+  - @ref mocodevguide
   - @ref faq
 
 
