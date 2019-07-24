@@ -71,6 +71,7 @@ set(MOCO_SOURCES
         Components/DiscreteForces.cpp
         Components/AccelerationMotion.h
         Components/AccelerationMotion.cpp
+        Components/MultivariatePolynomialFunction.h
         MocoCasADiSolver/MocoCasADiSolver.h
         MocoCasADiSolver/MocoCasADiSolver.cpp
         MocoCasADiSolver/MocoCasOCProblem.h
