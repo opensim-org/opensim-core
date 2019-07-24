@@ -1,7 +1,7 @@
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: MocoSumSquaredStateCost.cpp                                  *
+ * OpenSim Moco: MocoMarkerFinalGoal.cpp                                      *
  * -------------------------------------------------------------------------- *
- * Copyright (c) 2019 Stanford University and the Authors                     *
+ * Copyright (c) 2017 Stanford University and the Authors                     *
  *                                                                            *
  * Author(s): Christopher Dembia                                              *
  *                                                                            *
@@ -15,22 +15,26 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
-#include "MocoSumSquaredStateCost.h"
+
+#include "MocoMarkerFinalGoal.h"
+
 #include <OpenSim/Simulation/Model/Model.h>
 
 using namespace OpenSim;
 
-MocoSumSquaredStateCost::MocoSumSquaredStateCost() {
-    constructProperties();
+void MocoMarkerFinalGoal::initializeOnModelImpl(const Model& model) const {
+    m_point.reset(&model.getComponent<Point>(get_point_name()));
+    setNumIntegralsAndOutputs(0, 1);
 }
 
-void MocoSumSquaredStateCost::constructProperties() {
+void MocoMarkerFinalGoal::calcGoalImpl(
+        const GoalInput& input, SimTK::Vector& cost) const {
+    getModel().realizePosition(input.final_state);
+    const auto& actualLocation = m_point->getLocationInGround(input.final_state);
+    cost[0] = (actualLocation - get_reference_location()).normSqr();
 }
 
-void MocoSumSquaredStateCost::initializeOnModelImpl(const Model& model) const {
-}
-
-void MocoSumSquaredStateCost::calcIntegrandImpl(const SimTK::State& state,
-        double& integrand) const {
-    integrand = state.getY().normSqr();
+void MocoMarkerFinalGoal::constructProperties() {
+    constructProperty_point_name("");
+    constructProperty_reference_location(SimTK::Vec3(0));
 }

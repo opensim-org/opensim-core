@@ -81,7 +81,7 @@ void torqueDrivenMarkerTracking() {
     track.set_allow_unused_references(true);
 
     // Increase the global marker tracking weight, which is the weight
-    // associated with the internal MocoMarkerTrackingCost term.
+    // associated with the internal MocoMarkerTrackingGoal term.
     track.set_markers_global_tracking_weight(10);
 
     // Increase the tracking weights for individual markers in the data set 
@@ -160,11 +160,11 @@ void muscleDrivenStateTracking() {
     // problem beyond the MocoTrack interface.
     MocoStudy moco = track.initialize();
 
-    // Get a reference to the MocoControlCost that is added to every MocoTrack
+    // Get a reference to the MocoControlGoal that is added to every MocoTrack
     // problem by default.
     MocoProblem& problem = moco.updProblem();
-    MocoControlCost& effort =
-        dynamic_cast<MocoControlCost&>(problem.updCost("control_effort"));
+    MocoControlGoal& effort =
+        dynamic_cast<MocoControlGoal&>(problem.updGoal("control_effort"));
 
     // Put a large weight on the pelvis CoordinateActuators, which act as the
     // residual, or 'hand-of-god', forces which we would like to keep as small
@@ -173,7 +173,7 @@ void muscleDrivenStateTracking() {
      for (const auto& coordAct : model.getComponentList<CoordinateActuator>()) {
         auto coordPath = coordAct.getAbsolutePathString();
         if (coordPath.find("pelvis") != std::string::npos) {
-            effort.setWeight(coordPath, 10);
+            effort.setWeightForControl(coordPath, 10);
         }
     }
     

@@ -17,15 +17,16 @@
 * -------------------------------------------------------------------------- */
 
 #include "MocoTrack.h"
-#include "MocoWeightSet.h"
-#include "MocoStudy.h"
-#include "MocoProblem.h"
-#include "MocoCost/MocoControlCost.h"
-#include "MocoCost/MocoControlTrackingCost.h"
-#include "MocoCost/MocoStateTrackingCost.h"
-#include "MocoCost/MocoMarkerTrackingCost.h"
+
 #include "MocoCasADiSolver/MocoCasADiSolver.h"
+#include "MocoGoal/MocoControlGoal.h"
+#include "MocoGoal/MocoControlTrackingGoal.h"
+#include "MocoGoal/MocoMarkerTrackingGoal.h"
+#include "MocoGoal/MocoStateTrackingGoal.h"
+#include "MocoProblem.h"
+#include "MocoStudy.h"
 #include "MocoUtilities.h"
+#include "MocoWeightSet.h"
 
 #include <OpenSim/Common/FileAdapter.h>
 #include <OpenSim/Common/GCVSpline.h>
@@ -60,7 +61,7 @@ MocoStudy MocoTrack::initialize() {
     Model model = get_model().process();
     model.initSystem();
 
-    // Costs.
+    // Goals.
     // ------
     // State tracking cost.
     TimeSeriesTable tracked_states;
@@ -88,8 +89,8 @@ MocoStudy MocoTrack::initialize() {
                        "got a weight with value %d.", 
                         get_control_effort_weight()));
       
-        auto* effort = problem.addCost<MocoControlCost>("control_effort");
-        effort->set_weight(get_control_effort_weight());
+        auto* effort = problem.addGoal<MocoControlGoal>("control_effort");
+        effort->setWeight(get_control_effort_weight());
     }
 
     // Set the time range.
@@ -212,9 +213,8 @@ TimeSeriesTable MocoTrack::configureStateTracking(MocoProblem& problem,
     }
 
     // Add state tracking cost to the MocoProblem.
-    auto* stateTracking =
-        problem.addCost<MocoStateTrackingCost>("state_tracking",
-            get_states_global_tracking_weight());
+    auto* stateTracking = problem.addGoal<MocoStateTrackingGoal>(
+            "state_tracking", get_states_global_tracking_weight());
     stateTracking->setReference(states);
     stateTracking->setWeightSet(weights);
     stateTracking->setAllowUnusedReferences(get_allow_unused_references());
@@ -251,9 +251,8 @@ void MocoTrack::configureMarkerTracking(MocoProblem& problem, Model& model) {
     }
     
     // Add marker tracking cost to the MocoProblem.
-    auto* markerTracking =
-        problem.addCost<MocoMarkerTrackingCost>("marking_tracking",
-            get_markers_global_tracking_weight());
+    auto* markerTracking = problem.addGoal<MocoMarkerTrackingGoal>(
+            "marking_tracking", get_markers_global_tracking_weight());
     markerTracking->setMarkersReference(markersRef);
     markerTracking->setAllowUnusedReferences(get_allow_unused_references());
 

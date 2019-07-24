@@ -142,7 +142,7 @@ class MocoTrajectory;
 /// MocoStudy moco = track.initialize();
 ///
 /// auto& problem = moco.updProblem(); 
-/// auto* hipForceCost = problem.addCost<MocoJointReactionCost>("hip_force");
+/// auto* hipForceCost = problem.addGoal<MocoJointReactionCost>("hip_force");
 /// hipForceCost->set_weight(10);
 /// hipForceCost->setJointPath("/jointset/hip_r");
 /// hipForceCost->setReactionMeasures({"force-y"});
@@ -160,11 +160,11 @@ OpenSim_DECLARE_CONCRETE_OBJECT(MocoTrack, MocoTool);
 public:
     OpenSim_DECLARE_PROPERTY(states_reference, TableProcessor,
         "States reference data to be tracked. If provided, a "
-        "MocoStateTrackingCost term is created and added to the internal "
+        "MocoStateTrackingGoal term is created and added to the internal "
         "MocoProblem. ");
 
     OpenSim_DECLARE_PROPERTY(states_global_tracking_weight, double,
-        "The weight for the MocoStateTrackingCost that applies to tracking " 
+        "The weight for the MocoStateTrackingGoal that applies to tracking "
         "errors for all states in the reference.");
 
     OpenSim_DECLARE_PROPERTY(states_weight_set, MocoWeightSet,
@@ -185,11 +185,11 @@ public:
         "the table should correspond to scalar x/y/z marker position "
         "values and the columns labels should have consistent suffixes "
         "appended to the model marker names. If provided, a "
-        "MocoMarkerTrackingCost term is created and added to the internal "
+        "MocoMarkerTrackingGoal term is created and added to the internal "
         "MocoProblem.");
 
     OpenSim_DECLARE_PROPERTY(markers_global_tracking_weight, double,
-        "The weight for the MocoMarkerTrackingCost that applies to tracking "
+        "The weight for the MocoMarkerTrackingGoal that applies to tracking "
         "errors for all markers in the reference.");
 
     OpenSim_DECLARE_PROPERTY(markers_weight_set, MocoWeightSet,

@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: MocoMarkerFinalCost.cpp                                      *
+ * OpenSim Moco: MocoGoal.cpp                                                 *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2017 Stanford University and the Authors                     *
  *                                                                            *
@@ -15,25 +15,38 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
-
-#include "MocoMarkerFinalCost.h"
-
-#include <OpenSim/Simulation/Model/Model.h>
+#include "MocoGoal.h"
 
 using namespace OpenSim;
 
-void MocoMarkerFinalCost::initializeOnModelImpl(const Model& model) const {
-    m_point.reset(&model.getComponent<Point>(get_point_name()));
+MocoGoal::MocoGoal() {
+    constructProperties();
+    if (getName().empty()) setName("goal");
 }
 
-void MocoMarkerFinalCost::calcCostImpl(
-        const CostInput& input, SimTK::Real& cost) const {
-    getModel().realizePosition(input.final_state);
-    const auto& actualLocation = m_point->getLocationInGround(input.final_state);
-    cost = (actualLocation - get_reference_location()).normSqr();
+MocoGoal::MocoGoal(std::string name) {
+    setName(std::move(name));
+    constructProperties();
 }
 
-void MocoMarkerFinalCost::constructProperties() {
-    constructProperty_point_name("");
-    constructProperty_reference_location(SimTK::Vec3(0));
+MocoGoal::MocoGoal(std::string name, double weight)
+        : MocoGoal(std::move(name)) {
+    set_weight(weight);
+}
+
+
+void MocoGoal::printDescription(std::ostream& stream) const {
+    const auto mode = getModeAsString();
+    stream << getName() << ". " << getConcreteClassName() <<
+            " enabled: " << get_enabled() << " mode: " << mode;
+    if (mode == "cost") {
+        stream << " weight: " << get_weight() << std::endl;
+    }
+}
+
+void MocoGoal::constructProperties() {
+    constructProperty_enabled(true);
+    constructProperty_weight(1);
+    constructProperty_mode();
+    constructProperty_MocoConstraintInfo(MocoConstraintInfo());
 }

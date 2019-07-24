@@ -167,7 +167,7 @@ def muscleDrivenStateTracking():
     for i in range(forceSet.getSize()):
         forcePath = forceSet.get(i).getAbsolutePathString()
         if 'pelvis' in str(forcePath):
-            effort.setWeight(forcePath, 10)
+            effort.setWeightForControl(forcePath, 10)
     
     # Solve and visualize.
     solution = moco.solve()

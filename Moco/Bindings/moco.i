@@ -20,20 +20,22 @@ namespace OpenSim {
 %include <Moco/ModelProcessor.h>
 
 namespace OpenSim {
-    %ignore MocoCost::CostInput;
-    %ignore MocoCost::calcCost;
+    %ignore MocoGoal::GoalInput;
+    %ignore MocoGoal::calcGoal;
 }
-%include <Moco/MocoCost/MocoCost.h>
+%include <Moco/MocoGoal/MocoGoal.h>
 %template(SetMocoWeight) OpenSim::Set<OpenSim::MocoWeight, OpenSim::Object>;
 %include <Moco/MocoWeightSet.h>
-%include <Moco/MocoCost/MocoStateTrackingCost.h>
-%include <Moco/MocoCost/MocoMarkerTrackingCost.h>
-%include <Moco/MocoCost/MocoMarkerFinalCost.h>
-%include <Moco/MocoCost/MocoControlCost.h>
-%include <Moco/MocoCost/MocoSumSquaredStateCost.h>
-%include <Moco/MocoCost/MocoJointReactionCost.h>
-%include <Moco/MocoCost/MocoOrientationTrackingCost.h>
-%include <Moco/MocoCost/MocoTranslationTrackingCost.h>
+%include <Moco/MocoGoal/MocoStateTrackingGoal.h>
+%include <Moco/MocoGoal/MocoMarkerTrackingGoal.h>
+%include <Moco/MocoGoal/MocoMarkerFinalGoal.h>
+%include <Moco/MocoGoal/MocoControlGoal.h>
+%include <Moco/MocoGoal/MocoInitialActivationGoal.h>
+%include <Moco/MocoGoal/MocoJointReactionGoal.h>
+%include <Moco/MocoGoal/MocoSumSquaredStateGoal.h>
+%include <Moco/MocoGoal/MocoOrientationTrackingGoal.h>
+%include <Moco/MocoGoal/MocoTranslationTrackingGoal.h>
+%include <Moco/MocoGoal/MocoPeriodicityGoal.h>
 
 
 // %template(MocoBoundsVector) std::vector<OpenSim::MocoBounds>;
@@ -133,8 +135,8 @@ namespace OpenSim {
     void addParameter(MocoParameter* ptr) {
         $self->addParameter(std::unique_ptr<MocoParameter>(ptr));
     }
-    void addCost(MocoCost* ptr) {
-        $self->addCost(std::unique_ptr<MocoCost>(ptr));
+    void addGoal(MocoGoal* ptr) {
+        $self->addGoal(std::unique_ptr<MocoGoal>(ptr));
     }
     void addPathConstraint(MocoPathConstraint* ptr) {
         $self->addPathConstraint(std::unique_ptr<MocoPathConstraint>(ptr));
@@ -148,8 +150,8 @@ namespace OpenSim {
     void addParameter(MocoParameter* ptr) {
         $self->addParameter(std::unique_ptr<MocoParameter>(ptr));
     }
-    void addCost(MocoCost* ptr) {
-        $self->addCost(std::unique_ptr<MocoCost>(ptr));
+    void addGoal(MocoGoal* ptr) {
+        $self->addGoal(std::unique_ptr<MocoGoal>(ptr));
     }
     void addPathConstraint(MocoPathConstraint* ptr) {
         $self->addPathConstraint(std::unique_ptr<MocoPathConstraint>(ptr));

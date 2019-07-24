@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: MocoMarkerTrackingCost.h                                     *
+ * OpenSim Moco: MocoMarkerTrackingGoal.h                                     *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2017 Stanford University and the Authors                     *
  *                                                                            *
@@ -16,7 +16,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "MocoMarkerTrackingCost.h"
+#include "MocoMarkerTrackingGoal.h"
 
 #include "../MocoUtilities.h"
 
@@ -25,11 +25,11 @@
 
 using namespace OpenSim;
 
-void MocoMarkerTrackingCost::initializeOnModelImpl(const Model& model) const {
+void MocoMarkerTrackingGoal::initializeOnModelImpl(const Model& model) const {
 
     // TODO: When should we load a markers file?
     if (get_markers_reference().get_marker_file() != "") {
-        const_cast<MocoMarkerTrackingCost*>(this)
+        const_cast<MocoMarkerTrackingGoal*>(this)
                 ->upd_markers_reference()
                 .loadMarkersFile(get_markers_reference().get_marker_file());
     }
@@ -76,9 +76,11 @@ void MocoMarkerTrackingCost::initializeOnModelImpl(const Model& model) const {
     // trajectories.
     m_refsplines =
             GCVSplineSet(get_markers_reference().getMarkerTable().flatten());
+
+    setNumIntegralsAndOutputs(1, 1);
 }
 
- void MocoMarkerTrackingCost::calcIntegrandImpl(const SimTK::State& state,
+ void MocoMarkerTrackingGoal::calcIntegrandImpl(const SimTK::State& state,
         double& integrand) const {
      const auto& time = state.getTime();
      getModel().realizePosition(state);

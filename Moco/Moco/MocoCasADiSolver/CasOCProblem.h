@@ -80,10 +80,36 @@ struct ParameterInfo {
     Bounds bounds;
 };
 
-struct CostInfo {
+struct EndpointInfo {
+    EndpointInfo(std::string name, int num_outputs,
+            std::unique_ptr<Integrand> ifunc, std::unique_ptr<Endpoint> efunc)
+            : name(std::move(name)), num_outputs(num_outputs),
+              integrand_function(std::move(ifunc)),
+              endpoint_function(std::move(efunc)) {}
     std::string name;
+    int num_outputs;
     std::unique_ptr<Integrand> integrand_function;
-    std::unique_ptr<Cost> cost_function;
+    std::unique_ptr<Endpoint> endpoint_function;
+};
+
+struct CostInfo : EndpointInfo {
+    CostInfo(std::string name, int num_outputs,
+            std::unique_ptr<Integrand> ifunc, std::unique_ptr<Endpoint> efunc)
+            : EndpointInfo(std::move(name), num_outputs, std::move(ifunc),
+                      std::move(efunc)) {}
+};
+
+struct EndpointConstraintInfo : EndpointInfo {
+    EndpointConstraintInfo(std::string name, int num_outputs,
+            std::unique_ptr<Integrand> ifunc, std::unique_ptr<Endpoint> efunc,
+            casadi::DM lowerBounds, casadi::DM upperBounds)
+            : EndpointInfo(std::move(name), num_outputs, std::move(ifunc),
+                      std::move(efunc)),
+              lowerBounds(std::move(lowerBounds)),
+              upperBounds(std::move(upperBounds)) {}
+    // The number of rows in these bounds must be num_outputs.
+    casadi::DM lowerBounds;
+    casadi::DM upperBounds;
 };
 
 /// The number outputs in the function must match the size of
@@ -217,16 +243,36 @@ protected:
         m_paramInfos.push_back({std::move(name), std::move(bounds)});
     }
     /// Add a cost term to the problem.
-    void addCost(std::string name, int numIntegrals) {
-        OPENSIM_THROW_IF(numIntegrals < 0 || numIntegrals > 1, OpenSim::Exception,
-                "numIntegrals must be 0 or 1.");
+    void addCost(std::string name, int numIntegrals, int numOutputs) {
+        OPENSIM_THROW_IF(numIntegrals < 0 || numIntegrals > 1,
+                OpenSim::Exception, "numIntegrals must be 0 or 1.");
         std::unique_ptr<Integrand> integrand_function;
         if (numIntegrals) {
             integrand_function = OpenSim::make_unique<Integrand>();
         }
-        m_costInfos.push_back(
-                {std::move(name), std::move(integrand_function),
-                        OpenSim::make_unique<Cost>()});
+        m_costInfos.emplace_back(std::move(name), numOutputs,
+                std::move(integrand_function),
+                OpenSim::make_unique<Cost>());
+    }
+    /// Add an endpoint constraint to the problem.
+    void addEndpointConstraint(
+            std::string name, int numIntegrals, std::vector<Bounds> bounds) {
+        OPENSIM_THROW_IF(numIntegrals < 0 || numIntegrals > 1,
+                OpenSim::Exception, "numIntegrals must be 0 or 1.");
+        std::unique_ptr<Integrand> integrand_function;
+        if (numIntegrals) {
+            integrand_function = OpenSim::make_unique<Integrand>();
+        }
+        casadi::DM lower(bounds.size(), 1);
+        casadi::DM upper(bounds.size(), 1);
+        for (int ibound = 0; ibound < (int)bounds.size(); ++ibound) {
+            lower(ibound, 0) = bounds[ibound].lower;
+            upper(ibound, 0) = bounds[ibound].upper;
+        }
+        m_endpointConstraintInfos.emplace_back(std::move(name),
+                (int)bounds.size(), std::move(integrand_function),
+                OpenSim::make_unique<EndpointConstraint>(), std::move(lower),
+                std::move(upper));
     }
     /// The size of bounds must match the number of outputs in the function.
     /// Use variadic template arguments to pass arguments to the constructor of
@@ -268,7 +314,9 @@ public:
     virtual void calcIntegrand(int /*integralIndex*/,
             const ContinuousInput& /*input*/, double& integrand) const {}
     virtual void calcCost(int /*costIndex*/, const CostInput& /*input*/,
-            double& /*cost*/) const {}
+            casadi::DM& /*cost*/) const {}
+    virtual void calcEndpointConstraint(int /*index*/,
+            const CostInput& /*input*/, casadi::DM& /*values*/) const {}
     virtual void calcPathConstraint(int /*constraintIndex*/,
             const ContinuousInput& /*input*/,
             casadi::DM& /*path_constraint*/) const {}
@@ -328,12 +376,28 @@ public:
         {
             int index = 0;
             for (const auto& costInfo : mutThis->m_costInfos) {
-                costInfo.cost_function->constructFunction(this,
-                        "cost_endpoint_" + costInfo.name, index,
-                        finiteDiffScheme, pointsForSparsityDetection);
+                costInfo.endpoint_function->constructFunction(this,
+                        "cost_" + costInfo.name + "_endpoint", index,
+                        costInfo.num_outputs, finiteDiffScheme,
+                        pointsForSparsityDetection);
                 if (costInfo.integrand_function) {
                     costInfo.integrand_function->constructFunction(this,
-                            "cost_integrand_" + costInfo.name, index,
+                            "cost_" + costInfo.name + "_integrand", index,
+                            finiteDiffScheme, pointsForSparsityDetection);
+                }
+                ++index;
+            }
+        }
+        {
+            int index = 0;
+            for (const auto& info : mutThis->m_endpointConstraintInfos) {
+                info.endpoint_function->constructFunction(this,
+                        "endpoint_constraint_" + info.name + "_endpoint", index,
+                        info.num_outputs, finiteDiffScheme,
+                        pointsForSparsityDetection);
+                if (info.integrand_function) {
+                    info.integrand_function->constructFunction(this,
+                            "endpoint_constraint_" + info.name + "_integrand", index,
                             finiteDiffScheme, pointsForSparsityDetection);
                 }
                 ++index;
@@ -476,6 +540,10 @@ public:
         return m_paramInfos;
     }
     const std::vector<CostInfo>& getCostInfos() const { return m_costInfos; }
+    const std::vector<EndpointConstraintInfo>&
+    getEndpointConstraintInfos() const {
+        return m_endpointConstraintInfos;
+    }
     const std::vector<PathConstraintInfo>& getPathConstraintInfos() const {
         return m_pathInfos;
     }
@@ -533,6 +601,7 @@ private:
     std::vector<SlackInfo> m_slackInfos;
     std::vector<ParameterInfo> m_paramInfos;
     std::vector<CostInfo> m_costInfos;
+    std::vector<EndpointConstraintInfo> m_endpointConstraintInfos;
     std::vector<PathConstraintInfo> m_pathInfos;
     std::unique_ptr<MultibodySystemExplicit<true>> m_multibodyFunc;
     std::unique_ptr<MultibodySystemExplicit<false>>

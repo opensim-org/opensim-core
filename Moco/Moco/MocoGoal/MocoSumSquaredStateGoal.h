@@ -1,7 +1,7 @@
-#ifndef MOCO_MOCOPROBLEMINFO_H
-#define MOCO_MOCOPROBLEMINFO_H
+#ifndef MOCO_MOCOSUMSQUAREDSTATEGOAL_H
+#define MOCO_MOCOSUMSQUAREDSTATEGOAL_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: MocoProblemInfo.h                                            *
+ * OpenSim Moco: MocoSumSquaredStateGoal.h                                    *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2019 Stanford University and the Authors                     *
  *                                                                            *
@@ -18,17 +18,42 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
+#include "MocoGoal.h"
+
 namespace OpenSim {
 
-/// This class is mostly for internal use for MocoProblemRep to pass select
-/// information about a problem to the MocoGoal%s and MocoPathConstraint%s of
-/// the problem during initializeOnModel().
-class MocoProblemInfo {
+/// Minimize the sum of squared states, integrated over the phase. This
+/// can be used to minimize muscle activations (if those are the only states
+/// in the system), as is done in MocoInverse.
+/// @underdevelopment
+/// In the future, this class will allow you to select which states to
+/// minimize.
+class OSIMMOCO_API MocoSumSquaredStateGoal : public MocoGoal {
+    OpenSim_DECLARE_CONCRETE_OBJECT(MocoSumSquaredStateGoal, MocoGoal);
+
 public:
-    double minInitialTime;
-    double maxFinalTime;
+    MocoSumSquaredStateGoal();
+    MocoSumSquaredStateGoal(std::string name) : MocoGoal(std::move(name)) {
+        constructProperties();
+    }
+    MocoSumSquaredStateGoal(std::string name, double weight)
+            : MocoGoal(std::move(name), weight) {
+        constructProperties();
+    }
+
+protected:
+    void initializeOnModelImpl(const Model&) const override;
+    void calcIntegrandImpl(
+            const SimTK::State& state, double& integrand) const override;
+    void calcGoalImpl(
+            const GoalInput& input, SimTK::Vector& cost) const override {
+        cost[0] = input.integral;
+    }
+
+private:
+    void constructProperties();
 };
 
 } // namespace OpenSim
 
-#endif // MOCO_MOCOPROBLEMINFO_H
+#endif // MOCO_MOCOSUMSQUAREDSTATEGOAL_H

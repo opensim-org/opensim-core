@@ -1,7 +1,7 @@
-#ifndef MOCO_MOCOSUMSQUAREDSTATECOST_H
-#define MOCO_MOCOSUMSQUAREDSTATECOST_H
+#ifndef MOCO_MOCOINITIALACTIVATIONGOAL_H
+#define MOCO_MOCOINITIALACTIVATIONGOAL_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: MocoSumSquaredStateCost.h                                    *
+ * OpenSim Moco: MocoInitialActivationGoal.h                                  *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2019 Stanford University and the Authors                     *
  *                                                                            *
@@ -18,43 +18,37 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "MocoCost.h"
+#include "MocoGoal.h"
 
 namespace OpenSim {
 
-/// Minimize the sum of squared states, integrated over the phase. This
-/// can be used to minimize muscle activations (if those are the only states
-/// in the system), as is done in MocoInverse.
-/// @underdevelopment
-/// In the future, this class will allow you to select which states to
-/// minimize.
-class OSIMMOCO_API MocoSumSquaredStateCost : public MocoCost {
-    OpenSim_DECLARE_CONCRETE_OBJECT(MocoSumSquaredStateCost, MocoCost);
+/// For all muscles with activation dynamics, the initial activation and initial
+/// excitation should be the same.
+/// Without this goal, muscle activation may undesirably start at its maximum
+/// possible value in inverse/tracking problems which penalize only excitations
+/// (such activation is "free").
+/// This is an endpoint constraint goal by default.
+/// @ingroup mocogoal
+class OSIMMOCO_API MocoInitialActivationGoal : public MocoGoal {
+    OpenSim_DECLARE_CONCRETE_OBJECT(MocoInitialActivationGoal, MocoGoal);
 
 public:
-    MocoSumSquaredStateCost();
-    MocoSumSquaredStateCost(std::string name) : MocoCost(std::move(name)) {
-        constructProperties();
-    }
-    MocoSumSquaredStateCost(std::string name, double weight)
-            : MocoCost(std::move(name), weight) {
-        constructProperties();
-    }
+    MocoInitialActivationGoal() = default;
+    MocoInitialActivationGoal(std::string name) : MocoGoal(std::move(name)) {}
 
 protected:
-    void initializeOnModelImpl(const Model&) const override;
-    int getNumIntegralsImpl() const override { return 1; }
-    void calcIntegrandImpl(
-            const SimTK::State& state, double& integrand) const override;
-    void calcCostImpl(
-            const CostInput& input, SimTK::Real& cost) const override {
-        cost = input.integral;
+    bool getSupportsEndpointConstraintImpl() const override { return true; }
+    Mode getDefaultModeImpl() const override {
+        return Mode::EndpointConstraint;
     }
+    void initializeOnModelImpl(const Model&) const override;
+    void calcGoalImpl(
+            const GoalInput& input, SimTK::Vector& goal) const override;
 
 private:
-    void constructProperties();
+    mutable std::vector<std::pair<int, int>> m_indices;
 };
 
 } // namespace OpenSim
 
-#endif // MOCO_MOCOSUMSQUAREDSTATECOST_H
+#endif // MOCO_MOCOINITIALACTIVATIONGOAL_H

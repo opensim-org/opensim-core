@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: MocoOrientationTrackingCost.h                                *
+ * OpenSim Moco: MocoOrientationTrackingGoal.h                                *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2019 Stanford University and the Authors                     *
  *                                                                            *
@@ -16,18 +16,19 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "MocoOrientationTrackingCost.h"
+#include "MocoOrientationTrackingGoal.h"
 
-#include <algorithm>
 #include "../MocoUtilities.h"
-#include <OpenSim/Simulation/StatesTrajectory.h>
-#include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/Frame.h>
+#include <algorithm>
+
 #include <OpenSim/Common/TimeSeriesTable.h>
+#include <OpenSim/Simulation/Model/Frame.h>
+#include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/StatesTrajectory.h>
 
 using namespace OpenSim;
 
-void MocoOrientationTrackingCost::initializeOnModelImpl(const Model& model) 
+void MocoOrientationTrackingGoal::initializeOnModelImpl(const Model& model) 
         const {
     // Get the reference data.
     TimeSeriesTable_<Rotation> rotationTable;
@@ -171,9 +172,11 @@ void MocoOrientationTrackingCost::initializeOnModelImpl(const Model& model)
     flatTable.setColumnLabels(colLabels);
 
     m_ref_splines = GCVSplineSet(flatTable);
+
+    setNumIntegralsAndOutputs(1, 1);
 }
 
-void MocoOrientationTrackingCost::calcIntegrandImpl(const SimTK::State& state,
+void MocoOrientationTrackingGoal::calcIntegrandImpl(const SimTK::State& state,
         double& integrand) const {
     const auto& time = state.getTime();
     getModel().realizePosition(state);

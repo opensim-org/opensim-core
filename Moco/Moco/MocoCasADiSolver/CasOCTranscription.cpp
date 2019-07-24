@@ -103,6 +103,12 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
             m_numResiduals * m_numGridPoints +
             m_problem.getNumKinematicConstraintEquations() * m_numMeshPoints +
             m_problem.getNumControls() * (int)pointsForInterpControls.numel();
+    m_constraints.endpoint.resize(
+            m_problem.getEndpointConstraintInfos().size());
+    for (int iec = 0; iec < (int)m_constraints.endpoint.size(); ++iec) {
+        const auto& info = m_problem.getEndpointConstraintInfos()[iec];
+        m_numConstraints += info.num_outputs;
+    }
     m_constraints.path.resize(m_problem.getPathConstraintInfos().size());
     for (int ipc = 0; ipc < (int)m_constraints.path.size(); ++ipc) {
         const auto& info = m_problem.getPathConstraintInfos()[ipc];
@@ -238,7 +244,7 @@ void Transcription::transcribe() {
 
     // Cost.
     // =====
-    setObjective();
+    setObjectiveAndEndpointConstraints();
 
     // Compute DAEs at necessary grid points.
     // ======================================
@@ -412,9 +418,12 @@ void Transcription::transcribe() {
     calcInterpolatingControls();
 }
 
-void Transcription::setObjective() {
-    m_objective = 0;
+void Transcription::setObjectiveAndEndpointConstraints() {
     DM quadCoeffs = this->createQuadratureCoefficients();
+
+    // Objective.
+    // ----------
+    m_objective = 0;
 
     // Minimize Lagrange multipliers if specified by the solver.
     if (m_solver.getMinimizeLagrangeMultipliers() &&
@@ -446,8 +455,7 @@ void Transcription::setObjective() {
         }
 
         MXVector costOut;
-
-        info.cost_function->call(
+        info.endpoint_function->call(
                 {m_vars[initial_time], m_vars[states](Slice(), 0),
                         m_vars[controls](Slice(), 0),
                         m_vars[multipliers](Slice(), 0),
@@ -458,7 +466,45 @@ void Transcription::setObjective() {
                         m_vars[derivatives](Slice(), -1), m_vars[parameters],
                         integral},
                 costOut);
-        m_objective += costOut.at(0);
+        m_objective += casadi::MX::sum1(costOut.at(0));
+    }
+
+    // Endpoint constraints
+
+    int numEndpointConstraints =
+            (int)m_problem.getEndpointConstraintInfos().size();
+    m_constraints.endpoint.resize(numEndpointConstraints);
+    m_constraintsLowerBounds.endpoint.resize(numEndpointConstraints);
+    m_constraintsUpperBounds.endpoint.resize(numEndpointConstraints);
+    for (int iec = 0; iec < (int)m_constraints.endpoint.size(); ++iec) {
+        const auto& info = m_problem.getEndpointConstraintInfos()[iec];
+
+        MX integral;
+        if (info.integrand_function) {
+            MX integrandTraj = evalOnTrajectory(*info.integrand_function,
+                    {states, controls, multipliers, derivatives}, m_gridIndices)
+                                       .at(0);
+
+            integral = m_duration * dot(quadCoeffs.T(), integrandTraj);
+        } else {
+            integral = MX::nan(1, 1);
+        }
+
+        MXVector endpointOut;
+        info.endpoint_function->call(
+                {m_vars[initial_time], m_vars[states](Slice(), 0),
+                        m_vars[controls](Slice(), 0),
+                        m_vars[multipliers](Slice(), 0),
+                        m_vars[derivatives](Slice(), 0), m_vars[final_time],
+                        m_vars[states](Slice(), -1),
+                        m_vars[controls](Slice(), -1),
+                        m_vars[multipliers](Slice(), -1),
+                        m_vars[derivatives](Slice(), -1), m_vars[parameters],
+                        integral},
+                endpointOut);
+        m_constraints.endpoint[iec] = endpointOut.at(0);
+        m_constraintsLowerBounds.endpoint[iec] = info.lowerBounds;
+        m_constraintsUpperBounds.endpoint[iec] = info.upperBounds;
     }
 }
 

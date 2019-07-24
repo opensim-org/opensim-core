@@ -613,7 +613,7 @@ TEMPLATE_TEST_CASE("Hanging muscle minimum time", "", MocoCasADiSolver) {
         }
         problem.setControlInfo("/forceset/actuator", {0.01, 1});
 
-        problem.addCost<MocoFinalTimeCost>();
+        problem.addGoal<MocoFinalTimeGoal>();
 
         auto& solver = moco.initSolver<TestType>();
         solver.set_num_mesh_points(40);
@@ -688,7 +688,7 @@ TEMPLATE_TEST_CASE("Hanging muscle minimum time", "", MocoCasADiSolver) {
         }
         problem.setControlInfo("/forceset/actuator", {0.01, 1});
 
-        auto* tracking = problem.addCost<MocoStateTrackingCost>();
+        auto* tracking = problem.addGoal<MocoStateTrackingGoal>();
 
         auto states = solutionTrajOpt.exportToStatesStorage().exportToTable();
         TimeSeriesTable ref(states.getIndependentColumn());
