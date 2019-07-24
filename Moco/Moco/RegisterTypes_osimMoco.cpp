@@ -25,6 +25,7 @@
 #include "Components/PositionMotion.h"
 #include "Components/SmoothSphereHalfSpaceForce.h"
 #include "Components/StationPlaneContactForce.h"
+#include "Components/MultivariatePolynomialFunction.h"
 #ifdef MOCO_WITH_TROPTER
 #    include "InverseMuscleSolver/GlobalStaticOptimization.h"
 #    include "InverseMuscleSolver/INDYGO.h"
@@ -119,6 +120,7 @@ OSIMMOCO_API void RegisterTypes_osimMoco() {
         Object::registerType(PositionMotion());
         Object::registerType(DeGrooteFregly2016Muscle());
         Object::registerType(SmoothSphereHalfSpaceForce());
+        Object::registerType(MultivariatePolynomialFunction());
 
         Object::registerType(DiscreteForces());
         Object::registerType(AccelerationMotion());
