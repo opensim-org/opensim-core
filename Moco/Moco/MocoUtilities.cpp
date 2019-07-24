@@ -20,6 +20,7 @@
 
 #include "MocoProblem.h"
 #include "MocoTrajectory.h"
+#include "Components/SmoothSphereHalfSpaceForce.h"
 #include <cstdarg>
 #include <cstdio>
 #include <iomanip>
@@ -604,4 +605,70 @@ int OpenSim::getMocoParallelEnvironmentVariable() {
         }
     }
     return -1;
+}
+
+TimeSeriesTable OpenSim::getSmoothSphereHalfSpaceForce(Model model,
+        MocoProblem problem, const MocoSolution& solution,
+        const std::vector<std::string>& smoothSphereHalfSpaceForceNamesRight,
+        const std::vector<std::string>& smoothSphereHalfSpaceForceNamesLeft) {
+    model.initSystem();
+    problem.setModelCopy(model);
+    TimeSeriesTableVec3 externalForcesTable{};
+    StatesTrajectory optStates = solution.exportToStatesTrajectory(problem);
+    SimTK::Vector optTime = solution.getTime();
+    int count = 0;
+    for (const auto& state : optStates) {
+        model.realizeVelocity(state);
+        SimTK::Vec3 forcesRight(0);
+        SimTK::Vec3 torquesRight(0);
+        // Loop through all smoothSphereHalfSpaceForces of the right side.
+        for (const auto& smoothForce : smoothSphereHalfSpaceForceNamesRight) {
+            Array<double> forceValues = model.getComponent<
+                    SmoothSphereHalfSpaceForce>(
+                            smoothForce).getRecordValues(state);
+            forcesRight += SimTK::Vec3(forceValues[0], forceValues[1],
+                    forceValues[2]);
+            torquesRight += SimTK::Vec3(forceValues[3], forceValues[4],
+                    forceValues[5]);
+        }
+        SimTK::Vec3 forcesLeft(0);
+        SimTK::Vec3 torquesLeft(0);
+        // Loop through all smoothSphereHalfSpaceForces of the left side.
+        for (const auto& smoothForce : smoothSphereHalfSpaceForceNamesLeft) {
+            Array<double> forceValues = model.getComponent<
+                    SmoothSphereHalfSpaceForce>(
+                            smoothForce).getRecordValues(state);
+            forcesLeft += SimTK::Vec3(forceValues[0], forceValues[1],
+                    forceValues[2]);
+            torquesLeft += SimTK::Vec3(forceValues[3], forceValues[4],
+                    forceValues[5]);
+        }
+        // Append row to table.
+        SimTK::RowVector_<SimTK::Vec3> row(6);
+        row(0) = forcesRight;
+        row(1) = SimTK::Vec3(0);
+        row(2) = forcesLeft;
+        row(3) = SimTK::Vec3(0);
+        row(4) = torquesRight;
+        row(5) = torquesLeft;
+        externalForcesTable.appendRow(optTime[count],row);
+        ++count;
+    }
+    // Create table.
+    std::vector<std::string> labels;
+    labels.push_back("ground_force_v");
+    labels.push_back("ground_force_p");
+    labels.push_back("1_ground_force_v");
+    labels.push_back("1_ground_force_p");
+    labels.push_back("ground_torque_");
+    labels.push_back("1_ground_torque_");
+    std::vector<std::string> suffixes;
+    suffixes.push_back("x");
+    suffixes.push_back("y");
+    suffixes.push_back("z");
+    externalForcesTable.setColumnLabels(labels);
+    TimeSeriesTable externalForcesTableFlat =
+            externalForcesTable.flatten(suffixes);
+
+    return externalForcesTableFlat;
 }
