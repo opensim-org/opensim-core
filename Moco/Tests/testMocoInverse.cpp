@@ -125,7 +125,6 @@ TEST_CASE("MocoInverse gait10dof18musc") {
 
     inverse.setModel(ModelProcessor("testGait10dof18musc_subject01.osim") |
                      ModOpReplaceMusclesWithDeGrooteFregly2016() |
-                     ModOpIgnoreActivationDynamics() |
                      ModOpIgnoreTendonCompliance() | ModOpAddReserves(2) |
                      ModOpAddExternalLoads("walk_gait1018_subject01_grf.xml"));
     inverse.setKinematics(TableProcessor("walk_gait1018_state_reference.mot") |
@@ -143,4 +142,6 @@ TEST_CASE("MocoInverse gait10dof18musc") {
     const auto expected = std.getControlsTrajectory();
     CHECK(std.compareContinuousVariablesRMS(
                   solution.getMocoSolution(), {{"controls", {}}}) < 1e-4);
+    CHECK(std.compareContinuousVariablesRMS(
+                  solution.getMocoSolution(), {{"states", {}}}) < 1e-4);
 }

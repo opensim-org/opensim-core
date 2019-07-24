@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: MocoStateTrackingCost.cpp                                    *
+ * OpenSim Moco: MocoStateTrackingGoal.cpp                                    *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2017 Stanford University and the Authors                     *
  *                                                                            *
@@ -16,13 +16,15 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "MocoStateTrackingCost.h"
+#include "MocoStateTrackingGoal.h"
+
 #include "../MocoUtilities.h"
+
 #include <OpenSim/Simulation/Model/Model.h>
 
 using namespace OpenSim;
 
-void MocoStateTrackingCost::initializeOnModelImpl(const Model& model) const {
+void MocoStateTrackingGoal::initializeOnModelImpl(const Model& model) const {
 
     // TODO: set relativeToDirectory properly.
     TimeSeriesTable tableToUse = get_reference().process("", &model);
@@ -64,9 +66,11 @@ void MocoStateTrackingCost::initializeOnModelImpl(const Model& model) const {
         m_state_weights.push_back(refWeight);
         m_refsplines.cloneAndAppend(allSplines[iref]);
     }
+
+    setNumIntegralsAndOutputs(1, 1);
 }
 
-void MocoStateTrackingCost::calcIntegrandImpl(/*int meshIndex,*/
+void MocoStateTrackingGoal::calcIntegrandImpl(/*int meshIndex,*/
         const SimTK::State& state, double& integrand) const {
     const auto& time = state.getTime();
 

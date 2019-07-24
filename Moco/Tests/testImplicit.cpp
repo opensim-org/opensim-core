@@ -71,11 +71,11 @@ MocoSolution solveDoublePendulumSwingup(const std::string& dynamics_mode) {
 
     // Cost.
     // -----
-    auto* ftCost = mp.addCost<MocoFinalTimeCost>();
-    ftCost->set_weight(0.001);
+    auto* ftCost = mp.addGoal<MocoFinalTimeGoal>();
+    ftCost->setWeight(0.001);
 
-    auto* finalCost = mp.addCost<MocoMarkerFinalCost>("final");
-    finalCost->set_weight(1000.0);
+    auto* finalCost = mp.addGoal<MocoMarkerFinalGoal>("final");
+    finalCost->setWeight(1000.0);
     finalCost->setPointName("/markerset/marker1");
     finalCost->setReferenceLocation(SimTK::Vec3(0, 2, 0));
 
@@ -189,7 +189,7 @@ TEMPLATE_TEST_CASE("Combining implicit dynamics mode with path constraints",
         auto model = ModelFactory::createPendulum();
         prob.setTimeBounds(0, 1);
         prob.setModelCopy(model);
-        prob.addCost<MocoControlCost>();
+        prob.addGoal<MocoControlGoal>();
         auto* pc = prob.addPathConstraint<MyPathConstraint>();
         MocoConstraintInfo info;
         info.setBounds(std::vector<MocoBounds>(1, {10, 10000}));

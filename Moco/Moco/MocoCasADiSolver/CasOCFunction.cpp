@@ -150,7 +150,7 @@ VectorDM Integrand::eval(const VectorDM& args) const {
     return out;
 }
 
-casadi::Sparsity Cost::get_sparsity_in(casadi_int i) {
+casadi::Sparsity Endpoint::get_sparsity_in(casadi_int i) {
     if (i == 0) {
         return casadi::Sparsity::dense(1, 1);
     } else if (i == 1) {
@@ -183,8 +183,16 @@ VectorDM Cost::eval(const VectorDM& args) const {
     Problem::CostInput input{args.at(0).scalar(), args.at(1), args.at(2),
             args.at(3), args.at(4), args.at(5).scalar(), args.at(6), args.at(7),
             args.at(8), args.at(9), args.at(10), args.at(11).scalar()};
-    VectorDM out{casadi::DM(casadi::Sparsity::scalar())};
-    m_casProblem->calcCost(m_index, input, *out[0].ptr());
+    VectorDM out{casadi::DM(sparsity_out(0))};
+    m_casProblem->calcCost(m_index, input, out.at(0));
+    return out;
+}
+VectorDM EndpointConstraint::eval(const VectorDM& args) const {
+    Problem::CostInput input{args.at(0).scalar(), args.at(1), args.at(2),
+                             args.at(3), args.at(4), args.at(5).scalar(), args.at(6), args.at(7),
+                             args.at(8), args.at(9), args.at(10), args.at(11).scalar()};
+    VectorDM out{casadi::DM(sparsity_out(0))};
+    m_casProblem->calcEndpointConstraint(m_index, input, out.at(0));
     return out;
 }
 

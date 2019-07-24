@@ -134,12 +134,12 @@ are disabled. We use the first (constrained) model to calculate kinematic
 constraint violations and to convert the optimization solver's Lagrange
 multipliers into body and mobilizer forces using the constrained model's
 constraint Jacobian. Then we apply the multiplier-derived forces to the
-unconstrained model using the DiscreteForces component. In MocoCost and
+unconstrained model using the DiscreteForces component. In MocoGoal and
 MocoPathConstraint, we provide the unconstrained model with applied
 multiplier-derived forces, ensuring that joint reaction load calculations will
 use the correct multipliers.
 
-Note that MocoCosts and MocoPathConstraints do not have direct access
+Note that MocoGoals and MocoPathConstraints do not have direct access
 to the Lagrange multipliers; the unconstrained model does not have multipliers.
 
 @subsection implimplicitmultibody Implicit multibody dynamics

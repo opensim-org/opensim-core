@@ -25,7 +25,7 @@
 namespace OpenSim {
 
 /// This class contains a single property that holds a weighting factor to be
-/// used in a MocoCost. The meaning of the name given to this object depends on
+/// used in a MocoGoal. The meaning of the name given to this object depends on
 /// where the weight is used. In a MocoStateTrackingCost, the name is the name
 /// (path) of a state variable.
 class OSIMMOCO_API MocoWeight : public Object {

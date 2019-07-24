@@ -96,11 +96,11 @@ private:
     }
 };
 
-class MocoCost : public Object {
-OpenSim_DECLARE_ABSTRACT_OBJECT(MocoCost, Object);
+class MocoGoal : public Object {
+OpenSim_DECLARE_ABSTRACT_OBJECT(MocoGoal, Object);
 public:
     OpenSim_DECLARE_PROPERTY(weight, double, "TODO");
-    MocoCost() {
+    MocoGoal() {
         constructProperties();
     }
     // TODO allow alternate interface that does not require creating a SimTK
@@ -132,8 +132,8 @@ private:
     mutable SimTK::ReferencePtr<const Model> m_model;
 };
 
-class MocoSimpleTrackingCost : public MocoCost {
-OpenSim_DECLARE_CONCRETE_OBJECT(MocoSimpleTrackingCost, MocoCost);
+class MocoSimpleTrackingCost : public MocoGoal {
+OpenSim_DECLARE_CONCRETE_OBJECT(MocoSimpleTrackingCost, MocoGoal);
 public:
     MocoSimpleTrackingCost() {
         constructProperties();
@@ -160,8 +160,8 @@ private:
     }
 };
 
-class MocoFinalTimeCost : public MocoCost {
-OpenSim_DECLARE_CONCRETE_OBJECT(MocoFinalTimeCost, MocoCost);
+class MocoFinalTimeGoal : public MocoGoal {
+OpenSim_DECLARE_CONCRETE_OBJECT(MocoFinalTimeGoal, MocoGoal);
 protected:
     void calcEndpointCostImpl(const SimTK::State& finalState,
                               double& cost) const override {
@@ -173,14 +173,14 @@ protected:
 // components, etc. Maybe these should have a method where they get to add
 // arbitrary components to the model.
 // TODO should also have an initialization routine to cache quantities.
-class MocoMarkerFinalCost : public MocoCost {
-OpenSim_DECLARE_CONCRETE_OBJECT(MocoMarkerFinalCost, MocoCost);
+class MocoMarkerFinalGoal : public MocoGoal {
+OpenSim_DECLARE_CONCRETE_OBJECT(MocoMarkerFinalGoal, MocoGoal);
 public:
     OpenSim_DECLARE_PROPERTY(frame_name, std::string, "TODO");
     OpenSim_DECLARE_PROPERTY(point_on_frame, SimTK::Vec3, "TODO");
     OpenSim_DECLARE_PROPERTY(point_to_track, SimTK::Vec3,
             "TODO Expressed in ground.");
-    MocoMarkerFinalCost() {
+    MocoMarkerFinalGoal() {
         constructProperties();
     }
 protected:
@@ -213,7 +213,7 @@ public:
             MocoVariableInfo, "TODO");
     OpenSim_DECLARE_LIST_PROPERTY(control_info,
             MocoVariableInfo, "TODO");
-    OpenSim_DECLARE_LIST_PROPERTY(costs, MocoCost, "TODO");
+    OpenSim_DECLARE_LIST_PROPERTY(costs, MocoGoal, "TODO");
 
     MocoProblem() {
         constructProperties();
@@ -793,7 +793,7 @@ int main() {
 
         // TODO specify guess.
 
-        mp.append_costs(MocoFinalTimeCost());
+        mp.append_costs(MocoFinalTimeGoal());
 
         MocoSolver ms(mp);
         ms.solve();
@@ -817,14 +817,14 @@ int main() {
 
         mp.print("DEBUG_MocoProblemDoublePendulumSwingUp.xml");
 
-        MocoMarkerFinalCost endpointCost;
+        MocoMarkerFinalGoal endpointCost;
         endpointCost.set_frame_name("b1");
         endpointCost.set_weight(1000.0);
         endpointCost.set_point_on_frame(SimTK::Vec3(0));
         endpointCost.set_point_to_track(SimTK::Vec3(0, 2, 0));
         mp.append_costs(endpointCost);
 
-        MocoFinalTimeCost ftCost;
+        MocoFinalTimeGoal ftCost;
         ftCost.set_weight(0.001);
         mp.append_costs(ftCost);
 

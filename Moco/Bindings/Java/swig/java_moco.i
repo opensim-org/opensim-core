@@ -116,8 +116,8 @@ SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
 %rename OpenSim::MocoPhase::setModel private_setModel;
 %javamethodmodifiers OpenSim::MocoPhase::addParameter "private";
 %rename OpenSim::MocoPhase::addParameter private_addParameter;
-%javamethodmodifiers OpenSim::MocoPhase::addCost "private";
-%rename OpenSim::MocoPhase::addCost private_addCost;
+%javamethodmodifiers OpenSim::MocoPhase::addGoal "private";
+%rename OpenSim::MocoPhase::addGoal private_addGoal;
 %javamethodmodifiers OpenSim::MocoPhase::addPathConstraint "private";
 %rename OpenSim::MocoPhase::addPathConstraint private_addPathConstraint;
 
@@ -125,8 +125,8 @@ SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
 %rename OpenSim::MocoProblem::setModel private_setModel;
 %javamethodmodifiers OpenSim::MocoProblem::addParameter "private";
 %rename OpenSim::MocoProblem::addParameter private_addParameter;
-%javamethodmodifiers OpenSim::MocoProblem::addCost "private";
-%rename OpenSim::MocoProblem::addCost private_addCost;
+%javamethodmodifiers OpenSim::MocoProblem::addGoal "private";
+%rename OpenSim::MocoProblem::addGoal private_addGoal;
 %javamethodmodifiers OpenSim::MocoProblem::addPathConstraint "private";
 %rename OpenSim::MocoProblem::addPathConstraint private_addPathConstraint;
 
@@ -187,8 +187,8 @@ SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
         private_addParameter(obj);
         obj.markAdopted();
     }
-    public void addCost(MocoCost obj) {
-        private_addCost(obj);
+    public void addGoal(MocoGoal obj) {
+        private_addGoal(obj);
         obj.markAdopted();
     }
     public void addPathConstraint(MocoPathConstraint obj) {
@@ -266,8 +266,8 @@ SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
         private_addParameter(obj);
         obj.markAdopted();
     }
-    public void addCost(MocoCost obj) {
-        private_addCost(obj);
+    public void addGoal(MocoGoal obj) {
+        private_addGoal(obj);
         obj.markAdopted();
     }
     public void addPathConstraint(MocoPathConstraint obj) {

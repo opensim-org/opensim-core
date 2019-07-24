@@ -60,8 +60,8 @@ Model createInvertedPendulumModel() {
     return model;
 }
 
-class JointReactionCost : public MocoCost {
-    OpenSim_DECLARE_CONCRETE_OBJECT(JointReactionCost, MocoCost);
+class JointReactionCost : public MocoGoal {
+    OpenSim_DECLARE_CONCRETE_OBJECT(JointReactionCost, MocoGoal);
 protected:
     void calcIntegrandImpl(const SimTK::State& state,
             double& integrand) const override {
@@ -74,7 +74,7 @@ protected:
 
         integrand = reaction.norm();
     }
-    void calcCostImpl(const CostInput& input, double& cost) const override {
+    void calcCostImpl(const GoalInput& input, double& cost) const override {
         cost = input.integral;
     }
 };
@@ -92,7 +92,7 @@ void minimizePendulumReactionLoads() {
 
     MocoJointReactionNormCost reactionNormCost;
     reactionNormCost.setJointPath("j0");
-    mp.addCost(reactionNormCost);
+    mp.addGoal(reactionNormCost);
 
     MocoTropterSolver& ms = moco.initSolver();
     ms.set_num_mesh_points(50);
@@ -118,8 +118,8 @@ void minimizeControlEffort() {
     mp.setStateInfo("j0/q0/speed", {-50, 50}, 0, 0);
     mp.setControlInfo("tau0", {-100, 100});
 
-    MocoControlCost effort;
-    mp.addCost(effort);
+    MocoControlGoal effort;
+    mp.addGoal(effort);
 
     MocoTropterSolver& ms = moco.initSolver();
     ms.set_num_mesh_points(50);

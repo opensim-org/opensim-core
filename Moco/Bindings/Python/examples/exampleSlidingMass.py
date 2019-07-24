@@ -70,7 +70,7 @@ problem.setControlInfo('/actuator', osim.MocoBounds(-50, 50))
 
 # Cost.
 # -----
-problem.addCost(osim.MocoFinalTimeCost())
+problem.addGoal(osim.MocoFinalTimeGoal())
 
 # Configure the solver.
 # =====================

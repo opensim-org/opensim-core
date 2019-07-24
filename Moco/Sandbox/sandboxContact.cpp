@@ -751,22 +751,22 @@ void slipSolveForForce(double rzvalue0 = 0, double rzspeed0 = 0) {
     // TODO filter statesTimeSteppingTable!
     // TODO only track coordinate values, not speeds.
 
-    auto* stateTracking = mp.addCost<MocoStateTrackingCost>("state_tracking");
+    auto* stateTracking = mp.addGoal<MocoStateTrackingCost>("state_tracking");
     stateTracking->setReference(statesToTrack);
 
-    mp.addCost<MocoControlCost>("effort");
+    mp.addGoal<MocoControlGoal>("effort");
 
-    //MocoMarkerTrackingCost markerTracking;
+    //MocoMarkerTrackingGoal markerTracking;
     //markerTracking.setName("marker_tracking");
     //MarkersReference markersRef(markersToUse);
     //markerTracking.setMarkersReference(markersRef);
     ////markerTracking.setFreeRadius(0.01);
     //markerTracking.set_weight(1);
-    //mp.addCost(markerTracking);
+    //mp.addGoal(markerTracking);
 
     // Solves in 3-4 minutes without contact tracking, 9 minutes with contact
     // tracking.
-    auto* grfTracking = mp.addCost<MocoForceTrackingCost>("grf_tracking");
+    auto* grfTracking = mp.addGoal<MocoForceTrackingCost>("grf_tracking");
     GCVSplineSet grfSplines(forcesFlattened);
     grfTracking->m_refspline_x = *grfSplines.getGCVSpline(0);
     grfTracking->m_refspline_y = *grfSplines.getGCVSpline(1);
