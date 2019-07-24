@@ -232,11 +232,9 @@ protected:
 private:
     OpenSim_DECLARE_PROPERTY(
             enabled, bool, "This bool indicates whether this goal is enabled.");
-
     OpenSim_DECLARE_PROPERTY(weight, double,
             "In cost mode, the goal is multiplied by this weight (default: "
             "1).");
-
     OpenSim_DECLARE_OPTIONAL_PROPERTY(mode, std::string,
             "'cost' to enforce as a penalty, 'endpoint_constraint' to enforce "
             "as a constraint.");
