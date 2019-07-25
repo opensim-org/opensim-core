@@ -377,7 +377,7 @@
 						<groups />
 					</WrapObjectSet>
 					<!--The mass of the body (kg)-->
-					<mass>13.2954396544328</mass>
+					<mass>17.2954396544328</mass>
 					<!--The location (Vec3) of the mass center in the body frame.-->
 					<mass_center>-0.087995500000000004 0 0</mass_center>
 					<!--The elements of the inertia tensor (Vec6) as [Ixx Iyy Izz Ixy Ixz Iyz] measured about the mass_center and not the body origin.-->
@@ -406,7 +406,7 @@
 								<color>1 1 1</color>
 							</Appearance>
 							<!--Name of geometry file.-->
-							<mesh_file>r_femur.vtp</mesh_file>
+							<mesh_file>femur_r.vtp</mesh_file>
 						</Mesh>
 					</attached_geometry>
 					<!--Set of wrap objects fixed to this body that GeometryPaths can wrap over.This property used to be a member of Body but was moved up with the introduction of Frames.-->
@@ -697,7 +697,7 @@
 								<color>1 1 1</color>
 							</Appearance>
 							<!--Name of geometry file.-->
-							<mesh_file>r_tibia.vtp</mesh_file>
+							<mesh_file>tibia_r.vtp</mesh_file>
 						</Mesh>
 						<Mesh name="tibia_r_geom_2">
 							<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
@@ -1073,7 +1073,7 @@
 								<color>1 1 1</color>
 							</Appearance>
 							<!--Name of geometry file.-->
-							<mesh_file>l_femur.vtp</mesh_file>
+							<mesh_file>femur_l.vtp</mesh_file>
 						</Mesh>
 					</attached_geometry>
 					<!--Set of wrap objects fixed to this body that GeometryPaths can wrap over.This property used to be a member of Body but was moved up with the introduction of Frames.-->
@@ -1364,7 +1364,7 @@
 								<color>1 1 1</color>
 							</Appearance>
 							<!--Name of geometry file.-->
-							<mesh_file>l_tibia.vtp</mesh_file>
+							<mesh_file>tibia_l.vtp</mesh_file>
 						</Mesh>
 						<Mesh name="tibia_l_geom_2">
 							<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
@@ -1794,7 +1794,7 @@
 						<groups />
 					</WrapObjectSet>
 					<!--The mass of the body (kg)-->
-					<mass>30.285424253511501</mass>
+					<mass>34.285424253511501</mass>
 					<!--The location (Vec3) of the mass center in the body frame.-->
 					<mass_center>-0.014706800000000001 0.37689899999999998 -0.00230561</mass_center>
 					<!--The elements of the inertia tensor (Vec6) as [Ixx Iyy Izz Ixy Ixz Iyz] measured about the mass_center and not the body origin.-->

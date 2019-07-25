@@ -339,6 +339,8 @@ public:
     /// change this behavior with `overwrite`.
     void insertStatesTrajectory(
             const TimeSeriesTable& subsetOfStates, bool overwrite = false);
+    void insertControlsTrajectory(const TimeSeriesTable& subsetOfControls,
+            bool overwrite = false);
     /// @}
 
     /// @name Accessors
