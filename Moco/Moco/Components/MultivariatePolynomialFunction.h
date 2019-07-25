@@ -233,19 +233,19 @@ public:
     void setCoefficients(SimTK::Vector coefficients)
     {   set_coefficients(coefficients); }
     /// Get coefficients
-    const SimTK::Vector getCoefficients() const
+    const SimTK::Vector& getCoefficients() const
     {   return get_coefficients(); }
     /// Set dimension
     void setDimension(int dimension)
     {   set_dimension(dimension); }
     /// Get dimension
-    const int getDimension() const
+    int getDimension() const
     {   return get_dimension(); }
     /// Set order
     void setOrder(int order)
     {   set_order(order); }
     /// Get order
-    const int getOrder() const
+    int getOrder() const
     {   return get_order(); }
 
     /// Return function
