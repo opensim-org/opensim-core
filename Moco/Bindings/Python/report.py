@@ -392,6 +392,29 @@ class Report(object):
                     self.plotVariables('derivative', derivative_dict, 
                             derivative_ls_dict, derivative_label_dict)
 
+                # Activation
+                activ_dict = OrderedDict()
+                activ_ls_dict = defaultdict(list)
+                activ_label_dict = dict()
+                for state_name in state_names:
+                    if state_name.endswith('/activation'):
+                        title = state_name
+                        if self.bilateral:
+                            title, activ_ls_dict = bilateralize(title,
+                                                                activ_ls_dict)
+                        else:
+                            activ_ls_dict[title].append('-')
+                        if not title in activ_dict:
+                            activ_dict[title] = list()
+                        # If --bilateral was set, the 'title' key will
+                        # correspond to a list containing paths for both sides
+                        # of the model.
+                        activ_dict[title].append(state_name)
+                        activ_label_dict[title] = ''
+                self.plotVariables('state', activ_dict, activ_ls_dict,
+                                   activ_label_dict)
+
+
             # Controls
             # --------
             control_names = self.trajectory.getControlNames()
