@@ -349,6 +349,10 @@ public:
     /// change this behavior with `overwrite`.
     void insertStatesTrajectory(
             const TimeSeriesTable& subsetOfStates, bool overwrite = false);
+    /// Add additional control columns. The provided data are interpolated using
+    /// GCV splines to match the times in this iterate. By default, we do not
+    /// overwrite data for controls that already exist in the iterate; you can
+    /// change this behavior with `overwrite`.
     void insertControlsTrajectory(const TimeSeriesTable& subsetOfControls,
             bool overwrite = false);
 
