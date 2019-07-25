@@ -204,7 +204,7 @@ Storage::Storage(const string &fileName, bool readHeadersOnly) :
             OPENSIM_THROW_IF(readHeadersOnly, Exception,
                 "Cannot read headers only if not a STO file or its "
                 "version is greater than 1.");
-            auto& dataAdapter = FileAdapter::createAdapterBasedOnExtension(fileName);
+            auto dataAdapter = FileAdapter::createAdapterBasedOnExtension(fileName);
             auto& fileAdapter = static_cast<FileAdapter&>(*dataAdapter);
             FileAdapter::OutputTables tables = fileAdapter.read(fileName);
             if (tables.size() > 1) {

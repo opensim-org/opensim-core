@@ -82,8 +82,7 @@ void test(const std::string filename) {
     const double MaximumLoadTimeInMS = 100;
     
     std::clock_t startTime = std::clock();
-    auto tables = C3DFileAdapter::readFile(filename,
-        C3DFileAdapter::ForceLocation::OriginOfForcePlate);
+    auto tables = C3DFileAdapter{}.read(filename);
 
     double loadTime = 1.e3*(std::clock() - startTime) / CLOCKS_PER_SEC;
 

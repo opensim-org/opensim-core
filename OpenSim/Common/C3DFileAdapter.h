@@ -40,8 +40,8 @@ public:
     /** Enumerated list of locations in which read in forces are expressed.
         %Measurement from force plates can be expressed by the C3DFileAdapter
         either at the OriginOfForcePlate (the default), CenterOfPressure, or
-        the PointOfWrenchApplication. It is an optional argument to 
-        C3DFileAdapter::readFile().
+        the PointOfWrenchApplication. You need to call  setLocationForForceExpression
+        before invoking C3DFileAdapter::read().
 
         In the case of the CenterOfPressure (COP), the underlying assumptions
         are that the ground plane (in which COP is defined) passes through the
@@ -55,26 +55,32 @@ public:
 
         <b>C++ example</b>
         \code{.cpp}
-        auto tables  =  C3DFileAdapter::readFile("myData.c3d", 
-                            C3DFileAdapter::ForceLocation::CenterOfPressure);
+        C3DFileAdapter c3dFileAdapter;
+        c3dFileAdapter.setLocationForForceExpression(C3DFileAdapter::ForceLocation::CenterOfPressure);
+        auto tables  =  c3dFileAdapter.read("myData.c3d");
         \endcode
 
         <b>Python example</b>
         \code{.py}
         import opensim
-        tables = C3DFileAdapter.readFile("myData.c3d",
-                    opensim.C3DFileAdapter.ForceLocation_CenterOfPressure)
+        C3DFileAdapter c3dFileAdapter;
+        c3dFileAdapter.setLocationForForceExpression(opensim.C3DFileAdapter.ForceLocation_CenterOfPressure);
+        tables = c3dFileAdapter.read("myData.c3d")
         \endcode
 
         <b>Java example</b>
         \code{.java}
-        tables = C3DFileAdapter.readFile("myData.c3d",
-                    C3DFileAdapter.ForceLocation.CenterOfPressure);
+        C3DFileAdapter c3dFileAdapter = new C3DFileAdapter();
+        c3dFileAdapter.setLocationForForceExpression(C3DFileAdapter.ForceLocation.CenterOfPressure);
+        tables = c3dFileAdapter.read("myData.c3d");
+                    
         \endcode
 
         <b>MATLAB example</b>
         \code{.m}
-        tables = C3DFileAdapter.readFile("myData.c3d", 1);
+         C3DFileAdapter c3dFileAdapter;
+         c3dFileAdapter.setLocationForForceExpression(1);
+        tables = C3DFileAdapter.read("myData.c3d");
         \endcode
     */
     enum class ForceLocation {
