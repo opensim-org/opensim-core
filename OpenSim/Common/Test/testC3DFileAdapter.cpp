@@ -98,6 +98,7 @@ void test(const std::string filename) {
         to_string(MaximumLoadTimeInMS) + "ms.");
     #endif
 */
+#if 0
     auto& marker_table = tables.at("markers");
     auto&  force_table = tables.at("forces");
     downsample_table(*marker_table, 10);
@@ -191,6 +192,7 @@ void test(const std::string filename) {
 
     cout << "\ttestC3DFileAdapter '" << filename << "' completed in "
         << 1.e3*(std::clock() - startTime) / CLOCKS_PER_SEC  << "ms" << endl;
+#endif
 }
 
 int main() {
