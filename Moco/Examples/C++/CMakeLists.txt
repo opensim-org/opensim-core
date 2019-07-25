@@ -4,4 +4,3 @@ add_subdirectory(exampleTracking)
 add_subdirectory(exampleMarkerTracking)
 add_subdirectory(exampleMocoTrack)
 add_subdirectory(example2DWalking)
-
