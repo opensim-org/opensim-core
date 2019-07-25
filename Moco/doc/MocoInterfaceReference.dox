@@ -1,0 +1,9 @@
+namespace OpenSim {
+/** @page mocoapiref Interface reference
+
+This is the landing page for the reference for Moco's interface, or Application
+Programming Interface.
+
+*/
+} // namespace OpenSim
+
