@@ -105,7 +105,7 @@ public:
     const ForceLocation getLocationForForceExpression() const {
         return _location;
     }
-    
+#if 0   
     /** Read in a C3D file into separate markers and forces tables of type
         TimeSeriesTableVec3. The markers table has each column labeled by its
         corresponding marker name. For the forces table, the data are grouped
@@ -118,7 +118,7 @@ public:
     static
     Tables readFile(const std::string& fileName, 
                 ForceLocation wrt = ForceLocation::OriginOfForcePlate);
-
+#endif
     static
     void write(const Tables& markerTable, const std::string& fileName);
 

@@ -42,7 +42,7 @@ C3DFileAdapter*
 C3DFileAdapter::clone() const {
     return new C3DFileAdapter{*this};
 }
-
+#if 0
 C3DFileAdapter::Tables
 C3DFileAdapter::readFile(const std::string& fileName, ForceLocation wrt)
 {
@@ -59,7 +59,7 @@ C3DFileAdapter::readFile(const std::string& fileName, ForceLocation wrt)
     tables.emplace( _forces,  force_table);
     return tables;
 }
-
+#endif
 void
 C3DFileAdapter::write(const C3DFileAdapter::Tables& tables,
                       const std::string& fileName) {
