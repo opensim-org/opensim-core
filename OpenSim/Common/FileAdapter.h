@@ -215,7 +215,7 @@ public:
     /** Create a concerte FileAdapter based on the extensionof the passed in file and return it.
      This serves as a Factory of FileAdapters so clients don't need to know about concrete 
      subclasses, as long as the generic base class read interface is used */
-    static FileAdapter& createAdapterBasedOnExtension(const std::string& fileName);
+    static std::shared_ptr<DataAdapter> createAdapterBasedOnExtension(const std::string& fileName);
 };
 
 } // OpenSim namespace

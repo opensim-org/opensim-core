@@ -160,7 +160,7 @@ int main() {
     for(const auto& filename : filenames) {
         std::cout << "  " << filename << std::endl;
         try {
-            auto table = FileAdapter::createAdapterBasedOnExtension(filename).read(filename).at("markers");
+            auto table = FileAdapter::createAdapterBasedOnExtension(filename)->read(filename).at("markers");
             DataAdapter::InputTables tables{};
             tables.emplace(std::string{ "markers" }, table.get());
             FileAdapter::writeFile(tables, tmpfile);

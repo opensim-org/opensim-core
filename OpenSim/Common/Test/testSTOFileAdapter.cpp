@@ -190,7 +190,7 @@ void testReadingWriting() {
         }
         STOFileAdapter_<T>::write(table, fileA);
         auto table_copy = STOFileAdapter_<T>::readFile(fileA);
-        auto table_ptr = FileAdapter::createAdapterBasedOnExtension(fileA).read(fileA).at("table");
+        auto table_ptr = FileAdapter::createAdapterBasedOnExtension(fileA)->read(fileA).at("table");
         DataAdapter::InputTables inputTables{};
         inputTables.emplace(std::string{"table"}, table_ptr.get());
         FileAdapter::writeFile(inputTables, fileB);
@@ -204,7 +204,7 @@ void testReadingWriting() {
         TimeSeriesTable_<T> table{};
         STOFileAdapter_<T>::write(table, fileA);
         auto table_copy = STOFileAdapter_<T>::readFile(fileA);
-        auto table_ptr = FileAdapter::createAdapterBasedOnExtension(fileA).read(fileA).at("table");
+        auto table_ptr = FileAdapter::createAdapterBasedOnExtension(fileA)->read(fileA).at("table");
         DataAdapter::InputTables inputTables{};
         inputTables.emplace(std::string{"table"}, table_ptr.get());
         FileAdapter::writeFile(inputTables, fileB);
@@ -218,7 +218,7 @@ void testReadingWriting() {
         TimeSeriesTable_<T> table{std::vector<double>{0, 0.1, 0.2}};
         STOFileAdapter_<T>::write(table, fileA);
         auto table_copy = STOFileAdapter_<T>::readFile(fileA);
-        auto table_ptr = FileAdapter::createAdapterBasedOnExtension(fileA).read(fileA).at("table");
+        auto table_ptr = FileAdapter::createAdapterBasedOnExtension(fileA)->read(fileA).at("table");
         DataAdapter::InputTables inputTables{};
         inputTables.emplace(std::string{"table"}, table_ptr.get());
         FileAdapter::writeFile(inputTables, fileB);
@@ -257,7 +257,7 @@ int main() {
               << std::endl;
     for(const auto& filename : filenames) {
         std::cout << "  " << filename << std::endl;
-        auto table = FileAdapter::createAdapterBasedOnExtension(filename).read(filename).at("table");
+        auto table = FileAdapter::createAdapterBasedOnExtension(filename)->read(filename).at("table");
         DataAdapter::InputTables tables{};
         tables.emplace(std::string{"table"}, table.get());
         FileAdapter::writeFile(tables, tmpfile);
@@ -331,7 +331,7 @@ int main() {
     // version-1.0 STO files because the "DataType" metadata was required to
     // determine the template argument for STOFileAdapter (Issue #1725).
     // This test ensures that bug is fixed (test.sto is version 1.0).
-    auto outputTables = FileAdapter::createAdapterBasedOnExtension("test.sto").read("test.sto");
+    auto outputTables = FileAdapter::createAdapterBasedOnExtension("test.sto")->read("test.sto");
     SimTK_TEST(outputTables["table"]->getNumRows() == 2);
     SimTK_TEST(outputTables["table"]->getNumColumns() == 2);
 

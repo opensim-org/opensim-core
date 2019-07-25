@@ -245,7 +245,7 @@ public:
                             this TimeSeriesTable_ type.                       */
     TimeSeriesTable_(const std::string& filename, 
                      const std::string& tablename) {
-        auto absTables = FileAdapter::createAdapterBasedOnExtension(filename).read(filename);
+        auto absTables = FileAdapter::createAdapterBasedOnExtension(filename)->read(filename);
 
         OPENSIM_THROW_IF(absTables.size() > 1 && tablename.empty(),
                          InvalidArgument,
