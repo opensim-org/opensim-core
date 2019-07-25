@@ -21,7 +21,7 @@
 namespace OpenSim {
 
 /// This class is mostly for internal use for MocoProblemRep to pass select
-/// information about a problem to the MocoCost%s and MocoPathConstraint%s of
+/// information about a problem to the MocoGoal%s and MocoPathConstraint%s of
 /// the problem during initializeOnModel().
 class MocoProblemInfo {
 public:

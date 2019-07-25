@@ -39,10 +39,11 @@ Parts of the documentation:
 
 
 
-@defgroup mococost Available cost terms
+@defgroup mocogoal Available goals
 
-These are the available cost terms you can use in your cost functional. If none
-of these satisfy your needs, you can define your own using a plugin.
+These are the available goals you can use in your cost functional or as endpoint
+constraints. If none of these satisfy your needs, you can define your own using
+a plugin.
 
 
 

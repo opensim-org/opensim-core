@@ -50,3 +50,8 @@ cmake-build-*
 delete_this_to_stop_optimization*.txt
 
 venv
+
+# MATLAB
+*.asv
+
+Moco/doc/MocoCheatSheet.pdf

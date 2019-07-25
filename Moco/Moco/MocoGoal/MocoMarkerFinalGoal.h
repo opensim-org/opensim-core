@@ -1,7 +1,7 @@
-#ifndef MOCO_MOCOMARKERFINALCOST_H
-#define MOCO_MOCOMARKERFINALCOST_H
+#ifndef MOCO_MOCOMARKERFINALGOAL_H
+#define MOCO_MOCOMARKERFINALGOAL_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: MocoMarkerFinalCost.h                                        *
+ * OpenSim Moco: MocoMarkerFinalGoal.h                                        *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2017 Stanford University and the Authors                     *
  *                                                                            *
@@ -18,7 +18,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "MocoCost.h"
+#include "MocoGoal.h"
 
 namespace OpenSim {
 
@@ -26,16 +26,16 @@ class Point;
 
 /// The squared distance between a single model point location and reference
 /// location in the final state.
-/// @ingroup mococost
-class OSIMMOCO_API MocoMarkerFinalCost : public MocoCost {
-    OpenSim_DECLARE_CONCRETE_OBJECT(MocoMarkerFinalCost, MocoCost);
+/// @ingroup mocogoal
+class OSIMMOCO_API MocoMarkerFinalGoal : public MocoGoal {
+    OpenSim_DECLARE_CONCRETE_OBJECT(MocoMarkerFinalGoal, MocoGoal);
 public:
-    MocoMarkerFinalCost() { constructProperties(); }
-    MocoMarkerFinalCost(std::string name) : MocoCost(std::move(name)) {
+    MocoMarkerFinalGoal() { constructProperties(); }
+    MocoMarkerFinalGoal(std::string name) : MocoGoal(std::move(name)) {
         constructProperties();
     }
-    MocoMarkerFinalCost(std::string name, double weight)
-            : MocoCost(std::move(name), weight) {
+    MocoMarkerFinalGoal(std::string name, double weight)
+            : MocoGoal(std::move(name), weight) {
         constructProperties();
     }
 
@@ -52,9 +52,8 @@ public:
 
 protected:
     void initializeOnModelImpl(const Model&) const override;
-    int getNumIntegralsImpl() const override { return 0; }
-    void calcCostImpl(
-            const CostInput& input, SimTK::Real& cost) const override;
+    void calcGoalImpl(
+            const GoalInput& input, SimTK::Vector& cost) const override;
 private:
 
     OpenSim_DECLARE_PROPERTY(point_name, std::string,
@@ -70,4 +69,4 @@ private:
 
 } // namespace OpenSim
 
-#endif // MOCO_MOCOMARKERFINALCOST_H
+#endif // MOCO_MOCOMARKERFINALGOAL_H

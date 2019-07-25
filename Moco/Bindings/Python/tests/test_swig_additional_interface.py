@@ -287,7 +287,7 @@ class TestWorkflow(unittest.TestCase):
         problem.setStateInfo("/slider/position/value", [0, 1], 0, 1)
         problem.setStateInfo("/slider/position/speed", [-100, 100], 0, 0)
         problem.setControlInfo("/actuator", [-10, 10])
-        problem.addCost(osim.MocoFinalTimeCost())
+        problem.addGoal(osim.MocoFinalTimeGoal())
 
         solver = moco.initTropterSolver()
         solver.set_transcription_scheme("trapezoidal");
@@ -313,7 +313,7 @@ class TestWorkflow(unittest.TestCase):
         problem.setTimeBounds(0, [0, 10])
         problem.setStateInfo("/slider/position/value", [0, 1], 0, 1)
         problem.setStateInfo("/slider/position/speed", [-100, 100], 0, 0)
-        problem.addCost(osim.MocoFinalTimeCost())
+        problem.addGoal(osim.MocoFinalTimeGoal())
         solver = moco.initTropterSolver()
         solver.set_num_mesh_points(20)
         solver.set_transcription_scheme("trapezoidal");
@@ -333,7 +333,7 @@ class TestWorkflow(unittest.TestCase):
         problem.setTimeBounds(0, [0, 10])
         problem.setStateInfo("/slider/position/value", [0, 1], 0, 1)
         problem.setStateInfo("/slider/position/speed", [-100, 100], 0, 0)
-        problem.addCost(osim.MocoFinalTimeCost())
+        problem.addGoal(osim.MocoFinalTimeGoal())
         problem.setModel(createSlidingMassModel())
         solver = moco.initTropterSolver()
         solver.set_num_mesh_points(20)
@@ -349,13 +349,13 @@ class TestWorkflow(unittest.TestCase):
         problem.setTimeBounds(0, [0, 10])
         problem.setStateInfo("/slider/position/value", [0, 1], 0, 1)
         problem.setStateInfo("/slider/position/speed", [-100, 100], 0, 0)
-        problem.updPhase().addCost(osim.MocoFinalTimeCost())
-        effort = osim.MocoControlCost("effort")
-        problem.updPhase().addCost(effort)
+        problem.updPhase().addGoal(osim.MocoFinalTimeGoal())
+        effort = osim.MocoControlGoal("effort")
+        problem.updPhase().addGoal(effort)
         solver = moco.initTropterSolver()
         solver.set_transcription_scheme("trapezoidal");
         finalTime0 = moco.solve().getFinalTime()
 
         # Change the weights of the costs.
-        effort.set_weight(0.1)
+        effort.setWeight(0.1)
         assert(moco.solve().getFinalTime() < 0.8 * finalTime0)

@@ -38,6 +38,7 @@ void MocoProblemRep::initialize() {
     m_control_infos.clear();
     m_parameters.clear();
     m_costs.clear();
+    m_endpoint_constraints.clear();
     m_path_constraints.clear();
     m_kinematic_constraints.clear();
     m_multiplier_infos_map.clear();
@@ -248,10 +249,10 @@ void MocoProblemRep::initialize() {
     // ------------
     const auto stateNames = m_model_base.getStateVariableNames();
     for (int i = 0; i < ph0.getProperty_state_infos_pattern().size(); ++i) {
-        const auto& pattern =
-                std::regex(ph0.get_state_infos_pattern(i).getName());
+        const auto& pattern = ph0.get_state_infos_pattern(i).getName();
+        auto regexPattern = std::regex(pattern);
         for (int j = 0; j < stateNames.size(); ++j) {
-            if (std::regex_match(stateNames[j], pattern)) {
+            if (std::regex_match(stateNames[j], regexPattern)) {
                 m_state_infos[stateNames[j]] = ph0.get_state_infos_pattern(i);
                 m_state_infos[stateNames[j]].setName(stateNames[j]);
             }
@@ -405,20 +406,26 @@ void MocoProblemRep::initialize() {
         m_parameters[i]->initializeOnModel(m_model_disabled_constraints);
     }
 
-    // Costs.
+    // Goals.
     // ------
-    m_costs.resize(ph0.getProperty_costs().size());
-    std::unordered_set<std::string> costNames;
-    for (int i = 0; i < ph0.getProperty_costs().size(); ++i) {
-        const auto& cost = ph0.get_costs(i);
-        OPENSIM_THROW_IF(cost.getName().empty(), Exception,
-                "All costs must have a name.");
-        OPENSIM_THROW_IF(costNames.count(cost.getName()), Exception,
-                format("A cost with name '%s' already exists.",
-                        cost.getName()));
-        costNames.insert(cost.getName());
-        m_costs[i] = std::unique_ptr<MocoCost>(cost.clone());
-        m_costs[i]->initializeOnModel(m_model_disabled_constraints);
+    std::unordered_set<std::string> goalNames;
+    for (int i = 0; i < ph0.getProperty_goals().size(); ++i) {
+        const auto& goal = ph0.get_goals(i);
+        OPENSIM_THROW_IF(goal.getName().empty(), Exception,
+                "All goals must have a name.");
+        OPENSIM_THROW_IF(goalNames.count(goal.getName()), Exception,
+                format("A goal with name '%s' already exists.",
+                        goal.getName()));
+        goalNames.insert(goal.getName());
+        if (goal.getEnabled()) {
+            std::unique_ptr<MocoGoal> item(goal.clone());
+            item->initializeOnModel(m_model_disabled_constraints);
+            if (item->getModeIsEndpointConstraint()) {
+                m_endpoint_constraints.push_back(std::move(item));
+            } else {
+                m_costs.push_back(std::move(item));
+            }
+        }
     }
 
     MocoProblemInfo problemInfo;
@@ -432,10 +439,10 @@ void MocoProblemRep::initialize() {
     std::unordered_set<std::string> pcNames;
     for (int i = 0; i < ph0.getProperty_path_constraints().size(); ++i) {
         const auto& pc = ph0.get_path_constraints(i);
-        OPENSIM_THROW_IF(
-                pc.getName().empty(), Exception, "All costs must have a name.");
+        OPENSIM_THROW_IF(pc.getName().empty(), Exception,
+                "All path constraints must have a name.");
         OPENSIM_THROW_IF(pcNames.count(pc.getName()), Exception,
-                format("A constraint with name '%s' already exists.",
+                format("A path constraint with name '%s' already exists.",
                         pc.getName()));
         pcNames.insert(pc.getName());
         m_path_constraints[i] = std::unique_ptr<MocoPathConstraint>(pc.clone());
@@ -531,6 +538,15 @@ std::vector<std::string> MocoProblemRep::createCostNames() const {
     }
     return names;
 }
+std::vector<std::string> MocoProblemRep::createEndpointConstraintNames() const {
+    std::vector<std::string> names(m_endpoint_constraints.size());
+    int i = 0;
+    for (const auto& endpoint_constraint : m_endpoint_constraints) {
+        names[i] = endpoint_constraint->getName();
+        ++i;
+    }
+    return names;
+}
 std::vector<std::string> MocoProblemRep::createPathConstraintNames() const {
     std::vector<std::string> names(m_path_constraints.size());
     int i = 0;
@@ -561,15 +577,27 @@ const MocoParameter& MocoProblemRep::getParameter(
     OPENSIM_THROW(
             Exception, format("No parameter with name '%s' found.", name));
 }
-const MocoCost& MocoProblemRep::getCost(const std::string& name) const {
+const MocoGoal& MocoProblemRep::getCost(const std::string& name) const {
 
     for (const auto& c : m_costs) {
         if (c->getName() == name) { return *c.get(); }
     }
     OPENSIM_THROW(Exception, format("No cost with name '%s' found.", name));
 }
-const MocoCost& MocoProblemRep::getCostByIndex(int index) const {
+const MocoGoal& MocoProblemRep::getCostByIndex(int index) const {
     return *m_costs[index];
+}
+const MocoGoal& MocoProblemRep::getEndpointConstraint(
+        const std::string& name) const {
+
+    for (const auto& c : m_endpoint_constraints) {
+        if (c->getName() == name) { return *c.get(); }
+    }
+    OPENSIM_THROW(Exception,
+            format("No endpoint constraint with name '%s' found.", name));
+}
+const MocoGoal& MocoProblemRep::getEndpointConstraintByIndex(int index) const {
+    return *m_endpoint_constraints[index];
 }
 const MocoPathConstraint& MocoProblemRep::getPathConstraint(
         const std::string& name) const {
@@ -678,6 +706,17 @@ void MocoProblemRep::printDescription(std::ostream& stream) const {
     for (const auto& cost : m_costs) {
         stream << "  ";
         cost->printDescription(stream);
+    }
+
+    stream << "Endpoint constraints:";
+    if (m_endpoint_constraints.empty())
+        stream << " none";
+    else
+        stream << " (total: " << m_endpoint_constraints.size() << ")";
+    stream << "\n";
+    for (const auto& endpoint_constraint : m_endpoint_constraints) {
+        stream << "  ";
+        endpoint_constraint->printDescription(stream);
     }
 
     stream << "Kinematic constraints: ";

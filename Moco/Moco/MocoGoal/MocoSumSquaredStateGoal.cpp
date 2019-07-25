@@ -1,7 +1,7 @@
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: MocoCost.cpp                                                 *
+ * OpenSim Moco: MocoSumSquaredStateGoal.cpp                                  *
  * -------------------------------------------------------------------------- *
- * Copyright (c) 2017 Stanford University and the Authors                     *
+ * Copyright (c) 2019 Stanford University and the Authors                     *
  *                                                                            *
  * Author(s): Christopher Dembia                                              *
  *                                                                            *
@@ -15,32 +15,24 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
-#include "MocoCost.h"
+#include "MocoSumSquaredStateGoal.h"
+
+#include <OpenSim/Simulation/Model/Model.h>
 
 using namespace OpenSim;
 
-MocoCost::MocoCost() {
-    constructProperties();
-    if (getName().empty()) setName("cost");
-}
-
-MocoCost::MocoCost(std::string name) {
-    setName(std::move(name));
+MocoSumSquaredStateGoal::MocoSumSquaredStateGoal() {
     constructProperties();
 }
 
-MocoCost::MocoCost(std::string name, double weight)
-        : MocoCost(std::move(name)) {
-    set_weight(weight);
+void MocoSumSquaredStateGoal::constructProperties() {
 }
 
-
-void MocoCost::printDescription(std::ostream& stream) const {
-    stream << getName() << ". " << getConcreteClassName() <<
-            " enabled: " << get_enabled() << " weight: " << get_weight() << std::endl;
+void MocoSumSquaredStateGoal::initializeOnModelImpl(const Model& model) const {
+    setNumIntegralsAndOutputs(1, 1);
 }
 
-void MocoCost::constructProperties() {
-    constructProperty_weight(1);
-    constructProperty_enabled(true);
+void MocoSumSquaredStateGoal::calcIntegrandImpl(const SimTK::State& state,
+        double& integrand) const {
+    integrand = state.getY().normSqr();
 }

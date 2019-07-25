@@ -36,9 +36,6 @@ cache:
   - C:\projects\deps\ipopt -> dependencies\CMakeLists.txt
   - C:\projects\deps\casadi -> dependencies\CMakeLists.txt
   - C:\projects\deps\opensim-core -> dependencies\opensim-core.cmake
-  
-  - C:\ProgramData\chocolatey\bin -> .appveyor.yml # swig.exe
-  - C:\ProgramData\chocolatey\lib -> .appveyor.yml # supporting swig Lib files.
 
 install:
   - cmake --version
@@ -50,14 +47,11 @@ install:
   - ps: (New-Object System.Net.WebClient).DownloadFile("https://sourceforge.net/projects/myosin/files/doxygen-1.8.14.windows.x64.bin.zip/download", "C:\doxygen.zip")
   - 7z x C:\doxygen.zip -oC:\doxygen
   - SET PATH=C:\doxygen;%PATH%
-  
+
   - echo %PATH%
 
   ## Use Chocolatey to install SWIG.
-  # Only install swig if it isn't present (as a result of AppVeyor's caching).
-  # SWIG 3.0.8 is the minimum required version, but it does not yet exist in
-  # Chocolatey.
-  - IF NOT EXIST C:\ProgramData\chocolatey\bin\swig.exe choco install swig --version 3.0.9 --yes --limit-output #> $null
+  - choco install swig --version 3.0.9 --yes --limit-output #> $null
 
   # Install dependencies.
   # We are using superbuild for opensim-core, as that allows us to specify

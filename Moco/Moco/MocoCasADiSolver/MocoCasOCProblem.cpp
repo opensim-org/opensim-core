@@ -164,7 +164,8 @@ MocoCasOCProblem::MocoCasOCProblem(const MocoCasADiSolver& mocoCasADiSolver,
 
                     // Add velocity correction variables if enforcing
                     // constraint equation derivatives.
-                    if (enforceConstraintDerivs) {
+                    if (enforceConstraintDerivs &&
+                            !isPrescribedKinematics()) {
                         // TODO this naming convention assumes that the
                         // associated Lagrange multiplier name begins with
                         // "lambda", which may change in the future.
@@ -203,10 +204,24 @@ MocoCasOCProblem::MocoCasOCProblem(const MocoCasADiSolver& mocoCasADiSolver,
         addParameter(paramName, convertBounds(param.getBounds()));
     }
 
-    const auto costNames = problemRep.createCostNames();
-    for (const auto& name : costNames) {
-        const auto& cost = problemRep.getCost(name);
-        addCost(name, cost.getNumIntegrals());
+    {
+        const auto costNames = problemRep.createCostNames();
+        for (const auto& name : costNames) {
+            const auto& cost = problemRep.getCost(name);
+            addCost(name, cost.getNumIntegrals(), cost.getNumOutputs());
+        }
+    }
+    {
+        const auto endpointConNames =
+                problemRep.createEndpointConstraintNames();
+        for (const auto& name : endpointConNames) {
+            const auto& ec = problemRep.getEndpointConstraint(name);
+            std::vector<CasOC::Bounds> casBounds;
+            for (const auto& bounds : ec.getConstraintInfo().getBounds()) {
+                casBounds.push_back(convertBounds(bounds));
+            }
+            addEndpointConstraint(name, ec.getNumIntegrals(), casBounds);
+        }
     }
 
     const auto pathConstraintNames = problemRep.createPathConstraintNames();

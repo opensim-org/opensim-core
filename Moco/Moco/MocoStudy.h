@@ -95,11 +95,16 @@ public:
     /// If using this method in C++, make sure to include the "&" in the
     /// return type; otherwise, you'll make a copy of the solver, and the copy
     /// will have no effect on this MocoStudy.
-    MocoTropterSolver& initTropterSolver();
-
-    // TODO document
-    /// This returns a fresh MucoCasADiSolver and deletes the previous solver.
+    /// This deletes the previous solver if one exists.
     MocoCasADiSolver& initCasADiSolver();
+
+    /// Call this method once you have finished setting up your MocoProblem.
+    /// This returns a reference to the MocoSolver, which you can then edit.
+    /// If using this method in C++, make sure to include the "&" in the
+    /// return type; otherwise, you'll make a copy of the solver, and the copy
+    /// will have no effect on this MocoStudy.
+    /// This deletes the previous solver if one exists.
+    MocoTropterSolver& initTropterSolver();
 
     /// Access the solver. Make sure to call `initSolver()` beforehand.
     /// If using this method in C++, make sure to include the "&" in the
@@ -124,7 +129,14 @@ public:
     ///     the provided iterate.
     void visualize(const MocoTrajectory& it) const;
 
-    /// TODO
+    /// Calculate the requested outputs using the model in the problem and the
+    /// states and controls in the MocoTrajectory.
+    /// The output paths can be regular expressions. For example,
+    /// ".*activation" gives the activation of all muscles.
+    /// Constraints are not enforced but prescribed motion (e.g.,
+    /// PositionMotion) is.
+    /// @see OpenSim::analyze()
+    /// @note Parameters in the MocoTrajectory are **not** applied to the model.
     TimeSeriesTable analyze(
             const MocoTrajectory& it, std::vector<std::string> outputPaths) const;
 

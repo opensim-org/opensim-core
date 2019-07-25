@@ -1,7 +1,7 @@
-#ifndef MOCO_MOCOCONTROLTRACKINGCOST_H
-#define MOCO_MOCOCONTROLTRACKINGCOST_H
+#ifndef MOCO_MOCOCONTROLTRACKINGGOAL_H
+#define MOCO_MOCOCONTROLTRACKINGGOAL_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: MocoControlTrackingCost.h                                    *
+ * OpenSim Moco: MocoControlTrackingGoal.h                                    *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2019 Stanford University and the Authors                     *
  *                                                                            *
@@ -20,7 +20,7 @@
 
 #include "../Common/TableProcessor.h"
 #include "../MocoWeightSet.h"
-#include "MocoCost.h"
+#include "MocoGoal.h"
 
 #include <OpenSim/Common/GCVSplineSet.h>
 #include <OpenSim/Common/TimeSeriesTable.h>
@@ -37,17 +37,17 @@ namespace OpenSim {
 /// Tracking problems in direct collocation perform best when tracking smooth
 /// data, so it is recommended to filter the data in the reference you provide
 /// to the cost.
-/// @ingroup mococost
-class OSIMMOCO_API MocoControlTrackingCost : public MocoCost {
-    OpenSim_DECLARE_CONCRETE_OBJECT(MocoControlTrackingCost, MocoCost);
+/// @ingroup mocogoal
+class OSIMMOCO_API MocoControlTrackingGoal : public MocoGoal {
+    OpenSim_DECLARE_CONCRETE_OBJECT(MocoControlTrackingGoal, MocoGoal);
 
 public:
-    MocoControlTrackingCost() { constructProperties(); };
-    MocoControlTrackingCost(std::string name) : MocoCost(std::move(name)) {
+    MocoControlTrackingGoal() { constructProperties(); };
+    MocoControlTrackingGoal(std::string name) : MocoGoal(std::move(name)) {
         constructProperties();
     }
-    MocoControlTrackingCost(std::string name, double weight)
-            : MocoCost(std::move(name), weight) {
+    MocoControlTrackingGoal(std::string name, double weight)
+            : MocoGoal(std::move(name), weight) {
         constructProperties();
     }
     /// Provide a table containing reference values for the
@@ -90,12 +90,11 @@ public:
 protected:
     // TODO check that the reference covers the entire possible time range.
     void initializeOnModelImpl(const Model& model) const override;
-    int getNumIntegralsImpl() const override { return 1; }
     void calcIntegrandImpl(
             const SimTK::State& state, double& integrand) const override;
-    void calcCostImpl(
-            const CostInput& input, SimTK::Real& cost) const override {
-        cost = input.integral;
+    void calcGoalImpl(
+            const GoalInput& input, SimTK::Vector& cost) const override {
+        cost[0] = input.integral;
     }
 
 private:
@@ -125,4 +124,4 @@ private:
 
 } // namespace OpenSim
 
-#endif // MOCO_MOCOCONTROLTRACKINGCOST_H
+#endif // MOCO_MOCOCONTROLTRACKINGGOAL_H

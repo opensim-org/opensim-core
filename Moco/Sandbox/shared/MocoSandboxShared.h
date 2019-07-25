@@ -18,17 +18,18 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
+#include <Moco/MocoGoal/MocoGoal.h>
+
+#include <OpenSim/Actuators/osimActuators.h>
 #include <OpenSim/Common/osimCommon.h>
 #include <OpenSim/Simulation/osimSimulation.h>
-#include <OpenSim/Actuators/osimActuators.h>
-#include <Moco/MocoCost/MocoCost.h>
 
 namespace OpenSim {
 
 // TODO rename ContactForceTracking? ExternalForceTracking?
 // TODO add function that saves a file comparing the simulated and tracked GRF.
-class MocoForceTrackingCost : public MocoCost {
-    OpenSim_DECLARE_CONCRETE_OBJECT(MocoForceTrackingCost, MocoCost);
+class MocoForceTrackingCost : public MocoGoal {
+    OpenSim_DECLARE_CONCRETE_OBJECT(MocoForceTrackingCost, MocoGoal);
 public:
     OpenSim_DECLARE_LIST_PROPERTY(forces, std::string, "TODO");
     OpenSim_DECLARE_PROPERTY(tracked_grf_components, std::string, "TODO");
@@ -50,7 +51,7 @@ protected:
         }
     }
 
-    void calcCostImpl(const CostInput& input, double& cost) const override {
+    void calcCostImpl(const GoalInput& input, double& cost) const override {
         cost = input.integral;
     }
     void calcIntegrandImpl(const SimTK::State& state, double& integrand)

@@ -73,8 +73,8 @@ class TestSlidingMass {
 
     // Cost.
     // -----
-    MocoFinalTimeCost ftCost = new MocoFinalTimeCost();
-    mp.addCost(ftCost);
+    MocoFinalTimeGoal ftCost = new MocoFinalTimeGoal();
+    mp.addGoal(ftCost);
 
     // Configure the solver.
     // =====================

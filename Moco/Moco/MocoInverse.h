@@ -64,10 +64,12 @@ private:
 ///
 /// Cost
 /// ----
-/// By default, MocoInverse minimizes the sum of squared controls. To customize
-/// the cost, invoke initialize(), add costs manually, and solve the problem
-/// using the solver directly. Note, however, that kinematic states are not
-/// included in the solution if you use the solver directly.
+/// By default, MocoInverse minimizes the sum of squared controls and
+/// constrains initial activation to be equal to initial excitation (to avoid
+/// initial activation spikes). To customize the cost, invoke initialize(), add
+/// costs manually, and solve the problem using the solver directly. Note,
+/// however, that kinematic states are not included in the solution if you use
+/// the solver directly.
 ///
 /// Default solver settings
 /// -----------------------
@@ -78,6 +80,24 @@ private:
 /// - optim_constraint_tolerance: 1e-3
 /// - optim_sparsity_detection: random
 /// - optim_finite_difference_scheme: forward
+///
+/// ### Cost
+///
+/// MocoInverse minimizes the sum of squared controls and, optionally, the sum
+/// of squared states. MocoInverse assumes that the only states in the system
+/// are muscle activations, but this is not checked or enforced.
+/// Currently, the costs used by MocoInverse cannot be customized.
+/// As MocoInverse becomes more mature and general, the costs will become more
+/// flexible.
+///
+/// ### Mesh interval
+///
+/// A smaller mesh interval increases the convergence time, but is necessary
+/// for fast motions or problems with stiff differential equations (e.g.,
+/// stiff tendons).
+/// For gait, consider using a mesh interval between 0.01 and 0.05 seconds.
+/// Try solving your problem with decreasing mesh intervals and choose a mesh
+/// interval at which the solution stops changing noticeably.
 ///
 /// @underdevelopment
 class OSIMMOCO_API MocoInverse : public MocoTool {
@@ -97,11 +117,11 @@ public:
             "Minimize the sum of squared states (e.g., activations). "
             "Do not use this if tendon compliance is enabled. Default: false.");
 
-    OpenSim_DECLARE_PROPERTY(tolerance, double,
-            "The convergence and constraint tolerances (default: 1e-3).");
-
     OpenSim_DECLARE_OPTIONAL_PROPERTY(max_iterations, int,
             "Maximum number of solver iterations (default: solver default).");
+
+    OpenSim_DECLARE_PROPERTY(tolerance, double,
+            "The convergence and constraint tolerances (default: 1e-3).");
 
     OpenSim_DECLARE_LIST_PROPERTY(output_paths, std::string,
             "Outputs to compute after solving the problem."

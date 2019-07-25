@@ -326,6 +326,129 @@ void MocoTrajectory::insertControlsTrajectory(
     }
 }
 
+void MocoTrajectory::generateSpeedsFromValues() {
+    // Spline the states trajectory.
+    auto statesTable = exportToStatesTable();
+    GCVSplineSet splines(statesTable, {}, std::min(getNumTimes() - 1, 5));
+    // Allocate memory for the speeds.
+    int numValues = 0;
+    for (auto name : m_state_names) {
+        auto leafpos = name.find("/value");
+        if (leafpos != std::string::npos) ++numValues;
+    }
+    OPENSIM_THROW_IF(!numValues, Exception,
+            "Tried to compute speeds from coordinate values, but no values "
+            "exist in the trajectory.");
+    TimeSeriesTable speedsToInsert;
+    SimTK::Matrix& speedsMat = speedsToInsert.updMatrix();
+    speedsMat.resize(getNumTimes(), numValues);
+
+    std::vector<std::string> speedNames;
+    SimTK::Vector curTime(1, SimTK::NaN);
+    int ispeed = 0;
+    for (auto name : m_state_names) {
+        auto leafpos = name.find("/value");
+        if (leafpos != std::string::npos) {
+            // Compute the derivative from the splined value and assign to this
+            // speed memory.
+            for (int itime = 0; itime < m_time.size(); ++itime) {
+                curTime[0] = m_time[itime];
+                speedsMat(itime, ispeed) =
+                        splines.get(name).calcDerivative({0}, curTime);
+            }
+            // Re-use the value name to create the speed name.
+            name.replace(leafpos, name.size(), "/speed");
+            speedNames.push_back(name);
+
+            ++ispeed;
+        }
+    }
+    // Assign speed names.
+    speedsToInsert.setColumnLabels(speedNames);
+
+    // Insert coordinate speeds trajectory into m_states, overriding existing
+    // speed values if necessary.
+    insertStatesTrajectory(speedsToInsert, true);
+}
+
+void MocoTrajectory::generateAccelerationsFromValues() {
+    // Spline the states trajectory.
+    auto statesTable = exportToStatesTable();
+    GCVSplineSet splines(statesTable, {}, std::min(getNumTimes() - 1, 5));
+    // Allocate memory for the accelerations.
+    int numValues = 0;
+    for (auto name : m_state_names) {
+        auto leafpos = name.find("/value");
+        if (leafpos != std::string::npos) ++numValues;
+    }
+    OPENSIM_THROW_IF(!numValues, Exception,
+            "Tried to compute accelerations from coordinate values, but no "
+            "values exist in the trajectory.");
+    m_derivatives.resize(getNumTimes(), numValues);
+
+    std::vector<std::string> accelNames;
+    SimTK::Vector curTime(1, SimTK::NaN);
+    int iaccel = 0;
+    for (auto name : m_state_names) {
+        auto leafpos = name.find("/value");
+        if (leafpos != std::string::npos) {
+            // Compute the derivative from the splined value and assign to this
+            // acceleration memory.
+            for (int itime = 0; itime < m_time.size(); ++itime) {
+                curTime[0] = m_time[itime];
+                m_derivatives(itime, iaccel) =
+                        splines.get(name).calcDerivative({0, 0}, curTime);
+            }
+            // Re-use the speed name to create the acceleration name.
+            name.replace(leafpos, name.size(), "/accel");
+            accelNames.push_back(name);
+
+            ++iaccel;
+        }
+    }
+    // Assign acceleration names.
+    m_derivative_names = accelNames;
+}
+
+void MocoTrajectory::generateAccelerationsFromSpeeds() {
+    // Spline the states trajectory.
+    auto statesTable = exportToStatesTable();
+    GCVSplineSet splines(statesTable, {}, std::min(getNumTimes() - 1, 5));
+    // Allocate memory for the accelerations.
+    int numSpeeds = 0;
+    for (auto name : m_state_names) {
+        auto leafpos = name.find("/speed");
+        if (leafpos != std::string::npos) ++numSpeeds;
+    }
+    OPENSIM_THROW_IF(!numSpeeds, Exception,
+            "Tried to compute accelerations from speeds, but no speeds exist "
+            "in the trajectory.");
+    m_derivatives.resize(getNumTimes(), numSpeeds);
+
+    std::vector<std::string> accelNames;
+    SimTK::Vector curTime(1, SimTK::NaN);
+    int iaccel = 0;
+    for (auto name : m_state_names) {
+        auto leafpos = name.find("/speed");
+        if (leafpos != std::string::npos) {
+            // Compute the derivative from the splined speed and assign to this
+            // acceleration memory.
+            for (int itime = 0; itime < m_time.size(); ++itime) {
+                curTime[0] = m_time[itime];
+                m_derivatives(itime, iaccel) =
+                        splines.get(name).calcDerivative({0}, curTime);
+            }
+            // Re-use the speed name to create the acceleration name.
+            name.replace(leafpos, name.size(), "/accel");
+            accelNames.push_back(name);
+
+            ++iaccel;
+        }
+    }
+    // Assign acceleration names.
+    m_derivative_names = accelNames;
+}
+
 double MocoTrajectory::getInitialTime() const {
     ensureUnsealed();
     OPENSIM_THROW_IF(m_time.size() == 0, Exception, "Time vector is empty.");
@@ -801,8 +924,8 @@ void MocoTrajectory::randomize(bool add, const SimTK::Random& randGen) {
 bool MocoTrajectory::isCompatible(
         const MocoProblemRep& mp, bool throwOnError) const {
     ensureUnsealed();
-    // Slack variables might be solver dependent, so we can't check for
-    // compatibility on the problem.
+    // Slack variables might be solver dependent, so we can't include them in 
+    // the compatibility check.
 
     auto mpsn = mp.createStateInfoNames();
     std::sort(mpsn.begin(), mpsn.end());

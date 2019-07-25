@@ -82,7 +82,14 @@ TEST_CASE("DeGrooteFregly2016Muscle basics") {
             REQUIRE_THROWS_AS(musc.finalizeFromProperties(),
                     SimTK::Exception::ErrorCheck);
         }
+        SECTION("active_force_width_scale"){
+            DeGrooteFregly2016Muscle musc = muscle;
+            musc.set_active_force_width_scale(0.99999999);
+            SimTK_TEST_MUST_THROW_EXC(musc.finalizeFromProperties(),
+                    SimTK::Exception::ErrorCheck);
+        }
         SECTION("fiber_damping") {
+            DeGrooteFregly2016Muscle musc = muscle;
             musc.set_fiber_damping(-0.0001);
             REQUIRE_THROWS_AS(musc.finalizeFromProperties(),
                     SimTK::Exception::ErrorCheck);
@@ -606,7 +613,7 @@ TEMPLATE_TEST_CASE("Hanging muscle minimum time", "", MocoCasADiSolver) {
         }
         problem.setControlInfo("/forceset/actuator", {0.01, 1});
 
-        problem.addCost<MocoFinalTimeCost>();
+        problem.addGoal<MocoFinalTimeGoal>();
 
         auto& solver = moco.initSolver<TestType>();
         solver.set_num_mesh_points(40);
@@ -681,7 +688,7 @@ TEMPLATE_TEST_CASE("Hanging muscle minimum time", "", MocoCasADiSolver) {
         }
         problem.setControlInfo("/forceset/actuator", {0.01, 1});
 
-        auto* tracking = problem.addCost<MocoStateTrackingCost>();
+        auto* tracking = problem.addGoal<MocoStateTrackingGoal>();
 
         auto states = solutionTrajOpt.exportToStatesStorage().exportToTable();
         TimeSeriesTable ref(states.getIndependentColumn());

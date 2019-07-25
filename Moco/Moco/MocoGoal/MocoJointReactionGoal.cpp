@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: MocoJointReactionCost.h                                      *
+ * OpenSim Moco: MocoJointReactionGoal.h                                      *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2019 Stanford University and the Authors                     *
  *                                                                            *
@@ -16,17 +16,19 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "MocoJointReactionCost.h"
+#include "MocoJointReactionGoal.h"
+
 #include "../MocoUtilities.h"
+
 #include <OpenSim/Simulation/Model/Model.h>
 
 using namespace OpenSim;
 
-MocoJointReactionCost::MocoJointReactionCost() {
+MocoJointReactionGoal::MocoJointReactionGoal() {
     constructProperties();
 }
 
-void MocoJointReactionCost::constructProperties() {
+void MocoJointReactionGoal::constructProperties() {
     constructProperty_joint_path("");
     constructProperty_loads_frame("parent");
     constructProperty_expressed_in_frame_path("");
@@ -34,7 +36,7 @@ void MocoJointReactionCost::constructProperties() {
     constructProperty_reaction_weights(MocoWeightSet());
 }
 
-void MocoJointReactionCost::initializeOnModelImpl(const Model& model) const {
+void MocoJointReactionGoal::initializeOnModelImpl(const Model& model) const {
 
     // Cache the joint.
     OPENSIM_THROW_IF_FRMOBJ(get_joint_path().empty(), Exception,
@@ -103,9 +105,11 @@ void MocoJointReactionCost::initializeOnModelImpl(const Model& model) const {
         }
         m_measureWeights.push_back(compWeight);
     }
+
+    setNumIntegralsAndOutputs(1, 1);
 }
 
-void MocoJointReactionCost::calcIntegrandImpl(const SimTK::State& state,
+void MocoJointReactionGoal::calcIntegrandImpl(const SimTK::State& state,
         double& integrand) const {
 
     getModel().realizeAcceleration(state);
