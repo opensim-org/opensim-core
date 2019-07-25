@@ -177,6 +177,14 @@ void OpenSim::visualize(Model model, Storage statesSto) {
     model.setUseVisualizer(true);
     model.initSystem();
 
+    // This line allows muscle activity to be visualized. To get muscle activity
+    // we probably need to realize only to Dynamics, but realizing to Report
+    // will catch any other calculations that custom components require for
+    // visualizing.
+    for (const auto& state : statesTraj) {
+        model.realizeReport(state);
+    }
+
     // OPENSIM_THROW_IF(!statesTraj.isCompatibleWith(model), Exception,
     //        "Model is not compatible with the provided StatesTrajectory.");
 
