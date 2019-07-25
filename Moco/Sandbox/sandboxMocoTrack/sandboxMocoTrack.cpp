@@ -25,11 +25,11 @@
 using namespace OpenSim;
 using SimTK::Infinity;
 
-class DecorativeCoordinateActuator : public CoordinateActuator {
+class DecoratedCoordinateActuator : public CoordinateActuator {
     OpenSim_DECLARE_CONCRETE_OBJECT(
-            DecorativeCoordinateActuator, CoordinateActuator);
+            DecoratedCoordinateActuator, CoordinateActuator);
 public:
-    DecorativeCoordinateActuator() = default;
+    DecoratedCoordinateActuator() = default;
 
 protected:
     void generateDecorations(bool fixed, const ModelDisplayHints& hints,
