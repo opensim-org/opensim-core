@@ -810,7 +810,7 @@ private:
     void updateDefaultObjectsFromXMLNode();
     void updateDefaultObjectsXMLNode(SimTK::Xml::Element& aParent);
 
-    /** This is invoked at the start of print() if second argument to print is true
+    /** This is invoked at the start of print() if _debugLevel is greater than 0 then
      * printing is allowed to proceed even if the resulting file is corrupt, otherwise
      * printing is aborted.
      * Derived classes can use this as an opportunity to issue warnings to users.
