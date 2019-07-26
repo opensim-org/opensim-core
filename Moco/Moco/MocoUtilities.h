@@ -472,7 +472,7 @@ OSIMMOCO_API void checkRedundantLabels(std::vector<std::string> labels);
 /// pair) as $1. The default symmetry patterns cause the following replacements:
 /// - "/jointset/hip_r/hip_flexion_r/value" becomes "/jointset/hip_l/hip_flexion_l/value"
 /// - "/forceset/soleus_r" becomes "/forceset/soleus_l"
-OSIMMOCO_API MocoTrajectory createPeriodicTrajectoryFromSymmetric(
+OSIMMOCO_API MocoTrajectory createPeriodicTrajectory(
         const MocoTrajectory& halfPeriodTrajectory,
         std::vector<std::string> addPatterns = {".*pelvis_tx/value"},
         std::vector<std::string> negatePatterns = {".*pelvis_list.*",

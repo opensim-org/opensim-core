@@ -248,7 +248,7 @@ MocoSolution gaitTracking(const bool& setPathLengthApproximation) {
     // Solve problem.
     // ==============
     MocoSolution solution = moco.solve();
-    auto full = createPeriodicTrajectoryFromSymmetric(solution);
+    auto full = createPeriodicTrajectory(solution);
     full.write("gaitTracking_solution_fullcycle.sto");
 
     //moco.visualize(solution);
@@ -399,7 +399,7 @@ void gaitPrediction(const MocoSolution& gaitTrackingSolution,
     // Solve problem.
     // ==============
     MocoSolution solution = moco.solve();
-    auto full = createPeriodicTrajectoryFromSymmetric(solution);
+    auto full = createPeriodicTrajectory(solution);
     full.write("gaitPrediction_solution_fullcycle.sto");
 
     moco.visualize(solution);

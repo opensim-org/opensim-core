@@ -578,7 +578,7 @@ void OpenSim::checkRedundantLabels(std::vector<std::string> labels) {
                     *it));
 }
 
-MocoTrajectory OpenSim::createPeriodicTrajectoryFromSymmetric(
+MocoTrajectory OpenSim::createPeriodicTrajectory(
         const MocoTrajectory& in, std::vector<std::string> addPatterns,
         std::vector<std::string> negatePatterns,
         std::vector<std::pair<std::string, std::string>> symmetryPatterns) {
