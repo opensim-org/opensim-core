@@ -439,9 +439,9 @@ OSIMMOCO_API void checkOrderSystemControls(const Model& model);
 OSIMMOCO_API void checkRedundantLabels(std::vector<std::string> labels);
 
 OSIMMOCO_API MocoTrajectory createPeriodicTrajectoryFromSymmetric(
-        const Model& model, const MocoTrajectory& halfPeriodTrajectory,
+        const MocoTrajectory& halfPeriodTrajectory,
         std::vector<std::pair<std::string, std::string>> patterns =
-                {{"(_r)(/|$)", R"(_l\2)"}, {"(_l)(/|$)", R"(_r\2)"}});
+                {{R"(_r(\/|$))", "_l$1"}, {R"(_l(\/|$))", "_r$1"}});
 
 /// Throw an exception if the property's value is not in the provided set.
 /// We assume that `p` is a single-value property.

@@ -405,8 +405,12 @@ int main() {
     try {
         // Use polynomial approximations of muscle path lengths (set false to use
         // GeometryPath).
-        const MocoSolution gaitTrackingSolution = gaitTracking(true);
-        gaitPrediction(gaitTrackingSolution, true);
+        // const MocoSolution gaitTrackingSolution = gaitTracking(true);
+        MocoTrajectory half("gaitTracking_solution.sto");
+        auto full = createPeriodicTrajectoryFromSymmetric(half);
+
+        full.write("gaitTracking_solution_fullcycle.sto");
+        // gaitPrediction(gaitTrackingSolution, true);
     } catch (const std::exception& e) {
         std::cout << e.what() << std::endl;
     }

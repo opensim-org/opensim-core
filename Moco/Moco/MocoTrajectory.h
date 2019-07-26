@@ -117,7 +117,7 @@ public:
             std::vector<std::string> parameter_names,
             const SimTK::Matrix& statesTrajectory,
             const SimTK::Matrix& controlsTrajectory,
-            const SimTK::Matrix& multipliersTrajectorye
+            const SimTK::Matrix& multipliersTrajectory,
             const SimTK::Matrix& derivativesTrajectory,
             const SimTK::RowVector& parameters);
 #ifndef SWIG
@@ -385,7 +385,31 @@ public:
     /// @throws Exception If numTimes is 0.
     double getFinalTime() const;
 
-    // TODO inconsistent plural "state names" vs "states trajectory"
+    int getNumStates() const {
+        ensureUnsealed();
+        return (int)m_state_names.size();
+    }
+
+    int getNumControls() const {
+        ensureUnsealed();
+        return (int)m_control_names.size();
+    }
+
+    int getNumMultipliers() const {
+        ensureUnsealed();
+        return (int)m_multiplier_names.size();
+    }
+
+    int getNumDerivatives() const {
+        ensureUnsealed();
+        return (int)m_derivative_names.size();
+    }
+
+    int getNumParameters() const {
+        ensureUnsealed();
+        return (int)m_parameter_names.size();
+    }
+
     const std::vector<std::string>& getStateNames() const {
         ensureUnsealed();
         return m_state_names;

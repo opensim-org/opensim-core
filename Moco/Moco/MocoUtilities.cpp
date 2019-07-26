@@ -181,9 +181,7 @@ void OpenSim::visualize(Model model, Storage statesSto) {
     // we probably need to realize only to Dynamics, but realizing to Report
     // will catch any other calculations that custom components require for
     // visualizing.
-    for (const auto& state : statesTraj) {
-        model.realizeReport(state);
-    }
+    for (const auto& state : statesTraj) { model.realizeReport(state); }
 
     // OPENSIM_THROW_IF(!statesTraj.isCompatibleWith(model), Exception,
     //        "Model is not compatible with the provided StatesTrajectory.");
@@ -580,42 +578,76 @@ void OpenSim::checkRedundantLabels(std::vector<std::string> labels) {
                     *it));
 }
 
-MocoTrajectory createPeriodicTrajectoryFromSymmetric(
-        const Model& model, const MocoTrajectory& in,
-    std::vector<std::pair<std::string, std::string>> patterns) {
+MocoTrajectory OpenSim::createPeriodicTrajectoryFromSymmetric(
+        const MocoTrajectory& in,
+        std::vector<std::pair<std::string, std::string>> patterns) {
 
     const int oldN = in.getNumTimes();
-    const int newN = in.getNumTimes();
-    // TODO how to handle the
-    SimTK::Vector newTime(2 * oldN - 1);
+    const int newN = 2 * oldN - 1;
+    SimTK::Vector newTime(newN);
     newTime.updBlock(0, 0, oldN, 1) = in.getTime();
-    // TODO: this leads to duplicate time. Must add a little bit more?
-    // TODO: Avoid repeating the same intermediate state!
-    // TODO: new final time must equal 2 * old final time, kinda!
-    newTime.updBlock(oldN, 0, oldN - 1, 1) =
-            in.getTime().block(1, 0, oldN - 1, 1) - in.getTime()[0] +
-            in.getTime()[oldN - 1];
-
-    SimTK::Matrix states(newN, in.getNumStates());
-    for (const auto& name : in.getStateNames()) {
-
-        out.setState(name, in.getState)
-        bool matched = false;
-        for (const auto& pattern : patterns) {
-            const auto regex = std::regex(pattern.first);
-            if (std::regex_match(name, regex)) {
-                matched = true;
-                const auto opposite = std::regex_replace(name, regex, pattern.second);
-
-            }
-        }
-        if (!matched) {
-            // TODO copy same data.
-        }
-
+    for (int i = 1; i < oldN; ++i) {
+        newTime[i + oldN - 1] =
+                in.getTime()[i] + in.getFinalTime() - in.getInitialTime();
     }
 
+    auto find = [](const std::vector<std::string>& v, const std::string& e) {
+        return std::find(v.begin(), v.end(), e);
+    };
 
+    auto process = [&](std::string vartype,
+                           const std::vector<std::string> names,
+                           const SimTK::Matrix& oldTraj) -> SimTK::Matrix {
+        SimTK::Matrix newTraj(newN, (int)names.size());
+        for (int i = 0; i < (int)names.size(); ++i) {
+            newTraj.updBlock(0, i, oldN, 1) = oldTraj.col(i);
+            bool matched = false;
+            for (const auto& pattern : patterns) {
+                std::string name = names[i];
+                const auto regex = std::regex(pattern.first);
+                if (std::regex_search(name, regex)) {
+                    matched = true;
+                    const auto opposite =
+                            std::regex_replace(name, regex, pattern.second);
+                    const auto it = find(names, opposite);
+                    OPENSIM_THROW_IF(it == names.end(), Exception,
+                            format("Could not find %s %s, which is supposed "
+                                   "to "
+                                   "be opposite of %s.",
+                                    vartype, opposite, name));
+                    const int iopp = (int)std::distance(names.cbegin(), it);
+                    newTraj.updBlock(oldN, iopp, oldN - 1, 1) =
+                            oldTraj.block(1, i, oldN - 1, 1);
+                    break;
+                }
+            }
+            if (!matched) {
+                // TODO copy same data.
+                newTraj.updBlock(oldN, i, oldN - 1, 1) =
+                        oldTraj.block(1, i, oldN - 1, 1);
+            }
+        }
+        return newTraj;
+    };
+
+    // TODO: handle pelvis_tx.
+
+    // TODO use MocoPeriodicityCost to handle this!!! rather than this
+    //  autodetection.
+
+    SimTK::Matrix states =
+            process("state", in.getStateNames(), in.getStatesTrajectory());
+
+    SimTK::Matrix controls = process(
+            "control", in.getControlNames(), in.getControlsTrajectory());
+
+    SimTK::Matrix derivatives = process("derivative", in.getDerivativeNames(),
+            in.getDerivativesTrajectory());
+
+    return MocoTrajectory(newTime,
+            {{"states", {in.getStateNames(), states}},
+                    {"controls", {in.getControlNames(), controls}},
+                    {"derivatives", {in.getDerivativeNames(), derivatives}}});
 }
 
 std::string OpenSim::format_c(const char* format, ...) {
