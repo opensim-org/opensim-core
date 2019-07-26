@@ -52,7 +52,7 @@ protected:
         // calculate average gait speed
         values[0] = get_gait_speed() - (distanceTraveled / timeFinal);
     }
-    void initializeOnModelImpl(const Model& model) const {
+    void initializeOnModelImpl(const Model& model) const override {
         m_coord.reset(&model.getCoordinateSet().get("pelvis_tx"));
         setNumIntegralsAndOutputs(0, 1);
     }
@@ -85,14 +85,14 @@ protected:
         goal[0] = input.integral / distanceTraveled ;
     }
     void calcIntegrandImpl(
-        const SimTK::State& state, double& integrand) const {
-        // integrand is squared controls
+        const SimTK::State& state, double& integrand) const override {
+        // integrand is cubed controls
         const auto& controls = getModel().getControls(state);
         integrand = 0;
         for (int i = 0; i < getModel().getNumControls(); ++i)
-            integrand += SimTK::square(controls[i]);
+            integrand += SimTK::cube(abs(controls[i]));
     }
-    void initializeOnModelImpl(const Model& model) const {
+    void initializeOnModelImpl(const Model& model) const override {
         m_coord.reset(&model.getCoordinateSet().get("pelvis_tx"));
         setNumIntegralsAndOutputs(1, 1);
     }
@@ -402,8 +402,13 @@ void gaitPrediction(const MocoSolution& gaitTrackingSolution,
 }
 
 int main() {
-    // Use polynomial approximations of muscle path lengths (set false to use
-    // GeometryPath).
-    const MocoSolution gaitTrackingSolution = gaitTracking(true);
-    gaitPrediction(gaitTrackingSolution, true);
+    try {
+        // Use polynomial approximations of muscle path lengths (set false to use
+        // GeometryPath).
+        const MocoSolution gaitTrackingSolution = gaitTracking(true);
+        gaitPrediction(gaitTrackingSolution, true);
+    } catch (const std::exception& e) {
+        std::cout << e.what() << std::endl;
+    }
+    return EXIT_SUCCESS;
 }

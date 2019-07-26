@@ -438,6 +438,11 @@ OSIMMOCO_API void checkOrderSystemControls(const Model& model);
 /// for redundancies.
 OSIMMOCO_API void checkRedundantLabels(std::vector<std::string> labels);
 
+OSIMMOCO_API MocoTrajectory createPeriodicTrajectoryFromSymmetric(
+        const Model& model, const MocoTrajectory& halfPeriodTrajectory,
+        std::vector<std::pair<std::string, std::string>> patterns =
+                {{"(_r)(/|$)", R"(_l\2)"}, {"(_l)(/|$)", R"(_r\2)"}});
+
 /// Throw an exception if the property's value is not in the provided set.
 /// We assume that `p` is a single-value property.
 template <typename T>

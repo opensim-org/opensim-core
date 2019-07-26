@@ -117,7 +117,7 @@ public:
             std::vector<std::string> parameter_names,
             const SimTK::Matrix& statesTrajectory,
             const SimTK::Matrix& controlsTrajectory,
-            const SimTK::Matrix& multipliersTrajectory,
+            const SimTK::Matrix& multipliersTrajectorye
             const SimTK::Matrix& derivativesTrajectory,
             const SimTK::RowVector& parameters);
 #ifndef SWIG

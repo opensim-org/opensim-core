@@ -580,6 +580,44 @@ void OpenSim::checkRedundantLabels(std::vector<std::string> labels) {
                     *it));
 }
 
+MocoTrajectory createPeriodicTrajectoryFromSymmetric(
+        const Model& model, const MocoTrajectory& in,
+    std::vector<std::pair<std::string, std::string>> patterns) {
+
+    const int oldN = in.getNumTimes();
+    const int newN = in.getNumTimes();
+    // TODO how to handle the
+    SimTK::Vector newTime(2 * oldN - 1);
+    newTime.updBlock(0, 0, oldN, 1) = in.getTime();
+    // TODO: this leads to duplicate time. Must add a little bit more?
+    // TODO: Avoid repeating the same intermediate state!
+    // TODO: new final time must equal 2 * old final time, kinda!
+    newTime.updBlock(oldN, 0, oldN - 1, 1) =
+            in.getTime().block(1, 0, oldN - 1, 1) - in.getTime()[0] +
+            in.getTime()[oldN - 1];
+
+    SimTK::Matrix states(newN, in.getNumStates());
+    for (const auto& name : in.getStateNames()) {
+
+        out.setState(name, in.getState)
+        bool matched = false;
+        for (const auto& pattern : patterns) {
+            const auto regex = std::regex(pattern.first);
+            if (std::regex_match(name, regex)) {
+                matched = true;
+                const auto opposite = std::regex_replace(name, regex, pattern.second);
+
+            }
+        }
+        if (!matched) {
+            // TODO copy same data.
+        }
+
+    }
+
+
+}
+
 std::string OpenSim::format_c(const char* format, ...) {
     // Get buffer size.
     va_list args;
