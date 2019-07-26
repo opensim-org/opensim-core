@@ -1,3 +1,7 @@
+/** The Moco interface is contained within the OpenSim namespace.
+*/
+// We must document the OpenSim namespace for free functions within the
+// namespace to appear in Doxygen.
 namespace OpenSim {
 /** @mainpage
 

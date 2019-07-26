@@ -579,17 +579,18 @@ void OpenSim::checkRedundantLabels(std::vector<std::string> labels) {
 }
 
 MocoTrajectory OpenSim::createPeriodicTrajectoryFromSymmetric(
-        const MocoTrajectory& in,
-        std::vector<std::pair<std::string, std::string>> patterns) {
+        const MocoTrajectory& in, std::vector<std::string> addPatterns,
+        std::vector<std::string> negatePatterns,
+        std::vector<std::pair<std::string, std::string>> symmetryPatterns) {
 
     const int oldN = in.getNumTimes();
     const int newN = 2 * oldN - 1;
     SimTK::Vector newTime(newN);
     newTime.updBlock(0, 0, oldN, 1) = in.getTime();
-    for (int i = 1; i < oldN; ++i) {
-        newTime[i + oldN - 1] =
-                in.getTime()[i] + in.getFinalTime() - in.getInitialTime();
-    }
+    newTime.updBlock(oldN, 0, oldN - 1, 1) =
+            in.getTime().block(1, 0, oldN - 1, 1);
+    newTime.updBlock(oldN, 0, oldN - 1, 1).updCol(0) +=
+            in.getFinalTime() - in.getInitialTime();
 
     auto find = [](const std::vector<std::string>& v, const std::string& e) {
         return std::find(v.begin(), v.end(), e);
@@ -600,11 +601,42 @@ MocoTrajectory OpenSim::createPeriodicTrajectoryFromSymmetric(
                            const SimTK::Matrix& oldTraj) -> SimTK::Matrix {
         SimTK::Matrix newTraj(newN, (int)names.size());
         for (int i = 0; i < (int)names.size(); ++i) {
+            std::string name = names[i];
             newTraj.updBlock(0, i, oldN, 1) = oldTraj.col(i);
             bool matched = false;
-            for (const auto& pattern : patterns) {
-                std::string name = names[i];
+            for (const auto& pattern : addPatterns) {
+                const auto regex = std::regex(pattern);
+                // regex_match() only returns true if the regex matches the
+                // entire name.
+                if (std::regex_match(name, regex)) {
+                    matched = true;
+                    const double& oldInit = oldTraj.col(i)[0];
+                    const double& oldFinal = oldTraj.col(i)[oldN - 1];
+                    newTraj.updBlock(oldN, i, oldN - 1, 1) =
+                            oldTraj.block(1, i, oldN - 1, 1);
+                    newTraj.updBlock(oldN, i, oldN - 1, 1).updCol(0) +=
+                            oldFinal - oldInit;
+                    break;
+                }
+            }
+
+            for (const auto& pattern : negatePatterns) {
+                const auto regex = std::regex(pattern);
+                if (std::regex_match(name, regex)) {
+                    matched = true;
+                    const double& oldFinal = oldTraj.col(i)[oldN - 1];
+                    newTraj.updBlock(oldN, i, oldN - 1, 1) =
+                            SimTK::Matrix(oldTraj.block(1, i, oldN - 1, 1).negate());
+                    newTraj.updBlock(oldN, i, oldN - 1, 1).updCol(0) +=
+                            2 * oldFinal;
+                    break;
+                }
+            }
+
+            for (const auto& pattern : symmetryPatterns) {
                 const auto regex = std::regex(pattern.first);
+                // regex_search() returns true if the regex matches any portion
+                // of the name.
                 if (std::regex_search(name, regex)) {
                     matched = true;
                     const auto opposite =
@@ -621,19 +653,14 @@ MocoTrajectory OpenSim::createPeriodicTrajectoryFromSymmetric(
                     break;
                 }
             }
+
             if (!matched) {
-                // TODO copy same data.
                 newTraj.updBlock(oldN, i, oldN - 1, 1) =
                         oldTraj.block(1, i, oldN - 1, 1);
             }
         }
         return newTraj;
     };
-
-    // TODO: handle pelvis_tx.
-
-    // TODO use MocoPeriodicityCost to handle this!!! rather than this
-    //  autodetection.
 
     SimTK::Matrix states =
             process("state", in.getStateNames(), in.getStatesTrajectory());

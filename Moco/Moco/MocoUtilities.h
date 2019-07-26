@@ -438,9 +438,47 @@ OSIMMOCO_API void checkOrderSystemControls(const Model& model);
 /// for redundancies.
 OSIMMOCO_API void checkRedundantLabels(std::vector<std::string> labels);
 
+/// Convert a trajectory covering half the period of a symmetric motion into a
+/// trajectory over the full period. This is useful for simulations of half a
+/// gait cycle.
+/// This converts time, states, controls, and derivatives; all other quanties
+/// from the input trajectory are ignored.
+/// If a column in the trajectory does not match addPatterns, negatePatterns, or
+/// symmetryPatterns, then the second half of the period contains the same
+/// data as the first half.
+///
+/// @param halfPeriodTrajectory The input trajectory covering half a period.
+/// @param addPatterns If a column label matches an addPattern, then the second
+/// half of the period for that column is (first_half_trajectory +
+/// half_period_value - initial_value).
+/// @param negatePatterns If a column label matches a negatePattern, then the
+/// second half of the period for that column is (-first_half_trajectory + 2 *
+/// half_period_value). This is usually relevant for only 3D models.
+/// @param symmetryPatterns This argument is a list of pairs, where the first
+/// element of the pair is a pattern to match, and the second is a substitution
+/// to convert the column label into the opposite column label of the symmetric
+/// pair. If a column label matches a symmetryPattern, then its first
+/// half-period is copied into the second half of the period for the column
+/// identified by the substitution.
+///
+/// The default values for the patterns are intended to handle the column labels
+/// for typical 2D or 3D OpenSim gait models.
+/// The default value for symmetryPatterns warrants an explanation. R"()" is a
+/// string literal that permits us to not escape backslash characters. The regex
+/// "_r(\/|$)" matches "_r" followed by either a forward slash
+/// (which is escaped) OR the end of the string ($). Since the forward slash
+/// and end of the string are within parentheses, whatever matches this is
+/// captured and is available in the substitution (the second element of the
+/// pair) as $1. The default symmetry patterns cause the following replacements:
+/// - "/jointset/hip_r/hip_flexion_r/value" becomes "/jointset/hip_l/hip_flexion_l/value"
+/// - "/forceset/soleus_r" becomes "/forceset/soleus_l"
 OSIMMOCO_API MocoTrajectory createPeriodicTrajectoryFromSymmetric(
         const MocoTrajectory& halfPeriodTrajectory,
-        std::vector<std::pair<std::string, std::string>> patterns =
+        std::vector<std::string> addPatterns = {".*pelvis_tx/value"},
+        std::vector<std::string> negatePatterns = {".*pelvis_list.*",
+                                                   ".*pelvis_rotation.*",
+                                                   ".*pelvis_tz.*"},
+        std::vector<std::pair<std::string, std::string>> symmetryPatterns =
                 {{R"(_r(\/|$))", "_l$1"}, {R"(_l(\/|$))", "_r$1"}});
 
 /// Throw an exception if the property's value is not in the provided set.
