@@ -63,6 +63,12 @@ void MocoStateTrackingGoal::initializeOnModelImpl(const Model& model) const {
         if (get_state_weights().contains(refName)) {
             refWeight = get_state_weights().get(refName).getWeight();
         }
+        if (get_scale_weights_with_range()) {
+            auto refValue = tableToUse.getDependentColumn(refName);
+            double refRange =
+                    SimTK::abs(SimTK::max(refValue) - SimTK::min(refValue));
+            refWeight *= 1.0 / refRange;
+        }
         m_state_weights.push_back(refWeight);
         m_refsplines.cloneAndAppend(allSplines[iref]);
     }

@@ -89,6 +89,16 @@ public:
     /// If false, extra reference will cause an Exception to be raised.
     void setAllowUnusedReferences(bool tf) { set_allow_unused_references(tf); }
 
+    /// Use the range, or the distance between the maximum and minimum value, of 
+    /// each reference quantity to scale the weight for the associated tracking 
+    /// error in the cost. The scale is computed by the inverse of the range, 
+    /// so a reference quantity that changes less across the trajectory has a 
+    /// larger weight. Each reference has a default weight of 1, so this flag
+    /// works even if no user weights have be set. This may be useful when 
+    /// tracking quantities with different units, which may have tracking errors 
+    /// with different magnitudes.
+    void setScaleWeightsWithRange(bool tf) { set_scale_weights_with_range(tf); }
+
 protected:
     // TODO check that the reference covers the entire possible time range.
     void initializeOnModelImpl(const Model&) const override;
@@ -113,10 +123,18 @@ private:
             "Set of weight objects to weight the tracking of individual "
             "state variables in the cost.");
 
+    OpenSim_DECLARE_PROPERTY(scale_weights_with_range, bool, 
+            "Use the range, or the distance between the maximum and minimum "
+            "value, of each reference quantity to scale the weight "
+            "for the associated tracking error in the cost. The scale is "
+            "computed by the inverse of the range, so a reference quantity "
+            "that changes less across the trajectory has a larger weight. ");
+
     void constructProperties() {
         constructProperty_reference(TableProcessor());
         constructProperty_allow_unused_references(false);
         constructProperty_state_weights(MocoWeightSet());
+        constructProperty_scale_weights_with_range(false);
     }
 
     mutable GCVSplineSet m_refsplines;

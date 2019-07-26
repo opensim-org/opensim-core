@@ -39,6 +39,7 @@ void MocoTrack::constructProperties() {
     constructProperty_states_reference(TableProcessor());
     constructProperty_states_global_tracking_weight(1);
     constructProperty_states_weight_set(MocoWeightSet());
+    constructProperty_scale_state_weights_with_range(false);
     constructProperty_track_reference_position_derivatives(false);
     constructProperty_markers_reference(TableProcessor());
     constructProperty_markers_global_tracking_weight(1);
@@ -185,30 +186,27 @@ TimeSeriesTable MocoTrack::configureStateTracking(MocoProblem& problem,
                     SimTK::Vector(1, time[j]));
             }
             states.appendColumn(speedName, speed);
-        }
-
-        // State variable tracking weights.
-        bool valueWeightProvided = false;
-        bool speedWeightProvided = false;
-        for (int w = 0; w < user_weights.getSize(); ++w) {
-            const auto& user_weight = user_weights.get(w);
-            if (user_weight.getName() == valueName) {
-                weights.cloneAndAppend(user_weight);
-                valueWeightProvided = true;
-            } else if (user_weight.getName() == speedName) {
-                weights.cloneAndAppend(user_weight);
-                speedWeightProvided = true;
-            }
+            trackingSpeed = true;
         }
 
         // Unless the user already specified weights, don't track state
         // variables that are already constrained.
-        double weight = coord.isConstrained(model.getWorkingState()) ? 0 : 1;
-        if (!valueWeightProvided) {
-            weights.cloneAndAppend({valueName, weight});
+        bool isConstrained = coord.isConstrained(model.getWorkingState());
+        // Value weights.
+        if (user_weights.contains(valueName)) {
+            auto uw = user_weights.get(valueName);
+            weights.cloneAndAppend({valueName, uw.getWeight()});
+        } else if(isConstrained) {
+            weights.cloneAndAppend({valueName, 0});
         }
-        if (!speedWeightProvided) {
-            weights.cloneAndAppend({speedName, weight});
+        // Speed weights.
+        if (trackingSpeed) {
+            if (user_weights.contains(speedName)) {
+                auto uw = user_weights.get(speedName);
+                weights.cloneAndAppend({speedName, uw.getWeight()});
+            } else if(isConstrained) {
+                weights.cloneAndAppend({speedName, 0});
+            }
         }
     }
 
@@ -218,6 +216,8 @@ TimeSeriesTable MocoTrack::configureStateTracking(MocoProblem& problem,
     stateTracking->setReference(states);
     stateTracking->setWeightSet(weights);
     stateTracking->setAllowUnusedReferences(get_allow_unused_references());
+    stateTracking->setScaleWeightsWithRange(
+            get_scale_state_weights_with_range());
 
     // Update the time info struct.
     updateTimeInfo("states", states.getIndependentColumn().front(),
