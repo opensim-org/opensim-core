@@ -113,11 +113,11 @@ protected:
     }
     void calcIntegrandImpl(
         const SimTK::State& state, double& integrand) const override {
-        // Integrand is squared controls.
+        // Integrand is cubed controls.
         const auto& controls = getModel().getControls(state);
         integrand = 0;
         for (int i = 0; i < getModel().getNumControls(); ++i)
-            integrand += SimTK::square(controls[i]);
+            integrand += SimTK::cube(abs(controls[i]));
     }
     void initializeOnModelImpl(const Model& model) const override {
         m_coord.reset(&model.getCoordinateSet().get("pelvis_tx"));
