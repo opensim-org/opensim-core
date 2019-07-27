@@ -135,8 +135,6 @@ private:
 // actuator controls, and muscle activations. The tracking problem is solved
 // using polynomial approximations of muscle path lengths if true is passed as
 // an input argument, whereas geometry paths are used with the argument false.
-// Polynomial approximations should improve the computation speeds by about 15%
-// for this problem.
 MocoSolution gaitTracking(const bool& setPathLengthApproximation) {
 
     using SimTK::Pi;
@@ -386,10 +384,10 @@ void gaitPrediction(const MocoSolution& gaitTrackingSolution,
 
 int main() {
     try {
-        // Use polynomial approximations of muscle path lengths (set false to use
-        // GeometryPath).
-        const MocoSolution gaitTrackingSolution = gaitTracking(true);
-        gaitPrediction(gaitTrackingSolution, true);
+        // Use polynomial approximations of muscle path lengths (set false to
+        // use GeometryPath).
+        const MocoSolution gaitTrackingSolution = gaitTracking(false);
+        gaitPrediction(gaitTrackingSolution, false);
     } catch (const std::exception& e) {
         std::cout << e.what() << std::endl;
     }
