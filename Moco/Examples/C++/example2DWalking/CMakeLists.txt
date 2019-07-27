@@ -1,5 +1,5 @@
 set(EXAMPLE_MOCO_2D_WALKING_FILES
-      gait10dof18musc.osim
+      2D_gait.osim
       referenceCoordinates.sto)
 
 MocoAddExampleCXX(NAME example2DWalking
