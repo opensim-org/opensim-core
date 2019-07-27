@@ -113,7 +113,7 @@ protected:
     }
     void calcIntegrandImpl(
         const SimTK::State& state, double& integrand) const override {
-        // Integrand is cubed controls.
+        // integrand is cubed controls
         const auto& controls = getModel().getControls(state);
         integrand = 0;
         for (int i = 0; i < getModel().getNumControls(); ++i)
