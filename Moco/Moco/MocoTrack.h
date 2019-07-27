@@ -172,6 +172,13 @@ public:
         "weight names should match the names of the column labels in the "
         "file associated with the 'states_reference' property.");
 
+    OpenSim_DECLARE_PROPERTY(scale_state_weights_with_range, bool, 
+        "Use the range, or the distance between the maximum and minimum "
+        "value, of each reference quantity to scale the weight "
+        "for the associated tracking error in the cost. The scale is "
+        "computed by the inverse of the range, so a reference quantity "
+        "that changes less across the trajectory has a larger weight. ");
+
     OpenSim_DECLARE_PROPERTY(track_reference_position_derivatives, bool,
         "Option to track the derivative of position-level state reference "
         "data if no velocity-level state reference data was included in "

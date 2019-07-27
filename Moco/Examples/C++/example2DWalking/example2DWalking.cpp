@@ -251,6 +251,8 @@ MocoSolution gaitTracking(const bool& setPathLengthApproximation) {
     // Solve problem.
     // ==============
     MocoSolution solution = moco.solve();
+    auto full = createPeriodicTrajectory(solution);
+    full.write("gaitTracking_solution_fullcycle.sto");
 
     //moco.visualize(solution);
 
@@ -376,13 +378,20 @@ void gaitPrediction(const MocoSolution& gaitTrackingSolution,
     // Solve problem.
     // ==============
     MocoSolution solution = moco.solve();
+    auto full = createPeriodicTrajectory(solution);
+    full.write("gaitPrediction_solution_fullcycle.sto");
 
     moco.visualize(solution);
 }
 
 int main() {
-    // Use polynomial approximations of muscle path lengths (set false to use
-    // GeometryPath).
-    const MocoSolution gaitTrackingSolution = gaitTracking(true);
-    gaitPrediction(gaitTrackingSolution, true);
+    try {
+        // Use polynomial approximations of muscle path lengths (set false to use
+        // GeometryPath).
+        const MocoSolution gaitTrackingSolution = gaitTracking(true);
+        gaitPrediction(gaitTrackingSolution, true);
+    } catch (const std::exception& e) {
+        std::cout << e.what() << std::endl;
+    }
+    return EXIT_SUCCESS;
 }

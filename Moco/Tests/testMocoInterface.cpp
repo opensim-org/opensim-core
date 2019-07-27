@@ -1218,7 +1218,7 @@ TEMPLATE_TEST_CASE("Guess", "", MocoTropterSolver, MocoCasADiSolver) {
         MocoTrajectory explicitGuess = ms.createGuess();
         ms.set_dynamics_mode("implicit");
         ms.setGuess(explicitGuess);
-        CHECK_THROWS_WITH(moco.solve(), 
+        CHECK_THROWS_WITH(moco.solve(),
             Catch::Contains(
                 "'dynamics_mode' set to 'implicit' and coordinate states "
                 "exist in the guess, but no coordinate accelerations were "
@@ -1568,6 +1568,72 @@ TEST_CASE("MocoTrajectory randomize") {
     }
 }
 
+TEST_CASE("createPeriodicTrajectory") {
+    const std::string hip_r = "hip_r/hip_flexion_r/value";
+    const std::string hip_l = "hip_l/hip_flexion_l/value";
+    std::vector<std::string> sn{
+            "pelvis_tx/value",
+            "pelvis_list/value",
+            hip_r, hip_l
+    };
+    std::vector<std::string> cn{
+            "soleus_r",
+            "soleus_l",
+    };
+    int N = 4;
+    const auto time = createVectorLinspace(N, 0, 1);
+    SimTK::Matrix st(N, 4);
+    SimTK::Matrix ct(N, 2);
+    for (int i = 0; i < N; ++i) {
+        st(i, 0) = std::sin(time[i]);
+        st(i, 1) = std::cos(time[i]);
+        st(i, 2) = std::exp(time[i]);
+        st(i, 3) = std::log(time[i] + 1.0);
+
+        ct(i, 0) = std::tan(time[i]);
+        ct(i, 1) = SimTK::cube(time[i]);
+    }
+
+    MocoTrajectory halfTraj(
+            time, {{"states", {sn, st}}, {"controls", {cn, ct}}});
+    const auto fullTraj = createPeriodicTrajectory(halfTraj);
+
+    // add
+    {
+        SimTK::Vector secondHalf = halfTraj.getState("pelvis_tx/value")
+                                           .block(1, 0, N - 1, 1)
+                                           .col(0);
+        secondHalf += st(N - 1, 0);
+        OpenSim_CHECK_MATRIX(
+                fullTraj.getState("pelvis_tx/value").block(N, 0, N - 1, 1),
+                secondHalf);
+    }
+
+    // negate
+    {
+        SimTK::Vector secondHalf(N - 1);
+        for (int i = 0; i < N - 1; ++i) {
+            secondHalf[i] = -std::cos(time[i + 1]) + 2 * std::cos(time[N - 1]);
+        }
+        OpenSim_CHECK_MATRIX(
+                fullTraj.getState("pelvis_list/value").block(N, 0, N - 1, 1),
+                secondHalf);
+    }
+
+    // symmetry
+    OpenSim_CHECK_MATRIX(
+            fullTraj.getState(hip_r).block(N, 0, N - 1, 1),
+            fullTraj.getState(hip_l).block(1, 0, N - 1, 1));
+    OpenSim_CHECK_MATRIX(
+            fullTraj.getState(hip_l).block(N, 0, N - 1, 1),
+            fullTraj.getState(hip_r).block(1, 0, N - 1, 1));
+
+    OpenSim_CHECK_MATRIX(fullTraj.getControl("soleus_r").block(N, 0, N - 1, 1),
+            fullTraj.getControl("soleus_l").block(1, 0, N - 1, 1));
+    OpenSim_CHECK_MATRIX(fullTraj.getControl("soleus_l").block(N, 0, N - 1, 1),
+            fullTraj.getControl("soleus_r").block(1, 0, N - 1, 1));
+}
+
 TEST_CASE("Interpolate", "") {
     SimTK::Vector x(2);
     x[0] = 0;
@@ -1815,8 +1881,3 @@ TEST_CASE("MocoPhase::bound_activation_from_excitation") {
     }
 }
 
-// testCopy();
-// testSolveRepeatedly();
-// testOMUCOSerialization();
-
-// TODO specifying optimizer options.

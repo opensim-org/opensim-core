@@ -142,14 +142,14 @@ Model createModel() {
     ConditionalPathPoint* RF_P2 = new ConditionalPathPoint();
     RF_P2->setName("RF-P2");
     RF_P2->setCoordinate(knee_angle);
-    RF_P2->setBody(*femur);
+    RF_P2->setParentFrame(*femur);
     RF_P2->setLocation(Vec3(0.0334917, -0.404106, 0.00190522));
     RF_P2->setRangeMin(-2.61799);
     RF_P2->setRangeMax(-1.45997);
     RF->updGeometryPath().updPathPointSet().adoptAndAppend(RF_P2);
     OpenSim::MovingPathPoint* RF_P3 = new MovingPathPoint();
     RF_P3->setName("RF-P3");
-    RF_P3->setBody(*tibia);
+    RF_P3->setParentFrame(*tibia);
     double scale = 0.966732152034662;
     int np_RFX = 17;
     double RFX_x[] = { -2.0944, -1.99997, -1.5708, -1.45752, -1.39626, -1.0472,
