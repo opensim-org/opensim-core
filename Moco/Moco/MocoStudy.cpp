@@ -115,7 +115,7 @@ MocoSolution MocoStudy::solve() const {
 void MocoStudy::visualize(const MocoTrajectory& it) const {
     // TODO this does not need the Solver at all, so this could be moved to
     // MocoProblem.
-    const auto& model = get_problem().getPhase(0).getModel();
+    const auto& model = get_problem().getPhase(0).getModelProcessor().process();
     OpenSim::visualize(model, it.exportToStatesStorage());
 }
 

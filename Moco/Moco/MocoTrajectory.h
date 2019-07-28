@@ -391,7 +391,31 @@ public:
     /// @throws Exception If numTimes is 0.
     double getFinalTime() const;
 
-    // TODO inconsistent plural "state names" vs "states trajectory"
+    int getNumStates() const {
+        ensureUnsealed();
+        return (int)m_state_names.size();
+    }
+
+    int getNumControls() const {
+        ensureUnsealed();
+        return (int)m_control_names.size();
+    }
+
+    int getNumMultipliers() const {
+        ensureUnsealed();
+        return (int)m_multiplier_names.size();
+    }
+
+    int getNumDerivatives() const {
+        ensureUnsealed();
+        return (int)m_derivative_names.size();
+    }
+
+    int getNumParameters() const {
+        ensureUnsealed();
+        return (int)m_parameter_names.size();
+    }
+
     const std::vector<std::string>& getStateNames() const {
         ensureUnsealed();
         return m_state_names;
