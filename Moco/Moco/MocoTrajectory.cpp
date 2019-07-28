@@ -486,15 +486,6 @@ SimTK::VectorView MocoTrajectory::getMultiplier(const std::string& name) const {
     int index = (int)std::distance(m_multiplier_names.cbegin(), it);
     return m_multipliers.col(index);
 }
-SimTK::VectorView MocoIterate::getDerivative(const std::string& name) const {
-    ensureUnsealed();
-    auto it = std::find(
-            m_derivative_names.cbegin(), m_derivative_names.cend(), name);
-    OPENSIM_THROW_IF(it == m_derivative_names.cend(), Exception,
-            format("Cannot find derivative named %s.", name));
-    int index = (int)std::distance(m_derivative_names.cbegin(), it);
-    return m_derivatives.col(index);
-}
 SimTK::VectorView MocoTrajectory::getDerivative(const std::string& name) const {
     ensureUnsealed();
     auto it = std::find(

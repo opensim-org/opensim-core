@@ -37,7 +37,8 @@ public:
     /// `/markerset/marker#` at the origin of the link's body, and a
     /// PhysicalOffsetFrame \c /b\#center at the center of the link.
     static Model createNLinkPendulum(int numLinks);
-    /// This is a convenience for `createNLinkPendulum(1)`.static Model createPendulum() { return createNLinkPendulum(1); }
+    /// This is a convenience for `createNLinkPendulum(1)`.
+    static Model createPendulum() { return createNLinkPendulum(1); }
     /// This is a convenience for `createNLinkPendulum(2)`.
     static Model createDoublePendulum() { return createNLinkPendulum(2); }
     /// This model contains:
