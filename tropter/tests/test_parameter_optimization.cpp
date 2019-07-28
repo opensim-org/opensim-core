@@ -34,15 +34,19 @@ public:
         this->set_time({0}, {1});
         this->add_parameter("x0", {-5, 5});
         this->add_parameter("x1", {-5, 5});
+        this->add_cost("cost", 1);
     }
 
-    void calc_integral_cost(const Input<T>& in, T& integrand) const override {
-        
+    void calc_cost(
+            int cost_index, const CostInput<T>& in, T& cost) const override {
+        cost = in.integral;
+    }
+    void calc_cost_integrand(
+            int cost_index, const Input<T>& in, T& integrand) const override {
         const auto& parameters = in.parameters;
         integrand = (parameters[0] - 1.5) * (parameters[0] - 1.5)
-            + (parameters[1] + 2.0) * (parameters[1] + 2.0);
+                + (parameters[1] + 2.0) * (parameters[1] + 2.0);
     }
-
 };
 
 TEST_CASE("Unconstrained, IPOPT") {
@@ -100,6 +104,7 @@ public:
                                             GRAV_ACCEL * 0.5 + 0.5});
         this->add_state("v", {0, 20}, {0}, {GRAV_ACCEL});
         this->add_parameter("g", {0, 20});
+        this->add_cost("cost", 0);
     }
 
     void calc_differential_algebraic_equations(
@@ -108,12 +113,11 @@ public:
         out.dynamics[1] = in.parameters[0];
     }
 
-    void calc_endpoint_cost(const Input<T>& in,
-            T& cost) const override {
-        cost = (in.states[0] - GRAV_ACCEL * 0.5) * 
-               (in.states[0] - GRAV_ACCEL * 0.5);
+    void calc_cost(
+            int cost_index, const CostInput<T>& in, T& cost) const override {
+        cost = (in.final_states[0] - GRAV_ACCEL * 0.5) *
+                (in.final_states[0] - GRAV_ACCEL * 0.5);
     }
-
 };
 
 TEST_CASE("GravitationalAcceleration, IPOPT") {
@@ -166,6 +170,7 @@ public:
         this->add_state("x", {-5.0, 5.0}, {-0.5}, {0.25, 0.75});
         this->add_state("v", {-20, 20}, {0}, {0});
         this->add_parameter("mass", {0, 10});
+        this->add_cost("cost", 0);
     }
 
     void calc_differential_algebraic_equations(
@@ -173,18 +178,17 @@ public:
         out.dynamics[0] = in.states[1];
         out.dynamics[1] = -(STIFFNESS / in.parameters[0]) * in.states[0];
     }
+    void calc_cost(
+            int cost_index, const CostInput<T>& in, T& cost) const override {
 
-    void calc_endpoint_cost(const Input<T>& in,
-            T& cost) const override {
-        
-        cost = (in.states[0] - 0.5) * (in.states[0] - 0.5);
+        cost = (in.final_states[0] - 0.5) * (in.final_states[0] - 0.5);
 
         // TODO: Final time cost approach not finding correct mass parameter.
         // double frequency = sqrt(STIFFNESS / MASS) / (2 * PI);
         // double period = final_time * 2;
         // cost = pow(frequency - (1 / period), 2);
     }
-    
+
 };
 
 TEST_CASE("OscillatorMass, IPOPT") {

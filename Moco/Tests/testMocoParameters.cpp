@@ -57,14 +57,17 @@ std::unique_ptr<Model> createOscillatorModel() {
     return model;
 }
 
-class FinalPositionCost : public MocoCost {
-OpenSim_DECLARE_CONCRETE_OBJECT(FinalPositionCost, MocoCost);
+class FinalPositionGoal : public MocoGoal {
+OpenSim_DECLARE_CONCRETE_OBJECT(FinalPositionGoal, MocoGoal);
 protected:
-    void calcEndpointCostImpl(const SimTK::State& finalState,
-            SimTK::Real& cost) const override {
-       const auto& finalPosition = finalState.getY()[0];
+    void initializeOnModelImpl(const Model&) const override {
+        setNumIntegralsAndOutputs(0, 1);
+    }
+    void calcGoalImpl(const GoalInput& input,
+            SimTK::Vector& cost) const override {
+       const auto& finalPosition = input.final_state.getY()[0];
 
-       cost = (finalPosition - 0.5) * (finalPosition - 0.5);
+       cost[0] = (finalPosition - 0.5) * (finalPosition - 0.5);
     }
 };
 
@@ -75,7 +78,7 @@ protected:
 TEMPLATE_TEST_CASE("Oscillator mass", "", MocoTropterSolver, MocoCasADiSolver) {
     int N = 25;
 
-    MocoTool moco;
+    MocoStudy moco;
     moco.setName("oscillator_mass");
     MocoProblem& mp = moco.updProblem();
     mp.setModel(createOscillatorModel());
@@ -85,7 +88,7 @@ TEMPLATE_TEST_CASE("Oscillator mass", "", MocoTropterSolver, MocoCasADiSolver) {
     
     mp.addParameter("oscillator_mass", "body", "mass", MocoBounds(0, 10));
 
-    mp.addCost<FinalPositionCost>();
+    mp.addGoal<FinalPositionGoal>();
 
     auto& ms = moco.initSolver<TestType>();
     ms.set_num_mesh_points(N);
@@ -136,7 +139,7 @@ TEMPLATE_TEST_CASE("One parameter two springs", "",
         MocoTropterSolver, MocoCasADiSolver) {
     int N = 25;
 
-    MocoTool moco;
+    MocoStudy moco;
     moco.setName("oscillator_spring_stiffnesses");
     MocoProblem& mp = moco.updProblem();
     mp.setModel(createOscillatorTwoSpringsModel());
@@ -149,7 +152,7 @@ TEMPLATE_TEST_CASE("One parameter two springs", "",
     mp.addParameter("spring_stiffness", components, "stiffness",
         MocoBounds(0, 100));
 
-    mp.addCost<FinalPositionCost>();
+    mp.addGoal<FinalPositionGoal>();
 
     auto& ms = moco.initSolver<TestType>();
     ms.set_num_mesh_points(N);
@@ -186,10 +189,13 @@ std::unique_ptr<Model> createSeeSawModel() {
     return model;
 }
 
-class RotationalAccelerationCost : public MocoCost {
-OpenSim_DECLARE_CONCRETE_OBJECT(RotationalAccelerationCost, MocoCost);
+class RotationalAccelerationGoal : public MocoGoal {
+OpenSim_DECLARE_CONCRETE_OBJECT(RotationalAccelerationGoal, MocoGoal);
 protected:
-    void calcIntegralCostImpl(const SimTK::State& state,
+    void initializeOnModelImpl(const Model&) const override {
+        setNumIntegralsAndOutputs(1, 1);
+    }
+    void calcIntegrandImpl(const SimTK::State& state,
         SimTK::Real& integrand) const override {
 
         getModel().realizeAcceleration(state); // TODO would avoid this, ideally.
@@ -197,6 +203,10 @@ protected:
             state, "pin/rotation/speed");
 
         integrand = accel * accel;
+    }
+    void calcGoalImpl(
+            const GoalInput& input, SimTK::Vector& cost) const override {
+        cost[0] = input.integral;
     }
 };
 
@@ -208,7 +218,7 @@ TEMPLATE_TEST_CASE("See-saw center of mass", "",
         MocoTropterSolver, MocoCasADiSolver) {
     int N = 25;
 
-    MocoTool moco;
+    MocoStudy moco;
     moco.setName("seesaw_com");
     MocoProblem& mp = moco.updProblem();
     mp.setModel(createSeeSawModel());
@@ -225,7 +235,7 @@ TEMPLATE_TEST_CASE("See-saw center of mass", "",
     mp.addParameter("com_location", "body", "mass_center",
             MocoBounds(-0.7*L, 0), centerOfMassElt);
 
-    mp.addCost<RotationalAccelerationCost>();
+    mp.addGoal<RotationalAccelerationGoal>();
 
     auto& ms = moco.initSolver<TestType>();
     ms.set_num_mesh_points(N);
@@ -235,7 +245,7 @@ TEMPLATE_TEST_CASE("See-saw center of mass", "",
     sol.write("testMocoParameters_testSeeSawCOM_sol.sto");
     
     // Update problem model with new mass center.
-    // TODO: create method for this, or have MocoTool do it automatically
+    // TODO: create method for this, or have MocoStudy do it automatically
     // SimTK::Vec3 sol_COM(sol_xCOM, 0, 0);
     // mp.updPhase(0).updModel().updComponent<Body>("body").setMassCenter(sol_COM);
 

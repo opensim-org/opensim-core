@@ -4,14 +4,38 @@
 typedef SimTK::RowVector_<double> RowVector;
 
 %include <Moco/osimMocoDLL.h>
-%include <Moco/MocoCost/MocoCost.h>
+
+%include <Moco/Common/TableProcessor.h>
+
+
+namespace OpenSim {
+    %ignore ModelProcessor::setModel(std::unique_ptr<Model>);
+}
+
+%extend OpenSim::ModelProcessor {
+    void setModel(Model* model) {
+        $self->setModel(std::unique_ptr<Model>(model));
+    }
+};
+%include <Moco/ModelProcessor.h>
+
+namespace OpenSim {
+    %ignore MocoGoal::GoalInput;
+    %ignore MocoGoal::calcGoal;
+}
+%include <Moco/MocoGoal/MocoGoal.h>
+%template(SetMocoWeight) OpenSim::Set<OpenSim::MocoWeight, OpenSim::Object>;
 %include <Moco/MocoWeightSet.h>
-%include <Moco/MocoCost/MocoStateTrackingCost.h>
-%include <Moco/MocoCost/MocoMarkerTrackingCost.h>
-%include <Moco/MocoCost/MocoMarkerEndpointCost.h>
-%include <Moco/MocoCost/MocoControlCost.h>
-%include <Moco/MocoCost/MocoSumSquaredStateCost.h>
-%include <Moco/MocoCost/MocoJointReactionNormCost.h>
+%include <Moco/MocoGoal/MocoStateTrackingGoal.h>
+%include <Moco/MocoGoal/MocoMarkerTrackingGoal.h>
+%include <Moco/MocoGoal/MocoMarkerFinalGoal.h>
+%include <Moco/MocoGoal/MocoControlGoal.h>
+%include <Moco/MocoGoal/MocoInitialActivationGoal.h>
+%include <Moco/MocoGoal/MocoJointReactionGoal.h>
+%include <Moco/MocoGoal/MocoSumSquaredStateGoal.h>
+%include <Moco/MocoGoal/MocoOrientationTrackingGoal.h>
+%include <Moco/MocoGoal/MocoTranslationTrackingGoal.h>
+%include <Moco/MocoGoal/MocoPeriodicityGoal.h>
 
 
 // %template(MocoBoundsVector) std::vector<OpenSim::MocoBounds>;
@@ -27,6 +51,8 @@ typedef SimTK::RowVector_<double> RowVector;
 %ignore OpenSim::MocoProblemRep::getMultiplierInfos;
 
 %include <Moco/MocoConstraint.h>
+
+%include <Moco/MocoControlBoundConstraint.h>
 
 // unique_ptr
 // ----------
@@ -89,11 +115,18 @@ moco_unique_ptr(OpenSim::MocoProblemRep);
 %rename(createRep) OpenSim::MocoProblem::createRepHeap;
 
 namespace OpenSim {
+    %ignore ModelProcessor::setModel(std::unique_ptr<Model>);
     %ignore MocoPhase::setModel(Model);
     %ignore MocoPhase::setModel(std::unique_ptr<Model>);
     %ignore MocoProblem::setModel(Model);
     %ignore MocoProblem::setModel(std::unique_ptr<Model>);
 }
+
+%extend OpenSim::ModelProcessor {
+    void setModel(Model* model) {
+        $self->setModel(std::unique_ptr<Model>(model));
+    }
+};
 
 %extend OpenSim::MocoPhase {
     void setModel(Model* model) {
@@ -102,8 +135,8 @@ namespace OpenSim {
     void addParameter(MocoParameter* ptr) {
         $self->addParameter(std::unique_ptr<MocoParameter>(ptr));
     }
-    void addCost(MocoCost* ptr) {
-        $self->addCost(std::unique_ptr<MocoCost>(ptr));
+    void addGoal(MocoGoal* ptr) {
+        $self->addGoal(std::unique_ptr<MocoGoal>(ptr));
     }
     void addPathConstraint(MocoPathConstraint* ptr) {
         $self->addPathConstraint(std::unique_ptr<MocoPathConstraint>(ptr));
@@ -117,8 +150,8 @@ namespace OpenSim {
     void addParameter(MocoParameter* ptr) {
         $self->addParameter(std::unique_ptr<MocoParameter>(ptr));
     }
-    void addCost(MocoCost* ptr) {
-        $self->addCost(std::unique_ptr<MocoCost>(ptr));
+    void addGoal(MocoGoal* ptr) {
+        $self->addGoal(std::unique_ptr<MocoGoal>(ptr));
     }
     void addPathConstraint(MocoPathConstraint* ptr) {
         $self->addPathConstraint(std::unique_ptr<MocoPathConstraint>(ptr));
@@ -142,15 +175,15 @@ EXPOSE_BOUNDS_CONSTRUCTORS_HELPER(MocoFinalBounds);
 
 // SWIG does not support initializer_list, but we can use Java arrays to
 // achieve similar syntax in MATLAB.
-%ignore OpenSim::MocoIterate::setTime(std::initializer_list<double>);
-%ignore OpenSim::MocoIterate::setState(const std::string&,
+%ignore OpenSim::MocoTrajectory::setTime(std::initializer_list<double>);
+%ignore OpenSim::MocoTrajectory::setState(const std::string&,
         std::initializer_list<double>);
-%ignore OpenSim::MocoIterate::setControl(const std::string&,
+%ignore OpenSim::MocoTrajectory::setControl(const std::string&,
         std::initializer_list<double>);
-%ignore OpenSim::MocoIterate::setMultiplier(const std::string&,
+%ignore OpenSim::MocoTrajectory::setMultiplier(const std::string&,
         std::initializer_list<double>);
 
-%include <Moco/MocoIterate.h>
+%include <Moco/MocoTrajectory.h>
 
 %include <Moco/MocoSolver.h>
 %include <Moco/MocoDirectCollocationSolver.h>
@@ -161,12 +194,20 @@ namespace OpenSim {
 }
 %include <Moco/MocoTropterSolver.h>
 %include <Moco/MocoCasADiSolver/MocoCasADiSolver.h>
-%include <Moco/MocoTool.h>
+%include <Moco/MocoStudy.h>
 
+%include <Moco/MocoTool.h>
 %include <Moco/MocoInverse.h>
+%include <Moco/MocoTrack.h>
 
 %include <Moco/Components/ActivationCoordinateActuator.h>
 %include <Moco/Components/DeGrooteFregly2016Muscle.h>
+moco_unique_ptr(OpenSim::PositionMotion);
+%include <Moco/Components/PositionMotion.h>
 %include <Moco/MocoUtilities.h>
 
 %include <Moco/Components/ModelFactory.h>
+%include <Moco/Components/SmoothSphereHalfSpaceForce.h>
+%include <Moco/Components/MultivariatePolynomialFunction.h>
+
+%include <Moco/ModelOperators.h>

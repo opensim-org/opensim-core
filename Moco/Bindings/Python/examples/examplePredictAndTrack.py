@@ -103,7 +103,7 @@ def solvePrediction():
     #
     #       iniital pose      final pose
     #
-    moco = osim.MocoTool()
+    moco = osim.MocoStudy()
     moco.setName("double_pendulum_predict")
 
     problem = moco.updProblem()
@@ -123,18 +123,18 @@ def solvePrediction():
     problem.setControlInfo("/tau0", [-100, 100])
     problem.setControlInfo("/tau1", [-100, 100])
 
-    # Cost: minimize final time and error from desired 
+    # Cost: minimize final time and error from desired
     #       end effector position.
-    ftCost = osim.MocoFinalTimeCost()
-    ftCost.set_weight(0.001)
-    problem.addCost(ftCost)
+    ftCost = osim.MocoFinalTimeGoal()
+    ftCost.setWeight(0.001)
+    problem.addGoal(ftCost)
 
-    endpointCost = osim.MocoMarkerEndpointCost()
-    endpointCost.setName("endpoint")
-    endpointCost.set_weight(1000.0)
-    endpointCost.setPointName("/markerset/m1")
-    endpointCost.setReferenceLocation(osim.Vec3(0, 2, 0))
-    problem.addCost(endpointCost)
+    finalCost = osim.MocoMarkerFinalGoal()
+    finalCost.setName("final")
+    finalCost.setWeight(1000.0)
+    finalCost.setPointName("/markerset/m1")
+    finalCost.setReferenceLocation(osim.Vec3(0, 2, 0))
+    problem.addGoal(finalCost)
 
 
     # Configure the solver.
@@ -200,7 +200,7 @@ def computeMarkersReference(predictedSolution):
     
 def solveStateTracking(stateRef):
     # Predict the optimal trajectory for a minimum time swing-up.
-    moco = osim.MocoTool()
+    moco = osim.MocoStudy()
     moco.setName("double_pendulum_track")
 
     problem = moco.updProblem()
@@ -222,14 +222,14 @@ def solveStateTracking(stateRef):
     problem.setControlInfo("/tau1", [-150, 150])
 
     # Cost: track provided state data.
-    stateTracking = osim.MocoStateTrackingCost()
-    stateTracking.setReference(stateRef)
-    problem.addCost(stateTracking)
+    stateTracking = osim.MocoStateTrackingGoal()
+    stateTracking.setReference(osim.TableProcessor(stateRef))
+    problem.addGoal(stateTracking)
 
-    effort = osim.MocoControlCost()
+    effort = osim.MocoControlGoal()
     effort.setName("effort")
-    effort.set_weight(0.001)
-    # TODO problem.addCost(effort)
+    effort.setWeight(0.001)
+    # TODO problem.addGoal(effort)
 
     # Configure the solver.
     solver = moco.initTropterSolver()
@@ -255,7 +255,7 @@ def solveStateTracking(stateRef):
     
 def solveMarkerTracking(markersRef, guess):
     # Predict the optimal trajectory for a minimum time swing-up.
-    moco = osim.MocoTool()
+    moco = osim.MocoStudy()
     moco.setName("double_pendulum_track")
 
     problem = moco.updProblem()
@@ -277,14 +277,14 @@ def solveMarkerTracking(markersRef, guess):
     problem.setControlInfo("/tau1", [-100, 100])
 
     # Cost: track provided marker data.
-    markerTracking = osim.MocoMarkerTrackingCost()
+    markerTracking = osim.MocoMarkerTrackingGoal()
     markerTracking.setMarkersReference(markersRef)
-    problem.addCost(markerTracking)
+    problem.addGoal(markerTracking)
     
-    effort = osim.MocoControlCost()
+    effort = osim.MocoControlGoal()
     effort.setName("effort")
-    effort.set_weight(0.0001)
-    # problem.addCost(effort)
+    effort.setWeight(0.0001)
+    # problem.addGoal(effort)
 
     # Configure the solver.
     solver = moco.initTropterSolver()

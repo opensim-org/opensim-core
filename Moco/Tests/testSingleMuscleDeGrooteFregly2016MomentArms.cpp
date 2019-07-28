@@ -105,6 +105,7 @@ public:
         } else {
             this->add_control("activation", {0, 1});
         }
+        this->add_cost("final_time", 0);
         m_muscle = DeGrooteFregly2016MuscleStandalone<T>(
                 max_isometric_force, optimal_fiber_length, tendon_slack_length,
                 pennation_angle_at_optimal, max_contraction_velocity);
@@ -176,9 +177,9 @@ public:
             out.dynamics[3] = max_contraction_velocity * normFibVel;
         }
     }
-    void calc_endpoint_cost(const tropter::Input<T>& in,
+    void calc_cost(int cost_index, const tropter::CostInput<adouble>& in,
             T& cost) const override {
-        cost = in.time;
+        cost = in.final_time;
     }
 private:
     DeGrooteFregly2016MuscleStandalone<T> m_muscle;

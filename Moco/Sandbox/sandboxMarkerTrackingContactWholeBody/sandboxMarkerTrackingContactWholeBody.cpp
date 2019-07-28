@@ -199,7 +199,7 @@ void setModelAndBounds(MocoProblem& mp, bool useOptimizedModel = false) {
 /// Estimated time to solve: ~35 minutes.
 MocoSolution solveStateTrackingProblem() {
 
-    MocoTool moco;
+    MocoStudy moco;
     moco.setName("whole_body_state_tracking");
 
     // Define the optimal control problem.
@@ -226,7 +226,7 @@ MocoSolution solveStateTrackingProblem() {
     auto refFilt = filterLowpass(ref, 6.0, true);
     tracking.setReference(refFilt);
     //tracking.setAllowUnusedReferences(true);
-    mp.addCost(tracking);
+    mp.addGoal(tracking);
 
     // Configure the solver.
     // =====================
@@ -238,7 +238,7 @@ MocoSolution solveStateTrackingProblem() {
 
     // Create guess.
     // =============
-    MocoIterate guess = ms.createGuess();
+    MocoTrajectory guess = ms.createGuess();
     auto model = mp.getPhase().getModel();
     model.initSystem();
     auto refFilt2 = refFilt;
@@ -270,7 +270,7 @@ MocoSolution solveStateTrackingProblem() {
 MocoSolution solveMarkerTrackingProblem(bool createGuess,
         bool useOptimizedModel) {
 
-    MocoTool moco;
+    MocoStudy moco;
     moco.setName("whole_body_marker_tracking");
 
     // Define the optimal control problem.
@@ -327,7 +327,7 @@ MocoSolution solveMarkerTrackingProblem(bool createGuess,
     // TODO tracking.set_weight(0.000001);
     tracking.setFreeRadius(0.01);
     tracking.setTrackedMarkerComponents("xy");
-    // TODO mp.addCost(tracking);
+    // TODO mp.addGoal(tracking);
 
     auto data = STOFileAdapter::read("walk_gait1018_subject01_grf.mot");
     auto time = data.getIndependentColumn();
@@ -356,12 +356,12 @@ MocoSolution solveMarkerTrackingProblem(bool createGuess,
         grfTracking.set_tracked_grf_components("horizontal");
         // grfTracking.set_tracked_grf_components("all");
         grfTracking.set_free_force_window(25.0);
-        mp.addCost(grfTracking);
+        mp.addGoal(grfTracking);
     }
 
-    //MocoControlCost effort;
+    //MocoControlGoal effort;
     //effort.setName("effort");
-    //mp.addCost(effort);
+    //mp.addGoal(effort);
 
     // Configure the solver.
     // =====================
@@ -378,11 +378,11 @@ MocoSolution solveMarkerTrackingProblem(bool createGuess,
     // Create guess.
     // =============
     if (!createGuess) {
-        MocoIterate guess("sandboxMarkerTrackingContactWholeBody_guess.sto");
+        MocoTrajectory guess("sandboxMarkerTrackingContactWholeBody_guess.sto");
         ms.setGuess(guess);
         // moco.visualize(guess);
     }
-    //MocoIterate guess = ms.createGuess();
+    //MocoTrajectory guess = ms.createGuess();
     //auto model = mp.getPhase().getModel();
     //model.initSystem();
     //auto statesRef = STOFileAdapter::read("walk_gait1018_state_reference.mot");

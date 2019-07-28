@@ -18,17 +18,19 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "MocoIterate.h"
+#include "Common/TableProcessor.h"
+#include "MocoTool.h"
+#include "MocoTrajectory.h"
+#include "MocoStudy.h"
 #include "osimMocoDLL.h"
 
-#include <OpenSim/Common/Object.h>
 #include <OpenSim/Simulation/Model/Model.h>
 
 namespace OpenSim {
 
 class MocoInverse;
 
-/// This class holds the solution from MocoInverseTool.
+/// This class holds the solution from MocoInverse.
 class MocoInverseSolution {
 public:
     const MocoSolution& getMocoSolution() const { return m_mocoSolution; }
@@ -58,8 +60,26 @@ private:
 /// are set to NaN.
 ///
 /// The provided trajectory is altered to satisfy any enabled kinematic
-/// constraints in the model. Filtering is performed before satisfying the
-/// constraints.
+/// constraints in the model.
+///
+/// Cost
+/// ----
+/// By default, MocoInverse minimizes the sum of squared controls and
+/// constrains initial activation to be equal to initial excitation (to avoid
+/// initial activation spikes). To customize the cost, invoke initialize(), add
+/// costs manually, and solve the problem using the solver directly. Note,
+/// however, that kinematic states are not included in the solution if you use
+/// the solver directly.
+///
+/// Default solver settings
+/// -----------------------
+/// - solver: MocoCasADiSolver
+/// - dynamics_mode: implicit
+/// - transcription_sceheme: trapezoidal
+/// - optim_convergence_tolerance: 1e-3
+/// - optim_constraint_tolerance: 1e-3
+/// - optim_sparsity_detection: random
+/// - optim_finite_difference_scheme: forward
 ///
 /// ### Cost
 ///
@@ -79,91 +99,28 @@ private:
 /// Try solving your problem with decreasing mesh intervals and choose a mesh
 /// interval at which the solution stops changing noticeably.
 ///
-/// ### Reserve actuators
-///
-/// Sometimes it is not possible to achieve the desired motion using
-/// muscles alone. There are multiple possible causes for this:
-///   - the muscles are not strong enough to achieve the required
-///     net joint moments,
-///   - the net joint moments change more rapidly than activation and
-///     deactivation time constants allow,
-///   - the filtering of the data causes unrealistic desired net joint moments.
-/// You may want to add "reserve" actuators to your model.
-/// This can be done automatically for you if you set the property
-/// `create_reserve_actuators` appropriately. This option will cause a
-/// CoordinateActuator to be added to the model for each unconstrained
-/// coordinate. The main knob on these actuators is their `optimal_force`. If
-/// the optimal force is $F$ and the actuator's control signal is $e$, then the
-/// cost of using the actuator is $e*e$, but the generalized force it applies is
-/// $F*e$. A smaller optimal force means a greater control value is required to
-/// generate a given force.
-/// The reserve actuators *can* generate (generalized) forces larger than their
-/// optimal force. The optimal force for reserve actuators should be set very
-/// low (e.g., 1.0) to discourage their use.
-///
 /// @underdevelopment
-class OSIMMOCO_API MocoInverse : public Object {
-    OpenSim_DECLARE_CONCRETE_OBJECT(MocoInverse, Object);
+class OSIMMOCO_API MocoInverse : public MocoTool {
+    OpenSim_DECLARE_CONCRETE_OBJECT(MocoInverse, MocoTool);
 
 public:
-    OpenSim_DECLARE_OPTIONAL_PROPERTY(initial_time, double,
-            "The start of the time interval in which to solve for muscle "
-            "activity. "
-            "All data must start at or before this time. "
-            "(default: earliest time available in all provided data)");
 
-    OpenSim_DECLARE_OPTIONAL_PROPERTY(final_time, double,
-            "The end of the time interval in which to solve for muscle "
-            "activity. "
-            "All data must end at or after this time. "
-            "(default: latest time available in all provided data)");
-
-    OpenSim_DECLARE_PROPERTY(mesh_interval, double,
-            "The time duration of each mesh interval "
-            "(default: 0.020 seconds).");
-
-    OpenSim_DECLARE_PROPERTY(kinematics_file, std::string,
-            "Path to a STO file containing generalized coordinates "
-            "to prescribe. The path can be absolute or relative to the setup "
-            "file.");
+    OpenSim_DECLARE_PROPERTY(kinematics, TableProcessor,
+            "Generalized coordinate values to prescribe.");
 
     OpenSim_DECLARE_PROPERTY(kinematics_allow_extra_columns, bool,
             "Allow the kinematics file to contain columns that do not name "
             "states in the model. "
             "This is false by default to help you avoid accidents.");
 
-    OpenSim_DECLARE_PROPERTY(lowpass_cutoff_frequency_for_kinematics, double,
-            "The frequency (Hz) at which to filter the kinematics. "
-            "(default is -1, which means no filtering; for walking, "
-            "consider 6 Hz).");
-
-    OpenSim_DECLARE_PROPERTY(external_loads_file, std::string,
-            "XML file (.xml) containing the forces applied to the model as "
-            "ExternalLoads.");
-
-    OpenSim_DECLARE_PROPERTY(ignore_activation_dynamics, bool,
-            "Ignore activation dynamics for all muscles in the model. "
-            "If false, the muscle's setting is not modified."
-            "(default: false).");
-
-    OpenSim_DECLARE_PROPERTY(ignore_tendon_compliance, bool,
-            "Ignore tendon_compliance for all muscles in the model. "
-            "If false, the muscle's setting is not modified."
-            "(default: false).");
-
-    OpenSim_DECLARE_PROPERTY(create_reserve_actuators, double,
-            "Create a reserve actuator (CoordinateActuator) for each "
-            "unconstrained coordinate in the model, and add each to the model. "
-            "Each actuator will have the specified `optimal_force`, which "
-            "should be set low to "
-            "discourage the use of the reserve actuators. (default is -1, "
-            "which means no reserves are created)");
-
     OpenSim_DECLARE_PROPERTY(minimize_sum_squared_states, bool,
             "Minimize the sum of squared states (e.g., activations). "
             "Do not use this if tendon compliance is enabled. Default: false.");
 
-    OpenSim_DECLARE_OPTIONAL_PROPERTY(tolerance, double,
+    OpenSim_DECLARE_OPTIONAL_PROPERTY(max_iterations, int,
+            "Maximum number of solver iterations (default: solver default).");
+
+    OpenSim_DECLARE_PROPERTY(tolerance, double,
             "The convergence and constraint tolerances (default: 1e-3).");
 
     OpenSim_DECLARE_LIST_PROPERTY(output_paths, std::string,
@@ -172,35 +129,18 @@ public:
 
     MocoInverse() { constructProperties(); }
 
-    void setModel(Model model) { m_model = std::move(model); }
-
-    void setKinematicsFile(std::string fileName) {
-        set_kinematics_file(fileName);
+    void setKinematics(TableProcessor kinematics) {
+        set_kinematics(std::move(kinematics));
     }
 
-    void setExternalLoadsFile(std::string fileName) {
-        set_external_loads_file(std::move(fileName));
-    }
-
+    MocoStudy initialize() const;
+    /// Solve the problem returned by initialize() and compute the outputs
+    /// listed in output_paths.
     MocoInverseSolution solve() const;
 
 private:
     void constructProperties();
-    void writeTableToFile(const TimeSeriesTable&, const std::string&) const;
-
-    struct TimeInfo {
-        double initialTime;
-        double finalTime;
-        int numMeshPoints;
-    };
-    TimeInfo calcInitialAndFinalTimes(
-            // Time vector from a primary data source.
-            const std::vector<double>& time0,
-            // Time vector from a secondary data source.
-            const std::vector<double>& time1, const double& meshInterval) const;
-
-    // TODO: Move to property.
-    Model m_model;
+    std::pair<MocoStudy, TimeSeriesTable> initializeInternal() const;
 };
 
 } // namespace OpenSim

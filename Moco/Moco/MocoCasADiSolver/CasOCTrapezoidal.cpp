@@ -40,54 +40,21 @@ DM Trapezoidal::createKinematicConstraintIndicesImpl() const {
     return DM::ones(1, m_numGridPoints);
 }
 
-void Trapezoidal::applyConstraintsImpl(const VariablesMX& vars,
-        const casadi::MX& xdot, const casadi::MX& residual,
-        const casadi::MX& kcerr, const casadi::MXVector& path) {
+void Trapezoidal::calcDefectsImpl(
+        const casadi::MX& x, const casadi::MX& xdot, casadi::MX& defects) const {
 
     // We have arranged the code this way so that all constraints at a given
     // mesh point are grouped together (organizing the sparsity of the Jacobian
     // this way might have benefits for sparse linear algebra).
-    const auto& states = vars.at(Var::states);
-    const DM zeroS = casadi::DM::zeros(m_problem.getNumStates(), 1);
-    const DM zeroR = casadi::DM::zeros(
-            m_problem.getNumMultibodyDynamicsEquations(), 1);
-    for (int itime = 0; itime < m_numGridPoints; ++itime) {
-        if (itime > 0) {
-            const auto h = m_times(itime) - m_times(itime - 1);
-            const auto x_i = states(Slice(), itime);
-            const auto x_im1 = states(Slice(), itime - 1);
-            const auto xdot_i = xdot(Slice(), itime);
-            const auto xdot_im1 = xdot(Slice(), itime - 1);
+    for (int itime = 0; itime < m_numMeshIntervals; ++itime) {
+        const auto h = m_times(itime + 1) - m_times(itime);
+        const auto x_i = x(Slice(), itime);
+        const auto x_ip1 = x(Slice(), itime + 1);
+        const auto xdot_i = xdot(Slice(), itime);
+        const auto xdot_ip1 = xdot(Slice(), itime + 1);
 
-            // Trapezoidal defects.
-            addConstraints(zeroS, zeroS,
-                    x_i - (x_im1 + 0.5 * h * (xdot_i + xdot_im1)));
-        }
-
-        if (m_solver.isDynamicsModeImplicit()) {
-            addConstraints(zeroR, zeroR, residual(Slice(), itime));
-        }
-
-        // Kinematic constraint errors.
-        if (m_problem.getNumKinematicConstraintEquations()) {
-            DM kinConLowerBounds(
-                    m_problem.getNumKinematicConstraintEquations(), 1);
-            DM kinConUpperBounds(
-                    m_problem.getNumKinematicConstraintEquations(), 1);
-
-            const auto& bounds = m_problem.getKinematicConstraintBounds();
-            kinConLowerBounds(Slice()) = bounds.lower;
-            kinConUpperBounds(Slice()) = bounds.upper;
-
-            addConstraints(kinConLowerBounds, kinConUpperBounds,
-                    kcerr(Slice(), itime));
-        }
-
-        for (int ipc = 0; ipc < (int)path.size(); ++ipc) {
-            const auto& pathInfo = m_problem.getPathConstraintInfos()[ipc];
-            addConstraints(pathInfo.lowerBounds, pathInfo.upperBounds,
-                    path[ipc](Slice(), itime));
-        }
+        // Trapezoidal defects.
+        defects(Slice(), itime) = x_ip1 - (x_i + 0.5 * h * (xdot_ip1 + xdot_i));
     }
 }
 

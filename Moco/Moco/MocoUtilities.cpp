@@ -18,9 +18,12 @@
 
 #include "MocoUtilities.h"
 
-#include "MocoIterate.h"
+#include "MocoProblem.h"
+#include "MocoTrajectory.h"
 #include <cstdarg>
 #include <cstdio>
+#include <iomanip>
+#include <regex>
 
 #include <simbody/internal/Visualizer_InputListener.h>
 
@@ -36,6 +39,29 @@
 #include <OpenSim/Simulation/StatesTrajectoryReporter.h>
 
 using namespace OpenSim;
+
+std::string OpenSim::getFormattedDateTime(
+        bool appendMicroseconds, std::string format) {
+    using namespace std::chrono;
+    auto now = system_clock::now();
+    auto time_now = system_clock::to_time_t(now);
+    struct tm buf;
+#if defined(_WIN32)
+    localtime_s(&buf, &time_now);
+#else
+    localtime_r(&time_now, &buf);
+#endif
+    if (format == "ISO") { format = "%Y-%m-%dT%H:%M:%S"; }
+    std::stringstream ss;
+    ss << std::put_time(&buf, format.c_str());
+    if (appendMicroseconds) {
+        // Get number of microseconds since last second.
+        auto microsec =
+                duration_cast<microseconds>(now.time_since_epoch()) % 1000000;
+        ss << '.' << std::setfill('0') << std::setw(6) << microsec.count();
+    }
+    return ss.str();
+}
 
 SimTK::Vector OpenSim::createVectorLinspace(
         int length, double start, double end) {
@@ -113,10 +139,16 @@ TimeSeriesTable OpenSim::filterLowpass(
             format("Cutoff frequency must be non-negative; got %g.",
                     cutoffFreq));
     auto storage = convertTableToStorage(table);
-    if (padData) { storage.pad(storage.getSize() / 2); }
+    if (padData) { storage.pad((int)table.getNumRows() / 2); }
     storage.lowpassIIR(cutoffFreq);
 
     return storage.exportToTable();
+}
+
+void OpenSim::writeTableToFile(
+        const TimeSeriesTable& table, const std::string& filepath) {
+    DataAdapter::InputTables tables = {{"table", &table}};
+    FileAdapter::writeFile(tables, filepath);
 }
 
 // Based on code from simtk.org/projects/predictivesim SimbiconExample/main.cpp.
@@ -145,6 +177,14 @@ void OpenSim::visualize(Model model, Storage statesSto) {
     model.setUseVisualizer(true);
     model.initSystem();
 
+    // This line allows muscle activity to be visualized. To get muscle activity
+    // we probably need to realize only to Dynamics, but realizing to Report
+    // will catch any other calculations that custom components require for
+    // visualizing.
+    for (const auto& state : statesTraj) {
+        model.realizeReport(state);
+    }
+
     // OPENSIM_THROW_IF(!statesTraj.isCompatibleWith(model), Exception,
     //        "Model is not compatible with the provided StatesTrajectory.");
 
@@ -157,21 +197,7 @@ void OpenSim::visualize(Model model, Storage statesSto) {
     std::string title = "Visualizing model '" + modelName + "'";
     if (!statesSto.getName().empty() && statesSto.getName() != "UNKNOWN")
         title += " with motion '" + statesSto.getName() + "'";
-    {
-        using namespace std::chrono;
-        auto time_now = system_clock::to_time_t(system_clock::now());
-        std::stringstream ss;
-        // ISO standard extended datetime format.
-        // https://kjellkod.wordpress.com/2013/01/22/exploring-c11-part-2-localtime-and-time-again/
-        struct tm buf;
-#if defined(_WIN32)
-        localtime_s(&buf, &time_now);
-#else
-        localtime_r(&time_now, &buf);
-#endif
-        ss << std::put_time(&buf, "%Y-%m-%dT%X");
-        title += " (" + ss.str() + ")";
-    }
+    title += " (" + getFormattedDateTime(false, "ISO") + ")";
     viz.setWindowTitle(title);
     viz.setMode(SimTK::Visualizer::RealTime);
     // Buffering causes issues when the user adjusts the "Speed" slider.
@@ -291,8 +317,25 @@ void OpenSim::visualize(Model model, TimeSeriesTable table) {
     visualize(std::move(model), convertTableToStorage(table));
 }
 
+namespace {
+template <typename FunctionType>
+std::unique_ptr<Function> createFunction(
+        const SimTK::Vector& x, const SimTK::Vector& y) {
+    OPENSIM_THROW_IF(x.size() != y.size(), Exception, "x.size() != y.size()");
+    return OpenSim::make_unique<FunctionType>(
+            x.size(), x.getContiguousScalarData(), y.getContiguousScalarData());
+}
+template <>
+std::unique_ptr<Function> createFunction<GCVSpline>(
+        const SimTK::Vector& x, const SimTK::Vector& y) {
+    OPENSIM_THROW_IF(x.size() != y.size(), Exception, "x.size() != y.size()");
+    return OpenSim::make_unique<GCVSpline>(5, x.size(),
+            x.getContiguousScalarData(), y.getContiguousScalarData());
+}
+} // anonymous namespace
+
 void OpenSim::prescribeControlsToModel(
-        const MocoIterate& iterate, Model& model) {
+        const MocoTrajectory& iterate, Model& model, std::string functionType) {
     // Get actuator names.
     model.initSystem();
     OpenSim::Array<std::string> actuNames;
@@ -309,18 +352,27 @@ void OpenSim::prescribeControlsToModel(
     controller->setName("prescribed_controller");
     for (int i = 0; i < actuNames.size(); ++i) {
         const auto control = iterate.getControl(actuNames[i]);
-        auto* function = new GCVSpline(5, time.nrow(), &time[0], &control[0]);
+        std::unique_ptr<Function> function;
+        if (functionType == "GCVSpline") {
+            function = createFunction<GCVSpline>(time, control);
+        } else if (functionType == "PiecewiseLinearFunction") {
+            function = createFunction<PiecewiseLinearFunction>(time, control);
+        } else {
+            OPENSIM_THROW(Exception,
+                    format("Unexpected function type %s.", functionType));
+        }
         const auto& actu = model.getComponent<Actuator>(actuNames[i]);
         controller->addActuator(actu);
-        controller->prescribeControlForActuator(actu.getName(), function);
+        controller->prescribeControlForActuator(
+                actu.getName(), function.release());
     }
     model.addController(controller);
 }
 
-MocoIterate OpenSim::simulateIterateWithTimeStepping(
-        const MocoIterate& iterate, Model model, double integratorAccuracy) {
+MocoTrajectory OpenSim::simulateIterateWithTimeStepping(
+        const MocoTrajectory& iterate, Model model, double integratorAccuracy) {
 
-    prescribeControlsToModel(iterate, model);
+    prescribeControlsToModel(iterate, model, "PiecewiseLinearFunction");
 
     // Add states reporter to the model.
     auto* statesRep = new StatesTrajectoryReporter();
@@ -357,129 +409,22 @@ MocoIterate OpenSim::simulateIterateWithTimeStepping(
 
     const auto& statesTimes = states.getIndependentColumn();
     SimTK::Vector timeVec((int)statesTimes.size(), statesTimes.data(), true);
-    TimeSeriesTable controls = resample(model.getControlsTable(), timeVec);
+    TimeSeriesTable controls = resample<SimTK::Vector, PiecewiseLinearFunction>(
+            model.getControlsTable(), timeVec);
     // Fix column labels. (TODO: Not general.)
     auto labels = controls.getColumnLabels();
     for (auto& label : labels) { label = "/forceset/" + label; }
     controls.setColumnLabels(labels);
 
-    // Create a MocoIterate to facilitate states trajectory comparison (with
+    // Create a MocoTrajectory to facilitate states trajectory comparison (with
     // dummy data for the multipliers, which we'll ignore).
 
-    auto forwardSolution = MocoIterate(timeVec,
+    auto forwardSolution = MocoTrajectory(timeVec,
             {{"states", {states.getColumnLabels(), states.getMatrix()}},
                     {"controls", {controls.getColumnLabels(),
                                          controls.getMatrix()}}});
 
     return forwardSolution;
-}
-
-void OpenSim::replaceMusclesWithPathActuators(Model& model) {
-
-    // Create path actuators from muscle properties and add to the model. Save
-    // a list of pointers of the muscles to delete.
-    std::vector<Muscle*> musclesToDelete;
-    auto& muscleSet = model.updMuscles();
-    for (int i = 0; i < muscleSet.getSize(); ++i) {
-        auto& musc = muscleSet.get(i);
-        auto* actu = new PathActuator();
-        actu->setName(musc.getName());
-        musc.setName(musc.getName() + "_delete");
-        actu->setOptimalForce(musc.getMaxIsometricForce());
-        actu->setMinControl(musc.getMinControl());
-        actu->setMaxControl(musc.getMaxControl());
-
-        const auto& pathPointSet = musc.getGeometryPath().getPathPointSet();
-        auto& geomPath = actu->updGeometryPath();
-        for (int i = 0; i < pathPointSet.getSize(); ++i) {
-            auto* pathPoint = pathPointSet.get(i).clone();
-            const auto& socketNames = pathPoint->getSocketNames();
-            for (const auto& socketName : socketNames) {
-                pathPoint->updSocket(socketName)
-                        .connect(pathPointSet.get(i)
-                                         .getSocket(socketName)
-                                         .getConnecteeAsObject());
-            }
-            geomPath.updPathPointSet().adoptAndAppend(pathPoint);
-        }
-        model.addComponent(actu);
-        musclesToDelete.push_back(&musc);
-    }
-
-    // Delete the muscles.
-    for (const auto* musc : musclesToDelete) {
-        int index = model.getForceSet().getIndex(musc, 0);
-        OPENSIM_THROW_IF(index == -1, Exception,
-                format("Muscle with name %s not found in ForceSet.",
-                        musc->getName()));
-        bool success = model.updForceSet().remove(index);
-        OPENSIM_THROW_IF(!success, Exception,
-                format("Attempt to remove muscle with "
-                       "name %s was unsuccessful.",
-                        musc->getName()));
-    }
-}
-
-void OpenSim::removeMuscles(Model& model) {
-
-    // Save a list of pointers of the muscles to delete.
-    std::vector<Muscle*> musclesToDelete;
-    auto& muscleSet = model.updMuscles();
-    for (int i = 0; i < muscleSet.getSize(); ++i) {
-        musclesToDelete.push_back(&muscleSet.get(i));
-    }
-
-    // Delete the muscles.
-    for (const auto* musc : musclesToDelete) {
-        int index = model.getForceSet().getIndex(musc, 0);
-        OPENSIM_THROW_IF(index == -1, Exception,
-                format("Muscle with name %s not found in ForceSet.",
-                        musc->getName()));
-        model.updForceSet().remove(index);
-    }
-
-    model.finalizeConnections();
-    model.initSystem();
-}
-
-void OpenSim::replaceJointWithWeldJoint(
-        Model& model, const std::string& jointName) {
-    OPENSIM_THROW_IF(!model.getJointSet().hasComponent(jointName), Exception,
-            "Joint with name '" + jointName +
-                    "' not found in the model JointSet.");
-
-    // This is needed here to access offset frames.
-    model.finalizeConnections();
-
-    // Get the current joint and save a copy of the parent and child offset
-    // frames.
-    auto& current_joint = model.updJointSet().get(jointName);
-    PhysicalOffsetFrame* parent_offset = PhysicalOffsetFrame().safeDownCast(
-            current_joint.getParentFrame().clone());
-    PhysicalOffsetFrame* child_offset = PhysicalOffsetFrame().safeDownCast(
-            current_joint.getChildFrame().clone());
-
-    // Save the original names of the body frames (not the offset frames), so we
-    // can find them when the new joint is created.
-    parent_offset->finalizeConnections(model);
-    child_offset->finalizeConnections(model);
-    std::string parent_body_path =
-            parent_offset->getParentFrame().getAbsolutePathString();
-    std::string child_body_path =
-            child_offset->getParentFrame().getAbsolutePathString();
-
-    // Remove the current Joint from the the JointSet.
-    model.updJointSet().remove(&current_joint);
-
-    // Create the new joint and add it to the model.
-    auto* new_joint = new WeldJoint(jointName,
-            model.getComponent<PhysicalFrame>(parent_body_path),
-            parent_offset->get_translation(), parent_offset->get_orientation(),
-            model.getComponent<PhysicalFrame>(child_body_path),
-            child_offset->get_translation(), child_offset->get_orientation());
-    model.addJoint(new_joint);
-
-    model.finalizeConnections();
 }
 
 std::vector<std::string> OpenSim::createStateVariableNamesInSystemOrder(
@@ -547,6 +492,92 @@ std::unordered_map<std::string, int> OpenSim::createSystemYIndexMap(
             "Expected to find %i state indices but found %i.", svNames.size(),
             sysYIndices.size());
     return sysYIndices;
+}
+
+std::vector<std::string> OpenSim::createControlNamesFromModel(
+        const Model& model, std::vector<int>& modelControlIndices) {
+    std::vector<std::string> controlNames;
+    // Loop through all actuators and create control names. For scalar
+    // actuators, use the actuator name for the control name. For non-scalar
+    // actuators, use the actuator name with a control index appended for the
+    // control name.
+    // TODO update when OpenSim supports named controls.
+    int count = 0;
+    modelControlIndices.clear();
+    for (const auto& actu : model.getComponentList<Actuator>()) {
+        if (!actu.get_appliesForce()) {
+            count += actu.numControls();
+            continue;
+        }
+        std::string actuPath = actu.getAbsolutePathString();
+        if (actu.numControls() == 1) {
+            controlNames.push_back(actuPath);
+            modelControlIndices.push_back(count);
+            count++;
+        } else {
+            for (int i = 0; i < actu.numControls(); ++i) {
+                controlNames.push_back(actuPath + "_" + std::to_string(i));
+                modelControlIndices.push_back(count);
+                count++;
+            }
+        }
+    }
+
+    return controlNames;
+}
+std::vector<std::string> OpenSim::createControlNamesFromModel(
+        const Model& model) {
+    std::vector<int> modelControlIndices;
+    return createControlNamesFromModel(model, modelControlIndices);
+}
+
+std::unordered_map<std::string, int> OpenSim::createSystemControlIndexMap(
+        const Model& model) {
+    // We often assume that control indices in the state are in the same order
+    // as the actuators in the model. However, the control indices are
+    // allocated in the order in which addToSystem() is invoked (not
+    // necessarily the order used by getComponentList()). So until we can be
+    // absolutely sure that the controls are in the same order as actuators,
+    // we can run the following check: in order, set an actuator's control
+    // signal(s) to NaN and ensure the i-th control is NaN.
+    // TODO update when OpenSim supports named controls.
+    std::unordered_map<std::string, int> controlIndices;
+    const SimTK::State state = model.getWorkingState();
+    auto modelControls = model.updControls(state);
+    int i = 0;
+    for (const auto& actu : model.getComponentList<Actuator>()) {
+        int nc = actu.numControls();
+        SimTK::Vector origControls(nc);
+        SimTK::Vector nan(nc, SimTK::NaN);
+        actu.getControls(modelControls, origControls);
+        actu.setControls(nan, modelControls);
+        std::string actuPath = actu.getAbsolutePathString();
+        for (int j = 0; j < nc; ++j) {
+            OPENSIM_THROW_IF(!SimTK::isNaN(modelControls[i]), Exception,
+                    "Internal error: actuators are not in the "
+                    "expected order. Submit a bug report.");
+            if (nc == 1) {
+                controlIndices[actuPath] = i;
+            } else {
+                controlIndices[format("%s_%i", actuPath, j)] = i;
+            }
+            ++i;
+        }
+        actu.setControls(origControls, modelControls);
+    }
+    return controlIndices;
+}
+
+void OpenSim::checkOrderSystemControls(const Model& model) {
+    createSystemControlIndexMap(model);
+}
+
+void OpenSim::checkRedundantLabels(std::vector<std::string> labels) {
+    std::sort(labels.begin(), labels.end());
+    auto it = std::adjacent_find(labels.begin(), labels.end());
+    OPENSIM_THROW_IF(it != labels.end(), Exception,
+            format("Multiple reference data provided for the variable %s.",
+                    *it));
 }
 
 std::string OpenSim::format_c(const char* format, ...) {

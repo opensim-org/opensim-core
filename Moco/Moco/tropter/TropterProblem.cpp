@@ -20,8 +20,8 @@
 using namespace OpenSim;
 
 template <typename T>
-template <typename MocoIterateType, typename tropIterateType>
-MocoIterateType MocoTropterSolver::TropterProblemBase<T>::
+template <typename MocoTrajectoryType, typename tropIterateType>
+MocoTrajectoryType MocoTropterSolver::TropterProblemBase<T>::
 convertIterateTropterToMoco(const tropIterateType& tropSol) const {
     const auto& tropTime = tropSol.time;
     SimTK::Vector time((int)tropTime.size(), tropTime.data());
@@ -111,7 +111,7 @@ convertIterateTropterToMoco(const tropIterateType& tropSol) const {
     SimTK::RowVector parameters(numParameters, tropSol.parameters.data());
 
     // Create iterate.
-    MocoIterateType mocoIter(time, state_names, control_names, multiplier_names,
+    MocoTrajectoryType mocoIter(time, state_names, control_names, multiplier_names,
                         derivative_names, parameter_names, states, controls,
                         multipliers, derivatives, parameters);
     // Append slack variables.
@@ -122,10 +122,10 @@ convertIterateTropterToMoco(const tropIterateType& tropSol) const {
 }
 
 template <typename T>
-OpenSim::MocoIterate MocoTropterSolver::TropterProblemBase<T>::
-convertToMocoIterate(const tropter::Iterate& tropIter) const {
-    using OpenSim::MocoIterate;
-    return convertIterateTropterToMoco<MocoIterate, tropter::Iterate>(tropIter);
+OpenSim::MocoTrajectory
+MocoTropterSolver::TropterProblemBase<T>::convertToMocoTrajectory(const tropter::Iterate& tropIter) const {
+    using OpenSim::MocoTrajectory;
+    return convertIterateTropterToMoco<MocoTrajectory, tropter::Iterate>(tropIter);
 }
 
 template <typename T>
@@ -139,7 +139,7 @@ convertToMocoSolution(const tropter::Solution& tropSol) const {
 
 template <typename T>
 tropter::Iterate MocoTropterSolver::TropterProblemBase<T>::
-convertToTropterIterate(const OpenSim::MocoIterate& mocoIter) const {
+convertToTropterIterate(const OpenSim::MocoTrajectory& mocoIter) const {
     tropter::Iterate tropIter;
     if (mocoIter.empty()) return tropIter;
 

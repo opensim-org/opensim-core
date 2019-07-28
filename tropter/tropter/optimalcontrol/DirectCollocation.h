@@ -43,6 +43,13 @@ public:
                             const std::string& optimization_solver,
                             // TODO remove; put somewhere better.
                             const unsigned& num_mesh_points = 20);
+
+    DirectCollocationSolver(
+            std::shared_ptr<const OCProblem> ocproblem,
+            const std::string& transcrip,
+            const std::string& optsolver,
+            const std::vector<double>& mesh);
+
     Iterate make_initial_guess_from_bounds() const {
         // We only need this decorator to form an initial guess from the bounds.
         auto decorator = m_transcription->make_decorator();
@@ -84,6 +91,14 @@ public:
     /// @copydoc set_exact_hessian_block_sparsity_mode()
     std::string get_exact_hessian_block_sparsity_mode() const
     { return m_exact_hessian_block_sparsity_mode; }
+
+    /// If using a Hermite-Simpson collocation scheme, enable this setting to 
+    /// contrain control values at mesh interval midpoints by linearly
+    /// interpolating the values at the mesh interval endpoints. Default: true.
+    void set_interpolate_control_midpoints(bool tf);
+    /// @copydoc set_interpolate_control_midpoints()
+    bool get_interpolate_control_midpoints() const
+    { return m_interpolate_control_midpoints; }
 
     /// Solve the problem using an initial guess that is based on the bounds
     /// on the variables.
@@ -129,6 +144,7 @@ private:
 
     int m_verbosity = 1;
     std::string m_exact_hessian_block_sparsity_mode{"dense"};
+    bool m_interpolate_control_midpoints = true;
 };
 
 } // namespace tropter

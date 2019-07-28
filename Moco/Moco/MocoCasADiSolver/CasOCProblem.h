@@ -69,6 +69,7 @@ struct MultiplierInfo {
     Bounds bounds;
     Bounds initialBounds;
     Bounds finalBounds;
+    KinematicLevel level;
 };
 struct SlackInfo {
     std::string name;
@@ -79,10 +80,43 @@ struct ParameterInfo {
     Bounds bounds;
 };
 
+struct EndpointInfo {
+    EndpointInfo(std::string name, int num_outputs,
+            std::unique_ptr<Integrand> ifunc, std::unique_ptr<Endpoint> efunc)
+            : name(std::move(name)), num_outputs(num_outputs),
+              integrand_function(std::move(ifunc)),
+              endpoint_function(std::move(efunc)) {}
+    std::string name;
+    int num_outputs;
+    std::unique_ptr<Integrand> integrand_function;
+    std::unique_ptr<Endpoint> endpoint_function;
+};
+
+struct CostInfo : EndpointInfo {
+    CostInfo(std::string name, int num_outputs,
+            std::unique_ptr<Integrand> ifunc, std::unique_ptr<Endpoint> efunc)
+            : EndpointInfo(std::move(name), num_outputs, std::move(ifunc),
+                      std::move(efunc)) {}
+};
+
+struct EndpointConstraintInfo : EndpointInfo {
+    EndpointConstraintInfo(std::string name, int num_outputs,
+            std::unique_ptr<Integrand> ifunc, std::unique_ptr<Endpoint> efunc,
+            casadi::DM lowerBounds, casadi::DM upperBounds)
+            : EndpointInfo(std::move(name), num_outputs, std::move(ifunc),
+                      std::move(efunc)),
+              lowerBounds(std::move(lowerBounds)),
+              upperBounds(std::move(upperBounds)) {}
+    // The number of rows in these bounds must be num_outputs.
+    casadi::DM lowerBounds;
+    casadi::DM upperBounds;
+};
+
 /// The number outputs in the function must match the size of
 /// lowerBounds and upperBounds.
 struct PathConstraintInfo {
     std::string name;
+    int size() const { return (int)lowerBounds.numel(); }
     casadi::DM lowerBounds;
     casadi::DM upperBounds;
     std::unique_ptr<PathConstraint> function;
@@ -103,13 +137,19 @@ public:
         const casadi::DM& derivatives;
         const casadi::DM& parameters;
     };
-    struct EndpointInput {
+    struct CostInput {
+        const double& initial_time;
+        const casadi::DM& initial_states;
+        const casadi::DM& initial_controls;
+        const casadi::DM& initial_multipliers;
+        const casadi::DM& initial_derivatives;
         const double& final_time;
         const casadi::DM& final_states;
         const casadi::DM& final_controls;
         const casadi::DM& final_multipliers;
         const casadi::DM& final_derivatives;
         const casadi::DM& parameters;
+        const double& integral;
     };
     struct MultibodySystemExplicitOutput {
         casadi::DM& multibody_derivatives;
@@ -163,7 +203,8 @@ protected:
         clipEndpointBounds(multbounds, multInitialBounds);
         clipEndpointBounds(multbounds, multFinalBounds);
         m_multiplierInfos.push_back({std::move(multName), std::move(multbounds),
-                std::move(multInitialBounds), std::move(multFinalBounds)});
+                std::move(multInitialBounds), std::move(multFinalBounds),
+                kinLevel});
 
         if (kinLevel == KinematicLevel::Position)
             ++m_numHolonomicConstraintEquations;
@@ -177,6 +218,13 @@ protected:
     void addSlack(std::string name, Bounds bounds) {
         m_slackInfos.push_back({std::move(name), std::move(bounds)});
     }
+    /// Set if all kinematics are prescribed. In this case, do not add state
+    /// variables for coordinates or speeds. The number of multibody dynamics
+    /// equations is equal to the number of speeds in the original system. But
+    /// if kinematics are prescribed, you must provide the number of multibody
+    /// dynamics equations directly. This is because no speed state variables
+    /// are added and CasOCProblem can't obtain the number of multibody
+    /// equations by counting the number of speed state variables.
     void setPrescribedKinematics(bool tf, int numMultibodyDynamicsEquations) {
         m_prescribedKinematics = tf;
         m_numMultibodyDynamicsEquationsIfPrescribedKinematics =
@@ -193,6 +241,38 @@ protected:
     /// Add a constant (time-invariant) variable to the optimization problem.
     void addParameter(std::string name, Bounds bounds) {
         m_paramInfos.push_back({std::move(name), std::move(bounds)});
+    }
+    /// Add a cost term to the problem.
+    void addCost(std::string name, int numIntegrals, int numOutputs) {
+        OPENSIM_THROW_IF(numIntegrals < 0 || numIntegrals > 1,
+                OpenSim::Exception, "numIntegrals must be 0 or 1.");
+        std::unique_ptr<Integrand> integrand_function;
+        if (numIntegrals) {
+            integrand_function = OpenSim::make_unique<Integrand>();
+        }
+        m_costInfos.emplace_back(std::move(name), numOutputs,
+                std::move(integrand_function),
+                OpenSim::make_unique<Cost>());
+    }
+    /// Add an endpoint constraint to the problem.
+    void addEndpointConstraint(
+            std::string name, int numIntegrals, std::vector<Bounds> bounds) {
+        OPENSIM_THROW_IF(numIntegrals < 0 || numIntegrals > 1,
+                OpenSim::Exception, "numIntegrals must be 0 or 1.");
+        std::unique_ptr<Integrand> integrand_function;
+        if (numIntegrals) {
+            integrand_function = OpenSim::make_unique<Integrand>();
+        }
+        casadi::DM lower(bounds.size(), 1);
+        casadi::DM upper(bounds.size(), 1);
+        for (int ibound = 0; ibound < (int)bounds.size(); ++ibound) {
+            lower(ibound, 0) = bounds[ibound].lower;
+            upper(ibound, 0) = bounds[ibound].upper;
+        }
+        m_endpointConstraintInfos.emplace_back(std::move(name),
+                (int)bounds.size(), std::move(integrand_function),
+                OpenSim::make_unique<EndpointConstraint>(), std::move(lower),
+                std::move(upper));
     }
     /// The size of bounds must match the number of outputs in the function.
     /// Use variadic template arguments to pass arguments to the constructor of
@@ -215,13 +295,13 @@ protected:
     }
 
 public:
-    virtual void calcIntegralCostIntegrand(
-            const ContinuousInput&, double& integrand) const {
-        integrand = 0;
-    }
-    virtual void calcEndpointCost(const EndpointInput&, double& cost) const {
-        cost = 0;
-    }
+    /// Kinematic constraint errors should be ordered as so:
+    /// - position-level constraints
+    /// - first derivative of position-level constraints
+    /// - velocity-level constraints
+    /// - second derivative of position-level constraints
+    /// - first derivative of velocity-level constraints
+    /// - acceleration-level constraints
     virtual void calcMultibodySystemExplicit(const ContinuousInput& input,
             bool calcKCErrors, MultibodySystemExplicitOutput& output) const = 0;
     virtual void calcMultibodySystemImplicit(const ContinuousInput& input,
@@ -231,9 +311,29 @@ public:
             const casadi::DM& parameters,
             casadi::DM& velocity_correction) const = 0;
 
-    virtual void calcPathConstraint(
-            int, const ContinuousInput&, casadi::DM&) const {}
+    virtual void calcIntegrand(int /*integralIndex*/,
+            const ContinuousInput& /*input*/, double& integrand) const {}
+    virtual void calcCost(int /*costIndex*/, const CostInput& /*input*/,
+            casadi::DM& /*cost*/) const {}
+    virtual void calcEndpointConstraint(int /*index*/,
+            const CostInput& /*input*/, casadi::DM& /*values*/) const {}
+    virtual void calcPathConstraint(int /*constraintIndex*/,
+            const ContinuousInput& /*input*/,
+            casadi::DM& /*path_constraint*/) const {}
 
+    virtual std::vector<std::string>
+    createKinematicConstraintEquationNamesImpl() const;
+
+    void intermediateCallback() const { intermediateCallbackImpl(); }
+    void intermediateCallbackWithIterate(const CasOC::Iterate& it) const {
+        intermediateCallbackWithIterateImpl(it);
+    }
+    /// This is invoked once for each iterate in the optimization process.
+    virtual void intermediateCallbackImpl() const {}
+    /// Process an intermediate iterate. The frequency with which this is
+    /// evaluated is governed by Solver::getOutputInterval().
+    virtual void intermediateCallbackWithIterateImpl(
+            const CasOC::Iterate&) const {}
     /// @}
 
 public:
@@ -268,11 +368,41 @@ public:
         return it;
     }
 
-    void constructFunctions(const std::string& finiteDiffScheme,
+    void initialize(const std::string& finiteDiffScheme,
             std::shared_ptr<const std::vector<VariablesDM>>
                     pointsForSparsityDetection) const {
         auto* mutThis = const_cast<Problem*>(this);
 
+        {
+            int index = 0;
+            for (const auto& costInfo : mutThis->m_costInfos) {
+                costInfo.endpoint_function->constructFunction(this,
+                        "cost_" + costInfo.name + "_endpoint", index,
+                        costInfo.num_outputs, finiteDiffScheme,
+                        pointsForSparsityDetection);
+                if (costInfo.integrand_function) {
+                    costInfo.integrand_function->constructFunction(this,
+                            "cost_" + costInfo.name + "_integrand", index,
+                            finiteDiffScheme, pointsForSparsityDetection);
+                }
+                ++index;
+            }
+        }
+        {
+            int index = 0;
+            for (const auto& info : mutThis->m_endpointConstraintInfos) {
+                info.endpoint_function->constructFunction(this,
+                        "endpoint_constraint_" + info.name + "_endpoint", index,
+                        info.num_outputs, finiteDiffScheme,
+                        pointsForSparsityDetection);
+                if (info.integrand_function) {
+                    info.integrand_function->constructFunction(this,
+                            "endpoint_constraint_" + info.name + "_integrand", index,
+                            finiteDiffScheme, pointsForSparsityDetection);
+                }
+                ++index;
+            }
+        }
         {
             int index = 0;
             for (const auto& pathInfo : mutThis->m_pathInfos) {
@@ -283,15 +413,6 @@ public:
                 ++index;
             }
         }
-        mutThis->m_integralCostFunc =
-                OpenSim::make_unique<IntegralCostIntegrand>();
-        mutThis->m_integralCostFunc->constructFunction(this,
-                "integral_cost_integrand", finiteDiffScheme,
-                pointsForSparsityDetection);
-
-        mutThis->m_endpointCostFunc = OpenSim::make_unique<EndpointCost>();
-        mutThis->m_endpointCostFunc->constructFunction(this, "endpoint_cost",
-                finiteDiffScheme, pointsForSparsityDetection);
 
         if (m_dynamicsMode == "implicit") {
             // Construct a full implicit multibody system (i.e. including
@@ -354,6 +475,7 @@ public:
     int getNumCoordinates() const { return m_numCoordinates; }
     int getNumSpeeds() const { return m_numSpeeds; }
     int getNumAuxiliaryStates() const { return m_numAuxiliaryStates; }
+    int getNumCosts() const { return (int)m_costInfos.size(); }
     bool isPrescribedKinematics() const { return m_prescribedKinematics; }
     /// If the coordinates are prescribed, then the number of multibody dynamics
     /// equations is not the same as the number of speeds.
@@ -376,6 +498,18 @@ public:
         return m_numHolonomicConstraintEquations +
                m_numNonHolonomicConstraintEquations +
                m_numAccelerationConstraintEquations;
+    }
+    /// Create a vector of names for scalar kinematic constraint equations.
+    /// The length of the vector is getNumKinematicConstraintEquations().
+    /// `includeDerivatives` determines if names for derivatives of
+    /// position-level and velocity-level constraints should be included.
+    std::vector<std::string> createKinematicConstraintEquationNames() const {
+        std::vector<std::string> names =
+                createKinematicConstraintEquationNamesImpl();
+        OPENSIM_THROW_IF(
+                (int)names.size() != getNumKinematicConstraintEquations(),
+                OpenSim::Exception, "Internal error.");
+        return names;
     }
     int getNumHolonomicConstraintEquations() const {
         return m_numHolonomicConstraintEquations;
@@ -405,14 +539,13 @@ public:
     const std::vector<ParameterInfo>& getParameterInfos() const {
         return m_paramInfos;
     }
+    const std::vector<CostInfo>& getCostInfos() const { return m_costInfos; }
+    const std::vector<EndpointConstraintInfo>&
+    getEndpointConstraintInfos() const {
+        return m_endpointConstraintInfos;
+    }
     const std::vector<PathConstraintInfo>& getPathConstraintInfos() const {
         return m_pathInfos;
-    }
-    const casadi::Function& getIntegralCostIntegrand() const {
-        return *m_integralCostFunc;
-    }
-    const casadi::Function& getEndpointCost() const {
-        return *m_endpointCostFunc;
     }
     /// Get a function to the full multibody system (i.e. including kinematic
     /// constraints errors).
@@ -466,10 +599,10 @@ private:
     std::vector<ControlInfo> m_controlInfos;
     std::vector<MultiplierInfo> m_multiplierInfos;
     std::vector<SlackInfo> m_slackInfos;
-    std::vector<PathConstraintInfo> m_pathInfos;
     std::vector<ParameterInfo> m_paramInfos;
-    std::unique_ptr<IntegralCostIntegrand> m_integralCostFunc;
-    std::unique_ptr<EndpointCost> m_endpointCostFunc;
+    std::vector<CostInfo> m_costInfos;
+    std::vector<EndpointConstraintInfo> m_endpointConstraintInfos;
+    std::vector<PathConstraintInfo> m_pathInfos;
     std::unique_ptr<MultibodySystemExplicit<true>> m_multibodyFunc;
     std::unique_ptr<MultibodySystemExplicit<false>>
             m_multibodyFuncIgnoringConstraints;

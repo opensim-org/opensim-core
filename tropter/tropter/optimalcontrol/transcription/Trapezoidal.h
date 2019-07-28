@@ -60,17 +60,13 @@ public:
 
     // TODO why would we want a shared_ptr? A copy would use the same Problem.
     Trapezoidal(std::shared_ptr<const OCProblem> ocproblem,
-            unsigned num_mesh_points = 50) {
+            std::vector<double> mesh) : m_mesh(mesh) {
         if (std::is_same<T, double>::value) {
             this->set_use_supplied_sparsity_hessian_lagrangian(true);
         }
-        set_num_mesh_points(num_mesh_points);
         set_ocproblem(ocproblem);
     }
-    /// The number of mesh points must be at least 2.
-    // TODO order of calls?
-    // TODO right now, must call this BEFORE set_problem.
-    void set_num_mesh_points(unsigned N);
+
     void set_ocproblem(std::shared_ptr<const OCProblem> ocproblem);
 
     void calc_objective(const VectorX<T>& x, T& obj_value) const override;
@@ -183,7 +179,11 @@ protected:
 private:
 
     std::shared_ptr<const OCProblem> m_ocproblem;
-    int m_num_mesh_points;
+
+    std::vector<double> m_mesh;
+    Eigen::VectorXd m_mesh_intervals;
+    Eigen::VectorXd m_mesh_eigen;
+    int m_num_mesh_points = 0;
     int m_num_time_variables = -1;
     int m_num_parameters = -1;
     // The sum total of time_variables and parameters. Here, "dense" means that

@@ -19,7 +19,7 @@
  * -------------------------------------------------------------------------- */
 
 #include "MocoConstraint.h"
-#include "MocoCost/MocoCost.h"
+#include "MocoGoal/MocoGoal.h"
 #include "MocoParameter.h"
 #include "MocoVariableInfo.h"
 #include "osimMocoDLL.h"
@@ -59,7 +59,7 @@ public:
     const std::string& getName() const;
 
     /// Get a reference to the copy of the model being used by this
-    /// MocoProblemRep. This model is *not* the model given to MocoCost or
+    /// MocoProblemRep. This model is *not* the model given to MocoGoal or
     /// MocoPathConstraint, but can be used within solvers to compute constraint
     /// forces and constraint errors (see getModelDisabledConstraints() for more
     /// details). Any parameter updates via a MocoParameter added to the problem
@@ -75,7 +75,7 @@ public:
     /// forces. You should use this model to compute accelerations via
     /// getModelDisabledConstraints().realizeAccleration(state), making sure to
     /// add any constraint forces to the model preceeding the realization. This
-    /// model is the same instance as that given to MocoCost and
+    /// model is the same instance as that given to MocoGoal and
     /// MocoPathConstraint, ensuring that realizing to Stage::Acceleration
     /// in these classes produces the same accelerations computed by the solver.
     /// Any parameter updates via a MocoParameter added to the problem
@@ -84,9 +84,11 @@ public:
         return m_model_disabled_constraints;
     }
     /// This is a state object that solvers can use with
-    /// ModelDisabledConstraints.
-    SimTK::State& updStateDisabledConstraints() const {
-        return m_state_disabled_constraints;
+    /// ModelDisabledConstraints. Some solvers may need to use 2 state objects
+    /// at once; you can supply an index of 1 to get a second state object.
+    SimTK::State& updStateDisabledConstraints(int index = 0) const {
+        assert(index <= 1);
+        return m_state_disabled_constraints[index];
     }
     /// This is a component inside ModelDisabledConstraints that you can use
     /// to set the value of discrete forces, intended to hold the constraint
@@ -103,7 +105,20 @@ public:
     int getNumStates() const { return (int)m_state_infos.size(); }
     int getNumControls() const { return (int)m_control_infos.size(); }
     int getNumParameters() const { return (int)m_parameters.size(); }
+    /// Get the number of goals in cost mode.
+    int getNumCosts() const { return (int)m_costs.size(); }
+    /// Get the number of goals in endpoint constraint mode.
+    int getNumEndpointConstraints() const {
+        return (int)m_endpoint_constraints.size();
+    }
+    int getNumKinematicConstraints() const {
+        return (int)m_kinematic_constraints.size();
+    }
+    /// Does the model contain a PositionMotion to prescribe all generalized
+    /// coordinates, speeds, and accelerations?
     bool isPrescribedKinematics() const { return m_prescribedKinematics; }
+    /// This excludes generalized coordinate and speed states if
+    /// isPrescribedKinematics() is true.
     std::vector<std::string> createStateVariableNamesInSystemOrder(
             std::unordered_map<int, int>& yIndexMap) const;
     /// Get the state names of all the state infos.
@@ -112,6 +127,10 @@ public:
     std::vector<std::string> createControlInfoNames() const;
     /// Get the names of all the parameters.
     std::vector<std::string> createParameterNames() const;
+    /// Get the names of all the goals in cost mode.
+    std::vector<std::string> createCostNames() const;
+    /// Get the names of all the goals in endpoint constraint mode.
+    std::vector<std::string> createEndpointConstraintNames() const;
     /// Get the names of all the MocoPathConstraint%s.
     std::vector<std::string> createPathConstraintNames() const;
     /// Get the names of all the Lagrange multiplier infos.
@@ -119,21 +138,47 @@ public:
     /// Get the constraint names of all the kinematic constraints. Note: this
     /// should only be called after initialize().
     std::vector<std::string> createKinematicConstraintNames() const;
+    /// Get a vector of names for all kinematic constraint equations.
+    /// Kinematic constraint equations are ordered as so:
+    /// - position-level constraints
+    /// - velocity-level constraints
+    /// - acceleration-level constraints
+    /// If includeDerivatives is true, the ordering is:
+    /// - position-level constraints
+    /// - first derivative of position-level constraints (denoted by suffix "d")
+    /// - velocity-level constraints
+    /// - second derivative of position-level constraints (suffix "dd")
+    /// - first derivative of velocity-level constraints (suffix "d")
+    /// - acceleration-level constraints
+    std::vector<std::string> getKinematicConstraintEquationNames(
+            bool includeDerivatives) const;
     /// @details Note: the return value is constructed fresh on every call from
     /// the internal property. Avoid repeated calls to this function.
     MocoInitialBounds getTimeInitialBounds() const;
     /// @copydoc getTimeInitialBounds()
     MocoFinalBounds getTimeFinalBounds() const;
-    /// Get information for state variables. If info was not specified for
-    /// a coordinate value, the coordinate range is used for the bounds.
-    /// If info was not specified for a coordinate speed, the
-    /// default_speed_bounds property is used.
+    /// Get information for state variables. See MocoPhase::setStateInfo().
     const MocoVariableInfo& getStateInfo(const std::string& name) const;
-    /// Get information for actuator controls. If info was not specified for
-    /// an actuator, the actuator's min and max control are used for the bounds.
+    /// Get information for actuator controls.
+    /// If the control is associated with a non-scalar actuator (i.e. uses
+    /// multiple control variables), then the control name will be the actuator
+    /// path appended by the control index (e.g. "/actuator_0");
+    /// See MocoPhase::setControlInfo().
     const MocoVariableInfo& getControlInfo(const std::string& name) const;
     const MocoParameter& getParameter(const std::string& name) const;
-    /// Get a MocoPathConstraint from this MocoPhase. Note: this does not
+    /// Get a cost by name. This returns a MocoGoal in cost mode.
+    const MocoGoal& getCost(const std::string& name) const;
+    /// Get a cost by index. The order is the same as in getCostNames().
+    /// Note: this does not perform a bounds check.
+    const MocoGoal& getCostByIndex(int index) const;
+    /// Get an endpoint constraint by name. This returns a MocoGoal in endpoint
+    /// constraint mode.
+    const MocoGoal& getEndpointConstraint(const std::string& name) const;
+    /// Get an endpoint constraint by index.
+    /// The order is the same as in getEndpointConstraintNames().
+    /// Note: this does not perform a bounds check.
+    const MocoGoal& getEndpointConstraintByIndex(int index) const;
+    /// Get a MocoPathConstraint. Note: this does not
     /// include MocoKinematicConstraints, use getKinematicConstraint() instead.
     const MocoPathConstraint& getPathConstraint(const std::string& name) const;
     /// Get a path constraint by index. The order is the same as
@@ -178,25 +223,6 @@ public:
     /// These functions are for use by MocoSolver%s, but can also be called
     /// by users for debugging.
     /// @{
-    /// Calculate the sum of integrand over all the integral cost terms in this
-    /// phase for the provided state. That is, the returned value is *not* an
-    /// integral over time.
-    SimTK::Real calcIntegralCost(const SimTK::State& state) const {
-        SimTK::Real integrand = 0;
-        for (const auto& cost : m_costs) {
-            integrand += cost->calcIntegralCost(state);
-        }
-        return integrand;
-    }
-    /// Calculate the sum of all the endpoint cost terms in this phase.
-    SimTK::Real calcEndpointCost(const SimTK::State& finalState) const {
-        SimTK::Real sum = 0;
-        // TODO cannot use controls.
-        for (const auto& cost : m_costs) {
-            sum += cost->calcEndpointCost(finalState);
-        }
-        return sum;
-    }
     /// Calculate the errors in all the scalar path constraint equations in this
     /// phase.
     void calcPathConstraintErrors(
@@ -263,7 +289,7 @@ private:
     mutable SimTK::State m_state_base;
     SimTK::ReferencePtr<const PositionMotion> m_position_motion_base;
     Model m_model_disabled_constraints;
-    mutable SimTK::State m_state_disabled_constraints;
+    mutable std::array<SimTK::State, 2> m_state_disabled_constraints;
     SimTK::ReferencePtr<const PositionMotion>
             m_position_motion_disabled_constraints;
     SimTK::ReferencePtr<DiscreteForces> m_constraint_forces;
@@ -275,12 +301,16 @@ private:
     std::unordered_map<std::string, MocoVariableInfo> m_control_infos;
 
     std::vector<std::unique_ptr<MocoParameter>> m_parameters;
-    std::vector<std::unique_ptr<MocoCost>> m_costs;
+    std::vector<std::unique_ptr<MocoGoal>> m_costs;
+    std::vector<std::unique_ptr<MocoGoal>> m_endpoint_constraints;
     std::vector<std::unique_ptr<MocoPathConstraint>> m_path_constraints;
     int m_num_path_constraint_equations = -1;
     int m_num_kinematic_constraint_equations = -1;
     std::vector<MocoKinematicConstraint> m_kinematic_constraints;
     std::map<std::string, std::vector<MocoVariableInfo>> m_multiplier_infos_map;
+    std::vector<std::string> m_kinematic_constraint_eq_names_with_derivatives;
+    std::vector<std::string>
+            m_kinematic_constraint_eq_names_without_derivatives;
 };
 
 } // namespace OpenSim

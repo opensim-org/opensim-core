@@ -161,7 +161,7 @@ void ball2d() {
     auto statesTimeSteppingTable = statesTimeStepping.exportToTable();
     STOFileAdapter::write(statesTimeSteppingTable, "ball2d_timestepping.sto");
 
-    MocoTool moco;
+    MocoStudy moco;
     moco.setName("ball2d");
 
     // Define the optimal control problem.
@@ -187,7 +187,7 @@ void ball2d() {
     MocoTropterSolver& ms = moco.initSolver();
     ms.set_num_mesh_points(500);
 
-    MocoIterate guess = ms.createGuess();
+    MocoTrajectory guess = ms.createGuess();
 
     // Setting this guess reduces the number of iterations from 90 to 6.
     // Can tweak the guess to test convergence (~50 iterations):
@@ -268,9 +268,7 @@ void pendulum() {
     auto statesTimeSteppingTable = statesTimeStepping.exportToTable();
     STOFileAdapter::write(statesTimeSteppingTable, "pendulum_timestepping.sto");
 
-
-
-    MocoTool moco;
+    MocoStudy moco;
     moco.setName("ball2d");
     MocoProblem& mp = moco.updProblem();
     mp.setModel(std::move(model));
@@ -283,7 +281,7 @@ void pendulum() {
 
     MocoTropterSolver& ms = moco.initSolver();
     ms.set_num_mesh_points(500);
-    MocoIterate guess = ms.createGuess();
+    MocoTrajectory guess = ms.createGuess();
     guess.setStatesTrajectory(statesTimeSteppingTable);
 
     ms.setGuess(guess);
@@ -360,7 +358,7 @@ void pendulumActivationCoordinateActuator() {
 
     /*
 
-    MocoTool moco;
+    MocoStudy moco;
     moco.setName("pendulumaca");
     MocoProblem& mp = moco.updProblem();
     mp.setModel(model);
@@ -373,7 +371,7 @@ void pendulumActivationCoordinateActuator() {
 
     MocoTropterSolver& ms = moco.initSolver();
     ms.set_num_mesh_points(500);
-    MocoIterate guess = ms.createGuess();
+    MocoTrajectory guess = ms.createGuess();
     guess.setStatesTrajectory(statesTimeSteppingTable);
 
     ms.setGuess(guess);
@@ -605,8 +603,7 @@ void slip(double rzvalue0 = 0, double rzspeed0 = 0) {
     auto statesTimeSteppingTable = statesTimeStepping.exportToTable();
     STOFileAdapter::write(statesTimeSteppingTable, "slip_timestepping.sto");
 
-
-    MocoTool moco;
+    MocoStudy moco;
     moco.setName("slip");
     MocoProblem& mp = moco.updProblem();
     mp.setModel(std::move(model));
@@ -624,7 +621,7 @@ void slip(double rzvalue0 = 0, double rzspeed0 = 0) {
     MocoTropterSolver& ms = moco.initSolver();
     ms.set_num_mesh_points(500);
     //ms.set_optim_max_iterations(2);
-    MocoIterate guess = ms.createGuess();
+    MocoTrajectory guess = ms.createGuess();
     //statesTimeSteppingTable.updMatrix() +=
     //        0.1 * SimTK::Test::randMatrix(guess.getNumTimes(), 6);
     //statesTimeSteppingTable.updDependentColumn("planar/ty/value") +=
@@ -719,8 +716,7 @@ void slipSolveForForce(double rzvalue0 = 0, double rzspeed0 = 0) {
     markersToUse.setColumnLabels({"foot_COM", "pelvis_COM"});
     visualize(*modelTS, statesTimeStepping);
 
-
-    MocoTool moco;
+    MocoStudy moco;
     moco.setName("slipSolveForForce");
     MocoProblem& mp = moco.updProblem();
     //mp.setModel(modelTS);
@@ -755,22 +751,22 @@ void slipSolveForForce(double rzvalue0 = 0, double rzspeed0 = 0) {
     // TODO filter statesTimeSteppingTable!
     // TODO only track coordinate values, not speeds.
 
-    auto* stateTracking = mp.addCost<MocoStateTrackingCost>("state_tracking");
+    auto* stateTracking = mp.addGoal<MocoStateTrackingCost>("state_tracking");
     stateTracking->setReference(statesToTrack);
 
-    mp.addCost<MocoControlCost>("effort");
+    mp.addGoal<MocoControlGoal>("effort");
 
-    //MocoMarkerTrackingCost markerTracking;
+    //MocoMarkerTrackingGoal markerTracking;
     //markerTracking.setName("marker_tracking");
     //MarkersReference markersRef(markersToUse);
     //markerTracking.setMarkersReference(markersRef);
     ////markerTracking.setFreeRadius(0.01);
     //markerTracking.set_weight(1);
-    //mp.addCost(markerTracking);
+    //mp.addGoal(markerTracking);
 
     // Solves in 3-4 minutes without contact tracking, 9 minutes with contact
     // tracking.
-    auto* grfTracking = mp.addCost<MocoForceTrackingCost>("grf_tracking");
+    auto* grfTracking = mp.addGoal<MocoForceTrackingCost>("grf_tracking");
     GCVSplineSet grfSplines(forcesFlattened);
     grfTracking->m_refspline_x = *grfSplines.getGCVSpline(0);
     grfTracking->m_refspline_y = *grfSplines.getGCVSpline(1);
@@ -794,7 +790,7 @@ void slipSolveForForce(double rzvalue0 = 0, double rzspeed0 = 0) {
     // time is about 5 minutes whether or not the convergence tolerance is set.
     // ms.set_optim_convergence_tolerance(1e-2);
     // ms.set_optim_constraint_tolerance(1e-2);
-    MocoIterate guess = ms.createGuess();
+    MocoTrajectory guess = ms.createGuess();
     guess.setStatesTrajectory(statesToTrack, true);
     ms.setGuess(guess);
 

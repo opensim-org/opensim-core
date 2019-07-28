@@ -20,66 +20,65 @@ Moco depends on the following software:
 1. **OpenSim**: Platform for simulating musculoskeletal systems.
    1. **Simbody**: Multibody dynamics.
 2. **Tropter**: C++ library for solving general optimal control problems with 
-direct collocation. Currently, Tropter's source code is part of Muscollo.
+direct collocation. Currently, Tropter's source code is part of Moco.
    1. **Ipopt**: Nonlinear programming solver.
    2. **Eigen**: C++ matrix library.
    3. **ColPack**: Used to efficiently 
    4. **ADOL-C**: Automatic differentiation.
 3. **CasADi**: Algorithmic differentiation and interface to nonlinear solvers.
 
-On **Linux** and **macOS**, you must obtain these packages on your own. Most of
-them can be found in a package manager (`apt-get` on Ubuntu, Homebrew on macOS).
-
 Build the dependencies by building the CMake project in the `dependencies`
 folder.
-
-Ubuntu
-------
-
-```bash
-sudo apt install git cmake pkg-config liblapack-dev coinor-libipopt-dev
-```
-
-Install Eigen, ColPack, ADOL-C, and OpenSim using the CMake project in the
-`dependencies` directory (TODO improve instructions).
-
-For some reason, the ADOL-C in the Ubuntu package repositories does not work well
-with Muscollo/tropter.
-
-Mac
----
-You must first install the following:
- - `gfortran`
- - `pkgconfig`
- - `autoreconf`
- - `aclocal`
- - `glibtoolize`
- - `wget`
- - `doxygen` (optional)
-
-You can install these with Homebrew:
-
-```bash
-brew install pkgconfig gcc autoconf libtool automake wget doxygen
-```
-
-If you use Homebrew to obtain ColPack and ADOL-C, make 
-sure they are compiled with the same compiler you will use for Muscollo and 
-tropter (by default, Homebrew compiles these with GCC):
-
-```bash
-brew install --cc=clang colpack
-brew install --cc=clang adol-c
-```
 
 
 Windows
 -------
 
 On **Windows**, you can run the `build_on_windows.ps1` PowerShell script to 
-obtain Muscollo's dependencies and to build Muscollo. This script assumes you
-have installed **Microsoft Visual Studio 2015** (with C++ support) and **CMake**
-3.2 or greater.
+obtain Moco's dependencies and to build Moco. This script assumes you
+have installed **Microsoft Visual Studio 2017** (with C++ support) and **CMake**
+3.2 or greater. You can alternatively use **Microsoft Visual Studio 2015**,
+but no other versions of Visual Studio will work with Moco.
+
+
+Mac
+---
+
+Install the following:
+- `gfortran`
+- `pkgconfig`
+- `autoreconf`
+- `aclocal`
+- `glibtoolize`
+- `wget`
+- `cmake`
+- `doxygen` (optional)
+
+You can install these with Homebrew:
+
+```bash
+brew install cmake pkgconfig gcc autoconf libtool automake wget doxygen
+```
+
+Nagivate to the directory where you placed the opensim-moco source code.
+
+ex: `cd ~/opensim-moco`
+
+Run build_on_mac from the terminal.
+
+ex `./build_on_mac.sh`
+
+
+Ubuntu
+------
+
+```bash
+sudo apt install git wget build-essential libtool autoconf cmake pkg-config gfortran liblapack-dev
+```
+
+Use the CMake project in the
+`dependencies` directory to install remaining dependencies.
+
 
 Design goals
 ============
@@ -124,7 +123,7 @@ Design goals
    computer, but should provide the option to only use 1 thread (if the user is 
    solving multiple problems in parallel).
    
-7. Users can construct a Muscollo problem in MATLAB and Python.
+7. Users can construct a Moco problem in MATLAB and Python.
 
 8. The software is easy to build from source.
 

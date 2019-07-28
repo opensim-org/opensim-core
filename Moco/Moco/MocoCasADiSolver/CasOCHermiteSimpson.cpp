@@ -26,7 +26,7 @@ namespace CasOC {
 DM HermiteSimpson::createQuadratureCoefficientsImpl() const {
 
     // The duration of each mesh interval.
-    const DM mesh = DM::linspace(0, 1, m_numMeshPoints);
+    const DM mesh(m_solver.getMesh());
     const DM meshIntervals = mesh(Slice(1, m_numMeshPoints)) -
                              mesh(Slice(0, m_numMeshPoints - 1));
     // Simpson quadrature includes integrand evaluations at the midpoint.
@@ -51,96 +51,56 @@ DM HermiteSimpson::createKinematicConstraintIndicesImpl() const {
     return indices;
 }
 
-void HermiteSimpson::applyConstraintsImpl(const VariablesMX& vars,
-        const casadi::MX& xdot, const casadi::MX& residual,
-        const casadi::MX& kcerr, const casadi::MXVector& path) {
+void HermiteSimpson::calcDefectsImpl(const casadi::MX& x,
+        const casadi::MX& xdot, casadi::MX& defects) const {
+    // For more information, see doxygen documentation for the class.
 
-    // Breakdown of constraints for Hermite-Simpson collocation.
+    const int NS = m_problem.getNumStates();
 
-    // Defect constraints.
-    // -------------------
-    // For each state variable, there is one pair of defect constraints
-    // (Hermite interpolant defect + Simpson integration defect) per mesh
-    // interval. Each mesh interval includes two mesh points (at the interval's
-    // endpoints) and an additional collocation point at the mesh interval
-    // midpoint. All three mesh interval points (2 mesh points + 1 collocation
-    // point) are used to construct the defects (see below).
-
-    // Kinematic constraints + path constraints.
-    // -----------------------------------------
-    // Kinematic constraint and path constraint errors are enforced only at the
-    // mesh points. Errors at collocation points at the mesh interval midpoint
-    // are ignored.
-
-    // We have arranged the code this way so that all constraints at a given
-    // mesh point are grouped together (organizing the sparsity of the Jacobian
-    // this way might have benefits for sparse linear algebra).
-    const auto& states = vars.at(Var::states);
-    const DM zeroS = casadi::DM::zeros(m_problem.getNumStates(), 1);
-    const DM zeroR =
-            casadi::DM::zeros(m_problem.getNumMultibodyDynamicsEquations(), 1);
-
-    int time_i, time_mid, time_ip1;
-    for (int imesh = 0; imesh < m_numMeshPoints; ++imesh) {
-        time_i = 2 * imesh; // Needed for defects.
+    int time_i;
+    int time_mid;
+    int time_ip1;
+    for (int imesh = 0; imesh < m_numMeshIntervals; ++imesh) {
+        time_i = 2 * imesh; // Needed for defects and path constraints.
 
         // We enforce defect constraints on a mesh interval basis, so add
         // constraints until the number of mesh intervals is reached.
-        if (imesh < m_numMeshIntervals) {
+        time_mid = 2 * imesh + 1;
+        time_ip1 = 2 * imesh + 2;
+
+        const auto h = m_times(time_ip1) - m_times(time_i);
+        const auto x_i = x(Slice(), time_i);
+        const auto x_mid = x(Slice(), time_mid);
+        const auto x_ip1 = x(Slice(), time_ip1);
+        const auto xdot_i = xdot(Slice(), time_i);
+        const auto xdot_mid = xdot(Slice(), time_mid);
+        const auto xdot_ip1 = xdot(Slice(), time_ip1);
+
+        // Hermite interpolant defects.
+        defects(Slice(0, NS), imesh) =
+                x_mid - 0.5 * (x_ip1 + x_i) - (h / 8.0) * (xdot_i - xdot_ip1);
+
+        // Simpson integration defects.
+        defects(Slice(NS, 2 * NS), imesh) =
+                x_ip1 - x_i - (h / 6.0) * (xdot_ip1 + 4.0 * xdot_mid + xdot_i);
+    }
+}
+
+void HermiteSimpson::calcInterpolatingControlsImpl(
+        const casadi::MX& controls, casadi::MX& interpControls) const {
+    if (m_problem.getNumControls() &&
+            m_solver.getInterpolateControlMidpoints()) {
+        int time_i;
+        int time_mid;
+        int time_ip1;
+        for (int imesh = 0; imesh < m_numMeshIntervals; ++imesh) {
+            time_i = 2 * imesh;
             time_mid = 2 * imesh + 1;
             time_ip1 = 2 * imesh + 2;
-
-            const auto h = m_times(time_ip1) - m_times(time_i);
-            const auto x_i = states(Slice(), time_i);
-            const auto x_mid = states(Slice(), time_mid);
-            const auto x_ip1 = states(Slice(), time_ip1);
-            const auto xdot_i = xdot(Slice(), time_i);
-            const auto xdot_mid = xdot(Slice(), time_mid);
-            const auto xdot_ip1 = xdot(Slice(), time_ip1);
-
-            // Hermite interpolant defects.
-            addConstraints(zeroS, zeroS,
-                    x_mid - 0.5 * (x_ip1 + x_i) -
-                            (h / 8.0) * (xdot_i - xdot_ip1));
-
-            // Simpson integration defects.
-            addConstraints(zeroS, zeroS,
-                    x_ip1 - x_i -
-                            (h / 6.0) * (xdot_ip1 + 4.0 * xdot_mid + xdot_i));
-
-            // The residuals are enforced at the mesh interval midpoints.
-            if (m_solver.isDynamicsModeImplicit()) {
-                addConstraints(zeroR, zeroR, residual(Slice(), time_i));
-                addConstraints(zeroR, zeroR, residual(Slice(), time_mid));
-                // We only need to add a constraint on this time point for the
-                // last mesh interval since, for all other mesh intervals, the
-                // time_ip1 point for a given mesh interval is covered by the
-                // next mesh interval's time_i point.
-                if (imesh == m_numMeshIntervals - 1) {
-                    addConstraints(zeroR, zeroR, residual(Slice(), time_ip1));
-                }
-            }
-        }
-
-        // Kinematic constraint errors.
-        if (m_problem.getNumKinematicConstraintEquations()) {
-            DM kinConLowerBounds(
-                    m_problem.getNumKinematicConstraintEquations(), 1);
-            DM kinConUpperBounds(
-                    m_problem.getNumKinematicConstraintEquations(), 1);
-
-            const auto& bounds = m_problem.getKinematicConstraintBounds();
-            kinConLowerBounds(Slice()) = bounds.lower;
-            kinConUpperBounds(Slice()) = bounds.upper;
-
-            addConstraints(kinConLowerBounds, kinConUpperBounds,
-                    kcerr(Slice(), imesh));
-        }
-
-        for (int ipc = 0; ipc < (int)path.size(); ++ipc) {
-            const auto& pathInfo = m_problem.getPathConstraintInfos()[ipc];
-            addConstraints(pathInfo.lowerBounds, pathInfo.upperBounds,
-                    path[ipc](Slice(), imesh));
+            const auto c_i = controls(Slice(), time_i);
+            const auto c_mid = controls(Slice(), time_mid);
+            const auto c_ip1 = controls(Slice(), time_ip1);
+            interpControls(Slice(), imesh) = c_mid - 0.5 * (c_ip1 + c_i);
         }
     }
 }

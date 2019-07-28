@@ -18,7 +18,7 @@ using namespace OpenSim;
 using namespace SimTK;
 %}
 
-// Add support for converting between NumPy and C arrays (for MocoIterate).
+// Add support for converting between NumPy and C arrays (for MocoTrajectory).
 %include "numpy.i"
 %init %{
     import_array();
@@ -57,6 +57,8 @@ using namespace SimTK;
         if hasattr(v, '__len__'):
             if len(v) > 2:
                 raise Exception("Bounds cannot have more than 2 elements.")
+            elif len(v) == 0:
+                return cls()
             elif len(v) == 1:
                 return cls(v[0])
             elif len(v) == 2:
@@ -82,7 +84,25 @@ using namespace SimTK;
     if len(args) >= 4 and not type(args[3]) is MocoFinalBounds:
         args[3] = self._convert(MocoFinalBounds, args[3])
 %}
+%pythonprepend OpenSim::MocoPhase::setStateInfoPattern %{
+    args = list(args)
+    if len(args) >= 2 and not type(args[1]) is MocoBounds:
+        args[1] = self._convert(MocoBounds, args[1])
+    if len(args) >= 3 and not type(args[2]) is MocoInitialBounds:
+        args[2] = self._convert(MocoInitialBounds, args[2])
+    if len(args) >= 4 and not type(args[3]) is MocoFinalBounds:
+        args[3] = self._convert(MocoFinalBounds, args[3])
+%}
 %pythonprepend OpenSim::MocoPhase::setControlInfo %{
+    args = list(args)
+    if len(args) >= 2 and not type(args[1]) is MocoBounds:
+        args[1] = self._convert(MocoBounds, args[1])
+    if len(args) >= 3 and not type(args[2]) is MocoInitialBounds:
+        args[2] = self._convert(MocoInitialBounds, args[2])
+    if len(args) >= 4 and not type(args[3]) is MocoFinalBounds:
+        args[3] = self._convert(MocoFinalBounds, args[3])
+%}
+%pythonprepend OpenSim::MocoPhase::setControlInfoPattern %{
     args = list(args)
     if len(args) >= 2 and not type(args[1]) is MocoBounds:
         args[1] = self._convert(MocoBounds, args[1])
@@ -98,6 +118,8 @@ using namespace SimTK;
         if hasattr(v, '__len__'):
             if len(v) > 2:
                 raise Exception("Bounds cannot have more than 2 elements.")
+            elif len(v) == 0:
+                return cls()
             elif len(v) == 1:
                 return cls(v[0])
             elif len(v) == 2:
@@ -123,6 +145,15 @@ using namespace SimTK;
     if len(args) >= 4 and not type(args[3]) is MocoFinalBounds:
         args[3] = self._convert(MocoFinalBounds, args[3])
 %}
+%pythonprepend OpenSim::MocoProblem::setStateInfoPattern %{
+    args = list(args)
+    if len(args) >= 2 and not type(args[1]) is MocoBounds:
+        args[1] = self._convert(MocoBounds, args[1])
+    if len(args) >= 3 and not type(args[2]) is MocoInitialBounds:
+        args[2] = self._convert(MocoInitialBounds, args[2])
+    if len(args) >= 4 and not type(args[3]) is MocoFinalBounds:
+        args[3] = self._convert(MocoFinalBounds, args[3])
+%}
 %pythonprepend OpenSim::MocoProblem::setControlInfo %{
     args = list(args)
     if len(args) >= 2 and not type(args[1]) is MocoBounds:
@@ -132,15 +163,34 @@ using namespace SimTK;
     if len(args) >= 4 and not type(args[3]) is MocoFinalBounds:
         args[3] = self._convert(MocoFinalBounds, args[3])
 %}
+%pythonprepend OpenSim::MocoProblem::setControlInfoPattern %{
+    args = list(args)
+    if len(args) >= 2 and not type(args[1]) is MocoBounds:
+        args[1] = self._convert(MocoBounds, args[1])
+    if len(args) >= 3 and not type(args[2]) is MocoInitialBounds:
+        args[2] = self._convert(MocoInitialBounds, args[2])
+    if len(args) >= 4 and not type(args[3]) is MocoFinalBounds:
+        args[3] = self._convert(MocoFinalBounds, args[3])
+%}
 
+// MocoTrajectory's functions contain lots of matrices, and Python users
+// feel more comfortable providing/getting these matrices as NumPy types rather
+// than as SimTK numeric types. We can use SWIG NumPy typemaps to accomplish
+// this.
 // https://docs.scipy.org/doc/numpy/reference/swig.interface-file.html
 // https://scipy-cookbook.readthedocs.io/items/SWIG_NumPy_examples.html
 // For constructor.
+// The Python version of any Moco function taking the pair of arguments
+// (int ntime, double* time) or (int nparams, double* params) will instead
+// take a single NumPy array.
 %apply (int DIM1, double* IN_ARRAY1) {
     (int ntime, double* time),
     (int nparams, double* params)
 };
 // For constructor.
+// The Python version of any Moco function taking sets of arguments
+// (int nrowstates, int ncolstates, double* states) will instead take a single
+// NumPy 2D array.
 %apply (int DIM1, int DIM2, double* IN_ARRAY2) {
     (int nrowstates, int ncolstates, double* states),
     (int nrowcontrols, int ncolcontrols, double* controls),
@@ -148,6 +198,12 @@ using namespace SimTK;
     (int nrowderivs, int ncolderivs, double* derivs)
 };
 // For getState(), etc.
+// The typemaps for functions that return matrices is more complicated: we must
+// pass in a NumPy array that already has the correct size. We create a (hidden)
+// C++ function that takes, for example, (int n, double* timeOut)
+// (e.g., _getTimeMat()).
+// Then we create a Python function that invokes the hidden C++ function with
+// a correctly-sized NumPy array (e.g., getTimeMat()).
 %apply (int DIM1, double* ARGOUT_ARRAY1) {
     (int n, double* timeOut),
     (int n, double* stateOut),
@@ -157,14 +213,15 @@ using namespace SimTK;
     (int n, double* paramsOut)
 };
 // For getStatesTrajectory(), etc.
+// Similar to above but for 2D arrays.
 %apply (int DIM1, int DIM2, double* INPLACE_FARRAY2) {
     (int nrow, int ncol, double* statesOut),
     (int nrow, int ncol, double* controlsOut),
     (int nrow, int ncol, double* multsOut),
     (int nrow, int ncol, double* derivsOut)
 };
-%extend OpenSim::MocoIterate {
-    MocoIterate(
+%extend OpenSim::MocoTrajectory {
+    MocoTrajectory(
             int ntime,
             double* time,
             std::vector<std::string> state_names,
@@ -175,7 +232,7 @@ using namespace SimTK;
             int nrowcontrols, int ncolcontrols, double* controls,
             int nrowmults, int ncolmults, double* mults,
             int nparams, double* params) {
-        return new MocoIterate(SimTK::Vector(ntime, time, true),
+        return new MocoTrajectory(SimTK::Vector(ntime, time, true),
                         std::move(state_names),
                         std::move(control_names),
                         std::move(multiplier_names),
@@ -185,7 +242,7 @@ using namespace SimTK;
                         SimTK::Matrix(nrowmults, ncolmults, mults),
                         SimTK::RowVector(nparams, params, true));
     }
-    MocoIterate(
+    MocoTrajectory(
             int ntime,
             double* time,
             std::vector<std::string> state_names,
@@ -198,7 +255,7 @@ using namespace SimTK;
             int nrowmults, int ncolmults, double* mults,
             int nrowderivs, int ncolderivs, double* derivs,
             int nparams, double* params) {
-        return new MocoIterate(SimTK::Vector(ntime, time, true),
+        return new MocoTrajectory(SimTK::Vector(ntime, time, true),
                 std::move(state_names),
                 std::move(control_names),
                 std::move(multiplier_names),
@@ -339,7 +396,7 @@ using namespace SimTK;
 %pythonappend OpenSim::MocoPhase::addParameter %{
     ptr._markAdopted()
 %}
-%pythonappend OpenSim::MocoPhase::addCost %{
+%pythonappend OpenSim::MocoPhase::addGoal %{
     ptr._markAdopted()
 %}
 %pythonappend OpenSim::MocoPhase::addPathConstraint %{
@@ -351,14 +408,14 @@ using namespace SimTK;
 %pythonappend OpenSim::MocoProblem::addParameter %{
     ptr._markAdopted()
 %}
-%pythonappend OpenSim::MocoProblem::addCost %{
+%pythonappend OpenSim::MocoProblem::addGoal %{
     ptr._markAdopted()
 %}
 %pythonappend OpenSim::MocoProblem::addPathConstraint %{
     ptr._markAdopted()
 %}
 
-%pythonprepend OpenSim::MocoTool::solve %{
+%pythonprepend OpenSim::MocoStudy::solve %{
     if MocoCasADiSolver.safeDownCast(self.updSolver()):
         solver = MocoCasADiSolver.safeDownCast(self.updSolver())
         solver.setRunningInPython(True)
@@ -370,4 +427,4 @@ using namespace SimTK;
 %include <Bindings/preliminaries.i>
 %include <Bindings/moco.i>
 
-// %thread OpenSim::MocoTool::solve;
+// %thread OpenSim::MocoStudy::solve;
