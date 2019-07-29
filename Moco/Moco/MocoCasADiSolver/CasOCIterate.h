@@ -72,6 +72,7 @@ struct Iterate {
 struct Solution : public Iterate {
     casadi::Dict stats;
     double objective;
+    std::vector<std::pair<std::string, double>> cost_breakdown; // TODO objective_breakdown?
 };
 
 } // namespace CasOC

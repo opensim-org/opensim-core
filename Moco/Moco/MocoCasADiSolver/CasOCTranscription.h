@@ -108,6 +108,9 @@ protected:
     void printConstraintValues(const Iterate& it,
             const Constraints<casadi::DM>& constraints,
             std::ostream& stream = std::cout) const;
+    void printCostBreakdown(const Iterate& it,
+            const Cost TODO,
+            std::ostream& stream = std::cout) const;
 
     const Solver& m_solver;
     const Problem& m_problem;
