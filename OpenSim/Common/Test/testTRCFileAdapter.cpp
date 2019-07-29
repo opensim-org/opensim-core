@@ -145,7 +145,7 @@ int main() {
         std::cout << "  " << filename << std::endl;
         TRCFileAdapter trcfileadapter{};
         try {
-            auto table = trcfileadapter.readFile(filename);
+            TimeSeriesTable_<SimTK::Vec3> table(filename);
             trcfileadapter.write(table, tmpfile);
             compareFiles(filename, tmpfile);
         }

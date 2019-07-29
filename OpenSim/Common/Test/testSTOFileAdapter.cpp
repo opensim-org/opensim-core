@@ -189,7 +189,7 @@ void testReadingWriting() {
             table.appendRow(t, {elem, elem, elem});
         }
         STOFileAdapter_<T>::write(table, fileA);
-        auto table_copy = STOFileAdapter_<T>::readFile(fileA);
+        TimeSeriesTable_<T> table_copy(fileA);
         auto table_ptr = FileAdapter::createAdapterBasedOnExtension(fileA)->read(fileA).at("table");
         DataAdapter::InputTables inputTables{};
         inputTables.emplace(std::string{"table"}, table_ptr.get());
@@ -203,7 +203,7 @@ void testReadingWriting() {
         // Empty table.
         TimeSeriesTable_<T> table{};
         STOFileAdapter_<T>::write(table, fileA);
-        auto table_copy = STOFileAdapter_<T>::readFile(fileA);
+        TimeSeriesTable_<T> table_copy(fileA);
         auto table_ptr = FileAdapter::createAdapterBasedOnExtension(fileA)->read(fileA).at("table");
         DataAdapter::InputTables inputTables{};
         inputTables.emplace(std::string{"table"}, table_ptr.get());
@@ -217,7 +217,7 @@ void testReadingWriting() {
         // No columns.
         TimeSeriesTable_<T> table{std::vector<double>{0, 0.1, 0.2}};
         STOFileAdapter_<T>::write(table, fileA);
-        auto table_copy = STOFileAdapter_<T>::readFile(fileA);
+        TimeSeriesTable_<T> table_copy(fileA);
         auto table_ptr = FileAdapter::createAdapterBasedOnExtension(fileA)->read(fileA).at("table");
         DataAdapter::InputTables inputTables{};
         inputTables.emplace(std::string{"table"}, table_ptr.get());
@@ -248,12 +248,12 @@ int main() {
     for(const auto& filename : filenames) {
         std::cout << "  " << filename << std::endl;
         STOFileAdapter_<double> stofileadapter{};
-        auto table = stofileadapter.readFile(filename);
+        TimeSeriesTable table(filename);
         stofileadapter.write(table, tmpfile);
         compareFiles(filename, tmpfile);
     }
 
-    std::cout << "Testing FileAdapter::readFile() and FileAdapter::writeFile()"
+    std::cout << "Testing FileAdapter::read() and FileAdapter::writeFile()"
               << std::endl;
     for(const auto& filename : filenames) {
         std::cout << "  " << filename << std::endl;
@@ -322,12 +322,12 @@ int main() {
               << std::endl;
     std::string emptyFileName("testSTOFileAdapter_empty.sto");
     std::ofstream emptyFile(emptyFileName);
-    SimTK_TEST_MUST_THROW_EXC(STOFileAdapter::readFile(emptyFileName), FileIsEmpty);
+    SimTK_TEST_MUST_THROW_EXC(FileAdapter::createAdapterBasedOnExtension(emptyFileName)->read(emptyFileName), FileIsEmpty);
     std::remove(emptyFileName.c_str());
 
     std::cout << "Testing reading STO version 1.0 using "
-              << "FileAdapter::readFile()." << std::endl;
-    // There was a bug where the FileAdapter::readFile() could not handle
+              << "FileAdapter::read()." << std::endl;
+    // There was a bug where the FileAdapter::read() could not handle
     // version-1.0 STO files because the "DataType" metadata was required to
     // determine the template argument for STOFileAdapter (Issue #1725).
     // This test ensures that bug is fixed (test.sto is version 1.0).
@@ -339,3 +339,6 @@ int main() {
 
     return 0;
 }
+
+
+

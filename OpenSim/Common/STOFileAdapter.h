@@ -137,7 +137,7 @@ STOFileAdapter_<T>*
 STOFileAdapter_<T>::clone() const {
     return new STOFileAdapter_{*this};
 }
-
+#if 0
 template<typename T>
 TimeSeriesTable_<T>
 STOFileAdapter_<T>::readFile(const std::string& fileName) {
@@ -146,7 +146,7 @@ STOFileAdapter_<T>::readFile(const std::string& fileName) {
                      at(DelimFileAdapter<T>::tableString());
     return static_cast<TimeSeriesTable_<T>&>(*abs_table);
 }
-
+#endif
 template<typename T>
 void 
 STOFileAdapter_<T>::write(const TimeSeriesTable_<T>& table, 

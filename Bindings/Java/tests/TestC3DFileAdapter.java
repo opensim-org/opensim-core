@@ -25,7 +25,7 @@ class TestC3DFileAdapter {
         String markerFileName = new String("markers.mot");
         STOFileAdapter stoAdapter = new STOFileAdapter();
         stoAdapter.write(markerTableFlat, markerFileName);
-        TimeSeriesTable markerTableDouble = stoAdapter.readFile(markerFileName);
+        TimeSeriesTable markerTableDouble(markerFileName);
         assert markerTableDouble.getNumRows()    == 1103;
         assert markerTableDouble.getNumColumns() == 40 * 3;
 
@@ -86,7 +86,7 @@ class TestC3DFileAdapter {
         String forceFileName = new String("forces.mot");
         stoAdapter = new STOFileAdapter();
         stoAdapter.write(forceTableFlat, forceFileName);
-        TimeSeriesTable forceTableDouble = stoAdapter.readFile(forceFileName);
+        TimeSeriesTable forceTableDouble(forceFileName);
         assert forceTableDouble.getNumRows()    == 8824;
         assert forceTableDouble.getNumColumns() == 6 * 3;
 
