@@ -98,9 +98,9 @@ void test(const std::string filename) {
         to_string(MaximumLoadTimeInMS) + "ms.");
     #endif
 */
-#if 0
-    auto& marker_table = tables.at("markers");
-    auto&  force_table = tables.at("forces");
+
+    TimeSeriesTable_<SimTK::Vec3>* marker_table = static_cast<TimeSeriesTable_<SimTK::Vec3>*>(tables.at("markers").get());
+    TimeSeriesTable_<SimTK::Vec3>* force_table = static_cast<TimeSeriesTable_<SimTK::Vec3>*>(tables.at("forces").get());
     downsample_table(*marker_table, 10);
     downsample_table(*force_table, 100);
 
@@ -134,8 +134,8 @@ void test(const std::string filename) {
 
     // Verify that marker data was written out and can be read in
     t0 = std::clock();
-    auto markers = trc_adapter.readFile(marker_file);
-    auto std_markers = trc_adapter.readFile("std_" + marker_file);
+    TimeSeriesTable_<SimTK::Vec3> markers(marker_file);
+    TimeSeriesTable_<SimTK::Vec3> std_markers("std_" + marker_file);
     cout << "\tRead'" << marker_file << "' and its standard in "
         << 1.e3*(std::clock() - t0) / CLOCKS_PER_SEC << "ms" << endl;
 
@@ -148,8 +148,8 @@ void test(const std::string filename) {
     cout << "\tMarkers " << marker_file << " equivalent to standard." << endl;
 
     // Verify that grfs data was written out and can be read in
-    auto forces = sto_adapter.readFile(forces_file);
-    auto std_forces = sto_adapter.readFile("std_" + forces_file);
+    TimeSeriesTable forces(forces_file);
+    TimeSeriesTable std_forces("std_" + forces_file);
     // Compare C3DFileAdapter read-in and written forces data
     compare_tables<SimTK::Vec3>(forces.pack<SimTK::Vec3>(), 
                                 *force_table,
@@ -160,11 +160,11 @@ void test(const std::string filename) {
 
     cout << "\tForces " << forces_file << " equivalent to standard." << endl;
 
-    
     t0 = std::clock();
     // Reread in C3D file with forces resolved to the COP 
-    auto tables2 = C3DFileAdapter::readFile(filename,
-        C3DFileAdapter::ForceLocation::CenterOfPressure);
+    auto c3dFileAdapter2 = C3DFileAdapter{};
+    c3dFileAdapter2.setLocationForForceExpression(C3DFileAdapter::ForceLocation::CenterOfPressure);
+    auto tables2 = c3dFileAdapter2.read(filename);
     
     loadTime = 1.e3*(std::clock() - t0) / CLOCKS_PER_SEC;
     cout << "\tC3DFileAdapter '" << filename << "' read with forces at COP in "
@@ -176,12 +176,12 @@ void test(const std::string filename) {
         to_string(MaximumLoadTimeInMS) + "ms.");
     #endif
 
-    auto& force_table_cop = tables2.at("forces");
+    TimeSeriesTable_<SimTK::Vec3>* force_table_cop = static_cast<TimeSeriesTable_<SimTK::Vec3>*>(tables2.at("forces").get());
     downsample_table(*force_table_cop, 100);
 
     sto_adapter.write(force_table_cop->flatten(), "cop_"+ forces_file);
 
-    auto std_forces_cop = sto_adapter.readFile("std_cop_" + forces_file);
+    TimeSeriesTable std_forces_cop("std_cop_" + forces_file);
     // Compare C3DFileAdapter written forces data to standard
     // Note std generated using MATLAB C3D processing scripts 
     compare_tables<SimTK::Vec3>(*force_table_cop, 
@@ -192,7 +192,7 @@ void test(const std::string filename) {
 
     cout << "\ttestC3DFileAdapter '" << filename << "' completed in "
         << 1.e3*(std::clock() - startTime) / CLOCKS_PER_SEC  << "ms" << endl;
-#endif
+
 }
 
 int main() {
