@@ -3,6 +3,10 @@ namespace OpenSim {
 
 @page mocotheoryguide Moco Theory Guide
 
+This guide explains the type of optimal control problems Moco can solve,
+in mathematical form, and how these problems are transcribed into
+nonlinear optimization problems.
+
 @tableofcontents
 
 @section mocoocp Optimal control problem

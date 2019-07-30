@@ -123,6 +123,13 @@ equations. That is, they are in the form \f$ 0 = f(y, \dot{y}) \f$ rather than
 \f$ \dot{y} = f(y) \f$. See the descriptions for the specific transcription
 schemes for more detail.
 
+@note **Implicit versus explicit integrators**: Differential equations can be
+implicit and explicit, but so can numerical integrators. This is often a point
+of confusion. Implicit and explicit numerical integrators describe types of
+methods for solving differential equations; both implicit and explicit numerical
+integrators can be used with explicit differential equations, while only
+implicit numerical integrators can be used with implicit differential equations.
+
 @subsection kincon Kinematic constraints
 
 Moco supports enforcing OpenSim kinematic constraints in optimal control

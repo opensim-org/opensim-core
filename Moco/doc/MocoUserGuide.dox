@@ -25,6 +25,22 @@ custom optimal control problem using the MocoStudy class.
 
 - @subpage mocostudy
 
+@section customgoal Defining a custom goal or cost
+
+Moco allows you to compose your cost from multiple existing cost terms. This
+gives you flexibility and means that you usually do not need to write your
+cost yourself, even if it has many terms. Moco's existing costs are ususally
+well-tested and work well with Moco's solvers, so we encourage you to use them
+if possible. In the case that you want to create your own custom cost term,
+you can derive from MocoGoal in C++.
+
+If you do not want to write C++ code, you can prototype your cost in Matlab
+and we can help convert it to C++. See the Matlab example
+@ref examplePrototypeCustomGoal.m for more information.
+
+In the future, Moco could allow you to define custom cost terms in Python. If
+this is of interest to you, please let the Moco developers know (on GitHub).
+
 @section utilities Utilities
 
 Moco contains utilities for creating models, modifying models,
