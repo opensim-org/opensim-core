@@ -114,11 +114,11 @@ public:
     ~STOFileAdapter_()                                 = default;
 
     STOFileAdapter_* clone() const override;
-
+#if 0
     /** Read a STO file.                                                      */
     static
     TimeSeriesTable_<T> readFile(const std::string& fileName);
-
+#endif
     /** Write a STO file.                                                     */
     static
     void write(const TimeSeriesTable_<T>& table, const std::string& fileName);
