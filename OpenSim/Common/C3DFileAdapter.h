@@ -132,8 +132,6 @@ public:
         return std::shared_ptr< OpenSim::TimeSeriesTableVec3>(static_cast<OpenSim::TimeSeriesTableVec3*>(adt.get()));
     }
 
-    std::shared_ptr<TimeSeriesTableVec3> getForcesTimeSeries();
-
     static const std::string _markers;
     static const std::string _forces;
 
