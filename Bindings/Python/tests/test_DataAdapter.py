@@ -42,7 +42,7 @@ class TestDataAdapter(unittest.TestCase):
         assert markers.getNumColumns() == 44
         assert forces.getNumRows()     == 9992
         assert forces.getNumColumns()  == 6
-        adapter.setLocationForForceExpression(osim.C3DFileAdapter.ForceLoation.CenterOfPressure)
+        adapter.setLocationForForceExpression(1)
         tables = adapter.read(os.path.join(test_dir, 'walking5.c3d'))
 
         # Marker data read from C3D.

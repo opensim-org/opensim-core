@@ -407,6 +407,27 @@ namespace OpenSim {
 %include <OpenSim/Common/XsensDataReader.h>
 %include <OpenSim/Common/C3DFileAdapter.h>
 
+%extend OpenSim::C3DFileAdapter {
+    void setLocationForForceExpression(unsigned int wrt) {
+        C3DFileAdapter::ForceLocation location;
+        switch(wrt) {
+            case 0:
+                location = C3DFileAdapter::ForceLocation::OriginOfForcePlate;
+                break;
+            case 1:
+                location = C3DFileAdapter::ForceLocation::CenterOfPressure;
+                break;
+            case 2:
+                location = C3DFileAdapter::ForceLocation::PointOfWrenchApplication;
+                break;
+            default:
+                throw OpenSim::Exception{
+                    "An invalid C3DFileAdapter::ForceLocation was provided."};
+        }
+        setLocationForForceExpression(location);
+    };
+};
+
 namespace OpenSim {
     %ignore TableSource_::TableSource_(TableSource_ &&);
 }
