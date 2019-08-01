@@ -97,11 +97,14 @@ public:
     ~C3DFileAdapter()                                = default;
 
     C3DFileAdapter* clone() const override;
-
+    /**  C3DFileAdpater provides options for expressing the force-plate 
+        measurements either as the net force and moments expressed at the 
+        ForcePlateOrigin, the CentereOfPressure, or the 
+        PointOfWrenchApplication  This function sets the option. */
     void setLocationForForceExpression(const ForceLocation location) {
         _location = location;
     }
-
+    /** Retrieve the option for location for force expression */
     const ForceLocation getLocationForForceExpression() const {
         return _location;
     }
