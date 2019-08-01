@@ -82,7 +82,8 @@ void test(const std::string filename) {
     const double MaximumLoadTimeInMS = 100;
     
     std::clock_t startTime = std::clock();
-    auto tables = C3DFileAdapter{}.read(filename);
+    C3DFileAdapter c3dFileAdapter{};
+    auto tables = c3dFileAdapter.read(filename);
 
     double loadTime = 1.e3*(std::clock() - startTime) / CLOCKS_PER_SEC;
 
@@ -99,8 +100,8 @@ void test(const std::string filename) {
     #endif
 */
 
-    TimeSeriesTable_<SimTK::Vec3>* marker_table = static_cast<TimeSeriesTable_<SimTK::Vec3>*>(tables.at("markers").get());
-    TimeSeriesTable_<SimTK::Vec3>* force_table = static_cast<TimeSeriesTable_<SimTK::Vec3>*>(tables.at("forces").get());
+    std::shared_ptr<TimeSeriesTableVec3> marker_table = c3dFileAdapter.getMarkersTimeSeries(tables);
+    std::shared_ptr<TimeSeriesTableVec3> force_table = c3dFileAdapter.getForcesTimeSeries(tables);
     downsample_table(*marker_table, 10);
     downsample_table(*force_table, 100);
 
@@ -175,8 +176,7 @@ void test(const std::string filename) {
         "Unable to load '" + filename + "' within " +
         to_string(MaximumLoadTimeInMS) + "ms.");
     #endif
-
-    TimeSeriesTable_<SimTK::Vec3>* force_table_cop = static_cast<TimeSeriesTable_<SimTK::Vec3>*>(tables2.at("forces").get());
+    std::shared_ptr<TimeSeriesTableVec3> force_table_cop = c3dFileAdapter.getForcesTimeSeries(tables2);
     downsample_table(*force_table_cop, 100);
 
     sto_adapter.write(force_table_cop->flatten(), "cop_"+ forces_file);
