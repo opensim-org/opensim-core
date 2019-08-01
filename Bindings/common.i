@@ -424,7 +424,7 @@ namespace OpenSim {
                 throw OpenSim::Exception{
                     "An invalid C3DFileAdapter::ForceLocation was provided."};
         }
-        setLocationForForceExpression(location);
+        $self->setLocationForForceExpression(location);
     };
 };
 
