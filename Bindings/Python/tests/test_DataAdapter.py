@@ -28,7 +28,7 @@ class TestDataAdapter(unittest.TestCase):
         assert table.getNumRows()    == 73
         assert table.getNumColumns() == 23
 
-    def untest_C3DFileAdapter(self):
+    def test_C3DFileAdapter(self):
         try:
             adapter = osim.C3DFileAdapter()
         except AttributeError:
@@ -43,10 +43,10 @@ class TestDataAdapter(unittest.TestCase):
         assert forces.getNumRows()     == 9992
         assert forces.getNumColumns()  == 6
         adapter.setLocationForForceExpression(1)
-        tables = adapter.read(os.path.join(test_dir, 'walking5.c3d'))
+        tables2 = adapter.read(os.path.join(test_dir, 'walking5.c3d'))
 
         # Marker data read from C3D.
-        markers = adapter.getMarkersTimeSeries(tables)
+        markers = adapter.getMarkersTimeSeries(tables2)
         assert markers.getNumRows()    == 1103
         assert markers.getNumColumns() == 40
         assert markers.getTableMetaDataString('DataRate') == '250.000000'
@@ -66,7 +66,7 @@ class TestDataAdapter(unittest.TestCase):
         assert markersDouble.getNumColumns() == 40 * 3
 
         # Forces data read from C3d.
-        forces = adapter.getForcesTimeSeries(tables)
+        forces = adapter.getForcesTimeSeries(tables2)
         assert forces.getNumRows()     == 8824
         assert forces.getNumColumns()  == 6
         assert forces.getTableMetaDataString('DataRate') == '2000.000000'
