@@ -154,11 +154,13 @@ public:
     struct MultibodySystemExplicitOutput {
         casadi::DM& multibody_derivatives;
         casadi::DM& auxiliary_derivatives;
+        casadi::DM auxiliary_residuals;
         casadi::DM& kinematic_constraint_errors;
     };
     struct MultibodySystemImplicitOutput {
         casadi::DM& multibody_residuals;
         casadi::DM& auxiliary_derivatives;
+        casadi::DM& auxiliary_residuals;
         casadi::DM& kinematic_constraint_errors;
     };
 

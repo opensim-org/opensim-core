@@ -69,6 +69,9 @@ MocoCasOCProblem::MocoCasOCProblem(const MocoCasADiSolver& mocoCasADiSolver,
                 convertBounds(info.getFinalBounds()));
     }
 
+    // Auxiliary dynamics components.
+
+
     // Add any scalar constraints associated with kinematic constraints in
     // the model as path constraints in the problem.
     // Whether or not enabled kinematic constraints exist in the model,

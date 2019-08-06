@@ -25,6 +25,7 @@
 #include "MocoProblemInfo.h"
 #include <regex>
 #include <unordered_set>
+#include "Components/DeGrooteFregly2016Muscle.h"
 
 using namespace OpenSim;
 
@@ -247,6 +248,7 @@ void MocoProblemRep::initialize() {
 
     // State infos.
     // ------------
+    // Set the regex pattern states first.  
     const auto stateNames = m_model_base.getStateVariableNames();
     for (int i = 0; i < ph0.getProperty_state_infos_pattern().size(); ++i) {
         const auto& pattern = ph0.get_state_infos_pattern(i).getName();
@@ -266,7 +268,8 @@ void MocoProblemRep::initialize() {
     }
 
     // Create internal record of state and control infos, automatically
-    // populated from coordinates and actuators.
+    // populated from coordinates and actuators. This could override state infos
+    // set using a regex pattern above.
     for (int i = 0; i < ph0.getProperty_state_infos().size(); ++i) {
         const auto& name = ph0.get_state_infos(i).getName();
         m_state_infos[name] = ph0.get_state_infos(i);
@@ -301,6 +304,11 @@ void MocoProblemRep::initialize() {
                 }
             }
         }
+    }
+
+    for (const auto& dgfmusc : 
+            m_model_base.getComponentList<DeGrooteFregly2016Muscle>()) {
+        
     }
 
     // Control infos.

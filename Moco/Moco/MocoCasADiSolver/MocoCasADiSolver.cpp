@@ -232,6 +232,20 @@ std::unique_ptr<CasOC::Solver> MocoCasADiSolver::createCasOCSolver(
         }
     }
 
+    // TODO these options don't seem to get passed to SNOPT
+    //if (get_optim_solver() == "snopt") {
+    //    if (get_optim_convergence_tolerance() != -1) {
+    //        const auto& tol = get_optim_convergence_tolerance();
+    //        // This is based on what Simbody does.
+    //        solverOptions["Major optimality tolerance"] = tol;
+    //    }
+    //    if (get_optim_constraint_tolerance() != -1) {
+    //        const auto& tol = get_optim_constraint_tolerance();
+    //        solverOptions["Major feasibility tolerance"] = tol;
+    //        solverOptions["Minor feasibility tolerance"] = tol;
+    //    }
+    //}
+
     checkPropertyInSet(*this, getProperty_optim_sparsity_detection(),
             {"none", "random", "initial-guess"});
     casSolver->setSparsityDetection(get_optim_sparsity_detection());
@@ -359,11 +373,18 @@ MocoSolution MocoCasADiSolver::solveImpl() const {
         }
     }
 
+
+    int iter_count;
+    if (get_optim_solver() == "snopt") {
+        // TODO error trying to retrieve number of iterations with SNOPT
+        iter_count = 0;
+    } else {
+        iter_count = casSolution.stats.at("iter_count");
+    }
     const long long elapsed = stopwatch.getElapsedTimeInNs();
     setSolutionStats(mocoSolution, casSolution.stats.at("success"),
             casSolution.objective, casSolution.stats.at("return_status"),
-            casSolution.stats.at("iter_count"),
-            SimTK::nsToSec(elapsed));
+            iter_count, SimTK::nsToSec(elapsed));
 
     if (get_verbosity()) {
         std::cout << std::string(79, '-') << "\n";
