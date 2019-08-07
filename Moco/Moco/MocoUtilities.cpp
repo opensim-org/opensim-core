@@ -181,9 +181,7 @@ void OpenSim::visualize(Model model, Storage statesSto) {
     // we probably need to realize only to Dynamics, but realizing to Report
     // will catch any other calculations that custom components require for
     // visualizing.
-    for (const auto& state : statesTraj) {
-        model.realizeReport(state);
-    }
+    for (const auto& state : statesTraj) { model.realizeReport(state); }
 
     // OPENSIM_THROW_IF(!statesTraj.isCompatibleWith(model), Exception,
     //        "Model is not compatible with the provided StatesTrajectory.");
@@ -578,6 +576,105 @@ void OpenSim::checkRedundantLabels(std::vector<std::string> labels) {
     OPENSIM_THROW_IF(it != labels.end(), Exception,
             format("Multiple reference data provided for the variable %s.",
                     *it));
+}
+
+MocoTrajectory OpenSim::createPeriodicTrajectory(
+        const MocoTrajectory& in, std::vector<std::string> addPatterns,
+        std::vector<std::string> negatePatterns,
+        std::vector<std::pair<std::string, std::string>> symmetryPatterns) {
+
+    const int oldN = in.getNumTimes();
+    const int newN = 2 * oldN - 1;
+    SimTK::Vector newTime(newN);
+    newTime.updBlock(0, 0, oldN, 1) = in.getTime();
+    newTime.updBlock(oldN, 0, oldN - 1, 1) =
+            in.getTime().block(1, 0, oldN - 1, 1);
+    newTime.updBlock(oldN, 0, oldN - 1, 1).updCol(0) +=
+            in.getFinalTime() - in.getInitialTime();
+
+    auto find = [](const std::vector<std::string>& v, const std::string& e) {
+        return std::find(v.begin(), v.end(), e);
+    };
+
+    auto process = [&](std::string vartype,
+                           const std::vector<std::string> names,
+                           const SimTK::Matrix& oldTraj) -> SimTK::Matrix {
+        SimTK::Matrix newTraj(newN, (int)names.size());
+        for (int i = 0; i < (int)names.size(); ++i) {
+            std::string name = names[i];
+            newTraj.updBlock(0, i, oldN, 1) = oldTraj.col(i);
+            bool matched = false;
+            for (const auto& pattern : addPatterns) {
+                const auto regex = std::regex(pattern);
+                // regex_match() only returns true if the regex matches the
+                // entire name.
+                if (std::regex_match(name, regex)) {
+                    matched = true;
+                    const double& oldInit = oldTraj.col(i)[0];
+                    const double& oldFinal = oldTraj.col(i)[oldN - 1];
+                    newTraj.updBlock(oldN, i, oldN - 1, 1) =
+                            oldTraj.block(1, i, oldN - 1, 1);
+                    newTraj.updBlock(oldN, i, oldN - 1, 1).updCol(0) +=
+                            oldFinal - oldInit;
+                    break;
+                }
+            }
+
+            for (const auto& pattern : negatePatterns) {
+                const auto regex = std::regex(pattern);
+                if (std::regex_match(name, regex)) {
+                    matched = true;
+                    const double& oldFinal = oldTraj.col(i)[oldN - 1];
+                    newTraj.updBlock(oldN, i, oldN - 1, 1) =
+                            SimTK::Matrix(oldTraj.block(1, i, oldN - 1, 1).negate());
+                    newTraj.updBlock(oldN, i, oldN - 1, 1).updCol(0) +=
+                            2 * oldFinal;
+                    break;
+                }
+            }
+
+            for (const auto& pattern : symmetryPatterns) {
+                const auto regex = std::regex(pattern.first);
+                // regex_search() returns true if the regex matches any portion
+                // of the name.
+                if (std::regex_search(name, regex)) {
+                    matched = true;
+                    const auto opposite =
+                            std::regex_replace(name, regex, pattern.second);
+                    const auto it = find(names, opposite);
+                    OPENSIM_THROW_IF(it == names.end(), Exception,
+                            format("Could not find %s %s, which is supposed "
+                                   "to "
+                                   "be opposite of %s.",
+                                    vartype, opposite, name));
+                    const int iopp = (int)std::distance(names.cbegin(), it);
+                    newTraj.updBlock(oldN, iopp, oldN - 1, 1) =
+                            oldTraj.block(1, i, oldN - 1, 1);
+                    break;
+                }
+            }
+
+            if (!matched) {
+                newTraj.updBlock(oldN, i, oldN - 1, 1) =
+                        oldTraj.block(1, i, oldN - 1, 1);
+            }
+        }
+        return newTraj;
+    };
+
+    SimTK::Matrix states =
+            process("state", in.getStateNames(), in.getStatesTrajectory());
+
+    SimTK::Matrix controls = process(
+            "control", in.getControlNames(), in.getControlsTrajectory());
+
+    SimTK::Matrix derivatives = process("derivative", in.getDerivativeNames(),
+            in.getDerivativesTrajectory());
+
+    return MocoTrajectory(newTime,
+            {{"states", {in.getStateNames(), states}},
+                    {"controls", {in.getControlNames(), controls}},
+                    {"derivatives", {in.getDerivativeNames(), derivatives}}});
 }
 
 std::string OpenSim::format_c(const char* format, ...) {
