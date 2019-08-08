@@ -49,10 +49,10 @@ env:
     - OPENSIM_DEPENDENCIES_INSTALL_DIR=~/opensim_dependencies-install
     - SWIG_VER=3.0.8
     - PATH="$PATH:$TRAVIS_BUILD_DIR/.github"
-    - USE_CCACHE=0
-    - CCACHE_COMPRESS=0
+    - USE_CCACHE=1
+    - CCACHE_COMPRESS=1
     # For Clang to work with ccache.
-    - CCACHE_CPP2=0
+    - CCACHE_CPP2=1
 
 cache: ccache
 
