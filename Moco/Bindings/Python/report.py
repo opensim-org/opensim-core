@@ -448,13 +448,14 @@ class Report(object):
                 ls_dict = defaultdict(list)
                 label_dict = dict()
                 for multiplier_name in multiplier_names:
+                    title = multiplier_name.replace('/', '')
                     if self.bilateral:
                         # If the --bilateral flag was set by the user, remove
                         # substrings that indicate the body side and update the
                         # linestyle dict.
                         title, ls_dict = bilateralize(multiplier_name, ls_dict)
                     else:
-                        ls_dict[valueName].append('-')
+                        ls_dict[title].append('-')
 
                     if not title in multiplier_dict:
                         multiplier_dict[title] = list()
