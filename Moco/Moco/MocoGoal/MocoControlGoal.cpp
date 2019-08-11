@@ -28,6 +28,8 @@ MocoControlGoal::MocoControlGoal() { constructProperties(); }
 
 void MocoControlGoal::constructProperties() {
     constructProperty_control_weights(MocoWeightSet());
+    constructProperty_exponent(2);
+    constructProperty_divide_by_displacement(false);
 }
 
 void MocoControlGoal::setWeightForControl(
@@ -70,6 +72,10 @@ void MocoControlGoal::initializeOnModelImpl(const Model& model) const {
         }
     }
 
+    OPENSIM_THROW_IF_FRMOBJ(get_exponent() < 2, Exception,
+            "Exponent must be 2 or greater.");
+    m_exponent = get_exponent();
+
     setNumIntegralsAndOutputs(1, 1);
 }
 
@@ -80,7 +86,23 @@ void MocoControlGoal::calcIntegrandImpl(
     integrand = 0;
     int iweight = 0;
     for (const auto& icontrol : m_controlIndices) {
-        integrand += m_weights[iweight] * controls[icontrol] * controls[icontrol];
+        // TODO: check effect on performance.
+        integrand +=
+                m_weights[iweight] * pow(abs(controls[icontrol]), m_exponent);
         ++iweight;
+    }
+}
+
+void MocoControlGoal::calcGoalImpl(
+        const GoalInput& input, SimTK::Vector& cost) const {
+    cost[0] = input.integral;
+    if (get_divide_by_displacement()) {
+        const SimTK::Vec3 comInitial =
+                getModel().calcMassCenterPosition(input.initial_state);
+        const SimTK::Vec3 comFinal =
+                getModel().calcMassCenterPosition(input.final_state);
+        // TODO: Use distance squared for convexity.
+        const SimTK::Real displacement = (comFinal - comInitial).norm();
+        cost[0] /= displacement;
     }
 }
