@@ -294,7 +294,8 @@ void gaitPrediction(const MocoSolution& gaitTrackingSolution,
     speedGoal->set_desired_average_speed(1.2);
     // Effort over distance.
     auto* effortGoal = problem.addGoal<MocoControlGoal>("effort", 10);
-    effortGoal->set_divide_by_displacement(true);
+    effortGoal->setExponent(3);
+    effortGoal->setDivideByDisplacement(true);
 
     // Bounds.
     // =======
