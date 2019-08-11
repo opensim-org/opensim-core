@@ -26,9 +26,12 @@ namespace OpenSim {
 /// Minimize the sum of squared controls, integrated over the phase.
 /// The default weight for each control is 1.0; this can be changed by
 /// calling setWeight() or editing the `control_weights` property in XML.
+/// You can choose the exponent TODO
+/// If conducting a predictive simulation, you likely want to set
+/// `divide_by_displacement` to true; otherwise, this cost is minimized by not
+/// moving. Dividing by displacement leads to a quantity similar to cost of
+/// transport.
 /// @ingroup mocogoal
-// TODO want a related cost for minimizing the value of state variables like
-// activation.
 // TODO allow leaving out some controls.
 class OSIMMOCO_API MocoControlGoal : public MocoGoal {
     OpenSim_DECLARE_CONCRETE_OBJECT(MocoControlGoal, MocoGoal);
@@ -56,17 +59,19 @@ protected:
     void calcIntegrandImpl(
             const SimTK::State& state, double& integrand) const override;
     void calcGoalImpl(
-            const GoalInput& input, SimTK::Vector& cost) const override {
-        cost[0] = input.integral;
-    }
+            const GoalInput& input, SimTK::Vector& cost) const override;
 
 private:
     void constructProperties();
     OpenSim_DECLARE_PROPERTY(control_weights, MocoWeightSet,
             "The weights for each control; "
             "the weight for unspecified controls is 1.");
+    OpenSim_DECLARE_PROPERTY(exponent, int, "TODO");
+    OpenSim_DECLARE_PROPERTY(divide_by_displacement, bool,
+            "Divide by the model's displacement over the phase.");
     mutable std::vector<double> m_weights;
     mutable std::vector<int> m_controlIndices;
+    mutable int m_exponent = -1;
 };
 
 } // namespace OpenSim

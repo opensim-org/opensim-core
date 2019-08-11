@@ -313,7 +313,7 @@ protected:
         SimTK::Vec3 comFinal =
                 getModel().calcMassCenterPosition(input.final_state);
         // TODO: Use distance squared for convexity.
-        SimTK::Real displacement = (comInitial - comFinal).norm();
+        SimTK::Real displacement = (comFinal - comInitial).norm();
         // Calculate average gait speed.
         values[0] = get_desired_average_speed() - (displacement / duration);
         if (getModeIsCost()) { values[0] = SimTK::square(values[0]); }
