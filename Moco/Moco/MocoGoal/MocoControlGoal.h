@@ -68,9 +68,12 @@ public:
     void setWeightForControl(
             const std::string& controlName, const double& weight);
 
+    /// Set the exponent on the control signals.
     void setExponent(double exponent) { set_exponent(exponent); }
     double getExponent() const { return get_exponent(); }
 
+    /// Set if the goal should be divided by the displacement of the system's
+    /// center of mass over the phase.
     void setDivideByDisplacement(bool tf) { set_divide_by_displacement(tf); }
     bool getDivideByDisplacement() const {
         return get_divide_by_displacement();
