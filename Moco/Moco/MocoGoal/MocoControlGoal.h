@@ -23,16 +23,27 @@
 
 namespace OpenSim {
 
-/// Minimize the sum of squared controls, integrated over the phase.
-/// The default weight for each control is 1.0; this can be changed by
-/// calling setWeight() or editing the `control_weights` property in XML.
-/// You can choose the exponent TODO
+/// Minimize the sum of the absolute value of the controls raised to a given
+/// exponent, integrated over the phase. The default weight for each control is
+/// 1.0; this can be changed by calling setWeight() or editing the
+/// `control_weights` property in XML.
+/// The exponent must be 2 or greater, and it is 2 by default.
 /// If conducting a predictive simulation, you likely want to set
 /// `divide_by_displacement` to true; otherwise, this cost is minimized by not
 /// moving. Dividing by displacement leads to a quantity similar to cost of
 /// transport.
+///
+/// \f[
+/// J = \frac{1}{d} \int_{t_i}^{t_f} \sum_{c \in C} w_c |x_c(t)|^p ~dt
+/// \f]
+/// We use the following notation:
+/// - \f$ d \f$: displacement of the system, if `divide_by_displacement` is
+///   true; 1 otherwise.
+/// - \f$ C \f$: the set of control signals.
+/// - \f$ w_c \f$: the weight for control \f$ c \f$.
+/// - \f$ x_c(t) \f$: control signal \f$ c \f$.
+/// - \f$ p \f$: the `exponent`.
 /// @ingroup mocogoal
-// TODO allow leaving out some controls.
 class OSIMMOCO_API MocoControlGoal : public MocoGoal {
     OpenSim_DECLARE_CONCRETE_OBJECT(MocoControlGoal, MocoGoal);
 
@@ -52,7 +63,16 @@ public:
     /// weight replaces the previous weight. Only controls with non-zero weights
     /// that are associated with actuators for which appliesForce is True are
     /// included in the cost function.
-    void setWeightForControl(const std::string& controlName, const double& weight);
+    void setWeightForControl(
+            const std::string& controlName, const double& weight);
+
+    void setExponent(double exponent) { set_exponent(exponent); }
+    double getExponent() const { return get_exponent(); }
+
+    void setDivideByDisplacement(bool tf) { set_divide_by_displacement(tf); }
+    bool getDivideByDisplacement() const {
+        return get_divide_by_displacement();
+    }
 
 protected:
     void initializeOnModelImpl(const Model&) const override;
