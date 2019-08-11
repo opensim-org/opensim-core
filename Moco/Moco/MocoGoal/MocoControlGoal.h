@@ -91,9 +91,11 @@ private:
     OpenSim_DECLARE_PROPERTY(control_weights, MocoWeightSet,
             "The weights for each control; "
             "the weight for unspecified controls is 1.");
-    OpenSim_DECLARE_PROPERTY(exponent, int, "TODO");
+    OpenSim_DECLARE_PROPERTY(
+            exponent, int, "The exponent on controls (default: 2).");
     OpenSim_DECLARE_PROPERTY(divide_by_displacement, bool,
-            "Divide by the model's displacement over the phase.");
+            "Divide by the model's displacement over the phase (default: "
+            "false)");
     mutable std::vector<double> m_weights;
     mutable std::vector<int> m_controlIndices;
     mutable int m_exponent = -1;
