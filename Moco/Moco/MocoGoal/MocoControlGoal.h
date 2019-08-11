@@ -33,8 +33,10 @@ namespace OpenSim {
 /// moving. Dividing by displacement leads to a quantity similar to cost of
 /// transport.
 ///
+/// This goal is computed as follows:
+///
 /// \f[
-/// J = \frac{1}{d} \int_{t_i}^{t_f} \sum_{c \in C} w_c |x_c(t)|^p ~dt
+/// \frac{1}{d} \int_{t_i}^{t_f} \sum_{c \in C} w_c |x_c(t)|^p ~dt
 /// \f]
 /// We use the following notation:
 /// - \f$ d \f$: displacement of the system, if `divide_by_displacement` is
