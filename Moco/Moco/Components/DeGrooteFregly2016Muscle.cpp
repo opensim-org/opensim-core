@@ -170,6 +170,23 @@ double DeGrooteFregly2016Muscle::computeActuation(const SimTK::State& s) const {
     return mdi.tendonForce;
 }
 
+double DeGrooteFregly2016Muscle::calcInextensibleTendonActiveFiberForce(
+        SimTK::State& s, double activation) const {
+
+    // TODO: When tendon compliance is supported, we can no longer use MLI and
+    // FVI, as those will include tendon compliance.
+    const auto& mli = getMuscleLengthInfo(s);
+    const auto& fvi = getFiberVelocityInfo(s);
+
+    const SimTK::Real normActiveForce = activation *
+            mli.fiberActiveForceLengthMultiplier *
+            fvi.fiberForceVelocityMultiplier;
+
+    const auto Fmax = get_max_isometric_force();
+
+    return Fmax * normActiveForce * mli.cosPennationAngle;
+}
+
 void DeGrooteFregly2016Muscle::calcMuscleLengthInfo(
         const SimTK::State& s, MuscleLengthInfo& mli) const {
 
