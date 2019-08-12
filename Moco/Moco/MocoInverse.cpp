@@ -44,22 +44,13 @@ void MocoInverse::constructProperties() {
 MocoStudy MocoInverse::initialize() const { return initializeInternal().first; }
 
 std::pair<MocoStudy, TimeSeriesTable> MocoInverse::initializeInternal() const {
-    using SimTK::Pathname;
-    // Get the directory containing the setup file.
-    std::string setupDir;
-    {
-        bool dontApplySearchPath;
-        std::string fileName, extension;
-        Pathname::deconstructPathname(getDocumentFileName(),
-                dontApplySearchPath, setupDir, fileName, extension);
-    }
 
     // Process inputs.
     // ----------------
-    Model model = get_model().process();
+    Model model = get_model().process(getDocumentDirectory());
     model.initSystem();
 
-    TimeSeriesTable kinematics = get_kinematics().process(setupDir, &model);
+    TimeSeriesTable kinematics = get_kinematics().process(getDocumentDirectory(), &model);
 
     // Prescribe the kinematics.
     // -------------------------
