@@ -266,7 +266,7 @@ void MocoTrack::configureMarkerTracking(MocoProblem& problem, Model& model) {
 }
 
 void MocoTrack::applyStatesToGuess(const TimeSeriesTable& states,
-        const Model& model, MocoTrajectory& guess) {
+        const Model& /*model*/, MocoTrajectory& guess) {
 
     guess.resampleWithNumTimes((int)states.getNumRows());
     std::vector<std::string> names = guess.getStateNames();

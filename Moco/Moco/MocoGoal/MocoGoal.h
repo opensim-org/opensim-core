@@ -259,7 +259,7 @@ private:
 };
 
 inline void MocoGoal::calcIntegrandImpl(
-        const SimTK::State& state, double& integrand) const {}
+        const SimTK::State& /*state*/, double& /*integrand*/) const {}
 
 /// Endpoint cost for final time.
 /// @ingroup mocogoal

@@ -262,11 +262,11 @@ public:
                      - genForce;
         }
     }
-    void calc_cost(int cost_index, const tropter::CostInput<T>& in,
+    void calc_cost(int /*cost_index*/, const tropter::CostInput<T>& in,
             T& cost) const override {
         cost = in.integral;
     }
-    void calc_cost_integrand(int cost_index, const tropter::Input<T>& in,
+    void calc_cost_integrand(int /*cost_index*/, const tropter::Input<T>& in,
             T& integrand) const override {
         const auto& controls = in.controls;
         integrand = controls.squaredNorm();
