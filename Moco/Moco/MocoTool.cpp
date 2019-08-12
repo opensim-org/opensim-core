@@ -16,6 +16,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 #include "MocoTool.h"
+
 #include "MocoUtilities.h"
 
 using namespace OpenSim;
@@ -71,17 +72,23 @@ void MocoTool::updateTimeInfo(const std::string& dataLabel,
 
 std::string MocoTool::getFilePath(const std::string& file) const {
     using SimTK::Pathname;
+
+    const std::string setupDir = getDocumentDirectory();
+
+    const std::string filepath =
+            Pathname::getAbsolutePathnameUsingSpecifiedWorkingDirectory(
+                    setupDir, file);
+
+    return filepath;
+}
+
+std::string MocoTool::getDocumentDirectory() const {
     std::string setupDir;
     {
         bool dontApplySearchPath;
         std::string fileName, extension;
-        Pathname::deconstructPathname(getDocumentFileName(),
-            dontApplySearchPath, setupDir, fileName, extension);
+        SimTK::Pathname::deconstructPathname(getDocumentFileName(),
+                dontApplySearchPath, setupDir, fileName, extension);
     }
-
-    std::string filepath =
-        Pathname::getAbsolutePathnameUsingSpecifiedWorkingDirectory(
-            setupDir, file);
-
-    return filepath;
+    return setupDir;
 }
