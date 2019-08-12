@@ -1796,7 +1796,8 @@ void Component::warnBeforePrint() const {
                 << "::print(): The following connections are not finalized "
                    "and will not appear in the resulting XML file. "
                    "Call finalizeConnections() before print().\n"
-                   "To ignore, please call Object::setDebugLevel(1) first.\n"
+                   "To ignore, set the debug level to at least 1 "
+                   "(e.g, by calling Object::setDebugLevel(1)) first.\n"
                 << message << std::endl;
         OPENSIM_THROW_FRMOBJ(Exception, buffer.str());
     }
