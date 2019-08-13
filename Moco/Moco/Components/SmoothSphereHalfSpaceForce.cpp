@@ -37,11 +37,12 @@ SmoothSphereHalfSpaceForce::SmoothSphereHalfSpaceForce() {
 }
 
 // Take over ownership of supplied object.
-SmoothSphereHalfSpaceForce::SmoothSphereHalfSpaceForce(const std::string& /*name*/,
+SmoothSphereHalfSpaceForce::SmoothSphereHalfSpaceForce(const std::string& name,
         const Frame& contactSphereBodyFrame, SimTK::Vec3 contactSphereLocation,
         double contactSphereRadius, const Frame& contactHalfSpaceBodyFrame,
         SimTK::Vec3 contactHalfSpaceLocation,
         SimTK::Vec3 contactHalfSpaceOrientation) {
+    this->setName(name);
     this->connectSocket_sphere_frame(contactSphereBodyFrame);
     this->connectSocket_half_space_frame(contactHalfSpaceBodyFrame);
 
