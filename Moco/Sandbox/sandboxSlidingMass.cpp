@@ -480,7 +480,7 @@ private:
 class MocoSolver : public Object {
 OpenSim_DECLARE_CONCRETE_OBJECT(MocoSolver, Object);
 public:
-    OpenSim_DECLARE_PROPERTY(num_mesh_points, double, "TODO");
+    OpenSim_DECLARE_PROPERTY(num_mesh_intervals, double, "TODO");
     // TODO should be a copy or reference to MocoProblem?
     MocoSolver(const MocoProblem& problem) {
         constructProperties();

@@ -102,7 +102,7 @@ public:
 TEST_CASE("Sliding mass minimum time.") {
     SECTION("derivative comparison") {
         OCPDerivativesComparison<SlidingMassMinimumTime> comp;
-        comp.num_mesh_points = 4;
+        comp.num_mesh_intervals = 4;
         comp.compare();
     }
     SECTION("trapezoidal") {

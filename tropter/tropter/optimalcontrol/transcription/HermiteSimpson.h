@@ -240,7 +240,7 @@ private:
     Eigen::VectorXd m_mesh_intervals;
     Eigen::VectorXd m_mesh_and_midpoints;
     Eigen::VectorXd m_mesh_eigen;
-    int m_num_mesh_points;
+    int m_num_mesh_intervals;
     int m_num_col_points;
     int m_num_time_variables = -1;
     int m_num_parameters = -1;

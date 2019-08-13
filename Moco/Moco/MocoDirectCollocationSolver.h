@@ -86,7 +86,7 @@ class OSIMMOCO_API MocoDirectCollocationSolver : public MocoSolver {
     OpenSim_DECLARE_ABSTRACT_OBJECT(MocoDirectCollocationSolver, MocoSolver);
 
 public:
-    OpenSim_DECLARE_PROPERTY(num_mesh_points, int,
+    OpenSim_DECLARE_PROPERTY(num_mesh_intervals, int,
             "The number of uniformly-spaced mesh points for the problem "
             "(default: "
             "100). If a non-uniform mesh exists, the non-uniform mesh is used "

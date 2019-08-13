@@ -144,7 +144,7 @@ Model createRightLegModel(const std::string& actuatorType,
 struct Options {
     std::string actuatorType = "torques";
     bool weldPelvis = false;
-    int num_mesh_points = 10;
+    int num_mesh_intervals = 10;
     double convergence_tol = 1e-2;
     double constraint_tol = 1e-2;
     int max_iterations = 100000;
