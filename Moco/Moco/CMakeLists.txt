@@ -6,55 +6,60 @@ set(MOCO_SOURCES
         RegisterTypes_osimMoco.cpp
         MocoUtilities.h
         MocoUtilities.cpp
-        MocoTool.h
-        MocoTool.cpp
+        MocoStudy.h
+        MocoStudy.cpp
         MocoBounds.h
         MocoBounds.cpp
         MocoVariableInfo.h
         MocoVariableInfo.cpp
         MocoProblem.h
         MocoProblem.cpp
+        MocoProblemInfo.h
         MocoProblemRep.h
         MocoProblemRep.cpp
-        MocoCost/MocoCost.h
-        MocoCost/MocoCost.cpp
-        MocoCost/MocoMarkerEndpointCost.h
-        MocoCost/MocoMarkerEndpointCost.cpp
-        MocoCost/MocoMarkerTrackingCost.h
-        MocoCost/MocoMarkerTrackingCost.cpp
+        MocoGoal/MocoGoal.h
+        MocoGoal/MocoGoal.cpp
+        MocoGoal/MocoMarkerFinalGoal.h
+        MocoGoal/MocoMarkerFinalGoal.cpp
+        MocoGoal/MocoMarkerTrackingGoal.h
+        MocoGoal/MocoMarkerTrackingGoal.cpp
         MocoWeightSet.h
-        MocoCost/MocoStateTrackingCost.h
-        MocoCost/MocoStateTrackingCost.cpp
-        MocoCost/MocoSumSquaredStateCost.h
-        MocoCost/MocoSumSquaredStateCost.cpp
-        MocoCost/MocoControlCost.h
-        MocoCost/MocoControlCost.cpp
-        MocoCost/MocoJointReactionNormCost.h
-        MocoCost/MocoJointReactionNormCost.cpp
+        MocoGoal/MocoStateTrackingGoal.h
+        MocoGoal/MocoStateTrackingGoal.cpp
+        MocoGoal/MocoSumSquaredStateGoal.h
+        MocoGoal/MocoSumSquaredStateGoal.cpp
+        MocoGoal/MocoControlGoal.h
+        MocoGoal/MocoControlGoal.cpp
+        MocoGoal/MocoControlTrackingGoal.h
+        MocoGoal/MocoControlTrackingGoal.cpp
+        MocoGoal/MocoJointReactionGoal.h
+        MocoGoal/MocoJointReactionGoal.cpp
+        MocoGoal/MocoOrientationTrackingGoal.h
+        MocoGoal/MocoOrientationTrackingGoal.cpp
+        MocoGoal/MocoTranslationTrackingGoal.h
+        MocoGoal/MocoTranslationTrackingGoal.cpp
+        MocoGoal/MocoInitialActivationGoal.cpp
+        MocoGoal/MocoInitialActivationGoal.h
+        MocoGoal/MocoPeriodicityGoal.h
+        MocoGoal/MocoPeriodicityGoal.cpp
         MocoSolver.h
         MocoSolver.cpp
         MocoDirectCollocationSolver.h
         MocoDirectCollocationSolver.cpp
-        MocoIterate.h
-        MocoIterate.cpp
+        MocoTrajectory.h
+        MocoTrajectory.cpp
         MocoTropterSolver.h
         MocoTropterSolver.cpp
         MocoParameter.h
         MocoParameter.cpp
         MocoConstraint.h
         MocoConstraint.cpp
-        InverseMuscleSolver/InverseMuscleSolver.h
-        InverseMuscleSolver/InverseMuscleSolver.cpp
-        InverseMuscleSolver/GlobalStaticOptimization.h
-        InverseMuscleSolver/GlobalStaticOptimization.cpp
-        InverseMuscleSolver/INDYGO.h
-        InverseMuscleSolver/INDYGO.cpp
-        InverseMuscleSolver/INDYGOProblemInternal.h
-        InverseMuscleSolver/DeGrooteFregly2016MuscleStandalone.h
-        InverseMuscleSolver/InverseMuscleSolverMotionData.h
-        InverseMuscleSolver/InverseMuscleSolverMotionData.cpp
+        MocoControlBoundConstraint.cpp
+        MocoControlBoundConstraint.h
         Components/DeGrooteFregly2016Muscle.h
         Components/DeGrooteFregly2016Muscle.cpp
+        Components/SmoothSphereHalfSpaceForce.h
+        Components/SmoothSphereHalfSpaceForce.cpp
         Components/ActivationCoordinateActuator.h
         Components/StationPlaneContactForce.h
         Components/StationPlaneContactForce.cpp
@@ -66,6 +71,7 @@ set(MOCO_SOURCES
         Components/DiscreteForces.cpp
         Components/AccelerationMotion.h
         Components/AccelerationMotion.cpp
+        Components/MultivariatePolynomialFunction.h
         MocoCasADiSolver/MocoCasADiSolver.h
         MocoCasADiSolver/MocoCasADiSolver.cpp
         MocoCasADiSolver/MocoCasOCProblem.h
@@ -83,17 +89,40 @@ set(MOCO_SOURCES
         MocoCasADiSolver/CasOCHermiteSimpson.h
         MocoCasADiSolver/CasOCHermiteSimpson.cpp
         MocoCasADiSolver/CasOCIterate.h
-        MocoInverse.h
         MocoInverse.cpp
+        MocoInverse.h
+        MocoTrack.h
+        MocoTrack.cpp
+        Common/TableProcessor.h
+        ModelProcessor.h
+        ModelOperators.h
+        MocoTool.cpp
+        MocoTool.h
+        MocoConstraintInfo.cpp
+        MocoConstraintInfo.h
         )
 if(MOCO_WITH_TROPTER)
     list(APPEND MOCO_SOURCES
             tropter/TropterProblem.h
-            tropter/TropterProblem.cpp)
-endif()
+            tropter/TropterProblem.cpp
+            InverseMuscleSolver/InverseMuscleSolver.h
+            InverseMuscleSolver/InverseMuscleSolver.cpp
+            InverseMuscleSolver/GlobalStaticOptimization.h
+            InverseMuscleSolver/GlobalStaticOptimization.cpp
+            InverseMuscleSolver/INDYGO.h
+            InverseMuscleSolver/INDYGO.cpp
+            InverseMuscleSolver/INDYGOProblemInternal.h
+            InverseMuscleSolver/DeGrooteFregly2016MuscleStandalone.h
+            InverseMuscleSolver/InverseMuscleSolverMotionData.h
+            InverseMuscleSolver/InverseMuscleSolverMotionData.cpp
+            )
+endif ()
 add_library(osimMoco SHARED ${MOCO_SOURCES})
 target_link_libraries(osimMoco PUBLIC osimTools
-                               PRIVATE tropter casadi)
+        PRIVATE casadi)
+if (MOCO_WITH_TROPTER)
+    target_link_libraries(osimMoco PRIVATE tropter)
+endif ()
 
 target_include_directories(osimMoco INTERFACE
         $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/Moco>
@@ -104,30 +133,24 @@ set_target_properties(osimMoco PROPERTIES
         PROJECT_LABEL "Library - osimMoco"
         FOLDER "Moco"
         )
-if(MOCO_WITH_TROPTER)
+if (MOCO_WITH_TROPTER)
     target_compile_definitions(osimMoco PUBLIC MOCO_WITH_TROPTER)
-endif()
+endif ()
 
-if(MOCO_COPY_DEPENDENCIES)
-    if(APPLE)
-        set(rpath_macro "\@loader_path")
-    elseif(UNIX)
-        set(rpath_macro "\$ORIGIN")
-    endif()
-    set_property(TARGET osimMoco APPEND PROPERTY
-            INSTALL_RPATH "${rpath_macro}/")
-endif()
+MocoAddInstallRPATHSelf(TARGET osimMoco LOADER)
+MocoAddInstallRPATHSimbody(TARGET osimMoco LOADER
+        FROM "${CMAKE_INSTALL_LIBDIR}")
 
-if(WIN32)
-   add_dependencies(osimMoco Copy_OpenSim_DLLs)
-endif()
+if (WIN32)
+    add_dependencies(osimMoco Copy_OpenSim_DLLs)
+endif ()
 
-install(TARGETS osimMoco EXPORT MocoTargets
+install(TARGETS osimMoco EXPORT OpenSimMocoTargets
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
 # TODO do not install InverseMuscleSolverMotionData.h b/c it uses Eigen.
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
-        DESTINATION ${MOCO_INSTALL_INCLUDEDIR}/Moco
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/Moco
         FILES_MATCHING PATTERN "*.h*")

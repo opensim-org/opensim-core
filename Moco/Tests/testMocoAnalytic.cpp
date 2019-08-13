@@ -103,7 +103,7 @@ TEMPLATE_TEST_CASE("Second order linear min effort",
     model.addForce(actu);
     model.finalizeConnections();
 
-    MocoTool moco;
+    MocoStudy moco;
     auto& problem = moco.updProblem();
 
     problem.setModelCopy(model);
@@ -112,7 +112,7 @@ TEMPLATE_TEST_CASE("Second order linear min effort",
     problem.setStateInfo("/jointset/j/coord/speed", {-10, 10}, 0, 2);
     problem.setControlInfo("/forceset/coordinateactuator", {-50, 50});
 
-    problem.addCost<MocoControlCost>("effort", 0.5);
+    problem.addGoal<MocoControlGoal>("effort", 0.5);
 
     auto& solver = moco.initSolver<TestType>();
     // solver.set_num_mesh_points(1000);
@@ -163,7 +163,7 @@ TEMPLATE_TEST_CASE("Brachistochrone", ""
 
     Model model = ModelFactory::createBrachistochrone();
 
-    MocoTool moco;
+    MocoStudy moco;
     auto& problem = moco.updProblem();
 
     problem.setModelCopy(model);
@@ -173,7 +173,7 @@ TEMPLATE_TEST_CASE("Brachistochrone", ""
     problem.setStateInfo("/brachistochrone/v", {-10, 10}, 0);
     problem.setControlInfo("/brachistochrone", {-10, 10});
 
-    problem.addCost<MocoFinalTimeCost>();
+    problem.addGoal<MocoFinalTimeGoal>();
 
     auto& solver = moco.initSolver<TestType>();
     // solver.set_num_mesh_points(1000);

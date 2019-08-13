@@ -2,11 +2,16 @@
 set(CMAKE_CXX_STANDARD 11)
 
 # Copy CasADi into our installation.
+if (${MOCO_INSTALL_UNIX_FHS})
+    set(MOCO_INSTALL_CASADIDIR "")
+else()
+    set(MOCO_INSTALL_CASADIDIR sdk)
+endif()
 install(DIRECTORY "${CASADI_CMAKE_DIR}/../../../"
-        DESTINATION "${CMAKE_INSTALL_PREFIX}"
+        DESTINATION "${CMAKE_INSTALL_PREFIX}/${MOCO_INSTALL_CASADIDIR}"
         USE_SOURCE_PERMISSIONS)
 
-find_package(OpenSim 4.0 REQUIRED)
+find_package(OpenSim 4.1 REQUIRED)
 set_package_properties(OpenSim PROPERTIES
         URL http://opensim.stanford.edu
         TYPE REQUIRED
@@ -28,8 +33,7 @@ if(BUILD_TESTING)
     add_subdirectory(Tests)
 endif()
 if(MOCO_BUILD_EXECUTABLE)
-add_subdirectory(Executable
-        )
+    add_subdirectory(Executable)
 endif()
 add_subdirectory(Bindings)
 if(MOCO_BUILD_EXAMPLES)

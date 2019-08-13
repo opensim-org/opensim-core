@@ -23,7 +23,7 @@ import org.opensim.modeling.*;
 % Control effort minimization problem.
 % ====================================
 % This problem minimizes the squared control effort, integrated over the phase.
-effort = MocoControlCost();
+effort = MocoControlGoal();
 runInvertedPendulumProblem('minimize_control_effort', effort);
 
 % Joint reaction load minimization problem.
@@ -31,7 +31,7 @@ runInvertedPendulumProblem('minimize_control_effort', effort);
 % This problem minimizes the reaction loads on the rotating body at the pin 
 % joint. Specifically, the norm of the reaction forces and moments integrated
 % over the phase is minimized.
-reaction = MocoJointReactionNormCost();
+reaction = MocoJointReactionCost();
 reaction.setJointPath('pin');
 runInvertedPendulumProblem('minimize_joint_reaction_loads', reaction);
 
@@ -68,9 +68,9 @@ body_center.attachGeometry(geom);
 
 model.finalizeConnections();
 
-% Create MocoTool.
+% Create MocoStudy.
 % ================
-moco = MocoTool();
+moco = MocoStudy();
 moco.setName(name);
 
 % Define the optimal control problem.
@@ -97,11 +97,11 @@ problem.setControlInfo('/forceset/actuator', MocoBounds(-100, 100));
 
 % Cost.
 % -----
-problem.addCost(cost);
+problem.addGoal(cost);
 
 % Configure the solver.
 % =====================
-solver = moco.initSolver();
+solver = moco.initCasADiSolver();
 solver.set_num_mesh_points(50);
 solver.set_optim_convergence_tolerance(1e-3);
 

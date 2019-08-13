@@ -22,9 +22,9 @@
 #include "CasOCTranscription.h"
 #include "CasOCTrapezoidal.h"
 
-// Shhh...we shouldn't depend on these but MocoIterate has a handy resample()
+// Shhh...we shouldn't depend on these but MocoTrajectory has a handy resample()
 // function.
-#include "../MocoIterate.h"
+#include "../MocoTrajectory.h"
 #include "MocoCasOCProblem.h"
 
 using OpenSim::Exception;
@@ -33,10 +33,19 @@ using OpenSim::format;
 namespace CasOC {
 
 Iterate Iterate::resample(const casadi::DM& newTimes) const {
-    auto mocoIt = OpenSim::convertToMocoIterate(*this);
+    auto mocoIt = OpenSim::convertToMocoTrajectory(*this);
     auto simtkNewTimes = OpenSim::convertToSimTKVector(newTimes);
     mocoIt.resample(simtkNewTimes);
     return OpenSim::convertToCasOCIterate(mocoIt);
+}
+
+std::vector<std::string>
+Problem::createKinematicConstraintEquationNamesImpl() const {
+    std::vector<std::string> names(getNumKinematicConstraintEquations());
+    for (int i = 0; i < getNumKinematicConstraintEquations(); ++i) {
+        names[i] = format("kinematic_constraint_%03i", i);
+    }
+    return names;
 }
 
 } // namespace CasOC

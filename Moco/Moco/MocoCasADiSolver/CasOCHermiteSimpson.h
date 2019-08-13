@@ -25,20 +25,55 @@ namespace CasOC {
 /// Enforce the differential equations in the problem using a Hermite-
 /// Simpson (third-order) approximation. The integral in the objective
 /// function is approximated by Simpson quadrature.
+///
+/// Defect constraints.
+/// -------------------
+/// For each state variable, there is one pair of defect constraints
+/// (Hermite interpolant defect + Simpson integration defect) per mesh
+/// interval. Each mesh interval includes two mesh points (at the interval's
+/// endpoints) and an additional collocation point at the mesh interval
+/// midpoint. All three mesh interval points (2 mesh points + 1 collocation
+/// point) are used to construct the defects.
+///
+/// Kinematic constraints and path constraints.
+/// -------------------------------------------
+/// Kinematic constraint and path constraint errors are enforced only at the
+/// mesh points. Errors at collocation points at the mesh interval midpoint
+/// are ignored.
 class HermiteSimpson : public Transcription {
 public:
     HermiteSimpson(const Solver& solver, const Problem& problem)
-            : Transcription(solver, problem, 2 * solver.getNumMeshPoints() - 1,
-                      solver.getNumMeshPoints()) {
-        createVariablesAndSetBounds();
+            : Transcription(solver, problem) {
+        casadi::DM grid =
+                casadi::DM::zeros(1, (2 * m_solver.getMesh().size()) - 1);
+        const auto& mesh = m_solver.getMesh();
+        const bool interpControls = m_solver.getInterpolateControlMidpoints();
+        casadi::DM pointsForInterpControls;
+        if (interpControls) {
+            pointsForInterpControls =
+                    casadi::DM::zeros(1, m_solver.getMesh().size() - 1);
+        }
+        for (int i = 0; i < grid.numel(); ++i) {
+            if (i % 2 == 0) {
+                grid(i) = mesh[i / 2];
+            } else {
+                grid(i) = .5 * (mesh[i / 2] + mesh[i / 2 + 1]);
+                if (interpControls) {
+                    pointsForInterpControls(i / 2) = grid(i);
+                }
+            }
+        }
+        createVariablesAndSetBounds(
+                grid, 2 * m_problem.getNumStates(), pointsForInterpControls);
     }
 
 private:
     casadi::DM createQuadratureCoefficientsImpl() const override;
     casadi::DM createKinematicConstraintIndicesImpl() const override;
-    void applyConstraintsImpl(const VariablesMX& vars, const casadi::MX& xdot,
-            const casadi::MX& residual, const casadi::MX& kcerr,
-            const casadi::MXVector& path) override;
+    void calcDefectsImpl(const casadi::MX& x, const casadi::MX& xdot,
+            casadi::MX& defects) const override;
+    void calcInterpolatingControlsImpl(const casadi::MX& controls,
+            casadi::MX& interpControls) const override;
 };
 
 } // namespace CasOC

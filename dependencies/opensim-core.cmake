@@ -4,7 +4,7 @@
 # will invalidate its cached opensim-core installation if we change the commit.
 # This commented commit hash is not actually used in the superbuild.
 # opensim-core commit:
-# 1a30539f95073c0ebf17e62f1880dd9e75f5dde7
+# 7420c7e67aa2438b1157784f68b7fbda1b6b2498
 
 AddDependency(NAME       opensim-core
               URL        ${CMAKE_SOURCE_DIR}/../opensim-core
@@ -15,14 +15,16 @@ AddDependency(NAME       opensim-core
                     -DBUILD_PYTHON_WRAPPING:BOOL=${OPENSIM_PYTHON_WRAPPING}
                     -DOPENSIM_PYTHON_VERSION:STRING=${OPENSIM_PYTHON_VERSION}
                     -DSIMBODY_HOME:PATH=${CMAKE_INSTALL_PREFIX}/simbody
-                    -DCMAKE_PREFIX_PATH:PATH=${CMAKE_INSTALL_PREFIX}/docopt)
+                    -DCMAKE_PREFIX_PATH:PATH=${CMAKE_INSTALL_PREFIX}/docopt
+                    -DOPENSIM_INSTALL_UNIX_FHS:BOOL=OFF)
+
 
 if(SUPERBUILD_opensim-core)
 
     # OpenSim's dependencies.
     AddDependency(NAME simbody
                   GIT_URL    https://github.com/simbody/simbody.git
-                  GIT_TAG    187d22c690359677912f03c0490049f878d36c72
+                  GIT_TAG    94814f3c19e613f82a91ab58abd5471ed63aad96
                   CMAKE_ARGS -DBUILD_EXAMPLES:BOOL=OFF 
                              -DBUILD_TESTING:BOOL=OFF)
 
@@ -33,5 +35,6 @@ if(SUPERBUILD_opensim-core)
 
     add_dependencies(opensim-core simbody docopt)
 endif()
+
 
 

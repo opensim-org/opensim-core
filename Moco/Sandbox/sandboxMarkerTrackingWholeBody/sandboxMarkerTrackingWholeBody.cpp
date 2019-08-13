@@ -212,7 +212,7 @@ void addCoordinateActuator(std::unique_ptr<Model>& model, std::string coordName,
 MocoSolution solveMarkerTrackingProblem(
         bool prevSolutionInitialization) {
 
-    MocoTool moco;
+    MocoStudy moco;
     moco.setName("whole_body_marker_tracking");
 
     // Define the optimal control problem.
@@ -237,7 +237,7 @@ MocoSolution solveMarkerTrackingProblem(
 
     // Cost.
     // -----
-    auto* tracking = mp.addCost<MocoMarkerTrackingCost>();
+    auto* tracking = mp.addGoal<MocoMarkerTrackingCost>();
     tracking->setName("tracking");
     auto ref = TRCFileAdapter::read("marker_trajectories.trc");
     mp.setTimeBounds(ref.getIndependentColumn().at(0),
@@ -258,7 +258,7 @@ MocoSolution solveMarkerTrackingProblem(
     tracking->setMarkersReference(markersRef);
     tracking->setAllowUnusedReferences(true);
 
-    auto* control = mp.addCost<MocoControlCost>();
+    auto* control = mp.addGoal<MocoControlGoal>();
     control->setName("control_cost");
     control->set_weight(0.1);
 
@@ -273,7 +273,7 @@ MocoSolution solveMarkerTrackingProblem(
     // Create guess.
     // =============
     if (prevSolutionInitialization) {
-        MocoIterate prevSolution(
+        MocoTrajectory prevSolution(
             "sandboxMarkerTrackingWholeBody_marker_solution.sto");
         ms.setGuess(prevSolution);
     } else {

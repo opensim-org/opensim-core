@@ -18,6 +18,9 @@ dependencies/*
 # python
 *.pyc
 
+# Matlab
+*.asv
+
 # Clion
 # -----
 # Reference: https://intellij-support.jetbrains.com/hc/en-us/articles/206544839
@@ -43,7 +46,12 @@ cmake-build-*
 ## File-based project format:
 *.iws
 
+# optimization delete-to-stop file
+delete_this_to_stop_optimization*.txt
+
 venv
 
 # MATLAB
 *.asv
+
+Moco/doc/MocoCheatSheet.pdf

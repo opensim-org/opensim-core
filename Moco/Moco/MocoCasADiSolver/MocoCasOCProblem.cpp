@@ -33,7 +33,8 @@ MocoCasOCProblem::MocoCasOCProblem(const MocoCasADiSolver& mocoCasADiSolver,
         std::string dynamicsMode)
         : m_jar(std::move(jar)),
           m_paramsRequireInitSystem(
-                  mocoCasADiSolver.get_parameters_require_initsystem()) {
+                  mocoCasADiSolver.get_parameters_require_initsystem()),
+          m_formattedTimeString(getFormattedDateTime(true)) {
 
     setDynamicsMode(dynamicsMode);
     const auto& model = problemRep.getModelBase();
@@ -58,11 +59,12 @@ MocoCasOCProblem::MocoCasOCProblem(const MocoCasADiSolver& mocoCasADiSolver,
                 convertBounds(info.getInitialBounds()),
                 convertBounds(info.getFinalBounds()));
     }
-    for (const auto& actu : model.getComponentList<Actuator>()) {
-        // TODO handle a variable number of control signals.
-        const auto& actuName = actu.getAbsolutePathString();
-        const auto& info = problemRep.getControlInfo(actuName);
-        addControl(actuName, convertBounds(info.getBounds()),
+
+    auto controlNames =
+            createControlNamesFromModel(model, m_modelControlIndices);
+    for (const auto& controlName : controlNames) {
+        const auto& info = problemRep.getControlInfo(controlName);
+        addControl(controlName, convertBounds(info.getBounds()),
                 convertBounds(info.getInitialBounds()),
                 convertBounds(info.getFinalBounds()));
     }
@@ -74,27 +76,12 @@ MocoCasOCProblem::MocoCasOCProblem(const MocoCasADiSolver& mocoCasADiSolver,
     // set properly.
     const auto kcNames = problemRep.createKinematicConstraintNames();
     if (kcNames.empty()) {
-        OPENSIM_THROW_IF(
-                !mocoCasADiSolver.getProperty_enforce_constraint_derivatives()
-                         .empty(),
-                Exception,
-                "Solver property 'enforce_constraint_derivatives' "
-                "was set but no enabled kinematic constraints exist in the "
-                "model.");
         OPENSIM_THROW_IF(mocoCasADiSolver.get_minimize_lagrange_multipliers(),
                 Exception,
                 "Solver property 'minimize_lagrange_multipliers' "
                 "was enabled but no enabled kinematic constraints exist in the "
                 "model.");
     } else {
-        OPENSIM_THROW_IF(
-                mocoCasADiSolver.getProperty_enforce_constraint_derivatives()
-                        .empty(),
-                Exception,
-                "Enabled kinematic constraints exist in the "
-                "provided model. Please set the solver property "
-                "'enforce_constraint_derivatives' to either 'true' or "
-                "'false'.");
 
         int cid, mp, mv, ma;
         int multIndexThisConstraint;
@@ -177,7 +164,8 @@ MocoCasOCProblem::MocoCasOCProblem(const MocoCasADiSolver& mocoCasADiSolver,
 
                     // Add velocity correction variables if enforcing
                     // constraint equation derivatives.
-                    if (enforceConstraintDerivs && !isPrescribedKinematics()) {
+                    if (enforceConstraintDerivs &&
+                            !isPrescribedKinematics()) {
                         // TODO this naming convention assumes that the
                         // associated Lagrange multiplier name begins with
                         // "lambda", which may change in the future.
@@ -215,6 +203,27 @@ MocoCasOCProblem::MocoCasOCProblem(const MocoCasADiSolver& mocoCasADiSolver,
         const auto& param = problemRep.getParameter(paramName);
         addParameter(paramName, convertBounds(param.getBounds()));
     }
+
+    {
+        const auto costNames = problemRep.createCostNames();
+        for (const auto& name : costNames) {
+            const auto& cost = problemRep.getCost(name);
+            addCost(name, cost.getNumIntegrals(), cost.getNumOutputs());
+        }
+    }
+    {
+        const auto endpointConNames =
+                problemRep.createEndpointConstraintNames();
+        for (const auto& name : endpointConNames) {
+            const auto& ec = problemRep.getEndpointConstraint(name);
+            std::vector<CasOC::Bounds> casBounds;
+            for (const auto& bounds : ec.getConstraintInfo().getBounds()) {
+                casBounds.push_back(convertBounds(bounds));
+            }
+            addEndpointConstraint(name, ec.getNumIntegrals(), casBounds);
+        }
+    }
+
     const auto pathConstraintNames = problemRep.createPathConstraintNames();
     for (const auto& name : pathConstraintNames) {
         const auto& pathCon = problemRep.getPathConstraint(name);
@@ -224,4 +233,8 @@ MocoCasOCProblem::MocoCasOCProblem(const MocoCasADiSolver& mocoCasADiSolver,
         }
         addPathConstraint(name, casBounds);
     }
+
+    m_fileDeletionThrower = OpenSim::make_unique<FileDeletionThrower>(
+            format("delete_this_to_stop_optimization_%s_%s.txt",
+                    problemRep.getName(), m_formattedTimeString));
 }

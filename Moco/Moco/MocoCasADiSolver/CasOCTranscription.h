@@ -28,10 +28,8 @@ namespace CasOC {
 /// and obey the settings that the user specified in the CasOC::Solver.
 class Transcription {
 public:
-    Transcription(const Solver& solver, const Problem& problem,
-            const int& numGridPoints, const int& numMeshPoints)
-            : m_solver(solver), m_problem(problem),
-              m_numGridPoints(numGridPoints), m_numMeshPoints(numMeshPoints) {}
+    Transcription(const Solver& solver, const Problem& problem)
+            : m_solver(solver), m_problem(problem) {}
     virtual ~Transcription() = default;
     Iterate createInitialGuessFromBounds() const;
     /// Use the provided random number generator to generate an iterate.
@@ -71,7 +69,11 @@ protected:
     /// overridden virtual methods are accessible to the base class. This
     /// implementation allows initialization to occur during construction,
     /// avoiding an extra call on the instantiated object.
-    void createVariablesAndSetBounds();
+    /// pointsForInterpControls are grid points at which the transcription
+    /// scheme applies constraints between control points.
+    void createVariablesAndSetBounds(const casadi::DM& grid,
+            int numDefectsPerMeshInterval,
+            const casadi::DM& pointsForInterpControls = casadi::DM());
 
     /// We assume all functions depend on time and parameters.
     /// "inputs" is prepended by time and postpended (?) by parameters.
@@ -88,23 +90,36 @@ protected:
             const auto& upper = bounds.upper;
             m_upperBounds[var](rowIndices, columnIndices) = upper;
         } else {
-            m_lowerBounds[var](rowIndices, columnIndices) =
-                    -std::numeric_limits<double>::infinity();
-            m_upperBounds[var](rowIndices, columnIndices) =
-                    std::numeric_limits<double>::infinity();
+            const auto inf = std::numeric_limits<double>::infinity();
+            m_lowerBounds[var](rowIndices, columnIndices) = -inf;
+            m_upperBounds[var](rowIndices, columnIndices) = inf;
         }
     }
 
-    void addConstraints(const casadi::DM& lower, const casadi::DM& upper,
-            const casadi::MX& equations);
+    template <typename T>
+    struct Constraints {
+        T defects;
+        T residuals;
+        T kinematic;
+        std::vector<T> endpoint;
+        std::vector<T> path;
+        T interp_controls;
+    };
+    void printConstraintValues(const Iterate& it,
+            const Constraints<casadi::DM>& constraints,
+            std::ostream& stream = std::cout) const;
 
     const Solver& m_solver;
     const Problem& m_problem;
+    int m_numGridPoints = -1;
+    int m_numMeshPoints = -1;
+    int m_numMeshIntervals = -1;
+    int m_numPointsIgnoringConstraints = -1;
+    int m_numDefectsPerMeshInterval = -1;
+    int m_numResiduals = -1;
+    int m_numConstraints = -1;
     casadi::DM m_grid;
-    int m_numGridPoints = 0;
-    int m_numMeshPoints = 0;
-    int m_numMeshIntervals = 0;
-    int m_numPointsIgnoringConstraints = 0;
+    casadi::DM m_pointsForInterpControls;
     casadi::MX m_times;
     casadi::MX m_duration;
 
@@ -122,14 +137,11 @@ private:
     casadi::Matrix<casadi_int> m_daeIndicesIgnoringConstraints;
 
     casadi::MX m_xdot; // State derivatives.
-    casadi::MX m_residual;
-    casadi::MX m_kcerr;      // Kinematic constraint errors.
-    casadi::MXVector m_path; // Auxiliary path constraint errors.
 
     casadi::MX m_objective;
-    std::vector<casadi::MX> m_constraints;
-    std::vector<casadi::DM> m_constraintsLowerBounds;
-    std::vector<casadi::DM> m_constraintsUpperBounds;
+    Constraints<casadi::MX> m_constraints;
+    Constraints<casadi::DM> m_constraintsLowerBounds;
+    Constraints<casadi::DM> m_constraintsUpperBounds;
 
 private:
     /// Override this function in your derived class to compute a vector of
@@ -144,14 +156,22 @@ private:
     virtual casadi::DM createKinematicConstraintIndicesImpl() const = 0;
     /// Override this function in your derived class set the defect, kinematic,
     /// and path constraint errors required for your transcription scheme.
-    virtual void applyConstraintsImpl(const VariablesMX& vars,
-            const casadi::MX& xdot, const casadi::MX& residual,
-            const casadi::MX& kcerr, const casadi::MXVector& path) = 0;
+    virtual void calcDefectsImpl(const casadi::MX& x, const casadi::MX& xdot,
+            casadi::MX& defects) const = 0;
+    virtual void calcInterpolatingControlsImpl(const casadi::MX& /*controls*/,
+            casadi::MX& /*interpControls*/) const {
+        OPENSIM_THROW_IF(m_pointsForInterpControls.numel(), OpenSim::Exception,
+                "Must provide constraints for interpolating controls.")
+    }
 
     void transcribe();
-    void setObjective();
-    void applyConstraints() {
-        applyConstraintsImpl(m_vars, m_xdot, m_residual, m_kcerr, m_path);
+    void setObjectiveAndEndpointConstraints();
+    void calcDefects() {
+        calcDefectsImpl(m_vars.at(states), m_xdot, m_constraints.defects);
+    }
+    void calcInterpolatingControls() {
+        calcInterpolatingControlsImpl(
+                m_vars.at(controls), m_constraints.interp_controls);
     }
 
     /// Use this function to ensure you iterate through variables in the same
@@ -166,7 +186,7 @@ private:
     /// Convert the map of variables into a column vector, for passing onto
     /// nlpsol(), etc.
     template <typename T>
-    static T flatten(const CasOC::Variables<T>& vars) {
+    static T flattenVariables(const CasOC::Variables<T>& vars) {
         std::vector<T> stdvec;
         for (const auto& key : getSortedVarKeys(vars)) {
             stdvec.push_back(vars.at(key));
@@ -174,7 +194,7 @@ private:
         return T::veccat(stdvec);
     }
     /// Convert the 'x' column vector into separate variables.
-    CasOC::VariablesDM expand(const casadi::DM& x) const {
+    CasOC::VariablesDM expandVariables(const casadi::DM& x) const {
         CasOC::VariablesDM out;
         using casadi::Slice;
         casadi_int offset = 0;
@@ -188,6 +208,174 @@ private:
         }
         return out;
     }
+
+    /// Flatten the constraints into a row vector, keeping constraints
+    /// grouped together by time. Organizing the sparsity of the Jacobian
+    /// this way might have benefits for sparse linear algebra.
+    template <typename T>
+    T flattenConstraints(const Constraints<T>& constraints) const {
+        T flat = T(casadi::Sparsity::dense(m_numConstraints, 1));
+
+        int iflat = 0;
+        auto copyColumn = [&flat, &iflat](const T& matrix, int columnIndex) {
+            using casadi::Slice;
+            if (matrix.rows()) {
+                flat(Slice(iflat, iflat + matrix.rows())) =
+                        matrix(Slice(), columnIndex);
+                iflat += matrix.rows();
+            }
+        };
+
+        // Trapezidal sparsity pattern for mesh intervals 0, 1 and 2:
+        // Endpoint constraints depend on all time points through their
+        // integral.
+        //                   0    1    2    3
+        //    endpoint       x    x    x    x
+        //    path_0         x
+        //    kinematic_0    x
+        //    residual_0     x
+        //    defect_0       x    x
+        //    kinematic_1         x
+        //    path_1              x
+        //    residual_1          x
+        //    defect_1            x    x
+        //    kinematic_2              x
+        //    path_2                   x
+        //    residual_2               x
+        //    kinematic_3                   x
+        //    path_3                        x
+        //    residual_3                    x
+
+        // Hermite-Simpson sparsity pattern for mesh intervals 0, 1 and 2:
+        //                   0    0.5    1    1.5    2    2.5    3
+        //    endpoint       x     x     x     x     x     x     x
+        //    path_0         x
+        //    kinematic_0    x
+        //    residual_0     x
+        //    residual_0.5         x
+        //    defect_0       x     x     x
+        //    interp_con_0   x     x     x
+        //    kinematic_1                x
+        //    path_1                     x
+        //    residual_1                 x
+        //    residual_1.5                     x
+        //    defect_1                   x     x     x
+        //    interp_con_1               x     x     x
+        //    kinematic_2                            x
+        //    path_2                                 x
+        //    residual_2                             x
+        //    residual_2.5                                 x
+        //    defect_2                               x     x     x
+        //    interp_con_2                           x     x     x
+        //    kinematic_3                                        x
+        //    path_3                                             x
+        //    residual_3                                         x
+        //                   0    0.5    1    1.5    2    2.5    3
+
+        for (const auto& endpoint : constraints.endpoint) {
+            copyColumn(endpoint, 0);
+        }
+
+        int igrid = 0;
+        // Index for pointsForInterpControls.
+        int icon = 0;
+        for (int imesh = 0; imesh < m_numMeshPoints; ++imesh) {
+            copyColumn(constraints.kinematic, imesh);
+            for (const auto& path : constraints.path) {
+                copyColumn(path, imesh);
+            }
+            if (imesh < m_numMeshIntervals) {
+                while (m_grid(igrid).scalar() < m_solver.getMesh()[imesh + 1]) {
+                    copyColumn(constraints.residuals, igrid);
+                    ++igrid;
+                }
+                copyColumn(constraints.defects, imesh);
+                while (icon < m_pointsForInterpControls.numel() &&
+                        m_pointsForInterpControls(icon).scalar() <
+                                m_solver.getMesh()[imesh + 1]) {
+                    copyColumn(constraints.interp_controls, icon);
+                    ++icon;
+                }
+            }
+        }
+        // The loop above does not handle the residual at the final grid point.
+        copyColumn(constraints.residuals, m_numGridPoints - 1);
+
+        OPENSIM_THROW_IF(iflat != m_numConstraints, OpenSim::Exception,
+                "Internal error.");
+        return flat;
+    }
+
+    // Expand constraints that have been flattened into a Constraints struct.
+    template <typename T>
+    Constraints<T> expandConstraints(const T& flat) const {
+        using casadi::Sparsity;
+
+        // Allocate memory.
+        auto init = [](int numRows, int numColumns) {
+            return T(casadi::Sparsity::dense(numRows, numColumns));
+        };
+        Constraints<T> out;
+        out.defects = init(m_numDefectsPerMeshInterval, m_numMeshPoints - 1);
+        out.residuals = init(m_numResiduals, m_numGridPoints);
+        out.kinematic = init(m_problem.getNumKinematicConstraintEquations(),
+                m_numMeshPoints);
+        out.endpoint.resize(m_problem.getEndpointConstraintInfos().size());
+        for (int iec = 0; iec < (int)m_constraints.endpoint.size(); ++iec) {
+            const auto& info = m_problem.getEndpointConstraintInfos()[iec];
+            out.endpoint[iec] = init(info.num_outputs, 1);
+        }
+        out.path.resize(m_problem.getPathConstraintInfos().size());
+        for (int ipc = 0; ipc < (int)m_constraints.path.size(); ++ipc) {
+            const auto& info = m_problem.getPathConstraintInfos()[ipc];
+            out.path[ipc] = init(info.size(), m_numMeshPoints);
+        }
+        out.interp_controls = init(m_problem.getNumControls(),
+                (int)m_pointsForInterpControls.numel());
+
+        int iflat = 0;
+        auto copyColumn = [&flat, &iflat](T& matrix, int columnIndex) {
+            using casadi::Slice;
+            if (matrix.rows()) {
+                matrix(Slice(), columnIndex) =
+                        flat(Slice(iflat, iflat + matrix.rows()));
+                iflat += matrix.rows();
+            }
+        };
+
+        for (auto& endpoint : out.endpoint) {
+            copyColumn(endpoint, 0);
+        }
+
+        int igrid = 0;
+        // Index for pointsForInterpControls.
+        int icon = 0;
+        for (int imesh = 0; imesh < m_numMeshPoints; ++imesh) {
+            copyColumn(out.kinematic, imesh);
+            for (auto& path : out.path) { copyColumn(path, imesh); }
+            if (imesh < m_numMeshIntervals) {
+                while (m_grid(igrid).scalar() < m_solver.getMesh()[imesh + 1]) {
+                    copyColumn(out.residuals, igrid);
+                    ++igrid;
+                }
+                copyColumn(out.defects, imesh);
+                while (icon < m_pointsForInterpControls.numel() &&
+                        m_pointsForInterpControls(icon).scalar() <
+                                m_solver.getMesh()[imesh + 1]) {
+                    copyColumn(out.interp_controls, icon);
+                    ++icon;
+                }
+            }
+        }
+        // The loop above does not handle the residual at the final grid point.
+        copyColumn(out.residuals, m_numGridPoints - 1);
+
+        OPENSIM_THROW_IF(iflat != m_numConstraints, OpenSim::Exception,
+                "Internal error.");
+        return out;
+    }
+
+    friend class NlpsolCallback;
 };
 
 } // namespace CasOC

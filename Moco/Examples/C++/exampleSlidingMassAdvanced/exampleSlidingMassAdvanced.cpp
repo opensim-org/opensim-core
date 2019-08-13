@@ -68,7 +68,7 @@ std::unique_ptr<Model> createSlidingMassModel() {
 
 int main() {
 
-    MocoTool moco;
+    MocoStudy moco;
     moco.setName("sliding_mass");
 
     // Define the optimal control problem.
@@ -95,7 +95,7 @@ int main() {
 
     // Cost.
     // -----
-    problem.addCost<MocoFinalTimeCost>();
+    problem.addGoal<MocoFinalTimeGoal>();
 
     // Configure the solver.
     // =====================
@@ -114,7 +114,7 @@ int main() {
 
     // Specify an initial guess.
     // -------------------------
-    MocoIterate guess = solver.createGuess("bounds");
+    MocoTrajectory guess = solver.createGuess("bounds");
     guess.resampleWithNumTimes(2);
     guess.setTime({0, 0.5});
     guess.setState("/slider/position/value", {0.0, 1.0});

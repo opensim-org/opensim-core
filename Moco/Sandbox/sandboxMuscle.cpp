@@ -299,7 +299,7 @@ void testHangingMuscleMinimumTime(
     for (int i = 0; i < svn.size(); ++i) { std::cout << svn[i] << std::endl; }
     MocoSolution solutionTrajOpt;
     {
-        MocoTool moco;
+        MocoStudy moco;
         MocoProblem& problem = moco.updProblem();
         problem.setModelCopy(model);
         problem.setTimeBounds(0, {0.05, 1.0});
@@ -333,7 +333,7 @@ void testHangingMuscleMinimumTime(
         }
         problem.setControlInfo("/forceset/actuator", {0.01, 1});
 
-        problem.addCost<MocoFinalTimeCost>();
+        problem.addGoal<MocoFinalTimeGoal>();
 
         auto& solver = moco.initSolver<SolverType>();
         solver.set_num_mesh_points(20);
@@ -342,7 +342,7 @@ void testHangingMuscleMinimumTime(
         solver.set_optim_constraint_tolerance(1e-3);
         // TODO if compliant tendon, use rigid tendon as initial guess.
         // solver.set_optim_sparsity_detection("initial-guess");
-        MocoIterate guessForwardSim = solver.createGuess("time-stepping");
+        MocoTrajectory guessForwardSim = solver.createGuess("time-stepping");
         // solver.setGuess(guessForwardSim);
         guessForwardSim.write("sandboxMuscle_guess_forward_sim.sto");
         std::cout << "Guess from forward sim: "
@@ -379,7 +379,7 @@ void testHangingMuscleMinimumTime(
     {
         std::cout << "Tracking the trajectory optimization coordinate solution."
                   << std::endl;
-        MocoTool moco;
+        MocoStudy moco;
         MocoProblem& problem = moco.updProblem();
         problem.setModelCopy(model);
         // Using an equality constraint for the time bounds was essential for
@@ -414,7 +414,7 @@ void testHangingMuscleMinimumTime(
         }
         problem.setControlInfo("/forceset/actuator", {0.01, 1});
 
-        auto* tracking = problem.addCost<MocoStateTrackingCost>();
+        auto* tracking = problem.addGoal<MocoStateTrackingCost>();
 
         auto states = solutionTrajOpt.exportToStatesStorage().exportToTable();
         TimeSeriesTable ref(states.getIndependentColumn());

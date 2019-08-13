@@ -18,17 +18,16 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "MocoIterate.h"
-
 #include "MocoProblemRep.h"
-
-#include <OpenSim/Common/Object.h>
+#include "MocoTrajectory.h"
 
 #include <SimTKcommon/internal/ReferencePtr.h>
 
+#include <OpenSim/Common/Object.h>
+
 namespace OpenSim {
 
-class MocoTool;
+class MocoStudy;
 
 // TODO create typed versions?
 /*
@@ -86,7 +85,7 @@ public:
     /// general; it's just that this function doesn't support it.
     ///
     /// @precondition You must have called resetProblem().
-    MocoIterate createGuessTimeStepping() const;
+    MocoTrajectory createGuessTimeStepping() const;
 
 protected:
 
@@ -111,11 +110,11 @@ protected:
 
 private:
 
-    /// This is called by MocoTool.
+    /// This is called by MocoStudy.
     // We don't want to make this public, as users would get confused about
-    // whether they should call MocoTool::solve() or MocoSolver::solve().
+    // whether they should call MocoStudy::solve() or MocoSolver::solve().
     MocoSolution solve() const;
-    friend MocoTool;
+    friend MocoStudy;
 
     /// This is the meat of a solver: solve the problem and return the solution.
     virtual MocoSolution solveImpl() const = 0;

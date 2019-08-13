@@ -395,7 +395,7 @@ Model createModel(DOFs dofs) {
 
 int main() {
 
-    MocoTool moco;
+    MocoStudy moco;
     moco.setName("whole_body_tracking");
 
     // Define the optimal control problem.
@@ -504,19 +504,19 @@ int main() {
 
     trackingCost.setReference(refFilt);
     trackingCost.setAllowUnusedReferences(true);
-    //trackingCost.setWeight("gp/p_rz/value", 100.0);
-    //trackingCost.setWeight("gp/p_tx/value", 25.0);
-    //trackingCost.setWeight("gp/p_ty/value", 10.0);
-    //trackingCost.setWeight("hip/hip_rz/value", 2.0);
-    mp.addCost(trackingCost);
+    //trackingCost.setWeightForState("gp/p_rz/value", 100.0);
+    //trackingCost.setWeightForState("gp/p_tx/value", 25.0);
+    //trackingCost.setWeightForState("gp/p_ty/value", 10.0);
+    //trackingCost.setWeightForState("hip/hip_rz/value", 2.0);
+    mp.addGoal(trackingCost);
 
     // Takes longer to solve with this cost:
     // With implicit, and 5e4 stiffness, doesn't not converge within 1000
     // iterations:
-    //MocoControlCost controlCost;
+    //MocoControlGoal controlCost;
     //controlCost.setName("effort");
     //controlCost.set_weight(0.00000001);
-    //mp.addCost(controlCost);
+    //mp.addGoal(controlCost);
 
     // Configure the solver.
     // =====================
@@ -528,10 +528,10 @@ int main() {
     ms.set_optim_solver("ipopt");
     ms.set_optim_hessian_approximation("exact");
 
-    MocoIterate guess = ms.createGuess();
+    MocoTrajectory guess = ms.createGuess();
     guess.setStatesTrajectory(refFilt2, true, true);
     guess.write("states_guess.sto");
-    //MocoIterate guess("sandboxWholeBodyTracking_solution.sto");
+    //MocoTrajectory guess("sandboxWholeBodyTracking_solution.sto");
     ms.setGuess(guess);
     // Using the correct initial guess reduces computational time by 4x.
 

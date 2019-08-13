@@ -135,6 +135,11 @@ public:
             "0: not parallel; 1: use all cores (default); greater than 1: use"
             "this number of threads. This overrides the OPENSIM_MOCO_PARALLEL "
             "environment variable.");
+    OpenSim_DECLARE_PROPERTY(output_interval, int,
+            "Write intermediate iterates to file. 0, the default, indicates no "
+            "intermediate iterates are saved, 1 indicates each iteration "
+            "is saved, 5 indicates every fifth iteration is saved, etc.");
+
     MocoCasADiSolver();
 
     /// @name Specifying an initial guess
@@ -151,12 +156,12 @@ public:
     /// @note Calling this method does *not* set an initial guess to be used
     /// in the solver; you must call setGuess() or setGuessFile() for that.
     /// @precondition You must have called resetProblem().
-    MocoIterate createGuess(const std::string& type = "bounds") const;
+    MocoTrajectory createGuess(const std::string& type = "bounds") const;
 
     /// The number of time points in the iterate does *not* need to match
     /// `num_mesh_points`; the iterate will be interpolated to the correct size.
     /// This clears the `guess_file`, if any.
-    void setGuess(MocoIterate guess);
+    void setGuess(MocoTrajectory guess);
     /// Use this convenience function if you want to choose the type of guess
     /// used, but do not want to modify it first.
     void setGuess(const std::string& type) { setGuess(createGuess(type)); }
@@ -172,15 +177,13 @@ public:
     /// This throws an exception if you have not set a guess (or guess file).
     /// If you have not set a guess (or guess file), this returns an empty
     /// guess, and when solving, we will generate a guess using bounds.
-    const MocoIterate& getGuess() const;
+    const MocoTrajectory& getGuess() const;
 
     /// @}
 
     /// @cond
     /// This is used to generate a warning.
-    void setRunningInPython(bool value) const {
-        m_runningInPython = value;
-    }
+    void setRunningInPython(bool value) const { m_runningInPython = value; }
     /// @endcond
 
 protected:
@@ -195,9 +198,9 @@ private:
 
     // When a copy of the solver is made, we want to keep any guess specified
     // by the API, but want to discard anything we've cached by loading a file.
-    MocoIterate m_guessFromAPI;
-    mutable SimTK::ResetOnCopy<MocoIterate> m_guessFromFile;
-    mutable SimTK::ReferencePtr<const MocoIterate> m_guessToUse;
+    MocoTrajectory m_guessFromAPI;
+    mutable SimTK::ResetOnCopy<MocoTrajectory> m_guessFromFile;
+    mutable SimTK::ReferencePtr<const MocoTrajectory> m_guessToUse;
 
     mutable bool m_runningInPython = false;
 };

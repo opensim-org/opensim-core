@@ -45,7 +45,7 @@ class TestSlidingMass {
 
   public static void testSlidingMass() throws Exception {
 
-    MocoTool moco = new MocoTool();
+    MocoStudy moco = new MocoStudy();
     moco.setName("sliding_mass");
 
     // Define the optimal control problem.
@@ -73,8 +73,8 @@ class TestSlidingMass {
 
     // Cost.
     // -----
-    MocoFinalTimeCost ftCost = new MocoFinalTimeCost();
-    mp.addCost(ftCost);
+    MocoFinalTimeGoal ftCost = new MocoFinalTimeGoal();
+    mp.addGoal(ftCost);
 
     // Configure the solver.
     // =====================

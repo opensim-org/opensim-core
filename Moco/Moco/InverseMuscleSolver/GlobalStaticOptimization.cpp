@@ -166,6 +166,8 @@ public:
             i_mus++;
         }
 
+        this->add_cost("effort", 1);
+
         // Add a constraint for each coordinate we want to actuate.
         _numCoordsToActuate = (int)coordPathsToActuate.size();
         for (const auto& coordPath : coordPathsToActuate) {
@@ -260,9 +262,12 @@ public:
                      - genForce;
         }
     }
-    void calc_integral_cost(const tropter::Input<T>& in,
+    void calc_cost(int cost_index, const tropter::CostInput<T>& in,
+            T& cost) const override {
+        cost = in.integral;
+    }
+    void calc_cost_integrand(int cost_index, const tropter::Input<T>& in,
             T& integrand) const override {
-
         const auto& controls = in.controls;
         integrand = controls.squaredNorm();
     }

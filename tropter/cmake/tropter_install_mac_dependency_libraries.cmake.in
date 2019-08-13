@@ -1,6 +1,6 @@
-# Temporary hack to package dependencies on Macs. TODO
+# Temporary hack to package dependencies on Macs.
 
-set(libdir "${CMAKE_INSTALL_PREFIX}/lib")
+set(libdir "@CMAKE_INSTALL_PREFIX@/@CMAKE_INSTALL_LIBDIR@")
 message(STATUS "Editing RPATH of tropter dependency libraries")
 
 macro(install_name_tool_change lib dep_name dep_oldpath)
@@ -8,6 +8,31 @@ macro(install_name_tool_change lib dep_name dep_oldpath)
             -change ${dep_oldpath}/lib${dep_name}.dylib
             @rpath/lib${dep_name}.dylib
             "${libdir}/lib${lib}.dylib")
+endmacro()
+
+macro(install_name_tool_change_gfortran lib)
+    execute_process(COMMAND bash "-c"
+        "otool -L ${libdir}/lib${lib}.dylib | grep 'libgfortran.*version' | perl -pe 's/^\\s+(.*)\\/libg.*/\\1/gc'"
+        OUTPUT_VARIABLE libgfortran_dir
+        OUTPUT_STRIP_TRAILING_WHITESPACE)
+    execute_process(COMMAND bash "-c"
+        "otool -L ${libdir}/lib${lib}.dylib | grep 'libgfortran.*version' | perl -pe 's/.*lib(.*).dylib.*/\\1/gc'"
+        OUTPUT_VARIABLE libgfortran_name
+        OUTPUT_STRIP_TRAILING_WHITESPACE)
+    install_name_tool_change(${lib} "${libgfortran_name}" "${libgfortran_dir}")
+endmacro()
+
+macro(install_name_tool_change_quadmath lib)
+execute_process(COMMAND bash "-c"
+    "otool -L ${libdir}/lib${lib}.dylib | grep 'libquadmath' | perl -pe 's/^\\s+(.*)\\/libq.*/\\1/gc'"
+    OUTPUT_VARIABLE libquadmath_dir
+    OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+execute_process(COMMAND bash "-c"
+    "otool -L ${libdir}/lib${lib}.dylib | grep 'libquadmath' | perl -pe 's/.*lib(.*).dylib.*/\\1/gc'"
+    OUTPUT_VARIABLE libquadmath_name
+    OUTPUT_STRIP_TRAILING_WHITESPACE)
+    install_name_tool_change(${lib} "${libquadmath_name}" "${libquadmath_dir}")
 endmacro()
 
 macro(install_name_tool_id lib)
@@ -28,13 +53,26 @@ macro(install_name_tool_delete_rpath lib rpath)
             "${libdir}/lib${lib}.dylib")
 endmacro()
 
+# Get the directory containing libgcc_s.1.dylib.
+# otool: Get the list of dependencies of gfortran, which includes libgcc_s.
+# grep: Isolate the line containing libgcc.
+# perl: Extract only the directory, without the filename.
+#    ^\\s+     matches all spaces at the start of the string.
+#   (.*)       matches everything up to libgcc, and captures it as match gorup #1
+#   \\/libg.*  matches the rest of the line.
+#   \\1        replaces the contents of the entire match with match group #1
+execute_process(COMMAND bash "-c"
+    "otool -L ${libdir}/libgfortran.dylib | grep 'libgcc' | perl -pe 's/^\\s+(.*)\\/libg.*/\\1/gc'"
+    OUTPUT_VARIABLE libgcc_dir
+    OUTPUT_STRIP_TRAILING_WHITESPACE)
+
 # tropter
 install_name_tool_change(tropter adolc.2 "@ADOLC_DIR@/lib64")
 install_name_tool_change(tropter ipopt.1 "@IPOPT_LIBDIR@")
 install_name_tool_change(tropter coinmumps.1 "@IPOPT_LIBDIR@")
 install_name_tool_change(tropter coinmetis.1 "@IPOPT_LIBDIR@")
-install_name_tool_change(tropter gfortran.5 /usr/local/opt/gcc/lib/gcc/8)
-install_name_tool_change(tropter quadmath.0 /usr/local/opt/gcc/lib/gcc/8)
+install_name_tool_change_gfortran(tropter)
+install_name_tool_change_quadmath(tropter)
 install_name_tool_add_rpath(tropter)
 
 # adol-c
@@ -48,15 +86,15 @@ install_name_tool_delete_rpath(adolc.2 "@ColPack_ROOT_DIR@/lib")
 install_name_tool_id(ipopt.1)
 install_name_tool_change(ipopt.1 coinmumps.1 "@IPOPT_LIBDIR@")
 install_name_tool_change(ipopt.1 coinmetis.1 "@IPOPT_LIBDIR@")
-install_name_tool_change(ipopt.1 gfortran.5 /usr/local/opt/gcc/lib/gcc/8)
-install_name_tool_change(ipopt.1 quadmath.0 /usr/local/opt/gcc/lib/gcc/8)
+install_name_tool_change_gfortran(ipopt.1)
+install_name_tool_change_quadmath(ipopt.1)
 
 # coinmumps
 install_name_tool_id(coinmumps.1)
 install_name_tool_change(coinmumps.1 coinmetis.1 "@IPOPT_LIBDIR@")
-install_name_tool_change(coinmumps.1 gfortran.5 /usr/local/opt/gcc/lib/gcc/8)
-install_name_tool_change(coinmumps.1 gcc_s.1 /usr/local/lib/gcc/8)
-install_name_tool_change(coinmumps.1 quadmath.0 /usr/local/opt/gcc/lib/gcc/8)
+install_name_tool_change_gfortran(coinmumps.1)
+install_name_tool_change(coinmumps.1 gcc_s.1 "${libgcc_dir}")
+install_name_tool_change_quadmath(coinmumps.1)
 install_name_tool_add_rpath(coinmumps.1)
 
 # coinmetis
@@ -70,16 +108,15 @@ install_name_tool_add_rpath(coinmetis.1)
 # install_name_tool_id(ColPack.0)
 
 # gfortran
-install_name_tool_id(gfortran.5)
-install_name_tool_change(gfortran.5 gcc_s.1 /usr/local/lib/gcc/8)
-install_name_tool_change(gfortran.5 quadmath.0
-        /usr/local/Cellar/gcc/8.2.0/lib/gcc/8)
-install_name_tool_add_rpath(gfortran.5)
+install_name_tool_id(gfortran)
+install_name_tool_change(gfortran gcc_s.1 "${libgcc_dir}")
+install_name_tool_change_quadmath(gfortran)
+install_name_tool_add_rpath(gfortran)
 
 # gcc_s
 install_name_tool_id(gcc_s.1)
 
 # quadmath
 install_name_tool_id(quadmath.0)
-install_name_tool_change(quadmath.0 gcc_s.1 /usr/local/lib/gcc/8)
+install_name_tool_change(quadmath.0 gcc_s.1 "${libgcc_dir}")
 install_name_tool_add_rpath(quadmath.0)

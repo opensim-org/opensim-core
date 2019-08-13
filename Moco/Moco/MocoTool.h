@@ -3,7 +3,7 @@
 /* -------------------------------------------------------------------------- *
  * OpenSim Moco: MocoTool.h                                                   *
  * -------------------------------------------------------------------------- *
- * Copyright (c) 2017 Stanford University and the Authors                     *
+ * Copyright (c) 2019 Stanford University and the Authors                     *
  *                                                                            *
  * Author(s): Christopher Dembia                                              *
  *                                                                            *
@@ -18,161 +18,96 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include <OpenSim/Common/Object.h>
-#include <OpenSim/Simulation/Model/Model.h>
+#include "ModelProcessor.h"
 
-#include "MocoSolver.h"
+#include <OpenSim/Common/Object.h>
 
 namespace OpenSim {
 
-class MocoProblem;
-class MocoTropterSolver;
-class MocoCasADiSolver;
+/// This is a base class for solving problems that depend on an observed motion
+/// using Moco's optimal control methods.
+///
+/// Mesh interval
+/// -------------
+/// A smaller mesh interval increases the convergence time, but is necessary
+/// for fast motions or problems with stiff differential equations (e.g.,
+/// stiff tendons).
+/// For gait, consider using a mesh interval between 0.01 and 0.05 seconds.
+/// Try solving your problem with decreasing mesh intervals and choose a mesh
+/// interval at which the solution stops changing noticeably.
+///
+/// Reserve actuators
+/// -----------------
+/// Sometimes it is not possible to achieve the desired motion using
+/// muscles alone. There are multiple possible causes for this:
+///   - the muscles are not strong enough to achieve the required
+///     net joint moments,
+///   - the net joint moments change more rapidly than activation and
+///     deactivation time constants allow,
+///   - the filtering of the data causes unrealistic desired net joint moments.
+/// You may want to add "reserve" actuators to your model.
+/// This can be done with the ModOpAddReserves model operator.
+class MocoTool : public Object {
+    OpenSim_DECLARE_ABSTRACT_OBJECT(MocoTool, Object);
 
-/// The top-level class for solving a custom optimal control problem.
-///
-/// This class consists of a MocoProblem, which describes the optimal control
-/// problem, and a MocoSolver, which describes the numerical method for
-/// solving the problem.
-///
-/// Workflow
-/// --------
-/// When building a MocoTool programmatically (e.g., in C++), the workflow is as
-/// follows:
-///
-/// 1. Build the MocoProblem (set the model, constraints, etc.).
-/// 2. Call MocoTool::initSolver(), which returns a reference to the MocoSolver.
-///    After this, you cannot edit the MocoProblem.
-/// 3. Edit the settings of the MocoSolver (returned by initSolver()).
-/// 4. Call MocoTool::solve(). This returns the MocoSolution.
-/// 5. (Optional) Postprocess the solution, perhaps using MocoTool::visualize().
-///
-/// After calling solve(), you can edit the MocoProblem and/or the MocoSolver.
-/// You can then call solve() again, if you wish.
-///
-/// Saving the tool setup to a file
-/// -------------------------------
-/// You can save the MocoTool to a file by calling MocoTool::print(), and you
-/// can load the setup using MocoTool(const std::string& omocoFile).
-/// MocoTool setup files have a `.omoco` extension.
-///
-/// Solver
-/// ------
-/// The default solver uses the **tropter** direct
-/// collocation library. We also provide the **CasADi** solver, which
-/// depends on the **CasADi** automatic differentiation and optimization library.
-/// If you want to use CasADi programmatically, call initCasADiSolver() before
-/// solve().
-/// We would like to support users plugging in their own
-/// solvers, but there is no timeline for this. If you require additional
-/// features or enhancements to the solver, please consider contributing to
-/// **tropter**.
-
-// TODO rename to MocoFramework.
-
-class OSIMMOCO_API MocoTool : public Object {
-    OpenSim_DECLARE_CONCRETE_OBJECT(MocoTool, Object);
 public:
-    OpenSim_DECLARE_PROPERTY(write_solution, std::string,
-    "Provide the folder path (relative to working directory) to which the "
-    "solution files should be written. Set to 'false' to not write the "
-    "solution to disk.");
+    OpenSim_DECLARE_OPTIONAL_PROPERTY(initial_time, double,
+            "The start of the time interval. "
+            "All data must start at or before this time. "
+            "(default: earliest time available in all provided data)");
 
-    MocoTool();
+    OpenSim_DECLARE_OPTIONAL_PROPERTY(final_time, double,
+            "The end of the time interval. "
+            "All data must end at or after this time. "
+            "(default: latest time available in all provided data)");
 
-    /// Load a MocoTool setup file.
-    MocoTool(const std::string& omocoFile);
+    OpenSim_DECLARE_PROPERTY(mesh_interval, double,
+            "The time duration of each mesh interval "
+            "(default: 0.020 seconds).");
 
-    const MocoProblem& getProblem() const;
+    OpenSim_DECLARE_PROPERTY(clip_time_range, bool,
+            "Set the time range to be 1e-3 shorter on both ends to leave space "
+            "for finite difference estimates (default: false).");
 
-    /// If using this method in C++, make sure to include the "&" in the
-    /// return type; otherwise, you'll make a copy of the problem, and the copy
-    /// will have no effect on this MocoTool.
-    MocoProblem& updProblem();
+    OpenSim_DECLARE_PROPERTY(
+            model, ModelProcessor, "The musculoskeletal model to use.");
 
-    /// Call this method once you have finished setting up your MocoProblem.
-    /// This returns a reference to the MocoSolver, which you can then edit.
-    /// If using this method in C++, make sure to include the "&" in the
-    /// return type; otherwise, you'll make a copy of the solver, and the copy
-    /// will have no effect on this MocoTool.
-    MocoTropterSolver& initTropterSolver();
+    MocoTool() { constructProperties(); }
 
-    // TODO document
-    /// This returns a fresh MucoCasADiSolver and deletes the previous solver.
-    MocoCasADiSolver& initCasADiSolver();
-
-    /// Access the solver. Make sure to call `initSolver()` beforehand.
-    /// If using this method in C++, make sure to include the "&" in the
-    /// return type; otherwise, you'll make a copy of the solver, and the copy
-    /// will have no effect on this MocoTool.
-    MocoSolver& updSolver();
-
-    /// Solve the provided MocoProblem using the provided MocoSolver, and
-    /// obtain the solution to the problem. If the write_solution property
-    /// contains a file path (that is, it's not "false"), then the solution is
-    /// also written to disk.
-    /// @precondition
-    ///     You must have finished setting up both the problem and solver.
-    /// This reinitializes the solver so that any changes you have made will
-    /// hold.
-    MocoSolution solve() const;
-
-    /// Interactively visualize an iterate using the simbody-visualizer. The
-    /// iterate could be an initial guess, a solution, etc.
-    /// @precondition
-    ///     The MocoProblem must contain the model corresponding to
-    ///     the provided iterate.
-    void visualize(const MocoIterate& it) const;
-
-    /// Calculate the requested outputs using the model in the problem and the
-    /// states and controls in the MocoIterate.
-    /// The output paths can be regular expressions. For example,
-    /// ".*activation" gives the activation of all muscles.
-    /// Constraints are not enforced but prescribed motion (e.g.,
-    /// PositionMotion) is.
-    /// @note Parameters in the MocoIterate are **not** applied to the model.
-    TimeSeriesTable analyze(const MocoIterate& it,
-            std::vector<std::string> outputPaths) const;
-
-    /// @name Using other solvers
-    /// @{
-    template <typename SolverType>
-    void setCustomSolver() {
-        set_solver(SolverType());
-    }
-
-    /// @precondition If not using MucoTropterSolver or MucoCasADiSolver, you
-    /// must invoke setCustomSolver() first.
-    template <typename SolverType>
-    SolverType& initSolver() {
-        return dynamic_cast<SolverType&>(initSolverInternal());
-    }
-
-    template <typename SolverType>
-    SolverType& updSolver() {
-        return dynamic_cast<SolverType&>(upd_solver());
-    }
-    /// @}
+    void setModel(ModelProcessor model) { set_model(std::move(model)); }
 
 protected:
-    OpenSim_DECLARE_PROPERTY(problem, MocoProblem,
-    "The optimal control problem to solve.");
-    OpenSim_DECLARE_PROPERTY(solver, MocoSolver,
-    "The optimal control algorithm for solving the problem.");
+#ifndef SWIG
+    struct TimeInfo {
+        double initial = -SimTK::Infinity;
+        double final = SimTK::Infinity;
+        int numMeshPoints = -1;
+    };
+    /// This function updates a TimeInfo so the initial and final times are
+    /// within the data times provided. If the user provided a value for the
+    /// initial_time or final_time properties, then this ensures the
+    /// user-provided times are within the data times, and the info is updated
+    /// to use the user-provided times.
+    /// Finally, the TimeInfo.numMeshPoints field is updated based on the
+    /// mesh_interval property.
+    void updateTimeInfo(const std::string& dataLabel, const double& dataInitial,
+            const double& dataFinal, TimeInfo& info) const;
 
+    /// Get the canonicalized absolute pathname with respect to the setup file
+    /// directory from a given pathname which can be relative or absolute. Here,
+    /// canonicalized means that the pathname is analyzed and possibly modified
+    /// to conform to the current platform.
+    std::string getFilePath(const std::string& file) const;
+
+    /// Get the (canonicalized) absolute directory containing the file from
+    /// which this tool was loaded. If the tool was not loaded from a file, this
+    /// returns an empty string.
+    std::string getDocumentDirectory() const;
+
+#endif
 private:
-
-    MocoSolver& initSolverInternal();
     void constructProperties();
 };
-
-template <>
-OSIMMOCO_API
-MocoTropterSolver& MocoTool::initSolver<MocoTropterSolver>();
-
-template <>
-OSIMMOCO_API
-MocoCasADiSolver& MocoTool::initSolver<MocoCasADiSolver>();
 
 } // namespace OpenSim
 

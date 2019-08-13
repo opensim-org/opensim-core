@@ -33,7 +33,7 @@ MocoSolution solveDoublePendulumSwingup(const std::string& dynamics_mode) {
 
     using SimTK::Vec3;
 
-    MocoTool moco;
+    MocoStudy moco;
     moco.setName("double_pendulum_swingup_" + dynamics_mode);
 
     // Define the optimal control problem.
@@ -71,13 +71,13 @@ MocoSolution solveDoublePendulumSwingup(const std::string& dynamics_mode) {
 
     // Cost.
     // -----
-    auto* ftCost = mp.addCost<MocoFinalTimeCost>();
-    ftCost->set_weight(0.001);
+    auto* ftCost = mp.addGoal<MocoFinalTimeGoal>();
+    ftCost->setWeight(0.001);
 
-    auto* endpointCost = mp.addCost<MocoMarkerEndpointCost>("endpoint");
-    endpointCost->set_weight(1000.0);
-    endpointCost->setPointName("/markerset/marker1");
-    endpointCost->setReferenceLocation(SimTK::Vec3(0, 2, 0));
+    auto* finalCost = mp.addGoal<MocoMarkerFinalGoal>("final");
+    finalCost->setWeight(1000.0);
+    finalCost->setPointName("/markerset/marker1");
+    finalCost->setReferenceLocation(SimTK::Vec3(0, 2, 0));
 
     // Configure the solver.
     // =====================
@@ -85,9 +85,10 @@ MocoSolution solveDoublePendulumSwingup(const std::string& dynamics_mode) {
     auto& solver = moco.initSolver<SolverType>();
     solver.set_dynamics_mode(dynamics_mode);
     solver.set_num_mesh_points(N);
+    solver.set_transcription_scheme("trapezoidal");
     // solver.set_verbosity(2);
 
-    MocoIterate guess = solver.createGuess();
+    MocoTrajectory guess = solver.createGuess();
     guess.resampleWithNumTimes(2);
     guess.setTime({0, 1});
     guess.setState("/jointset/j0/q0/value", {0, -SimTK::Pi});
@@ -157,7 +158,7 @@ TEMPLATE_TEST_CASE("Similar solutions between implicit and explicit dynamics",
             derivTraj(i, 1) = explicitAccel[1];
             ++i;
         }
-        MocoIterate explicitWithDeriv(solution.getTime(),
+        MocoTrajectory explicitWithDeriv(solution.getTime(),
                 {{"derivatives",
                         {solutionImplicit.getDerivativeNames(), derivTraj}}});
         const double RMS = solutionImplicit.compareContinuousVariablesRMS(
@@ -173,7 +174,8 @@ TEMPLATE_TEST_CASE("Combining implicit dynamics mode with path constraints",
     std::cerr.rdbuf(LogManager::cerr.rdbuf());
     class MyPathConstraint : public MocoPathConstraint {
         OpenSim_DECLARE_CONCRETE_OBJECT(MyPathConstraint, MocoPathConstraint);
-        void initializeOnModelImpl(const Model& model) const override {
+        void initializeOnModelImpl(
+                const Model& model, const MocoProblemInfo&) const override {
             setNumEquations(model.getNumControls());
         }
         void calcPathConstraintErrorsImpl(const SimTK::State& state,
@@ -182,24 +184,26 @@ TEMPLATE_TEST_CASE("Combining implicit dynamics mode with path constraints",
         }
     };
     GIVEN("MocoProblem with path constraints") {
-        MocoTool moco;
+        MocoStudy moco;
         auto& prob = moco.updProblem();
         auto model = ModelFactory::createPendulum();
         prob.setTimeBounds(0, 1);
         prob.setModelCopy(model);
-        prob.addCost<MocoControlCost>();
+        prob.addGoal<MocoControlGoal>();
         auto* pc = prob.addPathConstraint<MyPathConstraint>();
         MocoConstraintInfo info;
         info.setBounds(std::vector<MocoBounds>(1, {10, 10000}));
         pc->setConstraintInfo(info);
         auto& solver = moco.initSolver<TestType>();
         solver.set_dynamics_mode("implicit");
-        solver.set_num_mesh_points(5);
+        const int N = 5;          // mesh points
+        const int Nc = 2 * N - 1; // collocation points (Hermite-Simpson)
+        solver.set_num_mesh_points(N);
         MocoSolution solution = moco.solve();
 
         THEN("path constraints are still obeyed") {
-            OpenSim_REQUIRE_MATRIX_TOL(solution.getControlsTrajectory(),
-                    SimTK::Matrix(5, 1, 10.0), 1e-5);
+            SimTK_TEST_EQ_TOL(solution.getControlsTrajectory(),
+                    SimTK::Matrix(Nc, 1, 10.0), 1e-5);
         }
     }
 }
@@ -209,7 +213,7 @@ TEMPLATE_TEST_CASE("Combining implicit dynamics with kinematic constraints",
     std::cout.rdbuf(LogManager::cout.rdbuf());
     std::cerr.rdbuf(LogManager::cerr.rdbuf());
     GIVEN("MocoProblem with a kinematic constraint") {
-        MocoTool moco;
+        MocoStudy moco;
         auto& prob = moco.updProblem();
         auto model = ModelFactory::createDoublePendulum();
         prob.setTimeBounds(0, 1);
@@ -232,30 +236,27 @@ TEMPLATE_TEST_CASE("Combining implicit dynamics with kinematic constraints",
         THEN("kinematic constraint is still obeyed") {
             const auto q0value = solution.getStatesTrajectory().col(0);
             const auto q1value = solution.getStatesTrajectory().col(1);
-            // Only check at the mesh points.
-            for (int i = 0; i < q0value.size(); i += 2) {
-                SimTK_TEST_EQ_TOL(q0value[i], q1value[i], 1e-6);
-            }
+            SimTK_TEST_EQ_TOL(q0value, q1value, 1e-6);
         }
     }
 }
 
-SCENARIO("Using MocoIterate with the implicit dynamics mode",
+SCENARIO("Using MocoTrajectory with the implicit dynamics mode",
         "[implicit][iterate]") {
-    GIVEN("MocoIterate with only derivatives") {
-        MocoIterate iterate;
+    GIVEN("MocoTrajectory with only derivatives") {
+        MocoTrajectory iterate;
         const_cast<SimTK::Matrix*>(&iterate.getDerivativesTrajectory())
                 ->resize(3, 2);
         THEN("it is not empty") { REQUIRE(!iterate.empty()); }
     }
-    GIVEN("MocoIterate with only derivative names") {
-        MocoIterate iterate;
+    GIVEN("MocoTrajectory with only derivative names") {
+        MocoTrajectory iterate;
         const_cast<std::vector<std::string>*>(&iterate.getDerivativeNames())
                 ->resize(3);
         THEN("it is not empty") { REQUIRE(!iterate.empty()); }
     }
-    GIVEN("MocoIterate with derivative data") {
-        MocoIterate iter(createVectorLinspace(6, 0, 1), {}, {}, {}, {"a", "b"},
+    GIVEN("MocoTrajectory with derivative data") {
+        MocoTrajectory iter(createVectorLinspace(6, 0, 1), {}, {}, {}, {"a", "b"},
                 {}, {}, {}, {}, {6, 2, 0.5}, {});
         WHEN("calling setNumTimes()") {
             REQUIRE(iter.getDerivativesTrajectory().nrow() != 4);
@@ -265,21 +266,21 @@ SCENARIO("Using MocoIterate with the implicit dynamics mode",
             }
         }
         WHEN("deserializing") {
-            const std::string filename = "testImplicit_MocoIterate.sto";
+            const std::string filename = "testImplicit_MocoTrajectory.sto";
             iter.write(filename);
             THEN("derivatives trajectory is preserved") {
-                MocoIterate deserialized(filename);
+                MocoTrajectory deserialized(filename);
                 REQUIRE(iter.getDerivativesTrajectory().nrow() == 6);
                 REQUIRE(iter.isNumericallyEqual(deserialized));
             }
         }
     }
-    GIVEN("two MocoIterates with different derivative data") {
+    GIVEN("two MocoTrajectorys with different derivative data") {
         const double valueA = 0.5;
         const double valueB = 0.499999;
-        MocoIterate iterA(createVectorLinspace(6, 0, 1), {}, {}, {}, {"a", "b"},
+        MocoTrajectory iterA(createVectorLinspace(6, 0, 1), {}, {}, {}, {"a", "b"},
                 {}, {}, {}, {}, {6, 2, valueA}, {});
-        MocoIterate iterB(createVectorLinspace(6, 0, 1), {}, {}, {}, {"a", "b"},
+        MocoTrajectory iterB(createVectorLinspace(6, 0, 1), {}, {}, {}, {"a", "b"},
                 {}, {}, {}, {}, {6, 2, valueB}, {});
         THEN("not numerically equal") {
             REQUIRE(!iterA.isNumericallyEqual(iterB));

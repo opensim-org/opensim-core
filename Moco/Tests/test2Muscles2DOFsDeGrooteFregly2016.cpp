@@ -117,6 +117,7 @@ public:
                     osimMuscleR.get_pennation_angle_at_optimal(),
                     osimMuscleR.get_max_contraction_velocity());
         }
+        this->add_cost("effort", 1);
     }
     void calc_differential_algebraic_equations(
             const tropter::Input<T>& in,
@@ -163,13 +164,16 @@ public:
                             +tensionR * (-y) / musTenLenR;
         return {netForceX,  netForceY};
     }
-    void calc_integral_cost(const tropter::Input<T>& in,
+    void calc_cost_integrand(int cost_index, const tropter::Input<T>& in,
             T& integrand) const override {
-
         const auto& controls = in.controls;
         const auto& controlL = controls[m_i_activation_l];
         const auto& controlR = controls[m_i_activation_r];
         integrand = controlL * controlL + controlR * controlR;
+    }
+    void calc_cost(int cost_index, const tropter::CostInput<T>& in,
+            T& cost) const override {
+        cost = in.integral;
     }
 };
 
@@ -255,6 +259,7 @@ public:
                 this->add_control("norm_fiber_velocity_l", {-1, 1}, 0);
         m_i_norm_fiber_velocity_r =
                 this->add_control("norm_fiber_velocity_r", {-1, 1}, 0);
+        this->add_cost("effort", 1);
         m_i_fiber_equilibrium_l =
                 this->add_path_constraint("fiber_equilibrium_l", 0);
         m_i_fiber_equilibrium_r =
@@ -365,13 +370,17 @@ public:
                             +tensionR * (-y) / musTenLenR;
         return {netForceX,  netForceY};
     }
-    void calc_integral_cost(const tropter::Input<T>& in,
+    void calc_cost_integrand(int cost_index, const tropter::Input<T>& in,
             T& integrand) const override {
 
         const auto& controls = in.controls;
         const auto& controlL = controls[m_i_excitation_l];
         const auto& controlR = controls[m_i_excitation_r];
         integrand = controlL * controlL + controlR * controlR;
+    }
+    void calc_cost(int cost_index, const tropter::CostInput<T>& in,
+            T& cost) const override {
+        cost = in.integral;
     }
 };
 

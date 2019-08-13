@@ -12,8 +12,8 @@ if(MOCO_COPY_DEPENDENCIES AND APPLE)
     # is installed (add_subdirectory(cmake) must be after
     # add_subdirectory(Moco)).
     set(script
-        ${CMAKE_CURRENT_BINARY_DIR}/MocoInstallMacDependencyLibraries.cmake)
-    configure_file(MocoInstallMacDependencyLibraries.cmake.in
+        ${CMAKE_CURRENT_BINARY_DIR}/OpenSimMocoInstallMacDependencyLibraries.cmake)
+    configure_file(OpenSimMocoInstallMacDependencyLibraries.cmake.in
             "${script}" @ONLY)
     install(SCRIPT "${script}")
 
@@ -27,23 +27,23 @@ endif()
 include(CMakePackageConfigHelpers)
 
 configure_package_config_file(
-        MocoConfig.cmake.in
-        "${CMAKE_CURRENT_BINARY_DIR}/MocoConfigToInstall.cmake"
+        OpenSimMocoConfig.cmake.in
+        "${CMAKE_CURRENT_BINARY_DIR}/OpenSimMocoConfigToInstall.cmake"
         INSTALL_DESTINATION "${MOCO_INSTALL_CMAKEDIR}"
         PATH_VARS
             CMAKE_INSTALL_PREFIX
             CMAKE_INSTALL_LIBDIR
             CMAKE_INSTALL_BINDIR
-            MOCO_INSTALL_INCLUDEDIR
+            CMAKE_INSTALL_INCLUDEDIR
             MOCO_INSTALL_CMAKEDIR
 )
 
-install(FILES "${CMAKE_CURRENT_BINARY_DIR}/MocoConfigToInstall.cmake"
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/OpenSimMocoConfigToInstall.cmake"
         DESTINATION "${MOCO_INSTALL_CMAKEDIR}"
-        RENAME MocoConfig.cmake)
+        RENAME OpenSimMocoConfig.cmake)
 
-install(FILES MocoMacros.cmake
+install(FILES OpenSimMocoMacros.cmake
         DESTINATION "${MOCO_INSTALL_CMAKEDIR}"
-        RENAME UseMoco.cmake)
+        RENAME UseOpenSimMoco.cmake)
 
-install(EXPORT MocoTargets DESTINATION "${MOCO_INSTALL_CMAKEDIR}")
+install(EXPORT OpenSimMocoTargets DESTINATION "${MOCO_INSTALL_CMAKEDIR}")

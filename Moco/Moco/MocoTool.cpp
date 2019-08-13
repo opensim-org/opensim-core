@@ -1,7 +1,7 @@
 /* -------------------------------------------------------------------------- *
  * OpenSim Moco: MocoTool.cpp                                                 *
  * -------------------------------------------------------------------------- *
- * Copyright (c) 2017 Stanford University and the Authors                     *
+ * Copyright (c) 2019 Stanford University and the Authors                     *
  *                                                                            *
  * Author(s): Christopher Dembia                                              *
  *                                                                            *
@@ -17,126 +17,78 @@
  * -------------------------------------------------------------------------- */
 #include "MocoTool.h"
 
-#include "Components/PositionMotion.h"
-#include "MocoCasADiSolver/MocoCasADiSolver.h"
-#include "MocoProblem.h"
-#include "MocoTropterSolver.h"
 #include "MocoUtilities.h"
-#include <regex>
-
-#include <OpenSim/Common/IO.h>
-#include <OpenSim/Common/Reporter.h>
-#include <OpenSim/Simulation/StatesTrajectory.h>
 
 using namespace OpenSim;
 
-MocoTool::MocoTool() { constructProperties(); }
-
-MocoTool::MocoTool(const std::string& omocoFile) : Object(omocoFile) {
-    constructProperties();
-    updateFromXMLDocument();
-}
-
 void MocoTool::constructProperties() {
-    constructProperty_write_solution("./");
-    constructProperty_problem(MocoProblem());
-    constructProperty_solver(MocoTropterSolver());
+    constructProperty_initial_time();
+    constructProperty_final_time();
+    constructProperty_mesh_interval(0.02);
+    constructProperty_clip_time_range(false);
+    constructProperty_model(ModelProcessor());
 }
 
-const MocoProblem& MocoTool::getProblem() const { return get_problem(); }
-
-MocoProblem& MocoTool::updProblem() { return upd_problem(); }
-
-MocoSolver& MocoTool::initSolverInternal() {
-    // TODO what to do if we already have a solver (from cloning?)
-    upd_solver().resetProblem(get_problem());
-    return upd_solver();
-}
-
-template <>
-MocoTropterSolver& MocoTool::initSolver<MocoTropterSolver>() {
-    set_solver(MocoTropterSolver());
-    return dynamic_cast<MocoTropterSolver&>(initSolverInternal());
-}
-
-template <>
-MocoCasADiSolver& MocoTool::initSolver<MocoCasADiSolver>() {
-    set_solver(MocoCasADiSolver());
-    return dynamic_cast<MocoCasADiSolver&>(initSolverInternal());
-}
-
-MocoTropterSolver& MocoTool::initTropterSolver() {
-    set_solver(MocoTropterSolver());
-    return initSolver<MocoTropterSolver>();
-}
-
-MocoCasADiSolver& MocoTool::initCasADiSolver() {
-    return initSolver<MocoCasADiSolver>();
-}
-
-MocoSolver& MocoTool::updSolver() { return updSolver<MocoSolver>(); }
-
-MocoSolution MocoTool::solve() const {
-    // TODO avoid const_cast.
-    const_cast<Self*>(this)->initSolverInternal();
-    MocoSolution solution = get_solver().solve();
-    bool originallySealed = solution.isSealed();
-    if (get_write_solution() != "false") {
-        OpenSim::IO::makeDir(get_write_solution());
-        std::string prefix = getName().empty() ? "MocoTool" : getName();
-        solution.unseal();
-        const std::string filename = get_write_solution() +
-                                     SimTK::Pathname::getPathSeparator() +
-                                     prefix + "_solution.sto";
-        try {
-            solution.write(filename);
-        } catch (const TimestampGreaterThanEqualToNext&) {
-            std::cout << "Could not write solution to file...skipping."
-                      << std::endl;
-        }
-        if (originallySealed) solution.seal();
+void MocoTool::updateTimeInfo(const std::string& dataLabel,
+        const double& dataInitial, const double& dataFinal,
+        TimeInfo& info) const {
+    double initial;
+    double final;
+    if (!getProperty_initial_time().empty()) {
+        OPENSIM_THROW_IF_FRMOBJ(get_initial_time() < dataInitial, Exception,
+                format("Provided initial time of %g is less than what is "
+                       "available from %s data, which starts at %g.",
+                        get_initial_time(), dataLabel, dataInitial));
+        initial = get_initial_time();
+    } else {
+        initial = std::max(info.initial, dataInitial);
     }
-    return solution;
-}
-
-void MocoTool::visualize(const MocoIterate& it) const {
-    // TODO this does not need the Solver at all, so this could be moved to
-    // MocoProblem.
-    const auto& model = get_problem().getPhase(0).getModel();
-    OpenSim::visualize(model, it.exportToStatesStorage());
-}
-
-TimeSeriesTable MocoTool::analyze(const MocoIterate& iterate,
-        std::vector<std::string> outputPaths) const {
-    auto model = get_problem().createRep().getModelBase();
-
-    prescribeControlsToModel(iterate, model);
-
-    auto* reporter = new TableReporter();
-    for (const auto& comp : model.getComponentList()) {
-        for (const auto& outputName : comp.getOutputNames()) {
-            const auto& output = comp.getOutput(outputName);
-            if (output.getTypeName() == "double") {
-                const auto& thisOutputPath = output.getPathName();
-                for (const auto& outputPathArg : outputPaths) {
-                    if (std::regex_match(
-                                thisOutputPath, std::regex(outputPathArg))) {
-                        reporter->addToReport(output);
-                    }
-                }
-            }
-        }
-    }
-    model.addComponent(reporter);
-
-    model.initSystem();
-
-    auto statesTraj = iterate.exportToStatesTrajectory(get_problem());
-
-    for (auto state : statesTraj) {
-        model.getSystem().prescribe(state);
-        model.realizeReport(state);
+    if (!getProperty_final_time().empty()) {
+        OPENSIM_THROW_IF_FRMOBJ(get_final_time() > dataFinal, Exception,
+                format("Provided final time of %g is greater than what "
+                       "is available from %s data, which ends at %g.",
+                        get_final_time(), dataLabel, dataFinal));
+        final = get_final_time();
+    } else {
+        final = std::min(info.final, dataFinal);
     }
 
-    return reporter->getTable();
+    OPENSIM_THROW_IF_FRMOBJ(final < initial, Exception,
+            format("Initial time of %g is greater than final time of %g.",
+                    initial, final));
+
+    OPENSIM_THROW_IF_FRMOBJ(get_mesh_interval() <= 0, Exception,
+            format("Expected mesh_interval to be positive but got %f.",
+                    get_mesh_interval()));
+
+    info.initial = initial;
+    info.final = final;
+
+    // We do not want to end up with a larger mesh interval than requested.
+    info.numMeshPoints =
+            (int)std::ceil((info.final - info.initial) / get_mesh_interval()) +
+            1;
+}
+
+std::string MocoTool::getFilePath(const std::string& file) const {
+    using SimTK::Pathname;
+
+    const std::string setupDir = getDocumentDirectory();
+
+    const std::string filepath =
+            Pathname::getAbsolutePathnameUsingSpecifiedWorkingDirectory(
+                    setupDir, file);
+
+    return filepath;
+}
+
+std::string MocoTool::getDocumentDirectory() const {
+    std::string setupDir;
+    {
+        bool dontApplySearchPath;
+        std::string fileName, extension;
+        SimTK::Pathname::deconstructPathname(getDocumentFileName(),
+                dontApplySearchPath, setupDir, fileName, extension);
+    }
+    return setupDir;
 }

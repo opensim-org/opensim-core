@@ -37,6 +37,7 @@ public:
         this->add_state("x", {0, 2}, {0}, {1});
         this->add_state("u", {-10, 10}, {0}, {0});
         this->add_control("F", {-50, 50});
+        this->add_cost("effort", 1);
     }
     const double mass = 10.0;
     void calc_differential_algebraic_equations(
@@ -46,8 +47,12 @@ public:
     }
     // TODO alternate form that takes a matrix; state at every time.
     //virtual void continuous(const MatrixXd& x, MatrixXd& xdot) const = 0;
-    void calc_integral_cost(const Input<T>& in, T& integrand) const override {
-
+    void calc_cost(
+            int cost_index, const CostInput<T>& in, T& cost) const override {
+        cost = in.integral;
+    }
+    void calc_cost_integrand(
+            int cost_index, const Input<T>& in, T& integrand) const override {
         const auto& controls = in.controls;
         integrand = controls[0] * controls[0];
     }

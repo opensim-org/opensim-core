@@ -34,13 +34,17 @@ class MocoParameter;
 class OSIMMOCO_API MocoBounds : public Object {
 OpenSim_DECLARE_CONCRETE_OBJECT(MocoBounds, Object);
 public:
-    /// The bounds are NaN, which means (-inf, inf).
+    /// The bounds are unset (NaN).
     MocoBounds();
     /// The lower and upper bound are equal (the variable is constrained to this
     /// single value).
     MocoBounds(double value);
     /// The variable is constrained to be within [lower, upper].
     MocoBounds(double lower, double upper);
+    /// Create bounds that are (-inf, inf), so the variable is unconstrained.
+    static MocoBounds unconstrained() {
+        return MocoBounds(-SimTK::Infinity, SimTK::Infinity);
+    }
     /// True if the lower and upper bounds are both not NaN.
     bool isSet() const {
         return !getProperty_bounds().empty();

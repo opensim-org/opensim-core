@@ -96,7 +96,7 @@ std::unique_ptr<Model> createDoublePendulumModel() {
 
 int main() {
 
-    MocoTool moco;
+    MocoStudy moco;
     moco.setName("double_pendulum_marker_tracking");
 
     // Define the optimal control problem.
@@ -137,7 +137,7 @@ int main() {
     MarkersReference ref(markerTrajectories, &markerWeights);
 
     // Create cost, set reference, and attach to problem.
-    auto* markerTracking = problem.addCost<MocoMarkerTrackingCost>();
+    auto* markerTracking = problem.addGoal<MocoMarkerTrackingGoal>();
     markerTracking->setMarkersReference(ref);
 
     // Configure the solver.

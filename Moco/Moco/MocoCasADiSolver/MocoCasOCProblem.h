@@ -51,8 +51,7 @@ inline casadi::DM convertToCasADiDMTranspose(const SimTK::Matrix& simtkMatrix) {
     return out;
 }
 
-template <typename T>
-casadi::DM convertToCasADiDMTemplate(const T& simtk) {
+template <typename T> casadi::DM convertToCasADiDMTemplate(const T& simtk) {
     casadi::DM out(casadi::Sparsity::dense(simtk.size(), 1));
     std::copy_n(simtk.getContiguousScalarData(), simtk.size(), out.ptr());
     return out;
@@ -67,7 +66,7 @@ inline casadi::DM convertToCasADiDM(const SimTK::Vector& simtkVec) {
 }
 
 /// This resamples the iterate to obtain values that lie on the mesh.
-inline CasOC::Iterate convertToCasOCIterate(const MocoIterate& mocoIt) {
+inline CasOC::Iterate convertToCasOCIterate(const MocoTrajectory& mocoIt) {
     CasOC::Iterate casIt;
     CasOC::VariablesDM& casVars = casIt.variables;
     using CasOC::Var;
@@ -125,8 +124,8 @@ inline SimTK::Matrix convertToSimTKMatrix(const casadi::DM& casMatrix) {
     return simtkMatrix;
 }
 
-template <typename TOut = MocoIterate>
-TOut convertToMocoIterate(const CasOC::Iterate& casIt) {
+template <typename TOut = MocoTrajectory>
+TOut convertToMocoTrajectory(const CasOC::Iterate& casIt) {
     SimTK::Matrix simtkStates;
     const auto& casVars = casIt.variables;
     using CasOC::Var;
@@ -163,12 +162,12 @@ TOut convertToMocoIterate(const CasOC::Iterate& casIt) {
     }
     SimTK::Vector simtkTimes = convertToSimTKVector(casIt.times);
 
-    TOut mocoIterate(simtkTimes, casIt.state_names, casIt.control_names,
+    TOut mocoTraj(simtkTimes, casIt.state_names, casIt.control_names,
             casIt.multiplier_names, derivativeNames, casIt.parameter_names,
             simtkStates, simtkControls, simtkMultipliers, simtkDerivatives,
             simtkParameters);
 
-    // Append slack variables. MocoIterate requires the slack variables to be
+    // Append slack variables. MocoTrajectory requires the slack variables to be
     // the same length as its time vector, but it will not be if the
     // CasOC::Iterate was generated from a CasOC::Transcription object.
     // Therefore, slack variables are interpolated as necessary.
@@ -178,15 +177,14 @@ TOut convertToMocoIterate(const CasOC::Iterate& casIt) {
                 simtkTimes[0], simtkTimes[simtkTimes.size() - 1]);
         for (int i = 0; i < (int)casIt.slack_names.size(); ++i) {
             if (simtkSlacksLength != simtkTimes.size()) {
-                mocoIterate.appendSlack(casIt.slack_names[i],
+                mocoTraj.appendSlack(casIt.slack_names[i],
                         interpolate(slackTime, simtkSlacks.col(i), simtkTimes));
             } else {
-                mocoIterate.appendSlack(
-                        casIt.slack_names[i], simtkSlacks.col(i));
+                mocoTraj.appendSlack(casIt.slack_names[i], simtkSlacks.col(i));
             }
         }
     }
-    return mocoIterate;
+    return mocoTraj;
 }
 
 class MocoCasOCProblem : public CasOC::Problem {
@@ -199,40 +197,6 @@ public:
     int getJarSize() const { return (int)m_jar->size(); }
 
 private:
-    void calcIntegralCostIntegrand(
-            const ContinuousInput& input, double& integrand) const override {
-        auto mocoProblemRep = m_jar->take();
-        applyInput(input.time, input.states, input.controls, input.multipliers,
-                input.derivatives, input.parameters, mocoProblemRep);
-
-        auto& simtkStateDisabledConstraints =
-                mocoProblemRep->updStateDisabledConstraints();
-
-        // Compute the integrand for all MocoCosts.
-        // TODO: Create separate functions for each cost term.
-        integrand =
-                mocoProblemRep->calcIntegralCost(simtkStateDisabledConstraints);
-
-        m_jar->leave(std::move(mocoProblemRep));
-    }
-
-    void calcEndpointCost(
-            const EndpointInput& input, double& cost) const override {
-        auto mocoProblemRep = m_jar->take();
-
-        applyInput(input.final_time, input.final_states, input.final_controls,
-                input.final_multipliers, input.final_derivatives,
-                input.parameters, mocoProblemRep);
-
-        auto& simtkStateDisabledConstraints =
-                mocoProblemRep->updStateDisabledConstraints();
-
-        // Compute the endpoint cost for all MocoCosts.
-        cost = mocoProblemRep->calcEndpointCost(simtkStateDisabledConstraints);
-
-        m_jar->leave(std::move(mocoProblemRep));
-    }
-
     void calcMultibodySystemExplicit(const ContinuousInput& input,
             bool calcKCErrors,
             MultibodySystemExplicitOutput& output) const override {
@@ -330,7 +294,8 @@ private:
 
         // Update the model and state.
         applyParametersToModelProperties(parameters, *mocoProblemRep);
-        convertToSimTKState(time, multibody_states, modelBase, simtkStateBase);
+        convertToSimTKState(
+                time, multibody_states, modelBase, simtkStateBase, false);
         modelBase.realizeVelocity(simtkStateBase);
 
         // Apply velocity correction to qdot if at a mesh interval midpoint.
@@ -351,6 +316,79 @@ private:
 
         m_jar->leave(std::move(mocoProblemRep));
     }
+    void calcIntegrand(int integralIndex, const ContinuousInput& input,
+            double& integrand) const override {
+        auto mocoProblemRep = m_jar->take();
+        applyInput(input.time, input.states, input.controls, input.multipliers,
+                input.derivatives, input.parameters, mocoProblemRep);
+
+        auto& simtkStateDisabledConstraints =
+                mocoProblemRep->updStateDisabledConstraints();
+
+        const auto& mocoCost = mocoProblemRep->getCostByIndex(integralIndex);
+        integrand = mocoCost.calcIntegrand(simtkStateDisabledConstraints);
+
+        m_jar->leave(std::move(mocoProblemRep));
+    }
+    void calcCost(int index, const CostInput& input,
+            casadi::DM& cost) const override {
+        auto mocoProblemRep = m_jar->take();
+
+        applyInput(input.initial_time, input.initial_states,
+                input.initial_controls, input.initial_multipliers,
+                input.initial_derivatives, input.parameters, mocoProblemRep, 0);
+
+        auto& simtkStateDisabledConstraintsInitial =
+                mocoProblemRep->updStateDisabledConstraints(0);
+
+        applyInput(input.final_time, input.final_states, input.final_controls,
+                input.final_multipliers, input.final_derivatives,
+                input.parameters, mocoProblemRep, 1);
+
+        auto& simtkStateDisabledConstraintsFinal =
+                mocoProblemRep->updStateDisabledConstraints(1);
+
+        // Compute the cost for this cost term.
+        const auto& mocoCost = mocoProblemRep->getCostByIndex(index);
+        SimTK::Vector simtkCost((int)cost.rows(), cost.ptr(), true);
+        mocoCost.calcGoal(
+                {simtkStateDisabledConstraintsInitial,
+                        simtkStateDisabledConstraintsFinal, input.integral},
+                simtkCost);
+
+        m_jar->leave(std::move(mocoProblemRep));
+    }
+
+    void calcEndpointConstraint(int index, const CostInput& input,
+            casadi::DM& values) const override {
+        auto mocoProblemRep = m_jar->take();
+
+        applyInput(input.initial_time, input.initial_states,
+                input.initial_controls, input.initial_multipliers,
+                input.initial_derivatives, input.parameters, mocoProblemRep, 0);
+
+        auto& simtkStateDisabledConstraintsInitial =
+                mocoProblemRep->updStateDisabledConstraints(0);
+
+        applyInput(input.final_time, input.final_states, input.final_controls,
+                input.final_multipliers, input.final_derivatives,
+                input.parameters, mocoProblemRep, 1);
+
+        auto& simtkStateDisabledConstraintsFinal =
+                mocoProblemRep->updStateDisabledConstraints(1);
+
+        // Compute the cost for this cost term.
+        const auto& mocoEC =
+                mocoProblemRep->getEndpointConstraintByIndex(index);
+        SimTK::Vector simtkValues((int)values.rows(), values.ptr(), true);
+        mocoEC.calcGoal(
+                {simtkStateDisabledConstraintsInitial,
+                        simtkStateDisabledConstraintsFinal, input.integral},
+                simtkValues);
+
+        m_jar->leave(std::move(mocoProblemRep));
+    }
+
     void calcPathConstraint(int constraintIndex, const ContinuousInput& input,
             casadi::DM& path_constraint) const override {
         auto mocoProblemRep = m_jar->take();
@@ -369,6 +407,23 @@ private:
 
         m_jar->leave(std::move(mocoProblemRep));
     }
+    std::vector<std::string>
+    createKinematicConstraintEquationNamesImpl() const override {
+        auto mocoProblemRep = m_jar->take();
+        const auto names = mocoProblemRep->getKinematicConstraintEquationNames(
+                getEnforceConstraintDerivatives());
+        m_jar->leave(std::move(mocoProblemRep));
+        return names;
+    }
+    void intermediateCallbackImpl() const override {
+        m_fileDeletionThrower->throwIfDeleted();
+    }
+    void intermediateCallbackWithIterateImpl(
+            const CasOC::Iterate& iterate) const override {
+        std::string filename = format("MocoCasADiSolver_%s_iterate%06i.sto",
+                m_formattedTimeString, iterate.iteration);
+        convertToMocoTrajectory(iterate).write(filename);
+    }
 
 private:
     /// Apply parameters to properties in the models returned by
@@ -379,16 +434,17 @@ private:
         if (parameters.numel()) {
             SimTK::Vector simtkParams(
                     (int)parameters.size1(), parameters.ptr(), true);
-            mocoProblemRep.applyParametersToModelProperties(simtkParams,
-                    m_paramsRequireInitSystem);
+            mocoProblemRep.applyParametersToModelProperties(
+                    simtkParams, m_paramsRequireInitSystem);
         }
     }
     /// Copy values from `states` into `simtkState.updY()`, accounting for empty
     /// slots in Simbody's Y vector.
     /// It's fine for the size of `states` to be less than the size of Y; only
     /// the first states.size1() values are copied.
-    void convertToSimTKState(const double& time, const casadi::DM& states,
-            const Model& model, SimTK::State& simtkState) const {
+    inline void convertToSimTKState(const double& time,
+            const casadi::DM& states, const Model& model,
+            SimTK::State& simtkState, bool copyAuxStates) const {
         simtkState.setTime(time);
         // Assign the generalized coordinates. We know we have NU generalized
         // speeds because we do not yet support quaternions.
@@ -398,27 +454,31 @@ private:
         std::copy_n(states.ptr() + getNumCoordinates(), getNumSpeeds(),
                 simtkState.updY().updContiguousScalarData() +
                         simtkState.getNQ());
-        std::copy_n(states.ptr() + getNumCoordinates() + getNumSpeeds(),
-                getNumAuxiliaryStates(),
-                simtkState.updY().updContiguousScalarData() +
-                        simtkState.getNQ() + simtkState.getNU());
+        if (copyAuxStates) {
+            std::copy_n(states.ptr() + getNumCoordinates() + getNumSpeeds(),
+                    getNumAuxiliaryStates(),
+                    simtkState.updY().updContiguousScalarData() +
+                            simtkState.getNQ() + simtkState.getNU());
+        }
         model.getSystem().prescribe(simtkState);
     }
 
     void convertToSimTKState(const double& time, const casadi::DM& states,
             const casadi::DM& controls, const Model& model,
-            SimTK::State& simtkState) const {
-        convertToSimTKState(time, states, model, simtkState);
+            SimTK::State& simtkState, bool copyAuxStates) const {
+        convertToSimTKState(time, states, model, simtkState, copyAuxStates);
         auto& simtkControls = model.updControls(simtkState);
-        std::copy_n(controls.ptr(), simtkControls.size(),
-                simtkControls.updContiguousScalarData());
+        for (int ic = 0; ic < getNumControls(); ++ic) {
+            simtkControls[m_modelControlIndices[ic]] = *(controls.ptr() + ic);
+        }
         model.realizeVelocity(simtkState);
         model.setControls(simtkState, simtkControls);
     }
-    inline void applyInput(const double& time, const casadi::DM& states,
+    void applyInput(const double& time, const casadi::DM& states,
             const casadi::DM& controls, const casadi::DM& multipliers,
             const casadi::DM& derivatives, const casadi::DM& parameters,
-            const std::unique_ptr<const MocoProblemRep>& mocoProblemRep) const {
+            const std::unique_ptr<const MocoProblemRep>& mocoProblemRep,
+            int stateDisConIndex = 0) const {
         // Original model and its associated state. These are used to calculate
         // kinematic constraint forces and errors.
         const auto& modelBase = mocoProblemRep->getModelBase();
@@ -429,11 +489,10 @@ private:
         const auto& modelDisabledConstraints =
                 mocoProblemRep->getModelDisabledConstraints();
         auto& simtkStateDisabledConstraints =
-                mocoProblemRep->updStateDisabledConstraints();
+                mocoProblemRep->updStateDisabledConstraints(stateDisConIndex);
 
         // Update the model and state.
         applyParametersToModelProperties(parameters, *mocoProblemRep);
-
         modelBase.getSystem().prescribe(simtkStateBase);
         modelDisabledConstraints.getSystem().prescribe(
                 simtkStateDisabledConstraints);
@@ -446,9 +505,10 @@ private:
             accel.setUDot(simtkStateDisabledConstraints, udot);
         }
 
-        convertToSimTKState(time, states, controls, modelBase, simtkStateBase);
+        convertToSimTKState(
+                time, states, controls, modelBase, simtkStateBase, true);
         convertToSimTKState(time, states, controls, modelDisabledConstraints,
-                simtkStateDisabledConstraints);
+                simtkStateDisabledConstraints, true);
         // If enabled constraints exist in the model, compute constraint forces
         // based on Lagrange multipliers. This also updates the associated
         // discrete variables in the state.
@@ -552,7 +612,10 @@ private:
 
     std::unique_ptr<ThreadsafeJar<const MocoProblemRep>> m_jar;
     bool m_paramsRequireInitSystem = true;
+    std::string m_formattedTimeString;
     std::unordered_map<int, int> m_yIndexMap;
+    std::vector<int> m_modelControlIndices;
+    std::unique_ptr<FileDeletionThrower> m_fileDeletionThrower;
     // Local memory to hold constraint forces.
     static thread_local SimTK::Vector_<SimTK::SpatialVec>
             m_constraintBodyForces;

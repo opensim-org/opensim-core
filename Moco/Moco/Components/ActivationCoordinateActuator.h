@@ -18,6 +18,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
+#include "../osimMocoDLL.h"
+
 #include <OpenSim/Actuators/CoordinateActuator.h>
 
 namespace OpenSim {

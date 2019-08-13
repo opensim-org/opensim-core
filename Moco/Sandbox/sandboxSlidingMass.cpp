@@ -96,17 +96,17 @@ private:
     }
 };
 
-class MocoCost : public Object {
-OpenSim_DECLARE_ABSTRACT_OBJECT(MocoCost, Object);
+class MocoGoal : public Object {
+OpenSim_DECLARE_ABSTRACT_OBJECT(MocoGoal, Object);
 public:
     OpenSim_DECLARE_PROPERTY(weight, double, "TODO");
-    MocoCost() {
+    MocoGoal() {
         constructProperties();
     }
     // TODO allow alternate interface that does not require creating a SimTK
     // state (if just minimizing the control signal).
     // TODO create separate integral and endpoint cost types?
-    double calcIntegralCost(const SimTK::State& state) const {
+    double calcIntegrandCost(const SimTK::State& state) const {
         double integrand = 0;
         calcIntegralCostImpl(state, integrand);
         return get_weight() * integrand;
@@ -132,8 +132,8 @@ private:
     mutable SimTK::ReferencePtr<const Model> m_model;
 };
 
-class MocoSimpleTrackingCost : public MocoCost {
-OpenSim_DECLARE_CONCRETE_OBJECT(MocoSimpleTrackingCost, MocoCost);
+class MocoSimpleTrackingCost : public MocoGoal {
+OpenSim_DECLARE_CONCRETE_OBJECT(MocoSimpleTrackingCost, MocoGoal);
 public:
     MocoSimpleTrackingCost() {
         constructProperties();
@@ -160,8 +160,8 @@ private:
     }
 };
 
-class MocoFinalTimeCost : public MocoCost {
-OpenSim_DECLARE_CONCRETE_OBJECT(MocoFinalTimeCost, MocoCost);
+class MocoFinalTimeGoal : public MocoGoal {
+OpenSim_DECLARE_CONCRETE_OBJECT(MocoFinalTimeGoal, MocoGoal);
 protected:
     void calcEndpointCostImpl(const SimTK::State& finalState,
                               double& cost) const override {
@@ -173,14 +173,14 @@ protected:
 // components, etc. Maybe these should have a method where they get to add
 // arbitrary components to the model.
 // TODO should also have an initialization routine to cache quantities.
-class MocoMarkerEndpointCost : public MocoCost {
-OpenSim_DECLARE_CONCRETE_OBJECT(MocoMarkerEndpointCost, MocoCost);
+class MocoMarkerFinalGoal : public MocoGoal {
+OpenSim_DECLARE_CONCRETE_OBJECT(MocoMarkerFinalGoal, MocoGoal);
 public:
     OpenSim_DECLARE_PROPERTY(frame_name, std::string, "TODO");
     OpenSim_DECLARE_PROPERTY(point_on_frame, SimTK::Vec3, "TODO");
     OpenSim_DECLARE_PROPERTY(point_to_track, SimTK::Vec3,
             "TODO Expressed in ground.");
-    MocoMarkerEndpointCost() {
+    MocoMarkerFinalGoal() {
         constructProperties();
     }
 protected:
@@ -213,7 +213,7 @@ public:
             MocoVariableInfo, "TODO");
     OpenSim_DECLARE_LIST_PROPERTY(control_info,
             MocoVariableInfo, "TODO");
-    OpenSim_DECLARE_LIST_PROPERTY(costs, MocoCost, "TODO");
+    OpenSim_DECLARE_LIST_PROPERTY(costs, MocoGoal, "TODO");
 
     MocoProblem() {
         constructProperties();
@@ -278,6 +278,7 @@ public:
 private:
     void constructProperties() {
         constructProperty_model_file("");
+
         constructProperty_time_initial_bounds();
         constructProperty_time_final_bounds();
         constructProperty_state_info();
@@ -332,11 +333,11 @@ private:
     //    virtual void write(const std::string& filepath) const;
     //};
 };*/
-class MocoIterate {
+class MocoTrajectory {
 public:
     /// Allow implicit conversion from tropter's iterate type to Moco's
     /// iterate type.
-    MocoIterate(const tropter::Iterate& tropIter) {
+    MocoTrajectory(const tropter::Iterate& tropIter) {
         const auto& tropTime = tropIter.time;
         m_time = SimTK::Vector((int)tropTime.size(), tropTime.data());
         m_state_names = tropIter.state_names;
@@ -358,7 +359,7 @@ public:
             }
         }
     }
-    MocoIterate* clone() const { return new MocoIterate(*this); }
+    MocoTrajectory* clone() const { return new MocoTrajectory(*this); }
     /// Resize the time vector and the time dimension of the states and
     /// controls trajectories.
     /// This may erase any data that was previously stored.
@@ -489,7 +490,7 @@ public:
     /// Create a template for an initial guess for the related MocoProblem.
     /// The number of times in the guess is based on num_mesh_points, and
     /// the guess is based on the bounds on the MocoProblem.
-    MocoIterate createGuessTemplate() const {
+    MocoTrajectory createGuessTemplate() const {
         // TODO throw error if MocoProblem is not set yet.
         auto ocp = getOptimalControlProblem();
         // Create a direct collocation solver to access a function that
@@ -504,11 +505,11 @@ public:
     }
     // TODO make sure time is nondecreasing and states/controls are within
     // bounds.
-    void setGuess(const MocoIterate& guess) {
-        m_guess.reset(new MocoIterate(guess));
+    void setGuess(const MocoTrajectory& guess) {
+        m_guess.reset(new MocoTrajectory(guess));
     }
 
-    MocoIterate solve() const;
+    MocoTrajectory solve() const;
 
     const MocoProblem& getProblem() const { return m_problem.getRef(); }
 
@@ -522,7 +523,7 @@ private:
         constructProperty_num_mesh_points(100);
     }
     SimTK::ReferencePtr<const MocoProblem> m_problem;
-    SimTK::ClonePtr<MocoIterate> m_guess;
+    SimTK::ClonePtr<MocoTrajectory> m_guess;
     mutable SimTK::ResetOnCopy<std::shared_ptr<OCProblem<double>>>
             m_ocproblem;
 };
@@ -666,7 +667,7 @@ MocoSolver::getOptimalControlProblem() const {
     return m_ocproblem;
 }
 
-MocoIterate MocoSolver::solve() const {
+MocoTrajectory MocoSolver::solve() const {
     // TODO
     auto ocp = getOptimalControlProblem();
     ocp->print_description();
@@ -792,7 +793,7 @@ int main() {
 
         // TODO specify guess.
 
-        mp.append_costs(MocoFinalTimeCost());
+        mp.append_costs(MocoFinalTimeGoal());
 
         MocoSolver ms(mp);
         ms.solve();
@@ -816,14 +817,14 @@ int main() {
 
         mp.print("DEBUG_MocoProblemDoublePendulumSwingUp.xml");
 
-        MocoMarkerEndpointCost endpointCost;
+        MocoMarkerFinalGoal endpointCost;
         endpointCost.set_frame_name("b1");
         endpointCost.set_weight(1000.0);
         endpointCost.set_point_on_frame(SimTK::Vec3(0));
         endpointCost.set_point_to_track(SimTK::Vec3(0, 2, 0));
         mp.append_costs(endpointCost);
 
-        MocoFinalTimeCost ftCost;
+        MocoFinalTimeGoal ftCost;
         ftCost.set_weight(0.001);
         mp.append_costs(ftCost);
 
@@ -831,7 +832,7 @@ int main() {
 
         // TODO this uses the bounds to fill in guesses; not necessary to
         // fill in a guess for *each* variable.
-        MocoIterate guess = ms.createGuessTemplate();
+        MocoTrajectory guess = ms.createGuessTemplate();
         guess.setNumTimes(2);
         guess.setTime_std({0, 1});
         guess.setState_std("j0/q0/value", {0, -SimTK::Pi});
@@ -843,13 +844,13 @@ int main() {
         ms.setGuess(guess);
 
         ms.set_num_mesh_points(100);
-        MocoIterate solution0 = ms.solve();
+        MocoTrajectory solution0 = ms.solve();
         solution0.write("DEBUG_sandboxSlidingMass_solution.sto");
 
         // TODO the second problem never solves well...Ipopt keeps on iterating.
         //ms.set_num_mesh_points(20);
         //ms.setGuess(solution0);
-        //MocoIterate solution1 = ms.solve();
+        //MocoTrajectory solution1 = ms.solve();
 
     }
 
@@ -870,7 +871,7 @@ int main() {
 
         MocoSolver ms(mp);
         ms.set_num_mesh_points(50);
-        //MocoIterate guess = ms.createGuessTemplate();
+        //MocoTrajectory guess = ms.createGuessTemplate();
         //guess.setNumTimes(2);
         //guess.setTime_std({0, 1});
         //guess.setState_std("j0/q0/value", {0, 0.5 * SimTK::Pi});
@@ -880,7 +881,7 @@ int main() {
         //guess.setControl_std("tau0", {20, 1});
         //guess.setControl_std("tau1", {20, -2});
         //ms.setGuess(guess);
-        MocoIterate solution = ms.solve();
+        MocoTrajectory solution = ms.solve();
         solution.write("DEBUG_double_pendulum_tracking.sto");
 
     }
