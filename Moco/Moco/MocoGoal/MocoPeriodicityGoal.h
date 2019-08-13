@@ -31,15 +31,15 @@ public:
             initial_variable, std::string, "Initial variable of the pair.");
     OpenSim_DECLARE_PROPERTY(
             final_variable, std::string, "Final variable of the pair.");
+    OpenSim_DECLARE_PROPERTY(negated, bool, "Is there negating in the pair.");
 
     MocoPeriodicityGoalPair();
-    MocoPeriodicityGoalPair(std::string initialVariable,
-            std::string finalVariable);
+    MocoPeriodicityGoalPair(
+            std::string initialVariable, std::string finalVariable);
     MocoPeriodicityGoalPair(std::string initialVariableIsFinalVariable);
 
 private:
     void constructProperties();
-
 };
 
 /// This goal enforces equality between initial and final variable values in
@@ -94,8 +94,8 @@ class OSIMMOCO_API MocoPeriodicityGoal : public MocoGoal {
     OpenSim_DECLARE_CONCRETE_OBJECT(MocoPeriodicityGoal, MocoGoal);
 
 public:
-    OpenSim_DECLARE_LIST_PROPERTY(state_pairs, MocoPeriodicityGoalPair,
-            "Periodic pairs of states.");
+    OpenSim_DECLARE_LIST_PROPERTY(
+            state_pairs, MocoPeriodicityGoalPair, "Periodic pairs of states.");
     OpenSim_DECLARE_LIST_PROPERTY(control_pairs, MocoPeriodicityGoalPair,
             "Periodic pairs of controls.");
 
@@ -122,8 +122,8 @@ protected:
 
 private:
     void constructProperties();
-    mutable std::vector<std::pair<int, int>> m_indices_states;
-    mutable std::vector<std::pair<int, int>> m_indices_controls;
+    mutable std::vector<std::tuple<int, int, int>> m_indices_states;
+    mutable std::vector<std::tuple<int, int, int>> m_indices_controls;
 };
 
 } // namespace OpenSim
