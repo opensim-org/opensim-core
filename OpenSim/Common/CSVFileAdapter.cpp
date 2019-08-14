@@ -11,13 +11,7 @@ CSVFileAdapter*
 CSVFileAdapter::clone() const {
     return new CSVFileAdapter{*this};
 }
-#if 0
-TimeSeriesTable
-CSVFileAdapter::readFile(const std::string& fileName) {
-    auto abs_table = CSVFileAdapter{}.extendRead(fileName).at(tableString());
-    return static_cast<TimeSeriesTable&>(*abs_table);
-}
-#endif
+
 void 
 CSVFileAdapter::write(const TimeSeriesTable& table, 
                         const std::string& fileName) {

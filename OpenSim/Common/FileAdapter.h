@@ -184,13 +184,7 @@ public:
     FileAdapter& operator=(const FileAdapter&) = default;
     FileAdapter& operator=(FileAdapter&&)      = default;
     virtual ~FileAdapter()                     = default;
-#if 0
-    /** Read a file with the given name. Returns a collection of tables 
-    depending on the contents of the file read. For example, a TRC file contains
-    just one table whereas a C3D file might contain multiple tables. Refer to
-    the specific adapter's documentation to see what was returned.            */
-    static OutputTables readFile(const std::string& fileName);
-#endif
+
     /** Write a collection of tables to the given file. Different file formats
     require different number/type of tables. See specific adapter's 
     documentation to see what is required.                                    */

@@ -114,11 +114,7 @@ public:
     ~STOFileAdapter_()                                 = default;
 
     STOFileAdapter_* clone() const override;
-#if 0
-    /** Read a STO file.                                                      */
-    static
-    TimeSeriesTable_<T> readFile(const std::string& fileName);
-#endif
+
     /** Write a STO file.                                                     */
     static
     void write(const TimeSeriesTable_<T>& table, const std::string& fileName);
@@ -137,16 +133,7 @@ STOFileAdapter_<T>*
 STOFileAdapter_<T>::clone() const {
     return new STOFileAdapter_{*this};
 }
-#if 0
-template<typename T>
-TimeSeriesTable_<T>
-STOFileAdapter_<T>::readFile(const std::string& fileName) {
-    auto abs_table = STOFileAdapter_{}.
-                     extendRead(fileName).
-                     at(DelimFileAdapter<T>::tableString());
-    return static_cast<TimeSeriesTable_<T>&>(*abs_table);
-}
-#endif
+
 template<typename T>
 void 
 STOFileAdapter_<T>::write(const TimeSeriesTable_<T>& table, 

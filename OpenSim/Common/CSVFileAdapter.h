@@ -39,11 +39,7 @@ public:
     ~CSVFileAdapter()                                = default;
 
     CSVFileAdapter* clone() const override;
-#if 0
-    /** Read a CSV file.                                                      */
-    static
-    TimeSeriesTable readFile(const std::string& fileName);
-#endif
+
     /** Write a CSV file.                                                     */
     static
     void write(const TimeSeriesTable& table, const std::string& fileName);

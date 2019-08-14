@@ -9,19 +9,7 @@ createSTOFileAdapterForReading(const std::string&);
 
 std::shared_ptr<DataAdapter>
 createSTOFileAdapterForWriting(const DataAdapter::InputTables&);
-#if 0
-FileAdapter::OutputTables
-FileAdapter::readFile(const std::string& fileName) {
-    auto extension = findExtension(fileName);
-    std::shared_ptr<DataAdapter> dataAdapter{};
-    if(extension == "sto")
-        dataAdapter = createSTOFileAdapterForReading(fileName);
-    else 
-        dataAdapter = createAdapter(extension);
-    auto& fileAdapter = static_cast<FileAdapter&>(*dataAdapter);
-    return fileAdapter.extendRead(fileName);
-}
-#endif
+
 void 
 FileAdapter::writeFile(const InputTables& tables, 
                        const std::string& fileName) {
