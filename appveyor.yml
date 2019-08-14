@@ -24,7 +24,7 @@ nuget:
 environment:
   CMAKE_GENERATOR: "Visual Studio 15 2017 Win64"
   JAVA_DIR: "C:\\Program Files\\Java\\jdk1.8.0"
-  PYTHON_DIR: "C:\\Python27-x64"
+  PYTHON_DIR: "C:\\Python37-x64"
   matrix:
     - CMAKE_TOOLSET: "v140"
       NUGET_PACKAGE_ID_SUFFIX: "-VC140"
@@ -40,8 +40,8 @@ branches:
   - /^(?i:devprop).*$/
 
 init:
-  # Note: python 2.7 32bit is already on the path. We want v2.7 64bit,
-  # so we must add v2.7 64bit earlier on the PATH so that CMake finds it when
+  # Note: There could be other versions of python on the path. We want v3.7 64bit,
+  # so we must add v3.7 64bit earlier on the PATH so that CMake finds it when
   # configuring.
   # The Scripts directory is for putting nosetests on the path.
   # http://www.appveyor.com/docs/installed-software

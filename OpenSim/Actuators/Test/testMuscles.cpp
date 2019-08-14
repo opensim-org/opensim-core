@@ -308,6 +308,7 @@ void simulateMuscle(
     jointWorkProbe->setOperation("integrate");
     model.addProbe(jointWorkProbe);
 
+    model.finalizeConnections(); // Needed so sockets have correct absolute path on print
     /* Since all components are allocated on the stack don't have model 
        own them (and try to free)*/
 //  model.disownAllComponents();
@@ -732,6 +733,7 @@ void testThelen2003Muscle()
             SimTK::SignificantReal, __FILE__, __LINE__,
             "minimum_activation was not set in activation model");
 
+        myModel.finalizeConnections();  // Needed so sockets have correct absolute path on print
         // Print model and read back in.
         myModel.print(filename);
         Model myModel2(filename);
