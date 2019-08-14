@@ -596,7 +596,9 @@ public:
     /** Write this %Object into an XML file of the given name; conventionally
     the suffix to use is ".osim". This is useful for writing out a Model that
     has been created programmatically, and also very useful for testing and
-    debugging. **/
+    debugging. If object has invalid connections, then printing is aborted.
+    You can override this behavior by setting the debug level to at least 1 
+    (e.g., Object::setDebugLevel(1)) prior to printing. **/
     bool print(const std::string& fileName) const;
 
     /** dump the XML representation of this %Object into an std::string and return it.
@@ -808,11 +810,11 @@ private:
     void updateDefaultObjectsFromXMLNode();
     void updateDefaultObjectsXMLNode(SimTK::Xml::Element& aParent);
 
-    /** This is invoked at the start of print(). Derived classes can use this
-     * as an opportunity to issue warnings to users.
-     * Any exception thrown in this function is ignored, as exceptions would
-     * prevent the user from printing the object, which could be useful for
-     * debugging. */
+    /** This is invoked at the start of print(). If _debugLevel is at least 1 then
+     * printing is allowed to proceed even if the resulting file is corrupt, otherwise
+     * printing is aborted.
+     * Derived classes can use this as an opportunity to issue warnings to users.
+     */
     virtual void warnBeforePrint() const {}
 
 //==============================================================================

@@ -333,6 +333,7 @@ int main() {
         CoordinateLimitForce* clfRKnee = new CoordinateLimitForce("RKnee_rz",
             0, 1e6, -100, 1e6, 1e5, 5);
         osimModel.addForce(clfRKnee);
+        osimModel.finalizeConnections(); // Needed so sockets have correct absolute path on print
 
         // Save the model to a file
         osimModel.print("DynamicWalkerModel.osim");
