@@ -53,7 +53,6 @@ SmoothSphereHalfSpaceForce::SmoothSphereHalfSpaceForce(const std::string& name,
 }
 
 SimTK::Transform
-/**/
 SmoothSphereHalfSpaceForce::getHalfSpaceTransformInHalfSpaceFrame() const {
     return {SimTK::Rotation(SimTK::BodyRotationSequence,
                     get_contact_half_space_orientation()[0], SimTK::XAxis,
