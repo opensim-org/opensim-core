@@ -1,0 +1,62 @@
+namespace OpenSim {
+/**
+
+@page mocouserguide Moco User Guide
+
+This guide shows the various ways of using Moco.
+
+@tableofcontents
+
+
+@section mocotool MocoTools
+
+Moco provides easy-to-use tools for solving for muscle activity that can achieve
+an observed motion. See the following pages:
+
+- @subpage mocotrack "MocoTrack: kinematics are tracked in the cost"
+- @subpage mocoinverse "MocoInverse: kinematics are prescribed"
+
+These tools derive from the MocoTool class.
+
+@section mocostudysection Solving custom optimal control problems
+
+If the MocoTool%s do not satisfy your needs, you can create and solve your own
+custom optimal control problem using the MocoStudy class.
+
+- @subpage mocostudy
+
+@section customgoal Defining a custom goal or cost
+
+Moco allows you to compose your cost from multiple existing cost terms. This
+gives you flexibility and means that you usually do not need to write your
+cost yourself, even if it has many terms. Moco's existing costs are ususally
+well-tested and work well with Moco's solvers, so we encourage you to use them
+if possible. In the case that you want to create your own custom cost term,
+you can derive from MocoGoal in C++.
+
+If you do not want to write C++ code, you can prototype your cost in Matlab
+and we can help convert it to C++. See the Matlab example
+@ref examplePrototypeCustomGoal.m for more information.
+
+In the future, Moco could allow you to define custom cost terms in Python. If
+this is of interest to you, please let the Moco developers know (on GitHub).
+
+@section utilities Utilities
+
+Moco contains utilities for creating models, modifying models,
+working with data, and postprocessing results.
+
+1. ModelFactory: Create standard models and modify existing models.
+2. ModelProcessor: Create a workflow of operations to perform on a model.
+3. TableProcessor: Create a workflow of operations to perform on a table.
+4. OpenSim::visualize: Visualize (animate) a MocoTrajectory.
+5. OpenSim::analyze: Compute the values of Component outputs from a given
+                     MocoTrajectory.
+6. plot_trajectory.py: Plot a MocoTrajectory with the Python Matplotlib plotting
+                       library.
+7. report.py: Generate a detailed PDF report about a MocoTrajectory and any
+              reference data (part of the `opensim` Python package).
+
+*/
+} // namespace OpenSim
+
