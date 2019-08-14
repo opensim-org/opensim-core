@@ -48,6 +48,14 @@ MocoPeriodicityGoalPair::MocoPeriodicityGoalPair(
     set_final_variable(initialVariableIsFinalVariable);
 }
 
+MocoPeriodicityGoalPair::MocoPeriodicityGoalPair(
+        std::string initialVariableIsFinalVariable, bool negate) {
+    constructProperties();
+    set_initial_variable(initialVariableIsFinalVariable);
+    set_final_variable(initialVariableIsFinalVariable);
+    set_negate(negate);
+}
+
 void MocoPeriodicityGoalPair::constructProperties() {
     constructProperty_initial_variable("");
     constructProperty_final_variable("");

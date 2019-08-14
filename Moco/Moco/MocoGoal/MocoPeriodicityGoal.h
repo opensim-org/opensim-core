@@ -32,7 +32,8 @@ public:
     OpenSim_DECLARE_PROPERTY(
             final_variable, std::string, "Final variable of the pair.");
     OpenSim_DECLARE_PROPERTY(negate, bool,
-            "Should the initial and final variables have opposite signs?");
+            "Should the initial and final variables have opposite signs? "
+            "Defaults to false.");
 
     MocoPeriodicityGoalPair();
     MocoPeriodicityGoalPair(
@@ -40,6 +41,8 @@ public:
     MocoPeriodicityGoalPair(std::string initialVariable,
             std::string finalVariable, bool negate);
     MocoPeriodicityGoalPair(std::string initialVariableIsFinalVariable);
+    MocoPeriodicityGoalPair(
+            std::string initialVariableIsFinalVariable, bool negate);
 
 private:
     void constructProperties();
