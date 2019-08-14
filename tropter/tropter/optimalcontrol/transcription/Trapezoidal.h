@@ -184,7 +184,7 @@ private:
     Eigen::VectorXd m_mesh_intervals;
     Eigen::VectorXd m_mesh_eigen;
     int m_num_mesh_intervals = -1;
-    int m_num_mesh_points = -1;
+    int m_num_mesh_points = 0;
     int m_num_time_variables = -1;
     int m_num_parameters = -1;
     // The sum total of time_variables and parameters. Here, "dense" means that

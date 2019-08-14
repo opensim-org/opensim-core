@@ -201,7 +201,7 @@ void Trapezoidal<T>::set_ocproblem(std::shared_ptr<const OCProblem> ocproblem) {
     m_mesh_eigen = Eigen::Map<VectorXd>(m_mesh.data(), m_mesh.size());
     m_mesh_intervals = m_mesh_eigen.tail(num_mesh_intervals) -
                        m_mesh_eigen.head(num_mesh_intervals);
-    m_trapezoidal_quadrature_coefficients = VectorXd::Zero(m_num_mesh_intervals);
+    m_trapezoidal_quadrature_coefficients = VectorXd::Zero(m_num_mesh_points);
     // Betts 2010 equation 4.195, page 169.
     // b = 0.5 * [tau0, tau0 + tau1, tau1 + tau2, ..., tauM-2 + tauM-1, tauM-1]
     m_trapezoidal_quadrature_coefficients.head(num_mesh_intervals) =
