@@ -127,8 +127,8 @@ public:
 
 protected:
     /// Eigen::Map is a view on other data, and allows "slicing" so that we can
-    /// view part of the vector of unknowns as a matrix of (num_states x
-    /// num_mesh_points).
+    /// view part of the vector of unknowns as a matrix of either (num_states x
+    /// num_mesh_points) or (num_states x num_col_points).
     /// The second template argument specifies memory alignment; the default is
     /// Unaligned.
     /// The third template argument allows us to specify a stride so that we can
@@ -241,6 +241,7 @@ private:
     Eigen::VectorXd m_mesh_and_midpoints;
     Eigen::VectorXd m_mesh_eigen;
     int m_num_mesh_intervals;
+    int m_num_mesh_points;
     int m_num_col_points;
     int m_num_time_variables = -1;
     int m_num_parameters = -1;

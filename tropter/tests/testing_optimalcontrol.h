@@ -58,7 +58,7 @@ struct OCPDerivativesComparison {
         // adouble
         auto a = std::make_shared<OCPType<adouble>>();
         DirectCollocationSolver<adouble> adc(a, "trapezoidal", "ipopt",
-                num_mesh_points);
+                num_mesh_intervals);
         auto anlp = adc.get_transcription().make_decorator();
         VectorXd agrad;
         SparseMatrix<double> ajac;

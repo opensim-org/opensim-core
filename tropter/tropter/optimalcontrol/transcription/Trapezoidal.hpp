@@ -37,15 +37,16 @@ void Trapezoidal<T>::set_ocproblem(std::shared_ptr<const OCProblem> ocproblem) {
     m_num_time_variables = 2;
     m_num_parameters = m_ocproblem->get_num_parameters();
     m_num_dense_variables = m_num_time_variables + m_num_parameters;
-    m_num_mesh_intervals = (int)m_mesh.size();
+    m_num_mesh_points = (int)m_mesh.size();
+    m_num_mesh_intervals = m_num_mesh_points - 1;
     int num_variables = m_num_time_variables + m_num_parameters +
-                        m_num_mesh_intervals * m_num_continuous_variables;
+                        m_num_mesh_points * m_num_continuous_variables;
     this->set_num_variables(num_variables);
-    m_num_defects = m_num_states ? m_num_mesh_intervals - 1 : 0;
+    m_num_defects = m_num_states ? m_num_mesh_intervals : 0;
     m_num_dynamics_constraints = m_num_defects * m_num_states;
     m_num_path_constraints = m_ocproblem->get_num_path_constraints();
     // TODO rename..."total_path_constraints"?
-    int num_path_traj_constraints = m_num_mesh_intervals * m_num_path_constraints;
+    int num_path_traj_constraints = m_num_mesh_points * m_num_path_constraints;
     int num_constraints =
             m_num_dynamics_constraints + num_path_traj_constraints;
     this->set_num_constraints(num_constraints);
@@ -63,8 +64,8 @@ void Trapezoidal<T>::set_ocproblem(std::shared_ptr<const OCProblem> ocproblem) {
     // For padding, count the number of digits in num_mesh_points.
     int num_digits_max_mesh_index = 0;
     {
-        // The printed index goes up to m_num_mesh_points - 1.
-        int max_index = m_num_mesh_intervals - 1;
+        // The printed index goes up to m_num_mesh_intervals.
+        int max_index = m_num_mesh_intervals;
         while (max_index != 0) {
             max_index /= 10;
             num_digits_max_mesh_index++;
@@ -73,7 +74,7 @@ void Trapezoidal<T>::set_ocproblem(std::shared_ptr<const OCProblem> ocproblem) {
     const auto state_names = m_ocproblem->get_state_names();
     const auto control_names = m_ocproblem->get_control_names();
     const auto adjunct_names = m_ocproblem->get_adjunct_names();
-    for (int i_mesh = 0; i_mesh < m_num_mesh_intervals; ++i_mesh) {
+    for (int i_mesh = 0; i_mesh < m_num_mesh_points; ++i_mesh) {
         for (const auto& state_name : state_names) {
             std::stringstream ss;
             ss << state_name << "_" << std::setfill('0')
@@ -96,7 +97,7 @@ void Trapezoidal<T>::set_ocproblem(std::shared_ptr<const OCProblem> ocproblem) {
 
     m_constraint_names.clear();
     // Start at index 1 (counting mesh intervals; not mesh points).
-    for (int i_mesh = 1; i_mesh < m_num_mesh_intervals; ++i_mesh) {
+    for (int i_mesh = 1; i_mesh < m_num_mesh_points; ++i_mesh) {
         for (const auto& state_name : state_names) {
             std::stringstream ss;
             ss << state_name << "_" << std::setfill('0')
@@ -105,7 +106,7 @@ void Trapezoidal<T>::set_ocproblem(std::shared_ptr<const OCProblem> ocproblem) {
         }
     }
     const auto path_constraint_names = m_ocproblem->get_path_constraint_names();
-    for (int i_mesh = 0; i_mesh < m_num_mesh_intervals; ++i_mesh) {
+    for (int i_mesh = 0; i_mesh < m_num_mesh_points; ++i_mesh) {
         for (const auto& path_constraint_name : path_constraint_names) {
             std::stringstream ss;
             ss << path_constraint_name << "_" << std::setfill('0')
@@ -164,7 +165,7 @@ void Trapezoidal<T>::set_ocproblem(std::shared_ptr<const OCProblem> ocproblem) {
             (VectorXd(m_num_continuous_variables) << states_lower,
                     controls_lower, adjuncts_lower)
                     .finished()
-                    .replicate(m_num_mesh_intervals - 2, 1),
+                    .replicate(m_num_mesh_intervals - 1, 1),
             final_states_lower, final_controls_lower, final_adjuncts_lower;
     VectorXd variable_upper(num_variables);
     variable_upper << initial_time_upper, final_time_upper, parameters_upper,
@@ -173,7 +174,7 @@ void Trapezoidal<T>::set_ocproblem(std::shared_ptr<const OCProblem> ocproblem) {
             (VectorXd(m_num_continuous_variables) << states_upper,
                     controls_upper, adjuncts_upper)
                     .finished()
-                    .replicate(m_num_mesh_intervals - 2, 1),
+                    .replicate(m_num_mesh_intervals - 1, 1),
             final_states_upper, final_controls_upper, final_adjuncts_upper;
     this->set_variable_bounds(variable_lower, variable_upper);
     // Bounds for constraints.
@@ -182,9 +183,9 @@ void Trapezoidal<T>::set_ocproblem(std::shared_ptr<const OCProblem> ocproblem) {
     // Defects must be 0.
     VectorXd dynamics_bounds = VectorXd::Zero(m_num_dynamics_constraints);
     VectorXd path_constraints_traj_lower =
-            path_constraints_lower.replicate(m_num_mesh_intervals, 1);
+            path_constraints_lower.replicate(m_num_mesh_points, 1);
     VectorXd path_constraints_traj_upper =
-            path_constraints_upper.replicate(m_num_mesh_intervals, 1);
+            path_constraints_upper.replicate(m_num_mesh_points, 1);
     constraint_lower << dynamics_bounds, path_constraints_traj_lower;
     constraint_upper << dynamics_bounds, path_constraints_traj_upper;
     this->set_constraint_bounds(constraint_lower, constraint_upper);
@@ -194,7 +195,7 @@ void Trapezoidal<T>::set_ocproblem(std::shared_ptr<const OCProblem> ocproblem) {
 
     // Set the mesh.
     // -------------
-    const int num_mesh_intervals = m_num_mesh_intervals - 1;
+    const int num_mesh_intervals = m_num_mesh_intervals;
     // For integrating the integral cost.
     // The duration of each mesh interval.
     m_mesh_eigen = Eigen::Map<VectorXd>(m_mesh.data(), m_mesh.size());
@@ -209,8 +210,8 @@ void Trapezoidal<T>::set_ocproblem(std::shared_ptr<const OCProblem> ocproblem) {
             0.5 * m_mesh_intervals;
 
     // Allocate working memory.
-    m_integrand.resize(m_num_mesh_intervals);
-    m_derivs.resize(m_num_states, m_num_mesh_intervals);
+    m_integrand.resize(m_num_mesh_points);
+    m_derivs.resize(m_num_states, m_num_mesh_points);
 
     m_ocproblem->initialize_on_mesh(m_mesh_eigen);
 }
@@ -239,7 +240,7 @@ void Trapezoidal<T>::calc_objective(const VectorX<T>& x, T& obj_value) const {
         T integral = 0;
         if (m_ocproblem->get_cost_requires_integral(i_cost)) {
             m_integrand.setZero();
-            for (int i_mesh = 0; i_mesh < m_num_mesh_intervals; ++i_mesh) {
+            for (int i_mesh = 0; i_mesh < m_num_mesh_points; ++i_mesh) {
                 const T time = duration * m_mesh[i_mesh] + initial_time;
                 m_ocproblem->calc_cost_integrand(i_cost,
                         {i_mesh, time, states.col(i_mesh), controls.col(i_mesh),
@@ -248,7 +249,7 @@ void Trapezoidal<T>::calc_objective(const VectorX<T>& x, T& obj_value) const {
                         m_integrand[i_mesh]);
             }
 
-            for (int i_mesh = 0; i_mesh < m_num_mesh_intervals; ++i_mesh) {
+            for (int i_mesh = 0; i_mesh < m_num_mesh_points; ++i_mesh) {
                 integral += m_trapezoidal_quadrature_coefficients[i_mesh] *
                             m_integrand[i_mesh];
             }
@@ -264,7 +265,7 @@ void Trapezoidal<T>::calc_objective(const VectorX<T>& x, T& obj_value) const {
         T cost = 0;
         m_ocproblem->calc_cost(i_cost,
                 {0, initial_time, states.leftCols(1), controls.leftCols(1),
-                        adjuncts.leftCols(1), m_num_mesh_intervals - 1, final_time,
+                        adjuncts.leftCols(1), m_num_mesh_intervals, final_time,
                         states.rightCols(1), controls.rightCols(1),
                         adjuncts.rightCols(1), parameters, integral},
                 cost);
@@ -301,7 +302,7 @@ void Trapezoidal<T>::calc_constraints(
     // TODO storing 1 too many derivatives trajectory; don't need the first
     // xdot (at t0). (TODO I don't think this is true anymore).
     // TODO tradeoff between memory and parallelism.
-    for (int i_mesh = 0; i_mesh < m_num_mesh_intervals; ++i_mesh) {
+    for (int i_mesh = 0; i_mesh < m_num_mesh_points; ++i_mesh) {
         // TODO should pass the time.
         const T time = duration * m_mesh[i_mesh] + initial_time;
         m_ocproblem->calc_differential_algebraic_equations(
@@ -316,7 +317,7 @@ void Trapezoidal<T>::calc_constraints(
     // Backwards Euler (not used here):
     // defect_i = x_i - (x_{i-1} + h * xdot_i)  for i = 1, ..., N.
     if (m_num_defects) {
-        const unsigned N = m_num_mesh_intervals;
+        const unsigned N = m_num_mesh_points;
         const auto& x_i = states.rightCols(N - 1);
         const auto& x_im1 = states.leftCols(N - 1);
         const auto& xdot_i = m_derivs.rightCols(N - 1);
@@ -405,7 +406,7 @@ void Trapezoidal<T>::calc_sparsity_hessian_lagrangian(const Eigen::VectorXd& x,
     }
 
     // Repeat the block down the diagonal of the Hessian of constraints.
-    for (int imesh = 0; imesh < m_num_mesh_intervals; ++imesh) {
+    for (int imesh = 0; imesh < m_num_mesh_points; ++imesh) {
         const auto istart = m_num_dense_variables + imesh * num_con_vars;
         hescon_sparsity.set_nonzero_block(istart, dae_sparsity);
     }
@@ -465,7 +466,7 @@ void Trapezoidal<T>::calc_sparsity_hessian_lagrangian(const Eigen::VectorXd& x,
 
             // Repeat the block down the diagonal of the Hessian of the
             // objective.
-            for (int imesh = 0; imesh < m_num_mesh_intervals; ++imesh) {
+            for (int imesh = 0; imesh < m_num_mesh_points; ++imesh) {
                 const auto istart =
                         m_num_dense_variables + imesh * num_con_vars;
                 hesobj_sparsity.set_nonzero_block(
@@ -478,7 +479,7 @@ void Trapezoidal<T>::calc_sparsity_hessian_lagrangian(const Eigen::VectorXd& x,
         SymmetricSparsityPattern cost_initial_sparsity(num_con_vars);
         SymmetricSparsityPattern cost_final_sparsity(num_con_vars);
         const auto lastmeshstart =
-                m_num_dense_variables + (m_num_mesh_intervals - 1) * num_con_vars;
+                m_num_dense_variables + m_num_mesh_intervals * num_con_vars;
         if (this->get_exact_hessian_block_sparsity_mode() == "sparse") {
             auto st = make_states_trajectory_view(x);
             auto ct = make_controls_trajectory_view(x);
@@ -524,7 +525,7 @@ void Trapezoidal<T>::calc_sparsity_hessian_lagrangian(const Eigen::VectorXd& x,
                         // coefficients.
                         T integral = 0.0;
                         m_ocproblem->calc_cost(icost,
-                                {0, it, is, ic, ia, m_num_mesh_intervals - 1, ft,
+                                {0, it, is, ic, ia, m_num_mesh_intervals, ft,
                                         fs, fc, fa, p, integral},
                                 cost);
                         return cost;
@@ -616,18 +617,18 @@ Eigen::VectorXd Trapezoidal<T>::construct_iterate(
                     traj.time.size(), traj.adjuncts.cols());
         }
     } else {
-        TROPTER_THROW_IF(traj.time.size() != m_num_mesh_intervals,
+        TROPTER_THROW_IF(traj.time.size() != m_num_mesh_points,
                 "Expected time to have %i element(s), but it has %i.",
-                m_num_mesh_intervals, traj.time.size());
-        TROPTER_THROW_IF(traj.states.cols() != m_num_mesh_intervals,
+                m_num_mesh_points, traj.time.size());
+        TROPTER_THROW_IF(traj.states.cols() != m_num_mesh_points,
                 "Expected states to have %i column(s), but it has %i.",
-                m_num_mesh_intervals, traj.states.cols());
-        TROPTER_THROW_IF(traj.controls.cols() != m_num_mesh_intervals,
+                m_num_mesh_points, traj.states.cols());
+        TROPTER_THROW_IF(traj.controls.cols() != m_num_mesh_points,
                 "Expected controls to have %i column(s), but it has %i.",
-                m_num_mesh_intervals, traj.controls.cols());
-        TROPTER_THROW_IF(traj.adjuncts.cols() != m_num_mesh_intervals,
+                m_num_mesh_points, traj.controls.cols());
+        TROPTER_THROW_IF(traj.adjuncts.cols() != m_num_mesh_points,
                 "Expected adjuncts to have %i column(s), but it has %i.",
-                m_num_mesh_intervals, traj.adjuncts.cols());
+                m_num_mesh_points, traj.adjuncts.cols());
     }
 
     // Interpolate the trajectory, as it might have a different number of mesh
@@ -1068,7 +1069,7 @@ Trapezoidal<T>::make_states_trajectory_view(const VectorX<S>& x) const {
     return {// Pointer to the start of the states.
             x.data() + m_num_dense_variables,
             m_num_states,      // Number of rows.
-            m_num_mesh_intervals, // Number of columns.
+            m_num_mesh_points, // Number of columns.
                                // Distance between the start of each column.
             Eigen::OuterStride<Eigen::Dynamic>(m_num_continuous_variables)};
 }
@@ -1080,7 +1081,7 @@ Trapezoidal<T>::make_controls_trajectory_view(const VectorX<S>& x) const {
     return {// Start of controls for first mesh interval.
             x.data() + m_num_dense_variables + m_num_states,
             m_num_controls,    // Number of rows.
-            m_num_mesh_intervals, // Number of columns.
+            m_num_mesh_points, // Number of columns.
                                // Distance between the start of each column;
                                // same as above.
             Eigen::OuterStride<Eigen::Dynamic>(m_num_continuous_variables)};
@@ -1093,7 +1094,7 @@ Trapezoidal<T>::make_adjuncts_trajectory_view(const VectorX<S>& x) const {
     return {// Start of adjuncts for first mesh interval.
             x.data() + m_num_dense_variables + m_num_states + m_num_controls,
             m_num_adjuncts,    // Number of rows.
-            m_num_mesh_intervals, // Number of columns.
+            m_num_mesh_points, // Number of columns.
                                // Distance between the start of each column;
                                // same as above.
             Eigen::OuterStride<Eigen::Dynamic>(m_num_continuous_variables)};
@@ -1117,7 +1118,7 @@ Trapezoidal<T>::make_states_trajectory_view(VectorX<S>& x) const {
     return {// Pointer to the start of the states.
             x.data() + m_num_dense_variables,
             m_num_states,      // Number of rows.
-            m_num_mesh_intervals, // Number of columns.
+            m_num_mesh_points, // Number of columns.
                                // Distance between the start of each column.
             Eigen::OuterStride<Eigen::Dynamic>(m_num_continuous_variables)};
 }
@@ -1129,7 +1130,7 @@ Trapezoidal<T>::make_controls_trajectory_view(VectorX<S>& x) const {
     return {// Start of controls for first mesh interval.
             x.data() + m_num_dense_variables + m_num_states,
             m_num_controls,    // Number of rows.
-            m_num_mesh_intervals, // Number of columns.
+            m_num_mesh_points, // Number of columns.
                                // Distance between the start of each column;
                                // same as above.
             Eigen::OuterStride<Eigen::Dynamic>(m_num_continuous_variables)};
@@ -1142,7 +1143,7 @@ Trapezoidal<T>::make_adjuncts_trajectory_view(VectorX<S>& x) const {
     return {// Start of adjuncts for first mesh interval.
             x.data() + m_num_dense_variables + m_num_states + m_num_controls,
             m_num_adjuncts,    // Number of rows.
-            m_num_mesh_intervals, // Number of columns.
+            m_num_mesh_points, // Number of columns.
                                // Distance between the start of each column;
                                // same as above.
             Eigen::OuterStride<Eigen::Dynamic>(m_num_continuous_variables)};
@@ -1160,7 +1161,7 @@ typename Trapezoidal<T>::ConstraintsView Trapezoidal<T>::make_constraints_view(
                                        : nullptr;
     return {DefectsTrajectoryView(d_ptr, m_num_states, m_num_defects),
             PathConstraintsTrajectoryView(
-                    pc_ptr, m_num_path_constraints, m_num_mesh_intervals)};
+                    pc_ptr, m_num_path_constraints, m_num_mesh_points)};
 }
 
 } // namespace transcription

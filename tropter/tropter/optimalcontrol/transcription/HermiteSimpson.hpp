@@ -29,14 +29,15 @@ template <typename T>
 void HermiteSimpson<T>::set_ocproblem(
         std::shared_ptr<const OCProblem> ocproblem) {
     m_ocproblem = ocproblem;
-    m_num_mesh_intervals = (int)m_mesh.size();
+    m_num_mesh_points = (int)m_mesh.size();
+    m_num_mesh_intervals = m_num_mesh_points + 1;
     // We define the set of collocation points to include any time point where
     // derivatives of the state estimates are required to match the estimated
     // dynamics. For Hermite-Simpson collocation, collocation points include
     // both the mesh points and the mesh interval midpoints, so add N-1 points
     // to the number of mesh points to get the number of collocation points.
     // TODO rename to m_num_grid_points?
-    m_num_col_points = 2 * m_num_mesh_intervals - 1;
+    m_num_col_points = 2 * m_num_mesh_intervals + 1;
     m_num_states = m_ocproblem->get_num_states();
     m_num_controls = m_ocproblem->get_num_controls();
     m_num_adjuncts = m_ocproblem->get_num_adjuncts();
@@ -47,20 +48,20 @@ void HermiteSimpson<T>::set_ocproblem(
     m_num_dense_variables = m_num_time_variables + m_num_parameters;
     int num_variables = m_num_time_variables + m_num_parameters +
                         m_num_col_points * m_num_continuous_variables +
-                        (m_num_mesh_intervals - 1) * m_num_diffuses;
+                        m_num_mesh_intervals * m_num_diffuses;
     this->set_num_variables(num_variables);
     // The separated form of Hermite-Simpson requires two constraint equations
     // to implement the defects for a single state variable, one for the
     // midpoint interpolation (Hermite) and one for the integration rule
     // (Simpson). Therefore, the number of defects is 2*(N-1).
-    m_num_defects = m_num_states ? 2 * (m_num_mesh_intervals - 1) : 0;
+    m_num_defects = m_num_states ? (2 * m_num_mesh_intervals + 1) : 0;
     m_num_dynamics_constraints = m_num_defects * m_num_states;
     m_num_path_constraints = m_ocproblem->get_num_path_constraints();
     // TODO rename..."total_path_constraints"?
-    m_num_path_traj_constraints = m_num_mesh_intervals * m_num_path_constraints;
+    m_num_path_traj_constraints = m_num_mesh_points * m_num_path_constraints;
     m_num_control_midpoint_constraints =
             m_interpolate_control_midpoints
-                    ? m_num_controls * (m_num_mesh_intervals - 1)
+                    ? m_num_controls * m_num_mesh_intervals
                     : 0;
     int num_constraints = m_num_dynamics_constraints +
                           m_num_path_traj_constraints +
@@ -77,11 +78,11 @@ void HermiteSimpson<T>::set_ocproblem(
     for (const auto& param_name : param_names)
         m_variable_names.push_back(param_name);
 
-    // For padding, count the number of digits in num_mesh_points.
+    // For padding, count the number of digits in num_mesh_intervals.
     int num_digits_max_mesh_index = 0;
     {
-        // The printed index goes up to m_num_mesh_points - 1.
-        int max_index = m_num_mesh_intervals - 1;
+        // The printed index goes up to intervals.
+        int max_index = m_num_mesh_intervals;
         while (max_index != 0) {
             max_index /= 10;
             num_digits_max_mesh_index++;
@@ -91,7 +92,7 @@ void HermiteSimpson<T>::set_ocproblem(
     const auto control_names = m_ocproblem->get_control_names();
     const auto adjunct_names = m_ocproblem->get_adjunct_names();
     const auto diffuse_names = m_ocproblem->get_diffuse_names();
-    for (int i_mesh = 0; i_mesh < m_num_mesh_intervals; ++i_mesh) {
+    for (int i_mesh = 0; i_mesh < m_num_mesh_points; ++i_mesh) {
         // If not the first mesh point, also add in midpoint variable names
         // before the mesh point variable names.
         // Ordering based on Betts 4.105, pg. 144.

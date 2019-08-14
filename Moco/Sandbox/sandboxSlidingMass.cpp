@@ -488,7 +488,7 @@ public:
     }
 
     /// Create a template for an initial guess for the related MocoProblem.
-    /// The number of times in the guess is based on num_mesh_points, and
+    /// The number of times in the guess is based on num_mesh_intervals, and
     /// the guess is based on the bounds on the MocoProblem.
     MocoTrajectory createGuessTemplate() const {
         // TODO throw error if MocoProblem is not set yet.
@@ -496,9 +496,9 @@ public:
         // Create a direct collocation solver to access a function that
         // allows us to get an initial guess (we are NOT going to actually
         // try solving a problem here).
-        int N = get_num_mesh_points();
-        OPENSIM_THROW_IF_FRMOBJ(N <= 0, Exception,
-                "Invalid number of mesh points (" + std::to_string(N) + ")");
+        int N = get_num_mesh_intervals();
+        OPENSIM_THROW_IF_FRMOBJ(N < 0, Exception,
+                "Invalid number of mesh intervals (" + std::to_string(N) + ")");
         tropter::DirectCollocationSolver<double> dircol(
                 ocp, "trapezoidal", "ipopt", N);
         return dircol.make_initial_guess_from_bounds();
@@ -520,7 +520,7 @@ protected:
     getOptimalControlProblem() const;
 private:
     void constructProperties() {
-        constructProperty_num_mesh_points(100);
+        constructProperty_num_mesh_intervals(100);
     }
     SimTK::ReferencePtr<const MocoProblem> m_problem;
     SimTK::ClonePtr<MocoTrajectory> m_guess;
@@ -671,9 +671,9 @@ MocoTrajectory MocoSolver::solve() const {
     // TODO
     auto ocp = getOptimalControlProblem();
     ocp->print_description();
-    int N = get_num_mesh_points();
-    OPENSIM_THROW_IF_FRMOBJ(N <= 0, Exception,
-            "Invalid number of mesh points (" + std::to_string(N) + ")");
+    int N = get_num_mesh_intervals();
+    OPENSIM_THROW_IF_FRMOBJ(N < 0, Exception,
+            "Invalid number of mesh intervals (" + std::to_string(N) + ")");
     tropter::DirectCollocationSolver<double> dircol(ocp, "trapezoidal", "ipopt",
             N);
     dircol.get_opt_solver().set_advanced_option_string
@@ -843,12 +843,12 @@ int main() {
         guess.setControl_std("tau1", {0, 0});
         ms.setGuess(guess);
 
-        ms.set_num_mesh_points(100);
+        ms.set_num_mesh_intervals(100);
         MocoTrajectory solution0 = ms.solve();
         solution0.write("DEBUG_sandboxSlidingMass_solution.sto");
 
         // TODO the second problem never solves well...Ipopt keeps on iterating.
-        //ms.set_num_mesh_points(20);
+        //ms.set_num_mesh_intervals(20);
         //ms.setGuess(solution0);
         //MocoTrajectory solution1 = ms.solve();
 
@@ -870,7 +870,7 @@ int main() {
         mp.append_costs(tracking);
 
         MocoSolver ms(mp);
-        ms.set_num_mesh_points(50);
+        ms.set_num_mesh_intervals(50);
         //MocoTrajectory guess = ms.createGuessTemplate();
         //guess.setNumTimes(2);
         //guess.setTime_std({0, 1});

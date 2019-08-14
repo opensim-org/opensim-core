@@ -179,7 +179,7 @@ MocoSolution minimizeControlEffortRightLeg(const Options& opt) {
     // Set solver options.
     // -------------------
     auto& ms = moco.initTropterSolver();
-    ms.set_num_mesh_points(opt.num_mesh_points);
+    ms.set_num_mesh_intervals(opt.num_mesh_intervals);
     ms.set_verbosity(2);
     ms.set_dynamics_mode(opt.dynamics_mode);
     ms.set_optim_convergence_tolerance(opt.convergence_tol);
@@ -326,7 +326,7 @@ MocoSolution stateTrackingRightLeg(const Options& opt) {
     // Set solver options.
     // -------------------
     auto& ms = moco.initTropterSolver();
-    ms.set_num_mesh_points(opt.num_mesh_points);
+    ms.set_num_mesh_intervals(opt.num_mesh_intervals);
     ms.set_verbosity(2);
     ms.set_dynamics_mode(opt.dynamics_mode);
     ms.set_optim_convergence_tolerance(opt.convergence_tol);
@@ -381,7 +381,7 @@ int main() {
     // Set options.
     Options opt;
     opt.weldPelvis = true;
-    opt.num_mesh_points = 15;
+    opt.num_mesh_intervals = 15;
     opt.solver = "ipopt";
     opt.constraint_tol = 1e-2;
     opt.convergence_tol = 1e-2;
