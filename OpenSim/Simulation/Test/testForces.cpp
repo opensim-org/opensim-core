@@ -928,7 +928,7 @@ void testExpressionBasedBushingForceTranslational()
     spring.setName("translational_linear_bushing");
     
     osimModel.addForce(&spring);
-    
+    osimModel.finalizeConnections();
     osimModel.print("ExpressionBasedBushingForceTranslationalModel.osim");
     
     // Create the force reporter
@@ -1048,7 +1048,7 @@ void testExpressionBasedBushingForceRotational()
     spring.setName("rotational_linear_bushing");
 
     osimModel.addForce(&spring);
-
+    osimModel.finalizeConnections();
     osimModel.print("ExpressionBasedBushingForceRotationalModel.osim");
 
     // Create the force reporter
@@ -1602,6 +1602,7 @@ void testExternalForce()
     ExternalForce xf(forces, "force", "point", "", "tower", "ground", "ground");
     
     model.addForce(&xf);
+    model.finalizeConnections(); // Needed so sockets have correct absolute path on print
     model.print("ExternalForceTest.osim");
     ForceReporter frp;
     model.addAnalysis(&frp);

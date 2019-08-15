@@ -28,6 +28,7 @@ Bug Fixes
 - Fix bug that resulted in activations and forces reported for Actuators that are disabled during StaticOptimization (issue #2438) Disabled actuators are now ignored in StaticOptimization.
 - OpenSim no longer supports model file formats predating version 1.8.1 (PR #2498)
 - FunctionBasedBushingForce now applies damping if specified (it was incorrectly ignored in 4.0) issue #2512
+- TRCFileAdapter.write() uses the number of columns and rows in the supplied dataTable to set the "NumMarkers" and "NumRows" Metadata in the output file. Users won't have to set this metadata string manually.  #2510
 
 Documentation
 -------------
@@ -38,7 +39,7 @@ Other Changes
 - Performance of reading large data files has been significantly improved. A 50MB .sto file would take 10-11 min to read now takes 2-3 seconds. (PR #2399)
 - Added Matlab example script of plotting the Force-length properties of muscles in a models; creating an Actuator file from a model; 
 building and simulating a simple arm model;  using OutputReporters to record and write marker location and coordinate values to file.
-
+- OpenSim 4.1 ships with Python3 bindings as default. It is still possible to create bindings for Python2 if desired by setting CMake variable OPENSIM_PYTHON_VERSION to 2
 
 v4.0
 ====
