@@ -382,7 +382,7 @@ void HermiteSimpson<T>::calc_objective(
         T cost = 0;
         m_ocproblem->calc_cost(i_cost,
                 {0, initial_time, states.leftCols(1), controls.leftCols(1),
-                        adjuncts.leftCols(1), m_num_mesh_points, final_time,
+                        adjuncts.leftCols(1), m_num_mesh_points - 1, final_time,
                         states.rightCols(1), controls.rightCols(1),
                         adjuncts.rightCols(1), parameters, integral},
                 cost);
@@ -622,7 +622,7 @@ void HermiteSimpson<T>::calc_sparsity_hessian_lagrangian(
                         // coefficients.
                         T integral = 0.0;
                         m_ocproblem->calc_cost(icost,
-                                {0, it, is, ic, ia, m_num_mesh_points, ft, fs,
+                                {0, it, is, ic, ia, m_num_mesh_points - 1, ft, fs,
                                         fc, fa, p, integral},
                                 cost);
                         return cost;
