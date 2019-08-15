@@ -1367,9 +1367,15 @@ setAllPropertiesUseDefault(bool aUseDefault)
 bool Object::
 print(const string &aFileName) const
 {
-    try {
+    // Default to strict exception to avoid creating bad files
+    // but for debugging allow users to be more lenient.
+    if (_debugLevel >= 1) { 
+        try {
+            warnBeforePrint();
+        } catch (...) {}
+    }
+    else
         warnBeforePrint();
-    } catch (...) {}
     // Temporarily change current directory so that inlined files are written to correct relative directory
     std::string savedCwd = IO::getCwd();
     IO::chDir(IO::getParentDirectory(aFileName));
@@ -1647,19 +1653,17 @@ void Object::updateFromXMLDocument()
     IO::chDir(saveWorkingDirectory);
 }
 
-std::string Object::dump(bool dumpName) {
+std::string Object::dump() const {
     SimTK::String outString;
     XMLDocument doc;
-    std::string saveName = getName();
-    if (!dumpName) setName("");
     Object::setSerializeAllDefaults(true);
     SimTK::Xml::Element elem = doc.getRootElement();
     updateXMLNode(elem);
     Object::setSerializeAllDefaults(false);
-    setName(saveName);
     doc.getRootElement().node_begin()->writeToString(outString);
     return outString;
-    }
+}
+
 /** 
     * The following code accounts for an object made up to call 
     * RegisterTypes_osimCommon function on entry to the DLL in a cross platform manner 

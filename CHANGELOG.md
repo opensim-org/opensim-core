@@ -8,6 +8,11 @@ This is not a comprehensive list of changes but rather a hand-curated collection
 
 v4.1
 ====
+- Added `OrientationsReference` as the frame orientation analog to the location of experimental markers. Enables experimentally measured orientations from wearable sensors (e.g. from IMUs) to be tracked by reference frames in the model. A correspondence between the experimental (IMU frame) orientation column label and that of the virtual frame on the `Model` is expected. The `InverseKinematicsSolver` was extended to simultaneously track the `OrientationsReference` if provided. (PR #2412)
+- Removed the undocumented `bool dumpName` argument from `Object::dump()` and made the method `const` so it can be safely called on `const` objects. (PR #2412)
+- `MarkersReference` convenience constructors were updated to take a const reference to a `MarkerWeightSet` as its second argument. If a `Set` is not empty, then only the markers listed are used as reference signals. That means `InverseKinematicsTool` no longer tracks all experimental markers even those not in the `MarkerWeightSet`. One can quickly track all experimental markers (that have a corresponding model marker) by simply providing an empty `Set`, in which case all markers are assigned the default weight (typically 1.0).
+- Model files from very old versions (pre 1.8.1) are not supported, an exception is thrown rather than fail quietly (issue #2395).
+- Initializing a Component from an existing Component with correct socket connectees yields invalid paths (issue #2418).
 
 Converting from v4.0 to v4.1
 ----------------------------
@@ -16,6 +21,25 @@ Converting from v4.0 to v4.1
   conversion, you will need to update your code to use the constructor
   explicitly.
 
+Bug Fixes
+---------
+- Fixed bug in osimTable2Struct.m for renaming unlabelled markers (PR #2491)
+- Fixed bug that resulted in an exception when reading C3D files without forces. Now, if the C3D doesn't contain markers or forces, an empty table will be returned (PR #2421) 
+- Fix bug that resulted in activations and forces reported for Actuators that are disabled during StaticOptimization (issue #2438) Disabled actuators are now ignored in StaticOptimization.
+- OpenSim no longer supports model file formats predating version 1.8.1 (PR #2498)
+- FunctionBasedBushingForce now applies damping if specified (it was incorrectly ignored in 4.0) issue #2512
+- TRCFileAdapter.write() uses the number of columns and rows in the supplied dataTable to set the "NumMarkers" and "NumRows" Metadata in the output file. Users won't have to set this metadata string manually.  #2510
+
+Documentation
+-------------
+
+
+Other Changes
+-------------
+- Performance of reading large data files has been significantly improved. A 50MB .sto file would take 10-11 min to read now takes 2-3 seconds. (PR #2399)
+- Added Matlab example script of plotting the Force-length properties of muscles in a models; creating an Actuator file from a model; 
+building and simulating a simple arm model;  using OutputReporters to record and write marker location and coordinate values to file.
+- OpenSim 4.1 ships with Python3 bindings as default. It is still possible to create bindings for Python2 if desired by setting CMake variable OPENSIM_PYTHON_VERSION to 2
 
 v4.0
 ====
@@ -105,7 +129,7 @@ Converting from v3.x to v4.0
 - `Manager::setIntegrator(SimTK::Integrator)` has been removed and replaced by
   `Manager::setIntegratorMethod(IntegratorMethod)` which uses an enum and can
   be used by the MATLAB/Python interface. See the method's documentation for
-  examples. Integrator settings are now handled by the Manager through the 
+  examples. Integrator settings are now handled by the Manager through the
   following new functions:
   - setIntegratorAccuracy(double)
   - setIntegratorMinimumStepSize(double)
@@ -191,6 +215,7 @@ New Classes
 - Added Point as a new base class for all points, which include: Station, Marker, and PathPoints
 
 - Added OutputReporter as an Analysis so that users can use the existing AnalyzeTool and ForwardTool to extract Output values of interest, without modifications to the GUI. (PR #1991)
+
 
 Removed Classes
 ---------------

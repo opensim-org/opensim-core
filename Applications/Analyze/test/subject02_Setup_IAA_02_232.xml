@@ -75,7 +75,7 @@
 					<compute_potentials_only> false </compute_potentials_only>
 					<!--Report individual contributions to constraint reactions in addition to
 					    accelerations.-->
-					<report_constraint_reactions> false </report_constraint_reactions>
+					<report_constraint_reactions> true </report_constraint_reactions>
 				</InducedAccelerations>
 			</objects>
 			<groups/>

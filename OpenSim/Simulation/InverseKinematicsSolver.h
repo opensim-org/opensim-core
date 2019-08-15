@@ -24,15 +24,15 @@
  * -------------------------------------------------------------------------- */
 
 #include "AssemblySolver.h"
+#include "MarkersReference.h"
+#include "OrientationsReference.h"
 
 namespace SimTK {
 class Markers;
+class OrientationSensors;
 }
 
 namespace OpenSim {
-
-class MarkersReference;
-
 //=============================================================================
 //=============================================================================
 /**
@@ -76,9 +76,16 @@ public:
     //--------------------------------------------------------------------------
     virtual ~InverseKinematicsSolver() {}
 
-    InverseKinematicsSolver(const Model &model, MarkersReference &markersReference,
-                            SimTK::Array_<CoordinateReference> &coordinateReferences,
-                            double constraintWeight = SimTK::Infinity);
+    InverseKinematicsSolver(const Model& model, 
+                        const MarkersReference& markersReference,
+                        SimTK::Array_<CoordinateReference>& coordinateReferences,
+                        double constraintWeight = SimTK::Infinity);
+
+    InverseKinematicsSolver(const Model& model,
+                        const MarkersReference& markersReference,
+                        const OrientationsReference& orientationsReference,
+                        SimTK::Array_<CoordinateReference> &coordinateReferences,
+                        double constraintWeight = SimTK::Infinity);
     
     /* Assemble a model configuration that meets the InverseKinematics conditions  
         (desired values and constraints) starting from an initial state that  
@@ -100,6 +107,13 @@ public:
         (i.e. during subsequent calls to track()).*/
     int getNumMarkersInUse() const;
 
+    /** Return the number of orientation sensors used to solve for model
+    coordinates. It is a count of the number of orientation sensors that
+    intersect the reference orientations and model reference frames with
+    the same name. This number is guaranteed not to change after assemble()
+    is called (i.e. during subsequent calls to track()).*/
+    int getNumOrientationSensorsInUse() const;
+
     /** Change the weighting of a marker, given the marker's name. Takes effect
         when assemble() or track() is called next. */
     void updateMarkerWeight(const std::string &markerName, double value);
@@ -111,6 +125,18 @@ public:
         as they appear in the MarkersReference that was passed in when the
         solver was constructed. */
     void updateMarkerWeights(const SimTK::Array_<double> &weights);
+
+    /** Change the weighting of an orientation sensor, given its name. Takes
+    effect when assemble() or track() is called next. */
+    void updateOrientationWeight(const std::string& orientationName, double value);
+    /** Change the weighting of an orientation sensor, given its index. Takes
+    effect when assemble() or track() is called next. */
+    void updateOrientationWeight(int orientationIndex, double value);
+    /** Change the weighting of all orientation sensors. Takes effect when
+    assemble() or track() is called next. Orientation weights are specified
+    in the same order as they appear in the OrientationsReference that was
+    passed in when the solver was constructed. */
+    void updateOrientationWeights(const SimTK::Array_<double> &weights);
 
     /** Compute and return a marker's spatial location in the ground frame,
         given the marker's name. */
@@ -151,26 +177,69 @@ public:
         solver. */
     std::string getMarkerNameForIndex(int markerIndex) const;
 
+    /** Compute and return an orientation sensor's spatial orientation in the
+    ground frame, given the o-sensor's name. */
+    SimTK::Rotation computeCurrentSensorOrientation(const std::string& osensorName);
+    /** Compute and return an orientation sensor's spatial orientation in the
+    ground frame, given the o-sensor's index. */
+    SimTK::Rotation computeCurrentSensorOrientation(int osensorIndex);
+    /** Compute and return the spatial orientations of all o-sensors, expressed in
+    the ground frame. */
+    void computeCurrentSensorOrientations(
+        SimTK::Array_<SimTK::Rotation>& osensorOrientations);
+
+    /** Compute and return the orientation error between the model orientation
+    sensor and its observation, given the o-sensor's name. */
+    double computeCurrentOrientationError(const std::string& osensorName);
+    /** Compute and return the orientation error between the model orientation
+    sensor and its observation, given the o-sensor's index. */
+    double computeCurrentOrientationError(int osensorIndex);
+    /** Compute all the orientation errors between the model orientation
+    sensors and their observations. */
+    void computeCurrentOrientationErrors(SimTK::Array_<double>& osensorErrors);
+
+    /** Orientation sensor locations and errors may be computed in an order that
+    may be different from tasks file or listed in the model. Return the 
+    corresponding orientation sensor name for an index in the list of
+    orientations returned by the solver. */
+    std::string getOrientationSensorNameForIndex(int osensorIndex) const;
+
 protected:
-    /** Internal method to convert the CoordinateReferences into goals of the 
-        assembly solver. Subclasses can override to include other goals  
-        such as point of interest matching (Marker tracking). This method is
-        automatically called by assemble(). */
+    /** Override to include point of interest matching (Marker tracking)
+        as well ad Frame orientation (OSensor) tracking.
+        This method extends the set of goals used by the AssemblySolver. */
     void setupGoals(SimTK::State &s) override;
     /** Internal method to update the time, reference values and/or their 
         weights that define the goals, based on the provided state. */
     void updateGoals(const SimTK::State &s) override;
 
 private:
+    /** Define and apply marker tracking goal to the assembly problem. */
+    void setupMarkersGoal(SimTK::State &s);
+
+    /** Define and apply Orientations of Frames to be tracked to the
+        assembly problem. */
+    void setupOrientationsGoal(SimTK::State &s);
+
     // The marker reference values and weightings
-    MarkersReference &_markersReference;
+    MarkersReference _markersReference;
+
+    // The orientation reference values and weightings
+    OrientationsReference _orientationsReference;
 
     // Non-accessible cache of the marker values to be matched at a given state
     SimTK::Array_<SimTK::Vec3> _markerValues;
 
-    // Markers collectively form a single assembly condition for the SimTK::Assembler
-    // and the memory is managed by the Assembler
+    // Markers collectively form a single assembly condition for the 
+    // SimTK::Assembler and the memory is managed by the Assembler
     SimTK::ReferencePtr<SimTK::Markers> _markerAssemblyCondition;
+
+    // Private cache of the orientation values to be matched at a given state
+    SimTK::Array_<SimTK::Rotation> _orientationValues;
+
+    // OrientationSensors collectively form a single assembly condition for
+    // the SimTK::Assembler and the memory is managed by the Assembler
+    SimTK::ReferencePtr<SimTK::OrientationSensors> _orientationAssemblyCondition;
 
 //=============================================================================
 };  // END of class InverseKinematicsSolver

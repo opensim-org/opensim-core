@@ -37,24 +37,27 @@ MarkersReference::MarkersReference() :
 }
 
 MarkersReference::MarkersReference(const std::string& markerFile,
+                                   const Set<MarkerWeight>& markerWeightSet,
                                    Units modelUnits) :
     MarkersReference() {
-    loadMarkersFile(markerFile, modelUnits);
+    initializeFromMarkersFile(markerFile, markerWeightSet, modelUnits);
 }
 
 MarkersReference::
 MarkersReference(const TimeSeriesTable_<SimTK::Vec3>& markerTable,
-                 const Set<MarkerWeight>* markerWeightSet,
+                 const Set<MarkerWeight>& markerWeightSet,
                  Units units) :
     MarkersReference() {
+    // Make a writable copy of the marker table owned by this reference.
     _markerTable = markerTable;
-    if(markerWeightSet != nullptr)
-        upd_marker_weights() = *markerWeightSet;
-    populateFromMarkerData(markerTable, units.getAbbreviation());
+    if(markerWeightSet.getSize())
+        upd_marker_weights() = markerWeightSet;
+    populateFromMarkerData(_markerTable, markerWeightSet, units.getAbbreviation());
 }
 
-void MarkersReference::loadMarkersFile(const std::string markerFile,
-                                       Units modelUnits) {
+void MarkersReference::initializeFromMarkersFile(const std::string& markerFile,
+                                        const Set<MarkerWeight>& markerWeightSet,
+                                        Units modelUnits) {
     auto fileExt = FileAdapter::findExtension(markerFile);
     OPENSIM_THROW_IF(!(fileExt == "sto" || fileExt == "trc"),
                      UnsupportedFileType,
@@ -73,12 +76,12 @@ void MarkersReference::loadMarkersFile(const std::string markerFile,
 
     upd_marker_file() = markerFile;
 
-    populateFromMarkerData(_markerTable, modelUnits.getAbbreviation());
+    populateFromMarkerData(_markerTable, markerWeightSet, modelUnits.getAbbreviation());
 }
 
-void
-MarkersReference::
+void MarkersReference::
 populateFromMarkerData(const TimeSeriesTable_<SimTK::Vec3>& markerTable,
+                       const Set<MarkerWeight>& markerWeightSet,
                        const std::string& units) {
     Units thisUnits{};
     if(_markerTable.hasTableMetaDataKey("Units"))
@@ -100,9 +103,26 @@ populateFromMarkerData(const TimeSeriesTable_<SimTK::Vec3>& markerTable,
         _markerTable.addTableMetaData("Units", units);
     }
     
+    
+    const auto& allMarkerNamesInFile = markerTable.getColumnLabels();
+
+    // If user specifies a MarkerWeightSet only track markers that it specifies
+    // therefore remove extraneous markers and their data from the Reference
+    if (markerWeightSet.getSize()) {
+        for (const auto& mname : allMarkerNamesInFile) {
+            if (!markerWeightSet.contains(mname)) {
+                _markerTable.removeColumn(mname);
+            }
+        }
+        // update the reference weights to be the user assigned weights
+        upd_marker_weights() = markerWeightSet;
+    }
+
     const auto& markerNames = markerTable.getColumnLabels();
+
     _markerNames.clear();
     _weights.clear();
+
     _markerNames.assign(static_cast<unsigned>(markerNames.size()), "");
     _weights.assign(static_cast<unsigned>(markerNames.size()),
                     get_default_weight());

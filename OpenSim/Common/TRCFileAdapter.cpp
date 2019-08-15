@@ -28,7 +28,7 @@ TRCFileAdapter::clone() const {
 }
 
 TimeSeriesTableVec3
-TRCFileAdapter::read(const std::string& fileName) {
+TRCFileAdapter::readFile(const std::string& fileName) {
     auto abs_table = TRCFileAdapter{}.extendRead(fileName).at(_markers);
     return static_cast<TimeSeriesTableVec3&>(*abs_table);
 }
@@ -281,24 +281,13 @@ TRCFileAdapter::extendWrite(const InputTables& absTables,
     } catch(KeyNotFound&) {
         out_stream << datarate << _delimiterWrite;
     }
-    try {
-        out_stream << table->
-                      getTableMetaData().
-                      getValueForKey(_metadataKeys[2]).
-                      getValue<std::string>()
-                   << _delimiterWrite;
-    } catch(KeyNotFound&) {
-        out_stream << table->getNumRows() << _delimiterWrite;
-    }
-    try {
-        out_stream << table->
-                      getTableMetaData().
-                      getValueForKey(_metadataKeys[3]).
-                      getValue<std::string>()
-                   << _delimiterWrite;
-    } catch(KeyNotFound&) {
-        out_stream << table->getNumColumns() << _delimiterWrite;
-    }
+
+    // Next is _metadataKeys[2] is NumFrames
+    out_stream << table->getNumRows() << _delimiterWrite;
+
+    // Next is _metadataKeys[3] is NumMarkers
+    out_stream << table->getNumColumns() << _delimiterWrite;
+
     try {
         out_stream << table->
                       getTableMetaData().

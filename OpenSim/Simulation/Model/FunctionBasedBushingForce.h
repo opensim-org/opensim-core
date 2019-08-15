@@ -149,6 +149,9 @@ public:
         in drawn in the visualizer.  ratio = length/diameter.*/
     void setVisualAspectRatio(double ratio) {set_visual_aspect_ratio(ratio);}
 
+    /** Component interface. */
+    void extendFinalizeFromProperties() override;
+
     //--------------------------------------------------------------------------
     // COMPUTATION
     //--------------------------------------------------------------------------

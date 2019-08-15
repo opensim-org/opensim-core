@@ -15,7 +15,7 @@ for i = 1 : 10
     elem = Vec3(randi(10,1),randi(10,1),randi(10,1));
     elems = StdVectorVec3();
     elems.add(elem); elems.add(elem); elems.add(elem); elems.add(elem);
-    row = RowVectorOfVec3(elems);
+    row = RowVectorVec3(elems);
     
     rotatedRow = R.multiply(row);    
     table.appendRow(0.1,rotatedRow);
@@ -101,3 +101,18 @@ sV3_new         = osimTableToStruct(oTableV3);
 % Check that the number of fields have been preserved. 
 assert(length(fieldnames(s)) == length(fieldnames(s_new)), 'Number of fields in s and s_new are different')
 assert(length(fieldnames(sV3)) == length(fieldnames(sV3_new)), 'Number of fields in sV3 and sV3_new are different')
+
+%% Check column names can be converted to Matlab structure fields
+labels = oTable.getColumnLabels();
+labels.set(0,'8*_hi there!');
+labels.set(1,'*6');
+oTable.setColumnLabels(labels)
+
+try
+    mTable = osimTableToStruct(oTable);
+catch
+    error('Failed to convert rare column labels to Structure fields in osimTableToStruct()')
+end
+
+
+
