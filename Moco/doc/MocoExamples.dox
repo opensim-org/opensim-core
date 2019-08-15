@@ -1,7 +1,6 @@
 namespace OpenSim {
 /** @example examplePrototypeCustomGoal.m
-This is an example of how to prototype a custom goal in Matlab.
-
-See @ref customgoal.
+This is an example of how to prototype a custom goal in Matlab. See
+@ref customgoal.
 */
 } // namespace OpenSim

@@ -1,0 +1,23 @@
+namespace OpenSim {
+/**
+@page faq Frequently Asked Questions
+
+@section faqcustomgoal How do I define a custom goal or cost term?
+
+If Moco does not contain a cost term you need, you can create your own in C++ by
+deriving from the MocoGoal class. If you do not want to use C++, you can draft
+your goal in Matlab, send us your Matlab code, and we will consider implementing
+it in C++ for you. See @ref customgoal for more information.
+
+@section faqinterrupt How do I interrupt an optimization in MATLAB?
+
+Sometimes, you may want to interrupt an optimization before it is complete. In
+MATLAB, we commonly use Ctrl-C to interrupt code, but this does not work during
+a Moco optimization.
+
+Use this alternative: During an optimization, Moco tries to write a text file to
+your current directory named "delete_this...". Delete this file to interrupt the
+optimization.
+*/
+} // namespace OpenSim
+
