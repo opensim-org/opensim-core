@@ -1,4 +1,4 @@
-Guidelines for Contributing to OpenSim-Core
+﻿Guidelines for Contributing to OpenSim-Core
 ===========================================
 OpenSim is a community resource that is housed in the OpenSim-Core repository.
 We encourage everyone to contribute to the OpenSim project. This could be adding new code for a feature, improving an algorithm, or letting us know about a bug or making a feature request. The purpose of our contribution policy is to ensure that all code in OpenSim-Core has undergone real scrutiny, thereby reducing the likelihood of errors.
@@ -56,6 +56,8 @@ When you are ready to make a PR, please adhere to the following guidelines:
 6. Any other changes to the code require review by one member of the Dev Team, and manual testing by one member of the Dev Team. If the pull request involves adding a new class or performing a major object/algorithm refactor, one of these reviewers must be an Owner. The first reviewer determines if a second reviewer is required for the pull request to be accepted; you may also suggest whether the pull request should require one or two reviewers. The Owners and Dev Team are Teams within the opensim-org GitHub organization. You or the reviewers may merge the pull request once the reviewers accept the pull request.
 
 7. As the changes introduced by your pull request become finalized throughout the review process, you should decide if your changes warrant being mentioned in the change log. If so, update the [CHANGELOG.md](https://github.com/opensim-org/opensim-core/blob/master/CHANGELOG.md) with an additional commit to your pull request.
+
+8. CI must be run for all changes, except Matlab tests and examples, non-Doxygen markdown files, and non-Doxygen comments. CI tests must pass before merge, unless the author and reviewer(s) deem the failures unrelated to the change.
 
 A few additional practices will help streamline the code review process. Please use tags (i.e., @user_name) and quoting to help keep the discussion organized. Please also call for a meeting or Skype call when discussions start to stagnate. In addition, we recommend getting input on your interface design before implementing a major new component or other change.
 
