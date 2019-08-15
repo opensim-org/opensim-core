@@ -30,7 +30,7 @@ void HermiteSimpson<T>::set_ocproblem(
         std::shared_ptr<const OCProblem> ocproblem) {
     m_ocproblem = ocproblem;
     m_num_mesh_points = (int)m_mesh.size();
-    m_num_mesh_intervals = m_num_mesh_points + 1;
+    m_num_mesh_intervals = m_num_mesh_points - 1;
     // We define the set of collocation points to include any time point where
     // derivatives of the state estimates are required to match the estimated
     // dynamics. For Hermite-Simpson collocation, collocation points include
@@ -276,12 +276,11 @@ void HermiteSimpson<T>::set_ocproblem(
 
     // Set the mesh.
     // -------------
-    const int num_mesh_intervals = m_num_mesh_intervals;
     // For integrating the integral cost.
     // The duration of each mesh interval.
     m_mesh_eigen = Eigen::Map<VectorXd>(m_mesh.data(), m_mesh.size());
-    m_mesh_intervals = m_mesh_eigen.tail(num_mesh_intervals) -
-                       m_mesh_eigen.head(num_mesh_intervals);
+    m_mesh_intervals = m_mesh_eigen.tail(m_num_mesh_intervals) -
+                       m_mesh_eigen.head(m_num_mesh_intervals);
     // Simpson quadrature includes integrand evaluations at the midpoint.
     m_simpson_quadrature_coefficients = VectorXd::Zero(m_num_col_points);
     // The fractional coefficients that, when multiplied by the mesh fraction
@@ -290,7 +289,7 @@ void HermiteSimpson<T>::set_ocproblem(
     Eigen::Vector3d fracs(1.0 / 6.0, 2.0 / 3.0, 1.0 / 6.0);
     // Loop through each mesh interval and update the corresponding components
     // in the total coefficients vector.
-    for (int i_mesh = 0; i_mesh < num_mesh_intervals; ++i_mesh) {
+    for (int i_mesh = 0; i_mesh < m_num_mesh_intervals; ++i_mesh) {
         // The mesh interval coefficients overlap at the mesh grid points in the
         // total coefficients vector, so we create a map starting at every
         // other index
@@ -383,7 +382,7 @@ void HermiteSimpson<T>::calc_objective(
         T cost = 0;
         m_ocproblem->calc_cost(i_cost,
                 {0, initial_time, states.leftCols(1), controls.leftCols(1),
-                        adjuncts.leftCols(1), m_num_mesh_intervals, final_time,
+                        adjuncts.leftCols(1), m_num_mesh_points, final_time,
                         states.rightCols(1), controls.rightCols(1),
                         adjuncts.rightCols(1), parameters, integral},
                 cost);
@@ -623,8 +622,8 @@ void HermiteSimpson<T>::calc_sparsity_hessian_lagrangian(
                         // coefficients.
                         T integral = 0.0;
                         m_ocproblem->calc_cost(icost,
-                                {0, it, is, ic, ia, m_num_mesh_intervals, ft,
-                                        fs, fc, fa, p, integral},
+                                {0, it, is, ic, ia, m_num_mesh_points, ft, fs,
+                                        fc, fa, p, integral},
                                 cost);
                         return cost;
                     };
@@ -703,8 +702,7 @@ Eigen::MatrixXd HermiteSimpson<T>::get_diffuses_without_nans(
         const Eigen::MatrixXd& diffuses_with_nans) const {
     assert(diffuses_with_nans.rows() == m_num_diffuses);
     assert(diffuses_with_nans.cols() == m_num_col_points);
-    Eigen::MatrixXd diffuses_without_nans(
-            m_num_diffuses, m_num_mesh_intervals);
+    Eigen::MatrixXd diffuses_without_nans(m_num_diffuses, m_num_mesh_intervals);
 
     int i_mid = 0;
     for (int i_col = 1; i_col < m_num_col_points - 1; i_col += 2) {
@@ -1267,9 +1265,9 @@ HermiteSimpson<T>::make_states_trajectory_view_mid(const VectorX<S>& x) const {
     // TODO move time variables to the end.
     return {// Pointer to the start of the states.
             x.data() + m_num_dense_variables + m_num_continuous_variables,
-            m_num_states,          // Number of rows.
+            m_num_states,         // Number of rows.
             m_num_mesh_intervals, // Number of columns.
-                                   // Distance between the start of each column.
+                                  // Distance between the start of each column.
             Eigen::OuterStride<Eigen::Dynamic>(2 * m_num_continuous_variables)};
 }
 
@@ -1306,9 +1304,9 @@ HermiteSimpson<T>::make_controls_trajectory_view_mid(
     return {// Start of controls for first mesh interval.
             x.data() + m_num_dense_variables + m_num_states +
                     m_num_continuous_variables,
-            m_num_controls,        // Number of rows.
+            m_num_controls,       // Number of rows.
             m_num_mesh_intervals, // Number of columns.
-                                   // Distance between the start of each column.
+                                  // Distance between the start of each column.
             Eigen::OuterStride<Eigen::Dynamic>(2 * m_num_continuous_variables)};
 }
 
@@ -1331,9 +1329,9 @@ HermiteSimpson<T>::make_diffuses_trajectory_view(const VectorX<S>& x) const {
     return {// Start of diffuses for first mesh interval.
             x.data() + m_num_dense_variables +
                     m_num_continuous_variables * m_num_col_points,
-            m_num_diffuses,        // Number of rows.
+            m_num_diffuses,       // Number of rows.
             m_num_mesh_intervals, // Number of columns.
-                                   // Distance between the start of each column.
+                                  // Distance between the start of each column.
             Eigen::OuterStride<Eigen::Dynamic>(m_num_diffuses)};
 }
 
@@ -1380,9 +1378,9 @@ HermiteSimpson<T>::make_states_trajectory_view_mid(VectorX<S>& x) const {
     // TODO move time variables to the end.
     return {// Pointer to the start of the states.
             x.data() + m_num_dense_variables + m_num_continuous_variables,
-            m_num_states,          // Number of rows.
+            m_num_states,         // Number of rows.
             m_num_mesh_intervals, // Number of columns.
-                                   // Distance between the start of each column.
+                                  // Distance between the start of each column.
             Eigen::OuterStride<Eigen::Dynamic>(2 * m_num_continuous_variables)};
 }
 
@@ -1417,9 +1415,9 @@ HermiteSimpson<T>::make_controls_trajectory_view_mid(VectorX<S>& x) const {
     return {// Start of controls for first mesh interval.
             x.data() + m_num_dense_variables + m_num_states +
                     m_num_continuous_variables,
-            m_num_controls,        // Number of rows.
+            m_num_controls,       // Number of rows.
             m_num_mesh_intervals, // Number of columns.
-                                   // Distance between the start of each column.
+                                  // Distance between the start of each column.
             Eigen::OuterStride<Eigen::Dynamic>(2 * m_num_continuous_variables)};
 }
 
@@ -1442,9 +1440,9 @@ HermiteSimpson<T>::make_diffuses_trajectory_view(VectorX<S>& x) const {
     return {// Start of diffuses for first mesh interval.
             x.data() + m_num_dense_variables +
                     m_num_continuous_variables * m_num_col_points,
-            m_num_diffuses,        // Number of rows.
+            m_num_diffuses,       // Number of rows.
             m_num_mesh_intervals, // Number of columns.
-                                   // Distance between the start of each column.
+                                  // Distance between the start of each column.
             Eigen::OuterStride<Eigen::Dynamic>(m_num_diffuses)};
 }
 

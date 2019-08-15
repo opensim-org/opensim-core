@@ -87,7 +87,7 @@ class OSIMMOCO_API MocoDirectCollocationSolver : public MocoSolver {
 
 public:
     OpenSim_DECLARE_PROPERTY(num_mesh_intervals, int,
-            "The number of uniformly-spaced mesh intervals for the problem "
+            "The number of uniformly-sized mesh intervals for the problem "
             "(default: "
             "100). If a non-uniform mesh exists, the non-uniform mesh is used "
             "instead.");

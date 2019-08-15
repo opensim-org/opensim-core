@@ -165,7 +165,7 @@ void Trapezoidal<T>::set_ocproblem(std::shared_ptr<const OCProblem> ocproblem) {
             (VectorXd(m_num_continuous_variables) << states_lower,
                     controls_lower, adjuncts_lower)
                     .finished()
-                    .replicate(m_num_mesh_intervals - 1, 1),
+                    .replicate(m_num_mesh_points - 2, 1),
             final_states_lower, final_controls_lower, final_adjuncts_lower;
     VectorXd variable_upper(num_variables);
     variable_upper << initial_time_upper, final_time_upper, parameters_upper,
@@ -174,7 +174,7 @@ void Trapezoidal<T>::set_ocproblem(std::shared_ptr<const OCProblem> ocproblem) {
             (VectorXd(m_num_continuous_variables) << states_upper,
                     controls_upper, adjuncts_upper)
                     .finished()
-                    .replicate(m_num_mesh_intervals - 1, 1),
+                    .replicate(m_num_mesh_points - 2, 1),
             final_states_upper, final_controls_upper, final_adjuncts_upper;
     this->set_variable_bounds(variable_lower, variable_upper);
     // Bounds for constraints.
@@ -195,18 +195,17 @@ void Trapezoidal<T>::set_ocproblem(std::shared_ptr<const OCProblem> ocproblem) {
 
     // Set the mesh.
     // -------------
-    const int num_mesh_intervals = m_num_mesh_intervals;
     // For integrating the integral cost.
     // The duration of each mesh interval.
     m_mesh_eigen = Eigen::Map<VectorXd>(m_mesh.data(), m_mesh.size());
-    m_mesh_intervals = m_mesh_eigen.tail(num_mesh_intervals) -
-                       m_mesh_eigen.head(num_mesh_intervals);
+    m_mesh_intervals = m_mesh_eigen.tail(m_num_mesh_intervals) -
+                       m_mesh_eigen.head(m_num_mesh_intervals);
     m_trapezoidal_quadrature_coefficients = VectorXd::Zero(m_num_mesh_points);
     // Betts 2010 equation 4.195, page 169.
     // b = 0.5 * [tau0, tau0 + tau1, tau1 + tau2, ..., tauM-2 + tauM-1, tauM-1]
-    m_trapezoidal_quadrature_coefficients.head(num_mesh_intervals) =
+    m_trapezoidal_quadrature_coefficients.head(m_num_mesh_intervals) =
             0.5 * m_mesh_intervals;
-    m_trapezoidal_quadrature_coefficients.tail(num_mesh_intervals) +=
+    m_trapezoidal_quadrature_coefficients.tail(m_num_mesh_intervals) +=
             0.5 * m_mesh_intervals;
 
     // Allocate working memory.
@@ -265,7 +264,7 @@ void Trapezoidal<T>::calc_objective(const VectorX<T>& x, T& obj_value) const {
         T cost = 0;
         m_ocproblem->calc_cost(i_cost,
                 {0, initial_time, states.leftCols(1), controls.leftCols(1),
-                        adjuncts.leftCols(1), m_num_mesh_intervals, final_time,
+                        adjuncts.leftCols(1), m_num_mesh_points - 1, final_time,
                         states.rightCols(1), controls.rightCols(1),
                         adjuncts.rightCols(1), parameters, integral},
                 cost);
@@ -479,7 +478,7 @@ void Trapezoidal<T>::calc_sparsity_hessian_lagrangian(const Eigen::VectorXd& x,
         SymmetricSparsityPattern cost_initial_sparsity(num_con_vars);
         SymmetricSparsityPattern cost_final_sparsity(num_con_vars);
         const auto lastmeshstart =
-                m_num_dense_variables + m_num_mesh_intervals * num_con_vars;
+                m_num_dense_variables + m_num_mesh_points - 1 * num_con_vars;
         if (this->get_exact_hessian_block_sparsity_mode() == "sparse") {
             auto st = make_states_trajectory_view(x);
             auto ct = make_controls_trajectory_view(x);
@@ -525,7 +524,7 @@ void Trapezoidal<T>::calc_sparsity_hessian_lagrangian(const Eigen::VectorXd& x,
                         // coefficients.
                         T integral = 0.0;
                         m_ocproblem->calc_cost(icost,
-                                {0, it, is, ic, ia, m_num_mesh_intervals, ft,
+                                {0, it, is, ic, ia, m_num_mesh_points - 1, ft,
                                         fs, fc, fa, p, integral},
                                 cost);
                         return cost;
