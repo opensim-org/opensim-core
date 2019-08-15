@@ -252,7 +252,6 @@ std::unique_ptr<CasOC::Solver> MocoCasADiSolver::createCasOCSolver(
     if (getProperty_mesh().empty()) {
         casSolver->setNumMeshIntervals(get_num_mesh_intervals());
     } else {
-        casSolver->setNumMeshIntervals((int)getProperty_mesh().size());
         std::vector<double> mesh;
         for (int i = 0; i < getProperty_mesh().size(); ++i) {
             mesh.push_back(get_mesh(i));
