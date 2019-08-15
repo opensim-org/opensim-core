@@ -16,6 +16,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 #include "MocoTool.h"
+
 #include "MocoUtilities.h"
 
 using namespace OpenSim;
@@ -64,9 +65,8 @@ void MocoTool::updateTimeInfo(const std::string& dataLabel,
     info.final = final;
 
     // We do not want to end up with a larger mesh interval than requested.
-    info.numMeshPoints =
-            (int)std::ceil((info.final - info.initial) / get_mesh_interval()) +
-            1;
+    info.numMeshIntervals =
+            (int)std::ceil((info.final - info.initial) / get_mesh_interval());
 }
 
 std::string MocoTool::getFilePath(const std::string& file) const {
@@ -76,12 +76,12 @@ std::string MocoTool::getFilePath(const std::string& file) const {
         bool dontApplySearchPath;
         std::string fileName, extension;
         Pathname::deconstructPathname(getDocumentFileName(),
-            dontApplySearchPath, setupDir, fileName, extension);
+                dontApplySearchPath, setupDir, fileName, extension);
     }
 
     std::string filepath =
-        Pathname::getAbsolutePathnameUsingSpecifiedWorkingDirectory(
-            setupDir, file);
+            Pathname::getAbsolutePathnameUsingSpecifiedWorkingDirectory(
+                    setupDir, file);
 
     return filepath;
 }

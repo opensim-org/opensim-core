@@ -77,7 +77,7 @@ MocoStudy createSlidingMassMocoStudy() {
     mp.addGoal<MocoFinalTimeGoal>();
 
     auto& ms = moco.initSolver<SolverType>();
-    ms.set_num_mesh_points(20);
+    ms.set_num_mesh_intervals(20);
     ms.set_transcription_scheme("trapezoidal");
     ms.set_enforce_constraint_derivatives(false);
     return moco;
@@ -639,7 +639,7 @@ TEMPLATE_TEST_CASE("Workflow", "", MocoTropterSolver, MocoCasADiSolver) {
         auto& solver = moco.initSolver<TestType>();
         const int N = 20;         // mesh points
         const int Nc = 2 * N - 1; // collocation points
-        solver.set_num_mesh_points(N);
+        solver.set_num_mesh_intervals(N);
         MocoTrajectory guess = solver.createGuess("random");
         guess.setTime(createVectorLinspace(Nc, 0.0, 3.0));
         solver.setGuess(guess);
@@ -668,7 +668,7 @@ TEMPLATE_TEST_CASE("Workflow", "", MocoTropterSolver, MocoCasADiSolver) {
             problem.setStateInfo("/slider/position/speed", {-100, 100}, 0, 0);
             problem.addGoal<MocoFinalTimeGoal>();
             auto& solver = moco.initSolver<TestType>();
-            solver.set_num_mesh_points(20);
+            solver.set_num_mesh_intervals(20);
             finalTime0 = moco.solve().getFinalTime();
 
             auto& body = model->updComponent<Body>("body");
@@ -687,7 +687,7 @@ TEMPLATE_TEST_CASE("Workflow", "", MocoTropterSolver, MocoCasADiSolver) {
             problem.setStateInfo("/slider/position/speed", {-100, 100}, 0, 0);
             problem.setModel(createSlidingMassModel());
             auto& solver = moco.initSolver<TestType>();
-            solver.set_num_mesh_points(20);
+            solver.set_num_mesh_intervals(20);
             const double finalTime = moco.solve().getFinalTime();
             SimTK_TEST_EQ_TOL(finalTime, finalTime0, 1e-6);
         }
@@ -815,7 +815,7 @@ TEMPLATE_TEST_CASE(
 
         mp.addGoal<MocoFinalTimeGoal>();
         auto& ms = moco.initSolver<TestType>();
-        ms.set_num_mesh_points(15);
+        ms.set_num_mesh_intervals(15);
         solution = moco.solve();
     }
     {
@@ -843,7 +843,7 @@ TEMPLATE_TEST_CASE(
 
         mp2.addGoal<MocoFinalTimeGoal>();
         auto& ms2 = moco2.initSolver<TestType>();
-        ms2.set_num_mesh_points(15);
+        ms2.set_num_mesh_intervals(15);
         solution2 = moco2.solve();
     }
     CHECK(solution2.getObjective() != Approx(solution.getObjective()));
@@ -885,7 +885,7 @@ TEMPLATE_TEST_CASE("State tracking", "", MocoTropterSolver, MocoCasADiSolver) {
         auto tracking = mp.addGoal<MocoStateTrackingGoal>();
         tracking->setReference(STOFileAdapter::read(fname));
         auto& ms = moco.template initSolver<TestType>();
-        ms.set_num_mesh_points(5);
+        ms.set_num_mesh_intervals(5);
         ms.set_optim_hessian_approximation("exact");
         solDirect = moco.solve();
     }
@@ -901,7 +901,7 @@ TEMPLATE_TEST_CASE("State tracking", "", MocoTropterSolver, MocoCasADiSolver) {
         auto tracking = mp.addGoal<MocoStateTrackingGoal>();
         tracking->setReference(fname);
         auto& ms = moco.template initSolver<TestType>();
-        ms.set_num_mesh_points(5);
+        ms.set_num_mesh_intervals(5);
         ms.set_optim_hessian_approximation("exact");
         solFile = moco.solve();
         moco.print(setup_fname);
@@ -936,7 +936,7 @@ TEMPLATE_TEST_CASE("Guess", "", MocoTropterSolver, MocoCasADiSolver) {
     auto& ms = moco.initSolver<TestType>();
     const int N = 6;
     const int Nc = 2 * N - 1;
-    ms.set_num_mesh_points(N);
+    ms.set_num_mesh_intervals(N);
 
     std::vector<std::string> expectedStateNames{
             "/slider/position/value", "/slider/position/speed"};
@@ -1121,7 +1121,7 @@ TEMPLATE_TEST_CASE("Guess", "", MocoTropterSolver, MocoCasADiSolver) {
     {
         const int N = 5;
         const int Nc = 2 * N - 1;
-        ms.set_num_mesh_points(N);
+        ms.set_num_mesh_intervals(N);
         MocoTrajectory guess0 = ms.createGuess();
         guess0.setControl("/actuator", createVectorLinspace(Nc, 2.8, 7.3));
         CHECK(guess0.getTime().size() == Nc); // midpoint of [0, 10]
@@ -1199,11 +1199,11 @@ TEMPLATE_TEST_CASE("Guess", "", MocoTropterSolver, MocoCasADiSolver) {
     // Number of points required for splining.
     {
         // 3 and 2 points are okay.
-        ms.set_num_mesh_points(3);
+        ms.set_num_mesh_intervals(3);
         MocoTrajectory guess3 = ms.createGuess();
         guess3.resampleWithNumTimes(10);
 
-        ms.set_num_mesh_points(2);
+        ms.set_num_mesh_intervals(2);
         MocoTrajectory guess2 = ms.createGuess();
         guess2.resampleWithNumTimes(10);
 
@@ -1261,7 +1261,7 @@ TEMPLATE_TEST_CASE(
     problem.setStateInfo("/jointset/j0/q0/speed", {-50, 50}, initialSpeed);
     problem.setControlInfo("/forceset/tau0", 0);
     auto& solver = moco.initSolver<TestType>();
-    solver.set_num_mesh_points(20);
+    solver.set_num_mesh_intervals(20);
     solver.setGuess("random");
     // With MUMPS: 4 iterations.
     const MocoSolution solutionRandom = moco.solve();
@@ -1708,7 +1708,7 @@ TEMPLATE_TEST_CASE("Solving an empty MocoProblem", "", MocoTropterSolver,
     auto& solver = moco.initSolver<TestType>();
     THEN("problem solves without error, solution trajectories are empty.") {
         MocoSolution solution = moco.solve();
-        const int N = solver.get_num_mesh_points();
+        const int N = solver.get_num_mesh_intervals();
         const int Nc = 2 * N - 1; // collocation points
         CHECK(solution.getTime().size() == Nc);
         CHECK(solution.getStatesTrajectory().ncol() == 0);
@@ -1781,7 +1781,7 @@ void testSkippingOverQuaternionSlots(
 
     auto& solver = moco.initSolver<SolverType>();
     const int N = 5;
-    solver.set_num_mesh_points(N);
+    solver.set_num_mesh_intervals(N);
     solver.set_dynamics_mode(dynamicsMode);
     solver.set_transcription_scheme("hermite-simpson");
     solver.set_optim_constraint_tolerance(1e-2);

@@ -105,7 +105,7 @@ MocoStudy MocoTrack::initialize() {
     // Configure solver.
     // -----------------
     MocoCasADiSolver& solver = moco.initCasADiSolver();
-    solver.set_num_mesh_points(m_timeInfo.numMeshPoints);
+    solver.set_num_mesh_intervals(m_timeInfo.numMeshIntervals);
     solver.set_dynamics_mode("explicit");
     solver.set_optim_convergence_tolerance(1e-2);
     solver.set_optim_constraint_tolerance(1e-2);
