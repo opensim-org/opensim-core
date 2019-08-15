@@ -31,14 +31,14 @@
 template<typename> class shrik;
 
 namespace OpenSim {
-    /** C3DFileAdapter Reads in a C3D file into separate markers and forces tables of type
+    /** C3DFileAdapter reads a C3D file into markers and forces tables of type
     TimeSeriesTableVec3. The markers table has each column labeled by its
     corresponding marker name. For the forces table, the data are grouped
     by sensor (force-plate #) in force, point and moment order, with the
     respective *f#*, *p#* and *m#* column labels. C3DFileAdpater provides
     options for expressing the force-plate measurements either as the
     net force and moments expressed at the ForcePlateOrigin, the
-    CentereOfPressure, or the PointOfWrenchApplication.
+    CenterOfPressure, or the PointOfWrenchApplication.
     */
 
 class OSIMCOMMON_API C3DFileAdapter : public FileAdapter {
@@ -50,7 +50,8 @@ public:
         %Measurement from force plates can be expressed by the C3DFileAdapter
         either at the OriginOfForcePlate (the default), CenterOfPressure, or
         the PointOfWrenchApplication. You need to call  setLocationForForceExpression
-        before invoking C3DFileAdapter::read().
+        before invoking C3DFileAdapter::read(), otherwise the default location
+        (OriginOfForcePlate) is assumed.
 
         In the case of the CenterOfPressure (COP), the underlying assumptions
         are that the ground plane (in which COP is defined) passes through the
@@ -108,8 +109,8 @@ public:
     C3DFileAdapter* clone() const override;
     /**  C3DFileAdpater provides options for expressing the force-plate 
         measurements either as the net force and moments expressed at the 
-        ForcePlateOrigin, the CentereOfPressure, or the 
-        PointOfWrenchApplication  This function sets the option. */
+        ForcePlateOrigin, the CenterOfPressure, or the 
+        PointOfWrenchApplication.  This function sets the option. */
     void setLocationForForceExpression(const ForceLocation location) {
         _location = location;
     }

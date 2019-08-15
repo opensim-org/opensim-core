@@ -175,7 +175,8 @@ public:
 };
 
 /** FileAdapter is a DataAdapter that reads and writes files with methods
-read and writeFile respectively.                                          */
+read and writeFile respectively. The read method is implemented in the base class and it
+calls the virtual extendRead method implemented by format specific subclasses. */
 class OSIMCOMMON_API FileAdapter : public DataAdapter {
 public:
     FileAdapter()                              = default;
