@@ -137,7 +137,7 @@ void MocoPeriodicityGoal::calcGoalImpl(
     const auto& finalControls = getModel().getControls(input.final_state);
     int j = 0;
     for (const auto& index_control : m_indices_controls) {
-        goal[i + j] = (initialControls[std::get<0>(index_control)] *
+        goal[i + j] = (initialControls[std::get<0>(index_control)]/**/ *
                               std::get<2>(index_control)) -
                       finalControls[std::get<1>(index_control)];
         if (getModeIsCost()) { goal[i + j] = SimTK::square(goal[i + j]); }
