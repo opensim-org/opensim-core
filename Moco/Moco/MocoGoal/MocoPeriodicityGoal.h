@@ -38,11 +38,15 @@ public:
     MocoPeriodicityGoalPair();
     MocoPeriodicityGoalPair(
             std::string initialVariable, std::string finalVariable);
+    /*
     MocoPeriodicityGoalPair(std::string initialVariable,
             std::string finalVariable, bool negate);
+            */
     MocoPeriodicityGoalPair(std::string initialVariableIsFinalVariable);
+    /*
     MocoPeriodicityGoalPair(
             std::string initialVariableIsFinalVariable, bool negate);
+            */
 
 private:
     void constructProperties();
@@ -113,10 +117,17 @@ public:
     void addStatePair(MocoPeriodicityGoalPair pair) {
         append_state_pairs(std::move(pair));
     }
+    void addNegatedStatePair(MocoPeriodicityGoalPair pair) {
+        pair.set_negate(true);
+        append_state_pairs(std::move(pair));
+    }
     void addControlPair(MocoPeriodicityGoalPair pair) {
         append_control_pairs(std::move(pair));
     }
-
+    void addNegatedControlPair(MocoPeriodicityGoalPair pair) {
+        pair.set_negate(true);
+        append_control_pairs(std::move(pair));
+    }
 protected:
     bool getSupportsEndpointConstraintImpl() const override { return true; }
     Mode getDefaultModeImpl() const override {

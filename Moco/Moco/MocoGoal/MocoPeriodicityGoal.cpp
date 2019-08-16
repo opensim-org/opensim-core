@@ -33,6 +33,7 @@ MocoPeriodicityGoalPair::MocoPeriodicityGoalPair(
     set_final_variable(finalVariable);
 }
 
+/*
 MocoPeriodicityGoalPair::MocoPeriodicityGoalPair(
         std::string initialVariable, std::string finalVariable, bool negate) {
     constructProperties();
@@ -40,6 +41,7 @@ MocoPeriodicityGoalPair::MocoPeriodicityGoalPair(
     set_final_variable(finalVariable);
     set_negate(negate);
 }
+*/
 
 MocoPeriodicityGoalPair::MocoPeriodicityGoalPair(
         std::string initialVariableIsFinalVariable) {
@@ -48,6 +50,7 @@ MocoPeriodicityGoalPair::MocoPeriodicityGoalPair(
     set_final_variable(initialVariableIsFinalVariable);
 }
 
+/*
 MocoPeriodicityGoalPair::MocoPeriodicityGoalPair(
         std::string initialVariableIsFinalVariable, bool negate) {
     constructProperties();
@@ -55,7 +58,7 @@ MocoPeriodicityGoalPair::MocoPeriodicityGoalPair(
     set_final_variable(initialVariableIsFinalVariable);
     set_negate(negate);
 }
-
+*/
 void MocoPeriodicityGoalPair::constructProperties() {
     constructProperty_initial_variable("");
     constructProperty_final_variable("");
@@ -87,11 +90,10 @@ void MocoPeriodicityGoal::initializeOnModelImpl(const Model& model) const {
                 format("Could not find state '%s'.", path2));
         int stateIndex1 = allSysYIndices[path1];
         int stateIndex2 = allSysYIndices[path2];
-        m_indices_states.emplace_back(stateIndex1, stateIndex2);
         if (get_state_pairs(i).get_negate()) {
-            m_indices_states.emplace_back(-1);
+            m_indices_states.emplace_back(stateIndex1, stateIndex2, -1);
         } else {
-            m_indices_states.emplace_back(1);
+            m_indices_states.emplace_back(stateIndex1, stateIndex2, 1);
         }
     }
 
@@ -107,11 +109,10 @@ void MocoPeriodicityGoal::initializeOnModelImpl(const Model& model) const {
                 format("Could not find control '%s'.", path2));
         int controlIndex1 = systemControlIndexMap[path1];
         int controlIndex2 = systemControlIndexMap[path2];
-        m_indices_controls.emplace_back(controlIndex1, controlIndex2);
         if (get_control_pairs(i).get_negate()) {
-            m_indices_controls.emplace_back(-1);
+            m_indices_controls.emplace_back(controlIndex1, controlIndex2, -1);
         } else {
-            m_indices_controls.emplace_back(1);
+            m_indices_controls.emplace_back(controlIndex1, controlIndex2, 1);
         }
     }
 
@@ -137,7 +138,7 @@ void MocoPeriodicityGoal::calcGoalImpl(
     const auto& finalControls = getModel().getControls(input.final_state);
     int j = 0;
     for (const auto& index_control : m_indices_controls) {
-        goal[i + j] = (initialControls[std::get<0>(index_control)]/**/ *
+        goal[i + j] = (initialControls[std::get<0>(index_control)] *
                               std::get<2>(index_control)) -
                       finalControls[std::get<1>(index_control)];
         if (getModeIsCost()) { goal[i + j] = SimTK::square(goal[i + j]); }
