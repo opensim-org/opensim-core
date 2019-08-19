@@ -224,9 +224,10 @@ Storage::Storage(const string &fileName, bool readHeadersOnly) :
     }
 
     // Process file as if it were a .mot file
-
-    // cout << "Storage: read data file =" << fileName
-    //    << " (nr=" << nr << " nc=" << nc << ")" << endl;
+    if (getDebugLevel() >= 2) {
+        cout << "Storage: read data file =" << fileName
+            << " (nr=" << nr << " nc=" << nc << ")" << endl;
+    }
     // Motion files from SIMM are in degrees
     if (_fileVersion < 1 && isMotFile) {
         _inDegrees = true;
