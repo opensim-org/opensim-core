@@ -664,7 +664,7 @@ void Muscle::computeForce(const SimTK::State& s,
     // This calls compute actuation.
     Super::computeForce(s, bodyForces, generalizedForces); 
 
-    if (getDebugLevel() < 2) return;
+    if (getDebugLevel() < 0) return;
     // NOTE: Actuation could be negative, in particular during CMC, when the 
     // optimizer is computing gradients, but in those cases the actuation will 
     // be overridden and will not be computed by the muscle.

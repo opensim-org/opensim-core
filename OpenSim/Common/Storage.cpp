@@ -224,7 +224,7 @@ Storage::Storage(const string &fileName, bool readHeadersOnly) :
     }
 
     // Process file as if it were a .mot file
-    if (getDebugLevel() >= 2) {
+    if (getDebugLevel() >= 0) {
         cout << "Storage: read data file =" << fileName
             << " (nr=" << nr << " nc=" << nc << ")" << endl;
     }
