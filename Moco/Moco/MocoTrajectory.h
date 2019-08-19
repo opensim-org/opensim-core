@@ -547,6 +547,9 @@ public:
     /// The MocoProblem is necessary because we need the underlying Model to
     /// order the state variables correctly.
     StatesTrajectory exportToStatesTrajectory(const MocoProblem&) const;
+    /// This is similar to the above function but requires only a model, not
+    /// a MocoProblem.
+    StatesTrajectory exportToStatesTrajectory(const Model&) const;
     /// @}
 
     /// @name Modify the data
