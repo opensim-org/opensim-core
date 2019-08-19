@@ -121,11 +121,12 @@ public:
 
     static
     void write(const Tables& markerTable, const std::string& fileName);
-
+    /** Retrieve the TimeSeriesTableVec3 of Markers */
     std::shared_ptr<TimeSeriesTableVec3> getMarkersTimeSeries(DataAdapter::OutputTables& tables) {
         std::shared_ptr<AbstractDataTable>& adt = tables.at("markers");
         return std::dynamic_pointer_cast<TimeSeriesTableVec3>(adt);
     }
+    /** Retrieve the TimeSeriesTableVec3 of Forces */
     std::shared_ptr<TimeSeriesTableVec3> getForcesTimeSeries(DataAdapter::OutputTables& tables) {
         std::shared_ptr<AbstractDataTable>& adt = tables.at("forces");
         return std::dynamic_pointer_cast<TimeSeriesTableVec3>(adt);
