@@ -209,10 +209,10 @@ public:
     specifies that either a space or a tab can act as the delimiter.          */
     static std::vector<std::string> tokenize(const std::string& str, 
                                       const std::string& delims);
-    /** Create a concerte FileAdapter based on the extensionof the passed in file and return it.
-     This serves as a Factory of FileAdapters so clients don't need to know about concrete 
+    /** Create a concerte FileAdapter based on the extension of the passed in file and return it.
+     This serves as a Factory of FileAdapters so clients don't need to know specific concrete 
      subclasses, as long as the generic base class read interface is used */
-    static std::shared_ptr<DataAdapter> createAdapterBasedOnExtension(const std::string& fileName);
+    static std::shared_ptr<DataAdapter> createAdapterFromExtension(const std::string& fileName);
 };
 
 } // OpenSim namespace

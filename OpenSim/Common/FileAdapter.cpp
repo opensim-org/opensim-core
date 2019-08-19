@@ -81,7 +81,7 @@ FileAdapter::getNextLine(std::istream& stream,
 }
 
 std::shared_ptr<DataAdapter>
-FileAdapter::createAdapterBasedOnExtension(const std::string& fileName) {
+FileAdapter::createAdapterFromExtension(const std::string& fileName) {
     auto extension = FileAdapter::findExtension(fileName);
     std::shared_ptr<DataAdapter> dataAdapter{};
     if (extension == "sto")
