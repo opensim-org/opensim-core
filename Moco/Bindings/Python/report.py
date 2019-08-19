@@ -123,6 +123,7 @@ class Report(object):
                  colormap=None,
                  ):
         self.model = model
+        self.model.initSystem()
         self.trajectory_filepath = trajectory_filepath
         self.trajectory = osim.MocoTrajectory(self.trajectory_filepath)
         self.bilateral = bilateral
@@ -145,7 +146,6 @@ class Report(object):
                     ref = sto_adapter.read(ref_file)
                     if (ref.hasTableMetaDataKey('inDegrees') and 
                             ref.getTableMetaDataAsString('inDegrees') == 'yes'):
-                        self.model.initSystem()
                         simbodyEngine = self.model.getSimbodyEngine()
                         simbodyEngine.convertDegreesToRadians(ref)
                         ref_file = ref_file.replace(file_ext, 
