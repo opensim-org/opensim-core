@@ -205,8 +205,7 @@ Storage::Storage(const string &fileName, bool readHeadersOnly) :
                 "Cannot read headers only if not a STO file or its "
                 "version is greater than 1.");
             auto dataAdapter = FileAdapter::createAdapterFromExtension(fileName);
-            auto& fileAdapter = static_cast<FileAdapter&>(*dataAdapter);
-            FileAdapter::OutputTables tables = fileAdapter.read(fileName);
+            FileAdapter::OutputTables tables = dataAdapter->read(fileName);
             if (tables.size() > 1) {
                 cout << "Storage: cannot read data files with multiple tables. "
                     << "Only the first table '" << tables.begin()->first << "' will "
