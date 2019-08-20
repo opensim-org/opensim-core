@@ -56,8 +56,8 @@ private:
 /// supported, and are specified via the 'state_pairs' and 'control_pairs'
 /// properties.
 ///
-/// To enforce adherence to initial and final variable values that are equal in
-/// absolute value but differ in sign (e.g. a pelvis rotation in walking), use
+/// To handle initial and final variable values that are equal in absolute value
+/// but differ in sign (e.g. a pelvis rotation in walking), use
 /// addNegatedStatePair or addNegatedControlPair.
 ///
 /// To impose bilateral symmetry in a walking simulation,
