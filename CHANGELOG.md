@@ -20,3 +20,6 @@
               metabolic rate and the difference between final and initial states
               (for distance traveled).
 
+- 2019-08-20: Periodicity of the states and/or controls can now be enforced with a
+              negated MocoPeriodicityGoalPair added via addNegatedStatePair or
+              addNegatedControlPair respectively.

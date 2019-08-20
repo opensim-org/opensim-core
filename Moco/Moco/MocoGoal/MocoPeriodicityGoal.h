@@ -38,15 +38,7 @@ public:
     MocoPeriodicityGoalPair();
     MocoPeriodicityGoalPair(
             std::string initialVariable, std::string finalVariable);
-    /*
-    MocoPeriodicityGoalPair(std::string initialVariable,
-            std::string finalVariable, bool negate);
-            */
     MocoPeriodicityGoalPair(std::string initialVariableIsFinalVariable);
-    /*
-    MocoPeriodicityGoalPair(
-            std::string initialVariableIsFinalVariable, bool negate);
-            */
 
 private:
     void constructProperties();
@@ -64,15 +56,19 @@ private:
 /// supported, and are specified via the 'state_pairs' and 'control_pairs'
 /// properties.
 ///
-/// To impose bilateral symmetry in a walking simulation, we can simulate over
-/// half a gait cycle and impose periodic constraints. For bilateral variables
-/// (e.g., hip flexion speeds and hamstrings controls), the constraints should
-/// enforce that right and left values, and inversely, should be the same at
-/// the beginning and half of the gait cycle, respectively. For the other
-/// variables (e.g., pelvis tilt values), the constraints should enforce that
-/// the values should be the same at the beginning and half of the gait cycle.
-/// The example code below illustrates how to enforce the aforementioned
-/// constraints with different constructors.
+/// To enforce adherence to initial and final variable values that are equal in
+/// absolute value but differ in sign (e.g. a pelvis rotation in walking), use
+/// addNegatedStatePair or addNegatedControlPair.
+///
+/// To impose bilateral symmetry in a walking simulation,
+/// we can simulate over half a gait cycle and impose periodic constraints. For
+/// bilateral variables (e.g., hip flexion speeds and hamstrings controls), the
+/// constraints should enforce that right and left values, and inversely, should
+/// be the same at the beginning and half of the gait cycle, respectively. For
+/// the other variables (e.g., pelvis tilt values), the constraints should
+/// enforce that the values should be the same at the beginning and half of the
+/// gait cycle. The example code below illustrates how to enforce the
+/// aforementioned constraints with different constructors.
 /// @code
 /// periodicGoal = problem.addGoal<MocoPeriodicityGoal>("periodicGoal");
 /// @endcode
@@ -100,6 +96,7 @@ private:
 /// @endcode
 /// This is an endpoint constraint goal by default.
 /// @ingroup mocogoal
+///
 class OSIMMOCO_API MocoPeriodicityGoal : public MocoGoal {
     OpenSim_DECLARE_CONCRETE_OBJECT(MocoPeriodicityGoal, MocoGoal);
 
@@ -128,6 +125,7 @@ public:
         pair.set_negate(true);
         append_control_pairs(std::move(pair));
     }
+
 protected:
     bool getSupportsEndpointConstraintImpl() const override { return true; }
     Mode getDefaultModeImpl() const override {

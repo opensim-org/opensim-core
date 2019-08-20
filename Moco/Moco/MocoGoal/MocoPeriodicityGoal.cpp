@@ -90,11 +90,8 @@ void MocoPeriodicityGoal::initializeOnModelImpl(const Model& model) const {
                 format("Could not find state '%s'.", path2));
         int stateIndex1 = allSysYIndices[path1];
         int stateIndex2 = allSysYIndices[path2];
-        if (get_state_pairs(i).get_negate()) {
-            m_indices_states.emplace_back(stateIndex1, stateIndex2, -1);
-        } else {
-            m_indices_states.emplace_back(stateIndex1, stateIndex2, 1);
-        }
+        m_indices_states.emplace_back(stateIndex1, stateIndex2,
+                get_state_pairs(i).get_negate() ? -1 : 1);
     }
 
     auto systemControlIndexMap = createSystemControlIndexMap(model);
@@ -109,11 +106,8 @@ void MocoPeriodicityGoal::initializeOnModelImpl(const Model& model) const {
                 format("Could not find control '%s'.", path2));
         int controlIndex1 = systemControlIndexMap[path1];
         int controlIndex2 = systemControlIndexMap[path2];
-        if (get_control_pairs(i).get_negate()) {
-            m_indices_controls.emplace_back(controlIndex1, controlIndex2, -1);
-        } else {
-            m_indices_controls.emplace_back(controlIndex1, controlIndex2, 1);
-        }
+        m_indices_states.emplace_back(controlIndex1, controlIndex2,
+                get_state_pairs(i).get_negate() ? -1 : 1);
     }
 
     setNumIntegralsAndOutputs(
