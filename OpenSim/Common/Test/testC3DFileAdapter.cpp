@@ -100,8 +100,8 @@ void test(const std::string filename) {
     #endif
 */
 
-    std::shared_ptr<TimeSeriesTableVec3> marker_table = c3dFileAdapter.getMarkersTimeSeries(tables);
-    std::shared_ptr<TimeSeriesTableVec3> force_table = c3dFileAdapter.getForcesTimeSeries(tables);
+    std::shared_ptr<TimeSeriesTableVec3> marker_table = c3dFileAdapter.getMarkersTable(tables);
+    std::shared_ptr<TimeSeriesTableVec3> force_table = c3dFileAdapter.getForcesTable(tables);
     downsample_table(*marker_table, 10);
     downsample_table(*force_table, 100);
 
@@ -176,7 +176,7 @@ void test(const std::string filename) {
         "Unable to load '" + filename + "' within " +
         to_string(MaximumLoadTimeInMS) + "ms.");
     #endif
-    std::shared_ptr<TimeSeriesTableVec3> force_table_cop = c3dFileAdapter.getForcesTimeSeries(tables2);
+    std::shared_ptr<TimeSeriesTableVec3> force_table_cop = c3dFileAdapter.getForcesTable(tables2);
     downsample_table(*force_table_cop, 100);
 
     sto_adapter.write(force_table_cop->flatten(), "cop_"+ forces_file);
