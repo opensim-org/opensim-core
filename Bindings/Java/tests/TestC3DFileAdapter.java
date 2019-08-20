@@ -9,7 +9,7 @@ class TestC3DFileAdapter {
             c3dAdapter.read("walking5.c3d");
 
         // Marker data read from C3D.
-        TimeSeriesTableVec3 markerTable = c3dAdapter.getMarkersTimeSeries(tables);
+        TimeSeriesTableVec3 markerTable = c3dAdapter.getMarkersTable(tables);
         assert markerTable.getNumRows()    == 1103;
         assert markerTable.getNumColumns() == 40;
         assert markerTable.
@@ -30,7 +30,7 @@ class TestC3DFileAdapter {
         assert markerTableDouble.getNumColumns() == 40 * 3;
 
         // Forces data read from C3D.
-        TimeSeriesTableVec3 forceTable = c3dAdapter.getForcesTimeSeries(tables);
+        TimeSeriesTableVec3 forceTable = c3dAdapter.getForcesTable(tables);
         assert forceTable.getNumRows()    == 8824;
         assert forceTable.getNumColumns() == 6;
         assert forceTable.

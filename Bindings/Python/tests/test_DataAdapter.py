@@ -35,8 +35,8 @@ class TestDataAdapter(unittest.TestCase):
             # C3D support not available. OpenSim was not compiled with BTK.
             return
         tables = adapter.read(os.path.join(test_dir, 'walking2.c3d'))
-        forces = adapter.getForcesTimeSeries(tables)
-        markers = adapter.getMarkersTimeSeries(tables)
+        forces = adapter.getForcesTable(tables)
+        markers = adapter.getMarkersTable(tables)
         
         assert markers.getNumRows()    == 1249
         assert markers.getNumColumns() == 44
@@ -46,7 +46,7 @@ class TestDataAdapter(unittest.TestCase):
         tables2 = adapter.read(os.path.join(test_dir, 'walking5.c3d'))
 
         # Marker data read from C3D.
-        markers = adapter.getMarkersTimeSeries(tables2)
+        markers = adapter.getMarkersTable(tables2)
         assert markers.getNumRows()    == 1103
         assert markers.getNumColumns() == 40
         assert markers.getTableMetaDataString('DataRate') == '250.000000'
@@ -66,7 +66,7 @@ class TestDataAdapter(unittest.TestCase):
         assert markersDouble.getNumColumns() == 40 * 3
 
         # Forces data read from C3d.
-        forces = adapter.getForcesTimeSeries(tables2)
+        forces = adapter.getForcesTable(tables2)
         assert forces.getNumRows()     == 8824
         assert forces.getNumColumns()  == 6
         assert forces.getTableMetaDataString('DataRate') == '2000.000000'
