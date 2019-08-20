@@ -95,12 +95,15 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
     m_numPointsIgnoringConstraints = m_numGridPoints - m_numMeshPoints;
     m_numDefectsPerMeshInterval = numDefectsPerMeshInterval;
     m_pointsForInterpControls = pointsForInterpControls;
-    m_numResiduals = m_solver.isDynamicsModeImplicit()
+    m_numMultibodyResiduals = m_solver.isDynamicsModeImplicit()
                              ? m_problem.getNumMultibodyDynamicsEquations()
                              : 0;
+    m_numAuxiliaryResiduals = m_problem.getNumAuxiliaryResidualEquations();
+
     m_numConstraints =
             m_numDefectsPerMeshInterval * m_numMeshIntervals +
-            m_numResiduals * m_numGridPoints +
+            m_numMultibodyResiduals * m_numGridPoints +
+            m_numAuxiliaryResiduals * m_numGridPoints +
             m_problem.getNumKinematicConstraintEquations() * m_numMeshPoints +
             m_problem.getNumControls() * (int)pointsForInterpControls.numel();
     m_constraints.endpoint.resize(
@@ -267,15 +270,23 @@ void Transcription::transcribe() {
     m_constraintsUpperBounds.defects =
             DM::zeros(m_numDefectsPerMeshInterval, m_numMeshIntervals);
 
-    // Initialize memory for implicit residuals.
-    // -----------------------------------------
-    if (m_solver.isDynamicsModeImplicit()) {
-        const auto& NR = m_problem.getNumMultibodyDynamicsEquations();
-        m_constraints.residuals =
-                MX(casadi::Sparsity::dense(NR, m_numGridPoints));
-        m_constraintsLowerBounds.residuals = DM::zeros(NR, m_numGridPoints);
-        m_constraintsUpperBounds.residuals = DM::zeros(NR, m_numGridPoints);
-    }
+    // Initialize memory for implicit multibody residuals.
+    // ---------------------------------------------------
+    m_constraints.multibody_residuals = MX(casadi::Sparsity::dense(
+            m_numMultibodyResiduals, m_numGridPoints));
+    m_constraintsLowerBounds.multibody_residuals =
+            DM::zeros(m_numMultibodyResiduals, m_numGridPoints);
+    m_constraintsUpperBounds.multibody_residuals =
+            DM::zeros(m_numMultibodyResiduals, m_numGridPoints);
+
+    // Initialize memory for implicit auxiliary residuals.
+    // ---------------------------------------------------
+    m_constraints.auxiliary_residuals = MX(casadi::Sparsity::dense(
+            m_numAuxiliaryResiduals, m_numGridPoints));
+    m_constraintsLowerBounds.auxiliary_residuals =
+            DM::zeros(m_numAuxiliaryResiduals, m_numGridPoints);
+    m_constraintsUpperBounds.auxiliary_residuals =
+            DM::zeros(m_numAuxiliaryResiduals, m_numGridPoints);
 
     // Initialize memory for kinematic constraints.
     // --------------------------------------------
@@ -336,10 +347,13 @@ void Transcription::transcribe() {
             const auto out =
                     evalOnTrajectory(m_problem.getImplicitMultibodySystem(),
                             inputs, m_daeIndices);
-            m_constraints.residuals(Slice(), m_daeIndices) = out.at(0);
+            m_constraints.multibody_residuals(Slice(), m_daeIndices) = 
+                    out.at(0);
             // zdot.
             m_xdot(Slice(NQ + NU, NS), m_daeIndices) = out.at(1);
-            m_constraints.kinematic = out.at(2);
+            m_constraints.auxiliary_residuals(Slice(), m_daeIndices) = 
+                    out.at(2);
+            m_constraints.kinematic = out.at(3);
         }
 
         // Points where we ignore algebraic constraints.
@@ -347,11 +361,13 @@ void Transcription::transcribe() {
             const auto out = evalOnTrajectory(
                     m_problem.getImplicitMultibodySystemIgnoringConstraints(),
                     inputs, m_daeIndicesIgnoringConstraints);
-            m_constraints.residuals(Slice(), m_daeIndicesIgnoringConstraints) =
-                    out.at(0);
+            m_constraints.multibody_residuals(Slice(), 
+                    m_daeIndicesIgnoringConstraints) = out.at(0);
             // zdot.
             m_xdot(Slice(NQ + NU, NS), m_daeIndicesIgnoringConstraints) =
                     out.at(1);
+            m_constraints.auxiliary_residuals(Slice(), 
+                    m_daeIndicesIgnoringConstraints) = out.at(2);
         }
 
     } else { // Explicit dynamics mode.
@@ -366,7 +382,9 @@ void Transcription::transcribe() {
                     m_problem.getMultibodySystem(), inputs, m_daeIndices);
             m_xdot(Slice(NQ, NQ + NU), m_daeIndices) = out.at(0);
             m_xdot(Slice(NQ + NU, NS), m_daeIndices) = out.at(1);
-            m_constraints.kinematic = out.at(2);
+            m_constraints.auxiliary_residuals(Slice(), m_daeIndices) =
+                    out.at(2);
+            m_constraints.kinematic = out.at(3);
         }
 
         // Points where we ignore algebraic constraints.
@@ -378,6 +396,8 @@ void Transcription::transcribe() {
                     out.at(0);
             m_xdot(Slice(NQ + NU, NS), m_daeIndicesIgnoringConstraints) =
                     out.at(1);
+            m_constraints.auxiliary_residuals(
+                    Slice(), m_daeIndicesIgnoringConstraints) = out.at(2);
         }
     }
 

@@ -18,6 +18,7 @@
 
 #include "MocoCasOCProblem.h"
 
+#include "../Components/DeGrooteFregly2016Muscle.h"
 #include "MocoCasADiSolver.h"
 
 using namespace OpenSim;
@@ -68,9 +69,23 @@ MocoCasOCProblem::MocoCasOCProblem(const MocoCasADiSolver& mocoCasADiSolver,
                 convertBounds(info.getInitialBounds()),
                 convertBounds(info.getFinalBounds()));
     }
-
-    // Auxiliary dynamics components.
-
+    // Add additional controls for implicit auxiliary dynamics equations.
+    if (problemRep.getNumAuxiliaryResidualEquations()) {
+        const auto& implicitMuscleRefs =
+                problemRep.getImplicitDynamicsMuscleReferences();
+        for (const auto& muscleRef : implicitMuscleRefs) {
+            const DeGrooteFregly2016Muscle& muscle = muscleRef.getRef();
+            const std::string controlName =
+                    muscle.getAbsolutePathString() +
+                    "/implicitderiv_normalized_tendon_force";
+            const auto& info = problemRep.getControlInfo(controlName);
+            addControl(controlName, convertBounds(info.getBounds()),
+                    convertBounds(info.getInitialBounds()),
+                    convertBounds(info.getFinalBounds()));
+        }
+    }
+    setNumAuxiliaryResidualEquations(
+            problemRep.getNumAuxiliaryResidualEquations());
 
     // Add any scalar constraints associated with kinematic constraints in
     // the model as path constraints in the problem.
@@ -167,8 +182,7 @@ MocoCasOCProblem::MocoCasOCProblem(const MocoCasADiSolver& mocoCasADiSolver,
 
                     // Add velocity correction variables if enforcing
                     // constraint equation derivatives.
-                    if (enforceConstraintDerivs &&
-                            !isPrescribedKinematics()) {
+                    if (enforceConstraintDerivs && !isPrescribedKinematics()) {
                         // TODO this naming convention assumes that the
                         // associated Lagrange multiplier name begins with
                         // "lambda", which may change in the future.
@@ -199,7 +213,7 @@ MocoCasOCProblem::MocoCasOCProblem(const MocoCasADiSolver& mocoCasADiSolver,
         // TODO: This behavior may be unexpected for users.
         const auto& kc = problemRep.getKinematicConstraint(kcNames.at(0));
         std::vector<MocoBounds> bounds = kc.getConstraintInfo().getBounds();
-        setKinematicConstraintBounds(convertBounds(bounds.at(0)));
+        setKinematicConstraintBounds(convertBounds(bounds.at(0)));   
     }
 
     for (const auto& paramName : problemRep.createParameterNames()) {

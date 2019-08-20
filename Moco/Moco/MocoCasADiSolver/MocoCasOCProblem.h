@@ -232,6 +232,20 @@ private:
         std::copy_n(zdot.getContiguousScalarData(), zdot.size(),
                 output.auxiliary_derivatives.ptr());
 
+        // Copy auxiliary residuals to output.
+        if (getNumAuxiliaryResidualEquations()) {
+            modelBase.realizeDynamics(simtkStateBase);
+            const auto& residualOutputs =
+                    mocoProblemRep->getImplicitTendonDynamicsResiduals();
+            SimTK::Vector auxResiduals((int)residualOutputs.size());
+            for (int i = 0; i < residualOutputs.size(); ++i) {
+                auxResiduals[i] =
+                        residualOutputs[i].getRef().getValue(simtkStateBase);
+            }
+            std::copy_n(auxResiduals.getContiguousScalarData(),
+                    auxResiduals.size(), output.auxiliary_residuals.ptr());
+        }
+
         m_jar->leave(std::move(mocoProblemRep));
     }
     void calcMultibodySystemImplicit(const ContinuousInput& input,
@@ -279,6 +293,20 @@ private:
         const auto& zdot = simtkStateDisabledConstraints.getZDot();
         std::copy_n(zdot.getContiguousScalarData(), zdot.size(),
                 output.auxiliary_derivatives.ptr());
+
+        // Copy auxiliary residuals to output.
+        if (getNumAuxiliaryResidualEquations()) {
+            modelBase.realizeDynamics(simtkStateBase);
+            const auto& residualOutputs =
+                    mocoProblemRep->getImplicitTendonDynamicsResiduals();
+            SimTK::Vector auxResiduals((int)residualOutputs.size(), 0.0);
+            for (int i = 0; i < residualOutputs.size(); ++i) {
+                auxResiduals[i] =
+                        residualOutputs[i].getRef().getValue(simtkStateBase);
+            }
+            std::copy_n(auxResiduals.getContiguousScalarData(),
+                    auxResiduals.size(), output.auxiliary_residuals.ptr());
+        }
 
         m_jar->leave(std::move(mocoProblemRep));
     }
@@ -465,14 +493,32 @@ private:
 
     void convertToSimTKState(const double& time, const casadi::DM& states,
             const casadi::DM& controls, const Model& model,
-            SimTK::State& simtkState, bool copyAuxStates) const {
+            const MocoProblemRep& mocoProblemRep, SimTK::State& simtkState,
+            bool copyAuxStates) const {
         convertToSimTKState(time, states, model, simtkState, copyAuxStates);
+        model.realizeVelocity(simtkState);
+
         auto& simtkControls = model.updControls(simtkState);
-        for (int ic = 0; ic < getNumControls(); ++ic) {
+        int numSimtkControls =
+                getNumControls() -
+                mocoProblemRep.getNumAuxiliaryResidualEquations();
+
+        for (int ic = 0; ic < numSimtkControls; ++ic) {
             simtkControls[m_modelControlIndices[ic]] = *(controls.ptr() + ic);
         }
         model.realizeVelocity(simtkState);
         model.setControls(simtkState, simtkControls);
+
+        const auto& implicitMuscleRefs =
+                mocoProblemRep.getImplicitDynamicsMuscleReferences();
+        int iaux = 0;
+        for (const auto& muscleRef : implicitMuscleRefs) {
+            const auto& muscle = muscleRef.getRef();
+            muscle.setDiscreteVariableValue(simtkState,
+                    "implicitderiv_normalized_tendon_force",
+                    *(controls.ptr() + numSimtkControls + iaux));
+            ++iaux;
+        }
     }
     void applyInput(const double& time, const casadi::DM& states,
             const casadi::DM& controls, const casadi::DM& multipliers,
@@ -505,10 +551,10 @@ private:
             accel.setUDot(simtkStateDisabledConstraints, udot);
         }
 
-        convertToSimTKState(
-                time, states, controls, modelBase, simtkStateBase, true);
+        convertToSimTKState(time, states, controls, modelBase, *mocoProblemRep,
+                simtkStateBase, true);
         convertToSimTKState(time, states, controls, modelDisabledConstraints,
-                simtkStateDisabledConstraints, true);
+                *mocoProblemRep, simtkStateDisabledConstraints, true);
         // If enabled constraints exist in the model, compute constraint forces
         // based on Lagrange multipliers. This also updates the associated
         // discrete variables in the state.

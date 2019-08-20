@@ -85,12 +85,12 @@ MocoSolution MocoStudy::solve() const {
     bool oldWarningFlag = Muscle::getPrintWarnings();
     Muscle::setPrintWarnings(false);
     MocoSolution solution;
-    try {
-        solution = get_solver().solve();
-    } catch (const Exception&) { 
-        Muscle::setPrintWarnings(oldWarningFlag);
-        throw;
-    }
+    //try {
+    solution = get_solver().solve();
+    //} catch (const Exception&) { 
+    //    Muscle::setPrintWarnings(oldWarningFlag);
+    //    throw;
+    //}
     Muscle::setPrintWarnings(oldWarningFlag);
 
     bool originallySealed = solution.isSealed();

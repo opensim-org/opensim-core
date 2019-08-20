@@ -57,16 +57,16 @@ TEST_CASE("DeGrooteFregly2016Muscle basics") {
             musc.set_optimal_force(1.5);
             REQUIRE_THROWS_AS(musc.finalizeFromProperties(), Exception);
         }
-        SECTION("default_normalized_fiber_length min") {
-            musc.set_default_normalized_fiber_length(0.1999);
-            REQUIRE_THROWS_AS(musc.finalizeFromProperties(),
-                    SimTK::Exception::ErrorCheck);
-        }
-        SECTION("default_normalized_fiber_length max") {
-            musc.set_default_normalized_fiber_length(1.800001);
-            REQUIRE_THROWS_AS(musc.finalizeFromProperties(),
-                    SimTK::Exception::ErrorCheck);
-        }
+        //SECTION("default_normalized_fiber_length min") {
+        //    musc.set_default_normalized_fiber_length(0.1999);
+        //    REQUIRE_THROWS_AS(musc.finalizeFromProperties(),
+        //            SimTK::Exception::ErrorCheck);
+        //}
+        //SECTION("default_normalized_fiber_length max") {
+        //    musc.set_default_normalized_fiber_length(1.800001);
+        //    REQUIRE_THROWS_AS(musc.finalizeFromProperties(),
+        //            SimTK::Exception::ErrorCheck);
+        //}
         SECTION("activation_time_constant") {
             musc.set_activation_time_constant(0);
             REQUIRE_THROWS_AS(musc.finalizeFromProperties(),
@@ -79,6 +79,11 @@ TEST_CASE("DeGrooteFregly2016Muscle basics") {
         }
         SECTION("default_activation") {
             musc.set_default_activation(-0.0001);
+            REQUIRE_THROWS_AS(musc.finalizeFromProperties(),
+                    SimTK::Exception::ErrorCheck);
+        }
+        SECTION("default_normalized_tendon_force") {
+            musc.set_default_normalized_tendon_force(5.00001);
             REQUIRE_THROWS_AS(musc.finalizeFromProperties(),
                     SimTK::Exception::ErrorCheck);
         }
@@ -552,8 +557,8 @@ Model createHangingMuscleModel(
 }
 
 TEMPLATE_TEST_CASE("Hanging muscle minimum time", "", MocoCasADiSolver) {
-    auto ignoreActivationDynamics = GENERATE(true, false);
-    auto ignoreTendonCompliance = GENERATE(true);
+    auto ignoreActivationDynamics = GENERATE(true);
+    auto ignoreTendonCompliance = GENERATE(false);
 
     CAPTURE(ignoreActivationDynamics);
     CAPTURE(ignoreTendonCompliance);
@@ -570,17 +575,6 @@ TEMPLATE_TEST_CASE("Hanging muscle minimum time", "", MocoCasADiSolver) {
 
     const auto* muscle = dynamic_cast<const Muscle*>(&actuator);
 
-    if (!ignoreTendonCompliance) {
-        model.setStateVariableValue(state, "joint/height/value", initHeight);
-        model.realizeVelocity(state);
-        muscle->setActivation(state, initActivation);
-        model.equilibrateMuscles(state);
-        std::cout << "Equilibrium norm fiber length: "
-                  << model.getStateVariableValue(
-                             state, "forceset/actuator/norm_fiber_length")
-                  << std::endl;
-    }
-
     // Minimum time trajectory optimization.
     // -------------------------------------
     const auto svn = model.getStateVariableNames();
@@ -593,33 +587,34 @@ TEMPLATE_TEST_CASE("Hanging muscle minimum time", "", MocoCasADiSolver) {
         problem.setStateInfo(
                 "/joint/height/value", {0.10, 0.16}, initHeight, finalHeight);
         problem.setStateInfo("/joint/height/speed", {-10, 10}, 0, 0);
-        // TODO initial fiber length?
-        // TODO how to enforce initial equilibrium with explicit dynamics?
         if (!ignoreTendonCompliance) {
-            // We would prefer to use a range of [0.2, 1.8] but then IPOPT
-            // tries very small fiber lengths that cause tendon stretch to
-            // be HUGE, causing insanely high tendon forces.
-            // TODO Try minimizing fiber velocity in the objective.
-            // Set the initial value to be the equilibrium value.
-            problem.setStateInfo("/forceset/actuator/norm_fiber_length",
-                    {0.8, 1.8},
-                    model.getStateVariableValue(
-                            state, "forceset/actuator/norm_fiber_length"));
+            problem.setStateInfo("/forceset/actuator/normalized_tendon_force",
+                    {0, 5});
+            auto* initial_equilibrium =
+                    problem.addGoal<MocoInitialVelocityEquilibriumGoal>();
+            initial_equilibrium->setName("initial_velocity_equilibrium");
         }
         // OpenSim might not allow activations of 0.
         if (!ignoreActivationDynamics) {
             problem.setStateInfo(
-                    "/forceset/actuator/activation", {0.01, 1}, initActivation);
+                    "/forceset/actuator/activation", {0.01, 1});
+            auto* initial_activation =
+                    problem.addGoal<MocoInitialActivationGoal>();
+            initial_activation->setName("initial_activation");
         }
         problem.setControlInfo("/forceset/actuator", {0.01, 1});
 
         problem.addGoal<MocoFinalTimeGoal>();
 
+        //auto* effort = problem.addGoal<MocoControlGoal>();
+        //effort->setName("effort");
+        //effort->setWeight(0.01);
+
         auto& solver = moco.initSolver<TestType>();
-        solver.set_num_mesh_points(40);
+        solver.set_num_mesh_points(50);
         solver.set_dynamics_mode("implicit");
-        solver.set_optim_convergence_tolerance(1e-4);
-        solver.set_optim_constraint_tolerance(1e-3);
+        //solver.set_optim_convergence_tolerance(1e-4);
+        //solver.set_optim_constraint_tolerance(1e-4);
         solver.set_transcription_scheme("trapezoidal");
 
         solutionTrajOpt = moco.solve();
@@ -639,7 +634,7 @@ TEMPLATE_TEST_CASE("Hanging muscle minimum time", "", MocoCasADiSolver) {
     // Perform time stepping forward simulation using optimized controls.
     // ------------------------------------------------------------------
     // See if we end up at the correct final state.
-    {
+    if (ignoreTendonCompliance) {
         const auto iterateSim =
                 simulateIterateWithTimeStepping(solutionTrajOpt, model);
         std::string iterateFilename =
@@ -670,25 +665,30 @@ TEMPLATE_TEST_CASE("Hanging muscle minimum time", "", MocoCasADiSolver) {
         const double slop = 0; // TODO 1e-4;
         problem.setTimeBounds(0 + slop, finalTime - slop);
         problem.setStateInfo("/joint/height/value",
-                {0.10, 0.16}); // , initHeight, finalHeight);
-        problem.setStateInfo("/joint/height/speed", {-10, 10}); // , 0, 0);
+                {0.10, 0.16}, initHeight, finalHeight);
+        problem.setStateInfo("/joint/height/speed", {-10, 10}, 0, 0);
         if (!ignoreTendonCompliance) {
-            // We would prefer to use a range of [0.2, 1.8] but then IPOPT
-            // tries very small fiber lengths that cause tendon stretch to
-            // be HUGE, causing insanely high tendon forces.
-            problem.setStateInfo("/forceset/actuator/norm_fiber_length",
-                    {0.8, 1.8},
-                    model.getStateVariableValue(
-                            state, "forceset/actuator/norm_fiber_length"));
+            problem.setStateInfo("/forceset/actuator/normalized_tendon_force",
+                    {0, 5});
+            auto* initial_equilibrium = 
+                    problem.addGoal<MocoInitialVelocityEquilibriumGoal>();
+            initial_equilibrium->setName("initial_velocity_equilibrium");
         }
         // OpenSim might not allow activations of 0.
         if (!ignoreActivationDynamics) {
-            problem.setStateInfo(
-                    "/forceset/actuator/activation", {0.01, 1}, initActivation);
+            problem.setStateInfo("/forceset/actuator/activation", {0.01, 1});
+            auto* initial_activation = 
+                    problem.addGoal<MocoInitialActivationGoal>();
+            initial_activation->setName("initial_activation");
         }
         problem.setControlInfo("/forceset/actuator", {0.01, 1});
 
         auto* tracking = problem.addGoal<MocoStateTrackingGoal>();
+        tracking->setName("tracking");
+
+        //auto* effort = problem.addGoal<MocoControlGoal>();
+        //effort->setName("effort");
+        //effort->setWeight(0.01);
 
         auto states = solutionTrajOpt.exportToStatesStorage().exportToTable();
         TimeSeriesTable ref(states.getIndependentColumn());
@@ -705,7 +705,7 @@ TEMPLATE_TEST_CASE("Hanging muscle minimum time", "", MocoCasADiSolver) {
         tracking->setAllowUnusedReferences(true);
 
         auto& solver = moco.initSolver<TestType>();
-        solver.set_num_mesh_points(40);
+        solver.set_num_mesh_points(50);
         solver.set_dynamics_mode("implicit");
         solver.set_transcription_scheme("trapezoidal");
 
@@ -720,6 +720,4 @@ TEMPLATE_TEST_CASE("Hanging muscle minimum time", "", MocoCasADiSolver) {
                 solutionTrack.compareContinuousVariablesRMS(solutionTrajOpt);
         CHECK(error < 0.015);
     }
-    // TODO: Support constraining initial fiber lengths to their equilibrium
-    // lengths (in explicit mode).
 }

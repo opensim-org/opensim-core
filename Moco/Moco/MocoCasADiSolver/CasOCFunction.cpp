@@ -206,6 +206,9 @@ casadi::Sparsity MultibodySystemExplicit<CalcKCErrors>::get_sparsity_out(
         return casadi::Sparsity::dense(
                 m_casProblem->getNumAuxiliaryStates(), 1);
     } else if (i == 2) {
+        return casadi::Sparsity::dense(
+                m_casProblem->getNumAuxiliaryResidualEquations(), 1);
+    } else if (i == 3) {
         if (CalcKCErrors) {
             int numRows = m_casProblem->getNumKinematicConstraintEquations();
             return casadi::Sparsity::dense(numRows, 1);
@@ -226,7 +229,8 @@ VectorDM MultibodySystemExplicit<CalcKCErrors>::eval(
     for (casadi_int i = 0; i < n_out(); ++i) {
         out[i] = casadi::DM(sparsity_out(i));
     }
-    Problem::MultibodySystemExplicitOutput output{out[0], out[1], out[2]};
+    Problem::MultibodySystemExplicitOutput output{out[0], out[1], out[2],
+            out[3]};
     m_casProblem->calcMultibodySystemExplicit(input, CalcKCErrors, output);
     return out;
 }
@@ -287,6 +291,9 @@ casadi::Sparsity MultibodySystemImplicit<CalcKCErrors>::get_sparsity_out(
         return casadi::Sparsity::dense(
                 m_casProblem->getNumAuxiliaryStates(), 1);
     } else if (i == 2) {
+        return casadi::Sparsity::dense(
+                m_casProblem->getNumAuxiliaryResidualEquations(), 1);
+    } else if (i == 3) {
         if (CalcKCErrors) {
             int numRows = m_casProblem->getNumKinematicConstraintEquations();
             return casadi::Sparsity::dense(numRows, 1);
@@ -308,7 +315,8 @@ VectorDM MultibodySystemImplicit<CalcKCErrors>::eval(
         out[i] = casadi::DM(sparsity_out(i));
     }
 
-    Problem::MultibodySystemImplicitOutput output{out[0], out[1], out[2]};
+    Problem::MultibodySystemImplicitOutput output{out[0], out[1], out[2], 
+            out[3]};
     m_casProblem->calcMultibodySystemImplicit(input, CalcKCErrors, output);
     return out;
 }

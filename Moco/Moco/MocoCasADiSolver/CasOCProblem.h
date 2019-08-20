@@ -154,7 +154,7 @@ public:
     struct MultibodySystemExplicitOutput {
         casadi::DM& multibody_derivatives;
         casadi::DM& auxiliary_derivatives;
-        casadi::DM auxiliary_residuals;
+        casadi::DM& auxiliary_residuals;
         casadi::DM& kinematic_constraint_errors;
     };
     struct MultibodySystemImplicitOutput {
@@ -294,6 +294,9 @@ protected:
                 dynamicsMode != "explicit" && dynamicsMode != "implicit",
                 OpenSim::Exception, "Invalid dynamics mode.");
         m_dynamicsMode = std::move(dynamicsMode);
+    }
+    void setNumAuxiliaryResidualEquations(int numAuxResiduals) {
+        m_numAuxiliaryResiduals = numAuxResiduals;
     }
 
 public:
@@ -487,6 +490,9 @@ public:
         }
         return getNumSpeeds();
     }
+    int getNumAuxiliaryResidualEquations() const {
+        return m_numAuxiliaryResiduals;
+    }
     int getNumKinematicConstraintEquations() const {
         // If all kinematics are prescribed, we assume that the prescribed
         // kinematics obey any kinematic constraints. Therefore, the kinematic
@@ -590,6 +596,7 @@ private:
     int m_numCoordinates = 0;
     int m_numSpeeds = 0;
     int m_numAuxiliaryStates = 0;
+    int m_numAuxiliaryResiduals = 0;
     int m_numHolonomicConstraintEquations = 0;
     int m_numNonHolonomicConstraintEquations = 0;
     int m_numAccelerationConstraintEquations = 0;

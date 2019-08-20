@@ -99,7 +99,8 @@ protected:
     template <typename T>
     struct Constraints {
         T defects;
-        T residuals;
+        T multibody_residuals;
+        T auxiliary_residuals;
         T kinematic;
         std::vector<T> endpoint;
         std::vector<T> path;
@@ -116,7 +117,8 @@ protected:
     int m_numMeshIntervals = -1;
     int m_numPointsIgnoringConstraints = -1;
     int m_numDefectsPerMeshInterval = -1;
-    int m_numResiduals = -1;
+    int m_numMultibodyResiduals = -1;
+    int m_numAuxiliaryResiduals = -1;
     int m_numConstraints = -1;
     casadi::DM m_grid;
     casadi::DM m_pointsForInterpControls;
@@ -286,7 +288,8 @@ private:
             }
             if (imesh < m_numMeshIntervals) {
                 while (m_grid(igrid).scalar() < m_solver.getMesh()[imesh + 1]) {
-                    copyColumn(constraints.residuals, igrid);
+                    copyColumn(constraints.multibody_residuals, igrid);
+                    copyColumn(constraints.auxiliary_residuals, igrid);
                     ++igrid;
                 }
                 copyColumn(constraints.defects, imesh);
@@ -299,7 +302,8 @@ private:
             }
         }
         // The loop above does not handle the residual at the final grid point.
-        copyColumn(constraints.residuals, m_numGridPoints - 1);
+        copyColumn(constraints.multibody_residuals, m_numGridPoints - 1);
+        copyColumn(constraints.auxiliary_residuals, m_numGridPoints - 1);
 
         OPENSIM_THROW_IF(iflat != m_numConstraints, OpenSim::Exception,
                 "Internal error.");
@@ -317,7 +321,10 @@ private:
         };
         Constraints<T> out;
         out.defects = init(m_numDefectsPerMeshInterval, m_numMeshPoints - 1);
-        out.residuals = init(m_numResiduals, m_numGridPoints);
+        out.multibody_residuals = init(m_numMultibodyResiduals, 
+                m_numGridPoints);
+        out.auxiliary_residuals = init(m_numAuxiliaryResiduals,
+                m_numGridPoints);
         out.kinematic = init(m_problem.getNumKinematicConstraintEquations(),
                 m_numMeshPoints);
         out.endpoint.resize(m_problem.getEndpointConstraintInfos().size());
@@ -355,7 +362,8 @@ private:
             for (auto& path : out.path) { copyColumn(path, imesh); }
             if (imesh < m_numMeshIntervals) {
                 while (m_grid(igrid).scalar() < m_solver.getMesh()[imesh + 1]) {
-                    copyColumn(out.residuals, igrid);
+                    copyColumn(out.multibody_residuals, igrid);
+                    copyColumn(out.auxiliary_residuals, igrid);
                     ++igrid;
                 }
                 copyColumn(out.defects, imesh);
@@ -367,8 +375,9 @@ private:
                 }
             }
         }
-        // The loop above does not handle the residual at the final grid point.
-        copyColumn(out.residuals, m_numGridPoints - 1);
+        // The loop above does not handle residuals at the final grid point.
+        copyColumn(out.multibody_residuals, m_numGridPoints - 1);
+        copyColumn(out.auxiliary_residuals, m_numGridPoints - 1);
 
         OPENSIM_THROW_IF(iflat != m_numConstraints, OpenSim::Exception,
                 "Internal error.");

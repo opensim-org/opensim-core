@@ -25,6 +25,7 @@
 #include "osimMocoDLL.h"
 
 #include <OpenSim/Simulation/Model/Model.h>
+#include "Components/DeGrooteFregly2016Muscle.h"
 
 namespace OpenSim {
 
@@ -213,6 +214,13 @@ public:
                 "available until after initialization.");
         return m_num_kinematic_constraint_equations;
     }
+    /// Get the number of auxiliary residual equations in the MocoProblem.
+    int getNumAuxiliaryResidualEquations() const {
+        OPENSIM_THROW_IF(m_num_auxiliary_residual_equations == -1, Exception,
+                "The number of auxiliary residual equations is not available "
+                "until after initialization.");
+        return m_num_auxiliary_residual_equations;
+    }
 
     /// Print a description of this problem, including costs and variable
     /// bounds. By default, the description is printed to the console (cout),
@@ -275,6 +283,20 @@ public:
     /// (see getModelDisabledConstraints()).
     void applyParametersToModelProperties(const SimTK::Vector& parameterValues,
             bool initSystemAndDisableConstraints = false) const;
+
+    /// Get a vector of reference pointers to model outputs that return residual
+    /// values for the muscle-tendon equilibrium equation in implicit tendon
+    /// contraction dynamics.
+    const std::vector<SimTK::ReferencePtr<const Output<double>>>&
+    getImplicitTendonDynamicsResiduals() const {
+        return m_implicit_tendon_dynamics_residuals;
+    }
+
+    /// TODO
+    const std::vector<SimTK::ReferencePtr<const DeGrooteFregly2016Muscle>>&
+    getImplicitDynamicsMuscleReferences() const {
+        return m_implicit_dynamics_muscle_refs;
+    }
     /// @}
 
 private:
@@ -311,6 +333,12 @@ private:
     std::vector<std::string> m_kinematic_constraint_eq_names_with_derivatives;
     std::vector<std::string>
             m_kinematic_constraint_eq_names_without_derivatives;
+
+    int m_num_auxiliary_residual_equations = -1;
+    std::vector<SimTK::ReferencePtr<const Output<double>>> 
+            m_implicit_tendon_dynamics_residuals;
+    std::vector<SimTK::ReferencePtr<const DeGrooteFregly2016Muscle>>
+            m_implicit_dynamics_muscle_refs;
 };
 
 } // namespace OpenSim
