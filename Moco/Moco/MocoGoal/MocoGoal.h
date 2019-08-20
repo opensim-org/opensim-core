@@ -318,7 +318,7 @@ protected:
         values[0] = get_desired_average_speed() - (displacement / duration);
         if (getModeIsCost()) { values[0] = SimTK::square(values[0]); }
     }
-    void initializeOnModelImpl(const Model& model) const override {
+    void initializeOnModelImpl(const Model&) const override {
         setNumIntegralsAndOutputs(0, 1);
     }
 
