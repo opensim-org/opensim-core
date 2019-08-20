@@ -42,6 +42,7 @@ SmoothSphereHalfSpaceForce::SmoothSphereHalfSpaceForce(const std::string& name,
         double contactSphereRadius, const Frame& contactHalfSpaceBodyFrame,
         SimTK::Vec3 contactHalfSpaceLocation,
         SimTK::Vec3 contactHalfSpaceOrientation) {
+    this->setName(name);
     this->connectSocket_sphere_frame(contactSphereBodyFrame);
     this->connectSocket_half_space_frame(contactHalfSpaceBodyFrame);
 
