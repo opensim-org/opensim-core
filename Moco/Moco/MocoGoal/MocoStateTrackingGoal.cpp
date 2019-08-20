@@ -65,7 +65,8 @@ void MocoStateTrackingGoal::initializeOnModelImpl(const Model& model) const {
         }
         if (get_scale_weights_with_range()) {
             auto refValue = tableToUse.getDependentColumn(refName);
-            double refRange = SimTK::max(refValue) - SimTK::min(refValue);
+            double refRange =
+                    std::abs(SimTK::max(refValue) - SimTK::min(refValue));
             refWeight *= 1.0 / refRange;
         }
         m_state_weights.push_back(refWeight);

@@ -8,6 +8,7 @@
       <tab type="user" url="@ref mocoinverse" visible="yes" title="MocoInverse" intro="" />
       <tab type="user" url="@ref mocostudy" visible="yes" title="MocoStudy" intro="" />
       <tab type="user" url="@ref mocogoal" visible="yes" title="MocoGoals" intro="" />
+      <tab type="user" url="@ref faq" visible="yes" title="FAQ" intro="" />
     </tab>
     <tab type="user" url="@ref mocotheoryguide" visible="yes" title="Theory Guide" intro=""/>
     <tab type="user" url="@ref mocodevguide" visible="yes" title="Dev Guide" intro=""/>
