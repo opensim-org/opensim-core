@@ -178,7 +178,11 @@ public:
 read and writeFile respectively. The read method is implemented in the base class and it
 calls the virtual extendRead method implemented by format specific subclasses. 
 Typically you don't need to call read explicitly if reading one DataTable from file, instead use 
-a constructor of the table from the specific file. e.g. TimeSeriesTableVec3 table(filename). */
+a constructor of the table from the specific file. e.g. 
+\code{.cpp}
+TimeSeriesTableVec3 table(filename);
+ \endcode
+ */
 class OSIMCOMMON_API FileAdapter : public DataAdapter {
 public:
     FileAdapter()                              = default;
