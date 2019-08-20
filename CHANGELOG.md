@@ -1,3 +1,6 @@
+- 2019-08-20: Users now interface with num_mesh_intervals instead of
+              num_mesh_points when setting times to sample.
+
 - 2019-07-18: Periodicity of the states and/or controls can be enforced with
               MocoPeriodicityGoals that impose equality of the initial and final
               state/control values.
@@ -19,4 +22,3 @@
               metabolic cost of transport, which depends on both the integral of
               metabolic rate and the difference between final and initial states
               (for distance traveled).
-
