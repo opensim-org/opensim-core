@@ -4,12 +4,12 @@ import org.opensim.modeling.*;
 class TestC3DFileAdapter {
     public static void test_C3DFileAdapter() {
         C3DFileAdapter c3dAdapter = new C3DFileAdapter();
-        StdMapStringTimeSeriesTableVec3 tables =
-            c3dAdapter.readFile("walking5.c3d", 
-            C3DFileAdapter.ForceLocation.CenterOfPressure);
+        c3dAdapter.setLocationForForceExpression(C3DFileAdapter.ForceLocation.CenterOfPressure);
+        StdMapStringAbstractDataTable tables =
+            c3dAdapter.read("walking5.c3d");
 
         // Marker data read from C3D.
-        TimeSeriesTableVec3 markerTable = tables.get("markers");
+        TimeSeriesTableVec3 markerTable = c3dAdapter.getMarkersTable(tables);
         assert markerTable.getNumRows()    == 1103;
         assert markerTable.getNumColumns() == 40;
         assert markerTable.
@@ -25,12 +25,12 @@ class TestC3DFileAdapter {
         String markerFileName = new String("markers.mot");
         STOFileAdapter stoAdapter = new STOFileAdapter();
         stoAdapter.write(markerTableFlat, markerFileName);
-        TimeSeriesTable markerTableDouble = stoAdapter.readFile(markerFileName);
+        TimeSeriesTable markerTableDouble = new TimeSeriesTable(markerFileName);
         assert markerTableDouble.getNumRows()    == 1103;
         assert markerTableDouble.getNumColumns() == 40 * 3;
 
         // Forces data read from C3D.
-        TimeSeriesTableVec3 forceTable = tables.get("forces");
+        TimeSeriesTableVec3 forceTable = c3dAdapter.getForcesTable(tables);
         assert forceTable.getNumRows()    == 8824;
         assert forceTable.getNumColumns() == 6;
         assert forceTable.
@@ -83,10 +83,10 @@ class TestC3DFileAdapter {
         assert forceTableFlat.getNumColumns() == 6 * 3;
 
         // Make sure flattenned forces data is writable/readable to/from file.
-        String forceFileName = new String("forces.mot");
+        String forceFileName = "forces.mot";
         stoAdapter = new STOFileAdapter();
         stoAdapter.write(forceTableFlat, forceFileName);
-        TimeSeriesTable forceTableDouble = stoAdapter.readFile(forceFileName);
+        TimeSeriesTable forceTableDouble = new TimeSeriesTable(forceFileName);
         assert forceTableDouble.getNumRows()    == 8824;
         assert forceTableDouble.getNumColumns() == 6 * 3;
 

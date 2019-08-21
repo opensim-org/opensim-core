@@ -204,7 +204,8 @@ Storage::Storage(const string &fileName, bool readHeadersOnly) :
             OPENSIM_THROW_IF(readHeadersOnly, Exception,
                 "Cannot read headers only if not a STO file or its "
                 "version is greater than 1.");
-            FileAdapter::OutputTables tables = FileAdapter::readFile(fileName);
+            auto dataAdapter = FileAdapter::createAdapterFromExtension(fileName);
+            FileAdapter::OutputTables tables = dataAdapter->read(fileName);
             if (tables.size() > 1) {
                 cout << "Storage: cannot read data files with multiple tables. "
                     << "Only the first table '" << tables.begin()->first << "' will "
