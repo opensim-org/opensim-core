@@ -331,7 +331,7 @@ private:
         m_jar->leave(std::move(mocoProblemRep));
     }
     void calcCost(int index, const CostInput& input,
-            double& cost) const override {
+            casadi::DM& cost) const override {
         auto mocoProblemRep = m_jar->take();
 
         applyInput(input.initial_time, input.initial_states,
@@ -350,8 +350,41 @@ private:
 
         // Compute the cost for this cost term.
         const auto& mocoCost = mocoProblemRep->getCostByIndex(index);
-        cost = mocoCost.calcCost({simtkStateDisabledConstraintsInitial,
-                simtkStateDisabledConstraintsFinal, input.integral});
+        SimTK::Vector simtkCost((int)cost.rows(), cost.ptr(), true);
+        mocoCost.calcGoal(
+                {simtkStateDisabledConstraintsInitial,
+                        simtkStateDisabledConstraintsFinal, input.integral},
+                simtkCost);
+
+        m_jar->leave(std::move(mocoProblemRep));
+    }
+
+    void calcEndpointConstraint(int index, const CostInput& input,
+            casadi::DM& values) const override {
+        auto mocoProblemRep = m_jar->take();
+
+        applyInput(input.initial_time, input.initial_states,
+                input.initial_controls, input.initial_multipliers,
+                input.initial_derivatives, input.parameters, mocoProblemRep, 0);
+
+        auto& simtkStateDisabledConstraintsInitial =
+                mocoProblemRep->updStateDisabledConstraints(0);
+
+        applyInput(input.final_time, input.final_states, input.final_controls,
+                input.final_multipliers, input.final_derivatives,
+                input.parameters, mocoProblemRep, 1);
+
+        auto& simtkStateDisabledConstraintsFinal =
+                mocoProblemRep->updStateDisabledConstraints(1);
+
+        // Compute the cost for this cost term.
+        const auto& mocoEC =
+                mocoProblemRep->getEndpointConstraintByIndex(index);
+        SimTK::Vector simtkValues((int)values.rows(), values.ptr(), true);
+        mocoEC.calcGoal(
+                {simtkStateDisabledConstraintsInitial,
+                        simtkStateDisabledConstraintsFinal, input.integral},
+                simtkValues);
 
         m_jar->leave(std::move(mocoProblemRep));
     }

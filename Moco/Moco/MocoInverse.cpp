@@ -21,8 +21,9 @@
 #include "Components/ModelFactory.h"
 #include "Components/PositionMotion.h"
 #include "MocoCasADiSolver/MocoCasADiSolver.h"
-#include "MocoCost/MocoControlCost.h"
-#include "MocoCost/MocoSumSquaredStateCost.h"
+#include "MocoGoal/MocoControlGoal.h"
+#include "MocoGoal/MocoInitialActivationGoal.h"
+#include "MocoGoal/MocoSumSquaredStateGoal.h"
 #include "MocoProblem.h"
 #include "MocoStudy.h"
 #include "MocoUtilities.h"
@@ -44,22 +45,13 @@ void MocoInverse::constructProperties() {
 MocoStudy MocoInverse::initialize() const { return initializeInternal().first; }
 
 std::pair<MocoStudy, TimeSeriesTable> MocoInverse::initializeInternal() const {
-    using SimTK::Pathname;
-    // Get the directory containing the setup file.
-    std::string setupDir;
-    {
-        bool dontApplySearchPath;
-        std::string fileName, extension;
-        Pathname::deconstructPathname(getDocumentFileName(),
-                dontApplySearchPath, setupDir, fileName, extension);
-    }
 
     // Process inputs.
     // ----------------
-    Model model = get_model().process();
+    Model model = get_model().process(getDocumentDirectory());
     model.initSystem();
 
-    TimeSeriesTable kinematics = get_kinematics().process(setupDir, &model);
+    TimeSeriesTable kinematics = get_kinematics().process(getDocumentDirectory(), &model);
 
     // Prescribe the kinematics.
     // -------------------------
@@ -94,9 +86,13 @@ std::pair<MocoStudy, TimeSeriesTable> MocoInverse::initializeInternal() const {
     problem.setTimeBounds(timeInfo.initial, timeInfo.final);
 
     // TODO: Allow users to specify costs flexibly.
-    problem.addCost<MocoControlCost>("excitation_effort");
+    problem.addGoal<MocoControlGoal>("excitation_effort");
+
+    // Prevent "free" activation at the beginning of the motion.
+    problem.addGoal<MocoInitialActivationGoal>("initial_activation");
+
     if (get_minimize_sum_squared_states()) {
-        problem.addCost<MocoSumSquaredStateCost>("activation_effort");
+        problem.addGoal<MocoSumSquaredStateGoal>("activation_effort");
     }
 
     // Configure the MocoSolver.

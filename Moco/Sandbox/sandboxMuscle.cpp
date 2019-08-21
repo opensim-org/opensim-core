@@ -333,7 +333,7 @@ void testHangingMuscleMinimumTime(
         }
         problem.setControlInfo("/forceset/actuator", {0.01, 1});
 
-        problem.addCost<MocoFinalTimeCost>();
+        problem.addGoal<MocoFinalTimeGoal>();
 
         auto& solver = moco.initSolver<SolverType>();
         solver.set_num_mesh_points(20);
@@ -414,7 +414,7 @@ void testHangingMuscleMinimumTime(
         }
         problem.setControlInfo("/forceset/actuator", {0.01, 1});
 
-        auto* tracking = problem.addCost<MocoStateTrackingCost>();
+        auto* tracking = problem.addGoal<MocoStateTrackingCost>();
 
         auto states = solutionTrajOpt.exportToStatesStorage().exportToTable();
         TimeSeriesTable ref(states.getIndependentColumn());

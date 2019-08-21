@@ -22,47 +22,6 @@
 using namespace OpenSim;
 
 // ============================================================================
-// MocoConstraintInfo
-// ============================================================================
-
-MocoConstraintInfo::MocoConstraintInfo() {
-    constructProperties();
-    if (getName().empty()) setName("path_constraint");
-}
-
-std::vector<std::string> MocoConstraintInfo::getConstraintLabels() const {
-    std::vector<std::string> labels(getNumEquations());
-    for (int i = 0; i < getNumEquations(); ++i) {
-        if (getProperty_suffixes().empty()) {
-            labels[i] = getName() + "_" + std::to_string(i);
-        }
-        else {
-            labels[i] = getName() + "_" + get_suffixes(i);
-        }
-    }
-    return labels;
-}
-
-void MocoConstraintInfo::printDescription(std::ostream& stream) const {
-    stream << getName() << ". " << getConcreteClassName() <<
-        ". number of scalar equations: " << getNumEquations();
-
-    const std::vector<MocoBounds> bounds = getBounds();
-    stream << ". bounds: ";
-    for (int i = 0; i < (int)bounds.size(); ++i) {
-        bounds[i].printDescription(stream);
-        if (i < (int)bounds.size() - 1)
-            stream << ", ";
-    }
-    stream << std::endl;
-}
-
-void MocoConstraintInfo::constructProperties() {
-    constructProperty_bounds();
-    constructProperty_suffixes();
-}
-
-// ============================================================================
 // MocoKinematicConstraint
 // ============================================================================
 
@@ -180,7 +139,7 @@ void MocoPathConstraint::initializeOnModel(const Model& model,
     m_model.reset(&model);
     initializeOnModelImpl(model, problemInfo);
 
-    OPENSIM_THROW_IF_FRMOBJ(get_MocoConstraintInfo().getNumEquations() <  0,
+    OPENSIM_THROW_IF_FRMOBJ(get_MocoConstraintInfo().getNumEquations() < 0,
         Exception, "Number of equations cannot be negative.");
 
     OPENSIM_THROW_IF_FRMOBJ(pathConstraintIndex < 0, Exception, "Invalid "

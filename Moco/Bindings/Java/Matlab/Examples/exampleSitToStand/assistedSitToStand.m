@@ -147,7 +147,7 @@ if nargin > 1
             if (~strcmp(coord, 'hip_flexion_r') && ...
                     ~strcmp(coord, 'knee_angle_r') && ...
                     ~strcmp(coord, 'ankle_angle_r'))
-                error("Coordinate name is incorrect.");
+                error('Coordinate name is incorrect.');
             end
         end
         it.next();

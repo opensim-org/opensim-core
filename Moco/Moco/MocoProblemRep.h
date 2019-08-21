@@ -19,7 +19,7 @@
  * -------------------------------------------------------------------------- */
 
 #include "MocoConstraint.h"
-#include "MocoCost/MocoCost.h"
+#include "MocoGoal/MocoGoal.h"
 #include "MocoParameter.h"
 #include "MocoVariableInfo.h"
 #include "osimMocoDLL.h"
@@ -59,7 +59,7 @@ public:
     const std::string& getName() const;
 
     /// Get a reference to the copy of the model being used by this
-    /// MocoProblemRep. This model is *not* the model given to MocoCost or
+    /// MocoProblemRep. This model is *not* the model given to MocoGoal or
     /// MocoPathConstraint, but can be used within solvers to compute constraint
     /// forces and constraint errors (see getModelDisabledConstraints() for more
     /// details). Any parameter updates via a MocoParameter added to the problem
@@ -75,7 +75,7 @@ public:
     /// forces. You should use this model to compute accelerations via
     /// getModelDisabledConstraints().realizeAccleration(state), making sure to
     /// add any constraint forces to the model preceeding the realization. This
-    /// model is the same instance as that given to MocoCost and
+    /// model is the same instance as that given to MocoGoal and
     /// MocoPathConstraint, ensuring that realizing to Stage::Acceleration
     /// in these classes produces the same accelerations computed by the solver.
     /// Any parameter updates via a MocoParameter added to the problem
@@ -105,6 +105,15 @@ public:
     int getNumStates() const { return (int)m_state_infos.size(); }
     int getNumControls() const { return (int)m_control_infos.size(); }
     int getNumParameters() const { return (int)m_parameters.size(); }
+    /// Get the number of goals in cost mode.
+    int getNumCosts() const { return (int)m_costs.size(); }
+    /// Get the number of goals in endpoint constraint mode.
+    int getNumEndpointConstraints() const {
+        return (int)m_endpoint_constraints.size();
+    }
+    int getNumKinematicConstraints() const {
+        return (int)m_kinematic_constraints.size();
+    }
     /// Does the model contain a PositionMotion to prescribe all generalized
     /// coordinates, speeds, and accelerations?
     bool isPrescribedKinematics() const { return m_prescribedKinematics; }
@@ -118,8 +127,10 @@ public:
     std::vector<std::string> createControlInfoNames() const;
     /// Get the names of all the parameters.
     std::vector<std::string> createParameterNames() const;
-    /// Get the names of all the costs.
+    /// Get the names of all the goals in cost mode.
     std::vector<std::string> createCostNames() const;
+    /// Get the names of all the goals in endpoint constraint mode.
+    std::vector<std::string> createEndpointConstraintNames() const;
     /// Get the names of all the MocoPathConstraint%s.
     std::vector<std::string> createPathConstraintNames() const;
     /// Get the names of all the Lagrange multiplier infos.
@@ -155,11 +166,18 @@ public:
     /// See MocoPhase::setControlInfo().
     const MocoVariableInfo& getControlInfo(const std::string& name) const;
     const MocoParameter& getParameter(const std::string& name) const;
-    /// Get a MocoCost by name.
-    const MocoCost& getCost(const std::string& name) const;
+    /// Get a cost by name. This returns a MocoGoal in cost mode.
+    const MocoGoal& getCost(const std::string& name) const;
     /// Get a cost by index. The order is the same as in getCostNames().
     /// Note: this does not perform a bounds check.
-    const MocoCost& getCostByIndex(int index) const;
+    const MocoGoal& getCostByIndex(int index) const;
+    /// Get an endpoint constraint by name. This returns a MocoGoal in endpoint
+    /// constraint mode.
+    const MocoGoal& getEndpointConstraint(const std::string& name) const;
+    /// Get an endpoint constraint by index.
+    /// The order is the same as in getEndpointConstraintNames().
+    /// Note: this does not perform a bounds check.
+    const MocoGoal& getEndpointConstraintByIndex(int index) const;
     /// Get a MocoPathConstraint. Note: this does not
     /// include MocoKinematicConstraints, use getKinematicConstraint() instead.
     const MocoPathConstraint& getPathConstraint(const std::string& name) const;
@@ -283,14 +301,16 @@ private:
     std::unordered_map<std::string, MocoVariableInfo> m_control_infos;
 
     std::vector<std::unique_ptr<MocoParameter>> m_parameters;
-    std::vector<std::unique_ptr<MocoCost>> m_costs;
+    std::vector<std::unique_ptr<MocoGoal>> m_costs;
+    std::vector<std::unique_ptr<MocoGoal>> m_endpoint_constraints;
     std::vector<std::unique_ptr<MocoPathConstraint>> m_path_constraints;
     int m_num_path_constraint_equations = -1;
     int m_num_kinematic_constraint_equations = -1;
     std::vector<MocoKinematicConstraint> m_kinematic_constraints;
     std::map<std::string, std::vector<MocoVariableInfo>> m_multiplier_infos_map;
     std::vector<std::string> m_kinematic_constraint_eq_names_with_derivatives;
-    std::vector<std::string> m_kinematic_constraint_eq_names_without_derivatives;
+    std::vector<std::string>
+            m_kinematic_constraint_eq_names_without_derivatives;
 };
 
 } // namespace OpenSim

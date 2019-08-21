@@ -28,7 +28,7 @@ MocoAddTest(NAME testTableProcessor)
 
 MocoAddTest(NAME testModelProcessor)
 
-MocoAddTest(NAME testMocoCosts)
+MocoAddTest(NAME testMocoGoals)
 
 MocoAddTest(NAME testMocoParameters)
 

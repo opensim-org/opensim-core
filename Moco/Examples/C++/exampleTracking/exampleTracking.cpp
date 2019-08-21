@@ -119,7 +119,7 @@ int main() {
 
     // Cost.
     // -----
-    MocoStateTrackingCost tracking;
+    auto* tracking = problem.addGoal<MocoStateTrackingGoal>();
     TimeSeriesTable ref;
     ref.setColumnLabels({"/jointset/j0/q0/value", "/jointset/j1/q1/value"});
     for (double time = -0.05; time < finalTime + 0.05; time += 0.01) {
@@ -129,7 +129,7 @@ int main() {
         });
     }
 
-    tracking.setReference(ref);
+    tracking->setReference(ref);
 
     // Configure the solver.
     // =====================

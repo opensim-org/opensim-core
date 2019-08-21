@@ -69,7 +69,7 @@ problem.setTimeBounds(0, 1.25);
 % Create a marker tracking cost term. This term will compute the squared 
 % difference between the model markers and the experimental markers, 
 % integrated over the phase.
-markerTrackingCost = MocoMarkerTrackingCost();
+markerTrackingCost = MocoMarkerTrackingGoal();
 markerTrackingCost.setName('marker_tracking');
 
 % Create a set of marker weights to define the relative importance for
@@ -100,13 +100,13 @@ markerTrackingCost.setMarkersReference(markersRef);
 markerTrackingCost.setAllowUnusedReferences(true);
 
 % Add the tracking cost to the problem.
-problem.addCost(markerTrackingCost);
+problem.addGoal(markerTrackingCost);
 
 % Add a low-weighted control effort cost to reduce oscillations in the 
 % actuator controls.
-controlCost = MocoControlCost();
+controlCost = MocoControlGoal();
 controlCost.set_weight(0.001);
-problem.addCost(controlCost);
+problem.addGoal(controlCost);
 
 % Configure the solver.
 % =====================

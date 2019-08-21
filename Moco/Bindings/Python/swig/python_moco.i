@@ -396,7 +396,7 @@ using namespace SimTK;
 %pythonappend OpenSim::MocoPhase::addParameter %{
     ptr._markAdopted()
 %}
-%pythonappend OpenSim::MocoPhase::addCost %{
+%pythonappend OpenSim::MocoPhase::addGoal %{
     ptr._markAdopted()
 %}
 %pythonappend OpenSim::MocoPhase::addPathConstraint %{
@@ -408,7 +408,7 @@ using namespace SimTK;
 %pythonappend OpenSim::MocoProblem::addParameter %{
     ptr._markAdopted()
 %}
-%pythonappend OpenSim::MocoProblem::addCost %{
+%pythonappend OpenSim::MocoProblem::addGoal %{
     ptr._markAdopted()
 %}
 %pythonappend OpenSim::MocoProblem::addPathConstraint %{

@@ -377,7 +377,7 @@
 						<groups />
 					</WrapObjectSet>
 					<!--The mass of the body (kg)-->
-					<mass>13.2954396544328</mass>
+					<mass>17.2954396544328</mass>
 					<!--The location (Vec3) of the mass center in the body frame.-->
 					<mass_center>-0.087995500000000004 0 0</mass_center>
 					<!--The elements of the inertia tensor (Vec6) as [Ixx Iyy Izz Ixy Ixz Iyz] measured about the mass_center and not the body origin.-->
@@ -1794,7 +1794,7 @@
 						<groups />
 					</WrapObjectSet>
 					<!--The mass of the body (kg)-->
-					<mass>30.285424253511501</mass>
+					<mass>34.285424253511501</mass>
 					<!--The location (Vec3) of the mass center in the body frame.-->
 					<mass_center>-0.014706800000000001 0.37689899999999998 -0.00230561</mass_center>
 					<!--The elements of the inertia tensor (Vec6) as [Ixx Iyy Izz Ixy Ixz Iyz] measured about the mass_center and not the body origin.-->

@@ -64,10 +64,12 @@ private:
 ///
 /// Cost
 /// ----
-/// By default, MocoInverse minimizes the sum of squared controls. To customize
-/// the cost, invoke initialize(), add costs manually, and solve the problem
-/// using the solver directly. Note, however, that kinematic states are not
-/// included in the solution if you use the solver directly.
+/// By default, MocoInverse minimizes the sum of squared controls and
+/// constrains initial activation to be equal to initial excitation (to avoid
+/// initial activation spikes). To customize the cost, invoke initialize(), add
+/// costs manually, and solve the problem using the solver directly. Note,
+/// however, that kinematic states are not included in the solution if you use
+/// the solver directly.
 ///
 /// Default solver settings
 /// -----------------------

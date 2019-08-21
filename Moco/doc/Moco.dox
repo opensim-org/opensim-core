@@ -1,10 +1,14 @@
+/** The Moco interface is contained within the OpenSim namespace.
+*/
+// We must document the OpenSim namespace for free functions within the
+// namespace to appear in Doxygen.
 namespace OpenSim {
 /** @mainpage
 
-OpenSim Moco is a software package for solving optimal control problems for
-musculoskeletal systems modeled in OpenSim. The package has Python, MATLAB, and
-XML (command-line) interfaces; the core library is written in C++. Here are some
-problems you can solve with Moco:
+Moco is a module of OpenSim for solving optimal control problems for
+musculoskeletal systems defined as OpenSim models.
+The package has Python, MATLAB, and XML (command-line) interfaces; the core
+library is written in C++. Here are some problems you can solve with Moco:
 
 1. Solve for the muscle activity that tracks a known motion.
 2. Solve for a new motion that optimizes some cost (e.g., effort).
@@ -26,59 +30,22 @@ problems. Solving a custom optimal control problem with direct collocation
 requires substantial tuning of the direct collocation method's settings. Use the
 more specific interfaces if possible.
 
-Parts of the documentation:
-  - @ref mocotrack
-  - @ref mocoinverse
-  - @ref mocostudy
-  - MocoTrajectory
-  - @ref utilities
-  - @ref mocoimplguide
-  - @ref faq
+Where to start?
+ - @ref mocotool "Solving for muscle activity that tracks an observed motion"
+ - @ref mocostudy "Defining a custom optimization problem"
+ - @ref mocouserguide "User Guide: Learning how to use Moco"
+ - @ref mocotheoryguide "Theory Guide: Learning how Moco solves optimal control problems"
+ - @ref mocodevguide "Developer Guide: Learning the Moco codebase and how to contribute"
+ - @ref mocoapiref "Interface Reference"
 
 
+@defgroup mocogoal Available goals
 
-
-
-@defgroup mococost Available cost terms
-
-These are the available cost terms you can use in your cost functional. If none
-of these satisfy your needs, you can define your own using a plugin.
-
-
-
-@page utilities Utilities
-
-Moco contains utilities for creating models, modifying models,
-working with data, and postprocessing results.
-
-1. ModelFactory: Create standard models and modify existing models.
-2. ModelProcessor: Create a workflow of operations to perform on a model.
-3. TableProcessor: Create a workflow of operations to perform on a table.
-4. OpenSim::visualize: Visualize (animate) a MocoTrajectory.
-5. OpenSim::analyze: Compute the values of Component outputs from a given
-                     MocoTrajectory.
-6. plot_trajectory.py: Plot a MocoTrajectory with the Python Matplotlib plotting
-                       library.
-7. report.py: Generate a detailed PDF report about a MocoTrajectory and any
-              reference data (part of the `opensim` Python package).
-
-
-
-
-@page faq Frequently Asked Questions
-
-@section interrupt How do I interrupt an optimization in MATLAB?
-
-Sometimes, you may want to interrupt an optimization before it is complete. In
-MATLAB, we commonly use Ctrl-C to interrupt code, but this does not work during
-a Moco optimization.
-
-Use this alternative: During an optimization, Moco tries to write a text file to
-your current directory named "delete_this...". Delete this file to interrupt the
-optimization.
+These are the available goals you can use in your cost functional or as endpoint
+constraints. If none of these satisfy your needs, you can define your own using
+a plugin.
 
 */
-
 
 } // namespace OpenSim
 
