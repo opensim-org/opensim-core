@@ -125,12 +125,11 @@ TimeSeriesTable MocoStudy::analyze(const MocoTrajectory& iterate,
         iterate, outputPaths);
 }
 
-TimeSeriesTable MocoStudy::getSmoothSphereHalfSpaceForce(
+TimeSeriesTable MocoStudy::getSmoothSphereHalfSpaceReactionForces(
         const MocoSolution& solution,
-        std::vector<std::string>& smoothSphereHalfSpaceForceNamesRight,
-        std::vector<std::string>& smoothSphereHalfSpaceForceNamesLeft) const {
-    return OpenSim::getSmoothSphereHalfSpaceForce(
+        std::vector<std::string>& forceNamesRightFoot,
+        std::vector<std::string>& forceNamesLeftFoot) const {
+    return OpenSim::getSmoothSphereHalfSpaceReactionForces(
             get_problem().createRep().getModelBase(), get_problem(), solution,
-            smoothSphereHalfSpaceForceNamesRight,
-            smoothSphereHalfSpaceForceNamesLeft);
+            forceNamesRightFoot, forceNamesLeftFoot);
 }

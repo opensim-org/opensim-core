@@ -607,10 +607,10 @@ int OpenSim::getMocoParallelEnvironmentVariable() {
     return -1;
 }
 
-TimeSeriesTable OpenSim::getSmoothSphereHalfSpaceForce(Model model,
+TimeSeriesTable OpenSim::getSmoothSphereHalfSpaceReactionForces(Model model,
         MocoProblem problem, const MocoSolution& solution,
-        const std::vector<std::string>& smoothSphereHalfSpaceForceNamesRight,
-        const std::vector<std::string>& smoothSphereHalfSpaceForceNamesLeft) {
+        const std::vector<std::string>& forceNamesRightFoot,
+        const std::vector<std::string>& forceNamesLeftFoot) {
     model.initSystem();
     problem.setModelCopy(model);
     TimeSeriesTableVec3 externalForcesTable{};
@@ -622,7 +622,7 @@ TimeSeriesTable OpenSim::getSmoothSphereHalfSpaceForce(Model model,
         SimTK::Vec3 forcesRight(0);
         SimTK::Vec3 torquesRight(0);
         // Loop through all smoothSphereHalfSpaceForces of the right side.
-        for (const auto& smoothForce : smoothSphereHalfSpaceForceNamesRight) {
+        for (const auto& smoothForce : forceNamesRightFoot) {
             Array<double> forceValues = model.getComponent<
                     SmoothSphereHalfSpaceForce>(
                             smoothForce).getRecordValues(state);
@@ -634,7 +634,7 @@ TimeSeriesTable OpenSim::getSmoothSphereHalfSpaceForce(Model model,
         SimTK::Vec3 forcesLeft(0);
         SimTK::Vec3 torquesLeft(0);
         // Loop through all smoothSphereHalfSpaceForces of the left side.
-        for (const auto& smoothForce : smoothSphereHalfSpaceForceNamesLeft) {
+        for (const auto& smoothForce : forceNamesLeftFoot) {
             Array<double> forceValues = model.getComponent<
                     SmoothSphereHalfSpaceForce>(
                             smoothForce).getRecordValues(state);
@@ -651,24 +651,20 @@ TimeSeriesTable OpenSim::getSmoothSphereHalfSpaceForce(Model model,
         row(3) = SimTK::Vec3(0);
         row(4) = torquesRight;
         row(5) = torquesLeft;
-        externalForcesTable.appendRow(optTime[count],row);
+        externalForcesTable.appendRow(optTime[count], row);
         ++count;
     }
     // Create table.
     std::vector<std::string> labels;
-    labels.push_back("ground_force_v");
-    labels.push_back("ground_force_p");
-    labels.push_back("1_ground_force_v");
-    labels.push_back("1_ground_force_p");
-    labels.push_back("ground_torque_");
-    labels.push_back("1_ground_torque_");
-    std::vector<std::string> suffixes;
-    suffixes.push_back("x");
-    suffixes.push_back("y");
-    suffixes.push_back("z");
+    labels.push_back("ground_force_r_v");
+    labels.push_back("ground_force_r_p");
+    labels.push_back("ground_force_l_v");
+    labels.push_back("ground_force_l_p");
+    labels.push_back("ground_torque_r_");
+    labels.push_back("ground_torque_l_");
     externalForcesTable.setColumnLabels(labels);
     TimeSeriesTable externalForcesTableFlat =
-            externalForcesTable.flatten(suffixes);
+            externalForcesTable.flatten({"x", "y", "z"});
 
     return externalForcesTableFlat;
 }

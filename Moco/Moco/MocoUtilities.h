@@ -679,10 +679,10 @@ private:
 /// ("ground_<>") and left ("1_ground_<>") forces, centers of pressure, and
 /// torques.
 OSIMMOCO_API
-TimeSeriesTable getSmoothSphereHalfSpaceForce(Model model,
+TimeSeriesTable getSmoothSphereHalfSpaceReactionForces(Model model,
         MocoProblem problem, const MocoSolution& solution,
-        const std::vector<std::string>& smoothSphereHalfSpaceForceNamesRight,
-        const std::vector<std::string>& smoothSphereHalfSpaceForceNamesLeft);
+        const std::vector<std::string>& forceNamesRightFoot,
+        const std::vector<std::string>& forceNamesLeftFoot);
 
 } // namespace OpenSim
 
