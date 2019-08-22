@@ -488,7 +488,7 @@ TEMPLATE_TEST_CASE("MocoPeriodicityGoal", "", MocoCasADiSolver) {
         CHECK(solution.getState("/jointset/j0/q0/speed")[N - 1] ==
                 solution.getState("/jointset/j0/q0/speed")[0]);
         CHECK(solution.getControl("/tau0")[N - 1] ==
-                solution.getControl("/tau0")[0]);
+                Approx(solution.getControl("/tau0")[0]).margin(1e-6);
     }
 
     SECTION("Goal works in cost mode.") {
