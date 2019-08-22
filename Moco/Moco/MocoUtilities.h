@@ -723,7 +723,7 @@ private:
 /// torques.
 OSIMMOCO_API
 TimeSeriesTable getSmoothSphereHalfSpaceReactionForces(Model model,
-        MocoProblem problem, const MocoSolution& solution,
+        const MocoSolution& solution,
         const std::vector<std::string>& forceNamesRightFoot,
         const std::vector<std::string>& forceNamesLeftFoot);
 

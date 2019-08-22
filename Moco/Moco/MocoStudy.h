@@ -140,21 +140,6 @@ public:
     TimeSeriesTable analyze(
             const MocoTrajectory& it, std::vector<std::string> outputPaths) const;
 
-    /// Obtain the ground reaction forces, centers of pressure, and torques
-    /// resulting from smoothSphereHalfSpaceForces using the model in the
-    /// problem and the solution. Force and torques are expressed in the ground
-    /// frame with respect to the ground origin. Hence, the centers of pressure
-    /// are at the origin. Names of smoothSphereHalfSpaceForce elements should
-    /// be provided separately for elements of the right and left feet. The
-    /// output is a table formatted for use with OpenSim tools; the labels of
-    /// the columns distinguish between right ("ground_<>") and left
-    /// ("1_ground_<>") forces, centers of pressure, and torques.
-    /// @see OpenSim::getSmoothSphereHalfSpaceReactionForces()
-    TimeSeriesTable getSmoothSphereHalfSpaceReactionForces(
-            const MocoSolution& s,
-            std::vector<std::string>& forceNamesRightFoot,
-            std::vector<std::string>& forceNamesLeftFoot) const;
-
     /// @name Using other solvers
     /// @{
     template <typename SolverType>
