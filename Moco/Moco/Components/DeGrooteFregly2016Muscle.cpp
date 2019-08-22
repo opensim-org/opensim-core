@@ -297,16 +297,18 @@ void DeGrooteFregly2016Muscle::calcMuscleDynamicsInfo(
     const auto& mli = getMuscleLengthInfo(s);
     const auto& fvi = getFiberVelocityInfo(s);
 
-    SimTK::Vec4 fiberForceVec = calcFiberForce(mdi.activation,
-            mli.fiberActiveForceLengthMultiplier,
+    SimTK::Real activeFiberForce;
+    SimTK::Real conPassiveFiberForce;
+    SimTK::Real nonConPassiveFiberForce;
+    SimTK::Real totalFiberForce;
+    calcFiberForce(mdi.activation, mli.fiberActiveForceLengthMultiplier,
             fvi.fiberForceVelocityMultiplier,
-            mli.fiberPassiveForceLengthMultiplier, fvi.normFiberVelocity);
+            mli.fiberPassiveForceLengthMultiplier, fvi.normFiberVelocity,
+            activeFiberForce, conPassiveFiberForce, nonConPassiveFiberForce,
+            totalFiberForce);
 
-    double totalFiberForce = fiberForceVec[0];
-    const double activeFiberForce = fiberForceVec[1];
-    const double conPassiveFiberForce = fiberForceVec[2];
-    double nonConPassiveFiberForce = fiberForceVec[3];
-    double passiveFiberForce = conPassiveFiberForce + nonConPassiveFiberForce;
+    SimTK::Real passiveFiberForce =
+            conPassiveFiberForce + nonConPassiveFiberForce;
 
     // When using a rigid tendon, avoid generating compressive fiber forces by 
     // saturating the damping force produced by the parallel element. 
@@ -341,27 +343,34 @@ void DeGrooteFregly2016Muscle::calcMuscleDynamicsInfo(
     // --------------------------
     mdi.fiberStiffness = calcFiberStiffness(mdi.activation, mli.normFiberLength,
             fvi.fiberForceVelocityMultiplier);
-    const auto& Dpenn_DlM =
-            calc_DPennationAngle_DFiberLength(mli.fiberLength);
-    const auto& dFMAT_dlM =
-            calc_DFiberForceAT_DFiberLength(mdi.fiberForce, mdi.fiberStiffness,
-                    mli.sinPennationAngle, mli.cosPennationAngle, Dpenn_DlM);
-    const auto& dFMAT_dlMAT = calc_DFiberForceAT_DFiberLengthAT(mli.fiberLength,
-            dFMAT_dlM, mli.sinPennationAngle, mli.cosPennationAngle, Dpenn_DlM);
-    mdi.fiberStiffnessAlongTendon = dFMAT_dlMAT;
+    const auto& partialPennationAnglePartialFiberLength =
+            calcPartialPennationAnglePartialFiberLength(mli.fiberLength);
+    const auto& partialFiberForceAlongTendonPartialFiberLength =
+            calcPartialFiberForceAlongTendonPartialFiberLength(
+                    mdi.fiberForce, mdi.fiberStiffness, mli.sinPennationAngle,
+                    mli.cosPennationAngle,
+                    partialPennationAnglePartialFiberLength);
+    const auto& fiberStiffnessAlongTendon = calcFiberStiffnessAlongTendon(
+            mli.fiberLength,
+            partialFiberForceAlongTendonPartialFiberLength,
+            mli.sinPennationAngle, mli.cosPennationAngle,
+            partialPennationAnglePartialFiberLength);
+    mdi.fiberStiffnessAlongTendon = fiberStiffnessAlongTendon;
     if (!get_ignore_tendon_compliance()) {
-        const auto& dFT_dlT =
+        const auto& tendonStiffness =
                 (get_max_isometric_force() / get_tendon_slack_length()) *
                 calcTendonForceMultiplierDerivative(mli.normTendonLength);
         // Compute stiffness of whole musculotendon actuator. Based on 
         // Millard2012EquilibriumMuscle.
-        SimTK::Real Ke = 0;
-        if (abs(dFMAT_dlMAT*dFT_dlT) > 0.0 
-            && abs(dFMAT_dlMAT+dFT_dlT) > SimTK::SignificantReal) {
-            Ke = (dFMAT_dlMAT * dFT_dlT) / (dFMAT_dlMAT + dFT_dlT);
+        SimTK::Real muscleStiffness = 0;
+        if (abs(fiberStiffnessAlongTendon * tendonStiffness) > 0.0 &&  
+            abs(fiberStiffnessAlongTendon + tendonStiffness) > 
+                    SimTK::SignificantReal) {
+            muscleStiffness = (fiberStiffnessAlongTendon * tendonStiffness) /
+                    (fiberStiffnessAlongTendon + tendonStiffness);
         }
-        mdi.tendonStiffness = dFT_dlT;
-        mdi.muscleStiffness = Ke;
+        mdi.tendonStiffness = tendonStiffness;
+        mdi.muscleStiffness = muscleStiffness;
     } else {
         mdi.tendonStiffness = SimTK::Infinity;
         mdi.muscleStiffness = mdi.fiberStiffnessAlongTendon;
@@ -374,7 +383,6 @@ void DeGrooteFregly2016Muscle::calcMuscleDynamicsInfo(
     mdi.fiberPassivePower = -conPassiveFiberForce*fvi.fiberVelocity;
     mdi.tendonPower = -mdi.tendonForce*fvi.tendonVelocity;
     mdi.musclePower = -mdi.tendonForce*getLengtheningSpeed(s);
-
 }
 
 void DeGrooteFregly2016Muscle::calcMusclePotentialEnergyInfo(

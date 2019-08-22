@@ -23,7 +23,7 @@ using namespace OpenSim;
 void MocoInitialVelocityEquilibriumGoal::initializeOnModelImpl(
         const Model& model) const {
 
-    for (const auto& dgfmuscle : 
+    for (const auto& dgfmuscle :
             model.getComponentList<DeGrooteFregly2016Muscle>()) {
         if (!dgfmuscle.get_ignore_tendon_compliance()) {
             m_dgfMuscleRefs.emplace_back(&dgfmuscle);
@@ -36,13 +36,13 @@ void MocoInitialVelocityEquilibriumGoal::initializeOnModelImpl(
 void MocoInitialVelocityEquilibriumGoal::calcGoalImpl(
         const GoalInput& input, SimTK::Vector& goal) const {
     const auto& s = input.initial_state;
-
-    int i = 0;
-    for (const auto& dgfMuscleRef : m_dgfMuscleRefs) {
-        const auto& dgfmuscle = dgfMuscleRef.getRef();
-
-        // Equation (A6) in Millard et al. 2013:
-        //      residual = dFS_dlS * vS - dFT_dlT * (vMT - vS)
-        goal[i] = dgfmuscle.calcDerivativeLinearizedEquilibriumResidual(s);
+    for (int i = 0; i < m_dgfMuscleRefs.size(); ++i) {
+        const auto residual = 
+            m_dgfMuscleRefs[i]->calcDerivativeLinearizedEquilibriumResidual(s);
+        if (getModeIsCost()) {
+            goal[i] = residual * residual;
+        } else {
+            goal[i] = residual;
+        }
     }
 }

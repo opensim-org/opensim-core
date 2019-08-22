@@ -273,11 +273,11 @@ public:
             const SimTK::Real& normFiberLength) const {
 
         if (get_ignore_passive_fiber_force()) return 0;
-        return (exp(-kPE) * exp(1) * exp(-kPE / e0) *
-                       (e0 * exp((kPE * normFiberLength) / e0) -
-                               kPE * normFiberLength *
-                                       exp((kPE * normFiberLength) / e0))) /
-               kPE;
+
+        const auto temp1 = exp(-kPE) * SimTK::E * exp(-kPE / e0);
+        const auto temp2 = exp((kPE * normFiberLength) / e0);
+        const auto temp3 = e0 - kPE * normFiberLength;
+        return (temp1 * temp2 * temp3) / kPE;
     }
 
     /// The normalized tendon force as a function of normalized tendon length.
@@ -328,21 +328,23 @@ public:
     SimTK::Vec4 calcFiberForce(const SimTK::Real& activation,
             const SimTK::Real& fal, const SimTK::Real& fv, 
             const SimTK::Real& fpe, 
-            const SimTK::Real& normFiberVelocity) const {
+            const SimTK::Real& normFiberVelocity,
+            SimTK::Real& activeFiberForce,
+            SimTK::Real& conPassiveFiberForce,
+            SimTK::Real& nonConPassiveFiberForce,
+            SimTK::Real& totalFiberForce) const {
         const auto& FMo = get_max_isometric_force();
         const auto& beta = get_fiber_damping();
 
-        SimTK::Vec4 fiberForce;
         // active force
-        fiberForce[1] = FMo * (activation * fal * fv);
+        activeFiberForce = FMo * (activation * fal * fv);
         // conservative passive force
-        fiberForce[2] = FMo * fpe;
+        conPassiveFiberForce = FMo * fpe;
         // non-conservative passive force
-        fiberForce[3] = FMo * beta * normFiberVelocity;
+        nonConPassiveFiberForce = FMo * beta * normFiberVelocity;
         // total force
-        fiberForce[0] = fiberForce[1] + fiberForce[2] + fiberForce[3];
-
-        return fiberForce;
+        totalFiberForce = activeFiberForce + conPassiveFiberForce +
+                          nonConPassiveFiberForce;
     }
 
     /// The stiffness of the fiber in the direction of the fiber. This includes
@@ -368,54 +370,65 @@ public:
     /// The derivative of pennation angle with respect to fiber length.
     /// @note based on 
     /// MuscleFixedWidthPennationModel::calc_DPennationAngle_DFiberLength().
-    SimTK::Real calc_DPennationAngle_DFiberLength(
+    SimTK::Real calcPartialPennationAnglePartialFiberLength(
             const SimTK::Real& fiberLength) const {
 
         using SimTK::square;
-        // penn = asin(fiberWidth/lM)
-        // d_penn/d_lM = d/dlM (asin(fiberWidth/lM))
-        const SimTK::Real h_over_l = m_fiberWidth / fiberLength;
-        return (-h_over_l / fiberLength) / sqrt(1.0 - square(h_over_l));
+        // pennationAngle = asin(fiberWidth/fiberLength)
+        // d_pennationAngle/d_fiberLength = 
+        //          d/d_fiberLength (asin(fiberWidth/fiberLength))
+        return -m_fiberWidth / sqrt(1.0 - square(m_fiberWidth / fiberLength));
     }
 
     /// The derivative of the fiber force along the tendon with respect to fiber
     /// length.
     /// @note based on 
     /// Millard2012EquilibriumMuscle::calc_DFiberForceAT_DFiberLength().
-    SimTK::Real calc_DFiberForceAT_DFiberLength(const SimTK::Real& fiberForce, 
-            const SimTK::Real& fiberStiffness, const SimTK::Real& sinPenn, 
-            const SimTK::Real& cosPenn, const SimTK::Real& Dpenn_DlM) const {
+    SimTK::Real calcPartialFiberForceAlongTendonPartialFiberLength(
+            const SimTK::Real& fiberForce, const SimTK::Real& fiberStiffness, 
+            const SimTK::Real& sinPennationAngle, 
+            const SimTK::Real& cosPennationAngle, 
+            const SimTK::Real& partialPennationAnglePartialFiberLength) const {
 
-        const SimTK::Real DcosPenn_DlM = -sinPenn * Dpenn_DlM;
+        const SimTK::Real partialCosPennationAnglePartialFiberLength =
+                -sinPennationAngle * partialPennationAnglePartialFiberLength;
 
         // The stiffness of the fiber along the direction of the tendon. For
         // small changes in length parallel to the fiber, this quantity is
-        // D(FiberForceAlongTendon) / D(fiberLength)
-        // dFMAT/dlM = d/dlM(fMax * (a*fact*fv + fpe + beta*vMtilde)*cosPenn)
-        return fiberStiffness * cosPenn + fiberForce * DcosPenn_DlM;
+        // d_fiberForceAlongTendon / d_fiberLength =
+        //      d/d_fiberLength(fiberForce * cosPenneationAngle)
+        return fiberStiffness * cosPennationAngle +
+               fiberForce * partialCosPennationAnglePartialFiberLength;
     }
 
     /// The derivative of the fiber force along the tendon with respect to the
     /// fiber length along the tendon.
     /// @note based on 
     /// Millard2012EquilibriumMuscle::calc_DFiberForceAT_DFiberLengthAT.
-    SimTK::Real calc_DFiberForceAT_DFiberLengthAT(
-            const SimTK::Real& fiberLength, const SimTK::Real& dFMAT_dlM,
-            const SimTK::Real& sinPenn, const SimTK::Real& cosPenn, 
-            const SimTK::Real& Dpenn_DlM) const {
+    SimTK::Real calcFiberStiffnessAlongTendon( 
+            const SimTK::Real& fiberLength, 
+            const SimTK::Real& partialFiberForceAlongTendonPartialFiberLength,
+            const SimTK::Real& sinPennationAngle, 
+            const SimTK::Real& cosPennationAngle, 
+            const SimTK::Real& partialPennationAnglePartialFiberLength) const {
 
         // The change in length of the fiber length along the tendon.
-        // lMAT = lM*cos(penn)
-        const SimTK::Real DlMAT_DlM =
-                cosPenn - fiberLength * sinPenn * Dpenn_DlM;
+        // fiberLengthAlongTendon = fiberLength * cosPennationAngle
+        const SimTK::Real partialFiberLengthAlongTendonPartialFiberLength =
+                cosPennationAngle -
+                fiberLength * sinPennationAngle *
+                        partialPennationAnglePartialFiberLength;
 
-        // dFMAT/dLMAT = (dFMAT/dlM)*(1/(dlMAT/dlM))
-        //             = dFMAT/dlMAT
-        return dFMAT_dlM * (1.0 / DlMAT_DlM);
+        // fiberStiffnessAlongTendon  
+        //    = d_fiberForceAlongTendon / d_fiberLengthAlongTendon   
+        //    = (d_fiberForceAlongTendon / d_fiberLength) * 
+        //      (1 / (d_fiberLengthAlongTendon / d_fiberLength)) 
+        return partialFiberForceAlongTendonPartialFiberLength *
+               (1.0 / partialFiberLengthAlongTendonPartialFiberLength);
     }
 
     /// The residual (i.e. error) in the muscle-tendon equilibrium equation:
-    ///         residual = FT - FM * cos(pennAngle)
+    ///         residual = tendonForce - fiberForce * cosPennationAngle
     SimTK::Real calcEquilibriumResidual(const SimTK::State& s) const {
         const auto& mdi = getMuscleDynamicsInfo(s);
         return mdi.tendonForce - mdi.fiberForceAlongTendon;
@@ -423,31 +436,21 @@ public:
 
     /// The residual (i.e. error) in the time derivative of the linearized 
     /// muscle-tendon equilibrium equation (Millard et al. 2013, equation A6): 
-    ///         residual = dFS_dlS * vS - dFT_dlT * (vMT - vS)
-    /// where,
-    ///         lS = lM * cos(pennAngle)
-    ///         vS = vM * cos(pennAngle)
-    ///         FS = FM * cos(pennAngle)
+    ///     residual = fiberStiffnessAlongTendon * fiberVelocityAlongTendon -
+    ///                tendonStiffness * 
+    ///                    (muscleTendonVelocity - fiberVelocityAlongTendon)
     SimTK::Real calcDerivativeLinearizedEquilibriumResidual(
             const SimTK::State& s) const {
         
-        // Muscle info structs.
-        // --------------------
-        const MuscleLengthInfo& mli = getMuscleLengthInfo(s);
+        // Muscle info.
+        // ------------
         const FiberVelocityInfo& fvi = getFiberVelocityInfo(s);
         const MuscleDynamicsInfo& mdi = getMuscleDynamicsInfo(s);
+        const auto& muscleTendonVelocity = getLengtheningSpeed(s);
 
-        // Velocity quantities.
-        // --------------------
-        const auto& vMT = getLengtheningSpeed(s);
-        const auto& vS = fvi.fiberVelocityAlongTendon;
-
-        // Stiffness quantities.
-        // ---------------------
-        const auto& dFS_dlS = mdi.fiberStiffnessAlongTendon;
-        const auto& dFT_dlT = mdi.tendonStiffness;
-
-        return dFS_dlS * vS - dFT_dlT * (vMT - vS);
+        return mdi.fiberStiffnessAlongTendon * fvi.fiberVelocityAlongTendon -
+               mdi.tendonStiffness *
+                       (muscleTendonVelocity - fvi.fiberVelocityAlongTendon);
     }
 
     /// @name Utilities

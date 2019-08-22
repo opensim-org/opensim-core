@@ -557,13 +557,12 @@ Model createHangingMuscleModel(
 }
 
 TEMPLATE_TEST_CASE("Hanging muscle minimum time", "", MocoCasADiSolver) {
-    auto ignoreActivationDynamics = GENERATE(true);
-    auto ignoreTendonCompliance = GENERATE(false);
+    auto ignoreActivationDynamics = GENERATE(true, false);
+    auto ignoreTendonCompliance = GENERATE(true, false);
 
     CAPTURE(ignoreActivationDynamics);
     CAPTURE(ignoreTendonCompliance);
 
-    SimTK::Real initActivation = 0.01;
     SimTK::Real initHeight = 0.15;
     SimTK::Real finalHeight = 0.14;
 
@@ -588,34 +587,37 @@ TEMPLATE_TEST_CASE("Hanging muscle minimum time", "", MocoCasADiSolver) {
                 "/joint/height/value", {0.10, 0.16}, initHeight, finalHeight);
         problem.setStateInfo("/joint/height/speed", {-10, 10}, 0, 0);
         if (!ignoreTendonCompliance) {
-            problem.setStateInfo("/forceset/actuator/normalized_tendon_force",
-                    {0, 5});
-            auto* initial_equilibrium =
-                    problem.addGoal<MocoInitialVelocityEquilibriumGoal>();
-            initial_equilibrium->setName("initial_velocity_equilibrium");
-        }
-        // OpenSim might not allow activations of 0.
-        if (!ignoreActivationDynamics) {
             problem.setStateInfo(
-                    "/forceset/actuator/activation", {0.01, 1});
+                    "/forceset/actuator/normalized_tendon_force", {0, 5});
+        }
+        if (!ignoreActivationDynamics) {
+            problem.setStateInfo("/forceset/actuator/activation", {0.01, 1});
+        }
+        problem.setControlInfo("/forceset/actuator", {0.01, 1});
+
+        // Initial state constraints/costs.
+        if (!ignoreActivationDynamics && ignoreTendonCompliance) {
             auto* initial_activation =
                     problem.addGoal<MocoInitialActivationGoal>();
             initial_activation->setName("initial_activation");
         }
-        problem.setControlInfo("/forceset/actuator", {0.01, 1});
+        if (!ignoreTendonCompliance) {
+            // The problem performs better when this is in cost mode.
+            auto* initial_equilibrium =
+                    problem.addGoal<MocoInitialVelocityEquilibriumGoal>();
+            initial_equilibrium->setName("initial_velocity_equilibrium");
+            initial_equilibrium->setMode("cost");
+            initial_equilibrium->setWeight(0.001);
+        }
 
         problem.addGoal<MocoFinalTimeGoal>();
 
-        //auto* effort = problem.addGoal<MocoControlGoal>();
-        //effort->setName("effort");
-        //effort->setWeight(0.01);
-
         auto& solver = moco.initSolver<TestType>();
-        solver.set_num_mesh_points(50);
+        solver.set_num_mesh_points(25);
         solver.set_dynamics_mode("implicit");
-        //solver.set_optim_convergence_tolerance(1e-4);
-        //solver.set_optim_constraint_tolerance(1e-4);
-        solver.set_transcription_scheme("trapezoidal");
+        solver.set_optim_convergence_tolerance(1e-4);
+        solver.set_optim_constraint_tolerance(1e-4);
+        solver.set_transcription_scheme("hermite-simpson");
 
         solutionTrajOpt = moco.solve();
         std::string solutionFilename = "testDeGrooteFregly2016Muscle_solution";
@@ -623,17 +625,12 @@ TEMPLATE_TEST_CASE("Hanging muscle minimum time", "", MocoCasADiSolver) {
         if (ignoreTendonCompliance) solutionFilename += "_rigidtendon";
         solutionFilename += ".sto";
         solutionTrajOpt.write(solutionFilename);
-        std::cout << "Solution joint/height/value trajectory: "
-                  << solutionTrajOpt.getState("/joint/height/value")
-                  << std::endl;
-        std::cout << "Solution joint/height/speed trajectory: "
-                  << solutionTrajOpt.getState("/joint/height/speed")
-                  << std::endl;
     }
 
     // Perform time stepping forward simulation using optimized controls.
     // ------------------------------------------------------------------
     // See if we end up at the correct final state.
+    // TODO can't perform time stepping with implicit tendon dynamics.
     if (ignoreTendonCompliance) {
         const auto iterateSim =
                 simulateIterateWithTimeStepping(solutionTrajOpt, model);
@@ -668,27 +665,31 @@ TEMPLATE_TEST_CASE("Hanging muscle minimum time", "", MocoCasADiSolver) {
                 {0.10, 0.16}, initHeight, finalHeight);
         problem.setStateInfo("/joint/height/speed", {-10, 10}, 0, 0);
         if (!ignoreTendonCompliance) {
-            problem.setStateInfo("/forceset/actuator/normalized_tendon_force",
-                    {0, 5});
-            auto* initial_equilibrium = 
-                    problem.addGoal<MocoInitialVelocityEquilibriumGoal>();
-            initial_equilibrium->setName("initial_velocity_equilibrium");
+            problem.setStateInfo(
+                    "/forceset/actuator/normalized_tendon_force", {0, 5});
         }
-        // OpenSim might not allow activations of 0.
         if (!ignoreActivationDynamics) {
             problem.setStateInfo("/forceset/actuator/activation", {0.01, 1});
-            auto* initial_activation = 
-                    problem.addGoal<MocoInitialActivationGoal>();
-            initial_activation->setName("initial_activation");
         }
         problem.setControlInfo("/forceset/actuator", {0.01, 1});
 
+        // Initial state constraints/costs.
+        if (!ignoreActivationDynamics && ignoreTendonCompliance) {
+            auto* initial_activation =
+                    problem.addGoal<MocoInitialActivationGoal>();
+            initial_activation->setName("initial_activation");
+        }
+        if (!ignoreTendonCompliance) {
+            // The problem performs better when this is in cost mode.
+            auto* initial_equilibrium =
+                    problem.addGoal<MocoInitialVelocityEquilibriumGoal>();
+            initial_equilibrium->setName("initial_velocity_equilibrium");
+            initial_equilibrium->setMode("cost");
+            initial_equilibrium->setWeight(0.001);
+        }
+
         auto* tracking = problem.addGoal<MocoStateTrackingGoal>();
         tracking->setName("tracking");
-
-        //auto* effort = problem.addGoal<MocoControlGoal>();
-        //effort->setName("effort");
-        //effort->setWeight(0.01);
 
         auto states = solutionTrajOpt.exportToStatesStorage().exportToTable();
         TimeSeriesTable ref(states.getIndependentColumn());
@@ -705,9 +706,9 @@ TEMPLATE_TEST_CASE("Hanging muscle minimum time", "", MocoCasADiSolver) {
         tracking->setAllowUnusedReferences(true);
 
         auto& solver = moco.initSolver<TestType>();
-        solver.set_num_mesh_points(50);
+        solver.set_num_mesh_points(25);
         solver.set_dynamics_mode("implicit");
-        solver.set_transcription_scheme("trapezoidal");
+        solver.set_transcription_scheme("hermite-simpson");
 
         MocoSolution solutionTrack = moco.solve();
         std::string solutionFilename =

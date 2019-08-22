@@ -92,7 +92,7 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
     m_numMeshPoints = (int)m_solver.getMesh().size();
     m_numGridPoints = (int)grid.numel();
     m_numMeshIntervals = m_numMeshPoints - 1;
-    m_numPointsIgnoringConstraints = m_numGridPoints - m_numMeshPoints;
+    m_numMeshInteriorPoints = m_numGridPoints - m_numMeshPoints;
     m_numDefectsPerMeshInterval = numDefectsPerMeshInterval;
     m_pointsForInterpControls = pointsForInterpControls;
     m_numMultibodyResiduals = m_solver.isDynamicsModeImplicit()
@@ -136,22 +136,22 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
     // TODO: This assumes that slack variables are applied at all
     // collocation points on the mesh interval interior.
     m_vars[slacks] = MX::sym(
-            "slacks", m_problem.getNumSlacks(), m_numPointsIgnoringConstraints);
+            "slacks", m_problem.getNumSlacks(), m_numMeshInteriorPoints);
     m_vars[parameters] = MX::sym("parameters", m_problem.getNumParameters(), 1);
 
     m_paramsTrajGrid = MX::repmat(m_vars[parameters], 1, m_numGridPoints);
-    m_paramsTraj = MX::repmat(m_vars[parameters], 1, m_numMeshPoints);
-    m_paramsTrajIgnoringConstraints =
-            MX::repmat(m_vars[parameters], 1, m_numPointsIgnoringConstraints);
+    m_paramsTrajMesh = MX::repmat(m_vars[parameters], 1, m_numMeshPoints);
+    m_paramsTrajMeshInterior =
+            MX::repmat(m_vars[parameters], 1, m_numMeshInteriorPoints);
 
-    m_kinematicConstraintIndices = createKinematicConstraintIndices();
-    std::vector<int> daeIndicesVector;
-    std::vector<int> daeIndicesIgnoringConstraintsVector;
-    for (int i = 0; i < m_kinematicConstraintIndices.size2(); ++i) {
-        if (m_kinematicConstraintIndices(i).scalar() == 1) {
-            daeIndicesVector.push_back(i);
+    m_meshIndicesMap = createMeshIndices();
+    std::vector<int> meshIndicesVector;
+    std::vector<int> meshInteriorIndicesVector;
+    for (int i = 0; i < m_meshIndicesMap.size2(); ++i) {
+        if (m_meshIndicesMap(i).scalar() == 1) {
+            meshIndicesVector.push_back(i);
         } else {
-            daeIndicesIgnoringConstraintsVector.push_back(i);
+            meshInteriorIndicesVector.push_back(i);
         }
     }
 
@@ -165,9 +165,9 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
         std::iota(gridIndicesVector.begin(), gridIndicesVector.end(), 0);
         m_gridIndices = makeTimeIndices(gridIndicesVector);
     }
-    m_daeIndices = makeTimeIndices(daeIndicesVector);
-    m_daeIndicesIgnoringConstraints =
-            makeTimeIndices(daeIndicesIgnoringConstraintsVector);
+    m_meshIndices = makeTimeIndices(meshIndicesVector);
+    m_meshInteriorIndices =
+            makeTimeIndices(meshInteriorIndicesVector);
 
     // Set variable bounds.
     // --------------------
@@ -258,8 +258,8 @@ void Transcription::transcribe() {
             "Problems with differing numbers of coordinates and speeds are "
             "not supported (e.g., quaternions).");
 
-    // TODO: Does creating all this memory have efficiency implications in
-    // CasADi?
+    // TODO: Does creating all this memory have efficiency implications 
+    //        in CasADi?
     // Initialize memory for state derivatives and defects.
     // ----------------------------------------------------
     m_xdot = MX(NS, m_numGridPoints);
@@ -307,7 +307,7 @@ void Transcription::transcribe() {
     m_xdot(Slice(0, NQ), Slice()) = u;
 
     if (m_problem.getEnforceConstraintDerivatives() &&
-            m_numPointsIgnoringConstraints &&
+            m_numMeshInteriorPoints &&
             !m_problem.isPrescribedKinematics()) {
         // In Hermite-Simpson, we must compute a velocity correction at all mesh
         // interval midpoints and update qdot. See MocoCasADiVelocityCorrection
@@ -319,16 +319,15 @@ void Transcription::transcribe() {
         // this if we add other transcription schemes.
         const auto velocityCorrOut = evalOnTrajectory(
                 m_problem.getVelocityCorrection(), {multibody_states, slacks},
-                m_daeIndicesIgnoringConstraints);
+                m_meshInteriorIndices);
         const auto uCorr = velocityCorrOut.at(0);
 
-        m_xdot(Slice(0, NQ), m_daeIndicesIgnoringConstraints) += uCorr;
+        m_xdot(Slice(0, NQ), m_meshInteriorIndices) += uCorr;
     }
 
     // udot, zdot, residual, kcerr
     // ---------------------------
     if (m_solver.isDynamicsModeImplicit()) {
-
         // udot.
         const MX w = m_vars[derivatives];
         m_xdot(Slice(NQ, NQ + NU), Slice()) = w;
@@ -346,28 +345,28 @@ void Transcription::transcribe() {
         {
             const auto out =
                     evalOnTrajectory(m_problem.getImplicitMultibodySystem(),
-                            inputs, m_daeIndices);
-            m_constraints.multibody_residuals(Slice(), m_daeIndices) = 
+                            inputs, m_meshIndices);
+            m_constraints.multibody_residuals(Slice(), m_meshIndices) = 
                     out.at(0);
             // zdot.
-            m_xdot(Slice(NQ + NU, NS), m_daeIndices) = out.at(1);
-            m_constraints.auxiliary_residuals(Slice(), m_daeIndices) = 
+            m_xdot(Slice(NQ + NU, NS), m_meshIndices) = out.at(1);
+            m_constraints.auxiliary_residuals(Slice(), m_meshIndices) =
                     out.at(2);
             m_constraints.kinematic = out.at(3);
         }
 
         // Points where we ignore algebraic constraints.
-        if (m_numPointsIgnoringConstraints) {
+        if (m_numMeshInteriorPoints) {
             const auto out = evalOnTrajectory(
                     m_problem.getImplicitMultibodySystemIgnoringConstraints(),
-                    inputs, m_daeIndicesIgnoringConstraints);
-            m_constraints.multibody_residuals(Slice(), 
-                    m_daeIndicesIgnoringConstraints) = out.at(0);
+                    inputs, m_meshInteriorIndices);
+            m_constraints.multibody_residuals(Slice(), m_meshInteriorIndices) =
+                    out.at(0);
             // zdot.
-            m_xdot(Slice(NQ + NU, NS), m_daeIndicesIgnoringConstraints) =
+            m_xdot(Slice(NQ + NU, NS), m_meshInteriorIndices) =
                     out.at(1);
-            m_constraints.auxiliary_residuals(Slice(), 
-                    m_daeIndicesIgnoringConstraints) = out.at(2);
+            m_constraints.auxiliary_residuals(Slice(), m_meshInteriorIndices) =
+                    out.at(2);
         }
 
     } else { // Explicit dynamics mode.
@@ -379,30 +378,30 @@ void Transcription::transcribe() {
             // Evaluate the multibody system function and get udot
             // (speed derivatives) and zdot (auxiliary derivatives).
             const auto out = evalOnTrajectory(
-                    m_problem.getMultibodySystem(), inputs, m_daeIndices);
-            m_xdot(Slice(NQ, NQ + NU), m_daeIndices) = out.at(0);
-            m_xdot(Slice(NQ + NU, NS), m_daeIndices) = out.at(1);
-            m_constraints.auxiliary_residuals(Slice(), m_daeIndices) =
+                    m_problem.getMultibodySystem(), inputs, m_meshIndices);
+            m_xdot(Slice(NQ, NQ + NU), m_meshIndices) = out.at(0);
+            m_xdot(Slice(NQ + NU, NS), m_meshIndices) = out.at(1);
+            m_constraints.auxiliary_residuals(Slice(), m_meshIndices) =
                     out.at(2);
             m_constraints.kinematic = out.at(3);
         }
 
         // Points where we ignore algebraic constraints.
-        if (m_numPointsIgnoringConstraints) {
+        if (m_numMeshInteriorPoints) {
             const auto out = evalOnTrajectory(
                     m_problem.getMultibodySystemIgnoringConstraints(), inputs,
-                    m_daeIndicesIgnoringConstraints);
-            m_xdot(Slice(NQ, NQ + NU), m_daeIndicesIgnoringConstraints) =
+                    m_meshInteriorIndices);
+            m_xdot(Slice(NQ, NQ + NU), m_meshInteriorIndices) =
                     out.at(0);
-            m_xdot(Slice(NQ + NU, NS), m_daeIndicesIgnoringConstraints) =
+            m_xdot(Slice(NQ + NU, NS), m_meshInteriorIndices) =
                     out.at(1);
-            m_constraints.auxiliary_residuals(
-                    Slice(), m_daeIndicesIgnoringConstraints) = out.at(2);
+            m_constraints.auxiliary_residuals(Slice(), m_meshInteriorIndices) =
+                    out.at(2);
         }
     }
 
-    // Calculate defects and constraints for interpolating controls.
-    // -------------------------------------------------------------
+    // Calculate defects.
+    // ------------------
     calcDefects();
 
     // Path constraints
@@ -417,7 +416,7 @@ void Transcription::transcribe() {
         const auto& info = m_problem.getPathConstraintInfos()[ipc];
         // TODO: Is it sufficiently general to apply these to mesh points?
         const auto out = evalOnTrajectory(*info.function,
-                {states, controls, multipliers, derivatives}, m_daeIndices);
+                {states, controls, multipliers, derivatives}, m_meshIndices);
         m_constraints.path[ipc] = out.at(0);
         m_constraintsLowerBounds.path[ipc] =
                 casadi::DM::repmat(info.lowerBounds, 1, m_numMeshPoints);
@@ -549,10 +548,10 @@ Solution Transcription::solve(const Iterate& guessOrig) {
         // length, remove the elements on the mesh points where the slack
         // variables are not defined.
         if (slacks.size2() == m_numGridPoints) {
-            casadi::DM kinConIndices = createKinematicConstraintIndices();
+            casadi::DM meshIndices = createMeshIndices();
             std::vector<casadi_int> slackColumnsToRemove;
             for (int itime = 0; itime < m_numGridPoints; ++itime) {
-                if (kinConIndices(itime).__nonzero__()) {
+                if (meshIndices(itime).__nonzero__()) {
                     slackColumnsToRemove.push_back(itime);
                 }
             }
@@ -564,11 +563,11 @@ Solution Transcription::solve(const Iterate& guessOrig) {
         // Check that either that the slack variables provided in the guess
         // are the correct length, or that the correct number of columns
         // were removed.
-        OPENSIM_THROW_IF(slacks.size2() != m_numPointsIgnoringConstraints,
+        OPENSIM_THROW_IF(slacks.size2() != m_numMeshInteriorPoints,
                 OpenSim::Exception,
                 OpenSim::format("Expected slack variables to be length %i, "
                                 "but they are length %i.",
-                        m_numPointsIgnoringConstraints, slacks.size2()));
+                        m_numMeshInteriorPoints, slacks.size2()));
     }
 
     // Create the CasADi NLP function.
@@ -1106,10 +1105,10 @@ casadi::MXVector Transcription::evalOnTrajectory(
     }
     if (&timeIndices == &m_gridIndices) {
         mxIn[mxIn.size() - 1] = m_paramsTrajGrid;
-    } else if (&timeIndices == &m_daeIndices) {
-        mxIn[mxIn.size() - 1] = m_paramsTraj;
-    } else if (&timeIndices == &m_daeIndicesIgnoringConstraints) {
-        mxIn[mxIn.size() - 1] = m_paramsTrajIgnoringConstraints;
+    } else if (&timeIndices == &m_meshIndices) {
+        mxIn[mxIn.size() - 1] = m_paramsTrajMesh;
+    } else if (&timeIndices == &m_meshInteriorIndices) {
+        mxIn[mxIn.size() - 1] = m_paramsTrajMeshInterior;
     } else {
         OPENSIM_THROW(OpenSim::Exception, "Internal error.");
     }

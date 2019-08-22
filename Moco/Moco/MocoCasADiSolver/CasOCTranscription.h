@@ -44,22 +44,22 @@ public:
     casadi::DM createQuadratureCoefficients() const {
         return createQuadratureCoefficientsImpl();
     }
-    casadi::DM createKinematicConstraintIndices() const {
-        casadi::DM kinConIndices = createKinematicConstraintIndicesImpl();
-        const auto shape = kinConIndices.size();
+    casadi::DM createMeshIndices() const {
+        casadi::DM meshIndices = createMeshIndicesImpl();
+        const auto shape = meshIndices.size();
         OPENSIM_THROW_IF(shape.first != 1 || shape.second != m_numGridPoints,
                 OpenSim::Exception,
                 OpenSim::format(
-                        "createKinematicConstraintIndicesImpl() must return a "
+                        "createMeshIndicesImpl() must return a "
                         "row vector of shape length [1, %i], but a matrix of "
                         "shape [%i, %i] was returned.",
                         m_numGridPoints, shape.first, shape.second));
         OPENSIM_THROW_IF(!SimTK::isNumericallyEqual(
-                                 casadi::DM::sum2(kinConIndices).scalar(),
+                                 casadi::DM::sum2(meshIndices).scalar(),
                                  m_numMeshPoints),
                 OpenSim::Exception, "Internal error.");
 
-        return kinConIndices;
+        return meshIndices;
     }
 
     Solution solve(const Iterate& guessOrig);
@@ -115,7 +115,7 @@ protected:
     int m_numGridPoints = -1;
     int m_numMeshPoints = -1;
     int m_numMeshIntervals = -1;
-    int m_numPointsIgnoringConstraints = -1;
+    int m_numMeshInteriorPoints = -1;
     int m_numDefectsPerMeshInterval = -1;
     int m_numMultibodyResiduals = -1;
     int m_numAuxiliaryResiduals = -1;
@@ -128,15 +128,15 @@ protected:
 private:
     VariablesMX m_vars;
     casadi::MX m_paramsTrajGrid;
-    casadi::MX m_paramsTraj;
-    casadi::MX m_paramsTrajIgnoringConstraints;
+    casadi::MX m_paramsTrajMesh;
+    casadi::MX m_paramsTrajMeshInterior;
     VariablesDM m_lowerBounds;
     VariablesDM m_upperBounds;
 
-    casadi::DM m_kinematicConstraintIndices;
+    casadi::DM m_meshIndicesMap;
     casadi::Matrix<casadi_int> m_gridIndices;
-    casadi::Matrix<casadi_int> m_daeIndices;
-    casadi::Matrix<casadi_int> m_daeIndicesIgnoringConstraints;
+    casadi::Matrix<casadi_int> m_meshIndices;
+    casadi::Matrix<casadi_int> m_meshInteriorIndices;
 
     casadi::MX m_xdot; // State derivatives.
 
@@ -150,12 +150,11 @@ private:
     /// quadrature coeffecients (of length m_numGridPoints) required to set the
     /// the integral cost within transcribe().
     virtual casadi::DM createQuadratureCoefficientsImpl() const = 0;
-    /// Override this function to specify the indicies in the grid where any
-    /// existing kinematic constraints are to be enforced.
+    /// Override this function to specify the indicies in the grid where the
+    /// mesh (or "knot") points lie.
     /// @note The returned vector must be a row vector of length m_numGridPoints
-    /// with nonzero values at the indices where kinematic constraints are
-    /// enforced.
-    virtual casadi::DM createKinematicConstraintIndicesImpl() const = 0;
+    /// with nonzero values at the mesh indices.
+    virtual casadi::DM createMeshIndicesImpl() const = 0;
     /// Override this function in your derived class set the defect, kinematic,
     /// and path constraint errors required for your transcription scheme.
     virtual void calcDefectsImpl(const casadi::MX& x, const casadi::MX& xdot,
