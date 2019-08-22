@@ -59,7 +59,7 @@ MocoStudy MocoTrack::initialize() {
 
     // Modeling.
     // ---------
-    Model model = get_model().process();
+    Model model = get_model().process(getDocumentDirectory());
     model.initSystem();
 
     // Goals.
@@ -147,7 +147,8 @@ TimeSeriesTable MocoTrack::configureStateTracking(
         MocoProblem& problem, Model& model) {
 
     // Read in the states reference data and spline.
-    TimeSeriesTable states = get_states_reference().process("", &model);
+    TimeSeriesTable states =
+            get_states_reference().process(getDocumentDirectory(), &model);
     auto stateSplines = GCVSplineSet(states, states.getColumnLabels());
 
     // Loop through all coordinates and compare labels in the reference data
@@ -234,7 +235,8 @@ TimeSeriesTable MocoTrack::configureStateTracking(
 void MocoTrack::configureMarkerTracking(MocoProblem& problem, Model& model) {
 
     // Read in the markers reference data.
-    TimeSeriesTable markersFlat = get_markers_reference().process("", &model);
+    TimeSeriesTable markersFlat =
+            get_markers_reference().process(getDocumentDirectory(), &model);
     TimeSeriesTable_<SimTK::Vec3> markers = markersFlat.pack<SimTK::Vec3>();
     MarkersReference markersRef(markers);
 

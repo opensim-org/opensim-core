@@ -99,6 +99,11 @@ protected:
     /// to conform to the current platform.
     std::string getFilePath(const std::string& file) const;
 
+    /// Get the (canonicalized) absolute directory containing the file from
+    /// which this tool was loaded. If the tool was not loaded from a file, this
+    /// returns an empty string.
+    std::string getDocumentDirectory() const;
+
 #endif
 private:
     void constructProperties();
