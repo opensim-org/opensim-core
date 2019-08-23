@@ -251,6 +251,7 @@ MocoSolution gaitTracking(const bool& setPathLengthApproximation) {
     MocoSolution solution = moco.solve();
     auto full = createPeriodicTrajectory(solution);
     full.write("gaitTracking_solution_fullcycle.sto");
+
     //moco.visualize(solution);
 
     return solution;
@@ -378,7 +379,8 @@ void gaitPrediction(const MocoSolution& gaitTrackingSolution,
     auto full = createPeriodicTrajectory(solution);
     full.write("gaitPrediction_solution_fullcycle.sto");
 
-    // Extract ground reaction forces
+    // Extract ground reaction forces.
+    // ===============================
     std::vector<std::string> contactSpheres_r;
     std::vector<std::string> contactSpheres_l;
     contactSpheres_r.push_back("contactSphereHeel_r");

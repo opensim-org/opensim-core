@@ -20,7 +20,6 @@
 
 #include "MocoProblem.h"
 #include "MocoTrajectory.h"
-#include "Components/SmoothSphereHalfSpaceForce.h"
 #include <cstdarg>
 #include <cstdio>
 #include <iomanip>
