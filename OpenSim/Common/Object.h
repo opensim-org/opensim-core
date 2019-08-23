@@ -857,10 +857,12 @@ private:
     // a "defaults" section.
     static bool _serializeAllDefaults;
 
-    // Debug level: 
-    //  0: Hides non fatal warnings 
-    //  1: Shows illegal tags 
-    //  2: level 1 + registration troubleshooting
+    // Debug level:
+    // -1: Quiet mode, no warnings printed.
+    //  0: Print upon successful load of model, external loads, etc. Print 
+    //     warnings for muscles with negative force.
+    //  1: Shows illegal tags. 
+    //  2: level 1 + registration troubleshooting.
     //  3: 2 + more verbose troubleshooting of Object (de)serialization. When 
     //     used from Java wrapping in GUI/Matlab this catches all exceptions 
     //     thrown by the low-level libraries which is slower but helpful in 
