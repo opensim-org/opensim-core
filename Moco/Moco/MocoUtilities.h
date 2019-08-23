@@ -714,16 +714,16 @@ private:
 
 /// Obtain the ground reaction forces, centers of pressure, and torques
 /// resulting from smoothSphereHalfSpaceForces using the model in the problem
-/// and the solution. Force and torques are expressed in the ground frame with
-/// respect to the ground origin. Hence, the centers of pressure are Vec3(0).
-/// Names of smoothSphereHalfSpaceForce elements should be provided separately
-/// for elements of the right and left feet. The output is a table formated for
-/// use with OpenSim tools; the labels of the columns distinguish between right
-/// ("ground_<>") and left ("1_ground_<>") forces, centers of pressure, and
+/// and the trajectory. Force and torques are expressed in the ground frame
+/// with respect to the ground origin. Hence, the centers of pressure are at
+/// the origin. Names of smoothSphereHalfSpaceForce elements should be provided
+/// separately for elements of the right and left feet. The output is a table
+/// formated for use with OpenSim tools; the labels of the columns distinguish
+/// between right ("<>_r") and left ("<>_l") forces, centers of pressure, and
 /// torques.
 OSIMMOCO_API
 TimeSeriesTable getSmoothSphereHalfSpaceReactionForces(Model model,
-        const MocoSolution& solution,
+        const MocoTrajectory& trajectory,
         const std::vector<std::string>& forceNamesRightFoot,
         const std::vector<std::string>& forceNamesLeftFoot);
 

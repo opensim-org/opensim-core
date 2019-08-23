@@ -713,15 +713,15 @@ int OpenSim::getMocoParallelEnvironmentVariable() {
 }
 
 TimeSeriesTable OpenSim::getSmoothSphereHalfSpaceReactionForces(Model model,
-        const MocoSolution& solution,
+        const MocoTrajectory& trajectory,
         const std::vector<std::string>& forceNamesRightFoot,
         const std::vector<std::string>& forceNamesLeftFoot) {
     model.initSystem();
     TimeSeriesTableVec3 externalForcesTable{};
-    Storage storage = solution.exportToStatesStorage();
+    Storage storage = trajectory.exportToStatesStorage();
     StatesTrajectory optStates =
             StatesTrajectory::createFromStatesStorage(model, storage, true);
-    SimTK::Vector optTime = solution.getTime();
+    SimTK::Vector optTime = trajectory.getTime();
     int count = 0;
     for (const auto& state : optStates) {
         model.realizeVelocity(state);
