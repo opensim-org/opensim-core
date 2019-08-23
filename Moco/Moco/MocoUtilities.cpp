@@ -712,7 +712,7 @@ int OpenSim::getMocoParallelEnvironmentVariable() {
     return -1;
 }
 
-TimeSeriesTable OpenSim::getSmoothSphereHalfSpaceReactionForces(Model model,
+TimeSeriesTable OpenSim::getReactionForces(Model model,
         const MocoTrajectory& trajectory,
         const std::vector<std::string>& forceNamesRightFoot,
         const std::vector<std::string>& forceNamesLeftFoot) {
@@ -727,11 +727,10 @@ TimeSeriesTable OpenSim::getSmoothSphereHalfSpaceReactionForces(Model model,
         model.realizeVelocity(state);
         SimTK::Vec3 forcesRight(0);
         SimTK::Vec3 torquesRight(0);
-        // Loop through all smoothSphereHalfSpaceForces of the right side.
+        // Loop through all Forces of the right side.
         for (const auto& smoothForce : forceNamesRightFoot) {
-            Array<double> forceValues = model.getComponent<
-                    SmoothSphereHalfSpaceForce>(
-                            smoothForce).getRecordValues(state);
+            Array<double> forceValues =
+                model.getComponent<Force>(smoothForce).getRecordValues(state);
             forcesRight += SimTK::Vec3(forceValues[0], forceValues[1],
                     forceValues[2]);
             torquesRight += SimTK::Vec3(forceValues[3], forceValues[4],
@@ -739,11 +738,10 @@ TimeSeriesTable OpenSim::getSmoothSphereHalfSpaceReactionForces(Model model,
         }
         SimTK::Vec3 forcesLeft(0);
         SimTK::Vec3 torquesLeft(0);
-        // Loop through all smoothSphereHalfSpaceForces of the left side.
+        // Loop through all Forces of the left side.
         for (const auto& smoothForce : forceNamesLeftFoot) {
-            Array<double> forceValues = model.getComponent<
-                    SmoothSphereHalfSpaceForce>(
-                            smoothForce).getRecordValues(state);
+            Array<double> forceValues =
+                model.getComponent<Force>(smoothForce).getRecordValues(state);
             forcesLeft += SimTK::Vec3(forceValues[0], forceValues[1],
                     forceValues[2]);
             torquesLeft += SimTK::Vec3(forceValues[3], forceValues[4],
