@@ -259,7 +259,7 @@ private:
 };
 
 inline void MocoGoal::calcIntegrandImpl(
-        const SimTK::State& state, double& integrand) const {}
+        const SimTK::State& /*state*/, double& /*integrand*/) const {}
 
 /// Endpoint cost for final time.
 /// @ingroup mocogoal
@@ -318,7 +318,7 @@ protected:
         values[0] = get_desired_average_speed() - (displacement / duration);
         if (getModeIsCost()) { values[0] = SimTK::square(values[0]); }
     }
-    void initializeOnModelImpl(const Model& model) const override {
+    void initializeOnModelImpl(const Model&) const override {
         setNumIntegralsAndOutputs(0, 1);
     }
 

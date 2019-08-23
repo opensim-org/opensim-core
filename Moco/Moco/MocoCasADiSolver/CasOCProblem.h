@@ -312,7 +312,7 @@ public:
             casadi::DM& velocity_correction) const = 0;
 
     virtual void calcIntegrand(int /*integralIndex*/,
-            const ContinuousInput& /*input*/, double& integrand) const {}
+            const ContinuousInput& /*input*/, double& /*integrand*/) const {}
     virtual void calcCost(int /*costIndex*/, const CostInput& /*input*/,
             casadi::DM& /*cost*/) const {}
     virtual void calcEndpointConstraint(int /*index*/,

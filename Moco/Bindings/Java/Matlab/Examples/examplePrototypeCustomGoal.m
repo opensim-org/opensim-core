@@ -79,12 +79,12 @@ org.opensim.modeling.opensimMoco.prescribeControlsToModel(mocoTraj, model);
 statesTraj = mocoTraj.exportToStatesTrajectory(problem);
 model.initSystem();
 N = statesTraj.getSize();
-integrands = zeros(N, 1);
+integrand = zeros(N, 1);
 for i = 0:(N - 1)
-    integrands(i + 1) = integrandFunc(model, statesTraj.get(i));
+    integrand(i + 1) = integrandFunc(model, statesTraj.get(i));
 end
 
-integral = trapz(integrands);
+integral = trapz(integrand);
 goalValue = goalFunc(model, statesTraj.front(), statesTraj.back(), integral);
 
 end

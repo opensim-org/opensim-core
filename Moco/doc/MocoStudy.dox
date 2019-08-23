@@ -6,8 +6,9 @@ namespace OpenSim {
 @tableofcontents
 
 MocoStudy allows one to solve a generic optimal control problem, where the
-costs, constraints, and solver settings are fully defined by the user. See
-@ref mocoocp for a mathematical description).
+costs, constraints, and solver settings are fully defined by the user.
+
+For a mathematical description, see @ref mocoocp.
 
 In Moco, "goals", such as tracking marker data or effort, can be
 enforced either as cost terms to minimize or endpoint constraints.
