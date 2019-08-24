@@ -323,11 +323,11 @@ void DeGrooteFregly2016Muscle::calcMuscleDynamicsInfo(
 
     // Compute force entries.
     // ----------------------
-    const auto FMo = get_max_isometric_force();
+    const auto maxIsometricForce = get_max_isometric_force();
     mdi.fiberForce = totalFiberForce;
     mdi.activeFiberForce = activeFiberForce;
     mdi.passiveFiberForce = passiveFiberForce;
-    mdi.normFiberForce = mdi.fiberForce / FMo;
+    mdi.normFiberForce = mdi.fiberForce / maxIsometricForce;
     mdi.fiberForceAlongTendon = mdi.fiberForce * mli.cosPennationAngle;
 
     if (get_ignore_tendon_compliance()) {
@@ -336,7 +336,7 @@ void DeGrooteFregly2016Muscle::calcMuscleDynamicsInfo(
     } else {
         mdi.normTendonForce =
                 getStateVariableValue(s, STATE_NORMALIZED_TENDON_FORCE_NAME);
-        mdi.tendonForce = FMo * mdi.normTendonForce;
+        mdi.tendonForce = maxIsometricForce * mdi.normTendonForce;
     }
 
     // Compute stiffness entries.

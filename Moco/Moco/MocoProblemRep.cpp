@@ -374,8 +374,8 @@ void MocoProblemRep::initialize() {
                 }
             }
             
-            const auto* muscle = dynamic_cast<const Muscle*>(&actu);
             if (ph0.get_bound_activation_from_excitation()) {
+                const auto* muscle = dynamic_cast<const Muscle*>(&actu);
                 if (muscle && !muscle->get_ignore_activation_dynamics()) {
                     const std::string stateName = actuName + "/activation";
                     auto& info = m_state_infos[stateName];
@@ -438,8 +438,8 @@ void MocoProblemRep::initialize() {
 
     // Muscle-tendon equilibrium residual outputs.
     m_implicit_tendon_dynamics_residuals =
-            getModelOutputReferences<double>(m_model_base, "implicitresidual",
-                    true);
+            getModelOutputReferences<double>(m_model_disabled_constraints, 
+                "implicitresidual", true);
 
     // Parameters.
     // -----------

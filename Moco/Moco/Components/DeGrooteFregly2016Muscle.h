@@ -325,23 +325,25 @@ public:
     /// of fiber force (active, conservative passive, and non-conservative 
     /// passive).
     /// @note based on Millard2012EquilibriumMuscle::calcFiberForce().
-    SimTK::Vec4 calcFiberForce(const SimTK::Real& activation,
-            const SimTK::Real& fal, const SimTK::Real& fv, 
-            const SimTK::Real& fpe, 
+    void calcFiberForce(const SimTK::Real& activation,
+            const SimTK::Real& fiberForceLengthMultiplier, 
+            const SimTK::Real& fiberForceVelocityMultiplier, 
+            const SimTK::Real& normPassiveFiberForce, 
             const SimTK::Real& normFiberVelocity,
             SimTK::Real& activeFiberForce,
             SimTK::Real& conPassiveFiberForce,
             SimTK::Real& nonConPassiveFiberForce,
             SimTK::Real& totalFiberForce) const {
-        const auto& FMo = get_max_isometric_force();
-        const auto& beta = get_fiber_damping();
-
+        const auto& maxIsometricForce = get_max_isometric_force();
         // active force
-        activeFiberForce = FMo * (activation * fal * fv);
+        activeFiberForce =
+                maxIsometricForce * (activation * fiberForceLengthMultiplier *
+                                         fiberForceVelocityMultiplier);
         // conservative passive force
-        conPassiveFiberForce = FMo * fpe;
+        conPassiveFiberForce = maxIsometricForce * normPassiveFiberForce;
         // non-conservative passive force
-        nonConPassiveFiberForce = FMo * beta * normFiberVelocity;
+        nonConPassiveFiberForce =
+                maxIsometricForce * get_fiber_damping() * normFiberVelocity;
         // total force
         totalFiberForce = activeFiberForce + conPassiveFiberForce +
                           nonConPassiveFiberForce;
@@ -352,19 +354,23 @@ public:
     /// fiber.
     /// @note based on Millard2012EquilibriumMuscle::calcFiberStiffness().
     SimTK::Real calcFiberStiffness(const SimTK::Real& activation,
-            const SimTK::Real& normFiberLength, const SimTK::Real& fv) const {
+            const SimTK::Real& normFiberLength, 
+            const SimTK::Real& fiberVelocityMultiplier) const {
 
-        const SimTK::Real DlMtilde_DlM = 1.0 / get_optimal_fiber_length();
-        const SimTK::Real Dfact_DlM =
-                DlMtilde_DlM *
+        const SimTK::Real partialNormFiberLengthParialFiberLength = 
+                1.0 / get_optimal_fiber_length();
+        const SimTK::Real partialNormActiveForcePartialFiberLength =
+                partialNormFiberLengthParialFiberLength *
                 calcActiveForceLengthMultiplierDerivative(normFiberLength);
-        const SimTK::Real Dfpas_DlM =
-                DlMtilde_DlM *
+        const SimTK::Real partialNormPassiveForcePartialFiberLength =
+                partialNormFiberLengthParialFiberLength *
                 calcPassiveForceMultiplierDerivative(normFiberLength);
 
-        // DFM_DlM
+        // fiberStiffness = d_fiberForce / d_fiberLength
         return get_max_isometric_force() *
-               (activation * Dfact_DlM * fv + Dfpas_DlM);
+               (activation * partialNormActiveForcePartialFiberLength *
+                               fiberVelocityMultiplier +
+                       partialNormPassiveForcePartialFiberLength);
     }
 
     /// The derivative of pennation angle with respect to fiber length.

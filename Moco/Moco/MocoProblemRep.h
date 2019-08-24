@@ -286,7 +286,8 @@ public:
 
     /// Get a vector of reference pointers to model outputs that return residual
     /// values for the muscle-tendon equilibrium equation in implicit tendon
-    /// contraction dynamics.
+    /// contraction dynamics. The references returned are from the model
+    /// returned by getModelDisabledConstraints(). 
     const std::vector<SimTK::ReferencePtr<const Output<double>>>&
     getImplicitTendonDynamicsResiduals() const {
         return m_implicit_tendon_dynamics_residuals;

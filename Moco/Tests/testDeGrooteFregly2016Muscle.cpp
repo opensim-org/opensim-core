@@ -140,9 +140,22 @@ TEST_CASE("DeGrooteFregly2016Muscle basics") {
             CHECK(muscle.getPassiveForceMultiplier(state) ==
                     Approx(muscle.calcPassiveForceMultiplier(1.0)));
             CHECK(muscle.getActiveForceLengthMultiplier(state) == Approx(1.0));
-            CHECK(SimTK::isNaN(muscle.getFiberPotentialEnergy(state)));
-            CHECK(SimTK::isNaN(muscle.getTendonPotentialEnergy(state)));
-            CHECK(SimTK::isNaN(muscle.getMusclePotentialEnergy(state)));
+            const auto fiberPotentialEnergy =
+                    muscle.calcPassiveForceMultiplierIntegral(1.0) *
+                    muscle.get_optimal_fiber_length() *
+                    muscle.get_max_isometric_force();
+            CHECK(muscle.getFiberPotentialEnergy(state) == 
+                    Approx(fiberPotentialEnergy));
+            const auto tendonPotentialEnergy =
+                    muscle.calcTendonForceMultiplierIntegral(1.0) *
+                    muscle.get_tendon_slack_length() *
+                    muscle.get_max_isometric_force();
+            CHECK(muscle.getTendonPotentialEnergy(state) == 
+                    Approx(tendonPotentialEnergy));
+            CHECK(muscle.getMusclePotentialEnergy(state) == 
+                    Approx(fiberPotentialEnergy + tendonPotentialEnergy));
+
+            //SimTK::Differentiator diff();
 
             model.realizeVelocity(state);
             CHECK(muscle.getFiberVelocity(state) == 0);
@@ -555,6 +568,31 @@ Model createHangingMuscleModel(
 
     return model;
 }
+
+//class FiberForceFunction : SimTK::Differentiator::ScalarFunction {
+//    
+//public:
+//    FiberForceFunction(const DeGrooteFregly2016Muscle& muscle,
+//        const SimTK::State& state)
+//        : SimTK::Differentiator::ScalarFunction(), m_muscle(&muscle),
+//          m_state(&state) {
+//    }
+//
+//    int f(SimTK::Real x, SimTK::Real& fx) const override {
+//
+//        
+//        
+//        m_muscle->getFiberForce(m_state);
+//        
+//    }
+//private:
+//    SimTK::ReferencePtr<const DeGrooteFregly2016Muscle> m_muscle;
+//    SimTK::ReferencePtr<const SimTK::State> m_state;
+//};
+//
+//TEST_CASE("DeGrooteFregly2016Muscle derivatives") {
+//    
+//}
 
 TEMPLATE_TEST_CASE("Hanging muscle minimum time", "", MocoCasADiSolver) {
     auto ignoreActivationDynamics = GENERATE(true, false);

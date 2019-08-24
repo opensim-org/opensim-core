@@ -232,20 +232,6 @@ std::unique_ptr<CasOC::Solver> MocoCasADiSolver::createCasOCSolver(
         }
     }
 
-    // TODO these options don't seem to get passed to SNOPT
-    //if (get_optim_solver() == "snopt") {
-    //    if (get_optim_convergence_tolerance() != -1) {
-    //        const auto& tol = get_optim_convergence_tolerance();
-    //        // This is based on what Simbody does.
-    //        solverOptions["Major optimality tolerance"] = tol;
-    //    }
-    //    if (get_optim_constraint_tolerance() != -1) {
-    //        const auto& tol = get_optim_constraint_tolerance();
-    //        solverOptions["Major feasibility tolerance"] = tol;
-    //        solverOptions["Minor feasibility tolerance"] = tol;
-    //    }
-    //}
-
     checkPropertyInSet(*this, getProperty_optim_sparsity_detection(),
             {"none", "random", "initial-guess"});
     casSolver->setSparsityDetection(get_optim_sparsity_detection());
