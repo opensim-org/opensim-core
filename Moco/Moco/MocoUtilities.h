@@ -720,9 +720,12 @@ private:
 /// separately for elements of the right and left feet. The output is a table
 /// formated for use with OpenSim tools; the labels of the columns distinguish
 /// between right ("<>_r") and left ("<>_l") forces, centers of pressure, and
-/// torques.
+/// torques. The forces and torques used are taken from the first six outputs
+/// of getRecordValues(); this order is of use for, for example, the
+/// SmoothSphereHalfSpaceForce contact model but might have a different meaning
+/// for different contact models.
 OSIMMOCO_API
-TimeSeriesTable getReactionForces(Model model,
+TimeSeriesTable createExternalLoadsTableForGait(Model model,
         const MocoTrajectory& trajectory,
         const std::vector<std::string>& forceNamesRightFoot,
         const std::vector<std::string>& forceNamesLeftFoot);

@@ -711,7 +711,7 @@ int OpenSim::getMocoParallelEnvironmentVariable() {
     return -1;
 }
 
-TimeSeriesTable OpenSim::getReactionForces(Model model,
+TimeSeriesTable OpenSim::createExternalLoadsTableForGait(Model model,
         const MocoTrajectory& trajectory,
         const std::vector<std::string>& forceNamesRightFoot,
         const std::vector<std::string>& forceNamesLeftFoot) {

@@ -383,14 +383,14 @@ void gaitPrediction(const MocoSolution& gaitTrackingSolution,
     // ===============================
     std::vector<std::string> contactSpheres_r;
     std::vector<std::string> contactSpheres_l;
-    contactSpheres_r.push_back("contactSphereHeel_r");
+    contactSpheres_r.push_back("contactSphereHeEel_r");
     contactSpheres_r.push_back("contactSphereFront_r");
     contactSpheres_l.push_back("contactSphereHeel_l");
     contactSpheres_l.push_back("contactSphereFront_l");
-    TimeSeriesTable externalForcesTableFlat = getReactionForces(model, full,
-            contactSpheres_r, contactSpheres_l);
-    DataAdapter::InputTables tables = {{"table", &externalForcesTableFlat}};
-    FileAdapter::writeFile(tables, "gaitPrediction_solutionGRF_fullcycle.sto");
+    TimeSeriesTable externalForcesTableFlat = createExternalLoadsTableForGait(
+            model, full, contactSpheres_r, contactSpheres_l);
+    writeTableToFile(externalForcesTableFlat,
+            "gaitPrediction_solutionGRF_fullcycle.sto");
 
     moco.visualize(solution);
 }
