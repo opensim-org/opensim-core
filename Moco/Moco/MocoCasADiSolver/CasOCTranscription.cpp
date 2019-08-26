@@ -219,7 +219,8 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
             // "Slice()" grabs everything in that dimension (like ":" in
             // Matlab).
             // TODO: How to choose bounds on udot?
-            setVariableBounds(derivatives, Slice(), Slice(), {-1000, 1000});
+            setVariableBounds(derivatives, Slice(), Slice(), 
+                m_solver.getImplicitModeAccelerationBounds());
         }
     }
     {

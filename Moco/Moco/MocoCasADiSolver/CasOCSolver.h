@@ -65,6 +65,12 @@ public:
     double getLagrangeMultiplierWeight() const {
         return m_lagrangeMultiplierWeight;
     }
+    void setImplicitModeAccelerationBounds(Bounds bounds) {
+        m_implicitModeAccelerationBounds = bounds;
+    }
+    Bounds getImplicitModeAccelerationBounds() const {
+        return m_implicitModeAccelerationBounds;
+    }
     /// Whether or not to constrain control values at mesh interval midpoints
     /// by linearly interpolating control values from mesh interval endpoints.
     /// @note Only applies to Hermite-Simpson collocation.
@@ -145,6 +151,7 @@ private:
     bool m_minimizeLagrangeMultipliers = false;
     double m_lagrangeMultiplierWeight = 1.0;
     bool m_interpolateControlMidpoints = true;
+    Bounds m_implicitModeAccelerationBounds;
     std::string m_finite_difference_scheme = "central";
     std::string m_sparsity_detection = "none";
     std::string m_write_sparsity;
