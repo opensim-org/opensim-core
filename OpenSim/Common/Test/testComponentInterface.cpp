@@ -595,10 +595,10 @@ void testMisc() {
         const AbstractOutput& out5 = bar.getOutput("PotentialEnergy");
 
         cout << "=========================[Time " << s.getTime() << "s]======================="<<endl;
-        cout << out1.getName() <<"|"<< out1.getTypeName() <<"|"<< out1.getValueAsString(s) << endl;
-        cout << out2.getName() <<"|"<< out2.getTypeName() <<"|"<< out2.getValueAsString(s) << endl;
-        cout << out3.getName() <<"|"<< out3.getTypeName() <<"|"<< out3.getValueAsString(s) << endl;
-            
+        cout << format("%s|%s|%s", out1.getName(), out1.getTypeName(), out1.getValueAsString(s)) << endl;
+        cout << format("%s|%s|%s", out2.getName(), out2.getTypeName(), out2.getValueAsString(s)) << endl;
+        cout << format("%s|%s|%s", out3.getName(), out3.getTypeName(), out3.getValueAsString(s)) << endl;
+
         system.realize(s, Stage::Acceleration);
         cout << out4.getName() <<"|"<< out4.getTypeName() <<"|"<< out4.getValueAsString(s) << endl;
         cout << out5.getName() <<"|"<< out5.getTypeName() <<"|"<< out5.getValueAsString(s) << endl;

@@ -660,3 +660,18 @@ void IO::eraseEmptyElements(std::vector<std::string>& list)
             ++it;
     }
 }
+
+std::string OpenSim::format_c(const char* format, ...) {
+    // Get buffer size.
+    va_list args;
+    va_start(args, format);
+    int bufsize = vsnprintf(nullptr, 0, format, args) + 1; // +1 for '\0'
+    va_end(args);
+
+    // Create formatted string.
+    std::unique_ptr<char[]> buf(new char[bufsize]);
+    va_start(args, format);
+    vsnprintf(buf.get(), bufsize, format, args);
+    va_end(args);
+    return std::string(buf.get());
+}
