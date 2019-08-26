@@ -374,7 +374,7 @@ TEMPLATE_TEST_CASE(
 
     // Check that the actuator "actu" is equal to gravity (i.e. supporting all
     // of the weight).
-    CHECK(solution.getControl("/actu")[0] == Approx(-10).epsilon(1e-6));
+    CHECK(solution.getControl("/actu")[0] == Approx(-10).epsilon(1e-4));
     // Check that the reaction force is zero.
     CHECK(solution.getObjective() == Approx(0.0).margin(1e-6));
 }
