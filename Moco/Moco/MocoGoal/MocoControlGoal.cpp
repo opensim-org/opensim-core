@@ -56,6 +56,7 @@ void MocoControlGoal::initializeOnModelImpl(const Model& model) const {
             OPENSIM_THROW_FRMOBJ(
                     Exception, "Unrecognized control '" + thisName + "'.");
         }
+        m_controlNames.push_back(thisName);
     }
 
     for (const auto& controlName : controlNames) {
@@ -82,5 +83,18 @@ void MocoControlGoal::calcIntegrandImpl(
     for (const auto& icontrol : m_controlIndices) {
         integrand += m_weights[iweight] * controls[icontrol] * controls[icontrol];
         ++iweight;
+    }
+}
+
+void MocoControlGoal::printDescriptionImpl(std::ostream &stream) const {
+    stream << "    ";
+    while(true) {
+        int i = 0;
+        stream << "Name: " << m_controlNames[i] << " Weight: " << m_weights[i];
+        i++;
+        if(i == (int) m_controlNames.size()) {
+            break;
+        }
+        stream << ", ";
     }
 }
