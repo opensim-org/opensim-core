@@ -11,14 +11,12 @@ jobs:
     - uses: actions/checkout@v1
     - name: Install dependencies
       env:
-        DEP_BUILD_DIR: ~/build_deps
-        DEP_INSTALL_DIR: ~/opensim_dependencies_install
+        DEP_BUILD_DIR: $HOME/build_deps
+        DEP_INSTALL_DIR: $HOME/opensim_dependencies_install
         BTYPE: Release
       run: |
         REPO=$(pwd)
-        echo $pwd
-        echo $(pwd)
-        echo $REPO
+        echo $DEP_BUILD_DIR
         mkdir $DEP_BUILD_DIR && cd $DEP_BUILD_DIR
-        cmake $REPO -DCMAKE_INSTALL_PREFIX=$DEP_INSTALL_DIR -DCMAKE_BUILD_TYPE=$BTYPE
+        cmake $REPO/dependencies -DCMAKE_INSTALL_PREFIX=$DEP_INSTALL_DIR -DCMAKE_BUILD_TYPE=$BTYPE
         make --jobs 4
