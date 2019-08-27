@@ -70,6 +70,7 @@ void MocoPeriodicityGoal::initializeOnModelImpl(const Model& model) const {
                 Exception, format("Could not find state '%s'.", path2));
         int stateIndex1 = allSysYIndices[path1];
         int stateIndex2 = allSysYIndices[path2];
+        m_state_names.emplace_back(path1, path2);
         m_indices_states.emplace_back(stateIndex1, stateIndex2);
     }
 
@@ -85,6 +86,7 @@ void MocoPeriodicityGoal::initializeOnModelImpl(const Model& model) const {
                 Exception, format("Could not find control '%s'.", path2));
         int controlIndex1 = systemControlIndexMap[path1];
         int controlIndex2 = systemControlIndexMap[path2];
+        m_control_names.emplace_back(path1, path2);
         m_indices_controls.emplace_back(controlIndex1, controlIndex2);
     }
 
@@ -118,4 +120,18 @@ void MocoPeriodicityGoal::calcGoalImpl(
         }
         ++j;
     }
+}
+void MocoPeriodicityGoal::printDescriptionImpl(std::ostream& stream) const {
+    stream << "        ";
+    stream << "State periodicity pairs: ";
+    for (const auto& pair : m_state_names) {
+        stream << "[" << pair.first << "," << pair.second << "]";
+    }
+    stream << "\n";
+    stream << "        ";
+    stream << "Control periodicity pairs: ";
+    for (const auto& pair : m_control_names) {
+        stream << "[" << pair.first << "," << pair.second << "]";
+    }
+    stream << "\n";
 }

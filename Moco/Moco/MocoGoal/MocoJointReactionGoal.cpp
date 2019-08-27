@@ -148,3 +148,17 @@ void MocoJointReactionGoal::calcIntegrandImpl(const SimTK::State& state,
         integrand += weight * pow(reaction[index.first][index.second], 2);
     }
 }
+void MocoJointReactionGoal::printDescriptionImpl(std::ostream &stream) const {
+    stream << "        ";
+    stream << "Joint path: " << get_joint_path() << ", ";
+    stream << "Loads frame: " << get_loads_frame() << ", ";
+    stream << "Expressed: " << get_expressed_in_frame_path() << ", ";
+    stream << "Reaction measures: ";
+    for(int i = 0; i < getProperty_reaction_measures().size(); i++) {
+        stream << get_reaction_measures(i);
+        if(i < getProperty_reaction_measures().size() - 1) {
+            stream << ", ";
+        }
+    }
+    stream << "Reaction weights: " << get_reaction_weights() << "\n";
+}

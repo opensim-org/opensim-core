@@ -214,4 +214,13 @@ void MocoOrientationTrackingGoal::calcIntegrandImpl(const SimTK::State& state,
         integrand += weight * SimTK::square(aa_MD[0]);
     }
 }
+void MocoOrientationTrackingGoal::printDescriptionImpl(std::ostream& stream) const {
+    stream << "        ";
+    stream << "Rotation reference file: " << get_rotation_reference_file() << ", ";
+    for (int i = 0; i < (int) getProperty_frame_paths().size(); i++) {
+        stream << "Frame path " << i << ": " << get_frame_paths(i);
+        stream << " ";
+    }
+    stream << "\n";
+}
 

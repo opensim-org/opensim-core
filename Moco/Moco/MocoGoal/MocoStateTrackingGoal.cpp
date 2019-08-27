@@ -71,6 +71,7 @@ void MocoStateTrackingGoal::initializeOnModelImpl(const Model& model) const {
         }
         m_state_weights.push_back(refWeight);
         m_refsplines.cloneAndAppend(allSplines[iref]);
+        m_control_names.push_back(refName);
     }
 
     setNumIntegralsAndOutputs(1, 1);
@@ -91,3 +92,14 @@ void MocoStateTrackingGoal::calcIntegrandImpl(/*int meshIndex,*/
         integrand += m_state_weights[iref] * pow(modelValue - refValue, 2);
     }
 }
+void MocoStateTrackingGoal::printDescriptionImpl(std::ostream &stream) const {
+    stream << "        ";
+    for (int i = 0; i < (int) m_control_names.size(); i++) {
+        stream << "Name: " << m_control_names[i] << " Weight: " << m_state_weights[i];
+        if (i < (int) m_control_names.size() - 1) {
+            stream << ", ";
+        }
+        stream << "\n";
+    }
+}
+

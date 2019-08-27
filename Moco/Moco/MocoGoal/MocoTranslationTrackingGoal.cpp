@@ -199,3 +199,15 @@ void MocoTranslationTrackingGoal::calcIntegrandImpl(const SimTK::State& state,
         integrand += weight * error.normSqr();
     }
 }
+void MocoTranslationTrackingGoal::printDescriptionImpl(std::ostream &stream) const {
+    stream << "        ";
+    stream << "Translation reference file: " << get_translation_reference_file() << ", ";
+    for(int i = 0; i < getProperty_frame_paths().size(); i++) {
+        stream << "Frame path " << i << ": ";
+        stream << get_frame_paths(i);
+        if (i < getProperty_frame_paths().size() - 1) {
+            stream << ", ";
+        }
+    }
+    stream << "\n";
+}

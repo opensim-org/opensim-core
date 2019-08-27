@@ -102,3 +102,7 @@ void MocoMarkerTrackingGoal::initializeOnModelImpl(const Model& model) const {
         integrand += m_marker_weights[refidx] * distance;
     }
 }
+void MocoMarkerTrackingGoal::printDescriptionImpl(std::ostream& stream) const {
+    stream << "        ";
+    stream << "Allow unused references: " << get_allow_unused_references() << "\n";
+}

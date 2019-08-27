@@ -87,15 +87,12 @@ void MocoControlGoal::calcIntegrandImpl(
 }
 
 void MocoControlGoal::printDescriptionImpl(std::ostream &stream) const {
-    int i = 0;
     stream << "        ";
-    while(true) {
+    for(int i = 0; i < (int) m_controlNames.size(); i++) {
         stream << "Name: " << m_controlNames[i] << " Weight: " << m_weights[i];
-        i++;
-        if(i >= (int) m_controlNames.size()) {
-            break;
+        if(i < (int) m_controlNames.size() - 1) {
+            stream << ", ";
         }
-        stream << ", ";
     }
     stream << "\n";
 }
