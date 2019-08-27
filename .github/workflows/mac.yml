@@ -1,0 +1,35 @@
+name: Mac CI
+
+on: [push]
+
+jobs:
+  build:
+
+    runs-on: macOS-10.14
+
+    steps:
+    - uses: actions/checkout@v1
+    - name: Install Homebrew packages
+      run: |
+        brew install doxygen
+    - name: Build
+      env:
+        DEP_BUILD_DIR: /Users/runner/work/build_deps
+        DEP_INSTALL_DIR: /Users/runner/work/opensim_dependencies_install
+        BUILD_DIR: /Users/runner/work/build
+        INSTALL_DIR: /Users/runner/work/opensim-core-install
+        BTYPE: Release
+      run: |
+        REPO=$(pwd)
+        mkdir $DEP_BUILD_DIR && cd $DEP_BUILD_DIR
+        cmake $REPO/dependencies -DCMAKE_INSTALL_PREFIX=$DEP_INSTALL_DIR -DCMAKE_BUILD_TYPE=$BTYPE
+        make --jobs 4
+        mkdir $BUILD_DIR && cd $BUILD_DIR
+        OSIM_CMAKE_ARGS=($REPO -DCMAKE_INSTALL_PREFIX=$INSTALL_DIR -DCMAKE_BUILD_TYPE=$BTYPE)
+        printf '%s\n' "${OSIM_CMAKE_ARGS[@]}" 
+        cmake "${OSIM_CMAKE_ARGS[@]}"
+        make --jobs 4
+    - name: Test
+      run: ctest --jobs 4
+    - name: Install
+      run: make install
