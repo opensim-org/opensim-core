@@ -54,7 +54,7 @@ void MocoProblemRep::initialize() {
     m_kinematic_constraint_eq_names_with_derivatives.clear();
     m_kinematic_constraint_eq_names_without_derivatives.clear();
     m_implicit_dynamics_muscle_refs.clear();
-    m_implicit_tendon_dynamics_residuals.clear();
+    m_implicit_residuals.clear();
     
     if (!getTimeInitialBounds().isSet() && !getTimeFinalBounds().isSet()) {
         std::cout << "Warning: no time bounds set." << std::endl;
@@ -406,8 +406,8 @@ void MocoProblemRep::initialize() {
     // Additional information for DeGrooteFregly2016Muscle components that have
     // tendon compliance enabled.
     m_num_auxiliary_residual_equations = 0;
-    for (const auto& dgfmuscle : 
-            m_model_base.getComponentList<DeGrooteFregly2016Muscle>()) {
+    for (const auto& dgfmuscle : m_model_disabled_constraints
+            .getComponentList<DeGrooteFregly2016Muscle>()) {
         if (!dgfmuscle.get_ignore_tendon_compliance()) {
             // Normalized tendon force state info.
             const std::string stateName = 
@@ -437,9 +437,8 @@ void MocoProblemRep::initialize() {
     }
 
     // Muscle-tendon equilibrium residual outputs.
-    m_implicit_tendon_dynamics_residuals =
-            getModelOutputReferences<double>(m_model_disabled_constraints, 
-                "implicitresidual", true);
+    m_implicit_residuals = getModelOutputReferencePtrs<double>(
+            m_model_disabled_constraints, "implicitresidual", true);
 
     // Parameters.
     // -----------

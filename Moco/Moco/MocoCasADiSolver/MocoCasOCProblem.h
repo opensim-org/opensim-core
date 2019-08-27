@@ -234,14 +234,13 @@ private:
 
         // Copy auxiliary residuals to output.
         if (getNumAuxiliaryResidualEquations()) {
-            modelBase.realizeDynamics(simtkStateBase);
             const auto& residualOutputs =
-                    mocoProblemRep->getImplicitTendonDynamicsResiduals();
+                    mocoProblemRep->getImplicitResiduals();
             SimTK::Vector auxResiduals((int)residualOutputs.size());
             for (int i = 0; i < residualOutputs.size(); ++i) {
-                auxResiduals[i] =
-                        residualOutputs[i].getRef().getValue(simtkStateBase);
+                auxResiduals[i] = residualOutputs[i]->getValue(simtkStateBase);
             }
+
             std::copy_n(auxResiduals.getContiguousScalarData(),
                     auxResiduals.size(), output.auxiliary_residuals.ptr());
         }
@@ -296,13 +295,11 @@ private:
 
         // Copy auxiliary residuals to output.
         if (getNumAuxiliaryResidualEquations()) {
-            modelBase.realizeDynamics(simtkStateBase);
-            const auto& residualOutputs =
-                    mocoProblemRep->getImplicitTendonDynamicsResiduals();
+            const auto& residualOutputs = 
+                    mocoProblemRep->getImplicitResiduals();
             SimTK::Vector auxResiduals((int)residualOutputs.size(), 0.0);
             for (int i = 0; i < residualOutputs.size(); ++i) {
-                auxResiduals[i] =
-                        residualOutputs[i].getRef().getValue(simtkStateBase);
+                auxResiduals[i] = residualOutputs[i]->getValue(simtkStateBase);
             }
             std::copy_n(auxResiduals.getContiguousScalarData(),
                     auxResiduals.size(), output.auxiliary_residuals.ptr());

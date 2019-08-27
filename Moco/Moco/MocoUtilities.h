@@ -433,30 +433,27 @@ OSIMMOCO_API void checkOrderSystemControls(const Model& model);
 /// for redundancies.
 OSIMMOCO_API void checkRedundantLabels(std::vector<std::string> labels);
 
-/// Get a list of reference pointers to all outputs in a component that match a
-/// provided substring. The 'substring' argument can be the full name of the
-/// output. Set the argument 'includeDescendents' to true to include outputs 
-/// from all descendents from the provided component.
-template <typename T>
-std::vector<SimTK::ReferencePtr<const Output<T>>> getModelOutputReferences(
-        const Component& component, const std::string& substring, 
+/// Get a list of reference pointers to all outputs whose names (not paths)
+/// match a provided substring. The 'substring' argument can be the full name of
+/// the output. Only Output%s that match the template argument type will be
+/// returned (double is the default type). Set the argument 'includeDescendents'
+/// to true to include outputs from all descendents from the provided component.
+template <typename T = double>
+std::vector<SimTK::ReferencePtr<const Output<T>>> getModelOutputReferencePtrs(
+        const Component& component, const std::string& substring,
         bool includeDescendents = false) {
+
     // Initialize outputs array.
     std::vector<SimTK::ReferencePtr<const Output<T>>> outputs;
-    getModelOutputReferencesHelper<T>(component, substring, includeDescendents, 
-            outputs);
-    return outputs;
-}
 
-template <typename T>
-void getModelOutputReferencesHelper(const Component& component,
-        const std::string& substring, bool includeDescendents,
-        std::vector<SimTK::ReferencePtr<const Output<T>>>& outputs) {
-
-    // If no outputs, skip this component.
-    if (component.getNumOutputs() > 0) {
-        // Store a reference to outputs that match the template parameter type
-        // and whose names contain the provided substring.
+    std::function<void(const Component&, const std::string&, bool, 
+            std::vector<SimTK::ReferencePtr<const Output<T>>>&)> helper;
+    helper = [&helper](const Component& component, const std::string& substring,
+            bool includeDescendents,
+            std::vector<SimTK::ReferencePtr<const Output<T>>>& outputs) {
+        // Store a reference to outputs that match the template
+        // parameter type and whose names contain the provided
+        // substring.
         for (const auto& entry : component.getOutputs()) {
             const std::string& name = entry.first;
             const auto* output =
@@ -465,17 +462,19 @@ void getModelOutputReferencesHelper(const Component& component,
                 outputs.emplace_back(output);
             }
         }
-    }
 
-    // Repeat for all subcomponents.
-    if (includeDescendents) {
-        for (const Component& thisComp :
-                component.getComponentList<Component>()) {
-            if (&thisComp == &component) { continue; }
-            getModelOutputReferencesHelper<T>(thisComp, substring, false,
-                    outputs);
+        // Repeat for all subcomponents.
+        if (includeDescendents) {
+            for (const Component& thisComp :
+                    component.getComponentList<Component>()) {
+                if (&thisComp == &component) { continue; }
+                helper(thisComp, substring, false, outputs);
+            }
         }
-    }
+    };
+    
+    helper(component, substring, includeDescendents, outputs);
+    return outputs;
 }
 
 /// Throw an exception if the property's value is not in the provided set.

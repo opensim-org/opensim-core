@@ -265,20 +265,18 @@ void DeGrooteFregly2016Muscle::calcFiberVelocityInfo(
         // vM = vMT cos(alpha)
         fvi.tendonVelocity = 0;
         fvi.normTendonVelocity = 0;
-        fvi.fiberVelocity = MTUVel * mli.cosPennationAngle;
         fvi.fiberVelocityAlongTendon = MTUVel;
     } else {
         // From DeGroote et al. 2016 supplementary data.
         const auto& derivNormTendonForce = getDiscreteVariableValue(
                 s, "implicitderiv_" + STATE_NORMALIZED_TENDON_FORCE_NAME);
-        fvi.normTendonVelocity = calcDerivativeTendonForceLengthInverseCurve(
+        fvi.normTendonVelocity = calcTendonForceLengthInverseCurveDerivative(
                 derivNormTendonForce, mli.normTendonLength);
         fvi.tendonVelocity = get_tendon_slack_length() * fvi.normTendonVelocity;
         fvi.fiberVelocityAlongTendon = MTUVel - fvi.tendonVelocity;
-        fvi.fiberVelocity = 
-                fvi.fiberVelocityAlongTendon * mli.cosPennationAngle; 
     }
 
+    fvi.fiberVelocity = fvi.fiberVelocityAlongTendon * mli.cosPennationAngle;
     fvi.normFiberVelocity =
             fvi.fiberVelocity / m_maxContractionVelocityInMetersPerSecond;
     const SimTK::Real tanPennationAngle =
@@ -350,31 +348,14 @@ void DeGrooteFregly2016Muscle::calcMuscleDynamicsInfo(
                     mdi.fiberForce, mdi.fiberStiffness, mli.sinPennationAngle,
                     mli.cosPennationAngle,
                     partialPennationAnglePartialFiberLength);
-    const auto& fiberStiffnessAlongTendon = calcFiberStiffnessAlongTendon(
+    mdi.fiberStiffnessAlongTendon = calcFiberStiffnessAlongTendon(
             mli.fiberLength,
             partialFiberForceAlongTendonPartialFiberLength,
             mli.sinPennationAngle, mli.cosPennationAngle,
             partialPennationAnglePartialFiberLength);
-    mdi.fiberStiffnessAlongTendon = fiberStiffnessAlongTendon;
-    if (!get_ignore_tendon_compliance()) {
-        const auto& tendonStiffness =
-                (get_max_isometric_force() / get_tendon_slack_length()) *
-                calcTendonForceMultiplierDerivative(mli.normTendonLength);
-        // Compute stiffness of whole musculotendon actuator. Based on 
-        // Millard2012EquilibriumMuscle.
-        SimTK::Real muscleStiffness = 0;
-        if (abs(fiberStiffnessAlongTendon * tendonStiffness) > 0.0 &&  
-            abs(fiberStiffnessAlongTendon + tendonStiffness) > 
-                    SimTK::SignificantReal) {
-            muscleStiffness = (fiberStiffnessAlongTendon * tendonStiffness) /
-                    (fiberStiffnessAlongTendon + tendonStiffness);
-        }
-        mdi.tendonStiffness = tendonStiffness;
-        mdi.muscleStiffness = muscleStiffness;
-    } else {
-        mdi.tendonStiffness = SimTK::Infinity;
-        mdi.muscleStiffness = mdi.fiberStiffnessAlongTendon;
-    }
+    mdi.tendonStiffness = calcTendonStiffness(mli.normTendonLength);
+    mdi.muscleStiffness = calcMuscleStiffness(mdi.tendonStiffness, 
+            mdi.fiberStiffnessAlongTendon);
 
     // Compute power entries.
     // ----------------------
