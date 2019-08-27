@@ -18,6 +18,7 @@ jobs:
         BTYPE: Release
       run: |
         REPO=$(pwd)
+        sudo apt-get install --yes liblapack-dev freeglut3-dev libxi-dev libxmu-dev
         mkdir $DEP_BUILD_DIR && cd $DEP_BUILD_DIR
         cmake $REPO/dependencies -DCMAKE_INSTALL_PREFIX=$DEP_INSTALL_DIR -DCMAKE_BUILD_TYPE=$BTYPE
         make --jobs 4
