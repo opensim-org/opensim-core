@@ -14,10 +14,10 @@ jobs:
         brew install doxygen
     - name: Build
       env:
-        DEP_BUILD_DIR: /Users/runner/work/build_deps
-        DEP_INSTALL_DIR: /Users/runner/work/opensim_dependencies_install
-        BUILD_DIR: /Users/runner/work/build
-        INSTALL_DIR: /Users/runner/work/opensim-core-install
+        DEP_BUILD_DIR: $GITHUB_WORKSPACE/build_deps
+        DEP_INSTALL_DIR: $GITHUB_WORKSPACE/opensim_dependencies_install
+        BUILD_DIR: $GITHUB_WORKSPACE/build
+        INSTALL_DIR: $GITHUB_WORKSPACE/opensim-core-install
         BTYPE: Release
       run: |
         REPO=$(pwd)
