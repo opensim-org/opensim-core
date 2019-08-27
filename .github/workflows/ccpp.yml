@@ -1,15 +1,21 @@
-name: C/C++ CI
+name: Linux CI
 
 on: [push]
 
 jobs:
   build:
 
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-18.04
     
     steps:
     - uses: actions/checkout@v1
-    - name: configure
-      run: cmake .
-    - name: make
-      run: make
+    - name: dependencies
+      env:
+        DEP_BUILD_DIR=~/build_deps
+        DEP_INSTALL_DIR=~/opensim_dependencies_install
+        BTYPE=Release
+      run: |
+        REPO=$pwd
+        mkdir ~/build_deps && cd ~/build_deps
+        cmake $REPO -DCMAKE_INSTALL_PREFIX=$DEP_INSTALL_DIR -DCMAKE_BUILD_TYPE=$BTYPE
+        make --jobs 4
