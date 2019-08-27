@@ -11,9 +11,9 @@ jobs:
     - uses: actions/checkout@v1
     - name: dependencies
       env:
-        DEP_BUILD_DIR=~/build_deps
-        DEP_INSTALL_DIR=~/opensim_dependencies_install
-        BTYPE=Release
+        DEP_BUILD_DIR: ~/build_deps
+        DEP_INSTALL_DIR: ~/opensim_dependencies_install
+        BTYPE: Release
       run: |
         REPO=$pwd
         mkdir ~/build_deps && cd ~/build_deps
