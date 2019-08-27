@@ -333,7 +333,6 @@ public:
         and applied by the tendon to bones (i.e. not the fiber force) */
     double computeActuation(const SimTK::State& s) const override = 0;
 
-
     /** @name Muscle initialization 
      */ 
     //@{
