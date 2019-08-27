@@ -40,10 +40,6 @@ public:
 
     CSVFileAdapter* clone() const override;
 
-    /** Read a CSV file.                                                      */
-    static
-    TimeSeriesTable readFile(const std::string& fileName);
-
     /** Write a CSV file.                                                     */
     static
     void write(const TimeSeriesTable& table, const std::string& fileName);
