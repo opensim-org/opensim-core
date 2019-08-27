@@ -14,18 +14,15 @@ jobs:
         brew install doxygen
     - name: Build
       env:
-        DEP_BUILD_DIR: $GITHUB_WORKSPACE/build_deps
-        DEP_INSTALL_DIR: $GITHUB_WORKSPACE/opensim_dependencies_install
-        BUILD_DIR: $GITHUB_WORKSPACE/build
-        INSTALL_DIR: $GITHUB_WORKSPACE/opensim-core-install
         BTYPE: Release
       run: |
         REPO=$(pwd)
-        mkdir $DEP_BUILD_DIR && cd $DEP_BUILD_DIR
-        cmake $REPO/dependencies -DCMAKE_INSTALL_PREFIX=$DEP_INSTALL_DIR -DCMAKE_BUILD_TYPE=$BTYPE
+        mkdir $GITHUB_WORKSPACE/build_deps && cd $GITHUB_WORKSPACE/build_deps
+        cmake $REPO/dependencies -DCMAKE_INSTALL_PREFIX=$GITHUB_WORKSPACE/opensim_dependencies_install -DCMAKE_BUILD_TYPE=$BTYPE
         make --jobs 4
         mkdir $BUILD_DIR && cd $BUILD_DIR
-        OSIM_CMAKE_ARGS=($REPO -DCMAKE_INSTALL_PREFIX=$INSTALL_DIR -DCMAKE_BUILD_TYPE=$BTYPE -DOPENSIM_DEPENDENCIES_DIR=$DEP_INSTALL_DIR)
+        OSIM_CMAKE_ARGS=($REPO -DCMAKE_INSTALL_PREFIX=$GITHUB_WORKSPACE/opensim-core-install -DCMAKE_BUILD_TYPE=$BTYPE)
+        OSIM_CMAKE_ARGS+=(-DOPENSIM_DEPENDENCIES_DIR=$GITHUB_WORKSPACE/opensim_dependencies_install)
         printf '%s\n' "${OSIM_CMAKE_ARGS[@]}" 
         cmake "${OSIM_CMAKE_ARGS[@]}"
         make --jobs 4
