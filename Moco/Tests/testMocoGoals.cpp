@@ -486,9 +486,10 @@ TEMPLATE_TEST_CASE("MocoPeriodicityGoal", "", MocoCasADiSolver) {
         CHECK(solution.getState("/jointset/j0/q0/value")[N - 1] ==
                 solution.getState("/jointset/j0/q0/value")[0]);
         CHECK(solution.getState("/jointset/j0/q0/speed")[N - 1] ==
-                solution.getState("/jointset/j0/q0/speed")[0]);
+                Approx(solution.getState("/jointset/j0/q0/speed")[0])
+                        .margin(1e-6));
         CHECK(solution.getControl("/tau0")[N - 1] ==
-                solution.getControl("/tau0")[0]);
+                Approx(solution.getControl("/tau0")[0]).margin(1e-6));
     }
 
     SECTION("Goal works in cost mode.") {
@@ -497,10 +498,12 @@ TEMPLATE_TEST_CASE("MocoPeriodicityGoal", "", MocoCasADiSolver) {
         effort->setEnabled(false);
         MocoSolution solution = study.solve();
         const int N = solution.getNumTimes();
-        CHECK(solution.getState("/jointset/j0/q0/value")[N - 1] == Approx(
-                solution.getState("/jointset/j0/q0/value")[0]).margin(1e-6));
-        CHECK(solution.getState("/jointset/j0/q0/speed")[N - 1] == Approx(
-                solution.getState("/jointset/j0/q0/speed")[0]).margin(1e-6));
+        CHECK(solution.getState("/jointset/j0/q0/value")[N - 1] ==
+                Approx(solution.getState("/jointset/j0/q0/value")[0])
+                        .margin(1e-6));
+        CHECK(solution.getState("/jointset/j0/q0/speed")[N - 1] ==
+                Approx(solution.getState("/jointset/j0/q0/speed")[0])
+                        .margin(1e-6));
         CHECK(solution.getControl("/tau0")[N - 1] ==
                 Approx(solution.getControl("/tau0")[0]).margin(1e-6));
     }
