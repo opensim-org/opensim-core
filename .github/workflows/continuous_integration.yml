@@ -14,7 +14,7 @@ jobs:
       run: |
         mkdir %GITHUB_WORKSPACE%/build_deps
         cd %GITHUB_WORKSPACE%/build_deps
-        cmake %GITHUB_WORKSPACE%/dependencies -DCMAKE_INSTALL_PREFIX=%GITHUB_WORKSPACE%/opensim_dependencies_install -DCMAKE_BUILD_TYPE=$BTYPE -G"Visual Studio 15 2017 Win64" -T"v141"
+        cmake %GITHUB_WORKSPACE%/dependencies -DCMAKE_INSTALL_PREFIX=%GITHUB_WORKSPACE%/opensim_dependencies_install -DCMAKE_BUILD_TYPE=Release -G"Visual Studio 15 2017 Win64" -T"v141"
         cmake --build . --config Release -- /maxcpucount:4 /verbosity:quiet
         mkdir %GITHUB_WORKSPACE%/build && cd %GITHUB_WORKSPACE%/build
         cmake %GITHUB_WORKSPACE% -G"Visual Studio 15 2017 Win64" -T"v141" -DCMAKE_INSTALL_PREFIX=%GITHUB_WORKSPACE%/opensim-core-install -DOPENSIM_DEPENDENCIES_DIR=%GITHUB_WORKSPACE%/opensim_dependencies_install -DWITH_BTK=on
@@ -35,30 +35,26 @@ jobs:
       run: |
         brew install doxygen
     - name: Build
-      env:
-        BTYPE: Release
       run: |
-        REPO=$(pwd)
-        echo 'REPO'
-        ls $REPO
-        echo 'GITHUB_WORKSPACE'
-        ls $GITHUB_WORKSPACE
-        mkdir $GITHUB_WORKSPACE/build_deps && cd $GITHUB_WORKSPACE/build_deps
-        DEP_CMAKE_ARGS=($REPO/dependencies -DCMAKE_INSTALL_PREFIX=$GITHUB_WORKSPACE/opensim_dependencies_install -DCMAKE_BUILD_TYPE=$BTYPE)
+        mkdir $GITHUB_WORKSPACE/../build_deps && cd $GITHUB_WORKSPACE/../build_deps
+        DEP_CMAKE_ARGS=($REPO/dependencies -DCMAKE_INSTALL_PREFIX=$GITHUB_WORKSPACE/../opensim_dependencies_install -DCMAKE_BUILD_TYPE=Release)
         DEP_CMAKE_ARGS+=(-DCMAKE_OSX_DEPLOYMENT_TARGET=10.10)
         cmake "${DEP_CMAKE_ARGS[@]}"
         make --jobs 4
-        mkdir $GITHUB_WORKSPACE/build && cd $GITHUB_WORKSPACE/build
-        OSIM_CMAKE_ARGS=($REPO -DCMAKE_INSTALL_PREFIX=$GITHUB_WORKSPACE/opensim-core-install -DCMAKE_BUILD_TYPE=$BTYPE)
-        OSIM_CMAKE_ARGS+=(-DOPENSIM_DEPENDENCIES_DIR=$GITHUB_WORKSPACE/opensim_dependencies_install)
+        mkdir $GITHUB_WORKSPACE/../build && cd $GITHUB_WORKSPACE/../build
+        OSIM_CMAKE_ARGS=($GITHUB_WORKSPACE -DCMAKE_INSTALL_PREFIX=$GITHUB_WORKSPACE/../opensim-core-install -DCMAKE_BUILD_TYPE=Release)
+        OSIM_CMAKE_ARGS+=(-DOPENSIM_DEPENDENCIES_DIR=$GITHUB_WORKSPACE/../opensim_dependencies_install)
         OSIM_CMAKE_ARGS+=(-DCMAKE_OSX_DEPLOYMENT_TARGET=10.10)
         printf '%s\n' "${OSIM_CMAKE_ARGS[@]}" 
         cmake "${OSIM_CMAKE_ARGS[@]}"
         make --jobs 4
     - name: Test
-      run: ctest --parallel 4
+      run: |
+        cd $GITHUB_WORKSPACE/../build
+        ctest --parallel 4
     - name: Install
       run: |
+        cd $GITHUB_WORKSPACE/../build
         make doxygen
         make install
 
@@ -72,24 +68,24 @@ jobs:
     - name: Install packages
       run: sudo apt-get install --yes liblapack-dev freeglut3-dev libxi-dev libxmu-dev doxygen
     - name: Build
-      env:
-        BTYPE: Release
       run: |
-        REPO=$(pwd)
-        mkdir $GITHUB_WORKSPACE/build_deps && cd $GITHUB_WORKSPACE/build_deps
-        cmake $REPO/dependencies -DCMAKE_INSTALL_PREFIX=$GITHUB_WORKSPACE/opensim_dependencies_install -DCMAKE_BUILD_TYPE=$BTYPE
+        mkdir $GITHUB_WORKSPACE/../build_deps && cd $GITHUB_WORKSPACE/../build_deps
+        cmake $GITHUB_WORKSPACE/dependencies -DCMAKE_INSTALL_PREFIX=$GITHUB_WORKSPACE/../opensim_dependencies_install -DCMAKE_BUILD_TYPE=Release
         make --jobs 4
-        mkdir $GITHUB_WORKSPACE/build && cd $GITHUB_WORKSPACE/build
-        OSIM_CMAKE_ARGS=($REPO -DCMAKE_INSTALL_PREFIX=$GITHUB_WORKSPACE/opensim-core-install -DCMAKE_BUILD_TYPE=$BTYPE)
-        OSIM_CMAKE_ARGS+=(-DOPENSIM_DEPENDENCIES_DIR=$GITHUB_WORKSPACE/opensim_dependencies_install)
+        mkdir $GITHUB_WORKSPACE/../build && cd $GITHUB_WORKSPACE/../build
+        OSIM_CMAKE_ARGS=($GITHUB_WORKSPACE -DCMAKE_INSTALL_PREFIX=$GITHUB_WORKSPACE/../opensim-core-install -DCMAKE_BUILD_TYPE=Release)
+        OSIM_CMAKE_ARGS+=(-DOPENSIM_DEPENDENCIES_DIR=$GITHUB_WORKSPACE/../opensim_dependencies_install)
         OSIM_CMAKE_ARGS+=(-DWITH_BTK=on)
         printf '%s\n' "${OSIM_CMAKE_ARGS[@]}" 
         cmake "${OSIM_CMAKE_ARGS[@]}"
         make --jobs 4
     - name: Test
-      run: ctest --parallel 4
+      run: |
+        cd $GITHUB_WORKSPACE/../build
+        ctest --parallel 4
     - name: Install
       run: |
+        cd $GITHUB_WORKSPACE/../build
         make doxygen
         make install
   
