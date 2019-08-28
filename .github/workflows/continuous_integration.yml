@@ -63,7 +63,7 @@ jobs:
     - name: Test
       run: |
         cd $GITHUB_WORKSPACE/../build
-        ctest --parallel 4
+        ctest --parallel 4 --output-on-failure
     - name: Install
       run: |
         cd $GITHUB_WORKSPACE/../build
@@ -104,7 +104,7 @@ jobs:
     - name: Test
       run: |
         cd $GITHUB_WORKSPACE/../build
-        ctest --parallel 4
+        ctest --parallel 4 --output-on-failure
     - name: Install
       run: |
         cd $GITHUB_WORKSPACE/../build
