@@ -20,7 +20,7 @@ jobs:
         mkdir $GITHUB_WORKSPACE/build_deps && cd $GITHUB_WORKSPACE/build_deps
         cmake $REPO/dependencies -DCMAKE_INSTALL_PREFIX=$GITHUB_WORKSPACE/opensim_dependencies_install -DCMAKE_BUILD_TYPE=$BTYPE
         make --jobs 4
-        mkdir $BUILD_DIR && cd $BUILD_DIR
+        mkdir $GITHUB_WORKSPACE/build && cd $GITHUB_WORKSPACE/build
         OSIM_CMAKE_ARGS=($REPO -DCMAKE_INSTALL_PREFIX=$GITHUB_WORKSPACE/opensim-core-install -DCMAKE_BUILD_TYPE=$BTYPE)
         OSIM_CMAKE_ARGS+=(-DOPENSIM_DEPENDENCIES_DIR=$GITHUB_WORKSPACE/opensim_dependencies_install)
         printf '%s\n' "${OSIM_CMAKE_ARGS[@]}" 
