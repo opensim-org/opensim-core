@@ -37,7 +37,7 @@ jobs:
     - name: Build
       run: |
         mkdir $GITHUB_WORKSPACE/../build_deps && cd $GITHUB_WORKSPACE/../build_deps
-        DEP_CMAKE_ARGS=($REPO/dependencies -DCMAKE_INSTALL_PREFIX=$GITHUB_WORKSPACE/../opensim_dependencies_install -DCMAKE_BUILD_TYPE=Release)
+        DEP_CMAKE_ARGS=($GITHUB_WORKSPACE/dependencies -DCMAKE_INSTALL_PREFIX=$GITHUB_WORKSPACE/../opensim_dependencies_install -DCMAKE_BUILD_TYPE=Release)
         DEP_CMAKE_ARGS+=(-DCMAKE_OSX_DEPLOYMENT_TARGET=10.10)
         cmake "${DEP_CMAKE_ARGS[@]}"
         make --jobs 4
