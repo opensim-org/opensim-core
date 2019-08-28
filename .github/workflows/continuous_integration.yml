@@ -52,7 +52,7 @@ jobs:
         OSIM_CMAKE_ARGS+=(-DOPENSIM_DEPENDENCIES_DIR=$GITHUB_WORKSPACE/../opensim_dependencies_install)
         OSIM_CMAKE_ARGS+=(-DCMAKE_OSX_DEPLOYMENT_TARGET=10.10)
         OSIM_CMAKE_ARGS+=(-DWITH_BTK=on)
-        OSIM_CMAKE_ARGS+=(-DBUILD_PYTHON_WRAPPING=on -DBUILD_JAVA_WRAPPING=on)
+        OSIM_CMAKE_ARGS+=(-DBUILD_PYTHON_WRAPPING=on -DBUILD_JAVA_WRAPPING=on -DSWIG_EXECUTABLE=/usr/local/opt/swig@3/bin/swig)
         printf '%s\n' "${OSIM_CMAKE_ARGS[@]}" 
         cmake "${OSIM_CMAKE_ARGS[@]}"
         make --jobs 4
