@@ -9,25 +9,23 @@ jobs:
     
     steps:
     - uses: actions/checkout@v1
-    - name: Install dependencies
+    - name: Install packages
+      run: sudo apt-get install --yes liblapack-dev freeglut3-dev libxi-dev libxmu-dev
+    - name: Build
       env:
-        DEP_BUILD_DIR: /home/runner/work/build_deps
-        DEP_INSTALL_DIR: /home/runner/work/opensim_dependencies_install
-        BUILD_DIR: /home/runner/work/build
-        INSTALL_DIR: /home/runner/work/opensim-core-install
         BTYPE: Release
       run: |
         REPO=$(pwd)
-        sudo apt-get install --yes liblapack-dev freeglut3-dev libxi-dev libxmu-dev
-        mkdir $DEP_BUILD_DIR && cd $DEP_BUILD_DIR
-        cmake $REPO/dependencies -DCMAKE_INSTALL_PREFIX=$DEP_INSTALL_DIR -DCMAKE_BUILD_TYPE=$BTYPE
+        mkdir $GITHUB_WORKSPACE/build_deps && cd $GITHUB_WORKSPACE/build_deps
+        cmake $REPO/dependencies -DCMAKE_INSTALL_PREFIX=$GITHUB_WORKSPACE/opensim_dependencies_install -DCMAKE_BUILD_TYPE=$BTYPE
         make --jobs 4
-        mkdir $BUILD_DIR && cd $BUILD_DIR
-        OSIM_CMAKE_ARGS=($REPO -DCMAKE_INSTALL_PREFIX=$INSTALL_DIR -DCMAKE_BUILD_TYPE=$BTYPE -DOPENSIM_DEPENDENCIES_DIR=$DEP_INSTALL_DIR)
+        mkdir $GITHUB_WORKSPACE/build && cd $GITHUB_WORKSPACE/build
+        OSIM_CMAKE_ARGS=($REPO -DCMAKE_INSTALL_PREFIX=$GITHUB_WORKSPACE/opensim-core-install -DCMAKE_BUILD_TYPE=$BTYPE)
+        OSIM_CMAKE_ARGS+=(-DOPENSIM_DEPENDENCIES_DIR=$GITHUB_WORKSPACE/opensim_dependencies_install)
         printf '%s\n' "${OSIM_CMAKE_ARGS[@]}" 
         cmake "${OSIM_CMAKE_ARGS[@]}"
         make --jobs 4
-        ctest --jobs 4
-        make install
-        
-      
+    - name: Test
+      run: ctest --jobs 4
+    - name: Install
+      run: make install
