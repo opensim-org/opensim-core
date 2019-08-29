@@ -1,6 +1,9 @@
 name: continuous-integration
 
-on: [push]
+on:
+  push:
+  - master
+  pull_request:
 
 jobs:
   # windows:
