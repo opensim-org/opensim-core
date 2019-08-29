@@ -25,8 +25,8 @@ jobs:
          cmake --build . --config Release -- /maxcpucount:4 
      - name: Test
        run: |
-         chdir %GITHUB_WORKSPACE%\\build
-         ctest --parallel 4 --output-on-failure
+         # chdir %GITHUB_WORKSPACE%\\build
+         # ctest --parallel 4 --output-on-failure
     - name: Install
       run: |
          cd %GITHUB_WORKSPACE%\\build
