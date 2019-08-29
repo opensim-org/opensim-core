@@ -759,13 +759,13 @@ if(${OPENSIM_COPY_DEPENDENCIES})
                 DESTINATION "${CMAKE_INSTALL_LIBDIR}")
     endif()
 
-	#SPDLOG
-	#---
-	set(SPDLOG_HOME "${OPENSIM_DEPENDENCIES_DIR}/spdlog")
+    #SPDLOG
+    #---
+    set(SPDLOG_HOME "${OPENSIM_DEPENDENCIES_DIR}/spdlog")
     if(WIN32)
          install(DIRECTORY "${SPDLOG_HOME}/include"
                 DESTINATION "${OPENSIM_INSTALL_SPDLOGDIR}")
-	endif()
+    endif()
 endif()
 
 if(BUILD_PYTHON_WRAPPING AND OPENSIM_PYTHON_STANDALONE)
