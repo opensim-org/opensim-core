@@ -189,6 +189,7 @@ else()
     set(OPENSIM_INSTALL_JAVASRCDIR sdk/Java)
     set(OPENSIM_INSTALL_APIEXDIR Resources/Code)
     set(OPENSIM_INSTALL_SIMBODYDIR sdk/Simbody)
+    set(OPENSIM_INSTALL_SPDLOGDIR sdk/spdlog)
 
 endif()
 
@@ -584,6 +585,15 @@ if(WITH_BTK)
     endif()
 endif()
 
+#find_package(spdlog REQUIRED)
+# if(NOT SPDLOG_FOUND)
+#    message("spdlog not found. Install spdlog and set
+#        SPDLOG_HOME to the installation directory of spdlog.")
+#endif()
+include_directories("${OPENSIM_DEPENDENCIES_DIR}/spdlog/include")
+
+
+
 if(NOT SIMBODY_HOME AND OPENSIM_DEPENDENCIES_DIR)
     set(SIMBODY_HOME "${OPENSIM_DEPENDENCIES_DIR}/simbody")
 endif()
@@ -754,9 +764,7 @@ if(${OPENSIM_COPY_DEPENDENCIES})
 	set(SPDLOG_HOME "${OPENSIM_DEPENDENCIES_DIR}/spdlog")
     if(WIN32)
          install(DIRECTORY "${SPDLOG_HOME}/include"
-                DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
-
-		include_directories("${SPDLOG_HOME}/include")
+                DESTINATION "${OPENSIM_INSTALL_SPDLOGDIR}")
 	endif()
 endif()
 

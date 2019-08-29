@@ -36,7 +36,7 @@
 #include "Property_Deprecated.h"
 #include "PropertyTransform.h"
 #include "IO.h"
-
+#include "spdlog/spdlog.h"
 #include <fstream>
 
 using namespace OpenSim;
@@ -517,6 +517,7 @@ registerType(const Object& aObject)
     }
     if (_debugLevel>=2) {
         cout << "Object.registerType: " << type << " .\n";
+        spdlog::debug("Object.registerType: {}!", type);
     }
 
     // REPLACE IF A MATCHING TYPE IS ALREADY REGISTERED
