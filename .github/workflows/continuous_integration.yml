@@ -1,7 +1,7 @@
 name: continuous-integration
 
-# TODO: no need to build for every push.
-on: [push, pull_request]
+# TODO: build master branch after PRs are merged.
+on: [pull_request]
 
 jobs:
   # windows:
