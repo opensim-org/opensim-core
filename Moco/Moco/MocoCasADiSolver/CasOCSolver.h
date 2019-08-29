@@ -116,8 +116,9 @@ public:
     }
     std::string getWriteSparsity() const { return m_write_sparsity; }
 
-    /// Use this to tell CasADi to evaluate the differential-algebraic equations
-    /// in parallel across grid points. "parallelism" is passed on directly to
+    /// Use this to tell CasADi to evaluate differential-algebraic equations,
+    /// path constraints, integrands, etc. in parallel across grid points.
+    /// "parallelism" is passed on directly to
     /// the "parallelism" argument of casadi::MX::map(). CasADi supports
     /// "serial", "openmp", "thread", and perhaps some other options.
     void setParallelism(std::string parallelism, int numThreads);
