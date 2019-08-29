@@ -1,9 +1,7 @@
 name: continuous-integration
 
-on:
-  push:
-  - master
-  pull_request:
+# TODO: no need to build for every push.
+on: [push, pull_request]
 
 jobs:
   # windows:
