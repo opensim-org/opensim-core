@@ -8,7 +8,7 @@ jobs:
     name: Windows
 
     runs-on: windows-2019
-   ..
+
     steps:
      - uses: actions/checkout@v1
      - name: Build
