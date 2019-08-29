@@ -13,9 +13,9 @@ jobs:
      - uses: actions/checkout@v1
      - name: Build
        run: |
-         echo %GITHUB_WORKSPACE%/build_deps &&
-         mkdir %GITHUB_WORKSPACE%/build_deps &&
-         cd %GITHUB_WORKSPACE%/build_deps &&
+         echo %GITHUB_WORKSPACE%/build_deps
+         mkdir %GITHUB_WORKSPACE%/build_deps
+         cd %GITHUB_WORKSPACE%/build_deps
          cmake %GITHUB_WORKSPACE%/dependencies -G"Visual Studio 15 2017" -A x64 -T"v141" -DCMAKE_INSTALL_PREFIX=%GITHUB_WORKSPACE%/opensim_dependencies_install -DCMAKE_BUILD_TYPE=Release 
    # cmake --build . --config Release -- /maxcpucount:4 /verbosity:quiet &&
    # mkdir %GITHUB_WORKSPACE%/build &&
