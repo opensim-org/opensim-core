@@ -710,3 +710,64 @@ int OpenSim::getMocoParallelEnvironmentVariable() {
     }
     return -1;
 }
+
+TimeSeriesTable OpenSim::createExternalLoadsTableForGait(Model model,
+        const MocoTrajectory& trajectory,
+        const std::vector<std::string>& forceNamesRightFoot,
+        const std::vector<std::string>& forceNamesLeftFoot) {
+    model.initSystem();
+    TimeSeriesTableVec3 externalForcesTable{};
+    Storage storage = trajectory.exportToStatesStorage();
+    StatesTrajectory optStates =
+            StatesTrajectory::createFromStatesStorage(model, storage, true);
+    SimTK::Vector optTime = trajectory.getTime();
+    int count = 0;
+    for (const auto& state : optStates) {
+        model.realizeVelocity(state);
+        SimTK::Vec3 forcesRight(0);
+        SimTK::Vec3 torquesRight(0);
+        // Loop through all Forces of the right side.
+        for (const auto& smoothForce : forceNamesRightFoot) {
+            Array<double> forceValues =
+                model.getComponent<Force>(smoothForce).getRecordValues(state);
+            forcesRight += SimTK::Vec3(forceValues[0], forceValues[1],
+                    forceValues[2]);
+            torquesRight += SimTK::Vec3(forceValues[3], forceValues[4],
+                    forceValues[5]);
+        }
+        SimTK::Vec3 forcesLeft(0);
+        SimTK::Vec3 torquesLeft(0);
+        // Loop through all Forces of the left side.
+        for (const auto& smoothForce : forceNamesLeftFoot) {
+            Array<double> forceValues =
+                model.getComponent<Force>(smoothForce).getRecordValues(state);
+            forcesLeft += SimTK::Vec3(forceValues[0], forceValues[1],
+                    forceValues[2]);
+            torquesLeft += SimTK::Vec3(forceValues[3], forceValues[4],
+                    forceValues[5]);
+        }
+        // Append row to table.
+        SimTK::RowVector_<SimTK::Vec3> row(6);
+        row(0) = forcesRight;
+        row(1) = SimTK::Vec3(0);
+        row(2) = forcesLeft;
+        row(3) = SimTK::Vec3(0);
+        row(4) = torquesRight;
+        row(5) = torquesLeft;
+        externalForcesTable.appendRow(optTime[count], row);
+        ++count;
+    }
+    // Create table.
+    std::vector<std::string> labels;
+    labels.push_back("ground_force_r_v");
+    labels.push_back("ground_force_r_p");
+    labels.push_back("ground_force_l_v");
+    labels.push_back("ground_force_l_p");
+    labels.push_back("ground_torque_r_");
+    labels.push_back("ground_torque_l_");
+    externalForcesTable.setColumnLabels(labels);
+    TimeSeriesTable externalForcesTableFlat =
+            externalForcesTable.flatten({"x", "y", "z"});
+
+    return externalForcesTableFlat;
+}
