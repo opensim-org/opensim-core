@@ -11,6 +11,8 @@ jobs:
 
     steps:
      - uses: actions/checkout@v1
+     - name: Install Chocolatey packages
+       run: choco install swig --version 3.0.9 --yes --limit-output 
      - name: Build
        run: |
          echo %GITHUB_WORKSPACE%\\build_deps
@@ -21,7 +23,7 @@ jobs:
          cmake --build . --config Release -- /maxcpucount:4 
          mkdir %GITHUB_WORKSPACE%\\build 
          chdir %GITHUB_WORKSPACE%\\build
-         cmake %GITHUB_WORKSPACE% -G"Visual Studio 15 2017" -A x64 -DCMAKE_INSTALL_PREFIX=%GITHUB_WORKSPACE%\\opensim-core-install -DOPENSIM_DEPENDENCIES_DIR=%GITHUB_WORKSPACE%\\opensim_dependencies_install -DWITH_BTK=on
+         cmake %GITHUB_WORKSPACE% -G"Visual Studio 15 2017" -A x64 -DCMAKE_INSTALL_PREFIX=%GITHUB_WORKSPACE%\\opensim-core-install -DOPENSIM_DEPENDENCIES_DIR=%GITHUB_WORKSPACE%\\opensim_dependencies_install -DWITH_BTK=on -DBUILD_PYTHON_WRAPPING=on -DBUILD_JAVA_WRAPPING=on
          cmake --build . --config Release -- /maxcpucount:4 
      - name: Test
        run: |
@@ -106,6 +108,10 @@ jobs:
     - name: Test
       run: |
         cd $GITHUB_WORKSPACE/../build
+        # TODO temporary for python to find Simbody libraries.
+        ls $GITHUB_WORKSPACE/../opensim_dependencies_install/simbody/
+        ls $GITHUB_WORKSPACE/../opensim_dependencies_install/simbody/lib
+        export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$GITHUB_WORKSPACE/../opensim_dependencies_install/simbody/lib
         ctest --parallel 4 --output-on-failure
     - name: Install
       run: |
