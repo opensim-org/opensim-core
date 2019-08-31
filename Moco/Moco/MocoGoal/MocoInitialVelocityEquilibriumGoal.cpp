@@ -40,14 +40,14 @@ void MocoInitialVelocityEquilibriumGoal::calcGoalImpl(
         for (int i = 0; i < m_dgfMuscleRefs.size(); ++i) {
             const auto residual =
                     m_dgfMuscleRefs[i]
-                            ->calcLinearizedEquilibriumResidualDerivative(s);
+                            ->getLinearizedEquilibriumResidualDerivative(s);
             goal[i] = residual * residual;
         }
     } else {
         for (int i = 0; i < m_dgfMuscleRefs.size(); ++i) {
             const auto residual =
                     m_dgfMuscleRefs[i]
-                            ->calcLinearizedEquilibriumResidualDerivative(s);
+                            ->getLinearizedEquilibriumResidualDerivative(s);
             goal[i] = residual;
         }
     }

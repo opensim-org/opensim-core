@@ -359,18 +359,10 @@ MocoSolution MocoCasADiSolver::solveImpl() const {
         }
     }
 
-
-    int iter_count;
-    if (get_optim_solver() == "snopt") {
-        // TODO error trying to retrieve number of iterations with SNOPT
-        iter_count = 0;
-    } else {
-        iter_count = casSolution.stats.at("iter_count");
-    }
     const long long elapsed = stopwatch.getElapsedTimeInNs();
     setSolutionStats(mocoSolution, casSolution.stats.at("success"),
             casSolution.objective, casSolution.stats.at("return_status"),
-            iter_count, SimTK::nsToSec(elapsed));
+            casSolution.stats.at("iter_count"), SimTK::nsToSec(elapsed));
 
     if (get_verbosity()) {
         std::cout << std::string(79, '-') << "\n";

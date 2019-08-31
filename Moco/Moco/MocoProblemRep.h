@@ -285,8 +285,9 @@ public:
             bool initSystemAndDisableConstraints = false) const;
 
     /// Get a vector of reference pointers to model outputs that return residual
-    /// values for any muscles with dynamics in implicit forms. The references 
-    /// returned are from the model returned by getModelDisabledConstraints(). 
+    /// values for any components with dynamics in implicit forms. The 
+    /// references returned are from the model returned by 
+    /// getModelDisabledConstraints(). 
     const std::vector<SimTK::ReferencePtr<const Output<double>>>&
     getImplicitResiduals() const {
         return m_implicit_residuals;

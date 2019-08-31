@@ -233,17 +233,8 @@ private:
                 output.auxiliary_derivatives.ptr());
 
         // Copy auxiliary residuals to output.
-        if (getNumAuxiliaryResidualEquations()) {
-            const auto& residualOutputs =
-                    mocoProblemRep->getImplicitResiduals();
-            SimTK::Vector auxResiduals((int)residualOutputs.size());
-            for (int i = 0; i < residualOutputs.size(); ++i) {
-                auxResiduals[i] = residualOutputs[i]->getValue(simtkStateBase);
-            }
-
-            std::copy_n(auxResiduals.getContiguousScalarData(),
-                    auxResiduals.size(), output.auxiliary_residuals.ptr());
-        }
+        copyImplicitResidualsToOutput(*mocoProblemRep,
+                simtkStateDisabledConstraints, output.auxiliary_residuals);
 
         m_jar->leave(std::move(mocoProblemRep));
     }
@@ -294,16 +285,8 @@ private:
                 output.auxiliary_derivatives.ptr());
 
         // Copy auxiliary residuals to output.
-        if (getNumAuxiliaryResidualEquations()) {
-            const auto& residualOutputs = 
-                    mocoProblemRep->getImplicitResiduals();
-            SimTK::Vector auxResiduals((int)residualOutputs.size(), 0.0);
-            for (int i = 0; i < residualOutputs.size(); ++i) {
-                auxResiduals[i] = residualOutputs[i]->getValue(simtkStateBase);
-            }
-            std::copy_n(auxResiduals.getContiguousScalarData(),
-                    auxResiduals.size(), output.auxiliary_residuals.ptr());
-        }
+        copyImplicitResidualsToOutput(*mocoProblemRep, 
+            simtkStateDisabledConstraints, output.auxiliary_residuals);
 
         m_jar->leave(std::move(mocoProblemRep));
     }
@@ -651,6 +634,19 @@ private:
         std::copy_n(udoterr.getContiguousScalarData() + udoterrOffset,
                 udoterrSize,
                 kinematic_constraint_errors.ptr() + qerr.size() + uerrSize);
+    }
+
+    void copyImplicitResidualsToOutput(const MocoProblemRep& mocoProblemRep,
+        const SimTK::State& state, casadi::DM& auxiliary_residuals) const {
+        if (getNumAuxiliaryResidualEquations()) {
+            const auto& residualOutputs = mocoProblemRep.getImplicitResiduals();
+            SimTK::Vector auxResiduals((int)residualOutputs.size(), 0.0);
+            for (int i = 0; i < residualOutputs.size(); ++i) {
+                auxResiduals[i] = residualOutputs[i]->getValue(state);
+            }
+            std::copy_n(auxResiduals.getContiguousScalarData(),
+                    auxResiduals.size(), auxiliary_residuals.ptr());
+        }
     }
 
     std::unique_ptr<ThreadsafeJar<const MocoProblemRep>> m_jar;
