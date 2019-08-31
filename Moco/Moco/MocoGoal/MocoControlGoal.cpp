@@ -86,7 +86,9 @@ void MocoControlGoal::calcIntegrandImpl(
     integrand = 0;
     int iweight = 0;
     for (const auto& icontrol : m_controlIndices) {
-        // TODO: check effect on performance.
+        // TODO: On the first problem in exampleMocoTrack, this more general
+        // form causes the problem to take 2 minutes instead of 1 minute 30
+        // seconds. So there is a large performance penalty.
         integrand +=
                 m_weights[iweight] * pow(abs(controls[icontrol]), m_exponent);
         ++iweight;
