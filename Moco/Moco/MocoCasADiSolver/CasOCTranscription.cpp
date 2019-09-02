@@ -133,6 +133,7 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
             "multipliers", m_problem.getNumMultipliers(), m_numGridPoints);
     m_vars[derivatives] = MX::sym(
             "derivatives", m_problem.getNumDerivatives(), m_numGridPoints);
+    
     // TODO: This assumes that slack variables are applied at all
     // collocation points on the mesh interval interior.
     m_vars[slacks] = MX::sym(

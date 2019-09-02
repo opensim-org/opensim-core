@@ -341,13 +341,13 @@ public:
         if (!isCacheVariableValid(s, "implicitresidual_normalized_tendon_force")) {
             // Get the tendon force derivative control value.
             // TODO add method to Component get with index instead.
-            const double deriveNormTendonForce = getDiscreteVariableValue(s, 
+            const double derivNormTendonForce = getDiscreteVariableValue(s, 
                     "implicitderiv_normalized_tendon_force");
             // Get the normalized tendon force state variable value.
             const double normTendonForce = getStateVariableValue(s, 
                     "normalized_tendon_force");
             // The dynamics residual: y y' - 1 = 0.
-            double residual = deriveNormTendonForce * normTendonForce - 1;
+            double residual = derivNormTendonForce * normTendonForce - 1;
             // Update the cache variable with the residual value.
             setCacheVariableValue(s, "implicitresidual_normalized_tendon_force", 
                     residual);

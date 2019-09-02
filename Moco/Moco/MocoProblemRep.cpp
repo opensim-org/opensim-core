@@ -53,8 +53,8 @@ void MocoProblemRep::initialize() {
     m_multiplier_infos_map.clear();
     m_kinematic_constraint_eq_names_with_derivatives.clear();
     m_kinematic_constraint_eq_names_without_derivatives.clear();
-    m_implicit_dynamics_muscle_refs.clear();
-    m_implicit_residuals.clear();
+    m_implicit_component_refs.clear();
+    m_implicit_residual_refs.clear();
     
     if (!getTimeInitialBounds().isSet() && !getTimeFinalBounds().isSet()) {
         std::cout << "Warning: no time bounds set." << std::endl;
@@ -415,8 +415,10 @@ void MocoProblemRep::initialize() {
                     dgfmuscle.getNormalizedTendonForceStateName();
             auto& stateInfo = m_state_infos[stateName];
             if (stateInfo.getName().empty()) { stateInfo.setName(stateName); }
-            // TODO create variable default bounds
-            if (!stateInfo.getBounds().isSet()) { stateInfo.setBounds({0, 5}); }
+            if (!stateInfo.getBounds().isSet()) {
+                stateInfo.setBounds({dgfmuscle.getMinNormalizedTendonForce(), 
+                                     dgfmuscle.getMaxNormalizedTendonForce()});
+            }
 
             if (dgfmuscle.get_tendon_dynamics_mode() == "implicit") {
                 // Derivative of normalized tendon force control info.

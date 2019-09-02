@@ -740,8 +740,8 @@ void DeGrooteFregly2016Muscle::replaceMuscles(
             actu->set_deactivation_time_constant(
                     musc->get_deactivation_time_constant());
 
-            // TODO: currently needs to be hardcoded for 
-            // Thelen2003Muscle as damping is not a property
+            // Fiber damping needs to be hardcoded at zero since it is not a 
+            // property of the Thelen2003 muscle.
             actu->set_fiber_damping(0);
             actu->set_tendon_strain_at_one_norm_force(
                     musc->get_FmaxTendonStrain());

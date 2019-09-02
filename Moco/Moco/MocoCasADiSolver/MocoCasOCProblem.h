@@ -490,7 +490,7 @@ private:
         model.setControls(simtkState, simtkControls);
 
         const auto& implicitRefs =
-                mocoProblemRep.getImplicitComponentReferences();
+                mocoProblemRep.getImplicitComponentReferencePtrs();
         int iaux = 0;
         for (const auto& implicitRef : implicitRefs) {
             const auto& comp = implicitRef.second.getRef();
@@ -638,7 +638,8 @@ private:
     void copyImplicitResidualsToOutput(const MocoProblemRep& mocoProblemRep,
         const SimTK::State& state, casadi::DM& auxiliary_residuals) const {
         if (getNumAuxiliaryResidualEquations()) {
-            const auto& residualOutputs = mocoProblemRep.getImplicitResiduals();
+            const auto& residualOutputs = 
+                mocoProblemRep.getImplicitResidualReferencePtrs();
             SimTK::Vector auxResiduals((int)residualOutputs.size(), 0.0);
             for (int i = 0; i < residualOutputs.size(); ++i) {
                 auxResiduals[i] = residualOutputs[i]->getValue(state);

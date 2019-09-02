@@ -72,7 +72,7 @@ MocoCasOCProblem::MocoCasOCProblem(const MocoCasADiSolver& mocoCasADiSolver,
     // Add additional controls for implicit auxiliary dynamics equations.
     if (problemRep.getNumAuxiliaryResidualEquations()) {
         const auto& implicitRefs =
-                problemRep.getImplicitComponentReferences();
+                problemRep.getImplicitComponentReferencePtrs();
         for (const auto& implicitRef : implicitRefs) {
             const auto& controlName =
                     implicitRef.second->getAbsolutePathString() + "/" + 

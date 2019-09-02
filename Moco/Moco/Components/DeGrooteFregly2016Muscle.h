@@ -250,6 +250,8 @@ public:
     static std::string getImplicitDynamicsResidualName() {
         return RESIDUAL_NORMALIZED_TENDON_FORCE_NAME;
     }
+    static double getMinNormalizedTendonForce() { return m_minNormTendonForce; }
+    static double getMaxNormalizedTendonForce() { return m_maxNormTendonForce; }
     /// @}
 
     /// @name Set methods.
