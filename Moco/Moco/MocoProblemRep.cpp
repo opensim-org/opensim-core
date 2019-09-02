@@ -412,32 +412,36 @@ void MocoProblemRep::initialize() {
             // Normalized tendon force state info.
             const std::string stateName = 
                     dgfmuscle.getAbsolutePathString() + 
-                    "/normalized_tendon_force";
+                    dgfmuscle.getNormalizedTendonForceStateName();
             auto& stateInfo = m_state_infos[stateName];
             if (stateInfo.getName().empty()) { stateInfo.setName(stateName); }
             // TODO create variable default bounds
             if (!stateInfo.getBounds().isSet()) { stateInfo.setBounds({0, 5}); }
 
-            // Derivative of normalized tendon force control info.
-            const std::string controlName =
-                    dgfmuscle.getAbsolutePathString() +
-                    "/implicitderiv_normalized_tendon_force";
-            auto& controlInfo = m_control_infos[controlName];
-            if (controlInfo.getName().empty()) {
-                controlInfo.setName(controlName);
-            }
-            // TODO create variable default bounds
-            if (!controlInfo.getBounds().isSet()) {
-                controlInfo.setBounds({-1000, 1000});
-            }
+            if (dgfmuscle.get_tendon_dynamics_mode() == "implicit") {
+                // Derivative of normalized tendon force control info.
+                // TODO make this a derivative variable
+                const auto& derivName =
+                        dgfmuscle.getImplicitDynamicsDerivativeName();
+                const std::string controlName =
+                        dgfmuscle.getAbsolutePathString() + "/" + derivName;
+                auto& controlInfo = m_control_infos[controlName];
+                if (controlInfo.getName().empty()) {
+                    controlInfo.setName(controlName);
+                }
+                // TODO create variable default bounds
+                if (!controlInfo.getBounds().isSet()) {
+                    controlInfo.setBounds({-1000, 1000});
+                }
 
-            ++m_num_auxiliary_residual_equations;
-            m_implicit_dynamics_muscle_refs.emplace_back(&dgfmuscle); 
+                ++m_num_auxiliary_residual_equations;
+                m_implicit_component_refs.emplace_back(derivName, &dgfmuscle); 
+            }
         }
     }
 
     // Muscle-tendon equilibrium residual outputs.
-    m_implicit_residuals = getModelOutputReferencePtrs<double>(
+    m_implicit_residual_refs = getModelOutputReferencePtrs<double>(
             m_model_disabled_constraints, "implicitresidual", true);
 
     // Parameters.

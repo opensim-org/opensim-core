@@ -71,13 +71,12 @@ MocoCasOCProblem::MocoCasOCProblem(const MocoCasADiSolver& mocoCasADiSolver,
     }
     // Add additional controls for implicit auxiliary dynamics equations.
     if (problemRep.getNumAuxiliaryResidualEquations()) {
-        const auto& implicitMuscleRefs =
-                problemRep.getImplicitDynamicsMuscleReferences();
-        for (const auto& muscleRef : implicitMuscleRefs) {
-            const DeGrooteFregly2016Muscle& muscle = muscleRef.getRef();
-            const std::string controlName =
-                    muscle.getAbsolutePathString() +
-                    "/implicitderiv_normalized_tendon_force";
+        const auto& implicitRefs =
+                problemRep.getImplicitComponentReferences();
+        for (const auto& implicitRef : implicitRefs) {
+            const auto& controlName =
+                    implicitRef.second->getAbsolutePathString() + "/" + 
+                    implicitRef.first;
             const auto& info = problemRep.getControlInfo(controlName);
             addControl(controlName, convertBounds(info.getBounds()),
                     convertBounds(info.getInitialBounds()),

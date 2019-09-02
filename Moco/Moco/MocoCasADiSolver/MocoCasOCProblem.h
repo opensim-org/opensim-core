@@ -489,13 +489,12 @@ private:
         model.realizeVelocity(simtkState);
         model.setControls(simtkState, simtkControls);
 
-        const auto& implicitMuscleRefs =
-                mocoProblemRep.getImplicitDynamicsMuscleReferences();
+        const auto& implicitRefs =
+                mocoProblemRep.getImplicitComponentReferences();
         int iaux = 0;
-        for (const auto& muscleRef : implicitMuscleRefs) {
-            const auto& muscle = muscleRef.getRef();
-            muscle.setDiscreteVariableValue(simtkState,
-                    "implicitderiv_normalized_tendon_force",
+        for (const auto& implicitRef : implicitRefs) {
+            const auto& comp = implicitRef.second.getRef();
+            comp.setDiscreteVariableValue(simtkState, implicitRef.first,
                     *(controls.ptr() + numSimtkControls + iaux));
             ++iaux;
         }

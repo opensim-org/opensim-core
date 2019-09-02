@@ -289,14 +289,17 @@ public:
     /// references returned are from the model returned by 
     /// getModelDisabledConstraints(). 
     const std::vector<SimTK::ReferencePtr<const Output<double>>>&
-    getImplicitResiduals() const {
-        return m_implicit_residuals;
+    getImplicitResidualReferencePtrs() const {
+        return m_implicit_residual_refs;
     }
 
-    /// TODO
-    const std::vector<SimTK::ReferencePtr<const DeGrooteFregly2016Muscle>>&
-    getImplicitDynamicsMuscleReferences() const {
-        return m_implicit_dynamics_muscle_refs;
+    /// Get reference pointers to components that enforce dynamics in implicit 
+    /// form. This returns a vector of pairs including the name of the discrete
+    /// derivative variable and the component reference pointer.
+    const 
+    std::vector<std::pair<std::string, SimTK::ReferencePtr<const Component>>>&
+    getImplicitComponentReferencePtrs() const {
+        return m_implicit_component_refs;
     }
     /// @}
 
@@ -337,9 +340,9 @@ private:
 
     int m_num_auxiliary_residual_equations = -1;
     std::vector<SimTK::ReferencePtr<const Output<double>>> 
-            m_implicit_residuals;
-    std::vector<SimTK::ReferencePtr<const DeGrooteFregly2016Muscle>>
-            m_implicit_dynamics_muscle_refs;
+            m_implicit_residual_refs;
+    std::vector<std::pair<std::string, SimTK::ReferencePtr<const Component>>>
+            m_implicit_component_refs;
 };
 
 } // namespace OpenSim

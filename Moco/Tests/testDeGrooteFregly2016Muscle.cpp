@@ -699,9 +699,10 @@ TEST_CASE("DeGrooteFregly2016Muscle basics") {
             const double muscleTendonVelocity = -0.21 * Vmax;
             coord.setSpeedValue(state, muscleTendonVelocity);
 
-            model.realizeDynamics(state);
-            muscle.computeInitialFiberEquilibrium(state);
+            
+            //muscle.computeInitialFiberEquilibrium(state);
 
+            model.realizePosition(state);
             const auto& normFiberLength =
                     muscle.getNormalizedFiberLength(state);
             const auto& fiberLength =
@@ -746,6 +747,7 @@ TEST_CASE("DeGrooteFregly2016Muscle basics") {
             CHECK(muscle.getMusclePotentialEnergy(state) ==
                     Approx(fiberPotentialEnergy + tendonPotentialEnergy));
 
+            model.realizeVelocity(state);
             const auto& normFiberVelocity =
                     muscle.getNormalizedFiberVelocity(state);
             const auto& fiberVelocity = Vmax * normFiberVelocity;
@@ -766,11 +768,14 @@ TEST_CASE("DeGrooteFregly2016Muscle basics") {
             CHECK(muscle.getTendonVelocity(state) == Approx(tendonVelocity));
             CHECK(muscle.getForceVelocityMultiplier(state) == Approx(fv));
 
+            model.realizeDynamics(state);
             const auto& Fmax = muscle.getMaxIsometricForce();
             const auto& activeFiberForce = Fmax * fal * fv;
             const auto& passiveFiberForce = Fmax * fpass;
             const auto& fiberForce = activeFiberForce + passiveFiberForce;
-            const auto& tendonForce = fiberForce;
+            const auto& fiberForceAlongTendon =
+                    fiberForce* cosPennationAngle;
+            const auto& tendonForce = fiberForceAlongTendon;
             CHECK(muscle.getActiveFiberForce(state) ==
                     Approx(activeFiberForce));
             CHECK(muscle.getActiveFiberForceAlongTendon(state) ==
@@ -781,9 +786,8 @@ TEST_CASE("DeGrooteFregly2016Muscle basics") {
                     Approx(passiveFiberForce * cosPennationAngle));
             CHECK(muscle.getFiberForce(state) ==  Approx(fiberForce));
             CHECK(muscle.getFiberForceAlongTendon(state) ==
-                    Approx(fiberForce * cosPennationAngle));
-            CHECK(muscle.getTendonForce(state) ==
-                    Approx(fiberForce * cosPennationAngle));
+                    Approx(fiberForceAlongTendon));
+            CHECK(muscle.getTendonForce(state) == Approx(tendonForce));
 
             FiberForceFunction fiberForceFunc(muscle, state, false);
             SimTK::Differentiator diffFiberStiffness(fiberForceFunc);
