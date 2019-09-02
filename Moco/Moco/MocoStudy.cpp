@@ -85,12 +85,12 @@ MocoSolution MocoStudy::solve() const {
     bool oldWarningFlag = Muscle::getPrintWarnings();
     Muscle::setPrintWarnings(false);
     MocoSolution solution;
-    //try {
-    solution = get_solver().solve();
-    //} catch (const Exception&) { 
-    //    Muscle::setPrintWarnings(oldWarningFlag);
-    //    throw;
-    //}
+    try {
+        solution = get_solver().solve();
+    } catch (const Exception&) {
+        Muscle::setPrintWarnings(oldWarningFlag);
+        throw;
+    }
     Muscle::setPrintWarnings(oldWarningFlag);
 
     bool originallySealed = solution.isSealed();
@@ -115,12 +115,12 @@ MocoSolution MocoStudy::solve() const {
 void MocoStudy::visualize(const MocoTrajectory& it) const {
     // TODO this does not need the Solver at all, so this could be moved to
     // MocoProblem.
-    const auto& model = get_problem().getPhase(0).getModel();
+    const auto& model = get_problem().getPhase(0).getModelProcessor().process();
     OpenSim::visualize(model, it.exportToStatesStorage());
 }
 
 TimeSeriesTable MocoStudy::analyze(const MocoTrajectory& iterate,
         std::vector<std::string> outputPaths) const {
-    return OpenSim::analyze<double>(get_problem().createRep().getModelBase(), 
+    return OpenSim::analyze<double>(get_problem().createRep().getModelBase(),
         iterate, outputPaths);
 }

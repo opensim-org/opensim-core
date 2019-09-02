@@ -648,8 +648,8 @@ public:
             OPENSIM_THROW_IF(
                     leafpos == std::string::npos, Exception, "Internal error.");
             name.replace(leafpos, name.size(), "accel");
-            // TODO: How to choose bounds on udot?
-            this->add_adjunct(name, {-1000, 1000});
+            this->add_adjunct(name, 
+                convertBounds(solver.get_implicit_mode_acceleration_bounds()));
             this->add_path_constraint(name.substr(0, leafpos) + "residual", 0);
         }
     }

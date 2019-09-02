@@ -1,7 +1,7 @@
 namespace OpenSim {
 /**
 
-@page mocoimplguide Moco Implementation Guide
+@page mocodevguide Moco Developer Guide
 
 @tableofcontents
 
