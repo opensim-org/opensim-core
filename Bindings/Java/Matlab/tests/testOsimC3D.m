@@ -13,9 +13,11 @@ ForceLocation = 0;
 c3dpath = fullfile(cd,'walking2.c3d');
 c3d = osimC3D(c3dpath,ForceLocation);
 % Get tables directly from c3d file adapter
-tables = C3DFileAdapter().readFile('walking2.c3d',ForceLocation);
-markers = tables.get('markers');
-forces = tables.get('forces');
+c3dAdapter = C3DFileAdapter();
+c3dAdapter.setLocationForForceExpression(ForceLocation);
+tables = c3dAdapter.read('walking2.c3d');
+markers = c3dAdapter.getMarkersTable(tables);
+forces = c3dAdapter.getForcesTable(tables);
 
 %% Test getAsStructs
 [markerRef, forceRef] = c3d.getAsStructs;
@@ -134,8 +136,8 @@ if isempty(exist( fullfile(cd, 'testing2.mot') ,'file'))
 end
 
 %% Test that TRC and MOT are readable by osim classes
-trcTable = TRCFileAdapter.read(fullfile(cd, 'walking2.trc'));
-motTable = STOFileAdapter.read(fullfile(cd, 'walking2.mot'));
+trcTable = TimeSeriesTableVec3(fullfile(cd, 'walking2.trc'));
+motTable = TimeSeriesTable(fullfile(cd, 'walking2.mot'));
 
 % Test if readable by Storage
 sto  = Storage(fullfile(cd, 'walking2.trc'));
