@@ -117,9 +117,9 @@ jobs:
         make doxygen
         make install
         rm -r $GITHUB_WORKSPACE/../opensim_dependencies_install
-        cd $GITHUB_WORKSPACE/../opensim-core-install/sdk/Python
+        # cd $GITHUB_WORKSPACE/../opensim-core-install/sdk/Python
         # Run the python tests, verbosely.
-        python3 -m unittest discover --start-directory opensim/tests --verbose
+        # python3 -m unittest discover --start-directory opensim/tests --verbose
     # TODO: deploy
 
 
