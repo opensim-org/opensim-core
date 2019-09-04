@@ -478,7 +478,7 @@ void Trapezoidal<T>::calc_sparsity_hessian_lagrangian(const Eigen::VectorXd& x,
         SymmetricSparsityPattern cost_initial_sparsity(num_con_vars);
         SymmetricSparsityPattern cost_final_sparsity(num_con_vars);
         const auto lastmeshstart =
-                m_num_dense_variables + m_num_mesh_points - 1 * num_con_vars;
+                m_num_dense_variables + (m_num_mesh_points - 1) * num_con_vars;
         if (this->get_exact_hessian_block_sparsity_mode() == "sparse") {
             auto st = make_states_trajectory_view(x);
             auto ct = make_controls_trajectory_view(x);

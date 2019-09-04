@@ -43,6 +43,12 @@ void MocoJointReactionGoal::initializeOnModelImpl(const Model& model) const {
         "Expected a joint path, but property joint_path is empty.");
     m_joint = &model.getComponent<Joint>(get_joint_path());
 
+    m_denominator = model.getTotalMass(model.getWorkingState());
+    const double gravityAccelMagnitude = model.get_gravity().norm();
+    if (gravityAccelMagnitude > SimTK::SignificantReal) {
+        m_denominator *= gravityAccelMagnitude;
+    }
+
     // Get the frame from which the loads are computed.
     checkPropertyInSet(*this, getProperty_loads_frame(), {"parent", "child"});
     if (get_loads_frame() == "parent") {
@@ -130,13 +136,13 @@ void MocoJointReactionGoal::calcIntegrandImpl(const SimTK::State& state,
     SimTK::Vec3 moment;
     SimTK::Vec3 force;
     if (m_frame.get() == &getModel().getGround()) {
-        moment = ground.expressVectorInAnotherFrame(state, reactionInGround[0], 
-            *m_frame);
-        force = ground.expressVectorInAnotherFrame(state, reactionInGround[1], 
-            *m_frame);
-    } else {
         moment = reactionInGround[0];
         force = reactionInGround[1];
+    } else {
+        moment = ground.expressVectorInAnotherFrame(state, reactionInGround[0],
+                *m_frame);
+        force = ground.expressVectorInAnotherFrame(state, reactionInGround[1],
+                *m_frame);
     }
     SimTK::SpatialVec reaction(moment, force);
 
