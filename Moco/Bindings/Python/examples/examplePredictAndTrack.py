@@ -187,7 +187,7 @@ def computeMarkersReference(predictedSolution):
         m0 = model.getComponent("markerset/m0")
         m1 = model.getComponent("markerset/m1")
         markerTrajectories.appendRow(state.getTime(),
-            osim.RowVectorOfVec3([m0.getLocationInGround(state),
+            osim.RowVectorVec3([m0.getLocationInGround(state),
                                   m1.getLocationInGround(state)]))
                                   
     # Assign a weight to each marker.

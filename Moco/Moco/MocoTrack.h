@@ -255,7 +255,7 @@ public:
     /// @note Overrides any existing TableProcessor for 'markers_reference'.
     void setMarkersReferenceFromTRC(
             const std::string& filename, double lowpassFilterFreq = 6.0) {
-        auto markers = TRCFileAdapter::read(filename);
+        TimeSeriesTableVec3 markers(filename);
         TimeSeriesTable markersFlat = markers.flatten();
         if (markersFlat.hasTableMetaDataKey("Units") &&
                 markersFlat.getTableMetaDataAsString("Units") == "mm") {

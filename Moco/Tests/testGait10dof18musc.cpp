@@ -35,8 +35,8 @@ void testGait10dof18musc_GSO() {
 
 
     // Regression tests.
-    TimeSeriesTable std_activation = STOFileAdapter_<double>::read
-            ("std_testGait10dof18musc_GSO_solution_activation.sto");
+    TimeSeriesTable std_activation(
+            "std_testGait10dof18musc_GSO_solution_activation.sto");
     compare(solution.activation, "/forceset/hamstrings_r",
             std_activation,      "/forceset/hamstrings_r", 1e-3, true);
     compare(solution.activation, "/forceset/bifemsh_r",
@@ -56,8 +56,8 @@ void testGait10dof18musc_GSO() {
     compare(solution.activation, "/forceset/tib_ant_r",
             std_activation,      "/forceset/tib_ant_r", 1e-3);
 
-    TimeSeriesTable std_norm_fiber_length = STOFileAdapter_<double>::read
-            ("std_testGait10dof18musc_GSO_solution_norm_fiber_length.sto");
+    TimeSeriesTable std_norm_fiber_length(
+            "std_testGait10dof18musc_GSO_solution_norm_fiber_length.sto");
     compare(solution.norm_fiber_length, "/forceset/hamstrings_r",
             std_norm_fiber_length,      "/forceset/hamstrings_r", 1e-5);
     compare(solution.norm_fiber_length, "/forceset/bifemsh_r",
@@ -77,8 +77,8 @@ void testGait10dof18musc_GSO() {
     compare(solution.norm_fiber_length, "/forceset/tib_ant_r",
             std_norm_fiber_length,      "/forceset/tib_ant_r", 1e-5);
 
-    TimeSeriesTable std_norm_fiber_velocity = STOFileAdapter_<double>::read
-            ("std_testGait10dof18musc_GSO_solution_norm_fiber_velocity.sto");
+    TimeSeriesTable std_norm_fiber_velocity(
+            "std_testGait10dof18musc_GSO_solution_norm_fiber_velocity.sto");
     compare(solution.norm_fiber_velocity, "/forceset/hamstrings_r",
             std_norm_fiber_velocity,      "/forceset/hamstrings_r", 1e-5);
     compare(solution.norm_fiber_velocity, "/forceset/bifemsh_r",
@@ -98,8 +98,8 @@ void testGait10dof18musc_GSO() {
     compare(solution.norm_fiber_velocity, "/forceset/tib_ant_r",
             std_norm_fiber_velocity,      "/forceset/tib_ant_r", 1e-5);
 
-    TimeSeriesTable std_other_controls = STOFileAdapter_<double>::read
-            ("std_testGait10dof18musc_GSO_solution_other_controls.sto");
+    TimeSeriesTable std_other_controls(
+            "std_testGait10dof18musc_GSO_solution_other_controls.sto");
     compare(solution.other_controls,
             "/reserve__jointset_hip_r_hip_flexion_r",
             std_other_controls,
@@ -113,8 +113,8 @@ void testGait10dof18musc_GSO() {
             std_other_controls,
             "/reserve__jointset_ankle_r_ankle_angle_r", 1e-6);
 
-    TimeSeriesTable std_tendon_force = STOFileAdapter_<double>::read
-            ("std_testGait10dof18musc_GSO_solution_tendon_force.sto");
+    TimeSeriesTable std_tendon_force(
+            "std_testGait10dof18musc_GSO_solution_tendon_force.sto");
     compare(solution.tendon_force, "/forceset/hamstrings_r",
             std_tendon_force,      "/forceset/hamstrings_r", 1e-3);
     compare(solution.tendon_force, "/forceset/bifemsh_r",
@@ -134,8 +134,8 @@ void testGait10dof18musc_GSO() {
     compare(solution.tendon_force, "/forceset/tib_ant_r",
             std_tendon_force,      "/forceset/tib_ant_r", 5e-3, 1);
 
-    TimeSeriesTable std_norm_tendon_force = STOFileAdapter_<double>::read
-            ("std_testGait10dof18musc_GSO_solution_norm_tendon_force.sto");
+    TimeSeriesTable std_norm_tendon_force(
+            "std_testGait10dof18musc_GSO_solution_norm_tendon_force.sto");
     compare(solution.norm_tendon_force, "/forceset/hamstrings_r",
             std_norm_tendon_force,      "/forceset/hamstrings_r", 1e-3);
     compare(solution.norm_tendon_force, "/forceset/bifemsh_r",
@@ -167,8 +167,8 @@ void testGait10dof18musc_INDYGO(const std::string& fiberDynamicsMode,
     //solution.write("testGait10dof18musc_INDYGO_solution");
 
     // Regression tests.
-    TimeSeriesTable std_activation = STOFileAdapter_<double>::read
-            ("std_testGait10dof18musc_INDYGO_solution_activation.sto");
+    TimeSeriesTable std_activation(
+            "std_testGait10dof18musc_INDYGO_solution_activation.sto");
     compare(solution.activation, "/forceset/gastroc_r",
             std_activation,      "/forceset/gastroc_r", 1e-3);
     compare(solution.activation, "/forceset/soleus_r",
@@ -176,8 +176,8 @@ void testGait10dof18musc_INDYGO(const std::string& fiberDynamicsMode,
     compare(solution.activation, "/forceset/tib_ant_r",
             std_activation,      "/forceset/tib_ant_r", 1e-3);
 
-    TimeSeriesTable std_excitation = STOFileAdapter_<double>::read
-            ("std_testGait10dof18musc_INDYGO_solution_excitation.sto");
+    TimeSeriesTable std_excitation(
+            "std_testGait10dof18musc_INDYGO_solution_excitation.sto");
     compare(solution.excitation, "/forceset/gastroc_r",
             std_excitation,      "/forceset/gastroc_r", 1e-3);
     compare(solution.excitation, "/forceset/soleus_r",
@@ -185,8 +185,8 @@ void testGait10dof18musc_INDYGO(const std::string& fiberDynamicsMode,
     compare(solution.excitation, "/forceset/tib_ant_r",
             std_excitation,      "/forceset/tib_ant_r", 1e-3);
 
-    TimeSeriesTable std_norm_fiber_length = STOFileAdapter_<double>::read
-            ("std_testGait10dof18musc_INDYGO_solution_norm_fiber_length.sto");
+    TimeSeriesTable std_norm_fiber_length(
+            "std_testGait10dof18musc_INDYGO_solution_norm_fiber_length.sto");
     compare(solution.norm_fiber_length, "/forceset/gastroc_r",
             std_norm_fiber_length,      "/forceset/gastroc_r", 1e-2);
     compare(solution.norm_fiber_length, "/forceset/soleus_r",
@@ -194,8 +194,8 @@ void testGait10dof18musc_INDYGO(const std::string& fiberDynamicsMode,
     compare(solution.norm_fiber_length, "/forceset/tib_ant_r",
             std_norm_fiber_length,      "/forceset/tib_ant_r", 1e-2);
 
-    TimeSeriesTable std_norm_fiber_velocity = STOFileAdapter_<double>::read
-            ("std_testGait10dof18musc_INDYGO_solution_norm_fiber_velocity.sto");
+    TimeSeriesTable std_norm_fiber_velocity(
+            "std_testGait10dof18musc_INDYGO_solution_norm_fiber_velocity.sto");
     compare(solution.norm_fiber_velocity, "/forceset/gastroc_r",
             std_norm_fiber_velocity,      "/forceset/gastroc_r", 1e-1);
     compare(solution.norm_fiber_velocity, "/forceset/soleus_r",
@@ -203,15 +203,15 @@ void testGait10dof18musc_INDYGO(const std::string& fiberDynamicsMode,
     compare(solution.norm_fiber_velocity, "/forceset/tib_ant_r",
             std_norm_fiber_velocity,      "/forceset/tib_ant_r", 1e-2);
 
-    TimeSeriesTable std_other_controls = STOFileAdapter_<double>::read
-            ("std_testGait10dof18musc_INDYGO_solution_other_controls.sto");
+    TimeSeriesTable std_other_controls(
+            "std_testGait10dof18musc_INDYGO_solution_other_controls.sto");
     compare(solution.other_controls,
             "/reserve__jointset_ankle_r_ankle_angle_r",
             std_other_controls,
             "/reserve__jointset_ankle_r_ankle_angle_r", 1e-4);
 
-    TimeSeriesTable std_tendon_force = STOFileAdapter_<double>::read
-            ("std_testGait10dof18musc_INDYGO_solution_tendon_force.sto");
+    TimeSeriesTable std_tendon_force(
+            "std_testGait10dof18musc_INDYGO_solution_tendon_force.sto");
     compare(solution.tendon_force, "/forceset/gastroc_r",
             std_tendon_force,      "/forceset/gastroc_r", 0.5);
     // Forces diverge at the very end of the motion.
@@ -220,8 +220,8 @@ void testGait10dof18musc_INDYGO(const std::string& fiberDynamicsMode,
     rootMeanSquare(solution.tendon_force, "/forceset/tib_ant_r",
                    std_tendon_force,      "/forceset/tib_ant_r", 0.5);
 
-    TimeSeriesTable std_norm_tendon_force = STOFileAdapter_<double>::read
-            ("std_testGait10dof18musc_INDYGO_solution_norm_tendon_force.sto");
+    TimeSeriesTable std_norm_tendon_force(
+            "std_testGait10dof18musc_INDYGO_solution_norm_tendon_force.sto");
     compare(solution.norm_tendon_force, "/forceset/gastroc_r",
             std_norm_tendon_force,      "/forceset/gastroc_r", 1e-3);
     compare(solution.norm_tendon_force, "/forceset/soleus_r",

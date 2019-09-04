@@ -137,6 +137,9 @@ private:
 // an input argument, whereas geometry paths are used with the argument false.
 MocoSolution gaitTracking(const bool& setPathLengthApproximation) {
 
+    OPENSIM_THROW_IF(setPathLengthApproximation, Exception,
+            "Cannot currently use path length approximation.")
+
     using SimTK::Pi;
 
     MocoTrack track;
@@ -144,8 +147,7 @@ MocoSolution gaitTracking(const bool& setPathLengthApproximation) {
 
     // Define the optimal control problem.
     // ===================================
-    ModelProcessor modelprocessor = ModelProcessor("2D_gait.osim") |
-            ModOpSetPathLengthApproximation(setPathLengthApproximation);
+    ModelProcessor modelprocessor = ModelProcessor("2D_gait.osim");
     track.setModel(modelprocessor);
     track.setStatesReference(TableProcessor("referenceCoordinates.sto") |
             TabOpLowPassFilter(6));
@@ -277,8 +279,7 @@ void gaitPrediction(const MocoSolution& gaitTrackingSolution,
     // Define the optimal control problem.
     // ===================================
     MocoProblem& problem = moco.updProblem();
-    ModelProcessor modelprocessor = ModelProcessor("2D_gait.osim") |
-            ModOpSetPathLengthApproximation(setPathLengthApproximation);
+    ModelProcessor modelprocessor = ModelProcessor("2D_gait.osim");
     problem.setModelProcessor(modelprocessor);
 
     // Goals.

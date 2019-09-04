@@ -215,6 +215,7 @@ public:
 
 /// Turn on or off path length approximation for all GeometryPath components in
 /// the model.
+/*
 class OSIMMOCO_API ModOpSetPathLengthApproximation : public ModelOperator {
     OpenSim_DECLARE_CONCRETE_OBJECT(
             ModOpSetPathLengthApproximation, ModelOperator);
@@ -237,6 +238,7 @@ public:
         }
     }
 };
+ */
 
 } // namespace OpenSim
 

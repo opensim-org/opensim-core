@@ -39,7 +39,7 @@ void MocoTranslationTrackingGoal::initializeOnModelImpl(const Model& model)
         assert(get_states_reference().empty());
         if (get_translation_reference_file() != "") { // translation ref file
             assert(m_translation_table.getNumColumns() == 0);
-            translationTableToUse = readTableFromFileT<Vec3>(
+            translationTableToUse = TimeSeriesTableVec3(
                     get_translation_reference_file());
 
         } else { // translation table
