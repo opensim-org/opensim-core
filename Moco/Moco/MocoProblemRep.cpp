@@ -430,8 +430,9 @@ void MocoProblemRep::initialize() {
     }
 
     // Muscle-tendon equilibrium residual outputs.
+    std::regex re("^implicitresidual_.*");
     m_implicit_residual_refs = getModelOutputReferencePtrs<double>(
-            m_model_disabled_constraints, "implicitresidual", true);
+            m_model_disabled_constraints, re, true);
 
     // Parameters.
     // -----------

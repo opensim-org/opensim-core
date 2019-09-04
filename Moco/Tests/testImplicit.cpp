@@ -342,9 +342,9 @@ public:
             const double derivative = getDiscreteVariableValue(s, 
                     "implicitderiv");
             // Get the state variable value.
-            const double state = getStateVariableValue(s, "state");
+            const double statevar = getStateVariableValue(s, "statevar");
             // The dynamics residual: y y' - 1 = 0.
-            double residual = derivative * state - 1;
+            double residual = derivative * statevar - 1;
             // Update the cache variable with the residual value.
             setCacheVariableValue(s, "implicitresidual", residual);
             markCacheVariableValid(s,"implicitresidual");
@@ -356,19 +356,19 @@ public:
 private:
     void extendInitStateFromProperties(SimTK::State& s) const override {
         Super::extendInitStateFromProperties(s);
-        setStateVariableValue(s, "state", get_default_state());
+        setStateVariableValue(s, "statevar", get_default_state());
     }
     void extendSetPropertiesFromState(const SimTK::State& s) override {
         Super::extendSetPropertiesFromState(s);
-        set_default_state(getStateVariableValue(s, "state"));
+        set_default_state(getStateVariableValue(s, "statevar"));
     }
     void computeStateVariableDerivatives(const SimTK::State& s) const override {
-        const double state = getStateVariableValue(s, "state");
-        setStateVariableDerivativeValue(s, "state", 1.0 / state);
+        const double statevar = getStateVariableValue(s, "statevar");
+        setStateVariableDerivativeValue(s, "statevar", 1.0 / statevar);
     }
     void extendAddToSystem(SimTK::MultibodySystem& system) const override {
         Super::extendAddToSystem(system);
-        addStateVariable("state");
+        addStateVariable("statevar");
         addDiscreteVariable("implicitderiv", SimTK::Stage::Dynamics);
         addCacheVariable("implicitresidual", double(0), SimTK::Stage::Dynamics);
     }
@@ -391,22 +391,20 @@ TEST_CASE("Auxiliary implicit dynamics") {
             const double derivativeControl =
                     polyFunc.calcValue(SimTK::Vector(1, time[i]));
             implicit_auxdyn->setDiscreteVariableValue(
-                    state, "implicitderiv_normalized_tendon_force", 
+                    state, "implicitderiv", 
                     derivativeControl);
             model.realizeDynamics(state);
 
-            double normTendonForce = implicit_auxdyn->getStateVariableValue(
-                    state, "normalized_tendon_force");
-            double derivNormTendonForce =
+            double statevar = implicit_auxdyn->getStateVariableValue(
+                    state, "statevar");
+            double derivative =
                     implicit_auxdyn->getStateVariableDerivativeValue(
-                            state, "normalized_tendon_force");
+                            state, "statevar");
             // y y' = 1
-            double residual = normTendonForce * derivativeControl - 1;
+            double residual = statevar * derivative - 1;
             // The residual returned by the component represents the dynamics.
             CHECK(residual == implicit_auxdyn->getOutputValue<double>(
-                    state, "implicitresidual_normalized_tendon_force"));
-            // The state variable derivative represents the dynamics.
-            CHECK(derivNormTendonForce == 1.0 / normTendonForce);
+                    state, "implicitresidual"));
         }
     }
 
@@ -420,8 +418,7 @@ TEST_CASE("Auxiliary implicit dynamics") {
     //    model->printSubcomponentInfo();
     //    problem.setModel(std::move(model));
     //    problem.setTimeBounds(0, 1);
-    //    problem.setStateInfo("/implicit_auxdyn/normalized_tendon_force", {}, 
-    //            1.0);
+    //    problem.setStateInfo("/implicit_auxdyn/statevar", {-10, 10}, 0.0);
     //    auto solution = study.solve();
     //}
 }

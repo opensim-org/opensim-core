@@ -47,7 +47,20 @@ namespace OpenSim {
 /// useful with explicit fiber dynamics than implicit fiber dynamics (when
 /// support for fiber dynamics is added).
 ///
-/// @note This class currently supports fiber dynamics in implicit form only.
+/// This class supports tendon compliance dynamics in both explicit and implicit 
+/// form. Both forms of the dynamics use normalized tendon force as the state
+/// variable (rather than the typical fiber length state). The explicit form is 
+/// handled through the usual Component dynamics interface. The implicit form 
+/// introduces an additional discrete and cache SimTK::State variable for the
+/// derivative of normalized tendon force and muscle-tendon equilibrium residual
+/// respectively. The implicit form is only for use with solvers that support
+/// implicit dynamics (i.e. Moco) and cannot be used to perform a time-stepping
+/// forward simulation with Manager; use explicit mode for time-stepping.
+/// 
+/// @note Normalized tendon force is bounded in the range [0, 5] in this class.
+///       The methods getMinNormalizedTendonForce() and 
+///       getMaxNormalizedTendonForce() are available to access these bounds for
+///       use in custom solvers.
 ///
 /// @underdevelopment
 ///
@@ -97,11 +110,6 @@ public:
     OpenSim_DECLARE_PROPERTY(tendon_compliance_dynamics_mode, std::string,
             "The dynamics method used to enforce tendon compliance dynamics. "
             "Options: 'explicit' or 'implicit'. Default: 'explicit'. ");
-    OpenSim_DECLARE_PROPERTY(initial_equilibrium_method, std::string,
-            "The method used to compute the initial equilibrium between the "
-            "muscle and tendon (only when ignore_tendon_compliance is false). "
-            "Options: 'bisection' or 'gradient-descent'. "
-            "Default: 'gradient-descent'.");
 
     OpenSim_DECLARE_OUTPUT(implicitresidual_normalized_tendon_force, double,
             getImplicitResidualNormalizedTendonForce, SimTK::Stage::Dynamics);
@@ -654,6 +662,7 @@ private:
     void calcFiberVelocityInfoHelper(const SimTK::Real& muscleTendonVelocity,
             const SimTK::Real& activation, const SimTK::Real& normTendonForce,
             const SimTK::Real& normTendonForceDerivative,
+            const bool& isTendonDynamicsExplicit,
             const MuscleLengthInfo& mli, FiberVelocityInfo& fvi) const;
     void calcMuscleDynamicsInfoHelper(const SimTK::Real& activation,
             const SimTK::Real& normTendonForce,

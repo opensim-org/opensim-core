@@ -434,13 +434,14 @@ OSIMMOCO_API void checkOrderSystemControls(const Model& model);
 OSIMMOCO_API void checkRedundantLabels(std::vector<std::string> labels);
 
 /// Get a list of reference pointers to all outputs whose names (not paths)
-/// match a provided substring. The 'substring' argument can be the full name of
-/// the output. Only Output%s that match the template argument type will be
-/// returned (double is the default type). Set the argument 'includeDescendents'
-/// to true to include outputs from all descendents from the provided component.
+/// match a substring defined by a provided regex pattern. The substring 
+/// regex pattern could be the full name of the output. Only Output%s that match 
+/// the template argument type will be returned (double is the default type). 
+/// Set the argument 'includeDescendents' to true to include outputs from all 
+/// descendents from the provided component.
 template <typename T = double>
 std::vector<SimTK::ReferencePtr<const Output<T>>> getModelOutputReferencePtrs(
-        const Component& component, const std::string& substring,
+        const Component& component, const std::regex& regexSubstring,
         bool includeDescendents = false) {
 
     // Initialize outputs array.
@@ -448,7 +449,8 @@ std::vector<SimTK::ReferencePtr<const Output<T>>> getModelOutputReferencePtrs(
 
     std::function<void(const Component&, const std::string&, bool, 
             std::vector<SimTK::ReferencePtr<const Output<T>>>&)> helper;
-    helper = [&helper](const Component& component, const std::string& substring,
+    helper = [&helper](const Component& component,
+                     const std::regex& regexSubstring,
             bool includeDescendents,
             std::vector<SimTK::ReferencePtr<const Output<T>>>& outputs) {
         // Store a reference to outputs that match the template
@@ -456,9 +458,12 @@ std::vector<SimTK::ReferencePtr<const Output<T>>> getModelOutputReferencePtrs(
         // substring.
         for (const auto& entry : component.getOutputs()) {
             const std::string& name = entry.first;
+            std::smatch m;
+            const auto foundSubstring =
+                    std::regex_search(name, m, regexSubstring);
             const auto* output =
                     dynamic_cast<const Output<T>*>(entry.second.get());
-            if (output && name.find(substring) != std::string::npos) {
+            if (output && foundSubstring) {
                 outputs.emplace_back(output);
             }
         }
@@ -468,12 +473,12 @@ std::vector<SimTK::ReferencePtr<const Output<T>>> getModelOutputReferencePtrs(
             for (const Component& thisComp :
                     component.getComponentList<Component>()) {
                 if (&thisComp == &component) { continue; }
-                helper(thisComp, substring, false, outputs);
+                helper(thisComp, regexSubstring, false, outputs);
             }
         }
     };
     
-    helper(component, substring, includeDescendents, outputs);
+    helper(component, regexSubstring, includeDescendents, outputs);
     return outputs;
 }
 
