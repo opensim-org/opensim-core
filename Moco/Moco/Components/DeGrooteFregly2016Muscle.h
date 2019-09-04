@@ -84,9 +84,6 @@ public:
     OpenSim_DECLARE_PROPERTY(default_normalized_tendon_force, double,
             "Value of normalized tendon force in the default state returned by "
             "initSystem().");
-    OpenSim_DECLARE_OUTPUT(implicitresidual_normalized_tendon_force, double,
-            getImplicitResidualNormalizedTendonForce, SimTK::Stage::Dynamics);
-
     OpenSim_DECLARE_PROPERTY(active_force_width_scale, double,
             "Scale factor for the width of the active force-length curve. "
             "Larger values make the curve wider. "
@@ -95,13 +92,19 @@ public:
             "The linear damping of the fiber (default: 0.01).");
     OpenSim_DECLARE_PROPERTY(tendon_strain_at_one_norm_force, double,
             "Tendon strain at a tension of 1 normalized force.");
-
     OpenSim_DECLARE_PROPERTY(ignore_passive_fiber_force, bool,
             "Make the passive fiber force 0 (default: false).");
-
-    OpenSim_DECLARE_PROPERTY(tendon_dynamics_mode, std::string,
+    OpenSim_DECLARE_PROPERTY(tendon_compliance_dynamics_mode, std::string,
             "The dynamics method used to enforce tendon compliance dynamics. "
             "Options: 'explicit' or 'implicit'. Default: 'explicit'. ");
+    OpenSim_DECLARE_PROPERTY(initial_equilibrium_method, std::string,
+            "The method used to compute the initial equilibrium between the "
+            "muscle and tendon (only when ignore_tendon_compliance is false). "
+            "Options: 'bisection' or 'gradient-descent'. "
+            "Default: 'gradient-descent'.");
+
+    OpenSim_DECLARE_OUTPUT(implicitresidual_normalized_tendon_force, double,
+            getImplicitResidualNormalizedTendonForce, SimTK::Stage::Dynamics);
 
     DeGrooteFregly2016Muscle() { constructProperties(); }
 
@@ -545,6 +548,32 @@ public:
                (1.0 / partialFiberLengthAlongTendonPartialFiberLength);
     }
 
+    SimTK::Real calcPartialTendonLengthPartialFiberLength(
+            const SimTK::Real& fiberLength,
+            const SimTK::Real& sinPennationAngle,
+            const SimTK::Real& cosPennationAngle,
+            const SimTK::Real& partialPennationAnglePartialFiberLength) const {
+
+        return fiberLength * sinPennationAngle *
+                       partialPennationAnglePartialFiberLength -
+               cosPennationAngle;
+    }
+
+    SimTK::Real calcPartialTendonForcePartialFiberLength(
+            const SimTK::Real& tendonStiffness, const SimTK::Real& fiberLength, 
+            const SimTK::Real& sinPennationAngle, 
+            const SimTK::Real& cosPennationAngle) const {
+        const SimTK::Real partialPennationAnglePartialFiberLength =
+                calcPartialPennationAnglePartialFiberLength(fiberLength);
+
+        const SimTK::Real partialTendonLengthPartialFiberLength =
+                calcPartialTendonLengthPartialFiberLength(fiberLength, 
+                    sinPennationAngle, cosPennationAngle,
+                        partialPennationAnglePartialFiberLength);
+
+        return tendonStiffness * partialTendonLengthPartialFiberLength;
+    }
+
     /// @copydoc getEquilibriumResidual()
     SimTK::Real calcEquilibriumResidual(const SimTK::Real& tendonForce,
             const SimTK::Real& fiberForceAlongTendon) const {
@@ -575,7 +604,6 @@ public:
             const SimTK::Real& xTolerance = 1e-6,
             const SimTK::Real& yTolerance = 1e-6,
             int maxIterations = 1000) const;
-
     /// Export the active force-length multiplier and passive force multiplier
     /// curves to a DataTable. If the normFiberLengths argument is omitted, we
     /// use createVectorLinspace(200, minNormFiberLength, maxNormFiberLength).
@@ -658,6 +686,22 @@ private:
                        (b2 - x) * (b3 + b2 * b4)) /
                cube(b3 + b4 * x);
     }
+
+    enum StatusFromEstimateMuscleFiberState {
+        Success_Converged,
+        Warning_FiberAtLowerBound,
+        Warning_FiberAtUpperBound,
+        Failure_MaxIterationsReached
+    };
+
+    typedef std::map<std::string, double> ValuesFromEstimateMuscleFiberState;
+
+    std::pair<StatusFromEstimateMuscleFiberState,
+            ValuesFromEstimateMuscleFiberState>
+    estimateMuscleFiberState(const double activation, 
+            const double muscleTendonLength, const double muscleTendonVelocity, 
+            const double normTendonForceDerivative, const double tolerance,
+            const int maxIterations) const;
 
     // Curve parameters.
     // Notation comes from De Groote et al., 2016 (supplement).

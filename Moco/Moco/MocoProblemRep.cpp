@@ -411,7 +411,7 @@ void MocoProblemRep::initialize() {
         if (!dgfmuscle.get_ignore_tendon_compliance()) {
             // Normalized tendon force state info.
             const std::string stateName = 
-                    dgfmuscle.getAbsolutePathString() + 
+                    dgfmuscle.getAbsolutePathString() + "/" + 
                     dgfmuscle.getNormalizedTendonForceStateName();
             auto& stateInfo = m_state_infos[stateName];
             if (stateInfo.getName().empty()) { stateInfo.setName(stateName); }
@@ -420,22 +420,9 @@ void MocoProblemRep::initialize() {
                                      dgfmuscle.getMaxNormalizedTendonForce()});
             }
 
-            if (dgfmuscle.get_tendon_dynamics_mode() == "implicit") {
-                // Derivative of normalized tendon force control info.
-                // TODO make this a derivative variable
+            if (dgfmuscle.get_tendon_compliance_dynamics_mode() == "implicit") {
                 const auto& derivName =
                         dgfmuscle.getImplicitDynamicsDerivativeName();
-                const std::string controlName =
-                        dgfmuscle.getAbsolutePathString() + "/" + derivName;
-                auto& controlInfo = m_control_infos[controlName];
-                if (controlInfo.getName().empty()) {
-                    controlInfo.setName(controlName);
-                }
-                // TODO create variable default bounds
-                if (!controlInfo.getBounds().isSet()) {
-                    controlInfo.setBounds({-1000, 1000});
-                }
-
                 ++m_num_auxiliary_residual_equations;
                 m_implicit_component_refs.emplace_back(derivName, &dgfmuscle); 
             }

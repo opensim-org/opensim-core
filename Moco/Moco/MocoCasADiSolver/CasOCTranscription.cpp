@@ -219,11 +219,20 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
         }
     }
     {
+        int numAccelerations = 0;
         if (m_solver.isDynamicsModeImplicit()) {
             // "Slice()" grabs everything in that dimension (like ":" in
             // Matlab).
-            setVariableBounds(derivatives, Slice(), Slice(), 
-                m_solver.getImplicitModeAccelerationBounds());
+            setVariableBounds(derivatives, Slice(0, m_problem.getNumSpeeds()), 
+                    Slice(), m_solver.getImplicitModeAccelerationBounds());
+            numAccelerations += m_problem.getNumSpeeds();
+        }
+        if (m_problem.getNumAuxiliaryResidualEquations()) {
+            setVariableBounds(derivatives, 
+                Slice(numAccelerations, numAccelerations + 
+                        m_problem.getNumAuxiliaryResidualEquations()), 
+                Slice(), m_solver.getImplicitComponentDerivativeBounds());
+
         }
     }
     {
@@ -330,7 +339,8 @@ void Transcription::transcribe() {
     // ---------------------------
     if (m_solver.isDynamicsModeImplicit()) {
         // udot.
-        const MX w = m_vars[derivatives];
+        const MX w = m_vars[derivatives](Slice(0, m_problem.getNumSpeeds()), 
+                Slice());
         m_xdot(Slice(NQ, NQ + NU), Slice()) = w;
 
         std::vector<Var> inputs{states, controls, multipliers, derivatives};

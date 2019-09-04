@@ -16,11 +16,11 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "MocoInitialVelocityEquilibriumGoal.h"
+#include "MocoInitialVelocityEquilibriumDGFGoal.h"
 
 using namespace OpenSim;
 
-void MocoInitialVelocityEquilibriumGoal::initializeOnModelImpl(
+void MocoInitialVelocityEquilibriumDGFGoal::initializeOnModelImpl(
         const Model& model) const {
 
     for (const auto& dgfmuscle :
@@ -33,7 +33,7 @@ void MocoInitialVelocityEquilibriumGoal::initializeOnModelImpl(
     setNumIntegralsAndOutputs(0, (int)m_dgfMuscleRefs.size());
 }
 
-void MocoInitialVelocityEquilibriumGoal::calcGoalImpl(
+void MocoInitialVelocityEquilibriumDGFGoal::calcGoalImpl(
         const GoalInput& input, SimTK::Vector& goal) const {
     const auto& s = input.initial_state;
     if (getModeIsCost()) {

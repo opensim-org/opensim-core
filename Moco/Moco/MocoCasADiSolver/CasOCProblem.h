@@ -294,9 +294,11 @@ protected:
                 dynamicsMode != "explicit" && dynamicsMode != "implicit",
                 OpenSim::Exception, "Invalid dynamics mode.");
         m_dynamicsMode = std::move(dynamicsMode);
+        m_isDynamicsModeImplicit = m_dynamicsMode == "implicit";
     }
-    void setNumAuxiliaryResidualEquations(int numAuxResiduals) {
-        m_numAuxiliaryResiduals = numAuxResiduals;
+    void setAuxiliaryDerivativeNames(const std::vector<std::string>& names) {
+        m_auxiliaryDerivativeNames = names;
+        m_numAuxiliaryResiduals = (int)names.size();
     }
 
 public:
@@ -368,6 +370,10 @@ public:
                 it.derivative_names.push_back(name);
             }
         }
+        for (const auto& auxDerivName : m_auxiliaryDerivativeNames) {
+            it.derivative_names.push_back(auxDerivName);
+        }
+            
         for (const auto& info : m_paramInfos)
             it.parameter_names.push_back(info.name);
         return it;
@@ -467,11 +473,12 @@ public:
     int getNumParameters() const { return (int)m_paramInfos.size(); }
     int getNumMultipliers() const { return (int)m_multiplierInfos.size(); }
     std::string getDynamicsMode() const { return m_dynamicsMode; }
+    bool isDynamicsModeImplicit() const { return m_isDynamicsModeImplicit; }
     int getNumDerivatives() const {
-        if (m_dynamicsMode == "implicit") {
-            return getNumSpeeds();
+        if (isDynamicsModeImplicit()) {
+            return getNumSpeeds() + getNumAuxiliaryResidualEquations();
         } else {
-            return 0;
+            return getNumAuxiliaryResidualEquations();
         }
     }
     int getNumSlacks() const { return (int)m_slackInfos.size(); }
@@ -489,6 +496,9 @@ public:
             return m_numMultibodyDynamicsEquationsIfPrescribedKinematics;
         }
         return getNumSpeeds();
+    }
+    const std::vector<std::string>& getAuxiliaryDerivativeNames() const {
+        return m_auxiliaryDerivativeNames;
     }
     int getNumAuxiliaryResidualEquations() const {
         return m_numAuxiliaryResiduals;
@@ -602,6 +612,8 @@ private:
     int m_numAccelerationConstraintEquations = 0;
     bool m_enforceConstraintDerivatives = false;
     std::string m_dynamicsMode = "explicit";
+    std::vector<std::string> m_auxiliaryDerivativeNames;
+    bool m_isDynamicsModeImplicit = false;
     bool m_prescribedKinematics = false;
     int m_numMultibodyDynamicsEquationsIfPrescribedKinematics = 0;
     Bounds m_kinematicConstraintBounds;

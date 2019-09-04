@@ -71,6 +71,12 @@ public:
     Bounds getImplicitModeAccelerationBounds() const {
         return m_implicitModeAccelerationBounds;
     }
+    void setImplicitComponentDerivativeBounds(Bounds bounds) {
+        m_implicitComponentDerivativeBounds = bounds;
+    }
+    Bounds getImplicitComponentDerivativeBounds() const {
+        return m_implicitComponentDerivativeBounds;
+    }
     /// Whether or not to constrain control values at mesh interval midpoints
     /// by linearly interpolating control values from mesh interval endpoints.
     /// @note Only applies to Hermite-Simpson collocation.
@@ -152,6 +158,7 @@ private:
     double m_lagrangeMultiplierWeight = 1.0;
     bool m_interpolateControlMidpoints = true;
     Bounds m_implicitModeAccelerationBounds;
+    Bounds m_implicitComponentDerivativeBounds;
     std::string m_finite_difference_scheme = "central";
     std::string m_sparsity_detection = "none";
     std::string m_write_sparsity;

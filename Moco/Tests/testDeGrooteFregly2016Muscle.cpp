@@ -684,7 +684,8 @@ TEST_CASE("DeGrooteFregly2016Muscle basics") {
             auto& mutMuscle =
                     model.updComponent<DeGrooteFregly2016Muscle>("muscle");
             mutMuscle.set_ignore_tendon_compliance(false);
-            mutMuscle.set_integration_mode("explicit");
+            mutMuscle.set_tendon_compliance_dynamics_mode("explicit");
+
             const double pennOpt = 0.12;
             double cosPenn = cos(pennOpt);
             mutMuscle.set_pennation_angle_at_optimal(pennOpt);
@@ -692,15 +693,15 @@ TEST_CASE("DeGrooteFregly2016Muscle basics") {
             muscle.setActivation(state, 1.0);
             const double muscleLength =
                     muscle.get_optimal_fiber_length() * cosPenn +
-                    muscle.get_tendon_slack_length();
+                    1.1 * muscle.get_tendon_slack_length();
             coord.setValue(state, muscleLength);
             const double Vmax = muscle.get_optimal_fiber_length() *
                                 muscle.get_max_contraction_velocity();
-            const double muscleTendonVelocity = -0.21 * Vmax;
+            const double muscleTendonVelocity = 0.0 * Vmax;
             coord.setSpeedValue(state, muscleTendonVelocity);
 
-            
-            //muscle.computeInitialFiberEquilibrium(state);
+            model.realizeDynamics(state);
+            muscle.computeInitialFiberEquilibrium(state);
 
             model.realizePosition(state);
             const auto& normFiberLength =
@@ -712,7 +713,7 @@ TEST_CASE("DeGrooteFregly2016Muscle basics") {
             const auto& fiberLengthAlongTendon =
                     fiberLength * cosPennationAngle;
             const auto& tendonLength = muscleLength - fiberLengthAlongTendon;
-            const auto& normTendonLength = 
+            const auto& normTendonLength =
                     tendonLength / muscle.get_tendon_slack_length();
             const auto& tendonStrain = normTendonLength - 1.0;
             const auto fpass =
@@ -721,7 +722,7 @@ TEST_CASE("DeGrooteFregly2016Muscle basics") {
                     muscle.calcActiveForceLengthMultiplier(normFiberLength);
 
             CHECK(muscle.getFiberLength(state) == Approx(fiberLength));
-            CHECK(muscle.getNormalizedFiberLength(state) == 
+            CHECK(muscle.getNormalizedFiberLength(state) ==
                     Approx(normFiberLength));
             CHECK(muscle.getPennationAngle(state) == Approx(pennationAngle));
             CHECK(muscle.getCosPennationAngle(state) ==
@@ -740,7 +741,7 @@ TEST_CASE("DeGrooteFregly2016Muscle basics") {
                     Approx(fiberPotentialEnergy));
             const auto tendonPotentialEnergy =
                     muscle.calcTendonForceMultiplierIntegral(normTendonLength) *
-                    muscle.get_tendon_slack_length() * 
+                    muscle.get_tendon_slack_length() *
                     muscle.get_max_isometric_force();
             CHECK(muscle.getTendonPotentialEnergy(state) ==
                     Approx(tendonPotentialEnergy));
@@ -753,15 +754,15 @@ TEST_CASE("DeGrooteFregly2016Muscle basics") {
             const auto& fiberVelocity = Vmax * normFiberVelocity;
             const auto& fiberVelocityAlongTendon =
                     fiberVelocity / cosPennationAngle;
-            const auto& tendonVelocity = 
-                muscleTendonVelocity - fiberVelocityAlongTendon;
+            const auto& tendonVelocity =
+                    muscleTendonVelocity - fiberVelocityAlongTendon;
             const auto& fv =
                     muscle.calcForceVelocityMultiplier(normFiberVelocity);
 
             CHECK(muscle.getFiberVelocity(state) == Approx(fiberVelocity));
             CHECK(muscle.getNormalizedFiberVelocity(state) ==
                     Approx(normFiberVelocity));
-            CHECK(muscle.getFiberVelocityAlongTendon(state) == 
+            CHECK(muscle.getFiberVelocityAlongTendon(state) ==
                     Approx(fiberVelocityAlongTendon));
             CHECK(muscle.getPennationAngularVelocity(state) ==
                     Approx(-fiberVelocity / fiberLength * tan(pennationAngle)));
@@ -773,8 +774,7 @@ TEST_CASE("DeGrooteFregly2016Muscle basics") {
             const auto& activeFiberForce = Fmax * fal * fv;
             const auto& passiveFiberForce = Fmax * fpass;
             const auto& fiberForce = activeFiberForce + passiveFiberForce;
-            const auto& fiberForceAlongTendon =
-                    fiberForce* cosPennationAngle;
+            const auto& fiberForceAlongTendon = fiberForce * cosPennationAngle;
             const auto& tendonForce = fiberForceAlongTendon;
             CHECK(muscle.getActiveFiberForce(state) ==
                     Approx(activeFiberForce));
@@ -784,14 +784,14 @@ TEST_CASE("DeGrooteFregly2016Muscle basics") {
                     Approx(passiveFiberForce));
             CHECK(muscle.getPassiveFiberForceAlongTendon(state) ==
                     Approx(passiveFiberForce * cosPennationAngle));
-            CHECK(muscle.getFiberForce(state) ==  Approx(fiberForce));
+            CHECK(muscle.getFiberForce(state) == Approx(fiberForce));
             CHECK(muscle.getFiberForceAlongTendon(state) ==
                     Approx(fiberForceAlongTendon));
             CHECK(muscle.getTendonForce(state) == Approx(tendonForce));
 
             FiberForceFunction fiberForceFunc(muscle, state, false);
             SimTK::Differentiator diffFiberStiffness(fiberForceFunc);
-            SimTK::Real fiberStiffness = 
+            SimTK::Real fiberStiffness =
                     diffFiberStiffness.calcDerivative(fiberLength);
             CHECK(muscle.getFiberStiffness(state) == Approx(fiberStiffness));
 
@@ -815,17 +815,16 @@ TEST_CASE("DeGrooteFregly2016Muscle basics") {
 
             CHECK(muscle.getFiberActivePower(state) ==
                     Approx(-activeFiberForce * fiberVelocity));
-            // No damping, so we can use the total passive fiber force we 
+            // No damping, so we can use the total passive fiber force we
             // computed previously.
             CHECK(muscle.getFiberPassivePower(state) ==
                     Approx(-passiveFiberForce * fiberVelocity));
-            CHECK(muscle.getTendonPower(state) == 
+            CHECK(muscle.getTendonPower(state) ==
                     Approx(-tendonForce * tendonVelocity));
             CHECK(muscle.getMusclePower(state) ==
                     Approx(-tendonForce * muscleTendonVelocity));
             CHECK(muscle.getStress(state) == Approx(tendonForce / Fmax));
-
-         }
+        }
     }
 
     SECTION("Force-velocity curve inverse") {
@@ -883,9 +882,8 @@ TEST_CASE("DeGrooteFregly2016Muscle basics") {
             REQUIRE_THROWS_AS(
                     muscle.solveBisection(parabola, -5, 5), Exception);
         }
-
     }
-    
+
     // getActivation(), setActivation()
     // --------------------------------
     SECTION("getActivation(), setActivation()") {
@@ -919,6 +917,7 @@ Model createHangingMuscleModel(
     actu->set_tendon_strain_at_one_norm_force(0.10);
     actu->set_ignore_activation_dynamics(ignoreActivationDynamics);
     actu->set_ignore_tendon_compliance(ignoreTendonCompliance);
+    actu->set_tendon_compliance_dynamics_mode("implicit");
     actu->set_max_contraction_velocity(10);
     actu->set_pennation_angle_at_optimal(0.10);
     actu->addNewPathPoint("origin", model.updGround(), SimTK::Vec3(0));
@@ -978,7 +977,7 @@ TEMPLATE_TEST_CASE("Hanging muscle minimum time", "", MocoCasADiSolver) {
         if (!ignoreTendonCompliance) {
             // The problem performs better when this is in cost mode.
             auto* initial_equilibrium =
-                    problem.addGoal<MocoInitialVelocityEquilibriumGoal>();
+                    problem.addGoal<MocoInitialVelocityEquilibriumDGFGoal>();
             initial_equilibrium->setName("initial_velocity_equilibrium");
             initial_equilibrium->setMode("cost");
             initial_equilibrium->setWeight(0.001);
@@ -1004,12 +1003,17 @@ TEMPLATE_TEST_CASE("Hanging muscle minimum time", "", MocoCasADiSolver) {
     // Perform time stepping forward simulation using optimized controls.
     // ------------------------------------------------------------------
     // See if we end up at the correct final state.
-    // TODO can't perform time stepping with implicit tendon dynamics.
-    if (ignoreTendonCompliance) {
+    {
+        // We need to temporarily switch the muscle in the model to explicit
+        // tendon compliance dynamics mode to perform time stepping.
+        auto* mutableDGFMuscle = dynamic_cast<DeGrooteFregly2016Muscle*>(
+                &model.updComponent("forceset/actuator"));
+        if (!ignoreTendonCompliance) {
+            mutableDGFMuscle->set_tendon_compliance_dynamics_mode("explicit");
+        }
         const auto iterateSim =
                 simulateIterateWithTimeStepping(solutionTrajOpt, model);
-        std::string iterateFilename =
-                "testDeGrooteFregly2016Muscle_timestepping";
+        std::string iterateFilename = "testDeGrooteFregly2016Muscle_timestepping";
         if (!ignoreActivationDynamics) iterateFilename += "_actdyn";
         if (ignoreTendonCompliance) iterateFilename += "_rigidtendon";
         iterateFilename += ".sto";
@@ -1018,6 +1022,9 @@ TEMPLATE_TEST_CASE("Hanging muscle minimum time", "", MocoCasADiSolver) {
         const double error = iterateSim.compareContinuousVariablesRMS(
                 solutionTrajOpt, {{"states", {}}, {"controls", {}}});
         CHECK(error < 0.05);
+        if (!ignoreTendonCompliance) {
+            mutableDGFMuscle->set_tendon_compliance_dynamics_mode("implicit");
+        }
     }
 
     // Track the kinematics from the trajectory optimization.
@@ -1056,7 +1063,7 @@ TEMPLATE_TEST_CASE("Hanging muscle minimum time", "", MocoCasADiSolver) {
         if (!ignoreTendonCompliance) {
             // The problem performs better when this is in cost mode.
             auto* initial_equilibrium =
-                    problem.addGoal<MocoInitialVelocityEquilibriumGoal>();
+                    problem.addGoal<MocoInitialVelocityEquilibriumDGFGoal>();
             initial_equilibrium->setName("initial_velocity_equilibrium");
             initial_equilibrium->setMode("cost");
             initial_equilibrium->setWeight(0.001);

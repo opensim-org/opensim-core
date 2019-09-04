@@ -1,7 +1,7 @@
-#ifndef MOCO_MOCOINITIALVELOCITYEQUILIBRIUMGOAL_H
-#define MOCO_MOCOINITIALVELOCITYEQUILIBRIUMGOAL_H
+#ifndef MOCO_MOCOINITIALVELOCITYEQUILIBRIUMDGFGOAL_H
+#define MOCO_MOCOINITIALVELOCITYEQUILIBRIUMDGFGOAL_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: MocoInitialVelocityEquilibriumGoal.h                         *
+ * OpenSim Moco: MocoInitialVelocityEquilibriumDGFGoal.h                         *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2019 Stanford University and the Authors                     *
  *                                                                            *
@@ -23,25 +23,24 @@
 
 namespace OpenSim {
 
-/// For all muscles with implicit tendon contraction dynamics, the initial 
-/// tendon and fiber velocities are determined based the derivative of the
-/// linearized muscle-tendon equilibrium equation described in Millard et al.
-/// 2013 (Appendix, equation A6).
+/// For DeGrooteFregly2016Muscle components with implicit tendon compliance 
+/// dynamics, the initial tendon and fiber velocities are determined based the 
+/// derivative of the linearized muscle-tendon equilibrium equation described 
+/// in Millard et al. 2013 (Appendix, equation A6).
 /// Without this goal, the derivative of normalized tendon force, which is a 
-/// control variable in implicit tendon contraction dynamics, may undesirably
-/// start at a very large value if not constrained or minimized (which is is 
+/// control variable in implicit tendon compliance dynamics, may undesirably
+/// start at a very large value if not constrained or minimized (which it is
 /// not by default).
 /// This is an endpoint constraint goal by default.
-/// @note this goal only applies to DeGrooteFregly2016Muscles.
+/// @note This goal only applies to DeGrooteFregly2016Muscles.
 /// @ingroup mocogoal
-// TODO will we support other muscles or should we rename the class?
-class OSIMMOCO_API MocoInitialVelocityEquilibriumGoal : public MocoGoal {
+class OSIMMOCO_API MocoInitialVelocityEquilibriumDGFGoal : public MocoGoal {
     OpenSim_DECLARE_CONCRETE_OBJECT(
-            MocoInitialVelocityEquilibriumGoal, MocoGoal);
+            MocoInitialVelocityEquilibriumDGFGoal, MocoGoal);
 
 public:
-    MocoInitialVelocityEquilibriumGoal() = default;
-    MocoInitialVelocityEquilibriumGoal(std::string name)
+    MocoInitialVelocityEquilibriumDGFGoal() = default;
+    MocoInitialVelocityEquilibriumDGFGoal(std::string name)
         : MocoGoal(std::move(name)) {}
 
 protected:
@@ -60,4 +59,4 @@ private:
 
 } // namespace OpenSim
 
-#endif // MOCO_MOCOINITIALVELOCITYEQUILIBRIUMGOAL_H
+#endif // MOCO_MOCOINITIALVELOCITYEQUILIBRIUMDGFGOAL_H

@@ -320,68 +320,57 @@ using namespace Catch;
     CHECK(state.getUDot()[0] == Approx(0).margin(1e-10));
 }
 
-// This class implements a custom component with simple dynamics representing
-// auxiliary muscle-tendon dynamics in implicit form.
+// This class implements a custom component with simple dynamics in implicit 
+// form.
 class MyAuxiliaryImplicitDynamics : public Component {
     OpenSim_DECLARE_CONCRETE_OBJECT(MyAuxiliaryImplicitDynamics, Component);
 
 public:
-    OpenSim_DECLARE_PROPERTY(default_normalized_tendon_force, double,
-            "Value of normalized tendon force in the default state returned by "
-            "initSystem().");
-    OpenSim_DECLARE_OUTPUT(implicitresidual_normalized_tendon_force, double,
-            getImplicitResidualNormalizedTendonForce, SimTK::Stage::Dynamics);
+    OpenSim_DECLARE_PROPERTY(default_state, double,
+            "Value of the default state returned by initSystem().");
+    OpenSim_DECLARE_OUTPUT(implicitresidual, double,
+            getImplicitResidual, SimTK::Stage::Dynamics);
     MyAuxiliaryImplicitDynamics() {
         setName("implicit_auxdyn");
-        constructProperty_default_normalized_tendon_force(0.5);
+        constructProperty_default_state(0.5);
     }
-    double getImplicitResidualNormalizedTendonForce(
-            const SimTK::State& s) const {
+    double getImplicitResidual(const SimTK::State& s) const {
 
-        if (!isCacheVariableValid(s, "implicitresidual_normalized_tendon_force")) {
-            // Get the tendon force derivative control value.
+        if (!isCacheVariableValid(s, "implicitresidual")) {
+            // Get the derivative control value.
             // TODO add method to Component get with index instead.
-            const double derivNormTendonForce = getDiscreteVariableValue(s, 
-                    "implicitderiv_normalized_tendon_force");
-            // Get the normalized tendon force state variable value.
-            const double normTendonForce = getStateVariableValue(s, 
-                    "normalized_tendon_force");
+            const double derivative = getDiscreteVariableValue(s, 
+                    "implicitderiv");
+            // Get the state variable value.
+            const double state = getStateVariableValue(s, "state");
             // The dynamics residual: y y' - 1 = 0.
-            double residual = derivNormTendonForce * normTendonForce - 1;
+            double residual = derivative * state - 1;
             // Update the cache variable with the residual value.
-            setCacheVariableValue(s, "implicitresidual_normalized_tendon_force", 
-                    residual);
-            markCacheVariableValid(s, 
-                    "implicitresidual_normalized_tendon_force");
+            setCacheVariableValue(s, "implicitresidual", residual);
+            markCacheVariableValid(s,"implicitresidual");
         }
         return getCacheVariableValue<double>(
-                s, "implicitresidual_normalized_tendon_force");
+                s, "implicitresidual");
     }
 
 private:
     void extendInitStateFromProperties(SimTK::State& s) const override {
         Super::extendInitStateFromProperties(s);
-        setStateVariableValue(s, "normalized_tendon_force", 
-                get_default_normalized_tendon_force());
+        setStateVariableValue(s, "state", get_default_state());
     }
     void extendSetPropertiesFromState(const SimTK::State& s) override {
         Super::extendSetPropertiesFromState(s);
-        set_default_normalized_tendon_force(
-                getStateVariableValue(s, "normalized_tendon_force"));
+        set_default_state(getStateVariableValue(s, "state"));
     }
     void computeStateVariableDerivatives(const SimTK::State& s) const override {
-        const double normTendonForce = getStateVariableValue(s, 
-                "normalized_tendon_force");
-        setStateVariableDerivativeValue(s, "normalized_tendon_force", 
-                1.0 / normTendonForce);
+        const double state = getStateVariableValue(s, "state");
+        setStateVariableDerivativeValue(s, "state", 1.0 / state);
     }
     void extendAddToSystem(SimTK::MultibodySystem& system) const override {
         Super::extendAddToSystem(system);
-        addStateVariable("normalized_tendon_force");
-        addDiscreteVariable("implicitderiv_normalized_tendon_force", 
-                SimTK::Stage::Dynamics);
-        addCacheVariable("implicitresidual_normalized_tendon_force", double(0),
-                SimTK::Stage::Dynamics);
+        addStateVariable("state");
+        addDiscreteVariable("implicitderiv", SimTK::Stage::Dynamics);
+        addCacheVariable("implicitresidual", double(0), SimTK::Stage::Dynamics);
     }
 };
 
@@ -413,10 +402,6 @@ TEST_CASE("Auxiliary implicit dynamics") {
                             state, "normalized_tendon_force");
             // y y' = 1
             double residual = normTendonForce * derivativeControl - 1;
-
-            // The normalized tendon force returned by the component matches the 
-            // state value.
-            CHECK(state.getY()[0] == normTendonForce);
             // The residual returned by the component represents the dynamics.
             CHECK(residual == implicit_auxdyn->getOutputValue<double>(
                     state, "implicitresidual_normalized_tendon_force"));

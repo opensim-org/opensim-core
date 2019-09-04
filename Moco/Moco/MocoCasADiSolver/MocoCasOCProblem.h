@@ -285,8 +285,8 @@ private:
                 output.auxiliary_derivatives.ptr());
 
         // Copy auxiliary residuals to output.
-        copyImplicitResidualsToOutput(*mocoProblemRep, 
-            simtkStateDisabledConstraints, output.auxiliary_residuals);
+        copyImplicitResidualsToOutput(*mocoProblemRep,
+                simtkStateDisabledConstraints, output.auxiliary_residuals);
 
         m_jar->leave(std::move(mocoProblemRep));
     }
@@ -473,31 +473,17 @@ private:
 
     void convertToSimTKState(const double& time, const casadi::DM& states,
             const casadi::DM& controls, const Model& model,
-            const MocoProblemRep& mocoProblemRep, SimTK::State& simtkState,
-            bool copyAuxStates) const {
+            SimTK::State& simtkState, bool copyAuxStates) const {
         convertToSimTKState(time, states, model, simtkState, copyAuxStates);
         model.realizeVelocity(simtkState);
 
         auto& simtkControls = model.updControls(simtkState);
-        int numSimtkControls =
-                getNumControls() -
-                mocoProblemRep.getNumAuxiliaryResidualEquations();
 
-        for (int ic = 0; ic < numSimtkControls; ++ic) {
+        for (int ic = 0; ic < getNumControls(); ++ic) {
             simtkControls[m_modelControlIndices[ic]] = *(controls.ptr() + ic);
         }
         model.realizeVelocity(simtkState);
         model.setControls(simtkState, simtkControls);
-
-        const auto& implicitRefs =
-                mocoProblemRep.getImplicitComponentReferencePtrs();
-        int iaux = 0;
-        for (const auto& implicitRef : implicitRefs) {
-            const auto& comp = implicitRef.second.getRef();
-            comp.setDiscreteVariableValue(simtkState, implicitRef.first,
-                    *(controls.ptr() + numSimtkControls + iaux));
-            ++iaux;
-        }
     }
     void applyInput(const double& time, const casadi::DM& states,
             const casadi::DM& controls, const casadi::DM& multipliers,
@@ -522,18 +508,28 @@ private:
         modelDisabledConstraints.getSystem().prescribe(
                 simtkStateDisabledConstraints);
 
-        if (getNumDerivatives()) {
+        if (isDynamicsModeImplicit()) {
             auto& accel = mocoProblemRep->getAccelerationMotion();
             accel.setEnabled(simtkStateDisabledConstraints, true);
-            SimTK::Vector udot(
-                    (int)derivatives.rows(), derivatives.ptr(), true);
+            SimTK::Vector udot(getNumSpeeds(), derivatives.ptr(), true);
             accel.setUDot(simtkStateDisabledConstraints, udot);
         }
 
-        convertToSimTKState(time, states, controls, modelBase, *mocoProblemRep,
-                simtkStateBase, true);
+        if (getNumAuxiliaryResidualEquations()) {
+            const auto& implicitRefs =
+                    mocoProblemRep->getImplicitComponentReferencePtrs();
+            for (int i = 0; i < implicitRefs.size(); ++i) {
+                const auto& comp = implicitRefs[i].second.getRef();
+                comp.setDiscreteVariableValue(simtkStateDisabledConstraints,
+                        implicitRefs[i].first,
+                        *(derivatives.ptr() + getNumSpeeds() + i));
+            }
+        }
+
+        convertToSimTKState(
+                time, states, controls, modelBase, simtkStateBase, true);
         convertToSimTKState(time, states, controls, modelDisabledConstraints,
-                *mocoProblemRep, simtkStateDisabledConstraints, true);
+                simtkStateDisabledConstraints, true);
         // If enabled constraints exist in the model, compute constraint forces
         // based on Lagrange multipliers. This also updates the associated
         // discrete variables in the state.
@@ -636,10 +632,10 @@ private:
     }
 
     void copyImplicitResidualsToOutput(const MocoProblemRep& mocoProblemRep,
-        const SimTK::State& state, casadi::DM& auxiliary_residuals) const {
+            const SimTK::State& state, casadi::DM& auxiliary_residuals) const {
         if (getNumAuxiliaryResidualEquations()) {
-            const auto& residualOutputs = 
-                mocoProblemRep.getImplicitResidualReferencePtrs();
+            const auto& residualOutputs =
+                    mocoProblemRep.getImplicitResidualReferencePtrs();
             SimTK::Vector auxResiduals((int)residualOutputs.size(), 0.0);
             for (int i = 0; i < residualOutputs.size(); ++i) {
                 auxResiduals[i] = residualOutputs[i]->getValue(state);

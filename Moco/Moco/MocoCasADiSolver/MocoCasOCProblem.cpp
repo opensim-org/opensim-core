@@ -18,7 +18,6 @@
 
 #include "MocoCasOCProblem.h"
 
-#include "../Components/DeGrooteFregly2016Muscle.h"
 #include "MocoCasADiSolver.h"
 
 using namespace OpenSim;
@@ -69,22 +68,17 @@ MocoCasOCProblem::MocoCasOCProblem(const MocoCasADiSolver& mocoCasADiSolver,
                 convertBounds(info.getInitialBounds()),
                 convertBounds(info.getFinalBounds()));
     }
-    // Add additional controls for implicit auxiliary dynamics equations.
-    if (problemRep.getNumAuxiliaryResidualEquations()) {
-        const auto& implicitRefs =
-                problemRep.getImplicitComponentReferencePtrs();
-        for (const auto& implicitRef : implicitRefs) {
-            const auto& controlName =
-                    implicitRef.second->getAbsolutePathString() + "/" + 
-                    implicitRef.first;
-            const auto& info = problemRep.getControlInfo(controlName);
-            addControl(controlName, convertBounds(info.getBounds()),
-                    convertBounds(info.getInitialBounds()),
-                    convertBounds(info.getFinalBounds()));
-        }
+
+    // Set the number of residual equations to be enforced for components with
+    // dynamics in implicit form.
+    const auto& implicitRefs = problemRep.getImplicitComponentReferencePtrs();
+    std::vector<std::string> derivativeNames;
+    for (const auto& implicitRef : implicitRefs) {
+        derivativeNames.push_back(implicitRef.second->getAbsolutePathString() +
+                                  "/" + implicitRef.first);
     }
-    setNumAuxiliaryResidualEquations(
-            problemRep.getNumAuxiliaryResidualEquations());
+
+    setAuxiliaryDerivativeNames(derivativeNames);
 
     // Add any scalar constraints associated with kinematic constraints in
     // the model as path constraints in the problem.
@@ -212,7 +206,7 @@ MocoCasOCProblem::MocoCasOCProblem(const MocoCasADiSolver& mocoCasADiSolver,
         // TODO: This behavior may be unexpected for users.
         const auto& kc = problemRep.getKinematicConstraint(kcNames.at(0));
         std::vector<MocoBounds> bounds = kc.getConstraintInfo().getBounds();
-        setKinematicConstraintBounds(convertBounds(bounds.at(0)));   
+        setKinematicConstraintBounds(convertBounds(bounds.at(0)));
     }
 
     for (const auto& paramName : problemRep.createParameterNames()) {
