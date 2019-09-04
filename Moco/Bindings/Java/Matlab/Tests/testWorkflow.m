@@ -105,7 +105,7 @@ function testChangingTimeBounds(testCase)
 
     solver = moco.initTropterSolver();
     solver.set_transcription_scheme('trapezoidal')
-    solver.set_num_mesh_points(20);
+    solver.set_num_mesh_intervals(20);
     solver.set_transcription_scheme('trapezoidal')
     guess = solver.createGuess('random');
     guess.setTime(opensimMoco.createVectorLinspace(20, 0.0, 3.0));
@@ -133,7 +133,7 @@ function testChangingModel(testCase)
     problem.setStateInfo('/slider/position/speed', [-100, 100], 0, 0);
     problem.addGoal(MocoFinalTimeGoal());
     solver = moco.initTropterSolver();
-    solver.set_num_mesh_points(20);
+    solver.set_num_mesh_intervals(20);
     finalTime0 = moco.solve().getFinalTime();
 
     testCase.assertEqual(finalTime0, 2.00, 'AbsTol', 0.01);
@@ -155,7 +155,7 @@ function testOrder(testCase)
     problem.addGoal(MocoFinalTimeGoal());
     problem.setModel(createSlidingMassModel());
     solver = moco.initTropterSolver();
-    solver.set_num_mesh_points(20);
+    solver.set_num_mesh_intervals(20);
     finalTime =  moco.solve().getFinalTime();
 
     testCase.assertEqual(finalTime, 2.0, 'AbsTol', 0.01);

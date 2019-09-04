@@ -77,7 +77,7 @@ MocoStudy createSlidingMassMocoStudy() {
     mp.addGoal<MocoFinalTimeGoal>();
 
     auto& ms = moco.initSolver<SolverType>();
-    ms.set_num_mesh_intervals(20);
+    ms.set_num_mesh_intervals(19);
     ms.set_transcription_scheme("trapezoidal");
     ms.set_enforce_constraint_derivatives(false);
     return moco;
@@ -291,11 +291,11 @@ TEST_CASE("Ordering of calls") {
     {
         MocoStudy moco = createSlidingMassMocoStudy();
         auto& solver = moco.initTropterSolver();
-        const int initNumMeshPoints = solver.get_num_mesh_points();
+        const int initNumMeshPoints = solver.get_num_mesh_intervals();
         MocoSolution sol0 = moco.solve();
-        solver.set_num_mesh_points(2 * initNumMeshPoints);
+        solver.set_num_mesh_intervals(2 * initNumMeshPoints);
         MocoSolution sol1 = moco.solve();
-        solver.set_num_mesh_points(initNumMeshPoints);
+        solver.set_num_mesh_intervals(initNumMeshPoints);
         MocoSolution sol2 = moco.solve();
         // Ensure that changing the mesh has an effect.
         SimTK_TEST(!sol0.isNumericallyEqual(sol1));
@@ -637,8 +637,8 @@ TEMPLATE_TEST_CASE("Workflow", "", MocoTropterSolver, MocoCasADiSolver) {
         problem.addGoal<MocoFinalTimeGoal>();
 
         auto& solver = moco.initSolver<TestType>();
-        const int N = 20;         // mesh points
-        const int Nc = 2 * N - 1; // collocation points
+        const int N = 19;         // mesh intervals
+        const int Nc = 2 * N + 1; // collocation points
         solver.set_num_mesh_intervals(N);
         MocoTrajectory guess = solver.createGuess("random");
         guess.setTime(createVectorLinspace(Nc, 0.0, 3.0));
@@ -934,8 +934,8 @@ TEMPLATE_TEST_CASE("Guess", "", MocoTropterSolver, MocoCasADiSolver) {
 
     MocoStudy moco = createSlidingMassMocoStudy<TestType>();
     auto& ms = moco.initSolver<TestType>();
-    const int N = 6;
-    const int Nc = 2 * N - 1;
+    const int N = 5;
+    const int Nc = 2 * N + 1;
     ms.set_num_mesh_intervals(N);
 
     std::vector<std::string> expectedStateNames{
@@ -1119,13 +1119,15 @@ TEMPLATE_TEST_CASE("Guess", "", MocoTropterSolver, MocoCasADiSolver) {
 
     // Resampling.
     {
-        const int N = 5;
-        const int Nc = 2 * N - 1;
+        const int N = 4;
+        const int Nc = 2 * N + 1;
         ms.set_num_mesh_intervals(N);
         MocoTrajectory guess0 = ms.createGuess();
         guess0.setControl("/actuator", createVectorLinspace(Nc, 2.8, 7.3));
         CHECK(guess0.getTime().size() == Nc); // midpoint of [0, 10]
-        SimTK_TEST_EQ(guess0.getTime()[Nc - 1], N);
+        std::cout << "guess0.getTime()[Nc - 1] is: " << guess0.getTime()[Nc - 1] << "\n";
+        std::cout << "N is: " << N << "\n";
+        SimTK_TEST_EQ(guess0.getTime()[Nc - 1], N + 1);
 
         // resampleWithNumTimes
         {
@@ -1665,8 +1667,10 @@ TEMPLATE_TEST_CASE("Sliding mass", "", MocoTropterSolver, MocoCasADiSolver) {
     int numTimes = 20;
     int numStates = 2;
     int numControls = 1;
+    std::cout << "Solution times size is: " << solution.getTime().size();
+    std::cout << "numTimes is: " << numTimes;
 
-    // Check dimensions and metadata of the solution.
+// Check dimensions and metadata of the solution.
     SimTK_TEST((solution.getStateNames() ==
                 std::vector<std::string>{
                         "/slider/position/value", "/slider/position/speed"}));
@@ -1686,6 +1690,7 @@ TEMPLATE_TEST_CASE("Sliding mass", "", MocoTropterSolver, MocoCasADiSolver) {
             solution.getTime().get(numTimes - 1), expectedFinalTime, 1e-2);
     const double half = 0.5 * expectedFinalTime;
 
+    std::cout << "numTimes is: " << numTimes << "\n";
     for (int itime = 0; itime < numTimes; ++itime) {
         const double& t = solution.getTime().get(itime);
         // Position is a quadratic.
@@ -1695,6 +1700,11 @@ TEMPLATE_TEST_CASE("Sliding mass", "", MocoTropterSolver, MocoCasADiSolver) {
         SimTK_TEST_EQ_TOL(states(itime, 0), expectedPos, 1e-2);
 
         double expectedSpeed = t < half ? t : 2.0 - t;
+        std::cout << "itime is: " << itime << "\n";
+        std::cout << "Expected speed: " << expectedSpeed << "\n";
+        std::cout << "States speed: " << states(itime, 1) << "\n";
+        std::cout << "States speed next itime: " << states(itime + 1, 1) << "\n";
+
         SimTK_TEST_EQ_TOL(states(itime, 1), expectedSpeed, 1e-2);
 
         double expectedForce = t < half ? 10 : -10;
@@ -1709,7 +1719,7 @@ TEMPLATE_TEST_CASE("Solving an empty MocoProblem", "", MocoTropterSolver,
     THEN("problem solves without error, solution trajectories are empty.") {
         MocoSolution solution = moco.solve();
         const int N = solver.get_num_mesh_intervals();
-        const int Nc = 2 * N - 1; // collocation points
+        const int Nc = 2 * N + 1; // collocation points
         CHECK(solution.getTime().size() == Nc);
         CHECK(solution.getStatesTrajectory().ncol() == 0);
         CHECK(solution.getStatesTrajectory().nrow() == Nc);
@@ -1780,7 +1790,7 @@ void testSkippingOverQuaternionSlots(
     problem.addGoal<MocoControlGoal>();
 
     auto& solver = moco.initSolver<SolverType>();
-    const int N = 5;
+    const int N = 4;
     solver.set_num_mesh_intervals(N);
     solver.set_dynamics_mode(dynamicsMode);
     solver.set_transcription_scheme("hermite-simpson");

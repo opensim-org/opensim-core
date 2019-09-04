@@ -79,7 +79,7 @@ public:
     }
     static void run_test(int N, std::string transcription, double eps) {
         auto ocp = std::make_shared<SlidingMassMinimumTime<T>>();
-        DirectCollocationSolver<T> dircol(ocp, transcription, "ipopt", N);
+        DirectCollocationSolver<T> dircol(ocp, transcription, "ipopt", N - 1);
         //dircol.get_opt_solver().set_advanced_option_string
         //        ("derivative_test", "second-order");
         dircol.get_opt_solver().set_sparsity_detection("random");
@@ -102,7 +102,7 @@ public:
 TEST_CASE("Sliding mass minimum time.") {
     SECTION("derivative comparison") {
         OCPDerivativesComparison<SlidingMassMinimumTime> comp;
-        comp.num_mesh_intervals = 4;
+        comp.num_mesh_intervals = 3;
         comp.compare();
     }
     SECTION("trapezoidal") {

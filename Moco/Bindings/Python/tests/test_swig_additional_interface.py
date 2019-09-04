@@ -291,7 +291,7 @@ class TestWorkflow(unittest.TestCase):
 
         solver = moco.initTropterSolver()
         solver.set_transcription_scheme("trapezoidal");
-        solver.set_num_mesh_points(20)
+        solver.set_num_mesh_intervals(20)
         guess = solver.createGuess("random")
         guess.setTime(osim.createVectorLinspace(20, 0.0, 3.0))
         solver.setGuess(guess)
@@ -315,7 +315,7 @@ class TestWorkflow(unittest.TestCase):
         problem.setStateInfo("/slider/position/speed", [-100, 100], 0, 0)
         problem.addGoal(osim.MocoFinalTimeGoal())
         solver = moco.initTropterSolver()
-        solver.set_num_mesh_points(20)
+        solver.set_num_mesh_intervals(20)
         solver.set_transcription_scheme("trapezoidal");
         finalTime0 = moco.solve().getFinalTime()
 
@@ -336,7 +336,7 @@ class TestWorkflow(unittest.TestCase):
         problem.addGoal(osim.MocoFinalTimeGoal())
         problem.setModel(createSlidingMassModel())
         solver = moco.initTropterSolver()
-        solver.set_num_mesh_points(20)
+        solver.set_num_mesh_intervals(20)
         solver.set_transcription_scheme("trapezoidal");
         finalTime =  moco.solve().getFinalTime()
         self.assertAlmostEqual(finalTime, 2.0, places=2)
