@@ -1,3 +1,13 @@
+classdef osimC3D < matlab.mixin.SetGet
+% osimC3D(filepath, ForceLocation)
+%   C3D data to OpenSim Tables.
+%   OpenSim Utility Class
+%   Inputs:
+%   filepath           Full path to the location of the C3D file
+%   ForceLocation      Integer value for representation of force from plate
+%                      0 = forceplate orgin, 1 = COP, 2 = Point Of Wrench
+%                      Application
+
 % ----------------------------------------------------------------------- %
 % The OpenSim API is a toolkit for musculoskeletal modeling and           %
 % simulation. See http://opensim.stanford.edu and the NOTICE file         %
@@ -20,15 +30,6 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-classdef osimC3D < matlab.mixin.SetGet
-% osimC3D(filepath, ForceLocation)
-%   C3D data to OpenSim Tables.
-%   OpenSim Utility Class
-%   Inputs:
-%   filepath           Full path to the location of the C3D file
-%   ForceLocation      Integer value for representation of force from plate
-%                      0 = forceplate orgin, 1 = COP, 2 = Point Of Wrench
-%                      Application
     properties (Access = private)
         path
         name
@@ -151,9 +152,9 @@ classdef osimC3D < matlab.mixin.SetGet
             disp('Marker and Force tables have been rotated')
         end
         function convertMillimeters2Meters(obj)
-            % Function to convert displacement forceplate measurements made
-            % in millimeters to meters. This will convert point data (mm)
-            % to m and Torque data (Nmm) to Nm.
+            % Function to convert  point data (mm) to m and Torque data 
+            % (Nmm) to Nm.
+            
             import org.opensim.modeling.*
             
             nRows  = obj.forces.getNumRows();
