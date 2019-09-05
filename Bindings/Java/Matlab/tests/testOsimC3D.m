@@ -101,7 +101,7 @@ for i =  0 : forces_m.getNumColumns() - 1
     label = forces_m.getColumnLabel(i);
     
     for u = 1 : length(randomRows)
-        if contains(char(forces_m.getColumnLabels().get(i)),'f')
+        if startsWith(char(forces_m.getColumnLabels().get(i)),'f')
             % Get the values
             d   = col.get(randomRows(u));
             d_m = col_m.get(randomRows(u));
