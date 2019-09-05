@@ -282,6 +282,50 @@ protected:
     }
 };
 
+/// This goal requires the average speed of the system to match a desired
+/// average speed. The average speed of the system is the displacement of the
+/// system's center of mass divided by the duration of the phase.
+/// @ingroup mocogoal
+class MocoAverageSpeedGoal : public MocoGoal {
+OpenSim_DECLARE_CONCRETE_OBJECT(MocoAverageSpeedGoal, MocoGoal);
+
+public:
+    OpenSim_DECLARE_PROPERTY(desired_average_speed, double,
+            "The desired average speed of the system (m/s). Default: 0.");
+    MocoAverageSpeedGoal() { constructProperties(); }
+    MocoAverageSpeedGoal(std::string name) : MocoGoal(std::move(name)) {
+        constructProperties();
+    }
+
+protected:
+    bool getSupportsEndpointConstraintImpl() const override { return true; }
+    Mode getDefaultModeImpl() const override {
+        return Mode::EndpointConstraint;
+    }
+    void calcGoalImpl(
+            const GoalInput& input, SimTK::Vector& values) const override {
+        SimTK::Real timeInitial = input.initial_state.getTime();
+        SimTK::Real timeFinal = input.final_state.getTime();
+        SimTK::Real duration = timeFinal - timeInitial;
+
+        SimTK::Vec3 comInitial =
+                getModel().calcMassCenterPosition(input.initial_state);
+        SimTK::Vec3 comFinal =
+                getModel().calcMassCenterPosition(input.final_state);
+        // TODO: Use distance squared for convexity.
+        SimTK::Real displacement = (comInitial - comFinal).norm();
+        // Calculate average gait speed.
+        values[0] = get_desired_average_speed() - (displacement / duration);
+        if (getModeIsCost()) { values[0] = SimTK::square(values[0]); }
+    }
+    void initializeOnModelImpl(const Model& model) const override {
+        setNumIntegralsAndOutputs(0, 1);
+    }
+
+private:
+    void constructProperties() { constructProperty_desired_average_speed(0); }
+};
+
 } // namespace OpenSim
 
 #endif // MOCO_MOCOGOAL_H
