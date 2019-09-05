@@ -508,10 +508,10 @@ private:
         modelDisabledConstraints.getSystem().prescribe(
                 simtkStateDisabledConstraints);
 
-        if (isDynamicsModeImplicit()) {
+        if (getNumAccelerations()) {
             auto& accel = mocoProblemRep->getAccelerationMotion();
             accel.setEnabled(simtkStateDisabledConstraints, true);
-            SimTK::Vector udot(getNumSpeeds(), derivatives.ptr(), true);
+            SimTK::Vector udot(getNumAccelerations(), derivatives.ptr(), true);
             accel.setUDot(simtkStateDisabledConstraints, udot);
         }
 
@@ -522,7 +522,7 @@ private:
                 const auto& comp = implicitRefs[i].second.getRef();
                 comp.setDiscreteVariableValue(simtkStateDisabledConstraints,
                         implicitRefs[i].first,
-                        *(derivatives.ptr() + getNumSpeeds() + i));
+                        *(derivatives.ptr() + getNumAccelerations() + i));
             }
         }
 

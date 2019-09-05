@@ -50,9 +50,6 @@ public:
         return m_transcriptionScheme;
     }
     std::string getDynamicsMode() const { return m_problem.getDynamicsMode(); }
-    bool isDynamicsModeImplicit() const {
-        return m_problem.getDynamicsMode() == "implicit";
-    }
     void setMinimizeLagrangeMultipliers(bool tf) {
         m_minimizeLagrangeMultipliers = tf;
     }
@@ -71,11 +68,11 @@ public:
     Bounds getImplicitModeAccelerationBounds() const {
         return m_implicitModeAccelerationBounds;
     }
-    void setImplicitComponentDerivativeBounds(Bounds bounds) {
-        m_implicitComponentDerivativeBounds = bounds;
+    void setImplicitAuxiliaryDerivativeBounds(Bounds bounds) {
+        m_implicitAuxiliaryDerivativeBounds = bounds;
     }
-    Bounds getImplicitComponentDerivativeBounds() const {
-        return m_implicitComponentDerivativeBounds;
+    Bounds getImplicitAuxiliaryDerivativeBounds() const {
+        return m_implicitAuxiliaryDerivativeBounds;
     }
     /// Whether or not to constrain control values at mesh interval midpoints
     /// by linearly interpolating control values from mesh interval endpoints.
@@ -158,7 +155,7 @@ private:
     double m_lagrangeMultiplierWeight = 1.0;
     bool m_interpolateControlMidpoints = true;
     Bounds m_implicitModeAccelerationBounds;
-    Bounds m_implicitComponentDerivativeBounds;
+    Bounds m_implicitAuxiliaryDerivativeBounds;
     std::string m_finite_difference_scheme = "central";
     std::string m_sparsity_detection = "none";
     std::string m_write_sparsity;

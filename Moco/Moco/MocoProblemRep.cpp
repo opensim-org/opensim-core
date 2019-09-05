@@ -335,8 +335,6 @@ void MocoProblemRep::initialize() {
 
     for (int i = 0; i < ph0.getProperty_control_infos().size(); ++i) {
         const auto& name = ph0.get_control_infos(i).getName();
-        // TODO cleaner check.
-        if (name.find("/implicitderiv_normalized_tendon_force")) continue;
         auto it = std::find(controlNames.begin(), controlNames.end(), name);
         OPENSIM_THROW_IF(it == controlNames.end(), Exception,
                 format("Control info provided for nonexistent or disabled "

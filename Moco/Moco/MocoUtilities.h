@@ -441,7 +441,7 @@ OSIMMOCO_API void checkRedundantLabels(std::vector<std::string> labels);
 /// descendents from the provided component.
 template <typename T = double>
 std::vector<SimTK::ReferencePtr<const Output<T>>> getModelOutputReferencePtrs(
-        const Component& component, const std::regex& regexSubstring,
+        const Component& component, const std::regex& pattern,
         bool includeDescendents = false) {
 
     // Initialize outputs array.
@@ -449,8 +449,7 @@ std::vector<SimTK::ReferencePtr<const Output<T>>> getModelOutputReferencePtrs(
 
     std::function<void(const Component&, const std::regex&, bool, 
             std::vector<SimTK::ReferencePtr<const Output<T>>>&)> helper;
-    helper = [&helper](const Component& component,
-                     const std::regex& regexSubstring,
+    helper = [&helper](const Component& component, const std::regex& pattern,
             bool includeDescendents,
             std::vector<SimTK::ReferencePtr<const Output<T>>>& outputs) {
         // Store a reference to outputs that match the template
@@ -458,9 +457,7 @@ std::vector<SimTK::ReferencePtr<const Output<T>>> getModelOutputReferencePtrs(
         // substring.
         for (const auto& entry : component.getOutputs()) {
             const std::string& name = entry.first;
-            std::smatch m;
-            const auto foundSubstring =
-                    std::regex_search(name, m, regexSubstring);
+            const auto foundSubstring = std::regex_match(name, pattern);
             const auto* output =
                     dynamic_cast<const Output<T>*>(entry.second.get());
             if (output && foundSubstring) {
@@ -473,12 +470,12 @@ std::vector<SimTK::ReferencePtr<const Output<T>>> getModelOutputReferencePtrs(
             for (const Component& thisComp :
                     component.getComponentList<Component>()) {
                 if (&thisComp == &component) { continue; }
-                helper(thisComp, regexSubstring, false, outputs);
+                helper(thisComp, pattern, false, outputs);
             }
         }
     };
     
-    helper(component, regexSubstring, includeDescendents, outputs);
+    helper(component, pattern, includeDescendents, outputs);
     return outputs;
 }
 

@@ -475,17 +475,20 @@ public:
     std::string getDynamicsMode() const { return m_dynamicsMode; }
     bool isDynamicsModeImplicit() const { return m_isDynamicsModeImplicit; }
     int getNumDerivatives() const {
-        if (isDynamicsModeImplicit()) {
-            return getNumSpeeds() + getNumAuxiliaryResidualEquations();
-        } else {
-            return getNumAuxiliaryResidualEquations();
-        }
+        return getNumAccelerations() + getNumAuxiliaryResidualEquations();
     }
     int getNumSlacks() const { return (int)m_slackInfos.size(); }
     /// This is the number of generalized coordinates, which may be greater
     /// than the number of generalized speeds.
     int getNumCoordinates() const { return m_numCoordinates; }
     int getNumSpeeds() const { return m_numSpeeds; }
+    int getNumAccelerations() const {
+        if (isDynamicsModeImplicit() && !isPrescribedKinematics()) {
+            return getNumSpeeds();
+        } else {
+            return 0;
+        }
+    }
     int getNumAuxiliaryStates() const { return m_numAuxiliaryStates; }
     int getNumCosts() const { return (int)m_costInfos.size(); }
     bool isPrescribedKinematics() const { return m_prescribedKinematics; }

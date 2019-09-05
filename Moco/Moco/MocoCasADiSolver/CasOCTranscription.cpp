@@ -95,7 +95,7 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
     m_numMeshInteriorPoints = m_numGridPoints - m_numMeshPoints;
     m_numDefectsPerMeshInterval = numDefectsPerMeshInterval;
     m_pointsForInterpControls = pointsForInterpControls;
-    m_numMultibodyResiduals = m_solver.isDynamicsModeImplicit()
+    m_numMultibodyResiduals = m_problem.isDynamicsModeImplicit()
                              ? m_problem.getNumMultibodyDynamicsEquations()
                              : 0;
     m_numAuxiliaryResiduals = m_problem.getNumAuxiliaryResidualEquations();
@@ -219,20 +219,17 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
         }
     }
     {
-        int numAccelerations = 0;
-        if (m_solver.isDynamicsModeImplicit()) {
+        if (m_problem.isDynamicsModeImplicit()) {
             // "Slice()" grabs everything in that dimension (like ":" in
             // Matlab).
             setVariableBounds(derivatives, Slice(0, m_problem.getNumSpeeds()), 
                     Slice(), m_solver.getImplicitModeAccelerationBounds());
-            numAccelerations += m_problem.getNumSpeeds();
         }
         if (m_problem.getNumAuxiliaryResidualEquations()) {
             setVariableBounds(derivatives, 
-                Slice(numAccelerations, numAccelerations + 
-                        m_problem.getNumAuxiliaryResidualEquations()), 
-                Slice(), m_solver.getImplicitComponentDerivativeBounds());
-
+                Slice(m_problem.getNumAccelerations(), 
+                      m_problem.getNumDerivatives()), 
+                Slice(), m_solver.getImplicitAuxiliaryDerivativeBounds());
         }
     }
     {
@@ -337,7 +334,7 @@ void Transcription::transcribe() {
 
     // udot, zdot, residual, kcerr
     // ---------------------------
-    if (m_solver.isDynamicsModeImplicit()) {
+    if (m_problem.isDynamicsModeImplicit()) {
         // udot.
         const MX w = m_vars[derivatives](Slice(0, m_problem.getNumSpeeds()), 
                 Slice());

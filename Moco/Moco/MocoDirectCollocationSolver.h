@@ -147,9 +147,9 @@ public:
     OpenSim_DECLARE_PROPERTY(implicit_mode_acceleration_bounds, MocoBounds,
             "Bounds on acceleration variables in implicit dynamics mode. "
             "Default: [-1000, 1000]");
-    OpenSim_DECLARE_PROPERTY(implicit_component_derivative_bounds, MocoBounds,
-            "Bounds on derivative variables for components with implicit "
-            "dynamics. Default: [-1000, 1000]");
+    OpenSim_DECLARE_PROPERTY(implicit_auxiliary_derivative_bounds, MocoBounds,
+            "Bounds on derivative variables for components with auxiliary "
+            "dynamics in implicit form. Default: [-1000, 1000]");
 
     MocoDirectCollocationSolver() { constructProperties(); }
 
