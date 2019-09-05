@@ -421,9 +421,10 @@ void testLiftingMassGSO(
 
     // The rationale for the tolerances: as tight as they could be for the
     // test to pass.
+
     rootMeanSquare(solution.activation, "/actuator",
                    ocpSolution,         "activation",
-                   0.06);
+                   0.07, true);
 }
 
 // Reproduce the trajectory using the MuscleRedundancy, without specifying an

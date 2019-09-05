@@ -52,8 +52,8 @@ std::unique_ptr<Model> createSlidingMassModel() {
 /// Test the result of a sliding mass minimum effort problem.
 TEMPLATE_TEST_CASE(
         "Test MocoControlGoal", "", MocoTropterSolver, MocoCasADiSolver) {
-    const int N = 10;         // mesh intervals
-    const int Nc = 2 * N - 1; // collocation points (Hermite-Simpson)
+    const int N = 9;         // mesh intervals
+    const int Nc = 2 * N + 1; // collocation points (Hermite-Simpson)
     MocoSolution sol1;
     {
         MocoStudy moco;

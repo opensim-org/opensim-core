@@ -81,7 +81,7 @@ MocoSolution solveDoublePendulumSwingup(const std::string& dynamics_mode) {
 
     // Configure the solver.
     // =====================
-    int N = 30;
+    int N = 29;
     auto& solver = moco.initSolver<SolverType>();
     solver.set_dynamics_mode(dynamics_mode);
     solver.set_num_mesh_intervals(N);
@@ -196,8 +196,8 @@ TEMPLATE_TEST_CASE("Combining implicit dynamics mode with path constraints",
         pc->setConstraintInfo(info);
         auto& solver = moco.initSolver<TestType>();
         solver.set_dynamics_mode("implicit");
-        const int N = 5;          // mesh intervals
-        const int Nc = 2 * N - 1; // collocation points (Hermite-Simpson)
+        const int N = 4;          // mesh intervals
+        const int Nc = 2 * N + 1; // collocation points (Hermite-Simpson)
         solver.set_num_mesh_intervals(N);
         MocoSolution solution = moco.solve();
 

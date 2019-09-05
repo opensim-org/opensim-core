@@ -446,7 +446,7 @@ void testLiftingMassGSO(
     // ---------------------------------------------------------------------
     rootMeanSquare(solution.activation, "/actuator",
                    ocpSolution,         "activation",
-                   0.03);
+                   0.04);
     auto reserveForceRMS = reserveOptimalForce *
          solution.other_controls.getDependentColumnAtIndex(0).normRMS();
     SimTK_TEST(reserveForceRMS < 0.02);
