@@ -145,7 +145,7 @@ int main() {
         std::cout << "  " << filename << std::endl;
         TRCFileAdapter trcfileadapter{};
         try {
-            auto table = trcfileadapter.readFile(filename);
+            TimeSeriesTable_<SimTK::Vec3> table(filename);
             trcfileadapter.write(table, tmpfile);
             compareFiles(filename, tmpfile);
         }
@@ -155,12 +155,12 @@ int main() {
         }
     }
 
-    std::cout << "Testing FileAdapter::readFile() and FileAdapter::writeFile()"
+    std::cout << "Testing FileAdapter::read() and FileAdapter::writeFile()"
               << std::endl;
     for(const auto& filename : filenames) {
         std::cout << "  " << filename << std::endl;
         try {
-            auto table = FileAdapter::readFile(filename).at("markers");
+            auto table = FileAdapter::createAdapterFromExtension(filename)->read(filename).at("markers");
             DataAdapter::InputTables tables{};
             tables.emplace(std::string{ "markers" }, table.get());
             FileAdapter::writeFile(tables, tmpfile);

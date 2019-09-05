@@ -31,6 +31,15 @@
 template<typename> class shrik;
 
 namespace OpenSim {
+    /** C3DFileAdapter reads a C3D file into markers and forces tables of type
+    TimeSeriesTableVec3. The markers table has each column labeled by its
+    corresponding marker name. For the forces table, the data are grouped
+    by sensor (force-plate #) in force, point and moment order, with the
+    respective *f#*, *p#* and *m#* column labels. C3DFileAdpater provides
+    options for expressing the force-plate measurements either as the
+    net force and moments expressed at the ForcePlateOrigin, the
+    CenterOfPressure, or the PointOfWrenchApplication.
+    */
 
 class OSIMCOMMON_API C3DFileAdapter : public FileAdapter {
 public:
@@ -40,8 +49,9 @@ public:
     /** Enumerated list of locations in which read in forces are expressed.
         %Measurement from force plates can be expressed by the C3DFileAdapter
         either at the OriginOfForcePlate (the default), CenterOfPressure, or
-        the PointOfWrenchApplication. It is an optional argument to 
-        C3DFileAdapter::readFile().
+        the PointOfWrenchApplication. You need to call  setLocationForForceExpression
+        before invoking C3DFileAdapter::read(), otherwise the default location
+        (OriginOfForcePlate) is assumed.
 
         In the case of the CenterOfPressure (COP), the underlying assumptions
         are that the ground plane (in which COP is defined) passes through the
@@ -55,26 +65,32 @@ public:
 
         <b>C++ example</b>
         \code{.cpp}
-        auto tables  =  C3DFileAdapter::readFile("myData.c3d", 
-                            C3DFileAdapter::ForceLocation::CenterOfPressure);
+        C3DFileAdapter c3dFileAdapter;
+        c3dFileAdapter.setLocationForForceExpression(C3DFileAdapter::ForceLocation::CenterOfPressure);
+        auto tables  =  c3dFileAdapter.read("myData.c3d");
         \endcode
 
         <b>Python example</b>
         \code{.py}
         import opensim
-        tables = C3DFileAdapter.readFile("myData.c3d",
-                    opensim.C3DFileAdapter.ForceLocation_CenterOfPressure)
+        C3DFileAdapter c3dFileAdapter;
+        c3dFileAdapter.setLocationForForceExpression(opensim.C3DFileAdapter.ForceLocation_CenterOfPressure);
+        tables = c3dFileAdapter.read("myData.c3d")
         \endcode
 
         <b>Java example</b>
         \code{.java}
-        tables = C3DFileAdapter.readFile("myData.c3d",
-                    C3DFileAdapter.ForceLocation.CenterOfPressure);
+        C3DFileAdapter c3dFileAdapter = new C3DFileAdapter();
+        c3dFileAdapter.setLocationForForceExpression(C3DFileAdapter.ForceLocation.CenterOfPressure);
+        tables = c3dFileAdapter.read("myData.c3d");
+                    
         \endcode
 
         <b>MATLAB example</b>
         \code{.m}
-        tables = C3DFileAdapter.readFile("myData.c3d", 1);
+         C3DFileAdapter c3dFileAdapter;
+         c3dFileAdapter.setLocationForForceExpression(1);
+        tables = C3DFileAdapter.read("myData.c3d");
         \endcode
     */
     enum class ForceLocation {
@@ -91,33 +107,34 @@ public:
     ~C3DFileAdapter()                                = default;
 
     C3DFileAdapter* clone() const override;
-
+    /**  C3DFileAdpater provides options for expressing the force-plate 
+        measurements either as the net force and moments expressed at the 
+        ForcePlateOrigin, the CenterOfPressure, or the 
+        PointOfWrenchApplication.  This function sets the option. */
     void setLocationForForceExpression(const ForceLocation location) {
         _location = location;
     }
-
+    /** Retrieve the option for location for force expression */
     const ForceLocation getLocationForForceExpression() const {
         return _location;
     }
-    
-    /** Read in a C3D file into separate markers and forces tables of type
-        TimeSeriesTableVec3. The markers table has each column labeled by its
-        corresponding marker name. For the forces table, the data are grouped
-        by sensor (force-plate #) in force, point and moment order, with the
-        respective *f#*, *p#* and *m#* column labels. C3DFileAdpater provides
-        options for expressing the force-plate measurements either as the
-        net force and moments expressed at the ForcePlateOrigin, the 
-        CentereOfPressure, or the PointOfWrenchApplication (see above).
-        */
-    static
-    Tables readFile(const std::string& fileName, 
-                ForceLocation wrt = ForceLocation::OriginOfForcePlate);
 
     static
     void write(const Tables& markerTable, const std::string& fileName);
+    /** Retrieve the TimeSeriesTableVec3 of Markers */
+    std::shared_ptr<TimeSeriesTableVec3> getMarkersTable(DataAdapter::OutputTables& tables) {
+        std::shared_ptr<AbstractDataTable>& adt = tables.at("markers");
+        return std::dynamic_pointer_cast<TimeSeriesTableVec3>(adt);
+    }
+    /** Retrieve the TimeSeriesTableVec3 of Forces */
+     std::shared_ptr<TimeSeriesTableVec3> getForcesTable(DataAdapter::OutputTables& tables) {
+        std::shared_ptr<AbstractDataTable>& adt = tables.at("forces");
+        return std::dynamic_pointer_cast<TimeSeriesTableVec3>(adt);
+    }
 
     static const std::string _markers;
     static const std::string _forces;
+
 
 protected:
     OutputTables extendRead(const std::string& fileName) const override;

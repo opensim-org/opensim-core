@@ -5,6 +5,7 @@ language: cpp
 
 # Use container-based infrastructure to allow caching (for ccache).
 sudo: false
+dist: trusty
 
 # For thread_local support on macOS, we require xcode8 or greater.
 # Before 2018, xcode7 was the default. Now that xcode8.3 is the default,

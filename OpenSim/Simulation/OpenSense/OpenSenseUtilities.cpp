@@ -130,8 +130,7 @@ Model OpenSenseUtilities::calibrateModelFromOrientations(
 
     const SimTK::Array_<int>& startEnd = { 0, 1 };
 
-    TimeSeriesTable_<SimTK::Quaternion> quatTable =
-        STOFileAdapter_<SimTK::Quaternion>::readFile(calibrationOrientationsFile);
+    TimeSeriesTable_<SimTK::Quaternion> quatTable(calibrationOrientationsFile);
 
 
     TimeSeriesTable_<SimTK::Rotation> orientationsData =

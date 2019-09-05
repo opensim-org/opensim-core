@@ -43,23 +43,6 @@ C3DFileAdapter::clone() const {
     return new C3DFileAdapter{*this};
 }
 
-C3DFileAdapter::Tables
-C3DFileAdapter::readFile(const std::string& fileName, ForceLocation wrt)
-{
-    C3DFileAdapter c3dreader{};
-    c3dreader.setLocationForForceExpression(wrt);
-
-    auto abstables = c3dreader.extendRead(fileName);
-    auto marker_table = 
-        std::static_pointer_cast<TimeSeriesTableVec3>(abstables.at(_markers));
-    auto force_table = 
-        std::static_pointer_cast<TimeSeriesTableVec3>(abstables.at(_forces));
-    Tables tables{};
-    tables.emplace(_markers, marker_table);
-    tables.emplace( _forces,  force_table);
-    return tables;
-}
-
 void
 C3DFileAdapter::write(const C3DFileAdapter::Tables& tables,
                       const std::string& fileName) {
