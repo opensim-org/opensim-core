@@ -447,7 +447,7 @@ std::vector<SimTK::ReferencePtr<const Output<T>>> getModelOutputReferencePtrs(
     // Initialize outputs array.
     std::vector<SimTK::ReferencePtr<const Output<T>>> outputs;
 
-    std::function<void(const Component&, const std::string&, bool, 
+    std::function<void(const Component&, const std::regex&, bool, 
             std::vector<SimTK::ReferencePtr<const Output<T>>>&)> helper;
     helper = [&helper](const Component& component,
                      const std::regex& regexSubstring,
