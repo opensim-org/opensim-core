@@ -123,15 +123,15 @@ void MocoPeriodicityGoal::calcGoalImpl(
 }
 void MocoPeriodicityGoal::printDescriptionImpl(std::ostream& stream) const {
     stream << "        ";
-    stream << "State periodicity pairs: ";
+    stream << "State periodicity pairs: " << "\n";
     for (const auto& pair : m_state_names) {
-        stream << "[" << pair.first << "," << pair.second << "]";
+        stream << "                ";
+        stream << "[" << pair.first << "," << pair.second << "]" << "\n";
     }
-    stream << "\n";
     stream << "        ";
-    stream << "Control periodicity pairs: ";
+    stream << "Control periodicity pairs: " << "\n";
     for (const auto& pair : m_control_names) {
-        stream << "[" << pair.first << "," << pair.second << "]";
+        stream << "                ";
+        stream << "[" << pair.first << "," << pair.second << "]" << "\n";
     }
-    stream << "\n";
 }

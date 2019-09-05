@@ -142,7 +142,7 @@ private:
     /// The indices in Y corresponding to the provided reference coordinates.
     mutable std::vector<int> m_sysYIndices;
     mutable std::vector<double> m_state_weights;
-    mutable std::vector<std::string> m_control_names;
+    mutable std::vector<std::string> m_state_names;
 };
 
 } // namespace OpenSim

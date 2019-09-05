@@ -92,13 +92,9 @@ void MocoControlTrackingGoal::calcIntegrandImpl(const SimTK::State& state,
     }
 }
 void MocoControlTrackingGoal::printDescriptionImpl(std::ostream &stream) const {
-    stream << "        ";
     for (int i = 0; i < (int) m_control_names.size(); i++) {
-        stream << "Name: " << m_control_names[i] << " Weight: " << m_control_weights[i];
-        if (i < (int) m_control_names.size() - 1) {
-           stream << ", ";
-        }
-        stream << "\n";
+        stream << "        ";
+        stream << "control: " << m_control_names[i] << ", weight: " << m_control_weights[i] << "\n";
     }
 }
 

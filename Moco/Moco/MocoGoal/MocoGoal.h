@@ -222,9 +222,9 @@ protected:
     /// The Lagrange multipliers for kinematic constraints are not available.
     virtual void calcGoalImpl(
             const GoalInput& input, SimTK::Vector& goal) const = 0;
-    /// For use within virtual function implementations.
-    virtual void printDescriptionImpl(std::ostream& stream = std::cout) const {};
     /// Print a more detailed description unique to each goal.
+    virtual void printDescriptionImpl(std::ostream& stream = std::cout) const {};
+    /// For use within virtual function implementations.
     const Model& getModel() const {
         OPENSIM_THROW_IF_FRMOBJ(!m_model, Exception,
                 "Model is not available until the start of initializing.");

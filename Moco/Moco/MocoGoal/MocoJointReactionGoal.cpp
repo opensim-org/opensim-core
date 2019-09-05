@@ -150,15 +150,15 @@ void MocoJointReactionGoal::calcIntegrandImpl(const SimTK::State& state,
 }
 void MocoJointReactionGoal::printDescriptionImpl(std::ostream &stream) const {
     stream << "        ";
-    stream << "Joint path: " << get_joint_path() << ", ";
-    stream << "Loads frame: " << get_loads_frame() << ", ";
-    stream << "Expressed: " << get_expressed_in_frame_path() << ", ";
-    stream << "Reaction measures: ";
+    stream << "Joint path: " << get_joint_path() << "\n";
+    stream << "        ";
+    stream << "Loads frame: " << get_loads_frame() << "\n";
+    stream << "        ";
+    stream << "Expressed: " << get_expressed_in_frame_path() << "\n";
     for(int i = 0; i < getProperty_reaction_measures().size(); i++) {
-        stream << get_reaction_measures(i);
-        if(i < getProperty_reaction_measures().size() - 1) {
-            stream << ", ";
-        }
+        stream << "        ";
+        stream << "Reaction measure " << i << ": " << get_reaction_measures(i) << "\n";
     }
+    stream << "        ";
     stream << "Reaction weights: " << get_reaction_weights() << "\n";
 }

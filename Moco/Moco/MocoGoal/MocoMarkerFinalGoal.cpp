@@ -41,7 +41,7 @@ void MocoMarkerFinalGoal::constructProperties() {
 
 void MocoMarkerFinalGoal::printDescriptionImpl(std::ostream& stream) const {
     stream << "        ";
-    stream << "Point name: " << get_point_name() << " Reference location: " << get_reference_location();
-    stream << ", ";
-    stream << "\n";
+    stream << "Point name: " << get_point_name() << "\n";
+    stream << "        ";
+    stream << "Reference location: " << get_reference_location() << "\n";
 }
