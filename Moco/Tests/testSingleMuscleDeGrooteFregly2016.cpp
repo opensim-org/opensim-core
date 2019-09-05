@@ -423,7 +423,7 @@ void testLiftingMassGSO(
     // test to pass.
     rootMeanSquare(solution.activation, "/actuator",
                    ocpSolution,         "activation",
-                   0.07, true);
+                   0.07);
 }
 
 // Reproduce the trajectory using the MuscleRedundancy, without specifying an
