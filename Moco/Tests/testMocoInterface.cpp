@@ -1665,8 +1665,6 @@ TEMPLATE_TEST_CASE("Sliding mass", "", MocoTropterSolver, MocoCasADiSolver) {
     int numTimes = 20;
     int numStates = 2;
     int numControls = 1;
-    std::cout << "Solution times size is: " << solution.getTime().size();
-    std::cout << "numTimes is: " << numTimes;
 
 // Check dimensions and metadata of the solution.
     SimTK_TEST((solution.getStateNames() ==
@@ -1697,7 +1695,6 @@ TEMPLATE_TEST_CASE("Sliding mass", "", MocoTropterSolver, MocoCasADiSolver) {
         SimTK_TEST_EQ_TOL(states(itime, 0), expectedPos, 1e-2);
 
         double expectedSpeed = t < half ? t : 2.0 - t;
-
         SimTK_TEST_EQ_TOL(states(itime, 1), expectedSpeed, 1e-2);
 
         double expectedForce = t < half ? 10 : -10;
