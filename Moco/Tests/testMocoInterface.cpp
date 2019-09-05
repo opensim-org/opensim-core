@@ -1125,8 +1125,6 @@ TEMPLATE_TEST_CASE("Guess", "", MocoTropterSolver, MocoCasADiSolver) {
         MocoTrajectory guess0 = ms.createGuess();
         guess0.setControl("/actuator", createVectorLinspace(Nc, 2.8, 7.3));
         CHECK(guess0.getTime().size() == Nc); // midpoint of [0, 10]
-        std::cout << "guess0.getTime()[Nc - 1] is: " << guess0.getTime()[Nc - 1] << "\n";
-        std::cout << "N is: " << N << "\n";
         SimTK_TEST_EQ(guess0.getTime()[Nc - 1], N + 1);
 
         // resampleWithNumTimes
@@ -1690,7 +1688,6 @@ TEMPLATE_TEST_CASE("Sliding mass", "", MocoTropterSolver, MocoCasADiSolver) {
             solution.getTime().get(numTimes - 1), expectedFinalTime, 1e-2);
     const double half = 0.5 * expectedFinalTime;
 
-    std::cout << "numTimes is: " << numTimes << "\n";
     for (int itime = 0; itime < numTimes; ++itime) {
         const double& t = solution.getTime().get(itime);
         // Position is a quadratic.
@@ -1700,10 +1697,6 @@ TEMPLATE_TEST_CASE("Sliding mass", "", MocoTropterSolver, MocoCasADiSolver) {
         SimTK_TEST_EQ_TOL(states(itime, 0), expectedPos, 1e-2);
 
         double expectedSpeed = t < half ? t : 2.0 - t;
-        std::cout << "itime is: " << itime << "\n";
-        std::cout << "Expected speed: " << expectedSpeed << "\n";
-        std::cout << "States speed: " << states(itime, 1) << "\n";
-        std::cout << "States speed next itime: " << states(itime + 1, 1) << "\n";
 
         SimTK_TEST_EQ_TOL(states(itime, 1), expectedSpeed, 1e-2);
 
