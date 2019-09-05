@@ -58,6 +58,9 @@ forceTable = c3d.getTable_forces();
 % Get as Matlab Structures
 [markerStruct forceStruct] = c3d.getAsStructs();
 
+%% Convert COP (mm to m) and Moments (Nmm to Nm)
+c3d.convertMillimeters2Meters();
+
 %% Write the marker and force data to file
 
 % Write marker data to trc file.

@@ -150,6 +150,32 @@ classdef osimC3D < matlab.mixin.SetGet
             obj.rotateTable(obj.forces, axis, value);
             disp('Marker and Force tables have been rotated')
         end
+        function convertMillimeters2Meters(obj)
+            % Function to convert displacement forceplate measurements made
+            % in millimeters to meters. This will convert point data (mm)
+            % to m and Torque data (Nmm) to Nm.
+            import org.opensim.modeling.*
+            
+            nRows  = obj.forces.getNumRows();
+            labels = obj.forces.getColumnLabels();
+            
+            for i = 0 : obj.forces.getNumColumns - 1
+                % All force columns will have the 'f' prefix while point
+                % and moment columns will have 'p' and 'm' prefixes,
+                % respectively. 
+                if ~contains(char(labels.get(i)),'f')
+                    for u = 0 : nRows - 1
+                        % Get the Vec3
+                        vec3 = obj.forces.getDependentColumnAtIndex(i).get(u);
+                        % Divide the Vec3 by 1000
+                        vec3_new = Vec3(vec3.get(0)/1000,vec3.get(1)/1000,vec3.get(2)/1000);
+                        % set the table value
+                        obj.forces.getDependentColumnAtIndex(i).set(u,vec3_new);
+                    end
+                end    
+            end
+           disp('Point and Torque values convert from mm and Nmm to m and Nm, respectively')
+        end
         function writeTRC(obj,varargin)
             % Write marker data to trc file.
             % osimC3d.writeTRC()                       Write to dir of input c3d.
@@ -170,10 +196,6 @@ classdef osimC3D < matlab.mixin.SetGet
         % osimC3d.writeMOT()                       Write to dir of input c3d.
         % osimC3d.writeMOT('Walking.mot')          Write to dir of input c3d with defined file name.
         % osimC3d.writeMOT('C:/data/Walking.mot')  Write to defined path input path.
-        % 
-        % This function assumes point and torque data are in mm and Nmm and
-        % converts them to m and Nm. If your C3D is already in M and Nm,
-        % comment out the internal function convertMillimeters2Meters()
 
          % Compute an output path to use for writing to file
          outputPath = generateOutputPath(obj,varargin,'.mot');
@@ -229,11 +251,8 @@ classdef osimC3D < matlab.mixin.SetGet
           forces_flat.addTableMetaDataString('nColumns',num2str(forces_flat.getNumColumns()+1))
           forces_flat.addTableMetaDataString('nRows',num2str(forces_flat.getNumRows()));
 
-          % Convert mm to m
-          forces_flat_m  = obj.convertMillimeters2Meters(forces_flat);
-          
           % Write to file
-          STOFileAdapter().write(forces_flat_m, outputPath)
+          STOFileAdapter().write(forces_flat, outputPath)
           disp(['Forces file written to ' outputPath]);
       end
    end
@@ -310,30 +329,6 @@ classdef osimC3D < matlab.mixin.SetGet
             end
             % Generate the output path.
             outputPath = fullfile(filepath, [name ext]);
-        end
-        function table_flat = convertMillimeters2Meters(obj,table_flat)
-            % Function to convert displacement forceplate measurements made
-            % in millimeters to meters. This will convert point data (mm)
-            % to m and Torque data (Nmm) to Nm.
-            
-            nForces = table_flat.getNumColumns();
-            nRows  = table_flat.getNumRows();
-            labels = table_flat.getColumnLabels();
-            
-            for i = 0 : nForces - 1
-                % Find all point and torque colomns. Force columns will
-                % have _v in the label, all columns that don't have this
-                % character will be point and torque columns
-                if ~contains(char(labels.get(i)),'v')
-                    for u = 0 : nRows - 1
-                        % Get the table value
-                        c = table_flat.getDependentColumnAtIndex(i).get(u);
-                        % set the table value
-                        table_flat.getDependentColumnAtIndex(i).set(u,c/1000);
-                    end
-                end    
-            end
-           disp('Point and Torque values convert from mm and Nmm to m and Nm, respectively')
         end
    end
 end
