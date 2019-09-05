@@ -26,6 +26,9 @@
 
 using namespace OpenSim;
 
+const std::vector<std::string> MocoTrajectory::m_allowedKeys =
+        {"states", "controls", "multipliers", "derivatives"};
+
 MocoTrajectory::MocoTrajectory(const SimTK::Vector& time,
         std::vector<std::string> state_names,
         std::vector<std::string> control_names,
@@ -1181,17 +1184,9 @@ double MocoTrajectory::compareContinuousVariablesRMS(
         const MocoTrajectory& other,
         std::map<std::string, std::vector<std::string>> cols) const {
     ensureUnsealed();
-    std::vector<std::string> allowedKeys{
-            "states", "controls", "multipliers", "derivatives"};
     for (auto kv : cols) {
-        bool keyIsAllowed = false;
-        for (auto allowedKey : allowedKeys) {
-            if (kv.first == allowedKey) {
-                keyIsAllowed = true;
-                break;
-            }
-        }
-        OPENSIM_THROW_IF(!keyIsAllowed, Exception,
+        OPENSIM_THROW_IF(find(m_allowedKeys, kv.first) == m_allowedKeys.cend(),
+                Exception,
                 format("Key '%s' is not allowed.", kv.first));
     }
     if (cols.size() == 0) {
@@ -1203,6 +1198,33 @@ double MocoTrajectory::compareContinuousVariablesRMS(
             cols.count("controls") ? cols.at("controls") : none,
             cols.count("multipliers") ? cols.at("multipliers") : none,
             cols.count("derivatives") ? cols.at("derivatives") : none);
+}
+
+double MocoTrajectory::compareContinuousVariablesRMSPattern(
+        const MocoTrajectory& other, std::string columnType,
+        std::string pattern) const {
+    ensureUnsealed();
+    const std::vector<std::string>* names;
+    if (columnType == "states") {
+        names = &m_state_names;
+    } else if (columnType == "controls") {
+        names = &m_control_names;
+    } else if (columnType == "multipliers") {
+        names = &m_multiplier_names;
+    } else if (columnType == "derivatives") {
+        names = &m_derivative_names;
+    } else {
+        OPENSIM_THROW(Exception,
+                format("Column type '%s' is not allowed.", columnType));
+    }
+    std::vector<std::string> namesToUse;
+    std::regex regex(pattern);
+    for (const auto& name : *names) {
+        if (std::regex_match(name, regex)) {
+            namesToUse.push_back(name);
+        }
+    }
+    return compareContinuousVariablesRMS(other, {{columnType, namesToUse}});
 }
 
 double MocoTrajectory::compareParametersRMS(const MocoTrajectory& other,

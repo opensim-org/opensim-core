@@ -519,6 +519,14 @@ public:
     double compareContinuousVariablesRMS(const MocoTrajectory& other,
             std::map<std::string, std::vector<std::string>> columnsToUse = {})
             const;
+    /// This is an alternative interface for compareContinuousVariablesRMS()
+    /// that uses regular expression patterns to select columns. The parameter
+    /// columnType is "states", "controls", "multipliers", or "derivatives".
+    /// All columns for the provided column type whose entire name matches the
+    /// provided regular expression are included in the root-mean-square.
+    double compareContinuousVariablesRMSPattern(const MocoTrajectory& other,
+            std::string columnType,
+            std::string pattern) const;
     /// Compute the root-mean-square error between the parameters in this
     /// iterate and another. The RMS is computed by dividing the the sum of the
     /// squared errors between corresponding parameters and then dividing by the
@@ -665,6 +673,7 @@ private:
     // We use "seal" instead of "lock" because locks have a specific meaning
     // with threading (e.g., std::unique_lock()).
     bool m_sealed = false;
+    static const std::vector<std::string> m_allowedKeys;
 };
 
 /// Return type for MocoStudy::solve(). Use success() to check if the solver
