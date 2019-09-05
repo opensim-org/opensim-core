@@ -15,6 +15,13 @@ namespace SimTK {
 %template(Vec4) Vec<4>;
 %template(Vec6) Vec<6>;
 }
+%extend SimTK::Vec<3> {
+	%template(scalarEq) scalarEq<double>;
+	%template(scalarPlusEq) scalarPlusEq<double>;
+	%template(scalarMinusEq) scalarMinusEq<double>;
+	%template(scalarTimesEq) scalarTimesEq<double>;
+	%template(scalarDivideEq) scalarDivideEq<double>;
+}
 
 // Mat33
 %include <SWIGSimTK/Mat.h>
