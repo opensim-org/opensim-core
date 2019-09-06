@@ -1,8 +1,10 @@
 name: continuous-integration
 
 # TODO: build master branch after PRs are merged.
-on: [pull_request]
-
+on:
+  schedule:
+    - cron: '0 2 * * *'
+    
 jobs:
   windows:
     name: Windows
