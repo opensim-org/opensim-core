@@ -56,7 +56,7 @@ void MocoPeriodicityGoal::constructProperties() {
     constructProperty_control_pairs();
 }
 
-void MocoPeriodicityGoal::initializeOnModelImpl(const Model& model) const {
+void MocoPeriodicityGoal::initializeOnModelImpl(const Model &model) const {
 
     auto allSysYIndices = createSystemYIndexMap(model);
     int nStatePairs = getProperty_state_pairs().size();
@@ -64,10 +64,10 @@ void MocoPeriodicityGoal::initializeOnModelImpl(const Model& model) const {
     for (int i = 0; i < nStatePairs; ++i) {
         const auto path1 = get_state_pairs(i).get_initial_variable();
         OPENSIM_THROW_IF(allSysYIndices.count(path1) == 0,
-                Exception, format("Could not find state '%s'.", path1));
+                         Exception, format("Could not find state '%s'.", path1));
         const auto path2 = get_state_pairs(i).get_final_variable();
         OPENSIM_THROW_IF(allSysYIndices.count(path2) == 0,
-                Exception, format("Could not find state '%s'.", path2));
+                         Exception, format("Could not find state '%s'.", path2));
         int stateIndex1 = allSysYIndices[path1];
         int stateIndex2 = allSysYIndices[path2];
         m_state_names.emplace_back(path1, path2);
@@ -80,10 +80,10 @@ void MocoPeriodicityGoal::initializeOnModelImpl(const Model& model) const {
     for (int i = 0; i < nControlPairs; ++i) {
         const auto path1 = get_control_pairs(i).get_initial_variable();
         OPENSIM_THROW_IF(systemControlIndexMap.count(path1) == 0,
-                Exception, format("Could not find control '%s'.", path1));
+                         Exception, format("Could not find control '%s'.", path1));
         const auto path2 = get_control_pairs(i).get_final_variable();
         OPENSIM_THROW_IF(systemControlIndexMap.count(path2) == 0,
-                Exception, format("Could not find control '%s'.", path2));
+                         Exception, format("Could not find control '%s'.", path2));
         int controlIndex1 = systemControlIndexMap[path1];
         int controlIndex2 = systemControlIndexMap[path2];
         m_control_names.emplace_back(path1, path2);
@@ -91,47 +91,50 @@ void MocoPeriodicityGoal::initializeOnModelImpl(const Model& model) const {
     }
 
     setNumIntegralsAndOutputs(0,
-            (int)m_indices_states.size() + (int)m_indices_controls.size());
+                              (int) m_indices_states.size() + (int) m_indices_controls.size());
 }
 
 void MocoPeriodicityGoal::calcGoalImpl(
-        const GoalInput& input, SimTK::Vector& goal) const {
+        const GoalInput &input, SimTK::Vector &goal) const {
 
-    const auto& initialStates = input.initial_state.getY();
-    const auto& finalStates = input.final_state.getY();
+    const auto &initialStates = input.initial_state.getY();
+    const auto &finalStates = input.final_state.getY();
     int i = 0;
-    for (const auto& index_state : m_indices_states) {
+    for (const auto &index_state : m_indices_states) {
         goal[i] = initialStates[index_state.first] -
-                finalStates[index_state.second];
+                  finalStates[index_state.second];
         if (getModeIsCost()) {
             goal[i] = SimTK::square(goal[i]);
         }
         ++i;
     }
 
-    const auto& initialControls = getModel().getControls(input.initial_state);
-    const auto& finalControls = getModel().getControls(input.final_state);
+    const auto &initialControls = getModel().getControls(input.initial_state);
+    const auto &finalControls = getModel().getControls(input.final_state);
     int j = 0;
-    for (const auto& index_control : m_indices_controls) {
-        goal[i+j] = initialControls[index_control.first] -
-                finalControls[index_control.second];
+    for (const auto &index_control : m_indices_controls) {
+        goal[i + j] = initialControls[index_control.first] -
+                      finalControls[index_control.second];
         if (getModeIsCost()) {
-            goal[i+j] = SimTK::square(goal[i+j]);
+            goal[i + j] = SimTK::square(goal[i + j]);
         }
         ++j;
     }
 }
-void MocoPeriodicityGoal::printDescriptionImpl(std::ostream& stream) const {
+
+void MocoPeriodicityGoal::printDescriptionImpl(std::ostream &stream) const {
     stream << "        ";
-    stream << "State periodicity pairs: " << "\n";
-    for (const auto& pair : m_state_names) {
+    stream << "state periodicity pairs: " << std::endl;
+    for (const auto &pair : m_state_names) {
         stream << "                ";
-        stream << "[" << pair.first << "," << pair.second << "]" << "\n";
+        stream << "[" << pair.first
+               << "," << pair.second << "]" << std::endl;
     }
     stream << "        ";
-    stream << "Control periodicity pairs: " << "\n";
-    for (const auto& pair : m_control_names) {
+    stream << "control periodicity pairs: " << std::endl;
+    for (const auto &pair : m_control_names) {
         stream << "                ";
-        stream << "[" << pair.first << "," << pair.second << "]" << "\n";
+        stream << "[" << pair.first
+               << "," << pair.second << "]" << std::endl;
     }
 }

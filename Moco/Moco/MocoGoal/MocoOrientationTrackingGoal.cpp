@@ -28,20 +28,20 @@
 
 using namespace OpenSim;
 
-void MocoOrientationTrackingGoal::initializeOnModelImpl(const Model& model) 
-        const {
+void MocoOrientationTrackingGoal::initializeOnModelImpl(const Model &model)
+const {
     // Get the reference data.
     TimeSeriesTable_<Rotation> rotationTable;
     std::vector<std::string> pathsToUse;
     if (m_rotation_table.getNumColumns() != 0 ||   // rotation table or rotation
-            get_rotation_reference_file() != "") { // reference file provided
+        get_rotation_reference_file() != "") { // reference file provided
         TimeSeriesTable_<Rotation> rotationTableToUse;
         // Should not be able to supply any two simultaneously.
         assert(get_states_reference().empty());
         if (get_rotation_reference_file() != "") { // rotation reference file
             assert(m_rotation_table.getNumColumns() == 0);
             rotationTableToUse = readTableFromFileT<Rotation>(
-                get_rotation_reference_file());
+                    get_rotation_reference_file());
 
         } else { // rotation table
             assert(get_rotation_reference_file() == "");
@@ -56,23 +56,23 @@ void MocoOrientationTrackingGoal::initializeOnModelImpl(const Model& model)
             rotationTable = rotationTableToUse;
         } else {
             rotationTable = TimeSeriesTable_<Rotation>(
-                rotationTableToUse.getIndependentColumn());
-            const auto& labels = rotationTableToUse.getColumnLabels();
+                    rotationTableToUse.getIndependentColumn());
+            const auto &labels = rotationTableToUse.getColumnLabels();
             for (int i = 0; i < getProperty_frame_paths().size(); ++i) {
-                const auto& path = get_frame_paths(i);
+                const auto &path = get_frame_paths(i);
                 OPENSIM_THROW_IF_FRMOBJ(
-                    std::find(labels.begin(), labels.end(), path) == 
+                        std::find(labels.begin(), labels.end(), path) ==
                         labels.end(),
-                    Exception,
-                    format("Expected frame_paths to match at least one of the "
-                        "column labels in the rotation reference, but frame "
-                        "path '%s' not found in the reference labels.", path));
+                        Exception,
+                        format("Expected frame_paths to match at least one of the "
+                               "column labels in the rotation reference, but frame "
+                               "path '%s' not found in the reference labels.", path));
                 pathsToUse.push_back(path);
                 rotationTable.appendColumn(path,
-                    rotationTableToUse.getDependentColumn(path));
+                                           rotationTableToUse.getDependentColumn(path));
             }
         }
-        
+
     } else { // states reference file or states reference provided
         assert(get_rotation_reference_file() == "");
         assert(m_rotation_table.getNumColumns() == 0);
@@ -83,12 +83,12 @@ void MocoOrientationTrackingGoal::initializeOnModelImpl(const Model& model)
         auto modelStateNames = model.getStateVariableNames();
         auto tableStateNames = statesTableToUse.getColumnLabels();
         for (int i = 0; i < modelStateNames.getSize(); ++i) {
-            const auto& name = modelStateNames[i];
-            OPENSIM_THROW_IF_FRMOBJ(std::count(tableStateNames.begin(), 
-                    tableStateNames.end(), name) == 0, 
-                Exception, format("Expected the reference state names to match "
-                    "the model state names, but reference state %s not found "
-                    "in the model.", name));
+            const auto &name = modelStateNames[i];
+            OPENSIM_THROW_IF_FRMOBJ(std::count(tableStateNames.begin(),
+                                               tableStateNames.end(), name) == 0,
+                                    Exception, format("Expected the reference state names to match "
+                                                      "the model state names, but reference state %s not found "
+                                                      "in the model.", name));
         }
 
         // Create the StatesTrajectory.
@@ -96,8 +96,8 @@ void MocoOrientationTrackingGoal::initializeOnModelImpl(const Model& model)
         auto statesTraj = StatesTrajectory::createFromStatesStorage(model, sto);
 
         // Use all paths provided in frame_paths.
-        OPENSIM_THROW_IF_FRMOBJ(getProperty_frame_paths().empty(), Exception, 
-            "Expected paths in the frame_paths property, but none were found.");
+        OPENSIM_THROW_IF_FRMOBJ(getProperty_frame_paths().empty(), Exception,
+                                "Expected paths in the frame_paths property, but none were found.");
         for (int i = 0; i < getProperty_frame_paths().size(); ++i) {
             pathsToUse.push_back(get_frame_paths(i));
         }
@@ -109,9 +109,9 @@ void MocoOrientationTrackingGoal::initializeOnModelImpl(const Model& model)
             // model.
             model.realizePosition(state);
             std::vector<Rotation> rotations;
-            for (const auto& path : pathsToUse) {
+            for (const auto &path : pathsToUse) {
                 Rotation rotation =
-                    model.getComponent<Frame>(path).getRotationInGround(state);
+                        model.getComponent<Frame>(path).getRotationInGround(state);
                 rotations.push_back(rotation);
             }
             rotationTable.appendRow(state.getTime(), rotations);
@@ -124,9 +124,9 @@ void MocoOrientationTrackingGoal::initializeOnModelImpl(const Model& model)
 
     // Cache the model frames and rotation weights based on the order of the 
     // rotation table.
-    for (int i = 0; i < (int)pathsToUse.size(); ++i) {
-        const auto& path = pathsToUse[i];
-        const auto& frame = model.getComponent<Frame>(path);
+    for (int i = 0; i < (int) pathsToUse.size(); ++i) {
+        const auto &path = pathsToUse[i];
+        const auto &frame = model.getComponent<Frame>(path);
         m_model_frames.emplace_back(&frame);
 
         double weight = 1.0;
@@ -144,21 +144,21 @@ void MocoOrientationTrackingGoal::initializeOnModelImpl(const Model& model)
 
     // This matrix has the input table number of columns times four to hold all
     // four quaternion elements per rotation.
-    SimTK::Matrix mat((int)rotationTable.getNumRows(), 
-                    4*(int)rotationTable.getNumColumns());
+    SimTK::Matrix mat((int) rotationTable.getNumRows(),
+                      4 * (int) rotationTable.getNumColumns());
     // Column labels are necessary for creating the GCVSplineSet from the table,
     // so we'll label each column using the frame path and the quaternion
     // element (e.g. "<frame-path>/quaternion_e0" for the first quaternion
     // element).
     std::vector<std::string> colLabels;
-    for (int irow = 0; irow < (int)rotationTable.getNumRows(); ++irow) {
+    for (int irow = 0; irow < (int) rotationTable.getNumRows(); ++irow) {
         const auto row = rotationTable.getRowAtIndex(irow);
 
         // Get quaternion elements from rotations.
         int icol = 0;
         for (int ielt = 0; ielt < row.size(); ++ielt) {
-            const auto& label = rotationTable.getColumnLabel(ielt);
-            const auto& R = row[ielt];
+            const auto &label = rotationTable.getColumnLabel(ielt);
+            const auto &R = row[ielt];
             auto e = R.convertRotationToQuaternion();
             for (int ie = 0; ie < e.size(); ++ie) {
                 mat.updElt(irow, icol++) = e[ie];
@@ -176,9 +176,9 @@ void MocoOrientationTrackingGoal::initializeOnModelImpl(const Model& model)
     setNumIntegralsAndOutputs(1, 1);
 }
 
-void MocoOrientationTrackingGoal::calcIntegrandImpl(const SimTK::State& state,
-        double& integrand) const {
-    const auto& time = state.getTime();
+void MocoOrientationTrackingGoal::calcIntegrandImpl(const SimTK::State &state,
+                                                    double &integrand) const {
+    const auto &time = state.getTime();
     getModel().realizePosition(state);
     SimTK::Vector timeVec(1, time);
 
@@ -187,9 +187,9 @@ void MocoOrientationTrackingGoal::calcIntegrandImpl(const SimTK::State& state,
     //  D - data (reference)
     //  M - model
     integrand = 0;
-    for (int iframe = 0; iframe < (int)m_model_frames.size(); ++iframe) {
-        const auto& R_GM =
-            m_model_frames[iframe]->getRotationInGround(state);
+    for (int iframe = 0; iframe < (int) m_model_frames.size(); ++iframe) {
+        const auto &R_GM =
+                m_model_frames[iframe]->getRotationInGround(state);
 
         // Construct a new quaternion object from the splined quaternion data.
         // This constructor normalizes the provided values to ensure that a 
@@ -199,27 +199,29 @@ void MocoOrientationTrackingGoal::calcIntegrandImpl(const SimTK::State& state,
         // seems to be sufficient for the purposes of this cost. 
         // https://keithmaggio.wordpress.com/2011/02/15/math-magician-lerp-slerp-and-nlerp/
         const SimTK::Quaternion e(
-            m_ref_splines[4*iframe].calcValue(timeVec),
-            m_ref_splines[4*iframe + 1].calcValue(timeVec),
-            m_ref_splines[4*iframe + 2].calcValue(timeVec),
-            m_ref_splines[4*iframe + 3].calcValue(timeVec));
+                m_ref_splines[4 * iframe].calcValue(timeVec),
+                m_ref_splines[4 * iframe + 1].calcValue(timeVec),
+                m_ref_splines[4 * iframe + 2].calcValue(timeVec),
+                m_ref_splines[4 * iframe + 3].calcValue(timeVec));
         // Construct a Rotation object from which we'll calcuation an angle-axis 
         // representation of the current orientation error.
         const Rotation R_GD(e);
-        const Rotation R_MD = ~R_GM*R_GD;
+        const Rotation R_MD = ~R_GM * R_GD;
         const SimTK::Vec4 aa_MD = R_MD.convertRotationToAngleAxis();
-        
+
         // Add this frame's rotation error to the integrand.
-        const double& weight = m_rotation_weights[iframe];
+        const double &weight = m_rotation_weights[iframe];
         integrand += weight * SimTK::square(aa_MD[0]);
     }
 }
-void MocoOrientationTrackingGoal::printDescriptionImpl(std::ostream& stream) const {
+
+void MocoOrientationTrackingGoal::printDescriptionImpl(std::ostream &stream) const {
     stream << "        ";
-    stream << "Rotation reference file: " << get_rotation_reference_file() << "\n";
+    stream << "rotation reference file: " << get_rotation_reference_file() << std::endl;
     for (int i = 0; i < (int) getProperty_frame_paths().size(); i++) {
         stream << "        ";
-        stream << "Frame path " << i << ": " << get_frame_paths(i) << "\n";
+        stream << "frame path " << i << ": "
+               << get_frame_paths(i) << std::endl;
     }
 }
 

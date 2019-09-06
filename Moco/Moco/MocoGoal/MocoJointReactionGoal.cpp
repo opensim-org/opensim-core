@@ -36,11 +36,11 @@ void MocoJointReactionGoal::constructProperties() {
     constructProperty_reaction_weights(MocoWeightSet());
 }
 
-void MocoJointReactionGoal::initializeOnModelImpl(const Model& model) const {
+void MocoJointReactionGoal::initializeOnModelImpl(const Model &model) const {
 
     // Cache the joint.
     OPENSIM_THROW_IF_FRMOBJ(get_joint_path().empty(), Exception,
-        "Expected a joint path, but property joint_path is empty.");
+                            "Expected a joint path, but property joint_path is empty.");
     m_joint = &model.getComponent<Joint>(get_joint_path());
 
     // Get the frame from which the loads are computed.
@@ -67,16 +67,16 @@ void MocoJointReactionGoal::initializeOnModelImpl(const Model& model) const {
     // and check that they are all accepted measures.
     std::vector<std::string> reactionMeasures;
     std::vector<std::string> allowedMeasures = {"moment-x", "moment-y",
-        "moment-z", "force-x", "force-y", "force-z"};
+                                                "moment-z", "force-x", "force-y", "force-z"};
     if (getProperty_reaction_measures().empty()) {
-        reactionMeasures = allowedMeasures;    
+        reactionMeasures = allowedMeasures;
     } else {
         for (int i = 0; i < getProperty_reaction_measures().size(); ++i) {
             if (std::find(allowedMeasures.begin(), allowedMeasures.end(),
-                get_reaction_measures(i)) == allowedMeasures.end()) {
+                          get_reaction_measures(i)) == allowedMeasures.end()) {
                 OPENSIM_THROW_FRMOBJ(Exception,
-                    format("Reaction measure '%s' not recognized.",
-                            get_reaction_measures(i)));
+                                     format("Reaction measure '%s' not recognized.",
+                                            get_reaction_measures(i)));
             }
             reactionMeasures.push_back(get_reaction_measures(i));
         }
@@ -84,7 +84,7 @@ void MocoJointReactionGoal::initializeOnModelImpl(const Model& model) const {
 
     // Loop through all reaction measures to minimize and get the
     // corresponding SpatialVec indices and weights.
-    for (const auto& measure :  reactionMeasures) {
+    for (const auto &measure :  reactionMeasures) {
         if (measure == "moment-x") {
             m_measureIndices.push_back({0, 0});
         } else if (measure == "moment-y") {
@@ -109,31 +109,31 @@ void MocoJointReactionGoal::initializeOnModelImpl(const Model& model) const {
     setNumIntegralsAndOutputs(1, 1);
 }
 
-void MocoJointReactionGoal::calcIntegrandImpl(const SimTK::State& state,
-        double& integrand) const {
+void MocoJointReactionGoal::calcIntegrandImpl(const SimTK::State &state,
+                                              double &integrand) const {
 
     getModel().realizeAcceleration(state);
-    const auto& ground = getModel().getGround();
+    const auto &ground = getModel().getGround();
 
     // Compute the reaction loads on the parent or child frame.
     SimTK::SpatialVec reactionInGround;
     if (m_isParentFrame) {
         reactionInGround =
-            m_joint->calcReactionOnParentExpressedInGround(state);
+                m_joint->calcReactionOnParentExpressedInGround(state);
     } else {
         reactionInGround =
-            m_joint->calcReactionOnChildExpressedInGround(state);
+                m_joint->calcReactionOnChildExpressedInGround(state);
     }
-        
+
     // Re-express the reactions into the proper frame and repackage into a new
     // SpatialVec.
     SimTK::Vec3 moment;
     SimTK::Vec3 force;
     if (m_frame.get() == &getModel().getGround()) {
-        moment = ground.expressVectorInAnotherFrame(state, reactionInGround[0], 
-            *m_frame);
-        force = ground.expressVectorInAnotherFrame(state, reactionInGround[1], 
-            *m_frame);
+        moment = ground.expressVectorInAnotherFrame(state, reactionInGround[0],
+                                                    *m_frame);
+        force = ground.expressVectorInAnotherFrame(state, reactionInGround[1],
+                                                   *m_frame);
     } else {
         moment = reactionInGround[0];
         force = reactionInGround[1];
@@ -142,23 +142,28 @@ void MocoJointReactionGoal::calcIntegrandImpl(const SimTK::State& state,
 
     // Compute cost.
     integrand = 0;
-    for (int i = 0; i < (int)m_measureIndices.size(); ++i) {
+    for (int i = 0; i < (int) m_measureIndices.size(); ++i) {
         const auto index = m_measureIndices[i];
         const double weight = m_measureWeights[i];
         integrand += weight * pow(reaction[index.first][index.second], 2);
     }
 }
+
 void MocoJointReactionGoal::printDescriptionImpl(std::ostream &stream) const {
     stream << "        ";
-    stream << "Joint path: " << get_joint_path() << "\n";
+    stream << "joint path: " << get_joint_path() << std::endl;
     stream << "        ";
-    stream << "Loads frame: " << get_loads_frame() << "\n";
+    stream << "loads frame: " << get_loads_frame() << std::endl;
     stream << "        ";
-    stream << "Expressed: " << get_expressed_in_frame_path() << "\n";
-    for(int i = 0; i < getProperty_reaction_measures().size(); i++) {
-        stream << "        ";
-        stream << "Reaction measure " << i << ": " << get_reaction_measures(i) << "\n";
+    stream << "expressed: " << get_expressed_in_frame_path() << std::endl;
+    stream << "        ";
+    stream << "reaction measures: " << std::endl;
+    for (int i = 0; i < getProperty_reaction_measures().size(); i++) {
+        stream << "                ";
+        stream << get_reaction_measures(i) << ", ";
     }
+    stream << std::endl;
     stream << "        ";
-    stream << "Reaction weights: " << get_reaction_weights() << "\n";
+    stream << "reaction weights: "
+           << get_reaction_weights() << std::endl;
 }
