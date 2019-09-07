@@ -1,4 +1,4 @@
------------------------------------------------------------------------ %
+%-----------------------------------------------------------------------  %
 % The OpenSim API is a toolkit for musculoskeletal modeling and           %
 % simulation. See http://opensim.stanford.edu and the NOTICE file         %
 % for more information. OpenSim is developed at Stanford University       %
@@ -30,7 +30,7 @@
 import org.opensim.modeling.*
 
 % Open Model
-walkerModel = Model('../Model/WalkerModel.osim');
+walkerModel = Model('../Model/WalkerModelTerrain.osim');
 
 % make a copy
 new_model = walkerModel;

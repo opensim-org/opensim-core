@@ -98,7 +98,8 @@ hold on
 % Add Data
 indx = strcmp(dataStructure.labels(:),xQuantity);
 for j = 1:1:length(yQuantities)
-    indy = strcmp(dataStructure.labels(:),yQuantities{j});
+    indy = contains(dataStructure.labels(:),[yQuantities{j} '/value']);
+        
     if(~any(indy))
         close(figHandle)
         error('PlotOpensimData:InvalidArgument', [...

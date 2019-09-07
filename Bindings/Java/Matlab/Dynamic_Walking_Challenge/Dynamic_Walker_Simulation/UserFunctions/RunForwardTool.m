@@ -24,7 +24,7 @@
 import org.opensim.modeling.*
 
 % Open Model
-walkerModel = Model('../Model/WalkerModel.osim');
+walkerModel = Model('../Model/WalkerModelTerrain.osim');
 
 % Add Analyses to the Model
 forceReporter = ForceReporter();
@@ -46,11 +46,8 @@ tool.setFinalTime(2);
 % Define the prefix for the result files
 tool.setName('WalkerModel.osim');
 
-% Set Input States File
-tool.setStatesFileName('../Model/WalkerModel_Initial_states.sto');
-
 % Set Results Directory (will create without prompt)
-tool.setResultsDir('../Results/FWD');
+tool.setResultsDir('Results/FWD');
 
 % Run the simulation
 statusVal = tool.run();

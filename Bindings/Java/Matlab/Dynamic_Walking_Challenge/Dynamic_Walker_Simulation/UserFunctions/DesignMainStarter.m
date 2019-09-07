@@ -42,7 +42,7 @@ editableCoordSet.get('Pelvis_ty').setValue(osimState, 1.1);
 editableCoordSet.get('Pelvis_tx').setSpeedValue(osimState, 1.0);
 
 % Recalculate the derivatives after the coordinate changes
-stateDerivVector = osimModel.computeStateVariableDerivatives(osimState);
+osimModel.computeStateVariableDerivatives(osimState);
 
 % The base model has no controls 
 controlsFuncHandle = [];
@@ -57,8 +57,8 @@ motionData = IntegrateOpenSimPlant(osimModel, controlsFuncHandle, timeSpan, ...
     integratorName, integratorOptions);
 
 % Plot Results
-[figHandle, axisHandle] = PlotOpenSimData(motionData, 'time', ...
-    {'Pelvis_tx_u', 'RHip_rz', 'RKnee_rz'});
+[figHandle, axisHandle] = PlotOpenSimData([],motionData, 'time', ...
+    {'Pelvis_tx', 'RHip_rz', 'RKnee_rz'});
 
 % Clean up
-clearvars stateDerivVector editableCoordSet
+clearvars editableCoordSet

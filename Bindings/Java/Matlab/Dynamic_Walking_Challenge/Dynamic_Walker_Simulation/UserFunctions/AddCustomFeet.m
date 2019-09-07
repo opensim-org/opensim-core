@@ -35,7 +35,7 @@
 import org.opensim.modeling.*
 
 % model file
-modelPath = '../Model/WalkerModel.osim';
+modelPath = '../Model/WalkerModelTerrain.osim';
 
 % open the model
 model = Model(modelPath);

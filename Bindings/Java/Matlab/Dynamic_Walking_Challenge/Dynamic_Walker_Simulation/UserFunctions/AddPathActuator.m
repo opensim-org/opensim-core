@@ -26,7 +26,7 @@
 import org.opensim.modeling.*
 
 % Open the model.
-walkerModel = Model('../Model/WalkerModel.osim');
+walkerModel = Model('../Model/WalkerModelTerrain.osim');
 
 % Change the name.
 walkerModel.setName('WalkerModelTerrain_CoordAct');

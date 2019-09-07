@@ -27,7 +27,7 @@ import org.opensim.modeling.*
 % your desired result!
 
 % Open the model
-walkerModel = Model('../Model/WalkerModel.osim');
+walkerModel = Model('../Model/WalkerModelTerrain.osim');
 
 % Change the name
 walkerModel.setName('WalkerModelTerrainAddMillardMuscle');

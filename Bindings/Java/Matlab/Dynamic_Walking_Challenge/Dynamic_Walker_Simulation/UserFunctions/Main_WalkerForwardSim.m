@@ -27,7 +27,7 @@ clear all; close all; clc
 import org.opensim.modeling.*;
 
 % Open a Model by name
-osimModel = Model('../Model/WalkerModel.osim');
+osimModel = Model('../Model/WalkerModelTerrain.osim');
 
 % Use the visualizer (must be done before the call to init system)
 osimModel.setUseVisualizer(true);
