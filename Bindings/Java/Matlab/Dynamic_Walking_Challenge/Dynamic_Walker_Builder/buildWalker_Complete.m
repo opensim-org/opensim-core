@@ -4,7 +4,7 @@
 
 % -------------------------------------------------------------------------- %
 % The OpenSim API is a toolkit for musculoskeletal osimModeling and simulation.  %
-% See http://opensim.stanford.edu and the NOTICE file for more information.  %
+% See http:%opensim.stanford.edu and the NOTICE file for more information.  %
 % OpenSim is developed at Stanford University and supported by the US        %
 % National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    %
 % through the Warrior Web program.                                           %
@@ -12,12 +12,12 @@
 % Copyright (c) 2005-2019 Stanford University and the Authors                %
 % Author(s): James Dunne, Tom Uchida, Chris Dembia                           %
 %                                                                            %
-% Licensed under the Apache License, Version 2.0 (the "License"); you may    %
+% Licensed under the Apache License, Version 2.0 (the 'License'); you may    %
 % not use this file except in compliance with the License. You may obtain a  %
-% copy of the License at http://www.apache.org/licenses/LICENSE-2.0.         %
+% copy of the License at http:%www.apache.org/licenses/LICENSE-2.0.         %
 %                                                                            %
 % Unless required by applicable law or agreed to in writing, software        %
-% distributed under the License is distributed on an "AS IS" BASIS,          %
+% distributed under the License is distributed on an 'AS IS' BASIS,          %
 % WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.   %
 % See the License for the specific language governing permissions and        %
 % limitations under the License.                                             %
@@ -32,41 +32,59 @@ clear all; close all; clc;
 %% Import OpenSim Libraries into Matlab
 import org.opensim.modeling.*
 
+%% Define key model variables
+pelvisWidth = 0.20; 
+thighLength = 0.40; 
+shankLength = 0.435;
+
 %% Instantiate an (empty) OpenSim Model
 osimModel = Model();
-% Name the Model
 osimModel.setName('DynamicWalkerModel');
- 
-% Define the acceleration due to gravity
-osimModel.setGravity( Vec3(0, -9.80665, 0) );
 
-% Get handle to the Ground
+% Get a reference to the ground object
 ground = osimModel.getGround();
 
-%% TODO: Add Bodies, Joints, & Display Geometry 
-% Make and add a Platform Body
+% Define the acceleration of gravity
+osimModel.setGravity(Vec3(0, -9.80665, 0));
+
+% TODO: Construct Bodies and Joints Here
+% ********** BEGIN CODE **********
 platform = Body();
 platform.setName('Platform');
 platform.setMass(1);
 platform.setInertia( Inertia(1,1,1,0,0,0) );
-% Make a mesh for display
-m = Mesh('box.vtp');
-m.set_scale_factors( Vec3(10, 0.05, 1) );
-% Add geometry mesh to the body
-platform.append_attached_geometry(m);
+
+% Add geometry to the body
+platformGeometry = Brick(Vec3(10,0.01,1));
+platform.attachGeometry(platformGeometry);
+
 % Add Body to the Model
 osimModel.addBody(platform);
-% Make and add a Weld joint for the Platform Body
+
+% Section: Create the Platform Joint
+% Make and add a Pin joint for the Platform Body
 locationInParent    = Vec3(0,0,0);
-orientationInParent = Vec3(0,0,deg2rad(-1.5));
+orientationInParent = Vec3(0,0,0);
 locationInChild     = Vec3(0,0,0);
 orientationInChild  = Vec3(0,0,0);
-platformToGround    = WeldJoint('PlatformToGround', ...
-    ground, locationInParent, orientationInParent, ...
-    platform, locationInChild, orientationInChild);
+platformToGround    = PinJoint('PlatformToGround',...  % Joint Name
+                                ground,...             % Parent Frame
+                                locationInParent,...   % Translation in Parent Frame
+                                orientationInParent,...% Orientation in Parent Frame
+                                platform,...           % Child Frame
+                                locationInChild,...    % Translation in Child Frame
+                                orientationInChild);   % Orientation in Child Frame
+
+% Update the coordinates of the new joint
+platform_rz = platformToGround.upd_coordinates(0);
+platform_rz.setRange([deg2rad(-100), deg2rad(100)]);
+platform_rz.setName('platform_rz');
+platform_rz.setDefaultValue(deg2rad(-1.5));
+platform_rz.setDefaultSpeedValue(0);
+platform_rz.setDefaultLocked(true)
+
 % Add Joint to the Model
 osimModel.addJoint(platformToGround);
-
 
 % Make and add a Pelvis Body
 pelvis = Body();
@@ -74,26 +92,29 @@ pelvis.setName('Pelvis');
 pelvis.setMass(1);
 pelvis.setInertia(Inertia(1,1,1,0,0,0));
 % Add geometry for display
-pelvis.attachGeometry(Sphere(0.2));
+pelvis.attachGeometry(Sphere(pelvisWidth));
 % Add Body to the Model
 osimModel.addBody(pelvis);
+
 % Make and add a Planar joint for the Pelvis Body
-pelvisToPlatform    = PlanarJoint('PelvisToPlatform', platform, pelvis);
+pelvisToPlatform = PlanarJoint('PelvisToPlatform', platform, pelvis);
 % Update the coordinates of the new joint
-Pelvis_rz = pelvisToPlatform.upd_coordinates(0); % Translation in z
-Pelvis_rz.setRange([0, 0]);
+Pelvis_rz = pelvisToPlatform.upd_coordinates(0); % Rotation about z
+Pelvis_rz.setRange([-pi, pi]);
 Pelvis_rz.setName('Pelvis_rz');
 Pelvis_rz.setDefaultValue(0);
-Pelvis_tx = pelvisToPlatform.upd_coordinates(1); % Rotation about x
+
+Pelvis_tx = pelvisToPlatform.upd_coordinates(1); % T about x
 Pelvis_tx.setRange([0, 10]);
 Pelvis_tx.setName('Pelvis_tx');
-Pelvis_tx.setDefaultValue(0.20);
-Pelvis_tx.setDefaultSpeedValue(1.5)
-Pelvis_ty = pelvisToPlatform.upd_coordinates(2); % Rotation about y
-Pelvis_ty.setRange([0, 5]);
+Pelvis_tx.setDefaultValue(0);
+Pelvis_tx.setDefaultSpeedValue(0)
+
+Pelvis_ty = pelvisToPlatform.upd_coordinates(2); % Translation about y
+Pelvis_ty.setRange([-5,5]);
 Pelvis_ty.setName('Pelvis_ty');
-Pelvis_ty.setDefaultValue(0.96);
-Pelvis_ty.setDefaultSpeedValue(-2)
+Pelvis_ty.setDefaultValue(thighLength + shankLength);
+Pelvis_ty.setDefaultSpeedValue(0)
 % Add Joint to model
 osimModel.addJoint(pelvisToPlatform)
 
@@ -102,65 +123,72 @@ osimModel.addJoint(pelvisToPlatform)
 rightThigh = Body();
 rightThigh.setName('RightThigh');
 rightThigh.setMass(1);
+rightThigh.setMassCenter( Vec3(0,0,0) )
 rightThigh.setInertia(Inertia(2,2,0.02,0,0,0));
 % Add geometry for display
-rightThigh.attachGeometry(Ellipsoid(0.5/20, 0.5/2, 0.5/20));
+rightThigh.attachGeometry(Ellipsoid(thighLength/10, thighLength/2, thighLength/10));
 % Add Body to the Model
 osimModel.addBody(rightThigh);
+
 % Make and add a Pin joint for the Right Thigh Body
-locationInParent    = Vec3(0,0,0.2);
+locationInParent    = Vec3(0,0,pelvisWidth);
 orientationInParent = Vec3(0,0,0);
-locationInChild     = Vec3(0,0.25,0);
+locationInChild     = Vec3(0,thighLength/2,0);
 orientationInChild  = Vec3(0,0,0);
-RThighToPelvis = PinJoint('RThighToPelvis', pelvis, locationInParent, ...
+RightThighToPelvis = PinJoint('RThighToPelvis', pelvis, locationInParent, ...
     orientationInParent, rightThigh, locationInChild, orientationInChild);
+
 % Update the coordinates of the new joint
-RHip_rz = RThighToPelvis.updCoordinate();
+RHip_rz = RightThighToPelvis.upd_coordinates(0);
 RHip_rz.setRange([deg2rad(-100), deg2rad(100)]);
 RHip_rz.setName('RHip_rz');
-RHip_rz.setDefaultValue(-0.15);
-RHip_rz.setDefaultSpeedValue(-0.6 );
+RHip_rz.setDefaultValue(deg2rad(30));
+RHip_rz.setDefaultSpeedValue(0 );
 % Add Joint to the Model
-osimModel.addJoint(RThighToPelvis);
+osimModel.addJoint(RightThighToPelvis);
+
 
 % Make and add a Left Thigh Body
 leftThigh = Body();
 leftThigh.setName('LeftThigh');
 leftThigh.setMass(1);
+rightThigh.setMassCenter( Vec3(0,0,0) )
 leftThigh.setInertia(Inertia(2,2,0.02,0,0,0));
 % Add geometry for display
-leftThigh.attachGeometry(Ellipsoid(0.5/20, 0.5/2, 0.5/20));
+leftThigh.attachGeometry(Ellipsoid(thighLength/10, thighLength/2, thighLength/10));
 % Add Body to the Model
 osimModel.addBody(leftThigh);
+
 % Make and add a Pin joint for the Left Thigh Body
-locationInParent    = Vec3(0,0,-0.2);
+locationInParent    = Vec3(0,0,-pelvisWidth);
 orientationInParent = Vec3(0,0,0);
-locationInChild     = Vec3(0,0.25,0);
+locationInChild     = Vec3(0,thighLength/2,0);
 orientationInChild  = Vec3(0,0,0);
 LThighToPelvis = PinJoint('LThighToPelvis', pelvis, locationInParent, ...
     orientationInParent, leftThigh, locationInChild, orientationInChild);
 % Update the coordinates of the new joint
-LHip_rz = LThighToPelvis.updCoordinate();
+LHip_rz = LThighToPelvis.upd_coordinates(0);
 LHip_rz.setRange([deg2rad(-100), deg2rad(100)]);
 LHip_rz.setName('LHip_rz');
-LHip_rz.setDefaultValue(0.3);
-LHip_rz.setDefaultSpeedValue(-0.25);
+LHip_rz.setDefaultValue(deg2rad(-10));
+LHip_rz.setDefaultSpeedValue(0);
 % Add Body to the Model
 osimModel.addJoint(LThighToPelvis);
 
 % Make and add a Right Shank Body
 rightShank = Body();
 rightShank.setName('RightShank');
-rightShank.setMass(0.1);
+rightShank.setMass(1);
+rightShank.setMassCenter( Vec3(0,0,0) )
 rightShank.setInertia(Inertia(2,2,0.002,0,0,0));
 % Add geometry for display
-rightShank.attachGeometry(Ellipsoid(0.5/20, 0.5/2, 0.5/20));
+rightShank.attachGeometry(Ellipsoid(shankLength/10, shankLength/2, shankLength/10));
 % Add Body to the Model
 osimModel.addBody(rightShank);
 % Make and add a Pin joint for the Right Shank Body
-locationInParent    = Vec3(0,-0.5/2,0);
+locationInParent    = Vec3(0,-thighLength/2,0);
 orientationInParent = Vec3(0,0,0);
-locationInChild     = Vec3(0,0.5/2,0);
+locationInChild     = Vec3(0,shankLength/2,0);
 orientationInChild  = Vec3(0,0,0);
 RShankToThigh = PinJoint('RShankToRThigh', ...
     rightThigh, locationInParent, orientationInParent, ...
@@ -169,8 +197,8 @@ RShankToThigh = PinJoint('RShankToRThigh', ...
 RKnee_rz = RShankToThigh.updCoordinate();
 RKnee_rz.setRange([deg2rad(-100), 0]);
 RKnee_rz.setName('RKnee_rz');
-RKnee_rz.setDefaultValue(0.05);
-RKnee_rz.setDefaultSpeedValue(0.02);
+RKnee_rz.setDefaultValue(deg2rad(-30));
+RKnee_rz.setDefaultSpeedValue(0);
 % Add Joint to the Model
 osimModel.addJoint(RShankToThigh);
 
@@ -180,13 +208,13 @@ leftShank.setName('LeftShank');
 leftShank.setMass(0.1);
 leftShank.setInertia(Inertia(2,2,0.002,0,0,0));
 % Add geometry for display
-leftShank.attachGeometry(Ellipsoid(0.5/20, 0.5/2, 0.5/20));
+leftShank.attachGeometry(Ellipsoid(shankLength/10, shankLength/2, shankLength/10));
 % Add Body to the Model
 osimModel.addBody(leftShank);
 % Make and add a Pin joint for the Left Shank Body
-locationInParent    = Vec3(0,-0.25,0);
+locationInParent    = Vec3(0,-thighLength/2,0);
 orientationInParent = Vec3(0,0,0);
-locationInChild     = Vec3(0,0.25,0);
+locationInChild     = Vec3(0,shankLength/2,0);
 orientationInChild  = Vec3(0,0,0);
 LShankToThigh = PinJoint('LShankToLThigh', leftThigh, locationInParent,...
     orientationInParent, leftShank, locationInChild, orientationInChild);
@@ -194,48 +222,18 @@ LShankToThigh = PinJoint('LShankToLThigh', leftThigh, locationInParent,...
 LKnee_rz = LShankToThigh.updCoordinate();
 LKnee_rz.setRange([deg2rad(-100), 0]);
 LKnee_rz.setName('LKnee_rz');
-LKnee_rz.setDefaultValue(0.03);
-LKnee_rz.setDefaultSpeedValue(-0.5)
+LKnee_rz.setDefaultValue(deg2rad(-30));
+LKnee_rz.setDefaultSpeedValue(0)
 % Add Joint to the Model
 osimModel.addJoint(LShankToThigh);
+% **********  END CODE  **********
 
-% Make and add a Right Foot Body
-rightFoot = Body();
-rightFoot.setName('RightFoot');
-rightFoot.setMass(0.0002);
-rightFoot.setInertia(Inertia(2,2,0.0002,0,0,0));
-% Add Body to the Model
-osimModel.addBody(rightFoot);
-% Make and add a Weld joint for the Right Foot Body
-locationInParent    = Vec3(0.05,-0.2,0);
-orientationInParent = Vec3(0,0,0);
-locationInChild     = Vec3(0,0,0);
-orientationInChild  = Vec3(0,0,0);
-RShankToFoot = WeldJoint('RightShankToFoot', ...
-    rightShank, locationInParent, orientationInParent, ...
-    rightFoot, locationInChild, orientationInChild);
-% Add Joint to the Model
-osimModel.addJoint(RShankToFoot);
+% TODO: Construct ContactGeometry and HuntCrossleyForces Here
+% ********** BEGIN CODE **********
+% TODO: Construct ContactGeometry and HuntCrossleyForces Here
+% ********** BEGIN CODE **********
+contactSphereRadius = 0.05;
 
-% Make and add a Left Foot Body
-leftFoot = Body();
-leftFoot.setName('leftFoot');
-leftFoot.setMass(0.0002);
-leftFoot.setInertia(Inertia(2,2,0.0002,0,0,0));
-% Add Body to the Model
-osimModel.addBody(leftFoot);
-% Make and add a Weld joint for the Left Foot Body
-locationInParent    = Vec3(0.05,-0.2,0);
-orientationInParent = Vec3(0,0,0);
-locationInChild     = Vec3(0,0,0);
-orientationInChild  = Vec3(0,0,0);
-LShankToFoot = WeldJoint('LeftShankToFoot', ...
-    leftShank, locationInParent, orientationInParent, ...
-    leftFoot, locationInChild, orientationInChild);
-% Add Joint to the Model
-osimModel.addJoint(LShankToFoot);
-
-%% TODO: Add ContactGeometry 
 % Make a Contact Half Space
 groundContactLocation = Vec3(0,0.025,0);
 groundContactOrientation = Vec3(0,0,-1.57);
@@ -248,8 +246,8 @@ osimModel.addContactGeometry(groundContactSpace);
 
 % Make a Right Hip Contact
 RightHipContactSphere = ContactSphere();
-RightHipContactSphere.setRadius(0.05);
-RightHipContactSphere.setLocation( Vec3(0,0,0.2) );
+RightHipContactSphere.setRadius(contactSphereRadius);
+RightHipContactSphere.setLocation( Vec3(0,0,pelvisWidth) );
 RightHipContactSphere.setFrame(pelvis)
 RightHipContactSphere.setName('RHipContact');
 osimModel.addContactGeometry(RightHipContactSphere);
@@ -257,8 +255,8 @@ osimModel.addContactGeometry(RightHipContactSphere);
 
 % Make a Left Hip Contact
 LeftHipContactSphere = ContactSphere();
-LeftHipContactSphere.setRadius(0.05);
-LeftHipContactSphere.setLocation( Vec3(0,0,-0.2) );
+LeftHipContactSphere.setRadius(contactSphereRadius);
+LeftHipContactSphere.setLocation( Vec3(0,0,-pelvisWidth) );
 LeftHipContactSphere.setFrame(pelvis)
 LeftHipContactSphere.setName('LHipContact');
 osimModel.addContactGeometry(LeftHipContactSphere);
@@ -266,43 +264,45 @@ osimModel.addContactGeometry(LeftHipContactSphere);
 
 % Make a Right Knee Contact
 RightKneeContactSphere = ContactSphere();
-RightKneeContactSphere.setRadius(0.05);
-RightKneeContactSphere.setLocation( Vec3(0,0.25,0) );
+RightKneeContactSphere.setRadius(contactSphereRadius);
+RightKneeContactSphere.setLocation( Vec3(0,thighLength/2,0) );
 RightKneeContactSphere.setFrame(rightShank)
 RightKneeContactSphere.setName('RKneeContact');
 osimModel.addContactGeometry(RightKneeContactSphere);
 
 % Make a Left Knee Contact
 LeftKneeContactSphere = ContactSphere();
-LeftKneeContactSphere.setRadius(0.05);
-LeftKneeContactSphere.setLocation(Vec3(0,0.25,0));
+LeftKneeContactSphere.setRadius(contactSphereRadius);
+LeftKneeContactSphere.setLocation(Vec3(0,thighLength/2,0));
 LeftKneeContactSphere.setFrame(leftShank)
 LeftKneeContactSphere.setName('LKneeContact');
 osimModel.addContactGeometry(LeftKneeContactSphere);
 
 % Make a Right Foot Contact Sphere
 RightFootContactSphere = ContactSphere();
-RightFootContactSphere.setRadius(0.1);
-RightFootContactSphere.setLocation( Vec3(0,0.05,0) );
-RightFootContactSphere.setFrame(rightFoot)
+RightFootContactSphere.setRadius(contactSphereRadius);
+RightFootContactSphere.setLocation( Vec3(0,-shankLength/2,0) );
+RightFootContactSphere.setFrame(rightShank)
 RightFootContactSphere.setName('RFootContact');
 osimModel.addContactGeometry(RightFootContactSphere);
 
 % Make a Left Foot Contact Sphere
 LeftFootContactSphere = ContactSphere();
-LeftFootContactSphere.setRadius(0.1);
-LeftFootContactSphere.setLocation( Vec3(0,0.05,0) );
-LeftFootContactSphere.setFrame(leftFoot)
+LeftFootContactSphere.setRadius(contactSphereRadius);
+LeftFootContactSphere.setLocation( Vec3(0,-shankLength/2,0) );
+LeftFootContactSphere.setFrame(leftShank)
 LeftFootContactSphere.setName('LFootContact');
 osimModel.addContactGeometry(LeftFootContactSphere);
 
-%% TODO: Add Hunt Crossley Forces
+% **********  END CODE  **********
+
 % Define Contact Force Parameters
 stiffness           = 1000000;
 dissipation         = 2.0;
 staticFriction      = 0.8;
 dynamicFriction     = 0.4;
 viscousFriction     = 0.4;
+transitionVelocity  = 0.2;
 
 % Make a Hunt Crossley Force for Right Hip and update parameters
 HuntCrossleyRightHip = HuntCrossleyForce();
@@ -314,7 +314,7 @@ HuntCrossleyRightHip.setDissipation(dissipation);
 HuntCrossleyRightHip.setStaticFriction(staticFriction);
 HuntCrossleyRightHip.setDynamicFriction(dynamicFriction);
 HuntCrossleyRightHip.setViscousFriction(viscousFriction);
-HuntCrossleyRightHip.setTransitionVelocity(0.2);
+HuntCrossleyRightHip.setTransitionVelocity(transitionVelocity);
 osimModel.addForce(HuntCrossleyRightHip);
 
 
@@ -328,7 +328,7 @@ HuntCrossleyLeftHip.setDissipation(dissipation);
 HuntCrossleyLeftHip.setStaticFriction(staticFriction);
 HuntCrossleyLeftHip.setDynamicFriction(dynamicFriction);
 HuntCrossleyLeftHip.setViscousFriction(viscousFriction);
-HuntCrossleyLeftHip.setTransitionVelocity(0.2);
+HuntCrossleyLeftHip.setTransitionVelocity(transitionVelocity);
 osimModel.addForce(HuntCrossleyLeftHip);
 
 
@@ -342,7 +342,7 @@ HuntCrossleyRightKnee.setDissipation(dissipation);
 HuntCrossleyRightKnee.setStaticFriction(staticFriction);
 HuntCrossleyRightKnee.setDynamicFriction(dynamicFriction);
 HuntCrossleyRightKnee.setViscousFriction(viscousFriction);
-HuntCrossleyRightKnee.setTransitionVelocity(0.2);
+HuntCrossleyRightKnee.setTransitionVelocity(transitionVelocity);
 osimModel.addForce(HuntCrossleyRightKnee);
 
 
@@ -356,7 +356,7 @@ HuntCrossleyLeftKnee.setDissipation(dissipation);
 HuntCrossleyLeftKnee.setStaticFriction(staticFriction);
 HuntCrossleyLeftKnee.setDynamicFriction(dynamicFriction);
 HuntCrossleyLeftKnee.setViscousFriction(viscousFriction);
-HuntCrossleyLeftKnee.setTransitionVelocity(0.2);
+HuntCrossleyLeftKnee.setTransitionVelocity(transitionVelocity);
 osimModel.addForce(HuntCrossleyLeftKnee);
 
 
@@ -370,7 +370,7 @@ HuntCrossleyRightFoot.setDissipation(dissipation);
 HuntCrossleyRightFoot.setStaticFriction(staticFriction);
 HuntCrossleyRightFoot.setDynamicFriction(dynamicFriction);
 HuntCrossleyRightFoot.setViscousFriction(viscousFriction);
-HuntCrossleyRightFoot.setTransitionVelocity(0.1);
+HuntCrossleyRightFoot.setTransitionVelocity(transitionVelocity);
 osimModel.addForce(HuntCrossleyRightFoot);
 
 
@@ -384,10 +384,11 @@ HuntCrossleyLeftFoot.setDissipation(dissipation);
 HuntCrossleyLeftFoot.setStaticFriction(staticFriction);
 HuntCrossleyLeftFoot.setDynamicFriction(dynamicFriction);
 HuntCrossleyLeftFoot.setViscousFriction(viscousFriction);
-HuntCrossleyLeftFoot.setTransitionVelocity(0.1);
+HuntCrossleyLeftFoot.setTransitionVelocity(transitionVelocity);
 osimModel.addForce(HuntCrossleyLeftFoot);
 
-%% TODO: Add CoordinateLimitForces 
+% TODO: Construct CoordinateLimitForces Here
+% ********** BEGIN CODE **********
 % Define Coordinate Limit Force Parameters
 upperStiffness = 0.5;
 lowerStiffness = 0.5;
@@ -435,7 +436,6 @@ RKneeLimitTorque.setDamping(damping);
 RKneeLimitTorque.setTransition(transition)
 osimModel.addForce(RKneeLimitTorque);
 
-
 % Make a Left Knee Coordinate Limit Force
 LKneeLimitTorque = CoordinateLimitForce();
 LKneeLimitTorque.setName('LKneeLimitTorque')
@@ -447,10 +447,12 @@ LKneeLimitTorque.setLowerLimit(kneeLowerLimit);
 LKneeLimitTorque.setDamping(damping);
 LKneeLimitTorque.setTransition(transition)
 osimModel.addForce(LKneeLimitTorque);
+% **********  END CODE  **********
 
 %% Initialize the System (checks model consistency). 
 osimModel.initSystem();
 
-%% Print osimModel to file
-osimModel.print('Walker_osimModel.osim');
-display(['osimModel Walker_osimModel.osim printed!']);
+% Save the model to a file
+osimModel.print('DynamicWalkerModel.osim');
+display(['DynamicWalkerModel.osim printed!']);
+
