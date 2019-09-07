@@ -79,7 +79,7 @@ platformToGround    = PinJoint('PlatformToGround',...  % Joint Name
 platform_rz = platformToGround.upd_coordinates(0);
 platform_rz.setRange([deg2rad(-100), deg2rad(100)]);
 platform_rz.setName('platform_rz');
-platform_rz.setDefaultValue(deg2rad(-1.5));
+platform_rz.setDefaultValue(deg2rad(-10));
 platform_rz.setDefaultSpeedValue(0);
 platform_rz.setDefaultLocked(true)
 
