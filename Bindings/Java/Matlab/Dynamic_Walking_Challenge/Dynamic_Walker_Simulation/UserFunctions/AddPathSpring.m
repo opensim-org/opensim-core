@@ -1,3 +1,5 @@
+% This script demonstraties how to add a PathSpring to a model. 
+
 % -----------------------------------------------------------------------
 % The OpenSim API is a toolkit for musculoskeletal modeling and
 % simulation. See http://opensim.stanford.edu and the NOTICE file
@@ -20,7 +22,7 @@
 % permissions and limitations under the License.
 % -----------------------------------------------------------------------
 
-% Import Java Library
+%% Import OpenSim Libraries
 import org.opensim.modeling.*
 
 % NOTE: In this sample code, we've used arbitrary parameters. Tweak them to get

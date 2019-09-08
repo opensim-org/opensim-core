@@ -1,3 +1,5 @@
+% This script demonstraties how to add a PathActuator to a model.
+
 % -----------------------------------------------------------------------
 % The OpenSim API is a toolkit for musculoskeletal modeling and
 % simulation. See http://opensim.stanford.edu and the NOTICE file
@@ -19,11 +21,12 @@
 % implied. See the License for the specific language governing
 % permissions and limitations under the License.
 % -----------------------------------------------------------------------
-% This script adds a PathActuator that spans the left knee.
-% https://simtk.org/api_docs/opensim/api_docs/classOpenSim_1_1PathActuator.html
 
-% Import Java library.
+%% Import OpenSim Libraries.
 import org.opensim.modeling.*
+
+% NOTE: In this sample code, we've used arbitrary parameters. Tweak them to get
+% your desired result!
 
 % Open the model.
 walkerModel = Model('../Model/WalkerModelTerrain.osim');

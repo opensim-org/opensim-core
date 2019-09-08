@@ -1,3 +1,5 @@
+% This file demonstrates how to add a ClutchedPathSpring to the model.
+
 % ----------------------------------------------------------------------%
 % The OpenSim API is a toolkit for musculoskeletal modeling and         %
 % simulation. See http://opensim.stanford.edu and the NOTICE file       %
@@ -19,8 +21,8 @@
 % implied. See the License for the specific language governing          %
 % permissions and limitations under the License.                        %
 % ----------------------------------------------------------------------%
-% Import Java Library 
 
+%% Import OpenSim Libraries
 import org.opensim.modeling.*
 
 % NOTE: In this sample code, we've used arbitrary parameters. Tweak them to get

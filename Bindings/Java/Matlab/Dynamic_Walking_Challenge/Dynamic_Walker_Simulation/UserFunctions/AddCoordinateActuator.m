@@ -1,3 +1,6 @@
+% This file demonstrates how to add a CoordinateActuator to the model. In
+% this case, the Left Knee of a Passive Dynamic Walker Model. 
+
 % -----------------------------------------------------------------------
 % The OpenSim API is a toolkit for musculoskeletal modeling and
 % simulation. See http://opensim.stanford.edu and the NOTICE file
@@ -19,10 +22,8 @@
 % implied. See the License for the specific language governing
 % permissions and limitations under the License.
 % -----------------------------------------------------------------------
-% This script adds a CoordinateActuator to the left knee.
-% simtk.org/api_docs/opensim/api_docs/classOpenSim_1_1CoordinateActuator.html
 
-% Import Java library.
+%% Import OpenSim Libraries.
 import org.opensim.modeling.*
 
 % Open the model.

@@ -1,3 +1,13 @@
+% This file demonstrates how to add feet to the model using a custom
+% object.
+%
+% The model will look for .object files in two locations
+% 1) The model's local directory
+% 2) The Models directory in the OpenSim Installation Directory
+% e.g. (<OpenSim_Home>\Models)
+%
+% The allowed object extensions are .vtp, .stl, .obj
+
 % -----------------------------------------------------------------------
 % The OpenSim API is a toolkit for musculoskeletal modeling and
 % simulation. See http://opensim.stanford.edu and the NOTICE file
@@ -20,18 +30,7 @@
 % permissions and limitations under the License.
 % -----------------------------------------------------------------------
 
-% This file demonstrates how to add feet to the model using a custom
-% object.
-%
-% The model will look for .object files in two locations
-% 1) The model's local directory
-% 2) The Models directory in the OpenSim Installation Directory
-% e.g. (<OpenSim_Home>\Models)
-%
-% The allowed object extensions are .vtp, .stl, .obj
-% -----------------------------------------------------------------------
-
-% Import Java Library
+%% Import OpenSim Libraries
 import org.opensim.modeling.*
 
 % model file
@@ -56,8 +55,8 @@ end
 % remove the current (foot) contact geometry
 geometryNames = [{'LFootContact'} {'RFootContact'}];
 for i = 1 : length(geometryNames)
-    
-    idx = model.getContactGeometrySet().getIndex(geometryNames{i}); 
+
+    idx = model.getContactGeometrySet().getIndex(geometryNames{i});
     if (idx < 0), error(['COntact Geometry, ' geometryNames{i} ', does not exist in the Model']); end
     isSuccessful = model.updContactGeometrySet().remove(idx);
     if (~isSuccessful), error(['The Contact Geometry, ' geometryNames{i} ',was not able to be removed from Model']); end

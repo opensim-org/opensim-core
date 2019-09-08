@@ -1,59 +1,42 @@
-function CreateWalkingModelAndEnvironment(modelpath)
-%% Function to generate a Passive Dynamic Walking Model Course.
+%% Script to generate a Passive Dynamic Walking Model Course.
 %  Adds contact Spheres to a Passive Dynamic Walker plateform. Placement is
-%  done randomly. 
-%
-% Inputs - 'modelpath', path to an OSIM file (string)
-%
-% e.g. CreateWalkingModelAndEnvironment('myInputModel.osim')
+%  done randomly.
 
-% ----------------------------------------------------------------------- 
-% The OpenSim API is a toolkit for musculoskeletal modeling and           
-% simulation. See http://opensim.stanford.edu and the NOTICE file         
-% for more information. OpenSim is developed at Stanford University       
-% and supported by the US National Institutes of Health (U54 GM072970,    
-% R24 HD065690) and by DARPA through the Warrior Web program.             
-%                                                                         
-% Copyright (c) 2005-2019 Stanford University and the Authors             
-% Author(s): Daniel A. Jacobs                                             
+% -----------------------------------------------------------------------
+% The OpenSim API is a toolkit for musculoskeletal modeling and
+% simulation. See http://opensim.stanford.edu and the NOTICE file
+% for more information. OpenSim is developed at Stanford University
+% and supported by the US National Institutes of Health (U54 GM072970,
+% R24 HD065690) and by DARPA through the Warrior Web program.
+%
+% Copyright (c) 2005-2019 Stanford University and the Authors
+% Author(s): Daniel A. Jacobs
 % Contributor(s): Hannah O'Day, Chris Dembia
-%                                                                         
-% Licensed under the Apache License, Version 2.0 (the "License");         
-% you may not use this file except in compliance with the License.        
-% You may obtain a copy of the License at                                 
-% http://www.apache.org/licenses/LICENSE-2.0.                             
-%                                                                         
-% Unless required by applicable law or agreed to in writing, software     
-% distributed under the License is distributed on an "AS IS" BASIS,       
-% WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or         
-% implied. See the License for the specific language governing            
-% permissions and limitations under the License.                          
-% ----------------------------------------------------------------------- 
+%
+% Licensed under the Apache License, Version 2.0 (the "License");
+% you may not use this file except in compliance with the License.
+% You may obtain a copy of the License at
+% http://www.apache.org/licenses/LICENSE-2.0.
+%
+% Unless required by applicable law or agreed to in writing, software
+% distributed under the License is distributed on an "AS IS" BASIS,
+% WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+% implied. See the License for the specific language governing
+% permissions and limitations under the License.
+% -----------------------------------------------------------------------
 
 %% Import OpenSim Libraries
 import org.opensim.modeling.*
 
 %% If no model is input, get a path to one.
+[pathname,filename] = uigetfile('*.osim', 'Select an OpenSim Passive Dynamic Walker Model File (.osim)');
 display('Loading the model...');
-if nargin < 1
-    [pathname,filename] = uigetfile('*.osim', 'PSelect an OpenSim Model File');
-    modelpath = fullfile(filename,pathname);
-elseif nargin > 1
-    error('Too many inputs to function. Input is Model path');
-end
-
-
-% User Section - Adjust these parameters at will
-outputPath = '../Model/';
-outputModelName = 'WalkerModel';
 
 % Model Body Parameters
 PlatformLength  = 10;
 PlatformHeight   = 0.05;
 PlatformOffset  = 0.5;
 PelvisWidth = 0.20;
-% thighLength = 0.40;
-% shankLength = 0.435;
 
 % Add Obstacles
 addObstacles = true;
@@ -110,7 +93,6 @@ end
 
 %% Add Force to the Model
 osimModel.addForce(ObstacleForces);
-
 
 %% Ensure there are no errors with how the model was built.
 osimModel.initSystem();

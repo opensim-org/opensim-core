@@ -1,8 +1,10 @@
+% This script demonstraties how to add a SpringGeneralizedForce to a model.
+
 % -----------------------------------------------------------------------
 % The OpenSim API is a toolkit for musculoskeletal modeling and
 % simulation. See http://opensim.stanford.edu and the NOTICE file
 % for more information. OpenSim is developed at Stanford University
-% and supported by the US National Institutes of Health (U54 GM072970,    
+% and supported by the US National Institutes of Health (U54 GM072970,
 % R24 HD065690) and by DARPA through the Warrior Web program.
 %
 % Copyright (c) 2005-2019 Stanford University and the Authors
@@ -20,7 +22,7 @@
 % permissions and limitations under the License.
 % -----------------------------------------------------------------------
 
-% Import Java Library
+%% Import OpenSim Libraries
 import org.opensim.modeling.*
 
 % NOTE: In this sample code, we've used arbitrary parameters. Tweak them to get

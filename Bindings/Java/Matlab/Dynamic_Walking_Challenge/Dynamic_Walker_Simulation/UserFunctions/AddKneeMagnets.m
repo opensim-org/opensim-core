@@ -1,3 +1,10 @@
+% This script demonstraties how to add a ExpressionBasedPointToPointForce 
+% to a model. 
+%
+% The ExpressionPointToPointForce calculates the relative translation and
+% relative velocity between two points in the global frame and allows the
+% user to specify a force based on a string of the symbols d and ddot.
+
 %-----------------------------------------------------------------------  %
 % The OpenSim API is a toolkit for musculoskeletal modeling and           %
 % simulation. See http://opensim.stanford.edu and the NOTICE file         %
@@ -20,13 +27,7 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-% This script uses an ExpressionBasedPointToPointForce to realize a magnet
-% force model.  The ExpressionBasedPointToPointForce calculates the relative
-% translation and relative velocity between two points in the global frame
-% and allows the user to specify a force based on a string of the symbols
-% d and ddot.
-
-% Import Java Library
+%% Import OpenSim Libraries
 import org.opensim.modeling.*
 
 % Open Model

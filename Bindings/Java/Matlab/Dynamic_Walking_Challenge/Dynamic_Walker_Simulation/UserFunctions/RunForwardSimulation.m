@@ -1,3 +1,6 @@
+% This script demonstrates running a Forward Simulation using the OpenSim
+% Manager Class. The OpenSim Manager is available from OpenSim 4.0, onwards.
+
 % ----------------------------------------------------------------------%
 % The OpenSim API is a toolkit for musculoskeletal modeling and         %
 % simulation. See http://opensim.stanford.edu and the NOTICE file       %
@@ -20,8 +23,7 @@
 % permissions and limitations under the License.                        %
 % ----------------------------------------------------------------------%
 
-% This script demonstrates calling the Forward Tool from the OpenSim library from Matlab.
-
+%% Import OpenSim Libraries
 import org.opensim.modeling.*
 
 % Open Model
@@ -49,8 +51,6 @@ stofiles.write(sTable, '../Results/fwd/simulation_states.sto');
 % Print the force reporter results to file (_ForceReporter_Forces.sto)
 forceReporter.printResults('','../Results/fwd',-1, '.sto');
 
-% Cleanup
-% clearvars walkerModel forceReporter tool state statusVal
+% Display Messages
 display('Forward Tool Finished.');
 display('Output files were written to the /Results/FWD directory:')
-
