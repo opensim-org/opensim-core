@@ -1,5 +1,5 @@
 % This file demonstrates how to add a CoordinateActuator to the model. In
-% this case, the Left Knee of a Passive Dynamic Walker Model. 
+% this case, the Left Knee of a Passive Dynamic Walker Model.
 
 % -----------------------------------------------------------------------
 % The OpenSim API is a toolkit for musculoskeletal modeling and
@@ -26,20 +26,20 @@
 %% Import OpenSim Libraries.
 import org.opensim.modeling.*
 
-% Open the model.
-walkerModel = Model('../Model/WalkerModelTerrain.osim');
+%% Instantiate the Model
+model_path = '../Model/WalkerModelTerrain.osim';
+walkerModel = Model(model_path);
+% Change the name
+walkerModel.setName('WalkerModelTerrain_CoordinateActuator');
 
-% Change the name.
-walkerModel.setName('WalkerModelTerrain_CoordAct');
-
-% Display all coordinates in the model.
+%% Display all coordinates in the model.
 numCoords = walkerModel.getNumCoordinates();
 fprintf('There are %d coordinates in the model:\n',numCoords);
 for i=0:numCoords-1
     fprintf('\t(%d) %s\n',i,char(walkerModel.getCoordinateSet().get(i)));
 end
 
-% Create and configure a CoordinateActuator for the left knee.
+%% Create and configure a CoordinateActuator for the left knee.
 jointName = 'LKnee_rz';
 fprintf('Adding CoordinateActuator to %s.\n',jointName);
 coordAct = CoordinateActuator(jointName);
@@ -51,10 +51,11 @@ coordAct.setMaxControl(inf);                % Maximum control signal allowed
 % Add the force to the model.
 walkerModel.addForce(coordAct);
 
-% Finalize connections
-walkerModel.finalizeConnections();
+%% Finalize connections
+walkerModel.finalizeConnections()
 
-% Save the new model file.
-modelFile_new = '../Model/WalkerModelTerrain_CoordAct.osim';
-walkerModel.print(modelFile_new);
-fprintf('Model saved to %s\n',modelFile_new);
+%% Print the model to file.
+newFilename = strrep(model_path, '.osim', '_CoordinateActuator.osim');
+isSuccessful = walkerModel.print(newFilename);
+if (~isSuccessful), error('Model printed to file failed'); end
+fprintf('Model printed to file successfully\n');

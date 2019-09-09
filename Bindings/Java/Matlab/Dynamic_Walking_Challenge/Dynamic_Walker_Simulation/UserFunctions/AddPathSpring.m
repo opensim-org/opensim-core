@@ -1,9 +1,9 @@
-% This script demonstraties how to add a PathSpring to a model. 
+% This script demonstraties how to add a PathSpring to a model.
 
 % -----------------------------------------------------------------------
 % The OpenSim API is a toolkit for musculoskeletal modeling and
 % simulation. See http://opensim.stanford.edu and the NOTICE file
-% for more information. OpenSim is developed at Stanford University       
+% for more information. OpenSim is developed at Stanford University
 % and supported by the US National Institutes of Health (U54 GM072970,
 % R24 HD065690) and by DARPA through the Warrior Web program.
 %
@@ -22,19 +22,19 @@
 % permissions and limitations under the License.
 % -----------------------------------------------------------------------
 
-%% Import OpenSim Libraries
-import org.opensim.modeling.*
-
 % NOTE: In this sample code, we've used arbitrary parameters. Tweak them to get
 % your desired result!
 
-% Open the model
-walkerModel = Model('../Model/WalkerModelTerrain.osim');
+%% Import OpenSim Libraries
+import org.opensim.modeling.*
 
+%% Instantiate the Model
+model_path = '../Model/WalkerModelTerrain.osim';
+walkerModel = Model(model_path);
 % Change the name
-walkerModel.setName('WalkerModel_AddPathSpring');
+walkerModel.setName('WalkerModelTerrain_PathSpring');
 
-% Create a Path Spring on the right leg
+%% Create a Path Spring on the right leg
 restLength = 1.0;
 stiffness = 100;
 dissipation = 0.01;
@@ -49,7 +49,7 @@ rightSpring.updGeometryPath().appendNewPathPoint('right_thigh',rightThighBody,Ve
 % Add the force to the model
 walkerModel.addComponent(rightSpring);
 
-% Create a Path Spring on the left leg
+%% Create a Path Spring on the left leg
 restLength = 1.0;
 stiffness = 1000;
 dissipation = 0.01;
@@ -64,8 +64,11 @@ leftSpring.updGeometryPath().appendNewPathPoint('left_thigh',leftThighBody,Vec3(
 % Add the force to the model
 walkerModel.addComponent(leftSpring);
 
-% Finalize connections
+%% Finalize connections
 walkerModel.finalizeConnections()
 
-% Print a new model file
-walkerModel.print('../Model/WalkerModel_PathSpring.osim');
+%% Print a new model file
+newFilename = strrep(model_path, '.osim', '_PathSpring.osim');
+isSuccessful = walkerModel.print(newFilename);
+if (~isSuccessful), error('Model printed to file failed'); end
+fprintf('Model printed to file successfully\n');

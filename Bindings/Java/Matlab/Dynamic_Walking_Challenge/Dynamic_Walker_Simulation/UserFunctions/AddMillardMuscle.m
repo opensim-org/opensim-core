@@ -1,5 +1,5 @@
-% This script demonstraties how to add a Millard2012EquilibriumMuscle 
-% to a model. 
+% This script demonstraties how to add a Millard2012EquilibriumMuscle
+% to a model.
 
 % -----------------------------------------------------------------------
 % The OpenSim API is a toolkit for musculoskeletal modeling and
@@ -23,19 +23,19 @@
 % permissions and limitations under the License.
 % -----------------------------------------------------------------------
 
-%% Import OpenSim Libraries
-import org.opensim.modeling.*
-
 % NOTE: In this sample code, we've used arbitrary parameters. Tweak them to get
 % your desired result!
 
-% Open the model
-walkerModel = Model('../Model/WalkerModelTerrain.osim');
+%% Import OpenSim Libraries
+import org.opensim.modeling.*
 
+%% Instantiate the Model
+model_path = '../Model/WalkerModelTerrain.osim';
+walkerModel = Model(model_path);
 % Change the name
-walkerModel.setName('WalkerModelTerrainAddMillardMuscle');
+walkerModel.setName('WalkerModelTerrain_MillardMuscle');
 
-% Create a muscle on the right leg
+%% Create a muscle on the right leg
 maxIsometricForce = 500;
 optimalFiberLength = 0.15;
 tendonSlackLength = 0.1;
@@ -63,8 +63,11 @@ leftMuscle.updGeometryPath().appendNewPathPoint('left_thigh',leftThighBody,Vec3(
 % Add the force to the model
 walkerModel.addForce(leftMuscle);
 
-% Finalize connections
+%% Finalize connections
 walkerModel.finalizeConnections()
 
-% Print a new model file
-walkerModel.print('../Model/WalkerModel_AddMillardMuscle.osim');
+%% Print a new model file
+newFilename = strrep(model_path, '.osim', '_MillardMuscle.osim');
+isSuccessful = walkerModel.print(newFilename);
+if (~isSuccessful), error('Model printed to file failed'); end
+fprintf('Model printed to file successfully\n');

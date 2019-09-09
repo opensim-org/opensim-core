@@ -22,19 +22,19 @@
 % permissions and limitations under the License.
 % -----------------------------------------------------------------------
 
-%% Import OpenSim Libraries
-import org.opensim.modeling.*
-
 % NOTE: In this sample code, we've used arbitrary parameters. Tweak them to get
 % your desired result!
 
-% Open the model
-walkerModel = Model('../Model/WalkerModelTerrain.osim');
+%% Import OpenSim Libraries
+import org.opensim.modeling.*
 
+%% Instantiate the Model
+model_path = '../Model/WalkerModelTerrain.osim';
+walkerModel = Model(model_path);
 % Change the name
-walkerModel.setName('WalkerModelTerrainAddSpringGeneralizedForce');
+walkerModel.setName('WalkerModelTerrain_SpringGeneralizedForce');
 
-% Create the springs
+%% Create the springs
 rightSpring = SpringGeneralizedForce('RHip_rz');
 leftSpring = SpringGeneralizedForce('LHip_rz');
 
@@ -57,8 +57,11 @@ leftSpring.setViscosity(viscosity);
 walkerModel.addForce(rightSpring);
 walkerModel.addForce(leftSpring);
 
-% Finalize connections
+%% Finalize connections
 walkerModel.finalizeConnections()
 
-% Print a new model file
-walkerModel.print('../Model/WalkerModelTerrainAddSpringGeneralizedForce.osim');
+%% Print a new model file
+newFilename = strrep(model_path, '.osim', '_SpringGeneralizedForce.osim');
+isSuccessful = walkerModel.print(newFilename);
+if (~isSuccessful), error('Model printed to file failed'); end
+fprintf('Model printed to file successfully\n');

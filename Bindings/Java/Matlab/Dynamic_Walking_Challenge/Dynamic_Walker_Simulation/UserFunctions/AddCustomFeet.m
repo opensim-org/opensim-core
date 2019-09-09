@@ -33,83 +33,87 @@
 %% Import OpenSim Libraries
 import org.opensim.modeling.*
 
-% model file
-modelPath = '../Model/WalkerModelTerrain.osim';
+%% Instantiate the Model
+model_path = '../Model/WalkerModelTerrain.osim';
+walkerModel = Model(model_path);
+% Change the name
+walkerModel.setName('WalkerModelTerrain_CustomFeet');
 
-% open the model
-model = Model(modelPath);
+%% Define the foot mesh name
+meshPath = 'ThinHalfCylinder100mmby50mm.obj';
+% If the foot mesh isn't in the Model folder, make a copy. Otherwise mesh
+% will not be usable when Model is openned in the OpenSim GUI
+if ~isfile('../Model/ThinHalfCylinder100mmby50mm.obj')
+    copyfile 'ThinHalfCylinder100mmby50mm.obj' '../Model/ThinHalfCylinder100mmby50mm.obj'
+end
 
-% change the name
-model.setName( [model.getName().toCharArray()' '_CustomFeet']);
-
-% remove the current foot forces
+%% Remove the current foot forces
 forceNames = [{'LFootForce'} {'RFootForce'}];
 
+% Check tosee if the model has feet forces
 for i = 1 : length(forceNames)
-    idx = model.getForceSet().getIndex( forceNames{i} );
+    idx = walkerModel.getForceSet().getIndex( forceNames{i} );
     if (idx < 0), error(['Force, ' forceNames{i} ', does not exist in the Model']); end
-    isSuccessful = model.updForceSet().remove(idx);
+    isSuccessful = walkerModel.updForceSet().remove(idx);
     if (~isSuccessful), error(['The Force, ' forceNames{i} ', as not able to be removed from Model']); end
 end
 
-% remove the current (foot) contact geometry
+% Remove the current (foot) contact geometry
 geometryNames = [{'LFootContact'} {'RFootContact'}];
 for i = 1 : length(geometryNames)
 
-    idx = model.getContactGeometrySet().getIndex(geometryNames{i});
+    idx = walkerModel.getContactGeometrySet().getIndex(geometryNames{i});
     if (idx < 0), error(['COntact Geometry, ' geometryNames{i} ', does not exist in the Model']); end
-    isSuccessful = model.updContactGeometrySet().remove(idx);
+    isSuccessful = walkerModel.updContactGeometrySet().remove(idx);
     if (~isSuccessful), error(['The Contact Geometry, ' geometryNames{i} ',was not able to be removed from Model']); end
 end
 
-% make rigid bodies for feet
+%% Add Bodies and joints for two feet
+% Make feet Bodies
 leftFoot = Body('LeftFoot', 0.0001 , Vec3(0), Inertia(1,1,.0001,0,0,0) );
 rightFoot = Body('RightFoot', 0.0001 , Vec3(0), Inertia(1,1,.0001,0,0,0) );
 
-% get a reference to each shank
-leftShank= model.getBodySet().get('LeftShank');
-rightShank = model.getBodySet().get('RightShank');
+% Add visual objects of the feet
+leftFoot.attachGeometry( Mesh(meshPath) );
+rightFoot.attachGeometry( Mesh(meshPath) );
 
-% weld feet to shanks
+% Get a reference to the shank bodies
+leftShank= walkerModel.getBodySet().get('LeftShank');
+rightShank = walkerModel.getBodySet().get('RightShank');
+
+% Make Weld Joints for the feet
 ankle_l = WeldJoint('ankle_l',leftShank, Vec3(0.075,-0.2,0), Vec3(0,0,0), leftFoot, Vec3(0,0,0), Vec3(0,0,0));
 ankle_r = WeldJoint('ankle_r',rightShank, Vec3(0.075,-0.2,0),Vec3(0,0,0), rightFoot, Vec3(0,0,0), Vec3(0,0,0));
 
-% add the visual object
-leftFoot.attachGeometry( Mesh('ThinHalfCylinder100mmby50mm.obj') );
-rightFoot.attachGeometry( Mesh('ThinHalfCylinder100mmby50mm.obj') );
+% Add the bodies and joints to the model
+walkerModel.addBody(leftFoot);
+walkerModel.addBody(rightFoot);
+walkerModel.addJoint(ankle_l);
+walkerModel.addJoint(ankle_r);
 
-% add the bodies and joints to the model
-model.addBody(leftFoot);
-model.addBody(rightFoot);
-model.addJoint(ankle_l);
-model.addJoint(ankle_r);
+% Make a contact mesh for each foot
+contact_l = ContactMesh(meshPath,Vec3(0,0,0), Vec3(0,0,0), leftFoot, 'LFootContact');
+contact_r = ContactMesh(meshPath,Vec3(0,0,0), Vec3(0,0,0), rightFoot, 'RFootContact');
 
-% make a contact mesh for each foot
-contact_l = ContactMesh('ThinHalfCylinder100mmby50mm.obj',Vec3(0,0,0), Vec3(0,0,0), leftFoot, 'LFootContact');
-contact_r = ContactMesh('ThinHalfCylinder100mmby50mm.obj',Vec3(0,0,0), Vec3(0,0,0), rightFoot, 'RFootContact');
+% Add contact geometry to the model
+walkerModel.addComponent(contact_l);
+walkerModel.addComponent(contact_r);
 
-% add contact geometry
-model.addComponent(contact_l);
-model.addComponent(contact_r);
-
-% make an elastic foundation force for both feet
+%% Make elastic foundation forces for both feet
 elasticforce_l = ElasticFoundationForce();
 elasticforce_r = ElasticFoundationForce();
 
-% set names
+% Set elastic foundation force names
 elasticforce_l.setName('LFootForce');
 elasticforce_r.setName('RFootForce');
 
-% set transition velocity
-elasticforce_l.setTransitionVelocity(0.1);
-elasticforce_r.setTransitionVelocity(0.1);
-
-% define contact parameters
+% Define the force parameters
 stiffness           = 1.0E6;
 dissipation         = 2.0;
 staticFriction      = 0.8;
 dynamicFriction     = 0.4;
 viscousFriction     = 0.4;
+translationVelocity = 0.1;
 
 % set the contact parameters
 elasticforce_l.addGeometry('LFootContact');
@@ -119,6 +123,7 @@ elasticforce_l.setDissipation(dissipation);
 elasticforce_l.setStaticFriction(staticFriction);
 elasticforce_l.setDynamicFriction(dynamicFriction);
 elasticforce_l.setViscousFriction(viscousFriction);
+elasticforce_l.setTransitionVelocity(translationVelocity);
 
 elasticforce_r.addGeometry('RFootContact');
 elasticforce_r.addGeometry('PlatformContact');
@@ -127,16 +132,17 @@ elasticforce_r.setDissipation(dissipation);
 elasticforce_r.setStaticFriction(staticFriction);
 elasticforce_r.setDynamicFriction(dynamicFriction);
 elasticforce_r.setViscousFriction(viscousFriction);
+elasticforce_r.setTransitionVelocity(translationVelocity);
 
-% add forces.
-model.addForce(elasticforce_l);
-model.addForce(elasticforce_r);
+% Add forces.
+walkerModel.addForce(elasticforce_l);
+walkerModel.addForce(elasticforce_r);
 
-% finalize connections
-model.finalizeConnections()
+%% finalize connections
+walkerModel.finalizeConnections()
 
-% print new model to file.
-newFilename = 'WalkerModel_customFeet.osim';
-isSuccessful = model.print(['../Model/',newFilename]);
+%% Print the model to file.
+newFilename = strrep(model_path, '.osim', '_CustomFeet.osim');
+isSuccessful = walkerModel.print(newFilename);
 if (~isSuccessful), error('Model printed to file failed'); end
 fprintf('Model printed to file successfully\n');

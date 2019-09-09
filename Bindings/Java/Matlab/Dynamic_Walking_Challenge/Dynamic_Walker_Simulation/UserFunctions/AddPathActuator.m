@@ -22,26 +22,26 @@
 % permissions and limitations under the License.
 % -----------------------------------------------------------------------
 
-%% Import OpenSim Libraries.
-import org.opensim.modeling.*
-
 % NOTE: In this sample code, we've used arbitrary parameters. Tweak them to get
 % your desired result!
 
-% Open the model.
-walkerModel = Model('../Model/WalkerModelTerrain.osim');
+%% Import OpenSim Libraries.
+import org.opensim.modeling.*
 
+%% Instantiate the Model
+model_path = '../Model/WalkerModelTerrain.osim';
+walkerModel = Model(model_path);
 % Change the name.
-walkerModel.setName('WalkerModelTerrain_CoordAct');
+walkerModel.setName('WalkerModelTerrain_PathActuator');
 
-% Display all bodies in the model.
+%% Display all bodies in the model.
 numBodies = walkerModel.getNumBodies();
 fprintf('There are %d bodies in the model:\n',numBodies);
 for i=0:numBodies-1
     fprintf('\t(%d) %s\n',i,char(walkerModel.getBodySet().get(i)));
 end
 
-% Create and configure a PathActuator that spans the left knee.
+%% Create and configure a PathActuator that spans the left knee.
 pathAct = PathActuator();
 pathAct.setName('pathAct_LK');              % Name
 pathAct.setOptimalForce(10.0);              % Maximum generalized force
@@ -61,10 +61,11 @@ pathAct.addNewPathPoint('pathAct_point2',body2,point2);
 % Add the force to the model.
 walkerModel.addComponent(pathAct);
 
-% Finalize connections
+%% Finalize connections
 walkerModel.finalizeConnections()
 
-% Save the new model file.
-modelFile_new = '../Model/WalkerModel_PathAct.osim';
-walkerModel.print(modelFile_new);
-fprintf('Model saved to %s\n',modelFile_new);
+%% Print the model to file.
+newFilename = strrep(model_path, '.osim', '_PathActuator.osim');
+isSuccessful = walkerModel.print(newFilename);
+if (~isSuccessful), error('Model printed to file failed'); end
+fprintf('Model printed to file successfully\n');

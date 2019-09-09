@@ -1,5 +1,5 @@
-% This script demonstraties how to add a ExpressionBasedPointToPointForce 
-% to a model. 
+% This script demonstraties how to add a ExpressionBasedPointToPointForce
+% to a model.
 %
 % The ExpressionPointToPointForce calculates the relative translation and
 % relative velocity between two points in the global frame and allows the
@@ -30,11 +30,11 @@
 %% Import OpenSim Libraries
 import org.opensim.modeling.*
 
-% Open the model
-walkerModel = Model('../Model/WalkerModelTerrain.osim');
-
+%% Instantiate the Model
+model_path = '../Model/WalkerModelTerrain.osim';
+walkerModel = Model(model_path);
 % Change the name
-walkerModel.setName('WalkerModelTerrainAddMagnet');
+walkerModel.setName('WalkerModelTerrain_KneeMagnet');
 
 % Define the body and points location in each body's coordinate frame
 locBody1 = Vec3(0.05,-0.2, 0);
@@ -68,8 +68,12 @@ rightKneeMagnet.setName('RightKneeMagnet')
 % walkerModel.addForce(leftKneeMagnet);
 % walkerModel.addForce(rightKneeMagnet);
 
-% Finalize connections 
-model.finalizeConnections()
 
-% Print a new model file
-walkerModel.print('../Model/WalkerModelTerrainAddMagnet.osim');
+%% Finalize connections
+walkerModel.finalizeConnections()
+
+%% Print the model to file.
+newFilename = strrep(model_path, '.osim', '_KneeMagnet.osim');
+isSuccessful = walkerModel.print(newFilename);
+if (~isSuccessful), error('Model printed to file failed'); end
+fprintf('Model printed to file successfully\n');

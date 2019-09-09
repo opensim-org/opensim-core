@@ -22,19 +22,19 @@
 % permissions and limitations under the License.                        %
 % ----------------------------------------------------------------------%
 
-%% Import OpenSim Libraries
-import org.opensim.modeling.*
-
 % NOTE: In this sample code, we've used arbitrary parameters. Tweak them to get
 % your desired result!
 
-% Open the model
-walkerModel = Model('../Model/WalkerModelTerrain.osim');
+%% Import OpenSim Libraries
+import org.opensim.modeling.*
 
+%% Instantiate the Model
+model_path = '../Model/WalkerModelTerrain.osim';
+walkerModel = Model(model_path);
 % Change the name
-walkerModel.setName('WalkerModelTerrainAddPathSpring');
+walkerModel.setName('WalkerModelTerrain_ClutchedPathSpring');
 
-% Create a Path Spring on the right leg
+%% Create a Path Spring on the right leg
 stiffness = 100;
 dissipation = 0.05;
 relaxationTime = 0.01;
@@ -64,8 +64,11 @@ leftSpring.updGeometryPath().appendNewPathPoint('left_thigh',leftThighBody,Vec3(
 % Add the force to the model
 walkerModel.addForce(leftSpring);
 
-% Finalize connections
+%% Finalize connections
 walkerModel.finalizeConnections()
 
-% Print a new model file
-walkerModel.print('../Model/WalkerModel_ClutchedPathSpring.osim');
+%% Print the model to file.
+newFilename = strrep(model_path, '.osim', '_ClutchedPathSpring.osim');
+isSuccessful = walkerModel.print(newFilename);
+if (~isSuccessful), error('Model printed to file failed'); end
+fprintf('Model printed to file successfully\n');
