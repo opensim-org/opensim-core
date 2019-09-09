@@ -703,12 +703,11 @@ class TestTables {
     }
 
     public static void test_FlattenWithIK() throws java.io.IOException {
-        String setupFileName = new String("subject01_Setup_IK_generic.xml");
-        String markerFileName = new String("walk_free_01.trc");
-        String modelFileName = new String("subject01_gait2392_scaled.osim");
+        String setupFileName = "subject01_Setup_IK_generic.xml";
+        String markerFileName = "walk_free_01.trc";
+        String modelFileName = "subject01_gait2392_scaled.osim";
 
-        TRCFileAdapter trcAdapter = new TRCFileAdapter();
-        TimeSeriesTableVec3 markerTable = trcAdapter.readFile(markerFileName);
+        TimeSeriesTableVec3 markerTable = new TimeSeriesTableVec3(markerFileName);
         System.out.println(markerTable);
         StdVectorString suffixes = new StdVectorString();
         suffixes.add(".x"); suffixes.add(".y"); suffixes.add(".z");

@@ -11,7 +11,7 @@
 % and supported by the US National Institutes of Health (U54 GM072970,    %
 % R24 HD065690) and by DARPA through the Warrior Web program.             %
 %                                                                         %
-% Copyright (c) 2005-2018 Stanford University and the Authors             %
+% Copyright (c) 2005-2019 Stanford University and the Authors             %
 % Author(s): James Dunne                                                  %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
@@ -29,6 +29,7 @@
 % Written by: James Dunne, Tom Uchida, Chris Dembia, Ajay Seth,
 %                   Ayman Habib, Jen Hicks,Shrinidhi K. Lakshmikanth.
 
+%%
 function timeseriesosimtable = osimTableFromStruct(s)
 %% import Java Libraries
 import org.opensim.modeling.*
@@ -101,7 +102,7 @@ if colRef == 1
     end
 else
     % Get an OpenSim Row Vector
-    row = RowVectorOfVec3(nfields);
+    row = RowVectorVec3(nfields);
     for iRow = 1 : nRows
         % Create and fill a row of data
         for iCol = 1 : nfields 

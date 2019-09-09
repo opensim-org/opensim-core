@@ -84,7 +84,7 @@ add_library(osim${KIT}
 target_include_directories(osim${KIT} PRIVATE
                            ${JAVA_INCLUDE_PATH} ${JAVA_INCLUDE_PATH2})
 
-target_link_libraries(osim${KIT} osimTools osimSimmFileWriter osimExampleComponents)
+target_link_libraries(osim${KIT} osimTools osimExampleComponents)
     
 set_target_properties(osim${KIT} PROPERTIES
    DEFINE_SYMBOL ${EXPORT_MACRO}

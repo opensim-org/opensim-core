@@ -99,7 +99,7 @@ public:
                             this DataTable_ type.                             */
     DataTable_(const std::string& filename,
                const std::string& tablename) {
-        auto absTables = FileAdapter::readFile(filename);
+        auto absTables = FileAdapter::createAdapterFromExtension(filename)->read(filename);
 
         OPENSIM_THROW_IF(absTables.size() > 1 && tablename.empty(),
                          InvalidArgument,
@@ -946,6 +946,45 @@ public:
         _depData.resizeKeep(_depData.nrow(), _depData.ncol() + 1);
         _depData.updCol(_depData.ncol() - 1) = depCol;
         appendColumnLabel(columnLabel);
+    }
+
+    /** Remove column corresponding to the given column index.
+
+    \throws ColumnIndexOutOfRange If the index is out of range.                  */
+        void removeColumnAtIndex(size_t index) {
+        OPENSIM_THROW_IF(isColumnIndexOutOfRange(index),
+            ColumnIndexOutOfRange,
+            index, 0, static_cast<unsigned>(_depData.ncol() - 1));
+
+        // get copy of labels
+        auto labels = getColumnLabels();
+
+        assert(labels.size() == _depData.ncol());
+
+        // shift columns unless we're already at the last column
+        for (size_t c = index; c < getNumColumns()-1; ++c) {
+            _depData.updCol((int)c) = _depData.col((int)(c + 1));
+            labels[c] = labels[c + 1];
+        }
+
+        _depData.resizeKeep(_depData.nrow(), _depData.ncol()-1);
+        labels.resize(_depData.ncol());
+        setColumnLabels(labels);
+    }
+
+    /** Remove column corresponding to the given dependent column label. The
+    independent column cannot be removed.
+
+    \throws KeyNotFound If the independent column has no entry with the given
+    value.                                                */
+    void removeColumn(const std::string& columnLabel) {
+        const auto& labels = getColumnLabels();
+        auto iter = std::find(labels.cbegin(), labels.cend(), columnLabel);
+
+        OPENSIM_THROW_IF(iter == labels.cend(),
+            KeyNotFound, columnLabel);
+
+        return removeColumnAtIndex(std::distance(labels.cbegin(), iter));
     }
 
     /** Get dependent column at index.

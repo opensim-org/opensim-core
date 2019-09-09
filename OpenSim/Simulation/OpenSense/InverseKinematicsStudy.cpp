@@ -126,8 +126,7 @@ runInverseKinematicsWithOrientationsFromFile(Model& model,
 
     model.addComponent(ikReporter);
 
-    TimeSeriesTable_<SimTK::Quaternion> quatTable =
-        STOFileAdapter_<SimTK::Quaternion>::readFile(orientationsFileName);
+    TimeSeriesTable_<SimTK::Quaternion> quatTable(orientationsFileName);
     std::cout << "Loading orientations as quaternions from "
         << orientationsFileName << std::endl;
 
@@ -252,7 +251,7 @@ SimTK::Array_<int> InverseKinematicsStudy::getTimeRangeInUse(
 TimeSeriesTable_<SimTK::Vec3> 
     InverseKinematicsStudy::loadMarkersFile(const std::string& markerFile)
 {
-    auto markers = TRCFileAdapter::readFile(markerFile);
+    TimeSeriesTable_<Vec3> markers(markerFile);
     std::cout << markerFile << " loaded " << markers.getNumColumns() << " markers "
         << " and " << markers.getNumRows() << " rows of data." << std::endl;
 

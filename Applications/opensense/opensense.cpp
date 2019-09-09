@@ -355,7 +355,7 @@ void addImuFramesFromMarkers(const string& modelFile, const string& markersFile)
     //auto averageRow = table->averageRow(*times.cbegin(), *times.cend());
     const auto referenceRow = table.getRowAtIndex(0);
 
-    MarkersReference markersRef(table, nullptr);
+    MarkersReference markersRef(table, Set<MarkerWeight>());
 
     // create the IK solver based on markers only to get the static pose
     SimTK::Array_<CoordinateReference> coordinateReferences;

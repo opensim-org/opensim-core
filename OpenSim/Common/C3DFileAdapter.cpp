@@ -43,23 +43,6 @@ C3DFileAdapter::clone() const {
     return new C3DFileAdapter{*this};
 }
 
-C3DFileAdapter::Tables
-C3DFileAdapter::readFile(const std::string& fileName, ForceLocation wrt)
-{
-    C3DFileAdapter c3dreader{};
-    c3dreader.setLocationForForceExpression(wrt);
-
-    auto abstables = c3dreader.extendRead(fileName);
-    auto marker_table = 
-        std::static_pointer_cast<TimeSeriesTableVec3>(abstables.at(_markers));
-    auto force_table = 
-        std::static_pointer_cast<TimeSeriesTableVec3>(abstables.at(_forces));
-    Tables tables{};
-    tables.emplace(_markers, marker_table);
-    tables.emplace( _forces,  force_table);
-    return tables;
-}
-
 void
 C3DFileAdapter::write(const C3DFileAdapter::Tables& tables,
                       const std::string& fileName) {
@@ -155,7 +138,13 @@ C3DFileAdapter::extendRead(const std::string& fileName) const {
 
         tables.emplace(_markers, marker_table);
     }
-
+    else { // insert empty table
+        std::vector<double> emptyTimes;
+        std::vector<std::string> emptyLabels;
+        SimTK::Matrix_<SimTK::Vec3> noData;
+        auto emptyMarkersTable = std::make_shared<TimeSeriesTableVec3>(emptyTimes, noData, emptyLabels);
+        tables.emplace(_markers, emptyMarkersTable);
+    }
     // This is probably the right way to get the raw forces data from force 
     // platforms. Extract the collection of force platforms.
     auto force_platforms_extractor = btk::ForcePlatformsExtractor::New();
@@ -295,6 +284,13 @@ C3DFileAdapter::extendRead(const std::string& fileName) const {
             std::shared_ptr<TimeSeriesTableVec3>(&force_table));
 
         force_table.updTableMetaData().setValueForKey("events", event_table);
+    }
+    else { // insert empty table
+        std::vector<double> emptyTimes;
+        std::vector<std::string> emptyLabels;
+        SimTK::Matrix_<SimTK::Vec3> noData;
+        auto emptyforcesTable = std::make_shared<TimeSeriesTableVec3>(emptyTimes, noData, emptyLabels);
+        tables.emplace(_forces, emptyforcesTable);
     }
 
     return tables;

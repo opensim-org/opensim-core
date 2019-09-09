@@ -10,6 +10,12 @@ v4.1
 ====
 - Added `OrientationsReference` as the frame orientation analog to the location of experimental markers. Enables experimentally measured orientations from wearable sensors (e.g. from IMUs) to be tracked by reference frames in the model. A correspondence between the experimental (IMU frame) orientation column label and that of the virtual frame on the `Model` is expected. The `InverseKinematicsSolver` was extended to simultaneously track the `OrientationsReference` if provided. (PR #2412)
 - Removed the undocumented `bool dumpName` argument from `Object::dump()` and made the method `const` so it can be safely called on `const` objects. (PR #2412)
+- `MarkersReference` convenience constructors were updated to take a const reference to a `MarkerWeightSet` as its second argument. If a `Set` is not empty, then only the markers listed are used as reference signals. That means `InverseKinematicsTool` no longer tracks all experimental markers even those not in the `MarkerWeightSet`. One can quickly track all experimental markers (that have a corresponding model marker) by simply providing an empty `Set`, in which case all markers are assigned the default weight (typically 1.0).
+- Model files from very old versions (pre 1.8.1) are not supported, an exception is thrown rather than fail quietly (issue #2395).
+- Initializing a Component from an existing Component with correct socket connectees yields invalid paths (issue #2418).
+- Reading DataTables from files has been simplified. Reading one table from a file typically uses the Table constructor except when the data-source/file contains multiple tables. (In these cases e.g. C3D files, use C3DFileAdapter.read method, then use functions in C3DFileAdapter to get the individual TimeSeriesTable(s)). Writing tables to files has not changed.
+- Exposed convertMillimeters2Meters() in osimC3D.m. This function converts COP and moment data from mm to m and now must be invoked prior to writing force data to file. Previously, this was automatically performed during writing forces to file. 
+- Methods that operate on SimTK::Vec<n> are now available through Java/Matlab and python bindings to add/subtract/divide/multiply vec<n> contents with a scalar (PR #2558)
 
 Converting from v4.0 to v4.1
 ----------------------------
@@ -18,6 +24,25 @@ Converting from v4.0 to v4.1
   conversion, you will need to update your code to use the constructor
   explicitly.
 
+Bug Fixes
+---------
+- Fixed bug in osimTable2Struct.m for renaming unlabelled markers (PR #2491)
+- Fixed bug that resulted in an exception when reading C3D files without forces. Now, if the C3D doesn't contain markers or forces, an empty table will be returned (PR #2421) 
+- Fix bug that resulted in activations and forces reported for Actuators that are disabled during StaticOptimization (issue #2438) Disabled actuators are now ignored in StaticOptimization.
+- OpenSim no longer supports model file formats predating version 1.8.1 (PR #2498)
+- FunctionBasedBushingForce now applies damping if specified (it was incorrectly ignored in 4.0) issue #2512
+- TRCFileAdapter.write() uses the number of columns and rows in the supplied dataTable to set the "NumMarkers" and "NumRows" Metadata in the output file. Users won't have to set this metadata string manually.  #2510
+
+Documentation
+-------------
+
+
+Other Changes
+-------------
+- Performance of reading large data files has been significantly improved. A 50MB .sto file would take 10-11 min to read now takes 2-3 seconds. (PR #2399)
+- Added Matlab example script of plotting the Force-length properties of muscles in a models; creating an Actuator file from a model; 
+building and simulating a simple arm model;  using OutputReporters to record and write marker location and coordinate values to file.
+- OpenSim 4.1 ships with Python3 bindings as default. It is still possible to create bindings for Python2 if desired by setting CMake variable OPENSIM_PYTHON_VERSION to 2
 
 v4.0
 ====

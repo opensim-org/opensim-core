@@ -166,7 +166,7 @@ void testMarkersReference()
 
     std::cout << markerWeights.dump() << std::endl;
 
-    MarkersReference markersRef(markerData, &markerWeights);
+    MarkersReference markersRef(markerData, markerWeights);
 
     Model model;
     SimTK::State& s = model.initSystem();
@@ -190,7 +190,7 @@ void testMarkersReference()
     markerWeights.adoptAndAppend(new MarkerWeight("X", 0.1));
     markerWeights.insert(0, new MarkerWeight("Y", 0.01));
 
-    MarkersReference markersRef2(markerData, &markerWeights);
+    MarkersReference markersRef2(markerData, markerWeights);
 
     auto& mWeightSet = markersRef2.get_marker_weights();
 
@@ -309,7 +309,8 @@ void testAccuracy()
 
     SimTK::RowVector_<SimTK::Vec3> biases(3, SimTK::Vec3(0));
     MarkersReference
-        markersRef(generateMarkerDataFromModelAndStates(*pendulum, states, biases));
+        markersRef(generateMarkerDataFromModelAndStates(*pendulum, states, biases),
+            Set<MarkerWeight>());
     markersRef.setDefaultWeight(1.0);
 
     // Reset the initial coordinate value
@@ -411,7 +412,8 @@ void testUpdateMarkerWeights()
     MarkersReference
         markersRef(generateMarkerDataFromModelAndStates(*pendulum,
                                                         states, biases,
-                                                        0.02));
+                                                        0.02),
+            Set<MarkerWeight>());
     auto& markerNames = markersRef.getNames();
 
     for (const auto& name : markerNames) {
@@ -521,7 +523,8 @@ void testTrackWithUpdateMarkerWeights()
         markersRef(generateMarkerDataFromModelAndStates(*pendulum,
                                                         states, biases,
                                                         0.02,
-                                                        true));
+                                                        true),
+            Set<MarkerWeight>());
     auto& markerNames = markersRef.getNames();
 
     for (const auto& name : markerNames) {
@@ -630,7 +633,8 @@ void testNumberOfMarkersMismatch()
 
     cout << "After reorder and NaN injections:\n" << markerTable << endl;
 
-    MarkersReference markersRef(markerTable);
+    Set<MarkerWeight> markerWeightSet;
+    MarkersReference markersRef(markerTable, markerWeightSet);
     int nmr = markersRef.getNumRefs();
     auto& markerNames = markersRef.getNames();
     cout << markerNames << endl;
