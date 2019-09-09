@@ -15,6 +15,23 @@ namespace SimTK {
 %template(Vec4) Vec<4>;
 %template(Vec6) Vec<6>;
 }
+%define ADD_VEC_OPERATOR_METHODS(VEC_TYPE)
+%extend VEC_TYPE {
+	%template(scalarEq) scalarEq<double>;
+	%template(scalarPlusEq) scalarPlusEq<double>;
+	%template(scalarMinusEq) scalarMinusEq<double>;
+	%template(scalarTimesEq) scalarTimesEq<double>;
+	%template(scalarDivideEq) scalarDivideEq<double>;
+}
+%enddef
+
+ADD_VEC_OPERATOR_METHODS(SimTK::Vec<2>)
+
+ADD_VEC_OPERATOR_METHODS(SimTK::Vec<3>)
+
+ADD_VEC_OPERATOR_METHODS(SimTK::Vec<4>)
+
+ADD_VEC_OPERATOR_METHODS(SimTK::Vec<6>)
 
 // Mat33
 %include <SWIGSimTK/Mat.h>
