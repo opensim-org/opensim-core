@@ -576,7 +576,6 @@ protected:
     Property(Property&&) = default;
     Property& operator=(const Property&) = default;
     Property& operator=(Property&&) = default;
-    /** @cond **/ // Hide from Doxygen.
     // This is the interface that SimpleProperty and ObjectProperty must
     // implement.
     // Base class verifies that 0 <= index < size(), and for append operations
@@ -586,7 +585,7 @@ protected:
     virtual void setValueVirtual(int index, const T& value) = 0;
     virtual int appendValueVirtual(const T& value) = 0;
     virtual int adoptAndAppendValueVirtual(T* value) = 0;
-    /** @endcond **/
+
 };
 
 

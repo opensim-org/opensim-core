@@ -402,7 +402,6 @@ public:
     };
 
     /// @name Create partial trajectory from a states Storage
-    /// @{
     /** Create a partial trajectory of States from a states Storage
      * object. The resulting StatesTrajectory will restore continuous state
      * variable values, but not discrete state variable values, modeling
@@ -494,7 +493,6 @@ public:
      * default values for `allowMissingColumns` and `allowExtraColumns`. */
     static StatesTrajectory createFromStatesStorage(const Model& model,
             const std::string& filepath);
-    /// @}
 };
 
 } // namespace

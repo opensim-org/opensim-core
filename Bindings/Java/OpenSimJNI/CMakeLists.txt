@@ -32,6 +32,7 @@ function(OpenSimGenerateJavaWrapper
         COMMAND ${CMAKE_COMMAND} -E remove ${CMAKE_CURRENT_BINARY_DIR}/src/${NAME}/*
         COMMAND ${SWIG_EXECUTABLE}
             -v # verbose
+            -doxygen #translate doxugen to .java files
             -o ${OUTPUT_CXX_FILE}
             -outdir ${CMAKE_CURRENT_BINARY_DIR}/src/${NAME}
             ${_swig_common_args}
