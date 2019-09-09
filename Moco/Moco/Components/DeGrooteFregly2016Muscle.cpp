@@ -34,6 +34,21 @@ const std::string
         DeGrooteFregly2016Muscle::RESIDUAL_NORMALIZED_TENDON_FORCE_NAME(
                 "implicitresidual_normalized_tendon_force");
 
+// We must define these variables in some compilation unit (pre-C++17).
+// https://stackoverflow.com/questions/40690260/undefined-reference-error-for-static-constexpr-member?noredirect=1&lq=1
+constexpr double DeGrooteFregly2016Muscle::b11;
+constexpr double DeGrooteFregly2016Muscle::b21;
+constexpr double DeGrooteFregly2016Muscle::b31;
+constexpr double DeGrooteFregly2016Muscle::b41;
+constexpr double DeGrooteFregly2016Muscle::b12;
+constexpr double DeGrooteFregly2016Muscle::b22;
+constexpr double DeGrooteFregly2016Muscle::b32;
+constexpr double DeGrooteFregly2016Muscle::b42;
+constexpr double DeGrooteFregly2016Muscle::b13;
+constexpr double DeGrooteFregly2016Muscle::b23;
+constexpr double DeGrooteFregly2016Muscle::b33;
+constexpr double DeGrooteFregly2016Muscle::b43;
+
 void DeGrooteFregly2016Muscle::constructProperties() {
     constructProperty_activation_time_constant(0.015);
     constructProperty_deactivation_time_constant(0.060);
@@ -535,16 +550,13 @@ void DeGrooteFregly2016Muscle::computeInitialFiberEquilibrium(
                 return calcTendonForceMultiplier(normTendonLength);
     };
 
-    auto calcResidual = [this, &calcNormTendonForceFromNormFiberLength,
-                                &muscleTendonLength, &muscleTendonVelocity,
-                                &normTendonForceDerivative, &activation,
-                                &mli, &fvi,
+    auto calcResidual = [this, &muscleTendonLength, &muscleTendonVelocity,
+                                &normTendonForceDerivative, &activation, &mli,
+                                &fvi,
                                 &mdi](const SimTK::Real& normTendonForce) {
-        calcMuscleLengthInfoHelper(
-                muscleTendonLength, normTendonForce, mli);
+        calcMuscleLengthInfoHelper(muscleTendonLength, normTendonForce, mli);
         calcFiberVelocityInfoHelper(muscleTendonVelocity, activation,
-                normTendonForce, normTendonForceDerivative, false, mli, 
-                fvi);
+                normTendonForce, normTendonForceDerivative, false, mli, fvi);
         calcMuscleDynamicsInfoHelper(activation, normTendonForce,
                 muscleTendonVelocity, mli, fvi, mdi);
 
