@@ -248,7 +248,7 @@ The resulting finite-dimensional NLP is as follows:
          & \bar{x}_i = (x_{i-1} + x_i)/2 & i = 1, \ldots, n \\
          & 0 = \phi(q_i)  & i = 0, \ldots, n\\
          & 0 = \dot{\phi}(q_i, u_i, p) = G(q_i, p) u_i  & i = 0, \ldots, n\\
-         & 0 = \ddot{\phi}(q_i, u_i, f_{\textrm{mb}}(t, y, x, \lambda, p), p) = G(q_i, p) f_{\textrm{mb}}(t, y, x, \lambda, p) + \dot{G}(q_i, p) u_i  & i = 0, \ldots, n\\
+         & 0 = \ddot{\phi}(t_i, y_i, x_i, \lambda_i, p) = G(q_i, p) f_{\textrm{mb}}(t_i, y_i, x_i, \lambda_i, p) + \dot{G}(q_i, p) u_i  & i = 0, \ldots, n\\
          & g_{L} \leq g(t_i, y_i, x_{i}, p) \leq g_{U}  & i = 0, \ldots, n\\
          & V_{L,k} \leq V_k(t_0, t_f, y_0, y_f, x_{0}, x_{f}, \lambda_0, \lambda_f, p, S_{e,k}) \leq V_{U,k} \quad S_{e,j} = \sum_{i=1}^{n} \textrm{simpson}_i(s_{e,j}(t, y, x, \lambda, p)) & k = 1, \ldots, K \\
          \mbox{with respect to} \quad
@@ -285,7 +285,7 @@ by the equations:
 \f[
     \begin{alignat*}{2}
          & 0 = \dot{\phi}(q, u, p) = G(q, p) u\\
-         & 0 = \ddot{\phi}(q, u, f_{\textrm{mb}}(t, y, x, \lambda, p), p) = G(q, p) f_{\textrm{mb}}(t, y, x, \lambda, p) + \dot{G}(q, p) u \\
+         & 0 = \ddot{\phi}(t, y, x, \lambda, p) = G(q, p) f_{\textrm{mb}}(t, y, x, \lambda, p) + \dot{G}(q, p) u \\
     \end{alignat*}
 \f]
 
