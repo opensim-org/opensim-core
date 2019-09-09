@@ -7,19 +7,8 @@ endif()
 
 # Install.
 # --------
-install(DIRECTORY examples/ DESTINATION "${OPENSIM_INSTALL_MATLABEXDIR}")
-install(DIRECTORY Dynamic_Walking_Challenge
-        DESTINATION "${OPENSIM_INSTALL_MATLABEXDIR}"
-        # These files have not yet been updated for 4.0:
-        PATTERN "DesignMainStarter.m" EXCLUDE
-        PATTERN "DesignMainStarterWithControls.m" EXCLUDE
-        PATTERN "IntegrateOpenSimPlant.m" EXCLUDE
-        PATTERN "Main_WalkerForwardSim.m" EXCLUDE
-        PATTERN "Main_WalkerForwardSimWithControls.m" EXCLUDE
-        PATTERN "OpenSimPlantControlsFunction.m" EXCLUDE
-        PATTERN "OpenSimPlantFunction.m" EXCLUDE
-        PATTERN "PlotOpenSimData.m" EXCLUDE
-        )
+install(DIRECTORY examples/ DESTINATION "${OPENSIM_INSTALL_MATLABEXDIR}/Examples")
+install(DIRECTORY Dynamic_Walking_Challenge DESTINATION "${OPENSIM_INSTALL_MATLABEXDIR}")
 install(DIRECTORY Hopper_Device DESTINATION "${OPENSIM_INSTALL_MATLABEXDIR}")
 install(DIRECTORY Utilities DESTINATION "${OPENSIM_INSTALL_MATLABEXDIR}")
 install(DIRECTORY OpenSenseExampleFiles DESTINATION "${OPENSIM_INSTALL_MATLABEXDIR}")
