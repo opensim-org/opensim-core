@@ -270,7 +270,9 @@ The resulting finite-dimensional NLP is as follows:
 \f]
 
 The explicit multibody dynamics function \f$ f_{\textrm{mb}} \f$ is the same as
-in Trapezoidal transcription. The \f$ G(\bar{q}_i, p)^T \bar{\gamma}_i \f$ term 
+in Trapezoidal transcription.
+
+The \f$ G(\bar{q}_i, p)^T \bar{\gamma}_i \f$ term 
 represents a velocity correction that is necessary to impose when enforcing 
 derivatives of kinematic constraints in the NLP. The additional variables 
 \f$ \bar{\gamma}_i \f$ help avoid problems becoming overconstrained, and the 
@@ -283,9 +285,13 @@ by the equations:
 \f[
     \begin{alignat*}{2}
          & 0 = \dot{\phi}(q, u, p) = G(q, p) u\\
-         & 0 = \ddot{\phi}(q, u, \dot{u}, p) = G(q, p) \dot{u} + \dot{G}(q, p) u \\
+         & 0 = \ddot{\phi}(q, u, f_{\textrm{mb}}(t, y, x, \lambda, p), p) = G(q, p) f_{\textrm{mb}}(t, y, x, \lambda, p) + \dot{G}(q, p) u \\
     \end{alignat*}
 \f]
+
+The explicit multibody dynamics function is used here where \f$ \dot{u} \f$ 
+would be if it were a continuous variable in the problem (as is in implicit mode,
+see below).
 
 Even though OpenSim supports non-holonomic constraints (that is,
 \f$ \nu(q, u, p) = 0 \f$), we only support holonomic constraints; that is,
