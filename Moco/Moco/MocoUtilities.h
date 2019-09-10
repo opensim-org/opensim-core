@@ -441,7 +441,7 @@ OSIMMOCO_API void checkRedundantLabels(std::vector<std::string> labels);
 /// descendents from the provided component.
 template <typename T = double>
 std::vector<SimTK::ReferencePtr<const Output<T>>> getModelOutputReferencePtrs(
-        const Component& component, const std::regex& pattern,
+        const Component& component, const std::string& pattern,
         bool includeDescendents = false) {
 
     // Initialize outputs array.
@@ -475,7 +475,7 @@ std::vector<SimTK::ReferencePtr<const Output<T>>> getModelOutputReferencePtrs(
         }
     };
     
-    helper(component, pattern, includeDescendents, outputs);
+    helper(component, std::regex(pattern), includeDescendents, outputs);
     return outputs;
 }
 
