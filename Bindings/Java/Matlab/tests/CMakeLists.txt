@@ -103,5 +103,5 @@ file(COPY "${OPENSIM_SHARED_TEST_FILES_DIR}/arm26.osim"
      DESTINATION "${matlab_output_dir}")
 file(COPY "${OPENSIM_SHARED_TEST_FILES_DIR}/walking2.c3d"
      DESTINATION "${matlab_output_dir}")
-file(COPY "${PROJECT_SOURCE_DIR}/Bindings/Java/Matlab/Dynamic_Walking_Challenge/Dynamic_Walker_Simulation"
+file(COPY "${PROJECT_SOURCE_DIR}/Bindings/Java/Matlab/Dynamic_Walking_Tutorials/Dynamic_Walker_Simulation"
      DESTINATION "${matlab_output_dir}")
