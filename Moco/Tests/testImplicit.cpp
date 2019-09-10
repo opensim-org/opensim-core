@@ -326,9 +326,14 @@ public:
             "Value of the default state returned by initSystem().");
     OpenSim_DECLARE_OUTPUT(implicitresidual_foo, double, getImplicitResidual,
             SimTK::Stage::Dynamics);
+    OpenSim_DECLARE_OUTPUT(implicitenabled_foo, bool, getImplicitEnabled,
+            SimTK::Stage::Model);
     MyAuxiliaryImplicitDynamics() {
         setName("implicit_auxdyn");
         constructProperty_default_foo(0.5);
+    }
+    bool getImplicitEnabled(const SimTK::State&) const {
+        return true;
     }
     double getImplicitResidual(const SimTK::State& s) const {
 
@@ -409,14 +414,14 @@ TEST_CASE("Auxiliary implicit dynamics") {
        MocoStudy study;
        auto& problem = study.updProblem();
        auto model = OpenSim::make_unique<Model>();
-       auto* implicit_auxdyn = new MyAuxiliaryImplicitDynamics();
-       model->addComponent(implicit_auxdyn);
-       model->initSystem();
-       model->printSubcomponentInfo();
+       model->addComponent(new MyAuxiliaryImplicitDynamics());
        problem.setModel(std::move(model));
        problem.setTimeBounds(0, 1);
-       problem.setStateInfo("/implicit_auxdyn/foo", {-10, 10}, 0.0);
+       problem.setStateInfo("/implicit_auxdyn/foo", {0, 3}, 1.0);
        auto solution = study.solve();
-       // TODO: what's the test?
+       const int N = solution.getNumTimes();
+       const double final = solution.getStatesTrajectory().getElt(N-1, 0);
+       // Correct answer obtained from Matlab with ode45.
+       CHECK(final == Approx(1.732).margin(1e-3));
     }
 }

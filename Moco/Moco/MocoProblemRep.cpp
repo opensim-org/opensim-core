@@ -427,24 +427,28 @@ void MocoProblemRep::initialize() {
     //     }
     // }
 
+
     // TODO: move these to the top.
     m_implicit_residual_refs.clear();
     m_implicit_component_refs.clear();
 
     // Muscle-tendon equilibrium residual outputs.
-    m_implicit_residual_refs = getModelOutputReferencePtrs<double>(
+    const auto allImplicitResiduals = getModelOutputReferencePtrs<double>(
             m_model_disabled_constraints, "^implicitresidual_.*", true);
 
-    for (const auto& output : m_implicit_residual_refs) {
+    for (const auto& output : allImplicitResiduals) {
         const auto& component = output->getOwner();
-        const auto nameStart = output->getName().find("implicitresidual_");
+        const auto nameStart = output->getName().find("_") + 1;
         const std::string stateName = output->getName().substr(nameStart);
-        std::cout << "DEBUG stateName " << stateName << std::endl;
-        m_implicit_component_refs.emplace_back(
-                "implicitderiv_" + stateName, &component);
+        bool enabled = component.getOutputValue<bool>(
+                m_state_disabled_constraints[0],
+                "implicitenabled_" + stateName);
+        if (enabled) {
+            m_implicit_residual_refs.emplace_back(output.get());
+            m_implicit_component_refs.emplace_back(
+                    "implicitderiv_" + stateName, &component);
+        }
     }
-    std::cout << "DEBUG EXIT" << std::endl;
-    std::exit(-1);
 
 
     // Parameters.

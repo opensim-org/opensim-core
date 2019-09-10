@@ -113,6 +113,8 @@ public:
 
     OpenSim_DECLARE_OUTPUT(implicitresidual_normalized_tendon_force, double,
             getImplicitResidualNormalizedTendonForce, SimTK::Stage::Dynamics);
+    OpenSim_DECLARE_OUTPUT(implicitenabled_normalized_tendon_force, bool,
+            getImplicitEnabledNormalizedTendonForce, SimTK::Stage::Model);
 
     DeGrooteFregly2016Muscle() { constructProperties(); }
 
@@ -190,6 +192,10 @@ public:
 
     /// @name Get methods.
     /// @{
+
+    bool getImplicitEnabledNormalizedTendonForce(const SimTK::State&) const {
+        return !m_isTendonDynamicsExplicit;
+    }
     /// Compute the muscle-tendon force equilibrium residual value when using
     /// implicit contraction dynamics with normalized tendon force as the
     /// state.
