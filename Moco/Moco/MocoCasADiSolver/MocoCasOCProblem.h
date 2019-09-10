@@ -518,11 +518,12 @@ private:
         if (getNumAuxiliaryResidualEquations()) {
             const auto& implicitRefs =
                     mocoProblemRep->getImplicitComponentReferencePtrs();
+            const int numAccels = getNumAccelerations();
             for (int i = 0; i < implicitRefs.size(); ++i) {
                 const auto& comp = implicitRefs[i].second.getRef();
                 comp.setDiscreteVariableValue(simtkStateDisabledConstraints,
                         implicitRefs[i].first,
-                        *(derivatives.ptr() + getNumAccelerations() + i));
+                        *(derivatives.ptr() + numAccels + i));
             }
         }
 
