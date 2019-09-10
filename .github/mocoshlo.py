@@ -45,6 +45,8 @@ parser.add_argument('--container', type=str, default=None,
 parser.add_argument('--exclude', type=str, default=None,
                     help="Exclude files from copying to the cluster. This is "
                          "passed onto rsync --exclude.")
+parser.add_argument('--parallelism', type=int, default=8,
+                    help="Number of parallel threads. Default: 8.")
 
 # TODO windows
 # TODO initial configuring gdrive on Sherlock.
@@ -124,7 +126,7 @@ batch = f"""#!/bin/bash
 #SBATCH --mail-user={sunetid}@stanford.edu
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=8
+#SBATCH --cpus-per-task={args.parallelism}
 #SBATCH --partition=owners,normal
 module load gcc/8.1.0
 
