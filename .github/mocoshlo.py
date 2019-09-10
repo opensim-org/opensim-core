@@ -140,6 +140,7 @@ singularity exec {container} {command}
 module load system gdrive
 
 # TODO: What happens when we hit max files to list (--max)?
+# TODO: Sometimes, we create duplicate opensim-moco folders in Google Drive.
 opensim_moco_folder_id=$(gdrive list --absolute | grep 'opensim-moco ' | cut -d" " -f1)
 if [[ -z "$opensim_moco_folder_id" ]]; then
     echo "Creating opensim-moco folder."
