@@ -535,21 +535,6 @@ void DeGrooteFregly2016Muscle::computeInitialFiberEquilibrium(
     FiberVelocityInfo fvi;
     MuscleDynamicsInfo mdi;
 
-    auto calcNormTendonForceFromNormFiberLength =
-            [this, &muscleTendonLength](
-                    const SimTK::Real& normFiberLength) {
-                const auto& fiberLength =
-                        normFiberLength * get_optimal_fiber_length();
-                const auto& fiberLengthAlongTendon = sqrt(
-                        SimTK::square(fiberLength) - m_squareFiberWidth);
-                const auto& tendonLength =
-                        muscleTendonLength - fiberLengthAlongTendon;
-                const auto& normTendonLength =
-                        tendonLength / get_tendon_slack_length();
-
-                return calcTendonForceMultiplier(normTendonLength);
-    };
-
     auto calcResidual = [this, &muscleTendonLength, &muscleTendonVelocity,
                                 &normTendonForceDerivative, &activation, &mli,
                                 &fvi,
@@ -839,6 +824,7 @@ DeGrooteFregly2016Muscle::estimateMuscleFiberState(const double activation,
 
 double DeGrooteFregly2016Muscle::getImplicitResidualNormalizedTendonForce(
         const SimTK::State& s) const {
+    // TODO: What to do if implicit is disabled?
     // Recompute residual if cache is invalid.
     if (!isCacheVariableValid(
                 s, "implicitresidual_" + STATE_NORMALIZED_TENDON_FORCE_NAME)) {
