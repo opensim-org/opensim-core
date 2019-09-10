@@ -1,7 +1,7 @@
 %% Test for the walker model scripts
 clear all; close all; clc;
 %% Move to the User Functions directory
-cd('Dynamic_Walker_Simulation/UserFunctions')
+cd('Dynamic_Walker_Challenge/UserFunctions')
 
 %% Get a Structure with each 'Add' script in the folder;
 scriptNames = dir('Add*');
