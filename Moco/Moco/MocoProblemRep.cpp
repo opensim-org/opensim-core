@@ -25,7 +25,6 @@
 #include "MocoProblemInfo.h"
 #include <regex>
 #include <unordered_set>
-#include "Components/DeGrooteFregly2016Muscle.h"
 
 using namespace OpenSim;
 
@@ -403,34 +402,50 @@ void MocoProblemRep::initialize() {
 
     // Additional information for DeGrooteFregly2016Muscle components that have
     // tendon compliance enabled.
-    m_num_auxiliary_residual_equations = 0;
-    for (const auto& dgfmuscle : m_model_disabled_constraints
-            .getComponentList<DeGrooteFregly2016Muscle>()) {
-        if (!dgfmuscle.get_ignore_tendon_compliance()) {
-            // Normalized tendon force state info.
-            const std::string stateName = 
-                    dgfmuscle.getAbsolutePathString() + "/" + 
-                    dgfmuscle.getNormalizedTendonForceStateName();
-            auto& stateInfo = m_state_infos[stateName];
-            if (stateInfo.getName().empty()) { stateInfo.setName(stateName); }
-            if (!stateInfo.getBounds().isSet()) {
-                stateInfo.setBounds({dgfmuscle.getMinNormalizedTendonForce(), 
-                                     dgfmuscle.getMaxNormalizedTendonForce()});
-            }
+    // TODO
+    // m_num_auxiliary_residual_equations = 0;
+    // for (const auto& dgfmuscle : m_model_disabled_constraints
+    //         .getComponentList<DeGrooteFregly2016Muscle>()) {
+    //     if (!dgfmuscle.get_ignore_tendon_compliance()) {
+    //         // Normalized tendon force state info.
+    //         const std::string stateName =
+    //                 dgfmuscle.getAbsolutePathString() + "/" +
+    //                 dgfmuscle.getNormalizedTendonForceStateName();
+    //         auto& stateInfo = m_state_infos[stateName];
+    //         if (stateInfo.getName().empty()) { stateInfo.setName(stateName); }
+    //         if (!stateInfo.getBounds().isSet()) {
+    //             stateInfo.setBounds({dgfmuscle.getMinNormalizedTendonForce(),
+    //                                  dgfmuscle.getMaxNormalizedTendonForce()});
+    //         }
+    //
+    //         if (dgfmuscle.get_tendon_compliance_dynamics_mode() == "implicit") {
+    //             const auto& derivName =
+    //                     dgfmuscle.getImplicitDynamicsDerivativeName();
+    //             ++m_num_auxiliary_residual_equations;
+    //             m_implicit_component_refs.emplace_back(derivName, &dgfmuscle);
+    //         }
+    //     }
+    // }
 
-            if (dgfmuscle.get_tendon_compliance_dynamics_mode() == "implicit") {
-                const auto& derivName =
-                        dgfmuscle.getImplicitDynamicsDerivativeName();
-                ++m_num_auxiliary_residual_equations;
-                m_implicit_component_refs.emplace_back(derivName, &dgfmuscle); 
-            }
-        }
-    }
+    // TODO: move these to the top.
+    m_implicit_residual_refs.clear();
+    m_implicit_component_refs.clear();
 
     // Muscle-tendon equilibrium residual outputs.
-    std::regex re("^implicitresidual_.*");
     m_implicit_residual_refs = getModelOutputReferencePtrs<double>(
-            m_model_disabled_constraints, re, true);
+            m_model_disabled_constraints, "^implicitresidual_.*", true);
+
+    for (const auto& output : m_implicit_residual_refs) {
+        const auto& component = output->getOwner();
+        const auto nameStart = output->getName().find("implicitresidual_");
+        const std::string stateName = output->getName().substr(nameStart);
+        std::cout << "DEBUG stateName " << stateName << std::endl;
+        m_implicit_component_refs.emplace_back(
+                "implicitderiv_" + stateName, &component);
+    }
+    std::cout << "DEBUG EXIT" << std::endl;
+    std::exit(-1);
+
 
     // Parameters.
     // -----------
