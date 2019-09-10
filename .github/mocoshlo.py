@@ -53,6 +53,7 @@ parser.add_argument('--parallelism', type=int, default=4,
 # TODO building a docker container from a branch (as a separate step?).
 # TODO allow customizing where files are saved in Google Drive.
 # TODO: support ignoring directories when copying (venv).
+# TODO: memory seems fixed at 4GB. use mem-per-cpu=4000M?
 
 
 args = parser.parse_args()
@@ -127,6 +128,7 @@ batch = f"""#!/bin/bash
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task={args.parallelism}
+#SBATCH --mem-per-cpu=2000M
 #SBATCH --partition=owners,normal
 module load gcc/8.1.0
 
