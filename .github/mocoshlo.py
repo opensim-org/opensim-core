@@ -45,8 +45,8 @@ parser.add_argument('--container', type=str, default=None,
 parser.add_argument('--exclude', type=str, default=None,
                     help="Exclude files from copying to the cluster. This is "
                          "passed onto rsync --exclude.")
-parser.add_argument('--parallelism', type=int, default=8,
-                    help="Number of parallel threads. Default: 8.")
+parser.add_argument('--parallelism', type=int, default=4,
+                    help="Number of parallel threads. Default: 4.")
 
 # TODO windows
 # TODO initial configuring gdrive on Sherlock.
