@@ -96,7 +96,7 @@ if(WITH_BTK)
     OpenSimAddMatlabTest(testOsimC3D testOsimC3D.m)
 endif()
 OpenSimAddMatlabTest(testOsimList2MatlabCell testOsimList2MatlabCell.m)
-OpenSimAddMatlabTest(WalkerAddScripts testWalkerScripts.m)
+OpenSimAddMatlabTest(testWalkerScripts testWalkerScripts.m)
 
 # Copy resources.
 file(COPY "${OPENSIM_SHARED_TEST_FILES_DIR}/arm26.osim"

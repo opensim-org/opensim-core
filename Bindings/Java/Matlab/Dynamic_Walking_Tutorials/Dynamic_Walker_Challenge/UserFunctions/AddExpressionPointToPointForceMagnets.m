@@ -64,8 +64,6 @@ walkerModel.addComponent(rightKneeMagnet);
 
 % TODO: Add the Left Knee Magnet force to the Model
 
-% ***** WRITE YOUR CODE HERE:  *****
-
 %% Finalize connections
 walkerModel.finalizeConnections()
 
