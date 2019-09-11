@@ -30,19 +30,20 @@ endTime   = 2;
 visulizeSimulation = false;
 plotResults = true;
 
-%% Define the intial coordinate values and speeds for the model
+%% Define the intial coordinate values and speeds for the model. Translations
+% coordinates are in meters, rotations are in radians. 
 pelvisTYValue = 0.8350;
 pelvisTYSpeed = 0;
 pelvisTXValue = 0;
 pelvisTXSpeed  = 0;
-rHipValue = 0.5236;
-rHipSpeed = 0;
-lHipValue = -0.175;
-lHipSpeed = 0;
-rKneeValue = -0.5236;
-rKneeSpeed = 0;
-rKneeValue = -0.5236;
-rKneeSpeed = 0;
+rHipValue = deg2rad(30.0);
+rHipSpeed = deg2rad(0);
+lHipValue = deg2rad(-10);
+lHipSpeed = deg2rad(0);
+rKneeValue = deg2rad(-30.0);
+rKneeSpeed = deg2rad(0);
+rKneeValue = deg2rad(-30.0);
+rKneeSpeed = deg2rad(0);
 
 %% Import OpenSim Libraries
 import org.opensim.modeling.*;
