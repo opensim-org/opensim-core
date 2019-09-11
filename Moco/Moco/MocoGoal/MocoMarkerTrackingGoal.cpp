@@ -80,7 +80,7 @@ void MocoMarkerTrackingGoal::initializeOnModelImpl(const Model& model) const {
     setNumIntegralsAndOutputs(1, 1);
 }
 
- void MocoMarkerTrackingGoal::calcIntegrandImpl(const SimTK::State &state,
+ void MocoMarkerTrackingGoal::calcIntegrandImpl(const SimTK::State& state,
         double& integrand) const {
      const auto& time = state.getTime();
      getModel().realizePosition(state);
