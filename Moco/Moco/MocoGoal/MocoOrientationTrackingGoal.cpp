@@ -29,7 +29,7 @@
 using namespace OpenSim;
 
 void MocoOrientationTrackingGoal::initializeOnModelImpl(const Model& model)
-const {
+        const {
     // Get the reference data.
     TimeSeriesTable_<Rotation> rotationTable;
     std::vector<std::string> pathsToUse;
@@ -65,11 +65,11 @@ const {
                         labels.end(),
                     Exception,
                     format("Expected frame_paths to match at least one of the "
-                           "column labels in the rotation reference, but frame "
-                           "path '%s' not found in the reference labels.", path));
+                       "column labels in the rotation reference, but frame "
+                       "path '%s' not found in the reference labels.", path));
                 pathsToUse.push_back(path);
                 rotationTable.appendColumn(path,
-                   rotationTableToUse.getDependentColumn(path));
+                    rotationTableToUse.getDependentColumn(path));
             }
         }
 
@@ -87,8 +87,8 @@ const {
             OPENSIM_THROW_IF_FRMOBJ(std::count(tableStateNames.begin(),
                    tableStateNames.end(), name) == 0,
                 Exception, format("Expected the reference state names to match "
-                                  "the model state names, but reference state %s not found "
-                                  "in the model.", name));
+                      "the model state names, but reference state %s not found "
+                      "in the model.", name));
         }
 
         // Create the StatesTrajectory.
@@ -145,7 +145,7 @@ const {
     // This matrix has the input table number of columns times four to hold all
     // four quaternion elements per rotation.
     SimTK::Matrix mat((int)rotationTable.getNumRows(),
-                      4 * (int)rotationTable.getNumColumns());
+                      4*(int)rotationTable.getNumColumns());
     // Column labels are necessary for creating the GCVSplineSet from the table,
     // so we'll label each column using the frame path and the quaternion
     // element (e.g. "<frame-path>/quaternion_e0" for the first quaternion
@@ -177,7 +177,7 @@ const {
 }
 
 void MocoOrientationTrackingGoal::calcIntegrandImpl(const SimTK::State& state,
-         double &integrand) const {
+        double& integrand) const {
     const auto& time = state.getTime();
     getModel().realizePosition(state);
     SimTK::Vector timeVec(1, time);
@@ -199,10 +199,10 @@ void MocoOrientationTrackingGoal::calcIntegrandImpl(const SimTK::State& state,
         // seems to be sufficient for the purposes of this cost. 
         // https://keithmaggio.wordpress.com/2011/02/15/math-magician-lerp-slerp-and-nlerp/
         const SimTK::Quaternion e(
-            m_ref_splines[4 * iframe].calcValue(timeVec),
-            m_ref_splines[4 * iframe + 1].calcValue(timeVec),
-            m_ref_splines[4 * iframe + 2].calcValue(timeVec),
-            m_ref_splines[4 * iframe + 3].calcValue(timeVec));
+            m_ref_splines[4*iframe].calcValue(timeVec),
+            m_ref_splines[4*iframe + 1].calcValue(timeVec),
+            m_ref_splines[4*iframe + 2].calcValue(timeVec),
+            m_ref_splines[4*iframe + 3].calcValue(timeVec));
         // Construct a Rotation object from which we'll calcuation an angle-axis 
         // representation of the current orientation error.
         const Rotation R_GD(e);

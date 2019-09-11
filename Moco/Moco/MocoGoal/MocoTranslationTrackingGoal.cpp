@@ -28,7 +28,7 @@ using namespace OpenSim;
 using SimTK::Vec3;
 
 void MocoTranslationTrackingGoal::initializeOnModelImpl(const Model& model)
-const {
+        const {
     // Get the reference data.
     TimeSeriesTableVec3 translationTable;
     std::vector<std::string> pathsToUse;
@@ -55,8 +55,8 @@ const {
             translationTable = translationTableToUse;
         } else {
             translationTable = TimeSeriesTableVec3(
-                    translationTableToUse.getIndependentColumn());
-            const auto &labels = translationTableToUse.getColumnLabels();
+                translationTableToUse.getIndependentColumn());
+            const auto& labels = translationTableToUse.getColumnLabels();
             for (int i = 0; i < getProperty_frame_paths().size(); ++i) {
                 const auto& path = get_frame_paths(i);
                 OPENSIM_THROW_IF_FRMOBJ(
@@ -64,8 +64,8 @@ const {
                         labels.end(),
                     Exception,
                     format("Expected frame_paths to match at least one of the "
-                           "column labels in the translation reference, but frame "
-                           "path '%s' not found in the reference labels.", path));
+                       "column labels in the translation reference, but frame "
+                       "path '%s' not found in the reference labels.", path));
                 pathsToUse.push_back(path);
                 translationTable.appendColumn(path,
                     translationTableToUse.getDependentColumn(path));
@@ -84,10 +84,10 @@ const {
         for (int i = 0; i < modelStateNames.getSize(); ++i) {
             const auto& name = modelStateNames[i];
             OPENSIM_THROW_IF_FRMOBJ(std::count(tableStateNames.begin(),
-                                               tableStateNames.end(), name) == 0,
+                   tableStateNames.end(), name) == 0,
                 Exception, format("Expected the reference state names to match "
-                                  "the model state names, but reference state %s not found "
-                                  "in the model.", name));
+                              "the model state names, but reference state %s not found "
+                              "in the model.", name));
         }
 
         // Create the StatesTrajectory.
@@ -145,7 +145,7 @@ const {
     // This matrix has the input table number of columns times three to hold all
     // position elements per translation.
     SimTK::Matrix mat((int)translationTable.getNumRows(),
-                      3 * (int)translationTable.getNumColumns());
+                      3*(int)translationTable.getNumColumns());
     // Column labels are necessary for creating the GCVSplineSet from the table,
     // so we'll label each column using the frame path and the position vector
     // element (e.g. "<frame-path>/position_p0" for the first position vector
@@ -177,15 +177,15 @@ const {
 }
 
 void MocoTranslationTrackingGoal::calcIntegrandImpl(const SimTK::State& state,
-                                                    double& integrand) const {
+        double& integrand) const {
     const auto& time = state.getTime();
     getModel().realizePosition(state);
     SimTK::Vector timeVec(1, time);
 
     integrand = 0;
     for (int iframe = 0; iframe < (int)m_model_frames.size(); ++iframe) {
-        const auto &p_model =
-                m_model_frames[iframe]->getPositionInGround(state);
+        const auto& p_model =
+            m_model_frames[iframe]->getPositionInGround(state);
 
         // Compute position error.
         Vec3 p_ref(0.0);

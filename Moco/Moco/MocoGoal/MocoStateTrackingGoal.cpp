@@ -40,8 +40,8 @@ void MocoStateTrackingGoal::initializeOnModelImpl(const Model& model) const {
         const auto& weightName = get_state_weights().get(i).getName();
         if (allSysYIndices.count(weightName) == 0) {
             OPENSIM_THROW_FRMOBJ(Exception,
-                 "Weight provided with name '" + weightName + "' but this is "
-                 "not a recognized state.");
+                "Weight provided with name '" + weightName + "' but this is "
+                "not a recognized state.");
         }
     }
 

@@ -64,10 +64,10 @@ void MocoPeriodicityGoal::initializeOnModelImpl(const Model& model) const {
     for (int i = 0; i < nStatePairs; ++i) {
         const auto path1 = get_state_pairs(i).get_initial_variable();
         OPENSIM_THROW_IF(allSysYIndices.count(path1) == 0,
-                 Exception, format("Could not find state '%s'.", path1));
+                Exception, format("Could not find state '%s'.", path1));
         const auto path2 = get_state_pairs(i).get_final_variable();
         OPENSIM_THROW_IF(allSysYIndices.count(path2) == 0,
-                 Exception, format("Could not find state '%s'.", path2));
+                Exception, format("Could not find state '%s'.", path2));
         int stateIndex1 = allSysYIndices[path1];
         int stateIndex2 = allSysYIndices[path2];
         m_state_names.emplace_back(path1, path2);
@@ -80,10 +80,10 @@ void MocoPeriodicityGoal::initializeOnModelImpl(const Model& model) const {
     for (int i = 0; i < nControlPairs; ++i) {
         const auto path1 = get_control_pairs(i).get_initial_variable();
         OPENSIM_THROW_IF(systemControlIndexMap.count(path1) == 0,
-                 Exception, format("Could not find control '%s'.", path1));
+                Exception, format("Could not find control '%s'.", path1));
         const auto path2 = get_control_pairs(i).get_final_variable();
         OPENSIM_THROW_IF(systemControlIndexMap.count(path2) == 0,
-                 Exception, format("Could not find control '%s'.", path2));
+                Exception, format("Could not find control '%s'.", path2));
         int controlIndex1 = systemControlIndexMap[path1];
         int controlIndex2 = systemControlIndexMap[path2];
         m_control_names.emplace_back(path1, path2);
@@ -91,7 +91,7 @@ void MocoPeriodicityGoal::initializeOnModelImpl(const Model& model) const {
     }
 
     setNumIntegralsAndOutputs(0,
-            (int) m_indices_states.size() + (int) m_indices_controls.size());
+            (int)m_indices_states.size() + (int)m_indices_controls.size());
 }
 
 void MocoPeriodicityGoal::calcGoalImpl(
@@ -116,7 +116,7 @@ void MocoPeriodicityGoal::calcGoalImpl(
         goal[i+j] = initialControls[index_control.first] -
                 finalControls[index_control.second];
         if (getModeIsCost()) {
-            goal[i + j] = SimTK::square(goal[i + j]);
+            goal[i+j] = SimTK::square(goal[i + j]);
         }
         ++j;
     }

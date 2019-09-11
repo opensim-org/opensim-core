@@ -28,7 +28,7 @@ void MocoMarkerFinalGoal::initializeOnModelImpl(const Model& model) const {
 }
 
 void MocoMarkerFinalGoal::calcGoalImpl(
-        const GoalInput &input, SimTK::Vector& cost) const {
+        const GoalInput& input, SimTK::Vector& cost) const {
     getModel().realizePosition(input.final_state);
     const auto& actualLocation = m_point->getLocationInGround(input.final_state);
     cost[0] = (actualLocation - get_reference_location()).normSqr();

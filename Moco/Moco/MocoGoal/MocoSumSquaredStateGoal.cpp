@@ -33,6 +33,6 @@ void MocoSumSquaredStateGoal::initializeOnModelImpl(const Model& /*model*/) cons
 }
 
 void MocoSumSquaredStateGoal::calcIntegrandImpl(const SimTK::State& state,
-        double &integrand) const {
+        double& integrand) const {
     integrand = state.getY().normSqr();
 }
