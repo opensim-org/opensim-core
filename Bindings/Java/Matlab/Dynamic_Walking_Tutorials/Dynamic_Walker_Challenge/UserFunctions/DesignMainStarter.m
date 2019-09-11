@@ -25,13 +25,12 @@
 % -----------------------------------------------------------------------
 
 %% Set some properties for the simulation
-startTime = 0;
 endTime   = 2;
 visulizeSimulation = false;
 plotResults = true;
 
 %% Define the intial coordinate values and speeds for the model. Translations
-% coordinates are in meters, rotations are in radians. 
+% coordinates are in meters, rotations are in radians.
 pelvisTYValue = 0.8350;
 pelvisTYSpeed = 0;
 pelvisTXValue = 0;
