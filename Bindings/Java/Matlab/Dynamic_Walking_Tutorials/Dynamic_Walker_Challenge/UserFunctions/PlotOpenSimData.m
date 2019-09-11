@@ -1,127 +1,88 @@
-% ----------------------------------------------------------------------- 
-% The OpenSim API is a toolkit for musculoskeletal modeling and           
-% simulation. See http://opensim.stanford.edu and the NOTICE file         
-% for more information. OpenSim is developed at Stanford University       
-% and supported by the US National Institutes of Health (U54 GM072970,    
-% R24 HD065690) and by DARPA through the Warrior Web program.             
-%                                                                         
-% Copyright (c) 2005-2019 Stanford University and the Authors             
-% Author(s): Daniel A. Jacobs                                             
-%                                                                         
-% Licensed under the Apache License, Version 2.0 (the "License");         
-% you may not use this file except in compliance with the License.        
-% You may obtain a copy of the License at                                 
-% http://www.apache.org/licenses/LICENSE-2.0.                             
-%                                                                         
-% Unless required by applicable law or agreed to in writing, software     
-% distributed under the License is distributed on an "AS IS" BASIS,       
-% WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or         
-% implied. See the License for the specific language governing            
-% permissions and limitations under the License.                          
-% ----------------------------------------------------------------------- 
+%% PlotOpenSimData
+%   Plots the results of a Passive Dynamic Walker Simulation. In
+%   particular, the Pelvis Tx, Right Hip, and Right Knee Coordinates.
 
-% [figHandle, axisHandle] = PlotOpenSimData(dataStructure, xQuantity, yQuantities) 
-% creates a plot of the yQuantities vs the xQuantity using the supplied 
-% string names.
-%
-% Note: To create the appropriate data structure, please use
-% ReadOpenSimStorage or IntegrateOpenSimPlant before using this function
-%
-% Input:
-%   dataStructure: a structure of formatted data
-%       The stucture fields are:
-%           name: A char array identifier of the data
-%           nRows: the number of rows of data in the data field
-%           nColumns: the number of columns of data in the data field
-%           labels: an array of char arrays of names from the header file
-%           data: a nRows by nColumnss matrix of data values
-%   xQuantity: A char array of the name of an independent variable to plot
-%   yQuantities: A cell of the names of the dependent variables to plot
-%
-% Usage:
-%   PlotOpenSimData(outputData, 'time', {'Pelvis_tx'})
-%   PlotOpenSimData(outputData, 'time', {'Pelvis_tx', 'Pelvis_ty'})
 % -----------------------------------------------------------------------
-function [figHandle, axisHandle] = PlotOpenSimData(figHandle, dataStructure, ...
-    xQuantity, yQuantities)
+% The OpenSim API is a toolkit for musculoskeletal modeling and
+% simulation. See http://opensim.stanford.edu and the NOTICE file
+% for more information. OpenSim is developed at Stanford University
+% and supported by the US National Institutes of Health (U54 GM072970,
+% R24 HD065690) and by DARPA through the Warrior Web program.
+%
+% Copyright (c) 2005-2019 Stanford University and the Authors
+% Author(s): James Dunne
+%
+% Licensed under the Apache License, Version 2.0 (the "License");
+% you may not use this file except in compliance with the License.
+% You may obtain a copy of the License at
+% http://www.apache.org/licenses/LICENSE-2.0.
+%
+% Unless required by applicable law or agreed to in writing, software
+% distributed under the License is distributed on an "AS IS" BASIS,
+% WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+% implied. See the License for the specific language governing
+% permissions and limitations under the License.
+% -----------------------------------------------------------------------
+
+%% Import OpenSim Libraries
+import org.opensim.modeling.*
+
+%% Find states from Walker Simulation
+if ~isfile('ResultsFWD/simulation_states.sto')
+    warning('Cannot find ResultsFWD/simulation_states.sto, please select file')
+    [filename,pathname] = uigetfile('*.sto', 'Select simulation_states.sto file');
+    filepath = fullfile(pathname, filename);
+else
+    filepath = fullfile(cd, 'ResultsFWD/simulation_states.sto');
+end
+
+%% Use the OpenSim TimeSeriesTable to load the data into an OpenSim Table
+opensimTable = TimeSeriesTable(filepath);
+
+%% Get the relevent data from the file
+% Define the coordinates of interest by name
+coordinatesOfInterest = [{'Pelvis_tx/value'} {'RHip_rz/value'} {'RKnee_rz/value'}];
+% Pre-allocate some arrays
+plotData = zeros( opensimTable.getNumRows(), 3);
+timeArray = zeros(opensimTable.getNumRows(),1);
+
+% Get the column labels from the TimeSeriesTable
+labels = opensimTable.getColumnLabels();
+
+% Get the coordinate data
+for i = 0 : labels.size() - 1
+    for u = 1 : 3
+        if contains(char(labels.get(i)),coordinatesOfInterest{u})
+            for k = 0 : opensimTable.getNumRows() - 1
+                plotData(k+1,u) = opensimTable.getDependentColumnAtIndex(i).get(k);
+            end
+        end
+    end
+end
+
+% Get the time array
+for k = 0 : opensimTable.getNumRows() - 1
+    timeArray(k+1,1) = opensimTable.getIndependentColumn().get(k);
+end
+
+%% Generate plots for the data
 % Set up plot parameters
-colorOpts = {'b', 'g', 'r', 'c', 'm'};
-lineOpts = {'-', '-.','--', ':'};
-total = length(colorOpts)*length(lineOpts);
+colorOpts = {'b', 'g', 'r'};
 lineWidth = 2.5;
 
-% Error Check Structure
-if(~ischar(xQuantity))
-    error('PlotOpensimData:InvalidArgument', [...
-        '\tError in PlotOpensimData:\n', ...
-        '\tThe argument xQuantities should be a char array']);
-end
-if(~iscell(yQuantities))
-    error('PlotOpensimData:InvalidArgument', [...
-        '\tError in PlotOpensimData:\n', ...
-        '\tThe argument yQuantities should be a cell array of strings']);
-end
-if(~isfield(dataStructure, 'name'))
-    error('PlotOpensimData:InvalidArgument', [...
-        '\tError in PlotOpensimData:\n',...
-        '\tThe argument dataStructure does not have a name field.']);
-end
-if(~isfield(dataStructure, 'nRows'))
-    error('PlotOpensimData:InvalidArgument', [...
-        '\tError in PlotOpensimData:\n',...
-        '\tThe argument dataStructure does not have a nRows field.']);
-end
-if(~isfield(dataStructure, 'nColumns'))
-    error('PlotOpensimData:InvalidArgument', [...
-        '\tError in PlotOpensimData:\n',...
-        '\tThe argument dataStructure does not have a nColumns field.']);
-end
-if(~isfield(dataStructure, 'labels'))
-    error('PlotOpensimData:InvalidArgument', [...
-        '\tError in PlotOpensimData:\n',...
-        '\tThe argument dataStructure does not have a labels field.']);
-end
-if(~isfield(dataStructure, 'data'))
-    error('PlotOpensimData:InvalidArgument', [...
-        '\tError in PlotOpensimData:\n',...
-        '\tThe argument dataStructure does not have a data field.']);
-end
-
 % Create figure
-if(isempty(figHandle))
-    figHandle = figure;
-end
-axisHandle = gca();
-numCurrentLines = length(get(axisHandle, 'Children'));
+figHandle = figure;
 hold on
-
-% Add Data
-indx = strcmp(dataStructure.labels(:),xQuantity);
-for j = 1:1:length(yQuantities)
-    indy = contains(dataStructure.labels(:),[yQuantities{j} '/value']);
-        
-    if(~any(indy))
-        close(figHandle)
-        error('PlotOpensimData:InvalidArgument', [...
-            '\tError in PlotOpensimData:\n',...
-            '\tThe quantity %s is not in dataStructure.labels', ...
-            yQuantities{j}]);
-    end
-    iter = numCurrentLines + j;
-    plothandle = plot(dataStructure.data(:,indx), dataStructure.data(:,indy), ...
-        [lineOpts{floor(1+iter/length(colorOpts))}, ...
-        colorOpts{1+mod(iter,length(colorOpts))}], 'linewidth', lineWidth);
-    [LEGH,OBJH,OUTH,OUTM] = legend;
-    if(isempty(OUTH))
-        xlabel(xQuantity, 'Interpreter', 'none');
-        legend(yQuantities{j});
-    else
-         % Add object with new handle and new legend string to legend
-        legend([OUTH;plothandle],OUTM{:},yQuantities{j})
-    end
-
+for i = 1 : 3
+    plothandle = plot(timeArray,plotData(:,i),...
+                    'Color',colorOpts{i},...
+                    'linewidth', lineWidth);
 end
-[LEGH,OBJH,OUTH,OUTM] = legend;
-set(LEGH, 'interpreter', 'none')
+% Add a legend to the plot
+legend(coordinatesOfInterest')
+% Add a title
+title('Dynamic Walker Simulation Results')
+% Add Axis Labels
+xlabel('Time (Seconds)')
+ylabel('Coordinate Value (Rotations in Radians)')
 hold off
-end

@@ -15,3 +15,12 @@ for i = 1 : length(scriptNames)
       error(['Error in file ' scriptNames(i).name ':']);
     end
 end
+
+% Test the Forward Simulation script
+try run DesignMainStarter
+
+catch Me
+  disp(Me.message);
+  disp(['Error at line ' num2str(Me.stack(1).line)]);
+  error(['Error in file ' scriptNames(i).name ':']);
+end
