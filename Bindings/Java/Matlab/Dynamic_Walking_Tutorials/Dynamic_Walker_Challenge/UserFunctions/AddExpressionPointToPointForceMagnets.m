@@ -1,4 +1,4 @@
-% This script demonstraties how to add a ExpressionBasedPointToPointForce
+% This script demonstrates how to add a ExpressionBasedPointToPointForce
 % to a model.
 %
 % The ExpressionPointToPointForce calculates the relative translation and
@@ -36,38 +36,35 @@ walkerModel = Model(model_path);
 % Change the name
 walkerModel.setName('WalkerModelTerrain_KneeMagnet');
 
-% Define the body and points location in each body's coordinate frame
-locBody1 = Vec3(0.05,-0.2, 0);
-locBody2 = Vec3(0.05, 0.2, 0);
+% Define the point location in each body's coordinate frame
+locThigh = Vec3(0.05,-0.2, 0);
+locShank = Vec3(0.05, 0.2, 0);
 
-% Create an ExpressionBasedBushingForce for the magnets
-leftKneeMagnet = ExpressionBasedPointToPointForce();
-leftKneeMagnet.setName('LeftKneeMagnet');
+%% Create an ExpressionBasedBushingForce for the Right Knee Coordinate
 rightKneeMagnet = ExpressionBasedPointToPointForce();
 rightKneeMagnet.setName('RightKneeMagnet')
 
-% Set the first body and the reference frame properties
+% Set body references and point locations for the ExpressionBasedBushingForce
+rightKneeMagnet.setBody1Name('RightThigh');
+rightKneeMagnet.setPoint1(locThigh);
+rightKneeMagnet.setBody2Name('RightShank');
+rightKneeMagnet.setPoint2(locShank);
+
+% Set the expression to represent a magnet (0.01/d^2) force.
+rightKneeMagnet.setExpression('0.01/d^2');
+
+% Add the Right Knee Magnet force to the Model
+walkerModel.addComponent(rightKneeMagnet);
+
+%% TODO: Create an ExpressionBasedBushingForce for the Left Knee Coordinate
+
+% TODO: Set body references and point locations for the ExpressionBasedBushingForce
+
+% TODO: Set the expression to represent a magnet (0.01/d^2) force.
+
+% TODO: Add the Left Knee Magnet force to the Model
+
 % ***** WRITE YOUR CODE HERE:  *****
-% Task: Navigate to your local doxygen and find the methods to set the name
-% of Body1 and set the location of Point1.
-
-
-% Set the second body and the location of the reference point
-% ***** WRITE YOUR CODE HERE:  *****
-% Task: Set the name of Body2 and the location of Point2.
-
-
-% Set the expression to represent a magnet (1/d^2) force
-% ***** WRITE YOUR CODE HERE:  *****
-% Task: Use the setExpression method for each magnet and pass an char type
-% argument of the desired function (0.01/d^2).
-
-% ***** WRITE YOUR CODE HERE:  *****
-% Task: Uncomment these lines when you are finished with the above tasks.
-% Add the force to the model
-% walkerModel.addForce(leftKneeMagnet);
-% walkerModel.addForce(rightKneeMagnet);
-
 
 %% Finalize connections
 walkerModel.finalizeConnections()

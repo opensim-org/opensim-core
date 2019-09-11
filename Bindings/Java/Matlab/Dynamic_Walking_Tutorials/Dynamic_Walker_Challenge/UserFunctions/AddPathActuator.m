@@ -1,4 +1,4 @@
-% This script demonstraties how to add a PathActuator to a model.
+% This script demonstrates how to add a PathActuator to a model.
 
 % -----------------------------------------------------------------------
 % The OpenSim API is a toolkit for musculoskeletal modeling and

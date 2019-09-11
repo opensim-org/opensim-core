@@ -1,4 +1,4 @@
-% This script demonstraties how to add a SpringGeneralizedForce to a model.
+% This script demonstrates how to add a SpringGeneralizedForce to a model.
 
 % -----------------------------------------------------------------------
 % The OpenSim API is a toolkit for musculoskeletal modeling and

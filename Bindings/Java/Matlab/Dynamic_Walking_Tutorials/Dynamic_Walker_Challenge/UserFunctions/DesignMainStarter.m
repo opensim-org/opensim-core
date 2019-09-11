@@ -30,6 +30,20 @@ endTime   = 2;
 visulizeSimulation = false;
 plotResults = true;
 
+%% Define the intial coordinate values and speeds for the model
+pelvisTYValue = 0.8350;
+pelvisTYSpeed = 0;
+pelvisTXValue = 0;
+pelvisTXSpeed  = 0;
+rHipValue = 0.5236;
+rHipSpeed = 0;
+lHipValue = -0.175;
+lHipSpeed = 0;
+rKneeValue = -0.5236;
+rKneeSpeed = 0;
+rKneeValue = -0.5236;
+rKneeSpeed = 0;
+
 %% Import OpenSim Libraries
 import org.opensim.modeling.*;
 
@@ -39,6 +53,20 @@ osimModel = Model('../Model/WalkerModelTerrain.osim');
 osimModel.setUseVisualizer(visulizeSimulation);
 % Initialize the underlying computational system
 state = osimModel.initSystem();
+
+%% Change the initial Coordinate values and speeds of the model
+osimModel.updCoordinateSet().get('Pelvis_ty').setValue(state, pelvisTYValue);
+osimModel.updCoordinateSet().get('Pelvis_ty').setLocked(state, pelvisTYSpeed);
+osimModel.updCoordinateSet().get('Pelvis_tx').setValue(state, pelvisTXValue);
+osimModel.updCoordinateSet().get('Pelvis_tx').setLocked(state, pelvisTXSpeed);
+osimModel.updCoordinateSet().get('RHip_rz').setValue(state, rHipValue);
+osimModel.updCoordinateSet().get('RHip_rz').setLocked(state, rHipSpeed);
+osimModel.updCoordinateSet().get('LHip_rz').setValue(state, lHipValue);
+osimModel.updCoordinateSet().get('LHip_rz').setLocked(state, lHipSpeed);
+osimModel.updCoordinateSet().get('RKnee_rz').setValue(state, rKneeValue);
+osimModel.updCoordinateSet().get('RKnee_rz').setLocked(state, rKneeSpeed)
+osimModel.updCoordinateSet().get('LKnee_rz').setValue(state, rKneeValue);
+osimModel.updCoordinateSet().get('LKnee_rz').setLocked(state, rKneeSpeed);
 
 %% Run a fwd simulation using the manager
 manager = Manager(osimModel);

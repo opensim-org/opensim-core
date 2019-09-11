@@ -1,4 +1,4 @@
-% This script demonstraties how to add a Millard2012EquilibriumMuscle
+% This script demonstrates how to add a Millard2012EquilibriumMuscle
 % to a model.
 
 % -----------------------------------------------------------------------
