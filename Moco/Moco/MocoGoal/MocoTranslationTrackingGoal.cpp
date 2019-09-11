@@ -64,8 +64,8 @@ void MocoTranslationTrackingGoal::initializeOnModelImpl(const Model& model)
                         labels.end(),
                     Exception,
                     format("Expected frame_paths to match at least one of the "
-                      "column labels in the translation reference, but frame "
-                      "path '%s' not found in the reference labels.", path));
+                        "column labels in the translation reference, but frame "
+                        "path '%s' not found in the reference labels.", path));
                 pathsToUse.push_back(path);
                 translationTable.appendColumn(path,
                     translationTableToUse.getDependentColumn(path));
@@ -84,7 +84,7 @@ void MocoTranslationTrackingGoal::initializeOnModelImpl(const Model& model)
         for (int i = 0; i < modelStateNames.getSize(); ++i) {
             const auto& name = modelStateNames[i];
             OPENSIM_THROW_IF_FRMOBJ(std::count(tableStateNames.begin(),
-                  tableStateNames.end(), name) == 0,
+                    tableStateNames.end(), name) == 0,
                 Exception, format("Expected the reference state names to match "
                     "the model state names, but reference state %s not found "
                     "in the model.", name));

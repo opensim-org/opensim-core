@@ -81,7 +81,7 @@ void MocoMarkerTrackingGoal::initializeOnModelImpl(const Model& model) const {
 }
 
  void MocoMarkerTrackingGoal::calcIntegrandImpl(const SimTK::State &state,
-         double& integrand) const {
+        double& integrand) const {
      const auto& time = state.getTime();
      getModel().realizePosition(state);
      SimTK::Vector timeVec(1, time);
