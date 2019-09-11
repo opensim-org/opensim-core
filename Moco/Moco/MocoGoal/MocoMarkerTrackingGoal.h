@@ -95,7 +95,7 @@ protected:
     mutable std::vector<SimTK::ReferencePtr<const Marker>> m_model_markers;
     mutable std::vector<int> m_refindices;
     mutable SimTK::Array_<double> m_marker_weights;
-    mutable std::vector<std::string> m_marker_names;
+    mutable SimTK::Array_<std::string> m_marker_names;
 
 private:
     void constructProperties() {
