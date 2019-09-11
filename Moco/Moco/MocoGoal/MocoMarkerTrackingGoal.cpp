@@ -44,7 +44,7 @@ void MocoMarkerTrackingGoal::initializeOnModelImpl(const Model &model) const {
     int iset = -1;
     for (int i = 0; i < (int) markRefNames.size(); ++i) {
         if (model.hasComponent<Marker>(markRefNames[i])) {
-            const auto &m = model.getComponent<Marker>(markRefNames[i]);
+            const auto& m = model.getComponent<Marker>(markRefNames[i]);
             // Store a pointer to the current model marker.
             m_model_markers.emplace_back(&m);
             // Store the reference index corresponding to the current model
@@ -103,7 +103,7 @@ void MocoMarkerTrackingGoal::calcIntegrandImpl(const SimTK::State &state,
     }
 }
 
-void MocoMarkerTrackingGoal::printDescriptionImpl(std::ostream &stream) const {
+void MocoMarkerTrackingGoal::printDescriptionImpl(std::ostream& stream) const {
     stream << "        ";
     stream << "allow unused references: "
            << get_allow_unused_references() << std::endl;

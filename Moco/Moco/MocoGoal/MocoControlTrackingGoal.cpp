@@ -24,7 +24,7 @@
 
 using namespace OpenSim;
 
-void MocoControlTrackingGoal::initializeOnModelImpl(const Model &model) const {
+void MocoControlTrackingGoal::initializeOnModelImpl(const Model& model) const {
 
     // TODO: set relativeToDirectory properly.
     TimeSeriesTable tableToUse = get_reference().process();
@@ -41,11 +41,11 @@ void MocoControlTrackingGoal::initializeOnModelImpl(const Model &model) const {
 
     // Throw exception if a weight is specified for a nonexistent control.
     for (int i = 0; i < get_control_weights().getSize(); ++i) {
-        const auto &weightName = get_control_weights().get(i).getName();
+        const auto& weightName = get_control_weights().get(i).getName();
         if (allControlIndices.count(weightName) == 0) {
             OPENSIM_THROW_FRMOBJ(Exception,
-                                 "Weight provided with name '" + weightName + "' but this is "
-                                                                              "not a recognized control.");
+                 "Weight provided with name '" + weightName + "' but this is "
+                  "not a recognized control.");
         }
     }
 
@@ -53,13 +53,13 @@ void MocoControlTrackingGoal::initializeOnModelImpl(const Model &model) const {
     // allow_unused_references is set to true, an exception is thrown for
     // names in the references that don't correspond to a control variable.
     for (int iref = 0; iref < allSplines.getSize(); ++iref) {
-        const auto &refName = allSplines[iref].getName();
+        const auto& refName = allSplines[iref].getName();
         if (allControlIndices.count(refName) == 0) {
             if (get_allow_unused_references()) {
                 continue;
             }
             OPENSIM_THROW_FRMOBJ(Exception,
-                                 "Control reference '" + refName + "' unrecognized.");
+                 "Control reference '" + refName + "' unrecognized.");
         }
 
         m_control_indices.push_back(allControlIndices[refName]);
@@ -75,24 +75,24 @@ void MocoControlTrackingGoal::initializeOnModelImpl(const Model &model) const {
     setNumIntegralsAndOutputs(1, 1);
 }
 
-void MocoControlTrackingGoal::calcIntegrandImpl(const SimTK::State &state,
-                                                double &integrand) const {
+void MocoControlTrackingGoal::calcIntegrandImpl(const SimTK::State& state,
+                                                double& integrand) const {
 
-    const auto &time = state.getTime();
+    const auto& time = state.getTime();
     SimTK::Vector timeVec(1, time);
-    const auto &controls = getModel().getControls(state);
+    const auto& controls = getModel().getControls(state);
 
     // TODO cache the reference coordinate values at the mesh points, 
     // rather than evaluating the spline.
     integrand = 0;
     for (int iref = 0; iref < m_ref_splines.getSize(); ++iref) {
-        const auto &modelValue = controls[m_control_indices[iref]];
-        const auto &refValue = m_ref_splines[iref].calcValue(timeVec);
+        const auto& modelValue = controls[m_control_indices[iref]];
+        const auto& refValue = m_ref_splines[iref].calcValue(timeVec);
         integrand += m_control_weights[iref] * pow(modelValue - refValue, 2);
     }
 }
 
-void MocoControlTrackingGoal::printDescriptionImpl(std::ostream &stream) const {
+void MocoControlTrackingGoal::printDescriptionImpl(std::ostream& stream) const {
     for (int i = 0; i < (int) m_control_names.size(); i++) {
         stream << "        ";
         stream << "control: " << m_control_names[i]

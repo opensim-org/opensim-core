@@ -36,11 +36,11 @@ void MocoJointReactionGoal::constructProperties() {
     constructProperty_reaction_weights(MocoWeightSet());
 }
 
-void MocoJointReactionGoal::initializeOnModelImpl(const Model &model) const {
+void MocoJointReactionGoal::initializeOnModelImpl(const Model& model) const {
 
     // Cache the joint.
     OPENSIM_THROW_IF_FRMOBJ(get_joint_path().empty(), Exception,
-                            "Expected a joint path, but property joint_path is empty.");
+        "Expected a joint path, but property joint_path is empty.");
     m_joint = &model.getComponent<Joint>(get_joint_path());
 
     // Get the frame from which the loads are computed.
@@ -73,10 +73,11 @@ void MocoJointReactionGoal::initializeOnModelImpl(const Model &model) const {
     } else {
         for (int i = 0; i < getProperty_reaction_measures().size(); ++i) {
             if (std::find(allowedMeasures.begin(), allowedMeasures.end(),
-                          get_reaction_measures(i)) == allowedMeasures.end()) {
+                get_reaction_measures(i)) == allowedMeasures.end()) {
+
                 OPENSIM_THROW_FRMOBJ(Exception,
-                                     format("Reaction measure '%s' not recognized.",
-                                            get_reaction_measures(i)));
+                     format("Reaction measure '%s' not recognized.",
+                            get_reaction_measures(i)));
             }
             reactionMeasures.push_back(get_reaction_measures(i));
         }
@@ -84,7 +85,7 @@ void MocoJointReactionGoal::initializeOnModelImpl(const Model &model) const {
 
     // Loop through all reaction measures to minimize and get the
     // corresponding SpatialVec indices and weights.
-    for (const auto &measure :  reactionMeasures) {
+    for (const auto& measure :  reactionMeasures) {
         if (measure == "moment-x") {
             m_measureIndices.push_back({0, 0});
         } else if (measure == "moment-y") {
@@ -109,20 +110,20 @@ void MocoJointReactionGoal::initializeOnModelImpl(const Model &model) const {
     setNumIntegralsAndOutputs(1, 1);
 }
 
-void MocoJointReactionGoal::calcIntegrandImpl(const SimTK::State &state,
-                                              double &integrand) const {
+void MocoJointReactionGoal::calcIntegrandImpl(const SimTK::State& state,
+                                              double& integrand) const {
 
     getModel().realizeAcceleration(state);
-    const auto &ground = getModel().getGround();
+    const auto& ground = getModel().getGround();
 
     // Compute the reaction loads on the parent or child frame.
     SimTK::SpatialVec reactionInGround;
     if (m_isParentFrame) {
         reactionInGround =
-                m_joint->calcReactionOnParentExpressedInGround(state);
+            m_joint->calcReactionOnParentExpressedInGround(state);
     } else {
         reactionInGround =
-                m_joint->calcReactionOnChildExpressedInGround(state);
+            m_joint->calcReactionOnChildExpressedInGround(state);
     }
 
     // Re-express the reactions into the proper frame and repackage into a new
@@ -131,7 +132,7 @@ void MocoJointReactionGoal::calcIntegrandImpl(const SimTK::State &state,
     SimTK::Vec3 force;
     if (m_frame.get() == &getModel().getGround()) {
         moment = ground.expressVectorInAnotherFrame(state, reactionInGround[0],
-                                                    *m_frame);
+                                                   *m_frame);
         force = ground.expressVectorInAnotherFrame(state, reactionInGround[1],
                                                    *m_frame);
     } else {
@@ -148,6 +149,7 @@ void MocoJointReactionGoal::calcIntegrandImpl(const SimTK::State &state,
         integrand += weight * pow(reaction[index.first][index.second], 2);
     }
 }
+test
 
 void MocoJointReactionGoal::printDescriptionImpl(std::ostream &stream) const {
     stream << "        ";
@@ -157,10 +159,12 @@ void MocoJointReactionGoal::printDescriptionImpl(std::ostream &stream) const {
     stream << "        ";
     stream << "expressed: " << get_expressed_in_frame_path() << std::endl;
     stream << "        ";
-    stream << "reaction measures: " << std::endl;
+    stream << "reaction measures: ";
     for (int i = 0; i < getProperty_reaction_measures().size(); i++) {
-        stream << "                ";
-        stream << get_reaction_measures(i) << ", ";
+        stream << get_reaction_measures(i);
+        if (i < getProperty_reaction_measures().size() - 1) {
+           stream << ", ";
+        }
     }
     stream << std::endl;
     stream << "        ";

@@ -206,6 +206,6 @@ void MocoTranslationTrackingGoal::printDescriptionImpl(std::ostream &stream) con
            << get_translation_reference_file() << std::endl;
     for (int i = 0; i < getProperty_frame_paths().size(); i++) {
         stream << "        ";
-        stream << "frame path " << i << ": " << get_frame_paths(i) << std::endl;
+        stream << "frame " << i << ": " << get_frame_paths(i) << std::endl;
     }
 }

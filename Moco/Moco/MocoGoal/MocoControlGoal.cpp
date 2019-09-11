@@ -31,7 +31,7 @@ void MocoControlGoal::constructProperties() {
 }
 
 void MocoControlGoal::setWeightForControl(
-        const std::string &controlName, const double &weight) {
+        const std::string& controlName, const double& weight) {
     if (get_control_weights().contains(controlName)) {
         upd_control_weights().get(controlName).setWeight(weight);
     } else {
@@ -39,7 +39,7 @@ void MocoControlGoal::setWeightForControl(
     }
 }
 
-void MocoControlGoal::initializeOnModelImpl(const Model &model) const {
+void MocoControlGoal::initializeOnModelImpl(const Model& model) const {
 
     // Get all expected control names.
     auto controlNames = createControlNamesFromModel(model);
@@ -50,7 +50,7 @@ void MocoControlGoal::initializeOnModelImpl(const Model &model) const {
     auto systemControlIndexMap = createSystemControlIndexMap(model);
     // Make sure there are no weights for nonexistent controls.
     for (int i = 0; i < get_control_weights().getSize(); ++i) {
-        const auto &thisName = get_control_weights()[i].getName();
+        const auto& thisName = get_control_weights()[i].getName();
         if (std::find(controlNames.begin(), controlNames.end(), thisName) ==
             controlNames.end()) {
             OPENSIM_THROW_FRMOBJ(
@@ -58,7 +58,7 @@ void MocoControlGoal::initializeOnModelImpl(const Model &model) const {
         }
     }
 
-    for (const auto &controlName : controlNames) {
+    for (const auto& controlName : controlNames) {
         double weight = 1.0;
         if (get_control_weights().contains(controlName)) {
             weight = get_control_weights().get(controlName).getWeight();
@@ -77,16 +77,16 @@ void MocoControlGoal::initializeOnModelImpl(const Model &model) const {
 void MocoControlGoal::calcIntegrandImpl(
         const SimTK::State &state, double &integrand) const {
     getModel().realizeVelocity(state); // TODO would avoid this, ideally.
-    const auto &controls = getModel().getControls(state);
+    const auto& controls = getModel().getControls(state);
     integrand = 0;
     int iweight = 0;
-    for (const auto &icontrol : m_controlIndices) {
+    for (const auto& icontrol : m_controlIndices) {
         integrand += m_weights[iweight] * controls[icontrol] * controls[icontrol];
         ++iweight;
     }
 }
 
-void MocoControlGoal::printDescriptionImpl(std::ostream &stream) const {
+void MocoControlGoal::printDescriptionImpl(std::ostream& stream) const {
     for (int i = 0; i < (int) m_controlNames.size(); i++) {
         stream << "        ";
         stream << "control: " << m_controlNames[i]
