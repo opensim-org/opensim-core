@@ -25,11 +25,11 @@
 
 using namespace OpenSim;
 
-void MocoMarkerTrackingGoal::initializeOnModelImpl(const Model &model) const {
+void MocoMarkerTrackingGoal::initializeOnModelImpl(const Model& model) const {
 
     // TODO: When should we load a markers file?
     if (get_markers_reference().get_marker_file() != "") {
-        const_cast<MocoMarkerTrackingGoal *>(this)
+        const_cast<MocoMarkerTrackingGoal*>(this)
                 ->upd_markers_reference()
                 .loadMarkersFile(get_markers_reference().get_marker_file());
     }
@@ -39,10 +39,10 @@ void MocoMarkerTrackingGoal::initializeOnModelImpl(const Model &model) const {
             get_markers_reference().getMarkerTable().getColumnLabels());
 
     // Cache reference pointers to model markers.
-    const auto &markRefNames = get_markers_reference().getNames();
-    const auto &markerSet = model.getMarkerSet();
+    const auto& markRefNames = get_markers_reference().getNames();
+    const auto& markerSet = model.getMarkerSet();
     int iset = -1;
-    for (int i = 0; i < (int) markRefNames.size(); ++i) {
+    for (int i = 0; i < (int)markRefNames.size(); ++i) {
         if (model.hasComponent<Marker>(markRefNames[i])) {
             const auto& m = model.getComponent<Marker>(markRefNames[i]);
             // Store a pointer to the current model marker.
@@ -60,7 +60,7 @@ void MocoMarkerTrackingGoal::initializeOnModelImpl(const Model &model) const {
                 OPENSIM_THROW_FRMOBJ(
                         Exception, format("Marker '%s' unrecognized by the "
                                           "specified model.",
-                                          markRefNames[i]));
+                                           markRefNames[i]));
             }
         }
     }
@@ -68,7 +68,7 @@ void MocoMarkerTrackingGoal::initializeOnModelImpl(const Model &model) const {
     // Get the marker weights. The MarkersReference constructor automatically
     // sets a default value of 1.0 to each marker if not provided by the user,
     // so this is generic.
-    const SimTK::State &s = model.getWorkingState();
+    const SimTK::State& s = model.getWorkingState();
     get_markers_reference().getWeights(s, m_marker_weights);
 
     // Get and flatten TimeSeriesTableVec3 to doubles and create a set of
@@ -81,13 +81,13 @@ void MocoMarkerTrackingGoal::initializeOnModelImpl(const Model &model) const {
 }
 
 void MocoMarkerTrackingGoal::calcIntegrandImpl(const SimTK::State &state,
-                                               double &integrand) const {
-    const auto &time = state.getTime();
+        double &integrand) const {
+    const auto& time = state.getTime();
     getModel().realizePosition(state);
     SimTK::Vector timeVec(1, time);
 
-    for (int i = 0; i < (int) m_model_markers.size(); ++i) {
-        const auto &modelValue = m_model_markers[i]->getLocationInGround(state);
+    for (int i = 0; i <(int) m_model_markers.size(); ++i) {
+        const auto& modelValue = m_model_markers[i]->getLocationInGround(state);
         SimTK::Vec3 refValue;
 
         // Get the markers reference index corresponding to the current

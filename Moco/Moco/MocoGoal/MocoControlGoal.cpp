@@ -52,7 +52,7 @@ void MocoControlGoal::initializeOnModelImpl(const Model& model) const {
     for (int i = 0; i < get_control_weights().getSize(); ++i) {
         const auto& thisName = get_control_weights()[i].getName();
         if (std::find(controlNames.begin(), controlNames.end(), thisName) ==
-            controlNames.end()) {
+                controlNames.end()) {
             OPENSIM_THROW_FRMOBJ(
                     Exception, "Unrecognized control '" + thisName + "'.");
         }
@@ -75,7 +75,7 @@ void MocoControlGoal::initializeOnModelImpl(const Model& model) const {
 }
 
 void MocoControlGoal::calcIntegrandImpl(
-        const SimTK::State &state, double &integrand) const {
+        const SimTK::State& state, double& integrand) const {
     getModel().realizeVelocity(state); // TODO would avoid this, ideally.
     const auto& controls = getModel().getControls(state);
     integrand = 0;

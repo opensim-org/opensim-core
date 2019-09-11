@@ -24,7 +24,7 @@
 
 using namespace OpenSim;
 
-void MocoStateTrackingGoal::initializeOnModelImpl(const Model &model) const {
+void MocoStateTrackingGoal::initializeOnModelImpl(const Model& model) const {
 
     // TODO: set relativeToDirectory properly.
     TimeSeriesTable tableToUse = get_reference().process("", &model);
@@ -37,11 +37,11 @@ void MocoStateTrackingGoal::initializeOnModelImpl(const Model &model) const {
     // Throw exception if a weight is specified for a nonexistent state.
     auto allSysYIndices = createSystemYIndexMap(model);
     for (int i = 0; i < get_state_weights().getSize(); ++i) {
-        const auto &weightName = get_state_weights().get(i).getName();
+        const auto& weightName = get_state_weights().get(i).getName();
         if (allSysYIndices.count(weightName) == 0) {
             OPENSIM_THROW_FRMOBJ(Exception,
-                                 "Weight provided with name '" + weightName + "' but this is "
-                                                                              "not a recognized state.");
+                 "Weight provided with name '" + weightName + "' but this is "
+                 "not a recognized state.");
         }
     }
 
@@ -49,13 +49,13 @@ void MocoStateTrackingGoal::initializeOnModelImpl(const Model &model) const {
     // allow_unused_references is set to true, an exception is thrown for
     // names in the references that don't correspond to a state variable.
     for (int iref = 0; iref < allSplines.getSize(); ++iref) {
-        const auto &refName = allSplines[iref].getName();
+        const auto& refName = allSplines[iref].getName();
         if (allSysYIndices.count(refName) == 0) {
             if (get_allow_unused_references()) {
                 continue;
             }
             OPENSIM_THROW_FRMOBJ(Exception,
-                                 "State reference '" + refName + "' unrecognized.");
+                 "State reference '" + refName + "' unrecognized.");
         }
 
         m_sysYIndices.push_back(allSysYIndices[refName]);
@@ -78,8 +78,8 @@ void MocoStateTrackingGoal::initializeOnModelImpl(const Model &model) const {
 }
 
 void MocoStateTrackingGoal::calcIntegrandImpl(/*int meshIndex,*/
-        const SimTK::State &state, double &integrand) const {
-    const auto &time = state.getTime();
+        const SimTK::State& state, double& integrand) const {
+    const auto& time = state.getTime();
 
     SimTK::Vector timeVec(1, time);
 
@@ -87,8 +87,8 @@ void MocoStateTrackingGoal::calcIntegrandImpl(/*int meshIndex,*/
     // than evaluating the spline.
     integrand = 0;
     for (int iref = 0; iref < m_refsplines.getSize(); ++iref) {
-        const auto &modelValue = state.getY()[m_sysYIndices[iref]];
-        const auto &refValue = m_refsplines[iref].calcValue(timeVec);
+        const auto& modelValue = state.getY()[m_sysYIndices[iref]];
+        const auto& refValue = m_refsplines[iref].calcValue(timeVec);
         integrand += m_state_weights[iref] * pow(modelValue - refValue, 2);
     }
 }

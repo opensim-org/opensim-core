@@ -67,7 +67,7 @@ void MocoJointReactionGoal::initializeOnModelImpl(const Model& model) const {
     // and check that they are all accepted measures.
     std::vector<std::string> reactionMeasures;
     std::vector<std::string> allowedMeasures = {"moment-x", "moment-y",
-                                                "moment-z", "force-x", "force-y", "force-z"};
+        "moment-z", "force-x", "force-y", "force-z"};
     if (getProperty_reaction_measures().empty()) {
         reactionMeasures = allowedMeasures;
     } else {
@@ -76,7 +76,7 @@ void MocoJointReactionGoal::initializeOnModelImpl(const Model& model) const {
                 get_reaction_measures(i)) == allowedMeasures.end()) {
 
                 OPENSIM_THROW_FRMOBJ(Exception,
-                     format("Reaction measure '%s' not recognized.",
+                    format("Reaction measure '%s' not recognized.",
                             get_reaction_measures(i)));
             }
             reactionMeasures.push_back(get_reaction_measures(i));
@@ -111,7 +111,7 @@ void MocoJointReactionGoal::initializeOnModelImpl(const Model& model) const {
 }
 
 void MocoJointReactionGoal::calcIntegrandImpl(const SimTK::State& state,
-                                              double& integrand) const {
+        double& integrand) const {
 
     getModel().realizeAcceleration(state);
     const auto& ground = getModel().getGround();
@@ -132,9 +132,9 @@ void MocoJointReactionGoal::calcIntegrandImpl(const SimTK::State& state,
     SimTK::Vec3 force;
     if (m_frame.get() == &getModel().getGround()) {
         moment = ground.expressVectorInAnotherFrame(state, reactionInGround[0],
-                                                   *m_frame);
+            *m_frame);
         force = ground.expressVectorInAnotherFrame(state, reactionInGround[1],
-                                                   *m_frame);
+            *m_frame);
     } else {
         moment = reactionInGround[0];
         force = reactionInGround[1];
@@ -143,13 +143,12 @@ void MocoJointReactionGoal::calcIntegrandImpl(const SimTK::State& state,
 
     // Compute cost.
     integrand = 0;
-    for (int i = 0; i < (int) m_measureIndices.size(); ++i) {
+    for (int i = 0; i < (int)m_measureIndices.size(); ++i) {
         const auto index = m_measureIndices[i];
         const double weight = m_measureWeights[i];
         integrand += weight * pow(reaction[index.first][index.second], 2);
     }
 }
-test
 
 void MocoJointReactionGoal::printDescriptionImpl(std::ostream &stream) const {
     stream << "        ";

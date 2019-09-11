@@ -44,8 +44,8 @@ void MocoControlTrackingGoal::initializeOnModelImpl(const Model& model) const {
         const auto& weightName = get_control_weights().get(i).getName();
         if (allControlIndices.count(weightName) == 0) {
             OPENSIM_THROW_FRMOBJ(Exception,
-                 "Weight provided with name '" + weightName + "' but this is "
-                  "not a recognized control.");
+                "Weight provided with name '" + weightName + "' but this is "
+                "not a recognized control.");
         }
     }
 
@@ -59,7 +59,7 @@ void MocoControlTrackingGoal::initializeOnModelImpl(const Model& model) const {
                 continue;
             }
             OPENSIM_THROW_FRMOBJ(Exception,
-                 "Control reference '" + refName + "' unrecognized.");
+                "Control reference '" + refName + "' unrecognized.");
         }
 
         m_control_indices.push_back(allControlIndices[refName]);
@@ -76,7 +76,7 @@ void MocoControlTrackingGoal::initializeOnModelImpl(const Model& model) const {
 }
 
 void MocoControlTrackingGoal::calcIntegrandImpl(const SimTK::State& state,
-                                                double& integrand) const {
+        double& integrand) const {
 
     const auto& time = state.getTime();
     SimTK::Vector timeVec(1, time);

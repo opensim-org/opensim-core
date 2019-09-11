@@ -22,15 +22,15 @@
 
 using namespace OpenSim;
 
-void MocoMarkerFinalGoal::initializeOnModelImpl(const Model &model) const {
+void MocoMarkerFinalGoal::initializeOnModelImpl(const Model& model) const {
     m_point.reset(&model.getComponent<Point>(get_point_name()));
     setNumIntegralsAndOutputs(0, 1);
 }
 
 void MocoMarkerFinalGoal::calcGoalImpl(
-        const GoalInput &input, SimTK::Vector &cost) const {
+        const GoalInput &input, SimTK::Vector& cost) const {
     getModel().realizePosition(input.final_state);
-    const auto &actualLocation = m_point->getLocationInGround(input.final_state);
+    const auto& actualLocation = m_point->getLocationInGround(input.final_state);
     cost[0] = (actualLocation - get_reference_location()).normSqr();
 }
 
@@ -39,7 +39,7 @@ void MocoMarkerFinalGoal::constructProperties() {
     constructProperty_reference_location(SimTK::Vec3(0));
 }
 
-void MocoMarkerFinalGoal::printDescriptionImpl(std::ostream &stream) const {
+void MocoMarkerFinalGoal::printDescriptionImpl(std::ostream& stream) const {
     stream << "        ";
     stream << "point name: " << get_point_name() << std::endl;
     stream << "        ";
