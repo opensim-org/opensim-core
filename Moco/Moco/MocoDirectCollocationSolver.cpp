@@ -21,7 +21,7 @@
 using namespace OpenSim;
 
 void MocoDirectCollocationSolver::constructProperties() {
-    constructProperty_num_mesh_points(100);
+    constructProperty_num_mesh_intervals(100);
     constructProperty_mesh();
     constructProperty_verbosity(2);
     constructProperty_transcription_scheme("hermite-simpson");

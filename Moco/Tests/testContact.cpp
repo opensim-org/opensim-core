@@ -128,7 +128,7 @@ SimTK::Real testNormalForce(CreateContactFunction createContact) {
         mp.setStateInfo("/ty/ty/speed", {-10, 10}, 0);
 
         auto& ms = moco.initTropterSolver();
-        ms.set_num_mesh_points(50);
+        ms.set_num_mesh_intervals(50);
         // TODO: Hermite-Simpson has trouble converging
         ms.set_transcription_scheme("trapezoidal");
 
@@ -222,7 +222,7 @@ void testFrictionForce(CreateContactFunction createContact,
         mp.setStateInfo("/ty/ty/speed", {-10, 10}, 0);
 
         auto& ms = moco.initTropterSolver();
-        ms.set_num_mesh_points(25);
+        ms.set_num_mesh_intervals(25);
         // TODO: Hermite-Simpson has trouble converging
         ms.set_transcription_scheme("trapezoidal");
 
@@ -368,7 +368,7 @@ SimTK::Real testSmoothSphereHalfSpaceForce_NormalForce()
         mp.setStateInfo("/groundBall/groundBall_coord_2/speed", {-10, 10}, 0);
 
         auto& ms = moco.initCasADiSolver();
-        ms.set_num_mesh_points(50);
+        ms.set_num_mesh_intervals(50);
         ms.set_verbosity(2);
         ms.set_optim_solver("ipopt");
 
@@ -476,7 +476,7 @@ void testSmoothSphereHalfSpaceForce_FrictionForce(
         mp.setStateInfo("/groundBall/groundBall_coord_2/speed", {-10, 10}, 0);
 
         auto& ms = moco.initCasADiSolver();
-        ms.set_num_mesh_points(50);
+        ms.set_num_mesh_intervals(50);
         ms.set_verbosity(2);
         ms.set_optim_solver("ipopt");
 
