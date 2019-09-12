@@ -200,7 +200,7 @@ void MocoTranslationTrackingGoal::calcIntegrandImpl(const SimTK::State& state,
     }
 }
 
-void MocoTranslationTrackingGoal::printDescriptionImpl(std::ostream &stream) const {
+void MocoTranslationTrackingGoal::printDescriptionImpl(std::ostream& stream) const {
     stream << "        ";
     stream << "translation reference file: "
            << get_translation_reference_file() << std::endl;

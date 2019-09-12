@@ -116,7 +116,7 @@ void MocoStateTrackingGoal::calcIntegrandImpl(/*int meshIndex,*/
     }
 }
 
-void MocoStateTrackingGoal::printDescriptionImpl(std::ostream &stream) const {
+void MocoStateTrackingGoal::printDescriptionImpl(std::ostream& stream) const {
     for (int i = 0; i < (int) m_state_names.size(); i++) {
         stream << "        ";
         stream << "state: " << m_state_names[i] << ", "
