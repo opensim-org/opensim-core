@@ -111,9 +111,9 @@ void MocoMarkerTrackingGoal::printDescriptionImpl(std::ostream& stream) const {
     stream << "        ";
     stream << "tracked marker(s): " << std::endl;
     int weightIndex = 0;
-    for (auto i : m_marker_names) {
+    for (auto name : m_marker_names) {
        stream << "            ";
-       stream << i << ", weight: " << m_marker_weights[weightIndex] << std::endl;
+       stream << name << ", weight: " << m_marker_weights[weightIndex] << std::endl;
        weightIndex++;
     }
 
