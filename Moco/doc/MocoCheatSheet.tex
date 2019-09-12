@@ -294,6 +294,7 @@ solution.unseal(); % Access a failed solution.
          & \textcolor{dblue}{0 = \nu(q, u, p)} \\
          &  \textcolor{dblue}{0 = \alpha(q, u, \dot{u}, p)} \\
          & g_{L} \leq g(t, y, x, \lambda, p) \leq g_{U} && \texttt{problem.addPathConstraint()} \\
+         & V_{L,k} \leq V_{k}\displaystyle\left(t_0,t_f,y_0, y_f, x_0, x_f, \lambda_0, \lambda_f, p, \int_{t_0}^{t_f} s_{e,k}(t,y,x,\lambda,p)~dt\displaystyle\right) \leq V_{U,k} && \texttt{problem.addGoal()} \\
          & \textcolor{dblue}{y_{0,L} \leq y_0 \leq y_{0,U} \quad\quad y_{f,L} \leq y_f \leq y_{f,U}} && \texttt{\textcolor{dblue}{problem.setStateInfo()}} \\
          & \textcolor{dblue}{x_{0,L} \leq x_0 \leq x_{0,U} \quad\quad x_{f,L} \leq x_f \leq x_{f,U}} && \texttt{\textcolor{dblue}{problem.setControlInfo()}} \\
          \mbox{with respect to} \quad
@@ -306,10 +307,11 @@ solution.unseal(); % Access a failed solution.
 
 %\begin{tikzpicture}
 %\node [object, align=left, text width=7.5in, below=of ocp] {
-\vspace{-20pt}
+\vspace{-30pt}
 %\begin{center}\textbf{\textcolor{oblue}{Terminology}}\end{center}
 \begin{multicols}{2}
 \begin{itemize}[noitemsep]
+\begin{scriptsize}
 \item $ t $: time
 \item $ q(t) $: generalized coordinates
 \item $ u(t) $: generalized speeds
@@ -333,6 +335,7 @@ solution.unseal(); % Access a failed solution.
 \item $ K $: number of endpoint constraint goals
 \item subscript $ U $: an upper bound
 \item subscript $ L $: a lower bound    
+\end{scriptsize}
 \end{itemize}
 \end{multicols}
 };
