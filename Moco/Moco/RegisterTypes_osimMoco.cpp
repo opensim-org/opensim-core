@@ -38,7 +38,7 @@
 #include "MocoGoal/MocoGoal.h"
 #include "MocoGoal/MocoInitialActivationGoal.h"
 #include "MocoGoal/MocoInitialVelocityEquilibriumDGFGoal.h"
-#include "MocoGoal/MocoInitialForceEquilibriumDGFGoal.h"
+#include "MocoGoal/MocoInitialForceEquilibriumGoal.h"
 #include "MocoGoal/MocoJointReactionGoal.h"
 #include "MocoGoal/MocoMarkerFinalGoal.h"
 #include "MocoGoal/MocoMarkerTrackingGoal.h"
@@ -77,7 +77,7 @@ OSIMMOCO_API void RegisterTypes_osimMoco() {
         Object::registerType(MocoControlTrackingGoal());
         Object::registerType(MocoInitialActivationGoal());
         Object::registerType(MocoInitialVelocityEquilibriumDGFGoal());
-        Object::registerType(MocoInitialForceEquilibriumDGFGoal());
+        Object::registerType(MocoInitialForceEquilibriumGoal());
         Object::registerType(MocoJointReactionGoal());
         Object::registerType(MocoOrientationTrackingGoal());
         Object::registerType(MocoTranslationTrackingGoal());

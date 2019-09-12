@@ -1048,7 +1048,8 @@ TEMPLATE_TEST_CASE("Hanging muscle minimum time", "", MocoCasADiSolver) {
     SimTK::State state = model.initSystem();
     const auto& actuator = model.getComponent("forceset/actuator");
 
-    const auto* muscle = dynamic_cast<const DeGrooteFregly2016Muscle*>(&actuator);
+    const auto* muscle = 
+            dynamic_cast<const DeGrooteFregly2016Muscle*>(&actuator);
 
     // Minimum time trajectory optimization.
     // -------------------------------------
@@ -1081,7 +1082,7 @@ TEMPLATE_TEST_CASE("Hanging muscle minimum time", "", MocoCasADiSolver) {
         if (!ignoreTendonCompliance) {
             if (isTendonDynamicsExplicit) {
                 auto* initial_equilibrium = 
-                    problem.addGoal<MocoInitialForceEquilibriumDGFGoal>();
+                    problem.addGoal<MocoInitialForceEquilibriumGoal>();
                 initial_equilibrium->setName("initial_force_equilibrium");
                 auto* initial_activation =
                         problem.addGoal<MocoInitialActivationGoal>();
@@ -1178,7 +1179,7 @@ TEMPLATE_TEST_CASE("Hanging muscle minimum time", "", MocoCasADiSolver) {
         if (!ignoreTendonCompliance) {
             if (isTendonDynamicsExplicit) {
                 auto* initial_equilibrium =
-                        problem.addGoal<MocoInitialForceEquilibriumDGFGoal>();
+                        problem.addGoal<MocoInitialForceEquilibriumGoal>();
                 initial_equilibrium->setName("initial_force_equilibrium");
                 auto* initial_activation =
                         problem.addGoal<MocoInitialActivationGoal>();

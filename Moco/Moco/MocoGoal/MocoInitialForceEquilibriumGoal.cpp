@@ -16,35 +16,48 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "MocoInitialForceEquilibriumDGFGoal.h"
+#include "MocoInitialForceEquilibriumGoal.h"
+#include "../Components/DeGrooteFregly2016Muscle.h"
 
 using namespace OpenSim;
 
-void MocoInitialForceEquilibriumDGFGoal::initializeOnModelImpl(
+void MocoInitialForceEquilibriumGoal::initializeOnModelImpl(
     const Model& model) const {
 
-    for (const auto& dgfmuscle :
-        model.getComponentList<DeGrooteFregly2016Muscle>()) {
-        if (!dgfmuscle.get_ignore_tendon_compliance()) {
-            m_dgfMuscleRefs.emplace_back(&dgfmuscle);
+    // Save references to muscles with tendon compliance enabled. If the muscle
+    // is of type DeGrooteFregly2016Muscle, check that tendon compliance
+    // dynamics mode is 'explicit'.
+    for (const auto& muscle : model.getComponentList<Muscle>()) {
+        if (!muscle.get_ignore_tendon_compliance()) {
+            if (const auto dgfmuscle =
+                    dynamic_cast<const DeGrooteFregly2016Muscle*>(&muscle)) {
+                if (dgfmuscle->get_tendon_compliance_dynamics_mode() 
+                        == "explicit") {
+                    m_muscleRefs.emplace_back(&muscle);
+                }
+            } else {
+                    m_muscleRefs.emplace_back(&muscle);
+            }
         }
+
     }
 
-    setNumIntegralsAndOutputs(0, (int)m_dgfMuscleRefs.size());
+    setNumIntegralsAndOutputs(0, (int)m_muscleRefs.size());
 }
 
-void MocoInitialForceEquilibriumDGFGoal::calcGoalImpl(
+void MocoInitialForceEquilibriumGoal::calcGoalImpl(
     const GoalInput& input, SimTK::Vector& goal) const {
     const auto& s = input.initial_state;
     if (getModeIsCost()) {
-        for (int i = 0; i < m_dgfMuscleRefs.size(); ++i) {
-            const auto residual = m_dgfMuscleRefs[i]->getEquilibriumResidual(s);
+        for (int i = 0; i < m_muscleRefs.size(); ++i) {
+            const auto residual = m_muscleRefs[i]->getTendonForce(s) -
+                                  m_muscleRefs[i]->getFiberForceAlongTendon(s);
             goal[i] = residual * residual;
         }
-    }
-    else {
-        for (int i = 0; i < m_dgfMuscleRefs.size(); ++i) {
-            const auto residual = m_dgfMuscleRefs[i]->getEquilibriumResidual(s);
+    } else {
+        for (int i = 0; i < m_muscleRefs.size(); ++i) {
+            const auto residual = m_muscleRefs[i]->getTendonForce(s) -
+                                  m_muscleRefs[i]->getFiberForceAlongTendon(s);
             goal[i] = residual;
         }
     }
