@@ -264,6 +264,8 @@ std::unique_ptr<CasOC::Solver> MocoCasADiSolver::createCasOCSolver(
     casSolver->setLagrangeMultiplierWeight(get_lagrange_multiplier_weight());
     casSolver->setImplicitModeAccelerationBounds(
             convertBounds(get_implicit_mode_acceleration_bounds()));
+    casSolver->setImplicitAuxiliaryDerivativeBounds(
+            convertBounds(get_implicit_auxiliary_derivative_bounds()));
     casSolver->setOptimSolver(get_optim_solver());
     casSolver->setInterpolateControlMidpoints(
             get_interpolate_control_midpoints());
@@ -364,8 +366,7 @@ MocoSolution MocoCasADiSolver::solveImpl() const {
     const long long elapsed = stopwatch.getElapsedTimeInNs();
     setSolutionStats(mocoSolution, casSolution.stats.at("success"),
             casSolution.objective, casSolution.stats.at("return_status"),
-            casSolution.stats.at("iter_count"),
-            SimTK::nsToSec(elapsed));
+            casSolution.stats.at("iter_count"), SimTK::nsToSec(elapsed));
 
     if (get_verbosity()) {
         std::cout << std::string(79, '-') << "\n";

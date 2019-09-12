@@ -25,6 +25,7 @@
 #include "osimMocoDLL.h"
 
 #include <OpenSim/Simulation/Model/Model.h>
+#include "Components/DeGrooteFregly2016Muscle.h"
 
 namespace OpenSim {
 
@@ -213,6 +214,13 @@ public:
                 "available until after initialization.");
         return m_num_kinematic_constraint_equations;
     }
+    /// Get the number of auxiliary residual equations in the MocoProblem.
+    int getNumAuxiliaryResidualEquations() const {
+        OPENSIM_THROW_IF(m_num_auxiliary_residual_equations == -1, Exception,
+                "The number of auxiliary residual equations is not available "
+                "until after initialization.");
+        return m_num_auxiliary_residual_equations;
+    }
 
     /// Print a description of this problem, including costs and variable
     /// bounds. By default, the description is printed to the console (cout),
@@ -275,6 +283,24 @@ public:
     /// (see getModelDisabledConstraints()).
     void applyParametersToModelProperties(const SimTK::Vector& parameterValues,
             bool initSystemAndDisableConstraints = false) const;
+
+    /// Get a vector of reference pointers to model outputs that return residual
+    /// values for any components with dynamics in implicit forms. The 
+    /// references returned are from the model returned by 
+    /// getModelDisabledConstraints(). 
+    const std::vector<SimTK::ReferencePtr<const Output<double>>>&
+    getImplicitResidualReferencePtrs() const {
+        return m_implicit_residual_refs;
+    }
+
+    /// Get reference pointers to components that enforce dynamics in implicit 
+    /// form. This returns a vector of pairs including the name of the discrete
+    /// derivative variable and the component reference pointer.
+    const 
+    std::vector<std::pair<std::string, SimTK::ReferencePtr<const Component>>>&
+    getImplicitComponentReferencePtrs() const {
+        return m_implicit_component_refs;
+    }
     /// @}
 
 private:
@@ -311,6 +337,12 @@ private:
     std::vector<std::string> m_kinematic_constraint_eq_names_with_derivatives;
     std::vector<std::string>
             m_kinematic_constraint_eq_names_without_derivatives;
+
+    int m_num_auxiliary_residual_equations = -1;
+    std::vector<SimTK::ReferencePtr<const Output<double>>> 
+            m_implicit_residual_refs;
+    std::vector<std::pair<std::string, SimTK::ReferencePtr<const Component>>>
+            m_implicit_component_refs;
 };
 
 } // namespace OpenSim

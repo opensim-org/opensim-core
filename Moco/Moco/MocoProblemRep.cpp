@@ -25,6 +25,7 @@
 #include "MocoProblemInfo.h"
 #include <regex>
 #include <unordered_set>
+#include "Components/DeGrooteFregly2016Muscle.h"
 
 using namespace OpenSim;
 
@@ -34,6 +35,14 @@ MocoProblemRep::MocoProblemRep(const MocoProblem& problem)
 }
 void MocoProblemRep::initialize() {
 
+    // Clear member variables.
+    m_model_base = Model();
+    m_state_base.clear();
+    m_position_motion_base.reset();
+    m_model_disabled_constraints = Model();
+    m_position_motion_disabled_constraints.reset();
+    m_constraint_forces.reset();
+    m_acceleration_motion.reset();
     m_state_infos.clear();
     m_control_infos.clear();
     m_parameters.clear();
@@ -42,7 +51,11 @@ void MocoProblemRep::initialize() {
     m_path_constraints.clear();
     m_kinematic_constraints.clear();
     m_multiplier_infos_map.clear();
-
+    m_kinematic_constraint_eq_names_with_derivatives.clear();
+    m_kinematic_constraint_eq_names_without_derivatives.clear();
+    m_implicit_component_refs.clear();
+    m_implicit_residual_refs.clear();
+    
     if (!getTimeInitialBounds().isSet() && !getTimeFinalBounds().isSet()) {
         std::cout << "Warning: no time bounds set." << std::endl;
     }
@@ -247,6 +260,7 @@ void MocoProblemRep::initialize() {
 
     // State infos.
     // ------------
+    // Set the regex pattern states first.  
     const auto stateNames = m_model_base.getStateVariableNames();
     for (int i = 0; i < ph0.getProperty_state_infos_pattern().size(); ++i) {
         const auto& pattern = ph0.get_state_infos_pattern(i).getName();
@@ -266,7 +280,8 @@ void MocoProblemRep::initialize() {
     }
 
     // Create internal record of state and control infos, automatically
-    // populated from coordinates and actuators.
+    // populated from coordinates and actuators. This could override state infos
+    // set using a regex pattern above.
     for (int i = 0; i < ph0.getProperty_state_infos().size(); ++i) {
         const auto& name = ph0.get_state_infos(i).getName();
         m_state_infos[name] = ph0.get_state_infos(i);
@@ -301,7 +316,7 @@ void MocoProblemRep::initialize() {
                 }
             }
         }
-    }
+    }   
 
     // Control infos.
     // --------------
@@ -317,6 +332,7 @@ void MocoProblemRep::initialize() {
             }
         }
     }
+
     for (int i = 0; i < ph0.getProperty_control_infos().size(); ++i) {
         const auto& name = ph0.get_control_infos(i).getName();
         auto it = std::find(controlNames.begin(), controlNames.end(), name);
@@ -355,6 +371,7 @@ void MocoProblemRep::initialize() {
                             MocoBounds::unconstrained());
                 }
             }
+            
             if (ph0.get_bound_activation_from_excitation()) {
                 const auto* muscle = dynamic_cast<const Muscle*>(&actu);
                 if (muscle && !muscle->get_ignore_activation_dynamics()) {
@@ -366,6 +383,7 @@ void MocoProblemRep::initialize() {
                     }
                 }
             }
+            
         } else {
             // This is a non-scalar actuator, so we need to add multiple
             // control infos.
@@ -382,6 +400,36 @@ void MocoProblemRep::initialize() {
             }
         }
     }
+
+    // Additional information for DeGrooteFregly2016Muscle components that have
+    // tendon compliance enabled.
+    m_num_auxiliary_residual_equations = 0;
+    for (const auto& dgfmuscle : m_model_disabled_constraints
+            .getComponentList<DeGrooteFregly2016Muscle>()) {
+        if (!dgfmuscle.get_ignore_tendon_compliance()) {
+            // Normalized tendon force state info.
+            const std::string stateName = 
+                    dgfmuscle.getAbsolutePathString() + "/" + 
+                    dgfmuscle.getNormalizedTendonForceStateName();
+            auto& stateInfo = m_state_infos[stateName];
+            if (stateInfo.getName().empty()) { stateInfo.setName(stateName); }
+            if (!stateInfo.getBounds().isSet()) {
+                stateInfo.setBounds({dgfmuscle.getMinNormalizedTendonForce(), 
+                                     dgfmuscle.getMaxNormalizedTendonForce()});
+            }
+
+            if (dgfmuscle.get_tendon_compliance_dynamics_mode() == "implicit") {
+                const auto& derivName =
+                        dgfmuscle.getImplicitDynamicsDerivativeName();
+                ++m_num_auxiliary_residual_equations;
+                m_implicit_component_refs.emplace_back(derivName, &dgfmuscle); 
+            }
+        }
+    }
+
+    // Muscle-tendon equilibrium residual outputs.
+    m_implicit_residual_refs = getModelOutputReferencePtrs<double>(
+            m_model_disabled_constraints, "^implicitresidual_.*", true);
 
     // Parameters.
     // -----------

@@ -235,6 +235,10 @@ private:
         std::copy_n(zdot.getContiguousScalarData(), zdot.size(),
                 output.auxiliary_derivatives.ptr());
 
+        // Copy auxiliary residuals to output.
+        copyImplicitResidualsToOutput(*mocoProblemRep,
+                simtkStateDisabledConstraints, output.auxiliary_residuals);
+
         m_jar->leave(std::move(mocoProblemRep));
     }
     void calcMultibodySystemImplicit(const ContinuousInput& input,
@@ -282,6 +286,10 @@ private:
         const auto& zdot = simtkStateDisabledConstraints.getZDot();
         std::copy_n(zdot.getContiguousScalarData(), zdot.size(),
                 output.auxiliary_derivatives.ptr());
+
+        // Copy auxiliary residuals to output.
+        copyImplicitResidualsToOutput(*mocoProblemRep,
+                simtkStateDisabledConstraints, output.auxiliary_residuals);
 
         m_jar->leave(std::move(mocoProblemRep));
     }
@@ -470,7 +478,10 @@ private:
             const casadi::DM& controls, const Model& model,
             SimTK::State& simtkState, bool copyAuxStates) const {
         convertToSimTKState(time, states, model, simtkState, copyAuxStates);
+        model.realizeVelocity(simtkState);
+
         auto& simtkControls = model.updControls(simtkState);
+
         for (int ic = 0; ic < getNumControls(); ++ic) {
             simtkControls[m_modelControlIndices[ic]] = *(controls.ptr() + ic);
         }
@@ -500,12 +511,23 @@ private:
         modelDisabledConstraints.getSystem().prescribe(
                 simtkStateDisabledConstraints);
 
-        if (getNumDerivatives()) {
+        if (getNumAccelerations()) {
             auto& accel = mocoProblemRep->getAccelerationMotion();
             accel.setEnabled(simtkStateDisabledConstraints, true);
-            SimTK::Vector udot(
-                    (int)derivatives.rows(), derivatives.ptr(), true);
+            SimTK::Vector udot(getNumAccelerations(), derivatives.ptr(), true);
             accel.setUDot(simtkStateDisabledConstraints, udot);
+        }
+
+        if (getNumAuxiliaryResidualEquations()) {
+            const auto& implicitRefs =
+                    mocoProblemRep->getImplicitComponentReferencePtrs();
+            const int numAccels = getNumAccelerations();
+            for (int i = 0; i < implicitRefs.size(); ++i) {
+                const auto& comp = implicitRefs[i].second.getRef();
+                comp.setDiscreteVariableValue(simtkStateDisabledConstraints,
+                        implicitRefs[i].first,
+                        *(derivatives.ptr() + numAccels + i));
+            }
         }
 
         convertToSimTKState(
@@ -611,6 +633,20 @@ private:
         std::copy_n(udoterr.getContiguousScalarData() + udoterrOffset,
                 udoterrSize,
                 kinematic_constraint_errors.ptr() + qerr.size() + uerrSize);
+    }
+
+    void copyImplicitResidualsToOutput(const MocoProblemRep& mocoProblemRep,
+            const SimTK::State& state, casadi::DM& auxiliary_residuals) const {
+        if (getNumAuxiliaryResidualEquations()) {
+            const auto& residualOutputs =
+                    mocoProblemRep.getImplicitResidualReferencePtrs();
+            SimTK::Vector auxResiduals((int)residualOutputs.size(), 0.0);
+            for (int i = 0; i < residualOutputs.size(); ++i) {
+                auxResiduals[i] = residualOutputs[i]->getValue(state);
+            }
+            std::copy_n(auxResiduals.getContiguousScalarData(),
+                    auxResiduals.size(), auxiliary_residuals.ptr());
+        }
     }
 
     std::unique_ptr<ThreadsafeJar<const MocoProblemRep>> m_jar;
