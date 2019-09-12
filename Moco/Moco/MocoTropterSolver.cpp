@@ -55,9 +55,9 @@ MocoTropterSolver::createTropterSolver(
         std::shared_ptr<const MocoTropterSolver::TropterProblemBase<double>>
                 ocp) const {
 #ifdef MOCO_WITH_TROPTER
-    // Check that a positive number of mesh points was provided.
+    // Check that a non-negative number of mesh points was provided.
     checkPropertyInRangeOrSet(*this, getProperty_num_mesh_intervals(), 0,
-            std::numeric_limits<int>::max(), {-1});
+            std::numeric_limits<int>::max(), {});
 
     if (getProperty_mesh().size() > 0) {
 

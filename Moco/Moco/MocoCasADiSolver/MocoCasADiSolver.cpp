@@ -175,7 +175,7 @@ std::unique_ptr<CasOC::Solver> MocoCasADiSolver::createCasOCSolver(
     }
 
     checkPropertyInRangeOrSet(*this, getProperty_num_mesh_intervals(), 0,
-            std::numeric_limits<int>::max(), {-1});
+            std::numeric_limits<int>::max(), {});
 
     if (getProperty_mesh().size() > 0) {
 
