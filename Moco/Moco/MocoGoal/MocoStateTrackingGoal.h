@@ -63,6 +63,9 @@ public:
         set_reference(std::move(ref));
     }
 
+    /// If no reference has been provided, this returns an empty processor.
+    const TableProcessor& getReference() const { return get_reference(); }
+
     /// Set the weight for an individual state variable. If a weight is
     /// already set for the requested state, then the provided weight
     /// replaces the previous weight. An exception is thrown if a weight
@@ -81,8 +84,19 @@ public:
         upd_state_weights() = weightSet;
     }
 
-    /// If no reference has been provided, this returns an empty processor.
-    const TableProcessor& getReference() const { return get_reference(); }
+    /// Only state paths matching the regular expression are tracked. The
+    /// regular expression must match the entire state path for a state path to
+    /// be tracked (that is, we use std::regex_match, not std::regex_search).
+    /// To track only generalized coordinates, use `.*value$`.
+    /// To track generalized coordinates and speeds, use `.*(value|speed)$`.
+    /// To track only activations, use `.*activation$`.
+    /// If the reference contains columns for states whose path does not match
+    /// this pattern, you will get an error unless you use
+    /// `setAllowUnusedReferences(true)`.
+    void setPattern(std::string pattern) { set_pattern(pattern); }
+    /// Unset the pattern, which causes all states to be matched.
+    void clearPattern() { updProperty_pattern().clear(); }
+    std::string getPattern() const { return get_pattern(); }
 
     /// Specify whether or not extra columns in the reference are allowed.
     /// If set true, the extra references will be ignored by the cost.
@@ -116,13 +130,17 @@ private:
             "(coordinates, speeds, activation, etc.) to track. Column labels "
             "should be state variable paths, e.g., 'knee/flexion/value'");
 
-    OpenSim_DECLARE_PROPERTY(allow_unused_references, bool,
-            "Flag to determine whether or not references contained in the "
-            "reference_file are allowed to be ignored by the cost.");
-
     OpenSim_DECLARE_PROPERTY(state_weights, MocoWeightSet,
             "Set of weight objects to weight the tracking of individual "
             "state variables in the cost.");
+
+    OpenSim_DECLARE_OPTIONAL_PROPERTY(pattern, std::string,
+            "If provided, only states matching this regular expression are "
+            "tracked (default: no pattern).");
+
+    OpenSim_DECLARE_PROPERTY(allow_unused_references, bool,
+            "Flag to determine whether or not references contained in the "
+            "reference_file are allowed to be ignored by the cost.");
 
     OpenSim_DECLARE_PROPERTY(scale_weights_with_range, bool, 
             "Use the range, or the distance between the maximum and minimum "
@@ -133,8 +151,9 @@ private:
 
     void constructProperties() {
         constructProperty_reference(TableProcessor());
-        constructProperty_allow_unused_references(false);
         constructProperty_state_weights(MocoWeightSet());
+        constructProperty_pattern();
+        constructProperty_allow_unused_references(false);
         constructProperty_scale_weights_with_range(false);
     }
 

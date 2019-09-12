@@ -31,15 +31,17 @@ public:
             initial_variable, std::string, "Initial variable of the pair.");
     OpenSim_DECLARE_PROPERTY(
             final_variable, std::string, "Final variable of the pair.");
+    OpenSim_DECLARE_PROPERTY(negate, bool,
+            "Should the initial and final variables have opposite signs? "
+            "Defaults to false.");
 
     MocoPeriodicityGoalPair();
-    MocoPeriodicityGoalPair(std::string initialVariable,
-            std::string finalVariable);
+    MocoPeriodicityGoalPair(
+            std::string initialVariable, std::string finalVariable);
     MocoPeriodicityGoalPair(std::string initialVariableIsFinalVariable);
 
 private:
     void constructProperties();
-
 };
 
 /// This goal enforces equality between initial and final variable values in
@@ -54,15 +56,19 @@ private:
 /// supported, and are specified via the 'state_pairs' and 'control_pairs'
 /// properties.
 ///
-/// To impose bilateral symmetry in a walking simulation, we can simulate over
-/// half a gait cycle and impose periodic constraints. For bilateral variables
-/// (e.g., hip flexion speeds and hamstrings controls), the constraints should
-/// enforce that right and left values, and inversely, should be the same at
-/// the beginning and half of the gait cycle, respectively. For the other
-/// variables (e.g., pelvis tilt values), the constraints should enforce that
-/// the values should be the same at the beginning and half of the gait cycle.
-/// The example code below illustrates how to enforce the aforementioned
-/// constraints with different constructors.
+/// To handle initial and final variable values that are equal in absolute value
+/// but differ in sign (e.g. a pelvis rotation in walking), use
+/// addNegatedStatePair or addNegatedControlPair.
+///
+/// To impose bilateral symmetry in a walking simulation,
+/// we can simulate over half a gait cycle and impose periodic constraints. For
+/// bilateral variables (e.g., hip flexion speeds and hamstrings controls), the
+/// constraints should enforce that right and left values, and inversely, should
+/// be the same at the beginning and half of the gait cycle, respectively. For
+/// the other variables (e.g., pelvis tilt values), the constraints should
+/// enforce that the values should be the same at the beginning and half of the
+/// gait cycle. The example code below illustrates how to enforce the
+/// aforementioned constraints with different constructors.
 /// @code
 /// periodicGoal = problem.addGoal<MocoPeriodicityGoal>("periodicGoal");
 /// @endcode
@@ -90,12 +96,13 @@ private:
 /// @endcode
 /// This is an endpoint constraint goal by default.
 /// @ingroup mocogoal
+///
 class OSIMMOCO_API MocoPeriodicityGoal : public MocoGoal {
     OpenSim_DECLARE_CONCRETE_OBJECT(MocoPeriodicityGoal, MocoGoal);
 
 public:
-    OpenSim_DECLARE_LIST_PROPERTY(state_pairs, MocoPeriodicityGoalPair,
-            "Periodic pairs of states.");
+    OpenSim_DECLARE_LIST_PROPERTY(
+            state_pairs, MocoPeriodicityGoalPair, "Periodic pairs of states.");
     OpenSim_DECLARE_LIST_PROPERTY(control_pairs, MocoPeriodicityGoalPair,
             "Periodic pairs of controls.");
 
@@ -107,7 +114,15 @@ public:
     void addStatePair(MocoPeriodicityGoalPair pair) {
         append_state_pairs(std::move(pair));
     }
+    void addNegatedStatePair(MocoPeriodicityGoalPair pair) {
+        pair.set_negate(true);
+        append_state_pairs(std::move(pair));
+    }
     void addControlPair(MocoPeriodicityGoalPair pair) {
+        append_control_pairs(std::move(pair));
+    }
+    void addNegatedControlPair(MocoPeriodicityGoalPair pair) {
+        pair.set_negate(true);
         append_control_pairs(std::move(pair));
     }
 
@@ -123,8 +138,8 @@ protected:
 
 private:
     void constructProperties();
-    mutable std::vector<std::pair<int, int>> m_indices_states;
-    mutable std::vector<std::pair<int, int>> m_indices_controls;
+    mutable std::vector<std::tuple<int, int, int>> m_indices_states;
+    mutable std::vector<std::tuple<int, int, int>> m_indices_controls;
     mutable std::vector<std::pair<std::string,std::string>> m_state_names;
     mutable std::vector<std::pair<std::string,std::string>> m_control_names;
 };

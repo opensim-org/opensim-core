@@ -87,7 +87,7 @@ MocoSolution MocoStudy::solve() const {
     MocoSolution solution;
     try {
         solution = get_solver().solve();
-    } catch (const Exception&) { 
+    } catch (const Exception&) {
         Muscle::setPrintWarnings(oldWarningFlag);
         throw;
     }
@@ -121,6 +121,6 @@ void MocoStudy::visualize(const MocoTrajectory& it) const {
 
 TimeSeriesTable MocoStudy::analyze(const MocoTrajectory& iterate,
         std::vector<std::string> outputPaths) const {
-    return OpenSim::analyze<double>(get_problem().createRep().getModelBase(), 
+    return OpenSim::analyze<double>(get_problem().createRep().getModelBase(),
         iterate, outputPaths);
 }

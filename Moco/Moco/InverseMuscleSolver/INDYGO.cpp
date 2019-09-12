@@ -318,7 +318,7 @@ INDYGO::Solution INDYGO::solve() const {
     // ----------------------------------
     ocp->print_description();
     tropter::DirectCollocationSolver<adouble> dircol(ocp, "trapezoidal",
-            "ipopt", numMeshPoints);
+            "ipopt", numMeshPoints - 1);
     // TODO Consider trying using the quasi-Newton mode; it seems to work
     // well for some problems but not well for larger problems.
     // dircol.get_opt_solver().set_hessian_approximation("limited-memory");

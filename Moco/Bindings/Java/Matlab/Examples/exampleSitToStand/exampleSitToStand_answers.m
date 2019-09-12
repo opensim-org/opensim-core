@@ -51,7 +51,7 @@ problem.addCost(MocoControlCost('myeffort'));
 
 % Part 1e: Configure the solver.
 solver = moco.initCasADiSolver();
-solver.set_num_mesh_points(25);
+solver.set_num_mesh_intervals(25);
 solver.set_optim_convergence_tolerance(1e-4);
 solver.set_optim_constraint_tolerance(1e-4);
 

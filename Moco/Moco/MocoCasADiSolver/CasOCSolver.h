@@ -35,9 +35,9 @@ class Transcription;
 class Solver {
 public:
     Solver(const Problem& problem) : m_problem(problem) {}
-    void setNumMeshPoints(int numMeshPoints) {
-        for (int i = 0; i < numMeshPoints; ++i) {
-            m_mesh.push_back(i / (double)(numMeshPoints - 1));
+    void setNumMeshIntervals(int numMeshIntervals) {
+        for (int i = 0; i < (numMeshIntervals + 1); ++i) {
+            m_mesh.push_back(i / (double)(numMeshIntervals));
         }
     }
     void setMesh(std::vector<double> mesh) { m_mesh = std::move(mesh); }
@@ -64,6 +64,12 @@ public:
     }
     double getLagrangeMultiplierWeight() const {
         return m_lagrangeMultiplierWeight;
+    }
+    void setImplicitModeAccelerationBounds(Bounds bounds) {
+        m_implicitModeAccelerationBounds = bounds;
+    }
+    Bounds getImplicitModeAccelerationBounds() const {
+        return m_implicitModeAccelerationBounds;
     }
     /// Whether or not to constrain control values at mesh interval midpoints
     /// by linearly interpolating control values from mesh interval endpoints.
@@ -145,6 +151,7 @@ private:
     bool m_minimizeLagrangeMultipliers = false;
     double m_lagrangeMultiplierWeight = 1.0;
     bool m_interpolateControlMidpoints = true;
+    Bounds m_implicitModeAccelerationBounds;
     std::string m_finite_difference_scheme = "central";
     std::string m_sparsity_detection = "none";
     std::string m_write_sparsity;

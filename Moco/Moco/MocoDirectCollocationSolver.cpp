@@ -21,7 +21,7 @@
 using namespace OpenSim;
 
 void MocoDirectCollocationSolver::constructProperties() {
-    constructProperty_num_mesh_points(100);
+    constructProperty_num_mesh_intervals(100);
     constructProperty_mesh();
     constructProperty_verbosity(2);
     constructProperty_transcription_scheme("hermite-simpson");
@@ -36,6 +36,7 @@ void MocoDirectCollocationSolver::constructProperties() {
     constructProperty_optim_ipopt_print_level(-1);
     constructProperty_guess_file("");
     constructProperty_velocity_correction_bounds({-0.1, 0.1});
+    constructProperty_implicit_mode_acceleration_bounds({-1000, 1000});
     constructProperty_minimize_lagrange_multipliers(false);
     constructProperty_lagrange_multiplier_weight(1.0);
 }

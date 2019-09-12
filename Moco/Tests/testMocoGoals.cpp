@@ -52,8 +52,8 @@ std::unique_ptr<Model> createSlidingMassModel() {
 /// Test the result of a sliding mass minimum effort problem.
 TEMPLATE_TEST_CASE(
         "Test MocoControlGoal", "", MocoTropterSolver, MocoCasADiSolver) {
-    const int N = 10;         // mesh points
-    const int Nc = 2 * N - 1; // collocation points (Hermite-Simpson)
+    const int N = 9;         // mesh intervals
+    const int Nc = 2 * N + 1; // collocation points (Hermite-Simpson)
     MocoSolution sol1;
     {
         MocoStudy moco;
@@ -68,7 +68,7 @@ TEMPLATE_TEST_CASE(
         mp.addGoal<MocoControlGoal>();
 
         auto& ms = moco.initSolver<TestType>();
-        ms.set_num_mesh_points(N);
+        ms.set_num_mesh_intervals(N);
 
         sol1 = moco.solve();
         sol1.write("testMocoGoals_testMocoControlGoal_sol1.sto");
@@ -114,7 +114,7 @@ TEMPLATE_TEST_CASE(
     //    mp.addGoal(effort);
 
     //    MocoTropterSolver& ms = moco.initSolver();
-    //    ms.set_num_mesh_points(N);
+    //    ms.set_num_mesh_intervals(N);
 
     //    MocoSolution solution = moco.solve();
     //    SimTK_TEST_EQ(solution.getControl("actuator2"), SimTK::Vector(N, 0));
@@ -150,7 +150,7 @@ TEMPLATE_TEST_CASE(
         effort->setWeightForControl("/actuator2", 2.0);
 
         auto& ms = moco.initSolver<TestType>();
-        ms.set_num_mesh_points(N);
+        ms.set_num_mesh_intervals(N);
 
         sol2 = moco.solve();
 
@@ -225,7 +225,7 @@ MocoStudy setupMocoStudyDoublePendulumMinimizeEffort() {
     problem.setStateInfo("/jointset/j1/q1/speed", {-50, 50}, 0, 0);
 
     auto& solver = moco.initSolver<SolverType>();
-    solver.set_num_mesh_points(20);
+    solver.set_num_mesh_intervals(20);
     solver.set_optim_convergence_tolerance(1e-5);
 
     return moco;
@@ -366,7 +366,7 @@ TEMPLATE_TEST_CASE(
 
     auto& ms = moco.initSolver<TestType>();
     int N = 5;
-    ms.set_num_mesh_points(N);
+    ms.set_num_mesh_intervals(N);
     ms.set_optim_convergence_tolerance(1e-6);
 
     MocoSolution solution = moco.solve().unseal();
@@ -374,7 +374,7 @@ TEMPLATE_TEST_CASE(
 
     // Check that the actuator "actu" is equal to gravity (i.e. supporting all
     // of the weight).
-    CHECK(solution.getControl("/actu")[0] == Approx(-10).epsilon(1e-6));
+    CHECK(solution.getControl("/actu")[0] == Approx(-10).epsilon(1e-4));
     // Check that the reaction force is zero.
     CHECK(solution.getObjective() == Approx(0.0).margin(1e-6));
 }
@@ -486,9 +486,10 @@ TEMPLATE_TEST_CASE("MocoPeriodicityGoal", "", MocoCasADiSolver) {
         CHECK(solution.getState("/jointset/j0/q0/value")[N - 1] ==
                 solution.getState("/jointset/j0/q0/value")[0]);
         CHECK(solution.getState("/jointset/j0/q0/speed")[N - 1] ==
-                solution.getState("/jointset/j0/q0/speed")[0]);
+                Approx(solution.getState("/jointset/j0/q0/speed")[0])
+                        .margin(1e-6));
         CHECK(solution.getControl("/tau0")[N - 1] ==
-                solution.getControl("/tau0")[0]);
+                Approx(solution.getControl("/tau0")[0]).margin(1e-6));
     }
 
     SECTION("Goal works in cost mode.") {
@@ -497,10 +498,12 @@ TEMPLATE_TEST_CASE("MocoPeriodicityGoal", "", MocoCasADiSolver) {
         effort->setEnabled(false);
         MocoSolution solution = study.solve();
         const int N = solution.getNumTimes();
-        CHECK(solution.getState("/jointset/j0/q0/value")[N - 1] == Approx(
-                solution.getState("/jointset/j0/q0/value")[0]).margin(1e-6));
-        CHECK(solution.getState("/jointset/j0/q0/speed")[N - 1] == Approx(
-                solution.getState("/jointset/j0/q0/speed")[0]).margin(1e-6));
+        CHECK(solution.getState("/jointset/j0/q0/value")[N - 1] ==
+                Approx(solution.getState("/jointset/j0/q0/value")[0])
+                        .margin(1e-6));
+        CHECK(solution.getState("/jointset/j0/q0/speed")[N - 1] ==
+                Approx(solution.getState("/jointset/j0/q0/speed")[0])
+                        .margin(1e-6));
         CHECK(solution.getControl("/tau0")[N - 1] ==
                 Approx(solution.getControl("/tau0")[0]).margin(1e-6));
     }

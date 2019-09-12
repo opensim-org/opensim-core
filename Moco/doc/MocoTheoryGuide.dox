@@ -239,16 +239,16 @@ The resulting finite-dimensional NLP is as follows:
          + w_{\lambda} \sum_{i=1}^{n} \textrm{simpson}_i(\|\lambda\|_2^2) &  \\
          & \quad S_{c,j} = \sum_{i=1}^{n} \textrm{simpson}_i(s_{c,j}(t, y, x, \lambda, p)) \\
         \mbox{subject to} \quad
-         & \bar{q}_i = \textrm{hermite}_i(q, u) & i = 1, \ldots, n \\
+         & \bar{q}_i = \textrm{hermite}_i(q, u) + G(\bar{q}_i, p)^T \bar{\gamma}_i & i = 1, \ldots, n \\
          & q_i = q_{i-1} + \textrm{simpson}_i(u) & i = 1, \ldots, n \\
-         & \bar{u}_i = \textrm{hermite}_i(u, f_{\textrm{mb}}(t, y, x, \lambda, p)) + G(\bar{q}_i, p)^T \bar{\gamma}_i & i = 1, \ldots, n \\
+         & \bar{u}_i = \textrm{hermite}_i(u, f_{\textrm{mb}}(t, y, x, \lambda, p)) & i = 1, \ldots, n \\
          & u_i = u_{i-1} + \textrm{simpson}_i(f_{\textrm{mb}}(t, y, x, \lambda, p))  & i = 1, \ldots, n \\
          & \bar{z}_i = \textrm{hermite}_i(z, f_{\textrm{aux}}(t, y, x, \lambda, p)) & i = 1, \ldots, n \\
          & z_i = z_{i-1} + \textrm{simpson}_i(f_{\textrm{aux}}(t, y, x, \lambda, p)) & i = 1, \ldots, n \\
          & \bar{x}_i = (x_{i-1} + x_i)/2 & i = 1, \ldots, n \\
          & 0 = \phi(q_i)  & i = 0, \ldots, n\\
          & 0 = \dot{\phi}(q_i, u_i, p) = G(q_i, p) u_i  & i = 0, \ldots, n\\
-         & 0 = \ddot{\phi}(q_i, u_i, \dot{u}_i, p) = G(q_i, p) \dot{u}_i + \dot{G}(q_i, p) u_i  & i = 0, \ldots, n\\
+         & 0 = \ddot{\phi}(t_i, y_i, x_i, \lambda_i, p) = G(q_i, p) f_{\textrm{mb}}(t_i, y_i, x_i, \lambda_i, p) + \dot{G}(q_i, p) u_i  & i = 0, \ldots, n\\
          & g_{L} \leq g(t_i, y_i, x_{i}, p) \leq g_{U}  & i = 0, \ldots, n\\
          & V_{L,k} \leq V_k(t_0, t_f, y_0, y_f, x_{0}, x_{f}, \lambda_0, \lambda_f, p, S_{e,k}) \leq V_{U,k} \quad S_{e,j} = \sum_{i=1}^{n} \textrm{simpson}_i(s_{e,j}(t, y, x, \lambda, p)) & k = 1, \ldots, K \\
          \mbox{with respect to} \quad
@@ -270,12 +270,39 @@ The resulting finite-dimensional NLP is as follows:
 \f]
 
 The explicit multibody dynamics function \f$ f_{\textrm{mb}} \f$ is the same as
-in Trapezoidal transcription. The implicit dynamics formulation is as follows:
+in Trapezoidal transcription.
+
+The \f$ G(\bar{q}_i, p)^T \bar{\gamma}_i \f$ term 
+represents a velocity correction that is necessary to impose when enforcing 
+derivatives of kinematic constraints in the NLP. The additional variables 
+\f$ \bar{\gamma}_i \f$ help avoid problems becoming overconstrained, and the 
+kinematic Jacobian transpose operator, \f$ G(\bar{q}_i, p)^T \f$, restricts the 
+velocity correction to the tangent plane of the constraint manifold (see Posa et 
+al. 2016 described in @ref kincon for more details). Currently, we only support 
+enforcing derivatives of position-level, or holonomic, constraints, represented 
+by the equations:
+
+\f[
+    \begin{alignat*}{2}
+         & 0 = \dot{\phi}(q, u, p) = G(q, p) u\\
+         & 0 = \ddot{\phi}(t, y, x, \lambda, p) = G(q, p) f_{\textrm{mb}}(t, y, x, \lambda, p) + \dot{G}(q, p) u \\
+    \end{alignat*}
+\f]
+
+The explicit multibody dynamics function is used here where \f$ \dot{u} \f$ 
+would be if it were a continuous variable in the problem (as is in implicit mode,
+see below).
+
+Even though OpenSim supports non-holonomic constraints (that is,
+\f$ \nu(q, u, p) = 0 \f$), we only support holonomic constraints; that is,
+\f$ \phi(q) = 0 \f$.
+
+The implicit dynamics formulation is as follows:
 
 \f[
     \begin{alignat*}{2}
     \mbox{subject to} \quad
-         & \bar{u}_i = \textrm{hermite}_i(u, \zeta)  & i = 1, \ldots, n \\
+         & \bar{u}_i = \textrm{hermite}_i(u, \zeta) & i = 1, \ldots, n \\
          & u_i = u_{i-1} + \textrm{simpson}_i(\zeta)  & i = 1, \ldots, n \\
          & M(q_i, p)\zeta_i + G(q_i, p)^T \lambda_i =
           f_{\textrm{app}}(t_i, y_i, x_{i}, p) -
@@ -288,26 +315,6 @@ in Trapezoidal transcription. The implicit dynamics formulation is as follows:
          & \bar{\zeta}_i \in [-\zeta_{B}, \zeta_{B}] & i = 1, \ldots, n
     \end{alignat*}
 \f]
-
-The \f$ G(\bar{q}_i, p)^T \bar{\gamma}_i \f$ term represents a velocity
-correction that is necessary to impose when enforcing derivatives of kinematic
-constraints in the NLP. The additional variables \f$ \bar{\gamma}_i \f$ help
-avoid problems becoming overconstrained, and the kinematic Jacobian transpose
-operator, \f$ G(\bar{q}_i, p)^T \f$, restricts the velocity correction to the
-tangent plane of the constraint manifold (see Posa et al. 2016 described in @ref
-kincon for more details). Currently, we only support enforcing derivatives of
-position-level, or holonomic, constraints, represented by the equations:
-
-\f[
-    \begin{alignat*}{2}
-         & 0 = \dot{\phi}(q, u, p) = G(q, p) u\\
-         & 0 = \ddot{\phi}(q, u, \dot{u}, p) = G(q, p) \dot{u} + \dot{G}(q, p) u \\
-    \end{alignat*}
-\f]
-
-Even though OpenSim supports non-holonomic constraints (that is,
-\f$ \nu(q, u, p) = 0 \f$), we only support holonomic constraints; that is,
-\f$ \phi(q) = 0 \f$.
 
 */
 } // namespace OpenSim

@@ -712,6 +712,24 @@ private:
     const std::string m_filepath;
 };
 
+/// Obtain the ground reaction forces, centers of pressure, and torques
+/// resulting from Force elements (e.g., SmoothSphereHalfSpaceForce), using the
+/// model and the trajectory. Forces and torques are expressed in the ground
+/// frame with respect to the ground origin. Hence, the centers of pressure are
+/// at the origin. Names of Force elements should be provided separately for
+/// elements of the right and left feet. The output is a table formated for use
+/// with OpenSim tools; the labels of the columns distinguish between right
+/// ("<>_r") and left ("<>_l") forces, centers of pressure, and torques. The
+/// forces and torques used are taken from the first six outputs of
+/// getRecordValues(); this order is of use for, for example, the
+/// SmoothSphereHalfSpaceForce contact model but might have a different meaning
+/// for different contact models.
+OSIMMOCO_API
+TimeSeriesTable createExternalLoadsTableForGait(Model model,
+        const MocoTrajectory& trajectory,
+        const std::vector<std::string>& forceNamesRightFoot,
+        const std::vector<std::string>& forceNamesLeftFoot);
+
 } // namespace OpenSim
 
 #endif // MOCO_MOCOUTILITIES_H

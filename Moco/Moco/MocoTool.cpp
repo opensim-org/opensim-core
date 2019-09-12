@@ -65,9 +65,8 @@ void MocoTool::updateTimeInfo(const std::string& dataLabel,
     info.final = final;
 
     // We do not want to end up with a larger mesh interval than requested.
-    info.numMeshPoints =
-            (int)std::ceil((info.final - info.initial) / get_mesh_interval()) +
-            1;
+    info.numMeshIntervals =
+            (int)std::ceil((info.final - info.initial) / get_mesh_interval());
 }
 
 std::string MocoTool::getFilePath(const std::string& file) const {

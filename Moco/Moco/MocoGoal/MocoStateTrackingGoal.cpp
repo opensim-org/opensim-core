@@ -36,12 +36,25 @@ void MocoStateTrackingGoal::initializeOnModelImpl(const Model& model) const {
 
     // Throw exception if a weight is specified for a nonexistent state.
     auto allSysYIndices = createSystemYIndexMap(model);
+
+    std::regex regex;
+    if (getProperty_pattern().size()) {
+        regex = std::regex(get_pattern());
+    }
+
     for (int i = 0; i < get_state_weights().getSize(); ++i) {
         const auto& weightName = get_state_weights().get(i).getName();
         if (allSysYIndices.count(weightName) == 0) {
             OPENSIM_THROW_FRMOBJ(Exception,
                 "Weight provided with name '" + weightName + "' but this is "
                 "not a recognized state.");
+        }
+        if (getProperty_pattern().size() &&
+                !std::regex_match(weightName, regex)) {
+            OPENSIM_THROW_FRMOBJ(Exception,
+                    format("Weight provided with name '%s' but this name does "
+                           "not match the pattern '%s'.",
+                            weightName, get_pattern()));
         }
     }
 
@@ -56,6 +69,16 @@ void MocoStateTrackingGoal::initializeOnModelImpl(const Model& model) const {
             }
             OPENSIM_THROW_FRMOBJ(Exception,
                  "State reference '" + refName + "' unrecognized.");
+        }
+        if (getProperty_pattern().size() &&
+                !std::regex_match(refName, regex)) {
+            if (get_allow_unused_references()) {
+                continue;
+            }
+            OPENSIM_THROW_FRMOBJ(
+                    Exception, format("State reference '%s' does not match the "
+                                      "pattern '%s'.",
+                                       refName, get_pattern()));
         }
 
         m_sysYIndices.push_back(allSysYIndices[refName]);

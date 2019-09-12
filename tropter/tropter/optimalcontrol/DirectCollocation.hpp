@@ -30,9 +30,9 @@ template <typename T>
 DirectCollocationSolver<T>::DirectCollocationSolver(
         std::shared_ptr<const OCProblem> ocproblem,
         const std::string& transcrip, const std::string& optsolver,
-        const unsigned& num_mesh_points)
+        const unsigned& num_mesh_intervals)
         : DirectCollocationSolver(ocproblem, transcrip, optsolver,
-                  linspace(0, 1, num_mesh_points)){}
+                  linspace(0, 1, num_mesh_intervals + 1)){}
 
 template<typename T>
 DirectCollocationSolver<T>::DirectCollocationSolver(
