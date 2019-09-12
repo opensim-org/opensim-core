@@ -165,10 +165,11 @@ classdef osimC3D < matlab.mixin.SetGet
                 % and moment columns will have 'p' and 'm' prefixes,
                 % respectively.
                 if ~startsWith(char(labels.get(i)),'f')
-                    for u = 0 : nRows - 1
-                      % Divide by 1000
-                      self.forces.getDependentColumnAtIndex(i).get(u).scalarDivideEq(1000);
-                    end
+                   columnData = self.forces.updDependentColumnAtIndex(i);
+                   for u = 0 : nRows - 1
+                     % Divide by 1000
+                     columnData.set(u,columnData.get(u).scalarDivideEq(1000));
+                   end
                 end
             end
            disp('Point and Torque values convert from mm and Nmm to m and Nm, respectively')
