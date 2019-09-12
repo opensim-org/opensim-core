@@ -1,0 +1,129 @@
+name: continuous-integration
+
+# TODO: build master branch after PRs are merged.
+# syntax https://help.github.com/en/articles/workflow-syntax-for-github-actions
+on:
+  schedule:
+  - cron: '0 2 * * *'
+    
+jobs:
+  windows:
+    name: Windows
+
+    runs-on: windows-2016
+
+    steps:
+    - uses: actions/checkout@v1
+    - name: Install Chocolatey packages
+      run: choco install swig --version 3.0.9 --yes --limit-output 
+    - name: Build
+      run: |
+        echo %GITHUB_WORKSPACE%\\build_deps
+        mkdir %GITHUB_WORKSPACE%\\build_deps
+        chdir %GITHUB_WORKSPACE%\\build_deps
+        cmake --version
+        cmake %GITHUB_WORKSPACE%\\dependencies -G"Visual Studio 15 2017" -A x64 -DCMAKE_INSTALL_PREFIX=%GITHUB_WORKSPACE%\\opensim_dependencies_install
+        cmake --build . --config Release -- /maxcpucount:4 
+        mkdir %GITHUB_WORKSPACE%\\build 
+        chdir %GITHUB_WORKSPACE%\\build
+        cmake %GITHUB_WORKSPACE% -G"Visual Studio 15 2017" -A x64 -DCMAKE_INSTALL_PREFIX=%GITHUB_WORKSPACE%\\opensim-core-install -DOPENSIM_DEPENDENCIES_DIR=%GITHUB_WORKSPACE%\\opensim_dependencies_install -DWITH_BTK=on -DBUILD_PYTHON_WRAPPING=on -DBUILD_JAVA_WRAPPING=on
+        cmake --build . --config Release -- /maxcpucount:4 
+    - name: Test
+      run: |
+        chdir %GITHUB_WORKSPACE%\\build
+        ctest --parallel 4 --output-on-failure --build-config Release
+    - name: Install
+      run: |
+        chdir %GITHUB_WORKSPACE%\\build
+        cmake --build . --config Release --target install -- /maxcpucount:4 /verbosity:quiet
+  
+  mac:
+    name: Mac
+
+    runs-on: macOS-10.14
+
+    steps:
+    - uses: actions/checkout@v1
+    - name: Install Homebrew packages
+      run: |
+        brew install doxygen swig@3
+    - name: Build
+      run: |
+        mkdir $GITHUB_WORKSPACE/../build_deps && cd $GITHUB_WORKSPACE/../build_deps
+        DEP_CMAKE_ARGS=($GITHUB_WORKSPACE/dependencies -DCMAKE_INSTALL_PREFIX=$GITHUB_WORKSPACE/../opensim_dependencies_install -DCMAKE_BUILD_TYPE=Release)
+        DEP_CMAKE_ARGS+=(-DCMAKE_OSX_DEPLOYMENT_TARGET=10.10)
+        cmake "${DEP_CMAKE_ARGS[@]}"
+        make --jobs 4
+        mkdir $GITHUB_WORKSPACE/../build && cd $GITHUB_WORKSPACE/../build
+        OSIM_CMAKE_ARGS=($GITHUB_WORKSPACE -DCMAKE_INSTALL_PREFIX=$GITHUB_WORKSPACE/../opensim-core-install -DCMAKE_BUILD_TYPE=Release)
+        OSIM_CMAKE_ARGS+=(-DOPENSIM_DEPENDENCIES_DIR=$GITHUB_WORKSPACE/../opensim_dependencies_install)
+        OSIM_CMAKE_ARGS+=(-DCMAKE_OSX_DEPLOYMENT_TARGET=10.10)
+        OSIM_CMAKE_ARGS+=(-DWITH_BTK=on)
+        OSIM_CMAKE_ARGS+=(-DBUILD_PYTHON_WRAPPING=on -DBUILD_JAVA_WRAPPING=on -DSWIG_EXECUTABLE=/usr/local/opt/swig@3/bin/swig)
+        OSIM_CMAKE_ARGS+=(-DOPENSIM_INSTALL_UNIX_FHS=OFF)
+        OSIM_CMAKE_ARGS+=(-DOPENSIM_DOXYGEN_USE_MATHJAX=off)
+        OSIM_CMAKE_ARGS+=(-DOPENSIM_SIMBODY_DOXYGEN_LOCATION="https://simtk.org/api_docs/simbody/latest/")
+        OSIM_CMAKE_ARGS+=(-DCMAKE_CXX_FLAGS="-Werror")
+        printf '%s\n' "${OSIM_CMAKE_ARGS[@]}" 
+        cmake "${OSIM_CMAKE_ARGS[@]}"
+        make --jobs 4
+    - name: Test
+      run: |
+        cd $GITHUB_WORKSPACE/../build
+        ctest --parallel 4 --output-on-failure
+    - name: Install
+      run: |
+        cd $GITHUB_WORKSPACE/../build
+        make doxygen
+        make install
+        rm -r $GITHUB_WORKSPACE/../opensim_dependencies_install
+        cd $GITHUB_WORKSPACE/../opensim-core-install/sdk/Python
+        # Run the python tests, verbosely.
+        python3 -m unittest discover --start-directory opensim/tests --verbose
+    # TODO: deploy
+
+  linux:
+    name: Linux
+
+    runs-on: ubuntu-18.04
+
+    steps:
+    - uses: actions/checkout@v1
+    - name: Install packages
+      run: sudo apt-get install --yes liblapack-dev freeglut3-dev libxi-dev libxmu-dev doxygen python3 python3-dev python3-numpy python3-setuptools swig
+    - name: Build
+      run: |
+        mkdir $GITHUB_WORKSPACE/../build_deps && cd $GITHUB_WORKSPACE/../build_deps
+        cmake $GITHUB_WORKSPACE/dependencies -DCMAKE_INSTALL_PREFIX=$GITHUB_WORKSPACE/../opensim_dependencies_install -DCMAKE_BUILD_TYPE=Release
+        make --jobs 4
+        mkdir $GITHUB_WORKSPACE/../build && cd $GITHUB_WORKSPACE/../build
+        OSIM_CMAKE_ARGS=($GITHUB_WORKSPACE -DCMAKE_INSTALL_PREFIX=$GITHUB_WORKSPACE/../opensim-core-install -DCMAKE_BUILD_TYPE=Release)
+        OSIM_CMAKE_ARGS+=(-DOPENSIM_DEPENDENCIES_DIR=$GITHUB_WORKSPACE/../opensim_dependencies_install)
+        OSIM_CMAKE_ARGS+=(-DWITH_BTK=on)
+        OSIM_CMAKE_ARGS+=(-DBUILD_PYTHON_WRAPPING=on -DBUILD_JAVA_WRAPPING=on)
+        OSIM_CMAKE_ARGS+=(-DOPENSIM_INSTALL_UNIX_FHS=OFF)
+        OSIM_CMAKE_ARGS+=(-DOPENSIM_DOXYGEN_USE_MATHJAX=off)
+        OSIM_CMAKE_ARGS+=(-DOPENSIM_SIMBODY_DOXYGEN_LOCATION="https://simtk.org/api_docs/simbody/latest/")
+        # OSIM_CMAKE_ARGS+=(-DCMAKE_CXX_FLAGS="-Werror")
+        printf '%s\n' "${OSIM_CMAKE_ARGS[@]}"
+        cmake "${OSIM_CMAKE_ARGS[@]}"
+        make --jobs 4
+    - name: Test
+      run: |
+        cd $GITHUB_WORKSPACE/../build
+        # TODO: Temporary for python to find Simbody libraries.
+        export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$GITHUB_WORKSPACE/../opensim_dependencies_install/simbody/lib
+        ctest --parallel 4 --output-on-failure
+    - name: Install
+      run: |
+        cd $GITHUB_WORKSPACE/../build
+        make doxygen
+        make install
+        rm -r $GITHUB_WORKSPACE/../opensim_dependencies_install
+        # cd $GITHUB_WORKSPACE/../opensim-core-install/sdk/Python
+        # Run the python tests, verbosely.
+        # python3 -m unittest discover --start-directory opensim/tests --verbose
+    # TODO: deploy
+
+
+  
