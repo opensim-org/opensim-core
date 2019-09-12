@@ -357,17 +357,16 @@ public:
             it.multiplier_names.push_back(info.name);
         for (const auto& info : m_slackInfos)
             it.slack_names.push_back(info.name);
-        // We do not know whether this problem will be solved using implicit
-        // or explicit dynamics mode, so we populate the derivative_names
-        // always.
-        for (const auto& info : m_stateInfos) {
-            if (info.type == StateType::Speed) {
-                auto name = info.name;
-                auto leafpos = name.find("speed");
-                OPENSIM_THROW_IF(leafpos == std::string::npos,
-                        OpenSim::Exception, "Internal error.");
-                name.replace(leafpos, name.size(), "accel");
-                it.derivative_names.push_back(name);
+        if (isDynamicsModeImplicit()) {
+            for (const auto& info : m_stateInfos) {
+                if (info.type == StateType::Speed) {
+                    auto name = info.name;
+                    auto leafpos = name.find("speed");
+                    OPENSIM_THROW_IF(leafpos == std::string::npos,
+                            OpenSim::Exception, "Internal error.");
+                    name.replace(leafpos, name.size(), "accel");
+                    it.derivative_names.push_back(name);
+                }
             }
         }
         for (const auto& auxDerivName : m_auxiliaryDerivativeNames) {

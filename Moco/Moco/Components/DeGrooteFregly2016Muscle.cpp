@@ -329,7 +329,6 @@ void DeGrooteFregly2016Muscle::calcFiberVelocityInfoHelper(
                 calcForceVelocityMultiplier(fvi.normFiberVelocity);
     }
 
-    fvi.fiberVelocityAlongTendon = muscleTendonVelocity - fvi.tendonVelocity;
     const SimTK::Real tanPennationAngle =
             m_fiberWidth / mli.fiberLengthAlongTendon;
     fvi.pennationAngularVelocity =

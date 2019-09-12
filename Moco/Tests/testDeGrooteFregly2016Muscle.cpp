@@ -993,7 +993,8 @@ TEST_CASE("DeGrooteFregly2016Muscle basics") {
 }
 
 Model createHangingMuscleModel(
-        bool ignoreActivationDynamics, bool ignoreTendonCompliance) {
+        bool ignoreActivationDynamics, bool ignoreTendonCompliance, 
+        bool isTendonDynamicsExplicit) {
     Model model;
     model.setName("isometric_muscle");
     model.set_gravity(SimTK::Vec3(9.81, 0, 0));
@@ -1014,7 +1015,9 @@ Model createHangingMuscleModel(
     actu->set_tendon_strain_at_one_norm_force(0.10);
     actu->set_ignore_activation_dynamics(ignoreActivationDynamics);
     actu->set_ignore_tendon_compliance(ignoreTendonCompliance);
-    actu->set_tendon_compliance_dynamics_mode("implicit");
+    if (!isTendonDynamicsExplicit) {
+        actu->set_tendon_compliance_dynamics_mode("implicit");
+    }
     actu->set_max_contraction_velocity(10);
     actu->set_pennation_angle_at_optimal(0.10);
     actu->addNewPathPoint("origin", model.updGround(), SimTK::Vec3(0));
@@ -1029,23 +1032,27 @@ Model createHangingMuscleModel(
 TEMPLATE_TEST_CASE("Hanging muscle minimum time", "", MocoCasADiSolver) {
     auto ignoreActivationDynamics = GENERATE(true, false);
     auto ignoreTendonCompliance = GENERATE(true, false);
+    auto isTendonDynamicsExplicit = GENERATE(true, false);
 
     std::cout.rdbuf(LogManager::cout.rdbuf());
     std::cout.rdbuf(LogManager::cout.rdbuf());
 
     CAPTURE(ignoreActivationDynamics);
     CAPTURE(ignoreTendonCompliance);
+    CAPTURE(isTendonDynamicsExplicit);
 
     SimTK::Real initHeight = 0.15;
     SimTK::Real finalHeight = 0.14;
 
     Model model = createHangingMuscleModel(
-            ignoreActivationDynamics, ignoreTendonCompliance);
+            ignoreActivationDynamics, ignoreTendonCompliance,
+            isTendonDynamicsExplicit);
 
     SimTK::State state = model.initSystem();
     const auto& actuator = model.getComponent("forceset/actuator");
 
-    const auto* muscle = dynamic_cast<const Muscle*>(&actuator);
+    const auto* muscle = 
+            dynamic_cast<const DeGrooteFregly2016Muscle*>(&actuator);
 
     // Minimum time trajectory optimization.
     // -------------------------------------
@@ -1064,7 +1071,8 @@ TEMPLATE_TEST_CASE("Hanging muscle minimum time", "", MocoCasADiSolver) {
                     "/forceset/actuator/normalized_tendon_force", {0, 5});
         }
         if (!ignoreActivationDynamics) {
-            problem.setStateInfo("/forceset/actuator/activation", {0.01, 1});
+                problem.setStateInfo(
+                        "/forceset/actuator/activation", {0.01, 1});
         }
         problem.setControlInfo("/forceset/actuator", {0.01, 1});
 
@@ -1075,19 +1083,28 @@ TEMPLATE_TEST_CASE("Hanging muscle minimum time", "", MocoCasADiSolver) {
             initial_activation->setName("initial_activation");
         }
         if (!ignoreTendonCompliance) {
-            // The problem performs better when this is in cost mode.
-            auto* initial_equilibrium =
-                    problem.addGoal<MocoInitialVelocityEquilibriumDGFGoal>();
-            initial_equilibrium->setName("initial_velocity_equilibrium");
-            initial_equilibrium->setMode("cost");
-            initial_equilibrium->setWeight(0.001);
+            if (isTendonDynamicsExplicit) {
+                auto* initial_equilibrium = 
+                    problem.addGoal<MocoInitialForceEquilibriumGoal>();
+                initial_equilibrium->setName("initial_force_equilibrium");
+                auto* initial_activation =
+                        problem.addGoal<MocoInitialActivationGoal>();
+                initial_activation->setName("initial_activation");
+            } else {
+                // The problem performs better when this is in cost mode.
+                auto* initial_equilibrium = problem.addGoal<
+                        MocoInitialVelocityEquilibriumDGFGoal>();
+                initial_equilibrium->setName("initial_velocity_equilibrium");
+                initial_equilibrium->setMode("cost");
+                initial_equilibrium->setWeight(0.001);
+            }
         }
 
         problem.addGoal<MocoFinalTimeGoal>();
 
         auto& solver = moco.initSolver<TestType>();
-        solver.set_num_mesh_points(25);
-        solver.set_dynamics_mode("implicit");
+        solver.set_num_mesh_points(40);
+        solver.set_dynamics_mode("explicit");
         solver.set_optim_convergence_tolerance(1e-4);
         solver.set_optim_constraint_tolerance(1e-4);
         solver.set_transcription_scheme("hermite-simpson");
@@ -1096,6 +1113,7 @@ TEMPLATE_TEST_CASE("Hanging muscle minimum time", "", MocoCasADiSolver) {
         std::string solutionFilename = "testDeGrooteFregly2016Muscle_solution";
         if (!ignoreActivationDynamics) solutionFilename += "_actdyn";
         if (ignoreTendonCompliance) solutionFilename += "_rigidtendon";
+        if (isTendonDynamicsExplicit) solutionFilename += "_exptendyn";
         solutionFilename += ".sto";
         solutionTrajOpt.write(solutionFilename);
     }
@@ -1108,7 +1126,7 @@ TEMPLATE_TEST_CASE("Hanging muscle minimum time", "", MocoCasADiSolver) {
         // tendon compliance dynamics mode to perform time stepping.
         auto* mutableDGFMuscle = dynamic_cast<DeGrooteFregly2016Muscle*>(
                 &model.updComponent("forceset/actuator"));
-        if (!ignoreTendonCompliance) {
+        if (!ignoreTendonCompliance && !isTendonDynamicsExplicit) {
             mutableDGFMuscle->set_tendon_compliance_dynamics_mode("explicit");
         }
         const auto iterateSim =
@@ -1123,7 +1141,7 @@ TEMPLATE_TEST_CASE("Hanging muscle minimum time", "", MocoCasADiSolver) {
         const double error = iterateSim.compareContinuousVariablesRMS(
                 solutionTrajOpt, {{"states", {}}, {"controls", {}}});
         CHECK(error < 0.05);
-        if (!ignoreTendonCompliance) {
+        if (!ignoreTendonCompliance && !isTendonDynamicsExplicit) {
             mutableDGFMuscle->set_tendon_compliance_dynamics_mode("implicit");
         }
     }
@@ -1162,12 +1180,21 @@ TEMPLATE_TEST_CASE("Hanging muscle minimum time", "", MocoCasADiSolver) {
             initial_activation->setName("initial_activation");
         }
         if (!ignoreTendonCompliance) {
-            // The problem performs better when this is in cost mode.
-            auto* initial_equilibrium =
-                    problem.addGoal<MocoInitialVelocityEquilibriumDGFGoal>();
-            initial_equilibrium->setName("initial_velocity_equilibrium");
-            initial_equilibrium->setMode("cost");
-            initial_equilibrium->setWeight(0.001);
+            if (isTendonDynamicsExplicit) {
+                auto* initial_equilibrium =
+                        problem.addGoal<MocoInitialForceEquilibriumGoal>();
+                initial_equilibrium->setName("initial_force_equilibrium");
+                auto* initial_activation =
+                        problem.addGoal<MocoInitialActivationGoal>();
+                initial_activation->setName("initial_activation");
+            } else {
+                // The problem performs better when this is in cost mode.
+                auto* initial_equilibrium = problem.addGoal<
+                        MocoInitialVelocityEquilibriumDGFGoal>();
+                initial_equilibrium->setName("initial_velocity_equilibrium");
+                initial_equilibrium->setMode("cost");
+                initial_equilibrium->setWeight(0.001);
+            }
         }
 
         auto* tracking = problem.addGoal<MocoStateTrackingGoal>();
@@ -1188,8 +1215,8 @@ TEMPLATE_TEST_CASE("Hanging muscle minimum time", "", MocoCasADiSolver) {
         tracking->setAllowUnusedReferences(true);
 
         auto& solver = moco.initSolver<TestType>();
-        solver.set_num_mesh_points(25);
-        solver.set_dynamics_mode("implicit");
+        solver.set_num_mesh_points(40);
+        solver.set_dynamics_mode("explicit");
         solver.set_transcription_scheme("hermite-simpson");
 
         MocoSolution solutionTrack = moco.solve();
@@ -1197,6 +1224,7 @@ TEMPLATE_TEST_CASE("Hanging muscle minimum time", "", MocoCasADiSolver) {
                 "testDeGrooteFregly2016Muscle_track_solution";
         if (!ignoreActivationDynamics) solutionFilename += "_actdyn";
         if (ignoreTendonCompliance) solutionFilename += "_rigidtendon";
+        if (isTendonDynamicsExplicit) solutionFilename += "_exptendyn";
         solutionFilename += ".sto";
         solutionTrack.write(solutionFilename);
         double error =
