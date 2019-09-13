@@ -63,13 +63,13 @@ public:
                 }
             }
         }
-        createVariablesAndSetBounds(
-                grid, 2 * m_problem.getNumStates(), pointsForInterpControls);
+        createVariablesAndSetBounds(grid, 2 * m_problem.getNumStates(),
+                pointsForInterpControls);
     }
 
 private:
     casadi::DM createQuadratureCoefficientsImpl() const override;
-    casadi::DM createKinematicConstraintIndicesImpl() const override;
+    casadi::DM createMeshIndicesImpl() const override;
     void calcDefectsImpl(const casadi::MX& x, const casadi::MX& xdot,
             casadi::MX& defects) const override;
     void calcInterpolatingControlsImpl(const casadi::MX& controls,

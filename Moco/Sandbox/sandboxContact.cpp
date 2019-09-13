@@ -185,7 +185,7 @@ void ball2d() {
     // Configure the solver.
 
     MocoTropterSolver& ms = moco.initSolver();
-    ms.set_num_mesh_points(500);
+    ms.set_num_mesh_intervals(500);
 
     MocoTrajectory guess = ms.createGuess();
 
@@ -280,7 +280,7 @@ void pendulum() {
     // Configure the solver.
 
     MocoTropterSolver& ms = moco.initSolver();
-    ms.set_num_mesh_points(500);
+    ms.set_num_mesh_intervals(500);
     MocoTrajectory guess = ms.createGuess();
     guess.setStatesTrajectory(statesTimeSteppingTable);
 
@@ -370,7 +370,7 @@ void pendulumActivationCoordinateActuator() {
     // Configure the solver.
 
     MocoTropterSolver& ms = moco.initSolver();
-    ms.set_num_mesh_points(500);
+    ms.set_num_mesh_intervals(500);
     MocoTrajectory guess = ms.createGuess();
     guess.setStatesTrajectory(statesTimeSteppingTable);
 
@@ -619,7 +619,7 @@ void slip(double rzvalue0 = 0, double rzspeed0 = 0) {
     mp.setStateInfo("/leg/length/speed", {-10, 10}, 0);
 
     MocoTropterSolver& ms = moco.initSolver();
-    ms.set_num_mesh_points(500);
+    ms.set_num_mesh_intervals(500);
     //ms.set_optim_max_iterations(2);
     MocoTrajectory guess = ms.createGuess();
     //statesTimeSteppingTable.updMatrix() +=
@@ -778,8 +778,8 @@ void slipSolveForForce(double rzvalue0 = 0, double rzspeed0 = 0) {
 
     MocoTropterSolver& ms = moco.initSolver();
     ms.set_dynamics_mode("implicit");
-    ms.set_num_mesh_points(100);
-    //ms.set_num_mesh_points(50);
+    ms.set_num_mesh_intervals(100);
+    //ms.set_num_mesh_intervals(50);
     //ms.set_optim_max_iterations(2);
     // I tried setting convergence and constraint tolerances to 1e-3, and the
     // time to solve increased from 11 to 16 minutes (using EspositoMiller2018
@@ -825,22 +825,22 @@ void slipSolveForForce(double rzvalue0 = 0, double rzspeed0 = 0) {
     STOFileAdapter::write(contactForceHistory.flatten({"x", "y", "z"}),
             "slipSolveForForce_dircol_force.sto");
 
-    //ms.set_num_mesh_points(50);
+    //ms.set_num_mesh_intervals(50);
     //ms.setGuess(solution);
     //// Does not converge instantly... TODO
     //MocoSolution solution2 = moco.solve().unseal();
     //solution2.write("slipSolveForForce_solution2.sto");
 
-    //// 200 mesh points results in a *much* smoother solution than 50 but takes
+    //// 200 mesh intervals results in a *much* smoother solution than 50 but takes
     //// 7626 seconds to solve. and it's smoother but not smooth; very high
     //// frequency for most of the motion; smooth in the middle third.
-    //ms.set_num_mesh_points(200);
+    //ms.set_num_mesh_intervals(200);
     //ms.setGuess(solution2);
     //MocoSolution solution200 = moco.solve().unseal();
     //solution200.write("slipSolveForForce_solution200.sto");
 
     // This works, but it takes a few minutes:
-    //ms.set_num_mesh_points(100);
+    //ms.set_num_mesh_intervals(100);
     //ms.setGuess(solution);
     //MocoSolution solution100 = moco.solve().unseal();
     //solution100.write("slipSolveForForce_solution100.sto");
@@ -848,7 +848,7 @@ void slipSolveForForce(double rzvalue0 = 0, double rzspeed0 = 0) {
     // State and GRF tracking solution:
     // + Residual actuators at pelvis (rz, tx, ty)
     // + Implicit skeletal dynamics (no activation dynamics at coordinates)
-    // + 100 mesh points
+    // + 100 mesh intervals
     // + AckermannVanDenBogert2010Force contact (defaults w/ stiffness = 5e5)
 
     moco.visualize(solution);

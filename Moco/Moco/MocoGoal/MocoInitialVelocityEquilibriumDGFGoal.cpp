@@ -1,9 +1,9 @@
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: MocoInitialActivationGoal.cpp                                *
+ * OpenSim Moco: MocoInitialVelocityEquilibriumGoal.cpp                       *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2019 Stanford University and the Authors                     *
  *                                                                            *
- * Author(s): Christopher Dembia                                              *
+ * Author(s): Nicholas Bianco                                                 *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -16,43 +16,39 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "MocoInitialActivationGoal.h"
+#include "MocoInitialVelocityEquilibriumDGFGoal.h"
 
 using namespace OpenSim;
 
-void MocoInitialActivationGoal::initializeOnModelImpl(
+void MocoInitialVelocityEquilibriumDGFGoal::initializeOnModelImpl(
         const Model& model) const {
 
-    auto allSysYIndices = createSystemYIndexMap(model);
-    auto systemControlIndexMap = createSystemControlIndexMap(model);
-
-    for (const auto& muscle : model.getComponentList<Muscle>()) {
-        if (!muscle.get_ignore_activation_dynamics()) {
-            const std::string path = muscle.getAbsolutePathString();
-            int excitationIndex = systemControlIndexMap[path];
-            int activationIndex = allSysYIndices[path + "/activation"];
-            m_indices.emplace_back(excitationIndex, activationIndex);
+    for (const auto& dgfmuscle :
+            model.getComponentList<DeGrooteFregly2016Muscle>()) {
+        if (!dgfmuscle.get_ignore_tendon_compliance()) {
+            m_dgfMuscleRefs.emplace_back(&dgfmuscle);
         }
     }
 
-    setNumIntegralsAndOutputs(0, (int)m_indices.size());
+    setNumIntegralsAndOutputs(0, (int)m_dgfMuscleRefs.size());
 }
 
-void MocoInitialActivationGoal::calcGoalImpl(
+void MocoInitialVelocityEquilibriumDGFGoal::calcGoalImpl(
         const GoalInput& input, SimTK::Vector& goal) const {
-    const auto& controls = getModel().getControls(input.initial_state);
-    const auto& states = input.initial_state.getY();
-    int i = 0;
-    if (!getModeIsCost()) {
-        for (const auto& indices : m_indices) {
-            goal[i] = controls[indices.first] - states[indices.second];
-            ++i;
+    const auto& s = input.initial_state;
+    if (getModeIsCost()) {
+        for (int i = 0; i < m_dgfMuscleRefs.size(); ++i) {
+            const auto residual =
+                    m_dgfMuscleRefs[i]
+                            ->getLinearizedEquilibriumResidualDerivative(s);
+            goal[i] = residual * residual;
         }
     } else {
-        for (const auto& indices : m_indices) {
-            goal[i] = SimTK::square(controls[indices.first] -
-                    states[indices.second]);
-            ++i;
+        for (int i = 0; i < m_dgfMuscleRefs.size(); ++i) {
+            const auto residual =
+                    m_dgfMuscleRefs[i]
+                            ->getLinearizedEquilibriumResidualDerivative(s);
+            goal[i] = residual;
         }
     }
 }

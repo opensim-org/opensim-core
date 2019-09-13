@@ -81,10 +81,10 @@ MocoSolution solveDoublePendulumSwingup(const std::string& dynamics_mode) {
 
     // Configure the solver.
     // =====================
-    int N = 30;
+    int N = 29;
     auto& solver = moco.initSolver<SolverType>();
     solver.set_dynamics_mode(dynamics_mode);
-    solver.set_num_mesh_points(N);
+    solver.set_num_mesh_intervals(N);
     solver.set_transcription_scheme("trapezoidal");
     // solver.set_verbosity(2);
 
@@ -196,9 +196,9 @@ TEMPLATE_TEST_CASE("Combining implicit dynamics mode with path constraints",
         pc->setConstraintInfo(info);
         auto& solver = moco.initSolver<TestType>();
         solver.set_dynamics_mode("implicit");
-        const int N = 5;          // mesh points
-        const int Nc = 2 * N - 1; // collocation points (Hermite-Simpson)
-        solver.set_num_mesh_points(N);
+        const int N = 4;          // mesh intervals
+        const int Nc = 2 * N + 1; // collocation points (Hermite-Simpson)
+        solver.set_num_mesh_intervals(N);
         MocoSolution solution = moco.solve();
 
         THEN("path constraints are still obeyed") {
@@ -228,7 +228,7 @@ TEMPLATE_TEST_CASE("Combining implicit dynamics with kinematic constraints",
         prob.setModelCopy(model);
         auto& solver = moco.initSolver<TestType>();
         solver.set_dynamics_mode("implicit");
-        solver.set_num_mesh_points(5);
+        solver.set_num_mesh_intervals(5);
         solver.set_transcription_scheme("hermite-simpson");
         solver.set_enforce_constraint_derivatives(true);
         MocoSolution solution = moco.solve();
@@ -256,8 +256,8 @@ SCENARIO("Using MocoTrajectory with the implicit dynamics mode",
         THEN("it is not empty") { REQUIRE(!iterate.empty()); }
     }
     GIVEN("MocoTrajectory with derivative data") {
-        MocoTrajectory iter(createVectorLinspace(6, 0, 1), {}, {}, {}, {"a", "b"},
-                {}, {}, {}, {}, {6, 2, 0.5}, {});
+        MocoTrajectory iter(createVectorLinspace(6, 0, 1), {}, {}, {},
+                {"a", "b"}, {}, {}, {}, {}, {6, 2, 0.5}, {});
         WHEN("calling setNumTimes()") {
             REQUIRE(iter.getDerivativesTrajectory().nrow() != 4);
             iter.setNumTimes(4);
@@ -278,10 +278,10 @@ SCENARIO("Using MocoTrajectory with the implicit dynamics mode",
     GIVEN("two MocoTrajectorys with different derivative data") {
         const double valueA = 0.5;
         const double valueB = 0.499999;
-        MocoTrajectory iterA(createVectorLinspace(6, 0, 1), {}, {}, {}, {"a", "b"},
-                {}, {}, {}, {}, {6, 2, valueA}, {});
-        MocoTrajectory iterB(createVectorLinspace(6, 0, 1), {}, {}, {}, {"a", "b"},
-                {}, {}, {}, {}, {6, 2, valueB}, {});
+        MocoTrajectory iterA(createVectorLinspace(6, 0, 1), {}, {}, {},
+                {"a", "b"}, {}, {}, {}, {}, {6, 2, valueA}, {});
+        MocoTrajectory iterB(createVectorLinspace(6, 0, 1), {}, {}, {},
+                {"a", "b"}, {}, {}, {}, {}, {6, 2, valueB}, {});
         THEN("not numerically equal") {
             REQUIRE(!iterA.isNumericallyEqual(iterB));
         }
@@ -314,4 +314,106 @@ TEST_CASE("AccelerationMotion") {
     accel->setEnabled(state, false);
     model.realizeAcceleration(state);
     CHECK(state.getUDot()[0] == Approx(0).margin(1e-10));
+}
+
+// This class implements a custom component with simple dynamics in implicit
+// form.
+class MyAuxiliaryImplicitDynamics : public Component {
+    OpenSim_DECLARE_CONCRETE_OBJECT(MyAuxiliaryImplicitDynamics, Component);
+
+public:
+    OpenSim_DECLARE_PROPERTY(default_state, double,
+            "Value of the default state returned by initSystem().");
+    OpenSim_DECLARE_OUTPUT(implicitresidual, double, getImplicitResidual,
+            SimTK::Stage::Dynamics);
+    MyAuxiliaryImplicitDynamics() {
+        setName("implicit_auxdyn");
+        constructProperty_default_state(0.5);
+    }
+    double getImplicitResidual(const SimTK::State& s) const {
+
+        if (!isCacheVariableValid(s, "implicitresidual")) {
+            // Get the derivative control value.
+            // TODO add method to Component get with index instead.
+            const double derivative =
+                    getDiscreteVariableValue(s, "implicitderiv");
+            // Get the state variable value.
+            const double statevar = getStateVariableValue(s, "statevar");
+            // The dynamics residual: y y' - 1 = 0.
+            double residual = derivative * statevar - 1;
+            // Update the cache variable with the residual value.
+            setCacheVariableValue(s, "implicitresidual", residual);
+            markCacheVariableValid(s, "implicitresidual");
+        }
+        return getCacheVariableValue<double>(s, "implicitresidual");
+    }
+
+private:
+    void extendInitStateFromProperties(SimTK::State& s) const override {
+        Super::extendInitStateFromProperties(s);
+        setStateVariableValue(s, "statevar", get_default_state());
+    }
+    void extendSetPropertiesFromState(const SimTK::State& s) override {
+        Super::extendSetPropertiesFromState(s);
+        set_default_state(getStateVariableValue(s, "statevar"));
+    }
+    void computeStateVariableDerivatives(const SimTK::State& s) const override {
+        const double derivative = getDiscreteVariableValue(s, "implicitderiv");
+        setStateVariableDerivativeValue(s, "statevar", derivative);
+    }
+    void extendAddToSystem(SimTK::MultibodySystem& system) const override {
+        Super::extendAddToSystem(system);
+        addStateVariable("statevar");
+        addDiscreteVariable("implicitderiv", SimTK::Stage::Dynamics);
+        addCacheVariable("implicitresidual", double(0), SimTK::Stage::Dynamics);
+    }
+};
+
+TEST_CASE("Auxiliary implicit dynamics") {
+    SECTION("State unit tests") {
+        Model model;
+        auto* implicit_auxdyn = new MyAuxiliaryImplicitDynamics();
+        model.addComponent(implicit_auxdyn);
+        auto state = model.initSystem();
+        model.finalizeConnections();
+
+        // Create quadratic polynomial function.
+        SimTK::Function::Polynomial polyFunc(
+                SimTK::Vector(SimTK::Vec3(1, 0, 0)));
+        auto time = createVectorLinspace(20, 0, 1);
+        for (int i = 0; i < time.size(); ++i) {
+            // Set the velocity control discrete variable.
+            const double derivativeControl =
+                    polyFunc.calcValue(SimTK::Vector(1, time[i]));
+            implicit_auxdyn->setDiscreteVariableValue(
+                    state, "implicitderiv", derivativeControl);
+            model.realizeDynamics(state);
+
+            double statevar =
+                    implicit_auxdyn->getStateVariableValue(state, "statevar");
+            double derivative =
+                    implicit_auxdyn->getStateVariableDerivativeValue(
+                            state, "statevar");
+
+            // y y' = 1
+            double residual = statevar * derivative - 1;
+            // The check that the residual is being computed correctly.
+            CHECK(residual == implicit_auxdyn->getOutputValue<double>(
+                                      state, "implicitresidual"));
+        }
+    }
+
+    // SECTION("Direct collocation implicit") {
+    //    MocoStudy study;
+    //    auto& problem = study.updProblem();
+    //    auto model = OpenSim::make_unique<Model>();
+    //    auto* implicit_auxdyn = new MyAuxiliaryImplicitDynamics();
+    //    model->addComponent(implicit_auxdyn);
+    //    model->initSystem();
+    //    model->printSubcomponentInfo();
+    //    problem.setModel(std::move(model));
+    //    problem.setTimeBounds(0, 1);
+    //    problem.setStateInfo("/implicit_auxdyn/statevar", {-10, 10}, 0.0);
+    //    auto solution = study.solve();
+    //}
 }

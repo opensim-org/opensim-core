@@ -112,7 +112,7 @@ std::unique_ptr<MocoCasOCProblem> MocoCasADiSolver::createCasOCProblem() const {
     } else if (parallelEV != -1) {
         parallel = parallelEV;
     }
-    //if (m_runningInPython && parallel) {
+    // if (m_runningInPython && parallel) {
     //    std::cout << "Warning: "
     //                 "Cannot use parallelism in Python due to its "
     //                 "Global Interpreter Lock. "
@@ -174,7 +174,8 @@ std::unique_ptr<CasOC::Solver> MocoCasADiSolver::createCasOCSolver(
                         get_transcription_scheme()));
     }
 
-    checkPropertyIsPositive(*this, getProperty_num_mesh_points());
+    checkPropertyInRangeOrSet(*this, getProperty_num_mesh_intervals(), 0,
+            std::numeric_limits<int>::max(), {});
 
     if (getProperty_mesh().size() > 0) {
 
@@ -249,9 +250,8 @@ std::unique_ptr<CasOC::Solver> MocoCasADiSolver::createCasOCSolver(
     pluginOptions["verbose_init"] = true;
 
     if (getProperty_mesh().empty()) {
-        casSolver->setNumMeshPoints(get_num_mesh_points());
+        casSolver->setNumMeshIntervals(get_num_mesh_intervals());
     } else {
-        casSolver->setNumMeshPoints((int)getProperty_mesh().size());
         std::vector<double> mesh;
         for (int i = 0; i < getProperty_mesh().size(); ++i) {
             mesh.push_back(get_mesh(i));
@@ -264,6 +264,8 @@ std::unique_ptr<CasOC::Solver> MocoCasADiSolver::createCasOCSolver(
     casSolver->setLagrangeMultiplierWeight(get_lagrange_multiplier_weight());
     casSolver->setImplicitModeAccelerationBounds(
             convertBounds(get_implicit_mode_acceleration_bounds()));
+    casSolver->setImplicitAuxiliaryDerivativeBounds(
+            convertBounds(get_implicit_auxiliary_derivative_bounds()));
     casSolver->setOptimSolver(get_optim_solver());
     casSolver->setInterpolateControlMidpoints(
             get_interpolate_control_midpoints());
@@ -277,7 +279,6 @@ std::unique_ptr<CasOC::Solver> MocoCasADiSolver::createCasOCSolver(
 
 MocoSolution MocoCasADiSolver::solveImpl() const {
     const Stopwatch stopwatch;
-
 
     if (get_verbosity()) {
         std::cout << std::string(79, '=') << "\n";
@@ -298,14 +299,17 @@ MocoSolution MocoCasADiSolver::solveImpl() const {
         casGuess = casSolver->createInitialGuessFromBounds();
     } else {
         OPENSIM_THROW_IF(get_dynamics_mode() == "implicit" &&
-                guess.hasCoordinateStates() &&
-                guess.getDerivativeNames().empty(), Exception,
-            "'dynamics_mode' set to 'implicit' and coordinate states exist in "
-            "the guess, but no coordinate accelerations were found in the "
-            "guess. Consider using "
-            "MocoTrajectory::generateAccelerationsFromValues() or "
-            "MocoTrajectory::generateAccelerationsFromSpeeds() to construct an "
-            "appropriate guess.")
+                                 guess.hasCoordinateStates() &&
+                                 guess.getDerivativeNames().empty(),
+                Exception,
+                "'dynamics_mode' set to 'implicit' and coordinate states exist "
+                "in "
+                "the guess, but no coordinate accelerations were found in the "
+                "guess. Consider using "
+                "MocoTrajectory::generateAccelerationsFromValues() or "
+                "MocoTrajectory::generateAccelerationsFromSpeeds() to "
+                "construct an "
+                "appropriate guess.")
         casGuess = convertToCasOCIterate(guess);
     }
     CasOC::Solution casSolution = casSolver->solve(casGuess);
@@ -322,8 +326,8 @@ MocoSolution MocoCasADiSolver::solveImpl() const {
         const auto& matter = model.getMatterSubsystem();
         Storage storage = mocoSolution.exportToStatesStorage();
         // TODO update when we support multiple phases.
-        auto statesTraj = StatesTrajectory::createFromStatesStorage(model,
-            storage);
+        auto statesTraj =
+                StatesTrajectory::createFromStatesStorage(model, storage);
         SimTK::Matrix G;
         SimTK::FactorQTZ G_qtz;
         bool isJacobianFullRank = true;
@@ -364,13 +368,12 @@ MocoSolution MocoCasADiSolver::solveImpl() const {
     const long long elapsed = stopwatch.getElapsedTimeInNs();
     setSolutionStats(mocoSolution, casSolution.stats.at("success"),
             casSolution.objective, casSolution.stats.at("return_status"),
-            casSolution.stats.at("iter_count"),
-            SimTK::nsToSec(elapsed));
+            casSolution.stats.at("iter_count"), SimTK::nsToSec(elapsed));
 
     if (get_verbosity()) {
         std::cout << std::string(79, '-') << "\n";
-        std::cout << "Elapsed real time: "
-                << stopwatch.formatNs(elapsed) << ".\n";
+        std::cout << "Elapsed real time: " << stopwatch.formatNs(elapsed)
+                  << ".\n";
         if (mocoSolution) {
             std::cout << "MocoCasADiSolver succeeded!\n";
         } else {
