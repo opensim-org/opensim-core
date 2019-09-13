@@ -32,11 +32,11 @@ The most generic problem that Moco solves can be expressed as follows:
          & y_{f,L} \leq y_f \leq y_{f,U} \\
          & x_{f,L} \leq x_f \leq x_{f,U} \\
          \mbox{with respect to} \quad
+         & t_0 \in [t_{0,L}, t_{0,U}] \\
+         & t_f \in [t_{f,L}, t_{f,U}] \\
          & y \in [y_{L}, y_{U}] \\
          & x \in [x_{L}, x_{U}] \\
-         & p \in [p_{L}, p_{U}] \\
-         & t_0 \in [t_{0,L}, t_{0,U}] \\
-         & t_f \in [t_{f,L}, t_{f,U}]
+         & p \in [p_{L}, p_{U}].
     \end{alignat*}
 \f]
 
@@ -103,11 +103,11 @@ replaced with known quantities \f$ \hat{q} \f$ and \f$ \hat{u} \f$:
          & z_{f,L} \leq z_f \leq z_{f,U} \\
          & x_{f,L} \leq x_f \leq x_{f,U} \\
          \mbox{with respect to} \quad
+         & t_0 \in [t_{0,L}, t_{0,U}] \\
+         & t_f \in [t_{f,L}, t_{f,U}] \\
          & z \in [z_{L}, z_{U}] \\
          & x \in [x_{L}, x_{U}] \\
-         & p \in [p_{L}, p_{U}] \\
-         & t_0 \in [t_{0,L}, t_{0,U}] \\
-         & t_f \in [t_{f,L}, t_{f,U}].
+         & p \in [p_{L}, p_{U}].
     \end{alignat*}
 \f]
 
@@ -143,7 +143,7 @@ where \f$ \eta \f$ is any continuous variable in the optimal control problem
 (e.g., \f$ y \f$) and \f$ F \f$ is any function.
 
 Combining the discretization with the trapezoidal rule yields the following
-finite-dimensional nonlinear optimization problem (or nonlinear program, abbreviated as NLP).
+finite-dimensional nonlinear optimization problem (or nonlinear program, abbreviated as NLP):
 
 \f[
     \begin{alignat*}{2}
@@ -159,16 +159,16 @@ finite-dimensional nonlinear optimization problem (or nonlinear program, abbrevi
          & g_{L} \leq g(t_i, y_i, x_{i}, p) \leq g_{U}  & i = 0, \ldots, n\\
          & V_{L,k} \leq V_k(t_0, t_f, y_0, y_f, x_{0}, x_{f}, \lambda_0, \lambda_f, p, S_{e,k}) \leq V_{U,k} \quad S_{e,j} = \sum_{i=1}^{n} \textrm{trap}_i(s_{e,j}(t, y, x, \lambda, p)) & k = 1, \ldots, K \\
          \mbox{with respect to} \quad
-         & y_0 \in [y_{0,L}, y_{0,U}] \\
-         & x_0 \in [x_{0,L}, x_{0,U}] \\
-         & y_i \in [y_{L}, y_{U}] & i = 1, \ldots, n - 1\\
-         & x_i \in [x_{L}, x_{U}] & i = 1, \ldots, n - 1\\
-         & y_n \in [y_{f,L}, y_{f,U}] \\
-         & x_n \in [x_{f,L}, x_{f,U}] \\
-         & p \in [p_{L}, p_{U}] \\
          & t_0 \in [t_{0,L}, t_{0,U}] \\
          & t_n \in [t_{f,L}, t_{f,U}] \\
-         & \lambda_i \in [\lambda_L, \lambda_U] & i = 0, \ldots, n
+         & y_0 \in [y_{0,L}, y_{0,U}] \\
+         & y_i \in [y_{L}, y_{U}] & i = 1, \ldots, n - 1\\
+         & y_n \in [y_{f,L}, y_{f,U}] \\
+         & x_0 \in [x_{0,L}, x_{0,U}] \\
+         & x_i \in [x_{L}, x_{U}] & i = 1, \ldots, n - 1\\
+         & x_n \in [x_{f,L}, x_{f,U}] \\
+         & \lambda_i \in [\lambda_L, \lambda_U] & i = 0, \ldots, n \\
+         & p \in [p_{L}, p_{U}].
     \end{alignat*}
 \f]
 
@@ -252,20 +252,20 @@ The resulting finite-dimensional NLP is as follows:
          & g_{L} \leq g(t_i, y_i, x_{i}, p) \leq g_{U}  & i = 0, \ldots, n\\
          & V_{L,k} \leq V_k(t_0, t_f, y_0, y_f, x_{0}, x_{f}, \lambda_0, \lambda_f, p, S_{e,k}) \leq V_{U,k} \quad S_{e,j} = \sum_{i=1}^{n} \textrm{simpson}_i(s_{e,j}(t, y, x, \lambda, p)) & k = 1, \ldots, K \\
          \mbox{with respect to} \quad
-         & y_0 \in [y_{0,L}, y_{0,U}] \\
-         & x_0 \in [x_{0,L}, x_{0,U}] \\
-         & y_i \in [y_{L}, y_{U}] & i = 1, \ldots, n - 1 \\
-         & x_i \in [x_{L}, x_{U}] & i = 1, \ldots, n - 1 \\
-         & \bar{y}_i \in [y_{L}, y_{U}] & i = 1, \ldots, n \\
-         & \bar{x}_i \in [x_{L}, x_{U}] & i = 1, \ldots, n \\
-         & y_n \in [y_{f,L}, y_{f,U}] \\
-         & x_n \in [x_{f,L}, x_{f,U}] \\
-         & p \in [p_{L}, p_{U}] \\
          & t_0 \in [t_{0,L}, t_{0,U}] \\
          & t_n \in [t_{f,L}, t_{f,U}] \\
+         & y_0 \in [y_{0,L}, y_{0,U}] \\
+         & y_i \in [y_{L}, y_{U}] & i = 1, \ldots, n - 1 \\
+         & \bar{y}_i \in [y_{L}, y_{U}] & i = 1, \ldots, n \\
+         & y_n \in [y_{f,L}, y_{f,U}] \\
+         & x_0 \in [x_{0,L}, x_{0,U}] \\
+         & x_i \in [x_{L}, x_{U}] & i = 1, \ldots, n - 1 \\
+         & \bar{x}_i \in [x_{L}, x_{U}] & i = 1, \ldots, n \\
+         & x_n \in [x_{f,L}, x_{f,U}] \\
          & \lambda_i \in [\lambda_L, \lambda_U] & i = 0, \ldots, n \\
          & \bar{\lambda}_i \in [\lambda_L, \lambda_U] & i = 1, \ldots, n \\
-         & \bar{\gamma}_i \in [\bar{\gamma}_L, \bar{\gamma}_U] & i = 1, \ldots, n
+         & \bar{\gamma}_i \in [\bar{\gamma}_L, \bar{\gamma}_U] & i = 1, \ldots, n \\
+         & p \in [p_{L}, p_{U}].
     \end{alignat*}
 \f]
 
