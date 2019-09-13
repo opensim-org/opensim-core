@@ -173,7 +173,7 @@ MocoSolution minimizeControlEffortRightLeg(const Options& opt) {
     mp.setStateInfo("/jointset/ankle_r/ankle_angle_r/value", {-0.7, 0.5}, -0.2,
         0.2);
 
-    auto* effort = mp.addCost<MocoControlCost>();
+    auto* effort = mp.addGoal<MocoControlGoal>();
     effort->setName("control_effort");
 
     // Set solver options.
@@ -312,14 +312,14 @@ MocoSolution stateTrackingRightLeg(const Options& opt) {
     mp.setStateInfo("/jointset/ankle_r/ankle_angle_r/value", {-0.7, 0.5}, -0.2,
         0.2);
 
-    auto* tracking = mp.addCost<MocoStateTrackingCost>();
+    auto* tracking = mp.addGoal<MocoStateTrackingCost>();
     tracking->setName("tracking");
     tracking->setReference(prevStateTraj);
     // Don't track coordinates enforced by constraints.
     tracking->setWeight("/jointset/patellofemoral_r/knee_angle_r_beta/value", 0);
     tracking->setWeight("/jointset/patellofemoral_r/knee_angle_r_beta/speed", 0);
 
-    auto* effort = mp.addCost<MocoControlCost>();
+    auto* effort = mp.addGoal<MocoControlGoal>();
     effort->setName("effort");
     effort->set_weight(0.0001);
 

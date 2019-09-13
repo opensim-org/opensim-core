@@ -177,6 +177,12 @@ void OpenSim::visualize(Model model, Storage statesSto) {
     model.setUseVisualizer(true);
     model.initSystem();
 
+    // This line allows muscle activity to be visualized. To get muscle activity
+    // we probably need to realize only to Dynamics, but realizing to Report
+    // will catch any other calculations that custom components require for
+    // visualizing.
+    for (const auto& state : statesTraj) { model.realizeReport(state); }
+
     // OPENSIM_THROW_IF(!statesTraj.isCompatibleWith(model), Exception,
     //        "Model is not compatible with the provided StatesTrajectory.");
 
@@ -572,6 +578,105 @@ void OpenSim::checkRedundantLabels(std::vector<std::string> labels) {
                     *it));
 }
 
+MocoTrajectory OpenSim::createPeriodicTrajectory(
+        const MocoTrajectory& in, std::vector<std::string> addPatterns,
+        std::vector<std::string> negatePatterns,
+        std::vector<std::pair<std::string, std::string>> symmetryPatterns) {
+
+    const int oldN = in.getNumTimes();
+    const int newN = 2 * oldN - 1;
+    SimTK::Vector newTime(newN);
+    newTime.updBlock(0, 0, oldN, 1) = in.getTime();
+    newTime.updBlock(oldN, 0, oldN - 1, 1) =
+            in.getTime().block(1, 0, oldN - 1, 1);
+    newTime.updBlock(oldN, 0, oldN - 1, 1).updCol(0) +=
+            in.getFinalTime() - in.getInitialTime();
+
+    auto find = [](const std::vector<std::string>& v, const std::string& e) {
+        return std::find(v.begin(), v.end(), e);
+    };
+
+    auto process = [&](std::string vartype,
+                           const std::vector<std::string> names,
+                           const SimTK::Matrix& oldTraj) -> SimTK::Matrix {
+        SimTK::Matrix newTraj(newN, (int)names.size());
+        for (int i = 0; i < (int)names.size(); ++i) {
+            std::string name = names[i];
+            newTraj.updBlock(0, i, oldN, 1) = oldTraj.col(i);
+            bool matched = false;
+            for (const auto& pattern : addPatterns) {
+                const auto regex = std::regex(pattern);
+                // regex_match() only returns true if the regex matches the
+                // entire name.
+                if (std::regex_match(name, regex)) {
+                    matched = true;
+                    const double& oldInit = oldTraj.col(i)[0];
+                    const double& oldFinal = oldTraj.col(i)[oldN - 1];
+                    newTraj.updBlock(oldN, i, oldN - 1, 1) =
+                            oldTraj.block(1, i, oldN - 1, 1);
+                    newTraj.updBlock(oldN, i, oldN - 1, 1).updCol(0) +=
+                            oldFinal - oldInit;
+                    break;
+                }
+            }
+
+            for (const auto& pattern : negatePatterns) {
+                const auto regex = std::regex(pattern);
+                if (std::regex_match(name, regex)) {
+                    matched = true;
+                    const double& oldFinal = oldTraj.col(i)[oldN - 1];
+                    newTraj.updBlock(oldN, i, oldN - 1, 1) =
+                            SimTK::Matrix(oldTraj.block(1, i, oldN - 1, 1).negate());
+                    newTraj.updBlock(oldN, i, oldN - 1, 1).updCol(0) +=
+                            2 * oldFinal;
+                    break;
+                }
+            }
+
+            for (const auto& pattern : symmetryPatterns) {
+                const auto regex = std::regex(pattern.first);
+                // regex_search() returns true if the regex matches any portion
+                // of the name.
+                if (std::regex_search(name, regex)) {
+                    matched = true;
+                    const auto opposite =
+                            std::regex_replace(name, regex, pattern.second);
+                    const auto it = find(names, opposite);
+                    OPENSIM_THROW_IF(it == names.end(), Exception,
+                            format("Could not find %s %s, which is supposed "
+                                   "to "
+                                   "be opposite of %s.",
+                                    vartype, opposite, name));
+                    const int iopp = (int)std::distance(names.cbegin(), it);
+                    newTraj.updBlock(oldN, iopp, oldN - 1, 1) =
+                            oldTraj.block(1, i, oldN - 1, 1);
+                    break;
+                }
+            }
+
+            if (!matched) {
+                newTraj.updBlock(oldN, i, oldN - 1, 1) =
+                        oldTraj.block(1, i, oldN - 1, 1);
+            }
+        }
+        return newTraj;
+    };
+
+    SimTK::Matrix states =
+            process("state", in.getStateNames(), in.getStatesTrajectory());
+
+    SimTK::Matrix controls = process(
+            "control", in.getControlNames(), in.getControlsTrajectory());
+
+    SimTK::Matrix derivatives = process("derivative", in.getDerivativeNames(),
+            in.getDerivativesTrajectory());
+
+    return MocoTrajectory(newTime,
+            {{"states", {in.getStateNames(), states}},
+                    {"controls", {in.getControlNames(), controls}},
+                    {"derivatives", {in.getDerivativeNames(), derivatives}}});
+}
+
 std::string OpenSim::format_c(const char* format, ...) {
     // Get buffer size.
     va_list args;
@@ -604,4 +709,65 @@ int OpenSim::getMocoParallelEnvironmentVariable() {
         }
     }
     return -1;
+}
+
+TimeSeriesTable OpenSim::createExternalLoadsTableForGait(Model model,
+        const MocoTrajectory& trajectory,
+        const std::vector<std::string>& forceNamesRightFoot,
+        const std::vector<std::string>& forceNamesLeftFoot) {
+    model.initSystem();
+    TimeSeriesTableVec3 externalForcesTable{};
+    Storage storage = trajectory.exportToStatesStorage();
+    StatesTrajectory optStates =
+            StatesTrajectory::createFromStatesStorage(model, storage, true);
+    SimTK::Vector optTime = trajectory.getTime();
+    int count = 0;
+    for (const auto& state : optStates) {
+        model.realizeVelocity(state);
+        SimTK::Vec3 forcesRight(0);
+        SimTK::Vec3 torquesRight(0);
+        // Loop through all Forces of the right side.
+        for (const auto& smoothForce : forceNamesRightFoot) {
+            Array<double> forceValues =
+                model.getComponent<Force>(smoothForce).getRecordValues(state);
+            forcesRight += SimTK::Vec3(forceValues[0], forceValues[1],
+                    forceValues[2]);
+            torquesRight += SimTK::Vec3(forceValues[3], forceValues[4],
+                    forceValues[5]);
+        }
+        SimTK::Vec3 forcesLeft(0);
+        SimTK::Vec3 torquesLeft(0);
+        // Loop through all Forces of the left side.
+        for (const auto& smoothForce : forceNamesLeftFoot) {
+            Array<double> forceValues =
+                model.getComponent<Force>(smoothForce).getRecordValues(state);
+            forcesLeft += SimTK::Vec3(forceValues[0], forceValues[1],
+                    forceValues[2]);
+            torquesLeft += SimTK::Vec3(forceValues[3], forceValues[4],
+                    forceValues[5]);
+        }
+        // Append row to table.
+        SimTK::RowVector_<SimTK::Vec3> row(6);
+        row(0) = forcesRight;
+        row(1) = SimTK::Vec3(0);
+        row(2) = forcesLeft;
+        row(3) = SimTK::Vec3(0);
+        row(4) = torquesRight;
+        row(5) = torquesLeft;
+        externalForcesTable.appendRow(optTime[count], row);
+        ++count;
+    }
+    // Create table.
+    std::vector<std::string> labels;
+    labels.push_back("ground_force_r_v");
+    labels.push_back("ground_force_r_p");
+    labels.push_back("ground_force_l_v");
+    labels.push_back("ground_force_l_p");
+    labels.push_back("ground_torque_r_");
+    labels.push_back("ground_torque_l_");
+    externalForcesTable.setColumnLabels(labels);
+    TimeSeriesTable externalForcesTableFlat =
+            externalForcesTable.flatten({"x", "y", "z"});
+
+    return externalForcesTableFlat;
 }

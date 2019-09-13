@@ -226,7 +226,7 @@ MocoSolution solveStateTrackingProblem() {
     auto refFilt = filterLowpass(ref, 6.0, true);
     tracking.setReference(refFilt);
     //tracking.setAllowUnusedReferences(true);
-    mp.addCost(tracking);
+    mp.addGoal(tracking);
 
     // Configure the solver.
     // =====================
@@ -327,7 +327,7 @@ MocoSolution solveMarkerTrackingProblem(bool createGuess,
     // TODO tracking.set_weight(0.000001);
     tracking.setFreeRadius(0.01);
     tracking.setTrackedMarkerComponents("xy");
-    // TODO mp.addCost(tracking);
+    // TODO mp.addGoal(tracking);
 
     auto data = STOFileAdapter::read("walk_gait1018_subject01_grf.mot");
     auto time = data.getIndependentColumn();
@@ -356,12 +356,12 @@ MocoSolution solveMarkerTrackingProblem(bool createGuess,
         grfTracking.set_tracked_grf_components("horizontal");
         // grfTracking.set_tracked_grf_components("all");
         grfTracking.set_free_force_window(25.0);
-        mp.addCost(grfTracking);
+        mp.addGoal(grfTracking);
     }
 
-    //MocoControlCost effort;
+    //MocoControlGoal effort;
     //effort.setName("effort");
-    //mp.addCost(effort);
+    //mp.addGoal(effort);
 
     // Configure the solver.
     // =====================

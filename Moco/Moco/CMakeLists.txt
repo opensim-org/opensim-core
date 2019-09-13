@@ -17,27 +17,31 @@ set(MOCO_SOURCES
         MocoProblemInfo.h
         MocoProblemRep.h
         MocoProblemRep.cpp
-        MocoCost/MocoCost.h
-        MocoCost/MocoCost.cpp
-        MocoCost/MocoMarkerFinalCost.h
-        MocoCost/MocoMarkerFinalCost.cpp
-        MocoCost/MocoMarkerTrackingCost.h
-        MocoCost/MocoMarkerTrackingCost.cpp
+        MocoGoal/MocoGoal.h
+        MocoGoal/MocoGoal.cpp
+        MocoGoal/MocoMarkerFinalGoal.h
+        MocoGoal/MocoMarkerFinalGoal.cpp
+        MocoGoal/MocoMarkerTrackingGoal.h
+        MocoGoal/MocoMarkerTrackingGoal.cpp
         MocoWeightSet.h
-        MocoCost/MocoStateTrackingCost.h
-        MocoCost/MocoStateTrackingCost.cpp
-        MocoCost/MocoSumSquaredStateCost.h
-        MocoCost/MocoSumSquaredStateCost.cpp
-        MocoCost/MocoControlCost.h
-        MocoCost/MocoControlCost.cpp
-        MocoCost/MocoControlTrackingCost.h
-        MocoCost/MocoControlTrackingCost.cpp
-        MocoCost/MocoJointReactionCost.h
-        MocoCost/MocoJointReactionCost.cpp
-        MocoCost/MocoOrientationTrackingCost.h
-        MocoCost/MocoOrientationTrackingCost.cpp
-        MocoCost/MocoTranslationTrackingCost.h
-        MocoCost/MocoTranslationTrackingCost.cpp		
+        MocoGoal/MocoStateTrackingGoal.h
+        MocoGoal/MocoStateTrackingGoal.cpp
+        MocoGoal/MocoSumSquaredStateGoal.h
+        MocoGoal/MocoSumSquaredStateGoal.cpp
+        MocoGoal/MocoControlGoal.h
+        MocoGoal/MocoControlGoal.cpp
+        MocoGoal/MocoControlTrackingGoal.h
+        MocoGoal/MocoControlTrackingGoal.cpp
+        MocoGoal/MocoJointReactionGoal.h
+        MocoGoal/MocoJointReactionGoal.cpp
+        MocoGoal/MocoOrientationTrackingGoal.h
+        MocoGoal/MocoOrientationTrackingGoal.cpp
+        MocoGoal/MocoTranslationTrackingGoal.h
+        MocoGoal/MocoTranslationTrackingGoal.cpp
+        MocoGoal/MocoInitialActivationGoal.cpp
+        MocoGoal/MocoInitialActivationGoal.h
+        MocoGoal/MocoPeriodicityGoal.h
+        MocoGoal/MocoPeriodicityGoal.cpp
         MocoSolver.h
         MocoSolver.cpp
         MocoDirectCollocationSolver.h
@@ -67,6 +71,7 @@ set(MOCO_SOURCES
         Components/DiscreteForces.cpp
         Components/AccelerationMotion.h
         Components/AccelerationMotion.cpp
+        Components/MultivariatePolynomialFunction.h
         MocoCasADiSolver/MocoCasADiSolver.h
         MocoCasADiSolver/MocoCasADiSolver.cpp
         MocoCasADiSolver/MocoCasOCProblem.h
@@ -93,6 +98,8 @@ set(MOCO_SOURCES
         ModelOperators.h
         MocoTool.cpp
         MocoTool.h
+        MocoConstraintInfo.cpp
+        MocoConstraintInfo.h
         )
 if(MOCO_WITH_TROPTER)
     list(APPEND MOCO_SOURCES
@@ -115,7 +122,7 @@ target_link_libraries(osimMoco PUBLIC osimTools
         PRIVATE casadi)
 if (MOCO_WITH_TROPTER)
     target_link_libraries(osimMoco PRIVATE tropter)
-endif()
+endif ()
 
 target_include_directories(osimMoco INTERFACE
         $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/Moco>

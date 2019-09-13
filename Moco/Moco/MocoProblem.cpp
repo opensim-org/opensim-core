@@ -37,7 +37,7 @@ void MocoPhase::constructProperties() {
     constructProperty_control_infos();
     constructProperty_control_infos_pattern();
     constructProperty_parameters();
-    constructProperty_costs();
+    constructProperty_goals();
     constructProperty_path_constraints();
     constructProperty_kinematic_constraint_bounds(MocoBounds(0));
     constructProperty_multiplier_bounds(MocoBounds(-1000.0, 1000.0));
@@ -182,19 +182,19 @@ MocoParameter& MocoPhase::updParameter(const std::string& name) {
             format("No parameter with name '%s' found.", name));
     return upd_parameters(idx);
 }
-const MocoCost& MocoPhase::getCost(const std::string& name) const {
+const MocoGoal& MocoPhase::getGoal(const std::string& name) const {
 
-    int idx = getProperty_costs().findIndexForName(name);
+    int idx = getProperty_goals().findIndexForName(name);
     OPENSIM_THROW_IF_FRMOBJ(idx == -1, Exception,
-            format("No cost with name '%s' found.", name));
-    return get_costs(idx);
+            format("No goal with name '%s' found.", name));
+    return get_goals(idx);
 }
-MocoCost& MocoPhase::updCost(const std::string& name) {
+MocoGoal& MocoPhase::updGoal(const std::string& name) {
 
-    int idx = updProperty_costs().findIndexForName(name);
+    int idx = updProperty_goals().findIndexForName(name);
     OPENSIM_THROW_IF_FRMOBJ(idx == -1, Exception,
-            format("No cost with name '%s' found.", name));
-    return upd_costs(idx);
+            format("No goal with name '%s' found.", name));
+    return upd_goals(idx);
 }
 const MocoPathConstraint& MocoPhase::getPathConstraint(
         const std::string& name) const {
@@ -252,8 +252,8 @@ void MocoProblem::setKinematicConstraintBounds(const MocoBounds& bounds) {
 void MocoProblem::setMultiplierBounds(const MocoBounds& bounds) {
     upd_phases(0).setMultiplierBounds(bounds);
 }
-MocoCost& MocoProblem::updCost(const std::string& name) {
-    return upd_phases(0).updCost(name);
+MocoGoal& MocoProblem::updGoal(const std::string& name) {
+    return upd_phases(0).updGoal(name);
 }
 void MocoProblem::constructProperties() {
     constructProperty_phases(Array<MocoPhase>(MocoPhase(), 1));

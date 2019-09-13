@@ -19,7 +19,7 @@ problem.setModel(torqueDrivenModel);
 % problem.setTimeBounds(initial_bounds, final_bounds)
 % problem.setStateInfo(path, trajectory_bounds, inital_bounds, final_bounds)
 %
-% All *_bounds arguments can be set to a range, [lower upper], or to a 
+% All *_bounds arguments can be set to a range, [lower upper], or to a
 % single value (equal lower and upper bounds). Empty brackets, [], indicate
 % using default bounds (if they exist). You may set multiple state infos at
 % once using setStateInfoPattern():
@@ -72,7 +72,7 @@ tableProcessor.append(TabOpLowPassFilter(6));
 % Part 2b: Add a MocoStateTrackingCost to the problem using the states
 % from the predictive problem (via the TableProcessor we just created). 
 % Enable the setAllowUnusedReferences() setting to ignore the controls in
-% the predictive solution.  
+% the predictive solution.
 tracking = MocoStateTrackingCost();
 tracking.setName('mytracking');
 tracking.setReference(tableProcessor);
@@ -114,7 +114,7 @@ inverse.setModel(modelProcessor);
 % in the tracking problem.
 inverse.setKinematics(tableProcessor);
 
-% Set the time range, mesh interval, and convergence tolerance.
+% Part 4c: Set the time range, mesh interval, and convergence tolerance.
 inverse.set_initial_time(0);
 inverse.set_final_time(1);
 inverse.set_mesh_interval(0.05);
@@ -124,7 +124,7 @@ inverse.set_tolerance(1e-4);
 inverse.set_kinematics_allow_extra_columns(true);
 inverse.set_minimize_sum_squared_states(true);
 
-% Part 4c: Append additional outputs path for quantities that are calculated
+% Append additional outputs path for quantities that are calculated
 % post-hoc using the inverse problem solution.
 inverse.append_output_paths('.*normalized_fiber_length');
 inverse.append_output_paths('.*passive_force_multiplier');
@@ -146,13 +146,13 @@ device.setRestLength(0);
 device.setViscosity(0);
 muscleDrivenModel.addForce(device);
 
-% Create a ModelProcessor similar to the previous one, using the same
+% Part 5b: Create a ModelProcessor similar to the previous one, using the same
 % reserve actuator strength so we can compare muscle activity accurately.
 modelProcessor = ModelProcessor(muscleDrivenModel);
 modelProcessor.append(ModOpAddReserves(2));
 inverse.setModel(modelProcessor);
 
-% Part 5b: Solve! Write solution.
+% Part 5c: Solve! Write solution.
 inverseDeviceSolution = inverse.solve();
 inverseDeviceSolution.getMocoSolution().write('inverseDeviceSolution.sto');
 

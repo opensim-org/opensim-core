@@ -262,6 +262,8 @@ std::unique_ptr<CasOC::Solver> MocoCasADiSolver::createCasOCSolver(
     casSolver->setMinimizeLagrangeMultipliers(
             get_minimize_lagrange_multipliers());
     casSolver->setLagrangeMultiplierWeight(get_lagrange_multiplier_weight());
+    casSolver->setImplicitModeAccelerationBounds(
+            convertBounds(get_implicit_mode_acceleration_bounds()));
     casSolver->setOptimSolver(get_optim_solver());
     casSolver->setInterpolateControlMidpoints(
             get_interpolate_control_midpoints());

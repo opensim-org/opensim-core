@@ -69,7 +69,7 @@ problem.setControlInfo('/actuator', MocoBounds(-50, 50));
 
 % Cost.
 % -----
-problem.addCost(MocoFinalTimeCost('final_time'));
+problem.addGoal(MocoFinalTimeGoal('final_time'));
 
 
 
