@@ -170,8 +170,6 @@ public:
     }
 
 protected:
-    double calcInextensibleTendonActiveFiberForce(
-            SimTK::State&, double) const override;
     void calcMuscleLengthInfo(
             const SimTK::State& s, MuscleLengthInfo& mli) const override;
     void calcFiberVelocityInfo(
