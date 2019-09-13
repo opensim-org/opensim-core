@@ -91,7 +91,7 @@ TEMPLATE_TEST_CASE("Oscillator mass", "", MocoTropterSolver, MocoCasADiSolver) {
     mp.addGoal<FinalPositionGoal>();
 
     auto& ms = moco.initSolver<TestType>();
-    ms.set_num_mesh_points(N);
+    ms.set_num_mesh_intervals(N);
 
     MocoSolution sol = moco.solve();
     sol.write("testMocoParameters_testOscillatorMass_sol.sto");
@@ -155,7 +155,7 @@ TEMPLATE_TEST_CASE("One parameter two springs", "",
     mp.addGoal<FinalPositionGoal>();
 
     auto& ms = moco.initSolver<TestType>();
-    ms.set_num_mesh_points(N);
+    ms.set_num_mesh_intervals(N);
 
     MocoSolution sol = moco.solve();
     sol.write("testMocoParameters_testOscillatorMassTwoSprings_sol.sto");
@@ -238,7 +238,7 @@ TEMPLATE_TEST_CASE("See-saw center of mass", "",
     mp.addGoal<RotationalAccelerationGoal>();
 
     auto& ms = moco.initSolver<TestType>();
-    ms.set_num_mesh_points(N);
+    ms.set_num_mesh_intervals(N);
 
     MocoSolution sol = moco.solve();
     const auto& sol_xCOM = sol.getParameter("com_location");

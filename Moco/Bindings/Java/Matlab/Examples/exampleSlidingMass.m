@@ -76,7 +76,7 @@ problem.addGoal(MocoFinalTimeGoal('final_time'));
 % Configure the solver.
 % =====================
 solver = moco.initTropterSolver();
-solver.set_num_mesh_points(50);
+solver.set_num_mesh_intervals(50);
 
 % Now that we've finished setting up the tool, print it to a file.
 moco.print('sliding_mass.omoco');

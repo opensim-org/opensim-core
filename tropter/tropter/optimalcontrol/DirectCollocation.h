@@ -42,7 +42,7 @@ public:
                             const std::string& transcription_method,
                             const std::string& optimization_solver,
                             // TODO remove; put somewhere better.
-                            const unsigned& num_mesh_points = 20);
+                            const unsigned& num_mesh_intervals = 20);
 
     DirectCollocationSolver(
             std::shared_ptr<const OCProblem> ocproblem,

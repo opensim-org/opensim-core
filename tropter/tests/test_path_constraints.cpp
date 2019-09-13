@@ -87,7 +87,7 @@ public:
     }
     static void run_test(int N, std::string solver, std::string transcription) {
         auto ocp = std::make_shared<SlidingMassPathConstraint<T>>();
-        DirectCollocationSolver<adouble> dircol(ocp, transcription, solver, N);
+        DirectCollocationSolver<adouble> dircol(ocp, transcription, solver, N - 1);
         Solution solution = dircol.solve();
         solution.write("sliding_mass_minimum_time_path_constraints_"
             + transcription + "_solution.csv");

@@ -134,7 +134,7 @@ int main() {
     // Configure the solver.
     // =====================
     auto& solver = moco.initCasADiSolver();
-    solver.set_num_mesh_points(50);
+    solver.set_num_mesh_intervals(50);
     solver.set_verbosity(2);
     solver.set_optim_solver("ipopt");
 

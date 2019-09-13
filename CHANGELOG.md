@@ -1,5 +1,8 @@
-- 2019-08-20: Periodicity of the states and/or controls can now be enforced with a
-              negated MocoPeriodicityGoalPair added via addNegatedStatePair or
+- 2019-08-29: Users now interface with num_mesh_intervals instead of
+              num_mesh_points when setting times to sample.
+
+- 2019-08-20: Periodicity of the states and/or controls can now be enforced with
+              a negated MocoPeriodicityGoalPair added via addNegatedStatePair or
               addNegatedControlPair respectively.
 
 - 2019-07-18: Periodicity of the states and/or controls can be enforced with
@@ -23,3 +26,4 @@
               metabolic cost of transport, which depends on both the integral of
               metabolic rate and the difference between final and initial states
               (for distance traveled).
+

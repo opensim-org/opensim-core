@@ -114,7 +114,7 @@ std::pair<MocoStudy, TimeSeriesTable> MocoInverse::initializeInternal() const {
     solver.set_optim_sparsity_detection("random");
     // Forward is 3x faster than central.
     solver.set_optim_finite_difference_scheme("forward");
-    solver.set_num_mesh_points(timeInfo.numMeshPoints);
+    solver.set_num_mesh_intervals(timeInfo.numMeshIntervals);
     if (!getProperty_max_iterations().empty()) {
         solver.set_optim_max_iterations(get_max_iterations());
     }
