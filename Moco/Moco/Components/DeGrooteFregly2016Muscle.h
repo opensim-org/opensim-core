@@ -116,6 +116,9 @@ public:
     OpenSim_DECLARE_OUTPUT(implicitenabled_normalized_tendon_force, bool,
             getImplicitEnabledNormalizedTendonForce, SimTK::Stage::Model);
 
+    OpenSim_DECLARE_OUTPUT(statebounds_normalized_tendon_force, SimTK::Vec2,
+            getBoundsNormalizedTendonForce, SimTK::Stage::Model);
+
     DeGrooteFregly2016Muscle() { constructProperties(); }
 
 protected:
@@ -194,7 +197,7 @@ public:
     /// @{
 
     bool getImplicitEnabledNormalizedTendonForce(const SimTK::State&) const {
-        return !m_isTendonDynamicsExplicit;
+        return !get_ignore_tendon_compliance() && !m_isTendonDynamicsExplicit;
     }
     /// Compute the muscle-tendon force equilibrium residual value when using
     /// implicit contraction dynamics with normalized tendon force as the
@@ -269,6 +272,10 @@ public:
     }
     static double getMinNormalizedTendonForce() { return m_minNormTendonForce; }
     static double getMaxNormalizedTendonForce() { return m_maxNormTendonForce; }
+    /// The first element of the Vec2 is the lower bound, and the second is the
+    /// upper bound.
+    SimTK::Vec2 getBoundsNormalizedTendonForce(const SimTK::State&) const
+    { return {getMinNormalizedTendonForce(), getMaxNormalizedTendonForce()}; }
     /// @}
 
     /// @name Set methods.
