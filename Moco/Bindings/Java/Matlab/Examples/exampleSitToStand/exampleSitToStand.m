@@ -48,7 +48,7 @@ problem.setStateInfoPattern('/jointset/.*/speed', );
 
 % Part 1e: Configure the solver.
 solver = moco.initCasADiSolver();
-solver.set_num_mesh_points( );
+solver.set_num_mesh_intervals( );
 solver.set_optim_convergence_tolerance( );
 solver.set_optim_constraint_tolerance( );
 
