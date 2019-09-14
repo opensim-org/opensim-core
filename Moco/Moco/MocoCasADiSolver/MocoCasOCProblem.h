@@ -187,6 +187,9 @@ TOut convertToMocoTrajectory(const CasOC::Iterate& casIt) {
     return mocoTraj;
 }
 
+/// This class is the bridge between CasOC::Problem and MocoProblemRep. Inputs
+/// are CasADi types, which are converted to SimTK types to evaluate problem
+/// functions. Then, results are converted back into CasADi types.
 class MocoCasOCProblem : public CasOC::Problem {
 public:
     MocoCasOCProblem(const MocoCasADiSolver& mocoCasADiSolver,

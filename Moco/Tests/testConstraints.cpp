@@ -580,7 +580,7 @@ void testDoublePendulumPointOnLine(
     mp.addGoal<MocoControlGoal>();
 
     auto& ms = moco.initSolver<TestType>();
-    ms.set_num_mesh_points(20);
+    ms.set_num_mesh_intervals(20);
     ms.set_verbosity(2);
     ms.set_optim_solver("ipopt");
     ms.set_optim_convergence_tolerance(1e-3);
@@ -662,7 +662,7 @@ void testDoublePendulumCoordinateCoupler(MocoSolution& solution,
     mp.addGoal<MocoControlGoal>();
 
     auto& ms = moco.initSolver<SolverType>();
-    ms.set_num_mesh_points(20);
+    ms.set_num_mesh_intervals(20);
     ms.set_verbosity(2);
     ms.set_optim_solver("ipopt");
     ms.set_optim_convergence_tolerance(1e-3);
@@ -739,7 +739,7 @@ void testDoublePendulumPrescribedMotion(MocoSolution& couplerSolution,
     mp.addGoal<MocoControlGoal>();
 
     auto& ms = moco.initSolver<SolverType>();
-    ms.set_num_mesh_points(20);
+    ms.set_num_mesh_intervals(20);
     ms.set_verbosity(2);
     ms.set_optim_solver("ipopt");
     ms.set_optim_convergence_tolerance(1e-3);
@@ -961,7 +961,7 @@ TEMPLATE_TEST_CASE(
     mp.addGoal<MocoControlGoal>();
 
     auto& ms = moco.initSolver<TestType>();
-    ms.set_num_mesh_points(25);
+    ms.set_num_mesh_intervals(25);
     ms.set_verbosity(2);
     ms.set_optim_solver("ipopt");
     ms.set_optim_convergence_tolerance(1e-3);
@@ -1021,7 +1021,7 @@ TEMPLATE_TEST_CASE(
     problem.setTimeBounds(0, 1);
     problem.addParameter("mass", "/bodyset/b", "mass", MocoBounds(0.5, 1.5));
     auto& solver = moco.initSolver<TestType>();
-    solver.set_num_mesh_points(10);
+    solver.set_num_mesh_intervals(10);
     MocoSolution solution = moco.solve();
     CHECK(solution.getParameter("mass") == Approx(1.0).epsilon(1e-3));
 }
@@ -1094,7 +1094,7 @@ void testDoublePendulumPointOnLineJointReaction(
 
     auto& ms = moco.initSolver<TestType>();
     int N = 5;
-    ms.set_num_mesh_points(N);
+    ms.set_num_mesh_intervals(N);
     ms.set_verbosity(2);
     ms.set_optim_solver("ipopt");
     ms.set_optim_convergence_tolerance(1e-6);
@@ -1155,7 +1155,7 @@ TEST_CASE("Multipliers are correct", "") {
         problem.setTimeBounds(0, 0.5);
 
         auto& solver = moco.initCasADiSolver();
-        solver.set_num_mesh_points(5);
+        solver.set_num_mesh_intervals(5);
         solver.set_dynamics_mode(dynamics_mode);
         solver.set_transcription_scheme("hermite-simpson");
         solver.set_enforce_constraint_derivatives(true);
@@ -1218,7 +1218,7 @@ TEST_CASE("Multipliers are correct", "") {
         problem.addGoal<MocoControlGoal>();
 
         auto& solver = moco.initCasADiSolver();
-        solver.set_num_mesh_points(10);
+        solver.set_num_mesh_intervals(10);
         solver.set_dynamics_mode(dynamics_mode);
         solver.set_transcription_scheme("hermite-simpson");
         solver.set_enforce_constraint_derivatives(true);
@@ -1266,7 +1266,7 @@ TEST_CASE("Prescribed kinematics with kinematic constraints", "") {
     problem.addGoal<MocoControlGoal>();
 
     auto& solver = moco.initCasADiSolver();
-    solver.set_num_mesh_points(10);
+    solver.set_num_mesh_intervals(10);
     solver.set_dynamics_mode("implicit");
     solver.set_interpolate_control_midpoints(false);
     MocoSolution solution = moco.solve();

@@ -139,7 +139,7 @@ def solvePrediction():
 
     # Configure the solver.
     solver = moco.initTropterSolver()
-    solver.set_num_mesh_points(100)
+    solver.set_num_mesh_intervals(100)
     solver.set_verbosity(2)
     solver.set_optim_solver("ipopt")
 
@@ -233,7 +233,7 @@ def solveStateTracking(stateRef):
 
     # Configure the solver.
     solver = moco.initTropterSolver()
-    solver.set_num_mesh_points(50)
+    solver.set_num_mesh_intervals(50)
     solver.set_verbosity(2)
     solver.set_optim_solver("ipopt")
     solver.set_optim_jacobian_approximation("exact")
@@ -288,7 +288,7 @@ def solveMarkerTracking(markersRef, guess):
 
     # Configure the solver.
     solver = moco.initTropterSolver()
-    solver.set_num_mesh_points(50)
+    solver.set_num_mesh_intervals(50)
     solver.set_verbosity(2)
     solver.set_optim_solver("ipopt")
     solver.set_optim_jacobian_approximation("exact")

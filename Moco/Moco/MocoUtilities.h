@@ -191,7 +191,7 @@ TimeSeriesTable resample(const TimeSeriesTable& in, const TimeVector& newTime) {
 
     const auto& time = in.getIndependentColumn();
 
-    OPENSIM_THROW_IF(newTime.size() < 2, Exception,
+    OPENSIM_THROW_IF(time.size() < 2, Exception,
             "Cannot resample if number of times is 0 or 1.");
     OPENSIM_THROW_IF(newTime[0] < time[0], Exception,
             format("New initial time (%f) cannot be less than existing "

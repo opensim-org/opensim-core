@@ -27,8 +27,8 @@
 
 using namespace OpenSim;
 
-using SimTK::Vec3;
 using SimTK::Inertia;
+using SimTK::Vec3;
 
 Model ModelFactory::createNLinkPendulum(int numLinks) {
     Model model;
@@ -97,15 +97,17 @@ Model ModelFactory::createPlanarPointMass() {
     auto* body = new Body("body", 1, Vec3(0), Inertia(0));
     model.addBody(body);
 
+    body->attachGeometry(new Sphere(0.05));
+
     auto* jointX = new SliderJoint("tx", model.getGround(), *intermed);
     auto& coordX = jointX->updCoordinate(SliderJoint::Coord::TranslationX);
     coordX.setName("tx");
     model.addJoint(jointX);
 
     // The joint's x axis must point in the global "+y" direction.
-    auto* jointY = new SliderJoint("ty",
-            *intermed, Vec3(0), Vec3(0, 0, 0.5 * SimTK::Pi),
-            *body, Vec3(0), Vec3(0, 0, .5 * SimTK::Pi));
+    auto* jointY = new SliderJoint("ty", *intermed, Vec3(0),
+            Vec3(0, 0, 0.5 * SimTK::Pi), *body, Vec3(0),
+            Vec3(0, 0, .5 * SimTK::Pi));
     auto& coordY = jointY->updCoordinate(SliderJoint::Coord::TranslationX);
     coordY.setName("ty");
     model.addJoint(jointY);
@@ -124,6 +126,50 @@ Model ModelFactory::createPlanarPointMass() {
         model.addForce(forceY);
     }
 
+    model.finalizeConnections();
+
+    return model;
+}
+
+Model ModelFactory::createBrachistochrone() {
+    Model model;
+    class Brachistochrone : public ScalarActuator {
+        OpenSim_DECLARE_CONCRETE_OBJECT(Brachistochrone, ScalarActuator);
+
+    public:
+        Brachistochrone() {
+            g = std::abs(Model().get_gravity()[1]);
+        }
+        void extendAddToSystem(SimTK::MultibodySystem& system) const override {
+            Super::extendAddToSystem(system);
+            addStateVariable("x");
+            addStateVariable("y");
+            addStateVariable("v");
+        }
+        void extendInitStateFromProperties(SimTK::State& s) const override {
+            Super::extendInitStateFromProperties(s);
+            setStateVariableValue(s, "x", 0);
+            setStateVariableValue(s, "y", 0);
+            setStateVariableValue(s, "v", 0);
+        }
+        void computeStateVariableDerivatives(
+                const SimTK::State& s) const override {
+            const auto v = getStateVariableValue(s, "v");
+            const auto u = getControl(s);
+            setStateVariableDerivativeValue(s, "x", v * std::cos(u));
+            setStateVariableDerivativeValue(s, "y", v * std::sin(u));
+            setStateVariableDerivativeValue(s, "v", g * std::sin(u));
+        }
+        double computeActuation(const SimTK::State&) const override {
+            return 0;
+        }
+    private:
+        double g;
+    };
+    auto* b = new Brachistochrone();
+    b->setName("brachistochrone");
+    model.addComponent(b);
+    model.finalizeConnections();
     return model;
 }
 
@@ -252,7 +298,7 @@ void ModelFactory::createReserveActuators(Model& model, double optimalForce,
         // Don't add a reserve if a CoordinateActuator already exists.
         bool skipCoord = false;
         if (skipCoordinatesWithExistingActuators) {
-            for (const auto& coordAct : 
+            for (const auto& coordAct :
                     modelCopy.getComponentList<CoordinateActuator>()) {
                 if (coordAct.getCoordinate() == &coord) {
                     skipCoord = true;

@@ -81,7 +81,7 @@ protected:
     struct TimeInfo {
         double initial = -SimTK::Infinity;
         double final = SimTK::Infinity;
-        int numMeshPoints = -1;
+        int numMeshIntervals = -1;
     };
     /// This function updates a TimeInfo so the initial and final times are
     /// within the data times provided. If the user provided a value for the

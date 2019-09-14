@@ -402,7 +402,7 @@ MocoTrajectory OpenSim::simulateIterateWithTimeStepping(
     manager.initialize(state);
     state = manager.integrate(time[time.size() - 1]);
 
-    // Export results from states reporter to a TimeSeries Table
+    // Export results from states reporter to a TimeSeriesTable
     TimeSeriesTable states = statesRep->getStates().exportToTable(model);
 
     const auto& statesTimes = states.getIndependentColumn();

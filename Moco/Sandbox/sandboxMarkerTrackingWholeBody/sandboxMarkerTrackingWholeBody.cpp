@@ -265,7 +265,7 @@ MocoSolution solveMarkerTrackingProblem(
     // Configure the solver.
     // =====================
     MocoTropterSolver& ms = moco.initTropterSolver();
-    ms.set_num_mesh_points(50);
+    ms.set_num_mesh_intervals(50);
     ms.set_verbosity(2);
     ms.set_optim_solver("snopt");
     ms.set_transcription_scheme("hermite-simpson");

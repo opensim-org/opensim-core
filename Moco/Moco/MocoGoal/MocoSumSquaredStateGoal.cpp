@@ -28,7 +28,7 @@ MocoSumSquaredStateGoal::MocoSumSquaredStateGoal() {
 void MocoSumSquaredStateGoal::constructProperties() {
 }
 
-void MocoSumSquaredStateGoal::initializeOnModelImpl(const Model& /*model*/) const {
+void MocoSumSquaredStateGoal::initializeOnModelImpl(const Model&) const {
     setNumIntegralsAndOutputs(1, 1);
 }
 

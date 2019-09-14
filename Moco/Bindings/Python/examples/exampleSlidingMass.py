@@ -75,7 +75,7 @@ problem.addGoal(osim.MocoFinalTimeGoal())
 # Configure the solver.
 # =====================
 solver = moco.initTropterSolver()
-solver.set_num_mesh_points(100)
+solver.set_num_mesh_intervals(100)
 
 # Now that we've finished setting up the study, print it to a file.
 moco.printToXML('sliding_mass.omoco')

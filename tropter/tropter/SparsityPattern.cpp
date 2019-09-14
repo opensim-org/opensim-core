@@ -150,9 +150,13 @@ void SymmetricSparsityPattern::set_nonzero_block(
         unsigned int startindex,
         SymmetricSparsityPattern& block) {
     TROPTER_THROW_IF((int)startindex + block.get_num_rows() > get_num_rows(),
-        "Block does not fit within this matrix.");
+        "Block does not fit within this matrix (number of rows: %i, "
+        "required number of rows to set block: %i).", get_num_rows(),
+            (int)startindex + block.get_num_rows());
     TROPTER_THROW_IF((int)startindex + block.get_num_cols() > get_num_cols(),
-        "Block does not fit within this matrix.");
+        "Block does not fit within this matrix (number of columns: %i, "
+        "required number of columns to set block: %i).", get_num_cols(),
+            (int)startindex + block.get_num_cols());
     for (const auto& block_entries : block.m_sparsity) {
         set_nonzero(startindex + block_entries.first,
             startindex + block_entries.second);
