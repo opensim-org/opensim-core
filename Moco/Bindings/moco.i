@@ -35,7 +35,8 @@ namespace OpenSim {
 %include <Moco/MocoGoal/MocoSumSquaredStateGoal.h>
 %include <Moco/MocoGoal/MocoOrientationTrackingGoal.h>
 %include <Moco/MocoGoal/MocoTranslationTrackingGoal.h>
-%include <Moco/MocoGoal/MocoPeriodicityGoal.h>
+%include <Moco/MocoGoal/MocoInitialForceEquilibriumGoal.h>
+%include <Moco/MocoGoal/MocoInitialVelocityEquilibriumDGFGoal.h>
 
 
 // %template(MocoBoundsVector) std::vector<OpenSim::MocoBounds>;
