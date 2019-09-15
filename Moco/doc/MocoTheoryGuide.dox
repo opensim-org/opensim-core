@@ -36,6 +36,7 @@ The most generic problem that Moco solves can be expressed as follows:
          & t_f \in [t_{f,L}, t_{f,U}] \\
          & y \in [y_{L}, y_{U}] \\
          & x \in [x_{L}, x_{U}] \\
+         & \lambda \\
          & p \in [p_{L}, p_{U}].
     \end{alignat*}
 \f]
@@ -107,6 +108,7 @@ replaced with known quantities \f$ \hat{q} \f$ and \f$ \hat{u} \f$:
          & t_f \in [t_{f,L}, t_{f,U}] \\
          & z \in [z_{L}, z_{U}] \\
          & x \in [x_{L}, x_{U}] \\
+         & \lambda \\
          & p \in [p_{L}, p_{U}].
     \end{alignat*}
 \f]
