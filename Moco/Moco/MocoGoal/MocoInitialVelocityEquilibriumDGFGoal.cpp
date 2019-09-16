@@ -37,14 +37,14 @@ void MocoInitialVelocityEquilibriumDGFGoal::calcGoalImpl(
         const GoalInput& input, SimTK::Vector& goal) const {
     const auto& s = input.initial_state;
     if (getModeIsCost()) {
-        for (int i = 0; i < m_dgfMuscleRefs.size(); ++i) {
+        for (int i = 0; i < (int)m_dgfMuscleRefs.size(); ++i) {
             const auto residual =
                     m_dgfMuscleRefs[i]
                             ->getLinearizedEquilibriumResidualDerivative(s);
             goal[i] = residual * residual;
         }
     } else {
-        for (int i = 0; i < m_dgfMuscleRefs.size(); ++i) {
+        for (int i = 0; i < (int)m_dgfMuscleRefs.size(); ++i) {
             const auto residual =
                     m_dgfMuscleRefs[i]
                             ->getLinearizedEquilibriumResidualDerivative(s);

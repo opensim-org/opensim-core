@@ -522,7 +522,7 @@ private:
             const auto& implicitRefs =
                     mocoProblemRep->getImplicitComponentReferencePtrs();
             const int numAccels = getNumAccelerations();
-            for (int i = 0; i < implicitRefs.size(); ++i) {
+            for (int i = 0; i < (int)implicitRefs.size(); ++i) {
                 const auto& comp = implicitRefs[i].second.getRef();
                 comp.setDiscreteVariableValue(simtkStateDisabledConstraints,
                         implicitRefs[i].first,
@@ -641,7 +641,7 @@ private:
             const auto& residualOutputs =
                     mocoProblemRep.getImplicitResidualReferencePtrs();
             SimTK::Vector auxResiduals((int)residualOutputs.size(), 0.0);
-            for (int i = 0; i < residualOutputs.size(); ++i) {
+            for (int i = 0; i < (int)residualOutputs.size(); ++i) {
                 auxResiduals[i] = residualOutputs[i]->getValue(state);
             }
             std::copy_n(auxResiduals.getContiguousScalarData(),

@@ -115,7 +115,7 @@ TEMPLATE_TEST_CASE("Second order linear min effort",
     problem.addGoal<MocoControlGoal>("effort", 0.5);
 
     auto& solver = moco.initSolver<TestType>();
-    // solver.set_num_mesh_points(1000);
+    // solver.set_num_mesh_intervals(1000);
     // solver.set_transcription_scheme("hermite-simpson");
     solver.set_optim_hessian_approximation("limited-memory");
     // MocoSolution solution = moco.solve();
@@ -129,7 +129,7 @@ TEMPLATE_TEST_CASE("Second order linear min effort",
 
     solver.set_verbosity(0);
     for (int N = 10; N < 10000; N *= 2) {
-        solver.set_num_mesh_points(N);
+        solver.set_num_mesh_intervals(N);
         const auto solution = moco.solve();
         const auto expectedStatesTrajectory =
                 expectedSolution(solution.getTime());
@@ -176,7 +176,7 @@ TEMPLATE_TEST_CASE("Brachistochrone", ""
     problem.addGoal<MocoFinalTimeGoal>();
 
     auto& solver = moco.initSolver<TestType>();
-    // solver.set_num_mesh_points(1000);
+    // solver.set_num_mesh_intervals(1000);
     // solver.set_transcription_scheme("hermite-simpson");
     solver.set_optim_hessian_approximation("limited-memory");
     solver.set_parallel(0); // TODO: causes controls to be bogus, and takes
@@ -195,7 +195,7 @@ TEMPLATE_TEST_CASE("Brachistochrone", ""
 
     // solver.set_verbosity(0);
     // for (int N = 10; N < 10000; N *= 2) {
-    //     solver.set_num_mesh_points(N);
+    //     solver.set_num_mesh_intervals(N);
     //     const auto solution = moco.solve();
     //     // const auto expectedStatesTrajectory =
     //     //         expectedSolution(solution.getTime());

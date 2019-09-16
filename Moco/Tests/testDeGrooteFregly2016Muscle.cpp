@@ -1032,7 +1032,10 @@ Model createHangingMuscleModel(
 TEMPLATE_TEST_CASE("Hanging muscle minimum time", "", MocoCasADiSolver) {
     auto ignoreActivationDynamics = GENERATE(true, false);
     auto ignoreTendonCompliance = GENERATE(true, false);
-    auto isTendonDynamicsExplicit = GENERATE(true, false);
+    auto isTendonDynamicsExplicit = GENERATE(false);
+
+    std::cout.rdbuf(LogManager::cout.rdbuf());
+    std::cout.rdbuf(LogManager::cout.rdbuf());
 
     CAPTURE(ignoreActivationDynamics);
     CAPTURE(ignoreTendonCompliance);
@@ -1101,7 +1104,7 @@ TEMPLATE_TEST_CASE("Hanging muscle minimum time", "", MocoCasADiSolver) {
 
         auto& solver = moco.initSolver<TestType>();
         solver.set_num_mesh_intervals(40);
-        solver.set_dynamics_mode("explicit");
+        solver.set_dynamics_mode("implicit");
         solver.set_optim_convergence_tolerance(1e-4);
         solver.set_optim_constraint_tolerance(1e-4);
         solver.set_transcription_scheme("hermite-simpson");
@@ -1213,7 +1216,7 @@ TEMPLATE_TEST_CASE("Hanging muscle minimum time", "", MocoCasADiSolver) {
 
         auto& solver = moco.initSolver<TestType>();
         solver.set_num_mesh_intervals(40);
-        solver.set_dynamics_mode("explicit");
+        solver.set_dynamics_mode("implicit");
         solver.set_transcription_scheme("hermite-simpson");
 
         MocoSolution solutionTrack = moco.solve();

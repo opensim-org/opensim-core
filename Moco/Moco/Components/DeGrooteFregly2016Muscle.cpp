@@ -34,6 +34,21 @@ const std::string
         DeGrooteFregly2016Muscle::RESIDUAL_NORMALIZED_TENDON_FORCE_NAME(
                 "implicitresidual_normalized_tendon_force");
 
+// We must define these variables in some compilation unit (pre-C++17).
+// https://stackoverflow.com/questions/40690260/undefined-reference-error-for-static-constexpr-member?noredirect=1&lq=1
+constexpr double DeGrooteFregly2016Muscle::b11;
+constexpr double DeGrooteFregly2016Muscle::b21;
+constexpr double DeGrooteFregly2016Muscle::b31;
+constexpr double DeGrooteFregly2016Muscle::b41;
+constexpr double DeGrooteFregly2016Muscle::b12;
+constexpr double DeGrooteFregly2016Muscle::b22;
+constexpr double DeGrooteFregly2016Muscle::b32;
+constexpr double DeGrooteFregly2016Muscle::b42;
+constexpr double DeGrooteFregly2016Muscle::b13;
+constexpr double DeGrooteFregly2016Muscle::b23;
+constexpr double DeGrooteFregly2016Muscle::b33;
+constexpr double DeGrooteFregly2016Muscle::b43;
+
 void DeGrooteFregly2016Muscle::constructProperties() {
     constructProperty_activation_time_constant(0.015);
     constructProperty_deactivation_time_constant(0.060);
@@ -439,6 +454,19 @@ void DeGrooteFregly2016Muscle::calcMusclePotentialEnergyInfoHelper(
             mpei.fiberPotentialEnergy + mpei.tendonPotentialEnergy;
 }
 
+double
+OpenSim::DeGrooteFregly2016Muscle::calcInextensibleTendonActiveFiberForce(
+        SimTK::State& s, double activation) const {
+    const auto& mli = getMuscleLengthInfo(s);
+    const auto& fvi = getFiberVelocityInfo(s);
+
+    const SimTK::Real normActiveForce = activation *
+                                        mli.fiberActiveForceLengthMultiplier *
+                                        fvi.fiberForceVelocityMultiplier;
+
+    return get_max_isometric_force() * normActiveForce * mli.cosPennationAngle;
+}
+
 void DeGrooteFregly2016Muscle::calcMuscleLengthInfo(
         const SimTK::State& s, MuscleLengthInfo& mli) const {
 
@@ -519,31 +547,13 @@ void DeGrooteFregly2016Muscle::computeInitialFiberEquilibrium(
     FiberVelocityInfo fvi;
     MuscleDynamicsInfo mdi;
 
-    auto calcNormTendonForceFromNormFiberLength =
-            [this, &muscleTendonLength](
-                    const SimTK::Real& normFiberLength) {
-                const auto& fiberLength =
-                        normFiberLength * get_optimal_fiber_length();
-                const auto& fiberLengthAlongTendon = sqrt(
-                        SimTK::square(fiberLength) - m_squareFiberWidth);
-                const auto& tendonLength =
-                        muscleTendonLength - fiberLengthAlongTendon;
-                const auto& normTendonLength =
-                        tendonLength / get_tendon_slack_length();
-
-                return calcTendonForceMultiplier(normTendonLength);
-    };
-
-    auto calcResidual = [this, &calcNormTendonForceFromNormFiberLength,
-                                &muscleTendonLength, &muscleTendonVelocity,
-                                &normTendonForceDerivative, &activation,
-                                &mli, &fvi,
+    auto calcResidual = [this, &muscleTendonLength, &muscleTendonVelocity,
+                                &normTendonForceDerivative, &activation, &mli,
+                                &fvi,
                                 &mdi](const SimTK::Real& normTendonForce) {
-        calcMuscleLengthInfoHelper(
-                muscleTendonLength, normTendonForce, mli);
+        calcMuscleLengthInfoHelper(muscleTendonLength, normTendonForce, mli);
         calcFiberVelocityInfoHelper(muscleTendonVelocity, activation,
-                normTendonForce, normTendonForceDerivative, false, mli, 
-                fvi);
+                normTendonForce, normTendonForceDerivative, false, mli, fvi);
         calcMuscleDynamicsInfoHelper(activation, normTendonForce,
                 muscleTendonVelocity, mli, fvi, mdi);
 
@@ -826,6 +836,7 @@ DeGrooteFregly2016Muscle::estimateMuscleFiberState(const double activation,
 
 double DeGrooteFregly2016Muscle::getImplicitResidualNormalizedTendonForce(
         const SimTK::State& s) const {
+    // TODO: What to do if implicit is disabled?
     // Recompute residual if cache is invalid.
     if (!isCacheVariableValid(
                 s, "implicitresidual_" + STATE_NORMALIZED_TENDON_FORCE_NAME)) {

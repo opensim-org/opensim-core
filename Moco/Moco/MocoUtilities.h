@@ -435,9 +435,9 @@ OSIMMOCO_API void checkRedundantLabels(std::vector<std::string> labels);
 
 /// Get a list of reference pointers to all outputs whose names (not paths)
 /// match a substring defined by a provided regex string pattern. The regex
-/// string pattern could be the full name of the output. Only Output%s that 
-/// match the template argument type will be returned (double is the default 
-/// type). Set the argument 'includeDescendents' to true to include outputs 
+/// string pattern could be the full name of the output. Only Output%s that
+/// match the template argument type will be returned (double is the default
+/// type). Set the argument 'includeDescendents' to true to include outputs
 /// from all descendents from the provided component.
 template <typename T = double>
 std::vector<SimTK::ReferencePtr<const Output<T>>> getModelOutputReferencePtrs(

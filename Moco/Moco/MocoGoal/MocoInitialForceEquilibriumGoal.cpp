@@ -49,13 +49,13 @@ void MocoInitialForceEquilibriumGoal::calcGoalImpl(
     const GoalInput& input, SimTK::Vector& goal) const {
     const auto& s = input.initial_state;
     if (getModeIsCost()) {
-        for (int i = 0; i < m_muscleRefs.size(); ++i) {
+        for (int i = 0; i < (int)m_muscleRefs.size(); ++i) {
             const auto residual = m_muscleRefs[i]->getTendonForce(s) -
                                   m_muscleRefs[i]->getFiberForceAlongTendon(s);
             goal[i] = residual * residual;
         }
     } else {
-        for (int i = 0; i < m_muscleRefs.size(); ++i) {
+        for (int i = 0; i < (int)m_muscleRefs.size(); ++i) {
             const auto residual = m_muscleRefs[i]->getTendonForce(s) -
                                   m_muscleRefs[i]->getFiberForceAlongTendon(s);
             goal[i] = residual;

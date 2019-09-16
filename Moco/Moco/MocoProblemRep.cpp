@@ -25,7 +25,6 @@
 #include "MocoProblemInfo.h"
 #include <regex>
 #include <unordered_set>
-#include "Components/DeGrooteFregly2016Muscle.h"
 
 using namespace OpenSim;
 
@@ -55,7 +54,8 @@ void MocoProblemRep::initialize() {
     m_kinematic_constraint_eq_names_without_derivatives.clear();
     m_implicit_component_refs.clear();
     m_implicit_residual_refs.clear();
-    
+
+
     if (!getTimeInitialBounds().isSet() && !getTimeFinalBounds().isSet()) {
         std::cout << "Warning: no time bounds set." << std::endl;
     }
@@ -287,6 +287,33 @@ void MocoProblemRep::initialize() {
         m_state_infos[name] = ph0.get_state_infos(i);
     }
 
+    // Components can provide default state bounds via an output starting with
+    // statebounds_.
+    for (const auto& component : m_model_base.getComponentList()) {
+        const auto outputsMin = getModelOutputReferencePtrs<SimTK::Vec2>(
+                m_model_disabled_constraints, "^statebounds_.*");
+        for (const auto& output : outputsMin) {
+            const auto nameStart = output->getName().find("_") + 1;
+            const auto stateName = output->getName().substr(nameStart);
+            const auto statePath = format("%s/%s",
+                    component.getAbsolutePathString(),
+                    stateName);
+            // If this is indeed a state and no info has been provided for it,
+            // use the state bounds from the output.
+            if (stateNames.findIndex(statePath) != -1) {
+                if (m_state_infos.count(statePath) == 0) {
+                    const auto info = MocoVariableInfo(statePath, {}, {}, {});
+                    m_state_infos[statePath] = info;
+                }
+                if (!m_state_infos[statePath].getBounds().isSet()) {
+                    const auto& bounds =
+                            output->getValue(m_state_disabled_constraints[0]);
+                    m_state_infos[statePath].setBounds({bounds[0], bounds[1]});
+                }
+            }
+        }
+    }
+
     if (!m_prescribedKinematics) {
         for (const auto& coord : m_model_base.getComponentList<Coordinate>()) {
             const auto stateVarNames = coord.getStateVariableNames();
@@ -401,35 +428,24 @@ void MocoProblemRep::initialize() {
         }
     }
 
-    // Additional information for DeGrooteFregly2016Muscle components that have
-    // tendon compliance enabled.
-    m_num_auxiliary_residual_equations = 0;
-    for (const auto& dgfmuscle : m_model_disabled_constraints
-            .getComponentList<DeGrooteFregly2016Muscle>()) {
-        if (!dgfmuscle.get_ignore_tendon_compliance()) {
-            // Normalized tendon force state info.
-            const std::string stateName = 
-                    dgfmuscle.getAbsolutePathString() + "/" + 
-                    dgfmuscle.getNormalizedTendonForceStateName();
-            auto& stateInfo = m_state_infos[stateName];
-            if (stateInfo.getName().empty()) { stateInfo.setName(stateName); }
-            if (!stateInfo.getBounds().isSet()) {
-                stateInfo.setBounds({dgfmuscle.getMinNormalizedTendonForce(), 
-                                     dgfmuscle.getMaxNormalizedTendonForce()});
-            }
+    // Auxiliary state implicit residual outputs.
+    const auto allImplicitResiduals = getModelOutputReferencePtrs<double>(
+            m_model_disabled_constraints, "^implicitresidual_.*", true);
 
-            if (dgfmuscle.get_tendon_compliance_dynamics_mode() == "implicit") {
-                const auto& derivName =
-                        dgfmuscle.getImplicitDynamicsDerivativeName();
-                ++m_num_auxiliary_residual_equations;
-                m_implicit_component_refs.emplace_back(derivName, &dgfmuscle); 
-            }
+    for (const auto& output : allImplicitResiduals) {
+        const auto& component = output->getOwner();
+        const auto nameStart = output->getName().find("_") + 1;
+        const std::string stateName = output->getName().substr(nameStart);
+        bool enabled = component.getOutputValue<bool>(
+                m_state_disabled_constraints[0],
+                "implicitenabled_" + stateName);
+        if (enabled) {
+            m_implicit_residual_refs.emplace_back(output.get());
+            m_implicit_component_refs.emplace_back(
+                    "implicitderiv_" + stateName, &component);
         }
     }
 
-    // Muscle-tendon equilibrium residual outputs.
-    m_implicit_residual_refs = getModelOutputReferencePtrs<double>(
-            m_model_disabled_constraints, "^implicitresidual_.*", true);
 
     // Parameters.
     // -----------
