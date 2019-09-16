@@ -32,7 +32,7 @@
 using namespace OpenSim;
 
 // Function to compute fiber force (or fiber force along tendon) versus fiber
-// length (or fiber length along tendon). Used check to fiber stiffness
+// length (or fiber length along tendon). This checks fiber stiffness
 // calculations in DeGrooteFregly2016Muscle.
 class FiberForceFunction : public SimTK::Differentiator::ScalarFunction {
 
@@ -97,7 +97,7 @@ private:
     bool m_alongTendon = false;
 };
 
-// Function to compute tendon force versus tendon length. Used check to tendon 
+// Function to compute tendon force versus tendon length. This checks tendon
 // stiffness calculations in DeGrooteFregly2016Muscle.
 class TendonForceFunction : public SimTK::Differentiator::ScalarFunction {
 
@@ -310,8 +310,6 @@ TEST_CASE("DeGrooteFregly2016Muscle basics") {
 
         SECTION("(length) = 0.5*(optimal fiber length) + (tendon slack "
                 "length)") {
-            auto& mutMuscle =
-                    model.updComponent<DeGrooteFregly2016Muscle>("muscle");
             double activation = 1.0;
             double fiberLength = 0.5 * muscle.get_optimal_fiber_length();
             double tendonLength = muscle.get_tendon_slack_length();
@@ -1049,10 +1047,6 @@ TEMPLATE_TEST_CASE("Hanging muscle minimum time", "", MocoCasADiSolver) {
             isTendonDynamicsExplicit);
 
     SimTK::State state = model.initSystem();
-    const auto& actuator = model.getComponent("forceset/actuator");
-
-    const auto* muscle = 
-            dynamic_cast<const DeGrooteFregly2016Muscle*>(&actuator);
 
     // Minimum time trajectory optimization.
     // -------------------------------------
