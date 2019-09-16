@@ -26,7 +26,7 @@
 
 %% Set some properties for the simulation
 endTime   = 2;
-visulizeSimulation = false;
+visualize = true;
 plotResults = true;
 
 %% Define the intial coordinate values and speeds for the model. Translations
@@ -49,10 +49,29 @@ import org.opensim.modeling.*;
 
 %% Instantiate model from file
 osimModel = Model('../Model/WalkerModelTerrain.osim');
-% Use the SimTK visualizer to visualize the simulation.
-osimModel.setUseVisualizer(visulizeSimulation);
-% Initialize the underlying computational system
+if visualize
+    osimModel.setUseVisualizer(visualize)
+end
+% Initialize the underlying computational system and get a reference to
+% the system state.
 state = osimModel.initSystem();
+
+%% Set the Vizualizer parameters
+if visualize
+    sviz = osimModel.updVisualizer().updSimbodyVisualizer();
+    sviz.setShowSimTime(true);
+    % Show "ground and sky" background instead of just a black background.
+    sviz.setBackgroundTypeByInt(1);
+    % Set the default ground height down so that the walker platform is
+    % viewable.
+    sviz.setGroundHeight(-10)
+    % Set the initial position of the camera
+    sviz.setCameraTransform(Transform(Rotation(),Vec3(1,0,5)));
+    % Show help text in the visualization window.
+    help = DecorativeText('ESC or CMD-Q to quit.');
+    help.setIsScreenText(true);
+    sviz.addDecoration(0, Transform(Vec3(0, 0, 0)), help);
+end
 
 %% Change the initial Coordinate values and speeds of the model
 osimModel.updCoordinateSet().get('Pelvis_ty').setValue(state, pelvisTYValue);
