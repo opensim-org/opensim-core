@@ -15,6 +15,7 @@ install(DIRECTORY Dynamic_Walking_Tutorials/Dynamic_Walker_Challenge
         DESTINATION "${OPENSIM_INSTALL_MATLABEXDIR}"
         # These files have not yet been updated for 4.0:
         PATTERN "DesignMainStarterWithControls.m" EXCLUDE
+        PATTERN "AddCoordinateActuator.m" EXCLUDE
         PATTERN "AddMillardMuscle.m" EXCLUDE
         PATTERN "AddPathActuator.m" EXCLUDE
         PATTERN "IntegrateOpenSimPlant.m" EXCLUDE
