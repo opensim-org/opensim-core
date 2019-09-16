@@ -357,14 +357,13 @@ TEST_CASE("Bounds", "") {
     {
         auto model = createSlidingMassModel();
         model->initSystem();
-        // TODO why does this fail?
-        //{
-        //    MocoStudy moco;
-        //    MocoProblem& mp = moco.updProblem();
-        //    mp.setModel(std::unique_ptr<Model>(model->clone()));
-        //    mp.setStateInfo("nonexistent", {0, 1});
-        //    CHECK_THROWS_AS(mp.createRep(), Exception);
-        //}
+        {
+           MocoStudy moco;
+           MocoProblem& mp = moco.updProblem();
+           mp.setModel(std::unique_ptr<Model>(model->clone()));
+           mp.setStateInfo("nonexistent", {0, 1});
+           CHECK_THROWS_AS(mp.createRep(), Exception);
+        }
         {
             MocoStudy moco;
             MocoProblem& mp = moco.updProblem();
