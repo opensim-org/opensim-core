@@ -43,7 +43,7 @@ walkerModel.setName('WalkerModelTerrain_CustomFeet');
 meshPath = 'ThinHalfCylinder100mmby50mm.obj';
 % If the foot mesh isn't in the Model folder, make a copy. Otherwise mesh
 % will not be usable when Model is openned in the OpenSim GUI
-if ~exist('../Model/ThinHalfCylinder100mmby50mm.obj')
+if ~exist('../Model/ThinHalfCylinder100mmby50mm.obj','file')
     copyfile 'ThinHalfCylinder100mmby50mm.obj' '../Model/ThinHalfCylinder100mmby50mm.obj'
 end
 
