@@ -55,8 +55,9 @@ MocoTropterSolver::createTropterSolver(
         std::shared_ptr<const MocoTropterSolver::TropterProblemBase<double>>
                 ocp) const {
 #ifdef MOCO_WITH_TROPTER
-    // Check that a positive number of mesh points was provided.
-    checkPropertyIsPositive(*this, getProperty_num_mesh_points());
+    // Check that a non-negative number of mesh points was provided.
+    checkPropertyInRangeOrSet(*this, getProperty_num_mesh_intervals(), 0,
+            std::numeric_limits<int>::max(), {});
 
     if (getProperty_mesh().size() > 0) {
 
@@ -131,7 +132,7 @@ MocoTropterSolver::createTropterSolver(
     if (getProperty_mesh().empty()) {
         dircol = OpenSim::make_unique<tropter::DirectCollocationSolver<double>>(
                 ocp, get_transcription_scheme(), get_optim_solver(),
-                get_num_mesh_points());
+                get_num_mesh_intervals());
     } else {
         std::vector<double> mesh;
         for (int i = 0; i < getProperty_mesh().size(); ++i) {
@@ -308,13 +309,16 @@ MocoSolution MocoTropterSolver::solveImpl() const {
     auto dircol = createTropterSolver(ocp);
     MocoTrajectory guess = getGuess();
     OPENSIM_THROW_IF(get_dynamics_mode() == "implicit" &&
-            guess.hasCoordinateStates() &&
-            guess.getDerivativeNames().empty(), Exception,
-        "'dynamics_mode' set to 'implicit' and coordinate states exist in the "
-        "guess, but no coordinate accelerations were found in the guess. "
-        "Consider using MocoTrajectory::generateAccelerationsFromValues() or "
-        "MocoTrajectory::generateAccelerationsFromSpeeds() to construct an "
-        "appropriate guess.")
+                             guess.hasCoordinateStates() &&
+                             guess.getDerivativeNames().empty(),
+            Exception,
+            "'dynamics_mode' set to 'implicit' and coordinate states exist in "
+            "the "
+            "guess, but no coordinate accelerations were found in the guess. "
+            "Consider using MocoTrajectory::generateAccelerationsFromValues() "
+            "or "
+            "MocoTrajectory::generateAccelerationsFromSpeeds() to construct an "
+            "appropriate guess.")
     tropter::Iterate tropIterate = ocp->convertToTropterIterate(guess);
     tropter::Solution tropSolution = dircol->solve(tropIterate);
 
@@ -376,13 +380,12 @@ MocoSolution MocoTropterSolver::solveImpl() const {
     const long long elapsed = stopwatch.getElapsedTimeInNs();
     MocoSolver::setSolutionStats(mocoSolution, tropSolution.success,
             tropSolution.objective, tropSolution.status,
-            tropSolution.num_iterations,
-            SimTK::nsToSec(elapsed));
+            tropSolution.num_iterations, SimTK::nsToSec(elapsed));
 
     if (get_verbosity()) {
         std::cout << std::string(79, '-') << "\n";
-        std::cout << "Elapsed real time: "
-                  << stopwatch.formatNs(elapsed) << ".\n";
+        std::cout << "Elapsed real time: " << stopwatch.formatNs(elapsed)
+                  << ".\n";
         if (mocoSolution) {
             std::cout << "MocoTropterSolver succeeded!\n";
         } else {

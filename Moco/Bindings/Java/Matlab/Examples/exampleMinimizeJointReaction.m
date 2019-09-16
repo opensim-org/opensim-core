@@ -102,7 +102,7 @@ problem.addGoal(cost);
 % Configure the solver.
 % =====================
 solver = moco.initCasADiSolver();
-solver.set_num_mesh_points(50);
+solver.set_num_mesh_intervals(50);
 solver.set_optim_convergence_tolerance(1e-3);
 
 % Now that we've finished setting up the tool, print it to a file.

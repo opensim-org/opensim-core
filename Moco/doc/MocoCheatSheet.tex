@@ -94,7 +94,7 @@ problem.addParameter(MocoParameter('myparam',
     '/bodyset/b0', 'mass', MocoBounds(0.1, 0.5)));
 \end{lstlisting}
 \vspace{5pt}
-\textbf{Add cost terms to the problem.}
+\textbf{Add goals to the problem.}
 \begin{center}
 Control $\cdot $ ControlTracking $\cdot$ FinalTime \\
 StateTracking $\cdot$ MarkerTracking $\cdot$ TranslationTracking \\
@@ -102,7 +102,7 @@ OrientationTracking $\cdot$ JointReaction
 \end{center}
 Minimize the sum of squared controls with weight 1.5.
 \begin{lstlisting}[style=Matlab-editor, basicstyle=\mlttfamily\small, linewidth=0.48\textwidth]
-problem.addCost(MocoControlCost('effort', 1.5));    
+problem.addGoal(MocoControlGoal('effort', 1.5));    
 \end{lstlisting}
 \vspace{5pt}
 \textbf{Add path constraints to the problem.}\\
@@ -127,7 +127,7 @@ solver = study.initCasADiSolver();
 \textbf{Settings for Tropter and CasADi solvers.}\\
 Solve the problem on a grid of 51 mesh points.
 \begin{lstlisting}[style=Matlab-editor, basicstyle=\mlttfamily\small, linewidth=0.48\textwidth]
-solver.set_num_mesh_points(51);
+solver.set_num_mesh_intervals(50);
 \end{lstlisting}
 Transcribe the optimal control problem with the Hermite-Simpson scheme (alternative: `trapezoidal').
 \begin{lstlisting}[style=Matlab-editor, basicstyle=\mlttfamily\small, linewidth=0.48\textwidth]
@@ -285,7 +285,7 @@ solution.unseal(); % Access a failed solution.
 \vspace{-15pt}
     \begin{align*}
         \mbox{minimize}
-         \quad & \sum_j w_{j} J_{j}\displaystyle\left(t_0, t_f, y_0, y_f, x_{0}, x_{f}, \lambda_0, \lambda_f, p, \int_{t_0}^{t_f} s_{c,j}(t, y, x, \lambda, p)~dt \displaystyle\right) && \texttt{problem.addCost()}   \\
+         \quad & \sum_j w_{j} J_{j}\displaystyle\left(t_0, t_f, y_0, y_f, x_{0}, x_{f}, \lambda_0, \lambda_f, p, \int_{t_0}^{t_f} s_{c,j}(t, y, x, \lambda, p)~dt \displaystyle\right) && \texttt{problem.addGoal()}   \\
         \mbox{subject to}
          \quad & \textcolor{dblue}{\dot{q} = u} && \\
          & \textcolor{dblue}{M(q, p)\dot{u} + G(q, p)^T \lambda = f_{\textrm{app}}(t, y, x, p) - f_{\textrm{bias}}(q, u, p)} \\
@@ -318,9 +318,9 @@ solution.unseal(); % Access a failed solution.
 \item $ x(t) $: controls (including muscle activation)
 \item $ p $: constant parameters
 \item $ \lambda $: kinematic constraint multipliers
-\item $ w_j $: weight for $ j $-th cost
-\item $ J_{j} $: the $ j $-th cost
-\item $ s_{c,j} $: integrand used in the $ j $-th cost
+\item $ w_j $: weight for $ j $-th goal
+\item $ J_{j} $: the $ j $-th goal
+\item $ s_{c,j} $: integrand used in the $ j $-th goal
 \item $ M $: mass matrix
 \item $ f_{\textrm{bias}} $: centripetal and coriolis forces
 \item $ G $: kinematic constraint Jacobian

@@ -529,7 +529,7 @@ GlobalStaticOptimization::solve() const {
             motionData);
     ocp->print_description();
     tropter::DirectCollocationSolver<adouble> dircol(ocp, "trapezoidal",
-            "ipopt", numMeshPoints);
+            "ipopt", numMeshPoints - 1);
     tropter::Solution ocp_solution = dircol.solve();
 
     // Return the solution.

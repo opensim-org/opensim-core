@@ -172,7 +172,7 @@ problem.addCost(MocoControlCost('myeffort'));
 % Configure the solver.
 solver = moco.initCasADiSolver();
 solver.set_dynamics_mode('implicit');
-solver.set_num_mesh_points(25);
+solver.set_num_mesh_intervals(25);
 solver.set_optim_convergence_tolerance(1e-3);
 solver.set_optim_constraint_tolerance(1e-3);
 solver.set_optim_finite_difference_scheme('forward');

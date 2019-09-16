@@ -108,7 +108,7 @@ public:
 
     // TODO document; any validation?
     /// The number of time points in the iterate does *not* need to match
-    /// `num_mesh_points`; the iterate will be interpolated to the correct size.
+    /// `num_mesh_intervals`; the iterate will be interpolated to the correct size.
     /// This clears the `guess_file`, if any.
     void setGuess(MocoTrajectory guess);
     /// Use this convenience function if you want to choose the type of guess
