@@ -122,6 +122,7 @@ protected:
             const GoalInput& input, SimTK::Vector& cost) const override {
         cost[0] = input.integral;
     }
+    void printDescriptionImpl(std::ostream& stream = std::cout) const override;
 
 private:
     OpenSim_DECLARE_PROPERTY(reference, TableProcessor,
@@ -160,6 +161,7 @@ private:
     /// The indices in Y corresponding to the provided reference coordinates.
     mutable std::vector<int> m_sysYIndices;
     mutable std::vector<double> m_state_weights;
+    mutable std::vector<std::string> m_state_names;
 };
 
 } // namespace OpenSim
