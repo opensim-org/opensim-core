@@ -21,16 +21,9 @@ import os
 import ntpath
 import math
 import opensim as osim
-from matplotlib.backends.backend_pdf import PdfPages
-import matplotlib.pyplot as plt
-import matplotlib.lines as mlines
-from matplotlib.ticker import FormatStrFormatter
-import matplotlib.cm as cm
 import numpy as np
 from collections import defaultdict, OrderedDict
 # import pdb
-
-
 
 ## Helper functions.
 # ==================
@@ -166,6 +159,7 @@ class Report(object):
         # Load the colormap provided by the user. Use a default colormap ('jet') 
         # if not provided. Uniformly sample the colormap based on the number of 
         # reference data sets, plus one for the MocoTrajectory.
+        import matplotlib.cm as cm
         if colormap is None: colormap = 'jet'
         self.cmap_samples = np.linspace(0.1, 0.9, len(self.refs)+1)
         self.cmap = cm.get_cmap(colormap)
@@ -181,6 +175,7 @@ class Report(object):
         all_files.append(trajectory_filepath)
         for sample, file in zip(self.cmap_samples, all_files):
             color = self.cmap(sample)
+            import matplotlib.lines as mlines
             if bilateral:
                 r = mlines.Line2D([], [], ls='-', color=color, linewidth=3)
                 self.legend_handles.append(r)
@@ -239,6 +234,8 @@ class Report(object):
         return var
 
     def plotVariables(self, var_type, var_dict, ls_dict, label_dict):
+        import matplotlib.pyplot as plt
+
         # Loop through all keys in the dictionary and plot all variables.
         p = 1 # Counter to keep track of number of plots per page.
         for i, key in enumerate(var_dict.keys()):
@@ -294,6 +291,7 @@ class Report(object):
             ax.get_yaxis().get_offset_text().set_position((-0.15,0))
             ax.get_yaxis().get_offset_text().set_fontsize(6)
             ax.tick_params(direction='in', gridOn=True)
+            from matplotlib.ticker import FormatStrFormatter
             ax.xaxis.set_major_formatter(
                 FormatStrFormatter('%.1f'))
 
@@ -315,11 +313,14 @@ class Report(object):
 
         ## Generate report.
         # =================
+        import matplotlib.pyplot as plt
+        from matplotlib.backends.backend_pdf import PdfPages
 
         # TODO is ntpath cross-platform?
         trajectory_fname = ntpath.basename(self.trajectory_filepath)
         trajectory_fname = trajectory_fname.replace('.sto', '')
         trajectory_fname = trajectory_fname.replace('.mot', '')
+
         with PdfPages(trajectory_fname + '_report.pdf') as self.pdf:
 
             # States & Derivatives
