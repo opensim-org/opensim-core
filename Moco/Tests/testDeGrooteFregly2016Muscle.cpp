@@ -1032,6 +1032,9 @@ TEMPLATE_TEST_CASE("Hanging muscle minimum time", "", MocoCasADiSolver) {
     auto ignoreTendonCompliance = GENERATE(true, false);
     auto isTendonDynamicsExplicit = GENERATE(true, false);
 
+    // TODO: Some problem has a bad initial guess and the constraint violation
+    // goes to 1e+14. Maybe the bounds on the coordinate should be tighter.
+
     std::cout.rdbuf(LogManager::cout.rdbuf());
     std::cout.rdbuf(LogManager::cout.rdbuf());
 
@@ -1066,12 +1069,12 @@ TEMPLATE_TEST_CASE("Hanging muscle minimum time", "", MocoCasADiSolver) {
         }
         if (!ignoreActivationDynamics) {
                 problem.setStateInfo(
-                        "/forceset/actuator/activation", {0.01, 1});
+                        "/forceset/actuator/activation", {0.01, 1}, 0.01);
         }
         problem.setControlInfo("/forceset/actuator", {0.01, 1});
 
         // Initial state constraints/costs.
-        if (!ignoreActivationDynamics && ignoreTendonCompliance) {
+        if (!ignoreActivationDynamics) {
             auto* initial_activation =
                     problem.addGoal<MocoInitialActivationGoal>();
             initial_activation->setName("initial_activation");
@@ -1081,9 +1084,6 @@ TEMPLATE_TEST_CASE("Hanging muscle minimum time", "", MocoCasADiSolver) {
                 auto* initial_equilibrium = 
                     problem.addGoal<MocoInitialForceEquilibriumGoal>();
                 initial_equilibrium->setName("initial_force_equilibrium");
-                auto* initial_activation =
-                        problem.addGoal<MocoInitialActivationGoal>();
-                initial_activation->setName("initial_activation");
             } else {
                 // The problem performs better when this is in cost mode.
                 auto* initial_equilibrium = problem.addGoal<
@@ -1098,10 +1098,9 @@ TEMPLATE_TEST_CASE("Hanging muscle minimum time", "", MocoCasADiSolver) {
 
         auto& solver = moco.initSolver<TestType>();
         solver.set_num_mesh_intervals(40);
-        solver.set_dynamics_mode("explicit");
-        solver.set_optim_convergence_tolerance(1e-4);
-        solver.set_optim_constraint_tolerance(1e-4);
-        solver.set_transcription_scheme("hermite-simpson");
+        solver.set_dynamics_mode("implicit");
+        // solver.set_optim_convergence_tolerance(1e-4);
+        // solver.set_optim_constraint_tolerance(1e-4);
 
         solutionTrajOpt = moco.solve();
         std::string solutionFilename = "testDeGrooteFregly2016Muscle_solution";
@@ -1163,12 +1162,12 @@ TEMPLATE_TEST_CASE("Hanging muscle minimum time", "", MocoCasADiSolver) {
                     "/forceset/actuator/normalized_tendon_force", {0, 5});
         }
         if (!ignoreActivationDynamics) {
-            problem.setStateInfo("/forceset/actuator/activation", {0.01, 1});
+            problem.setStateInfo("/forceset/actuator/activation", {0.01, 1}, 0.01);
         }
         problem.setControlInfo("/forceset/actuator", {0.01, 1});
 
         // Initial state constraints/costs.
-        if (!ignoreActivationDynamics && ignoreTendonCompliance) {
+        if (!ignoreActivationDynamics) {
             auto* initial_activation =
                     problem.addGoal<MocoInitialActivationGoal>();
             initial_activation->setName("initial_activation");
@@ -1178,9 +1177,6 @@ TEMPLATE_TEST_CASE("Hanging muscle minimum time", "", MocoCasADiSolver) {
                 auto* initial_equilibrium =
                         problem.addGoal<MocoInitialForceEquilibriumGoal>();
                 initial_equilibrium->setName("initial_force_equilibrium");
-                auto* initial_activation =
-                        problem.addGoal<MocoInitialActivationGoal>();
-                initial_activation->setName("initial_activation");
             } else {
                 // The problem performs better when this is in cost mode.
                 auto* initial_equilibrium = problem.addGoal<
@@ -1210,8 +1206,7 @@ TEMPLATE_TEST_CASE("Hanging muscle minimum time", "", MocoCasADiSolver) {
 
         auto& solver = moco.initSolver<TestType>();
         solver.set_num_mesh_intervals(40);
-        solver.set_dynamics_mode("explicit");
-        solver.set_transcription_scheme("hermite-simpson");
+        solver.set_dynamics_mode("implicit");
 
         MocoSolution solutionTrack = moco.solve();
         std::string solutionFilename =
