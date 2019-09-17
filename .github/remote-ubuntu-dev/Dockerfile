@@ -1,4 +1,6 @@
 # https://github.com/shuhaoliu/docker-clion-dev/blob/master/Dockerfile
+# Password for user 'debugger' is pwd.
+# We assume the build context is the .../opensim-moco/dependencies directory.
 
 FROM ubuntu
 
@@ -9,8 +11,6 @@ FROM ubuntu
 RUN apt-get update && apt-get upgrade -y && apt-get install -y \
     apt-utils gcc g++ openssh-server cmake build-essential gdb gdbserver rsync \
     vim
-
-WORKDIR /moco_dependencies
 
 # Taken from - https://docs.docker.com/engine/examples/running_ssh_service/#environment-variables
 
@@ -34,10 +34,12 @@ RUN echo 'debugger:pwd' | chpasswd
 # Add custom packages and development environment here
 ########################################################
 
+ARG BTYPE=RelWithDebInfo
+
 # Avoid interactive timezone prompt when installing packages.
 ENV DEBIAN_FRONTEND=noninteractive
 
-RUN apt-get update && apt-get install -y \
+RUN apt-get install -y \
         git \
         build-essential libtool autoconf \
         cmake \
@@ -49,9 +51,12 @@ RUN apt-get update && apt-get install -y \
         python3 python3-dev python3-numpy python3-matplotlib python3-setuptools \
         swig
 
+COPY opensim-core /opensim-core
+COPY dependencies/CMakeLists.txt dependencies/*.cmake /dependencies/
+
 RUN mkdir /moco_dependencies_build \
         && cd /moco_dependencies_build \
-        && cmake /moco_dependencies -DOPENSIM_PYTHON_WRAPPING=on \
+        && cmake /dependencies -DOPENSIM_PYTHON_WRAPPING=on -DCMAKE_BUILD_TYPE=$BTYPE \
         && make --jobs 4 ipopt \
         && make --jobs 4 \
         && echo "/moco_dependencies_install/adol-c/lib64" >> /etc/ld.so.conf.d/moco.conf \
