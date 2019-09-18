@@ -170,8 +170,8 @@ public:
         } else {
             setStateVariableValue(s, STATE_ACTIVATION_NAME, activation);
         }
-        markCacheVariableInvalid(s, "velInfo");
-        markCacheVariableInvalid(s, "dynamicsInfo");
+        //markCacheVariableInvalid(s, "velInfo");
+        //markCacheVariableInvalid(s, "dynamicsInfo");
     }
 
 protected:
@@ -653,9 +653,9 @@ public:
     /// Currently, only Millard2012EquilibriumMuscles and Thelen2003Muscles
     /// are replaced. If the model has muscles of other types, an exception is
     /// thrown unless allowUnsupportedMuscles is true.
-    /// The resulting muscles will have ignore_tendon_compliance set as true,
-    /// regardless of the values in the original muscles, as this muscle class
-    /// does not yet support tendon compliance.
+    /// Since the DeGrooteFregly2016Muscle implements tendon compliance dynamics
+    /// with normalized tendon force as the state variable, this function
+    /// ignores the 'default_fiber_length' property in replaced muscles.
     static void replaceMuscles(
             Model& model, bool allowUnsupportedMuscles = false);
     /// @}
@@ -665,13 +665,6 @@ private:
 
     void calcMuscleLengthInfoHelper(const SimTK::Real& muscleTendonLength,
             const SimTK::Real& normTendonForce, MuscleLengthInfo& mli) const;
-    void calcTendonVelocityInfoHelper(const MuscleLengthInfo& mli,
-            const SimTK::Real& muscleTendonVelocity,
-            const SimTK::Real& activation, const SimTK::Real& normTendonForce,
-            SimTK::Real& fiberForceVelocityMultiplier,
-            SimTK::Real& normFiberVelocity, SimTK::Real& fiberVelocity,
-            SimTK::Real& fiberVelocityAlongTendon, SimTK::Real& tendonVelocity,
-            SimTK::Real& normTendonVelocity) const;
     void calcFiberVelocityInfoHelper(const SimTK::Real& muscleTendonVelocity,
             const SimTK::Real& activation, const SimTK::Real& normTendonForce,
             const SimTK::Real& normTendonForceDerivative,
@@ -716,7 +709,13 @@ private:
         Failure_MaxIterationsReached
     };
 
-    typedef std::map<std::string, double> ValuesFromEstimateMuscleFiberState;
+    struct ValuesFromEstimateMuscleFiberState {
+        int iterations;
+        double solution_error;
+        double fiber_length;
+        double fiber_velocity;
+        double normalized_tendon_force;
+    };
 
     std::pair<StatusFromEstimateMuscleFiberState,
             ValuesFromEstimateMuscleFiberState>
