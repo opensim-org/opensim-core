@@ -149,6 +149,20 @@ void MocoTrajectory::setState(
     m_states.updCol(index) = trajectory;
 }
 
+void MocoTrajectory::setState(
+        const std::string& name, const SimTK::VectorView& trajectory) {
+    ensureUnsealed();
+    OPENSIM_THROW_IF(trajectory.size() != m_states.nrow(), Exception,
+            format("For state %s, expected %i elements but got %i.", name,
+                    m_states.nrow(), trajectory.size()));
+
+    auto it = std::find(m_state_names.cbegin(), m_state_names.cend(), name);
+    OPENSIM_THROW_IF(it == m_state_names.cend(), Exception,
+            format("Cannot find state named %s.", name));
+    int index = (int)std::distance(m_state_names.cbegin(), it);
+    m_states.updCol(index) = trajectory;
+}
+
 void MocoTrajectory::setControl(
         const std::string& name, const SimTK::Vector& trajectory) {
     ensureUnsealed();

@@ -125,7 +125,7 @@ TEST_CASE("MocoInverse gait10dof18musc") {
 
     inverse.setModel(ModelProcessor("testGait10dof18musc_subject01.osim") |
                      ModOpReplaceMusclesWithDeGrooteFregly2016() |
-                     ModOpIgnoreTendonCompliance() | ModOpAddReserves(2) |
+                     ModOpAddReserves(2) |
                      ModOpAddExternalLoads("walk_gait1018_subject01_grf.xml"));
     inverse.setKinematics(TableProcessor("walk_gait1018_state_reference.mot") |
                           TabOpLowPassFilter(6));
