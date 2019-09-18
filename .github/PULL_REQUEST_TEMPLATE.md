@@ -2,9 +2,7 @@ Fixes issue #<issue_number>
 
 ### Brief summary of changes
 
-### Testing I've completed
-
-### Looking for feedback on...
+### Details (optional)
 
 ### CHANGELOG.md (choose one)
 
