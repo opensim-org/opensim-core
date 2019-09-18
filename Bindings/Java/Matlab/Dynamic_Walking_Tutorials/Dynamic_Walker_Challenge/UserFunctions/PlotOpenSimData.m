@@ -28,7 +28,7 @@
 import org.opensim.modeling.*
 
 %% Find states from Walker Simulation
-if ~isfile('ResultsFWD/simulation_states.sto')
+if ~exist('ResultsFWD/simulation_states.sto','file')
     warning('Cannot find ResultsFWD/simulation_states.sto, please select file')
     [filename,pathname] = uigetfile('*.sto', 'Select simulation_states.sto file');
     filepath = fullfile(pathname, filename);
