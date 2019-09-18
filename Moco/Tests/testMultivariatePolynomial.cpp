@@ -226,7 +226,7 @@ void testPolynomialApproximationImpl() {
 void testPolynomialApproximation() {
 
     Model model(createModel());
-    SimTK::State& state = model.initSystem();
+    model.initSystem();
 
     // Lengths
     auto& hamstringsPath = model.getComponent<PathActuator>(

@@ -422,9 +422,9 @@ TEMPLATE_TEST_CASE("Endpoint constraints", "", MocoCasADiSolver) {
     SECTION("Endpoint constraint is satisfied.") {
         MocoSolution solution = study.solve();
         const int N = solution.getNumTimes();
-        CHECK(solution.getState("/jointset/j0/q0/value")[N - 1] ==
+        CHECK(solution.getState("/jointset/j0/q0/value").getElt(N - 1, 0) ==
                 Approx(-0.3));
-        CHECK(solution.getState("/jointset/j0/q0/speed")[N - 1] ==
+        CHECK(solution.getState("/jointset/j0/q0/speed").getElt(N - 1, 0) ==
                 Approx(0).margin(1e-10));
     }
 
@@ -437,11 +437,11 @@ TEMPLATE_TEST_CASE("Endpoint constraints", "", MocoCasADiSolver) {
         periodic->updConstraintInfo().setBounds({{0.0}, {-0.05, 0}});
         MocoSolution solution = study.solve();
         const int N = solution.getNumTimes();
-        CHECK(solution.getState("/jointset/j0/q0/value")[N - 1] ==
+        CHECK(solution.getState("/jointset/j0/q0/value").getElt(N - 1, 0) ==
                 Approx(-0.3));
         // Since we are minimizing effort, we should reduce breaking and allow
         // the pendulum to end with some downward velocity.
-        CHECK(solution.getState("/jointset/j0/q0/speed")[N - 1] ==
+        CHECK(solution.getState("/jointset/j0/q0/speed").getElt(N - 1, 0) ==
                 Approx(-0.05).margin(1e-10));
     }
 
@@ -451,9 +451,9 @@ TEMPLATE_TEST_CASE("Endpoint constraints", "", MocoCasADiSolver) {
         effort->setEnabled(false);
         MocoSolution solution = study.solve();
         const int N = solution.getNumTimes();
-        CHECK(solution.getState("/jointset/j0/q0/value")[N - 1] ==
+        CHECK(solution.getState("/jointset/j0/q0/value").getElt(N - 1, 0) ==
                 Approx(-0.3).margin(1e-4));
-        CHECK(solution.getState("/jointset/j0/q0/speed")[N - 1] ==
+        CHECK(solution.getState("/jointset/j0/q0/speed").getElt(N - 1, 0) ==
                 Approx(0).margin(1e-6));
     }
 }

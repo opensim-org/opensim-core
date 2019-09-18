@@ -1293,7 +1293,7 @@ TEMPLATE_TEST_CASE(
         constr->addControlPath("/tau0");
         constr->setLowerBound(Constant(lowerBound));
 
-        auto& solver = moco.initSolver<TestType>();
+        moco.initSolver<TestType>();
         MocoSolution solution = moco.solve();
         SimTK::Vector expected(solution.getNumTimes());
         expected = lowerBound;
@@ -1315,7 +1315,7 @@ TEMPLATE_TEST_CASE(
         const double upperBound = 11.236;
         constr->setUpperBound(Constant(upperBound));
 
-        auto& solver = moco.initSolver<TestType>();
+        moco.initSolver<TestType>();
         MocoSolution solution = moco.solve();
         SimTK::Vector expected(solution.getNumTimes());
         expected = upperBound;
@@ -1343,7 +1343,7 @@ TEMPLATE_TEST_CASE(
         constr->addControlPath("/tau0");
         constr->setLowerBound(violateLower);
         constr->setEqualityWithLower(true);
-        auto& solver = moco.initSolver<TestType>();
+        moco.initSolver<TestType>();
         MocoSolution solution = moco.solve();
         SimTK::Vector expectedV(solution.getNumTimes());
         for (int itime = 0; itime < expectedV.size(); ++itime) {

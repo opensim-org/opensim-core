@@ -52,7 +52,7 @@ public:
         }
     }
     void calc_cost(
-            int cost_index, const CostInput<T>& in, T& cost) const override {
+            int, const CostInput<T>& in, T& cost) const override {
         cost = in.final_time;
     }
     Solution actual_solution(const VectorXd& time) const
