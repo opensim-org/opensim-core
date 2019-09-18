@@ -37,12 +37,11 @@ public:
         this->add_cost("cost", 1);
     }
 
-    void calc_cost(
-            int cost_index, const CostInput<T>& in, T& cost) const override {
+    void calc_cost(int, const CostInput<T>& in, T& cost) const override {
         cost = in.integral;
     }
     void calc_cost_integrand(
-            int cost_index, const Input<T>& in, T& integrand) const override {
+            int, const Input<T>& in, T& integrand) const override {
         const auto& parameters = in.parameters;
         integrand = (parameters[0] - 1.5) * (parameters[0] - 1.5)
                 + (parameters[1] + 2.0) * (parameters[1] + 2.0);
@@ -114,7 +113,7 @@ public:
     }
 
     void calc_cost(
-            int cost_index, const CostInput<T>& in, T& cost) const override {
+            int, const CostInput<T>& in, T& cost) const override {
         cost = (in.final_states[0] - GRAV_ACCEL * 0.5) *
                 (in.final_states[0] - GRAV_ACCEL * 0.5);
     }
@@ -179,7 +178,7 @@ public:
         out.dynamics[1] = -(STIFFNESS / in.parameters[0]) * in.states[0];
     }
     void calc_cost(
-            int cost_index, const CostInput<T>& in, T& cost) const override {
+            int, const CostInput<T>& in, T& cost) const override {
 
         cost = (in.final_states[0] - 0.5) * (in.final_states[0] - 0.5);
 

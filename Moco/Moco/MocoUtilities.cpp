@@ -610,8 +610,8 @@ MocoTrajectory OpenSim::createPeriodicTrajectory(
                 // entire name.
                 if (std::regex_match(name, regex)) {
                     matched = true;
-                    const double& oldInit = oldTraj.col(i)[0];
-                    const double& oldFinal = oldTraj.col(i)[oldN - 1];
+                    const double& oldInit = oldTraj.getElt(0, i);
+                    const double& oldFinal = oldTraj.getElt(oldN - 1, i);
                     newTraj.updBlock(oldN, i, oldN - 1, 1) =
                             oldTraj.block(1, i, oldN - 1, 1);
                     newTraj.updBlock(oldN, i, oldN - 1, 1).updCol(0) +=
@@ -624,7 +624,7 @@ MocoTrajectory OpenSim::createPeriodicTrajectory(
                 const auto regex = std::regex(pattern);
                 if (std::regex_match(name, regex)) {
                     matched = true;
-                    const double& oldFinal = oldTraj.col(i)[oldN - 1];
+                    const double& oldFinal = oldTraj.getElt(oldN - 1, i);
                     newTraj.updBlock(oldN, i, oldN - 1, 1) =
                             SimTK::Matrix(oldTraj.block(1, i, oldN - 1, 1).negate());
                     newTraj.updBlock(oldN, i, oldN - 1, 1).updCol(0) +=

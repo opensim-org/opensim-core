@@ -4,7 +4,11 @@ version: '3'
 
 services:
   gdbserver:
-    build: .
+    build:
+      context: ../../
+      dockerfile: .github/remote-ubuntu-dev/Dockerfile
+      args:
+        BTYPE: RelWithDebInfo
     security_opt: # options needed for gdb debugging
       - seccomp:unconfined
       - apparmor:unconfined
@@ -12,5 +16,3 @@ services:
     ports:
       - "7776:22"
       - "7777:7777"
-    volumes:
-      - ../../dependencies:/moco_dependencies

@@ -41,7 +41,6 @@ DM HermiteSimpson::createQuadratureCoefficientsImpl() const {
         quadCoeffs(2 * i + 1) += (2.0 / 3.0) * meshIntervals(i);
         quadCoeffs(2 * i + 2) += (1.0 / 6.0) * meshIntervals(i);
     }
-
     return quadCoeffs;
 }
 

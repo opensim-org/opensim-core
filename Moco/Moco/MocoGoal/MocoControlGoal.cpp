@@ -90,7 +90,8 @@ void MocoControlGoal::calcIntegrandImpl(
         // form causes the problem to take 2 minutes instead of 1 minute 30
         // seconds. So there is a large performance penalty.
         integrand +=
-                m_weights[iweight] * pow(abs(controls[icontrol]), m_exponent);
+                m_weights[iweight] *
+                        pow(std::abs(controls[icontrol]), m_exponent);
         ++iweight;
     }
 }
