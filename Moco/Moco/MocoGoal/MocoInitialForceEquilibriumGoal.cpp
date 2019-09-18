@@ -24,9 +24,6 @@ using namespace OpenSim;
 void MocoInitialForceEquilibriumGoal::initializeOnModelImpl(
     const Model& model) const {
 
-    // Save references to muscles with tendon compliance enabled. If the muscle
-    // is of type DeGrooteFregly2016Muscle, check that tendon compliance
-    // dynamics mode is 'explicit'.
     for (const auto& muscle : model.getComponentList<Muscle>()) {
         if (!muscle.get_ignore_tendon_compliance()) {
             if (const auto dgfmuscle =
@@ -39,7 +36,6 @@ void MocoInitialForceEquilibriumGoal::initializeOnModelImpl(
                     m_muscleRefs.emplace_back(&muscle);
             }
         }
-
     }
 
     setNumIntegralsAndOutputs(0, (int)m_muscleRefs.size());
