@@ -763,9 +763,6 @@ TEST_CASE("DeGrooteFregly2016Muscle basics") {
             model.realizeDynamics(state);
             muscle.computeInitialFiberEquilibrium(state);
 
-            const double normTendonForce =
-                    muscle.getNormalizedTendonForce(state);
-
             model.realizeDynamics(state);
             CHECK(muscle.getNormalizedTendonForceDerivative(state) == 
                     Approx(0.0).margin(1e-6));
