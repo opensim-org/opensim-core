@@ -69,6 +69,7 @@ void MocoControlGoal::initializeOnModelImpl(const Model& model) const {
         if (weight != 0.0) {
             m_controlIndices.push_back(systemControlIndexMap[controlName]);
             m_weights.push_back(weight);
+            m_controlNames.push_back(controlName);
         }
     }
 
@@ -107,5 +108,13 @@ void MocoControlGoal::calcGoalImpl(
         // TODO: Use distance squared for convexity.
         const SimTK::Real displacement = (comFinal - comInitial).norm();
         cost[0] /= displacement;
+    }
+}
+
+void MocoControlGoal::printDescriptionImpl(std::ostream& stream) const {
+    for (int i = 0; i < (int) m_controlNames.size(); i++) {
+        stream << "        ";
+        stream << "control: " << m_controlNames[i]
+               << ", weight: " << m_weights[i] << std::endl;
     }
 }

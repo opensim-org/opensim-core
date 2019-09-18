@@ -85,6 +85,7 @@ protected:
             const SimTK::State& state, double& integrand) const override;
     void calcGoalImpl(
             const GoalInput& input, SimTK::Vector& cost) const override;
+    void printDescriptionImpl(std::ostream& stream = std::cout) const override;
 
 private:
     void constructProperties();
@@ -98,6 +99,7 @@ private:
             "false)");
     mutable std::vector<double> m_weights;
     mutable std::vector<int> m_controlIndices;
+    mutable std::vector<std::string> m_controlNames;
     mutable int m_exponent = -1;
 };
 
