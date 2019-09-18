@@ -181,7 +181,7 @@ MocoSolution minimizeControlEffortRightLeg(const Options& opt) {
     auto& ms = moco.initTropterSolver();
     ms.set_num_mesh_intervals(opt.num_mesh_intervals);
     ms.set_verbosity(2);
-    ms.set_dynamics_mode(opt.dynamics_mode);
+    ms.set_multibody_dynamics_mode(opt.dynamics_mode);
     ms.set_optim_convergence_tolerance(opt.convergence_tol);
     ms.set_optim_constraint_tolerance(opt.constraint_tol);
     ms.set_optim_solver(opt.solver);
@@ -328,7 +328,7 @@ MocoSolution stateTrackingRightLeg(const Options& opt) {
     auto& ms = moco.initTropterSolver();
     ms.set_num_mesh_intervals(opt.num_mesh_intervals);
     ms.set_verbosity(2);
-    ms.set_dynamics_mode(opt.dynamics_mode);
+    ms.set_multibody_dynamics_mode(opt.dynamics_mode);
     ms.set_optim_convergence_tolerance(opt.convergence_tol);
     ms.set_optim_constraint_tolerance(opt.constraint_tol);
     ms.set_optim_solver(opt.solver);
