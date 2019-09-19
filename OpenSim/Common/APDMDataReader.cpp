@@ -229,10 +229,7 @@ void APDMDataReader::find_start_column(std::vector<std::string> tokens,
                 compare(sensorName + search_labels[remaining]) == 0;
         }
         if (match) {
-            if (newFromat)
-                indices.push_back(found_index - 3); // Three extra  comma separated fields in header before imu name
-            else
-                indices.push_back(found_index);
+                indices.push_back(found_index); 
                 return;
             }
             else { // first label found but the remaining didn't. Throw

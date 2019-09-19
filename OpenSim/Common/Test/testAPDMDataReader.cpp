@@ -27,7 +27,7 @@
 
 
 using namespace OpenSim;
-
+void testAPDMFormat7();
 
 int main() {
 
@@ -94,6 +94,8 @@ int main() {
         quatFromTable = quatTableTyped.getRowAtIndex(numRows - 1)[0];
         quatFromFile = SimTK::Quaternion(0.979175344,0.00110321,-0.005109196,-0.202949069);
         ASSERT_EQUAL(quatFromTable, quatFromFile, tolerance);
+        testAPDMFormat7();
+        // Now test new Fromat=7
      }
     catch (const std::exception& ex) {
         std::cout << "testAPDMDataReader FAILED: " << ex.what() << std::endl;
@@ -103,4 +105,28 @@ int main() {
     std::cout << "\n All testAPDMDataReader cases passed." << std::endl;
 
     return 0;
+}
+
+void testAPDMFormat7() {
+    APDMDataReaderSettings readerSettings;
+    std::vector<std::string> imu_names{ "imu1", "imu2", "imu4" };
+    std::vector<std::string> names_in_experiment{ "5718", "5778", "6570" };
+    // Programmatically add items to name mapping, write to xml
+    for (int index = 0; index < imu_names.size(); ++index) {
+        ExperimentalSensor  nextSensor(names_in_experiment[index], imu_names[index]);
+        readerSettings.append_ExperimentalSensors(nextSensor);
+    }
+    APDMDataReader reader(readerSettings);
+    DataAdapter::OutputTables tables = reader.read("apdm_format7.csv");
+    const TimeSeriesTableVec3& accelTable = reader.getLinearAccelerationsTable(tables);
+    // First row acceleration //-9.982604,-2.450636,0.515763
+    const SimTK::Vec3 refAccel{ -9.982604,-2.450636,0.515763 };
+    const SimTK::Vec3 fromFile = accelTable.getRowAtIndex(0)[0];
+    double tolerance = SimTK::Eps;
+    ASSERT_EQUAL(refAccel, fromFile, tolerance);
+    const SimTK::Vec3 refGyro{ -0.928487, -0.085719, -0.059549 };
+    const SimTK::Vec3 fromFileGyro = reader.getAngularVelocityTable(tables).getRowAtIndex(0)[0];
+    ASSERT_EQUAL(refGyro, fromFileGyro, tolerance);
+
+
 }
