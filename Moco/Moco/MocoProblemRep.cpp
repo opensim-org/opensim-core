@@ -289,9 +289,9 @@ void MocoProblemRep::initialize() {
 
     // Components can provide default state bounds via an output starting with
     // statebounds_.
+    const auto outputsMin = getModelOutputReferencePtrs<SimTK::Vec2>(
+        m_model_disabled_constraints, "^statebounds_.*", true);
     for (const auto& component : m_model_base.getComponentList()) {
-        const auto outputsMin = getModelOutputReferencePtrs<SimTK::Vec2>(
-                m_model_disabled_constraints, "^statebounds_.*");
         for (const auto& output : outputsMin) {
             const auto nameStart = output->getName().find("_") + 1;
             const auto stateName = output->getName().substr(nameStart);
