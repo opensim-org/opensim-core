@@ -290,9 +290,9 @@ void MocoProblemRep::initialize() {
     // Components can provide default state bounds via an output starting with
     // statebounds_.
     for (const auto& component : m_model_base.getComponentList()) {
-        const auto outputsMin = getModelOutputReferencePtrs<SimTK::Vec2>(
-                m_model_disabled_constraints, "^statebounds_.*");
-        for (const auto& output : outputsMin) {
+        const auto outputsBound = getModelOutputReferencePtrs<SimTK::Vec2>(
+                component, "^statebounds_.*");
+        for (const auto& output : outputsBound) {
             const auto nameStart = output->getName().find("_") + 1;
             const auto stateName = output->getName().substr(nameStart);
             const auto statePath = format("%s/%s",
@@ -307,7 +307,7 @@ void MocoProblemRep::initialize() {
                 }
                 if (!m_state_infos[statePath].getBounds().isSet()) {
                     const auto& bounds =
-                            output->getValue(m_state_disabled_constraints[0]);
+                            output->getValue(m_state_base);
                     m_state_infos[statePath].setBounds({bounds[0], bounds[1]});
                 }
             }
