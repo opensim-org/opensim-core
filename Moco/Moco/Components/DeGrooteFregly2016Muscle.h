@@ -196,6 +196,8 @@ public:
     /// @name Get methods.
     /// @{
 
+    /// We don't need the state, but the state parameter is a requirement of
+    /// Output functions.
     bool getImplicitEnabledNormalizedTendonForce(const SimTK::State&) const {
         return !get_ignore_tendon_compliance() && !m_isTendonDynamicsExplicit;
     }
@@ -274,6 +276,8 @@ public:
     static double getMaxNormalizedTendonForce() { return m_maxNormTendonForce; }
     /// The first element of the Vec2 is the lower bound, and the second is the
     /// upper bound.
+    /// We don't need the state, but the state parameter is a requirement of
+    /// Output functions.
     SimTK::Vec2 getBoundsNormalizedTendonForce(const SimTK::State&) const
     { return {getMinNormalizedTendonForce(), getMaxNormalizedTendonForce()}; }
     /// @}

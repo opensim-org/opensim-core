@@ -288,7 +288,7 @@ void MocoProblemRep::initialize() {
     }
 
     // Components can provide default state bounds via an output starting with
-    // statebounds_.
+    // "statebounds_".
     for (const auto& component : m_model_base.getComponentList()) {
         const auto outputsBound = getModelOutputReferencePtrs<SimTK::Vec2>(
                 component, "^statebounds_.*");

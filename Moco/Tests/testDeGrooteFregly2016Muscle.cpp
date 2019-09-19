@@ -1060,16 +1060,8 @@ TEMPLATE_TEST_CASE("Hanging muscle minimum time", "", MocoCasADiSolver) {
         problem.setModelCopy(model);
         problem.setTimeBounds(0, {0.05, 1.0});
         problem.setStateInfo(
-                "/joint/height/value", {0.10, 0.16}, initHeight, finalHeight);
-        problem.setStateInfo("/joint/height/speed", {-10, 10}, 0, 0);
-        if (!ignoreTendonCompliance) {
-            problem.setStateInfo(
-                    "/forceset/actuator/normalized_tendon_force", {0, 5});
-        }
-        if (!ignoreActivationDynamics) {
-                problem.setStateInfo(
-                        "/forceset/actuator/activation", {0.01, 1}, 0.01);
-        }
+                "/joint/height/value", {0.14, 0.16}, initHeight, finalHeight);
+        problem.setStateInfo("/joint/height/speed", {-1, 1}, 0, 0);
         problem.setControlInfo("/forceset/actuator", {0.01, 1});
 
         // Initial state constraints/costs.
@@ -1083,6 +1075,8 @@ TEMPLATE_TEST_CASE("Hanging muscle minimum time", "", MocoCasADiSolver) {
                 auto* initial_equilibrium = 
                     problem.addGoal<MocoInitialForceEquilibriumGoal>();
                 initial_equilibrium->setName("initial_force_equilibrium");
+                // problem.setStateInfo("/forceset/actuator/normalized_tendon_force",
+                // {0, 2});
             } else {
                 // The problem performs better when this is in cost mode.
                 auto* initial_equilibrium = problem.addGoal<
@@ -1151,18 +1145,10 @@ TEMPLATE_TEST_CASE("Hanging muscle minimum time", "", MocoCasADiSolver) {
         // recovering the correct excitation.
         const double finalTime =
                 solutionTrajOpt.getTime()[solutionTrajOpt.getNumTimes() - 1];
-        const double slop = 0; // TODO 1e-4;
-        problem.setTimeBounds(0 + slop, finalTime - slop);
+        problem.setTimeBounds(0, finalTime);
         problem.setStateInfo(
-                "/joint/height/value", {0.10, 0.16}, initHeight, finalHeight);
-        problem.setStateInfo("/joint/height/speed", {-10, 10}, 0, 0);
-        if (!ignoreTendonCompliance) {
-            problem.setStateInfo(
-                    "/forceset/actuator/normalized_tendon_force", {0, 5});
-        }
-        if (!ignoreActivationDynamics) {
-            problem.setStateInfo("/forceset/actuator/activation", {0.01, 1}, 0.01);
-        }
+                "/joint/height/value", {0.14, 0.16}, initHeight, finalHeight);
+        problem.setStateInfo("/joint/height/speed", {-1, 1}, 0, 0);
         problem.setControlInfo("/forceset/actuator", {0.01, 1});
 
         // Initial state constraints/costs.

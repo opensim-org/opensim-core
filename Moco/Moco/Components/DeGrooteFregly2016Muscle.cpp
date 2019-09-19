@@ -801,7 +801,12 @@ DeGrooteFregly2016Muscle::estimateMuscleFiberState(const double activation,
 
 double DeGrooteFregly2016Muscle::getImplicitResidualNormalizedTendonForce(
         const SimTK::State& s) const {
-    // TODO: What to do if implicit is disabled?
+    if (get_ignore_tendon_compliance()) {
+        return 0;
+    }
+    else if (m_isTendonDynamicsExplicit) {
+        return SimTK::NaN;
+    }
     // Recompute residual if cache is invalid.
     if (!isCacheVariableValid(
                 s, "implicitresidual_" + STATE_NORMALIZED_TENDON_FORCE_NAME)) {
