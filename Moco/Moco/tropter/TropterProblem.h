@@ -649,7 +649,8 @@ public:
                     leafpos == std::string::npos, Exception, "Internal error.");
             name.replace(leafpos, name.size(), "accel");
             this->add_adjunct(name, 
-                convertBounds(solver.get_implicit_mode_acceleration_bounds()));
+                convertBounds(
+                    solver.get_implicit_multibody_acceleration_bounds()));
             this->add_path_constraint(name.substr(0, leafpos) + "residual", 0);
         }
     }
