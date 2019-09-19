@@ -508,35 +508,3 @@ TEMPLATE_TEST_CASE("MocoPeriodicityGoal", "", MocoCasADiSolver) {
                 Approx(solution.getControl("/tau0")[0]).margin(1e-6));
     }
 }
-
-TEMPLATE_TEST_CASE("Endpoint constraint with integral", "", MocoCasADiSolver) {
-
-    Model model;
-    const double mass = 1.3169;
-    auto* body = new Body("body", mass, SimTK::Vec3(0), SimTK::Inertia(1));
-    model.addBody(body);
-
-    auto* joint = new FreeJoint("joint", model.getGround(), *body);
-    model.addJoint(joint);
-
-    auto* constr = new WeldConstraint("constraint", model.getGround(),
-            SimTK::Transform(), *body, SimTK::Transform());
-    model.addConstraint(constr);
-    model.finalizeConnections();
-
-    ModelFactory::createReserveActuators(model, 1.0);
-
-    MocoStudy study;
-    auto& problem = study.updProblem();
-    problem.setModelCopy(model);
-
-    problem.setTimeBounds(0, 0.5);
-
-    auto& solver = study.initCasADiSolver();
-    solver.set_num_mesh_intervals(5);
-
-    // TODO minimize reserves.
-    // TODO controls can't be 0 in the initial guess.
-
-    auto solution = study.solve();
-}
