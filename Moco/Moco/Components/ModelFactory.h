@@ -47,17 +47,6 @@ public:
     /// - 2 coordinate actuators: "force_x" and "force_y".
     /// Gravity is default; that is, (0, -g, 0).
     static Model createPlanarPointMass();
-    /// This model contains differential equations for the Brachistochrone
-    /// optimal control problem. The model contains a single component of type
-    /// Brachistochrone (defined in the function) with states x, y, v, and
-    /// control w. The constant g is std::abs(Model().get_gravity()[1]).
-    ///     xdot = v * cos(w)
-    ///     ydot = v * sin(w)
-    ///     vdot = g * sin(w)
-    /// These equations are from Betts, 2010 "Practical Methods for Optimal
-    /// Control and Estimation using Nonlinear Programming" Example 4.10 (page
-    /// 215).
-    static Model createBrachistochrone();
 
     /// @}
 

@@ -131,48 +131,6 @@ Model ModelFactory::createPlanarPointMass() {
     return model;
 }
 
-Model ModelFactory::createBrachistochrone() {
-    Model model;
-    class Brachistochrone : public ScalarActuator {
-        OpenSim_DECLARE_CONCRETE_OBJECT(Brachistochrone, ScalarActuator);
-
-    public:
-        Brachistochrone() {
-            g = std::abs(Model().get_gravity()[1]);
-        }
-        void extendAddToSystem(SimTK::MultibodySystem& system) const override {
-            Super::extendAddToSystem(system);
-            addStateVariable("x");
-            addStateVariable("y");
-            addStateVariable("v");
-        }
-        void extendInitStateFromProperties(SimTK::State& s) const override {
-            Super::extendInitStateFromProperties(s);
-            setStateVariableValue(s, "x", 0);
-            setStateVariableValue(s, "y", 0);
-            setStateVariableValue(s, "v", 0);
-        }
-        void computeStateVariableDerivatives(
-                const SimTK::State& s) const override {
-            const auto v = getStateVariableValue(s, "v");
-            const auto u = getControl(s);
-            setStateVariableDerivativeValue(s, "x", v * std::cos(u));
-            setStateVariableDerivativeValue(s, "y", v * std::sin(u));
-            setStateVariableDerivativeValue(s, "v", g * std::sin(u));
-        }
-        double computeActuation(const SimTK::State&) const override {
-            return 0;
-        }
-    private:
-        double g;
-    };
-    auto* b = new Brachistochrone();
-    b->setName("brachistochrone");
-    model.addComponent(b);
-    model.finalizeConnections();
-    return model;
-}
-
 void ModelFactory::replaceMusclesWithPathActuators(OpenSim::Model &model) {
 
     // Create path actuators from muscle properties and add to the model. Save
