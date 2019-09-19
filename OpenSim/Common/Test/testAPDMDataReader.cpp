@@ -94,8 +94,9 @@ int main() {
         quatFromTable = quatTableTyped.getRowAtIndex(numRows - 1)[0];
         quatFromFile = SimTK::Quaternion(0.979175344,0.00110321,-0.005109196,-0.202949069);
         ASSERT_EQUAL(quatFromTable, quatFromFile, tolerance);
-        testAPDMFormat7();
         // Now test new Fromat=7
+        testAPDMFormat7();
+        
      }
     catch (const std::exception& ex) {
         std::cout << "testAPDMDataReader FAILED: " << ex.what() << std::endl;
@@ -127,6 +128,7 @@ void testAPDMFormat7() {
     const SimTK::Vec3 refGyro{ -0.928487, -0.085719, -0.059549 };
     const SimTK::Vec3 fromFileGyro = reader.getAngularVelocityTable(tables).getRowAtIndex(0)[0];
     ASSERT_EQUAL(refGyro, fromFileGyro, tolerance);
-
-
+    const SimTK::Vec3 refMagneto{ 9.564500, 12.689596, -7.455671 };
+    const SimTK::Vec3 fromFileMagneto = reader.getMagneticHeadingTable(tables).getRowAtIndex(2)[0]; 
+    ASSERT_EQUAL(refMagneto, fromFileMagneto, tolerance);
 }
