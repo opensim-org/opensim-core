@@ -128,7 +128,8 @@ void testAPDMFormat7() {
     const SimTK::Vec3 refGyro{ -0.928487, -0.085719, -0.059549 };
     const SimTK::Vec3 fromFileGyro = reader.getAngularVelocityTable(tables).getRowAtIndex(0)[0];
     ASSERT_EQUAL(refGyro, fromFileGyro, tolerance);
-    const SimTK::Vec3 refMagneto{ 9.564500, 12.689596, -7.455671 };
-    const SimTK::Vec3 fromFileMagneto = reader.getMagneticHeadingTable(tables).getRowAtIndex(2)[0]; 
+    // Magnetometer data on a different imu from the last row
+    const SimTK::Vec3 refMagneto{ -55.436261,-1.704153,16.382336 };
+    const SimTK::Vec3 fromFileMagneto = reader.getMagneticHeadingTable(tables).getRowAtIndex(2)[1]; 
     ASSERT_EQUAL(refMagneto, fromFileMagneto, tolerance);
 }
