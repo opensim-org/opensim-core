@@ -163,26 +163,35 @@ public:
 class OSIMMOCO_API ModOpAddReserves : public ModelOperator {
     OpenSim_DECLARE_CONCRETE_OBJECT(ModOpAddReserves, ModelOperator);
     OpenSim_DECLARE_PROPERTY(optimal_force, double,
-            "The optimal force for all added reserve actuators.");
+            "The optimal force for all added reserve actuators. Default: 1.");
+    OpenSim_DECLARE_OPTIONAL_PROPERTY(bound, double,
+            "Set the min and max control to -bound and bound, respectively. "
+            "Default: no bounds.");
     OpenSim_DECLARE_PROPERTY(skip_coordinates_with_actuators, bool,
             "Whether or not to skip coordinates with existing actuators. "
             "Default: true.")
 public:
     ModOpAddReserves() {
         constructProperty_optimal_force(1);
+        constructProperty_bound();
         constructProperty_skip_coordinates_with_actuators(true);
     }
     ModOpAddReserves(double optimalForce) : ModOpAddReserves() {
         set_optimal_force(optimalForce);
     }
-    ModOpAddReserves(double optimalForce, bool skipCoordsWithActu)
-            : ModOpAddReserves() {
-        set_optimal_force(optimalForce);
+    ModOpAddReserves(double optimalForce, double bound)
+            : ModOpAddReserves(optimalForce) {
+        set_bound(bound);
+    }
+    ModOpAddReserves(
+            double optimalForce, double bounds, bool skipCoordsWithActu)
+            : ModOpAddReserves(optimalForce, bounds) {
         set_skip_coordinates_with_actuators(skipCoordsWithActu);
     }
     void operate(Model& model, const std::string&) const override {
         model.initSystem();
         ModelFactory::createReserveActuators(model, get_optimal_force(),
+                getProperty_bound().empty() ? SimTK::NaN : get_bound(),
                 get_skip_coordinates_with_actuators());
     }
 };

@@ -73,10 +73,14 @@ public:
     /// force. Increasing the optimal force decreases the required control
     /// signal to generate a given actuation level. The actuators are added to
     /// the model's ForceSet and are named "reserve_<coordinate-path>" with
-    /// forward slashes converted to underscores. The third optional argument
+    /// forward slashes converted to underscores. The `bound` argument, if
+    /// supplied, sets the min and max controls to `-bound` and `bound`,
+    /// respectively.
+    /// The fourth (optional) argument
     /// specifies whether or not to skip coordinates that already have
     /// CoordinateActuator%s associated with them (default: true).
     static void createReserveActuators(Model& model, double optimalForce,
+            double bound = SimTK::NaN,
             bool skipCoordinatesWithExistingActuators = true);
 
     /// @}
