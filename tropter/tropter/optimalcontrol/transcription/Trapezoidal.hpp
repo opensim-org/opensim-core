@@ -38,10 +38,11 @@ void Trapezoidal<T>::set_ocproblem(std::shared_ptr<const OCProblem> ocproblem) {
     m_num_parameters = m_ocproblem->get_num_parameters();
     m_num_dense_variables = m_num_time_variables + m_num_parameters;
     m_num_mesh_points = (int)m_mesh.size();
+    m_num_mesh_intervals = m_num_mesh_points - 1;
     int num_variables = m_num_time_variables + m_num_parameters +
                         m_num_mesh_points * m_num_continuous_variables;
     this->set_num_variables(num_variables);
-    m_num_defects = m_num_states ? m_num_mesh_points - 1 : 0;
+    m_num_defects = m_num_states ? m_num_mesh_intervals : 0;
     m_num_dynamics_constraints = m_num_defects * m_num_states;
     m_num_path_constraints = m_ocproblem->get_num_path_constraints();
     // TODO rename..."total_path_constraints"?
@@ -63,8 +64,8 @@ void Trapezoidal<T>::set_ocproblem(std::shared_ptr<const OCProblem> ocproblem) {
     // For padding, count the number of digits in num_mesh_points.
     int num_digits_max_mesh_index = 0;
     {
-        // The printed index goes up to m_num_mesh_points - 1.
-        int max_index = m_num_mesh_points - 1;
+        // The printed index goes up to m_num_mesh_intervals.
+        int max_index = m_num_mesh_intervals;
         while (max_index != 0) {
             max_index /= 10;
             num_digits_max_mesh_index++;
@@ -194,18 +195,17 @@ void Trapezoidal<T>::set_ocproblem(std::shared_ptr<const OCProblem> ocproblem) {
 
     // Set the mesh.
     // -------------
-    const int num_mesh_intervals = m_num_mesh_points - 1;
     // For integrating the integral cost.
     // The duration of each mesh interval.
     m_mesh_eigen = Eigen::Map<VectorXd>(m_mesh.data(), m_mesh.size());
-    m_mesh_intervals = m_mesh_eigen.tail(num_mesh_intervals) -
-                       m_mesh_eigen.head(num_mesh_intervals);
+    m_mesh_intervals = m_mesh_eigen.tail(m_num_mesh_intervals) -
+                       m_mesh_eigen.head(m_num_mesh_intervals);
     m_trapezoidal_quadrature_coefficients = VectorXd::Zero(m_num_mesh_points);
     // Betts 2010 equation 4.195, page 169.
     // b = 0.5 * [tau0, tau0 + tau1, tau1 + tau2, ..., tauM-2 + tauM-1, tauM-1]
-    m_trapezoidal_quadrature_coefficients.head(num_mesh_intervals) =
+    m_trapezoidal_quadrature_coefficients.head(m_num_mesh_intervals) =
             0.5 * m_mesh_intervals;
-    m_trapezoidal_quadrature_coefficients.tail(num_mesh_intervals) +=
+    m_trapezoidal_quadrature_coefficients.tail(m_num_mesh_intervals) +=
             0.5 * m_mesh_intervals;
 
     // Allocate working memory.

@@ -36,12 +36,25 @@ void MocoStateTrackingGoal::initializeOnModelImpl(const Model& model) const {
 
     // Throw exception if a weight is specified for a nonexistent state.
     auto allSysYIndices = createSystemYIndexMap(model);
+
+    std::regex regex;
+    if (getProperty_pattern().size()) {
+        regex = std::regex(get_pattern());
+    }
+
     for (int i = 0; i < get_state_weights().getSize(); ++i) {
         const auto& weightName = get_state_weights().get(i).getName();
         if (allSysYIndices.count(weightName) == 0) {
             OPENSIM_THROW_FRMOBJ(Exception,
                 "Weight provided with name '" + weightName + "' but this is "
                 "not a recognized state.");
+        }
+        if (getProperty_pattern().size() &&
+                !std::regex_match(weightName, regex)) {
+            OPENSIM_THROW_FRMOBJ(Exception,
+                    format("Weight provided with name '%s' but this name does "
+                           "not match the pattern '%s'.",
+                            weightName, get_pattern()));
         }
     }
 
@@ -53,9 +66,19 @@ void MocoStateTrackingGoal::initializeOnModelImpl(const Model& model) const {
         if (allSysYIndices.count(refName) == 0) {
             if (get_allow_unused_references()) {
                 continue;
-            } 
-            OPENSIM_THROW_FRMOBJ(Exception, 
-                "State reference '" + refName + "' unrecognized.");
+            }
+            OPENSIM_THROW_FRMOBJ(Exception,
+                 "State reference '" + refName + "' unrecognized.");
+        }
+        if (getProperty_pattern().size() &&
+                !std::regex_match(refName, regex)) {
+            if (get_allow_unused_references()) {
+                continue;
+            }
+            OPENSIM_THROW_FRMOBJ(
+                    Exception, format("State reference '%s' does not match the "
+                                      "pattern '%s'.",
+                                       refName, get_pattern()));
         }
 
         m_sysYIndices.push_back(allSysYIndices[refName]);
@@ -71,6 +94,7 @@ void MocoStateTrackingGoal::initializeOnModelImpl(const Model& model) const {
         }
         m_state_weights.push_back(refWeight);
         m_refsplines.cloneAndAppend(allSplines[iref]);
+        m_state_names.push_back(refName);
     }
 
     setNumIntegralsAndOutputs(1, 1);
@@ -91,3 +115,12 @@ void MocoStateTrackingGoal::calcIntegrandImpl(/*int meshIndex,*/
         integrand += m_state_weights[iref] * pow(modelValue - refValue, 2);
     }
 }
+
+void MocoStateTrackingGoal::printDescriptionImpl(std::ostream& stream) const {
+    for (int i = 0; i < (int) m_state_names.size(); i++) {
+        stream << "        ";
+        stream << "state: " << m_state_names[i] << ", "
+               << "weight: " << m_state_weights[i] << std::endl;
+    }
+}
+

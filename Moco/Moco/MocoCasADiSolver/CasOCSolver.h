@@ -35,9 +35,9 @@ class Transcription;
 class Solver {
 public:
     Solver(const Problem& problem) : m_problem(problem) {}
-    void setNumMeshPoints(int numMeshPoints) {
-        for (int i = 0; i < numMeshPoints; ++i) {
-            m_mesh.push_back(i / (double)(numMeshPoints - 1));
+    void setNumMeshIntervals(int numMeshIntervals) {
+        for (int i = 0; i < (numMeshIntervals + 1); ++i) {
+            m_mesh.push_back(i / (double)(numMeshIntervals));
         }
     }
     void setMesh(std::vector<double> mesh) { m_mesh = std::move(mesh); }

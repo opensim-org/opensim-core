@@ -76,7 +76,7 @@ MocoStudy configureMocoStudy() {
 
     // Get the empty MocoSolver (here MocoCasADiSolver) from the MocoStudy.
     auto& solver = moco.initCasADiSolver();
-    solver.set_num_mesh_points(25);
+    solver.set_num_mesh_intervals(25);
     solver.set_dynamics_mode("implicit"); // default: "explicit"
     solver.set_optim_convergence_tolerance(1e-6);
     solver.set_optim_constraint_tolerance(1e-6);

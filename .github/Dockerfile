@@ -24,10 +24,12 @@ ARG GITHUBTOKEN
 
 ARG MOCOBRANCH=master
 
-# Avoid interactive timezone prompt when installing packages.
-ENV DEBIAN_FRONTEND=noninteractive
+RUN echo ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula \
+        select true | debconf-set-selections
 
-RUN apt-get update && apt-get install -y \
+# Set DEBIAN_FRONTEND to avoid interactive timezone prompt when installing
+# packages.
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
         git \
         build-essential libtool autoconf \
         cmake \
@@ -36,8 +38,16 @@ RUN apt-get update && apt-get install -y \
         pkg-config \
         libopenblas-dev \
         liblapack-dev \
-        python3 python3-dev python3-numpy python3-matplotlib python3-setuptools \
+        python3 python3-dev python3-numpy python3-scipy \
+        python3-matplotlib python3-opencv \
+        python3-setuptools \
+        ttf-mscorefonts-installer \
         swig
+
+# Matplotlib's default backend requires a DISPLAY / Xserver.
+RUN mkdir -p ~/.config/matplotlib && \
+    echo 'backend : Agg' >> ~/.config/matplotlib/matplotlibrc && \
+    echo 'font.sans-serif : Arial, Helvetica, sans-serif' >> ~/.config/matplotlib/matplotlibrc
 
 # Must be careful to not embed the GitHub token in the image.
 RUN git config --global url."https://$GITHUBTOKEN:@github.com/".insteadOf "https://github.com/" \

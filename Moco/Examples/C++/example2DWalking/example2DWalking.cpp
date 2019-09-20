@@ -47,49 +47,6 @@
 
 using namespace OpenSim;
 
-// MocoGoal imposing an average gait speed through endpoint constraints. The
-// average gait speed is defined as the distance traveled by the pelvis in the
-// forward direction divided by the final time.
-class MocoGaitSpeedGoal : public MocoGoal {
-OpenSim_DECLARE_CONCRETE_OBJECT(MocoGaitSpeedGoal, MocoGoal);
-public:
-    OpenSim_DECLARE_PROPERTY(gait_speed, double,
-            "The average gait speed defined as the distance traveled by "
-            "the pelvis in the forward direction divided by the final time.");
-    MocoGaitSpeedGoal() {
-        constructProperties();
-    }
-    MocoGaitSpeedGoal(std::string name) : MocoGoal(std::move(name)) {
-        constructProperties();
-    }
-protected:
-    bool getSupportsEndpointConstraintImpl() const override { return true; }
-    Mode getDefaultModeImpl() const override {
-        return Mode::EndpointConstraint;
-    }
-    void calcGoalImpl(const GoalInput& input, SimTK::Vector& values)
-        const override {
-        // Get final time.
-        SimTK::Real timeFinal = input.final_state.getTime();
-        // Get initial and final pelvis forward coordinate values.
-        SimTK::Real pelvisTxInitial =  m_coord->getValue(input.initial_state);
-        SimTK::Real pelvisTxFinal =  m_coord->getValue(input.final_state);
-        // Calculate distance traveled.
-        SimTK::Real distanceTraveled = pelvisTxFinal - pelvisTxInitial;
-        // Calculate average gait speed.
-        values[0] = get_gait_speed() - (distanceTraveled / timeFinal);
-    }
-    void initializeOnModelImpl(const Model& model) const override {
-        m_coord.reset(&model.getCoordinateSet().get("pelvis_tx"));
-        setNumIntegralsAndOutputs(0, 1);
-    }
-private:
-    void constructProperties() {
-        constructProperty_gait_speed(0);
-    }
-    mutable SimTK::ReferencePtr<const Coordinate> m_coord;
-};
-
 // MocoGoal minimizing the integral of the squared controls divided by the
 // distance traveled by the pelvis in the forward direction.
 class MocoEffortOverDistanceGoal : public MocoGoal {
@@ -240,7 +197,7 @@ MocoSolution gaitTracking(const bool& setPathLengthApproximation) {
     // Configure the solver.
     // =====================
     MocoCasADiSolver& solver = moco.updSolver<MocoCasADiSolver>();
-    solver.set_num_mesh_points(50);
+    solver.set_num_mesh_intervals(50);
     solver.set_verbosity(2);
     solver.set_optim_solver("ipopt");
     solver.set_optim_convergence_tolerance(1e-4);
@@ -333,8 +290,8 @@ void gaitPrediction(const MocoSolution& gaitTrackingSolution,
         }
     }
     // Prescribed average gait speed.
-    auto* speedGoal = problem.addGoal<MocoGaitSpeedGoal>("speed");
-    speedGoal->set_gait_speed(1.2);
+    auto* speedGoal = problem.addGoal<MocoAverageSpeedGoal>("speed");
+    speedGoal->set_desired_average_speed(1.2);
     // Effort over distance.
     auto* effortGoal = problem.addGoal<MocoControlGoal>("effort", 10);
     effortGoal->setExponent(3);
@@ -365,7 +322,7 @@ void gaitPrediction(const MocoSolution& gaitTrackingSolution,
     // Configure the solver.
     // =====================
     auto& solver = moco.initCasADiSolver();
-    solver.set_num_mesh_points(50);
+    solver.set_num_mesh_intervals(50);
     solver.set_verbosity(2);
     solver.set_optim_solver("ipopt");
     solver.set_optim_convergence_tolerance(1e-4);
@@ -393,7 +350,7 @@ void gaitPrediction(const MocoSolution& gaitTrackingSolution,
     writeTableToFile(externalForcesTableFlat,
             "gaitPrediction_solutionGRF_fullcycle.sto");
 
-    moco.visualize(solution);
+    moco.visualize(full);
 }
 
 int main() {
