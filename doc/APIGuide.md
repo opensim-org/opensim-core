@@ -405,9 +405,10 @@ Based on the extension part of the filename, these methods invoke one of the fol
 3. [CSVFileAdapter](@ref OpenSim::CSVFileAdapter): reads and writes CSV files.
 4. [C3DFileAdapter](@ref OpenSim::C3DFileAdapter): reads C3D files.
 
-While it is possible to invoke the concrete FileAdapters above for reading data files, typically users don't need to think about which Adapter class to use but rather about what type of DataTable they want to read. There're constructors for tables from files that create the appropriate FileAdapters internally, for example to read TimeSeriesTableVec3 of marker data from a TRC file you can use:
+While it is possible to invoke the concrete FileAdapters above for reading data files, it is often more intuitive to think about what type of DataTable you want to read, rather than which Adapter class to use. Thus we provide constructors to create tables from files using the appropriate FileAdapters internally. For example, to read a TimeSeriesTableVec3 of marker data from a TRC file you can use:
 ~~~cpp
-TimeSeriesTableVec3 markersTable('markerDataFile.trc'); 
+TimeSeriesTableVec3 markersTable("markerDataFile.trc"); 
+TimeSeriesTable coordinates("kinematics.sto");
 ~~~
 
 ## Solvers {#solvers}
