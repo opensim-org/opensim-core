@@ -75,7 +75,17 @@ void MocoControlGoal::initializeOnModelImpl(const Model& model) const {
 
     OPENSIM_THROW_IF_FRMOBJ(get_exponent() < 2, Exception,
             "Exponent must be 2 or greater.");
-    m_exponent = get_exponent();
+    int exponent = get_exponent();
+
+    // The pow() function gives slightly different results than x * x. On Mac,
+    // using x * x requires fewer solver iterations.
+    if (exponent == 2) {
+        m_power_function = [](const double& x) { return x * x; };
+    } else {
+        m_power_function = [exponent](const double& x) {
+            return pow(std::abs(x), exponent);
+        };
+    }
 
     setNumIntegralsAndOutputs(1, 1);
 }
@@ -87,9 +97,8 @@ void MocoControlGoal::calcIntegrandImpl(
     integrand = 0;
     int iweight = 0;
     for (const auto& icontrol : m_controlIndices) {
-        // TODO: check effect on performance.
-        integrand +=
-                m_weights[iweight] * pow(abs(controls[icontrol]), m_exponent);
+        const auto& control = controls[icontrol];
+        integrand += m_weights[iweight] * m_power_function(control);
         ++iweight;
     }
 }
