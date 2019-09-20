@@ -100,7 +100,7 @@ private:
     mutable std::vector<double> m_weights;
     mutable std::vector<int> m_controlIndices;
     mutable std::vector<std::string> m_controlNames;
-    mutable int m_exponent = -1;
+    mutable std::function<double(const double&)> m_power_function;
 };
 
 } // namespace OpenSim
