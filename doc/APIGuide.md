@@ -394,16 +394,21 @@ The DataAdapter separates use of a DataTable from the various sources of data, i
 
 [FileAdapter](@ref OpenSim::FileAdapter) offers an interface to read and write files through the following methods.
 ~~~cpp
-FileAdapter::readFile(string fileName)
-FileAdapter::writeFile(string fileName)
+FileAdapter::read(string fileName)
+FileAdapter::write(string fileName)
 ~~~
 
-Based on the extension part of the filename, these methods invoke one of the following concrete FileAdapters to perform the read/write. It is also possible to invoke the following concrete FileAdapters directly.
+Based on the extension part of the filename, these methods invoke one of the following concrete FileAdapters to perform the read/write.
 
 1. [TRCFileAdapter](@ref OpenSim::TRCFileAdapter): reads and writes TRC files.
 2. [STOFileAdapter](@ref OpenSim::STOFileAdapter): reads and writes STO files.
 3. [CSVFileAdapter](@ref OpenSim::CSVFileAdapter): reads and writes CSV files.
 4. [C3DFileAdapter](@ref OpenSim::C3DFileAdapter): reads C3D files.
+
+While it is possible to invoke the concrete FileAdapters above for reading data files, typically users don't need to think about which Adapter class to use but rather about what type of DataTable they want to read. There're constructors for tables from files that create the appropriate FileAdapters internally, for example to read TimeSeriesTableVec3 of marker data from a TRC file you can use:
+~~~cpp
+TimeSeriesTableVec3 markersTable('markerDataFile.trc'); 
+~~~
 
 ## Solvers {#solvers}
 
