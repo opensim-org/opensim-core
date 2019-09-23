@@ -195,6 +195,19 @@ The optimization solver still has variables for the Lagrange multipliers and
 we enforce kinematic constraints as path constraints in the optimal control
 problem.
 
+@subsection implimplicitauxiliary (TODO)
+
+OpenSim's Component interface supports implementation of auxiliary dynamics, that
+is, additional dynamics added to the set of multibody dynamics equations that
+define a model's computational system (e.g. muscle activation dynamics). The 
+Component interface support dynamics in explicit form (i.e. 
+\f$ \dot{y} = f(y) \f$), but it is often desirable to implment auxiliary dynamics
+in implicit form (i.e. \f$ f(y, \dot{y}) = 0 \f$). For example, expressing tendon
+compliance dynamics in explicit introduces singularities that arise as a result
+of inverting the force-velocity curve. Solving the dynamics implicity by 
+enforce the muscle-tendon equilibrium (i.e. \f$ F^T - F^M cos(\alpha) = 0 \f$)
+is more natural and avoids these difficulties. 
+
 @subsection implpreskin Prescribed kinematics
 
 The situation of prescribed kinematics is similar to the situation for implicit

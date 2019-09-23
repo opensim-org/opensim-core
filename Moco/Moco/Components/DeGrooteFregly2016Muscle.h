@@ -651,17 +651,16 @@ private:
     void constructProperties();
 
     void calcMuscleLengthInfoHelper(const SimTK::Real& muscleTendonLength,
-            const SimTK::Real& normTendonForce, MuscleLengthInfo& mli) const;
+            MuscleLengthInfo& mli, const SimTK::Real& normTendonForce) const;
     void calcFiberVelocityInfoHelper(const SimTK::Real& muscleTendonVelocity,
-            const SimTK::Real& activation, const SimTK::Real& normTendonForce,
-            const SimTK::Real& normTendonForceDerivative,
-            const bool& isTendonDynamicsExplicit,
-            const MuscleLengthInfo& mli, FiberVelocityInfo& fvi) const;
-    void calcMuscleDynamicsInfoHelper(const SimTK::Real& activation,
+            const SimTK::Real& activation, const bool& isTendonDynamicsExplicit,
+            const MuscleLengthInfo& mli, FiberVelocityInfo& fvi,
             const SimTK::Real& normTendonForce,
+            const SimTK::Real& normTendonForceDerivative) const;
+    void calcMuscleDynamicsInfoHelper(const SimTK::Real& activation,
             const SimTK::Real& muscleTendonVelocity,
             const MuscleLengthInfo& mli, const FiberVelocityInfo& fvi,
-            MuscleDynamicsInfo& mdi) const;
+            MuscleDynamicsInfo& mdi, const SimTK::Real& normTendonForce) const;
     void calcMusclePotentialEnergyInfoHelper(
             const MuscleLengthInfo& mli, MusclePotentialEnergyInfo& mpei) const;
 
