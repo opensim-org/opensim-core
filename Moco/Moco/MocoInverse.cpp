@@ -29,6 +29,7 @@
 #include "MocoUtilities.h"
 
 #include <OpenSim/Tools/InverseDynamicsTool.h>
+#include <OpenSim/Actuators/CoordinateActuator.h>
 
 using namespace OpenSim;
 
@@ -40,6 +41,7 @@ void MocoInverse::constructProperties() {
     constructProperty_max_iterations();
     constructProperty_tolerance(1e-3);
     constructProperty_output_paths();
+    constructProperty_reserves_weight(1.0);
 }
 
 MocoStudy MocoInverse::initialize() const { return initializeInternal().first; }
@@ -51,7 +53,8 @@ std::pair<MocoStudy, TimeSeriesTable> MocoInverse::initializeInternal() const {
     Model model = get_model().process(getDocumentDirectory());
     model.initSystem();
 
-    TimeSeriesTable kinematics = get_kinematics().process(getDocumentDirectory(), &model);
+    TimeSeriesTable kinematics = 
+            get_kinematics().process(getDocumentDirectory(), &model);
 
     // Prescribe the kinematics.
     // -------------------------
@@ -86,7 +89,14 @@ std::pair<MocoStudy, TimeSeriesTable> MocoInverse::initializeInternal() const {
     problem.setTimeBounds(timeInfo.initial, timeInfo.final);
 
     // TODO: Allow users to specify costs flexibly.
-    problem.addGoal<MocoControlGoal>("excitation_effort");
+    auto* effort = problem.addGoal<MocoControlGoal>("excitation_effort");
+    for (const auto& actu : model.getComponentList<CoordinateActuator>()) {
+        auto name = actu.getName();
+        if (std::regex_match(name, std::regex("^reserve_.*"))) {
+            effort->setWeightForControl(actu.getAbsolutePathString(), 
+                    get_reserves_weight());
+        }
+    }
 
     // Prevent "free" activation at the beginning of the motion.
     problem.addGoal<MocoInitialActivationGoal>("initial_activation");
@@ -109,6 +119,8 @@ std::pair<MocoStudy, TimeSeriesTable> MocoInverse::initializeInternal() const {
         solver.set_enforce_constraint_derivatives(true);
         solver.set_interpolate_control_midpoints(false);
     }
+    solver.set_minimize_implicit_auxiliary_derivatives(true);
+    solver.set_implicit_auxiliary_derivatives_weight(1);
     // The sparsity detection works fine with DeGrooteFregly2016Muscle.
     solver.set_optim_sparsity_detection("random");
     // Forward is 3x faster than central.

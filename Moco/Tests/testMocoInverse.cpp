@@ -19,6 +19,10 @@
 #include <Moco/osimMoco.h>
 
 #include <OpenSim/Common/LogManager.h>
+#include <OpenSim/Tools/CMC_TaskSet.h>
+#include <OpenSim/Tools/CMC_Joint.h>
+#include <OpenSim/Tools/CMC.h>
+#include <OpenSim/Tools/CMCTool.h>
 
 #define CATCH_CONFIG_MAIN
 #include "Testing.h"
@@ -120,6 +124,7 @@ TEST_CASE("PrescribedKinematics direct collocation auxiliary dynamics") {
 TEST_CASE("MocoInverse gait10dof18musc") {
     std::cout.rdbuf(LogManager::cout.rdbuf());
     std::cerr.rdbuf(LogManager::cerr.rdbuf());
+
 
     MocoInverse inverse;
 
