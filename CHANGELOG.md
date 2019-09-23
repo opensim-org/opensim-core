@@ -1,3 +1,8 @@
+- 2019-09-23: MocoControlGoal has properties "exponent" and
+              "divide_by_displacement". 
+
+- 2019-09-05: MocoAverageSpeedGoal was added.
+
 - 2019-08-29: Users now interface with num_mesh_intervals instead of
               num_mesh_points when setting times to sample.
 
