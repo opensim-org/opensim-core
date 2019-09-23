@@ -47,45 +47,6 @@
 
 using namespace OpenSim;
 
-// MocoGoal minimizing the integral of the squared controls divided by the
-// distance traveled by the pelvis in the forward direction.
-class MocoEffortOverDistanceGoal : public MocoGoal {
-    OpenSim_DECLARE_CONCRETE_OBJECT(MocoEffortOverDistanceGoal, MocoGoal);
-
-public:
-    MocoEffortOverDistanceGoal() = default;
-    MocoEffortOverDistanceGoal(std::string name) : MocoGoal(std::move(name)) {}
-    MocoEffortOverDistanceGoal(std::string name, double weight)
-            : MocoGoal(std::move(name), weight) {}
-
-protected:
-    void initializeOnModelImpl(const Model& model) const override {
-        m_coord.reset(&model.getCoordinateSet().get("pelvis_tx"));
-        setNumIntegralsAndOutputs(1, 1);
-    }
-    void calcIntegrandImpl(
-            const SimTK::State& state, double& integrand) const override {
-        // Integrand is cubed controls.
-        const auto& controls = getModel().getControls(state);
-        integrand = 0;
-        for (int i = 0; i < getModel().getNumControls(); ++i)
-            integrand += SimTK::cube(abs(controls[i]));
-    }
-    void calcGoalImpl(
-            const GoalInput& input, SimTK::Vector& goal) const override {
-        // Get initial and final pelvis forward coordinate values.
-        SimTK::Real pelvisTxInitial = m_coord->getValue(input.initial_state);
-        SimTK::Real pelvisTxFinal = m_coord->getValue(input.final_state);
-        // Calculate distance traveled.
-        SimTK::Real distanceTraveled = pelvisTxFinal - pelvisTxInitial;
-        // Normalize integral by distance traveled.
-        goal[0] = input.integral / distanceTraveled;
-    }
-
-private:
-    mutable SimTK::ReferencePtr<const Coordinate> m_coord;
-};
-
 // Set a coordinate tracking problem where the goal is to minimize the
 // difference between provided and simulated coordinate values and speeds
 // as well as to minimize an effort cost (squared controls). The provided data
