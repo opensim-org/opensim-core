@@ -110,7 +110,7 @@ TEST_CASE("PrescribedKinematics direct collocation auxiliary dynamics") {
     problem.setStateInfo("/customdynamics/s", {0, 100}, init_s);
     auto& solver = moco.initCasADiSolver();
     solver.set_transcription_scheme("trapezoidal");
-    solver.set_dynamics_mode("implicit");
+    solver.set_multibody_dynamics_mode("implicit");
 
     MocoSolution solution = moco.solve();
     OpenSim_CHECK_MATRIX_TOL(solution.getState("/customdynamics/s"),
