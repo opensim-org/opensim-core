@@ -144,8 +144,8 @@ void MocoTranslationTrackingGoal::initializeOnModelImpl(const Model& model)
 
     // This matrix has the input table number of columns times three to hold all
     // position elements per translation.
-    SimTK::Matrix mat((int)translationTable.getNumRows(), 
-                    3*(int)translationTable.getNumColumns());
+    SimTK::Matrix mat((int)translationTable.getNumRows(),
+                      3*(int)translationTable.getNumColumns());
     // Column labels are necessary for creating the GCVSplineSet from the table,
     // so we'll label each column using the frame path and the position vector
     // element (e.g. "<frame-path>/position_p0" for the first position vector
@@ -197,5 +197,15 @@ void MocoTranslationTrackingGoal::calcIntegrandImpl(const SimTK::State& state,
         // Add this frame's position error to the integrand.
         const double& weight = m_translation_weights[iframe];
         integrand += weight * error.normSqr();
+    }
+}
+
+void MocoTranslationTrackingGoal::printDescriptionImpl(std::ostream& stream) const {
+    stream << "        ";
+    stream << "translation reference file: "
+           << get_translation_reference_file() << std::endl;
+    for (int i = 0; i < getProperty_frame_paths().size(); i++) {
+        stream << "        ";
+        stream << "frame " << i << ": " << get_frame_paths(i) << std::endl;
     }
 }

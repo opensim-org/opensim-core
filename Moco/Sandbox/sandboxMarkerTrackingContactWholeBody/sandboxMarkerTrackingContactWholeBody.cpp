@@ -234,7 +234,7 @@ MocoSolution solveStateTrackingProblem() {
     ms.set_num_mesh_intervals(50);
     ms.set_verbosity(2);
     ms.set_optim_solver("ipopt");
-    ms.set_dynamics_mode("implicit");
+    ms.set_multibody_dynamics_mode("implicit");
 
     // Create guess.
     // =============
@@ -370,7 +370,7 @@ MocoSolution solveMarkerTrackingProblem(bool createGuess,
     ms.set_verbosity(2);
     ms.set_optim_solver("ipopt");
     ms.set_optim_hessian_approximation("limited-memory"); // TODO "exact");
-    ms.set_dynamics_mode("implicit");
+    ms.set_multibody_dynamics_mode("implicit");
     ms.set_optim_max_iterations(5000);
     ms.set_optim_convergence_tolerance(1e-4);
     ms.set_optim_constraint_tolerance(1e-2);

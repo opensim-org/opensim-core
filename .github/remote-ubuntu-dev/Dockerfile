@@ -37,9 +37,7 @@ RUN echo 'debugger:pwd' | chpasswd
 ARG BTYPE=RelWithDebInfo
 
 # Avoid interactive timezone prompt when installing packages.
-ENV DEBIAN_FRONTEND=noninteractive
-
-RUN apt-get install -y \
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y \
         git \
         build-essential libtool autoconf \
         cmake \

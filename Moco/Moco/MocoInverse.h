@@ -74,7 +74,7 @@ private:
 /// Default solver settings
 /// -----------------------
 /// - solver: MocoCasADiSolver
-/// - dynamics_mode: implicit
+/// - multibody_dynamics_mode: implicit
 /// - transcription_sceheme: trapezoidal
 /// - optim_convergence_tolerance: 1e-3
 /// - optim_constraint_tolerance: 1e-3

@@ -43,6 +43,9 @@ protected:
     Mode getDefaultModeImpl() const override {
         return Mode::EndpointConstraint;
     }
+    /// Save references to muscles with tendon compliance enabled. If the muscle
+    /// is of type DeGrooteFregly2016Muscle, check that tendon compliance
+    /// dynamics mode is 'explicit'.
     void initializeOnModelImpl(const Model&) const override;
     void calcGoalImpl(
         const GoalInput& input, SimTK::Vector& goal) const override;

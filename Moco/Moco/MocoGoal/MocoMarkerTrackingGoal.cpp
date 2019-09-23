@@ -70,6 +70,7 @@ void MocoMarkerTrackingGoal::initializeOnModelImpl(const Model& model) const {
     // so this is generic.
     const SimTK::State& s = model.getWorkingState();
     get_markers_reference().getWeights(s, m_marker_weights);
+    m_marker_names = get_markers_reference().getNames();
 
     // Get and flatten TimeSeriesTableVec3 to doubles and create a set of
     // reference splines, one for each component of the coordinate
@@ -101,4 +102,19 @@ void MocoMarkerTrackingGoal::initializeOnModelImpl(const Model& model) const {
 
         integrand += m_marker_weights[refidx] * distance;
     }
+}
+
+void MocoMarkerTrackingGoal::printDescriptionImpl(std::ostream& stream) const {
+    stream << "        ";
+    stream << "allow unused references: "
+           << get_allow_unused_references() << std::endl;
+    stream << "        ";
+    stream << "tracked marker(s): " << std::endl;
+    int weightIndex = 0;
+    for (auto name : m_marker_names) {
+       stream << "            ";
+       stream << name << ", weight: " << m_marker_weights[weightIndex] << std::endl;
+       weightIndex++;
+    }
+
 }

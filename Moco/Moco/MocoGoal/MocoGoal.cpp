@@ -42,7 +42,8 @@ void MocoGoal::printDescription(std::ostream& stream) const {
     if (mode == "cost") {
         stream << " weight: " << get_weight();
     }
-    std::cout << std::endl;
+    stream << std::endl;
+    printDescriptionImpl(stream);
 }
 
 void MocoGoal::constructProperties() {

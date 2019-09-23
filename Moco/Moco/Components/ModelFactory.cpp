@@ -131,48 +131,6 @@ Model ModelFactory::createPlanarPointMass() {
     return model;
 }
 
-Model ModelFactory::createBrachistochrone() {
-    Model model;
-    class Brachistochrone : public ScalarActuator {
-        OpenSim_DECLARE_CONCRETE_OBJECT(Brachistochrone, ScalarActuator);
-
-    public:
-        Brachistochrone() {
-            g = std::abs(Model().get_gravity()[1]);
-        }
-        void extendAddToSystem(SimTK::MultibodySystem& system) const override {
-            Super::extendAddToSystem(system);
-            addStateVariable("x");
-            addStateVariable("y");
-            addStateVariable("v");
-        }
-        void extendInitStateFromProperties(SimTK::State& s) const override {
-            Super::extendInitStateFromProperties(s);
-            setStateVariableValue(s, "x", 0);
-            setStateVariableValue(s, "y", 0);
-            setStateVariableValue(s, "v", 0);
-        }
-        void computeStateVariableDerivatives(
-                const SimTK::State& s) const override {
-            const auto v = getStateVariableValue(s, "v");
-            const auto u = getControl(s);
-            setStateVariableDerivativeValue(s, "x", v * std::cos(u));
-            setStateVariableDerivativeValue(s, "y", v * std::sin(u));
-            setStateVariableDerivativeValue(s, "v", g * std::sin(u));
-        }
-        double computeActuation(const SimTK::State&) const override {
-            return 0;
-        }
-    private:
-        double g;
-    };
-    auto* b = new Brachistochrone();
-    b->setName("brachistochrone");
-    model.addComponent(b);
-    model.finalizeConnections();
-    return model;
-}
-
 void ModelFactory::replaceMusclesWithPathActuators(OpenSim::Model &model) {
 
     // Create path actuators from muscle properties and add to the model. Save
@@ -280,6 +238,7 @@ void ModelFactory::removeMuscles(Model& model) {
 }
 
 void ModelFactory::createReserveActuators(Model& model, double optimalForce,
+        double bound,
         bool skipCoordinatesWithExistingActuators) {
     OPENSIM_THROW_IF(optimalForce <= 0, Exception,
             format("Invalid value (%g) for create_reserve_actuators; "
@@ -317,8 +276,13 @@ void ModelFactory::createReserveActuators(Model& model, double optimalForce,
             std::replace(path.begin(), path.end(), '/', '_');
             actu->setName("reserve" + path);
             actu->setOptimalForce(optimalForce);
-            actu->setMinControl(-1);
-            actu->setMaxControl(1);
+            if (!SimTK::isNaN(bound)) {
+                OPENSIM_THROW_IF(bound < 0, Exception,
+                        format("Expected a non-negative bound but got %d.",
+                                bound));
+                actu->setMinControl(-bound);
+                actu->setMaxControl(bound);
+            }
             model.addForce(actu);
         }
     }

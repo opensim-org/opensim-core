@@ -69,12 +69,23 @@ void MocoControlGoal::initializeOnModelImpl(const Model& model) const {
         if (weight != 0.0) {
             m_controlIndices.push_back(systemControlIndexMap[controlName]);
             m_weights.push_back(weight);
+            m_controlNames.push_back(controlName);
         }
     }
 
     OPENSIM_THROW_IF_FRMOBJ(get_exponent() < 2, Exception,
             "Exponent must be 2 or greater.");
-    m_exponent = get_exponent();
+    int exponent = get_exponent();
+
+    // The pow() function gives slightly different results than x * x. On Mac,
+    // using x * x requires fewer solver iterations.
+    if (exponent == 2) {
+        m_power_function = [](const double& x) { return x * x; };
+    } else {
+        m_power_function = [exponent](const double& x) {
+            return pow(std::abs(x), exponent);
+        };
+    }
 
     setNumIntegralsAndOutputs(1, 1);
 }
@@ -86,12 +97,8 @@ void MocoControlGoal::calcIntegrandImpl(
     integrand = 0;
     int iweight = 0;
     for (const auto& icontrol : m_controlIndices) {
-        // TODO: On the first problem in exampleMocoTrack, this more general
-        // form causes the problem to take 2 minutes instead of 1 minute 30
-        // seconds. So there is a large performance penalty.
-        integrand +=
-                m_weights[iweight] *
-                        pow(std::abs(controls[icontrol]), m_exponent);
+        const auto& control = controls[icontrol];
+        integrand += m_weights[iweight] * m_power_function(control);
         ++iweight;
     }
 }
@@ -107,5 +114,13 @@ void MocoControlGoal::calcGoalImpl(
         // TODO: Use distance squared for convexity.
         const SimTK::Real displacement = (comFinal - comInitial).norm();
         cost[0] /= displacement;
+    }
+}
+
+void MocoControlGoal::printDescriptionImpl(std::ostream& stream) const {
+    for (int i = 0; i < (int) m_controlNames.size(); i++) {
+        stream << "        ";
+        stream << "control: " << m_controlNames[i]
+               << ", weight: " << m_weights[i] << std::endl;
     }
 }

@@ -47,17 +47,6 @@ public:
     /// - 2 coordinate actuators: "force_x" and "force_y".
     /// Gravity is default; that is, (0, -g, 0).
     static Model createPlanarPointMass();
-    /// This model contains differential equations for the Brachistochrone
-    /// optimal control problem. The model contains a single component of type
-    /// Brachistochrone (defined in the function) with states x, y, v, and
-    /// control w. The constant g is std::abs(Model().get_gravity()[1]).
-    ///     xdot = v * cos(w)
-    ///     ydot = v * sin(w)
-    ///     vdot = g * sin(w)
-    /// These equations are from Betts, 2010 "Practical Methods for Optimal
-    /// Control and Estimation using Nonlinear Programming" Example 4.10 (page
-    /// 215).
-    static Model createBrachistochrone();
 
     /// @}
 
@@ -84,10 +73,14 @@ public:
     /// force. Increasing the optimal force decreases the required control
     /// signal to generate a given actuation level. The actuators are added to
     /// the model's ForceSet and are named "reserve_<coordinate-path>" with
-    /// forward slashes converted to underscores. The third optional argument
+    /// forward slashes converted to underscores. The `bound` argument, if
+    /// supplied, sets the min and max controls to `-bound` and `bound`,
+    /// respectively.
+    /// The fourth (optional) argument
     /// specifies whether or not to skip coordinates that already have
     /// CoordinateActuator%s associated with them (default: true).
     static void createReserveActuators(Model& model, double optimalForce,
+            double bound = SimTK::NaN,
             bool skipCoordinatesWithExistingActuators = true);
 
     /// @}

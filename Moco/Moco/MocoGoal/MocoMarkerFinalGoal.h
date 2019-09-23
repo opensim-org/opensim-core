@@ -54,6 +54,7 @@ protected:
     void initializeOnModelImpl(const Model&) const override;
     void calcGoalImpl(
             const GoalInput& input, SimTK::Vector& cost) const override;
+    void printDescriptionImpl(std::ostream& stream = std::cout) const override;
 private:
 
     OpenSim_DECLARE_PROPERTY(point_name, std::string,
