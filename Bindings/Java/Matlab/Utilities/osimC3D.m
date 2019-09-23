@@ -15,7 +15,7 @@ classdef osimC3D < matlab.mixin.SetGet
 % and supported by the US National Institutes of Health (U54 GM072970,    %
 % R24 HD065690) and by DARPA through the Warrior Web program.             %
 %                                                                         %
-% Copyright (c) 2005-2018 Stanford University and the Authors             %
+% Copyright (c) 2005-2019 Stanford University and the Authors             %
 % Author(s): James Dunne                                                  %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
@@ -139,7 +139,7 @@ classdef osimC3D < matlab.mixin.SetGet
             % Method for rotating marker and force data stored in osim
             % tables.
             % c3d.rotateData('x', 90)
-            
+
             if ~ischar(axis)
                error('Axis must be either x,y or z')
             end
@@ -152,28 +152,25 @@ classdef osimC3D < matlab.mixin.SetGet
             disp('Marker and Force tables have been rotated')
         end
         function convertMillimeters2Meters(self)
-            % Function to convert  point data (mm) to m and Torque data 
+            % Function to convert  point data (mm) to m and Torque data
             % (Nmm) to Nm.
-            
+
             import org.opensim.modeling.*
-            
+
             nRows  = self.forces.getNumRows();
             labels = self.forces.getColumnLabels();
-            
+
             for i = 0 : self.forces.getNumColumns - 1
                 % All force columns will have the 'f' prefix while point
                 % and moment columns will have 'p' and 'm' prefixes,
-                % respectively. 
+                % respectively.
                 if ~startsWith(char(labels.get(i)),'f')
-                    for u = 0 : nRows - 1
-                        % Get the Vec3
-                        vec3 = self.forces.getDependentColumnAtIndex(i).get(u);
-                        % Divide the Vec3 by 1000
-                        vec3_new = Vec3(vec3.get(0)/1000,vec3.get(1)/1000,vec3.get(2)/1000);
-                        % set the table value
-                        self.forces.getDependentColumnAtIndex(i).set(u,vec3_new);
-                    end
-                end    
+                   columnData = self.forces.updDependentColumnAtIndex(i);
+                   for u = 0 : nRows - 1
+                     % Divide by 1000
+                     columnData.set(u,columnData.get(u).scalarDivideEq(1000));
+                   end
+                end
             end
            disp('Point and Torque values convert from mm and Nmm to m and Nm, respectively')
         end
@@ -200,17 +197,17 @@ classdef osimC3D < matlab.mixin.SetGet
 
          % Compute an output path to use for writing to file
          outputPath = generateOutputPath(self,varargin,'.mot');
-         
+
          import org.opensim.modeling.*
          % Get the forces table
          forces = self.getTable_forces();
          % Get the column labels
          labels = forces.getColumnLabels();
          % Make a copy
-         updlabels = labels; 
-          
+         updlabels = labels;
+
          % Labels from C3DFileAdapter are f1, p1, m1, f2,...
-         % We edit them to be consistent with requirements of viewing 
+         % We edit them to be consistent with requirements of viewing
          % forces in the GUI (ground_force_vx, ground_force_px,...)
          for i = 0 : labels.size() - 1
             % Get the label as a string
@@ -226,18 +223,18 @@ classdef osimC3D < matlab.mixin.SetGet
                 label = strrep(label,'m', 'ground_moment_');
                 label = [label '_m'];
             end
-            % update the label name 
+            % update the label name
             updlabels.set(i,label);
          end
-         
+
          % set the column labels
          forces.setColumnLabels(updlabels)
-         
+
          % Flatten the Vec3 force table
          postfix = StdVectorString();
          postfix.add('x');postfix.add('y');postfix.add('z');
          forces_flat = forces.flatten(postfix);
-          
+
          % Change the header in the file to meet Storage conditions
           if forces_flat.getTableMetaDataKeys().size() > 0
               for i = 0 : forces_flat.getTableMetaDataKeys().size() - 1
@@ -297,22 +294,22 @@ classdef osimC3D < matlab.mixin.SetGet
         end
         function outputPath = generateOutputPath(self,path, ext)
             % Function to generate an output path from no, partial, or fully
-            % defined user path. 
-            
+            % defined user path.
+
             % Validate the output filename
             if size(path,2) > 1
                 % Path selfect should be of size == 1, any larger and user
-                % input multiple variables into function. 
+                % input multiple variables into function.
                 error([ num2str(size(path,2)) ' inputs, expecting zero or one'])
             end
-        
+
             if isempty(path)
                % No file path has been input, so use the path and name from
-               % the c3d file. 
+               % the c3d file.
                filepath = self.getPath();
                name = self.getName();
             else
-            
+
                 if ~ischar(path{1})
                    error('Input must be a sting of characters')
                 end
@@ -320,9 +317,9 @@ classdef osimC3D < matlab.mixin.SetGet
                 if isempty(strfind(path{1}, ext))
                    error(['Input must be a path to a ' ext ' file']);
                 end
-            
+
                 % User has included a path to write to
-                [filepath, name, e] = fileparts(path{1}); 
+                [filepath, name, e] = fileparts(path{1});
                 if isempty(filepath)
                   % Only the file name is given
                   filepath = self.getPath();
