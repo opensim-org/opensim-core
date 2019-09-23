@@ -465,7 +465,6 @@ OpenSim::DeGrooteFregly2016Muscle::calcInextensibleTendonActiveFiberForce(
     const SimTK::Real normActiveForce = activation *
             fiberActiveForceLengthMultiplier *
             fiberForceVelocityMultiplier;
-    std::cout << "DEBUG " << getName() << " " << normActiveForce << std::endl;
 
     return get_max_isometric_force() * normActiveForce * cosPennationAngle;
 }
