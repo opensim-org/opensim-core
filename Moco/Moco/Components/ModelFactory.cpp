@@ -317,6 +317,8 @@ void ModelFactory::createReserveActuators(Model& model, double optimalForce,
             std::replace(path.begin(), path.end(), '/', '_');
             actu->setName("reserve" + path);
             actu->setOptimalForce(optimalForce);
+            actu->setMinControl(-1);
+            actu->setMaxControl(1);
             model.addForce(actu);
         }
     }

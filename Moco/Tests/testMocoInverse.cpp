@@ -19,6 +19,10 @@
 #include <Moco/osimMoco.h>
 
 #include <OpenSim/Common/LogManager.h>
+#include <OpenSim/Tools/CMC_TaskSet.h>
+#include <OpenSim/Tools/CMC_Joint.h>
+#include <OpenSim/Tools/CMC.h>
+#include <OpenSim/Tools/CMCTool.h>
 
 #define CATCH_CONFIG_MAIN
 #include "Testing.h"
@@ -121,30 +125,52 @@ TEST_CASE("MocoInverse gait10dof18musc") {
     std::cout.rdbuf(LogManager::cout.rdbuf());
     std::cerr.rdbuf(LogManager::cerr.rdbuf());
 
+    ModelProcessor modelProcessor = 
+        ModelProcessor("testGait10dof18musc_subject01.osim") |
+        ModOpReplaceMusclesWithDeGrooteFregly2016() |
+        ModOpAddReserves(1000);
+    Model cmcModel = modelProcessor.process();
+    cmcModel.print("testGait10dof18musc_subject01_cmc.osim");
+
+    //auto tasks = CMC_TaskSet();
+    //const auto& coordSet = cmcModel.getCoordinateSet();
+    //for (int icoord = 0; icoord < coordSet.getSize(); ++icoord) {
+    //    const auto& coord = coordSet.get(icoord);
+    //    auto task = CMC_Joint();
+    //    task.setName(coord.getName());
+    //    task.setCoordinateName(coord.getName());
+    //    task.setKP(100, 1, 1);
+    //    task.setKV(20, 1, 1);
+    //    task.setActive(true, false, false);
+    //    tasks.cloneAndAppend(task);
+    //}
+    //tasks.print("testMocoInverse_cmc_tasks.xml");
+
+    //auto cmc = CMCTool();
+    ////cmc.setModel(cmcModel);
+    //cmc.setName("testMocoInverse_cmc");
+    //cmc.setExternalLoadsFileName("walk_gait1018_subject01_grf.xml");
+    //cmc.setDesiredKinematicsFileName("walk_gait1018_state_reference.mot");
+    //cmc.print("testMocoInverse_cmc_setup.xml");
+    auto cmc = CMCTool("testMocoInverse_cmc_setup.xml");
+    cmc.run();
+
     MocoInverse inverse;
 
     inverse.setModel(ModelProcessor("testGait10dof18musc_subject01.osim") |
                      ModOpReplaceMusclesWithDeGrooteFregly2016() |
+                     //ModOpIgnoreTendonCompliance() |
                      ModOpUseImplicitTendonComplianceDynamicsDGF() |
-                     ModOpAddReserves(2) |
+                     ModOpAddReserves(1000) |
                      ModOpAddExternalLoads("walk_gait1018_subject01_grf.xml"));
     inverse.setKinematics(TableProcessor("walk_gait1018_state_reference.mot") |
                           TabOpLowPassFilter(6));
     inverse.set_initial_time(0.01);
     inverse.set_final_time(1.3);
 
-    auto moco = inverse.initialize();
-    auto& problem = moco.updProblem();
-    auto& solver = moco.updSolver<MocoCasADiSolver>();
-    solver.set_minimize_implicit_auxiliary_derivatives(true);
-    solver.set_implicit_auxiliary_derivatives_weight(0.1);
+    inverse.print("testMocoInverse_setup.xml");
 
-    //problem.addGoal<MocoInitialVelocityEquilibriumDGFGoal>();
-
-    moco.print("testMocoInverse_setup.xml");
-
-    MocoSolution solution = moco.solve();
-    //MocoSolution solution = inverse.solve().getMocoSolution();
+    MocoSolution solution = inverse.solve().getMocoSolution();
 
     solution.write("testMocoInverseGait10dof18musc_solution.sto");
     const auto actual = solution.getControlsTrajectory();
