@@ -1012,6 +1012,7 @@ Model createHangingMuscleModel(
     actu->set_tendon_strain_at_one_norm_force(0.10);
     actu->set_ignore_activation_dynamics(ignoreActivationDynamics);
     actu->set_ignore_tendon_compliance(ignoreTendonCompliance);
+    actu->set_fiber_damping(0.01);
     if (!isTendonDynamicsExplicit) {
         actu->set_tendon_compliance_dynamics_mode("implicit");
     }

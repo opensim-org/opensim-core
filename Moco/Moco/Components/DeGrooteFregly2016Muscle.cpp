@@ -40,7 +40,7 @@ void DeGrooteFregly2016Muscle::constructProperties() {
     constructProperty_default_activation(0.5);
     constructProperty_default_normalized_tendon_force(0.5);
     constructProperty_active_force_width_scale(1.0);
-    constructProperty_fiber_damping(0.01);
+    constructProperty_fiber_damping(0.0);
     constructProperty_tendon_strain_at_one_norm_force(0.049);
     constructProperty_ignore_passive_fiber_force(false);
     constructProperty_tendon_compliance_dynamics_mode("explicit");
@@ -422,7 +422,7 @@ void DeGrooteFregly2016Muscle::calcMuscleLengthInfo(
         const SimTK::State& s, MuscleLengthInfo& mli) const {
 
     const auto& muscleTendonLength = getLength(s);
-    SimTK::Real normTendonForce = 0.0;
+    SimTK::Real normTendonForce = SimTK::NaN;
     if (!get_ignore_tendon_compliance()) {
         normTendonForce = getNormalizedTendonForce(s);
     }
