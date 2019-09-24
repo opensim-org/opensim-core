@@ -34,8 +34,6 @@ public:
     CSVFileAdapter();
     CSVFileAdapter(const CSVFileAdapter&)            = default;
     CSVFileAdapter(CSVFileAdapter&&)                 = default;
-    CSVFileAdapter& operator=(const CSVFileAdapter&) = default;
-    CSVFileAdapter& operator=(CSVFileAdapter&&)      = default;
     ~CSVFileAdapter()                                = default;
 
     CSVFileAdapter* clone() const override;
