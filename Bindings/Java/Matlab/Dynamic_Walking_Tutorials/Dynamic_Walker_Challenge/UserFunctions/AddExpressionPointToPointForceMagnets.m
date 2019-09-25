@@ -39,8 +39,11 @@ locShank = Vec3(0.05, 0.2, 0);
 parentBodyName = 'RightThigh';
 childBodyName  = 'RightShank';
 
-%% Instantiate the Model
+%% Define the Model File Path.
+% The default is a relative path from the working directory for the example
 model_path = '../Model/WalkerModelTerrain.osim';
+
+%% Instantiate the Model
 walkerModel = Model(model_path);
 % Change the name
 walkerModel.setName('WalkerModelTerrain_KneeMagnet');

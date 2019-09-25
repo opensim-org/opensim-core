@@ -33,9 +33,12 @@
 %% Import OpenSim Libraries
 import org.opensim.modeling.*
 
-%% Instantiate the Model
+%% Define the Model File Path.
+% The default is a relative path from the working directory for the example
 model_path = '../Model/WalkerModelTerrain.osim';
-walkerModel = Model(model_path);
+
+%% Instantiate the Model
+walkerModel = Model(model_path);walkerModel = Model(model_path);
 % Change the name
 walkerModel.setName('WalkerModelTerrain_CustomFeet');
 

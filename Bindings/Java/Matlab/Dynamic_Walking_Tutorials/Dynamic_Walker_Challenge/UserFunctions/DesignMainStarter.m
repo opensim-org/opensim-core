@@ -47,10 +47,14 @@ rKneeSpeed = deg2rad(0);
 %% Import OpenSim Libraries
 import org.opensim.modeling.*;
 
-%% Instantiate model from file
-osimModel = Model('../Model/WalkerModelTerrain.osim');
+%% Define the Model File Path.
+% The default is a relative path from the working directory for the example
+model_path = '../Model/WalkerModelTerrain.osim';
 
-% Set the visualizer use. 
+%% Instantiate the Model
+walkerModel = Model(model_path);
+
+% Set the visualizer use.
 osimModel.setUseVisualizer(visualize)
 
 % Initialize the underlying computational system and get a reference to
