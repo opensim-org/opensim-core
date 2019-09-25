@@ -70,8 +70,12 @@ end
 
 %% Add Bodies and joints for two feet
 % Make feet Bodies
-leftFoot = Body('LeftFoot', 0.0001 , Vec3(0), Inertia(1,1,.0001,0,0,0) );
-rightFoot = Body('RightFoot', 0.0001 , Vec3(0), Inertia(1,1,.0001,0,0,0) );
+mass = 0.0001;
+massCenter = Vec3(0);
+inertia = Inertia(1,1,.0001,0,0,0);
+
+leftFoot = Body('LeftFoot', mass , massCenter, inertia);
+rightFoot = Body('RightFoot', mass , massCenter, inertia );
 
 % Add visual objects of the feet
 leftFoot.attachGeometry( Mesh(meshPath) );
@@ -82,8 +86,14 @@ leftShank= walkerModel.getBodySet().get('LeftShank');
 rightShank = walkerModel.getBodySet().get('RightShank');
 
 % Make Weld Joints for the feet
-ankle_l = WeldJoint('ankle_l',leftShank, Vec3(0.075,-0.2,0), Vec3(0,0,0), leftFoot, Vec3(0,0,0), Vec3(0,0,0));
-ankle_r = WeldJoint('ankle_r',rightShank, Vec3(0.075,-0.2,0),Vec3(0,0,0), rightFoot, Vec3(0,0,0), Vec3(0,0,0));
+locationInParent = Vec3(0.075,-0.2,0);
+orientationInParent = Vec3(0);
+locationInChild = Vec3(0);
+orientationInChild = Vec3(0);
+
+ankle_l = WeldJoint('ankle_l',leftShank, locationInParent, orientationInParent, leftFoot, locationInChild, orientationInChild);
+ankle_r = WeldJoint('ankle_r',rightShank, locationInParent,orientationInParent, rightFoot, locationInChild, orientationInChild);
+
 
 % Add the bodies and joints to the model
 walkerModel.addBody(leftFoot);
@@ -96,8 +106,8 @@ contact_l = ContactMesh(meshPath,Vec3(0,0,0), Vec3(0,0,0), leftFoot, 'LFootConta
 contact_r = ContactMesh(meshPath,Vec3(0,0,0), Vec3(0,0,0), rightFoot, 'RFootContact');
 
 % Add contact geometry to the model
-walkerModel.addComponent(contact_l);
-walkerModel.addComponent(contact_r);
+walkerModel.addContactGeometry(contact_l);
+walkerModel.addContactGeometry(contact_r);
 
 %% Make elastic foundation forces for both feet
 elasticforce_l = ElasticFoundationForce();
