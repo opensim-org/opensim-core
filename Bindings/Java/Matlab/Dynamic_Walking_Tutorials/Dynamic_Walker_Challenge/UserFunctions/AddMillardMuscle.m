@@ -48,8 +48,8 @@ rightMuscle = Millard2012EquilibriumMuscle('muscle_r',maxIsometricForce,optimalF
 % Define the geometry path
 rightShankBody = walkerModel.getBodySet().get('RightShank');
 rightThighBody = walkerModel.getBodySet().get('RightThigh');
-rightMuscle.updGeometryPath().appendNewPathPoint('right_shank',rightShankBody,Vec3(0,0,0));
-rightMuscle.updGeometryPath().appendNewPathPoint('right_thigh',rightThighBody,Vec3(0,0,0));
+rightMuscle.updGeometryPath().appendNewPathPoint('right_shank_attachment',rightShankBody,Vec3(0,0,0));
+rightMuscle.updGeometryPath().appendNewPathPoint('right_thigh_attachment',rightThighBody,Vec3(0,0,0));
 
 % Add the force to the model
 walkerModel.addForce(rightMuscle);
@@ -60,8 +60,8 @@ leftMuscle = Millard2012EquilibriumMuscle('muscle_l',maxIsometricForce,optimalFi
 % Define the geometry path
 leftShankBody = walkerModel.getBodySet().get('LeftShank');
 leftThighBody = walkerModel.getBodySet().get('LeftThigh');
-leftMuscle.updGeometryPath().appendNewPathPoint('left_shank',leftShankBody,Vec3(0,0,0));
-leftMuscle.updGeometryPath().appendNewPathPoint('left_thigh',leftThighBody,Vec3(0,0,0));
+leftMuscle.updGeometryPath().appendNewPathPoint('left_shank_attachment',leftShankBody,Vec3(0,0,0));
+leftMuscle.updGeometryPath().appendNewPathPoint('left_thigh_attachment',leftThighBody,Vec3(0,0,0));
 
 % Add the force to the model
 walkerModel.addForce(leftMuscle);

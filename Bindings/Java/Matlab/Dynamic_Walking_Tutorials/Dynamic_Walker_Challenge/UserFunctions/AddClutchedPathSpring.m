@@ -46,8 +46,8 @@ rightSpring = ClutchedPathSpring('path_spring_r', stiffness, dissipation, relaxa
 % Define the geometry path
 rightShankBody = walkerModel.getBodySet().get('RightShank');
 rightThighBody = walkerModel.getBodySet().get('RightThigh');
-rightSpring.updGeometryPath().appendNewPathPoint('right_shank',rightShankBody,Vec3(0,0,0));
-rightSpring.updGeometryPath().appendNewPathPoint('right_thigh',rightThighBody,Vec3(0,0,0));
+rightSpring.updGeometryPath().appendNewPathPoint('right_shank_attachment',rightShankBody,Vec3(0,0,0));
+rightSpring.updGeometryPath().appendNewPathPoint('right_thigh_attachment',rightThighBody,Vec3(0,0,0));
 
 % Add the force to the model
 walkerModel.addForce(rightSpring);
@@ -61,8 +61,8 @@ leftSpring = ClutchedPathSpring('path_spring_l', stiffness, dissipation, relaxat
 % Define the geometry path
 leftShankBody = walkerModel.getBodySet().get('LeftShank');
 leftThighBody = walkerModel.getBodySet().get('LeftThigh');
-leftSpring.updGeometryPath().appendNewPathPoint('left_shank',leftShankBody,Vec3(0,0,0));
-leftSpring.updGeometryPath().appendNewPathPoint('left_thigh',leftThighBody,Vec3(0,0,0));
+leftSpring.updGeometryPath().appendNewPathPoint('left_shank_attachment',leftShankBody,Vec3(0,0,0));
+leftSpring.updGeometryPath().appendNewPathPoint('left_thigh_attachment',leftThighBody,Vec3(0,0,0));
 
 % Add the force to the model
 walkerModel.addForce(leftSpring);

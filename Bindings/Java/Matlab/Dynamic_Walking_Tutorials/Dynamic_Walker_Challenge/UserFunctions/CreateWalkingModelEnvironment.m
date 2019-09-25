@@ -28,9 +28,11 @@
 %% Import OpenSim Libraries
 import org.opensim.modeling.*
 
-%% If no model is input, get a path to one.
-[pathname,filename] = uigetfile('*.osim', 'Select an OpenSim Passive Dynamic Walker Model File (.osim)');
+%% Get a path to one.
+[filename,pathname] = uigetfile('*.osim', 'Select an OpenSim Passive Dynamic Walker Model File (.osim)');
 display('Loading the model...');
+
+modelpath = fullfile(pathname, filename);
 
 % Model Body Parameters
 PlatformLength  = 10;

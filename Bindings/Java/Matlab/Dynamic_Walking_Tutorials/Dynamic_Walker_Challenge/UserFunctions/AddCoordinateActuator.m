@@ -43,9 +43,9 @@ for i=0:numCoords-1
 end
 
 %% Create and configure a CoordinateActuator for the left knee.
-jointName = 'LKnee_rz';
-fprintf('Adding CoordinateActuator to %s.\n',jointName);
-coordAct = CoordinateActuator(jointName);
+coordinateName = 'LKnee_rz';
+fprintf('Adding CoordinateActuator to %s.\n',coordinateName);
+coordAct = CoordinateActuator(coordinateName);
 coordAct.setName('coordAct_LK');            % Name
 coordAct.setOptimalForce(10.0);             % Maximum generalized force
 coordAct.setMinControl(-inf);               % Minimum control signal allowed

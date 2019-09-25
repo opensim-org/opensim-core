@@ -38,7 +38,7 @@ import org.opensim.modeling.*
 model_path = '../Model/WalkerModelTerrain.osim';
 
 %% Instantiate the Model
-walkerModel = Model(model_path);walkerModel = Model(model_path);
+walkerModel = Model(model_path);
 % Change the name
 walkerModel.setName('WalkerModelTerrain_CustomFeet');
 

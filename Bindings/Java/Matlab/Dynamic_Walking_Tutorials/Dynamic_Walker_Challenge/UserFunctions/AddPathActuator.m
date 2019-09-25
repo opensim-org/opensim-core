@@ -37,7 +37,7 @@ walkerModel = Model(model_path);
 % Change the name.
 walkerModel.setName('WalkerModelTerrain_PathActuator');
 
-%% Display all bodies in the model.
+%% Display names of all bodies in the model.
 numBodies = walkerModel.getNumBodies();
 fprintf('There are %d bodies in the model:\n',numBodies);
 for i=0:numBodies-1
