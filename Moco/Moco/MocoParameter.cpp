@@ -89,7 +89,7 @@ void MocoParameter::initializeOnModel(Model& model) const {
             "MocoParameter does not support list properties.");
 
         // Type detection and property element value error checking.
-        if (auto* p = dynamic_cast<Property<double>*>(ap)) {
+        if (dynamic_cast<Property<double>*>(ap)) {
             OPENSIM_THROW_IF_FRMOBJ(!getProperty_property_element().empty(),
                 Exception,
                 "A property element index was specified for "
@@ -104,14 +104,14 @@ void MocoParameter::initializeOnModel(Model& model) const {
             OPENSIM_THROW_IF_FRMOBJ(get_property_element() < 0, Exception,
                 format("Expected property element to be non-negative, "
                        "but %i was provided.", get_property_element()));
-            if (auto* p = dynamic_cast<Property<SimTK::Vec3>*>(ap)) {
+            if (dynamic_cast<Property<SimTK::Vec3>*>(ap)) {
                 OPENSIM_THROW_IF_FRMOBJ(get_property_element() > 2, Exception,
                         format("The property element for a Vec3 property must "
                                "be between 0 and 2, but the value %i was "
                                "provided.", get_property_element()));
                 m_data_type = Type_Vec3;
             }
-            else if (auto* p = dynamic_cast<Property<SimTK::Vec6>*>(ap)) {
+            else if (dynamic_cast<Property<SimTK::Vec6>*>(ap)) {
                 OPENSIM_THROW_IF_FRMOBJ(get_property_element() > 5, Exception,
                         format("The property element for a Vec6 property must "
                                "be between 0 and 5, but the value %i was "
