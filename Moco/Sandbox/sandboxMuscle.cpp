@@ -337,7 +337,7 @@ void testHangingMuscleMinimumTime(
 
         auto& solver = moco.initSolver<SolverType>();
         solver.set_num_mesh_intervals(20);
-        solver.set_dynamics_mode("implicit");
+        solver.set_multibody_dynamics_mode("implicit");
         solver.set_optim_convergence_tolerance(1e-4);
         solver.set_optim_constraint_tolerance(1e-3);
         // TODO if compliant tendon, use rigid tendon as initial guess.
@@ -433,7 +433,7 @@ void testHangingMuscleMinimumTime(
 
         auto& solver = moco.initSolver<SolverType>();
         solver.set_num_mesh_intervals(20);
-        solver.set_dynamics_mode("implicit");
+        solver.set_multibody_dynamics_mode("implicit");
         // solver.set_optim_convergence_tolerance(1e-3);
         // solver.set_optim_constraint_tolerance(1e-3);
         // solver.set_optim_sparsity_detection("initial-guess");

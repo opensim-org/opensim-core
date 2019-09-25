@@ -4,6 +4,9 @@ namespace OpenSim {
 
 @section faqpagesection Frequently Asked Questions
 
+This page contains a list of answers to miscellaneous questions. If you have a
+question that is not answered here, contact the OpenSim Moco team.
+
 @subsection faqcustomgoal How do I define a custom goal or cost term?
 
 If Moco does not contain a cost term you need, you can create your own in C++ by

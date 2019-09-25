@@ -33,6 +33,35 @@ The MocoProblem class contains only user input and describes the physical
 optimal control problem. The MocoSolver classes allow the user to configure the
 numerical method used to solve the problem.
 
+@subsection stepbystep What happens when you call solve()?
+
+One way to learn the Moco codebase is to use a debugger to step through the
+code that is executed when invoking MocoStudy::solve(). Here, we walk through
+some of the key steps for you when using MocoCasADiSolver.
+
+1. MocoStudy::solve(): solve the MocoProblem with the requested MocoSolver.
+2. MocoProblem::createRep(): Create a MocoProblemRep from the MocoProblem (see
+   below). Initialize goals, path constraints, parameters, etc.
+3. MocoSolver::solve(): Invoke the derived class' solveImpl().
+4. MocoCasADiSolver::solveImpl(): Create a CasOC::Problem, CasOC::Solver, and
+   solve the CasOC::Problem.
+5. MocoCasADiSolver::createCasOCProblem(): Create a MocoCasOCProblem, which
+   derives from CasOC::Problem. Add states, controls, costs,
+   endpoint constraints, path constraints, etc. to the CasOC::Problem.
+6. MocoCasADiSolver::createCasOCSolver(): Copy solver settings from
+   MocoCasADiSolver into an instance of CasOC::Solver.
+7. CasOC::Solver::solve().
+8. CasOC::Solver::createTranscription(): Creates either CasOC::Trapezoidal or
+   CasOC::HermiteSimpson.
+9. CasOC::Transcription::solve().
+10. CasOC::Transcription::transcribe(): Convert the CasOC::Problem into a
+   nonlinear program using a given transcription scheme.
+11. casadi::nlpsol(): Create a CasADi Function for solving the nonlinear
+   program. After this call, we invoke this function to solve the problem.
+12. MocoStudy returns a MocoSolution.
+
+The MocoTropterSolver follows similar steps.
+
 @subsection implmocoproblemrep The MocoProblemRep class
 
 The MocoSolver interacts with the MocoProblem through the intermediate class

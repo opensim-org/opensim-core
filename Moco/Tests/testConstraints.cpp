@@ -588,7 +588,7 @@ void testDoublePendulumPointOnLine(
     ms.set_enforce_constraint_derivatives(enforce_constraint_derivatives);
     ms.set_minimize_lagrange_multipliers(true);
     ms.set_lagrange_multiplier_weight(10);
-    ms.set_dynamics_mode(dynamics_mode);
+    ms.set_multibody_dynamics_mode(dynamics_mode);
     ms.setGuess("bounds");
 
     MocoSolution solution = moco.solve();
@@ -670,7 +670,7 @@ void testDoublePendulumCoordinateCoupler(MocoSolution& solution,
     ms.set_enforce_constraint_derivatives(enforce_constraint_derivatives);
     ms.set_minimize_lagrange_multipliers(true);
     ms.set_lagrange_multiplier_weight(10);
-    ms.set_dynamics_mode(dynamics_mode);
+    ms.set_multibody_dynamics_mode(dynamics_mode);
     ms.setGuess("bounds");
 
     solution = moco.solve();
@@ -747,7 +747,7 @@ void testDoublePendulumPrescribedMotion(MocoSolution& couplerSolution,
     ms.set_enforce_constraint_derivatives(enforce_constraint_derivatives);
     ms.set_minimize_lagrange_multipliers(true);
     ms.set_lagrange_multiplier_weight(10);
-    ms.set_dynamics_mode(dynamics_mode);
+    ms.set_multibody_dynamics_mode(dynamics_mode);
 
     // Set guess based on coupler solution trajectory.
     MocoTrajectory guess(ms.createGuess("bounds"));
@@ -1102,7 +1102,7 @@ void testDoublePendulumPointOnLineJointReaction(
     ms.set_enforce_constraint_derivatives(enforce_constraint_derivatives);
     ms.set_minimize_lagrange_multipliers(true);
     ms.set_lagrange_multiplier_weight(10);
-    ms.set_dynamics_mode(dynamics_mode);
+    ms.set_multibody_dynamics_mode(dynamics_mode);
     ms.setGuess("bounds");
 
     MocoSolution solution = moco.solve().unseal();
@@ -1156,7 +1156,7 @@ TEST_CASE("Multipliers are correct", "") {
 
         auto& solver = moco.initCasADiSolver();
         solver.set_num_mesh_intervals(5);
-        solver.set_dynamics_mode(dynamics_mode);
+        solver.set_multibody_dynamics_mode(dynamics_mode);
         solver.set_transcription_scheme("hermite-simpson");
         solver.set_enforce_constraint_derivatives(true);
 
@@ -1219,7 +1219,7 @@ TEST_CASE("Multipliers are correct", "") {
 
         auto& solver = moco.initCasADiSolver();
         solver.set_num_mesh_intervals(10);
-        solver.set_dynamics_mode(dynamics_mode);
+        solver.set_multibody_dynamics_mode(dynamics_mode);
         solver.set_transcription_scheme("hermite-simpson");
         solver.set_enforce_constraint_derivatives(true);
         MocoSolution solution = moco.solve();
@@ -1267,7 +1267,7 @@ TEST_CASE("Prescribed kinematics with kinematic constraints", "") {
 
     auto& solver = moco.initCasADiSolver();
     solver.set_num_mesh_intervals(10);
-    solver.set_dynamics_mode("implicit");
+    solver.set_multibody_dynamics_mode("implicit");
     solver.set_interpolate_control_midpoints(false);
     MocoSolution solution = moco.solve();
     const auto Fx = solution.getControl("/forceset/force_x");

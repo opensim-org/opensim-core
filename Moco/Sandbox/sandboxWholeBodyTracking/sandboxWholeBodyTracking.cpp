@@ -521,7 +521,7 @@ int main() {
     // Configure the solver.
     // =====================
     MocoTropterSolver& ms = moco.initTropterSolver();
-    ms.set_dynamics_mode("implicit");
+    ms.set_multibody_dynamics_mode("implicit");
     ms.set_num_mesh_intervals(50);
     ms.set_optim_max_iterations(1000);
     ms.set_verbosity(2);
