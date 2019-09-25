@@ -30,31 +30,40 @@
 %% Import OpenSim Libraries
 import org.opensim.modeling.*
 
+%%  Define some variables
+% Define the point location in each body's coordinate frame
+locThigh = Vec3(0.05,-0.2, 0);
+locShank = Vec3(0.05, 0.2, 0);
+
+% Define the body Names for the ExpressionBasedPointToPointForce
+parentBodyName = 'RightThigh';
+childBodyName  = 'RightShank';
+
 %% Instantiate the Model
 model_path = '../Model/WalkerModelTerrain.osim';
 walkerModel = Model(model_path);
 % Change the name
 walkerModel.setName('WalkerModelTerrain_KneeMagnet');
 
-% Define the point location in each body's coordinate frame
-locThigh = Vec3(0.05,-0.2, 0);
-locShank = Vec3(0.05, 0.2, 0);
-
 %% Create an ExpressionBasedBushingForce for the Right Knee Coordinate
 rightKneeMagnet = ExpressionBasedPointToPointForce();
 rightKneeMagnet.setName('RightKneeMagnet')
 
+% Get references to model bodies
+parentBody = walkerModel.getBodySet().get(parentBodyName);
+childBody  = walkerModel.getBodySet().get(childBodyName);
+
 % Set body references and point locations for the ExpressionBasedBushingForce
-rightKneeMagnet.setBody1Name('RightThigh');
+rightKneeMagnet.setBody1Name( parentBody.getName() );
 rightKneeMagnet.setPoint1(locThigh);
-rightKneeMagnet.setBody2Name('RightShank');
+rightKneeMagnet.setBody2Name( childBody.getName() );
 rightKneeMagnet.setPoint2(locShank);
 
 % Set the expression to represent a magnet (0.01/d^2) force.
 rightKneeMagnet.setExpression('0.01/d^2');
 
 % Add the Right Knee Magnet force to the Model
-walkerModel.addComponent(rightKneeMagnet);
+walkerModel.addForce(rightKneeMagnet);
 
 %% TODO: Create an ExpressionBasedBushingForce for the Left Knee Coordinate
 
