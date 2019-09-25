@@ -49,9 +49,10 @@ import org.opensim.modeling.*;
 
 %% Instantiate model from file
 osimModel = Model('../Model/WalkerModelTerrain.osim');
-if visualize
-    osimModel.setUseVisualizer(visualize)
-end
+
+% Set the visualizer use. 
+osimModel.setUseVisualizer(visualize)
+
 % Initialize the underlying computational system and get a reference to
 % the system state.
 state = osimModel.initSystem();
