@@ -52,7 +52,7 @@ std::unique_ptr<Model> createSlidingMassModel() {
 /// Test the result of a sliding mass minimum effort problem.
 TEMPLATE_TEST_CASE(
         "Test MocoControlGoal", "", MocoTropterSolver, MocoCasADiSolver) {
-    const int N = 9;         // mesh intervals
+    const int N = 9;          // mesh intervals
     const int Nc = 2 * N + 1; // collocation points (Hermite-Simpson)
     MocoSolution sol1;
     {
@@ -507,4 +507,67 @@ TEMPLATE_TEST_CASE("MocoPeriodicityGoal", "", MocoCasADiSolver) {
         CHECK(solution.getControl("/tau0")[N - 1] ==
                 Approx(solution.getControl("/tau0")[0]).margin(1e-6));
     }
+}
+
+class MocoControlGoalWithEndpointConstraint : public MocoGoal {
+    OpenSim_DECLARE_CONCRETE_OBJECT(MocoControlGoalWithEndpointConstraint,
+            MocoGoal);
+
+public:
+    MocoControlGoalWithEndpointConstraint() = default;
+    bool getSupportsEndpointConstraintImpl() const override { return true; }
+    Mode getDefaultModeImpl() const override {
+        return Mode::EndpointConstraint;
+    }
+    void initializeOnModelImpl(const Model&) const override {
+        setNumIntegralsAndOutputs(1, 1);
+    }
+    void calcIntegrandImpl(const SimTK::State& state, double& integrand) const override {
+        getModel().realizeVelocity(state);
+        const auto& controls = getModel().getControls(state);
+        integrand = controls.normSqr();
+    }
+    void calcGoalImpl(
+            const GoalInput& in, SimTK::Vector& values) const override {
+        values[0] = in.integral;
+    }
+};
+
+TEMPLATE_TEST_CASE("Endpoint constraint with integral", "", MocoCasADiSolver) {
+
+    Model model;
+    const double mass = 1.3169;
+    auto* body = new Body("body", mass, SimTK::Vec3(0), SimTK::Inertia(1));
+    model.addBody(body);
+
+    auto* joint = new FreeJoint("joint", model.getGround(), *body);
+    model.addJoint(joint);
+
+    auto* constr = new WeldConstraint("constraint", model.getGround(),
+            SimTK::Transform(), *body, SimTK::Transform());
+    model.addConstraint(constr);
+    model.finalizeConnections();
+
+    ModelFactory::createReserveActuators(model, 1.0);
+
+    MocoStudy study;
+    auto& problem = study.updProblem();
+    problem.setModelCopy(model);
+
+    problem.setTimeBounds(0, 0.5);
+
+    auto* goal = problem.addGoal<MocoControlGoalWithEndpointConstraint>();
+    goal->setMode("endpoint_constraint");
+
+    auto& solver = study.initCasADiSolver();
+    solver.set_num_mesh_intervals(5);
+    auto guess = solver.createGuess();
+    guess.randomizeReplace();
+    solver.setGuess(guess);
+
+    auto solution = study.solve();
+
+    // The endpoint constraint is that the sum of squared controls integrated
+    // over the motion must be 0.
+    CHECK(solution.getControlsTrajectory().norm() < 1e-3);
 }
