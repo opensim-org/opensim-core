@@ -65,8 +65,8 @@ public:
     }
 };
 
-/// Turn off passive fiber forces for all DeGrooteFregly2016Muscle%s in the
-/// model.
+/// For DeGrooteFregly2016Muscle muscles whose 'ignore_tendon_compliance' 
+/// property is false, set the tendon compliance dynamics mode to 'implicit'.
 class OSIMMOCO_API ModOpUseImplicitTendonComplianceDynamicsDGF 
         : public ModelOperator {
     OpenSim_DECLARE_CONCRETE_OBJECT(

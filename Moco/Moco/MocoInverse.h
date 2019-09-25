@@ -80,6 +80,7 @@ private:
 /// - optim_constraint_tolerance: 1e-3
 /// - optim_sparsity_detection: random
 /// - optim_finite_difference_scheme: forward
+/// - minimize_implicit_auxiliary_derivatives: true
 ///
 /// ### Cost
 ///

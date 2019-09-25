@@ -117,6 +117,7 @@ std::pair<MocoStudy, TimeSeriesTable> MocoInverse::initializeInternal() const {
     if (!getProperty_max_iterations().empty()) {
         solver.set_optim_max_iterations(get_max_iterations());
     }
+    solver.set_minimize_implicit_auxiliary_derivatives(true);
 
     return std::make_pair(
             moco, posmotPtr->exportToTable(kinematics.getIndependentColumn()));

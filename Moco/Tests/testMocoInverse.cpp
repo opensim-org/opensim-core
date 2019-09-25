@@ -125,7 +125,8 @@ TEST_CASE("MocoInverse gait10dof18musc") {
 
     inverse.setModel(ModelProcessor("testGait10dof18musc_subject01.osim") |
                      ModOpReplaceMusclesWithDeGrooteFregly2016() |
-                     ModOpUseImplicitTendonComplianceDynamicsDGF() |
+                     //ModOpUseImplicitTendonComplianceDynamicsDGF() |
+                     ModOpIgnoreTendonCompliance() |
                      ModOpAddReserves(2) |
                      ModOpAddExternalLoads("walk_gait1018_subject01_grf.xml"));
     inverse.setKinematics(TableProcessor("walk_gait1018_state_reference.mot") |
@@ -133,18 +134,15 @@ TEST_CASE("MocoInverse gait10dof18musc") {
     inverse.set_initial_time(0.01);
     inverse.set_final_time(1.3);
 
-    auto moco = inverse.initialize();
-    auto& problem = moco.updProblem();
-    auto& solver = moco.updSolver<MocoCasADiSolver>();
-    solver.set_minimize_implicit_auxiliary_derivatives(true);
-    solver.set_implicit_auxiliary_derivatives_weight(0.1);
+    //auto moco = inverse.initialize();
+    //auto& problem = moco.updProblem();
+    //auto& solver = moco.updSolver<MocoCasADiSolver>();
+    //solver.set_minimize_implicit_auxiliary_derivatives(true);
+    //solver.set_implicit_auxiliary_derivatives_weight(0.1);
 
-    //problem.addGoal<MocoInitialVelocityEquilibriumDGFGoal>();
+    inverse.print("testMocoInverse_setup.xml");
 
-    moco.print("testMocoInverse_setup.xml");
-
-    MocoSolution solution = moco.solve();
-    //MocoSolution solution = inverse.solve().getMocoSolution();
+    MocoSolution solution = inverse.solve().getMocoSolution();
 
     solution.write("testMocoInverseGait10dof18musc_solution.sto");
     const auto actual = solution.getControlsTrajectory();
