@@ -1211,7 +1211,7 @@ TEMPLATE_TEST_CASE("Hanging muscle minimum time", "", MocoCasADiSolver) {
 
         auto& solver = moco.initSolver<TestType>();
         solver.set_num_mesh_intervals(40);
-        solver.set_dynamics_mode("implicit");
+        solver.set_multibody_dynamics_mode("implicit");
         solver.set_transcription_scheme("hermite-simpson");
 
         MocoSolution solutionTrack = moco.solve();
