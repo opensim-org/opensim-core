@@ -27,7 +27,8 @@ namespace OpenSim {
 /// exponent, integrated over the phase. The default weight for each control is
 /// 1.0; this can be changed by calling setWeight() or editing the
 /// `control_weights` property in XML.
-/// The exponent must be 2 or greater, and it is 2 by default.
+/// The exponent must be an integer greater than or equal to 2,
+/// and is 2 by default.
 /// If conducting a predictive simulation, you likely want to set
 /// `divide_by_displacement` to true; otherwise, this cost is minimized by not
 /// moving. Dividing by displacement leads to a quantity similar to cost of
@@ -45,6 +46,9 @@ namespace OpenSim {
 /// - \f$ w_c \f$: the weight for control \f$ c \f$.
 /// - \f$ x_c(t) \f$: control signal \f$ c \f$.
 /// - \f$ p \f$: the `exponent`.
+///
+/// If `p > 2`, we first the absolute value of the control; this is to properly
+/// odd exponents.
 /// @ingroup mocogoal
 class OSIMMOCO_API MocoControlGoal : public MocoGoal {
 OpenSim_DECLARE_CONCRETE_OBJECT(MocoControlGoal, MocoGoal);
@@ -93,7 +97,8 @@ private:
             "The weights for each control; "
             "the weight for unspecified controls is 1.");
     OpenSim_DECLARE_PROPERTY(
-            exponent, int, "The exponent on controls (default: 2).");
+            exponent, int, "The exponent on controls; greater than or equal to "
+                           "2 (default: 2).");
     OpenSim_DECLARE_PROPERTY(divide_by_displacement, bool,
             "Divide by the model's displacement over the phase (default: "
             "false)");
