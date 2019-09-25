@@ -336,7 +336,6 @@ public:
         return true;
     }
     double getImplicitResidual(const SimTK::State& s) const {
-
         if (!isCacheVariableValid(s, "implicitresidual_foo")) {
             // Get the derivative control value.
             // TODO add method to Component get with index instead.
@@ -376,7 +375,7 @@ private:
     }
 };
 
-TEST_CASE("Auxiliary implicit dynamics") {
+TEST_CASE("Implicit auxiliary dynamics") {
     SECTION("State unit tests") {
         Model model;
         auto* implicit_auxdyn = new MyAuxiliaryImplicitDynamics();
@@ -423,5 +422,19 @@ TEST_CASE("Auxiliary implicit dynamics") {
        const double final = solution.getStatesTrajectory().getElt(N-1, 0);
        // Correct answer obtained from Matlab with ode45.
        CHECK(final == Approx(1.732).margin(1e-3));
+    }
+
+    SECTION("MocoTropterSolver does not support implicit auxiliary dynamics") {
+        MocoStudy study;
+        auto& problem = study.updProblem();
+        auto model = OpenSim::make_unique<Model>();
+        model->addComponent(new MyAuxiliaryImplicitDynamics());
+        problem.setModel(std::move(model));
+        problem.setTimeBounds(0, 1);
+        problem.setStateInfo("/implicit_auxdyn/foo", {0, 3}, 1.0);
+        study.initTropterSolver();
+        CHECK_THROWS(study.solve(),
+                Catch::Contains("MocoTropterSolver does not support problems "
+                                "with implicit auxiliary dynamics."));
     }
 }

@@ -118,6 +118,9 @@ public:
     /// Does the model contain a PositionMotion to prescribe all generalized
     /// coordinates, speeds, and accelerations?
     bool isPrescribedKinematics() const { return m_prescribedKinematics; }
+    bool getNumImplicitAuxiliaryResiduals() const {
+        return (int)m_implicit_residual_refs.size();
+    }
     /// This excludes generalized coordinate and speed states if
     /// isPrescribedKinematics() is true.
     std::vector<std::string> createStateVariableNamesInSystemOrder(
