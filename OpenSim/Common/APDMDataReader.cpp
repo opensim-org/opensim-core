@@ -83,6 +83,8 @@ APDMDataReader::extendRead(const std::string& fileName) const {
                 magIndex.push_back(accIndex[imu_index] + 6);
                 orientationsIndex.push_back(accIndex[imu_index] + 10);
             }
+            else
+                OPENSIM_THROW(Exception, "Data for sensor:" +sensorName + "was not found in data file "+ fileName+".");
         }
         // Line 2 unused
         std::getline(in_stream, line);
@@ -229,7 +231,10 @@ void APDMDataReader::find_start_column(std::vector<std::string> tokens,
                 compare(sensorName + search_labels[remaining]) == 0;
         }
         if (match) {
-                indices.push_back(found_index); 
+            if (newFromat)
+                indices.push_back(found_index - 3); // Three extra  comma separated fields in header before imu name
+            else
+                indices.push_back(found_index);
                 return;
             }
             else { // first label found but the remaining didn't. Throw
