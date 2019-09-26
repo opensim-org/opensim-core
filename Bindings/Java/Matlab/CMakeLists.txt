@@ -11,6 +11,8 @@ install(DIRECTORY examples/ DESTINATION "${OPENSIM_INSTALL_MATLABEXDIR}/Examples
 install(DIRECTORY Hopper_Device DESTINATION "${OPENSIM_INSTALL_MATLABEXDIR}")
 install(DIRECTORY Utilities DESTINATION "${OPENSIM_INSTALL_MATLABEXDIR}")
 install(DIRECTORY OpenSenseExampleFiles DESTINATION "${OPENSIM_INSTALL_MATLABEXDIR}")
+install(DIRECTORY Dynamic_Walking_Tutorials/Dynamic_Walker_Builder
+        DESTINATION "${OPENSIM_INSTALL_MATLABEXDIR}")
 install(DIRECTORY Dynamic_Walking_Tutorials/Dynamic_Walker_Challenge
         DESTINATION "${OPENSIM_INSTALL_MATLABEXDIR}"
         # These files have not yet been updated for 4.0:
