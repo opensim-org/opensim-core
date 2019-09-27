@@ -1098,8 +1098,8 @@ TEMPLATE_TEST_CASE("Hanging muscle minimum time", "", MocoCasADiSolver) {
         problem.addGoal<MocoFinalTimeGoal>();
 
         auto& solver = moco.initSolver<TestType>();
-        solver.set_num_mesh_intervals(25);
-        solver.set_dynamics_mode("implicit");
+        solver.set_num_mesh_intervals(40);
+        solver.set_multibody_dynamics_mode("implicit");
         solver.set_optim_convergence_tolerance(1e-4);
         solver.set_optim_constraint_tolerance(1e-4);
         solver.set_transcription_scheme("hermite-simpson");
@@ -1210,8 +1210,8 @@ TEMPLATE_TEST_CASE("Hanging muscle minimum time", "", MocoCasADiSolver) {
         tracking->setAllowUnusedReferences(true);
 
         auto& solver = moco.initSolver<TestType>();
-        solver.set_num_mesh_intervals(25);
-        solver.set_dynamics_mode("implicit");
+        solver.set_num_mesh_intervals(40);
+        solver.set_multibody_dynamics_mode("implicit");
         solver.set_transcription_scheme("hermite-simpson");
 
         MocoSolution solutionTrack = moco.solve();

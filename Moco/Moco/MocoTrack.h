@@ -103,7 +103,7 @@ class MocoTrajectory;
 /// Default solver settings
 /// -----------------------
 /// - solver: MocoCasADiSolver
-/// - dynamics_mode: explicit
+/// - multibody_dynamics_mode: explicit
 /// - transcription_scheme: Hermite-Simpson
 /// - optim_convergence_tolerance: 1e-2
 /// - optim_constraint_tolerance: 1e-2
@@ -148,7 +148,7 @@ class MocoTrajectory;
 /// hipForceCost->setReactionMeasures({"force-y"});
 ///
 /// auto& solver = moco.updSolver<MocoCasADiSolver>();
-/// solver.set_dynamics_mode("implicit");
+/// solver.set_multibody_dynamics_mode("implicit");
 ///
 /// MocoSolution solution = moco.solve();
 /// @endcode

@@ -38,10 +38,11 @@ std::shared_ptr<const MocoTropterSolver::TropterProblemBase<double>>
 MocoTropterSolver::createTropterProblem() const {
 #ifdef MOCO_WITH_TROPTER
     checkPropertyInSet(
-            *this, getProperty_dynamics_mode(), {"explicit", "implicit"});
-    if (get_dynamics_mode() == "explicit") {
+            *this, getProperty_multibody_dynamics_mode(),
+            {"explicit", "implicit"});
+    if (get_multibody_dynamics_mode() == "explicit") {
         return std::make_shared<ExplicitTropterProblem<double>>(*this);
-    } else if (get_dynamics_mode() == "implicit") {
+    } else if (get_multibody_dynamics_mode() == "implicit") {
         return std::make_shared<ImplicitTropterProblem<double>>(*this);
     } else {
         OPENSIM_THROW_FRMOBJ(Exception, "Internal error.");
@@ -308,12 +309,12 @@ MocoSolution MocoTropterSolver::solveImpl() const {
     }
     auto dircol = createTropterSolver(ocp);
     MocoTrajectory guess = getGuess();
-    OPENSIM_THROW_IF(get_dynamics_mode() == "implicit" &&
+    OPENSIM_THROW_IF(get_multibody_dynamics_mode() == "implicit" &&
                              guess.hasCoordinateStates() &&
                              guess.getDerivativeNames().empty(),
             Exception,
-            "'dynamics_mode' set to 'implicit' and coordinate states exist in "
-            "the "
+            "'multibody_dynamics_mode' set to 'implicit' and coordinate states "
+            "exist in the "
             "guess, but no coordinate accelerations were found in the guess. "
             "Consider using MocoTrajectory::generateAccelerationsFromValues() "
             "or "

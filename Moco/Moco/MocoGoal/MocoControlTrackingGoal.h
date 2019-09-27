@@ -96,6 +96,7 @@ protected:
             const GoalInput& input, SimTK::Vector& cost) const override {
         cost[0] = input.integral;
     }
+    void printDescriptionImpl(std::ostream& stream = std::cout) const override;
 
 private:
     OpenSim_DECLARE_PROPERTY(reference, TableProcessor,
@@ -120,6 +121,7 @@ private:
     mutable GCVSplineSet m_ref_splines;
     mutable std::vector<int> m_control_indices;
     mutable std::vector<double> m_control_weights;
+    mutable std::vector<std::string> m_control_names;
 };
 
 } // namespace OpenSim

@@ -59,6 +59,7 @@ protected:
             const GoalInput& input, SimTK::Vector& cost) const override {
         cost[0] = input.integral;
     }
+    void printDescriptionImpl(std::ostream& stream = std::cout) const override;
 
 private:
     void constructProperties();
@@ -67,6 +68,7 @@ private:
             "the weight for unspecified controls is 1.");
     mutable std::vector<double> m_weights;
     mutable std::vector<int> m_controlIndices;
+    mutable std::vector<std::string> m_controlNames;
 };
 
 } // namespace OpenSim

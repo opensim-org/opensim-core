@@ -777,7 +777,7 @@ void slipSolveForForce(double rzvalue0 = 0, double rzspeed0 = 0) {
 
 
     MocoTropterSolver& ms = moco.initSolver();
-    ms.set_dynamics_mode("implicit");
+    ms.set_multibody_dynamics_mode("implicit");
     ms.set_num_mesh_intervals(100);
     //ms.set_num_mesh_intervals(50);
     //ms.set_optim_max_iterations(2);

@@ -136,9 +136,9 @@ std::unique_ptr<MocoCasOCProblem> MocoCasADiSolver::createCasOCProblem() const {
     }
 
     checkPropertyInSet(
-            *this, getProperty_dynamics_mode(), {"explicit", "implicit"});
+            *this, getProperty_multibody_dynamics_mode(), {"explicit", "implicit"});
     if (problemRep.isPrescribedKinematics()) {
-        OPENSIM_THROW_IF(get_dynamics_mode() != "implicit", Exception,
+        OPENSIM_THROW_IF(get_multibody_dynamics_mode() != "implicit", Exception,
                 "Prescribed kinematics (PositionMotion) requires implicit "
                 "dynamics mode.");
     }
@@ -148,7 +148,7 @@ std::unique_ptr<MocoCasOCProblem> MocoCasADiSolver::createCasOCProblem() const {
                              model.getWorkingState()),
             Exception, "Quaternions are not supported.");
     return OpenSim::make_unique<MocoCasOCProblem>(*this, problemRep,
-            createProblemRepJar(numThreads), get_dynamics_mode());
+            createProblemRepJar(numThreads), get_multibody_dynamics_mode());
 }
 
 std::unique_ptr<CasOC::Solver> MocoCasADiSolver::createCasOCSolver(
@@ -311,11 +311,11 @@ MocoSolution MocoCasADiSolver::solveImpl() const {
     if (guess.empty()) {
         casGuess = casSolver->createInitialGuessFromBounds();
     } else {
-        OPENSIM_THROW_IF(get_dynamics_mode() == "implicit" &&
+        OPENSIM_THROW_IF(get_multibody_dynamics_mode() == "implicit" &&
                                  guess.hasCoordinateStates() &&
                                  guess.getDerivativeNames().empty(),
                 Exception,
-                "'dynamics_mode' set to 'implicit' and coordinate states exist "
+                "'multibody_dynamics_mode' set to 'implicit' and coordinate states exist "
                 "in "
                 "the guess, but no coordinate accelerations were found in the "
                 "guess. Consider using "

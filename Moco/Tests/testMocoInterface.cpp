@@ -1217,11 +1217,11 @@ TEMPLATE_TEST_CASE("Guess", "", MocoTropterSolver, MocoCasADiSolver) {
     // Can't use a guess from explicit dynamics in implicit dynamics mode.
     {
         MocoTrajectory explicitGuess = ms.createGuess();
-        ms.set_dynamics_mode("implicit");
+        ms.set_multibody_dynamics_mode("implicit");
         ms.setGuess(explicitGuess);
         CHECK_THROWS_WITH(moco.solve(),
             Catch::Contains(
-                "'dynamics_mode' set to 'implicit' and coordinate states "
+                "'multibody_dynamics_mode' set to 'implicit' and coordinate states "
                 "exist in the guess, but no coordinate accelerations were "
                 "found in the guess. Consider using "
                 "MocoTrajectory::generateAccelerationsFromValues() or "
@@ -1783,7 +1783,7 @@ void testSkippingOverQuaternionSlots(
     auto& solver = moco.initSolver<SolverType>();
     const int N = 4;
     solver.set_num_mesh_intervals(N);
-    solver.set_dynamics_mode(dynamicsMode);
+    solver.set_multibody_dynamics_mode(dynamicsMode);
     solver.set_transcription_scheme("hermite-simpson");
     solver.set_optim_constraint_tolerance(1e-2);
     solver.set_optim_convergence_tolerance(1e-2);

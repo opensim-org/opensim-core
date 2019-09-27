@@ -108,6 +108,7 @@ protected:
             const GoalInput& input, SimTK::Vector& cost) const override {
         cost[0] = input.integral / m_denominator;
     }
+    void printDescriptionImpl(std::ostream& stream = std::cout) const override;
 
 private:
     OpenSim_DECLARE_PROPERTY(joint_path, std::string, 

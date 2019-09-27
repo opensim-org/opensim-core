@@ -108,7 +108,7 @@ std::pair<MocoStudy, TimeSeriesTable> MocoInverse::initializeInternal() const {
     // Configure the MocoSolver.
     // -------------------------
     auto& solver = moco.initCasADiSolver();
-    solver.set_dynamics_mode("implicit");
+    solver.set_multibody_dynamics_mode("implicit");
     OPENSIM_THROW_IF_FRMOBJ(get_tolerance() <= 0, Exception,
             format("Tolerance must be positive, but got %g.", get_tolerance()));
     solver.set_optim_convergence_tolerance(get_tolerance());

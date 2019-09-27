@@ -58,13 +58,14 @@ namespace OpenSim {
 /// `interpolate_control_midpoints` is false, the values of a control at
 /// midpoints may differ greatly from the values at mesh interval endpoints.
 ///
-/// Dynamics mode
-/// -------------
-/// The `dynamics_mode` setting allows you to choose between expressing
-/// multibody dynamics as explicit differential equations (e.g., \f$ \dot{y} =
-/// f(y) \f$) or implicit differential equations (e.g., \f$ 0 = f(y, \dot{y})
-/// \f$, or inverse dynamics). Currently, auxiliary dynamics (e.g., muscle fiber
-/// and activation dynamics) are always explicit.
+/// Multibody dynamics mode
+/// -----------------------
+/// The `multibody_dynamics_mode` setting allows you to choose between
+/// expressing multibody dynamics as explicit differential equations (e.g., \f$
+/// \dot{y} = f(y) \f$) or implicit differential equations (e.g., \f$ 0 = f(y,
+/// \dot{y}) \f$, or inverse dynamics). Whether auxiliary dynamics (e.g.,
+/// muscle fiber and activation dynamics) are implicit or explicit depends on
+/// the model component implementing those dynamics.
 ///
 /// Kinematic constraints
 /// ---------------------
@@ -102,11 +103,10 @@ public:
             "If the transcription scheme is set to 'hermite-simpson', then "
             "enable this property to constrain the control values at mesh "
             "interval midpoints to be linearly interpolated from the control "
-            "values at the mesh interval endpoints. Default: true.")
-            OpenSim_DECLARE_PROPERTY(dynamics_mode, std::string,
-                    "Dynamics are expressed as 'explicit' (default) or "
-                    "'implicit' "
-                    "differential equations.");
+            "values at the mesh interval endpoints. Default: true.");
+    OpenSim_DECLARE_PROPERTY(multibody_dynamics_mode, std::string,
+            "Multibody dynamics are expressed as 'explicit' (default) or "
+            "'implicit' differential equations.");
     OpenSim_DECLARE_PROPERTY(optim_solver, std::string,
             "The optimization solver to use (default: ipopt).");
     OpenSim_DECLARE_PROPERTY(optim_max_iterations, int,
