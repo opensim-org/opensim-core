@@ -7,22 +7,27 @@ endif()
 
 # Install.
 # --------
-install(DIRECTORY examples/ DESTINATION "${OPENSIM_INSTALL_MATLABEXDIR}")
-install(DIRECTORY Dynamic_Walking_Challenge
+install(DIRECTORY examples/ DESTINATION "${OPENSIM_INSTALL_MATLABEXDIR}/Examples")
+install(DIRECTORY Hopper_Device DESTINATION "${OPENSIM_INSTALL_MATLABEXDIR}")
+install(DIRECTORY Utilities DESTINATION "${OPENSIM_INSTALL_MATLABEXDIR}")
+install(DIRECTORY OpenSenseExampleFiles DESTINATION "${OPENSIM_INSTALL_MATLABEXDIR}")
+install(DIRECTORY Dynamic_Walking_Tutorials/Dynamic_Walker_Builder
+        DESTINATION "${OPENSIM_INSTALL_MATLABEXDIR}")
+install(DIRECTORY Dynamic_Walking_Tutorials/Dynamic_Walker_Challenge
         DESTINATION "${OPENSIM_INSTALL_MATLABEXDIR}"
         # These files have not yet been updated for 4.0:
-        PATTERN "DesignMainStarter.m" EXCLUDE
         PATTERN "DesignMainStarterWithControls.m" EXCLUDE
+        PATTERN "AddCoordinateActuator.m" EXCLUDE
+        PATTERN "AddMillardMuscle.m" EXCLUDE
+        PATTERN "AddPathActuator.m" EXCLUDE
         PATTERN "IntegrateOpenSimPlant.m" EXCLUDE
         PATTERN "Main_WalkerForwardSim.m" EXCLUDE
         PATTERN "Main_WalkerForwardSimWithControls.m" EXCLUDE
         PATTERN "OpenSimPlantControlsFunction.m" EXCLUDE
         PATTERN "OpenSimPlantFunction.m" EXCLUDE
-        PATTERN "PlotOpenSimData.m" EXCLUDE
-        )
-install(DIRECTORY Hopper_Device DESTINATION "${OPENSIM_INSTALL_MATLABEXDIR}")
-install(DIRECTORY Utilities DESTINATION "${OPENSIM_INSTALL_MATLABEXDIR}")
-install(DIRECTORY OpenSenseExampleFiles DESTINATION "${OPENSIM_INSTALL_MATLABEXDIR}")
+        PATTERN "Simulation_using_Matlab_Integration.m" EXCLUDE)
+
+
 
 # Remove parts from the hopper device example that the tutorial audience is
 # expected to fill in.
