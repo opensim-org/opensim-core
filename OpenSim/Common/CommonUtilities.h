@@ -1,7 +1,7 @@
-#ifndef OPENSIM_OSIMCOMMON_H_
-#define OPENSIM_OSIMCOMMON_H_
+#ifndef OPENSIM_COMMONUTILITIES_H_
+#define OPENSIM_COMMONUTILITIES_H_
 /* -------------------------------------------------------------------------- *
- *                           OpenSim:  osimCommon.h                           *
+ *                          OpenSim:  CommonUtilities.h                       *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -9,8 +9,8 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2017 Stanford University and the Authors                *
- * Author(s): Ayman Habib                                                     *
+ * Copyright (c) 2005-2019 Stanford University and the Authors                *
+ * Author(s): Christopher Dembia                                              *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -23,45 +23,21 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "About.h"
-#include "CommonUtilities.h"
-#include "Object.h"
-#include "RegisterTypes_osimCommon.h"
-#include "FunctionSet.h"
-#include "GCVSplineSet.h"
-#include "ScaleSet.h"
-#include "GCVSpline.h"
-#include "IO.h"
+#include "osimCommonDLL.h"
+#include <iostream>
 
-#include "Scale.h"
-#include "SimmSpline.h"
-#include "Constant.h"
-#include "Sine.h"
-#include "StepFunction.h"
-#include "LinearFunction.h"
-#include "PiecewiseConstantFunction.h"
-#include "PiecewiseLinearFunction.h"
+namespace OpenSim {
 
-#include "MultiplierFunction.h"
-#include "PolynomialFunction.h"
+/// Get a string with the current date and time formatted as %Y-%m-%dT%H%M%S
+/// (year, month, day, "T", hour, minute, second). You can change the datetime
+/// format via the `format` parameter.
+/// If you specify "ISO", then we use the ISO 8601 extended datetime format
+/// %Y-%m-%dT%H:%M:%S.
+/// See https://en.cppreference.com/w/cpp/io/manip/put_time.
+OSIMCOMMON_API std::string getFormattedDateTime(
+        bool appendMicroseconds = false,
+        std::string format = "%Y-%m-%dT%H%M%S");
 
-#include "SignalGenerator.h"
+} // namespace OpenSim
 
-#include "ObjectGroup.h"
-#include "StorageInterface.h"
-#include "LoadOpenSimLibrary.h"
-#include "RegisterTypes_osimCommon.h"   // to expose RegisterTypes_osimCommon
-#include "SmoothSegmentedFunctionFactory.h"
-
-#include "DataTable.h"
-#include "TimeSeriesTable.h"
-
-#include "Adapters.h"
-
-#include "TableSource.h"
-
-#include "Reporter.h"
-
-#include "ModelDisplayHints.h"
-
-#endif // OPENSIM_OSIMCOMMON_H_
+#endif // OPENSIM_COMMONUTILITIES_H_

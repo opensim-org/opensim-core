@@ -1,7 +1,5 @@
-#ifndef OPENSIM_OSIMCOMMON_H_
-#define OPENSIM_OSIMCOMMON_H_
 /* -------------------------------------------------------------------------- *
- *                           OpenSim:  osimCommon.h                           *
+ *                          OpenSim:  CommonUtilities.cpp                     *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -9,8 +7,8 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2017 Stanford University and the Authors                *
- * Author(s): Ayman Habib                                                     *
+ * Copyright (c) 2005-2019 Stanford University and the Authors                *
+ * Author(s): Christopher Dembia                                              *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -23,45 +21,30 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "About.h"
 #include "CommonUtilities.h"
-#include "Object.h"
-#include "RegisterTypes_osimCommon.h"
-#include "FunctionSet.h"
-#include "GCVSplineSet.h"
-#include "ScaleSet.h"
-#include "GCVSpline.h"
-#include "IO.h"
 
-#include "Scale.h"
-#include "SimmSpline.h"
-#include "Constant.h"
-#include "Sine.h"
-#include "StepFunction.h"
-#include "LinearFunction.h"
-#include "PiecewiseConstantFunction.h"
-#include "PiecewiseLinearFunction.h"
+#include <iomanip>
+#include <sstream>
 
-#include "MultiplierFunction.h"
-#include "PolynomialFunction.h"
-
-#include "SignalGenerator.h"
-
-#include "ObjectGroup.h"
-#include "StorageInterface.h"
-#include "LoadOpenSimLibrary.h"
-#include "RegisterTypes_osimCommon.h"   // to expose RegisterTypes_osimCommon
-#include "SmoothSegmentedFunctionFactory.h"
-
-#include "DataTable.h"
-#include "TimeSeriesTable.h"
-
-#include "Adapters.h"
-
-#include "TableSource.h"
-
-#include "Reporter.h"
-
-#include "ModelDisplayHints.h"
-
-#endif // OPENSIM_OSIMCOMMON_H_
+std::string OpenSim::getFormattedDateTime(
+        bool appendMicroseconds, std::string format) {
+    using namespace std::chrono;
+    auto now = system_clock::now();
+    auto time_now = system_clock::to_time_t(now);
+    struct tm buf;
+#if defined(_WIN32)
+    localtime_s(&buf, &time_now);
+#else
+    localtime_r(&time_now, &buf);
+#endif
+    if (format == "ISO") { format = "%Y-%m-%dT%H:%M:%S"; }
+    std::stringstream ss;
+    ss << std::put_time(&buf, format.c_str());
+    if (appendMicroseconds) {
+        // Get number of microseconds since last second.
+        auto microsec =
+                duration_cast<microseconds>(now.time_since_epoch()) % 1000000;
+        ss << '.' << std::setfill('0') << std::setw(6) << microsec.count();
+    }
+    return ss.str();
+}
