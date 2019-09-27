@@ -113,14 +113,14 @@ std::pair<MocoStudy, TimeSeriesTable> MocoInverse::initializeInternal() const {
             format("Tolerance must be positive, but got %g.", get_tolerance()));
     solver.set_optim_convergence_tolerance(get_tolerance());
     solver.set_optim_constraint_tolerance(get_tolerance());
-    solver.set_transcription_scheme("trapezoidal");
+    //solver.set_transcription_scheme("trapezoidal");
     if (model.getWorkingState().getNMultipliers()) {
         solver.set_transcription_scheme("hermite-simpson");
         solver.set_enforce_constraint_derivatives(true);
         solver.set_interpolate_control_midpoints(false);
     }
     solver.set_minimize_implicit_auxiliary_derivatives(true);
-    solver.set_implicit_auxiliary_derivatives_weight(1);
+    solver.set_implicit_auxiliary_derivatives_weight(0.001);
     // The sparsity detection works fine with DeGrooteFregly2016Muscle.
     solver.set_optim_sparsity_detection("random");
     // Forward is 3x faster than central.
@@ -129,7 +129,8 @@ std::pair<MocoStudy, TimeSeriesTable> MocoInverse::initializeInternal() const {
     if (!getProperty_max_iterations().empty()) {
         solver.set_optim_max_iterations(get_max_iterations());
     }
-    solver.set_minimize_implicit_auxiliary_derivatives(true);
+    //solver.set_minimize_implicit_auxiliary_derivatives(true);
+    //solver.set_implicit_auxiliary_derivatives_weight(10);
 
     return std::make_pair(
             moco, posmotPtr->exportToTable(kinematics.getIndependentColumn()));

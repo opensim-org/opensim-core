@@ -462,7 +462,7 @@ void DeGrooteFregly2016Muscle::calcFiberVelocityInfo(
 void DeGrooteFregly2016Muscle::calcMuscleDynamicsInfo(
         const SimTK::State& s, MuscleDynamicsInfo& mdi) const {
     const auto& activation = getActivation(s);
-    SimTK::Real normTendonForce = 0.0;
+    SimTK::Real normTendonForce = SimTK::NaN;
     if (!get_ignore_tendon_compliance()) {
         normTendonForce = getNormalizedTendonForce(s);
     }
@@ -478,6 +478,43 @@ void DeGrooteFregly2016Muscle::calcMusclePotentialEnergyInfo(
         const SimTK::State& s, MusclePotentialEnergyInfo& mpei) const {
     const MuscleLengthInfo& mli = getMuscleLengthInfo(s);
     calcMusclePotentialEnergyInfoHelper(mli, mpei);
+}
+
+double
+OpenSim::DeGrooteFregly2016Muscle::calcInextensibleTendonActiveFiberForce(
+        SimTK::State& s, double activation) const {
+    // TODO: Avoid code duplication.
+
+    // Length multiplier.
+    const double muscleTendonLength = getLength(s);
+    const double normTendonLength = 1.0;
+    const double tendonLength = get_tendon_slack_length() * normTendonLength;
+    const double fiberLengthAlongTendon = muscleTendonLength - tendonLength;
+    const double fiberLength = sqrt(
+        SimTK::square(fiberLengthAlongTendon) + m_squareFiberWidth);
+    const double normFiberLength = fiberLength / get_optimal_fiber_length();
+    const double cosPennationAngle = fiberLengthAlongTendon / fiberLength;
+    const double fiberActiveForceLengthMultiplier =
+        calcActiveForceLengthMultiplier(normFiberLength);
+
+    // Velocity multiplier.
+    const double muscleTendonVelocity = getLengtheningSpeed(s);
+    const double normTendonVelocity = 0.0;
+    const double tendonVelocity = get_tendon_slack_length() * normTendonVelocity;
+    const double fiberVelocityAlongTendon =
+        muscleTendonVelocity - tendonVelocity;
+    const double fiberVelocity =
+        fiberVelocityAlongTendon * cosPennationAngle;
+    const double normFiberVelocity =
+        fiberVelocity / m_maxContractionVelocityInMetersPerSecond;
+    const double fiberForceVelocityMultiplier =
+        calcForceVelocityMultiplier(normFiberVelocity);
+
+    const SimTK::Real normActiveForce = activation *
+        fiberActiveForceLengthMultiplier *
+        fiberForceVelocityMultiplier;
+
+    return get_max_isometric_force() * normActiveForce * cosPennationAngle;
 }
 
 void DeGrooteFregly2016Muscle::computeInitialFiberEquilibrium(
