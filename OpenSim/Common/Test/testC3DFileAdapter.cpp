@@ -80,7 +80,7 @@ void test(const std::string filename) {
     // The walking C3D files included in this test should not take more
     // than 40ms on most hardware. We make the max time 100ms to account
     // for potentially slower CI machines.
-    const double MaximumLoadTimeInMS = SimTK::secToNs(0.100);
+    const long long MaximumLoadTimeInMS = SimTK::secToNs(0.100);
     
     Stopwatch watch;
     C3DFileAdapter c3dFileAdapter{};
