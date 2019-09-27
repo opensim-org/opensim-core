@@ -65,8 +65,9 @@ for i=0:2, blockToGround.upd_coordinates(i).setRange(angleRange); end
 for i=3:5, blockToGround.upd_coordinates(i).setRange(positionRange); end
 
 
-% Add the block body to the model
-model.addBody(block)
+% Add the block body and joint to the model
+model.addBody(block);
+model.addJoint(blockToGround);
 
 %% Define Muscles in the Model
 % Define parameters for a Muscle
