@@ -223,7 +223,7 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
             // "Slice()" grabs everything in that dimension (like ":" in
             // Matlab).
             setVariableBounds(derivatives, Slice(0, m_problem.getNumSpeeds()), 
-                    Slice(), m_solver.getImplicitModeAccelerationBounds());
+                    Slice(), m_solver.getImplicitMultibodyAccelerationBounds());
         }
         if (m_problem.getNumAuxiliaryResidualEquations()) {
             setVariableBounds(derivatives, 
@@ -459,6 +459,28 @@ void Transcription::setObjectiveAndEndpointConstraints() {
         const double multiplierWeight = m_solver.getLagrangeMultiplierWeight();
         // Sum across constraints of each multiplier element squared.
         MX integrandTraj = multiplierWeight * MX::sum1(MX::sq(mults));
+        m_objective += m_duration * dot(quadCoeffs.T(), integrandTraj);
+    }
+
+    if (m_solver.getMinimizeImplicitMultibodyAccelerations() &&
+            m_problem.isDynamicsModeImplicit()) {
+        const auto& numAccels = m_problem.getNumAccelerations();
+        const auto accels = m_vars[derivatives](Slice(0, numAccels), Slice());
+        const double accelWeight = 
+                m_solver.getImplicitMultibodyAccelerationsWeight();
+        MX integrandTraj = accelWeight * MX::sum1(MX::sq(accels));
+        m_objective += m_duration * dot(quadCoeffs.T(), integrandTraj);
+    }
+
+    if (m_solver.getMinimizeImplicitAuxiliaryDerivatives() && 
+            m_problem.getNumAuxiliaryResidualEquations()) {
+        const auto& numAccels = m_problem.getNumAccelerations();
+        const auto& numAuxDerivs = m_problem.getNumAuxiliaryResidualEquations();
+        const auto auxDerivs = m_vars[derivatives](
+                Slice(numAccels, numAccels + numAuxDerivs), Slice());
+        const double auxDerivWeight =
+                m_solver.getImplicitAuxiliaryDerivativesWeight();
+        MX integrandTraj = auxDerivWeight * MX::sum1(MX::sq(auxDerivs));
         m_objective += m_duration * dot(quadCoeffs.T(), integrandTraj);
     }
 

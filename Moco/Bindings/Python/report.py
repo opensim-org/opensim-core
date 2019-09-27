@@ -322,20 +322,29 @@ class Report(object):
         trajectory_fname = trajectory_fname.replace('.mot', '')
         with PdfPages(trajectory_fname + '_report.pdf') as self.pdf:
 
-            # States & Derivatives
+            # States & Accelerations
             # --------------------
             state_names = self.trajectory.getStateNames()
             derivative_names = self.trajectory.getDerivativeNames()
             derivs = True if (len(derivative_names) > 0) else False
+            accels = False
+            auxiliary_derivative_names = list()
+            for derivative_name in derivative_names:
+                leaf = os.path.basename(os.path.normpath(derivative_name))
+                if leaf == 'accel':
+                    accels = True
+                else:
+                    auxiliary_derivative_names.append(derivative_name)
+                    
             if len(state_names) > 0:
                 # Loop through the model's joints and cooresponding coordinates to
                 # store plotting information.
                 state_dict = OrderedDict()
                 state_ls_dict = defaultdict(list)
                 state_label_dict = dict()
-                derivative_dict = OrderedDict()
-                derivative_ls_dict = defaultdict(list)
-                derivative_label_dict = dict()
+                acceleration_dict = OrderedDict()
+                acceleration_ls_dict = defaultdict(list)
+                acceleration_label_dict = dict()
                 coordSet = self.model.getCoordinateSet()
                 for c in range(coordSet.getSize()):
                     coord = coordSet.get(c)
@@ -346,7 +355,7 @@ class Report(object):
                     # variables.
                     valueName = coordName + '/value'
                     speedName = coordName + '/speed'
-                    if derivs: accelName = coordName + '/accel'
+                    if accels: accelName = coordName + '/accel'
                     if self.bilateral:
                         # If the --bilateral flag was set by the user, remove
                         # substrings that indicate the body side and update the
@@ -355,14 +364,14 @@ class Report(object):
                                 state_ls_dict)
                         speedName, state_ls_dict = bilateralize(speedName,
                                 state_ls_dict)
-                        if derivs:
-                            accelName, derivative_ls_dict = bilateralize(accelName,
-                                    derivative_ls_dict)
+                        if accels:
+                            accelName, acceleration_ls_dict = bilateralize(
+                                accelName, acceleration_ls_dict)
 
                     else:
                         state_ls_dict[valueName].append('-')
                         state_ls_dict[speedName].append('-')
-                        if derivs: derivative_ls_dict[accelName].append('-')
+                        if accels: acceleration_ls_dict[accelName].append('-')
 
 
                     if not valueName in state_dict:
@@ -379,20 +388,20 @@ class Report(object):
                     state_label_dict[speedName] = \
                         getLabelFromMotionType(coordMotType, 'speed')
 
-                    if derivs:
-                        if not accelName in derivative_dict:
-                            derivative_dict[accelName] = list()
-                        derivative_dict[accelName].append(coordPath + '/accel')
-                        derivative_label_dict[accelName] = \
+                    if accels:
+                        if not accelName in acceleration_dict:
+                            acceleration_dict[accelName] = list()
+                        acceleration_dict[accelName].append(coordPath + '/accel')
+                        acceleration_label_dict[accelName] = \
                             getLabelFromMotionType(coordMotType, 'accel')
 
                 self.plotVariables('state', state_dict, state_ls_dict, 
                         state_label_dict)
-                if derivs:
-                    self.plotVariables('derivative', derivative_dict, 
-                            derivative_ls_dict, derivative_label_dict)
+                if accels:
+                    self.plotVariables('derivative', acceleration_dict, 
+                            acceleration_ls_dict, acceleration_label_dict)
 
-                # Activation
+                # Activations
                 activ_dict = OrderedDict()
                 activ_ls_dict = defaultdict(list)
                 activ_label_dict = dict()
@@ -414,6 +423,49 @@ class Report(object):
                 self.plotVariables('state', activ_dict, activ_ls_dict,
                                    activ_label_dict)
 
+                # Non-coordinate states
+                norm_tendon_force_dict = OrderedDict()
+                norm_tendon_force_ls_dict = defaultdict(list)
+                norm_tendon_force_label_dict = dict()
+                for state_name in state_names:
+                    if state_name.endswith('/normalized_tendon_force'):
+                        title = state_name
+                        if self.bilateral:
+                            title, norm_tendon_force_ls_dict = bilateralize(
+                                title, norm_tendon_force_ls_dict)
+                        else:
+                            norm_tendon_force_ls_dict[title].append('-')
+                        if not title in norm_tendon_force_dict:
+                            norm_tendon_force_dict[title] = list()
+                        # If --bilateral was set, the 'title' key will
+                        # correspond to a list containing paths for both sides
+                        # of the model.
+                        norm_tendon_force_dict[title].append(state_name)
+                        norm_tendon_force_label_dict[title] = ''
+                self.plotVariables('state', norm_tendon_force_dict, 
+                        norm_tendon_force_ls_dict,
+                        norm_tendon_force_label_dict)
+
+                # Auxiliary derivative variables
+                aux_dict = OrderedDict()
+                aux_ls_dict = defaultdict(list)
+                aux_label_dict = dict()
+                for aux_name in auxiliary_derivative_names:
+                    title = aux_name
+                    if self.bilateral:
+                        title, aux_ls_dict = bilateralize(title,
+                                                            aux_ls_dict)
+                    else:
+                        aux_ls_dict[title].append('-')
+                    if not title in aux_dict:
+                        aux_dict[title] = list()
+                    # If --bilateral was set, the 'title' key will
+                    # correspond to a list containing paths for both sides
+                    # of the model.
+                    aux_dict[title].append(aux_name)
+                    aux_label_dict[title] = ''
+                self.plotVariables('derivative', aux_dict, aux_ls_dict,
+                                   aux_label_dict)
 
             # Controls
             # --------
