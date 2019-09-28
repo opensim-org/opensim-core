@@ -3,4 +3,10 @@ namespace OpenSim {
 This is an example of how to prototype a custom goal in Matlab. See
 @ref customgoal.
 */
+
+/** @example exampleSlidingMassAdvanced.cpp
+This example shows setting solver settings, customizing an initial guess,
+and defining a custom goal (cost term).
+See @ref customgoal.
+*/
 } // namespace OpenSim
