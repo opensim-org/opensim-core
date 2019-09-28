@@ -42,12 +42,12 @@ model.finalizeConnections();
 
 % Create MocoStudy.
 % ================
-moco = MocoStudy();
-moco.setName('sliding_mass');
+study = MocoStudy();
+study.setName('sliding_mass');
 
 % Define the optimal control problem.
 % ===================================
-problem = moco.updProblem();
+problem = study.updProblem();
 
 % Model (dynamics).
 % -----------------
@@ -75,20 +75,20 @@ problem.addGoal(MocoFinalTimeGoal('final_time'));
 
 % Configure the solver.
 % =====================
-solver = moco.initTropterSolver();
+solver = study.initTropterSolver();
 solver.set_num_mesh_intervals(50);
 
 % Now that we've finished setting up the tool, print it to a file.
-moco.print('sliding_mass.omoco');
+study.print('sliding_mass.omoco');
 
 % Solve the problem.
 % ==================
-solution = moco.solve();
+solution = study.solve();
 
 solution.write('sliding_mass_solution.sto');
 
 if ~strcmp(getenv('OPENSIM_USE_VISUALIZER'), '0')
-    moco.visualize(solution);
+    study.visualize(solution);
     plot(solution.getTimeMat(), solution.getStatesTrajectoryMat());
     xlabel('time (s)');
     ylabel('states');
