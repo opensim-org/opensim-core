@@ -151,11 +151,11 @@ def muscleDrivenStateTracking():
     # Instead of calling solve(), call initialize() to receive a pre-configured
     # MocoStudy object based on the settings above. Use this to customize the
     # problem beyond the MocoTrack interface.
-    moco = track.initialize()
+    study = track.initialize()
 
     # Get a reference to the MocoControlCost that is added to every MocoTrack
     # problem by default.
-    problem = moco.updProblem()
+    problem = study.updProblem()
     effort = osim.MocoControlCost.safeDownCast(problem.updCost("control_effort"))
 
     # Put a large weight on the pelvis CoordinateActuators, which act as the
@@ -170,8 +170,8 @@ def muscleDrivenStateTracking():
             effort.setWeightForControl(forcePath, 10)
     
     # Solve and visualize.
-    solution = moco.solve()
-    moco.visualize(solution)
+    solution = study.solve()
+    study.visualize(solution)
 
 # Solve the torque-driven marker tracking problem.
 # This problem takes a few minutes to solve.

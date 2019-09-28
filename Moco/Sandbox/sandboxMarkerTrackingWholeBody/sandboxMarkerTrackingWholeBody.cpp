@@ -212,12 +212,12 @@ void addCoordinateActuator(std::unique_ptr<Model>& model, std::string coordName,
 MocoSolution solveMarkerTrackingProblem(
         bool prevSolutionInitialization) {
 
-    MocoStudy moco;
-    moco.setName("whole_body_marker_tracking");
+    MocoStudy study;
+    study.setName("whole_body_marker_tracking");
 
     // Define the optimal control problem.
     // ===================================
-    MocoProblem& mp = moco.updProblem();
+    MocoProblem& mp = study.updProblem();
 
     // Model(dynamics).
     // -----------------
@@ -264,7 +264,7 @@ MocoSolution solveMarkerTrackingProblem(
 
     // Configure the solver.
     // =====================
-    MocoTropterSolver& ms = moco.initTropterSolver();
+    MocoTropterSolver& ms = study.initTropterSolver();
     ms.set_num_mesh_intervals(50);
     ms.set_verbosity(2);
     ms.set_optim_solver("snopt");
@@ -282,8 +282,8 @@ MocoSolution solveMarkerTrackingProblem(
 
     // Solve the problem.
     // ==================
-    MocoSolution solution = moco.solve();
-    moco.visualize(solution);
+    MocoSolution solution = study.solve();
+    study.visualize(solution);
     solution.write("sandboxMarkerTrackingWholeBody_marker_solution.sto");
 
     auto statesTable = solution.exportToStatesTable();

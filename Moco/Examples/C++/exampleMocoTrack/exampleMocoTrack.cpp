@@ -158,11 +158,11 @@ void muscleDrivenStateTracking() {
     // Instead of calling solve(), call initialize() to receive a pre-configured
     // MocoStudy object based on the settings above. Use this to customize the
     // problem beyond the MocoTrack interface.
-    MocoStudy moco = track.initialize();
+    MocoStudy study = track.initialize();
 
     // Get a reference to the MocoControlGoal that is added to every MocoTrack
     // problem by default.
-    MocoProblem& problem = moco.updProblem();
+    MocoProblem& problem = study.updProblem();
     MocoControlGoal& effort =
         dynamic_cast<MocoControlGoal&>(problem.updGoal("control_effort"));
 
@@ -178,8 +178,8 @@ void muscleDrivenStateTracking() {
     }
     
     // Solve and visualize.
-    MocoSolution solution = moco.solve();
-    moco.visualize(solution);
+    MocoSolution solution = study.solve();
+    study.visualize(solution);
 }
 
 int main() {
