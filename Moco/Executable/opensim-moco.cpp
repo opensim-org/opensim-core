@@ -94,8 +94,8 @@ void visualize(std::string file, std::string trajectory_file) {
     if (file.rfind(".osim") != std::string::npos) {
         model = OpenSim::make_unique<Model>(file);
     } else {
-        MocoStudy moco(file);
-        const MocoPhase& phase = moco.getProblem().getPhase(0);
+        MocoStudy study(file);
+        const MocoPhase& phase = study.getProblem().getPhase(0);
         model.reset(phase.getModel().clone());
     }
     if (trajectory_file.empty()) {

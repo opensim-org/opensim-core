@@ -114,7 +114,7 @@ subjectInfos{2} = createSubjectInfo(2);
 subjectInfos{2}.torso = 1.5;
 end
 
-function [moco] = createStudy(subjectIndex, addDeviceFunction)
+function [study] = createStudy(subjectIndex, addDeviceFunction)
 % This function builds a study for predicting a sit-to-stand motion given
 % adjustments to a model (given a subject index; 1 or 2) and, optionally, a
 % function for adding a device to a model. This returns a MocoStudy, and you can
@@ -124,10 +124,10 @@ global subjectInfos;
 
 import org.opensim.modeling.*;
 
-moco = MocoStudy();
+study = MocoStudy();
 
 % Configure the problem.
-problem = moco.updProblem();
+problem = study.updProblem();
 
 % Set the model.
 subjectInfo = subjectInfos{subjectIndex};
@@ -170,8 +170,8 @@ problem.setStateInfoPattern('/jointset/.*/speed', [], 0, 0);
 problem.addCost(MocoControlCost('myeffort'));
 
 % Configure the solver.
-solver = moco.initCasADiSolver();
-solver.set_dynamics_mode('implicit');
+solver = study.initCasADiSolver();
+solver.set_multibody_dynamics_mode('implicit');
 solver.set_num_mesh_intervals(25);
 solver.set_optim_convergence_tolerance(1e-3);
 solver.set_optim_constraint_tolerance(1e-3);
@@ -192,24 +192,24 @@ global visualize;
 import org.opensim.modeling.*;
 
 if nargin > 1
-    moco = createStudy(subjectIndex, varargin{1});
+    study = createStudy(subjectIndex, varargin{1});
 else
-    moco = createStudy(subjectIndex);
+    study = createStudy(subjectIndex);
 end
 
-solution = moco.solve();
+solution = study.solve();
 
 if nargin > 1
-    solution.write([char(moco.getProblem().getName()) '_solution.sto']);
+    solution.write([char(study.getProblem().getName()) '_solution.sto']);
 end
 
 % outputPaths = StdVectorString();
 % outputPaths.add('.*multiplier');
-% outputTable = moco.analyze(solution, outputPaths);
+% outputTable = study.analyze(solution, outputPaths);
 % STOFileAdapter.write(outputTable, "assistedOutputs.sto");
 
 if visualize
-    moco.visualize(solution);
+    study.visualize(solution);
 end
 
 end

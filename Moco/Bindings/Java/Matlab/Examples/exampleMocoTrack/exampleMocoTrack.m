@@ -169,11 +169,11 @@ track.set_mesh_interval(0.08);
 % Instead of calling solve(), call initialize() to receive a pre-configured
 % MocoStudy object based on the settings above. Use this to customize the
 % problem beyond the MocoTrack interface.
-moco = track.initialize();
+study = track.initialize();
 
 % Get a reference to the MocoControlGoal that is added to every MocoTrack
 % problem by default.
-problem = moco.updProblem();
+problem = study.updProblem();
 effort = MocoControlGoal.safeDownCast(problem.updGoal("control_effort"));
 
 % Put a large weight on the pelvis CoordinateActuators, which act as the
@@ -190,8 +190,8 @@ for i = 0:forceSet.getSize()-1
 end
 
 % Solve and visualize.
-solution = moco.solve();
-moco.visualize(solution);
+solution = study.solve();
+study.visualize(solution);
 
 end
 

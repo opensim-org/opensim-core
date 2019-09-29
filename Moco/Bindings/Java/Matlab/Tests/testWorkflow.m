@@ -53,8 +53,8 @@ end
 
 function testDefaultBounds(testCase)
     import org.opensim.modeling.*;
-    moco = MocoStudy();
-    problem = moco.updProblem();
+    study = MocoStudy();
+    problem = study.updProblem();
     model = createSlidingMassModel();
     model.finalizeFromProperties();
     coord = Coordinate.safeDownCast(model.updComponent('slider/position'));
@@ -94,8 +94,8 @@ end
 
 function testChangingTimeBounds(testCase)
     import org.opensim.modeling.*;
-    moco = MocoStudy();
-    problem = moco.updProblem();
+    study = MocoStudy();
+    problem = study.updProblem();
     problem.setModel(createSlidingMassModel());
     problem.setTimeBounds(0, [0, 10]);
     problem.setStateInfo('/slider/position/value', [0, 1], 0, 1);
@@ -103,59 +103,59 @@ function testChangingTimeBounds(testCase)
     problem.setControlInfo('/actuator', [-10, 10]);
     problem.addGoal(MocoFinalTimeGoal());
 
-    solver = moco.initTropterSolver();
+    solver = study.initTropterSolver();
     solver.set_transcription_scheme('trapezoidal')
     solver.set_num_mesh_intervals(19);
     guess = solver.createGuess('random');
     guess.setTime(opensimMoco.createVectorLinspace(20, 0.0, 3.0));
     solver.setGuess(guess);
-    solution0 = moco.solve();
+    solution0 = study.solve();
 
     problem.setTimeBounds(0, [5.8, 10]);
     % Editing the problem does not affect information in the Solver; the
     % guess still exists.
     assert(~solver.getGuess().empty());
 
-    solution = moco.solve();
+    solution = study.solve();
     testCase.assertEqual(solution.getFinalTime(), 5.8);
 
 end
 
 function testChangingModel(testCase)
     import org.opensim.modeling.*;
-    moco = MocoStudy();
-    problem = moco.updProblem();
+    study = MocoStudy();
+    problem = study.updProblem();
     model = createSlidingMassModel();
     problem.setModel(model);
     problem.setTimeBounds(0, [0, 10]);
     problem.setStateInfo('/slider/position/value', [0, 1], 0, 1);
     problem.setStateInfo('/slider/position/speed', [-100, 100], 0, 0);
     problem.addGoal(MocoFinalTimeGoal());
-    solver = moco.initTropterSolver();
+    solver = study.initTropterSolver();
     solver.set_num_mesh_intervals(20);
-    finalTime0 = moco.solve().getFinalTime();
+    finalTime0 = study.solve().getFinalTime();
 
     testCase.assertEqual(finalTime0, 2.00, 'AbsTol', 0.01);
 
     body = Body.safeDownCast(model.updComponent('body'));
     body.setMass(2 * body.getMass());
-    finalTime1 = moco.solve().getFinalTime();
+    finalTime1 = study.solve().getFinalTime();
     assert(finalTime1 > 1.1 * finalTime0);
 end
 
 function testOrder(testCase)
     import org.opensim.modeling.*;
     % Can set the cost and model in any order.
-    moco = MocoStudy();
-    problem = moco.updProblem();
+    study = MocoStudy();
+    problem = study.updProblem();
     problem.setTimeBounds(0, [0, 10]);
     problem.setStateInfo('/slider/position/value', [0, 1], 0, 1);
     problem.setStateInfo('/slider/position/speed', [-100, 100], 0, 0);
     problem.addGoal(MocoFinalTimeGoal());
     problem.setModel(createSlidingMassModel());
-    solver = moco.initTropterSolver();
+    solver = study.initTropterSolver();
     solver.set_num_mesh_intervals(20);
-    finalTime =  moco.solve().getFinalTime();
+    finalTime =  study.solve().getFinalTime();
 
     testCase.assertEqual(finalTime, 2.0, 'AbsTol', 0.01);
 end
@@ -163,8 +163,8 @@ end
 function testChangingGoals(testCase)
     import org.opensim.modeling.*;
     % Changes to the costs are obeyed.
-    moco = MocoStudy();
-    problem = moco.updProblem();
+    study = MocoStudy();
+    problem = study.updProblem();
     problem.setModel(createSlidingMassModel());
     problem.setTimeBounds(0, [0, 10]);
     problem.setStateInfo('/slider/position/value', [0, 1], 0, 1);
@@ -172,9 +172,9 @@ function testChangingGoals(testCase)
     problem.updPhase().addGoal(MocoFinalTimeGoal());
     effort = MocoControlGoal('effort');
     problem.updPhase().addGoal(effort);
-    finalTime0 = moco.solve().getFinalTime();
+    finalTime0 = study.solve().getFinalTime();
 
     % Change the weights of the costs.
     effort.setWeight(0.1);
-    assert(moco.solve().getFinalTime() < 0.8 * finalTime0);
+    assert(study.solve().getFinalTime() < 0.8 * finalTime0);
 end
