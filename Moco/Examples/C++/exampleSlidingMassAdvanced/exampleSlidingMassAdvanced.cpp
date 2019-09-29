@@ -73,7 +73,7 @@ std::unique_ptr<Model> createSlidingMassModel() {
 /// just to illustrate creating a custom goal).
 /// Refer to Doxygen documentation for more information on creating a custom
 /// goal.
-class OSIMMOCO_API MocoCustomEffortGoal : public MocoGoal {
+class MocoCustomEffortGoal : public MocoGoal {
     OpenSim_DECLARE_CONCRETE_OBJECT(MocoCustomEffortGoal, MocoGoal);
 
 public:
