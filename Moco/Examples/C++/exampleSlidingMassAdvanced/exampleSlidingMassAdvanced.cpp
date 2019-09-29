@@ -159,7 +159,7 @@ int main() {
     // ==================
     MocoSolution solution = study.solve();
     std::cout << "Solution status: " << solution.getStatus() << std::endl;
-    moco.visualize(solution);
+    study.visualize(solution);
 
     return EXIT_SUCCESS;
 }
