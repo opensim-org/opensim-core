@@ -16,12 +16,11 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
+#include "Tests/Testing.h"
 #include <Moco/InverseMuscleSolver/GlobalStaticOptimization.h>
 #include <Moco/InverseMuscleSolver/INDYGO.h>
 
 #include <OpenSim/Simulation/osimSimulation.h>
-
-#include "Testing.h"
 
 using namespace OpenSim;
 
