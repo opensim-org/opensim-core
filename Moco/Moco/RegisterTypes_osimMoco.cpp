@@ -1,3 +1,4 @@
+
 /* -------------------------------------------------------------------------- *
  * OpenSim Moco: RegisterTypes_osimMoco.cpp                                   *
  * -------------------------------------------------------------------------- *
@@ -22,10 +23,10 @@
 #include "Components/ActivationCoordinateActuator.h"
 #include "Components/DeGrooteFregly2016Muscle.h"
 #include "Components/DiscreteForces.h"
+#include "Components/MultivariatePolynomialFunction.h"
 #include "Components/PositionMotion.h"
 #include "Components/SmoothSphereHalfSpaceForce.h"
 #include "Components/StationPlaneContactForce.h"
-#include "Components/MultivariatePolynomialFunction.h"
 #ifdef MOCO_WITH_TROPTER
 #    include "InverseMuscleSolver/GlobalStaticOptimization.h"
 #    include "InverseMuscleSolver/INDYGO.h"
@@ -136,7 +137,7 @@ OSIMMOCO_API void RegisterTypes_osimMoco() {
         Object::registerType(Set<MarkerWeight>());
     } catch (const std::exception& e) {
         std::cerr << "ERROR during osimMoco Object registration:\n"
-                  << e.what() << std::endl;
+                << e.what() << std::endl;
     }
 }
 
