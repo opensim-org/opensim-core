@@ -1,5 +1,5 @@
-- 2019-09-28: exampleSlidingMassAdvanced.cpp now shows how to create a custom
-              goal class.
+- 2019-09-28: exampleSlidingMassAdvanced.cpp and exampleMocoCustomEffortGoal
+              show how to create a custom goal class.
 
 - 2019-08-29: Users now interface with num_mesh_intervals instead of
               num_mesh_points when setting times to sample.
