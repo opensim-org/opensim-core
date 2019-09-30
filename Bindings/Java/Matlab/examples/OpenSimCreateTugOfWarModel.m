@@ -37,10 +37,16 @@ model.setGravity(zeroVec3);
 %% Define Bodies and Joints in the Model
 % Get a reference to the model's ground body
 ground = model.getGround();
-% Add display geometry to the ground to visualize in the GUI
-ground.attachGeometry(Mesh('ground.vtp'));
-ground.attachGeometry(Mesh('anchor1.vtp'));
-ground.attachGeometry(Mesh('anchor2.vtp'));
+
+%% Attach Anchor geometry to the Ground
+% Add offset frames so we can position the geometry
+anchor1Offset = PhysicalOffsetFrame('anchor1', ground, Transform(Vec3(0,0.05,0.4)));
+anchor1Offset.attachGeometry(Brick(Vec3(0.2,0.05,0.05)));
+anchor2Offset = PhysicalOffsetFrame('anchor1', ground, Transform(Vec3(0,0.05,-0.4)));
+anchor2Offset.attachGeometry(Brick(Vec3(0.2,0.05,0.05)));
+% Add the frames and Geometry
+model.addComponent(anchor1Offset)
+model.addComponent(anchor2Offset)
 
 % Instantiate a Body with mass, inertia, and a display geometry
 block = Body();
@@ -49,7 +55,8 @@ block.setMass(20);
 block.setMassCenter(zeroVec3);
 block.setInertia(Inertia(0.133,0.133,0.133,0,0,0));
 % Add display geometry for the block
-block.attachGeometry(Mesh('block.vtp'));
+block.attachGeometry(Brick(Vec3(0.05)));
+
 
 % Instantiate a Free Joint (6 DoF) that connects the block and ground.
 blockSideLength      = 0.1;
