@@ -102,17 +102,17 @@ TEST_CASE("PrescribedKinematics direct collocation auxiliary dynamics") {
     model.addModelComponent(motion);
     model.addComponent(new CustomDynamics());
 
-    MocoStudy moco;
-    auto& problem = moco.updProblem();
+    MocoStudy study;
+    auto& problem = study.updProblem();
     problem.setModelCopy(model);
     problem.setTimeBounds(0, 1);
     const double init_s = 0.2;
     problem.setStateInfo("/customdynamics/s", {0, 100}, init_s);
-    auto& solver = moco.initCasADiSolver();
+    auto& solver = study.initCasADiSolver();
     solver.set_transcription_scheme("trapezoidal");
-    solver.set_dynamics_mode("implicit");
+    solver.set_multibody_dynamics_mode("implicit");
 
-    MocoSolution solution = moco.solve();
+    MocoSolution solution = study.solve();
     OpenSim_CHECK_MATRIX_TOL(solution.getState("/customdynamics/s"),
             0.2 * SimTK::exp(solution.getTime()), 1e-4);
 }

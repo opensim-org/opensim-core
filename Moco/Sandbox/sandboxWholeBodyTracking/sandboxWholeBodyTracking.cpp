@@ -395,12 +395,12 @@ Model createModel(DOFs dofs) {
 
 int main() {
 
-    MocoStudy moco;
-    moco.setName("whole_body_tracking");
+    MocoStudy study;
+    study.setName("whole_body_tracking");
 
     // Define the optimal control problem.
     // ===================================
-    MocoProblem& mp = moco.updProblem();
+    MocoProblem& mp = study.updProblem();
 
     DOFs dofs = DOFs::PTX_PTY_PRZ_HIPRZ_KNEERZ_ANKLERZ;
 
@@ -520,8 +520,8 @@ int main() {
 
     // Configure the solver.
     // =====================
-    MocoTropterSolver& ms = moco.initTropterSolver();
-    ms.set_dynamics_mode("implicit");
+    MocoTropterSolver& ms = study.initTropterSolver();
+    ms.set_multibody_dynamics_mode("implicit");
     ms.set_num_mesh_intervals(50);
     ms.set_optim_max_iterations(1000);
     ms.set_verbosity(2);
@@ -535,14 +535,14 @@ int main() {
     ms.setGuess(guess);
     // Using the correct initial guess reduces computational time by 4x.
 
-    moco.visualize(guess);
+    study.visualize(guess);
 
     // Solve the problem.
     // ==================
-    MocoSolution solution = moco.solve().unseal();
+    MocoSolution solution = study.solve().unseal();
     solution.write("sandboxWholeBodyTracking_solution.sto");
 
-    moco.visualize(solution);
+    study.visualize(solution);
 
     // Notes:
     // All dofs and no contact takes ~70 seconds to solve.

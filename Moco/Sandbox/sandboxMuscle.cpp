@@ -299,8 +299,8 @@ void testHangingMuscleMinimumTime(
     for (int i = 0; i < svn.size(); ++i) { std::cout << svn[i] << std::endl; }
     MocoSolution solutionTrajOpt;
     {
-        MocoStudy moco;
-        MocoProblem& problem = moco.updProblem();
+        MocoStudy study;
+        MocoProblem& problem = study.updProblem();
         problem.setModelCopy(model);
         problem.setTimeBounds(0, {0.05, 1.0});
         // TODO this might have been the culprit when using the Millard muscle:
@@ -335,9 +335,9 @@ void testHangingMuscleMinimumTime(
 
         problem.addGoal<MocoFinalTimeGoal>();
 
-        auto& solver = moco.initSolver<SolverType>();
+        auto& solver = study.initSolver<SolverType>();
         solver.set_num_mesh_intervals(20);
-        solver.set_dynamics_mode("implicit");
+        solver.set_multibody_dynamics_mode("implicit");
         solver.set_optim_convergence_tolerance(1e-4);
         solver.set_optim_constraint_tolerance(1e-3);
         // TODO if compliant tendon, use rigid tendon as initial guess.
@@ -347,7 +347,7 @@ void testHangingMuscleMinimumTime(
         guessForwardSim.write("sandboxMuscle_guess_forward_sim.sto");
         std::cout << "Guess from forward sim: "
                   << guessForwardSim.getStatesTrajectory() << std::endl;
-        // moco.visualize(guessForwardSim);
+        // study.visualize(guessForwardSim);
 
         solutionTrajOpt = moco.solve();
         std::string solutionFilename = "sandboxMuscle_solution";
@@ -379,8 +379,8 @@ void testHangingMuscleMinimumTime(
     {
         std::cout << "Tracking the trajectory optimization coordinate solution."
                   << std::endl;
-        MocoStudy moco;
-        MocoProblem& problem = moco.updProblem();
+        MocoStudy study;
+        MocoProblem& problem = study.updProblem();
         problem.setModelCopy(model);
         // Using an equality constraint for the time bounds was essential for
         // recovering the correct excitation.
@@ -433,7 +433,7 @@ void testHangingMuscleMinimumTime(
 
         auto& solver = moco.initSolver<SolverType>();
         solver.set_num_mesh_intervals(20);
-        solver.set_dynamics_mode("implicit");
+        solver.set_multibody_dynamics_mode("implicit");
         // solver.set_optim_convergence_tolerance(1e-3);
         // solver.set_optim_constraint_tolerance(1e-3);
         // solver.set_optim_sparsity_detection("initial-guess");
@@ -444,7 +444,7 @@ void testHangingMuscleMinimumTime(
         // neat. Although, using TrajOpt for the guess improves convergence.
         // TODO solver.setGuess(solutionTrajOpt);
 
-        MocoSolution solutionTrack = moco.solve();
+        MocoSolution solutionTrack = study.solve();
         std::string solutionFilename = "sandboxMuscle_track_solution";
         if (ignoreTendonCompliance) solutionFilename += "_rigidtendon";
         solutionFilename += ".sto";

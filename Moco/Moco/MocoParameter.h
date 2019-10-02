@@ -64,8 +64,8 @@ class Model;
 ///
 /// Here is a Matlab example of optimizing the optimal fiber length of a muscle:
 /// @code
-/// moco = MocoStudy();
-/// problem = moco.updProblem();
+/// study = MocoStudy();
+/// problem = study.updProblem();
 /// param = MocoParameter('my_param_name', /forceset/soleus_r', 'optimal_fiber_length', ...
 /// MocoBounds(0.04, 0.06));
 /// problem.addParameter(param);

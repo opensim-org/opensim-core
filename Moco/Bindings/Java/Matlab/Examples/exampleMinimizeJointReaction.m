@@ -70,12 +70,12 @@ model.finalizeConnections();
 
 % Create MocoStudy.
 % ================
-moco = MocoStudy();
-moco.setName(name);
+study = MocoStudy();
+study.setName(name);
 
 % Define the optimal control problem.
 % ===================================
-problem = moco.updProblem();
+problem = study.updProblem();
 
 % Model (dynamics).
 % -----------------
@@ -101,22 +101,22 @@ problem.addGoal(cost);
 
 % Configure the solver.
 % =====================
-solver = moco.initCasADiSolver();
+solver = study.initCasADiSolver();
 solver.set_num_mesh_intervals(50);
 solver.set_optim_convergence_tolerance(1e-3);
 
 % Now that we've finished setting up the tool, print it to a file.
-moco.print([name '.omoco']);
+study.print([name '.omoco']);
 
 % Solve the problem.
 % ==================
-solution = moco.solve();
+solution = study.solve();
 solution.write([name '_solution.sto']);
 
 % Visualize.
 % ==========
 if ~strcmp(getenv('OPENSIM_USE_VISUALIZER'), '0')
-    moco.visualize(solution);
+    study.visualize(solution);
 end
 
 % Plot results.

@@ -72,12 +72,12 @@ Model createMuscleDrivenModel() {
 MocoStudy configureMocoStudy() {
 
     // Create a MocoStudy instance.
-    MocoStudy moco;
+    MocoStudy study;
 
     // Get the empty MocoSolver (here MocoCasADiSolver) from the MocoStudy.
-    auto& solver = moco.initCasADiSolver();
+    auto& solver = study.initCasADiSolver();
     solver.set_num_mesh_intervals(25);
-    solver.set_dynamics_mode("implicit"); // default: "explicit"
+    solver.set_multibody_dynamics_mode("implicit"); // default: "explicit"
     solver.set_optim_convergence_tolerance(1e-6);
     solver.set_optim_constraint_tolerance(1e-6);
     solver.set_transcription_scheme("hermite-simpson");
@@ -86,7 +86,7 @@ MocoStudy configureMocoStudy() {
     solver.set_optim_finite_difference_scheme("forward");
 
     // Get the empty MocoProblem from the MocoStudy.
-    auto& problem = moco.updProblem();
+    auto& problem = study.updProblem();
     // Set the bounds for the MocoProblem.
     problem.setTimeBounds(0, 1);
     problem.setStateInfo("/jointset/hip_r/hip_flexion_r/value",
@@ -103,23 +103,23 @@ MocoStudy configureMocoStudy() {
     problem.setStateInfo("/jointset/ankle_r/ankle_angle_r/speed",
             {-50, 50}, 0, {-50, 50});
 
-    return moco;
+    return study;
 }
 
 int main() {
 
-    //MocoStudy moco = configureMocoStudy();
-    //auto& problem = moco.updProblem();
+    //MocoStudy study = configureMocoStudy();
+    //auto& problem = study.updProblem();
     //problem.setModelCopy(createTorqueDrivenModel());
     //problem.addCost<MocoControlCost>();
 
-    //auto& solver = moco.updSolver<MocoCasADiSolver>();
+    //auto& solver = study.updSolver<MocoCasADiSolver>();
     //solver.resetProblem(problem);
     //solver.createGuess("bounds");
 
-    //MocoSolution predictSolution = moco.solve();
+    //MocoSolution predictSolution = study.solve();
     //predictSolution.write("predictSolution.sto");
-    //moco.visualize(predictSolution);
+    //study.visualize(predictSolution);
 
 
     //MocoStudy mocoTracking = configureMocoStudy();

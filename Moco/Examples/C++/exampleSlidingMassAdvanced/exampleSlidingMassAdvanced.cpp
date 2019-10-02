@@ -68,12 +68,12 @@ std::unique_ptr<Model> createSlidingMassModel() {
 
 int main() {
 
-    MocoStudy moco;
-    moco.setName("sliding_mass");
+    MocoStudy study;
+    study.setName("sliding_mass");
 
     // Define the optimal control problem.
     // ===================================
-    MocoProblem& problem = moco.updProblem();
+    MocoProblem& problem = study.updProblem();
 
     // Model (dynamics).
     // -----------------
@@ -99,7 +99,7 @@ int main() {
 
     // Configure the solver.
     // =====================
-    MocoCasADiSolver& solver = moco.initCasADiSolver();
+    MocoCasADiSolver& solver = study.initCasADiSolver();
     solver.set_num_mesh_intervals(50);
     solver.set_verbosity(2);
     solver.set_optim_solver("ipopt");
@@ -122,7 +122,7 @@ int main() {
 
     // Solve the problem.
     // ==================
-    MocoSolution solution = moco.solve();
+    MocoSolution solution = study.solve();
     std::cout << "Solution status: " << solution.getStatus() << std::endl;
 
     return EXIT_SUCCESS;

@@ -118,8 +118,8 @@ SimTK::Real testNormalForce(CreateContactFunction createContact) {
     // optimization.
     SimTK::Real finalHeightDircol;
     {
-        MocoStudy moco;
-        MocoProblem& mp = moco.updProblem();
+        MocoStudy study;
+        MocoProblem& mp = study.updProblem();
         mp.setModelCopy(model);
         mp.setTimeBounds(0, finalTime);
         mp.setStateInfo("/tx/tx/value", {-1, 1}, 0);
@@ -127,12 +127,12 @@ SimTK::Real testNormalForce(CreateContactFunction createContact) {
         mp.setStateInfo("/tx/tx/speed", {-10, 10}, 0);
         mp.setStateInfo("/ty/ty/speed", {-10, 10}, 0);
 
-        auto& ms = moco.initTropterSolver();
+        auto& ms = study.initTropterSolver();
         ms.set_num_mesh_intervals(50);
         // TODO: Hermite-Simpson has trouble converging
         ms.set_transcription_scheme("trapezoidal");
 
-        MocoSolution solution = moco.solve();
+        MocoSolution solution = study.solve();
         solution.write("testContact_solution_testNormalForce.sto");
         // moco.visualize(solution);
 
@@ -212,8 +212,8 @@ void testFrictionForce(CreateContactFunction createContact,
     // This is a simulation (initial value problem), not a trajectory
     // optimization.
     {
-        MocoStudy moco;
-        MocoProblem& mp = moco.updProblem();
+        MocoStudy study;
+        MocoProblem& mp = study.updProblem();
         mp.setModelCopy(model);
         mp.setTimeBounds(0, finalTime);
         mp.setStateInfo("/tx/tx/value", {-1, 1}, 0);
@@ -221,14 +221,14 @@ void testFrictionForce(CreateContactFunction createContact,
         mp.setStateInfo("/tx/tx/speed", {-10, 10}, vx0);
         mp.setStateInfo("/ty/ty/speed", {-10, 10}, 0);
 
-        auto& ms = moco.initTropterSolver();
+        auto& ms = study.initTropterSolver();
         ms.set_num_mesh_intervals(25);
         // TODO: Hermite-Simpson has trouble converging
         ms.set_transcription_scheme("trapezoidal");
 
-        MocoSolution solution = moco.solve();
+        MocoSolution solution = study.solve();
         solution.write("testContact_testFrictionForce_solution.sto");
-        // moco.visualize(solution);
+        // study.visualize(solution);
 
         auto statesTraj = solution.exportToStatesTrajectory(mp);
         const auto& finalState = statesTraj.back();
@@ -356,8 +356,8 @@ SimTK::Real testSmoothSphereHalfSpaceForce_NormalForce()
     // optimization.
     SimTK::Real finalHeightDircol;
     {
-        MocoStudy moco;
-        MocoProblem& mp = moco.updProblem();
+        MocoStudy study;
+        MocoProblem& mp = study.updProblem();
         mp.setModelCopy(model);
         mp.setTimeBounds(0, finalTime);
         mp.setStateInfo("/groundBall/groundBall_coord_0/value", {-1, 1}, 0);
@@ -367,12 +367,12 @@ SimTK::Real testSmoothSphereHalfSpaceForce_NormalForce()
         mp.setStateInfo("/groundBall/groundBall_coord_1/speed", {-10, 10}, 0);
         mp.setStateInfo("/groundBall/groundBall_coord_2/speed", {-10, 10}, 0);
 
-        auto& ms = moco.initCasADiSolver();
+        auto& ms = study.initCasADiSolver();
         ms.set_num_mesh_intervals(50);
         ms.set_verbosity(2);
         ms.set_optim_solver("ipopt");
 
-        MocoSolution solution = moco.solve();
+        MocoSolution solution = study.solve();
 
         auto statesTraj = solution.exportToStatesTrajectory(mp);
         const auto& finalState = statesTraj.back();
@@ -464,8 +464,8 @@ void testSmoothSphereHalfSpaceForce_FrictionForce(
     // This is a simulation (initial value problem), not a trajectory
     // optimization.
     {
-        MocoStudy moco;
-        MocoProblem& mp = moco.updProblem();
+        MocoStudy study;
+        MocoProblem& mp = study.updProblem();
         mp.setModelCopy(model);
         mp.setTimeBounds(0, finalTime);
         mp.setStateInfo("/groundBall/groundBall_coord_0/value", {-1, 1}, 0);
@@ -475,14 +475,14 @@ void testSmoothSphereHalfSpaceForce_FrictionForce(
         mp.setStateInfo("/groundBall/groundBall_coord_1/speed", {-10, 10},vx0);
         mp.setStateInfo("/groundBall/groundBall_coord_2/speed", {-10, 10}, 0);
 
-        auto& ms = moco.initCasADiSolver();
+        auto& ms = study.initCasADiSolver();
         ms.set_num_mesh_intervals(50);
         ms.set_verbosity(2);
         ms.set_optim_solver("ipopt");
 
-        MocoSolution solution = moco.solve();
+        MocoSolution solution = study.solve();
         //solution.write("testContact_testFrictionForce_solution.sto");
-        //moco.visualize(solution);
+        //study.visualize(solution);
 
         auto statesTraj = solution.exportToStatesTrajectory(mp);
         const auto& finalState = statesTraj.back();

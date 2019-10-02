@@ -53,9 +53,9 @@ void MocoTrack::constructProperties() {
 
 MocoStudy MocoTrack::initialize() {
 
-    MocoStudy moco;
-    moco.setName(getName());
-    MocoProblem& problem = moco.updProblem();
+    MocoStudy study;
+    study.setName(getName());
+    MocoProblem& problem = study.updProblem();
 
     // Modeling.
     // ---------
@@ -104,9 +104,9 @@ MocoStudy MocoTrack::initialize() {
 
     // Configure solver.
     // -----------------
-    MocoCasADiSolver& solver = moco.initCasADiSolver();
+    MocoCasADiSolver& solver = study.initCasADiSolver();
     solver.set_num_mesh_intervals(m_timeInfo.numMeshIntervals);
-    solver.set_dynamics_mode("explicit");
+    solver.set_multibody_dynamics_mode("explicit");
     solver.set_optim_convergence_tolerance(1e-2);
     solver.set_optim_constraint_tolerance(1e-2);
     solver.set_optim_finite_difference_scheme("forward");
@@ -128,17 +128,17 @@ MocoStudy MocoTrack::initialize() {
         solver.setGuess(guess);
     }
 
-    return moco;
+    return study;
 }
 
 MocoSolution MocoTrack::solve(bool visualize) {
     // Generate the base MocoStudy.
-    MocoStudy moco = initialize();
+    MocoStudy study = initialize();
 
     // Solve!
     // ------
-    MocoSolution solution = moco.solve();
-    if (visualize) { moco.visualize(solution); }
+    MocoSolution solution = study.solve();
+    if (visualize) { study.visualize(solution); }
 
     return solution;
 }
