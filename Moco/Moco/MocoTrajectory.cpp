@@ -175,6 +175,22 @@ void MocoTrajectory::setMultiplier(
     m_multipliers.updCol(index) = trajectory;
 }
 
+void MocoTrajectory::setDerivative(
+        const std::string& name, const SimTK::Vector& trajectory) {
+    ensureUnsealed();
+    OPENSIM_THROW_IF(trajectory.size() != m_derivatives.nrow(), Exception,
+            format("For derivative %s, expected %i elements but got %i.", name,
+                    m_derivatives.nrow(), trajectory.size()));
+
+    auto it = std::find(
+            m_derivative_names.cbegin(), m_derivative_names.cend(), name);
+    OPENSIM_THROW_IF(it == m_derivative_names.cend(), Exception,
+            format("Cannot find derivative named %s.", name));
+    int index = (int)std::distance(m_derivative_names.cbegin(), it);
+    m_derivatives.updCol(index) = trajectory;
+
+}
+
 void MocoTrajectory::setSlack(
         const std::string& name, const SimTK::Vector& trajectory) {
     ensureUnsealed();
