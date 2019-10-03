@@ -52,7 +52,7 @@ import org.opensim.modeling.*;
 model_path = '../Model/WalkerModelTerrain.osim';
 
 %% Instantiate the Model
-walkerModel = Model(model_path);
+osimModel = Model(model_path);
 
 % Set the visualizer use.
 osimModel.setUseVisualizer(visualize)
