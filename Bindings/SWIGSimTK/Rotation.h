@@ -181,9 +181,9 @@ public:
     void setRotationToBodyFixedXYZ( const Vec3& v)  { setRotationFromThreeAnglesThreeAxes( BodyRotationSequence, v[0], XAxis, v[1], YAxis, v[2], ZAxis ); }
 
     /// Constructor for creating a rotation matrix from a quaternion.
-    explicit Rotation_( const Quaternion& q )  { setRotationFromQuaternion(q); }
+    explicit Rotation_( const Quaternion_<double>& q )  { setRotationFromQuaternion(q); }
     /// Method for creating a rotation matrix from a quaternion.
-    /* SimTK_SimTKCOMMON_EXPORT */ Rotation_&  setRotationFromQuaternion( const Quaternion& q );
+    /* SimTK_SimTKCOMMON_EXPORT */ Rotation_&  setRotationFromQuaternion( const Quaternion_<double>& q );
 
     /// Construct a Rotation_ directly from a Mat33 (we trust that m is a valid Rotation_!)
     Rotation_( const Mat33& m, bool ) : Mat33(m) {}
