@@ -194,7 +194,7 @@ void DeGrooteFregly2016Muscle::computeStateVariableDerivatives(
             const auto& mli = getMuscleLengthInfo(s);
             const auto& fvi = getFiberVelocityInfo(s);
             // calcTendonForceMultiplerDerivative() is with respect to
-            // normalized tendon length, so per the chain rule, to get
+            // normalized tendon length, so using the chain rule, to get
             // normalized tendon force derivative with respect to time, we 
             // multiply by normalized fiber velocity.
             normTendonForceDerivative =
