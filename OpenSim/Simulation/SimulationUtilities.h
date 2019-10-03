@@ -47,17 +47,6 @@ OSIMSIMULATION_API SimTK::State simulate(Model& model,
     bool saveStatesFile = false);
 /// @}
 
-/// @name Visualize a motion from the API using simbody-visualizer
-/// @{
-
-/// Play back an existing motion (from the Storage) in the simbody-visuailzer.
-/// The Storage should contain all generalized coordinates. The visualizer
-/// window allows the user to control playback speed.
-/// This function blocks until the user exits the simbody-visualizer window.
-// TODO handle degrees.
-OSIMSIMULATION_API void visualize(Model, Storage);
-/// @}
-
 #ifndef SWIG
 /** Not available through scripting. 
  @returns nullptr if no update is necessary. */
