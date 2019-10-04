@@ -114,6 +114,7 @@ class Report(object):
                  bilateral=True,
                  ref_files=None,
                  colormap=None,
+                 output=None,
                  ):
         self.model = model
         self.model.initSystem()
@@ -122,6 +123,13 @@ class Report(object):
         self.bilateral = bilateral
         self.ref_files = ref_files
         self.colormap = colormap
+        if output:
+            self.output = output
+        else:
+            trajectory_fname = ntpath.basename(self.trajectory_filepath)
+            trajectory_fname = trajectory_fname.replace('.sto', '')
+            trajectory_fname = trajectory_fname.replace('.mot', '')
+            self.output = trajectory_fname + '_report.pdf'
 
         # Get any reference files provided by the user and create a list of NumPy
         # arrays to use in plotting.
@@ -316,12 +324,7 @@ class Report(object):
         import matplotlib.pyplot as plt
         from matplotlib.backends.backend_pdf import PdfPages
 
-        # TODO is ntpath cross-platform?
-        trajectory_fname = ntpath.basename(self.trajectory_filepath)
-        trajectory_fname = trajectory_fname.replace('.sto', '')
-        trajectory_fname = trajectory_fname.replace('.mot', '')
-
-        with PdfPages(trajectory_fname + '_report.pdf') as self.pdf:
+        with PdfPages(self.output) as self.pdf:
 
             # States & Accelerations
             # --------------------
@@ -562,8 +565,10 @@ def main():
                     "compatible with the MocoTrajectory may be plotted "
                     "simultaneously.")
     # Required arguments.
-    parser.add_argument('model', type=str,
-                        help="OpenSim Model file name (including path).")
+    parser.add_argument('model_or_mocostudy',
+                        metavar='model-or-mocostudy', type=str,
+                        help="OpenSim Model or MocoStudy file name "
+                             "(including path).")
     parser.add_argument('trajectory', type=str,
                         help="MocoTrajectory file name (including path).")
     # Optional arguments.
@@ -575,10 +580,19 @@ def main():
     parser.add_argument('--colormap', type=str,
                         help="Matplotlib colormap from which plot colors are "
                              "sampled from.")
+    parser.add_argument('--output', type=str,
+                        help="Write the report to this filepath. "
+                             "Default: the report is named "
+                             "<trajectory-without-.sto>_report.pdf")
     args = parser.parse_args()
 
     # Load the Model and MocoTrajectory from file.
-    model = osim.Model(args.model)
+    model_or_mocostudy = args.model_or_mocostudy
+    if model_or_mocostudy.endswith('.osim'):
+        model = osim.Model(model_or_mocostudy)
+    elif model_or_mocostudy.endswith('.omoco'):
+        study = osim.MocoStudy(model_or_mocostudy)
+        model = study.getProblem().createRep().getModelBase()
 
     ref_files = args.ref_files
 
@@ -587,6 +601,7 @@ def main():
                     bilateral=args.bilateral,
                     colormap=args.colormap,
                     ref_files=ref_files,
+                    output=args.output,
                     )
     report.generate()
 
