@@ -436,7 +436,6 @@ state = manager.integrate(10.0);
 ```
 
 </details>
----
 
 Building from the source code
 -----------------------------
