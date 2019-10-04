@@ -24,8 +24,9 @@
 #include "CommonUtilities.h"
 
 #include <chrono>
-#include <iomanip>
 #include <ctime>
+#include <iomanip>
+#include <memory>
 #include <sstream>
 
 std::string OpenSim::getFormattedDateTime(
