@@ -41,6 +41,15 @@ void MocoControlGoal::setWeightForControl(
     }
 }
 
+void MocoControlGoal::setWeightForControlPattern(
+        const std::string& pattern, const double& weight) {
+    if (get_control_weights_pattern().contains(pattern)) {
+        upd_control_weights_pattern().get(pattern).setWeight(weight);
+    } else {
+        upd_control_weights_pattern().cloneAndAppend({pattern, weight});
+    }
+}
+
 void MocoControlGoal::initializeOnModelImpl(const Model& model) const {
 
     // Get all expected control names.
@@ -60,10 +69,26 @@ void MocoControlGoal::initializeOnModelImpl(const Model& model) const {
         }
     }
 
+    // Set the regex pattern controls first.
+    std::map<std::string, double> weightsFromPatterns;
+
+    for (int i = 0; i < get_control_weights_pattern().getSize(); ++i) {
+        const auto& mocoWeight = get_control_weights_pattern().get(i);
+        const auto& pattern = mocoWeight.getName();
+        const auto regex = std::regex(pattern);
+        for (const auto& controlName : controlNames) {
+            if (std::regex_match(controlName, regex)) {
+                weightsFromPatterns[controlName] = mocoWeight.getWeight();
+            }
+        }
+    }
+
     for (const auto& controlName : controlNames) {
         double weight = 1.0;
         if (get_control_weights().contains(controlName)) {
             weight = get_control_weights().get(controlName).getWeight();
+        } else if (weightsFromPatterns.count(controlName)) {
+            weight = weightsFromPatterns[controlName];
         }
 
         if (weight != 0.0) {
