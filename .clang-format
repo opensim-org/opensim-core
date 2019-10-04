@@ -1,4 +1,13 @@
-﻿---
+# This file can be used by the clang-format tool to 
+# automatically format C++ source code.
+# See https://clang.llvm.org/docs/ClangFormat.html.
+# You can either run clang-format directly, or you can use
+# Integrated Development Environments (IDEs) that support clang-format,
+# such as:
+#  - Visual Studio (https://devblogs.microsoft.com/cppblog/clangformat-support-in-visual-studio-2017-15-7-preview-1/),
+#  - CLion (https://www.jetbrains.com/help/clion/clangformat-as-alternative-formatter.html).
+# See the documentation for IDEs for more information.
+---
 Language:        Cpp
 # BasedOnStyle:  LLVM
 AccessModifierOffset: -4
