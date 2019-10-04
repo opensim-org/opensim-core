@@ -83,6 +83,8 @@ APDMDataReader::extendRead(const std::string& fileName) const {
                 magIndex.push_back(accIndex[imu_index] + 6);
                 orientationsIndex.push_back(accIndex[imu_index] + 10);
             }
+            else
+                OPENSIM_THROW(Exception, "Data for sensor:" +sensorName + "was not found in data file "+ fileName+".");
         }
         // Line 2 unused
         std::getline(in_stream, line);

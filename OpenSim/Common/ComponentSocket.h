@@ -361,16 +361,7 @@ public:
         For example, Input should short circuit to its Output's getValue()
         once it is connected.
     Return a const reference to the object connected to this Socket */
-    const T& getConnectee() const {
-        if (!isConnected()) {
-            std::string msg = "Socket " + getName() + " of type " +
-                    T::getClassName() + " in " +
-                    getOwner().getAbsolutePathString() + " of type " +
-                    getOwner().getConcreteClassName() + " is not connected.";
-            OPENSIM_THROW(Exception, msg);
-        }
-        return connectee.getRef();
-    }
+    const T& getConnectee() const;
 
     /** Connect this Socket to the provided connectee object */
     void connect(const Object& object) override {
@@ -394,13 +385,7 @@ public:
      * Throws an exception If you provide only a component name and the
      * model has multiple components with that nume.
      * */
-    void findAndConnect(const ComponentPath& connectee) override {
-        const auto* comp =
-            getOwner().getRoot().template findComponent<T>(connectee);
-        OPENSIM_THROW_IF(!comp, ComponentNotFound, connectee.toString(),
-                getConnecteeTypeName(), getOwner().getAbsolutePathString());
-        connect(*comp);
-    }
+    void findAndConnect(const ComponentPath& connectee) override;
 
     /** Connect this Socket given its connectee path property  */
     void finalizeConnection(const Component& root) override;

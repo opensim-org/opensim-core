@@ -14,6 +14,8 @@ v4.1
 - Model files from very old versions (pre 1.8.1) are not supported, an exception is thrown rather than fail quietly (issue #2395).
 - Initializing a Component from an existing Component with correct socket connectees yields invalid paths (issue #2418).
 - Reading DataTables from files has been simplified. Reading one table from a file typically uses the Table constructor except when the data-source/file contains multiple tables. (In these cases e.g. C3D files, use C3DFileAdapter.read method, then use functions in C3DFileAdapter to get the individual TimeSeriesTable(s)). Writing tables to files has not changed.
+- Exposed convertMillimeters2Meters() in osimC3D.m. This function converts COP and moment data from mm to m and now must be invoked prior to writing force data to file. Previously, this was automatically performed during writing forces to file. 
+- Methods that operate on SimTK::Vec<n> are now available through Java/Matlab and python bindings to add/subtract/divide/multiply vec<n> contents with a scalar (PR #2558)
 
 Converting from v4.0 to v4.1
 ----------------------------

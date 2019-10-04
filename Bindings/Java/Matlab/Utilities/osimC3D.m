@@ -1,3 +1,13 @@
+classdef osimC3D < matlab.mixin.SetGet
+% osimC3D(filepath, ForceLocation)
+%   C3D data to OpenSim Tables.
+%   OpenSim Utility Class
+%   Inputs:
+%   filepath           Full path to the location of the C3D file
+%   ForceLocation      Integer value for representation of force from plate
+%                      0 = forceplate orgin, 1 = COP, 2 = Point Of Wrench
+%                      Application
+
 % ----------------------------------------------------------------------- %
 % The OpenSim API is a toolkit for musculoskeletal modeling and           %
 % simulation. See http://opensim.stanford.edu and the NOTICE file         %
@@ -5,7 +15,7 @@
 % and supported by the US National Institutes of Health (U54 GM072970,    %
 % R24 HD065690) and by DARPA through the Warrior Web program.             %
 %                                                                         %
-% Copyright (c) 2005-2018 Stanford University and the Authors             %
+% Copyright (c) 2005-2019 Stanford University and the Authors             %
 % Author(s): James Dunne                                                  %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
@@ -20,15 +30,6 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-classdef osimC3D < matlab.mixin.SetGet
-% osimC3D(filepath, ForceLocation)
-%   C3D data to OpenSim Tables.
-%   OpenSim Utility Class
-%   Inputs:
-%   filepath           Full path to the location of the C3D file
-%   ForceLocation      Integer value for representation of force from plate
-%                      0 = forceplate orgin, 1 = COP, 2 = Point Of Wrench
-%                      Application
     properties (Access = private)
         path
         name
@@ -37,7 +38,7 @@ classdef osimC3D < matlab.mixin.SetGet
         ForceLocation
     end
     methods
-        function obj = osimC3D(path2c3d, ForceLocation)
+        function self = osimC3D(path2c3d, ForceLocation)
             % Class Constructor: input is an absolute path to a C3D file.
 
             % Verify the correct number of inputs
@@ -52,8 +53,8 @@ classdef osimC3D < matlab.mixin.SetGet
                 if isempty(path)
                     error('Input path must be full path to file (C:/data/Walking.mot)')
                 end
-                obj.path = path;
-                obj.name = name;
+                self.path = path;
+                self.name = name;
             end
             % Verify the ForceLocation input is correct
             if  ~isnumeric(ForceLocation) || ~ismember(ForceLocation,[0:2])
@@ -62,10 +63,12 @@ classdef osimC3D < matlab.mixin.SetGet
             % load java libs
             import org.opensim.modeling.*
             % Use a c3dAdapter to read the c3d file
-            tables = C3DFileAdapter().readFile(path2c3d, ForceLocation);
+			c3dAdapter =  C3DFileAdapter();
+			c3dAdapter.setLocationForForceExpression(ForceLocation);
+            tables = c3dAdapter.read(path2c3d);
             % Set the marker and force data into OpenSim tables
-            obj.markers = tables.get('markers');
-            obj.forces = tables.get('forces');
+            self.markers = c3dAdapter.getMarkersTable(tables);
+            self.forces = c3dAdapter.getForcesTable(tables);
             % Set the force location specifier in case someone wants to
             % check.
             switch(ForceLocation)
@@ -76,67 +79,67 @@ classdef osimC3D < matlab.mixin.SetGet
                 case 2
                     location = 'PointOfWrenchApplication';
             end
-            obj.ForceLocation = location;
+            self.ForceLocation = location;
         end
-        function p = getPath(obj)
-            p = obj.path();
+        function p = getPath(self)
+            p = self.path();
         end
-        function n = getName(obj)
-            n = obj.name();
+        function n = getName(self)
+            n = self.name();
         end
-        function location = getForceLocation(obj)
+        function location = getForceLocation(self)
             % Get the Force Location
-            location = obj.ForceLocation();
+            location = self.ForceLocation();
         end
-        function rate = getRate_marker(obj)
+        function rate = getRate_marker(self)
             % Get the capture rate used for the Marker Data
-            rate = str2double(obj.markers.getTableMetaDataAsString('DataRate'));
+            rate = str2double(self.markers.getTableMetaDataAsString('DataRate'));
         end
-        function rate = getRate_force(obj)
+        function rate = getRate_force(self)
             % Get the capture rate used for the Force Data
-            rate = str2double(obj.forces.getTableMetaDataAsString('DataRate'));
+            rate = str2double(self.forces.getTableMetaDataAsString('DataRate'));
         end
-        function n = getNumTrajectories(obj)
+        function n = getNumTrajectories(self)
             % Get the number of markers in the c3d file
-            n = obj.markers.getNumColumns();
+            n = self.markers.getNumColumns();
         end
-        function n = getNumForces(obj)
+        function n = getNumForces(self)
             % Get the number of forceplates in the c3d file
-            n = (obj.forces.getNumColumns())/3;
+            n = (self.forces.getNumColumns())/3;
         end
-        function t = getStartTime(obj)
+        function t = getStartTime(self)
             % Get the start time of the c3d file
-            t = obj.markers.getIndependentColumn().get(0);
+            t = self.markers.getIndependentColumn().get(0);
         end
-        function t = getEndTime(obj)
+        function t = getEndTime(self)
             % Get the end time of the c3d file
-            t = obj.markers.getIndependentColumn().get(obj.markers.getNumRows() - 1);
+            t = self.markers.getIndependentColumn().get(self.markers.getNumRows() - 1);
         end
-        function name = getFileName(obj)
+        function name = getFileName(self)
             % Get the name of the c3d file
-            [filedirectory, name, extension] = fileparts(obj.path);
+            [filedirectory, name, extension] = fileparts(self.path);
         end
-        function filedirectory = getDirectory(obj)
+        function filedirectory = getDirectory(self)
             % Get the directory path for the c3d file
-            [filedirectory, name, extension] = fileparts(obj.path);
+            [filedirectory, name, extension] = fileparts(self.path);
         end
-        function table = getTable_markers(obj)
-            table = obj.markers().clone();
+        function table = getTable_markers(self)
+            table = self.markers().clone();
         end
-        function table = getTable_forces(obj)
-            table = obj.forces().clone();
+        function table = getTable_forces(self)
+            table = self.forces().clone();
         end
-        function [markerStruct, forcesStruct] = getAsStructs(obj)
+        function [markerStruct, forcesStruct] = getAsStructs(self)
             % Convert the OpenSim tables into Matlab Structures
-            markerStruct = osimTableToStruct(obj.markers);
-            forcesStruct = osimTableToStruct(obj.forces);
+            markerStruct = osimTableToStruct(self.markers);
+            forcesStruct = osimTableToStruct(self.forces);
             disp('Maker and force data returned as Matlab Structs')
         end
-        function rotateData(obj,axis,value)
+        function rotateData(self,axis,value)
             % Method for rotating marker and force data stored in osim
             % tables.
             % c3d.rotateData('x', 90)
-            
+
             if ~ischar(axis)
                error('Axis must be either x,y or z')
             end
@@ -144,48 +147,67 @@ classdef osimC3D < matlab.mixin.SetGet
                 error('value must be numeric (90, -90, 270, ...')
             end
             % rotate the tables
-            obj.rotateTable(obj.markers, axis, value);
-            obj.rotateTable(obj.forces, axis, value);
+            self.rotateTable(self.markers, axis, value);
+            self.rotateTable(self.forces, axis, value);
             disp('Marker and Force tables have been rotated')
         end
-        function writeTRC(obj,varargin)
+        function convertMillimeters2Meters(self)
+            % Function to convert  point data (mm) to m and Torque data
+            % (Nmm) to Nm.
+
+            import org.opensim.modeling.*
+
+            nRows  = self.forces.getNumRows();
+            labels = self.forces.getColumnLabels();
+
+            for i = 0 : self.forces.getNumColumns - 1
+                % All force columns will have the 'f' prefix while point
+                % and moment columns will have 'p' and 'm' prefixes,
+                % respectively.
+                if ~startsWith(char(labels.get(i)),'f')
+                   columnData = self.forces.updDependentColumnAtIndex(i);
+                   for u = 0 : nRows - 1
+                     % Divide by 1000
+                     columnData.set(u,columnData.get(u).scalarDivideEq(1000));
+                   end
+                end
+            end
+           disp('Point and Torque values convert from mm and Nmm to m and Nm, respectively')
+        end
+        function writeTRC(self,varargin)
             % Write marker data to trc file.
             % osimC3d.writeTRC()                       Write to dir of input c3d.
             % osimC3d.writeTRC('Walking.trc')          Write to dir of input c3d with defined file name.
             % osimC3d.writeTRC('C:/data/Walking.trc')  Write to defined path input path.
 
             % Compute an output path to use for writing to file
-            outputPath = generateOutputPath(obj,varargin,'.trc');
+            outputPath = generateOutputPath(self,varargin,'.trc');
 
 
             import org.opensim.modeling.*
             % Write to file
-            TRCFileAdapter().write( obj.markers, outputPath)
+            TRCFileAdapter().write( self.markers, outputPath)
             disp(['Marker file written to ' outputPath]);
         end
-        function writeMOT(obj,varargin)
+        function writeMOT(self,varargin)
         % Write force data to mot file.
         % osimC3d.writeMOT()                       Write to dir of input c3d.
         % osimC3d.writeMOT('Walking.mot')          Write to dir of input c3d with defined file name.
         % osimC3d.writeMOT('C:/data/Walking.mot')  Write to defined path input path.
-        % 
-        % This function assumes point and torque data are in mm and Nmm and
-        % converts them to m and Nm. If your C3D is already in M and Nm,
-        % comment out the internal function convertMillimeters2Meters()
 
          % Compute an output path to use for writing to file
-         outputPath = generateOutputPath(obj,varargin,'.mot');
-         
+         outputPath = generateOutputPath(self,varargin,'.mot');
+
          import org.opensim.modeling.*
          % Get the forces table
-         forces = obj.getTable_forces();
+         forces = self.getTable_forces();
          % Get the column labels
          labels = forces.getColumnLabels();
          % Make a copy
-         updlabels = labels; 
-          
+         updlabels = labels;
+
          % Labels from C3DFileAdapter are f1, p1, m1, f2,...
-         % We edit them to be consistent with requirements of viewing 
+         % We edit them to be consistent with requirements of viewing
          % forces in the GUI (ground_force_vx, ground_force_px,...)
          for i = 0 : labels.size() - 1
             % Get the label as a string
@@ -201,18 +223,18 @@ classdef osimC3D < matlab.mixin.SetGet
                 label = strrep(label,'m', 'ground_moment_');
                 label = [label '_m'];
             end
-            % update the label name 
+            % update the label name
             updlabels.set(i,label);
          end
-         
+
          % set the column labels
          forces.setColumnLabels(updlabels)
-         
+
          % Flatten the Vec3 force table
          postfix = StdVectorString();
          postfix.add('x');postfix.add('y');postfix.add('z');
          forces_flat = forces.flatten(postfix);
-          
+
          % Change the header in the file to meet Storage conditions
           if forces_flat.getTableMetaDataKeys().size() > 0
               for i = 0 : forces_flat.getTableMetaDataKeys().size() - 1
@@ -227,25 +249,22 @@ classdef osimC3D < matlab.mixin.SetGet
           forces_flat.addTableMetaDataString('nColumns',num2str(forces_flat.getNumColumns()+1))
           forces_flat.addTableMetaDataString('nRows',num2str(forces_flat.getNumRows()));
 
-          % Convert mm to m
-          forces_flat_m  = obj.convertMillimeters2Meters(forces_flat);
-          
           % Write to file
-          STOFileAdapter().write(forces_flat_m, outputPath)
+          STOFileAdapter().write(forces_flat, outputPath)
           disp(['Forces file written to ' outputPath]);
       end
    end
 
    methods (Access = private, Hidden = true)
-        function setMarkers(obj, a)
+        function setMarkers(self, a)
             % Private Method for setting the internal Marker table
-            obj.markers = a;
+            self.markers = a;
         end
-        function setForces(obj, a)
+        function setForces(self, a)
             % Private Method for setting the internal Force table
-            obj.forces = a;
+            self.forces = a;
         end
-        function rotateTable(obj, table, axisString, value)
+        function rotateTable(self, table, axisString, value)
             % Private Method for doing the table rotation operations
 
             import org.opensim.modeling.*
@@ -260,7 +279,7 @@ classdef osimC3D < matlab.mixin.SetGet
                 error('input axis must ne either x,y, or z')
             end
 
-            % instantiate a transform object. Rotation() is a Simbody class
+            % instantiate a transform selfect. Rotation() is a Simbody class
             R = Rotation( deg2rad(value) , axis ) ;
 
             % Rotation() works on each row.
@@ -273,24 +292,24 @@ classdef osimC3D < matlab.mixin.SetGet
                 table.setRowAtIndex(iRow,rowVec_rotated)
             end
         end
-        function outputPath = generateOutputPath(obj,path, ext)
+        function outputPath = generateOutputPath(self,path, ext)
             % Function to generate an output path from no, partial, or fully
-            % defined user path. 
-            
+            % defined user path.
+
             % Validate the output filename
             if size(path,2) > 1
-                % Path object should be of size == 1, any larger and user
-                % input multiple variables into function. 
+                % Path selfect should be of size == 1, any larger and user
+                % input multiple variables into function.
                 error([ num2str(size(path,2)) ' inputs, expecting zero or one'])
             end
-        
+
             if isempty(path)
                % No file path has been input, so use the path and name from
-               % the c3d file. 
-               filepath = obj.getPath();
-               name = obj.getName();
+               % the c3d file.
+               filepath = self.getPath();
+               name = self.getName();
             else
-            
+
                 if ~ischar(path{1})
                    error('Input must be a sting of characters')
                 end
@@ -298,40 +317,16 @@ classdef osimC3D < matlab.mixin.SetGet
                 if isempty(strfind(path{1}, ext))
                    error(['Input must be a path to a ' ext ' file']);
                 end
-            
+
                 % User has included a path to write to
-                [filepath, name, e] = fileparts(path{1}); 
+                [filepath, name, e] = fileparts(path{1});
                 if isempty(filepath)
                   % Only the file name is given
-                  filepath = obj.getPath();
+                  filepath = self.getPath();
                 end
             end
             % Generate the output path.
             outputPath = fullfile(filepath, [name ext]);
-        end
-        function table_flat = convertMillimeters2Meters(obj,table_flat)
-            % Function to convert displacement forceplate measurements made
-            % in millimeters to meters. This will convert point data (mm)
-            % to m and Torque data (Nmm) to Nm.
-            
-            nForces = table_flat.getNumColumns();
-            nRows  = table_flat.getNumRows();
-            labels = table_flat.getColumnLabels();
-            
-            for i = 0 : nForces - 1
-                % Find all point and torque colomns. Force columns will
-                % have _v in the label, all columns that don't have this
-                % character will be point and torque columns
-                if ~contains(char(labels.get(i)),'v')
-                    for u = 0 : nRows - 1
-                        % Get the table value
-                        c = table_flat.getDependentColumnAtIndex(i).get(u);
-                        % set the table value
-                        table_flat.getDependentColumnAtIndex(i).set(u,c/1000);
-                    end
-                end    
-            end
-           disp('Point and Torque values convert from mm and Nmm to m and Nm, respectively')
         end
    end
 end
