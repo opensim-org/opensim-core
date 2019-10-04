@@ -21,6 +21,7 @@
  * -------------------------------------------------------------------------- */
 #include "LogManager.h"
 #include <fstream>
+#include <spdlog/spdlog.h>
 
 using namespace OpenSim;
 
@@ -101,6 +102,9 @@ sync()
 //=============================================================================
 LogManager::LogManager()
 {
+    // spdlog messages have the format "[log_level] message"
+    spdlog::default_logger()->set_pattern("[%l] %v");
+
     // Seems to be causing crashes in the GUI... maybe a multithreading issue.
 
     // Change the underlying streambuf for the standard cout/cerr to our custom buffers
