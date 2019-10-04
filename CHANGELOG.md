@@ -1,3 +1,6 @@
+- 2019-10-04: MocoControlGoal weights can be specified via regular expression
+              patterns.
+
 - 2019-08-29: Users now interface with num_mesh_intervals instead of
               num_mesh_points when setting times to sample.
 

@@ -28,6 +28,7 @@ MocoControlGoal::MocoControlGoal() { constructProperties(); }
 
 void MocoControlGoal::constructProperties() {
     constructProperty_control_weights(MocoWeightSet());
+    constructProperty_control_weights_pattern(MocoWeightSet());
     constructProperty_exponent(2);
     constructProperty_divide_by_displacement(false);
 }
