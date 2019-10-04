@@ -585,13 +585,8 @@ if(WITH_BTK)
     endif()
 endif()
 
-#find_package(spdlog REQUIRED)
-# if(NOT SPDLOG_FOUND)
-#    message("spdlog not found. Install spdlog and set
-#        SPDLOG_HOME to the installation directory of spdlog.")
-#endif()
-include_directories("${OPENSIM_DEPENDENCIES_DIR}/spdlog/include")
-
+find_package(spdlog REQUIRED
+        HINTS "${OPENSIM_DEPENDENCIES_DIR}/spdlog")
 
 
 if(NOT SIMBODY_HOME AND OPENSIM_DEPENDENCIES_DIR)
