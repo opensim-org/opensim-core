@@ -77,10 +77,13 @@ if (@OPENSIM_COPY_DEPENDENCIES@) # OPENSIM_COPY_DEPENDENCIES
     # Find the copy of Simbody within the OpenSim installation.
     find_package(Simbody @SIMBODY_VERSION_TO_USE@ REQUIRED
         PATHS "@PACKAGE_OPENSIM_INSTALL_SIMBODYDIR@" NO_MODULE NO_DEFAULT_PATH)
+    find_package(spdlog REQUIRED
+        PATHS "@PACKAGE_OPENSIM_INSTALL_SPDLOGDIR@" NO_MODULE NO_DEFAULT_PATH)
 else()
     # Find the correct version anywhere on the machine.
     include(CMakeFindDependencyMacro)
     find_dependency(Simbody @SIMBODY_VERSION_TO_USE@)
+    find_dependency(spdlog)
 endif()
 
 

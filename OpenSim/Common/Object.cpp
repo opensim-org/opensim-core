@@ -36,7 +36,7 @@
 #include "Property_Deprecated.h"
 #include "PropertyTransform.h"
 #include "IO.h"
-#include "spdlog/spdlog.h"
+#include <spdlog/spdlog.h>
 #include <fstream>
 
 using namespace OpenSim;
