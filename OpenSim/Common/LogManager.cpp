@@ -103,7 +103,7 @@ sync()
 LogManager::LogManager()
 {
     // spdlog messages have the format "[log_level] message"
-    spdlog::default_logger()->set_pattern("[%l] %v");
+    spdlog::set_pattern("[%l] %v");
 
     // Seems to be causing crashes in the GUI... maybe a multithreading issue.
 
