@@ -80,7 +80,7 @@ void test(const std::string filename) {
     // The walking C3D files included in this test should not take more
     // than 40ms on most hardware. We make the max time 100ms to account
     // for potentially slower CI machines.
-    const long long MaximumLoadTimeInMS = SimTK::secToNs(0.100);
+    const long long MaximumLoadTimeInNs = SimTK::secToNs(0.100);
     
     Stopwatch watch;
     C3DFileAdapter c3dFileAdapter{};
@@ -94,9 +94,9 @@ void test(const std::string filename) {
     meet this timing requirement. Consider PR#2221 to address this issue
     longer term.
     #ifdef NDEBUG
-    ASSERT(loadTime < MaximumLoadTimeInMS, __FILE__, __LINE__,
+    ASSERT(loadTime < MaximumLoadTimeInNs, __FILE__, __LINE__,
         "Unable to load '" + filename + "' within " + 
-        to_string(MaximumLoadTimeInMS) + "ms.");
+        to_string(MaximumLoadTimeInNs) + "ns.");
     #endif
 */
 
@@ -173,9 +173,9 @@ void test(const std::string filename) {
         << watch.formatNs(loadTime) << endl;
     // on ci-biulds will define SKIP_TIMING as it is unpredictably slow on some machines
     #if defined(NDEBUG) && !defined(SKIP_TIMING)
-    ASSERT(loadTime < MaximumLoadTimeInMS, __FILE__, __LINE__,
+    ASSERT(loadTime < MaximumLoadTimeInNs, __FILE__, __LINE__,
         "Unable to load '" + filename + "' within " +
-        to_string(MaximumLoadTimeInMS) + "ms.");
+        to_string(MaximumLoadTimeInNs) + "ns.");
     #endif
     std::shared_ptr<TimeSeriesTableVec3> force_table_cop =
             c3dFileAdapter.getForcesTable(tables2);
