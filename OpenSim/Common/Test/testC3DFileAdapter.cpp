@@ -171,8 +171,8 @@ void test(const std::string filename) {
     loadTime = watch.getElapsedTimeInNs();
     cout << "\tC3DFileAdapter '" << filename << "' read with forces at COP in "
         << watch.formatNs(loadTime) << endl;
-
-    #ifdef NDEBUG
+    // on ci-biulds will define SKIP_TIMING as it is unpredictably slow on some machines
+    #if defined(NDEBUG) && !defined(SKIP_TIMING)
     ASSERT(loadTime < MaximumLoadTimeInMS, __FILE__, __LINE__,
         "Unable to load '" + filename + "' within " +
         to_string(MaximumLoadTimeInMS) + "ms.");
