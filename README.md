@@ -607,11 +607,11 @@ On Windows using Visual Studio
            `BTKConfig.cmake`. If the root directory of your BTK installation is
            `C:/BTKCore-install`, then set this variable to
            `C:/BTKCore-install/share/btk-0.4dev`.
-        3. docopt.cpp. Set the variable `docopt_DIR` to the directory
+        3. docopt.cpp: Set the variable `docopt_DIR` to the directory
            containing `docopt-config.cmake`. If the root directory of your
            docopt.cpp installation is `C:/docopt.cpp-install`, then set this
            variable to `C:/docopt.cpp-install/lib/cmake`.
-        4. spdlog. Set the variable `spdlog_DIR` to the directory containing
+        4. spdlog: Set the variable `spdlog_DIR` to the directory containing
            `spdlogConfig.cmake`. If the root directory of your spdlog 
            installation is `C:/spdlog-install`, then set this variable to
            `C:/spdlog-install/lib/spdlog/cmake`.
@@ -875,11 +875,11 @@ You can get most of these dependencies using [Homebrew](http://brew.sh):
         2. BTK: Set the `BTK_DIR` variable to the directory containing
            `BTKConfig.cmake`. If you installed BTK in `~/BTKCore-install`, then
            set `BTK_DIR` to `~/BTKCore-install/share/btk-0.4dev`
-        3. docopt.cpp. Set the variable `docopt_DIR` to the directory
+        3. docopt.cpp: Set the variable `docopt_DIR` to the directory
            containing `docopt-config.cmake`. If the root directory of your
            docopt.cpp installation is `~/docopt.cpp-install`, then set this
            variable to `~/docopt.cpp-install/lib/cmake`.
-        4. spdlog. Set the variable `spdlog_DIR` to the directory containing
+        4. spdlog: Set the variable `spdlog_DIR` to the directory containing
            `spdlogConfig.cmake`. If the root directory of your spdlog 
            installation is `~/spdlog-install`, then set this variable to
            `~/spdlog-install/lib/spdlog/cmake`.
@@ -1073,11 +1073,11 @@ And you could get all the optional dependencies via:
         2. BTK: Set the `BTK_DIR` variable to the directory containing
            `BTKConfig.cmake`. If you installed BTK in `~/BTK-install`, then set
            `BTK-DIR` to `~/BTK-install/share/btk-0.4dev`.
-        3. docopt.cpp. Set the variable `docopt_DIR` to the directory
+        3. docopt.cpp: Set the variable `docopt_DIR` to the directory
            containing `docopt-config.cmake`. If the root directory of your
            docopt.cpp installation is `~/docopt.cpp-install`, then set this
            variable to `~/docopt.cpp-install/lib/cmake`.
-        4. spdlog. Set the variable `spdlog_DIR` to the directory containing
+        4. spdlog: Set the variable `spdlog_DIR` to the directory containing
            `spdlogConfig.cmake`. If the root directory of your spdlog 
            installation is `~/spdlog-install`, then set this variable to
            `~/spdlog-install/lib/spdlog/cmake`.
