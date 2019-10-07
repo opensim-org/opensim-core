@@ -78,13 +78,13 @@ void addDecorativeCoordinateActuator(Model& model, std::string coordName,
     model.addComponent(actu);
 }
 
-void transformReactionToBodyFrame(const MocoStudy& moco, 
+void transformReactionToBodyFrame(const MocoStudy& study, 
         const MocoTrajectory& iterate, 
         TimeSeriesTable_<SimTK::SpatialVec>& reactionTable) {
-    auto model = moco.getProblem().createRep().getModelBase();
+    auto model = study.getProblem().createRep().getModelBase();
     model.initSystem();
     const auto& ground = model.getGround();
-    auto statesTraj = iterate.exportToStatesTrajectory(moco.getProblem());
+    auto statesTraj = iterate.exportToStatesTrajectory(study.getProblem());
     assert(statesTraj.getSize() == reactionTable.getNumRows());
 
     for (int irow = 0; irow < reactionTable.getNumRows(); ++irow) {
@@ -318,25 +318,25 @@ void smoothSolutionControls(Model model, std::string statesFile,
     track.set_final_time(1.648);
     track.set_control_effort_weight(0.05);
 
-    MocoStudy moco = track.initialize();
+    MocoStudy study = track.initialize();
 
-    auto& solver = moco.updSolver<MocoCasADiSolver>();
+    auto& solver = study.updSolver<MocoCasADiSolver>();
     solver.set_optim_constraint_tolerance(1e-4);
     solver.set_optim_convergence_tolerance(1e-4);
 
-    MocoProblem problem = moco.getProblem();
+    MocoProblem problem = study.getProblem();
 
-    MocoSolution solution = moco.solve().unseal();
+    MocoSolution solution = study.solve().unseal();
     solution.write(statesFile.replace(statesFile.end()-4, statesFile.end(),
         "_smoothed.sto"));
-    moco.visualize(solution);
+    study.visualize(solution);
 
     TimeSeriesTable_<SimTK::SpatialVec> reactionTable =
         analyze<SimTK::SpatialVec>(model, solution,
         {"/jointset/walker_knee_l/reaction_on_child",
             "/jointset/walker_knee_r/reaction_on_child"});
 
-    transformReactionToBodyFrame(moco, solution, reactionTable);
+    transformReactionToBodyFrame(study, solution, reactionTable);
     STOFileAdapter::write(reactionTable.flatten(),
         statesFile.replace(statesFile.end() - 4, statesFile.end(),
             "_reactions.sto"));
@@ -377,17 +377,17 @@ MocoSolution runBaselineProblem(bool removeMuscles, double controlWeight = 0.1,
 
     track.print("sandboxMocoTrack_baseline_muscles_MocoTrack.omoco");
 
-    MocoStudy moco = track.initialize();
+    MocoStudy study = track.initialize();
 
-    auto& solver = moco.updSolver<MocoCasADiSolver>();
+    auto& solver = study.updSolver<MocoCasADiSolver>();
     solver.set_optim_constraint_tolerance(1e-3);
     solver.set_optim_convergence_tolerance(1e-3);
     if (guessFile != "") {
         solver.setGuessFile(guessFile);
     }
 
-    moco.print("sandboxMocoTrack_baseline_muscles_MocoStudy.omoco");
-    MocoSolution solution = moco.solve().unseal();
+    study.print("sandboxMocoTrack_baseline_muscles_MocoStudy.omoco");
+    MocoSolution solution = study.solve().unseal();
     std::string filename;
     if (removeMuscles) {
         filename = "sandboxMocoTrack_solution_baseline.sto";
@@ -395,14 +395,14 @@ MocoSolution runBaselineProblem(bool removeMuscles, double controlWeight = 0.1,
         filename = "sandboxMocoTrack_solution_baseline_muscles.sto";
     }
     solution.write(filename);
-    moco.visualize(solution);
+    study.visualize(solution);
 
     //TimeSeriesTable_<SimTK::SpatialVec> reactionTable =
     //        analyze<SimTK::SpatialVec>(model, solution,
     //            {"/jointset/walker_knee_l/reaction_on_child",
     //             "/jointset/walker_knee_r/reaction_on_child"});
 
-    //transformReactionToBodyFrame(moco, solution, reactionTable);
+    //transformReactionToBodyFrame(study, solution, reactionTable);
     //STOFileAdapter::write(reactionTable.flatten(),
     //    filename.replace(filename.end()-4, filename.end(), 
     //        "_reactions.sto"));
@@ -440,14 +440,14 @@ MocoSolution runExoskeletonProblemMarkers(double controlWeight,
 
     track.print("sandboxMocoTrack_exoskeleton_markers_MocoTrack.omoco");
 
-    MocoStudy moco = track.initialize();
+    MocoStudy study = track.initialize();
 
     auto& effort = dynamic_cast<MocoControlCost&>(
-            moco.updProblem().updCost("control_effort"));
+            study.updProblem().updCost("control_effort"));
     effort.setWeight("/tau_ankle_angle_r", 0.0);
     effort.setWeight("/tau_ankle_angle_l", 0.0);
 
-    auto& solver = moco.updSolver<MocoCasADiSolver>();
+    auto& solver = study.updSolver<MocoCasADiSolver>();
     solver.set_optim_constraint_tolerance(1e-3);
     solver.set_optim_convergence_tolerance(1e-3);
     MocoTrajectory guess(trackedTrajectoryFile);
@@ -461,11 +461,11 @@ MocoSolution runExoskeletonProblemMarkers(double controlWeight,
     guess.insertControlsTrajectory(exoGuess);
     solver.setGuess(guess);
 
-    moco.print("sandboxMocoTrack_exoskeleton_markers_MocoStudy.omoco");
+    study.print("sandboxMocoTrack_exoskeleton_markers_MocoStudy.omoco");
 
-    MocoSolution solution = moco.solve().unseal();
+    MocoSolution solution = study.solve().unseal();
     solution.write("sandboxMocoTrack_solution_exoskeleton_markers.sto");
-    moco.visualize(solution);
+    study.visualize(solution);
 
     return solution;
 }
@@ -534,8 +534,8 @@ MocoSolution runKneeReactionMinimizationProblem(bool removeMuscles,
     track.set_initial_time(0.811);
     track.set_final_time(1.649);
 
-    MocoStudy moco = track.initialize();
-    auto& problem = moco.updProblem();
+    MocoStudy study = track.initialize();
+    auto& problem = study.updProblem();
 
     // Control tracking cost.
     // ----------------------
@@ -633,13 +633,13 @@ MocoSolution runKneeReactionMinimizationProblem(bool removeMuscles,
 
     // Configure solver.
     // -----------------
-    auto& solver = moco.updSolver<MocoCasADiSolver>();
+    auto& solver = study.updSolver<MocoCasADiSolver>();
     solver.set_optim_constraint_tolerance(1e-2);
     solver.set_optim_convergence_tolerance(1e-2);
 
     // Solve!
     // ------
-    MocoSolution solution = moco.solve().unseal();
+    MocoSolution solution = study.solve().unseal();
     std::string baseline;
     std::string filename;
     if (removeMuscles) {
@@ -651,7 +651,7 @@ MocoSolution runKneeReactionMinimizationProblem(bool removeMuscles,
             "sandboxMocoTrack_solution_minimize_knee_adduction_muscles.sto";
     }
     solution.write(filename);
-    moco.visualize(solution);
+    study.visualize(solution);
 
     // Compute reaction loads.
     // -----------------------
@@ -660,7 +660,7 @@ MocoSolution runKneeReactionMinimizationProblem(bool removeMuscles,
                 {"/jointset/walker_knee_l/reaction_on_child",
                  "/jointset/walker_knee_r/reaction_on_child"});
 
-    transformReactionToBodyFrame(moco, solution, reactionTableMTG);
+    transformReactionToBodyFrame(study, solution, reactionTableMTG);
     STOFileAdapter::write(reactionTableMTG.flatten(),
         filename.replace(filename.end()-4, filename.end(), "_reactions.sto"));
 
@@ -720,11 +720,11 @@ MocoSolution runExoskeletonProblem(const std::string& trackedIterateFile,
 
     // Initialize MocoStudy and grab problem.
     // --------------------------------------
-    MocoStudy moco = track.initialize();
+    MocoStudy study = track.initialize();
     auto& problem = moco.updProblem();
     // Don't penalize exoskeleton.
     auto& effort = dynamic_cast<MocoControlGoal&>(
-            moco.updProblem().updGoal("control_effort"));
+            study.updProblem().updGoal("control_effort"));
     double coordActWeight = 10000;
     effort.setWeight("/tau_ankle_angle_r", 0.001*controlEffortWeight);
     effort.setWeight("/tau_ankle_angle_l", 0.001*controlEffortWeight);
@@ -779,18 +779,18 @@ MocoSolution runExoskeletonProblem(const std::string& trackedIterateFile,
 
     // Configure solver.
     // -----------------
-    auto& solver = moco.updSolver<MocoCasADiSolver>();
+    auto& solver = study.updSolver<MocoCasADiSolver>();
     solver.set_optim_constraint_tolerance(1e-2);
     solver.set_optim_convergence_tolerance(1e-2);
 
     // Save to setup file.
-    moco.print("sandboxMocoTrack_exoskeleton_muscles.omoco");
+    study.print("sandboxMocoTrack_exoskeleton_muscles.omoco");
 
     // Solve!
     // ------
-    MocoSolution solution = moco.solve().unseal();
+    MocoSolution solution = study.solve().unseal();
     solution.write("sandboxMocoTrack_solution_exoskeleton_muscles.sto");
-    moco.visualize(solution);
+    study.visualize(solution);
 
     return solution;
 }

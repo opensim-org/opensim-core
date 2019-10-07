@@ -199,12 +199,12 @@ void setModelAndBounds(MocoProblem& mp, bool useOptimizedModel = false) {
 /// Estimated time to solve: ~35 minutes.
 MocoSolution solveStateTrackingProblem() {
 
-    MocoStudy moco;
-    moco.setName("whole_body_state_tracking");
+    MocoStudy study;
+    study.setName("whole_body_state_tracking");
 
     // Define the optimal control problem.
     // ===================================
-    MocoProblem& mp = moco.updProblem();
+    MocoProblem& mp = study.updProblem();
 
     // Bounds and model.
     setModelAndBounds(mp);
@@ -230,7 +230,7 @@ MocoSolution solveStateTrackingProblem() {
 
     // Configure the solver.
     // =====================
-    MocoTropterSolver& ms = moco.initTropterSolver();
+    MocoTropterSolver& ms = study.initTropterSolver();
     ms.set_num_mesh_intervals(50);
     ms.set_verbosity(2);
     ms.set_optim_solver("ipopt");
@@ -251,10 +251,10 @@ MocoSolution solveStateTrackingProblem() {
 
     // Solve the problem.
     // ==================
-    MocoSolution solution = moco.solve();
+    MocoSolution solution = study.solve();
     solution.write("sandboxMarkerTrackingContactWholeBody_states_solution.sto");
 
-    moco.visualize(solution);
+    study.visualize(solution);
 
     // TODO with barely any contact: 26 minutes to solve (instead of 6)
     // TODO fix contact locations.
@@ -270,12 +270,12 @@ MocoSolution solveStateTrackingProblem() {
 MocoSolution solveMarkerTrackingProblem(bool createGuess,
         bool useOptimizedModel) {
 
-    MocoStudy moco;
-    moco.setName("whole_body_marker_tracking");
+    MocoStudy study;
+    study.setName("whole_body_marker_tracking");
 
     // Define the optimal control problem.
     // ===================================
-    MocoProblem& mp = moco.updProblem();
+    MocoProblem& mp = study.updProblem();
 
 
     // Bounds and model.
@@ -365,7 +365,7 @@ MocoSolution solveMarkerTrackingProblem(bool createGuess,
 
     // Configure the solver.
     // =====================
-    MocoTropterSolver& ms = moco.initTropterSolver();
+    MocoTropterSolver& ms = study.initTropterSolver();
     ms.set_num_mesh_intervals(50);
     ms.set_verbosity(2);
     ms.set_optim_solver("ipopt");
@@ -395,7 +395,7 @@ MocoSolution solveMarkerTrackingProblem(bool createGuess,
 
     // Solve the problem.
     // ==================
-    MocoSolution solution = moco.solve().unseal();
+    MocoSolution solution = study.solve().unseal();
     solution.write("sandboxMarkerTrackingContactWholeBody_marker_solution.sto");
     if (createGuess) {
         solution.write("sandboxMarkerTrackingContactWholeBody_guess.sto");
@@ -451,7 +451,7 @@ MocoSolution solveMarkerTrackingProblem(bool createGuess,
     STOFileAdapter::write(modelMarkerHistory.flatten({ "_x", "_y", "_z" }),
         "sandboxMarkerTrackingContactWholeBody_dircol_markers.sto");
 
-    moco.visualize(solution);
+    study.visualize(solution);
 
     return solution;
 }

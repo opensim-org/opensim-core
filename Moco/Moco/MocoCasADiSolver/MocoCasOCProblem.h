@@ -327,7 +327,7 @@ private:
 
         m_jar->leave(std::move(mocoProblemRep));
     }
-    void calcIntegrand(int integralIndex, const ContinuousInput& input,
+    void calcCostIntegrand(int index, const ContinuousInput& input,
             double& integrand) const override {
         auto mocoProblemRep = m_jar->take();
         applyInput(input.time, input.states, input.controls, input.multipliers,
@@ -336,7 +336,7 @@ private:
         auto& simtkStateDisabledConstraints =
                 mocoProblemRep->updStateDisabledConstraints();
 
-        const auto& mocoCost = mocoProblemRep->getCostByIndex(integralIndex);
+        const auto& mocoCost = mocoProblemRep->getCostByIndex(index);
         integrand = mocoCost.calcIntegrand(simtkStateDisabledConstraints);
 
         m_jar->leave(std::move(mocoProblemRep));
@@ -370,6 +370,21 @@ private:
         m_jar->leave(std::move(mocoProblemRep));
     }
 
+    void calcEndpointConstraintIntegrand(int index,
+            const ContinuousInput& input, double& integrand) const override {
+        auto mocoProblemRep = m_jar->take();
+        applyInput(input.time, input.states, input.controls, input.multipliers,
+                input.derivatives, input.parameters, mocoProblemRep);
+
+        auto& simtkStateDisabledConstraints =
+                mocoProblemRep->updStateDisabledConstraints();
+
+        const auto& mocoEC =
+                mocoProblemRep->getEndpointConstraintByIndex(index);
+        integrand = mocoEC.calcIntegrand(simtkStateDisabledConstraints);
+
+        m_jar->leave(std::move(mocoProblemRep));
+    }
     void calcEndpointConstraint(int index, const CostInput& input,
             casadi::DM& values) const override {
         auto mocoProblemRep = m_jar->take();

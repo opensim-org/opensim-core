@@ -1054,8 +1054,8 @@ TEMPLATE_TEST_CASE("Hanging muscle minimum time", "", MocoCasADiSolver) {
     const auto svn = model.getStateVariableNames();
     MocoSolution solutionTrajOpt;
     {
-        MocoStudy moco;
-        MocoProblem& problem = moco.updProblem();
+        MocoStudy study;
+        MocoProblem& problem = study.updProblem();
         problem.setModelCopy(model);
         problem.setTimeBounds(0, {0.05, 1.0});
         problem.setStateInfo(
@@ -1097,14 +1097,14 @@ TEMPLATE_TEST_CASE("Hanging muscle minimum time", "", MocoCasADiSolver) {
 
         problem.addGoal<MocoFinalTimeGoal>();
 
-        auto& solver = moco.initSolver<TestType>();
+        auto& solver = study.initSolver<TestType>();
         solver.set_num_mesh_intervals(40);
         solver.set_multibody_dynamics_mode("implicit");
         solver.set_optim_convergence_tolerance(1e-4);
         solver.set_optim_constraint_tolerance(1e-4);
         solver.set_transcription_scheme("hermite-simpson");
 
-        solutionTrajOpt = moco.solve();
+        solutionTrajOpt = study.solve();
         std::string solutionFilename = "testDeGrooteFregly2016Muscle_solution";
         if (!ignoreActivationDynamics) solutionFilename += "_actdyn";
         if (ignoreTendonCompliance) solutionFilename += "_rigidtendon";
@@ -1147,8 +1147,8 @@ TEMPLATE_TEST_CASE("Hanging muscle minimum time", "", MocoCasADiSolver) {
     if (!isTendonDynamicsExplicit) {
         std::cout << "Tracking the trajectory optimization coordinate solution."
                   << std::endl;
-        MocoStudy moco;
-        MocoProblem& problem = moco.updProblem();
+        MocoStudy study;
+        MocoProblem& problem = study.updProblem();
         problem.setModelCopy(model);
         // Using an equality constraint for the time bounds was essential for
         // recovering the correct excitation.
@@ -1209,12 +1209,12 @@ TEMPLATE_TEST_CASE("Hanging muscle minimum time", "", MocoCasADiSolver) {
         tracking->setReference(ref);
         tracking->setAllowUnusedReferences(true);
 
-        auto& solver = moco.initSolver<TestType>();
+        auto& solver = study.initSolver<TestType>();
         solver.set_num_mesh_intervals(40);
         solver.set_multibody_dynamics_mode("implicit");
         solver.set_transcription_scheme("hermite-simpson");
 
-        MocoSolution solutionTrack = moco.solve();
+        MocoSolution solutionTrack = study.solve();
         std::string solutionFilename =
                 "testDeGrooteFregly2016Muscle_track_solution";
         if (!ignoreActivationDynamics) solutionFilename += "_actdyn";

@@ -75,8 +75,8 @@ std::pair<MocoStudy, TimeSeriesTable> MocoInverse::initializeInternal() const {
     // Set up the MocoProblem.
     // -----------------------
 
-    MocoStudy moco;
-    auto& problem = moco.updProblem();
+    MocoStudy study;
+    auto& problem = study.updProblem();
     problem.setModelCopy(model);
 
     TimeInfo timeInfo;
@@ -107,7 +107,7 @@ std::pair<MocoStudy, TimeSeriesTable> MocoInverse::initializeInternal() const {
 
     // Configure the MocoSolver.
     // -------------------------
-    auto& solver = moco.initCasADiSolver();
+    auto& solver = study.initCasADiSolver();
     solver.set_multibody_dynamics_mode("implicit");
     OPENSIM_THROW_IF_FRMOBJ(get_tolerance() <= 0, Exception,
             format("Tolerance must be positive, but got %g.", get_tolerance()));
@@ -131,14 +131,14 @@ std::pair<MocoStudy, TimeSeriesTable> MocoInverse::initializeInternal() const {
     }
 
     return std::make_pair(
-            moco, posmotPtr->exportToTable(kinematics.getIndependentColumn()));
+            study, posmotPtr->exportToTable(kinematics.getIndependentColumn()));
 }
 
 MocoInverseSolution MocoInverse::solve() const {
     std::pair<MocoStudy, TimeSeriesTable> init = initializeInternal();
-    const auto& moco = init.first;
+    const auto& study = init.first;
 
-    MocoSolution mocoSolution = moco.solve().unseal();
+    MocoSolution mocoSolution = study.solve().unseal();
 
     const auto& statesTrajTable = init.second;
     mocoSolution.insertStatesTrajectory(statesTrajTable);
@@ -151,7 +151,7 @@ MocoInverseSolution MocoInverse::solve() const {
             outputPaths.push_back(get_output_paths(io));
         }
         solution.setOutputs(
-                moco.analyze(solution.getMocoSolution(), outputPaths));
+                study.analyze(solution.getMocoSolution(), outputPaths));
     }
     if (!mocoSolution.success()) {
         solution.m_mocoSolution.seal();

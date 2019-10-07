@@ -59,8 +59,8 @@ void addCoordinateActuator(std::unique_ptr<Model>& model, std::string coordName,
 int main() {
 
     // create a new MocoStudy
-    MocoStudy moco;
-    moco.setName("my_study");
+    MocoStudy study;
+    study.setName("my_study");
 
     // PREPARE THE MODEL
     // ----------------------------------
@@ -84,7 +84,7 @@ int main() {
     // ----------------------------------
 
     // get the MocoProblem
-    MocoProblem& problem = moco.updProblem();
+    MocoProblem& problem = study.updProblem();
 
     // set the model
     problem.setModelCopy(*model);
@@ -132,7 +132,7 @@ int main() {
     // ----------------------------------
 
     // get the NLP solver
-    MocoCasADiSolver& solver = moco.initCasADiSolver();
+    MocoCasADiSolver& solver = study.initCasADiSolver();
     solver.set_num_mesh_intervals(20);
     solver.set_optim_constraint_tolerance(1e-3);
     solver.set_optim_convergence_tolerance(1e-3);
@@ -141,11 +141,11 @@ int main() {
     solver.setGuess("bounds"); // not sure what this does
 
     // solve and write to file
-    MocoSolution solution = moco.solve();
+    MocoSolution solution = study.solve();
     solution.write("sandboxMocoUserControlCost_marker_tracking_solution.sto");
 
     // visualise solution
-    moco.visualize(solution);
+    study.visualize(solution);
 
     return EXIT_SUCCESS;
 }

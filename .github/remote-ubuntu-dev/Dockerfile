@@ -37,9 +37,7 @@ RUN echo 'debugger:pwd' | chpasswd
 ARG BTYPE=RelWithDebInfo
 
 # Avoid interactive timezone prompt when installing packages.
-ENV DEBIAN_FRONTEND=noninteractive
-
-RUN apt-get install -y \
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y \
         git \
         build-essential libtool autoconf \
         cmake \
@@ -57,8 +55,8 @@ COPY dependencies/CMakeLists.txt dependencies/*.cmake /dependencies/
 RUN mkdir /moco_dependencies_build \
         && cd /moco_dependencies_build \
         && cmake /dependencies -DOPENSIM_PYTHON_WRAPPING=on -DCMAKE_BUILD_TYPE=$BTYPE \
-        && make --jobs 4 ipopt \
-        && make --jobs 4 \
+        && make --jobs $(nproc) ipopt \
+        && make --jobs $(nproc) \
         && echo "/moco_dependencies_install/adol-c/lib64" >> /etc/ld.so.conf.d/moco.conf \
         && echo "/moco_dependencies_install/ipopt/lib" >> /etc/ld.so.conf.d/moco.conf \
         && ldconfig \
