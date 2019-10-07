@@ -91,7 +91,7 @@ MocoAddTest(NAME testMocoInverse RESOURCES
         subject_walk_armless_grfs.mot
         subject_walk_armless_external_loads.xml
         std_testMocoInverse_subject_18musc_solution.sto
-        std_testMocoInverse_subject_18musc_tendon_compliance.sto
+        std_testMocoInverse_subject_18musc_solution_tendon_compliance.sto
         )
         
 MocoAddTest(NAME testMocoTrack RESOURCES
