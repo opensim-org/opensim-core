@@ -86,11 +86,12 @@ endif()
 MocoAddTest(NAME testDeGrooteFregly2016Muscle)
 
 MocoAddTest(NAME testMocoInverse RESOURCES
-        testGait10dof18musc_subject01.osim
-        walk_gait1018_state_reference.mot
-        walk_gait1018_subject01_grf.xml
-        walk_gait1018_subject01_grf.mot
-        std_testMocoInverseGait10dof18musc_solution.sto
+        subject_walk_armless_18musc.osim
+        subject_walk_armless_coordinates.mot
+        subject_walk_armless_grfs.mot
+        subject_walk_armless_external_loads.xml
+        std_testMocoInverse_subject_18musc_solution.sto
+        std_testMocoInverse_subject_18musc_tendon_compliance.sto
         )
         
 MocoAddTest(NAME testMocoTrack RESOURCES
@@ -99,6 +100,11 @@ MocoAddTest(NAME testMocoTrack RESOURCES
         walk_gait1018_subject01_grf.xml
         walk_gait1018_subject01_grf.mot
         std_testMocoTrackGait10dof18musc_solution.sto
+        subject_walk_armless_no_musc.osim
+        subject_walk_armless_coordinates.mot
+        subject_walk_armless_grfs.mot
+        subject_walk_armless_external_loads.xml
+        std_testMocoTrack_subject_no_musc_solution.sto
         )
         
 MocoAddTest(NAME testMultivariatePolynomial)
