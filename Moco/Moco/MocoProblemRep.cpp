@@ -19,13 +19,13 @@
 #include "MocoProblemRep.h"
 
 #include "Components/AccelerationMotion.h"
+#include "Components/DeGrooteFregly2016Muscle.h"
 #include "Components/DiscreteForces.h"
 #include "Components/PositionMotion.h"
 #include "MocoProblem.h"
 #include "MocoProblemInfo.h"
 #include <regex>
 #include <unordered_set>
-#include "Components/DeGrooteFregly2016Muscle.h"
 
 using namespace OpenSim;
 
@@ -55,7 +55,7 @@ void MocoProblemRep::initialize() {
     m_kinematic_constraint_eq_names_without_derivatives.clear();
     m_implicit_component_refs.clear();
     m_implicit_residual_refs.clear();
-    
+
     if (!getTimeInitialBounds().isSet() && !getTimeFinalBounds().isSet()) {
         std::cout << "Warning: no time bounds set." << std::endl;
     }
@@ -225,26 +225,31 @@ void MocoProblemRep::initialize() {
     }
 
     // Create kinematic constraint equation names.
-    for (const auto& name : kc_perr_names) {
-        m_kinematic_constraint_eq_names_without_derivatives.push_back(name);
-        m_kinematic_constraint_eq_names_with_derivatives.push_back(name);
-    }
-    for (const auto& name : kc_perr_names) {
-        m_kinematic_constraint_eq_names_with_derivatives.push_back(name + "d");
-    }
-    for (const auto& name : kc_verr_names) {
-        m_kinematic_constraint_eq_names_without_derivatives.push_back(name);
-        m_kinematic_constraint_eq_names_with_derivatives.push_back(name);
-    }
-    for (const auto& name : kc_perr_names) {
-        m_kinematic_constraint_eq_names_with_derivatives.push_back(name + "dd");
-    }
-    for (const auto& name : kc_verr_names) {
-        m_kinematic_constraint_eq_names_with_derivatives.push_back(name + "d");
-    }
-    for (const auto& name : kc_aerr_names) {
-        m_kinematic_constraint_eq_names_without_derivatives.push_back(name);
-        m_kinematic_constraint_eq_names_with_derivatives.push_back(name);
+    if (!m_prescribedKinematics) {
+        for (const auto& name : kc_perr_names) {
+            m_kinematic_constraint_eq_names_without_derivatives.push_back(name);
+            m_kinematic_constraint_eq_names_with_derivatives.push_back(name);
+        }
+        for (const auto& name : kc_perr_names) {
+            m_kinematic_constraint_eq_names_with_derivatives.push_back(
+                    name + "d");
+        }
+        for (const auto& name : kc_verr_names) {
+            m_kinematic_constraint_eq_names_without_derivatives.push_back(name);
+            m_kinematic_constraint_eq_names_with_derivatives.push_back(name);
+        }
+        for (const auto& name : kc_perr_names) {
+            m_kinematic_constraint_eq_names_with_derivatives.push_back(
+                    name + "dd");
+        }
+        for (const auto& name : kc_verr_names) {
+            m_kinematic_constraint_eq_names_with_derivatives.push_back(
+                    name + "d");
+        }
+        for (const auto& name : kc_aerr_names) {
+            m_kinematic_constraint_eq_names_without_derivatives.push_back(name);
+            m_kinematic_constraint_eq_names_with_derivatives.push_back(name);
+        }
     }
 
     // Verify that the constraint error vectors in the state associated with the
@@ -260,7 +265,7 @@ void MocoProblemRep::initialize() {
 
     // State infos.
     // ------------
-    // Set the regex pattern states first.  
+    // Set the regex pattern states first.
     const auto stateNames = m_model_base.getStateVariableNames();
     for (int i = 0; i < ph0.getProperty_state_infos_pattern().size(); ++i) {
         const auto& pattern = ph0.get_state_infos_pattern(i).getName();
@@ -316,7 +321,7 @@ void MocoProblemRep::initialize() {
                 }
             }
         }
-    }   
+    }
 
     // Control infos.
     // --------------
@@ -371,7 +376,7 @@ void MocoProblemRep::initialize() {
                             MocoBounds::unconstrained());
                 }
             }
-            
+
             if (ph0.get_bound_activation_from_excitation()) {
                 const auto* muscle = dynamic_cast<const Muscle*>(&actu);
                 if (muscle && !muscle->get_ignore_activation_dynamics()) {
@@ -383,7 +388,7 @@ void MocoProblemRep::initialize() {
                     }
                 }
             }
-            
+
         } else {
             // This is a non-scalar actuator, so we need to add multiple
             // control infos.
@@ -404,32 +409,41 @@ void MocoProblemRep::initialize() {
     // Additional information for DeGrooteFregly2016Muscle components that have
     // tendon compliance enabled.
     m_num_auxiliary_residual_equations = 0;
-    for (const auto& dgfmuscle : m_model_disabled_constraints
-            .getComponentList<DeGrooteFregly2016Muscle>()) {
+    for (const auto& dgfmuscle :
+            m_model_disabled_constraints
+                    .getComponentList<DeGrooteFregly2016Muscle>()) {
         if (!dgfmuscle.get_ignore_tendon_compliance()) {
             // Normalized tendon force state info.
-            const std::string stateName = 
-                    dgfmuscle.getAbsolutePathString() + "/" + 
+            const std::string stateName =
+                    dgfmuscle.getAbsolutePathString() + "/" +
                     dgfmuscle.getNormalizedTendonForceStateName();
             auto& stateInfo = m_state_infos[stateName];
             if (stateInfo.getName().empty()) { stateInfo.setName(stateName); }
             if (!stateInfo.getBounds().isSet()) {
-                stateInfo.setBounds({dgfmuscle.getMinNormalizedTendonForce(), 
-                                     dgfmuscle.getMaxNormalizedTendonForce()});
+                stateInfo.setBounds({dgfmuscle.getMinNormalizedTendonForce(),
+                        dgfmuscle.getMaxNormalizedTendonForce()});
             }
 
             if (dgfmuscle.get_tendon_compliance_dynamics_mode() == "implicit") {
                 const auto& derivName =
                         dgfmuscle.getImplicitDynamicsDerivativeName();
                 ++m_num_auxiliary_residual_equations;
-                m_implicit_component_refs.emplace_back(derivName, &dgfmuscle); 
+                m_implicit_component_refs.emplace_back(derivName, &dgfmuscle);
+                // TODO: temporary until we merge the generalized fiber
+                // dynamics branch.
+                for (const auto& entry : dgfmuscle.getOutputs()) {
+                    const std::string& name = entry.first;
+                    const auto foundSubstring = std::regex_match(
+                            name, std::regex("^implicitresidual_.*"));
+                    const auto* output = dynamic_cast<const Output<double>*>(
+                            entry.second.get());
+                    if (output && foundSubstring) {
+                        m_implicit_residual_refs.emplace_back(output);
+                    }
+                }
             }
         }
     }
-
-    // Muscle-tendon equilibrium residual outputs.
-    m_implicit_residual_refs = getModelOutputReferencePtrs<double>(
-            m_model_disabled_constraints, "^implicitresidual_.*", true);
 
     // Parameters.
     // -----------
