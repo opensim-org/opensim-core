@@ -17,17 +17,16 @@
  * -------------------------------------------------------------------------- */
 #include "GlobalStaticOptimization.h"
 
+#include "../../Moco/MocoUtilities.h"
 #include "DeGrooteFregly2016MuscleStandalone.h"
 #include "InverseMuscleSolverMotionData.h"
-#include "../MocoUtilities.h"
+#include <algorithm>
 
-#include <tropter/tropter.h>
-
+#include <OpenSim/Actuators/CoordinateActuator.h>
 #include <OpenSim/Common/TimeSeriesTable.h>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Actuators/CoordinateActuator.h>
 
-#include <algorithm>
+#include <tropter/tropter.h>
 
 using namespace OpenSim;
 
