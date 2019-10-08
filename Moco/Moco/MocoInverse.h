@@ -81,6 +81,7 @@ private:
 /// - optim_sparsity_detection: random
 /// - optim_finite_difference_scheme: forward
 /// - minimize_implicit_auxiliary_derivatives: true
+/// - implicit_auxiliary_derivatives_weight: 0.01
 ///
 /// ### Cost
 ///

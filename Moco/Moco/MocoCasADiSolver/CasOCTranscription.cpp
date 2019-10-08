@@ -480,8 +480,9 @@ void Transcription::setObjectiveAndEndpointConstraints() {
                 Slice(numAccels, numAccels + numAuxDerivs), Slice());
         const double auxDerivWeight =
                 m_solver.getImplicitAuxiliaryDerivativesWeight();
-        MX integrandTraj = auxDerivWeight * MX::sum1(MX::sq(auxDerivs));
-        m_objective += m_duration * dot(quadCoeffs.T(), integrandTraj);
+        MX integrandTraj = MX::sum1(MX::sq(auxDerivs));
+        m_objective += auxDerivWeight * m_duration *
+                       dot(quadCoeffs.T(), integrandTraj);
     }
 
     for (int ic = 0; ic < m_problem.getNumCosts(); ++ic) {

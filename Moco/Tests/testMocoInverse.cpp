@@ -19,10 +19,6 @@
 #include <Moco/osimMoco.h>
 
 #include <OpenSim/Common/LogManager.h>
-#include <OpenSim/Tools/CMC_TaskSet.h>
-#include <OpenSim/Tools/CMC_Joint.h>
-#include <OpenSim/Tools/CMC.h>
-#include <OpenSim/Tools/CMCTool.h>
 
 #define CATCH_CONFIG_MAIN
 #include "Testing.h"
@@ -106,219 +102,50 @@ TEST_CASE("PrescribedKinematics direct collocation auxiliary dynamics") {
     model.addModelComponent(motion);
     model.addComponent(new CustomDynamics());
 
-    MocoStudy moco;
-    auto& problem = moco.updProblem();
+    MocoStudy study;
+    auto& problem = study.updProblem();
     problem.setModelCopy(model);
     problem.setTimeBounds(0, 1);
     const double init_s = 0.2;
     problem.setStateInfo("/customdynamics/s", {0, 100}, init_s);
-    auto& solver = moco.initCasADiSolver();
+    auto& solver = study.initCasADiSolver();
     solver.set_transcription_scheme("trapezoidal");
     solver.set_multibody_dynamics_mode("implicit");
 
-    MocoSolution solution = moco.solve();
+    MocoSolution solution = study.solve();
     OpenSim_CHECK_MATRIX_TOL(solution.getState("/customdynamics/s"),
             0.2 * SimTK::exp(solution.getTime()), 1e-4);
 }
 
-SimTK::Vector smoothColumn(SimTK::Vector col, double fwhm, 
-        std::vector<bool> smoothIndices) {
-    double sigma = fwhm / sqrt(8.0 * log(2.0));
-    SimTK::Vector x(col.size());
-    for (int i = 0; i < col.size(); ++i) x[i] = i;
-
-    SimTK::Vector smoothCol(col.size());
-    for (int i = 0; i < col.size(); ++i) {
-
-        if (smoothIndices[i]) {
-            auto x_sub = x.elementwiseSubtractScalar((double)i).getAsVector();
-            auto x_sub_sq = x_sub.elementwiseMultiply(x_sub);
-            double denom = 2.0 * sigma * sigma;
-            x_sub_sq /= denom;
-            auto x_exp = -x_sub_sq;
-
-            SimTK::Vector kernel(col.size());
-            for (int j = 0; j < col.size(); ++j) {
-                kernel[j] = std::exp(x_exp[j]);
-            }
-            kernel /= kernel.sum();
-
-            smoothCol[i] = col.elementwiseMultiply(kernel).sum();
-        } else {
-            smoothCol[i] = col[i];
-        }
-        
-    }
-
-    return smoothCol;
-}
-
-TEST_CASE("MocoInverse gait10dof18musc") {
+TEST_CASE("MocoInverse Rajagopal2016, 18 muscles") {
     std::cout.rdbuf(LogManager::cout.rdbuf());
     std::cerr.rdbuf(LogManager::cerr.rdbuf());
 
-    //TimeSeriesTable grfOrigTable(
-    //        "testMocoInverse_subject01_walk2_ground_reaction.mot");
-
-    //auto time = grfOrigTable.getIndependentColumn();
-    //TimeSeriesTable grfTable(time);
-
-    //std::vector<bool> smoothIndices(time.size(), false);
-    //std::vector<std::pair<double, double>> windows;
-    //windows.push_back({2.298, 2.301});
-    //windows.push_back({2.445, 2.448});
-    //windows.push_back({2.849, 2.852});
-    //windows.push_back({3.001, 3.004});
-    //windows.push_back({3.390, 3.393});
-    //windows.push_back({3.549, 3.552});
-
-    //double pad = 0.05;
-    //for (const auto& window : windows) {
-    //    int startIdx = (int)grfOrigTable.getNearestRowIndexForTime(window.first-pad, true);
-    //    int endIdx = (int)grfOrigTable.getNearestRowIndexForTime(window.second+pad, true);
-
-    //    int idx = startIdx;
-    //    while (idx <= endIdx) {
-    //        smoothIndices[idx] = true;
-    //        ++idx;
-    //    }
-    //}
-
-    //for (const auto& colLabel : grfOrigTable.getColumnLabels()) {
-    //    auto col = grfOrigTable.getDependentColumn(colLabel);
-    //    auto smoothCol = smoothColumn(col, 50, smoothIndices);
-
-    //    grfTable.appendColumn(colLabel, smoothCol);
-    //}
-
-    //STOFileAdapter::write(filterLowpass(grfTable, 25),
-    //        "testMocoInverse_subject01_walk2_ground_reaction_splined.mot");
-
     MocoInverse inverse;
-    // Psoas muscle max isometric force increased 1000 N
-    // Tib ant muscle max isometric force increased 500 N
     ModelProcessor modelProcessor =
-        ModelProcessor("testMocoInverse_subject01_scaled_Fmax.osim") |
+        ModelProcessor("subject_walk_armless_18musc.osim") |
         ModOpReplaceJointsWithWelds({"subtalar_r", "subtalar_l",
             "mtp_r", "mtp_l"}) |
         ModOpReplaceMusclesWithDeGrooteFregly2016() |
-        ModOpIgnoreTendonCompliance() |
         ModOpIgnorePassiveFiberForcesDGF() |
-        ModOpAddExternalLoads("testMocoInverse_subject01_walk2_external_loads.xml");
-
-    //modelProcessor.process().print("testMocoInverse_subject01_scaled_Fmax_welds.osim");
+        ModOpTendonComplianceDynamicsModeDGF("implicit") |
+        ModOpAddExternalLoads("subject_walk_armless_external_loads.xml");
 
     inverse.setModel(modelProcessor);
     inverse.setKinematics(
-        TableProcessor("testMocoInverse_subject01_walk2_ik_solution.mot") |
+        TableProcessor("subject_walk_armless_coordinates.mot") |
         TabOpLowPassFilter(6));
-    inverse.set_initial_time(2.282);
-    inverse.set_final_time(3.361);
+    inverse.set_initial_time(0.450);
+    inverse.set_final_time(1.0);
     inverse.set_kinematics_allow_extra_columns(true);
-    inverse.set_mesh_interval(0.02);
-    inverse.set_tolerance(1e-4);
-    //inverse.set_reserves_weight(1000);
+    inverse.set_mesh_interval(0.05);
 
     MocoSolution solution = inverse.solve().getMocoSolution();
-    solution.write("testMocoInverse_subject01_walk2_solution.sto");
+    solution.write("testMocoInverse_subject_18musc_solution.sto");
 
-    ModelProcessor modelProcessorTendonCompliance =
-        ModelProcessor("testMocoInverse_subject01_scaled_Fmax.osim") |
-        ModOpReplaceJointsWithWelds({"subtalar_r", "subtalar_l",
-            "mtp_r", "mtp_l"}) |
-        ModOpReplaceMusclesWithDeGrooteFregly2016() |
-        ModOpIgnorePassiveFiberForcesDGF() |
-        ModOpUseImplicitTendonComplianceDynamicsDGF() |
-        ModOpAddExternalLoads("testMocoInverse_subject01_walk2_external_loads.xml");
-    inverse.setModel(modelProcessorTendonCompliance);
-
-    MocoSolution solutionTendonCompliance = inverse.solve().getMocoSolution();
-    solutionTendonCompliance.write(
-        "testMocoInverse_subject01_walk2_solution_tendon_compliance.sto");
-
-    ModelProcessor modelProcessorCMC =
-        ModelProcessor("testMocoInverse_subject01_scaled_Fmax.osim") |
-        ModOpReplaceJointsWithWelds({"subtalar_r", "subtalar_l",
-            "mtp_r", "mtp_l"}) |
-        ModOpReplaceMusclesWithDeGrooteFregly2016() |
-        ModOpIgnoreTendonCompliance() |
-        ModOpIgnorePassiveFiberForcesDGF();
-    modelProcessorCMC.process().print(
-        "testMocoInverse_subject01_scaled_Fmax_cmc.osim");
-
-    Muscle::setPrintWarnings(false);
-    auto cmc = CMCTool("testMocoInverse_subject01_walk2_cmc_setup.xml");
-    cmc.run();
-    Muscle::setPrintWarnings(true);
-
-
-    //MocoInverse inverse;
-    //ModelProcessor modelProcessor = 
-    //    ModelProcessor("testGait10dof18musc_subject01_residuals.osim") |
-    //    ModOpReplaceMusclesWithDeGrooteFregly2016() |
-    //    ModOpIgnoreTendonCompliance() |
-    //    ModOpIgnorePassiveFiberForcesDGF() |
-    //    ModOpAddExternalLoads("walk_gait1018_subject01_grf.xml");
-
-    //inverse.setModel(modelProcessor);
-    //inverse.setKinematics(TableProcessor("walk_gait1018_state_reference.mot") |
-    //                      TabOpLowPassFilter(6));
-    //inverse.set_initial_time(0.1);
-    //inverse.set_final_time(1.3);
-    //inverse.set_tolerance(1e-5);
-    //inverse.set_mesh_interval(0.01);
-
-    //inverse.print("testMocoInverse_setup.xml");
-
-    //MocoSolution solution = inverse.solve().getMocoSolution();
-    ////hey gi
-    //std::vector<std::string> outputPaths;
-    //Model model = modelProcessor.process();
-    //for (const auto& muscle : model.getComponentList<Muscle>()) {
-    //    outputPaths.push_back(muscle.getAbsolutePathString() + 
-    //            "\\|active_force_length_multiplier");
-    //}
-
-    //TimeSeriesTable outputTable = analyze<double>(model, solution, outputPaths);
-    //STOFileAdapter::write(outputTable, "testMocoInverse_multipliers.sto");
-
-    //solution.write("testMocoInverseGait10dof18musc_solution.sto");
-    //const auto actual = solution.getControlsTrajectory();
-
-    //MocoTrajectory std("std_testMocoInverseGait10dof18musc_solution.sto");
-    //const auto expected = std.getControlsTrajectory();
-    //CHECK(std.compareContinuousVariablesRMS(
-    //              solution, {{"controls", {}}}) < 1e-4);
-    //CHECK(std.compareContinuousVariablesRMS(
-    //              solution, {{"states", {}}}) < 1e-4);
-
-    //ModelProcessor modelProcessorTendonCompliance = 
-    //    ModelProcessor("testGait10dof18musc_subject01_residuals.osim") |
-    //    ModOpReplaceMusclesWithDeGrooteFregly2016() |
-    //    ModOpUseImplicitTendonComplianceDynamicsDGF() |
-    //    ModOpIgnorePassiveFiberForcesDGF() |
-    //    ModOpAddExternalLoads("walk_gait1018_subject01_grf.xml");
-
-    //inverse.setModel(modelProcessorTendonCompliance);
-
-    //inverse.print("testMocoInverse_tendon_compliance_setup.xml");
-
-    //MocoSolution solutionTendonCompliance = inverse.solve().getMocoSolution();
-
-    //solutionTendonCompliance.write(
-    //    "testMocoInverseGait10dof18musc_tendon_compliance_solution.sto");
-
-
-    //ModelProcessor modelProcessorTendonCompliance2 =
-    //    ModelProcessor("testGait10dof18musc_subject01_residuals.osim") |
-    //    ModOpReplaceMusclesWithDeGrooteFregly2016() |
-    //    //ModOpUseImplicitTendonComplianceDynamicsDGF() |
-    //    ModOpAddExternalLoads("walk_gait1018_subject01_grf.xml");
-    //TimeSeriesTable outputTableTendonCompliance = 
-    //    analyze<double>(modelProcessorTendonCompliance2.process(),
-    //        solutionTendonCompliance, outputPaths);
-    //STOFileAdapter::write(outputTableTendonCompliance,
-    //        "testMocoInverse_tendon_compliance_multipliers.sto");
-
-
+    MocoTrajectory std("std_testMocoInverse_subject_18musc_solution.sto");
+    const auto expected = std.getControlsTrajectory();
+    CHECK(std.compareContinuousVariablesRMS(solution, 
+            {{"controls", {}}}) < 1e-2);
+    CHECK(std.compareContinuousVariablesRMS(solution, {{"states", {}}}) < 1e-2);
 }

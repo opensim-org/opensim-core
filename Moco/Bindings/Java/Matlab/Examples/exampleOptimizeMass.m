@@ -51,12 +51,12 @@ model.addComponent(spring);
 
 % Create MocoStudy.
 % ================
-moco = MocoStudy();
-moco.setName('oscillator_spring_stiffness');
+study = MocoStudy();
+study.setName('oscillator_spring_stiffness');
 
 % Define the optimal control problem.
 % ===================================
-problem = moco.updProblem();
+problem = study.updProblem();
 
 % Model (dynamics).
 % -----------------
@@ -83,9 +83,9 @@ endpointCost.setReferenceLocation(Vec3(0.5, 0, 0));
 
 problem.addGoal(endpointCost);
 
-solver = moco.initTropterSolver();
+solver = study.initTropterSolver();
 
-moco.print('optimize_mass.omoco');
+study.print('optimize_mass.omoco');
 
-sol = moco.solve();
+sol = study.solve();
 sol.write('optimize_mass_solution.sto');

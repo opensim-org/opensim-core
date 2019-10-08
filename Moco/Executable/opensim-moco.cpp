@@ -1,36 +1,46 @@
-#include <Moco/InverseMuscleSolver/GlobalStaticOptimization.h>
-#include <Moco/InverseMuscleSolver/INDYGO.h>
-#include <Moco/MocoStudy.h>
+/* -------------------------------------------------------------------------- *
+ * OpenSim Moco: opensim-moco.cpp                                             *
+ * -------------------------------------------------------------------------- *
+ * Copyright (c) 2017-19 Stanford University and the Authors                  *
+ *                                                                            *
+ * Author(s): Christopher Dembia                                              *
+ *                                                                            *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
+ * not use this file except in compliance with the License. You may obtain a  *
+ * copy of the License at http://www.apache.org/licenses/LICENSE-2.0          *
+ *                                                                            *
+ * Unless required by applicable law or agreed to in writing, software        *
+ * distributed under the License is distributed on an "AS IS" BASIS,          *
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.   *
+ * See the License for the specific language governing permissions and        *
+ * limitations under the License.                                             *
+ * -------------------------------------------------------------------------- */
 #include <Moco/MocoProblem.h>
 #include <Moco/MocoStudy.h>
 #include <Moco/MocoUtilities.h>
 #include <iostream>
 
 #include <OpenSim/Common/Object.h>
+#include <OpenSim/Common/LoadOpenSimLibrary.h>
 #include <OpenSim/Simulation/osimSimulation.h>
 
 using namespace OpenSim;
 
 static const char helpMessage[] =
-        R"(OpenSim Moco. Use this command to run a setup file for the following:
-  - Global Static Optimization,
-  - INDYGO: Inverse, Dynamic, Global Optimization (tracking),
-  - MocoStudy: flexible optimal control framework (.omoco file).
+        R"(OpenSim Moco. Use this command to run a MocoStudy (.omoco file).
 
 Usage:
   opensim-moco -h | --help
 
     Print this help message.
 
-  opensim-moco [--library=<path>] run-tool [--visualize] <setup-file>
+  opensim-moco [--library=<path>] run [--visualize] <.omoco-file>
 
-    Run the tool specified in the provided setup file.
-    Only MocoStudy supports visualizing.
+    Run the MocoStudy in the provided .omoco file.
 
-  opensim-moco [--library=<path>] print-xml <tool>
+  opensim-moco [--library=<path>] print-xml
 
-    Print a template XML file for the provided tool.
-    <tool> can be "GlobalStaticOptimization", "INDYGO", or "MocoStudy"
+    Print a template XML .omoco file for a MocoStudy.
 
   opensim-moco [--library=<path>] visualize <model-or-omoco-file> [<trajectory-file>]
 
@@ -51,38 +61,22 @@ void run_tool(std::string setupFile, bool visualize) {
             format("A problem occurred when trying to load file '%s'.",
                     setupFile));
 
-    if (const auto* gso =
-                    dynamic_cast<const GlobalStaticOptimization*>(obj.get())) {
-        auto solution = gso->solve();
-        if (visualize) std::cout << "Ignoring --visualize flag." << std::endl;
-    } else if (const auto* mrs = dynamic_cast<const INDYGO*>(obj.get())) {
-        auto solution = mrs->solve();
-        if (visualize) std::cout << "Ignoring --visualize flag." << std::endl;
-    } else if (const auto* moco = dynamic_cast<const MocoStudy*>(obj.get())) {
+    if (const auto* moco = dynamic_cast<const MocoStudy*>(obj.get())) {
         auto solution = moco->solve();
         if (visualize) moco->visualize(solution);
     } else {
         throw Exception("The provided file '" + setupFile + "' yields a '" +
                         obj->getConcreteClassName() +
-                        "' but only GlobalStaticOptimization, INDYGO, and "
-                        "MocoStudy are acceptable.");
+                        "' but a MocoStudy was expected.");
     }
 }
 
-void print_xml(std::string className) {
-    if (className != "GlobalStaticOptimization" && className != "INDYGO" &&
-            className != "MocoStudy") {
-        throw Exception("Unexpected argument: " + className);
-    }
-    const auto* obj = Object::getDefaultInstanceOfType(className);
+void print_xml() {
+    const auto* obj = Object::getDefaultInstanceOfType("MocoStudy");
     if (!obj) {
-        throw Exception("Cannot create an instance of " + className + ".");
+        throw Exception("Cannot create an instance of MocoStudy.");
     }
-    std::string fileName = "default_" + className;
-    if (className == "MocoStudy")
-        fileName += ".omoco";
-    else
-        fileName += ".xml";
+    std::string fileName = "default_MocoStudy.omoco";
     std::cout << "Printing '" << fileName << "'." << std::endl;
     Object::setSerializeAllDefaults(true);
     obj->print(fileName);
@@ -94,8 +88,8 @@ void visualize(std::string file, std::string trajectory_file) {
     if (file.rfind(".osim") != std::string::npos) {
         model = OpenSim::make_unique<Model>(file);
     } else {
-        MocoStudy moco(file);
-        const MocoPhase& phase = moco.getProblem().getPhase(0);
+        MocoStudy study(file);
+        const MocoPhase& phase = study.getProblem().getPhase(0);
         model.reset(phase.getModel().clone());
     }
     if (trajectory_file.empty()) {
@@ -138,7 +132,7 @@ int main(int argc, char* argv[]) {
             subcommand = arg1;
         }
 
-        if (subcommand == "run-tool") {
+        if (subcommand == "run") {
             OPENSIM_THROW_IF(argc < 3 || argc > 4, Exception,
                     "Incorrect number of arguments.");
 
@@ -159,10 +153,9 @@ int main(int argc, char* argv[]) {
 
         } else if (subcommand == "print-xml") {
             OPENSIM_THROW_IF(
-                    argc != 3, Exception, "Incorrect number of arguments.");
+                    argc != 2, Exception, "Incorrect number of arguments.");
 
-            std::string className(argv[2 + offset]);
-            print_xml(className);
+            print_xml();
 
         } else if (subcommand == "visualize") {
             OPENSIM_THROW_IF(argc < 3 || argc > 4, Exception,

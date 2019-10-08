@@ -60,9 +60,10 @@ RUN cd /opensim-moco \
         && git submodule update --init \
         && mkdir ../moco_dependencies_build \
         && cd ../moco_dependencies_build \
-        && cmake ../opensim-moco/dependencies -DOPENSIM_PYTHON_WRAPPING=on \
-        && make --jobs 4 ipopt \
-        && make --jobs 4 \
+        && cmake ../opensim-moco/dependencies \
+            -DOPENSIM_PYTHON_WRAPPING=on \
+        && make --jobs $(nproc) ipopt \
+        && make --jobs $(nproc) \
         && echo "/moco_dependencies_install/adol-c/lib64" >> /etc/ld.so.conf.d/moco.conf \
         && echo "/moco_dependencies_install/ipopt/lib" >> /etc/ld.so.conf.d/moco.conf \
         && ldconfig \
@@ -75,7 +76,7 @@ RUN cd / \
             -DMOCO_PYTHON_BINDINGS=on \
             -DBUILD_TESTING=off \
             -DBUILD_EXAMPLES=off \
-        && make --jobs 4 install \
+        && make --jobs $(nproc) install \
         && echo "/opensim-moco-install/sdk/lib" >> /etc/ld.so.conf.d/moco.conf \
         && echo "/opensim-moco-install/sdk/Simbody/lib" >> /etc/ld.so.conf.d/moco.conf \
         && ldconfig \
