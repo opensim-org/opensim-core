@@ -127,7 +127,6 @@ TEST_CASE("MocoInverse Rajagopal2016, 18 muscles") {
         ModOpReplaceJointsWithWelds({"subtalar_r", "subtalar_l",
             "mtp_r", "mtp_l"}) |
         ModOpReplaceMusclesWithDeGrooteFregly2016() |
-        ModOpIgnoreTendonCompliance() |
         ModOpIgnorePassiveFiberForcesDGF() |
         ModOpTendonComplianceDynamicsModeDGF("implicit") |
         ModOpAddExternalLoads("subject_walk_armless_external_loads.xml");
