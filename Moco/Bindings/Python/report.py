@@ -427,7 +427,7 @@ class Report(object):
                 self.plotVariables('state', activ_dict, activ_ls_dict,
                                    activ_label_dict)
 
-                # Non-coordinate states
+                # Normalized tendon forces
                 norm_tendon_force_dict = OrderedDict()
                 norm_tendon_force_ls_dict = defaultdict(list)
                 norm_tendon_force_label_dict = dict()
