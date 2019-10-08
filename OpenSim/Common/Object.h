@@ -651,13 +651,9 @@ public:
     } 
 
     /** %Set the debug level to get verbose output. Zero means no debugging. **/
-    static void setDebugLevel(int newLevel) {
-        _debugLevel=newLevel; 
-    };
+    static void setDebugLevel(int newLevel);
     /** Get current setting of debug level. **/
-    static int getDebugLevel() {
-        return _debugLevel; 
-    };
+    static int getDebugLevel();
 
     /** Wrapper to be used on Java side to display objects in tree; this returns
     just the object's name. **/
@@ -867,7 +863,7 @@ private:
     //     used from Java wrapping in GUI/Matlab this catches all exceptions 
     //     thrown by the low-level libraries which is slower but helpful in 
     //     troubleshooting.
-    static int      _debugLevel;
+    // TODO static int      _debugLevel;
 
     // The name of this object.
     std::string     _name;
