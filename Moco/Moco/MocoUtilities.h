@@ -31,7 +31,6 @@
 #include <OpenSim/Common/GCVSplineSet.h>
 #include <OpenSim/Common/PiecewiseLinearFunction.h>
 #include <OpenSim/Common/Storage.h>
-#include "Components/DeGrooteFregly2016Muscle.h"
 
 namespace OpenSim {
 
