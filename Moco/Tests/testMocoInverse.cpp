@@ -19,10 +19,6 @@
 #include <Moco/osimMoco.h>
 
 #include <OpenSim/Common/LogManager.h>
-#include <OpenSim/Tools/CMC_TaskSet.h>
-#include <OpenSim/Tools/CMC_Joint.h>
-#include <OpenSim/Tools/CMC.h>
-#include <OpenSim/Tools/CMCTool.h>
 
 #define CATCH_CONFIG_MAIN
 #include "Testing.h"
@@ -157,25 +153,25 @@ TEST_CASE("MocoInverse Rajagopal2016, 18 muscles") {
 
     // With tendon compliance.
     // =======================
-    ModelProcessor modelProcessorTendonCompliance =
-        ModelProcessor("subject_walk_armless_18musc.osim") |
-        ModOpReplaceJointsWithWelds({"subtalar_r", "subtalar_l",
-            "mtp_r", "mtp_l"}) |
-        ModOpReplaceMusclesWithDeGrooteFregly2016() |
-        ModOpIgnorePassiveFiberForcesDGF() |
-        ModOpUseImplicitTendonComplianceDynamicsDGF() |
-        ModOpAddExternalLoads("subject_walk_armless_external_loads.xml");
-    inverse.setModel(modelProcessorTendonCompliance);
+    //ModelProcessor modelProcessorTendonCompliance =
+    //    ModelProcessor("subject_walk_armless_18musc.osim") |
+    //    ModOpReplaceJointsWithWelds({"subtalar_r", "subtalar_l",
+    //        "mtp_r", "mtp_l"}) |
+    //    ModOpReplaceMusclesWithDeGrooteFregly2016() |
+    //    ModOpIgnorePassiveFiberForcesDGF() |
+    //    ModOpTendonComplianceDynamicsModeDGF("implicit") |
+    //    ModOpAddExternalLoads("subject_walk_armless_external_loads.xml");
+    //inverse.setModel(modelProcessorTendonCompliance);
 
-    MocoSolution solutionTC = inverse.solve().getMocoSolution();
-    solutionTC.write(
-        "testMocoInverse_subject_18musc_solution_tendon_compliance.sto");
+    //MocoSolution solutionTC = inverse.solve().getMocoSolution();
+    //solutionTC.write(
+    //    "testMocoInverse_subject_18musc_solution_tendon_compliance.sto");
 
-    MocoTrajectory stdTC(
-        "std_testMocoInverse_subject_18musc_solution_tendon_compliance.sto");
-    const auto expectedTC = stdTC.getControlsTrajectory();
-    CHECK(stdTC.compareContinuousVariablesRMS(solutionTC, 
-            {{"controls", {}}}) < 1e-2);
-    CHECK(stdTC.compareContinuousVariablesRMS(solutionTC, 
-            {{"states", {}}}) < 1e-2);
+    //MocoTrajectory stdTC(
+    //    "std_testMocoInverse_subject_18musc_solution_tendon_compliance.sto");
+    //const auto expectedTC = stdTC.getControlsTrajectory();
+    //CHECK(stdTC.compareContinuousVariablesRMS(solutionTC, 
+    //        {{"controls", {}}}) < 1e-2);
+    //CHECK(stdTC.compareContinuousVariablesRMS(solutionTC, 
+    //        {{"states", {}}}) < 1e-2);
 }

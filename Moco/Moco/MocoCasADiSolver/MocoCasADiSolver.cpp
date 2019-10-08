@@ -267,18 +267,31 @@ std::unique_ptr<CasOC::Solver> MocoCasADiSolver::createCasOCSolver(
     casSolver->setMinimizeLagrangeMultipliers(
             get_minimize_lagrange_multipliers());
     casSolver->setLagrangeMultiplierWeight(get_lagrange_multiplier_weight());
+
     casSolver->setImplicitMultibodyAccelerationBounds(
             convertBounds(get_implicit_multibody_acceleration_bounds()));
     casSolver->setMinimizeImplicitMultibodyAccelerations(
             get_minimize_implicit_multibody_accelerations());
+    OPENSIM_THROW_IF(get_implicit_multibody_accelerations_weight() < 0,
+            Exception, format(
+                "Property implicit_multibody_accelerations_weight must be "
+                "non-negative, but it is set to %f.", 
+                get_implicit_multibody_accelerations_weight()));
     casSolver->setImplicitMultibodyAccelerationsWeight(
             get_implicit_multibody_accelerations_weight());
+
     casSolver->setImplicitAuxiliaryDerivativeBounds(
             convertBounds(get_implicit_auxiliary_derivative_bounds()));
     casSolver->setMinimizeImplicitAuxiliaryDerivatives(
             get_minimize_implicit_auxiliary_derivatives());
+    OPENSIM_THROW_IF(get_implicit_auxiliary_derivatives_weight() < 0,
+            Exception, format(
+                    "Property implicit_auxiliary_derivatives_weight must be "
+                    "non-negative, but it is set to %f.",
+                    get_implicit_auxiliary_derivatives_weight()));
     casSolver->setImplicitAuxiliaryDerivativesWeight(
             get_implicit_auxiliary_derivatives_weight());
+
     casSolver->setOptimSolver(get_optim_solver());
     casSolver->setInterpolateControlMidpoints(
             get_interpolate_control_midpoints());

@@ -66,19 +66,33 @@ public:
 };
 
 /// For DeGrooteFregly2016Muscle muscles whose 'ignore_tendon_compliance' 
-/// property is false, set the tendon compliance dynamics mode to 'implicit'.
-class OSIMMOCO_API ModOpUseImplicitTendonComplianceDynamicsDGF 
+/// property is false, set the tendon compliance dynamics mode to either 
+/// 'explicit' or 'implicit'.
+class OSIMMOCO_API ModOpTendonComplianceDynamicsModeDGF 
         : public ModelOperator {
     OpenSim_DECLARE_CONCRETE_OBJECT(
-        ModOpUseImplicitTendonComplianceDynamicsDGF, ModelOperator);
+            ModOpTendonComplianceDynamicsModeDGF, ModelOperator);
+    OpenSim_DECLARE_PROPERTY(mode, std::string,
+            "The tendon compliance dynamics mode: 'implicit' or 'explicit'. "
+            "Default: 'explicit'.");
 
 public:
+    ModOpTendonComplianceDynamicsModeDGF() {
+        constructProperty_mode("explicit");
+    }
+    ModOpTendonComplianceDynamicsModeDGF(std::string mode) : 
+            ModOpTendonComplianceDynamicsModeDGF() {
+        OPENSIM_THROW_IF(mode != "explicit" && mode != "implicit", Exception,
+            format("The tendon compliance dynamics mode must be either "
+                "'explicit' or 'implicit', but %s was provided.", mode));
+        set_mode(std::move(mode));
+    }
     void operate(Model& model, const std::string&) const override {
         model.finalizeFromProperties();
         for (auto& muscle :
                 model.updComponentList<DeGrooteFregly2016Muscle>()) {
             if (!muscle.get_ignore_tendon_compliance()) {
-                muscle.set_tendon_compliance_dynamics_mode("implicit");
+                muscle.set_tendon_compliance_dynamics_mode(get_mode());
             }
         }
     }

@@ -141,17 +141,17 @@ public:
             "is saved, 5 indicates every fifth iteration is saved, etc.");
 
     OpenSim_DECLARE_PROPERTY(minimize_implicit_multibody_accelerations, bool,
-            "Whether or not to minimize the integral of the squared "
-            "acceleration continuous variables when using the implicit " 
-            "multibody mode. Default: false.");
+            "Minimize the integral of the squared acceleration continuous "
+            "variables when using the implicit multibody mode. "
+            "Default: false.");
     OpenSim_DECLARE_PROPERTY(implicit_multibody_accelerations_weight, double,
             "The weight on the cost term added if "
             "'minimize_implicit_multibody_accelerations' is enabled."
             "Default: 1.0.");
     OpenSim_DECLARE_PROPERTY(minimize_implicit_auxiliary_derivatives, bool,
-            "Whether or not to minimize the integral of the squared "
-            "derivative continuous variables for components with implicit "
-            "multibody dynamics. Default: false.");
+            "Minimize the integral of the squared derivative continuous "
+            "variables for components with implicit multibody dynamics. "
+            "Default: false.");
     OpenSim_DECLARE_PROPERTY(implicit_auxiliary_derivatives_weight, double,
             "The weight on the cost term added if "
             "'minimize_implicit_auxiliary_derivatives' is enabled."

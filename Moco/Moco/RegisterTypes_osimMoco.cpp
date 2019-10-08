@@ -108,6 +108,7 @@ OSIMMOCO_API void RegisterTypes_osimMoco() {
         Object::registerType(ModOpReplaceMusclesWithDeGrooteFregly2016());
         Object::registerType(ModOpIgnoreActivationDynamics());
         Object::registerType(ModOpIgnoreTendonCompliance());
+        Object::registerType(ModOpTendonComplianceDynamicsModeDGF());
         Object::registerType(ModOpAddReserves());
         Object::registerType(ModOpAddExternalLoads());
         Object::registerType(ModOpIgnorePassiveFiberForcesDGF());
