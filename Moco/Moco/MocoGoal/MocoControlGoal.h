@@ -48,7 +48,7 @@ namespace OpenSim {
 /// - \f$ p \f$: the `exponent`.
 ///
 /// If `p > 2`, we first the absolute value of the control; this is to properly
-/// odd exponents.
+/// handle odd exponents.
 /// @ingroup mocogoal
 class OSIMMOCO_API MocoControlGoal : public MocoGoal {
 OpenSim_DECLARE_CONCRETE_OBJECT(MocoControlGoal, MocoGoal);
