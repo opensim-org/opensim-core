@@ -17,12 +17,13 @@
  * -------------------------------------------------------------------------- */
 
 #include "InverseMuscleSolverMotionData.h"
-#include "../MocoUtilities.h"
 
-#include <tropter/tropter.h>
+#include "../../Moco/MocoUtilities.h"
 
 #include <OpenSim/Common/osimCommon.h>
 #include <OpenSim/Simulation/osimSimulation.h>
+
+#include <tropter/tropter.h>
 
 using namespace OpenSim;
 

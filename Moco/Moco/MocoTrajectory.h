@@ -667,7 +667,7 @@ private:
 /// Return type for MocoStudy::solve(). Use success() to check if the solver
 /// succeeded. You can also use this object as a boolean in an if-statement:
 /// @code
-/// auto solution = moco.solve();
+/// auto solution = study.solve();
 /// if (solution) {
 ///     std::cout << solution.getStatus() << std::endl;
 /// }
