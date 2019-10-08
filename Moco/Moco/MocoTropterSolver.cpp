@@ -96,6 +96,11 @@ MocoTropterSolver::createTropterSolver(
                        "Currently, it is set to '%s'.",
                         get_transcription_scheme()));
     }
+    OPENSIM_THROW_IF_FRMOBJ(
+            getProblemRep().getNumImplicitAuxiliaryResiduals(),
+            Exception, "MocoTropterSolver does not support problems "
+                       "with implicit auxiliary dynamics.");
+
     // Block sparsity detected is only in effect when using an exact Hessian
     // approximation.
     OPENSIM_THROW_IF(

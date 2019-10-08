@@ -227,7 +227,7 @@ private:
             }
         };
 
-        // Trapezidal sparsity pattern for mesh intervals 0, 1 and 2:
+        // Trapezoidal sparsity pattern for mesh intervals 0, 1 and 2:
         // Endpoint constraints depend on all time points through their
         // integral.
         //                   0    1    2    3

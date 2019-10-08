@@ -34,6 +34,21 @@ const std::string
         DeGrooteFregly2016Muscle::RESIDUAL_NORMALIZED_TENDON_FORCE_NAME(
                 "implicitresidual_normalized_tendon_force");
 
+// We must define these variables in some compilation unit (pre-C++17).
+// https://stackoverflow.com/questions/40690260/undefined-reference-error-for-static-constexpr-member?noredirect=1&lq=1
+constexpr double DeGrooteFregly2016Muscle::b11;
+constexpr double DeGrooteFregly2016Muscle::b21;
+constexpr double DeGrooteFregly2016Muscle::b31;
+constexpr double DeGrooteFregly2016Muscle::b41;
+constexpr double DeGrooteFregly2016Muscle::b12;
+constexpr double DeGrooteFregly2016Muscle::b22;
+constexpr double DeGrooteFregly2016Muscle::b32;
+constexpr double DeGrooteFregly2016Muscle::b42;
+constexpr double DeGrooteFregly2016Muscle::b13;
+constexpr double DeGrooteFregly2016Muscle::b23;
+constexpr double DeGrooteFregly2016Muscle::b33;
+constexpr double DeGrooteFregly2016Muscle::b43;
+
 void DeGrooteFregly2016Muscle::constructProperties() {
     constructProperty_activation_time_constant(0.015);
     constructProperty_deactivation_time_constant(0.060);
@@ -521,25 +536,9 @@ void DeGrooteFregly2016Muscle::computeInitialFiberEquilibrium(
     FiberVelocityInfo fvi;
     MuscleDynamicsInfo mdi;
 
-    auto calcNormTendonForceFromNormFiberLength =
-            [this, &muscleTendonLength](
-                    const SimTK::Real& normFiberLength) {
-                const auto& fiberLength =
-                        normFiberLength * get_optimal_fiber_length();
-                const auto& fiberLengthAlongTendon = sqrt(
-                        SimTK::square(fiberLength) - m_squareFiberWidth);
-                const auto& tendonLength =
-                        muscleTendonLength - fiberLengthAlongTendon;
-                const auto& normTendonLength =
-                        tendonLength / get_tendon_slack_length();
-
-                return calcTendonForceMultiplier(normTendonLength);
-    };
-
-    auto calcResidual = [this, &calcNormTendonForceFromNormFiberLength,
-                                &muscleTendonLength, &muscleTendonVelocity,
-                                &normTendonForceDerivative, &activation,
-                                &mli, &fvi,
+    auto calcResidual = [this, &muscleTendonLength, &muscleTendonVelocity,
+                                &normTendonForceDerivative, &activation, &mli,
+                                &fvi,
                                 &mdi](const SimTK::Real& normTendonForce) {
         calcMuscleLengthInfoHelper(muscleTendonLength, false, mli, 
                 normTendonForce);
@@ -829,6 +828,12 @@ DeGrooteFregly2016Muscle::estimateMuscleFiberState(const double activation,
 
 double DeGrooteFregly2016Muscle::getImplicitResidualNormalizedTendonForce(
         const SimTK::State& s) const {
+    if (get_ignore_tendon_compliance()) {
+        return 0;
+    }
+    else if (m_isTendonDynamicsExplicit) {
+        return SimTK::NaN;
+    }
     // Recompute residual if cache is invalid.
     if (!isCacheVariableValid(
                 s, "implicitresidual_" + STATE_NORMALIZED_TENDON_FORCE_NAME)) {

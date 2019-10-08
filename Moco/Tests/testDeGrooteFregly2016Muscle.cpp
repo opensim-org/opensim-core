@@ -32,7 +32,7 @@
 using namespace OpenSim;
 
 // Function to compute fiber force (or fiber force along tendon) versus fiber
-// length (or fiber length along tendon). Used check to fiber stiffness
+// length (or fiber length along tendon). This checks fiber stiffness
 // calculations in DeGrooteFregly2016Muscle.
 class FiberForceFunction : public SimTK::Differentiator::ScalarFunction {
 
@@ -97,7 +97,7 @@ private:
     bool m_alongTendon = false;
 };
 
-// Function to compute tendon force versus tendon length. Used check to tendon 
+// Function to compute tendon force versus tendon length. This checks tendon
 // stiffness calculations in DeGrooteFregly2016Muscle.
 class TendonForceFunction : public SimTK::Differentiator::ScalarFunction {
 
@@ -1032,6 +1032,12 @@ TEMPLATE_TEST_CASE("Hanging muscle minimum time", "", MocoCasADiSolver) {
     auto ignoreTendonCompliance = GENERATE(true, false);
     auto isTendonDynamicsExplicit = GENERATE(true, false);
 
+    // TODO: Some problem has a bad initial guess and the constraint violation
+    // goes to 1e+14. Maybe the bounds on the coordinate should be tighter.
+
+    std::cout.rdbuf(LogManager::cout.rdbuf());
+    std::cout.rdbuf(LogManager::cout.rdbuf());
+
     CAPTURE(ignoreActivationDynamics);
     CAPTURE(ignoreTendonCompliance);
     CAPTURE(isTendonDynamicsExplicit);
@@ -1044,10 +1050,6 @@ TEMPLATE_TEST_CASE("Hanging muscle minimum time", "", MocoCasADiSolver) {
             isTendonDynamicsExplicit);
 
     SimTK::State state = model.initSystem();
-    const auto& actuator = model.getComponent("forceset/actuator");
-
-    const auto* muscle = 
-            dynamic_cast<const DeGrooteFregly2016Muscle*>(&actuator);
 
     // Minimum time trajectory optimization.
     // -------------------------------------
@@ -1059,20 +1061,12 @@ TEMPLATE_TEST_CASE("Hanging muscle minimum time", "", MocoCasADiSolver) {
         problem.setModelCopy(model);
         problem.setTimeBounds(0, {0.05, 1.0});
         problem.setStateInfo(
-                "/joint/height/value", {0.10, 0.16}, initHeight, finalHeight);
-        problem.setStateInfo("/joint/height/speed", {-10, 10}, 0, 0);
-        if (!ignoreTendonCompliance) {
-            problem.setStateInfo(
-                    "/forceset/actuator/normalized_tendon_force", {0, 5});
-        }
-        if (!ignoreActivationDynamics) {
-                problem.setStateInfo(
-                        "/forceset/actuator/activation", {0.01, 1});
-        }
+                "/joint/height/value", {0.14, 0.16}, initHeight, finalHeight);
+        problem.setStateInfo("/joint/height/speed", {-1, 1}, 0, 0);
         problem.setControlInfo("/forceset/actuator", {0.01, 1});
 
         // Initial state constraints/costs.
-        if (!ignoreActivationDynamics && ignoreTendonCompliance) {
+        if (!ignoreActivationDynamics) {
             auto* initial_activation =
                     problem.addGoal<MocoInitialActivationGoal>();
             initial_activation->setName("initial_activation");
@@ -1082,9 +1076,8 @@ TEMPLATE_TEST_CASE("Hanging muscle minimum time", "", MocoCasADiSolver) {
                 auto* initial_equilibrium = 
                     problem.addGoal<MocoInitialForceEquilibriumGoal>();
                 initial_equilibrium->setName("initial_force_equilibrium");
-                auto* initial_activation =
-                        problem.addGoal<MocoInitialActivationGoal>();
-                initial_activation->setName("initial_activation");
+                // problem.setStateInfo("/forceset/actuator/normalized_tendon_force",
+                // {0, 2});
             } else {
                 // The problem performs better when this is in cost mode.
                 auto* initial_equilibrium = problem.addGoal<
@@ -1098,11 +1091,10 @@ TEMPLATE_TEST_CASE("Hanging muscle minimum time", "", MocoCasADiSolver) {
         problem.addGoal<MocoFinalTimeGoal>();
 
         auto& solver = study.initSolver<TestType>();
-        solver.set_num_mesh_intervals(40);
+        solver.set_num_mesh_intervals(25);
         solver.set_multibody_dynamics_mode("implicit");
         solver.set_optim_convergence_tolerance(1e-4);
         solver.set_optim_constraint_tolerance(1e-4);
-        solver.set_transcription_scheme("hermite-simpson");
 
         solutionTrajOpt = study.solve();
         std::string solutionFilename = "testDeGrooteFregly2016Muscle_solution";
@@ -1154,22 +1146,14 @@ TEMPLATE_TEST_CASE("Hanging muscle minimum time", "", MocoCasADiSolver) {
         // recovering the correct excitation.
         const double finalTime =
                 solutionTrajOpt.getTime()[solutionTrajOpt.getNumTimes() - 1];
-        const double slop = 0; // TODO 1e-4;
-        problem.setTimeBounds(0 + slop, finalTime - slop);
+        problem.setTimeBounds(0, finalTime);
         problem.setStateInfo(
-                "/joint/height/value", {0.10, 0.16}, initHeight, finalHeight);
-        problem.setStateInfo("/joint/height/speed", {-10, 10}, 0, 0);
-        if (!ignoreTendonCompliance) {
-            problem.setStateInfo(
-                    "/forceset/actuator/normalized_tendon_force", {0, 5});
-        }
-        if (!ignoreActivationDynamics) {
-            problem.setStateInfo("/forceset/actuator/activation", {0.01, 1});
-        }
+                "/joint/height/value", {0.14, 0.16}, initHeight, finalHeight);
+        problem.setStateInfo("/joint/height/speed", {-1, 1}, 0, 0);
         problem.setControlInfo("/forceset/actuator", {0.01, 1});
 
         // Initial state constraints/costs.
-        if (!ignoreActivationDynamics && ignoreTendonCompliance) {
+        if (!ignoreActivationDynamics) {
             auto* initial_activation =
                     problem.addGoal<MocoInitialActivationGoal>();
             initial_activation->setName("initial_activation");
@@ -1179,9 +1163,6 @@ TEMPLATE_TEST_CASE("Hanging muscle minimum time", "", MocoCasADiSolver) {
                 auto* initial_equilibrium =
                         problem.addGoal<MocoInitialForceEquilibriumGoal>();
                 initial_equilibrium->setName("initial_force_equilibrium");
-                auto* initial_activation =
-                        problem.addGoal<MocoInitialActivationGoal>();
-                initial_activation->setName("initial_activation");
             } else {
                 // The problem performs better when this is in cost mode.
                 auto* initial_equilibrium = problem.addGoal<
@@ -1210,9 +1191,8 @@ TEMPLATE_TEST_CASE("Hanging muscle minimum time", "", MocoCasADiSolver) {
         tracking->setAllowUnusedReferences(true);
 
         auto& solver = study.initSolver<TestType>();
-        solver.set_num_mesh_intervals(40);
+        solver.set_num_mesh_intervals(25);
         solver.set_multibody_dynamics_mode("implicit");
-        solver.set_transcription_scheme("hermite-simpson");
 
         MocoSolution solutionTrack = study.solve();
         std::string solutionFilename =
