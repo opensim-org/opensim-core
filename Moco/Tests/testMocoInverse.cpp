@@ -121,8 +121,6 @@ TEST_CASE("MocoInverse Rajagopal2016, 18 muscles") {
     std::cout.rdbuf(LogManager::cout.rdbuf());
     std::cerr.rdbuf(LogManager::cerr.rdbuf());
 
-    // Without tendon compliance.
-    // ==========================
     MocoInverse inverse;
     ModelProcessor modelProcessor =
         ModelProcessor("subject_walk_armless_18musc.osim") |
@@ -131,6 +129,7 @@ TEST_CASE("MocoInverse Rajagopal2016, 18 muscles") {
         ModOpReplaceMusclesWithDeGrooteFregly2016() |
         ModOpIgnoreTendonCompliance() |
         ModOpIgnorePassiveFiberForcesDGF() |
+        ModOpTendonComplianceDynamicsModeDGF("implicit") |
         ModOpAddExternalLoads("subject_walk_armless_external_loads.xml");
 
     inverse.setModel(modelProcessor);
@@ -147,7 +146,7 @@ TEST_CASE("MocoInverse Rajagopal2016, 18 muscles") {
 
     MocoTrajectory std("std_testMocoInverse_subject_18musc_solution.sto");
     const auto expected = std.getControlsTrajectory();
-    CHECK(std.compareContinuousVariablesRMS(solution, {{"controls", {}}}) <
-            1e-4);
-    CHECK(std.compareContinuousVariablesRMS(solution, {{"states", {}}}) < 1e-4);
+    CHECK(std.compareContinuousVariablesRMS(solution, 
+            {{"controls", {}}}) < 1e-2);
+    CHECK(std.compareContinuousVariablesRMS(solution, {{"states", {}}}) < 1e-2);
 }
