@@ -118,6 +118,9 @@ public:
     /// Does the model contain a PositionMotion to prescribe all generalized
     /// coordinates, speeds, and accelerations?
     bool isPrescribedKinematics() const { return m_prescribedKinematics; }
+    int getNumImplicitAuxiliaryResiduals() const {
+        return (int)m_implicit_residual_refs.size();
+    }
     /// This excludes generalized coordinate and speed states if
     /// isPrescribedKinematics() is true.
     std::vector<std::string> createStateVariableNamesInSystemOrder(
@@ -213,13 +216,6 @@ public:
                 "The number of scalar kinematic constraint equations is not "
                 "available until after initialization.");
         return m_num_kinematic_constraint_equations;
-    }
-    /// Get the number of auxiliary residual equations in the MocoProblem.
-    int getNumAuxiliaryResidualEquations() const {
-        OPENSIM_THROW_IF(m_num_auxiliary_residual_equations == -1, Exception,
-                "The number of auxiliary residual equations is not available "
-                "until after initialization.");
-        return m_num_auxiliary_residual_equations;
     }
 
     /// Print a description of this problem, including costs and variable
@@ -338,8 +334,7 @@ private:
     std::vector<std::string>
             m_kinematic_constraint_eq_names_without_derivatives;
 
-    int m_num_auxiliary_residual_equations = -1;
-    std::vector<SimTK::ReferencePtr<const Output<double>>> 
+    std::vector<SimTK::ReferencePtr<const Output<double>>>
             m_implicit_residual_refs;
     std::vector<std::pair<std::string, SimTK::ReferencePtr<const Component>>>
             m_implicit_component_refs;

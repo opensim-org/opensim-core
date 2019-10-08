@@ -226,18 +226,41 @@ problem.
 
 @subsection implimplicitauxiliary Implicit auxiliary dynamics
 
-OpenSim's Component interface supports implementation of auxiliary dynamics, that
-is, additional dynamics added to the set of multibody dynamics equations that
-define a model's computational system (e.g. muscle activation dynamics). The 
-Component interface supports dynamics in explicit form (i.e. 
-\f$ \dot{y} = f(y) \f$), but it is often desirable to implment auxiliary dynamics
-in implicit form (i.e. \f$ f(y, \dot{y}) = 0 \f$). For example, expressing tendon 
-compliance dynamics explicitly requires inverting the force-velocity curve, which 
-introduces singularities. Solving the dynamics implicity by enforcing 
-muscle-tendon equilibrium (i.e. \f$ F^T - F^M cos(\alpha) = 0 \f$) is more 
-natural and avoids these difficulties. 
+While the implicit multibody dynamics setting lives in the MocoSolver, the
+implicit auxiliary dynamics settings live in the MocoProblem, in the model
+components. This difference exists for two reasons: (1) the equations for
+multibody dynamics exist outside of the Model, while the equations for auxiliary
+dynamics exist within the Model; and (2) users may wish for only a subset of
+states to be handled implicitly, while the choice of dynamics mode for the
+multibody system affects all differential equations describing the multibody
+system.
 
-TODO: Moco implementation details
+Handling implicit dynamics requires that Moco (1) provides components with
+values for the derivatives of the auxiliary state variables, and (2) obtains the
+residuals of the implicit differential equations. For (1), MocoProblemRep
+provides a container of Component%s and the names of the appropriate discrete
+state variables. For (2), MocoProblemRep provides a container of Output%s that
+provide the residuals.
+
+To satisfy the Model Component interface, components must implement
+Component::computeStateVariableDerivatives() to provide the explicit form of the
+differential equations; this is still true for components supporting an implicit
+mode. Components supporting implicit mode must also support explicit mode so
+that models used in direct collocation problems can still be used in
+time-stepping forward simulations. We do not want to end up in a situation where
+some models can be used only in direct collocation and some only in
+time-stepping forward simulations. The correct implementation of
+computeStateVariableDerivatives() in implicit mode is to set the derivative
+to the value of the discrete variable holding the state derivative that was
+supplied by Moco. Moco relies on computeStateVariableDerivatives() when
+enforcing `zdot = zeta` (where zeta is the control variable for the derivative
+of the auxiliary state variable).
+
+The use of discrete state variables and component outputs instead of virtual
+functions (akin to computeStateVariableDerivatives()) was chosen to avoid
+modifying the Component class. The interface for specifying
+implicit auxiliary dynamics may change in the future to be more similar to the
+interface for explicit auxiliary dynamics.
 
 @subsection implpreskin Prescribed kinematics
 

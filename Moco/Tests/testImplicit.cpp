@@ -322,54 +322,60 @@ class MyAuxiliaryImplicitDynamics : public Component {
     OpenSim_DECLARE_CONCRETE_OBJECT(MyAuxiliaryImplicitDynamics, Component);
 
 public:
-    OpenSim_DECLARE_PROPERTY(default_state, double,
+    OpenSim_DECLARE_PROPERTY(default_foo, double,
             "Value of the default state returned by initSystem().");
-    OpenSim_DECLARE_OUTPUT(implicitresidual, double, getImplicitResidual,
+    OpenSim_DECLARE_OUTPUT(implicitresidual_foo, double, getImplicitResidual,
             SimTK::Stage::Dynamics);
+    OpenSim_DECLARE_OUTPUT(implicitenabled_foo, bool, getImplicitEnabled,
+            SimTK::Stage::Model);
     MyAuxiliaryImplicitDynamics() {
         setName("implicit_auxdyn");
-        constructProperty_default_state(0.5);
+        constructProperty_default_foo(0.5);
+    }
+    bool getImplicitEnabled(const SimTK::State&) const {
+        return true;
     }
     double getImplicitResidual(const SimTK::State& s) const {
-
-        if (!isCacheVariableValid(s, "implicitresidual")) {
+        if (!isCacheVariableValid(s, "implicitresidual_foo")) {
             // Get the derivative control value.
             // TODO add method to Component get with index instead.
             const double derivative =
-                    getDiscreteVariableValue(s, "implicitderiv");
+                    getDiscreteVariableValue(s, "implicitderiv_foo");
             // Get the state variable value.
-            const double statevar = getStateVariableValue(s, "statevar");
+            const double statevar = getStateVariableValue(s, "foo");
             // The dynamics residual: y y' - 1 = 0.
             double residual = derivative * statevar - 1;
             // Update the cache variable with the residual value.
-            setCacheVariableValue(s, "implicitresidual", residual);
-            markCacheVariableValid(s, "implicitresidual");
+            setCacheVariableValue(s, "implicitresidual_foo", residual);
+            markCacheVariableValid(s, "implicitresidual_foo");
         }
-        return getCacheVariableValue<double>(s, "implicitresidual");
+        return getCacheVariableValue<double>(s, "implicitresidual_foo");
     }
 
 private:
     void extendInitStateFromProperties(SimTK::State& s) const override {
         Super::extendInitStateFromProperties(s);
-        setStateVariableValue(s, "statevar", get_default_state());
+        setStateVariableValue(s, "foo", get_default_foo());
     }
     void extendSetPropertiesFromState(const SimTK::State& s) override {
         Super::extendSetPropertiesFromState(s);
-        set_default_state(getStateVariableValue(s, "statevar"));
+        set_default_foo(getStateVariableValue(s, "foo"));
     }
     void computeStateVariableDerivatives(const SimTK::State& s) const override {
-        const double derivative = getDiscreteVariableValue(s, "implicitderiv");
-        setStateVariableDerivativeValue(s, "statevar", derivative);
+        const double derivative =
+                getDiscreteVariableValue(s, "implicitderiv_foo");
+        setStateVariableDerivativeValue(s, "foo", derivative);
     }
     void extendAddToSystem(SimTK::MultibodySystem& system) const override {
         Super::extendAddToSystem(system);
-        addStateVariable("statevar");
-        addDiscreteVariable("implicitderiv", SimTK::Stage::Dynamics);
-        addCacheVariable("implicitresidual", double(0), SimTK::Stage::Dynamics);
+        addStateVariable("foo");
+        addDiscreteVariable("implicitderiv_foo", SimTK::Stage::Dynamics);
+        addCacheVariable(
+                "implicitresidual_foo", double(0), SimTK::Stage::Dynamics);
     }
 };
 
-TEST_CASE("Auxiliary implicit dynamics") {
+TEST_CASE("Implicit auxiliary dynamics") {
     SECTION("State unit tests") {
         Model model;
         auto* implicit_auxdyn = new MyAuxiliaryImplicitDynamics();
@@ -386,34 +392,49 @@ TEST_CASE("Auxiliary implicit dynamics") {
             const double derivativeControl =
                     polyFunc.calcValue(SimTK::Vector(1, time[i]));
             implicit_auxdyn->setDiscreteVariableValue(
-                    state, "implicitderiv", derivativeControl);
+                    state, "implicitderiv_foo", derivativeControl);
             model.realizeDynamics(state);
 
             double statevar =
-                    implicit_auxdyn->getStateVariableValue(state, "statevar");
+                    implicit_auxdyn->getStateVariableValue(state, "foo");
             double derivative =
                     implicit_auxdyn->getStateVariableDerivativeValue(
-                            state, "statevar");
+                            state, "foo");
 
             // y y' = 1
             double residual = statevar * derivative - 1;
             // The check that the residual is being computed correctly.
             CHECK(residual == implicit_auxdyn->getOutputValue<double>(
-                                      state, "implicitresidual"));
+                                      state, "implicitresidual_foo"));
         }
     }
 
-    // SECTION("Direct collocation implicit") {
-    //    MocoStudy study;
-    //    auto& problem = study.updProblem();
-    //    auto model = OpenSim::make_unique<Model>();
-    //    auto* implicit_auxdyn = new MyAuxiliaryImplicitDynamics();
-    //    model->addComponent(implicit_auxdyn);
-    //    model->initSystem();
-    //    model->printSubcomponentInfo();
-    //    problem.setModel(std::move(model));
-    //    problem.setTimeBounds(0, 1);
-    //    problem.setStateInfo("/implicit_auxdyn/statevar", {-10, 10}, 0.0);
-    //    auto solution = study.solve();
-    //}
+    SECTION("Direct collocation implicit") {
+       MocoStudy study;
+       auto& problem = study.updProblem();
+       auto model = OpenSim::make_unique<Model>();
+       model->addComponent(new MyAuxiliaryImplicitDynamics());
+       problem.setModel(std::move(model));
+       problem.setTimeBounds(0, 1);
+       problem.setStateInfo("/implicit_auxdyn/foo", {0, 3}, 1.0);
+       auto solution = study.solve();
+       const int N = solution.getNumTimes();
+       const double final = solution.getStatesTrajectory().getElt(N-1, 0);
+       // Correct answer obtained from Matlab with ode45.
+       CHECK(final == Approx(1.732).margin(1e-3));
+    }
+
+    SECTION("MocoTropterSolver does not support implicit auxiliary dynamics") {
+        MocoStudy study;
+        auto& problem = study.updProblem();
+        auto model = OpenSim::make_unique<Model>();
+        model->addComponent(new MyAuxiliaryImplicitDynamics());
+        problem.setModel(std::move(model));
+        problem.setTimeBounds(0, 1);
+        problem.setStateInfo("/implicit_auxdyn/foo", {0, 3}, 1.0);
+        study.initTropterSolver();
+        CHECK_THROWS(study.solve(),
+                Catch::Contains("MocoTropterSolver does not support problems "
+                                "with implicit auxiliary dynamics."));
+    }
 }
