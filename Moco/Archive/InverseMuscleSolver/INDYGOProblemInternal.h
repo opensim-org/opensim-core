@@ -18,23 +18,17 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "INDYGO.h"
+#include "../../Moco/MocoUtilities.h"
 #include "DeGrooteFregly2016MuscleStandalone.h"
-
-#include "InverseMuscleSolverMotionData.h"
 #include "GlobalStaticOptimization.h"
-
-#include "../MocoUtilities.h"
-
-#include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Actuators/CoordinateActuator.h>
-
-
-#include "DeGrooteFregly2016MuscleStandalone.h"
-#include <tropter/tropter.h>
-
-
+#include "INDYGO.h"
+#include "InverseMuscleSolverMotionData.h"
 #include <algorithm>
+
+#include <OpenSim/Actuators/CoordinateActuator.h>
+#include <OpenSim/Simulation/Model/Model.h>
+
+#include <tropter/tropter.h>
 
 namespace OpenSim {
 
