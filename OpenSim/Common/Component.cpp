@@ -256,10 +256,9 @@ void Component::finalizeFromProperties()
 
         if (count > 0) { // if a duplicate
             // Warn of the problem
-            std::string msg = getConcreteClassName() + " '" + getName() +
-                "' has subcomponents with duplicate name '" + name +  "'.\n" +
-                "The duplicate is being renamed to '" + uniqueName + "'.";
-            std::cout << msg << std::endl;
+            spdlog::warn("{} '{}' has subcomponents with duplicate name '{}'. "
+                         "The duplicate is being renamed to '{}'.",
+                         getConcreteClassName(), getName(), name, uniqueName);
 
             // Now rename the subcomponent with its verified unique name
             Component* mutableSub = const_cast<Component *>(sub.get());

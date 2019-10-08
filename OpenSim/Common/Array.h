@@ -27,10 +27,10 @@
  * Author: Frank C. Anderson 
  */
 
-
-#include <iostream>
-#include "osimCommonDLL.h"
 #include "Exception.h"
+#include "osimCommonDLL.h"
+#include <iostream>
+#include <spdlog/spdlog.h>
 
 static const int Array_CAPMIN = 1;
 
@@ -308,8 +308,8 @@ bool computeNewCapacity(int aMinCapacity,int &rNewCapacity)
 
     // CHECK FOR ZERO INCREMENT
     if(_capacityIncrement == 0) {
-        std::cout << "Array.computeNewCapacity: WARN- capacity is set";
-        std::cout << " not to increase (i.e., _capacityIncrement==0).\n";
+        spdlog::warn("Array.computeNewCapacity: capacity is set not to "
+                     "increase (i.e., _capacityIncrement==0).");
         return(false);
     }
 
@@ -342,7 +342,7 @@ bool ensureCapacity(int aCapacity)
     int i;
     T *newArray = new T[aCapacity];
     if(newArray==NULL) {
-        std::cout << "Array.ensureCapacity: ERR- failed to increase capacity.\n";
+        spdlog::error("Array.ensureCapacity: failed to increase capacity.");
         return(false);
     }
 
@@ -381,7 +381,7 @@ void trim()
     int i;
     T *array = new T[newCapacity];
     if(array==NULL) {
-        std::cout << "Array.trim: ERR- unable to allocate temporary array.\n";
+        spdlog::error("Array.trim: unable to allocate temporary array.");
         return;
     }
 
@@ -583,7 +583,7 @@ int insert(int aIndex,const T &aValue)
 {
     // NEGATIVE INDEX
     if(aIndex<0) {
-        std::cout << "Array.insert: ERR- aIndex was less than 0.\n";
+        spdlog::error("Array.insert: aIndex was less than 0.");
         return(_size);
     }
 
@@ -636,12 +636,12 @@ int insert(int aIndex,const T &aValue)
 int remove(int aIndex)
 {
     if(aIndex<0) {
-        std::cout << "Array.remove: ERR- aIndex was less than 0.\n";
+        spdlog::error("Array.remove: aIndex was less than 0.");
         return(_size);
     }
     if(aIndex>=_size) {
-        std::cout << "Array.remove: ERR- aIndex was greater than or equal the ";
-        std::cout << "size of the array.\n";
+        spdlog::error("Array.remove: aIndex was greater than or equal the size "
+                      "of the array.");
         return(_size);
     }
 

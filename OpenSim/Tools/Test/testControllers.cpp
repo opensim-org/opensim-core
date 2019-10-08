@@ -149,7 +149,7 @@ void testControlSetControllerOnBlock()
     // Integrate from initial time to final time
     si.setTime(initialTime);
     manager.initialize(si);
-    std::cout<<"\n\nIntegrating from "<<initialTime<<" to "<<finalTime<<std::endl;
+    spdlog::info("Integrating from {} to {}.", initialTime, finalTime);
     si = manager.integrate(finalTime);
 
     si.getQ().dump("Final position:");

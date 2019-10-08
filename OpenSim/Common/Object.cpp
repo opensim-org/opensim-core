@@ -240,9 +240,9 @@ bool Object::operator==(const Object& other) const
                             const std::string& thisValue,
                             const std::string& otherValue) {
         if (Object::getDebugLevel() > 0) {
-            std::cout << "In Object::operator==(), differing " << name << ":\n"
-                << "left: " << thisValue
-                << "\nright: " << otherValue << std::endl;
+            spdlog::debug("In Object::operator==(), differing {}:\n"
+                          "left: {}\nright: {}",
+                    name, thisValue, otherValue);
         }
 
     };
@@ -512,12 +512,11 @@ registerType(const Object& aObject)
     // GET TYPE
     const string& type = aObject.getConcreteClassName();
     if(type.empty()) {
-        printf("Object.registerType: ERR- no type name has been set.\n");
+        spdlog::error("Object.registerType: no type name has been set.");
         return;
     }
     if (_debugLevel>=2) {
-        cout << "Object.registerType: " << type << " .\n";
-        spdlog::debug("Object.registerType: {}!", type);
+        spdlog::trace("Object.registerType: {}.", type);
     }
 
     // REPLACE IF A MATCHING TYPE IS ALREADY REGISTERED
@@ -978,7 +977,7 @@ try {
 
         // NOT RECOGNIZED
         default :
-            cout<<"Object.UpdateObject: WARN- unrecognized property type."<<endl;
+            spdlog::warn("Object.UpdateObject: unrecognized property type.");
             break;
         }
     }
@@ -1237,7 +1236,7 @@ void Object::updateXMLNode(SimTK::Xml::Element& aParent,
 
         // NOT RECOGNIZED
         default :
-            cout<<"Object.UpdateObject: WARN- unrecognized property type."<<endl;
+            spdlog::warn("Object.UpdateObject: unrecognized property type.");
             break;
         }
     }
@@ -1601,7 +1600,7 @@ makeObjectFromFile(const std::string &aFileName)
     }
 
     catch(const std::exception& x) {
-        cout << x.what() << endl;
+        spdlog::info(x.what());
         return nullptr;
     }
     catch(...){ // Document couldn't be opened, or something went really bad

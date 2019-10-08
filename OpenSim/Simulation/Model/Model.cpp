@@ -1584,6 +1584,7 @@ void Model::printBasicInfo(std::ostream& aOStream) const
 
 void Model::printDetailedInfo(const SimTK::State& s, std::ostream& aOStream) const
 {
+    // TODO: use logging?
     aOStream << "MODEL: " << getName() << std::endl;
 
     aOStream

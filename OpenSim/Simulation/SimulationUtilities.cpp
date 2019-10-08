@@ -43,8 +43,9 @@ SimTK::State OpenSim::simulate(Model& model,
     // Ensure the final time is in the future.
     const double initialTime = initialState.getTime();
     if (finalTime <= initialTime) {
-        std::cout << "The final time must be in the future (current time is "
-                  << initialTime << "); simulation aborted." << std::endl;
+        spdlog::error("The final time must be in the future (current time is {}"
+                      "); simulation aborted.",
+                initialTime);
         return state;
     }
 
@@ -61,7 +62,7 @@ SimTK::State OpenSim::simulate(Model& model,
 
         viz.setShowSimTime(true);
         viz.drawFrameNow(state);
-        std::cout << "A visualizer window has opened." << std::endl;
+        spdlog::info("A visualizer window has opened.");
 
         // if visualizing enable replay
         simulateOnce = false;
@@ -135,9 +136,9 @@ OpenSim::updatePre40KinematicsStorageFor40MotionType(const Model& pre40Model,
         int ix = updatedKinematics->getStateIndex(coord->getName());
         
         if (ix < 0) {
-            std::cout << "updateKinematicsStorageForUpdatedModel(): motion '"
-            << kinematics.getName() << "' does not contain inconsistent "
-            << "coordinate '" << coord->getName() << "'." << std::endl;
+            spdlog::warn("updateKinematicsStorageForUpdatedModel(): motion '{}"
+                         "' does not contain inconsistent coordinate {}.",
+                    kinematics.getName(), coord->getName());
         }
         else {
             // convert this column back to internal values by undoing the
@@ -169,8 +170,8 @@ void OpenSim::updatePre40KinematicsFilesFor40MotionType(const Model& model,
             outFilePath = filePath.substr(0, back) + suffix +
                             filePath.substr(back);
         }
-        std::cout << "Writing converted motion '" << filePath << "' to '"
-            << outFilePath << "'." << std::endl;
+        spdlog::info("Writing converted motion '{}' to '{}'.",
+                filePath, outFilePath);
 
         updatedMotion->print(outFilePath);
     }
@@ -195,29 +196,27 @@ void OpenSim::updateSocketConnecteesBySearch(Model& model)
                         socket.finalizeConnection(model);
                         numSocketsUpdated += 1;
                     } else {
-                        std::cout << "Socket '" << socketNames[i] << "' in "
-                                << "Component " << comp.getAbsolutePathString()
-                                << " needs updating but a connectee with the "
-                                   "specified name could not be found."
-                                << std::endl;
+                        spdlog::warn("Socket '{}' in Component {} "
+                                     "needs updating but a connectee with the "
+                                     "specified name could not be found.",
+                                socketNames[i], comp.getAbsolutePathString());
                     }
                 }
             } catch (const std::exception& e) {
-                std::cout << "Warning: Caught exception when processing "
-                    "Socket " << socketNames[i] << " in " <<
-                    comp.getConcreteClassName() << " at " <<
-                    comp.getAbsolutePathString() << ": " << e.what() <<
-                    std::endl;
+                spdlog::warn("Caught exception when processing "
+                             "Socket {} in {} at {}: {}",
+                        socketNames[i], comp.getConcreteClassName(),
+                        comp.getAbsolutePathString(), e.what());
             }
         }
     }
     if (numSocketsUpdated) {
-        std::cout << "OpenSim::updateSocketConnecteesBySearch(): updated "
-                << numSocketsUpdated << " Sockets in Model '"
-                << model.getName() << "'." << std::endl;
+        spdlog::info("OpenSim::updateSocketConnecteesBySearch(): updated {}"
+                     " Sockets in Model '{}'.", numSocketsUpdated,
+                     model.getName());
     } else {
-        std::cout << "OpenSim::updateSocketConnecteesBySearch(): "
-                     "no Sockets updated in Model '"
-                  << model.getName() << "'." << std::endl;
+        spdlog::info("OpenSim::updateSocketConnecteesBySearch(): "
+                     "no Sockets updated in Model '{}'.",
+                model.getName());
     }
 }

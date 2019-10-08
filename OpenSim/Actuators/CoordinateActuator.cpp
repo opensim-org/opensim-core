@@ -25,9 +25,10 @@
 //==============================================================================
 // INCLUDES
 //==============================================================================
-#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/CoordinateSet.h>
 #include <OpenSim/Simulation/Model/ForceSet.h>
+#include <OpenSim/Simulation/Model/Model.h>
+#include <spdlog/spdlog.h>
 
 #include "CoordinateActuator.h"
 
@@ -199,7 +200,7 @@ void CoordinateActuator::computeForce( const SimTK::State& s,
     if(isCoordinateValid()){
         applyGeneralizedForce(s, *_coord, getActuation(s), mobilityForces);
     } else {
-       std::cout << "CoordinateActuator::computeForce  Invalid coordinate " << std::endl;
+       spdlog::error("CoordinateActuator::computeForce Invalid coordinate ");
     }
 }
 

@@ -49,7 +49,7 @@ static void PrintUsage(const char *aProgName, ostream &aOStream);
  */
 int main(int argc,char **argv)
 {
-    std::cout << "openSimToSimm, " << OpenSim::GetVersionAndDate() << std::endl;
+    spdlog::info("openSimToSimm, {}", OpenSim::GetVersionAndDate());
 
    Object::RegisterType(SimbodyEngine());
     SimbodyEngine::registerTypes();

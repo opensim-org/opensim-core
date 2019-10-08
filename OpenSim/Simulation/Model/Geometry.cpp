@@ -218,7 +218,8 @@ void Mesh::extendFinalizeFromProperties() {
     if (!isObjectUpToDateWithProperties()) {
         const Component* rootModel = nullptr;
         if (!hasOwner()) {
-            std::cout << "Mesh " << get_mesh_file() << " not connected to model..ignoring" << std::endl;
+            spdlog::warn("Mesh {} not connected to model..ignoring",
+                    get_mesh_file());
             return;   // Orphan Mesh not part of a model yet
         }
         const Component* owner = &getOwner();
@@ -234,7 +235,8 @@ void Mesh::extendFinalizeFromProperties() {
         }
 
         if (rootModel == nullptr) {
-            std::cout << "Mesh " << get_mesh_file() << " not connected to model..ignoring" << std::endl;
+            spdlog::warn("Mesh {} not connected to model..ignoring",
+                    get_mesh_file());
             return;   // Orphan Mesh not descendant of a model
         }
 
@@ -250,8 +252,8 @@ void Mesh::extendFinalizeFromProperties() {
             isAbsolutePath, directory, fileName, extension);
         const string lowerExtension = SimTK::String::toLower(extension);
         if (lowerExtension != ".vtp" && lowerExtension != ".obj" && lowerExtension != ".stl") {
-            std::cout << "ModelVisualizer ignoring '" << file
-                << "'; only .vtp, .stl, and .obj files currently supported." << std::endl;
+            spdlog::warn("ModelVisualizer ignoring '{}'; only .vtp, .stl, and "
+                         ".obj files currently supported.", file);
             return;
         }
 
@@ -262,7 +264,7 @@ void Mesh::extendFinalizeFromProperties() {
 
         if (!foundIt) {
             if (!warningGiven) {
-                std::cout << "Couldn't find file '" << file << "'." << std::endl;
+                spdlog::warn("Couldn't find file '{}'.", file);
                 warningGiven = true;
             }
             if (getDebugLevel() <= 0) { return; }
@@ -285,9 +287,8 @@ void Mesh::extendFinalizeFromProperties() {
             // it will be handled downstream 
         }
         catch (const std::exception& e) {
-            std::cout << "Visualizer couldn't open "
-                << attempts.back() << " because:\n"
-                << e.what() << std::endl;
+            spdlog::error("Visualizer couldn't open {} because:\n{}",
+                attempts.back(), e.what());
             return;
         }
 

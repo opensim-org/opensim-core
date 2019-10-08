@@ -27,12 +27,12 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <OpenSim/Common/Storage.h>
-#include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/Analysis.h>
-#include <OpenSim/Simulation/Model/Probe.h>
 #include "osimAnalysesDLL.h"
-
+#include <OpenSim/Common/Storage.h>
+#include <OpenSim/Simulation/Model/Analysis.h>
+#include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/Model/Probe.h>
+#include <spdlog/spdlog.h>
 
 #ifdef SWIG
     #ifdef OSIMANALYSES_API
@@ -158,8 +158,7 @@ public:
             Probe& nextProbe = (Probe&)probes[i];
             if (nextProbe.getOperation()=="integrate" || nextProbe.getOperation()=="min" || nextProbe.getOperation()=="max"){
                 nextProbe.setEnabled(false);
-                std::cout << "Disabling probe " << nextProbe.getName() << " as invalid for non-integration context." << std::endl;
-
+                spdlog::warn("Disabling probe {} as invalid for non-integration context.", nextProbe.getName());
             }
         }
     }

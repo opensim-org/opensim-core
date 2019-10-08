@@ -252,9 +252,9 @@ Storage::Storage(const string &fileName, bool readHeadersOnly) :
     parseColumnLabels(line.c_str());
 
     if (_columnLabels.getSize()!= nc){
-        std::cout << "Storage: Warning- inconsistent headers in file " << 
-            fileName << ". nColumns=" << nc << " but "
-            << _columnLabels.getSize() << " were found" << std::endl;
+        spdlog::warn("Storage: inconsistent headers in file {}. "
+                     "nColumns={} but {} were found",
+                fileName, nc, _columnLabels.getSize());
     }
     // CAPACITY
     _storage.ensureCapacity(nr);
@@ -759,7 +759,7 @@ getLastStateVector() const
     try {
         vec = &_storage.updLast();
     } catch(const Exception&) {
-        //x.print(cout);
+        //spdlog::warn(cout);
     }
     return(vec);
 }
@@ -1286,7 +1286,7 @@ setDataColumn(int aStateIndex,const Array<double> &aData)
 {
     int n = _storage.getSize();
     if(n!=aData.getSize()) {
-        cout<<"Storage.setDataColumn: ERR- sizes don't match." << endl;
+        spdlog::error("Storage.setDataColumn: sizes don't match.");
         return;
     }
 
@@ -1304,7 +1304,7 @@ void Storage::setDataColumnToFixedValue(const std::string& columnName, double ne
     int n = _storage.getSize();
     int aStateIndex = getStateIndex(columnName);
     if(aStateIndex==-1) {
-        cout<<"Storage.setDataColumnToFixedValue: ERR- column not found." << endl;
+        spdlog::error("Storage.setDataColumnToFixedValue: column not found.");
         return;
     }
 
@@ -1353,7 +1353,8 @@ void Storage::getDataForIdentifier(const std::string& identifier, Array<Array<do
     Array<int> found = getColumnIndicesForIdentifier(identifier);
 
     if(found.getSize() == 0){
-        cout << "WARNING: Storage "+getName()+" could not locate data for identifier "+identifier+"." << endl;
+        spdlog::warn("Storage {} could not locate data for identifier {}.",
+                getName(), identifier);
         return;
     }
     /* a row of "data" can be shorter than number of columns if time is the first column, since 
@@ -1472,7 +1473,7 @@ crop(const double newStartTime, const double newFinalTime)
     // delete remaining rows in reverse order.
     int numRowsToKeep=finalindex-startindex+1;
     if (numRowsToKeep <=0){
-        cout<<"Storage.crop: WARNING: No rows will be left." << endl;
+        spdlog::warn("Storage.crop: No rows will be left.");
         numRowsToKeep=0;
     }
     if (startindex!=0){
@@ -2411,7 +2412,7 @@ smoothSpline(int aOrder,double aCutoffFrequency)
     double avgDt = (_storage[size-1].getTime() - _storage[0].getTime()) / (size-1);
 
     if(dtmin<SimTK::Eps) {
-        cout<<"Storage.SmoothSpline: storage cannot be resampled."<<endl;
+        spdlog::warn("Storage.SmoothSpline: storage cannot be resampled.");
         return;
     }
 
@@ -2422,7 +2423,7 @@ smoothSpline(int aOrder,double aCutoffFrequency)
     }
 
     if(size<(2*aOrder)) {
-        cout<<"Storage.SmoothSpline: too few data points to filter."<<endl;
+        spdlog::warn("Storage.SmoothSpline: too few data points to filter.");
         return;
     }
 
@@ -2451,7 +2452,7 @@ lowpassIIR(double aCutoffFrequency)
     double avgDt = (_storage[size-1].getTime() - _storage[0].getTime()) / (size-1);
 
     if(dtmin<SimTK::Eps) {
-        cout<<"Storage.lowpassIIR: storage cannot be resampled."<<endl;
+        spdlog::warn("Storage.lowpassIIR: storage cannot be resampled.");
         return;
     }
 
@@ -2462,7 +2463,7 @@ lowpassIIR(double aCutoffFrequency)
     }
 
     if(size<(4)) {
-        cout<<"Storage.lowpassIIR: too few data points to filter."<<endl;
+        spdlog::warn("Storage.lowpassIIR: too few data points to filter.");
         return;
     }
 
@@ -2488,7 +2489,7 @@ lowpassFIR(int aOrder,double aCutoffFrequency)
     double avgDt = (_storage[size-1].getTime() - _storage[0].getTime()) / (size-1);
 
     if (dtmin<SimTK::Eps) {
-        cout<<"Storage.lowpassFIR: storage cannot be resampled."<<endl;
+        spdlog::warn("Storage.lowpassFIR: storage cannot be resampled.");
         return;
     }
 
@@ -2499,7 +2500,7 @@ lowpassFIR(int aOrder,double aCutoffFrequency)
     }
 
     if(size<(2*aOrder)) {
-        cout<<"Storage.lowpassFIR: too few data points to filter."<<endl;
+        spdlog::warn("Storage.lowpassFIR: too few data points to filter.");
         return;
     }
 
@@ -2609,7 +2610,9 @@ resample(double aDT, int aDegree)
     int maxSamples = MAX_RESAMPLE_SIZE;
     if((getLastTime()-getFirstTime())/aDT > maxSamples) {
         double newDT = (getLastTime()-getFirstTime())/maxSamples;
-        cout<<"Storage.resample: WARNING: resampling at time step "<<newDT<<" (but minimum time step is "<<aDT<<")"<<endl;
+        spdlog::warn("Storage.resample: resampling at time step {} (but "
+                     "minimum time step is {})",
+                newDT, aDT);
         aDT = newDT;
     }
 

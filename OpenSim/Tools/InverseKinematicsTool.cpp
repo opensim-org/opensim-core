@@ -300,7 +300,7 @@ bool InverseKinematicsTool::run()
         kinematicsReporter->setInDegrees(true);
         _model->addAnalysis(kinematicsReporter);
 
-        cout<<"Running tool "<<getName()<<".\n";
+        spdlog::info("Running tool {}.", getName());
 
         // Get the trial name to label data written to files
         string trialName = getName();
@@ -385,11 +385,11 @@ bool InverseKinematicsTool::run()
                 markerErrors.set(2, sqrt(maxSquaredMarkerError));
                 modelMarkerErrors->append(s.getTime(), 3, &markerErrors[0]);
 
-                cout << "Frame " << i << " (t=" << s.getTime() << "):\t"
-                    << "total squared error = " << totalSquaredMarkerError
-                    << ", marker error: RMS=" << rms << ", max="
-                    << sqrt(maxSquaredMarkerError) << " (" 
-                    << ikSolver.getMarkerNameForIndex(worst) << ")" << endl;
+                spdlog::info("Frame {} (t={}):\ttotal squared error = {}"
+                             ", marker error: RMS={}, max={} ({})",
+                        i, s.getTime(), totalSquaredMarkerError, rms,
+                        sqrt(maxSquaredMarkerError),
+                        ikSolver.getMarkerNameForIndex(worst));
             }
 
             if(_reportMarkerLocations){
@@ -459,16 +459,16 @@ bool InverseKinematicsTool::run()
 
         success = true;
 
-        cout << "InverseKinematicsTool completed " << Nframes << " frames in "
-            <<(double)(clock()-start)/CLOCKS_PER_SEC << "s\n" <<endl;
+        spdlog::info("InverseKinematicsTool completed {} frames in {}s.",
+                Nframes, (double)(clock()-start)/CLOCKS_PER_SEC);
     }
     catch (const std::exception& ex) {
-        std::cout << "InverseKinematicsTool Failed: " << ex.what() << std::endl;
+        spdlog::error("InverseKinematicsTool Failed: {}", ex.what());
         // If failure happened after kinematicsReporter was added, make sure to cleanup
         if (kinematicsReporter!= nullptr)
             _model->removeAnalysis(kinematicsReporter);
-        throw (Exception("InverseKinematicsTool Failed, "
-            "please see messages window for details..."));
+        throw Exception("InverseKinematicsTool Failed, "
+                        "please see messages window for details...");
     }
 
     if (modelFromFile) delete _model;
@@ -484,7 +484,7 @@ void InverseKinematicsTool::updateFromXMLNode(SimTK::Xml::Element& aNode, int ve
         if (versionNumber < 20300){
             std::string origFilename = getDocumentFileName();
             newFileName=IO::replaceSubstring(newFileName, ".xml", "_v23.xml");
-            cout << "Old version setup file encountered. Converting to new file "<< newFileName << endl;
+            spdlog::info("Old version setup file encountered. Converting to new file {}", newFileName);
             SimTK::Xml::Document doc = SimTK::Xml::Document(origFilename);
             doc.writeToFile(newFileName);
         }

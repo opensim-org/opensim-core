@@ -680,14 +680,15 @@ bool RRATool::run()
     SimTK::OptimizerAlgorithm algorithm = SimTK::InteriorPoint;
     if(IO::Uppercase(_optimizerAlgorithm) == "CFSQP") {
         if(!SimTK::Optimizer::isAlgorithmAvailable(SimTK::CFSQP)) {
-            std::cout << "CFSQP optimizer algorithm unavailable.  Will try to use IPOPT instead." << std::endl;
+            spdlog::warn("CFSQP optimizer algorithm unavailable. "
+                         "Will try to use IPOPT instead.");
             algorithm = SimTK::InteriorPoint;
         } else {
-            std::cout << "Using CFSQP optimizer algorithm." << std::endl;
+            spdlog::info("Using CFSQP optimizer algorithm.");
             algorithm = SimTK::CFSQP;
         }
     } else if(IO::Uppercase(_optimizerAlgorithm) == "IPOPT") {
-        std::cout << "Using IPOPT optimizer algorithm." << std::endl;
+        spdlog::info("Using IPOPT optimizer algorithm.");
         algorithm = SimTK::InteriorPoint;
     } else {
         throw Exception("RRATool: ERROR- Unrecognized optimizer algorithm: '"+_optimizerAlgorithm+"'",__FILE__,__LINE__);
@@ -696,12 +697,14 @@ bool RRATool::run()
     SimTK::Optimizer *optimizer = new SimTK::Optimizer(*target, algorithm);
     controller->setOptimizationTarget(target, optimizer);
 
-    cout<<"\nSetting optimizer print level to "<< (_verbose?4:0) <<".\n";
+    spdlog::info("Setting optimizer print level to {}.", _verbose?4:0);
     optimizer->setDiagnosticsLevel(_verbose?4:0);
-    cout<<"Setting optimizer convergence tolerance to "<<_optimizationConvergenceTolerance<<".\n";
+    spdlog::info("Setting optimizer convergence tolerance to {}.",
+            _optimizationConvergenceTolerance);
     optimizer->setConvergenceTolerance(_optimizationConvergenceTolerance);
-    cout<<"Setting optimizer maximum iterations to "<<2000<<".\n";
-    optimizer->setMaxIterations(2000);
+    const int maxIterations = 2000;
+    spdlog::info("Setting optimizer maximum iterations to {}.", maxIterations);
+    optimizer->setMaxIterations(maxIterations);
     optimizer->useNumericalGradient(false); // Use our own central difference approximations
     optimizer->useNumericalJacobian(false);
     if(algorithm == SimTK::InteriorPoint) {
@@ -712,8 +715,10 @@ bool RRATool::run()
         optimizer->setAdvancedRealOption("nlp_scaling_max_gradient",100);
     }
 
-    if(_verbose) cout<<"\nSetting cmc controller to use verbose printing."<<endl;
-    else cout<<"\nSetting cmc controller to not use verbose printing."<<endl;
+    if(_verbose)
+        spdlog::info("Setting cmc controller to use verbose printing.");
+    else
+        spdlog::info("Setting cmc controller to not use verbose printing.");
     controller->setUseVerbosePrinting(_verbose);
 
     controller->setCheckTargetTime(true);

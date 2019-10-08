@@ -281,8 +281,9 @@ void CorrectionController::extendConnectToModel(Model& model)
             adoptSubcomponent(actuator);
             setNextSubcomponentInSystem(*actuator);
             
-            std::cout << " CorrectionController::extendConnectToModel(): "
-                << name << " added " << std::endl;
+            spdlog::info(" CorrectionController::extendConnectToModel(): "
+                         "{} added",
+                    name);
 
             actuator->setOptimalForce(1.0);
         }
@@ -293,8 +294,8 @@ void CorrectionController::extendConnectToModel(Model& model)
 
     setNumControls(getActuatorSet().getSize());
 
-    printf(" CorrectionController::extendConnectToModel() " 
-        "num Actuators= %d kv=%f kp=%f \n",
+    spdlog::info(" CorrectionController::extendConnectToModel() "
+        "num Actuators= {} kv={} kp={}",
         getNumControls(), _kv, _kp );
 }
 

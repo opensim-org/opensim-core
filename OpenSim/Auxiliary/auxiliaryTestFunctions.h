@@ -30,15 +30,16 @@
 #include "getRSS.h"
 
 #include <fstream>
-#include <string>
 #include <regex>
+#include <spdlog/spdlog.h>
+#include <string>
 #include <type_traits>
 
- /**
+/**
  * ASSERT_EQUAL is a general utility for comparing two values and throwing
  * an Exception with a caller defined message when values are not equivalent.
  * Note, ASSERT_EQUAL is typically used to verify that some found value matches
- * a given expected or standard value. If the expected value is NaN, 
+ * a given expected or standard value. If the expected value is NaN,
  * ASSERT_EQUAL will NOT throw if the found value is also NaN. This is
  * particularly helpful for comparing motion capture data where missing data
  * are denoted by NaN values. If NaNs are not acceptable for your test, then
@@ -172,10 +173,10 @@ void CHECK_STORAGE_AGAINST_STANDARD(const OpenSim::Storage& result,
            errorMessage + "- no common columns to compare!");
 
     for (size_t i = 0; i < ncolumns; ++i) {
-        std::cout << "column:    " << columnsUsed[i] << std::endl;
-        std::cout << "RMS error: " << comparisons[i] << std::endl;
-        std::cout << "tolerance: " << tolerances[i] << std::endl << std::endl;
-        ASSERT(comparisons[i] < tolerances[i], testFile, testFileLine, 
+        spdlog::info("column:    {}", columnsUsed[i]);
+        spdlog::info("RMS error: {}", comparisons[i]);
+        spdlog::info("tolerance: {}\n", tolerances[i]);
+        ASSERT(comparisons[i] < tolerances[i], testFile, testFileLine,
                errorMessage);
     }
 }
