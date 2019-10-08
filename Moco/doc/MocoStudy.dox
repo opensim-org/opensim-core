@@ -110,7 +110,7 @@ satisfy the kinematic constraints (using Model::assemble()).
 
 @subsection implicitauxiliary Implicit auxiliary dynamics
 
-OpenSim's Component%s supports of auxiliary dynamics,
+OpenSim's Component%s support auxiliary dynamics,
 that is, additional dynamics added to the multibody dynamics equations
 that define a model's computational system (e.g., muscle activation dynamics).
 Component%s support dynamics in explicit form (i.e., \f$ \dot{y} =

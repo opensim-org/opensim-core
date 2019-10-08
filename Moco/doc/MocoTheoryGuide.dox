@@ -79,15 +79,16 @@ We use the following notation:
 In Moco, "goals", such as tracking marker data or effort, can be
 enforced either as cost terms to minimize or endpoint constraints.
 
-Auxiliary dynamics are typically used for muscle activation dynamics
-and fiber dynamics. In Moco, these dynamics can be expressed with explicit
-differential equations, where the derivative of the auxiliary state variable is
-isolated, or implicit differential equations, where the derivative of the
-auxiliary state variable is defined implicitly (not isolated). Note that the
-explicit auxiliary differential equations can depend on any auxiliary state
-variable, even on a variable whose dynamics are enforced with an implicit
-differential equation. Similarly, the implicit differential equations can depend
-on any of the auxiliary state variables.
+Auxiliary dynamics are typically used for muscle activation dynamics and fiber
+dynamics. In Moco, these dynamics can be expressed with explicit differential
+equations, where the derivative of the auxiliary state variable is on the left
+hand side of the dynamics equations, or implicit differential equations, where
+the derivative of the auxiliary state variable is an input to a residual
+equation (i.e., the left hand side is 0). Note that the explicit auxiliary
+differential equations can depend on any auxiliary state variable, even on a
+variable whose dynamics are enforced with an implicit differential equation.
+Similarly, the implicit differential equations can depend on any of the
+auxiliary state variables.
 
 @subsection mocopreskintheory Prescribed kinematics
 
