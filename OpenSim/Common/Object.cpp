@@ -1664,6 +1664,44 @@ std::string Object::dump() const {
     return outString;
 }
 
+
+void Object::setDebugLevel(int newLevel) {
+    switch (newLevel) {
+    case -1:
+        spdlog::set_level(spdlog::level::err);
+        break;
+    case 0:
+        spdlog::set_level(spdlog::level::warn);
+        break;
+    case 1:
+        spdlog::set_level(spdlog::level::info);
+        break;
+    case 2:
+        spdlog::set_level(spdlog::level::debug);
+        break;
+    case 3:
+        spdlog::set_level(spdlog::level::trace);
+        break;
+    default:
+        OPENSIM_THROW(Exception,
+                fmt::format("Expected newLevel to be -1, 0, 1, 2, or 3; "
+                            "but got {}.", newLevel));
+    }
+}
+
+int Object::getDebugLevel() {
+    const auto level = spdlog::default_logger()->level();
+    switch (level) {
+    case spdlog::level::off: return -3;
+    case spdlog::level::critical: return -2;
+    case spdlog::level::err: return -1;
+    case spdlog::level::warn: return 0;
+    case spdlog::level::info: return 1;
+    case spdlog::level::debug: return 2;
+    case spdlog::level::trace: return 3;
+    }
+}
+
 /** 
     * The following code accounts for an object made up to call 
     * RegisterTypes_osimCommon function on entry to the DLL in a cross platform manner 
