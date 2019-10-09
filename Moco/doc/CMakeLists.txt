@@ -26,14 +26,17 @@ if(DOXYGEN_FOUND)
 
 endif()
 
-find_package(LATEX COMPONENTS PDFLATEX)
+option(MOCO_CHEATSHEET "Compile the MocoCheatSheet with LaTeX." OFF)
 
-set_package_properties(LATEX PROPERTIES
-        URL https://www.latex-project.org/
-        TYPE OPTIONAL
-        PURPOSE "Building the MocoCheatSheet PDF.")
+if(MOCO_CHEATSHEET)
 
-if(LATEX_PDFLATEX_FOUND)
+    find_package(LATEX COMPONENTS PDFLATEX)
+
+    set_package_properties(LATEX PROPERTIES
+            URL https://www.latex-project.org/
+            TYPE OPTIONAL
+            PURPOSE "Building the MocoCheatSheet PDF.")
+
     add_custom_target(MocoCheatSheet
             COMMENT "MocoCheatSheet LaTeX PDF"
             SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/MocoCheatSheet.tex")
