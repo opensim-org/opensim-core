@@ -289,7 +289,7 @@ solution.unseal(); % Access a failed solution.
         \mbox{subject to}
          \quad & \textcolor{dblue}{\dot{q} = u} && \\
          & \textcolor{dblue}{M(q, p)\dot{u} + G(q, p)^T \lambda = f_{\textrm{app}}(t, y, x, p) - f_{\textrm{bias}}(q, u, p)} \\
-         & \textcolor{dblue}{\dot{z}(t) = f_{\textrm{aux}}(t, y, x, \lambda, p)} &&\texttt{\textcolor{dblue}{problem.setModel()}} \\
+         & \textcolor{dblue}{\dot{z}_\textrm{ex}(t) = f_{\textrm{aux},\textrm{ex}}(t, y, x, \lambda, p) \quad\quad 0 = f_{\textrm{aux},\textrm{im}}(t, y, \dot{z}_{\textrm{im}}, x, \lambda, p)} &&\texttt{\textcolor{dblue}{problem.setModel()}} \\
          & \textcolor{dblue}{0 = \phi(q, p)} \\
          & \textcolor{dblue}{0 = \nu(q, u, p)} \\
          &  \textcolor{dblue}{0 = \alpha(q, u, \dot{u}, p)} \\
@@ -304,15 +304,15 @@ solution.unseal(); % Access a failed solution.
     \end{align*}
 
 \begin{center}
-    \begin{tabular}{cp{15em}|cp{15em}|cp{15em}}
+    \begin{tabular}{c l|c l|c l}
     $ t    $     & time                                                 & $ w_j $               & weight for the $j$-th cost              & $ \phi $                     & position-level constraints \\
     $ q(t) $     & generalized coordinates                              & $ J_j $               & the $j$-th cost                         & $ \nu    $                   & velocity-level constraints \\
     $ u(t) $     & generalized speeds                                   & $ s_{c,j} $           & integrand used in the $j$-th cost       & $ \alpha    $                & acceleration-level constraints\\
     $ z(t) $     & auxiliary states                                     & $ M $                 & mass matrix                             & $ g $                        & path constraints \\
     $ y(t) $     & $ (q(t),u(t),z(t)) $                                 & $ f_{\textrm{bias}} $ & centripetal and coriolis forces         & $ V_k $                      & the $k$-th endpoint constraint \\
     $ x(t) $     & controls                                             & $ G $                 & kinematic constraint Jacobian           & $ K $                        & number of endpoint constraints \\
-    $ p    $     & constant parameters                                  & $ f_{\textrm{app}} $  & applied forces                          & $ (\hspace{1em})_{U}   $     & an upper bound \\
-    $ \lambda $  & kinematic constraint multipliers                     & $ f_{\textrm{aux}} $  & auxiliary (muscle) dynamics             & $ (\hspace{1em})_{L}   $     & a lower bound \\
+    $ p    $     & constant parameters                                  & $ f_{\textrm{app}} $  & applied forces                          & $ (\enspace)_{U}   $     & an upper bound \\
+    $ \lambda $  & kinematic constraint multipliers                     & $ f_{\textrm{aux}} $  & auxiliary dynamics (explicit \& implicit) & $ (\enspace)_{L}   $     & a lower bound \\
 \end{tabular}
 \end{center}
 

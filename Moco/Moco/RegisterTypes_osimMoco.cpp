@@ -26,10 +26,7 @@
 #include "Components/PositionMotion.h"
 #include "Components/SmoothSphereHalfSpaceForce.h"
 #include "Components/StationPlaneContactForce.h"
-#ifdef MOCO_WITH_TROPTER
-#    include "InverseMuscleSolver/GlobalStaticOptimization.h"
-#    include "InverseMuscleSolver/INDYGO.h"
-#endif
+#include "Components/MultivariatePolynomialFunction.h"
 #include "MocoBounds.h"
 #include "MocoCasADiSolver/MocoCasADiSolver.h"
 #include "MocoControlBoundConstraint.h"
@@ -103,11 +100,6 @@ OSIMMOCO_API void RegisterTypes_osimMoco() {
 
         Object::registerType(ActivationCoordinateActuator());
 
-#ifdef MOCO_WITH_TROPTER
-        Object::registerType(GlobalStaticOptimization());
-        Object::registerType(INDYGO());
-#endif
-
         Object::registerType(TableProcessor());
 
         Object::registerType(TabOpLowPassFilter());
@@ -117,6 +109,7 @@ OSIMMOCO_API void RegisterTypes_osimMoco() {
         Object::registerType(ModOpReplaceMusclesWithDeGrooteFregly2016());
         Object::registerType(ModOpIgnoreActivationDynamics());
         Object::registerType(ModOpIgnoreTendonCompliance());
+        Object::registerType(ModOpTendonComplianceDynamicsModeDGF());
         Object::registerType(ModOpAddReserves());
         Object::registerType(ModOpAddExternalLoads());
         Object::registerType(ModOpIgnorePassiveFiberForcesDGF());

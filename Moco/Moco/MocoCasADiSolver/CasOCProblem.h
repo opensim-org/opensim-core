@@ -248,9 +248,9 @@ protected:
     void addCost(std::string name, int numIntegrals, int numOutputs) {
         OPENSIM_THROW_IF(numIntegrals < 0 || numIntegrals > 1,
                 OpenSim::Exception, "numIntegrals must be 0 or 1.");
-        std::unique_ptr<Integrand> integrand_function;
+        std::unique_ptr<CostIntegrand> integrand_function;
         if (numIntegrals) {
-            integrand_function = OpenSim::make_unique<Integrand>();
+            integrand_function = OpenSim::make_unique<CostIntegrand>();
         }
         m_costInfos.emplace_back(std::move(name), numOutputs,
                 std::move(integrand_function),
@@ -261,9 +261,10 @@ protected:
             std::string name, int numIntegrals, std::vector<Bounds> bounds) {
         OPENSIM_THROW_IF(numIntegrals < 0 || numIntegrals > 1,
                 OpenSim::Exception, "numIntegrals must be 0 or 1.");
-        std::unique_ptr<Integrand> integrand_function;
+        std::unique_ptr<EndpointConstraintIntegrand> integrand_function;
         if (numIntegrals) {
-            integrand_function = OpenSim::make_unique<Integrand>();
+            integrand_function =
+                    OpenSim::make_unique<EndpointConstraintIntegrand>();
         }
         casadi::DM lower(bounds.size(), 1);
         casadi::DM upper(bounds.size(), 1);
@@ -318,10 +319,12 @@ public:
             const casadi::DM& parameters,
             casadi::DM& velocity_correction) const = 0;
 
-    virtual void calcIntegrand(int /*integralIndex*/,
+    virtual void calcCostIntegrand(int /*costIndex*/,
             const ContinuousInput& /*input*/, double& /*integrand*/) const {}
     virtual void calcCost(int /*costIndex*/, const CostInput& /*input*/,
             casadi::DM& /*cost*/) const {}
+    virtual void calcEndpointConstraintIntegrand(int /*index*/,
+            const ContinuousInput& /*input*/, double& /*integrand*/) const {}
     virtual void calcEndpointConstraint(int /*index*/,
             const CostInput& /*input*/, casadi::DM& /*values*/) const {}
     virtual void calcPathConstraint(int /*constraintIndex*/,

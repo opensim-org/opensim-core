@@ -76,8 +76,8 @@ MocoSolution gaitTracking(const bool& setPathLengthApproximation) {
     track.set_apply_tracked_states_to_guess(true);
     track.set_initial_time(0.0);
     track.set_final_time(0.47008941);
-    MocoStudy moco = track.initialize();
-    MocoProblem& problem = moco.updProblem();
+    MocoStudy study = track.initialize();
+    MocoProblem& problem = study.updProblem();
 
     // Goals.
     // =====
@@ -157,7 +157,7 @@ MocoSolution gaitTracking(const bool& setPathLengthApproximation) {
 
     // Configure the solver.
     // =====================
-    MocoCasADiSolver& solver = moco.updSolver<MocoCasADiSolver>();
+    MocoCasADiSolver& solver = study.updSolver<MocoCasADiSolver>();
     solver.set_num_mesh_intervals(50);
     solver.set_verbosity(2);
     solver.set_optim_solver("ipopt");
@@ -167,7 +167,7 @@ MocoSolution gaitTracking(const bool& setPathLengthApproximation) {
 
     // Solve problem.
     // ==============
-    MocoSolution solution = moco.solve();
+    MocoSolution solution = study.solve();
     auto full = createPeriodicTrajectory(solution);
     full.write("gaitTracking_solution_fullcycle.sto");
 
@@ -190,12 +190,12 @@ void gaitPrediction(const MocoSolution& gaitTrackingSolution,
 
     using SimTK::Pi;
 
-    MocoStudy moco;
-    moco.setName("gaitPrediction");
+    MocoStudy study;
+    study.setName("gaitPrediction");
 
     // Define the optimal control problem.
     // ===================================
-    MocoProblem& problem = moco.updProblem();
+    MocoProblem& problem = study.updProblem();
     ModelProcessor modelprocessor =
             ModelProcessor("2D_gait.osim") |
             ModOpSetPathLengthApproximation(setPathLengthApproximation);
@@ -282,7 +282,7 @@ void gaitPrediction(const MocoSolution& gaitTrackingSolution,
 
     // Configure the solver.
     // =====================
-    auto& solver = moco.initCasADiSolver();
+    auto& solver = study.initCasADiSolver();
     solver.set_num_mesh_intervals(50);
     solver.set_verbosity(2);
     solver.set_optim_solver("ipopt");
@@ -294,7 +294,7 @@ void gaitPrediction(const MocoSolution& gaitTrackingSolution,
 
     // Solve problem.
     // ==============
-    MocoSolution solution = moco.solve();
+    MocoSolution solution = study.solve();
     auto full = createPeriodicTrajectory(solution);
     full.write("gaitPrediction_solution_fullcycle.sto");
 
@@ -311,7 +311,7 @@ void gaitPrediction(const MocoSolution& gaitTrackingSolution,
     writeTableToFile(externalForcesTableFlat,
             "gaitPrediction_solutionGRF_fullcycle.sto");
 
-    moco.visualize(full);
+    study.visualize(full);
 }
 
 int main() {

@@ -106,79 +106,50 @@ TEST_CASE("PrescribedKinematics direct collocation auxiliary dynamics") {
     model.addModelComponent(motion);
     model.addComponent(new CustomDynamics());
 
-    MocoStudy moco;
-    auto& problem = moco.updProblem();
+    MocoStudy study;
+    auto& problem = study.updProblem();
     problem.setModelCopy(model);
     problem.setTimeBounds(0, 1);
     const double init_s = 0.2;
     problem.setStateInfo("/customdynamics/s", {0, 100}, init_s);
-    auto& solver = moco.initCasADiSolver();
+    auto& solver = study.initCasADiSolver();
     solver.set_transcription_scheme("trapezoidal");
     solver.set_multibody_dynamics_mode("implicit");
 
-    MocoSolution solution = moco.solve();
+    MocoSolution solution = study.solve();
     OpenSim_CHECK_MATRIX_TOL(solution.getState("/customdynamics/s"),
             0.2 * SimTK::exp(solution.getTime()), 1e-4);
 }
 
-TEST_CASE("MocoInverse gait10dof18musc") {
+TEST_CASE("MocoInverse Rajagopal2016, 18 muscles") {
     std::cout.rdbuf(LogManager::cout.rdbuf());
     std::cerr.rdbuf(LogManager::cerr.rdbuf());
 
-    ModelProcessor modelProcessor = 
-        ModelProcessor("testGait10dof18musc_subject01.osim") |
-        ModOpReplaceMusclesWithDeGrooteFregly2016() |
-        ModOpAddReserves(1000);
-    Model cmcModel = modelProcessor.process();
-    cmcModel.print("testGait10dof18musc_subject01_cmc.osim");
-
-    //auto tasks = CMC_TaskSet();
-    //const auto& coordSet = cmcModel.getCoordinateSet();
-    //for (int icoord = 0; icoord < coordSet.getSize(); ++icoord) {
-    //    const auto& coord = coordSet.get(icoord);
-    //    auto task = CMC_Joint();
-    //    task.setName(coord.getName());
-    //    task.setCoordinateName(coord.getName());
-    //    task.setKP(100, 1, 1);
-    //    task.setKV(20, 1, 1);
-    //    task.setActive(true, false, false);
-    //    tasks.cloneAndAppend(task);
-    //}
-    //tasks.print("testMocoInverse_cmc_tasks.xml");
-
-    //auto cmc = CMCTool();
-    ////cmc.setModel(cmcModel);
-    //cmc.setName("testMocoInverse_cmc");
-    //cmc.setExternalLoadsFileName("walk_gait1018_subject01_grf.xml");
-    //cmc.setDesiredKinematicsFileName("walk_gait1018_state_reference.mot");
-    //cmc.print("testMocoInverse_cmc_setup.xml");
-    auto cmc = CMCTool("testMocoInverse_cmc_setup.xml");
-    cmc.run();
-
     MocoInverse inverse;
+    ModelProcessor modelProcessor =
+        ModelProcessor("subject_walk_armless_18musc.osim") |
+        ModOpReplaceJointsWithWelds({"subtalar_r", "subtalar_l",
+            "mtp_r", "mtp_l"}) |
+        ModOpReplaceMusclesWithDeGrooteFregly2016() |
+        ModOpIgnorePassiveFiberForcesDGF() |
+        ModOpTendonComplianceDynamicsModeDGF("implicit") |
+        ModOpAddExternalLoads("subject_walk_armless_external_loads.xml");
 
-    inverse.setModel(ModelProcessor("testGait10dof18musc_subject01.osim") |
-                     ModOpReplaceMusclesWithDeGrooteFregly2016() |
-                     //ModOpIgnoreTendonCompliance() |
-                     ModOpUseImplicitTendonComplianceDynamicsDGF() |
-                     ModOpAddReserves(1000) |
-                     ModOpAddExternalLoads("walk_gait1018_subject01_grf.xml"));
-    inverse.setKinematics(TableProcessor("walk_gait1018_state_reference.mot") |
-                          TabOpLowPassFilter(6));
-    inverse.set_initial_time(0.01);
-    inverse.set_final_time(1.3);
-
-    inverse.print("testMocoInverse_setup.xml");
+    inverse.setModel(modelProcessor);
+    inverse.setKinematics(
+        TableProcessor("subject_walk_armless_coordinates.mot") |
+        TabOpLowPassFilter(6));
+    inverse.set_initial_time(0.450);
+    inverse.set_final_time(1.0);
+    inverse.set_kinematics_allow_extra_columns(true);
+    inverse.set_mesh_interval(0.05);
 
     MocoSolution solution = inverse.solve().getMocoSolution();
+    solution.write("testMocoInverse_subject_18musc_solution.sto");
 
-    solution.write("testMocoInverseGait10dof18musc_solution.sto");
-    const auto actual = solution.getControlsTrajectory();
-
-    MocoTrajectory std("std_testMocoInverseGait10dof18musc_solution.sto");
+    MocoTrajectory std("std_testMocoInverse_subject_18musc_solution.sto");
     const auto expected = std.getControlsTrajectory();
-    CHECK(std.compareContinuousVariablesRMS(
-                  solution, {{"controls", {}}}) < 1e-4);
-    CHECK(std.compareContinuousVariablesRMS(
-                  solution, {{"states", {}}}) < 1e-4);
+    CHECK(std.compareContinuousVariablesRMS(solution,
+            {{"controls", {}}}) < 1e-2);
+    CHECK(std.compareContinuousVariablesRMS(solution, {{"states", {}}}) < 1e-2);
 }

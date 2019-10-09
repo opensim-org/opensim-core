@@ -80,6 +80,8 @@ private:
 /// - optim_constraint_tolerance: 1e-3
 /// - optim_sparsity_detection: random
 /// - optim_finite_difference_scheme: forward
+/// - minimize_implicit_auxiliary_derivatives: true
+/// - implicit_auxiliary_derivatives_weight: 0.01
 ///
 /// ### Cost
 ///
@@ -127,7 +129,7 @@ public:
             "Outputs to compute after solving the problem."
             " Entries can be regular expressions (e.g., '.*activation').");
 
-    OpenSim_DECLARE_PROPERTY(reserves_weight, double, 
+    OpenSim_DECLARE_PROPERTY(reserves_weight, double,
             "The weight applied to the controls whose name includes "
             "'/reserve_'. This can be used with "
             "the model operator ModOpAddReserves, which names each appended "

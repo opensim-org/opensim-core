@@ -139,18 +139,18 @@ class MocoTrajectory;
 ///                ModOpAddExternalLoads());
 /// track.setStatesReference("states_reference_file.sto");
 ///
-/// MocoStudy moco = track.initialize();
+/// MocoStudy study = track.initialize();
 ///
-/// auto& problem = moco.updProblem();
+/// auto& problem = study.updProblem();
 /// auto* hipForceCost = problem.addGoal<MocoJointReactionCost>("hip_force");
 /// hipForceCost->set_weight(10);
 /// hipForceCost->setJointPath("/jointset/hip_r");
 /// hipForceCost->setReactionMeasures({"force-y"});
 ///
-/// auto& solver = moco.updSolver<MocoCasADiSolver>();
+/// auto& solver = study.updSolver<MocoCasADiSolver>();
 /// solver.set_multibody_dynamics_mode("implicit");
 ///
-/// MocoSolution solution = moco.solve();
+/// MocoSolution solution = study.solve();
 /// @endcode
 ///
 /// @underdevelopment
