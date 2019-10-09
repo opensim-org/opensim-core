@@ -198,8 +198,8 @@ VectorDM Cost::eval(const VectorDM& args) const {
 }
 VectorDM EndpointConstraint::eval(const VectorDM& args) const {
     Problem::CostInput input{args.at(0).scalar(), args.at(1), args.at(2),
-                             args.at(3), args.at(4), args.at(5).scalar(), args.at(6), args.at(7),
-                             args.at(8), args.at(9), args.at(10), args.at(11).scalar()};
+            args.at(3), args.at(4), args.at(5).scalar(), args.at(6), args.at(7),
+            args.at(8), args.at(9), args.at(10), args.at(11).scalar()};
     VectorDM out{casadi::DM(sparsity_out(0))};
     m_casProblem->calcEndpointConstraint(m_index, input, out.at(0));
     return out;
@@ -215,6 +215,9 @@ casadi::Sparsity MultibodySystemExplicit<CalcKCErrors>::get_sparsity_out(
         return casadi::Sparsity::dense(
                 m_casProblem->getNumAuxiliaryStates(), 1);
     } else if (i == 2) {
+        return casadi::Sparsity::dense(
+                m_casProblem->getNumAuxiliaryResidualEquations(), 1);
+    } else if (i == 3) {
         if (CalcKCErrors) {
             int numRows = m_casProblem->getNumKinematicConstraintEquations();
             return casadi::Sparsity::dense(numRows, 1);
@@ -235,7 +238,8 @@ VectorDM MultibodySystemExplicit<CalcKCErrors>::eval(
     for (casadi_int i = 0; i < n_out(); ++i) {
         out[i] = casadi::DM(sparsity_out(i));
     }
-    Problem::MultibodySystemExplicitOutput output{out[0], out[1], out[2]};
+    Problem::MultibodySystemExplicitOutput output{out[0], out[1], out[2],
+            out[3]};
     m_casProblem->calcMultibodySystemExplicit(input, CalcKCErrors, output);
     return out;
 }
@@ -296,6 +300,9 @@ casadi::Sparsity MultibodySystemImplicit<CalcKCErrors>::get_sparsity_out(
         return casadi::Sparsity::dense(
                 m_casProblem->getNumAuxiliaryStates(), 1);
     } else if (i == 2) {
+        return casadi::Sparsity::dense(
+                m_casProblem->getNumAuxiliaryResidualEquations(), 1);
+    } else if (i == 3) {
         if (CalcKCErrors) {
             int numRows = m_casProblem->getNumKinematicConstraintEquations();
             return casadi::Sparsity::dense(numRows, 1);
@@ -317,7 +324,8 @@ VectorDM MultibodySystemImplicit<CalcKCErrors>::eval(
         out[i] = casadi::DM(sparsity_out(i));
     }
 
-    Problem::MultibodySystemImplicitOutput output{out[0], out[1], out[2]};
+    Problem::MultibodySystemImplicitOutput output{out[0], out[1], out[2], 
+            out[3]};
     m_casProblem->calcMultibodySystemImplicit(input, CalcKCErrors, output);
     return out;
 }

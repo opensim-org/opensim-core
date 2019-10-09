@@ -186,13 +186,19 @@ TEST_CASE("First order minimum effort.", "[analytic]")
                 const Input<T>& in, Output<T> out) const override {
             out.dynamics[0] = -2*in.states[0] + in.controls[0];
         }
-        void calc_integral_cost(const Input<T>& in,
-                           double& integrand) const override {
+        void calc_cost(int cost_index, const CostInput<T>& in,
+                T& cost) const override {
+            cost = in.integral;
+        }
+        void calc_cost_integrand(int cost_index, const Input<T>& in, 
+                T& integrand) const override {
             integrand = in.controls[0] * in.controls[0];
         }
     };
     auto ocp = std::make_shared<FirstOrderMinEffort>();
     DirectCollocationSolver<double> dircol(ocp, "trapezoidal", "snopt", 50);
+    dircol.get_opt_solver().set_jacobian_approximation(
+            "finite-difference-values");
     Solution solution = dircol.solve();
     solution.write("first_order_minimum_effort_snopt_solution.csv");
 
@@ -228,9 +234,13 @@ public:
         out.dynamics[0] = in.states[1];
         out.dynamics[1] = in.controls[0]/mass;
     }
-    void calc_integral_cost(const Input<T>& in,
-                       T& integrand) const override {
-        integrand = in.controls.squaredNorm();
+    void calc_cost(
+            int cost_index, const CostInput<T>& in, T& cost) const override {
+        cost = in.integral;
+    }
+    void calc_cost_integrand(
+            int cost_index, const Input<T>& in, T& integrand) const override {
+        integrand = in.controls[0] * in.controls[0];
     }
 };
 
@@ -239,6 +249,8 @@ TEST_CASE("Sliding mass minimum effort with SNOPT.")
 
     auto ocp = std::make_shared<SlidingMassMinimumEffort<double>>();
     DirectCollocationSolver<double> dircol(ocp, "trapezoidal", "snopt", 30);
+    dircol.get_opt_solver().set_jacobian_approximation(
+            "finite-difference-values");
     Solution solution = dircol.solve();
     solution.write("sliding_mass_minimum_effort_snopt_solution.csv");
 

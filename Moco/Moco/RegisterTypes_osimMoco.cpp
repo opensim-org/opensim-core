@@ -22,6 +22,7 @@
 #include "Components/ActivationCoordinateActuator.h"
 #include "Components/DeGrooteFregly2016Muscle.h"
 #include "Components/DiscreteForces.h"
+#include "Components/MultivariatePolynomialFunction.h"
 #include "Components/PositionMotion.h"
 #include "Components/SmoothSphereHalfSpaceForce.h"
 #include "Components/StationPlaneContactForce.h"
@@ -33,6 +34,8 @@
 #include "MocoGoal/MocoControlTrackingGoal.h"
 #include "MocoGoal/MocoGoal.h"
 #include "MocoGoal/MocoInitialActivationGoal.h"
+#include "MocoGoal/MocoInitialVelocityEquilibriumDGFGoal.h"
+#include "MocoGoal/MocoInitialForceEquilibriumGoal.h"
 #include "MocoGoal/MocoJointReactionGoal.h"
 #include "MocoGoal/MocoMarkerFinalGoal.h"
 #include "MocoGoal/MocoMarkerTrackingGoal.h"
@@ -70,6 +73,8 @@ OSIMMOCO_API void RegisterTypes_osimMoco() {
         Object::registerType(MocoSumSquaredStateGoal());
         Object::registerType(MocoControlTrackingGoal());
         Object::registerType(MocoInitialActivationGoal());
+        Object::registerType(MocoInitialVelocityEquilibriumDGFGoal());
+        Object::registerType(MocoInitialForceEquilibriumGoal());
         Object::registerType(MocoJointReactionGoal());
         Object::registerType(MocoOrientationTrackingGoal());
         Object::registerType(MocoTranslationTrackingGoal());
@@ -103,6 +108,7 @@ OSIMMOCO_API void RegisterTypes_osimMoco() {
         Object::registerType(ModOpReplaceMusclesWithDeGrooteFregly2016());
         Object::registerType(ModOpIgnoreActivationDynamics());
         Object::registerType(ModOpIgnoreTendonCompliance());
+        Object::registerType(ModOpTendonComplianceDynamicsModeDGF());
         Object::registerType(ModOpAddReserves());
         Object::registerType(ModOpAddExternalLoads());
         Object::registerType(ModOpIgnorePassiveFiberForcesDGF());

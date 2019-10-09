@@ -5,7 +5,7 @@
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2017 Stanford University and the Authors                     *
  *                                                                            *
- * Author(s): Christopher Dembia                                              *
+ * Author(s): Christopher Dembia, Nicholas Bianco                             *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -23,10 +23,10 @@
 #include <Common/Reporter.h>
 #include <Simulation/Model/Model.h>
 #include <Simulation/StatesTrajectory.h>
+#include <condition_variable>
 #include <regex>
 #include <set>
 #include <stack>
-#include <condition_variable>
 
 #include <OpenSim/Common/GCVSplineSet.h>
 #include <OpenSim/Common/PiecewiseLinearFunction.h>
@@ -52,8 +52,7 @@ std::unique_ptr<T> make_unique(Args&&... args) {
 /// If you specify "ISO", then we use the ISO 8601 extended datetime format
 /// %Y-%m-%dT%H:%M:%S.
 /// See https://en.cppreference.com/w/cpp/io/manip/put_time.
-OSIMMOCO_API std::string getFormattedDateTime(
-        bool appendMicroseconds = false,
+OSIMMOCO_API std::string getFormattedDateTime(bool appendMicroseconds = false,
         std::string format = "%Y-%m-%dT%H%M%S");
 
 /// Determine if `string` starts with the substring `start`.
@@ -80,10 +79,7 @@ inline bool endsWith(const std::string& string, const std::string& ending) {
 
 #ifndef SWIG
 /// Return type for make_printable()
-template <typename T>
-struct make_printable_return {
-    typedef T type;
-};
+template <typename T> struct make_printable_return { typedef T type; };
 /// Convert to types that can be printed with sprintf() (vsnprintf()).
 /// The generic template does not alter the type.
 template <typename T>
@@ -92,8 +88,7 @@ inline typename make_printable_return<T>::type make_printable(const T& x) {
 }
 
 /// Specialization for std::string.
-template <>
-struct make_printable_return<std::string> {
+template <> struct make_printable_return<std::string> {
     typedef const char* type;
 };
 /// Specialization for std::string.
@@ -324,7 +319,7 @@ TimeSeriesTable_<T> analyze(Model model, const MocoTrajectory& iterate,
             auto thisOutputPath = output.getPathName();
             for (const auto& outputPathArg : outputPaths) {
                 if (std::regex_match(
-                        thisOutputPath, std::regex(outputPathArg))) {
+                            thisOutputPath, std::regex(outputPathArg))) {
                     // Make sure the output type agrees with the template.
                     if (dynamic_cast<const Output<T>*>(&output)) {
                         reporter->addToReport(output);
@@ -370,10 +365,10 @@ TimeSeriesTable_<T> analyze(Model model, const MocoTrajectory& iterate,
     return reporter->getTable();
 }
 
-/// Given a MocoTrajectory and the associated OpenSim model, return the model with
-/// a prescribed controller appended that will compute the control values from
-/// the MocoSolution. This can be useful when computing state-dependent model
-/// quantities that require realization to the Dynamics stage or later.
+/// Given a MocoTrajectory and the associated OpenSim model, return the model
+/// with a prescribed controller appended that will compute the control values
+/// from the MocoSolution. This can be useful when computing state-dependent
+/// model quantities that require realization to the Dynamics stage or later.
 /// The function used to fit the controls can either be GCVSpline or
 /// PiecewiseLinearFunction.
 OSIMMOCO_API void prescribeControlsToModel(const MocoTrajectory& iterate,
@@ -420,7 +415,7 @@ std::unordered_map<std::string, int> createSystemYIndexMap(const Model& model);
 OSIMMOCO_API
 std::vector<std::string> createControlNamesFromModel(
         const Model& model, std::vector<int>& modelControlIndices);
-//// Same as above, but when there is no mapping to the modelControlIndices.
+/// Same as above, but when there is no mapping to the modelControlIndices.
 OSIMMOCO_API
 std::vector<std::string> createControlNamesFromModel(const Model& model);
 /// The map provides the index of each control variable in the SimTK::Vector
@@ -437,6 +432,54 @@ OSIMMOCO_API void checkOrderSystemControls(const Model& model);
 /// The argument copies the provided labels since we need to sort them to check
 /// for redundancies.
 OSIMMOCO_API void checkRedundantLabels(std::vector<std::string> labels);
+
+/// Get a list of reference pointers to all outputs whose names (not paths)
+/// match a substring defined by a provided regex string pattern. The regex
+/// string pattern could be the full name of the output. Only Output%s that
+/// match the template argument type will be returned (double is the default
+/// type). Set the argument 'includeDescendents' to true to include outputs
+/// from all descendents from the provided component.
+template <typename T = double>
+std::vector<SimTK::ReferencePtr<const Output<T>>> getModelOutputReferencePtrs(
+        const Component& component, const std::string& pattern,
+        bool includeDescendents = false) {
+
+    // Create regex.
+    std::regex regex(pattern);
+    // Initialize outputs array.
+    std::vector<SimTK::ReferencePtr<const Output<T>>> outputs;
+
+    std::function<void(const Component&, const std::regex&, bool, 
+            std::vector<SimTK::ReferencePtr<const Output<T>>>&)> helper;
+    helper = [&helper](const Component& component, const std::regex& regex,
+            bool includeDescendents,
+            std::vector<SimTK::ReferencePtr<const Output<T>>>& outputs) {
+        // Store a reference to outputs that match the template
+        // parameter type and whose names contain the provided
+        // substring.
+        for (const auto& entry : component.getOutputs()) {
+            const std::string& name = entry.first;
+            const auto foundSubstring = std::regex_match(name, regex);
+            const auto* output =
+                    dynamic_cast<const Output<T>*>(entry.second.get());
+            if (output && foundSubstring) {
+                outputs.emplace_back(output);
+            }
+        }
+
+        // Repeat for all subcomponents.
+        if (includeDescendents) {
+            for (const Component& thisComp :
+                    component.getComponentList<Component>()) {
+                if (&thisComp == &component) { continue; }
+                helper(thisComp, regex, false, outputs);
+            }
+        }
+    };
+    
+    helper(component, regex, includeDescendents, outputs);
+    return outputs;
+}
 
 /// Convert a trajectory covering half the period of a symmetric motion into a
 /// trajectory over the full period. This is useful for simulations of half a
@@ -626,8 +669,7 @@ OSIMMOCO_API int getMocoParallelEnvironmentVariable();
 /// This class lets you store objects of a single type for reuse by multiple
 /// threads, ensuring threadsafe access to each of those objects.
 // TODO: Find a way to always give the same thread the same object.
-template <typename T>
-class ThreadsafeJar {
+template <typename T> class ThreadsafeJar {
 public:
     /// Request an object for your exclusive use on your thread. This function
     /// blocks the thread until an object is available. Make sure to return

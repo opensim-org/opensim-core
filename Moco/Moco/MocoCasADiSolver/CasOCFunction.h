@@ -256,12 +256,13 @@ public:
 template <bool CalcKCErrors>
 class MultibodySystemExplicit : public Function {
 public:
-    casadi_int get_n_out() override final { return 3; }
+    casadi_int get_n_out() override final { return 4; }
     std::string get_name_out(casadi_int i) override final {
         switch (i) {
         case 0: return "multibody_derivatives";
         case 1: return "auxiliary_derivatives";
-        case 2: return "kinematic_constraint_errors";
+        case 2: return "auxiliary_residuals";
+        case 3: return "kinematic_constraint_errors";
         default: OPENSIM_THROW(OpenSim::Exception, "Internal error.");
         }
     }
@@ -298,12 +299,13 @@ public:
 
 template <bool CalcKCErrors>
 class MultibodySystemImplicit : public Function {
-    casadi_int get_n_out() override final { return 3; }
+    casadi_int get_n_out() override final { return 4; }
     std::string get_name_out(casadi_int i) override final {
         switch (i) {
         case 0: return "multibody_residuals";
         case 1: return "auxiliary_derivatives";
-        case 2: return "kinematic_constraint_errors";
+        case 2: return "auxiliary_residuals";
+        case 3: return "kinematic_constraint_errors";
         default: OPENSIM_THROW(OpenSim::Exception, "Internal error.");
         }
     }

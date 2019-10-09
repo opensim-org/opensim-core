@@ -69,6 +69,17 @@ MocoCasOCProblem::MocoCasOCProblem(const MocoCasADiSolver& mocoCasADiSolver,
                 convertBounds(info.getFinalBounds()));
     }
 
+    // Set the number of residual equations to be enforced for components with
+    // dynamics in implicit form.
+    const auto& implicitRefs = problemRep.getImplicitComponentReferencePtrs();
+    std::vector<std::string> derivativeNames;
+    for (const auto& implicitRef : implicitRefs) {
+        derivativeNames.push_back(implicitRef.second->getAbsolutePathString() +
+                                  "/" + implicitRef.first);
+    }
+
+    setAuxiliaryDerivativeNames(derivativeNames);
+
     // Add any scalar constraints associated with kinematic constraints in
     // the model as path constraints in the problem.
     // Whether or not enabled kinematic constraints exist in the model,
@@ -164,8 +175,7 @@ MocoCasOCProblem::MocoCasOCProblem(const MocoCasADiSolver& mocoCasADiSolver,
 
                     // Add velocity correction variables if enforcing
                     // constraint equation derivatives.
-                    if (enforceConstraintDerivs &&
-                            !isPrescribedKinematics()) {
+                    if (enforceConstraintDerivs && !isPrescribedKinematics()) {
                         // TODO this naming convention assumes that the
                         // associated Lagrange multiplier name begins with
                         // "lambda", which may change in the future.

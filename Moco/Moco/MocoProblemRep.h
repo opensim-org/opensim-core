@@ -25,6 +25,7 @@
 #include "osimMocoDLL.h"
 
 #include <OpenSim/Simulation/Model/Model.h>
+#include "Components/DeGrooteFregly2016Muscle.h"
 
 namespace OpenSim {
 
@@ -117,6 +118,9 @@ public:
     /// Does the model contain a PositionMotion to prescribe all generalized
     /// coordinates, speeds, and accelerations?
     bool isPrescribedKinematics() const { return m_prescribedKinematics; }
+    int getNumImplicitAuxiliaryResiduals() const {
+        return (int)m_implicit_residual_refs.size();
+    }
     /// This excludes generalized coordinate and speed states if
     /// isPrescribedKinematics() is true.
     std::vector<std::string> createStateVariableNamesInSystemOrder(
@@ -275,6 +279,24 @@ public:
     /// (see getModelDisabledConstraints()).
     void applyParametersToModelProperties(const SimTK::Vector& parameterValues,
             bool initSystemAndDisableConstraints = false) const;
+
+    /// Get a vector of reference pointers to model outputs that return residual
+    /// values for any components with dynamics in implicit forms. The 
+    /// references returned are from the model returned by 
+    /// getModelDisabledConstraints(). 
+    const std::vector<SimTK::ReferencePtr<const Output<double>>>&
+    getImplicitResidualReferencePtrs() const {
+        return m_implicit_residual_refs;
+    }
+
+    /// Get reference pointers to components that enforce dynamics in implicit 
+    /// form. This returns a vector of pairs including the name of the discrete
+    /// derivative variable and the component reference pointer.
+    const 
+    std::vector<std::pair<std::string, SimTK::ReferencePtr<const Component>>>&
+    getImplicitComponentReferencePtrs() const {
+        return m_implicit_component_refs;
+    }
     /// @}
 
 private:
@@ -311,6 +333,11 @@ private:
     std::vector<std::string> m_kinematic_constraint_eq_names_with_derivatives;
     std::vector<std::string>
             m_kinematic_constraint_eq_names_without_derivatives;
+
+    std::vector<SimTK::ReferencePtr<const Output<double>>>
+            m_implicit_residual_refs;
+    std::vector<std::pair<std::string, SimTK::ReferencePtr<const Component>>>
+            m_implicit_component_refs;
 };
 
 } // namespace OpenSim
