@@ -78,9 +78,9 @@ protected:
 TEMPLATE_TEST_CASE("Oscillator mass", "", MocoTropterSolver, MocoCasADiSolver) {
     int N = 25;
 
-    MocoStudy moco;
-    moco.setName("oscillator_mass");
-    MocoProblem& mp = moco.updProblem();
+    MocoStudy study;
+    study.setName("oscillator_mass");
+    MocoProblem& mp = study.updProblem();
     mp.setModel(createOscillatorModel());
     mp.setTimeBounds(0, FINAL_TIME);
     mp.setStateInfo("/slider/position/value", {-5.0, 5.0}, -0.5, {0.25, 0.75});
@@ -90,10 +90,10 @@ TEMPLATE_TEST_CASE("Oscillator mass", "", MocoTropterSolver, MocoCasADiSolver) {
 
     mp.addGoal<FinalPositionGoal>();
 
-    auto& ms = moco.initSolver<TestType>();
+    auto& ms = study.initSolver<TestType>();
     ms.set_num_mesh_intervals(N);
 
-    MocoSolution sol = moco.solve();
+    MocoSolution sol = study.solve();
     sol.write("testMocoParameters_testOscillatorMass_sol.sto");
 
     CHECK(sol.getParameter("oscillator_mass") == Approx(MASS).epsilon(0.003));
@@ -139,9 +139,9 @@ TEMPLATE_TEST_CASE("One parameter two springs", "",
         MocoTropterSolver, MocoCasADiSolver) {
     int N = 25;
 
-    MocoStudy moco;
-    moco.setName("oscillator_spring_stiffnesses");
-    MocoProblem& mp = moco.updProblem();
+    MocoStudy study;
+    study.setName("oscillator_spring_stiffnesses");
+    MocoProblem& mp = study.updProblem();
     mp.setModel(createOscillatorTwoSpringsModel());
     mp.setTimeBounds(0, FINAL_TIME);
     mp.setStateInfo("/slider/position/value", {-5.0, 5.0}, -0.5, {0.25, 0.75});
@@ -154,10 +154,10 @@ TEMPLATE_TEST_CASE("One parameter two springs", "",
 
     mp.addGoal<FinalPositionGoal>();
 
-    auto& ms = moco.initSolver<TestType>();
+    auto& ms = study.initSolver<TestType>();
     ms.set_num_mesh_intervals(N);
 
-    MocoSolution sol = moco.solve();
+    MocoSolution sol = study.solve();
     sol.write("testMocoParameters_testOscillatorMassTwoSprings_sol.sto");
 
     // Since springs add in parallel, both stiffness must be the same value
@@ -218,9 +218,9 @@ TEMPLATE_TEST_CASE("See-saw center of mass", "",
         MocoTropterSolver, MocoCasADiSolver) {
     int N = 25;
 
-    MocoStudy moco;
-    moco.setName("seesaw_com");
-    MocoProblem& mp = moco.updProblem();
+    MocoStudy study;
+    study.setName("seesaw_com");
+    MocoProblem& mp = study.updProblem();
     mp.setModel(createSeeSawModel());
     mp.setTimeBounds(0, 5);
     mp.setStateInfo("/pin/rotation/value", {-10, 10}, 0, {-10, 10});
@@ -237,10 +237,10 @@ TEMPLATE_TEST_CASE("See-saw center of mass", "",
 
     mp.addGoal<RotationalAccelerationGoal>();
 
-    auto& ms = moco.initSolver<TestType>();
+    auto& ms = study.initSolver<TestType>();
     ms.set_num_mesh_intervals(N);
 
-    MocoSolution sol = moco.solve();
+    MocoSolution sol = study.solve();
     const auto& sol_xCOM = sol.getParameter("com_location");
     sol.write("testMocoParameters_testSeeSawCOM_sol.sto");
     

@@ -147,10 +147,19 @@ public:
         else
             return casadi::Sparsity(0, 0);
     }
-    VectorDM eval(const VectorDM& args) const override;
 
 protected:
     int m_index = -1;
+};
+
+class CostIntegrand : public Integrand {
+public:
+    VectorDM eval(const VectorDM& args) const override;
+};
+
+class EndpointConstraintIntegrand : public Integrand {
+public:
+    VectorDM eval(const VectorDM& args) const override;
 };
 
 /// This function takes initial states/controls, final states/controls, and an

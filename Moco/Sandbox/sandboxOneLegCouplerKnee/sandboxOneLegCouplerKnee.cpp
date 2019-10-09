@@ -156,12 +156,12 @@ struct Options {
 };
 
 MocoSolution minimizeControlEffortRightLeg(const Options& opt) {
-    MocoStudy moco;
+    MocoStudy study;
     std::string weldedPelvisStr = "";
     if (opt.weldPelvis) { weldedPelvisStr = "weldedPelvis_"; }
-    moco.setName("sandboxRightLeg_" + weldedPelvisStr + opt.actuatorType +
+    study.setName("sandboxRightLeg_" + weldedPelvisStr + opt.actuatorType +
         "_minimize_control_effort");
-    MocoProblem& mp = moco.updProblem();
+    MocoProblem& mp = study.updProblem();
     Model model = createRightLegModel(opt.actuatorType, opt.weldPelvis);
     mp.setModelCopy(model);
 
@@ -178,7 +178,7 @@ MocoSolution minimizeControlEffortRightLeg(const Options& opt) {
 
     // Set solver options.
     // -------------------
-    auto& ms = moco.initTropterSolver();
+    auto& ms = study.initTropterSolver();
     ms.set_num_mesh_intervals(opt.num_mesh_intervals);
     ms.set_verbosity(2);
     ms.set_multibody_dynamics_mode(opt.dynamics_mode);
@@ -222,8 +222,8 @@ MocoSolution minimizeControlEffortRightLeg(const Options& opt) {
     }
     ms.setGuess(guess);
     
-    MocoSolution solution = moco.solve().unseal();
-    moco.visualize(solution);
+    MocoSolution solution = study.solve().unseal();
+    study.visualize(solution);
 
     return solution;
 }
@@ -285,12 +285,12 @@ TimeSeriesTable createGuessFromGSO(const MocoSolution& torqueSolution,
 }
 
 MocoSolution stateTrackingRightLeg(const Options& opt) {
-    MocoStudy moco;
+    MocoStudy study;
     std::string weldedPelvisStr = "";
     if (opt.weldPelvis) { weldedPelvisStr = "weldedPelvis_"; }
-    moco.setName("sandboxRightLeg_" + weldedPelvisStr + opt.actuatorType +
+    study.setName("sandboxRightLeg_" + weldedPelvisStr + opt.actuatorType +
         "_state_tracking");
-    MocoProblem& mp = moco.updProblem();
+    MocoProblem& mp = study.updProblem();
     Model model = createRightLegModel(opt.actuatorType, opt.weldPelvis);
 
     // Get previous solution.
@@ -325,7 +325,7 @@ MocoSolution stateTrackingRightLeg(const Options& opt) {
 
     // Set solver options.
     // -------------------
-    auto& ms = moco.initTropterSolver();
+    auto& ms = study.initTropterSolver();
     ms.set_num_mesh_intervals(opt.num_mesh_intervals);
     ms.set_verbosity(2);
     ms.set_multibody_dynamics_mode(opt.dynamics_mode);
@@ -346,8 +346,8 @@ MocoSolution stateTrackingRightLeg(const Options& opt) {
 
     // Solve.
     // ------
-    MocoSolution solution = moco.solve().unseal();
-    moco.visualize(solution);
+    MocoSolution solution = study.solve().unseal();
+    study.visualize(solution);
 
     return solution;
 }

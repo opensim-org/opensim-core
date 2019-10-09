@@ -33,12 +33,12 @@ MocoSolution solveDoublePendulumSwingup(const std::string& dynamics_mode) {
 
     using SimTK::Vec3;
 
-    MocoStudy moco;
-    moco.setName("double_pendulum_swingup_" + dynamics_mode);
+    MocoStudy study;
+    study.setName("double_pendulum_swingup_" + dynamics_mode);
 
     // Define the optimal control problem.
     // ===================================
-    MocoProblem& mp = moco.updProblem();
+    MocoProblem& mp = study.updProblem();
 
     // Model (dynamics).
     // -----------------
@@ -82,7 +82,7 @@ MocoSolution solveDoublePendulumSwingup(const std::string& dynamics_mode) {
     // Configure the solver.
     // =====================
     int N = 29;
-    auto& solver = moco.initSolver<SolverType>();
+    auto& solver = study.initSolver<SolverType>();
     solver.set_multibody_dynamics_mode(dynamics_mode);
     solver.set_num_mesh_intervals(N);
     solver.set_transcription_scheme("trapezoidal");
@@ -102,12 +102,12 @@ MocoSolution solveDoublePendulumSwingup(const std::string& dynamics_mode) {
 
     // moco.visualize(guess);
 
-    moco.print("double_pendulum_swingup_" + dynamics_mode + ".omoco");
+    study.print("double_pendulum_swingup_" + dynamics_mode + ".omoco");
 
     // Solve the problem.
     // ==================
-    MocoSolution solution = moco.solve();
-    // moco.visualize(solution);
+    MocoSolution solution = study.solve();
+    // study.visualize(solution);
 
     return solution;
 }
@@ -184,8 +184,8 @@ TEMPLATE_TEST_CASE("Combining implicit dynamics mode with path constraints",
         }
     };
     GIVEN("MocoProblem with path constraints") {
-        MocoStudy moco;
-        auto& prob = moco.updProblem();
+        MocoStudy study;
+        auto& prob = study.updProblem();
         auto model = ModelFactory::createPendulum();
         prob.setTimeBounds(0, 1);
         prob.setModelCopy(model);
@@ -194,12 +194,12 @@ TEMPLATE_TEST_CASE("Combining implicit dynamics mode with path constraints",
         MocoConstraintInfo info;
         info.setBounds(std::vector<MocoBounds>(1, {10, 10000}));
         pc->setConstraintInfo(info);
-        auto& solver = moco.initSolver<TestType>();
+        auto& solver = study.initSolver<TestType>();
         solver.set_multibody_dynamics_mode("implicit");
         const int N = 4;          // mesh intervals
         const int Nc = 2 * N + 1; // collocation points (Hermite-Simpson)
         solver.set_num_mesh_intervals(N);
-        MocoSolution solution = moco.solve();
+        MocoSolution solution = study.solve();
 
         THEN("path constraints are still obeyed") {
             SimTK_TEST_EQ_TOL(solution.getControlsTrajectory(),
@@ -213,8 +213,8 @@ TEMPLATE_TEST_CASE("Combining implicit dynamics with kinematic constraints",
     std::cout.rdbuf(LogManager::cout.rdbuf());
     std::cerr.rdbuf(LogManager::cerr.rdbuf());
     GIVEN("MocoProblem with a kinematic constraint") {
-        MocoStudy moco;
-        auto& prob = moco.updProblem();
+        MocoStudy study;
+        auto& prob = study.updProblem();
         auto model = ModelFactory::createDoublePendulum();
         prob.setTimeBounds(0, 1);
         auto* constraint = new CoordinateCouplerConstraint();
@@ -226,12 +226,12 @@ TEMPLATE_TEST_CASE("Combining implicit dynamics with kinematic constraints",
         constraint->setFunction(func);
         model.addConstraint(constraint);
         prob.setModelCopy(model);
-        auto& solver = moco.initSolver<TestType>();
+        auto& solver = study.initSolver<TestType>();
         solver.set_multibody_dynamics_mode("implicit");
         solver.set_num_mesh_intervals(5);
         solver.set_transcription_scheme("hermite-simpson");
         solver.set_enforce_constraint_derivatives(true);
-        MocoSolution solution = moco.solve();
+        MocoSolution solution = study.solve();
 
         THEN("kinematic constraint is still obeyed") {
             const auto q0value = solution.getStatesTrajectory().col(0);
@@ -336,7 +336,6 @@ public:
         return true;
     }
     double getImplicitResidual(const SimTK::State& s) const {
-
         if (!isCacheVariableValid(s, "implicitresidual_foo")) {
             // Get the derivative control value.
             // TODO add method to Component get with index instead.
@@ -376,7 +375,7 @@ private:
     }
 };
 
-TEST_CASE("Auxiliary implicit dynamics") {
+TEST_CASE("Implicit auxiliary dynamics") {
     SECTION("State unit tests") {
         Model model;
         auto* implicit_auxdyn = new MyAuxiliaryImplicitDynamics();
@@ -423,5 +422,19 @@ TEST_CASE("Auxiliary implicit dynamics") {
        const double final = solution.getStatesTrajectory().getElt(N-1, 0);
        // Correct answer obtained from Matlab with ode45.
        CHECK(final == Approx(1.732).margin(1e-3));
+    }
+
+    SECTION("MocoTropterSolver does not support implicit auxiliary dynamics") {
+        MocoStudy study;
+        auto& problem = study.updProblem();
+        auto model = OpenSim::make_unique<Model>();
+        model->addComponent(new MyAuxiliaryImplicitDynamics());
+        problem.setModel(std::move(model));
+        problem.setTimeBounds(0, 1);
+        problem.setStateInfo("/implicit_auxdyn/foo", {0, 3}, 1.0);
+        study.initTropterSolver();
+        CHECK_THROWS(study.solve(),
+                Catch::Contains("MocoTropterSolver does not support problems "
+                                "with implicit auxiliary dynamics."));
     }
 }

@@ -458,8 +458,33 @@ void Transcription::setObjectiveAndEndpointConstraints() {
         const auto mults = m_vars[multipliers];
         const double multiplierWeight = m_solver.getLagrangeMultiplierWeight();
         // Sum across constraints of each multiplier element squared.
-        MX integrandTraj = multiplierWeight * MX::sum1(MX::sq(mults));
-        m_objective += m_duration * dot(quadCoeffs.T(), integrandTraj);
+        MX integrandTraj = MX::sum1(MX::sq(mults));
+        m_objective += multiplierWeight * m_duration *
+                       dot(quadCoeffs.T(), integrandTraj);
+    }
+
+    if (m_solver.getMinimizeImplicitMultibodyAccelerations() &&
+            m_problem.isDynamicsModeImplicit()) {
+        const auto& numAccels = m_problem.getNumAccelerations();
+        const auto accels = m_vars[derivatives](Slice(0, numAccels), Slice());
+        const double accelWeight = 
+                m_solver.getImplicitMultibodyAccelerationsWeight();
+        MX integrandTraj = MX::sum1(MX::sq(accels));
+        m_objective += accelWeight * m_duration * 
+                       dot(quadCoeffs.T(), integrandTraj);
+    }
+
+    if (m_solver.getMinimizeImplicitAuxiliaryDerivatives() && 
+            m_problem.getNumAuxiliaryResidualEquations()) {
+        const auto& numAccels = m_problem.getNumAccelerations();
+        const auto& numAuxDerivs = m_problem.getNumAuxiliaryResidualEquations();
+        const auto auxDerivs = m_vars[derivatives](
+                Slice(numAccels, numAccels + numAuxDerivs), Slice());
+        const double auxDerivWeight =
+                m_solver.getImplicitAuxiliaryDerivativesWeight();
+        MX integrandTraj = MX::sum1(MX::sq(auxDerivs));
+        m_objective += auxDerivWeight * m_duration *
+                       dot(quadCoeffs.T(), integrandTraj);
     }
 
     if (m_solver.getMinimizeImplicitMultibodyAccelerations() &&

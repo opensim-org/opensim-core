@@ -19,6 +19,7 @@
 #include "MocoProblemRep.h"
 
 #include "Components/AccelerationMotion.h"
+#include "Components/DeGrooteFregly2016Muscle.h"
 #include "Components/DiscreteForces.h"
 #include "Components/PositionMotion.h"
 #include "MocoProblem.h"
@@ -54,7 +55,6 @@ void MocoProblemRep::initialize() {
     m_kinematic_constraint_eq_names_without_derivatives.clear();
     m_implicit_component_refs.clear();
     m_implicit_residual_refs.clear();
-
 
     if (!getTimeInitialBounds().isSet() && !getTimeFinalBounds().isSet()) {
         std::cout << "Warning: no time bounds set." << std::endl;
@@ -225,26 +225,31 @@ void MocoProblemRep::initialize() {
     }
 
     // Create kinematic constraint equation names.
-    for (const auto& name : kc_perr_names) {
-        m_kinematic_constraint_eq_names_without_derivatives.push_back(name);
-        m_kinematic_constraint_eq_names_with_derivatives.push_back(name);
-    }
-    for (const auto& name : kc_perr_names) {
-        m_kinematic_constraint_eq_names_with_derivatives.push_back(name + "d");
-    }
-    for (const auto& name : kc_verr_names) {
-        m_kinematic_constraint_eq_names_without_derivatives.push_back(name);
-        m_kinematic_constraint_eq_names_with_derivatives.push_back(name);
-    }
-    for (const auto& name : kc_perr_names) {
-        m_kinematic_constraint_eq_names_with_derivatives.push_back(name + "dd");
-    }
-    for (const auto& name : kc_verr_names) {
-        m_kinematic_constraint_eq_names_with_derivatives.push_back(name + "d");
-    }
-    for (const auto& name : kc_aerr_names) {
-        m_kinematic_constraint_eq_names_without_derivatives.push_back(name);
-        m_kinematic_constraint_eq_names_with_derivatives.push_back(name);
+    if (!m_prescribedKinematics) {
+        for (const auto& name : kc_perr_names) {
+            m_kinematic_constraint_eq_names_without_derivatives.push_back(name);
+            m_kinematic_constraint_eq_names_with_derivatives.push_back(name);
+        }
+        for (const auto& name : kc_perr_names) {
+            m_kinematic_constraint_eq_names_with_derivatives.push_back(
+                    name + "d");
+        }
+        for (const auto& name : kc_verr_names) {
+            m_kinematic_constraint_eq_names_without_derivatives.push_back(name);
+            m_kinematic_constraint_eq_names_with_derivatives.push_back(name);
+        }
+        for (const auto& name : kc_perr_names) {
+            m_kinematic_constraint_eq_names_with_derivatives.push_back(
+                    name + "dd");
+        }
+        for (const auto& name : kc_verr_names) {
+            m_kinematic_constraint_eq_names_with_derivatives.push_back(
+                    name + "d");
+        }
+        for (const auto& name : kc_aerr_names) {
+            m_kinematic_constraint_eq_names_without_derivatives.push_back(name);
+            m_kinematic_constraint_eq_names_with_derivatives.push_back(name);
+        }
     }
 
     // Verify that the constraint error vectors in the state associated with the
@@ -260,7 +265,7 @@ void MocoProblemRep::initialize() {
 
     // State infos.
     // ------------
-    // Set the regex pattern states first.  
+    // Set the regex pattern states first.
     const auto stateNames = m_model_base.getStateVariableNames();
     for (int i = 0; i < ph0.getProperty_state_infos_pattern().size(); ++i) {
         const auto& pattern = ph0.get_state_infos_pattern(i).getName();
@@ -343,7 +348,7 @@ void MocoProblemRep::initialize() {
                 }
             }
         }
-    }   
+    }
 
     // Control infos.
     // --------------
@@ -398,7 +403,7 @@ void MocoProblemRep::initialize() {
                             MocoBounds::unconstrained());
                 }
             }
-            
+
             if (ph0.get_bound_activation_from_excitation()) {
                 const auto* muscle = dynamic_cast<const Muscle*>(&actu);
                 if (muscle && !muscle->get_ignore_activation_dynamics()) {
@@ -410,7 +415,7 @@ void MocoProblemRep::initialize() {
                     }
                 }
             }
-            
+
         } else {
             // This is a non-scalar actuator, so we need to add multiple
             // control infos.
@@ -431,7 +436,6 @@ void MocoProblemRep::initialize() {
     // Auxiliary state implicit residual outputs.
     const auto allImplicitResiduals = getModelOutputReferencePtrs<double>(
             m_model_disabled_constraints, "^implicitresidual_.*", true);
-
     for (const auto& output : allImplicitResiduals) {
         const auto& component = output->getOwner();
         const auto nameStart = output->getName().find("_") + 1;

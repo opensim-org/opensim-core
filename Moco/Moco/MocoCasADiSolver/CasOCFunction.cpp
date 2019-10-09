@@ -142,11 +142,20 @@ VectorDM PathConstraint::eval(const VectorDM& args) const {
     return out;
 }
 
-VectorDM Integrand::eval(const VectorDM& args) const {
+VectorDM CostIntegrand::eval(const VectorDM& args) const {
     Problem::ContinuousInput input{args.at(0).scalar(), args.at(1), args.at(2),
             args.at(3), args.at(4), args.at(5)};
     VectorDM out{casadi::DM(casadi::Sparsity::scalar())};
-    m_casProblem->calcIntegrand(m_index, input, *out[0].ptr());
+    m_casProblem->calcCostIntegrand(m_index, input, *out[0].ptr());
+    return out;
+}
+
+VectorDM EndpointConstraintIntegrand::eval(const VectorDM& args) const {
+    Problem::ContinuousInput input{args.at(0).scalar(), args.at(1), args.at(2),
+                                   args.at(3), args.at(4), args.at(5)};
+    VectorDM out{casadi::DM(casadi::Sparsity::scalar())};
+    m_casProblem->calcEndpointConstraintIntegrand(
+            m_index, input, *out[0].ptr());
     return out;
 }
 

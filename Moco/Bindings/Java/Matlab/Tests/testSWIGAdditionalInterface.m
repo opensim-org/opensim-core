@@ -36,10 +36,10 @@ actu.setName('actuator');
 model.addComponent(actu);
 model.finalizeConnections();
 
-moco = MocoStudy();
-moco.setName('sliding_mass');
+study = MocoStudy();
+study.setName('sliding_mass');
 
-mp = moco.updProblem();
+mp = study.updProblem();
 ph0 = mp.getPhase();
 
 mp.setModel(model);
