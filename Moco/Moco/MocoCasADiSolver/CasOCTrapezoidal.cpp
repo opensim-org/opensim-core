@@ -36,7 +36,7 @@ DM Trapezoidal::createQuadratureCoefficientsImpl() const {
     return quadCoeffs;
 }
 
-DM Trapezoidal::createKinematicConstraintIndicesImpl() const {
+DM Trapezoidal::createMeshIndicesImpl() const {
     return DM::ones(1, m_numGridPoints);
 }
 

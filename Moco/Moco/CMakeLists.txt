@@ -40,6 +40,10 @@ set(MOCO_SOURCES
         MocoGoal/MocoTranslationTrackingGoal.cpp
         MocoGoal/MocoInitialActivationGoal.cpp
         MocoGoal/MocoInitialActivationGoal.h
+        MocoGoal/MocoInitialVelocityEquilibriumDGFGoal.h
+        MocoGoal/MocoInitialVelocityEquilibriumDGFGoal.cpp
+        MocoGoal/MocoInitialForceEquilibriumGoal.h
+        MocoGoal/MocoInitialForceEquilibriumGoal.cpp
         MocoGoal/MocoPeriodicityGoal.h
         MocoGoal/MocoPeriodicityGoal.cpp
         MocoSolver.h
@@ -105,16 +109,6 @@ if(MOCO_WITH_TROPTER)
     list(APPEND MOCO_SOURCES
             tropter/TropterProblem.h
             tropter/TropterProblem.cpp
-            InverseMuscleSolver/InverseMuscleSolver.h
-            InverseMuscleSolver/InverseMuscleSolver.cpp
-            InverseMuscleSolver/GlobalStaticOptimization.h
-            InverseMuscleSolver/GlobalStaticOptimization.cpp
-            InverseMuscleSolver/INDYGO.h
-            InverseMuscleSolver/INDYGO.cpp
-            InverseMuscleSolver/INDYGOProblemInternal.h
-            InverseMuscleSolver/DeGrooteFregly2016MuscleStandalone.h
-            InverseMuscleSolver/InverseMuscleSolverMotionData.h
-            InverseMuscleSolver/InverseMuscleSolverMotionData.cpp
             )
 endif ()
 add_library(osimMoco SHARED ${MOCO_SOURCES})

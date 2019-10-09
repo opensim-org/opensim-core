@@ -1,5 +1,16 @@
+- 2019-10-04: report.py can plot normalized tendon force states. Users can 
+              provide a MocoStudy file instead of a Model file, and users can
+              specify the name of the report output file.
+              
+- 2019-09-29: Remove INDYGO and GlobalStaticOptimization from Moco.
+
 - 2019-09-28: exampleSlidingMassAdvanced.cpp and exampleMocoCustomEffortGoal
               show how to create a custom goal class.
+
+- 2019-09-23: MocoControlGoal has properties "exponent" and
+              "divide_by_displacement". 
+
+- 2019-09-05: MocoAverageSpeedGoal was added.
 
 - 2019-08-29: Users now interface with num_mesh_intervals instead of
               num_mesh_points when setting times to sample.

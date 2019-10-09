@@ -960,12 +960,22 @@ bool MocoTrajectory::isCompatible(
             mpdn.push_back(name);
         }
     }
+    std::vector<std::string> mpcdn; // Component derivative names only.
+    const auto& implicitComponentRefs = mp.getImplicitComponentReferencePtrs();
+    for (const auto& compRef : implicitComponentRefs) {
+        const auto& derivName =
+                compRef.second->getAbsolutePathString() + "/" + compRef.first;
+        mpdn.push_back(derivName);
+        mpcdn.push_back(derivName);
+    }
     std::sort(mpdn.begin(), mpdn.end());
+    std::sort(mpcdn.begin(), mpcdn.end());
 
     bool compatible = mpsn == sn && mpcn == cn && mpmn == mn &&
-                      // It's okay to not have any derivatives (for solving the
-                      // problem with an explicit dynamics mode).
-                      (dn.empty() || mpdn == dn) && mppn == pn;
+                      // It's okay to not have any multibody dynamics 
+                      // derivatives (for solving the problem with an explicit 
+                      // dynamics mode).
+                      (mpcdn == dn || mpdn == dn) && mppn == pn;
 
     // TODO more detailed error message specifying exactly what's different.
     OPENSIM_THROW_IF(!compatible && throwOnError, Exception,

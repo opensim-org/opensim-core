@@ -80,6 +80,8 @@ private:
 /// - optim_constraint_tolerance: 1e-3
 /// - optim_sparsity_detection: random
 /// - optim_finite_difference_scheme: forward
+/// - minimize_implicit_auxiliary_derivatives: true
+/// - implicit_auxiliary_derivatives_weight: 0.01
 ///
 /// ### Cost
 ///
@@ -126,6 +128,12 @@ public:
     OpenSim_DECLARE_LIST_PROPERTY(output_paths, std::string,
             "Outputs to compute after solving the problem."
             " Entries can be regular expressions (e.g., '.*activation').");
+
+    OpenSim_DECLARE_PROPERTY(reserves_weight, double, 
+            "The weight applied to the control for any CoordinateActuators in "
+            "model whose names begin with 'reserve_'. This can be used with "
+            "the model operator ModOpAddReserves, which names each appended "
+            "actuator in this format. Default weight: 1.")
 
     MocoInverse() { constructProperties(); }
 

@@ -154,11 +154,13 @@ public:
     struct MultibodySystemExplicitOutput {
         casadi::DM& multibody_derivatives;
         casadi::DM& auxiliary_derivatives;
+        casadi::DM& auxiliary_residuals;
         casadi::DM& kinematic_constraint_errors;
     };
     struct MultibodySystemImplicitOutput {
         casadi::DM& multibody_residuals;
         casadi::DM& auxiliary_derivatives;
+        casadi::DM& auxiliary_residuals;
         casadi::DM& kinematic_constraint_errors;
     };
 
@@ -293,6 +295,11 @@ protected:
                 dynamicsMode != "explicit" && dynamicsMode != "implicit",
                 OpenSim::Exception, "Invalid dynamics mode.");
         m_dynamicsMode = std::move(dynamicsMode);
+        m_isDynamicsModeImplicit = m_dynamicsMode == "implicit";
+    }
+    void setAuxiliaryDerivativeNames(const std::vector<std::string>& names) {
+        m_auxiliaryDerivativeNames = names;
+        m_numAuxiliaryResiduals = (int)names.size();
     }
 
 public:
@@ -353,19 +360,22 @@ public:
             it.multiplier_names.push_back(info.name);
         for (const auto& info : m_slackInfos)
             it.slack_names.push_back(info.name);
-        // We do not know whether this problem will be solved using implicit
-        // or explicit dynamics mode, so we populate the derivative_names
-        // always.
-        for (const auto& info : m_stateInfos) {
-            if (info.type == StateType::Speed) {
-                auto name = info.name;
-                auto leafpos = name.find("speed");
-                OPENSIM_THROW_IF(leafpos == std::string::npos,
-                        OpenSim::Exception, "Internal error.");
-                name.replace(leafpos, name.size(), "accel");
-                it.derivative_names.push_back(name);
+        if (isDynamicsModeImplicit()) {
+            for (const auto& info : m_stateInfos) {
+                if (info.type == StateType::Speed) {
+                    auto name = info.name;
+                    auto leafpos = name.find("speed");
+                    OPENSIM_THROW_IF(leafpos == std::string::npos,
+                            OpenSim::Exception, "Internal error.");
+                    name.replace(leafpos, name.size(), "accel");
+                    it.derivative_names.push_back(name);
+                }
             }
         }
+        for (const auto& auxDerivName : m_auxiliaryDerivativeNames) {
+            it.derivative_names.push_back(auxDerivName);
+        }
+            
         for (const auto& info : m_paramInfos)
             it.parameter_names.push_back(info.name);
         return it;
@@ -465,18 +475,22 @@ public:
     int getNumParameters() const { return (int)m_paramInfos.size(); }
     int getNumMultipliers() const { return (int)m_multiplierInfos.size(); }
     std::string getDynamicsMode() const { return m_dynamicsMode; }
+    bool isDynamicsModeImplicit() const { return m_isDynamicsModeImplicit; }
     int getNumDerivatives() const {
-        if (m_dynamicsMode == "implicit") {
-            return getNumSpeeds();
-        } else {
-            return 0;
-        }
+        return getNumAccelerations() + getNumAuxiliaryResidualEquations();
     }
     int getNumSlacks() const { return (int)m_slackInfos.size(); }
     /// This is the number of generalized coordinates, which may be greater
     /// than the number of generalized speeds.
     int getNumCoordinates() const { return m_numCoordinates; }
     int getNumSpeeds() const { return m_numSpeeds; }
+    int getNumAccelerations() const {
+        if (isDynamicsModeImplicit() && !isPrescribedKinematics()) {
+            return getNumSpeeds();
+        } else {
+            return 0;
+        }
+    }
     int getNumAuxiliaryStates() const { return m_numAuxiliaryStates; }
     int getNumCosts() const { return (int)m_costInfos.size(); }
     bool isPrescribedKinematics() const { return m_prescribedKinematics; }
@@ -487,6 +501,12 @@ public:
             return m_numMultibodyDynamicsEquationsIfPrescribedKinematics;
         }
         return getNumSpeeds();
+    }
+    const std::vector<std::string>& getAuxiliaryDerivativeNames() const {
+        return m_auxiliaryDerivativeNames;
+    }
+    int getNumAuxiliaryResidualEquations() const {
+        return m_numAuxiliaryResiduals;
     }
     int getNumKinematicConstraintEquations() const {
         // If all kinematics are prescribed, we assume that the prescribed
@@ -591,11 +611,14 @@ private:
     int m_numCoordinates = 0;
     int m_numSpeeds = 0;
     int m_numAuxiliaryStates = 0;
+    int m_numAuxiliaryResiduals = 0;
     int m_numHolonomicConstraintEquations = 0;
     int m_numNonHolonomicConstraintEquations = 0;
     int m_numAccelerationConstraintEquations = 0;
     bool m_enforceConstraintDerivatives = false;
     std::string m_dynamicsMode = "explicit";
+    std::vector<std::string> m_auxiliaryDerivativeNames;
+    bool m_isDynamicsModeImplicit = false;
     bool m_prescribedKinematics = false;
     int m_numMultibodyDynamicsEquationsIfPrescribedKinematics = 0;
     Bounds m_kinematicConstraintBounds;
