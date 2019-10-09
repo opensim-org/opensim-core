@@ -1195,7 +1195,7 @@ TEST_CASE("Goals use Moco-defined accelerations and multipliers") {
     int N = 5;
     solver.set_num_mesh_intervals(N);
     solver.set_minimize_lagrange_multipliers(true);
-    solver.set_dynamics_mode("implicit");
+    solver.set_multibody_dynamics_mode("implicit");
     solver.set_optim_max_iterations(0);
     solver.set_parallel(0);
     auto guess = solver.createGuess("bounds");
