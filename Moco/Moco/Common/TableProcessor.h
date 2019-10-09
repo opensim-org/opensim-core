@@ -168,83 +168,49 @@ public:
     }
 };
 
-/// Update table column headers to show full path to components in a model 
-/// tree. If a column header matches a component name, the column header is 
-/// replaced by the full path to the component. This operation applies the 
-/// findComponent() method on the column header string, therefore the column 
-/// header string may already contain a full or partial path to the component. 
-/// The user may append a '/value' or '/speed' suffix to the end of the full 
-/// path to the component. However, for column headers with the suffix "_u" 
-/// to represent speeds, a flag may be optionally set to automatically 
-/// replace the '_u' with '/speeds' for these columns only (overriding the 
-/// above). If a component given by the column header is not found in the model, 
-/// the column header is left unchanged. Assumption: all column headers names 
-/// are unique.
-
+/// Update table column labels to use post-4.0 state paths instead of pre-4.0
+/// state names. For example, this converts column labels as follows:
+///   - `pelvis_tilt` -> `/jointset/ground_pelvis/pelvis_tilt/value`
+///   - `pelvis_tilt_u` -> `/jointset/ground_pelvis/pelvis_tilt/speed`
+///   - `soleus.activation` -> `/forceset/soleus/activation`
+///   - `soleus.fiber_length` -> `/forceset/soleus/fiber_length`
+/// If a column label does not identify a state in the model,
+/// the column label is not changed. We assume all column labels are unique.
 class OSIMMOCO_API TabOpAbsolutePathColumnLabels : public TableOperator {
-    OpenSim_DECLARE_CONCRETE_OBJECT(TabOpAbsolutePathColumnLabels, TableOperator);
-    OpenSim_DECLARE_PROPERTY(suffix, std::string,
-            "Append optional '/value' or '/speed' suffix to full path. "
-            "Default: no suffix.");
-    OpenSim_DECLARE_PROPERTY(auto_change_u_to_speed, bool,
-            "If the column name contains a '_u' suffix, set this flag to "
-            "automatically change '_u' to '/speed'. This will override any "
-            "previously-set suffix. Default: false.");
+    OpenSim_DECLARE_CONCRETE_OBJECT(
+            TabOpAbsolutePathColumnLabels, TableOperator);
 
 public:
-    TabOpAbsolutePathColumnLabels() {
-        constructProperty_suffix("");
-        constructProperty_auto_change_u_to_speed(false);
-    };
-    TabOpAbsolutePathColumnLabels(std::string suffval, 
-            bool auto_change_u_flag = false)
-                : TabOpAbsolutePathColumnLabels() {
-        std::transform(
-                suffval.begin(), suffval.end(), suffval.begin(), ::tolower);
-        set_suffix(suffval);
-        set_auto_change_u_to_speed(auto_change_u_flag);
-    };
+    TabOpAbsolutePathColumnLabels() {}
 
     void operate(TimeSeriesTable& table, const Model* model) const override {
+        // Storage::getStateIndex() holds the logic for converting between
+        // new-style state names and old-style state names.
 
-        for (int i = 0; i < table.getNumColumns(); i++) {
+        OPENSIM_THROW_IF(!model, Exception,
+                "Expected a model, but no model was provided.");
 
-            // check model nullptr
-            OPENSIM_THROW_IF(!model, Exception,
-                    format("Expected a model, but no model was provided."));
-
-            // check valid suffix
-            OPENSIM_THROW_IF(get_suffix().compare("") &&
-                                     get_suffix().compare("/value") &&
-                                     get_suffix().compare("/speed"),
-                    Exception,
-                    format("Expected suffix '/value', '/speed' or no "
-                           "suffix. The provided suffix '%s' did not match "
-                           "these options.",
-                            get_suffix()));
-
-			// trim the "_u" if column header has suffix "_u" and auto change flagged
-            std::string colheader = table.getColumnLabel(i);
-            bool autospeedflag = get_auto_change_u_to_speed() &&
-                                 (colheader.rfind("_u") == (colheader.length() - 2));
-            if (autospeedflag)
-                colheader.erase(colheader.end() - 2, colheader.end());
-            
-            // find the component with the same name as the current column header and 
-			// append the required suffix
-            if (const Component* found =
-                model->findComponent(ComponentPath(colheader))) {
-                std::string pathstring = found->getAbsolutePathString();
-                if (autospeedflag) {
-                    pathstring.append("/speed");
-                }
-                else {
-                    pathstring.append(
-                            get_suffix().compare("") ? get_suffix() : "");
-                }
-                table.setColumnLabel(i, pathstring);
-            }
+        Array<std::string> labels;
+        for (const auto& label : table.getColumnLabels()) {
+            labels.append(label);
         }
+        Storage sto;
+        sto.setColumnLabels(labels);
+
+        const Array<std::string> stateNames = model->getStateVariableNames();
+        for (int isv = 0; isv < stateNames.size(); ++isv) {
+            int isto = sto.getStateIndex(stateNames[isv]);
+            if (isto == -1) continue;
+
+            // Skip over time.
+            labels[isto + 1] = stateNames[isv];
+        }
+
+        std::vector<std::string> newLabels;
+        for (int i = 1; i < labels.size(); ++i) {
+            newLabels.push_back(labels[i]);
+        }
+        table.setColumnLabels(newLabels);
     }
 };
 
