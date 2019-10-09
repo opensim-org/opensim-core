@@ -1,6 +1,10 @@
 - 2019-10-04: MocoControlGoal weights can be specified via regular expression
               patterns.
 
+- 2019-10-04: report.py can plot normalized tendon force states. Users can 
+              provide a MocoStudy file instead of a Model file, and users can
+              specify the name of the report output file.
+              
 - 2019-09-29: Remove INDYGO and GlobalStaticOptimization from Moco.
 
 - 2019-09-23: MocoControlGoal has properties "exponent" and
