@@ -65,6 +65,39 @@ public:
     }
 };
 
+/// For DeGrooteFregly2016Muscle muscles whose 'ignore_tendon_compliance' 
+/// property is false, set the tendon compliance dynamics mode to either 
+/// 'explicit' or 'implicit'.
+class OSIMMOCO_API ModOpTendonComplianceDynamicsModeDGF 
+        : public ModelOperator {
+    OpenSim_DECLARE_CONCRETE_OBJECT(
+            ModOpTendonComplianceDynamicsModeDGF, ModelOperator);
+    OpenSim_DECLARE_PROPERTY(mode, std::string,
+            "The tendon compliance dynamics mode: 'implicit' or 'explicit'. "
+            "Default: 'explicit'.");
+
+public:
+    ModOpTendonComplianceDynamicsModeDGF() {
+        constructProperty_mode("explicit");
+    }
+    ModOpTendonComplianceDynamicsModeDGF(std::string mode) : 
+            ModOpTendonComplianceDynamicsModeDGF() {
+        OPENSIM_THROW_IF(mode != "explicit" && mode != "implicit", Exception,
+            format("The tendon compliance dynamics mode must be either "
+                "'explicit' or 'implicit', but %s was provided.", mode));
+        set_mode(std::move(mode));
+    }
+    void operate(Model& model, const std::string&) const override {
+        model.finalizeFromProperties();
+        for (auto& muscle :
+                model.updComponentList<DeGrooteFregly2016Muscle>()) {
+            if (!muscle.get_ignore_tendon_compliance()) {
+                muscle.set_tendon_compliance_dynamics_mode(get_mode());
+            }
+        }
+    }
+};
+
 /// Turn off passive fiber forces for all DeGrooteFregly2016Muscle%s in the
 /// model.
 class OSIMMOCO_API ModOpIgnorePassiveFiberForcesDGF : public ModelOperator {
@@ -144,26 +177,35 @@ public:
 class OSIMMOCO_API ModOpAddReserves : public ModelOperator {
     OpenSim_DECLARE_CONCRETE_OBJECT(ModOpAddReserves, ModelOperator);
     OpenSim_DECLARE_PROPERTY(optimal_force, double,
-            "The optimal force for all added reserve actuators.");
+            "The optimal force for all added reserve actuators. Default: 1.");
+    OpenSim_DECLARE_OPTIONAL_PROPERTY(bound, double,
+            "Set the min and max control to -bound and bound, respectively. "
+            "Default: no bounds.");
     OpenSim_DECLARE_PROPERTY(skip_coordinates_with_actuators, bool,
             "Whether or not to skip coordinates with existing actuators. "
             "Default: true.")
 public:
     ModOpAddReserves() {
         constructProperty_optimal_force(1);
+        constructProperty_bound();
         constructProperty_skip_coordinates_with_actuators(true);
     }
     ModOpAddReserves(double optimalForce) : ModOpAddReserves() {
         set_optimal_force(optimalForce);
     }
-    ModOpAddReserves(double optimalForce, bool skipCoordsWithActu)
-            : ModOpAddReserves() {
-        set_optimal_force(optimalForce);
+    ModOpAddReserves(double optimalForce, double bound)
+            : ModOpAddReserves(optimalForce) {
+        set_bound(bound);
+    }
+    ModOpAddReserves(
+            double optimalForce, double bounds, bool skipCoordsWithActu)
+            : ModOpAddReserves(optimalForce, bounds) {
         set_skip_coordinates_with_actuators(skipCoordsWithActu);
     }
     void operate(Model& model, const std::string&) const override {
         model.initSystem();
         ModelFactory::createReserveActuators(model, get_optimal_force(),
+                getProperty_bound().empty() ? SimTK::NaN : get_bound(),
                 get_skip_coordinates_with_actuators());
     }
 };
