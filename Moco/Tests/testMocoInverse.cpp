@@ -125,36 +125,6 @@ TEST_CASE("MocoInverse Rajagopal2016, 18 muscles") {
     std::cout.rdbuf(LogManager::cout.rdbuf());
     std::cerr.rdbuf(LogManager::cerr.rdbuf());
 
-    ModelProcessor modelProcessor =
-        ModelProcessor("testGait10dof18musc_subject01.osim") |
-        ModOpReplaceMusclesWithDeGrooteFregly2016() |
-        ModOpAddReserves(1000);
-    Model cmcModel = modelProcessor.process();
-    cmcModel.print("testGait10dof18musc_subject01_cmc.osim");
-
-    //auto tasks = CMC_TaskSet();
-    //const auto& coordSet = cmcModel.getCoordinateSet();
-    //for (int icoord = 0; icoord < coordSet.getSize(); ++icoord) {
-    //    const auto& coord = coordSet.get(icoord);
-    //    auto task = CMC_Joint();
-    //    task.setName(coord.getName());
-    //    task.setCoordinateName(coord.getName());
-    //    task.setKP(100, 1, 1);
-    //    task.setKV(20, 1, 1);
-    //    task.setActive(true, false, false);
-    //    tasks.cloneAndAppend(task);
-    //}
-    //tasks.print("testMocoInverse_cmc_tasks.xml");
-
-    //auto cmc = CMCTool();
-    ////cmc.setModel(cmcModel);
-    //cmc.setName("testMocoInverse_cmc");
-    //cmc.setExternalLoadsFileName("walk_gait1018_subject01_grf.xml");
-    //cmc.setDesiredKinematicsFileName("walk_gait1018_state_reference.mot");
-    //cmc.print("testMocoInverse_cmc_setup.xml");
-    auto cmc = CMCTool("testMocoInverse_cmc_setup.xml");
-    cmc.run();
-
     MocoInverse inverse;
     ModelProcessor modelProcessor =
         ModelProcessor("subject_walk_armless_18musc.osim") |
