@@ -111,6 +111,7 @@ OSIMMOCO_API void RegisterTypes_osimMoco() {
         Object::registerType(TableProcessor());
 
         Object::registerType(TabOpLowPassFilter());
+        Object::registerType(TabOpUseAbsoluteStateNames());
 
         Object::registerType(ModelProcessor());
         Object::registerType(ModOpReplaceMusclesWithDeGrooteFregly2016());

@@ -32,6 +32,8 @@ class OSIMMOCO_API TableOperator : public Object {
     OpenSim_DECLARE_ABSTRACT_OBJECT(TableOperator, Object);
 
 public:
+    /// This function may or may not be provided with a model. If the operation
+    /// requires a model and model == nullptr, an exception is thrown.
     virtual void operate(TimeSeriesTable& table, const Model* model) const = 0;
 };
 
@@ -70,12 +72,12 @@ public:
         set_filepath(std::move(filepath));
     }
     /// Process and obtain the table. If a filepath is provided, it will be
-    /// evaluated relative `relativeToDirectory`, if provided.
+    /// evaluated relative `relativeToDirectory`.
     /// If a model is provided, it is used to convert columns from degrees to
     /// radians (if the table has a header with inDegrees=yes) before any
     /// operations are performed. This model is accessible by any 
     /// TableOperator%s that require it.
-    TimeSeriesTable process(std::string relativeToDirectory = {},
+    TimeSeriesTable process(std::string relativeToDirectory,
             const Model* model = nullptr) const {
         TimeSeriesTable table;
         if (get_filepath().empty()) {
@@ -108,7 +110,9 @@ public:
         }
         return table;
     }
-    TimeSeriesTable process(const Model* model = nullptr) {
+    /// Same as above, but paths are evaluated with respect to the current
+    /// working directory.
+    TimeSeriesTable process(const Model* model = nullptr) const {
         return process({}, model);
     }
     /// Returns true if neither a filepath nor an in-memory table have been
@@ -176,12 +180,11 @@ public:
 ///   - `soleus.fiber_length` -> `/forceset/soleus/fiber_length`
 /// If a column label does not identify a state in the model,
 /// the column label is not changed. We assume all column labels are unique.
-class OSIMMOCO_API TabOpAbsolutePathColumnLabels : public TableOperator {
-    OpenSim_DECLARE_CONCRETE_OBJECT(
-            TabOpAbsolutePathColumnLabels, TableOperator);
+class OSIMMOCO_API TabOpUseAbsoluteStateNames : public TableOperator {
+    OpenSim_DECLARE_CONCRETE_OBJECT(TabOpUseAbsoluteStateNames, TableOperator);
 
 public:
-    TabOpAbsolutePathColumnLabels() {}
+    TabOpUseAbsoluteStateNames() {}
 
     void operate(TimeSeriesTable& table, const Model* model) const override {
         // Storage::getStateIndex() holds the logic for converting between
@@ -191,6 +194,7 @@ public:
                 "Expected a model, but no model was provided.");
 
         Array<std::string> labels;
+        labels.append("time");
         for (const auto& label : table.getColumnLabels()) {
             labels.append(label);
         }
