@@ -267,15 +267,16 @@ void Mesh::extendFinalizeFromProperties() {
                 spdlog::warn("Couldn't find file '{}'.", file);
                 warningGiven = true;
             }
-            if (getDebugLevel() <= 0) { return; }
-            std::cout << "The following locations were tried:\n";
-            for (unsigned i = 0; i < attempts.size(); ++i)
-                std::cout << "\n  " << attempts[i];
-            std::cout << std::endl;
-            if (!isAbsolutePath &&
-                !Pathname::environmentVariableExists("OPENSIM_HOME"))
-                std::cout << "Set environment variable OPENSIM_HOME "
-                << "to search $OPENSIM_HOME/Geometry." << std::endl;
+            if (Log::shouldLog(Log::Level::Info)) {
+                std::cout << "The following locations were tried:\n";
+                for (unsigned i = 0; i < attempts.size(); ++i)
+                    std::cout << "\n  " << attempts[i];
+                std::cout << std::endl;
+                if (!isAbsolutePath &&
+                    !Pathname::environmentVariableExists("OPENSIM_HOME"))
+                    std::cout << "Set environment variable OPENSIM_HOME "
+                    << "to search $OPENSIM_HOME/Geometry." << std::endl;
+            }
             return;
         }
 

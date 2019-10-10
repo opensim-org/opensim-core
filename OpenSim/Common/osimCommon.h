@@ -24,6 +24,8 @@
  * -------------------------------------------------------------------------- */
 
 #include "About.h"
+#include "CommonUtilities.h"
+#include "Log.h"
 #include "Object.h"
 #include "RegisterTypes_osimCommon.h"
 #include "FunctionSet.h"
