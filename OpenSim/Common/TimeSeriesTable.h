@@ -404,21 +404,22 @@ public:
      * newStartTime, newFinalTime. The cropping is done in place, no copy is made. Uses getNearestRowIndexForTime to handle locating proper rows.
      */
     void crop(const double newStartTime, const double newFinalTime) {
-        const auto& timeCol = getIndependentColumn();
+        const auto& timeCol = this->getIndependentColumn();
         size_t start_index = 0;
-        size_t last_index = getNumRows() - 1;
+        size_t last_index = this->getNumRows() - 1;
         if (newStartTime > timeCol.front()) // Avoid throwing exception if newStartTime is less than first time
-            start_index = getNearestRowIndexForTime(newStartTime);
+            start_index = this->getNearestRowIndexForTime(newStartTime);
         if (newFinalTime <timeCol.back()) 
-            last_index = getNearestRowIndexForTime(newFinalTime);
+            last_index = this->getNearestRowIndexForTime(newFinalTime);
 
-        SimTK::Matrix_<ETY> matrixBlock = updMatrix()(start_index, (size_t)0,
+        SimTK::Matrix_<ETY> matrixBlock = this->updMatrix()(start_index,
+                (size_t)0,
                 last_index - start_index + 1, getNumColumns());
-        updMatrix() = matrixBlock;
+        this->updMatrix() = matrixBlock;
         std::vector<double> newIndependentVector = std::vector<double>(
-                getIndependentColumn().begin() + start_index,
-                getIndependentColumn().begin() + last_index+1 );
-        _indData = newIndependentVector;
+                this->getIndependentColumn().begin() + start_index,
+                this->getIndependentColumn().begin() + last_index + 1);
+        this->_indData = newIndependentVector;
     }
 
 
