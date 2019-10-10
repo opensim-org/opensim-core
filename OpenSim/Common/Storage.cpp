@@ -32,7 +32,7 @@
 #include "GCVSpline.h"
 #include "GCVSplineSet.h"
 #include "IO.h"
-#include "LogManager.h"
+#include "Log.h"
 #include "STOFileAdapter.h"
 #include "Signal.h"
 #include "SimTKcommon.h"
@@ -227,7 +227,7 @@ Storage::Storage(const string &fileName, bool readHeadersOnly) :
     }
 
     // Process file as if it were a .mot file
-    if (LogManager::getLogLevel() <= LogLevel::Info) {
+    if (Log::getLevel() <= Log::Level::Info) {
         cout << "Storage: read data file =" << fileName
             << " (nr=" << nr << " nc=" << nc << ")" << endl;
     }

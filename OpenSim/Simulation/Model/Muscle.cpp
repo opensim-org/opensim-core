@@ -55,7 +55,7 @@ Muscle::Muscle()
 void Muscle::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 {
     if ( versionNumber < XMLDocument::getLatestVersion()) {
-        if (LogManager::getLogLevel() <= LogLevel::Debug)
+        if (Log::getLevel() <= Log::Level::Debug)
             cout << "Updating Muscle object to latest format..." << endl;
         
         if (versionNumber <= 20301){
@@ -663,7 +663,7 @@ void Muscle::computeForce(const SimTK::State& s,
     // This calls compute actuation.
     Super::computeForce(s, bodyForces, generalizedForces); 
 
-    if (LogManager::getLogLevel() > LogLevel::Info) return;
+    if (Log::getLevel() > Log::Level::Info) return;
     // NOTE: Actuation could be negative, in particular during CMC, when the 
     // optimizer is computing gradients, but in those cases the actuation will 
     // be overridden and will not be computed by the muscle.

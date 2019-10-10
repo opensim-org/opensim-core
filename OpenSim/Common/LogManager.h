@@ -59,29 +59,6 @@ private:
     int sync() override;
 };
 
-/// This enum lists the types of messages that should be logged. These levels
-/// match those of the spdlog logging library that OpenSim uses for logging.
-enum class LogLevel {
-    /// Do not log any messages. Useful when running an optimization or
-    /// automated pipeline.
-    Off = 6,
-    /// Only log critical errors.
-    Critical = 5,
-    /// Log all messages that require user intervention.
-    Error = 4,
-    /// Log warnings. Warnings are generated when the software will proceed
-    /// but the user should check their input.
-    Warn = 3,
-    /// Default.
-    Info = 2,
-    /// Log information that may be useful when debugging the operation of the
-    /// software to investigate unexpected results.
-    Debug = 1,
-    /// Log as much as possible, including messages that describe the software's
-    /// behavior step by step. Note: OpenSim has very few Trace-level messages.
-    Trace = 0
-};
-
 class OSIMCOMMON_API LogManager
 {
 public:
@@ -102,26 +79,6 @@ public:
 
     LogBuffer *getOutBuffer();
     LogBuffer *getErrBuffer();
-
-    /// Log messages of importance `level` and greater.
-    /// For example, if the level is set to Info, then Critical, Error, Warn,
-    /// and Info messages are logged, while Debug and Trace messages are not
-    /// logged.
-    static void setLogLevel(LogLevel level);
-    static LogLevel getLogLevel();
-
-    /// Set the logging level using one of the following strings:
-    /// - Off
-    /// - Critical
-    /// - Error
-    /// - Warn
-    /// - Info
-    /// - Debug
-    /// - Trace
-    /// This variant of setLogLevel() is for use from Matlab.
-    /// @see LogLevel.
-    static void setLogLevelString(const std::string& level);
-    static std::string getLogLevelString();
 };
 
 }

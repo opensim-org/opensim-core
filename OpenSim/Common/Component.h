@@ -44,7 +44,7 @@
 // INCLUDES
 #include "ComponentList.h"
 #include "ComponentPath.h"
-#include "LogManager.h"
+#include "Log.h"
 #include "OpenSim/Common/Array.h"
 #include "OpenSim/Common/ComponentOutput.h"
 #include "OpenSim/Common/ComponentSocket.h"
@@ -2288,7 +2288,7 @@ public:
                 foundCs.push_back(&comp);
                 // TODO Revisit why the exact match isn't found when
                 // when what appears to be the complete path.
-                if (LogManager::getLogLevel() < LogLevel::Info) {
+                if (Log::getLevel() < Log::Level::Info) {
                     std::string details = msg + " Found '" + compAbsPath.toString() +
                         "' as a match for:\n Component '" + name + "' of type " +
                         comp.getConcreteClassName() + ", but it "

@@ -34,12 +34,11 @@
 
 #include "Exception.h"
 #include "IO.h"
-#include "LogManager.h"
+#include "Log.h"
 #include "PropertyTransform.h"
 #include "Property_Deprecated.h"
 #include "XMLDocument.h"
 #include <fstream>
-#include <spdlog/spdlog.h>
 
 using namespace OpenSim;
 using namespace std;
@@ -240,12 +239,11 @@ bool Object::operator==(const Object& other) const
     auto printDiff = [](const std::string& name,
                             const std::string& thisValue,
                             const std::string& otherValue) {
-        if (Object::getDebugLevel() > 0) {
+        if (Log::getLevel() < Log::Level::Info) {
             std::cout << "In Object::operator==(), differing " << name << ":\n"
-                << "left: " << thisValue
-                << "\nright: " << otherValue << std::endl;
+                      << "left: " << thisValue << "\nright: " << otherValue
+                      << std::endl;
         }
-
     };
     if (getConcreteClassName()  != other.getConcreteClassName()) {
         printDiff("ConcreteClassName", getConcreteClassName(),
@@ -516,7 +514,7 @@ registerType(const Object& aObject)
         printf("Object.registerType: ERR- no type name has been set.\n");
         return;
     }
-    if (_debugLevel>=2) {
+    if (Log::getLevel() <= Log::Level::Trace) {
         cout << "Object.registerType: " << type << " .\n";
     }
 
@@ -524,7 +522,7 @@ registerType(const Object& aObject)
     for(int i=0; i <_registeredTypes.size(); ++i) {
         Object *object = _registeredTypes.get(i);
         if(object->getConcreteClassName() == type) {
-            if(_debugLevel>=2) {
+            if(Log::getLevel() <= Log::Level::Debug) {
                 cout<<"Object.registerType: replacing registered object of type ";
                 cout<<type;
                 cout<<"\n\twith a new default object of the same type."<<endl;
@@ -1370,7 +1368,7 @@ print(const string &aFileName) const
 {
     // Default to strict exception to avoid creating bad files
     // but for debugging allow users to be more lenient.
-    if (LogManager::getLogLevel() <= LogLevel::Debug) {
+    if (Log::getLevel() <= Log::Level::Debug) {
         try {
             warnBeforePrint();
         } catch (...) {}
@@ -1669,29 +1667,29 @@ std::string Object::dump() const {
 void Object::setDebugLevel(int newLevel) {
     switch (newLevel) {
     case -4:
-        LogManager::setLogLevel(LogLevel::Off);
+        Log::setLevel(Log::Level::Off);
         break;
     case -3:
-        LogManager::setLogLevel(LogLevel::Critical);
+        Log::setLevel(Log::Level::Critical);
         break;
     case -2:
-        LogManager::setLogLevel(LogLevel::Error);
+        Log::setLevel(Log::Level::Error);
         break;
     case -1:
-        LogManager::setLogLevel(LogLevel::Warn);
+        Log::setLevel(Log::Level::Warn);
         break;
     case 0:
-        LogManager::setLogLevel(LogLevel::Info);
+        Log::setLevel(Log::Level::Info);
         break;
     case 1:
-        LogManager::setLogLevel(LogLevel::Debug);
+        Log::setLevel(Log::Level::Debug);
         break;
     case 2:
-        LogManager::setLogLevel(LogLevel::Trace);
+        Log::setLevel(Log::Level::Trace);
         break;
     case 3:
         // Backwards compatibility.
-        LogManager::setLogLevel(LogLevel::Trace);
+        Log::setLevel(Log::Level::Trace);
         break;
     default:
         OPENSIM_THROW(
@@ -1702,15 +1700,15 @@ void Object::setDebugLevel(int newLevel) {
 }
 
 int Object::getDebugLevel() {
-    const auto level = LogManager::getLogLevel();
+    const auto level = Log::getLevel();
     switch (level) {
-    case LogLevel::Off: return -4;
-    case LogLevel::Critical: return -3;
-    case LogLevel::Error: return -2;
-    case LogLevel::Warn: return -1;
-    case LogLevel::Info: return 0;
-    case LogLevel::Debug: return 1;
-    case LogLevel::Trace: return 2;
+    case Log::Level::Off: return -4;
+    case Log::Level::Critical: return -3;
+    case Log::Level::Error: return -2;
+    case Log::Level::Warn: return -1;
+    case Log::Level::Info: return 0;
+    case Log::Level::Debug: return 1;
+    case Log::Level::Trace: return 2;
     }
 }
 

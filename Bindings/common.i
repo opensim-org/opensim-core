@@ -11,16 +11,7 @@
 %include <OpenSim/Common/About.h>
 %include <OpenSim/Common/Exception.h>
 
-%ignore OpenSim::StreamLogCallback;
-%ignore OpenSim::LogBuffer;
-%ignore OpenSim::LogManager::out;
-%ignore OpenSim::LogManager::err;
-%ignore OpenSim::LogManager::cout;
-%ignore OpenSim::LogManager::cerr;
-%ignore OpenSim::LogManager::getInstance;
-%ignore OpenSim::LogManager::getOutBuffer;
-%ignore OpenSim::LogManager::getErrBuffer;
-%include <OpenSim/Common/LogManager.h>
+%include <OpenSim/Common/Log.h>
 
 %include <OpenSim/Common/Array.h>
 %include <OpenSim/Common/ArrayPtrs.h>
