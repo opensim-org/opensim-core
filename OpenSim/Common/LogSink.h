@@ -23,6 +23,7 @@
  * -------------------------------------------------------------------------- */
 
 #include "osimCommonDLL.h"
+#include <iostream>
 #include <spdlog/sinks/base_sink.h>
 
 // This file is not included in osimCommon.h. Only include
@@ -33,6 +34,8 @@ namespace OpenSim {
 /// Derive from this class to implement your own way of reporting logged
 /// messages.
 class OSIMCOMMON_API LogSink : public spdlog::sinks::base_sink<std::mutex> {
+public:
+    virtual ~LogSink() = default;
 protected:
     /// This function is invoked whenever a message is logged at the desired
     /// levels.

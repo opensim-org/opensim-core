@@ -30,7 +30,6 @@
 
 namespace OpenSim {
 
-/* TODO
 class OSIMCOMMON_API StreamLogCallback : public LogCallback
 {
 public:
@@ -81,7 +80,6 @@ public:
     LogBuffer *getOutBuffer();
     LogBuffer *getErrBuffer();
 };
-*/
 
 }
 

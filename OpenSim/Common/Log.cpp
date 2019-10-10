@@ -131,7 +131,14 @@ void Log::addLogFile(const std::string& filepath) {
     m_filepaths.insert(filepath);
 }
 
-void Log::addSink(std::shared_ptr<LogSink> sink) {
+void Log::addSink(const std::shared_ptr<LogSink> sink) {
     spdlog::default_logger()->sinks().push_back(
             std::static_pointer_cast<spdlog::sinks::sink>(sink));
+}
+
+void Log::removeSink(const std::shared_ptr<LogSink> sink) {
+    auto spdlogSink = std::static_pointer_cast<spdlog::sinks::sink>(sink);
+    auto sinks = spdlog::default_logger()->sinks();
+    auto to_erase = std::find(sinks.cbegin(), sinks.cend(), spdlogSink);
+    if (to_erase != sinks.cend()) sinks.erase(to_erase);
 }

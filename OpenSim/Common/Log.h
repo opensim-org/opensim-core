@@ -136,18 +136,23 @@ public:
     /// If we are already logging messages to the provided file, then this
     /// function issues a warning and returns.
     /// @note This function is not thread-safe. Do not invoke this function
-    /// concurrently, or concurrently with addSink().
+    /// concurrently, or concurrently with addSink() or removeSink().
     static void addLogFile(const std::string& filepath = "opensim.log");
 
     /// Start reporting messages to the provided sink.
     /// @note This function is not thread-safe. Do not invoke this function
-    /// concurrently, or concurrently with addLogFile().
-    static void addSink(std::shared_ptr<LogSink> sink);
+    /// concurrently, or concurrently with addLogFile() or removeSink().
+    static void addSink(const std::shared_ptr<LogSink> sink);
+
+    /// Remove a sink. If it doesn't exist, do nothing.
+    /// @note This function is not thread-safe. Do not invoke this function
+    /// concurrently, or concurrently with addLogFile() or addSink().
+    static void removeSink(const std::shared_ptr<LogSink> sink);
 
     /// This returns the singleton instance of the Log class, but users never
     /// need to invoke this function. The member functions in this class are
     /// static.
-    static std::shared_ptr<Log> getInstance() {
+    static const std::shared_ptr<Log> getInstance() {
         if (!m_log) {
             m_log = std::shared_ptr<Log>(new Log());
         }

@@ -24,7 +24,6 @@
 #include <spdlog/spdlog.h>
 
 using namespace OpenSim;
-/*
 
 // Initialize static members
 LogBuffer LogManager::out;
@@ -143,6 +142,5 @@ LogBuffer *LogManager::getErrBuffer()
 {
     return &err;
 }
-*/
 
 
