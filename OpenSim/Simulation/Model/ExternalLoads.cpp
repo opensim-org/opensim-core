@@ -420,7 +420,7 @@ void ExternalLoads::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNum
 {
     int documentVersion = versionNumber;
     if ( documentVersion < 20301){
-        if (Object::getDebugLevel()>=1)
+        if (LogManager::getLogLevel() <= LogLevel::Debug)
             cout << "Updating ExternalLoad object to latest format..." << endl;
         _dataFileName="";
         SimTK::Xml::element_iterator dataFileElementIter =aNode.element_begin("datafile");

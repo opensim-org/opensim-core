@@ -27,17 +27,19 @@
 
 
 // INCLUDES
-#include <iostream>
-#include "IO.h"
-#include "Signal.h"
 #include "Storage.h"
-#include "GCVSplineSet.h"
-#include "SimmMacros.h"
-#include "SimTKcommon.h"
+
 #include "GCVSpline.h"
-#include "StateVector.h"
+#include "GCVSplineSet.h"
+#include "IO.h"
+#include "LogManager.h"
 #include "STOFileAdapter.h"
+#include "Signal.h"
+#include "SimTKcommon.h"
+#include "SimmMacros.h"
+#include "StateVector.h"
 #include "TimeSeriesTable.h"
+#include <iostream>
 
 using namespace OpenSim;
 using namespace std;
@@ -225,7 +227,7 @@ Storage::Storage(const string &fileName, bool readHeadersOnly) :
     }
 
     // Process file as if it were a .mot file
-    if (getDebugLevel() >= 0) {
+    if (LogManager::getLogLevel() <= LogLevel::Info) {
         cout << "Storage: read data file =" << fileName
             << " (nr=" << nr << " nc=" << nc << ")" << endl;
     }
