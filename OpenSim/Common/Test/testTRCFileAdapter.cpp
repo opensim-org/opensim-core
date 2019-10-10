@@ -190,6 +190,17 @@ int main() {
     if (failed)
         return 1;
 
+    TimeSeriesTable_<SimTK::Vec3> table(tmpfile);
+    double cropToTime = 0.1;
+    table.crop(0.0, cropToTime);
+    TRCFileAdapter::write(table, "cropped_"+tmpfile);
+    TimeSeriesTable_<SimTK::Vec3> roundTripTable("cropped_" + tmpfile);
+    OPENSIM_THROW_IF(roundTripTable.getNumRows() != 7, OpenSim::Exception,
+            "Cropped table has wrong size");
+    OPENSIM_THROW_IF(roundTripTable.getIndependentColumn().back() > cropToTime,
+            OpenSim::Exception,
+            "Cropped table has wrong time column");
+
     std::remove(tmpfile.c_str());
     std::cout << "\nAll tests passed!" << std::endl;
 

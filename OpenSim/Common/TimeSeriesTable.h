@@ -399,6 +399,24 @@ public:
 
         return row;
     }
+    /**
+     * Crop TimeSeriesTable to rows that have timestamp that lies between 
+     * newStartTime, newFinalTime. The cropping is done in place, no copy is made
+     */
+    void crop(const double newStartTime, const double newFinalTime) {
+        const auto& timeCol = getIndependentColumn();
+        size_t start_index = 0;
+        size_t last_index = getNumRows() - 1;
+        if (newStartTime > timeCol.front()) // Avoid throwing exception if newStartTime is less than first time
+            start_index = getNearestRowIndexForTime(newStartTime);
+        if (newFinalTime <timeCol.back()) 
+            last_index = getNearestRowIndexForTime(newFinalTime);
+
+        SimTK::Matrix_<ETY> matrixBlock = updMatrix()(start_index, (size_t)0,
+                last_index - start_index + 1, getNumColumns());
+        updMatrix() = matrixBlock;
+    }
+
 
 protected:
     /** Validate the given row. 
