@@ -56,8 +56,6 @@
 #include <iostream>
 #include <string>
 
-#include <spdlog/spdlog.h>
-
 #include <OpenSim/Simulation/AssemblySolver.h>
 
 using namespace std;
@@ -113,16 +111,16 @@ Model::Model(const string &aFileName) :
         ". Please open model and save it in OpenSim version 3.3 to upgrade.");
 
     _fileName = aFileName;
-    spdlog::info("Loaded model {} from file {}", getName(), getInputFileName());
+    cout << "Loaded model " << getName() << " from file " << getInputFileName() << endl;
 
     try {
         finalizeFromProperties();
     }
     catch(const InvalidPropertyValue& err) {
-        spdlog::warn("Model was unable to finalizeFromProperties. "
+        cout << "WARNING: Model was unable to finalizeFromProperties.\n" <<
             "Update the model file and reload OR update the property and call "
-            "finalizeFromProperties() on the model.\n(details: {}).",
-            err.what());
+            "finalizeFromProperties() on the model.\n" <<
+            "(details: " << err.what() << ")." << endl;
     }
 }
 
@@ -135,10 +133,10 @@ Model* Model::clone() const
         clone->finalizeFromProperties();
     }
     catch (const InvalidPropertyValue& err) {
-        spdlog::warn("clone() was unable to finalizeFromProperties. "
+        cout << "WARNING: clone() was unable to finalizeFromProperties.\n" <<
             "Update the model and call clone() again OR update the clone's "
-            "property and call finalizeFromProperties() on it.\n(details: {}).",
-            err.what());
+            "property and call finalizeFromProperties() on it.\n"
+            "(details: " << err.what() << ")." << endl;
     }
 
     return clone;
@@ -153,8 +151,8 @@ Model* Model::clone() const
 void Model::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 {
     if (versionNumber < XMLDocument::getLatestVersion()){
-        spdlog::info("Updating Model file from {} to latest format...",
-                versionNumber);
+        cout << "Updating Model file from " << versionNumber 
+            << " to latest format..." << endl;
         // Version has to be 1.6 or later, otherwise assert
         if (versionNumber == 10600){
             // Get node for DynamicsEngine
@@ -530,9 +528,8 @@ void Model::assemble(SimTK::State& s, const Coordinate *coord, double weight)
         }
         catch (const std::exception& ex){
             // Constraints are probably infeasible so try again relaxing constraints
-            spdlog::info("Model unable to assemble: {}\n"
-                         "Model relaxing constraints and trying again.",
-                         ex.what());
+            cout << "Model unable to assemble: " << ex.what() << endl;
+            cout << "Model relaxing constraints and trying again." << endl;
 
             try{
                 // Try to satisfy with constraints as errors weighted heavily.
@@ -540,9 +537,7 @@ void Model::assemble(SimTK::State& s, const Coordinate *coord, double weight)
                 _assemblySolver->assemble(s);
             }
             catch (const std::exception& ex){
-                spdlog::info(
-                        "Model unable to assemble with relaxed constraints: {}",
-                        ex.what());
+                cout << "Model unable to assemble with relaxed constraints: " << ex.what() << endl;
             }
         }
     }
@@ -795,8 +790,9 @@ void Model::extendConnectToModel(Model &model)
     Super::extendConnectToModel(model);
 
     if (&model != this){
-        spdlog::info("Model {} is being connected to model {}.", getName(),
-                model.getName());
+        cout << "Model::" << getName() <<
+            " is being connected to model " <<
+            model.getName() << "." << endl;
         // if part of another Model, that Model is in charge
         // of creating a valid Multibody tree that includes
         // Components of this Model. 
