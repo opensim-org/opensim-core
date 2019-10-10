@@ -118,7 +118,7 @@ void ExternalForce::setDataSource(const Storage &dataSource)
 { 
     _dataSource = &dataSource;
 
-    if (Log::getLevel() <= Log::Level::Info) {
+    if (Log::shouldLog(Log::Level::Info)) {
         cout << "ExternalForce::" << getName() << endl;
         cout << "Data source being set to " << _dataSource->getName() << endl;   
     }

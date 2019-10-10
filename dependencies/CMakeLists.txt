@@ -166,7 +166,7 @@ AddDependency(NAME       spdlog
               CMAKE_ARGS -DSPDLOG_BUILD_BENCH:BOOL=OFF
                          -DSPDLOG_BUILD_TESTS:BOOL=OFF
                          -DSPDLOG_BUILD_EXAMPLE:BOOL=OFF
-			 -DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=ON)
+                         -DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=ON)
  
 #######################
 

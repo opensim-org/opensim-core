@@ -239,7 +239,7 @@ bool Object::operator==(const Object& other) const
     auto printDiff = [](const std::string& name,
                             const std::string& thisValue,
                             const std::string& otherValue) {
-        if (Log::getLevel() < Log::Level::Info) {
+        if (Log::shouldLog(Log::Level::Debug)) {
             std::cout << "In Object::operator==(), differing " << name << ":\n"
                       << "left: " << thisValue << "\nright: " << otherValue
                       << std::endl;
@@ -514,7 +514,7 @@ registerType(const Object& aObject)
         printf("Object.registerType: ERR- no type name has been set.\n");
         return;
     }
-    if (Log::getLevel() <= Log::Level::Trace) {
+    if (Log::shouldLog(Log::Level::Trace)) {
         cout << "Object.registerType: " << type << " .\n";
     }
 
@@ -522,7 +522,7 @@ registerType(const Object& aObject)
     for(int i=0; i <_registeredTypes.size(); ++i) {
         Object *object = _registeredTypes.get(i);
         if(object->getConcreteClassName() == type) {
-            if(Log::getLevel() <= Log::Level::Debug) {
+            if(Log::shouldLog(Log::Level::Debug)) {
                 cout<<"Object.registerType: replacing registered object of type ";
                 cout<<type;
                 cout<<"\n\twith a new default object of the same type."<<endl;
@@ -1368,7 +1368,7 @@ print(const string &aFileName) const
 {
     // Default to strict exception to avoid creating bad files
     // but for debugging allow users to be more lenient.
-    if (Log::getLevel() <= Log::Level::Debug) {
+    if (Log::shouldLog(Log::Level::Debug)) {
         try {
             warnBeforePrint();
         } catch (...) {}

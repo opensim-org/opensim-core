@@ -2288,7 +2288,7 @@ public:
                 foundCs.push_back(&comp);
                 // TODO Revisit why the exact match isn't found when
                 // when what appears to be the complete path.
-                if (Log::getLevel() < Log::Level::Info) {
+                if (Log::shouldLog(Log::Level::Debug)) {
                     std::string details = msg + " Found '" + compAbsPath.toString() +
                         "' as a match for:\n Component '" + name + "' of type " +
                         comp.getConcreteClassName() + ", but it "
