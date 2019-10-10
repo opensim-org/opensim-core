@@ -16,6 +16,11 @@ add_library(osim@_example_name@ SHARED
         )
 target_link_libraries(osim@_example_name@ osimMoco)
 
+string(TOUPPER osim@_example_name@ example_name_upper)
+set_target_properties(osim@_example_name@ PROPERTIES
+        DEFINE_SYMBOL OSIM${example_name_upper}_EXPORTS
+        )
+
 add_executable(example@_example_name@ example@_example_name@.cpp)
 target_link_libraries(example@_example_name@ osim@_example_name@)
 
