@@ -22,7 +22,9 @@
  * -------------------------------------------------------------------------- */
 
 #include "StatesTrajectory.h"
+
 #include <OpenSim/Common/Storage.h>
+#include <OpenSim/Common/CommonUtilities.h>
 #include <OpenSim/Simulation/Model/Model.h>
 
 using namespace OpenSim;
@@ -164,6 +166,22 @@ StatesTrajectory StatesTrajectory::createFromStatesStorage(
         bool allowMissingColumns,
         bool allowExtraColumns,
         bool assemble) {
+    return createFromStatesTable(model, sto.exportToTable(),
+            allowMissingColumns, allowExtraColumns, assemble);
+}
+
+StatesTrajectory StatesTrajectory::createFromStatesStorage(
+        const Model& model,
+        const std::string& filepath) {
+    return createFromStatesStorage(model, Storage(filepath));
+}
+
+StatesTrajectory StatesTrajectory::createFromStatesTable(
+        const Model& model,
+        const TimeSeriesTable& table,
+        bool allowMissingColumns,
+        bool allowExtraColumns,
+        bool assemble) {
 
     // Assemble the required objects.
     // ==============================
@@ -178,26 +196,30 @@ StatesTrajectory StatesTrajectory::createFromStatesStorage(
     auto state = localModel.initSystem();
 
     // The labels of the columns in the storage file.
-    const auto& stoLabels = sto.getColumnLabels();
-    int numDependentColumns = stoLabels.getSize() - 1;
+    const auto& labels = table.getColumnLabels();
+    int numDependentColumns = (int)labels.size();
 
     // Error checking.
     // ===============
     // Angular quantities must be expressed in radians.
     // TODO we could also manually convert the necessary coords/speeds to
     // radians.
-    OPENSIM_THROW_IF(sto.isInDegrees(), StatesStorageIsInDegrees);
+    if (table.hasTableMetaDataKey("inDegrees")) {
+        OPENSIM_THROW_IF(
+            table.getTableMetaData<std::string>("inDegrees") == "yes",
+            StatesStorageIsInDegrees);
+    }
 
     // If column labels aren't unique, It's unclear which column the user
     // wanted to use for the related state variable.
-    OPENSIM_THROW_IF(!sto.storageLabelsAreUnique(),
-            NonUniqueColumnsInStatesStorage);
-
-    // To be safe, we don't process storages in which individual rows are
-    // missing values.
-    OPENSIM_THROW_IF(numDependentColumns != sto.getSmallestNumberOfStates(),
-            VaryingNumberOfStatesPerRow,
-            numDependentColumns, sto.getSmallestNumberOfStates());
+    {
+        auto sortedLabels = labels;
+        sort(sortedLabels.begin(), sortedLabels.end());
+        auto it = std::unique(sortedLabels.begin(), sortedLabels.end() );
+        bool labelsAreUnique = (it == sortedLabels.end());
+        OPENSIM_THROW_IF(!labelsAreUnique,
+                         NonUniqueColumnsInStatesStorage);
+    }
 
     // Check if states are missing from the Storage.
     // ---------------------------------------------
@@ -208,7 +230,7 @@ StatesTrajectory StatesTrajectory::createFromStatesStorage(
     std::map<int, int> statesToFillUp;
     for (int is = 0; is < modelStateNames.getSize(); ++is) {
         // getStateIndex() will check for pre-4.0 column names.
-        const int stateIndex = sto.getStateIndex(modelStateNames[is]);
+        const int stateIndex = getStateIndex(labels, modelStateNames[is]);
         if (stateIndex == -1) {
             missingColumnNames.push_back(modelStateNames[is]);
         } else {
@@ -226,11 +248,10 @@ StatesTrajectory StatesTrajectory::createFromStatesStorage(
             std::vector<std::string> extraColumnNames;
             // We want the actual column names, not the state names; the two
             // might be different b/c the state names changed in v4.0.
-            for (int ic = 1; ic < stoLabels.getSize(); ++ic) {
+            for (int ic = 0; ic < table.getNumColumns(); ++ic) {
                 // Has this label been marked as a model state?
-                // stateIndex = columnIndex - 1 (b/c of the time column).
-                if (statesToFillUp.count(ic - 1) == 0) {
-                    extraColumnNames.push_back(stoLabels[ic]);
+                if (statesToFillUp.count(ic) == 0) {
+                    extraColumnNames.push_back(labels[ic]);
                 }
             }
             OPENSIM_THROW(ExtraColumnsInStatesStorage, localModel.getName(),
@@ -242,10 +263,7 @@ StatesTrajectory StatesTrajectory::createFromStatesStorage(
     // ===================
 
     // Reserve the memory we'll need to fit all the states.
-    states.m_states.reserve(sto.getSize());
-
-    // Working memory for Storage.
-    SimTK::Vector dependentValues(numDependentColumns);
+    states.m_states.reserve(table.getNumRows());
 
     // Working memory for state. Initialize so that missing columns end up as
     // NaN.
@@ -254,14 +272,14 @@ StatesTrajectory StatesTrajectory::createFromStatesStorage(
     // Initialize so that missing columns end up as NaN.
     state.updY().setToNaN();
 
-    // Loop through all rows of the Storage.
-    for (int itime = 0; itime < sto.getSize(); ++itime) {
+    // Loop through all rows of the table.
+    for (int itime = 0; itime < (int)table.getNumRows(); ++itime) {
 
         // Extract data from Storage into the working Vector.
-        sto.getData(itime, numDependentColumns, dependentValues);
+        auto dependentValues = table.getRowAtIndex(itime);
 
         // Set the correct time in the state.
-        sto.getTime(itime, state.updTime());
+        state.updTime() = table.getIndependentColumn()[itime];
 
         // Fill up current State with the data for the current time.
         for (const auto& kv : statesToFillUp) {
@@ -278,12 +296,6 @@ StatesTrajectory StatesTrajectory::createFromStatesStorage(
     }
 
     return states;
-}
-
-StatesTrajectory StatesTrajectory::createFromStatesStorage(
-        const Model& model,
-        const std::string& filepath) {
-    return createFromStatesStorage(model, Storage(filepath));
 }
 
 StatesTrajectory::IncompatibleModel::IncompatibleModel(

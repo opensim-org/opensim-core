@@ -55,7 +55,7 @@ OSIMSIMULATION_API SimTK::State simulate(Model& model,
 /// window allows the user to control playback speed.
 /// This function blocks until the user exits the simbody-visualizer window.
 // TODO handle degrees.
-OSIMSIMULATION_API void visualize(Model, Storage);
+OSIMSIMULATION_API void visualize(Model, TimeSeriesTable);
 /// @}
 
 #ifndef SWIG

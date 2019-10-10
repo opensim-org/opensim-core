@@ -101,10 +101,10 @@ SimTK::State OpenSim::simulate(Model& model,
 
 
 // Based on code from simtk.org/projects/predictivesim SimbiconExample/main.cpp.
-void OpenSim::visualize(Model model, Storage statesSto) {
+void OpenSim::visualize(Model model, TimeSeriesTable statesTable) {
 
-    const SimTK::Real initialTime = statesSto.getFirstTime();
-    const SimTK::Real finalTime = statesSto.getLastTime();
+    const SimTK::Real initialTime = statesTable.getFirstTime();
+    const SimTK::Real finalTime = statesTable.getLastTime();
     const SimTK::Real duration = finalTime - initialTime;
 
     // A data rate of 300 Hz means we can maintain 30 fps down to
@@ -116,9 +116,9 @@ void OpenSim::visualize(Model model, Storage statesSto) {
 
     // Prepare data.
     // -------------
-    statesSto.resample(1.0 / dataRate, 4 /* degree */);
-    auto statesTraj = StatesTrajectory::createFromStatesStorage(
-            model, statesSto, true, true, false);
+    resampleTable(statesTable, 1.0 / dataRate);
+    auto statesTraj = StatesTrajectory::createFromStatesTable(
+            model, statesTable, true, true, false);
     const int numStates = (int)statesTraj.getSize();
 
     // Must setUseVisualizer() *after* createFromStatesStorage(), otherwise
@@ -139,8 +139,8 @@ void OpenSim::visualize(Model model, Storage statesSto) {
     std::string modelName =
             model.getName().empty() ? "<unnamed>" : model.getName();
     std::string title = "Visualizing model '" + modelName + "'";
-    if (!statesSto.getName().empty() && statesSto.getName() != "UNKNOWN")
-        title += " with motion '" + statesSto.getName() + "'";
+    // if (!statesTable.getName().empty() && statesTable.getName() != "UNKNOWN")
+    //     title += " with motion '" + statesTable.getName() + "'";
     title += " (" + getFormattedDateTime(false, "ISO") + ")";
     viz.setWindowTitle(title);
     viz.setMode(SimTK::Visualizer::RealTime);
@@ -148,10 +148,6 @@ void OpenSim::visualize(Model model, Storage statesSto) {
     viz.setDesiredBufferLengthInSec(0);
     viz.setDesiredFrameRate(frameRate);
     viz.setShowSimTime(true);
-    // viz.setBackgroundType(viz.SolidColor);
-    // viz.setBackgroundColor(SimTK::White);
-    // viz.setShowFrameRate(true);
-    // viz.setShowFrameNumber(true);
     auto& silo = model.updVisualizer().updInputSilo();
 
     // BodyWatcher to control camera.

@@ -915,6 +915,19 @@ int searchBinary(const T &aValue,bool aFindFirst=false,
     return(mid);
 }
 
+const T* begin() const {
+    return cbegin();
+}
+const T* cbegin() const {
+    return _array;
+}
+const T* end() const {
+    return cbegin();
+}
+const T* cend() const {
+    return _array + _size;
+}
+
 
 //=============================================================================
 };  // END of class Array

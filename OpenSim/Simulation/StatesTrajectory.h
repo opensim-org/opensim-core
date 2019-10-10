@@ -384,22 +384,6 @@ public:
                     "no in the header.");
         }
     };
-    
-    /** Thrown by createFromStatesStorage(). */
-    class VaryingNumberOfStatesPerRow : public OpenSim::Exception {
-    public:
-        VaryingNumberOfStatesPerRow(const std::string& file, size_t line,
-                const std::string& func,
-                int numDepColumns, int smallestNumStates) :
-                    OpenSim::Exception(file, line, func) {
-            std::string msg = "States Storage has varying number of entries ";
-            msg += "per row (from " + std::to_string(smallestNumStates) + " to ";
-            msg += std::to_string(numDepColumns) + "). You must provide a ";
-            msg += "States Storage that has the same number ";
-            msg += "of entries in every row.";
-            addMessage(msg);
-        }
-    };
 
     /// @name Create partial trajectory from a states Storage
     /// @{
@@ -470,9 +454,6 @@ public:
      * @throws StatesStorageIsInDegrees Thrown if the Storage is in degrees
      *      (inDegrees=yes); angular quantities must use radians to properly
      *      create the trajectory.
-     *
-     * @throws VaryingNumberOfStatesPerRow Thrown if the rows of the storage
-     *      don't all have the same number of entries.
      */
     // TODO When OSTATES support is complete, add the following blurb to
     // the doxygen block above.
@@ -494,6 +475,11 @@ public:
      * default values for `allowMissingColumns` and `allowExtraColumns`. */
     static StatesTrajectory createFromStatesStorage(const Model& model,
             const std::string& filepath);
+
+    /// Similar to createFromStatesStorage(), except using a TimeSeriesTable.
+    static StatesTrajectory createFromStatesTable(const Model& model,
+            const TimeSeriesTable& table, bool allowMissingColumns = false,
+            bool allowExtraColumns = false, bool assemble = false);
     /// @}
 };
 

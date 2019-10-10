@@ -400,6 +400,17 @@ public:
         return row;
     }
 
+    double getFirstTime() const {
+        OPENSIM_THROW_IF(this->getIndependentColumn().empty(), Exception,
+                         "Table has no rows.");
+        return this->getIndependentColumn().front();
+    }
+    double getLastTime() const {
+        OPENSIM_THROW_IF(this->getIndependentColumn().empty(), Exception,
+                         "Table has no rows.");
+        return this->getIndependentColumn().back();
+    }
+
 protected:
     /** Validate the given row. 
 

@@ -23,8 +23,9 @@
 # This example shows how to use the StatesTrajectory to analyze a simulation
 # (computing joint reaction forces).
 
-import opensim as osim
+import sys
 import math
+import opensim as osim
 
 model = osim.Model()
 model.setName('model')
@@ -59,6 +60,7 @@ model.setStateVariableValue(state, 'joint/q/value', 0.25 * math.pi)
 manager = osim.Manager(model, state)
 manager.integrate(1.0)
 
+
 # Analyze the simulation.
 # -----------------------
 # Retrieve the StatesTrajectory from the reporter. Alternately, we could load a
@@ -84,3 +86,9 @@ for itime in range(statesTraj.getSize()):
     # abstractOutput = joint.getOutput('reaction_on_parent')
     # output = osim.OutputSpatialVec.safeDownCast(abstractOutput)
     # outputValue = output.getValue(s)
+
+
+# Are we running this script as a test? Users can ignore this line!
+running_as_test = 'unittest' in str().join(sys.argv)
+if not running_as_test:
+    osim.visualize(model, manager.exportTo)

@@ -63,3 +63,69 @@ std::string OpenSim::getFormattedDateTime(
     }
     return ss.str();
 }
+
+int OpenSim::getStateIndex(
+        const SimTK::Array_<std::string>& labels, const std::string& name) {
+
+    auto find = [&labels](const std::string& s) -> int {
+      auto it = std::find(labels.cbegin(), labels.cend(), s);
+      if (it == labels.cend()) return -1;
+      return std::distance(labels.cbegin(), it);
+    };
+
+    int index = -1;
+
+    // This uses the `do while(false)` idiom to run common code if one of a
+    // number of conditions succeeds (much like what a goto would be used for).
+    index = find(name);
+    if (index != -1) return index;
+
+    // 4.0 and its beta versions differ slightly in the absolute path but
+    // the <joint>/<coordinate>/value (or speed) will be common to both.
+    // Likewise, for muscle states <muscle>/activation (or fiber_length)
+    // must be common to the state variable (path) name and column label.
+    std::string shortPath = name;
+    std::string::size_type front = shortPath.find("/");
+    while (index < 0 && front < std::string::npos) {
+        shortPath = shortPath.substr(front + 1, name.length());
+        index = find(shortPath);
+        front = shortPath.find("/");
+    }
+    if (index != -1) return index;
+
+    // Assume labels follow pre-v4.0 state variable labeling.
+    // Redo search with what the pre-v4.0 label might have been.
+
+    // First, try just the last element of the path.
+    std::string::size_type back = name.rfind("/");
+    std::string prefix = name.substr(0, back);
+    std::string shortName = name.substr(back + 1, name.length() - back);
+    index = find(shortName);
+    if (index != -1) return index;
+
+    // If that didn't work, specifically check for coordinate state names
+    // (<coord_name>/value and <coord_name>/speed) and muscle state names
+    // (<muscle_name>/activation <muscle_name>/fiber_length).
+    if (shortName == "value") {
+        // pre-v4.0 did not have "/value" so remove it if here
+        back = prefix.rfind("/");
+        shortName = prefix.substr(back + 1, prefix.length());
+        index = find(shortName);
+    } else if (shortName == "speed") {
+        // replace "/speed" (the v4.0 labeling for speeds) with "_u"
+        back = prefix.rfind("/");
+        shortName = prefix.substr(back + 1, prefix.length() - back) + "_u";
+        index = find(shortName);
+    } else if (back < name.length()) {
+        // try replacing the '/' with '.' in the last segment
+        shortName = name;
+        shortName.replace(back, 1, ".");
+        back = shortName.rfind("/");
+        shortName = shortName.substr(back + 1, shortName.length() - back);
+        index = find(shortName);
+    }
+    if (index != -1) return index;
+
+    // If all of the above checks failed, return -1.
+    return -1;
+}
