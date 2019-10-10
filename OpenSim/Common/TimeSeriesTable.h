@@ -414,7 +414,7 @@ public:
 
         SimTK::Matrix_<ETY> matrixBlock = this->updMatrix()(start_index,
                 (size_t)0,
-                last_index - start_index + 1, getNumColumns());
+                last_index - start_index + 1, this->getNumColumns());
         this->updMatrix() = matrixBlock;
         std::vector<double> newIndependentVector = std::vector<double>(
                 this->getIndependentColumn().begin() + start_index,
