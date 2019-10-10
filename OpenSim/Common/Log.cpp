@@ -21,9 +21,20 @@
  * -------------------------------------------------------------------------- */
 
 #include "Log.h"
+#include "LogSink.h"
 #include "Exception.h"
 
+#include "spdlog/sinks/basic_file_sink.h"
+
 using namespace OpenSim;
+
+std::shared_ptr<Log> Log::m_log = Log::getInstance();
+std::set<std::string> Log::m_filepaths = {};
+
+Log::Log() {
+    spdlog::set_level(spdlog::level::info);
+    spdlog::set_pattern("[%l] %v");
+}
 
 void Log::setLevel(Level level) {
     switch (level) {
@@ -93,4 +104,34 @@ std::string Log::getLevelString() {
     case Level::Debug: return "Debug";
     case Level::Trace: return "Trace";
     }
+}
+
+bool Log::shouldLog(Level level) {
+    spdlog::level::level_enum spdlogLevel;
+    switch (level) {
+    case Level::Off: spdlogLevel = spdlog::level::off; break;
+    case Level::Critical: spdlogLevel = spdlog::level::critical; break;
+    case Level::Error: spdlogLevel = spdlog::level::err; break;
+    case Level::Warn: spdlogLevel = spdlog::level::warn; break;
+    case Level::Info: spdlogLevel = spdlog::level::info; break;
+    case Level::Debug: spdlogLevel = spdlog::level::debug; break;
+    case Level::Trace: spdlogLevel = spdlog::level::trace; break;
+    }
+    return spdlog::default_logger()->should_log(spdlogLevel);
+}
+
+void Log::addLogFile(const std::string& filepath) {
+    auto sinks = spdlog::default_logger()->sinks();
+    if (m_filepaths.count(filepath)) {
+        warn("Already logging to file '{}'.", filepath);
+        return;
+    }
+    sinks.push_back(
+            std::make_shared<spdlog::sinks::basic_file_sink_mt>(filepath));
+    m_filepaths.insert(filepath);
+}
+
+void Log::addSink(std::shared_ptr<LogSink> sink) {
+    spdlog::default_logger()->sinks().push_back(
+            std::static_pointer_cast<spdlog::sinks::sink>(sink));
 }

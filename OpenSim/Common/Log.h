@@ -23,15 +23,22 @@
  * -------------------------------------------------------------------------- */
 
 #include "osimCommonDLL.h"
-
+#include <set>
 #include <spdlog/spdlog.h>
-
 #include <string>
 
 namespace OpenSim {
 
+class LogSink;
+
+/// This is a singleton class (single instance) for logging messages and
+/// controlling how those messages are presented to the user.
 class OSIMCOMMON_API Log {
 public:
+
+    Log(Log const&) = delete;
+    Log& operator=(Log const&) = delete;
+
     /// This enum lists the types of messages that should be logged. These
     /// levels match those of the spdlog logging library that OpenSim uses for
     /// logging.
@@ -79,6 +86,20 @@ public:
     static void setLevelString(const std::string& level);
     static std::string getLevelString();
 
+    /// Returns true if messages at the provided level should be logged,
+    /// based on the set logging level. The following code will produce output:
+    /// @code
+    /// Log::setLevel(Log::Level::Warn);
+    /// if (shouldLog(Log::Level::Error)) {
+    ///     std::cout << "Error encountered." << std::endl;
+    /// }
+    /// @endcode
+    static bool shouldLog(Level level);
+
+    /// @name Commands to log messages
+    /// Use these functions instead of using spdlog directly.
+    /// @{
+
     template <typename... Args>
     static void critical(spdlog::string_view_t fmt, const Args&... args) {
         spdlog::critical(fmt, args...);
@@ -108,6 +129,37 @@ public:
     static void trace(spdlog::string_view_t fmt, const Args&... args) {
         spdlog::trace(fmt, args...);
     }
+
+    /// @}
+
+    /// Log messages to a file at the level getLevel().
+    /// If we are already logging messages to the provided file, then this
+    /// function issues a warning and returns.
+    /// @note This function is not thread-safe. Do not invoke this function
+    /// concurrently, or concurrently with addSink().
+    static void addLogFile(const std::string& filepath = "opensim.log");
+
+    /// Start reporting messages to the provided sink.
+    /// @note This function is not thread-safe. Do not invoke this function
+    /// concurrently, or concurrently with addLogFile().
+    static void addSink(std::shared_ptr<LogSink> sink);
+
+    /// This returns the singleton instance of the Log class, but users never
+    /// need to invoke this function. The member functions in this class are
+    /// static.
+    static std::shared_ptr<Log> getInstance() {
+        if (!m_log) {
+            m_log = std::shared_ptr<Log>(new Log());
+        }
+        return m_log;
+    }
+private:
+    /// Initialize spdlog.
+    Log();
+    static std::shared_ptr<Log> m_log;
+
+    /// Keep track of file sinks.
+    static std::set<std::string> m_filepaths;
 };
 
 } // namespace OpenSim

@@ -1,7 +1,7 @@
-#ifndef _LogManager_h_
-#define _LogManager_h_
+#ifndef OPENSIM_LOGSINK_H_
+#define OPENSIM_LOGSINK_H_
 /* -------------------------------------------------------------------------- *
- *                           OpenSim:  LogManager.h                           *
+ *                         OpenSim:  LogSink.h                                *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2017 Stanford University and the Authors                *
+ * Copyright (c) 2005-2019 Stanford University and the Authors                *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -23,66 +23,28 @@
  * -------------------------------------------------------------------------- */
 
 #include "osimCommonDLL.h"
-#include "Array.h"
-#include "LogCallback.h"
-#include <iostream>
-#include <sstream>
+#include <spdlog/sinks/base_sink.h>
+
+// This file is not included in osimCommon.h. Only include
+// this file when deriving from LogSink.
 
 namespace OpenSim {
 
-/* TODO
-class OSIMCOMMON_API StreamLogCallback : public LogCallback
-{
-public:
-    StreamLogCallback(const std::string &aFilename);
-    StreamLogCallback(std::ostream *aOut, bool aOwnsStream = true);
-    ~StreamLogCallback();
-    void log(const std::string &aStr) override;
-
+/// Derive from this class to implement your own way of reporting logged
+/// messages.
+class OSIMCOMMON_API LogSink : public spdlog::sinks::base_sink<std::mutex> {
+protected:
+    /// This function is invoked whenever a message is logged at the desired
+    /// levels.
+    virtual void sinkImpl(const std::string& msg) = 0;
+    virtual void flushImpl() {}
 private:
-    std::ostream *_out;
-    bool _ownsStream;
-
+    void sink_it_(const spdlog::details::log_msg& msg) override final {
+        sinkImpl(std::string(msg.payload.begin(), msg.payload.end()));
+    }
+    void flush_() override final { flushImpl(); }
 };
 
+} // namespace OpenSim
 
-class OSIMCOMMON_API LogBuffer : public std::stringbuf
-{
-public:
-    LogBuffer();
-    ~LogBuffer();
-    bool addLogCallback(LogCallback *aLogCallback);
-    bool removeLogCallback(LogCallback *aLogCallback);
-
-private:
-    Array<LogCallback*> _logCallbacks;
-
-    int sync() override;
-};
-
-class OSIMCOMMON_API LogManager
-{
-public:
-    // Expose these members so users can manipulate output formats by calling
-    // functions on LogManager::out/err
-    static LogBuffer out;
-    static LogBuffer err;
-
-    // LogManager's cout and cerr act as the normal standard output and error
-    // (i.e. they write to the terminal)
-    static std::ostream cout;
-    static std::ostream cerr;
-
-    LogManager();
-    ~LogManager();
-
-    static LogManager *getInstance();
-
-    LogBuffer *getOutBuffer();
-    LogBuffer *getErrBuffer();
-};
-*/
-
-}
-
-#endif
+#endif // OPENSIM_LOGSINK_H_
