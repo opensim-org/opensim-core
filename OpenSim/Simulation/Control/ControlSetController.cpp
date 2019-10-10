@@ -250,10 +250,9 @@ void ControlSetController::extendFinalizeFromProperties()
     }
 
     if (loadedControlSet && _controlSet) {
-        std::cout << "ControlSetController::extendFinalizeFromProperties '";
-        std::cout << _controlsFileName << "' loaded\n";
-        std::cout << "and will replace existing ControlSet '";
-        std::cout << _controlSet->getName() << "'." << std::endl;
+        Log::info("ControlSetController::extendFinalizeFromProperties '{}' "
+                  "loaded and will replace existing ControlSet '{}'.",
+                  _controlsFileName, _controlSet->getName());
         delete _controlSet;
     }
 

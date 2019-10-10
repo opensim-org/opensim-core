@@ -100,7 +100,7 @@ void GCVSplineSet::construct(int aDegree,
 
         // CHECK
         if(nTime!=nData) {
-            spdlog::error("GCVSplineSet.construct: number of times ({}) "
+            Log::error("GCVSplineSet.construct: number of times ({}) "
                           "and number of data ({}) don't agree.", nTime, nData);
             break;
         }

@@ -31,7 +31,6 @@
 
 #include <fstream>
 #include <regex>
-#include <spdlog/spdlog.h>
 #include <string>
 #include <type_traits>
 
@@ -173,9 +172,9 @@ void CHECK_STORAGE_AGAINST_STANDARD(const OpenSim::Storage& result,
            errorMessage + "- no common columns to compare!");
 
     for (size_t i = 0; i < ncolumns; ++i) {
-        spdlog::info("column:    {}", columnsUsed[i]);
-        spdlog::info("RMS error: {}", comparisons[i]);
-        spdlog::info("tolerance: {}\n", tolerances[i]);
+        OpenSim::Log::info("column:    {}", columnsUsed[i]);
+        OpenSim::Log::info("RMS error: {}", comparisons[i]);
+        OpenSim::Log::info("tolerance: {}\n", tolerances[i]);
         ASSERT(comparisons[i] < tolerances[i], testFile, testFileLine,
                errorMessage);
     }

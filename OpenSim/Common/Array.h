@@ -30,7 +30,7 @@
 #include "Exception.h"
 #include "osimCommonDLL.h"
 #include <iostream>
-#include <spdlog/spdlog.h>
+#include "Log.h"
 
 static const int Array_CAPMIN = 1;
 
@@ -308,7 +308,7 @@ bool computeNewCapacity(int aMinCapacity,int &rNewCapacity)
 
     // CHECK FOR ZERO INCREMENT
     if(_capacityIncrement == 0) {
-        spdlog::warn("Array.computeNewCapacity: capacity is set not to "
+        Log::warn("Array.computeNewCapacity: capacity is set not to "
                      "increase (i.e., _capacityIncrement==0).");
         return(false);
     }
@@ -342,7 +342,7 @@ bool ensureCapacity(int aCapacity)
     int i;
     T *newArray = new T[aCapacity];
     if(newArray==NULL) {
-        spdlog::error("Array.ensureCapacity: failed to increase capacity.");
+        Log::error("Array.ensureCapacity: failed to increase capacity.");
         return(false);
     }
 
@@ -381,7 +381,7 @@ void trim()
     int i;
     T *array = new T[newCapacity];
     if(array==NULL) {
-        spdlog::error("Array.trim: unable to allocate temporary array.");
+        Log::error("Array.trim: unable to allocate temporary array.");
         return;
     }
 
@@ -583,7 +583,7 @@ int insert(int aIndex,const T &aValue)
 {
     // NEGATIVE INDEX
     if(aIndex<0) {
-        spdlog::error("Array.insert: aIndex was less than 0.");
+        Log::error("Array.insert: aIndex was less than 0.");
         return(_size);
     }
 
@@ -636,11 +636,11 @@ int insert(int aIndex,const T &aValue)
 int remove(int aIndex)
 {
     if(aIndex<0) {
-        spdlog::error("Array.remove: aIndex was less than 0.");
+        Log::error("Array.remove: aIndex was less than 0.");
         return(_size);
     }
     if(aIndex>=_size) {
-        spdlog::error("Array.remove: aIndex was greater than or equal the size "
+        Log::error("Array.remove: aIndex was greater than or equal the size "
                       "of the array.");
         return(_size);
     }

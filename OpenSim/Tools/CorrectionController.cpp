@@ -281,7 +281,7 @@ void CorrectionController::extendConnectToModel(Model& model)
             adoptSubcomponent(actuator);
             setNextSubcomponentInSystem(*actuator);
             
-            spdlog::info(" CorrectionController::extendConnectToModel(): "
+            Log::info(" CorrectionController::extendConnectToModel(): "
                          "{} added",
                     name);
 
@@ -294,7 +294,7 @@ void CorrectionController::extendConnectToModel(Model& model)
 
     setNumControls(getActuatorSet().getSize());
 
-    spdlog::info(" CorrectionController::extendConnectToModel() "
+    Log::info(" CorrectionController::extendConnectToModel() "
         "num Actuators= {} kv={} kp={}",
         getNumControls(), _kv, _kp );
 }

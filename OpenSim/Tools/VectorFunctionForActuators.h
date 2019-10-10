@@ -28,6 +28,7 @@
  */
 
 #include <OpenSim/Common/Array.h>
+#include <OpenSim/Common/Log.h>
 #include <OpenSim/Common/VectorFunctionUncoupledNxN.h>
 
 namespace SimTK {
@@ -121,20 +122,20 @@ public:
     //--------------------------------------------------------------------------
 
     void calcValue( const double *aX, double *rF, int aSize) override {
-        spdlog::error("Unimplemented evaluate method");
+        Log::error("Unimplemented evaluate method");
 //      exit(0);
     }
     void calcValue( const Array<double> &aX, Array<double> &rF) override {
-        spdlog::error("Unimplemented evaluate method");
+        Log::error("Unimplemented evaluate method");
 //      exit(0);
     }
     virtual void calcValue( const Array<double> &aX, Array<double> &rF, const Array<int> &aDerivWRT) {
-        spdlog::error("Unimplemented evaluate method");
+        Log::error("Unimplemented evaluate method");
 //      exit(0);
     }
     void calcDerivative(const Array<double> &aX,Array<double> &rY,
         const Array<int> &aDerivWRT) override {
-        spdlog::error("Unimplemented calcDerivative method");
+        Log::error("Unimplemented calcDerivative method");
     }
 
     virtual void evaluate( const SimTK::State& s,  double *aX, double *rF);

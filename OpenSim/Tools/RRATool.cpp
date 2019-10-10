@@ -680,15 +680,15 @@ bool RRATool::run()
     SimTK::OptimizerAlgorithm algorithm = SimTK::InteriorPoint;
     if(IO::Uppercase(_optimizerAlgorithm) == "CFSQP") {
         if(!SimTK::Optimizer::isAlgorithmAvailable(SimTK::CFSQP)) {
-            spdlog::warn("CFSQP optimizer algorithm unavailable. "
+            Log::warn("CFSQP optimizer algorithm unavailable. "
                          "Will try to use IPOPT instead.");
             algorithm = SimTK::InteriorPoint;
         } else {
-            spdlog::info("Using CFSQP optimizer algorithm.");
+            Log::info("Using CFSQP optimizer algorithm.");
             algorithm = SimTK::CFSQP;
         }
     } else if(IO::Uppercase(_optimizerAlgorithm) == "IPOPT") {
-        spdlog::info("Using IPOPT optimizer algorithm.");
+        Log::info("Using IPOPT optimizer algorithm.");
         algorithm = SimTK::InteriorPoint;
     } else {
         throw Exception("RRATool: ERROR- Unrecognized optimizer algorithm: '"+_optimizerAlgorithm+"'",__FILE__,__LINE__);
@@ -697,13 +697,13 @@ bool RRATool::run()
     SimTK::Optimizer *optimizer = new SimTK::Optimizer(*target, algorithm);
     controller->setOptimizationTarget(target, optimizer);
 
-    spdlog::info("Setting optimizer print level to {}.", _verbose?4:0);
+    Log::info("Setting optimizer print level to {}.", _verbose?4:0);
     optimizer->setDiagnosticsLevel(_verbose?4:0);
-    spdlog::info("Setting optimizer convergence tolerance to {}.",
+    Log::info("Setting optimizer convergence tolerance to {}.",
             _optimizationConvergenceTolerance);
     optimizer->setConvergenceTolerance(_optimizationConvergenceTolerance);
     const int maxIterations = 2000;
-    spdlog::info("Setting optimizer maximum iterations to {}.", maxIterations);
+    Log::info("Setting optimizer maximum iterations to {}.", maxIterations);
     optimizer->setMaxIterations(maxIterations);
     optimizer->useNumericalGradient(false); // Use our own central difference approximations
     optimizer->useNumericalJacobian(false);
@@ -716,9 +716,9 @@ bool RRATool::run()
     }
 
     if(_verbose)
-        spdlog::info("Setting cmc controller to use verbose printing.");
+        Log::info("Setting cmc controller to use verbose printing.");
     else
-        spdlog::info("Setting cmc controller to not use verbose printing.");
+        Log::info("Setting cmc controller to not use verbose printing.");
     controller->setUseVerbosePrinting(_verbose);
 
     controller->setCheckTargetTime(true);

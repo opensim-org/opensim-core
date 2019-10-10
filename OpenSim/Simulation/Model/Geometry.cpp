@@ -218,7 +218,7 @@ void Mesh::extendFinalizeFromProperties() {
     if (!isObjectUpToDateWithProperties()) {
         const Component* rootModel = nullptr;
         if (!hasOwner()) {
-            spdlog::warn("Mesh {} not connected to model..ignoring",
+            Log::warn("Mesh {} not connected to model..ignoring",
                     get_mesh_file());
             return;   // Orphan Mesh not part of a model yet
         }
@@ -235,7 +235,7 @@ void Mesh::extendFinalizeFromProperties() {
         }
 
         if (rootModel == nullptr) {
-            spdlog::warn("Mesh {} not connected to model..ignoring",
+            Log::warn("Mesh {} not connected to model..ignoring",
                     get_mesh_file());
             return;   // Orphan Mesh not descendant of a model
         }
@@ -252,7 +252,7 @@ void Mesh::extendFinalizeFromProperties() {
             isAbsolutePath, directory, fileName, extension);
         const string lowerExtension = SimTK::String::toLower(extension);
         if (lowerExtension != ".vtp" && lowerExtension != ".obj" && lowerExtension != ".stl") {
-            spdlog::warn("ModelVisualizer ignoring '{}'; only .vtp, .stl, and "
+            Log::warn("ModelVisualizer ignoring '{}'; only .vtp, .stl, and "
                          ".obj files currently supported.", file);
             return;
         }
@@ -264,7 +264,7 @@ void Mesh::extendFinalizeFromProperties() {
 
         if (!foundIt) {
             if (!warningGiven) {
-                spdlog::warn("Couldn't find file '{}'.", file);
+                Log::warn("Couldn't find file '{}'.", file);
                 warningGiven = true;
             }
             if (Log::shouldLog(Log::Level::Info)) {
@@ -288,7 +288,7 @@ void Mesh::extendFinalizeFromProperties() {
             // it will be handled downstream 
         }
         catch (const std::exception& e) {
-            spdlog::error("Visualizer couldn't open {} because:\n{}",
+            Log::error("Visualizer couldn't open {} because:\n{}",
                 attempts.back(), e.what());
             return;
         }

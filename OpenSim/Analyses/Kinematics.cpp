@@ -203,7 +203,7 @@ updateCoordinatesToRecord()
     _values.setSize(_coordinateIndices.getSize());
 
     if(_values.getSize()==0) {
-         cout << "WARNING: Kinematics analysis has no coordinates to record values for" << endl;
+         Log::warn("Kinematics analysis has no coordinates to record values for");
     }
 }
 

@@ -32,7 +32,6 @@
 #include <OpenSim/Simulation/Model/Analysis.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/Probe.h>
-#include <spdlog/spdlog.h>
 
 #ifdef SWIG
     #ifdef OSIMANALYSES_API
@@ -158,7 +157,9 @@ public:
             Probe& nextProbe = (Probe&)probes[i];
             if (nextProbe.getOperation()=="integrate" || nextProbe.getOperation()=="min" || nextProbe.getOperation()=="max"){
                 nextProbe.setEnabled(false);
-                spdlog::warn("Disabling probe {} as invalid for non-integration context.", nextProbe.getName());
+                Log::warn("Disabling probe {} as invalid for non-integration "
+                          "context.",
+                        nextProbe.getName());
             }
         }
     }

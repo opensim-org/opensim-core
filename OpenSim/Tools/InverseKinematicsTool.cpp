@@ -300,7 +300,7 @@ bool InverseKinematicsTool::run()
         kinematicsReporter->setInDegrees(true);
         _model->addAnalysis(kinematicsReporter);
 
-        spdlog::info("Running tool {}.", getName());
+        Log::info("Running tool {}.", getName());
 
         // Get the trial name to label data written to files
         string trialName = getName();
@@ -385,7 +385,7 @@ bool InverseKinematicsTool::run()
                 markerErrors.set(2, sqrt(maxSquaredMarkerError));
                 modelMarkerErrors->append(s.getTime(), 3, &markerErrors[0]);
 
-                spdlog::info("Frame {} (t={}):\ttotal squared error = {}"
+                Log::info("Frame {} (t={}):\ttotal squared error = {}"
                              ", marker error: RMS={}, max={} ({})",
                         i, s.getTime(), totalSquaredMarkerError, rms,
                         sqrt(maxSquaredMarkerError),
@@ -459,11 +459,11 @@ bool InverseKinematicsTool::run()
 
         success = true;
 
-        spdlog::info("InverseKinematicsTool completed {} frames in {}s.",
+        Log::info("InverseKinematicsTool completed {} frames in {}s.",
                 Nframes, (double)(clock()-start)/CLOCKS_PER_SEC);
     }
     catch (const std::exception& ex) {
-        spdlog::error("InverseKinematicsTool Failed: {}", ex.what());
+        Log::error("InverseKinematicsTool Failed: {}", ex.what());
         // If failure happened after kinematicsReporter was added, make sure to cleanup
         if (kinematicsReporter!= nullptr)
             _model->removeAnalysis(kinematicsReporter);
@@ -484,7 +484,9 @@ void InverseKinematicsTool::updateFromXMLNode(SimTK::Xml::Element& aNode, int ve
         if (versionNumber < 20300){
             std::string origFilename = getDocumentFileName();
             newFileName=IO::replaceSubstring(newFileName, ".xml", "_v23.xml");
-            spdlog::info("Old version setup file encountered. Converting to new file {}", newFileName);
+            Log::info("Old version setup file encountered. Converting to new "
+                      "file {}",
+                    newFileName);
             SimTK::Xml::Document doc = SimTK::Xml::Document(origFilename);
             doc.writeToFile(newFileName);
         }
