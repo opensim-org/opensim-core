@@ -31,13 +31,15 @@
 //============================================================================
 
 #include "Object.h"
-#include "XMLDocument.h"
+
 #include "Exception.h"
-#include "Property_Deprecated.h"
-#include "PropertyTransform.h"
 #include "IO.h"
-#include <spdlog/spdlog.h>
+#include "LogManager.h"
+#include "PropertyTransform.h"
+#include "Property_Deprecated.h"
+#include "XMLDocument.h"
 #include <fstream>
+#include <spdlog/spdlog.h>
 
 using namespace OpenSim;
 using namespace std;
@@ -53,7 +55,6 @@ std::map<string,string>     Object::_renamedTypesMap;
 
 bool                        Object::_serializeAllDefaults=false;
 const string                Object::DEFAULT_NAME(ObjectDEFAULT_NAME);
-int                         Object::_debugLevel = 0;
 
 //=============================================================================
 // CONSTRUCTOR(S)
@@ -1370,7 +1371,7 @@ print(const string &aFileName) const
 {
     // Default to strict exception to avoid creating bad files
     // but for debugging allow users to be more lenient.
-    if (_debugLevel >= 1) { 
+    if (LogManager::getLogLevel() <= LogLevel::Debug) {
         try {
             warnBeforePrint();
         } catch (...) {}
@@ -1668,38 +1669,49 @@ std::string Object::dump() const {
 
 void Object::setDebugLevel(int newLevel) {
     switch (newLevel) {
+    case -4:
+        LogManager::setLogLevel(LogLevel::Off);
+        break;
+    case -3:
+        LogManager::setLogLevel(LogLevel::Critical);
+        break;
+    case -2:
+        LogManager::setLogLevel(LogLevel::Error);
+        break;
     case -1:
-        spdlog::set_level(spdlog::level::err);
+        LogManager::setLogLevel(LogLevel::Warn);
         break;
     case 0:
-        spdlog::set_level(spdlog::level::warn);
+        LogManager::setLogLevel(LogLevel::Info);
         break;
     case 1:
-        spdlog::set_level(spdlog::level::info);
+        LogManager::setLogLevel(LogLevel::Debug);
         break;
     case 2:
-        spdlog::set_level(spdlog::level::debug);
+        LogManager::setLogLevel(LogLevel::Trace);
         break;
     case 3:
-        spdlog::set_level(spdlog::level::trace);
+        // Backwards compatibility.
+        LogManager::setLogLevel(LogLevel::Trace);
         break;
     default:
-        OPENSIM_THROW(Exception,
-                fmt::format("Expected newLevel to be -1, 0, 1, 2, or 3; "
-                            "but got {}.", newLevel));
+        OPENSIM_THROW(
+                Exception, fmt::format("Expected newLevel to be -4, -3, "
+                                       "-2, -1, 0, 1, 2, or 3; but got {}.",
+                                   newLevel));
     }
 }
 
 int Object::getDebugLevel() {
-    const auto level = spdlog::default_logger()->level();
+    const auto level = LogManager::getLogLevel();
     switch (level) {
-    case spdlog::level::off: return -3;
-    case spdlog::level::critical: return -2;
-    case spdlog::level::err: return -1;
-    case spdlog::level::warn: return 0;
-    case spdlog::level::info: return 1;
-    case spdlog::level::debug: return 2;
-    case spdlog::level::trace: return 3;
+    case LogLevel::Off: return -4;
+    case LogLevel::Critical: return -3;
+    case LogLevel::Error: return -2;
+    case LogLevel::Warn: return -1;
+    case LogLevel::Info: return 0;
+    case LogLevel::Debug: return 1;
+    case LogLevel::Trace: return 2;
     }
 }
 

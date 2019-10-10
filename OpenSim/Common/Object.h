@@ -650,9 +650,22 @@ public:
         return this->isKindOf(type); 
     } 
 
-    /** %Set the debug level to get verbose output. Zero means no debugging. **/
+    /** %Set the amount of logging output. Higher numbers generate more logging
+    output.
+     - -4: Off
+     - -3: Critical
+     - -2: Error
+     - -1: Warn
+     -  0: Info
+     -  1: Debug
+     -  2: Trace
+     -  3: Trace (for backwards compatibility).
+    <b>(Deprecated)</b> Use LogManager::setLogLevel() instead. **/
+    DEPRECATED_14("Use LogManager::setLogLevel() instead.")
     static void setDebugLevel(int newLevel);
-    /** Get current setting of debug level. **/
+    /** Get the current setting of debug level.
+    <b>(Deprecated)</b> Use LogManager::getLogLevel() instead. **/
+    DEPRECATED_14("Use LogManager::getLogLevel() instead.")
     static int getDebugLevel();
 
     /** Wrapper to be used on Java side to display objects in tree; this returns
@@ -852,18 +865,6 @@ private:
     // Global flag to indicate if all registered objects are to be written in 
     // a "defaults" section.
     static bool _serializeAllDefaults;
-
-    // Debug level:
-    // -1: Quiet mode, no warnings printed.
-    //  0: Print upon successful load of model, external loads, etc. Print 
-    //     warnings for muscles with negative force.
-    //  1: Shows illegal tags. 
-    //  2: level 1 + registration troubleshooting.
-    //  3: 2 + more verbose troubleshooting of Object (de)serialization. When 
-    //     used from Java wrapping in GUI/Matlab this catches all exceptions 
-    //     thrown by the low-level libraries which is slower but helpful in 
-    //     troubleshooting.
-    // TODO static int      _debugLevel;
 
     // The name of this object.
     std::string     _name;
