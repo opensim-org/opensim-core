@@ -518,7 +518,6 @@ registerType(const Object& aObject)
     }
     if (_debugLevel>=2) {
         cout << "Object.registerType: " << type << " .\n";
-        spdlog::debug("Object.registerType: {}!", type);
     }
 
     // REPLACE IF A MATCHING TYPE IS ALREADY REGISTERED
