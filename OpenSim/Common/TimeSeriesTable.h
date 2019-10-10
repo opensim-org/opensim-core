@@ -400,8 +400,9 @@ public:
         return row;
     }
     /**
-     * Crop TimeSeriesTable to rows that have timestamp that lies between 
-     * newStartTime, newFinalTime. The cropping is done in place, no copy is made. Uses getNearestRowIndexForTime to handle locating proper rows.
+     * Crop TimeSeriesTable to rows that have times that lies between 
+     * newStartTime, newFinalTime. The cropping is done in place, no copy is made. 
+     * Uses getNearestRowIndexForTime method to locate proper rows.
      */
     void crop(const double newStartTime, const double newFinalTime) {
         const auto& timeCol = this->getIndependentColumn();
@@ -411,7 +412,11 @@ public:
             start_index = this->getNearestRowIndexForTime(newStartTime);
         if (newFinalTime <timeCol.back()) 
             last_index = this->getNearestRowIndexForTime(newFinalTime);
-
+        // This uses the rather invasive but efficient mechanism to copy a 
+        // block of the underlying Matrix.
+        // Side effect may include that headers/metaData may be left stale. 
+        // Alternatively we can create a new TimeSeriesTable and copy contents one row 
+        // at a time but that's rather overkill
         SimTK::Matrix_<ETY> matrixBlock = this->updMatrix()(start_index,
                 (size_t)0,
                 last_index - start_index + 1, this->getNumColumns());
@@ -421,7 +426,18 @@ public:
                 this->getIndependentColumn().begin() + last_index + 1);
         this->_indData = newIndependentVector;
     }
-
+    /**
+     * Crop TimeSeriesTable, keeping rows at newStartTime to the end.
+     */
+    void cropFrom(const double newStartTime) { 
+        this->crop(newStartTime, this->getIndependentColumn().back());
+    }
+    /**
+     * Crop TimeSeriesTable, keeping rows up to newFinalTime
+     */
+    void cropTo(const double newFinalTime) {
+        this->crop(this->getIndependentColumn().front(), newFinalTime);
+    }
 
 protected:
     /** Validate the given row. 
