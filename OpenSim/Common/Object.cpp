@@ -240,12 +240,9 @@ bool Object::operator==(const Object& other) const
     auto printDiff = [](const std::string& name,
                             const std::string& thisValue,
                             const std::string& otherValue) {
-        if (Object::getDebugLevel() > 0) {
-            spdlog::debug("In Object::operator==(), differing {}:\n"
-                          "left: {}\nright: {}",
-                    name, thisValue, otherValue);
-        }
-
+        spdlog::debug("In Object::operator==(), differing {}:\n"
+                      "left: {}\nright: {}",
+                name, thisValue, otherValue);
     };
     if (getConcreteClassName()  != other.getConcreteClassName()) {
         printDiff("ConcreteClassName", getConcreteClassName(),
@@ -516,19 +513,15 @@ registerType(const Object& aObject)
         spdlog::error("Object.registerType: no type name has been set.");
         return;
     }
-    if (_debugLevel>=2) {
-        spdlog::trace("Object.registerType: {}.", type);
-    }
+    spdlog::debug("Object.registerType: {}.", type);
 
     // REPLACE IF A MATCHING TYPE IS ALREADY REGISTERED
     for(int i=0; i <_registeredTypes.size(); ++i) {
         Object *object = _registeredTypes.get(i);
         if(object->getConcreteClassName() == type) {
-            if(_debugLevel>=2) {
-                cout<<"Object.registerType: replacing registered object of type ";
-                cout<<type;
-                cout<<"\n\twith a new default object of the same type."<<endl;
-            }
+            spdlog::debug("Object.registerType: replacing registered object of "
+                          "type {} with a new default object of the same type.",
+                    type);
             Object* defaultObj = aObject.clone();
             defaultObj->setName(DEFAULT_NAME);
             _registeredTypes.set(i,defaultObj);
