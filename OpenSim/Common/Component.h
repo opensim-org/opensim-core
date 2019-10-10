@@ -42,16 +42,17 @@
  */
 
 // INCLUDES
-#include <OpenSim/Common/osimCommonDLL.h>
-#include "OpenSim/Common/Object.h"
-#include "OpenSim/Common/ComponentSocket.h"
-#include "OpenSim/Common/ComponentOutput.h"
-#include "OpenSim/Common/Array.h"
 #include "ComponentList.h"
 #include "ComponentPath.h"
+#include "LogManager.h"
+#include "OpenSim/Common/Array.h"
+#include "OpenSim/Common/ComponentOutput.h"
+#include "OpenSim/Common/ComponentSocket.h"
+#include "OpenSim/Common/Object.h"
+#include "simbody/internal/MultibodySystem.h"
 #include <functional>
 
-#include "simbody/internal/MultibodySystem.h"
+#include <OpenSim/Common/osimCommonDLL.h>
 
 namespace OpenSim {
 
@@ -2287,7 +2288,7 @@ public:
                 foundCs.push_back(&comp);
                 // TODO Revisit why the exact match isn't found when
                 // when what appears to be the complete path.
-                if (comp.getDebugLevel() > 0) {
+                if (LogManager::getLogLevel() < LogLevel::Info) {
                     std::string details = msg + " Found '" + compAbsPath.toString() +
                         "' as a match for:\n Component '" + name + "' of type " +
                         comp.getConcreteClassName() + ", but it "
