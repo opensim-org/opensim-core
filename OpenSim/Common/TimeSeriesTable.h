@@ -401,7 +401,7 @@ public:
     }
     /**
      * Crop TimeSeriesTable to rows that have timestamp that lies between 
-     * newStartTime, newFinalTime. The cropping is done in place, no copy is made
+     * newStartTime, newFinalTime. The cropping is done in place, no copy is made. Uses getNearestRowIndexForTime to handle locating proper rows.
      */
     void crop(const double newStartTime, const double newFinalTime) {
         const auto& timeCol = getIndependentColumn();
@@ -415,6 +415,10 @@ public:
         SimTK::Matrix_<ETY> matrixBlock = updMatrix()(start_index, (size_t)0,
                 last_index - start_index + 1, getNumColumns());
         updMatrix() = matrixBlock;
+        std::vector<double> newIndependentVector = std::vector<double>(
+                getIndependentColumn().begin() + start_index,
+                getIndependentColumn().begin() + last_index+1 );
+        _indData = newIndependentVector;
     }
 
 

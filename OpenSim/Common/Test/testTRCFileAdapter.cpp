@@ -138,7 +138,7 @@ int main() {
     std::string tmpfile{"testtrcfileadapter.trc"};
 
     bool failed = false;
-
+    
     std::cout << "Testing TRCFileAdapter::read() and TRCFileAdapter::write()"
               << std::endl;
     for(const auto& filename : filenames) {
@@ -189,18 +189,19 @@ int main() {
 
     if (failed)
         return 1;
-
+    
     TimeSeriesTable_<SimTK::Vec3> table(tmpfile);
     double cropToTime = 0.1;
-    table.crop(0.0, cropToTime);
+    table.crop(0.02, cropToTime);
     TRCFileAdapter::write(table, "cropped_"+tmpfile);
     TimeSeriesTable_<SimTK::Vec3> roundTripTable("cropped_" + tmpfile);
-    OPENSIM_THROW_IF(roundTripTable.getNumRows() != 7, OpenSim::Exception,
+    OPENSIM_THROW_IF(roundTripTable.getNumRows() != 6, OpenSim::Exception,
             "Cropped table has wrong size");
     OPENSIM_THROW_IF(roundTripTable.getIndependentColumn().back() > cropToTime,
-            OpenSim::Exception,
-            "Cropped table has wrong time column");
-
+            OpenSim::Exception, "Cropped table has wrong end time.");
+    OPENSIM_THROW_IF(roundTripTable.getIndependentColumn().front() > 0.02,
+            OpenSim::Exception, "Cropped table has wrong start time.");
+    std::remove(("cropped_" + tmpfile).c_str());
     std::remove(tmpfile.c_str());
     std::cout << "\nAll tests passed!" << std::endl;
 
