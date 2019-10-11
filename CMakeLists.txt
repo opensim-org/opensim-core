@@ -169,6 +169,7 @@ if(${OPENSIM_INSTALL_UNIX_FHS})
     set(OPENSIM_INSTALL_JAVASRCDIR "${CMAKE_INSTALL_DATAROOTDIR}/OpenSim/java")
     set(OPENSIM_INSTALL_APIEXDIR "${CMAKE_INSTALL_DOCDIR}/Code")
     set(OPENSIM_INSTALL_SIMBODYDIR ".")
+    set(OPENSIM_INSTALL_SPDLOGDIR ".")
 
 else()
 
@@ -189,6 +190,7 @@ else()
     set(OPENSIM_INSTALL_JAVASRCDIR sdk/Java)
     set(OPENSIM_INSTALL_APIEXDIR Resources/Code)
     set(OPENSIM_INSTALL_SIMBODYDIR sdk/Simbody)
+    set(OPENSIM_INSTALL_SPDLOGDIR sdk/spdlog)
 
 endif()
 
@@ -584,6 +586,10 @@ if(WITH_BTK)
     endif()
 endif()
 
+find_package(spdlog REQUIRED
+        HINTS "${OPENSIM_DEPENDENCIES_DIR}/spdlog")
+
+
 if(NOT SIMBODY_HOME AND OPENSIM_DEPENDENCIES_DIR)
     set(SIMBODY_HOME "${OPENSIM_DEPENDENCIES_DIR}/simbody")
 endif()
@@ -749,6 +755,10 @@ if(${OPENSIM_COPY_DEPENDENCIES})
                 DESTINATION "${CMAKE_INSTALL_LIBDIR}")
     endif()
 
+    # spdlog
+    # ------
+    install(DIRECTORY "${spdlog_DIR}/../../../"
+            DESTINATION "${OPENSIM_INSTALL_SPDLOGDIR}")
 endif()
 
 if(BUILD_PYTHON_WRAPPING AND OPENSIM_PYTHON_STANDALONE)
