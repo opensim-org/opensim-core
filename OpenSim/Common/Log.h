@@ -73,7 +73,8 @@ public:
     static void setLevel(Level level);
     static Level getLevel();
 
-    /// Set the logging level using one of the following strings:
+    /// Set the logging level using one of the following strings
+    /// (case-insensitive):
     /// - Off
     /// - Critical
     /// - Error
@@ -83,7 +84,7 @@ public:
     /// - Trace
     /// This variant of setLevel() is for use in Matlab.
     /// @see Level.
-    static void setLevelString(const std::string& level);
+    static void setLevelString(std::string level);
     static std::string getLevelString();
 
     /// Returns true if messages at the provided level should be logged,

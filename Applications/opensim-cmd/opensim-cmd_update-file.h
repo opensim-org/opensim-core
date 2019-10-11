@@ -38,6 +38,7 @@ Usage:
   opensim-cmd update-file -h | --help
 
 Options:
+  -v <level>, --log-level <level>  Specify the logging level (verbosity).
   -L <path>, --library <path>  Load a plugin.
 
 Description:

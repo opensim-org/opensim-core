@@ -21,9 +21,10 @@
  * -------------------------------------------------------------------------- */
 
 #include "Log.h"
-#include "LogSink.h"
-#include "Exception.h"
 
+#include "Exception.h"
+#include "IO.h"
+#include "LogSink.h"
 #include "spdlog/sinks/basic_file_sink.h"
 
 using namespace OpenSim;
@@ -75,15 +76,16 @@ Log::Level Log::getLevel() {
     }
 }
 
-void Log::setLevelString(const std::string& str) {
+void Log::setLevelString(std::string str) {
     Level level;
-    if (str == "Off") level = Level::Off;
-    else if (str == "Critical") level = Level::Critical;
-    else if (str == "Error") level = Level::Error;
-    else if (str == "Warn") level = Level::Warn;
-    else if (str == "Info") level = Level::Info;
-    else if (str == "Debug") level = Level::Debug;
-    else if (str == "Trace") level = Level::Trace;
+    str = IO::Lowercase(str);
+    if (str == "off") level = Level::Off;
+    else if (str == "critical") level = Level::Critical;
+    else if (str == "error") level = Level::Error;
+    else if (str == "warn") level = Level::Warn;
+    else if (str == "info") level = Level::Info;
+    else if (str == "debug") level = Level::Debug;
+    else if (str == "trace") level = Level::Trace;
     else {
         OPENSIM_THROW(Exception,
                 fmt::format("Expected log level to be Off, Critical, Error, "
