@@ -417,9 +417,9 @@ public:
         // Side effect may include that headers/metaData may be left stale. 
         // Alternatively we can create a new TimeSeriesTable and copy contents one row 
         // at a time but that's rather overkill
-        SimTK::Matrix_<ETY> matrixBlock = this->updMatrix()(start_index,
-                (size_t)0,
-                last_index - start_index + 1, this->getNumColumns());
+        SimTK::Matrix_<ETY> matrixBlock = this->updMatrix()((int)start_index,
+                0,
+                (int) (last_index - start_index + 1), (int) this->getNumColumns());
         this->updMatrix() = matrixBlock;
         std::vector<double> newIndependentVector = std::vector<double>(
                 this->getIndependentColumn().begin() + start_index,
@@ -438,7 +438,6 @@ public:
     void cropTo(const double newFinalTime) {
         this->crop(this->getIndependentColumn().front(), newFinalTime);
     }
-
 protected:
     /** Validate the given row. 
 
