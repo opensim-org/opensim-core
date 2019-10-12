@@ -15,6 +15,7 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
+#include <Moco/About.h>
 #include <Moco/MocoProblem.h>
 #include <Moco/MocoStudy.h>
 #include <Moco/MocoUtilities.h>
@@ -31,19 +32,18 @@ static const char helpMessage[] =
 
 Usage:
   opensim-moco -h | --help
-
     Print this help message.
 
-  opensim-moco [--library=<path>] run [--visualize] <.omoco-file>
+  opensim-moco -V | --version
+    Print Moco's version.
 
+  opensim-moco [--library=<path>] run [--visualize] <.omoco-file>
     Run the MocoStudy in the provided .omoco file.
 
   opensim-moco [--library=<path>] print-xml
-
     Print a template XML .omoco file for a MocoStudy.
 
   opensim-moco [--library=<path>] visualize <model-or-omoco-file> [<trajectory-file>]
-
     Visualize an OpenSim model (.osim file) with a MocoTrajectory, if provided.
     If a trajectory is not provided, the model is visualized with its default
     state.
@@ -121,6 +121,9 @@ int main(int argc, char* argv[]) {
         int offset = 0;
         if (arg1 == "-h" || arg1 == "--help") {
             std::cout << helpMessage << std::endl;
+            return EXIT_SUCCESS;
+        } else if (arg1 == "-V" || arg1 == "--version") {
+            std::cout << OpenSim::GetMocoVersion() << std::endl;
             return EXIT_SUCCESS;
         } else if (startsWith(arg1, "--library=")) {
             OpenSim::LoadOpenSimLibraryExact(arg1.substr(arg1.find("=") + 1));
