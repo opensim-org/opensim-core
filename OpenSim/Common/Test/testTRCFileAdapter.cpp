@@ -189,19 +189,24 @@ int main() {
 
     if (failed)
         return 1;
+    std::cout << "Testing TimeSeriesTable::trim() " << std::endl;
     
     TimeSeriesTable_<SimTK::Vec3> table(tmpfile);
-    double cropToTime = 0.1;
-    table.crop(0.02, cropToTime);
-    TRCFileAdapter::write(table, "cropped_"+tmpfile);
-    TimeSeriesTable_<SimTK::Vec3> roundTripTable("cropped_" + tmpfile);
+    double trimToTime = 0.1;
+    table.trim(0.02, trimToTime);
+    TRCFileAdapter::write(table, "trimmed_"+tmpfile);
+    TimeSeriesTable_<SimTK::Vec3> roundTripTable("trimmed_" + tmpfile);
     OPENSIM_THROW_IF(roundTripTable.getNumRows() != 6, OpenSim::Exception,
-            "Cropped table has wrong size");
-    OPENSIM_THROW_IF(roundTripTable.getIndependentColumn().back() > cropToTime,
-            OpenSim::Exception, "Cropped table has wrong end time.");
+            "Trimmed table has wrong size");
+    OPENSIM_THROW_IF(roundTripTable.getIndependentColumn().back() > trimToTime,
+            OpenSim::Exception, "Trimmed table has wrong end time.");
     OPENSIM_THROW_IF(roundTripTable.getIndependentColumn().front() > 0.02,
-            OpenSim::Exception, "Cropped table has wrong start time.");
-    std::remove(("cropped_" + tmpfile).c_str());
+            OpenSim::Exception, "Trimmed table has wrong start time.");
+    // Use final time < first time should give empty table
+    table.trim(.02, 0);
+    OPENSIM_THROW_IF(table.getNumRows() != 1, OpenSim::Exception,
+            "Trimmed table not empty");
+    std::remove(("trimmed_" + tmpfile).c_str());
     std::remove(tmpfile.c_str());
     std::cout << "\nAll tests passed!" << std::endl;
 

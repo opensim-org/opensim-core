@@ -400,18 +400,18 @@ public:
         return row;
     }
     /**
-     * Crop TimeSeriesTable to rows that have times that lies between 
-     * newStartTime, newFinalTime. The cropping is done in place, no copy is made. 
+     * Trim TimeSeriesTable to rows that have times that lies between 
+     * newStartTime, newFinalTime. The trimming is done in place, no copy is made. 
      * Uses getNearestRowIndexForTime method to locate proper rows.
      */
-    void crop(const double newStartTime, const double newFinalTime) {
+    void trim(const double& newStartTime, const double& newFinalTime) {
         const auto& timeCol = this->getIndependentColumn();
         size_t start_index = 0;
         size_t last_index = this->getNumRows() - 1;
-        if (newStartTime > timeCol.front()) // Avoid throwing exception if newStartTime is less than first time
-            start_index = this->getNearestRowIndexForTime(newStartTime);
-        if (newFinalTime <timeCol.back()) 
-            last_index = this->getNearestRowIndexForTime(newFinalTime);
+        // Avoid throwing exception if newStartTime is less than first time
+        // or newFinalTime is greater than last value in table
+        start_index = this->getNearestRowIndexForTime(newStartTime, false);
+        last_index = this->getNearestRowIndexForTime(newFinalTime, false);
         // This uses the rather invasive but efficient mechanism to copy a 
         // block of the underlying Matrix.
         // Side effect may include that headers/metaData may be left stale. 
@@ -427,16 +427,16 @@ public:
         this->_indData = newIndependentVector;
     }
     /**
-     * Crop TimeSeriesTable, keeping rows at newStartTime to the end.
+     * trim TimeSeriesTable, keeping rows at newStartTime to the end.
      */
-    void cropFrom(const double newStartTime) { 
-        this->crop(newStartTime, this->getIndependentColumn().back());
+    void trimFrom(const double& newStartTime) { 
+        this->trim(newStartTime, this->getIndependentColumn().back());
     }
     /**
-     * Crop TimeSeriesTable, keeping rows up to newFinalTime
+     * trim TimeSeriesTable, keeping rows up to newFinalTime
      */
-    void cropTo(const double newFinalTime) {
-        this->crop(this->getIndependentColumn().front(), newFinalTime);
+    void trimTo(const double& newFinalTime) {
+        this->trim(this->getIndependentColumn().front(), newFinalTime);
     }
 protected:
     /** Validate the given row. 
