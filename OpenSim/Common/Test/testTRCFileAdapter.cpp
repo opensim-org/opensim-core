@@ -200,13 +200,9 @@ int main() {
             OpenSim::Exception, "Trimmed table has wrong end time.");
     OPENSIM_THROW_IF(roundTripTable.getIndependentColumn().front() < 0.02,
             OpenSim::Exception, "Trimmed table has wrong start time.");
-    // Use final time < first time should give empty table
-    try {
-        table.trim(.02, 0);
-        failed = true;
-    } catch (std::exception& ex) {
-        std::cout << "Exception thrown: '" << ex.what() << "'." << std::endl;
-    }
+    // Use final time < first time should throw exception 
+    SimTK_TEST_MUST_THROW_EXC(table.trim(.02, 0), OpenSim::EmptyTable);
+    
     if (failed) return 1;
     std::remove(("trimmed_" + tmpfile).c_str());
     std::remove(tmpfile.c_str());
