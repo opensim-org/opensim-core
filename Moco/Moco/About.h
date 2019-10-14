@@ -19,22 +19,12 @@
  * -------------------------------------------------------------------------- */
 
 #include "osimMocoDLL.h"
-
-extern "C" {
-
-OSIMMOCO_API
-void opensim_version_moco(int* major, int* minor, int* build);
-OSIMMOCO_API
-void opensim_about_moco(const char* key, int maxlen, char* value);
-
-}
-
-#if defined(__cplusplus) || defined(SWIG)
 #include <string>
+
 namespace OpenSim {
 OSIMMOCO_API std::string GetMocoVersionAndDate();
+
 OSIMMOCO_API std::string GetMocoVersion();
 }
-#endif
 
 #endif // OPENSIM_MOCO_ABOUT_H_
