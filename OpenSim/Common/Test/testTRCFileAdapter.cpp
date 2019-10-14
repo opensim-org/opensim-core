@@ -138,18 +138,17 @@ int main() {
     std::string tmpfile{"testtrcfileadapter.trc"};
 
     bool failed = false;
-    
+
     std::cout << "Testing TRCFileAdapter::read() and TRCFileAdapter::write()"
               << std::endl;
-    for(const auto& filename : filenames) {
+    for (const auto& filename : filenames) {
         std::cout << "  " << filename << std::endl;
         TRCFileAdapter trcfileadapter{};
         try {
             TimeSeriesTable_<SimTK::Vec3> table(filename);
             trcfileadapter.write(table, tmpfile);
             compareFiles(filename, tmpfile);
-        }
-        catch (std::exception& ex) {
+        } catch (std::exception& ex) {
             std::cout << "Failed because: '" << ex.what() << "'." << std::endl;
             failed = true;
         }
@@ -157,16 +156,17 @@ int main() {
 
     std::cout << "Testing FileAdapter::read() and FileAdapter::writeFile()"
               << std::endl;
-    for(const auto& filename : filenames) {
+    for (const auto& filename : filenames) {
         std::cout << "  " << filename << std::endl;
         try {
-            auto table = FileAdapter::createAdapterFromExtension(filename)->read(filename).at("markers");
+            auto table = FileAdapter::createAdapterFromExtension(filename)
+                                 ->read(filename)
+                                 .at("markers");
             DataAdapter::InputTables tables{};
-            tables.emplace(std::string{ "markers" }, table.get());
+            tables.emplace(std::string{"markers"}, table.get());
             FileAdapter::writeFile(tables, tmpfile);
             compareFiles(filename, tmpfile);
-        }
-        catch (std::exception& ex) {
+        } catch (std::exception& ex) {
             std::cout << "Failed because: '" << ex.what() << "'." << std::endl;
             failed = true;
         }
@@ -174,38 +174,40 @@ int main() {
 
     std::cout << "Testing TimeSeriesTableVec3 and TRCFileAdapter::write()"
               << std::endl;
-    for(const auto& filename : filenames) {
+    for (const auto& filename : filenames) {
         try {
             std::cout << "  " << filename << std::endl;
             TimeSeriesTableVec3 table{filename};
             TRCFileAdapter::write(table, tmpfile);
             compareFiles(filename, tmpfile);
-        }
-        catch (std::exception& ex) {
+        } catch (std::exception& ex) {
             std::cout << "Failed because: '" << ex.what() << "'." << std::endl;
             failed = true;
         }
     }
 
-    if (failed)
-        return 1;
+    if (failed) return 1;
     std::cout << "Testing TimeSeriesTable::trim() " << std::endl;
-    
+
     TimeSeriesTable_<SimTK::Vec3> table(tmpfile);
     double trimToTime = 0.1;
     table.trim(0.02, trimToTime);
-    TRCFileAdapter::write(table, "trimmed_"+tmpfile);
+    TRCFileAdapter::write(table, "trimmed_" + tmpfile);
     TimeSeriesTable_<SimTK::Vec3> roundTripTable("trimmed_" + tmpfile);
-    OPENSIM_THROW_IF(roundTripTable.getNumRows() != 6, OpenSim::Exception,
+    OPENSIM_THROW_IF(roundTripTable.getNumRows() != 5, OpenSim::Exception,
             "Trimmed table has wrong size");
     OPENSIM_THROW_IF(roundTripTable.getIndependentColumn().back() > trimToTime,
             OpenSim::Exception, "Trimmed table has wrong end time.");
-    OPENSIM_THROW_IF(roundTripTable.getIndependentColumn().front() > 0.02,
+    OPENSIM_THROW_IF(roundTripTable.getIndependentColumn().front() < 0.02,
             OpenSim::Exception, "Trimmed table has wrong start time.");
     // Use final time < first time should give empty table
-    table.trim(.02, 0);
-    OPENSIM_THROW_IF(table.getNumRows() != 1, OpenSim::Exception,
-            "Trimmed table not empty");
+    try {
+        table.trim(.02, 0);
+        failed = true;
+    } catch (std::exception& ex) {
+        std::cout << "Exception thrown: '" << ex.what() << "'." << std::endl;
+    }
+    if (failed) return 1;
     std::remove(("trimmed_" + tmpfile).c_str());
     std::remove(tmpfile.c_str());
     std::cout << "\nAll tests passed!" << std::endl;
