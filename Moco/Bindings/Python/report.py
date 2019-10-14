@@ -123,12 +123,13 @@ class Report(object):
         self.bilateral = bilateral
         self.ref_files = ref_files
         self.colormap = colormap
+        trajectory_fname = ntpath.basename(self.trajectory_filepath)
+        trajectory_fname = trajectory_fname.replace('.sto', '')
+        trajectory_fname = trajectory_fname.replace('.mot', '')
+        self.trajectory_fname = trajectory_fname
         if output:
             self.output = output
         else:
-            trajectory_fname = ntpath.basename(self.trajectory_filepath)
-            trajectory_fname = trajectory_fname.replace('.sto', '')
-            trajectory_fname = trajectory_fname.replace('.mot', '')
             self.output = trajectory_fname + '_report.pdf'
 
         # Get any reference files provided by the user and create a list of NumPy
@@ -532,21 +533,20 @@ class Report(object):
                 ax = plt.axes()
 
                 cell_text = []
-                parameters = convert(trajectory.getParameters())
+                parameters = convert(self.trajectory.getParameters())
                 cell_text.append(['%10.5f' % p for p in parameters])
 
-                print('trajectory name', trajectory_fname)
                 plt.table(cellText=cell_text, rowLabels=parameter_names,
-                          colLabels=[trajectory_fname], loc='center')
+                          colLabels=[self.trajectory_fname], loc='center')
                 ax.axis('off')
                 ax.axis('tight')
 
                 plt.subplots_adjust(left=0.2, right=0.8)
 
-                plt.figlegend(legend_handles, legend_labels,
+                plt.figlegend(self.legend_handles, self.legend_labels,
                     loc='upper center', bbox_to_anchor=(0.5, 0.97),
                     fancybox=True, shadow=True)
-                pdf.savefig(fig)
+                self.pdf.savefig(fig)
                 plt.close()
 
             # Slacks
