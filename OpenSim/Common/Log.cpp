@@ -61,6 +61,7 @@ void Log::setLevel(Level level) {
         spdlog::set_level(spdlog::level::trace);
         break;
     }
+    Log::info("Set log level to {}.", getLevelString());
 }
 
 Log::Level Log::getLevel() {

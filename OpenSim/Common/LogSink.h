@@ -38,7 +38,7 @@ public:
     virtual ~LogSink() = default;
 protected:
     /// This function is invoked whenever a message is logged at the desired
-    /// levels.
+    /// Log::Level.
     virtual void sinkImpl(const std::string& msg) = 0;
     virtual void flushImpl() {}
 private:

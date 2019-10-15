@@ -43,7 +43,7 @@ Usage:
   opensim-cmd -V | --version
 
 Options:
-  -v <level>, --log-level <level>  Specify the logging level (verbosity).
+  -d <level>, --log-level <level>  Specify the logging level (verbosity).
                  Options are off, critical, error, warn, info, debug, trace
                  (least to most verbose). The default level is info.
   -L <path>, --library <path>  Load a plugin before executing the requested
