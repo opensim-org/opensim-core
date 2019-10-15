@@ -158,7 +158,16 @@ AddDependency(NAME       simbody
 AddDependency(NAME       docopt
               URL        https://github.com/docopt/docopt.cpp.git
               TAG        af03fa044ee1eff20819549b534ea86829a24a54)
- 
+
+
+AddDependency(NAME       spdlog
+              URL        https://github.com/gabime/spdlog.git
+              TAG        v1.4.1
+              CMAKE_ARGS -DSPDLOG_BUILD_BENCH:BOOL=OFF
+                         -DSPDLOG_BUILD_TESTS:BOOL=OFF
+                         -DSPDLOG_BUILD_EXAMPLE:BOOL=OFF
+                         -DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=ON)
+
 #######################
 
 RemoveDefaultInstallDirIfEmpty("${DEFAULT_CMAKE_INSTALL_PREFIX}")
