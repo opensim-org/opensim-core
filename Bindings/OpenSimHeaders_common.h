@@ -7,6 +7,8 @@
 #include <SimTKsimbody.h>
 #include <OpenSim/Common/osimCommonDLL.h>
 #include <OpenSim/Common/Exception.h>
+#include <OpenSim/Common/LogSink.h>
+#include <OpenSim/Common/Log.h>
 #include <OpenSim/Common/Array.h>
 #include <OpenSim/Common/ArrayPtrs.h>
 #include <OpenSim/Common/AbstractProperty.h>

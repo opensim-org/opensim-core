@@ -1,7 +1,7 @@
-#ifndef OPENSIM_OSIMCOMMON_H_
-#define OPENSIM_OSIMCOMMON_H_
+#ifndef OPENSIM_LOGSINK_H_
+#define OPENSIM_LOGSINK_H_
 /* -------------------------------------------------------------------------- *
- *                           OpenSim:  osimCommon.h                           *
+ *                         OpenSim:  LogSink.h                                *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -9,8 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2017 Stanford University and the Authors                *
- * Author(s): Ayman Habib                                                     *
+ * Copyright (c) 2005-2019 Stanford University and the Authors                *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -23,46 +22,32 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "About.h"
-#include "CommonUtilities.h"
-#include "Log.h"
-#include "Object.h"
-#include "RegisterTypes_osimCommon.h"
-#include "FunctionSet.h"
-#include "GCVSplineSet.h"
-#include "ScaleSet.h"
-#include "GCVSpline.h"
-#include "IO.h"
+#include "osimCommonDLL.h"
+#include <iostream>
+#include <spdlog/sinks/base_sink.h>
 
-#include "Scale.h"
-#include "SimmSpline.h"
-#include "Constant.h"
-#include "Sine.h"
-#include "StepFunction.h"
-#include "LinearFunction.h"
-#include "PiecewiseConstantFunction.h"
-#include "PiecewiseLinearFunction.h"
+// This file is not included in osimCommon.h. Only include
+// this file when deriving from LogSink.
 
-#include "MultiplierFunction.h"
-#include "PolynomialFunction.h"
+namespace OpenSim {
 
-#include "SignalGenerator.h"
+/// Derive from this class to implement your own way of reporting logged
+/// messages.
+class OSIMCOMMON_API LogSink : public spdlog::sinks::base_sink<std::mutex> {
+public:
+    virtual ~LogSink() = default;
+protected:
+    /// This function is invoked whenever a message is logged at the desired
+    /// levels.
+    virtual void sinkImpl(const std::string& msg) = 0;
+    virtual void flushImpl() {}
+private:
+    void sink_it_(const spdlog::details::log_msg& msg) override final {
+        sinkImpl(std::string(msg.payload.begin(), msg.payload.end()));
+    }
+    void flush_() override final { flushImpl(); }
+};
 
-#include "ObjectGroup.h"
-#include "StorageInterface.h"
-#include "LoadOpenSimLibrary.h"
-#include "RegisterTypes_osimCommon.h"   // to expose RegisterTypes_osimCommon
-#include "SmoothSegmentedFunctionFactory.h"
+} // namespace OpenSim
 
-#include "DataTable.h"
-#include "TimeSeriesTable.h"
-
-#include "Adapters.h"
-
-#include "TableSource.h"
-
-#include "Reporter.h"
-
-#include "ModelDisplayHints.h"
-
-#endif // OPENSIM_OSIMCOMMON_H_
+#endif // OPENSIM_LOGSINK_H_

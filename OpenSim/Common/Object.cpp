@@ -36,6 +36,7 @@
 #include "Property_Deprecated.h"
 #include "PropertyTransform.h"
 #include "IO.h"
+#include "Log.h"
 
 #include <fstream>
 
@@ -53,7 +54,6 @@ std::map<string,string>     Object::_renamedTypesMap;
 
 bool                        Object::_serializeAllDefaults=false;
 const string                Object::DEFAULT_NAME(ObjectDEFAULT_NAME);
-int                         Object::_debugLevel = 0;
 
 //=============================================================================
 // CONSTRUCTOR(S)
@@ -515,7 +515,7 @@ registerType(const Object& aObject)
         printf("Object.registerType: ERR- no type name has been set.\n");
         return;
     }
-    if (_debugLevel>=2) {
+    if (getDebugLevel() >= 2) {
         cout << "Object.registerType: " << type << " .\n";
     }
 
@@ -523,7 +523,7 @@ registerType(const Object& aObject)
     for(int i=0; i <_registeredTypes.size(); ++i) {
         Object *object = _registeredTypes.get(i);
         if(object->getConcreteClassName() == type) {
-            if(_debugLevel>=2) {
+            if (getDebugLevel() >= 2) {
                 cout<<"Object.registerType: replacing registered object of type ";
                 cout<<type;
                 cout<<"\n\twith a new default object of the same type."<<endl;
@@ -1369,7 +1369,7 @@ print(const string &aFileName) const
 {
     // Default to strict exception to avoid creating bad files
     // but for debugging allow users to be more lenient.
-    if (_debugLevel >= 1) { 
+    if (getDebugLevel() >= 1) {
         try {
             warnBeforePrint();
         } catch (...) {}
@@ -1664,7 +1664,56 @@ std::string Object::dump() const {
     return outString;
 }
 
-/** 
+
+void Object::setDebugLevel(int newLevel) {
+    switch (newLevel) {
+    case -4:
+        Log::setLevel(Log::Level::Off);
+        break;
+    case -3:
+        Log::setLevel(Log::Level::Critical);
+        break;
+    case -2:
+        Log::setLevel(Log::Level::Error);
+        break;
+    case -1:
+        Log::setLevel(Log::Level::Warn);
+        break;
+    case 0:
+        Log::setLevel(Log::Level::Info);
+        break;
+    case 1:
+        Log::setLevel(Log::Level::Debug);
+        break;
+    case 2:
+        Log::setLevel(Log::Level::Trace);
+        break;
+    case 3:
+        // Backwards compatibility.
+        Log::setLevel(Log::Level::Trace);
+        break;
+    default:
+        OPENSIM_THROW(
+                Exception, fmt::format("Expected newLevel to be -4, -3, "
+                                       "-2, -1, 0, 1, 2, or 3; but got {}.",
+                                   newLevel));
+    }
+}
+
+int Object::getDebugLevel() {
+    const auto level = Log::getLevel();
+    switch (level) {
+    case Log::Level::Off: return -4;
+    case Log::Level::Critical: return -3;
+    case Log::Level::Error: return -2;
+    case Log::Level::Warn: return -1;
+    case Log::Level::Info: return 0;
+    case Log::Level::Debug: return 1;
+    case Log::Level::Trace: return 2;
+    }
+}
+
+/**
     * The following code accounts for an object made up to call 
     * RegisterTypes_osimCommon function on entry to the DLL in a cross platform manner 
     * 
