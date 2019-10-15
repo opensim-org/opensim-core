@@ -203,7 +203,6 @@ int main() {
     // Use final time < first time should throw exception 
     SimTK_TEST_MUST_THROW_EXC(table.trim(.02, 0), OpenSim::EmptyTable);
     
-    if (failed) return 1;
     std::remove(("trimmed_" + tmpfile).c_str());
     std::remove(tmpfile.c_str());
     std::cout << "\nAll tests passed!" << std::endl;
