@@ -31,13 +31,13 @@
 //============================================================================
 
 #include "Object.h"
-#include "XMLDocument.h"
-#include "Exception.h"
-#include "Property_Deprecated.h"
-#include "PropertyTransform.h"
-#include "IO.h"
-#include "Log.h"
 
+#include "Exception.h"
+#include "IO.h"
+#include "Logger.h"
+#include "PropertyTransform.h"
+#include "Property_Deprecated.h"
+#include "XMLDocument.h"
 #include <fstream>
 
 using namespace OpenSim;
@@ -1667,30 +1667,23 @@ std::string Object::dump() const {
 
 void Object::setDebugLevel(int newLevel) {
     switch (newLevel) {
-    case -4:
-        Log::setLevel(Log::Level::Off);
+    case -4: Logger::setLevel(Logger::Level::Off);
         break;
-    case -3:
-        Log::setLevel(Log::Level::Critical);
+    case -3: Logger::setLevel(Logger::Level::Critical);
         break;
-    case -2:
-        Log::setLevel(Log::Level::Error);
+    case -2: Logger::setLevel(Logger::Level::Error);
         break;
-    case -1:
-        Log::setLevel(Log::Level::Warn);
+    case -1: Logger::setLevel(Logger::Level::Warn);
         break;
-    case 0:
-        Log::setLevel(Log::Level::Info);
+    case 0: Logger::setLevel(Logger::Level::Info);
         break;
-    case 1:
-        Log::setLevel(Log::Level::Debug);
+    case 1: Logger::setLevel(Logger::Level::Debug);
         break;
-    case 2:
-        Log::setLevel(Log::Level::Trace);
+    case 2: Logger::setLevel(Logger::Level::Trace);
         break;
     case 3:
         // Backwards compatibility.
-        Log::setLevel(Log::Level::Trace);
+        Logger::setLevel(Logger::Level::Trace);
         break;
     default:
         OPENSIM_THROW(
@@ -1701,15 +1694,15 @@ void Object::setDebugLevel(int newLevel) {
 }
 
 int Object::getDebugLevel() {
-    const auto level = Log::getLevel();
+    const auto level = Logger::getLevel();
     switch (level) {
-    case Log::Level::Off: return -4;
-    case Log::Level::Critical: return -3;
-    case Log::Level::Error: return -2;
-    case Log::Level::Warn: return -1;
-    case Log::Level::Info: return 0;
-    case Log::Level::Debug: return 1;
-    case Log::Level::Trace: return 2;
+    case Logger::Level::Off: return -4;
+    case Logger::Level::Critical: return -3;
+    case Logger::Level::Error: return -2;
+    case Logger::Level::Warn: return -1;
+    case Logger::Level::Info: return 0;
+    case Logger::Level::Debug: return 1;
+    case Logger::Level::Trace: return 2;
     }
 }
 

@@ -115,8 +115,8 @@ int main(int argc, const char** argv) {
     }
 
     if (args["--log-level"]) {
-        Log::setLevelString(args["--log-level"].asString());
-        Log::info("Log level is set to {}.", Log::getLevelString());
+        Logger::setLevelString(args["--log-level"].asString());
+        Logger::info("Logger level is set to {}.", Logger::getLevelString());
     }
 
     // Did the user provide a valid command?

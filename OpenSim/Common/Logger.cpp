@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- *                           OpenSim:  Log.cpp                                *
+ *                           OpenSim:  Logger.cpp                                *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -20,7 +20,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "Log.h"
+#include "Logger.h"
 
 #include "Exception.h"
 #include "IO.h"
@@ -29,15 +29,15 @@
 
 using namespace OpenSim;
 
-std::shared_ptr<Log> Log::m_log = Log::getInstance();
-std::set<std::string> Log::m_filepaths = {};
+std::shared_ptr<Logger> Logger::m_log = Logger::getInstance();
+std::set<std::string> Logger::m_filepaths = {};
 
-Log::Log() {
+Logger::Logger() {
     spdlog::set_level(spdlog::level::info);
     spdlog::set_pattern("[%l] %v");
 }
 
-void Log::setLevel(Level level) {
+void Logger::setLevel(Level level) {
     switch (level) {
     case Level::Off:
         spdlog::set_level(spdlog::level::off);
@@ -61,10 +61,10 @@ void Log::setLevel(Level level) {
         spdlog::set_level(spdlog::level::trace);
         break;
     }
-    Log::info("Set log level to {}.", getLevelString());
+    Logger::info("Set log level to {}.", getLevelString());
 }
 
-Log::Level Log::getLevel() {
+Logger::Level Logger::getLevel() {
     const auto level = spdlog::default_logger()->level();
     switch (level) {
     case spdlog::level::off: return Level::Off;
@@ -77,7 +77,7 @@ Log::Level Log::getLevel() {
     }
 }
 
-void Log::setLevelString(std::string str) {
+void Logger::setLevelString(std::string str) {
     Level level;
     str = IO::Lowercase(str);
     if (str == "off") level = Level::Off;
@@ -96,7 +96,7 @@ void Log::setLevelString(std::string str) {
     setLevel(level);
 }
 
-std::string Log::getLevelString() {
+std::string Logger::getLevelString() {
     const auto level = getLevel();
     switch (level) {
     case Level::Off: return "Off";
@@ -109,7 +109,7 @@ std::string Log::getLevelString() {
     }
 }
 
-bool Log::shouldLog(Level level) {
+bool Logger::shouldLog(Level level) {
     spdlog::level::level_enum spdlogLevel;
     switch (level) {
     case Level::Off: spdlogLevel = spdlog::level::off; break;
@@ -123,7 +123,7 @@ bool Log::shouldLog(Level level) {
     return spdlog::default_logger()->should_log(spdlogLevel);
 }
 
-void Log::addLogFile(const std::string& filepath) {
+void Logger::addLogFile(const std::string& filepath) {
     auto sinks = spdlog::default_logger()->sinks();
     if (m_filepaths.count(filepath)) {
         warn("Already logging to file '{}'.", filepath);
@@ -134,12 +134,12 @@ void Log::addLogFile(const std::string& filepath) {
     m_filepaths.insert(filepath);
 }
 
-void Log::addSink(const std::shared_ptr<LogSink> sink) {
+void Logger::addSink(const std::shared_ptr<LogSink> sink) {
     spdlog::default_logger()->sinks().push_back(
             std::static_pointer_cast<spdlog::sinks::sink>(sink));
 }
 
-void Log::removeSink(const std::shared_ptr<LogSink> sink) {
+void Logger::removeSink(const std::shared_ptr<LogSink> sink) {
     auto spdlogSink = std::static_pointer_cast<spdlog::sinks::sink>(sink);
     auto sinks = spdlog::default_logger()->sinks();
     auto to_erase = std::find(sinks.cbegin(), sinks.cend(), spdlogSink);

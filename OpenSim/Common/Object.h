@@ -661,11 +661,11 @@ public:
      -  2: Trace
      -  3: Trace (for backwards compatibility).
     <b>(Deprecated)</b> Use Log::setLevel() instead. **/
-    // TODO: DEPRECATED_14("Use Log::setLevel() instead.")
+    // TODO: DEPRECATED_14("Use Logger::setLevel() instead.")
     static void setDebugLevel(int newLevel);
     /** Get the current setting of debug level.
     <b>(Deprecated)</b> Use Log::getLevel() instead. **/
-    // TODO: DEPRECATED_14("Use Log::getLevel() instead.")
+    // TODO: DEPRECATED_14("Use Logger::getLevel() instead.")
     static int getDebugLevel();
 
     /** Wrapper to be used on Java side to display objects in tree; this returns

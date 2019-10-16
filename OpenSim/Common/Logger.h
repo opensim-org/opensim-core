@@ -1,7 +1,7 @@
 #ifndef OPENSIM_LOG_H_
 #define OPENSIM_LOG_H_
 /* -------------------------------------------------------------------------- *
- *                           OpenSim:  Log.h                                  *
+ *                           OpenSim:  Logger.h                                  *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -33,11 +33,10 @@ class LogSink;
 
 /// This is a singleton class (single instance) for logging messages and
 /// controlling how those messages are presented to the user.
-class OSIMCOMMON_API Log {
+class OSIMCOMMON_API Logger {
 public:
-
-    Log(Log const&) = delete;
-    Log& operator=(Log const&) = delete;
+    Logger(Logger const&) = delete;
+    Logger& operator=(Logger const&) = delete;
 
     /// This enum lists the types of messages that should be logged. These
     /// levels match those of the spdlog logging library that OpenSim uses for
@@ -153,16 +152,16 @@ public:
     /// This returns the singleton instance of the Log class, but users never
     /// need to invoke this function. The member functions in this class are
     /// static.
-    static const std::shared_ptr<Log> getInstance() {
+    static const std::shared_ptr<Logger> getInstance() {
         if (!m_log) {
-            m_log = std::shared_ptr<Log>(new Log());
+            m_log = std::shared_ptr<Logger>(new Logger());
         }
         return m_log;
     }
 private:
     /// Initialize spdlog.
-    Log();
-    static std::shared_ptr<Log> m_log;
+    Logger();
+    static std::shared_ptr<Logger> m_log;
 
     /// Keep track of file sinks.
     static std::set<std::string> m_filepaths;

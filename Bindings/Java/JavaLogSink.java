@@ -28,7 +28,7 @@ appear in Matlab's Command Window. If you have this problem, run the following
 code in Matlab:
 
 import org.opensim.modeling.*;
-Log.addSink(JavaLogSink());
+Logger.addSink(JavaLogSink());
 */
 public class JavaLogSink extends LogSink {
   protected void sinkImpl(final String msg) {
