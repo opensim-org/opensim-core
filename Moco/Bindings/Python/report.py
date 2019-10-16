@@ -328,7 +328,7 @@ class Report(object):
         with PdfPages(self.output) as self.pdf:
 
             # States & Accelerations
-            # --------------------
+            # ----------------------
             state_names = self.trajectory.getStateNames()
             derivative_names = self.trajectory.getDerivativeNames()
             derivs = True if (len(derivative_names) > 0) else False
@@ -340,7 +340,7 @@ class Report(object):
                     accels = True
                 else:
                     auxiliary_derivative_names.append(derivative_name)
-                    
+
             if len(state_names) > 0:
                 # Loop through the model's joints and cooresponding coordinates to
                 # store plotting information.
@@ -403,7 +403,7 @@ class Report(object):
                 self.plotVariables('state', state_dict, state_ls_dict, 
                         state_label_dict)
                 if accels:
-                    self.plotVariables('derivative', acceleration_dict, 
+                    self.plotVariables('derivative', acceleration_dict,
                             acceleration_ls_dict, acceleration_label_dict)
 
                 # Activations
@@ -428,7 +428,7 @@ class Report(object):
                 self.plotVariables('state', activ_dict, activ_ls_dict,
                                    activ_label_dict)
 
-                # Non-coordinate states
+                # Normalized tendon forces
                 norm_tendon_force_dict = OrderedDict()
                 norm_tendon_force_ls_dict = defaultdict(list)
                 norm_tendon_force_label_dict = dict()
@@ -447,7 +447,7 @@ class Report(object):
                         # of the model.
                         norm_tendon_force_dict[title].append(state_name)
                         norm_tendon_force_label_dict[title] = ''
-                self.plotVariables('state', norm_tendon_force_dict, 
+                self.plotVariables('state', norm_tendon_force_dict,
                         norm_tendon_force_ls_dict,
                         norm_tendon_force_label_dict)
 
