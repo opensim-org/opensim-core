@@ -322,13 +322,30 @@ public:
         size_t candidate = getNearestRowIndexForTime(time, false);
         using DT = DataTable_<double, ETY>;
         const auto& timeCol = DT::getIndependentColumn();
+        const SimTK::Real eps = SimTK::SignificantReal;
         // increment if less than time passed in
-        if (timeCol[candidate] < time) 
+        if (timeCol[candidate] < time-eps) 
             candidate++;
         OPENSIM_THROW_IF(candidate > timeCol.size() - 1,
                     TimeOutOfRange, time, timeCol.front(), timeCol.back());
         return candidate;
     }
+    /** Get index of row whose time is the largest time less than the given value.
+
+     \param time Value to search for.
+     */
+    size_t getRowIndexBeforeTime(const double& time) const {
+        size_t candidate = getNearestRowIndexForTime(time, false);
+        using DT = DataTable_<double, ETY>;
+        const auto& timeCol = DT::getIndependentColumn();
+        const SimTK::Real eps = SimTK::SignificantReal;
+        // increment if less than time passed in
+        if (timeCol[candidate] > time+eps) candidate--;
+        OPENSIM_THROW_IF(candidate < 0, TimeOutOfRange, time,
+                timeCol.front(), timeCol.back());
+        return candidate;
+    }
+
     /** Get row whose time column is nearest/closest to the given value. 
 
     \param time Value to search for. 
@@ -428,7 +445,7 @@ public:
         // Avoid throwing exception if newStartTime is less than first time
         // or newFinalTime is greater than last value in table
         start_index = this->getRowIndexAfterTime(newStartTime);
-        last_index = this->getNearestRowIndexForTime(newFinalTime, false);
+        last_index = this->getRowIndexBeforeTime(newFinalTime);
 
         // do the actual trimming based on index instead of time.
         trimToIndices(start_index, last_index);
