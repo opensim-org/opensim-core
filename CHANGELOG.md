@@ -1,3 +1,6 @@
+- 2019-10-16: Fix a bug in ModOpscaleMaxIsometricForce, where the scale factor
+              was not used properly.
+
 - 2019-10-04: report.py can plot normalized tendon force states. Users can 
               provide a MocoStudy file instead of a Model file, and users can
               specify the name of the report output file.
