@@ -58,7 +58,7 @@ int main(int argc,char **argv)
       analyze -S SetupFileName -> opensim-cmd run-tool SetupFileName
       analyze -PS              -> opensim-cmd print-xml analyze
     )";
-    std::cout << deprecationNotice << std::endl;
+    log_info(deprecationNotice);
 
     // PARSE COMMAND LINE
     int i;
@@ -117,7 +117,7 @@ int main(int argc,char **argv)
 
     // ERROR CHECK
     if(setupFileName=="") {
-        cout<<"\n\nforward.exe: ERROR- A setup file must be specified.\n";
+        log_error("forward: A setup file must be specified.");
         PrintUsage(argv[0], cout);
         return(-1);
     }
@@ -143,13 +143,14 @@ int main(int argc,char **argv)
     // RUN
     analyze.run();
 
-    std::cout << "Analyze compute time = " << 1.e3*(std::clock()-startTime)/CLOCKS_PER_SEC << "ms\n" << endl;
+    log_info("Analyze compute time = {}ms",
+            1.e3 * (std::clock() - startTime) / CLOCKS_PER_SEC);
 
     //----------------------------
     // Catch any thrown exceptions
     //----------------------------
     } catch(const std::exception& x) {
-        cout << "Exception in analyze: " << x.what() << endl;
+        log_error("Exception in analyze: {}", x.what());
         return -1;
     }
     //----------------------------

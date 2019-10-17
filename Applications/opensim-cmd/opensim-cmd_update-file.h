@@ -74,25 +74,23 @@ int update_file(int argc, const char** argv) {
 
     // .osim or .xml file.
     if (extension == ".osim" || extension == ".xml") {
-        std::cout << "Loading input file '" << inputFile << "'." << std::endl;
+        log_info("Loading input file '{}'.", inputFile);
         const auto* obj = Object::makeObjectFromFile(inputFile);
         if (!obj) {
             throw Exception(
                     "Could not make object from file '" + inputFile + "'.\n"
                     "Did you intend to load a plugin (with --library)?");
         }
-        std::cout << "Printing updated file to '" << outputFile << "'."
-                  << std::endl;
+        log_info("Printing updated file to '{}.", outputFile);
         obj->print(outputFile);
         return EXIT_SUCCESS;
     }
 
     // .sto file.
     if (extension == ".sto") {
-        std::cout << "Loading input file '" << inputFile << "'." << std::endl;
+        log_info("Loading input file '{}'.", inputFile);
         Storage stg(inputFile);
-        std::cout << "Printing updated file to '" << outputFile << "'."
-                  << std::endl;
+        log_info("Printing updated file to '{}'.", outputFile);
         stg.print(outputFile);
         return EXIT_SUCCESS;
     }

@@ -186,7 +186,7 @@ double ControlSetController::getFirstTime() const {
     Array<int> controlList;
    SimTK_ASSERT( _controlSet , "ControlSetController::getFirstTime controlSet is NULL");
 
-//    std::cout << " ncontrols= "<< _controlSet->getSize() << std::endl<<std::endl;
+//    log_debug("ncontrols= {}", _controlSet->getSize());
     _controlSet->getControlList( "ControlLinear" , controlList );
     
     if( controlList.getSize() < 1 ) {
@@ -218,11 +218,10 @@ void ControlSetController::extendFinalizeFromProperties()
 
     // The result of default constructing and adding  this to a model
     if (_controlSet == nullptr &&  !hasFile) {
-        std::cout << "ControlSetController::extendFinalizeFromProperties '";
-        std::cout << _controlsFileNameProp.getName() << "' unassigned.\n";
-        std::cout << "No ControlSet loaded or set. Use ControSetController::";
-        std::cout << "setControlSetFileName() to\n specify file and try again."
-                  << std::endl;
+        log_warn("ControlSetController::extendFinalizeFromProperties '{}' "
+                 "unassigned. No ControlSet loaded or set. Use "
+                 "ControlSetController::setControlSetFileName().",
+                _controlsFileNameProp.getName());
         setEnabled(false);
         return;
     }
@@ -238,14 +237,13 @@ void ControlSetController::extendFinalizeFromProperties()
         // Should only catch an "UnaccessibleFileException" since we would want
         // to know if the file was corrupt or in the wrong format
         catch (const Exception& e) {
-            std::string msg = "ControlSetController::extendFinalizeFromProperties ";
-            msg += "Unable to load control set file '" + _controlsFileName + "'.";
-            msg += "\nDetails: " + std::string(e.getMessage());
+            log_warn("ControlSetController::extendFinalizeFromProperties "
+                     "Unable to load control set file '{}'.\nDetails: {}",
+                    _controlsFileName, e.getMessage());
             //throw Exception(msg);
             //TODO: Should throw a specific "UnaccessibleControlFileException"
             //testSerializeOpenSimObjects should not expect to just add garbage filled
             //objects (components) to a model and expect to serialize- must be changed!
-            std::cout << msg << std::endl;
         }
     }
 

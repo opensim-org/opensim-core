@@ -48,7 +48,7 @@ int main(int argc,char **argv)
     DEPRECATED:    versionUpdate inputFileName outputFileName
     REPLACED WITH: opensim-cmd update-file inputFileName outputFileName
     )";
-    std::cout << deprecationNotice << std::endl;
+    log_info(deprecationNotice);
 
     // PARSE COMMAND LINE
     string option = "";

@@ -86,8 +86,7 @@ int run_tool(int argc, const char** argv) {
         // We must use the concrete class constructor, as it loads the model
         // (this also preserves the behavior of the previous command line
         // tools).
-        std::cout << "Preparing to run " << tool->getConcreteClassName() << "."
-                  << std::endl;
+        log_info("Preparing to run {}.", tool->getConcreteClassName());
         std::unique_ptr<AbstractTool> concreteTool;
         if        (dynamic_cast<RRATool*>(tool)) {
             concreteTool.reset(new RRATool(setupFile));
@@ -98,9 +97,9 @@ int run_tool(int argc, const char** argv) {
         } else if (dynamic_cast<AnalyzeTool*>(tool)) {
             concreteTool.reset(new AnalyzeTool(setupFile));
         } else {
-            std::cout << "Detected an AbstractTool that is not RRA, "
+            log_warn("Detected an AbstractTool that is not RRA, "
                 "CMC, Forward, or Analyze; custom tools may not get "
-                "constructed properly." << std::endl;
+                "constructed properly.");
             concreteTool.reset(tool->clone());
         }
         const bool success = concreteTool->run();
@@ -108,15 +107,13 @@ int run_tool(int argc, const char** argv) {
         else return EXIT_FAILURE;
     } else if (auto* tool = dynamic_cast<Tool*>(obj.get())) {
         // Tool.
-        std::cout << "Preparing to run " << tool->getConcreteClassName() << "."
-                  << std::endl;
+        log_info("Preparing to run {}.", tool->getConcreteClassName());
         const bool success = tool->run();
         if (success) return EXIT_SUCCESS;
         else return EXIT_FAILURE;
     } else if (auto* scale = dynamic_cast<ScaleTool*>(obj.get())) {
         // ScaleTool.
-        std::cout << "Preparing to run " << scale->getConcreteClassName() << "."
-                  << std::endl;
+        log_info("Preparing to run {}.", scale->getConcreteClassName());
         const bool success = scale->run();
         if (success) return EXIT_SUCCESS;
         else return EXIT_FAILURE;

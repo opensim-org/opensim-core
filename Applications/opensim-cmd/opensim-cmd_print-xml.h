@@ -120,7 +120,7 @@ int print_xml(int argc, const char** argv) {
                 "Did you intend to load a plugin (with --library)?");
     }
 
-    std::cout << "Printing '" << outputFile << "'." << std::endl;
+    log_info("Printing '{}'.", outputFile);
     Object::setSerializeAllDefaults(true);
     obj->print(outputFile);
     Object::setSerializeAllDefaults(false);

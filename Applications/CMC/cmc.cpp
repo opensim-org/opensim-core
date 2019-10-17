@@ -59,7 +59,7 @@ int main(int argc,char **argv)
       cmc -S SetupFileName -> opensim-cmd run-tool SetupFileName
       cmc -PS              -> opensim-cmd print-xml cmc
     )";
-    std::cout << deprecationNotice << std::endl;
+    log_info(deprecationNotice);
 
     // PARSE COMMAND LINE
     int i;

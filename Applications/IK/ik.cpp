@@ -66,7 +66,7 @@ int main(int argc,char **argv)
       ik -S SetupFileName -> opensim-cmd run-tool SetupFileName
       ik -PS              -> opensim-cmd print-xml ik
     )";
-    std::cout << deprecationNotice << std::endl;
+    log_info(deprecationNotice);
 
     // REGISTER TYPES
     InverseKinematicsTool::registerTypes();
