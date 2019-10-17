@@ -239,11 +239,8 @@ bool Object::operator==(const Object& other) const
     auto printDiff = [](const std::string& name,
                             const std::string& thisValue,
                             const std::string& otherValue) {
-        if (Log::shouldLog(Log::Level::Debug)) {
-            std::cout << "In Object::operator==(), differing " << name << ":\n"
-                      << "left: " << thisValue << "\nright: " << otherValue
-                      << std::endl;
-        }
+        log_debug("In Object::operator==(), differing {}:\nleft: {}\nright: {}",
+                name, thisValue, otherValue);
     };
     if (getConcreteClassName()  != other.getConcreteClassName()) {
         printDiff("ConcreteClassName", getConcreteClassName(),
@@ -514,19 +511,15 @@ registerType(const Object& aObject)
         printf("Object.registerType: ERR- no type name has been set.\n");
         return;
     }
-    if (Log::shouldLog(Log::Level::Trace)) {
-        cout << "Object.registerType: " << type << " .\n";
-    }
+    log_trace("Object.registerType: {}.", type);
 
     // REPLACE IF A MATCHING TYPE IS ALREADY REGISTERED
     for(int i=0; i <_registeredTypes.size(); ++i) {
         Object *object = _registeredTypes.get(i);
         if(object->getConcreteClassName() == type) {
-            if(Log::shouldLog(Log::Level::Debug)) {
-                cout<<"Object.registerType: replacing registered object of type ";
-                cout<<type;
-                cout<<"\n\twith a new default object of the same type."<<endl;
-            }
+            log_debug("Object.registerType: replacing registered object of "
+                      "type {} with a new default object of the same type.",
+                      type);
             Object* defaultObj = aObject.clone();
             defaultObj->setName(DEFAULT_NAME);
             _registeredTypes.set(i,defaultObj);
@@ -1368,7 +1361,7 @@ print(const string &aFileName) const
 {
     // Default to strict exception to avoid creating bad files
     // but for debugging allow users to be more lenient.
-    if (Log::shouldLog(Log::Level::Debug)) {
+    if (Logger::shouldLog(Logger::Level::Debug)) {
         try {
             warnBeforePrint();
         } catch (...) {}
