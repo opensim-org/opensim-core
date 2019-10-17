@@ -96,7 +96,7 @@ public:
         this->add_cost("target", 0);
     }
     void calc_cost(
-            int cost_index, const CostInput<T>& in, T& cost) const override {
+            int, const CostInput<T>& in, T& cost) const override {
         // TODO a final state constraint probably makes more sense.
         const auto& q0 = in.final_states[0];
         const auto& q1 = in.final_states[1];
@@ -216,11 +216,11 @@ public:
         this->add_cost("tracking", 1);
     }
     void calc_cost(
-            int cost_index, const CostInput<T>& in, T& cost) const override {
+            int, const CostInput<T>& in, T& cost) const override {
         cost = in.integral;
     }
     void calc_cost_integrand(
-            int cost_index, const Input<T>& in, T& integrand) const override {
+            int, const Input<T>& in, T& integrand) const override {
 
         const auto& time = in.time;
         const auto& states = in.states;
@@ -330,11 +330,11 @@ public:
         this->add_path_constraint("u1", 0);
     }
     void calc_cost(
-            int cost_index, const CostInput<T>& in, T& cost) const override {
+            int, const CostInput<T>& in, T& cost) const override {
         cost = in.integral;
     }
     void calc_cost_integrand(
-            int cost_index, const Input<T>& in, T& integrand) const override {
+            int, const Input<T>& in, T& integrand) const override {
 
         const auto& time = in.time;
         const auto& states = in.states;

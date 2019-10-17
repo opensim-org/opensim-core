@@ -178,7 +178,7 @@ public:
             out.dynamics[3] = max_contraction_velocity * normFibVel;
         }
     }
-    void calc_cost(int cost_index, const tropter::CostInput<adouble>& in,
+    void calc_cost(int, const tropter::CostInput<adouble>& in,
             T& cost) const override {
         cost = in.final_time;
     }

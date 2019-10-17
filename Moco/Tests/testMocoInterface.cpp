@@ -117,8 +117,9 @@ TEMPLATE_TEST_CASE(
 
             double manualIntegral = 0;
             for (int i = 0; i < (int)(mesh.size() - 1); ++i) {
-                manualIntegral += 0.5 * (mesh[i + 1] - mesh[i]) *
-                                  (square(u[i]) + square(u[i + 1]));
+                manualIntegral +=
+                        0.5 * (mesh[i + 1] - mesh[i]) *
+                        (square(u.getElt(i, 0)) + square(u.getElt(i + 1, 0)));
             }
             manualIntegral *= finalTime;
 
@@ -136,9 +137,9 @@ TEMPLATE_TEST_CASE(
             for (int i = 0; i < (int)mesh.size() - 1; ++i) {
                 const auto a = mesh[i];
                 const auto b = mesh[i + 1];
-                const auto fa = square(u[2 * i]);
-                const auto fmid = square(u[2 * i + 1]);
-                const auto fb = square(u[2 * i + 2]);
+                const auto fa = square(u.getElt(2 * i, 0));
+                const auto fmid = square(u.getElt(2 * i + 1, 0));
+                const auto fb = square(u.getElt(2 * i + 2, 0));
                 manualIntegral += (b - a) / 6.0 * (fa + 4 * fmid + fb);
             }
             manualIntegral *= finalTime;
