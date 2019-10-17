@@ -34,7 +34,6 @@
 #include <OpenSim/Simulation/Control/PrescribedController.h>
 #include <OpenSim/Simulation/Manager/Manager.h>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/SimbodyEngine/WeldJoint.h>
 #include <OpenSim/Simulation/StatesTrajectory.h>
 #include <OpenSim/Simulation/StatesTrajectoryReporter.h>
 
@@ -81,6 +80,10 @@ SimTK::Vector OpenSim::interpolate(const SimTK::Vector& x,
         const SimTK::Vector& y, const SimTK::Vector& newX,
         const bool ignoreNaNs) {
 
+    OPENSIM_THROW_IF(x.size() != y.size(), Exception,
+            format("Expected size of x to equal size of y, but size of x "
+                      "is %i and size of y is %i.", x.size(), y.size()));
+
     // Create vectors of non-NaN values if user set 'ignoreNaNs' argument to
     // 'true', otherwise throw an exception. If no NaN's are present in the
     // provided data vectors, the '*_no_nans' variables below will contain
@@ -96,6 +99,10 @@ SimTK::Vector OpenSim::interpolate(const SimTK::Vector& x,
             y_no_nans.push_back(y[i]);
         }
     }
+
+    OPENSIM_THROW_IF(x_no_nans.empty(), Exception,
+            "Input vectors are empty (perhaps after removing NaNs).");
+
 
     PiecewiseLinearFunction function(
             (int)x_no_nans.size(), &x_no_nans[0], &y_no_nans[0]);

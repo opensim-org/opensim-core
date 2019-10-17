@@ -249,6 +249,13 @@ public:
     /// value 10.
     void setMultiplier(
             const std::string& name, const SimTK::Vector& trajectory);
+    /// Set the value of a single state derivative variable across time.
+    /// The provided vector must have length getNumTimes().
+    /// @note Using `setDerivative(name, {5, 10})` uses the initializer list
+    /// overload below; it does *not* construct a 5-element vector with the
+    /// value 10.
+    void setDerivative(
+            const std::string& name, const SimTK::Vector& trajectory);
 
     /// Set the value of a single parameter variable. This value is invariant
     /// across time.
@@ -312,6 +319,21 @@ public:
         for (auto it = trajectory.begin(); it != trajectory.end(); ++it, ++i)
             v[i] = *it;
         setMultiplier(name, v);
+    }
+    /// Set the value of a single state derivative variable across time. The
+    /// provided vector must have length getNumTimes().
+    /// This variant supports use of an initializer list:
+    /// @code{.cpp}
+    /// iterate.setDerivative("/jointset/joint/coord/accel", {0, 0.5, 1.0});
+    /// @endcode
+    void setDerivative(
+            const std::string& name, std::initializer_list<double> trajectory) {
+        ensureUnsealed();
+        SimTK::Vector v((int)trajectory.size());
+        int i = 0;
+        for (auto it = trajectory.begin(); it != trajectory.end(); ++it, ++i)
+            v[i] = *it;
+        setDerivative(name, v);
     }
 
     /// Set the states trajectory. The provided data is interpolated at the
