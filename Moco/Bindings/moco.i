@@ -5,6 +5,8 @@ typedef SimTK::RowVector_<double> RowVector;
 
 %include <Moco/osimMocoDLL.h>
 
+%include <Moco/About.h>
+
 %include <Moco/Common/TableProcessor.h>
 
 

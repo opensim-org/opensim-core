@@ -2,6 +2,8 @@
 set(MOCO_SOURCES
         osimMoco.h
         osimMocoDLL.h
+        About.h
+        About.cpp
         RegisterTypes_osimMoco.h
         RegisterTypes_osimMoco.cpp
         MocoUtilities.h
@@ -130,6 +132,9 @@ set_target_properties(osimMoco PROPERTIES
 if (MOCO_WITH_TROPTER)
     target_compile_definitions(osimMoco PUBLIC MOCO_WITH_TROPTER)
 endif ()
+target_compile_definitions(osimMoco PRIVATE
+        OPENSIM_MOCO_VERSION=${PROJECT_VERSION}${VERSION_SUFFIX}
+)
 
 MocoAddInstallRPATHSelf(TARGET osimMoco LOADER)
 MocoAddInstallRPATHSimbody(TARGET osimMoco LOADER
