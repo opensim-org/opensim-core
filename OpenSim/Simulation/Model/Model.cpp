@@ -109,7 +109,7 @@ Model::Model(const string &aFileName) :
         ". Please open model and save it in OpenSim version 3.3 to upgrade.");
 
     _fileName = aFileName;
-    info("Loaded model {} from file {}", getName(), getInputFileName());
+    log_info("Loaded model {} from file {}", getName(), getInputFileName());
 
     try {
         finalizeFromProperties();
