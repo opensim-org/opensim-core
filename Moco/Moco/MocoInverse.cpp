@@ -40,7 +40,8 @@ void MocoInverse::constructProperties() {
     constructProperty_kinematics_allow_extra_columns(false);
     constructProperty_minimize_sum_squared_states(false);
     constructProperty_max_iterations();
-    constructProperty_tolerance(1e-3);
+    constructProperty_convergence_tolerance(1e-3);
+    constructProperty_constraint_tolerance(1e-3);
     constructProperty_output_paths();
     constructProperty_reserves_weight(1.0);
 }
@@ -104,13 +105,11 @@ std::pair<MocoStudy, TimeSeriesTable> MocoInverse::initializeInternal() const {
     // -------------------------
     auto& solver = study.initCasADiSolver();
     solver.set_multibody_dynamics_mode("implicit");
-    OPENSIM_THROW_IF_FRMOBJ(get_tolerance() <= 0, Exception,
-            format("Tolerance must be positive, but got %g.", get_tolerance()));
-    solver.set_optim_convergence_tolerance(get_tolerance());
-    solver.set_optim_constraint_tolerance(get_tolerance());
     solver.set_interpolate_control_midpoints(false);
     solver.set_minimize_implicit_auxiliary_derivatives(true);
     solver.set_implicit_auxiliary_derivatives_weight(0.01);
+    solver.set_optim_convergence_tolerance(get_convergence_tolerance());
+    solver.set_optim_constraint_tolerance(get_constraint_tolerance());
     // The sparsity detection works fine with DeGrooteFregly2016Muscle.
     solver.set_optim_sparsity_detection("random");
     // Forward is 3x faster than central.

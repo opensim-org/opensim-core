@@ -75,24 +75,16 @@ private:
 /// -----------------------
 /// - solver: MocoCasADiSolver
 /// - multibody_dynamics_mode: implicit
-/// - transcription_sceheme: trapezoidal
+/// - interpolate_control_midpoints: false
+/// - minimize_implicit_auxiliary_derivatives: true
+/// - implicit_auxiliary_derivatives_weight: 0.01
 /// - optim_convergence_tolerance: 1e-3
 /// - optim_constraint_tolerance: 1e-3
 /// - optim_sparsity_detection: random
 /// - optim_finite_difference_scheme: forward
-/// - minimize_implicit_auxiliary_derivatives: true
-/// - implicit_auxiliary_derivatives_weight: 0.01
 ///
-/// ### Cost
-///
-/// MocoInverse minimizes the sum of squared controls and, optionally, the sum
-/// of squared states. MocoInverse assumes that the only states in the system
-/// are muscle activations, but this is not checked or enforced.
-/// Currently, the costs used by MocoInverse cannot be customized.
-/// As MocoInverse becomes more mature and general, the costs will become more
-/// flexible.
-///
-/// ### Mesh interval
+/// Mesh interval
+/// -------------
 ///
 /// A smaller mesh interval increases the convergence time, but is necessary
 /// for fast motions or problems with stiff differential equations (e.g.,
@@ -122,8 +114,11 @@ public:
     OpenSim_DECLARE_OPTIONAL_PROPERTY(max_iterations, int,
             "Maximum number of solver iterations (default: solver default).");
 
-    OpenSim_DECLARE_PROPERTY(tolerance, double,
-            "The convergence and constraint tolerances (default: 1e-3).");
+    OpenSim_DECLARE_PROPERTY(convergence_tolerance, double,
+            "The convergence tolerance (default: 1e-3).");
+
+    OpenSim_DECLARE_PROPERTY(constraint_tolerance, double,
+            "The constraint tolerance (default: 1e-3).");
 
     OpenSim_DECLARE_LIST_PROPERTY(output_paths, std::string,
             "Outputs to compute after solving the problem."
