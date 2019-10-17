@@ -167,6 +167,41 @@ private:
     static std::set<std::string> m_filepaths;
 };
 
+/// @name Logging functions
+/// @{
+
+template <typename... Args>
+void critical(spdlog::string_view_t fmt, const Args&... args) {
+    Logger::critical(fmt, args...);
+}
+
+template <typename... Args>
+void error(spdlog::string_view_t fmt, const Args&... args) {
+    Logger::error(fmt, args...);
+}
+
+template <typename... Args>
+void warn(spdlog::string_view_t fmt, const Args&... args) {
+    Logger::warn(fmt, args...);
+}
+
+template <typename... Args>
+void info(spdlog::string_view_t fmt, const Args&... args) {
+    Logger::info(fmt, args...);
+}
+
+template <typename... Args>
+void debug(spdlog::string_view_t fmt, const Args&... args) {
+    Logger::debug(fmt, args...);
+}
+
+template <typename... Args>
+void trace(spdlog::string_view_t fmt, const Args&... args) {
+    Logger::trace(fmt, args...);
+}
+
+/// @}
+
 } // namespace OpenSim
 
 #endif // OPENSIM_LOG_H_

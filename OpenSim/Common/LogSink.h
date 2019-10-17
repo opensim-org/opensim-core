@@ -24,7 +24,7 @@
 
 #include "osimCommonDLL.h"
 #include <iostream>
-#include <spdlog/sinks/base_sink.h>
+#include <spdlog/sinks/base_sink-inl.h>
 
 // This file is not included in osimCommon.h. Only include
 // this file when deriving from LogSink.
