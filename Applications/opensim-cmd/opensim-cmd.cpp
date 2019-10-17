@@ -43,7 +43,7 @@ Usage:
   opensim-cmd -V | --version
 
 Options:
-  -v <level>, --log-level <level>  Specify the logging level (verbosity).
+  -d <level>, --log-level <level>  Specify the logging level (verbosity).
                  Options are off, critical, error, warn, info, debug, trace
                  (least to most verbose). The default level is info.
   -L <path>, --library <path>  Load a plugin before executing the requested
@@ -115,8 +115,7 @@ int main(int argc, const char** argv) {
     }
 
     if (args["--log-level"]) {
-        Log::setLevelString(args["--log-level"].asString());
-        Log::info("Log level is set to {}.", Log::getLevelString());
+        Logger::setLevelString(args["--log-level"].asString());
     }
 
     // Did the user provide a valid command?
@@ -149,6 +148,3 @@ int main(int argc, const char** argv) {
     // We shouldn't ever get here, so we can consider this a failure.
     return EXIT_FAILURE;
 }
-
-
-

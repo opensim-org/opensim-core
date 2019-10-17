@@ -15,7 +15,7 @@
 
 %shared_ptr(OpenSim::LogSink);
 %include <OpenSim/Common/LogSink.h>
-%include <OpenSim/Common/Log.h>
+%include <OpenSim/Common/Logger.h>
 
 %include <OpenSim/Common/Array.h>
 %include <OpenSim/Common/ArrayPtrs.h>

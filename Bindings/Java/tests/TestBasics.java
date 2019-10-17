@@ -110,7 +110,7 @@ class TestBasics {
                 sinkImplInvoked[0] = true;
             }
         }
-        Log.addSink(new MyJavaLogSink());
+        Logger.addSink(new MyJavaLogSink());
         Model model0 = new Model();
         model0.print("default_model.osim");
 

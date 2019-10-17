@@ -26,19 +26,6 @@
 // INCLUDES
 //=============================================================================
 
-#include <OpenSim/Common/IO.h>
-#include <OpenSim/Common/XMLDocument.h>
-#include <OpenSim/Common/ScaleSet.h>
-#include <OpenSim/Common/Storage.h>
-#include <OpenSim/Simulation/SimbodyEngine/FreeJoint.h>
-#include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
-#include <OpenSim/Simulation/SimbodyEngine/WeldConstraint.h>
-#include <OpenSim/Simulation/SimbodyEngine/PointConstraint.h>
-#include <OpenSim/Common/Constant.h>
-#include <OpenSim/Simulation/CoordinateReference.h>
-
-#include "SimTKcommon/internal/SystemGuts.h"
-
 #include "Model.h"
 
 #include "Actuator.h"
@@ -52,11 +39,22 @@
 #include "Ligament.h"
 #include "MarkerSet.h"
 #include "ProbeSet.h"
-
+#include "SimTKcommon/internal/SystemGuts.h"
 #include <iostream>
 #include <string>
 
+#include <OpenSim/Common/Constant.h>
+#include <OpenSim/Common/IO.h>
+#include <OpenSim/Common/Logger.h>
+#include <OpenSim/Common/ScaleSet.h>
+#include <OpenSim/Common/Storage.h>
+#include <OpenSim/Common/XMLDocument.h>
 #include <OpenSim/Simulation/AssemblySolver.h>
+#include <OpenSim/Simulation/CoordinateReference.h>
+#include <OpenSim/Simulation/SimbodyEngine/FreeJoint.h>
+#include <OpenSim/Simulation/SimbodyEngine/PointConstraint.h>
+#include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
+#include <OpenSim/Simulation/SimbodyEngine/WeldConstraint.h>
 
 using namespace std;
 using namespace OpenSim;
@@ -111,7 +109,7 @@ Model::Model(const string &aFileName) :
         ". Please open model and save it in OpenSim version 3.3 to upgrade.");
 
     _fileName = aFileName;
-    Log::info("Loaded model {} from file {}", getName(), getInputFileName());
+    info("Loaded model {} from file {}", getName(), getInputFileName());
 
     try {
         finalizeFromProperties();
