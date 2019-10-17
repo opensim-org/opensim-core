@@ -250,7 +250,7 @@ void ControlSetController::extendFinalizeFromProperties()
     }
 
     if (loadedControlSet && _controlSet) {
-        Log::info("ControlSetController::extendFinalizeFromProperties '{}' "
+        log_info("ControlSetController::extendFinalizeFromProperties '{}' "
                   "loaded and will replace existing ControlSet '{}'.",
                   _controlsFileName, _controlSet->getName());
         delete _controlSet;

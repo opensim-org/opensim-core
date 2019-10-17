@@ -694,14 +694,14 @@ bool CMCTool::run()
     SimTK::OptimizerAlgorithm algorithm = SimTK::InteriorPoint;
     if(IO::Uppercase(_optimizerAlgorithm) == "CFSQP") {
         if(!SimTK::Optimizer::isAlgorithmAvailable(SimTK::CFSQP)) {
-            Log::warn("CFSQP optimizer algorithm unavailable. Will try to use IPOPT instead.");
+            log_warn("CFSQP optimizer algorithm unavailable. Will try to use IPOPT instead.");
             algorithm = SimTK::InteriorPoint;
         } else {
-            Log::info("Using CFSQP optimizer algorithm.");
+            log_info("Using CFSQP optimizer algorithm.");
             algorithm = SimTK::CFSQP;
         }
     } else if(IO::Uppercase(_optimizerAlgorithm) == "IPOPT") {
-        Log::info("Using IPOPT optimizer algorithm.");
+        log_info("Using IPOPT optimizer algorithm.");
         algorithm = SimTK::InteriorPoint;
     } else {
         throw Exception("CMCTool: ERROR- Unrecognized optimizer algorithm: '"+_optimizerAlgorithm+"'",__FILE__,__LINE__);
@@ -710,12 +710,12 @@ bool CMCTool::run()
     SimTK::Optimizer *optimizer = new SimTK::Optimizer(*target, algorithm);
     controller->setOptimizationTarget(target, optimizer);
 
-    Log::info("Setting optimizer print level to {}.", _printLevel);
+    log_info("Setting optimizer print level to {}.", _printLevel);
     optimizer->setDiagnosticsLevel(_printLevel);
-    Log::info("Setting optimizer convergence tolerance to {}.",
+    log_info("Setting optimizer convergence tolerance to {}.",
             _optimizationConvergenceTolerance);
     optimizer->setConvergenceTolerance(_optimizationConvergenceTolerance);
-    Log::info("Setting optimizer maximum iterations to {}.", _maxIterations);
+    log_info("Setting optimizer maximum iterations to {}.", _maxIterations);
     optimizer->setMaxIterations(_maxIterations);
     optimizer->useNumericalGradient(false); // Use our own central difference approximations
     optimizer->useNumericalJacobian(false);
@@ -728,9 +728,9 @@ bool CMCTool::run()
     }
 
     if (_verbose)
-        Log::info("Setting cmc controller to use verbose printing.");
+        log_info("Setting cmc controller to use verbose printing.");
     else
-        Log::info("Setting cmc controller to not use verbose printing.");
+        log_info("Setting cmc controller to not use verbose printing.");
     controller->setUseVerbosePrinting(_verbose);
 
     controller->setCheckTargetTime(true);

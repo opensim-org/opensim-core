@@ -22,17 +22,18 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include <OpenSim/Common/Exception.h>
-#include <OpenSim/Common/Storage.h>
-#include <OpenSim/Common/Function.h>
-#include <OpenSim/Common/LinearFunction.h>
-#include <OpenSim/Common/PropertyObjArray.h>
 #include "getRSS.h"
-
 #include <fstream>
 #include <regex>
 #include <string>
 #include <type_traits>
+
+#include <OpenSim/Common/Exception.h>
+#include <OpenSim/Common/Function.h>
+#include <OpenSim/Common/LinearFunction.h>
+#include <OpenSim/Common/Logger.h>
+#include <OpenSim/Common/PropertyObjArray.h>
+#include <OpenSim/Common/Storage.h>
 
 /**
  * ASSERT_EQUAL is a general utility for comparing two values and throwing
@@ -172,9 +173,9 @@ void CHECK_STORAGE_AGAINST_STANDARD(const OpenSim::Storage& result,
            errorMessage + "- no common columns to compare!");
 
     for (size_t i = 0; i < ncolumns; ++i) {
-        OpenSim::Log::info("column:    {}", columnsUsed[i]);
-        OpenSim::Log::info("RMS error: {}", comparisons[i]);
-        OpenSim::Log::info("tolerance: {}\n", tolerances[i]);
+        OpenSim::log_info("column:    {}", columnsUsed[i]);
+        OpenSim::log_info("RMS error: {}", comparisons[i]);
+        OpenSim::log_info("tolerance: {}\n", tolerances[i]);
         ASSERT(comparisons[i] < tolerances[i], testFile, testFileLine,
                errorMessage);
     }

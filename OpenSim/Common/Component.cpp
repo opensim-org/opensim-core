@@ -249,7 +249,7 @@ void Component::finalizeFromProperties() {
 
         if (count > 0) { // if a duplicate
             // Warn of the problem
-            Log::warn("{} '{}' has subcomponents with duplicate name '{}'. "
+            log_warn("{} '{}' has subcomponents with duplicate name '{}'. "
                       "The duplicate is being renamed to '{}'.",
                     getConcreteClassName(), getName(), name, uniqueName);
 
@@ -1013,7 +1013,7 @@ void Component::updateFromXMLNode(
                             std::remove_if(name.begin(), name.end(), ::isspace),
                             name.end());
                     node.setAttributeValue("name", name);
-                    Log::info("{} name '{}' contains whitespace. It was "
+                    log_info("{} name '{}' contains whitespace. It was "
                               "renamed '{}'.",
                             getConcreteClassName(), prevName, name);
                 }

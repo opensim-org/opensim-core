@@ -149,7 +149,7 @@ void testControlSetControllerOnBlock()
     // Integrate from initial time to final time
     si.setTime(initialTime);
     manager.initialize(si);
-    Log::info("Integrating from {} to {}.", initialTime, finalTime);
+    log_info("Integrating from {} to {}.", initialTime, finalTime);
     si = manager.integrate(finalTime);
 
     si.getQ().dump("Final position:");

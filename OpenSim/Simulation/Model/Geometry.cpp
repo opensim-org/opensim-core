@@ -218,7 +218,7 @@ void Mesh::extendFinalizeFromProperties() {
     if (!isObjectUpToDateWithProperties()) {
         const Component* rootModel = nullptr;
         if (!hasOwner()) {
-            Log::warn("Mesh {} not connected to model..ignoring",
+            log_warn("Mesh {} not connected to model..ignoring",
                     get_mesh_file());
             return;   // Orphan Mesh not part of a model yet
         }
@@ -235,7 +235,7 @@ void Mesh::extendFinalizeFromProperties() {
         }
 
         if (rootModel == nullptr) {
-            Log::warn("Mesh {} not connected to model..ignoring",
+            log_warn("Mesh {} not connected to model..ignoring",
                     get_mesh_file());
             return;   // Orphan Mesh not descendant of a model
         }
@@ -252,7 +252,7 @@ void Mesh::extendFinalizeFromProperties() {
             isAbsolutePath, directory, fileName, extension);
         const string lowerExtension = SimTK::String::toLower(extension);
         if (lowerExtension != ".vtp" && lowerExtension != ".obj" && lowerExtension != ".stl") {
-            Log::warn("ModelVisualizer ignoring '{}'; only .vtp, .stl, and "
+            log_warn("ModelVisualizer ignoring '{}'; only .vtp, .stl, and "
                          ".obj files currently supported.", file);
             return;
         }
@@ -264,7 +264,7 @@ void Mesh::extendFinalizeFromProperties() {
 
         if (!foundIt) {
             if (!warningGiven) {
-                Log::warn("Couldn't find file '{}'.", file);
+                log_warn("Couldn't find file '{}'.", file);
                 warningGiven = true;
             }
             if (Logger::shouldLog(Logger::Level::Info)) {
@@ -287,7 +287,7 @@ void Mesh::extendFinalizeFromProperties() {
             // it will be handled downstream 
         }
         catch (const std::exception& e) {
-            Log::error("Visualizer couldn't open {} because:\n{}",
+            log_error("Visualizer couldn't open {} because:\n{}",
                 attempts.back(), e.what());
             return;
         }

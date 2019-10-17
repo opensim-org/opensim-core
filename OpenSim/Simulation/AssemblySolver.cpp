@@ -285,7 +285,7 @@ void AssemblySolver::track(SimTK::State &s)
     }
     catch (const std::exception& ex)
     {
-        Log::error("AssemblySolver::track() attempt Failed: {}");
+        log_error("AssemblySolver::track() attempt Failed: {}");
         throw Exception("AssemblySolver::track() attempt failed.");
     }
 }

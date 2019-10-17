@@ -217,7 +217,7 @@ void InverseDynamicsTool::getJointsByName(Model &model, const Array<std::string>
         if (k >= 0){
             joints.adoptAndAppend(&modelJoints[k]);
         } else {
-            Log::warn("InverseDynamicsTool could not find Joint named "
+            log_warn("InverseDynamicsTool could not find Joint named "
                          "'{}' to report body forces.", jointNames[i]);
         }
     }
@@ -250,7 +250,7 @@ bool InverseDynamicsTool::run()
         _model->finalizeFromProperties();
         _model->printBasicInfo();
 
-        Log::info("Running tool {}.", getName());
+        log_info("Running tool {}.", getName());
         // Do the maneuver to change then restore working directory
         // so that the parsing code behaves properly if called from a different directory.
         string saveWorkingDirectory = IO::getCwd();
@@ -269,7 +269,7 @@ bool InverseDynamicsTool::run()
 
         if (loadCoordinateValues()){
             if(_lowpassCutoffFrequency>=0) {
-                Log::info("Low-pass filtering coordinates data with a "
+                log_info("Low-pass filtering coordinates data with a "
                              "cutoff frequency of {}...",
                         _lowpassCutoffFrequency);
                 _coordinateValues->pad(_coordinateValues->getSize()/2);
@@ -291,7 +291,7 @@ bool InverseDynamicsTool::run()
                 }
                 else{
                     coordFunctions->insert(i,new Constant(coord.getDefaultValue()));
-                    Log::warn("InverseDynamicsTool: coordinate file does "
+                    log_warn("InverseDynamicsTool: coordinate file does "
                                  "not contain coordinate {}"
                                  "; assuming default value." ,
                             coord.getName());
@@ -339,7 +339,7 @@ bool InverseDynamicsTool::run()
         ivdSolver.solve(s, *coordFunctions, times, genForceTraj);
         success = true;
 
-        Log::info("InverseDynamicsTool: {} time frames in {}s.", nt,
+        log_info("InverseDynamicsTool: {} time frames in {}s.", nt,
                 (double)(clock()-start)/CLOCKS_PER_SEC);
 
         JointSet jointsForEquivalentBodyForces;
@@ -426,7 +426,7 @@ bool InverseDynamicsTool::run()
         removeExternalLoadsFromModel();
     }
     catch (const OpenSim::Exception& ex) {
-        Log::error("InverseDynamicsTool Failed: {}", ex.what());
+        log_error("InverseDynamicsTool Failed: {}", ex.what());
         throw (Exception("InverseDynamicsTool Failed, please see messages window for details..."));
     }
 
@@ -455,7 +455,7 @@ void InverseDynamicsTool::updateFromXMLNode(SimTK::Xml::Element& aNode, int vers
         if (documentVersion < 20300){
             std::string origFilename = getDocumentFileName();
             newFileName=IO::replaceSubstring(newFileName, ".xml", "_v23.xml");
-            Log::info("Old version setup file encountered. Converting to new file {}.", newFileName);
+            log_info("Old version setup file encountered. Converting to new file {}.", newFileName);
             SimTK::Xml::Document doc = SimTK::Xml::Document(origFilename);
             doc.writeToFile(newFileName);
         }

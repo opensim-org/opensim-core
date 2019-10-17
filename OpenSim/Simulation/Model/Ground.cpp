@@ -55,7 +55,7 @@ void Ground::extendFinalizeFromProperties() {
         std::string msg = getConcreteClassName() + " '" + getName() + "' ";
         setName(GroundNameString);
         msg += "was renamed and is being reset to '" + getName() + "'.";
-        Log::warn(msg);
+        log_warn(msg);
     }
 }
 

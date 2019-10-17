@@ -122,20 +122,20 @@ public:
     //--------------------------------------------------------------------------
 
     void calcValue( const double *aX, double *rF, int aSize) override {
-        Log::error("Unimplemented evaluate method");
+        log_error("Unimplemented evaluate method");
 //      exit(0);
     }
     void calcValue( const Array<double> &aX, Array<double> &rF) override {
-        Log::error("Unimplemented evaluate method");
+        log_error("Unimplemented evaluate method");
 //      exit(0);
     }
     virtual void calcValue( const Array<double> &aX, Array<double> &rF, const Array<int> &aDerivWRT) {
-        Log::error("Unimplemented evaluate method");
+        log_error("Unimplemented evaluate method");
 //      exit(0);
     }
     void calcDerivative(const Array<double> &aX,Array<double> &rY,
         const Array<int> &aDerivWRT) override {
-        Log::error("Unimplemented calcDerivative method");
+        log_error("Unimplemented calcDerivative method");
     }
 
     virtual void evaluate( const SimTK::State& s,  double *aX, double *rF);

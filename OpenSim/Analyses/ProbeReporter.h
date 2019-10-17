@@ -157,7 +157,7 @@ public:
             Probe& nextProbe = (Probe&)probes[i];
             if (nextProbe.getOperation()=="integrate" || nextProbe.getOperation()=="min" || nextProbe.getOperation()=="max"){
                 nextProbe.setEnabled(false);
-                Log::warn("Disabling probe {} as invalid for non-integration "
+                log_warn("Disabling probe {} as invalid for non-integration "
                           "context.",
                         nextProbe.getName());
             }

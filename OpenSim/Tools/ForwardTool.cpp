@@ -229,11 +229,11 @@ operator=(const ForwardTool &aTool)
  */
 bool ForwardTool::run()
 {
-    Log::info("Running tool {}.", getName());
+    log_info("Running tool {}.", getName());
     // CHECK FOR A MODEL
     if(_model==NULL) {
         string msg = "A model has not been set.";
-        Log::error(msg);
+        log_error(msg);
         throw(Exception(msg,__FILE__,__LINE__));
     }
 
@@ -302,7 +302,7 @@ bool ForwardTool::run()
         // INTEGRATE
         _model->printDetailedInfo(s, std::cout );
 
-        Log::info("\n\nIntegrating from {} to {}.", _ti, _tf);
+        log_info("\n\nIntegrating from {} to {}.", _ti, _tf);
         s.setTime(_ti);
         manager.initialize(s);
         manager.integrate(_tf);
@@ -389,12 +389,12 @@ void ForwardTool::loadStatesStorage (std::string& statesFileName, Storage*& rYSt
     // Initial states
     rYStore = NULL;
     if(_statesFileName!="") {
-        Log::info("Loading states from file {}.", _statesFileName);
+        log_info("Loading states from file {}.", _statesFileName);
         Storage temp(statesFileName);
         rYStore = new Storage();
         _model->formStateStorage(temp, *rYStore);
 
-        Log::info("Found {} state vectors with time stamps ranging "
+        log_info("Found {} state vectors with time stamps ranging "
                      "from {} to {}.",
                 rYStore->getSize(),
                 rYStore->getFirstTime(),
@@ -412,7 +412,7 @@ void ForwardTool::InitializeSpecifiedTimeStepping(Storage *aYStore, Manager& aMa
     // USE INITIAL STATES FILE FOR TIME STEPS
 
     if(aYStore) {
-        Log::info("Using dt specified from storage {}.", aYStore->getName());
+        log_info("Using dt specified from storage {}.", aYStore->getName());
         Array<double> tArray(0.0,aYStore->getSize());
         Array<double> dtArray(0.0,aYStore->getSize());
         aYStore->getTimeColumn(tArray);
@@ -425,7 +425,7 @@ void ForwardTool::InitializeSpecifiedTimeStepping(Storage *aYStore, Manager& aMa
 
     // NO AVAILABLE STATES FILE
     } else {
-        Log::warn("Ignoring 'use_specified_dt' property because no initial "
+        log_warn("Ignoring 'use_specified_dt' property because no initial "
                      "states file is specified");
     }
 }

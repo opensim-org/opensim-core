@@ -49,7 +49,7 @@ static void PrintUsage(const char *aProgName, ostream &aOStream);
  */
 int main(int argc,char **argv)
 {
-    Log::info("openSimToSimm, {}", OpenSim::GetVersionAndDate());
+    log_info("openSimToSimm, {}", OpenSim::GetVersionAndDate());
 
    Object::RegisterType(SimbodyEngine());
     SimbodyEngine::registerTypes();

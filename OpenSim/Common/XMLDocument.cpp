@@ -312,7 +312,7 @@ bool XMLDocument::isEqualTo(XMLDocument& aOtherDocument, double toleranceForDoub
     SimTK::Array_<SimTK::Xml::Element> elts1 = root1.getAllElements();
     SimTK::Array_<SimTK::Xml::Element> elts2 = root2.getAllElements();
     if (elts1.size() != elts2.size()){
-        Log::info("Different number of children at Top level");
+        log_info("Different number of children at Top level");
         equal = false;
     }
     if (!equal) return false;

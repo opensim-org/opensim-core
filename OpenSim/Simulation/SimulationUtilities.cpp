@@ -43,7 +43,7 @@ SimTK::State OpenSim::simulate(Model& model,
     // Ensure the final time is in the future.
     const double initialTime = initialState.getTime();
     if (finalTime <= initialTime) {
-        Log::error("The final time must be in the future (current time is {}"
+        log_error("The final time must be in the future (current time is {}"
                       "); simulation aborted.",
                 initialTime);
         return state;
@@ -62,7 +62,7 @@ SimTK::State OpenSim::simulate(Model& model,
 
         viz.setShowSimTime(true);
         viz.drawFrameNow(state);
-        Log::info("A visualizer window has opened.");
+        log_info("A visualizer window has opened.");
 
         // if visualizing enable replay
         simulateOnce = false;
@@ -136,7 +136,7 @@ OpenSim::updatePre40KinematicsStorageFor40MotionType(const Model& pre40Model,
         int ix = updatedKinematics->getStateIndex(coord->getName());
         
         if (ix < 0) {
-            Log::warn("updateKinematicsStorageForUpdatedModel(): motion '{}"
+            log_warn("updateKinematicsStorageForUpdatedModel(): motion '{}"
                          "' does not contain inconsistent coordinate {}.",
                     kinematics.getName(), coord->getName());
         }
@@ -170,7 +170,7 @@ void OpenSim::updatePre40KinematicsFilesFor40MotionType(const Model& model,
             outFilePath = filePath.substr(0, back) + suffix +
                             filePath.substr(back);
         }
-        Log::info("Writing converted motion '{}' to '{}'.",
+        log_info("Writing converted motion '{}' to '{}'.",
                 filePath, outFilePath);
 
         updatedMotion->print(outFilePath);
@@ -196,14 +196,14 @@ void OpenSim::updateSocketConnecteesBySearch(Model& model)
                         socket.finalizeConnection(model);
                         numSocketsUpdated += 1;
                     } else {
-                        Log::warn("Socket '{}' in Component {} "
+                        log_warn("Socket '{}' in Component {} "
                                      "needs updating but a connectee with the "
                                      "specified name could not be found.",
                                 socketNames[i], comp.getAbsolutePathString());
                     }
                 }
             } catch (const std::exception& e) {
-                Log::warn("Caught exception when processing "
+                log_warn("Caught exception when processing "
                              "Socket {} in {} at {}: {}",
                         socketNames[i], comp.getConcreteClassName(),
                         comp.getAbsolutePathString(), e.what());
@@ -211,11 +211,11 @@ void OpenSim::updateSocketConnecteesBySearch(Model& model)
         }
     }
     if (numSocketsUpdated) {
-        Log::info("OpenSim::updateSocketConnecteesBySearch(): updated {}"
+        log_info("OpenSim::updateSocketConnecteesBySearch(): updated {}"
                      " Sockets in Model '{}'.", numSocketsUpdated,
                      model.getName());
     } else {
-        Log::info("OpenSim::updateSocketConnecteesBySearch(): "
+        log_info("OpenSim::updateSocketConnecteesBySearch(): "
                      "no Sockets updated in Model '{}'.",
                 model.getName());
     }
