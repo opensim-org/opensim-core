@@ -156,7 +156,8 @@ public:
     void operate(Model& model, const std::string&) const override {
         model.finalizeFromProperties();
         for (auto& muscle : model.updComponentList<Muscle>()) {
-            muscle.set_max_isometric_force(get_scale_factor());
+            muscle.set_max_isometric_force(
+                    get_scale_factor() * muscle.get_max_isometric_force());
         }
     }
 };
