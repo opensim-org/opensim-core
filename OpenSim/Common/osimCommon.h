@@ -26,7 +26,6 @@
 #include "About.h"
 #include "Adapters.h"
 #include "CommonUtilities.h"
-#include "Log.h"
 #include "Constant.h"
 #include "DataTable.h"
 #include "FunctionSet.h"

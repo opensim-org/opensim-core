@@ -284,8 +284,7 @@ updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 {
     int documentVersion = versionNumber;
     if ( documentVersion < XMLDocument::getLatestVersion()){
-        if (Log::shouldLog(Log::Level::Debug))
-            cout << "Updating CustomJoint to latest format..." << endl;
+        log_debug("Updating CustomJoint to latest format...");
         // Version before refactoring spatialTransform
         if (documentVersion<10901){
             // replace TransformAxisSet with SpatialTransform

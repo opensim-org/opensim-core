@@ -149,8 +149,7 @@ void MovingPathPoint::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionN
 {
     int documentVersion = versionNumber;
     if (documentVersion < 30000) {
-        if (Log::shouldLog(Log::Level::Debug))
-            cout << "Updating MovingPathPoint object to latest format..." << endl;
+        log_debug("Updating MovingPathPoint object to latest format...");
         XMLDocument::renameChildNode(aNode, "XAttachment", "x_location");
         XMLDocument::renameChildNode(aNode,"YAttachment", "y_location");
         XMLDocument::renameChildNode(aNode,"ZAttachment", "z_location");
