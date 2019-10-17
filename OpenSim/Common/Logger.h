@@ -1,7 +1,7 @@
 #ifndef OPENSIM_LOG_H_
 #define OPENSIM_LOG_H_
 /* -------------------------------------------------------------------------- *
- *                           OpenSim:  Log.h                                  *
+ *                           OpenSim:  Logger.h                                  *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -33,11 +33,10 @@ class LogSink;
 
 /// This is a singleton class (single instance) for logging messages and
 /// controlling how those messages are presented to the user.
-class OSIMCOMMON_API Log {
+class OSIMCOMMON_API Logger {
 public:
-
-    Log(Log const&) = delete;
-    Log& operator=(Log const&) = delete;
+    Logger(Logger const&) = delete;
+    Logger& operator=(Logger const&) = delete;
 
     /// This enum lists the types of messages that should be logged. These
     /// levels match those of the spdlog logging library that OpenSim uses for
@@ -73,7 +72,8 @@ public:
     static void setLevel(Level level);
     static Level getLevel();
 
-    /// Set the logging level using one of the following strings:
+    /// Set the logging level using one of the following strings
+    /// (case-insensitive):
     /// - Off
     /// - Critical
     /// - Error
@@ -83,7 +83,7 @@ public:
     /// - Trace
     /// This variant of setLevel() is for use in Matlab.
     /// @see Level.
-    static void setLevelString(const std::string& level);
+    static void setLevelString(std::string level);
     static std::string getLevelString();
 
     /// Returns true if messages at the provided level should be logged,
@@ -152,20 +152,55 @@ public:
     /// This returns the singleton instance of the Log class, but users never
     /// need to invoke this function. The member functions in this class are
     /// static.
-    static const std::shared_ptr<Log> getInstance() {
+    static const std::shared_ptr<Logger> getInstance() {
         if (!m_log) {
-            m_log = std::shared_ptr<Log>(new Log());
+            m_log = std::shared_ptr<Logger>(new Logger());
         }
         return m_log;
     }
 private:
     /// Initialize spdlog.
-    Log();
-    static std::shared_ptr<Log> m_log;
+    Logger();
+    static std::shared_ptr<Logger> m_log;
 
     /// Keep track of file sinks.
     static std::set<std::string> m_filepaths;
 };
+
+/// @name Logging functions
+/// @{
+
+template <typename... Args>
+void log_critical(spdlog::string_view_t fmt, const Args&... args) {
+    Logger::critical(fmt, args...);
+}
+
+template <typename... Args>
+void log_error(spdlog::string_view_t fmt, const Args&... args) {
+    Logger::error(fmt, args...);
+}
+
+template <typename... Args>
+void log_warn(spdlog::string_view_t fmt, const Args&... args) {
+    Logger::warn(fmt, args...);
+}
+
+template <typename... Args>
+void log_info(spdlog::string_view_t fmt, const Args&... args) {
+    Logger::info(fmt, args...);
+}
+
+template <typename... Args>
+void log_debug(spdlog::string_view_t fmt, const Args&... args) {
+    Logger::debug(fmt, args...);
+}
+
+template <typename... Args>
+void log_trace(spdlog::string_view_t fmt, const Args&... args) {
+    Logger::trace(fmt, args...);
+}
+
+/// @}
 
 } // namespace OpenSim
 

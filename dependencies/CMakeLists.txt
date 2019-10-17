@@ -167,7 +167,7 @@ AddDependency(NAME       spdlog
                          -DSPDLOG_BUILD_TESTS:BOOL=OFF
                          -DSPDLOG_BUILD_EXAMPLE:BOOL=OFF
                          -DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=ON)
- 
+
 #######################
 
 RemoveDefaultInstallDirIfEmpty("${DEFAULT_CMAKE_INSTALL_PREFIX}")

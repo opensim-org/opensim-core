@@ -24,7 +24,7 @@
 
 #include "osimCommonDLL.h"
 #include <iostream>
-#include <spdlog/sinks/base_sink.h>
+#include <spdlog/sinks/base_sink-inl.h>
 
 // This file is not included in osimCommon.h. Only include
 // this file when deriving from LogSink.
@@ -38,7 +38,7 @@ public:
     virtual ~LogSink() = default;
 protected:
     /// This function is invoked whenever a message is logged at the desired
-    /// levels.
+    /// Log::Level.
     virtual void sinkImpl(const std::string& msg) = 0;
     virtual void flushImpl() {}
 private:

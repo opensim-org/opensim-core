@@ -32,7 +32,7 @@
 #include "GCVSpline.h"
 #include "GCVSplineSet.h"
 #include "IO.h"
-#include "Log.h"
+#include "Logger.h"
 #include "STOFileAdapter.h"
 #include "Signal.h"
 #include "SimTKcommon.h"
@@ -227,10 +227,8 @@ Storage::Storage(const string &fileName, bool readHeadersOnly) :
     }
 
     // Process file as if it were a .mot file
-    if (Log::shouldLog(Log::Level::Info)) {
-        cout << "Storage: read data file =" << fileName
-            << " (nr=" << nr << " nc=" << nc << ")" << endl;
-    }
+    log_info("Storage: read data file = {} (nr={} nc={})", fileName, nr, nc);
+
     // Motion files from SIMM are in degrees
     if (_fileVersion < 1 && isMotFile) {
         _inDegrees = true;

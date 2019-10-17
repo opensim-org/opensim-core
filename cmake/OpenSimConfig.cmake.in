@@ -75,8 +75,10 @@ set(@CMAKE_PROJECT_NAME@_JAR_FILE
 # ------------
 if (@OPENSIM_COPY_DEPENDENCIES@) # OPENSIM_COPY_DEPENDENCIES
     # Find the copies of Simbody and spdlog within the OpenSim installation.
-    # We pre-define these variables because finding Simbody redefines variables
-    # that we need for finding spdlog.
+    # We define _SIMBODY_PATH and _SPDLOG_PATH before find_package(Simbody)
+    # because finding Simbody redefines the PACKAGE_PREFIX_DIR variable
+    # that appears in this file after configuring, thereby incorrectly
+    # causing CMake to look for spdlog within Simbody's installation.
     set(_SIMBODY_PATH "@PACKAGE_OPENSIM_INSTALL_SIMBODYDIR@")
     set(_SPDLOG_PATH "@PACKAGE_OPENSIM_INSTALL_SPDLOGDIR@")
     find_package(Simbody @SIMBODY_VERSION_TO_USE@ REQUIRED

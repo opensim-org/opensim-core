@@ -44,7 +44,7 @@
 // INCLUDES
 #include "ComponentList.h"
 #include "ComponentPath.h"
-#include "Log.h"
+#include "Logger.h"
 #include "OpenSim/Common/Array.h"
 #include "OpenSim/Common/ComponentOutput.h"
 #include "OpenSim/Common/ComponentSocket.h"
@@ -2288,14 +2288,11 @@ public:
                 foundCs.push_back(&comp);
                 // TODO Revisit why the exact match isn't found when
                 // when what appears to be the complete path.
-                if (Log::shouldLog(Log::Level::Debug)) {
-                    std::string details = msg + " Found '" + compAbsPath.toString() +
-                        "' as a match for:\n Component '" + name + "' of type " +
-                        comp.getConcreteClassName() + ", but it "
-                        "is not on specified path.\n";
-                    //throw Exception(details, __FILE__, __LINE__);
-                    std::cout << details << std::endl;
-                }
+                log_debug("{} Found '{}' as a match for: Component '{}' of "
+                          "type {}, but it is not on the specified path.",
+                          msg, compAbsPath.toString(),
+                          comp.getConcreteClassName());
+                //throw Exception(details, __FILE__, __LINE__);
             }
         }
 
