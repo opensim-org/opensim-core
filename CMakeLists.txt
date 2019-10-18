@@ -89,7 +89,9 @@ option(OPENSIM_COPY_DEPENDENCIES "Copy Simbody and BTK into the
 OpenSim installation. This should be set to ON when making a relocatable
 distribution, and should be set to OFF when packaging for Homebrew, Debian,
 etc. On Linux and macOS: we use relative RPATHs when ON, and absolute RPATHs
-when OFF." ON)
+when OFF. This should also be on if BUILD_JAVA_WRAPPING or 
+BUILD_PYTHON_WRAPPING is ON, so if this OFF, a warning is thrown to the user
+and this option is automatically turned ON." ON)
 mark_as_advanced(OPENSIM_COPY_DEPENDENCIES)
 
 option(OPENSIM_PYTHON_STANDALONE "Make the Python package standalone, meaning

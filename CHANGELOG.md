@@ -43,6 +43,7 @@ Other Changes
 - Added Matlab example script of plotting the Force-length properties of muscles in a models; creating an Actuator file from a model; 
 building and simulating a simple arm model;  using OutputReporters to record and write marker location and coordinate values to file.
 - OpenSim 4.1 ships with Python3 bindings as default. It is still possible to create bindings for Python2 if desired by setting CMake variable OPENSIM_PYTHON_VERSION to 2
+- For CMake, the option OPENSIM_COPY_DEPENDENCIES option is now an advanced option, and it is also turned on automatically if building Java or Python wrapping (a warning is provided if this option is off but wrapping is turned on.)
 
 v4.0
 ====
