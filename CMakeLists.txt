@@ -90,6 +90,7 @@ OpenSim installation. This should be set to ON when making a relocatable
 distribution, and should be set to OFF when packaging for Homebrew, Debian,
 etc. On Linux and macOS: we use relative RPATHs when ON, and absolute RPATHs
 when OFF." ON)
+mark_as_advanced(OPENSIM_COPY_DEPENDENCIES)
 
 option(OPENSIM_PYTHON_STANDALONE "Make the Python package standalone, meaning
 the OpenSim (and Simbody and BTK) shared libraries it depends on are copied
@@ -440,6 +441,15 @@ if(${BUILD_JAVA_WRAPPING})
             endif()
         endif()
     endif()
+    # Need copies of dependencies for wrapping. Turn it on and warn user
+    # if it wasn't on.
+    if (NOT OPENSIM_COPY_DEPENDENCIES)
+        set(OPENSIM_COPY_DEPENDENCIES ON)
+        string(CONCAT MSG
+           "BUILD_JAVA_WRAPPING is ON but OPENSIM_COPY_DEPENDENCIES is OFF. "
+           "OPENSIM_COPY_DEPENDENCIES is now ON.")
+        message(WARNING ${MSG})
+    endif()
 endif()
 
 if(${BUILD_PYTHON_WRAPPING})
@@ -488,7 +498,16 @@ if(${BUILD_PYTHON_WRAPPING})
             CACHE FILEPATH "${pylib_desc}")
     endif()
     find_package(PythonLibs ${required_python_version} REQUIRED)
-
+    
+    # Need copies of dependencies for wrapping. Turn it on and warn user
+    # if it wasn't on.
+    if (NOT OPENSIM_COPY_DEPENDENCIES)
+        set(OPENSIM_COPY_DEPENDENCIES ON)
+        string(CONCAT MSG
+           "BUILD_JAVA_WRAPPING is ON but OPENSIM_COPY_DEPENDENCIES is OFF. "
+           "OPENSIM_COPY_DEPENDENCIES is now ON.")
+        message(WARNING ${MSG})
+    endif()
 endif()
 
 if(WIN32)
