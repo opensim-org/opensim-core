@@ -65,7 +65,7 @@ int main(int argc,char **argv)
       forward -S SetupFileName -> opensim-cmd run-tool SetupFileName
       forward -PS              -> opensim-cmd print-xml forward
     )";
-    std::cout << deprecationNotice << std::endl;
+    log_info(deprecationNotice);
 
 
     // PARSE COMMAND LINE
@@ -148,13 +148,14 @@ int main(int argc,char **argv)
     // RUN
     forward.run();
 
-    std::cout << "Forward simulation time = " << 1.e3*(std::clock()-startTime)/CLOCKS_PER_SEC << "ms\n" << endl;
+    log_info("Forward simulation time = {}ms",
+            1.e3 * (std::clock() - startTime) / CLOCKS_PER_SEC);
 
     //----------------------------
     // Catch any thrown exceptions
     //----------------------------
     } catch(const std::exception& x) {
-        cout << "Exception in forward: " << x.what() << endl;
+        log_error("Exception in forward: {}", x.what());
         return -1;
     }
     //----------------------------

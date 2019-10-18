@@ -390,7 +390,7 @@ loadModel(const string &aToolSetupFileName, ForceSet *rOriginalForceSet )
     string directoryOfSetupFile = IO::getParentDirectory(aToolSetupFileName);
     IO::chDir(directoryOfSetupFile);
 
-    cout<<"AbstractTool "<<getName()<<" loading model '"<<_modelFile<<"'"<<endl;
+    log_info("AbstractTool {} loading model '{}'.", getName(), _modelFile);
 
     Model *model = 0;
 
@@ -428,7 +428,7 @@ updateModelForces(Model& model, const string &aToolSetupFileName, ForceSet *rOri
 
         // Load force set(s)
         for(int i=0;i<_forceSetFiles.getSize();i++) {
-            cout<<"Adding force object set from "<<_forceSetFiles[i]<<endl;
+            log_info("Adding force object set from {}", _forceSetFiles[i]);
             ForceSet *forceSet=new ForceSet(_forceSetFiles[i], true);
             model.updForceSet().append(*forceSet);
         }
@@ -455,8 +455,8 @@ void AbstractTool::
 addAnalysisSetToModel()
 {
     if (!_model) {
-        string msg = "ERROR- A model has not been set.";
-        cout<<endl<<msg<<endl;
+        string msg = "A model has not been set.";
+        log_error(msg);
         throw(Exception(msg,__FILE__,__LINE__));
     }
 
@@ -483,8 +483,8 @@ void AbstractTool::
 addControllerSetToModel()
 {
     if (!_model) {
-        string msg = "ERROR- A model has not been set.";
-        cout<<endl<<msg<<endl;
+        string msg = "A model has not been set.";
+        log_error(msg);
         throw(Exception(msg,__FILE__,__LINE__));
     }
 
@@ -547,7 +547,7 @@ void AbstractTool::
 printResults(const string &aBaseName,const string &aDir,double aDT,
                  const string &aExtension)
 {
-    cout<<"Printing results of investigation "<<getName()<<" to "<<aDir<<"."<<endl;
+    log_info("Printing results of investigation {} to {}.", getName(), aDir);
     IO::makeDir(aDir);
     _model->updAnalysisSet().printResults(aBaseName,aDir,aDT,aExtension);
 }
@@ -559,7 +559,8 @@ bool AbstractTool::createExternalLoads( const string& aExternalLoadsFileName,
                                         Model& aModel)
 {
     if(aExternalLoadsFileName==""||aExternalLoadsFileName=="Unassigned") {
-        cout<<"No external loads will be applied (external loads file not specified)."<<endl;
+        log_info("No external loads will be applied (external loads file not "
+                 "specified).");
         return false;
     }
 
@@ -578,9 +579,10 @@ bool AbstractTool::createExternalLoads( const string& aExternalLoadsFileName,
     catch (const Exception &ex) {
         // Important to catch exceptions here so we can restore current working directory...
         // And then we can re-throw the exception
-        cout << "Error: failed to construct ExternalLoads from file " << aExternalLoadsFileName;
-        cout << ". Please make sure the file exists and that it contains an ExternalLoads";
-        cout << "object or create a fresh one." << endl;
+        log_error("Failed to construct ExternalLoads from file {}. Please make "
+                  "sure the file exists and that it contains an ExternalLoads "
+                  "object or create a fresh one.",
+                aExternalLoadsFileName);
         throw(ex);
     }
 
@@ -612,8 +614,8 @@ bool AbstractTool::createExternalLoads( const string& aExternalLoadsFileName,
         }
         // if loading the data, do whatever filtering operations are also specified
         if (temp && externalLoads->getLowpassCutoffFrequencyForLoadKinematics() >= 0) {
-            cout << "\n\nLow-pass filtering coordinates data with a cutoff frequency of "
-                << _externalLoads.getLowpassCutoffFrequencyForLoadKinematics() << "." << endl;
+            log_info("Low-pass filtering coordinates data with a cutoff frequency of {}.",
+                _externalLoads.getLowpassCutoffFrequencyForLoadKinematics());
             temp->pad(temp->getSize() / 2);
             temp->lowpassIIR(externalLoads->getLowpassCutoffFrequencyForLoadKinematics());
         }
@@ -778,12 +780,13 @@ void AbstractTool::removeExternalLoadsFromModel()
 void AbstractTool::loadQStorage (const std::string& statesFileName, Storage& rQStore) const {
     // Initial states
     if(statesFileName!="") {
-        cout<<"\nLoading q's from file "<<statesFileName<<"."<<endl;
+        log_info("Loading q's from file {}.", statesFileName);
         Storage temp(statesFileName);
         _model->formQStorage(temp, rQStore);
 
-        cout<<"Found "<<rQStore.getSize()<<" q's with time stamps ranging"<<endl;
-        cout<<"from "<<rQStore.getFirstTime()<<" to "<<rQStore.getLastTime()<<"."<<endl;
+        log_info("Found {} q's with time stamps ranging from {} to {}.",
+                rQStore.getSize(), rQStore.getFirstTime(),
+                rQStore.getLastTime());
     }
 }
 //_____________________________________________________________________________
@@ -924,7 +927,8 @@ std::string AbstractTool::createExternalLoadsFile(const std::string& oldFile,
         std::string newName=oldFile.substr(0, oldFile.length()-4)+".xml";
         _externalLoads.print(newName);
         if(getDocument()) IO::chDir(savedCwd);
-        cout<<"\n\n- Created ForceSet file " << newName << "to apply forces from " << oldFile << ".\n\n";
+        log_info("Created ForceSet file {} to apply forces from {}.", newName,
+                oldFile);
         return newName;
     }
     else {
