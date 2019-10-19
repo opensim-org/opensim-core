@@ -1884,6 +1884,7 @@ TEST_CASE("MocoPhase::bound_activation_from_excitation") {
 }
 
 
+/*
 TEMPLATE_TEST_CASE("Controllers in the model", "",
         MocoCasADiSolver, MocoTropterSolver) {
     MocoStudy study;
@@ -1905,3 +1906,4 @@ TEMPLATE_TEST_CASE("Controllers in the model", "",
     std::cout << "DEBUG " << solution.getControl("/actuator") << std::endl;
 
 }
+*/
