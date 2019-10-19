@@ -151,6 +151,7 @@ SimTK::Vector createVector(std::initializer_list<SimTK::Real> elements);
 /// create the interpolant from the non-NaN values only. Note that this option
 /// does not necessarily prevent NaN values from being returned in 'newX', which
 /// will have NaN for any values of newX outside of the range of x.
+/// @throws Exception if x and y are different sizes, or x or y is empty.
 OSIMMOCO_API
 SimTK::Vector interpolate(const SimTK::Vector& x, const SimTK::Vector& y,
         const SimTK::Vector& newX, const bool ignoreNaNs = false);

@@ -18,6 +18,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
+#include "About.h"
 #include "Common/TableProcessor.h"
 #include "Components/ActivationCoordinateActuator.h"
 #include "Components/DeGrooteFregly2016Muscle.h"

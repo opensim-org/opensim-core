@@ -1,5 +1,44 @@
 cmake_minimum_required(VERSION 3.2)
-project(OpenSimMoco VERSION 0.1)
+project(OpenSimMoco VERSION 0.1.0)
+
+# Version.
+# --------
+set(VERSION_SUFFIX "")
+find_package(Git)
+if(Git_FOUND)
+    # This command provides the annotated tag for the current commit, if it
+    # exists, and returns an error if a tag does not exist.
+    execute_process(
+            COMMAND git describe --exact-match
+            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+            RESULT_VARIABLE GIT_DESCRIBE_EXACT_MATCH_RETVAL
+            OUTPUT_VARIABLE GIT_TAG
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+            OUTPUT_QUIET
+            ERROR_QUIET
+    )
+    if(${GIT_DESCRIBE_EXACT_MATCH_RETVAL} EQUAL 0)
+        # A tag exists.
+        # Do not add anything to the version.
+    else()
+        execute_process(
+                COMMAND git log -1 --format=%h
+                WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+                OUTPUT_VARIABLE GIT_COMMIT_HASH
+                OUTPUT_STRIP_TRAILING_WHITESPACE
+        )
+        # Prepend date for sorting.
+        execute_process(
+                COMMAND git show -s --format=%cd --date=short HEAD
+                WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+                OUTPUT_VARIABLE GIT_COMMIT_DATE
+                OUTPUT_STRIP_TRAILING_WHITESPACE
+        )
+        set(VERSION_SUFFIX "-${GIT_COMMIT_DATE}-${GIT_COMMIT_HASH}")
+    endif()
+else()
+    set(VERSION_SUFFIX "?")
+endif()
 
 # Moco settings.
 # --------------

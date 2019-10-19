@@ -1,3 +1,10 @@
+- 2019-10-16: Fix a bug in ModOpscaleMaxIsometricForce, where the scale factor
+              was not used properly.
+
+- 2019-10-12: Add GetMocoVersion(), GetMocoVersionAndDate() to provide the 
+              git commit hash and commit date. The opensim-moco command-line
+              tool now has a --version flag to print the Moco version.
+              
 - 2019-10-04: MocoControlGoal weights can be specified via regular expression
               patterns.
 

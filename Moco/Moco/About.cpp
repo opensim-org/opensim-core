@@ -1,9 +1,9 @@
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: DiscreteForces.cpp                                           *
+ * OpenSim Moco: About.cpp                                                    *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2019 Stanford University and the Authors                     *
  *                                                                            *
- * Author(s): Nicholas Bianco                                                 *
+ * Author(s): Christopher Dembia                                              *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -16,27 +16,38 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "DiscreteForces.h"
-#include <OpenSim/Simulation/Model/Model.h>
+/**
+ * Define the standard SimTK compliant "version" and "about" routines.
+ */
 
-using namespace OpenSim;
+#include "About.h"
 
-void DiscreteForces::extendAddToSystem(SimTK::MultibodySystem& system) const {
-    Super::extendAddToSystem(system);
+#include "MocoUtilities.h"
+#include <stdio.h>
 
-    SimTK::SubsystemIndex forcesIdx = 
-        getModel().getForceSubsystem().getMySubsystemIndex();
-    SimTK::ForceSubsystem& forces = 
-        SimTK::ForceSubsystem::updDowncast(system.updSubsystem(forcesIdx));
-    m_discrete_forces = SimTK::Force::DiscreteForces(
-        SimTK::GeneralForceSubsystem::updDowncast(forces),
-        system.getMatterSubsystem());
+#define STR(var) #var
+#define MAKE_VERSION_STRING(maj, min, build) STR(maj.min.build)
+#define MAKE_STRING(a) STR(a)
+
+#define GET_OPENSIM_MOCO_VERSION_STRING MAKE_STRING(OPENSIM_MOCO_VERSION)
+
+#ifndef NDEBUG
+#    define GET_DEBUG_STRING "debug"
+#else
+#    define GET_DEBUG_STRING "release"
+#endif
+
+using namespace std;
+
+namespace OpenSim {
+
+static const char* OpenSimMocoVersion = GET_OPENSIM_MOCO_VERSION_STRING;
+
+std::string GetMocoVersionAndDate() {
+    return format("version %s, build date %s %s", OpenSimMocoVersion, __TIME__,
+            __DATE__);
 }
 
-void DiscreteForces::setAllForces(SimTK::State& s, 
-        const SimTK::Vector& generalizedForces,
-        const SimTK::Vector_<SimTK::SpatialVec>& bodyForcesInG) const {
+std::string GetMocoVersion() { return OpenSimMocoVersion; }
 
-    m_discrete_forces.setAllMobilityForces(s, generalizedForces);
-    m_discrete_forces.setAllBodyForces(s, bodyForcesInG);
-}
+} // namespace OpenSim

@@ -3,6 +3,7 @@
 /* This header is only used with SWIG to create bindings.
  */
 
+#include <Moco/About.h>
 #include <Moco/Common/TableProcessor.h>
 #include <Moco/Components/ActivationCoordinateActuator.h>
 #include <Moco/Components/DeGrooteFregly2016Muscle.h>
