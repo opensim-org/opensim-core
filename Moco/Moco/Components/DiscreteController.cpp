@@ -35,6 +35,14 @@ SimTK::Vector& DiscreteController::updDiscreteControls(SimTK::State& s) const {
     return discreteControls;
 }
 
+const SimTK::Vector& DiscreteController::getDiscreteControls(
+        const SimTK::State& s) const {
+    const SimTK::Subsystem& subSys = getSystem().getDefaultSubsystem();
+    auto& dv = subSys.getDiscreteVariable(s, m_discreteVarIndex);
+    auto& discreteControls = SimTK::Value<SimTK::Vector>::downcast(dv).get();
+    return discreteControls;
+}
+
 void DiscreteController::computeControls(
         const SimTK::State& s, SimTK::Vector& controls) const {
     const SimTK::Subsystem& subSys = getSystem().getDefaultSubsystem();

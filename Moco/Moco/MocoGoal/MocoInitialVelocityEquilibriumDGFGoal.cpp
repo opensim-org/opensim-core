@@ -30,7 +30,7 @@ void MocoInitialVelocityEquilibriumDGFGoal::initializeOnModelImpl(
         }
     }
 
-    setNumIntegralsAndOutputs(0, (int)m_dgfMuscleRefs.size());
+    setRequirements(0, (int)m_dgfMuscleRefs.size());
 }
 
 void MocoInitialVelocityEquilibriumDGFGoal::calcGoalImpl(

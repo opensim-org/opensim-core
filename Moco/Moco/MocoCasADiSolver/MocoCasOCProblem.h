@@ -337,8 +337,14 @@ private:
         auto& simtkStateDisabledConstraints =
                 mocoProblemRep->updStateDisabledConstraints();
 
+        const auto& discreteController =
+                mocoProblemRep->getDiscreteControllerDisabledConstraints();
+        const auto& rawControls= discreteController.getDiscreteControls(
+                simtkStateDisabledConstraints);
+
         const auto& mocoCost = mocoProblemRep->getCostByIndex(index);
-        integrand = mocoCost.calcIntegrand(simtkStateDisabledConstraints);
+        integrand = mocoCost.calcIntegrand({simtkStateDisabledConstraints,
+                                            rawControls});
 
         m_jar->leave(std::move(mocoProblemRep));
     }
@@ -360,12 +366,20 @@ private:
         auto& simtkStateDisabledConstraintsFinal =
                 mocoProblemRep->updStateDisabledConstraints(1);
 
+        const auto& discreteController =
+                mocoProblemRep->getDiscreteControllerDisabledConstraints();
+        const auto& rawControlsInitial = discreteController.getDiscreteControls(
+                simtkStateDisabledConstraintsInitial);
+        const auto& rawControlsFinal = discreteController.getDiscreteControls(
+                simtkStateDisabledConstraintsFinal);
+
         // Compute the cost for this cost term.
         const auto& mocoCost = mocoProblemRep->getCostByIndex(index);
         SimTK::Vector simtkCost((int)cost.rows(), cost.ptr(), true);
         mocoCost.calcGoal(
-                {simtkStateDisabledConstraintsInitial,
-                        simtkStateDisabledConstraintsFinal, input.integral},
+                {simtkStateDisabledConstraintsInitial, rawControlsInitial,
+                 simtkStateDisabledConstraintsFinal, rawControlsFinal,
+                 input.integral},
                 simtkCost);
 
         m_jar->leave(std::move(mocoProblemRep));
@@ -380,9 +394,15 @@ private:
         auto& simtkStateDisabledConstraints =
                 mocoProblemRep->updStateDisabledConstraints();
 
+        const auto& discreteController =
+                mocoProblemRep->getDiscreteControllerDisabledConstraints();
+        const auto& rawControls= discreteController.getDiscreteControls(
+                simtkStateDisabledConstraints);
+
         const auto& mocoEC =
                 mocoProblemRep->getEndpointConstraintByIndex(index);
-        integrand = mocoEC.calcIntegrand(simtkStateDisabledConstraints);
+        integrand = mocoEC.calcIntegrand(
+                {simtkStateDisabledConstraints, rawControls});
 
         m_jar->leave(std::move(mocoProblemRep));
     }
@@ -404,13 +424,21 @@ private:
         auto& simtkStateDisabledConstraintsFinal =
                 mocoProblemRep->updStateDisabledConstraints(1);
 
+        const auto& discreteController =
+                mocoProblemRep->getDiscreteControllerDisabledConstraints();
+        const auto& rawControlsInitial = discreteController.getDiscreteControls(
+                simtkStateDisabledConstraintsInitial);
+        const auto& rawControlsFinal = discreteController.getDiscreteControls(
+                simtkStateDisabledConstraintsFinal);
+
         // Compute the cost for this cost term.
         const auto& mocoEC =
                 mocoProblemRep->getEndpointConstraintByIndex(index);
         SimTK::Vector simtkValues((int)values.rows(), values.ptr(), true);
         mocoEC.calcGoal(
-                {simtkStateDisabledConstraintsInitial,
-                        simtkStateDisabledConstraintsFinal, input.integral},
+                {simtkStateDisabledConstraintsInitial, rawControlsInitial,
+                 simtkStateDisabledConstraintsFinal, rawControlsFinal,
+                 input.integral},
                 simtkValues);
 
         m_jar->leave(std::move(mocoProblemRep));

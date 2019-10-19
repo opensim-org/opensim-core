@@ -38,7 +38,7 @@ void MocoInitialForceEquilibriumGoal::initializeOnModelImpl(
         }
     }
 
-    setNumIntegralsAndOutputs(0, (int)m_muscleRefs.size());
+    setRequirements(0, (int)m_muscleRefs.size());
 }
 
 void MocoInitialForceEquilibriumGoal::calcGoalImpl(

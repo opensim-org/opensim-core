@@ -66,7 +66,7 @@ protected:
         // Ensure the model does not have user-provided controllers.
         int numControllers = 0;
         for (const auto& controller :
-                m_modelBase.getComponentList<Controller>()) {
+                m_modelBase.template getComponentList<Controller>()) {
             // Avoid unused variable warning.
             (void)&controller;
             ++numControllers;
@@ -385,9 +385,16 @@ protected:
         // point, so that each can preserve their cache?
         this->setSimTKState(in);
 
+        const auto& discreteController =
+                m_mocoProbRep.getDiscreteControllerDisabledConstraints();
+        const auto& rawControls= discreteController.getDiscreteControls(
+                this->m_stateDisabledConstraints);
+
         // Compute the integrand for this cost term.
         const auto& cost = m_mocoProbRep.getCostByIndex(cost_index);
-        integrand = cost.calcIntegrand(this->m_stateDisabledConstraints);
+        integrand = cost.calcIntegrand({
+            this->m_stateDisabledConstraints,
+            rawControls});
     }
 
     void calc_cost(int cost_index, const tropter::CostInput<T>& in,
@@ -404,10 +411,18 @@ protected:
         const auto& initialState = m_mocoProbRep.updStateDisabledConstraints(0);
         const auto& finalState = m_mocoProbRep.updStateDisabledConstraints(1);
 
+        const auto& discreteController =
+                m_mocoProbRep.getDiscreteControllerDisabledConstraints();
+        const auto& initialRawControls = discreteController.getDiscreteControls(
+                initialState);
+        const auto& finalRawControls = discreteController.getDiscreteControls(
+                finalState);
+
         // Compute the cost for this cost term.
         const auto& cost = m_mocoProbRep.getCostByIndex(cost_index);
         SimTK::Vector costVector(cost.getNumOutputs());
-        cost.calcGoal({initialState, finalState, in.integral}, costVector);
+        cost.calcGoal({initialState, initialRawControls,
+                       finalState, finalRawControls, in.integral}, costVector);
         cost_value = costVector.sum();
     }
 
@@ -654,7 +669,7 @@ public:
             OPENSIM_THROW_IF(
                     leafpos == std::string::npos, Exception, "Internal error.");
             name.replace(leafpos, name.size(), "accel");
-            this->add_adjunct(name, 
+            this->add_adjunct(name,
                 convertBounds(
                     solver.get_implicit_multibody_acceleration_bounds()));
             this->add_path_constraint(name.substr(0, leafpos) + "residual", 0);

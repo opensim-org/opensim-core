@@ -63,8 +63,8 @@ Model createInvertedPendulumModel() {
 class JointReactionCost : public MocoGoal {
     OpenSim_DECLARE_CONCRETE_OBJECT(JointReactionCost, MocoGoal);
 protected:
-    void calcIntegrandImpl(const SimTK::State& state,
-            double& integrand) const override {
+    void calcIntegrandImpl(const IntegrandInput& input,
+            SimTK::Real& integrand) const override {
 
         getModel().realizeAcceleration(state);
         const auto& j0 = getModel().getJointSet().get("j0");
@@ -72,7 +72,7 @@ protected:
         SimTK::SpatialVec reaction =
             j0.calcReactionOnChildExpressedInGround(state);
 
-        integrand = reaction.norm();
+        input = reaction.norm();
     }
     void calcCostImpl(const GoalInput& input, double& cost) const override {
         cost = input.integral;

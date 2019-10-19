@@ -389,7 +389,7 @@ public:
         return Mode::EndpointConstraint;
     }
     void initializeOnModelImpl(const Model&) const override {
-        setNumIntegralsAndOutputs(0, 2);
+        setRequirements(0, 2);
     }
     void calcGoalImpl(
             const GoalInput& in, SimTK::Vector& values) const override {
@@ -520,12 +520,14 @@ public:
         return Mode::EndpointConstraint;
     }
     void initializeOnModelImpl(const Model&) const override {
-        setNumIntegralsAndOutputs(1, 1);
+        // TODO: does not require states.
+        setRequirements(1, 1);
     }
-    void calcIntegrandImpl(const SimTK::State& state, double& integrand) const override {
-        getModel().realizeVelocity(state);
-        const auto& controls = getModel().getControls(state);
-        integrand = controls.normSqr();
+    void calcIntegrandImpl(const IntegrandInput& input,
+            SimTK::Real& integrand) const override {
+        getModel().realizeVelocity(input.state);
+        const auto& controls = getModel().getControls(input.state);
+        input = controls.normSqr();
     }
     void calcGoalImpl(
             const GoalInput& in, SimTK::Vector& values) const override {

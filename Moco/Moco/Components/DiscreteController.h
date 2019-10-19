@@ -33,6 +33,7 @@ public:
     void setDiscreteControls(SimTK::State& s,
             const SimTK::Vector& controls) const;
     SimTK::Vector& updDiscreteControls(SimTK::State& s) const;
+    const SimTK::Vector& getDiscreteControls(const SimTK::State& s) const;
     void computeControls(
             const SimTK::State& s, SimTK::Vector& controls) const override;
 protected:

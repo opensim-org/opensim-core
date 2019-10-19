@@ -123,17 +123,30 @@ public:
                 "be available.");
         return m_numIntegrals;
     }
+
+    /// TODO
+    bool getRequiresSimTKState() const {
+        return m_requiresSimTKState;
+    }
+
+    struct IntegrandInput {
+        const SimTK::State& state;
+        const SimTK::Vector& controls;
+    };
     /// Calculate the integrand that should be integrated and passed to
     /// calcCost(). If getNumIntegrals() is not zero, this must be implemented.
-    SimTK::Real calcIntegrand(const SimTK::State& state) const {
+    SimTK::Real calcIntegrand(const IntegrandInput& input) const {
         double integrand = 0;
         if (!get_enabled()) { return integrand; }
-        calcIntegrandImpl(state, integrand);
+        calcIntegrandImpl(input, integrand);
         return integrand;
     }
+
     struct GoalInput {
         const SimTK::State& initial_state;
+        const SimTK::Vector& initial_controls;
         const SimTK::State& final_state;
+        const SimTK::Vector& final_controls;
         /// This is computed by integrating calcIntegrand().
         const double& integral;
     };
@@ -143,6 +156,7 @@ public:
     /// different scalar equation to enforce as a constraint.
     /// The length of the returned vector is getNumOutputs().
     void calcGoal(const GoalInput& input, SimTK::Vector& goal) const {
+        // TODO pass in an empty SimTK::State?
         goal.resize(getNumOutputs());
         goal = 0;
         if (!get_enabled()) { return; }
@@ -177,7 +191,7 @@ public:
         initializeOnModelImpl(model);
 
         OPENSIM_THROW_IF_FRMOBJ(m_numIntegrals == -1, Exception,
-                "Expected setNumIntegralsAndOutputs() to be invoked, "
+                "Expected setRequirements() to be invoked, "
                 "but it was not.");
     }
 
@@ -199,7 +213,8 @@ protected:
     /// This must be set within initializeOnModelImpl(), otherwise an exception
     /// is thrown during initialization.
     /// The number of integrals must be either 0 or 1.
-    void setNumIntegralsAndOutputs(int numIntegrals, int numOutputs) const {
+    void setRequirements(int numIntegrals, int numOutputs,
+            bool requiresSimTKState = true) const {
         OPENSIM_THROW_IF(numIntegrals < 0 || numIntegrals > 1, Exception,
                 "Number of integrals must be 0 or 1.");
         OPENSIM_THROW_IF(numOutputs < 0, Exception,
@@ -207,6 +222,7 @@ protected:
         m_numIntegrals = numIntegrals;
         const_cast<MocoGoal*>(this)->upd_MocoConstraintInfo().setNumEquations(
                 numOutputs);
+        m_requiresSimTKState = requiresSimTKState;
     }
 
     virtual Mode getDefaultModeImpl() const { return Mode::Cost; }
@@ -218,7 +234,7 @@ protected:
     /// @endcode
     /// The Lagrange multipliers for kinematic constraints are not available.
     virtual void calcIntegrandImpl(
-            const SimTK::State& state, double& integrand) const;
+            const IntegrandInput& input, SimTK::Real& integrand) const;
     /// The Lagrange multipliers for kinematic constraints are not available.
     virtual void calcGoalImpl(
             const GoalInput& input, SimTK::Vector& goal) const = 0;
@@ -257,11 +273,12 @@ private:
     mutable SimTK::ReferencePtr<const Model> m_model;
     mutable double m_weightToUse;
     mutable Mode m_modeToUse;
+    mutable bool m_requiresSimTKState = true;
     mutable int m_numIntegrals = -1;
 };
 
 inline void MocoGoal::calcIntegrandImpl(
-        const SimTK::State& /*state*/, double& /*integrand*/) const {}
+        const IntegrandInput&, SimTK::Real&) const {}
 
 /// Endpoint cost for final time.
 /// @ingroup mocogoal
@@ -276,7 +293,7 @@ public:
 
 protected:
     void initializeOnModelImpl(const Model&) const override {
-        setNumIntegralsAndOutputs(0, 1);
+        setRequirements(0, 1);
     }
     void calcGoalImpl(
             const GoalInput& input, SimTK::Vector& cost) const override {
@@ -321,7 +338,7 @@ protected:
         if (getModeIsCost()) { values[0] = SimTK::square(values[0]); }
     }
     void initializeOnModelImpl(const Model& model) const override {
-        setNumIntegralsAndOutputs(0, 1);
+        setRequirements(0, 1);
     }
 
 private:

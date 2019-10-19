@@ -28,11 +28,11 @@ MocoSumSquaredStateGoal::MocoSumSquaredStateGoal() {
 void MocoSumSquaredStateGoal::constructProperties() {
 }
 
-void MocoSumSquaredStateGoal::initializeOnModelImpl(const Model& /*model*/) const {
-    setNumIntegralsAndOutputs(1, 1);
+void MocoSumSquaredStateGoal::initializeOnModelImpl(const Model&) const {
+    setRequirements(1, 1);
 }
 
-void MocoSumSquaredStateGoal::calcIntegrandImpl(const SimTK::State& state,
-        double& integrand) const {
-    integrand = state.getY().normSqr();
+void MocoSumSquaredStateGoal::calcIntegrandImpl(
+        const IntegrandInput& input, SimTK::Real& integrand) const {
+    integrand = input.state.getY().normSqr();
 }

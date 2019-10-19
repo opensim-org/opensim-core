@@ -1032,14 +1032,15 @@ class MocoJointReactionComponentGoal : public MocoGoal {
 
 public:
     void initializeOnModelImpl(const Model&) const override {
-        setNumIntegralsAndOutputs(1, 1);
+        setRequirements(1, 1);
     }
-    void calcIntegrandImpl(
-            const SimTK::State& state, double& integrand) const override {
-        getModel().realizeAcceleration(state);
+    void calcIntegrandImpl(const IntegrandInput& input,
+            SimTK::Real& integrand) const override {
+        getModel().realizeAcceleration(input.state);
         const auto& joint = getModel().getComponent<Joint>("jointset/j1");
         // Minus sign since we are maximizing.
-        integrand = -joint.calcReactionOnChildExpressedInGround(state)[0][0];
+        integrand =
+                -joint.calcReactionOnChildExpressedInGround(input.state)[0][0];
     }
     void calcGoalImpl(
             const GoalInput& input, SimTK::Vector& cost) const override {
@@ -1138,7 +1139,7 @@ public:
             std::shared_ptr<AccelerationsAndJointReaction> data)
             : m_jointName(jointName), m_data(data) {}
     void initializeOnModelImpl(const Model&) const override {
-        setNumIntegralsAndOutputs(0, 1);
+        setRequirements(0, 1);
     }
     void calcGoalImpl(
             const GoalInput& input, SimTK::Vector& cost) const override {

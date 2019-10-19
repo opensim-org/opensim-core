@@ -173,19 +173,19 @@ void MocoTranslationTrackingGoal::initializeOnModelImpl(const Model& model)
 
     m_ref_splines = GCVSplineSet(flatTable);
 
-    setNumIntegralsAndOutputs(1, 1);
+    setRequirements(1, 1);
 }
 
-void MocoTranslationTrackingGoal::calcIntegrandImpl(const SimTK::State& state,
-    double& integrand) const {
-    const auto& time = state.getTime();
-    getModel().realizePosition(state);
+void MocoTranslationTrackingGoal::calcIntegrandImpl(
+        const IntegrandInput& input, SimTK::Real& integrand) const {
+    const auto& time = input.state.getTime();
+    getModel().realizePosition(input.state);
     SimTK::Vector timeVec(1, time);
 
     integrand = 0;
     for (int iframe = 0; iframe < (int)m_model_frames.size(); ++iframe) {
         const auto& p_model =
-            m_model_frames[iframe]->getPositionInGround(state);
+            m_model_frames[iframe]->getPositionInGround(input.state);
 
         // Compute position error.
         Vec3 p_ref(0.0);

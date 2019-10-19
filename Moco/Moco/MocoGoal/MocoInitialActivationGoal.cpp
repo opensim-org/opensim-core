@@ -35,7 +35,7 @@ void MocoInitialActivationGoal::initializeOnModelImpl(
         }
     }
 
-    setNumIntegralsAndOutputs(0, (int)m_indices.size());
+    setRequirements(0, (int)m_indices.size());
 }
 
 void MocoInitialActivationGoal::calcGoalImpl(

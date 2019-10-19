@@ -93,7 +93,7 @@ void MocoPeriodicityGoal::initializeOnModelImpl(const Model& model) const {
         m_control_names.emplace_back(path1, path2);
     }
 
-    setNumIntegralsAndOutputs(
+    setRequirements(
             0, (int)m_indices_states.size() + (int)m_indices_controls.size());
 }
 
