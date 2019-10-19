@@ -697,9 +697,11 @@ public:
                     simTKStateDisabledConstraints);
         }
 
-        const auto& zdot = simTKStateDisabledConstraints.getZDot();
-        std::copy_n(zdot.getContiguousScalarData(), zdot.size(),
-                out.dynamics.data() + NQ + NU);
+        if (NZ) {
+            const auto& zdot = simTKStateDisabledConstraints.getZDot();
+            std::copy_n(zdot.getContiguousScalarData(), zdot.size(),
+                    out.dynamics.data() + NQ + NU);
+        }
 
         if (out.path.size() != 0) {
             const auto& matter =

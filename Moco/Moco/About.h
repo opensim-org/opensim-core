@@ -1,9 +1,11 @@
+#ifndef OPENSIM_MOCO_ABOUT_H_
+#define OPENSIM_MOCO_ABOUT_H_
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: DiscreteForces.cpp                                           *
+ * OpenSim Moco: About.h                                                      *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2019 Stanford University and the Authors                     *
  *                                                                            *
- * Author(s): Nicholas Bianco                                                 *
+ * Author(s): Christopher Dembia                                              *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -16,27 +18,13 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "DiscreteForces.h"
-#include <OpenSim/Simulation/Model/Model.h>
+#include "osimMocoDLL.h"
+#include <string>
 
-using namespace OpenSim;
+namespace OpenSim {
+OSIMMOCO_API std::string GetMocoVersionAndDate();
 
-void DiscreteForces::extendAddToSystem(SimTK::MultibodySystem& system) const {
-    Super::extendAddToSystem(system);
-
-    SimTK::SubsystemIndex forcesIdx = 
-        getModel().getForceSubsystem().getMySubsystemIndex();
-    SimTK::ForceSubsystem& forces = 
-        SimTK::ForceSubsystem::updDowncast(system.updSubsystem(forcesIdx));
-    m_discrete_forces = SimTK::Force::DiscreteForces(
-        SimTK::GeneralForceSubsystem::updDowncast(forces),
-        system.getMatterSubsystem());
+OSIMMOCO_API std::string GetMocoVersion();
 }
 
-void DiscreteForces::setAllForces(SimTK::State& s, 
-        const SimTK::Vector& generalizedForces,
-        const SimTK::Vector_<SimTK::SpatialVec>& bodyForcesInG) const {
-
-    m_discrete_forces.setAllMobilityForces(s, generalizedForces);
-    m_discrete_forces.setAllBodyForces(s, bodyForcesInG);
-}
+#endif // OPENSIM_MOCO_ABOUT_H_

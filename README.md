@@ -1,16 +1,15 @@
 OpenSim Moco
 ============
 
-OpenSim Moco is a library for solving optimal control problems for 
-musculoskeletal systems. The library is written in C++ and will be part of 
-the OpenSim biomechanics simulation software package. Here are some examples of 
-problems you will be able to solve with OpenSim Moco:
+OpenSim Moco is a toolkit for solving optimal control problems involving
+musculoskeletal systems using the direct collocation method. Moco solves the
+following broad categories of problems:
 
-1. Solve for the muscle activity that tracks a known motion.
-2. Solve for a new motion that optimizes some objective functional.
-3. Solve for mass properties that minimize residual "hand of God" forces.
-
-The optimal control problems are solved using the direct collocation method.
+1. Solve for the muscle activity that produces an observed motion.
+1. Solve for the muscle activity that approximately tracks an observed motion.
+2. Solve for a new motion that optimizes user-defined costs.
+3. Solve for muscle properties that yield a good match between simulated and
+   measured muscle activity.
 
 Building Moco
 =============
@@ -19,13 +18,13 @@ Moco depends on the following software:
 
 1. **OpenSim**: Platform for simulating musculoskeletal systems.
    1. **Simbody**: Multibody dynamics.
-2. **Tropter**: C++ library for solving general optimal control problems with 
+2. **CasADi**: Algorithmic differentiation and interface to nonlinear solvers.
+3. **Tropter**: C++ library for solving general optimal control problems with 
 direct collocation. Currently, Tropter's source code is part of Moco.
-   1. **Ipopt**: Nonlinear programming solver.
    2. **Eigen**: C++ matrix library.
    3. **ColPack**: Used to efficiently 
    4. **ADOL-C**: Automatic differentiation.
-3. **CasADi**: Algorithmic differentiation and interface to nonlinear solvers.
+4. **Ipopt**: Nonlinear program solver.
 
 Build the dependencies by building the CMake project in the `dependencies`
 folder.
@@ -103,17 +102,13 @@ Design goals
    1. Choose an objective functional (sum of squared muscle activation, 
       metabolic cost, joint loads, coordinate tracking, marker tracking).
       
-   2. Choose constraints (activation within range of EMG).
+   2. Choose constraints (activation within range of electromyography).
       
 3. The software and its source code are made freely available in a way that 
    allows for commercial use (permissive licensing).
    
 4. Users do not need to manually specify derivatives (gradient, Jacobian, 
    Hessian) for their optimal control problems.
-   
-   1. Optimal control problems can be written using either `double`s 
-      (derivatives computed with finite differences) or `adouble`s (allowing use
-      of automatic differentiation).
 
 5. For advanced users, there should be utilities to easily debug issues with 
    problem formulation (which variables are hitting their constraints?) and to 
@@ -128,24 +123,3 @@ Design goals
 8. The software is easy to build from source.
 
 9. The software runs on Windows, macOS, and Linux (Ubuntu).
-
-Non-goals
-=========
-
-1. We do not aim to provide a full-fledged direct collocation solver (in 
-   Tropter). Rather, we will decide what features to add to Tropter based on 
-   what is useful for solving biomechanics optimal control problems.
-    
-2. Specifying custom cost or constraint modules in MATLAB/Python.
-
-User stories
-============
-
-1. A user has joint angles from OpenSim and estimates muscle activity
-   that minimizes the sum of squared muscle activity.
- 
-2. A user plots the solution to an optimal control problem in Python or MATLAB.
-   
-3. A user postprocesses their optimal control solution in OpenSim to compute 
-   metabolic cost across the trajectory.
-
