@@ -55,7 +55,7 @@ void AddEnvironmentVariablesFromFile(const std::string &aFileName)
     while (getline(input,line)) {
         if(line.find("export") != std::string::npos) {
             std::string env=line.substr(7);
-            std::cout << "Setting environment '" << env << "'" << std::endl;
+            log_info("Setting environment '{}'", env );
 #ifdef _WIN32
             _putenv(env.c_str());
 #else

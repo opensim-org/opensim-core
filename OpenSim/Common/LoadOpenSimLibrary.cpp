@@ -52,7 +52,7 @@ static void *LoadLibrary(const std::string &name, std::string &actualNameLoaded)
     }
     return lib;
 }
-#define LoadLibraryError() { char* err=dlerror(); if(err) cout<<"dlerror: "<<err<<endl; }
+#define LoadLibraryError() { char* err=dlerror(); if(err) log_error("dlerror: {}", err); }
 
 #else
 

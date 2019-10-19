@@ -233,15 +233,15 @@ void JointReaction::setupReactionList()
 {
     /* check length of property arrays.  if one is empty, set it to default*/
     if(_jointNames.getSize() == 0) {
-        cout << "\nNo joints are specified in joint_names.  Setting to ALL\n";
+        log_info("No joints are specified in joint_names. Setting to ALL");
         _jointNames.setSize(1);
         _jointNames[0] = "ALL";}
     if(_onBody.getSize() == 0) {
-        cout << "\nNo bodies are specified in apply_on_bodies.  Setting to child\n";
+        log_info("No bodies are specified in apply_on_bodies. Setting to child");
         _onBody.setSize(1);
         _onBody[0] = "child";}
     if(_inFrame.getSize() == 0) {
-        cout << "\nNo bodies are specified in express_in_frame.  Setting to ground\n";
+        log_info("No bodies are specified in express_in_frame. Setting to ground");
         _inFrame.setSize(1);
         _inFrame[0] = "ground";}
 
@@ -336,8 +336,8 @@ void JointReaction::setupReactionList()
             _reactionList.append(currentKey);
         }
         else {
-            cout << "\nWARNING: " << _jointNames[i] << " is not a valid joint. "
-                "Ignoring this entry.\n";
+            log_warn("{} is not a valid joint. Ignoring this entry.",
+                    _jointNames[i]);
         }
     }
 }

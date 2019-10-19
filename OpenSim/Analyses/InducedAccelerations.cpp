@@ -501,7 +501,7 @@ int InducedAccelerations::record(const SimTK::State& s)
 {
     int nu = _model->getNumSpeeds();
     double aT = s.getTime();
-    cout << "time = " << aT << endl;
+    log_info("time = {}", aT);
 
     SimTK::Vector Q = s.getQ();
 
@@ -542,7 +542,7 @@ int InducedAccelerations::record(const SimTK::State& s)
 
     // Cycle through the force contributors to the system acceleration
     for(int c=0; c< _contributors.getSize(); c++){          
-        //cout << "Solving for contributor: " << _contributors[c] << endl;
+        //log_info("Solving for contributor: {}", _contributors[c]);
         // Need to be at the dynamics stage to disable a force
         _model->getMultibodySystem().realize(s_analysis, SimTK::Stage::Dynamics);
         
@@ -853,7 +853,7 @@ int InducedAccelerations::begin(const SimTK::State &s)
         _storeInducedAccelerations[i]->reset(s.getTime());
     }
 
-    cout << "Performing Induced Accelerations Analysis" << endl;
+    log_info("Performing Induced Accelerations Analysis");
 
     // RECORD
     int status = 0;
@@ -966,12 +966,14 @@ Array<bool> InducedAccelerations::applyContactConstraintAccordingToExternalForce
             if(exf->getPointExpressedInBodyName() != exf->getAppliedToBodyName()){
                 int appliedToBodyIndex = _model->getBodySet().getIndex(exf->getAppliedToBodyName());
                 if(appliedToBodyIndex < 0){
-                    cout << "External force appliedToBody " <<  exf->getAppliedToBodyName() << " not found." << endl;
+                    log_warn("External force appliedToBody {} not found.",
+                            exf->getAppliedToBodyName());
                 }
 
                 int expressedInBodyIndex = _model->getBodySet().getIndex(exf->getPointExpressedInBodyName());
                 if(expressedInBodyIndex < 0){
-                    cout << "External force expressedInBody " <<  exf->getPointExpressedInBodyName() << " not found." << endl;
+                    log_warn("External force expressedInBody {} not found.",
+                            exf->getPointExpressedInBodyName());
                 }
 
                 const Body &appliedToBody = _model->getBodySet().get(appliedToBodyIndex);
