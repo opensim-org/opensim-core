@@ -40,7 +40,7 @@ MocoStudy::MocoStudy(const std::string& omocoFile) : Object(omocoFile) {
 void MocoStudy::constructProperties() {
     constructProperty_write_solution("./");
     constructProperty_problem(MocoProblem());
-    constructProperty_solver(MocoTropterSolver());
+    constructProperty_solver(MocoCasADiSolver());
 }
 
 const MocoProblem& MocoStudy::getProblem() const { return get_problem(); }
@@ -87,7 +87,7 @@ MocoSolution MocoStudy::solve() const {
     MocoSolution solution;
     try {
         solution = get_solver().solve();
-    } catch (const Exception&) { 
+    } catch (const Exception&) {
         Muscle::setPrintWarnings(oldWarningFlag);
         throw;
     }
@@ -115,12 +115,12 @@ MocoSolution MocoStudy::solve() const {
 void MocoStudy::visualize(const MocoTrajectory& it) const {
     // TODO this does not need the Solver at all, so this could be moved to
     // MocoProblem.
-    const auto& model = get_problem().getPhase(0).getModel();
+    const auto& model = get_problem().getPhase(0).getModelProcessor().process();
     OpenSim::visualize(model, it.exportToStatesStorage());
 }
 
 TimeSeriesTable MocoStudy::analyze(const MocoTrajectory& iterate,
         std::vector<std::string> outputPaths) const {
-    return OpenSim::analyze<double>(get_problem().createRep().getModelBase(), 
+    return OpenSim::analyze<double>(get_problem().createRep().getModelBase(),
         iterate, outputPaths);
 }

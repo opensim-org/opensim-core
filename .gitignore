@@ -40,6 +40,9 @@ dependencies/*
 .idea/**/dynamic.xml
 .idea/**/uiDesigner.xml
 
+.idea/deployment.xml
+.idea/other.xml
+
 # CMake
 cmake-build-*
 
@@ -53,3 +56,5 @@ venv
 
 # MATLAB
 *.asv
+
+Moco/doc/MocoCheatSheet.pdf

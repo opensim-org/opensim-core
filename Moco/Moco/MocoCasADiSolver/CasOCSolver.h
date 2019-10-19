@@ -35,9 +35,9 @@ class Transcription;
 class Solver {
 public:
     Solver(const Problem& problem) : m_problem(problem) {}
-    void setNumMeshPoints(int numMeshPoints) {
-        for (int i = 0; i < numMeshPoints; ++i) {
-            m_mesh.push_back(i / (double)(numMeshPoints - 1));
+    void setNumMeshIntervals(int numMeshIntervals) {
+        for (int i = 0; i < (numMeshIntervals + 1); ++i) {
+            m_mesh.push_back(i / (double)(numMeshIntervals));
         }
     }
     void setMesh(std::vector<double> mesh) { m_mesh = std::move(mesh); }
@@ -50,9 +50,6 @@ public:
         return m_transcriptionScheme;
     }
     std::string getDynamicsMode() const { return m_problem.getDynamicsMode(); }
-    bool isDynamicsModeImplicit() const {
-        return m_problem.getDynamicsMode() == "implicit";
-    }
     void setMinimizeLagrangeMultipliers(bool tf) {
         m_minimizeLagrangeMultipliers = tf;
     }
@@ -65,6 +62,43 @@ public:
     double getLagrangeMultiplierWeight() const {
         return m_lagrangeMultiplierWeight;
     }
+    void setImplicitMultibodyAccelerationBounds(Bounds bounds) {
+        m_implicitMultibodyAccelerationBounds = bounds;
+    }
+    Bounds getImplicitMultibodyAccelerationBounds() const {
+        return m_implicitMultibodyAccelerationBounds;
+    }
+    bool getMinimizeImplicitMultibodyAccelerations() const {
+        return m_minimizeImplicitMultibodyAccelerations;
+    }
+    void setMinimizeImplicitMultibodyAccelerations(bool tf) {
+        m_minimizeImplicitMultibodyAccelerations = tf;
+    }
+    double getImplicitMultibodyAccelerationsWeight() const {
+        return m_implicitMultibodyAccelerationsWeight;
+    }
+    void setImplicitMultibodyAccelerationsWeight(double weight) {
+        m_implicitMultibodyAccelerationsWeight = weight;
+    }
+    void setImplicitAuxiliaryDerivativeBounds(Bounds bounds) {
+        m_implicitAuxiliaryDerivativeBounds = bounds;
+    }
+    Bounds getImplicitAuxiliaryDerivativeBounds() const {
+        return m_implicitAuxiliaryDerivativeBounds;
+    }
+    bool getMinimizeImplicitAuxiliaryDerivatives() const {
+        return m_minimizeImplicitAuxiliaryDerivatives;
+    }
+    void setMinimizeImplicitAuxiliaryDerivatives(bool tf) {
+        m_minimizeImplicitAuxiliaryDerivatives = tf;
+    }
+    double getImplicitAuxiliaryDerivativesWeight() const {
+        return m_implicitAuxiliaryDerivativesWeight;
+    }
+    void setImplicitAuxiliaryDerivativesWeight(double weight) {
+        m_implicitAuxiliaryDerivativesWeight = weight;
+    }
+
     /// Whether or not to constrain control values at mesh interval midpoints
     /// by linearly interpolating control values from mesh interval endpoints.
     /// @note Only applies to Hermite-Simpson collocation.
@@ -110,8 +144,9 @@ public:
     }
     std::string getWriteSparsity() const { return m_write_sparsity; }
 
-    /// Use this to tell CasADi to evaluate the differential-algebraic equations
-    /// in parallel across grid points. "parallelism" is passed on directly to
+    /// Use this to tell CasADi to evaluate differential-algebraic equations,
+    /// path constraints, integrands, etc. in parallel across grid points.
+    /// "parallelism" is passed on directly to
     /// the "parallelism" argument of casadi::MX::map(). CasADi supports
     /// "serial", "openmp", "thread", and perhaps some other options.
     void setParallelism(std::string parallelism, int numThreads);
@@ -144,7 +179,13 @@ private:
     std::string m_transcriptionScheme = "hermite-simpson";
     bool m_minimizeLagrangeMultipliers = false;
     double m_lagrangeMultiplierWeight = 1.0;
+    bool m_minimizeImplicitMultibodyAccelerations = false;
+    double m_implicitMultibodyAccelerationsWeight = 1.0;
+    bool m_minimizeImplicitAuxiliaryDerivatives = false;
+    double m_implicitAuxiliaryDerivativesWeight = 1.0;
     bool m_interpolateControlMidpoints = true;
+    Bounds m_implicitMultibodyAccelerationBounds;
+    Bounds m_implicitAuxiliaryDerivativeBounds;
     std::string m_finite_difference_scheme = "central";
     std::string m_sparsity_detection = "none";
     std::string m_write_sparsity;

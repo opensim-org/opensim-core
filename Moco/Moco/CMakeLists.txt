@@ -2,6 +2,8 @@
 set(MOCO_SOURCES
         osimMoco.h
         osimMocoDLL.h
+        About.h
+        About.cpp
         RegisterTypes_osimMoco.h
         RegisterTypes_osimMoco.cpp
         MocoUtilities.h
@@ -26,6 +28,8 @@ set(MOCO_SOURCES
         MocoWeightSet.h
         MocoGoal/MocoStateTrackingGoal.h
         MocoGoal/MocoStateTrackingGoal.cpp
+        MocoGoal/MocoSumSquaredStateGoal.h
+        MocoGoal/MocoSumSquaredStateGoal.cpp
         MocoGoal/MocoControlGoal.h
         MocoGoal/MocoControlGoal.cpp
         MocoGoal/MocoControlTrackingGoal.h
@@ -38,8 +42,12 @@ set(MOCO_SOURCES
         MocoGoal/MocoTranslationTrackingGoal.cpp
         MocoGoal/MocoInitialActivationGoal.cpp
         MocoGoal/MocoInitialActivationGoal.h
-        MocoGoal/MocoSumSquaredStateGoal.h
-        MocoGoal/MocoSumSquaredStateGoal.cpp
+        MocoGoal/MocoInitialVelocityEquilibriumDGFGoal.h
+        MocoGoal/MocoInitialVelocityEquilibriumDGFGoal.cpp
+        MocoGoal/MocoInitialForceEquilibriumGoal.h
+        MocoGoal/MocoInitialForceEquilibriumGoal.cpp
+        MocoGoal/MocoPeriodicityGoal.h
+        MocoGoal/MocoPeriodicityGoal.cpp
         MocoSolver.h
         MocoSolver.cpp
         MocoDirectCollocationSolver.h
@@ -69,6 +77,7 @@ set(MOCO_SOURCES
         Components/DiscreteForces.cpp
         Components/AccelerationMotion.h
         Components/AccelerationMotion.cpp
+        Components/MultivariatePolynomialFunction.h
         MocoCasADiSolver/MocoCasADiSolver.h
         MocoCasADiSolver/MocoCasADiSolver.cpp
         MocoCasADiSolver/MocoCasOCProblem.h
@@ -102,16 +111,6 @@ if(MOCO_WITH_TROPTER)
     list(APPEND MOCO_SOURCES
             tropter/TropterProblem.h
             tropter/TropterProblem.cpp
-            InverseMuscleSolver/InverseMuscleSolver.h
-            InverseMuscleSolver/InverseMuscleSolver.cpp
-            InverseMuscleSolver/GlobalStaticOptimization.h
-            InverseMuscleSolver/GlobalStaticOptimization.cpp
-            InverseMuscleSolver/INDYGO.h
-            InverseMuscleSolver/INDYGO.cpp
-            InverseMuscleSolver/INDYGOProblemInternal.h
-            InverseMuscleSolver/DeGrooteFregly2016MuscleStandalone.h
-            InverseMuscleSolver/InverseMuscleSolverMotionData.h
-            InverseMuscleSolver/InverseMuscleSolverMotionData.cpp
             )
 endif ()
 add_library(osimMoco SHARED ${MOCO_SOURCES})
@@ -133,6 +132,9 @@ set_target_properties(osimMoco PROPERTIES
 if (MOCO_WITH_TROPTER)
     target_compile_definitions(osimMoco PUBLIC MOCO_WITH_TROPTER)
 endif ()
+target_compile_definitions(osimMoco PRIVATE
+        OPENSIM_MOCO_VERSION=${PROJECT_VERSION}${VERSION_SUFFIX}
+)
 
 MocoAddInstallRPATHSelf(TARGET osimMoco LOADER)
 MocoAddInstallRPATHSimbody(TARGET osimMoco LOADER

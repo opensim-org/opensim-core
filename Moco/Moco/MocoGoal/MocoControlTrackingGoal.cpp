@@ -69,8 +69,9 @@ void MocoControlTrackingGoal::initializeOnModelImpl(const Model& model) const {
         }
         m_control_weights.push_back(refWeight);
         m_ref_splines.cloneAndAppend(allSplines[iref]);
+        m_control_names.push_back(refName);
     }
-    
+
     setNumIntegralsAndOutputs(1, 1);
 }
 
@@ -91,3 +92,12 @@ void MocoControlTrackingGoal::calcIntegrandImpl(const SimTK::State& state,
         integrand += m_control_weights[iref] * pow(modelValue - refValue, 2);
     }
 }
+
+void MocoControlTrackingGoal::printDescriptionImpl(std::ostream& stream) const {
+    for (int i = 0; i < (int) m_control_names.size(); i++) {
+        stream << "        ";
+        stream << "control: " << m_control_names[i]
+               << ", weight: " << m_control_weights[i] << std::endl;
+    }
+}
+

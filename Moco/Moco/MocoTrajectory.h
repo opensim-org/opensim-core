@@ -249,6 +249,13 @@ public:
     /// value 10.
     void setMultiplier(
             const std::string& name, const SimTK::Vector& trajectory);
+    /// Set the value of a single state derivative variable across time.
+    /// The provided vector must have length getNumTimes().
+    /// @note Using `setDerivative(name, {5, 10})` uses the initializer list
+    /// overload below; it does *not* construct a 5-element vector with the
+    /// value 10.
+    void setDerivative(
+            const std::string& name, const SimTK::Vector& trajectory);
 
     /// Set the value of a single parameter variable. This value is invariant
     /// across time.
@@ -313,6 +320,21 @@ public:
             v[i] = *it;
         setMultiplier(name, v);
     }
+    /// Set the value of a single state derivative variable across time. The
+    /// provided vector must have length getNumTimes().
+    /// This variant supports use of an initializer list:
+    /// @code{.cpp}
+    /// iterate.setDerivative("/jointset/joint/coord/accel", {0, 0.5, 1.0});
+    /// @endcode
+    void setDerivative(
+            const std::string& name, std::initializer_list<double> trajectory) {
+        ensureUnsealed();
+        SimTK::Vector v((int)trajectory.size());
+        int i = 0;
+        for (auto it = trajectory.begin(); it != trajectory.end(); ++it, ++i)
+            v[i] = *it;
+        setDerivative(name, v);
+    }
 
     /// Set the states trajectory. The provided data is interpolated at the
     /// times contained within this iterate. The controls trajectory is not
@@ -349,6 +371,12 @@ public:
     /// change this behavior with `overwrite`.
     void insertStatesTrajectory(
             const TimeSeriesTable& subsetOfStates, bool overwrite = false);
+    /// Add additional control columns. The provided data are interpolated using
+    /// GCV splines to match the times in this iterate. By default, we do not
+    /// overwrite data for controls that already exist in the iterate; you can
+    /// change this behavior with `overwrite`.
+    void insertControlsTrajectory(const TimeSeriesTable& subsetOfControls,
+            bool overwrite = false);
 
     /// Compute coordinate speeds based on coordinate position values and append
     /// to the trajectory. Coordinate values must exist in the original
@@ -385,7 +413,31 @@ public:
     /// @throws Exception If numTimes is 0.
     double getFinalTime() const;
 
-    // TODO inconsistent plural "state names" vs "states trajectory"
+    int getNumStates() const {
+        ensureUnsealed();
+        return (int)m_state_names.size();
+    }
+
+    int getNumControls() const {
+        ensureUnsealed();
+        return (int)m_control_names.size();
+    }
+
+    int getNumMultipliers() const {
+        ensureUnsealed();
+        return (int)m_multiplier_names.size();
+    }
+
+    int getNumDerivatives() const {
+        ensureUnsealed();
+        return (int)m_derivative_names.size();
+    }
+
+    int getNumParameters() const {
+        ensureUnsealed();
+        return (int)m_parameter_names.size();
+    }
+
     const std::vector<std::string>& getStateNames() const {
         ensureUnsealed();
         return m_state_names;
@@ -637,7 +689,7 @@ private:
 /// Return type for MocoStudy::solve(). Use success() to check if the solver
 /// succeeded. You can also use this object as a boolean in an if-statement:
 /// @code
-/// auto solution = moco.solve();
+/// auto solution = study.solve();
 /// if (solution) {
 ///     std::cout << solution.getStatus() << std::endl;
 /// }

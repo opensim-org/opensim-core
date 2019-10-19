@@ -1,0 +1,12 @@
+namespace OpenSim {
+/**
+
+@example examplePrototypeCustomGoal.m
+This is an example of how to prototype a custom goal in Matlab. See
+@ref customgoal.
+
+@example exampleCustomImplicitAuxiliaryDynamics.cpp
+This example shows how to define dynamics with an implicit differential
+equation.
+*/
+} // namespace OpenSim

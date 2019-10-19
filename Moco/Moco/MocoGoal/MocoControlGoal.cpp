@@ -28,6 +28,8 @@ MocoControlGoal::MocoControlGoal() { constructProperties(); }
 
 void MocoControlGoal::constructProperties() {
     constructProperty_control_weights(MocoWeightSet());
+    constructProperty_exponent(2);
+    constructProperty_divide_by_displacement(false);
 }
 
 void MocoControlGoal::setWeightForControl(
@@ -67,7 +69,22 @@ void MocoControlGoal::initializeOnModelImpl(const Model& model) const {
         if (weight != 0.0) {
             m_controlIndices.push_back(systemControlIndexMap[controlName]);
             m_weights.push_back(weight);
+            m_controlNames.push_back(controlName);
         }
+    }
+
+    OPENSIM_THROW_IF_FRMOBJ(get_exponent() < 2, Exception,
+            "Exponent must be 2 or greater.");
+    int exponent = get_exponent();
+
+    // The pow() function gives slightly different results than x * x. On Mac,
+    // using x * x requires fewer solver iterations.
+    if (exponent == 2) {
+        m_power_function = [](const double& x) { return x * x; };
+    } else {
+        m_power_function = [exponent](const double& x) {
+            return pow(std::abs(x), exponent);
+        };
     }
 
     setNumIntegralsAndOutputs(1, 1);
@@ -80,7 +97,30 @@ void MocoControlGoal::calcIntegrandImpl(
     integrand = 0;
     int iweight = 0;
     for (const auto& icontrol : m_controlIndices) {
-        integrand += m_weights[iweight] * controls[icontrol] * controls[icontrol];
+        const auto& control = controls[icontrol];
+        integrand += m_weights[iweight] * m_power_function(control);
         ++iweight;
+    }
+}
+
+void MocoControlGoal::calcGoalImpl(
+        const GoalInput& input, SimTK::Vector& cost) const {
+    cost[0] = input.integral;
+    if (get_divide_by_displacement()) {
+        const SimTK::Vec3 comInitial =
+                getModel().calcMassCenterPosition(input.initial_state);
+        const SimTK::Vec3 comFinal =
+                getModel().calcMassCenterPosition(input.final_state);
+        // TODO: Use distance squared for convexity.
+        const SimTK::Real displacement = (comFinal - comInitial).norm();
+        cost[0] /= displacement;
+    }
+}
+
+void MocoControlGoal::printDescriptionImpl(std::ostream& stream) const {
+    for (int i = 0; i < (int) m_controlNames.size(); i++) {
+        stream << "        ";
+        stream << "control: " << m_controlNames[i]
+               << ", weight: " << m_weights[i] << std::endl;
     }
 }

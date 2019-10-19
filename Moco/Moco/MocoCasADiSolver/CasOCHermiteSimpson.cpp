@@ -41,11 +41,10 @@ DM HermiteSimpson::createQuadratureCoefficientsImpl() const {
         quadCoeffs(2 * i + 1) += (2.0 / 3.0) * meshIntervals(i);
         quadCoeffs(2 * i + 2) += (1.0 / 6.0) * meshIntervals(i);
     }
-
     return quadCoeffs;
 }
 
-DM HermiteSimpson::createKinematicConstraintIndicesImpl() const {
+DM HermiteSimpson::createMeshIndicesImpl() const {
     DM indices = DM::zeros(1, m_numGridPoints);
     for (int i = 0; i < m_numGridPoints; i += 2) { indices(i) = 1; }
     return indices;

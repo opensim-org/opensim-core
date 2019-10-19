@@ -1,5 +1,44 @@
 cmake_minimum_required(VERSION 3.2)
-project(OpenSimMoco VERSION 0.1)
+project(OpenSimMoco VERSION 0.1.0)
+
+# Version.
+# --------
+set(VERSION_SUFFIX "")
+find_package(Git)
+if(Git_FOUND)
+    # This command provides the annotated tag for the current commit, if it
+    # exists, and returns an error if a tag does not exist.
+    execute_process(
+            COMMAND git describe --exact-match
+            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+            RESULT_VARIABLE GIT_DESCRIBE_EXACT_MATCH_RETVAL
+            OUTPUT_VARIABLE GIT_TAG
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+            OUTPUT_QUIET
+            ERROR_QUIET
+    )
+    if(${GIT_DESCRIBE_EXACT_MATCH_RETVAL} EQUAL 0)
+        # A tag exists.
+        # Do not add anything to the version.
+    else()
+        execute_process(
+                COMMAND git log -1 --format=%h
+                WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+                OUTPUT_VARIABLE GIT_COMMIT_HASH
+                OUTPUT_STRIP_TRAILING_WHITESPACE
+        )
+        # Prepend date for sorting.
+        execute_process(
+                COMMAND git show -s --format=%cd --date=short HEAD
+                WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+                OUTPUT_VARIABLE GIT_COMMIT_DATE
+                OUTPUT_STRIP_TRAILING_WHITESPACE
+        )
+        set(VERSION_SUFFIX "-${GIT_COMMIT_DATE}-${GIT_COMMIT_HASH}")
+    endif()
+else()
+    set(VERSION_SUFFIX "?")
+endif()
 
 # Moco settings.
 # --------------
@@ -62,22 +101,23 @@ endif()
 
 # Default paths for finding dependencies.
 set(MOCO_DEPENDENCIES_DIR
-        "${CMAKE_SOURCE_DIR}/../moco_dependencies_install")
-get_filename_component(MOCO_DEPENDENCIES_DIR "${MOCO_DEPENDENCIES_DIR}"
+        "${CMAKE_SOURCE_DIR}/../moco_dependencies_install" CACHE PATH
+        "The install prefix for the dependencies CMake project.")
+get_filename_component(MOCO_DEPENDENCIES_ABSDIR "${MOCO_DEPENDENCIES_DIR}"
         ABSOLUTE)
 if(NOT CMAKE_PREFIX_PATH
         AND NOT ADOLC_DIR AND NOT "$ENV{ADOLC_DIR}"
         AND NOT IPOPT_DIR AND NOT "$ENV{IPOPT_DIR}"
-        AND EXISTS "${MOCO_DEPENDENCIES_DIR}")
+        AND EXISTS "${MOCO_DEPENDENCIES_ABSDIR}")
     message(STATUS
-            "Attempting to use dependencies from ${MOCO_DEPENDENCIES_DIR}")
+            "Attempting to use dependencies from ${MOCO_DEPENDENCIES_ABSDIR}")
     set(dep_install_dirs)
     foreach(dep opensim-core colpack ipopt eigen casadi)
-        list(APPEND dep_install_dirs "${MOCO_DEPENDENCIES_DIR}/${dep}")
+        list(APPEND dep_install_dirs "${MOCO_DEPENDENCIES_ABSDIR}/${dep}")
     endforeach()
     set(CMAKE_PREFIX_PATH "${dep_install_dirs}" CACHE PATH
             "Directories containing dependencies.")
-    set(ADOLC_DIR "${MOCO_DEPENDENCIES_DIR}/adol-c" CACHE PATH
+    set(ADOLC_DIR "${MOCO_DEPENDENCIES_ABSDIR}/adol-c" CACHE PATH
             "Path to ADOL-C install directory.")
 endif()
 

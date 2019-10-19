@@ -45,12 +45,12 @@ class TestSlidingMass {
 
   public static void testSlidingMass() throws Exception {
 
-    MocoStudy moco = new MocoStudy();
-    moco.setName("sliding_mass");
+    MocoStudy study = new MocoStudy();
+    study.setName("sliding_mass");
 
     // Define the optimal control problem.
     // ===================================
-    MocoProblem mp = moco.updProblem();
+    MocoProblem mp = study.updProblem();
 
     // Model (dynamics).
     // -----------------
@@ -78,15 +78,15 @@ class TestSlidingMass {
 
     // Configure the solver.
     // =====================
-    MocoTropterSolver ms = moco.initTropterSolver();
-    ms.set_num_mesh_points(100);
+    MocoTropterSolver ms = study.initTropterSolver();
+    ms.set_num_mesh_intervals(100);
 
     // Now that we've finished setting up the tool, print it to a file.
-    moco.print("sliding_mass.omoco");
+    study.print("sliding_mass.omoco");
 
     // Solve the problem.
     // ==================
-    MocoSolution solution = moco.solve();
+    MocoSolution solution = study.solve();
 
     solution.write("sliding_mass_solution.sto");
   }

@@ -81,7 +81,7 @@ protected:
     struct TimeInfo {
         double initial = -SimTK::Infinity;
         double final = SimTK::Infinity;
-        int numMeshPoints = -1;
+        int numMeshIntervals = -1;
     };
     /// This function updates a TimeInfo so the initial and final times are
     /// within the data times provided. If the user provided a value for the
@@ -98,6 +98,11 @@ protected:
     /// canonicalized means that the pathname is analyzed and possibly modified
     /// to conform to the current platform.
     std::string getFilePath(const std::string& file) const;
+
+    /// Get the (canonicalized) absolute directory containing the file from
+    /// which this tool was loaded. If the tool was not loaded from a file, this
+    /// returns an empty string.
+    std::string getDocumentDirectory() const;
 
 #endif
 private:

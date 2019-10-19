@@ -175,6 +175,22 @@ void MocoTrajectory::setMultiplier(
     m_multipliers.updCol(index) = trajectory;
 }
 
+void MocoTrajectory::setDerivative(
+        const std::string& name, const SimTK::Vector& trajectory) {
+    ensureUnsealed();
+    OPENSIM_THROW_IF(trajectory.size() != m_derivatives.nrow(), Exception,
+            format("For derivative %s, expected %i elements but got %i.", name,
+                    m_derivatives.nrow(), trajectory.size()));
+
+    auto it = std::find(
+            m_derivative_names.cbegin(), m_derivative_names.cend(), name);
+    OPENSIM_THROW_IF(it == m_derivative_names.cend(), Exception,
+            format("Cannot find derivative named %s.", name));
+    int index = (int)std::distance(m_derivative_names.cbegin(), it);
+    m_derivatives.updCol(index) = trajectory;
+
+}
+
 void MocoTrajectory::setSlack(
         const std::string& name, const SimTK::Vector& trajectory) {
     ensureUnsealed();
@@ -290,6 +306,37 @@ void MocoTrajectory::insertStatesTrajectory(
             for (int itime = 0; itime < m_time.size(); ++itime) {
                 curTime[0] = m_time[itime];
                 m_states(itime, istate) = splines.get(label).calcValue(curTime);
+            }
+        }
+    }
+}
+
+void MocoTrajectory::insertControlsTrajectory(
+        const TimeSeriesTable& subsetOfControls, bool overwrite) {
+    ensureUnsealed();
+
+    const auto origControlNames = m_control_names;
+    const auto& labelsToInsert = subsetOfControls.getColumnLabels();
+    for (const auto& label : labelsToInsert) {
+        auto it = find(m_control_names, label);
+        if (it == m_control_names.cend()) { m_control_names.push_back(label); }
+    }
+
+    m_controls.resizeKeep(getNumTimes(), (int)m_control_names.size());
+
+    const int numTimesTable = (int)subsetOfControls.getNumRows();
+
+    GCVSplineSet splines(subsetOfControls, {}, std::min(numTimesTable - 1, 5));
+    SimTK::Vector curTime(1, SimTK::NaN);
+    for (const auto& label : labelsToInsert) {
+        if (find(origControlNames, label) == origControlNames.cend() 
+                || overwrite) {
+            auto it = find(m_control_names, label);
+            int istate = (int)std::distance(m_control_names.cbegin(), it);
+            for (int itime = 0; itime < m_time.size(); ++itime) {
+                curTime[0] = m_time[itime];
+                m_controls(itime, istate) = 
+                    splines.get(label).calcValue(curTime);
             }
         }
     }
@@ -929,12 +976,22 @@ bool MocoTrajectory::isCompatible(
             mpdn.push_back(name);
         }
     }
+    std::vector<std::string> mpcdn; // Component derivative names only.
+    const auto& implicitComponentRefs = mp.getImplicitComponentReferencePtrs();
+    for (const auto& compRef : implicitComponentRefs) {
+        const auto& derivName =
+                compRef.second->getAbsolutePathString() + "/" + compRef.first;
+        mpdn.push_back(derivName);
+        mpcdn.push_back(derivName);
+    }
     std::sort(mpdn.begin(), mpdn.end());
+    std::sort(mpcdn.begin(), mpcdn.end());
 
     bool compatible = mpsn == sn && mpcn == cn && mpmn == mn &&
-                      // It's okay to not have any derivatives (for solving the
-                      // problem with an explicit dynamics mode).
-                      (dn.empty() || mpdn == dn) && mppn == pn;
+                      // It's okay to not have any multibody dynamics 
+                      // derivatives (for solving the problem with an explicit 
+                      // dynamics mode).
+                      (mpcdn == dn || mpdn == dn) && mppn == pn;
 
     // TODO more detailed error message specifying exactly what's different.
     OPENSIM_THROW_IF(!compatible && throwOnError, Exception,

@@ -5,7 +5,7 @@
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2017 Stanford University and the Authors                     *
  *                                                                            *
- * Author(s): Christopher Dembia                                              *
+ * Author(s): Christopher Dembia, Nicholas Bianco                             *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -23,10 +23,10 @@
 #include <Common/Reporter.h>
 #include <Simulation/Model/Model.h>
 #include <Simulation/StatesTrajectory.h>
+#include <condition_variable>
 #include <regex>
 #include <set>
 #include <stack>
-#include <condition_variable>
 
 #include <OpenSim/Common/GCVSplineSet.h>
 #include <OpenSim/Common/PiecewiseLinearFunction.h>
@@ -52,8 +52,7 @@ std::unique_ptr<T> make_unique(Args&&... args) {
 /// If you specify "ISO", then we use the ISO 8601 extended datetime format
 /// %Y-%m-%dT%H:%M:%S.
 /// See https://en.cppreference.com/w/cpp/io/manip/put_time.
-OSIMMOCO_API std::string getFormattedDateTime(
-        bool appendMicroseconds = false,
+OSIMMOCO_API std::string getFormattedDateTime(bool appendMicroseconds = false,
         std::string format = "%Y-%m-%dT%H%M%S");
 
 /// Determine if `string` starts with the substring `start`.
@@ -80,10 +79,7 @@ inline bool endsWith(const std::string& string, const std::string& ending) {
 
 #ifndef SWIG
 /// Return type for make_printable()
-template <typename T>
-struct make_printable_return {
-    typedef T type;
-};
+template <typename T> struct make_printable_return { typedef T type; };
 /// Convert to types that can be printed with sprintf() (vsnprintf()).
 /// The generic template does not alter the type.
 template <typename T>
@@ -92,8 +88,7 @@ inline typename make_printable_return<T>::type make_printable(const T& x) {
 }
 
 /// Specialization for std::string.
-template <>
-struct make_printable_return<std::string> {
+template <> struct make_printable_return<std::string> {
     typedef const char* type;
 };
 /// Specialization for std::string.
@@ -156,6 +151,7 @@ SimTK::Vector createVector(std::initializer_list<SimTK::Real> elements);
 /// create the interpolant from the non-NaN values only. Note that this option
 /// does not necessarily prevent NaN values from being returned in 'newX', which
 /// will have NaN for any values of newX outside of the range of x.
+/// @throws Exception if x and y are different sizes, or x or y is empty.
 OSIMMOCO_API
 SimTK::Vector interpolate(const SimTK::Vector& x, const SimTK::Vector& y,
         const SimTK::Vector& newX, const bool ignoreNaNs = false);
@@ -324,7 +320,7 @@ TimeSeriesTable_<T> analyze(Model model, const MocoTrajectory& iterate,
             auto thisOutputPath = output.getPathName();
             for (const auto& outputPathArg : outputPaths) {
                 if (std::regex_match(
-                        thisOutputPath, std::regex(outputPathArg))) {
+                            thisOutputPath, std::regex(outputPathArg))) {
                     // Make sure the output type agrees with the template.
                     if (dynamic_cast<const Output<T>*>(&output)) {
                         reporter->addToReport(output);
@@ -370,10 +366,10 @@ TimeSeriesTable_<T> analyze(Model model, const MocoTrajectory& iterate,
     return reporter->getTable();
 }
 
-/// Given a MocoTrajectory and the associated OpenSim model, return the model with
-/// a prescribed controller appended that will compute the control values from
-/// the MocoSolution. This can be useful when computing state-dependent model
-/// quantities that require realization to the Dynamics stage or later.
+/// Given a MocoTrajectory and the associated OpenSim model, return the model
+/// with a prescribed controller appended that will compute the control values
+/// from the MocoSolution. This can be useful when computing state-dependent
+/// model quantities that require realization to the Dynamics stage or later.
 /// The function used to fit the controls can either be GCVSpline or
 /// PiecewiseLinearFunction.
 OSIMMOCO_API void prescribeControlsToModel(const MocoTrajectory& iterate,
@@ -420,7 +416,7 @@ std::unordered_map<std::string, int> createSystemYIndexMap(const Model& model);
 OSIMMOCO_API
 std::vector<std::string> createControlNamesFromModel(
         const Model& model, std::vector<int>& modelControlIndices);
-//// Same as above, but when there is no mapping to the modelControlIndices.
+/// Same as above, but when there is no mapping to the modelControlIndices.
 OSIMMOCO_API
 std::vector<std::string> createControlNamesFromModel(const Model& model);
 /// The map provides the index of each control variable in the SimTK::Vector
@@ -437,6 +433,97 @@ OSIMMOCO_API void checkOrderSystemControls(const Model& model);
 /// The argument copies the provided labels since we need to sort them to check
 /// for redundancies.
 OSIMMOCO_API void checkRedundantLabels(std::vector<std::string> labels);
+
+/// Get a list of reference pointers to all outputs whose names (not paths)
+/// match a substring defined by a provided regex string pattern. The regex
+/// string pattern could be the full name of the output. Only Output%s that
+/// match the template argument type will be returned (double is the default
+/// type). Set the argument 'includeDescendents' to true to include outputs
+/// from all descendents from the provided component.
+template <typename T = double>
+std::vector<SimTK::ReferencePtr<const Output<T>>> getModelOutputReferencePtrs(
+        const Component& component, const std::string& pattern,
+        bool includeDescendents = false) {
+
+    // Create regex.
+    std::regex regex(pattern);
+    // Initialize outputs array.
+    std::vector<SimTK::ReferencePtr<const Output<T>>> outputs;
+
+    std::function<void(const Component&, const std::regex&, bool, 
+            std::vector<SimTK::ReferencePtr<const Output<T>>>&)> helper;
+    helper = [&helper](const Component& component, const std::regex& regex,
+            bool includeDescendents,
+            std::vector<SimTK::ReferencePtr<const Output<T>>>& outputs) {
+        // Store a reference to outputs that match the template
+        // parameter type and whose names contain the provided
+        // substring.
+        for (const auto& entry : component.getOutputs()) {
+            const std::string& name = entry.first;
+            const auto foundSubstring = std::regex_match(name, regex);
+            const auto* output =
+                    dynamic_cast<const Output<T>*>(entry.second.get());
+            if (output && foundSubstring) {
+                outputs.emplace_back(output);
+            }
+        }
+
+        // Repeat for all subcomponents.
+        if (includeDescendents) {
+            for (const Component& thisComp :
+                    component.getComponentList<Component>()) {
+                if (&thisComp == &component) { continue; }
+                helper(thisComp, regex, false, outputs);
+            }
+        }
+    };
+    
+    helper(component, regex, includeDescendents, outputs);
+    return outputs;
+}
+
+/// Convert a trajectory covering half the period of a symmetric motion into a
+/// trajectory over the full period. This is useful for simulations of half a
+/// gait cycle.
+/// This converts time, states, controls, and derivatives; all other quanties
+/// from the input trajectory are ignored.
+/// If a column in the trajectory does not match addPatterns, negatePatterns, or
+/// symmetryPatterns, then the second half of the period contains the same
+/// data as the first half.
+///
+/// @param halfPeriodTrajectory The input trajectory covering half a period.
+/// @param addPatterns If a column label matches an addPattern, then the second
+/// half of the period for that column is (first_half_trajectory +
+/// half_period_value - initial_value).
+/// @param negatePatterns If a column label matches a negatePattern, then the
+/// second half of the period for that column is (-first_half_trajectory + 2 *
+/// half_period_value). This is usually relevant for only 3D models.
+/// @param symmetryPatterns This argument is a list of pairs, where the first
+/// element of the pair is a pattern to match, and the second is a substitution
+/// to convert the column label into the opposite column label of the symmetric
+/// pair. If a column label matches a symmetryPattern, then its first
+/// half-period is copied into the second half of the period for the column
+/// identified by the substitution.
+///
+/// The default values for the patterns are intended to handle the column labels
+/// for typical 2D or 3D OpenSim gait models.
+/// The default value for symmetryPatterns warrants an explanation. R"()" is a
+/// string literal that permits us to not escape backslash characters. The regex
+/// "_r(\/|$)" matches "_r" followed by either a forward slash
+/// (which is escaped) OR the end of the string ($). Since the forward slash
+/// and end of the string are within parentheses, whatever matches this is
+/// captured and is available in the substitution (the second element of the
+/// pair) as $1. The default symmetry patterns cause the following replacements:
+/// - "/jointset/hip_r/hip_flexion_r/value" becomes "/jointset/hip_l/hip_flexion_l/value"
+/// - "/forceset/soleus_r" becomes "/forceset/soleus_l"
+OSIMMOCO_API MocoTrajectory createPeriodicTrajectory(
+        const MocoTrajectory& halfPeriodTrajectory,
+        std::vector<std::string> addPatterns = {".*pelvis_tx/value"},
+        std::vector<std::string> negatePatterns = {".*pelvis_list.*",
+                                                   ".*pelvis_rotation.*",
+                                                   ".*pelvis_tz.*"},
+        std::vector<std::pair<std::string, std::string>> symmetryPatterns =
+                {{R"(_r(\/|$))", "_l$1"}, {R"(_l(\/|$))", "_r$1"}});
 
 /// Throw an exception if the property's value is not in the provided set.
 /// We assume that `p` is a single-value property.
@@ -583,8 +670,7 @@ OSIMMOCO_API int getMocoParallelEnvironmentVariable();
 /// This class lets you store objects of a single type for reuse by multiple
 /// threads, ensuring threadsafe access to each of those objects.
 // TODO: Find a way to always give the same thread the same object.
-template <typename T>
-class ThreadsafeJar {
+template <typename T> class ThreadsafeJar {
 public:
     /// Request an object for your exclusive use on your thread. This function
     /// blocks the thread until an object is available. Make sure to return
@@ -668,6 +754,24 @@ private:
     bool m_wroteInitialFile = false;
     const std::string m_filepath;
 };
+
+/// Obtain the ground reaction forces, centers of pressure, and torques
+/// resulting from Force elements (e.g., SmoothSphereHalfSpaceForce), using the
+/// model and the trajectory. Forces and torques are expressed in the ground
+/// frame with respect to the ground origin. Hence, the centers of pressure are
+/// at the origin. Names of Force elements should be provided separately for
+/// elements of the right and left feet. The output is a table formated for use
+/// with OpenSim tools; the labels of the columns distinguish between right
+/// ("<>_r") and left ("<>_l") forces, centers of pressure, and torques. The
+/// forces and torques used are taken from the first six outputs of
+/// getRecordValues(); this order is of use for, for example, the
+/// SmoothSphereHalfSpaceForce contact model but might have a different meaning
+/// for different contact models.
+OSIMMOCO_API
+TimeSeriesTable createExternalLoadsTableForGait(Model model,
+        const MocoTrajectory& trajectory,
+        const std::vector<std::string>& forceNamesRightFoot,
+        const std::vector<std::string>& forceNamesLeftFoot);
 
 } // namespace OpenSim
 

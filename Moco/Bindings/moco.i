@@ -5,6 +5,8 @@ typedef SimTK::RowVector_<double> RowVector;
 
 %include <Moco/osimMocoDLL.h>
 
+%include <Moco/About.h>
+
 %include <Moco/Common/TableProcessor.h>
 
 
@@ -31,10 +33,11 @@ namespace OpenSim {
 %include <Moco/MocoGoal/MocoMarkerFinalGoal.h>
 %include <Moco/MocoGoal/MocoControlGoal.h>
 %include <Moco/MocoGoal/MocoInitialActivationGoal.h>
-%include <Moco/MocoGoal/MocoSumSquaredStateGoal.h>
 %include <Moco/MocoGoal/MocoJointReactionGoal.h>
+%include <Moco/MocoGoal/MocoSumSquaredStateGoal.h>
 %include <Moco/MocoGoal/MocoOrientationTrackingGoal.h>
 %include <Moco/MocoGoal/MocoTranslationTrackingGoal.h>
+%include <Moco/MocoGoal/MocoPeriodicityGoal.h>
 
 
 // %template(MocoBoundsVector) std::vector<OpenSim::MocoBounds>;
@@ -207,5 +210,6 @@ moco_unique_ptr(OpenSim::PositionMotion);
 
 %include <Moco/Components/ModelFactory.h>
 %include <Moco/Components/SmoothSphereHalfSpaceForce.h>
+%include <Moco/Components/MultivariatePolynomialFunction.h>
 
 %include <Moco/ModelOperators.h>

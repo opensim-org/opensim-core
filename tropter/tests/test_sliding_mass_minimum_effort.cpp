@@ -47,12 +47,11 @@ public:
     }
     // TODO alternate form that takes a matrix; state at every time.
     //virtual void continuous(const MatrixXd& x, MatrixXd& xdot) const = 0;
-    void calc_cost(
-            int cost_index, const CostInput<T>& in, T& cost) const override {
+    void calc_cost(int, const CostInput<T>& in, T& cost) const override {
         cost = in.integral;
     }
     void calc_cost_integrand(
-            int cost_index, const Input<T>& in, T& integrand) const override {
+            int, const Input<T>& in, T& integrand) const override {
         const auto& controls = in.controls;
         integrand = controls[0] * controls[0];
     }

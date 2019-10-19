@@ -25,8 +25,11 @@
 
 namespace OpenSim {
 
-/// Minimize the sum of squares of specified reaction moment and force 
-/// measures for a given joint, integrated over the phase.
+/// Minimize the sum of squares of specified reaction moment and force
+/// measures for a given joint, integrated over the phase. If the magnitude of
+/// the gravity acceleration vector (Model::get_gravity()) is non-zero, then the
+/// goal is normalized by the model's weight; otherwise, the goal is normalized
+/// by the model's mass.
 ///
 /// In addition to specifying the joint and reaction measures, the user may
 /// also specify the frame the loads are computed from ("parent" or "child"),
@@ -103,8 +106,9 @@ protected:
             double& integrand) const override;
     void calcGoalImpl(
             const GoalInput& input, SimTK::Vector& cost) const override {
-        cost[0] = input.integral;
+        cost[0] = input.integral / m_denominator;
     }
+    void printDescriptionImpl(std::ostream& stream = std::cout) const override;
 
 private:
     OpenSim_DECLARE_PROPERTY(joint_path, std::string, 
@@ -125,6 +129,7 @@ private:
     
     void constructProperties();
 
+    mutable double m_denominator;
     mutable SimTK::ReferencePtr<const Joint> m_joint;
     mutable SimTK::ReferencePtr<const Frame> m_frame;
     mutable std::vector<std::pair<int, int>> m_measureIndices;

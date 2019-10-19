@@ -234,6 +234,7 @@ void ModelFactory::removeMuscles(Model& model) {
 }
 
 void ModelFactory::createReserveActuators(Model& model, double optimalForce,
+        double bound,
         bool skipCoordinatesWithExistingActuators) {
     OPENSIM_THROW_IF(optimalForce <= 0, Exception,
             format("Invalid value (%g) for create_reserve_actuators; "
@@ -271,6 +272,13 @@ void ModelFactory::createReserveActuators(Model& model, double optimalForce,
             std::replace(path.begin(), path.end(), '/', '_');
             actu->setName("reserve" + path);
             actu->setOptimalForce(optimalForce);
+            if (!SimTK::isNaN(bound)) {
+                OPENSIM_THROW_IF(bound < 0, Exception,
+                        format("Expected a non-negative bound but got %d.",
+                                bound));
+                actu->setMinControl(-bound);
+                actu->setMaxControl(bound);
+            }
             model.addForce(actu);
         }
     }
