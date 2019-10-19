@@ -44,6 +44,7 @@ void MocoInitialForceEquilibriumGoal::initializeOnModelImpl(
 void MocoInitialForceEquilibriumGoal::calcGoalImpl(
     const GoalInput& input, SimTK::Vector& goal) const {
     const auto& s = input.initial_state;
+    getModel().realizeVelocity(s);
     if (getModeIsCost()) {
         for (int i = 0; i < (int)m_muscleRefs.size(); ++i) {
             const auto residual = m_muscleRefs[i]->getTendonForce(s) -

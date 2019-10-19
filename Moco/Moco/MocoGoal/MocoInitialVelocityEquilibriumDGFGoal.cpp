@@ -36,6 +36,7 @@ void MocoInitialVelocityEquilibriumDGFGoal::initializeOnModelImpl(
 void MocoInitialVelocityEquilibriumDGFGoal::calcGoalImpl(
         const GoalInput& input, SimTK::Vector& goal) const {
     const auto& s = input.initial_state;
+    getModel().realizeVelocity(s);
     if (getModeIsCost()) {
         for (int i = 0; i < (int)m_dgfMuscleRefs.size(); ++i) {
             const auto residual =
