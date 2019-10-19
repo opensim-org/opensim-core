@@ -124,12 +124,16 @@ public:
         return m_numIntegrals;
     }
 
-    /// TODO
-    bool getRequiresSimTKState() const {
-        return m_requiresSimTKState;
+    // TODO must still realize yourself to acceleration for example. this just
+    // tells the solver what to precompute.
+    // TODO controls depend on stage Model.
+    // TODO make time available even before Model.
+    SimTK::Stage getStageDependency() const {
+        return m_stageDependency;
     }
 
     struct IntegrandInput {
+        const SimTK::Real& time;
         const SimTK::State& state;
         const SimTK::Vector& controls;
     };
@@ -142,9 +146,16 @@ public:
         return integrand;
     }
 
+    // If the user set requiresSimTKState = false, make sure we do not give
+    // access to the SimTK::State somehow. What if raw controls are desired
+    // though?
+    // TODO: document what the raw controls are: how long they are, where they
+    // come from, etc.
     struct GoalInput {
+        const SimTK::Real& initial_time;
         const SimTK::State& initial_state;
         const SimTK::Vector& initial_controls;
+        const SimTK::Real& final_time;
         const SimTK::State& final_state;
         const SimTK::Vector& final_controls;
         /// This is computed by integrating calcIntegrand().
@@ -214,7 +225,7 @@ protected:
     /// is thrown during initialization.
     /// The number of integrals must be either 0 or 1.
     void setRequirements(int numIntegrals, int numOutputs,
-            bool requiresSimTKState = true) const {
+            SimTK::Stage stageDependency = SimTK::Stage::Acceleration) const {
         OPENSIM_THROW_IF(numIntegrals < 0 || numIntegrals > 1, Exception,
                 "Number of integrals must be 0 or 1.");
         OPENSIM_THROW_IF(numOutputs < 0, Exception,
@@ -222,7 +233,7 @@ protected:
         m_numIntegrals = numIntegrals;
         const_cast<MocoGoal*>(this)->upd_MocoConstraintInfo().setNumEquations(
                 numOutputs);
-        m_requiresSimTKState = requiresSimTKState;
+        m_stageDependency = stageDependency;
     }
 
     virtual Mode getDefaultModeImpl() const { return Mode::Cost; }
@@ -273,7 +284,7 @@ private:
     mutable SimTK::ReferencePtr<const Model> m_model;
     mutable double m_weightToUse;
     mutable Mode m_modeToUse;
-    mutable bool m_requiresSimTKState = true;
+    mutable SimTK::Stage m_stageDependency = SimTK::Stage::Acceleration;
     mutable int m_numIntegrals = -1;
 };
 
@@ -293,11 +304,11 @@ public:
 
 protected:
     void initializeOnModelImpl(const Model&) const override {
-        setRequirements(0, 1);
+        setRequirements(0, 1, SimTK::Stage::Topology);
     }
     void calcGoalImpl(
             const GoalInput& input, SimTK::Vector& cost) const override {
-        cost[0] = input.final_state.getTime();
+        cost[0] = input.final_time;
     }
 };
 

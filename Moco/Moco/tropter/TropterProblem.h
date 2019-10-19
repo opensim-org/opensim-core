@@ -392,9 +392,8 @@ protected:
 
         // Compute the integrand for this cost term.
         const auto& cost = m_mocoProbRep.getCostByIndex(cost_index);
-        integrand = cost.calcIntegrand({
-            this->m_stateDisabledConstraints,
-            rawControls});
+        integrand = cost.calcIntegrand(
+                {in.time, this->m_stateDisabledConstraints, rawControls});
     }
 
     void calc_cost(int cost_index, const tropter::CostInput<T>& in,
@@ -421,8 +420,10 @@ protected:
         // Compute the cost for this cost term.
         const auto& cost = m_mocoProbRep.getCostByIndex(cost_index);
         SimTK::Vector costVector(cost.getNumOutputs());
-        cost.calcGoal({initialState, initialRawControls,
-                       finalState, finalRawControls, in.integral}, costVector);
+        cost.calcGoal({in.initial_time, initialState, initialRawControls,
+                              in.final_time, finalState, finalRawControls,
+                              in.integral},
+                costVector);
         cost_value = costVector.sum();
     }
 
