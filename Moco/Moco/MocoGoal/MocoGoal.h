@@ -128,6 +128,8 @@ public:
     // tells the solver what to precompute.
     // TODO controls depend on stage Model.
     // TODO make time available even before Model.
+    // getIntegrandStageDependency()
+    // getEndpointStageDependency().
     SimTK::Stage getStageDependency() const {
         return m_stageDependency;
     }
@@ -152,6 +154,7 @@ public:
     // TODO: document what the raw controls are: how long they are, where they
     // come from, etc.
     struct GoalInput {
+        // TODO: speed benefit of separate time variable is negligible. remove it.
         const SimTK::Real& initial_time;
         const SimTK::State& initial_state;
         const SimTK::Vector& initial_controls;

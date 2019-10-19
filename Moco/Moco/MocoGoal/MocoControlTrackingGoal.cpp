@@ -72,7 +72,7 @@ void MocoControlTrackingGoal::initializeOnModelImpl(const Model& model) const {
         m_control_names.push_back(refName);
     }
 
-    setRequirements(1, 1);
+    setRequirements(1, 1, SimTK::Stage::Model);
 }
 
 void MocoControlTrackingGoal::calcIntegrandImpl(

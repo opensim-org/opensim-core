@@ -78,7 +78,7 @@ void MocoMarkerTrackingGoal::initializeOnModelImpl(const Model& model) const {
     m_refsplines =
             GCVSplineSet(get_markers_reference().getMarkerTable().flatten());
 
-    setRequirements(1, 1);
+    setRequirements(1, 1, SimTK::Stage::Position);
 }
 
 void MocoMarkerTrackingGoal::calcIntegrandImpl(

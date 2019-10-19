@@ -97,7 +97,7 @@ void MocoStateTrackingGoal::initializeOnModelImpl(const Model& model) const {
         m_state_names.push_back(refName);
     }
 
-    setRequirements(1, 1);
+    setRequirements(1, 1, SimTK::Stage::Position);
 }
 
 void MocoStateTrackingGoal::calcIntegrandImpl(

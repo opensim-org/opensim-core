@@ -22,6 +22,8 @@ namespace OpenSim {
 %include <Moco/ModelProcessor.h>
 
 namespace OpenSim {
+    %ignore MocoGoal::IntegrandInput;
+    %ignore MocoGoal::calcIntegrand;
     %ignore MocoGoal::GoalInput;
     %ignore MocoGoal::calcGoal;
 }

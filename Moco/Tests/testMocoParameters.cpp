@@ -198,11 +198,11 @@ protected:
     void calcIntegrandImpl(const IntegrandInput& input,
             SimTK::Real& integrand) const override {
 
-        getModel().realizeAcceleration(state); // TODO would avoid this, ideally.
+        getModel().realizeAcceleration(input.state);
         const auto& accel = getModel().getStateVariableDerivativeValue(
-            state, "pin/rotation/speed");
+            input.state, "pin/rotation/speed");
 
-        input = accel * accel;
+        integrand = accel * accel;
     }
     void calcGoalImpl(
             const GoalInput& input, SimTK::Vector& cost) const override {

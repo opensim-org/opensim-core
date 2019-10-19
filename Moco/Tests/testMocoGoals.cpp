@@ -198,12 +198,13 @@ TEST_CASE("Enabled Goals", "") {
     Model model;
     auto state = model.initSystem();
     state.setTime(x);
+    SimTK::Vector controls;
     cost.initializeOnModel(model);
     SimTK::Vector goal;
-    cost.calcGoal({state, state, 0}, goal);
+    cost.calcGoal({0, state, controls, x, state, controls, 0}, goal);
     CHECK(goal[0] == Approx(x));
     cost.setEnabled(false);
-    cost.calcGoal({state, state, 0}, goal);
+    cost.calcGoal({0, state, controls, x, state, controls, 0}, goal);
     CHECK(goal[0] == Approx(0));
 }
 
@@ -520,14 +521,11 @@ public:
         return Mode::EndpointConstraint;
     }
     void initializeOnModelImpl(const Model&) const override {
-        // TODO: does not require states.
-        setRequirements(1, 1);
+        setRequirements(1, 1, SimTK::Stage::Model);
     }
     void calcIntegrandImpl(const IntegrandInput& input,
             SimTK::Real& integrand) const override {
-        getModel().realizeVelocity(input.state);
-        const auto& controls = getModel().getControls(input.state);
-        input = controls.normSqr();
+        integrand = input.controls.normSqr();
     }
     void calcGoalImpl(
             const GoalInput& in, SimTK::Vector& values) const override {

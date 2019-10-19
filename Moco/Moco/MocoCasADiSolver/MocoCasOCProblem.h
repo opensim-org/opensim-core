@@ -519,6 +519,7 @@ private:
             const casadi::DM& states, const Model& model,
             SimTK::State& simtkState, bool copyAuxStates) const {
         if (stageDep >= SimTK::Stage::Model) {
+            simtkState.setTime(time);
             // Assign the generalized coordinates. We know we have NU
             // generalized speeds because we do not yet support quaternions.
             for (int isv = 0; isv < getNumCoordinates(); ++isv) {
@@ -533,9 +534,8 @@ private:
                         simtkState.updY().updContiguousScalarData() +
                                 simtkState.getNQ() + simtkState.getNU());
             }
+            model.getSystem().prescribe(simtkState);
         }
-        model.getSystem().prescribe(simtkState);
-        if (stageDep >= SimTK::Stage::Time) { simtkState.setTime(time); }
     }
 
     void convertToSimTKState(SimTK::Stage stageDep, const double& time,
@@ -576,10 +576,6 @@ private:
         if (stageDep >= SimTK::Stage::Instance) {
             applyParametersToModelProperties(parameters, *mocoProblemRep);
         }
-        // TODO: Two locations in this file invoke prescribe().
-        // modelBase.getSystem().prescribe(simtkStateBase);
-        // modelDisabledConstraints.getSystem().prescribe(
-        //         simtkStateDisabledConstraints);
 
         if (stageDep >= SimTK::Stage::Acceleration && getNumAccelerations()) {
             auto& accel = mocoProblemRep->getAccelerationMotion();
@@ -588,7 +584,8 @@ private:
             accel.setUDot(simtkStateDisabledConstraints, udot);
         }
 
-        if (stageDep >= SimTK::Stage::Acceleration &&
+        // TODO: What is the correct stage dependency here?
+        if (stageDep >= SimTK::Stage::Model &&
                 getNumAuxiliaryResidualEquations()) {
             const auto& implicitRefs =
                     mocoProblemRep->getImplicitComponentReferencePtrs();

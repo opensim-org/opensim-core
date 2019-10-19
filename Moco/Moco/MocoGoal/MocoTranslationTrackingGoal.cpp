@@ -173,7 +173,7 @@ void MocoTranslationTrackingGoal::initializeOnModelImpl(const Model& model)
 
     m_ref_splines = GCVSplineSet(flatTable);
 
-    setRequirements(1, 1);
+    setRequirements(1, 1, SimTK::Stage::Position);
 }
 
 void MocoTranslationTrackingGoal::calcIntegrandImpl(
