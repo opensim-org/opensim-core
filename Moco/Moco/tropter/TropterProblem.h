@@ -62,6 +62,20 @@ protected:
         OPENSIM_THROW_IF(!m_modelBase.getMatterSubsystem().getUseEulerAngles(
                                  m_stateBase),
                 Exception, "Quaternions are not supported.");
+
+        // Ensure the model does not have user-provided controllers.
+        int numControllers = 0;
+        for (const auto& controller :
+                m_modelBase.getComponentList<Controller>()) {
+            // Avoid unused variable warning.
+            (void)&controller;
+            ++numControllers;
+        }
+        // The model has a DiscreteController added by MocoProblemRep; any other
+        // controllers were added by the user.
+        OPENSIM_THROW_IF(numControllers > 1, Exception,
+                "MocoCasADiSolver does not support models with Controllers.");
+
         // It is sufficient to create these containers from the original model
         // since the discrete variables added to the model with disabled
         // constraints wouldn't show up anyway.

@@ -123,7 +123,8 @@ convertIterateTropterToMoco(const tropIterateType& tropSol) const {
 
 template <typename T>
 OpenSim::MocoTrajectory
-MocoTropterSolver::TropterProblemBase<T>::convertToMocoTrajectory(const tropter::Iterate& tropIter) const {
+MocoTropterSolver::TropterProblemBase<T>::convertToMocoTrajectory(
+        const tropter::Iterate& tropIter) const {
     using OpenSim::MocoTrajectory;
     return convertIterateTropterToMoco<MocoTrajectory, tropter::Iterate>(tropIter);
 }
