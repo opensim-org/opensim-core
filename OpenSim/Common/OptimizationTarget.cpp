@@ -21,8 +21,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/* Note: This code was originally developed by Realistic Dynamics Inc. 
- * Author: Frank C. Anderson 
+/* Note: This code was originally developed by Realistic Dynamics Inc.
+ * Author: Frank C. Anderson
  */
 
 
@@ -153,7 +153,7 @@ printPerformance(double *x)
 {
     double p;
     objectiveFunc(SimTK::Vector(getNumParameters(),x,true),true,p);
-    std::cout << "performance = " << p << std::endl;
+    log_info("performance = {}", p);
 }
 
 //=============================================================================
@@ -288,7 +288,7 @@ ForwardDifferences(const OptimizationTarget *aTarget,
 
     // PERFORMANCE
     double pf,pb;
-    
+
     // current objective function value
     status = aTarget->objectiveFunc(xp,true,pb);
     if(status<0) return(status);
