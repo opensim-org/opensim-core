@@ -1,4 +1,12 @@
-- 2019-10-16: Fix a bug in ModOpscaleMaxIsometricForce, where the scale factor
+- 2019-10-20: Introduce MocoGoal::getStageDependency() to improve efficiency of 
+              goals.
+              
+- 2019-10-20: MocoSolvers no longer directly set the model's control cache. 
+              Instead, Moco adds a DiscreteController to the model and the 
+              solvers modify the DiscreteController's control signals.
+              This change allows Moco to support synergies in the future.
+
+- 2019-10-16: Fix a bug in ModOpScaleMaxIsometricForce, where the scale factor
               was not used properly.
 
 - 2019-10-12: Add GetMocoVersion(), GetMocoVersionAndDate() to provide the 
