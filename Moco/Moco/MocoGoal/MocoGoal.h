@@ -44,6 +44,29 @@ class Model;
 /// The calculation of the goal may differ between cost and endpoint constraint
 /// modes; cost mode may require that outputs are squared, for example.
 ///
+/// # Stage dependency
+/// Some goals require less of IntegrandInput and GoalInput than others. To
+/// ensure goals are computed efficiently, goals can specify a stage dependency,
+/// which tells solvers what to do when preparing IntegrandInput and GoalInput.
+/// Here are the expectations for each SimTK::Stage:
+///
+/// - SimTK::Stage::Topology: the time field of IntegrandInput and
+///     initial_time and final_time fields of GoalInput are available.
+/// - SimTK::Stage::Model: controls fields of IntegrandInput and
+///     GoalInput are available.
+/// - SimTK::Stage::Instance: MocoParameters are applied to the model.
+/// - SimTK::Stage::Time: state variables (SimTK::State::getY(), etc.) are
+///     available, and SimTK::Stage::getTime() is updated.
+/// - SimTK::Stage::Position: state, initial_state, and final_state can be used
+///     to compute position-dependent quantities.
+/// - SimTK::Stage::Velocity: state, initial_state, and final_state can be used
+///     to compute velocity-dependent quantities.
+/// - SimTK::Stage::Dynamics: state, initial_state, and final_state can be used
+///     to compute force-dependent quantities.
+/// - SimTK::Stage::Dynamics: state, initial_state, and final_state can be used
+///     to compute acceleration-dependent quantities, such as body accelerations
+///     and joint reactions.
+///
 /// @par For developers
 /// Every time the problem is solved, a copy of this goal is used. An individual
 /// instance of a goal is only ever used in a single problem. Therefore, there
@@ -124,19 +147,32 @@ public:
         return m_numIntegrals;
     }
 
-    // TODO must still realize yourself to acceleration for example. this just
-    // tells the solver what to precompute.
-    // TODO controls depend on stage Model.
-    // TODO make time available even before Model.
-    // getIntegrandStageDependency()
+
+    /// Obtain the stage that this goal depends on. Solvers can use this to
+    /// more efficiently decide how to set the IntegrandInput and GoalInput.
+    /// See the MocoGoal class description for details about the different
+    /// stages.
+    // TODO: create separate getIntegrandStageDependency() and
     // getEndpointStageDependency().
     SimTK::Stage getStageDependency() const {
         return m_stageDependency;
     }
 
     struct IntegrandInput {
+        /// Time is available regardless of the stage dependency.
         const SimTK::Real& time;
+        /// The time in the state is only updated if the stage requirement is
+        /// SimTK::Stage::Time or greater.
+        /// If you need access to the state variables, you must set a stage
+        /// requirement of SimTK::Stage::Time.
         const SimTK::State& state;
+        /// Controls are available with a stage requirement of
+        /// SimTK::Stage::Model.
+        /// If you only need to access the controls, use this field.
+        /// This vector has length Model::getNumControls(), and has slots for
+        /// disabled actuators. The function createControlNamesForModel()
+        /// provides data structures that can be indexed in the same way as this
+        /// field. Use this field rather than Model::getControls().
         const SimTK::Vector& controls;
     };
     /// Calculate the integrand that should be integrated and passed to
@@ -148,20 +184,15 @@ public:
         return integrand;
     }
 
-    // If the user set requiresSimTKState = false, make sure we do not give
-    // access to the SimTK::State somehow. What if raw controls are desired
-    // though?
-    // TODO: document what the raw controls are: how long they are, where they
-    // come from, etc.
+    /// @see IntegrandInput.
     struct GoalInput {
-        // TODO: speed benefit of separate time variable is negligible. remove it.
         const SimTK::Real& initial_time;
         const SimTK::State& initial_state;
         const SimTK::Vector& initial_controls;
         const SimTK::Real& final_time;
         const SimTK::State& final_state;
         const SimTK::Vector& final_controls;
-        /// This is computed by integrating calcIntegrand().
+        /// The solver computes the integral by integrating calcIntegrand().
         const double& integral;
     };
     /// In cost mode, the returned cost includes the weight, and the elements of
@@ -170,7 +201,6 @@ public:
     /// different scalar equation to enforce as a constraint.
     /// The length of the returned vector is getNumOutputs().
     void calcGoal(const GoalInput& input, SimTK::Vector& goal) const {
-        // TODO pass in an empty SimTK::State?
         goal.resize(getNumOutputs());
         goal = 0;
         if (!get_enabled()) { return; }
@@ -215,7 +245,7 @@ public:
 
 protected:
     /// Perform any caching before the problem is solved.
-    /// You must override this function and invoke setNumIntegralsAndOutputs().
+    /// You must override this function and invoke setRequirements().
     /// @precondition The model is initialized (initSystem()) and getModel()
     /// is available.
     /// The passed-in model is equivalent to getModel().
@@ -227,6 +257,19 @@ protected:
     /// This must be set within initializeOnModelImpl(), otherwise an exception
     /// is thrown during initialization.
     /// The number of integrals must be either 0 or 1.
+    /// The stageDependency can be set to lower stages to avoid unnecessary
+    /// calculations. For example, if the goal does not depend on forces,
+    /// then the solver does not need to prepare the
+    /// IntegrandInput and GoalInput for force calculations.
+    /// See the MocoGoal class description for help with choosing the stage
+    /// dependency.
+    /// If you are not sure what your stageDependency is, leave it as
+    /// SimTK::Stage::Acceleration to be safe.
+    ///
+    /// You must still realize to the appropriate stage within the
+    /// integrand and goal functions. Setting the stageDependency to stage X
+    /// does not mean that the SimTK::State is realized to stage X as a
+    /// precondition of calcIntegrandImpl() and calcGoalImpl().
     void setRequirements(int numIntegrals, int numOutputs,
             SimTK::Stage stageDependency = SimTK::Stage::Acceleration) const {
         OPENSIM_THROW_IF(numIntegrals < 0 || numIntegrals > 1, Exception,
@@ -241,14 +284,15 @@ protected:
 
     virtual Mode getDefaultModeImpl() const { return Mode::Cost; }
     virtual bool getSupportsEndpointConstraintImpl() const { return false; }
-    /// @precondition The state is realized to SimTK::Stage::Position.
-    /// If you need access to the controls, you must realize to Velocity:
-    /// @code
-    /// getModel().realizeVelocity(state);
-    /// @endcode
+    /// You may need to realize the state to the stage required for your
+    /// calculations.
+    /// Do NOT realize to a stage higher than the goal's stage dependency.
     /// The Lagrange multipliers for kinematic constraints are not available.
     virtual void calcIntegrandImpl(
             const IntegrandInput& input, SimTK::Real& integrand) const;
+    /// You may need to realize the state to the stage required for your
+    /// calculations.
+    /// Do NOT realize to a stage higher than the goal's stage dependency.
     /// The Lagrange multipliers for kinematic constraints are not available.
     virtual void calcGoalImpl(
             const GoalInput& input, SimTK::Vector& goal) const = 0;

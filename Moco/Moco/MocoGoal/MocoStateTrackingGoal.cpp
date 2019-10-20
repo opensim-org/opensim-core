@@ -97,12 +97,12 @@ void MocoStateTrackingGoal::initializeOnModelImpl(const Model& model) const {
         m_state_names.push_back(refName);
     }
 
-    setRequirements(1, 1, SimTK::Stage::Position);
+    setRequirements(1, 1, SimTK::Stage::Time);
 }
 
 void MocoStateTrackingGoal::calcIntegrandImpl(
         const IntegrandInput& input, SimTK::Real& integrand) const {
-    const auto& time = input.state.getTime();
+    const auto& time = input.time;
 
     SimTK::Vector timeVec(1, time);
 

@@ -515,10 +515,10 @@ private:
     /// slots in Simbody's Y vector.
     /// It's fine for the size of `states` to be less than the size of Y; only
     /// the first states.size1() values are copied.
-    inline void convertToSimTKState(SimTK::Stage stageDep, const double& time,
+    void convertToSimTKState(SimTK::Stage stageDep, const double& time,
             const casadi::DM& states, const Model& model,
             SimTK::State& simtkState, bool copyAuxStates) const {
-        if (stageDep >= SimTK::Stage::Model) {
+        if (stageDep >= SimTK::Stage::Time) {
             simtkState.setTime(time);
             // Assign the generalized coordinates. We know we have NU
             // generalized speeds because we do not yet support quaternions.
@@ -534,6 +534,7 @@ private:
                         simtkState.updY().updContiguousScalarData() +
                                 simtkState.getNQ() + simtkState.getNU());
             }
+            // Prescribing motion requires that time is updated.
             model.getSystem().prescribe(simtkState);
         }
     }

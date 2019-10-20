@@ -35,7 +35,7 @@ void MocoInitialActivationGoal::initializeOnModelImpl(
         }
     }
 
-    setRequirements(0, (int)m_indices.size(), SimTK::Stage::Model);
+    setRequirements(0, (int)m_indices.size(), SimTK::Stage::Time);
 }
 
 void MocoInitialActivationGoal::calcGoalImpl(

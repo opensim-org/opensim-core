@@ -79,9 +79,9 @@ void MocoControlTrackingGoal::calcIntegrandImpl(
         const IntegrandInput& input, SimTK::Real& integrand) const {
     getModel().realizeVelocity(input.state);
 
-    const auto& time = input.state.getTime();
+    const auto& time = input.time;
     SimTK::Vector timeVec(1, time);
-    const auto& controls = getModel().getControls(input.state);
+    const auto& controls = input.controls;
 
     // TODO cache the reference coordinate values at the mesh points, 
     // rather than evaluating the spline.

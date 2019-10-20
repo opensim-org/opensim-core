@@ -29,7 +29,7 @@ void MocoSumSquaredStateGoal::constructProperties() {
 }
 
 void MocoSumSquaredStateGoal::initializeOnModelImpl(const Model&) const {
-    setRequirements(1, 1, SimTK::Stage::Model);
+    setRequirements(1, 1, SimTK::Stage::Time);
 }
 
 void MocoSumSquaredStateGoal::calcIntegrandImpl(
