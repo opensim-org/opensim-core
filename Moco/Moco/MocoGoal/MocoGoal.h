@@ -223,13 +223,17 @@ protected:
     virtual void calcGoalImpl(
             const GoalInput& input, SimTK::Vector& goal) const = 0;
     /// Print a more detailed description unique to each goal.
-    virtual void printDescriptionImpl(std::ostream& stream = std::cout) const {};
+    virtual void printDescriptionImpl(
+            std::ostream& stream = std::cout) const {};
     /// For use within virtual function implementations.
     const Model& getModel() const {
         OPENSIM_THROW_IF_FRMOBJ(!m_model, Exception,
                 "Model is not available until the start of initializing.");
         return m_model.getRef();
     }
+
+    double calcSystemDisplacement(
+            const SimTK::State& initial, const SimTK::State& final) const;
 
 private:
     OpenSim_DECLARE_PROPERTY(
@@ -289,7 +293,7 @@ protected:
 /// system's center of mass divided by the duration of the phase.
 /// @ingroup mocogoal
 class MocoAverageSpeedGoal : public MocoGoal {
-OpenSim_DECLARE_CONCRETE_OBJECT(MocoAverageSpeedGoal, MocoGoal);
+    OpenSim_DECLARE_CONCRETE_OBJECT(MocoAverageSpeedGoal, MocoGoal);
 
 public:
     OpenSim_DECLARE_PROPERTY(desired_average_speed, double,

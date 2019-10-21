@@ -43,6 +43,7 @@
 /// The coordinate data included in the 'referenceCoordinates.sto' comes from
 /// predictive simulations generated in Falisse et al. 2019.
 
+#include <Moco/MocoGoal/MocoOutputGoal.h>
 #include <Moco/osimMoco.h>
 
 using namespace OpenSim;
@@ -64,8 +65,12 @@ MocoSolution gaitTracking(const bool& setPathLengthApproximation) {
 
     // Define the optimal control problem.
     // ===================================
+    Model baseModel("2D_gait.osim");
+    auto metabolics = make_unique<MinettiAlexander1997Metabolics>();
+    metabolics->setName("metabolics");
+    baseModel.addComponent(metabolics.release());
     ModelProcessor modelprocessor =
-            ModelProcessor("2D_gait.osim") |
+            ModelProcessor(baseModel) |
             ModOpSetPathLengthApproximation(setPathLengthApproximation);
     track.setModel(modelprocessor);
     track.setStatesReference(
@@ -132,7 +137,11 @@ MocoSolution gaitTracking(const bool& setPathLengthApproximation) {
     // MocoTrack problem by default.
     MocoControlGoal& effort =
             dynamic_cast<MocoControlGoal&>(problem.updGoal("control_effort"));
-    effort.setWeight(10);
+    effort.setEnabled(false);
+    auto* metGoal = problem.addGoal<MocoOutputGoal>("met", 10);
+    metGoal->setOutputPath("/metabolics|total_metabolic_rate");
+    metGoal->setDivideByDisplacement(true);
+    metGoal->setDivideByMass(true);
 
     // Bounds.
     // =======
@@ -161,7 +170,7 @@ MocoSolution gaitTracking(const bool& setPathLengthApproximation) {
     solver.set_num_mesh_intervals(50);
     solver.set_verbosity(2);
     solver.set_optim_solver("ipopt");
-    solver.set_optim_convergence_tolerance(1e-4);
+    solver.set_optim_convergence_tolerance(1e-3);
     solver.set_optim_constraint_tolerance(1e-4);
     solver.set_optim_max_iterations(1000);
 
@@ -169,7 +178,7 @@ MocoSolution gaitTracking(const bool& setPathLengthApproximation) {
     // ==============
     MocoSolution solution = study.solve();
     auto full = createPeriodicTrajectory(solution);
-    full.write("gaitTracking_solution_fullcycle.sto");
+    full.write("gaitTracking_minetti_solution_fullcycle.sto");
 
     // moco.visualize(solution);
 
@@ -319,7 +328,7 @@ int main() {
         // Use polynomial approximations of muscle path lengths (set false to
         // use GeometryPath).
         const MocoSolution gaitTrackingSolution = gaitTracking(false);
-        gaitPrediction(gaitTrackingSolution, false);
+        // TODO gaitPrediction(gaitTrackingSolution, false);
     } catch (const std::exception& e) { std::cout << e.what() << std::endl; }
     return EXIT_SUCCESS;
 }

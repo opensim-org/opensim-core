@@ -22,11 +22,11 @@
 #include "Components/ActivationCoordinateActuator.h"
 #include "Components/DeGrooteFregly2016Muscle.h"
 #include "Components/DiscreteForces.h"
+#include "Components/MinettiAlexander1997Metabolics.h"
 #include "Components/MultivariatePolynomialFunction.h"
 #include "Components/PositionMotion.h"
 #include "Components/SmoothSphereHalfSpaceForce.h"
 #include "Components/StationPlaneContactForce.h"
-#include "Components/MultivariatePolynomialFunction.h"
 #include "MocoBounds.h"
 #include "MocoCasADiSolver/MocoCasADiSolver.h"
 #include "MocoControlBoundConstraint.h"
@@ -34,8 +34,8 @@
 #include "MocoGoal/MocoControlTrackingGoal.h"
 #include "MocoGoal/MocoGoal.h"
 #include "MocoGoal/MocoInitialActivationGoal.h"
-#include "MocoGoal/MocoInitialVelocityEquilibriumDGFGoal.h"
 #include "MocoGoal/MocoInitialForceEquilibriumGoal.h"
+#include "MocoGoal/MocoInitialVelocityEquilibriumDGFGoal.h"
 #include "MocoGoal/MocoJointReactionGoal.h"
 #include "MocoGoal/MocoMarkerFinalGoal.h"
 #include "MocoGoal/MocoMarkerTrackingGoal.h"
@@ -122,6 +122,7 @@ OSIMMOCO_API void RegisterTypes_osimMoco() {
         Object::registerType(PositionMotion());
         Object::registerType(DeGrooteFregly2016Muscle());
         Object::registerType(SmoothSphereHalfSpaceForce());
+        Object::registerType(MinettiAlexander1997Metabolics());
         Object::registerType(MultivariatePolynomialFunction());
 
         Object::registerType(DiscreteForces());
