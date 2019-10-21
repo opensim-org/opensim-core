@@ -113,12 +113,12 @@ int main(int argc, const char** argv) {
             if (!success) return EXIT_FAILURE;
         }
     }
-
+/*
     if (args["--log-level"]) {
         Logger::setLevelString(args["--log-level"].asString());
         Logger::info("Logger level is set to {}.", Logger::getLevelString());
     }
-
+*/
     // Did the user provide a valid command?
     // -------------------------------------
     if (!args["<command>"]) {
