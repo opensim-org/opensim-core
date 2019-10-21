@@ -19,6 +19,7 @@
  * -------------------------------------------------------------------------- */
 
 #include "MocoGoal.h"
+#include "../MocoWeightSet.h"
 
 namespace OpenSim {
 
@@ -41,6 +42,38 @@ public:
         constructProperties();
     }
 
+    /// Provide a MocoWeightSet to weight the state variables in the cost.
+    /// Replaces the weight set if it already exists.
+    void setWeightSet(const MocoWeightSet& weightSet) {
+        upd_state_weights() = weightSet;
+    }
+
+    /// Set the weight for an individual state variable. If a weight is
+    /// already set for the requested state, then the provided weight
+    /// replaces the previous weight. An exception is thrown if a weight
+    /// for an unknown state is provided.
+    void setWeightForState(const std::string& stateName, const double& weight) {
+        if (get_state_weights().contains(stateName)) {
+            upd_state_weights().get(stateName).setWeight(weight);
+        } else {
+            upd_state_weights().cloneAndAppend({stateName, weight});
+        }
+    }
+
+    /// Only state paths matching the regular expression are tracked. The
+    /// regular expression must match the entire state path for a state path to
+    /// be tracked (that is, we use std::regex_match, not std::regex_search).
+    /// To track only generalized coordinates, use `.*value$`.
+    /// To track generalized coordinates and speeds, use `.*(value|speed)$`.
+    /// To track only activations, use `.*activation$`.
+    /// If the reference contains columns for states whose path does not match
+    /// this pattern, you will get an error unless you use
+    /// `setAllowUnusedReferences(true)`.
+    void setPattern(std::string pattern) { set_pattern(pattern); }
+    /// Unset the pattern, which causes all states to be matched.
+    void clearPattern() { updProperty_pattern().clear(); }
+    std::string getPattern() const { return get_pattern(); }
+
 protected:
     void initializeOnModelImpl(const Model&) const override;
     void calcIntegrandImpl(
@@ -49,9 +82,27 @@ protected:
             const GoalInput& input, SimTK::Vector& cost) const override {
         cost[0] = input.integral;
     }
+    void printDescriptionImpl(std::ostream& stream = std::cout) const override;
 
 private:
-    void constructProperties();
+    OpenSim_DECLARE_PROPERTY(state_weights, MocoWeightSet,
+            "Set of weight objects to weight the tracking of individual "
+            "state variables in the cost.");
+
+    OpenSim_DECLARE_OPTIONAL_PROPERTY(pattern, std::string,
+            "If provided, only states matching this regular expression are "
+            "tracked (default: no pattern). If no pattern is provided, then "
+            "all states are used.");
+
+    void constructProperties() {
+        constructProperty_state_weights(MocoWeightSet());
+        constructProperty_pattern();
+    }
+
+    /// The indices in Y corresponding to the provided reference coordinates.
+    mutable std::vector<int> m_sysYIndices;
+    mutable std::vector<double> m_state_weights;
+    mutable std::vector<std::string> m_state_names;
 };
 
 } // namespace OpenSim

@@ -25,14 +25,60 @@ MocoSumSquaredStateGoal::MocoSumSquaredStateGoal() {
     constructProperties();
 }
 
-void MocoSumSquaredStateGoal::constructProperties() {
-}
+void MocoSumSquaredStateGoal::initializeOnModelImpl(const Model& model) const {
+    // Throw exception if a weight is specified for a nonexistent state.
+    auto allSysYIndices = createSystemYIndexMap(model);
 
-void MocoSumSquaredStateGoal::initializeOnModelImpl(const Model& /*model*/) const {
+    std::regex regex;
+    if (getProperty_pattern().size()) { 
+        regex = std::regex(get_pattern()); 
+    }
+
+    for (int i = 0; i < get_state_weights().getSize(); ++i) {
+        const auto& weightName = get_state_weights().get(i).getName();
+        if (allSysYIndices.count(weightName) == 0) {
+            OPENSIM_THROW_FRMOBJ(Exception, "Weight provided with name '" +
+                                                    weightName +
+                                                    "' but this is "
+                                                    "not a recognized state.");
+        }
+        if (getProperty_pattern().size() &&
+                !std::regex_match(weightName, regex)) {
+            OPENSIM_THROW_FRMOBJ(Exception,
+                    format("Weight provided with name '%s' but this name does "
+                           "not match the pattern '%s'.",
+                            weightName, get_pattern()));
+        }
+
+        m_sysYIndices.push_back(allSysYIndices[weightName]);
+
+        double weight = 1.0;
+        if (get_state_weights().contains(weightName)) {
+            weight = get_state_weights().get(weightName).getWeight();
+        }
+        m_state_weights.push_back(weight);
+    }
+
     setNumIntegralsAndOutputs(1, 1);
 }
 
 void MocoSumSquaredStateGoal::calcIntegrandImpl(const SimTK::State& state,
         double& integrand) const {
-    integrand = state.getY().normSqr();
+    if (get_state_weights().getSize() == 0) {
+        integrand = state.getY().normSqr();
+    } 
+    else {
+        for (int i = 0; i < get_state_weights().getSize(); ++i) {
+            const auto& value = state.getY()[m_sysYIndices[i]];
+            integrand += value * value;
+        }
+    }
+}
+
+void MocoSumSquaredStateGoal::printDescriptionImpl(std::ostream& stream) const {
+    for (int i = 0; i < (int)m_state_names.size(); i++) {
+        stream << "        ";
+        stream << "state: " << m_state_names[i] << ", "
+               << "weight: " << m_state_weights[i] << std::endl;
+    }
 }
