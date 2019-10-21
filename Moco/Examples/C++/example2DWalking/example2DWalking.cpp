@@ -137,11 +137,11 @@ MocoSolution gaitTracking(const bool& setPathLengthApproximation) {
     // MocoTrack problem by default.
     MocoControlGoal& effort =
             dynamic_cast<MocoControlGoal&>(problem.updGoal("control_effort"));
-    effort.setEnabled(false);
+    effort.setWeight(0.1);
     auto* metGoal = problem.addGoal<MocoOutputGoal>("met", 10);
     metGoal->setOutputPath("/metabolics|total_metabolic_rate");
     metGoal->setDivideByDisplacement(true);
-    metGoal->setDivideByMass(true);
+    // metGoal->setDivideByMass(true);
 
     // Bounds.
     // =======
@@ -170,9 +170,9 @@ MocoSolution gaitTracking(const bool& setPathLengthApproximation) {
     solver.set_num_mesh_intervals(50);
     solver.set_verbosity(2);
     solver.set_optim_solver("ipopt");
-    solver.set_optim_convergence_tolerance(1e-3);
+    solver.set_optim_convergence_tolerance(1e-4);
     solver.set_optim_constraint_tolerance(1e-4);
-    solver.set_optim_max_iterations(1000);
+    solver.set_optim_max_iterations(10000);
 
     // Solve problem.
     // ==============
