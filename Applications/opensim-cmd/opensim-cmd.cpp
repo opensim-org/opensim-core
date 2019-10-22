@@ -38,12 +38,12 @@ static const char HELP[] =
 R"(OpenSim: musculoskeletal modeling and simulation.
 
 Usage:
-  opensim-cmd [--loglevel=<level>] [--library=<path>]... <command> [<args>...]
+  opensim-cmd [--log-level=<level>] [--library=<path>]... <command> [<args>...]
   opensim-cmd -h | --help
   opensim-cmd -V | --version
 
 Options:
-  -d <level>, --loglevel <level>  Specify the logging level (verbosity).
+  -d <level>, --log-level <level>  Specify the logging level (verbosity).
                  Options are off, critical, error, warn, info, debug, trace
                  (least to most verbose). The default level is info.
   -L <path>, --library <path>  Load a plugin before executing the requested
@@ -65,7 +65,7 @@ Available commands:
 
 Examples:
   opensim-cmd run-tool InverseDynamics_Setup.xml
-  opensim-cmd --loglevel debug print-xml cmc
+  opensim-cmd --log-level debug print-xml cmc
   opensim-cmd info PathActuator
   opensim-cmd update-file lowerlimb_v3.3.osim lowerlimb_updated.osim
   opensim-cmd -L C:\Plugins\osimMyCustomForce.dll run-tool CMC_setup.xml
@@ -114,8 +114,8 @@ int main(int argc, const char** argv) {
         }
     }
 
-    if (args["--loglevel"]) {
-        Logger::setLevelString(args["--loglevel"].asString());
+    if (args["--log-level"]) {
+        Logger::setLevelString(args["--log-level"].asString());
         Logger::info("Logger level is set to {}.", Logger::getLevelString());
     }
 
