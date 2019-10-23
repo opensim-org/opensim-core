@@ -1,3 +1,7 @@
+- 2019-10-19: configureMoco.m adds Moco's Matlab Utilities directory
+              to the Matlab path, and removes any detected OpenSense beta
+              installations from Matlab.
+
 - 2019-10-18: MocoInverse has separate properties for constraint and convergence
               tolerances.
 
