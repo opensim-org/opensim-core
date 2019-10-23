@@ -2,6 +2,9 @@
               to the Matlab path, and removes any detected OpenSense beta
               installations from Matlab.
 
+- 2019-10-18: MocoInverse has separate properties for constraint and convergence
+              tolerances.
+
 - 2019-10-16: Fix a bug in ModOpscaleMaxIsometricForce, where the scale factor
               was not used properly.
 
