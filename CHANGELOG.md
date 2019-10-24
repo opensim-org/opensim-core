@@ -42,6 +42,7 @@ Other Changes
 - Performance of reading large data files has been significantly improved. A 50MB .sto file would take 10-11 min to read now takes 2-3 seconds. (PR #2399)
 - Added Matlab example script of plotting the Force-length properties of muscles in a models; creating an Actuator file from a model; 
 building and simulating a simple arm model;  using OutputReporters to record and write marker location and coordinate values to file.
+- Added Python example that demonstrates how to run an optimization using the cma package and how to avoid an expensive call to `initSystem()` within the objective function. (PR #2604)
 - OpenSim 4.1 ships with Python3 bindings as default. It is still possible to create bindings for Python2 if desired by setting CMake variable OPENSIM_PYTHON_VERSION to 2
 
 v4.0
