@@ -103,7 +103,7 @@ function(MocoAddPluginExampleCXX)
     cmake_parse_arguments(MOCOEX
             "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
-    add_library(osim${MOCOEX_NAME}
+    add_library(osim${MOCOEX_NAME} SHARED
             ${MOCOEX_NAME}.h
             ${MOCOEX_NAME}.cpp
             osim${MOCOEX_NAME}DLL.h
@@ -113,6 +113,11 @@ function(MocoAddPluginExampleCXX)
     set_target_properties(osim${MOCOEX_NAME} PROPERTIES
             FOLDER "Moco/Examples")
     target_link_libraries(osim${MOCOEX_NAME} osimMoco)
+
+    string(TOUPPER ${MOCOEX_NAME} _example_name_upper)
+    set_target_properties(osim${MOCOEX_NAME} PROPERTIES
+            DEFINE_SYMBOL OSIM${_example_name_upper}_EXPORTS
+            )
 
     add_executable(example${MOCOEX_NAME} example${MOCOEX_NAME}.cpp)
     set_target_properties(example${MOCOEX_NAME} PROPERTIES
