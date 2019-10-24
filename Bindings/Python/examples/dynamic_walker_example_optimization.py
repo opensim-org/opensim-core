@@ -37,6 +37,10 @@
 # [2] Implementation -- https://github.com/CMA-ES/pycma
 # [3] Documentation -- http://cma.gforge.inria.fr/apidocs-pycma/cma.html
 
+import opensim as osim
+import time
+import cma
+
 
 # OBJECTIVE FUNCTION
 # Runs a forward simulation using the initial conditions specified in the
@@ -44,7 +48,6 @@
 # objective function value (i.e. the final location of the pelvis).
 def walker_simulation_objective_function(candsol):
     global model, initial_state, all_distances, all_candsols
-    import opensim as osim
     
     # Set the initial hip and knee angles.
     initial_state.updQ()[3] = candsol[0]    # left hip
@@ -74,7 +77,7 @@ def walker_simulation_objective_function(candsol):
     # Store the candidate solution and the distance traveled.
     all_candsols.append(candsol)
     all_distances.append(x)
-    print('Distance traveled: ' + str(x) + ' meters')
+    print('Distance traveled: %f meters' % (x))
     
     # To maximize distance, minimize its negative. Also penalize candidate
     # solutions that increase the initial pelvis velocity beyond 2 m/s (to
@@ -89,10 +92,6 @@ def walker_simulation_objective_function(candsol):
 # MAIN
 # Perform an optimization using cma with the above objective function. The
 # final model will be saved as 'dynamic_walker_example_model_optimized.osim'.
-import opensim as osim
-import time
-import cma
-
 global model, initial_state, all_distances, all_candsols
 all_distances = []
 all_candsols  = []
@@ -128,11 +127,11 @@ result = cma.fmin(walker_simulation_objective_function, candsol, 0.5,
                   options = {'popsize':20, 'tolfun':1e-3, 'tolx':1e-3,
                              'maxfevals':100})
 t_elapsed = time.time() - t_start
-print('Elapsed time: ' + str(t_elapsed) + ' seconds')
+print('Elapsed time: %f seconds' % (t_elapsed))
 
 # Find the best solution.
 max_distance = max(all_distances)
-print('Best distance: ' + str(max_distance) + ' meters')
+print('Best distance: %f meters' % (max_distance))
 idx = all_distances.index(max_distance)
 bestsol = all_candsols[idx]
 print(bestsol)
