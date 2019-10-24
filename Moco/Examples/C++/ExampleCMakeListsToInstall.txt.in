@@ -3,15 +3,15 @@ project(Moco_@_example_name@)
 
 set(CMAKE_CXX_STANDARD 11)
 
-find_package(Moco REQUIRED HINTS
+find_package(OpenSimMoco REQUIRED HINTS
     "${CMAKE_SOURCE_DIR}/@_moco_install_hint@")
-include("${Moco_USE_FILE}")
+include("${OpenSimMoco_USE_FILE}")
 
 add_executable(@_example_name@ @_example_name@.cpp)
 target_link_libraries(@_example_name@ osimMoco)
 
 # For Windows: make sure DLLs for dependencies are available.
-MocoCopyDLLs(DEP_NAME Moco DEP_BIN_DIR "${Moco_BIN_DIR}")
+MocoCopyDLLs(DEP_NAME OpenSimMoco DEP_BIN_DIR "${OpenSimMoco_BIN_DIR}")
 if(WIN32)
     add_dependencies(@_example_name@ Copy_Moco_DLLs)
 endif()

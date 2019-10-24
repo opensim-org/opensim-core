@@ -9,4 +9,17 @@ This is an example of how to prototype a custom goal in Matlab. See
 This example shows how to define dynamics with an implicit differential
 equation.
 */
+
+/** @example exampleSlidingMassAdvanced.cpp
+This example shows setting solver settings, customizing an initial guess,
+and defining a custom goal (cost term).
+See @ref customgoal.
+*/
+
+/** @example exampleMocoCustomEffortGoal.cpp
+This example shows creating a custom goal in a plugin library, which allows
+you to use the custom goal in C++, the command-line, Matlab, Python, and the
+GUI.
+See @ref customgoal.
+*/
 } // namespace OpenSim

@@ -18,6 +18,9 @@
               
 - 2019-09-29: Remove INDYGO and GlobalStaticOptimization from Moco.
 
+- 2019-09-28: exampleSlidingMassAdvanced.cpp and exampleMocoCustomEffortGoal
+              show how to create a custom goal class.
+
 - 2019-09-23: MocoControlGoal has properties "exponent" and
               "divide_by_displacement". 
 
