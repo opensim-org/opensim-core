@@ -23,7 +23,30 @@ These tools derive from the MocoTool class.
 If the MocoTool%s do not satisfy your needs, you can create and solve your own
 custom optimal control problem using the MocoStudy class.
 
-- @subpage mocostudy
+@subpage mocostudy
+
+@section choosingmodel Choosing a Model
+
+Moco supports most OpenSim models, including those with kinematic constraints,
+auxiliary (muscle) dynamics, and passive force components.
+
+Currently, Moco does not support models with Controller%s. Moco must serve
+as the sole controller of the model. This prevents, for example,
+using reflex controllers to model spasticity.
+We hope to add support for Model Controllers in the future.
+
+Moco does not support models with SimTK::Measure%s, such as Probe%s. Some
+Measures rely on time-stepping forward integration, which does not
+occur with Moco. This prevents using, for example, the metabolics probes with
+Moco.
+
+Some model components are supported through Moco but may hinder the solvers
+from converging quickly. Any components with discontinuous functions can cause
+issues for the derivative-based optimization algorithms used by Moco.
+We suggest replacing your model's muscles with DeGrooteFregly2016Muscle%s
+and replacing your contact forces with SmoothSphereHalfSpaceForce%s. These
+components are designed for use with direct collocation.
+
 
 @section customgoal Defining a custom goal or cost
 
