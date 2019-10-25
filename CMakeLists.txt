@@ -89,9 +89,8 @@ option(OPENSIM_COPY_DEPENDENCIES "Copy Simbody and BTK into the
 OpenSim installation. This should be set to ON when making a relocatable
 distribution, and should be set to OFF when packaging for Homebrew, Debian,
 etc. On Linux and macOS: we use relative RPATHs when ON, and absolute RPATHs
-when OFF. This should also be on if BUILD_JAVA_WRAPPING or 
-BUILD_PYTHON_WRAPPING is ON, so if this OFF, a warning is thrown to the user
-and this option is automatically turned ON." ON)
+when OFF. For most users, this should also be on if BUILD_JAVA_WRAPPING or 
+BUILD_PYTHON_WRAPPING is ON, so if this OFF, a warning is thrown." ON)
 mark_as_advanced(OPENSIM_COPY_DEPENDENCIES)
 
 option(OPENSIM_PYTHON_STANDALONE "Make the Python package standalone, meaning
@@ -443,13 +442,13 @@ if(${BUILD_JAVA_WRAPPING})
             endif()
         endif()
     endif()
-    # Need copies of dependencies for wrapping. Turn it on and warn user
-    # if it wasn't on.
+    # Most users need to copy dependencies if wrapping is on. Warn user
+    # if it isn't on.
     if (NOT OPENSIM_COPY_DEPENDENCIES)
-        set(OPENSIM_COPY_DEPENDENCIES ON)
         string(CONCAT MSG
            "BUILD_JAVA_WRAPPING is ON but OPENSIM_COPY_DEPENDENCIES is OFF. "
-           "OPENSIM_COPY_DEPENDENCIES is now ON.")
+           "Wrapping may not work correctly. Consider switching the "
+		   "OPENSIM_COPY_DEPENDENCIES flag to ON.")
         message(WARNING ${MSG})
     endif()
 endif()
@@ -501,13 +500,13 @@ if(${BUILD_PYTHON_WRAPPING})
     endif()
     find_package(PythonLibs ${required_python_version} REQUIRED)
     
-    # Need copies of dependencies for wrapping. Turn it on and warn user
-    # if it wasn't on.
+    # Most users need to copy dependencies if wrapping is on. Warn user
+    # if it isn't on.
     if (NOT OPENSIM_COPY_DEPENDENCIES)
-        set(OPENSIM_COPY_DEPENDENCIES ON)
         string(CONCAT MSG
-           "BUILD_JAVA_WRAPPING is ON but OPENSIM_COPY_DEPENDENCIES is OFF. "
-           "OPENSIM_COPY_DEPENDENCIES is now ON.")
+           "BUILD_PYTHON_WRAPPING is ON but OPENSIM_COPY_DEPENDENCIES is OFF. "
+           "Wrapping may not work correctly. Consider switching the "
+		   "OPENSIM_COPY_DEPENDENCIES flag to ON.")
         message(WARNING ${MSG})
     endif()
 endif()
