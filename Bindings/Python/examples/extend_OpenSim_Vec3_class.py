@@ -43,5 +43,5 @@ osim.Vec3.__add__ = myVec3Add
 a = osim.Vec3(1,2,3)
 b = osim.Vec3(4,5,6)
 c = a+b
-print c
-print type(c)
+print(c)
+print(type(c))
