@@ -859,8 +859,9 @@ void Model::extendConnectToModel(Model &model)
         if (mob.isAddedBaseMobilizer()){
             // create and add the base joint to enable these dofs
             Body* child = static_cast<Body*>(mob.getOutboardBodyRef());
-            cout << "Body '" << child->getName() << "' not connected by a Joint.\n"
-                << "A FreeJoint will be added to connect it to ground." << endl;
+            log_info("Body '{}' not connected by a Joint. A FreeJoint will be "
+                     "added to connect it to ground.",
+                    child->getName());
             Ground* ground = static_cast<Ground*>(mob.getInboardBodyRef());
 
             std::string jname = "free_" + child->getName();
@@ -1160,8 +1161,6 @@ void Model::generateDecorations
     ComponentList<const Component> allComps = getComponentList();
     ComponentList<Component>::const_iterator iter = allComps.begin();
     while (iter != allComps.end()){
-        //std::string cn = iter->getConcreteClassName();
-        //std::cout << cn << ":" << iter->getName() << std::endl;
         iter->generateDecorations(fixed, hints, state, appendToThis);
         iter++;
     }
@@ -1439,7 +1438,7 @@ void Model::removeAnalysis(Analysis *aAnalysis, bool deleteIt)
 {
     // CHECK FOR NULL
     if(aAnalysis==NULL) {
-        cout << "Model.removeAnalysis:  ERROR- NULL analysis.\n" << endl;
+        log_error("Model.removeAnalysis: NULL analysis.");
     }
     if (!deleteIt){
         bool saveStatus = _analysisSet.getMemoryOwner();
@@ -1461,7 +1460,7 @@ void Model::removeController(Controller *aController)
 {
     // CHECK FOR NULL
     if(aController==NULL) {
-        cout << "Model.removeController:  ERROR- NULL controller.\n" << endl;
+        log_error("Model.removeController: NULL controller.");
     }
 
     upd_ControllerSet().remove(aController);
@@ -1751,7 +1750,7 @@ void Model::updateMarkerSet(MarkerSet& newMarkerSet)
         addMarker(updatingMarker.clone());
     }
 
-    cout << "Updated markers in model " << getName() << endl;
+    log_info("Updated markers in model {}.", getName());
 }
 
 //_____________________________________________________________________________
@@ -1783,7 +1782,7 @@ int Model::deleteUnusedMarkers(const OpenSim::Array<string>& aMarkerNames)
         }
     }
 
-    cout << "Deleted " << numDeleted << " unused markers from model " << getName() << endl;
+    log_info("Deleted {} unused markers from model {}.", numDeleted, getName());
 
     return numDeleted;
 }
