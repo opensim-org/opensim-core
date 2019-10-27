@@ -1,3 +1,7 @@
+- 2019-10-27: DeGrooteFregly2016Muscle::replaceMuscles() now carries over the
+              appliesForce property. This affects 
+              ModOpReplaceMusclesWithDeGrooteFregly2016 as well.
+
 - 2019-10-19: configureMoco.m adds Moco's Matlab Utilities directory
               to the Matlab path, and removes any detected OpenSense beta
               installations from Matlab.
