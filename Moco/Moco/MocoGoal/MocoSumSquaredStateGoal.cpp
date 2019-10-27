@@ -30,8 +30,8 @@ void MocoSumSquaredStateGoal::initializeOnModelImpl(const Model& model) const {
     auto allSysYIndices = createSystemYIndexMap(model);
 
     std::regex regex;
-    if (getProperty_pattern().size()) { 
-        regex = std::regex(get_pattern()); 
+    if (getProperty_pattern().size()) {
+        regex = std::regex(get_pattern());
     }
 
     for (int i = 0; i < get_state_weights().getSize(); ++i) {
@@ -62,15 +62,15 @@ void MocoSumSquaredStateGoal::initializeOnModelImpl(const Model& model) const {
     setNumIntegralsAndOutputs(1, 1);
 }
 
-void MocoSumSquaredStateGoal::calcIntegrandImpl(const SimTK::State& state,
-        double& integrand) const {
+void MocoSumSquaredStateGoal::calcIntegrandImpl(
+        const SimTK::State& state, double& integrand) const {
     if (get_state_weights().getSize() == 0) {
         integrand = state.getY().normSqr();
     } 
     else {
         for (int i = 0; i < get_state_weights().getSize(); ++i) {
             const auto& value = state.getY()[m_sysYIndices[i]];
-            integrand += value * value;
+            integrand += m_state_weights[i] * value * value;
         }
     }
 }
