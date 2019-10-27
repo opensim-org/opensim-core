@@ -299,7 +299,7 @@ if(WIN32)
     # want to accidentally use a different OpenSim build/installation somewhere
     # on the machine.
     foreach(folder tests examples)
-        set_tests_properties(python_${folder} PROPERTIES ENVIRONMENT
+        set_property(TEST python_${folder} APPEND PROPERTY ENVIRONMENT
             "PATH=${CMAKE_BINARY_DIR}/$<CONFIG>")
     endforeach()
 endif()
