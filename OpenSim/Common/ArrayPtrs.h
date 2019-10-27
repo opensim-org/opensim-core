@@ -31,6 +31,7 @@
 #include "osimCommonDLL.h"
 #include <iostream>
 #include "Exception.h"
+#include "Logger.h"
 
 
 //=============================================================================

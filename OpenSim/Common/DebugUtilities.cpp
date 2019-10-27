@@ -20,6 +20,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 #include "DebugUtilities.h"
+#include "Logger.h"
 #include <sstream>
 #include <fstream>
 #include <iostream>

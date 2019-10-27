@@ -24,6 +24,7 @@
 
 #include <iostream>
 #include "IO.h"
+#include "Logger.h"
 #include "LoadOpenSimLibrary.h"
 
 using namespace OpenSim;

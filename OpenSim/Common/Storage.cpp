@@ -209,19 +209,20 @@ Storage::Storage(const string &fileName, bool readHeadersOnly) :
             auto dataAdapter = FileAdapter::createAdapterFromExtension(fileName);
             FileAdapter::OutputTables tables = dataAdapter->read(fileName);
             if (tables.size() > 1) {
-                cout << "Storage: cannot read data files with multiple tables. "
-                    << "Only the first table '" << tables.begin()->first << "' will "
-                    << "be loaded as Storage." << endl;
+                log_warn(
+                        "Storage: cannot read data files with multiple tables. "
+                        "Only the first table '{}' will be loaded as Storage.",
+                        tables.begin()->first);
             }
             convertTableToStorage(tables.begin()->second.get(), *this);
             return;
         }
         catch (const std::exception& x) {
-            cout << "Storage: FileAdpater failed to read data file.\n"
-                << x.what() << endl;
-            if (isStoFile) 
-                cout << "Reverting to use conventional Storage reader." << endl;
-            else 
+            log_warn("Storage: FileAdpater failed to read data file.\n{}",
+                    x.what());
+            if (isStoFile)
+                log_warn("Reverting to use conventional Storage reader.");
+            else
                 throw x;
         }
     }
@@ -234,8 +235,8 @@ Storage::Storage(const string &fileName, bool readHeadersOnly) :
         _inDegrees = true;
     }
     if (_fileVersion < 1) {
-        cout << ".. assuming rotations in "
-            << (_inDegrees?"Degrees.":"Radians.") << endl;
+        log_info(".. assuming rotations in {}.",
+                _inDegrees ? "Degrees." : "Radians.");
     }
 
     // IGNORE blank lines after header -- treat \r and \n as end of line chars
@@ -252,9 +253,9 @@ Storage::Storage(const string &fileName, bool readHeadersOnly) :
     parseColumnLabels(line.c_str());
 
     if (_columnLabels.getSize()!= nc){
-        std::cout << "Storage: Warning- inconsistent headers in file " << 
-            fileName << ". nColumns=" << nc << " but "
-            << _columnLabels.getSize() << " were found" << std::endl;
+        log_warn("Storage: Inconsistent headers in file {}. nColumns={} but {} "
+                 "were found",
+                fileName, nc, _columnLabels.getSize());
     }
     // CAPACITY
     _storage.ensureCapacity(nr);
@@ -1286,7 +1287,7 @@ setDataColumn(int aStateIndex,const Array<double> &aData)
 {
     int n = _storage.getSize();
     if(n!=aData.getSize()) {
-        cout<<"Storage.setDataColumn: ERR- sizes don't match." << endl;
+        log_error("Storage.setDataColumn: sizes don't match.");
         return;
     }
 
@@ -1304,7 +1305,7 @@ void Storage::setDataColumnToFixedValue(const std::string& columnName, double ne
     int n = _storage.getSize();
     int aStateIndex = getStateIndex(columnName);
     if(aStateIndex==-1) {
-        cout<<"Storage.setDataColumnToFixedValue: ERR- column not found." << endl;
+        log_error("Storage.setDataColumnToFixedValue: column not found.");
         return;
     }
 
@@ -1353,7 +1354,8 @@ void Storage::getDataForIdentifier(const std::string& identifier, Array<Array<do
     Array<int> found = getColumnIndicesForIdentifier(identifier);
 
     if(found.getSize() == 0){
-        cout << "WARNING: Storage "+getName()+" could not locate data for identifier "+identifier+"." << endl;
+        log_warn("Storage {} could not locate data for identifier {}.",
+                getName(), identifier);
         return;
     }
     /* a row of "data" can be shorter than number of columns if time is the first column, since 
@@ -1472,7 +1474,7 @@ crop(const double newStartTime, const double newFinalTime)
     // delete remaining rows in reverse order.
     int numRowsToKeep=finalindex-startindex+1;
     if (numRowsToKeep <=0){
-        cout<<"Storage.crop: WARNING: No rows will be left." << endl;
+        log_warn("Storage.crop: No rows will be left.");
         numRowsToKeep=0;
     }
     if (startindex!=0){
@@ -2022,8 +2024,9 @@ computeAverage(int aN,double *aAve) const
     double ti = getFirstTime();
     double tf = getLastTime();
     if(tf<=ti) {
-        cout << "Storage.computeAverage: ERROR- time interval invalid." << endl
-              << "\tfirstTime=" << ti << "  lastTime=" << tf << endl;
+        log_error("Storage.computeAverage: time interval "
+                  "invalid.\n\tfirstTime={}  lastTime={}",
+                ti, tf);
         return(0);
     }
     double dt_recip = 1.0 / (tf-ti);
@@ -2074,13 +2077,13 @@ integrate(int aI1,int aI2,int aN,double *rArea,Storage *rStorage) const
 {
     // CHECK THAT THERE ARE STATES STORED
     if(_storage.getSize()<=0) {
-        cout << "Storage.integrate: ERROR- no stored states." << endl;
+        log_error("Storage.integrate: no stored states.");
         return(0);
     }
 
     // CHECK INDICES
     if(aI1>=aI2) {
-        cout << "Storage.integrate:  ERROR- aI1 >= aI2." << endl;
+        log_error("Storage.integrate:  aI1 >= aI2.");
         return(0);
     }
 
@@ -2088,7 +2091,7 @@ integrate(int aI1,int aI2,int aN,double *rArea,Storage *rStorage) const
     int n = getSmallestNumberOfStates();
     if(n>aN) n = aN;
     if(n<=0) {
-        cout << "Storage.computeArea: ERROR- no stored states" << endl;
+        log_error("Storage.computeArea: no stored states");
         return(0);
     }
 
@@ -2149,14 +2152,15 @@ integrate(double aTI,double aTF,int aN,double *rArea,Storage *rStorage) const
 {
     // CHECK THAT THERE ARE STATES STORED
     if(_storage.getSize()<=0) {
-        cout << "Storage.integrate: ERROR- no stored states." << endl;
+        log_error("Storage.integrate: no stored states.");
         return(0);
     }
 
     // CHECK INITIAL AND FINAL TIMES
     if(aTI>=aTF) {
-        cout << "Storage.integrate:  ERROR- bad time range." << endl
-              << "\tInitial time (" << aTI << ") is not smaller than final time (" << aTF << ")" << endl;
+        log_error("Storage.integrate: bad time range.\n\tInitial time ({}) is "
+                  "not smaller than final time ({})",
+                aTI, aTF);
         return(0);
     }
 
@@ -2164,9 +2168,10 @@ integrate(double aTI,double aTF,int aN,double *rArea,Storage *rStorage) const
     double fstT = getFirstTime();
     double lstT = getLastTime();
     if((aTI<fstT)||(aTI>lstT)||(aTF<fstT)||(aTF>lstT)) {
-        cout << "Storage.integrate: ERROR- bad time range." << endl
-              << "\tThe specified range (" << aTI << " to " << aTF << ") is not covered by" << endl
-              << "\ttime range of the stored states (" << fstT << " to " << lstT << ")." << endl;
+        log_error("Storage.integrate: bad time range.\n\tThe specified range "
+                  "({} to {}) is not covered by\ttime range of the stored "
+                  "states ({} to {}).",
+                aTI, aTF, fstT, lstT);
         return(0);
     }
 
@@ -2177,7 +2182,7 @@ integrate(double aTI,double aTF,int aN,double *rArea,Storage *rStorage) const
     int n = getSmallestNumberOfStates();
     if(n>aN) n = aN;
     if(n<=0) {
-        cout << "Storage.integrate: ERROR- no stored states" << endl;
+        log_error("Storage.integrate: no stored states");
         return(0);
     }
 
@@ -2411,7 +2416,7 @@ smoothSpline(int aOrder,double aCutoffFrequency)
     double avgDt = (_storage[size-1].getTime() - _storage[0].getTime()) / (size-1);
 
     if(dtmin<SimTK::Eps) {
-        cout<<"Storage.SmoothSpline: storage cannot be resampled."<<endl;
+        log_error("Storage.SmoothSpline: storage cannot be resampled.");
         return;
     }
 
@@ -2422,7 +2427,7 @@ smoothSpline(int aOrder,double aCutoffFrequency)
     }
 
     if(size<(2*aOrder)) {
-        cout<<"Storage.SmoothSpline: too few data points to filter."<<endl;
+        log_error("Storage.SmoothSpline: too few data points to filter.");
         return;
     }
 
@@ -2451,7 +2456,7 @@ lowpassIIR(double aCutoffFrequency)
     double avgDt = (_storage[size-1].getTime() - _storage[0].getTime()) / (size-1);
 
     if(dtmin<SimTK::Eps) {
-        cout<<"Storage.lowpassIIR: storage cannot be resampled."<<endl;
+        log_error("Storage.lowpassIIR: storage cannot be resampled.");
         return;
     }
 
@@ -2462,7 +2467,7 @@ lowpassIIR(double aCutoffFrequency)
     }
 
     if(size<(4)) {
-        cout<<"Storage.lowpassIIR: too few data points to filter."<<endl;
+        log_error("Storage.lowpassIIR: too few data points to filter.");
         return;
     }
 
@@ -2488,7 +2493,7 @@ lowpassFIR(int aOrder,double aCutoffFrequency)
     double avgDt = (_storage[size-1].getTime() - _storage[0].getTime()) / (size-1);
 
     if (dtmin<SimTK::Eps) {
-        cout<<"Storage.lowpassFIR: storage cannot be resampled."<<endl;
+        log_error("Storage.lowpassFIR: storage cannot be resampled.");
         return;
     }
 
@@ -2499,7 +2504,7 @@ lowpassFIR(int aOrder,double aCutoffFrequency)
     }
 
     if(size<(2*aOrder)) {
-        cout<<"Storage.lowpassFIR: too few data points to filter."<<endl;
+        log_error("Storage.lowpassFIR: too few data points to filter.");
         return;
     }
 
@@ -2609,7 +2614,9 @@ resample(double aDT, int aDegree)
     int maxSamples = MAX_RESAMPLE_SIZE;
     if((getLastTime()-getFirstTime())/aDT > maxSamples) {
         double newDT = (getLastTime()-getFirstTime())/maxSamples;
-        cout<<"Storage.resample: WARNING: resampling at time step "<<newDT<<" (but minimum time step is "<<aDT<<")"<<endl;
+        log_warn("Storage.resample: resampling at time step {} (but minimum "
+                 "time step is {}).",
+                newDT, aDT);
         aDT = newDT;
     }
 
@@ -2645,7 +2652,9 @@ resampleLinear(double aDT)
     int maxSamples = MAX_RESAMPLE_SIZE;
     if((getLastTime()-getFirstTime())/aDT > maxSamples) {
         double newDT = (getLastTime()-getFirstTime())/maxSamples;
-        cout<<"Storage.resampleLinear: WARNING: resampling at time step "<<newDT<<" (but minimum time step is "<<aDT<<")"<<endl;
+        log_warn("Storage.resample: resampling at time step {} (but minimum "
+                 "time step is {}).",
+                newDT, aDT);
         aDT = newDT;
     }
 
@@ -2762,8 +2771,8 @@ print(const string &aFileName,const string &aMode, const string& aComment) const
     int n=0,nTotal=0;
     n = writeHeader(fp);
     if(n<0) {
-        cout << "Storage.print(const string&,const string&): failed to" << endl
-              << " write header to file " << aFileName << endl;
+        log_error("Storage.print: failed to write header to file {}.",
+                aFileName);
         return(false);
     }
 
@@ -2771,8 +2780,8 @@ print(const string &aFileName,const string &aMode, const string& aComment) const
     if(_writeSIMMHeader) {
         n = writeSIMMHeader(fp, -1, aComment.c_str());
         if(n<0) {
-            cout << "Storage.print(const string&,const string&): failed to" << endl
-                  << " write SIMM header to file " << aFileName << endl;
+            log_error("Storage.print: failed to write SIMM header to file {}.",
+                    aFileName);
             return(false);
         }
     }
@@ -2780,16 +2789,16 @@ print(const string &aFileName,const string &aMode, const string& aComment) const
     // WRITE THE DESCRIPTION
     n = writeDescription(fp);
     if(n<0) {
-        cout << "Storage.print(const string&,const string&): failed to" << endl
-              << " write description to file " << aFileName << endl;
+        log_error("Storage.print: failed to write description to file {}.",
+                aFileName);
         return(false);
     }
 
     // WRITE THE COLUMN LABELS
     n = writeColumnLabels(fp);
     if(n<0) {
-        cout << "Storage.print(const string&,const string&): failed to" << endl
-              << " write column labels to file " << aFileName << endl;
+        log_error("Storage.print: failed to write column labels to file {}.",
+                aFileName);
         return(false);
     }
 
@@ -2800,7 +2809,7 @@ print(const string &aFileName,const string &aMode, const string& aComment) const
     for(int i=0;i<_storage.getSize();i++) {
         n = getStateVector(i)->print(fp);
         if(n<0) {
-            cout << "Storage.print(const string&,const string&): error printing to " << aFileName;
+            log_error("Storage.print: error printing to {}.", aFileName);
             return(false);
         }
         nTotal += n;        
@@ -2847,8 +2856,8 @@ print(const string &aFileName,double aDT,const string &aMode) const
     int n,nTotal=0;
     n = writeHeader(fp,aDT);
     if(n<0) {
-        cout << "Storage.print(const string&,const string&,double): failed to" << endl
-              << " write header of file " << aFileName << endl;
+        log_error("Storage.print: failed to write header to file {}.",
+                aFileName);
         return(n);
     }
 
@@ -2856,8 +2865,8 @@ print(const string &aFileName,double aDT,const string &aMode) const
     if(_writeSIMMHeader) {
         n = writeSIMMHeader(fp,aDT);
         if(n<0) {
-            cout << "Storage.print(const string&,const string&): failed to" << endl
-                  << " write SIMM header to file " << aFileName << endl;
+            log_error("Storage.print: failed to write SIMM header to file {}.",
+                    aFileName);
             return(n);
         }
     }
@@ -2865,16 +2874,16 @@ print(const string &aFileName,double aDT,const string &aMode) const
     // WRITE THE DESCRIPTION
     n = writeDescription(fp);
     if(n<0) {
-        cout << "Storage.print(const string&,const string&): failed to" << endl
-              << " write description to file " << aFileName << endl;
+        log_error("Storage.print: failed to write description to file {}.",
+                aFileName);
         return(n);
     }
 
     // WRITE THE COLUMN LABELS
     n = writeColumnLabels(fp);
     if(n<0) {
-        cout << "Storage.print(const string&,const string&): failed to" << endl
-              << " write column labels to file " << aFileName << endl;
+        log_error("Storage.print: failed to write column labels to file {}.",
+                aFileName);
         return(n);
     }
 
@@ -2891,7 +2900,7 @@ print(const string &aFileName,double aDT,const string &aMode) const
         // PRINT
         n = vec.print(fp);
         if(n<0) {
-            cout << "Storage.print(const string&,const string&): error printing to " << aFileName;
+            log_error("Storage.print: error printing to {}.", aFileName);
             return(n);
         }
         nTotal += n;        
@@ -3172,7 +3181,7 @@ bool Storage::parseHeaders(std::ifstream& aStream, int& rNumRows, int& rNumColum
         IO::TrimLeadingWhitespace(line);
         IO::TrimTrailingWhitespace(line);
         if(line.empty() && !aStream.good()) {
-            cout << "Storage: ERROR- no more lines in storage file." << endl;
+            log_error("Storage: no more lines in storage file.");
             return false;
         }
         if (line.length()==0)
@@ -3228,7 +3237,7 @@ bool Storage::parseHeaders(std::ifstream& aStream, int& rNumRows, int& rNumColum
     }
 
     if (_fileVersion < 1) {
-        cout << "Old version storage/motion file encountered" << endl;
+        log_info("Old version storage/motion file encountered");
     }
 
     if(rNumColumns==0 || rNumRows==0) {
