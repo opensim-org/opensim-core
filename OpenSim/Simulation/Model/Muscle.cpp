@@ -55,8 +55,7 @@ Muscle::Muscle()
 void Muscle::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 {
     if ( versionNumber < XMLDocument::getLatestVersion()) {
-        if (Object::getDebugLevel()>=1)
-            cout << "Updating Muscle object to latest format..." << endl;
+        log_debug("Updating Muscle object to latest format...");
         
         if (versionNumber <= 20301){
             SimTK::Xml::element_iterator pathIter = 
@@ -661,17 +660,17 @@ void Muscle::computeForce(const SimTK::State& s,
                           SimTK::Vector& generalizedForces) const
 {
     // This calls compute actuation.
-    Super::computeForce(s, bodyForces, generalizedForces); 
+    Super::computeForce(s, bodyForces, generalizedForces);
 
-    if (getDebugLevel() < 0) return;
-    // NOTE: Actuation could be negative, in particular during CMC, when the 
-    // optimizer is computing gradients, but in those cases the actuation will 
-    // be overridden and will not be computed by the muscle.
-    if (!isActuationOverridden(s) && (getActuation(s) < -SimTK::SqrtEps)) {
-        string msg = getConcreteClassName()
-            + "::computeForce, muscle "+ getName() + " force < 0";
-        cout << msg << " at time = " << s.getTime() << endl;
-        //throw Exception(msg);
+    if (Logger::shouldLog(Logger::Level::Warn)) {
+        // NOTE: Actuation could be negative, in particular during CMC, when the
+        // optimizer is computing gradients, but in those cases the actuation
+        // will be overridden and will not be computed by the muscle.
+        if (!isActuationOverridden(s) && (getActuation(s) < -SimTK::SqrtEps)) {
+            log_warn("{}::computeForce, muscle {} force < 0 at time = {}",
+                    getConcreteClassName(), getName(), s.getTime());
+            // throw Exception(msg);
+        }
     }
 }
 

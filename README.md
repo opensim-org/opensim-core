@@ -436,7 +436,6 @@ state = manager.integrate(10.0);
 ```
 
 </details>
----
 
 Building from the source code
 -----------------------------
@@ -492,6 +491,9 @@ On Windows using Visual Studio
 * **command-line argument parsing**: docopt.cpp. Two options:
     * Let OpenSim get this for you using superbuild (see below); much easier!
     * [Build on your own](https://github.com/docopt/docopt.cpp) (no instructions).
+* **logging**: spdlog. Two options:
+    * Let OpenSim get this for you using superbuild (see below); much easier!
+    * [Build on your own](https://github.com/gabime/spdlog).
 * **API documentation** (optional):
   [Doxygen](http://www.stack.nl/~dimitri/doxygen/download.html) >= 1.8.6
 * **version control** (optional): git. There are many options:
@@ -605,10 +607,14 @@ On Windows using Visual Studio
            `BTKConfig.cmake`. If the root directory of your BTK installation is
            `C:/BTKCore-install`, then set this variable to
            `C:/BTKCore-install/share/btk-0.4dev`.
-        3. docopt.cpp. Set the variable `docopt_DIR` to the directory
+        3. docopt.cpp: Set the variable `docopt_DIR` to the directory
            containing `docopt-config.cmake`. If the root directory of your
            docopt.cpp installation is `C:/docopt.cpp-install`, then set this
            variable to `C:/docopt.cpp-install/lib/cmake`.
+        4. spdlog: Set the variable `spdlog_DIR` to the directory containing
+           `spdlogConfig.cmake`. If the root directory of your spdlog 
+           installation is `C:/spdlog-install`, then set this variable to
+           `C:/spdlog-install/lib/spdlog/cmake`.
 7. Set the remaining configuration options.
     * `BUILD_API_EXAMPLES` to compile C++ API examples.
     * `BUILD_TESTING` to ensure that OpenSim works correctly. The tests take a
@@ -767,6 +773,9 @@ ctest -j8
 * **command-line argument parsing**: docopt.cpp. Two options:
     * Let OpenSim get this for you using superbuild (see below); much easier!
     * [Build on your own](https://github.com/docopt/docopt.cpp) (no instructions).
+* **logging**: spdlog. Two options:
+    * Let OpenSim get this for you using superbuild (see below); much easier!
+    * [Build on your own](https://github.com/gabime/spdlog).
 * **API documentation** (optional):
   [Doxygen](http://www.stack.nl/~dimitri/doxygen/download.html) >= 1.8.6
 * **version control** (optional): git.
@@ -866,10 +875,14 @@ You can get most of these dependencies using [Homebrew](http://brew.sh):
         2. BTK: Set the `BTK_DIR` variable to the directory containing
            `BTKConfig.cmake`. If you installed BTK in `~/BTKCore-install`, then
            set `BTK_DIR` to `~/BTKCore-install/share/btk-0.4dev`
-        3. docopt.cpp. Set the variable `docopt_DIR` to the directory
+        3. docopt.cpp: Set the variable `docopt_DIR` to the directory
            containing `docopt-config.cmake`. If the root directory of your
            docopt.cpp installation is `~/docopt.cpp-install`, then set this
            variable to `~/docopt.cpp-install/lib/cmake`.
+        4. spdlog: Set the variable `spdlog_DIR` to the directory containing
+           `spdlogConfig.cmake`. If the root directory of your spdlog 
+           installation is `~/spdlog-install`, then set this variable to
+           `~/spdlog-install/lib/spdlog/cmake`.
 7. Set the remaining configuration options.
     * `BUILD_API_EXAMPLES` to compile C++ API examples.
     * `BUILD_TESTING` to ensure that OpenSim works correctly. The tests take a
@@ -953,6 +966,9 @@ specific Ubuntu versions under 'For the impatient' below.
 * **command-line argument parsing**: docopt.cpp. Two options:
     * Let OpenSim get this for you using superbuild (see below); much easier!
     * [Build on your own](https://github.com/docopt/docopt.cpp) (no instructions).
+* **logging**: spdlog. Two options:
+    * Let OpenSim get this for you using superbuild (see below); much easier!
+    * [Build on your own](https://github.com/gabime/spdlog).
 * **API documentation** (optional):
   [Doxygen](http://www.stack.nl/~dimitri/doxygen/download.html) >= 1.8.6;
   `doxygen`.
@@ -1057,10 +1073,14 @@ And you could get all the optional dependencies via:
         2. BTK: Set the `BTK_DIR` variable to the directory containing
            `BTKConfig.cmake`. If you installed BTK in `~/BTK-install`, then set
            `BTK-DIR` to `~/BTK-install/share/btk-0.4dev`.
-        3. docopt.cpp. Set the variable `docopt_DIR` to the directory
+        3. docopt.cpp: Set the variable `docopt_DIR` to the directory
            containing `docopt-config.cmake`. If the root directory of your
            docopt.cpp installation is `~/docopt.cpp-install`, then set this
            variable to `~/docopt.cpp-install/lib/cmake`.
+        4. spdlog: Set the variable `spdlog_DIR` to the directory containing
+           `spdlogConfig.cmake`. If the root directory of your spdlog 
+           installation is `~/spdlog-install`, then set this variable to
+           `~/spdlog-install/lib/spdlog/cmake`.
 7. Choose your build type by setting `CMAKE_BUILD_TYPE` to one of the following:
     * **Debug**: debugger symbols; no optimizations (more than 10x slower).
     Library names end with `_d`.

@@ -138,3 +138,5 @@ LogBuffer *LogManager::getErrBuffer()
 {
     return &err;
 }
+
+

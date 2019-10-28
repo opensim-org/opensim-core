@@ -30,20 +30,18 @@
 
 namespace OpenSim {
 
-// Excluding this from Doxygen until it has better documentation! -Sam Hamner
-/// @cond
-
 class OSIMCOMMON_API StreamLogCallback : public LogCallback
 {
-private:
-    std::ostream *_out;
-    bool _ownsStream;
-    
 public:
     StreamLogCallback(const std::string &aFilename);
     StreamLogCallback(std::ostream *aOut, bool aOwnsStream = true);
     ~StreamLogCallback();
     void log(const std::string &aStr) override;
+
+private:
+    std::ostream *_out;
+    bool _ownsStream;
+
 };
 
 
@@ -60,18 +58,17 @@ private:
 
     int sync() override;
 };
-/// @endcond
 
-// Excluding this from Doxygen until it has better documentation! -Sam Hamner
-/// @cond
 class OSIMCOMMON_API LogManager
 {
 public:
-    // Expose these members so users can manipulate output formats by calling functions on LogManager::out/err
+    // Expose these members so users can manipulate output formats by calling
+    // functions on LogManager::out/err
     static LogBuffer out;
     static LogBuffer err;
 
-    // LogManager's cout and cerr act as the normal standard output and error (i.e. they write to the terminal)
+    // LogManager's cout and cerr act as the normal standard output and error
+    // (i.e. they write to the terminal)
     static std::ostream cout;
     static std::ostream cerr;
 
@@ -83,7 +80,7 @@ public:
     LogBuffer *getOutBuffer();
     LogBuffer *getErrBuffer();
 };
-/// @endcond
+
 }
 
 #endif
