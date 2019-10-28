@@ -123,7 +123,7 @@ Model OpenSenseUtilities::calibrateModelFromOrientations(
     const string& modelCalibrationPoseFile,
     const string& calibrationOrientationsFile,
     const std::string& baseImuName,
-    const SimTK::CoordinateAxis& baseHeadingAxis,
+    const SimTK::CoordinateDirection& baseHeadingDirection,
     bool visualizeCalibratedModel)
 {
     Model model(modelCalibrationPoseFile);
@@ -135,7 +135,7 @@ Model OpenSenseUtilities::calibrateModelFromOrientations(
 
     TimeSeriesTable_<SimTK::Rotation> orientationsData =
         OpenSenseUtilities::convertQuaternionsToRotations(quatTable,
-            startEnd, baseImuName, baseHeadingAxis);
+            startEnd, baseImuName, baseHeadingDirection);
 
     std::cout << "Loaded orientations as quaternions from "
         << calibrationOrientationsFile << std::endl;
