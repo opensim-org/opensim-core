@@ -179,8 +179,7 @@ print(const string &aFileName)
 {
     // Standard Out
     if(aFileName.empty()) {
-        cout << *this;
-        cout << flush;
+        log_info("{}", *this);
     // File
     } else {
         setIndentString("\t");
@@ -343,7 +342,7 @@ bool XMLDocument::isElementEqual(SimTK::Xml::Element& elt1, SimTK::Xml::Element&
     // Handle different # attributes
     if ( (att1 == elt1.attribute_end() && att2 != elt2.attribute_end()) ||
          (att1 != elt1.attribute_end() && att2 == elt2.attribute_end()) ){
-            cout << "Number of attributes is different, element " << elt1.getElementTag() << endl;
+            log_info("Number of attributes is different, element {}", elt1.getElementTag());
             return false;
     }
     bool equal =true;
@@ -352,8 +351,8 @@ bool XMLDocument::isElementEqual(SimTK::Xml::Element& elt1, SimTK::Xml::Element&
         equal = (att1->getName() == att2->getName());
         equal = equal && (att1->getValue() == att2->getValue());
         if (!equal) {
-            cout << "Attribute " << att1->getName() << " is different " << att1->getValue() << 
-            "vs." << att2->getValue() << endl;
+            log_info("Attribute {} is different {} vs. {}",
+                    att1->getName(), att1->getValue(), att2->getValue());
         }
     }
     if (!equal) return false;
@@ -362,13 +361,15 @@ bool XMLDocument::isElementEqual(SimTK::Xml::Element& elt1, SimTK::Xml::Element&
     SimTK::Array_<SimTK::Xml::Element> elts1 = elt1.getAllElements();
     SimTK::Array_<SimTK::Xml::Element> elts2 = elt2.getAllElements();
     if (elts1.size() != elts2.size()){
-        cout << "Different number of children for Element " << elt1.getElementTag() << endl;
+        log_info("Different number of children for Element {}",
+                elt1.getElementTag());
         equal = false;
     }
     if (!equal) return false;
     // Recursively compare Elements unless Value Elements in that case do direct compare
     for(unsigned it = 0; it < elts1.size() && equal; it++){
         SimTK::String elt1Tag = elts1[it].getElementTag();
+        // TODO: should this be logged?
         cout << "Compare " << elt1Tag << endl;
         SimTK::Xml::element_iterator elt2_iter = elt2.element_begin(elt1Tag);
         if (elt2_iter==elt2.element_end()){

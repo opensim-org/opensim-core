@@ -130,8 +130,9 @@ SmoothSpline(int degree,double T,double fc,int N,double *times,double *sig,doubl
     //cout << "Requested smoothing parameter = " << p << endl;
     //cout << "Actual smoothing parameter    = " << pActual << endl;
     if(p!=pActual) {
-        printf("Signal.SmoothSpline:  ERROR- The cutoff frequency (%lf)",fc);
-        printf(" produced a smoothing parameter (%le) beyond its bound (%le).\n",p,pActual);
+        log_error("Signal.SmoothSpline: The cutoff frequency ({}) produced a "
+                  "smoothing parameter ({}) beyond its bound ({}).",
+                  fc, p, pActual);
         return(-1);
     }
 
@@ -173,10 +174,10 @@ double *sigr;
     // CHECK THAT THE CUTOFF FREQUENCY IS LESS THAN HALF THE SAMPLE FREQUENCY
     fs = 1 / T;
     if (fc >= 0.5 * fs) {
-        printf("\nCutoff frequency should be less than half sample frequency.");
-        printf("\nchanging the cutoff frequency to 0.49*(Sample Frequency)...");
         fc = 0.49 * fs;
-        printf("\ncutoff = %lf\n\n",fc);
+        log_warn("Cutoff frequency should be less than half sample frequency. "
+                 "Changing the cutoff frequency to 0.49*(Sample Frequency)..."
+                 "cutoff = {}", fc);
     }
 
     // INITIALIZE SOME VARIABLES
@@ -202,7 +203,7 @@ double *sigr;
     // ALLOCATE MEMORY FOR sigr[]
     sigr = new double[N];
     if(sigr==NULL) {
-        printf("\nSignal.lowpassIIR: ERROR- Not enough memory.\n");
+        log_error("Signal.lowpassIIR: Not enough memory.");
         return(-1);
     }
 
@@ -267,8 +268,9 @@ LowpassFIR(int M,double T,double f,int N,double *sig,double *sigf)
 
     // CHECK THAT M IS NOT TOO LARGE RELATIVE TO N
     if((M+M)>N) {
-        printf("rdSingal.lowpassFIR:  ERROR- The number of data points (%d)",N);
-        printf(" should be at least twice the order of the filter (%d).\n",M);
+        log_error("rdSingal.lowpassFIR: The number of data points ({}) "
+                  "should be at least twice the order of the filter ({}).",
+                N, M);
         return(-1);
     }
 
@@ -350,16 +352,18 @@ double *s;
 
     // CHECK THAT M IS NOT TOO LARGE RELATIVE TO N
     if((M+M)>N) {
-    printf("\n\nThe number of data points (%d) should be at least twice\n",N);
-    printf("the order of the filter (%d).\n\n",M);
-    return(-1);
+        log_error("The number of data points ({}) "
+                  "should be at least twice the order of the filter ({}).",
+                N, M);
+        return(-1);
     }
 
     // ALLOCATE MEMORY FOR s
     size = N + M + M;
     s = (double *) calloc(size,sizeof(double));
     if (s == NULL) {
-        printf("\n\nlowpass() -> Not enough memory to process your sampled data.");
+        log_error(
+                "lowpass() -> Not enough memory to process your sampled data.");
         return(-1);
     }
 
@@ -418,14 +422,16 @@ Pad(int aPad,int aN,const double aSignal[])
     // COMPUTE FINAL SIZE
     int size = aN + 2*aPad;
     if(aPad>aN) {
-        cout<<"\nSignal.Pad(double[]): ERROR- requested pad size ("<<aPad<<") is greater than the number of points ("<<aN<<").\n";
+        log_error("Signal.Pad: requested pad size ({}) is greater than the "
+                  "number of points ({}).",
+                aPad, aN);
         return(NULL);
     }
 
     // ALLOCATE
     double *s = new double[size];
     if (s == NULL) {
-        printf("\n\nSignal.Pad: Failed to allocate memory.\n");
+        log_error("Signal.Pad: Failed to allocate memory.");
         return(NULL);
     }
 
@@ -519,8 +525,8 @@ ReduceNumberOfPoints(double aDistance,
     int size = rTime.getSize();
     int sizeSignal = rSignal.getSize();
     if(size!=sizeSignal) {
-        cout<<"\n\nSignal.ReduceNumberOfPoints:: quitting.  The time and signal ";
-        cout<<"arrays have different numbers of points.\n\n";
+        log_error("Signal.ReduceNumberOfPoints:: quitting.  The time and "
+                  "signal arrays have different numbers of points.");
         return(0);
     }
 
