@@ -186,6 +186,8 @@ EXPOSE_BOUNDS_CONSTRUCTORS_HELPER(MocoFinalBounds);
         std::initializer_list<double>);
 %ignore OpenSim::MocoTrajectory::setMultiplier(const std::string&,
         std::initializer_list<double>);
+%ignore OpenSim::MocoTrajectory::setDerivative(const std::string&,
+        std::initializer_list<double>);
 
 %include <Moco/MocoTrajectory.h>
 
