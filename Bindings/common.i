@@ -1,6 +1,7 @@
 
 %feature("director") OpenSim::AnalysisWrapper;
 %feature("director") OpenSim::SimtkLogCallback;
+%feature("director") OpenSim::LogSink;
 %feature("notabstract") ControlLinear;
 
 %rename(OpenSimObject) OpenSim::Object;
@@ -10,6 +11,11 @@
 %include <OpenSim/Common/osimCommonDLL.h>
 %include <OpenSim/Common/About.h>
 %include <OpenSim/Common/Exception.h>
+
+%shared_ptr(OpenSim::LogSink);
+%include <OpenSim/Common/LogSink.h>
+%include <OpenSim/Common/Logger.h>
+
 %include <OpenSim/Common/Array.h>
 %include <OpenSim/Common/ArrayPtrs.h>
 %include <OpenSim/Common/AbstractProperty.h>

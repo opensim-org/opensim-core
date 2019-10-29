@@ -34,7 +34,7 @@
 #include <OpenSim/OpenSim.h>
 #include <OpenSim/version.h>
 
-static const char HELP[] = 
+static const char HELP[] =
 R"(OpenSim: musculoskeletal modeling and simulation.
 
 Usage:
@@ -141,6 +141,3 @@ int main(int argc, const char** argv) {
     // We shouldn't ever get here, so we can consider this a failure.
     return EXIT_FAILURE;
 }
-
-
-
