@@ -182,7 +182,7 @@ void OpenSim::updateSocketConnecteesBySearch(Model& model)
     int numSocketsUpdated = 0;
     for (auto& comp : model.updComponentList()) {
         const auto socketNames = comp.getSocketNames();
-        for (int i = 0; i < socketNames.size(); ++i) {
+        for (size_t i = 0; i < socketNames.size(); ++i) {
             auto& socket = comp.updSocket(socketNames[i]);
             try {
                 socket.finalizeConnection(model);

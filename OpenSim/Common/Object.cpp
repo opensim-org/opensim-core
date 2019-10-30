@@ -1695,6 +1695,8 @@ int Object::getDebugLevel() {
     case Logger::Level::Info: return 0;
     case Logger::Level::Debug: return 1;
     case Logger::Level::Trace: return 2;
+    default:
+        OPENSIM_THROW(Exception, "Internal error.");
     }
 }
 

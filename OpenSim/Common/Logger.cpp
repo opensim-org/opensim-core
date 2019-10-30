@@ -60,6 +60,8 @@ void Logger::setLevel(Level level) {
     case Level::Trace:
         spdlog::set_level(spdlog::level::trace);
         break;
+    default:
+        OPENSIM_THROW(Exception, "Internal error.");
     }
     Logger::info("Set log level to {}.", getLevelString());
 }
@@ -74,6 +76,8 @@ Logger::Level Logger::getLevel() {
     case spdlog::level::info: return Level::Info;
     case spdlog::level::debug: return Level::Debug;
     case spdlog::level::trace: return Level::Trace;
+    default:
+        OPENSIM_THROW(Exception, "Internal error.");
     }
 }
 
@@ -106,6 +110,8 @@ std::string Logger::getLevelString() {
     case Level::Info: return "Info";
     case Level::Debug: return "Debug";
     case Level::Trace: return "Trace";
+    default:
+        OPENSIM_THROW(Exception, "Internal error.");
     }
 }
 
@@ -119,6 +125,8 @@ bool Logger::shouldLog(Level level) {
     case Level::Info: spdlogLevel = spdlog::level::info; break;
     case Level::Debug: spdlogLevel = spdlog::level::debug; break;
     case Level::Trace: spdlogLevel = spdlog::level::trace; break;
+    default:
+        OPENSIM_THROW(Exception, "Internal error.");
     }
     return spdlog::default_logger()->should_log(spdlogLevel);
 }
