@@ -124,6 +124,23 @@ std::pair<MocoStudy, TimeSeriesTable> MocoInverse::initializeInternal() const {
         solver.set_optim_max_iterations(get_max_iterations());
     }
 
+    // MocoTrajectory guess = solver.createGuess();
+    // int N = guess.getNumTimes();
+    // double guessValue = 0.05;
+    // for (const auto& muscle : model.getComponentList<Muscle>()) {
+    //     if (muscle.get_appliesForce()) {
+    //         // TODO: base on upper and lower bounds.
+    //         guess.setControl(muscle.getAbsolutePathString(),
+    //                 SimTK::Vector(N, guessValue));
+    //         if (!muscle.get_ignore_activation_dynamics()) {
+    //             guess.setState(muscle.getAbsolutePathString() + "/activation",
+    //                     SimTK::Vector(N, guessValue));
+    //         }
+    //     }
+    // }
+    // solver.setGuess(guess);
+
+
     return std::make_pair(
             study, posmotPtr->exportToTable(kinematics.getIndependentColumn()));
 }
