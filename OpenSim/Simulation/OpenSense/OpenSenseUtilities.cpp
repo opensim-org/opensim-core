@@ -38,7 +38,7 @@ TimeSeriesTable_<SimTK::Rotation> OpenSenseUtilities::
         const SimTK::CoordinateDirection& baseHeadingDirection,
         const SimTK::Rotation& sensorToOpenSim)
 {
-    // Fixed transform to rotate sensor orientations in world with Z up into the 
+    // Fixed transform to rotate sensor orientations in world with Z up into the
     // OpenSim ground reference frame with Y up and X forward.
     SimTK::Rotation R_XG = sensorToOpenSim;
 
@@ -71,9 +71,9 @@ TimeSeriesTable_<SimTK::Rotation> OpenSenseUtilities::
     // if a base imu is specified, perform heading correction, otherwise skip
     if (!baseImuName.empty()) {
 
-        // Base will rotate to match <base>_imu, so we must first remove the base 
-        // rotation from the other IMUs to get their orientation with respect to 
-        // individual model bodies and thereby compute correct offsets unbiased by the 
+        // Base will rotate to match <base>_imu, so we must first remove the base
+        // rotation from the other IMUs to get their orientation with respect to
+        // individual model bodies and thereby compute correct offsets unbiased by the
         // initial base orientation.
         auto imuLabels = orientationTable.getColumnLabels();
         auto pix = distance(imuLabels.begin(),
@@ -81,7 +81,7 @@ TimeSeriesTable_<SimTK::Rotation> OpenSenseUtilities::
 
         // if no base can be found but one was provided, throw.
         if (pix >= int(imuLabels.size())) {
-            OPENSIM_THROW(Exception, 
+            OPENSIM_THROW(Exception,
                 "No column with base IMU name '"+ baseImuName + "' found.");
         }
 
@@ -90,15 +90,19 @@ TimeSeriesTable_<SimTK::Rotation> OpenSenseUtilities::
 
         // Heading direction of the base IMU in this case the pelvis_imu heading is its ZAxis
         UnitVec3 pelvisHeading = base_R(baseHeadingDirection.getAxis());
-        if(baseHeadingDirection.getDirection() < 0) 
+        if(baseHeadingDirection.getDirection() < 0)
             pelvisHeading = pelvisHeading.negate();
         UnitVec3 groundX = UnitVec3(1, 0, 0);
         SimTK::Real angularDifference = acos(~pelvisHeading*groundX);
+        // Compute the angular coorrection
+        SimTK::Vec3 xproduct = (pelvisHeading % groundX);
+        if (xproduct.get(2)>0){
+          angularDifference *= -1;
+        }
 
         std::cout << "Heading correction computed to be "
             << angularDifference * SimTK_RADIAN_TO_DEGREE
             << "degs about ground Y" << std::endl;
-
 
         SimTK::Rotation R_HG = SimTK::Rotation(
             SimTK::BodyOrSpaceType::SpaceRotationSequence,
@@ -150,7 +154,7 @@ Model OpenSenseUtilities::calibrateModelFromOrientations(
     SimTK::State& s0 = model.initSystem();
     s0.updTime() = times[0];
 
-    // default pose of the model defined by marker-based IK 
+    // default pose of the model defined by marker-based IK
     model.realizePosition(s0);
 
     size_t imuix = 0;
@@ -228,7 +232,7 @@ Model OpenSenseUtilities::calibrateModelFromOrientations(
         const double accuracy = 1e-4;
         InverseKinematicsSolver ikSolver(model, mRefs, oRefs, coordRefs);
         ikSolver.setAccuracy(accuracy);
-        
+
         SimTK::Visualizer& viz = model.updVisualizer().updSimbodyVisualizer();
         // We use the input silo to get key presses.
         auto silo = &model.updVisualizer().updInputSilo();
@@ -274,7 +278,7 @@ OpenSenseUtilities::createOrientationsFileFromMarkers(const std::string& markers
 {
     TimeSeriesTableVec3 table{ markersFile };
 
-    // labels of markers including those <bodyName>O,X,Y that identify the 
+    // labels of markers including those <bodyName>O,X,Y that identify the
     // IMU sensor placement/alignment on the body expressed in Ground
     auto labels = table.getColumnLabels();
 
