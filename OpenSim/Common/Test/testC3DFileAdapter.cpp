@@ -21,16 +21,17 @@
  * -------------------------------------------------------------------------- */
 
 #include "OpenSim/Common/C3DFileAdapter.h"
-#include "OpenSim/Common/TRCFileAdapter.h"
 #include "OpenSim/Common/STOFileAdapter.h"
-#include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
-
-#include <vector>
-#include <unordered_map>
-#include <cstdlib>
+#include "OpenSim/Common/TRCFileAdapter.h"
 #include <chrono>
-#include <thread>
 #include <cmath>
+#include <cstdlib>
+#include <thread>
+#include <unordered_map>
+#include <vector>
+
+#include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
+#include <OpenSim/Common/Stopwatch.h>
 
 template<typename ETY = SimTK::Real>
 void compare_tables(const OpenSim::TimeSeriesTable_<ETY>& table1,
@@ -77,26 +78,25 @@ void test(const std::string filename) {
     using namespace std;
 
     // The walking C3D files included in this test should not take more
-    // than 40ms on most hardware. We make the max time 100ms to account
+    // than 40ms on most hardware. We make the max time 200ms to account
     // for potentially slower CI machines.
-    const double MaximumLoadTimeInMS = 100;
+    const long long MaximumLoadTimeInNs = SimTK::secToNs(0.200);
     
-    std::clock_t startTime = std::clock();
+    Stopwatch watch;
     C3DFileAdapter c3dFileAdapter{};
     auto tables = c3dFileAdapter.read(filename);
-
-    double loadTime = 1.e3*(std::clock() - startTime) / CLOCKS_PER_SEC;
+    long long loadTime = watch.getElapsedTimeInNs();
 
     cout << "\tC3DFileAdapter '" << filename << "' loaded in " 
-        << loadTime << "ms" << endl;
+        << watch.formatNs(loadTime) << endl;
 
 /*  Disabled performance test because Travis CI is consistently unable to
     meet this timing requirement. Consider PR#2221 to address this issue
     longer term.
     #ifdef NDEBUG
-    ASSERT(loadTime < MaximumLoadTimeInMS, __FILE__, __LINE__,
+    ASSERT(loadTime < MaximumLoadTimeInNs, __FILE__, __LINE__,
         "Unable to load '" + filename + "' within " + 
-        to_string(MaximumLoadTimeInMS) + "ms.");
+        to_string(MaximumLoadTimeInNs) + "ns.");
     #endif
 */
 
@@ -117,10 +117,10 @@ void test(const std::string filename) {
     marker_table->updTableMetaData().setValueForKey("Units", 
                                                     std::string{"mm"});
     TRCFileAdapter trc_adapter{};
-    std::clock_t t0 = std::clock();
+    watch.reset();
     trc_adapter.write(*marker_table, marker_file);
     cout << "\tWrote '" << marker_file << "' in "
-        << 1.e3*(std::clock() - t0) / CLOCKS_PER_SEC << "ms" << endl;
+        << watch.getElapsedTimeFormatted() << endl;
 
     ASSERT(force_table->getNumRows() > 0, __FILE__, __LINE__,
         "Failed to read forces data from " + filename);
@@ -128,17 +128,17 @@ void test(const std::string filename) {
     force_table->updTableMetaData().setValueForKey("Units", 
                                                     std::string{"mm"});
     STOFileAdapter sto_adapter{};
-    t0 = std::clock();
+    watch.reset();
     sto_adapter.write((force_table->flatten()), forces_file);
     cout << "\tWrote'" << forces_file << "' in "
-        << 1.e3*(std::clock() - t0) / CLOCKS_PER_SEC << "ms" << endl;
+        << watch.getElapsedTimeFormatted() << endl;
 
     // Verify that marker data was written out and can be read in
-    t0 = std::clock();
+    watch.reset();
     TimeSeriesTable_<SimTK::Vec3> markers(marker_file);
     TimeSeriesTable_<SimTK::Vec3> std_markers("std_" + marker_file);
     cout << "\tRead'" << marker_file << "' and its standard in "
-        << 1.e3*(std::clock() - t0) / CLOCKS_PER_SEC << "ms" << endl;
+        << watch.getElapsedTimeFormatted() << endl;
 
     // Compare C3DFileAdapter read-in and written marker data
     compare_tables<SimTK::Vec3>(markers, *marker_table);
@@ -161,22 +161,24 @@ void test(const std::string filename) {
 
     cout << "\tForces " << forces_file << " equivalent to standard." << endl;
 
-    t0 = std::clock();
-    // Reread in C3D file with forces resolved to the COP 
+    watch.reset();
+    // Reread in C3D file with forces resolved to the COP
     auto c3dFileAdapter2 = C3DFileAdapter{};
-    c3dFileAdapter2.setLocationForForceExpression(C3DFileAdapter::ForceLocation::CenterOfPressure);
+    c3dFileAdapter2.setLocationForForceExpression(
+            C3DFileAdapter::ForceLocation::CenterOfPressure);
     auto tables2 = c3dFileAdapter2.read(filename);
     
-    loadTime = 1.e3*(std::clock() - t0) / CLOCKS_PER_SEC;
+    loadTime = watch.getElapsedTimeInNs();
     cout << "\tC3DFileAdapter '" << filename << "' read with forces at COP in "
-        << loadTime << "ms" << endl;
+        << watch.formatNs(loadTime) << endl;
     // on ci-biulds will define SKIP_TIMING as it is unpredictably slow on some machines
     #if defined(NDEBUG) && !defined(SKIP_TIMING)
-    ASSERT(loadTime < MaximumLoadTimeInMS, __FILE__, __LINE__,
+    ASSERT(loadTime < MaximumLoadTimeInNs, __FILE__, __LINE__,
         "Unable to load '" + filename + "' within " +
-        to_string(MaximumLoadTimeInMS) + "ms.");
+        to_string(MaximumLoadTimeInNs) + "ns.");
     #endif
-    std::shared_ptr<TimeSeriesTableVec3> force_table_cop = c3dFileAdapter.getForcesTable(tables2);
+    std::shared_ptr<TimeSeriesTableVec3> force_table_cop =
+            c3dFileAdapter.getForcesTable(tables2);
     downsample_table(*force_table_cop, 100);
 
     sto_adapter.write(force_table_cop->flatten(), "cop_"+ forces_file);
@@ -189,29 +191,11 @@ void test(const std::string filename) {
                                 SimTK::SqrtEps);
 
     cout << "\tcop_" << forces_file << " is equivalent to its standard."<< endl;
-
-    cout << "\ttestC3DFileAdapter '" << filename << "' completed in "
-        << 1.e3*(std::clock() - startTime) / CLOCKS_PER_SEC  << "ms" << endl;
-
 }
 
 int main() {
-    std::vector<std::string> filenames{};
-    filenames.push_back("walking2.c3d");
-    filenames.push_back("walking5.c3d");
-
-    for(const auto& filename : filenames) {
-        std::cout << "\nTest reading '" + filename + "'." << std::endl;
-        try {
-            test(filename);
-        }
-        catch (const std::exception& ex) {
-            std::cout << "testC3DFileAdapter FAILED: " << ex.what() << std::endl;
-            return 1;
-        }
-    }
-
-    std::cout << "\nAll testC3DFileAdapter cases passed." << std::endl;
-
-    return 0;
+    SimTK_START_TEST("testC3DFileAdapter");
+        SimTK_SUBTEST1(test, "walking2.c3d");
+        SimTK_SUBTEST1(test, "walking5.c3d");
+    SimTK_END_TEST();
 }
