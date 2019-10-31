@@ -35,6 +35,11 @@ namespace OpenSim {
         typedef OpenSim::TimeSeriesTable_<SimTK::Quaternion> TimeSeriesTableQuaternion;
         typedef OpenSim::TimeSeriesTable_<SimTK::Rotation> TimeSeriesTableRotation;
 
+        static void rotateOrientationTable(
+                OpenSim::TimeSeriesTable_<SimTK::Quaternion_<double>>&
+                        quaternionsTable,
+                const SimTK::Rotation_<double>& rotationMatrix);
+
         /// @name Convert Table of Quaternions into a Table for Rotations
         /// @{
         /** Load a TimeSeriesTable of Rotation matrices from a Storage file containing

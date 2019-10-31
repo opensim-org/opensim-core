@@ -23,6 +23,7 @@
 
 
 // INCLUDES
+#include <OpenSim/Common/STOFileAdapter.h>
 #include <OpenSim/Simulation/OpenSense/OpenSenseUtilities.h>
 #include <OpenSim/Simulation/OpenSense/InverseKinematicsStudy.h>
 #include <OpenSim/Simulation/Model/Model.h>
@@ -34,12 +35,29 @@ using namespace std;
 
 int main()
 {
+    // Prepare data
+    TimeSeriesTable_<SimTK::Quaternion> quatTimeSeries =
+            TimeSeriesTable_<SimTK::Quaternion>("imuOrientations.sto");
+    quatTimeSeries.trim(0.0, 0.01);
+    SimTK::Rotation sensorToOpenSim(-SimTK_PI / 2, SimTK::XAxis);
+    // Rotate data so XAxis is forward
+    OpenSenseUtilities::rotateOrientationTable(quatTimeSeries, sensorToOpenSim);
+    /**
+    SimTK::Rotation headingRotation = computeHeadingCorrection(
+            quatTimeSeries, "pelvis_imu", SimTK::ZAxis);
+
+    OpenSenseUtilities::rotateOrientationTable(quatTimeSeries, headingRotation);
+
+    STOFileAdapter_<SimTK::Quaternion>::write(
+            quatTimeSeries, "adjusted_imuOrientations.sto");
+            */
     // Calibrate model and compare result to standard
     Model model = OpenSenseUtilities::calibrateModelFromOrientations(
         "subject07.osim",
         "imuOrientations.sto",
         "pelvis_imu", SimTK::ZAxis,
-        false);
+        false
+        );
     // Previous line produces a model with same name but "calibrated_" prefix.
     Model stdModel{ "std_calibrated_subject07.osim" };
     ASSERT(model == stdModel);

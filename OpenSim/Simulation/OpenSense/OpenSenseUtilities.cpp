@@ -119,6 +119,30 @@ TimeSeriesTable_<SimTK::Rotation> OpenSenseUtilities::
 }
 
 
+void OpenSim::OpenSenseUtilities::rotateOrientationTable(
+        OpenSim::TimeSeriesTable_<SimTK::Quaternion_<double>>&
+                quaternionsTable,
+        const SimTK::Rotation_<double>& rotationMatrix) {
+
+    // Fixed transform to rotate sensor orientations in world with Z up into the
+    // OpenSim ground reference frame with Y up and X forward.
+    SimTK::Rotation R_XG = rotationMatrix;
+
+    int nc = int(quaternionsTable.getNumColumns());
+    size_t nt = quaternionsTable.getNumRows();
+
+
+    for (size_t i = 0; i <= nt; ++i) {
+        auto& quatRow = quaternionsTable.updRowAtIndex(i);
+        for (int j = 0; j < nc; ++j) {
+            // This can be done completely in Quaternions but this is easier to debug for now
+            Quaternion quatO = (R_XG * Rotation(quatRow[j])).convertRotationToQuaternion();
+           quatRow[j] = quatO;
+        }
+    }
+    return;
+}
+
 Model OpenSenseUtilities::calibrateModelFromOrientations(
     const string& modelCalibrationPoseFile,
     const string& calibrationOrientationsFile,
