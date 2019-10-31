@@ -448,7 +448,7 @@ if(${BUILD_JAVA_WRAPPING})
         string(CONCAT MSG
            "BUILD_JAVA_WRAPPING is ON but OPENSIM_COPY_DEPENDENCIES is OFF. "
            "Wrapping may not work correctly. Consider switching the "
-		   "OPENSIM_COPY_DEPENDENCIES flag to ON.")
+           "OPENSIM_COPY_DEPENDENCIES flag to ON.")
         message(WARNING ${MSG})
     endif()
 endif()
@@ -506,7 +506,7 @@ if(${BUILD_PYTHON_WRAPPING})
         string(CONCAT MSG
            "BUILD_PYTHON_WRAPPING is ON but OPENSIM_COPY_DEPENDENCIES is OFF. "
            "Wrapping may not work correctly. Consider switching the "
-		   "OPENSIM_COPY_DEPENDENCIES flag to ON.")
+           "OPENSIM_COPY_DEPENDENCIES flag to ON.")
         message(WARNING ${MSG})
     endif()
 endif()
