@@ -179,7 +179,8 @@ print(const string &aFileName)
 {
     // Standard Out
     if(aFileName.empty()) {
-        log_info("{}", *this);
+        cout << *this;
+        cout << flush;
     // File
     } else {
         setIndentString("\t");

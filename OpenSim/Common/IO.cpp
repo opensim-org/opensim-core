@@ -21,8 +21,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/* Note: This code was originally developed by Realistic Dynamics Inc. 
- * Author: Frank C. Anderson 
+/* Note: This code was originally developed by Realistic Dynamics Inc.
+ * Author: Frank C. Anderson
  */
 
 
@@ -32,7 +32,9 @@
 #include <string>
 #include <climits>
 
+
 #include "IO.h"
+#include "Logger.h"
 #if defined(__linux__) || defined(__APPLE__)
     #include <sys/stat.h>
     #include <sys/types.h>
@@ -434,8 +436,8 @@ OpenFile(const string &aFileName,const string &aMode)
     // OPEN THE FILE
     fp = fopen(aFileName.c_str(),aMode.c_str());
     if(fp==NULL) {
-        printf("IO.OpenFile(const string&,const string&): failed to open %s\n",
-         aFileName.c_str());
+        log_error("IO.OpenFile(const string&,const string&): failed to open {}.",
+                aFileName.c_str());
         return(NULL);
     }
 
@@ -450,7 +452,9 @@ OpenInputFile(const string &aFileName,ios_base::openmode mode)
 {
     ifstream *fs = new ifstream(aFileName.c_str(), ios_base::in | mode);
     if(!fs || !(*fs)) {
-        printf("IO.OpenInputFile(const string&,openmode mode): failed to open %s\n", aFileName.c_str());
+        log_error("IO.OpenInputFile(const string&,openmode mode): failed to "
+                  "open {}.",
+                aFileName.c_str());
         return(NULL);
     }
 
@@ -461,7 +465,9 @@ OpenOutputFile(const string &aFileName,ios_base::openmode mode)
 {
     ofstream *fs = new ofstream(aFileName.c_str(), ios_base::out | mode);
     if(!fs || !(*fs)) {
-        printf("IO.OpenOutputFile(const string&,openmode mode): failed to open %s\n", aFileName.c_str());
+        log_error("IO.OpenOutputFile(const string&,openmode mode): failed to "
+                  "open {}.",
+                aFileName.c_str());
         return(NULL);
     }
 
@@ -492,7 +498,7 @@ chDir(const string &aDirName)
 {
 
 #if defined __linux__ || defined __APPLE__
-    return chdir(aDirName.c_str()); 
+    return chdir(aDirName.c_str());
 #else
     return _chdir(aDirName.c_str());
 #endif
@@ -518,7 +524,7 @@ getCwd()
 //_____________________________________________________________________________
 /**
  * Get parent directory of the passed in fileName.
- * 
+ *
 */
 string IO::
 getParentDirectory(const string& fileName)
@@ -526,10 +532,10 @@ getParentDirectory(const string& fileName)
     string  result="";
 
     string::size_type dirSep = fileName.rfind('/'); // Unix/Mac dir separator
-    
+
     if (dirSep == string::npos)
         dirSep = fileName.rfind('\\'); // DOS dir separator
-    
+
     if (dirSep != string::npos) // if '_fileName' contains path information...
         result = fileName.substr(0,dirSep+1); // include trailing slashes
 
@@ -539,7 +545,7 @@ getParentDirectory(const string& fileName)
 //_____________________________________________________________________________
 /**
  * Get filename part of a passed in URI (also works if a DOS/Unix path is passed in)
- * 
+ *
 */
 string IO::
 GetFileNameFromURI(const string& aURI)
@@ -547,10 +553,10 @@ GetFileNameFromURI(const string& aURI)
     string  result=aURI;
 
     string::size_type dirSep = aURI.rfind('/'); // Unix/Mac dir separator
-    
+
     if (dirSep == string::npos)
         dirSep = aURI.rfind('\\'); // DOS dir separator
-    
+
     if (dirSep != string::npos) // if aURI contains path information...
         result = aURI.substr(dirSep+1);
 

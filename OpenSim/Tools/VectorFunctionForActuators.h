@@ -28,7 +28,7 @@
  */
 
 #include <OpenSim/Common/Array.h>
-#include <OpenSim/Common/Log.h>
+#include <OpenSim/Common/Logger.h>
 #include <OpenSim/Common/VectorFunctionUncoupledNxN.h>
 
 namespace SimTK {

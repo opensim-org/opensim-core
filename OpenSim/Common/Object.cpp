@@ -508,7 +508,7 @@ registerType(const Object& aObject)
     // GET TYPE
     const string& type = aObject.getConcreteClassName();
     if(type.empty()) {
-        printf("Object.registerType: ERR- no type name has been set.\n");
+        log_error("Object.registerType: no type name has been set.");
         return;
     }
     log_trace("Object.registerType: {}.", type);
