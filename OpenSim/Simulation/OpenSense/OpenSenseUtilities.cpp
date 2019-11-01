@@ -132,7 +132,7 @@ void OpenSim::OpenSenseUtilities::rotateOrientationTable(
     size_t nt = quaternionsTable.getNumRows();
 
 
-    for (size_t i = 0; i <= nt; ++i) {
+    for (size_t i = 0; i < nt; ++i) {
         auto& quatRow = quaternionsTable.updRowAtIndex(i);
         for (int j = 0; j < nc; ++j) {
             // This can be done completely in Quaternions but this is easier to debug for now
