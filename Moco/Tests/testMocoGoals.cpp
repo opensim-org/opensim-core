@@ -383,29 +383,15 @@ TEMPLATE_TEST_CASE(
 TEST_CASE("Test MocoSumSquaredStateGoal") {
     using SimTK::Inertia;
     using SimTK::Vec3;
-
-    Model model;
-    model.setName("double_pin");
-    auto* body1 = new Body("body1", 1, Vec3(0), Inertia(0));
-    auto* body2 = new Body("body2", 1, Vec3(0), Inertia(0));
-    model.addBody(body1);
-    model.addBody(body2);
-
-    auto* pin1 = new PinJoint("pin1", model.getGround(), *body1);
-    auto* pin2 = new PinJoint("pin2", *body1, *body2);
-    pin1->updCoordinate().setName("rot1");
-    pin2->updCoordinate().setName("rot2");
-    model.addJoint(pin1);
-    model.addJoint(pin2);
-    model.finalizeConnections();
-    std::string state_coord_pin1_str =
-            pin1->getCoordinate().getAbsolutePathString() + "/value";
-    std::string state_coord_pin2_str =
-            pin2->getCoordinate().getAbsolutePathString() + "/value";
+    Model model = ModelFactory::createDoublePendulum();
+    const Coordinate& q0 = model.getCoordinateSet().get("q0");
+    const Coordinate& q1 = model.getCoordinateSet().get("q1");
+    std::string q0_str = q0.getAbsolutePathString() + "/value";
+    std::string q1_str = q1.getAbsolutePathString() + "/value";
 
     SimTK::State state = model.initSystem();
-    pin1->getCoordinate().setValue(state, 1.0);
-    pin2->getCoordinate().setValue(state, 0.5);
+    q0.setValue(state, 1.0);
+    q1.setValue(state, 0.5);
 
     MocoProblem mp;
     mp.setModelCopy(model);
@@ -417,28 +403,41 @@ TEST_CASE("Test MocoSumSquaredStateGoal") {
     goal->initializeOnModel(model);
     CHECK(goal->calcIntegrand(state) == Approx(1.25).margin(1e-6));
 
-    // 10 * 0.25 = 2.5
+    // If one state weight given, use that state weight, but then also
+    // set weight to all other states as 1.0.
+    // 1 * 1 + 10 * 0.25 = 3.5
     auto* goal2 = mp.addGoal<MocoSumSquaredStateGoal>();
-    goal2->setWeightForState(state_coord_pin2_str, 10.0);
+    goal2->setWeightForState(q1_str, 10.0);
     goal2->initializeOnModel(model);
-    CHECK(goal2->calcIntegrand(state) == Approx(2.5).margin(1e-6));
+    CHECK(goal2->calcIntegrand(state) == Approx(3.5).margin(1e-6));
 
     MocoWeightSet moco_weight_set;
-    moco_weight_set.cloneAndAppend({state_coord_pin1_str, 0.5});
-    moco_weight_set.cloneAndAppend({state_coord_pin2_str, 10.0});
+    moco_weight_set.cloneAndAppend({q0_str, 0.5});
+    moco_weight_set.cloneAndAppend({q1_str, 10.0});
 
-    // "pin1" is not found within all objects in weight set
+    // 0.5 * 1 + 10.0 * 0.25 = 3.0
     auto* goal3 = mp.addGoal<MocoSumSquaredStateGoal>();
     goal3->setWeightSet(moco_weight_set);
-    goal3->setPattern(".*pin1.*");
-    CHECK_THROWS(goal3->initializeOnModel(model));
+    goal3->initializeOnModel(model);
+    CHECK(goal3->calcIntegrand(state) == Approx(3.0).margin(1e-6));
 
     // 0.5 * 1.00 + 10.0 * 0.25 = 3.0
     auto* goal4 = mp.addGoal<MocoSumSquaredStateGoal>();
     goal4->setWeightSet(moco_weight_set);
-    goal4->setPattern(".*pin.*");
+    goal4->setPattern(".*value$");
     goal4->initializeOnModel(model);
     CHECK(goal4->calcIntegrand(state) == Approx(3.0).margin(1e-6));
+
+    // Throws since weight set has some names that don't match pattern.
+    auto* goal5 = mp.addGoal<MocoSumSquaredStateGoal>();
+    goal5->setWeightSet(moco_weight_set);
+    goal5->setPattern(".*pin1.*");
+    CHECK_THROWS(goal5->initializeOnModel(model));
+
+    // Throws since this state name doesn't exist in the model.
+    auto* goal6 = mp.addGoal<MocoSumSquaredStateGoal>();
+    goal6->setWeightForState("/jointset/j2/q2/value", 100.0);
+    CHECK_THROWS(goal6->initializeOnModel(model));
 }
 
 class MocoPeriodicish : public MocoGoal {

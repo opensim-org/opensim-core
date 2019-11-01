@@ -28,35 +28,63 @@ MocoSumSquaredStateGoal::MocoSumSquaredStateGoal() {
 void MocoSumSquaredStateGoal::initializeOnModelImpl(const Model& model) const {
     // Throw exception if a weight is specified for a nonexistent state.
     auto allSysYIndices = createSystemYIndexMap(model);
+    auto svNames = model.getStateVariableNames();
 
     std::regex regex;
-    if (getProperty_pattern().size()) {
-        regex = std::regex(get_pattern());
+    if (getProperty_pattern().size()) { regex = std::regex(get_pattern()); }
+
+    // All user-provided weights must match a state, and if a pattern is given,
+    // must match the pattern.
+    if (get_state_weights().getSize()) {
+        for (int i = 0; i < get_state_weights().getSize(); ++i) {
+            const auto& weightName = get_state_weights().get(i).getName();
+            if (allSysYIndices.count(weightName) == 0) {
+                OPENSIM_THROW_FRMOBJ(Exception,
+                        "Weight provided with name '" + weightName +
+                        "' but this is not a recognized state.");
+            }
+
+            if (getProperty_pattern().size()) { 
+                if (!std::regex_match(weightName, regex)) {
+                    OPENSIM_THROW_FRMOBJ(Exception,
+                            format("Weight provided with name '%s' but this "
+                                   "name does not match the pattern '%s'.",
+                                    weightName, get_pattern()));
+                }
+            }
+        }
     }
 
-    for (int i = 0; i < get_state_weights().getSize(); ++i) {
-        const auto& weightName = get_state_weights().get(i).getName();
-        if (allSysYIndices.count(weightName) == 0) {
-            OPENSIM_THROW_FRMOBJ(Exception, "Weight provided with name '" +
-                                                    weightName +
-                                                    "' but this is "
-                                                    "not a recognized state.");
+    // If pattern is given, populate m_sysYIndices based on the pattern.
+    if (getProperty_pattern().size()) {
+        for (int i = 0; i < svNames.size(); ++i) {
+            const auto& svName = svNames[i];
+            if (std::regex_match(svName, regex)) {
+                m_sysYIndices.push_back(allSysYIndices[svName]);
+
+                double weight = getStateWeight(svName);
+                m_state_weights.push_back(weight);
+            }
         }
-        if (getProperty_pattern().size() &&
-                !std::regex_match(weightName, regex)) {
+
+        // Pattern must match at least one state.
+        if (m_sysYIndices.size() == 0) {
             OPENSIM_THROW_FRMOBJ(Exception,
-                    format("Weight provided with name '%s' but this name does "
-                           "not match the pattern '%s'.",
-                            weightName, get_pattern()));
+                    format("Pattern '%s' given but no state variables "
+                           "matched the pattern.", get_pattern()));
         }
+    }
 
-        m_sysYIndices.push_back(allSysYIndices[weightName]);
+    // If no pattern is given, fill in all states into m_sysYIndices, and
+    // then either use user-provided weight if given or 1.0 if not given.
+    else {
+        for (int i = 0; i < svNames.size(); ++i) {
+            const auto& svName = svNames[i];
+            m_sysYIndices.push_back(allSysYIndices[svName]);
 
-        double weight = 1.0;
-        if (get_state_weights().contains(weightName)) {
-            weight = get_state_weights().get(weightName).getWeight();
+            double weight = getStateWeight(svName);
+            m_state_weights.push_back(weight);
         }
-        m_state_weights.push_back(weight);
     }
 
     setNumIntegralsAndOutputs(1, 1);
@@ -64,14 +92,9 @@ void MocoSumSquaredStateGoal::initializeOnModelImpl(const Model& model) const {
 
 void MocoSumSquaredStateGoal::calcIntegrandImpl(
         const SimTK::State& state, double& integrand) const {
-    if (get_state_weights().getSize() == 0) {
-        integrand = state.getY().normSqr();
-    } 
-    else {
-        for (int i = 0; i < get_state_weights().getSize(); ++i) {
-            const auto& value = state.getY()[m_sysYIndices[i]];
-            integrand += m_state_weights[i] * value * value;
-        }
+    for (int i = 0; i < m_state_weights.size(); ++i) {
+        const auto& value = state.getY()[m_sysYIndices[i]];
+        integrand += m_state_weights[i] * value * value;
     }
 }
 
@@ -81,4 +104,17 @@ void MocoSumSquaredStateGoal::printDescriptionImpl(std::ostream& stream) const {
         stream << "state: " << m_state_names[i] << ", "
                << "weight: " << m_state_weights[i] << std::endl;
     }
+}
+
+double MocoSumSquaredStateGoal::getStateWeight(
+        const std::string& stateName) const {
+    double weight = 1.0;
+    for (int i = 0; i < get_state_weights().getSize(); ++i) {
+        const auto& thisWeight = get_state_weights().get(i);
+        if (thisWeight.getName() == stateName) {
+            weight = thisWeight.getWeight();
+            break;
+        }
+    }
+    return weight;
 }
