@@ -133,11 +133,11 @@ void OpenSim::OpenSenseUtilities::rotateOrientationTable(
 
 
     for (size_t i = 0; i < nt; ++i) {
-        auto& quatRow = quaternionsTable.updRowAtIndex(i);
+        auto quatRow = quaternionsTable.updRowAtIndex(i);
         for (int j = 0; j < nc; ++j) {
             // This can be done completely in Quaternions but this is easier to debug for now
             Quaternion quatO = (R_XG * Rotation(quatRow[j])).convertRotationToQuaternion();
-           quatRow[j] = quatO;
+            quatRow[j] = quatO;
         }
     }
     return;
@@ -384,4 +384,59 @@ OpenSenseUtilities::createOrientationsFileFromMarkers(const std::string& markers
     STOFileAdapter_<SimTK::Quaternion>::write(quaternions, fileName);
 
     return quaternions;
+    }
+
+SimTK::Rotation OpenSenseUtilities::computeHeadingCorrection(
+        Model& model,
+        OpenSim::TimeSeriesTable_<SimTK::Quaternion_<double>>& quatTimeSeries,
+            const std::string& baseImuName,
+            const SimTK::CoordinateDirection baseHeadingDirection) {
+    // Return object
+    SimTK::Rotation rotation;
+ 
+    // if a base imu is specified, perform heading correction, otherwise skip
+    if (!baseImuName.empty()) {
+        /**
+        // Base will rotate to match <base>_imu, so we must first remove the
+        // base rotation from the other IMUs to get their orientation with
+        // respect to individual model bodies and thereby compute correct
+        // offsets unbiased by the initial base orientation.
+        auto imuLabels = orientationTable.getColumnLabels();
+        auto pix = distance(imuLabels.begin(),
+                std::find(imuLabels.begin(), imuLabels.end(), baseImuName));
+
+        // if no base can be found but one was provided, throw.
+        if (pix >= int(imuLabels.size())) {
+            OPENSIM_THROW(Exception, "No column with base IMU name '" +
+                                             baseImuName + "' found.");
+        }
+
+        auto startRow = orientationTable.getRowAtIndex(0);
+        const Rotation& base_R = startRow.getElt(0, int(pix));
+
+        // Heading direction of the base IMU in this case the pelvis_imu heading
+        // is its ZAxis
+        UnitVec3 pelvisHeading = base_R(baseHeadingDirection.getAxis());
+        if (baseHeadingDirection.getDirection() < 0)
+            pelvisHeading = pelvisHeading.negate();
+        UnitVec3 groundX = UnitVec3(1, 0, 0);
+        SimTK::Real angularDifference = acos(~pelvisHeading * groundX);
+
+        std::cout << "Heading correction computed to be "
+                  << angularDifference * SimTK_RADIAN_TO_DEGREE
+                  << "degs about ground Y" << std::endl;
+
+        SimTK::Rotation R_HG = SimTK::Rotation(
+                SimTK::BodyOrSpaceType::SpaceRotationSequence, 0, SimTK::XAxis,
+                angularDifference, SimTK::YAxis, 0, SimTK::ZAxis);
+
+        for (size_t i = 0; i < orientationTable.getNumRows(); ++i) {
+            RowVectorView_<SimTK::Rotation> rotationsRow =
+                    orientationTable.updRowAtIndex(i);
+            for (int j = 0; j < nc; ++j) {
+                rotationsRow[j] = R_HG * rotationsRow[j];
+            }
+        }*/
+    }
+    return rotation;
 }

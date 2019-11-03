@@ -64,6 +64,12 @@ namespace OpenSim {
                 const SimTK::Rotation_<double>& sensorToOpenSim = 
                     SimTK::Rotation(-SimTK_PI/2, SimTK::XAxis)
         );
+        static SimTK::Rotation computeHeadingCorrection(
+                OpenSim::Model& model,
+                OpenSim::TimeSeriesTable_<SimTK::Quaternion_<double>>&
+                        quatTimeSeries, 
+                const std::string& baseIMU, 
+                const SimTK::CoordinateDirection);
         /// @}
         /** Create a calibrated model from a model in the calibration pose and 
             the sensor (IMU) orientations (as quaternions) during the calibration.

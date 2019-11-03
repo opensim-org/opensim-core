@@ -42,15 +42,16 @@ int main()
     SimTK::Rotation sensorToOpenSim(-SimTK_PI / 2, SimTK::XAxis);
     // Rotate data so XAxis is forward
     OpenSenseUtilities::rotateOrientationTable(quatTimeSeries, sensorToOpenSim);
-    /**
-    SimTK::Rotation headingRotation = computeHeadingCorrection(
-            quatTimeSeries, "pelvis_imu", SimTK::ZAxis);
+
+    STOFileAdapter_<SimTK::Quaternion>::write(quatTimeSeries, "adjusted_imuOrientations.sto");
+    
+    Model origModel("subject07.osim");
+    SimTK::Rotation headingRotation =
+            OpenSenseUtilities::computeHeadingCorrection(
+                    origModel, quatTimeSeries, "pelvis_imu", SimTK::ZAxis);
 
     OpenSenseUtilities::rotateOrientationTable(quatTimeSeries, headingRotation);
 
-    STOFileAdapter_<SimTK::Quaternion>::write(
-            quatTimeSeries, "adjusted_imuOrientations.sto");
-            */
     // Calibrate model and compare result to standard
     Model model = OpenSenseUtilities::calibrateModelFromOrientations(
         "subject07.osim",
@@ -60,6 +61,7 @@ int main()
         );
     // Previous line produces a model with same name but "calibrated_" prefix.
     Model stdModel{ "std_calibrated_subject07.osim" };
+    model.print("calibrated_subject07.osim");
     ASSERT(model == stdModel);
 
     // Calibrate model from two different standing trials facing
