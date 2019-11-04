@@ -39,11 +39,11 @@ int main()
         "subject07.osim",
         "imuOrientations.sto",
         "pelvis_imu", SimTK::ZAxis,
-        false);
-    // Previous line produces a model with same name but "calibrated_" prefix.
-    Model stdModel{ "std_calibrated_subject07.osim" };
+        false);            
+    // Print model to file with same name but "calibrated_" prefix.
+    model.print("std_calibrated_subject07.osim");
+    Model stdModel{"std_calibrated_subject07.osim"};
     ASSERT(model == stdModel);
-
     // Calibrate model from two different standing trials facing
     // opposite directions to verify that heading correction is working
     Model facingX = OpenSenseUtilities::calibrateModelFromOrientations(
@@ -53,12 +53,11 @@ int main()
         false);
     facingX.setName("calibrated_FacingX");
     facingX.finalizeFromProperties();
-
     InverseKinematicsStudy ik_hjc("setup_track_HJC_trial.xml");
     ik_hjc.setModel(facingX);
     ik_hjc.set_results_directory("ik_hjc_" + facingX.getName());
     ik_hjc.run(false);
-
+    
     // Now facing the opposite direction (negative X)
     Model facingNegX = OpenSenseUtilities::calibrateModelFromOrientations(
         "subject07.osim",
