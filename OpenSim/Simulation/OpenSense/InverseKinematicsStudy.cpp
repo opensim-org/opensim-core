@@ -129,6 +129,11 @@ runInverseKinematicsWithOrientationsFromFile(Model& model,
     TimeSeriesTable_<SimTK::Quaternion> quatTable(orientationsFileName);
     std::cout << "Loading orientations as quaternions from "
         << orientationsFileName << std::endl;
+    // Convert to OpenSim Frame
+    SimTK::Rotation sensorToOpenSim(-SimTK_PI / 2, SimTK::XAxis);
+
+    // Rotate data so Y-Axis is up
+    OpenSenseUtilities::rotateOrientationTable(quatTable, sensorToOpenSim);
 
     auto startEnd = getTimeRangeInUse(quatTable.getIndependentColumn());
 
