@@ -133,10 +133,15 @@ runInverseKinematicsWithOrientationsFromFile(Model& model,
     auto startEnd = getTimeRangeInUse(quatTable.getIndependentColumn());
 
     const auto axis_string = IO::Lowercase(get_base_heading_axis());
+    int direction = 1;
+    if (axis_string.length() > 1) { 
+        if (axis_string.front() == '-') 
+            direction = -1;
+    }
+    int axis = (axis_string.back()=='x' ? 0 : 
+                                    ((axis_string.back() == 'y') ? 1 : 2));
 
-    int axis = (axis_string == "x" ? 0 : 
-                                    ((axis_string == "y") ? 1 : 2) );
-    SimTK::CoordinateAxis heading{ axis };
+    SimTK::CoordinateDirection heading( SimTK::CoordinateAxis(axis), direction );
 
 
     cout << "Heading correction for base '" << get_base_imu_label()
