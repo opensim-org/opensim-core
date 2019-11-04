@@ -173,6 +173,7 @@ Model OpenSenseUtilities::calibrateModelFromOrientations(
 
     OpenSenseUtilities::rotateOrientationTable(quatTable, headingRotation);
 
+    // This is now plain conversion, no Rotation or magic underneath
     TimeSeriesTable_<SimTK::Rotation> orientationsData =
         OpenSenseUtilities::convertQuaternionsToRotations(quatTable,
             startEnd);
