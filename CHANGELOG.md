@@ -16,6 +16,7 @@ v4.1
 - Reading DataTables from files has been simplified. Reading one table from a file typically uses the Table constructor except when the data-source/file contains multiple tables. (In these cases e.g. C3D files, use C3DFileAdapter.read method, then use functions in C3DFileAdapter to get the individual TimeSeriesTable(s)). Writing tables to files has not changed.
 - Exposed convertMillimeters2Meters() in osimC3D.m. This function converts COP and moment data from mm to m and now must be invoked prior to writing force data to file. Previously, this was automatically performed during writing forces to file. 
 - Methods that operate on SimTK::Vec<n> are now available through Java/Matlab and python bindings to add/subtract/divide/multiply vec<n> contents with a scalar (PR #2558)
+- The new Stopwatch class allows C++ API users to easily measure the runtime of their code.
 
 Converting from v4.0 to v4.1
 ----------------------------
@@ -42,7 +43,9 @@ Other Changes
 - Performance of reading large data files has been significantly improved. A 50MB .sto file would take 10-11 min to read now takes 2-3 seconds. (PR #2399)
 - Added Matlab example script of plotting the Force-length properties of muscles in a models; creating an Actuator file from a model; 
 building and simulating a simple arm model;  using OutputReporters to record and write marker location and coordinate values to file.
+- Added Python example that demonstrates how to run an optimization using the cma package and how to avoid an expensive call to `initSystem()` within the objective function. (PR #2604)
 - OpenSim 4.1 ships with Python3 bindings as default. It is still possible to create bindings for Python2 if desired by setting CMake variable OPENSIM_PYTHON_VERSION to 2
+- For CMake, the option OPENSIM_COPY_DEPENDENCIES option is now an advanced option, and a warning is provided if this option is off but wrapping is turned on.
 
 v4.0
 ====

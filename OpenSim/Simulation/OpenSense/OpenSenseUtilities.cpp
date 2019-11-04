@@ -147,7 +147,7 @@ Model OpenSenseUtilities::calibrateModelFromOrientations(
     const string& modelCalibrationPoseFile,
     const string& calibrationOrientationsFile,
     const std::string& baseImuName,
-    const SimTK::CoordinateAxis& baseHeadingAxis,
+    const SimTK::CoordinateDirection& baseHeadingDirection,
     bool visualizeCalibratedModel)
 {
     Model model(modelCalibrationPoseFile);

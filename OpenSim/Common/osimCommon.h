@@ -33,6 +33,8 @@
 #include "GCVSpline.h"
 #include "IO.h"
 
+#include "Stopwatch.h"
+
 #include "Scale.h"
 #include "SimmSpline.h"
 #include "Constant.h"
