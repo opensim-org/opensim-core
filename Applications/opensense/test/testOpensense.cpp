@@ -42,8 +42,6 @@ int main()
     SimTK::Rotation sensorToOpenSim(-SimTK_PI / 2, SimTK::XAxis);
     // Rotate data so XAxis is forward
     OpenSenseUtilities::rotateOrientationTable(quatTimeSeries, sensorToOpenSim);
-
-    STOFileAdapter_<SimTK::Quaternion>::write(quatTimeSeries, "adjusted_imuOrientations.sto");
     
     Model origModel("subject07.osim");
     SimTK::Rotation headingRotation =
@@ -52,6 +50,8 @@ int main()
 
     OpenSenseUtilities::rotateOrientationTable(quatTimeSeries, headingRotation);
 
+   STOFileAdapter_<SimTK::Quaternion>::write(
+            quatTimeSeries, "adjusted_imuOrientations.sto");
     // Calibrate model and compare result to standard
     Model model = OpenSenseUtilities::calibrateModelFromOrientations(
         "subject07.osim",

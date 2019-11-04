@@ -122,8 +122,8 @@ TimeSeriesTable_<SimTK::Rotation> OpenSenseUtilities::
 void OpenSim::OpenSenseUtilities::rotateOrientationTable(
         OpenSim::TimeSeriesTable_<SimTK::Quaternion_<double>>&
                 quaternionsTable,
-        const SimTK::Rotation_<double>& rotationMatrix) {
-
+        const SimTK::Rotation_<double>& rotationMatrix) 
+{
     // Fixed transform to rotate sensor orientations in world with Z up into the
     // OpenSim ground reference frame with Y up and X forward.
     SimTK::Rotation R_XG = rotationMatrix;
@@ -384,19 +384,20 @@ OpenSenseUtilities::createOrientationsFileFromMarkers(const std::string& markers
     STOFileAdapter_<SimTK::Quaternion>::write(quaternions, fileName);
 
     return quaternions;
-    }
+ }
 
 SimTK::Rotation OpenSenseUtilities::computeHeadingCorrection(
         Model& model,
-        OpenSim::TimeSeriesTable_<SimTK::Quaternion_<double>>& quatTimeSeries,
+            OpenSim::TimeSeriesTable_<SimTK::Quaternion_<double>>&
+                    orientationTable,
             const std::string& baseImuName,
-            const SimTK::CoordinateDirection baseHeadingDirection) {
-    // Return object
+            const SimTK::CoordinateDirection baseHeadingDirection) 
+{
     SimTK::Rotation rotation;
  
     // if a base imu is specified, perform heading correction, otherwise skip
     if (!baseImuName.empty()) {
-        /**
+        
         // Base will rotate to match <base>_imu, so we must first remove the
         // base rotation from the other IMUs to get their orientation with
         // respect to individual model bodies and thereby compute correct
@@ -410,7 +411,7 @@ SimTK::Rotation OpenSenseUtilities::computeHeadingCorrection(
             OPENSIM_THROW(Exception, "No column with base IMU name '" +
                                              baseImuName + "' found.");
         }
-
+        /**
         auto startRow = orientationTable.getRowAtIndex(0);
         const Rotation& base_R = startRow.getElt(0, int(pix));
 
