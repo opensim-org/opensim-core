@@ -34,7 +34,9 @@ namespace OpenSim {
     public:
         typedef OpenSim::TimeSeriesTable_<SimTK::Quaternion> TimeSeriesTableQuaternion;
         typedef OpenSim::TimeSeriesTable_<SimTK::Rotation> TimeSeriesTableRotation;
-
+        /** Apply the passed in Rotation matrix to a TimeSeriesTable of Quaternions.
+            The rotation is done in place so the table passed in is modified
+        */
         static void rotateOrientationTable(
                 OpenSim::TimeSeriesTable_<SimTK::Quaternion_<double>>&
                         quaternionsTable,
@@ -45,8 +47,8 @@ namespace OpenSim {
         /** Load a TimeSeriesTable of Rotation matrices from a Storage file containing
             quaternions as data elements. Optionally provide a range of times for data
             to be averaged. By default just uses the first time frame.
-            Additional options include the name of the base IMU and its axis that
-            represents the heading (forward) direction. These are used to perform
+            Additional options will be deprecated include the name of the base IMU 
+            and its axis that represents the heading (forward) direction. These are used to perform
             a heading correction on all the experimental (quaternion) data so that
             when tracking rotation data, the initial pose of the model is facing
             forward. If the baseImuName is empty, no correction is made. If no
@@ -61,9 +63,14 @@ namespace OpenSim {
                 const SimTK::Array_<int>& startEnd = { 0, 1 },
                 const std::string& baseImuName = "",
                 const SimTK::CoordinateDirection& baseHeadingDirection = SimTK::ZAxis,
-                const SimTK::Rotation_<double>& sensorToOpenSim = 
-                    SimTK::Rotation(-SimTK_PI/2, SimTK::XAxis)
+                const SimTK::Rotation_<double>& sensorToOpenSim = SimTK::Rotation_<double>()
         );
+
+        /** Compute a SimTK::Rotation matrix that aligns the specified 
+            baseIMU + CoordinateDirection combination with the positive X (=forward) direction 
+            in OpenSim based on the first frame of the passed in table of quaternions
+            quatTimeSeries. 
+        */
         static SimTK::Rotation computeHeadingCorrection(
                 OpenSim::Model& model,
                 OpenSim::TimeSeriesTable_<SimTK::Quaternion_<double>>&
