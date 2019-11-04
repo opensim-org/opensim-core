@@ -156,6 +156,22 @@ Model OpenSenseUtilities::calibrateModelFromOrientations(
 
     TimeSeriesTable_<SimTK::Quaternion> quatTable(calibrationOrientationsFile);
 
+    // Rotation matrix that maps the IMU World reference frame to
+    // OpenSim's ground reference frame. The default is to rotate -Pi/2 about
+    // the IMU world X - axis to get IMU World Z -axis to point up as OpenSim's
+    // ground Y-axis.
+    SimTK::Rotation sensorToOpenSim(-SimTK_PI / 2, SimTK::XAxis);
+
+    // Rotate data so Y-Axis is up
+    OpenSenseUtilities::rotateOrientationTable(quatTable, sensorToOpenSim);
+
+    // Compute rotation matrix so that ("pelvis_imu"+ SimTK::ZAxis) lines up
+    // with model forward (+X)
+    SimTK::Rotation headingRotation =
+            OpenSenseUtilities::computeHeadingCorrection(
+                    model, quatTable, "pelvis_imu", SimTK::ZAxis);
+
+    OpenSenseUtilities::rotateOrientationTable(quatTable, headingRotation);
 
     TimeSeriesTable_<SimTK::Rotation> orientationsData =
         OpenSenseUtilities::convertQuaternionsToRotations(quatTable,
@@ -430,14 +446,7 @@ SimTK::Rotation OpenSenseUtilities::computeHeadingCorrection(
         rotation = SimTK::Rotation(
                 SimTK::BodyOrSpaceType::SpaceRotationSequence, 0, SimTK::XAxis,
                 angularDifference, SimTK::YAxis, 0, SimTK::ZAxis);
-        /**
-        for (size_t i = 0; i < quaternionsTable.getNumRows(); ++i) {
-            RowVectorView_<SimTK::Rotation> rotationsRow =
-                    quaternionsTable.updRowAtIndex(i);
-            for (int j = 0; j < nc; ++j) {
-                rotationsRow[j] = R_HG * rotationsRow[j];
-            }
-        }*/
+
     }
     return rotation;
 }
