@@ -42,6 +42,7 @@
 
     #pragma warning(disable:4251) /*no DLL interface for type of member of exported class*/
     #pragma warning(disable:4275) /*no DLL interface for base class of exported class*/
+    #pragma warning(disable:4661) /*instantiating incomplete template class*/
 
 #endif
 
