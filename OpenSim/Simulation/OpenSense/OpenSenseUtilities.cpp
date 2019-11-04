@@ -159,7 +159,7 @@ Model OpenSenseUtilities::calibrateModelFromOrientations(
 
     TimeSeriesTable_<SimTK::Rotation> orientationsData =
         OpenSenseUtilities::convertQuaternionsToRotations(quatTable,
-            startEnd, baseImuName, baseHeadingAxis);
+            startEnd);
 
     std::cout << "Loaded orientations as quaternions from "
         << calibrationOrientationsFile << std::endl;
@@ -389,7 +389,7 @@ OpenSenseUtilities::createOrientationsFileFromMarkers(const std::string& markers
 SimTK::Rotation OpenSenseUtilities::computeHeadingCorrection(
         Model& model,
             OpenSim::TimeSeriesTable_<SimTK::Quaternion_<double>>&
-                    orientationTable,
+                    quaternionsTable,
             const std::string& baseImuName,
             const SimTK::CoordinateDirection baseHeadingDirection) 
 {
@@ -402,7 +402,7 @@ SimTK::Rotation OpenSenseUtilities::computeHeadingCorrection(
         // base rotation from the other IMUs to get their orientation with
         // respect to individual model bodies and thereby compute correct
         // offsets unbiased by the initial base orientation.
-        auto imuLabels = orientationTable.getColumnLabels();
+        auto imuLabels = quaternionsTable.getColumnLabels();
         auto pix = distance(imuLabels.begin(),
                 std::find(imuLabels.begin(), imuLabels.end(), baseImuName));
 
@@ -411,9 +411,9 @@ SimTK::Rotation OpenSenseUtilities::computeHeadingCorrection(
             OPENSIM_THROW(Exception, "No column with base IMU name '" +
                                              baseImuName + "' found.");
         }
-        /**
-        auto startRow = orientationTable.getRowAtIndex(0);
-        const Rotation& base_R = startRow.getElt(0, int(pix));
+        
+        auto startRow = quaternionsTable.getRowAtIndex(0);
+        Rotation base_R = Rotation(startRow.getElt(0, int(pix)));
 
         // Heading direction of the base IMU in this case the pelvis_imu heading
         // is its ZAxis
@@ -427,13 +427,13 @@ SimTK::Rotation OpenSenseUtilities::computeHeadingCorrection(
                   << angularDifference * SimTK_RADIAN_TO_DEGREE
                   << "degs about ground Y" << std::endl;
 
-        SimTK::Rotation R_HG = SimTK::Rotation(
+        rotation = SimTK::Rotation(
                 SimTK::BodyOrSpaceType::SpaceRotationSequence, 0, SimTK::XAxis,
                 angularDifference, SimTK::YAxis, 0, SimTK::ZAxis);
-
-        for (size_t i = 0; i < orientationTable.getNumRows(); ++i) {
+        /**
+        for (size_t i = 0; i < quaternionsTable.getNumRows(); ++i) {
             RowVectorView_<SimTK::Rotation> rotationsRow =
-                    orientationTable.updRowAtIndex(i);
+                    quaternionsTable.updRowAtIndex(i);
             for (int j = 0; j < nc; ++j) {
                 rotationsRow[j] = R_HG * rotationsRow[j];
             }

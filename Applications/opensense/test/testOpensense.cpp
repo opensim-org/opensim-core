@@ -39,23 +39,29 @@ int main()
     TimeSeriesTable_<SimTK::Quaternion> quatTimeSeries =
             TimeSeriesTable_<SimTK::Quaternion>("imuOrientations.sto");
     quatTimeSeries.trim(0.0, 0.01);
+    // Rotation matrix that maps the IMU World reference frame to
+    // OpenSim's ground reference frame. The default is to rotate -Pi/2 about the IMU world X -
+    // axis to get IMU World Z -axis to point up as OpenSim's ground Y-axis.
     SimTK::Rotation sensorToOpenSim(-SimTK_PI / 2, SimTK::XAxis);
-    // Rotate data so XAxis is forward
+
+    // Rotate data so Y-Axis is up
     OpenSenseUtilities::rotateOrientationTable(quatTimeSeries, sensorToOpenSim);
     
     Model origModel("subject07.osim");
+    // Compute rotation matrix so that ("pelvis_imu"+ SimTK::ZAxis) lines up with model forward (+X) 
     SimTK::Rotation headingRotation =
             OpenSenseUtilities::computeHeadingCorrection(
                     origModel, quatTimeSeries, "pelvis_imu", SimTK::ZAxis);
 
     OpenSenseUtilities::rotateOrientationTable(quatTimeSeries, headingRotation);
 
-   STOFileAdapter_<SimTK::Quaternion>::write(
+    STOFileAdapter_<SimTK::Quaternion>::write(
             quatTimeSeries, "adjusted_imuOrientations.sto");
+
     // Calibrate model and compare result to standard
     Model model = OpenSenseUtilities::calibrateModelFromOrientations(
         "subject07.osim",
-        "imuOrientations.sto",
+        "adjusted_imuOrientations.sto",
         "pelvis_imu", SimTK::ZAxis,
         false
         );
